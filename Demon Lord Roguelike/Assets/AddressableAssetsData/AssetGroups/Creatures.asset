@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Creatures
+  m_EditorClassIdentifier: 
+  m_GroupName: Creatures
+  m_Data:
+    m_SerializedData: []
+  m_GUID: f5aa8dfe4b705284e89d4a69ab8f6298
+  m_SerializeEntries:
+  - m_GUID: 57851122ffa86f140bdfdb1a9a751de1
+    m_Address: Assets/LoadResources/Creatures/FightCreature_Def_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d36b84ecb6d9e874fafca7af719f1608
+    m_Address: Assets/LoadResources/Creatures/FightCreature_SelectPreview.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 00bd59f96a2eaf843b50aa3ead32bf4b, type: 2}
+    - {fileID: 11400000, guid: 149744b69200d2e4cb4e40bc27426702, type: 2}

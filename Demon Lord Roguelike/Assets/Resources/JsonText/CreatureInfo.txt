@@ -1,0 +1,1 @@
+[{"creature_type":1,"create_magic":100,"name_res":"test","remark":"测试数据","id":1,"valid":0,"name_cn":null,"name_en":null}]

@@ -1,0 +1,1 @@
+[{"name_res":"FightScene_1.prefab","remark":"测试场景","id":1,"valid":0,"name_cn":null,"name_en":null}]
