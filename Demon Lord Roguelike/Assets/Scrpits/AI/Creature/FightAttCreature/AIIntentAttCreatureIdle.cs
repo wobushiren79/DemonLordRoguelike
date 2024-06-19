@@ -4,19 +4,19 @@ using UnityEngine;
 
 public class AIIntentAttCreatureIdle : AIBaseIntent
 {
-    //闲置更新时间
-    protected float timeUpdateForIdle = 0;
-    //本次闲置时间
-    protected float timeForIdle = 0;
+    //目标AI
+    public AIAttCreatureEntity selfAIEntity;
 
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
-
+        selfAIEntity = aiEntity as AIAttCreatureEntity;
+        //寻找一条路线上的敌人
+        selfAIEntity.FindDefCreatureDisMinEntity(selfAIEntity.selfAttCreatureEntity.fightCreatureData.positionZCurrent);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
-
+        selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureMove);
     }
 
     public override void IntentLeaving(AIBaseEntity aiEntity)

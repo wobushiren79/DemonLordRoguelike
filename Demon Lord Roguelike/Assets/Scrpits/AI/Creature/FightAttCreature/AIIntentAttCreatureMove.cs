@@ -4,19 +4,26 @@ using UnityEngine;
 
 public class AIIntentAttCreatureMove : AIBaseIntent
 {
-    //闲置更新时间
-    protected float timeUpdateForIdle = 0;
-    //本次闲置时间
-    protected float timeForIdle = 0;
+    //目标AI
+    public AIAttCreatureEntity selfAIEntity;
 
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
+        selfAIEntity = aiEntity as AIAttCreatureEntity;
 
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
-
+        //监测是否在攻击范围内
+        if (CheckIsAttRange())
+        {
+            selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureAttack);
+            return;
+        }
+        float moveSpeed = selfAIEntity.selfAttCreatureEntity.fightCreatureData.GetMoveSpeed();
+        Transform selfTF = selfAIEntity.selfAttCreatureEntity.creatureObj.transform;
+        selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeed);
     }
 
     public override void IntentLeaving(AIBaseEntity aiEntity)
@@ -24,4 +31,19 @@ public class AIIntentAttCreatureMove : AIBaseIntent
 
     }
 
+    /// <summary>
+    /// 检测是否在攻击范围内
+    /// </summary>
+    public bool CheckIsAttRange()
+    {
+        var currentPosition = selfAIEntity.selfAttCreatureEntity.creatureObj.transform.position;
+        var targetMovePos = selfAIEntity.targetMovePos;
+        float dis = Vector3.Distance(currentPosition, targetMovePos);
+        var creatureInfo = selfAIEntity.selfAttCreatureEntity.fightCreatureData.GetCreatureInfo();
+        if (dis <= creatureInfo.att_range)
+        {
+            return true;
+        }
+        return false;
+    }
 }

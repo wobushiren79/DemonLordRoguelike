@@ -7,4 +7,9 @@ using UnityEngine;
 public class CreatureBean
 {
     public long id;//ID;
+
+    public CreatureBean(long id)
+    {
+        this.id = id;
+    }
 }

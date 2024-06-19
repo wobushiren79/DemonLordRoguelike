@@ -23,8 +23,8 @@ public partial class UIFightMain : BaseUIComponent
         base.OpenUI();
         RegisterEvent(EventsInfo.Toast_NoEnoughCreateMagic, EventForNoEnoughCreateMagic);
         RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_SelectCard, EventForGameFightLogicSelectCard);
-        RegisterEvent<GameObject, FightCreatureBean>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
-        RegisterEvent<GameObject, FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        RegisterEvent<GameFightCreatureEntity>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
+        RegisterEvent<GameFightCreatureEntity>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
     }
 
     /// <summary>
@@ -50,6 +50,7 @@ public partial class UIFightMain : BaseUIComponent
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         //设置魔力值
         SetMagicData(gameFightLogic.fightData.currentMagic);
+        SetAttCreateProgress(gameFightLogic.fightData.gameStage, gameFightLogic.fightData.gameProgress);
     }
 
     /// <summary>
@@ -74,6 +75,7 @@ public partial class UIFightMain : BaseUIComponent
             rtf.anchoredPosition = new Vector2(contentXMax - itemW * i, rtf.anchoredPosition.y);
             rtf.sizeDelta = new Vector2(itemW, rtf.sizeDelta.y);
             UIViewFightMainAttCreateProgress itemView = objItem.GetComponent<UIViewFightMainAttCreateProgress>();
+            itemView.SetProgress(0);
             dicAttProgress.Add(i + 1, itemView);
         }
     }
@@ -81,9 +83,12 @@ public partial class UIFightMain : BaseUIComponent
     /// <summary>
     /// 设置进攻数据进度
     /// </summary>
-    public void SetAttCreateProgress()
+    public void SetAttCreateProgress(int stage, float progress)
     {
-
+        if (dicAttProgress.TryGetValue(stage,out UIViewFightMainAttCreateProgress progressView))
+        {
+            progressView.SetProgress(progress);
+        }
     }
 
     /// <summary>
@@ -202,7 +207,7 @@ public partial class UIFightMain : BaseUIComponent
     /// <summary>
     /// 事件-取消选择的卡片
     /// </summary>
-    public void EventForGameFightLogicUnSelectCard(GameObject targetObj, FightCreatureBean targetData)
+    public void EventForGameFightLogicUnSelectCard(GameFightCreatureEntity gameFightCreatureEntity)
     {
 
     }
@@ -210,7 +215,7 @@ public partial class UIFightMain : BaseUIComponent
     /// <summary>
     /// 事件-放置卡片
     /// </summary>
-    public void EventForGameFightLogicPutCard(GameObject targetObj, FightCreatureBean targetData)
+    public void EventForGameFightLogicPutCard(GameFightCreatureEntity gameFightCreatureEntity)
     {
         RefreshUIData();
     }

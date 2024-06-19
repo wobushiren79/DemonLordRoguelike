@@ -9,6 +9,8 @@ public class CreatureManager : BaseManager
     public Dictionary<string, GameObject> dicCreatureModel = new Dictionary<string, GameObject>();
     //防御生物的缓存池
     public Queue<GameObject> poolForCreatureDef = new Queue<GameObject>();
+    //进攻生物的缓存池
+    public Queue<GameObject> poolForCreatureAtt = new Queue<GameObject>();
     //生物预览
     public GameObject objCreatureSelectPreview;
 
@@ -52,24 +54,37 @@ public class CreatureManager : BaseManager
             case 2:
                 creatureModelName = "FightCreature_Att_1.prefab";
                 break;
+            default:
+                LogUtil.LogError($"创建生物失败：没有找到creature_type为{itemCreatureInfo.creature_type}的生物");
+                return;
         }
-        if (creatureModelName.IsNull())
-        {
-            LogUtil.LogError($"创建生物失败：没有找到creature_type为{itemCreatureInfo.creature_type}的生物");
-            return;
-        }
+
         string resPath = $"{PathInfo.CreaturesPrefabPath}/{creatureModelName}";
-        var targetModel = GetModelForAddressablesSync(dicCreatureModel, resPath);
-        if (targetModel == null)
+        GameObject objItem;
+        CreatureTypeEnum creatureType = itemCreatureInfo.GetCreatureType();
+        switch (creatureType)
         {
-            LogUtil.LogError($"创建生物失败：没有找到资源路径为{resPath}的生物");
-            return;
+            case CreatureTypeEnum.FightDef:
+                objItem = GetCreaureFromPool(poolForCreatureDef);
+                break;
+            case CreatureTypeEnum.FightAtt:
+                objItem = GetCreaureFromPool(poolForCreatureAtt);
+                break;
+            default:
+                return;
         }
-        GameObject objItem = GetCreaureFromPool(poolForCreatureDef);
+        //如果没有 则加载创建新的预制
         if (objItem == null)
         {
+            var targetModel = GetModelForAddressablesSync(dicCreatureModel, resPath);
+            if (targetModel == null)
+            {
+                LogUtil.LogError($"创建生物失败：没有找到资源路径为{resPath}的生物");
+                return;
+            }
             objItem = Instantiate(gameObject, targetModel);
         }
+
         objItem.gameObject.SetActive(true);
         actionForComplete?.Invoke(objItem);
     }

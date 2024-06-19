@@ -57,9 +57,9 @@ public partial class UIViewCreatureCardItem
     /// <summary>
     /// 事件-取消选择的卡片
     /// </summary>
-    public void EventForGameFightLogicUnSelectCard(GameObject targetObj, FightCreatureBean targetData)
+    public void EventForGameFightLogicUnSelectCard(GameFightCreatureEntity gameFightCreatureEntity)
     {
-        if (targetData != fightCreatureData)
+        if (gameFightCreatureEntity.fightCreatureData != fightCreatureData)
         {
             switch (stateForCard)
             {
@@ -78,9 +78,9 @@ public partial class UIViewCreatureCardItem
     /// <summary>
     /// 事件-放置卡片
     /// </summary>
-    public void EventForGameFightLogicPutCard(GameObject targetObj, FightCreatureBean targetData)
+    public void EventForGameFightLogicPutCard(GameFightCreatureEntity gameFightCreatureEntity)
     {
-        if (targetData != fightCreatureData)
+        if (gameFightCreatureEntity.fightCreatureData != fightCreatureData)
             return;
         //设置卡片状态
         SetCardState(CardStateEnum.Fighting);

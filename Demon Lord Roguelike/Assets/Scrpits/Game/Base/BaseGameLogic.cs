@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public abstract class GameBaseLogic
+public abstract class BaseGameLogic
 {
     //所有注册事件
     private List<string> listEvents = new List<string>();

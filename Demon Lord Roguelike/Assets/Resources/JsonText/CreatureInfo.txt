@@ -1,1 +1,1 @@
-[{"creature_type":1,"create_magic":100,"name_res":"test","remark":"测试数据","id":1,"valid":0,"name_cn":null,"name_en":null}]
+[{"creature_type":1,"create_magic":100,"name_res":"test","speed_move":1.0,"life":100,"att_mode":200001,"att_range":6.0,"att_cd":1.0,"att_damage":10,"remark":"测试数据","id":1,"valid":0,"name_cn":"防御测试","name_en":"Att Test Creature"},{"creature_type":2,"create_magic":0,"name_res":"test","speed_move":1.0,"life":100,"att_mode":100001,"att_range":0.5,"att_cd":1.0,"att_damage":10,"remark":"","id":2,"valid":0,"name_cn":"进攻测试","name_en":"Def Test Creature"}]

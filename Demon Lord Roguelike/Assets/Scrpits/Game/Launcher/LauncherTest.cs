@@ -37,12 +37,13 @@ public class LauncherTest : BaseLauncher
         //½ø¹¥Êý¾Ý1
         FightAttCreateDetailsBean attCreateData1 = new FightAttCreateDetailsBean();
         attCreateData1.stage = 1;
-        attCreateData1.timeDuration = 60;
+        attCreateData1.timeDuration = 180;
         attCreateData1.createNum = 1;
-        attCreateData1.createDelay = 1;
-        attCreateData1.creatureIds = new Dictionary<float, List<int>>()
+        attCreateData1.createDelay = 0.1f;
+        attCreateData1.timePointForCreatures = new List<FightAttCreateDetailsTimePointBean>()
         {
-            {1, new List<int>() { 1 }},
+            new FightAttCreateDetailsTimePointBean(0f, 0.5f, new List<int>() { 2 }),
+            new FightAttCreateDetailsTimePointBean(0.5f, 1f, new List<int>() { 2 })
         };
         attCreateData1.creatureEndIds = new Dictionary<int, int>()
         {
@@ -53,11 +54,12 @@ public class LauncherTest : BaseLauncher
         attCreateData2.timeDuration = 60;
         attCreateData2.createNum = 2;
         attCreateData2.createDelay = 2;
-        attCreateData2.creatureIds = new Dictionary<float, List<int>>()
+        attCreateData2.timePointForCreatures = new List<FightAttCreateDetailsTimePointBean>()
         {
-            {1, new List<int>() { 1 }},
+            new FightAttCreateDetailsTimePointBean(0, 0.5f, new List<int>() { 2 }),
+            new FightAttCreateDetailsTimePointBean(0.5f, 1f, new List<int>() { 2 })
         };
-        attCreateData1.creatureEndIds = new Dictionary<int, int>()
+        attCreateData2.creatureEndIds = new Dictionary<int, int>()
         {
             {1, 10},
         };
@@ -71,12 +73,11 @@ public class LauncherTest : BaseLauncher
         List<FightCreatureBean> listCreatureData = new List<FightCreatureBean>();
         for (int i = 0; i < testDataCardNum; i++)
         {
-            FightCreatureBean itemData = new FightCreatureBean();
-            itemData.creatureData = new CreatureBean();
-            itemData.creatureData.id = 1;
+            FightCreatureBean itemData = new FightCreatureBean(1);
             listCreatureData.Add(itemData); ;
         }
         fightData.listDefCreatureData = listCreatureData;
+        fightData.InitDataForAttCreateStage(1);
         return fightData;
     }
 }

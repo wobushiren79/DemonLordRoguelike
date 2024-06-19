@@ -1,0 +1,1 @@
+[{"class_name":"AttackModeMelee","prefab_name":"","remark":"普通近战攻击","id":100001,"valid":0,"name_cn":null,"name_en":null},{"class_name":"AttackModeRanged","prefab_name":"AttackMode_RangedBone","remark":"投掷骨头攻击","id":200001,"valid":0,"name_cn":null,"name_en":null}]

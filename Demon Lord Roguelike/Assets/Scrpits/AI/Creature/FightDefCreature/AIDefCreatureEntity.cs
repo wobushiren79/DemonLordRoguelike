@@ -4,16 +4,29 @@ using UnityEngine;
 
 public class AIDefCreatureEntity : AICreatureEntity
 {
+    /// <summary>
+    /// 开始AI
+    /// </summary>
     public override void StartAIEntity()
     {
-        base.StartAIEntity();
         //默认闲置
         ChangeIntent(AIIntentEnum.DefCreatureIdle);
     }
 
+    /// <summary>
+    /// 关闭AI
+    /// </summary>
     public override void CloseAIEntity()
     {
-        base.CloseAIEntity();
+
+    }
+
+    /// <summary>
+    /// 清空数据
+    /// </summary>
+    public override void ClearData()
+    {
+
     }
 
     /// <summary>
@@ -25,4 +38,6 @@ public class AIDefCreatureEntity : AICreatureEntity
         listIntentEnum.Add(AIIntentEnum.DefCreatureIdle);
         listIntentEnum.Add(AIIntentEnum.DefCreatureDead);
     }
+
+
 }

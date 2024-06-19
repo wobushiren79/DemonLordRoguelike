@@ -4,14 +4,10 @@ using UnityEngine;
 
 public class AIIntentAttCreatureDead : AIBaseIntent
 {
-    //闲置更新时间
-    protected float timeUpdateForIdle = 0;
-    //本次闲置时间
-    protected float timeForIdle = 0;
-
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
-
+        var targetAttCreatureEntity = aiEntity as AIAttCreatureEntity;
+        CreatureHandler.Instance.RemoveCreatureEntity(targetAttCreatureEntity.selfAttCreatureEntity, CreatureTypeEnum.FightAtt);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)

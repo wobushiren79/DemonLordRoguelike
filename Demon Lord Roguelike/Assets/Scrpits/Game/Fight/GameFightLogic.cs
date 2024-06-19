@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameFightLogic : GameBaseLogic
+public class GameFightLogic : BaseGameLogic
 {
     //战斗数据
     public FightBean fightData;
@@ -76,7 +76,13 @@ public class GameFightLogic : GameBaseLogic
     /// </summary>
     public void UpdateGameForAttCreate()
     {
-
+        fightData.timeUpdateForAttCreate += (Time.deltaTime * fightData.gameSpeed);
+        if (fightData.timeUpdateForAttCreate > fightData.timeUpdateTargetForAttCreate)
+        {
+            fightData.timeUpdateForAttCreate = 0;
+            //生成一次生物
+            CreatureHandler.Instance.CreateAttCreature(fightData.gameProgress, fightData.currentFightAttCreateDetails);
+        }
     }
 
     /// <summary>
@@ -98,7 +104,7 @@ public class GameFightLogic : GameBaseLogic
             ClearSelectData();
         }
         selectCreatureData = fightCreature;
-        CreatureHandler.Instance.GetCreatureObj(1, (targetObj) =>
+        CreatureHandler.Instance.CreateDefCreature(1, (targetObj) =>
         {
             selectCreature = targetObj;
         });
@@ -121,7 +127,7 @@ public class GameFightLogic : GameBaseLogic
     {
         if (selectCreature == null)
             return;
-        bool checkPosHasMainCreature = fightData.CheckFightPositionHasCreature(selectCreaturePutPost);
+        bool checkPosHasMainCreature = fightData.CheckFightPositionHasCreature(new Vector2Int(selectCreaturePutPost.x, selectCreaturePutPost.z));
         if (checkPosHasMainCreature)
         {
             //已经有生物了
@@ -129,7 +135,7 @@ public class GameFightLogic : GameBaseLogic
         }
         int createMagic = selectCreatureData.GetCreateMagic();
         if (fightData.currentMagic < createMagic)
-        {          
+        {
             //魔力不足
             EventHandler.Instance.TriggerEvent(EventsInfo.Toast_NoEnoughCreateMagic);
             return;
@@ -139,15 +145,15 @@ public class GameFightLogic : GameBaseLogic
         //设置生物位置
         selectCreature.transform.position = selectCreaturePutPost;
         //创建战斗生物
-        GameFightCreatureEntity gameFightCreatureEntit = new GameFightCreatureEntity();
-        gameFightCreatureEntit.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefCreatureEntity>();
-        gameFightCreatureEntit.fightCreatureData = selectCreatureData;
-        gameFightCreatureEntit.creatureObj = selectCreature;
+        GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity();
+        gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefCreatureEntity>();
+        gameFightCreatureEntity.fightCreatureData = selectCreatureData;
+        gameFightCreatureEntity.creatureObj = selectCreature;
 
-        fightData.SetFightPosition(selectCreaturePutPost, gameFightCreatureEntit);
+        fightData.SetFightPosition(new Vector2Int(selectCreaturePutPost.x, selectCreaturePutPost.z), gameFightCreatureEntity);
         selectCreature = null;
 
-        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_PutCard, selectCreature, selectCreatureData);
+        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_PutCard, gameFightCreatureEntity);
         ClearSelectData();
     }
 
@@ -161,7 +167,7 @@ public class GameFightLogic : GameBaseLogic
         //回收预制
         if (selectCreature != null)
         {
-            CreatureHandler.Instance.RemoveCreatureObj(selectCreature);
+            CreatureHandler.Instance.RemoveCreatureObj(selectCreature, CreatureTypeEnum.FightDef);
         }
         selectCreature = null;
         selectCreatureData = null;

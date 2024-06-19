@@ -16,6 +16,30 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public string name_res;
 	/// <summary>
+	///移动速度
+	/// </summary>
+	public float speed_move;
+	/// <summary>
+	///生命值
+	/// </summary>
+	public int life;
+	/// <summary>
+	///
+	/// </summary>
+	public int att_mode;
+	/// <summary>
+	///攻击范围
+	/// </summary>
+	public float att_range;
+	/// <summary>
+	///攻击间隔
+	/// </summary>
+	public float att_cd;
+	/// <summary>
+	///攻击力
+	/// </summary>
+	public int att_damage;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

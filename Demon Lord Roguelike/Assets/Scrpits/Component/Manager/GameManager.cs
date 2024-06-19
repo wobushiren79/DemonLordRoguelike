@@ -5,7 +5,7 @@ using UnityEngine;
 public partial class GameManager : BaseManager
 {
     public GameStateEnum gameState; //游戏状态
-    public GameBaseLogic gameLogic;//战斗逻辑
+    public BaseGameLogic gameLogic;//战斗逻辑
 
     /// <summary>
     /// 设置游戏状态
@@ -27,7 +27,7 @@ public partial class GameManager : BaseManager
     /// <summary>
     /// 获取游戏逻辑
     /// </summary>
-    public T GetGameLogic<T>() where T : GameBaseLogic
+    public T GetGameLogic<T>() where T : BaseGameLogic
     {
         if (gameLogic is T logic)
         {

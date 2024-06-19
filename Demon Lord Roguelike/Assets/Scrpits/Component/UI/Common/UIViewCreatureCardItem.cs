@@ -65,8 +65,8 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
         RegisterEvent<int, Vector2, bool>(EventsInfo.UIViewCreatureCardItem_SelectKeep, EventForSelectKeep);
         //Õ½¶·ÊÂ¼þ
         RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_SelectCard, EventForGameFightLogicSelectCard);
-        RegisterEvent<GameObject, FightCreatureBean>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
-        RegisterEvent<GameObject, FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        RegisterEvent<GameFightCreatureEntity>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
+        RegisterEvent<GameFightCreatureEntity>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
     }
 
     /// <summary>
