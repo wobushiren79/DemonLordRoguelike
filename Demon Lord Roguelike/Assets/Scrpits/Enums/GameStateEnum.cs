@@ -17,4 +17,5 @@ public enum CardStateEnum
     FightIdle = 101,//待机
     FightSelect = 102,//选择
     Fighting = 103,//上场战斗
+    FightRest = 104,//休息
 }

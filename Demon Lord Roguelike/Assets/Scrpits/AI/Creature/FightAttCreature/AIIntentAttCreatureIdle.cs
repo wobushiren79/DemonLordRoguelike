@@ -11,7 +11,21 @@ public class AIIntentAttCreatureIdle : AIBaseIntent
     {
         selfAIEntity = aiEntity as AIAttCreatureEntity;
         //寻找一条路线上的敌人
-        selfAIEntity.FindDefCreatureDisMinEntity(selfAIEntity.selfAttCreatureEntity.fightCreatureData.positionZCurrent);
+        selfAIEntity.targetDefCreatureEntity = null;
+        int selfRoad = selfAIEntity.selfAttCreatureEntity.fightCreatureData.positionCreate.z;
+        selfAIEntity.targetDefCreatureEntity = selfAIEntity.FindDefCreatureDisMinEntity(selfRoad);
+
+        //如果没有数据 说明这条路上没有防守生物，则直接前往路的尽头
+        if (selfAIEntity.targetDefCreatureEntity == null)
+        {
+            var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+            selfAIEntity.targetDefCreatureEntity = gameFightLogic.fightData.fightDefCoreCreature;
+            selfAIEntity.targetMovePos = new Vector3(0, 0, selfRoad);
+        }
+        else
+        {
+            selfAIEntity.targetMovePos = selfAIEntity.targetDefCreatureEntity.creatureObj.transform.position;
+        }
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)

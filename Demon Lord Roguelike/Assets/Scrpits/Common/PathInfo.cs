@@ -8,5 +8,7 @@ public class PathInfo
     public static string CameraMainPath = "Assets/LoadResources/Common/MainCamera.prefab";
     //生物预制路径地址
     public static string CreaturesPrefabPath = "Assets/LoadResources/Creatures";
+    //攻击预制
+    public static string AttackModePrefabPath = "Assets/LoadResources/AttackMode";
 
 }

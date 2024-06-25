@@ -18,11 +18,13 @@ public class FightBean
     public FightAttCreateDetailsBean currentFightAttCreateDetails;//当前进攻数据
 
     public List<FightCreatureBean> listDefCreatureData = new List<FightCreatureBean>();//当前可用防御生物数据
-    public Dictionary<Vector2Int, FightPositionBean> dicFightPosition = new Dictionary<Vector2Int, FightPositionBean>();//放置在场上的生物数据
+    public Dictionary<Vector3Int, FightPositionBean> dicFightPosition = new Dictionary<Vector3Int, FightPositionBean>();//放置在场上的生物数据
 
     public FightAttCreateBean fightAttCreateData;//进攻数据
-    public List<GameFightCreatureEntity> listAttCreatureEntity = new List<GameFightCreatureEntity>();//进攻方的所有生物实例
+    public Dictionary<int, List<GameFightCreatureEntity>> dicAttCreatureEntity = new Dictionary<int, List<GameFightCreatureEntity>>();//进攻方的所有生物实例
 
+    public Dictionary<string, GameFightCreatureEntity> dicCreatureEntity = new Dictionary<string, GameFightCreatureEntity>();//所有生物实例
+    public GameFightCreatureEntity fightDefCoreCreature;//防守方核心生物实例
     /// <summary>
     /// 初始化波数数据
     /// </summary>
@@ -66,7 +68,7 @@ public class FightBean
     /// <summary>
     /// 检测指定战斗位置上是否有生物
     /// </summary>
-    public bool CheckFightPositionHasCreature(Vector2Int targetPos)
+    public bool CheckFightPositionHasCreature(Vector3Int targetPos)
     {
         if (dicFightPosition.TryGetValue(targetPos, out FightPositionBean targetPositionData))
         {
@@ -79,21 +81,46 @@ public class FightBean
     }
 
     /// <summary>
+    /// 移除战斗位置数据
+    /// </summary>
+    public void RemoveFightPosition(Vector3Int targetPos)
+    {
+        if (dicFightPosition.TryGetValue(targetPos,out FightPositionBean fightPosition))
+        {
+            dicFightPosition.Remove(targetPos);
+
+            if (fightPosition.creatureMain != null && dicCreatureEntity.ContainsKey(fightPosition.creatureMain.creatureId))
+            {
+                dicCreatureEntity.Remove(fightPosition.creatureMain.creatureId);
+            }
+            if (fightPosition.creatureAssist != null && dicCreatureEntity.ContainsKey(fightPosition.creatureAssist.creatureId))
+            {
+                dicCreatureEntity.Remove(fightPosition.creatureAssist.creatureId);
+            }
+        }
+    }
+
+    /// <summary>
     /// 设置战斗位置数据
     /// </summary>
-    public void SetFightPosition(Vector2Int targetPos, GameFightCreatureEntity fightCreature)
+    public void SetFightPosition(Vector3Int targetPos, GameFightCreatureEntity fightCreature)
     {
         if (dicFightPosition.TryGetValue(targetPos, out FightPositionBean targetPositionData))
         {
             targetPositionData.creatureMain = fightCreature;
-            targetPositionData.creatureMain.fightCreatureData.positionZCurrent = Mathf.Abs(targetPos.y);
+            targetPositionData.creatureMain.fightCreatureData.positionCreate = targetPos;
         }
         else
         {
             FightPositionBean newPositionData = new FightPositionBean();
             newPositionData.creatureMain = fightCreature;
-            newPositionData.creatureMain.fightCreatureData.positionZCurrent = Mathf.Abs(targetPos.y);
+            newPositionData.creatureMain.fightCreatureData.positionCreate = targetPos;
             dicFightPosition.Add(targetPos, newPositionData);
+        }
+
+        if (!dicCreatureEntity.ContainsKey(fightCreature.creatureId))
+        {
+            dicCreatureEntity.Add(fightCreature.creatureId, fightCreature);
         }
     }
 
@@ -106,7 +133,7 @@ public class FightBean
         List<FightPositionBean> listData = new List<FightPositionBean>();
         for (int i = 1; i <= 10; i++)
         {
-            Vector2Int targetPosition = new Vector2Int(i, -roadIndex);
+            Vector3Int targetPosition = new Vector3Int(i, 0, roadIndex);
             if (dicFightPosition.TryGetValue(targetPosition, out FightPositionBean targetPositionData))
             {
                 if (targetPositionData != null)
@@ -116,5 +143,69 @@ public class FightBean
             }
         }
         return listData;
+    }
+
+
+    /// <summary>
+    /// 增加战斗生物
+    /// </summary>
+    public void AddFightAttCreature(int road, GameFightCreatureEntity targetEntity)
+    {
+        if (dicAttCreatureEntity.TryGetValue(road, out List<GameFightCreatureEntity> valueList))
+        {
+            valueList.Add(targetEntity);
+        }
+        else
+        {
+            dicAttCreatureEntity.Add(road, new List<GameFightCreatureEntity>() { targetEntity });
+        }
+
+        if (!dicCreatureEntity.ContainsKey(targetEntity.creatureId))
+        {
+            dicCreatureEntity.Add(targetEntity.creatureId, targetEntity);
+        }
+    }
+
+    /// <summary>
+    /// 移除战斗生物
+    /// </summary>
+    public void RemoveFightAttCreature(GameFightCreatureEntity targetEntity)
+    {
+        if (dicAttCreatureEntity.TryGetValue(targetEntity.fightCreatureData.positionCreate.z, out List<GameFightCreatureEntity> valueList))
+        {
+            valueList.Remove(targetEntity);
+        }
+        if (dicCreatureEntity.ContainsKey(targetEntity.creatureId))
+        {
+            dicCreatureEntity.Remove(targetEntity.creatureId);
+        }
+    }
+
+    /// <summary>
+    /// 获取某一路所有的进攻生物
+    /// </summary>
+    /// <param name="road"></param>
+    /// <returns></returns>
+    public List<GameFightCreatureEntity> GetFightAttCreatureByRoad(int road)
+    {
+        if (dicAttCreatureEntity.TryGetValue(road, out List<GameFightCreatureEntity> valueList))
+        {
+            return valueList;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 通过ID获取某一生物
+    /// </summary>
+    /// <param name="creatureId"></param>
+    /// <returns></returns>
+    public GameFightCreatureEntity GetFightCreatureById(string creatureId)
+    {
+        if (dicCreatureEntity.TryGetValue(creatureId,out GameFightCreatureEntity targetCreature))
+        {
+            return targetCreature;
+        }
+        return null;
     }
 }

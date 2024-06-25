@@ -9,5 +9,9 @@ public enum AIIntentEnum
     AttCreatureDead,//死亡
 
     DefCreatureIdle,//闲置
+    DefCreatureAttack,//攻击
     DefCreatureDead,//死亡
+
+    DefCoreCreatureIdle,//闲置
+    DefCoreCreatureDead,//死亡
 }

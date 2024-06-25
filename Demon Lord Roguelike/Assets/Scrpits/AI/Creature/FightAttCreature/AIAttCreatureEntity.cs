@@ -17,7 +17,8 @@ public class AIAttCreatureEntity : AICreatureEntity
     /// <param name="selfAttCreatureEntity"></param>
     public void InitData(GameFightCreatureEntity selfAttCreatureEntity)
     {
-        EventHandler.Instance.RegisterEvent<GameFightCreatureEntity>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        EventHandler.Instance.RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        EventHandler.Instance.RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_CreatureDead, EventForGameFightLogicCreatureDead);
         this.selfAttCreatureEntity = selfAttCreatureEntity;
     }
 
@@ -36,7 +37,8 @@ public class AIAttCreatureEntity : AICreatureEntity
     {
         selfAttCreatureEntity = null;
         targetDefCreatureEntity = null;
-        EventHandler.Instance.UnRegisterEvent<GameFightCreatureEntity>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        EventHandler.Instance.UnRegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        EventHandler.Instance.UnRegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_CreatureDead, EventForGameFightLogicCreatureDead);
     }
 
     /// <summary>
@@ -51,7 +53,6 @@ public class AIAttCreatureEntity : AICreatureEntity
         listIntentEnum.Add(AIIntentEnum.AttCreatureMove);
     }
 
-
     /// <summary>
     /// 查询要攻击的防御生物(距离最近)
     /// </summary>
@@ -62,6 +63,7 @@ public class AIAttCreatureEntity : AICreatureEntity
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         List<FightPositionBean> listFightPosition = gameFightLogic.fightData.GetFightPosition(roadIndex);
         float disMin = float.MaxValue;
+        GameFightCreatureEntity targetEntity = null;
         for (int i = 0; i < listFightPosition.Count; i++)
         {
             //获取距离最近的防守生物
@@ -75,31 +77,35 @@ public class AIAttCreatureEntity : AICreatureEntity
                     if (dis < disMin)
                     {
                         disMin = dis;
-                        targetDefCreatureEntity = itemFightPosition.creatureMain;
+                        targetEntity = itemFightPosition.creatureMain;
                     }
                 }
             }
         }
-        //如果没有数据 说明这条路上没有防守生物，则直接前往路的尽头
-        if (targetDefCreatureEntity == null)
-        {
-            targetMovePos = new Vector3(0, 0, -roadIndex);
-        }
-        else
-        {
-            targetMovePos = targetDefCreatureEntity.creatureObj.transform.position;
-        }
-        return targetDefCreatureEntity;
+        return targetEntity;
     }
 
     #region 事件回调
-    public void EventForGameFightLogicPutCard(GameFightCreatureEntity gameFightCreatureEntity)
+    public void EventForGameFightLogicPutCard(FightCreatureBean fightCreatureData)
     {
         //如果是同一路线
-        if (gameFightCreatureEntity.fightCreatureData.positionZCurrent == selfAttCreatureEntity.fightCreatureData.positionZCurrent)
+        if (fightCreatureData.positionCreate.z == selfAttCreatureEntity.fightCreatureData.positionCreate.z)
         {
             //如果正在前往目标 则重新寻找目标
             if (currentIntentEnum == AIIntentEnum.AttCreatureMove || currentIntentEnum == AIIntentEnum.AttCreatureAttack)
+            {
+                ChangeIntent(AIIntentEnum.AttCreatureIdle);
+            }
+        }
+    }
+
+    public void EventForGameFightLogicCreatureDead(FightCreatureBean fightCreatureData)
+    {
+        //如果自己是在攻击中
+        if (currentIntentEnum == AIIntentEnum.AttCreatureAttack)
+        {   //如果是防御生物死了 并且是自己攻击的生物
+            CreatureInfoBean creatureInfo = fightCreatureData.GetCreatureInfo();
+            if (creatureInfo.GetCreatureType() == CreatureTypeEnum.FightDef && fightCreatureData == targetDefCreatureEntity.fightCreatureData)
             {
                 ChangeIntent(AIIntentEnum.AttCreatureIdle);
             }

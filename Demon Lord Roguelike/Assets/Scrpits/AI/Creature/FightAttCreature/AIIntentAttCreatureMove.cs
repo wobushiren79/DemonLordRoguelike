@@ -15,12 +15,33 @@ public class AIIntentAttCreatureMove : AIBaseIntent
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
-        //监测是否在攻击范围内
-        if (CheckIsAttRange())
+        //如果目标是魔王
+        if (selfAIEntity.targetMovePos.x <= 0)
         {
-            selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureAttack);
-            return;
+            //检测是否靠近目标
+            if (CheckIsCloseTarget())
+            {
+                selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureDead);
+                return;
+            }
         }
+        //如果不是魔王
+        else
+        {
+            //如果目标已经死了
+            if (selfAIEntity.targetDefCreatureEntity == null || selfAIEntity.targetDefCreatureEntity.IsDead())
+            {
+                selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureIdle);
+                return;
+            }
+            //监测是否在攻击范围内
+            if (CheckIsAttRange())
+            {
+                selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureAttack);
+                return;
+            }
+        }
+
         float moveSpeed = selfAIEntity.selfAttCreatureEntity.fightCreatureData.GetMoveSpeed();
         Transform selfTF = selfAIEntity.selfAttCreatureEntity.creatureObj.transform;
         selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeed);
@@ -41,6 +62,22 @@ public class AIIntentAttCreatureMove : AIBaseIntent
         float dis = Vector3.Distance(currentPosition, targetMovePos);
         var creatureInfo = selfAIEntity.selfAttCreatureEntity.fightCreatureData.GetCreatureInfo();
         if (dis <= creatureInfo.att_range)
+        {
+            return true;
+        }
+        return false;
+    }
+    
+    /// <summary>
+    /// 检测是否靠近了目标
+    /// </summary>
+    /// <returns></returns>
+    public bool CheckIsCloseTarget()
+    {
+        var currentPosition = selfAIEntity.selfAttCreatureEntity.creatureObj.transform.position;
+        var targetMovePos = selfAIEntity.targetMovePos;
+        float dis = Vector3.Distance(currentPosition, targetMovePos);
+        if (dis <= 0.05f)
         {
             return true;
         }

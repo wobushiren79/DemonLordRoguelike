@@ -10,7 +10,6 @@ using UnityEngine.UI;
 
 public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, IPointerExitHandler
 {
-    public CardStateEnum stateForCard = CardStateEnum.None;    //卡片状态
     public FightCreatureBean fightCreatureData;//卡片数据
 
     public Vector2 originalCardPos;//卡片的起始位置
@@ -56,8 +55,9 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     /// </summary>
     public void SetData(FightCreatureBean fightCreatureData, Vector2 originalCardPos)
     {
-        this.stateForCard = CardStateEnum.FightIdle;
         this.fightCreatureData = fightCreatureData;
+        this.fightCreatureData.stateForCard = CardStateEnum.FightIdle;
+
         this.originalCardPos = originalCardPos;
         this.originalSibling = transform.GetSiblingIndex();
         gameObject.name = $"UIViewCreatureCardItem_{originalSibling}";
@@ -65,8 +65,9 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
         RegisterEvent<int, Vector2, bool>(EventsInfo.UIViewCreatureCardItem_SelectKeep, EventForSelectKeep);
         //战斗事件
         RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_SelectCard, EventForGameFightLogicSelectCard);
-        RegisterEvent<GameFightCreatureEntity>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
-        RegisterEvent<GameFightCreatureEntity>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
+        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_RefreshCard, EventForGameFightLogicRefreshCard);
     }
 
     /// <summary>
@@ -74,10 +75,18 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     /// </summary>
     public void SetCardState(CardStateEnum cardState)
     {
+        this.fightCreatureData.stateForCard = cardState;
+        RefreshCardState();
+    }
+
+    /// <summary>
+    /// 刷新卡的状态
+    /// </summary>
+    public void RefreshCardState()
+    {
         ui_CardBg.color = Color.white;
         maskUI.HideMask();
-        this.stateForCard = cardState;
-        switch (cardState)
+        switch (this.fightCreatureData.stateForCard)
         {
             case CardStateEnum.FightIdle:
                 break;
@@ -86,6 +95,8 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
                 break;
             case CardStateEnum.Fighting:
                 maskUI.ShowMask();
+                break;
+            case CardStateEnum.FightRest:
                 break;
         }
     }

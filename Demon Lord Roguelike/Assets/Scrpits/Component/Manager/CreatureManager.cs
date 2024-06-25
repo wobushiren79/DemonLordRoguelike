@@ -7,10 +7,9 @@ public class CreatureManager : BaseManager
 {
     //所有的模型
     public Dictionary<string, GameObject> dicCreatureModel = new Dictionary<string, GameObject>();
-    //防御生物的缓存池
-    public Queue<GameObject> poolForCreatureDef = new Queue<GameObject>();
-    //进攻生物的缓存池
-    public Queue<GameObject> poolForCreatureAtt = new Queue<GameObject>();
+    //所有生物的缓存池
+    public Dictionary<CreatureTypeEnum, Queue<GameObject>> dicPoolForCreature= new Dictionary<CreatureTypeEnum, Queue<GameObject>>();
+
     //生物预览
     public GameObject objCreatureSelectPreview;
 
@@ -45,37 +44,36 @@ public class CreatureManager : BaseManager
             LogUtil.LogError($"创建生物失败：没有找到ID为{creatureId}的生物");
             return;
         }
-        string creatureModelName = null;
-        switch (itemCreatureInfo.creature_type)
+  
+        CreatureTypeEnum creatureType = itemCreatureInfo.GetCreatureType();
+        //首先获取缓存池里的物体
+        GameObject objItem = null;
+        if (dicPoolForCreature.TryGetValue(creatureType, out Queue<GameObject> poolForCreature))
         {
-            case 1:
-                creatureModelName = "FightCreature_Def_1.prefab";
-                break;
-            case 2:
-                creatureModelName = "FightCreature_Att_1.prefab";
-                break;
-            default:
-                LogUtil.LogError($"创建生物失败：没有找到creature_type为{itemCreatureInfo.creature_type}的生物");
-                return;
+            objItem = GetCreaureFromPool(poolForCreature);
         }
 
-        string resPath = $"{PathInfo.CreaturesPrefabPath}/{creatureModelName}";
-        GameObject objItem;
-        CreatureTypeEnum creatureType = itemCreatureInfo.GetCreatureType();
-        switch (creatureType)
-        {
-            case CreatureTypeEnum.FightDef:
-                objItem = GetCreaureFromPool(poolForCreatureDef);
-                break;
-            case CreatureTypeEnum.FightAtt:
-                objItem = GetCreaureFromPool(poolForCreatureAtt);
-                break;
-            default:
-                return;
-        }
         //如果没有 则加载创建新的预制
         if (objItem == null)
         {
+            string creatureModelName;
+            switch (creatureType)
+            {
+                case CreatureTypeEnum.FightDef:
+                    creatureModelName = "FightCreature_Def_1.prefab";
+                    break;
+                case CreatureTypeEnum.FightAtt:
+                    creatureModelName = "FightCreature_Att_1.prefab";
+                    break;
+                case CreatureTypeEnum.FightDefCore:
+                    creatureModelName = "FightCreature_DefCore_1.prefab";
+                    break;
+                default:
+                    LogUtil.LogError($"创建生物失败：没有找到creature_type为{itemCreatureInfo.creature_type}的生物");
+                    return;
+            }
+
+            string resPath = $"{PathInfo.CreaturesPrefabPath}/{creatureModelName}";
             var targetModel = GetModelForAddressablesSync(dicCreatureModel, resPath);
             if (targetModel == null)
             {

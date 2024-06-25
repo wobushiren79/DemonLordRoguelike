@@ -3,19 +3,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AIIntentAttCreatureAttack : AIBaseIntent
+public class AIIntentDefCreatureAttack : AIBaseIntent
 {
     //攻击准备时间
     public float timeUpdateAttactPre = 0;
     //目标AI
-    public AIAttCreatureEntity selfAIEntity;
+    public AIDefCreatureEntity selfAIEntity;
     //攻击状态 0准备中 1攻击中
     public int attackState = 0;
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         timeUpdateAttactPre = 0;
         attackState = 0;
-        selfAIEntity = aiEntity as AIAttCreatureEntity;
+        selfAIEntity = aiEntity as AIDefCreatureEntity;
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
@@ -24,11 +24,11 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
         if (attackState == 0)
         {
             timeUpdateAttactPre += Time.deltaTime;
-            float attCD = selfAIEntity.selfAttCreatureEntity.fightCreatureData.GetAttCD();
+            float attCD = selfAIEntity.selfDefCreatureEntity.fightCreatureData.GetAttCD();
             if (timeUpdateAttactPre >= attCD)
             {
                 timeUpdateAttactPre = 0;
-                AttackDefCreature();
+                AttackAttCreature();
             }
         }
         //攻击中
@@ -44,29 +44,29 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
     }
 
     /// <summary>
-    /// 攻击防守生物
+    /// 攻击生物
     /// </summary>
-    public virtual void AttackDefCreature()
+    public virtual void AttackAttCreature()
     {
         attackState = 1;
         //如果目标生物已经无了
-        if (selfAIEntity.targetDefCreatureEntity == null || selfAIEntity.targetDefCreatureEntity.IsDead())
+        if (selfAIEntity.targetAttCreatureEntity == null || selfAIEntity.targetAttCreatureEntity.IsDead())
         {
-            ChangeIntent(AIIntentEnum.AttCreatureIdle);
+            ChangeIntent(AIIntentEnum.DefCreatureIdle);
             return;
         }
         //如果自己死了
-        if (selfAIEntity.selfAttCreatureEntity == null || selfAIEntity.selfAttCreatureEntity.IsDead())
+        if (selfAIEntity.selfDefCreatureEntity == null || selfAIEntity.selfDefCreatureEntity.IsDead())
         {
-            ChangeIntent(AIIntentEnum.AttCreatureDead);
+            ChangeIntent(AIIntentEnum.DefCreatureDead);
             return;
         }
-        var creatureInfo = selfAIEntity.selfAttCreatureEntity.fightCreatureData.GetCreatureInfo();
+        var creatureInfo = selfAIEntity.selfDefCreatureEntity.fightCreatureData.GetCreatureInfo();
         //获取攻击方式
         FightHandler.Instance.CreateAttackModePrefab(creatureInfo.att_mode, (targetAttackMode) =>
-        {       
+        {
             //开始攻击
-            targetAttackMode.StartAttack(selfAIEntity.selfAttCreatureEntity, selfAIEntity.targetDefCreatureEntity, ActionForAttackEnd);
+            targetAttackMode.StartAttack(selfAIEntity.selfDefCreatureEntity, selfAIEntity.targetAttCreatureEntity, ActionForAttackEnd);
         });
     }
 
@@ -77,9 +77,9 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
     public void ActionForAttackEnd()
     {
         //如果目标生物已经无了 则重新寻找目标
-        if (selfAIEntity.targetDefCreatureEntity == null || selfAIEntity.targetDefCreatureEntity.IsDead())
+        if (selfAIEntity.targetAttCreatureEntity == null || selfAIEntity.targetAttCreatureEntity.IsDead())
         {
-            ChangeIntent(AIIntentEnum.AttCreatureIdle);
+            ChangeIntent(AIIntentEnum.DefCreatureIdle);
             return;
         }
         //继续攻击

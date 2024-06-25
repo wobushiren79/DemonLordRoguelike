@@ -15,7 +15,7 @@ public partial class UIViewCreatureCardItem
     {
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         //战斗中的卡片不能点击
-        if (stateForCard == CardStateEnum.Fighting)
+        if (fightCreatureData.stateForCard == CardStateEnum.Fighting)
             return;
         int createMagic = fightCreatureData.GetCreateMagic();
         if (gameFightLogic.fightData.currentMagic < createMagic)
@@ -34,11 +34,11 @@ public partial class UIViewCreatureCardItem
     /// 事件-选择卡片
     /// </summary>
     /// <param name="targetData"></param>
-    public void EventForGameFightLogicSelectCard(FightCreatureBean targetData)
+    public void EventForGameFightLogicSelectCard(FightCreatureBean fightCreatureDataTarget)
     {
-        if (targetData != fightCreatureData)
+        if (this.fightCreatureData != fightCreatureDataTarget)
         {
-            switch (stateForCard)
+            switch (fightCreatureData.stateForCard)
             {
                 case CardStateEnum.Fighting:
                     break;
@@ -57,11 +57,11 @@ public partial class UIViewCreatureCardItem
     /// <summary>
     /// 事件-取消选择的卡片
     /// </summary>
-    public void EventForGameFightLogicUnSelectCard(GameFightCreatureEntity gameFightCreatureEntity)
+    public void EventForGameFightLogicUnSelectCard(FightCreatureBean fightCreatureDataTarget)
     {
-        if (gameFightCreatureEntity.fightCreatureData != fightCreatureData)
+        if (this.fightCreatureData != fightCreatureDataTarget)
         {
-            switch (stateForCard)
+            switch (fightCreatureData.stateForCard)
             {
                 case CardStateEnum.FightSelect:
                     SetCardState(CardStateEnum.FightIdle);
@@ -78,12 +78,23 @@ public partial class UIViewCreatureCardItem
     /// <summary>
     /// 事件-放置卡片
     /// </summary>
-    public void EventForGameFightLogicPutCard(GameFightCreatureEntity gameFightCreatureEntity)
+    public void EventForGameFightLogicPutCard(FightCreatureBean fightCreatureDataTarget)
     {
-        if (gameFightCreatureEntity.fightCreatureData != fightCreatureData)
+        if (this.fightCreatureData != fightCreatureDataTarget)
             return;
         //设置卡片状态
         SetCardState(CardStateEnum.Fighting);
+    }
+
+    /// <summary>
+    /// 事件-刷新卡片
+    /// </summary>
+    public void EventForGameFightLogicRefreshCard(FightCreatureBean fightCreatureDataTarget)
+    {
+        if (this.fightCreatureData != fightCreatureDataTarget)
+            return;
+        //刷新卡片状态
+        RefreshCardState();
     }
     #endregion
 }

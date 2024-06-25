@@ -21,7 +21,10 @@ public partial class CameraHandler : BaseHandler<CameraHandler, CameraManager>
         var mainCamera = manager.mainCamera;
         mainCamera.gameObject.SetActive(true);
         mainCamera.transform.eulerAngles = new Vector3(30, 0, 0);
-        mainCamera.transform.position = new Vector3(0, 3, -4);
+        //设置初始视角位置
+        mainCamera.transform.position = new Vector3(3, 3, -1);
+
         mainCamera.fieldOfView = 60;
+
     }
 }

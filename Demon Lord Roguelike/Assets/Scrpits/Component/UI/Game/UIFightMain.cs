@@ -23,8 +23,8 @@ public partial class UIFightMain : BaseUIComponent
         base.OpenUI();
         RegisterEvent(EventsInfo.Toast_NoEnoughCreateMagic, EventForNoEnoughCreateMagic);
         RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_SelectCard, EventForGameFightLogicSelectCard);
-        RegisterEvent<GameFightCreatureEntity>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
-        RegisterEvent<GameFightCreatureEntity>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
+        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
     }
 
     /// <summary>
@@ -207,7 +207,7 @@ public partial class UIFightMain : BaseUIComponent
     /// <summary>
     /// 事件-取消选择的卡片
     /// </summary>
-    public void EventForGameFightLogicUnSelectCard(GameFightCreatureEntity gameFightCreatureEntity)
+    public void EventForGameFightLogicUnSelectCard(FightCreatureBean targetData)
     {
 
     }
@@ -215,7 +215,7 @@ public partial class UIFightMain : BaseUIComponent
     /// <summary>
     /// 事件-放置卡片
     /// </summary>
-    public void EventForGameFightLogicPutCard(GameFightCreatureEntity gameFightCreatureEntity)
+    public void EventForGameFightLogicPutCard(FightCreatureBean targetData)
     {
         RefreshUIData();
     }

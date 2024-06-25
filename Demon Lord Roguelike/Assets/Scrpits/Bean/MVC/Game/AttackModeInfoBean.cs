@@ -12,6 +12,14 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public string prefab_name;
 	/// <summary>
+	///碰撞检测大小
+	/// </summary>
+	public float collider_size;
+	/// <summary>
+	///移动速度
+	/// </summary>
+	public float speed_move;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

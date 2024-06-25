@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -21,13 +22,20 @@ public class GameFightLogic : BaseGameLogic
         CameraHandler.Instance.SetFightSceneCamera();
         //加载战斗场景
         WorldHandler.Instance.LoadFightScene(1, (targetObj) =>
-        {
-            //开启战斗控制
-            GameControlHandler.Instance.SetFightControl();
-            //关闭LoadingUI
-            var uiFightMain = UIHandler.Instance.OpenUIAndCloseOther<UIFightMain>();
-            uiFightMain.InitData();
-            StartGame();
+        {        
+            //加载核心（魔王）实例
+            CreatureHandler.Instance.CreateDefCoreCreature((defCoreCreatureEntity) =>
+            {
+                //设置魔王核心
+                fightData.fightDefCoreCreature = defCoreCreatureEntity;
+                //开启战斗控制
+                GameControlHandler.Instance.SetFightControl();
+                //关闭LoadingUI
+                var uiFightMain = UIHandler.Instance.OpenUIAndCloseOther<UIFightMain>();
+                uiFightMain.InitData();
+                //开始游戏
+                StartGame();
+            });
         });
     }
 
@@ -63,8 +71,15 @@ public class GameFightLogic : BaseGameLogic
             {
                 GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreaureSelectPreview();
                 objSelectPreivew.gameObject.SetActive(true);
-                Vector3Int targetPos = Vector3Int.RoundToInt(hit.point);
-                selectCreature.transform.position = hit.point;
+                Vector3 hitPoint = hit.point;
+
+                if (hitPoint.x < 1) hitPoint.x = 1;
+                if (hitPoint.x > 10) hitPoint.x = 10;
+                if (hitPoint.z > 6) hitPoint.z = 6;
+                if (hitPoint.z < 1) hitPoint.z = 1;
+
+                Vector3Int targetPos = Vector3Int.RoundToInt(hitPoint);
+                selectCreature.transform.position = hitPoint;
                 objSelectPreivew.transform.position = targetPos;
                 selectCreaturePutPost = targetPos;
             }
@@ -116,7 +131,7 @@ public class GameFightLogic : BaseGameLogic
     /// </summary>
     public void UnSelectCard()
     {
-        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_UnSelectCard, selectCreature, selectCreatureData);
+        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_UnSelectCard, selectCreatureData);
         ClearSelectData();
     }
 
@@ -127,7 +142,7 @@ public class GameFightLogic : BaseGameLogic
     {
         if (selectCreature == null)
             return;
-        bool checkPosHasMainCreature = fightData.CheckFightPositionHasCreature(new Vector2Int(selectCreaturePutPost.x, selectCreaturePutPost.z));
+        bool checkPosHasMainCreature = fightData.CheckFightPositionHasCreature(selectCreaturePutPost);
         if (checkPosHasMainCreature)
         {
             //已经有生物了
@@ -145,15 +160,16 @@ public class GameFightLogic : BaseGameLogic
         //设置生物位置
         selectCreature.transform.position = selectCreaturePutPost;
         //创建战斗生物
-        GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity();
-        gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefCreatureEntity>();
-        gameFightCreatureEntity.fightCreatureData = selectCreatureData;
-        gameFightCreatureEntity.creatureObj = selectCreature;
+        GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(selectCreature, selectCreatureData);
+        gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefCreatureEntity>(actionBeforeStart: (targetEntity) =>
+        {
+            targetEntity.InitData(gameFightCreatureEntity);
+        });
 
-        fightData.SetFightPosition(new Vector2Int(selectCreaturePutPost.x, selectCreaturePutPost.z), gameFightCreatureEntity);
+        fightData.SetFightPosition(selectCreaturePutPost, gameFightCreatureEntity);
         selectCreature = null;
 
-        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_PutCard, gameFightCreatureEntity);
+        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_PutCard, selectCreatureData);
         ClearSelectData();
     }
 

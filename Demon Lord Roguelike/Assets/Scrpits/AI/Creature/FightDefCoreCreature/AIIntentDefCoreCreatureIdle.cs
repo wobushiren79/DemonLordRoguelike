@@ -2,12 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AIIntentDefCreatureDead : AIBaseIntent
+public class AIIntentDefCoreCreatureIdle : AIBaseIntent
 {
+
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
-        var targetDefCreatureEntity = aiEntity as AIDefCreatureEntity;
-        CreatureHandler.Instance.RemoveCreatureEntity(targetDefCreatureEntity.selfDefCreatureEntity, CreatureTypeEnum.FightDef);
+
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
