@@ -1,3 +1,4 @@
+using Spine.Unity;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,19 +10,29 @@ public class LauncherTest : BaseLauncher
     public int testDataCurrentMagic = 1000;
     [Header("测试数据-卡片数量")]
     public int testDataCardNum = 20;
+
+    public SkeletonAnimation skeletonAnimation;
+    public SkeletonGraphic skeletonGraphic;
+
     public override void Launch()
     {
         base.Launch();
-        //打开加载UI
-        UIHandler.Instance.OpenUIAndCloseOther<UILoading>();
-        //环境参数初始化
-        VolumeHandler.Instance.InitData();
-        //镜头初始化
-        CameraHandler.Instance.InitData();
-        //开始战斗
-        FightBean fightData = GetTestData();
-        //测试数据
-        GameHandler.Instance.StartGameFight(fightData);
+        ////打开加载UI
+        //UIHandler.Instance.OpenUIAndCloseOther<UILoading>();
+        ////环境参数初始化
+        //VolumeHandler.Instance.InitData();
+        ////镜头初始化
+        //CameraHandler.Instance.InitData();
+        ////开始战斗
+        //FightBean fightData = GetTestData();
+        ////测试数据
+        //GameHandler.Instance.StartGameFight(fightData);
+
+        string[] skinArray = new string[]
+        {
+            "",
+        };
+        SpineHandler.Instance.ChangeSkeletonAnimationSkinSync(skeletonAnimation,"", skinArray);
     }
 
     /// <summary>
