@@ -40,6 +40,10 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public int att_damage;
 	/// <summary>
+	///模组ID
+	/// </summary>
+	public int model_id;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

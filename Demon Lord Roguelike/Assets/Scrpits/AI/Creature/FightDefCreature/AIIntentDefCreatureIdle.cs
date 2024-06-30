@@ -1,16 +1,18 @@
+using Spine.Unity;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class AIIntentDefCreatureIdle : AIBaseIntent
 {
-    AIDefCreatureEntity selfEntity;
+    AIDefCreatureEntity selfAIEntity;
     public float timeUpdateForFindTarget = 0;
 
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
-        selfEntity = aiEntity as AIDefCreatureEntity;
+        selfAIEntity = aiEntity as AIDefCreatureEntity;
         timeUpdateForFindTarget = 0;
+        selfAIEntity.selfDefCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Idle, true);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
@@ -19,9 +21,9 @@ public class AIIntentDefCreatureIdle : AIBaseIntent
         if (timeUpdateForFindTarget > 0.25f)
         {
             timeUpdateForFindTarget = 0;
-            selfEntity.targetAttCreatureEntity = null;
-            selfEntity.targetAttCreatureEntity = selfEntity.FindAttCreatureDisMinEntity(selfEntity.selfDefCreatureEntity.fightCreatureData.positionCreate.z);
-            if (selfEntity.targetAttCreatureEntity != null)
+            selfAIEntity.targetAttCreatureEntity = null;
+            selfAIEntity.targetAttCreatureEntity = selfAIEntity.FindAttCreatureDisMinEntity(selfAIEntity.selfDefCreatureEntity.fightCreatureData.positionCreate.z);
+            if (selfAIEntity.targetAttCreatureEntity != null)
             {
                 ChangeIntent(AIIntentEnum.DefCreatureAttack);
             }

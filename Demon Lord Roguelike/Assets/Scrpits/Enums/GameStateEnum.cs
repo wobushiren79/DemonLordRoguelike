@@ -19,3 +19,12 @@ public enum CardStateEnum
     Fighting = 103,//上场战斗
     FightRest = 104,//休息
 }
+
+//动画-生物
+public enum AnimationCreatureStateEnum
+{
+    Idle,
+    Walk,
+    Attack,
+    Dead,
+}

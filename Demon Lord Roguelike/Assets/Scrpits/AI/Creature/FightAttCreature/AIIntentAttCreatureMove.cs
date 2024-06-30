@@ -10,7 +10,8 @@ public class AIIntentAttCreatureMove : AIBaseIntent
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         selfAIEntity = aiEntity as AIAttCreatureEntity;
-
+        //设置移动动作
+        selfAIEntity.selfAttCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Walk, true);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)

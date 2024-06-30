@@ -1,3 +1,4 @@
+using Spine.Unity;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,6 +23,7 @@ public class AIDefCreatureEntity : AICreatureEntity
     public override void ClearData()
     {
         selfDefCreatureEntity = null;
+        EventHandler.Instance.UnRegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
     }
 
     /// <summary>

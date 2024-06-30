@@ -1,5 +1,7 @@
+using Spine.Unity;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor.TestTools.CodeCoverage;
 using UnityEngine;
 
@@ -10,6 +12,7 @@ public class GameFightCreatureEntity
     public FightCreatureBean fightCreatureData;
     public AIBaseEntity aiEntity;
     public CreatureStateEnum creatureState = CreatureStateEnum.None;
+    public SkeletonAnimation creatureSkeletionAnimation;
 
     public GameFightCreatureEntity(GameObject creatureObj, FightCreatureBean fightCreatureData)
     {
@@ -18,6 +21,37 @@ public class GameFightCreatureEntity
         this.creatureObj = creatureObj;
         this.fightCreatureData = fightCreatureData;
         this.creatureObj.name = creatureId;
+        //获取骨骼数据
+        creatureSkeletionAnimation = creatureObj.transform.Find("Spine")?.GetComponent<SkeletonAnimation>();
+    }
+
+    /// <summary>
+    /// 播放动画
+    /// </summary>
+    /// <param name="animationCreatureState"></param>
+    public void PlayAnim(AnimationCreatureStateEnum animationCreatureState, bool isLoop)
+    {
+        if (creatureSkeletionAnimation == null)
+            return;
+        creatureSkeletionAnimation.AnimationState.SetAnimation(0, animationCreatureState.GetEnumName(), isLoop);
+    }
+
+    /// <summary>
+    /// 设置脸的朝向
+    /// </summary>
+    public void SetFaceDirection(Direction2DEnum direction2DEnum)
+    {
+        if (creatureSkeletionAnimation == null)
+            return;
+        float size = Mathf.Abs(creatureSkeletionAnimation.transform.localScale.x);
+        if (direction2DEnum == Direction2DEnum.Left)
+        {
+            creatureSkeletionAnimation.transform.localScale = new Vector3(-size, size, size);
+        }
+        else
+        {
+            creatureSkeletionAnimation.transform.localScale = new Vector3(size, size, size);
+        }
     }
 
     /// <summary>

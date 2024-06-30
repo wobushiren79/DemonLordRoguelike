@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Spine
+  m_EditorClassIdentifier: 
+  m_GroupName: Spine
+  m_Data:
+    m_SerializedData: []
+  m_GUID: ee849c7e9432d834b951501fb68c702e
+  m_SerializeEntries:
+  - m_GUID: fd81f03112dcbda4d8741c0b5a16e9b0
+    m_Address: Assets/LoadResources/Spine/Creature/Skeleton/Skeleton_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 63752a7ce6eb2374fa7887cebe2a5522, type: 2}
+    - {fileID: 11400000, guid: a7faacd060c28c549a614e65cd47b922, type: 2}

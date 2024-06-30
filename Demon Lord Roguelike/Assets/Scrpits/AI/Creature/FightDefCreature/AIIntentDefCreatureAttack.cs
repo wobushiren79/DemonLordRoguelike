@@ -16,6 +16,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
         timeUpdateAttactPre = 0;
         attackState = 0;
         selfAIEntity = aiEntity as AIDefCreatureEntity;
+        selfAIEntity.selfDefCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Idle, false);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
@@ -65,6 +66,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
         //获取攻击方式
         FightHandler.Instance.CreateAttackModePrefab(creatureInfo.att_mode, (targetAttackMode) =>
         {
+            selfAIEntity.selfDefCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Attack, false);
             //开始攻击
             targetAttackMode.StartAttack(selfAIEntity.selfDefCreatureEntity, selfAIEntity.targetAttCreatureEntity, ActionForAttackEnd);
         });

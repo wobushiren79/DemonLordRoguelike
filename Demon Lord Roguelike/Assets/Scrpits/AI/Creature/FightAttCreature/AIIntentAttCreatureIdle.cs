@@ -15,6 +15,10 @@ public class AIIntentAttCreatureIdle : AIBaseIntent
         int selfRoad = selfAIEntity.selfAttCreatureEntity.fightCreatureData.positionCreate.z;
         selfAIEntity.targetDefCreatureEntity = selfAIEntity.FindDefCreatureDisMinEntity(selfRoad);
 
+        //触发待机动作
+        selfAIEntity.selfAttCreatureEntity.SetFaceDirection(Direction2DEnum.Left);
+        selfAIEntity.selfAttCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Idle, true);
+
         //如果没有数据 说明这条路上没有防守生物，则直接前往路的尽头
         if (selfAIEntity.targetDefCreatureEntity == null)
         {

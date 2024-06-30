@@ -13,9 +13,13 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
     public int attackState = 0;
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
+        selfAIEntity = aiEntity as AIAttCreatureEntity;
+
         timeUpdateAttactPre = 0;
         attackState = 0;
-        selfAIEntity = aiEntity as AIAttCreatureEntity;
+
+        //设置待机动作
+        selfAIEntity.selfAttCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Idle, true);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
@@ -64,7 +68,9 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
         var creatureInfo = selfAIEntity.selfAttCreatureEntity.fightCreatureData.GetCreatureInfo();
         //获取攻击方式
         FightHandler.Instance.CreateAttackModePrefab(creatureInfo.att_mode, (targetAttackMode) =>
-        {       
+        {
+            //设置移动动作
+            selfAIEntity.selfAttCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Attack, false);
             //开始攻击
             targetAttackMode.StartAttack(selfAIEntity.selfAttCreatureEntity, selfAIEntity.targetDefCreatureEntity, ActionForAttackEnd);
         });

@@ -1,3 +1,4 @@
+using Spine.Unity;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -107,10 +108,16 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         manager.LoadCreatureObj(creatureId, (targetObj) =>
         {
             var mainCamera = CameraHandler.Instance.manager.mainCamera;
-            Transform rendererTF = targetObj.transform.Find("Renderer");
+            Transform rendererTF = targetObj.transform.Find("Spine");
+ 
             if (rendererTF != null)
             {
                 rendererTF.eulerAngles = mainCamera.transform.eulerAngles;
+                //如果没有加载过spine 则加载一次
+                if (rendererTF.GetComponent<SkeletonAnimation>() == null)
+                {
+                    SpineHandler.Instance.SetSkeletonAnimation(rendererTF.gameObject, "Creature/Skeleton/Skeleton_SkeletonData.asset", new string[] { "Base", "Head/Head_20" });
+                }
             }
             actionForComplete?.Invoke(targetObj);
         });

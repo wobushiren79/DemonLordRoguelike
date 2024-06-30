@@ -12,3 +12,12 @@ public enum CreatureStateEnum
     Live = 1,//存活
     Dead = 2,//死亡
 }
+
+public enum CreatureModelPartTypeEnum
+{
+    Base = 0,
+    Head = 1,//头部
+    Hat = 2,//帽子
+    ArmorShoulder = 11,//护肩 肩部
+    ArmorPants = 12,//护甲 裤子
+}
