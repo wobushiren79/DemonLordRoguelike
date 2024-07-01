@@ -1,3 +1,4 @@
+using NUnit.Framework.Interfaces;
 using Spine.Unity;
 using System;
 using System.Collections;
@@ -10,9 +11,6 @@ public class LauncherTest : BaseLauncher
     public int testDataCurrentMagic = 1000;
     [Header("测试数据-卡片数量")]
     public int testDataCardNum = 20;
-
-    public GameObject skeletonGameobject;
-    public SkeletonGraphic skeletonGraphic;
 
     public override void Launch()
     {
@@ -79,9 +77,19 @@ public class LauncherTest : BaseLauncher
         for (int i = 0; i < testDataCardNum; i++)
         {
             FightCreatureBean itemData = new FightCreatureBean(1);
+            itemData.creatureData.skinBaseId = 1000001;
+            itemData.creatureData.skinHeadId = 1010010;
             listCreatureData.Add(itemData); ;
         }
         fightData.listDefCreatureData = listCreatureData;
+
+
+        FightCreatureBean fightDefCoreData = new FightCreatureBean(1);
+        fightDefCoreData.creatureData.skinBaseId = 1000001;
+        fightDefCoreData.creatureData.skinHeadId = 1010011;
+        fightDefCoreData.creatureData.skinHatId = 1020030;
+        fightData.fightDefCoreData = fightDefCoreData;
+
         fightData.InitDataForAttCreateStage(1);
         return fightData;
     }

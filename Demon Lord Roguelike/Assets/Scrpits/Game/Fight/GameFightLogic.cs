@@ -69,7 +69,7 @@ public class GameFightLogic : BaseGameLogic
             RayUtil.RayToScreenPointForMousePosition(10, 1 << LayerInfo.Ground, out bool isCollider, out RaycastHit hit, CameraHandler.Instance.manager.mainCamera);
             if (isCollider && hit.collider != null)
             {
-                GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreaureSelectPreview();
+                GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreaureSelectPreview(selectCreatureData);
                 objSelectPreivew.gameObject.SetActive(true);
                 Vector3 hitPoint = hit.point;
 
@@ -119,7 +119,7 @@ public class GameFightLogic : BaseGameLogic
             ClearSelectData();
         }
         selectCreatureData = fightCreature;
-        CreatureHandler.Instance.CreateDefCreature(1, (targetObj) =>
+        CreatureHandler.Instance.CreateDefCreature(fightCreature.creatureData, (targetObj) =>
         {
             selectCreature = targetObj;
         });

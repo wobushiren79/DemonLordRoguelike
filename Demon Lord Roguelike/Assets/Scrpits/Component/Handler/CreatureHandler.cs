@@ -15,8 +15,9 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         GetCreatureObj(creatureId, (targetObj) =>
         {
             targetObj.transform.position = new Vector3(-1f, 0, 3.5f);
+            GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
             //创建生物
-            FightCreatureBean fightCreatureData = new FightCreatureBean(creatureId);
+            FightCreatureBean fightCreatureData = gameFightLogic.fightData.fightDefCoreData;
             fightCreatureData.positionCreate = new Vector3Int(-1, 0, 0);
 
             GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
@@ -31,10 +32,17 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// <summary>
     ///  创建防御生物
     /// </summary>
-    public void CreateDefCreature(int creatureId, Action<GameObject> actionForComplete)
+    public void CreateDefCreature(CreatureBean creatureData, Action<GameObject> actionForComplete)
     {
-        GetCreatureObj(creatureId, (targetObj) =>
+        GetCreatureObj((int)creatureData.id, (targetObj) =>
         {
+            Transform rendererTF = targetObj.transform.Find("Spine");
+            SkeletonAnimation targetSkeletonAnimation = rendererTF.GetComponent<SkeletonAnimation>();
+            if (targetSkeletonAnimation != null)
+            {
+                string[] skinArray = creatureData.GetSkinArray();
+                SpineHandler.Instance.ChangeSkeletonSkin(targetSkeletonAnimation.skeleton, skinArray);
+            }
             actionForComplete?.Invoke(targetObj);
         });
     }
@@ -87,6 +95,8 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
 
             //创建战斗生物
             FightCreatureBean fightCreatureData = new FightCreatureBean(creatureId);
+            fightCreatureData.creatureData.skinBaseId = 1000001;
+            fightCreatureData.creatureData.skinHeadId = 1010020;
             fightCreatureData.positionCreate = new Vector3Int(0, 0, targetRoad);
             GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
             gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIAttCreatureEntity>(actionBeforeStart: (targetEntity) =>
@@ -116,7 +126,9 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
                 //如果没有加载过spine 则加载一次
                 if (rendererTF.GetComponent<SkeletonAnimation>() == null)
                 {
-                    SpineHandler.Instance.SetSkeletonAnimation(rendererTF.gameObject, "Creature/Skeleton/Skeleton_SkeletonData.asset", new string[] { "Base", "Head/Head_20" });
+                    var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
+                    var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
+                    SpineHandler.Instance.AddSkeletonAnimation(rendererTF.gameObject, creatureModel.res_name);
                 }
             }
             actionForComplete?.Invoke(targetObj);

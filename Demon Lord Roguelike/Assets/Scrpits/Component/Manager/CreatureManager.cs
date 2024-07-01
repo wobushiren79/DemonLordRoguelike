@@ -1,3 +1,4 @@
+using Spine.Unity;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,22 +13,45 @@ public class CreatureManager : BaseManager
 
     //生物预览
     public GameObject objCreatureSelectPreview;
+    public SkeletonAnimation skeletonAnimationSelectPreview;
+    public FightCreatureBean fightCreatureDataSelectPreview;
 
 
     /// <summary>
     /// 获取生物预览
     /// </summary>
     /// <returns></returns>
-    public GameObject GetCreaureSelectPreview()
+    public GameObject GetCreaureSelectPreview(FightCreatureBean fightCreatureData = null)
     {
         if (objCreatureSelectPreview == null)
         {
             string resPath = $"{PathInfo.CreaturesPrefabPath}/FightCreature_SelectPreview.prefab";
             var targetModel = GetModelForAddressablesSync(dicCreatureModel, resPath);
             objCreatureSelectPreview = Instantiate(gameObject, targetModel);
+
+            Transform spineTF = objCreatureSelectPreview.transform.Find("Spine");
+            skeletonAnimationSelectPreview = spineTF.GetComponent<SkeletonAnimation>();
         }
         var mainCamera = CameraHandler.Instance.manager.mainCamera;
         objCreatureSelectPreview.transform.eulerAngles = mainCamera.transform.eulerAngles;
+
+        if (fightCreatureData != null)
+        {
+            if (fightCreatureDataSelectPreview == null || fightCreatureData != fightCreatureDataSelectPreview)
+            {
+                var creatureInfo = fightCreatureData.GetCreatureInfo();
+                var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
+                //设置骨骼数据
+                SpineHandler.Instance.SetSkeletonDataAsset(skeletonAnimationSelectPreview, creatureModel.res_name);
+                string[] skinArray = fightCreatureData.creatureData.GetSkinArray();
+                //修改皮肤
+                SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimationSelectPreview.skeleton, skinArray);
+                fightCreatureDataSelectPreview = fightCreatureData;
+
+                //修改材质球颜色
+                skeletonAnimationSelectPreview.skeleton.A = 0.65f;
+            }
+        }
         return objCreatureSelectPreview;
     }
 

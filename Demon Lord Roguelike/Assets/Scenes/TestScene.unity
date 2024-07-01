@@ -165,8 +165,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   testDataCurrentMagic: 1000
   testDataCardNum: 20
-  skeletonGameobject: {fileID: 0}
-  skeletonGraphic: {fileID: 0}
 --- !u!1 &167132107
 GameObject:
   m_ObjectHideFlags: 0
@@ -247,7 +245,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!108 &705507994
 Light:
   m_ObjectHideFlags: 0

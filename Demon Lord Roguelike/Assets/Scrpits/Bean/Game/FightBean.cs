@@ -24,6 +24,8 @@ public class FightBean
     public Dictionary<int, List<GameFightCreatureEntity>> dicAttCreatureEntity = new Dictionary<int, List<GameFightCreatureEntity>>();//进攻方的所有生物实例
 
     public Dictionary<string, GameFightCreatureEntity> dicCreatureEntity = new Dictionary<string, GameFightCreatureEntity>();//所有生物实例
+
+    public FightCreatureBean fightDefCoreData;//防守核心数据
     public GameFightCreatureEntity fightDefCoreCreature;//防守方核心生物实例
     /// <summary>
     /// 初始化波数数据

@@ -23,6 +23,20 @@ public class GameFightCreatureEntity
         this.creatureObj.name = creatureId;
         //获取骨骼数据
         creatureSkeletionAnimation = creatureObj.transform.Find("Spine")?.GetComponent<SkeletonAnimation>();
+        ChangeSkin(fightCreatureData.creatureData);
+    }
+
+    /// <summary>
+    /// 修改皮肤 根据生物数据修改
+    /// </summary>
+    public void ChangeSkin(CreatureBean creatureData)
+    {
+        if (creatureSkeletionAnimation == null)
+            return;
+        if (creatureData == null)
+            return;
+        string[] skinArray = creatureData.GetSkinArray();
+        SpineHandler.Instance.ChangeSkeletonSkin(creatureSkeletionAnimation.skeleton, skinArray);
     }
 
     /// <summary>
