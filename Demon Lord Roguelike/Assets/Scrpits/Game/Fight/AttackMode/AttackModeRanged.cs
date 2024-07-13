@@ -22,7 +22,7 @@ public class AttackModeRanged : BaseAttackMode
             string creatureId = hit.collider.gameObject.name;
             GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
             var targetCreature = gameFightLogic.fightData.GetFightCreatureById(creatureId);
-            if (targetCreature != null)
+            if (targetCreature != null && !targetCreature.IsDead())
             {
                 //ПлбЊ
                 targetCreature.UnderAttack(attackerDamage, out int leftLife, out int leftArmor);

@@ -69,7 +69,7 @@ public class AIAttCreatureEntity : AICreatureEntity
         {
             //获取距离最近的防守生物
             var itemFightPosition = listFightPosition[i];
-            if (itemFightPosition.creatureMain != null)
+            if (itemFightPosition.creatureMain != null && !itemFightPosition.creatureMain.IsDead())
             {
                 var creatureObj = itemFightPosition.creatureMain.creatureObj;
                 if (direction == DirectionEnum.Left && creatureObj.transform.position.x <= selfAttCreatureEntity.creatureObj.transform.position.x)

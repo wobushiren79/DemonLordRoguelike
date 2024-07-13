@@ -95,8 +95,10 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
 
             //创建战斗生物
             FightCreatureBean fightCreatureData = new FightCreatureBean(creatureId);
-            fightCreatureData.creatureData.skinBaseId = 1000001;
-            fightCreatureData.creatureData.skinHeadId = 1010020;
+            fightCreatureData.creatureData.AddSkin(2000001);
+            fightCreatureData.creatureData.AddSkin(2040001);
+            fightCreatureData.creatureData.AddSkin(2900001);
+ 
             fightCreatureData.positionCreate = new Vector3Int(0, 0, targetRoad);
             GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
             gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIAttCreatureEntity>(actionBeforeStart: (targetEntity) =>
@@ -163,7 +165,8 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     {
         if (targetEntity == null)
             return;
-
+        //清理动画
+        targetEntity.ClearAnim();
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         if (targetEntity.creatureObj != null)
         {

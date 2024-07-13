@@ -77,17 +77,17 @@ public class LauncherTest : BaseLauncher
         for (int i = 0; i < testDataCardNum; i++)
         {
             FightCreatureBean itemData = new FightCreatureBean(1);
-            itemData.creatureData.skinBaseId = 1000001;
-            itemData.creatureData.skinHeadId = 1010010;
+            itemData.creatureData.AddSkin(1000001);
+            itemData.creatureData.AddSkin(1010010);
             listCreatureData.Add(itemData); ;
         }
         fightData.listDefCreatureData = listCreatureData;
 
 
         FightCreatureBean fightDefCoreData = new FightCreatureBean(1);
-        fightDefCoreData.creatureData.skinBaseId = 1000001;
-        fightDefCoreData.creatureData.skinHeadId = 1010011;
-        fightDefCoreData.creatureData.skinHatId = 1020030;
+        fightDefCoreData.creatureData.AddSkin(1000001);
+        fightDefCoreData.creatureData.AddSkin(1010011);
+        fightDefCoreData.creatureData.AddSkin(1020030);
         fightData.fightDefCoreData = fightDefCoreData;
 
         fightData.InitDataForAttCreateStage(1);

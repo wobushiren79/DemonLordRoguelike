@@ -127,8 +127,11 @@ public class CreatureManager : BaseManager
     /// <summary>
     /// 回收对象
     /// </summary>
-    public void DestoryCreature(Queue<GameObject> pool, GameObject targetObj)
+    public async void DestoryCreature(Queue<GameObject> pool, GameObject targetObj)
     {
+        targetObj.transform.position = new Vector3(0,-100,0);
+        //等待1帧防止 当前动作闪现问题
+        await new WaitForEndOfFrame();
         targetObj.SetActive(false);
         pool.Enqueue(targetObj);
     }

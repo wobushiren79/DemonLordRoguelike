@@ -13,11 +13,32 @@ public enum CreatureStateEnum
     Dead = 2,//死亡
 }
 
-public enum CreatureModelPartTypeEnum
+public enum CreatureSkinTypeEnum
 {
     Base = 0,
     Head = 1,//头部
     Hat = 2,//帽子
-    ArmorShoulder = 11,//护肩 肩部
-    ArmorPants = 12,//护甲 裤子
+    Hair = 3,//发型
+    Body = 4,//身体
+    Eye = 5,//眼睛
+    Mouth = 6,//嘴巴
+    Clothes = 10,//衣服
+    Pants = 12,//裤子
+
+    Armor_Arm_Up_L = 20,//左肩上
+    Armor_Arm_Down_L = 21,//左肩上
+    Armor_Palm_Up_L = 22,//手套左
+    Armor_Arm_Up_R = 25,//左肩上
+    Armor_Arm_Down_R = 26,//左肩上
+    Armor_Palm_Up_R = 27,//手套右
+
+    Armor_Thigh_L = 30,//大腿
+    Armor_Calf_L = 31,//小腿
+    Shoe_L = 32,//鞋子
+    Armor_Thigh_R = 35,
+    Armor_Calf_R = 36,
+    Shoe_R = 37,
+
+    Weapon_L = 90,//武器左
+    Weapon_R = 91//武器右
 }

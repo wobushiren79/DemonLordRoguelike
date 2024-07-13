@@ -1,6 +1,7 @@
 using Spine.Unity;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEditor.TestTools.CodeCoverage;
 using UnityEngine;
@@ -48,6 +49,28 @@ public class GameFightCreatureEntity
         if (creatureSkeletionAnimation == null)
             return;
         creatureSkeletionAnimation.AnimationState.SetAnimation(0, animationCreatureState.GetEnumName(), isLoop);
+    }
+
+    /// <summary>
+    /// 增加动画
+    /// </summary>
+    public void AddAnim(int trackIndex, AnimationCreatureStateEnum animationCreatureState, bool isLoop, float delay)
+    {
+        if (creatureSkeletionAnimation == null)
+            return;
+        creatureSkeletionAnimation.AnimationState.AddAnimation(trackIndex, animationCreatureState.GetEnumName(), isLoop, delay);
+    }
+
+    /// <summary>
+    /// 清理动画
+    /// </summary>
+    public void ClearAnim()
+    {
+        if (creatureSkeletionAnimation == null)
+            return;
+        //再清除动画
+        creatureSkeletionAnimation.AnimationState.ClearTracks();
+        PlayAnim(AnimationCreatureStateEnum.Idle, true);
     }
 
     /// <summary>

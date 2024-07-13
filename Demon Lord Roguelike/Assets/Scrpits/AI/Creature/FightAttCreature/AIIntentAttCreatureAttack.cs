@@ -1,12 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class AIIntentAttCreatureAttack : AIBaseIntent
 {
     //攻击准备时间
-    public float timeUpdateAttactPre = 0;
+    public float timeUpdateAttackPre = 0;
+    public float timeUpdateAttacking = 0;
     //目标AI
     public AIAttCreatureEntity selfAIEntity;
     //攻击状态 0准备中 1攻击中
@@ -15,7 +17,8 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
     {
         selfAIEntity = aiEntity as AIAttCreatureEntity;
 
-        timeUpdateAttactPre = 0;
+        timeUpdateAttackPre = 0;
+        timeUpdateAttacking = 0;
         attackState = 0;
 
         //设置待机动作
@@ -27,18 +30,24 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
         //攻击准备中
         if (attackState == 0)
         {
-            timeUpdateAttactPre += Time.deltaTime;
+            timeUpdateAttackPre += Time.deltaTime;
             float attCD = selfAIEntity.selfAttCreatureEntity.fightCreatureData.GetAttCD();
-            if (timeUpdateAttactPre >= attCD)
+            if (timeUpdateAttackPre >= attCD)
             {
-                timeUpdateAttactPre = 0;
-                AttackDefCreature();
+                timeUpdateAttackPre = 0;
+                AttackDefCreatureStart();
             }
         }
         //攻击中
         else if (attackState == 1)
         {
-
+            timeUpdateAttacking += Time.deltaTime;
+            float attAnimCastTime = selfAIEntity.selfAttCreatureEntity.fightCreatureData.GetAttAnimCastTime();
+            if (timeUpdateAttacking >= attAnimCastTime)
+            {
+                timeUpdateAttacking = 0;
+                AttackDefCreatureStartEnd();
+            }
         }
     }
 
@@ -48,9 +57,9 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
     }
 
     /// <summary>
-    /// 攻击防守生物
+    /// 攻击开始
     /// </summary>
-    public virtual void AttackDefCreature()
+    public virtual void AttackDefCreatureStart()
     {
         attackState = 1;
         //如果目标生物已经无了
@@ -65,17 +74,24 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
             ChangeIntent(AIIntentEnum.AttCreatureDead);
             return;
         }
+        //播放攻击动画
+        selfAIEntity.selfAttCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Attack, false);
+    }
+
+    /// <summary>
+    /// 攻击结束
+    /// </summary>
+    public virtual void AttackDefCreatureStartEnd()
+    {
+        attackState = 2;
         var creatureInfo = selfAIEntity.selfAttCreatureEntity.fightCreatureData.GetCreatureInfo();
         //获取攻击方式
         FightHandler.Instance.CreateAttackModePrefab(creatureInfo.att_mode, (targetAttackMode) =>
         {
-            //设置移动动作
-            selfAIEntity.selfAttCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Attack, false);
             //开始攻击
             targetAttackMode.StartAttack(selfAIEntity.selfAttCreatureEntity, selfAIEntity.targetDefCreatureEntity, ActionForAttackEnd);
         });
     }
-
 
     /// <summary>
     /// 攻击结束回调

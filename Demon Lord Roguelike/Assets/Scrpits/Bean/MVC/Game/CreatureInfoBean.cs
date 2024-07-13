@@ -36,6 +36,10 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public float att_cd;
 	/// <summary>
+	///攻击动画出手时间
+	/// </summary>
+	public float att_anim_cast_time;
+	/// <summary>
 	///攻击力
 	/// </summary>
 	public int att_damage;

@@ -5,15 +5,15 @@ public partial class CreatureModelInfoBean
 }
 public partial class CreatureModelInfoCfg
 {
-    public Dictionary<int, Dictionary<CreatureModelPartTypeEnum, List<CreatureModelInfoBean>>> dicDetailsModelInfo;
+    public Dictionary<int, Dictionary<CreatureSkinTypeEnum, List<CreatureModelInfoBean>>> dicDetailsModelInfo;
 
-    public List<CreatureModelInfoBean> GetData(int modelId, CreatureModelPartTypeEnum modelType)
+    public List<CreatureModelInfoBean> GetData(int modelId, CreatureSkinTypeEnum modelType)
     {
         if (dicDetailsModelInfo == null || dicDetailsModelInfo.Count == 0)
         {
             InitDetailsData();
         }
-        if (dicDetailsModelInfo.TryGetValue(modelId, out Dictionary<CreatureModelPartTypeEnum, List<CreatureModelInfoBean>> valueModel))
+        if (dicDetailsModelInfo.TryGetValue(modelId, out Dictionary<CreatureSkinTypeEnum, List<CreatureModelInfoBean>> valueModel))
         {
             if (valueModel.TryGetValue(modelType, out List<CreatureModelInfoBean> creatureModelInfoList))
             {
@@ -37,13 +37,13 @@ public partial class CreatureModelInfoCfg
     /// </summary>
     public void InitDetailsData()
     {
-        dicDetailsModelInfo = new Dictionary<int, Dictionary<CreatureModelPartTypeEnum, List<CreatureModelInfoBean>>>();
+        dicDetailsModelInfo = new Dictionary<int, Dictionary<CreatureSkinTypeEnum, List<CreatureModelInfoBean>>>();
         var allData = GetAllData();
         foreach (var itemData in allData)
         {
             var itemDataDetails = itemData.Value;
-            CreatureModelPartTypeEnum partType = (CreatureModelPartTypeEnum)itemDataDetails.part_type;
-            if (dicDetailsModelInfo.TryGetValue(itemDataDetails.model_id, out Dictionary<CreatureModelPartTypeEnum, List<CreatureModelInfoBean>> valueModel))
+            CreatureSkinTypeEnum partType = (CreatureSkinTypeEnum)itemDataDetails.part_type;
+            if (dicDetailsModelInfo.TryGetValue(itemDataDetails.model_id, out Dictionary<CreatureSkinTypeEnum, List<CreatureModelInfoBean>> valueModel))
             {
                 if (valueModel.TryGetValue(partType, out List<CreatureModelInfoBean> valueModelInfoList))
                 {
@@ -64,7 +64,7 @@ public partial class CreatureModelInfoCfg
                 {
                      itemDataDetails
                 };
-                Dictionary<CreatureModelPartTypeEnum, List<CreatureModelInfoBean>> newData = new Dictionary<CreatureModelPartTypeEnum, List<CreatureModelInfoBean>>()
+                Dictionary<CreatureSkinTypeEnum, List<CreatureModelInfoBean>> newData = new Dictionary<CreatureSkinTypeEnum, List<CreatureModelInfoBean>>()
                 {
                     {partType, newListData}
                 };

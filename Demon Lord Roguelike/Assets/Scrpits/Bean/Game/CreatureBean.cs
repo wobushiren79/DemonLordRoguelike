@@ -7,17 +7,20 @@ using static Cinemachine.CinemachineOrbitalTransposer;
 [Serializable]
 public class CreatureBean
 {
-    public long id;//ID;
-
-    public int skinBaseId;//头部ID
-    public int skinHeadId;//头部ID
-    public int skinHatId;//帽子ID
-    public int skinArmorShoulderId;//肩部护甲ID
-    public int skinArmorPantsId;//裤子护甲ID
+    //ID
+    public long id;
+    //所有的皮肤数据
+    public List<CreatureSkinBean> listSkinData = new List<CreatureSkinBean>();
 
     public CreatureBean(long id)
     {
         this.id = id;
+    }
+
+    public void AddSkin(int skinId)
+    {
+        CreatureSkinBean creatureSkinBean = new CreatureSkinBean(skinId);
+        listSkinData.Add(creatureSkinBean);
     }
 
     /// <summary>
@@ -27,27 +30,19 @@ public class CreatureBean
     public string[] GetSkinArray()
     {
         List<string> listSkin = new List<string>();
-        GetAndAddSkin(listSkin, skinBaseId);
-        GetAndAddSkin(listSkin, skinHeadId);
-        GetAndAddSkin(listSkin, skinHatId);
-        GetAndAddSkin(listSkin, skinArmorShoulderId);
-        GetAndAddSkin(listSkin, skinArmorPantsId);
-        return listSkin.ToArray();
-    }
-
-    protected void GetAndAddSkin(List<string> listSkin,int targetId)
-    {
-        if (targetId != 0)
+        for (int i = 0; i < listSkinData.Count; i++)
         {
-            var itemInfo = CreatureModelInfoCfg.GetItemData(targetId);
-            if (itemInfo == null)
+            var itemSkinData = listSkinData[i];
+            var itemSkinInfo = CreatureModelInfoCfg.GetItemData(itemSkinData.skinId);
+            if (itemSkinInfo == null)
             {
-                LogUtil.LogError($"获取CreatureModelInfoCfg数据失败 没有找到ID_{targetId} 的数据");
+                LogUtil.LogError($"获取CreatureModelInfoCfg数据失败 没有找到ID_{itemSkinData.skinId} 的数据");
             }
             else
             {
-                listSkin.Add(itemInfo.res_name);
+                listSkin.Add(itemSkinInfo.res_name);
             }
         }
+        return listSkin.ToArray();
     }
 }

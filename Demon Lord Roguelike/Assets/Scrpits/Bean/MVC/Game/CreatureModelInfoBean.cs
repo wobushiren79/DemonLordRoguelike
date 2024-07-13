@@ -8,7 +8,7 @@ public partial class CreatureModelInfoBean : BaseBean
 	/// </summary>
 	public int model_id;
 	/// <summary>
-	///部件类型(0:基础类型 1:头 2:帽子 11:护甲肩膀 12:护甲裤子)
+	///部件类型(0:基础类型 1:头 2:帽子 3：发型 4:身体 5:眼睛 6:嘴巴 10:衣服 12:裤子 20:左肩上 21:左肩下 22:左手手套 25:右肩上 26:右肩下 27:右手手套 30:左腿上 31:左腿下 32:鞋子左 35:右腿上 36:右腿下 37:鞋子右 90：武器左 91：武器右)
 	/// </summary>
 	public int part_type;
 	/// <summary>

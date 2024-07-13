@@ -101,6 +101,16 @@ public class FightCreatureBean
         var creatureInfo = GetCreatureInfo();
         return creatureInfo.att_cd;
     }
+    
+    /// <summary>
+    /// 获取攻击动画出手时间
+    /// </summary>
+    /// <returns></returns>
+    public float GetAttAnimCastTime()
+    {
+        var creatureInfo = GetCreatureInfo();
+        return creatureInfo.att_anim_cast_time;
+    }
 
     /// <summary>
     /// 获取生物信息

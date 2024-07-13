@@ -71,7 +71,7 @@ public class AIDefCreatureEntity : AICreatureEntity
         {
             //获取距离最近的防守生物
             var itemTargetEntity = listTargetData[i];
-            if (itemTargetEntity != null)
+            if (itemTargetEntity != null && !itemTargetEntity.IsDead())
             {
                 var creatureObj = itemTargetEntity.creatureObj;
                 if (direction == DirectionEnum.Right && creatureObj.transform.position.x >= selfDefCreatureEntity.creatureObj.transform.position.x)

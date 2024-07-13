@@ -1,1 +1,1 @@
-[{"res_name":"Creature/Skeleton/Skeleton_SkeletonData.asset","remark":"骷髅","id":1,"valid":0,"name_cn":null,"name_en":null}]
+[{"res_name":"Creature/Skeleton/Skeleton_SkeletonData.asset","remark":"骷髅","id":1,"valid":0,"name_cn":null,"name_en":null},{"res_name":"Creature/Human/Human_SkeletonData.asset","remark":"人类","id":2,"valid":0,"name_cn":null,"name_en":null}]

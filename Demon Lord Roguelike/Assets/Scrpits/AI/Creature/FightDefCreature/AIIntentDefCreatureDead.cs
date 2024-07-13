@@ -4,15 +4,26 @@ using UnityEngine;
 
 public class AIIntentDefCreatureDead : AIBaseIntent
 {
+    public float timeUpdateForDead = 0f;
+    public float timeForDeadTime = 1.1f;
+
+    //Ä¿±êAI
+    public AIDefCreatureEntity selfAIEntity;
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
-        var targetDefCreatureEntity = aiEntity as AIDefCreatureEntity;
-        CreatureHandler.Instance.RemoveCreatureEntity(targetDefCreatureEntity.selfDefCreatureEntity, CreatureTypeEnum.FightDef);
+        timeUpdateForDead = 0;
+        selfAIEntity = aiEntity as AIDefCreatureEntity;
+        selfAIEntity.selfDefCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Dead, false);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
-
+        timeUpdateForDead += Time.deltaTime;
+        if (timeUpdateForDead >= timeForDeadTime)
+        {
+            timeUpdateForDead = 0;
+            CreatureHandler.Instance.RemoveCreatureEntity(selfAIEntity.selfDefCreatureEntity, CreatureTypeEnum.FightDef);
+        }
     }
 
     public override void IntentLeaving(AIBaseEntity aiEntity)
