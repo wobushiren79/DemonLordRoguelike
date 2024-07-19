@@ -12,6 +12,7 @@ public class AIIntentAttCreatureDead : AIBaseIntent
     {
         timeUpdateForDead = 0;
         selfAIEntity = aiEntity as AIAttCreatureEntity;
+
         selfAIEntity.selfAttCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Dead, false);
     }
 

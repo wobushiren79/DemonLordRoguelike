@@ -28,3 +28,12 @@ public enum AnimationCreatureStateEnum
     Attack,
     Dead,
 }
+
+
+//游戏战斗预制状态
+public enum GameFightPrefabStateEnum
+{
+    None = 0,
+    DropCheck = 1,//拾取检测中，
+    Droping = 2,//拾取中
+}

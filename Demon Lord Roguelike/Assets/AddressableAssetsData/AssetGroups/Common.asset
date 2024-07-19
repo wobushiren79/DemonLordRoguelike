@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Common
+  m_EditorClassIdentifier: 
+  m_GroupName: Common
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 8d34367864ba6d841ad6c55b768c2978
+  m_SerializeEntries:
+  - m_GUID: 3942aed023996e446a4dd56e8a2c1fae
+    m_Address: Assets/LoadResources/Common/MainCamera.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 90a8f4c76b4ae6b428e14c8f4dc2c8eb
+    m_Address: Assets/LoadResources/Common/FightDropCoin.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e61073fa09ee40349875317f266387d9
+    m_Address: Assets/LoadResources/Common/FightDropMagic.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: bf0af1bb1e1978046814d8bba55078b0, type: 2}
+    - {fileID: 11400000, guid: 9a809449c22a78e4f9990f1da57f10b1, type: 2}

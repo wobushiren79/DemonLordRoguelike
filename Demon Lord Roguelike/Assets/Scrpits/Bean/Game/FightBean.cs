@@ -27,6 +27,7 @@ public class FightBean
 
     public FightCreatureBean fightDefCoreData;//防守核心数据
     public GameFightCreatureEntity fightDefCoreCreature;//防守方核心生物实例
+
     /// <summary>
     /// 初始化波数数据
     /// </summary>

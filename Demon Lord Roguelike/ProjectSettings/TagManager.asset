@@ -15,6 +15,7 @@ TagManager:
   - Ground
   - CreatureDef
   - CreatureAtt
+  - Drop
   - 
   - 
   - 
@@ -27,8 +28,7 @@ TagManager:
   - 
   - 
   - 
-  - 
-  - 
+  - Other
   - 
   - 
   - 

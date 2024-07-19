@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -39,7 +40,8 @@ public class ControlForGameFight: BaseControl
 
     public void FixedUpdate()
     {
-        HandlerForMoveUpdate();
+        HandleForMoveUpdate();
+        HandleForClickDropUpdate();
     }
 
     public override void EnabledControl(bool enabled)
@@ -53,7 +55,7 @@ public class ControlForGameFight: BaseControl
     /// <summary>
     /// 移动处理
     /// </summary>
-    public void HandlerForMoveUpdate()
+    public void HandleForMoveUpdate()
     {
         if (!enabledControl)
             return;
@@ -70,6 +72,52 @@ public class ControlForGameFight: BaseControl
             targetCamerMovePos = targetCamerMovePos + targetMoveOffset;
         }
         mainCamera.transform.position = Vector3.Lerp(currentPos, targetCamerMovePos,  speedForLerpCameraMove);
+    }
+
+    /// <summary>
+    /// 点击拾取物品
+    /// </summary>
+    public void HandleForClickDropUpdate()
+    {
+        if (!enabledControl)
+            return;
+        var gameState = GameHandler.Instance.manager.GetGameState();
+        //如果是正在游戏中
+        if (gameState != GameStateEnum.Gaming)
+            return;
+        if (CheckUtil.CheckIsPointerUI())
+            return;
+        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        //手里没有物品
+        if (gameFightLogic.selectCreature != null)
+            return;
+        float inputValue = inputActionUseL.ReadValue<float>();
+        if (inputValue < 1)
+            return;
+        RayUtil.RayToScreenPointForMousePosition(10, 1 << LayerInfo.Drop, out bool isCollider, out RaycastHit hit, CameraHandler.Instance.manager.mainCamera);
+        if (isCollider && hit.collider != null)
+        {
+            var fightDropPrefab = FightHandler.Instance.manager.GetFightPrefab(hit.collider.gameObject.name);
+            if (fightDropPrefab == null)
+                return;
+            fightDropPrefab.SetState(GameFightPrefabStateEnum.Droping);
+            Vector3 targetPos = gameFightLogic.fightData.fightDefCoreCreature.creatureObj.transform.position;
+            float moveSpeed = 5
+                ;
+            float moveTime = Vector3.Distance(targetPos, fightDropPrefab.gameObject.transform.position) / moveSpeed;
+            //播放动画
+            fightDropPrefab.gameObject.transform
+                .DOJump(targetPos + new Vector3(0f, 0.5f, 0.5f), Random.Range(0, 0.5f), 1, moveTime)
+                .SetEase(Ease.OutCubic)
+                .OnComplete(() =>
+                {
+                    UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+                    userData.AddCoin(fightDropPrefab.valueInt);
+                    fightDropPrefab.Destroy();
+                    //刷新所有打开的UI
+                    UIHandler.Instance.RefreshUI();
+                });
+        }
     }
 
     /// <summary>

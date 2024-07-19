@@ -1,3 +1,4 @@
+using DG.Tweening;
 using Spine.Unity;
 using System.Collections;
 using System.Collections.Generic;
@@ -105,6 +106,23 @@ public class GameFightCreatureEntity
             fightCreatureData.ChangeLife(outArmorChangeData);
         }
         leftLife = fightCreatureData.liftCurrent;
+        //如果还有生命值 
+        if (leftLife > 0)
+        {
+            //触发被攻击特效
+            if (creatureSkeletionAnimation != null)
+            {
+                //颤抖
+                creatureSkeletionAnimation.transform.DOShakePosition(0.06f, strength: 0.05f,vibrato:10,randomness:180);
+                //流血
+            }
+        }
+        else
+        {   //掉落金币
+            FightHandler.Instance.CreateDropCoin(creatureObj.transform.position);
+            //如果被攻击对象死亡 
+            SetCreatureDead();
+        }
     }
 
     /// <summary>

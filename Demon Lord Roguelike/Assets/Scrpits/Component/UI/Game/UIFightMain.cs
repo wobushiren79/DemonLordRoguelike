@@ -18,6 +18,13 @@ public partial class UIFightMain : BaseUIComponent
         ui_UIViewFightMainAttCreateProgress.gameObject.SetActive(false);
     }
 
+    public override void RefreshUI(bool isOpenInit = false)
+    {
+        base.RefreshUI(isOpenInit);
+        if (!isOpenInit)
+            RefreshUIData();
+    }
+
     public override void OpenUI()
     {
         base.OpenUI();
@@ -47,9 +54,11 @@ public partial class UIFightMain : BaseUIComponent
     /// </summary>
     public void RefreshUIData()
     {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         //设置魔力值
         SetMagicData(gameFightLogic.fightData.currentMagic);
+        SetCoinData(userData.coin);
         SetAttCreateProgress(gameFightLogic.fightData.gameStage, gameFightLogic.fightData.gameProgress);
     }
 
@@ -97,6 +106,14 @@ public partial class UIFightMain : BaseUIComponent
     public void SetMagicData(int magic)
     {
         ui_MagicText.text = $"{magic}";
+    }
+
+    /// <summary>
+    /// 设置当前金币（魔晶）
+    /// </summary>
+    public void SetCoinData(long coin)
+    {
+        ui_CoinText.text = $"{coin}";
     }
 
     /// <summary>

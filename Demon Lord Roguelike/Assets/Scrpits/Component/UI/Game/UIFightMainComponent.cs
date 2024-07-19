@@ -15,5 +15,7 @@ public partial class UIFightMain
 
     public UIViewFightMainAttCreateProgress ui_UIViewFightMainAttCreateProgress;
 
+    public TextMeshProUGUI ui_CoinText;
+
 
 }

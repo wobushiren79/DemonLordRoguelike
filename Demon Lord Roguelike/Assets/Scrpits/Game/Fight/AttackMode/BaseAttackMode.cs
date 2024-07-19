@@ -7,6 +7,7 @@ public class BaseAttackMode
 {
     //当前obj
     public GameObject gameObject;
+    public SpriteRenderer spriteRenderer;
     //信息
     public AttackModeInfoBean attackModeInfo;
     //攻击者的攻击力

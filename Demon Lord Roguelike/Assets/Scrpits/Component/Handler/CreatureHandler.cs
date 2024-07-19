@@ -98,7 +98,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             fightCreatureData.creatureData.AddSkin(2000001);
             fightCreatureData.creatureData.AddSkin(2040001);
             fightCreatureData.creatureData.AddSkin(2900001);
- 
+            fightCreatureData.creatureData.AddSkin(2020001);
             fightCreatureData.positionCreate = new Vector3Int(0, 0, targetRoad);
             GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
             gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIAttCreatureEntity>(actionBeforeStart: (targetEntity) =>
@@ -121,16 +121,21 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         {
             var mainCamera = CameraHandler.Instance.manager.mainCamera;
             Transform rendererTF = targetObj.transform.Find("Spine");
- 
             if (rendererTF != null)
             {
                 rendererTF.eulerAngles = mainCamera.transform.eulerAngles;
-                //如果没有加载过spine 则加载一次
+                //如果没有加载过spine 则加载一次 
                 if (rendererTF.GetComponent<SkeletonAnimation>() == null)
                 {
                     var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
                     var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
                     SpineHandler.Instance.AddSkeletonAnimation(rendererTF.gameObject, creatureModel.res_name);
+
+                    //var render = rendererTF.GetComponent<MeshRenderer>();
+                    //if (render != null)
+                    //{
+                    //    render.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    //}
                 }
             }
             actionForComplete?.Invoke(targetObj);
