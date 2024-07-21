@@ -165,6 +165,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   testDataCurrentMagic: 1000
   testDataCardNum: 20
+  fightSceneId: 1
 --- !u!1 &167132107
 GameObject:
   m_ObjectHideFlags: 0

@@ -21,7 +21,7 @@ public class GameFightLogic : BaseGameLogic
         //设置战斗场景视角
         CameraHandler.Instance.SetFightSceneCamera();
         //加载战斗场景
-        WorldHandler.Instance.LoadFightScene(1, (targetObj) =>
+        WorldHandler.Instance.LoadFightScene(fightData.fightSceneId, (targetObj) =>
         {        
             //加载核心（魔王）实例
             CreatureHandler.Instance.CreateDefCoreCreature((defCoreCreatureEntity) =>

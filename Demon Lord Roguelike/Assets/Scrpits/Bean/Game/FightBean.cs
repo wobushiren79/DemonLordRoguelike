@@ -11,6 +11,8 @@ public class FightBean
     public float gameSpeed = 1;//游戏速度
     public int gameStage = 0;//游戏波次
 
+    public int fightSceneId;//战斗场景Id;
+
     public float timeUpdateForAttCreate = 0;//更新时间-怪物生成
     public float timeUpdateTargetForAttCreate = 0;//更新目标时间-怪物生成
 

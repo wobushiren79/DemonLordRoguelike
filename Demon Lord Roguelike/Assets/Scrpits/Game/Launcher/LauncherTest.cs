@@ -11,7 +11,8 @@ public class LauncherTest : BaseLauncher
     public int testDataCurrentMagic = 1000;
     [Header("测试数据-卡片数量")]
     public int testDataCardNum = 20;
-
+    [Header("测试数据-测试场景")]
+    public int fightSceneId = 1;
     public override void Launch()
     {
         base.Launch();
@@ -91,6 +92,8 @@ public class LauncherTest : BaseLauncher
         fightData.fightDefCoreData = fightDefCoreData;
 
         fightData.InitDataForAttCreateStage(1);
+        fightData.fightSceneId = fightSceneId;
+
         return fightData;
     }
 }

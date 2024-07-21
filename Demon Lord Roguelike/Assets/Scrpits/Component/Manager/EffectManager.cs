@@ -4,5 +4,5 @@ using UnityEngine;
 
 public partial class EffectManager
 {
-    public EffectBase effectBlood;
+
 }
