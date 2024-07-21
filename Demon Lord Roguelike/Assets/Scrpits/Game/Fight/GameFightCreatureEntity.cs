@@ -1,10 +1,6 @@
 using DG.Tweening;
+using Spine;
 using Spine.Unity;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using Unity.VisualScripting;
-using UnityEditor.TestTools.CodeCoverage;
 using UnityEngine;
 
 public class GameFightCreatureEntity
@@ -14,8 +10,10 @@ public class GameFightCreatureEntity
     public FightCreatureBean fightCreatureData;
     public AIBaseEntity aiEntity;
     public CreatureStateEnum creatureState = CreatureStateEnum.None;
+    //spine数据
     public SkeletonAnimation creatureSkeletionAnimation;
-
+    //颜色动画-受到攻击
+    Tween animForUnderAttackColor;
     public GameFightCreatureEntity(GameObject creatureObj, FightCreatureBean fightCreatureData)
     {
         this.creatureId = $"Creature_{SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N)}";
@@ -45,11 +43,16 @@ public class GameFightCreatureEntity
     /// 播放动画
     /// </summary>
     /// <param name="animationCreatureState"></param>
-    public void PlayAnim(AnimationCreatureStateEnum animationCreatureState, bool isLoop)
+    public TrackEntry PlayAnim(AnimationCreatureStateEnum animationCreatureState, bool isLoop, float mixDuration = -1)
     {
         if (creatureSkeletionAnimation == null)
-            return;
-        creatureSkeletionAnimation.AnimationState.SetAnimation(0, animationCreatureState.GetEnumName(), isLoop);
+            return null;
+        var anim = creatureSkeletionAnimation.AnimationState.SetAnimation(0, animationCreatureState.GetEnumName(), isLoop);
+        if (anim != null && mixDuration != -1)
+        {
+            anim.MixDuration = mixDuration;
+        }
+        return anim;
     }
 
     /// <summary>
@@ -70,8 +73,13 @@ public class GameFightCreatureEntity
         if (creatureSkeletionAnimation == null)
             return;
         //再清除动画
-        creatureSkeletionAnimation.AnimationState.ClearTracks();
-        PlayAnim(AnimationCreatureStateEnum.Idle, true);
+        //creatureSkeletionAnimation.AnimationState.ClearTracks();
+        var trackEntry = PlayAnim(AnimationCreatureStateEnum.Idle, true, 0);
+       //清理数据
+        if (animForUnderAttackColor != null && animForUnderAttackColor.IsPlaying())
+        {
+            animForUnderAttackColor.Complete();
+        }
     }
 
     /// <summary>
@@ -95,8 +103,7 @@ public class GameFightCreatureEntity
     /// <summary>
     /// 收到攻击
     /// </summary>
-    /// <returns></returns>
-    public void UnderAttack(int attDamage, out int leftLife, out int leftArmor)
+    public void UnderAttack(int attDamage, Vector3 attDirection, out int leftLife, out int leftArmor)
     {
         //先扣除护甲
         leftArmor = fightCreatureData.ChangeArmor(-attDamage, out int outArmorChangeData);
@@ -113,8 +120,11 @@ public class GameFightCreatureEntity
             if (creatureSkeletionAnimation != null)
             {
                 //颤抖
-                creatureSkeletionAnimation.transform.DOShakePosition(0.06f, strength: 0.05f,vibrato:10,randomness:180);
+                creatureSkeletionAnimation.transform.DOShakePosition(0.06f, strength: 0.05f, vibrato: 10, randomness: 180);
                 //流血
+                EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), attDirection);
+                //颜色变化动画
+                AnimForUnderAttackColor();
             }
         }
         else
@@ -122,7 +132,39 @@ public class GameFightCreatureEntity
             FightHandler.Instance.CreateDropCoin(creatureObj.transform.position);
             //如果被攻击对象死亡 
             SetCreatureDead();
+            //流血
+            EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), attDirection);
+            //颜色变化动画
+            AnimForUnderAttackColor();
         }
+    }
+
+
+    /// <summary>
+    /// 颜色动画-受到攻击
+    /// </summary>
+    public void AnimForUnderAttackColor()
+    {        
+        // 定义初始颜色和目标颜色
+        Color startColor = Color.white;
+        Color endColor = Color.red;
+        // 创建颜色渐变动画
+        if (animForUnderAttackColor != null && animForUnderAttackColor.IsPlaying())
+        {
+            animForUnderAttackColor.Complete();
+        }
+        animForUnderAttackColor = DOTween
+            .To(() => startColor, x => startColor = x, endColor, 0.2f)
+            .OnUpdate(() => 
+            {
+                // 在每帧更新时执行的操作
+                creatureSkeletionAnimation.skeleton.SetColor(startColor);
+            })
+            .OnComplete(() => {
+
+                creatureSkeletionAnimation.skeleton.SetColor(Color.white);
+                animForUnderAttackColor = null;
+            });
     }
 
     /// <summary>

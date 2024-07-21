@@ -44,7 +44,7 @@ public class FightManager : BaseManager
         foreach (var itemData in dicPoolAttackModeObj)
         {
             var queue = itemData.Value;
-            for (int i = 0; i < queue.Count; i++)
+            while(queue.Count > 0)
             {
                 var targetData = queue.Dequeue();
                 Destroy(targetData.gameObject);
@@ -62,7 +62,7 @@ public class FightManager : BaseManager
         foreach (var itemData in dicPoolFightObj)
         {
             var queue = itemData.Value;
-            for (int i = 0; i < queue.Count; i++)
+            while(queue.Count > 0)
             {
                 var targetData = queue.Dequeue();
                 Destroy(targetData.gameObject);

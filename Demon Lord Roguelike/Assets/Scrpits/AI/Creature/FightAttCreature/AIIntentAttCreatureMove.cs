@@ -22,7 +22,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
             //检测是否靠近目标
             if (CheckIsCloseTarget())
             {
-                selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureDead);
+                selfAIEntity.selfAttCreatureEntity.SetCreatureDead();
                 return;
             }
         }

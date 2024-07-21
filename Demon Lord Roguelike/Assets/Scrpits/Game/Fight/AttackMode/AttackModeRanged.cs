@@ -25,7 +25,7 @@ public class AttackModeRanged : BaseAttackMode
             if (targetCreature != null && !targetCreature.IsDead())
             {
                 //扣血
-                targetCreature.UnderAttack(attackerDamage, out int leftLife, out int leftArmor);
+                targetCreature.UnderAttack(attackerDamage, attackDirection, out int leftLife, out int leftArmor);
                 //攻击完了就回收这个攻击
                 Destory();
                 return;

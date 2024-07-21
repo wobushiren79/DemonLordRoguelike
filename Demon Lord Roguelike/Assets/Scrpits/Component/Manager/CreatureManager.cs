@@ -131,7 +131,7 @@ public class CreatureManager : BaseManager
     {
         targetObj.transform.position = new Vector3(0,-100,0);
         //等待1帧防止 当前动作闪现问题
-        await new WaitForEndOfFrame();
+        await new WaitNextFrame();
         targetObj.SetActive(false);
         pool.Enqueue(targetObj);
     }
