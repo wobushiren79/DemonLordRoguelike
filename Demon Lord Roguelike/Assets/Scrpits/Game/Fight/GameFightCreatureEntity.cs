@@ -12,6 +12,8 @@ public class GameFightCreatureEntity
     public CreatureStateEnum creatureState = CreatureStateEnum.None;
     //spine数据
     public SkeletonAnimation creatureSkeletionAnimation;
+    //生命条显示
+    public SpriteRenderer creatureLifeShow;
     //颜色动画-受到攻击
     Tween animForUnderAttackColor;
     public GameFightCreatureEntity(GameObject creatureObj, FightCreatureBean fightCreatureData)
@@ -23,6 +25,10 @@ public class GameFightCreatureEntity
         this.creatureObj.name = creatureId;
         //获取骨骼数据
         creatureSkeletionAnimation = creatureObj.transform.Find("Spine")?.GetComponent<SkeletonAnimation>();
+        //获取生命值显示
+        creatureLifeShow = creatureObj.transform.Find("LifeShow")?.GetComponent<SpriteRenderer>();
+        creatureLifeShow?.ShowObj(false);
+
         ChangeSkin(fightCreatureData.creatureData);
     }
 
@@ -125,6 +131,12 @@ public class GameFightCreatureEntity
                 EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), attDirection);
                 //颜色变化动画
                 AnimForUnderAttackColor();
+                //展示血条
+                creatureLifeShow?.ShowObj(true);
+                //设置血条进度
+                creatureLifeShow?.material.SetFloat("_Progress_1", leftLife / (float)fightCreatureData.liftMax);
+                //设置护盾进度
+                creatureLifeShow?.material.SetFloat("_Progress_2", leftArmor / (float)fightCreatureData.armorMax);
             }
         }
         else
@@ -136,6 +148,8 @@ public class GameFightCreatureEntity
             EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), attDirection);
             //颜色变化动画
             AnimForUnderAttackColor();
+            //隐藏血条
+            creatureLifeShow?.ShowObj(false);
         }
     }
 

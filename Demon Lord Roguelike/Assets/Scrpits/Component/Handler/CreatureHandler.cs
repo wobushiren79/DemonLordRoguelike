@@ -121,6 +121,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         {
             var mainCamera = CameraHandler.Instance.manager.mainCamera;
             Transform rendererTF = targetObj.transform.Find("Spine");
+            Transform lifeShowTF = targetObj.transform.Find("LifeShow");
             if (rendererTF != null)
             {
                 rendererTF.eulerAngles = mainCamera.transform.eulerAngles;
@@ -137,6 +138,10 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
                     //    render.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                     //}
                 }
+            }
+            if (lifeShowTF != null)
+            {
+                lifeShowTF.eulerAngles = mainCamera.transform.eulerAngles;
             }
             actionForComplete?.Invoke(targetObj);
         });
