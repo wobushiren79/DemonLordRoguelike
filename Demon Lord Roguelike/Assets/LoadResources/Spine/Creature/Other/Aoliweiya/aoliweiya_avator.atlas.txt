@@ -1,0 +1,412 @@
+
+aoliweiya_avator.png
+size: 2025,1920
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aoliweiya_0
+  rotate: true
+  xy: 2, 30
+  size: 374, 435
+  orig: 374, 435
+  offset: 0, 0
+  index: -1
+aoliweiya_1
+  rotate: true
+  xy: 717, 734
+  size: 329, 503
+  orig: 329, 503
+  offset: 0, 0
+  index: -1
+aoliweiya_10
+  rotate: true
+  xy: 1484, 1770
+  size: 148, 193
+  orig: 148, 193
+  offset: 0, 0
+  index: -1
+aoliweiya_11
+  rotate: false
+  xy: 439, 2
+  size: 451, 402
+  orig: 451, 402
+  offset: 0, 0
+  index: -1
+aoliweiya_12
+  rotate: false
+  xy: 455, 1671
+  size: 279, 174
+  orig: 279, 174
+  offset: 0, 0
+  index: -1
+aoliweiya_13
+  rotate: true
+  xy: 2, 1121
+  size: 287, 434
+  orig: 287, 434
+  offset: 0, 0
+  index: -1
+aoliweiya_14
+  rotate: false
+  xy: 1688, 1245
+  size: 312, 289
+  orig: 312, 289
+  offset: 0, 0
+  index: -1
+aoliweiya_16
+  rotate: true
+  xy: 877, 1306
+  size: 228, 809
+  orig: 228, 809
+  offset: 0, 0
+  index: -1
+aoliweiya_18
+  rotate: true
+  xy: 495, 1356
+  size: 278, 380
+  orig: 278, 380
+  offset: 0, 0
+  index: -1
+aoliweiya_19
+  rotate: true
+  xy: 1222, 577
+  size: 338, 536
+  orig: 338, 536
+  offset: 0, 0
+  index: -1
+aoliweiya_2
+  rotate: false
+  xy: 1366, 1803
+  size: 116, 115
+  orig: 116, 115
+  offset: 0, 0
+  index: -1
+aoliweiya_20
+  rotate: true
+  xy: 2, 1410
+  size: 259, 491
+  orig: 259, 491
+  offset: 0, 0
+  index: -1
+aoliweiya_21
+  rotate: true
+  xy: 2, 746
+  size: 317, 713
+  orig: 317, 713
+  offset: 0, 0
+  index: -1
+aoliweiya_22
+  rotate: true
+  xy: 182, 1872
+  size: 46, 93
+  orig: 46, 93
+  offset: 0, 0
+  index: -1
+aoliweiya_23
+  rotate: true
+  xy: 1679, 1762
+  size: 156, 314
+  orig: 156, 314
+  offset: 0, 0
+  index: -1
+aoliweiya_24
+  rotate: true
+  xy: 425, 1847
+  size: 71, 328
+  orig: 71, 328
+  offset: 0, 0
+  index: -1
+aoliweiya_25
+  rotate: false
+  xy: 2, 1712
+  size: 213, 158
+  orig: 213, 158
+  offset: 0, 0
+  index: -1
+aoliweiya_26
+  rotate: false
+  xy: 938, 1829
+  size: 173, 89
+  orig: 173, 89
+  offset: 0, 0
+  index: -1
+aoliweiya_31
+  rotate: false
+  xy: 1329, 1536
+  size: 467, 224
+  orig: 467, 224
+  offset: 0, 0
+  index: -1
+aoliweiya_38
+  rotate: true
+  xy: 1113, 1826
+  size: 92, 251
+  orig: 92, 251
+  offset: 0, 0
+  index: -1
+aoliweiya_39
+  rotate: false
+  xy: 1016, 1567
+  size: 311, 257
+  orig: 311, 257
+  offset: 0, 0
+  index: -1
+aoliweiya_4
+  rotate: false
+  xy: 2, 1900
+  size: 142, 18
+  orig: 142, 18
+  offset: 0, 0
+  index: -1
+aoliweiya_41
+  rotate: true
+  xy: 217, 1675
+  size: 170, 236
+  orig: 170, 236
+  offset: 0, 0
+  index: -1
+aoliweiya_42
+  rotate: true
+  xy: 755, 1846
+  size: 72, 181
+  orig: 72, 181
+  offset: 0, 0
+  index: -1
+aoliweiya_43
+  rotate: true
+  xy: 1021, 234
+  size: 341, 456
+  orig: 341, 456
+  offset: 0, 0
+  index: -1
+aoliweiya_44
+  rotate: true
+  xy: 736, 1636
+  size: 191, 278
+  orig: 191, 278
+  offset: 0, 0
+  index: -1
+aoliweiya_45
+  rotate: false
+  xy: 1249, 1014
+  size: 293, 290
+  orig: 293, 290
+  offset: 0, 0
+  index: -1
+aoliweiya_47
+  rotate: false
+  xy: 2, 406
+  size: 1017, 326
+  orig: 1017, 326
+  offset: 0, 0
+  index: -1
+aoliweiya_5
+  rotate: false
+  xy: 146, 1889
+  size: 34, 29
+  orig: 34, 29
+  offset: 0, 0
+  index: -1
+aoliweiya_51
+  rotate: true
+  xy: 1479, 219
+  size: 356, 445
+  orig: 356, 445
+  offset: 0, 0
+  index: -1
+aoliweiya_6
+  rotate: false
+  xy: 277, 1854
+  size: 146, 64
+  orig: 146, 64
+  offset: 0, 0
+  index: -1
+aoliweiya_7
+  rotate: false
+  xy: 1544, 917
+  size: 479, 326
+  orig: 479, 326
+  offset: 0, 0
+  index: -1
+aoliweiya_9
+  rotate: true
+  xy: 438, 1065
+  size: 239, 809
+  orig: 239, 809
+  offset: 0, 0
+  index: -1
+
+aoliweiya_avator2.png
+size: 1941,1701
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aoliweiya_15
+  rotate: true
+  xy: 2, 800
+  size: 487, 640
+  orig: 487, 640
+  offset: 0, 0
+  index: -1
+aoliweiya_17
+  rotate: true
+  xy: 2, 113
+  size: 685, 582
+  orig: 685, 582
+  offset: 0, 0
+  index: -1
+aoliweiya_29
+  rotate: true
+  xy: 586, 2
+  size: 640, 1310
+  orig: 640, 1310
+  offset: 0, 0
+  index: -1
+aoliweiya_32
+  rotate: false
+  xy: 1285, 1214
+  size: 654, 485
+  orig: 654, 485
+  offset: 0, 0
+  index: -1
+aoliweiya_40
+  rotate: false
+  xy: 646, 1229
+  size: 637, 470
+  orig: 637, 470
+  offset: 0, 0
+  index: -1
+aoliweiya_49
+  rotate: false
+  xy: 644, 644
+  size: 929, 568
+  orig: 929, 568
+  offset: 0, 0
+  index: -1
+aoliweiya_8
+  rotate: true
+  xy: 2, 1289
+  size: 410, 642
+  orig: 410, 642
+  offset: 0, 0
+  index: -1
+
+aoliweiya_avator3.png
+size: 1602,1707
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aoliweiya_37
+  rotate: false
+  xy: 2, 2
+  size: 1598, 1703
+  orig: 1598, 1703
+  offset: 0, 0
+  index: -1
+
+aoliweiya_avator4.png
+size: 1624,1972
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aoliweiya_28
+  rotate: true
+  xy: 2, 1366
+  size: 604, 1620
+  orig: 604, 1620
+  offset: 0, 0
+  index: -1
+aoliweiya_30
+  rotate: true
+  xy: 2, 717
+  size: 647, 857
+  orig: 647, 857
+  offset: 0, 0
+  index: -1
+aoliweiya_34
+  rotate: false
+  xy: 2, 2
+  size: 1497, 710
+  orig: 1497, 710
+  offset: 0, 0
+  index: -1
+aoliweiya_36
+  rotate: true
+  xy: 861, 714
+  size: 650, 693
+  orig: 650, 693
+  offset: 0, 0
+  index: -1
+
+aoliweiya_avator5.png
+size: 1291,1290
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aoliweiya_52
+  rotate: false
+  xy: 2, 2
+  size: 1287, 1286
+  orig: 1287, 1286
+  offset: 0, 0
+  index: -1
+
+aoliweiya_avator6.png
+size: 1616,1611
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aoliweiya_27
+  rotate: true
+  xy: 2, 2
+  size: 803, 1580
+  orig: 803, 1580
+  offset: 0, 0
+  index: -1
+aoliweiya_50
+  rotate: false
+  xy: 2, 807
+  size: 1612, 802
+  orig: 1612, 802
+  offset: 0, 0
+  index: -1
+
+aoliweiya_avator7.png
+size: 1842,1584
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aoliweiya_33
+  rotate: false
+  xy: 2, 2
+  size: 1527, 788
+  orig: 1527, 788
+  offset: 0, 0
+  index: -1
+aoliweiya_46
+  rotate: false
+  xy: 2, 807
+  size: 863, 775
+  orig: 863, 775
+  offset: 0, 0
+  index: -1
+aoliweiya_48
+  rotate: false
+  xy: 867, 792
+  size: 973, 790
+  orig: 973, 790
+  offset: 0, 0
+  index: -1
+
+aoliweiya_avator8.png
+size: 1156,1111
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aoliweiya_35
+  rotate: false
+  xy: 2, 2
+  size: 1152, 1107
+  orig: 1152, 1107
+  offset: 0, 0
+  index: -1

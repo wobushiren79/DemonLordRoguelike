@@ -5,6 +5,8 @@ using UnityEngine;
 public static class EventsInfo
 {
     public static string UIViewCreatureCardItem_SelectKeep = "UIViewCreatureCardItem_SelectKeep";//¿¨Æ¬±ÜÈÃ
+    public static string UIViewCreatureCardItem_ShowDetails = "UIViewCreatureCardItem_ShowDetails";//Õ¹Ê¾¿¨Æ¬ÏêÇé
+    public static string UIViewCreatureCardItem_HideDetails = "UIViewCreatureCardItem_HideDetails";//Òþ²Ø¿¨Æ¬ÏêÇé
 
     public static string GameFightLogic_SelectCard = "GameFightLogic_SelectCard";//¿¨Æ¬Ñ¡Ôñ
     public static string GameFightLogic_UnSelectCard = "GameFightLogic_UnSelectCard";//È¡Ïû¿¨Æ¬Ñ¡Ôñ

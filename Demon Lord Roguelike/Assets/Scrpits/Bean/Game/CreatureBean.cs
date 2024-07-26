@@ -9,6 +9,10 @@ public class CreatureBean
 {
     //ID
     public long id;
+    //生物名字
+    public string creatureName;
+    //等级
+    public int level;
     //所有的皮肤数据
     public List<CreatureSkinBean> listSkinData = new List<CreatureSkinBean>();
 

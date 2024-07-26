@@ -131,7 +131,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
                     var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
                     var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
                     SpineHandler.Instance.AddSkeletonAnimation(rendererTF.gameObject, creatureModel.res_name);
-
+                    rendererTF.transform.localScale = Vector3.one * creatureModel.size_spine;
                     //var render = rendererTF.GetComponent<MeshRenderer>();
                     //if (render != null)
                     //{
@@ -142,6 +142,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             if (lifeShowTF != null)
             {
                 lifeShowTF.eulerAngles = mainCamera.transform.eulerAngles;
+                lifeShowTF.ShowObj(false);
             }
             actionForComplete?.Invoke(targetObj);
         });

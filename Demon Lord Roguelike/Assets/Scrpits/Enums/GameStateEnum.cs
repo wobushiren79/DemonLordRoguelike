@@ -26,6 +26,7 @@ public enum AnimationCreatureStateEnum
     Idle,
     Walk,
     Attack,
+    Attack2,
     Dead,
 }
 
@@ -36,4 +37,11 @@ public enum GameFightPrefabStateEnum
     None = 0,
     DropCheck = 1,//拾取检测中，
     Droping = 2,//拾取中
+}
+
+public enum TestSceneTypeEnum
+{
+    None = 0,
+    FightSceneTest = 1,//战斗场景测试
+    CardTest = 2,//卡片效果测试
 }

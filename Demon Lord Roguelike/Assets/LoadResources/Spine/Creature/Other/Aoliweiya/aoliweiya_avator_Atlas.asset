@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: aoliweiya_avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: eeb02dc086dd6fb4e9c2e506e23f142c, type: 3}
+  materials:
+  - {fileID: 2100000, guid: ca0c0e9fb1c429d4fbb5aff8de595e99, type: 2}
+  - {fileID: 2100000, guid: fd478ef6d386927469b7b0af8e098cae, type: 2}
+  - {fileID: 2100000, guid: 85647bbb9e2679044bb4b79be8adede6, type: 2}
+  - {fileID: 2100000, guid: 8d2d9bff5fa67e34c92de76d95b55838, type: 2}
+  - {fileID: 2100000, guid: 684ae2bedef2c0f4aa0716eb8506d0b1, type: 2}
+  - {fileID: 2100000, guid: e73daab7387b3924e9d5c320904f7ea0, type: 2}
+  - {fileID: 2100000, guid: 93b2c1536a9307e419a7f6a31298667f, type: 2}
+  - {fileID: 2100000, guid: 0d694b8c632aa68439387f53a3d12183, type: 2}

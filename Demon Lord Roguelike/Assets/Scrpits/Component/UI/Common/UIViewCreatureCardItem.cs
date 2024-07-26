@@ -1,11 +1,6 @@
 using DG.Tweening;
-using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, IPointerExitHandler
@@ -50,6 +45,19 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
         maskUI = transform.GetComponent<MaskUIView>();
     }
 
+    public void Update()
+    {
+        if (timeUpdateForShowDetails >= 0)
+        {
+            timeUpdateForShowDetails += Time.deltaTime;
+            if (timeUpdateForShowDetails >= timeMaxForShowDetails)
+            {
+                timeUpdateForShowDetails = -1;
+                TriggerEvent(EventsInfo.UIViewCreatureCardItem_ShowDetails, fightCreatureData);
+            }
+        }
+    }
+
     /// <summary>
     /// 设置数据
     /// </summary>
@@ -68,6 +76,69 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
         RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
         RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
         RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_RefreshCard, EventForGameFightLogicRefreshCard);
+
+        SetCardIcon();
+
+        int attDamage = fightCreatureData.GetAttDamage();
+        int lifeMax = fightCreatureData.liftMax;
+        SetAttribute(attDamage, lifeMax);
+        SetName(fightCreatureData.creatureData.creatureName);
+        SetLevel(fightCreatureData.creatureData.level);
+    }
+
+    /// <summary>
+    /// 设置名字
+    /// </summary>
+    public void SetName(string name)
+    {
+        ui_Name.text = $"{name}";
+    }
+
+    /// <summary>
+    /// 设置等级
+    /// </summary>
+    public void SetLevel(int level)
+    {
+        ui_Level.text = $"{level}";
+    }
+
+    /// <summary>
+    /// 设置属性
+    /// </summary>
+    public void SetAttribute(int attDamage, int lifeMax)
+    {
+        ui_AttributeItemText_Att.text = $"{attDamage}";
+        ui_AttributeItemText_Life.text = $"{lifeMax}";
+    }
+
+    /// <summary>
+    /// 设置卡片图像
+    /// </summary>
+    public void SetCardIcon()
+    {
+        var creatureInfo = fightCreatureData.GetCreatureInfo();
+        var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
+        //设置骨骼数据
+        SpineHandler.Instance.SetSkeletonDataAsset(ui_Icon, creatureModel.res_name);
+        string[] skinArray = fightCreatureData.creatureData.GetSkinArray();
+        //修改皮肤
+        SpineHandler.Instance.ChangeSkeletonSkin(ui_Icon.Skeleton, skinArray);
+
+        ui_Icon.ShowObj(true);
+        //设置UI大小和坐标
+        if (creatureModel.ui_data_s.IsNull())
+        {
+            ui_Icon.rectTransform.anchoredPosition = Vector2.zero;
+            ui_Icon.rectTransform.localScale = Vector3.one;
+        }
+        else
+        {
+            string[] uiDataStr = creatureModel.ui_data_s.Split(';');
+            ui_Icon.rectTransform.localScale = Vector3.one * float.Parse(uiDataStr[0]);
+
+            float[] uiDataPosStr = uiDataStr[1].SplitForArrayFloat(',');
+            ui_Icon.rectTransform.anchoredPosition = new Vector2(uiDataPosStr[0], uiDataPosStr[1]);
+        }
     }
 
     /// <summary>
@@ -111,13 +182,17 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     }
 
     #region 点击触发
+
+    protected float timeUpdateForShowDetails = -1;
+    protected float timeMaxForShowDetails = 1;
     /// <summary>
     /// 触摸-进入
     /// </summary>
     /// <param name="eventData"></param>
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {
-       //LogUtil.Log($"OnPointerEnter_{originalSibling}");
+        //LogUtil.Log($"OnPointerEnter_{originalSibling}");
+        timeUpdateForShowDetails = 0;
         KillAnimForSelect();
         animForSelectStart = rectTransform
                 .DOScale(new Vector3(animCardSelectStartScale, animCardSelectStartScale, animCardSelectStartScale), animCardSelectStartTime)
@@ -135,6 +210,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
     {
         //LogUtil.Log($"OnPointerExit_{originalSibling}");
+        timeUpdateForShowDetails = -1;
         KillAnimForSelect();
         animForSelectEnd = rectTransform
                 .DOScale(Vector3.one, animCardSelectEndTime)
@@ -143,8 +219,12 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
         transform.SetSiblingIndex(originalSibling);
         //触发避让事件
         TriggerEvent(EventsInfo.UIViewCreatureCardItem_SelectKeep, originalSibling, originalCardPos, false);
+        //隐藏卡片详情
+        TriggerEvent(EventsInfo.UIViewCreatureCardItem_HideDetails, fightCreatureData);
     }
     #endregion
+
+
 
     #region 事件响应
     /// <summary>
@@ -269,7 +349,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
         if (animForSelectStart != null && animForSelectStart.IsPlaying())
             animForSelectStart.Kill();
         if (animForSelectEnd != null && animForSelectEnd.IsPlaying())
-            animForSelectEnd.Kill();       
+            animForSelectEnd.Kill();
     }
     #endregion
 }

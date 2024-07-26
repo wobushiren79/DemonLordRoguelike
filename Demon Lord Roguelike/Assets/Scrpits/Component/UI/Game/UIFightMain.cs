@@ -15,6 +15,7 @@ public partial class UIFightMain : BaseUIComponent
     {
         base.Awake();
         ui_CreatureCardItem.gameObject.SetActive(false);
+        ui_ViewCreatureCardDetails.gameObject.SetActive(false);
         ui_UIViewFightMainAttCreateProgress.gameObject.SetActive(false);
     }
 
@@ -32,6 +33,9 @@ public partial class UIFightMain : BaseUIComponent
         RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_SelectCard, EventForGameFightLogicSelectCard);
         RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
         RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+
+        RegisterEvent<FightCreatureBean>(EventsInfo.UIViewCreatureCardItem_ShowDetails, EventForShowCardDetails);
+        RegisterEvent<FightCreatureBean>(EventsInfo.UIViewCreatureCardItem_HideDetails, EventForHideCardDetails);
     }
 
     /// <summary>
@@ -180,7 +184,7 @@ public partial class UIFightMain : BaseUIComponent
         }
 
         float posOffset = cardW * currentIndex - (cardW * maxIndex / 2) + (cardW / 2);
-        return new Vector2(posOffset, -100);
+        return new Vector2(posOffset, -80);
     }
 
     /// <summary>
@@ -218,7 +222,7 @@ public partial class UIFightMain : BaseUIComponent
     /// <param name="targetData"></param>
     public void EventForGameFightLogicSelectCard(FightCreatureBean targetData)
     {
-
+        EventForHideCardDetails(targetData);
     }
 
     /// <summary>
@@ -235,6 +239,21 @@ public partial class UIFightMain : BaseUIComponent
     public void EventForGameFightLogicPutCard(FightCreatureBean targetData)
     {
         RefreshUIData();
+    }
+
+    public void EventForShowCardDetails(FightCreatureBean targetData)
+    {
+        var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        //没有选中卡片时才显示
+        if (gameFightLogic.selectCreature != null)
+            return;
+        ui_ViewCreatureCardDetails.ShowObj(true);
+        ui_ViewCreatureCardDetails.SetData(targetData);
+    }
+
+    public void EventForHideCardDetails(FightCreatureBean targetData)
+    {
+        ui_ViewCreatureCardDetails.ShowObj(false);
     }
     #endregion
 }

@@ -50,6 +50,9 @@ public class CreatureManager : BaseManager
 
                 //ÐÞ¸Ä²ÄÖÊÇòÑÕÉ«
                 skeletonAnimationSelectPreview.skeleton.A = 0.65f;
+
+                Transform spineTF = objCreatureSelectPreview.transform.Find("Spine");
+                spineTF.transform.localScale = Vector3.one * creatureModel.size_spine;
             }
         }
         return objCreatureSelectPreview;

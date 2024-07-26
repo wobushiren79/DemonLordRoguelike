@@ -48,6 +48,10 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public int model_id;
 	/// <summary>
+	///卡片背景
+	/// </summary>
+	public string card_scene;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

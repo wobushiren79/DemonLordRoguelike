@@ -1,0 +1,314 @@
+
+aoliweiya.png
+size: 1000,269
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+accessory
+  rotate: true
+  xy: 270, 42
+  size: 59, 78
+  orig: 59, 78
+  offset: 0, 0
+  index: -1
+bang1
+  rotate: true
+  xy: 158, 2
+  size: 31, 61
+  orig: 31, 61
+  offset: 0, 0
+  index: -1
+bang2
+  rotate: true
+  xy: 258, 3
+  size: 30, 59
+  orig: 30, 59
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 889, 123
+  size: 54, 46
+  orig: 54, 46
+  offset: 0, 0
+  index: -1
+crown
+  rotate: true
+  xy: 352, 115
+  size: 152, 115
+  orig: 152, 115
+  offset: 0, 0
+  index: -1
+earrings1
+  rotate: false
+  xy: 773, 29
+  size: 67, 105
+  orig: 67, 105
+  offset: 0, 0
+  index: -1
+earrings2
+  rotate: false
+  xy: 469, 5
+  size: 41, 108
+  orig: 41, 108
+  offset: 0, 0
+  index: -1
+eye1
+  rotate: true
+  xy: 842, 43
+  size: 91, 45
+  orig: 91, 45
+  offset: 0, 0
+  index: -1
+eye2
+  rotate: false
+  xy: 903, 4
+  size: 89, 42
+  orig: 89, 42
+  offset: 0, 0
+  index: -1
+eye3
+  rotate: true
+  xy: 643, 129
+  size: 138, 98
+  orig: 138, 98
+  offset: 0, 0
+  index: -1
+eye4
+  rotate: false
+  xy: 798, 136
+  size: 89, 33
+  orig: 89, 33
+  offset: 0, 0
+  index: -1
+eye5
+  rotate: false
+  xy: 903, 79
+  size: 93, 42
+  orig: 93, 42
+  offset: 0, 0
+  index: -1
+face
+  rotate: true
+  xy: 506, 125
+  size: 142, 135
+  orig: 142, 135
+  offset: 0, 0
+  index: -1
+forearm1
+  rotate: true
+  xy: 221, 2
+  size: 31, 35
+  orig: 31, 35
+  offset: 0, 0
+  index: -1
+forearm2
+  rotate: false
+  xy: 773, 4
+  size: 27, 23
+  orig: 27, 23
+  offset: 0, 0
+  index: -1
+hair1
+  rotate: false
+  xy: 512, 2
+  size: 87, 121
+  orig: 87, 121
+  offset: 0, 0
+  index: -1
+hair2
+  rotate: false
+  xy: 695, 22
+  size: 76, 105
+  orig: 76, 105
+  offset: 0, 0
+  index: -1
+hair3
+  rotate: true
+  xy: 945, 128
+  size: 92, 46
+  orig: 92, 46
+  offset: 0, 0
+  index: -1
+hair4
+  rotate: false
+  xy: 158, 35
+  size: 110, 232
+  orig: 110, 232
+  offset: 0, 0
+  index: -1
+hair5
+  rotate: false
+  xy: 317, 105
+  size: 33, 162
+  orig: 33, 162
+  offset: 0, 0
+  index: -1
+hair6
+  rotate: false
+  xy: 270, 103
+  size: 45, 164
+  orig: 45, 164
+  offset: 0, 0
+  index: -1
+hair7
+  rotate: false
+  xy: 469, 115
+  size: 35, 152
+  orig: 35, 152
+  offset: 0, 0
+  index: -1
+hide hair
+  rotate: false
+  xy: 2, 2
+  size: 154, 265
+  orig: 154, 265
+  offset: 0, 0
+  index: -1
+leg1
+  rotate: true
+  xy: 945, 222
+  size: 45, 53
+  orig: 45, 53
+  offset: 0, 0
+  index: -1
+leg2
+  rotate: true
+  xy: 889, 48
+  size: 29, 56
+  orig: 29, 56
+  offset: 0, 0
+  index: -1
+main arm1
+  rotate: true
+  xy: 695, 3
+  size: 17, 41
+  orig: 17, 41
+  offset: 0, 0
+  index: -1
+main arm2
+  rotate: false
+  xy: 373, 6
+  size: 22, 36
+  orig: 22, 36
+  offset: 0, 0
+  index: -1
+month1
+  rotate: false
+  xy: 270, 36
+  size: 12, 4
+  orig: 12, 4
+  offset: 0, 0
+  index: -1
+month2
+  rotate: false
+  xy: 367, 107
+  size: 16, 6
+  orig: 16, 6
+  offset: 0, 0
+  index: -1
+month3
+  rotate: false
+  xy: 601, 2
+  size: 23, 14
+  orig: 23, 14
+  offset: 0, 0
+  index: -1
+month4
+  rotate: false
+  xy: 352, 105
+  size: 13, 8
+  orig: 13, 8
+  offset: 0, 0
+  index: -1
+month5
+  rotate: false
+  xy: 284, 37
+  size: 7, 3
+  orig: 7, 3
+  offset: 0, 0
+  index: -1
+palm1
+  rotate: true
+  xy: 649, 4
+  size: 12, 26
+  orig: 12, 26
+  offset: 0, 0
+  index: -1
+palm2
+  rotate: true
+  xy: 626, 2
+  size: 14, 21
+  orig: 14, 21
+  offset: 0, 0
+  index: -1
+ribbon1
+  rotate: false
+  xy: 743, 136
+  size: 53, 131
+  orig: 53, 131
+  offset: 0, 0
+  index: -1
+ribbon2
+  rotate: false
+  xy: 397, 2
+  size: 26, 111
+  orig: 26, 111
+  offset: 0, 0
+  index: -1
+ribbon3
+  rotate: false
+  xy: 885, 171
+  size: 58, 96
+  orig: 58, 96
+  offset: 0, 0
+  index: -1
+ribbon4
+  rotate: false
+  xy: 425, 4
+  size: 42, 109
+  orig: 42, 109
+  offset: 0, 0
+  index: -1
+skirt1
+  rotate: true
+  xy: 601, 18
+  size: 105, 92
+  orig: 105, 92
+  offset: 0, 0
+  index: -1
+skirt2
+  rotate: true
+  xy: 798, 171
+  size: 96, 85
+  orig: 96, 85
+  offset: 0, 0
+  index: -1
+sleeve1
+  rotate: true
+  xy: 319, 4
+  size: 36, 52
+  orig: 36, 52
+  offset: 0, 0
+  index: -1
+sleeve2
+  rotate: false
+  xy: 947, 48
+  size: 27, 29
+  orig: 27, 29
+  offset: 0, 0
+  index: -1
+thigh1
+  rotate: false
+  xy: 350, 44
+  size: 39, 59
+  orig: 39, 59
+  offset: 0, 0
+  index: -1
+thigh2
+  rotate: true
+  xy: 842, 9
+  size: 32, 59
+  orig: 32, 59
+  offset: 0, 0
+  index: -1

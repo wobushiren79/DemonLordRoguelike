@@ -17,5 +17,7 @@ public partial class UIFightMain
 
     public TextMeshProUGUI ui_CoinText;
 
+    public UIViewCreatureCardDetails ui_ViewCreatureCardDetails;
+
 
 }

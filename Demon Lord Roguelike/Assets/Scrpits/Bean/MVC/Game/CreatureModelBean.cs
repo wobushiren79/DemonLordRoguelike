@@ -8,6 +8,22 @@ public partial class CreatureModelBean : BaseBean
 	/// </summary>
 	public string res_name;
 	/// <summary>
+	///spine大小缩放
+	/// </summary>
+	public float size_spine;
+	/// <summary>
+	///ui展示spine
+	/// </summary>
+	public string ui_show_spine;
+	/// <summary>
+	///ui-小卡-大小坐标
+	/// </summary>
+	public string ui_data_s;
+	/// <summary>
+	///ui-大卡-大小坐标
+	/// </summary>
+	public string ui_data_b;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

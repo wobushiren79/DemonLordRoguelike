@@ -25,6 +25,23 @@ public class FightCreatureBean
     }
 
     /// <summary>
+    /// 添加所有皮肤 用于测试
+    /// </summary>
+    public void AddAllSkin()
+    {
+        var allData = CreatureModelInfoCfg.GetAllData();
+        var creatureInfo = GetCreatureInfo();
+        foreach (var itemData in allData)
+        {
+            var itemCreatureModelInfo = itemData.Value;
+            if (itemCreatureModelInfo.model_id == creatureInfo.model_id)
+            {
+                creatureData.AddSkin((int)itemCreatureModelInfo.id);
+            }
+        }
+    }
+
+    /// <summary>
     /// 重置数据
     /// </summary>
     public void ResetData()
