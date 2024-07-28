@@ -9,6 +9,7 @@ public class GameTestEditor : Editor
     public int testDataCurrentMagic = 1000;
     public int testDataCardNum = 20;
     public int fightSceneId = 1;
+    public int fightCardId= 1;
 
     public int creatureId = 0;
     public int creatureModelId = 0;
@@ -26,9 +27,9 @@ public class GameTestEditor : Editor
         {
             UIForCardTest();
         }
-        else
+        else if (launcher.testSceneType == TestSceneTypeEnum.Base)
         {
-
+            UIForFightBase();
         }
     }
 
@@ -37,7 +38,7 @@ public class GameTestEditor : Editor
     /// </summary>
     public void UIForCardTest()
     {
-        if (GUILayout.Button("显示卡片"))
+        if (GUILayout.Button("显示卡片") && Application.isPlaying)
         {
             FightCreatureBean fightCreature = new FightCreatureBean(creatureId);
             fightCreature.AddAllSkin();
@@ -59,7 +60,7 @@ public class GameTestEditor : Editor
     /// </summary>
     public void UIForFightSceneTest()
     {
-        if (GUILayout.Button("开始"))
+        if (GUILayout.Button("开始") && Application.isPlaying)
         {
             FightBean fightData = GetTestData();
             launcher.StartForFightSceneTest(fightData);
@@ -77,6 +78,28 @@ public class GameTestEditor : Editor
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("测试数据-测试场景");
         fightSceneId =  EditorGUILayout.IntField(fightSceneId);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("测试数据-卡片生物ID");
+        fightCardId = EditorGUILayout.IntField(fightCardId);
+        EditorGUILayout.EndHorizontal();
+    }
+
+    /// <summary>
+    /// 基地测试UI
+    /// </summary>
+    public void UIForFightBase()
+    {
+        if (GUILayout.Button("开始") && Application.isPlaying)
+        {
+            FightCreatureBean itemData = new FightCreatureBean(fightCardId);
+            itemData.AddAllSkin();
+            launcher.StartForBaseTest(itemData);
+        }
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("生物ID");
+        fightCardId = EditorGUILayout.IntField(fightCardId);
         EditorGUILayout.EndHorizontal();
     }
 
@@ -129,7 +152,8 @@ public class GameTestEditor : Editor
         List<FightCreatureBean> listCreatureData = new List<FightCreatureBean>();
         for (int i = 0; i < testDataCardNum; i++)
         {
-            FightCreatureBean itemData = new FightCreatureBean(999998);
+            FightCreatureBean itemData = new FightCreatureBean(fightCardId);
+            itemData.AddAllSkin();
             //itemData.creatureData.AddSkin(1000001);
             //itemData.creatureData.AddSkin(1010010);
             listCreatureData.Add(itemData); ;

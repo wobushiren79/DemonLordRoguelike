@@ -6,8 +6,12 @@ using UnityEngine;
 public class WorldManager : BaseManager
 {
     //战斗场景
-    public Dictionary<string, GameObject> dicFightScene = new Dictionary<string, GameObject>();
+    public Dictionary<string, GameObject> dicScene = new Dictionary<string, GameObject>();
 
+
+    /// <summary>
+    /// 获取战斗场景
+    /// </summary>
     public void GetFightScene(int fightSceneId, Action<GameObject> actionForComplete)
     {
         FightSceneBean fightSceneData = FightSceneCfg.GetItemData(fightSceneId);
@@ -17,7 +21,19 @@ public class WorldManager : BaseManager
             return;
         }
         string dataPath = $"{PathInfo.FightScenePrefabPath}/{fightSceneData.name_res}";
-        GetModelForAddressables(dicFightScene, dataPath, (target) =>
+        GetModelForAddressables(dicScene, dataPath, (target) =>
+        {
+            actionForComplete?.Invoke(target);
+        });
+    }
+
+    /// <summary>
+    /// 获取基地场景
+    /// </summary>
+    public void GetBaseScene(Action<GameObject> actionForComplete)
+    {
+        string dataPath = $"{PathInfo.CommonPrefabPath}/BaseScene.prefab";
+        GetModelForAddressables(dicScene, dataPath, (target) =>
         {
             actionForComplete?.Invoke(target);
         });

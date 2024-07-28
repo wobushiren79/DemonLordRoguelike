@@ -25,9 +25,21 @@ public enum AnimationCreatureStateEnum
 {
     Idle,
     Walk,
+    Walk2,
+    Walk3,
     Attack,
     Attack2,
+    Attack3,
+    Attack4,
+    Attack5,
+    Attack6,
+    Attack7,
     Dead,
+    NearDead,
+    Hit,//ÊÜµ½¹¥»÷
+    Jump,//ÌøÔ¾
+    Run,//Åİ
+    Dizzy,//ÔÎÑ£
 }
 
 
@@ -44,4 +56,11 @@ public enum TestSceneTypeEnum
     None = 0,
     FightSceneTest = 1,//Õ½¶·³¡¾°²âÊÔ
     CardTest = 2,//¿¨Æ¬Ğ§¹û²âÊÔ
+    Base = 3,//»ùµØ²âÊÔ
+}
+
+public enum CinemachineCameraEnum
+{
+    Base,
+    Fight,
 }

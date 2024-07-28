@@ -1,0 +1,706 @@
+
+Asitelinna_Avator.png
+size: 2034,1931
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+angry
+  rotate: false
+  xy: 1394, 815
+  size: 330, 260
+  orig: 330, 260
+  offset: 0, 0
+  index: -1
+eye
+  rotate: false
+  xy: 135, 1839
+  size: 62, 61
+  orig: 62, 61
+  offset: 0, 0
+  index: -1
+eye1
+  rotate: true
+  xy: 1497, 1881
+  size: 48, 50
+  orig: 48, 50
+  offset: 0, 0
+  index: -1
+eye2
+  rotate: true
+  xy: 1446, 1882
+  size: 47, 49
+  orig: 47, 49
+  offset: 0, 0
+  index: -1
+eyebrow1
+  rotate: false
+  xy: 677, 1806
+  size: 305, 81
+  orig: 305, 81
+  offset: 0, 0
+  index: -1
+eyebrow2
+  rotate: false
+  xy: 1549, 1881
+  size: 294, 48
+  orig: 294, 48
+  offset: 0, 0
+  index: -1
+eyebrow3
+  rotate: false
+  xy: 665, 1893
+  size: 304, 36
+  orig: 304, 36
+  offset: 0, 0
+  index: -1
+eyebrow4
+  rotate: false
+  xy: 1036, 1887
+  size: 292, 42
+  orig: 292, 42
+  offset: 0, 0
+  index: -1
+happy
+  rotate: false
+  xy: 1417, 1077
+  size: 332, 245
+  orig: 332, 245
+  offset: 0, 0
+  index: -1
+month1
+  rotate: false
+  xy: 971, 1889
+  size: 63, 40
+  orig: 63, 40
+  offset: 0, 0
+  index: -1
+month2
+  rotate: false
+  xy: 1962, 1873
+  size: 69, 56
+  orig: 69, 56
+  offset: 0, 0
+  index: -1
+month3
+  rotate: false
+  xy: 30, 1908
+  size: 61, 21
+  orig: 61, 21
+  offset: 0, 0
+  index: -1
+month4
+  rotate: false
+  xy: 1330, 1887
+  size: 64, 42
+  orig: 64, 42
+  offset: 0, 0
+  index: -1
+sad
+  rotate: false
+  xy: 482, 1224
+  size: 333, 224
+  orig: 333, 224
+  offset: 0, 0
+  index: -1
+shijianxiaojj_0
+  rotate: true
+  xy: 2, 1011
+  size: 240, 430
+  orig: 240, 430
+  offset: 0, 0
+  index: -1
+shijianxiaojj_1
+  rotate: false
+  xy: 1584, 1759
+  size: 132, 120
+  orig: 132, 120
+  offset: 0, 0
+  index: -1
+shijianxiaojj_10
+  rotate: false
+  xy: 876, 289
+  size: 347, 315
+  orig: 347, 315
+  offset: 0, 0
+  index: -1
+shijianxiaojj_11
+  rotate: true
+  xy: 817, 1198
+  size: 234, 316
+  orig: 234, 316
+  offset: 0, 0
+  index: -1
+shijianxiaojj_12
+  rotate: false
+  xy: 1225, 132
+  size: 350, 405
+  orig: 350, 405
+  offset: 0, 0
+  index: -1
+shijianxiaojj_13
+  rotate: true
+  xy: 586, 1450
+  size: 208, 303
+  orig: 208, 303
+  offset: 0, 0
+  index: -1
+shijianxiaojj_14
+  rotate: false
+  xy: 884, 606
+  size: 385, 252
+  orig: 385, 252
+  offset: 0, 0
+  index: -1
+shijianxiaojj_15
+  rotate: true
+  xy: 2, 192
+  size: 283, 425
+  orig: 283, 425
+  offset: 0, 0
+  index: -1
+shijianxiaojj_16
+  rotate: true
+  xy: 984, 1794
+  size: 91, 101
+  orig: 91, 101
+  offset: 0, 0
+  index: -1
+shijianxiaojj_17
+  rotate: true
+  xy: 1484, 1543
+  size: 193, 412
+  orig: 193, 412
+  offset: 0, 0
+  index: -1
+shijianxiaojj_18
+  rotate: true
+  xy: 1209, 1611
+  size: 166, 273
+  orig: 166, 273
+  offset: 0, 0
+  index: -1
+shijianxiaojj_19
+  rotate: true
+  xy: 1845, 1878
+  size: 51, 115
+  orig: 51, 115
+  offset: 0, 0
+  index: -1
+shijianxiaojj_2
+  rotate: true
+  xy: 2, 487
+  size: 276, 352
+  orig: 276, 352
+  offset: 0, 0
+  index: -1
+shijianxiaojj_20
+  rotate: false
+  xy: 507, 1897
+  size: 53, 32
+  orig: 53, 32
+  offset: 0, 0
+  index: -1
+shijianxiaojj_21
+  rotate: false
+  xy: 1212, 1792
+  size: 139, 93
+  orig: 139, 93
+  offset: 0, 0
+  index: -1
+shijianxiaojj_22
+  rotate: false
+  xy: 67, 1840
+  size: 66, 60
+  orig: 66, 60
+  offset: 0, 0
+  index: -1
+shijianxiaojj_23
+  rotate: false
+  xy: 199, 1838
+  size: 103, 62
+  orig: 103, 62
+  offset: 0, 0
+  index: -1
+shijianxiaojj_24
+  rotate: false
+  xy: 393, 1900
+  size: 53, 29
+  orig: 53, 29
+  offset: 0, 0
+  index: -1
+shijianxiaojj_25
+  rotate: false
+  xy: 1087, 1793
+  size: 123, 92
+  orig: 123, 92
+  offset: 0, 0
+  index: -1
+shijianxiaojj_26
+  rotate: false
+  xy: 2, 1847
+  size: 63, 59
+  orig: 63, 59
+  offset: 0, 0
+  index: -1
+shijianxiaojj_27
+  rotate: false
+  xy: 304, 1829
+  size: 108, 69
+  orig: 108, 69
+  offset: 0, 0
+  index: -1
+shijianxiaojj_28
+  rotate: true
+  xy: 429, 96
+  size: 379, 407
+  orig: 379, 407
+  offset: 0, 0
+  index: -1
+shijianxiaojj_29
+  rotate: false
+  xy: 448, 1899
+  size: 57, 30
+  orig: 57, 30
+  offset: 0, 0
+  index: -1
+shijianxiaojj_3
+  rotate: false
+  xy: 2, 1702
+  size: 352, 125
+  orig: 352, 125
+  offset: 0, 0
+  index: -1
+shijianxiaojj_30
+  rotate: false
+  xy: 1396, 1886
+  size: 48, 43
+  orig: 48, 43
+  offset: 0, 0
+  index: -1
+shijianxiaojj_31
+  rotate: false
+  xy: 538, 1815
+  size: 137, 76
+  orig: 137, 76
+  offset: 0, 0
+  index: -1
+shijianxiaojj_32
+  rotate: false
+  xy: 414, 1823
+  size: 122, 72
+  orig: 122, 72
+  offset: 0, 0
+  index: -1
+shijianxiaojj_33
+  rotate: true
+  xy: 1577, 2
+  size: 384, 431
+  orig: 384, 431
+  offset: 0, 0
+  index: -1
+shijianxiaojj_34
+  rotate: false
+  xy: 922, 1649
+  size: 285, 142
+  orig: 285, 142
+  offset: 0, 0
+  index: -1
+shijianxiaojj_36
+  rotate: false
+  xy: 1193, 1368
+  size: 249, 241
+  orig: 249, 241
+  offset: 0, 0
+  index: -1
+shijianxiaojj_37
+  rotate: false
+  xy: 434, 977
+  size: 622, 219
+  orig: 622, 219
+  offset: 0, 0
+  index: -1
+shijianxiaojj_37a
+  rotate: false
+  xy: 1479, 1779
+  size: 103, 100
+  orig: 103, 100
+  offset: 0, 0
+  index: -1
+shijianxiaojj_38
+  rotate: false
+  xy: 891, 1434
+  size: 300, 213
+  orig: 300, 213
+  offset: 0, 0
+  index: -1
+shijianxiaojj_40
+  rotate: true
+  xy: 709, 1660
+  size: 144, 211
+  orig: 144, 211
+  offset: 0, 0
+  index: -1
+shijianxiaojj_41
+  rotate: true
+  xy: 356, 477
+  size: 258, 518
+  orig: 258, 518
+  offset: 0, 0
+  index: -1
+shijianxiaojj_42
+  rotate: false
+  xy: 1751, 1021
+  size: 279, 271
+  orig: 279, 271
+  offset: 0, 0
+  index: -1
+shijianxiaojj_43
+  rotate: true
+  xy: 1625, 388
+  size: 286, 399
+  orig: 286, 399
+  offset: 0, 0
+  index: -1
+shijianxiaojj_50
+  rotate: false
+  xy: 1768, 1294
+  size: 259, 247
+  orig: 259, 247
+  offset: 0, 0
+  index: -1
+shijianxiaojj_53
+  rotate: true
+  xy: 386, 737
+  size: 238, 496
+  orig: 238, 496
+  offset: 0, 0
+  index: -1
+shijianxiaojj_54
+  rotate: false
+  xy: 1726, 676
+  size: 306, 343
+  orig: 306, 343
+  offset: 0, 0
+  index: -1
+shijianxiaojj_55
+  rotate: true
+  xy: 1135, 1109
+  size: 257, 280
+  orig: 257, 280
+  offset: 0, 0
+  index: -1
+shijianxiaojj_59
+  rotate: true
+  xy: 2, 1253
+  size: 221, 478
+  orig: 221, 478
+  offset: 0, 0
+  index: -1
+shijianxiaojj_6
+  rotate: false
+  xy: 356, 1676
+  size: 351, 128
+  orig: 351, 128
+  offset: 0, 0
+  index: -1
+shijianxiaojj_62
+  rotate: true
+  xy: 1444, 1324
+  size: 217, 322
+  orig: 217, 322
+  offset: 0, 0
+  index: -1
+shijianxiaojj_65
+  rotate: true
+  xy: 1353, 1781
+  size: 99, 124
+  orig: 99, 124
+  offset: 0, 0
+  index: -1
+shijianxiaojj_66
+  rotate: true
+  xy: 1271, 539
+  size: 274, 352
+  orig: 274, 352
+  offset: 0, 0
+  index: -1
+shijianxiaojj_67
+  rotate: true
+  xy: 2, 1506
+  size: 194, 246
+  orig: 194, 246
+  offset: 0, 0
+  index: -1
+shijianxiaojj_7
+  rotate: false
+  xy: 93, 1902
+  size: 298, 27
+  orig: 298, 27
+  offset: 0, 0
+  index: -1
+shijianxiaojj_74
+  rotate: true
+  xy: 1718, 1738
+  size: 138, 221
+  orig: 138, 221
+  offset: 0, 0
+  index: -1
+shijianxiaojj_8
+  rotate: true
+  xy: 2, 765
+  size: 244, 382
+  orig: 244, 382
+  offset: 0, 0
+  index: -1
+shijianxiaojj_9
+  rotate: true
+  xy: 250, 1476
+  size: 198, 334
+  orig: 198, 334
+  offset: 0, 0
+  index: -1
+surprised
+  rotate: false
+  xy: 1058, 860
+  size: 334, 247
+  orig: 334, 247
+  offset: 0, 0
+  index: -1
+tear1
+  rotate: false
+  xy: 2, 1913
+  size: 26, 16
+  orig: 26, 16
+  offset: 0, 0
+  index: -1
+tear2
+  rotate: true
+  xy: 562, 1894
+  size: 35, 101
+  orig: 35, 101
+  offset: 0, 0
+  index: -1
+
+Asitelinna_Avator2.png
+size: 1994,1834
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+shijianxiaojj_35
+  rotate: false
+  xy: 1550, 1419
+  size: 442, 413
+  orig: 442, 413
+  offset: 0, 0
+  index: -1
+shijianxiaojj_39
+  rotate: true
+  xy: 1237, 562
+  size: 448, 469
+  orig: 448, 469
+  offset: 0, 0
+  index: -1
+shijianxiaojj_46
+  rotate: true
+  xy: 1061, 1444
+  size: 388, 487
+  orig: 388, 487
+  offset: 0, 0
+  index: -1
+shijianxiaojj_51
+  rotate: true
+  xy: 923, 2
+  size: 558, 1032
+  orig: 558, 1032
+  offset: 0, 0
+  index: -1
+shijianxiaojj_52
+  rotate: true
+  xy: 2, 126
+  size: 447, 919
+  orig: 447, 919
+  offset: 0, 0
+  index: -1
+shijianxiaojj_56
+  rotate: true
+  xy: 798, 1012
+  size: 405, 1159
+  orig: 405, 1159
+  offset: 0, 0
+  index: -1
+shijianxiaojj_57
+  rotate: false
+  xy: 496, 575
+  size: 739, 435
+  orig: 739, 435
+  offset: 0, 0
+  index: -1
+shijianxiaojj_58
+  rotate: true
+  xy: 2, 1480
+  size: 352, 1057
+  orig: 352, 1057
+  offset: 0, 0
+  index: -1
+shijianxiaojj_70
+  rotate: true
+  xy: 2, 1089
+  size: 389, 794
+  orig: 389, 794
+  offset: 0, 0
+  index: -1
+shijianxiaojj_71
+  rotate: false
+  xy: 2, 655
+  size: 492, 432
+  orig: 492, 432
+  offset: 0, 0
+  index: -1
+
+Asitelinna_Avator3.png
+size: 1747,1996
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+shijianxiaojj_45
+  rotate: true
+  xy: 2, 698
+  size: 657, 768
+  orig: 657, 768
+  offset: 0, 0
+  index: -1
+shijianxiaojj_49
+  rotate: true
+  xy: 1019, 2
+  size: 686, 726
+  orig: 686, 726
+  offset: 0, 0
+  index: -1
+shijianxiaojj_69
+  rotate: false
+  xy: 772, 690
+  size: 676, 665
+  orig: 676, 665
+  offset: 0, 0
+  index: -1
+shijianxiaojj_72
+  rotate: true
+  xy: 2, 1360
+  size: 634, 678
+  orig: 634, 678
+  offset: 0, 0
+  index: -1
+shijianxiaojj_77
+  rotate: true
+  xy: 682, 1357
+  size: 637, 945
+  orig: 637, 945
+  offset: 0, 0
+  index: -1
+shijianxiaojj_79
+  rotate: true
+  xy: 2, 21
+  size: 667, 1015
+  orig: 667, 1015
+  offset: 0, 0
+  index: -1
+
+Asitelinna_Avator4.png
+size: 1713,1508
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+shijianxiaojj_60
+  rotate: false
+  xy: 2, 2
+  size: 1579, 797
+  orig: 1579, 797
+  offset: 0, 0
+  index: -1
+shijianxiaojj_61
+  rotate: true
+  xy: 2, 802
+  size: 704, 825
+  orig: 704, 825
+  offset: 0, 0
+  index: -1
+shijianxiaojj_63
+  rotate: false
+  xy: 829, 801
+  size: 882, 705
+  orig: 882, 705
+  offset: 0, 0
+  index: -1
+
+Asitelinna_Avator5.png
+size: 1316,1820
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+shijianxiaojj_78
+  rotate: false
+  xy: 2, 2
+  size: 1312, 1816
+  orig: 1312, 1816
+  offset: 0, 0
+  index: -1
+
+Asitelinna_Avator6.png
+size: 1231,1939
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+shijianxiaojj_73
+  rotate: false
+  xy: 2, 2
+  size: 1227, 884
+  orig: 1227, 884
+  offset: 0, 0
+  index: -1
+shijianxiaojj_75
+  rotate: false
+  xy: 2, 888
+  size: 1193, 1049
+  orig: 1193, 1049
+  offset: 0, 0
+  index: -1
+
+Asitelinna_Avator7.png
+size: 1929,1817
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+shijianxiaojj_47
+  rotate: false
+  xy: 835, 881
+  size: 1092, 934
+  orig: 1092, 934
+  offset: 0, 0
+  index: -1
+shijianxiaojj_64
+  rotate: false
+  xy: 835, 2
+  size: 1082, 877
+  orig: 1082, 877
+  offset: 0, 0
+  index: -1
+shijianxiaojj_68
+  rotate: false
+  xy: 2, 550
+  size: 831, 1265
+  orig: 831, 1265
+  offset: 0, 0
+  index: -1
+
+Asitelinna_Avator8.png
+size: 856,1032
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+shijianxiaojj_76
+  rotate: false
+  xy: 2, 2
+  size: 852, 1028
+  orig: 852, 1028
+  offset: 0, 0
+  index: -1

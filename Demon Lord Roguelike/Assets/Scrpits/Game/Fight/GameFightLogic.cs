@@ -19,22 +19,24 @@ public class GameFightLogic : BaseGameLogic
     {
         base.PreGame();
         //设置战斗场景视角
-        CameraHandler.Instance.SetFightSceneCamera();
-        //加载战斗场景
-        WorldHandler.Instance.LoadFightScene(fightData.fightSceneId, (targetObj) =>
-        {        
-            //加载核心（魔王）实例
-            CreatureHandler.Instance.CreateDefCoreCreature((defCoreCreatureEntity) =>
+        CameraHandler.Instance.SetFightSceneCamera(() =>
+        {
+            //加载战斗场景
+            WorldHandler.Instance.LoadFightScene(fightData.fightSceneId, (targetObj) =>
             {
-                //设置魔王核心
-                fightData.fightDefCoreCreature = defCoreCreatureEntity;
-                //开启战斗控制
-                GameControlHandler.Instance.SetFightControl();
-                //关闭LoadingUI
-                var uiFightMain = UIHandler.Instance.OpenUIAndCloseOther<UIFightMain>();
-                uiFightMain.InitData();
-                //开始游戏
-                StartGame();
+                //加载核心（魔王）实例
+                CreatureHandler.Instance.CreateDefCoreCreature((defCoreCreatureEntity) =>
+                {
+                    //设置魔王核心
+                    fightData.fightDefCoreCreature = defCoreCreatureEntity;
+                    //开启战斗控制
+                    GameControlHandler.Instance.SetFightControl();
+                    //关闭LoadingUI
+                    var uiFightMain = UIHandler.Instance.OpenUIAndCloseOther<UIFightMain>();
+                    uiFightMain.InitData();
+                    //开始游戏
+                    StartGame();
+                });
             });
         });
     }

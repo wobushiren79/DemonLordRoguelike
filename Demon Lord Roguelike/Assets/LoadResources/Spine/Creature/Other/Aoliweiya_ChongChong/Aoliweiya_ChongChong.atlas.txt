@@ -1,0 +1,363 @@
+
+Aoliweiya_ChongChong.png
+size: 586,523
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+accessory
+  rotate: true
+  xy: 405, 4
+  size: 11, 17
+  orig: 11, 17
+  offset: 0, 0
+  index: -1
+bang1
+  rotate: true
+  xy: 2, 2
+  size: 33, 64
+  orig: 33, 64
+  offset: 0, 0
+  index: -1
+bang2
+  rotate: false
+  xy: 528, 229
+  size: 31, 61
+  orig: 31, 61
+  offset: 0, 0
+  index: -1
+bozi
+  rotate: true
+  xy: 154, 10
+  size: 65, 95
+  orig: 65, 95
+  offset: 0, 0
+  index: -1
+eye1
+  rotate: false
+  xy: 416, 290
+  size: 101, 48
+  orig: 101, 48
+  offset: 0, 0
+  index: -1
+eye2
+  rotate: true
+  xy: 392, 74
+  size: 95, 50
+  orig: 95, 50
+  offset: 0, 0
+  index: -1
+eye3
+  rotate: true
+  xy: 428, 187
+  size: 101, 48
+  orig: 101, 48
+  offset: 0, 0
+  index: -1
+eye4
+  rotate: false
+  xy: 492, 142
+  size: 92, 48
+  orig: 92, 48
+  offset: 0, 0
+  index: -1
+eye5
+  rotate: false
+  xy: 443, 418
+  size: 129, 103
+  orig: 129, 103
+  offset: 0, 0
+  index: -1
+eye6
+  rotate: false
+  xy: 246, 81
+  size: 93, 54
+  orig: 93, 54
+  offset: 0, 0
+  index: -1
+face
+  rotate: false
+  xy: 287, 380
+  size: 154, 141
+  orig: 154, 141
+  offset: 0, 0
+  index: -1
+foot1
+  rotate: false
+  xy: 552, 350
+  size: 22, 30
+  orig: 22, 30
+  offset: 0, 0
+  index: -1
+foot10
+  rotate: true
+  xy: 385, 2
+  size: 13, 18
+  orig: 13, 18
+  offset: 0, 0
+  index: -1
+foot2
+  rotate: true
+  xy: 535, 41
+  size: 16, 27
+  orig: 16, 27
+  offset: 0, 0
+  index: -1
+foot3
+  rotate: true
+  xy: 453, 25
+  size: 17, 29
+  orig: 17, 29
+  offset: 0, 0
+  index: -1
+foot4
+  rotate: true
+  xy: 416, 346
+  size: 15, 24
+  orig: 15, 24
+  offset: 0, 0
+  index: -1
+foot5
+  rotate: false
+  xy: 453, 44
+  size: 40, 44
+  orig: 40, 44
+  offset: 0, 0
+  index: -1
+foot5-1
+  rotate: false
+  xy: 428, 174
+  size: 12, 11
+  orig: 12, 11
+  offset: 0, 0
+  index: -1
+foot6
+  rotate: true
+  xy: 552, 382
+  size: 34, 32
+  orig: 34, 32
+  offset: 0, 0
+  index: -1
+foot7
+  rotate: true
+  xy: 548, 91
+  size: 49, 34
+  orig: 49, 34
+  offset: 0, 0
+  index: -1
+foot8
+  rotate: false
+  xy: 528, 198
+  size: 46, 29
+  orig: 46, 29
+  offset: 0, 0
+  index: -1
+foot8-1
+  rotate: false
+  xy: 142, 24
+  size: 9, 11
+  orig: 9, 11
+  offset: 0, 0
+  index: -1
+foot9
+  rotate: false
+  xy: 561, 229
+  size: 19, 15
+  orig: 19, 15
+  offset: 0, 0
+  index: -1
+forearm1
+  rotate: true
+  xy: 492, 91
+  size: 49, 54
+  orig: 49, 54
+  offset: 0, 0
+  index: -1
+forearm2
+  rotate: true
+  xy: 561, 246
+  size: 44, 23
+  orig: 44, 23
+  offset: 0, 0
+  index: -1
+hair1
+  rotate: true
+  xy: 287, 286
+  size: 92, 127
+  orig: 92, 127
+  offset: 0, 0
+  index: -1
+hair2
+  rotate: false
+  xy: 318, 174
+  size: 80, 110
+  orig: 80, 110
+  offset: 0, 0
+  index: -1
+hair3
+  rotate: true
+  xy: 478, 192
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: -1
+hair4
+  rotate: false
+  xy: 443, 340
+  size: 107, 76
+  orig: 107, 76
+  offset: 0, 0
+  index: -1
+hair5
+  rotate: false
+  xy: 2, 37
+  size: 150, 242
+  orig: 150, 242
+  offset: 0, 0
+  index: -1
+headwear1
+  rotate: false
+  xy: 154, 77
+  size: 90, 202
+  orig: 90, 202
+  offset: 0, 0
+  index: -1
+headwear2
+  rotate: false
+  xy: 400, 171
+  size: 26, 113
+  orig: 26, 113
+  offset: 0, 0
+  index: -1
+headwear3
+  rotate: false
+  xy: 246, 137
+  size: 70, 142
+  orig: 70, 142
+  offset: 0, 0
+  index: -1
+hide hair1
+  rotate: false
+  xy: 2, 281
+  size: 283, 240
+  orig: 283, 240
+  offset: 0, 0
+  index: -1
+main arm1
+  rotate: false
+  xy: 427, 23
+  size: 24, 49
+  orig: 24, 49
+  offset: 0, 0
+  index: -1
+main arm2
+  rotate: true
+  xy: 304, 5
+  size: 74, 37
+  orig: 74, 37
+  offset: 0, 0
+  index: -1
+month1
+  rotate: false
+  xy: 462, 12
+  size: 22, 11
+  orig: 22, 11
+  offset: 0, 0
+  index: -1
+month2
+  rotate: false
+  xy: 427, 2
+  size: 33, 19
+  orig: 33, 19
+  offset: 0, 0
+  index: -1
+month3
+  rotate: true
+  xy: 318, 139
+  size: 33, 14
+  orig: 33, 14
+  offset: 0, 0
+  index: -1
+month4
+  rotate: false
+  xy: 528, 192
+  size: 20, 4
+  orig: 20, 4
+  offset: 0, 0
+  index: -1
+month5
+  rotate: false
+  xy: 416, 363
+  size: 25, 15
+  orig: 25, 15
+  offset: 0, 0
+  index: -1
+palm1
+  rotate: true
+  xy: 68, 2
+  size: 33, 37
+  orig: 33, 37
+  offset: 0, 0
+  index: -1
+palm2
+  rotate: false
+  xy: 107, 2
+  size: 33, 33
+  orig: 33, 33
+  offset: 0, 0
+  index: -1
+shell1
+  rotate: true
+  xy: 343, 3
+  size: 85, 40
+  orig: 85, 40
+  offset: 0, 0
+  index: -1
+shell2
+  rotate: true
+  xy: 251, 2
+  size: 77, 51
+  orig: 77, 51
+  offset: 0, 0
+  index: -1
+shell3
+  rotate: true
+  xy: 444, 90
+  size: 95, 46
+  orig: 95, 46
+  offset: 0, 0
+  index: -1
+shell4
+  rotate: true
+  xy: 341, 90
+  size: 82, 49
+  orig: 82, 49
+  offset: 0, 0
+  index: -1
+shell5
+  rotate: false
+  xy: 385, 17
+  size: 40, 55
+  orig: 40, 55
+  offset: 0, 0
+  index: -1
+shell6
+  rotate: false
+  xy: 495, 46
+  size: 38, 43
+  orig: 38, 43
+  offset: 0, 0
+  index: -1
+shell7
+  rotate: false
+  xy: 535, 59
+  size: 46, 30
+  orig: 46, 30
+  offset: 0, 0
+  index: -1
+tail
+  rotate: false
+  xy: 519, 292
+  size: 41, 46
+  orig: 41, 46
+  offset: 0, 0
+  index: -1

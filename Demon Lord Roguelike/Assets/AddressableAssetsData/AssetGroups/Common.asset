@@ -17,8 +17,8 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: 8d34367864ba6d841ad6c55b768c2978
   m_SerializeEntries:
-  - m_GUID: 3942aed023996e446a4dd56e8a2c1fae
-    m_Address: Assets/LoadResources/Common/MainCamera.prefab
+  - m_GUID: 5c8e40565acdae3458e07b57cf27c25b
+    m_Address: Assets/LoadResources/Common/CameraData.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -29,6 +29,16 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e61073fa09ee40349875317f266387d9
     m_Address: Assets/LoadResources/Common/FightDropMagic.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ffc13e3f9d2d6384a830ab0998aa3705
+    m_Address: Assets/LoadResources/Common/BaseScene.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5aafe8a0c98d1e741a8c73e1268aea5b
+    m_Address: Assets/LoadResources/Common/ControlData.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

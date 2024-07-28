@@ -7,6 +7,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
 {
     //当前战斗场景
     public GameObject currentFightScene;
+    //基地场景
+    public GameObject currentBaseScene;
 
     /// <summary>
     /// 加载战斗场景
@@ -25,13 +27,41 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     }
 
     /// <summary>
+    /// 加载基地场景
+    /// </summary>
+    /// <param name="actionForComplete"></param>
+    public void LoadBaseScene(Action<GameObject> actionForComplete)
+    {
+        UnLoadBaseScene();
+        manager.GetBaseScene((targetScene) =>
+        {
+            currentFightScene = Instantiate(targetScene);
+            currentFightScene.SetActive(true);
+            currentFightScene.transform.position = Vector3.zero;
+            currentFightScene.transform.eulerAngles = Vector3.zero;
+            actionForComplete?.Invoke(currentFightScene);
+        });
+    }
+
+    /// <summary>
     /// 卸载战斗场景
     /// </summary>
     public void UnLoadFightScene()
     {
         if (currentFightScene != null)
         {
-            Destroy(currentFightScene);
+            DestroyImmediate(currentFightScene);
+        }
+    }
+
+    /// <summary>
+    /// 卸载基地场景
+    /// </summary>
+    public void UnLoadBaseScene()
+    {
+        if (currentBaseScene != null)
+        {
+            DestroyImmediate(currentBaseScene);
         }
     }
 }

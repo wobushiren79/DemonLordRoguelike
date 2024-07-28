@@ -292,8 +292,8 @@ MonoBehaviour:
     y: 0
     width: 501
     height: 1091
-  m_MinSize: {x: 275, y: 50}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 277, y: 71}
+  m_MaxSize: {x: 4002, y: 4021}
   m_ActualView: {fileID: 21}
   m_Panes:
   - {fileID: 21}
@@ -423,8 +423,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Console\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 1762
-    y: 73
+    x: 1763
+    y: 19
     width: 797
     height: 1070
   m_SerializedDataModeController:
@@ -460,7 +460,7 @@ MonoBehaviour:
   m_Pos:
     serializedVersion: 2
     x: 0
-    y: 73
+    y: 19
     width: 409
     height: 1070
   m_SerializedDataModeController:
@@ -477,8 +477,8 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: a0ca0000
-      m_LastClickedID: 51872
+      m_SelectedIDs: 
+      m_LastClickedID: 0
       m_ExpandedIDs: 1c8af5ff588af5fff28af5ff3c8bf5ff508bf5ff588bf5ff608bf5ff02b9f5ff6eb9f5ffa2b9f5ff0ebaf5ff42baf5ffaebaf5ffe2baf5ffa2c2f5ffd4c3f5ffc2c4f5ffecc4f5fff6c4f5ff0ac5f5ff12c5f5ff1ac5f5ff5acff5ff64cff5ff80cff5ff88cff5ff0287f8ffa4a0f8ffe0a0f8ff7aa1f8ffaea1f8fff8a1f8ff68a2f8ff9ca2f8ffb0a2f8ffb8a2f8ffc0a2f8ffd2e2f8ff0ee3f8ffa8e3f8ffdee4f8ffe6e4f8ffeee4f8ff266ef9ff626ef9fffc6ef9ff3270f9ff3a70f9ff4270f9ff9284f9ff8896f9ff0897f9ff4297f9ff7697f9ff9297f9ff9a97f9ff92f1f9ffaef1f9ffe2f1f9ff8efdf9ffc2fdf9ff02fef9ff34fff9ff6a00faff7200faff7a00faff5ec9faffaedbfaff2edcfafff437fbffd047fbff8a48fbffd248fbffda48fbffe248fbffce5dfbffd65dfbfffa6cfbff7c6dfbff5a7dfbffa8c1fbffe4c1fbff7ec2fbffb4c3fbffbcc3fbffc4c3fbff5a04fcff7604fcffb204fcff4c05fcff8206fcff8a06fcff9206fcffae61fcffe261fcff726dfcff8e6dfcffc26dfcffe86dfcff026efcff346ffcffb26ffcff2270fcff6a70fcff7270fcff7a70fcffc0fafffff4ffffff
       m_RenameOverlay:
         m_UserAcceptedRename: 0
@@ -525,8 +525,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Scene\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 410
-    y: 73
+    x: 411
+    y: 19
     width: 849
     height: 1070
   m_SerializedDataModeController:
@@ -1155,7 +1155,7 @@ MonoBehaviour:
     m_FarClip: 10000
     m_DynamicClip: 1
     m_OcclusionCulling: 0
-  m_LastSceneViewRotation: {x: -0.3797949, y: 0.09603515, z: -0.039679226, w: -0.91921705}
+  m_LastSceneViewRotation: {x: -0.08717229, y: 0.89959055, z: -0.21045254, w: -0.3726226}
   m_LastSceneViewOrtho: 0
   m_Viewpoint:
     m_SceneView: {fileID: 19}
@@ -1189,8 +1189,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Game\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 2560
-    y: 209
+    x: 0
+    y: 21
     width: 1920
     height: 988
   m_SerializedDataModeController:
@@ -1289,8 +1289,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Inspector\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 1261
-    y: 73
+    x: 1262
+    y: 19
     width: 499
     height: 1070
   m_SerializedDataModeController:
@@ -1339,7 +1339,7 @@ MonoBehaviour:
   m_Pos:
     serializedVersion: 2
     x: 0
-    y: 1164
+    y: 19
     width: 1866
     height: 187
   m_SerializedDataModeController:
@@ -1383,7 +1383,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 457}
     m_SelectedIDs: 6eed0000
     m_LastClickedID: 60782
-    m_ExpandedIDs: 00000000faca0000fcca0000feca000000cb000002cb000004cb000006cb000008cb00000acb00000ccb00000ecb000010cb000012cb000014cb000016cb000018cb00001acb00001ccb00001ecb000022cb000024cb000026cb000028cb00002acb00002ccb00002ecb000032cb00003ecb000040cb000042cb000044cb000046cb000048cb00004acb00004ecb0000e0cb000006cc00000ccc0000fee1000000ca9a3bffffff7f
+    m_ExpandedIDs: 0000000070cf000072cf000074cf000076cf000078cf00007acf00007ccf00007ecf000080cf000082cf000084cf000086cf000088cf00008acf00008ccf00008ecf000090cf000092cf000094cf000096cf000098cf00009acf00009ccf00009ecf0000a0cf0000a2cf0000a4cf0000a6cf0000a8cf0000aacf0000accf0000aecf0000b0cf0000b2cf0000b4cf0000b6cf0000b8cf0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1412,7 +1412,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000faca0000fcca0000feca000000cb000002cb000004cb000006cb000008cb00000acb00000ccb00000ecb000010cb000012cb000014cb000016cb000018cb00001acb00001ccb00001ecb000020cb000022cb000024cb000026cb000028cb00002acb00002ccb00002ecb000030cb000032cb000034cb000036cb000038cb00003acb00003ccb00003ecb000040cb000042cb000044cb000046cb000048cb00004acb00004ccb00004ecb0000
+    m_ExpandedIDs: 0000000070cf000072cf000074cf000076cf000078cf00007acf00007ccf00007ecf000080cf000082cf000084cf000086cf000088cf00008acf00008ccf00008ecf000090cf000092cf000094cf000096cf000098cf00009acf00009ccf00009ecf0000a0cf0000a2cf0000a4cf0000a6cf0000a8cf0000aacf0000accf0000aecf0000b0cf0000b2cf0000b4cf0000b6cf0000b8cf0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1444,18 +1444,18 @@ MonoBehaviour:
     m_ExpandedInstanceIDs: c6230000de26010056810000449100004a810000ca960000e67f0000167d0000226a00007075000046a70000fe3b01006c0600005487000076870000b88c00006097000030bb000078b100003cb50000d09d000070950000bc9f0000f03c000094f300002a930100284900008a180100c8e3000008e90000a0d000004ec2000060c2000046bd0000bebb000012c0000040de00003ac500003ec500002abc00008cd200009ecf000000000000aeee000096ce000022480000f6a1f5ffc4fa00003ed20000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
-      m_Name: "excel_creature_model[\u751F\u7269\u6A21\u578B\u4FE1\u606F]"
-      m_OriginalName: "excel_creature_model[\u751F\u7269\u6A21\u578B\u4FE1\u606F]"
+      m_Name: 
+      m_OriginalName: 
       m_EditFieldRect:
         serializedVersion: 2
         x: 0
         y: 0
         width: 0
         height: 0
-      m_UserData: 57964
+      m_UserData: 0
       m_IsWaitingForDelay: 0
       m_IsRenaming: 0
-      m_OriginalEventType: 0
+      m_OriginalEventType: 11
       m_IsRenamingFilename: 1
       m_TrimLeadingAndTrailingWhitespace: 0
       m_ClientGUIView: {fileID: 15}
@@ -1491,8 +1491,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Project Settings\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 1867
-    y: 1164
+    x: 1868
+    y: 19
     width: 692
     height: 187
   m_SerializedDataModeController:

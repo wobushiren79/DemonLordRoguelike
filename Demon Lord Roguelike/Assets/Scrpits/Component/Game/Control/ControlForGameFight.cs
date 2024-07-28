@@ -6,21 +6,20 @@ using UnityEngine.InputSystem;
 using UnityEngine.TextCore.Text;
 using static UnityEngine.InputSystem.InputAction;
 
-public class ControlForGameFight: BaseControl
+public class ControlForGameFight : BaseControl
 {
     [HideInInspector]
     public InputAction inputActionMove;
     public InputAction inputActionUseL;
     public InputAction inputActionUseR;
-    
+
     [Header("镜头移动速度")]
     public float speedForCameraMoveX = 2f;
     public float speedForCameraMoveZ = 2f;
-    public float speedForLerpCameraMove = 0.2f;
 
     public void Awake()
     {
-        inputActionMove = InputHandler.Instance.manager.GetInputPlayerData("Move"); 
+        inputActionMove = InputHandler.Instance.manager.GetInputPlayerData("Move");
 
         inputActionUseL = InputHandler.Instance.manager.GetInputPlayerData("UseL");
         inputActionUseL.started += HandleForUseLDown;
@@ -46,12 +45,10 @@ public class ControlForGameFight: BaseControl
 
     public override void EnabledControl(bool enabled)
     {
-        base.EnabledControl(enabled); 
-        var mainCamera = CameraHandler.Instance.manager.mainCamera;
-        targetCamerMovePos = mainCamera.transform.position;
+        base.EnabledControl(enabled);
+        GameControlHandler.Instance.manager.controlTargetForEmpty.SetActive(true);
     }
 
-    protected Vector3 targetCamerMovePos;
     /// <summary>
     /// 移动处理
     /// </summary>
@@ -60,18 +57,16 @@ public class ControlForGameFight: BaseControl
         if (!enabledControl)
             return;
         Vector2 moveData = inputActionMove.ReadValue<Vector2>();
-        var mainCamera = CameraHandler.Instance.manager.mainCamera;
-        Vector3 currentPos = mainCamera.transform.position;
         if (moveData.x == 0 && moveData.y == 0)
         {
-          
+
         }
         else
         {
             Vector3 targetMoveOffset = new Vector3(moveData.x * Time.deltaTime * speedForCameraMoveX, 0, moveData.y * Time.deltaTime * speedForCameraMoveZ);
-            targetCamerMovePos = targetCamerMovePos + targetMoveOffset;
+            var targetMove = GameControlHandler.Instance.manager.controlTargetForEmpty;
+            targetMove.transform.position = targetMove.transform.position + targetMoveOffset;
         }
-        mainCamera.transform.position = Vector3.Lerp(currentPos, targetCamerMovePos,  speedForLerpCameraMove);
     }
 
     /// <summary>

@@ -32,13 +32,48 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f89395fa3aa3dac4a862646359785854
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Aoliweiya/aoliweiya_avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e4f28b4d237676e4bbab55d000084b2b
     m_Address: Assets/LoadResources/Spine/Creature/Other/Aoliweiya/aoliweiya_SkeletonData.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: f89395fa3aa3dac4a862646359785854
-    m_Address: Assets/LoadResources/Spine/Creature/Other/Aoliweiya/aoliweiya_avator_SkeletonData.asset
+  - m_GUID: 31ffd7b0eccd8244292df26c775637f6
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Amelia/Amelia_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0d449567236ddd74d92f837a3b1c65ae
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Amelia/Amelia_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7719d1fae2c09304e899569bef6a009e
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Alice_Q/Alice_Q_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 24549adfb60c4eb43a797b2102346ae2
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Alice_Q/Alice_2_Q_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 61705f55840b00841b65d40a3c5a3db3
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Asitelinna/Asitelinna_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 09bb51087cb6ff24883a41f8e8924c67
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Asitelinna/Asitelinna_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1310a4fc8b7b9c841b4c4424cac9acde
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Aoliweiya_ChongChong/Aoliweiya_ChongChong_SkeletonData.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
