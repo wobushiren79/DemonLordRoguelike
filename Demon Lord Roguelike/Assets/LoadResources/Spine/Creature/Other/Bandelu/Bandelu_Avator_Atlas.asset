@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Bandelu_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: 51b50234b24ed9e4a9b2acb449b33057, type: 3}
+  materials:
+  - {fileID: 2100000, guid: 4d3132d9c1dca2a4697554da0ecc2e68, type: 2}
+  - {fileID: 2100000, guid: 6c8f6ae26251a5040afc4f455a989a66, type: 2}
+  - {fileID: 2100000, guid: fa16e8bc6df9872489f77d7009c4c53c, type: 2}
+  - {fileID: 2100000, guid: b2ac0753f1288bc4ebe0645481371768, type: 2}
+  - {fileID: 2100000, guid: 790d8e4787c3a7d4f96616c8d870e3f8, type: 2}

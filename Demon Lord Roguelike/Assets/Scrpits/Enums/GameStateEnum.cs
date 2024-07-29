@@ -23,6 +23,7 @@ public enum CardStateEnum
 //¶¯»­-ÉúÎï
 public enum AnimationCreatureStateEnum
 {
+    None,
     Idle,
     Walk,
     Walk2,

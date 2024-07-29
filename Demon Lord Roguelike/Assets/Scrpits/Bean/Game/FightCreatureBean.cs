@@ -36,7 +36,7 @@ public class FightCreatureBean
             var itemCreatureModelInfo = itemData.Value;
             if (itemCreatureModelInfo.model_id == creatureInfo.model_id)
             {
-                creatureData.AddSkin((int)itemCreatureModelInfo.id);
+                creatureData.AddSkin(itemCreatureModelInfo.id);
             }
         }
     }

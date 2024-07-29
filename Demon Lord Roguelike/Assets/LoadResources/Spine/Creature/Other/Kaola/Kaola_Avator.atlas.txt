@@ -1,0 +1,993 @@
+
+Kaola_Avator.png
+size: 2044,2036
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+biyan1
+  rotate: false
+  xy: 1110, 1834
+  size: 252, 78
+  orig: 252, 78
+  offset: 0, 0
+  index: -1
+biyan2
+  rotate: false
+  xy: 33, 2020
+  size: 36, 14
+  orig: 36, 14
+  offset: 0, 0
+  index: -1
+biyan3
+  rotate: false
+  xy: 568, 1994
+  size: 165, 40
+  orig: 165, 40
+  offset: 0, 0
+  index: -1
+biyan4
+  rotate: false
+  xy: 1678, 1982
+  size: 102, 52
+  orig: 102, 52
+  offset: 0, 0
+  index: -1
+biyan5
+  rotate: false
+  xy: 868, 1987
+  size: 105, 47
+  orig: 105, 47
+  offset: 0, 0
+  index: -1
+biyan7
+  rotate: false
+  xy: 345, 1764
+  size: 232, 84
+  orig: 232, 84
+  offset: 0, 0
+  index: -1
+haoqi11
+  rotate: false
+  xy: 345, 1764
+  size: 232, 84
+  orig: 232, 84
+  offset: 0, 0
+  index: -1
+kaola25
+  rotate: false
+  xy: 345, 1764
+  size: 232, 84
+  orig: 232, 84
+  offset: 0, 0
+  index: -1
+shengqi12
+  rotate: false
+  xy: 345, 1764
+  size: 232, 84
+  orig: 232, 84
+  offset: 0, 0
+  index: -1
+weixiao12
+  rotate: false
+  xy: 345, 1764
+  size: 232, 84
+  orig: 232, 84
+  offset: 0, 0
+  index: -1
+biyan8
+  rotate: false
+  xy: 488, 1997
+  size: 78, 37
+  orig: 78, 37
+  offset: 0, 0
+  index: -1
+biyan9
+  rotate: false
+  xy: 798, 1988
+  size: 68, 46
+  orig: 68, 46
+  offset: 0, 0
+  index: -1
+haoqi1
+  rotate: false
+  xy: 1364, 1833
+  size: 265, 78
+  orig: 265, 78
+  offset: 0, 0
+  index: -1
+haoqi12
+  rotate: false
+  xy: 92, 1784
+  size: 251, 83
+  orig: 251, 83
+  offset: 0, 0
+  index: -1
+haoqi2
+  rotate: false
+  xy: 412, 1858
+  size: 134, 76
+  orig: 134, 76
+  offset: 0, 0
+  index: -1
+haoqi3
+  rotate: false
+  xy: 303, 1869
+  size: 107, 79
+  orig: 107, 79
+  offset: 0, 0
+  index: -1
+haoqi4
+  rotate: false
+  xy: 63, 1957
+  size: 60, 59
+  orig: 60, 59
+  offset: 0, 0
+  index: -1
+haoqi5
+  rotate: false
+  xy: 917, 1917
+  size: 98, 68
+  orig: 98, 68
+  offset: 0, 0
+  index: -1
+haoqi6
+  rotate: false
+  xy: 1853, 1981
+  size: 181, 53
+  orig: 181, 53
+  offset: 0, 0
+  index: -1
+haoqi7
+  rotate: true
+  xy: 125, 1956
+  size: 59, 62
+  orig: 59, 62
+  offset: 0, 0
+  index: -1
+haoqi8
+  rotate: false
+  xy: 2, 1882
+  size: 93, 73
+  orig: 93, 73
+  offset: 0, 0
+  index: -1
+haoqi9
+  rotate: false
+  xy: 17, 2025
+  size: 14, 9
+  orig: 14, 9
+  offset: 0, 0
+  index: -1
+kaola1
+  rotate: true
+  xy: 1092, 1915
+  size: 69, 75
+  orig: 69, 75
+  offset: 0, 0
+  index: -1
+kaola10
+  rotate: true
+  xy: 2, 1649
+  size: 133, 207
+  orig: 133, 207
+  offset: 0, 0
+  index: -1
+kaola11
+  rotate: true
+  xy: 265, 950
+  size: 242, 322
+  orig: 242, 322
+  offset: 0, 0
+  index: -1
+kaola12
+  rotate: true
+  xy: 548, 1850
+  size: 74, 328
+  orig: 74, 328
+  offset: 0, 0
+  index: -1
+kaola13
+  rotate: true
+  xy: 846, 1713
+  size: 119, 303
+  orig: 119, 303
+  offset: 0, 0
+  index: -1
+kaola14
+  rotate: false
+  xy: 250, 1950
+  size: 161, 58
+  orig: 161, 58
+  offset: 0, 0
+  index: -1
+kaola15
+  rotate: false
+  xy: 274, 2010
+  size: 68, 24
+  orig: 68, 24
+  offset: 0, 0
+  index: -1
+kaola16
+  rotate: false
+  xy: 1201, 1984
+  size: 120, 50
+  orig: 120, 50
+  offset: 0, 0
+  index: -1
+kaola17
+  rotate: false
+  xy: 1075, 1986
+  size: 63, 48
+  orig: 63, 48
+  offset: 0, 0
+  index: -1
+kaola18
+  rotate: false
+  xy: 1323, 1984
+  size: 95, 50
+  orig: 95, 50
+  offset: 0, 0
+  index: -1
+weixiao9
+  rotate: false
+  xy: 1323, 1984
+  size: 95, 50
+  orig: 95, 50
+  offset: 0, 0
+  index: -1
+kaola19
+  rotate: false
+  xy: 975, 1987
+  size: 98, 47
+  orig: 98, 47
+  offset: 0, 0
+  index: -1
+kaola2
+  rotate: true
+  xy: 1889, 1688
+  size: 137, 153
+  orig: 137, 153
+  offset: 0, 0
+  index: -1
+kaola20
+  rotate: false
+  xy: 97, 1880
+  size: 84, 74
+  orig: 84, 74
+  offset: 0, 0
+  index: -1
+kaola21
+  rotate: true
+  xy: 2, 2027
+  size: 7, 13
+  orig: 7, 13
+  offset: 0, 0
+  index: -1
+kaola22
+  rotate: false
+  xy: 416, 2007
+  size: 70, 27
+  orig: 70, 27
+  offset: 0, 0
+  index: -1
+kaola23
+  rotate: false
+  xy: 121, 2018
+  size: 40, 16
+  orig: 40, 16
+  offset: 0, 0
+  index: -1
+kaola26
+  rotate: false
+  xy: 1776, 1909
+  size: 251, 70
+  orig: 251, 70
+  offset: 0, 0
+  index: -1
+kaola29
+  rotate: false
+  xy: 589, 888
+  size: 529, 227
+  orig: 529, 227
+  offset: 0, 0
+  index: -1
+kaola30
+  rotate: false
+  xy: 2, 1464
+  size: 198, 183
+  orig: 198, 183
+  offset: 0, 0
+  index: -1
+kaola31
+  rotate: false
+  xy: 1169, 1914
+  size: 206, 68
+  orig: 206, 68
+  offset: 0, 0
+  index: -1
+kaola32
+  rotate: false
+  xy: 2, 1238
+  size: 395, 198
+  orig: 395, 198
+  offset: 0, 0
+  index: -1
+kaola33
+  rotate: false
+  xy: 1533, 1693
+  size: 354, 132
+  orig: 354, 132
+  offset: 0, 0
+  index: -1
+kaola34
+  rotate: true
+  xy: 1612, 579
+  size: 261, 302
+  orig: 261, 302
+  offset: 0, 0
+  index: -1
+kaola35
+  rotate: false
+  xy: 2, 421
+  size: 284, 275
+  orig: 284, 275
+  offset: 0, 0
+  index: -1
+kaola36
+  rotate: false
+  xy: 202, 1438
+  size: 221, 184
+  orig: 221, 184
+  offset: 0, 0
+  index: -1
+kaola37
+  rotate: true
+  xy: 579, 1736
+  size: 112, 149
+  orig: 112, 149
+  offset: 0, 0
+  index: -1
+kaola39
+  rotate: false
+  xy: 689, 1346
+  size: 446, 193
+  orig: 446, 193
+  offset: 0, 0
+  index: -1
+kaola40
+  rotate: true
+  xy: 801, 2
+  size: 321, 350
+  orig: 321, 350
+  offset: 0, 0
+  index: -1
+kaola42
+  rotate: false
+  xy: 1782, 1982
+  size: 69, 52
+  orig: 69, 52
+  offset: 0, 0
+  index: -1
+kaola43
+  rotate: false
+  xy: 1373, 1520
+  size: 634, 166
+  orig: 634, 166
+  offset: 0, 0
+  index: -1
+kaola45
+  rotate: false
+  xy: 1120, 885
+  size: 422, 230
+  orig: 422, 230
+  offset: 0, 0
+  index: -1
+kaola48
+  rotate: true
+  xy: 879, 325
+  size: 300, 497
+  orig: 300, 497
+  offset: 0, 0
+  index: -1
+kaola49
+  rotate: true
+  xy: 399, 1194
+  size: 206, 280
+  orig: 206, 280
+  offset: 0, 0
+  index: -1
+kaola5
+  rotate: false
+  xy: 657, 1926
+  size: 258, 59
+  orig: 258, 59
+  offset: 0, 0
+  index: -1
+kaola50
+  rotate: false
+  xy: 608, 1582
+  size: 203, 150
+  orig: 203, 150
+  offset: 0, 0
+  index: -1
+kaola51
+  rotate: true
+  xy: 288, 352
+  size: 273, 589
+  orig: 273, 589
+  offset: 0, 0
+  index: -1
+kaola52
+  rotate: true
+  xy: 1544, 842
+  size: 254, 287
+  orig: 254, 287
+  offset: 0, 0
+  index: -1
+kaola54
+  rotate: true
+  xy: 1004, 1541
+  size: 157, 367
+  orig: 157, 367
+  offset: 0, 0
+  index: -1
+kaola55
+  rotate: true
+  xy: 2, 698
+  size: 250, 517
+  orig: 250, 517
+  offset: 0, 0
+  index: -1
+kaola56
+  rotate: true
+  xy: 940, 1117
+  size: 212, 703
+  orig: 212, 703
+  offset: 0, 0
+  index: -1
+kaola57
+  rotate: false
+  xy: 1137, 1331
+  size: 796, 187
+  orig: 796, 187
+  offset: 0, 0
+  index: -1
+kaola6
+  rotate: true
+  xy: 1305, 1700
+  size: 131, 226
+  orig: 131, 226
+  offset: 0, 0
+  index: -1
+kaola60
+  rotate: false
+  xy: 521, 627
+  size: 1089, 213
+  orig: 1089, 213
+  offset: 0, 0
+  index: -1
+kaola64
+  rotate: false
+  xy: 2, 1794
+  size: 88, 86
+  orig: 88, 86
+  offset: 0, 0
+  index: -1
+kaola65
+  rotate: true
+  xy: 1631, 1828
+  size: 81, 84
+  orig: 81, 84
+  offset: 0, 0
+  index: -1
+kaola69
+  rotate: false
+  xy: 730, 1734
+  size: 114, 114
+  orig: 114, 114
+  offset: 0, 0
+  index: -1
+kaola7
+  rotate: true
+  xy: 813, 1544
+  size: 167, 189
+  orig: 167, 189
+  offset: 0, 0
+  index: -1
+kaola70
+  rotate: false
+  xy: 453, 1585
+  size: 153, 149
+  orig: 153, 149
+  offset: 0, 0
+  index: -1
+kaola71
+  rotate: true
+  xy: 2, 997
+  size: 239, 261
+  orig: 239, 261
+  offset: 0, 0
+  index: -1
+kaola72
+  rotate: true
+  xy: 1645, 1098
+  size: 231, 249
+  orig: 231, 249
+  offset: 0, 0
+  index: -1
+kaola73
+  rotate: true
+  xy: 681, 1131
+  size: 213, 257
+  orig: 213, 257
+  offset: 0, 0
+  index: -1
+kaola77
+  rotate: true
+  xy: 1378, 273
+  size: 304, 371
+  orig: 304, 371
+  offset: 0, 0
+  index: -1
+kaola8
+  rotate: true
+  xy: 211, 1624
+  size: 138, 240
+  orig: 138, 240
+  offset: 0, 0
+  index: -1
+kaola9
+  rotate: true
+  xy: 425, 1402
+  size: 178, 262
+  orig: 178, 262
+  offset: 0, 0
+  index: -1
+shengqi1
+  rotate: false
+  xy: 1717, 1827
+  size: 249, 80
+  orig: 249, 80
+  offset: 0, 0
+  index: -1
+shengqi10
+  rotate: false
+  xy: 1017, 1916
+  size: 73, 68
+  orig: 73, 68
+  offset: 0, 0
+  index: -1
+shengqi2
+  rotate: false
+  xy: 878, 1839
+  size: 116, 76
+  orig: 116, 76
+  offset: 0, 0
+  index: -1
+shengqi3
+  rotate: false
+  xy: 1517, 1983
+  size: 159, 51
+  orig: 159, 51
+  offset: 0, 0
+  index: -1
+shengqi4
+  rotate: false
+  xy: 189, 1954
+  size: 59, 59
+  orig: 59, 59
+  offset: 0, 0
+  index: -1
+shengqi5
+  rotate: false
+  xy: 474, 1936
+  size: 90, 59
+  orig: 90, 59
+  offset: 0, 0
+  index: -1
+shengqi6
+  rotate: false
+  xy: 183, 1874
+  size: 118, 74
+  orig: 118, 74
+  offset: 0, 0
+  index: -1
+shengqi7
+  rotate: false
+  xy: 2, 1965
+  size: 59, 53
+  orig: 59, 53
+  offset: 0, 0
+  index: -1
+shengqi8
+  rotate: false
+  xy: 1420, 1984
+  size: 95, 50
+  orig: 95, 50
+  offset: 0, 0
+  index: -1
+texiao1
+  rotate: true
+  xy: 1151, 1703
+  size: 129, 152
+  orig: 129, 152
+  offset: 0, 0
+  index: -1
+texiao_4
+  rotate: false
+  xy: 2, 49
+  size: 797, 301
+  orig: 797, 301
+  offset: 0, 0
+  index: -1
+weixiao1
+  rotate: false
+  xy: 1377, 1913
+  size: 266, 68
+  orig: 266, 68
+  offset: 0, 0
+  index: -1
+weixiao10
+  rotate: false
+  xy: 216, 2015
+  size: 56, 19
+  orig: 56, 19
+  offset: 0, 0
+  index: -1
+weixiao13
+  rotate: false
+  xy: 344, 2010
+  size: 70, 24
+  orig: 70, 24
+  offset: 0, 0
+  index: -1
+weixiao14
+  rotate: false
+  xy: 735, 1993
+  size: 61, 41
+  orig: 61, 41
+  offset: 0, 0
+  index: -1
+weixiao2
+  rotate: false
+  xy: 71, 2020
+  size: 48, 14
+  orig: 48, 14
+  offset: 0, 0
+  index: -1
+weixiao3
+  rotate: false
+  xy: 163, 2017
+  size: 51, 17
+  orig: 51, 17
+  offset: 0, 0
+  index: -1
+weixiao4
+  rotate: false
+  xy: 996, 1835
+  size: 112, 78
+  orig: 112, 78
+  offset: 0, 0
+  index: -1
+weixiao5
+  rotate: false
+  xy: 413, 1946
+  size: 59, 59
+  orig: 59, 59
+  offset: 0, 0
+  index: -1
+weixiao6
+  rotate: false
+  xy: 566, 1933
+  size: 89, 59
+  orig: 89, 59
+  offset: 0, 0
+  index: -1
+weixiao7
+  rotate: false
+  xy: 1645, 1911
+  size: 129, 69
+  orig: 129, 69
+  offset: 0, 0
+  index: -1
+weixiao8
+  rotate: false
+  xy: 1140, 1986
+  size: 59, 48
+  orig: 59, 48
+  offset: 0, 0
+  index: -1
+
+Kaola_Avator2.png
+size: 2038,1776
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+kaola24
+  rotate: true
+  xy: 1540, 1077
+  size: 366, 377
+  orig: 366, 377
+  offset: 0, 0
+  index: -1
+kaola27
+  rotate: true
+  xy: 484, 345
+  size: 429, 456
+  orig: 429, 456
+  offset: 0, 0
+  index: -1
+kaola38
+  rotate: false
+  xy: 1704, 1445
+  size: 332, 329
+  orig: 332, 329
+  offset: 0, 0
+  index: -1
+kaola41
+  rotate: false
+  xy: 1509, 47
+  size: 524, 477
+  orig: 524, 477
+  offset: 0, 0
+  index: -1
+kaola53
+  rotate: true
+  xy: 2, 1198
+  size: 288, 1026
+  orig: 288, 1026
+  offset: 0, 0
+  index: -1
+kaola61
+  rotate: false
+  xy: 2, 2
+  size: 1444, 334
+  orig: 1444, 334
+  offset: 0, 0
+  index: -1
+kaola62
+  rotate: false
+  xy: 2, 1488
+  size: 1332, 286
+  orig: 1332, 286
+  offset: 0, 0
+  index: -1
+kaola74
+  rotate: false
+  xy: 1030, 1114
+  size: 508, 333
+  orig: 508, 333
+  offset: 0, 0
+  index: -1
+kaola75
+  rotate: true
+  xy: 1336, 1449
+  size: 325, 366
+  orig: 325, 366
+  offset: 0, 0
+  index: -1
+kaola76
+  rotate: true
+  xy: 2, 845
+  size: 351, 563
+  orig: 351, 563
+  offset: 0, 0
+  index: -1
+kaola78
+  rotate: true
+  xy: 1018, 719
+  size: 356, 608
+  orig: 356, 608
+  offset: 0, 0
+  index: -1
+kaola79
+  rotate: false
+  xy: 942, 338
+  size: 565, 379
+  orig: 565, 379
+  offset: 0, 0
+  index: -1
+texiao
+  rotate: true
+  xy: 2, 424
+  size: 419, 480
+  orig: 419, 480
+  offset: 0, 0
+  index: -1
+texiao0
+  rotate: true
+  xy: 1628, 526
+  size: 549, 391
+  orig: 549, 391
+  offset: 0, 0
+  index: -1
+texiao2
+  rotate: true
+  xy: 567, 776
+  size: 420, 449
+  orig: 420, 449
+  offset: 0, 0
+  index: -1
+
+Kaola_Avator3.png
+size: 2047,1738
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+kaola0
+  rotate: true
+  xy: 2, 1295
+  size: 441, 563
+  orig: 441, 563
+  offset: 0, 0
+  index: -1
+kaola3
+  rotate: false
+  xy: 636, 755
+  size: 672, 528
+  orig: 672, 528
+  offset: 0, 0
+  index: -1
+kaola46
+  rotate: false
+  xy: 567, 1285
+  size: 953, 451
+  orig: 953, 451
+  offset: 0, 0
+  index: -1
+kaola66
+  rotate: false
+  xy: 2, 824
+  size: 632, 459
+  orig: 632, 459
+  offset: 0, 0
+  index: -1
+kaola67
+  rotate: true
+  xy: 2, 254
+  size: 568, 574
+  orig: 568, 574
+  offset: 0, 0
+  index: -1
+kaola68
+  rotate: true
+  xy: 1302, 2
+  size: 559, 743
+  orig: 559, 743
+  offset: 0, 0
+  index: -1
+kaola80
+  rotate: true
+  xy: 578, 102
+  size: 651, 722
+  orig: 651, 722
+  offset: 0, 0
+  index: -1
+kaola81
+  rotate: false
+  xy: 1522, 1112
+  size: 503, 624
+  orig: 503, 624
+  offset: 0, 0
+  index: -1
+texiao_3
+  rotate: true
+  xy: 1310, 563
+  size: 547, 645
+  orig: 547, 645
+  offset: 0, 0
+  index: -1
+
+Kaola_Avator4.png
+size: 1919,1403
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+kaola44
+  rotate: false
+  xy: 2, 28
+  size: 749, 690
+  orig: 749, 690
+  offset: 0, 0
+  index: -1
+texiao_5
+  rotate: false
+  xy: 686, 720
+  size: 779, 681
+  orig: 779, 681
+  offset: 0, 0
+  index: -1
+texiao_6
+  rotate: false
+  xy: 753, 2
+  size: 1164, 716
+  orig: 1164, 716
+  offset: 0, 0
+  index: -1
+texiao_8
+  rotate: true
+  xy: 2, 723
+  size: 678, 682
+  orig: 678, 682
+  offset: 0, 0
+  index: -1
+
+Kaola_Avator5.png
+size: 1962,1352
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+kaola63
+  rotate: false
+  xy: 2, 2
+  size: 1958, 1348
+  orig: 1958, 1348
+  offset: 0, 0
+  index: -1
+
+Kaola_Avator6.png
+size: 1975,1525
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+kaola47
+  rotate: true
+  xy: 1226, 433
+  size: 1090, 747
+  orig: 1090, 747
+  offset: 0, 0
+  index: -1
+kaola58
+  rotate: true
+  xy: 2, 783
+  size: 740, 1222
+  orig: 740, 1222
+  offset: 0, 0
+  index: -1
+texiao_9
+  rotate: false
+  xy: 2, 2
+  size: 1210, 779
+  orig: 1210, 779
+  offset: 0, 0
+  index: -1
+
+Kaola_Avator7.png
+size: 2027,1659
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+kaola59
+  rotate: true
+  xy: 2, 2
+  size: 872, 1105
+  orig: 872, 1105
+  offset: 0, 0
+  index: -1
+texiao_2
+  rotate: true
+  xy: 1229, 266
+  size: 1391, 796
+  orig: 1391, 796
+  offset: 0, 0
+  index: -1
+texiao_7
+  rotate: false
+  xy: 2, 876
+  size: 1225, 781
+  orig: 1225, 781
+  offset: 0, 0
+  index: -1
+
+Kaola_Avator8.png
+size: 1006,1100
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+texiao_1
+  rotate: false
+  xy: 2, 2
+  size: 1002, 1096
+  orig: 1002, 1096
+  offset: 0, 0
+  index: -1

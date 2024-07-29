@@ -46,7 +46,7 @@ public partial class CreatureInfoBean : BaseBean
 	/// <summary>
 	///模组ID
 	/// </summary>
-	public int model_id;
+	public long model_id;
 	/// <summary>
 	///卡片背景
 	/// </summary>

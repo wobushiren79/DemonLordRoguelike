@@ -35,13 +35,13 @@ public partial class CameraHandler : BaseHandler<CameraHandler, CameraManager>
         //ÐÞ¸ÄÆ¤·ô
         SpineHandler.Instance.ChangeSkeletonSkin(targetSkeletonAnimation.skeleton, skinArray);
 
-        controlTarget.transform.position = new Vector3(0, 0, 3);
+        controlTarget.transform.position = new Vector3(0, 0, -3);
 
         ShowCinemachineCamera(CinemachineCameraEnum.Base);
 
         manager.cm_Base.Follow = controlTarget.transform;
         manager.cm_Base.LookAt = targetRenderer;
-
+        manager.cm_Base.PreviousStateIsValid = false;
         await new WaitNextFrame();
         actionForComplete?.Invoke();
     }
@@ -61,7 +61,7 @@ public partial class CameraHandler : BaseHandler<CameraHandler, CameraManager>
 
         manager.cm_Fight.Follow = controlTarget.transform;
         manager.cm_Fight.LookAt = controlTarget.transform;
-
+        manager.cm_Fight.PreviousStateIsValid = false;
         await new WaitNextFrame();
         actionForComplete?.Invoke();
     }

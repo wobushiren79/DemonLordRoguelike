@@ -6,9 +6,9 @@ using UnityEngine;
 [Serializable]
 public class CreatureSkinBean
 {
-    public int skinId;
+    public long skinId;
 
-    public CreatureSkinBean(int skinId)
+    public CreatureSkinBean(long skinId)
     {
         this.skinId = skinId;
     }

@@ -75,7 +75,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         }
 
         SpineHandler.Instance.SetSkeletonDataAsset(ui_Icon, resName);
-        string[] skinArray = fightCreatureData.creatureData.GetSkinArray();
+        string[] skinArray = fightCreatureData.creatureData.GetSkinArray(1);
         //ÐÞ¸ÄÆ¤·ô
         SpineHandler.Instance.ChangeSkeletonSkin(ui_Icon.Skeleton, skinArray);
 

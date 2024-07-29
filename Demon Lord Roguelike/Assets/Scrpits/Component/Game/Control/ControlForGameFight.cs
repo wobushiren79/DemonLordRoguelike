@@ -46,6 +46,8 @@ public class ControlForGameFight : BaseControl
     public override void EnabledControl(bool enabled)
     {
         base.EnabledControl(enabled);
+        if (!enabled)
+            return;
         GameControlHandler.Instance.manager.controlTargetForEmpty.SetActive(true);
     }
 

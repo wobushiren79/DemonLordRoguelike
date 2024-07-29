@@ -60,10 +60,18 @@ public partial class UIFightMain : BaseUIComponent
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        //设置魔力值
-        SetMagicData(gameFightLogic.fightData.currentMagic);
-        SetCoinData(userData.coin);
+
+        SetBaseInfo(gameFightLogic.fightData.currentMagic, userData.coin);
         SetAttCreateProgress(gameFightLogic.fightData.gameStage, gameFightLogic.fightData.gameProgress);
+    }
+
+    /// <summary>
+    /// 设置基础信息
+    /// </summary>
+    public void SetBaseInfo(int magic, long coin)
+    {
+        ui_ViewBaseInfoContent.SetMagicData(magic);
+        ui_ViewBaseInfoContent.SetCoinData(coin);
     }
 
     /// <summary>
@@ -75,6 +83,7 @@ public partial class UIFightMain : BaseUIComponent
         {
             DestroyImmediate(itemData.Value.gameObject);
         }
+        dicAttProgress.Clear();
         //获取左右X的最大值
         float contentXMax = ui_AttCreate.sizeDelta.x / 2;
         //获取单个进度条长度
@@ -98,26 +107,10 @@ public partial class UIFightMain : BaseUIComponent
     /// </summary>
     public void SetAttCreateProgress(int stage, float progress)
     {
-        if (dicAttProgress.TryGetValue(stage,out UIViewFightMainAttCreateProgress progressView))
+        if (dicAttProgress.TryGetValue(stage, out UIViewFightMainAttCreateProgress progressView))
         {
             progressView.SetProgress(progress);
         }
-    }
-
-    /// <summary>
-    /// 设置当前魔力
-    /// </summary>
-    public void SetMagicData(int magic)
-    {
-        ui_MagicText.text = $"{magic}";
-    }
-
-    /// <summary>
-    /// 设置当前金币（魔晶）
-    /// </summary>
-    public void SetCoinData(long coin)
-    {
-        ui_CoinText.text = $"{coin}";
     }
 
     /// <summary>
@@ -209,11 +202,7 @@ public partial class UIFightMain : BaseUIComponent
     /// </summary>
     public void EventForNoEnoughCreateMagic()
     {
-        ui_MagicText.DOKill();
-        ui_MagicText.DOColor(Color.red, 0.05f).SetLoops(6, LoopType.Yoyo).OnComplete(() =>
-        {
-            ui_MagicText.color = Color.white;
-        });
+        ui_ViewBaseInfoContent.PlayAnimForMagicNoEnough();
     }
 
     /// <summary>

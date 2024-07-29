@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f1b3b4b945939a54ea0b23d3396115fb, type: 3}
-  m_Name: aoliweiya_avator_SkeletonData
+  m_Name: Aoliweiya_Avator_SkeletonData
   m_EditorClassIdentifier: 
   atlasAssets:
   - {fileID: 11400000, guid: 99127690bee00064e8163cad14505236, type: 2}
@@ -21,7 +21,7 @@ MonoBehaviour:
     requiresBlendModeMaterials: 1
     applyAdditiveMaterial: 1
     additiveMaterials:
-    - pageName: aoliweiya_avator.png
+    - pageName: Aoliweiya_Avator.png
       material: {fileID: 2100000, guid: a5fd769ca0f186a429c6642b32e3849e, type: 2}
     multiplyMaterials: []
     screenMaterials: []

@@ -9,13 +9,34 @@ public class CreatureManager : BaseManager
     //所有的模型
     public Dictionary<string, GameObject> dicCreatureModel = new Dictionary<string, GameObject>();
     //所有生物的缓存池
-    public Dictionary<CreatureTypeEnum, Queue<GameObject>> dicPoolForCreature= new Dictionary<CreatureTypeEnum, Queue<GameObject>>();
+    public Dictionary<CreatureTypeEnum, Queue<GameObject>> dicPoolForCreature = new Dictionary<CreatureTypeEnum, Queue<GameObject>>();
 
     //生物预览
     public GameObject objCreatureSelectPreview;
     public SkeletonAnimation skeletonAnimationSelectPreview;
     public FightCreatureBean fightCreatureDataSelectPreview;
 
+    /// <summary>
+    /// 清理数据
+    /// </summary>
+    public void Clear()
+    {
+        if (objCreatureSelectPreview != null)
+            DestroyImmediate(objCreatureSelectPreview);
+        skeletonAnimationSelectPreview = null;
+        fightCreatureDataSelectPreview = null;
+
+        foreach (var itemPool in dicPoolForCreature)
+        {
+            Queue<GameObject> pool = itemPool.Value;
+            while (pool.Count > 0)
+            {
+                var itemObj = pool.Dequeue();
+                DestroyImmediate(itemObj);
+            }
+        }
+        dicPoolForCreature.Clear();
+    }
 
     /// <summary>
     /// 获取生物预览

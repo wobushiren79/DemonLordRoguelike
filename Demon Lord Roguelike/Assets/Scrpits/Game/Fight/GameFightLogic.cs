@@ -22,8 +22,10 @@ public class GameFightLogic : BaseGameLogic
         CameraHandler.Instance.SetFightSceneCamera(() =>
         {
             //加载战斗场景
-            WorldHandler.Instance.LoadFightScene(fightData.fightSceneId, (targetObj) =>
+            WorldHandler.Instance.LoadFightScene(fightData.fightSceneId,async (targetObj) =>
             {
+                //延迟0.1秒 防止一些镜头的1，2帧误差
+                await new WaitForSeconds(0.1f);
                 //加载核心（魔王）实例
                 CreatureHandler.Instance.CreateDefCoreCreature((defCoreCreatureEntity) =>
                 {
@@ -58,6 +60,25 @@ public class GameFightLogic : BaseGameLogic
         fightData.gameTime = fightData.gameTime + Time.deltaTime * fightData.gameSpeed;
         UpdateGameForSelectCreature();
         UpdateGameForAttCreate();
+    }
+
+    /// <summary>
+    /// 清理游戏
+    /// </summary>
+    public override void ClearGame()
+    {
+        base.ClearGame();
+        ClearSelectData(true);
+        //清理战斗数据
+        fightData.Clear();
+        //生物清理
+        CreatureHandler.Instance.manager.Clear();
+        //战场清理
+        FightHandler.Instance.manager.Clear();
+        //AI清理
+        AIHandler.Instance.manager.Clear();
+        //清理战斗场景
+        WorldHandler.Instance.UnLoadFightScene();
     }
 
     /// <summary>
@@ -178,16 +199,25 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>
     /// 清理选择的数据
     /// </summary>
-    public void ClearSelectData()
+    public void ClearSelectData(bool isDestroyImm = false)
     {
         GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreaureSelectPreview();
         objSelectPreivew.gameObject.SetActive(false);
         //回收预制
         if (selectCreature != null)
         {
-            CreatureHandler.Instance.RemoveCreatureObj(selectCreature, CreatureTypeEnum.FightDef);
+            if (isDestroyImm)
+            {
+                GameObject.DestroyImmediate(selectCreature);
+            }
+            else
+            {
+                CreatureHandler.Instance.RemoveCreatureObj(selectCreature, CreatureTypeEnum.FightDef);
+            }
         }
         selectCreature = null;
         selectCreatureData = null;
     }
+
+
 }

@@ -11,22 +11,6 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     public GameObject currentBaseScene;
 
     /// <summary>
-    /// 加载战斗场景
-    /// </summary>
-    public void LoadFightScene(int fightSceneId, Action<GameObject> actionForComplete)
-    {
-        UnLoadFightScene();
-        manager.GetFightScene(fightSceneId, (targetScene) =>
-        {
-            currentFightScene = Instantiate(targetScene);
-            currentFightScene.SetActive(true);
-            currentFightScene.transform.position = Vector3.zero;
-            currentFightScene.transform.eulerAngles = Vector3.zero;
-            actionForComplete?.Invoke(currentFightScene);
-        });
-    }
-
-    /// <summary>
     /// 加载基地场景
     /// </summary>
     /// <param name="actionForComplete"></param>
@@ -34,6 +18,22 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     {
         UnLoadBaseScene();
         manager.GetBaseScene((targetScene) =>
+        {
+            currentBaseScene = Instantiate(targetScene);
+            currentBaseScene.SetActive(true);
+            currentBaseScene.transform.position = Vector3.zero;
+            currentBaseScene.transform.eulerAngles = Vector3.zero;
+            actionForComplete?.Invoke(currentBaseScene);
+        });
+    }
+
+    /// <summary>
+    /// 加载战斗场景
+    /// </summary>
+    public void LoadFightScene(int fightSceneId, Action<GameObject> actionForComplete)
+    {
+        UnLoadFightScene();
+        manager.GetFightScene(fightSceneId, (targetScene) =>
         {
             currentFightScene = Instantiate(targetScene);
             currentFightScene.SetActive(true);
@@ -63,5 +63,34 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         {
             DestroyImmediate(currentBaseScene);
         }
+    }
+
+    /// <summary>
+    /// 清理世界所有数据
+    /// </summary>
+    public async void ClearWorldData(Action actionForComplete)
+    {      
+        //打开加载UI
+        UIHandler.Instance.OpenUIAndCloseOther<UILoading>();
+        //关闭所有控制
+        GameControlHandler.Instance.manager.EnableAllControl(false);
+
+        await new WaitNextFrame();
+        UnLoadBaseScene();
+        await new WaitNextFrame();
+        //logic清理
+        BaseGameLogic gameLogic =  GameHandler.Instance.manager.GetGameLogic<BaseGameLogic>();
+        if (gameLogic != null)
+        {
+            gameLogic.ClearGame();
+        }
+        await new WaitNextFrame();
+        //清理粒子
+        EffectHandler.Instance.manager.Clear();
+        await new WaitNextFrame();
+        //清理缓存
+        System.GC.Collect();
+        await new WaitNextFrame();
+        actionForComplete?.Invoke();
     }
 }

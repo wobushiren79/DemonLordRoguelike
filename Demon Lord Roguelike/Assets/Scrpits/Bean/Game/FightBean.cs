@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 [Serializable]
 public class FightBean
@@ -29,6 +30,31 @@ public class FightBean
 
     public FightCreatureBean fightDefCoreData;//防守核心数据
     public GameFightCreatureEntity fightDefCoreCreature;//防守方核心生物实例
+
+    /// <summary>
+    /// 清理数据
+    /// </summary>
+    public void Clear()
+    {
+        foreach (var item in dicCreatureEntity)
+        {
+            var itemValue = item.Value;
+            if (itemValue != null && itemValue.creatureObj != null)
+            {
+                GameObject.DestroyImmediate(itemValue.creatureObj);
+            }
+        }
+        dicCreatureEntity.Clear();
+        dicFightPosition.Clear();
+        dicAttCreatureEntity.Clear();
+
+        if (fightDefCoreCreature != null && fightDefCoreCreature.creatureObj != null)
+        {
+            GameObject.DestroyImmediate(fightDefCoreCreature.creatureObj);
+        }
+        fightDefCoreCreature = null;
+        fightDefCoreData = null;
+    }
 
     /// <summary>
     /// 初始化波数数据

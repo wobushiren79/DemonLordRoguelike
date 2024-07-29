@@ -1,0 +1,569 @@
+
+Bandelu_Avator.png
+size: 2047,1953
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+0101qun
+  rotate: false
+  xy: 1801, 1459
+  size: 188, 184
+  orig: 188, 184
+  offset: 0, 0
+  index: -1
+0103xionglian
+  rotate: false
+  xy: 1601, 1203
+  size: 392, 254
+  orig: 392, 254
+  offset: 0, 0
+  index: -1
+0104zuobi
+  rotate: true
+  xy: 1268, 905
+  size: 296, 478
+  orig: 296, 478
+  offset: 0, 0
+  index: -1
+0105fashu
+  rotate: false
+  xy: 771, 1904
+  size: 47, 47
+  orig: 47, 47
+  offset: 0, 0
+  index: -1
+0106fashu
+  rotate: false
+  xy: 2, 1914
+  size: 37, 37
+  orig: 37, 37
+  offset: 0, 0
+  index: -1
+0108tou
+  rotate: true
+  xy: 1880, 1645
+  size: 130, 136
+  orig: 130, 136
+  offset: 0, 0
+  index: -1
+0109jiaolian
+  rotate: true
+  xy: 2, 1150
+  size: 260, 361
+  orig: 260, 361
+  offset: 0, 0
+  index: -1
+0110zuotui
+  rotate: true
+  xy: 365, 1101
+  size: 259, 602
+  orig: 259, 602
+  offset: 0, 0
+  index: -1
+0111yaodai
+  rotate: false
+  xy: 2, 1412
+  size: 386, 174
+  orig: 386, 174
+  offset: 0, 0
+  index: -1
+0112shenti
+  rotate: false
+  xy: 390, 1389
+  size: 206, 191
+  orig: 206, 191
+  offset: 0, 0
+  index: -1
+0113lian
+  rotate: true
+  xy: 267, 1910
+  size: 41, 70
+  orig: 41, 70
+  offset: 0, 0
+  index: -1
+0114shenti
+  rotate: false
+  xy: 1675, 533
+  size: 370, 370
+  orig: 370, 370
+  offset: 0, 0
+  index: -1
+0116maozi1
+  rotate: false
+  xy: 443, 426
+  size: 400, 353
+  orig: 400, 353
+  offset: 0, 0
+  index: -1
+0116maozi2
+  rotate: true
+  xy: 1362, 1886
+  size: 65, 75
+  orig: 65, 75
+  offset: 0, 0
+  index: -1
+0117maozi2
+  rotate: false
+  xy: 845, 180
+  size: 399, 425
+  orig: 399, 425
+  offset: 0, 0
+  index: -1
+0118youtui
+  rotate: true
+  xy: 2, 781
+  size: 318, 944
+  orig: 318, 944
+  offset: 0, 0
+  index: -1
+0121youxiaobi
+  rotate: true
+  xy: 973, 1313
+  size: 182, 326
+  orig: 182, 326
+  offset: 0, 0
+  index: -1
+0122youdabi
+  rotate: false
+  xy: 969, 1047
+  size: 297, 264
+  orig: 297, 264
+  offset: 0, 0
+  index: -1
+0124toufa
+  rotate: false
+  xy: 1301, 1259
+  size: 298, 229
+  orig: 298, 229
+  offset: 0, 0
+  index: -1
+0201gaoguang
+  rotate: false
+  xy: 1166, 1895
+  size: 98, 56
+  orig: 98, 56
+  offset: 0, 0
+  index: -1
+0202mei
+  rotate: false
+  xy: 1439, 1885
+  size: 120, 66
+  orig: 120, 66
+  offset: 0, 0
+  index: -1
+0203yanwen
+  rotate: false
+  xy: 416, 1905
+  size: 85, 46
+  orig: 85, 46
+  offset: 0, 0
+  index: -1
+0204gaoguang
+  rotate: false
+  xy: 339, 1909
+  size: 75, 42
+  orig: 75, 42
+  offset: 0, 0
+  index: -1
+0205yanmao
+  rotate: false
+  xy: 403, 1824
+  size: 130, 79
+  orig: 130, 79
+  offset: 0, 0
+  index: -1
+0206yanpi
+  rotate: false
+  xy: 535, 1818
+  size: 127, 85
+  orig: 127, 85
+  offset: 0, 0
+  index: -1
+0207yangaoguang
+  rotate: false
+  xy: 1266, 1891
+  size: 94, 60
+  orig: 94, 60
+  offset: 0, 0
+  index: -1
+0208yanqiu
+  rotate: false
+  xy: 1805, 1882
+  size: 103, 69
+  orig: 103, 69
+  offset: 0, 0
+  index: -1
+0209yanbai
+  rotate: false
+  xy: 1910, 1882
+  size: 114, 69
+  orig: 114, 69
+  offset: 0, 0
+  index: -1
+1
+  rotate: false
+  xy: 317, 1826
+  size: 84, 81
+  orig: 84, 81
+  offset: 0, 0
+  index: -1
+1001kaola
+  rotate: false
+  xy: 2, 437
+  size: 439, 342
+  orig: 439, 342
+  offset: 0, 0
+  index: -1
+1002guang
+  rotate: false
+  xy: 948, 607
+  size: 318, 438
+  orig: 318, 438
+  offset: 0, 0
+  index: -1
+1003guangdian
+  rotate: true
+  xy: 866, 1542
+  size: 153, 194
+  orig: 153, 194
+  offset: 0, 0
+  index: -1
+1006kaola
+  rotate: false
+  xy: 1268, 581
+  size: 405, 322
+  orig: 405, 322
+  offset: 0, 0
+  index: -1
+1007kaola
+  rotate: true
+  xy: 1246, 140
+  size: 439, 416
+  orig: 439, 416
+  offset: 0, 0
+  index: -1
+1007kaolaa
+  rotate: false
+  xy: 1042, 1803
+  size: 96, 94
+  orig: 96, 94
+  offset: 0, 0
+  index: -1
+1007kaolb
+  rotate: true
+  xy: 217, 1588
+  size: 126, 177
+  orig: 126, 177
+  offset: 0, 0
+  index: -1
+1008guang
+  rotate: true
+  xy: 2, 2
+  size: 422, 550
+  orig: 422, 550
+  offset: 0, 0
+  index: -1
+1009guang
+  rotate: false
+  xy: 1238, 1789
+  size: 170, 95
+  orig: 170, 95
+  offset: 0, 0
+  index: -1
+2
+  rotate: false
+  xy: 1140, 1797
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+2001biaoqing
+  rotate: false
+  xy: 159, 1724
+  size: 136, 106
+  orig: 136, 106
+  offset: 0, 0
+  index: -1
+2002biaoqing
+  rotate: false
+  xy: 573, 1705
+  size: 141, 110
+  orig: 141, 110
+  offset: 0, 0
+  index: -1
+2003biaoqing
+  rotate: false
+  xy: 1193, 1665
+  size: 126, 122
+  orig: 126, 122
+  offset: 0, 0
+  index: -1
+2004biaoqing
+  rotate: false
+  xy: 435, 1709
+  size: 136, 107
+  orig: 136, 107
+  offset: 0, 0
+  index: -1
+2005biaoqing
+  rotate: false
+  xy: 297, 1716
+  size: 136, 106
+  orig: 136, 106
+  offset: 0, 0
+  index: -1
+3
+  rotate: false
+  xy: 715, 1546
+  size: 149, 149
+  orig: 149, 149
+  offset: 0, 0
+  index: -1
+4
+  rotate: false
+  xy: 1062, 1501
+  size: 167, 162
+  orig: 167, 162
+  offset: 0, 0
+  index: -1
+a0001
+  rotate: false
+  xy: 1738, 1777
+  size: 244, 103
+  orig: 244, 103
+  offset: 0, 0
+  index: -1
+a0002
+  rotate: false
+  xy: 1503, 1490
+  size: 296, 169
+  orig: 296, 169
+  offset: 0, 0
+  index: -1
+a0003
+  rotate: false
+  xy: 760, 1811
+  size: 280, 86
+  orig: 280, 86
+  offset: 0, 0
+  index: -1
+a0004
+  rotate: false
+  xy: 716, 1697
+  size: 350, 104
+  orig: 350, 104
+  offset: 0, 0
+  index: -1
+a0005
+  rotate: false
+  xy: 396, 1582
+  size: 317, 121
+  orig: 317, 121
+  offset: 0, 0
+  index: -1
+a0006
+  rotate: false
+  xy: 820, 1899
+  size: 344, 52
+  orig: 344, 52
+  offset: 0, 0
+  index: -1
+a0007
+  rotate: false
+  xy: 598, 1362
+  size: 373, 178
+  orig: 373, 178
+  offset: 0, 0
+  index: -1
+b0001
+  rotate: false
+  xy: 2, 1726
+  size: 155, 104
+  orig: 155, 104
+  offset: 0, 0
+  index: -1
+b0002
+  rotate: false
+  xy: 1231, 1497
+  size: 270, 166
+  orig: 270, 166
+  offset: 0, 0
+  index: -1
+b0003
+  rotate: false
+  xy: 1566, 1661
+  size: 312, 114
+  orig: 312, 114
+  offset: 0, 0
+  index: -1
+b0004
+  rotate: false
+  xy: 503, 1905
+  size: 266, 46
+  orig: 266, 46
+  offset: 0, 0
+  index: -1
+b0005
+  rotate: false
+  xy: 1321, 1665
+  size: 243, 112
+  orig: 243, 112
+  offset: 0, 0
+  index: -1
+b0006
+  rotate: false
+  xy: 2, 1599
+  size: 213, 123
+  orig: 213, 123
+  offset: 0, 0
+  index: -1
+b0007
+  rotate: false
+  xy: 1410, 1779
+  size: 326, 102
+  orig: 326, 102
+  offset: 0, 0
+  index: -1
+b0008
+  rotate: false
+  xy: 80, 1832
+  size: 235, 76
+  orig: 235, 76
+  offset: 0, 0
+  index: -1
+b0009
+  rotate: false
+  xy: 1561, 1883
+  size: 242, 68
+  orig: 242, 68
+  offset: 0, 0
+  index: -1
+b0010
+  rotate: false
+  xy: 41, 1912
+  size: 224, 39
+  orig: 224, 39
+  offset: 0, 0
+  index: -1
+zzz1
+  rotate: true
+  xy: 1068, 1678
+  size: 117, 123
+  orig: 117, 123
+  offset: 0, 0
+  index: -1
+zzz2
+  rotate: false
+  xy: 664, 1817
+  size: 94, 86
+  orig: 94, 86
+  offset: 0, 0
+  index: -1
+zzz3
+  rotate: false
+  xy: 2, 1841
+  size: 76, 69
+  orig: 76, 69
+  offset: 0, 0
+  index: -1
+
+Bandelu_Avator2.png
+size: 1874,1852
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+0123pifeng
+  rotate: true
+  xy: 1362, 25
+  size: 820, 510
+  orig: 820, 510
+  offset: 0, 0
+  index: -1
+1010guang
+  rotate: true
+  xy: 2, 2
+  size: 843, 1358
+  orig: 843, 1358
+  offset: 0, 0
+  index: -1
+1011guang
+  rotate: false
+  xy: 2, 847
+  size: 1826, 1003
+  orig: 1826, 1003
+  offset: 0, 0
+  index: -1
+
+Bandelu_Avator3.png
+size: 1862,1687
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+0102pifeng
+  rotate: true
+  xy: 1308, 495
+  size: 758, 495
+  orig: 758, 495
+  offset: 0, 0
+  index: -1
+0107fa
+  rotate: false
+  xy: 2, 815
+  size: 664, 438
+  orig: 664, 438
+  offset: 0, 0
+  index: -1
+0115qunzi
+  rotate: false
+  xy: 668, 770
+  size: 638, 483
+  orig: 638, 483
+  offset: 0, 0
+  index: -1
+0119qunhou
+  rotate: false
+  xy: 2, 1255
+  size: 504, 430
+  orig: 504, 430
+  offset: 0, 0
+  index: -1
+1004daizi
+  rotate: false
+  xy: 2, 2
+  size: 1610, 491
+  orig: 1610, 491
+  offset: 0, 0
+  index: -1
+1005guang
+  rotate: true
+  xy: 508, 1255
+  size: 430, 1352
+  orig: 430, 1352
+  offset: 0, 0
+  index: -1
+
+Bandelu_Avator4.png
+size: 1497,1129
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+0120wuqi
+  rotate: true
+  xy: 2, 2
+  size: 1125, 1493
+  orig: 1125, 1493
+  offset: 0, 0
+  index: -1
+
+Bandelu_Avator5.png
+size: 1576,1466
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+0125pifeng
+  rotate: false
+  xy: 2, 2
+  size: 1572, 1462
+  orig: 1572, 1462
+  offset: 0, 0
+  index: -1

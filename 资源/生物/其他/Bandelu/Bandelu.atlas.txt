@@ -1,0 +1,293 @@
+
+Bandelu.png
+size: 1061,269
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+accessory1
+  rotate: true
+  xy: 705, 2
+  size: 26, 24
+  orig: 26, 24
+  offset: 0, 0
+  index: -1
+accessory2
+  rotate: true
+  xy: 105, 5
+  size: 49, 41
+  orig: 49, 41
+  offset: 0, 0
+  index: -1
+accessory3
+  rotate: true
+  xy: 215, 57
+  size: 31, 14
+  orig: 31, 14
+  offset: 0, 0
+  index: -1
+bag
+  rotate: true
+  xy: 354, 6
+  size: 82, 41
+  orig: 82, 41
+  offset: 0, 0
+  index: -1
+cloak1
+  rotate: false
+  xy: 883, 154
+  size: 103, 113
+  orig: 103, 113
+  offset: 0, 0
+  index: -1
+cloak2
+  rotate: true
+  xy: 433, 10
+  size: 78, 89
+  orig: 78, 89
+  offset: 0, 0
+  index: -1
+eye1
+  rotate: false
+  xy: 148, 7
+  size: 86, 47
+  orig: 86, 47
+  offset: 0, 0
+  index: -1
+face
+  rotate: false
+  xy: 771, 151
+  size: 110, 116
+  orig: 110, 116
+  offset: 0, 0
+  index: -1
+foot1
+  rotate: false
+  xy: 771, 133
+  size: 12, 16
+  orig: 12, 16
+  offset: 0, 0
+  index: -1
+forearm1
+  rotate: true
+  xy: 1001, 58
+  size: 36, 22
+  orig: 36, 22
+  offset: 0, 0
+  index: -1
+forearm2
+  rotate: true
+  xy: 27, 4
+  size: 50, 49
+  orig: 50, 49
+  offset: 0, 0
+  index: -1
+forearm3
+  rotate: false
+  xy: 705, 59
+  size: 54, 39
+  orig: 54, 39
+  offset: 0, 0
+  index: -1
+guang
+  rotate: false
+  xy: 1030, 38
+  size: 23, 25
+  orig: 23, 25
+  offset: 0, 0
+  index: -1
+hair1
+  rotate: false
+  xy: 940, 52
+  size: 59, 100
+  orig: 59, 100
+  offset: 0, 0
+  index: -1
+hair2
+  rotate: false
+  xy: 894, 19
+  size: 44, 113
+  orig: 44, 113
+  offset: 0, 0
+  index: -1
+hair3
+  rotate: false
+  xy: 524, 3
+  size: 58, 88
+  orig: 58, 88
+  offset: 0, 0
+  index: -1
+hair4
+  rotate: false
+  xy: 397, 7
+  size: 34, 81
+  orig: 34, 81
+  offset: 0, 0
+  index: -1
+hat1
+  rotate: true
+  xy: 2, 56
+  size: 211, 182
+  orig: 211, 182
+  offset: 0, 0
+  index: -1
+hat2
+  rotate: true
+  xy: 469, 93
+  size: 174, 128
+  orig: 174, 128
+  offset: 0, 0
+  index: -1
+headwear
+  rotate: false
+  xy: 186, 56
+  size: 27, 32
+  orig: 27, 32
+  offset: 0, 0
+  index: -1
+hide hair1
+  rotate: false
+  xy: 657, 3
+  size: 46, 95
+  orig: 46, 95
+  offset: 0, 0
+  index: -1
+hide hair2
+  rotate: false
+  xy: 761, 13
+  size: 131, 118
+  orig: 131, 118
+  offset: 0, 0
+  index: -1
+hide hair3
+  rotate: false
+  xy: 599, 100
+  size: 95, 167
+  orig: 95, 167
+  offset: 0, 0
+  index: -1
+hide hair4
+  rotate: false
+  xy: 696, 133
+  size: 73, 134
+  orig: 73, 134
+  offset: 0, 0
+  index: -1
+leg1
+  rotate: false
+  xy: 1006, 3
+  size: 22, 53
+  orig: 22, 53
+  offset: 0, 0
+  index: -1
+leg2
+  rotate: true
+  xy: 696, 100
+  size: 31, 63
+  orig: 31, 63
+  offset: 0, 0
+  index: -1
+loop1
+  rotate: true
+  xy: 883, 134
+  size: 18, 17
+  orig: 18, 17
+  offset: 0, 0
+  index: -1
+main arm1
+  rotate: true
+  xy: 731, 2
+  size: 26, 18
+  orig: 26, 18
+  offset: 0, 0
+  index: -1
+main arm2
+  rotate: false
+  xy: 1025, 65
+  size: 29, 29
+  orig: 29, 29
+  offset: 0, 0
+  index: -1
+month1
+  rotate: false
+  xy: 148, 2
+  size: 9, 3
+  orig: 9, 3
+  offset: 0, 0
+  index: -1
+nu
+  rotate: true
+  xy: 1001, 96
+  size: 58, 55
+  orig: 58, 55
+  offset: 0, 0
+  index: -1
+palm1
+  rotate: true
+  xy: 940, 8
+  size: 42, 64
+  orig: 42, 64
+  offset: 0, 0
+  index: -1
+palm2
+  rotate: false
+  xy: 1021, 157
+  size: 38, 40
+  orig: 38, 40
+  offset: 0, 0
+  index: -1
+qipao
+  rotate: false
+  xy: 988, 156
+  size: 31, 41
+  orig: 31, 41
+  offset: 0, 0
+  index: -1
+skirt1
+  rotate: false
+  xy: 584, 14
+  size: 71, 77
+  orig: 71, 77
+  offset: 0, 0
+  index: -1
+skirt2
+  rotate: false
+  xy: 236, 3
+  size: 116, 85
+  orig: 116, 85
+  offset: 0, 0
+  index: -1
+skirt3
+  rotate: true
+  xy: 78, 4
+  size: 50, 25
+  orig: 50, 25
+  offset: 0, 0
+  index: -1
+thigh1
+  rotate: true
+  xy: 705, 30
+  size: 27, 53
+  orig: 27, 53
+  offset: 0, 0
+  index: -1
+thigh2
+  rotate: false
+  xy: 2, 3
+  size: 23, 51
+  orig: 23, 51
+  offset: 0, 0
+  index: -1
+weapon
+  rotate: true
+  xy: 186, 90
+  size: 177, 281
+  orig: 177, 281
+  offset: 0, 0
+  index: -1
+xiong-face1
+  rotate: false
+  xy: 988, 199
+  size: 68, 68
+  orig: 68, 68
+  offset: 0, 0
+  index: -1

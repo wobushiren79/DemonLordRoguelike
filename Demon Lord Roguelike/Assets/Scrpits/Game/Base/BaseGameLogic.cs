@@ -39,6 +39,14 @@ public abstract class BaseGameLogic
     /// </summary>
     public virtual void EndGame()
     {
+        ClearGame();
+    }
+
+    /// <summary>
+    /// 清理数据
+    /// </summary>
+    public virtual void ClearGame()
+    {
         GameHandler.Instance.manager.SetGameState(GameStateEnum.End);
         EndGameForUnRegisterEvent();
         System.GC.Collect();

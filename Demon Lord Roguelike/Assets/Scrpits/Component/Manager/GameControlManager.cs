@@ -80,7 +80,7 @@ public class GameControlManager : BaseManager
             if (_controlForGameBase == null)
             {
                 _controlForGameBase = gameObject.AddComponent<ControlForGameBase>();
-                listControl.Add(_controlForGameFight);
+                listControl.Add(_controlForGameBase);
             }
             return _controlForGameBase;
         }

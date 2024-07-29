@@ -1,5 +1,5 @@
 
-aoliweiya.png
+Aoliweiya.png
 size: 1000,269
 format: RGBA8888
 filter: Linear,Linear

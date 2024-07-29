@@ -1,5 +1,5 @@
 
-aoliweiya_avator.png
+Aoliweiya_Avator.png
 size: 2025,1920
 format: RGBA8888
 filter: Linear,Linear
@@ -236,7 +236,7 @@ aoliweiya_9
   offset: 0, 0
   index: -1
 
-aoliweiya_avator2.png
+Aoliweiya_Avator2.png
 size: 1941,1701
 format: RGBA8888
 filter: Linear,Linear
@@ -291,7 +291,7 @@ aoliweiya_8
   offset: 0, 0
   index: -1
 
-aoliweiya_avator3.png
+Aoliweiya_Avator3.png
 size: 1602,1707
 format: RGBA8888
 filter: Linear,Linear
@@ -304,7 +304,7 @@ aoliweiya_37
   offset: 0, 0
   index: -1
 
-aoliweiya_avator4.png
+Aoliweiya_Avator4.png
 size: 1624,1972
 format: RGBA8888
 filter: Linear,Linear
@@ -338,7 +338,7 @@ aoliweiya_36
   offset: 0, 0
   index: -1
 
-aoliweiya_avator5.png
+Aoliweiya_Avator5.png
 size: 1291,1290
 format: RGBA8888
 filter: Linear,Linear
@@ -351,7 +351,7 @@ aoliweiya_52
   offset: 0, 0
   index: -1
 
-aoliweiya_avator6.png
+Aoliweiya_Avator6.png
 size: 1616,1611
 format: RGBA8888
 filter: Linear,Linear
@@ -371,7 +371,7 @@ aoliweiya_50
   offset: 0, 0
   index: -1
 
-aoliweiya_avator7.png
+Aoliweiya_Avator7.png
 size: 1842,1584
 format: RGBA8888
 filter: Linear,Linear
@@ -398,7 +398,7 @@ aoliweiya_48
   offset: 0, 0
   index: -1
 
-aoliweiya_avator8.png
+Aoliweiya_Avator8.png
 size: 1156,1111
 format: RGBA8888
 filter: Linear,Linear

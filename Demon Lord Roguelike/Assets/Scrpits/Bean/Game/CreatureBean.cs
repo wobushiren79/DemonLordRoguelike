@@ -21,7 +21,7 @@ public class CreatureBean
         this.id = id;
     }
 
-    public void AddSkin(int skinId)
+    public void AddSkin(long skinId)
     {
         CreatureSkinBean creatureSkinBean = new CreatureSkinBean(skinId);
         listSkinData.Add(creatureSkinBean);
@@ -30,8 +30,7 @@ public class CreatureBean
     /// <summary>
     /// 获取皮肤列表
     /// </summary>
-    /// <returns></returns>
-    public string[] GetSkinArray()
+    public string[] GetSkinArray(int showType = 0)
     {
         List<string> listSkin = new List<string>();
         for (int i = 0; i < listSkinData.Count; i++)
@@ -44,7 +43,10 @@ public class CreatureBean
             }
             else
             {
-                listSkin.Add(itemSkinInfo.res_name);
+                if(itemSkinInfo.show_type == showType)
+                {
+                    listSkin.Add(itemSkinInfo.res_name);
+                }
             }
         }
         return listSkin.ToArray();
