@@ -1,13 +1,17 @@
 using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
+using static Cinemachine.CinemachineBlendDefinition;
 
 public partial class CameraManager
 {
     public CinemachineVirtualCamera cm_Fight;
     public CinemachineVirtualCamera cm_Base;
+
+    public CinemachineBrain cinemachineBrain;
 
     /// <summary>
     /// 加载主摄像头
@@ -24,6 +28,8 @@ public partial class CameraManager
 
             cm_Fight = objCameraData.transform.Find("CMFollow").GetComponent<CinemachineVirtualCamera>();
             cm_Base = objCameraData.transform.Find("CMBase").GetComponent<CinemachineVirtualCamera>();
+
+            cinemachineBrain = mainCamera.GetComponent<CinemachineBrain>();
         }
         else
         {
@@ -39,5 +45,17 @@ public partial class CameraManager
     {
         cm_Fight?.gameObject.SetActive(false);
         cm_Base?.gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// 设置主摄像头的默认切换动画
+    /// </summary>
+    public void SetMainCameraDefaultBlend(float time, Style style = Style.EaseInOut)
+    {
+        if (cinemachineBrain != null)
+        {
+            cinemachineBrain.m_DefaultBlend.m_Style = style;
+            cinemachineBrain.m_DefaultBlend.m_Time = time;
+        }
     }
 }

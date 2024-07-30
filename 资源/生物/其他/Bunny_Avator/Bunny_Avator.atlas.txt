@@ -1,0 +1,585 @@
+
+Bunny_Avator.png
+size: 2038,1979
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_ foot
+  rotate: true
+  xy: 851, 1321
+  size: 181, 491
+  orig: 181, 491
+  offset: 0, 0
+  index: -1
+L_bust01_dropshadow
+  rotate: false
+  xy: 2, 1847
+  size: 170, 92
+  orig: 170, 92
+  offset: 0, 0
+  index: -1
+L_bust01_dropshadow2
+  rotate: false
+  xy: 1675, 97
+  size: 297, 289
+  orig: 297, 289
+  offset: 0, 0
+  index: -1
+L_hand01
+  rotate: false
+  xy: 1676, 1315
+  size: 308, 183
+  orig: 308, 183
+  offset: 0, 0
+  index: -1
+L_rabbit ear01
+  rotate: false
+  xy: 542, 2
+  size: 348, 293
+  orig: 348, 293
+  offset: 0, 0
+  index: -1
+R_ foot
+  rotate: true
+  xy: 1018, 822
+  size: 217, 480
+  orig: 217, 480
+  offset: 0, 0
+  index: -1
+R_bust01_dropshadow
+  rotate: true
+  xy: 1922, 1804
+  size: 173, 108
+  orig: 173, 108
+  offset: 0, 0
+  index: -1
+R_bust01_dropshadow2
+  rotate: false
+  xy: 1031, 113
+  size: 284, 273
+  orig: 284, 273
+  offset: 0, 0
+  index: -1
+R_forearm
+  rotate: true
+  xy: 2, 954
+  size: 205, 518
+  orig: 205, 518
+  offset: 0, 0
+  index: -1
+R_forearm_dropshadow
+  rotate: false
+  xy: 1822, 1891
+  size: 98, 86
+  orig: 98, 86
+  offset: 0, 0
+  index: -1
+R_hand01
+  rotate: true
+  xy: 1317, 100
+  size: 286, 356
+  orig: 286, 356
+  offset: 0, 0
+  index: -1
+R_rabbit ear01
+  rotate: false
+  xy: 1281, 388
+  size: 733, 228
+  orig: 733, 228
+  offset: 0, 0
+  index: -1
+R_upperarm
+  rotate: true
+  xy: 2, 458
+  size: 208, 693
+  orig: 208, 693
+  offset: 0, 0
+  index: -1
+R_upperarm_dropshadow
+  rotate: true
+  xy: 1103, 1672
+  size: 123, 284
+  orig: 123, 284
+  offset: 0, 0
+  index: -1
+accessory
+  rotate: true
+  xy: 402, 1831
+  size: 100, 185
+  orig: 100, 185
+  offset: 0, 0
+  index: -1
+back hair L01
+  rotate: true
+  xy: 895, 1504
+  size: 166, 460
+  orig: 166, 460
+  offset: 0, 0
+  index: -1
+back hair L02
+  rotate: true
+  xy: 548, 1691
+  size: 114, 350
+  orig: 114, 350
+  offset: 0, 0
+  index: -1
+back hair L03
+  rotate: true
+  xy: 2, 1565
+  size: 149, 480
+  orig: 149, 480
+  offset: 0, 0
+  index: -1
+back hair L04
+  rotate: true
+  xy: 702, 1119
+  size: 200, 486
+  orig: 200, 486
+  offset: 0, 0
+  index: -1
+back hair R01
+  rotate: true
+  xy: 308, 1358
+  size: 167, 541
+  orig: 167, 541
+  offset: 0, 0
+  index: -1
+back hair R02
+  rotate: true
+  xy: 697, 297
+  size: 266, 332
+  orig: 266, 332
+  offset: 0, 0
+  index: -1
+back hair R03
+  rotate: true
+  xy: 40, 1941
+  size: 36, 226
+  orig: 36, 226
+  offset: 0, 0
+  index: -1
+back hair R04
+  rotate: false
+  xy: 636, 1916
+  size: 83, 61
+  orig: 83, 61
+  offset: 0, 0
+  index: -1
+body_dropshadow
+  rotate: false
+  xy: 522, 904
+  size: 494, 213
+  orig: 494, 213
+  offset: 0, 0
+  index: -1
+cheek(normal)
+  rotate: false
+  xy: 889, 565
+  size: 390, 255
+  orig: 390, 255
+  offset: 0, 0
+  index: -1
+costume_apron02
+  rotate: false
+  xy: 1615, 860
+  size: 324, 231
+  orig: 324, 231
+  offset: 0, 0
+  index: -1
+eyebrow(normal)
+  rotate: false
+  xy: 1497, 1892
+  size: 323, 85
+  orig: 323, 85
+  offset: 0, 0
+  index: -1
+eyelids(normal)
+  rotate: false
+  xy: 1149, 1893
+  size: 259, 84
+  orig: 259, 84
+  offset: 0, 0
+  index: -1
+eyeline bottom(normal)
+  rotate: false
+  xy: 1241, 1797
+  size: 278, 93
+  orig: 278, 93
+  offset: 0, 0
+  index: -1
+eyeline top(normal)
+  rotate: false
+  xy: 1521, 1786
+  size: 330, 103
+  orig: 330, 103
+  offset: 0, 0
+  index: -1
+eyes close_eyelids
+  rotate: false
+  xy: 443, 1933
+  size: 191, 44
+  orig: 191, 44
+  offset: 0, 0
+  index: -1
+eyes close_eyeline top
+  rotate: false
+  xy: 827, 1894
+  size: 320, 83
+  orig: 320, 83
+  offset: 0, 0
+  index: -1
+front hair01
+  rotate: true
+  xy: 1389, 1640
+  size: 144, 298
+  orig: 144, 298
+  offset: 0, 0
+  index: -1
+front hair02
+  rotate: true
+  xy: 2, 1381
+  size: 182, 304
+  orig: 182, 304
+  offset: 0, 0
+  index: -1
+front hair03
+  rotate: true
+  xy: 1344, 1245
+  size: 217, 310
+  orig: 217, 310
+  offset: 0, 0
+  index: -1
+glass
+  rotate: true
+  xy: 453, 668
+  size: 234, 434
+  orig: 234, 434
+  offset: 0, 0
+  index: -1
+mouth open
+  rotate: false
+  xy: 356, 1938
+  size: 85, 39
+  orig: 85, 39
+  offset: 0, 0
+  index: -1
+mouth(normal)
+  rotate: false
+  xy: 268, 1938
+  size: 86, 39
+  orig: 86, 39
+  offset: 0, 0
+  index: -1
+neck
+  rotate: true
+  xy: 1357, 1464
+  size: 174, 317
+  orig: 174, 317
+  offset: 0, 0
+  index: -1
+neck_collar01
+  rotate: true
+  xy: 1689, 1500
+  size: 169, 232
+  orig: 169, 232
+  offset: 0, 0
+  index: -1
+neck_collar02
+  rotate: true
+  xy: 300, 1716
+  size: 113, 246
+  orig: 113, 246
+  offset: 0, 0
+  index: -1
+neck_collar03
+  rotate: false
+  xy: 900, 1688
+  size: 201, 117
+  orig: 201, 117
+  offset: 0, 0
+  index: -1
+neck_ribbon01
+  rotate: false
+  xy: 1853, 1671
+  size: 183, 131
+  orig: 183, 131
+  offset: 0, 0
+  index: -1
+neck_ribbon02
+  rotate: false
+  xy: 1410, 1893
+  size: 85, 84
+  orig: 85, 84
+  offset: 0, 0
+  index: -1
+neck_ribbon03
+  rotate: true
+  xy: 721, 1901
+  size: 76, 104
+  orig: 76, 104
+  offset: 0, 0
+  index: -1
+nose(normal)
+  rotate: true
+  xy: 2, 1949
+  size: 28, 36
+  orig: 28, 36
+  offset: 0, 0
+  index: -1
+pupil(normal)
+  rotate: false
+  xy: 2, 1733
+  size: 296, 105
+  orig: 296, 105
+  offset: 0, 0
+  index: -1
+side hair L01
+  rotate: true
+  xy: 2, 187
+  size: 269, 538
+  orig: 269, 538
+  offset: 0, 0
+  index: -1
+side hair L02
+  rotate: true
+  xy: 484, 1527
+  size: 162, 409
+  orig: 162, 409
+  offset: 0, 0
+  index: -1
+side hair R01
+  rotate: true
+  xy: 1190, 1041
+  size: 202, 423
+  orig: 202, 423
+  offset: 0, 0
+  index: -1
+side hair R02
+  rotate: true
+  xy: 1500, 618
+  size: 240, 466
+  orig: 240, 466
+  offset: 0, 0
+  index: -1
+skirt02
+  rotate: false
+  xy: 1656, 1093
+  size: 352, 220
+  orig: 352, 220
+  offset: 0, 0
+  index: -1
+skirt05
+  rotate: true
+  xy: 2, 724
+  size: 228, 449
+  orig: 228, 449
+  offset: 0, 0
+  index: -1
+straw01
+  rotate: true
+  xy: 2, 1161
+  size: 195, 348
+  orig: 195, 348
+  offset: 0, 0
+  index: -1
+straw02
+  rotate: true
+  xy: 352, 1161
+  size: 195, 348
+  orig: 195, 348
+  offset: 0, 0
+  index: -1
+tray
+  rotate: false
+  xy: 589, 1807
+  size: 650, 84
+  orig: 650, 84
+  offset: 0, 0
+  index: -1
+ｈ(normal)
+  rotate: false
+  xy: 174, 1840
+  size: 226, 96
+  orig: 226, 96
+  offset: 0, 0
+  index: -1
+
+Bunny_Avator2.png
+size: 1940,1975
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_leg_upper
+  rotate: true
+  xy: 747, 697
+  size: 354, 1191
+  orig: 354, 1191
+  offset: 0, 0
+  index: -1
+L_leg_upper_dropshadow
+  rotate: true
+  xy: 1230, 1098
+  size: 354, 630
+  orig: 354, 630
+  offset: 0, 0
+  index: -1
+R_leg_lower
+  rotate: false
+  xy: 675, 1053
+  size: 553, 920
+  orig: 553, 920
+  offset: 0, 0
+  index: -1
+R_leg_upper
+  rotate: false
+  xy: 2, 872
+  size: 671, 1101
+  orig: 671, 1101
+  offset: 0, 0
+  index: -1
+R_leg_upper_dropshadow
+  rotate: false
+  xy: 747, 96
+  size: 530, 599
+  orig: 530, 599
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 2, 2
+  size: 743, 868
+  orig: 743, 868
+  offset: 0, 0
+  index: -1
+body_waist
+  rotate: false
+  xy: 1230, 1454
+  size: 652, 519
+  orig: 652, 519
+  offset: 0, 0
+  index: -1
+skirt01
+  rotate: false
+  xy: 1279, 120
+  size: 532, 575
+  orig: 532, 575
+  offset: 0, 0
+  index: -1
+
+Bunny_Avator3.png
+size: 2021,1699
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_bust01
+  rotate: false
+  xy: 1377, 757
+  size: 332, 444
+  orig: 332, 444
+  offset: 0, 0
+  index: -1
+L_forearm
+  rotate: true
+  xy: 355, 2
+  size: 316, 441
+  orig: 316, 441
+  offset: 0, 0
+  index: -1
+L_leg_lower
+  rotate: false
+  xy: 2, 813
+  size: 352, 884
+  orig: 352, 884
+  offset: 0, 0
+  index: -1
+L_rabbit ear02
+  rotate: true
+  xy: 1675, 46
+  size: 345, 333
+  orig: 345, 333
+  offset: 0, 0
+  index: -1
+L_upperarm
+  rotate: false
+  xy: 1308, 316
+  size: 365, 439
+  orig: 365, 439
+  offset: 0, 0
+  index: -1
+R_bust01
+  rotate: false
+  xy: 1711, 747
+  size: 298, 458
+  orig: 298, 458
+  offset: 0, 0
+  index: -1
+back hair 01
+  rotate: false
+  xy: 977, 1203
+  size: 562, 494
+  orig: 562, 494
+  offset: 0, 0
+  index: -1
+body_dropshadow2
+  rotate: false
+  xy: 898, 90
+  size: 352, 300
+  orig: 352, 300
+  offset: 0, 0
+  index: -1
+costume_apron01
+  rotate: false
+  xy: 356, 737
+  size: 519, 513
+  orig: 519, 513
+  offset: 0, 0
+  index: -1
+costume_body
+  rotate: false
+  xy: 1541, 1207
+  size: 462, 490
+  orig: 462, 490
+  offset: 0, 0
+  index: -1
+costume_bust
+  rotate: true
+  xy: 2, 251
+  size: 560, 351
+  orig: 560, 351
+  offset: 0, 0
+  index: -1
+head
+  rotate: true
+  xy: 355, 320
+  size: 415, 541
+  orig: 415, 541
+  offset: 0, 0
+  index: -1
+head_dropshadow
+  rotate: false
+  xy: 898, 392
+  size: 408, 403
+  orig: 408, 403
+  offset: 0, 0
+  index: -1
+shorts
+  rotate: false
+  xy: 356, 1252
+  size: 619, 445
+  orig: 619, 445
+  offset: 0, 0
+  index: -1
+skirt03
+  rotate: true
+  xy: 1675, 393
+  size: 352, 344
+  orig: 352, 344
+  offset: 0, 0
+  index: -1
+skirt04
+  rotate: true
+  xy: 877, 797
+  size: 404, 498
+  orig: 404, 498
+  offset: 0, 0
+  index: -1

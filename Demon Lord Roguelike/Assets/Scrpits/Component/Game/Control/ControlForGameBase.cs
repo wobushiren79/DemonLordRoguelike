@@ -51,7 +51,10 @@ public class ControlForGameBase : BaseControl
     {
         base.EnabledControl(enabled);
         if (!enabled)
+        {
+            GameControlHandler.Instance.manager.controlTargetForCreature.SetActive(false);
             return;
+        }
         GameControlHandler.Instance.manager.controlTargetForCreature.SetActive(true);
         //²¥·Å¶¯»­
         PlayAnimForControlTarget(AnimationCreatureStateEnum.Idle);
@@ -154,7 +157,7 @@ public class ControlForGameBase : BaseControl
         //ºËÐÄ
         if (firstHit.gameObject.name.Equals("Core"))
         {
-
+            UIBaseCore targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
         }
     }
 }

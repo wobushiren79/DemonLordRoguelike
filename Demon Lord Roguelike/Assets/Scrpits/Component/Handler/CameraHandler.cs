@@ -1,11 +1,14 @@
 using Cinemachine;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
 using Spine.Unity;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
-public partial class CameraHandler : BaseHandler<CameraHandler, CameraManager>
+public partial class CameraHandler
 {
     /// <summary>
     /// 初始化数据
@@ -16,9 +19,53 @@ public partial class CameraHandler : BaseHandler<CameraHandler, CameraManager>
     }
 
     /// <summary>
+    /// 设置核心UI
+    /// </summary>
+    public bool SetBaseCoreCamera(int priority, bool isEnable)
+    {
+        return SetCameraForBaseScene(priority, isEnable, "CV_Core");
+    }
+
+    /// <summary>
+    /// 设置扭蛋机UI
+    /// </summary>
+    public bool SetGashaponMachineCamera(int priority, bool isEnable)
+    {
+        return SetCameraForBaseScene(priority, isEnable, "CV_GashaponMachine");
+    }
+
+    protected bool SetCameraForBaseScene(int priority, bool isEnable, string cvName)
+    {
+        var targetBaseScene = WorldHandler.Instance.currentBaseScene;
+        if (targetBaseScene == null)
+        {
+            LogUtil.LogError("设置摄像头失败 没有找到对应场景");
+            return false;
+        }
+        var targetCVTF = targetBaseScene.transform.Find($"CV_List/{cvName}");
+        if (targetCVTF == null)
+        {
+            LogUtil.LogError("设置摄像头失败 没有找到对应CV Transfrom");
+            return false;
+        }
+        var targetCV = targetCVTF.GetComponent<CinemachineVirtualCamera>();
+        if (targetCV == null)
+        {
+            LogUtil.LogError("设置摄像头失败 没有找到对应CV CinemachineVirtualCamera");
+            return false;
+        }
+        //打开切换动画
+        manager.SetMainCameraDefaultBlend(0.5f);
+        targetCV.gameObject.SetActive(isEnable);
+        targetCV.Priority = priority;
+        return true;
+    }
+
+
+    /// <summary>
     /// 设置基地场景摄像头
     /// </summary>
-    public async void SetBaseSceneCamera(Action actionForComplete,FightCreatureBean fightCreatureData)
+    public async void SetBaseSceneCamera(Action actionForComplete, FightCreatureBean fightCreatureData)
     {
         var mainCamera = manager.mainCamera;
         mainCamera.gameObject.SetActive(true);
@@ -36,6 +83,9 @@ public partial class CameraHandler : BaseHandler<CameraHandler, CameraManager>
         SpineHandler.Instance.ChangeSkeletonSkin(targetSkeletonAnimation.skeleton, skinArray);
 
         controlTarget.transform.position = new Vector3(0, 0, -3);
+
+        //关闭切换动画
+        manager.SetMainCameraDefaultBlend(0);
 
         ShowCinemachineCamera(CinemachineCameraEnum.Base);
 
@@ -56,6 +106,9 @@ public partial class CameraHandler : BaseHandler<CameraHandler, CameraManager>
 
         var controlTarget = GameControlHandler.Instance.manager.controlTargetForEmpty;
         controlTarget.transform.position = new Vector3(3, 0, 3);
+
+        //关闭切换动画
+        manager.SetMainCameraDefaultBlend(0);
 
         ShowCinemachineCamera(CinemachineCameraEnum.Fight);
 

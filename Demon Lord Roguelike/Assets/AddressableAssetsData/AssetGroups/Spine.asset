@@ -97,6 +97,26 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f8141804bb09fda40b034b5b8914cb59
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Bunny/Bunny_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 624b825f893bd464d9d206d8ebdb01fd
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Bunny/Bunny_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 06fd34f8e6847f346b9bd23ddc75477b
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Dunniang/Dunniang_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7556ab057c0c91649abd6a79b5b3beff
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Dunniang/Dunniang_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}
   m_SchemaSet:
