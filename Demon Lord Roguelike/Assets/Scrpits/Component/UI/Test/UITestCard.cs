@@ -10,6 +10,8 @@ public partial class UITestCard : BaseUIComponent
     public override void Awake()
     {
         base.Awake();
+        ui_InputText_Obj_Size.onValueChanged.AddListener(ListenerForObjSize);
+
         ui_InputText_S_Size.onValueChanged.AddListener(ListenerForSSize);
         ui_InputText_S_X.onValueChanged.AddListener(ListenerForSX);
         ui_InputText_S_Y.onValueChanged.AddListener(ListenerForSY);
@@ -17,6 +19,22 @@ public partial class UITestCard : BaseUIComponent
         ui_InputText_B_Size.onValueChanged.AddListener(ListenerForBSize);
         ui_InputText_B_X.onValueChanged.AddListener(ListenerForBX);
         ui_InputText_B_Y.onValueChanged.AddListener(ListenerForBY);
+
+        //测试标准模型
+        CreatureBean creatureNormalTest = new CreatureBean(1);
+        creatureNormalTest.AddAllSkin();
+        var creatureMode = CreatureModelCfg.GetItemData(1);
+        SpineHandler.Instance.SetSkeletonDataAsset(ui_NormalModel, creatureMode.res_name);
+        string[] skinArray = creatureNormalTest.GetSkinArray();
+        SpineHandler.Instance.ChangeSkeletonSkin(ui_NormalModel.skeleton, skinArray);
+        ui_NormalModel.transform.localScale = Vector3.one * creatureMode.size_spine;
+    }
+
+    public override void OpenUI()
+    {
+        base.OpenUI();
+        GameControlHandler.Instance.manager.EnableAllControl(false);
+        CameraHandler.Instance.SetCardTestCamera();
     }
 
     public override void OnClickForButton(Button viewButton)
@@ -39,6 +57,12 @@ public partial class UITestCard : BaseUIComponent
         ui_CreatureCardItem.SetData(fightCreatureData, new Vector2(-200, 0));
         ui_ViewCreatureCardDetails.SetData(fightCreatureData);
 
+        //测试目标模型
+        var creatureMode = CreatureModelCfg.GetItemData(fightCreatureData.creatureData.id);
+        SpineHandler.Instance.SetSkeletonDataAsset(ui_TargetModel, creatureMode.res_name);
+        SpineHandler.Instance.ChangeSkeletonSkin(ui_TargetModel.skeleton, fightCreatureData.creatureData.GetSkinArray());
+        ui_TargetModel.transform.localScale = Vector3.one * creatureMode.size_spine;
+
         ui_InputText_S_Size.text = $"{ui_CreatureCardItem.ui_Icon.transform.localScale.x}";
         ui_InputText_S_X.text = $"{ui_CreatureCardItem.ui_Icon.rectTransform.anchoredPosition.x}";
         ui_InputText_S_Y.text = $"{ui_CreatureCardItem.ui_Icon.rectTransform.anchoredPosition.y}";
@@ -46,6 +70,8 @@ public partial class UITestCard : BaseUIComponent
         ui_InputText_B_Size.text = $"{ui_ViewCreatureCardDetails.ui_Icon.transform.localScale.x}";
         ui_InputText_B_X.text = $"{ui_ViewCreatureCardDetails.ui_Icon.rectTransform.anchoredPosition.x}";
         ui_InputText_B_Y.text = $"{ui_ViewCreatureCardDetails.ui_Icon.rectTransform.anchoredPosition.y}";
+
+        ui_InputText_Obj_Size.text = $"{ui_TargetModel.transform.localScale.x}";
     }
 
     /// <summary>
@@ -61,20 +87,27 @@ public partial class UITestCard : BaseUIComponent
         float bposX = ui_ViewCreatureCardDetails.ui_Icon.rectTransform.anchoredPosition.x;
         float bposY = ui_ViewCreatureCardDetails.ui_Icon.rectTransform.anchoredPosition.y;
 
+        float objSize = ui_TargetModel.transform.localScale.x;
         string sData = $"{ssize};{sposX},{sposY}";
         string bData = $"{bsize};{bposX},{bposY}";
 
         LogUtil.LogError($"小卡：{sData}");
         LogUtil.LogError($"大卡：{bData}");
-
+        LogUtil.LogError($"实体大小：{objSize}");
 #if UNITY_EDITOR
         List<ExcelChangeData> listData = new List<ExcelChangeData>() 
         {
             new ExcelChangeData(fightCreatureData.creatureData.id,"ui_data_s",sData),
-            new ExcelChangeData(fightCreatureData.creatureData.id,"ui_data_b",bData)
+            new ExcelChangeData(fightCreatureData.creatureData.id,"ui_data_b",bData),
+            new ExcelChangeData(fightCreatureData.creatureData.id,"size_spine",$"{objSize}")
         };
         ExcelUtil.SetExcelData("Assets/Data/Excel/excel_creature_model[生物模型信息].xlsx", "CreatureModel", listData);
 #endif
+    }
+
+    public void ListenerForObjSize(string data)
+    {
+        ui_TargetModel.transform.localScale = Vector3.one * float.Parse(data);
     }
 
     public void ListenerForSSize(string data)

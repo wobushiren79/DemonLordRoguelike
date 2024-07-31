@@ -117,6 +117,26 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c6cdc055574fec749a3262e00aec94d6
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Emma/Emma_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 180960e6658d1994a950169e7d4b1149
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Emma/Emma_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ede8be43ba9723b479e30fc1983fba6c
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Eleamor/Eleamor_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5447c20542e351b4d90dacb9135bffc3
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Eleamor/Eleamor_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}
   m_SchemaSet:

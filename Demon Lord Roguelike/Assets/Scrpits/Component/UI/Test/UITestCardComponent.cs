@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine.UI;
+using Spine.Unity;
 
 
 public partial class UITestCard
@@ -21,6 +22,12 @@ public partial class UITestCard
     public TMP_InputField ui_InputText_B_Y;
 
     public Button ui_CreateData;
+
+    public SkeletonAnimation ui_NormalModel;
+
+    public SkeletonAnimation ui_TargetModel;
+
+    public TMP_InputField ui_InputText_Obj_Size;
 
 
 }

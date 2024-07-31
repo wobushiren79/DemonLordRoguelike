@@ -1,0 +1,305 @@
+
+Emma_Avator.png
+size: 1999,1818
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_0
+  rotate: false
+  xy: 596, 1746
+  size: 274, 70
+  orig: 274, 70
+  offset: 0, 0
+  index: -1
+1_1
+  rotate: false
+  xy: 1575, 1707
+  size: 290, 109
+  orig: 290, 109
+  offset: 0, 0
+  index: -1
+1_10
+  rotate: true
+  xy: 599, 1375
+  size: 194, 434
+  orig: 194, 434
+  offset: 0, 0
+  index: -1
+1_11
+  rotate: true
+  xy: 1309, 1339
+  size: 206, 383
+  orig: 206, 383
+  offset: 0, 0
+  index: -1
+1_12
+  rotate: true
+  xy: 1035, 1363
+  size: 206, 272
+  orig: 206, 272
+  offset: 0, 0
+  index: -1
+1_13
+  rotate: true
+  xy: 741, 1066
+  size: 271, 636
+  orig: 271, 636
+  offset: 0, 0
+  index: -1
+1_14
+  rotate: false
+  xy: 872, 1723
+  size: 139, 93
+  orig: 139, 93
+  offset: 0, 0
+  index: -1
+1_15
+  rotate: true
+  xy: 1221, 1714
+  size: 102, 111
+  orig: 102, 111
+  offset: 0, 0
+  index: -1
+1_16
+  rotate: false
+  xy: 2, 1622
+  size: 270, 142
+  orig: 270, 142
+  offset: 0, 0
+  index: -1
+1_17
+  rotate: true
+  xy: 418, 334
+  size: 378, 457
+  orig: 378, 457
+  offset: 0, 0
+  index: -1
+1_2
+  rotate: false
+  xy: 157, 1766
+  size: 222, 50
+  orig: 222, 50
+  offset: 0, 0
+  index: -1
+1_20
+  rotate: false
+  xy: 505, 714
+  size: 409, 350
+  orig: 409, 350
+  offset: 0, 0
+  index: -1
+1_21
+  rotate: true
+  xy: 274, 1605
+  size: 142, 286
+  orig: 142, 286
+  offset: 0, 0
+  index: -1
+1_22
+  rotate: true
+  xy: 291, 1120
+  size: 253, 448
+  orig: 253, 448
+  offset: 0, 0
+  index: -1
+1_23
+  rotate: true
+  xy: 916, 692
+  size: 354, 860
+  orig: 354, 860
+  offset: 0, 0
+  index: -1
+1_25
+  rotate: false
+  xy: 2, 799
+  size: 501, 319
+  orig: 501, 319
+  offset: 0, 0
+  index: -1
+1_27
+  rotate: true
+  xy: 562, 1585
+  size: 159, 296
+  orig: 159, 296
+  offset: 0, 0
+  index: -1
+1_28
+  rotate: true
+  xy: 1694, 1334
+  size: 211, 246
+  orig: 211, 246
+  offset: 0, 0
+  index: -1
+1_29
+  rotate: true
+  xy: 1414, 1547
+  size: 158, 513
+  orig: 158, 513
+  offset: 0, 0
+  index: -1
+1_3
+  rotate: false
+  xy: 381, 1749
+  size: 213, 67
+  orig: 213, 67
+  offset: 0, 0
+  index: -1
+1_30
+  rotate: true
+  xy: 2, 1172
+  size: 227, 287
+  orig: 227, 287
+  offset: 0, 0
+  index: -1
+1_31
+  rotate: true
+  xy: 267, 1401
+  size: 182, 330
+  orig: 182, 330
+  offset: 0, 0
+  index: -1
+1_32
+  rotate: true
+  xy: 877, 299
+  size: 391, 862
+  orig: 391, 862
+  offset: 0, 0
+  index: -1
+1_33
+  rotate: true
+  xy: 860, 1571
+  size: 139, 552
+  orig: 139, 552
+  offset: 0, 0
+  index: -1
+1_34
+  rotate: true
+  xy: 2, 2
+  size: 295, 1893
+  orig: 295, 1893
+  offset: 0, 0
+  index: -1
+1_36
+  rotate: true
+  xy: 2, 1436
+  size: 184, 263
+  orig: 184, 263
+  offset: 0, 0
+  index: -1
+1_4
+  rotate: false
+  xy: 1013, 1715
+  size: 206, 101
+  orig: 206, 101
+  offset: 0, 0
+  index: -1
+1_5
+  rotate: true
+  xy: 2, 1802
+  size: 14, 26
+  orig: 14, 26
+  offset: 0, 0
+  index: -1
+1_6
+  rotate: false
+  xy: 93, 1791
+  size: 62, 25
+  orig: 62, 25
+  offset: 0, 0
+  index: -1
+1_7
+  rotate: false
+  xy: 30, 1796
+  size: 61, 20
+  orig: 61, 20
+  offset: 0, 0
+  index: -1
+1_8
+  rotate: true
+  xy: 1334, 1712
+  size: 104, 239
+  orig: 104, 239
+  offset: 0, 0
+  index: -1
+1_9
+  rotate: true
+  xy: 1379, 1048
+  size: 284, 618
+  orig: 284, 618
+  offset: 0, 0
+  index: -1
+head_shadow
+  rotate: true
+  xy: 2, 421
+  size: 376, 414
+  orig: 376, 414
+  offset: 0, 0
+  index: -1
+
+Emma_Avator2.png
+size: 1905,1510
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_18
+  rotate: false
+  xy: 2, 704
+  size: 438, 407
+  orig: 438, 407
+  offset: 0, 0
+  index: -1
+1_19
+  rotate: true
+  xy: 2, 35
+  size: 580, 635
+  orig: 580, 635
+  offset: 0, 0
+  index: -1
+1_26
+  rotate: true
+  xy: 639, 2
+  size: 564, 1147
+  orig: 564, 1147
+  offset: 0, 0
+  index: -1
+1_35
+  rotate: true
+  xy: 2, 1113
+  size: 395, 1901
+  orig: 395, 1901
+  offset: 0, 0
+  index: -1
+1_38
+  rotate: false
+  xy: 1038, 568
+  size: 614, 543
+  orig: 614, 543
+  offset: 0, 0
+  index: -1
+1_39
+  rotate: true
+  xy: 442, 617
+  size: 494, 594
+  orig: 494, 594
+  offset: 0, 0
+  index: -1
+
+Emma_Avator3.png
+size: 1684,934
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_24
+  rotate: false
+  xy: 1060, 204
+  size: 622, 728
+  orig: 622, 728
+  offset: 0, 0
+  index: -1
+1_37
+  rotate: false
+  xy: 2, 2
+  size: 1056, 930
+  orig: 1056, 930
+  offset: 0, 0
+  index: -1

@@ -41,7 +41,7 @@ public class GameTestEditor : Editor
         if (GUILayout.Button("ÏÔÊ¾¿¨Æ¬") && Application.isPlaying)
         {
             FightCreatureBean fightCreature = new FightCreatureBean(creatureId);
-            fightCreature.AddAllSkin();
+            fightCreature.creatureData.AddAllSkin();
             launcher.StartForCardTest(fightCreature);
         }
         EditorGUILayout.BeginHorizontal();
@@ -94,7 +94,7 @@ public class GameTestEditor : Editor
         if (GUILayout.Button("¿ªÊ¼") && Application.isPlaying)
         {
             FightCreatureBean itemData = new FightCreatureBean(fightCardId);
-            itemData.AddAllSkin();
+            itemData.creatureData.AddAllSkin();
             launcher.StartForBaseTest(itemData);
         }
         EditorGUILayout.BeginHorizontal();
@@ -153,7 +153,7 @@ public class GameTestEditor : Editor
         for (int i = 0; i < testDataCardNum; i++)
         {
             FightCreatureBean itemData = new FightCreatureBean(fightCardId);
-            itemData.AddAllSkin();
+            itemData.creatureData.AddAllSkin();
             //itemData.creatureData.AddSkin(1000001);
             //itemData.creatureData.AddSkin(1010010);
             listCreatureData.Add(itemData); ;

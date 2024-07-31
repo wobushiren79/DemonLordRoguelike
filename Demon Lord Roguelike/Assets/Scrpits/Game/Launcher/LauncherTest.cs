@@ -38,7 +38,10 @@ public class LauncherTest : BaseLauncher
     public void StartForCardTest(FightCreatureBean fightCreature)
     {
         WorldHandler.Instance.ClearWorldData(() =>
-        {
+        {       
+            //æµÕ∑≥ı ºªØ
+            CameraHandler.Instance.InitData();
+
             var ui = UIHandler.Instance.OpenUIAndCloseOther<UITestCard>();
             ui.SetData(fightCreature);
         });

@@ -119,6 +119,19 @@ public partial class CameraHandler
         actionForComplete?.Invoke();
     }
 
+    /// <summary>
+    /// …Ë÷√ø®∆¨≤‚ ‘æµÕ∑
+    /// </summary>
+    public void SetCardTestCamera()
+    {
+        var mainCamera = manager.mainCamera;
+        mainCamera.gameObject.SetActive(true);
+
+        //πÿ±’«–ªª∂Øª≠
+        manager.SetMainCameraDefaultBlend(0);
+    }
+
+
     public void ShowCinemachineCamera(CinemachineCameraEnum cinemachineCameraEnum)
     {
         manager.HideAllCM();

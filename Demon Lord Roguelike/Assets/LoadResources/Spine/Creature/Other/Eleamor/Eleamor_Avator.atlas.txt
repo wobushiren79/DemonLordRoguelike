@@ -1,0 +1,429 @@
+
+Eleamor_Avator.png
+size: 2040,1987
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_0
+  rotate: true
+  xy: 2, 1969
+  size: 16, 19
+  orig: 16, 19
+  offset: 0, 0
+  index: -1
+1_1
+  rotate: false
+  xy: 309, 1955
+  size: 91, 30
+  orig: 91, 30
+  offset: 0, 0
+  index: -1
+1_10
+  rotate: true
+  xy: 1245, 1534
+  size: 190, 372
+  orig: 190, 372
+  offset: 0, 0
+  index: -1
+1_11
+  rotate: true
+  xy: 1591, 1893
+  size: 92, 196
+  orig: 92, 196
+  offset: 0, 0
+  index: -1
+1_12
+  rotate: true
+  xy: 1265, 1757
+  size: 152, 260
+  orig: 152, 260
+  offset: 0, 0
+  index: -1
+1_13
+  rotate: false
+  xy: 1459, 1911
+  size: 130, 74
+  orig: 130, 74
+  offset: 0, 0
+  index: -1
+1_14
+  rotate: false
+  xy: 1327, 1919
+  size: 130, 66
+  orig: 130, 66
+  offset: 0, 0
+  index: -1
+1_15
+  rotate: false
+  xy: 898, 1943
+  size: 56, 42
+  orig: 56, 42
+  offset: 0, 0
+  index: -1
+1_16
+  rotate: false
+  xy: 1036, 1941
+  size: 58, 44
+  orig: 58, 44
+  offset: 0, 0
+  index: -1
+1_17
+  rotate: false
+  xy: 821, 1944
+  size: 75, 41
+  orig: 75, 41
+  offset: 0, 0
+  index: -1
+1_18
+  rotate: false
+  xy: 956, 1942
+  size: 78, 43
+  orig: 78, 43
+  offset: 0, 0
+  index: -1
+1_19
+  rotate: false
+  xy: 77, 1960
+  size: 52, 25
+  orig: 52, 25
+  offset: 0, 0
+  index: -1
+1_2
+  rotate: false
+  xy: 606, 1951
+  size: 101, 34
+  orig: 101, 34
+  offset: 0, 0
+  index: -1
+1_20
+  rotate: false
+  xy: 402, 1954
+  size: 50, 31
+  orig: 50, 31
+  offset: 0, 0
+  index: -1
+1_21
+  rotate: false
+  xy: 454, 1953
+  size: 49, 32
+  orig: 49, 32
+  offset: 0, 0
+  index: -1
+1_22
+  rotate: true
+  xy: 23, 1966
+  size: 19, 52
+  orig: 19, 52
+  offset: 0, 0
+  index: -1
+1_23
+  rotate: true
+  xy: 881, 578
+  size: 354, 409
+  orig: 354, 409
+  offset: 0, 0
+  index: -1
+1_24
+  rotate: false
+  xy: 1789, 1867
+  size: 166, 118
+  orig: 166, 118
+  offset: 0, 0
+  index: -1
+1_25
+  rotate: true
+  xy: 275, 1835
+  size: 114, 423
+  orig: 114, 423
+  offset: 0, 0
+  index: -1
+1_26
+  rotate: true
+  xy: 2, 1697
+  size: 136, 554
+  orig: 136, 554
+  offset: 0, 0
+  index: -1
+1_27
+  rotate: false
+  xy: 2, 440
+  size: 435, 478
+  orig: 435, 478
+  offset: 0, 0
+  index: -1
+1_28
+  rotate: true
+  xy: 1292, 542
+  size: 390, 461
+  orig: 390, 461
+  offset: 0, 0
+  index: -1
+1_29
+  rotate: true
+  xy: 131, 1960
+  size: 25, 90
+  orig: 25, 90
+  offset: 0, 0
+  index: -1
+1_3
+  rotate: false
+  xy: 1096, 1921
+  size: 110, 64
+  orig: 110, 64
+  offset: 0, 0
+  index: -1
+1_30
+  rotate: true
+  xy: 2, 920
+  size: 318, 457
+  orig: 318, 457
+  offset: 0, 0
+  index: -1
+1_31
+  rotate: true
+  xy: 1392, 1136
+  size: 290, 432
+  orig: 290, 432
+  offset: 0, 0
+  index: -1
+1_32
+  rotate: true
+  xy: 847, 1799
+  size: 140, 218
+  orig: 140, 218
+  offset: 0, 0
+  index: -1
+1_33
+  rotate: true
+  xy: 1527, 1726
+  size: 165, 204
+  orig: 165, 204
+  offset: 0, 0
+  index: -1
+1_34
+  rotate: true
+  xy: 2, 1277
+  size: 253, 258
+  orig: 253, 258
+  offset: 0, 0
+  index: -1
+1_35
+  rotate: false
+  xy: 1138, 1301
+  size: 252, 231
+  orig: 252, 231
+  offset: 0, 0
+  index: -1
+1_36
+  rotate: false
+  xy: 505, 1953
+  size: 99, 32
+  orig: 99, 32
+  offset: 0, 0
+  index: -1
+1_37
+  rotate: false
+  xy: 223, 1959
+  size: 84, 26
+  orig: 84, 26
+  offset: 0, 0
+  index: -1
+1_38
+  rotate: false
+  xy: 2, 1849
+  size: 271, 108
+  orig: 271, 108
+  offset: 0, 0
+  index: -1
+1_39
+  rotate: true
+  xy: 709, 1948
+  size: 37, 110
+  orig: 37, 110
+  offset: 0, 0
+  index: -1
+1_4
+  rotate: false
+  xy: 1208, 1920
+  size: 117, 65
+  orig: 117, 65
+  offset: 0, 0
+  index: -1
+1_40
+  rotate: false
+  xy: 531, 1433
+  size: 605, 170
+  orig: 605, 170
+  offset: 0, 0
+  index: -1
+1_42
+  rotate: true
+  xy: 461, 708
+  size: 343, 418
+  orig: 343, 418
+  offset: 0, 0
+  index: -1
+1_44
+  rotate: false
+  xy: 794, 1053
+  size: 290, 378
+  orig: 290, 378
+  offset: 0, 0
+  index: -1
+1_45
+  rotate: false
+  xy: 439, 222
+  size: 391, 484
+  orig: 391, 484
+  offset: 0, 0
+  index: -1
+1_47
+  rotate: true
+  xy: 1067, 1772
+  size: 146, 196
+  orig: 146, 196
+  offset: 0, 0
+  index: -1
+1_48
+  rotate: true
+  xy: 2, 1532
+  size: 163, 527
+  orig: 163, 527
+  offset: 0, 0
+  index: -1
+1_49
+  rotate: true
+  xy: 262, 1240
+  size: 191, 530
+  orig: 191, 530
+  offset: 0, 0
+  index: -1
+1_5
+  rotate: false
+  xy: 1733, 1658
+  size: 305, 207
+  orig: 305, 207
+  offset: 0, 0
+  index: -1
+1_50
+  rotate: true
+  xy: 832, 2
+  size: 538, 1090
+  orig: 538, 1090
+  offset: 0, 0
+  index: -1
+1_54
+  rotate: false
+  xy: 1086, 934
+  size: 817, 200
+  orig: 817, 200
+  offset: 0, 0
+  index: -1
+1_6
+  rotate: true
+  xy: 700, 1807
+  size: 135, 145
+  orig: 135, 145
+  offset: 0, 0
+  index: -1
+1_7
+  rotate: true
+  xy: 558, 1637
+  size: 160, 317
+  orig: 160, 317
+  offset: 0, 0
+  index: -1
+1_8
+  rotate: false
+  xy: 1619, 1428
+  size: 232, 228
+  orig: 232, 228
+  offset: 0, 0
+  index: -1
+1_9
+  rotate: true
+  xy: 877, 1605
+  size: 165, 366
+  orig: 165, 366
+  offset: 0, 0
+  index: -1
+
+Eleamor_Avator2.png
+size: 1690,1867
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_52
+  rotate: false
+  xy: 1281, 2
+  size: 407, 1863
+  orig: 407, 1863
+  offset: 0, 0
+  index: -1
+1_55
+  rotate: false
+  xy: 2, 178
+  size: 1277, 1687
+  orig: 1277, 1687
+  offset: 0, 0
+  index: -1
+
+Eleamor_Avator3.png
+size: 1734,1425
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_46
+  rotate: false
+  xy: 1084, 2
+  size: 609, 1025
+  orig: 609, 1025
+  offset: 0, 0
+  index: -1
+1_51
+  rotate: true
+  xy: 2, 481
+  size: 546, 1080
+  orig: 546, 1080
+  offset: 0, 0
+  index: -1
+1_53
+  rotate: true
+  xy: 2, 1029
+  size: 394, 1730
+  orig: 394, 1730
+  offset: 0, 0
+  index: -1
+
+Eleamor_Avator4.png
+size: 1807,1624
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_41
+  rotate: false
+  xy: 2, 8
+  size: 918, 1614
+  orig: 918, 1614
+  offset: 0, 0
+  index: -1
+1_43
+  rotate: false
+  xy: 922, 2
+  size: 883, 1620
+  orig: 883, 1620
+  offset: 0, 0
+  index: -1
+
+Eleamor_Avator5.png
+size: 1061,1295
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_56
+  rotate: false
+  xy: 2, 2
+  size: 1057, 1291
+  orig: 1057, 1291
+  offset: 0, 0
+  index: -1

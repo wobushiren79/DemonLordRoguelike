@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Eleamor_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: 27672b0e27d89fb44b0609f67149e13d, type: 3}
+  materials:
+  - {fileID: 2100000, guid: 2b64c3b20d3b5be4995f1220e0fb8ed2, type: 2}
+  - {fileID: 2100000, guid: 3f9828beb570dc248ad2b40446dda7da, type: 2}
+  - {fileID: 2100000, guid: f55b1a5c7b2467c46ad8a485b4e61052, type: 2}
+  - {fileID: 2100000, guid: ca29425680aa2ce44879a125b40330e3, type: 2}
+  - {fileID: 2100000, guid: 8ec36d5df20100c4d9fa3ab4416a9a8f, type: 2}

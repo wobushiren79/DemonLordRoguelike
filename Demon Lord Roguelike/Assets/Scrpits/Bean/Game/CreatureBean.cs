@@ -21,6 +21,23 @@ public class CreatureBean
         this.id = id;
     }
 
+    /// <summary>
+    /// 添加所有皮肤 用于测试
+    /// </summary>
+    public void AddAllSkin()
+    {
+        var allData = CreatureModelInfoCfg.GetAllData();
+        var creatureInfo = CreatureInfoCfg.GetItemData(id);
+        foreach (var itemData in allData)
+        {
+            var itemCreatureModelInfo = itemData.Value;
+            if (itemCreatureModelInfo.model_id == creatureInfo.model_id)
+            {
+                AddSkin(itemCreatureModelInfo.id);
+            }
+        }
+    }
+
     public void AddSkin(long skinId)
     {
         CreatureSkinBean creatureSkinBean = new CreatureSkinBean(skinId);
