@@ -36,6 +36,7 @@ public partial class CameraHandler
 
     protected bool SetCameraForBaseScene(int priority, bool isEnable, string cvName)
     {
+        manager.HideAllCM();
         var targetBaseScene = WorldHandler.Instance.currentBaseScene;
         if (targetBaseScene == null)
         {
