@@ -1,0 +1,324 @@
+
+Eris_Avator.png
+size: 2007,1951
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+ass
+  rotate: false
+  xy: 2, 1328
+  size: 460, 232
+  orig: 460, 232
+  offset: 0, 0
+  index: -1
+back of skirt
+  rotate: false
+  xy: 2, 600
+  size: 616, 351
+  orig: 616, 351
+  offset: 0, 0
+  index: -1
+bangsL
+  rotate: true
+  xy: 2, 1592
+  size: 170, 293
+  orig: 170, 293
+  offset: 0, 0
+  index: -1
+bangsR
+  rotate: true
+  xy: 1600, 1391
+  size: 240, 293
+  orig: 240, 293
+  offset: 0, 0
+  index: -1
+bustL
+  rotate: true
+  xy: 2, 997
+  size: 329, 352
+  orig: 329, 352
+  offset: 0, 0
+  index: -1
+bustR
+  rotate: true
+  xy: 356, 953
+  size: 331, 340
+  orig: 331, 340
+  offset: 0, 0
+  index: -1
+cloakL２
+  rotate: true
+  xy: 464, 1883
+  size: 66, 327
+  orig: 66, 327
+  offset: 0, 0
+  index: -1
+cloakR２
+  rotate: true
+  xy: 70, 1885
+  size: 64, 322
+  orig: 64, 322
+  offset: 0, 0
+  index: -1
+cloakedback２
+  rotate: true
+  xy: 793, 1882
+  size: 67, 293
+  orig: 67, 293
+  offset: 0, 0
+  index: -1
+eyebrow
+  rotate: false
+  xy: 1088, 1880
+  size: 338, 69
+  orig: 338, 69
+  offset: 0, 0
+  index: -1
+eyes
+  rotate: false
+  xy: 2, 1764
+  size: 333, 119
+  orig: 333, 119
+  offset: 0, 0
+  index: -1
+eyes closed
+  rotate: false
+  xy: 1428, 1872
+  size: 321, 77
+  orig: 321, 77
+  offset: 0, 0
+  index: -1
+forearmL
+  rotate: true
+  xy: 1159, 1496
+  size: 221, 439
+  orig: 221, 439
+  offset: 0, 0
+  index: -1
+forearmR
+  rotate: true
+  xy: 1043, 2
+  size: 413, 639
+  orig: 413, 639
+  offset: 0, 0
+  index: -1
+frill
+  rotate: false
+  xy: 1703, 1633
+  size: 302, 167
+  orig: 302, 167
+  offset: 0, 0
+  index: -1
+handL
+  rotate: false
+  xy: 1751, 1802
+  size: 178, 147
+  orig: 178, 147
+  offset: 0, 0
+  index: -1
+lower body１
+  rotate: true
+  xy: 599, 112
+  size: 440, 442
+  orig: 440, 442
+  offset: 0, 0
+  index: -1
+lower body２
+  rotate: false
+  xy: 2, 184
+  size: 595, 414
+  orig: 595, 414
+  offset: 0, 0
+  index: -1
+mouth
+  rotate: false
+  xy: 2, 1922
+  size: 66, 27
+  orig: 66, 27
+  offset: 0, 0
+  index: -1
+outline
+  rotate: true
+  xy: 620, 554
+  size: 383, 456
+  orig: 383, 456
+  offset: 0, 0
+  index: -1
+shorts
+  rotate: false
+  xy: 565, 1542
+  size: 592, 190
+  orig: 592, 190
+  offset: 0, 0
+  index: -1
+shorts ass
+  rotate: false
+  xy: 394, 1885
+  size: 68, 64
+  orig: 68, 64
+  offset: 0, 0
+  index: -1
+sideburnsL1
+  rotate: true
+  xy: 825, 1734
+  size: 144, 419
+  orig: 144, 419
+  offset: 0, 0
+  index: -1
+sideburnsL2
+  rotate: true
+  xy: 1246, 1719
+  size: 151, 455
+  orig: 151, 455
+  offset: 0, 0
+  index: -1
+sideburnsR1
+  rotate: true
+  xy: 464, 1286
+  size: 254, 413
+  orig: 254, 413
+  offset: 0, 0
+  index: -1
+sideburnsR2
+  rotate: true
+  xy: 337, 1758
+  size: 122, 486
+  orig: 122, 486
+  offset: 0, 0
+  index: -1
+thighL1
+  rotate: true
+  xy: 1423, 1128
+  size: 261, 562
+  orig: 261, 562
+  offset: 0, 0
+  index: -1
+thighR2
+  rotate: true
+  xy: 698, 939
+  size: 294, 593
+  orig: 294, 593
+  offset: 0, 0
+  index: -1
+tiara
+  rotate: false
+  xy: 297, 1562
+  size: 266, 194
+  orig: 266, 194
+  offset: 0, 0
+  index: -1
+upper armL
+  rotate: true
+  xy: 879, 1235
+  size: 259, 542
+  orig: 259, 542
+  offset: 0, 0
+  index: -1
+upper armR
+  rotate: true
+  xy: 1293, 818
+  size: 308, 562
+  orig: 308, 562
+  offset: 0, 0
+  index: -1
+upper body
+  rotate: true
+  xy: 1078, 417
+  size: 399, 822
+  orig: 399, 822
+  offset: 0, 0
+  index: -1
+
+Eris_Avator2.png
+size: 1926,1671
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+skirtL１
+  rotate: true
+  xy: 1225, 492
+  size: 473, 573
+  orig: 473, 573
+  offset: 0, 0
+  index: -1
+skirtL２
+  rotate: true
+  xy: 2, 516
+  size: 449, 593
+  orig: 449, 593
+  offset: 0, 0
+  index: -1
+skirtR１
+  rotate: true
+  xy: 2, 2
+  size: 496, 596
+  orig: 496, 596
+  offset: 0, 0
+  index: -1
+skirtR２
+  rotate: true
+  xy: 597, 500
+  size: 465, 626
+  orig: 465, 626
+  offset: 0, 0
+  index: -1
+thighL
+  rotate: true
+  xy: 2, 1374
+  size: 295, 1881
+  orig: 295, 1881
+  offset: 0, 0
+  index: -1
+thighR
+  rotate: true
+  xy: 2, 967
+  size: 405, 1922
+  orig: 405, 1922
+  offset: 0, 0
+  index: -1
+
+Eris_Avator3.png
+size: 1944,1307
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+cloakL１
+  rotate: true
+  xy: 2, 2
+  size: 657, 1940
+  orig: 657, 1940
+  offset: 0, 0
+  index: -1
+cloakR１
+  rotate: true
+  xy: 2, 661
+  size: 644, 1925
+  orig: 644, 1925
+  offset: 0, 0
+  index: -1
+
+Eris_Avator4.png
+size: 1690,1065
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+hair
+  rotate: true
+  xy: 2, 2
+  size: 1061, 1686
+  orig: 1061, 1686
+  offset: 0, 0
+  index: -1
+
+Eris_Avator5.png
+size: 1692,1713
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+cloakedback１
+  rotate: false
+  xy: 2, 2
+  size: 1688, 1709
+  orig: 1688, 1709
+  offset: 0, 0
+  index: -1

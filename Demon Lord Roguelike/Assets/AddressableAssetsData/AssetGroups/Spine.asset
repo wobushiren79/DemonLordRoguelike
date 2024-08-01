@@ -137,6 +137,26 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 708b824283470774e8a47821729b2abd
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Eris/Eris_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4bed7f88677a23548a0625f6cfe026e1
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Feizhalixiu/Feizhalixiu_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8b31eeecdd538114da9d38335d0f1eff
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Feizhalixiu/Feizhalixiu_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 415c778e084281845990baee1b78e04c
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Eris/Eris_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}
   m_SchemaSet:

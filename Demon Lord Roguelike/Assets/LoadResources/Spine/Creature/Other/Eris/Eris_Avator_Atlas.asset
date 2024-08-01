@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Eris_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: 48a785f11afc6414a8e84d2d298ef221, type: 3}
+  materials:
+  - {fileID: 2100000, guid: f8825bf3eaf73af478277a3811e2d5ce, type: 2}
+  - {fileID: 2100000, guid: ad7a67f16f609074494a9cb80f6432f1, type: 2}
+  - {fileID: 2100000, guid: e26d5a77a6e5f4948b5c07a27b0aaea9, type: 2}
+  - {fileID: 2100000, guid: 7535eba7c65c2384499324e626f27f78, type: 2}
+  - {fileID: 2100000, guid: 7d332900f3de0c64d9526898e544e0bb, type: 2}

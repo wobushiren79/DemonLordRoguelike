@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Feizhalixiu_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: 793b2298adbdb1149a24edbe0881ddb8, type: 3}
+  materials:
+  - {fileID: 2100000, guid: a8796d8dce6d3384bb552be2cf74a0c9, type: 2}
+  - {fileID: 2100000, guid: 22df4a473c862c747810b23bd64c2e30, type: 2}
+  - {fileID: 2100000, guid: bc21b9ec8b5b79844bd1a9206a915885, type: 2}
+  - {fileID: 2100000, guid: 0bccf2659646a1641b855f24f65a6aeb, type: 2}
+  - {fileID: 2100000, guid: 0c6e4b79437bd4d47b4cb1d731a3c157, type: 2}
+  - {fileID: 2100000, guid: b501edf2db225a3408703aa4c498eee6, type: 2}
+  - {fileID: 2100000, guid: 8aec3515fead5eb40943699522b423f4, type: 2}
+  - {fileID: 2100000, guid: 0b35f15d50e7a504a979773a0046b766, type: 2}
+  - {fileID: 2100000, guid: d147a49e5d2c771459a7ff26bdd41b9d, type: 2}
