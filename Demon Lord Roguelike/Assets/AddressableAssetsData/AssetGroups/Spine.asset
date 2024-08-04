@@ -157,6 +157,31 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f9694f08dbac0954f89111731fcff247
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Fulan/Fulan_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 09f0bf1c9889a284a8efa2dc7fa7c84a
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Fulan/Fulan_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9fa991b0352371a4583778974b7edd2a
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Gelinsipan/Gelinsipan_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 017a69ebf7a370d46910641d07524e90
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Gelinsipan/Gelinsipan_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 07b5a8b1a8740e64b8c09e9619a2a619
+    m_Address: Assets/LoadResources/Spine/Creature/Other/Panduola/Panduola_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}
   m_SchemaSet:

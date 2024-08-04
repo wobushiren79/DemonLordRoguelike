@@ -21,45 +21,52 @@ public partial class CameraHandler
     /// <summary>
     /// 设置核心UI
     /// </summary>
-    public bool SetBaseCoreCamera(int priority, bool isEnable)
+    public void SetBaseCoreCamera(int priority, bool isEnable)
     {
-        return SetCameraForBaseScene(priority, isEnable, "CV_Core");
+        SetCameraForBaseScene(priority, isEnable, "CV_Core");
     }
 
     /// <summary>
     /// 设置扭蛋机UI
     /// </summary>
-    public bool SetGashaponMachineCamera(int priority, bool isEnable)
+    public void SetGashaponMachineCamera(int priority, bool isEnable)
     {
-        return SetCameraForBaseScene(priority, isEnable, "CV_GashaponMachine");
+        SetCameraForBaseScene(priority, isEnable, "CV_GashaponMachine");
     }
 
-    protected bool SetCameraForBaseScene(int priority, bool isEnable, string cvName)
+    protected void SetCameraForBaseScene(int priority, bool isEnable, string cvName)
     {
         manager.HideAllCM();
         var targetBaseScene = WorldHandler.Instance.currentBaseScene;
         if (targetBaseScene == null)
         {
             LogUtil.LogError("设置摄像头失败 没有找到对应场景");
-            return false;
+            return;
         }
-        var targetCVTF = targetBaseScene.transform.Find($"CV_List/{cvName}");
-        if (targetCVTF == null)
+        var targetCVListTF = targetBaseScene.transform.Find($"CV_List");
+        if (targetCVListTF == null)
         {
-            LogUtil.LogError("设置摄像头失败 没有找到对应CV Transfrom");
-            return false;
+            LogUtil.LogError("设置摄像头失败 没有找到对应CV_List Transfrom");
+            return;
         }
-        var targetCV = targetCVTF.GetComponent<CinemachineVirtualCamera>();
-        if (targetCV == null)
+        //还原所有摄像头
+        var cvList = targetCVListTF.GetComponentsInChildren<CinemachineVirtualCamera>(true);
+        for (int i = 0; i < cvList.Length; i++)
         {
-            LogUtil.LogError("设置摄像头失败 没有找到对应CV CinemachineVirtualCamera");
-            return false;
+            var targetCV = cvList[i];
+            if (targetCV.name.Equals($"{cvName}"))
+            {
+                //打开切换动画
+                manager.SetMainCameraDefaultBlend(0.5f);
+                targetCV.gameObject.SetActive(isEnable);
+                targetCV.Priority = priority;
+            }
+            else
+            {
+                targetCV.gameObject.SetActive(false);
+                targetCV.Priority = 0;
+            }
         }
-        //打开切换动画
-        manager.SetMainCameraDefaultBlend(0.5f);
-        targetCV.gameObject.SetActive(isEnable);
-        targetCV.Priority = priority;
-        return true;
     }
 
 
@@ -73,10 +80,13 @@ public partial class CameraHandler
 
         var controlTarget = GameControlHandler.Instance.manager.controlTargetForCreature;
         var targetRenderer = controlTarget.transform.Find("Renderer");
+
         var targetSkeletonAnimation = targetRenderer.GetComponent<SkeletonAnimation>();
 
         var creatureInfo = fightCreatureData.GetCreatureInfo();
         var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
+        //设置大小
+        targetRenderer.transform.localScale = Vector3.one * creatureModel.size_spine;
         //设置骨骼数据
         SpineHandler.Instance.SetSkeletonDataAsset(targetSkeletonAnimation, creatureModel.res_name);
         string[] skinArray = fightCreatureData.creatureData.GetSkinArray();
@@ -94,6 +104,9 @@ public partial class CameraHandler
         manager.cm_Base.LookAt = targetRenderer;
         manager.cm_Base.PreviousStateIsValid = false;
         await new WaitNextFrame();
+        //设置偏转
+        targetRenderer.transform.eulerAngles = mainCamera.transform.eulerAngles;
+
         actionForComplete?.Invoke();
     }
 

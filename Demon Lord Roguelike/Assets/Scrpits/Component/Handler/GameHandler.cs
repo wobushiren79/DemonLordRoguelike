@@ -9,10 +9,22 @@ public class GameHandler : BaseHandler<GameHandler,GameManager>
     /// </summary>
     public void StartGameFight(FightBean fightData)
     {
-        if (manager.gameLogic == null)
+        if (manager.gameLogic == null || manager.gameLogic is not GameFightLogic)
             manager.gameLogic = new GameFightLogic();
         var gameLogic = manager.gameLogic as GameFightLogic;
         gameLogic.fightData = fightData;
+        manager.gameLogic.PreGame();
+    }
+
+    /// <summary>
+    /// ¿ªÊ¼Å¤µ°
+    /// </summary>
+    public void StartGashaponMachine(GashaponMachineBean gashaponMachineData)
+    {
+        if (manager.gameLogic == null || manager.gameLogic is not GashaponMachineLogic)
+            manager.gameLogic = new GashaponMachineLogic();
+        var gameLogic = manager.gameLogic as GashaponMachineLogic;
+        gameLogic.gashaponMachineData = gashaponMachineData;
         manager.gameLogic.PreGame();
     }
 

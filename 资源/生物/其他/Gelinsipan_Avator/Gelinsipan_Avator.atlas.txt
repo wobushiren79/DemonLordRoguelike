@@ -1,0 +1,873 @@
+
+Gelinsipan_Avator.png
+size: 2047,2036
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+angry
+  rotate: false
+  xy: 1725, 1704
+  size: 137, 126
+  orig: 137, 126
+  offset: 0, 0
+  index: -1
+calm
+  rotate: false
+  xy: 1129, 1749
+  size: 137, 109
+  orig: 137, 109
+  offset: 0, 0
+  index: -1
+exciting
+  rotate: false
+  xy: 1268, 1727
+  size: 135, 116
+  orig: 135, 116
+  offset: 0, 0
+  index: -1
+gelinsipan_10
+  rotate: true
+  xy: 304, 2010
+  size: 24, 105
+  orig: 24, 105
+  offset: 0, 0
+  index: -1
+gelinsipan_100
+  rotate: true
+  xy: 384, 2
+  size: 209, 1249
+  orig: 209, 1249
+  offset: 0, 0
+  index: -1
+gelinsipan_102
+  rotate: true
+  xy: 753, 213
+  size: 196, 866
+  orig: 196, 866
+  offset: 0, 0
+  index: -1
+gelinsipan_105
+  rotate: false
+  xy: 599, 1629
+  size: 141, 140
+  orig: 141, 140
+  offset: 0, 0
+  index: -1
+gelinsipan_109
+  rotate: false
+  xy: 266, 1322
+  size: 176, 175
+  orig: 176, 175
+  offset: 0, 0
+  index: -1
+gelinsipan_11
+  rotate: true
+  xy: 2, 737
+  size: 221, 224
+  orig: 221, 224
+  offset: 0, 0
+  index: -1
+gelinsipan_110
+  rotate: false
+  xy: 2, 1797
+  size: 105, 105
+  orig: 105, 105
+  offset: 0, 0
+  index: -1
+gelinsipan_111
+  rotate: false
+  xy: 757, 1760
+  size: 105, 105
+  orig: 105, 105
+  offset: 0, 0
+  index: -1
+gelinsipan_12
+  rotate: false
+  xy: 501, 659
+  size: 494, 249
+  orig: 494, 249
+  offset: 0, 0
+  index: -1
+gelinsipan_13
+  rotate: true
+  xy: 1379, 692
+  size: 244, 352
+  orig: 244, 352
+  offset: 0, 0
+  index: -1
+gelinsipan_14
+  rotate: false
+  xy: 2, 108
+  size: 380, 356
+  orig: 380, 356
+  offset: 0, 0
+  index: -1
+gelinsipan_19
+  rotate: true
+  xy: 1504, 1384
+  size: 163, 234
+  orig: 163, 234
+  offset: 0, 0
+  index: -1
+gelinsipan_2
+  rotate: true
+  xy: 519, 2002
+  size: 32, 545
+  orig: 32, 545
+  offset: 0, 0
+  index: -1
+gelinsipan_20
+  rotate: true
+  xy: 2, 1338
+  size: 175, 262
+  orig: 175, 262
+  offset: 0, 0
+  index: -1
+gelinsipan_21
+  rotate: false
+  xy: 1750, 1525
+  size: 265, 159
+  orig: 265, 159
+  offset: 0, 0
+  index: -1
+gelinsipan_22
+  rotate: false
+  xy: 547, 1875
+  size: 112, 78
+  orig: 112, 78
+  offset: 0, 0
+  index: -1
+gelinsipan_24
+  rotate: true
+  xy: 578, 1130
+  size: 178, 726
+  orig: 178, 726
+  offset: 0, 0
+  index: -1
+gelinsipan_25
+  rotate: true
+  xy: 1042, 1940
+  size: 56, 129
+  orig: 56, 129
+  offset: 0, 0
+  index: -1
+gelinsipan_26
+  rotate: true
+  xy: 1173, 1939
+  size: 56, 226
+  orig: 56, 226
+  offset: 0, 0
+  index: -1
+gelinsipan_27
+  rotate: true
+  xy: 139, 1886
+  size: 67, 209
+  orig: 67, 209
+  offset: 0, 0
+  index: -1
+gelinsipan_28
+  rotate: true
+  xy: 546, 1457
+  size: 143, 956
+  orig: 143, 956
+  offset: 0, 0
+  index: -1
+gelinsipan_3
+  rotate: true
+  xy: 331, 1955
+  size: 45, 556
+  orig: 45, 556
+  offset: 0, 0
+  index: -1
+gelinsipan_31
+  rotate: true
+  xy: 1602, 1164
+  size: 184, 188
+  orig: 184, 188
+  offset: 0, 0
+  index: -1
+gelinsipan_32
+  rotate: true
+  xy: 444, 1310
+  size: 145, 972
+  orig: 145, 972
+  offset: 0, 0
+  index: -1
+gelinsipan_33
+  rotate: false
+  xy: 997, 502
+  size: 345, 277
+  orig: 345, 277
+  offset: 0, 0
+  index: -1
+gelinsipan_35
+  rotate: true
+  xy: 871, 1860
+  size: 77, 406
+  orig: 77, 406
+  offset: 0, 0
+  index: -1
+gelinsipan_36
+  rotate: false
+  xy: 2, 1515
+  size: 369, 147
+  orig: 369, 147
+  offset: 0, 0
+  index: -1
+gelinsipan_37
+  rotate: false
+  xy: 1868, 1826
+  size: 95, 95
+  orig: 95, 95
+  offset: 0, 0
+  index: -1
+gelinsipan_38
+  rotate: true
+  xy: 468, 2004
+  size: 30, 49
+  orig: 30, 49
+  offset: 0, 0
+  index: -1
+gelinsipan_39
+  rotate: false
+  xy: 825, 910
+  size: 290, 218
+  orig: 290, 218
+  offset: 0, 0
+  index: -1
+gelinsipan_4
+  rotate: true
+  xy: 2, 1973
+  size: 39, 177
+  orig: 39, 177
+  offset: 0, 0
+  index: -1
+gelinsipan_40
+  rotate: false
+  xy: 1117, 781
+  size: 260, 220
+  orig: 260, 220
+  offset: 0, 0
+  index: -1
+gelinsipan_41
+  rotate: false
+  xy: 57, 2019
+  size: 41, 15
+  orig: 41, 15
+  offset: 0, 0
+  index: -1
+gelinsipan_42
+  rotate: false
+  xy: 661, 1870
+  size: 98, 83
+  orig: 98, 83
+  offset: 0, 0
+  index: -1
+gelinsipan_43
+  rotate: false
+  xy: 100, 2017
+  size: 34, 17
+  orig: 34, 17
+  offset: 0, 0
+  index: -1
+gelinsipan_44
+  rotate: true
+  xy: 889, 1947
+  size: 53, 89
+  orig: 53, 89
+  offset: 0, 0
+  index: -1
+gelinsipan_45
+  rotate: false
+  xy: 174, 2014
+  size: 46, 20
+  orig: 46, 20
+  offset: 0, 0
+  index: -1
+gelinsipan_46
+  rotate: false
+  xy: 761, 1867
+  size: 108, 86
+  orig: 108, 86
+  offset: 0, 0
+  index: -1
+gelinsipan_47
+  rotate: false
+  xy: 509, 1771
+  size: 246, 97
+  orig: 246, 97
+  offset: 0, 0
+  index: -1
+gelinsipan_48
+  rotate: false
+  xy: 228, 732
+  size: 271, 226
+  orig: 271, 226
+  offset: 0, 0
+  index: -1
+gelinsipan_49
+  rotate: false
+  xy: 1344, 411
+  size: 335, 279
+  orig: 335, 279
+  offset: 0, 0
+  index: -1
+gelinsipan_5
+  rotate: true
+  xy: 1903, 1996
+  size: 38, 85
+  orig: 38, 85
+  offset: 0, 0
+  index: -1
+gelinsipan_50
+  rotate: false
+  xy: 1740, 1350
+  size: 224, 173
+  orig: 224, 173
+  offset: 0, 0
+  index: -1
+gelinsipan_51
+  rotate: false
+  xy: 1733, 615
+  size: 281, 314
+  orig: 281, 314
+  offset: 0, 0
+  index: -1
+gelinsipan_52
+  rotate: false
+  xy: 742, 1608
+  size: 200, 143
+  orig: 200, 143
+  offset: 0, 0
+  index: -1
+gelinsipan_53
+  rotate: false
+  xy: 1437, 1841
+  size: 122, 89
+  orig: 122, 89
+  offset: 0, 0
+  index: -1
+gelinsipan_54
+  rotate: false
+  xy: 19, 2024
+  size: 20, 10
+  orig: 20, 10
+  offset: 0, 0
+  index: -1
+gelinsipan_55
+  rotate: true
+  xy: 1109, 1998
+  size: 36, 220
+  orig: 36, 220
+  offset: 0, 0
+  index: -1
+gelinsipan_56
+  rotate: true
+  xy: 350, 1880
+  size: 73, 195
+  orig: 73, 195
+  offset: 0, 0
+  index: -1
+gelinsipan_57
+  rotate: false
+  xy: 41, 2020
+  size: 14, 14
+  orig: 14, 14
+  offset: 0, 0
+  index: -1
+gelinsipan_58
+  rotate: true
+  xy: 2, 1156
+  size: 152, 574
+  orig: 152, 574
+  offset: 0, 0
+  index: -1
+gelinsipan_59
+  rotate: false
+  xy: 1757, 1832
+  size: 109, 94
+  orig: 109, 94
+  offset: 0, 0
+  index: -1
+gelinsipan_6
+  rotate: true
+  xy: 1331, 1997
+  size: 37, 454
+  orig: 37, 454
+  offset: 0, 0
+  index: -1
+gelinsipan_60
+  rotate: true
+  xy: 1841, 1928
+  size: 66, 101
+  orig: 66, 101
+  offset: 0, 0
+  index: -1
+gelinsipan_61
+  rotate: false
+  xy: 1405, 1724
+  size: 173, 114
+  orig: 173, 114
+  offset: 0, 0
+  index: -1
+gelinsipan_62
+  rotate: false
+  xy: 864, 1753
+  size: 147, 105
+  orig: 147, 105
+  offset: 0, 0
+  index: -1
+gelinsipan_63
+  rotate: false
+  xy: 1570, 938
+  size: 220, 224
+  orig: 220, 224
+  offset: 0, 0
+  index: -1
+gelinsipan_65
+  rotate: false
+  xy: 1792, 931
+  size: 234, 217
+  orig: 234, 217
+  offset: 0, 0
+  index: -1
+gelinsipan_66
+  rotate: false
+  xy: 373, 1499
+  size: 171, 163
+  orig: 171, 163
+  offset: 0, 0
+  index: -1
+gelinsipan_67
+  rotate: true
+  xy: 1792, 1150
+  size: 198, 245
+  orig: 198, 245
+  offset: 0, 0
+  index: -1
+gelinsipan_68
+  rotate: true
+  xy: 109, 1783
+  size: 95, 398
+  orig: 95, 398
+  offset: 0, 0
+  index: -1
+gelinsipan_69
+  rotate: false
+  xy: 2, 2030
+  size: 7, 4
+  orig: 7, 4
+  offset: 0, 0
+  index: -1
+gelinsipan_7
+  rotate: true
+  xy: 944, 1602
+  size: 120, 627
+  orig: 120, 627
+  offset: 0, 0
+  index: -1
+gelinsipan_70
+  rotate: false
+  xy: 11, 2030
+  size: 6, 4
+  orig: 6, 4
+  offset: 0, 0
+  index: -1
+gelinsipan_71
+  rotate: false
+  xy: 1787, 1997
+  size: 114, 37
+  orig: 114, 37
+  offset: 0, 0
+  index: -1
+gelinsipan_72
+  rotate: false
+  xy: 2, 1904
+  size: 135, 67
+  orig: 135, 67
+  offset: 0, 0
+  index: -1
+gelinsipan_73
+  rotate: false
+  xy: 1944, 1923
+  size: 88, 71
+  orig: 88, 71
+  offset: 0, 0
+  index: -1
+gelinsipan_74
+  rotate: false
+  xy: 136, 2015
+  size: 36, 19
+  orig: 36, 19
+  offset: 0, 0
+  index: -1
+gelinsipan_75
+  rotate: false
+  xy: 1066, 2001
+  size: 41, 33
+  orig: 41, 33
+  offset: 0, 0
+  index: -1
+gelinsipan_78
+  rotate: true
+  xy: 1013, 1751
+  size: 107, 114
+  orig: 107, 114
+  offset: 0, 0
+  index: -1
+gelinsipan_79
+  rotate: false
+  xy: 1580, 1719
+  size: 143, 119
+  orig: 143, 119
+  offset: 0, 0
+  index: -1
+gelinsipan_8
+  rotate: true
+  xy: 222, 2010
+  size: 24, 80
+  orig: 24, 80
+  offset: 0, 0
+  index: -1
+gelinsipan_80
+  rotate: true
+  xy: 181, 1959
+  size: 49, 148
+  orig: 49, 148
+  offset: 0, 0
+  index: -1
+gelinsipan_81
+  rotate: true
+  xy: 1561, 1840
+  size: 90, 194
+  orig: 90, 194
+  offset: 0, 0
+  index: -1
+gelinsipan_82
+  rotate: true
+  xy: 1681, 269
+  size: 344, 364
+  orig: 344, 364
+  offset: 0, 0
+  index: -1
+gelinsipan_84
+  rotate: false
+  xy: 403, 363
+  size: 348, 294
+  orig: 348, 294
+  offset: 0, 0
+  index: -1
+gelinsipan_85
+  rotate: true
+  xy: 561, 914
+  size: 214, 262
+  orig: 214, 262
+  offset: 0, 0
+  index: -1
+gelinsipan_89
+  rotate: true
+  xy: 411, 2008
+  size: 26, 55
+  orig: 26, 55
+  offset: 0, 0
+  index: -1
+gelinsipan_9
+  rotate: true
+  xy: 1401, 1932
+  size: 63, 438
+  orig: 63, 438
+  offset: 0, 0
+  index: -1
+gelinsipan_90
+  rotate: false
+  xy: 1279, 1845
+  size: 156, 85
+  orig: 156, 85
+  offset: 0, 0
+  index: -1
+gelinsipan_91
+  rotate: true
+  xy: 1418, 1205
+  size: 177, 182
+  orig: 177, 182
+  offset: 0, 0
+  index: -1
+gelinsipan_92
+  rotate: true
+  xy: 1573, 1549
+  size: 153, 175
+  orig: 153, 175
+  offset: 0, 0
+  index: -1
+gelinsipan_94
+  rotate: true
+  xy: 2, 466
+  size: 264, 399
+  orig: 264, 399
+  offset: 0, 0
+  index: -1
+gelinsipan_95
+  rotate: true
+  xy: 2, 960
+  size: 194, 557
+  orig: 194, 557
+  offset: 0, 0
+  index: -1
+gelinsipan_97
+  rotate: false
+  xy: 980, 1941
+  size: 60, 59
+  orig: 60, 59
+  offset: 0, 0
+  index: -1
+gelinsipan_98
+  rotate: true
+  xy: 1306, 1003
+  size: 200, 262
+  orig: 200, 262
+  offset: 0, 0
+  index: -1
+gelinsipan_99
+  rotate: true
+  xy: 2, 1664
+  size: 105, 595
+  orig: 105, 595
+  offset: 0, 0
+  index: -1
+sad
+  rotate: true
+  xy: 1864, 1686
+  size: 138, 142
+  orig: 138, 142
+  offset: 0, 0
+  index: -1
+
+Gelinsipan_Avator2.png
+size: 1895,2020
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gelinsipan_104
+  rotate: true
+  xy: 2, 1376
+  size: 369, 823
+  orig: 369, 823
+  offset: 0, 0
+  index: -1
+gelinsipan_15
+  rotate: false
+  xy: 1289, 1174
+  size: 602, 442
+  orig: 602, 442
+  offset: 0, 0
+  index: -1
+gelinsipan_23
+  rotate: true
+  xy: 2, 2
+  size: 449, 855
+  orig: 449, 855
+  offset: 0, 0
+  index: -1
+gelinsipan_29
+  rotate: false
+  xy: 1386, 1618
+  size: 507, 400
+  orig: 507, 400
+  offset: 0, 0
+  index: -1
+gelinsipan_30
+  rotate: true
+  xy: 763, 839
+  size: 462, 520
+  orig: 462, 520
+  offset: 0, 0
+  index: -1
+gelinsipan_34
+  rotate: true
+  xy: 2, 453
+  size: 384, 879
+  orig: 384, 879
+  offset: 0, 0
+  index: -1
+gelinsipan_64
+  rotate: true
+  xy: 827, 1303
+  size: 415, 460
+  orig: 415, 460
+  offset: 0, 0
+  index: -1
+gelinsipan_76
+  rotate: false
+  xy: 926, 1720
+  size: 458, 298
+  orig: 458, 298
+  offset: 0, 0
+  index: -1
+gelinsipan_77
+  rotate: false
+  xy: 2, 941
+  size: 759, 433
+  orig: 759, 433
+  offset: 0, 0
+  index: -1
+gelinsipan_83
+  rotate: true
+  xy: 1285, 682
+  size: 490, 607
+  orig: 490, 607
+  offset: 0, 0
+  index: -1
+gelinsipan_93
+  rotate: true
+  xy: 2, 1747
+  size: 271, 922
+  orig: 271, 922
+  offset: 0, 0
+  index: -1
+gelinsipan_96
+  rotate: true
+  xy: 883, 270
+  size: 410, 906
+  orig: 410, 906
+  offset: 0, 0
+  index: -1
+
+Gelinsipan_Avator3.png
+size: 1606,1520
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gelinsipan_101
+  rotate: true
+  xy: 2, 2
+  size: 590, 1530
+  orig: 590, 1530
+  offset: 0, 0
+  index: -1
+gelinsipan_113
+  rotate: false
+  xy: 2, 1092
+  size: 1602, 426
+  orig: 1602, 426
+  offset: 0, 0
+  index: -1
+gelinsipan_16
+  rotate: true
+  xy: 2, 640
+  size: 450, 770
+  orig: 450, 770
+  offset: 0, 0
+  index: -1
+gelinsipan_17
+  rotate: true
+  xy: 774, 594
+  size: 496, 623
+  orig: 496, 623
+  offset: 0, 0
+  index: -1
+
+Gelinsipan_Avator4.png
+size: 1794,1582
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gelinsipan_103
+  rotate: true
+  xy: 2, 2
+  size: 828, 1574
+  orig: 828, 1574
+  offset: 0, 0
+  index: -1
+gelinsipan_115
+  rotate: false
+  xy: 976, 832
+  size: 816, 748
+  orig: 816, 748
+  offset: 0, 0
+  index: -1
+gelinsipan_116
+  rotate: true
+  xy: 2, 909
+  size: 671, 972
+  orig: 671, 972
+  offset: 0, 0
+  index: -1
+
+Gelinsipan_Avator5.png
+size: 1246,2000
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gelinsipan_112
+  rotate: false
+  xy: 2, 2
+  size: 1242, 1996
+  orig: 1242, 1996
+  offset: 0, 0
+  index: -1
+
+Gelinsipan_Avator6.png
+size: 1550,1924
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gelinsipan_106
+  rotate: false
+  xy: 2, 2
+  size: 1546, 1920
+  orig: 1546, 1920
+  offset: 0, 0
+  index: -1
+
+Gelinsipan_Avator7.png
+size: 1879,1478
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gelinsipan_108
+  rotate: false
+  xy: 2, 2
+  size: 1875, 1474
+  orig: 1875, 1474
+  offset: 0, 0
+  index: -1
+
+Gelinsipan_Avator8.png
+size: 1448,1919
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gelinsipan_0
+  rotate: true
+  xy: 2, 2
+  size: 992, 1129
+  orig: 992, 1129
+  offset: 0, 0
+  index: -1
+gelinsipan_18
+  rotate: false
+  xy: 2, 996
+  size: 1444, 921
+  orig: 1444, 921
+  offset: 0, 0
+  index: -1
+
+Gelinsipan_Avator9.png
+size: 2025,1000
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gelinsipan_1
+  rotate: false
+  xy: 2, 10
+  size: 1067, 988
+  orig: 1067, 988
+  offset: 0, 0
+  index: -1
+gelinsipan_114
+  rotate: false
+  xy: 1071, 2
+  size: 952, 996
+  orig: 952, 996
+  offset: 0, 0
+  index: -1

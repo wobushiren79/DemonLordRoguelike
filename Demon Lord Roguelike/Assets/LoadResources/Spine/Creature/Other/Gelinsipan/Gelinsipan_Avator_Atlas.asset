@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Gelinsipan_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: 3a653ca7ee7dadc4899b8e6db16d41a3, type: 3}
+  materials:
+  - {fileID: 2100000, guid: f6a8c8db7a84d36489f14e9682e75edb, type: 2}
+  - {fileID: 2100000, guid: 258aeea33dcfd994f8b2ca856e2b9e55, type: 2}
+  - {fileID: 2100000, guid: 5223f87639d55d84ba9437d2aef206fe, type: 2}
+  - {fileID: 2100000, guid: a7611d2d3252ddc408a539b8135d9f20, type: 2}
+  - {fileID: 2100000, guid: d4fd912ac1b4d2b40a51b6519b80225e, type: 2}
+  - {fileID: 2100000, guid: 353ffce0e710df14cb4c9c1b008b7bcb, type: 2}
+  - {fileID: 2100000, guid: b91d2db9e369d4f41889a7bb20d2d7c7, type: 2}
+  - {fileID: 2100000, guid: 77846c7025338d745b08f5a84bef4b1e, type: 2}
+  - {fileID: 2100000, guid: 4ab79490e66f99148be25b57275f2c1f, type: 2}

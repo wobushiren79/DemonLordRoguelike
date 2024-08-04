@@ -14,5 +14,9 @@ public partial class UIGashaponMachine
 
     public ScrollRect ui_ScrollView;
 
+    public Button ui_BTTen;
+
+    public Button ui_BTOne;
+
 
 }

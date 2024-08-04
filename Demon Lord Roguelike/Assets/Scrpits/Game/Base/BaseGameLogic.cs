@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
+[Serializable]
 public abstract class BaseGameLogic
 {
     //所有注册事件

@@ -155,7 +155,7 @@ public class ControlForGameBase : BaseControl
             return;
         var firstHit = allHit[0];
         //ºËÐÄ
-        if (firstHit.gameObject.name.Equals("Core"))
+        if (firstHit.gameObject.name.Equals("CoreInteraction"))
         {
             UIBaseCore targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
         }

@@ -1,0 +1,610 @@
+
+Fulan_Avator.png
+size: 2047,1959
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Smile
+  rotate: false
+  xy: 2, 1479
+  size: 225, 193
+  orig: 225, 193
+  offset: 0, 0
+  index: -1
+aa_1
+  rotate: true
+  xy: 742, 1904
+  size: 53, 75
+  orig: 53, 75
+  offset: 0, 0
+  index: -1
+aa_10
+  rotate: true
+  xy: 619, 1905
+  size: 52, 121
+  orig: 52, 121
+  offset: 0, 0
+  index: -1
+aa_11
+  rotate: true
+  xy: 132, 1831
+  size: 84, 147
+  orig: 84, 147
+  offset: 0, 0
+  index: -1
+aa_12
+  rotate: true
+  xy: 1269, 527
+  size: 342, 512
+  orig: 342, 512
+  offset: 0, 0
+  index: -1
+aa_13
+  rotate: false
+  xy: 624, 581
+  size: 643, 292
+  orig: 643, 292
+  offset: 0, 0
+  index: -1
+aa_17
+  rotate: false
+  xy: 716, 1791
+  size: 270, 107
+  orig: 270, 107
+  offset: 0, 0
+  index: -1
+aa_2
+  rotate: true
+  xy: 2, 1679
+  size: 150, 158
+  orig: 150, 158
+  offset: 0, 0
+  index: -1
+aa_23_1
+  rotate: false
+  xy: 1062, 131
+  size: 549, 394
+  orig: 549, 394
+  offset: 0, 0
+  index: -1
+aa_26
+  rotate: true
+  xy: 1110, 1783
+  size: 114, 138
+  orig: 114, 138
+  offset: 0, 0
+  index: -1
+aa_27
+  rotate: true
+  xy: 162, 1674
+  size: 152, 170
+  orig: 152, 170
+  offset: 0, 0
+  index: -1
+aa_28
+  rotate: true
+  xy: 281, 1828
+  size: 86, 144
+  orig: 86, 144
+  offset: 0, 0
+  index: -1
+aa_29
+  rotate: true
+  xy: 427, 1803
+  size: 104, 147
+  orig: 104, 147
+  offset: 0, 0
+  index: -1
+aa_3
+  rotate: false
+  xy: 1146, 1133
+  size: 363, 230
+  orig: 363, 230
+  offset: 0, 0
+  index: -1
+aa_30
+  rotate: true
+  xy: 1635, 1754
+  size: 128, 158
+  orig: 128, 158
+  offset: 0, 0
+  index: -1
+aa_31
+  rotate: false
+  xy: 32, 1936
+  size: 66, 21
+  orig: 66, 21
+  offset: 0, 0
+  index: -1
+aa_32
+  rotate: true
+  xy: 100, 1927
+  size: 30, 39
+  orig: 30, 39
+  offset: 0, 0
+  index: -1
+aa_33
+  rotate: false
+  xy: 534, 1909
+  size: 83, 48
+  orig: 83, 48
+  offset: 0, 0
+  index: -1
+aa_34
+  rotate: false
+  xy: 819, 1902
+  size: 58, 55
+  orig: 58, 55
+  offset: 0, 0
+  index: -1
+aa_35
+  rotate: false
+  xy: 2, 1946
+  size: 13, 11
+  orig: 13, 11
+  offset: 0, 0
+  index: -1
+aa_36
+  rotate: true
+  xy: 432, 1915
+  size: 42, 52
+  orig: 42, 52
+  offset: 0, 0
+  index: -1
+aa_37
+  rotate: false
+  xy: 17, 1945
+  size: 13, 12
+  orig: 13, 12
+  offset: 0, 0
+  index: -1
+aa_38
+  rotate: true
+  xy: 486, 1914
+  size: 43, 46
+  orig: 43, 46
+  offset: 0, 0
+  index: -1
+aa_39
+  rotate: false
+  xy: 350, 1916
+  size: 80, 41
+  orig: 80, 41
+  offset: 0, 0
+  index: -1
+aa_4
+  rotate: true
+  xy: 1748, 871
+  size: 397, 293
+  orig: 397, 293
+  offset: 0, 0
+  index: -1
+aa_40
+  rotate: false
+  xy: 987, 1900
+  size: 60, 57
+  orig: 60, 57
+  offset: 0, 0
+  index: -1
+aa_41
+  rotate: false
+  xy: 1764, 1884
+  size: 85, 73
+  orig: 85, 73
+  offset: 0, 0
+  index: -1
+aa_42
+  rotate: false
+  xy: 1382, 1891
+  size: 70, 66
+  orig: 70, 66
+  offset: 0, 0
+  index: -1
+aa_43
+  rotate: false
+  xy: 141, 1927
+  size: 39, 30
+  orig: 39, 30
+  offset: 0, 0
+  index: -1
+aa_44
+  rotate: true
+  xy: 1049, 1900
+  size: 57, 62
+  orig: 57, 62
+  offset: 0, 0
+  index: -1
+aa_45
+  rotate: false
+  xy: 334, 1633
+  size: 197, 168
+  orig: 197, 168
+  offset: 0, 0
+  index: -1
+aa_46
+  rotate: true
+  xy: 1556, 1319
+  size: 212, 232
+  orig: 212, 232
+  offset: 0, 0
+  index: -1
+aa_47
+  rotate: true
+  xy: 250, 1917
+  size: 40, 98
+  orig: 40, 98
+  offset: 0, 0
+  index: -1
+aa_48
+  rotate: false
+  xy: 1250, 1778
+  size: 126, 115
+  orig: 126, 115
+  offset: 0, 0
+  index: -1
+aa_49
+  rotate: false
+  xy: 1851, 1876
+  size: 84, 81
+  orig: 84, 81
+  offset: 0, 0
+  index: -1
+aa_5
+  rotate: false
+  xy: 1378, 1762
+  size: 255, 123
+  orig: 255, 123
+  offset: 0, 0
+  index: -1
+aa_50
+  rotate: false
+  xy: 1937, 1825
+  size: 106, 132
+  orig: 106, 132
+  offset: 0, 0
+  index: -1
+aa_51
+  rotate: true
+  xy: 2, 285
+  size: 346, 382
+  orig: 346, 382
+  offset: 0, 0
+  index: -1
+aa_52
+  rotate: false
+  xy: 1790, 1270
+  size: 255, 261
+  orig: 255, 261
+  offset: 0, 0
+  index: -1
+aa_53
+  rotate: false
+  xy: 1511, 1037
+  size: 235, 280
+  orig: 235, 280
+  offset: 0, 0
+  index: -1
+aa_54
+  rotate: false
+  xy: 2, 633
+  size: 620, 270
+  orig: 620, 270
+  offset: 0, 0
+  index: -1
+aa_55
+  rotate: true
+  xy: 846, 875
+  size: 256, 647
+  orig: 256, 647
+  offset: 0, 0
+  index: -1
+aa_56
+  rotate: true
+  xy: 386, 213
+  size: 366, 674
+  orig: 366, 674
+  offset: 0, 0
+  index: -1
+aa_57
+  rotate: false
+  xy: 1613, 2
+  size: 421, 523
+  orig: 421, 523
+  offset: 0, 0
+  index: -1
+aa_58
+  rotate: false
+  xy: 229, 1432
+  size: 442, 193
+  orig: 442, 193
+  offset: 0, 0
+  index: -1
+aa_59
+  rotate: true
+  xy: 708, 1617
+  size: 172, 277
+  orig: 172, 277
+  offset: 0, 0
+  index: -1
+aa_6
+  rotate: true
+  xy: 879, 1900
+  size: 57, 106
+  orig: 57, 106
+  offset: 0, 0
+  index: -1
+aa_62
+  rotate: false
+  xy: 2, 957
+  size: 334, 264
+  orig: 334, 264
+  offset: 0, 0
+  index: -1
+aa_63
+  rotate: true
+  xy: 338, 905
+  size: 291, 506
+  orig: 291, 506
+  offset: 0, 0
+  index: -1
+aa_64
+  rotate: true
+  xy: 1046, 1365
+  size: 202, 508
+  orig: 202, 508
+  offset: 0, 0
+  index: -1
+aa_8
+  rotate: true
+  xy: 182, 1919
+  size: 38, 66
+  orig: 38, 66
+  offset: 0, 0
+  index: -1
+aa_9
+  rotate: false
+  xy: 987, 1607
+  size: 251, 174
+  orig: 251, 174
+  offset: 0, 0
+  index: -1
+aaa
+  rotate: false
+  xy: 1240, 1578
+  size: 211, 182
+  orig: 211, 182
+  offset: 0, 0
+  index: -1
+beishang
+  rotate: false
+  xy: 533, 1627
+  size: 173, 169
+  orig: 173, 169
+  offset: 0, 0
+  index: -1
+bf1
+  rotate: true
+  xy: 988, 1784
+  size: 114, 120
+  orig: 114, 120
+  offset: 0, 0
+  index: -1
+bf2
+  rotate: false
+  xy: 576, 1798
+  size: 138, 105
+  orig: 138, 105
+  offset: 0, 0
+  index: -1
+hair_B3
+  rotate: false
+  xy: 2, 1223
+  size: 546, 207
+  orig: 546, 207
+  offset: 0, 0
+  index: -1
+hair_B3_A
+  rotate: false
+  xy: 673, 1412
+  size: 371, 193
+  orig: 371, 193
+  offset: 0, 0
+  index: -1
+hua1
+  rotate: false
+  xy: 1639, 1533
+  size: 262, 184
+  orig: 262, 184
+  offset: 0, 0
+  index: -1
+hua2
+  rotate: true
+  xy: 550, 1198
+  size: 212, 302
+  orig: 212, 302
+  offset: 0, 0
+  index: -1
+hua3
+  rotate: false
+  xy: 854, 1138
+  size: 290, 225
+  orig: 290, 225
+  offset: 0, 0
+  index: -1
+hua4
+  rotate: false
+  xy: 1454, 1891
+  size: 70, 66
+  orig: 70, 66
+  offset: 0, 0
+  index: -1
+hua5
+  rotate: true
+  xy: 2, 1843
+  size: 82, 128
+  orig: 82, 128
+  offset: 0, 0
+  index: -1
+hua6
+  rotate: true
+  xy: 1795, 1719
+  size: 155, 136
+  orig: 155, 136
+  offset: 0, 0
+  index: -1
+hua7
+  rotate: true
+  xy: 1627, 1887
+  size: 70, 135
+  orig: 70, 135
+  offset: 0, 0
+  index: -1
+hua8
+  rotate: true
+  xy: 1113, 1899
+  size: 58, 85
+  orig: 58, 85
+  offset: 0, 0
+  index: -1
+hua9
+  rotate: true
+  xy: 1526, 1889
+  size: 68, 99
+  orig: 68, 99
+  offset: 0, 0
+  index: -1
+hua_01
+  rotate: false
+  xy: 1318, 1895
+  size: 62, 62
+  orig: 62, 62
+  offset: 0, 0
+  index: -1
+hua_02
+  rotate: true
+  xy: 1200, 1899
+  size: 58, 116
+  orig: 58, 116
+  offset: 0, 0
+  index: -1
+shengqi
+  rotate: true
+  xy: 1453, 1569
+  size: 183, 184
+  orig: 183, 184
+  offset: 0, 0
+  index: -1
+
+Fulan_Avator2.png
+size: 1886,1732
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aa_14
+  rotate: false
+  xy: 2, 788
+  size: 550, 543
+  orig: 550, 543
+  offset: 0, 0
+  index: -1
+aa_18_1
+  rotate: false
+  xy: 554, 690
+  size: 758, 596
+  orig: 758, 596
+  offset: 0, 0
+  index: -1
+aa_22
+  rotate: false
+  xy: 2, 1333
+  size: 682, 397
+  orig: 682, 397
+  offset: 0, 0
+  index: -1
+aa_67
+  rotate: true
+  xy: 1395, 1242
+  size: 488, 489
+  orig: 488, 489
+  offset: 0, 0
+  index: -1
+hair_B1
+  rotate: false
+  xy: 1314, 377
+  size: 561, 863
+  orig: 561, 863
+  offset: 0, 0
+  index: -1
+hair_B2
+  rotate: false
+  xy: 2, 2
+  size: 918, 686
+  orig: 918, 686
+  offset: 0, 0
+  index: -1
+hair_B4
+  rotate: false
+  xy: 686, 1288
+  size: 707, 442
+  orig: 707, 442
+  offset: 0, 0
+  index: -1
+
+Fulan_Avator3.png
+size: 1278,1722
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aa_66
+  rotate: false
+  xy: 2, 2
+  size: 1274, 1718
+  orig: 1274, 1718
+  offset: 0, 0
+  index: -1
+
+Fulan_Avator4.png
+size: 1929,1834
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aa_16
+  rotate: true
+  xy: 983, 748
+  size: 1084, 944
+  orig: 1084, 944
+  offset: 0, 0
+  index: -1
+aa_65
+  rotate: false
+  xy: 2, 2
+  size: 979, 1830
+  orig: 979, 1830
+  offset: 0, 0
+  index: -1
+
+Fulan_Avator5.png
+size: 1206,1119
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+eff1
+  rotate: false
+  xy: 2, 2
+  size: 1202, 1115
+  orig: 1202, 1115
+  offset: 0, 0
+  index: -1
+
+Fulan_Avator6.png
+size: 1303,1255
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+light
+  rotate: false
+  xy: 2, 2
+  size: 1299, 1251
+  orig: 1299, 1251
+  offset: 0, 0
+  index: -1

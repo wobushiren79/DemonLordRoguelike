@@ -22,8 +22,6 @@ public partial class UIGashaponMachine : BaseUIComponent
     public override void OpenUI()
     {
         base.OpenUI();
-        CameraHandler.Instance.SetGashaponMachineCamera(int.MaxValue, true);
-
         currentSelectCardGroupIndex = -1;
         SetCardGroupList();
         OnScrollViewChange(Vector2.zero);
@@ -48,6 +46,14 @@ public partial class UIGashaponMachine : BaseUIComponent
         {
             OnClickForExit();
         }
+        else if (viewButton == ui_BTOne)
+        {
+            StartGashaponMachine(1);
+        }
+        else if (viewButton == ui_BTTen)
+        {
+            StartGashaponMachine(10);
+        }
     }
 
     /// <summary>
@@ -59,6 +65,17 @@ public partial class UIGashaponMachine : BaseUIComponent
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
 
         SetBaseInfo(userData.coin);
+    }
+
+    /// <summary>
+    /// ¿ªÊ¼Å¤µ°ÓÎÏ·
+    /// </summary>
+    /// <param name="num"></param>
+    public void StartGashaponMachine(int num)
+    {
+        GashaponMachineBean gashaponMachine = new GashaponMachineBean();
+        gashaponMachine.gashaponNum = num;
+        GameHandler.Instance.StartGashaponMachine(gashaponMachine);
     }
 
     /// <summary>
@@ -75,7 +92,6 @@ public partial class UIGashaponMachine : BaseUIComponent
             GameObject objItem = Instantiate(ui_Content.gameObject, ui_ViewGashaponCardGroupItem.gameObject);
             var itemView = objItem.GetComponent<UIViewGashaponCardGroupItem>();
             listView.Add(itemView);
-            break;
         }
         if (listView.Count <= 1)
         {
@@ -101,7 +117,6 @@ public partial class UIGashaponMachine : BaseUIComponent
     /// </summary>
     public void OnClickForExit()
     {
-        CameraHandler.Instance.SetGashaponMachineCamera(0, false);
         UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
     }
 
