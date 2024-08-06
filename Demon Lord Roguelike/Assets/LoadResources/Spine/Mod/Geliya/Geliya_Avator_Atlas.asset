@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Geliya_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: 7874b6554eeb9784182a964e93064951, type: 3}
+  materials:
+  - {fileID: 2100000, guid: 01cb583f457814940bc3bbee0422f345, type: 2}
+  - {fileID: 2100000, guid: a69261e6915737648b9ecac375be910b, type: 2}
+  - {fileID: 2100000, guid: 93ba3c5d205d21b4ba193a07df24ca4d, type: 2}
+  - {fileID: 2100000, guid: 8a6428b41e51cbc46a7649b4ac5e44ca, type: 2}
+  - {fileID: 2100000, guid: d6a589eac28646a4e9672173fb812645, type: 2}
+  - {fileID: 2100000, guid: a408044518edb274fa2cb5422ad5fe5f, type: 2}
+  - {fileID: 2100000, guid: 88b529dcdc4ccfb4682640f0d99ef8fd, type: 2}
+  - {fileID: 2100000, guid: 7009836879e1ddc488141822d3a95dfc, type: 2}
+  - {fileID: 2100000, guid: e132da6227319b046b03cbd9cc501bbf, type: 2}

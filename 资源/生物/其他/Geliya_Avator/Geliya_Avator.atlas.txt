@@ -1,0 +1,796 @@
+
+Geliya_Avator.png
+size: 2043,2038
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+huo0001
+  rotate: false
+  xy: 2, 986
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0002
+  rotate: true
+  xy: 300, 923
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0003
+  rotate: true
+  xy: 1604, 896
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0004
+  rotate: true
+  xy: 609, 848
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0005
+  rotate: false
+  xy: 2, 677
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0006
+  rotate: true
+  xy: 300, 625
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0007
+  rotate: true
+  xy: 1571, 598
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0008
+  rotate: false
+  xy: 2, 368
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0009
+  rotate: true
+  xy: 300, 327
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0010
+  rotate: true
+  xy: 1351, 300
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0011
+  rotate: true
+  xy: 1660, 300
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0012
+  rotate: true
+  xy: 609, 264
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0013
+  rotate: true
+  xy: 918, 264
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0014
+  rotate: false
+  xy: 2, 59
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0015
+  rotate: true
+  xy: 300, 29
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0016
+  rotate: true
+  xy: 1227, 2
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0017
+  rotate: true
+  xy: 1536, 2
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+youlingyu_10
+  rotate: false
+  xy: 1358, 1953
+  size: 95, 83
+  orig: 95, 83
+  offset: 0, 0
+  index: -1
+youlingyu_11
+  rotate: false
+  xy: 208, 2002
+  size: 44, 34
+  orig: 44, 34
+  offset: 0, 0
+  index: -1
+youlingyu_12
+  rotate: false
+  xy: 45, 2022
+  size: 69, 14
+  orig: 69, 14
+  offset: 0, 0
+  index: -1
+youlingyu_13
+  rotate: false
+  xy: 153, 2011
+  size: 53, 25
+  orig: 53, 25
+  offset: 0, 0
+  index: -1
+youlingyu_14
+  rotate: false
+  xy: 380, 1987
+  size: 85, 49
+  orig: 85, 49
+  offset: 0, 0
+  index: -1
+youlingyu_15
+  rotate: false
+  xy: 116, 2015
+  size: 35, 21
+  orig: 35, 21
+  offset: 0, 0
+  index: -1
+youlingyu_16
+  rotate: true
+  xy: 935, 1965
+  size: 71, 101
+  orig: 71, 101
+  offset: 0, 0
+  index: -1
+youlingyu_17
+  rotate: false
+  xy: 2, 2028
+  size: 20, 8
+  orig: 20, 8
+  offset: 0, 0
+  index: -1
+youlingyu_18
+  rotate: false
+  xy: 24, 2026
+  size: 19, 10
+  orig: 19, 10
+  offset: 0, 0
+  index: -1
+youlingyu_19
+  rotate: true
+  xy: 254, 2002
+  size: 34, 36
+  orig: 34, 36
+  offset: 0, 0
+  index: -1
+youlingyu_20
+  rotate: false
+  xy: 292, 2002
+  size: 34, 34
+  orig: 34, 34
+  offset: 0, 0
+  index: -1
+youlingyu_21
+  rotate: false
+  xy: 1203, 1956
+  size: 153, 80
+  orig: 153, 80
+  offset: 0, 0
+  index: -1
+youlingyu_22
+  rotate: false
+  xy: 328, 2002
+  size: 50, 34
+  orig: 50, 34
+  offset: 0, 0
+  index: -1
+youlingyu_23
+  rotate: true
+  xy: 705, 1687
+  size: 168, 202
+  orig: 168, 202
+  offset: 0, 0
+  index: -1
+youlingyu_24
+  rotate: true
+  xy: 1038, 1960
+  size: 76, 163
+  orig: 76, 163
+  offset: 0, 0
+  index: -1
+youlingyu_25
+  rotate: true
+  xy: 1806, 1670
+  size: 168, 235
+  orig: 168, 235
+  offset: 0, 0
+  index: -1
+youlingyu_26
+  rotate: true
+  xy: 2, 1920
+  size: 93, 146
+  orig: 93, 146
+  offset: 0, 0
+  index: -1
+youlingyu_27
+  rotate: false
+  xy: 2, 1543
+  size: 230, 191
+  orig: 230, 191
+  offset: 0, 0
+  index: -1
+youlingyu_28
+  rotate: false
+  xy: 1420, 1794
+  size: 175, 151
+  orig: 175, 151
+  offset: 0, 0
+  index: -1
+youlingyu_29
+  rotate: false
+  xy: 909, 1650
+  size: 220, 171
+  orig: 220, 171
+  offset: 0, 0
+  index: -1
+youlingyu_3
+  rotate: true
+  xy: 1359, 1611
+  size: 176, 415
+  orig: 176, 415
+  offset: 0, 0
+  index: -1
+youlingyu_30
+  rotate: false
+  xy: 790, 1970
+  size: 143, 66
+  orig: 143, 66
+  offset: 0, 0
+  index: -1
+youlingyu_32
+  rotate: true
+  xy: 547, 1976
+  size: 60, 81
+  orig: 60, 81
+  offset: 0, 0
+  index: -1
+youlingyu_33
+  rotate: false
+  xy: 1776, 1464
+  size: 211, 204
+  orig: 211, 204
+  offset: 0, 0
+  index: -1
+youlingyu_34
+  rotate: true
+  xy: 831, 1437
+  size: 211, 242
+  orig: 211, 242
+  offset: 0, 0
+  index: -1
+youlingyu_35
+  rotate: true
+  xy: 720, 1971
+  size: 65, 68
+  orig: 65, 68
+  offset: 0, 0
+  index: -1
+youlingyu_37
+  rotate: true
+  xy: 1745, 1194
+  size: 268, 275
+  orig: 268, 275
+  offset: 0, 0
+  index: -1
+youlingyu_38
+  rotate: false
+  xy: 2, 1736
+  size: 320, 163
+  orig: 320, 163
+  offset: 0, 0
+  index: -1
+youlingyu_39
+  rotate: true
+  xy: 1131, 1633
+  size: 188, 226
+  orig: 188, 226
+  offset: 0, 0
+  index: -1
+youlingyu_40
+  rotate: false
+  xy: 2, 1295
+  size: 301, 237
+  orig: 301, 237
+  offset: 0, 0
+  index: -1
+youlingyu_41
+  rotate: true
+  xy: 324, 1714
+  size: 154, 379
+  orig: 154, 379
+  offset: 0, 0
+  index: -1
+youlingyu_42
+  rotate: false
+  xy: 150, 1901
+  size: 191, 99
+  orig: 191, 99
+  offset: 0, 0
+  index: -1
+youlingyu_43
+  rotate: true
+  xy: 630, 1974
+  size: 62, 88
+  orig: 62, 88
+  offset: 0, 0
+  index: -1
+youlingyu_44
+  rotate: false
+  xy: 1436, 1399
+  size: 307, 210
+  orig: 307, 210
+  offset: 0, 0
+  index: -1
+youlingyu_45
+  rotate: false
+  xy: 305, 1221
+  size: 373, 260
+  orig: 373, 260
+  offset: 0, 0
+  index: -1
+youlingyu_47
+  rotate: true
+  xy: 562, 1483
+  size: 202, 267
+  orig: 202, 267
+  offset: 0, 0
+  index: -1
+youlingyu_48
+  rotate: true
+  xy: 1597, 1789
+  size: 152, 207
+  orig: 152, 207
+  offset: 0, 0
+  index: -1
+youlingyu_49
+  rotate: true
+  xy: 1455, 1947
+  size: 89, 307
+  orig: 89, 307
+  offset: 0, 0
+  index: -1
+youlingyu_50
+  rotate: true
+  xy: 680, 1146
+  size: 289, 360
+  orig: 289, 360
+  offset: 0, 0
+  index: -1
+youlingyu_51
+  rotate: true
+  xy: 506, 1870
+  size: 99, 270
+  orig: 99, 270
+  offset: 0, 0
+  index: -1
+youlingyu_52
+  rotate: true
+  xy: 778, 1857
+  size: 106, 206
+  orig: 106, 206
+  offset: 0, 0
+  index: -1
+youlingyu_57
+  rotate: true
+  xy: 1042, 1123
+  size: 274, 560
+  orig: 274, 560
+  offset: 0, 0
+  index: -1
+youlingyu_58
+  rotate: true
+  xy: 918, 843
+  size: 278, 651
+  orig: 278, 651
+  offset: 0, 0
+  index: -1
+youlingyu_60
+  rotate: true
+  xy: 1075, 1410
+  size: 199, 359
+  orig: 199, 359
+  offset: 0, 0
+  index: -1
+youlingyu_64
+  rotate: false
+  xy: 234, 1534
+  size: 326, 178
+  orig: 326, 178
+  offset: 0, 0
+  index: -1
+youlingyu_69
+  rotate: true
+  xy: 1903, 1840
+  size: 196, 129
+  orig: 196, 129
+  offset: 0, 0
+  index: -1
+youlingyu_7
+  rotate: false
+  xy: 1764, 1943
+  size: 137, 93
+  orig: 137, 93
+  offset: 0, 0
+  index: -1
+youlingyu_78
+  rotate: false
+  xy: 609, 562
+  size: 740, 279
+  orig: 740, 279
+  offset: 0, 0
+  index: -1
+youlingyu_79
+  rotate: false
+  xy: 986, 1823
+  size: 432, 128
+  orig: 432, 128
+  offset: 0, 0
+  index: -1
+youlingyu_8
+  rotate: false
+  xy: 343, 1878
+  size: 161, 102
+  orig: 161, 102
+  offset: 0, 0
+  index: -1
+youlingyu_9
+  rotate: false
+  xy: 467, 1982
+  size: 78, 54
+  orig: 78, 54
+  offset: 0, 0
+  index: -1
+
+Geliya_Avator2.png
+size: 2039,1828
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+huo0018
+  rotate: true
+  xy: 2, 1530
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0019
+  rotate: true
+  xy: 311, 1530
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+huo0020
+  rotate: true
+  xy: 620, 1530
+  size: 296, 307
+  orig: 296, 307
+  offset: 0, 0
+  index: -1
+youlingyu_0
+  rotate: true
+  xy: 1148, 533
+  size: 580, 426
+  orig: 580, 426
+  offset: 0, 0
+  index: -1
+youlingyu_1
+  rotate: true
+  xy: 929, 1508
+  size: 318, 427
+  orig: 318, 427
+  offset: 0, 0
+  index: -1
+youlingyu_31
+  rotate: true
+  xy: 470, 231
+  size: 470, 542
+  orig: 470, 542
+  offset: 0, 0
+  index: -1
+youlingyu_36
+  rotate: false
+  xy: 1358, 1496
+  size: 338, 330
+  orig: 338, 330
+  offset: 0, 0
+  index: -1
+youlingyu_46
+  rotate: true
+  xy: 528, 703
+  size: 410, 618
+  orig: 410, 618
+  offset: 0, 0
+  index: -1
+youlingyu_53
+  rotate: false
+  xy: 2, 1197
+  size: 512, 331
+  orig: 512, 331
+  offset: 0, 0
+  index: -1
+youlingyu_54
+  rotate: false
+  xy: 2, 772
+  size: 524, 382
+  orig: 524, 382
+  offset: 0, 0
+  index: -1
+youlingyu_56
+  rotate: true
+  xy: 1067, 1115
+  size: 379, 526
+  orig: 379, 526
+  offset: 0, 0
+  index: -1
+youlingyu_6
+  rotate: false
+  xy: 516, 1156
+  size: 549, 350
+  orig: 549, 350
+  offset: 0, 0
+  index: -1
+youlingyu_62
+  rotate: true
+  xy: 1014, 2
+  size: 422, 709
+  orig: 422, 709
+  offset: 0, 0
+  index: -1
+youlingyu_65
+  rotate: true
+  xy: 1595, 886
+  size: 477, 401
+  orig: 477, 401
+  offset: 0, 0
+  index: -1
+youlingyu_67
+  rotate: true
+  xy: 1698, 1365
+  size: 461, 332
+  orig: 461, 332
+  offset: 0, 0
+  index: -1
+youlingyu_68
+  rotate: false
+  xy: 1576, 426
+  size: 461, 458
+  orig: 461, 458
+  offset: 0, 0
+  index: -1
+youlingyu_75
+  rotate: true
+  xy: 2, 309
+  size: 461, 466
+  orig: 461, 466
+  offset: 0, 0
+  index: -1
+
+Geliya_Avator3.png
+size: 1998,1662
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+youlingyu_4
+  rotate: false
+  xy: 2, 99
+  size: 624, 594
+  orig: 624, 594
+  offset: 0, 0
+  index: -1
+youlingyu_55
+  rotate: false
+  xy: 628, 2
+  size: 1274, 578
+  orig: 1274, 578
+  offset: 0, 0
+  index: -1
+youlingyu_59
+  rotate: true
+  xy: 2, 1242
+  size: 418, 1090
+  orig: 418, 1090
+  offset: 0, 0
+  index: -1
+youlingyu_61
+  rotate: false
+  xy: 2, 695
+  size: 1218, 452
+  orig: 1218, 452
+  offset: 0, 0
+  index: -1
+youlingyu_76
+  rotate: false
+  xy: 1094, 1149
+  size: 763, 511
+  orig: 763, 511
+  offset: 0, 0
+  index: -1
+youlingyu_81
+  rotate: true
+  xy: 1222, 582
+  size: 565, 774
+  orig: 565, 774
+  offset: 0, 0
+  index: -1
+
+Geliya_Avator4.png
+size: 1638,1366
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+youlingyu_2
+  rotate: true
+  xy: 2, 755
+  size: 609, 885
+  orig: 609, 885
+  offset: 0, 0
+  index: -1
+youlingyu_66
+  rotate: true
+  xy: 889, 754
+  size: 610, 619
+  orig: 610, 619
+  offset: 0, 0
+  index: -1
+youlingyu_77
+  rotate: false
+  xy: 830, 2
+  size: 806, 750
+  orig: 806, 750
+  offset: 0, 0
+  index: -1
+youlingyu_83
+  rotate: true
+  xy: 2, 51
+  size: 702, 826
+  orig: 702, 826
+  offset: 0, 0
+  index: -1
+
+Geliya_Avator5.png
+size: 1371,1702
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+youlingyu_86
+  rotate: false
+  xy: 2, 2
+  size: 1367, 1698
+  orig: 1367, 1698
+  offset: 0, 0
+  index: -1
+
+Geliya_Avator6.png
+size: 1983,1578
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+youlingyu_5
+  rotate: true
+  xy: 2, 46
+  size: 774, 944
+  orig: 774, 944
+  offset: 0, 0
+  index: -1
+youlingyu_63
+  rotate: false
+  xy: 2, 822
+  size: 1042, 754
+  orig: 1042, 754
+  offset: 0, 0
+  index: -1
+youlingyu_73
+  rotate: false
+  xy: 948, 2
+  size: 854, 805
+  orig: 854, 805
+  offset: 0, 0
+  index: -1
+youlingyu_85
+  rotate: false
+  xy: 1046, 809
+  size: 935, 767
+  orig: 935, 767
+  offset: 0, 0
+  index: -1
+
+Geliya_Avator7.png
+size: 1293,1939
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+youlingyu_84
+  rotate: true
+  xy: 2, 2
+  size: 761, 1119
+  orig: 761, 1119
+  offset: 0, 0
+  index: -1
+youlingyu_87
+  rotate: false
+  xy: 2, 765
+  size: 1289, 1172
+  orig: 1289, 1172
+  offset: 0, 0
+  index: -1
+
+Geliya_Avator8.png
+size: 1891,1993
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+youlingyu_72
+  rotate: false
+  xy: 2, 817
+  size: 884, 1174
+  orig: 884, 1174
+  offset: 0, 0
+  index: -1
+youlingyu_74
+  rotate: false
+  xy: 888, 842
+  size: 1001, 1149
+  orig: 1001, 1149
+  offset: 0, 0
+  index: -1
+youlingyu_80
+  rotate: true
+  xy: 2, 2
+  size: 813, 1033
+  orig: 813, 1033
+  offset: 0, 0
+  index: -1
+
+Geliya_Avator9.png
+size: 1013,1090
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+youlingyu_82
+  rotate: false
+  xy: 2, 2
+  size: 1009, 1086
+  orig: 1009, 1086
+  offset: 0, 0
+  index: -1

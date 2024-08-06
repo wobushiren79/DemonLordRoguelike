@@ -1,16 +1,17 @@
-using NUnit.Framework.Interfaces;
-using Spine.Unity;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
-using UnityEditor.TerrainTools;
 using UnityEngine;
 
 public class LauncherTest : BaseLauncher
 {
     [Header("测试类型")]
     public TestSceneTypeEnum testSceneType = TestSceneTypeEnum.FightSceneTest;
+
+    public override void Launch()
+    {
+        base.Launch();
+        //FightCreatureBean itemData = new FightCreatureBean(999998);
+        //itemData.creatureData.AddAllSkin();
+        //StartForBaseTest(itemData);
+    }
 
     /// <summary>
     /// 开始战斗场景测试
