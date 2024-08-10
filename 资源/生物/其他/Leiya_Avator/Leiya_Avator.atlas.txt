@@ -1,0 +1,889 @@
+
+Leiya_Avator.png
+size: 2044,1977
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Pain
+  rotate: false
+  xy: 1877, 1783
+  size: 118, 109
+  orig: 118, 109
+  offset: 0, 0
+  index: -1
+Relax
+  rotate: false
+  xy: 1489, 1798
+  size: 114, 104
+  orig: 114, 104
+  offset: 0, 0
+  index: -1
+anran
+  rotate: false
+  xy: 614, 1833
+  size: 118, 97
+  orig: 118, 97
+  offset: 0, 0
+  index: -1
+biyan
+  rotate: false
+  xy: 1008, 1817
+  size: 120, 102
+  orig: 120, 102
+  offset: 0, 0
+  index: -1
+guang0001
+  rotate: false
+  xy: 2, 377
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0002
+  rotate: false
+  xy: 392, 254
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0003
+  rotate: false
+  xy: 1359, 211
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0004
+  rotate: false
+  xy: 2, 2
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+sd0001
+  rotate: false
+  xy: 1263, 1660
+  size: 187, 137
+  orig: 187, 137
+  offset: 0, 0
+  index: -1
+sd0002
+  rotate: false
+  xy: 1452, 1656
+  size: 187, 137
+  orig: 187, 137
+  offset: 0, 0
+  index: -1
+sd0003
+  rotate: false
+  xy: 1641, 1656
+  size: 187, 137
+  orig: 187, 137
+  offset: 0, 0
+  index: -1
+sd0004
+  rotate: false
+  xy: 1830, 1644
+  size: 187, 137
+  orig: 187, 137
+  offset: 0, 0
+  index: -1
+sd0005
+  rotate: false
+  xy: 2, 1610
+  size: 187, 137
+  orig: 187, 137
+  offset: 0, 0
+  index: -1
+sd0006
+  rotate: false
+  xy: 191, 1585
+  size: 187, 137
+  orig: 187, 137
+  offset: 0, 0
+  index: -1
+sd0007
+  rotate: false
+  xy: 380, 1576
+  size: 187, 137
+  orig: 187, 137
+  offset: 0, 0
+  index: -1
+sd0008
+  rotate: false
+  xy: 569, 1564
+  size: 187, 137
+  orig: 187, 137
+  offset: 0, 0
+  index: -1
+sd0009
+  rotate: false
+  xy: 758, 1553
+  size: 187, 137
+  orig: 187, 137
+  offset: 0, 0
+  index: -1
+tianma_1
+  rotate: false
+  xy: 161, 1952
+  size: 83, 23
+  orig: 83, 23
+  offset: 0, 0
+  index: -1
+tianma_10
+  rotate: false
+  xy: 246, 1941
+  size: 35, 34
+  orig: 35, 34
+  offset: 0, 0
+  index: -1
+tianma_11
+  rotate: true
+  xy: 311, 1345
+  size: 217, 303
+  orig: 217, 303
+  offset: 0, 0
+  index: -1
+tianma_12
+  rotate: true
+  xy: 1454, 1904
+  size: 71, 179
+  orig: 71, 179
+  offset: 0, 0
+  index: -1
+tianma_15
+  rotate: false
+  xy: 879, 1925
+  size: 107, 50
+  orig: 107, 50
+  offset: 0, 0
+  index: -1
+tianma_16
+  rotate: false
+  xy: 616, 1273
+  size: 508, 270
+  orig: 508, 270
+  offset: 0, 0
+  index: -1
+tianma_17
+  rotate: false
+  xy: 2, 752
+  size: 417, 317
+  orig: 417, 317
+  offset: 0, 0
+  index: -1
+tianma_18
+  rotate: false
+  xy: 2, 1071
+  size: 428, 272
+  orig: 428, 272
+  offset: 0, 0
+  index: -1
+tianma_2
+  rotate: false
+  xy: 2, 1971
+  size: 7, 4
+  orig: 7, 4
+  offset: 0, 0
+  index: -1
+tianma_20
+  rotate: true
+  xy: 2, 1870
+  size: 84, 93
+  orig: 84, 93
+  offset: 0, 0
+  index: -1
+tianma_21
+  rotate: false
+  xy: 1250, 1811
+  size: 116, 103
+  orig: 116, 103
+  offset: 0, 0
+  index: -1
+tianma_22
+  rotate: false
+  xy: 212, 1851
+  size: 168, 83
+  orig: 168, 83
+  offset: 0, 0
+  index: -1
+tianma_24
+  rotate: true
+  xy: 421, 629
+  size: 322, 505
+  orig: 322, 505
+  offset: 0, 0
+  index: -1
+tianma_25
+  rotate: true
+  xy: 1473, 586
+  size: 365, 393
+  orig: 365, 393
+  offset: 0, 0
+  index: -1
+tianma_26
+  rotate: true
+  xy: 839, 953
+  size: 272, 1019
+  orig: 272, 1019
+  offset: 0, 0
+  index: -1
+tianma_29
+  rotate: true
+  xy: 97, 1860
+  size: 90, 113
+  orig: 90, 113
+  offset: 0, 0
+  index: -1
+tianma_3
+  rotate: true
+  xy: 11, 1967
+  size: 8, 14
+  orig: 8, 14
+  offset: 0, 0
+  index: -1
+tianma_30
+  rotate: false
+  xy: 382, 1838
+  size: 230, 93
+  orig: 230, 93
+  offset: 0, 0
+  index: -1
+tianma_31
+  rotate: false
+  xy: 1368, 1799
+  size: 119, 103
+  orig: 119, 103
+  offset: 0, 0
+  index: -1
+tianma_32
+  rotate: true
+  xy: 825, 1692
+  size: 123, 216
+  orig: 123, 216
+  offset: 0, 0
+  index: -1
+tianma_33
+  rotate: false
+  xy: 549, 1715
+  size: 116, 116
+  orig: 116, 116
+  offset: 0, 0
+  index: -1
+tianma_34
+  rotate: true
+  xy: 2, 1408
+  size: 175, 307
+  orig: 175, 307
+  offset: 0, 0
+  index: -1
+tianma_35
+  rotate: false
+  xy: 1635, 1902
+  size: 84, 73
+  orig: 84, 73
+  offset: 0, 0
+  index: -1
+tianma_36
+  rotate: true
+  xy: 432, 956
+  size: 315, 405
+  orig: 315, 405
+  offset: 0, 0
+  index: -1
+tianma_37
+  rotate: true
+  xy: 1721, 1901
+  size: 74, 179
+  orig: 74, 179
+  offset: 0, 0
+  index: -1
+tianma_38
+  rotate: true
+  xy: 1142, 1916
+  size: 59, 174
+  orig: 59, 174
+  offset: 0, 0
+  index: -1
+tianma_39
+  rotate: false
+  xy: 564, 1933
+  size: 90, 42
+  orig: 90, 42
+  offset: 0, 0
+  index: -1
+tianma_39a
+  rotate: true
+  xy: 133, 1955
+  size: 20, 26
+  orig: 20, 26
+  offset: 0, 0
+  index: -1
+tianma_4
+  rotate: false
+  xy: 27, 1956
+  size: 69, 19
+  orig: 69, 19
+  offset: 0, 0
+  index: -1
+tianma_41
+  rotate: false
+  xy: 1421, 1492
+  size: 167, 162
+  orig: 167, 162
+  offset: 0, 0
+  index: -1
+tianma_42
+  rotate: false
+  xy: 765, 1930
+  size: 112, 45
+  orig: 112, 45
+  offset: 0, 0
+  index: -1
+tianma_43
+  rotate: true
+  xy: 1792, 1475
+  size: 167, 214
+  orig: 167, 214
+  offset: 0, 0
+  index: -1
+tianma_44
+  rotate: true
+  xy: 462, 1934
+  size: 41, 100
+  orig: 41, 100
+  offset: 0, 0
+  index: -1
+tianma_45
+  rotate: true
+  xy: 2, 1749
+  size: 109, 206
+  orig: 109, 206
+  offset: 0, 0
+  index: -1
+tianma_46
+  rotate: true
+  xy: 928, 598
+  size: 353, 543
+  orig: 353, 543
+  offset: 0, 0
+  index: -1
+tianma_47a
+  rotate: true
+  xy: 1137, 1511
+  size: 147, 282
+  orig: 147, 282
+  offset: 0, 0
+  index: -1
+tianma_48
+  rotate: false
+  xy: 734, 1831
+  size: 99, 97
+  orig: 99, 97
+  offset: 0, 0
+  index: -1
+tianma_5
+  rotate: false
+  xy: 656, 1932
+  size: 107, 43
+  orig: 107, 43
+  offset: 0, 0
+  index: -1
+tianma_51
+  rotate: false
+  xy: 1902, 1894
+  size: 140, 81
+  orig: 140, 81
+  offset: 0, 0
+  index: -1
+tianma_52
+  rotate: false
+  xy: 98, 1956
+  size: 33, 19
+  orig: 33, 19
+  offset: 0, 0
+  index: -1
+tianma_53
+  rotate: true
+  xy: 1130, 1812
+  size: 102, 118
+  orig: 102, 118
+  offset: 0, 0
+  index: -1
+tianma_54
+  rotate: false
+  xy: 1590, 1489
+  size: 200, 165
+  orig: 200, 165
+  offset: 0, 0
+  index: -1
+tianma_55
+  rotate: true
+  xy: 988, 1925
+  size: 50, 83
+  orig: 50, 83
+  offset: 0, 0
+  index: -1
+tianma_56
+  rotate: false
+  xy: 373, 1724
+  size: 174, 112
+  orig: 174, 112
+  offset: 0, 0
+  index: -1
+tianma_57
+  rotate: true
+  xy: 1126, 1227
+  size: 246, 832
+  orig: 246, 832
+  offset: 0, 0
+  index: -1
+tianma_59
+  rotate: true
+  xy: 1043, 1686
+  size: 123, 218
+  orig: 123, 218
+  offset: 0, 0
+  index: -1
+tianma_6
+  rotate: false
+  xy: 283, 1939
+  size: 78, 36
+  orig: 78, 36
+  offset: 0, 0
+  index: -1
+tianma_60
+  rotate: true
+  xy: 210, 1735
+  size: 114, 161
+  orig: 114, 161
+  offset: 0, 0
+  index: -1
+tianma_61
+  rotate: false
+  xy: 1073, 1921
+  size: 67, 54
+  orig: 67, 54
+  offset: 0, 0
+  index: -1
+tianma_63
+  rotate: false
+  xy: 1318, 1916
+  size: 134, 59
+  orig: 134, 59
+  offset: 0, 0
+  index: -1
+tianma_65
+  rotate: false
+  xy: 835, 1828
+  size: 171, 95
+  orig: 171, 95
+  offset: 0, 0
+  index: -1
+tianma_69
+  rotate: false
+  xy: 1605, 1795
+  size: 270, 104
+  orig: 270, 104
+  offset: 0, 0
+  index: -1
+tianma_7
+  rotate: false
+  xy: 363, 1936
+  size: 97, 39
+  orig: 97, 39
+  offset: 0, 0
+  index: -1
+tianma_71
+  rotate: true
+  xy: 782, 233
+  size: 363, 575
+  orig: 363, 575
+  offset: 0, 0
+  index: -1
+tianma_8
+  rotate: true
+  xy: 947, 1545
+  size: 139, 188
+  orig: 139, 188
+  offset: 0, 0
+  index: -1
+tianma_9
+  rotate: true
+  xy: 667, 1703
+  size: 126, 156
+  orig: 126, 156
+  offset: 0, 0
+  index: -1
+
+Leiya_Avator2.png
+size: 1914,2011
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+tianma_28
+  rotate: false
+  xy: 1170, 2
+  size: 742, 711
+  orig: 742, 711
+  offset: 0, 0
+  index: -1
+tianma_49
+  rotate: false
+  xy: 2, 68
+  size: 1166, 1941
+  orig: 1166, 1941
+  offset: 0, 0
+  index: -1
+tianma_58
+  rotate: false
+  xy: 1170, 715
+  size: 695, 1294
+  orig: 695, 1294
+  offset: 0, 0
+  index: -1
+
+Leiya_Avator3.png
+size: 1989,1951
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+tianma_14
+  rotate: false
+  xy: 2, 818
+  size: 726, 1131
+  orig: 726, 1131
+  offset: 0, 0
+  index: -1
+tianma_19
+  rotate: false
+  xy: 981, 77
+  size: 839, 892
+  orig: 839, 892
+  offset: 0, 0
+  index: -1
+tianma_27
+  rotate: true
+  xy: 1498, 1037
+  size: 912, 489
+  orig: 912, 489
+  offset: 0, 0
+  index: -1
+tianma_64
+  rotate: true
+  xy: 2, 2
+  size: 814, 977
+  orig: 814, 977
+  offset: 0, 0
+  index: -1
+tianma_66
+  rotate: true
+  xy: 730, 971
+  size: 978, 766
+  orig: 978, 766
+  offset: 0, 0
+  index: -1
+
+Leiya_Avator4.png
+size: 1845,2021
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+guang0005
+  rotate: false
+  xy: 595, 2
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0006
+  rotate: false
+  xy: 985, 2
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0007
+  rotate: false
+  xy: 1375, 2
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+tianma_13
+  rotate: false
+  xy: 2, 433
+  size: 741, 925
+  orig: 741, 925
+  offset: 0, 0
+  index: -1
+tianma_47
+  rotate: false
+  xy: 2, 1360
+  size: 1093, 659
+  orig: 1093, 659
+  offset: 0, 0
+  index: -1
+tianma_50
+  rotate: false
+  xy: 745, 377
+  size: 996, 683
+  orig: 996, 683
+  offset: 0, 0
+  index: -1
+tianma_62
+  rotate: false
+  xy: 2, 15
+  size: 591, 416
+  orig: 591, 416
+  offset: 0, 0
+  index: -1
+tianma_67
+  rotate: true
+  xy: 1097, 1062
+  size: 957, 746
+  orig: 957, 746
+  offset: 0, 0
+  index: -1
+
+Leiya_Avator5.png
+size: 1945,1934
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+shan0001
+  rotate: false
+  xy: 888, 798
+  size: 794, 407
+  orig: 794, 407
+  offset: 0, 0
+  index: -1
+shan0002
+  rotate: false
+  xy: 1149, 1525
+  size: 794, 407
+  orig: 794, 407
+  offset: 0, 0
+  index: -1
+shan0003
+  rotate: true
+  xy: 888, 2
+  size: 794, 407
+  orig: 794, 407
+  offset: 0, 0
+  index: -1
+shan0004
+  rotate: true
+  xy: 1297, 2
+  size: 794, 407
+  orig: 794, 407
+  offset: 0, 0
+  index: -1
+tianma_23
+  rotate: false
+  xy: 2, 149
+  size: 435, 910
+  orig: 435, 910
+  offset: 0, 0
+  index: -1
+tianma_40
+  rotate: false
+  xy: 439, 238
+  size: 447, 821
+  orig: 447, 821
+  offset: 0, 0
+  index: -1
+tianma_68
+  rotate: false
+  xy: 2, 1061
+  size: 665, 871
+  orig: 665, 871
+  offset: 0, 0
+  index: -1
+tianma_70
+  rotate: true
+  xy: 669, 1207
+  size: 725, 478
+  orig: 725, 478
+  offset: 0, 0
+  index: -1
+
+Leiya_Avator6.png
+size: 1984,1945
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+guang0008
+  rotate: false
+  xy: 2, 1570
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0009
+  rotate: false
+  xy: 392, 1570
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0010
+  rotate: false
+  xy: 782, 1570
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0011
+  rotate: false
+  xy: 1172, 1570
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0012
+  rotate: false
+  xy: 1562, 1570
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0013
+  rotate: false
+  xy: 2, 1195
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0014
+  rotate: false
+  xy: 392, 1195
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0015
+  rotate: false
+  xy: 782, 1195
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0016
+  rotate: false
+  xy: 1172, 1195
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0017
+  rotate: false
+  xy: 1562, 1195
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0018
+  rotate: false
+  xy: 2, 820
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0019
+  rotate: false
+  xy: 392, 820
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0020
+  rotate: false
+  xy: 782, 820
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0021
+  rotate: false
+  xy: 1172, 820
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0022
+  rotate: false
+  xy: 1562, 820
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+guang0023
+  rotate: false
+  xy: 2, 445
+  size: 388, 373
+  orig: 388, 373
+  offset: 0, 0
+  index: -1
+shan0005
+  rotate: false
+  xy: 392, 411
+  size: 794, 407
+  orig: 794, 407
+  offset: 0, 0
+  index: -1
+shan0006
+  rotate: false
+  xy: 1188, 411
+  size: 794, 407
+  orig: 794, 407
+  offset: 0, 0
+  index: -1
+shan0007
+  rotate: false
+  xy: 2, 2
+  size: 794, 407
+  orig: 794, 407
+  offset: 0, 0
+  index: -1
+shan0008
+  rotate: false
+  xy: 798, 2
+  size: 794, 407
+  orig: 794, 407
+  offset: 0, 0
+  index: -1
+
+Leiya_Avator7.png
+size: 1638,798
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+shan0009
+  rotate: true
+  xy: 2, 2
+  size: 794, 407
+  orig: 794, 407
+  offset: 0, 0
+  index: -1
+shan0010
+  rotate: true
+  xy: 411, 2
+  size: 794, 407
+  orig: 794, 407
+  offset: 0, 0
+  index: -1
+shan0011
+  rotate: true
+  xy: 820, 2
+  size: 794, 407
+  orig: 794, 407
+  offset: 0, 0
+  index: -1
+shan0012
+  rotate: true
+  xy: 1229, 2
+  size: 794, 407
+  orig: 794, 407
+  offset: 0, 0
+  index: -1

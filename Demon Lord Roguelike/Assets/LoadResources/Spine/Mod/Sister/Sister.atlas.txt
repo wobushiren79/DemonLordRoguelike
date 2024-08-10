@@ -1,0 +1,580 @@
+
+Sister.png
+size: 713,523
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+face
+  rotate: true
+  xy: 583, 335
+  size: 97, 85
+  orig: 97, 85
+  offset: 0, 0
+  index: -1
+sister2_ body
+  rotate: true
+  xy: 671, 245
+  size: 33, 40
+  orig: 33, 40
+  offset: 0, 0
+  index: -1
+sister2_bang1
+  rotate: true
+  xy: 368, 3
+  size: 62, 51
+  orig: 62, 51
+  offset: 0, 0
+  index: -1
+sister2_bang2
+  rotate: false
+  xy: 671, 280
+  size: 39, 68
+  orig: 39, 68
+  offset: 0, 0
+  index: -1
+sister2_bang3
+  rotate: false
+  xy: 458, 238
+  size: 51, 62
+  orig: 51, 62
+  offset: 0, 0
+  index: -1
+sister2_eye1
+  rotate: true
+  xy: 573, 2
+  size: 32, 26
+  orig: 32, 26
+  offset: 0, 0
+  index: -1
+sister2_eye2
+  rotate: false
+  xy: 654, 120
+  size: 24, 24
+  orig: 24, 24
+  offset: 0, 0
+  index: -1
+sister2_face
+  rotate: true
+  xy: 511, 227
+  size: 76, 68
+  orig: 76, 68
+  offset: 0, 0
+  index: -1
+sister2_hair01
+  rotate: false
+  xy: 655, 232
+  size: 13, 39
+  orig: 13, 39
+  offset: 0, 0
+  index: -1
+sister2_hair1
+  rotate: true
+  xy: 544, 434
+  size: 87, 111
+  orig: 87, 111
+  offset: 0, 0
+  index: -1
+sister2_hair2
+  rotate: true
+  xy: 227, 164
+  size: 55, 100
+  orig: 55, 100
+  offset: 0, 0
+  index: -1
+sister2_hair3
+  rotate: false
+  xy: 227, 221
+  size: 81, 108
+  orig: 81, 108
+  offset: 0, 0
+  index: -1
+sister2_headwear1
+  rotate: false
+  xy: 329, 67
+  size: 84, 72
+  orig: 84, 72
+  offset: 0, 0
+  index: -1
+sister2_headwear2
+  rotate: false
+  xy: 2, 2
+  size: 130, 82
+  orig: 130, 82
+  offset: 0, 0
+  index: -1
+sister2_hip
+  rotate: false
+  xy: 653, 186
+  size: 34, 30
+  orig: 34, 30
+  offset: 0, 0
+  index: -1
+sister2_jiao1
+  rotate: true
+  xy: 509, 125
+  size: 37, 66
+  orig: 37, 66
+  offset: 0, 0
+  index: -1
+sister2_jiao2
+  rotate: false
+  xy: 429, 166
+  size: 27, 55
+  orig: 27, 55
+  offset: 0, 0
+  index: -1
+sister2_left_forearm
+  rotate: false
+  xy: 680, 128
+  size: 29, 24
+  orig: 29, 24
+  offset: 0, 0
+  index: -1
+sister2_left_leg
+  rotate: false
+  xy: 134, 2
+  size: 43, 63
+  orig: 43, 63
+  offset: 0, 0
+  index: -1
+sister2_left_palm
+  rotate: true
+  xy: 686, 99
+  size: 27, 19
+  orig: 27, 19
+  offset: 0, 0
+  index: -1
+sister2_left_thigh
+  rotate: false
+  xy: 560, 76
+  size: 30, 47
+  orig: 30, 47
+  offset: 0, 0
+  index: -1
+sister2_left_weapon
+  rotate: true
+  xy: 292, 96
+  size: 66, 35
+  orig: 66, 35
+  offset: 0, 0
+  index: -1
+sister2_left_wing
+  rotate: false
+  xy: 583, 273
+  size: 86, 60
+  orig: 86, 60
+  offset: 0, 0
+  index: -1
+sister2_right_forearm
+  rotate: false
+  xy: 622, 2
+  size: 16, 32
+  orig: 16, 32
+  offset: 0, 0
+  index: -1
+sister2_right_hair
+  rotate: true
+  xy: 546, 47
+  size: 27, 41
+  orig: 27, 41
+  offset: 0, 0
+  index: -1
+sister2_right_main_arm
+  rotate: false
+  xy: 689, 186
+  size: 16, 30
+  orig: 16, 30
+  offset: 0, 0
+  index: -1
+sister2_right_palm
+  rotate: false
+  xy: 640, 2
+  size: 25, 27
+  orig: 25, 27
+  offset: 0, 0
+  index: -1
+sister2_right_weapon
+  rotate: true
+  xy: 415, 73
+  size: 66, 31
+  orig: 66, 31
+  offset: 0, 0
+  index: -1
+sister2_right_wing
+  rotate: true
+  xy: 508, 305
+  size: 111, 73
+  orig: 111, 73
+  offset: 0, 0
+  index: -1
+sister2_shadow
+  rotate: false
+  xy: 581, 227
+  size: 72, 44
+  orig: 72, 44
+  offset: 0, 0
+  index: -1
+sister2_shou1
+  rotate: true
+  xy: 434, 223
+  size: 34, 22
+  orig: 34, 22
+  offset: 0, 0
+  index: -1
+sister_ hair1
+  rotate: true
+  xy: 544, 418
+  size: 14, 34
+  orig: 14, 34
+  offset: 0, 0
+  index: -1
+sister_ jiao1
+  rotate: true
+  xy: 584, 176
+  size: 49, 67
+  orig: 49, 67
+  offset: 0, 0
+  index: -1
+sister_ railing1
+  rotate: false
+  xy: 151, 111
+  size: 44, 205
+  orig: 44, 205
+  offset: 0, 0
+  index: -1
+sister_arm1
+  rotate: false
+  xy: 670, 218
+  size: 40, 25
+  orig: 40, 25
+  offset: 0, 0
+  index: -1
+sister_arm2
+  rotate: true
+  xy: 310, 306
+  size: 23, 18
+  orig: 23, 18
+  offset: 0, 0
+  index: -1
+sister_arm22
+  rotate: true
+  xy: 651, 72
+  size: 23, 27
+  orig: 23, 27
+  offset: 0, 0
+  index: -1
+sister_arm3
+  rotate: true
+  xy: 601, 2
+  size: 32, 19
+  orig: 32, 19
+  offset: 0, 0
+  index: -1
+sister_bang1
+  rotate: false
+  xy: 657, 438
+  size: 48, 83
+  orig: 48, 83
+  offset: 0, 0
+  index: -1
+sister_bang2
+  rotate: true
+  xy: 458, 192
+  size: 44, 51
+  orig: 44, 51
+  offset: 0, 0
+  index: -1
+sister_bang3
+  rotate: false
+  xy: 450, 23
+  size: 32, 60
+  orig: 32, 60
+  offset: 0, 0
+  index: -1
+sister_bang4
+  rotate: false
+  xy: 258, 5
+  size: 29, 80
+  orig: 29, 80
+  offset: 0, 0
+  index: -1
+sister_body
+  rotate: true
+  xy: 458, 153
+  size: 37, 49
+  orig: 37, 49
+  offset: 0, 0
+  index: -1
+sister_cry
+  rotate: false
+  xy: 484, 42
+  size: 60, 32
+  orig: 60, 32
+  offset: 0, 0
+  index: -1
+sister_cry1
+  rotate: false
+  xy: 197, 87
+  size: 85, 30
+  orig: 85, 30
+  offset: 0, 0
+  index: -1
+sister_ear
+  rotate: true
+  xy: 484, 25
+  size: 15, 21
+  orig: 15, 21
+  offset: 0, 0
+  index: -1
+sister_face
+  rotate: false
+  xy: 179, 8
+  size: 77, 77
+  orig: 77, 77
+  offset: 0, 0
+  index: -1
+sister_hands1
+  rotate: false
+  xy: 421, 5
+  size: 27, 66
+  orig: 27, 66
+  offset: 0, 0
+  index: -1
+sister_headwear1
+  rotate: false
+  xy: 329, 175
+  size: 98, 48
+  orig: 98, 48
+  offset: 0, 0
+  index: -1
+sister_headwear2
+  rotate: true
+  xy: 670, 350
+  size: 86, 40
+  orig: 86, 40
+  offset: 0, 0
+  index: -1
+sister_left_thigh
+  rotate: true
+  xy: 498, 76
+  size: 47, 60
+  orig: 47, 60
+  offset: 0, 0
+  index: -1
+sister_left_thigh2
+  rotate: true
+  xy: 640, 31
+  size: 38, 18
+  orig: 38, 18
+  offset: 0, 0
+  index: -1
+sister_long10
+  rotate: false
+  xy: 329, 141
+  size: 89, 32
+  orig: 89, 32
+  offset: 0, 0
+  index: -1
+sister_long11
+  rotate: true
+  xy: 511, 164
+  size: 61, 71
+  orig: 61, 71
+  offset: 0, 0
+  index: -1
+sister_long4
+  rotate: false
+  xy: 2, 318
+  size: 180, 203
+  orig: 180, 203
+  offset: 0, 0
+  index: -1
+sister_long5
+  rotate: false
+  xy: 654, 146
+  size: 24, 38
+  orig: 24, 38
+  offset: 0, 0
+  index: -1
+sister_long6
+  rotate: false
+  xy: 680, 154
+  size: 31, 30
+  orig: 31, 30
+  offset: 0, 0
+  index: -1
+sister_long7
+  rotate: false
+  xy: 450, 2
+  size: 55, 19
+  orig: 55, 19
+  offset: 0, 0
+  index: -1
+sister_long8
+  rotate: false
+  xy: 184, 331
+  size: 144, 190
+  orig: 144, 190
+  offset: 0, 0
+  index: -1
+sister_long9
+  rotate: false
+  xy: 310, 259
+  size: 146, 41
+  orig: 146, 41
+  offset: 0, 0
+  index: -1
+sister_ponytail1
+  rotate: true
+  xy: 197, 119
+  size: 43, 93
+  orig: 43, 93
+  offset: 0, 0
+  index: -1
+sister_ponytail2
+  rotate: true
+  xy: 330, 418
+  size: 103, 212
+  orig: 103, 212
+  offset: 0, 0
+  index: -1
+sister_ponytail3
+  rotate: false
+  xy: 2, 86
+  size: 147, 230
+  orig: 147, 230
+  offset: 0, 0
+  index: -1
+sister_ribbon1
+  rotate: true
+  xy: 330, 302
+  size: 114, 176
+  orig: 114, 176
+  offset: 0, 0
+  index: -1
+sister_ribbon2
+  rotate: false
+  xy: 589, 36
+  size: 49, 33
+  orig: 49, 33
+  offset: 0, 0
+  index: -1
+sister_ribbon4
+  rotate: false
+  xy: 507, 2
+  size: 41, 38
+  orig: 41, 38
+  offset: 0, 0
+  index: -1
+sister_ribbon5
+  rotate: false
+  xy: 197, 166
+  size: 28, 163
+  orig: 28, 163
+  offset: 0, 0
+  index: -1
+sister_ribbon6
+  rotate: false
+  xy: 310, 225
+  size: 122, 32
+  orig: 122, 32
+  offset: 0, 0
+  index: -1
+sister_right_forearm
+  rotate: true
+  xy: 289, 67
+  size: 27, 31
+  orig: 27, 31
+  offset: 0, 0
+  index: -1
+sister_right_main_arm
+  rotate: false
+  xy: 550, 2
+  size: 21, 43
+  orig: 21, 43
+  offset: 0, 0
+  index: -1
+sister_right_palm
+  rotate: true
+  xy: 134, 68
+  size: 16, 15
+  orig: 16, 15
+  offset: 0, 0
+  index: -1
+sister_right_palm2
+  rotate: false
+  xy: 151, 70
+  size: 16, 15
+  orig: 16, 15
+  offset: 0, 0
+  index: -1
+sister_right_thigh
+  rotate: false
+  xy: 648, 97
+  size: 36, 21
+  orig: 36, 21
+  offset: 0, 0
+  index: -1
+sister_shadow
+  rotate: false
+  xy: 289, 4
+  size: 77, 61
+  orig: 77, 61
+  offset: 0, 0
+  index: -1
+sister_shock
+  rotate: true
+  xy: 448, 85
+  size: 66, 48
+  orig: 66, 48
+  offset: 0, 0
+  index: -1
+sister_shock1
+  rotate: false
+  xy: 660, 32
+  size: 10, 38
+  orig: 10, 38
+  offset: 0, 0
+  index: -1
+sister_skirt1
+  rotate: false
+  xy: 592, 93
+  size: 54, 35
+  orig: 54, 35
+  offset: 0, 0
+  index: -1
+sister_skirt2
+  rotate: false
+  xy: 151, 87
+  size: 39, 22
+  orig: 39, 22
+  offset: 0, 0
+  index: -1
+sister_skirt3
+  rotate: false
+  xy: 420, 149
+  size: 16, 15
+  orig: 16, 15
+  offset: 0, 0
+  index: -1
+sister_smile
+  rotate: false
+  xy: 584, 130
+  size: 68, 44
+  orig: 68, 44
+  offset: 0, 0
+  index: -1
+sister_smile1
+  rotate: true
+  xy: 498, 139
+  size: 12, 9
+  orig: 12, 9
+  offset: 0, 0
+  index: -1
+sister_weapon
+  rotate: false
+  xy: 592, 71
+  size: 57, 20
+  orig: 57, 20
+  offset: 0, 0
+  index: -1

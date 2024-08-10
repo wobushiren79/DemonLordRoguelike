@@ -1,0 +1,391 @@
+
+Mubeiling.png
+size: 634,523
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+arm_little
+  rotate: true
+  xy: 487, 4
+  size: 25, 30
+  orig: 25, 30
+  offset: 0, 0
+  index: -1
+body
+  rotate: true
+  xy: 358, 11
+  size: 27, 41
+  orig: 27, 41
+  offset: 0, 0
+  index: -1
+clothing _cirrus
+  rotate: false
+  xy: 551, 65
+  size: 46, 18
+  orig: 46, 18
+  offset: 0, 0
+  index: -1
+clothing _cross
+  rotate: true
+  xy: 608, 184
+  size: 12, 16
+  orig: 12, 16
+  offset: 0, 0
+  index: -1
+clothing _head
+  rotate: false
+  xy: 171, 151
+  size: 143, 121
+  orig: 143, 121
+  offset: 0, 0
+  index: -1
+clothing _skirt
+  rotate: false
+  xy: 504, 230
+  size: 95, 60
+  orig: 95, 60
+  offset: 0, 0
+  index: -1
+clothing _white
+  rotate: false
+  xy: 503, 381
+  size: 99, 63
+  orig: 99, 63
+  offset: 0, 0
+  index: -1
+clothing _wing
+  rotate: true
+  xy: 189, 10
+  size: 40, 57
+  orig: 40, 57
+  offset: 0, 0
+  index: -1
+clothing_cirrus3
+  rotate: true
+  xy: 490, 46
+  size: 22, 46
+  orig: 22, 46
+  offset: 0, 0
+  index: -1
+clothing_skirt2
+  rotate: true
+  xy: 446, 78
+  size: 89, 49
+  orig: 89, 49
+  offset: 0, 0
+  index: -1
+clothing_skirt3
+  rotate: false
+  xy: 497, 124
+  size: 86, 58
+  orig: 86, 58
+  offset: 0, 0
+  index: -1
+crown
+  rotate: false
+  xy: 319, 68
+  size: 125, 99
+  orig: 125, 99
+  offset: 0, 0
+  index: -1
+eye
+  rotate: true
+  xy: 604, 384
+  size: 60, 28
+  orig: 60, 28
+  offset: 0, 0
+  index: -1
+face
+  rotate: false
+  xy: 504, 292
+  size: 90, 87
+  orig: 90, 87
+  offset: 0, 0
+  index: -1
+flower
+  rotate: false
+  xy: 319, 3
+  size: 37, 35
+  orig: 37, 35
+  offset: 0, 0
+  index: -1
+guishou_1
+  rotate: true
+  xy: 308, 334
+  size: 24, 33
+  orig: 24, 33
+  offset: 0, 0
+  index: -1
+guishou_1_1
+  rotate: false
+  xy: 121, 85
+  size: 48, 184
+  orig: 48, 184
+  offset: 0, 0
+  index: -1
+guishou_1_2
+  rotate: true
+  xy: 171, 52
+  size: 97, 146
+  orig: 97, 146
+  offset: 0, 0
+  index: -1
+guishou_1_3
+  rotate: true
+  xy: 308, 449
+  size: 72, 212
+  orig: 72, 212
+  offset: 0, 0
+  index: -1
+guishou_2
+  rotate: true
+  xy: 490, 31
+  size: 13, 32
+  orig: 13, 32
+  offset: 0, 0
+  index: -1
+guishou_3
+  rotate: true
+  xy: 598, 27
+  size: 17, 32
+  orig: 17, 32
+  offset: 0, 0
+  index: -1
+guishou_4
+  rotate: false
+  xy: 301, 4
+  size: 16, 46
+  orig: 16, 46
+  offset: 0, 0
+  index: -1
+guishou_5
+  rotate: true
+  xy: 401, 2
+  size: 16, 40
+  orig: 16, 40
+  offset: 0, 0
+  index: -1
+guishou_6
+  rotate: true
+  xy: 538, 44
+  size: 19, 33
+  orig: 19, 33
+  offset: 0, 0
+  index: -1
+hair_1
+  rotate: false
+  xy: 601, 245
+  size: 31, 134
+  orig: 31, 134
+  offset: 0, 0
+  index: -1
+hair_2
+  rotate: false
+  xy: 608, 198
+  size: 23, 45
+  orig: 23, 45
+  offset: 0, 0
+  index: -1
+hair_3
+  rotate: false
+  xy: 589, 187
+  size: 17, 41
+  orig: 17, 41
+  offset: 0, 0
+  index: -1
+hair_4
+  rotate: false
+  xy: 600, 90
+  size: 29, 45
+  orig: 29, 45
+  offset: 0, 0
+  index: -1
+hair_5
+  rotate: true
+  xy: 401, 20
+  size: 18, 43
+  orig: 18, 43
+  offset: 0, 0
+  index: -1
+hair_6
+  rotate: true
+  xy: 308, 360
+  size: 87, 193
+  orig: 87, 193
+  offset: 0, 0
+  index: -1
+hair_7
+  rotate: true
+  xy: 319, 40
+  size: 26, 126
+  orig: 26, 126
+  offset: 0, 0
+  index: -1
+hair_8
+  rotate: true
+  xy: 316, 169
+  size: 60, 166
+  orig: 60, 166
+  offset: 0, 0
+  index: -1
+hair_9
+  rotate: false
+  xy: 2, 73
+  size: 117, 196
+  orig: 117, 196
+  offset: 0, 0
+  index: -1
+hand2
+  rotate: false
+  xy: 447, 2
+  size: 38, 38
+  orig: 38, 38
+  offset: 0, 0
+  index: -1
+hand_clothing
+  rotate: true
+  xy: 447, 42
+  size: 34, 41
+  orig: 34, 41
+  offset: 0, 0
+  index: -1
+jian_chi1
+  rotate: true
+  xy: 316, 231
+  size: 41, 28
+  orig: 41, 28
+  offset: 0, 0
+  index: -1
+jian_chi2
+  rotate: false
+  xy: 599, 46
+  size: 33, 37
+  orig: 33, 37
+  offset: 0, 0
+  index: -1
+jian_d1
+  rotate: true
+  xy: 2, 10
+  size: 61, 124
+  orig: 61, 124
+  offset: 0, 0
+  index: -1
+jian_ding
+  rotate: true
+  xy: 348, 231
+  size: 127, 154
+  orig: 127, 154
+  offset: 0, 0
+  index: -1
+jian_men1
+  rotate: true
+  xy: 522, 489
+  size: 32, 110
+  orig: 32, 110
+  offset: 0, 0
+  index: -1
+jian_men2
+  rotate: true
+  xy: 522, 446
+  size: 41, 104
+  orig: 41, 104
+  offset: 0, 0
+  index: -1
+jian_men3
+  rotate: true
+  xy: 497, 85
+  size: 37, 101
+  orig: 37, 101
+  offset: 0, 0
+  index: -1
+jian_men4
+  rotate: true
+  xy: 497, 70
+  size: 13, 52
+  orig: 13, 52
+  offset: 0, 0
+  index: -1
+left_leg1
+  rotate: true
+  xy: 585, 137
+  size: 45, 47
+  orig: 45, 47
+  offset: 0, 0
+  index: -1
+left_leg2
+  rotate: false
+  xy: 128, 33
+  size: 41, 50
+  orig: 41, 50
+  offset: 0, 0
+  index: -1
+lefthand
+  rotate: true
+  xy: 519, 3
+  size: 26, 19
+  orig: 26, 19
+  offset: 0, 0
+  index: -1
+mouth
+  rotate: false
+  xy: 596, 377
+  size: 3, 2
+  orig: 3, 2
+  offset: 0, 0
+  index: -1
+righ_arm2
+  rotate: false
+  xy: 248, 2
+  size: 32, 20
+  orig: 32, 20
+  offset: 0, 0
+  index: -1
+righ_leg1
+  rotate: true
+  xy: 128, 2
+  size: 29, 59
+  orig: 29, 59
+  offset: 0, 0
+  index: -1
+righ_leg2
+  rotate: true
+  xy: 248, 24
+  size: 26, 51
+  orig: 26, 51
+  offset: 0, 0
+  index: -1
+righthand
+  rotate: false
+  xy: 573, 44
+  size: 23, 19
+  orig: 23, 19
+  offset: 0, 0
+  index: -1
+shadow
+  rotate: false
+  xy: 131, 274
+  size: 215, 58
+  orig: 215, 58
+  offset: 0, 0
+  index: -1
+tombstone
+  rotate: false
+  xy: 2, 271
+  size: 127, 250
+  orig: 127, 250
+  offset: 0, 0
+  index: -1
+veil_2
+  rotate: true
+  xy: 484, 184
+  size: 44, 103
+  orig: 44, 103
+  offset: 0, 0
+  index: -1
+veil_3
+  rotate: false
+  xy: 131, 334
+  size: 175, 187
+  orig: 175, 187
+  offset: 0, 0
+  index: -1

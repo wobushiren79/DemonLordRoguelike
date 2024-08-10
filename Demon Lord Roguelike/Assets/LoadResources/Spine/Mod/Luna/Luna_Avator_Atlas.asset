@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Luna_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: 6c1a0f0e9101f5c4cabcb8db07fb2be3, type: 3}
+  materials:
+  - {fileID: 2100000, guid: d5dd9907d12fc314486c501b69d01653, type: 2}
+  - {fileID: 2100000, guid: ee84da2de83726d4991108187b15dbf1, type: 2}
+  - {fileID: 2100000, guid: 299780162c7ed6641b5b5485c4ccf8b4, type: 2}
+  - {fileID: 2100000, guid: 35c4beb81d63172448bf4432f8834227, type: 2}
+  - {fileID: 2100000, guid: a313e4ca8ad37fe43b28a58371abfafa, type: 2}
+  - {fileID: 2100000, guid: bd362acd52994c2468d660c8615c4c34, type: 2}

@@ -21,52 +21,63 @@ public partial class CameraHandler
     /// <summary>
     /// 设置核心UI
     /// </summary>
-    public void SetBaseCoreCamera(int priority, bool isEnable)
+    public CinemachineVirtualCamera SetBaseCoreCamera(int priority, bool isEnable)
     {
-        SetCameraForBaseScene(priority, isEnable, "CV_Core");
+        return SetCameraForBaseScene(priority, isEnable, "CV_Core");
     }
 
     /// <summary>
     /// 设置扭蛋机UI
     /// </summary>
-    public void SetGashaponMachineCamera(int priority, bool isEnable)
+    public CinemachineVirtualCamera SetGashaponMachineCamera(int priority, bool isEnable)
     {
-        SetCameraForBaseScene(priority, isEnable, "CV_GashaponMachine");
+        return SetCameraForBaseScene(priority, isEnable, "CV_GashaponMachine");
     }
 
-    protected void SetCameraForBaseScene(int priority, bool isEnable, string cvName)
+    /// <summary>
+    /// 设置扭蛋破碎摄像头
+    /// </summary>
+    public CinemachineVirtualCamera SetGashaponBreakCamera(int priority, bool isEnable)
+    {
+        return SetCameraForBaseScene(priority, isEnable, "CV_GashaponBreak");
+    }
+
+    protected CinemachineVirtualCamera SetCameraForBaseScene(int priority, bool isEnable, string cvName)
     {
         manager.HideAllCM();
         var targetBaseScene = WorldHandler.Instance.currentBaseScene;
         if (targetBaseScene == null)
         {
             LogUtil.LogError("设置摄像头失败 没有找到对应场景");
-            return;
+            return null;
         }
         var targetCVListTF = targetBaseScene.transform.Find($"CV_List");
         if (targetCVListTF == null)
         {
             LogUtil.LogError("设置摄像头失败 没有找到对应CV_List Transfrom");
-            return;
+            return null;
         }
         //还原所有摄像头
         var cvList = targetCVListTF.GetComponentsInChildren<CinemachineVirtualCamera>(true);
+        CinemachineVirtualCamera targetCV = null;
         for (int i = 0; i < cvList.Length; i++)
         {
-            var targetCV = cvList[i];
-            if (targetCV.name.Equals($"{cvName}"))
+            var targetCVItem = cvList[i];
+            if (targetCVItem.name.Equals($"{cvName}"))
             {
                 //打开切换动画
                 manager.SetMainCameraDefaultBlend(0.5f);
-                targetCV.gameObject.SetActive(isEnable);
-                targetCV.Priority = priority;
+                targetCVItem.gameObject.SetActive(isEnable);
+                targetCVItem.Priority = priority;
+                targetCV = targetCVItem;
             }
             else
             {
-                targetCV.gameObject.SetActive(false);
-                targetCV.Priority = 0;
+                targetCVItem.gameObject.SetActive(false);
+                targetCVItem.Priority = 0;
             }
         }
+        return targetCV;
     }
 
 

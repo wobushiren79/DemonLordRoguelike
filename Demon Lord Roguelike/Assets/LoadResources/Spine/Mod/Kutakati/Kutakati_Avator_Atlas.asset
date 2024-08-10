@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Kutakati_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: 658debd375e0adb48ba5a2323804090e, type: 3}
+  materials:
+  - {fileID: 2100000, guid: 60a7c556909e1334fb5c7ebb328a9d0c, type: 2}
+  - {fileID: 2100000, guid: 3ce197f07f5d4ad4c9190b5334119870, type: 2}
+  - {fileID: 2100000, guid: cbdfdb207d42f5345983b848da0f2cf2, type: 2}
+  - {fileID: 2100000, guid: 4a37671dec6833d4c9648500989ecf74, type: 2}
+  - {fileID: 2100000, guid: e73db6b1798ed614087f8a52bef1583e, type: 2}

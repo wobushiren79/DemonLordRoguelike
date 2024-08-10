@@ -16,4 +16,8 @@ public static class EventsInfo
     public static string GameFightLogic_CreatureDead = "GameFightLogic_CreatureDead";//生物死亡  
 
     public static string Toast_NoEnoughCreateMagic = "Toast_NoEnoughCreateMagic";//没有足够的创建魔力
+
+    #region 扭蛋机
+    public static string GashaponMachine_ClickBreak = "GashaponMachine_ClickBreak";//点击破碎 
+    #endregion
 }

@@ -1,0 +1,386 @@
+
+Luna_Avator.png
+size: 2037,1973
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+A_arm_up_L1
+  rotate: true
+  xy: 2, 1454
+  size: 186, 503
+  orig: 186, 503
+  offset: 0, 0
+  index: -1
+A_belt_dropshadow1
+  rotate: false
+  xy: 2, 1185
+  size: 458, 267
+  orig: 458, 267
+  offset: 0, 0
+  index: -1
+A_choker
+  rotate: false
+  xy: 573, 1909
+  size: 137, 62
+  orig: 137, 62
+  offset: 0, 0
+  index: -1
+A_eye close_eyelids
+  rotate: false
+  xy: 2, 1867
+  size: 282, 76
+  orig: 282, 76
+  offset: 0, 0
+  index: -1
+A_eye open_eyelids
+  rotate: false
+  xy: 934, 1906
+  size: 309, 65
+  orig: 309, 65
+  offset: 0, 0
+  index: -1
+A_eye open_eyes open_hl
+  rotate: false
+  xy: 712, 1909
+  size: 220, 62
+  orig: 220, 62
+  offset: 0, 0
+  index: -1
+A_eye open_white of eyes
+  rotate: false
+  xy: 1602, 1899
+  size: 278, 72
+  orig: 278, 72
+  offset: 0, 0
+  index: -1
+A_eyebrow
+  rotate: false
+  xy: 50, 1945
+  size: 287, 26
+  orig: 287, 26
+  offset: 0, 0
+  index: -1
+A_foot_L1
+  rotate: true
+  xy: 2, 425
+  size: 294, 1665
+  orig: 294, 1665
+  offset: 0, 0
+  index: -1
+A_hair_B
+  rotate: true
+  xy: 1322, 770
+  size: 406, 478
+  orig: 406, 478
+  offset: 0, 0
+  index: -1
+A_hair_F1
+  rotate: true
+  xy: 309, 1642
+  size: 154, 470
+  orig: 154, 470
+  offset: 0, 0
+  index: -1
+A_hair_F2
+  rotate: true
+  xy: 467, 1799
+  size: 108, 248
+  orig: 108, 248
+  offset: 0, 0
+  index: -1
+A_hair_F3
+  rotate: true
+  xy: 1136, 1757
+  size: 146, 248
+  orig: 146, 248
+  offset: 0, 0
+  index: -1
+A_hair_F4
+  rotate: true
+  xy: 875, 1772
+  size: 132, 259
+  orig: 132, 259
+  offset: 0, 0
+  index: -1
+A_hair_F5
+  rotate: true
+  xy: 1129, 1560
+  size: 173, 486
+  orig: 173, 486
+  offset: 0, 0
+  index: -1
+A_hair_acce1
+  rotate: false
+  xy: 1592, 1735
+  size: 185, 162
+  orig: 185, 162
+  offset: 0, 0
+  index: -1
+A_hair_acce2
+  rotate: true
+  xy: 1779, 1714
+  size: 163, 169
+  orig: 163, 169
+  offset: 0, 0
+  index: -1
+A_hair_acce3
+  rotate: true
+  xy: 717, 1798
+  size: 109, 156
+  orig: 109, 156
+  offset: 0, 0
+  index: -1
+A_hair_acce4
+  rotate: true
+  xy: 286, 1855
+  size: 84, 179
+  orig: 84, 179
+  offset: 0, 0
+  index: -1
+A_hair_acce5
+  rotate: true
+  xy: 1882, 1879
+  size: 92, 148
+  orig: 92, 148
+  offset: 0, 0
+  index: -1
+A_hair_acce6
+  rotate: true
+  xy: 1418, 1901
+  size: 70, 182
+  orig: 70, 182
+  offset: 0, 0
+  index: -1
+A_hair_tail_R2
+  rotate: true
+  xy: 462, 1049
+  size: 318, 858
+  orig: 318, 858
+  offset: 0, 0
+  index: -1
+A_hand_L1
+  rotate: true
+  xy: 507, 1418
+  size: 186, 607
+  orig: 186, 607
+  offset: 0, 0
+  index: -1
+A_hand_R1
+  rotate: true
+  xy: 2, 721
+  size: 326, 934
+  orig: 326, 934
+  offset: 0, 0
+  index: -1
+A_hand_R2
+  rotate: true
+  xy: 1245, 1905
+  size: 66, 171
+  orig: 66, 171
+  offset: 0, 0
+  index: -1
+A_hand_R3
+  rotate: true
+  xy: 498, 1917
+  size: 54, 73
+  orig: 54, 73
+  offset: 0, 0
+  index: -1
+A_hand_R4
+  rotate: true
+  xy: 2, 1699
+  size: 154, 305
+  orig: 154, 305
+  offset: 0, 0
+  index: -1
+A_head
+  rotate: false
+  xy: 558, 5
+  size: 482, 418
+  orig: 482, 418
+  offset: 0, 0
+  index: -1
+A_mouth close
+  rotate: false
+  xy: 2, 1958
+  size: 46, 13
+  orig: 46, 13
+  offset: 0, 0
+  index: -1
+A_mouth normal
+  rotate: false
+  xy: 339, 1941
+  size: 81, 30
+  orig: 81, 30
+  offset: 0, 0
+  index: -1
+A_mouth open
+  rotate: false
+  xy: 422, 1941
+  size: 74, 30
+  orig: 74, 30
+  offset: 0, 0
+  index: -1
+A_nec
+  rotate: true
+  xy: 1386, 1751
+  size: 148, 204
+  orig: 148, 204
+  offset: 0, 0
+  index: -1
+A_pants
+  rotate: true
+  xy: 1042, 2
+  size: 421, 462
+  orig: 421, 462
+  offset: 0, 0
+  index: -1
+A_tops1
+  rotate: false
+  xy: 1617, 1503
+  size: 418, 209
+  orig: 418, 209
+  offset: 0, 0
+  index: -1
+A_tops5
+  rotate: true
+  xy: 781, 1606
+  size: 164, 346
+  orig: 164, 346
+  offset: 0, 0
+  index: -1
+A_tops6
+  rotate: false
+  xy: 1616, 1178
+  size: 378, 323
+  orig: 378, 323
+  offset: 0, 0
+  index: -1
+C_arm_up_L1
+  rotate: true
+  xy: 1116, 1369
+  size: 189, 498
+  orig: 189, 498
+  offset: 0, 0
+  index: -1
+C_body2
+  rotate: true
+  xy: 2, 13
+  size: 410, 554
+  orig: 410, 554
+  offset: 0, 0
+  index: -1
+
+Luna_Avator2.png
+size: 2019,1755
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+A_bow
+  rotate: false
+  xy: 2, 2
+  size: 2015, 1751
+  orig: 2015, 1751
+  offset: 0, 0
+  index: -1
+
+Luna_Avator3.png
+size: 1712,1542
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+A_hair_tail_L4
+  rotate: false
+  xy: 852, 23
+  size: 858, 1517
+  orig: 858, 1517
+  offset: 0, 0
+  index: -1
+A_hair_tail_R3
+  rotate: false
+  xy: 2, 2
+  size: 848, 1538
+  orig: 848, 1538
+  offset: 0, 0
+  index: -1
+
+Luna_Avator4.png
+size: 1637,2025
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+A_foot_R1
+  rotate: true
+  xy: 2, 2
+  size: 537, 1633
+  orig: 537, 1633
+  offset: 0, 0
+  index: -1
+A_hair_tail_R1
+  rotate: false
+  xy: 719, 765
+  size: 828, 1258
+  orig: 828, 1258
+  offset: 0, 0
+  index: -1
+A_hair_tail_R4
+  rotate: false
+  xy: 2, 541
+  size: 715, 1482
+  orig: 715, 1482
+  offset: 0, 0
+  index: -1
+
+Luna_Avator5.png
+size: 1968,1409
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+A_hair_tail_L1
+  rotate: false
+  xy: 1326, 157
+  size: 640, 1250
+  orig: 640, 1250
+  offset: 0, 0
+  index: -1
+A_hair_tail_L2
+  rotate: true
+  xy: 2, 836
+  size: 571, 574
+  orig: 571, 574
+  offset: 0, 0
+  index: -1
+A_hair_tail_L3
+  rotate: true
+  xy: 2, 2
+  size: 794, 1250
+  orig: 794, 1250
+  offset: 0, 0
+  index: -1
+A_skirt
+  rotate: false
+  xy: 578, 798
+  size: 746, 609
+  orig: 746, 609
+  offset: 0, 0
+  index: -1
+
+Luna_Avator6.png
+size: 1491,1373
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+A_arrow
+  rotate: true
+  xy: 675, 504
+  size: 867, 814
+  orig: 867, 814
+  offset: 0, 0
+  index: -1
+A_hair_tail_L5
+  rotate: false
+  xy: 2, 2
+  size: 671, 1369
+  orig: 671, 1369
+  offset: 0, 0
+  index: -1

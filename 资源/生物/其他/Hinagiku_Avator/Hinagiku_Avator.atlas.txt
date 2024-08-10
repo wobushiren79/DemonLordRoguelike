@@ -1,0 +1,653 @@
+
+Hinagiku_Avator.png
+size: 2046,2032
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_bust
+  rotate: true
+  xy: 317, 1031
+  size: 212, 306
+  orig: 212, 306
+  offset: 0, 0
+  index: -1
+L_foot
+  rotate: true
+  xy: 2, 585
+  size: 224, 386
+  orig: 224, 386
+  offset: 0, 0
+  index: -1
+L_forearm_dropshadow
+  rotate: true
+  xy: 625, 1021
+  size: 218, 241
+  orig: 218, 241
+  offset: 0, 0
+  index: -1
+L_hand
+  rotate: true
+  xy: 2, 824
+  size: 235, 274
+  orig: 235, 274
+  offset: 0, 0
+  index: -1
+L_sleeve_back
+  rotate: true
+  xy: 607, 777
+  size: 212, 595
+  orig: 212, 595
+  offset: 0, 0
+  index: -1
+L_sleeve_ribbon_01
+  rotate: true
+  xy: 2, 1787
+  size: 111, 116
+  orig: 111, 116
+  offset: 0, 0
+  index: -1
+L_sleeve_ribbon_02
+  rotate: false
+  xy: 781, 1967
+  size: 161, 63
+  orig: 161, 63
+  offset: 0, 0
+  index: -1
+L_sleeve_ribbon_03
+  rotate: false
+  xy: 120, 1784
+  size: 158, 114
+  orig: 158, 114
+  offset: 0, 0
+  index: -1
+L_sleeve_ribbon_04
+  rotate: false
+  xy: 1785, 1941
+  size: 240, 89
+  orig: 240, 89
+  offset: 0, 0
+  index: -1
+L_upperarm_dropshadow
+  rotate: true
+  xy: 280, 1767
+  size: 114, 152
+  orig: 114, 152
+  offset: 0, 0
+  index: -1
+R_bust
+  rotate: true
+  xy: 1663, 1690
+  size: 138, 276
+  orig: 138, 276
+  offset: 0, 0
+  index: -1
+R_foot
+  rotate: true
+  xy: 2, 340
+  size: 243, 372
+  orig: 243, 372
+  offset: 0, 0
+  index: -1
+R_forearm
+  rotate: true
+  xy: 564, 1430
+  size: 149, 488
+  orig: 149, 488
+  offset: 0, 0
+  index: -1
+R_hand
+  rotate: true
+  xy: 1353, 1170
+  size: 199, 259
+  orig: 199, 259
+  offset: 0, 0
+  index: -1
+R_leg_lower
+  rotate: true
+  xy: 797, 315
+  size: 222, 893
+  orig: 222, 893
+  offset: 0, 0
+  index: -1
+R_leg_upper
+  rotate: true
+  xy: 569, 53
+  size: 260, 1062
+  orig: 260, 1062
+  offset: 0, 0
+  index: -1
+R_sleeve_back
+  rotate: true
+  xy: 1204, 758
+  size: 218, 683
+  orig: 218, 683
+  offset: 0, 0
+  index: -1
+R_upperarm_dropshadow
+  rotate: true
+  xy: 659, 1241
+  size: 187, 253
+  orig: 187, 253
+  offset: 0, 0
+  index: -1
+back_hair_02
+  rotate: true
+  xy: 922, 1728
+  size: 126, 416
+  orig: 126, 416
+  offset: 0, 0
+  index: -1
+back_hair_03
+  rotate: true
+  xy: 1248, 978
+  size: 182, 733
+  orig: 182, 733
+  offset: 0, 0
+  index: -1
+back_hair_07
+  rotate: true
+  xy: 975, 539
+  size: 217, 1033
+  orig: 217, 1033
+  offset: 0, 0
+  index: -1
+bottoms_02
+  rotate: false
+  xy: 2, 1061
+  size: 313, 206
+  orig: 313, 206
+  offset: 0, 0
+  index: -1
+bottoms_05
+  rotate: true
+  xy: 376, 322
+  size: 226, 419
+  orig: 226, 419
+  offset: 0, 0
+  index: -1
+bottoms_waist
+  rotate: false
+  xy: 868, 991
+  size: 378, 211
+  orig: 378, 211
+  offset: 0, 0
+  index: -1
+cheek
+  rotate: false
+  xy: 933, 1581
+  size: 342, 145
+  orig: 342, 145
+  offset: 0, 0
+  index: -1
+decoration_01
+  rotate: false
+  xy: 325, 1883
+  size: 150, 92
+  orig: 150, 92
+  offset: 0, 0
+  index: -1
+decoration_02
+  rotate: false
+  xy: 1692, 281
+  size: 319, 256
+  orig: 319, 256
+  offset: 0, 0
+  index: -1
+decoration_03
+  rotate: true
+  xy: 2, 1644
+  size: 138, 225
+  orig: 138, 225
+  offset: 0, 0
+  index: -1
+ear_02
+  rotate: true
+  xy: 1633, 2
+  size: 277, 327
+  orig: 277, 327
+  offset: 0, 0
+  index: -1
+eyebrow
+  rotate: false
+  xy: 944, 1967
+  size: 363, 63
+  orig: 363, 63
+  offset: 0, 0
+  index: -1
+eyes_close_eyelids
+  rotate: false
+  xy: 1340, 1713
+  size: 321, 135
+  orig: 321, 135
+  offset: 0, 0
+  index: -1
+eyes_close_eyeline top
+  rotate: false
+  xy: 426, 1977
+  size: 353, 53
+  orig: 353, 53
+  offset: 0, 0
+  index: -1
+eyes_open_eyelids
+  rotate: false
+  xy: 2, 1900
+  size: 321, 88
+  orig: 321, 88
+  offset: 0, 0
+  index: -1
+eyes_open_eyeline_bottom
+  rotate: false
+  xy: 144, 1990
+  size: 280, 40
+  orig: 280, 40
+  offset: 0, 0
+  index: -1
+eyes_open_eyeline_top
+  rotate: false
+  xy: 773, 1862
+  size: 359, 103
+  orig: 359, 103
+  offset: 0, 0
+  index: -1
+eyes_open_hl
+  rotate: false
+  xy: 1452, 1961
+  size: 240, 69
+  orig: 240, 69
+  offset: 0, 0
+  index: -1
+eyes_open_pupil
+  rotate: false
+  xy: 1134, 1856
+  size: 281, 107
+  orig: 281, 107
+  offset: 0, 0
+  index: -1
+eyes_open_white_of_eyes
+  rotate: false
+  xy: 1417, 1850
+  size: 319, 103
+  orig: 319, 103
+  offset: 0, 0
+  index: -1
+front_hair_01
+  rotate: true
+  xy: 2, 1269
+  size: 182, 366
+  orig: 182, 366
+  offset: 0, 0
+  index: -1
+front_hair_01_dropshadow
+  rotate: true
+  xy: 370, 1245
+  size: 183, 287
+  orig: 183, 287
+  offset: 0, 0
+  index: -1
+front_hair_02
+  rotate: true
+  xy: 914, 1204
+  size: 190, 437
+  orig: 190, 437
+  offset: 0, 0
+  index: -1
+front_hair_02_dropshadow
+  rotate: true
+  xy: 1054, 1396
+  size: 162, 362
+  orig: 162, 362
+  offset: 0, 0
+  index: -1
+front_hair_03
+  rotate: true
+  xy: 184, 1453
+  size: 156, 378
+  orig: 156, 378
+  offset: 0, 0
+  index: -1
+front_hair_03_dropshadow
+  rotate: true
+  xy: 633, 1587
+  size: 139, 298
+  orig: 139, 298
+  offset: 0, 0
+  index: -1
+front_hair_04
+  rotate: true
+  xy: 1486, 1547
+  size: 141, 453
+  orig: 141, 453
+  offset: 0, 0
+  index: -1
+front_hair_05_dropshadow
+  rotate: true
+  xy: 229, 1611
+  size: 135, 402
+  orig: 135, 402
+  offset: 0, 0
+  index: -1
+front_hair_dropshadow
+  rotate: true
+  xy: 434, 1748
+  size: 121, 287
+  orig: 121, 287
+  offset: 0, 0
+  index: -1
+hair_accessories_01
+  rotate: true
+  xy: 2, 1485
+  size: 157, 180
+  orig: 157, 180
+  offset: 0, 0
+  index: -1
+hair_accessories_02
+  rotate: true
+  xy: 1738, 1830
+  size: 109, 289
+  orig: 109, 289
+  offset: 0, 0
+  index: -1
+hair_accessories_03
+  rotate: true
+  xy: 1418, 1371
+  size: 174, 239
+  orig: 174, 239
+  offset: 0, 0
+  index: -1
+hair_accessories_04
+  rotate: true
+  xy: 723, 1733
+  size: 127, 197
+  orig: 127, 197
+  offset: 0, 0
+  index: -1
+mouth_close
+  rotate: false
+  xy: 2, 2003
+  size: 95, 27
+  orig: 95, 27
+  offset: 0, 0
+  index: -1
+mouth_open
+  rotate: false
+  xy: 1694, 1955
+  size: 89, 75
+  orig: 89, 75
+  offset: 0, 0
+  index: -1
+neck
+  rotate: true
+  xy: 1277, 1560
+  size: 151, 207
+  orig: 151, 207
+  offset: 0, 0
+  index: -1
+nose
+  rotate: true
+  xy: 99, 2002
+  size: 28, 43
+  orig: 28, 43
+  offset: 0, 0
+  index: -1
+sash_01
+  rotate: true
+  xy: 1659, 1365
+  size: 180, 385
+  orig: 180, 385
+  offset: 0, 0
+  index: -1
+sash_02
+  rotate: false
+  xy: 477, 1873
+  size: 124, 102
+  orig: 124, 102
+  offset: 0, 0
+  index: -1
+sash_03
+  rotate: true
+  xy: 278, 811
+  size: 218, 327
+  orig: 218, 327
+  offset: 0, 0
+  index: -1
+sash_04
+  rotate: true
+  xy: 390, 550
+  size: 225, 583
+  orig: 225, 583
+  offset: 0, 0
+  index: -1
+sash_05
+  rotate: true
+  xy: 2, 69
+  size: 251, 565
+  orig: 251, 565
+  offset: 0, 0
+  index: -1
+sash_06
+  rotate: false
+  xy: 1614, 1162
+  size: 372, 201
+  orig: 372, 201
+  offset: 0, 0
+  index: -1
+tops_02
+  rotate: false
+  xy: 603, 1871
+  size: 168, 104
+  orig: 168, 104
+  offset: 0, 0
+  index: -1
+tops_03
+  rotate: true
+  xy: 1309, 1965
+  size: 65, 141
+  orig: 65, 141
+  offset: 0, 0
+  index: -1
+
+Hinagiku_Avator2.png
+size: 1851,1958
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Koshiwaist
+  rotate: false
+  xy: 1384, 2
+  size: 465, 430
+  orig: 465, 430
+  offset: 0, 0
+  index: -1
+bottoms_01
+  rotate: false
+  xy: 723, 69
+  size: 659, 1887
+  orig: 659, 1887
+  offset: 0, 0
+  index: -1
+bottoms_03
+  rotate: false
+  xy: 2, 102
+  size: 719, 1854
+  orig: 719, 1854
+  offset: 0, 0
+  index: -1
+bottoms_04
+  rotate: false
+  xy: 1384, 434
+  size: 459, 1522
+  orig: 459, 1522
+  offset: 0, 0
+  index: -1
+
+Hinagiku_Avator3.png
+size: 2025,1874
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_forearm
+  rotate: false
+  xy: 1606, 1551
+  size: 322, 321
+  orig: 322, 321
+  offset: 0, 0
+  index: -1
+L_leg_upper
+  rotate: true
+  xy: 1004, 352
+  size: 374, 832
+  orig: 374, 832
+  offset: 0, 0
+  index: -1
+L_sleeve_01
+  rotate: true
+  xy: 1055, 728
+  size: 312, 959
+  orig: 312, 959
+  offset: 0, 0
+  index: -1
+L_sleeve_02
+  rotate: true
+  xy: 2, 1609
+  size: 263, 543
+  orig: 263, 543
+  offset: 0, 0
+  index: -1
+L_upperarm
+  rotate: true
+  xy: 2, 1316
+  size: 291, 521
+  orig: 291, 521
+  offset: 0, 0
+  index: -1
+R_sleeve
+  rotate: true
+  xy: 2, 644
+  size: 348, 1000
+  orig: 348, 1000
+  offset: 0, 0
+  index: -1
+R_upperarm
+  rotate: true
+  xy: 1217, 1223
+  size: 326, 389
+  orig: 326, 389
+  offset: 0, 0
+  index: -1
+back_hair_05
+  rotate: true
+  xy: 2, 994
+  size: 306, 1051
+  orig: 306, 1051
+  offset: 0, 0
+  index: -1
+back_hair_08
+  rotate: true
+  xy: 625, 2
+  size: 348, 1230
+  orig: 348, 1230
+  offset: 0, 0
+  index: -1
+body
+  rotate: true
+  xy: 2, 208
+  size: 434, 621
+  orig: 434, 621
+  offset: 0, 0
+  index: -1
+ear_01
+  rotate: true
+  xy: 1234, 1589
+  size: 283, 370
+  orig: 283, 370
+  offset: 0, 0
+  index: -1
+front_hair_05
+  rotate: true
+  xy: 525, 1302
+  size: 303, 690
+  orig: 303, 690
+  offset: 0, 0
+  index: -1
+front_hair_06
+  rotate: true
+  xy: 547, 1607
+  size: 265, 685
+  orig: 265, 685
+  offset: 0, 0
+  index: -1
+head
+  rotate: false
+  xy: 1608, 1042
+  size: 415, 507
+  orig: 415, 507
+  offset: 0, 0
+  index: -1
+
+Hinagiku_Avator4.png
+size: 1973,1960
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_leg_lower
+  rotate: false
+  xy: 2, 909
+  size: 617, 602
+  orig: 617, 602
+  offset: 0, 0
+  index: -1
+back_hair_01
+  rotate: true
+  xy: 632, 1458
+  size: 500, 813
+  orig: 500, 813
+  offset: 0, 0
+  index: -1
+back_hair_04
+  rotate: true
+  xy: 2, 2
+  size: 817, 895
+  orig: 817, 895
+  offset: 0, 0
+  index: -1
+back_hair_10
+  rotate: true
+  xy: 621, 821
+  size: 633, 1144
+  orig: 633, 1144
+  offset: 0, 0
+  index: -1
+clothes_under
+  rotate: false
+  xy: 1447, 1456
+  size: 524, 502
+  orig: 524, 502
+  offset: 0, 0
+  index: -1
+tops_01
+  rotate: true
+  xy: 2, 1513
+  size: 445, 628
+  orig: 445, 628
+  offset: 0, 0
+  index: -1
+
+Hinagiku_Avator5.png
+size: 1944,1514
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+back_hair_09
+  rotate: false
+  xy: 2, 2
+  size: 961, 1510
+  orig: 961, 1510
+  offset: 0, 0
+  index: -1
+tail
+  rotate: false
+  xy: 965, 141
+  size: 977, 1371
+  orig: 977, 1371
+  offset: 0, 0
+  index: -1

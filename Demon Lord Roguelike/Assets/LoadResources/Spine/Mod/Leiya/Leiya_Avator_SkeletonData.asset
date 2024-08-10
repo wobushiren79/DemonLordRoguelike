@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1b3b4b945939a54ea0b23d3396115fb, type: 3}
+  m_Name: Leiya_Avator_SkeletonData
+  m_EditorClassIdentifier: 
+  atlasAssets:
+  - {fileID: 11400000, guid: ca50d0fcef70f0d4ebdf4a9b15eaba4a, type: 2}
+  scale: 0.01
+  skeletonJSON: {fileID: 4900000, guid: 2cfdc7df6b0bba5458cbcfa697db1cd0, type: 3}
+  isUpgradingBlendModeMaterials: 0
+  blendModeMaterials:
+    requiresBlendModeMaterials: 1
+    applyAdditiveMaterial: 1
+    additiveMaterials:
+    - pageName: Leiya_Avator.png
+      material: {fileID: 2100000, guid: 12a24b9457321e34e955dbae4cd62bb7, type: 2}
+    - pageName: Leiya_Avator4.png
+      material: {fileID: 2100000, guid: b73d41e408e83cb4e8fe83f3dc049976, type: 2}
+    - pageName: Leiya_Avator6.png
+      material: {fileID: 2100000, guid: c0e948bf591af2444a16dc1194941ac8, type: 2}
+    - pageName: Leiya_Avator5.png
+      material: {fileID: 2100000, guid: 6ab951e529bd5ef44a058ce950d19f2a, type: 2}
+    - pageName: Leiya_Avator7.png
+      material: {fileID: 2100000, guid: 8f8f689b37f76f24484d5f32f8deeb69, type: 2}
+    multiplyMaterials: []
+    screenMaterials: []
+  skeletonDataModifiers: []
+  fromAnimation: []
+  toAnimation: []
+  duration: []
+  defaultMix: 0.2
+  controller: {fileID: 0}

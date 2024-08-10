@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Kuluoxier_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: 4f39bae4d5dd20347afe8080e8262946, type: 3}
+  materials:
+  - {fileID: 2100000, guid: 17cdcb18e5a8d2644b89c08694c0e549, type: 2}
+  - {fileID: 2100000, guid: 782b0c2e6c7ac56459ad4b44ddaabfd6, type: 2}
+  - {fileID: 2100000, guid: c4ce0ee7274df1d45b393eb90dbe3b1a, type: 2}
+  - {fileID: 2100000, guid: c94256e12835d1c4783872ccc03da95a, type: 2}
+  - {fileID: 2100000, guid: d43a5897d6f7a6b4793a405d25e53156, type: 2}
+  - {fileID: 2100000, guid: a61d9a164fdcf5242a55231c372a12e1, type: 2}

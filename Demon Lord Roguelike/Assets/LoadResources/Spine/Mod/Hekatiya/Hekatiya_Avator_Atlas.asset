@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Hekatiya_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: e8e417e77a0feab478124cc695957c49, type: 3}
+  materials:
+  - {fileID: 2100000, guid: 640ab72a531060041a932a243d1e381b, type: 2}
+  - {fileID: 2100000, guid: f80c8ec4cd9a6db478debd9e1bd41a4c, type: 2}
+  - {fileID: 2100000, guid: 324d129f6666af0459dc42c96b2777df, type: 2}
+  - {fileID: 2100000, guid: b5f514e990b4c6d4a95d6c57ebb24d76, type: 2}
+  - {fileID: 2100000, guid: 98e47eca35ef99543a0b2e047aa99e73, type: 2}
+  - {fileID: 2100000, guid: 30e68df631a6b214cb364572fd67ab41, type: 2}
+  - {fileID: 2100000, guid: 67628a5e51d9e7c4faffa5ecc002542f, type: 2}
+  - {fileID: 2100000, guid: ed979dc7d736205408ace4fa579bb90f, type: 2}

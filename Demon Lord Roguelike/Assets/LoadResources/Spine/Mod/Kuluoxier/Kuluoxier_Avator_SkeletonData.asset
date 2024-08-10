@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1b3b4b945939a54ea0b23d3396115fb, type: 3}
+  m_Name: Kuluoxier_Avator_SkeletonData
+  m_EditorClassIdentifier: 
+  atlasAssets:
+  - {fileID: 11400000, guid: 74a8c61f57292f7488b70ab48f8273e6, type: 2}
+  scale: 0.01
+  skeletonJSON: {fileID: 4900000, guid: 7891bf383f8cbdd4fad14043414a2508, type: 3}
+  isUpgradingBlendModeMaterials: 0
+  blendModeMaterials:
+    requiresBlendModeMaterials: 1
+    applyAdditiveMaterial: 1
+    additiveMaterials:
+    - pageName: Kuluoxier_Avator4.png
+      material: {fileID: 2100000, guid: 13caf46e394eae548bb6819c9433b059, type: 2}
+    - pageName: Kuluoxier_Avator6.png
+      material: {fileID: 2100000, guid: 391b938140fd85343b4c7398eb64f6a3, type: 2}
+    multiplyMaterials:
+    - pageName: Kuluoxier_Avator.png
+      material: {fileID: 2100000, guid: e7818751642362443a081fa4de11399a, type: 2}
+    screenMaterials: []
+  skeletonDataModifiers: []
+  fromAnimation: []
+  toAnimation: []
+  duration: []
+  defaultMix: 0.2
+  controller: {fileID: 0}
