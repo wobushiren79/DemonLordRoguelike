@@ -237,7 +237,7 @@ public partial class UIFightMain : BaseUIComponent
         if (gameFightLogic.selectCreature != null)
             return;
         ui_ViewCreatureCardDetails.ShowObj(true);
-        ui_ViewCreatureCardDetails.SetData(targetData);
+        ui_ViewCreatureCardDetails.SetData(targetData.creatureData);
     }
 
     public void EventForHideCardDetails(FightCreatureBean targetData)

@@ -19,5 +19,6 @@ public static class EventsInfo
 
     #region 扭蛋机
     public static string GashaponMachine_ClickBreak = "GashaponMachine_ClickBreak";//点击破碎 
+    public static string GashaponMachine_ClickNext = "GashaponMachine_ClickNext";//点击下一个
     #endregion
 }

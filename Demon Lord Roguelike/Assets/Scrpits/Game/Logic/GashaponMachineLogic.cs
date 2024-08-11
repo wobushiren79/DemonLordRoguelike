@@ -1,9 +1,11 @@
 ﻿using DG.Tweening;
+using Spine.Unity;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.VFX;
 
 [Serializable]
 public class GashaponMachineLogic : BaseGameLogic
@@ -15,24 +17,40 @@ public class GashaponMachineLogic : BaseGameLogic
 
     //核心建筑
     public GameObject objBuildingCore;
+    public VisualEffect effectEggBreak;
 
     //蛋预制
-    public List<GameObject> listEggPool = new List<GameObject>();
+    public List<GameObject> listEggObjPool = new List<GameObject>();
+
+
+    //所有生成数据
+    public List<GashaponItemBean> listGashaponData = new List<GashaponItemBean>();
+    //所有生成数据
+    public List<GameObject> listEggObj = new List<GameObject>();
+    //当前破碎的index
+    public int currentBreakIndex = 0;
 
     public override void PreGameForRegisterEvent()
     {
-        this.RegisterEvent<GameObject>(EventsInfo.GashaponMachine_ClickBreak, EventForEggBreak);
+        this.RegisterEvent<GameObject, GashaponItemBean>(EventsInfo.GashaponMachine_ClickBreak, EventForEggBreak);
+        this.RegisterEvent(EventsInfo.GashaponMachine_ClickNext, EventForNextEgg);
     }
 
     public override void PreGame()
     {
         base.PreGame();
+        //初始化场景
+        InitSceneData();
+        //初始化数据
+        InitGashaponMachineData(() =>
+        {
+            //开始
+            StartGame();
+        });
         //设置摄像头
         CameraHandler.Instance.SetGashaponMachineCamera(int.MaxValue, true);
         //先暂时关闭所有UI
         UIHandler.Instance.CloseAllUI();
-        //开始
-        StartGame();
     }
 
     public override void StartGame()
@@ -40,7 +58,47 @@ public class GashaponMachineLogic : BaseGameLogic
         base.StartGame();
         ProcessForShowEgg((listEgg) =>
         {
-            ProcessForEggBreak(listEgg);
+            ProcessForEggBreak(currentBreakIndex);
+        });
+    }
+
+    /// <summary>
+    /// 处理场景数据
+    /// </summary>
+    public void InitSceneData()
+    {
+        //场景实例
+        var baseSceneObj = WorldHandler.Instance.currentBaseScene;
+        objBuildingCore = baseSceneObj.transform.Find("Core/Building").gameObject;
+        effectEggBreak = baseSceneObj.transform.Find("Effect/EggBreak").GetComponent<VisualEffect>();
+    }
+
+    /// <summary>
+    /// 处理所有蛋的数据
+    /// </summary>
+    public void InitGashaponMachineData(Action actionForComplete)
+    {
+        currentBreakIndex = 0;
+        listGashaponData = new List<GashaponItemBean>();
+        int eggNum = gashaponMachineData.gashaponNum;
+
+        List<string> listPreLoadSpineData = new List<string>();
+        for (int i = 0; i < eggNum; i++)
+        {
+            GashaponItemBean itemGashapon = new GashaponItemBean(999990+i);
+            listGashaponData.Add(itemGashapon);
+
+            var creatureInfo = itemGashapon.creatureData.GetCreatureInfo();
+            var caretureModelInfo = CreatureModelCfg.GetItemData(creatureInfo.model_id);
+            listPreLoadSpineData.Add(caretureModelInfo.res_name);
+            if (!caretureModelInfo.ui_show_spine.IsNull())
+            {
+                listPreLoadSpineData.Add(caretureModelInfo.ui_show_spine);
+            }
+        }
+        SpineHandler.Instance.PreLoadSkeletonDataAsset(listPreLoadSpineData, (dicData) =>
+        {
+            actionForComplete?.Invoke();
         });
     }
 
@@ -51,15 +109,15 @@ public class GashaponMachineLogic : BaseGameLogic
     {
         int gashaponNum = gashaponMachineData.gashaponNum;
         int showNum = 0;
-        List<GameObject> listEggTarget = new List<GameObject>();
+        listEggObj = new List<GameObject>();
         Action<GameObject> actionForShowEnd = (targetEgg) =>
         {
-            listEggTarget.Add(targetEgg);
+            listEggObj.Add(targetEgg);
             showNum++;
             //展示完成
             if (showNum == gashaponNum)
             {
-                actionForComplete?.Invoke(listEggTarget);
+                actionForComplete?.Invoke(listEggObj);
             }
         };
         for (int i = 0; i < gashaponNum; i++)
@@ -72,19 +130,21 @@ public class GashaponMachineLogic : BaseGameLogic
     /// <summary>
     /// 流程-蛋破碎
     /// </summary>
-    public void ProcessForEggBreak(List<GameObject> listEggTarget)
+    public void ProcessForEggBreak(int targetIndex)
     {
+        this.currentBreakIndex = targetIndex;
         //获取列表中第一个蛋
-        var firstEggObj = listEggTarget[0];
+        var targetEggObj = listEggObj[currentBreakIndex];
+        var targetEggData = listGashaponData[currentBreakIndex];
         //设置摄像头
         var targetCamera = CameraHandler.Instance.SetGashaponBreakCamera(int.MaxValue, true);
-        targetCamera.LookAt = firstEggObj.transform;
-        targetCamera.Follow = firstEggObj.transform;
+        targetCamera.LookAt = targetEggObj.transform;
+        targetCamera.Follow = targetEggObj.transform;
         //打开UI
         var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIGashaponBreak>();
-        targetUI.InitForClick(firstEggObj);
+        targetUI.InitForClick(targetEggObj, targetEggData);
         //晃动蛋
-        AnimForEggPunch(firstEggObj);
+        AnimForEggPunch(targetEggObj);
     }
 
     public override void UpdateGame()
@@ -102,11 +162,11 @@ public class GashaponMachineLogic : BaseGameLogic
         base.ClearGame();
 
         CameraHandler.Instance.SetGashaponMachineCamera(0, false);
-        if (!listEggPool.IsNull())
+        if (!listEggObjPool.IsNull())
         {
-            for (int i = 0; i < listEggPool.Count; i++)
+            for (int i = 0; i < listEggObjPool.Count; i++)
             {
-                var itemEgg = listEggPool[i];
+                var itemEgg = listEggObjPool[i];
                 GameObject.DestroyImmediate(itemEgg);
             }
         }
@@ -114,12 +174,24 @@ public class GashaponMachineLogic : BaseGameLogic
 
     #region 事件
     /// <summary>
-    /// 事件
+    /// 事件-展示蛋破碎
     /// </summary>
-    /// <param name="targetEgg"></param>
-    public void EventForEggBreak(GameObject targetEgg)
+    public void EventForEggBreak(GameObject targetEgg, GashaponItemBean gashaponItemData)
     {
-        AnimForEggBreak(targetEgg);
+        Action aciontForComplete = () =>
+        {
+            var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIGashaponBreak>();
+            targetUI.InitForBreak(targetEgg, gashaponItemData);
+        };
+        AnimForEggBreak(targetEgg, gashaponItemData, aciontForComplete);
+    }
+
+    /// <summary>
+    /// 事件-下一个蛋
+    /// </summary>
+    public void EventForNextEgg()
+    {
+        ProcessForEggBreak(currentBreakIndex + 1);
     }
     #endregion
 
@@ -128,22 +200,39 @@ public class GashaponMachineLogic : BaseGameLogic
     /// 动画-蛋破壳
     /// </summary>
     /// <param name="targetEgg"></param>
-    public void AnimForEggBreak(GameObject targetEgg)
+    public void AnimForEggBreak(GameObject targetEgg, GashaponItemBean gashaponItemData,Action actionForComplete)
     {
-        targetEgg.transform.DOKill();
         var eggTF = targetEgg.transform.Find("Other_Egg");
-        var effectTF = targetEgg.transform.Find("Effect_MeshShow_1");
-        var rendererTF = targetEgg.transform.Find("Renderer");
+        var eggSpine = targetEgg.transform.Find("Renderer").GetComponent<SkeletonAnimation>();
 
-        var effectPS = effectTF.GetComponent<ParticleSystem>();
-        ///设置蛋的大小
-        var effectMain = effectPS.main;
-        var effectShape = effectPS.shape;
-        effectMain.startSizeMultiplier = 0.5f;
-        effectShape.scale = targetEgg.transform.localScale;
+        targetEgg.transform.DOKill();
+        eggSpine.transform.DOKill();
 
-        effectTF.ShowObj(true);
         eggTF.ShowObj(false);
+        eggSpine.ShowObj(true);
+
+        var creatureData = gashaponItemData.creatureData;
+        var creatureInfo = CreatureInfoCfg.GetItemData(creatureData.id);
+        var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
+
+        //设置大小
+        eggSpine.transform.localScale = Vector3.zero;
+        SpineHandler.Instance.SetSkeletonDataAsset(eggSpine, creatureModel.res_name);
+        string[] skinArray = creatureData.GetSkinArray();
+        //修改皮肤
+        SpineHandler.Instance.ChangeSkeletonSkin(eggSpine.skeleton, skinArray);
+        //播放缩放动画
+        eggSpine.transform.DOScale(Vector3.one * creatureModel.size_spine, 0.2f).OnComplete(() =>
+        {
+            actionForComplete?.Invoke();
+        });
+        //播放spine动画
+        eggSpine.AnimationState.SetAnimation(0, AnimationCreatureStateEnum.Idle.ToString(), true);
+
+        //播放蛋壳破碎粒子
+        effectEggBreak.SetVector3("MeshSize", eggTF.transform.localScale);
+        effectEggBreak.SetVector3("StartPosition", eggTF.transform.position);
+        effectEggBreak.SendEvent("OnPlay");
     }
 
     /// <summary>
@@ -165,28 +254,27 @@ public class GashaponMachineLogic : BaseGameLogic
     /// </summary>
     public void AnimForShowEgg(int index, Action<GameObject> actionForComplete)
     {
-        //场景实例
-        var baseSceneObj = WorldHandler.Instance.currentBaseScene;
-        if (objBuildingCore == null)
-        {
-            objBuildingCore = baseSceneObj.transform.Find("Core/Building").gameObject;
-        }
         GameObject objEgg;
-        if (index < listEggPool.Count)
+        if (index < listEggObjPool.Count)
         {
             //使用老蛋
-            objEgg = listEggPool[index];
+            objEgg = listEggObjPool[index];
         }
         else
         {
             //创建一个新蛋
             objEgg = GameHandler.Instance.manager.GetGameObjectSync("Assets/LoadResources/Common/Gashapon_1.prefab");
-            listEggPool.Add(objEgg);
+            listEggObjPool.Add(objEgg);
         }
+        var baseSceneObj = WorldHandler.Instance.currentBaseScene;
+        objEgg.transform.SetParent(baseSceneObj.transform);
         objEgg.gameObject.SetActive(true);
         objEgg.transform.position = objBuildingCore.transform.position + new Vector3(0, 0.5f, -0.2f);
         objEgg.transform.localScale = Vector3.zero;
         objEgg.transform.DOKill();
+
+        var eggTF = objEgg.transform.Find("Other_Egg");
+        eggTF.ShowObj(true);
 
         float startPos;
         if (gashaponMachineData.gashaponNum == 1)
@@ -202,7 +290,7 @@ public class GashaponMachineLogic : BaseGameLogic
             startPos = gashaponMachineData.gashaponNum / 2f;
         }
         float animTimeForEggJump = 1;
-        objEgg.transform.DOScale(Vector3.one * 0.25f, animTimeForEggJump / 2f);
+        objEgg.transform.DOScale(Vector3.one, animTimeForEggJump / 2f);
         objEgg.transform
             .DOJump(objBuildingCore.transform.position + new Vector3(-startPos + index, 0, -2), 1, 5, animTimeForEggJump)
             .SetEase(Ease.Linear)

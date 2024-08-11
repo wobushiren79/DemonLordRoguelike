@@ -16,6 +16,7 @@ public class CreatureBean
     //所有的皮肤数据
     public List<CreatureSkinBean> listSkinData = new List<CreatureSkinBean>();
 
+    protected CreatureInfoBean creatureInfo;//生物信息
     public CreatureBean(long id)
     {
         this.id = id;
@@ -67,5 +68,78 @@ public class CreatureBean
             }
         }
         return listSkin.ToArray();
+    }
+
+    /// <summary>
+    /// 获取生物信息
+    /// </summary>
+    /// <returns></returns>
+    public CreatureInfoBean GetCreatureInfo()
+    {
+        if (creatureInfo == null || creatureInfo.id != id)
+        {
+            creatureInfo = CreatureInfoCfg.GetItemData(id);
+        }
+        return creatureInfo;
+    }
+
+    /// <summary>
+    /// 获取生命值
+    /// </summary>
+    /// <returns></returns>
+    public int GetLife()
+    {
+        var creatureInfo = GetCreatureInfo();
+        return creatureInfo.life;
+    }
+
+    /// <summary>
+    /// 获取攻击
+    /// </summary>
+    /// <returns></returns>
+    public int GetAttDamage()
+    {
+        var creatureInfo = GetCreatureInfo();
+        return creatureInfo.att_damage;
+    }
+
+    /// <summary>
+    /// 获取移动速度
+    /// </summary>
+    /// <returns></returns>
+    public float GetMoveSpeed()
+    {
+        var creatureInfo = GetCreatureInfo();
+        return creatureInfo.speed_move;
+    }
+
+    /// <summary>
+    /// 获取攻击CD
+    /// </summary>
+    /// <returns></returns>
+    public float GetAttCD()
+    {
+        var creatureInfo = GetCreatureInfo();
+        return creatureInfo.att_cd;
+    }
+
+    /// <summary>
+    /// 获取攻击动画出手时间
+    /// </summary>
+    /// <returns></returns>
+    public float GetAttAnimCastTime()
+    {
+        var creatureInfo = GetCreatureInfo();
+        return creatureInfo.att_anim_cast_time;
+    }
+
+
+    /// <summary>
+    /// 获取创建的魔力
+    /// </summary>
+    public int GetCreateMagic()
+    {
+        var creatureInfo = CreatureInfoCfg.GetItemData(id);
+        return creatureInfo.create_magic;
     }
 }

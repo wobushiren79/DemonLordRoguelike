@@ -11,27 +11,24 @@ using static Cinemachine.DocumentationSortingAttribute;
 
 public partial class UIViewCreatureCardDetails : BaseUIView
 {
-    public FightCreatureBean fightCreatureData;//卡片数据
+    public CreatureBean creatureData;
 
     protected static string pathCardScene = "Assets/LoadResources/Textures/CardScene";//卡片场景路径
 
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(FightCreatureBean fightCreatureData)
+    /// <param name="creatureData"></param>
+    public void SetData(CreatureBean creatureData)
     {
-        if (this.fightCreatureData != null && this.fightCreatureData == fightCreatureData)
-        {
-            return;
-        }
-        this.fightCreatureData = fightCreatureData;
+        this.creatureData = creatureData;
 
-        SetCardIcon();
-        SetName(fightCreatureData.creatureData.creatureName);
-        SetLevel(fightCreatureData.creatureData.level);
+        SetCardIcon(creatureData);
+        SetName(creatureData.creatureName);
+        SetLevel(creatureData.level);
 
-        int attDamage = fightCreatureData.GetAttDamage();
-        int lifeMax = fightCreatureData.liftMax;
+        int attDamage = creatureData.GetAttDamage();
+        int lifeMax = creatureData.GetLife();
         SetAttribute(attDamage, lifeMax);
     }
 
@@ -63,19 +60,22 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     /// <summary>
     /// 设置图片
     /// </summary>
-    public void SetCardIcon()
+    public void SetCardIcon(CreatureBean creatureData)
     {
-        var creatureInfo = fightCreatureData.GetCreatureInfo();
+        var creatureInfo = creatureData.GetCreatureInfo();
         var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
         //设置骨骼数据
         string resName = creatureModel.res_name;
+
+        int skinType = 0;
         if (!creatureModel.ui_show_spine.IsNull())
         {
             resName = creatureModel.ui_show_spine;
+            skinType = 1;
         }
 
         SpineHandler.Instance.SetSkeletonDataAsset(ui_Icon, resName);
-        string[] skinArray = fightCreatureData.creatureData.GetSkinArray(1);
+        string[] skinArray = creatureData.GetSkinArray(skinType);
         //修改皮肤
         SpineHandler.Instance.ChangeSkeletonSkin(ui_Icon.Skeleton, skinArray);
 

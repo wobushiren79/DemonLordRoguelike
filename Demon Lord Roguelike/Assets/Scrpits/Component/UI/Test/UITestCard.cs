@@ -54,8 +54,8 @@ public partial class UITestCard : BaseUIComponent
     {
         this.fightCreatureData = fightCreatureData;
 
-        ui_CreatureCardItem.SetData(fightCreatureData, new Vector2(-200, 0));
-        ui_ViewCreatureCardDetails.SetData(fightCreatureData);
+        ui_CreatureCardItem.SetData(fightCreatureData.creatureData, UIViewCreatureCardItem.CardUseState.Show);
+        ui_ViewCreatureCardDetails.SetData(fightCreatureData.creatureData);
 
         //测试目标模型
         var creatureMode = CreatureModelCfg.GetItemData(fightCreatureData.creatureData.id);

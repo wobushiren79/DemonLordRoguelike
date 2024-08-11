@@ -105,7 +105,7 @@ public class AIAttCreatureEntity : AICreatureEntity
         //如果自己是在攻击中
         if (currentIntentEnum == AIIntentEnum.AttCreatureAttack)
         {   //如果是防御生物死了 并且是自己攻击的生物
-            CreatureInfoBean creatureInfo = fightCreatureData.GetCreatureInfo();
+            CreatureInfoBean creatureInfo = fightCreatureData.creatureData.GetCreatureInfo();
             if (creatureInfo.GetCreatureType() == CreatureTypeEnum.FightDef && fightCreatureData == targetDefCreatureEntity.fightCreatureData)
             {
                 ChangeIntent(AIIntentEnum.AttCreatureIdle);

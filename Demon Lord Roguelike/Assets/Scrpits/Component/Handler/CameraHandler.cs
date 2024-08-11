@@ -94,7 +94,7 @@ public partial class CameraHandler
 
         var targetSkeletonAnimation = targetRenderer.GetComponent<SkeletonAnimation>();
 
-        var creatureInfo = fightCreatureData.GetCreatureInfo();
+        var creatureInfo = fightCreatureData.creatureData.GetCreatureInfo();
         var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
         //…Ë÷√¥Û–°
         targetRenderer.transform.localScale = Vector3.one * creatureModel.size_spine;

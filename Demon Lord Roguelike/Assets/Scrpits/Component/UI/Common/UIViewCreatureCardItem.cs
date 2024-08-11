@@ -5,7 +5,14 @@ using UnityEngine.UI;
 
 public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, IPointerExitHandler
 {
-    public FightCreatureBean fightCreatureData;//卡片数据
+    public enum CardUseState
+    {
+        Show,
+        Fight,
+    }
+
+    public CreatureBean creatureData;//卡片数据
+    public CardUseState cardUseState;//卡片用途
 
     public Vector2 originalCardPos;//卡片的起始位置
     public int originalSibling;//卡片的原始层级
@@ -39,6 +46,10 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
 
     public MaskUIView maskUI;//遮罩处理
 
+    //长事件选择展示详情
+    protected float timeUpdateForShowDetails = -1;
+    protected float timeMaxForShowDetails = 1;
+
     public override void Awake()
     {
         base.Awake();
@@ -61,29 +72,17 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(FightCreatureBean fightCreatureData, Vector2 originalCardPos)
+    public void SetData(CreatureBean creatureData,CardUseState cardUseState)
     {
-        this.fightCreatureData = fightCreatureData;
-        this.fightCreatureData.stateForCard = CardStateEnum.FightIdle;
+        this.cardUseState = cardUseState;
+        this.creatureData = creatureData;
+        int attDamage = creatureData.GetAttDamage();
+        int lifeMax = creatureData.GetLife();
 
-        this.originalCardPos = originalCardPos;
-        this.originalSibling = transform.GetSiblingIndex();
-        gameObject.name = $"UIViewCreatureCardItem_{originalSibling}";
-        //注册 避开卡片的事件
-        RegisterEvent<int, Vector2, bool>(EventsInfo.UIViewCreatureCardItem_SelectKeep, EventForSelectKeep);
-        //战斗事件
-        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_SelectCard, EventForGameFightLogicSelectCard);
-        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
-        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
-        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_RefreshCard, EventForGameFightLogicRefreshCard);
-
-        SetCardIcon();
-
-        int attDamage = fightCreatureData.GetAttDamage();
-        int lifeMax = fightCreatureData.liftMax;
+        SetCardIcon(creatureData);
         SetAttribute(attDamage, lifeMax);
-        SetName(fightCreatureData.creatureData.creatureName);
-        SetLevel(fightCreatureData.creatureData.level);
+        SetName(creatureData.creatureName);
+        SetLevel(creatureData.level);
     }
 
     /// <summary>
@@ -114,13 +113,13 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     /// <summary>
     /// 设置卡片图像
     /// </summary>
-    public void SetCardIcon()
+    public void SetCardIcon(CreatureBean creatureData)
     {
-        var creatureInfo = fightCreatureData.GetCreatureInfo();
+        var creatureInfo = creatureData.GetCreatureInfo();
         var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
         //设置骨骼数据
         SpineHandler.Instance.SetSkeletonDataAsset(ui_Icon, creatureModel.res_name);
-        string[] skinArray = fightCreatureData.creatureData.GetSkinArray();
+        string[] skinArray = creatureData.GetSkinArray();
         //修改皮肤
         SpineHandler.Instance.ChangeSkeletonSkin(ui_Icon.Skeleton, skinArray);
 
@@ -183,24 +182,20 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
 
     #region 点击触发
 
-    protected float timeUpdateForShowDetails = -1;
-    protected float timeMaxForShowDetails = 1;
     /// <summary>
     /// 触摸-进入
     /// </summary>
     /// <param name="eventData"></param>
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {
-        //LogUtil.Log($"OnPointerEnter_{originalSibling}");
-        timeUpdateForShowDetails = 0;
-        KillAnimForSelect();
-        animForSelectStart = rectTransform
-                .DOScale(new Vector3(animCardSelectStartScale, animCardSelectStartScale, animCardSelectStartScale), animCardSelectStartTime)
-                .SetEase(animCardSelectStart);
-        //设置层级最上
-        transform.SetAsLastSibling();
-        //触发避让事件
-        TriggerEvent(EventsInfo.UIViewCreatureCardItem_SelectKeep, originalSibling, originalCardPos, true);
+        switch (cardUseState)
+        {
+            case CardUseState.Show:
+                break;
+            case CardUseState.Fight:
+                OnPointerEnterForFight(eventData);
+                break;
+        }
     }
 
     /// <summary>
@@ -209,72 +204,14 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     /// <param name="eventData"></param>
     void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
     {
-        //LogUtil.Log($"OnPointerExit_{originalSibling}");
-        timeUpdateForShowDetails = -1;
-        KillAnimForSelect();
-        animForSelectEnd = rectTransform
-                .DOScale(Vector3.one, animCardSelectEndTime)
-                .SetEase(animCardSelectEnd);
-        //还原层级
-        transform.SetSiblingIndex(originalSibling);
-        //触发避让事件
-        TriggerEvent(EventsInfo.UIViewCreatureCardItem_SelectKeep, originalSibling, originalCardPos, false);
-        //隐藏卡片详情
-        TriggerEvent(EventsInfo.UIViewCreatureCardItem_HideDetails, fightCreatureData);
-    }
-    #endregion
-
-
-
-    #region 事件响应
-    /// <summary>
-    /// 事件 避让卡片
-    /// </summary>
-    /// <param name="targetIndex">目标序列</param>
-    public void EventForSelectKeep(int targetIndex, Vector2 targetPos, bool isKeep)
-    {
-        if (isKeep)
+        switch (cardUseState)
         {
-            int offsetIndex = Mathf.Abs(originalSibling - targetIndex);
-            //当前卡距离目标卡的距离
-            float disTwoCard = Mathf.Abs(originalCardPos.x - targetPos.x);
-            //单张卡间距
-            float disOneCard = disTwoCard / offsetIndex;
-            //获取最靠近的卡片应该移动的位置（卡片的一半加上扩大后的一半 减去 最靠近卡片的距离）
-            float closeCardMoveX = (rectTransform.sizeDelta.x + rectTransform.sizeDelta.x * animCardSelectStartScale) / 2f - disOneCard;
-            float subDataX = closeCardMoveX - (disOneCard / 2) * (offsetIndex - 1);
-            if (subDataX <= 0)
-                return;
-            Vector2 offsetPos = Vector2.zero;
-            if (originalSibling > targetIndex)
-            {
-                offsetPos = new Vector2(subDataX, 0);
-            }
-            else if (originalSibling < targetIndex)
-            {
-                offsetPos = new Vector2(-subDataX, 0);
-            }
-            if (offsetPos != Vector2.zero)
-            {
-                //把Keep动画关闭
-                KillAnimForKeep();
-                animForSelectKeepStart = rectTransform
-                    .DOAnchorPos(originalCardPos + offsetPos, animCardSelectStartTime)
-                    .SetEase(animCardSelectStart);
-            }
+            case CardUseState.Show:
+                break;
+            case CardUseState.Fight:
+                OnPointerExitForFight(eventData);
+                break;
         }
-        else
-        {
-            if (rectTransform.anchoredPosition != originalCardPos)
-            {
-                //把Keep动画关闭
-                KillAnimForKeep();
-                animForSelectKeepEnd = rectTransform
-                    .DOAnchorPos(originalCardPos, animCardSelectEndTime)
-                    .SetEase(animCardSelectEnd);
-            }
-        }
-        //LogUtil.Log($"EventForSelectKeep originalSibling_{originalSibling} targetIndex_{targetIndex} targetPos_{targetPos}  isKeep_{isKeep}");
     }
     #endregion
 

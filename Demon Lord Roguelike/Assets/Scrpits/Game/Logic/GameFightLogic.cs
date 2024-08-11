@@ -171,7 +171,7 @@ public class GameFightLogic : BaseGameLogic
             //已经有生物了
             return;
         }
-        int createMagic = selectCreatureData.GetCreateMagic();
+        int createMagic = selectCreatureData.creatureData.GetCreateMagic();
         if (fightData.currentMagic < createMagic)
         {
             //魔力不足

@@ -43,7 +43,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
             }
         }
 
-        float moveSpeed = selfAIEntity.selfAttCreatureEntity.fightCreatureData.GetMoveSpeed();
+        float moveSpeed = selfAIEntity.selfAttCreatureEntity.fightCreatureData.creatureData.GetMoveSpeed();
         Transform selfTF = selfAIEntity.selfAttCreatureEntity.creatureObj.transform;
         selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeed);
     }
@@ -61,7 +61,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
         var currentPosition = selfAIEntity.selfAttCreatureEntity.creatureObj.transform.position;
         var targetMovePos = selfAIEntity.targetMovePos;
         float dis = Vector3.Distance(currentPosition, targetMovePos);
-        var creatureInfo = selfAIEntity.selfAttCreatureEntity.fightCreatureData.GetCreatureInfo();
+        var creatureInfo = selfAIEntity.selfAttCreatureEntity.fightCreatureData.creatureData.GetCreatureInfo();
         if (dis <= creatureInfo.att_range)
         {
             return true;

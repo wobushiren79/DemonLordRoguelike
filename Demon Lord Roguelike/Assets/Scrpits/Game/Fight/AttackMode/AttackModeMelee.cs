@@ -11,7 +11,7 @@ public class AttackModeMelee : BaseAttackMode
         if (attacker != null && attacked != null && !attacked.IsDead())
         {
             //»ñÈ¡ÉËº¦
-            int attDamage = attacker.fightCreatureData.GetAttDamage();
+            int attDamage = attacker.fightCreatureData.creatureData.GetAttDamage();
             //¿ÛÑª
             attacked.UnderAttack(attDamage, attackDirection, out int leftLife, out int leftArmor);
         }

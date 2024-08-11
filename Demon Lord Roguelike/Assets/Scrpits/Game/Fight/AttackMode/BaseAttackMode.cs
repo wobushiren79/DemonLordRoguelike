@@ -32,7 +32,7 @@ public class BaseAttackMode
             if (attacker.fightCreatureData != null)
             {
                 //…Ë÷√…À∫¶
-                attackerDamage = attacker.fightCreatureData.GetAttDamage();
+                attackerDamage = attacker.fightCreatureData.creatureData.GetAttDamage();
             }
         }
         if (attacked != null)

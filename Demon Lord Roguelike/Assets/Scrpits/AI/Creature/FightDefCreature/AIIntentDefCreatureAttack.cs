@@ -25,7 +25,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
         if (attackState == 0)
         {
             timeUpdateAttackPre += Time.deltaTime;
-            float attCD = selfAIEntity.selfDefCreatureEntity.fightCreatureData.GetAttCD();
+            float attCD = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.GetAttCD();
             if (timeUpdateAttackPre >= attCD)
             {
                 timeUpdateAttackPre = 0;
@@ -36,7 +36,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
         else if (attackState == 1)
         {
             timeUpdateAttacking += Time.deltaTime;
-            float attAnimCastTime = selfAIEntity.selfDefCreatureEntity.fightCreatureData.GetAttAnimCastTime();
+            float attAnimCastTime = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.GetAttAnimCastTime();
             if (timeUpdateAttacking >= attAnimCastTime)
             {
                 timeUpdateAttacking = 0;
@@ -79,7 +79,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
     public virtual void AttackDefCreatureStartEnd()
     {
         attackState = 2;
-        var creatureInfo = selfAIEntity.selfDefCreatureEntity.fightCreatureData.GetCreatureInfo();
+        var creatureInfo = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.GetCreatureInfo();
         //获取攻击方式
         FightHandler.Instance.CreateAttackModePrefab(creatureInfo.att_mode, (targetAttackMode) =>
         {

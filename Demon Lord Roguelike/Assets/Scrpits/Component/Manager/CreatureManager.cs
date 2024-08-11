@@ -60,7 +60,7 @@ public class CreatureManager : BaseManager
         {
             if (fightCreatureDataSelectPreview == null || fightCreatureData != fightCreatureDataSelectPreview)
             {
-                var creatureInfo = fightCreatureData.GetCreatureInfo();
+                var creatureInfo = fightCreatureData.creatureData.GetCreatureInfo();
                 var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
                 //ÉèÖÃ¹Ç÷ÀÊý¾Ý
                 SpineHandler.Instance.SetSkeletonDataAsset(skeletonAnimationSelectPreview, creatureModel.res_name);

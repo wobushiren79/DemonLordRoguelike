@@ -16,7 +16,6 @@ public class FightCreatureBean
     public int armorMax;//最大护甲值
 
     public CardStateEnum stateForCard = CardStateEnum.None;//卡片状态(用于UI展示)
-    protected CreatureInfoBean creatureInfo;//生物信息
 
     public FightCreatureBean(int creatureId)
     {
@@ -29,7 +28,7 @@ public class FightCreatureBean
     /// </summary>
     public void ResetData()
     {
-        var creatureInfo = GetCreatureInfo();
+        var creatureInfo = creatureData.GetCreatureInfo();
         liftCurrent = creatureInfo.life;
         liftMax = creatureInfo.life;
     }
@@ -72,65 +71,4 @@ public class FightCreatureBean
         return liftCurrent;
     }
 
-    /// <summary>
-    /// 获取攻击
-    /// </summary>
-    /// <returns></returns>
-    public int GetAttDamage()
-    {
-        var creatureInfo = GetCreatureInfo();
-        return creatureInfo.att_damage;
-    }
-
-    /// <summary>
-    /// 获取移动速度
-    /// </summary>
-    /// <returns></returns>
-    public float GetMoveSpeed()
-    {
-        var creatureInfo = GetCreatureInfo();
-        return creatureInfo.speed_move;
-    }
-
-    /// <summary>
-    /// 获取攻击CD
-    /// </summary>
-    /// <returns></returns>
-    public float GetAttCD()
-    {
-        var creatureInfo = GetCreatureInfo();
-        return creatureInfo.att_cd;
-    }
-    
-    /// <summary>
-    /// 获取攻击动画出手时间
-    /// </summary>
-    /// <returns></returns>
-    public float GetAttAnimCastTime()
-    {
-        var creatureInfo = GetCreatureInfo();
-        return creatureInfo.att_anim_cast_time;
-    }
-
-    /// <summary>
-    /// 获取生物信息
-    /// </summary>
-    /// <returns></returns>
-    public CreatureInfoBean GetCreatureInfo()
-    {
-        if (creatureInfo == null || creatureInfo.id != creatureData.id)
-        {
-            creatureInfo = CreatureInfoCfg.GetItemData(creatureData.id);
-        }
-        return creatureInfo;
-    }
-
-    /// <summary>
-    /// 获取创建的魔力
-    /// </summary>
-    public int GetCreateMagic()
-    {
-        var creatureInfo = CreatureInfoCfg.GetItemData(creatureData.id);
-        return creatureInfo.create_magic;
-    }
 }

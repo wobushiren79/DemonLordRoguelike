@@ -12,5 +12,7 @@ public partial class UIGashaponBreak
 
     public Button ui_ButtonClick;
 
+    public Button ui_BtnNext;
+
 
 }
