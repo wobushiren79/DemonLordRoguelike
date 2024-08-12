@@ -58,20 +58,8 @@ public partial class UIFightMain : BaseUIComponent
     /// </summary>
     public void RefreshUIData()
     {
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-
-        SetBaseInfo(gameFightLogic.fightData.currentMagic, userData.coin);
         SetAttCreateProgress(gameFightLogic.fightData.gameStage, gameFightLogic.fightData.gameProgress);
-    }
-
-    /// <summary>
-    /// 设置基础信息
-    /// </summary>
-    public void SetBaseInfo(int magic, long coin)
-    {
-        ui_ViewBaseInfoContent.SetMagicData(magic);
-        ui_ViewBaseInfoContent.SetCoinData(coin);
     }
 
     /// <summary>

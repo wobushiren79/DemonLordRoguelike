@@ -14,5 +14,13 @@ public partial class UIGashaponBreak
 
     public Button ui_BtnNext;
 
+    public Button ui_BtnReset;
+
+    public Button ui_BtnEnd;
+
+    public UIViewBaseInfoContent ui_ViewBaseInfoContent;
+
+    public RectTransform ui_UIBtn;
+
 
 }

@@ -1,5 +1,6 @@
 using UnityEngine.UI;
 using UnityEngine;
+using TMPro;
 
 
 public partial class UIGashaponMachine
@@ -17,6 +18,10 @@ public partial class UIGashaponMachine
     public Button ui_BTTen;
 
     public Button ui_BTOne;
+
+    public TextMeshProUGUI ui_BTTextOne;
+
+    public TextMeshProUGUI ui_BTTextTen;
 
 
 }

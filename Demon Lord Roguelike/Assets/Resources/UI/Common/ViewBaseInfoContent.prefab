@@ -680,3 +680,5 @@ MonoBehaviour:
   rectTransform: {fileID: 0}
   ui_MagicText: {fileID: 8520989111694353109}
   ui_CoinText: {fileID: 6667212881552220506}
+  ui_Magic: {fileID: 6426279933399321674}
+  ui_Coin: {fileID: 6279611112104395941}

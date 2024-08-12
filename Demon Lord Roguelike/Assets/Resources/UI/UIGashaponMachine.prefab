@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6718205317045501934}
   - component: {fileID: 4319767648990480509}
   m_Layer: 5
-  m_Name: BTText
+  m_Name: BTTextOne
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -212,7 +212,7 @@ GameObject:
   - component: {fileID: 8560720067129386859}
   - component: {fileID: 6300018787178692014}
   m_Layer: 5
-  m_Name: BTText
+  m_Name: BTTextTen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -543,7 +543,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -150, y: -240}
+  m_AnchoredPosition: {x: -200, y: -240}
   m_SizeDelta: {x: 300, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &555650654894652506
@@ -664,7 +664,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 150, y: -240}
+  m_AnchoredPosition: {x: 200, y: -240}
   m_SizeDelta: {x: 300, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8565416999648940633
@@ -1046,8 +1046,10 @@ MonoBehaviour:
   ui_ViewGashaponCardGroupItem: {fileID: 8028212907137124897}
   ui_Content: {fileID: 116796971626091218}
   ui_ScrollView: {fileID: 6732971203576022880}
-  ui_BTTen: {fileID: 0}
-  ui_BTOne: {fileID: 0}
+  ui_BTTen: {fileID: 5740602047405034643}
+  ui_BTOne: {fileID: 1982730167383517715}
+  ui_BTTextOne: {fileID: 4319767648990480509}
+  ui_BTTextTen: {fileID: 6300018787178692014}
 --- !u!1 &8620211483548000882
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,6 +24,23 @@ public partial class UIGashaponMachine : BaseUIComponent
         currentSelectCardGroupIndex = -1;
         SetCardGroupList();
         OnScrollViewChange(Vector2.zero);
+
+        GameControlHandler.Instance.SetBaseControl(false);
+        CameraHandler.Instance.SetBaseCoreCamera(int.MaxValue, true);
+    }
+
+    /// <summary>
+    /// 初始化UI
+    /// </summary>
+    public void InitUIText()
+    {
+        if (currentSelectCardGroupIndex == -1 || currentSelectCardGroupIndex >= listView.Count)
+            return;
+
+        UIViewGashaponCardGroupItem targetView = listView[currentSelectCardGroupIndex];
+        int oneCoin = targetView.cardGroupInfo.pay_coin;
+        ui_BTTextOne.text = $"{TextHandler.Instance.GetTextById(10001)} {oneCoin}";
+        ui_BTTextTen.text = $"{TextHandler.Instance.GetTextById(10002)} {oneCoin * 10}";
     }
 
     public override void CloseUI()
@@ -61,10 +77,7 @@ public partial class UIGashaponMachine : BaseUIComponent
     /// </summary>
     public void RefreshUIData()
     {
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-
-        SetBaseInfo(userData.coin);
+        InitUIText();
     }
 
     /// <summary>
@@ -91,6 +104,7 @@ public partial class UIGashaponMachine : BaseUIComponent
             var itemData = item.Value;
             GameObject objItem = Instantiate(ui_Content.gameObject, ui_ViewGashaponCardGroupItem.gameObject);
             var itemView = objItem.GetComponent<UIViewGashaponCardGroupItem>();
+            itemView.SetData(itemData);
             listView.Add(itemView);
         }
         if (listView.Count <= 1)
@@ -102,14 +116,6 @@ public partial class UIGashaponMachine : BaseUIComponent
             itemCardGroupViewW = 1f / (listView.Count - 1);
         }
 
-    }
-
-    /// <summary>
-    /// 设置基础信息
-    /// </summary>
-    public void SetBaseInfo(long coin)
-    {
-        ui_ViewBaseInfoContent.SetCoinData(coin);
     }
 
     /// <summary>
@@ -146,7 +152,7 @@ public partial class UIGashaponMachine : BaseUIComponent
                     itemView.SetSelectState(false);
                 }
             }
+            RefreshUIData();
         }
-
     }
 }

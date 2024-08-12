@@ -5,6 +5,43 @@ using UnityEngine.UI;
 
 public partial class UIViewBaseInfoContent : BaseUIView
 {
+    public override void Awake()
+    {
+        this.RegisterEvent(EventsInfo.Coin_Change, RefreshUIData);
+        this.RegisterEvent(EventsInfo.Magic_Change, RefreshUIData);
+    }
+
+    public override void OnEnable()
+    {
+        base.OnEnable();
+        RefreshUIData();
+    }
+
+    public override void OnDisable()
+    {
+        base.OnDisable();
+    }
+
+    public void RefreshUIData()
+    {
+        if (ui_Coin.gameObject.activeSelf)
+        {
+            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+            if (userData != null)
+            {
+                SetCoinData(userData.coin);
+            }
+        }
+        if (ui_Magic.gameObject.activeSelf)
+        {
+            var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+            if (gameFightLogic != null)
+            {
+                SetMagicData(gameFightLogic.fightData.currentMagic);
+            }
+        }
+    }
+
     /// <summary>
     /// 设置当前魔力
     /// </summary>

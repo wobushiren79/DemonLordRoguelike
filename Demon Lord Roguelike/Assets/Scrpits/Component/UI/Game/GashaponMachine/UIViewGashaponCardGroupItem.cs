@@ -4,6 +4,16 @@ using UnityEngine;
 
 public partial class UIViewGashaponCardGroupItem : BaseUIView
 {
+    public CardGroupInfoBean cardGroupInfo;
+
+    /// <summary>
+    /// 设置数据
+    /// </summary>
+    public void SetData(CardGroupInfoBean cardGroupInfo)
+    {
+        this.cardGroupInfo = cardGroupInfo;
+    }
+
     /// <summary>
     /// 设置选中状态
     /// </summary>

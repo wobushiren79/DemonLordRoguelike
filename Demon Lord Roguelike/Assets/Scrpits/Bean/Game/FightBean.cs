@@ -93,6 +93,7 @@ public class FightBean
         currentMagic += changeData;
         if (currentMagic < 0)
             currentMagic = 0;
+        EventHandler.Instance.TriggerEvent(EventsInfo.Magic_Change);
     }
 
     /// <summary>

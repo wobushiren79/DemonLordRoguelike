@@ -30,10 +30,20 @@ public class GashaponMachineLogic : BaseGameLogic
     //当前破碎的index
     public int currentBreakIndex = 0;
 
+    public bool isRegisterEvent = false;
+
+    public string eggChildFbxName = "Other_Egg";
+    public string eggChildRendererName = "Renderer";
     public override void PreGameForRegisterEvent()
     {
-        this.RegisterEvent<GameObject, GashaponItemBean>(EventsInfo.GashaponMachine_ClickBreak, EventForEggBreak);
-        this.RegisterEvent(EventsInfo.GashaponMachine_ClickNext, EventForNextEgg);
+        if (!isRegisterEvent)
+        {
+            isRegisterEvent = true;
+            this.RegisterEvent<GameObject, GashaponItemBean>(EventsInfo.GashaponMachine_ClickBreak, EventForEggBreak);
+            this.RegisterEvent(EventsInfo.GashaponMachine_ClickNext, EventForNextEgg);
+            this.RegisterEvent(EventsInfo.GashaponMachine_ClickReset, EventForReset);
+            this.RegisterEvent(EventsInfo.GashaponMachine_ClickEnd, EventForEnd);
+        }
     }
 
     public override void PreGame()
@@ -71,6 +81,16 @@ public class GashaponMachineLogic : BaseGameLogic
         var baseSceneObj = WorldHandler.Instance.currentBaseScene;
         objBuildingCore = baseSceneObj.transform.Find("Core/Building").gameObject;
         effectEggBreak = baseSceneObj.transform.Find("Effect/EggBreak").GetComponent<VisualEffect>();
+
+        listEggObj.Clear();
+        for (int i = 0; i < listEggObjPool.Count; i++)
+        {
+            var targetEgg = listEggObjPool[i];
+            var eggTF = targetEgg.transform.Find(eggChildFbxName);
+            var eggSpine = targetEgg.transform.Find(eggChildRendererName).GetComponent<SkeletonAnimation>();
+            eggTF.ShowObj(false);
+            eggSpine.ShowObj(false);
+        }
     }
 
     /// <summary>
@@ -155,6 +175,8 @@ public class GashaponMachineLogic : BaseGameLogic
     public override void EndGame()
     {
         base.EndGame();
+
+        UIHandler.Instance.OpenUIAndCloseOther<UIGashaponMachine>();
     }
 
     public override void ClearGame()
@@ -169,7 +191,9 @@ public class GashaponMachineLogic : BaseGameLogic
                 var itemEgg = listEggObjPool[i];
                 GameObject.DestroyImmediate(itemEgg);
             }
+            listEggObjPool.Clear();
         }
+        isRegisterEvent = false;
     }
 
     #region 事件
@@ -181,7 +205,14 @@ public class GashaponMachineLogic : BaseGameLogic
         Action aciontForComplete = () =>
         {
             var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIGashaponBreak>();
-            targetUI.InitForBreak(targetEgg, gashaponItemData);
+            if (currentBreakIndex == gashaponMachineData.gashaponNum - 1)
+            {
+                targetUI.InitFoEnd();
+            }
+            else
+            {
+                targetUI.InitForBreak(targetEgg, gashaponItemData);
+            }
         };
         AnimForEggBreak(targetEgg, gashaponItemData, aciontForComplete);
     }
@@ -193,6 +224,22 @@ public class GashaponMachineLogic : BaseGameLogic
     {
         ProcessForEggBreak(currentBreakIndex + 1);
     }
+
+    /// <summary>
+    /// 事件-重置
+    /// </summary>
+    public void EventForReset()
+    {
+        PreGame();
+    }
+
+    /// <summary>
+    /// 事件-结束
+    /// </summary>
+    public void EventForEnd()
+    {
+        EndGame();
+    }
     #endregion
 
     #region 动画
@@ -202,8 +249,8 @@ public class GashaponMachineLogic : BaseGameLogic
     /// <param name="targetEgg"></param>
     public void AnimForEggBreak(GameObject targetEgg, GashaponItemBean gashaponItemData,Action actionForComplete)
     {
-        var eggTF = targetEgg.transform.Find("Other_Egg");
-        var eggSpine = targetEgg.transform.Find("Renderer").GetComponent<SkeletonAnimation>();
+        var eggTF = targetEgg.transform.Find(eggChildFbxName);
+        var eggSpine = targetEgg.transform.Find(eggChildRendererName).GetComponent<SkeletonAnimation>();
 
         targetEgg.transform.DOKill();
         eggSpine.transform.DOKill();
@@ -271,9 +318,10 @@ public class GashaponMachineLogic : BaseGameLogic
         objEgg.gameObject.SetActive(true);
         objEgg.transform.position = objBuildingCore.transform.position + new Vector3(0, 0.5f, -0.2f);
         objEgg.transform.localScale = Vector3.zero;
+        objEgg.transform.eulerAngles = Vector3.zero;
         objEgg.transform.DOKill();
 
-        var eggTF = objEgg.transform.Find("Other_Egg");
+        var eggTF = objEgg.transform.Find(eggChildFbxName);
         eggTF.ShowObj(true);
 
         float startPos;

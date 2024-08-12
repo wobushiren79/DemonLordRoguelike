@@ -4,6 +4,9 @@ using UnityEngine;
 
 public static class EventsInfo
 {
+    public static string Coin_Change = "Coin_Change";
+    public static string Magic_Change = "Magic_Change";
+
     public static string UIViewCreatureCardItem_SelectKeep = "UIViewCreatureCardItem_SelectKeep";//卡片避让
     public static string UIViewCreatureCardItem_ShowDetails = "UIViewCreatureCardItem_ShowDetails";//展示卡片详情
     public static string UIViewCreatureCardItem_HideDetails = "UIViewCreatureCardItem_HideDetails";//隐藏卡片详情
@@ -20,5 +23,7 @@ public static class EventsInfo
     #region 扭蛋机
     public static string GashaponMachine_ClickBreak = "GashaponMachine_ClickBreak";//点击破碎 
     public static string GashaponMachine_ClickNext = "GashaponMachine_ClickNext";//点击下一个
+    public static string GashaponMachine_ClickReset = "GashaponMachine_ClickReset";//点击重置
+    public static string GashaponMachine_ClickEnd = "GashaponMachine_ClickEnd";//点击结束
     #endregion
 }

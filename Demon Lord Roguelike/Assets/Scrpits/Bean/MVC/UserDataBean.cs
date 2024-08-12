@@ -25,5 +25,6 @@ public class UserDataBean : BaseBean
         {
             coin = 0;
         }
+        EventHandler.Instance.TriggerEvent(EventsInfo.Coin_Change);
     }
 }

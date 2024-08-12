@@ -8,6 +8,7 @@ public partial class UIGashaponBreak : BaseUIComponent
     public GameObject objTargetEgg;
     public GashaponItemBean gashaponItemData;
 
+
     /// <summary>
     /// 所有点击事件
     /// </summary>
@@ -22,6 +23,14 @@ public partial class UIGashaponBreak : BaseUIComponent
         {
             OnClickForNext();
         }
+        else if (viewButton == ui_BtnReset)
+        {
+            OnClickForReset();
+        }
+        else if (viewButton == ui_BtnEnd)
+        {
+            OnClickForEnd();
+        }
     }
 
     /// <summary>
@@ -31,6 +40,7 @@ public partial class UIGashaponBreak : BaseUIComponent
     {
         this.objTargetEgg = objTargetEgg;
         this.gashaponItemData = gashaponItemData;
+        ui_UIBtn.ShowObj(false);
         ui_ButtonClick.ShowObj(true);
         ui_UIShow.ShowObj(false);
     }
@@ -42,12 +52,32 @@ public partial class UIGashaponBreak : BaseUIComponent
     {
         this.objTargetEgg = objTargetEgg;
         this.gashaponItemData = gashaponItemData;
+        ui_UIBtn.ShowObj(true);
         ui_ButtonClick.ShowObj(false);
         ui_UIShow.ShowObj(true);
-        ui_BtnNext.ShowObj(true);
 
-        ui_CreatureCardItem.SetData(gashaponItemData.creatureData, UIViewCreatureCardItem.CardUseState.Show);
-        ui_ViewCreatureCardDetails.SetData(gashaponItemData.creatureData);
+        ui_BtnReset.ShowObj(false);
+        ui_BtnNext.ShowObj(true);
+        ui_BtnEnd.ShowObj(false);
+
+        InitCardData();
+    }
+
+    /// <summary>
+    /// 初始化-最后一个蛋
+    /// </summary>
+    public void InitFoEnd()
+    {
+        ui_UIBtn.ShowObj(true);
+        ui_ButtonClick.ShowObj(false);
+        ui_UIShow.ShowObj(true);
+
+        ui_BtnReset.ShowObj(true);
+        ui_BtnNext.ShowObj(false);
+        ui_BtnEnd.ShowObj(true);
+
+
+        InitCardData();
     }
 
     /// <summary>
@@ -55,8 +85,18 @@ public partial class UIGashaponBreak : BaseUIComponent
     /// </summary>
     public void InitForNone()
     {
+        ui_UIBtn.ShowObj(false);
         ui_ButtonClick.ShowObj(false);
         ui_UIShow.ShowObj(false);
+    }
+
+    /// <summary>
+    /// 初始化卡片数据
+    /// </summary>
+    public void InitCardData()
+    {
+        ui_CreatureCardItem.SetData(gashaponItemData.creatureData, UIViewCreatureCardItem.CardUseState.Show);
+        ui_ViewCreatureCardDetails.SetData(gashaponItemData.creatureData);
     }
 
     /// <summary>
@@ -78,4 +118,23 @@ public partial class UIGashaponBreak : BaseUIComponent
         //触发事件
         this.TriggerEvent(EventsInfo.GashaponMachine_ClickNext);
     }
+
+    /// <summary>
+    /// 点击重置
+    /// </summary>
+    public void OnClickForReset()
+    {
+        //触发事件
+        this.TriggerEvent(EventsInfo.GashaponMachine_ClickReset);
+    }
+
+    /// <summary>
+    /// 点击结束
+    /// </summary>
+    public void OnClickForEnd() 
+    {
+        //触发事件
+        this.TriggerEvent(EventsInfo.GashaponMachine_ClickEnd);
+    }
+
 }

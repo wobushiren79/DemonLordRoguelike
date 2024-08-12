@@ -45,6 +45,10 @@ public partial class GameManager : BaseManager
     /// </summary>
     public T GetGameLogic<T>() where T : BaseGameLogic
     {
+        if (gameLogic == null)
+        {
+            return null;
+        }
         if (gameLogic is T logic)
         {
             return logic;
