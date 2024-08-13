@@ -32,7 +32,7 @@ public class GashaponMachineLogic : BaseGameLogic
 
     public bool isRegisterEvent = false;
 
-    public string eggChildFbxName = "Other_Egg";
+    public string eggChildFbxName = "Egg_1";
     public string eggChildRendererName = "Renderer";
     public override void PreGameForRegisterEvent()
     {
@@ -276,9 +276,16 @@ public class GashaponMachineLogic : BaseGameLogic
         //播放spine动画
         eggSpine.AnimationState.SetAnimation(0, AnimationCreatureStateEnum.Idle.ToString(), true);
 
+
+        MeshRenderer eggRenderer = eggTF.GetComponentInChildren<MeshRenderer>();
+        Color eggColor1 = eggRenderer.material.GetColor("_Color_1");
+        Color eggColor2 = eggRenderer.material.GetColor("_Color_2");
+
         //播放蛋壳破碎粒子
         effectEggBreak.SetVector3("MeshSize", eggTF.transform.localScale);
         effectEggBreak.SetVector3("StartPosition", eggTF.transform.position);
+        effectEggBreak.SetVector4("Color1", eggColor1);
+        effectEggBreak.SetVector4("Color2", eggColor2);
         effectEggBreak.SendEvent("OnPlay");
     }
 
@@ -323,7 +330,11 @@ public class GashaponMachineLogic : BaseGameLogic
 
         var eggTF = objEgg.transform.Find(eggChildFbxName);
         eggTF.ShowObj(true);
+        eggTF.transform.eulerAngles = new Vector3(0, UnityEngine.Random.Range(0f, 360f), 0);
 
+        MeshRenderer eggRenderer = eggTF.GetComponentInChildren<MeshRenderer>();
+        eggRenderer.material.SetColor("_Color_1", Color.white);
+        eggRenderer.material.SetColor("_Color_2", new Color(UnityEngine.Random.Range(0f,1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f),1));
         float startPos;
         if (gashaponMachineData.gashaponNum == 1)
         {

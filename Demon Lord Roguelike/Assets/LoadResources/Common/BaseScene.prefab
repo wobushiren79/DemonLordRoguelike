@@ -903,7 +903,13 @@ VisualEffect:
         m_Name: StartPosition
         m_Overridden: 1
     m_Vector4f:
-      m_Array: []
+      m_Array:
+      - m_Value: {x: 0, y: 0, z: 0, w: 0}
+        m_Name: Color1
+        m_Overridden: 1
+      - m_Value: {x: 0, y: 0, z: 0, w: 0}
+        m_Name: Color2
+        m_Overridden: 1
     m_Uint:
       m_Array: []
     m_Int:
@@ -916,7 +922,7 @@ VisualEffect:
       m_Array: []
     m_NamedObject:
       m_Array:
-      - m_Value: {fileID: 747055014975764994, guid: 764b6b122eba2cd4c8fafa2b2dd4cdc1, type: 3}
+      - m_Value: {fileID: -2432090755550338912, guid: 37e97cddcdb078e458fe4b4a96131c9f, type: 3}
         m_Name: Mesh
         m_Overridden: 1
     m_Bool:

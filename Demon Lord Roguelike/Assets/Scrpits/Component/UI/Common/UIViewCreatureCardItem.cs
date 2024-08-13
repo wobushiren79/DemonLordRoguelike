@@ -1,4 +1,5 @@
 using DG.Tweening;
+using Spine;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -171,12 +172,27 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
         }
     }
 
+    /// <summary>
+    /// °´Å¥µã»÷
+    /// </summary>
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
         if (viewButton == ui_BtnSelect)
         {
-            OnClickSelectForFight();
+            OnClickSelect();
+        }
+    }
+    
+    public void OnClickSelect()
+    {
+        switch (cardUseState)
+        {
+            case CardUseState.Show:
+                break;
+            case CardUseState.Fight:
+                OnClickSelectForFight();
+                break;
         }
     }
 
