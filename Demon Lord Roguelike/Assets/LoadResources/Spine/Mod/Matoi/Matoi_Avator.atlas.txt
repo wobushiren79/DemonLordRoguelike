@@ -1,0 +1,718 @@
+
+Matoi_Avator.png
+size: 2032,2047
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+back_hair_L_01
+  rotate: true
+  xy: 325, 1567
+  size: 115, 426
+  orig: 115, 426
+  offset: 0, 0
+  index: -1
+back_hair_L_02
+  rotate: true
+  xy: 2, 1433
+  size: 178, 267
+  orig: 178, 267
+  offset: 0, 0
+  index: -1
+bra_01
+  rotate: false
+  xy: 318, 674
+  size: 493, 271
+  orig: 493, 271
+  offset: 0, 0
+  index: -1
+bra_02
+  rotate: false
+  xy: 1681, 1472
+  size: 346, 150
+  orig: 346, 150
+  offset: 0, 0
+  index: -1
+bust_R
+  rotate: true
+  xy: 1618, 189
+  size: 282, 326
+  orig: 282, 326
+  offset: 0, 0
+  index: -1
+clothes_02
+  rotate: false
+  xy: 1442, 1291
+  size: 282, 179
+  orig: 282, 179
+  offset: 0, 0
+  index: -1
+clothes_03
+  rotate: true
+  xy: 1825, 1624
+  size: 125, 180
+  orig: 125, 180
+  offset: 0, 0
+  index: -1
+clothes_chest_01
+  rotate: false
+  xy: 2, 720
+  size: 314, 263
+  orig: 314, 263
+  offset: 0, 0
+  index: -1
+clothes_chest_02
+  rotate: true
+  xy: 2, 985
+  size: 246, 319
+  orig: 246, 319
+  offset: 0, 0
+  index: -1
+clothes_ribbon_01
+  rotate: true
+  xy: 1563, 1766
+  size: 90, 289
+  orig: 90, 289
+  offset: 0, 0
+  index: -1
+clothes_ribbon_02
+  rotate: true
+  xy: 815, 1968
+  size: 50, 83
+  orig: 50, 83
+  offset: 0, 0
+  index: -1
+clothes_ribbon_03
+  rotate: true
+  xy: 2, 1822
+  size: 86, 265
+  orig: 86, 265
+  offset: 0, 0
+  index: -1
+clothes_ribbon_shadow
+  rotate: true
+  xy: 1726, 1281
+  size: 189, 298
+  orig: 189, 298
+  offset: 0, 0
+  index: -1
+dice_01
+  rotate: true
+  xy: 965, 1953
+  size: 56, 58
+  orig: 56, 58
+  offset: 0, 0
+  index: -1
+dice_02
+  rotate: false
+  xy: 900, 1964
+  size: 63, 53
+  orig: 63, 53
+  offset: 0, 0
+  index: -1
+ear
+  rotate: true
+  xy: 778, 1890
+  size: 76, 118
+  orig: 76, 118
+  offset: 0, 0
+  index: -1
+ear_acce
+  rotate: true
+  xy: 1500, 2005
+  size: 40, 237
+  orig: 40, 237
+  offset: 0, 0
+  index: -1
+eye_close_01
+  rotate: false
+  xy: 2, 1910
+  size: 326, 61
+  orig: 326, 61
+  offset: 0, 0
+  index: -1
+eye_open_01
+  rotate: false
+  xy: 941, 1676
+  size: 364, 101
+  orig: 364, 101
+  offset: 0, 0
+  index: -1
+eye_open_02
+  rotate: false
+  xy: 367, 1970
+  size: 256, 49
+  orig: 256, 49
+  offset: 0, 0
+  index: -1
+eye_open_03
+  rotate: false
+  xy: 1025, 1950
+  size: 285, 55
+  orig: 285, 55
+  offset: 0, 0
+  index: -1
+eye_open_04
+  rotate: false
+  xy: 1545, 1653
+  size: 278, 111
+  orig: 278, 111
+  offset: 0, 0
+  index: -1
+eye_open_05
+  rotate: false
+  xy: 2, 1613
+  size: 321, 106
+  orig: 321, 106
+  offset: 0, 0
+  index: -1
+eye_open_06
+  rotate: false
+  xy: 1216, 1871
+  size: 325, 72
+  orig: 325, 72
+  offset: 0, 0
+  index: -1
+eye_open_highlight
+  rotate: false
+  xy: 269, 1818
+  size: 273, 86
+  orig: 273, 86
+  offset: 0, 0
+  index: -1
+eyebrow
+  rotate: false
+  xy: 1541, 1945
+  size: 346, 57
+  orig: 346, 57
+  offset: 0, 0
+  index: -1
+foot_L_02
+  rotate: true
+  xy: 813, 575
+  size: 231, 883
+  orig: 231, 883
+  offset: 0, 0
+  index: -1
+foot_L_cloth_01
+  rotate: false
+  xy: 740, 1792
+  size: 236, 88
+  orig: 236, 88
+  offset: 0, 0
+  index: -1
+foot_L_cloth_02
+  rotate: false
+  xy: 1739, 1858
+  size: 234, 84
+  orig: 234, 84
+  offset: 0, 0
+  index: -1
+foot_L_string_01
+  rotate: true
+  xy: 930, 2019
+  size: 26, 33
+  orig: 26, 33
+  offset: 0, 0
+  index: -1
+foot_L_string_02
+  rotate: true
+  xy: 330, 1906
+  size: 62, 218
+  orig: 62, 218
+  offset: 0, 0
+  index: -1
+foot_L_string_03
+  rotate: true
+  xy: 1543, 1869
+  size: 74, 194
+  orig: 74, 194
+  offset: 0, 0
+  index: -1
+foot_L_string_04
+  rotate: true
+  xy: 1056, 2007
+  size: 38, 345
+  orig: 38, 345
+  offset: 0, 0
+  index: -1
+foot_L_string_05
+  rotate: true
+  xy: 898, 1882
+  size: 66, 316
+  orig: 66, 316
+  offset: 0, 0
+  index: -1
+foot_R_02
+  rotate: true
+  xy: 2, 419
+  size: 253, 618
+  orig: 253, 618
+  offset: 0, 0
+  index: -1
+foot_R_03
+  rotate: true
+  xy: 915, 1109
+  size: 242, 396
+  orig: 242, 396
+  offset: 0, 0
+  index: -1
+foot_R_cloth_01
+  rotate: false
+  xy: 510, 1693
+  size: 194, 110
+  orig: 194, 110
+  offset: 0, 0
+  index: -1
+foot_R_cloth_02
+  rotate: false
+  xy: 544, 1805
+  size: 194, 94
+  orig: 194, 94
+  offset: 0, 0
+  index: -1
+forearm_R
+  rotate: false
+  xy: 1698, 473
+  size: 309, 279
+  orig: 309, 279
+  offset: 0, 0
+  index: -1
+front_hair_01
+  rotate: true
+  xy: 538, 1193
+  size: 198, 375
+  orig: 198, 375
+  offset: 0, 0
+  index: -1
+front_hair_02
+  rotate: true
+  xy: 334, 2
+  size: 292, 350
+  orig: 292, 350
+  offset: 0, 0
+  index: -1
+front_hair_03
+  rotate: true
+  xy: 695, 1393
+  size: 150, 387
+  orig: 150, 387
+  offset: 0, 0
+  index: -1
+hair_highlight
+  rotate: false
+  xy: 550, 1901
+  size: 226, 66
+  orig: 226, 66
+  offset: 0, 0
+  index: -1
+hair_shadow_01
+  rotate: true
+  xy: 1084, 1353
+  size: 169, 356
+  orig: 169, 356
+  offset: 0, 0
+  index: -1
+hair_shadow_02
+  rotate: true
+  xy: 2, 131
+  size: 286, 330
+  orig: 286, 330
+  offset: 0, 0
+  index: -1
+hair_shadow_03
+  rotate: true
+  xy: 900, 1545
+  size: 129, 361
+  orig: 129, 361
+  offset: 0, 0
+  index: -1
+hair_shadow_L
+  rotate: true
+  xy: 2, 1721
+  size: 95, 380
+  orig: 95, 380
+  offset: 0, 0
+  index: -1
+hair_shadow_R
+  rotate: true
+  xy: 271, 1432
+  size: 133, 422
+  orig: 133, 422
+  offset: 0, 0
+  index: -1
+hand_L_01
+  rotate: true
+  xy: 1754, 754
+  size: 304, 276
+  orig: 304, 276
+  offset: 0, 0
+  index: -1
+hand_L_02
+  rotate: true
+  xy: 1854, 1751
+  size: 105, 112
+  orig: 105, 112
+  offset: 0, 0
+  index: -1
+hand_L_string_01
+  rotate: true
+  xy: 228, 1973
+  size: 46, 137
+  orig: 46, 137
+  offset: 0, 0
+  index: -1
+hand_L_string_02
+  rotate: true
+  xy: 1739, 2004
+  size: 41, 125
+  orig: 41, 125
+  offset: 0, 0
+  index: -1
+hand_L_string_03
+  rotate: true
+  xy: 668, 2020
+  size: 25, 229
+  orig: 25, 229
+  offset: 0, 0
+  index: -1
+hand_L_string_04
+  rotate: true
+  xy: 2, 2023
+  size: 22, 216
+  orig: 22, 216
+  offset: 0, 0
+  index: -1
+hand_R_01
+  rotate: false
+  xy: 324, 1227
+  size: 212, 203
+  orig: 212, 203
+  offset: 0, 0
+  index: -1
+hand_R_02
+  rotate: false
+  xy: 1506, 1493
+  size: 173, 158
+  orig: 173, 158
+  offset: 0, 0
+  index: -1
+hand_R_03
+  rotate: false
+  xy: 384, 1701
+  size: 124, 115
+  orig: 124, 115
+  offset: 0, 0
+  index: -1
+hand_R_string_01
+  rotate: true
+  xy: 2, 1976
+  size: 45, 135
+  orig: 45, 135
+  offset: 0, 0
+  index: -1
+hand_R_string_02
+  rotate: true
+  xy: 1866, 2004
+  size: 41, 126
+  orig: 41, 126
+  offset: 0, 0
+  index: -1
+hand_R_string_03
+  rotate: true
+  xy: 220, 2021
+  size: 24, 228
+  orig: 24, 228
+  offset: 0, 0
+  index: -1
+hand_R_string_04
+  rotate: true
+  xy: 450, 2021
+  size: 24, 216
+  orig: 24, 216
+  offset: 0, 0
+  index: -1
+head_acce_01
+  rotate: true
+  xy: 978, 1781
+  size: 88, 305
+  orig: 88, 305
+  offset: 0, 0
+  index: -1
+head_acce_02
+  rotate: false
+  xy: 1313, 1060
+  size: 529, 219
+  orig: 529, 219
+  offset: 0, 0
+  index: -1
+head_acce_03
+  rotate: true
+  xy: 1285, 1779
+  size: 88, 276
+  orig: 88, 276
+  offset: 0, 0
+  index: -1
+head_bell_01
+  rotate: true
+  xy: 753, 1549
+  size: 133, 145
+  orig: 133, 145
+  offset: 0, 0
+  index: -1
+head_bell_02
+  rotate: true
+  xy: 139, 1974
+  size: 45, 87
+  orig: 45, 87
+  offset: 0, 0
+  index: -1
+head_bell_03
+  rotate: false
+  xy: 899, 2020
+  size: 29, 25
+  orig: 29, 25
+  offset: 0, 0
+  index: -1
+head_bell_04
+  rotate: true
+  xy: 1403, 2006
+  size: 39, 95
+  orig: 39, 95
+  offset: 0, 0
+  index: -1
+head_ribbon_01
+  rotate: true
+  xy: 839, 845
+  size: 262, 404
+  orig: 262, 404
+  offset: 0, 0
+  index: -1
+head_ribbon_02
+  rotate: true
+  xy: 1312, 1947
+  size: 56, 227
+  orig: 56, 227
+  offset: 0, 0
+  index: -1
+head_ribbon_03
+  rotate: true
+  xy: 2, 1233
+  size: 197, 320
+  orig: 197, 320
+  offset: 0, 0
+  index: -1
+head_ribbon_04
+  rotate: true
+  xy: 625, 1969
+  size: 49, 188
+  orig: 49, 188
+  offset: 0, 0
+  index: -1
+luggage_rod_02
+  rotate: true
+  xy: 1010, 2011
+  size: 34, 44
+  orig: 34, 44
+  offset: 0, 0
+  index: -1
+mouth_open
+  rotate: false
+  xy: 1889, 1944
+  size: 100, 58
+  orig: 100, 58
+  offset: 0, 0
+  index: -1
+neck
+  rotate: true
+  xy: 1263, 1524
+  size: 134, 241
+  orig: 134, 241
+  offset: 0, 0
+  index: -1
+nose
+  rotate: true
+  xy: 965, 2016
+  size: 29, 43
+  orig: 29, 43
+  offset: 0, 0
+  index: -1
+side_hair_L_02
+  rotate: true
+  xy: 706, 1684
+  size: 106, 233
+  orig: 106, 233
+  offset: 0, 0
+  index: -1
+side_hair_R_01
+  rotate: true
+  xy: 1245, 808
+  size: 250, 507
+  orig: 250, 507
+  offset: 0, 0
+  index: -1
+side_hair_R_02
+  rotate: true
+  xy: 1307, 1660
+  size: 117, 236
+  orig: 117, 236
+  offset: 0, 0
+  index: -1
+sleeve_L_02
+  rotate: true
+  xy: 622, 296
+  size: 277, 545
+  orig: 277, 545
+  offset: 0, 0
+  index: -1
+sleeve_R_02
+  rotate: true
+  xy: 1169, 293
+  size: 280, 447
+  orig: 280, 447
+  offset: 0, 0
+  index: -1
+upperarm_L
+  rotate: true
+  xy: 323, 947
+  size: 244, 514
+  orig: 244, 514
+  offset: 0, 0
+  index: -1
+
+Matoi_Avator2.png
+size: 2030,1929
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+back_hair
+  rotate: false
+  xy: 619, 573
+  size: 567, 501
+  orig: 567, 501
+  offset: 0, 0
+  index: -1
+back_hair_R
+  rotate: false
+  xy: 1691, 1583
+  size: 337, 344
+  orig: 337, 344
+  offset: 0, 0
+  index: -1
+clothes_01
+  rotate: true
+  xy: 2, 564
+  size: 510, 615
+  orig: 510, 615
+  offset: 0, 0
+  index: -1
+foot_L_03
+  rotate: false
+  xy: 1691, 1146
+  size: 323, 435
+  orig: 323, 435
+  offset: 0, 0
+  index: -1
+foot_R_01
+  rotate: false
+  xy: 1320, 73
+  size: 369, 1001
+  orig: 369, 1001
+  offset: 0, 0
+  index: -1
+luggage
+  rotate: true
+  xy: 1691, 2
+  size: 557, 319
+  orig: 557, 319
+  offset: 0, 0
+  index: -1
+luggage_rod_01
+  rotate: false
+  xy: 2, 1076
+  size: 1687, 851
+  orig: 1687, 851
+  offset: 0, 0
+  index: -1
+sleeve_L_01
+  rotate: true
+  xy: 2, 144
+  size: 415, 1316
+  orig: 415, 1316
+  offset: 0, 0
+  index: -1
+sleeve_R_03
+  rotate: false
+  xy: 1691, 561
+  size: 319, 583
+  orig: 319, 583
+  offset: 0, 0
+  index: -1
+
+Matoi_Avator3.png
+size: 1524,1609
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: true
+  xy: 2, 2
+  size: 631, 746
+  orig: 631, 746
+  offset: 0, 0
+  index: -1
+bust_L
+  rotate: true
+  xy: 1224, 731
+  size: 316, 298
+  orig: 316, 298
+  offset: 0, 0
+  index: -1
+foot_L_01
+  rotate: false
+  xy: 2, 635
+  size: 420, 972
+  orig: 420, 972
+  offset: 0, 0
+  index: -1
+forearm_L
+  rotate: false
+  xy: 424, 687
+  size: 319, 340
+  orig: 319, 340
+  offset: 0, 0
+  index: -1
+head
+  rotate: true
+  xy: 750, 78
+  size: 447, 473
+  orig: 447, 473
+  offset: 0, 0
+  index: -1
+head_acce_shadow
+  rotate: true
+  xy: 1099, 1049
+  size: 558, 365
+  orig: 558, 365
+  offset: 0, 0
+  index: -1
+side_hair_L_01
+  rotate: false
+  xy: 750, 527
+  size: 472, 500
+  orig: 472, 500
+  offset: 0, 0
+  index: -1
+sleeve_R_01
+  rotate: false
+  xy: 1225, 148
+  size: 294, 581
+  orig: 294, 581
+  offset: 0, 0
+  index: -1
+waist
+  rotate: false
+  xy: 424, 1029
+  size: 673, 578
+  orig: 673, 578
+  offset: 0, 0
+  index: -1

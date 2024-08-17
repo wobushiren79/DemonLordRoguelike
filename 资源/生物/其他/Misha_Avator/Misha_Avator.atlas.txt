@@ -1,0 +1,598 @@
+
+Misha_Avator.png
+size: 2047,1988
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+arm_low_L2
+  rotate: false
+  xy: 667, 813
+  size: 480, 215
+  orig: 480, 215
+  offset: 0, 0
+  index: -1
+arm_low_R2
+  rotate: false
+  xy: 1456, 633
+  size: 430, 219
+  orig: 430, 219
+  offset: 0, 0
+  index: -1
+arm_up_L2
+  rotate: true
+  xy: 1563, 1277
+  size: 185, 302
+  orig: 185, 302
+  offset: 0, 0
+  index: -1
+arm_up_L3
+  rotate: true
+  xy: 577, 1217
+  size: 148, 627
+  orig: 148, 627
+  offset: 0, 0
+  index: -1
+arm_up_R2
+  rotate: true
+  xy: 1479, 854
+  size: 209, 392
+  orig: 209, 392
+  offset: 0, 0
+  index: -1
+arm_up_R3
+  rotate: true
+  xy: 575, 1030
+  size: 185, 607
+  orig: 185, 607
+  offset: 0, 0
+  index: -1
+bust_L
+  rotate: true
+  xy: 1206, 1161
+  size: 204, 295
+  orig: 204, 295
+  offset: 0, 0
+  index: -1
+bust_R
+  rotate: true
+  xy: 1184, 935
+  size: 224, 293
+  orig: 224, 293
+  offset: 0, 0
+  index: -1
+collar_B
+  rotate: false
+  xy: 1859, 1622
+  size: 186, 135
+  orig: 186, 135
+  offset: 0, 0
+  index: -1
+eye close
+  rotate: false
+  xy: 183, 1609
+  size: 330, 129
+  orig: 330, 129
+  offset: 0, 0
+  index: -1
+eye_open
+  rotate: false
+  xy: 1039, 1914
+  size: 286, 72
+  orig: 286, 72
+  offset: 0, 0
+  index: -1
+eyebrow
+  rotate: false
+  xy: 430, 1943
+  size: 318, 43
+  orig: 318, 43
+  offset: 0, 0
+  index: -1
+eyelids
+  rotate: false
+  xy: 750, 1928
+  size: 287, 58
+  orig: 287, 58
+  offset: 0, 0
+  index: -1
+eyeline bottom
+  rotate: false
+  xy: 157, 1950
+  size: 271, 36
+  orig: 271, 36
+  offset: 0, 0
+  index: -1
+eyeline top
+  rotate: false
+  xy: 2, 1869
+  size: 345, 79
+  orig: 345, 79
+  offset: 0, 0
+  index: -1
+hair_B1
+  rotate: true
+  xy: 2, 871
+  size: 157, 663
+  orig: 157, 663
+  offset: 0, 0
+  index: -1
+hair_B3
+  rotate: true
+  xy: 2, 667
+  size: 202, 662
+  orig: 202, 662
+  offset: 0, 0
+  index: -1
+hair_B4
+  rotate: true
+  xy: 803, 2
+  size: 227, 1141
+  orig: 227, 1141
+  offset: 0, 0
+  index: -1
+hair_B6
+  rotate: true
+  xy: 869, 231
+  size: 213, 1130
+  orig: 213, 1130
+  offset: 0, 0
+  index: -1
+hair_F1
+  rotate: true
+  xy: 1149, 709
+  size: 224, 305
+  orig: 224, 305
+  offset: 0, 0
+  index: -1
+hair_F3
+  rotate: true
+  xy: 2, 1765
+  size: 102, 299
+  orig: 102, 299
+  offset: 0, 0
+  index: -1
+hair_F4
+  rotate: true
+  xy: 2, 423
+  size: 242, 346
+  orig: 242, 346
+  offset: 0, 0
+  index: -1
+hair_L1
+  rotate: true
+  xy: 2, 1060
+  size: 201, 571
+  orig: 201, 571
+  offset: 0, 0
+  index: -1
+hair_R1
+  rotate: true
+  xy: 515, 1589
+  size: 131, 547
+  orig: 131, 547
+  offset: 0, 0
+  index: -1
+hair_R2
+  rotate: true
+  xy: 1141, 446
+  size: 185, 829
+  orig: 185, 829
+  offset: 0, 0
+  index: -1
+hand_L
+  rotate: true
+  xy: 1280, 1525
+  size: 145, 220
+  orig: 145, 220
+  offset: 0, 0
+  index: -1
+hand_R
+  rotate: true
+  xy: 807, 1412
+  size: 175, 195
+  orig: 175, 195
+  offset: 0, 0
+  index: -1
+head ribbon_L1
+  rotate: true
+  xy: 1713, 1464
+  size: 156, 210
+  orig: 156, 210
+  offset: 0, 0
+  index: -1
+head ribbon_L2
+  rotate: true
+  xy: 349, 1854
+  size: 87, 200
+  orig: 87, 200
+  offset: 0, 0
+  index: -1
+head ribbon_L3
+  rotate: true
+  xy: 551, 1834
+  size: 107, 163
+  orig: 107, 163
+  offset: 0, 0
+  index: -1
+head ribbon_L4
+  rotate: true
+  xy: 1481, 1911
+  size: 75, 209
+  orig: 75, 209
+  offset: 0, 0
+  index: -1
+head ribbon_L5
+  rotate: true
+  xy: 1092, 1700
+  size: 119, 188
+  orig: 119, 188
+  offset: 0, 0
+  index: -1
+head ribbon_L6
+  rotate: true
+  xy: 523, 1722
+  size: 97, 567
+  orig: 97, 567
+  offset: 0, 0
+  index: -1
+head ribbon_L7
+  rotate: true
+  xy: 2, 1460
+  size: 127, 595
+  orig: 127, 595
+  offset: 0, 0
+  index: -1
+head ribbon_R1
+  rotate: false
+  xy: 1727, 1065
+  size: 213, 210
+  orig: 213, 210
+  offset: 0, 0
+  index: -1
+head ribbon_R2
+  rotate: true
+  xy: 1531, 1799
+  size: 108, 211
+  orig: 108, 211
+  offset: 0, 0
+  index: -1
+head ribbon_R3
+  rotate: true
+  xy: 1675, 1660
+  size: 129, 182
+  orig: 129, 182
+  offset: 0, 0
+  index: -1
+head ribbon_R4
+  rotate: true
+  xy: 1467, 1672
+  size: 125, 206
+  orig: 125, 206
+  offset: 0, 0
+  index: -1
+head ribbon_R5
+  rotate: true
+  xy: 303, 1740
+  size: 112, 218
+  orig: 112, 218
+  offset: 0, 0
+  index: -1
+head ribbon_R6
+  rotate: true
+  xy: 928, 1821
+  size: 88, 601
+  orig: 88, 601
+  offset: 0, 0
+  index: -1
+head ribbon_R7
+  rotate: true
+  xy: 1004, 1367
+  size: 143, 557
+  orig: 143, 557
+  offset: 0, 0
+  index: -1
+headdress
+  rotate: false
+  xy: 666, 592
+  size: 473, 219
+  orig: 473, 219
+  offset: 0, 0
+  index: -1
+mouth close
+  rotate: false
+  xy: 71, 1953
+  size: 42, 33
+  orig: 42, 33
+  offset: 0, 0
+  index: -1
+mouth nomal
+  rotate: false
+  xy: 2, 1972
+  size: 20, 14
+  orig: 20, 14
+  offset: 0, 0
+  index: -1
+mouth open
+  rotate: false
+  xy: 24, 1956
+  size: 45, 30
+  orig: 45, 30
+  offset: 0, 0
+  index: -1
+neck
+  rotate: true
+  xy: 1064, 1554
+  size: 144, 214
+  orig: 144, 214
+  offset: 0, 0
+  index: -1
+nose
+  rotate: true
+  xy: 115, 1951
+  size: 35, 40
+  orig: 35, 40
+  offset: 0, 0
+  index: -1
+rabbit_body
+  rotate: true
+  xy: 2, 1268
+  size: 190, 273
+  orig: 190, 273
+  offset: 0, 0
+  index: -1
+rabbit_ear_L
+  rotate: false
+  xy: 1327, 1914
+  size: 152, 72
+  orig: 152, 72
+  offset: 0, 0
+  index: -1
+rabbit_ear_R
+  rotate: true
+  xy: 2, 1631
+  size: 132, 179
+  orig: 132, 179
+  offset: 0, 0
+  index: -1
+rabbit_foot_L
+  rotate: true
+  xy: 1744, 1791
+  size: 108, 169
+  orig: 108, 169
+  offset: 0, 0
+  index: -1
+rabbit_foot_R
+  rotate: true
+  xy: 716, 1825
+  size: 101, 210
+  orig: 101, 210
+  offset: 0, 0
+  index: -1
+rabbit_hand
+  rotate: false
+  xy: 1692, 1909
+  size: 106, 77
+  orig: 106, 77
+  offset: 0, 0
+  index: -1
+rabbit_hand_L
+  rotate: true
+  xy: 1282, 1695
+  size: 124, 183
+  orig: 124, 183
+  offset: 0, 0
+  index: -1
+rabbit_head
+  rotate: true
+  xy: 1503, 1067
+  size: 208, 222
+  orig: 208, 222
+  offset: 0, 0
+  index: -1
+rabbit_tail
+  rotate: true
+  xy: 1915, 1759
+  size: 118, 119
+  orig: 118, 119
+  offset: 0, 0
+  index: -1
+ribbon1
+  rotate: false
+  xy: 277, 1263
+  size: 298, 195
+  orig: 298, 195
+  offset: 0, 0
+  index: -1
+ribbon2
+  rotate: true
+  xy: 1502, 1512
+  size: 146, 209
+  orig: 146, 209
+  offset: 0, 0
+  index: -1
+ribbon3
+  rotate: true
+  xy: 599, 1414
+  size: 173, 206
+  orig: 173, 206
+  offset: 0, 0
+  index: -1
+shoes_LB
+  rotate: false
+  xy: 1921, 1879
+  size: 120, 107
+  orig: 120, 107
+  offset: 0, 0
+  index: -1
+shoes_R
+  rotate: true
+  xy: 350, 331
+  size: 259, 517
+  orig: 259, 517
+  offset: 0, 0
+  index: -1
+shoes_RB
+  rotate: false
+  xy: 1800, 1901
+  size: 119, 85
+  orig: 119, 85
+  offset: 0, 0
+  index: -1
+skirt_shadow
+  rotate: false
+  xy: 2, 95
+  size: 799, 234
+  orig: 799, 234
+  offset: 0, 0
+  index: -1
+
+Misha_Avator2.png
+size: 1853,2048
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+arm_low_L1
+  rotate: true
+  xy: 1458, 293
+  size: 584, 327
+  orig: 584, 327
+  offset: 0, 0
+  index: -1
+collar
+  rotate: false
+  xy: 1230, 2
+  size: 541, 284
+  orig: 541, 284
+  offset: 0, 0
+  index: -1
+foot_low_L
+  rotate: true
+  xy: 2, 27
+  size: 259, 1226
+  orig: 259, 1226
+  offset: 0, 0
+  index: -1
+hair_B7
+  rotate: true
+  xy: 2, 288
+  size: 589, 1454
+  orig: 589, 1454
+  offset: 0, 0
+  index: -1
+skirt_base
+  rotate: false
+  xy: 2, 879
+  size: 1849, 1167
+  orig: 1849, 1167
+  offset: 0, 0
+  index: -1
+
+Misha_Avator3.png
+size: 2009,1827
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+arm_low_R1
+  rotate: false
+  xy: 1422, 1507
+  size: 575, 318
+  orig: 575, 318
+  offset: 0, 0
+  index: -1
+arm_up_L1
+  rotate: true
+  xy: 2, 1557
+  size: 268, 465
+  orig: 268, 465
+  offset: 0, 0
+  index: -1
+arm_up_R1
+  rotate: true
+  xy: 977, 1525
+  size: 300, 443
+  orig: 300, 443
+  offset: 0, 0
+  index: -1
+foot_low_R
+  rotate: true
+  xy: 2, 524
+  size: 316, 1226
+  orig: 316, 1226
+  offset: 0, 0
+  index: -1
+foot_up_L
+  rotate: true
+  xy: 920, 1188
+  size: 317, 895
+  orig: 317, 895
+  offset: 0, 0
+  index: -1
+foot_up_R
+  rotate: true
+  xy: 2, 1237
+  size: 311, 916
+  orig: 311, 916
+  offset: 0, 0
+  index: -1
+hair_B2
+  rotate: true
+  xy: 2, 891
+  size: 295, 1170
+  orig: 295, 1170
+  offset: 0, 0
+  index: -1
+hair_B5
+  rotate: true
+  xy: 2, 175
+  size: 347, 1189
+  orig: 347, 1189
+  offset: 0, 0
+  index: -1
+hair_L2
+  rotate: true
+  xy: 1174, 842
+  size: 344, 833
+  orig: 344, 833
+  offset: 0, 0
+  index: -1
+head_base
+  rotate: true
+  xy: 1230, 422
+  size: 418, 506
+  orig: 418, 506
+  offset: 0, 0
+  index: -1
+head_shadow
+  rotate: true
+  xy: 1193, 2
+  size: 418, 439
+  orig: 418, 439
+  offset: 0, 0
+  index: -1
+shoes_L
+  rotate: true
+  xy: 469, 1550
+  size: 275, 506
+  orig: 275, 506
+  offset: 0, 0
+  index: -1
+
+Misha_Avator4.png
+size: 1587,709
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body1
+  rotate: false
+  xy: 1112, 2
+  size: 473, 705
+  orig: 473, 705
+  offset: 0, 0
+  index: -1
+body2
+  rotate: true
+  xy: 2, 112
+  size: 595, 1108
+  orig: 595, 1108
+  offset: 0, 0
+  index: -1

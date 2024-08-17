@@ -62,6 +62,7 @@ public enum TestSceneTypeEnum
 
 public enum CinemachineCameraEnum
 {
+    None,
     Base,
     Fight,
 }

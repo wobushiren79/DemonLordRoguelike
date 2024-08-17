@@ -1,0 +1,401 @@
+
+Meltina_Avator.png
+size: 2040,1833
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_0
+  rotate: false
+  xy: 1264, 1469
+  size: 365, 182
+  orig: 365, 182
+  offset: 0, 0
+  index: -1
+1_1
+  rotate: false
+  xy: 633, 1795
+  size: 282, 36
+  orig: 282, 36
+  offset: 0, 0
+  index: -1
+1_10
+  rotate: true
+  xy: 2, 1599
+  size: 130, 265
+  orig: 130, 265
+  offset: 0, 0
+  index: -1
+1_11
+  rotate: true
+  xy: 1352, 1663
+  size: 114, 241
+  orig: 114, 241
+  offset: 0, 0
+  index: -1
+1_12
+  rotate: false
+  xy: 1629, 1773
+  size: 88, 58
+  orig: 88, 58
+  offset: 0, 0
+  index: -1
+1_13
+  rotate: false
+  xy: 1719, 1772
+  size: 119, 59
+  orig: 119, 59
+  offset: 0, 0
+  index: -1
+1_14
+  rotate: false
+  xy: 2, 1819
+  size: 150, 12
+  orig: 150, 12
+  offset: 0, 0
+  index: -1
+1_15
+  rotate: false
+  xy: 472, 1801
+  size: 159, 30
+  orig: 159, 30
+  offset: 0, 0
+  index: -1
+1_16
+  rotate: false
+  xy: 917, 1792
+  size: 198, 39
+  orig: 198, 39
+  offset: 0, 0
+  index: -1
+1_17
+  rotate: false
+  xy: 1117, 1792
+  size: 230, 39
+  orig: 230, 39
+  offset: 0, 0
+  index: -1
+1_19
+  rotate: true
+  xy: 1489, 500
+  size: 335, 406
+  orig: 335, 406
+  offset: 0, 0
+  index: -1
+1_2
+  rotate: false
+  xy: 1349, 1779
+  size: 278, 52
+  orig: 278, 52
+  offset: 0, 0
+  index: -1
+1_20
+  rotate: true
+  xy: 2, 1731
+  size: 68, 523
+  orig: 68, 523
+  offset: 0, 0
+  index: -1
+1_21
+  rotate: false
+  xy: 269, 1587
+  size: 143, 142
+  orig: 143, 142
+  offset: 0, 0
+  index: -1
+1_22
+  rotate: false
+  xy: 1595, 1653
+  size: 202, 117
+  orig: 202, 117
+  offset: 0, 0
+  index: -1
+1_23
+  rotate: true
+  xy: 1840, 1769
+  size: 62, 80
+  orig: 62, 80
+  offset: 0, 0
+  index: -1
+1_24
+  rotate: true
+  xy: 820, 989
+  size: 262, 278
+  orig: 262, 278
+  offset: 0, 0
+  index: -1
+1_25
+  rotate: true
+  xy: 883, 1253
+  size: 237, 332
+  orig: 237, 332
+  offset: 0, 0
+  index: -1
+1_26
+  rotate: false
+  xy: 1631, 1358
+  size: 265, 202
+  orig: 265, 202
+  offset: 0, 0
+  index: -1
+1_27
+  rotate: true
+  xy: 1100, 955
+  size: 266, 281
+  orig: 266, 281
+  offset: 0, 0
+  index: -1
+1_28
+  rotate: false
+  xy: 1383, 837
+  size: 561, 271
+  orig: 561, 271
+  offset: 0, 0
+  index: -1
+1_29
+  rotate: false
+  xy: 2, 1102
+  size: 317, 249
+  orig: 317, 249
+  offset: 0, 0
+  index: -1
+1_3
+  rotate: false
+  xy: 212, 1807
+  size: 226, 24
+  orig: 226, 24
+  offset: 0, 0
+  index: -1
+1_30
+  rotate: false
+  xy: 1118, 516
+  size: 369, 319
+  orig: 369, 319
+  offset: 0, 0
+  index: -1
+1_32
+  rotate: true
+  xy: 2, 1404
+  size: 193, 252
+  orig: 193, 252
+  offset: 0, 0
+  index: -1
+1_34
+  rotate: true
+  xy: 760, 635
+  size: 318, 356
+  orig: 318, 356
+  offset: 0, 0
+  index: -1
+1_35
+  rotate: false
+  xy: 2, 463
+  size: 361, 354
+  orig: 361, 354
+  offset: 0, 0
+  index: -1
+1_36
+  rotate: true
+  xy: 1596, 1110
+  size: 246, 370
+  orig: 246, 370
+  offset: 0, 0
+  index: -1
+1_4
+  rotate: true
+  xy: 440, 1805
+  size: 26, 30
+  orig: 26, 30
+  offset: 0, 0
+  index: -1
+1_41
+  rotate: true
+  xy: 1922, 1706
+  size: 125, 116
+  orig: 125, 116
+  offset: 0, 0
+  index: -1
+1_42
+  rotate: true
+  xy: 365, 2
+  size: 512, 907
+  orig: 512, 907
+  offset: 0, 0
+  index: -1
+1_44
+  rotate: true
+  xy: 1184, 1664
+  size: 113, 166
+  orig: 113, 166
+  offset: 0, 0
+  index: -1
+1_48
+  rotate: true
+  xy: 1217, 1223
+  size: 244, 377
+  orig: 244, 377
+  offset: 0, 0
+  index: -1
+1_49
+  rotate: true
+  xy: 1799, 1562
+  size: 142, 154
+  orig: 142, 154
+  offset: 0, 0
+  index: -1
+1_5
+  rotate: false
+  xy: 154, 1812
+  size: 56, 19
+  orig: 56, 19
+  offset: 0, 0
+  index: -1
+1_50
+  rotate: true
+  xy: 1040, 1492
+  size: 170, 222
+  orig: 170, 222
+  offset: 0, 0
+  index: -1
+1_51
+  rotate: true
+  xy: 414, 1548
+  size: 142, 158
+  orig: 142, 158
+  offset: 0, 0
+  index: -1
+1_52
+  rotate: true
+  xy: 321, 1101
+  size: 250, 497
+  orig: 250, 497
+  offset: 0, 0
+  index: -1
+1_6
+  rotate: true
+  xy: 803, 1677
+  size: 113, 379
+  orig: 113, 379
+  offset: 0, 0
+  index: -1
+1_7
+  rotate: true
+  xy: 574, 1544
+  size: 131, 464
+  orig: 131, 464
+  offset: 0, 0
+  index: -1
+1_8
+  rotate: true
+  xy: 527, 1692
+  size: 101, 274
+  orig: 101, 274
+  offset: 0, 0
+  index: -1
+2
+  rotate: true
+  xy: 256, 1353
+  size: 189, 625
+  orig: 189, 625
+  offset: 0, 0
+  index: -1
+2-1
+  rotate: true
+  xy: 2, 819
+  size: 280, 756
+  orig: 280, 756
+  offset: 0, 0
+  index: -1
+
+Meltina_Avator2.png
+size: 1966,1638
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_45
+  rotate: true
+  xy: 2, 2
+  size: 554, 1371
+  orig: 554, 1371
+  offset: 0, 0
+  index: -1
+1_46
+  rotate: true
+  xy: 2, 558
+  size: 542, 1962
+  orig: 542, 1962
+  offset: 0, 0
+  index: -1
+1_54
+  rotate: true
+  xy: 2, 1102
+  size: 534, 1534
+  orig: 534, 1534
+  offset: 0, 0
+  index: -1
+
+Meltina_Avator3.png
+size: 1987,1817
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_37
+  rotate: true
+  xy: 2, 645
+  size: 592, 1273
+  orig: 592, 1273
+  offset: 0, 0
+  index: -1
+1_39
+  rotate: false
+  xy: 1277, 133
+  size: 658, 1104
+  orig: 658, 1104
+  offset: 0, 0
+  index: -1
+1_43
+  rotate: true
+  xy: 2, 1239
+  size: 576, 1983
+  orig: 576, 1983
+  offset: 0, 0
+  index: -1
+1_9
+  rotate: true
+  xy: 2, 2
+  size: 641, 1122
+  orig: 641, 1122
+  offset: 0, 0
+  index: -1
+
+Meltina_Avator4.png
+size: 1514,1415
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_53
+  rotate: false
+  xy: 2, 2
+  size: 1510, 1411
+  orig: 1510, 1411
+  offset: 0, 0
+  index: -1
+
+Meltina_Avator5.png
+size: 1753,1549
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1_38
+  rotate: false
+  xy: 998, 402
+  size: 753, 1145
+  orig: 753, 1145
+  offset: 0, 0
+  index: -1
+1_47
+  rotate: true
+  xy: 2, 2
+  size: 1545, 994
+  orig: 1545, 994
+  offset: 0, 0
+  index: -1

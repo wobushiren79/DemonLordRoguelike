@@ -1,0 +1,519 @@
+
+Lena_Avator.png
+size: 2047,1929
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+belt_02
+  rotate: false
+  xy: 1080, 1403
+  size: 332, 197
+  orig: 332, 197
+  offset: 0, 0
+  index: -1
+bracelet_R_01
+  rotate: false
+  xy: 845, 1868
+  size: 186, 59
+  orig: 186, 59
+  offset: 0, 0
+  index: -1
+bracelet_R_02
+  rotate: false
+  xy: 363, 1880
+  size: 180, 47
+  orig: 180, 47
+  offset: 0, 0
+  index: -1
+bust_L_02
+  rotate: true
+  xy: 348, 576
+  size: 357, 367
+  orig: 357, 367
+  offset: 0, 0
+  index: -1
+bust_R_02
+  rotate: true
+  xy: 2, 719
+  size: 331, 344
+  orig: 331, 344
+  offset: 0, 0
+  index: -1
+ear
+  rotate: true
+  xy: 333, 1783
+  size: 95, 126
+  orig: 95, 126
+  offset: 0, 0
+  index: -1
+eye_close_01
+  rotate: false
+  xy: 2, 1790
+  size: 329, 91
+  orig: 329, 91
+  offset: 0, 0
+  index: -1
+eye_close_02
+  rotate: false
+  xy: 1457, 1849
+  size: 370, 78
+  orig: 370, 78
+  offset: 0, 0
+  index: -1
+eye_open_  04
+  rotate: false
+  xy: 2, 1665
+  size: 298, 123
+  orig: 298, 123
+  offset: 0, 0
+  index: -1
+eye_open_01
+  rotate: false
+  xy: 1437, 1728
+  size: 414, 113
+  orig: 414, 113
+  offset: 0, 0
+  index: -1
+eye_open_02
+  rotate: false
+  xy: 545, 1873
+  size: 298, 54
+  orig: 298, 54
+  offset: 0, 0
+  index: -1
+eye_open_03
+  rotate: false
+  xy: 1085, 1736
+  size: 350, 122
+  orig: 350, 122
+  offset: 0, 0
+  index: -1
+eye_open_05
+  rotate: false
+  xy: 1116, 1860
+  size: 339, 67
+  orig: 339, 67
+  offset: 0, 0
+  index: -1
+eye_open_06
+  rotate: false
+  xy: 101, 1883
+  size: 260, 44
+  orig: 260, 44
+  offset: 0, 0
+  index: -1
+eyebrow
+  rotate: false
+  xy: 686, 1765
+  size: 397, 95
+  orig: 397, 95
+  offset: 0, 0
+  index: -1
+foot_L_03
+  rotate: true
+  xy: 419, 1204
+  size: 222, 414
+  orig: 222, 414
+  offset: 0, 0
+  index: -1
+foot_L_ribbon
+  rotate: false
+  xy: 1853, 1656
+  size: 192, 185
+  orig: 192, 185
+  offset: 0, 0
+  index: -1
+foot_R_01
+  rotate: true
+  xy: 885, 2
+  size: 366, 1009
+  orig: 366, 1009
+  offset: 0, 0
+  index: -1
+foot_R_02
+  rotate: true
+  xy: 1090, 370
+  size: 277, 845
+  orig: 277, 845
+  offset: 0, 0
+  index: -1
+foot_R_03
+  rotate: true
+  xy: 2, 1052
+  size: 237, 415
+  orig: 237, 415
+  offset: 0, 0
+  index: -1
+foot_R_ribbon
+  rotate: true
+  xy: 1658, 1246
+  size: 233, 237
+  orig: 233, 237
+  offset: 0, 0
+  index: -1
+front_hair_01
+  rotate: true
+  xy: 680, 1614
+  size: 149, 299
+  orig: 149, 299
+  offset: 0, 0
+  index: -1
+front_hair_02
+  rotate: true
+  xy: 2, 1291
+  size: 210, 415
+  orig: 210, 415
+  offset: 0, 0
+  index: -1
+front_hair_03
+  rotate: true
+  xy: 302, 1652
+  size: 124, 376
+  orig: 124, 376
+  offset: 0, 0
+  index: -1
+front_hair_04
+  rotate: false
+  xy: 1090, 782
+  size: 286, 383
+  orig: 286, 383
+  offset: 0, 0
+  index: -1
+mouth_close
+  rotate: false
+  xy: 29, 1904
+  size: 70, 23
+  orig: 70, 23
+  offset: 0, 0
+  index: -1
+mouth_open
+  rotate: false
+  xy: 1033, 1862
+  size: 81, 65
+  orig: 81, 65
+  offset: 0, 0
+  index: -1
+neck01
+  rotate: true
+  xy: 1705, 1481
+  size: 173, 233
+  orig: 173, 233
+  offset: 0, 0
+  index: -1
+nose
+  rotate: true
+  xy: 2, 1912
+  size: 15, 25
+  orig: 15, 25
+  offset: 0, 0
+  index: -1
+shoulder_cloth_R_02
+  rotate: true
+  xy: 461, 1778
+  size: 93, 223
+  orig: 93, 223
+  offset: 0, 0
+  index: -1
+shoulder_ribon_L
+  rotate: false
+  xy: 1414, 1380
+  size: 242, 220
+  orig: 242, 220
+  offset: 0, 0
+  index: -1
+shoulder_ribon_R
+  rotate: true
+  xy: 1829, 1843
+  size: 84, 185
+  orig: 84, 185
+  offset: 0, 0
+  index: -1
+side_hair_L_01
+  rotate: true
+  xy: 1397, 967
+  size: 277, 564
+  orig: 277, 564
+  offset: 0, 0
+  index: -1
+side_hair_L_02
+  rotate: true
+  xy: 981, 1602
+  size: 124, 722
+  orig: 124, 722
+  offset: 0, 0
+  index: -1
+side_hair_R_01
+  rotate: true
+  xy: 835, 1167
+  size: 234, 560
+  orig: 234, 560
+  offset: 0, 0
+  index: -1
+side_hair_R_02
+  rotate: true
+  xy: 419, 935
+  size: 230, 669
+  orig: 230, 669
+  offset: 0, 0
+  index: -1
+tie
+  rotate: true
+  xy: 518, 1428
+  size: 172, 560
+  orig: 172, 560
+  offset: 0, 0
+  index: -1
+twintail_L
+  rotate: true
+  xy: 1378, 649
+  size: 316, 455
+  orig: 316, 455
+  offset: 0, 0
+  index: -1
+twintail_R
+  rotate: false
+  xy: 717, 525
+  size: 371, 408
+  orig: 371, 408
+  offset: 0, 0
+  index: -1
+waist_acce
+  rotate: false
+  xy: 2, 1503
+  size: 514, 147
+  orig: 514, 147
+  offset: 0, 0
+  index: -1
+waist_frill
+  rotate: false
+  xy: 2, 211
+  size: 881, 312
+  orig: 881, 312
+  offset: 0, 0
+  index: -1
+
+Lena_Avator2.png
+size: 1806,1801
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+back_hair_L_03
+  rotate: true
+  xy: 491, 71
+  size: 457, 576
+  orig: 457, 576
+  offset: 0, 0
+  index: -1
+belt_01
+  rotate: false
+  xy: 445, 530
+  size: 712, 440
+  orig: 712, 440
+  offset: 0, 0
+  index: -1
+bust_shirt
+  rotate: false
+  xy: 661, 1403
+  size: 686, 396
+  orig: 686, 396
+  offset: 0, 0
+  index: -1
+collar
+  rotate: true
+  xy: 1349, 1382
+  size: 417, 427
+  orig: 417, 427
+  offset: 0, 0
+  index: -1
+foot_L_02
+  rotate: true
+  xy: 2, 998
+  size: 403, 797
+  orig: 403, 797
+  offset: 0, 0
+  index: -1
+hand_R
+  rotate: true
+  xy: 1069, 2
+  size: 495, 735
+  orig: 495, 735
+  offset: 0, 0
+  index: -1
+head
+  rotate: true
+  xy: 801, 972
+  size: 429, 499
+  orig: 429, 499
+  offset: 0, 0
+  index: -1
+head_Shadow1
+  rotate: true
+  xy: 2, 75
+  size: 453, 487
+  orig: 453, 487
+  offset: 0, 0
+  index: -1
+shoulder_cloth_L_01
+  rotate: true
+  xy: 2, 1421
+  size: 378, 657
+  orig: 378, 657
+  offset: 0, 0
+  index: -1
+shoulder_cloth_R_01
+  rotate: true
+  xy: 1302, 947
+  size: 433, 444
+  orig: 433, 444
+  offset: 0, 0
+  index: -1
+skirt_R_02
+  rotate: true
+  xy: 2, 561
+  size: 435, 441
+  orig: 435, 441
+  offset: 0, 0
+  index: -1
+upperarm_R
+  rotate: false
+  xy: 1159, 499
+  size: 523, 446
+  orig: 523, 446
+  offset: 0, 0
+  index: -1
+
+Lena_Avator3.png
+size: 1915,1681
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+back_hair_L_01
+  rotate: true
+  xy: 681, 2
+  size: 618, 1043
+  orig: 618, 1043
+  offset: 0, 0
+  index: -1
+back_hair_R_01
+  rotate: true
+  xy: 596, 622
+  size: 509, 1049
+  orig: 509, 1049
+  offset: 0, 0
+  index: -1
+foot_L_01_shadow
+  rotate: true
+  xy: 2, 1212
+  size: 467, 1017
+  orig: 467, 1017
+  offset: 0, 0
+  index: -1
+headhair
+  rotate: false
+  xy: 2, 638
+  size: 592, 572
+  orig: 592, 572
+  offset: 0, 0
+  index: -1
+skirt_L_02
+  rotate: true
+  xy: 2, 37
+  size: 583, 677
+  orig: 583, 677
+  offset: 0, 0
+  index: -1
+waist_red_skirt
+  rotate: false
+  xy: 1021, 1133
+  size: 892, 546
+  orig: 892, 546
+  offset: 0, 0
+  index: -1
+
+Lena_Avator4.png
+size: 1857,1349
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: true
+  xy: 690, 2
+  size: 689, 1165
+  orig: 689, 1165
+  offset: 0, 0
+  index: -1
+body_shirt
+  rotate: true
+  xy: 695, 693
+  size: 654, 774
+  orig: 654, 774
+  offset: 0, 0
+  index: -1
+skirt_R_01
+  rotate: true
+  xy: 2, 706
+  size: 641, 691
+  orig: 641, 691
+  offset: 0, 0
+  index: -1
+skirt_R_03
+  rotate: true
+  xy: 2, 23
+  size: 681, 686
+  orig: 681, 686
+  offset: 0, 0
+  index: -1
+
+Lena_Avator5.png
+size: 1589,1965
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+back_of_clothes
+  rotate: false
+  xy: 2, 801
+  size: 1585, 1162
+  orig: 1585, 1162
+  offset: 0, 0
+  index: -1
+upperarm_L
+  rotate: true
+  xy: 2, 2
+  size: 797, 1104
+  orig: 797, 1104
+  offset: 0, 0
+  index: -1
+
+Lena_Avator6.png
+size: 2005,1889
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+back_hair_01
+  rotate: false
+  xy: 2, 738
+  size: 1210, 1149
+  orig: 1210, 1149
+  offset: 0, 0
+  index: -1
+back_hair_L_02
+  rotate: true
+  xy: 1011, 2
+  size: 734, 952
+  orig: 734, 952
+  offset: 0, 0
+  index: -1
+skirt_L_01
+  rotate: true
+  xy: 2, 4
+  size: 732, 1007
+  orig: 732, 1007
+  offset: 0, 0
+  index: -1
+skirt_L_03
+  rotate: false
+  xy: 1214, 934
+  size: 789, 953
+  orig: 789, 953
+  offset: 0, 0
+  index: -1

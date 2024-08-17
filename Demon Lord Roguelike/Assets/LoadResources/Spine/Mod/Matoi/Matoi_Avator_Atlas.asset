@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Matoi_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: 6a10244b78b2a034aa57968662392323, type: 3}
+  materials:
+  - {fileID: 2100000, guid: 776e2330b4864044e870c1a6f9a0bcf1, type: 2}
+  - {fileID: 2100000, guid: 5e9be737e2daa5b4884ff21827a1dd1d, type: 2}
+  - {fileID: 2100000, guid: 9461dc3f3e60587439f792a005f49266, type: 2}

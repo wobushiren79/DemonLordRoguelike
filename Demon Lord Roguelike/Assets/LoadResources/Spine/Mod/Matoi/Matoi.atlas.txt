@@ -1,0 +1,419 @@
+
+Matoi.png
+size: 173,838
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_ hair_01
+  rotate: true
+  xy: 87, 154
+  size: 39, 74
+  orig: 39, 74
+  offset: 0, 0
+  index: -1
+L_ hair_02
+  rotate: true
+  xy: 2, 157
+  size: 48, 74
+  orig: 48, 74
+  offset: 0, 0
+  index: -1
+L_arm_hand
+  rotate: true
+  xy: 146, 808
+  size: 28, 25
+  orig: 28, 25
+  offset: 0, 0
+  index: -1
+L_arm_hand_b
+  rotate: false
+  xy: 147, 132
+  size: 24, 20
+  orig: 24, 20
+  offset: 0, 0
+  index: -1
+L_arm_hand_thumb
+  rotate: false
+  xy: 70, 133
+  size: 14, 11
+  orig: 14, 11
+  offset: 0, 0
+  index: -1
+L_arm_under
+  rotate: true
+  xy: 86, 107
+  size: 45, 59
+  orig: 45, 59
+  offset: 0, 0
+  index: -1
+L_arm_upper
+  rotate: true
+  xy: 2, 31
+  size: 28, 46
+  orig: 28, 46
+  offset: 0, 0
+  index: -1
+L_chest
+  rotate: true
+  xy: 86, 3
+  size: 28, 29
+  orig: 28, 29
+  offset: 0, 0
+  index: -1
+L_clothes
+  rotate: false
+  xy: 139, 539
+  size: 32, 23
+  orig: 32, 23
+  offset: 0, 0
+  index: -1
+L_foot_string_01
+  rotate: true
+  xy: 2, 20
+  size: 9, 15
+  orig: 9, 15
+  offset: 0, 0
+  index: -1
+L_foot_string_02
+  rotate: false
+  xy: 160, 58
+  size: 10, 12
+  orig: 10, 12
+  offset: 0, 0
+  index: -1
+L_foot_string_03
+  rotate: true
+  xy: 57, 85
+  size: 9, 21
+  orig: 9, 21
+  offset: 0, 0
+  index: -1
+L_foot_string_04
+  rotate: false
+  xy: 57, 96
+  size: 11, 18
+  orig: 11, 18
+  offset: 0, 0
+  index: -1
+L_head_string
+  rotate: true
+  xy: 84, 79
+  size: 26, 53
+  orig: 26, 53
+  offset: 0, 0
+  index: -1
+L_leg_under
+  rotate: true
+  xy: 91, 243
+  size: 29, 77
+  orig: 29, 77
+  offset: 0, 0
+  index: -1
+L_leg_upper
+  rotate: true
+  xy: 2, 116
+  size: 39, 66
+  orig: 39, 66
+  offset: 0, 0
+  index: -1
+L_side
+  rotate: false
+  xy: 139, 414
+  size: 31, 56
+  orig: 31, 56
+  offset: 0, 0
+  index: -1
+L_side hair1
+  rotate: true
+  xy: 88, 195
+  size: 46, 83
+  orig: 46, 83
+  offset: 0, 0
+  index: -1
+R_ hair_01
+  rotate: true
+  xy: 2, 331
+  size: 45, 97
+  orig: 45, 97
+  offset: 0, 0
+  index: -1
+R_ hair_02
+  rotate: true
+  xy: 101, 330
+  size: 38, 69
+  orig: 38, 69
+  offset: 0, 0
+  index: -1
+R_ hair_03
+  rotate: true
+  xy: 91, 274
+  size: 34, 78
+  orig: 34, 78
+  offset: 0, 0
+  index: -1
+R_arm_back_under
+  rotate: true
+  xy: 2, 61
+  size: 16, 47
+  orig: 16, 47
+  offset: 0, 0
+  index: -1
+R_arm_hand
+  rotate: false
+  xy: 142, 310
+  size: 26, 18
+  orig: 26, 18
+  offset: 0, 0
+  index: -1
+R_arm_ribbon_01
+  rotate: false
+  xy: 147, 58
+  size: 11, 12
+  orig: 11, 12
+  offset: 0, 0
+  index: -1
+R_arm_ribbon_02
+  rotate: false
+  xy: 78, 166
+  size: 7, 18
+  orig: 7, 18
+  offset: 0, 0
+  index: -1
+R_arm_ribbon_03
+  rotate: false
+  xy: 78, 146
+  size: 6, 18
+  orig: 6, 18
+  offset: 0, 0
+  index: -1
+R_arm_under_01
+  rotate: true
+  xy: 79, 33
+  size: 44, 46
+  orig: 44, 46
+  offset: 0, 0
+  index: -1
+R_arm_under_02
+  rotate: false
+  xy: 51, 45
+  size: 17, 16
+  orig: 17, 16
+  offset: 0, 0
+  index: -1
+R_arm_upper
+  rotate: true
+  xy: 2, 79
+  size: 35, 53
+  orig: 35, 53
+  offset: 0, 0
+  index: -1
+R_chest
+  rotate: true
+  xy: 50, 2
+  size: 29, 34
+  orig: 29, 34
+  offset: 0, 0
+  index: -1
+R_clothes
+  rotate: false
+  xy: 57, 63
+  size: 20, 20
+  orig: 20, 20
+  offset: 0, 0
+  index: -1
+R_foot_ string_01
+  rotate: true
+  xy: 19, 20
+  size: 9, 15
+  orig: 9, 15
+  offset: 0, 0
+  index: -1
+R_foot_ string_03
+  rotate: false
+  xy: 91, 310
+  size: 7, 19
+  orig: 7, 19
+  offset: 0, 0
+  index: -1
+R_foot_string_02
+  rotate: true
+  xy: 36, 20
+  size: 9, 12
+  orig: 9, 12
+  offset: 0, 0
+  index: -1
+R_foot_string_04
+  rotate: true
+  xy: 50, 33
+  size: 10, 17
+  orig: 10, 17
+  offset: 0, 0
+  index: -1
+R_head_string
+  rotate: false
+  xy: 147, 72
+  size: 23, 58
+  orig: 23, 58
+  offset: 0, 0
+  index: -1
+R_leg_under
+  rotate: false
+  xy: 146, 684
+  size: 24, 66
+  orig: 24, 66
+  offset: 0, 0
+  index: -1
+R_leg_upper
+  rotate: false
+  xy: 139, 472
+  size: 31, 65
+  orig: 31, 65
+  offset: 0, 0
+  index: -1
+back hair1
+  rotate: false
+  xy: 2, 595
+  size: 137, 66
+  orig: 137, 66
+  offset: 0, 0
+  index: -1
+back hair2
+  rotate: false
+  xy: 2, 711
+  size: 142, 125
+  orig: 142, 125
+  offset: 0, 0
+  index: -1
+back hair_fronthair
+  rotate: false
+  xy: 139, 371
+  size: 31, 41
+  orig: 31, 41
+  offset: 0, 0
+  index: -1
+base
+  rotate: true
+  xy: 2, 272
+  size: 57, 87
+  orig: 57, 87
+  offset: 0, 0
+  index: -1
+earrings
+  rotate: true
+  xy: 100, 310
+  size: 18, 40
+  orig: 18, 40
+  offset: 0, 0
+  index: -1
+eye
+  rotate: true
+  xy: 101, 370
+  size: 92, 36
+  orig: 92, 36
+  offset: 0, 0
+  index: -1
+eye_mouth
+  rotate: true
+  xy: 78, 186
+  size: 19, 7
+  orig: 19, 7
+  offset: 0, 0
+  index: -1
+eyebrow
+  rotate: false
+  xy: 2, 207
+  size: 84, 15
+  orig: 84, 15
+  offset: 0, 0
+  index: -1
+face
+  rotate: true
+  xy: 2, 464
+  size: 129, 135
+  orig: 129, 135
+  offset: 0, 0
+  index: -1
+hair_bangs
+  rotate: true
+  xy: 2, 224
+  size: 46, 84
+  orig: 46, 84
+  offset: 0, 0
+  index: -1
+head_Bell
+  rotate: false
+  xy: 146, 752
+  size: 25, 25
+  orig: 25, 25
+  offset: 0, 0
+  index: -1
+head_middle_red
+  rotate: false
+  xy: 141, 564
+  size: 30, 32
+  orig: 30, 32
+  offset: 0, 0
+  index: -1
+head_middle_white
+  rotate: true
+  xy: 144, 646
+  size: 36, 27
+  orig: 36, 27
+  offset: 0, 0
+  index: -1
+head_musubime
+  rotate: false
+  xy: 70, 96
+  size: 12, 15
+  orig: 12, 15
+  offset: 0, 0
+  index: -1
+head_ring
+  rotate: false
+  xy: 127, 58
+  size: 18, 19
+  orig: 18, 19
+  offset: 0, 0
+  index: -1
+head_string
+  rotate: false
+  xy: 2, 663
+  size: 140, 46
+  orig: 140, 46
+  offset: 0, 0
+  index: -1
+head_up_red
+  rotate: false
+  xy: 127, 25
+  size: 41, 31
+  orig: 41, 31
+  offset: 0, 0
+  index: -1
+head_up_white
+  rotate: false
+  xy: 141, 598
+  size: 30, 46
+  orig: 30, 46
+  offset: 0, 0
+  index: -1
+knot
+  rotate: true
+  xy: 146, 779
+  size: 27, 25
+  orig: 27, 25
+  offset: 0, 0
+  index: -1
+neck
+  rotate: true
+  xy: 70, 113
+  size: 18, 13
+  orig: 18, 13
+  offset: 0, 0
+  index: -1
+weapon
+  rotate: true
+  xy: 2, 378
+  size: 84, 97
+  orig: 84, 97
+  offset: 0, 0
+  index: -1

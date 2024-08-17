@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Mia_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: 19481619fd025b548b283345a2eb8ae7, type: 3}
+  materials:
+  - {fileID: 2100000, guid: bf51ad10619e43a4492bc094554c862c, type: 2}
+  - {fileID: 2100000, guid: bbb65412843f5fc41b56afedc5f08298, type: 2}
+  - {fileID: 2100000, guid: 694c304fb16ab2c4fa469aac0ad4fe26, type: 2}
+  - {fileID: 2100000, guid: c55a2cc979641cc4b9db0281d2599eb5, type: 2}

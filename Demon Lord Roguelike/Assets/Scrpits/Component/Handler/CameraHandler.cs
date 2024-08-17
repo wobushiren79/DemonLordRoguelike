@@ -149,6 +149,8 @@ public partial class CameraHandler
     /// </summary>
     public void SetCardTestCamera()
     {
+        manager.HideAllCM();
+
         var mainCamera = manager.mainCamera;
         mainCamera.gameObject.SetActive(true);
 

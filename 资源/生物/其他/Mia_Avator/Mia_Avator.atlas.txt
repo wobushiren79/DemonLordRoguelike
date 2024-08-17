@@ -1,0 +1,542 @@
+
+Mia_Avator.png
+size: 2048,2000
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_armunder01
+  rotate: false
+  xy: 2, 84
+  size: 410, 454
+  orig: 410, 454
+  offset: 0, 0
+  index: -1
+L_armunder02
+  rotate: false
+  xy: 1507, 989
+  size: 337, 238
+  orig: 337, 238
+  offset: 0, 0
+  index: -1
+L_armunder03
+  rotate: true
+  xy: 1752, 1229
+  size: 215, 290
+  orig: 215, 290
+  offset: 0, 0
+  index: -1
+L_armupperr01
+  rotate: true
+  xy: 2, 1124
+  size: 220, 286
+  orig: 220, 286
+  offset: 0, 0
+  index: -1
+L_armupperr02
+  rotate: true
+  xy: 708, 798
+  size: 258, 418
+  orig: 258, 418
+  offset: 0, 0
+  index: -1
+L_bust01
+  rotate: false
+  xy: 1146, 1010
+  size: 359, 237
+  orig: 359, 237
+  offset: 0, 0
+  index: -1
+L_ear
+  rotate: true
+  xy: 1327, 1645
+  size: 164, 173
+  orig: 164, 173
+  offset: 0, 0
+  index: -1
+L_foot
+  rotate: true
+  xy: 1414, 1249
+  size: 195, 336
+  orig: 195, 336
+  offset: 0, 0
+  index: -1
+L_hairribbon01
+  rotate: false
+  xy: 586, 1096
+  size: 286, 232
+  orig: 286, 232
+  offset: 0, 0
+  index: -1
+L_hairribbon02
+  rotate: false
+  xy: 572, 1681
+  size: 274, 158
+  orig: 274, 158
+  offset: 0, 0
+  index: -1
+L_hairribbon03
+  rotate: true
+  xy: 322, 1693
+  size: 146, 248
+  orig: 146, 248
+  offset: 0, 0
+  index: -1
+L_hand01
+  rotate: false
+  xy: 1053, 1935
+  size: 144, 63
+  orig: 144, 63
+  offset: 0, 0
+  index: -1
+L_hand02
+  rotate: false
+  xy: 948, 1939
+  size: 103, 59
+  orig: 103, 59
+  offset: 0, 0
+  index: -1
+L_hand03
+  rotate: false
+  xy: 1281, 1461
+  size: 185, 182
+  orig: 185, 182
+  offset: 0, 0
+  index: -1
+L_legupper_yy
+  rotate: true
+  xy: 2, 1346
+  size: 169, 525
+  orig: 169, 525
+  offset: 0, 0
+  index: -1
+R_armunder01
+  rotate: true
+  xy: 1055, 1477
+  size: 181, 224
+  orig: 181, 224
+  offset: 0, 0
+  index: -1
+R_armunder02
+  rotate: true
+  xy: 310, 844
+  size: 250, 396
+  orig: 250, 396
+  offset: 0, 0
+  index: -1
+R_armunder03
+  rotate: true
+  xy: 1147, 1277
+  size: 182, 265
+  orig: 182, 265
+  offset: 0, 0
+  index: -1
+R_ear
+  rotate: true
+  xy: 1151, 1660
+  size: 163, 174
+  orig: 163, 174
+  offset: 0, 0
+  index: -1
+R_foot
+  rotate: true
+  xy: 711, 1506
+  size: 164, 342
+  orig: 164, 342
+  offset: 0, 0
+  index: -1
+R_hairribbon01
+  rotate: false
+  xy: 874, 1058
+  size: 270, 234
+  orig: 270, 234
+  offset: 0, 0
+  index: -1
+R_hairribbon02
+  rotate: false
+  xy: 848, 1672
+  size: 301, 160
+  orig: 301, 160
+  offset: 0, 0
+  index: -1
+R_hairribbon03
+  rotate: true
+  xy: 2, 1738
+  size: 134, 318
+  orig: 134, 318
+  offset: 0, 0
+  index: -1
+R_hand
+  rotate: true
+  xy: 198, 1874
+  size: 96, 182
+  orig: 96, 182
+  offset: 0, 0
+  index: -1
+R_legupper_yy
+  rotate: true
+  xy: 1502, 1614
+  size: 160, 504
+  orig: 160, 504
+  offset: 0, 0
+  index: -1
+R_xb01
+  rotate: true
+  xy: 290, 1107
+  size: 221, 294
+  orig: 221, 294
+  offset: 0, 0
+  index: -1
+R_xb02
+  rotate: true
+  xy: 489, 1841
+  size: 97, 281
+  orig: 97, 281
+  offset: 0, 0
+  index: -1
+decoration01
+  rotate: true
+  xy: 899, 1294
+  size: 181, 246
+  orig: 181, 246
+  offset: 0, 0
+  index: -1
+decoration02
+  rotate: true
+  xy: 1225, 1825
+  size: 102, 195
+  orig: 102, 195
+  offset: 0, 0
+  index: -1
+decoration03
+  rotate: true
+  xy: 2, 1559
+  size: 177, 243
+  orig: 177, 243
+  offset: 0, 0
+  index: -1
+decoration04
+  rotate: true
+  xy: 2, 1876
+  size: 94, 194
+  orig: 94, 194
+  offset: 0, 0
+  index: -1
+decoration06
+  rotate: false
+  xy: 1655, 268
+  size: 387, 419
+  orig: 387, 419
+  offset: 0, 0
+  index: -1
+decoration07
+  rotate: false
+  xy: 1446, 689
+  size: 474, 298
+  orig: 474, 298
+  offset: 0, 0
+  index: -1
+decoration08
+  rotate: false
+  xy: 421, 480
+  size: 398, 316
+  orig: 398, 316
+  offset: 0, 0
+  index: -1
+decoration09
+  rotate: true
+  xy: 1533, 1914
+  size: 84, 98
+  orig: 84, 98
+  offset: 0, 0
+  index: -1
+decoration10
+  rotate: true
+  xy: 1439, 1917
+  size: 81, 92
+  orig: 81, 92
+  offset: 0, 0
+  index: -1
+eye
+  rotate: false
+  xy: 462, 1940
+  size: 215, 58
+  orig: 215, 58
+  offset: 0, 0
+  index: -1
+eye close
+  rotate: false
+  xy: 933, 1834
+  size: 290, 98
+  orig: 290, 98
+  offset: 0, 0
+  index: -1
+eyebrow
+  rotate: false
+  xy: 132, 1972
+  size: 255, 26
+  orig: 255, 26
+  offset: 0, 0
+  index: -1
+eyeline top
+  rotate: false
+  xy: 1750, 1908
+  size: 296, 90
+  orig: 296, 90
+  offset: 0, 0
+  index: -1
+fay
+  rotate: false
+  xy: 1128, 694
+  size: 316, 314
+  orig: 316, 314
+  offset: 0, 0
+  index: -1
+hair01
+  rotate: true
+  xy: 1739, 1776
+  size: 130, 237
+  orig: 130, 237
+  offset: 0, 0
+  index: -1
+hair02
+  rotate: true
+  xy: 247, 1517
+  size: 162, 462
+  orig: 162, 462
+  offset: 0, 0
+  index: -1
+hair03
+  rotate: false
+  xy: 2, 856
+  size: 306, 249
+  orig: 306, 249
+  offset: 0, 0
+  index: -1
+hair05
+  rotate: true
+  xy: 1468, 1446
+  size: 166, 493
+  orig: 166, 493
+  offset: 0, 0
+  index: -1
+hair06
+  rotate: false
+  xy: 529, 1330
+  size: 368, 174
+  orig: 368, 174
+  offset: 0, 0
+  index: -1
+hair07
+  rotate: true
+  xy: 1230, 369
+  size: 318, 423
+  orig: 318, 423
+  offset: 0, 0
+  index: -1
+hair08
+  rotate: true
+  xy: 2, 540
+  size: 302, 417
+  orig: 302, 417
+  offset: 0, 0
+  index: -1
+line
+  rotate: true
+  xy: 821, 376
+  size: 316, 407
+  orig: 316, 407
+  offset: 0, 0
+  index: -1
+mouse
+  rotate: false
+  xy: 64, 1973
+  size: 66, 25
+  orig: 66, 25
+  offset: 0, 0
+  index: -1
+mouse close
+  rotate: false
+  xy: 20, 1984
+  size: 42, 14
+  orig: 42, 14
+  offset: 0, 0
+  index: -1
+mouse open
+  rotate: false
+  xy: 389, 1955
+  size: 71, 43
+  orig: 71, 43
+  offset: 0, 0
+  index: -1
+neck01
+  rotate: true
+  xy: 772, 1841
+  size: 97, 159
+  orig: 97, 159
+  offset: 0, 0
+  index: -1
+neck02
+  rotate: false
+  xy: 1199, 1934
+  size: 114, 64
+  orig: 114, 64
+  offset: 0, 0
+  index: -1
+nose
+  rotate: true
+  xy: 2, 1994
+  size: 4, 16
+  orig: 4, 16
+  offset: 0, 0
+  index: -1
+ribbon01
+  rotate: false
+  xy: 1531, 1777
+  size: 206, 133
+  orig: 206, 133
+  offset: 0, 0
+  index: -1
+ribbon02
+  rotate: true
+  xy: 1422, 1811
+  size: 104, 107
+  orig: 104, 107
+  offset: 0, 0
+  index: -1
+ribbon03
+  rotate: true
+  xy: 382, 1842
+  size: 96, 105
+  orig: 96, 105
+  offset: 0, 0
+  index: -1
+shadow
+  rotate: false
+  xy: 679, 1940
+  size: 267, 58
+  orig: 267, 58
+  offset: 0, 0
+  index: -1
+weapon01
+  rotate: true
+  xy: 1633, 1912
+  size: 86, 115
+  orig: 86, 115
+  offset: 0, 0
+  index: -1
+weapon02
+  rotate: true
+  xy: 1315, 1929
+  size: 69, 122
+  orig: 69, 122
+  offset: 0, 0
+  index: -1
+weapon03
+  rotate: true
+  xy: 414, 2
+  size: 365, 896
+  orig: 365, 896
+  offset: 0, 0
+  index: -1
+
+Mia_Avator2.png
+size: 2006,2043
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+cloak
+  rotate: false
+  xy: 2, 677
+  size: 2002, 1364
+  orig: 2002, 1364
+  offset: 0, 0
+  index: -1
+hair11
+  rotate: false
+  xy: 1310, 58
+  size: 408, 617
+  orig: 408, 617
+  offset: 0, 0
+  index: -1
+hair14
+  rotate: true
+  xy: 2, 2
+  size: 673, 1306
+  orig: 673, 1306
+  offset: 0, 0
+  index: -1
+
+Mia_Avator3.png
+size: 1944,1664
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_legupper
+  rotate: true
+  xy: 2, 1010
+  size: 338, 1384
+  orig: 338, 1384
+  offset: 0, 0
+  index: -1
+R_legupper
+  rotate: true
+  xy: 2, 1350
+  size: 312, 1462
+  orig: 312, 1462
+  offset: 0, 0
+  index: -1
+body01
+  rotate: true
+  xy: 2, 582
+  size: 426, 866
+  orig: 426, 866
+  offset: 0, 0
+  index: -1
+decoration05
+  rotate: false
+  xy: 1466, 1239
+  size: 476, 423
+  orig: 476, 423
+  offset: 0, 0
+  index: -1
+hair09
+  rotate: true
+  xy: 2, 2
+  size: 437, 1362
+  orig: 437, 1362
+  offset: 0, 0
+  index: -1
+hair13
+  rotate: true
+  xy: 870, 441
+  size: 567, 1035
+  orig: 567, 1035
+  offset: 0, 0
+  index: -1
+
+Mia_Avator4.png
+size: 1863,1317
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+hair10
+  rotate: true
+  xy: 779, 678
+  size: 637, 1082
+  orig: 637, 1082
+  offset: 0, 0
+  index: -1
+hair12
+  rotate: true
+  xy: 779, 2
+  size: 674, 866
+  orig: 674, 866
+  offset: 0, 0
+  index: -1
+tail
+  rotate: false
+  xy: 2, 217
+  size: 775, 1098
+  orig: 775, 1098
+  offset: 0, 0
+  index: -1

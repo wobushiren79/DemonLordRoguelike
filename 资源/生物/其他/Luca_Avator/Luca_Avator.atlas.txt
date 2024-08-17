@@ -1,0 +1,555 @@
+
+Luca_Avator.png
+size: 2028,1970
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_arm_frill_1
+  rotate: true
+  xy: 1691, 1104
+  size: 230, 263
+  orig: 230, 263
+  offset: 0, 0
+  index: -1
+L_arm_frill_2
+  rotate: false
+  xy: 1516, 1704
+  size: 171, 118
+  orig: 171, 118
+  offset: 0, 0
+  index: -1
+L_arm_ribbon
+  rotate: true
+  xy: 2, 1867
+  size: 67, 142
+  orig: 67, 142
+  offset: 0, 0
+  index: -1
+L_bust
+  rotate: false
+  xy: 403, 1208
+  size: 237, 217
+  orig: 237, 217
+  offset: 0, 0
+  index: -1
+L_bust_negligee
+  rotate: false
+  xy: 1072, 1385
+  size: 273, 174
+  orig: 273, 174
+  offset: 0, 0
+  index: -1
+L_foot
+  rotate: true
+  xy: 2, 168
+  size: 276, 373
+  orig: 276, 373
+  offset: 0, 0
+  index: -1
+L_hand_1
+  rotate: false
+  xy: 690, 1747
+  size: 126, 113
+  orig: 126, 113
+  offset: 0, 0
+  index: -1
+L_hand_2
+  rotate: false
+  xy: 492, 1427
+  size: 283, 173
+  orig: 283, 173
+  offset: 0, 0
+  index: -1
+L_leg_ribbon
+  rotate: true
+  xy: 777, 1409
+  size: 170, 293
+  orig: 170, 293
+  offset: 0, 0
+  index: -1
+L_lower_arm
+  rotate: true
+  xy: 377, 93
+  size: 292, 522
+  orig: 292, 522
+  offset: 0, 0
+  index: -1
+L_negligee_strap
+  rotate: false
+  xy: 1167, 1722
+  size: 347, 104
+  orig: 347, 104
+  offset: 0, 0
+  index: -1
+L_side_hair_1
+  rotate: true
+  xy: 1134, 894
+  size: 208, 820
+  orig: 208, 820
+  offset: 0, 0
+  index: -1
+L_side_hair_2
+  rotate: true
+  xy: 478, 1862
+  size: 67, 378
+  orig: 67, 378
+  offset: 0, 0
+  index: -1
+L_side_hair_3
+  rotate: false
+  xy: 1107, 1830
+  size: 119, 86
+  orig: 119, 86
+  offset: 0, 0
+  index: -1
+L_side_hair_ribbon
+  rotate: false
+  xy: 871, 1924
+  size: 77, 44
+  orig: 77, 44
+  offset: 0, 0
+  index: -1
+L_sidetail
+  rotate: true
+  xy: 2, 1319
+  size: 191, 399
+  orig: 191, 399
+  offset: 0, 0
+  index: -1
+L_upper_arm
+  rotate: true
+  xy: 2, 709
+  size: 244, 571
+  orig: 244, 571
+  offset: 0, 0
+  index: -1
+L_wing
+  rotate: false
+  xy: 970, 364
+  size: 629, 272
+  orig: 629, 272
+  offset: 0, 0
+  index: -1
+R_bust
+  rotate: true
+  xy: 1681, 1499
+  size: 160, 203
+  orig: 160, 203
+  offset: 0, 0
+  index: -1
+R_bust_negligee
+  rotate: true
+  xy: 1120, 1566
+  size: 154, 192
+  orig: 154, 192
+  offset: 0, 0
+  index: -1
+R_foot
+  rotate: true
+  xy: 575, 650
+  size: 247, 454
+  orig: 247, 454
+  offset: 0, 0
+  index: -1
+R_frill
+  rotate: true
+  xy: 1023, 1160
+  size: 223, 238
+  orig: 223, 238
+  offset: 0, 0
+  index: -1
+R_hand_1
+  rotate: true
+  xy: 1847, 1661
+  size: 149, 169
+  orig: 149, 169
+  offset: 0, 0
+  index: -1
+R_hand_2
+  rotate: true
+  xy: 1689, 1668
+  size: 142, 156
+  orig: 142, 156
+  offset: 0, 0
+  index: -1
+R_hand_thumb
+  rotate: true
+  xy: 1203, 1918
+  size: 50, 139
+  orig: 50, 139
+  offset: 0, 0
+  index: -1
+R_lower_arm
+  rotate: false
+  xy: 1263, 1109
+  size: 426, 225
+  orig: 426, 225
+  offset: 0, 0
+  index: -1
+R_negligee_strap
+  rotate: false
+  xy: 1503, 1541
+  size: 176, 161
+  orig: 176, 161
+  offset: 0, 0
+  index: -1
+R_panties_ribbon
+  rotate: true
+  xy: 1644, 1906
+  size: 62, 277
+  orig: 62, 277
+  offset: 0, 0
+  index: -1
+R_side_hair
+  rotate: true
+  xy: 1601, 364
+  size: 272, 398
+  orig: 272, 398
+  offset: 0, 0
+  index: -1
+R_sidetail
+  rotate: true
+  xy: 642, 1198
+  size: 209, 379
+  orig: 209, 379
+  offset: 0, 0
+  index: -1
+R_upper_arm
+  rotate: true
+  xy: 901, 67
+  size: 295, 545
+  orig: 295, 545
+  offset: 0, 0
+  index: -1
+R_wing
+  rotate: false
+  xy: 2, 446
+  size: 482, 261
+  orig: 482, 261
+  offset: 0, 0
+  index: -1
+back_hair_L1
+  rotate: true
+  xy: 1031, 638
+  size: 254, 791
+  orig: 254, 791
+  offset: 0, 0
+  index: -1
+back_hair_R1
+  rotate: true
+  xy: 2, 1771
+  size: 89, 569
+  orig: 89, 569
+  offset: 0, 0
+  index: -1
+back_hair_R2
+  rotate: true
+  xy: 1347, 1336
+  size: 161, 657
+  orig: 161, 657
+  offset: 0, 0
+  index: -1
+back_hair_top
+  rotate: false
+  xy: 1448, 2
+  size: 471, 360
+  orig: 471, 360
+  offset: 0, 0
+  index: -1
+cheek
+  rotate: false
+  xy: 783, 1581
+  size: 335, 149
+  orig: 335, 149
+  offset: 0, 0
+  index: -1
+eyebrow
+  rotate: false
+  xy: 225, 1932
+  size: 302, 36
+  orig: 302, 36
+  offset: 0, 0
+  index: -1
+eyes close_eyelids
+  rotate: false
+  xy: 1531, 1824
+  size: 276, 80
+  orig: 276, 80
+  offset: 0, 0
+  index: -1
+eyes close_eyeline top
+  rotate: false
+  xy: 146, 1867
+  size: 330, 63
+  orig: 330, 63
+  offset: 0, 0
+  index: -1
+eyes open_eyelids
+  rotate: false
+  xy: 1344, 1907
+  size: 298, 61
+  orig: 298, 61
+  offset: 0, 0
+  index: -1
+eyes open_eyeline bottom
+  rotate: false
+  xy: 611, 1931
+  size: 258, 37
+  orig: 258, 37
+  offset: 0, 0
+  index: -1
+eyes open_eyeline top
+  rotate: false
+  xy: 818, 1732
+  size: 347, 96
+  orig: 347, 96
+  offset: 0, 0
+  index: -1
+eyes open_hl
+  rotate: false
+  xy: 950, 1919
+  size: 251, 49
+  orig: 251, 49
+  offset: 0, 0
+  index: -1
+eyes open_pupil
+  rotate: false
+  xy: 858, 1842
+  size: 247, 75
+  orig: 247, 75
+  offset: 0, 0
+  index: -1
+eyes open_white of eyes
+  rotate: false
+  xy: 1228, 1828
+  size: 301, 77
+  orig: 301, 77
+  offset: 0, 0
+  index: -1
+fornt_hair
+  rotate: true
+  xy: 2, 1087
+  size: 230, 242
+  orig: 230, 242
+  offset: 0, 0
+  index: -1
+fornt_hair_2
+  rotate: true
+  xy: 493, 1602
+  size: 143, 288
+  orig: 143, 288
+  offset: 0, 0
+  index: -1
+hair elastic_back
+  rotate: true
+  xy: 144, 1936
+  size: 32, 79
+  orig: 32, 79
+  offset: 0, 0
+  index: -1
+hair elastic_front
+  rotate: true
+  xy: 529, 1932
+  size: 36, 80
+  orig: 36, 80
+  offset: 0, 0
+  index: -1
+headband
+  rotate: false
+  xy: 246, 955
+  size: 622, 241
+  orig: 622, 241
+  offset: 0, 0
+  index: -1
+mouth_close
+  rotate: false
+  xy: 2, 1941
+  size: 98, 27
+  orig: 98, 27
+  offset: 0, 0
+  index: -1
+mouth_open
+  rotate: false
+  xy: 1923, 1906
+  size: 103, 62
+  orig: 103, 62
+  offset: 0, 0
+  index: -1
+negligee_cross
+  rotate: false
+  xy: 1809, 1812
+  size: 197, 92
+  orig: 197, 92
+  offset: 0, 0
+  index: -1
+negligee_frill
+  rotate: false
+  xy: 2, 1512
+  size: 488, 140
+  orig: 488, 140
+  offset: 0, 0
+  index: -1
+negligee_frill_back
+  rotate: false
+  xy: 2, 1654
+  size: 489, 115
+  orig: 489, 115
+  offset: 0, 0
+  index: -1
+negligee_strap_back
+  rotate: false
+  xy: 573, 1748
+  size: 115, 112
+  orig: 115, 112
+  offset: 0, 0
+  index: -1
+nose
+  rotate: true
+  xy: 102, 1939
+  size: 29, 40
+  orig: 29, 40
+  offset: 0, 0
+  index: -1
+panties
+  rotate: false
+  xy: 486, 387
+  size: 482, 261
+  orig: 482, 261
+  offset: 0, 0
+  index: -1
+ｎｅｃｋ
+  rotate: false
+  xy: 870, 899
+  size: 262, 259
+  orig: 262, 259
+  offset: 0, 0
+  index: -1
+ｎｅｃｋ_ribbon
+  rotate: true
+  xy: 1314, 1561
+  size: 159, 187
+  orig: 159, 187
+  offset: 0, 0
+  index: -1
+
+Luca_Avator2.png
+size: 1903,1690
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_lower_leg1
+  rotate: false
+  xy: 485, 941
+  size: 545, 377
+  orig: 545, 377
+  offset: 0, 0
+  index: -1
+L_lower_leg2
+  rotate: false
+  xy: 2, 967
+  size: 481, 375
+  orig: 481, 375
+  offset: 0, 0
+  index: -1
+R_leg_shin
+  rotate: true
+  xy: 754, 1320
+  size: 368, 934
+  orig: 368, 934
+  offset: 0, 0
+  index: -1
+R_leg_thigh
+  rotate: true
+  xy: 2, 534
+  size: 400, 1140
+  orig: 400, 1140
+  offset: 0, 0
+  index: -1
+R_negligee_front
+  rotate: true
+  xy: 1144, 226
+  size: 681, 747
+  orig: 681, 747
+  offset: 0, 0
+  index: -1
+back_hair
+  rotate: true
+  xy: 2, 2
+  size: 530, 908
+  orig: 530, 908
+  offset: 0, 0
+  index: -1
+back_hair_L2
+  rotate: true
+  xy: 2, 1344
+  size: 344, 750
+  orig: 344, 750
+  offset: 0, 0
+  index: -1
+head
+  rotate: true
+  xy: 1439, 909
+  size: 409, 462
+  orig: 409, 462
+  offset: 0, 0
+  index: -1
+head_dropshadow
+  rotate: false
+  xy: 1032, 936
+  size: 405, 382
+  orig: 405, 382
+  offset: 0, 0
+  index: -1
+
+Luca_Avator3.png
+size: 1716,1359
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_negligee_front
+  rotate: false
+  xy: 1083, 355
+  size: 631, 1002
+  orig: 631, 1002
+  offset: 0, 0
+  index: -1
+L_upper_leg
+  rotate: true
+  xy: 2, 2
+  size: 740, 1043
+  orig: 740, 1043
+  offset: 0, 0
+  index: -1
+body
+  rotate: true
+  xy: 2, 744
+  size: 613, 1079
+  orig: 613, 1079
+  offset: 0, 0
+  index: -1
+
+Luca_Avator4.png
+size: 1337,1090
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+negligee_back_2
+  rotate: false
+  xy: 2, 2
+  size: 1333, 1086
+  orig: 1333, 1086
+  offset: 0, 0
+  index: -1
+
+Luca_Avator5.png
+size: 1111,1156
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+tail
+  rotate: false
+  xy: 2, 2
+  size: 1107, 1152
+  orig: 1107, 1152
+  offset: 0, 0
+  index: -1

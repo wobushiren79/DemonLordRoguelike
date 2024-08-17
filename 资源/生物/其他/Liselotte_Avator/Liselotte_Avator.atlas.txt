@@ -1,0 +1,653 @@
+
+Liselotte_Avator.png
+size: 2038,1880
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_leg_lower
+  rotate: false
+  xy: 740, 59
+  size: 714, 289
+  orig: 714, 289
+  offset: 0, 0
+  index: -1
+L_leg_lower_acc01
+  rotate: false
+  xy: 874, 1826
+  size: 84, 52
+  orig: 84, 52
+  offset: 0, 0
+  index: -1
+L_leg_lower_acc02
+  rotate: true
+  xy: 288, 1622
+  size: 130, 194
+  orig: 130, 194
+  offset: 0, 0
+  index: -1
+R_leg_lower_acc01
+  rotate: true
+  xy: 960, 1820
+  size: 58, 84
+  orig: 58, 84
+  offset: 0, 0
+  index: -1
+R_leg_lower_acc02
+  rotate: true
+  xy: 212, 1453
+  size: 167, 205
+  orig: 167, 205
+  offset: 0, 0
+  index: -1
+R_leg_upper_acc01
+  rotate: true
+  xy: 776, 1579
+  size: 142, 232
+  orig: 142, 232
+  offset: 0, 0
+  index: -1
+R_leg_upper_acc02
+  rotate: true
+  xy: 1377, 1685
+  size: 120, 599
+  orig: 120, 599
+  offset: 0, 0
+  index: -1
+brooch
+  rotate: true
+  xy: 689, 1736
+  size: 96, 117
+  orig: 96, 117
+  offset: 0, 0
+  index: -1
+bustL02
+  rotate: false
+  xy: 688, 945
+  size: 302, 262
+  orig: 302, 262
+  offset: 0, 0
+  index: -1
+bustR02
+  rotate: false
+  xy: 278, 701
+  size: 286, 272
+  orig: 286, 272
+  offset: 0, 0
+  index: -1
+cheek
+  rotate: false
+  xy: 1371, 1352
+  size: 365, 175
+  orig: 365, 175
+  offset: 0, 0
+  index: -1
+collar01
+  rotate: false
+  xy: 1135, 1362
+  size: 234, 170
+  orig: 234, 170
+  offset: 0, 0
+  index: -1
+collar02
+  rotate: false
+  xy: 139, 1765
+  size: 176, 81
+  orig: 176, 81
+  offset: 0, 0
+  index: -1
+corset02
+  rotate: false
+  xy: 992, 886
+  size: 1004, 202
+  orig: 1004, 202
+  offset: 0, 0
+  index: -1
+dk1
+  rotate: true
+  xy: 750, 1415
+  size: 158, 383
+  orig: 158, 383
+  offset: 0, 0
+  index: -1
+dk2
+  rotate: false
+  xy: 2, 760
+  size: 274, 262
+  orig: 274, 262
+  offset: 0, 0
+  index: -1
+eyebrow
+  rotate: false
+  xy: 758, 1834
+  size: 114, 44
+  orig: 114, 44
+  offset: 0, 0
+  index: -1
+eyebrow2
+  rotate: false
+  xy: 77, 1854
+  size: 137, 24
+  orig: 137, 24
+  offset: 0, 0
+  index: -1
+eyelinebottom
+  rotate: false
+  xy: 431, 1845
+  size: 74, 33
+  orig: 74, 33
+  offset: 0, 0
+  index: -1
+eyelinebottom2
+  rotate: false
+  xy: 2, 1861
+  size: 73, 17
+  orig: 73, 17
+  offset: 0, 0
+  index: -1
+eyelinetop
+  rotate: false
+  xy: 1684, 1807
+  size: 340, 71
+  orig: 340, 71
+  offset: 0, 0
+  index: -1
+eyelinetop2
+  rotate: false
+  xy: 551, 1741
+  size: 136, 93
+  orig: 136, 93
+  offset: 0, 0
+  index: -1
+eyesclose
+  rotate: false
+  xy: 929, 1723
+  size: 340, 89
+  orig: 340, 89
+  offset: 0, 0
+  index: -1
+eyesopen_eyelids
+  rotate: false
+  xy: 663, 1836
+  size: 93, 42
+  orig: 93, 42
+  offset: 0, 0
+  index: -1
+eyesopen_eyelids2
+  rotate: false
+  xy: 250, 1848
+  size: 100, 30
+  orig: 100, 30
+  offset: 0, 0
+  index: -1
+eyesopen_hl
+  rotate: true
+  xy: 1516, 1811
+  size: 67, 82
+  orig: 67, 82
+  offset: 0, 0
+  index: -1
+eyesopen_hl2
+  rotate: true
+  xy: 1600, 1810
+  size: 68, 82
+  orig: 68, 82
+  offset: 0, 0
+  index: -1
+eyesopen_whiteofeyes
+  rotate: false
+  xy: 317, 1758
+  size: 112, 88
+  orig: 112, 88
+  offset: 0, 0
+  index: -1
+eyesopen_whiteofeyes2
+  rotate: false
+  xy: 431, 1754
+  size: 118, 86
+  orig: 118, 86
+  offset: 0, 0
+  index: -1
+forearmR
+  rotate: true
+  xy: 342, 67
+  size: 316, 396
+  orig: 316, 396
+  offset: 0, 0
+  index: -1
+fronthair01
+  rotate: true
+  xy: 2, 1024
+  size: 235, 282
+  orig: 235, 282
+  offset: 0, 0
+  index: -1
+fronthair02
+  rotate: true
+  xy: 1056, 350
+  size: 284, 481
+  orig: 284, 481
+  offset: 0, 0
+  index: -1
+fronthair03
+  rotate: true
+  xy: 286, 975
+  size: 255, 400
+  orig: 255, 400
+  offset: 0, 0
+  index: -1
+fronthair04
+  rotate: true
+  xy: 484, 1604
+  size: 130, 290
+  orig: 130, 290
+  offset: 0, 0
+  index: -1
+fronthair05
+  rotate: true
+  xy: 2, 1639
+  size: 124, 284
+  orig: 124, 284
+  offset: 0, 0
+  index: -1
+fronthair06
+  rotate: true
+  xy: 1482, 1090
+  size: 228, 427
+  orig: 228, 427
+  offset: 0, 0
+  index: -1
+hairribbon01
+  rotate: true
+  xy: 1738, 1320
+  size: 200, 213
+  orig: 200, 213
+  offset: 0, 0
+  index: -1
+hairribbon02
+  rotate: true
+  xy: 2, 1473
+  size: 164, 208
+  orig: 164, 208
+  offset: 0, 0
+  index: -1
+hairribbon04
+  rotate: true
+  xy: 338, 1232
+  size: 181, 550
+  orig: 181, 550
+  offset: 0, 0
+  index: -1
+handL01
+  rotate: false
+  xy: 1010, 1575
+  size: 199, 146
+  orig: 199, 146
+  offset: 0, 0
+  index: -1
+handL02
+  rotate: false
+  xy: 2, 1261
+  size: 334, 190
+  orig: 334, 190
+  offset: 0, 0
+  index: -1
+handR01
+  rotate: false
+  xy: 1456, 2
+  size: 404, 318
+  orig: 404, 318
+  offset: 0, 0
+  index: -1
+handaccL01
+  rotate: false
+  xy: 1539, 322
+  size: 321, 312
+  orig: 321, 312
+  offset: 0, 0
+  index: -1
+handaccL02
+  rotate: false
+  xy: 2, 118
+  size: 338, 314
+  orig: 338, 314
+  offset: 0, 0
+  index: -1
+handaccR01
+  rotate: true
+  xy: 566, 651
+  size: 292, 299
+  orig: 292, 299
+  offset: 0, 0
+  index: -1
+handaccR02
+  rotate: false
+  xy: 1211, 1562
+  size: 150, 148
+  orig: 150, 148
+  offset: 0, 0
+  index: -1
+mic
+  rotate: false
+  xy: 2, 434
+  size: 425, 265
+  orig: 425, 265
+  offset: 0, 0
+  index: -1
+mic_acc01
+  rotate: false
+  xy: 808, 1728
+  size: 119, 96
+  orig: 119, 96
+  offset: 0, 0
+  index: -1
+mic_acc02
+  rotate: true
+  xy: 1363, 1534
+  size: 149, 206
+  orig: 149, 206
+  offset: 0, 0
+  index: -1
+mic_acc03
+  rotate: false
+  xy: 1271, 1712
+  size: 104, 100
+  orig: 104, 100
+  offset: 0, 0
+  index: -1
+mic_acc04
+  rotate: false
+  xy: 1046, 1816
+  size: 114, 62
+  orig: 114, 62
+  offset: 0, 0
+  index: -1
+mouthclose
+  rotate: false
+  xy: 352, 1848
+  size: 77, 30
+  orig: 77, 30
+  offset: 0, 0
+  index: -1
+mouthnormal
+  rotate: false
+  xy: 1437, 1813
+  size: 77, 65
+  orig: 77, 65
+  offset: 0, 0
+  index: -1
+neck
+  rotate: true
+  xy: 1834, 1522
+  size: 161, 202
+  orig: 161, 202
+  offset: 0, 0
+  index: -1
+nose
+  rotate: true
+  xy: 216, 1852
+  size: 26, 32
+  orig: 26, 32
+  offset: 0, 0
+  index: -1
+sidehairR
+  rotate: true
+  xy: 419, 1433
+  size: 169, 329
+  orig: 169, 329
+  offset: 0, 0
+  index: -1
+sidetail02
+  rotate: true
+  xy: 429, 385
+  size: 249, 625
+  orig: 249, 625
+  offset: 0, 0
+  index: -1
+sidhairL
+  rotate: true
+  xy: 1126, 1150
+  size: 200, 354
+  orig: 200, 354
+  offset: 0, 0
+  index: -1
+skirt04_3
+  rotate: false
+  xy: 867, 636
+  size: 1086, 248
+  orig: 1086, 248
+  offset: 0, 0
+  index: -1
+tie01
+  rotate: false
+  xy: 1571, 1529
+  size: 261, 154
+  orig: 261, 154
+  offset: 0, 0
+  index: -1
+tie02
+  rotate: true
+  xy: 1162, 1814
+  size: 64, 273
+  orig: 64, 273
+  offset: 0, 0
+  index: -1
+tie03
+  rotate: false
+  xy: 890, 1209
+  size: 234, 204
+  orig: 234, 204
+  offset: 0, 0
+  index: -1
+underwear01
+  rotate: true
+  xy: 2, 1781
+  size: 71, 135
+  orig: 71, 135
+  offset: 0, 0
+  index: -1
+underwear02
+  rotate: true
+  xy: 507, 1842
+  size: 36, 154
+  orig: 36, 154
+  offset: 0, 0
+  index: -1
+
+Liselotte_Avator2.png
+size: 1885,2033
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+R_leg_lowerdropshadow
+  rotate: false
+  xy: 927, 786
+  size: 308, 1245
+  orig: 308, 1245
+  offset: 0, 0
+  index: -1
+colset04
+  rotate: false
+  xy: 2, 396
+  size: 923, 1635
+  orig: 923, 1635
+  offset: 0, 0
+  index: -1
+colset05
+  rotate: false
+  xy: 1268, 428
+  size: 615, 1603
+  orig: 615, 1603
+  offset: 0, 0
+  index: -1
+head
+  rotate: true
+  xy: 1268, 2
+  size: 424, 557
+  orig: 424, 557
+  offset: 0, 0
+  index: -1
+skirt04_1
+  rotate: false
+  xy: 2, 12
+  size: 1264, 382
+  orig: 1264, 382
+  offset: 0, 0
+  index: -1
+
+Liselotte_Avator3.png
+size: 1920,1791
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_leg_upperdropshadow
+  rotate: true
+  xy: 2, 744
+  size: 478, 1110
+  orig: 478, 1110
+  offset: 0, 0
+  index: -1
+armL
+  rotate: true
+  xy: 1025, 10
+  size: 551, 893
+  orig: 551, 893
+  offset: 0, 0
+  index: -1
+color
+  rotate: true
+  xy: 1265, 563
+  size: 1226, 484
+  orig: 1226, 484
+  offset: 0, 0
+  index: -1
+inner
+  rotate: true
+  xy: 2, 2
+  size: 559, 1021
+  orig: 559, 1021
+  offset: 0, 0
+  index: -1
+skirt03dropshadow
+  rotate: false
+  xy: 2, 1224
+  size: 1261, 565
+  orig: 1261, 565
+  offset: 0, 0
+  index: -1
+
+Liselotte_Avator4.png
+size: 1934,1910
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_ foot1
+  rotate: true
+  xy: 1209, 877
+  size: 358, 371
+  orig: 358, 371
+  offset: 0, 0
+  index: -1
+R_leg_upperdropshadow
+  rotate: false
+  xy: 2, 2
+  size: 359, 1203
+  orig: 359, 1203
+  offset: 0, 0
+  index: -1
+body01
+  rotate: false
+  xy: 2, 1207
+  size: 628, 701
+  orig: 628, 701
+  offset: 0, 0
+  index: -1
+body02
+  rotate: false
+  xy: 632, 1290
+  size: 611, 618
+  orig: 611, 618
+  offset: 0, 0
+  index: -1
+sidetail01
+  rotate: false
+  xy: 1591, 157
+  size: 331, 684
+  orig: 331, 684
+  offset: 0, 0
+  index: -1
+sidetail03
+  rotate: false
+  xy: 363, 320
+  size: 434, 885
+  orig: 434, 885
+  offset: 0, 0
+  index: -1
+sidetail04
+  rotate: false
+  xy: 799, 324
+  size: 462, 418
+  orig: 462, 418
+  offset: 0, 0
+  index: -1
+skirt01dropshadow
+  rotate: true
+  xy: 1591, 843
+  size: 1065, 341
+  orig: 1065, 341
+  offset: 0, 0
+  index: -1
+skirt04_2
+  rotate: false
+  xy: 363, 17
+  size: 1226, 301
+  orig: 1226, 301
+  offset: 0, 0
+  index: -1
+underwear03
+  rotate: true
+  xy: 799, 744
+  size: 544, 408
+  orig: 544, 408
+  offset: 0, 0
+  index: -1
+upperarmR
+  rotate: true
+  xy: 1245, 1237
+  size: 671, 322
+  orig: 671, 322
+  offset: 0, 0
+  index: -1
+
+Liselotte_Avator5.png
+size: 1871,523
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+backhair
+  rotate: true
+  xy: 561, 8
+  size: 513, 528
+  orig: 513, 528
+  offset: 0, 0
+  index: -1
+corsetbottun
+  rotate: true
+  xy: 2, 2
+  size: 519, 557
+  orig: 519, 557
+  offset: 0, 0
+  index: -1
+headdropshadow
+  rotate: false
+  xy: 1454, 70
+  size: 415, 451
+  orig: 415, 451
+  offset: 0, 0
+  index: -1
+innerbottun
+  rotate: true
+  xy: 1091, 2
+  size: 519, 361
+  orig: 519, 361
+  offset: 0, 0
+  index: -1

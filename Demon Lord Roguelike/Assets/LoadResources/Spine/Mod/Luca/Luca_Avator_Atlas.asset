@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Luca_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: b003f362e1f424841a96572fa611081c, type: 3}
+  materials:
+  - {fileID: 2100000, guid: e84fb76c8d9c3364b86f9c15508661ef, type: 2}
+  - {fileID: 2100000, guid: 2df093faab60fa54687ea65635bb2815, type: 2}
+  - {fileID: 2100000, guid: 7a0beb7399a6a4f4791eea6268945e92, type: 2}
+  - {fileID: 2100000, guid: f5fc47730e6b3534aa03e3d960349161, type: 2}
+  - {fileID: 2100000, guid: cda4c6d34dad69546816045724dda8b2, type: 2}

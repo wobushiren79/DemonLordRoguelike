@@ -1,0 +1,527 @@
+
+Luoluo_Avator.png
+size: 2011,1891
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+B1
+  rotate: true
+  xy: 1688, 1390
+  size: 235, 245
+  orig: 235, 245
+  offset: 0, 0
+  index: -1
+F1
+  rotate: false
+  xy: 216, 1548
+  size: 283, 176
+  orig: 283, 176
+  offset: 0, 0
+  index: -1
+F10
+  rotate: true
+  xy: 2, 238
+  size: 408, 561
+  orig: 408, 561
+  offset: 0, 0
+  index: -1
+F11
+  rotate: true
+  xy: 565, 68
+  size: 410, 628
+  orig: 410, 628
+  offset: 0, 0
+  index: -1
+F12
+  rotate: false
+  xy: 1206, 428
+  size: 431, 361
+  orig: 431, 361
+  offset: 0, 0
+  index: -1
+F14
+  rotate: true
+  xy: 681, 480
+  size: 347, 523
+  orig: 347, 523
+  offset: 0, 0
+  index: -1
+F16
+  rotate: true
+  xy: 2, 648
+  size: 319, 677
+  orig: 319, 677
+  offset: 0, 0
+  index: -1
+F18
+  rotate: true
+  xy: 462, 1251
+  size: 220, 683
+  orig: 220, 683
+  offset: 0, 0
+  index: -1
+F2
+  rotate: false
+  xy: 1153, 1462
+  size: 226, 194
+  orig: 226, 194
+  offset: 0, 0
+  index: -1
+F3
+  rotate: false
+  xy: 1755, 1803
+  size: 141, 86
+  orig: 141, 86
+  offset: 0, 0
+  index: -1
+F4
+  rotate: false
+  xy: 1248, 791
+  size: 618, 294
+  orig: 618, 294
+  offset: 0, 0
+  index: -1
+F5a
+  rotate: false
+  xy: 2, 1356
+  size: 458, 190
+  orig: 458, 190
+  offset: 0, 0
+  index: -1
+F5b
+  rotate: true
+  xy: 1381, 1436
+  size: 199, 305
+  orig: 199, 305
+  offset: 0, 0
+  index: -1
+F6
+  rotate: false
+  xy: 1171, 1658
+  size: 270, 158
+  orig: 270, 158
+  offset: 0, 0
+  index: -1
+L1
+  rotate: true
+  xy: 111, 1862
+  size: 27, 66
+  orig: 27, 66
+  offset: 0, 0
+  index: -1
+L2
+  rotate: true
+  xy: 1317, 1818
+  size: 71, 146
+  orig: 71, 146
+  offset: 0, 0
+  index: -1
+LIU
+  rotate: true
+  xy: 1035, 1825
+  size: 64, 78
+  orig: 64, 78
+  offset: 0, 0
+  index: -1
+N1
+  rotate: false
+  xy: 553, 1844
+  size: 71, 45
+  orig: 71, 45
+  offset: 0, 0
+  index: -1
+N10
+  rotate: false
+  xy: 1115, 1825
+  size: 89, 64
+  orig: 89, 64
+  offset: 0, 0
+  index: -1
+N11
+  rotate: true
+  xy: 502, 1715
+  size: 117, 192
+  orig: 117, 192
+  offset: 0, 0
+  index: -1
+N12
+  rotate: true
+  xy: 1443, 1637
+  size: 165, 263
+  orig: 165, 263
+  offset: 0, 0
+  index: -1
+N13
+  rotate: false
+  xy: 1521, 1087
+  size: 398, 301
+  orig: 398, 301
+  offset: 0, 0
+  index: -1
+N14
+  rotate: false
+  xy: 1147, 1149
+  size: 372, 285
+  orig: 372, 285
+  offset: 0, 0
+  index: -1
+N15
+  rotate: false
+  xy: 715, 1509
+  size: 229, 179
+  orig: 229, 179
+  offset: 0, 0
+  index: -1
+N16
+  rotate: true
+  xy: 2, 1040
+  size: 314, 318
+  orig: 314, 318
+  offset: 0, 0
+  index: -1
+N17
+  rotate: true
+  xy: 1639, 281
+  size: 508, 370
+  orig: 508, 370
+  offset: 0, 0
+  index: -1
+N18
+  rotate: false
+  xy: 923, 829
+  size: 323, 318
+  orig: 323, 318
+  offset: 0, 0
+  index: -1
+N19
+  rotate: false
+  xy: 322, 969
+  size: 599, 280
+  orig: 599, 280
+  offset: 0, 0
+  index: -1
+N2
+  rotate: true
+  xy: 1572, 1804
+  size: 85, 181
+  orig: 85, 181
+  offset: 0, 0
+  index: -1
+N20
+  rotate: false
+  xy: 1195, 2
+  size: 434, 424
+  orig: 434, 424
+  offset: 0, 0
+  index: -1
+N21
+  rotate: true
+  xy: 501, 1519
+  size: 176, 212
+  orig: 176, 212
+  offset: 0, 0
+  index: -1
+N22
+  rotate: true
+  xy: 976, 1665
+  size: 158, 193
+  orig: 158, 193
+  offset: 0, 0
+  index: -1
+N23
+  rotate: true
+  xy: 1465, 1805
+  size: 84, 105
+  orig: 84, 105
+  offset: 0, 0
+  index: -1
+N3
+  rotate: false
+  xy: 2, 1587
+  size: 212, 175
+  orig: 212, 175
+  offset: 0, 0
+  index: -1
+N4
+  rotate: false
+  xy: 1206, 1820
+  size: 109, 69
+  orig: 109, 69
+  offset: 0, 0
+  index: -1
+N5
+  rotate: false
+  xy: 812, 1828
+  size: 157, 61
+  orig: 157, 61
+  offset: 0, 0
+  index: -1
+N6
+  rotate: true
+  xy: 1708, 1627
+  size: 172, 201
+  orig: 172, 201
+  offset: 0, 0
+  index: -1
+N7
+  rotate: true
+  xy: 114, 1764
+  size: 96, 130
+  orig: 96, 130
+  offset: 0, 0
+  index: -1
+N8
+  rotate: false
+  xy: 246, 1743
+  size: 120, 109
+  orig: 120, 109
+  offset: 0, 0
+  index: -1
+N9
+  rotate: true
+  xy: 43, 1867
+  size: 22, 31
+  orig: 22, 31
+  offset: 0, 0
+  index: -1
+angry
+  rotate: false
+  xy: 696, 1697
+  size: 138, 129
+  orig: 138, 129
+  offset: 0, 0
+  index: -1
+blinky
+  rotate: true
+  xy: 836, 1690
+  size: 136, 138
+  orig: 136, 138
+  offset: 0, 0
+  index: -1
+face
+  rotate: true
+  xy: 946, 1473
+  size: 190, 205
+  orig: 190, 205
+  offset: 0, 0
+  index: -1
+normal1
+  rotate: false
+  xy: 319, 1854
+  size: 52, 35
+  orig: 52, 35
+  offset: 0, 0
+  index: -1
+normal2
+  rotate: false
+  xy: 1898, 1801
+  size: 109, 88
+  orig: 109, 88
+  offset: 0, 0
+  index: -1
+normal3
+  rotate: false
+  xy: 248, 1857
+  size: 33, 32
+  orig: 33, 32
+  offset: 0, 0
+  index: -1
+normal4
+  rotate: false
+  xy: 693, 1834
+  size: 55, 55
+  orig: 55, 55
+  offset: 0, 0
+  index: -1
+normal5
+  rotate: false
+  xy: 283, 1855
+  size: 34, 34
+  orig: 34, 34
+  offset: 0, 0
+  index: -1
+normal6
+  rotate: false
+  xy: 971, 1828
+  size: 62, 61
+  orig: 62, 61
+  offset: 0, 0
+  index: -1
+normal7
+  rotate: false
+  xy: 626, 1839
+  size: 65, 50
+  orig: 65, 50
+  offset: 0, 0
+  index: -1
+nose
+  rotate: true
+  xy: 76, 1866
+  size: 23, 33
+  orig: 23, 33
+  offset: 0, 0
+  index: -1
+sleepy
+  rotate: false
+  xy: 368, 1726
+  size: 132, 118
+  orig: 132, 118
+  offset: 0, 0
+  index: -1
+sleepy1
+  rotate: false
+  xy: 2, 1771
+  size: 110, 89
+  orig: 110, 89
+  offset: 0, 0
+  index: -1
+sleepy2
+  rotate: false
+  xy: 373, 1846
+  size: 60, 43
+  orig: 60, 43
+  offset: 0, 0
+  index: -1
+sleepy3
+  rotate: false
+  xy: 2, 1876
+  size: 18, 13
+  orig: 18, 13
+  offset: 0, 0
+  index: -1
+sleepy4
+  rotate: true
+  xy: 435, 1846
+  size: 43, 57
+  orig: 43, 57
+  offset: 0, 0
+  index: -1
+sleepy5
+  rotate: true
+  xy: 750, 1831
+  size: 58, 60
+  orig: 58, 60
+  offset: 0, 0
+  index: -1
+sleepy6
+  rotate: false
+  xy: 179, 1862
+  size: 30, 27
+  orig: 30, 27
+  offset: 0, 0
+  index: -1
+sleepy7
+  rotate: false
+  xy: 494, 1846
+  size: 57, 43
+  orig: 57, 43
+  offset: 0, 0
+  index: -1
+sleepy8
+  rotate: false
+  xy: 22, 1874
+  size: 19, 15
+  orig: 19, 15
+  offset: 0, 0
+  index: -1
+sleepy9
+  rotate: false
+  xy: 211, 1862
+  size: 35, 27
+  orig: 35, 27
+  offset: 0, 0
+  index: -1
+
+Luoluo_Avator2.png
+size: 1908,1798
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+F5c
+  rotate: true
+  xy: 1394, 214
+  size: 820, 445
+  orig: 820, 445
+  offset: 0, 0
+  index: -1
+F7
+  rotate: true
+  xy: 1394, 1036
+  size: 760, 512
+  orig: 760, 512
+  offset: 0, 0
+  index: -1
+S1
+  rotate: false
+  xy: 2, 2
+  size: 1390, 1794
+  orig: 1390, 1794
+  offset: 0, 0
+  index: -1
+
+Luoluo_Avator3.png
+size: 2040,1420
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+F13
+  rotate: true
+  xy: 764, 968
+  size: 450, 694
+  orig: 450, 694
+  offset: 0, 0
+  index: -1
+F15
+  rotate: true
+  xy: 1165, 2
+  size: 885, 802
+  orig: 885, 802
+  offset: 0, 0
+  index: -1
+F8
+  rotate: true
+  xy: 1460, 889
+  size: 529, 578
+  orig: 529, 578
+  offset: 0, 0
+  index: -1
+F9
+  rotate: false
+  xy: 2, 994
+  size: 760, 424
+  orig: 760, 424
+  offset: 0, 0
+  index: -1
+luo
+  rotate: false
+  xy: 2, 192
+  size: 1161, 774
+  orig: 1161, 774
+  offset: 0, 0
+  index: -1
+
+Luoluo_Avator4.png
+size: 1199,1881
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+B2
+  rotate: false
+  xy: 2, 2
+  size: 1195, 1877
+  orig: 1195, 1877
+  offset: 0, 0
+  index: -1
+
+Luoluo_Avator5.png
+size: 1277,1261
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+F17
+  rotate: false
+  xy: 2, 2
+  size: 1273, 1257
+  orig: 1273, 1257
+  offset: 0, 0
+  index: -1

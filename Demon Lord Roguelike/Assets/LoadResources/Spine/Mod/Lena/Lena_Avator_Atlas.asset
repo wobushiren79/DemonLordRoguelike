@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Lena_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: 44b4f52a89155d1449105d7f4d5b7466, type: 3}
+  materials:
+  - {fileID: 2100000, guid: f663eb4492ae1cf44a302f6ca7de68bd, type: 2}
+  - {fileID: 2100000, guid: 82f942cc7e05d434cb9d8379b7502fc7, type: 2}
+  - {fileID: 2100000, guid: b41e7c6d602d9ea46ba8726837abab96, type: 2}
+  - {fileID: 2100000, guid: 785bcb71021e8de478ccd68cf2ab6882, type: 2}
+  - {fileID: 2100000, guid: b7e139d80590696478eaf5175b4c99a2, type: 2}
+  - {fileID: 2100000, guid: fb82992025993334787d84739688d4b1, type: 2}

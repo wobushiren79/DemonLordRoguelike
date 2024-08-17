@@ -39,10 +39,11 @@ public class LauncherTest : BaseLauncher
     public void StartForCardTest(FightCreatureBean fightCreature)
     {
         WorldHandler.Instance.ClearWorldData(() =>
-        {       
+        {
+            VolumeHandler.Instance.SetDepthOfField(UnityEngine.Rendering.Universal.DepthOfFieldMode.Off, 0, 0, 0);
             //镜头初始化
             CameraHandler.Instance.InitData();
-
+            //关闭额外的摄像头
             var ui = UIHandler.Instance.OpenUIAndCloseOther<UITestCard>();
             ui.SetData(fightCreature);
         });

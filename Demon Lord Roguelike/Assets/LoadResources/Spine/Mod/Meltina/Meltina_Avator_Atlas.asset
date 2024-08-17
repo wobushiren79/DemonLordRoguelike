@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Meltina_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: 64d3a0c784a9c9b41898a8979c1026d2, type: 3}
+  materials:
+  - {fileID: 2100000, guid: cc6c518945dd817478b7bd00db924de1, type: 2}
+  - {fileID: 2100000, guid: bcf32c1f062105449a0ab8019d56fb69, type: 2}
+  - {fileID: 2100000, guid: 0a6b701857ee3fe499096dd283be4f2a, type: 2}
+  - {fileID: 2100000, guid: 19996180913780a488600d873359900d, type: 2}
+  - {fileID: 2100000, guid: 1fdf0a9373eef7b4e9c0039ac973aa01, type: 2}

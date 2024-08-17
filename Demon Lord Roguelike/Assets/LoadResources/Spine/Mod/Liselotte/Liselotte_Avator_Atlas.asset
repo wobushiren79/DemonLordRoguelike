@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Liselotte_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: dcbbf9528b7c17448962d426cec04791, type: 3}
+  materials:
+  - {fileID: 2100000, guid: 43934e6b251ecd94b95f381f48fdb663, type: 2}
+  - {fileID: 2100000, guid: 5c713d67ce328374683a4ac953e26f15, type: 2}
+  - {fileID: 2100000, guid: 8f42e38d9b22c1544bd9f2de3716e42f, type: 2}
+  - {fileID: 2100000, guid: 4510ae4d899833b4fbc128830432aad2, type: 2}
+  - {fileID: 2100000, guid: 977e1721cf1926d4fa6fd7678e8bc12e, type: 2}

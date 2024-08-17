@@ -1,0 +1,457 @@
+
+Luna_2_Avator.png
+size: 2048,1968
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+backofjacket_01
+  rotate: false
+  xy: 696, 1639
+  size: 475, 139
+  orig: 475, 139
+  offset: 0, 0
+  index: -1
+belt
+  rotate: false
+  xy: 218, 1671
+  size: 476, 138
+  orig: 476, 138
+  offset: 0, 0
+  index: -1
+bust_L2
+  rotate: true
+  xy: 1066, 1360
+  size: 236, 291
+  orig: 236, 291
+  offset: 0, 0
+  index: -1
+bust_R2
+  rotate: false
+  xy: 1517, 1038
+  size: 314, 291
+  orig: 314, 291
+  offset: 0, 0
+  index: -1
+bust_shirt
+  rotate: false
+  xy: 410, 77
+  size: 545, 365
+  orig: 545, 365
+  offset: 0, 0
+  index: -1
+ear
+  rotate: true
+  xy: 1847, 1882
+  size: 84, 109
+  orig: 84, 109
+  offset: 0, 0
+  index: -1
+eye_close_02
+  rotate: false
+  xy: 438, 1905
+  size: 332, 61
+  orig: 332, 61
+  offset: 0, 0
+  index: -1
+eye_open_01
+  rotate: false
+  xy: 1153, 1886
+  size: 370, 80
+  orig: 370, 80
+  offset: 0, 0
+  index: -1
+eye_open_02
+  rotate: false
+  xy: 95, 1940
+  size: 281, 26
+  orig: 281, 26
+  offset: 0, 0
+  index: -1
+eye_open_04
+  rotate: false
+  xy: 276, 1817
+  size: 345, 86
+  orig: 345, 86
+  offset: 0, 0
+  index: -1
+eye_open_05
+  rotate: false
+  xy: 1525, 1883
+  size: 320, 83
+  orig: 320, 83
+  offset: 0, 0
+  index: -1
+eyebrow
+  rotate: false
+  xy: 772, 1905
+  size: 379, 61
+  orig: 379, 61
+  offset: 0, 0
+  index: -1
+foot_L_02
+  rotate: true
+  xy: 496, 444
+  size: 354, 751
+  orig: 354, 751
+  offset: 0, 0
+  index: -1
+foot_L_03
+  rotate: true
+  xy: 676, 1444
+  size: 193, 388
+  orig: 193, 388
+  offset: 0, 0
+  index: -1
+foot_L_ribon
+  rotate: true
+  xy: 2, 1680
+  size: 172, 214
+  orig: 172, 214
+  offset: 0, 0
+  index: -1
+foot_L_shadow
+  rotate: true
+  xy: 957, 2
+  size: 342, 1060
+  orig: 342, 1060
+  offset: 0, 0
+  index: -1
+foot_R_02
+  rotate: true
+  xy: 2, 948
+  size: 255, 811
+  orig: 255, 811
+  offset: 0, 0
+  index: -1
+foot_R_03
+  rotate: true
+  xy: 1359, 1352
+  size: 217, 398
+  orig: 217, 398
+  offset: 0, 0
+  index: -1
+foot_R_ribon
+  rotate: true
+  xy: 1173, 1598
+  size: 172, 201
+  orig: 172, 201
+  offset: 0, 0
+  index: -1
+front_hair_01
+  rotate: true
+  xy: 623, 1811
+  size: 92, 287
+  orig: 92, 287
+  offset: 0, 0
+  index: -1
+front_hair_02
+  rotate: true
+  xy: 1565, 1734
+  size: 146, 326
+  orig: 146, 326
+  offset: 0, 0
+  index: -1
+front_hair_03
+  rotate: true
+  xy: 2, 1496
+  size: 173, 342
+  orig: 173, 342
+  offset: 0, 0
+  index: -1
+front_hair_04
+  rotate: true
+  xy: 346, 1467
+  size: 202, 328
+  orig: 202, 328
+  offset: 0, 0
+  index: -1
+front_hair_side_L
+  rotate: true
+  xy: 983, 1096
+  size: 254, 532
+  orig: 254, 532
+  offset: 0, 0
+  index: -1
+front_hair_side_R
+  rotate: true
+  xy: 2, 1233
+  size: 232, 537
+  orig: 232, 537
+  offset: 0, 0
+  index: -1
+hand_L
+  rotate: true
+  xy: 815, 800
+  size: 294, 543
+  orig: 294, 543
+  offset: 0, 0
+  index: -1
+hand_shirt_01
+  rotate: true
+  xy: 1958, 1858
+  size: 108, 88
+  orig: 108, 88
+  offset: 0, 0
+  index: -1
+hand_shirt_02
+  rotate: true
+  xy: 541, 1205
+  size: 237, 440
+  orig: 237, 440
+  offset: 0, 0
+  index: -1
+highlight
+  rotate: false
+  xy: 2, 1854
+  size: 272, 84
+  orig: 272, 84
+  offset: 0, 0
+  index: -1
+jacket_string
+  rotate: false
+  xy: 1263, 1772
+  size: 300, 109
+  orig: 300, 109
+  offset: 0, 0
+  index: -1
+mouth_close
+  rotate: false
+  xy: 2, 1944
+  size: 51, 22
+  orig: 51, 22
+  offset: 0, 0
+  index: -1
+mouth_open
+  rotate: false
+  xy: 378, 1927
+  size: 58, 39
+  orig: 58, 39
+  offset: 0, 0
+  index: -1
+neck
+  rotate: true
+  xy: 1759, 1331
+  size: 238, 284
+  orig: 238, 284
+  offset: 0, 0
+  index: -1
+nose
+  rotate: true
+  xy: 55, 1944
+  size: 22, 38
+  orig: 22, 38
+  offset: 0, 0
+  index: -1
+shoulder_cloth_L_02
+  rotate: true
+  xy: 1249, 346
+  size: 363, 534
+  orig: 363, 534
+  offset: 0, 0
+  index: -1
+sideburns_L
+  rotate: true
+  xy: 912, 1780
+  size: 104, 349
+  orig: 104, 349
+  offset: 0, 0
+  index: -1
+skirt_L_02
+  rotate: true
+  xy: 1360, 711
+  size: 325, 445
+  orig: 325, 445
+  offset: 0, 0
+  index: -1
+skirt_R_02
+  rotate: true
+  xy: 2, 226
+  size: 383, 406
+  orig: 383, 406
+  offset: 0, 0
+  index: -1
+tie
+  rotate: true
+  xy: 1376, 1571
+  size: 161, 533
+  orig: 161, 533
+  offset: 0, 0
+  index: -1
+upperarm_L
+  rotate: true
+  xy: 2, 611
+  size: 335, 492
+  orig: 335, 492
+  offset: 0, 0
+  index: -1
+
+Luna_2_Avator2.png
+size: 2038,1826
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+foot_R_shadow
+  rotate: true
+  xy: 516, 1438
+  size: 386, 996
+  orig: 386, 996
+  offset: 0, 0
+  index: -1
+head_Shadow
+  rotate: true
+  xy: 1514, 1395
+  size: 429, 522
+  orig: 429, 522
+  offset: 0, 0
+  index: -1
+head_back_hair
+  rotate: true
+  xy: 1483, 854
+  size: 539, 546
+  orig: 539, 546
+  offset: 0, 0
+  index: -1
+jacket_L
+  rotate: true
+  xy: 2, 1034
+  size: 402, 715
+  orig: 402, 715
+  offset: 0, 0
+  index: -1
+jacket_R2
+  rotate: false
+  xy: 1438, 135
+  size: 566, 717
+  orig: 566, 717
+  offset: 0, 0
+  index: -1
+shoulder_cloth_R_01
+  rotate: true
+  xy: 2, 561
+  size: 449, 918
+  orig: 449, 918
+  offset: 0, 0
+  index: -1
+skirt_L_01
+  rotate: true
+  xy: 719, 1012
+  size: 424, 762
+  orig: 424, 762
+  offset: 0, 0
+  index: -1
+skirt_L_03
+  rotate: true
+  xy: 2, 1450
+  size: 374, 512
+  orig: 374, 512
+  offset: 0, 0
+  index: -1
+skirt_R_03
+  rotate: false
+  xy: 922, 419
+  size: 514, 591
+  orig: 514, 591
+  offset: 0, 0
+  index: -1
+tied_hair
+  rotate: true
+  xy: 2, 2
+  size: 557, 793
+  orig: 557, 793
+  offset: 0, 0
+  index: -1
+
+Luna_2_Avator3.png
+size: 1845,1716
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+back_hair_L_01
+  rotate: true
+  xy: 2, 1199
+  size: 515, 1110
+  orig: 515, 1110
+  offset: 0, 0
+  index: -1
+back_hair_L_02
+  rotate: true
+  xy: 2, 2
+  size: 525, 1176
+  orig: 525, 1176
+  offset: 0, 0
+  index: -1
+backofjacket_02
+  rotate: false
+  xy: 2, 642
+  size: 1060, 555
+  orig: 1060, 555
+  offset: 0, 0
+  index: -1
+body_shirt
+  rotate: true
+  xy: 1114, 1156
+  size: 558, 729
+  orig: 558, 729
+  offset: 0, 0
+  index: -1
+skirt_R_01
+  rotate: true
+  xy: 1064, 529
+  size: 625, 771
+  orig: 625, 771
+  offset: 0, 0
+  index: -1
+
+Luna_2_Avator4.png
+size: 1630,2016
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+back_hair_R_02
+  rotate: false
+  xy: 889, 2
+  size: 739, 1189
+  orig: 739, 1189
+  offset: 0, 0
+  index: -1
+back_of_clothes2
+  rotate: false
+  xy: 2, 1193
+  size: 1510, 821
+  orig: 1510, 821
+  offset: 0, 0
+  index: -1
+waist_blue_skirt
+  rotate: false
+  xy: 2, 401
+  size: 885, 790
+  orig: 885, 790
+  offset: 0, 0
+  index: -1
+
+Luna_2_Avator5.png
+size: 1861,1154
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+back_hair_R_01
+  rotate: false
+  xy: 682, 48
+  size: 629, 1104
+  orig: 629, 1104
+  offset: 0, 0
+  index: -1
+body2
+  rotate: false
+  xy: 2, 2
+  size: 678, 1150
+  orig: 678, 1150
+  offset: 0, 0
+  index: -1
+upperarm_R
+  rotate: false
+  xy: 1313, 15
+  size: 546, 1137
+  orig: 546, 1137
+  offset: 0, 0
+  index: -1
