@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public partial class UIBaseCore : BaseUIComponent
@@ -18,6 +19,14 @@ public partial class UIBaseCore : BaseUIComponent
         base.RefreshUI(isOpenInit);
         RefreshUIData();
     }
+    public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
+    {
+        base.OnInputActionForStarted(inputType, callback);
+        if (inputType == InputActionUIEnum.ESC)
+        {
+            OnClickForExit();
+        }
+    }
 
     public override void OnClickForButton(Button viewButton)
     {
@@ -25,6 +34,10 @@ public partial class UIBaseCore : BaseUIComponent
         if (viewButton == ui_ViewExit)
         {
             OnClickForExit();
+        }
+        else if (viewButton == ui_ViewBaseCoreItemFunction_Lineup)
+        {
+            OnClickForLineup();
         }
         else if (viewButton == ui_ViewBaseCoreItemFunction_Gashapon)
         {
@@ -50,6 +63,14 @@ public partial class UIBaseCore : BaseUIComponent
 
         GameControlHandler.Instance.SetBaseControl();
         UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
+    }
+
+    /// <summary>
+    /// µ„ª˜’Û»›π‹¿Ì
+    /// </summary>
+    public void OnClickForLineup()
+    {
+        var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UILineupManager>();
     }
 
     /// <summary>
