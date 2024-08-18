@@ -2,18 +2,15 @@ using DG.Tweening;
 using Spine;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.ResourceManagement.ResourceProviders.Simulation;
 using UnityEngine.UI;
 
 public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, IPointerExitHandler
 {
-    public enum CardUseState
-    {
-        Show,
-        Fight,
-    }
 
     public CreatureBean creatureData;//卡片数据
     public CardUseState cardUseState;//卡片用途
+    public CardStateEnum cardState;
 
     public Vector2 originalCardPos;//卡片的起始位置
     public int originalSibling;//卡片的原始层级
@@ -84,6 +81,18 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
         SetAttribute(attDamage, lifeMax);
         SetName(creatureData.creatureName);
         SetLevel(creatureData.level);
+        SetRarity(creatureData.rarity);
+    }
+
+    /// <summary>
+    /// 设置稀有度
+    /// </summary>
+    public void SetRarity(int rarity)
+    {
+        var rarityInfo = RarityInfoCfg.GetItemData(rarity);
+        ColorUtility.TryParseHtmlString(rarityInfo.ui_board_color, out Color boardColor);
+        ui_CardBgBorad.color = boardColor;
+        maskUI.ChangeDefColor(ui_CardBgBorad, boardColor);
     }
 
     /// <summary>
@@ -146,18 +155,22 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     /// </summary>
     public void SetCardState(CardStateEnum cardState)
     {
-        this.fightCreatureData.stateForCard = cardState;
-        RefreshCardState();
+        this.cardState = cardState;
+        if (this.fightCreatureData != null)
+        {
+            this.fightCreatureData.stateForCard = cardState;
+        }
+        RefreshCardState(cardState);
     }
 
     /// <summary>
     /// 刷新卡的状态
     /// </summary>
-    public void RefreshCardState()
+    public void RefreshCardState(CardStateEnum cardState)
     {
         ui_CardBg.color = Color.white;
         maskUI.HideMask();
-        switch (this.fightCreatureData.stateForCard)
+        switch (cardState)
         {
             case CardStateEnum.FightIdle:
                 break;
@@ -193,6 +206,12 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
             case CardUseState.Fight:
                 OnClickSelectForFight();
                 break;
+            case CardUseState.Lineup:
+                OnClickSelectForLineup();
+                break;
+            case CardUseState.LineupBackpack:
+                OnClickSelectForLineupBackpack();
+                break;
         }
     }
 
@@ -211,6 +230,12 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
             case CardUseState.Fight:
                 OnPointerEnterForFight(eventData);
                 break;
+            case CardUseState.Lineup:
+                OnPointerEnterForLineup(eventData);
+                break;
+            case CardUseState.LineupBackpack:
+                OnPointerEnterForLineupBackpack(eventData);
+                break;
         }
     }
 
@@ -226,6 +251,12 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
                 break;
             case CardUseState.Fight:
                 OnPointerExitForFight(eventData);
+                break;
+            case CardUseState.Lineup:
+                OnPointerExitForLineup(eventData);
+                break;
+            case CardUseState.LineupBackpack:
+                OnPointerExitForLineupBackpack(eventData);
                 break;
         }
     }

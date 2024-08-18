@@ -207,7 +207,7 @@ public partial class UIViewCreatureCardItem
         if (this.fightCreatureData != fightCreatureDataTarget)
             return;
         //ˢ�¿�Ƭ״̬
-        RefreshCardState();
+        RefreshCardState(fightCreatureDataTarget.stateForCard);
     }
     #endregion
 }

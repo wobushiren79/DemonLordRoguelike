@@ -21,5 +21,7 @@ public partial class UIViewCreatureCardDetails
 
     public TextMeshProUGUI ui_AttributeItemText_Def;
 
+    public Image ui_CardBgBoard;
+
 
 }

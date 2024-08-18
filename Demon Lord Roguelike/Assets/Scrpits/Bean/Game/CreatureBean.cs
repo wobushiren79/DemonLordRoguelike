@@ -7,12 +7,17 @@ using static Cinemachine.CinemachineOrbitalTransposer;
 [Serializable]
 public class CreatureBean
 {
+    //生物ID
+    public string creatureId;
     //ID
     public long id;
     //生物名字
     public string creatureName;
     //等级
     public int level;
+    //稀有度
+    public int rarity;
+
     //所有的皮肤数据
     public List<CreatureSkinBean> listSkinData = new List<CreatureSkinBean>();
 

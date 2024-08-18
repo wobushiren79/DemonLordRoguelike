@@ -1,13 +1,5 @@
 using DG.Tweening;
-using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.Rendering;
-using UnityEngine.UI;
-using static Cinemachine.DocumentationSortingAttribute;
 
 public partial class UIViewCreatureCardDetails : BaseUIView
 {
@@ -30,6 +22,17 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         int attDamage = creatureData.GetAttDamage();
         int lifeMax = creatureData.GetLife();
         SetAttribute(attDamage, lifeMax);
+        SetRarity(creatureData.rarity);
+    }
+
+    /// <summary>
+    /// …Ë÷√œ°”–∂»
+    /// </summary>
+    public void SetRarity(int rarity)
+    {
+        var rarityInfo = RarityInfoCfg.GetItemData(rarity);
+        ColorUtility.TryParseHtmlString(rarityInfo.ui_board_color, out Color boardColor);
+        ui_CardBgBoard.color = boardColor;
     }
 
     /// <summary>

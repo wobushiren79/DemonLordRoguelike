@@ -492,7 +492,7 @@ GameObject:
   - component: {fileID: 8175520546131530261}
   - component: {fileID: 4108960328962923239}
   m_Layer: 5
-  m_Name: CardBg
+  m_Name: CardBgBoard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -725,18 +725,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rectTransform: {fileID: 0}
-  fightCreatureData:
-    creatureData:
-      id: 0
-      creatureName: 
-      level: 0
-      listSkinData: []
-    positionCreate: {x: 0, y: 0, z: 0}
-    liftCurrent: 0
-    liftMax: 0
-    armorCurrent: 0
-    armorMax: 0
-    stateForCard: 0
+  creatureData:
+    creatureId: 
+    id: 0
+    creatureName: 
+    level: 0
+    rarity: 0
+    listSkinData: []
   ui_ViewCreatureCardDetails: {fileID: 7933257876934081918}
   ui_Icon: {fileID: 2992929411199304094}
   ui_CardScene: {fileID: 486630122230598588}
@@ -745,6 +740,7 @@ MonoBehaviour:
   ui_AttributeItemText_Life: {fileID: 8866968502071271271}
   ui_AttributeItemText_Att: {fileID: 8524970180562100328}
   ui_AttributeItemText_Def: {fileID: 4671219778005323043}
+  ui_CardBgBoard: {fileID: 8175520546131530261}
 --- !u!1 &6698657121091642649
 GameObject:
   m_ObjectHideFlags: 0

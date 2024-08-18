@@ -10,6 +10,25 @@ public enum GameStateEnum
     End,//ÓÎÏ·½áÊø
 }
 
+public enum Rarity
+{
+    N = 1,
+    R = 2,
+    SR = 3,
+    SSR = 4,
+    UR = 5,
+    L = 6
+}
+
+//¿¨Æ¬ÓÃÍ¾
+public enum CardUseState
+{
+    Show,//Õ¹Ê¾
+    Fight,//Õ½¶·
+    Lineup,//ÕóÈİ
+    LineupBackpack,//ÕóÈİ±³°ü
+}
+
 //¿¨Æ¬×´Ì¬
 public enum CardStateEnum
 {

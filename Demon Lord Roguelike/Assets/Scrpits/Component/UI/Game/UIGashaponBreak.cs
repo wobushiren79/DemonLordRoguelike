@@ -95,7 +95,7 @@ public partial class UIGashaponBreak : BaseUIComponent
     /// </summary>
     public void InitCardData()
     {
-        ui_CreatureCardItem.SetData(gashaponItemData.creatureData, UIViewCreatureCardItem.CardUseState.Show);
+        ui_CreatureCardItem.SetData(gashaponItemData.creatureData, CardUseState.Show);
         ui_ViewCreatureCardDetails.SetData(gashaponItemData.creatureData);
     }
 

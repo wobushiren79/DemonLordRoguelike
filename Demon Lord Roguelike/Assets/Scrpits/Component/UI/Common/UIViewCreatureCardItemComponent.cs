@@ -19,5 +19,7 @@ public partial class UIViewCreatureCardItem
 
     public TextMeshProUGUI ui_Level;
 
+    public Image ui_CardBgBorad;
+
 
 }

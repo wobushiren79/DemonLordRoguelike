@@ -11,6 +11,9 @@ public static class EventsInfo
     public static string UIViewCreatureCardItem_ShowDetails = "UIViewCreatureCardItem_ShowDetails";//展示卡片详情
     public static string UIViewCreatureCardItem_HideDetails = "UIViewCreatureCardItem_HideDetails";//隐藏卡片详情
 
+    public static string UIViewCreatureCardItem_OnPointerEnter = "UIViewCreatureCardItem_OnPointerEnter";//卡片进入
+    public static string UIViewCreatureCardItem_OnPointerExit = "UIViewCreatureCardItem_OnPointerExit";//卡片离开
+
     public static string GameFightLogic_SelectCard = "GameFightLogic_SelectCard";//卡片选择
     public static string GameFightLogic_UnSelectCard = "GameFightLogic_UnSelectCard";//取消卡片选择
     public static string GameFightLogic_PutCard = "GameFightLogic_PutCard";//放置卡片选择    
