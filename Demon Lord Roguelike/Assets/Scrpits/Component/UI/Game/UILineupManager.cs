@@ -18,8 +18,9 @@ public partial class UILineupManager : BaseUIComponent
     {
         base.OpenUI();
         ui_ViewCreatureCardDetails.gameObject.SetActive(false);
-        this.RegisterEvent<CreatureBean>(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, EventForCardPointerEnter);
-        this.RegisterEvent<CreatureBean>(EventsInfo.UIViewCreatureCardItem_OnPointerExit, EventForCardPointerExit);
+        this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, EventForCardPointerEnter);
+        this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerExit, EventForCardPointerExit);
+        this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForOnClickSelect);
         InitBackpackData();
         InitLineupData();
     }
@@ -86,14 +87,25 @@ public partial class UILineupManager : BaseUIComponent
     /// <summary>
     /// 事件-焦点选中卡片
     /// </summary>
-    public void EventForCardPointerEnter(CreatureBean creatureData)
+    public void EventForCardPointerEnter(UIViewCreatureCardItem targetView)
     {
         ui_ViewCreatureCardDetails.gameObject.SetActive(true);
-        ui_ViewCreatureCardDetails.SetData(creatureData);
+        ui_ViewCreatureCardDetails.SetData(targetView.cardData.creatureData);
     }
 
-    public void EventForCardPointerExit(CreatureBean creatureData)
+    /// <summary>
+    /// 事件-焦点离开
+    /// </summary>
+    public void EventForCardPointerExit(UIViewCreatureCardItem targetView)
     {
         ui_ViewCreatureCardDetails.gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// 事件-点击
+    /// </summary>
+    public void EventForOnClickSelect(UIViewCreatureCardItem targetView)
+    {
+
     }
 }

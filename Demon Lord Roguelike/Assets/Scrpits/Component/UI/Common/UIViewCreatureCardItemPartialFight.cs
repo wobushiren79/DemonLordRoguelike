@@ -8,26 +8,24 @@ using UnityEngine.EventSystems;
 //战斗卡片特殊设置
 public partial class UIViewCreatureCardItem 
 {
-    public FightCreatureBean fightCreatureData;//卡片数据
-
     /// <summary>
     /// 设置数据
     /// </summary>
     public void SetData(FightCreatureBean fightCreatureData, Vector2 originalCardPos)
     {
-        this.fightCreatureData = fightCreatureData;
-        this.fightCreatureData.stateForCard = CardStateEnum.FightIdle;
+        this.cardData.fightCreatureData = fightCreatureData;
+        this.cardData.fightCreatureData.stateForCard = CardStateEnum.FightIdle;
 
-        this.originalCardPos = originalCardPos;
-        this.originalSibling = transform.GetSiblingIndex();
-        gameObject.name = $"UIViewCreatureCardItem_{originalSibling}";
+        this.cardData.originalCardPos = originalCardPos;
+        this.cardData.originalSibling = transform.GetSiblingIndex();
+        gameObject.name = $"UIViewCreatureCardItem_{cardData.originalSibling}";
         //注册 避开卡片的事件
         RegisterEvent<int, Vector2, bool>(EventsInfo.UIViewCreatureCardItem_SelectKeep, EventForForSelectKeep);
         //战斗事件
-        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_SelectCard, EventForGameFightLogicSelectCard);
-        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
-        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
-        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_RefreshCard, EventForGameFightLogicRefreshCard);
+        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_SelectCard, EventForGameFightLogicSelectCard);
+        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
+        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_RefreshCard, EventForGameFightLogicRefreshCard);
 
         SetData(fightCreatureData.creatureData,CardUseState.Show);
     }
@@ -47,7 +45,7 @@ public partial class UIViewCreatureCardItem
         //设置层级最上
         transform.SetAsLastSibling();
         //触发避让事件
-        TriggerEvent(EventsInfo.UIViewCreatureCardItem_SelectKeep, originalSibling, originalCardPos, true);
+        TriggerEvent(EventsInfo.UIViewCreatureCardItem_SelectKeep, cardData.originalSibling, cardData.originalCardPos, true);
     }
 
     /// <summary>
@@ -63,34 +61,13 @@ public partial class UIViewCreatureCardItem
                 .DOScale(Vector3.one, animCardSelectEndTime)
                 .SetEase(animCardSelectEnd);
         //还原层级
-        transform.SetSiblingIndex(originalSibling);
+        transform.SetSiblingIndex(cardData.originalSibling);
         //触发避让事件
-        TriggerEvent(EventsInfo.UIViewCreatureCardItem_SelectKeep, originalSibling, originalCardPos, false);
+        TriggerEvent(EventsInfo.UIViewCreatureCardItem_SelectKeep, cardData.originalSibling, cardData.originalCardPos, false);
         //隐藏卡片详情
-        TriggerEvent(EventsInfo.UIViewCreatureCardItem_HideDetails, fightCreatureData);
+        TriggerEvent(EventsInfo.UIViewCreatureCardItem_HideDetails, this);
     }
     #endregion
-
-    /// <summary>
-    /// 战斗中点击
-    /// </summary>
-    public void OnClickSelectForFight()
-    {
-        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        //战斗中的卡片不能点击
-        if (fightCreatureData.stateForCard == CardStateEnum.Fighting)
-            return;
-        int createMagic = fightCreatureData.creatureData.GetCreateMagic();
-        if (gameFightLogic.fightData.currentMagic < createMagic)
-        {            
-            //魔力不足
-            EventHandler.Instance.TriggerEvent(EventsInfo.Toast_NoEnoughCreateMagic);
-            return;
-        }
-        GameFightLogic fightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        fightLogic.SelectCard(fightCreatureData);
-    
-    }
 
     #region 事件
     /// <summary>
@@ -101,9 +78,9 @@ public partial class UIViewCreatureCardItem
     {
         if (isKeep)
         {
-            int offsetIndex = Mathf.Abs(originalSibling - targetIndex);
+            int offsetIndex = Mathf.Abs(cardData.originalSibling - targetIndex);
             //当前卡距离目标卡的距离
-            float disTwoCard = Mathf.Abs(originalCardPos.x - targetPos.x);
+            float disTwoCard = Mathf.Abs(cardData.originalCardPos.x - targetPos.x);
             //单张卡间距
             float disOneCard = disTwoCard / offsetIndex;
             //获取最靠近的卡片应该移动的位置（卡片的一半加上扩大后的一半 减去 最靠近卡片的距离）
@@ -112,11 +89,11 @@ public partial class UIViewCreatureCardItem
             if (subDataX <= 0)
                 return;
             Vector2 offsetPos = Vector2.zero;
-            if (originalSibling > targetIndex)
+            if (cardData.originalSibling > targetIndex)
             {
                 offsetPos = new Vector2(subDataX, 0);
             }
-            else if (originalSibling < targetIndex)
+            else if (cardData.originalSibling < targetIndex)
             {
                 offsetPos = new Vector2(-subDataX, 0);
             }
@@ -125,18 +102,18 @@ public partial class UIViewCreatureCardItem
                 //把Keep动画关闭
                 KillAnimForKeep();
                 animForSelectKeepStart = rectTransform
-                    .DOAnchorPos(originalCardPos + offsetPos, animCardSelectStartTime)
+                    .DOAnchorPos(cardData.originalCardPos + offsetPos, animCardSelectStartTime)
                     .SetEase(animCardSelectStart);
             }
         }
         else
         {
-            if (rectTransform.anchoredPosition != originalCardPos)
+            if (rectTransform.anchoredPosition != cardData.originalCardPos)
             {
                 //把Keep动画关闭
                 KillAnimForKeep();
                 animForSelectKeepEnd = rectTransform
-                    .DOAnchorPos(originalCardPos, animCardSelectEndTime)
+                    .DOAnchorPos(cardData.originalCardPos, animCardSelectEndTime)
                     .SetEase(animCardSelectEnd);
             }
         }
@@ -147,11 +124,11 @@ public partial class UIViewCreatureCardItem
     /// 事件-选择卡片
     /// </summary>
     /// <param name="targetData"></param>
-    public void EventForGameFightLogicSelectCard(FightCreatureBean fightCreatureDataTarget)
+    public void EventForGameFightLogicSelectCard(UIViewCreatureCardItem targetView)
     {
-        if (this.fightCreatureData != fightCreatureDataTarget)
+        if (this.cardData.fightCreatureData != targetView.cardData.fightCreatureData)
         {
-            switch (fightCreatureData.stateForCard)
+            switch (cardData.fightCreatureData.stateForCard)
             {
                 case CardStateEnum.Fighting:
                     break;
@@ -170,11 +147,11 @@ public partial class UIViewCreatureCardItem
     /// <summary>
     /// 事件-取消选择的卡片
     /// </summary>
-    public void EventForGameFightLogicUnSelectCard(FightCreatureBean fightCreatureDataTarget)
+    public void EventForGameFightLogicUnSelectCard(UIViewCreatureCardItem targetView)
     {
-        if (this.fightCreatureData != fightCreatureDataTarget)
+        if (this.cardData.fightCreatureData != targetView.cardData.fightCreatureData)
         {
-            switch (fightCreatureData.stateForCard)
+            switch (cardData.fightCreatureData.stateForCard)
             {
                 case CardStateEnum.FightSelect:
                     SetCardState(CardStateEnum.FightIdle);
@@ -191,9 +168,9 @@ public partial class UIViewCreatureCardItem
     /// <summary>
     /// 事件-放置卡片
     /// </summary>
-    public void EventForGameFightLogicPutCard(FightCreatureBean fightCreatureDataTarget)
+    public void EventForGameFightLogicPutCard(UIViewCreatureCardItem targetView)
     {
-        if (this.fightCreatureData != fightCreatureDataTarget)
+        if (this.cardData.fightCreatureData != targetView.cardData.fightCreatureData)
             return;
         //设置卡片状态
         SetCardState(CardStateEnum.Fighting);
@@ -202,12 +179,12 @@ public partial class UIViewCreatureCardItem
     /// <summary>
     /// 事件-刷新卡片
     /// </summary>
-    public void EventForGameFightLogicRefreshCard(FightCreatureBean fightCreatureDataTarget)
+    public void EventForGameFightLogicRefreshCard(UIViewCreatureCardItem targetView)
     {
-        if (this.fightCreatureData != fightCreatureDataTarget)
+        if (this.cardData.fightCreatureData != targetView.cardData.fightCreatureData)
             return;
         //刷新卡片状态
-        RefreshCardState(fightCreatureDataTarget.stateForCard);
+        RefreshCardState(targetView.cardData.fightCreatureData.stateForCard);
     }
     #endregion
 }

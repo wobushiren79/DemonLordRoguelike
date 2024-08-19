@@ -30,12 +30,16 @@ public partial class UIFightMain : BaseUIComponent
     {
         base.OpenUI();
         RegisterEvent(EventsInfo.Toast_NoEnoughCreateMagic, EventForNoEnoughCreateMagic);
-        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_SelectCard, EventForGameFightLogicSelectCard);
-        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
-        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_SelectCard, EventForGameFightLogicSelectCard);
+        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
+        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
 
-        RegisterEvent<FightCreatureBean>(EventsInfo.UIViewCreatureCardItem_ShowDetails, EventForShowCardDetails);
-        RegisterEvent<FightCreatureBean>(EventsInfo.UIViewCreatureCardItem_HideDetails, EventForHideCardDetails);
+        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_ShowDetails, EventForShowCardDetails);
+        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_HideDetails, EventForHideCardDetails);
+
+        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, EventForCardPointerEnter);
+        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerExit, EventForCardPointerExit);
+        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForOnClickSelect);
     }
 
     /// <summary>
@@ -197,15 +201,15 @@ public partial class UIFightMain : BaseUIComponent
     /// 事件-选择卡片
     /// </summary>
     /// <param name="targetData"></param>
-    public void EventForGameFightLogicSelectCard(FightCreatureBean targetData)
+    public void EventForGameFightLogicSelectCard(UIViewCreatureCardItem targetView)
     {
-        EventForHideCardDetails(targetData);
+        EventForHideCardDetails(targetView);
     }
 
     /// <summary>
     /// 事件-取消选择的卡片
     /// </summary>
-    public void EventForGameFightLogicUnSelectCard(FightCreatureBean targetData)
+    public void EventForGameFightLogicUnSelectCard(UIViewCreatureCardItem targetView)
     {
 
     }
@@ -213,24 +217,61 @@ public partial class UIFightMain : BaseUIComponent
     /// <summary>
     /// 事件-放置卡片
     /// </summary>
-    public void EventForGameFightLogicPutCard(FightCreatureBean targetData)
+    public void EventForGameFightLogicPutCard(UIViewCreatureCardItem targetView)
     {
         RefreshUIData();
     }
 
-    public void EventForShowCardDetails(FightCreatureBean targetData)
+    public void EventForShowCardDetails(UIViewCreatureCardItem targetView)
     {
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         //没有选中卡片时才显示
         if (gameFightLogic.selectCreature != null)
             return;
         ui_ViewCreatureCardDetails.ShowObj(true);
-        ui_ViewCreatureCardDetails.SetData(targetData.creatureData);
+        ui_ViewCreatureCardDetails.SetData(targetView.cardData.creatureData);
     }
 
-    public void EventForHideCardDetails(FightCreatureBean targetData)
+    public void EventForHideCardDetails(UIViewCreatureCardItem targetView)
     {
         ui_ViewCreatureCardDetails.ShowObj(false);
+    }
+
+
+    /// <summary>
+    /// 事件-焦点选中卡片
+    /// </summary>
+    public void EventForCardPointerEnter(UIViewCreatureCardItem targetView)
+    {
+
+    }
+
+    /// <summary>
+    /// 事件-焦点离开
+    /// </summary>
+    public void EventForCardPointerExit(UIViewCreatureCardItem targetView)
+    {
+
+    }
+
+    /// <summary>
+    /// 事件-点击
+    /// </summary>
+    public void EventForOnClickSelect(UIViewCreatureCardItem targetView)
+    {
+        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        //战斗中的卡片不能点击
+        if (targetView.cardData.fightCreatureData.stateForCard == CardStateEnum.Fighting)
+            return;
+        int createMagic = targetView.cardData.fightCreatureData.creatureData.GetCreateMagic();
+        if (gameFightLogic.fightData.currentMagic < createMagic)
+        {
+            //魔力不足
+            EventHandler.Instance.TriggerEvent(EventsInfo.Toast_NoEnoughCreateMagic);
+            return;
+        }
+        GameFightLogic fightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        fightLogic.SelectCard(targetView);
     }
     #endregion
 }

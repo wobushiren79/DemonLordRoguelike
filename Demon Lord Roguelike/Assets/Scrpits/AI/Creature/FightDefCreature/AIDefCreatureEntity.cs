@@ -13,7 +13,7 @@ public class AIDefCreatureEntity : AICreatureEntity
     /// </summary>
     public void InitData(GameFightCreatureEntity selfDefCreatureEntity)
     {
-        EventHandler.Instance.RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        EventHandler.Instance.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
         this.selfDefCreatureEntity = selfDefCreatureEntity;
     }
 
@@ -23,7 +23,7 @@ public class AIDefCreatureEntity : AICreatureEntity
     public override void ClearData()
     {
         selfDefCreatureEntity = null;
-        EventHandler.Instance.UnRegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        EventHandler.Instance.UnRegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
     }
 
     /// <summary>
@@ -89,7 +89,7 @@ public class AIDefCreatureEntity : AICreatureEntity
     }
 
     #region 事件回调
-    public void EventForGameFightLogicPutCard(FightCreatureBean targetData)
+    public void EventForGameFightLogicPutCard(UIViewCreatureCardItem targetView)
     {
 
     }

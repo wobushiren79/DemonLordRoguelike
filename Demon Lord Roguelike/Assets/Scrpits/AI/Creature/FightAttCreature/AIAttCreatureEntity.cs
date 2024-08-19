@@ -18,7 +18,7 @@ public class AIAttCreatureEntity : AICreatureEntity
     /// <param name="selfAttCreatureEntity"></param>
     public void InitData(GameFightCreatureEntity selfAttCreatureEntity)
     {
-        EventHandler.Instance.RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        EventHandler.Instance.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
         EventHandler.Instance.RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_CreatureDead, EventForGameFightLogicCreatureDead);
         this.selfAttCreatureEntity = selfAttCreatureEntity;
     }
@@ -38,7 +38,7 @@ public class AIAttCreatureEntity : AICreatureEntity
     {
         selfAttCreatureEntity = null;
         targetDefCreatureEntity = null;
-        EventHandler.Instance.UnRegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        EventHandler.Instance.UnRegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
         EventHandler.Instance.UnRegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_CreatureDead, EventForGameFightLogicCreatureDead);
     }
 
@@ -87,10 +87,10 @@ public class AIAttCreatureEntity : AICreatureEntity
     }
 
     #region 事件回调
-    public void EventForGameFightLogicPutCard(FightCreatureBean fightCreatureData)
+    public void EventForGameFightLogicPutCard(UIViewCreatureCardItem targetView)
     {
         //如果是同一路线
-        if (fightCreatureData.positionCreate.z == selfAttCreatureEntity.fightCreatureData.positionCreate.z)
+        if (targetView.cardData.fightCreatureData.positionCreate.z == selfAttCreatureEntity.fightCreatureData.positionCreate.z)
         {
             //如果正在前往目标 则重新寻找目标
             if (currentIntentEnum == AIIntentEnum.AttCreatureMove || currentIntentEnum == AIIntentEnum.AttCreatureAttack)

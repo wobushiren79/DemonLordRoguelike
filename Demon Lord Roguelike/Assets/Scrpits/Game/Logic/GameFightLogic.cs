@@ -9,7 +9,7 @@ public class GameFightLogic : BaseGameLogic
     public FightBean fightData;
 
     public GameObject selectCreature;    //选择的生物
-    public FightCreatureBean selectCreatureData;//选中生物卡片
+    public UIViewCreatureCardItem selectCreatureCard;//选中生物卡片
     public Vector3Int selectCreaturePutPost;    //选择的生物的放置位置
 
     /// <summary>
@@ -92,7 +92,7 @@ public class GameFightLogic : BaseGameLogic
             RayUtil.RayToScreenPointForMousePosition(10, 1 << LayerInfo.Ground, out bool isCollider, out RaycastHit hit, CameraHandler.Instance.manager.mainCamera);
             if (isCollider && hit.collider != null)
             {
-                GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreaureSelectPreview(selectCreatureData);
+                GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreaureSelectPreview(selectCreatureCard.cardData.fightCreatureData);
                 objSelectPreivew.gameObject.SetActive(true);
                 Vector3 hitPoint = hit.point;
 
@@ -126,10 +126,10 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>
     /// 选择了一张防御卡
     /// </summary>
-    public void SelectCard(FightCreatureBean fightCreature)
+    public void SelectCard(UIViewCreatureCardItem targetView)
     {
         //如果原来没有选中
-        if (selectCreatureData == null)
+        if (selectCreatureCard == null)
         {
 
         }
@@ -137,16 +137,16 @@ public class GameFightLogic : BaseGameLogic
         else
         {
             //如果选中的数据是当前的数据 则不做处理
-            if (fightCreature == selectCreatureData)
+            if (targetView == selectCreatureCard)
                 return;
             ClearSelectData();
         }
-        selectCreatureData = fightCreature;
-        CreatureHandler.Instance.CreateDefCreature(fightCreature.creatureData, (targetObj) =>
+        selectCreatureCard = targetView;
+        CreatureHandler.Instance.CreateDefCreature(targetView.cardData.fightCreatureData.creatureData, (targetObj) =>
         {
             selectCreature = targetObj;
         });
-        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_SelectCard, selectCreatureData);
+        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_SelectCard, selectCreatureCard);
     }
 
     /// <summary>
@@ -154,7 +154,7 @@ public class GameFightLogic : BaseGameLogic
     /// </summary>
     public void UnSelectCard()
     {
-        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_UnSelectCard, selectCreatureData);
+        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_UnSelectCard, selectCreatureCard);
         ClearSelectData();
     }
 
@@ -171,7 +171,7 @@ public class GameFightLogic : BaseGameLogic
             //已经有生物了
             return;
         }
-        int createMagic = selectCreatureData.creatureData.GetCreateMagic();
+        int createMagic = selectCreatureCard.cardData.creatureData.GetCreateMagic();
         if (fightData.currentMagic < createMagic)
         {
             //魔力不足
@@ -183,7 +183,7 @@ public class GameFightLogic : BaseGameLogic
         //设置生物位置
         selectCreature.transform.position = selectCreaturePutPost;
         //创建战斗生物
-        GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(selectCreature, selectCreatureData);
+        GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(selectCreature, selectCreatureCard.cardData.fightCreatureData);
         gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefCreatureEntity>(actionBeforeStart: (targetEntity) =>
         {
             targetEntity.InitData(gameFightCreatureEntity);
@@ -192,7 +192,7 @@ public class GameFightLogic : BaseGameLogic
         fightData.SetFightPosition(selectCreaturePutPost, gameFightCreatureEntity);
         selectCreature = null;
 
-        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_PutCard, selectCreatureData);
+        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_PutCard, selectCreatureCard);
         ClearSelectData();
     }
 
@@ -216,7 +216,7 @@ public class GameFightLogic : BaseGameLogic
             }
         }
         selectCreature = null;
-        selectCreatureData = null;
+        selectCreatureCard = null;
     }
 
 

@@ -7,13 +7,7 @@ using UnityEngine.UI;
 
 public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, IPointerExitHandler
 {
-
-    public CreatureBean creatureData;//卡片数据
-    public CardUseState cardUseState;//卡片用途
-    public CardStateEnum cardState;
-
-    public Vector2 originalCardPos;//卡片的起始位置
-    public int originalSibling;//卡片的原始层级
+    public CreatureCardItemBean cardData = new CreatureCardItemBean();
 
     [Header("卡片创建动画延迟时间")]
     public float animCardCreateDelayTime = 0.05f;
@@ -62,7 +56,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
             if (timeUpdateForShowDetails >= timeMaxForShowDetails)
             {
                 timeUpdateForShowDetails = -1;
-                TriggerEvent(EventsInfo.UIViewCreatureCardItem_ShowDetails, fightCreatureData);
+                TriggerEvent(EventsInfo.UIViewCreatureCardItem_ShowDetails, this);
             }
         }
     }
@@ -71,9 +65,9 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     /// 设置数据
     /// </summary>
     public void SetData(CreatureBean creatureData,CardUseState cardUseState)
-    {
-        this.cardUseState = cardUseState;
-        this.creatureData = creatureData;
+    { 
+        this.cardData.cardUseState = cardUseState;
+        this.cardData.creatureData = creatureData;
         int attDamage = creatureData.GetAttDamage();
         int lifeMax = creatureData.GetLife();
 
@@ -89,6 +83,8 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     /// </summary>
     public void SetRarity(int rarity)
     {
+        if (rarity == 0)
+            rarity = 1;
         var rarityInfo = RarityInfoCfg.GetItemData(rarity);
         ColorUtility.TryParseHtmlString(rarityInfo.ui_board_color, out Color boardColor);
         ui_CardBgBorad.color = boardColor;
@@ -155,10 +151,10 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     /// </summary>
     public void SetCardState(CardStateEnum cardState)
     {
-        this.cardState = cardState;
-        if (this.fightCreatureData != null)
+        this.cardData.cardState = cardState;
+        if (this.cardData.fightCreatureData != null)
         {
-            this.fightCreatureData.stateForCard = cardState;
+            this.cardData.fightCreatureData.stateForCard = cardState;
         }
         RefreshCardState(cardState);
     }
@@ -197,22 +193,12 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
         }
     }
     
+    /// <summary>
+    /// 点击选择
+    /// </summary>
     public void OnClickSelect()
     {
-        switch (cardUseState)
-        {
-            case CardUseState.Show:
-                break;
-            case CardUseState.Fight:
-                OnClickSelectForFight();
-                break;
-            case CardUseState.Lineup:
-                OnClickSelectForLineup();
-                break;
-            case CardUseState.LineupBackpack:
-                OnClickSelectForLineupBackpack();
-                break;
-        }
+        TriggerEvent(EventsInfo.UIViewCreatureCardItem_OnClickSelect, this);
     }
 
     #region 点击触发
@@ -223,20 +209,13 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     /// <param name="eventData"></param>
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {
-        switch (cardUseState)
+        switch (cardData.cardUseState)
         {
-            case CardUseState.Show:
-                break;
             case CardUseState.Fight:
                 OnPointerEnterForFight(eventData);
                 break;
-            case CardUseState.Lineup:
-                OnPointerEnterForLineup(eventData);
-                break;
-            case CardUseState.LineupBackpack:
-                OnPointerEnterForLineupBackpack(eventData);
-                break;
         }
+        TriggerEvent(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, this);
     }
 
     /// <summary>
@@ -245,20 +224,13 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     /// <param name="eventData"></param>
     void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
     {
-        switch (cardUseState)
+        switch (cardData.cardUseState)
         {
-            case CardUseState.Show:
-                break;
             case CardUseState.Fight:
                 OnPointerExitForFight(eventData);
                 break;
-            case CardUseState.Lineup:
-                OnPointerExitForLineup(eventData);
-                break;
-            case CardUseState.LineupBackpack:
-                OnPointerExitForLineupBackpack(eventData);
-                break;
         }
+        TriggerEvent(EventsInfo.UIViewCreatureCardItem_OnPointerExit, this);
     }
     #endregion
 
@@ -271,17 +243,17 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
         ClearAnim();
         if (animType == 1)
         {
-            rectTransform.anchoredPosition = new Vector2(originalCardPos.x + Screen.width, originalCardPos.y);
+            rectTransform.anchoredPosition = new Vector2(cardData.originalCardPos.x + Screen.width, cardData.originalCardPos.y);
             animForCreate = rectTransform
-                .DOAnchorPos(originalCardPos, animCardCreateTimeType1)
+                .DOAnchorPos(cardData.originalCardPos, animCardCreateTimeType1)
                 .SetEase(animCardCreateEase)
                 .SetDelay(index * animCardCreateDelayTime);
         }
         else if (animType == 2)
         {
-            rectTransform.anchoredPosition = new Vector2(originalCardPos.x, -500);
+            rectTransform.anchoredPosition = new Vector2(cardData.originalCardPos.x, -500);
             animForCreate = rectTransform
-                .DOAnchorPos(originalCardPos, animCardCreateTimeType2)
+                .DOAnchorPos(cardData.originalCardPos, animCardCreateTimeType2)
                 .SetEase(animCardCreateEase)
                 .SetDelay(index * animCardCreateDelayTime);
         }
