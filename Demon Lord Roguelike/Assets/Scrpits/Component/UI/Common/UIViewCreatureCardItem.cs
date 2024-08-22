@@ -178,6 +178,12 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
                 break;
             case CardStateEnum.FightRest:
                 break;
+
+            case CardStateEnum.LineupSelect:
+                maskUI.ShowMask();
+                break;
+            case CardStateEnum.LineupNoSelect:
+                break;
         }
     }
 

@@ -19,7 +19,7 @@ public class UserDataBean : BaseBean
     public int lineupMax = 10;
 
     //阵容生物
-    public List<string> listLineupCreature = new List<string>();
+    public Dictionary<int, List<string>> dicLineupCreature =new Dictionary<int, List<string>>();
     //背包里的所有生物
     public List<CreatureBean> listBackpackCreature = new List<CreatureBean>();
 
@@ -38,10 +38,90 @@ public class UserDataBean : BaseBean
     }
 
     /// <summary>
+    /// 获取阵容生物所在位置
+    /// </summary>
+    public int GetLineupCreaturePosIndex(int lineupIndex, string creatureId)
+    {
+        if (dicLineupCreature.TryGetValue(lineupIndex, out List<string> listCreatureId))
+        {
+            if (listCreatureId.Contains(creatureId))
+            {
+                return listCreatureId.IndexOf(creatureId); ;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        else
+        {
+            return -1;
+        }
+    }
+
+    /// <summary>
+    /// 添加阵容生物
+    /// </summary>
+    public bool AddLineupCreature(int lineupIndex, string creatureId)
+    {
+        if (dicLineupCreature.TryGetValue(lineupIndex, out List<string> listCreatureId))
+        {
+            if (listCreatureId.Contains(creatureId)) 
+            {
+                return false;
+            }
+            else
+            {
+                listCreatureId.Add(creatureId);
+            }
+        }
+        else
+        {
+            dicLineupCreature.Add(lineupIndex,new List<string>() { creatureId });
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// 移除阵容生物
+    /// </summary>
+    public bool RemoveLineupCreature(int lineupIndex, string creatureId)
+    {
+        if (dicLineupCreature.TryGetValue(lineupIndex, out List<string> listCreatureId))
+        {
+            if (listCreatureId.Contains(creatureId))
+            {
+                listCreatureId.Remove(creatureId);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
     /// 添加背包生物
     /// </summary>
     public void AddBackpackCreature(CreatureBean creatureData)
     {
         listBackpackCreature.Add(creatureData);
+    }
+
+    /// <summary>
+    /// 检测是否包含在阵容里
+    /// </summary>
+    public bool CheckIsLineup(int lineupIndex,string creatureId)
+    {
+        if (dicLineupCreature.TryGetValue(lineupIndex,out List<string> listCreatureId))
+        {
+            if (listCreatureId != null && listCreatureId.Contains(creatureId))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -277,10 +277,10 @@ RectTransform:
   - {fileID: 5773628214782723498}
   - {fileID: 8272645482953681052}
   - {fileID: 209077486160817069}
-  - {fileID: 4284623611785304850}
   - {fileID: 895901820973464988}
   - {fileID: 2196800848408947442}
   - {fileID: 3017371580357165498}
+  - {fileID: 4284623611785304850}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -310,7 +310,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiManager: {fileID: 0}
   remarkData: 
+  listShowCardLineup: []
   listBackpackCreature: []
+  currentLineupIndex: 1
+  timeForLineupCardMove: 0.2
   ui_ViewExit: {fileID: 4245406790760456673}
   ui_ViewBaseInfoContent: {fileID: 1692143287008850840}
   ui_BackpackContent: {fileID: 8712527677418259481}
@@ -427,7 +430,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -120, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4445897162731178859
 CanvasRenderer:

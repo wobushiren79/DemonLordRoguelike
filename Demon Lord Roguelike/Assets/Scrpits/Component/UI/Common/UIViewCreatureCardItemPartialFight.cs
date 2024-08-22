@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 //战斗卡片特殊设置
-public partial class UIViewCreatureCardItem 
+public partial class UIViewCreatureCardItem
 {
     /// <summary>
     /// 设置数据
@@ -27,8 +27,9 @@ public partial class UIViewCreatureCardItem
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_RefreshCard, EventForGameFightLogicRefreshCard);
 
-        SetData(fightCreatureData.creatureData,CardUseState.Show);
+        SetData(fightCreatureData.creatureData, CardUseState.Fight);
     }
+
     #region 触摸相关事件
     /// <summary>
     /// 触摸-进入
@@ -36,7 +37,7 @@ public partial class UIViewCreatureCardItem
     /// <param name="eventData"></param>
     void OnPointerEnterForFight(PointerEventData eventData)
     {
-        //LogUtil.Log($"OnPointerEnter_{originalSibling}");
+        //LogUtil.Log($"OnPointerEnter_{cardData.originalSibling}");
         timeUpdateForShowDetails = 0;
         KillAnimForSelect();
         animForSelectStart = rectTransform
@@ -54,7 +55,7 @@ public partial class UIViewCreatureCardItem
     /// <param name="eventData"></param>
     void OnPointerExitForFight(PointerEventData eventData)
     {
-        //LogUtil.Log($"OnPointerExit_{originalSibling}");
+        //LogUtil.Log($"OnPointerExit_{cardData.originalSibling}");
         timeUpdateForShowDetails = -1;
         KillAnimForSelect();
         animForSelectEnd = rectTransform

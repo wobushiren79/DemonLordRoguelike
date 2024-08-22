@@ -37,6 +37,9 @@ public enum CardStateEnum
     FightSelect = 102,//选择
     Fighting = 103,//上场战斗
     FightRest = 104,//休息
+
+    LineupNoSelect = 201,//阵容未选中
+    LineupSelect = 202,//阵容选中
 }
 
 //动画-生物
