@@ -65,7 +65,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     /// ÉèÖÃÊı¾İ
     /// </summary>
     public void SetData(CreatureBean creatureData,CardUseState cardUseState)
-    { 
+    {
         this.cardData.cardUseState = cardUseState;
         this.cardData.creatureData = creatureData;
         int attDamage = creatureData.GetAttDamage();

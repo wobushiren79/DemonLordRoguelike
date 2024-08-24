@@ -10,7 +10,6 @@ public partial class UILineupManager : BaseUIComponent
 {
     // 缓存池里的阵容卡片
     public Queue<UIViewCreatureCardItem> queuePoolCardLineup = new Queue<UIViewCreatureCardItem>();
-
     // 展示中的阵容卡片
     public List<UIViewCreatureCardItem> listShowCardLineup = new List<UIViewCreatureCardItem>();
 
@@ -19,7 +18,9 @@ public partial class UILineupManager : BaseUIComponent
     //当前阵容的序号
     public int currentLineupIndex = 1;
     //阵容动画卡片移动时间
-    public float timeForLineupCardMove = 0.2f;
+    protected float timeForLineupCardMove = 0.2f;
+    //阵容动画卡片移动时间(初始化)
+    protected float timeForLineupCardMoveInit = 0.5f;
     public override void Awake()
     {
         base.Awake();
@@ -40,18 +41,20 @@ public partial class UILineupManager : BaseUIComponent
 
     public override void CloseUI()
     {
-        base.CloseUI();
         ui_BackpackContent.SetCellCount(0);
+        ui_BackpackContent.ClearAllCell();
         while (queuePoolCardLineup.Count > 0)
         {
             var targetView = queuePoolCardLineup.Dequeue();
-            DestroyImmediate(targetView);
+            DestroyImmediate(targetView.gameObject);
         }
         for (int i = 0; i < listShowCardLineup.Count; i++)
         {
             var targetView = listShowCardLineup[i];
-            DestroyImmediate(targetView);
+            DestroyImmediate(targetView.gameObject);
         }
+        listShowCardLineup.Clear();
+        base.CloseUI();
     }
 
 
@@ -63,6 +66,7 @@ public partial class UILineupManager : BaseUIComponent
     {
         var itemData = listBackpackCreature[itemCell.index];
         var itemView = itemCell.GetComponent<UIViewCreatureCardItem>();
+        itemView.cardData.indexList = itemCell.index;
         itemView.SetData(itemData, CardUseState.LineupBackpack);
 
         //设置选中和未选中状态
@@ -95,13 +99,21 @@ public partial class UILineupManager : BaseUIComponent
     public void InitLineupData()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-
+        List<string> listLineupCreature = userData.GetLineupCreature(currentLineupIndex);
+        for (int i = 0; i < listLineupCreature.Count; i++)
+        {
+            string creatureId = listLineupCreature[i];
+            var creatureData = userData.GetBackpackCreature(creatureId);
+            if (creatureData == null)
+                continue;
+            AddLineupCard(creatureData, new Vector3(Screen.width / 2f + 120, 0, 0), 1);
+        }
     }
 
     /// <summary>
     /// 获取阵容卡片位置
     /// </summary>
-    public Vector3 GetLineupPostion(int maxLineupNum,int lineupPosIndex)
+    public Vector3 GetLineupPostion(int maxLineupNum, int lineupPosIndex)
     {
         float wView = ui_LineupContent.rect.width;
         float itemW = wView / maxLineupNum;
@@ -109,13 +121,15 @@ public partial class UILineupManager : BaseUIComponent
         {
             itemW = ui_ViewCreatureCardItem.rectTransform.rect.width;
         }
-        return new Vector3(itemW * lineupPosIndex - wView/2f + itemW/2f, 0,0);
+        return new Vector3(itemW * lineupPosIndex - wView / 2f + itemW / 2f, 0, 0);
     }
 
     /// <summary>
     /// 播放所有lineup卡片重置位置动画
     /// </summary>
-    public void AnimForAllLineupCardPosReset(Action actionForComplete)
+    /// <param name="animType">0默认 1初始化</param>
+    /// <param name="actionForComplete"></param>
+    public void AnimForAllLineupCardPosReset(int animType, Action actionForComplete)
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         int completeNum = 0;
@@ -127,10 +141,17 @@ public partial class UILineupManager : BaseUIComponent
             var itemLineupPosIndex = userData.GetLineupCreaturePosIndex(currentLineupIndex, itemCardView.cardData.creatureData.creatureId);
             Vector3 itemLineupPos = GetLineupPostion(listShowCardLineup.Count, itemLineupPosIndex);
             //播放动画
+            float timeForMove = timeForLineupCardMove;
+            Ease animEase = Ease.OutBack;
+            if (animType == 1)
+            {
+                timeForMove = timeForLineupCardMoveInit;
+                animEase = Ease.OutQuad;
+            }
             itemCardView.transform.DOKill();
             itemCardView.transform
-                .DOLocalMove(itemLineupPos, timeForLineupCardMove)
-                .SetEase(Ease.OutBack)
+                .DOLocalMove(itemLineupPos, timeForMove)
+                .SetEase(animEase)
                 .OnComplete(() =>
                 {
                     completeNum++;
@@ -145,7 +166,7 @@ public partial class UILineupManager : BaseUIComponent
     /// <summary>
     /// 增加阵容里面的卡片
     /// </summary>
-    public void AddLineupCard(UIViewCreatureCardItem targetView)
+    public void AddLineupCard(CreatureBean creatureData, Vector3 startPos, int animType = 0)
     {
         //UIHandler.Instance.ShowScreenLock();
         UIViewCreatureCardItem lineupView;
@@ -158,14 +179,12 @@ public partial class UILineupManager : BaseUIComponent
             GameObject ObjNewCard = Instantiate(ui_LineupContent.gameObject, ui_ViewCreatureCardItem.gameObject);
             lineupView = ObjNewCard.GetComponent<UIViewCreatureCardItem>();
         }
-        lineupView.SetData(targetView.cardData.creatureData, CardUseState.Lineup);
-
-        Vector3 posStart = UGUIUtil.GetUIRootPos(ui_LineupContent.transform, targetView.transform);
-        lineupView.transform.localPosition = posStart;
+        lineupView.SetData(creatureData, CardUseState.Lineup);
+        lineupView.transform.localPosition = startPos;
         listShowCardLineup.Add(lineupView);
         lineupView.gameObject.SetActive(true);
         //播放动画
-        AnimForAllLineupCardPosReset(() =>
+        AnimForAllLineupCardPosReset(animType, () =>
         {
             //UIHandler.Instance.HideScreenLock();
         });
@@ -175,14 +194,14 @@ public partial class UILineupManager : BaseUIComponent
     /// 移除阵容里的卡片
     /// </summary>
     /// <param name="targetView"></param>
-    public void RemoveLineupCard(UIViewCreatureCardItem targetView)
+    public void RemoveLineupCard(UIViewCreatureCardItem targetView, int animType = 0)
     {
         //UIHandler.Instance.ShowScreenLock();
         targetView.gameObject.SetActive(false);
         queuePoolCardLineup.Enqueue(targetView);
         listShowCardLineup.Remove(targetView);
 
-        AnimForAllLineupCardPosReset(() =>
+        AnimForAllLineupCardPosReset(animType, () =>
         {
             //UIHandler.Instance.HideScreenLock();
         });
@@ -240,15 +259,29 @@ public partial class UILineupManager : BaseUIComponent
         if (targetView.cardData.cardUseState == CardUseState.LineupBackpack && targetView.cardData.cardState == CardStateEnum.LineupNoSelect)
         {
             userData.AddLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureId);
-            ui_BackpackContent.RefreshAllCells();
+            ui_BackpackContent.RefreshCell(targetView.cardData.indexList);
 
-            AddLineupCard(targetView);
+            //增加阵容卡
+            Vector3 posStart = UGUIUtil.GetUIRootPos(ui_LineupContent.transform, targetView.transform);
+            AddLineupCard(targetView.cardData.creatureData, posStart);
         }
         else if (targetView.cardData.cardUseState == CardUseState.Lineup)
         {
             userData.RemoveLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureId);
-            ui_BackpackContent.RefreshAllCells();
 
+            //刷新
+            var allCell = ui_BackpackContent.GetAllCell();
+            for (int i = 0; i < allCell.Count; i++)
+            {
+                var itemCell = allCell[i];
+                var itemCardView = itemCell.GetComponent<UIViewCreatureCardItem>();
+                if (itemCardView.cardData.creatureData.creatureId.Equals(targetView.cardData.creatureData.creatureId))
+                {
+                    ui_BackpackContent.RefreshCell(i);
+                    break;
+                }
+            }
+            //移除阵容卡
             RemoveLineupCard(targetView);
         }
     }

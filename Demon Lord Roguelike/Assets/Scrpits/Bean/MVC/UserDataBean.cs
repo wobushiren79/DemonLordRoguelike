@@ -38,6 +38,23 @@ public class UserDataBean : BaseBean
     }
 
     /// <summary>
+    /// 获取阵容生物
+    /// </summary>
+    public List<string> GetLineupCreature(int lineupIndex)
+    {
+        if (dicLineupCreature.TryGetValue(lineupIndex, out List<string> listCreatureId))
+        {
+            return listCreatureId;
+        }
+        else
+        {
+            List<string> targetList = new List<string>();
+            dicLineupCreature.Add(lineupIndex, targetList);
+            return targetList;
+        }
+    }
+
+    /// <summary>
     /// 获取阵容生物所在位置
     /// </summary>
     public int GetLineupCreaturePosIndex(int lineupIndex, string creatureId)
@@ -108,6 +125,22 @@ public class UserDataBean : BaseBean
     public void AddBackpackCreature(CreatureBean creatureData)
     {
         listBackpackCreature.Add(creatureData);
+    }
+
+    /// <summary>
+    /// 获取背包里的生物
+    /// </summary>
+    public CreatureBean GetBackpackCreature(string creatureId)
+    {
+        for (int i = 0; i < listBackpackCreature.Count; i++)
+        {
+            var itemCreature = listBackpackCreature[i];
+            if (itemCreature.creatureId.Equals(creatureId))
+            {
+                return itemCreature;
+            }
+        }
+        return null;
     }
 
     /// <summary>
