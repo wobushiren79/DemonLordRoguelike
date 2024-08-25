@@ -23,6 +23,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     protected float timeForLineupCardMove = 0.2f;
     //阵容动画卡片移动时间(初始化)
     protected float timeForLineupCardMoveInit = 0.4f;
+
     public override void Awake()
     {
         base.Awake();
@@ -44,7 +45,6 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         ui_LineupIndexTitle.SetPosition(0,false);
     }
 
-
     public override void CloseUI()
     {
         ui_BackpackContent.SetCellCount(0);
@@ -62,7 +62,6 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         listShowCardLineup.Clear();
         base.CloseUI();
     }
-
 
     /// <summary>
     /// item滚动变化
