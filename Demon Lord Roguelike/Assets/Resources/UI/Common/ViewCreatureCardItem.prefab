@@ -333,8 +333,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -35, y: 67}
-  m_SizeDelta: {x: 19, y: 18}
+  m_AnchoredPosition: {x: -24, y: 49}
+  m_SizeDelta: {x: 39, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5352215771827235015
 CanvasRenderer:
@@ -364,7 +364,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 1
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 247c479848a079a49a20420c066af040, type: 2}
   m_sharedMaterial: {fileID: -8638347989651600913, guid: 247c479848a079a49a20420c066af040, type: 2}
@@ -391,14 +391,14 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 16
+  m_fontSize: 24
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 1
-  m_fontSizeMax: 16
+  m_fontSizeMax: 24
   m_fontStyle: 0
-  m_HorizontalAlignment: 2
+  m_HorizontalAlignment: 1
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -741,18 +741,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aaf2aa48634a83444aca6acb095dc16f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rectTransform: {fileID: 0}
-  creatureData:
-    creatureId: 
-    id: 0
-    creatureName: 
-    level: 0
-    rarity: 0
-    listSkinData: []
-  cardUseState: 0
-  cardState: 0
-  originalCardPos: {x: 0, y: 0}
-  originalSibling: 0
+  _rectTransform: {fileID: 0}
+  cardData:
+    fightCreatureData:
+      creatureData:
+        creatureId: 
+        id: 0
+        creatureName: 
+        level: 0
+        rarity: 0
+        listSkinData: []
+      positionCreate: {x: 0, y: 0, z: 0}
+      liftCurrent: 0
+      liftMax: 0
+      armorCurrent: 0
+      armorMax: 0
+      stateForCard: 0
+    creatureData:
+      creatureId: 
+      id: 0
+      creatureName: 
+      level: 0
+      rarity: 0
+      listSkinData: []
+    cardUseState: 0
+    cardState: 0
+    originalCardPos: {x: 0, y: 0}
+    originalSibling: 0
+    indexList: 0
   animCardCreateDelayTime: 0.05
   animCardCreateTimeType1: 0.8
   animCardCreateTimeType2: 0.4
@@ -771,20 +787,6 @@ MonoBehaviour:
   ui_Name: {fileID: 4296180375066215962}
   ui_Level: {fileID: 5692699625459065957}
   ui_CardBgBorad: {fileID: 8175520546131530261}
-  fightCreatureData:
-    creatureData:
-      creatureId: 
-      id: 0
-      creatureName: 
-      level: 0
-      rarity: 0
-      listSkinData: []
-    positionCreate: {x: 0, y: 0, z: 0}
-    liftCurrent: 0
-    liftMax: 0
-    armorCurrent: 0
-    armorMax: 0
-    stateForCard: 0
 --- !u!114 &328644363354151163
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -800,24 +802,32 @@ MonoBehaviour:
   defaultColor: {r: 0.20754719, g: 0.20754719, b: 0.20754719, a: 1}
   targetGraphics:
   - {fileID: 8200156635581598641}
-  - {fileID: 2975300435028145054}
   - {fileID: 8175520546131530261}
+  - {fileID: 3266094002738400249}
+  - {fileID: 2992929411199304094}
+  - {fileID: 2975300435028145054}
   - {fileID: 5692699625459065957}
   - {fileID: 4296180375066215962}
-  - {fileID: 2992929411199304094}
   - {fileID: 8269038274452040938}
+  - {fileID: 1181738874045560485}
   - {fileID: 2781131069662277899}
   - {fileID: 8866968502071271271}
   - {fileID: 3160264771354168836}
   - {fileID: 8524970180562100328}
+  - {fileID: 1247696057464144758}
+  - {fileID: 5532100201650777370}
   targetColors:
-  - {r: 0.34117648, g: 0.32156864, b: 0.28627452, a: 1}
-  - {r: 0.34509805, g: 0.3254902, b: 0.28627452, a: 1}
+  - {r: 0.34117648, g: 0.3190795, b: 0.28627452, a: 1}
   - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 1, g: 1, b: 1, a: 0.003921569}
   - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 0, g: 0, b: 0, a: 0.5019608}
   - {r: 1, g: 1, b: 1, a: 1}
   - {r: 1, g: 1, b: 1, a: 1}
   - {r: 1, g: 1, b: 1, a: 0}
+  - {r: 0, g: 0, b: 0, a: 0.5019608}
+  - {r: 1, g: 1, b: 1, a: 1}
+  - {r: 1, g: 1, b: 1, a: 1}
   - {r: 1, g: 1, b: 1, a: 1}
   - {r: 1, g: 1, b: 1, a: 1}
   - {r: 1, g: 1, b: 1, a: 1}
@@ -856,8 +866,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 8, y: 67}
-  m_SizeDelta: {x: 68, y: 12}
+  m_AnchoredPosition: {x: 0, y: 67}
+  m_SizeDelta: {x: 80, y: 12}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &843369063462462963
 CanvasRenderer:
@@ -1471,8 +1481,30 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 57eb99abd51d5644db5b806a87868598, type: 3}
+--- !u!114 &1247696057464144758 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8292138997184239160, guid: 57eb99abd51d5644db5b806a87868598, type: 3}
+  m_PrefabInstance: {fileID: 7080552035599963470}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &4668471347578155732 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2488961703218702234, guid: 57eb99abd51d5644db5b806a87868598, type: 3}
   m_PrefabInstance: {fileID: 7080552035599963470}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &5532100201650777370 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3352608166894909524, guid: 57eb99abd51d5644db5b806a87868598, type: 3}
+  m_PrefabInstance: {fileID: 7080552035599963470}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

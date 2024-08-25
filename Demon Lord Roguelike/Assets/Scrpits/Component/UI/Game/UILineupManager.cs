@@ -1,12 +1,14 @@
 using DG.Tweening;
+using NUnit.Framework.Interfaces;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public partial class UILineupManager : BaseUIComponent
+public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
 {
     // 缓存池里的阵容卡片
     public Queue<UIViewCreatureCardItem> queuePoolCardLineup = new Queue<UIViewCreatureCardItem>();
@@ -20,22 +22,26 @@ public partial class UILineupManager : BaseUIComponent
     //阵容动画卡片移动时间
     protected float timeForLineupCardMove = 0.2f;
     //阵容动画卡片移动时间(初始化)
-    protected float timeForLineupCardMoveInit = 0.5f;
+    protected float timeForLineupCardMoveInit = 0.4f;
     public override void Awake()
     {
         base.Awake();
         ui_BackpackContent.AddCellListener(OnCellChangeForBackpack);
+        ui_LineupIndexTitle.SetCallBack(this);
     }
 
     public override void OpenUI()
     {
         base.OpenUI();
+        currentLineupIndex = 1;
         ui_ViewCreatureCardDetails.gameObject.SetActive(false);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, EventForCardPointerEnter);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerExit, EventForCardPointerExit);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForOnClickSelect);
         InitBackpackData();
         InitLineupData();
+        //初始化设置标题
+        ui_LineupIndexTitle.SetPosition(0,false);
     }
 
 
@@ -89,6 +95,8 @@ public partial class UILineupManager : BaseUIComponent
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         listBackpackCreature.Clear();
         listBackpackCreature.AddRange(userData.listBackpackCreature);
+        //初始化排序
+        OrderBackpackCreature(3, false);
         //设置数量
         ui_BackpackContent.SetCellCount(userData.listBackpackCreature.Count);
     }
@@ -207,12 +215,38 @@ public partial class UILineupManager : BaseUIComponent
         });
     }
 
+    /// <summary>
+    /// 移除所有展示的阵容卡片
+    /// </summary>
+    public void RemoveLineupCardShow()
+    {
+        for (int i = 0; i < listShowCardLineup.Count; i++)
+        {
+            var targetView = listShowCardLineup[i];
+            targetView.gameObject.SetActive(false);
+            queuePoolCardLineup.Enqueue(targetView);
+        }
+        listShowCardLineup.Clear();
+    }
+
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
         if (viewButton == ui_ViewExit)
         {
             OnClickForExit();
+        }
+        else if (viewButton == ui_OrderBtn_Rarity)
+        {
+            OrderBackpackCreature(1);
+        }
+        else if (viewButton == ui_OrderBtn_Level)
+        {
+            OrderBackpackCreature(2);
+        }
+        else if (viewButton == ui_OrderBtn_Lineup)
+        {
+            OrderBackpackCreature(3);
         }
     }
 
@@ -223,6 +257,84 @@ public partial class UILineupManager : BaseUIComponent
         {
             OnClickForExit();
         }
+    }
+
+    /// <summary>
+    /// 改变队伍序号
+    /// </summary>
+    public void ChangeLineupIndex(int indexLineup)
+    {
+        currentLineupIndex = indexLineup;
+        //移除所有展示中的阵容卡片
+        RemoveLineupCardShow();
+        //初始化阵容卡片
+        InitLineupData();
+        //刷新背包卡片
+        ui_BackpackContent.RefreshAllCells();
+    }
+
+    /// <summary>
+    /// 排序背包里的生物
+    /// </summary>
+    /// <param name="orderType"></param>
+    public void OrderBackpackCreature(int orderType, bool isRefreshUI = true)
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+
+        switch (orderType)
+        {
+            case 1://按稀有度排序
+                listBackpackCreature = listBackpackCreature
+                    .OrderByDescending((itemData) =>
+                    {
+                        return itemData.rarity;
+                    })
+                    .ThenByDescending((itemData) =>
+                    {
+                        return itemData.level;
+                    })
+                    .ToList();
+                break;
+            case 2:
+                //按等级排序
+                listBackpackCreature = listBackpackCreature
+                    .OrderByDescending((itemData) =>
+                    {
+                        return itemData.level;
+                    })
+                    .ThenByDescending((itemData) =>
+                    {
+                        return itemData.rarity;
+                    })
+                    .ToList();
+                break;
+            case 3:
+                //按选中排序
+                listBackpackCreature = listBackpackCreature
+                    .OrderBy((itemData) =>
+                    {
+                        if (userData.CheckIsLineup(currentLineupIndex, itemData.creatureId))
+                        {
+                            return 0;
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+                    })
+                    .ThenByDescending((itemData) =>
+                    {
+                        return itemData.rarity;
+                    })
+                    .ThenByDescending((itemData) =>
+                    {
+                        return itemData.level;
+                    })
+                    .ToList();
+                break;
+        }
+        if (isRefreshUI)
+            ui_BackpackContent.RefreshAllCells();
     }
 
     /// <summary>
@@ -284,5 +396,26 @@ public partial class UILineupManager : BaseUIComponent
             //移除阵容卡
             RemoveLineupCard(targetView);
         }
+    }
+
+    public void RadioButtonSelected(RadioGroupView rgView, int position, RadioButtonView rbview)
+    {
+        if (rbview == ui_LineupIndexBtn_1)
+        {
+            ChangeLineupIndex(1);
+        }
+        else if (rbview == ui_LineupIndexBtn_2)
+        {
+            ChangeLineupIndex(2);
+        }
+        else if (rbview == ui_LineupIndexBtn_3)
+        {
+            ChangeLineupIndex(3);
+        }
+    }
+
+    public void RadioButtonUnSelected(RadioGroupView rgView, int position, RadioButtonView rbview)
+    {
+
     }
 }

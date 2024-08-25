@@ -16,5 +16,19 @@ public partial class UILineupManager
 
     public UIViewCreatureCardDetails ui_ViewCreatureCardDetails;
 
+    public Button ui_OrderBtn_Rarity;
+
+    public Button ui_OrderBtn_Level;
+
+    public Button ui_OrderBtn_Lineup;
+
+    public RadioButtonView ui_LineupIndexBtn_1;
+
+    public RadioButtonView ui_LineupIndexBtn_3;
+
+    public RadioButtonView ui_LineupIndexBtn_2;
+
+    public RadioGroupView ui_LineupIndexTitle;
+
 
 }
