@@ -242,14 +242,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spSelected: {fileID: 21300000, guid: 867330b3ae368374b8fda793c63287f9, type: 3}
   colorIVSelected: {r: 1, g: 1, b: 1, a: 1}
-  colorTVSelected: {r: 1, g: 1, b: 1, a: 1}
+  colorTVSelected: {r: 0.6981132, g: 0.15477037, b: 0.15477037, a: 1}
   spUnselected: {fileID: 21300000, guid: 2796b2ce09902334c9e5cbd2c7a34555, type: 3}
   colorIVUnselected: {r: 1, g: 1, b: 1, a: 1}
   colorTVUnselected: {r: 1, g: 1, b: 1, a: 1}
   rbButton: {fileID: 6108402067437202936}
-  rbImage: {fileID: 0}
+  rbImage: {fileID: 1583351194964968709}
   rbText: {fileID: 0}
-  rbText2: {fileID: 0}
+  rbText2: {fileID: 5994318137247325993}
   isSelect: 1
 --- !u!114 &6108402067437202936
 MonoBehaviour:

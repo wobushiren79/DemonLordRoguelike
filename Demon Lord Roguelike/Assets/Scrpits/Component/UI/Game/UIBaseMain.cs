@@ -15,6 +15,10 @@ public partial class UIBaseMain : BaseUIComponent
                 UIHandler.Instance.OpenUIAndCloseOther<UITestBase>();
             }
         }
+        else if (inputType == InputActionUIEnum.ESC)
+        {
+            UIHandler.Instance.OpenUIAndCloseOther<UIGameSystem>();
+        }
     }
 
 

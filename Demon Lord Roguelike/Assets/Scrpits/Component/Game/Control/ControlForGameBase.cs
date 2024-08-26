@@ -46,13 +46,21 @@ public class ControlForGameBase : BaseControl
         HandleForMoveUpdate();
     }
 
-
-    public override void EnabledControl(bool enabled)
+    public void EnabledControl(bool enabled, bool isHideControlTarget)
     {
         base.EnabledControl(enabled);
         if (!enabled)
         {
-            GameControlHandler.Instance.manager.controlTargetForCreature.SetActive(false);
+            if (isHideControlTarget)
+            {
+                GameControlHandler.Instance.manager.controlTargetForCreature.SetActive(false);
+            }
+            else
+            {
+                GameControlHandler.Instance.manager.controlTargetForCreature.SetActive(true);
+                //播放动画
+                PlayAnimForControlTarget(AnimationCreatureStateEnum.Idle);
+            }
             return;
         }
         GameControlHandler.Instance.manager.controlTargetForCreature.SetActive(true);
@@ -60,12 +68,18 @@ public class ControlForGameBase : BaseControl
         PlayAnimForControlTarget(AnimationCreatureStateEnum.Idle);
     }
 
+    public override void EnabledControl(bool enabled)
+    {
+        base.EnabledControl(enabled);
+        EnabledControl(enabled, true);
+    }
+
     /// <summary>
     /// 播放控制物体的动画
     /// </summary>
     /// <param name="animationCreatureState"></param>
     /// <param name="isLoop"></param>
-    public void PlayAnimForControlTarget(AnimationCreatureStateEnum animationCreatureState,bool isLoop =  true)
+    public void PlayAnimForControlTarget(AnimationCreatureStateEnum animationCreatureState, bool isLoop = true)
     {
         if (controlTargetForCreatureSkeletonAnimation == null)
         {
@@ -104,7 +118,7 @@ public class ControlForGameBase : BaseControl
             {
                 controlTargetForCreatureSkeletonAnimation.transform.localScale = new Vector3(directionXSize, sizeOriginal.y, sizeOriginal.z);
             }
-            else if(moveData.x < 0)
+            else if (moveData.x < 0)
             {
                 controlTargetForCreatureSkeletonAnimation.transform.localScale = new Vector3(-directionXSize, sizeOriginal.y, sizeOriginal.z);
             }
@@ -125,7 +139,7 @@ public class ControlForGameBase : BaseControl
         {
             timeUpdateForInteraction = 0;
             var controlTarget = GameControlHandler.Instance.manager.controlTargetForCreature;
-          
+
             if (controlTargetForInteraction == null)
             {
                 controlTargetForInteraction = controlTarget.transform.Find("Interaction").gameObject;

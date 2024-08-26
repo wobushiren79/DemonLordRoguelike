@@ -87,7 +87,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isCancelSelect: 0
-  listButton: []
+  listButton:
+  - {fileID: 7189810996019967593}
+  - {fileID: 7009214391004783219}
 --- !u!1 &1865413724962408494
 GameObject:
   m_ObjectHideFlags: 0

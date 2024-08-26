@@ -17,9 +17,9 @@ public class GameControlHandler : BaseHandler<GameControlHandler,GameControlMana
     /// <summary>
     /// 设置基础移动控制
     /// </summary>
-    public void SetBaseControl(bool isEnable = true)
+    public void SetBaseControl(bool isEnable = true, bool isHideControlTarget = true)
     {
         manager.EnableAllControl(false);
-        manager.controlForGameBase.EnabledControl(isEnable);
+        manager.controlForGameBase.EnabledControl(isEnable, isHideControlTarget);
     }
 }
