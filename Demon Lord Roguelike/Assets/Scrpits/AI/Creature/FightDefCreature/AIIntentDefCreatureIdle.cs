@@ -12,7 +12,7 @@ public class AIIntentDefCreatureIdle : AIBaseIntent
     {
         selfAIEntity = aiEntity as AIDefCreatureEntity;
         timeUpdateForFindTarget = 0;
-        selfAIEntity.selfDefCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Idle, true);
+        selfAIEntity.selfDefCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)

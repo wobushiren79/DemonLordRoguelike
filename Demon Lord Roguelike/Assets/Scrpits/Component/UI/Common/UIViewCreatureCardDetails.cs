@@ -82,7 +82,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         //修改皮肤
         SpineHandler.Instance.ChangeSkeletonSkin(ui_Icon.Skeleton, skinArray);
 
-        ui_Icon.AnimationState.SetAnimation(0, AnimationCreatureStateEnum.Idle.ToString(), true);
+        ui_Icon.AnimationState.SetAnimation(0, SpineAnimationStateEnum.Idle.ToString(), true);
         ui_Icon.ShowObj(true);
         //设置UI大小和坐标
         if (creatureModel.ui_data_b.IsNull())

@@ -18,7 +18,7 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
         attackState = 0;
 
         //设置待机动作
-        selfAIEntity.selfAttCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Idle, true);
+        selfAIEntity.selfAttCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
@@ -71,7 +71,7 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
             return;
         }
         //播放攻击动画
-        selfAIEntity.selfAttCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Attack, false);
+        selfAIEntity.selfAttCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false);
     }
 
     /// <summary>

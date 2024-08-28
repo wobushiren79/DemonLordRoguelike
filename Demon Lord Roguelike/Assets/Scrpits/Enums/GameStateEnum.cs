@@ -42,30 +42,6 @@ public enum CardStateEnum
     LineupSelect = 202,//阵容选中
 }
 
-//动画-生物
-public enum AnimationCreatureStateEnum
-{
-    None,
-    Idle,
-    Walk,
-    Walk2,
-    Walk3,
-    Attack,
-    Attack2,
-    Attack3,
-    Attack4,
-    Attack5,
-    Attack6,
-    Attack7,
-    Dead,
-    NearDead,
-    Hit,//受到攻击
-    Jump,//跳跃
-    Run,//泡
-    Dizzy,//晕眩
-}
-
-
 //游戏战斗预制状态
 public enum GameFightPrefabStateEnum
 {

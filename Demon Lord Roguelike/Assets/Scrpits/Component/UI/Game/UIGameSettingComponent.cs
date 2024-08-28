@@ -1,4 +1,5 @@
 using UnityEngine.UI;
+using UnityEngine;
 
 
 public partial class UIGameSetting
@@ -9,7 +10,11 @@ public partial class UIGameSetting
 
     public RadioButtonView ui_GameSetttingLabel_Game;
 
-    public RadioButtonView ui_GameSetttingLabel_Graphics;
+    public RectTransform ui_List;
+
+    public RadioButtonView ui_GameSetttingLabel_Display;
+
+    public RadioButtonView ui_GameSetttingLabel_Audio;
 
 
 }

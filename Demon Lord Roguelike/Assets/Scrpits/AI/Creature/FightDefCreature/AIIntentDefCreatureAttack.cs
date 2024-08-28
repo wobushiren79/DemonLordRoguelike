@@ -16,7 +16,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
         timeUpdateAttackPre = 0;
         attackState = 0;
         selfAIEntity = aiEntity as AIDefCreatureEntity;
-        selfAIEntity.selfDefCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Idle, false);
+        selfAIEntity.selfDefCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, false);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
@@ -69,8 +69,8 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
             return;
         }
         //²¥·Å¹¥»÷¶¯»­
-        selfAIEntity.selfDefCreatureEntity.PlayAnim(AnimationCreatureStateEnum.Attack, false);
-        selfAIEntity.selfDefCreatureEntity.AddAnim(0, AnimationCreatureStateEnum.Idle, true, 1);
+        selfAIEntity.selfDefCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false);
+        selfAIEntity.selfDefCreatureEntity.AddAnim(0, SpineAnimationStateEnum.Idle, true, 1);
     }
 
     /// <summary>

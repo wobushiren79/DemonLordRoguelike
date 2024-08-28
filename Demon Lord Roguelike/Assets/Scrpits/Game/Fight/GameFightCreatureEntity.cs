@@ -49,22 +49,22 @@ public class GameFightCreatureEntity
     /// 播放动画
     /// </summary>
     /// <param name="animationCreatureState"></param>
-    public TrackEntry PlayAnim(AnimationCreatureStateEnum animationCreatureState, bool isLoop, float mixDuration = -1)
+    public TrackEntry PlayAnim(SpineAnimationStateEnum animationCreatureState, bool isLoop, float mixDuration = -1)
     {
         if (creatureSkeletionAnimation == null)
             return null;
-        var anim = creatureSkeletionAnimation.AnimationState.SetAnimation(0, animationCreatureState.GetEnumName(), isLoop);
-        if (anim != null && mixDuration != -1)
+        var animData =  SpineHandler.Instance.PlayAnim(creatureSkeletionAnimation, animationCreatureState, isLoop);
+        if (animData != null && mixDuration != -1)
         {
-            anim.MixDuration = mixDuration;
+            animData.MixDuration = mixDuration;
         }
-        return anim;
+        return animData;
     }
 
     /// <summary>
     /// 增加动画
     /// </summary>
-    public void AddAnim(int trackIndex, AnimationCreatureStateEnum animationCreatureState, bool isLoop, float delay)
+    public void AddAnim(int trackIndex, SpineAnimationStateEnum animationCreatureState, bool isLoop, float delay)
     {
         if (creatureSkeletionAnimation == null)
             return;
@@ -80,7 +80,7 @@ public class GameFightCreatureEntity
             return;
         //再清除动画
         //creatureSkeletionAnimation.AnimationState.ClearTracks();
-        var trackEntry = PlayAnim(AnimationCreatureStateEnum.Idle, true, 0);
+        var trackEntry = PlayAnim(SpineAnimationStateEnum.Idle, true, 0);
        //清理数据
         if (animForUnderAttackColor != null && animForUnderAttackColor.IsPlaying())
         {

@@ -18,7 +18,7 @@ public class ControlForGameBase : BaseControl
     public float speedForCreatureMoveZ = 2f;
 
     public SkeletonAnimation controlTargetForCreatureSkeletonAnimation;
-    public AnimationCreatureStateEnum controlTargetForCreatureAnim = AnimationCreatureStateEnum.None;
+    public SpineAnimationStateEnum controlTargetForCreatureAnim = SpineAnimationStateEnum.None;
 
     //交互提示
     public GameObject controlTargetForInteraction;
@@ -59,13 +59,13 @@ public class ControlForGameBase : BaseControl
             {
                 GameControlHandler.Instance.manager.controlTargetForCreature.SetActive(true);
                 //播放动画
-                PlayAnimForControlTarget(AnimationCreatureStateEnum.Idle);
+                PlayAnimForControlTarget(SpineAnimationStateEnum.Idle);
             }
             return;
         }
         GameControlHandler.Instance.manager.controlTargetForCreature.SetActive(true);
         //播放动画
-        PlayAnimForControlTarget(AnimationCreatureStateEnum.Idle);
+        PlayAnimForControlTarget(SpineAnimationStateEnum.Idle);
     }
 
     public override void EnabledControl(bool enabled)
@@ -79,7 +79,7 @@ public class ControlForGameBase : BaseControl
     /// </summary>
     /// <param name="animationCreatureState"></param>
     /// <param name="isLoop"></param>
-    public void PlayAnimForControlTarget(AnimationCreatureStateEnum animationCreatureState, bool isLoop = true)
+    public void PlayAnimForControlTarget(SpineAnimationStateEnum animationCreatureState, bool isLoop = true)
     {
         if (controlTargetForCreatureSkeletonAnimation == null)
         {
@@ -104,7 +104,7 @@ public class ControlForGameBase : BaseControl
         if (moveData.x == 0 && moveData.y == 0)
         {
             //播放动画
-            PlayAnimForControlTarget(AnimationCreatureStateEnum.Idle);
+            PlayAnimForControlTarget(SpineAnimationStateEnum.Idle);
         }
         else
         {
@@ -123,7 +123,7 @@ public class ControlForGameBase : BaseControl
                 controlTargetForCreatureSkeletonAnimation.transform.localScale = new Vector3(-directionXSize, sizeOriginal.y, sizeOriginal.z);
             }
             //播放动画
-            PlayAnimForControlTarget(AnimationCreatureStateEnum.Walk);
+            PlayAnimForControlTarget(SpineAnimationStateEnum.Walk);
         }
     }
 
