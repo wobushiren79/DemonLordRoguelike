@@ -20,10 +20,13 @@ public class UIGameSettingBase
         gameConfig = GameDataHandler.Instance.manager.GetGameConfig();
     }
 
-    public UIViewGameSettingSelect CreatureItemForSelect()
+    public UIViewGameSettingSelect CreatureItemForSelect(string titleName, List<string> listSelect)
     {
         var targetObj = LoadItem("UIViewGameSettingSelect");
         var targetView = targetObj.GetComponent<UIViewGameSettingSelect>();
+        targetView.SetCallBack(ActionForSelectValueChange);
+        targetView.SetTitle(titleName);
+        targetView.SetListSelect(listSelect);
         return targetView;
     }
 
@@ -34,7 +37,7 @@ public class UIGameSettingBase
         return targetView;
     }
 
-    public UIViewGameSettingRange CreatureItemForRange(string titleName,float rangeMin,float rangeMax)
+    public UIViewGameSettingRange CreatureItemForRange(string titleName, float rangeMin, float rangeMax)
     {
         var targetObj = LoadItem("UIViewGameSettingRange");
         var targetView = targetObj.GetComponent<UIViewGameSettingRange>();
@@ -59,6 +62,11 @@ public class UIGameSettingBase
     /// »Øµ÷
     /// </summary>
     public virtual void ActionForRangeValueChange(UIViewGameSettingRange targetView, float progress)
+    {
+
+    }
+
+    public virtual void ActionForSelectValueChange(UIViewGameSettingSelect targetView, int index)
     {
 
     }
