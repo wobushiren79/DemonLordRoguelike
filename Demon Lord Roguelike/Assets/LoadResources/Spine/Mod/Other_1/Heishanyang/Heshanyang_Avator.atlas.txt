@@ -1,0 +1,481 @@
+
+Heshanyang_Avator.png
+size: 4085,4025
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bu_0
+  rotate: false
+  xy: 2524, 1691
+  size: 874, 575
+  orig: 874, 575
+  offset: 0, 0
+  index: -1
+bu_1
+  rotate: false
+  xy: 1752, 2453
+  size: 607, 477
+  orig: 607, 477
+  offset: 0, 0
+  index: -1
+bu_2
+  rotate: true
+  xy: 2, 2642
+  size: 508, 449
+  orig: 508, 449
+  offset: 0, 0
+  index: -1
+bu_3
+  rotate: true
+  xy: 3400, 1550
+  size: 716, 683
+  orig: 716, 683
+  offset: 0, 0
+  index: -1
+bu_4
+  rotate: false
+  xy: 2, 2068
+  size: 731, 529
+  orig: 731, 529
+  offset: 0, 0
+  index: -1
+bu_5
+  rotate: true
+  xy: 2692, 358
+  size: 1190, 1237
+  orig: 1190, 1237
+  offset: 0, 0
+  index: -1
+hei
+  rotate: true
+  xy: 3165, 2778
+  size: 446, 452
+  orig: 446, 452
+  offset: 0, 0
+  index: -1
+shabu_0
+  rotate: true
+  xy: 2, 3807
+  size: 182, 260
+  orig: 182, 260
+  offset: 0, 0
+  index: -1
+shabu_10
+  rotate: false
+  xy: 10, 4018
+  size: 10, 5
+  orig: 10, 5
+  offset: 0, 0
+  index: -1
+shabu_11
+  rotate: false
+  xy: 2, 4021
+  size: 6, 2
+  orig: 6, 2
+  offset: 0, 0
+  index: -1
+shabu_12
+  rotate: false
+  xy: 76, 4000
+  size: 61, 23
+  orig: 61, 23
+  offset: 0, 0
+  index: -1
+shabu_13
+  rotate: false
+  xy: 668, 3964
+  size: 64, 59
+  orig: 64, 59
+  offset: 0, 0
+  index: -1
+shabu_14
+  rotate: false
+  xy: 48, 4002
+  size: 26, 21
+  orig: 26, 21
+  offset: 0, 0
+  index: -1
+shabu_15
+  rotate: false
+  xy: 207, 3992
+  size: 39, 31
+  orig: 39, 31
+  offset: 0, 0
+  index: -1
+shabu_16
+  rotate: true
+  xy: 264, 3790
+  size: 187, 275
+  orig: 187, 275
+  offset: 0, 0
+  index: -1
+shabu_17
+  rotate: false
+  xy: 1699, 3871
+  size: 243, 152
+  orig: 243, 152
+  offset: 0, 0
+  index: -1
+shabu_18
+  rotate: true
+  xy: 1175, 3367
+  size: 304, 329
+  orig: 304, 329
+  offset: 0, 0
+  index: -1
+shabu_19
+  rotate: true
+  xy: 895, 3687
+  size: 188, 529
+  orig: 188, 529
+  offset: 0, 0
+  index: -1
+shabu_19a
+  rotate: false
+  xy: 139, 3995
+  size: 66, 28
+  orig: 66, 28
+  offset: 0, 0
+  index: -1
+shabu_19b
+  rotate: true
+  xy: 294, 3990
+  size: 33, 98
+  orig: 33, 98
+  offset: 0, 0
+  index: -1
+shabu_2
+  rotate: true
+  xy: 734, 3889
+  size: 134, 233
+  orig: 134, 233
+  offset: 0, 0
+  index: -1
+shabu_20
+  rotate: true
+  xy: 3880, 3802
+  size: 221, 203
+  orig: 221, 203
+  offset: 0, 0
+  index: -1
+shabu_21
+  rotate: true
+  xy: 1944, 3868
+  size: 155, 413
+  orig: 155, 413
+  offset: 0, 0
+  index: -1
+shabu_22
+  rotate: true
+  xy: 1309, 3877
+  size: 146, 162
+  orig: 146, 162
+  offset: 0, 0
+  index: -1
+shabu_23
+  rotate: true
+  xy: 968, 2563
+  size: 433, 782
+  orig: 433, 782
+  offset: 0, 0
+  index: -1
+shabu_24
+  rotate: false
+  xy: 3023, 2268
+  size: 644, 508
+  orig: 644, 508
+  offset: 0, 0
+  index: -1
+shabu_25
+  rotate: true
+  xy: 2847, 3594
+  size: 255, 299
+  orig: 255, 299
+  offset: 0, 0
+  index: -1
+shabu_26
+  rotate: true
+  xy: 1473, 3874
+  size: 149, 224
+  orig: 149, 224
+  offset: 0, 0
+  index: -1
+shabu_27
+  rotate: false
+  xy: 2396, 3301
+  size: 333, 320
+  orig: 333, 320
+  offset: 0, 0
+  index: -1
+shabu_28
+  rotate: false
+  xy: 2361, 2397
+  size: 660, 493
+  orig: 660, 493
+  offset: 0, 0
+  index: -1
+shabu_29
+  rotate: true
+  xy: 2, 3152
+  size: 371, 502
+  orig: 371, 502
+  offset: 0, 0
+  index: -1
+shabu_3
+  rotate: false
+  xy: 248, 3991
+  size: 44, 32
+  orig: 44, 32
+  offset: 0, 0
+  index: -1
+shabu_30
+  rotate: true
+  xy: 3629, 3102
+  size: 406, 418
+  orig: 406, 418
+  offset: 0, 0
+  index: -1
+shabu_31
+  rotate: true
+  xy: 1094, 2998
+  size: 359, 787
+  orig: 359, 787
+  offset: 0, 0
+  index: -1
+shabu_32
+  rotate: true
+  xy: 1657, 3644
+  size: 205, 876
+  orig: 205, 876
+  offset: 0, 0
+  index: -1
+shabu_33
+  rotate: true
+  xy: 2017, 3326
+  size: 316, 377
+  orig: 316, 377
+  offset: 0, 0
+  index: -1
+shabu_34
+  rotate: true
+  xy: 2359, 3851
+  size: 172, 263
+  orig: 172, 263
+  offset: 0, 0
+  index: -1
+shabu_35
+  rotate: false
+  xy: 1426, 3673
+  size: 229, 199
+  orig: 229, 199
+  offset: 0, 0
+  index: -1
+shabu_36
+  rotate: false
+  xy: 3651, 3846
+  size: 227, 177
+  orig: 227, 177
+  offset: 0, 0
+  index: -1
+shabu_37
+  rotate: true
+  xy: 541, 3701
+  size: 186, 352
+  orig: 186, 352
+  offset: 0, 0
+  index: -1
+shabu_38
+  rotate: true
+  xy: 2624, 3851
+  size: 172, 1025
+  orig: 172, 1025
+  offset: 0, 0
+  index: -1
+shabu_39
+  rotate: true
+  xy: 2, 3525
+  size: 263, 523
+  orig: 263, 523
+  offset: 0, 0
+  index: -1
+shabu_4
+  rotate: true
+  xy: 394, 3989
+  size: 34, 35
+  orig: 34, 35
+  offset: 0, 0
+  index: -1
+shabu_40
+  rotate: true
+  xy: 3645, 3510
+  size: 290, 432
+  orig: 290, 432
+  offset: 0, 0
+  index: -1
+shabu_41
+  rotate: false
+  xy: 3239, 3226
+  size: 388, 362
+  orig: 388, 362
+  offset: 0, 0
+  index: -1
+shabu_42
+  rotate: true
+  xy: 453, 2599
+  size: 455, 513
+  orig: 455, 513
+  offset: 0, 0
+  index: -1
+shabu_43
+  rotate: true
+  xy: 1630, 1827
+  size: 568, 892
+  orig: 568, 892
+  offset: 0, 0
+  index: -1
+shabu_43a
+  rotate: true
+  xy: 735, 1995
+  size: 566, 893
+  orig: 566, 893
+  offset: 0, 0
+  index: -1
+shabu_44
+  rotate: true
+  xy: 2, 1346
+  size: 647, 1399
+  orig: 647, 1399
+  offset: 0, 0
+  index: -1
+shabu_44a
+  rotate: true
+  xy: 506, 3056
+  size: 355, 586
+  orig: 355, 586
+  offset: 0, 0
+  index: -1
+shabu_45
+  rotate: true
+  xy: 1883, 2932
+  size: 367, 632
+  orig: 367, 632
+  offset: 0, 0
+  index: -1
+shabu_45a
+  rotate: true
+  xy: 2731, 3268
+  size: 320, 506
+  orig: 320, 506
+  offset: 0, 0
+  index: -1
+shabu_5
+  rotate: false
+  xy: 469, 3982
+  size: 59, 41
+  orig: 59, 41
+  offset: 0, 0
+  index: -1
+shabu_56
+  rotate: false
+  xy: 2517, 2892
+  size: 646, 374
+  orig: 646, 374
+  offset: 0, 0
+  index: -1
+shabu_57
+  rotate: true
+  xy: 1403, 863
+  size: 826, 1287
+  orig: 826, 1287
+  offset: 0, 0
+  index: -1
+shabu_58
+  rotate: true
+  xy: 2, 2
+  size: 859, 1564
+  orig: 859, 1564
+  offset: 0, 0
+  index: -1
+shabu_6
+  rotate: true
+  xy: 22, 4003
+  size: 20, 24
+  orig: 20, 24
+  offset: 0, 0
+  index: -1
+shabu_7
+  rotate: false
+  xy: 584, 3976
+  size: 82, 47
+  orig: 82, 47
+  offset: 0, 0
+  index: -1
+shabu_8
+  rotate: true
+  xy: 431, 3988
+  size: 35, 36
+  orig: 35, 36
+  offset: 0, 0
+  index: -1
+shabu_9
+  rotate: false
+  xy: 530, 3979
+  size: 52, 44
+  orig: 52, 44
+  offset: 0, 0
+  index: -1
+she_1
+  rotate: true
+  xy: 969, 3885
+  size: 138, 338
+  orig: 138, 338
+  offset: 0, 0
+  index: -1
+she_2
+  rotate: true
+  xy: 1506, 3359
+  size: 283, 509
+  orig: 283, 509
+  offset: 0, 0
+  index: -1
+she_3
+  rotate: true
+  xy: 2535, 3623
+  size: 226, 310
+  orig: 226, 310
+  offset: 0, 0
+  index: -1
+she_4
+  rotate: true
+  xy: 527, 3413
+  size: 272, 646
+  orig: 272, 646
+  offset: 0, 0
+  index: -1
+she_5
+  rotate: true
+  xy: 3148, 3590
+  size: 259, 495
+  orig: 259, 495
+  offset: 0, 0
+  index: -1
+
+Heshanyang_Avator2.png
+size: 4032,1233
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+shabu_1
+  rotate: true
+  xy: 2, 2
+  size: 1229, 2379
+  orig: 1229, 2379
+  offset: 0, 0
+  index: -1
+shabu_46
+  rotate: false
+  xy: 2383, 337
+  size: 1647, 894
+  orig: 1647, 894
+  offset: 0, 0
+  index: -1

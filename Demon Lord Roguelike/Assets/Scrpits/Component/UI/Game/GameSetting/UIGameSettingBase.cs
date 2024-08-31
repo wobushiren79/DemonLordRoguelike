@@ -30,10 +30,21 @@ public class UIGameSettingBase
         return targetView;
     }
 
-    public UIViewGameSettingCheckBox CreatureItemForCheckBox()
+    public UIViewGameSettingCheckBox CreatureItemForCheckBox(string titleName, string selectStr = null, string unselectStr = null)
     {
         var targetObj = LoadItem("UIViewGameSettingCheckBox");
         var targetView = targetObj.GetComponent<UIViewGameSettingCheckBox>();
+        targetView.SetCallBack(ActionForCheckBoxValueChange);
+        targetView.SetTitle(titleName);
+        if (selectStr == null)
+        {
+            selectStr = TextHandler.Instance.GetTextById(40998);
+        }
+        if (unselectStr == null)
+        {
+            unselectStr = TextHandler.Instance.GetTextById(40999);
+        }
+        targetView.SetCheckStr(selectStr, unselectStr);
         return targetView;
     }
 
@@ -67,6 +78,11 @@ public class UIGameSettingBase
     }
 
     public virtual void ActionForSelectValueChange(UIViewGameSettingSelect targetView, int index)
+    {
+
+    }
+
+    public virtual void ActionForCheckBoxValueChange(UIViewGameSettingCheckBox targetView, bool isCheck)
     {
 
     }

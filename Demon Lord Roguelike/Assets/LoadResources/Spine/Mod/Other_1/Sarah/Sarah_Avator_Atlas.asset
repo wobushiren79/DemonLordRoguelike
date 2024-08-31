@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Sarah_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: 14948ba0a66062746a8ee39261e33f15, type: 3}
+  materials:
+  - {fileID: 2100000, guid: 1ce1cd23a9be6ca4e9c970b294e0a411, type: 2}
+  - {fileID: 2100000, guid: 4de5a22576794e742bc4c46de8063c30, type: 2}
+  - {fileID: 2100000, guid: 129c64596cba8014c90c2293946d40cd, type: 2}
+  - {fileID: 2100000, guid: 5b22fa533994f164ea91343e8719f60c, type: 2}
+  - {fileID: 2100000, guid: 8ed5444a0dae8d94695ef8792bc16139, type: 2}

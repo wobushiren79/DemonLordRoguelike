@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: SpineMod_Other_2
+  m_EditorClassIdentifier: 
+  m_GroupName: SpineMod_Other_2
+  m_Data:
+    m_SerializedData: []
+  m_GUID: a38d49b95c8440048bedf126767cccd2
+  m_SerializeEntries:
+  - m_GUID: 7719d1fae2c09304e899569bef6a009e
+    m_Address: Assets/LoadResources/Spine/Mod/Other_2/Alice_Q/Alice_Q_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1310a4fc8b7b9c841b4c4424cac9acde
+    m_Address: Assets/LoadResources/Spine/Mod/Other_2/Aoliweiya_ChongChong/Aoliweiya_ChongChong_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 24549adfb60c4eb43a797b2102346ae2
+    m_Address: Assets/LoadResources/Spine/Mod/Other_2/Alice_Q/Alice_2_Q_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cc9e03c478045ad4bb3c2a6365f83532
+    m_Address: Assets/LoadResources/Spine/Mod/Other_2/Taobaibai_Q/Baitaotao_Q_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 634996eaf0b36824986ee8cb6244e1d0, type: 2}
+    - {fileID: 11400000, guid: 552bcde656d541e43a7f244ea13d75e7, type: 2}

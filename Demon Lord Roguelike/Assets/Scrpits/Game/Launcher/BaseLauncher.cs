@@ -18,5 +18,13 @@ public class BaseLauncher : BaseMonoBehaviour
         IconHandler.Instance.InitData();
         //先清理一下内存
         SystemUtil.GCCollect();
+
+        GameConfigBean gameConfig = GameDataHandler.Instance.manager.GetGameConfig();
+        //设置全屏
+        Screen.fullScreen = gameConfig.window == 1 ? true : false;
+        //设置FPS
+        FPSHandler.Instance.SetData(gameConfig.stateForFrames, gameConfig.frames);
+        //修改抗锯齿
+        //CameraHandler.Instance.ChangeAntialiasing(gameConfig.GetAntialiasingMode(), gameConfig.antialiasingQualityLevel);
     }
 }

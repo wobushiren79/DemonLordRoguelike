@@ -88,7 +88,7 @@ public class ControlForGameBase : BaseControl
         }
         if (controlTargetForCreatureAnim != animationCreatureState && controlTargetForCreatureSkeletonAnimation != null)
         {
-            controlTargetForCreatureSkeletonAnimation.AnimationState.SetAnimation(0, animationCreatureState.ToString(), isLoop);
+            SpineHandler.Instance.PlayAnim(controlTargetForCreatureSkeletonAnimation, animationCreatureState, isLoop);
             controlTargetForCreatureAnim = animationCreatureState;
         }
     }

@@ -1,0 +1,279 @@
+
+Baolilong.png
+size: 445,520
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+angle
+  rotate: true
+  xy: 164, 360
+  size: 43, 157
+  orig: 43, 157
+  offset: 0, 0
+  index: -1
+angle2
+  rotate: true
+  xy: 157, 255
+  size: 103, 152
+  orig: 103, 152
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 311, 239
+  size: 32, 46
+  orig: 32, 46
+  offset: 0, 0
+  index: -1
+clothes1
+  rotate: false
+  xy: 2, 2
+  size: 124, 82
+  orig: 124, 82
+  offset: 0, 0
+  index: -1
+clothes2
+  rotate: true
+  xy: 342, 149
+  size: 71, 98
+  orig: 71, 98
+  offset: 0, 0
+  index: -1
+dress
+  rotate: false
+  xy: 346, 222
+  size: 97, 76
+  orig: 97, 76
+  offset: 0, 0
+  index: -1
+dress1
+  rotate: true
+  xy: 232, 124
+  size: 57, 55
+  orig: 57, 55
+  offset: 0, 0
+  index: -1
+ear2
+  rotate: true
+  xy: 149, 135
+  size: 24, 35
+  orig: 24, 35
+  offset: 0, 0
+  index: -1
+earxsfsd
+  rotate: false
+  xy: 126, 161
+  size: 29, 40
+  orig: 29, 40
+  offset: 0, 0
+  index: -1
+eye2
+  rotate: true
+  xy: 310, 121
+  size: 74, 29
+  orig: 74, 29
+  offset: 0, 0
+  index: -1
+face
+  rotate: true
+  xy: 128, 3
+  size: 81, 90
+  orig: 81, 90
+  offset: 0, 0
+  index: -1
+guang
+  rotate: false
+  xy: 124, 134
+  size: 23, 25
+  orig: 23, 25
+  offset: 0, 0
+  index: -1
+hair1
+  rotate: false
+  xy: 2, 87
+  size: 55, 94
+  orig: 55, 94
+  offset: 0, 0
+  index: -1
+hair2
+  rotate: true
+  xy: 157, 183
+  size: 70, 151
+  orig: 70, 151
+  offset: 0, 0
+  index: -1
+hair3
+  rotate: true
+  xy: 2, 251
+  size: 124, 153
+  orig: 124, 153
+  offset: 0, 0
+  index: -1
+hair4
+  rotate: true
+  xy: 185, 405
+  size: 113, 160
+  orig: 113, 160
+  offset: 0, 0
+  index: -1
+hair5
+  rotate: true
+  xy: 2, 446
+  size: 72, 181
+  orig: 72, 181
+  offset: 0, 0
+  index: -1
+hair6
+  rotate: false
+  xy: 347, 374
+  size: 95, 144
+  orig: 95, 144
+  offset: 0, 0
+  index: -1
+hair7
+  rotate: true
+  xy: 2, 377
+  size: 67, 160
+  orig: 67, 160
+  offset: 0, 0
+  index: -1
+haira1
+  rotate: true
+  xy: 102, 87
+  size: 44, 70
+  orig: 44, 70
+  offset: 0, 0
+  index: -1
+haira2
+  rotate: true
+  xy: 378, 48
+  size: 36, 63
+  orig: 36, 63
+  offset: 0, 0
+  index: -1
+haira3
+  rotate: true
+  xy: 59, 133
+  size: 38, 63
+  orig: 38, 63
+  offset: 0, 0
+  index: -1
+haira4_1
+  rotate: true
+  xy: 347, 300
+  size: 72, 95
+  orig: 72, 95
+  offset: 0, 0
+  index: -1
+haira5
+  rotate: false
+  xy: 232, 16
+  size: 107, 103
+  orig: 107, 103
+  offset: 0, 0
+  index: -1
+hand2sfsdf
+  rotate: false
+  xy: 311, 326
+  size: 34, 30
+  orig: 34, 30
+  offset: 0, 0
+  index: -1
+hand31
+  rotate: true
+  xy: 128, 203
+  size: 46, 27
+  orig: 46, 27
+  offset: 0, 0
+  index: -1
+hand32
+  rotate: true
+  xy: 310, 197
+  size: 40, 30
+  orig: 40, 30
+  offset: 0, 0
+  index: -1
+hand33
+  rotate: true
+  xy: 186, 142
+  size: 39, 42
+  orig: 39, 42
+  offset: 0, 0
+  index: -1
+lefthand
+  rotate: false
+  xy: 341, 86
+  size: 102, 61
+  orig: 102, 61
+  offset: 0, 0
+  index: -1
+leftleg1
+  rotate: false
+  xy: 2, 183
+  size: 47, 66
+  orig: 47, 66
+  offset: 0, 0
+  index: -1
+leftleg2_1
+  rotate: false
+  xy: 323, 358
+  size: 22, 45
+  orig: 22, 45
+  offset: 0, 0
+  index: -1
+mouth1
+  rotate: true
+  xy: 164, 416
+  size: 21, 7
+  orig: 21, 7
+  offset: 0, 0
+  index: -1
+mouth2
+  rotate: false
+  xy: 164, 439
+  size: 18, 5
+  orig: 18, 5
+  offset: 0, 0
+  index: -1
+righthand
+  rotate: true
+  xy: 59, 173
+  size: 76, 65
+  orig: 76, 65
+  offset: 0, 0
+  index: -1
+rightleg1
+  rotate: true
+  xy: 311, 287
+  size: 37, 33
+  orig: 37, 33
+  offset: 0, 0
+  index: -1
+rightleg12
+  rotate: true
+  xy: 59, 86
+  size: 45, 41
+  orig: 45, 41
+  offset: 0, 0
+  index: -1
+rightleg13
+  rotate: false
+  xy: 341, 15
+  size: 35, 69
+  orig: 35, 69
+  offset: 0, 0
+  index: -1
+sleevedsfsf
+  rotate: true
+  xy: 378, 7
+  size: 39, 51
+  orig: 39, 51
+  offset: 0, 0
+  index: -1
+tie
+  rotate: true
+  xy: 174, 89
+  size: 44, 56
+  orig: 44, 56
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,1008 @@
+
+Nidiya_Avator.png
+size: 2043,2005
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+fusang_1
+  rotate: true
+  xy: 338, 433
+  size: 219, 221
+  orig: 219, 221
+  offset: 0, 0
+  index: -1
+fusang_10
+  rotate: true
+  xy: 1779, 1802
+  size: 112, 122
+  orig: 112, 122
+  offset: 0, 0
+  index: -1
+fusang_101
+  rotate: true
+  xy: 1853, 1663
+  size: 132, 188
+  orig: 132, 188
+  offset: 0, 0
+  index: -1
+fusang_103
+  rotate: false
+  xy: 1239, 37
+  size: 534, 240
+  orig: 534, 240
+  offset: 0, 0
+  index: -1
+fusang_104
+  rotate: false
+  xy: 704, 1044
+  size: 385, 187
+  orig: 385, 187
+  offset: 0, 0
+  index: -1
+fusang_11
+  rotate: false
+  xy: 1572, 736
+  size: 336, 207
+  orig: 336, 207
+  offset: 0, 0
+  index: -1
+fusang_110
+  rotate: false
+  xy: 688, 1961
+  size: 122, 42
+  orig: 122, 42
+  offset: 0, 0
+  index: -1
+fusang_116
+  rotate: false
+  xy: 702, 839
+  size: 317, 203
+  orig: 317, 203
+  offset: 0, 0
+  index: -1
+fusang_117
+  rotate: false
+  xy: 2, 688
+  size: 208, 215
+  orig: 208, 215
+  offset: 0, 0
+  index: -1
+fusang_118
+  rotate: true
+  xy: 1618, 1150
+  size: 179, 392
+  orig: 179, 392
+  offset: 0, 0
+  index: -1
+fusang_119
+  rotate: false
+  xy: 246, 1073
+  size: 229, 185
+  orig: 229, 185
+  offset: 0, 0
+  index: -1
+fusang_12
+  rotate: false
+  xy: 214, 869
+  size: 486, 189
+  orig: 486, 189
+  offset: 0, 0
+  index: -1
+fusang_125
+  rotate: true
+  xy: 1000, 1412
+  size: 170, 209
+  orig: 170, 209
+  offset: 0, 0
+  index: -1
+fusang_13
+  rotate: false
+  xy: 820, 1584
+  size: 426, 131
+  orig: 426, 131
+  offset: 0, 0
+  index: -1
+fusang_131
+  rotate: true
+  xy: 1046, 1951
+  size: 52, 179
+  orig: 52, 179
+  offset: 0, 0
+  index: -1
+fusang_132
+  rotate: true
+  xy: 472, 1965
+  size: 38, 162
+  orig: 38, 162
+  offset: 0, 0
+  index: -1
+fusang_134
+  rotate: true
+  xy: 2, 905
+  size: 205, 210
+  orig: 205, 210
+  offset: 0, 0
+  index: -1
+fusang_138
+  rotate: false
+  xy: 1021, 791
+  size: 549, 187
+  orig: 549, 187
+  offset: 0, 0
+  index: -1
+fusang_14
+  rotate: false
+  xy: 1429, 1532
+  size: 366, 143
+  orig: 366, 143
+  offset: 0, 0
+  index: -1
+fusang_15
+  rotate: true
+  xy: 542, 154
+  size: 242, 291
+  orig: 242, 291
+  offset: 0, 0
+  index: -1
+fusang_16
+  rotate: true
+  xy: 1211, 1383
+  size: 177, 200
+  orig: 177, 200
+  offset: 0, 0
+  index: -1
+fusang_17
+  rotate: false
+  xy: 949, 1954
+  size: 95, 49
+  orig: 95, 49
+  offset: 0, 0
+  index: -1
+fusang_18
+  rotate: false
+  xy: 282, 1966
+  size: 58, 37
+  orig: 58, 37
+  offset: 0, 0
+  index: -1
+fusang_19
+  rotate: false
+  xy: 23, 1983
+  size: 39, 20
+  orig: 39, 20
+  offset: 0, 0
+  index: -1
+fusang_20
+  rotate: false
+  xy: 901, 1957
+  size: 46, 46
+  orig: 46, 46
+  offset: 0, 0
+  index: -1
+fusang_21
+  rotate: false
+  xy: 2, 1986
+  size: 19, 17
+  orig: 19, 17
+  offset: 0, 0
+  index: -1
+fusang_22
+  rotate: false
+  xy: 1227, 1947
+  size: 61, 56
+  orig: 61, 56
+  offset: 0, 0
+  index: -1
+fusang_23
+  rotate: false
+  xy: 64, 1983
+  size: 46, 20
+  orig: 46, 20
+  offset: 0, 0
+  index: -1
+fusang_24
+  rotate: false
+  xy: 342, 1966
+  size: 73, 37
+  orig: 73, 37
+  offset: 0, 0
+  index: -1
+fusang_25
+  rotate: true
+  xy: 1428, 1942
+  size: 61, 200
+  orig: 61, 200
+  offset: 0, 0
+  index: -1
+fusang_26
+  rotate: false
+  xy: 636, 1962
+  size: 50, 41
+  orig: 50, 41
+  offset: 0, 0
+  index: -1
+fusang_27
+  rotate: true
+  xy: 112, 1973
+  size: 30, 35
+  orig: 30, 35
+  offset: 0, 0
+  index: -1
+fusang_28
+  rotate: false
+  xy: 417, 1966
+  size: 53, 37
+  orig: 53, 37
+  offset: 0, 0
+  index: -1
+fusang_29
+  rotate: true
+  xy: 149, 1971
+  size: 32, 131
+  orig: 32, 131
+  offset: 0, 0
+  index: -1
+fusang_3
+  rotate: true
+  xy: 2, 195
+  size: 237, 270
+  orig: 237, 270
+  offset: 0, 0
+  index: -1
+fusang_30
+  rotate: true
+  xy: 691, 1861
+  size: 97, 180
+  orig: 97, 180
+  offset: 0, 0
+  index: -1
+fusang_31
+  rotate: true
+  xy: 1092, 1717
+  size: 122, 234
+  orig: 122, 234
+  offset: 0, 0
+  index: -1
+fusang_32
+  rotate: true
+  xy: 1328, 1717
+  size: 122, 127
+  orig: 122, 127
+  offset: 0, 0
+  index: -1
+fusang_33
+  rotate: false
+  xy: 1248, 1562
+  size: 179, 153
+  orig: 179, 153
+  offset: 0, 0
+  index: -1
+fusang_34
+  rotate: true
+  xy: 477, 1060
+  size: 187, 225
+  orig: 187, 225
+  offset: 0, 0
+  index: -1
+fusang_35
+  rotate: false
+  xy: 812, 1960
+  size: 87, 43
+  orig: 87, 43
+  offset: 0, 0
+  index: -1
+fusang_36
+  rotate: false
+  xy: 1804, 945
+  size: 203, 203
+  orig: 203, 203
+  offset: 0, 0
+  index: -1
+fusang_37
+  rotate: true
+  xy: 873, 1850
+  size: 99, 193
+  orig: 99, 193
+  offset: 0, 0
+  index: -1
+fusang_38
+  rotate: true
+  xy: 1068, 1844
+  size: 105, 143
+  orig: 105, 143
+  offset: 0, 0
+  index: -1
+fusang_39
+  rotate: true
+  xy: 1903, 1797
+  size: 117, 130
+  orig: 117, 130
+  offset: 0, 0
+  index: -1
+fusang_4
+  rotate: true
+  xy: 1597, 945
+  size: 203, 205
+  orig: 203, 205
+  offset: 0, 0
+  index: -1
+fusang_41
+  rotate: false
+  xy: 2, 1768
+  size: 177, 112
+  orig: 177, 112
+  offset: 0, 0
+  index: -1
+fusang_42
+  rotate: false
+  xy: 655, 1596
+  size: 163, 143
+  orig: 163, 143
+  offset: 0, 0
+  index: -1
+fusang_43
+  rotate: true
+  xy: 1611, 1677
+  size: 123, 240
+  orig: 123, 240
+  offset: 0, 0
+  index: -1
+fusang_45
+  rotate: true
+  xy: 2, 1112
+  size: 185, 242
+  orig: 185, 242
+  offset: 0, 0
+  index: -1
+fusang_46
+  rotate: false
+  xy: 515, 1604
+  size: 138, 149
+  orig: 138, 149
+  offset: 0, 0
+  index: -1
+fusang_47
+  rotate: false
+  xy: 1611, 1814
+  size: 166, 106
+  orig: 166, 106
+  offset: 0, 0
+  index: -1
+fusang_48
+  rotate: false
+  xy: 660, 1741
+  size: 190, 118
+  orig: 190, 118
+  offset: 0, 0
+  index: -1
+fusang_49
+  rotate: false
+  xy: 646, 1426
+  size: 352, 156
+  orig: 352, 156
+  offset: 0, 0
+  index: -1
+fusang_5
+  rotate: true
+  xy: 1498, 1830
+  size: 110, 111
+  orig: 110, 111
+  offset: 0, 0
+  index: -1
+fusang_50
+  rotate: false
+  xy: 1811, 1916
+  size: 168, 87
+  orig: 168, 87
+  offset: 0, 0
+  index: -1
+fusang_51
+  rotate: false
+  xy: 1797, 1507
+  size: 203, 154
+  orig: 203, 154
+  offset: 0, 0
+  index: -1
+fusang_52
+  rotate: true
+  xy: 274, 168
+  size: 263, 266
+  orig: 263, 266
+  offset: 0, 0
+  index: -1
+fusang_53
+  rotate: true
+  xy: 1665, 1331
+  size: 174, 297
+  orig: 174, 297
+  offset: 0, 0
+  index: -1
+fusang_54
+  rotate: true
+  xy: 636, 622
+  size: 215, 351
+  orig: 215, 351
+  offset: 0, 0
+  index: -1
+fusang_55
+  rotate: true
+  xy: 456, 1445
+  size: 157, 188
+  orig: 157, 188
+  offset: 0, 0
+  index: -1
+fusang_56
+  rotate: true
+  xy: 1213, 1841
+  size: 99, 283
+  orig: 99, 283
+  offset: 0, 0
+  index: -1
+fusang_57
+  rotate: false
+  xy: 181, 1761
+  size: 205, 113
+  orig: 205, 113
+  offset: 0, 0
+  index: -1
+fusang_58
+  rotate: false
+  xy: 200, 1876
+  size: 254, 88
+  orig: 254, 88
+  offset: 0, 0
+  index: -1
+fusang_6
+  rotate: true
+  xy: 212, 654
+  size: 213, 422
+  orig: 213, 422
+  offset: 0, 0
+  index: -1
+fusang_60
+  rotate: false
+  xy: 1091, 998
+  size: 219, 197
+  orig: 219, 197
+  offset: 0, 0
+  index: -1
+fusang_61
+  rotate: true
+  xy: 1457, 1705
+  size: 123, 152
+  orig: 123, 152
+  offset: 0, 0
+  index: -1
+fusang_63
+  rotate: true
+  xy: 1312, 980
+  size: 198, 283
+  orig: 198, 283
+  offset: 0, 0
+  index: -1
+fusang_64
+  rotate: false
+  xy: 413, 1260
+  size: 190, 183
+  orig: 190, 183
+  offset: 0, 0
+  index: -1
+fusang_65
+  rotate: true
+  xy: 1282, 280
+  size: 234, 308
+  orig: 234, 308
+  offset: 0, 0
+  index: -1
+fusang_66
+  rotate: true
+  xy: 1592, 279
+  size: 235, 296
+  orig: 235, 296
+  offset: 0, 0
+  index: -1
+fusang_68
+  rotate: true
+  xy: 1413, 1366
+  size: 164, 250
+  orig: 164, 250
+  offset: 0, 0
+  index: -1
+fusang_7
+  rotate: true
+  xy: 1122, 1197
+  size: 184, 277
+  orig: 184, 277
+  offset: 0, 0
+  index: -1
+fusang_70
+  rotate: false
+  xy: 1775, 2
+  size: 264, 275
+  orig: 264, 275
+  offset: 0, 0
+  index: -1
+fusang_72
+  rotate: false
+  xy: 561, 398
+  size: 382, 222
+  orig: 382, 222
+  offset: 0, 0
+  index: -1
+fusang_73
+  rotate: false
+  xy: 835, 100
+  size: 402, 241
+  orig: 402, 241
+  offset: 0, 0
+  index: -1
+fusang_74
+  rotate: false
+  xy: 1409, 516
+  size: 465, 218
+  orig: 465, 218
+  offset: 0, 0
+  index: -1
+fusang_75
+  rotate: false
+  xy: 2, 1475
+  size: 452, 148
+  orig: 452, 148
+  offset: 0, 0
+  index: -1
+fusang_79
+  rotate: true
+  xy: 989, 575
+  size: 214, 418
+  orig: 214, 418
+  offset: 0, 0
+  index: -1
+fusang_8
+  rotate: true
+  xy: 2, 1633
+  size: 126, 311
+  orig: 126, 311
+  offset: 0, 0
+  index: -1
+fusang_80
+  rotate: false
+  xy: 2, 1299
+  size: 409, 174
+  orig: 409, 174
+  offset: 0, 0
+  index: -1
+fusang_81
+  rotate: true
+  xy: 315, 1625
+  size: 128, 198
+  orig: 128, 198
+  offset: 0, 0
+  index: -1
+fusang_83
+  rotate: true
+  xy: 852, 1727
+  size: 115, 238
+  orig: 115, 238
+  offset: 0, 0
+  index: -1
+fusang_88
+  rotate: false
+  xy: 605, 1249
+  size: 252, 175
+  orig: 252, 175
+  offset: 0, 0
+  index: -1
+fusang_89
+  rotate: true
+  xy: 1630, 1928
+  size: 75, 89
+  orig: 75, 89
+  offset: 0, 0
+  index: -1
+fusang_9
+  rotate: true
+  xy: 859, 1233
+  size: 177, 261
+  orig: 177, 261
+  offset: 0, 0
+  index: -1
+fusang_90
+  rotate: true
+  xy: 1721, 1922
+  size: 81, 88
+  orig: 81, 88
+  offset: 0, 0
+  index: -1
+fusang_91
+  rotate: true
+  xy: 1401, 1180
+  size: 184, 215
+  orig: 184, 215
+  offset: 0, 0
+  index: -1
+fusang_92
+  rotate: true
+  xy: 388, 1755
+  size: 113, 270
+  orig: 113, 270
+  offset: 0, 0
+  index: -1
+fusang_93
+  rotate: true
+  xy: 1290, 1945
+  size: 58, 136
+  orig: 58, 136
+  offset: 0, 0
+  index: -1
+fusang_94
+  rotate: false
+  xy: 2, 1882
+  size: 196, 87
+  orig: 196, 87
+  offset: 0, 0
+  index: -1
+fusang_95
+  rotate: true
+  xy: 2, 434
+  size: 218, 334
+  orig: 218, 334
+  offset: 0, 0
+  index: -1
+fusang_96
+  rotate: false
+  xy: 945, 343
+  size: 335, 230
+  orig: 335, 230
+  offset: 0, 0
+  index: -1
+fusang_98
+  rotate: false
+  xy: 456, 1870
+  size: 233, 89
+  orig: 233, 89
+  offset: 0, 0
+  index: -1
+
+Nidiya_Avator2.png
+size: 2018,1863
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+fusang_100
+  rotate: true
+  xy: 392, 23
+  size: 348, 869
+  orig: 348, 869
+  offset: 0, 0
+  index: -1
+fusang_102
+  rotate: true
+  xy: 309, 1617
+  size: 244, 427
+  orig: 244, 427
+  offset: 0, 0
+  index: -1
+fusang_105
+  rotate: true
+  xy: 1577, 707
+  size: 320, 439
+  orig: 320, 439
+  offset: 0, 0
+  index: -1
+fusang_106
+  rotate: true
+  xy: 1157, 1611
+  size: 250, 693
+  orig: 250, 693
+  offset: 0, 0
+  index: -1
+fusang_112
+  rotate: false
+  xy: 385, 743
+  size: 327, 311
+  orig: 327, 311
+  offset: 0, 0
+  index: -1
+fusang_115
+  rotate: false
+  xy: 1430, 1029
+  size: 492, 300
+  orig: 492, 300
+  offset: 0, 0
+  index: -1
+fusang_122
+  rotate: false
+  xy: 716, 1345
+  size: 451, 264
+  orig: 451, 264
+  offset: 0, 0
+  index: -1
+fusang_124
+  rotate: false
+  xy: 2, 764
+  size: 381, 304
+  orig: 381, 304
+  offset: 0, 0
+  index: -1
+fusang_126
+  rotate: false
+  xy: 738, 1617
+  size: 417, 244
+  orig: 417, 244
+  offset: 0, 0
+  index: -1
+fusang_127
+  rotate: true
+  xy: 714, 737
+  size: 317, 382
+  orig: 317, 382
+  offset: 0, 0
+  index: -1
+fusang_129
+  rotate: false
+  xy: 668, 1056
+  size: 451, 287
+  orig: 451, 287
+  offset: 0, 0
+  index: -1
+fusang_136
+  rotate: false
+  xy: 726, 373
+  size: 1004, 332
+  orig: 1004, 332
+  offset: 0, 0
+  index: -1
+fusang_40
+  rotate: true
+  xy: 359, 1351
+  size: 264, 355
+  orig: 264, 355
+  offset: 0, 0
+  index: -1
+fusang_44
+  rotate: true
+  xy: 2, 1352
+  size: 263, 355
+  orig: 263, 355
+  offset: 0, 0
+  index: -1
+fusang_59
+  rotate: false
+  xy: 357, 400
+  size: 367, 335
+  orig: 367, 335
+  offset: 0, 0
+  index: -1
+fusang_62
+  rotate: true
+  xy: 1121, 1031
+  size: 301, 307
+  orig: 301, 307
+  offset: 0, 0
+  index: -1
+fusang_67
+  rotate: true
+  xy: 2, 1618
+  size: 243, 305
+  orig: 243, 305
+  offset: 0, 0
+  index: -1
+fusang_71
+  rotate: true
+  xy: 2, 436
+  size: 326, 353
+  orig: 326, 353
+  offset: 0, 0
+  index: -1
+fusang_76
+  rotate: true
+  xy: 1169, 1334
+  size: 275, 337
+  orig: 275, 337
+  offset: 0, 0
+  index: -1
+fusang_77
+  rotate: true
+  xy: 1508, 1331
+  size: 278, 293
+  orig: 278, 293
+  offset: 0, 0
+  index: -1
+fusang_78
+  rotate: true
+  xy: 2, 1070
+  size: 279, 664
+  orig: 279, 664
+  offset: 0, 0
+  index: -1
+fusang_82
+  rotate: true
+  xy: 2, 56
+  size: 342, 388
+  orig: 342, 388
+  offset: 0, 0
+  index: -1
+fusang_84
+  rotate: true
+  xy: 1098, 715
+  size: 312, 477
+  orig: 312, 477
+  offset: 0, 0
+  index: -1
+fusang_97
+  rotate: false
+  xy: 1263, 2
+  size: 550, 369
+  orig: 550, 369
+  offset: 0, 0
+  index: -1
+
+Nidiya_Avator3.png
+size: 2033,1869
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+fusang_107
+  rotate: true
+  xy: 2, 1498
+  size: 369, 598
+  orig: 369, 598
+  offset: 0, 0
+  index: -1
+fusang_108
+  rotate: true
+  xy: 496, 1062
+  size: 388, 1087
+  orig: 388, 1087
+  offset: 0, 0
+  index: -1
+fusang_109
+  rotate: false
+  xy: 1165, 2
+  size: 634, 513
+  orig: 634, 513
+  offset: 0, 0
+  index: -1
+fusang_111
+  rotate: false
+  xy: 908, 601
+  size: 563, 459
+  orig: 563, 459
+  offset: 0, 0
+  index: -1
+fusang_113
+  rotate: true
+  xy: 2, 149
+  size: 450, 1161
+  orig: 450, 1161
+  offset: 0, 0
+  index: -1
+fusang_114
+  rotate: true
+  xy: 2, 640
+  size: 420, 904
+  orig: 420, 904
+  offset: 0, 0
+  index: -1
+fusang_123
+  rotate: true
+  xy: 995, 1452
+  size: 415, 851
+  orig: 415, 851
+  offset: 0, 0
+  index: -1
+fusang_128
+  rotate: false
+  xy: 1473, 517
+  size: 482, 469
+  orig: 482, 469
+  offset: 0, 0
+  index: -1
+fusang_69
+  rotate: true
+  xy: 602, 1489
+  size: 378, 391
+  orig: 378, 391
+  offset: 0, 0
+  index: -1
+fusang_85
+  rotate: true
+  xy: 2, 1068
+  size: 428, 492
+  orig: 428, 492
+  offset: 0, 0
+  index: -1
+fusang_86
+  rotate: false
+  xy: 1585, 988
+  size: 446, 462
+  orig: 446, 462
+  offset: 0, 0
+  index: -1
+
+Nidiya_Avator4.png
+size: 1535,1896
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+fusang_120
+  rotate: false
+  xy: 2, 1376
+  size: 691, 518
+  orig: 691, 518
+  offset: 0, 0
+  index: -1
+fusang_133
+  rotate: false
+  xy: 2, 2
+  size: 1250, 719
+  orig: 1250, 719
+  offset: 0, 0
+  index: -1
+fusang_137
+  rotate: false
+  xy: 2, 723
+  size: 1531, 555
+  orig: 1531, 555
+  offset: 0, 0
+  index: -1
+fusang_99
+  rotate: true
+  xy: 695, 1280
+  size: 614, 676
+  orig: 614, 676
+  offset: 0, 0
+  index: -1
+
+Nidiya_Avator5.png
+size: 1347,1348
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+fusang_0
+  rotate: false
+  xy: 2, 2
+  size: 1343, 1344
+  orig: 1343, 1344
+  offset: 0, 0
+  index: -1
+
+Nidiya_Avator6.png
+size: 1475,1934
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+fusang_121
+  rotate: true
+  xy: 2, 2
+  size: 988, 1326
+  orig: 988, 1326
+  offset: 0, 0
+  index: -1
+fusang_135
+  rotate: false
+  xy: 2, 992
+  size: 1471, 940
+  orig: 1471, 940
+  offset: 0, 0
+  index: -1
+
+Nidiya_Avator7.png
+size: 1819,888
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+fusang_130
+  rotate: true
+  xy: 1016, 34
+  size: 852, 801
+  orig: 852, 801
+  offset: 0, 0
+  index: -1
+fusang_87
+  rotate: true
+  xy: 2, 2
+  size: 884, 1012
+  orig: 884, 1012
+  offset: 0, 0
+  index: -1

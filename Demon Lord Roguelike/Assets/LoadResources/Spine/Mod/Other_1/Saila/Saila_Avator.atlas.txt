@@ -1,0 +1,720 @@
+
+Saila_Avator.png
+size: 2036,2017
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aila_0
+  rotate: true
+  xy: 359, 1750
+  size: 123, 153
+  orig: 123, 153
+  offset: 0, 0
+  index: -1
+aila_1
+  rotate: true
+  xy: 1627, 425
+  size: 325, 342
+  orig: 325, 342
+  offset: 0, 0
+  index: -1
+aila_10
+  rotate: false
+  xy: 931, 1957
+  size: 77, 58
+  orig: 77, 58
+  offset: 0, 0
+  index: -1
+aila_11
+  rotate: false
+  xy: 74, 2002
+  size: 33, 13
+  orig: 33, 13
+  offset: 0, 0
+  index: -1
+aila_12
+  rotate: false
+  xy: 1492, 1933
+  size: 88, 82
+  orig: 88, 82
+  offset: 0, 0
+  index: -1
+aila_13
+  rotate: false
+  xy: 109, 2002
+  size: 53, 13
+  orig: 53, 13
+  offset: 0, 0
+  index: -1
+aila_14
+  rotate: false
+  xy: 2, 2005
+  size: 35, 10
+  orig: 35, 10
+  offset: 0, 0
+  index: -1
+aila_15
+  rotate: false
+  xy: 39, 2004
+  size: 33, 11
+  orig: 33, 11
+  offset: 0, 0
+  index: -1
+aila_16
+  rotate: true
+  xy: 1010, 1956
+  size: 59, 64
+  orig: 59, 64
+  offset: 0, 0
+  index: -1
+aila_17
+  rotate: false
+  xy: 1076, 1950
+  size: 76, 65
+  orig: 76, 65
+  offset: 0, 0
+  index: -1
+aila_18
+  rotate: false
+  xy: 1560, 2
+  size: 456, 421
+  orig: 456, 421
+  offset: 0, 0
+  index: -1
+aila_19a
+  rotate: true
+  xy: 229, 1992
+  size: 23, 24
+  orig: 23, 24
+  offset: 0, 0
+  index: -1
+aila_19b
+  rotate: true
+  xy: 203, 1993
+  size: 22, 24
+  orig: 22, 24
+  offset: 0, 0
+  index: -1
+aila_2
+  rotate: true
+  xy: 596, 1971
+  size: 44, 100
+  orig: 44, 100
+  offset: 0, 0
+  index: -1
+aila_20
+  rotate: true
+  xy: 1061, 1838
+  size: 107, 162
+  orig: 107, 162
+  offset: 0, 0
+  index: -1
+aila_21
+  rotate: true
+  xy: 211, 1760
+  size: 124, 146
+  orig: 124, 146
+  offset: 0, 0
+  index: -1
+aila_22
+  rotate: false
+  xy: 815, 1850
+  size: 122, 105
+  orig: 122, 105
+  offset: 0, 0
+  index: -1
+aila_23
+  rotate: false
+  xy: 708, 1853
+  size: 105, 111
+  orig: 105, 111
+  offset: 0, 0
+  index: -1
+aila_24
+  rotate: true
+  xy: 1670, 1813
+  size: 111, 286
+  orig: 111, 286
+  offset: 0, 0
+  index: -1
+aila_25
+  rotate: false
+  xy: 327, 1980
+  size: 55, 35
+  orig: 55, 35
+  offset: 0, 0
+  index: -1
+aila_26
+  rotate: true
+  xy: 558, 1117
+  size: 269, 286
+  orig: 269, 286
+  offset: 0, 0
+  index: -1
+aila_27
+  rotate: true
+  xy: 1109, 1329
+  size: 192, 239
+  orig: 192, 239
+  offset: 0, 0
+  index: -1
+aila_28
+  rotate: false
+  xy: 2, 1419
+  size: 394, 186
+  orig: 394, 186
+  offset: 0, 0
+  index: -1
+aila_29
+  rotate: true
+  xy: 595, 1864
+  size: 100, 111
+  orig: 100, 111
+  offset: 0, 0
+  index: -1
+aila_3
+  rotate: true
+  xy: 631, 1570
+  size: 145, 286
+  orig: 145, 286
+  offset: 0, 0
+  index: -1
+aila_30
+  rotate: true
+  xy: 1216, 1693
+  size: 130, 237
+  orig: 130, 237
+  offset: 0, 0
+  index: -1
+aila_31
+  rotate: true
+  xy: 1732, 1673
+  size: 138, 191
+  orig: 138, 191
+  offset: 0, 0
+  index: -1
+aila_32
+  rotate: false
+  xy: 2, 335
+  size: 553, 283
+  orig: 553, 283
+  offset: 0, 0
+  index: -1
+aila_33
+  rotate: false
+  xy: 919, 1548
+  size: 206, 153
+  orig: 206, 153
+  offset: 0, 0
+  index: -1
+aila_34
+  rotate: true
+  xy: 1227, 1938
+  size: 77, 176
+  orig: 77, 176
+  offset: 0, 0
+  index: -1
+aila_35
+  rotate: true
+  xy: 663, 1722
+  size: 126, 166
+  orig: 126, 166
+  offset: 0, 0
+  index: -1
+aila_36
+  rotate: false
+  xy: 1455, 1681
+  size: 275, 130
+  orig: 275, 130
+  offset: 0, 0
+  index: -1
+aila_38
+  rotate: true
+  xy: 1598, 1015
+  size: 264, 406
+  orig: 264, 406
+  offset: 0, 0
+  index: -1
+aila_39
+  rotate: false
+  xy: 398, 1388
+  size: 502, 180
+  orig: 502, 180
+  offset: 0, 0
+  index: -1
+aila_4
+  rotate: false
+  xy: 1644, 1281
+  size: 370, 210
+  orig: 370, 210
+  offset: 0, 0
+  index: -1
+aila_40
+  rotate: false
+  xy: 1350, 1303
+  size: 292, 192
+  orig: 292, 192
+  offset: 0, 0
+  index: -1
+aila_43
+  rotate: false
+  xy: 192, 1607
+  size: 279, 141
+  orig: 279, 141
+  offset: 0, 0
+  index: -1
+aila_44
+  rotate: true
+  xy: 902, 1349
+  size: 197, 205
+  orig: 197, 205
+  offset: 0, 0
+  index: -1
+aila_45
+  rotate: true
+  xy: 1411, 752
+  size: 261, 598
+  orig: 261, 598
+  offset: 0, 0
+  index: -1
+aila_46
+  rotate: true
+  xy: 1054, 234
+  size: 384, 504
+  orig: 384, 504
+  offset: 0, 0
+  index: -1
+aila_47
+  rotate: true
+  xy: 477, 838
+  size: 253, 632
+  orig: 253, 632
+  offset: 0, 0
+  index: -1
+aila_48
+  rotate: true
+  xy: 2, 1781
+  size: 116, 207
+  orig: 116, 207
+  offset: 0, 0
+  index: -1
+aila_49
+  rotate: true
+  xy: 846, 1093
+  size: 234, 398
+  orig: 234, 398
+  offset: 0, 0
+  index: -1
+aila_5
+  rotate: false
+  xy: 384, 1978
+  size: 210, 37
+  orig: 210, 37
+  offset: 0, 0
+  index: -1
+aila_50
+  rotate: true
+  xy: 1405, 1936
+  size: 79, 85
+  orig: 79, 85
+  offset: 0, 0
+  index: -1
+aila_51
+  rotate: true
+  xy: 1111, 784
+  size: 280, 298
+  orig: 280, 298
+  offset: 0, 0
+  index: -1
+aila_52
+  rotate: false
+  xy: 2, 919
+  size: 473, 235
+  orig: 473, 235
+  offset: 0, 0
+  index: -1
+aila_53
+  rotate: true
+  xy: 1792, 1928
+  size: 87, 111
+  orig: 87, 111
+  offset: 0, 0
+  index: -1
+aila_54
+  rotate: true
+  xy: 1582, 1929
+  size: 86, 105
+  orig: 86, 105
+  offset: 0, 0
+  index: -1
+aila_55
+  rotate: false
+  xy: 1853, 1493
+  size: 181, 178
+  orig: 181, 178
+  offset: 0, 0
+  index: -1
+aila_56
+  rotate: true
+  xy: 363, 1878
+  size: 98, 121
+  orig: 98, 121
+  offset: 0, 0
+  index: -1
+aila_57
+  rotate: true
+  xy: 2, 620
+  size: 130, 1623
+  orig: 130, 1623
+  offset: 0, 0
+  index: -1
+aila_6
+  rotate: false
+  xy: 164, 1995
+  size: 37, 20
+  orig: 37, 20
+  offset: 0, 0
+  index: -1
+aila_62
+  rotate: true
+  xy: 1013, 1703
+  size: 133, 201
+  orig: 133, 201
+  offset: 0, 0
+  index: -1
+aila_63
+  rotate: true
+  xy: 247, 1886
+  size: 92, 114
+  orig: 92, 114
+  offset: 0, 0
+  index: -1
+aila_64
+  rotate: true
+  xy: 1225, 1827
+  size: 109, 120
+  orig: 109, 120
+  offset: 0, 0
+  index: -1
+aila_68
+  rotate: true
+  xy: 1127, 1523
+  size: 168, 235
+  orig: 168, 235
+  offset: 0, 0
+  index: -1
+aila_69
+  rotate: true
+  xy: 1364, 1507
+  size: 172, 196
+  orig: 172, 196
+  offset: 0, 0
+  index: -1
+aila_7
+  rotate: false
+  xy: 255, 1990
+  size: 37, 25
+  orig: 37, 25
+  offset: 0, 0
+  index: -1
+aila_70
+  rotate: true
+  xy: 2, 1641
+  size: 138, 188
+  orig: 138, 188
+  offset: 0, 0
+  index: -1
+aila_71
+  rotate: false
+  xy: 486, 1875
+  size: 107, 101
+  orig: 107, 101
+  offset: 0, 0
+  index: -1
+aila_72
+  rotate: false
+  xy: 2, 1909
+  size: 113, 91
+  orig: 113, 91
+  offset: 0, 0
+  index: -1
+aila_73
+  rotate: true
+  xy: 939, 1849
+  size: 105, 120
+  orig: 105, 120
+  offset: 0, 0
+  index: -1
+aila_74
+  rotate: true
+  xy: 1905, 1926
+  size: 89, 99
+  orig: 89, 99
+  offset: 0, 0
+  index: -1
+aila_77
+  rotate: true
+  xy: 1482, 1818
+  size: 109, 186
+  orig: 109, 186
+  offset: 0, 0
+  index: -1
+aila_78
+  rotate: true
+  xy: 514, 1738
+  size: 124, 147
+  orig: 124, 147
+  offset: 0, 0
+  index: -1
+aila_79
+  rotate: true
+  xy: 1347, 1825
+  size: 109, 133
+  orig: 109, 133
+  offset: 0, 0
+  index: -1
+aila_8
+  rotate: false
+  xy: 1689, 1928
+  size: 101, 87
+  orig: 101, 87
+  offset: 0, 0
+  index: -1
+aila_80
+  rotate: false
+  xy: 473, 1581
+  size: 156, 155
+  orig: 156, 155
+  offset: 0, 0
+  index: -1
+aila_81
+  rotate: true
+  xy: 1562, 1497
+  size: 174, 289
+  orig: 174, 289
+  offset: 0, 0
+  index: -1
+aila_82
+  rotate: true
+  xy: 831, 1717
+  size: 130, 180
+  orig: 130, 180
+  offset: 0, 0
+  index: -1
+aila_83
+  rotate: false
+  xy: 117, 1899
+  size: 128, 91
+  orig: 128, 91
+  offset: 0, 0
+  index: -1
+aila_85
+  rotate: false
+  xy: 557, 294
+  size: 495, 324
+  orig: 495, 324
+  offset: 0, 0
+  index: -1
+aila_89
+  rotate: true
+  xy: 1246, 1066
+  size: 235, 350
+  orig: 235, 350
+  offset: 0, 0
+  index: -1
+aila_9
+  rotate: true
+  xy: 1154, 1947
+  size: 68, 71
+  orig: 68, 71
+  offset: 0, 0
+  index: -1
+shitou_1
+  rotate: false
+  xy: 2, 1193
+  size: 266, 224
+  orig: 266, 224
+  offset: 0, 0
+  index: -1
+shitou_2
+  rotate: true
+  xy: 818, 1959
+  size: 56, 111
+  orig: 56, 111
+  offset: 0, 0
+  index: -1
+shitou_3
+  rotate: true
+  xy: 270, 1156
+  size: 230, 286
+  orig: 230, 286
+  offset: 0, 0
+  index: -1
+shitou_4
+  rotate: true
+  xy: 294, 1986
+  size: 29, 31
+  orig: 29, 31
+  offset: 0, 0
+  index: -1
+shitou_5
+  rotate: true
+  xy: 698, 1966
+  size: 49, 118
+  orig: 49, 118
+  offset: 0, 0
+  index: -1
+
+Saila_Avator2.png
+size: 1923,1666
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aila_37
+  rotate: true
+  xy: 1168, 1185
+  size: 479, 552
+  orig: 479, 552
+  offset: 0, 0
+  index: -1
+aila_41
+  rotate: false
+  xy: 2, 1246
+  size: 587, 418
+  orig: 587, 418
+  offset: 0, 0
+  index: -1
+aila_42
+  rotate: false
+  xy: 591, 1214
+  size: 575, 450
+  orig: 575, 450
+  offset: 0, 0
+  index: -1
+aila_58
+  rotate: false
+  xy: 1034, 677
+  size: 887, 506
+  orig: 887, 506
+  offset: 0, 0
+  index: -1
+aila_59
+  rotate: true
+  xy: 653, 2
+  size: 673, 738
+  orig: 673, 738
+  offset: 0, 0
+  index: -1
+aila_66
+  rotate: true
+  xy: 2, 734
+  size: 478, 1030
+  orig: 478, 1030
+  offset: 0, 0
+  index: -1
+butu
+  rotate: true
+  xy: 2, 108
+  size: 624, 649
+  orig: 624, 649
+  offset: 0, 0
+  index: -1
+
+Saila_Avator3.png
+size: 2010,1806
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aila_67
+  rotate: false
+  xy: 2, 2
+  size: 2006, 1802
+  orig: 2006, 1802
+  offset: 0, 0
+  index: -1
+
+Saila_Avator4.png
+size: 1763,1924
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aila_61
+  rotate: false
+  xy: 2, 797
+  size: 1759, 1125
+  orig: 1759, 1125
+  offset: 0, 0
+  index: -1
+aila_86
+  rotate: false
+  xy: 2, 2
+  size: 1320, 793
+  orig: 1320, 793
+  offset: 0, 0
+  index: -1
+
+Saila_Avator5.png
+size: 1992,1504
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aila_76
+  rotate: false
+  xy: 1125, 327
+  size: 865, 1175
+  orig: 865, 1175
+  offset: 0, 0
+  index: -1
+aila_90
+  rotate: false
+  xy: 2, 2
+  size: 1121, 1500
+  orig: 1121, 1500
+  offset: 0, 0
+  index: -1
+
+Saila_Avator6.png
+size: 1168,1788
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aila_75
+  rotate: false
+  xy: 2, 963
+  size: 1116, 823
+  orig: 1116, 823
+  offset: 0, 0
+  index: -1
+aila_87
+  rotate: false
+  xy: 2, 2
+  size: 1164, 959
+  orig: 1164, 959
+  offset: 0, 0
+  index: -1
+
+Saila_Avator7.png
+size: 1114,1062
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aila_88
+  rotate: true
+  xy: 2, 2
+  size: 1058, 1110
+  orig: 1058, 1110
+  offset: 0, 0
+  index: -1
+
+Saila_Avator8.png
+size: 1348,1139
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+aila_65
+  rotate: false
+  xy: 2, 2
+  size: 1344, 1135
+  orig: 1344, 1135
+  offset: 0, 0
+  index: -1

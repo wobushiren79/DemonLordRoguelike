@@ -1,0 +1,447 @@
+
+Nidiya.png
+size: 396,269
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bang1
+  rotate: true
+  xy: 108, 58
+  size: 37, 63
+  orig: 37, 63
+  offset: 0, 0
+  index: -1
+bird_1
+  rotate: true
+  xy: 117, 165
+  size: 50, 96
+  orig: 50, 96
+  offset: 0, 0
+  index: -1
+bird_2
+  rotate: false
+  xy: 258, 176
+  size: 66, 59
+  orig: 66, 59
+  offset: 0, 0
+  index: -1
+bird_3
+  rotate: false
+  xy: 180, 2
+  size: 45, 18
+  orig: 45, 18
+  offset: 0, 0
+  index: -1
+bird_4
+  rotate: false
+  xy: 254, 24
+  size: 26, 32
+  orig: 26, 32
+  offset: 0, 0
+  index: -1
+bird_5
+  rotate: false
+  xy: 173, 62
+  size: 16, 33
+  orig: 16, 33
+  offset: 0, 0
+  index: -1
+bird_6
+  rotate: false
+  xy: 384, 85
+  size: 7, 27
+  orig: 7, 27
+  offset: 0, 0
+  index: -1
+bird_7
+  rotate: true
+  xy: 117, 131
+  size: 32, 96
+  orig: 32, 96
+  offset: 0, 0
+  index: -1
+body
+  rotate: true
+  xy: 150, 21
+  size: 35, 28
+  orig: 35, 28
+  offset: 0, 0
+  index: -1
+chest
+  rotate: false
+  xy: 227, 2
+  size: 27, 18
+  orig: 27, 18
+  offset: 0, 0
+  index: -1
+clothes1
+  rotate: false
+  xy: 258, 58
+  size: 36, 21
+  orig: 36, 21
+  offset: 0, 0
+  index: -1
+clothes2
+  rotate: true
+  xy: 282, 26
+  size: 30, 26
+  orig: 30, 26
+  offset: 0, 0
+  index: -1
+clothes3
+  rotate: true
+  xy: 323, 113
+  size: 34, 45
+  orig: 34, 45
+  offset: 0, 0
+  index: -1
+clothes4
+  rotate: true
+  xy: 215, 88
+  size: 30, 41
+  orig: 30, 41
+  offset: 0, 0
+  index: -1
+clothes5
+  rotate: false
+  xy: 359, 53
+  size: 14, 25
+  orig: 14, 25
+  offset: 0, 0
+  index: -1
+clothes6
+  rotate: false
+  xy: 310, 29
+  size: 14, 30
+  orig: 14, 30
+  offset: 0, 0
+  index: -1
+clothes7
+  rotate: false
+  xy: 318, 80
+  size: 36, 31
+  orig: 36, 31
+  offset: 0, 0
+  index: -1
+clothes8
+  rotate: false
+  xy: 223, 22
+  size: 29, 33
+  orig: 29, 33
+  offset: 0, 0
+  index: -1
+face
+  rotate: false
+  xy: 2, 43
+  size: 86, 89
+  orig: 86, 89
+  offset: 0, 0
+  index: -1
+flower1
+  rotate: true
+  xy: 309, 2
+  size: 22, 14
+  orig: 22, 14
+  offset: 0, 0
+  index: -1
+flower2
+  rotate: true
+  xy: 377, 149
+  size: 16, 17
+  orig: 16, 17
+  offset: 0, 0
+  index: -1
+forearm1
+  rotate: true
+  xy: 296, 61
+  size: 16, 30
+  orig: 16, 30
+  offset: 0, 0
+  index: -1
+forearm2
+  rotate: true
+  xy: 375, 55
+  size: 23, 14
+  orig: 23, 14
+  offset: 0, 0
+  index: -1
+hair1
+  rotate: false
+  xy: 377, 205
+  size: 17, 62
+  orig: 17, 62
+  offset: 0, 0
+  index: -1
+hair2
+  rotate: false
+  xy: 258, 116
+  size: 63, 58
+  orig: 63, 58
+  offset: 0, 0
+  index: -1
+hair3
+  rotate: true
+  xy: 108, 97
+  size: 32, 81
+  orig: 32, 81
+  offset: 0, 0
+  index: -1
+hair4
+  rotate: true
+  xy: 254, 237
+  size: 30, 114
+  orig: 30, 114
+  offset: 0, 0
+  index: -1
+hair5
+  rotate: false
+  xy: 2, 134
+  size: 113, 133
+  orig: 113, 133
+  offset: 0, 0
+  index: -1
+headwear1
+  rotate: false
+  xy: 370, 114
+  size: 21, 33
+  orig: 21, 33
+  offset: 0, 0
+  index: -1
+headwear10
+  rotate: false
+  xy: 256, 2
+  size: 30, 20
+  orig: 30, 20
+  offset: 0, 0
+  index: -1
+headwear2
+  rotate: true
+  xy: 326, 21
+  size: 14, 20
+  orig: 14, 20
+  offset: 0, 0
+  index: -1
+headwear3
+  rotate: true
+  xy: 325, 2
+  size: 17, 9
+  orig: 17, 9
+  offset: 0, 0
+  index: -1
+headwear4
+  rotate: true
+  xy: 326, 37
+  size: 13, 27
+  orig: 13, 27
+  offset: 0, 0
+  index: -1
+headwear5
+  rotate: false
+  xy: 326, 174
+  size: 49, 61
+  orig: 49, 61
+  offset: 0, 0
+  index: -1
+headwear6
+  rotate: false
+  xy: 348, 20
+  size: 12, 15
+  orig: 12, 15
+  offset: 0, 0
+  index: -1
+headwear7
+  rotate: true
+  xy: 90, 44
+  size: 9, 12
+  orig: 9, 12
+  offset: 0, 0
+  index: -1
+headwear8
+  rotate: false
+  xy: 288, 2
+  size: 19, 22
+  orig: 19, 22
+  offset: 0, 0
+  index: -1
+headwear9
+  rotate: true
+  xy: 191, 57
+  size: 29, 41
+  orig: 29, 41
+  offset: 0, 0
+  index: -1
+hide hair1
+  rotate: true
+  xy: 2, 3
+  size: 38, 104
+  orig: 38, 104
+  offset: 0, 0
+  index: -1
+hide hair2
+  rotate: false
+  xy: 90, 55
+  size: 16, 77
+  orig: 16, 77
+  offset: 0, 0
+  index: -1
+hide hair3
+  rotate: false
+  xy: 215, 120
+  size: 41, 95
+  orig: 41, 95
+  offset: 0, 0
+  index: -1
+hide hair4
+  rotate: true
+  xy: 117, 217
+  size: 50, 135
+  orig: 50, 135
+  offset: 0, 0
+  index: -1
+left eye
+  rotate: false
+  xy: 234, 61
+  size: 22, 25
+  orig: 22, 25
+  offset: 0, 0
+  index: -1
+leg1
+  rotate: false
+  xy: 163, 5
+  size: 15, 14
+  orig: 15, 14
+  offset: 0, 0
+  index: -1
+leg2
+  rotate: true
+  xy: 355, 37
+  size: 13, 12
+  orig: 13, 12
+  offset: 0, 0
+  index: -1
+main arm1
+  rotate: false
+  xy: 191, 88
+  size: 22, 41
+  orig: 22, 41
+  offset: 0, 0
+  index: -1
+main arm2
+  rotate: true
+  xy: 328, 52
+  size: 26, 29
+  orig: 26, 29
+  offset: 0, 0
+  index: -1
+month
+  rotate: false
+  xy: 108, 131
+  size: 7, 1
+  orig: 7, 1
+  offset: 0, 0
+  index: -1
+palm1
+  rotate: false
+  xy: 347, 4
+  size: 14, 14
+  orig: 14, 14
+  offset: 0, 0
+  index: -1
+palm2
+  rotate: true
+  xy: 336, 2
+  size: 17, 9
+  orig: 17, 9
+  offset: 0, 0
+  index: -1
+palm3
+  rotate: true
+  xy: 336, 2
+  size: 17, 9
+  orig: 17, 9
+  offset: 0, 0
+  index: -1
+right eye
+  rotate: true
+  xy: 356, 80
+  size: 31, 26
+  orig: 31, 26
+  offset: 0, 0
+  index: -1
+sleeve1
+  rotate: true
+  xy: 323, 149
+  size: 23, 52
+  orig: 23, 52
+  offset: 0, 0
+  index: -1
+sleeve2
+  rotate: false
+  xy: 377, 167
+  size: 17, 36
+  orig: 17, 36
+  offset: 0, 0
+  index: -1
+sleeve3
+  rotate: false
+  xy: 108, 21
+  size: 40, 35
+  orig: 40, 35
+  offset: 0, 0
+  index: -1
+sleeve4
+  rotate: true
+  xy: 149, 2
+  size: 17, 12
+  orig: 17, 12
+  offset: 0, 0
+  index: -1
+thigh1
+  rotate: true
+  xy: 108, 4
+  size: 15, 39
+  orig: 15, 39
+  offset: 0, 0
+  index: -1
+thigh2
+  rotate: false
+  xy: 302, 79
+  size: 14, 35
+  orig: 14, 35
+  offset: 0, 0
+  index: -1
+trousers1
+  rotate: true
+  xy: 180, 22
+  size: 33, 41
+  orig: 33, 41
+  offset: 0, 0
+  index: -1
+trousers2
+  rotate: true
+  xy: 258, 81
+  size: 33, 42
+  orig: 33, 42
+  offset: 0, 0
+  index: -1
+yezi_1
+  rotate: false
+  xy: 391, 79
+  size: 3, 4
+  orig: 3, 4
+  offset: 0, 0
+  index: -1
+yezi_2
+  rotate: true
+  xy: 384, 80
+  size: 3, 5
+  orig: 3, 5
+  offset: 0, 0
+  index: -1
+yezi_3
+  rotate: true
+  xy: 391, 73
+  size: 4, 3
+  orig: 4, 3
+  offset: 0, 0
+  index: -1

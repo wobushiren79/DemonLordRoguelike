@@ -1,0 +1,625 @@
+
+Sarah_Avator.png
+size: 2026,2039
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1a
+  rotate: true
+  xy: 603, 1989
+  size: 48, 168
+  orig: 48, 168
+  offset: 0, 0
+  index: -1
+1b
+  rotate: true
+  xy: 2, 2021
+  size: 16, 63
+  orig: 16, 63
+  offset: 0, 0
+  index: -1
+1c
+  rotate: true
+  xy: 67, 2020
+  size: 17, 58
+  orig: 17, 58
+  offset: 0, 0
+  index: -1
+1d
+  rotate: true
+  xy: 1132, 1982
+  size: 55, 225
+  orig: 55, 225
+  offset: 0, 0
+  index: -1
+1e
+  rotate: true
+  xy: 1202, 1886
+  size: 89, 192
+  orig: 89, 192
+  offset: 0, 0
+  index: -1
+2a
+  rotate: true
+  xy: 639, 1800
+  size: 102, 202
+  orig: 102, 202
+  offset: 0, 0
+  index: -1
+2b
+  rotate: false
+  xy: 488, 1995
+  size: 45, 42
+  orig: 45, 42
+  offset: 0, 0
+  index: -1
+2c
+  rotate: true
+  xy: 347, 1808
+  size: 98, 132
+  orig: 98, 132
+  offset: 0, 0
+  index: -1
+Sidehair2_L
+  rotate: true
+  xy: 1297, 1760
+  size: 121, 347
+  orig: 121, 347
+  offset: 0, 0
+  index: -1
+Sidehair2_R
+  rotate: true
+  xy: 1623, 1578
+  size: 159, 401
+  orig: 159, 401
+  offset: 0, 0
+  index: -1
+Sidehair_L
+  rotate: true
+  xy: 929, 429
+  size: 258, 492
+  orig: 258, 492
+  offset: 0, 0
+  index: -1
+Sidehair_R
+  rotate: true
+  xy: 2, 824
+  size: 238, 505
+  orig: 238, 505
+  offset: 0, 0
+  index: -1
+accessory
+  rotate: true
+  xy: 324, 1654
+  size: 152, 160
+  orig: 152, 160
+  offset: 0, 0
+  index: -1
+accessory_shadow
+  rotate: true
+  xy: 486, 1646
+  size: 152, 160
+  orig: 152, 160
+  offset: 0, 0
+  index: -1
+armR2
+  rotate: true
+  xy: 358, 2
+  size: 338, 346
+  orig: 338, 346
+  offset: 0, 0
+  index: -1
+arm_L
+  rotate: true
+  xy: 509, 800
+  size: 215, 693
+  orig: 215, 693
+  offset: 0, 0
+  index: -1
+arm_R
+  rotate: true
+  xy: 662, 1017
+  size: 197, 714
+  orig: 197, 714
+  offset: 0, 0
+  index: -1
+belt2
+  rotate: false
+  xy: 1378, 945
+  size: 606, 231
+  orig: 606, 231
+  offset: 0, 0
+  index: -1
+breast_L_inside
+  rotate: false
+  xy: 1717, 589
+  size: 294, 354
+  orig: 294, 354
+  offset: 0, 0
+  index: -1
+breast_L_outside
+  rotate: true
+  xy: 199, 1484
+  size: 160, 413
+  orig: 160, 413
+  offset: 0, 0
+  index: -1
+breast_R_ inside
+  rotate: true
+  xy: 1423, 294
+  size: 293, 356
+  orig: 293, 356
+  offset: 0, 0
+  index: -1
+breast_R_outside
+  rotate: true
+  xy: 1246, 1602
+  size: 156, 375
+  orig: 156, 375
+  offset: 0, 0
+  index: -1
+chain_L
+  rotate: true
+  xy: 813, 1452
+  size: 182, 205
+  orig: 182, 205
+  offset: 0, 0
+  index: -1
+chain_L_back
+  rotate: false
+  xy: 535, 1992
+  size: 66, 45
+  orig: 66, 45
+  offset: 0, 0
+  index: -1
+chain_R
+  rotate: true
+  xy: 1182, 1774
+  size: 110, 113
+  orig: 110, 113
+  offset: 0, 0
+  index: -1
+chain_R_back
+  rotate: true
+  xy: 1631, 1975
+  size: 62, 67
+  orig: 62, 67
+  offset: 0, 0
+  index: -1
+chain_shadow
+  rotate: true
+  xy: 2, 1493
+  size: 173, 195
+  orig: 173, 195
+  offset: 0, 0
+  index: -1
+chainaccessory
+  rotate: true
+  xy: 1646, 1739
+  size: 134, 360
+  orig: 134, 360
+  offset: 0, 0
+  index: -1
+cloak_shadow_L
+  rotate: true
+  xy: 2, 1064
+  size: 190, 658
+  orig: 190, 658
+  offset: 0, 0
+  index: -1
+cloak_shadow_R
+  rotate: true
+  xy: 894, 1216
+  size: 184, 646
+  orig: 184, 646
+  offset: 0, 0
+  index: -1
+costume_L
+  rotate: true
+  xy: 1396, 1883
+  size: 90, 273
+  orig: 90, 273
+  offset: 0, 0
+  index: -1
+costume_R
+  rotate: true
+  xy: 1671, 1875
+  size: 97, 298
+  orig: 97, 298
+  offset: 0, 0
+  index: -1
+eye_normal
+  rotate: false
+  xy: 421, 1908
+  size: 263, 79
+  orig: 263, 79
+  offset: 0, 0
+  index: -1
+eye_shyness
+  rotate: false
+  xy: 1359, 1977
+  size: 270, 60
+  orig: 270, 60
+  offset: 0, 0
+  index: -1
+eyebrow_normal
+  rotate: false
+  xy: 168, 1998
+  size: 318, 39
+  orig: 318, 39
+  offset: 0, 0
+  index: -1
+eyebrow_shyness
+  rotate: false
+  xy: 2, 1668
+  size: 320, 149
+  orig: 320, 149
+  offset: 0, 0
+  index: -1
+eyelash_normal
+  rotate: false
+  xy: 2, 1819
+  size: 343, 97
+  orig: 343, 97
+  offset: 0, 0
+  index: -1
+eyelash_shyness
+  rotate: false
+  xy: 853, 1897
+  size: 347, 83
+  orig: 347, 83
+  offset: 0, 0
+  index: -1
+fronthair_01
+  rotate: true
+  xy: 1020, 1420
+  size: 180, 347
+  orig: 180, 347
+  offset: 0, 0
+  index: -1
+fronthair_03
+  rotate: true
+  xy: 843, 1791
+  size: 104, 337
+  orig: 104, 337
+  offset: 0, 0
+  index: -1
+fronthair_04
+  rotate: true
+  xy: 2, 1293
+  size: 189, 350
+  orig: 189, 350
+  offset: 0, 0
+  index: -1
+hand
+  rotate: true
+  xy: 575, 1256
+  size: 194, 317
+  orig: 194, 317
+  offset: 0, 0
+  index: -1
+hi_normal
+  rotate: false
+  xy: 1700, 1974
+  size: 256, 63
+  orig: 256, 63
+  offset: 0, 0
+  index: -1
+hi_shyness
+  rotate: false
+  xy: 773, 1989
+  size: 259, 48
+  orig: 259, 48
+  offset: 0, 0
+  index: -1
+legL
+  rotate: true
+  xy: 2, 587
+  size: 211, 925
+  orig: 211, 925
+  offset: 0, 0
+  index: -1
+legR
+  rotate: true
+  xy: 2, 342
+  size: 243, 887
+  orig: 243, 887
+  offset: 0, 0
+  index: -1
+mouth_normal
+  rotate: false
+  xy: 1034, 1985
+  size: 96, 52
+  orig: 96, 52
+  offset: 0, 0
+  index: -1
+mouth_shyness
+  rotate: false
+  xy: 2, 1937
+  size: 102, 81
+  orig: 102, 81
+  offset: 0, 0
+  index: -1
+neck
+  rotate: true
+  xy: 648, 1636
+  size: 153, 386
+  orig: 153, 386
+  offset: 0, 0
+  index: -1
+neck_back
+  rotate: false
+  xy: 686, 1904
+  size: 165, 83
+  orig: 165, 83
+  offset: 0, 0
+  index: -1
+nose
+  rotate: true
+  xy: 127, 2011
+  size: 26, 39
+  orig: 26, 39
+  offset: 0, 0
+  index: -1
+red
+  rotate: false
+  xy: 1570, 1390
+  size: 422, 186
+  orig: 422, 186
+  offset: 0, 0
+  index: -1
+red_shyness
+  rotate: false
+  xy: 1542, 1178
+  size: 427, 210
+  orig: 427, 210
+  offset: 0, 0
+  index: -1
+s
+  rotate: true
+  xy: 481, 1808
+  size: 98, 156
+  orig: 98, 156
+  offset: 0, 0
+  index: -1
+shoes_L_back
+  rotate: false
+  xy: 354, 1275
+  size: 219, 207
+  orig: 219, 207
+  offset: 0, 0
+  index: -1
+shoes_R_back
+  rotate: false
+  xy: 1369, 1402
+  size: 199, 198
+  orig: 199, 198
+  offset: 0, 0
+  index: -1
+tits_L
+  rotate: true
+  xy: 2, 46
+  size: 294, 354
+  orig: 294, 354
+  offset: 0, 0
+  index: -1
+tits_R
+  rotate: true
+  xy: 891, 134
+  size: 293, 360
+  orig: 293, 360
+  offset: 0, 0
+  index: -1
+veil_L_shadow
+  rotate: true
+  xy: 614, 1458
+  size: 176, 197
+  orig: 176, 197
+  offset: 0, 0
+  index: -1
+veil_R_shadow
+  rotate: true
+  xy: 1036, 1609
+  size: 163, 208
+  orig: 163, 208
+  offset: 0, 0
+  index: -1
+veil_ribbon
+  rotate: false
+  xy: 1204, 689
+  size: 511, 254
+  orig: 511, 254
+  offset: 0, 0
+  index: -1
+white_normal
+  rotate: false
+  xy: 106, 1918
+  size: 313, 78
+  orig: 313, 78
+  offset: 0, 0
+  index: -1
+
+Sarah_Avator2.png
+size: 1888,2048
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+belt1
+  rotate: false
+  xy: 1205, 2
+  size: 664, 333
+  orig: 664, 333
+  offset: 0, 0
+  index: -1
+costume_UL
+  rotate: false
+  xy: 2, 324
+  size: 1201, 1722
+  orig: 1201, 1722
+  offset: 0, 0
+  index: -1
+costume_UR
+  rotate: false
+  xy: 1205, 337
+  size: 681, 1709
+  orig: 681, 1709
+  offset: 0, 0
+  index: -1
+
+Sarah_Avator3.png
+size: 1998,1608
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+armL2
+  rotate: false
+  xy: 1499, 1256
+  size: 361, 350
+  orig: 361, 350
+  offset: 0, 0
+  index: -1
+belt3
+  rotate: false
+  xy: 2, 932
+  size: 635, 347
+  orig: 635, 347
+  offset: 0, 0
+  index: -1
+face
+  rotate: true
+  xy: 892, 475
+  size: 419, 552
+  orig: 419, 552
+  offset: 0, 0
+  index: -1
+groin
+  rotate: false
+  xy: 1287, 896
+  size: 709, 358
+  orig: 709, 358
+  offset: 0, 0
+  index: -1
+neck_under
+  rotate: false
+  xy: 858, 5
+  size: 574, 468
+  orig: 574, 468
+  offset: 0, 0
+  index: -1
+shadow
+  rotate: false
+  xy: 1434, 2
+  size: 554, 471
+  orig: 554, 471
+  offset: 0, 0
+  index: -1
+shadow1
+  rotate: true
+  xy: 1446, 475
+  size: 419, 437
+  orig: 419, 437
+  offset: 0, 0
+  index: -1
+shoesL
+  rotate: true
+  xy: 639, 911
+  size: 354, 646
+  orig: 354, 646
+  offset: 0, 0
+  index: -1
+shoesR
+  rotate: true
+  xy: 2, 1281
+  size: 325, 662
+  orig: 325, 662
+  offset: 0, 0
+  index: -1
+thighL
+  rotate: true
+  xy: 2, 566
+  size: 343, 888
+  orig: 343, 888
+  offset: 0, 0
+  index: -1
+thighR
+  rotate: true
+  xy: 666, 1267
+  size: 339, 831
+  orig: 339, 831
+  offset: 0, 0
+  index: -1
+veil_R
+  rotate: true
+  xy: 2, 104
+  size: 460, 854
+  orig: 460, 854
+  offset: 0, 0
+  index: -1
+
+Sarah_Avator4.png
+size: 2001,1717
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+chest
+  rotate: true
+  xy: 911, 1189
+  size: 526, 882
+  orig: 526, 882
+  offset: 0, 0
+  index: -1
+hair_back
+  rotate: true
+  xy: 2, 630
+  size: 557, 1418
+  orig: 557, 1418
+  offset: 0, 0
+  index: -1
+veil_L
+  rotate: true
+  xy: 2, 1241
+  size: 474, 907
+  orig: 474, 907
+  offset: 0, 0
+  index: -1
+veil_Side_L
+  rotate: false
+  xy: 1422, 252
+  size: 577, 935
+  orig: 577, 935
+  offset: 0, 0
+  index: -1
+veil_Side_R
+  rotate: true
+  xy: 2, 2
+  size: 626, 952
+  orig: 626, 952
+  offset: 0, 0
+  index: -1
+
+Sarah_Avator5.png
+size: 2019,1694
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+cloak_back
+  rotate: true
+  xy: 2, 173
+  size: 1519, 1283
+  orig: 1519, 1283
+  offset: 0, 0
+  index: -1
+stomach
+  rotate: true
+  xy: 1287, 2
+  size: 725, 730
+  orig: 725, 730
+  offset: 0, 0
+  index: -1
+veil_back
+  rotate: true
+  xy: 1287, 729
+  size: 963, 635
+  orig: 963, 635
+  offset: 0, 0
+  index: -1

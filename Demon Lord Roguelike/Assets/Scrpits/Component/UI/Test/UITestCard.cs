@@ -28,6 +28,7 @@ public partial class UITestCard : BaseUIComponent
         string[] skinArray = creatureNormalTest.GetSkinArray();
         SpineHandler.Instance.ChangeSkeletonSkin(ui_NormalModel.skeleton, skinArray);
         ui_NormalModel.transform.localScale = Vector3.one * creatureMode.size_spine;
+        SpineHandler.Instance.PlayAnim(ui_NormalModel, SpineAnimationStateEnum.Idle, true);
     }
 
     public override void OpenUI()
@@ -61,6 +62,8 @@ public partial class UITestCard : BaseUIComponent
         var creatureMode = CreatureModelCfg.GetItemData(fightCreatureData.creatureData.id);
         SpineHandler.Instance.SetSkeletonDataAsset(ui_TargetModel, creatureMode.res_name);
         SpineHandler.Instance.ChangeSkeletonSkin(ui_TargetModel.skeleton, fightCreatureData.creatureData.GetSkinArray());
+        SpineHandler.Instance.PlayAnim(ui_TargetModel, SpineAnimationStateEnum.Idle, true);
+
         ui_TargetModel.transform.localScale = Vector3.one * creatureMode.size_spine;
 
         ui_InputText_S_Size.text = $"{ui_CreatureCardItem.ui_Icon.transform.localScale.x}";

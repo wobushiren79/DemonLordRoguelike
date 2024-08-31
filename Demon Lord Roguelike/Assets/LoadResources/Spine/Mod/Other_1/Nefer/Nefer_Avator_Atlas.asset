@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Nefer_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: c1fc148e5abd3f043ba058434d6151f3, type: 3}
+  materials:
+  - {fileID: 2100000, guid: f7cb0d98d97fb964c877cf58b2195585, type: 2}
+  - {fileID: 2100000, guid: 3a424a3cf3881c34594e45db49d3b3a0, type: 2}
+  - {fileID: 2100000, guid: 766eba7be6928e64bb61a2cc9635c8b9, type: 2}

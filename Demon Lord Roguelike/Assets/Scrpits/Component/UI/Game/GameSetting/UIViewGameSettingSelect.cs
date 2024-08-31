@@ -22,6 +22,14 @@ public partial class UIViewGameSettingSelect : BaseUIView
     }
 
     /// <summary>
+    /// 设置选项
+    /// </summary>
+    public void SetSelcet(int index)
+    {
+        ui_Dropdown.value = index;
+    }
+
+    /// <summary>
     /// 设置回调
     /// </summary>
     public void SetCallBack(Action<UIViewGameSettingSelect, int> actionForCallBack)

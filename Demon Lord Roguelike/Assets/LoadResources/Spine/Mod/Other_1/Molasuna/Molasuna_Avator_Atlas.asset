@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Molasuna_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: a161bee764c3f5e46b5c96391f7415ed, type: 3}
+  materials:
+  - {fileID: 2100000, guid: b8686278cafe51b4ca39be19750099c4, type: 2}
+  - {fileID: 2100000, guid: 9dceb50942e09604cb1f9ecadf4b72ed, type: 2}
+  - {fileID: 2100000, guid: 3272825f6b78ad14a841865873af1660, type: 2}
+  - {fileID: 2100000, guid: cfc081661bba1374e82e3f2eb14299d8, type: 2}
+  - {fileID: 2100000, guid: f986c5b3f9ae0ea4a91dabcf2678fd4f, type: 2}
+  - {fileID: 2100000, guid: 9122b35bde792944bb7646baf50efcc4, type: 2}
+  - {fileID: 2100000, guid: 714e97227dde3524eb08a77458b1c35a, type: 2}
+  - {fileID: 2100000, guid: 224a0ccca68ed4f4ea437e9a969d8130, type: 2}

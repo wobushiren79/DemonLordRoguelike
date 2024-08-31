@@ -1,0 +1,460 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: SpineMod_Other_1
+  m_EditorClassIdentifier: 
+  m_GroupName: SpineMod_Other_1
+  m_Data:
+    m_SerializedData: []
+  m_GUID: f612051fabd46174689c34c71790cf47
+  m_SerializeEntries:
+  - m_GUID: 5ecd8396146630c4a95c998b00350f71
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Heitamoning/Heitamoning_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4bed7f88677a23548a0625f6cfe026e1
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Feizhalixiu/Feizhalixiu_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 017a69ebf7a370d46910641d07524e90
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Gelinsipan/Gelinsipan_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9299cf788e70d3e49ba6caedf1a87cf3
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Luca/Luca_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 415c778e084281845990baee1b78e04c
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Eris/Eris_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d8f5d0adcb6b05344a800f45e4df31e6
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Geliya/Geliya_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 51b9042f850187542b8658ed1515502a
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Sister/Sister_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b5051b88394345446aaafb67864da9d0
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Kuluoxier/Kuluoxier_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 890d731731e53ab4cafbd97a83f704d6
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Leiya/Leiya_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7ae2436bc5823f84c99d9eb28ef410b6
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Meltina/Meltina_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b1664846a19566d4ba8e30ddbcf0189b
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Hekatiya/Hekatiya_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1df52ca4a8aa8b741824473e3c6300e8
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Heitamoning/Heitamoning_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 14a32b11beb5df140b21dcc482df09b6
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Luna/Luna_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e1d41ed307921ab4a8248454fdb48c0d
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Kuluoxierback/Kuluoxierback_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bc34509e92b30be44833cb07443d84c4
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Matoi/Matoi_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 61705f55840b00841b65d40a3c5a3db3
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Asitelinna/Asitelinna_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ede8be43ba9723b479e30fc1983fba6c
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Eleamor/Eleamor_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d013e60b99e61fa42bbd21e1ad02aaec
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Kaola/Kaola_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 55cecbfe1fcd59643b4f47c60699419f
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Luca/Luca_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a0eceb13bc94eaa4aba0b3efa443f4cd
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Liselotte/Liselotte_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0d449567236ddd74d92f837a3b1c65ae
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Amelia/Amelia_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fb640891b748dc543965aea1d6041283
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Kuluoxier/Kuluoxier_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 07b5a8b1a8740e64b8c09e9619a2a619
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Panduola/Panduola_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 35bcf9a675b9a484e997e6b653d3debb
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Misha/Misha_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dbfe758859d2cf340b9ec78635f0de9e
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Nefer/Nefer_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 79b454b6c322a0e4e8207257157c2aa6
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Luoluo/Luoluo_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f0a7f26dbb9ad094c801faf58c3b1bbe
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Kaola/Kaola_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8b31eeecdd538114da9d38335d0f1eff
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Feizhalixiu/Feizhalixiu_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 393d4b8960d13c240a3312999d39d574
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Luna/Luna_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dc3b18b30b90ea448a48747f96e10104
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Youmingyu/Youmingyu_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 488e2aab200fe374e871c2f865030f5f
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Fusan/Fusan_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 83272a555d8d46f4fab37b1e9f4795f2
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Baolilong/Baolilong_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 09f0bf1c9889a284a8efa2dc7fa7c84a
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Fulan/Fulan_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c781a44d9182099409bdb3b4716e3324
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Luna_2/Luna_2_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 624b825f893bd464d9d206d8ebdb01fd
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Bunny/Bunny_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7d8db4e864a9dbb4ca33b5449c0eaf0b
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Hinagiku/Hinagiku_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 06fd34f8e6847f346b9bd23ddc75477b
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Dunniang/Dunniang_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bc2f8db7fdb31084db865baf384a23eb
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Mubeiling/Mubeiling_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3186bfeacfbb9934590f985ed6e7985b
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Meltina/Meltina_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1914bc02f3d23e4468c741b952da80bb
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Guanxingzhe/Guanxingzhe_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dfdb429da57a6ed4b8b1c8c69ad380d5
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Luoluo/Luoluo_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b3870d7537b870a40989aaf99d583d7a
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Geliya/Geliya_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5447c20542e351b4d90dacb9135bffc3
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Eleamor/Eleamor_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e4f28b4d237676e4bbab55d000084b2b
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Aoliweiya/Aoliweiya_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c99ada60c8f0b8749bcddac40b32f924
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Misha/Misha_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 408f17e369d5f8d47aa359faca1c9633
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Liselotte/Liselotte_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 31ffd7b0eccd8244292df26c775637f6
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Amelia/Amelia_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 195b11876e4a0644583562f678902437
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Hekatiya/Hekatiya_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f9694f08dbac0954f89111731fcff247
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Fulan/Fulan_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9fa991b0352371a4583778974b7edd2a
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Gelinsipan/Gelinsipan_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3c1dcdda90d87d34a83c8b7509ba6491
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Bandelu/Bandelu_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f8141804bb09fda40b034b5b8914cb59
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Bunny/Bunny_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 708b824283470774e8a47821729b2abd
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Eris/Eris_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 60ec3876d02f9d64f84a1814291b6263
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Mia/Mia_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 88b785a4e8ce0094f84fce968379c82b
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Bandelu/Bandelu_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8cbdd5004e461524ab6e3879b1ce4cf7
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Leiya/Leiya_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 180960e6658d1994a950169e7d4b1149
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Emma/Emma_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: db37dbaa6a8969143be99cafff53c118
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Mia/Mia_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 10ae77f7b317a624da93fd296a455e24
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Kutakati/Kutakati_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7556ab057c0c91649abd6a79b5b3beff
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Dunniang/Dunniang_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 109d155e8c5eda048bc65f351bc5ae25
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Lena/Lena_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0c0723e69376242409d2d3ac0ad9d478
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Kutakati/Kutakati_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7ae02e6c8c7cc0a4989e2dbf42cede5a
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Luna_2/Luna_2_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eb38e24dc06de0c4abd5431f0d52340f
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Hinagiku/Hinagiku_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c6cdc055574fec749a3262e00aec94d6
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Emma/Emma_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8fcd9f5cb577b9b4e8db36110c8de6aa
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Lena/Lena_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 09bb51087cb6ff24883a41f8e8924c67
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Asitelinna/Asitelinna_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d12d20ff216d4b94ea2babae6de2412c
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Matoi/Matoi_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f89395fa3aa3dac4a862646359785854
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Aoliweiya/Aoliweiya_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 31c5a02d3cd0fa84e8c9d4b44287afe4
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Sarah/Sarah_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ce77e04748ee14f47a31628cf49b8837
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Sarah/Sarah_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e383938a4b0911b439215e270ff85a4b
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Saila/Saila_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 70e1eb1e049500c41b17d8a98ca4195d
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Saila/Saila_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4224c77e51082fc4b9d984d6691a07d9
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Safeierde/Safeierde_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bd6f6782852355149860ab73b4c3e3be
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Safeierde/Safeierde_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2d4b30132ab3cd94194c09416f5671ef
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Rose/Rosa_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d776a10ba2e7a4a4f9f5a9c1ae879025
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Rose/Rosa_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dbe0e6d9cb30f494c957b2b8ced35b05
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Renyu/Renyu_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 21422bbee9bafa749b938f31d2a57337
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Reika/Reika_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 39f88dd03870f474dac238760347282d
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Reika/Reika_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 269b46b9c5b781849a14312a242ca2fa
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Nidiya/Nidiya_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1fd8f9d9ae3e3654a959ee05ba6ce546
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Nefer/Nefer_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ec2dd9e5af95c964daad90a4de48782d
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Molasuna/Molasuna_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9ac1c6423f15dff4fbb6341c791a9a41
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Molasuna/Molasuna_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d4331106414244f4cad4fccfd09c4af1
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Heishanyang/Heishanyang_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fcc5b2c49dc490f4e9212b29e598bdb9
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Heishanyang/Heshanyang_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cebce7e388bfc284ba42d3aa678726ab
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Nidiya/Nidiya_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: ef3b1b1af36e87a4a8e0d00ab589b0b2, type: 2}
+    - {fileID: 11400000, guid: cbdbfb789d0dd2149b9bb8e78659c6f4, type: 2}

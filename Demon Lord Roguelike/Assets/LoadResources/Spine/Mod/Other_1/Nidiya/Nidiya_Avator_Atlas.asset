@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Nidiya_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: d2e1feac3ed68554db9fc6d33fb30fe6, type: 3}
+  materials:
+  - {fileID: 2100000, guid: 0ebe40f088b57d3418bc6f1df5f7c98a, type: 2}
+  - {fileID: 2100000, guid: 6ecc281cf743551448e25e1260816864, type: 2}
+  - {fileID: 2100000, guid: bd69df3389d15fa4bbd3c24499f519d6, type: 2}
+  - {fileID: 2100000, guid: d14e9cff1057c7045993a50bf1789328, type: 2}
+  - {fileID: 2100000, guid: e4c8e95696db3dd448a3e951ca74efdb, type: 2}
+  - {fileID: 2100000, guid: 474361826edfa6b46ba8306a2b18843b, type: 2}
+  - {fileID: 2100000, guid: 435c3cd3be22a7d45ac629e375a3c42d, type: 2}
