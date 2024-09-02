@@ -56,6 +56,7 @@ public partial class UIGameSystem : BaseUIComponent
     public void OnClickForGameSetting()
     {
         var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIGameSetting>();
+        targetUI.enterType = 1;
     }
 
     /// <summary>

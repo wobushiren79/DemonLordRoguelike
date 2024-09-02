@@ -73,7 +73,7 @@ public class LauncherTest : BaseLauncher
                     //¹Ø±ÕLoadingUI
                     var uiBaseMain = UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
                 });
-            }, fightCreature);
+            }, fightCreature.creatureData);
         });
     }
 }

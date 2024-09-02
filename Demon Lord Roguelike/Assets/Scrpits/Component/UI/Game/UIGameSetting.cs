@@ -12,6 +12,7 @@ public partial class UIGameSetting : BaseUIComponent, IRadioGroupCallBack
     protected UIGameSettingForAudio gameSettingForAudio;
 
     public int currentSettingType = 1;
+    public int enterType = 0;
     public override void Awake()
     {
         base.Awake();
@@ -58,7 +59,16 @@ public partial class UIGameSetting : BaseUIComponent, IRadioGroupCallBack
     /// </summary>
     public void OnClickForExit()
     {
-        UIHandler.Instance.OpenUIAndCloseOther<UIGameSystem>();
+        //主界面进入
+        if (enterType == 0)
+        {
+            UIHandler.Instance.OpenUIAndCloseOther<UIMainStart>();
+        }
+        //基地进入
+        else if (enterType == 1)
+        {
+            UIHandler.Instance.OpenUIAndCloseOther<UIGameSystem>();
+        }
     }
 
     /// <summary>

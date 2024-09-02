@@ -42,6 +42,14 @@ public partial class CameraHandler
         return SetCameraForBaseScene(priority, isEnable, "CV_GashaponBreak");
     }
 
+    /// <summary>
+    /// 设置游戏开始摄像头
+    /// </summary>
+    public CinemachineVirtualCamera SetGameStartCamera(int priority, bool isEnable)
+    {
+        return SetCameraForBaseScene(priority, isEnable, "CV_GameStart");
+    }
+
     protected CinemachineVirtualCamera SetCameraForBaseScene(int priority, bool isEnable, string cvName)
     {
         manager.HideAllCM();
@@ -80,11 +88,10 @@ public partial class CameraHandler
         return targetCV;
     }
 
-
     /// <summary>
     /// 设置基地场景摄像头
     /// </summary>
-    public async void SetBaseSceneCamera(Action actionForComplete, FightCreatureBean fightCreatureData)
+    public async void SetBaseSceneCamera(Action actionForComplete, CreatureBean creatureData)
     {
         var mainCamera = manager.mainCamera;
         mainCamera.gameObject.SetActive(true);
@@ -94,13 +101,13 @@ public partial class CameraHandler
 
         var targetSkeletonAnimation = targetRenderer.GetComponent<SkeletonAnimation>();
 
-        var creatureInfo = fightCreatureData.creatureData.GetCreatureInfo();
+        var creatureInfo = creatureData.GetCreatureInfo();
         var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
         //设置大小
         targetRenderer.transform.localScale = Vector3.one * creatureModel.size_spine;
         //设置骨骼数据
         SpineHandler.Instance.SetSkeletonDataAsset(targetSkeletonAnimation, creatureModel.res_name);
-        string[] skinArray = fightCreatureData.creatureData.GetSkinArray();
+        string[] skinArray = creatureData.GetSkinArray();
         //修改皮肤
         SpineHandler.Instance.ChangeSkeletonSkin(targetSkeletonAnimation.skeleton, skinArray);
 
