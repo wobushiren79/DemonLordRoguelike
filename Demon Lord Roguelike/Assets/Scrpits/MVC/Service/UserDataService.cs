@@ -19,39 +19,18 @@ public class UserDataService : BaseDataStorage
     }
 
     /// <summary>
-    /// 查询所有数据
-    /// </summary>
-    /// <returns></returns>
-    public List<UserDataBean> QueryAllData()
-    {
-        return null; 
-    }
-
-    /// <summary>
     /// 查询游戏配置数据
     /// </summary>
-    /// <returns></returns>
-    public UserDataBean QueryData()
+    public UserDataBean QueryData(int index)
     {
-        return BaseLoadData<UserDataBean>(saveFileName);
-    }
-        
-    /// <summary>
-    /// 通过ID查询数据
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    public List<UserDataBean> QueryDataById(long id)
-    {
-        return null;
+        return BaseLoadData<UserDataBean>($"{saveFileName}_{index}");
     }
 
     /// <summary>
     /// 更新数据
     /// </summary>
-    /// <param name="data"></param>
-    public void UpdateData(UserDataBean data)
+    public void UpdateData(UserDataBean data,int index)
     {
-        BaseSaveData<UserDataBean>(saveFileName, data);
+        BaseSaveData<UserDataBean>($"{saveFileName}_{index}", data);
     }
 }

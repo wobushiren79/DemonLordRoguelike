@@ -53,7 +53,7 @@ public partial class UIMainStart : BaseUIComponent
     /// </summary>
     public void OnClickForStartGame()
     {
-
+        UIHandler.Instance.OpenUIAndCloseOther<UIMainLoad>();
     }
 
     /// <summary>

@@ -22,7 +22,6 @@ public class LauncherGame : BaseLauncher
                 CameraHandler.Instance.SetGameStartCamera(int.MaxValue, true);
                 //关闭LoadingUI 打开开始UI
                 UIHandler.Instance.OpenUIAndCloseOther<UIMainStart>();
-
             });
         });
     }

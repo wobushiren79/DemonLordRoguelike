@@ -3,15 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public  partial class GameDataManager : IUserDataView
+public partial class GameDataManager : IUserDataView
 {
     public UserDataBean userData;
     public UserDataController controllerForUserData;
 
     public void Awake()
     {
-        controllerForUserData = new UserDataController(this,this);
-        controllerForGameConfig = new GameConfigController(this,this);
+        controllerForUserData = new UserDataController(this, this);
+        controllerForGameConfig = new GameConfigController(this, this);
     }
 
     /// <summary>
@@ -31,7 +31,18 @@ public  partial class GameDataManager : IUserDataView
     /// </summary>
     public void SaveUserData()
     {
-        controllerForUserData.SaveUserData(userData,null);
+        controllerForUserData.SaveUserData(userData, null);
+    }
+
+    /// <summary>
+    /// 读取用户数据
+    /// </summary>
+    public void LoadUserData(int index, Action<int, UserDataBean> actionForComplete)
+    {
+        controllerForUserData.GetUserDataData(index, (userData) =>
+        {
+            actionForComplete?.Invoke(index, userData);
+        });
     }
 
     #region 回调

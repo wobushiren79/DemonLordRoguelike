@@ -18,36 +18,13 @@ public class UserDataModel : BaseMVCModel
     }
 
     /// <summary>
-    /// 获取所有数据
-    /// </summary>
-    /// <returns></returns>
-    public List<UserDataBean> GetAllUserDataData()
-    {
-        List<UserDataBean> listData = serviceUserData.QueryAllData();
-        return listData;
-    }
-
-    /// <summary>
     /// 获取游戏数据
     /// </summary>
     /// <returns></returns>
-    public UserDataBean GetUserDataData()
+    public UserDataBean GetUserDataData(int index)
     {
-        UserDataBean data = serviceUserData.QueryData();
-        if (data == null)
-            data = new UserDataBean();
+        UserDataBean data = serviceUserData.QueryData(index);
         return data;
-    }
-
-    /// <summary>
-    /// 根据ID获取数据
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    public List<UserDataBean> GetUserDataDataById(long id)
-    {
-        List<UserDataBean> listData = serviceUserData.QueryDataById(id);
-        return listData;
     }
 
     /// <summary>
@@ -56,7 +33,7 @@ public class UserDataModel : BaseMVCModel
     /// <param name="data"></param>
     public void SetUserDataData(UserDataBean data)
     {
-        serviceUserData.UpdateData(data);
+        serviceUserData.UpdateData(data, data.saveIndex);
     }
 
 }

@@ -12,9 +12,10 @@ using System.Collections.Generic;
 [Serializable]
 public class UserDataBean : BaseBean
 {
+    //保存下标
+    public int saveIndex = 0;
     //拥有的金币数量（魔晶石）
     public long coin;
-
     //阵容最大数量
     public int lineupMax = 10;
 
