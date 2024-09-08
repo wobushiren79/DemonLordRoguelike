@@ -67,7 +67,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     /// </summary>
     public void SetCardIcon(CreatureBean creatureData)
     {
-        var creatureInfo = creatureData.GetCreatureInfo();
+        var creatureInfo = creatureData.creatureInfo;
         var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
         //ÉèÖÃ¹Ç÷ÀÊı¾İ
         string resName = creatureModel.res_name;

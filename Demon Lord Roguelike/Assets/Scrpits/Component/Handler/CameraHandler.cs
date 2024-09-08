@@ -50,6 +50,14 @@ public partial class CameraHandler
         return SetCameraForBaseScene(priority, isEnable, "CV_GameStart");
     }
 
+    /// <summary>
+    /// 设置创建
+    /// </summary>
+    public CinemachineVirtualCamera SetPreviewCreateCamera(int priority, bool isEnable)
+    {
+        return SetCameraForBaseScene(priority, isEnable, "CV_PreviewCreate");
+    }
+
     protected CinemachineVirtualCamera SetCameraForBaseScene(int priority, bool isEnable, string cvName)
     {
         manager.HideAllCM();
@@ -101,7 +109,7 @@ public partial class CameraHandler
 
         var targetSkeletonAnimation = targetRenderer.GetComponent<SkeletonAnimation>();
 
-        var creatureInfo = creatureData.GetCreatureInfo();
+        var creatureInfo = creatureData.creatureInfo;
         var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
         //设置大小
         targetRenderer.transform.localScale = Vector3.one * creatureModel.size_spine;

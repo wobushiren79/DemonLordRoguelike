@@ -5,9 +5,9 @@ public partial class CreatureModelInfoBean
 }
 public partial class CreatureModelInfoCfg
 {
-    public Dictionary<int, Dictionary<CreatureSkinTypeEnum, List<CreatureModelInfoBean>>> dicDetailsModelInfo;
+    public static Dictionary<long, Dictionary<CreatureSkinTypeEnum, List<CreatureModelInfoBean>>> dicDetailsModelInfo;
 
-    public List<CreatureModelInfoBean> GetData(int modelId, CreatureSkinTypeEnum modelType)
+    public static List<CreatureModelInfoBean> GetData(long modelId, CreatureSkinTypeEnum modelType)
     {
         if (dicDetailsModelInfo == null || dicDetailsModelInfo.Count == 0)
         {
@@ -21,13 +21,13 @@ public partial class CreatureModelInfoCfg
             }
             else
             {
-                LogUtil.LogError($"CreatureModelInfoCfg 没有找到 modelId_{modelId} CreatureModelPartTypeEnum_{modelType.ToString()}的数据");
+                LogUtil.Log($"CreatureModelInfoCfg 没有找到 modelId_{modelId} CreatureModelPartTypeEnum_{modelType.ToString()}的数据");
                 return null;
             }
         }
         else
         {
-            LogUtil.LogError($"CreatureModelInfoCfg 没有找到 modelId_{modelId}的数据");
+            LogUtil.Log($"CreatureModelInfoCfg 没有找到 modelId_{modelId}的数据");
             return null;
         }
     }
@@ -35,9 +35,9 @@ public partial class CreatureModelInfoCfg
     /// <summary>
     /// 初始化数据
     /// </summary>
-    public void InitDetailsData()
+    public static void InitDetailsData()
     {
-        dicDetailsModelInfo = new Dictionary<int, Dictionary<CreatureSkinTypeEnum, List<CreatureModelInfoBean>>>();
+        dicDetailsModelInfo = new Dictionary<long, Dictionary<CreatureSkinTypeEnum, List<CreatureModelInfoBean>>>();
         var allData = GetAllData();
         foreach (var itemData in allData)
         {

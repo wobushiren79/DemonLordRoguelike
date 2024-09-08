@@ -28,7 +28,7 @@ public class FightCreatureBean
     /// </summary>
     public void ResetData()
     {
-        var creatureInfo = creatureData.GetCreatureInfo();
+        var creatureInfo = creatureData.creatureInfo;
         liftCurrent = creatureInfo.life;
         liftMax = creatureInfo.life;
     }

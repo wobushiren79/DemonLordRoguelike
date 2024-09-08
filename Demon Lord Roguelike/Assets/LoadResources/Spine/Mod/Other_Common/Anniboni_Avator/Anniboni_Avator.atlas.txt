@@ -1,0 +1,1436 @@
+
+Anniboni_Avator.png
+size: 2043,2019
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+anniboni_10
+  rotate: true
+  xy: 1157, 1573
+  size: 122, 124
+  orig: 122, 124
+  offset: 0, 0
+  index: -1
+anniboni_100
+  rotate: true
+  xy: 430, 1897
+  size: 61, 207
+  orig: 61, 207
+  offset: 0, 0
+  index: -1
+anniboni_101
+  rotate: true
+  xy: 95, 1909
+  size: 55, 232
+  orig: 55, 232
+  offset: 0, 0
+  index: -1
+anniboni_102
+  rotate: true
+  xy: 496, 1960
+  size: 38, 202
+  orig: 38, 202
+  offset: 0, 0
+  index: -1
+anniboni_103
+  rotate: true
+  xy: 1275, 1994
+  size: 23, 178
+  orig: 23, 178
+  offset: 0, 0
+  index: -1
+anniboni_104
+  rotate: true
+  xy: 607, 2000
+  size: 17, 165
+  orig: 17, 165
+  offset: 0, 0
+  index: -1
+anniboni_105
+  rotate: true
+  xy: 222, 2005
+  size: 12, 168
+  orig: 12, 168
+  offset: 0, 0
+  index: -1
+anniboni_106
+  rotate: true
+  xy: 442, 2001
+  size: 16, 132
+  orig: 16, 132
+  offset: 0, 0
+  index: -1
+anniboni_11
+  rotate: false
+  xy: 1403, 922
+  size: 502, 160
+  orig: 502, 160
+  offset: 0, 0
+  index: -1
+anniboni_110
+  rotate: false
+  xy: 1159, 1697
+  size: 168, 95
+  orig: 168, 95
+  offset: 0, 0
+  index: -1
+anniboni_112
+  rotate: true
+  xy: 774, 2000
+  size: 17, 28
+  orig: 17, 28
+  offset: 0, 0
+  index: -1
+anniboni_113
+  rotate: false
+  xy: 804, 2000
+  size: 52, 17
+  orig: 52, 17
+  offset: 0, 0
+  index: -1
+anniboni_114
+  rotate: false
+  xy: 979, 1891
+  size: 186, 62
+  orig: 186, 62
+  offset: 0, 0
+  index: -1
+anniboni_115
+  rotate: false
+  xy: 1604, 1866
+  size: 127, 66
+  orig: 127, 66
+  offset: 0, 0
+  index: -1
+anniboni_116
+  rotate: false
+  xy: 1610, 1406
+  size: 207, 128
+  orig: 207, 128
+  offset: 0, 0
+  index: -1
+anniboni_117
+  rotate: false
+  xy: 992, 1454
+  size: 142, 140
+  orig: 142, 140
+  offset: 0, 0
+  index: -1
+anniboni_118
+  rotate: false
+  xy: 1283, 1565
+  size: 134, 123
+  orig: 134, 123
+  offset: 0, 0
+  index: -1
+anniboni_119
+  rotate: false
+  xy: 1008, 1997
+  size: 49, 20
+  orig: 49, 20
+  offset: 0, 0
+  index: -1
+anniboni_12
+  rotate: true
+  xy: 1785, 1667
+  size: 101, 121
+  orig: 101, 121
+  offset: 0, 0
+  index: -1
+anniboni_120
+  rotate: true
+  xy: 652, 1169
+  size: 156, 173
+  orig: 156, 173
+  offset: 0, 0
+  index: -1
+anniboni_121
+  rotate: false
+  xy: 108, 2006
+  size: 74, 11
+  orig: 74, 11
+  offset: 0, 0
+  index: -1
+anniboni_122
+  rotate: false
+  xy: 766, 1612
+  size: 139, 109
+  orig: 139, 109
+  offset: 0, 0
+  index: -1
+anniboni_123
+  rotate: true
+  xy: 1909, 1929
+  size: 57, 96
+  orig: 57, 96
+  offset: 0, 0
+  index: -1
+anniboni_124
+  rotate: true
+  xy: 2, 186
+  size: 222, 334
+  orig: 222, 334
+  offset: 0, 0
+  index: -1
+anniboni_125
+  rotate: true
+  xy: 1615, 1542
+  size: 124, 145
+  orig: 124, 145
+  offset: 0, 0
+  index: -1
+anniboni_127
+  rotate: false
+  xy: 1762, 1536
+  size: 130, 129
+  orig: 130, 129
+  offset: 0, 0
+  index: -1
+anniboni_128
+  rotate: false
+  xy: 1059, 1997
+  size: 104, 20
+  orig: 104, 20
+  offset: 0, 0
+  index: -1
+anniboni_129
+  rotate: false
+  xy: 518, 1352
+  size: 219, 133
+  orig: 219, 133
+  offset: 0, 0
+  index: -1
+anniboni_13
+  rotate: false
+  xy: 1682, 1239
+  size: 349, 143
+  orig: 349, 143
+  offset: 0, 0
+  index: -1
+anniboni_130
+  rotate: true
+  xy: 1766, 1989
+  size: 28, 139
+  orig: 28, 139
+  offset: 0, 0
+  index: -1
+anniboni_131
+  rotate: false
+  xy: 2, 1228
+  size: 330, 144
+  orig: 330, 144
+  offset: 0, 0
+  index: -1
+anniboni_132
+  rotate: false
+  xy: 1405, 1789
+  size: 142, 79
+  orig: 142, 79
+  offset: 0, 0
+  index: -1
+anniboni_133
+  rotate: true
+  xy: 1637, 1668
+  size: 100, 146
+  orig: 100, 146
+  offset: 0, 0
+  index: -1
+anniboni_134
+  rotate: true
+  xy: 171, 1966
+  size: 37, 183
+  orig: 37, 183
+  offset: 0, 0
+  index: -1
+anniboni_135
+  rotate: true
+  xy: 1649, 1084
+  size: 153, 301
+  orig: 153, 301
+  offset: 0, 0
+  index: -1
+anniboni_136
+  rotate: true
+  xy: 2, 1970
+  size: 36, 38
+  orig: 36, 38
+  offset: 0, 0
+  index: -1
+anniboni_137
+  rotate: true
+  xy: 228, 864
+  size: 174, 220
+  orig: 174, 220
+  offset: 0, 0
+  index: -1
+anniboni_138
+  rotate: true
+  xy: 329, 1899
+  size: 60, 99
+  orig: 60, 99
+  offset: 0, 0
+  index: -1
+anniboni_139
+  rotate: true
+  xy: 530, 1002
+  size: 165, 284
+  orig: 165, 284
+  offset: 0, 0
+  index: -1
+anniboni_14
+  rotate: true
+  xy: 230, 410
+  size: 219, 264
+  orig: 219, 264
+  offset: 0, 0
+  index: -1
+anniboni_140
+  rotate: true
+  xy: 816, 978
+  size: 165, 351
+  orig: 165, 351
+  offset: 0, 0
+  index: -1
+anniboni_141
+  rotate: true
+  xy: 1167, 1879
+  size: 64, 179
+  orig: 64, 179
+  offset: 0, 0
+  index: -1
+anniboni_142
+  rotate: true
+  xy: 356, 1963
+  size: 39, 55
+  orig: 39, 55
+  offset: 0, 0
+  index: -1
+anniboni_143
+  rotate: true
+  xy: 1517, 1870
+  size: 67, 85
+  orig: 67, 85
+  offset: 0, 0
+  index: -1
+anniboni_144
+  rotate: true
+  xy: 1894, 1518
+  size: 129, 139
+  orig: 129, 139
+  offset: 0, 0
+  index: -1
+anniboni_145
+  rotate: true
+  xy: 1419, 1560
+  size: 121, 194
+  orig: 121, 194
+  offset: 0, 0
+  index: -1
+anniboni_146
+  rotate: false
+  xy: 1086, 1800
+  size: 154, 77
+  orig: 154, 77
+  offset: 0, 0
+  index: -1
+anniboni_147
+  rotate: false
+  xy: 1456, 1683
+  size: 179, 98
+  orig: 179, 98
+  offset: 0, 0
+  index: -1
+anniboni_148
+  rotate: true
+  xy: 2, 891
+  size: 173, 224
+  orig: 173, 224
+  offset: 0, 0
+  index: -1
+anniboni_149
+  rotate: false
+  xy: 339, 1363
+  size: 177, 132
+  orig: 177, 132
+  offset: 0, 0
+  index: -1
+anniboni_149a
+  rotate: true
+  xy: 1333, 754
+  size: 166, 415
+  orig: 166, 415
+  offset: 0, 0
+  index: -1
+anniboni_15
+  rotate: false
+  xy: 748, 1812
+  size: 336, 77
+  orig: 336, 77
+  offset: 0, 0
+  index: -1
+anniboni_150
+  rotate: true
+  xy: 1984, 1988
+  size: 29, 31
+  orig: 29, 31
+  offset: 0, 0
+  index: -1
+anniboni_151
+  rotate: false
+  xy: 708, 596
+  size: 219, 202
+  orig: 219, 202
+  offset: 0, 0
+  index: -1
+anniboni_152
+  rotate: false
+  xy: 1261, 1117
+  size: 166, 163
+  orig: 166, 163
+  offset: 0, 0
+  index: -1
+anniboni_153
+  rotate: false
+  xy: 1032, 1708
+  size: 125, 90
+  orig: 125, 90
+  offset: 0, 0
+  index: -1
+anniboni_155
+  rotate: true
+  xy: 1429, 1092
+  size: 163, 218
+  orig: 163, 218
+  offset: 0, 0
+  index: -1
+anniboni_156
+  rotate: true
+  xy: 1242, 1794
+  size: 77, 161
+  orig: 77, 161
+  offset: 0, 0
+  index: -1
+anniboni_158
+  rotate: true
+  xy: 1750, 740
+  size: 180, 184
+  orig: 180, 184
+  offset: 0, 0
+  index: -1
+anniboni_16
+  rotate: false
+  xy: 1229, 1945
+  size: 160, 47
+  orig: 160, 47
+  offset: 0, 0
+  index: -1
+anniboni_160
+  rotate: false
+  xy: 2, 450
+  size: 226, 218
+  orig: 226, 218
+  offset: 0, 0
+  index: -1
+anniboni_161
+  rotate: false
+  xy: 1680, 1770
+  size: 254, 83
+  orig: 254, 83
+  offset: 0, 0
+  index: -1
+anniboni_162
+  rotate: false
+  xy: 948, 128
+  size: 581, 226
+  orig: 581, 226
+  offset: 0, 0
+  index: -1
+anniboni_165
+  rotate: false
+  xy: 1141, 567
+  size: 488, 185
+  orig: 488, 185
+  offset: 0, 0
+  index: -1
+anniboni_17
+  rotate: false
+  xy: 2, 1066
+  size: 283, 160
+  orig: 283, 160
+  offset: 0, 0
+  index: -1
+anniboni_171
+  rotate: false
+  xy: 1329, 1690
+  size: 125, 97
+  orig: 125, 97
+  offset: 0, 0
+  index: -1
+anniboni_172
+  rotate: true
+  xy: 2, 1374
+  size: 127, 335
+  orig: 127, 335
+  offset: 0, 0
+  index: -1
+anniboni_174
+  rotate: true
+  xy: 1662, 1993
+  size: 24, 102
+  orig: 24, 102
+  offset: 0, 0
+  index: -1
+anniboni_179
+  rotate: false
+  xy: 2, 1503
+  size: 430, 119
+  orig: 430, 119
+  offset: 0, 0
+  index: -1
+anniboni_183
+  rotate: false
+  xy: 287, 1040
+  size: 241, 163
+  orig: 241, 163
+  offset: 0, 0
+  index: -1
+anniboni_185
+  rotate: true
+  xy: 537, 1622
+  size: 108, 227
+  orig: 108, 227
+  offset: 0, 0
+  index: -1
+anniboni_189
+  rotate: true
+  xy: 1631, 522
+  size: 216, 271
+  orig: 216, 271
+  offset: 0, 0
+  index: -1
+anniboni_19
+  rotate: false
+  xy: 1773, 234
+  size: 268, 286
+  orig: 268, 286
+  offset: 0, 0
+  index: -1
+anniboni_193
+  rotate: true
+  xy: 434, 1497
+  size: 123, 182
+  orig: 123, 182
+  offset: 0, 0
+  index: -1
+anniboni_194
+  rotate: false
+  xy: 618, 1487
+  size: 211, 123
+  orig: 211, 123
+  offset: 0, 0
+  index: -1
+anniboni_196
+  rotate: true
+  xy: 496, 400
+  size: 187, 491
+  orig: 187, 491
+  offset: 0, 0
+  index: -1
+anniboni_2
+  rotate: false
+  xy: 1031, 1596
+  size: 124, 110
+  orig: 124, 110
+  offset: 0, 0
+  index: -1
+anniboni_20
+  rotate: false
+  xy: 1391, 1941
+  size: 165, 50
+  orig: 165, 50
+  offset: 0, 0
+  index: -1
+anniboni_22
+  rotate: false
+  xy: 338, 175
+  size: 304, 223
+  orig: 304, 223
+  offset: 0, 0
+  index: -1
+anniboni_23
+  rotate: false
+  xy: 1147, 767
+  size: 184, 180
+  orig: 184, 180
+  offset: 0, 0
+  index: -1
+anniboni_26
+  rotate: true
+  xy: 964, 799
+  size: 177, 181
+  orig: 177, 181
+  offset: 0, 0
+  index: -1
+anniboni_28
+  rotate: false
+  xy: 989, 356
+  size: 544, 209
+  orig: 544, 209
+  offset: 0, 0
+  index: -1
+anniboni_29
+  rotate: true
+  xy: 201, 1732
+  size: 78, 673
+  orig: 78, 673
+  offset: 0, 0
+  index: -1
+anniboni_3
+  rotate: false
+  xy: 739, 1327
+  size: 143, 143
+  orig: 143, 143
+  offset: 0, 0
+  index: -1
+anniboni_30
+  rotate: true
+  xy: 1410, 1429
+  size: 129, 198
+  orig: 129, 198
+  offset: 0, 0
+  index: -1
+anniboni_32
+  rotate: false
+  xy: 1169, 949
+  size: 232, 166
+  orig: 232, 166
+  offset: 0, 0
+  index: -1
+anniboni_33
+  rotate: false
+  xy: 1535, 299
+  size: 236, 221
+  orig: 236, 221
+  offset: 0, 0
+  index: -1
+anniboni_34
+  rotate: false
+  xy: 1805, 1855
+  size: 159, 72
+  orig: 159, 72
+  offset: 0, 0
+  index: -1
+anniboni_35
+  rotate: false
+  xy: 639, 1894
+  size: 187, 62
+  orig: 187, 62
+  offset: 0, 0
+  index: -1
+anniboni_37
+  rotate: true
+  xy: 148, 1628
+  size: 102, 219
+  orig: 102, 219
+  offset: 0, 0
+  index: -1
+anniboni_38
+  rotate: false
+  xy: 700, 1958
+  size: 90, 40
+  orig: 90, 40
+  offset: 0, 0
+  index: -1
+anniboni_39
+  rotate: true
+  xy: 1624, 1934
+  size: 52, 283
+  orig: 52, 283
+  offset: 0, 0
+  index: -1
+anniboni_4
+  rotate: false
+  xy: 1531, 2
+  size: 327, 230
+  orig: 327, 230
+  offset: 0, 0
+  index: -1
+anniboni_40
+  rotate: true
+  xy: 1168, 1948
+  size: 46, 59
+  orig: 46, 59
+  offset: 0, 0
+  index: -1
+anniboni_41
+  rotate: false
+  xy: 2, 1909
+  size: 91, 58
+  orig: 91, 58
+  offset: 0, 0
+  index: -1
+anniboni_42
+  rotate: true
+  xy: 843, 1957
+  size: 40, 72
+  orig: 40, 72
+  offset: 0, 0
+  index: -1
+anniboni_43
+  rotate: false
+  xy: 1936, 1757
+  size: 99, 96
+  orig: 99, 96
+  offset: 0, 0
+  index: -1
+anniboni_44
+  rotate: true
+  xy: 107, 1966
+  size: 38, 62
+  orig: 38, 62
+  offset: 0, 0
+  index: -1
+anniboni_45
+  rotate: false
+  xy: 1908, 1649
+  size: 120, 106
+  orig: 120, 106
+  offset: 0, 0
+  index: -1
+anniboni_46
+  rotate: false
+  xy: 1819, 1384
+  size: 203, 132
+  orig: 203, 132
+  offset: 0, 0
+  index: -1
+anniboni_47
+  rotate: false
+  xy: 2, 1834
+  size: 121, 73
+  orig: 121, 73
+  offset: 0, 0
+  index: -1
+anniboni_48
+  rotate: false
+  xy: 18, 2008
+  size: 45, 9
+  orig: 45, 9
+  offset: 0, 0
+  index: -1
+anniboni_49
+  rotate: false
+  xy: 858, 1999
+  size: 36, 18
+  orig: 36, 18
+  offset: 0, 0
+  index: -1
+anniboni_5
+  rotate: true
+  xy: 1317, 1282
+  size: 145, 200
+  orig: 145, 200
+  offset: 0, 0
+  index: -1
+anniboni_50
+  rotate: false
+  xy: 413, 1961
+  size: 81, 38
+  orig: 81, 38
+  offset: 0, 0
+  index: -1
+anniboni_51
+  rotate: false
+  xy: 184, 2005
+  size: 16, 12
+  orig: 16, 12
+  offset: 0, 0
+  index: -1
+anniboni_52
+  rotate: false
+  xy: 392, 2004
+  size: 29, 13
+  orig: 29, 13
+  offset: 0, 0
+  index: -1
+anniboni_53
+  rotate: false
+  xy: 1165, 1996
+  size: 47, 21
+  orig: 47, 21
+  offset: 0, 0
+  index: -1
+anniboni_54
+  rotate: false
+  xy: 2, 2010
+  size: 14, 7
+  orig: 14, 7
+  offset: 0, 0
+  index: -1
+anniboni_55
+  rotate: false
+  xy: 1214, 1996
+  size: 59, 21
+  orig: 59, 21
+  offset: 0, 0
+  index: -1
+anniboni_56
+  rotate: false
+  xy: 896, 1999
+  size: 30, 18
+  orig: 30, 18
+  offset: 0, 0
+  index: -1
+anniboni_57
+  rotate: false
+  xy: 65, 2006
+  size: 13, 11
+  orig: 13, 11
+  offset: 0, 0
+  index: -1
+anniboni_58
+  rotate: false
+  xy: 202, 2005
+  size: 18, 12
+  orig: 18, 12
+  offset: 0, 0
+  index: -1
+anniboni_59
+  rotate: false
+  xy: 576, 2000
+  size: 29, 17
+  orig: 29, 17
+  offset: 0, 0
+  index: -1
+anniboni_6
+  rotate: false
+  xy: 907, 1601
+  size: 122, 120
+  orig: 122, 120
+  offset: 0, 0
+  index: -1
+anniboni_60
+  rotate: true
+  xy: 423, 2001
+  size: 16, 17
+  orig: 16, 17
+  offset: 0, 0
+  index: -1
+anniboni_61
+  rotate: false
+  xy: 80, 2006
+  size: 26, 11
+  orig: 26, 11
+  offset: 0, 0
+  index: -1
+anniboni_62
+  rotate: true
+  xy: 831, 1472
+  size: 127, 159
+  orig: 127, 159
+  offset: 0, 0
+  index: -1
+anniboni_63
+  rotate: true
+  xy: 1348, 1873
+  size: 66, 94
+  orig: 66, 94
+  offset: 0, 0
+  index: -1
+anniboni_64
+  rotate: true
+  xy: 828, 1891
+  size: 62, 149
+  orig: 62, 149
+  offset: 0, 0
+  index: -1
+anniboni_66
+  rotate: false
+  xy: 1455, 1993
+  size: 104, 24
+  orig: 104, 24
+  offset: 0, 0
+  index: -1
+anniboni_67
+  rotate: false
+  xy: 2, 1635
+  size: 144, 105
+  orig: 144, 105
+  offset: 0, 0
+  index: -1
+anniboni_68
+  rotate: false
+  xy: 1041, 1298
+  size: 274, 138
+  orig: 274, 138
+  offset: 0, 0
+  index: -1
+anniboni_7
+  rotate: false
+  xy: 827, 1149
+  size: 173, 157
+  orig: 173, 157
+  offset: 0, 0
+  index: -1
+anniboni_70
+  rotate: false
+  xy: 125, 1830
+  size: 152, 77
+  orig: 152, 77
+  offset: 0, 0
+  index: -1
+anniboni_71
+  rotate: false
+  xy: 1519, 1257
+  size: 161, 147
+  orig: 161, 147
+  offset: 0, 0
+  index: -1
+anniboni_72
+  rotate: false
+  xy: 279, 1821
+  size: 467, 71
+  orig: 467, 71
+  offset: 0, 0
+  index: -1
+anniboni_73
+  rotate: false
+  xy: 644, 170
+  size: 302, 228
+  orig: 302, 228
+  offset: 0, 0
+  index: -1
+anniboni_74
+  rotate: true
+  xy: 450, 829
+  size: 171, 317
+  orig: 171, 317
+  offset: 0, 0
+  index: -1
+anniboni_75
+  rotate: false
+  xy: 1136, 1438
+  size: 272, 125
+  orig: 272, 125
+  offset: 0, 0
+  index: -1
+anniboni_77
+  rotate: true
+  xy: 929, 589
+  size: 208, 210
+  orig: 208, 210
+  offset: 0, 0
+  index: -1
+anniboni_78
+  rotate: true
+  xy: 421, 631
+  size: 196, 285
+  orig: 196, 285
+  offset: 0, 0
+  index: -1
+anniboni_79
+  rotate: false
+  xy: 334, 1205
+  size: 316, 145
+  orig: 316, 145
+  offset: 0, 0
+  index: -1
+anniboni_8
+  rotate: true
+  xy: 196, 670
+  size: 192, 223
+  orig: 192, 223
+  offset: 0, 0
+  index: -1
+anniboni_83
+  rotate: false
+  xy: 2, 1742
+  size: 197, 86
+  orig: 197, 86
+  offset: 0, 0
+  index: -1
+anniboni_84
+  rotate: true
+  xy: 2, 698
+  size: 191, 192
+  orig: 191, 192
+  offset: 0, 0
+  index: -1
+anniboni_86
+  rotate: true
+  xy: 876, 1723
+  size: 87, 154
+  orig: 87, 154
+  offset: 0, 0
+  index: -1
+anniboni_87
+  rotate: true
+  xy: 1549, 1783
+  size: 81, 129
+  orig: 81, 129
+  offset: 0, 0
+  index: -1
+anniboni_88
+  rotate: true
+  xy: 792, 1958
+  size: 40, 49
+  orig: 40, 49
+  offset: 0, 0
+  index: -1
+anniboni_89
+  rotate: false
+  xy: 1444, 1873
+  size: 71, 66
+  orig: 71, 66
+  offset: 0, 0
+  index: -1
+anniboni_9
+  rotate: false
+  xy: 769, 800
+  size: 193, 176
+  orig: 193, 176
+  offset: 0, 0
+  index: -1
+anniboni_90
+  rotate: true
+  xy: 928, 1999
+  size: 18, 78
+  orig: 18, 78
+  offset: 0, 0
+  index: -1
+anniboni_91
+  rotate: true
+  xy: 1907, 1988
+  size: 29, 75
+  orig: 29, 75
+  offset: 0, 0
+  index: -1
+anniboni_92
+  rotate: true
+  xy: 917, 1955
+  size: 39, 249
+  orig: 39, 249
+  offset: 0, 0
+  index: -1
+anniboni_93
+  rotate: true
+  xy: 1561, 1993
+  size: 24, 99
+  orig: 24, 99
+  offset: 0, 0
+  index: -1
+anniboni_94
+  rotate: true
+  xy: 369, 1624
+  size: 106, 166
+  orig: 106, 166
+  offset: 0, 0
+  index: -1
+anniboni_95
+  rotate: false
+  xy: 42, 1969
+  size: 63, 35
+  orig: 63, 35
+  offset: 0, 0
+  index: -1
+anniboni_96
+  rotate: false
+  xy: 1733, 1863
+  size: 70, 69
+  orig: 70, 69
+  offset: 0, 0
+  index: -1
+anniboni_97
+  rotate: true
+  xy: 1558, 1939
+  size: 52, 64
+  orig: 52, 64
+  offset: 0, 0
+  index: -1
+anniboni_98
+  rotate: true
+  xy: 1002, 1145
+  size: 151, 257
+  orig: 151, 257
+  offset: 0, 0
+  index: -1
+anniboni_99
+  rotate: false
+  xy: 884, 1308
+  size: 155, 144
+  orig: 155, 144
+  offset: 0, 0
+  index: -1
+
+Anniboni_Avator2.png
+size: 2021,1990
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+anniboni_168
+  rotate: true
+  xy: 961, 2
+  size: 792, 481
+  orig: 792, 481
+  offset: 0, 0
+  index: -1
+anniboni_197
+  rotate: false
+  xy: 1510, 23
+  size: 492, 843
+  orig: 492, 843
+  offset: 0, 0
+  index: -1
+anniboni_198
+  rotate: false
+  xy: 2, 796
+  size: 1506, 1192
+  orig: 1506, 1192
+  offset: 0, 0
+  index: -1
+anniboni_24
+  rotate: false
+  xy: 1510, 868
+  size: 509, 1120
+  orig: 509, 1120
+  offset: 0, 0
+  index: -1
+anniboni_25
+  rotate: true
+  xy: 2, 104
+  size: 690, 957
+  orig: 690, 957
+  offset: 0, 0
+  index: -1
+
+Anniboni_Avator3.png
+size: 2037,1945
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+anniboni_107
+  rotate: false
+  xy: 742, 814
+  size: 934, 330
+  orig: 934, 330
+  offset: 0, 0
+  index: -1
+anniboni_108
+  rotate: false
+  xy: 2, 1720
+  size: 940, 223
+  orig: 940, 223
+  offset: 0, 0
+  index: -1
+anniboni_111
+  rotate: true
+  xy: 2, 968
+  size: 750, 738
+  orig: 750, 738
+  offset: 0, 0
+  index: -1
+anniboni_159
+  rotate: true
+  xy: 944, 1146
+  size: 797, 770
+  orig: 797, 770
+  offset: 0, 0
+  index: -1
+anniboni_164
+  rotate: false
+  xy: 1531, 2
+  size: 488, 657
+  orig: 488, 657
+  offset: 0, 0
+  index: -1
+anniboni_176
+  rotate: true
+  xy: 1678, 661
+  size: 483, 355
+  orig: 483, 355
+  offset: 0, 0
+  index: -1
+anniboni_195
+  rotate: true
+  xy: 2, 86
+  size: 880, 689
+  orig: 880, 689
+  offset: 0, 0
+  index: -1
+anniboni_65
+  rotate: true
+  xy: 1716, 1611
+  size: 332, 319
+  orig: 332, 319
+  offset: 0, 0
+  index: -1
+anniboni_76
+  rotate: true
+  xy: 1716, 1153
+  size: 456, 279
+  orig: 456, 279
+  offset: 0, 0
+  index: -1
+anniboni_82
+  rotate: false
+  xy: 693, 130
+  size: 836, 682
+  orig: 836, 682
+  offset: 0, 0
+  index: -1
+
+Anniboni_Avator4.png
+size: 2045,1852
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+anniboni_0
+  rotate: true
+  xy: 886, 779
+  size: 304, 487
+  orig: 304, 487
+  offset: 0, 0
+  index: -1
+anniboni_1
+  rotate: false
+  xy: 1403, 1060
+  size: 302, 281
+  orig: 302, 281
+  offset: 0, 0
+  index: -1
+anniboni_109
+  rotate: false
+  xy: 1059, 1606
+  size: 869, 244
+  orig: 869, 244
+  offset: 0, 0
+  index: -1
+anniboni_126
+  rotate: false
+  xy: 1528, 2
+  size: 502, 405
+  orig: 502, 405
+  offset: 0, 0
+  index: -1
+anniboni_166
+  rotate: false
+  xy: 417, 1358
+  size: 685, 246
+  orig: 685, 246
+  offset: 0, 0
+  index: -1
+anniboni_167
+  rotate: true
+  xy: 1196, 409
+  size: 311, 620
+  orig: 311, 620
+  offset: 0, 0
+  index: -1
+anniboni_169
+  rotate: false
+  xy: 388, 468
+  size: 806, 309
+  orig: 806, 309
+  offset: 0, 0
+  index: -1
+anniboni_173
+  rotate: true
+  xy: 668, 1610
+  size: 240, 389
+  orig: 240, 389
+  offset: 0, 0
+  index: -1
+anniboni_175
+  rotate: true
+  xy: 1491, 1343
+  size: 261, 302
+  orig: 261, 302
+  offset: 0, 0
+  index: -1
+anniboni_178
+  rotate: false
+  xy: 1104, 1353
+  size: 385, 251
+  orig: 385, 251
+  offset: 0, 0
+  index: -1
+anniboni_18
+  rotate: true
+  xy: 562, 1085
+  size: 266, 839
+  orig: 266, 839
+  offset: 0, 0
+  index: -1
+anniboni_180
+  rotate: false
+  xy: 2, 1096
+  size: 558, 260
+  orig: 558, 260
+  offset: 0, 0
+  index: -1
+anniboni_182
+  rotate: false
+  xy: 2, 1616
+  size: 664, 234
+  orig: 664, 234
+  offset: 0, 0
+  index: -1
+anniboni_184
+  rotate: false
+  xy: 593, 151
+  size: 546, 315
+  orig: 546, 315
+  offset: 0, 0
+  index: -1
+anniboni_186
+  rotate: true
+  xy: 2, 1369
+  size: 245, 413
+  orig: 245, 413
+  offset: 0, 0
+  index: -1
+anniboni_190
+  rotate: false
+  xy: 2, 811
+  size: 512, 283
+  orig: 512, 283
+  offset: 0, 0
+  index: -1
+anniboni_192
+  rotate: true
+  xy: 1375, 722
+  size: 300, 562
+  orig: 300, 562
+  offset: 0, 0
+  index: -1
+anniboni_199
+  rotate: false
+  xy: 1141, 31
+  size: 385, 376
+  orig: 385, 376
+  offset: 0, 0
+  index: -1
+anniboni_27
+  rotate: true
+  xy: 516, 791
+  size: 292, 368
+  orig: 292, 368
+  offset: 0, 0
+  index: -1
+anniboni_31
+  rotate: false
+  xy: 1707, 1024
+  size: 336, 317
+  orig: 336, 317
+  offset: 0, 0
+  index: -1
+anniboni_80
+  rotate: false
+  xy: 2, 152
+  size: 589, 314
+  orig: 589, 314
+  offset: 0, 0
+  index: -1
+anniboni_81
+  rotate: true
+  xy: 2, 504
+  size: 305, 384
+  orig: 305, 384
+  offset: 0, 0
+  index: -1
+
+Anniboni_Avator5.png
+size: 2002,1766
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+anniboni_154
+  rotate: true
+  xy: 2, 619
+  size: 578, 752
+  orig: 578, 752
+  offset: 0, 0
+  index: -1
+anniboni_157
+  rotate: false
+  xy: 1532, 1120
+  size: 468, 644
+  orig: 468, 644
+  offset: 0, 0
+  index: -1
+anniboni_170
+  rotate: false
+  xy: 2, 1199
+  size: 803, 565
+  orig: 803, 565
+  offset: 0, 0
+  index: -1
+anniboni_177
+  rotate: false
+  xy: 807, 1156
+  size: 723, 608
+  orig: 723, 608
+  offset: 0, 0
+  index: -1
+anniboni_187
+  rotate: true
+  xy: 1392, 2
+  size: 433, 558
+  orig: 433, 558
+  offset: 0, 0
+  index: -1
+anniboni_188
+  rotate: false
+  xy: 740, 115
+  size: 650, 446
+  orig: 650, 446
+  offset: 0, 0
+  index: -1
+anniboni_191
+  rotate: false
+  xy: 2, 37
+  size: 736, 580
+  orig: 736, 580
+  offset: 0, 0
+  index: -1
+anniboni_21
+  rotate: false
+  xy: 756, 563
+  size: 727, 591
+  orig: 727, 591
+  offset: 0, 0
+  index: -1
+anniboni_36
+  rotate: true
+  xy: 1485, 437
+  size: 681, 428
+  orig: 681, 428
+  offset: 0, 0
+  index: -1
+
+Anniboni_Avator6.png
+size: 1413,447
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+anniboni_163
+  rotate: true
+  xy: 985, 16
+  size: 429, 426
+  orig: 429, 426
+  offset: 0, 0
+  index: -1
+anniboni_69
+  rotate: false
+  xy: 2, 29
+  size: 525, 416
+  orig: 525, 416
+  offset: 0, 0
+  index: -1
+anniboni_85
+  rotate: false
+  xy: 529, 2
+  size: 454, 443
+  orig: 454, 443
+  offset: 0, 0
+  index: -1

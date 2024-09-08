@@ -20,7 +20,7 @@ public class UserDataBean : BaseBean
     public int lineupMax = 10;
 
     //阵容生物
-    public Dictionary<int, List<string>> dicLineupCreature =new Dictionary<int, List<string>>();
+    public Dictionary<int, List<string>> dicLineupCreature = new Dictionary<int, List<string>>();
     //背包里的所有生物
     public List<CreatureBean> listBackpackCreature = new List<CreatureBean>();
 

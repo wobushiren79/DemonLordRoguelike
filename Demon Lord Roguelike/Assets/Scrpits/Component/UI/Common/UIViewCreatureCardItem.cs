@@ -121,7 +121,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     /// </summary>
     public void SetCardIcon(CreatureBean creatureData)
     {
-        var creatureInfo = creatureData.GetCreatureInfo();
+        var creatureInfo = creatureData.creatureInfo;
         var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
         //ÉèÖÃ¹Ç÷ÀÊı¾İ
         SpineHandler.Instance.SetSkeletonDataAsset(ui_Icon, creatureModel.res_name);

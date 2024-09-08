@@ -23,14 +23,14 @@ public class UserDataService : BaseDataStorage
     /// </summary>
     public UserDataBean QueryData(int index)
     {
-        return BaseLoadData<UserDataBean>($"{saveFileName}_{index}");
+        return BaseLoadData<UserDataBean>($"{saveFileName}_{index}", jsonType: JsonType.Net);
     }
 
     /// <summary>
     /// 更新数据
     /// </summary>
-    public void UpdateData(UserDataBean data,int index)
+    public void UpdateData(UserDataBean data, int index)
     {
-        BaseSaveData<UserDataBean>($"{saveFileName}_{index}", data);
+        BaseSaveData<UserDataBean>($"{saveFileName}_{index}", data, jsonType: JsonType.Net);
     }
 }

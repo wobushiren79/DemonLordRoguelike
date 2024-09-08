@@ -19,12 +19,57 @@ public class CreatureBean
     public int rarity;
 
     //所有的皮肤数据
-    public List<CreatureSkinBean> listSkinData = new List<CreatureSkinBean>();
+    public Dictionary<CreatureSkinTypeEnum, CreatureSkinBean> dicSkinData = new Dictionary<CreatureSkinTypeEnum, CreatureSkinBean>();
 
-    protected CreatureInfoBean creatureInfo;//生物信息
+    public CreatureInfoBean creatureInfo
+    {
+        get
+        {
+            return CreatureInfoCfg.GetItemData(id);
+        }
+    }
+
     public CreatureBean(long id)
     {
         this.id = id;
+    }
+
+    /// <summary>
+    /// 清空皮肤
+    /// </summary>
+    public void ClearSkin(bool isAddBase = true)
+    {
+        dicSkinData.Clear();
+        if(isAddBase)
+            AddSkinForBase();
+    }
+
+    /// <summary>
+    /// 添加基础皮肤
+    /// </summary>
+    public void AddSkinForBase(int skinId = -1)
+    {
+        //添加基础皮肤
+        var listBaseSkin = CreatureModelInfoCfg.GetData(creatureInfo.model_id, CreatureSkinTypeEnum.Base);
+        if (!listBaseSkin.IsNull())
+        {
+            if (skinId == -1)
+            {
+                AddSkin(listBaseSkin[0].id);
+            }
+            else
+            {
+                for (int i = 0; i < listBaseSkin.Count; i++)
+                {
+                   var itemSkinData= listBaseSkin[i];
+                    if (itemSkinData.id == skinId)
+                    {
+                        AddSkin(skinId);
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -32,6 +77,7 @@ public class CreatureBean
     /// </summary>
     public void AddAllSkin()
     {
+        dicSkinData.Clear();
         var allData = CreatureModelInfoCfg.GetAllData();
         var creatureInfo = CreatureInfoCfg.GetItemData(id);
         foreach (var itemData in allData)
@@ -44,10 +90,22 @@ public class CreatureBean
         }
     }
 
+    /// <summary>
+    /// 添加皮肤
+    /// </summary>
     public void AddSkin(long skinId)
     {
-        CreatureSkinBean creatureSkinBean = new CreatureSkinBean(skinId);
-        listSkinData.Add(creatureSkinBean);
+        var modelDetailsInfo = CreatureModelInfoCfg.GetItemData(skinId);
+        CreatureSkinTypeEnum targetSkinType = (CreatureSkinTypeEnum)modelDetailsInfo.part_type;
+        if (dicSkinData.TryGetValue(targetSkinType, out CreatureSkinBean creatureSkin))
+        {
+            creatureSkin.skinId = skinId;
+        }
+        else
+        {
+            CreatureSkinBean creatureSkinBean = new CreatureSkinBean(skinId);
+            dicSkinData.Add(targetSkinType, creatureSkinBean);
+        }
     }
 
     /// <summary>
@@ -56,9 +114,9 @@ public class CreatureBean
     public string[] GetSkinArray(int showType = 0)
     {
         List<string> listSkin = new List<string>();
-        for (int i = 0; i < listSkinData.Count; i++)
+        foreach (var itemSkin in dicSkinData)
         {
-            var itemSkinData = listSkinData[i];
+            var itemSkinData = itemSkin.Value;
             var itemSkinInfo = CreatureModelInfoCfg.GetItemData(itemSkinData.skinId);
             if (itemSkinInfo == null)
             {
@@ -66,7 +124,7 @@ public class CreatureBean
             }
             else
             {
-                if(itemSkinInfo.show_type == showType)
+                if (itemSkinInfo.show_type == showType)
                 {
                     listSkin.Add(itemSkinInfo.res_name);
                 }
@@ -76,25 +134,11 @@ public class CreatureBean
     }
 
     /// <summary>
-    /// 获取生物信息
-    /// </summary>
-    /// <returns></returns>
-    public CreatureInfoBean GetCreatureInfo()
-    {
-        if (creatureInfo == null || creatureInfo.id != id)
-        {
-            creatureInfo = CreatureInfoCfg.GetItemData(id);
-        }
-        return creatureInfo;
-    }
-
-    /// <summary>
     /// 获取生命值
     /// </summary>
     /// <returns></returns>
     public int GetLife()
     {
-        var creatureInfo = GetCreatureInfo();
         return creatureInfo.life;
     }
 
@@ -104,7 +148,6 @@ public class CreatureBean
     /// <returns></returns>
     public int GetAttDamage()
     {
-        var creatureInfo = GetCreatureInfo();
         return creatureInfo.att_damage;
     }
 
@@ -114,7 +157,6 @@ public class CreatureBean
     /// <returns></returns>
     public float GetMoveSpeed()
     {
-        var creatureInfo = GetCreatureInfo();
         return creatureInfo.speed_move;
     }
 
@@ -124,7 +166,6 @@ public class CreatureBean
     /// <returns></returns>
     public float GetAttCD()
     {
-        var creatureInfo = GetCreatureInfo();
         return creatureInfo.att_cd;
     }
 
@@ -134,7 +175,6 @@ public class CreatureBean
     /// <returns></returns>
     public float GetAttAnimCastTime()
     {
-        var creatureInfo = GetCreatureInfo();
         return creatureInfo.att_anim_cast_time;
     }
 

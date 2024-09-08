@@ -79,7 +79,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
     public virtual void AttackDefCreatureStartEnd()
     {
         attackState = 2;
-        var creatureInfo = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.GetCreatureInfo();
+        var creatureInfo = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.creatureInfo;
         //获取攻击方式
         FightHandler.Instance.CreateAttackModePrefab(creatureInfo.att_mode, (targetAttackMode) =>
         {

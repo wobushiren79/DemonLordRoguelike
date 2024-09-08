@@ -1,0 +1,653 @@
+
+Setsuna_Avator.png
+size: 2034,2042
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_bust01
+  rotate: false
+  xy: 2, 199
+  size: 385, 278
+  orig: 385, 278
+  offset: 0, 0
+  index: -1
+L_earrings01
+  rotate: true
+  xy: 37, 2020
+  size: 20, 39
+  orig: 20, 39
+  offset: 0, 0
+  index: -1
+L_earrings02
+  rotate: true
+  xy: 1293, 1955
+  size: 85, 140
+  orig: 85, 140
+  offset: 0, 0
+  index: -1
+L_forearm02
+  rotate: false
+  xy: 1413, 785
+  size: 541, 218
+  orig: 541, 218
+  offset: 0, 0
+  index: -1
+L_forearm03
+  rotate: true
+  xy: 1105, 1854
+  size: 106, 169
+  orig: 106, 169
+  offset: 0, 0
+  index: -1
+L_hand
+  rotate: false
+  xy: 769, 930
+  size: 642, 213
+  orig: 642, 213
+  offset: 0, 0
+  index: -1
+L_leg_ribbon01
+  rotate: true
+  xy: 1207, 1962
+  size: 78, 84
+  orig: 78, 84
+  offset: 0, 0
+  index: -1
+L_leg_ribbon02
+  rotate: false
+  xy: 461, 1988
+  size: 62, 52
+  orig: 62, 52
+  offset: 0, 0
+  index: -1
+L_leg_ribbon03
+  rotate: true
+  xy: 1782, 1823
+  size: 121, 155
+  orig: 121, 155
+  offset: 0, 0
+  index: -1
+L_leg_ribbon04
+  rotate: true
+  xy: 1838, 1946
+  size: 94, 151
+  orig: 94, 151
+  offset: 0, 0
+  index: -1
+L_upper_arm01
+  rotate: true
+  xy: 2, 479
+  size: 263, 456
+  orig: 263, 456
+  offset: 0, 0
+  index: -1
+R_bust01
+  rotate: false
+  xy: 460, 392
+  size: 403, 276
+  orig: 403, 276
+  offset: 0, 0
+  index: -1
+R_earrings01
+  rotate: true
+  xy: 78, 2014
+  size: 26, 46
+  orig: 26, 46
+  offset: 0, 0
+  index: -1
+R_earrings02
+  rotate: true
+  xy: 2, 1917
+  size: 95, 165
+  orig: 95, 165
+  offset: 0, 0
+  index: -1
+R_foot
+  rotate: true
+  xy: 841, 1145
+  size: 202, 578
+  orig: 202, 578
+  offset: 0, 0
+  index: -1
+R_forearm01
+  rotate: true
+  xy: 2, 744
+  size: 233, 561
+  orig: 233, 561
+  offset: 0, 0
+  index: -1
+R_forearm02
+  rotate: true
+  xy: 870, 1349
+  size: 168, 580
+  orig: 168, 580
+  offset: 0, 0
+  index: -1
+R_forearm03
+  rotate: false
+  xy: 1435, 1954
+  size: 140, 86
+  orig: 140, 86
+  offset: 0, 0
+  index: -1
+R_hand
+  rotate: false
+  xy: 1740, 1484
+  size: 243, 197
+  orig: 243, 197
+  offset: 0, 0
+  index: -1
+R_leg_ribbon01
+  rotate: true
+  xy: 891, 1965
+  size: 75, 112
+  orig: 75, 112
+  offset: 0, 0
+  index: -1
+R_leg_ribbon02
+  rotate: true
+  xy: 594, 1977
+  size: 63, 68
+  orig: 63, 68
+  offset: 0, 0
+  index: -1
+R_leg_ribbon03
+  rotate: true
+  xy: 664, 1972
+  size: 68, 225
+  orig: 68, 225
+  offset: 0, 0
+  index: -1
+R_leg_ribbon04
+  rotate: true
+  xy: 258, 1993
+  size: 47, 201
+  orig: 47, 201
+  offset: 0, 0
+  index: -1
+R_lower_leg
+  rotate: true
+  xy: 865, 299
+  size: 222, 981
+  orig: 222, 981
+  offset: 0, 0
+  index: -1
+R_upper_arm01
+  rotate: true
+  xy: 2, 1255
+  size: 193, 353
+  orig: 193, 353
+  offset: 0, 0
+  index: -1
+R_upper_arm02
+  rotate: true
+  xy: 357, 1205
+  size: 197, 482
+  orig: 197, 482
+  offset: 0, 0
+  index: -1
+back_hair02
+  rotate: true
+  xy: 565, 670
+  size: 258, 582
+  orig: 258, 582
+  offset: 0, 0
+  index: -1
+back_hair04
+  rotate: true
+  xy: 2, 1450
+  size: 169, 510
+  orig: 169, 510
+  offset: 0, 0
+  index: -1
+back_hair06
+  rotate: true
+  xy: 1421, 2
+  size: 295, 611
+  orig: 295, 611
+  offset: 0, 0
+  index: -1
+back_hair09
+  rotate: true
+  xy: 909, 1531
+  size: 173, 352
+  orig: 173, 352
+  offset: 0, 0
+  index: -1
+back_hair10
+  rotate: true
+  xy: 753, 18
+  size: 279, 666
+  orig: 279, 666
+  offset: 0, 0
+  index: -1
+body02
+  rotate: false
+  xy: 1149, 523
+  size: 656, 260
+  orig: 656, 260
+  offset: 0, 0
+  index: -1
+cheek
+  rotate: false
+  xy: 514, 1404
+  size: 354, 176
+  orig: 354, 176
+  offset: 0, 0
+  index: -1
+eyebrow
+  rotate: false
+  xy: 831, 1866
+  size: 272, 97
+  orig: 272, 97
+  offset: 0, 0
+  index: -1
+eyelids
+  rotate: false
+  xy: 169, 1897
+  size: 283, 94
+  orig: 283, 94
+  offset: 0, 0
+  index: -1
+eyelids2
+  rotate: false
+  xy: 1517, 1834
+  size: 263, 114
+  orig: 263, 114
+  offset: 0, 0
+  index: -1
+eyeline_bottom
+  rotate: false
+  xy: 1577, 1950
+  size: 259, 90
+  orig: 259, 90
+  offset: 0, 0
+  index: -1
+eyeline_top
+  rotate: false
+  xy: 579, 1582
+  size: 328, 150
+  orig: 328, 150
+  offset: 0, 0
+  index: -1
+eyeline_top2
+  rotate: false
+  xy: 2, 1781
+  size: 305, 114
+  orig: 305, 114
+  offset: 0, 0
+  index: -1
+front_hair01
+  rotate: true
+  xy: 1062, 1706
+  size: 138, 306
+  orig: 138, 306
+  offset: 0, 0
+  index: -1
+front_hair02
+  rotate: true
+  xy: 713, 1734
+  size: 130, 347
+  orig: 130, 347
+  offset: 0, 0
+  index: -1
+front_hair03
+  rotate: true
+  xy: 1452, 1308
+  size: 209, 279
+  orig: 209, 279
+  offset: 0, 0
+  index: -1
+front_hair05
+  rotate: true
+  xy: 309, 1755
+  size: 123, 402
+  orig: 123, 402
+  offset: 0, 0
+  index: -1
+front_hair06
+  rotate: true
+  xy: 454, 1880
+  size: 90, 375
+  orig: 90, 375
+  offset: 0, 0
+  index: -1
+front_hair07
+  rotate: true
+  xy: 1263, 1519
+  size: 162, 475
+  orig: 162, 475
+  offset: 0, 0
+  index: -1
+mouth_close
+  rotate: false
+  xy: 126, 2014
+  size: 56, 26
+  orig: 56, 26
+  offset: 0, 0
+  index: -1
+mouth_open
+  rotate: false
+  xy: 525, 1988
+  size: 67, 52
+  orig: 67, 52
+  offset: 0, 0
+  index: -1
+neck01
+  rotate: true
+  xy: 184, 2003
+  size: 37, 72
+  orig: 37, 72
+  offset: 0, 0
+  index: -1
+neck02
+  rotate: true
+  xy: 2, 1000
+  size: 203, 396
+  orig: 203, 396
+  offset: 0, 0
+  index: -1
+nose
+  rotate: true
+  xy: 2, 2029
+  size: 11, 33
+  orig: 11, 33
+  offset: 0, 0
+  index: -1
+pupil01
+  rotate: false
+  xy: 1276, 1846
+  size: 239, 106
+  orig: 239, 106
+  offset: 0, 0
+  index: -1
+pupil02
+  rotate: false
+  xy: 1370, 1694
+  size: 243, 138
+  orig: 243, 138
+  offset: 0, 0
+  index: -1
+pupil03
+  rotate: false
+  xy: 1615, 1683
+  size: 279, 138
+  orig: 279, 138
+  offset: 0, 0
+  index: -1
+side_hair_L
+  rotate: true
+  xy: 2, 1621
+  size: 132, 575
+  orig: 132, 575
+  offset: 0, 0
+  index: -1
+side_hair_R02
+  rotate: true
+  xy: 400, 979
+  size: 224, 367
+  orig: 224, 367
+  offset: 0, 0
+  index: -1
+skirt01
+  rotate: false
+  xy: 1712, 1005
+  size: 258, 254
+  orig: 258, 254
+  offset: 0, 0
+  index: -1
+skirt02
+  rotate: true
+  xy: 1005, 1965
+  size: 75, 200
+  orig: 75, 200
+  offset: 0, 0
+  index: -1
+skirt05
+  rotate: true
+  xy: 1733, 1261
+  size: 221, 258
+  orig: 221, 258
+  offset: 0, 0
+  index: -1
+skirt07
+  rotate: true
+  xy: 1421, 1085
+  size: 221, 289
+  orig: 221, 289
+  offset: 0, 0
+  index: -1
+skirt09
+  rotate: true
+  xy: 389, 97
+  size: 293, 362
+  orig: 293, 362
+  offset: 0, 0
+  index: -1
+
+Setsuna_Avator2.png
+size: 1989,1940
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_bust02
+  rotate: true
+  xy: 1240, 1316
+  size: 317, 350
+  orig: 317, 350
+  offset: 0, 0
+  index: -1
+L_foot
+  rotate: true
+  xy: 2, 1006
+  size: 320, 520
+  orig: 320, 520
+  offset: 0, 0
+  index: -1
+L_forearm01
+  rotate: false
+  xy: 524, 991
+  size: 471, 331
+  orig: 471, 331
+  offset: 0, 0
+  index: -1
+L_upper_arm02_shadow
+  rotate: true
+  xy: 2, 1328
+  size: 308, 643
+  orig: 308, 643
+  offset: 0, 0
+  index: -1
+R_bust02
+  rotate: true
+  xy: 1592, 1280
+  size: 340, 349
+  orig: 340, 349
+  offset: 0, 0
+  index: -1
+R_upper_leg
+  rotate: true
+  xy: 509, 2
+  size: 412, 1164
+  orig: 412, 1164
+  offset: 0, 0
+  index: -1
+back_hair08
+  rotate: true
+  xy: 647, 1324
+  size: 309, 591
+  orig: 309, 591
+  offset: 0, 0
+  index: -1
+body04
+  rotate: false
+  xy: 2, 150
+  size: 505, 468
+  orig: 505, 468
+  offset: 0, 0
+  index: -1
+decollete
+  rotate: false
+  xy: 1398, 872
+  size: 533, 406
+  orig: 533, 406
+  offset: 0, 0
+  index: -1
+front_hair04
+  rotate: true
+  xy: 419, 1638
+  size: 300, 438
+  orig: 300, 438
+  offset: 0, 0
+  index: -1
+head
+  rotate: true
+  xy: 1233, 416
+  size: 454, 501
+  orig: 454, 501
+  offset: 0, 0
+  index: -1
+shadow_front_hair
+  rotate: false
+  xy: 997, 960
+  size: 399, 354
+  orig: 399, 354
+  offset: 0, 0
+  index: -1
+side_hair_R01
+  rotate: true
+  xy: 859, 1635
+  size: 303, 776
+  orig: 303, 776
+  offset: 0, 0
+  index: -1
+skirt03
+  rotate: false
+  xy: 2, 1642
+  size: 415, 296
+  orig: 415, 296
+  offset: 0, 0
+  index: -1
+skirt04
+  rotate: false
+  xy: 1637, 1622
+  size: 350, 316
+  orig: 350, 316
+  offset: 0, 0
+  index: -1
+skirt06
+  rotate: false
+  xy: 805, 535
+  size: 426, 423
+  orig: 426, 423
+  offset: 0, 0
+  index: -1
+skirt11
+  rotate: true
+  xy: 2, 620
+  size: 369, 801
+  orig: 369, 801
+  offset: 0, 0
+  index: -1
+
+Setsuna_Avator3.png
+size: 1961,1946
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_lower_leg
+  rotate: true
+  xy: 2, 1531
+  size: 413, 1022
+  orig: 413, 1022
+  offset: 0, 0
+  index: -1
+L_upper_leg
+  rotate: true
+  xy: 2, 532
+  size: 463, 1163
+  orig: 463, 1163
+  offset: 0, 0
+  index: -1
+back_hair01
+  rotate: true
+  xy: 2, 1061
+  size: 468, 891
+  orig: 468, 891
+  offset: 0, 0
+  index: -1
+back_hair05
+  rotate: true
+  xy: 1026, 1504
+  size: 440, 913
+  orig: 440, 913
+  offset: 0, 0
+  index: -1
+back_hair07
+  rotate: true
+  xy: 895, 997
+  size: 505, 755
+  orig: 505, 755
+  offset: 0, 0
+  index: -1
+body05
+  rotate: true
+  xy: 1167, 411
+  size: 584, 792
+  orig: 584, 792
+  offset: 0, 0
+  index: -1
+skirt10
+  rotate: true
+  xy: 2, 2
+  size: 528, 963
+  orig: 528, 963
+  offset: 0, 0
+  index: -1
+
+Setsuna_Avator4.png
+size: 2045,1823
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body01
+  rotate: false
+  xy: 2, 430
+  size: 759, 706
+  orig: 759, 706
+  offset: 0, 0
+  index: -1
+body03
+  rotate: false
+  xy: 2, 1198
+  size: 656, 623
+  orig: 656, 623
+  offset: 0, 0
+  index: -1
+skirt08
+  rotate: true
+  xy: 660, 1138
+  size: 683, 1058
+  orig: 683, 1058
+  offset: 0, 0
+  index: -1
+skirt12
+  rotate: true
+  xy: 763, 2
+  size: 1134, 1280
+  orig: 1134, 1280
+  offset: 0, 0
+  index: -1
+
+Setsuna_Avator5.png
+size: 911,1553
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+back_hair03
+  rotate: false
+  xy: 2, 2
+  size: 907, 1549
+  orig: 907, 1549
+  offset: 0, 0
+  index: -1

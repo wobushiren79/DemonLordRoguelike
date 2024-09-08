@@ -108,7 +108,7 @@ public class GashaponMachineLogic : BaseGameLogic
             GashaponItemBean itemGashapon = new GashaponItemBean(999990+i);
             listGashaponData.Add(itemGashapon);
 
-            var creatureInfo = itemGashapon.creatureData.GetCreatureInfo();
+            var creatureInfo = itemGashapon.creatureData.creatureInfo;
             var caretureModelInfo = CreatureModelCfg.GetItemData(creatureInfo.model_id);
             listPreLoadSpineData.Add(caretureModelInfo.res_name);
             if (!caretureModelInfo.ui_show_spine.IsNull())

@@ -61,7 +61,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
         var currentPosition = selfAIEntity.selfAttCreatureEntity.creatureObj.transform.position;
         var targetMovePos = selfAIEntity.targetMovePos;
         float dis = Vector3.Distance(currentPosition, targetMovePos);
-        var creatureInfo = selfAIEntity.selfAttCreatureEntity.fightCreatureData.creatureData.GetCreatureInfo();
+        var creatureInfo = selfAIEntity.selfAttCreatureEntity.fightCreatureData.creatureData.creatureInfo;
         if (dis <= creatureInfo.att_range)
         {
             return true;

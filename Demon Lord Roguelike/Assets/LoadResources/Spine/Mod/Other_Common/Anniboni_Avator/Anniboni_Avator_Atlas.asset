@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
+  m_Name: Anniboni_Avator_Atlas
+  m_EditorClassIdentifier: 
+  atlasFile: {fileID: 4900000, guid: 0e7cc2fff8647194fa9d7879344bf510, type: 3}
+  materials:
+  - {fileID: 2100000, guid: 0b7e2e7cadb5239468757fbe1d4e2633, type: 2}
+  - {fileID: 2100000, guid: 599d20e25f66cae4fbab11e2194f4455, type: 2}
+  - {fileID: 2100000, guid: 0f05faf4e674fad4f895bbf5e60df444, type: 2}
+  - {fileID: 2100000, guid: 6d408f1566c50fe429880076f74b0dbf, type: 2}
+  - {fileID: 2100000, guid: a8754c987e237f8429c88e2dfe7f752d, type: 2}
+  - {fileID: 2100000, guid: 7568ab12e393af74c941ad906d8c667e, type: 2}

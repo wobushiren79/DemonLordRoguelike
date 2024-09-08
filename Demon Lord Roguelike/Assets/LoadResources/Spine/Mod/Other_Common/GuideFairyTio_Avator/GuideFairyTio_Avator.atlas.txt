@@ -1,0 +1,558 @@
+
+GuideFairyTio_Avator.png
+size: 4078,3372
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_ear
+  rotate: false
+  xy: 2785, 3265
+  size: 236, 105
+  orig: 236, 105
+  offset: 0, 0
+  index: -1
+L_foot01
+  rotate: true
+  xy: 2459, 2579
+  size: 303, 319
+  orig: 303, 319
+  offset: 0, 0
+  index: -1
+L_foot02
+  rotate: true
+  xy: 3101, 2487
+  size: 316, 462
+  orig: 316, 462
+  offset: 0, 0
+  index: -1
+L_foot03
+  rotate: false
+  xy: 2164, 2902
+  size: 253, 217
+  orig: 253, 217
+  offset: 0, 0
+  index: -1
+L_forearm
+  rotate: false
+  xy: 3565, 2429
+  size: 457, 351
+  orig: 457, 351
+  offset: 0, 0
+  index: -1
+L_hand01
+  rotate: true
+  xy: 1090, 2679
+  size: 282, 281
+  orig: 282, 281
+  offset: 0, 0
+  index: -1
+L_hand02
+  rotate: false
+  xy: 2407, 3121
+  size: 159, 146
+  orig: 159, 146
+  offset: 0, 0
+  index: -1
+L_leg_upper
+  rotate: true
+  xy: 2025, 2
+  size: 828, 1750
+  orig: 828, 1750
+  offset: 0, 0
+  index: -1
+L_leg_upper_shade
+  rotate: true
+  xy: 2948, 2065
+  size: 420, 472
+  orig: 420, 472
+  offset: 0, 0
+  index: -1
+L_upperarm02
+  rotate: false
+  xy: 272, 2982
+  size: 388, 198
+  orig: 388, 198
+  offset: 0, 0
+  index: -1
+L_upperarm03
+  rotate: true
+  xy: 2, 1926
+  size: 458, 504
+  orig: 458, 504
+  offset: 0, 0
+  index: -1
+L_upperarm03_shade
+  rotate: false
+  xy: 3495, 2805
+  size: 275, 241
+  orig: 275, 241
+  offset: 0, 0
+  index: -1
+L_upperarm04
+  rotate: false
+  xy: 87, 3331
+  size: 129, 39
+  orig: 129, 39
+  offset: 0, 0
+  index: -1
+R_ear
+  rotate: false
+  xy: 1168, 3292
+  size: 183, 78
+  orig: 183, 78
+  offset: 0, 0
+  index: -1
+R_foot01
+  rotate: true
+  xy: 2918, 2851
+  size: 233, 270
+  orig: 233, 270
+  offset: 0, 0
+  index: -1
+R_foot02
+  rotate: true
+  xy: 1373, 2663
+  size: 271, 459
+  orig: 271, 459
+  offset: 0, 0
+  index: -1
+R_foot03
+  rotate: true
+  xy: 1373, 2936
+  size: 213, 262
+  orig: 213, 262
+  offset: 0, 0
+  index: -1
+R_forearm
+  rotate: true
+  xy: 3178, 3086
+  size: 168, 516
+  orig: 168, 516
+  offset: 0, 0
+  index: -1
+R_hand
+  rotate: true
+  xy: 2132, 2590
+  size: 292, 325
+  orig: 292, 325
+  offset: 0, 0
+  index: -1
+R_leg_lower
+  rotate: false
+  xy: 1493, 2259
+  size: 625, 370
+  orig: 625, 370
+  offset: 0, 0
+  index: -1
+R_leg_upper
+  rotate: true
+  xy: 3008, 1409
+  size: 560, 807
+  orig: 560, 807
+  offset: 0, 0
+  index: -1
+R_leg_upper_shade
+  rotate: true
+  xy: 3422, 1971
+  size: 456, 639
+  orig: 456, 639
+  offset: 0, 0
+  index: -1
+R_upperarm02
+  rotate: false
+  xy: 3023, 3264
+  size: 241, 106
+  orig: 241, 106
+  offset: 0, 0
+  index: -1
+R_upperarm03
+  rotate: true
+  xy: 2568, 3113
+  size: 149, 608
+  orig: 149, 608
+  offset: 0, 0
+  index: -1
+R_upperarm03_shade
+  rotate: true
+  xy: 2246, 3122
+  size: 145, 159
+  orig: 145, 159
+  offset: 0, 0
+  index: -1
+back hair center
+  rotate: false
+  xy: 2, 1290
+  size: 644, 569
+  orig: 644, 569
+  offset: 0, 0
+  index: -1
+body02
+  rotate: true
+  xy: 648, 1192
+  size: 583, 691
+  orig: 583, 691
+  offset: 0, 0
+  index: -1
+body02_shade
+  rotate: false
+  xy: 2419, 2884
+  size: 497, 227
+  orig: 497, 227
+  offset: 0, 0
+  index: -1
+bust
+  rotate: true
+  xy: 1341, 1036
+  size: 675, 941
+  orig: 675, 941
+  offset: 0, 0
+  index: -1
+decoration01
+  rotate: false
+  xy: 1495, 3151
+  size: 175, 134
+  orig: 175, 134
+  offset: 0, 0
+  index: -1
+decoration02
+  rotate: false
+  xy: 2, 3202
+  size: 283, 115
+  orig: 283, 115
+  offset: 0, 0
+  index: -1
+decoration03
+  rotate: true
+  xy: 1931, 2912
+  size: 216, 231
+  orig: 216, 231
+  offset: 0, 0
+  index: -1
+decoration04
+  rotate: false
+  xy: 2072, 3130
+  size: 172, 143
+  orig: 172, 143
+  offset: 0, 0
+  index: -1
+decoration05
+  rotate: false
+  xy: 2340, 3269
+  size: 234, 101
+  orig: 234, 101
+  offset: 0, 0
+  index: -1
+decoration06
+  rotate: true
+  xy: 2576, 3266
+  size: 104, 207
+  orig: 104, 207
+  offset: 0, 0
+  index: -1
+decoration07
+  rotate: false
+  xy: 662, 2963
+  size: 709, 193
+  orig: 709, 193
+  offset: 0, 0
+  index: -1
+eye lids_close
+  rotate: false
+  xy: 780, 3166
+  size: 349, 127
+  orig: 349, 127
+  offset: 0, 0
+  index: -1
+eyebrow_normal
+  rotate: false
+  xy: 1353, 3287
+  size: 374, 83
+  orig: 374, 83
+  offset: 0, 0
+  index: -1
+eyeline bottom_normal
+  rotate: false
+  xy: 218, 3319
+  size: 284, 51
+  orig: 284, 51
+  offset: 0, 0
+  index: -1
+eyeline top_normal
+  rotate: false
+  xy: 1672, 3151
+  size: 398, 130
+  orig: 398, 130
+  offset: 0, 0
+  index: -1
+front hair01
+  rotate: true
+  xy: 874, 3295
+  size: 75, 292
+  orig: 75, 292
+  offset: 0, 0
+  index: -1
+front hair02
+  rotate: true
+  xy: 287, 3195
+  size: 120, 309
+  orig: 120, 309
+  offset: 0, 0
+  index: -1
+front hair03
+  rotate: true
+  xy: 701, 2699
+  size: 262, 387
+  orig: 262, 387
+  offset: 0, 0
+  index: -1
+front hair04
+  rotate: true
+  xy: 1637, 2936
+  size: 213, 292
+  orig: 213, 292
+  offset: 0, 0
+  index: -1
+front hair05
+  rotate: true
+  xy: 2120, 2197
+  size: 380, 390
+  orig: 380, 390
+  offset: 0, 0
+  index: -1
+front hair06
+  rotate: true
+  xy: 3266, 3258
+  size: 112, 271
+  orig: 112, 271
+  offset: 0, 0
+  index: -1
+front hair07
+  rotate: true
+  xy: 1729, 3285
+  size: 85, 104
+  orig: 85, 104
+  offset: 0, 0
+  index: -1
+front hair08
+  rotate: true
+  xy: 2075, 3280
+  size: 90, 146
+  orig: 90, 146
+  offset: 0, 0
+  index: -1
+front hair09
+  rotate: true
+  xy: 2780, 2544
+  size: 305, 319
+  orig: 305, 319
+  offset: 0, 0
+  index: -1
+front hair11
+  rotate: true
+  xy: 2, 2732
+  size: 248, 347
+  orig: 248, 347
+  offset: 0, 0
+  index: -1
+front hair12
+  rotate: true
+  xy: 2223, 3275
+  size: 95, 115
+  orig: 95, 115
+  offset: 0, 0
+  index: -1
+front hair13
+  rotate: true
+  xy: 3824, 3237
+  size: 133, 252
+  orig: 133, 252
+  offset: 0, 0
+  index: -1
+head
+  rotate: true
+  xy: 1231, 1777
+  size: 480, 558
+  orig: 480, 558
+  offset: 0, 0
+  index: -1
+head_shade
+  rotate: true
+  xy: 1791, 1713
+  size: 482, 533
+  orig: 482, 533
+  offset: 0, 0
+  index: -1
+headdress01
+  rotate: false
+  xy: 1834, 2631
+  size: 296, 279
+  orig: 296, 279
+  offset: 0, 0
+  index: -1
+headdress02
+  rotate: false
+  xy: 3772, 2782
+  size: 283, 264
+  orig: 283, 264
+  offset: 0, 0
+  index: -1
+headdress03
+  rotate: false
+  xy: 2512, 2138
+  size: 434, 404
+  orig: 434, 404
+  offset: 0, 0
+  index: -1
+hi1_normal
+  rotate: false
+  xy: 1835, 3283
+  size: 238, 87
+  orig: 238, 87
+  offset: 0, 0
+  index: -1
+hi2_normal
+  rotate: false
+  xy: 504, 3317
+  size: 281, 53
+  orig: 281, 53
+  offset: 0, 0
+  index: -1
+mouth close
+  rotate: false
+  xy: 2, 3333
+  size: 83, 37
+  orig: 83, 37
+  offset: 0, 0
+  index: -1
+mouth_normal
+  rotate: false
+  xy: 787, 3300
+  size: 85, 70
+  orig: 85, 70
+  offset: 0, 0
+  index: -1
+neck01
+  rotate: false
+  xy: 598, 3182
+  size: 180, 133
+  orig: 180, 133
+  offset: 0, 0
+  index: -1
+neck02
+  rotate: true
+  xy: 2, 3010
+  size: 190, 268
+  orig: 190, 268
+  offset: 0, 0
+  index: -1
+neck02_shade
+  rotate: true
+  xy: 3696, 3048
+  size: 187, 246
+  orig: 187, 246
+  offset: 0, 0
+  index: -1
+pupil 2_normal
+  rotate: false
+  xy: 3539, 3256
+  size: 283, 114
+  orig: 283, 114
+  offset: 0, 0
+  index: -1
+side hair L01
+  rotate: true
+  xy: 351, 2705
+  size: 256, 348
+  orig: 256, 348
+  offset: 0, 0
+  index: -1
+side hair L02
+  rotate: false
+  xy: 2326, 1521
+  size: 680, 542
+  orig: 680, 542
+  offset: 0, 0
+  index: -1
+side hair L06
+  rotate: false
+  xy: 2, 2386
+  size: 584, 317
+  orig: 584, 317
+  offset: 0, 0
+  index: -1
+side hair R01
+  rotate: true
+  xy: 3190, 2846
+  size: 238, 303
+  orig: 238, 303
+  offset: 0, 0
+  index: -1
+side hair R02
+  rotate: true
+  xy: 2284, 832
+  size: 575, 1781
+  orig: 575, 1781
+  offset: 0, 0
+  index: -1
+side hair R03
+  rotate: true
+  xy: 588, 2323
+  size: 338, 903
+  orig: 338, 903
+  offset: 0, 0
+  index: -1
+side hair R06
+  rotate: true
+  xy: 508, 1861
+  size: 460, 721
+  orig: 460, 721
+  offset: 0, 0
+  index: -1
+skirt01
+  rotate: false
+  xy: 2, 543
+  size: 1163, 647
+  orig: 1163, 647
+  offset: 0, 0
+  index: -1
+skirt02
+  rotate: false
+  xy: 1167, 309
+  size: 856, 725
+  orig: 856, 725
+  offset: 0, 0
+  index: -1
+white eyes_normal
+  rotate: false
+  xy: 1131, 3158
+  size: 362, 127
+  orig: 362, 127
+  offset: 0, 0
+  index: -1
+
+GuideFairyTio_Avator2.png
+size: 3830,2651
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_wings
+  rotate: false
+  xy: 2, 152
+  size: 1445, 2497
+  orig: 1445, 2497
+  offset: 0, 0
+  index: -1
+R_wings
+  rotate: true
+  xy: 1449, 1210
+  size: 1439, 2379
+  orig: 1439, 2379
+  offset: 0, 0
+  index: -1
+side hair L03
+  rotate: false
+  xy: 1449, 2
+  size: 1467, 1206
+  orig: 1467, 1206
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: SpineMod_Other_Common
+  m_EditorClassIdentifier: 
+  m_GroupName: SpineMod_Other_Common
+  m_Data:
+    m_SerializedData: []
+  m_GUID: cb90122aaae22194b9a4a377b690bf63
+  m_SerializeEntries:
+  - m_GUID: 864e639800c4b3d408412594ffea383c
+    m_Address: Assets/LoadResources/Spine/Mod/Other_Common/Anniboni_Avator/Anniboni_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 911e1b6a8bf3b4541a6e5df7d5f0dcb7
+    m_Address: Assets/LoadResources/Spine/Mod/Other_Common/GuideFairyTio_Avator/GuideFairyTio_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: e06f9166f9e0dd142b99eb1214d70757, type: 2}
+    - {fileID: 11400000, guid: 80d35e96a557dee4a8d02862e8d09a12, type: 2}
