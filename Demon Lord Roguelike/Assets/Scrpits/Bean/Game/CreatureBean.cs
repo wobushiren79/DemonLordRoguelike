@@ -21,13 +21,40 @@ public class CreatureBean
     //所有的皮肤数据
     public Dictionary<CreatureSkinTypeEnum, CreatureSkinBean> dicSkinData = new Dictionary<CreatureSkinTypeEnum, CreatureSkinBean>();
 
+    [Newtonsoft.Json.JsonIgnore]
+    [NonSerialized]
+    protected CreatureInfoBean _creatureInfo;
+
+    [Newtonsoft.Json.JsonIgnore]
     public CreatureInfoBean creatureInfo
     {
         get
         {
-            return CreatureInfoCfg.GetItemData(id);
+            if(_creatureInfo == null)
+            {
+                _creatureInfo = CreatureInfoCfg.GetItemData(id);
+            }
+            return _creatureInfo;
         }
     }
+
+    [Newtonsoft.Json.JsonIgnore]
+    [NonSerialized]
+    protected CreatureModelBean _creatureModel;
+
+    [Newtonsoft.Json.JsonIgnore]
+    public CreatureModelBean creatureModel
+    {
+        get
+        {
+            if (_creatureModel == null)
+            {
+                _creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
+            }
+            return _creatureModel;
+        }
+    }
+
 
     public CreatureBean(long id)
     {

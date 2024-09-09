@@ -109,12 +109,10 @@ public partial class CameraHandler
 
         var targetSkeletonAnimation = targetRenderer.GetComponent<SkeletonAnimation>();
 
-        var creatureInfo = creatureData.creatureInfo;
-        var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
         //设置大小
-        targetRenderer.transform.localScale = Vector3.one * creatureModel.size_spine;
+        targetRenderer.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine;
         //设置骨骼数据
-        SpineHandler.Instance.SetSkeletonDataAsset(targetSkeletonAnimation, creatureModel.res_name);
+        SpineHandler.Instance.SetSkeletonDataAsset(targetSkeletonAnimation, creatureData.creatureModel.res_name);
         string[] skinArray = creatureData.GetSkinArray();
         //修改皮肤
         SpineHandler.Instance.ChangeSkeletonSkin(targetSkeletonAnimation.skeleton, skinArray);

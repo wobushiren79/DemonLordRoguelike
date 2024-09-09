@@ -23,7 +23,8 @@ public class UserDataBean : BaseBean
     public Dictionary<int, List<string>> dicLineupCreature = new Dictionary<int, List<string>>();
     //背包里的所有生物
     public List<CreatureBean> listBackpackCreature = new List<CreatureBean>();
-
+    //魔王自己的数据
+    public CreatureBean selfCreature;
 
     /// <summary>
     /// 增加金币

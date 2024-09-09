@@ -23,11 +23,10 @@ public partial class UITestCard : BaseUIComponent
         //测试标准模型
         CreatureBean creatureNormalTest = new CreatureBean(1);
         creatureNormalTest.AddAllSkin();
-        var creatureMode = CreatureModelCfg.GetItemData(1);
-        SpineHandler.Instance.SetSkeletonDataAsset(ui_NormalModel, creatureMode.res_name);
+        SpineHandler.Instance.SetSkeletonDataAsset(ui_NormalModel, creatureNormalTest.creatureModel.res_name);
         string[] skinArray = creatureNormalTest.GetSkinArray();
         SpineHandler.Instance.ChangeSkeletonSkin(ui_NormalModel.skeleton, skinArray);
-        ui_NormalModel.transform.localScale = Vector3.one * creatureMode.size_spine;
+        ui_NormalModel.transform.localScale = Vector3.one * creatureNormalTest.creatureModel.size_spine;
         SpineHandler.Instance.PlayAnim(ui_NormalModel, SpineAnimationStateEnum.Idle, true);
     }
 
@@ -54,17 +53,16 @@ public partial class UITestCard : BaseUIComponent
     public void SetData(FightCreatureBean fightCreatureData)
     {
         this.fightCreatureData = fightCreatureData;
-
-        ui_CreatureCardItem.SetData(fightCreatureData.creatureData, CardUseState.Show);
-        ui_ViewCreatureCardDetails.SetData(fightCreatureData.creatureData);
+        var creatureData = fightCreatureData.creatureData;
+        ui_CreatureCardItem.SetData(creatureData, CardUseState.Show);
+        ui_ViewCreatureCardDetails.SetData(creatureData);
 
         //测试目标模型
-        var creatureMode = CreatureModelCfg.GetItemData(fightCreatureData.creatureData.id);
-        SpineHandler.Instance.SetSkeletonDataAsset(ui_TargetModel, creatureMode.res_name);
-        SpineHandler.Instance.ChangeSkeletonSkin(ui_TargetModel.skeleton, fightCreatureData.creatureData.GetSkinArray());
+        SpineHandler.Instance.SetSkeletonDataAsset(ui_TargetModel, creatureData.creatureModel.res_name);
+        SpineHandler.Instance.ChangeSkeletonSkin(ui_TargetModel.skeleton, creatureData.GetSkinArray());
         SpineHandler.Instance.PlayAnim(ui_TargetModel, SpineAnimationStateEnum.Idle, true);
 
-        ui_TargetModel.transform.localScale = Vector3.one * creatureMode.size_spine;
+        ui_TargetModel.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine;
 
         ui_InputText_S_Size.text = $"{ui_CreatureCardItem.ui_Icon.transform.localScale.x}";
         ui_InputText_S_X.text = $"{ui_CreatureCardItem.ui_Icon.rectTransform.anchoredPosition.x}";

@@ -48,8 +48,7 @@ public class UserDataController : BaseMVCController<UserDataModel, IUserDataView
         UserDataBean data = GetModel().GetUserDataData(index);
         if (data == null)
         {
-            GetView().GetUserDataFail("没有数据", (null));
-            action?.Invoke(null);
+            GetView().GetUserDataFail("没有数据", (() => { action?.Invoke(null); }));
         }
         GetView().GetUserDataSuccess<UserDataBean>(data, action);
     }

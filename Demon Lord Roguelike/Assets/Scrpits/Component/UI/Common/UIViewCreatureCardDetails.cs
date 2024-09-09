@@ -67,43 +67,22 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     /// </summary>
     public void SetCardIcon(CreatureBean creatureData)
     {
-        var creatureInfo = creatureData.creatureInfo;
-        var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
         //设置骨骼数据
-        string resName = creatureModel.res_name;
-
-        int skinType = 0;
-        if (!creatureModel.ui_show_spine.IsNull())
-        {
-            resName = creatureModel.ui_show_spine;
-            skinType = 1;
-        }
+        creatureData.creatureModel.GetShowRes(out string resName, out int skinType);
 
         SpineHandler.Instance.SetSkeletonDataAsset(ui_Icon, resName);
         string[] skinArray = creatureData.GetSkinArray(skinType);
         //修改皮肤
         SpineHandler.Instance.ChangeSkeletonSkin(ui_Icon.Skeleton, skinArray);
-
+        //播放动画
         SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, true);
         ui_Icon.ShowObj(true);
         //设置UI大小和坐标
-        if (creatureModel.ui_data_b.IsNull())
-        {
-            ui_Icon.rectTransform.anchoredPosition = Vector2.zero;
-            ui_Icon.rectTransform.localScale = Vector3.one;
-        }
-        else
-        {
-            string[] uiDataStr = creatureModel.ui_data_b.Split(';');
-            ui_Icon.rectTransform.localScale = Vector3.one * float.Parse(uiDataStr[0]);
-
-            float[] uiDataPosStr = uiDataStr[1].SplitForArrayFloat(',');
-            ui_Icon.rectTransform.anchoredPosition = new Vector2(uiDataPosStr[0], uiDataPosStr[1]);
-        }
+        creatureData.creatureModel.ChangeUISizeForB(ui_Icon.rectTransform);
 
         //设置背景图片
         Texture2D targetSceneText = null;
-        if (creatureInfo.card_scene.IsNull())
+        if (creatureData.creatureInfo.card_scene.IsNull())
         {
             //如果没有背景图片 使用通用
             targetSceneText = IconHandler.Instance.manager.GetTextureSync($"{pathCardScene}/Card_Scene_4.png");
@@ -111,7 +90,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         else
         {
             //如果有背景图片 加载
-            targetSceneText = IconHandler.Instance.manager.GetTextureSync($"{pathCardScene}/{creatureInfo.card_scene}.png");
+            targetSceneText = IconHandler.Instance.manager.GetTextureSync($"{pathCardScene}/{creatureData.creatureInfo.card_scene}.png");
         }
         if (targetSceneText != null)
         {

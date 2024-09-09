@@ -259,17 +259,14 @@ public class GashaponMachineLogic : BaseGameLogic
         eggSpine.ShowObj(true);
 
         var creatureData = gashaponItemData.creatureData;
-        var creatureInfo = CreatureInfoCfg.GetItemData(creatureData.id);
-        var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
-
         //设置大小
         eggSpine.transform.localScale = Vector3.zero;
-        SpineHandler.Instance.SetSkeletonDataAsset(eggSpine, creatureModel.res_name);
+        SpineHandler.Instance.SetSkeletonDataAsset(eggSpine, creatureData.creatureModel.res_name);
         string[] skinArray = creatureData.GetSkinArray();
         //修改皮肤
         SpineHandler.Instance.ChangeSkeletonSkin(eggSpine.skeleton, skinArray);
         //播放缩放动画
-        eggSpine.transform.DOScale(Vector3.one * creatureModel.size_spine, 0.2f).OnComplete(() =>
+        eggSpine.transform.DOScale(Vector3.one * creatureData.creatureModel.size_spine, 0.2f).OnComplete(() =>
         {
             actionForComplete?.Invoke();
         });

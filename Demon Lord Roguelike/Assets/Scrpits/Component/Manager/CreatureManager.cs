@@ -60,11 +60,10 @@ public class CreatureManager : BaseManager
         {
             if (fightCreatureDataSelectPreview == null || fightCreatureData != fightCreatureDataSelectPreview)
             {
-                var creatureInfo = fightCreatureData.creatureData.creatureInfo;
-                var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
+                var creatureData = fightCreatureData.creatureData;
                 //设置骨骼数据
-                SpineHandler.Instance.SetSkeletonDataAsset(skeletonAnimationSelectPreview, creatureModel.res_name);
-                string[] skinArray = fightCreatureData.creatureData.GetSkinArray();
+                SpineHandler.Instance.SetSkeletonDataAsset(skeletonAnimationSelectPreview, creatureData.creatureModel.res_name);
+                string[] skinArray = creatureData.GetSkinArray();
                 //修改皮肤
                 SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimationSelectPreview.skeleton, skinArray);
                 fightCreatureDataSelectPreview = fightCreatureData;
@@ -73,7 +72,7 @@ public class CreatureManager : BaseManager
                 skeletonAnimationSelectPreview.skeleton.A = 0.65f;
 
                 Transform spineTF = objCreatureSelectPreview.transform.Find("Spine");
-                spineTF.transform.localScale = Vector3.one * creatureModel.size_spine;
+                spineTF.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine;
             }
         }
         return objCreatureSelectPreview;

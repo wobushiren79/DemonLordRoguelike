@@ -27,7 +27,8 @@ public partial class UIMainCreate : BaseUIComponent
     };
     //物种数据
     protected Dictionary<int, Dictionary<CreatureSkinTypeEnum, List<int>>> dicSelectData = new Dictionary<int, Dictionary<CreatureSkinTypeEnum, List<int>>>();
-
+    //选中的物种
+    protected int selectSpeciesIndex = 0;
 
     public override void OpenUI()
     {
@@ -40,6 +41,7 @@ public partial class UIMainCreate : BaseUIComponent
     {
         base.CloseUI();
         ShowPreviewCreate(false);
+        createCreatureData = null;
     }
 
     /// <summary>
@@ -100,9 +102,7 @@ public partial class UIMainCreate : BaseUIComponent
     /// </summary>
     public void SetPreviewCreate(CreatureBean createCreatureData)
     {
-        var creatureInfo = CreatureInfoCfg.GetItemData(createCreatureData.id);
-        var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
-        SpineHandler.Instance.SetSkeletonDataAsset(previewSpine, creatureModel.res_name);
+        SpineHandler.Instance.SetSkeletonDataAsset(previewSpine, createCreatureData.creatureModel.res_name);
         string[] skinArray = createCreatureData.GetSkinArray();
         //修改皮肤
         SpineHandler.Instance.ChangeSkeletonSkin(previewSpine.skeleton, skinArray);
@@ -157,10 +157,32 @@ public partial class UIMainCreate : BaseUIComponent
     /// </summary>
     public void OnClickForCreate()
     {
-        createCreatureData.creatureId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
-        createCreatureData.creatureName = ui_NameET.text;
-        createCreatureData.level = 0;
-        createCreatureData.rarity = 0;
+        if (ui_NameET.text.IsNull())
+        {
+            UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(305));
+            return;
+        }
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(304), ui_NameET.text);
+        dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
+        dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
+        dialogData.actionSubmit = ((view, data) =>
+        {
+            UserDataBean userData = new UserDataBean();
+            userData.saveIndex = userDataIndex;
+
+            createCreatureData.creatureId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
+            createCreatureData.creatureName = ui_NameET.text;
+            createCreatureData.level = 0;
+            createCreatureData.rarity = 0;
+
+            userData.selfCreature = createCreatureData;
+
+            GameDataHandler.Instance.manager.SetUserData(userData);
+            GameDataHandler.Instance.manager.SaveUserData(userData);
+        });
+        UIHandler.Instance.ShowDialog<UIDialogNormal>(dialogData);
+
     }
 
     /// <summary>
@@ -168,25 +190,48 @@ public partial class UIMainCreate : BaseUIComponent
     /// </summary>
     public void OnClickForRandom()
     {
-
+        int randomSelect = Random.Range(0, listSelectForSpecies.Count);
+        HandleForSelectSpecies(randomSelect, true);
     }
 
     /// <summary>
     /// 选择回调
     /// </summary>
-    public void ActionForSelect(UIViewMainCreateSelectItem targetView, int select)
+    public void ActionForSelect(UIViewMainCreateSelectItem targetView, int select, bool isInit)
     {
         if (targetView == ui_UIViewMainCreateSelectItem_Species)
         {
             HandleForSelectSpecies(select);
+        }
+        else
+        {
+            HandleForSelectOther(targetView, select, isInit);
+        }
+    }
+
+    /// <summary>
+    /// 处理选择其他
+    /// </summary>
+    /// <param name="targetView"></param>
+    /// <param name="select"></param>
+    public void HandleForSelectOther(UIViewMainCreateSelectItem targetView, int select, bool isInit)
+    {
+        dicSelectData.TryGetValue(targetView.creatureId, out Dictionary<CreatureSkinTypeEnum, List<int>> dicSkinData);
+        dicSkinData.TryGetValue(targetView.creatureSkinType, out List<int> listSkin);
+        var selectSkin = listSkin[select];
+        createCreatureData.AddSkin(selectSkin);
+        if (!isInit)
+        {
+            SetPreviewCreate(createCreatureData);
         }
     }
 
     /// <summary>
     /// 处理选择物种
     /// </summary>
-    public void HandleForSelectSpecies(int select)
+    public void HandleForSelectSpecies(int select,bool isRandom = false)
     {
+        this.selectSpeciesIndex = select;
         int creatureId = listSelectForSpecies[select];
         if (createCreatureData == null)
         {
@@ -227,10 +272,16 @@ public partial class UIMainCreate : BaseUIComponent
                 targetView = listSelectView[index];
             }
             targetView.ShowObj(true);
-            targetView.SetData(listSkinName, ActionForSelect);
+            targetView.creatureId = creatureId;
+            targetView.creatureSkinType = item.Key;
+            int startRandomIndex = 0;
+            if (isRandom)
+            {
+                startRandomIndex = Random.Range(0, listSkinName.Count);
+            }
+            targetView.SetData(listSkinName, ActionForSelect, startRandomIndex);
             index++;
         }
-
         SetPreviewCreate(createCreatureData);
     }
 }

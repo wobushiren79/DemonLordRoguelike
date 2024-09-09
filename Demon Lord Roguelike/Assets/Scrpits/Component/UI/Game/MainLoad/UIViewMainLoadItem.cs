@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public partial class UIViewMainLoadItem : BaseUIView
 {
     protected int userDataIndex;
+    protected UserDataBean userData;
 
     public override void Awake()
     {
@@ -29,6 +30,7 @@ public partial class UIViewMainLoadItem : BaseUIView
     /// </summary>
     public void SetData(int userDataIndex, UserDataBean userData)
     {
+        this.userData = userData;
         this.userDataIndex = userDataIndex;
         if (userData == null)
         {
@@ -39,7 +41,21 @@ public partial class UIViewMainLoadItem : BaseUIView
         {
             ui_Continue.ShowObj(true);
             ui_Create.ShowObj(false);
+
+            SetCreatureUI(userData.selfCreature);
         }
+    }
+
+    public void SetCreatureUI(CreatureBean creatureData)
+    {
+        creatureData.creatureModel.GetShowRes(out string resName, out int skinType);
+
+        SpineHandler.Instance.SetSkeletonDataAsset(ui_Icon, resName);
+        string[] skinArray =  creatureData.GetSkinArray(skinType);
+        SpineHandler.Instance.ChangeSkeletonSkin(ui_Icon.Skeleton, skinArray);
+        SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, true);
+        //设置UI大小和坐标
+        creatureData.creatureModel.ChangeUISizeForB(ui_Icon.rectTransform);
     }
 
     /// <summary>
@@ -58,4 +74,5 @@ public partial class UIViewMainLoadItem : BaseUIView
         var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIMainCreate>();
         targetUI.SetData(userDataIndex);
     }
+
 }

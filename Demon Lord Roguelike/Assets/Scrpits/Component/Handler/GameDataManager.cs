@@ -27,11 +27,25 @@ public partial class GameDataManager : IUserDataView
     }
 
     /// <summary>
+    /// 设置用户信息
+    /// </summary>
+    /// <param name="targetUserData"></param>
+    public void SetUserData(UserDataBean targetUserData)
+    {
+        userData = targetUserData;
+    }
+
+    /// <summary>
     /// 保存用户数据
     /// </summary>
     public void SaveUserData()
     {
-        controllerForUserData.SaveUserData(userData, null);
+        SaveUserData(userData);
+    }
+
+    public void SaveUserData(UserDataBean targetUserData)
+    {
+        controllerForUserData.SaveUserData(targetUserData, null);
     }
 
     /// <summary>
@@ -48,17 +62,17 @@ public partial class GameDataManager : IUserDataView
     #region 回调
     public void GetUserDataFail(string failMsg, Action action)
     {
-
+        action?.Invoke();
     }
 
     public void GetUserDataSuccess<T>(T data, Action<T> action)
     {
-
+        action?.Invoke(data);
     }
 
     public void SetUserDataSuccess<T>(T data, Action<T> action)
     {
-
+        action?.Invoke(data);
     }
 
     public void SetUserDataFail(string failMsg)

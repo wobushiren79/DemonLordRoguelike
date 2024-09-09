@@ -8,17 +8,20 @@ public partial class UIViewMainCreateSelectItem : BaseUIView
 {
     public List<string> listSelect = new List<string>();
     public int indexSelect = 0;
-    public Action<UIViewMainCreateSelectItem, int> actionForSelect;
+    public Action<UIViewMainCreateSelectItem, int, bool> actionForSelect;
+
+    public CreatureSkinTypeEnum creatureSkinType;
+    public int creatureId;
 
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(List<string> listSelect, Action<UIViewMainCreateSelectItem, int> actionForSelect)
+    public void SetData(List<string> listSelect, Action<UIViewMainCreateSelectItem, int, bool> actionForSelect,int startIndex = 0)
     {
-        indexSelect = 0;
+        indexSelect = startIndex;
         this.listSelect = listSelect;
         this.actionForSelect = actionForSelect;
-        ChangeSelect(indexSelect);
+        ChangeSelect(indexSelect, true);
     }
 
     /// <summary>
@@ -44,18 +47,18 @@ public partial class UIViewMainCreateSelectItem : BaseUIView
 
     public void OnClickForLeft()
     {
-        ChangeSelect(indexSelect - 1);
+        ChangeSelect(indexSelect - 1, false);
     }
 
     public void OnClickForRight()
     {
-        ChangeSelect(indexSelect + 1);
+        ChangeSelect(indexSelect + 1, false);
     }
 
     /// <summary>
     /// 改变选择
     /// </summary>
-    public void ChangeSelect(int changeSelect)
+    public void ChangeSelect(int changeSelect, bool isInit)
     {
         if (changeSelect >= listSelect.Count)
         {
@@ -67,7 +70,7 @@ public partial class UIViewMainCreateSelectItem : BaseUIView
         }
         indexSelect = changeSelect;
         SetTitle($"{listSelect[indexSelect]}");
-        actionForSelect?.Invoke(this, indexSelect);
+        actionForSelect?.Invoke(this, indexSelect, isInit);
     }
 
 }
