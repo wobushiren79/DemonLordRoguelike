@@ -6,6 +6,13 @@ using UnityEngine.UI;
 
 public partial class UIMainStart : BaseUIComponent
 {
+    public override void OpenUI()
+    {
+        base.OpenUI();
+        //设置基地场景视角
+        CameraHandler.Instance.SetGameStartCamera(int.MaxValue, true);
+    }
+
     public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
     {
         base.OnInputActionForStarted(inputType, callback);

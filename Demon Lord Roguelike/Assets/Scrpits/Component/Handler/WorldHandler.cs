@@ -10,6 +10,58 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     //基地场景
     public GameObject currentBaseScene;
 
+    public void EnterGameForBaseScene(UserDataBean userData,bool isInitScene)
+    {
+        Action actionForStart = () =>
+        {
+            //镜头初始化
+            CameraHandler.Instance.InitData();
+            //环境参数初始化
+            VolumeHandler.Instance.InitData();
+            //设置基地场景视角
+            CameraHandler.Instance.InitBaseSceneControlCamera(() =>
+            {
+                //关闭LoadingUI
+                var uiBaseMain = UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
+            }, userData.selfCreature);
+        };
+        if (isInitScene)
+        {
+            //清理世界数据
+            ClearWorldData(() =>
+            {                   
+                //加载基地场景
+                LoadBaseScene((targetObj) =>
+                {
+                    actionForStart?.Invoke();
+                });
+            });
+        }
+        else
+        {
+            actionForStart?.Invoke();
+        }
+    }
+
+    public void EnterMainForBaseScene()
+    {
+        ClearWorldData(() =>
+        {
+            //打开加载UI
+            UIHandler.Instance.OpenUIAndCloseOther<UILoading>();
+            //镜头初始化
+            CameraHandler.Instance.InitData();
+            //环境参数初始化
+            VolumeHandler.Instance.InitData();
+            //加载基地场景
+            LoadBaseScene((targetObj) =>
+            {
+                //关闭LoadingUI 打开开始UI
+                UIHandler.Instance.OpenUIAndCloseOther<UIMainStart>();
+            });
+        });
+    }
+
     /// <summary>
     /// 加载基地场景
     /// </summary>

@@ -23,6 +23,10 @@ public partial class UIViewMainLoadItem : BaseUIView
         {
             OnClickForCreateGame();
         }
+        else if (viewButton == ui_Delete)
+        {
+            OnClickForDelete();
+        }
     }
 
     /// <summary>
@@ -43,11 +47,17 @@ public partial class UIViewMainLoadItem : BaseUIView
             ui_Create.ShowObj(false);
 
             SetCreatureUI(userData.selfCreature);
+            SetUserName(userData.userName);
+            SetCoin(userData.coin);
         }
     }
 
+    /// <summary>
+    /// 设置生物UI
+    /// </summary>
     public void SetCreatureUI(CreatureBean creatureData)
     {
+        //获取展示资源
         creatureData.creatureModel.GetShowRes(out string resName, out int skinType);
 
         SpineHandler.Instance.SetSkeletonDataAsset(ui_Icon, resName);
@@ -56,6 +66,23 @@ public partial class UIViewMainLoadItem : BaseUIView
         SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, true);
         //设置UI大小和坐标
         creatureData.creatureModel.ChangeUISizeForB(ui_Icon.rectTransform);
+        ui_Icon.raycastTarget = false;
+    }
+
+    /// <summary>
+    /// 设置用户名字
+    /// </summary>
+    public void SetUserName(string userName)
+    {
+        ui_Name.text = userName;
+    }
+    
+    /// <summary>
+    /// 设置金币
+    /// </summary>
+    public void SetCoin(long coin)
+    {
+        ui_CoinText.text = $"{coin}";
     }
 
     /// <summary>
@@ -63,7 +90,8 @@ public partial class UIViewMainLoadItem : BaseUIView
     /// </summary>
     public void OnClickForEnterGame()
     {
-
+        GameDataHandler.Instance.manager.SetUserData(userData);
+        WorldHandler.Instance.EnterGameForBaseScene(userData,false);
     }
 
     /// <summary>
@@ -75,4 +103,21 @@ public partial class UIViewMainLoadItem : BaseUIView
         targetUI.SetData(userDataIndex);
     }
 
+    /// <summary>
+    /// 点击删除存档
+    /// </summary>
+    public void OnClickForDelete()
+    {
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(203),userData.userName);
+        dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
+        dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
+        dialogData.actionSubmit = (dialogView, dialogData) =>
+        {
+            GameDataHandler.Instance.manager.DeleteUserData(userData);
+            UIHandler.Instance.RefreshUI();
+        };
+
+        UIHandler.Instance.ShowDialog<UIDialogNormal>(dialogData);
+    }
 }

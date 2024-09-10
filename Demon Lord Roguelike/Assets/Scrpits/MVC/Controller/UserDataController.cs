@@ -52,4 +52,12 @@ public class UserDataController : BaseMVCController<UserDataModel, IUserDataView
         }
         GetView().GetUserDataSuccess<UserDataBean>(data, action);
     }
+
+    /// <summary>
+    /// 删除用户数据
+    /// </summary>
+    public void DeleteUserData(UserDataBean userData)
+    {
+        GetModel().DeleteUserDataData(userData);
+    }
 }

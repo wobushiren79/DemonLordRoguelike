@@ -49,6 +49,7 @@ public partial class UIMainCreate : BaseUIComponent
     /// </summary>
     public void InitData()
     {
+        dicSelectData.Clear();
         Dictionary<CreatureSkinTypeEnum, List<int>> dicSkin1 = new Dictionary<CreatureSkinTypeEnum, List<int>>()
         {
             {CreatureSkinTypeEnum.Head, new List<int>(){ 1010010, 1010011,1010012}},
@@ -93,7 +94,6 @@ public partial class UIMainCreate : BaseUIComponent
         else
         {
             previewObj.gameObject.SetActive(false);
-            CameraHandler.Instance.SetGameStartCamera(int.MaxValue, true);
         }
     }
 
@@ -170,6 +170,7 @@ public partial class UIMainCreate : BaseUIComponent
         {
             UserDataBean userData = new UserDataBean();
             userData.saveIndex = userDataIndex;
+            userData.userName = ui_NameET.text;
 
             createCreatureData.creatureId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
             createCreatureData.creatureName = ui_NameET.text;
@@ -178,8 +179,9 @@ public partial class UIMainCreate : BaseUIComponent
 
             userData.selfCreature = createCreatureData;
 
-            GameDataHandler.Instance.manager.SetUserData(userData);
             GameDataHandler.Instance.manager.SaveUserData(userData);
+            GameDataHandler.Instance.manager.SetUserData(userData);
+            WorldHandler.Instance.EnterGameForBaseScene(userData, false);
         });
         UIHandler.Instance.ShowDialog<UIDialogNormal>(dialogData);
 
@@ -229,7 +231,7 @@ public partial class UIMainCreate : BaseUIComponent
     /// <summary>
     /// 处理选择物种
     /// </summary>
-    public void HandleForSelectSpecies(int select,bool isRandom = false)
+    public void HandleForSelectSpecies(int select, bool isRandom = false)
     {
         this.selectSpeciesIndex = select;
         int creatureId = listSelectForSpecies[select];

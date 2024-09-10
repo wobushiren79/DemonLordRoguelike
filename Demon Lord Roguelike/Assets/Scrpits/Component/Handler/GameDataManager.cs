@@ -49,6 +49,14 @@ public partial class GameDataManager : IUserDataView
     }
 
     /// <summary>
+    /// 删除用户数据
+    /// </summary>
+    public void DeleteUserData(UserDataBean targetUserData)
+    {
+        controllerForUserData.DeleteUserData(targetUserData);
+    }
+
+    /// <summary>
     /// 读取用户数据
     /// </summary>
     public void LoadUserData(int index, Action<int, UserDataBean> actionForComplete)

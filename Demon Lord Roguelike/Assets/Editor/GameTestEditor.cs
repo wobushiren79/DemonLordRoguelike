@@ -93,9 +93,9 @@ public class GameTestEditor : Editor
     {
         if (GUILayout.Button("开始") && Application.isPlaying)
         {
-            FightCreatureBean itemData = new FightCreatureBean(fightCardId);
-            itemData.creatureData.AddAllSkin();
-            launcher.StartForBaseTest(itemData);
+            CreatureBean creatureData = new CreatureBean(fightCardId);
+            creatureData.AddAllSkin();
+            launcher.StartForBaseTest(creatureData);
         }
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("生物ID");

@@ -23,7 +23,7 @@ public partial class UIGameSystem : BaseUIComponent
         }
         else if (viewButton == ui_BtnBack)
         {
-
+            OnClickForBackMain();
         }
         else if (viewButton == ui_BtnExit)
         {
@@ -38,7 +38,6 @@ public partial class UIGameSystem : BaseUIComponent
         {
             OnClickForExit();
         }
-
     }
 
     /// <summary>
@@ -47,7 +46,14 @@ public partial class UIGameSystem : BaseUIComponent
     public void OnClickForExit()
     {
         UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
-        GameControlHandler.Instance.SetBaseControl(true);
+    }
+
+    /// <summary>
+    /// 点击返回主界面
+    /// </summary>
+    public void OnClickForBackMain()
+    {
+        WorldHandler.Instance.EnterMainForBaseScene();
     }
 
     /// <summary>

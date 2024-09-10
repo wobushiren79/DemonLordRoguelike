@@ -76,6 +76,7 @@ MonoBehaviour:
     dialogPosition: 0
     remark: 
     delayDelete: 0
+  ui_DialogContent: {fileID: 7113864888751565931}
 --- !u!1 &2425650995533815839
 GameObject:
   m_ObjectHideFlags: 0

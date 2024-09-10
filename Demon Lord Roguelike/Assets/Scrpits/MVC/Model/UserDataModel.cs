@@ -36,4 +36,11 @@ public class UserDataModel : BaseMVCModel
         serviceUserData.UpdateData(data, data.saveIndex);
     }
 
+    /// <summary>
+    /// 删除数据
+    /// </summary>
+    public void DeleteUserDataData(UserDataBean data)
+    {
+        serviceUserData.DeleteData(data.saveIndex);
+    }
 }

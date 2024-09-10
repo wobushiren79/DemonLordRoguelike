@@ -173,5 +173,10 @@ public class ControlForGameBase : BaseControl
         {
             UIBaseCore targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
         }
+        //´«ËÍÃÅ
+        else if (firstHit.gameObject.name.Equals("PortalInteraction"))
+        {
+            UIBasePortal targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBasePortal>();
+        }
     }
 }

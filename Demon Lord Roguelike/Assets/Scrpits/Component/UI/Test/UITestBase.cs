@@ -44,7 +44,6 @@ public partial class UITestBase : BaseUIComponent
     /// </summary>
     public void OnClickForExit()
     {
-        GameControlHandler.Instance.SetBaseControl();
         UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
     }
 

@@ -8,8 +8,8 @@ public class LauncherTest : BaseLauncher
     public override void Launch()
     {
         base.Launch();
-        FightCreatureBean itemData = new FightCreatureBean(999998);
-        itemData.creatureData.AddAllSkin();
+        CreatureBean itemData = new CreatureBean(999998);
+        itemData.AddAllSkin();
         StartForBaseTest(itemData);
     }
 
@@ -52,28 +52,10 @@ public class LauncherTest : BaseLauncher
     /// <summary>
     /// 基地测试
     /// </summary>
-    public void StartForBaseTest(FightCreatureBean fightCreature)
+    public void StartForBaseTest(CreatureBean creatureData)
     {
-        WorldHandler.Instance.ClearWorldData(() =>
-        {
-            //打开加载UI
-            UIHandler.Instance.OpenUIAndCloseOther<UILoading>();
-            //镜头初始化
-            CameraHandler.Instance.InitData();
-            //环境参数初始化
-            VolumeHandler.Instance.InitData();
-            //设置基地场景视角
-            CameraHandler.Instance.SetBaseSceneCamera(() =>
-            {
-                //加载基地场景
-                WorldHandler.Instance.LoadBaseScene((targetObj) =>
-                {
-                    //开启控制
-                    GameControlHandler.Instance.SetBaseControl();
-                    //关闭LoadingUI
-                    var uiBaseMain = UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
-                });
-            }, fightCreature.creatureData);
-        });
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        userData.selfCreature = creatureData;
+        WorldHandler.Instance.EnterGameForBaseScene(userData, true);
     }
 }

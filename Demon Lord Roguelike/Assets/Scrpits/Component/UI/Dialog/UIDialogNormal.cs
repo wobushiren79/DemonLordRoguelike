@@ -2,7 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UIDialogNormal : DialogView
+public partial class UIDialogNormal : DialogView
 {
-
+    public override void SetData(DialogBean dialogData)
+    {
+        base.SetData(dialogData);
+        UGUIUtil.RefreshUISize(ui_DialogContent);
+    }
 }

@@ -19,7 +19,7 @@ public class GameFightLogic : BaseGameLogic
     {
         base.PreGame();
         //设置战斗场景视角
-        CameraHandler.Instance.SetFightSceneCamera(() =>
+        CameraHandler.Instance.InitFightSceneCamera(() =>
         {
             //加载战斗场景
             WorldHandler.Instance.LoadFightScene(fightData.fightSceneId,async (targetObj) =>

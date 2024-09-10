@@ -19,6 +19,69 @@ public partial class CameraHandler
     }
 
     /// <summary>
+    /// 初始化基地场景摄像头
+    /// </summary>
+    public async void InitBaseSceneControlCamera(Action actionForComplete, CreatureBean creatureData)
+    {
+        HideCameraForBaseScene();
+
+        var mainCamera = manager.mainCamera;
+        mainCamera.gameObject.SetActive(true);
+
+        var controlTarget = GameControlHandler.Instance.manager.controlTargetForCreature;
+        var targetRenderer = controlTarget.transform.Find("Renderer");
+
+        var targetSkeletonAnimation = targetRenderer.GetComponent<SkeletonAnimation>();
+
+        //设置大小
+        targetRenderer.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine;
+        //设置骨骼数据
+        SpineHandler.Instance.SetSkeletonDataAsset(targetSkeletonAnimation, creatureData.creatureModel.res_name);
+        string[] skinArray = creatureData.GetSkinArray();
+        //修改皮肤
+        SpineHandler.Instance.ChangeSkeletonSkin(targetSkeletonAnimation.skeleton, skinArray);
+
+        controlTarget.transform.position = new Vector3(0, 0, -3);
+
+        //关闭切换动画
+        manager.SetMainCameraDefaultBlend(0);
+
+        SetCameraForControl(CinemachineCameraEnum.Base);
+
+        manager.cm_Base.Follow = controlTarget.transform;
+        manager.cm_Base.LookAt = targetRenderer;
+        manager.cm_Base.PreviousStateIsValid = false;
+        await new WaitNextFrame();
+        //设置偏转
+        targetRenderer.transform.eulerAngles = mainCamera.transform.eulerAngles;
+
+        actionForComplete?.Invoke();
+    }
+
+    /// <summary>
+    /// 初始化战斗场景视角
+    /// </summary>
+    public async void InitFightSceneCamera(Action actionForComplete)
+    {
+        var mainCamera = manager.mainCamera;
+        mainCamera.gameObject.SetActive(true);
+
+        var controlTarget = GameControlHandler.Instance.manager.controlTargetForEmpty;
+        controlTarget.transform.position = new Vector3(3, 0, 3);
+
+        //关闭切换动画
+        manager.SetMainCameraDefaultBlend(0);
+
+        SetCameraForControl(CinemachineCameraEnum.Fight);
+
+        manager.cm_Fight.Follow = controlTarget.transform;
+        manager.cm_Fight.LookAt = controlTarget.transform;
+        manager.cm_Fight.PreviousStateIsValid = false;
+        await new WaitNextFrame();
+        actionForComplete?.Invoke();
+    }
+
+    /// <summary>
     /// 设置核心UI
     /// </summary>
     public CinemachineVirtualCamera SetBaseCoreCamera(int priority, bool isEnable)
@@ -58,6 +121,9 @@ public partial class CameraHandler
         return SetCameraForBaseScene(priority, isEnable, "CV_PreviewCreate");
     }
 
+    /// <summary>
+    /// 设置基础场景的摄像头
+    /// </summary>
     protected CinemachineVirtualCamera SetCameraForBaseScene(int priority, bool isEnable, string cvName)
     {
         manager.HideAllCM();
@@ -97,65 +163,13 @@ public partial class CameraHandler
     }
 
     /// <summary>
-    /// 设置基地场景摄像头
+    /// 隐藏所有场景摄像头
     /// </summary>
-    public async void SetBaseSceneCamera(Action actionForComplete, CreatureBean creatureData)
+    protected void HideCameraForBaseScene()
     {
-        var mainCamera = manager.mainCamera;
-        mainCamera.gameObject.SetActive(true);
-
-        var controlTarget = GameControlHandler.Instance.manager.controlTargetForCreature;
-        var targetRenderer = controlTarget.transform.Find("Renderer");
-
-        var targetSkeletonAnimation = targetRenderer.GetComponent<SkeletonAnimation>();
-
-        //设置大小
-        targetRenderer.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine;
-        //设置骨骼数据
-        SpineHandler.Instance.SetSkeletonDataAsset(targetSkeletonAnimation, creatureData.creatureModel.res_name);
-        string[] skinArray = creatureData.GetSkinArray();
-        //修改皮肤
-        SpineHandler.Instance.ChangeSkeletonSkin(targetSkeletonAnimation.skeleton, skinArray);
-
-        controlTarget.transform.position = new Vector3(0, 0, -3);
-
-        //关闭切换动画
-        manager.SetMainCameraDefaultBlend(0);
-
-        ShowCinemachineCamera(CinemachineCameraEnum.Base);
-
-        manager.cm_Base.Follow = controlTarget.transform;
-        manager.cm_Base.LookAt = targetRenderer;
-        manager.cm_Base.PreviousStateIsValid = false;
-        await new WaitNextFrame();
-        //设置偏转
-        targetRenderer.transform.eulerAngles = mainCamera.transform.eulerAngles;
-
-        actionForComplete?.Invoke();
+        SetCameraForBaseScene(int.MinValue, false, "");
     }
 
-    /// <summary>
-    /// 设置战斗场景视角
-    /// </summary>
-    public async void SetFightSceneCamera(Action actionForComplete)
-    {
-        var mainCamera = manager.mainCamera;
-        mainCamera.gameObject.SetActive(true);
-
-        var controlTarget = GameControlHandler.Instance.manager.controlTargetForEmpty;
-        controlTarget.transform.position = new Vector3(3, 0, 3);
-
-        //关闭切换动画
-        manager.SetMainCameraDefaultBlend(0);
-
-        ShowCinemachineCamera(CinemachineCameraEnum.Fight);
-
-        manager.cm_Fight.Follow = controlTarget.transform;
-        manager.cm_Fight.LookAt = controlTarget.transform;
-        manager.cm_Fight.PreviousStateIsValid = false;
-        await new WaitNextFrame();
-        actionForComplete?.Invoke();
-    }
 
     /// <summary>
     /// 设置卡片测试镜头
@@ -171,13 +185,16 @@ public partial class CameraHandler
         manager.SetMainCameraDefaultBlend(0);
     }
 
-
-    public void ShowCinemachineCamera(CinemachineCameraEnum cinemachineCameraEnum)
+    /// <summary>
+    /// 设置控制摄像头
+    /// </summary>
+    public void SetCameraForControl(CinemachineCameraEnum cinemachineCameraEnum)
     {
         manager.HideAllCM();
         switch (cinemachineCameraEnum)
         {
             case CinemachineCameraEnum.Base:
+                HideCameraForBaseScene();
                 manager.cm_Base.gameObject.SetActive(true);
                 manager.cm_Base.Priority = int.MaxValue;
                 break;

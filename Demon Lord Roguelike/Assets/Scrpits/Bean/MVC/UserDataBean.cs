@@ -18,6 +18,8 @@ public class UserDataBean : BaseBean
     public long coin;
     //阵容最大数量
     public int lineupMax = 10;
+    //用户名字
+    public string userName;
 
     //阵容生物
     public Dictionary<int, List<string>> dicLineupCreature = new Dictionary<int, List<string>>();

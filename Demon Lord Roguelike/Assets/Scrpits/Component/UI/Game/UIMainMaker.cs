@@ -7,6 +7,12 @@ using UnityEngine.UI;
 
 public partial class UIMainMaker : BaseUIComponent
 {
+    public override void OpenUI()
+    {
+        base.OpenUI();
+        //设置基地场景视角
+        CameraHandler.Instance.SetGameStartCamera(int.MaxValue, true);
+    }
 
     public override void OnClickForButton(Button viewButton)
     {

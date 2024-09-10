@@ -58,10 +58,6 @@ public partial class UIBaseCore : BaseUIComponent
     /// </summary>
     public void OnClickForExit()
     {
-        CameraHandler.Instance.SetBaseCoreCamera(0, false);
-        CameraHandler.Instance.ShowCinemachineCamera(CinemachineCameraEnum.Base);
-
-        GameControlHandler.Instance.SetBaseControl();
         UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
     }
 

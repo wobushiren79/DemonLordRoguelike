@@ -18,5 +18,9 @@ public partial class UIViewMainLoadItem
 
     public SkeletonGraphic ui_Icon;
 
+    public TextMeshProUGUI ui_CoinText;
+
+    public Button ui_Delete;
+
 
 }

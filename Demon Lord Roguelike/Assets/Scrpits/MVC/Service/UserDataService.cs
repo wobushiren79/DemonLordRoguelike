@@ -33,4 +33,12 @@ public class UserDataService : BaseDataStorage
     {
         BaseSaveData<UserDataBean>($"{saveFileName}_{index}", data, jsonType: JsonType.Net);
     }
+
+    /// <summary>
+    /// 删除数据
+    /// </summary>
+    public void DeleteData(int index)
+    {
+        BaseDeleteFile($"{saveFileName}_{index}");
+    }
 }

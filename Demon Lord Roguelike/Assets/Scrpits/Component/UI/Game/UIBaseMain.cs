@@ -5,6 +5,15 @@ using UnityEngine.InputSystem;
 
 public partial class UIBaseMain : BaseUIComponent
 {
+    public override void OpenUI()
+    {
+        base.OpenUI();
+        //开启控制
+        GameControlHandler.Instance.SetBaseControl();
+        //开启摄像头
+        CameraHandler.Instance.SetCameraForControl(CinemachineCameraEnum.Base);
+    }
+
     public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
     {
         base.OnInputActionForStarted(inputType, callback);

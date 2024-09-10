@@ -9,6 +9,12 @@ public partial class UIMainLoad : BaseUIComponent
     public override void OpenUI()
     {
         base.OpenUI();
+        CameraHandler.Instance.SetGameStartCamera(int.MaxValue, true);
+    }
+
+    public override void RefreshUI(bool isOpenInit = false)
+    {
+        base.RefreshUI(isOpenInit);
         GameDataHandler.Instance.manager.LoadUserData(1, ActionForLoadUserData);
         GameDataHandler.Instance.manager.LoadUserData(2, ActionForLoadUserData);
         GameDataHandler.Instance.manager.LoadUserData(3, ActionForLoadUserData);
