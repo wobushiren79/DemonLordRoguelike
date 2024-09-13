@@ -17,7 +17,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             //镜头初始化
             CameraHandler.Instance.InitData();
             //环境参数初始化
-            VolumeHandler.Instance.InitData();
+            VolumeHandler.Instance.InitData(GameSceneTypeEnum.Base);
             //设置基地场景视角
             CameraHandler.Instance.InitBaseSceneControlCamera(() =>
             {
@@ -52,7 +52,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             //镜头初始化
             CameraHandler.Instance.InitData();
             //环境参数初始化
-            VolumeHandler.Instance.InitData();
+            VolumeHandler.Instance.InitData(GameSceneTypeEnum.Base);
             //加载基地场景
             LoadBaseScene((targetObj) =>
             {

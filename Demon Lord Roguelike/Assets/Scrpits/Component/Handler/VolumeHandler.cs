@@ -8,12 +8,32 @@ public class VolumeHandler : BaseHandler<VolumeHandler, VolumeManager>
     /// <summary>
     /// 初始化数据
     /// </summary>
-    public void InitData()
+    public void InitData(GameSceneTypeEnum gameSceneType)
     {
         GameConfigBean gameConfig = GameDataHandler.Instance.manager.GetGameConfig();
         SetDepthOfField(DepthOfFieldMode.Bokeh, 4, 140, 10);
+        switch (gameSceneType)
+        {
+            case GameSceneTypeEnum.Base:
+                SetSkyBox(null);
+                break;
+            case GameSceneTypeEnum.Fight:
+                SetSkyBox(null);
+                break;
+            default:
+                SetSkyBox(null);
+                break;
+        }
     }
 
+    /// <summary>
+    /// 设置天空盒
+    /// </summary>
+    /// <param name="skybox"></param>
+    public void SetSkyBox(Material skybox)
+    {
+        RenderSettings.skybox = skybox;
+    }
 
     /// <summary>
     /// 设置远景模糊
@@ -33,5 +53,15 @@ public class VolumeHandler : BaseHandler<VolumeHandler, VolumeManager>
         depthOfField.focalLength.value = focalLength;
         depthOfField.aperture.overrideState = true;
         depthOfField.aperture.value = aperture;
+    }
+
+    /// <summary>
+    /// 是否开启远景模糊
+    /// </summary>
+    /// <param name="isActive"></param>
+    public void SetDepthOfFieldActive(bool isActive)
+    {
+        var depthOfField = manager.depthOfField;
+        depthOfField.active = isActive;
     }
 }

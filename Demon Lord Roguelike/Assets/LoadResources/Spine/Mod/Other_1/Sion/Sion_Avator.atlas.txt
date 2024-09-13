@@ -1,0 +1,673 @@
+
+Sion_Avator.png
+size: 2046,1874
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+2
+  rotate: false
+  xy: 2, 762
+  size: 302, 265
+  orig: 302, 265
+  offset: 0, 0
+  index: -1
+L_arm01
+  rotate: true
+  xy: 1219, 868
+  size: 262, 278
+  orig: 262, 278
+  offset: 0, 0
+  index: -1
+L_arm02
+  rotate: true
+  xy: 1365, 1132
+  size: 227, 297
+  orig: 227, 297
+  offset: 0, 0
+  index: -1
+L_arm03
+  rotate: false
+  xy: 1801, 1684
+  size: 177, 111
+  orig: 177, 111
+  offset: 0, 0
+  index: -1
+L_arm04
+  rotate: true
+  xy: 2, 383
+  size: 288, 457
+  orig: 288, 457
+  offset: 0, 0
+  index: -1
+L_collar
+  rotate: true
+  xy: 2, 1646
+  size: 112, 217
+  orig: 112, 217
+  offset: 0, 0
+  index: -1
+L_collar2
+  rotate: true
+  xy: 1318, 1696
+  size: 101, 165
+  orig: 101, 165
+  offset: 0, 0
+  index: -1
+L_leg01
+  rotate: true
+  xy: 2, 40
+  size: 341, 431
+  orig: 341, 431
+  offset: 0, 0
+  index: -1
+L_leg04
+  rotate: true
+  xy: 306, 673
+  size: 273, 474
+  orig: 273, 474
+  offset: 0, 0
+  index: -1
+R_arm01
+  rotate: false
+  xy: 798, 1186
+  size: 288, 221
+  orig: 288, 221
+  offset: 0, 0
+  index: -1
+R_arm02
+  rotate: false
+  xy: 1088, 1155
+  size: 275, 223
+  orig: 275, 223
+  offset: 0, 0
+  index: -1
+R_arm03
+  rotate: true
+  xy: 960, 309
+  size: 277, 1081
+  orig: 277, 1081
+  offset: 0, 0
+  index: -1
+R_arm04
+  rotate: false
+  xy: 221, 1620
+  size: 275, 112
+  orig: 275, 112
+  offset: 0, 0
+  index: -1
+R_arm05
+  rotate: false
+  xy: 1764, 1797
+  size: 253, 75
+  orig: 253, 75
+  offset: 0, 0
+  index: -1
+R_arm06
+  rotate: true
+  xy: 523, 1190
+  size: 217, 273
+  orig: 217, 273
+  offset: 0, 0
+  index: -1
+R_arm_shadow2
+  rotate: true
+  xy: 435, 2
+  size: 305, 1333
+  orig: 305, 1333
+  offset: 0, 0
+  index: -1
+R_collar
+  rotate: true
+  xy: 2, 1290
+  size: 186, 204
+  orig: 186, 204
+  offset: 0, 0
+  index: -1
+R_ｊａｃｋｅｔ_collar
+  rotate: true
+  xy: 1676, 1357
+  size: 184, 224
+  orig: 184, 224
+  offset: 0, 0
+  index: -1
+R_ｓｈｏｕｌｄｅｒ
+  rotate: false
+  xy: 1148, 1705
+  size: 168, 99
+  orig: 168, 99
+  offset: 0, 0
+  index: -1
+cape01
+  rotate: true
+  xy: 613, 1430
+  size: 173, 174
+  orig: 173, 174
+  offset: 0, 0
+  index: -1
+cheek
+  rotate: false
+  xy: 1615, 1543
+  size: 353, 139
+  orig: 353, 139
+  offset: 0, 0
+  index: -1
+decoration
+  rotate: true
+  xy: 268, 1838
+  size: 34, 267
+  orig: 34, 267
+  offset: 0, 0
+  index: -1
+ear
+  rotate: true
+  xy: 244, 1754
+  size: 82, 136
+  orig: 82, 136
+  offset: 0, 0
+  index: -1
+eyebrow
+  rotate: false
+  xy: 1156, 1806
+  size: 294, 66
+  orig: 294, 66
+  offset: 0, 0
+  index: -1
+eyelids
+  rotate: false
+  xy: 1485, 1691
+  size: 314, 104
+  orig: 314, 104
+  offset: 0, 0
+  index: -1
+eyelids2
+  rotate: false
+  xy: 685, 1818
+  size: 117, 54
+  orig: 117, 54
+  offset: 0, 0
+  index: -1
+eyeline bottom
+  rotate: false
+  xy: 1452, 1799
+  size: 310, 73
+  orig: 310, 73
+  offset: 0, 0
+  index: -1
+eyeline bottom2
+  rotate: false
+  xy: 53, 1847
+  size: 84, 25
+  orig: 84, 25
+  offset: 0, 0
+  index: -1
+eyeline top
+  rotate: false
+  xy: 680, 1724
+  size: 335, 92
+  orig: 335, 92
+  offset: 0, 0
+  index: -1
+eyeline top2
+  rotate: false
+  xy: 1040, 1816
+  size: 114, 56
+  orig: 114, 56
+  offset: 0, 0
+  index: -1
+hair01
+  rotate: true
+  xy: 498, 1605
+  size: 117, 350
+  orig: 117, 350
+  offset: 0, 0
+  index: -1
+hair02
+  rotate: true
+  xy: 2, 1478
+  size: 140, 286
+  orig: 140, 286
+  offset: 0, 0
+  index: -1
+hair03
+  rotate: true
+  xy: 290, 1458
+  size: 145, 321
+  orig: 145, 321
+  offset: 0, 0
+  index: -1
+hair04
+  rotate: true
+  xy: 1292, 1559
+  size: 130, 321
+  orig: 130, 321
+  offset: 0, 0
+  index: -1
+hair05
+  rotate: true
+  xy: 1664, 1103
+  size: 252, 380
+  orig: 252, 380
+  offset: 0, 0
+  index: -1
+hair06
+  rotate: true
+  xy: 461, 320
+  size: 301, 497
+  orig: 301, 497
+  offset: 0, 0
+  index: -1
+hair07
+  rotate: true
+  xy: 789, 1409
+  size: 160, 413
+  orig: 160, 413
+  offset: 0, 0
+  index: -1
+hair08
+  rotate: true
+  xy: 208, 1255
+  size: 201, 313
+  orig: 201, 313
+  offset: 0, 0
+  index: -1
+hi
+  rotate: false
+  xy: 804, 1818
+  size: 234, 54
+  orig: 234, 54
+  offset: 0, 0
+  index: -1
+hi2
+  rotate: false
+  xy: 2, 1849
+  size: 49, 23
+  orig: 49, 23
+  offset: 0, 0
+  index: -1
+mouth
+  rotate: false
+  xy: 139, 1843
+  size: 74, 29
+  orig: 74, 29
+  offset: 0, 0
+  index: -1
+neck
+  rotate: true
+  xy: 1414, 1361
+  size: 180, 260
+  orig: 180, 260
+  offset: 0, 0
+  index: -1
+necktie01
+  rotate: true
+  xy: 1058, 1571
+  size: 132, 232
+  orig: 132, 232
+  offset: 0, 0
+  index: -1
+necktie02
+  rotate: true
+  xy: 1017, 1706
+  size: 108, 129
+  orig: 108, 129
+  offset: 0, 0
+  index: -1
+nose
+  rotate: true
+  xy: 215, 1841
+  size: 31, 51
+  orig: 31, 51
+  offset: 0, 0
+  index: -1
+pupil
+  rotate: false
+  xy: 2, 1760
+  size: 240, 79
+  orig: 240, 79
+  offset: 0, 0
+  index: -1
+pupil2
+  rotate: false
+  xy: 537, 1827
+  size: 55, 45
+  orig: 55, 45
+  offset: 0, 0
+  index: -1
+sarashi
+  rotate: false
+  xy: 414, 948
+  size: 400, 236
+  orig: 400, 236
+  offset: 0, 0
+  index: -1
+shirt_l
+  rotate: true
+  xy: 816, 916
+  size: 237, 401
+  orig: 237, 401
+  offset: 0, 0
+  index: -1
+shirt_r
+  rotate: true
+  xy: 1204, 1380
+  size: 177, 208
+  orig: 177, 208
+  offset: 0, 0
+  index: -1
+white of eyes
+  rotate: false
+  xy: 382, 1734
+  size: 296, 86
+  orig: 296, 86
+  offset: 0, 0
+  index: -1
+white of eyes2
+  rotate: false
+  xy: 594, 1822
+  size: 89, 50
+  orig: 89, 50
+  offset: 0, 0
+  index: -1
+ｂａｃｋ_ｊａｃｋｅｔ
+  rotate: false
+  xy: 2, 1029
+  size: 410, 224
+  orig: 410, 224
+  offset: 0, 0
+  index: -1
+ｃａｐ01
+  rotate: false
+  xy: 1359, 588
+  size: 604, 274
+  orig: 604, 274
+  offset: 0, 0
+  index: -1
+ｃａｐ02
+  rotate: false
+  xy: 782, 623
+  size: 575, 243
+  orig: 575, 243
+  offset: 0, 0
+  index: -1
+ｃａｐ03
+  rotate: false
+  xy: 1499, 864
+  size: 460, 237
+  orig: 460, 237
+  offset: 0, 0
+  index: -1
+ｃｏｌｌａｒ_back
+  rotate: false
+  xy: 850, 1580
+  size: 206, 124
+  orig: 206, 124
+  offset: 0, 0
+  index: -1
+
+Sion_Avator2.png
+size: 2001,1822
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_collar_under
+  rotate: true
+  xy: 2, 480
+  size: 376, 658
+  orig: 376, 658
+  offset: 0, 0
+  index: -1
+L_leg02
+  rotate: true
+  xy: 662, 431
+  size: 389, 1041
+  orig: 389, 1041
+  offset: 0, 0
+  index: -1
+L_leg03
+  rotate: true
+  xy: 491, 1213
+  size: 321, 1020
+  orig: 321, 1020
+  offset: 0, 0
+  index: -1
+R_leg01
+  rotate: true
+  xy: 914, 839
+  size: 372, 483
+  orig: 372, 483
+  offset: 0, 0
+  index: -1
+R_leg03
+  rotate: true
+  xy: 424, 17
+  size: 412, 1043
+  orig: 412, 1043
+  offset: 0, 0
+  index: -1
+R_leg04
+  rotate: true
+  xy: 462, 858
+  size: 353, 450
+  orig: 353, 450
+  offset: 0, 0
+  index: -1
+bust
+  rotate: true
+  xy: 2, 71
+  size: 407, 420
+  orig: 407, 420
+  offset: 0, 0
+  index: -1
+bust2
+  rotate: true
+  xy: 1399, 822
+  size: 383, 443
+  orig: 383, 443
+  offset: 0, 0
+  index: -1
+cape belt
+  rotate: false
+  xy: 2, 1218
+  size: 487, 316
+  orig: 487, 316
+  offset: 0, 0
+  index: -1
+cape belt_u
+  rotate: false
+  xy: 1513, 1207
+  size: 485, 327
+  orig: 485, 327
+  offset: 0, 0
+  index: -1
+cape03
+  rotate: true
+  xy: 2, 1536
+  size: 284, 1793
+  orig: 284, 1793
+  offset: 0, 0
+  index: -1
+color
+  rotate: true
+  xy: 1469, 2
+  size: 427, 530
+  orig: 427, 530
+  offset: 0, 0
+  index: -1
+ｓｈｉｒｔ
+  rotate: false
+  xy: 2, 883
+  size: 458, 333
+  orig: 458, 333
+  offset: 0, 0
+  index: -1
+
+Sion_Avator3.png
+size: 2045,1980
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_arm05
+  rotate: false
+  xy: 1605, 1344
+  size: 438, 634
+  orig: 438, 634
+  offset: 0, 0
+  index: -1
+R_leg02
+  rotate: true
+  xy: 536, 1545
+  size: 433, 1067
+  orig: 433, 1067
+  offset: 0, 0
+  index: -1
+R_ｕｎｄｅｒ_jacket
+  rotate: true
+  xy: 2, 628
+  size: 478, 652
+  orig: 478, 652
+  offset: 0, 0
+  index: -1
+R_ｕｎｄｅｒ_jacket2
+  rotate: true
+  xy: 656, 558
+  size: 511, 653
+  orig: 511, 653
+  offset: 0, 0
+  index: -1
+body_b
+  rotate: false
+  xy: 2, 1108
+  size: 693, 435
+  orig: 693, 435
+  offset: 0, 0
+  index: -1
+cape02
+  rotate: true
+  xy: 2, 102
+  size: 524, 563
+  orig: 524, 563
+  offset: 0, 0
+  index: -1
+head shadow
+  rotate: true
+  xy: 1311, 380
+  size: 484, 721
+  orig: 484, 721
+  offset: 0, 0
+  index: -1
+oti
+  rotate: true
+  xy: 697, 1071
+  size: 472, 612
+  orig: 472, 612
+  offset: 0, 0
+  index: -1
+oti2
+  rotate: true
+  xy: 1311, 866
+  size: 476, 612
+  orig: 476, 612
+  offset: 0, 0
+  index: -1
+ｂａｃｋ_ｈａｉｒ
+  rotate: true
+  xy: 567, 2
+  size: 554, 664
+  orig: 554, 664
+  offset: 0, 0
+  index: -1
+ｌｉｎｅ
+  rotate: true
+  xy: 2, 1551
+  size: 427, 532
+  orig: 427, 532
+  offset: 0, 0
+  index: -1
+
+Sion_Avator4.png
+size: 1610,2029
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+ｂａｃｋ_ｃａｐｅ01
+  rotate: false
+  xy: 2, 2
+  size: 797, 2025
+  orig: 797, 2025
+  offset: 0, 0
+  index: -1
+ｂａｃｋ_ｃａｐｅ02
+  rotate: false
+  xy: 801, 101
+  size: 807, 1926
+  orig: 807, 1926
+  offset: 0, 0
+  index: -1
+
+Sion_Avator5.png
+size: 1625,2030
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+R_arm_shadow
+  rotate: false
+  xy: 2, 572
+  size: 446, 1456
+  orig: 446, 1456
+  offset: 0, 0
+  index: -1
+belt04_shadow
+  rotate: false
+  xy: 847, 676
+  size: 744, 1352
+  orig: 744, 1352
+  offset: 0, 0
+  index: -1
+shadow
+  rotate: true
+  xy: 2, 57
+  size: 513, 843
+  orig: 513, 843
+  offset: 0, 0
+  index: -1
+ｂｅｌｔ
+  rotate: true
+  xy: 847, 2
+  size: 672, 776
+  orig: 672, 776
+  offset: 0, 0
+  index: -1
+
+Sion_Avator6.png
+size: 1531,1610
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+L_ｕｎｄｅｒ_jacket
+  rotate: false
+  xy: 893, 2
+  size: 620, 668
+  orig: 620, 668
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 897, 672
+  size: 632, 936
+  orig: 632, 936
+  offset: 0, 0
+  index: -1
+jacket_upper
+  rotate: false
+  xy: 2, 751
+  size: 893, 857
+  orig: 893, 857
+  offset: 0, 0
+  index: -1
+ｂｕｓｔ
+  rotate: true
+  xy: 2, 12
+  size: 737, 889
+  orig: 737, 889
+  offset: 0, 0
+  index: -1

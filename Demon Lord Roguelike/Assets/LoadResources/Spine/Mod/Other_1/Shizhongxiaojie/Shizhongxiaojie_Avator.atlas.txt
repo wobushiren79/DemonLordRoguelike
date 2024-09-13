@@ -1,0 +1,474 @@
+
+Shizhongxiaojie_Avator.png
+size: 4034,4007
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Original
+  rotate: false
+  xy: 2, 3836
+  size: 223, 140
+  orig: 223, 140
+  offset: 0, 0
+  index: -1
+aaa
+  rotate: false
+  xy: 128, 3982
+  size: 28, 23
+  orig: 28, 23
+  offset: 0, 0
+  index: -1
+bbb
+  rotate: false
+  xy: 414, 3967
+  size: 54, 38
+  orig: 54, 38
+  offset: 0, 0
+  index: -1
+blusher
+  rotate: false
+  xy: 1009, 3925
+  size: 197, 80
+  orig: 197, 80
+  offset: 0, 0
+  index: -1
+cloth1
+  rotate: false
+  xy: 3276, 3620
+  size: 320, 247
+  orig: 320, 247
+  offset: 0, 0
+  index: -1
+cloth2
+  rotate: true
+  xy: 2238, 3298
+  size: 343, 357
+  orig: 343, 357
+  offset: 0, 0
+  index: -1
+eyeball_l
+  rotate: true
+  xy: 335, 3973
+  size: 32, 33
+  orig: 32, 33
+  offset: 0, 0
+  index: -1
+eyeball_r
+  rotate: false
+  xy: 470, 3967
+  size: 39, 38
+  orig: 39, 38
+  offset: 0, 0
+  index: -1
+eyebrow_l
+  rotate: false
+  xy: 2, 3992
+  size: 46, 13
+  orig: 46, 13
+  offset: 0, 0
+  index: -1
+eyebrow_r
+  rotate: false
+  xy: 50, 3983
+  size: 76, 22
+  orig: 76, 22
+  offset: 0, 0
+  index: -1
+eyelash_l
+  rotate: false
+  xy: 649, 3961
+  size: 59, 44
+  orig: 59, 44
+  offset: 0, 0
+  index: -1
+eyelash_r
+  rotate: false
+  xy: 511, 3963
+  size: 91, 42
+  orig: 91, 42
+  offset: 0, 0
+  index: -1
+eyewhite_l
+  rotate: false
+  xy: 604, 3963
+  size: 43, 42
+  orig: 43, 42
+  offset: 0, 0
+  index: -1
+eyewhite_r
+  rotate: false
+  xy: 710, 3953
+  size: 72, 52
+  orig: 72, 52
+  offset: 0, 0
+  index: -1
+fadai
+  rotate: false
+  xy: 367, 3519
+  size: 403, 251
+  orig: 403, 251
+  offset: 0, 0
+  index: -1
+fazhang1
+  rotate: true
+  xy: 2294, 3643
+  size: 238, 694
+  orig: 238, 694
+  offset: 0, 0
+  index: -1
+fazhang2
+  rotate: false
+  xy: 1280, 3366
+  size: 554, 313
+  orig: 554, 313
+  offset: 0, 0
+  index: -1
+fire1
+  rotate: false
+  xy: 2, 2
+  size: 2153, 1337
+  orig: 2153, 1337
+  offset: 0, 0
+  index: -1
+fire2
+  rotate: false
+  xy: 2216, 1047
+  size: 1617, 838
+  orig: 1617, 838
+  offset: 0, 0
+  index: -1
+fire3
+  rotate: true
+  xy: 2, 1565
+  size: 850, 773
+  orig: 850, 773
+  offset: 0, 0
+  index: -1
+glasses
+  rotate: false
+  xy: 1476, 3924
+  size: 203, 81
+  orig: 203, 81
+  offset: 0, 0
+  index: -1
+hair1
+  rotate: false
+  xy: 2990, 3625
+  size: 284, 246
+  orig: 284, 246
+  offset: 0, 0
+  index: -1
+hair10
+  rotate: false
+  xy: 1852, 3667
+  size: 440, 223
+  orig: 440, 223
+  offset: 0, 0
+  index: -1
+hair11
+  rotate: false
+  xy: 3324, 2587
+  size: 708, 635
+  orig: 708, 635
+  offset: 0, 0
+  index: -1
+hair12
+  rotate: false
+  xy: 2, 2417
+  size: 834, 566
+  orig: 834, 566
+  offset: 0, 0
+  index: -1
+hair13
+  rotate: false
+  xy: 954, 2890
+  size: 1046, 448
+  orig: 1046, 448
+  offset: 0, 0
+  index: -1
+hair2
+  rotate: true
+  xy: 2679, 3885
+  size: 120, 204
+  orig: 120, 204
+  offset: 0, 0
+  index: -1
+hair3
+  rotate: true
+  xy: 1040, 3730
+  size: 193, 240
+  orig: 193, 240
+  offset: 0, 0
+  index: -1
+hair4
+  rotate: false
+  xy: 3156, 3224
+  size: 401, 394
+  orig: 401, 394
+  offset: 0, 0
+  index: -1
+hair5
+  rotate: true
+  xy: 3762, 3866
+  size: 139, 211
+  orig: 139, 211
+  offset: 0, 0
+  index: -1
+hair6
+  rotate: true
+  xy: 613, 3772
+  size: 176, 193
+  orig: 176, 193
+  offset: 0, 0
+  index: -1
+hair7
+  rotate: false
+  xy: 1836, 3340
+  size: 400, 325
+  orig: 400, 325
+  offset: 0, 0
+  index: -1
+hair8
+  rotate: false
+  xy: 2381, 3889
+  size: 296, 116
+  orig: 296, 116
+  offset: 0, 0
+  index: -1
+hair9
+  rotate: false
+  xy: 838, 2263
+  size: 1073, 625
+  orig: 1073, 625
+  offset: 0, 0
+  index: -1
+head
+  rotate: true
+  xy: 3598, 3616
+  size: 248, 371
+  orig: 248, 371
+  offset: 0, 0
+  index: -1
+l_foot
+  rotate: false
+  xy: 2586, 2684
+  size: 736, 538
+  orig: 736, 538
+  offset: 0, 0
+  index: -1
+l_foreaarm
+  rotate: false
+  xy: 1282, 3708
+  size: 232, 214
+  orig: 232, 214
+  offset: 0, 0
+  index: -1
+l_hand
+  rotate: false
+  xy: 3089, 3879
+  size: 178, 126
+  orig: 178, 126
+  offset: 0, 0
+  index: -1
+l_thigh
+  rotate: true
+  xy: 772, 3417
+  size: 311, 506
+  orig: 311, 506
+  offset: 0, 0
+  index: -1
+l_upperarm
+  rotate: false
+  xy: 1516, 3681
+  size: 334, 218
+  orig: 334, 218
+  offset: 0, 0
+  index: -1
+month1
+  rotate: false
+  xy: 370, 3973
+  size: 42, 32
+  orig: 42, 32
+  offset: 0, 0
+  index: -1
+month2
+  rotate: false
+  xy: 251, 3974
+  size: 45, 31
+  orig: 45, 31
+  offset: 0, 0
+  index: -1
+month3
+  rotate: false
+  xy: 158, 3978
+  size: 45, 27
+  orig: 45, 27
+  offset: 0, 0
+  index: -1
+mouth
+  rotate: false
+  xy: 205, 3978
+  size: 44, 27
+  orig: 44, 27
+  offset: 0, 0
+  index: -1
+necklace
+  rotate: false
+  xy: 1208, 3925
+  size: 266, 80
+  orig: 266, 80
+  offset: 0, 0
+  index: -1
+necklace_shadow
+  rotate: false
+  xy: 1900, 3896
+  size: 261, 109
+  orig: 261, 109
+  offset: 0, 0
+  index: -1
+nose
+  rotate: true
+  xy: 298, 3974
+  size: 31, 35
+  orig: 31, 35
+  offset: 0, 0
+  index: -1
+piece
+  rotate: true
+  xy: 854, 3928
+  size: 77, 153
+  orig: 77, 153
+  offset: 0, 0
+  index: -1
+piece1
+  rotate: true
+  xy: 3549, 3869
+  size: 136, 211
+  orig: 136, 211
+  offset: 0, 0
+  index: -1
+r_foot
+  rotate: false
+  xy: 2853, 1887
+  size: 744, 698
+  orig: 744, 698
+  offset: 0, 0
+  index: -1
+r_forearm
+  rotate: true
+  xy: 395, 3789
+  size: 172, 216
+  orig: 172, 216
+  offset: 0, 0
+  index: -1
+r_hand
+  rotate: false
+  xy: 227, 3822
+  size: 166, 149
+  orig: 166, 149
+  offset: 0, 0
+  index: -1
+r_thigh
+  rotate: true
+  xy: 2597, 3259
+  size: 364, 557
+  orig: 364, 557
+  offset: 0, 0
+  index: -1
+r_upperarm
+  rotate: true
+  xy: 3269, 3873
+  size: 132, 278
+  orig: 132, 278
+  offset: 0, 0
+  index: -1
+skirt1
+  rotate: true
+  xy: 2002, 2722
+  size: 574, 582
+  orig: 574, 582
+  offset: 0, 0
+  index: -1
+skirt2
+  rotate: false
+  xy: 808, 3746
+  size: 230, 177
+  orig: 230, 177
+  offset: 0, 0
+  index: -1
+skirt3
+  rotate: false
+  xy: 2, 2985
+  size: 950, 430
+  orig: 950, 430
+  offset: 0, 0
+  index: -1
+star
+  rotate: false
+  xy: 784, 3950
+  size: 68, 55
+  orig: 68, 55
+  offset: 0, 0
+  index: -1
+star2
+  rotate: true
+  xy: 2, 3563
+  size: 257, 363
+  orig: 257, 363
+  offset: 0, 0
+  index: -1
+suo1
+  rotate: false
+  xy: 1913, 2046
+  size: 938, 636
+  orig: 938, 636
+  offset: 0, 0
+  index: -1
+suo2
+  rotate: true
+  xy: 777, 1341
+  size: 703, 1437
+  orig: 703, 1437
+  offset: 0, 0
+  index: -1
+yey1
+  rotate: false
+  xy: 2163, 3892
+  size: 216, 113
+  orig: 216, 113
+  offset: 0, 0
+  index: -1
+yey2
+  rotate: false
+  xy: 2885, 3883
+  size: 202, 122
+  orig: 202, 122
+  offset: 0, 0
+  index: -1
+yey3
+  rotate: false
+  xy: 1681, 3901
+  size: 217, 104
+  orig: 217, 104
+  offset: 0, 0
+  index: -1
+
+Shizhongxiaojie_Avator2.png
+size: 3628,2694
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bg
+  rotate: true
+  xy: 2, 2
+  size: 2690, 2213
+  orig: 2690, 2213
+  offset: 0, 0
+  index: -1
+fire4
+  rotate: true
+  xy: 2217, 1170
+  size: 1522, 1409
+  orig: 1522, 1409
+  offset: 0, 0
+  index: -1

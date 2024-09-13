@@ -1,0 +1,508 @@
+
+Yury_Avator.png
+size: 2048,2013
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+3
+  rotate: true
+  xy: 819, 1436
+  size: 173, 428
+  orig: 173, 428
+  offset: 0, 0
+  index: -1
+4
+  rotate: true
+  xy: 521, 1011
+  size: 226, 356
+  orig: 226, 356
+  offset: 0, 0
+  index: -1
+5
+  rotate: true
+  xy: 787, 720
+  size: 265, 434
+  orig: 265, 434
+  offset: 0, 0
+  index: -1
+arm_L2
+  rotate: true
+  xy: 1301, 1593
+  size: 169, 482
+  orig: 169, 482
+  offset: 0, 0
+  index: -1
+arm_L2_costume_3
+  rotate: false
+  xy: 419, 764
+  size: 366, 245
+  orig: 366, 245
+  offset: 0, 0
+  index: -1
+arm_R1
+  rotate: true
+  xy: 860, 2
+  size: 330, 552
+  orig: 330, 552
+  offset: 0, 0
+  index: -1
+arm_R2_costume_1
+  rotate: true
+  xy: 579, 1239
+  size: 195, 485
+  orig: 195, 485
+  offset: 0, 0
+  index: -1
+arm_R2_costume_2
+  rotate: true
+  xy: 924, 334
+  size: 328, 354
+  orig: 328, 354
+  offset: 0, 0
+  index: -1
+arm_R2_costume_3
+  rotate: true
+  xy: 402, 58
+  size: 376, 456
+  orig: 376, 456
+  offset: 0, 0
+  index: -1
+arm_hand_L
+  rotate: true
+  xy: 1066, 1217
+  size: 197, 282
+  orig: 197, 282
+  offset: 0, 0
+  index: -1
+arm_hand_R
+  rotate: false
+  xy: 1548, 1764
+  size: 305, 143
+  orig: 305, 143
+  offset: 0, 0
+  index: -1
+bag_1
+  rotate: false
+  xy: 1350, 1141
+  size: 452, 201
+  orig: 452, 201
+  offset: 0, 0
+  index: -1
+bag_2
+  rotate: false
+  xy: 1280, 334
+  size: 334, 328
+  orig: 334, 328
+  offset: 0, 0
+  index: -1
+bag_3
+  rotate: false
+  xy: 2, 863
+  size: 415, 240
+  orig: 415, 240
+  offset: 0, 0
+  index: -1
+bag_4
+  rotate: false
+  xy: 2, 1316
+  size: 575, 167
+  orig: 575, 167
+  offset: 0, 0
+  index: -1
+bottom_costume_L
+  rotate: false
+  xy: 2, 550
+  size: 412, 311
+  orig: 412, 311
+  offset: 0, 0
+  index: -1
+bottom_costume_R
+  rotate: false
+  xy: 1661, 622
+  size: 313, 309
+  orig: 313, 309
+  offset: 0, 0
+  index: -1
+bust_L
+  rotate: true
+  xy: 2, 176
+  size: 372, 398
+  orig: 372, 398
+  offset: 0, 0
+  index: -1
+bust_R
+  rotate: true
+  xy: 1616, 269
+  size: 351, 382
+  orig: 351, 382
+  offset: 0, 0
+  index: -1
+bust_costume_3
+  rotate: false
+  xy: 1397, 1765
+  size: 149, 145
+  orig: 149, 145
+  offset: 0, 0
+  index: -1
+cheek
+  rotate: false
+  xy: 466, 1485
+  size: 351, 172
+  orig: 351, 172
+  offset: 0, 0
+  index: -1
+costume_shoulder_L_1
+  rotate: true
+  xy: 908, 1611
+  size: 159, 391
+  orig: 159, 391
+  offset: 0, 0
+  index: -1
+costume_shoulder_L_2
+  rotate: true
+  xy: 2, 1833
+  size: 105, 232
+  orig: 105, 232
+  offset: 0, 0
+  index: -1
+costume_shoulder_R_1
+  rotate: false
+  xy: 1855, 1719
+  size: 191, 186
+  orig: 191, 186
+  offset: 0, 0
+  index: -1
+costume_shoulder_R_1_2
+  rotate: false
+  xy: 2, 1970
+  size: 57, 41
+  orig: 57, 41
+  offset: 0, 0
+  index: -1
+costume_shoulder_R_2
+  rotate: true
+  xy: 1785, 1540
+  size: 177, 248
+  orig: 177, 248
+  offset: 0, 0
+  index: -1
+ear_L
+  rotate: true
+  xy: 411, 1938
+  size: 73, 98
+  orig: 73, 98
+  offset: 0, 0
+  index: -1
+ear_R
+  rotate: true
+  xy: 1116, 1930
+  size: 81, 87
+  orig: 81, 87
+  offset: 0, 0
+  index: -1
+eyebrow
+  rotate: false
+  xy: 1585, 1909
+  size: 347, 102
+  orig: 347, 102
+  offset: 0, 0
+  index: -1
+eyelashes_1
+  rotate: false
+  xy: 526, 1659
+  size: 380, 152
+  orig: 380, 152
+  offset: 0, 0
+  index: -1
+eyelashes_1-1
+  rotate: false
+  xy: 579, 1813
+  size: 349, 117
+  orig: 349, 117
+  offset: 0, 0
+  index: -1
+eyelashes_1-2
+  rotate: false
+  xy: 236, 1820
+  size: 341, 115
+  orig: 341, 115
+  offset: 0, 0
+  index: -1
+eyelashes_2
+  rotate: false
+  xy: 136, 1940
+  size: 273, 71
+  orig: 273, 71
+  offset: 0, 0
+  index: -1
+eyes_1
+  rotate: false
+  xy: 1116, 1772
+  size: 279, 138
+  orig: 279, 138
+  offset: 0, 0
+  index: -1
+eyes_2
+  rotate: false
+  xy: 199, 1664
+  size: 325, 154
+  orig: 325, 154
+  offset: 0, 0
+  index: -1
+foot_L3
+  rotate: true
+  xy: 416, 436
+  size: 282, 506
+  orig: 282, 506
+  offset: 0, 0
+  index: -1
+foot_R3
+  rotate: true
+  xy: 2, 1105
+  size: 209, 517
+  orig: 209, 517
+  offset: 0, 0
+  index: -1
+hair_B_L
+  rotate: true
+  xy: 1205, 1912
+  size: 99, 378
+  orig: 99, 378
+  offset: 0, 0
+  index: -1
+hair_B_R
+  rotate: true
+  xy: 761, 1932
+  size: 79, 353
+  orig: 79, 353
+  offset: 0, 0
+  index: -1
+hair_F1
+  rotate: true
+  xy: 879, 987
+  size: 228, 358
+  orig: 228, 358
+  offset: 0, 0
+  index: -1
+hair_L1
+  rotate: true
+  xy: 1223, 664
+  size: 267, 436
+  orig: 267, 436
+  offset: 0, 0
+  index: -1
+hair_L2
+  rotate: true
+  xy: 1239, 933
+  size: 206, 664
+  orig: 206, 664
+  offset: 0, 0
+  index: -1
+hair_R1
+  rotate: true
+  xy: 1249, 1416
+  size: 175, 430
+  orig: 175, 430
+  offset: 0, 0
+  index: -1
+hair_R2
+  rotate: true
+  xy: 2, 1493
+  size: 169, 462
+  orig: 169, 462
+  offset: 0, 0
+  index: -1
+hair_ornaments
+  rotate: false
+  xy: 1934, 1907
+  size: 105, 104
+  orig: 105, 104
+  offset: 0, 0
+  index: -1
+mouth
+  rotate: false
+  xy: 61, 1943
+  size: 73, 68
+  orig: 73, 68
+  offset: 0, 0
+  index: -1
+neck_1
+  rotate: true
+  xy: 1681, 1344
+  size: 194, 231
+  orig: 194, 231
+  offset: 0, 0
+  index: -1
+neck_2
+  rotate: false
+  xy: 596, 1934
+  size: 163, 77
+  orig: 163, 77
+  offset: 0, 0
+  index: -1
+neck_3
+  rotate: true
+  xy: 511, 1937
+  size: 74, 83
+  orig: 74, 83
+  offset: 0, 0
+  index: -1
+shoelace_L
+  rotate: true
+  xy: 2, 1687
+  size: 144, 195
+  orig: 144, 195
+  offset: 0, 0
+  index: -1
+shoelace_R
+  rotate: true
+  xy: 930, 1791
+  size: 139, 184
+  orig: 139, 184
+  offset: 0, 0
+  index: -1
+
+Yury_Avator2.png
+size: 2043,1708
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+arm_L1
+  rotate: true
+  xy: 2, 615
+  size: 406, 527
+  orig: 406, 527
+  offset: 0, 0
+  index: -1
+arm_L2_costume_1
+  rotate: false
+  xy: 531, 540
+  size: 530, 408
+  orig: 530, 408
+  offset: 0, 0
+  index: -1
+arm_L2_costume_2
+  rotate: true
+  xy: 1249, 840
+  size: 510, 404
+  orig: 510, 404
+  offset: 0, 0
+  index: -1
+bottom_costume_F
+  rotate: false
+  xy: 2, 84
+  size: 603, 454
+  orig: 603, 454
+  offset: 0, 0
+  index: -1
+bust_costume_1
+  rotate: true
+  xy: 1680, 1094
+  size: 612, 361
+  orig: 612, 361
+  offset: 0, 0
+  index: -1
+bust_costume_2
+  rotate: false
+  xy: 1073, 1352
+  size: 605, 354
+  orig: 605, 354
+  offset: 0, 0
+  index: -1
+face1
+  rotate: false
+  xy: 786, 950
+  size: 461, 400
+  orig: 461, 400
+  offset: 0, 0
+  index: -1
+foot_L2
+  rotate: true
+  xy: 2, 1405
+  size: 301, 1069
+  orig: 301, 1069
+  offset: 0, 0
+  index: -1
+foot_R1
+  rotate: true
+  xy: 607, 2
+  size: 402, 1211
+  orig: 402, 1211
+  offset: 0, 0
+  index: -1
+foot_R2
+  rotate: true
+  xy: 2, 1023
+  size: 380, 782
+  orig: 380, 782
+  offset: 0, 0
+  index: -1
+skirt_1_2
+  rotate: false
+  xy: 1063, 406
+  size: 703, 432
+  orig: 703, 432
+  offset: 0, 0
+  index: -1
+
+Yury_Avator3.png
+size: 1899,1915
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 707, 2
+  size: 643, 778
+  orig: 643, 778
+  offset: 0, 0
+  index: -1
+bottom
+  rotate: true
+  xy: 1352, 14
+  size: 730, 529
+  orig: 730, 529
+  offset: 0, 0
+  index: -1
+face
+  rotate: false
+  xy: 1404, 746
+  size: 461, 550
+  orig: 461, 550
+  offset: 0, 0
+  index: -1
+foot_L1
+  rotate: false
+  xy: 2, 749
+  size: 408, 1164
+  orig: 408, 1164
+  offset: 0, 0
+  index: -1
+hair_B_F
+  rotate: true
+  xy: 2, 13
+  size: 734, 703
+  orig: 734, 703
+  offset: 0, 0
+  index: -1
+skirt_1
+  rotate: false
+  xy: 412, 782
+  size: 990, 569
+  orig: 990, 569
+  offset: 0, 0
+  index: -1
+skirt_2
+  rotate: false
+  xy: 412, 1353
+  size: 1003, 560
+  orig: 1003, 560
+  offset: 0, 0
+  index: -1
+top
+  rotate: true
+  xy: 1417, 1298
+  size: 615, 480
+  orig: 615, 480
+  offset: 0, 0
+  index: -1

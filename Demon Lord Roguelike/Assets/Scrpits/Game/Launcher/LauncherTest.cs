@@ -26,7 +26,7 @@ public class LauncherTest : BaseLauncher
             //镜头初始化
             CameraHandler.Instance.InitData();
             //环境参数初始化
-            VolumeHandler.Instance.InitData();
+            VolumeHandler.Instance.InitData(GameSceneTypeEnum.Fight);
             //测试数据
             GameHandler.Instance.StartGameFight(fightData);
         });

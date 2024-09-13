@@ -1,0 +1,523 @@
+
+Suyite_Avator.png
+size: 2035,1994
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bang
+  rotate: true
+  xy: 563, 1787
+  size: 126, 174
+  orig: 126, 174
+  offset: 0, 0
+  index: -1
+body
+  rotate: true
+  xy: 479, 590
+  size: 359, 985
+  orig: 359, 985
+  offset: 0, 0
+  index: -1
+clothes1
+  rotate: false
+  xy: 2, 1408
+  size: 256, 234
+  orig: 256, 234
+  offset: 0, 0
+  index: -1
+clothes2
+  rotate: false
+  xy: 794, 2
+  size: 591, 586
+  orig: 591, 586
+  offset: 0, 0
+  index: -1
+clothes3
+  rotate: false
+  xy: 739, 1782
+  size: 302, 126
+  orig: 302, 126
+  offset: 0, 0
+  index: -1
+face1
+  rotate: true
+  xy: 1304, 1255
+  size: 279, 283
+  orig: 279, 283
+  offset: 0, 0
+  index: -1
+forearm1
+  rotate: false
+  xy: 1702, 1697
+  size: 238, 192
+  orig: 238, 192
+  offset: 0, 0
+  index: -1
+forearm2
+  rotate: true
+  xy: 1599, 1465
+  size: 230, 241
+  orig: 230, 241
+  offset: 0, 0
+  index: -1
+gen2
+  rotate: false
+  xy: 2, 203
+  size: 790, 385
+  orig: 790, 385
+  offset: 0, 0
+  index: -1
+hair1
+  rotate: true
+  xy: 813, 1556
+  size: 197, 249
+  orig: 197, 249
+  offset: 0, 0
+  index: -1
+hair2
+  rotate: true
+  xy: 2, 1644
+  size: 167, 405
+  orig: 167, 405
+  offset: 0, 0
+  index: -1
+hair3
+  rotate: true
+  xy: 1229, 1750
+  size: 150, 191
+  orig: 150, 191
+  offset: 0, 0
+  index: -1
+hair4
+  rotate: false
+  xy: 1589, 992
+  size: 444, 471
+  orig: 444, 471
+  offset: 0, 0
+  index: -1
+hong
+  rotate: false
+  xy: 1204, 1905
+  size: 185, 87
+  orig: 185, 87
+  offset: 0, 0
+  index: -1
+horn 1
+  rotate: true
+  xy: 579, 1915
+  size: 77, 373
+  orig: 77, 373
+  offset: 0, 0
+  index: -1
+horn 2
+  rotate: true
+  xy: 260, 1324
+  size: 266, 276
+  orig: 266, 276
+  offset: 0, 0
+  index: -1
+left eye shadow1
+  rotate: false
+  xy: 1391, 1902
+  size: 95, 90
+  orig: 95, 90
+  offset: 0, 0
+  index: -1
+left eye shadow2
+  rotate: false
+  xy: 482, 1924
+  size: 95, 68
+  orig: 95, 68
+  offset: 0, 0
+  index: -1
+left eye shadow3
+  rotate: false
+  xy: 1488, 1902
+  size: 94, 90
+  orig: 94, 90
+  offset: 0, 0
+  index: -1
+left eye shadow4
+  rotate: false
+  xy: 1584, 1902
+  size: 95, 90
+  orig: 95, 90
+  offset: 0, 0
+  index: -1
+left eye shadow5
+  rotate: true
+  xy: 954, 1910
+  size: 82, 151
+  orig: 82, 151
+  offset: 0, 0
+  index: -1
+leg1
+  rotate: false
+  xy: 1550, 262
+  size: 430, 728
+  orig: 430, 728
+  offset: 0, 0
+  index: -1
+leg2
+  rotate: true
+  xy: 538, 1315
+  size: 234, 764
+  orig: 234, 764
+  offset: 0, 0
+  index: -1
+main arm1
+  rotate: false
+  xy: 1422, 1737
+  size: 278, 154
+  orig: 278, 154
+  offset: 0, 0
+  index: -1
+main arm2
+  rotate: false
+  xy: 273, 1813
+  size: 288, 109
+  orig: 288, 109
+  offset: 0, 0
+  index: -1
+month1
+  rotate: false
+  xy: 50, 1942
+  size: 76, 50
+  orig: 76, 50
+  offset: 0, 0
+  index: -1
+month2
+  rotate: true
+  xy: 377, 1928
+  size: 64, 103
+  orig: 64, 103
+  offset: 0, 0
+  index: -1
+month3
+  rotate: true
+  xy: 2, 1949
+  size: 43, 46
+  orig: 43, 46
+  offset: 0, 0
+  index: -1
+month4
+  rotate: false
+  xy: 128, 1942
+  size: 76, 50
+  orig: 76, 50
+  offset: 0, 0
+  index: -1
+month5
+  rotate: false
+  xy: 206, 1938
+  size: 63, 54
+  orig: 63, 54
+  offset: 0, 0
+  index: -1
+neck
+  rotate: false
+  xy: 1107, 1907
+  size: 95, 85
+  orig: 95, 85
+  offset: 0, 0
+  index: -1
+palm1
+  rotate: true
+  xy: 409, 1592
+  size: 193, 200
+  orig: 193, 200
+  offset: 0, 0
+  index: -1
+palm2
+  rotate: true
+  xy: 611, 1587
+  size: 193, 200
+  orig: 193, 200
+  offset: 0, 0
+  index: -1
+right eyelid1
+  rotate: true
+  xy: 1834, 1891
+  size: 101, 139
+  orig: 101, 139
+  offset: 0, 0
+  index: -1
+right eyelid2
+  rotate: true
+  xy: 1681, 1893
+  size: 99, 151
+  orig: 99, 151
+  offset: 0, 0
+  index: -1
+right eyelid3
+  rotate: true
+  xy: 2, 1839
+  size: 101, 138
+  orig: 101, 138
+  offset: 0, 0
+  index: -1
+right eyelid4
+  rotate: true
+  xy: 142, 1822
+  size: 107, 129
+  orig: 107, 129
+  offset: 0, 0
+  index: -1
+right eyelid5
+  rotate: false
+  xy: 271, 1931
+  size: 104, 61
+  orig: 104, 61
+  offset: 0, 0
+  index: -1
+saliva1
+  rotate: true
+  xy: 1064, 1551
+  size: 197, 268
+  orig: 197, 268
+  offset: 0, 0
+  index: -1
+thigh1
+  rotate: false
+  xy: 2, 1027
+  size: 464, 295
+  orig: 464, 295
+  offset: 0, 0
+  index: -1
+thigh2
+  rotate: true
+  xy: 468, 1013
+  size: 300, 535
+  orig: 300, 535
+  offset: 0, 0
+  index: -1
+tongue1
+  rotate: true
+  xy: 1043, 1755
+  size: 148, 184
+  orig: 148, 184
+  offset: 0, 0
+  index: -1
+tongue3
+  rotate: false
+  xy: 1334, 1536
+  size: 263, 199
+  orig: 263, 199
+  offset: 0, 0
+  index: -1
+tongue4
+  rotate: true
+  xy: 2, 690
+  size: 321, 475
+  orig: 321, 475
+  offset: 0, 0
+  index: -1
+tooth2
+  rotate: false
+  xy: 1005, 951
+  size: 543, 302
+  orig: 543, 302
+  offset: 0, 0
+  index: -1
+
+Suyite_Avator2.png
+size: 1759,2045
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+flower4
+  rotate: false
+  xy: 2, 398
+  size: 1755, 1645
+  orig: 1755, 1645
+  offset: 0, 0
+  index: -1
+hide hair1
+  rotate: false
+  xy: 2, 2
+  size: 788, 394
+  orig: 788, 394
+  offset: 0, 0
+  index: -1
+
+Suyite_Avator3.png
+size: 2005,1913
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+flower2
+  rotate: true
+  xy: 1410, 2
+  size: 774, 587
+  orig: 774, 587
+  offset: 0, 0
+  index: -1
+gen1
+  rotate: false
+  xy: 2, 1503
+  size: 1334, 408
+  orig: 1334, 408
+  offset: 0, 0
+  index: -1
+hide hair4
+  rotate: false
+  xy: 2, 385
+  size: 640, 638
+  orig: 640, 638
+  offset: 0, 0
+  index: -1
+light1
+  rotate: false
+  xy: 764, 778
+  size: 1239, 528
+  orig: 1239, 528
+  offset: 0, 0
+  index: -1
+light3
+  rotate: false
+  xy: 644, 241
+  size: 764, 535
+  orig: 764, 535
+  offset: 0, 0
+  index: -1
+tongue2
+  rotate: true
+  xy: 1338, 1308
+  size: 603, 660
+  orig: 603, 660
+  offset: 0, 0
+  index: -1
+tooth1
+  rotate: false
+  xy: 2, 1025
+  size: 760, 476
+  orig: 760, 476
+  offset: 0, 0
+  index: -1
+
+Suyite_Avator4.png
+size: 1834,1966
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+cloak
+  rotate: false
+  xy: 2, 704
+  size: 1830, 633
+  orig: 1830, 633
+  offset: 0, 0
+  index: -1
+flower3
+  rotate: false
+  xy: 834, 1339
+  size: 876, 625
+  orig: 876, 625
+  offset: 0, 0
+  index: -1
+hide hair2
+  rotate: false
+  xy: 2, 1358
+  size: 830, 606
+  orig: 830, 606
+  offset: 0, 0
+  index: -1
+hide hair5
+  rotate: true
+  xy: 748, 2
+  size: 700, 885
+  orig: 700, 885
+  offset: 0, 0
+  index: -1
+hide hair6
+  rotate: true
+  xy: 2, 4
+  size: 698, 744
+  orig: 698, 744
+  offset: 0, 0
+  index: -1
+
+Suyite_Avator5.png
+size: 1750,1544
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gen3
+  rotate: false
+  xy: 2, 794
+  size: 1746, 748
+  orig: 1746, 748
+  offset: 0, 0
+  index: -1
+light2
+  rotate: false
+  xy: 2, 2
+  size: 1607, 790
+  orig: 1607, 790
+  offset: 0, 0
+  index: -1
+
+Suyite_Avator6.png
+size: 1925,1273
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+light4
+  rotate: false
+  xy: 2, 2
+  size: 1921, 1269
+  orig: 1921, 1269
+  offset: 0, 0
+  index: -1
+
+Suyite_Avator7.png
+size: 1396,1560
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+hide hair3
+  rotate: false
+  xy: 2, 2
+  size: 1392, 1556
+  orig: 1392, 1556
+  offset: 0, 0
+  index: -1
+
+Suyite_Avator8.png
+size: 1337,1814
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+flower1
+  rotate: false
+  xy: 2, 833
+  size: 1333, 979
+  orig: 1333, 979
+  offset: 0, 0
+  index: -1
+saliva3
+  rotate: false
+  xy: 2, 2
+  size: 1296, 829
+  orig: 1296, 829
+  offset: 0, 0
+  index: -1
+
+Suyite_Avator9.png
+size: 1300,2047
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gen5
+  rotate: false
+  xy: 2, 2
+  size: 1101, 791
+  orig: 1101, 791
+  offset: 0, 0
+  index: -1
+saliva2
+  rotate: false
+  xy: 2, 795
+  size: 1296, 1250
+  orig: 1296, 1250
+  offset: 0, 0
+  index: -1

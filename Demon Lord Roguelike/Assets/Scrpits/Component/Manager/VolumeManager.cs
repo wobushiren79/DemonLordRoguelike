@@ -6,6 +6,9 @@ using UnityEngine.Rendering.Universal;
 
 public class VolumeManager : BaseManager
 {
+    public Dictionary<string, Material> dicSkybox = new Dictionary<string, Material>();
+
+
     //»ù´¡ÉèÖÃ
     protected Volume _volume;
     public Volume volume

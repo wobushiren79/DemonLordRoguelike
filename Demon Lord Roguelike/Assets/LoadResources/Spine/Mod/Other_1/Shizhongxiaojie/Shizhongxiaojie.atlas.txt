@@ -1,0 +1,237 @@
+
+Shizhongxiaojie.png
+size: 554,269
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+adorn
+  rotate: false
+  xy: 140, 7
+  size: 23, 22
+  orig: 23, 22
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 501, 45
+  size: 39, 36
+  orig: 39, 36
+  offset: 0, 0
+  index: -1
+brow
+  rotate: false
+  xy: 45, 29
+  size: 57, 6
+  orig: 57, 6
+  offset: 0, 0
+  index: -1
+effect1
+  rotate: true
+  xy: 468, 13
+  size: 19, 38
+  orig: 19, 38
+  offset: 0, 0
+  index: -1
+effect2
+  rotate: true
+  xy: 45, 4
+  size: 23, 38
+  orig: 23, 38
+  offset: 0, 0
+  index: -1
+face
+  rotate: false
+  xy: 414, 181
+  size: 93, 86
+  orig: 93, 86
+  offset: 0, 0
+  index: -1
+gaoguang
+  rotate: true
+  xy: 543, 128
+  size: 45, 9
+  orig: 45, 9
+  offset: 0, 0
+  index: -1
+hair1
+  rotate: false
+  xy: 503, 83
+  size: 38, 90
+  orig: 38, 90
+  offset: 0, 0
+  index: -1
+hair10
+  rotate: true
+  xy: 140, 31
+  size: 36, 60
+  orig: 36, 60
+  offset: 0, 0
+  index: -1
+hair11
+  rotate: false
+  xy: 202, 17
+  size: 66, 62
+  orig: 66, 62
+  offset: 0, 0
+  index: -1
+hair12
+  rotate: false
+  xy: 428, 100
+  size: 73, 79
+  orig: 73, 79
+  offset: 0, 0
+  index: -1
+hair13
+  rotate: false
+  xy: 428, 34
+  size: 71, 64
+  orig: 71, 64
+  offset: 0, 0
+  index: -1
+hair14
+  rotate: false
+  xy: 509, 175
+  size: 42, 92
+  orig: 42, 92
+  offset: 0, 0
+  index: -1
+hair2
+  rotate: true
+  xy: 198, 81
+  size: 95, 167
+  orig: 95, 167
+  offset: 0, 0
+  index: -1
+hair4
+  rotate: false
+  xy: 2, 69
+  size: 194, 198
+  orig: 194, 198
+  offset: 0, 0
+  index: -1
+hair9
+  rotate: true
+  xy: 367, 72
+  size: 104, 59
+  orig: 104, 59
+  offset: 0, 0
+  index: -1
+hand1
+  rotate: false
+  xy: 508, 4
+  size: 36, 39
+  orig: 36, 39
+  offset: 0, 0
+  index: -1
+hand4
+  rotate: true
+  xy: 2, 6
+  size: 29, 41
+  orig: 29, 41
+  offset: 0, 0
+  index: -1
+lash1
+  rotate: true
+  xy: 85, 6
+  size: 21, 17
+  orig: 21, 17
+  offset: 0, 0
+  index: -1
+lash2
+  rotate: false
+  xy: 104, 16
+  size: 34, 19
+  orig: 34, 19
+  offset: 0, 0
+  index: -1
+lefthand
+  rotate: true
+  xy: 345, 2
+  size: 31, 39
+  orig: 31, 39
+  offset: 0, 0
+  index: -1
+leg1
+  rotate: true
+  xy: 386, 5
+  size: 28, 39
+  orig: 28, 39
+  offset: 0, 0
+  index: -1
+leg2
+  rotate: true
+  xy: 311, 44
+  size: 35, 54
+  orig: 35, 54
+  offset: 0, 0
+  index: -1
+leg3
+  rotate: true
+  xy: 427, 8
+  size: 24, 39
+  orig: 24, 39
+  offset: 0, 0
+  index: -1
+leg4
+  rotate: false
+  xy: 270, 25
+  size: 39, 54
+  orig: 39, 54
+  offset: 0, 0
+  index: -1
+mouth
+  rotate: false
+  xy: 270, 20
+  size: 6, 3
+  orig: 6, 3
+  offset: 0, 0
+  index: -1
+righthand
+  rotate: true
+  xy: 311, 2
+  size: 40, 32
+  orig: 40, 32
+  offset: 0, 0
+  index: -1
+sword1
+  rotate: false
+  xy: 198, 178
+  size: 214, 89
+  orig: 214, 89
+  offset: 0, 0
+  index: -1
+sword2
+  rotate: false
+  xy: 2, 37
+  size: 136, 30
+  orig: 136, 30
+  offset: 0, 0
+  index: -1
+yanbai
+  rotate: false
+  xy: 367, 52
+  size: 59, 18
+  orig: 59, 18
+  offset: 0, 0
+  index: -1
+yanjing
+  rotate: false
+  xy: 367, 35
+  size: 59, 15
+  orig: 59, 15
+  offset: 0, 0
+  index: -1
+yanzhu1
+  rotate: false
+  xy: 165, 9
+  size: 15, 20
+  orig: 15, 20
+  offset: 0, 0
+  index: -1
+yanzhu2
+  rotate: false
+  xy: 542, 63
+  size: 10, 18
+  orig: 10, 18
+  offset: 0, 0
+  index: -1

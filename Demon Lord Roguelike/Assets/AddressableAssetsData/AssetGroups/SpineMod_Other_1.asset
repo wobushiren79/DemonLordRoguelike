@@ -457,6 +457,56 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ba58b22959ea66a478ebefd662ad8793
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Sonia/Sonia_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9ed3e37d1bb59774fa6d9c02c749eba5
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Sion/Sion_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 90b620f1f0337974bb1dd74236d8f957
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Shizhongxiaojie/Shizhongxiaojie_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 40024a13ef97d3a4284c09fdb0eae297
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Shizhongxiaojie/Shizhongxiaojie_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d0b99ab53015bd4408bfe6a76af77d95
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Sion/Sion_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 00f872a031a313548a5a166193835038
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Sonia/Sonia_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fde6497773fd5ed4c9c567bdddcf0ec0
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Suyite/Suyite_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 543d87e7217aa42409f43a88795f3a7d
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Yury/Yury_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8016378b8ea04f647b2d1f37b8229bfd
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Suyite/Suyite_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c12592d4d7166c14b8331ee3a14447b3
+    m_Address: Assets/LoadResources/Spine/Mod/Other_1/Yury/Yury_Avator_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}
   m_SchemaSet:

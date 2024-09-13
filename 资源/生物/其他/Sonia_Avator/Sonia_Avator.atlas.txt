@@ -1,0 +1,382 @@
+
+Sonia_Avator.png
+size: 3962,3550
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Back side of bangs
+  rotate: true
+  xy: 454, 3265
+  size: 215, 495
+  orig: 215, 495
+  offset: 0, 0
+  index: -1
+Cheek
+  rotate: false
+  xy: 2723, 3389
+  size: 379, 159
+  orig: 379, 159
+  offset: 0, 0
+  index: -1
+Head
+  rotate: true
+  xy: 2413, 1684
+  size: 504, 614
+  orig: 504, 614
+  offset: 0, 0
+  index: -1
+In front of sideburns
+  rotate: true
+  xy: 1259, 2878
+  size: 322, 795
+  orig: 322, 795
+  offset: 0, 0
+  index: -1
+back of waist armor
+  rotate: false
+  xy: 2842, 3045
+  size: 689, 312
+  orig: 689, 312
+  offset: 0, 0
+  index: -1
+bangs left
+  rotate: true
+  xy: 951, 3242
+  size: 231, 336
+  orig: 231, 336
+  offset: 0, 0
+  index: -1
+bangs right
+  rotate: true
+  xy: 2, 3291
+  size: 196, 450
+  orig: 196, 450
+  offset: 0, 0
+  index: -1
+below the knee
+  rotate: true
+  xy: 961, 1184
+  size: 599, 1363
+  orig: 599, 1363
+  offset: 0, 0
+  index: -1
+body
+  rotate: true
+  xy: 782, 372
+  size: 810, 1183
+  orig: 810, 1183
+  offset: 0, 0
+  index: -1
+clothes
+  rotate: true
+  xy: 1967, 2
+  size: 909, 1340
+  orig: 909, 1340
+  offset: 0, 0
+  index: -1
+eyebrows
+  rotate: false
+  xy: 772, 3482
+  size: 339, 66
+  orig: 339, 66
+  offset: 0, 0
+  index: -1
+eyelash
+  rotate: false
+  xy: 1969, 3460
+  size: 351, 88
+  orig: 351, 88
+  offset: 0, 0
+  index: -1
+eyelash１
+  rotate: false
+  xy: 1113, 3475
+  size: 322, 73
+  orig: 322, 73
+  offset: 0, 0
+  index: -1
+eyelid
+  rotate: false
+  xy: 129, 3496
+  size: 175, 52
+  orig: 175, 52
+  offset: 0, 0
+  index: -1
+eyelid１
+  rotate: false
+  xy: 574, 3483
+  size: 196, 65
+  orig: 196, 65
+  offset: 0, 0
+  index: -1
+finger
+  rotate: true
+  xy: 2322, 3454
+  size: 94, 181
+  orig: 94, 181
+  offset: 0, 0
+  index: -1
+finger2
+  rotate: false
+  xy: 3104, 3359
+  size: 224, 189
+  orig: 224, 189
+  offset: 0, 0
+  index: -1
+front of bangs
+  rotate: true
+  xy: 1603, 3202
+  size: 256, 490
+  orig: 256, 490
+  offset: 0, 0
+  index: -1
+hand
+  rotate: true
+  xy: 3533, 3037
+  size: 318, 375
+  orig: 318, 375
+  offset: 0, 0
+  index: -1
+head ribbon
+  rotate: false
+  xy: 3029, 1532
+  size: 712, 656
+  orig: 712, 656
+  offset: 0, 0
+  index: -1
+left arm
+  rotate: true
+  xy: 1096, 2457
+  size: 419, 492
+  orig: 419, 492
+  offset: 0, 0
+  index: -1
+left bust
+  rotate: true
+  xy: 2, 2519
+  size: 412, 451
+  orig: 412, 451
+  offset: 0, 0
+  index: -1
+left hand
+  rotate: false
+  xy: 2412, 3082
+  size: 428, 305
+  orig: 428, 305
+  offset: 0, 0
+  index: -1
+left hand 2
+  rotate: false
+  xy: 863, 2882
+  size: 394, 358
+  orig: 394, 358
+  offset: 0, 0
+  index: -1
+left hand finger
+  rotate: true
+  xy: 1289, 3232
+  size: 239, 312
+  orig: 239, 312
+  offset: 0, 0
+  index: -1
+left leg
+  rotate: true
+  xy: 1590, 2251
+  size: 433, 1250
+  orig: 433, 1250
+  offset: 0, 0
+  index: -1
+left leg knee
+  rotate: true
+  xy: 455, 2464
+  size: 416, 639
+  orig: 416, 639
+  offset: 0, 0
+  index: -1
+left shoulder
+  rotate: false
+  xy: 2056, 2715
+  size: 414, 365
+  orig: 414, 365
+  offset: 0, 0
+  index: -1
+loincloth right
+  rotate: true
+  xy: 2, 1271
+  size: 701, 957
+  orig: 701, 957
+  offset: 0, 0
+  index: -1
+lower eyelashes
+  rotate: false
+  xy: 306, 3489
+  size: 266, 59
+  orig: 266, 59
+  offset: 0, 0
+  index: -1
+middle of bangs
+  rotate: true
+  xy: 3330, 3359
+  size: 189, 350
+  orig: 189, 350
+  offset: 0, 0
+  index: -1
+middle of bust
+  rotate: true
+  xy: 3682, 3357
+  size: 191, 278
+  orig: 191, 278
+  offset: 0, 0
+  index: -1
+mouth
+  rotate: false
+  xy: 2, 3517
+  size: 77, 31
+  orig: 77, 31
+  offset: 0, 0
+  index: -1
+neck
+  rotate: true
+  xy: 2095, 3179
+  size: 273, 315
+  orig: 273, 315
+  offset: 0, 0
+  index: -1
+neck ornament
+  rotate: false
+  xy: 2505, 3430
+  size: 216, 118
+  orig: 216, 118
+  offset: 0, 0
+  index: -1
+nose
+  rotate: true
+  xy: 81, 3517
+  size: 31, 46
+  orig: 31, 46
+  offset: 0, 0
+  index: -1
+pewter
+  rotate: false
+  xy: 1437, 3473
+  size: 289, 75
+  orig: 289, 75
+  offset: 0, 0
+  index: -1
+pupil
+  rotate: false
+  xy: 1728, 3473
+  size: 239, 75
+  orig: 239, 75
+  offset: 0, 0
+  index: -1
+right bust
+  rotate: true
+  xy: 3304, 2645
+  size: 390, 468
+  orig: 390, 468
+  offset: 0, 0
+  index: -1
+right elbow
+  rotate: true
+  xy: 2, 1991
+  size: 471, 661
+  orig: 471, 661
+  offset: 0, 0
+  index: -1
+right knee below
+  rotate: true
+  xy: 2326, 913
+  size: 617, 1293
+  orig: 617, 1293
+  offset: 0, 0
+  index: -1
+right leg
+  rotate: true
+  xy: 1193, 1785
+  size: 464, 1218
+  orig: 464, 1218
+  offset: 0, 0
+  index: -1
+right leg knee
+  rotate: true
+  xy: 665, 1974
+  size: 481, 526
+  orig: 481, 526
+  offset: 0, 0
+  index: -1
+right shoulder
+  rotate: false
+  xy: 2, 2952
+  size: 374, 337
+  orig: 374, 337
+  offset: 0, 0
+  index: -1
+right wrist
+  rotate: true
+  xy: 378, 2933
+  size: 330, 483
+  orig: 330, 483
+  offset: 0, 0
+  index: -1
+sideburns
+  rotate: true
+  xy: 2472, 2686
+  size: 357, 830
+  orig: 357, 830
+  offset: 0, 0
+  index: -1
+waist
+  rotate: false
+  xy: 2842, 2190
+  size: 1114, 453
+  orig: 1114, 453
+  offset: 0, 0
+  index: -1
+waist belt
+  rotate: false
+  xy: 2, 499
+  size: 778, 770
+  orig: 778, 770
+  offset: 0, 0
+  index: -1
+
+Sonia_Avator2.png
+size: 3677,3310
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+hair
+  rotate: true
+  xy: 2, 2352
+  size: 956, 1943
+  orig: 956, 1943
+  offset: 0, 0
+  index: -1
+loincloth left
+  rotate: true
+  xy: 2, 2
+  size: 1274, 2311
+  orig: 1274, 2311
+  offset: 0, 0
+  index: -1
+sword
+  rotate: true
+  xy: 2, 1278
+  size: 1072, 3673
+  orig: 1072, 3673
+  offset: 0, 0
+  index: -1
+
+Sonia_Avator3.png
+size: 2119,2073
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+behind frill
+  rotate: false
+  xy: 2, 2
+  size: 2115, 2069
+  orig: 2115, 2069
+  offset: 0, 0
+  index: -1

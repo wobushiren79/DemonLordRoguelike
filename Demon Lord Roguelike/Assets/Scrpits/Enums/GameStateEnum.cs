@@ -50,6 +50,14 @@ public enum GameFightPrefabStateEnum
     Droping = 2,//拾取中
 }
 
+//游戏场景
+public enum GameSceneTypeEnum
+{
+    None = 0,
+    Base = 1,//基地
+    Fight = 2,//战斗
+}
+
 public enum TestSceneTypeEnum
 {
     None = 0,

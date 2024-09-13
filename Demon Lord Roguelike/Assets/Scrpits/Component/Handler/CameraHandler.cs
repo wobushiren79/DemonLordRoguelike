@@ -90,6 +90,14 @@ public partial class CameraHandler
     }
 
     /// <summary>
+    /// 设置传送门
+    /// </summary>
+    public CinemachineVirtualCamera SetBasePortalCamera(int priority, bool isEnable)
+    {
+        return SetCameraForBaseScene(priority, isEnable, "CV_Portal");
+    }
+
+    /// <summary>
     /// 设置扭蛋机UI
     /// </summary>
     public CinemachineVirtualCamera SetGashaponMachineCamera(int priority, bool isEnable)
