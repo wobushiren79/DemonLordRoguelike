@@ -14,9 +14,11 @@ public partial class UIBasePortal : BaseUIComponent
         //开启控制
         GameControlHandler.Instance.SetBaseControl(false);
         //开启摄像头
-        CameraHandler.Instance.SetBasePortalCamera(int.MaxValue,true);
+        CameraHandler.Instance.SetBasePortalCamera(int.MaxValue, true);
         //关闭远景
         VolumeHandler.Instance.SetDepthOfFieldActive(false);
+        //初始化地图
+        InitMap();
     }
 
     public override void CloseUI()
@@ -24,6 +26,23 @@ public partial class UIBasePortal : BaseUIComponent
         base.CloseUI();
         //关闭远景
         VolumeHandler.Instance.SetDepthOfFieldActive(true);
+        ui_MapContent.DestroyAllChild();
+    }
+
+    /// <summary>
+    /// 初始化地图
+    /// </summary>
+    public void InitMap()
+    {
+        var allWorldData = GameWorldInfoCfg.GetAllData();
+        foreach (var item in allWorldData)
+        {
+            var worldInfo = item.Value;
+            GameObject objItem = Instantiate(ui_Content.gameObject, ui_UIViewBasePortalItem.gameObject);
+            objItem.ShowObj(true);
+            UIViewBasePortalItem itemView = objItem.GetComponent<UIViewBasePortalItem>();
+            itemView.SetData(worldInfo);
+        }
     }
 
     public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)

@@ -1,0 +1,1 @@
+[{"icon_res":"","map_pos":"0,0","remark":"","id":1,"valid":0,"name_cn":"剑与魔法","name_en":"Sword and Magic"}]

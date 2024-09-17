@@ -7,6 +7,7 @@ public partial class UIDialogNormal : DialogView
     public override void SetData(DialogBean dialogData)
     {
         base.SetData(dialogData);
+        UGUIUtil.RefreshUISize(ui_ContentShow);
         UGUIUtil.RefreshUISize(ui_DialogContent);
     }
 }

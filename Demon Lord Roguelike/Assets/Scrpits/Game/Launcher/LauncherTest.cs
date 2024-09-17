@@ -22,7 +22,7 @@ public class LauncherTest : BaseLauncher
         WorldHandler.Instance.ClearWorldData(() =>
         {
             //打开加载UI
-            UIHandler.Instance.OpenUIAndCloseOther<UILoading>();
+            UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
             //镜头初始化
             CameraHandler.Instance.InitData();
             //环境参数初始化

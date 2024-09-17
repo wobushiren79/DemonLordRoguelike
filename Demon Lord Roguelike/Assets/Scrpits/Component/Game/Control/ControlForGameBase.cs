@@ -39,6 +39,7 @@ public class ControlForGameBase : BaseControl
     public void Update()
     {
         HandleForInteraction();
+        HandleForCameraBlock();
     }
 
     public void FixedUpdate()
@@ -131,7 +132,7 @@ public class ControlForGameBase : BaseControl
     /// 处理交互
     /// </summary>
     public void HandleForInteraction()
-    {
+    { 
         if (!enabledControl)
             return;
         timeUpdateForInteraction += Time.deltaTime;
@@ -155,6 +156,15 @@ public class ControlForGameBase : BaseControl
             }
         }
     }
+
+    /// <summary>
+    /// 处理视线阻挡
+    /// </summary>
+    public void HandleForCameraBlock()
+    {
+        //RayUtil.RayToScreenPointForScreenCenter(100, 1 << LayerInfo.Obstacle, out bool isHit, out RaycastHit hit);
+    }
+
 
     public void HandleForUseEDown(CallbackContext callback)
     {

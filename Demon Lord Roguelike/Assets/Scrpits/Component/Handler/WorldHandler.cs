@@ -48,7 +48,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         ClearWorldData(() =>
         {
             //打开加载UI
-            UIHandler.Instance.OpenUIAndCloseOther<UILoading>();
+            UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
             //镜头初始化
             CameraHandler.Instance.InitData();
             //环境参数初始化
@@ -120,10 +120,11 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     /// <summary>
     /// 清理世界所有数据
     /// </summary>
-    public async void ClearWorldData(Action actionForComplete)
+    public async void ClearWorldData(Action actionForComplete,bool isShowLoading = true)
     {      
         //打开加载UI
-        UIHandler.Instance.OpenUIAndCloseOther<UILoading>();
+        if(isShowLoading)
+            UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
         //关闭所有控制
         GameControlHandler.Instance.manager.EnableAllControl(false);
 
