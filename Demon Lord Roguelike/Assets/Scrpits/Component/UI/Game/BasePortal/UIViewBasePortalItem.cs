@@ -19,12 +19,11 @@ public partial class UIViewBasePortalItem : BaseUIView
     /// <summary>
     /// …Ë÷√ ˝æ›
     /// </summary>
-    /// <param name="gameWorldInfo"></param>
-    public void SetData(GameWorldInfoBean gameWorldInfo)
+    public void SetData(GameWorldInfoBean gameWorldInfo, int difficultyLevel, Vector2 targetMapPos)
     {
         this.gameWorldInfo = gameWorldInfo;
 
-        Vector2 targetMapPos = gameWorldInfo.GetMapPosition();
+        //Vector2 targetMapPos = gameWorldInfo.GetMapPosition();
         SetMapPosition(targetMapPos);
 
         string targetName = gameWorldInfo.GetName();
@@ -65,20 +64,26 @@ public partial class UIViewBasePortalItem : BaseUIView
         dialogData.content = string.Format(TextHandler.Instance.GetTextById(401), gameWorldInfo.GetName());
         dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
         dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
+        float animTimeForShowMask = 2f;
+        float animTimeForHideMask = 1f;
         dialogData.actionSubmit = ((view, data) =>
         {
-            UIHandler.Instance.ShowMask(2f, null, () =>
+            UIHandler.Instance.ShowMask(animTimeForShowMask, null, () =>
             {
                 WorldHandler.Instance.ClearWorldData(() =>
                 {
-                    UIHandler.Instance.HideMask(2f,
+                    UIHandler.Instance.HideMask(animTimeForHideMask,
                         () =>
                         {
+                            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+                            GameWorldMapBean gameWorldMapData = GameHandler.Instance.CreateGameWorldMapData(gameWorldInfo.id);
+                            userData.gameWorldMapData = gameWorldMapData;
                             var mapUI = UIHandler.Instance.OpenUI<UIGameWorldMap>(layer: 0);
-                        }, 
+                            mapUI.AnimForShowUI(animTimeForHideMask);
+                        },
                         null);
-                },false);
-            });
+                }, false);
+            }, true);
         });
         UIHandler.Instance.ShowDialog<UIDialogNormal>(dialogData);
     }

@@ -29,6 +29,15 @@ public class GameHandler : BaseHandler<GameHandler,GameManager>
     }
 
     /// <summary>
+    /// 创建游戏世界地图数据
+    /// </summary>
+    public GameWorldMapBean CreateGameWorldMapData(long worldId)
+    {
+        GameWorldMapBean gameWorldMapData = new GameWorldMapBean(worldId);
+        return gameWorldMapData;
+    }
+
+    /// <summary>
     /// 结束游戏战斗-强制
     /// </summary>
     public void EndGameFight()

@@ -5,9 +5,17 @@ using UnityEngine;
 
 public partial class UIHandler
 {
-    public void ShowMask(float maskTime, Action acionForStart, Action acionForComplete)
+    public void ShowMask(float maskTime, Action acionForStart, Action acionForComplete, bool isCloseOther)
     {
-        var maskUI = OpenUIAndCloseOther<UICommonMask>();
+        UICommonMask maskUI;
+        if (isCloseOther)
+        {
+            maskUI = OpenUIAndCloseOther<UICommonMask>();
+        }
+        else
+        {
+            maskUI = OpenUI<UICommonMask>();
+        }
         maskUI.StartMask(maskTime, acionForStart, acionForComplete);
     }
 

@@ -28,6 +28,34 @@ public class UserDataBean : BaseBean
     //魔王自己的数据
     public CreatureBean selfCreature;
 
+    //游戏进度地图
+    public GameWorldMapBean gameWorldMapData;
+
+    //用户解锁数据
+    public UserUnlockBean userUnlockData;
+
+    /// <summary>
+    /// 获取用户解锁数据
+    /// </summary>
+    /// <returns></returns>
+    public UserUnlockBean GetUserUnlockData()
+    {
+        if(userUnlockData == null)
+            userUnlockData = new UserUnlockBean();
+        //容错处理
+        if (userUnlockData.unlockWorldMapRefreshNum > 50)
+            userUnlockData.unlockWorldMapRefreshNum = 50;
+        return userUnlockData;
+    }
+
+    /// <summary>
+    /// 清除游戏地图进度
+    /// </summary>
+    public void ClearGameWorldMapData()
+    {
+        gameWorldMapData = null;
+    }
+
     /// <summary>
     /// 增加金币
     /// </summary>
