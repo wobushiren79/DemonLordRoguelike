@@ -287,6 +287,7 @@ GameObject:
   - component: {fileID: 319605162363321523}
   - component: {fileID: 866685959033984927}
   - component: {fileID: 6558164647575660837}
+  - component: {fileID: 3194617661599314916}
   m_Layer: 5
   m_Name: BG
   m_TagString: Untagged
@@ -380,7 +381,7 @@ MonoBehaviour:
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
+    m_HighlightedSprite: {fileID: 21300000, guid: dc14cfb15e0992d4d9a6e94af9103c95, type: 3}
     m_PressedSprite: {fileID: 21300000, guid: dc14cfb15e0992d4d9a6e94af9103c95, type: 3}
     m_SelectedSprite: {fileID: 0}
     m_DisabledSprite: {fileID: 0}
@@ -395,3 +396,16 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3194617661599314916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5752096125685014217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16e10e1ab6287e34bb1c2a56fb2273e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _rectTransform: {fileID: 0}

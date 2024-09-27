@@ -58,9 +58,12 @@ public partial class UIBasePortal : BaseUIComponent
             //随机地图位置
             Vector2 randomMapPos = GetRandomMapPos(listOldPos);
             listOldPos.Add(randomMapPos);
+            //随机关卡长度
+            var difficultyData = worldInfo.GetDifficultyData(randomDifficultyLevel);
+            int randomLevelMax = UnityEngine.Random.Range(difficultyData.minLevelNum, difficultyData.maxLevelNum + 1);
 
             //设置数据
-            itemView.SetData(worldInfo, randomDifficultyLevel, randomMapPos);
+            itemView.SetData(worldInfo, randomDifficultyLevel, randomLevelMax, randomMapPos);
         }
     }
 
@@ -81,7 +84,7 @@ public partial class UIBasePortal : BaseUIComponent
         for (int i = 0; i < listOldPos.Count; i++)
         {
             var itemOldPos = listOldPos[i];
-            if((xRandom > itemOldPos.x - itemWidth)
+            if ((xRandom > itemOldPos.x - itemWidth)
                 && (xRandom < itemOldPos.x + itemWidth)
                 && (yRandom > itemOldPos.y - itemHeight)
                 && (yRandom < itemOldPos.y + itemHeight))

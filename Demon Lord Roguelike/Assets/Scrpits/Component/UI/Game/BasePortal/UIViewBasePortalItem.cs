@@ -6,6 +6,15 @@ using UnityEngine.UI;
 public partial class UIViewBasePortalItem : BaseUIView
 {
     protected GameWorldInfoBean gameWorldInfo;
+    protected int difficulty;
+    protected int maxLevel;
+    protected PopupButtonCommonView popupForPortalDetails;
+
+    public override void Awake()
+    {
+        base.Awake();
+        popupForPortalDetails = ui_BG.GetComponent<PopupButtonCommonView>();
+    }
 
     public override void OnClickForButton(Button viewButton)
     {
@@ -19,15 +28,21 @@ public partial class UIViewBasePortalItem : BaseUIView
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(GameWorldInfoBean gameWorldInfo, int difficultyLevel, Vector2 targetMapPos)
+    public void SetData(GameWorldInfoBean gameWorldInfo, int difficulty, int maxLevel, Vector2 targetMapPos)
     {
         this.gameWorldInfo = gameWorldInfo;
+        this.difficulty = difficulty;
+        this.maxLevel = maxLevel;
+
 
         //Vector2 targetMapPos = gameWorldInfo.GetMapPosition();
         SetMapPosition(targetMapPos);
 
         string targetName = gameWorldInfo.GetName();
         SetName(targetName);
+
+        //初始化弹窗
+        popupForPortalDetails.SetData((gameWorldInfo, difficulty, maxLevel), PopupEnum.ProtalDetails);
     }
 
     /// <summary>
@@ -77,6 +92,9 @@ public partial class UIViewBasePortalItem : BaseUIView
                         {
                             UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
                             GameWorldMapBean gameWorldMapData = GameHandler.Instance.CreateGameWorldMapData(gameWorldInfo.id);
+                            gameWorldMapData.difficutly = difficulty;
+                            gameWorldMapData.maxMapLevel = maxLevel;
+
                             userData.gameWorldMapData = gameWorldMapData;
                             var mapUI = UIHandler.Instance.OpenUI<UIGameWorldMap>(layer: 0);
                             mapUI.AnimForShowUI(animTimeForHideMask);
