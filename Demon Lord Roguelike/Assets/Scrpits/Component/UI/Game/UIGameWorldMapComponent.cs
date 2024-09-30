@@ -12,9 +12,9 @@ public partial class UIGameWorldMap
 
     public Button ui_ViewExit;
 
-    public RectTransform ui_MapPoint;
+    public UIViewGameWorldMapPointLine ui_UIViewGameWorldMapPointLine;
 
-    public RectTransform ui_MapPointLine;
+    public UIViewGameWorldMapPoint ui_UIViewGameWorldMapPoint;
 
 
 }

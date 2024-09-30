@@ -14,6 +14,8 @@ public class GameWorldMapBean
     public int currentMapLevel;//当前地图进度
     public int maxMapLevel;//地图总进度
 
+    public Vector2 currentMapPosition;//当前地图位置
+
     //详情数据
     Dictionary<string, GameWorldMapDetailsBean> dicDetails;
 
@@ -22,6 +24,7 @@ public class GameWorldMapBean
         this.worldId = worldId;
         currentMapLevel = 1;
         maxMapLevel = -1;
+        currentMapPosition = Vector2.zero;
     }
 
     /// <summary>
@@ -37,7 +40,7 @@ public class GameWorldMapBean
             int mapIndexMaxSelectNum = 4;//每一步最大选择数量
 
             //首先生成起始点和终点
-            GameWorldMapDetailsBean startPos = new GameWorldMapDetailsBean(1, Vector2Int.zero, mapLength);
+            GameWorldMapDetailsBean startPos = new GameWorldMapDetailsBean(1, new Vector2Int(0, 0), mapLength);
             GameWorldMapDetailsBean endPos = new GameWorldMapDetailsBean(2, new Vector2Int(mapLength + 1, 0), mapLength);
 
             //记录每一步的数据
@@ -69,11 +72,11 @@ public class GameWorldMapBean
             {
                 var itemData = item.Value;
                 //设置地图当前步骤数量
-                dicMapIndexData.TryGetValue(itemData.mapIndex.x, out List<string> listIdsCur);
+                dicMapIndexData.TryGetValue(itemData.mapPosition.x, out List<string> listIdsCur);
                 itemData.mapIndexNum = listIdsCur.Count;
 
                 //如果是起点 添加所有下一步
-                if (itemData.mapIndex.x == 0)
+                if (itemData.mapPosition.x == 0)
                 {
                     if (dicMapIndexData.TryGetValue(1, out List<string> listIds))
                     {
@@ -90,7 +93,7 @@ public class GameWorldMapBean
                     }
                 }
                 //如果是终点 没有添加
-                else if (itemData.mapIndex.x == mapLength + 1)
+                else if (itemData.mapPosition.x == mapLength + 1)
                 {
 
                 }
@@ -98,7 +101,7 @@ public class GameWorldMapBean
                 else
                 {
                     //获取下一步
-                    if (dicMapIndexData.TryGetValue(itemData.mapIndex.x + 1, out List<string> listIdsNext))
+                    if (dicMapIndexData.TryGetValue(itemData.mapPosition.x + 1, out List<string> listIdsNext))
                     {
                         //随机一个点位
                         int randomNextIndex = UnityEngine.Random.Range(0, listIdsNext.Count);
@@ -108,11 +111,11 @@ public class GameWorldMapBean
                     }
                     else
                     {
-                        LogUtil.LogError($"数据错误，地图没有下一步数据 itemData_{itemData.mapIndex}");
+                        LogUtil.LogError($"数据错误，地图没有下一步数据 itemData_{itemData.mapPosition}");
                     }
 
                     //获取上一步
-                    if (dicMapIndexData.TryGetValue(itemData.mapIndex.x - 1, out List<string> listIdsLast))
+                    if (dicMapIndexData.TryGetValue(itemData.mapPosition.x - 1, out List<string> listIdsLast))
                     {
                         //随机一个点位
                         int randomLastIndex = UnityEngine.Random.Range(0, listIdsLast.Count);
@@ -122,7 +125,7 @@ public class GameWorldMapBean
                     }
                     else
                     {
-                        LogUtil.LogError($"数据错误，地图没有上一步数据 itemData_{itemData.mapIndex}");
+                        LogUtil.LogError($"数据错误，地图没有上一步数据 itemData_{itemData.mapPosition}");
                     }
 
                 }
@@ -137,18 +140,18 @@ public class GameWorldMapBean
 public class GameWorldMapDetailsBean
 {
     public string id;
-    public Vector2Int mapIndex;//地图上的步骤序号
+    public Vector2Int mapPosition;//地图上的步骤序号
     public int mapType;//地图类型 1起始点 2终点  3战斗  4商店  5宝藏  6休息点 
     public int mapLength;
     public int mapIndexNum;//地图上该步骤数量
     public List<string> lastIds;
     public List<string> nextIds;
 
-    public GameWorldMapDetailsBean(int mapType, Vector2Int mapIndex,int mapLength)
+    public GameWorldMapDetailsBean(int mapType, Vector2Int mapPosition, int mapLength)
     {
         id = $"GameWorldMapDetails_{SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N)}";
         this.mapType = mapType;
-        this.mapIndex = mapIndex;
+        this.mapPosition = mapPosition;
         this.mapLength = mapLength;
         lastIds = new List<string>();
         nextIds = new List<string>();
