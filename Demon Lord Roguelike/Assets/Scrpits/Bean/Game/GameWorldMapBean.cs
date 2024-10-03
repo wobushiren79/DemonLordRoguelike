@@ -14,8 +14,9 @@ public class GameWorldMapBean
     public int currentMapLevel;//当前地图进度
     public int maxMapLevel;//地图总进度
 
-    public Vector2 currentMapPosition;//当前地图位置
-
+    public Vector2Int currentMapPosition;//当前地图位置
+    public List<Vector2Int> recordMapPosition;//已经走过的地图位置
+    
     //详情数据
     Dictionary<string, GameWorldMapDetailsBean> dicDetails;
 
@@ -24,7 +25,14 @@ public class GameWorldMapBean
         this.worldId = worldId;
         currentMapLevel = 1;
         maxMapLevel = -1;
-        currentMapPosition = Vector2.zero;
+        currentMapPosition = Vector2Int.zero;
+
+        //TODO 测试数据
+        currentMapPosition = new Vector2Int(2,0);
+        recordMapPosition = new List<Vector2Int>();
+        recordMapPosition.Add(new Vector2Int(0, 0));
+        recordMapPosition.Add(new Vector2Int(1, 1));
+        recordMapPosition.Add(new Vector2Int(2, 0));
     }
 
     /// <summary>

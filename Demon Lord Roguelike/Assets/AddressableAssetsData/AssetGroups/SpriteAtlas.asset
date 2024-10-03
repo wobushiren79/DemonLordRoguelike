@@ -13,17 +13,10 @@ MonoBehaviour:
   m_Name: SpriteAtlas
   m_EditorClassIdentifier: 
   m_GroupName: SpriteAtlas
-  m_Data:
-    m_SerializedData: []
   m_GUID: 2242fa4c7ca91f64e8bedd25cafbfd2e
   m_SerializeEntries:
-  - m_GUID: 5fe5d2ccf3bd50e498789a5a8dc66046
-    m_Address: Assets/LoadResources/Textures/SpriteAtlas/AtlasForUI.spriteatlasv2
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 26754017a057e9943bdb9bd555235ac9
-    m_Address: Assets/LoadResources/Textures/SpriteAtlas/AtlasForGame.spriteatlasv2
+  - m_GUID: fc78681ecc272374eb7ea1fd0433f047
+    m_Address: Assets/LoadResources/Textures/SpriteAtlas/AtlasForUI.spriteatlas
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

@@ -1,6 +1,7 @@
 using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,8 +9,6 @@ public partial class UIGameWorldMap : BaseUIComponent
 {
     //点位列表
     public Dictionary<string, GameObject> dicMapPoint = new Dictionary<string, GameObject>();
-
-
 
     public override void OpenUI()
     {
@@ -50,27 +49,27 @@ public partial class UIGameWorldMap : BaseUIComponent
         foreach (var item in mapDetailsData)
         {
             GameWorldMapDetailsBean gameWorldMapDetails = item.Value;
-            CreateMapPoint(gameWorldMapDetails, gameWorldMapData.currentMapPosition);
+            CreateMapPoint(gameWorldMapData, gameWorldMapDetails);
         }
         //生成连线
         foreach (var item in mapDetailsData)
         {
             GameWorldMapDetailsBean gameWorldMapDetails = item.Value;
-            CreateMapPointLine(gameWorldMapDetails, gameWorldMapData.currentMapPosition);
+            CreateMapPointLine(gameWorldMapData, gameWorldMapDetails);
         }
     }
 
     /// <summary>
     /// 创建地图点位
     /// </summary>
-    public void CreateMapPoint(GameWorldMapDetailsBean gameWorldMapDetails, Vector2 currentMapPosition)
+    public void CreateMapPoint(GameWorldMapBean gameWorldMapData, GameWorldMapDetailsBean gameWorldMapDetails)
     {
         //创建地图点位
         GameObject objItemPoint = Instantiate(ui_Map.gameObject, ui_UIViewGameWorldMapPoint.gameObject);
         objItemPoint.gameObject.SetActive(true);
 
         UIViewGameWorldMapPoint itemView = objItemPoint.GetComponent<UIViewGameWorldMapPoint>();
-        itemView.SetData(gameWorldMapDetails, currentMapPosition, ui_Map);
+        itemView.SetData(gameWorldMapDetails, gameWorldMapData.currentMapPosition, ui_Map);
         //记录所有点位obj
         dicMapPoint.Add(gameWorldMapDetails.id, objItemPoint);
     }
@@ -79,10 +78,10 @@ public partial class UIGameWorldMap : BaseUIComponent
     /// 创建地图连线
     /// </summary>
     /// <param name="gameWorldMapDetails"></param>
-    public void CreateMapPointLine(GameWorldMapDetailsBean gameWorldMapDetails, Vector2 currentMapPosition)
+    public void CreateMapPointLine(GameWorldMapBean gameWorldMapData, GameWorldMapDetailsBean gameWorldMapDetails)
     {
         //只显示当前地图位置的下一步和之前的连线
-        if (gameWorldMapDetails.mapPosition.x > currentMapPosition.x)
+        if (gameWorldMapDetails.mapPosition.x > gameWorldMapData.currentMapPosition.x)
         {
             return;
         }
@@ -91,7 +90,9 @@ public partial class UIGameWorldMap : BaseUIComponent
         for (int i = 0; i < gameWorldMapDetails.nextIds.Count; i++)
         {
             var itemNextId = gameWorldMapDetails.nextIds[i];
+
             dicMapPoint.TryGetValue(itemNextId, out GameObject objPointEnd);
+            gameWorldMapData.GetDetailsData().TryGetValue(itemNextId, out GameWorldMapDetailsBean nextGameWorldMapDetails);
 
             GameObject objItemPointLine = Instantiate(ui_Map.gameObject, ui_UIViewGameWorldMapPointLine.gameObject);
             objItemPointLine.gameObject.SetActive(true);
@@ -99,6 +100,25 @@ public partial class UIGameWorldMap : BaseUIComponent
 
             UIViewGameWorldMapPointLine itemView = objItemPointLine.GetComponent<UIViewGameWorldMapPointLine>();
             itemView.SetData(startPosition, ((RectTransform)objPointEnd.transform).anchoredPosition);
+
+            //设置连线颜色
+            if (gameWorldMapDetails.mapPosition.x == gameWorldMapData.currentMapPosition.x)
+            {
+                itemView.SetState(0);
+            }
+            else
+            {
+                if (nextGameWorldMapDetails != null 
+                    && gameWorldMapData.recordMapPosition.Contains(gameWorldMapDetails.mapPosition) 
+                    && gameWorldMapData.recordMapPosition.Contains(nextGameWorldMapDetails.mapPosition))
+                {
+                    itemView.SetState(2);
+                }
+                else
+                {
+                    itemView.SetState(1);
+                }
+            }
         }
     }
 

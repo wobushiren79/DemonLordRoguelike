@@ -31,4 +31,26 @@ public partial class UIViewGameWorldMapPointLine : BaseUIView
         ui_Line.rectTransform.sizeDelta = new Vector2(lineLength, 10);
         ui_Line.rectTransform.localEulerAngles = new Vector3(0, 0, lineAngle);
     }
+
+    /// <summary>
+    /// 设置状态
+    /// </summary>
+    public void SetState(int state)
+    {
+        //错过的点
+        if (state == 1)
+        {
+            ui_Line.color = Color.gray;
+        }
+        //走过的点
+        else if (state == 2)
+        {
+            ui_Line.color = Color.green;
+        }
+        else
+        {
+            ColorUtility.TryParseHtmlString("#BD7A49", out Color targetColor);
+            ui_Line.color = targetColor;
+        }
+    }
 }
