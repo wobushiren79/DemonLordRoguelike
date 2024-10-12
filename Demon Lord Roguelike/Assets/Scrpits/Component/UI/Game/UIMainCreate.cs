@@ -235,10 +235,7 @@ public partial class UIMainCreate : BaseUIComponent
     {
         this.selectSpeciesIndex = select;
         int creatureId = listSelectForSpecies[select];
-        if (createCreatureData == null)
-        {
-            createCreatureData = new CreatureBean(creatureId);
-        }
+        createCreatureData = new CreatureBean(creatureId);
         createCreatureData.id = creatureId;
         createCreatureData.ClearSkin();
         //隐藏所有选项

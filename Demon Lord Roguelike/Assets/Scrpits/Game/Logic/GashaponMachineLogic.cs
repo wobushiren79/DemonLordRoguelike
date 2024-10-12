@@ -15,9 +15,8 @@ public class GashaponMachineLogic : BaseGameLogic
     //展示吐蛋的间隔
     public float timeForAnimShowEggInterval = 0.3f;
 
-    //核心建筑
-    public GameObject objBuildingCore;
-    public VisualEffect effectEggBreak;
+    //场景预制
+    public ScenePrefabForBase scenePrefab;
 
     //蛋预制
     public List<GameObject> listEggObjPool = new List<GameObject>();
@@ -79,8 +78,7 @@ public class GashaponMachineLogic : BaseGameLogic
     {
         //场景实例
         var baseSceneObj = WorldHandler.Instance.currentBaseScene;
-        objBuildingCore = baseSceneObj.transform.Find("Core/Building").gameObject;
-        effectEggBreak = baseSceneObj.transform.Find("Effect/EggBreak").GetComponent<VisualEffect>();
+        scenePrefab = baseSceneObj.GetComponent<ScenePrefabForBase>();
 
         listEggObj.Clear();
         for (int i = 0; i < listEggObjPool.Count; i++)
@@ -278,11 +276,11 @@ public class GashaponMachineLogic : BaseGameLogic
         Color eggColor2 = eggRenderer.material.GetColor("_Color_2");
 
         //播放蛋壳破碎粒子
-        effectEggBreak.SetVector3("MeshSize", eggTF.transform.localScale);
-        effectEggBreak.SetVector3("StartPosition", eggTF.transform.position);
-        effectEggBreak.SetVector4("Color1", eggColor1);
-        effectEggBreak.SetVector4("Color2", eggColor2);
-        effectEggBreak.SendEvent("OnPlay");
+        scenePrefab.effectEggBreak.SetVector3("MeshSize", eggTF.transform.localScale);
+        scenePrefab.effectEggBreak.SetVector3("StartPosition", eggTF.transform.position);
+        scenePrefab.effectEggBreak.SetVector4("Color1", eggColor1);
+        scenePrefab.effectEggBreak.SetVector4("Color2", eggColor2);
+        scenePrefab.effectEggBreak.SendEvent("OnPlay");
     }
 
     /// <summary>
@@ -319,7 +317,7 @@ public class GashaponMachineLogic : BaseGameLogic
         var baseSceneObj = WorldHandler.Instance.currentBaseScene;
         objEgg.transform.SetParent(baseSceneObj.transform);
         objEgg.gameObject.SetActive(true);
-        objEgg.transform.position = objBuildingCore.transform.position + new Vector3(0, 0.5f, -0.2f);
+        objEgg.transform.position = scenePrefab.objBuildingCore.transform.position + new Vector3(0, 0.5f, -0.2f);
         objEgg.transform.localScale = Vector3.zero;
         objEgg.transform.eulerAngles = Vector3.zero;
         objEgg.transform.DOKill();
@@ -347,15 +345,15 @@ public class GashaponMachineLogic : BaseGameLogic
         float animTimeForEggJump = 1;
         objEgg.transform.DOScale(Vector3.one, animTimeForEggJump / 2f);
         objEgg.transform
-            .DOJump(objBuildingCore.transform.position + new Vector3(-startPos + index, 0, -2), 1, 5, animTimeForEggJump)
+            .DOJump(scenePrefab.objBuildingCore.transform.position + new Vector3(-startPos + index, 0, -2), 1, 5, animTimeForEggJump)
             .SetEase(Ease.Linear)
             .OnComplete(() =>
             {
                 actionForComplete?.Invoke(objEgg);
             });
 
-        objBuildingCore.transform.localScale = Vector3.one;
-        objBuildingCore.transform.DOPunchScale(new Vector3(0.2f, -0.2f, 0.2f), timeForAnimShowEggInterval, 2, 0.5f);
+        scenePrefab.objBuildingCore.transform.localScale = Vector3.one;
+        scenePrefab.objBuildingCore.transform.DOPunchScale(new Vector3(0.2f, -0.2f, 0.2f), timeForAnimShowEggInterval, 2, 0.5f);
     }
     #endregion
 }
