@@ -63,7 +63,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     /// <summary>
     /// 创建一个倒计时
     /// </summary>
-    public void CreateTimeCountDown(float countDownTime,Action<GameTimeCountDownBean> actionForEnd)
+    public void CreateTimeCountDown(float countDownTime, Action<GameTimeCountDownBean> actionForEnd)
     {
         var targetCountDown = manager.GetNewTimeCountDown();
         targetCountDown.timeUpdateMax = countDownTime;
@@ -91,7 +91,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
             {
                 targetPrefab.spriteRenderer.transform.eulerAngles = CameraHandler.Instance.manager.mainCamera.transform.eulerAngles;
             }
-  
+
             actionForComplete?.Invoke(targetPrefab);
         });
     }
@@ -112,7 +112,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     public void CreateDropCoin(Vector3 dropPos)
     {
         manager.GetDropCoinPrefab((targetPrefab) =>
-        {           
+        {
             if (targetPrefab.spriteRenderer == null)
             {
                 Transform rendererTF = targetPrefab.gameObject.transform.Find("Renderer");
@@ -127,7 +127,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
             }
 
             if (targetPrefab.spriteRenderer != null)
-            {           
+            {
                 //设置于摄像头角度持平
                 var mainCamera = CameraHandler.Instance.manager.mainCamera;
                 targetPrefab.spriteRenderer.transform.eulerAngles = mainCamera.transform.eulerAngles;
@@ -136,7 +136,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
             {
                 targetPrefab.collider.enabled = false;
             }
- 
+
             //播放一个掉落动画
             float randomX = UnityEngine.Random.Range(-0.5f, 0.5f);
             float randomZ = UnityEngine.Random.Range(-0.5f, 0.5f);
@@ -202,4 +202,5 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
         targetEntity.gameObject.SetActive(false);
         manager.RemoveFightPrefabCommon(targetEntity);
     }
+
 }

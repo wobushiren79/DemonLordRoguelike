@@ -51,7 +51,7 @@ public partial class UIFightMain : BaseUIComponent
         //初始所有卡片
         SetCreatureCardList(gameFightLogic.fightData.listDefCreatureData);
         //设置进攻波次
-        gameFightLogic.fightData.GetAttCreateInitData(out int fightNum);
+        gameFightLogic.fightData.GetAttCreatureInitData(out int fightNum);
         SetAttCreateData(fightNum);
         //刷新一次UI
         RefreshUIData();
@@ -108,7 +108,7 @@ public partial class UIFightMain : BaseUIComponent
     /// <summary>
     /// 初始化卡片列表
     /// </summary>
-    public void SetCreatureCardList(List<FightCreatureBean> listCreatureData)
+    public void SetCreatureCardList(List<CreatureBean> listCreatureData)
     {
         //先清空一下卡片
         ClearCardList();
@@ -261,9 +261,9 @@ public partial class UIFightMain : BaseUIComponent
     {
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         //战斗中的卡片不能点击
-        if (targetView.cardData.fightCreatureData.stateForCard == CardStateEnum.Fighting)
+        if (targetView.cardData.cardState == CardStateEnum.Fighting)
             return;
-        int createMagic = targetView.cardData.fightCreatureData.creatureData.GetCreateMagic();
+        int createMagic = targetView.cardData.creatureData.GetCreateMagic();
         if (gameFightLogic.fightData.currentMagic < createMagic)
         {
             //魔力不足

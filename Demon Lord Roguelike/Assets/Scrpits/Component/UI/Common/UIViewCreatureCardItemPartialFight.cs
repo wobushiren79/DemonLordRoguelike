@@ -11,10 +11,9 @@ public partial class UIViewCreatureCardItem
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(FightCreatureBean fightCreatureData, Vector2 originalCardPos)
+    public void SetData(CreatureBean creatureData, Vector2 originalCardPos)
     {
-        this.cardData.fightCreatureData = fightCreatureData;
-        this.cardData.fightCreatureData.stateForCard = CardStateEnum.FightIdle;
+        this.cardData.cardState = CardStateEnum.FightIdle;
 
         this.cardData.originalCardPos = originalCardPos;
         this.cardData.originalSibling = transform.GetSiblingIndex();
@@ -27,7 +26,7 @@ public partial class UIViewCreatureCardItem
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_RefreshCard, EventForGameFightLogicRefreshCard);
 
-        SetData(fightCreatureData.creatureData, CardUseState.Fight);
+        SetData(creatureData, CardUseState.Fight);
     }
 
     #region 触摸相关事件
@@ -127,9 +126,9 @@ public partial class UIViewCreatureCardItem
     /// <param name="targetData"></param>
     public void EventForGameFightLogicSelectCard(UIViewCreatureCardItem targetView)
     {
-        if (this.cardData.fightCreatureData != targetView.cardData.fightCreatureData)
+        if (this != targetView)
         {
-            switch (cardData.fightCreatureData.stateForCard)
+            switch (cardData.cardState)
             {
                 case CardStateEnum.Fighting:
                     break;
@@ -150,9 +149,9 @@ public partial class UIViewCreatureCardItem
     /// </summary>
     public void EventForGameFightLogicUnSelectCard(UIViewCreatureCardItem targetView)
     {
-        if (this.cardData.fightCreatureData != targetView.cardData.fightCreatureData)
+        if (this != targetView)
         {
-            switch (cardData.fightCreatureData.stateForCard)
+            switch (cardData.cardState)
             {
                 case CardStateEnum.FightSelect:
                     SetCardState(CardStateEnum.FightIdle);
@@ -171,7 +170,7 @@ public partial class UIViewCreatureCardItem
     /// </summary>
     public void EventForGameFightLogicPutCard(UIViewCreatureCardItem targetView)
     {
-        if (this.cardData.fightCreatureData != targetView.cardData.fightCreatureData)
+        if (this != targetView)
             return;
         //设置卡片状态
         SetCardState(CardStateEnum.Fighting);
@@ -182,10 +181,10 @@ public partial class UIViewCreatureCardItem
     /// </summary>
     public void EventForGameFightLogicRefreshCard(UIViewCreatureCardItem targetView)
     {
-        if (this.cardData.fightCreatureData != targetView.cardData.fightCreatureData)
+        if (this != targetView)
             return;
         //刷新卡片状态
-        RefreshCardState(targetView.cardData.fightCreatureData.stateForCard);
+        RefreshCardState(targetView.cardData.cardState);
     }
     #endregion
 }

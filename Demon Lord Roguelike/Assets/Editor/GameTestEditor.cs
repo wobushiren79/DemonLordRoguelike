@@ -149,11 +149,11 @@ public class GameTestEditor : Editor
         };
 
         //所有的卡皮数据
-        List<FightCreatureBean> listCreatureData = new List<FightCreatureBean>();
+        List<CreatureBean> listCreatureData = new List<CreatureBean>();
         for (int i = 0; i < testDataCardNum; i++)
         {
-            FightCreatureBean itemData = new FightCreatureBean(fightCardId);
-            itemData.creatureData.AddAllSkin();
+            CreatureBean itemData = new CreatureBean(fightCardId);
+            itemData.AddAllSkin();
             //itemData.creatureData.AddSkin(1000001);
             //itemData.creatureData.AddSkin(1010010);
             listCreatureData.Add(itemData); ;

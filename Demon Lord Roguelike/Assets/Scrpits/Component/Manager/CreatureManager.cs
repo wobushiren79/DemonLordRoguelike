@@ -14,7 +14,7 @@ public class CreatureManager : BaseManager
     //生物预览
     public GameObject objCreatureSelectPreview;
     public SkeletonAnimation skeletonAnimationSelectPreview;
-    public FightCreatureBean fightCreatureDataSelectPreview;
+    public CreatureBean creatureDataSelectPreview;
 
     /// <summary>
     /// 清理数据
@@ -24,7 +24,7 @@ public class CreatureManager : BaseManager
         if (objCreatureSelectPreview != null)
             DestroyImmediate(objCreatureSelectPreview);
         skeletonAnimationSelectPreview = null;
-        fightCreatureDataSelectPreview = null;
+        creatureDataSelectPreview = null;
 
         foreach (var itemPool in dicPoolForCreature)
         {
@@ -42,7 +42,7 @@ public class CreatureManager : BaseManager
     /// 获取生物预览
     /// </summary>
     /// <returns></returns>
-    public GameObject GetCreaureSelectPreview(FightCreatureBean fightCreatureData = null)
+    public GameObject GetCreaureSelectPreview(CreatureBean creatureData = null)
     {
         if (objCreatureSelectPreview == null)
         {
@@ -56,17 +56,16 @@ public class CreatureManager : BaseManager
         var mainCamera = CameraHandler.Instance.manager.mainCamera;
         objCreatureSelectPreview.transform.eulerAngles = mainCamera.transform.eulerAngles;
 
-        if (fightCreatureData != null)
+        if (creatureData != null)
         {
-            if (fightCreatureDataSelectPreview == null || fightCreatureData != fightCreatureDataSelectPreview)
+            if (creatureDataSelectPreview == null || creatureData != creatureDataSelectPreview)
             {
-                var creatureData = fightCreatureData.creatureData;
                 //设置骨骼数据
                 SpineHandler.Instance.SetSkeletonDataAsset(skeletonAnimationSelectPreview, creatureData.creatureModel.res_name);
                 string[] skinArray = creatureData.GetSkinArray();
                 //修改皮肤
                 SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimationSelectPreview.skeleton, skinArray);
-                fightCreatureDataSelectPreview = fightCreatureData;
+                creatureDataSelectPreview = creatureData;
 
                 //修改材质球颜色
                 skeletonAnimationSelectPreview.skeleton.A = 0.65f;

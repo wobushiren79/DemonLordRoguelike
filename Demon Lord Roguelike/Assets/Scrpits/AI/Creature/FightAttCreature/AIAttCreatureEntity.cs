@@ -90,7 +90,9 @@ public class AIAttCreatureEntity : AICreatureEntity
     public void EventForGameFightLogicPutCard(UIViewCreatureCardItem targetView)
     {
         //如果是同一路线
-        if (targetView.cardData.fightCreatureData.positionCreate.z == selfAttCreatureEntity.fightCreatureData.positionCreate.z)
+        var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        var gameFightEntity =  gameFightLogic.fightData.GetFightCreatureById(targetView.cardData.creatureData.creatureId);
+        if (gameFightEntity.fightCreatureData.positionCreate.z == selfAttCreatureEntity.fightCreatureData.positionCreate.z)
         {
             //如果正在前往目标 则重新寻找目标
             if (currentIntentEnum == AIIntentEnum.AttCreatureMove || currentIntentEnum == AIIntentEnum.AttCreatureAttack)

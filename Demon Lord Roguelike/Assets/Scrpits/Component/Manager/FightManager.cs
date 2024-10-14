@@ -25,6 +25,9 @@ public class FightManager : BaseManager
     public List<GameTimeCountDownBean> listTimeCountDown = new List<GameTimeCountDownBean>();
     public Queue<GameTimeCountDownBean> poolTimeCountDown = new Queue<GameTimeCountDownBean>();
 
+    //buff的实例类
+    public Dictionary<string, FightBuffBaseEntity> dicBuffEntity = new Dictionary<string, FightBuffBaseEntity>();
+
     /// <summary>
     /// 清理所有数据
     /// </summary>
@@ -40,7 +43,7 @@ public class FightManager : BaseManager
         foreach (var itemData in dicPoolAttackModeObj)
         {
             var queue = itemData.Value;
-            while(queue.Count > 0)
+            while (queue.Count > 0)
             {
                 var targetData = queue.Dequeue();
                 Destroy(targetData.gameObject);
@@ -58,7 +61,7 @@ public class FightManager : BaseManager
         foreach (var itemData in dicPoolFightObj)
         {
             var queue = itemData.Value;
-            while(queue.Count > 0)
+            while (queue.Count > 0)
             {
                 var targetData = queue.Dequeue();
                 Destroy(targetData.gameObject);
@@ -123,7 +126,7 @@ public class FightManager : BaseManager
     /// </summary>
     public void GetDropCoinPrefab(Action<GameFightPrefabEntity> actionForComplete)
     {
-        GetFightPrefabCommon(pathDropCoinPrefab,(targetPrefab)=> 
+        GetFightPrefabCommon(pathDropCoinPrefab, (targetPrefab) =>
         {
             targetPrefab.pathAsstes = pathDropCoinPrefab;
             targetPrefab.SetState(GameFightPrefabStateEnum.None);
@@ -132,7 +135,7 @@ public class FightManager : BaseManager
             actionForComplete?.Invoke(targetPrefab);
         });
     }
-    
+
     /// <summary>
     /// 获取掉落魔力预制
     /// </summary>
@@ -173,7 +176,7 @@ public class FightManager : BaseManager
     /// </summary>
     /// <param name="assetsPath"></param>
     /// <param name="actionForComplete"></param>
-    public void GetFightPrefabCommon(string assetsPath,Action<GameFightPrefabEntity> actionForComplete)
+    public void GetFightPrefabCommon(string assetsPath, Action<GameFightPrefabEntity> actionForComplete)
     {
         if (dicPoolFightObj.TryGetValue(assetsPath, out Queue<GameFightPrefabEntity> pool))
         {
@@ -247,5 +250,28 @@ public class FightManager : BaseManager
         }
     }
 
-
+    /// <summary>
+    /// 获取BUFF实例类
+    /// </summary>
+    public FightBuffBaseEntity GetBuffEntity(string entityName)
+    {
+        string className = $"FightBuffFor{entityName}";
+        if (dicBuffEntity.TryGetValue(className, out var targetClass))
+        {
+            return targetClass;
+        }
+        else
+        {
+            targetClass = ReflexUtil.CreateInstance<FightBuffBaseEntity>(className);
+            if (targetClass == null)
+            {
+                return null;
+            }
+            else
+            {
+                dicBuffEntity.Add(className, targetClass);
+                return targetClass;
+            }
+        }
+    }
 }

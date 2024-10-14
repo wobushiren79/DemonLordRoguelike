@@ -1,3 +1,4 @@
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,7 +20,8 @@ public class FightBean
     public int currentMagic;//当前魔力值
     public FightAttCreateDetailsBean currentFightAttCreateDetails;//当前进攻数据
 
-    public List<FightCreatureBean> listDefCreatureData = new List<FightCreatureBean>();//当前可用防御生物数据
+    public List<CreatureBean> listDefCreatureData = new List<CreatureBean>();//当前可用防御生物数据
+
     public Dictionary<Vector3Int, FightPositionBean> dicFightPosition = new Dictionary<Vector3Int, FightPositionBean>();//放置在场上的生物数据
 
     public FightAttCreateBean fightAttCreateData;//进攻数据
@@ -30,11 +32,22 @@ public class FightBean
     public FightCreatureBean fightDefCoreData;//防守核心数据
     public GameFightCreatureEntity fightDefCoreCreature;//防守方核心生物实例
 
+
+    public float timeUpdateForFightBuff = 0;//更新时间-战斗buff
+    public float timeUpdateMaxForFightBuff = 0.1f;//更新时间-战斗buff
+
+    public List<FightBuffBean> listBuff = new List<FightBuffBean>();//场上所有的buff
     /// <summary>
     /// 清理数据
     /// </summary>
     public void Clear()
     {
+        for (int i = 0; i < listDefCreatureData.Count; i++)
+        {
+            var itemCreature = listDefCreatureData[i];
+            itemCreature.creatureState = CreatureStateEnum.Idle;
+        }
+
         foreach (var item in dicCreatureEntity)
         {
             var itemValue = item.Value;
@@ -53,6 +66,9 @@ public class FightBean
         }
         fightDefCoreCreature = null;
         fightDefCoreData = null;
+
+        timeUpdateForFightBuff = 0;
+        listBuff.Clear();
     }
 
     /// <summary>
@@ -72,9 +88,18 @@ public class FightBean
     }
 
     /// <summary>
+    /// 获取所有buff
+    /// </summary>
+    /// <returns></returns>
+    public List<FightBuffBean> GetAllBuff()
+    {
+        return listBuff;
+    }
+
+    /// <summary>
     /// 获取进攻生物 进攻波次初始化数据
     /// </summary>
-    public void GetAttCreateInitData(out int fightNum)
+    public void GetAttCreatureInitData(out int fightNum)
     {
         fightNum = 0;
         if (fightAttCreateData == null)
@@ -120,13 +145,13 @@ public class FightBean
         {
             dicFightPosition.Remove(targetPos);
 
-            if (fightPosition.creatureMain != null && dicCreatureEntity.ContainsKey(fightPosition.creatureMain.creatureId))
+            if (fightPosition.creatureMain != null && dicCreatureEntity.ContainsKey(fightPosition.creatureMain.fightCreatureData.creatureData.creatureId))
             {
-                dicCreatureEntity.Remove(fightPosition.creatureMain.creatureId);
+                dicCreatureEntity.Remove(fightPosition.creatureMain.fightCreatureData.creatureData.creatureId);
             }
-            if (fightPosition.creatureAssist != null && dicCreatureEntity.ContainsKey(fightPosition.creatureAssist.creatureId))
+            if (fightPosition.creatureAssist != null && dicCreatureEntity.ContainsKey(fightPosition.creatureAssist.fightCreatureData.creatureData.creatureId))
             {
-                dicCreatureEntity.Remove(fightPosition.creatureAssist.creatureId);
+                dicCreatureEntity.Remove(fightPosition.creatureAssist.fightCreatureData.creatureData.creatureId);
             }
         }
     }
@@ -149,9 +174,9 @@ public class FightBean
             dicFightPosition.Add(targetPos, newPositionData);
         }
 
-        if (!dicCreatureEntity.ContainsKey(fightCreature.creatureId))
+        if (!dicCreatureEntity.ContainsKey(fightCreature.fightCreatureData.creatureData.creatureId))
         {
-            dicCreatureEntity.Add(fightCreature.creatureId, fightCreature);
+            dicCreatureEntity.Add(fightCreature.fightCreatureData.creatureData.creatureId, fightCreature);
         }
     }
 
@@ -191,9 +216,9 @@ public class FightBean
             dicAttCreatureEntity.Add(road, new List<GameFightCreatureEntity>() { targetEntity });
         }
 
-        if (!dicCreatureEntity.ContainsKey(targetEntity.creatureId))
+        if (!dicCreatureEntity.ContainsKey(targetEntity.fightCreatureData.creatureData.creatureId))
         {
-            dicCreatureEntity.Add(targetEntity.creatureId, targetEntity);
+            dicCreatureEntity.Add(targetEntity.fightCreatureData.creatureData.creatureId, targetEntity);
         }
     }
 
@@ -206,9 +231,9 @@ public class FightBean
         {
             valueList.Remove(targetEntity);
         }
-        if (dicCreatureEntity.ContainsKey(targetEntity.creatureId))
+        if (dicCreatureEntity.ContainsKey(targetEntity.fightCreatureData.creatureData.creatureId))
         {
-            dicCreatureEntity.Remove(targetEntity.creatureId);
+            dicCreatureEntity.Remove(targetEntity.fightCreatureData.creatureData.creatureId);
         }
     }
 
@@ -238,5 +263,34 @@ public class FightBean
             return targetCreature;
         }
         return null;
+    }
+
+    /// <summary>
+    /// 添加一个战斗BUFF
+    /// </summary>
+    /// <param name="fightBuffData"></param>
+    public void AddFightBuff(FightBuffBean fightBuffData)
+    {
+        listBuff.Add(fightBuffData);
+    }
+     
+    /// <summary>
+    /// 移除一个战斗BUFF
+    /// </summary>
+    public void RemoveFightBuff(FightBuffBean fightBuffData)
+    {
+        try
+        {
+            listBuff.Remove(fightBuffData);
+            var targetCreature = GetFightCreatureById(fightBuffData.creatureId);
+            if (targetCreature != null && targetCreature.fightCreatureData != null && !targetCreature.fightCreatureData.listBuff.IsNull())
+            {
+                targetCreature.fightCreatureData.listBuff.Remove(fightBuffData);
+            }
+        }
+        catch (Exception e)
+        {
+            LogUtil.LogError($"移除战斗buff失败  {e.ToString()}");
+        }
     }
 }

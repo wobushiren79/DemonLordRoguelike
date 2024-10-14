@@ -20,6 +20,8 @@ public class CreatureBean
 
     //所有的皮肤数据
     public Dictionary<CreatureSkinTypeEnum, CreatureSkinBean> dicSkinData = new Dictionary<CreatureSkinTypeEnum, CreatureSkinBean>();
+    //生物状态 默认闲置
+    public CreatureStateEnum creatureState = CreatureStateEnum.Idle;
 
     [Newtonsoft.Json.JsonIgnore]
     [NonSerialized]
@@ -59,6 +61,7 @@ public class CreatureBean
     public CreatureBean(long id)
     {
         this.id = id;
+        this.creatureId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
     }
 
     /// <summary>

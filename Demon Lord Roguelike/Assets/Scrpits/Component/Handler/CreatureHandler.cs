@@ -191,7 +191,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         if (creatureType == CreatureTypeEnum.FightDef)
         {
             gameFightLogic.fightData.RemoveFightPosition(targetEntity.fightCreatureData.positionCreate);
-            targetEntity.fightCreatureData.stateForCard = CardStateEnum.FightIdle;
+            targetEntity.fightCreatureData.creatureData.creatureState =  CreatureStateEnum.Idle;
             targetEntity.fightCreatureData.ResetData();
             EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_RefreshCard, targetEntity.fightCreatureData);
         }

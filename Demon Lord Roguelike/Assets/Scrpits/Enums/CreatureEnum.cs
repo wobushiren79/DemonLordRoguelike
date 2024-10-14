@@ -1,5 +1,9 @@
 
-using DG.Tweening;
+public enum CreatureStateEnum
+{
+    Idle = 1,//闲置
+    Fight = 2,//战斗中
+}
 
 public enum CreatureTypeEnum
 {
@@ -8,7 +12,7 @@ public enum CreatureTypeEnum
     FightDefCore = 99,//防守方核心
 }
 
-public enum CreatureStateEnum
+public enum CreatureFightStateEnum
 {
     None = 0,
     Live = 1,//存活

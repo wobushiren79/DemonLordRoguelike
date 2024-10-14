@@ -15,7 +15,7 @@ public class FightCreatureBean
     public int armorCurrent;//当前护甲值
     public int armorMax;//最大护甲值
 
-    public CardStateEnum stateForCard = CardStateEnum.None;//卡片状态(用于UI展示)
+    public List<FightBuffBean> listBuff;//所有的buff
 
     public FightCreatureBean(int creatureId)
     {
@@ -23,6 +23,11 @@ public class FightCreatureBean
         ResetData();
     }
 
+    public FightCreatureBean(CreatureBean creatureData)
+    {
+        this.creatureData = creatureData;
+        ResetData();
+    }
     /// <summary>
     /// 重置数据
     /// </summary>
@@ -31,6 +36,7 @@ public class FightCreatureBean
         var creatureInfo = creatureData.creatureInfo;
         liftCurrent = creatureInfo.life;
         liftMax = creatureInfo.life;
+        listBuff = new List<FightBuffBean>();
     }
 
     /// <summary>

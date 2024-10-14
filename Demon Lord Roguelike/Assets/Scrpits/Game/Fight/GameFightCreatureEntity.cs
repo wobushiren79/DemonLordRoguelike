@@ -5,11 +5,10 @@ using UnityEngine;
 
 public class GameFightCreatureEntity
 {
-    public string creatureId;
     public GameObject creatureObj;
     public FightCreatureBean fightCreatureData;
     public AIBaseEntity aiEntity;
-    public CreatureStateEnum creatureState = CreatureStateEnum.None;
+    public CreatureFightStateEnum creatureFightState = CreatureFightStateEnum.None;
     //spine数据
     public SkeletonAnimation creatureSkeletionAnimation;
     //生命条显示
@@ -18,11 +17,10 @@ public class GameFightCreatureEntity
     Tween animForUnderAttackColor;
     public GameFightCreatureEntity(GameObject creatureObj, FightCreatureBean fightCreatureData)
     {
-        this.creatureId = $"Creature_{SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N)}";
-        this.creatureState = CreatureStateEnum.Live;
+        this.creatureFightState = CreatureFightStateEnum.Live;
         this.creatureObj = creatureObj;
         this.fightCreatureData = fightCreatureData;
-        this.creatureObj.name = creatureId;
+        this.creatureObj.name = fightCreatureData.creatureData.creatureId;
         //获取骨骼数据
         creatureSkeletionAnimation = creatureObj.transform.Find("Spine")?.GetComponent<SkeletonAnimation>();
         //获取生命值显示
@@ -109,10 +107,10 @@ public class GameFightCreatureEntity
     /// <summary>
     /// 收到攻击
     /// </summary>
-    public void UnderAttack(int attDamage, Vector3 attDirection, out int leftLife, out int leftArmor)
+    public void UnderAttack(BaseAttackMode baseAttackMode, out int leftLife, out int leftArmor)
     {
         //先扣除护甲
-        leftArmor = fightCreatureData.ChangeArmor(-attDamage, out int outArmorChangeData);
+        leftArmor = fightCreatureData.ChangeArmor(-baseAttackMode.attackerDamage, out int outArmorChangeData);
         //如果护甲已经全部扣完 再扣除生命
         if (outArmorChangeData != 0)
         {
@@ -128,7 +126,7 @@ public class GameFightCreatureEntity
                 //颤抖
                 creatureSkeletionAnimation.transform.DOShakePosition(0.06f, strength: 0.05f, vibrato: 10, randomness: 180);
                 //流血
-                EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), attDirection);
+                EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
                 //颜色变化动画
                 AnimForUnderAttackColor();
                 //展示血条
@@ -138,6 +136,20 @@ public class GameFightCreatureEntity
                 //设置护盾进度
                 creatureLifeShow?.material.SetFloat("_Progress_2", leftArmor / (float)fightCreatureData.armorMax);
             }
+            //触发buff
+            var buffs = baseAttackMode.attackModeInfo.GetBuff();
+            if (!buffs.IsNull())
+            {
+                var buffsTrigger = FightBuffBean.GetTriggerFightBuff(buffs,fightCreatureData.creatureData.creatureId);
+                if (!buffsTrigger.IsNull())
+                {
+                    FightBuffBean.CombineBuff(fightCreatureData.listBuff, buffsTrigger, actionForCombineNew: (targetBuff) =>
+                    {
+                        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+                        gameFightLogic.fightData.AddFightBuff(targetBuff);
+                    });
+                }
+            }
         }
         else
         {   //掉落金币
@@ -145,7 +157,7 @@ public class GameFightCreatureEntity
             //如果被攻击对象死亡 
             SetCreatureDead();
             //流血
-            EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), attDirection);
+            EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
             //颜色变化动画
             AnimForUnderAttackColor();
             //隐藏血条
@@ -187,7 +199,7 @@ public class GameFightCreatureEntity
     /// <returns></returns>
     public bool IsDead()
     {
-        if (creatureState == CreatureStateEnum.Dead)
+        if (creatureFightState == CreatureFightStateEnum.Dead)
             return true;
         //如果目标生物已经无了
         //if (creatureObj == null || fightCreatureData == null || fightCreatureData.liftCurrent <= 0)
@@ -202,7 +214,7 @@ public class GameFightCreatureEntity
     /// </summary>
     public void SetCreatureDead()
     {
-        creatureState = CreatureStateEnum.Dead;
+        creatureFightState = CreatureFightStateEnum.Dead;
         if (aiEntity is AIAttCreatureEntity)
         {
             aiEntity.ChangeIntent(AIIntentEnum.AttCreatureDead);

@@ -10,10 +10,8 @@ public class AttackModeMelee : BaseAttackMode
         base.StartAttack(attacker, attacked, actionForAttackEnd);
         if (attacker != null && attacked != null && !attacked.IsDead())
         {
-            //获取伤害
-            int attDamage = attacker.fightCreatureData.creatureData.GetAttDamage();
             //扣血
-            attacked.UnderAttack(attDamage, attackDirection, out int leftLife, out int leftArmor);
+            attacked.UnderAttack(this, out int leftLife, out int leftArmor);
         }
 
         //攻击完了就回收这个攻击

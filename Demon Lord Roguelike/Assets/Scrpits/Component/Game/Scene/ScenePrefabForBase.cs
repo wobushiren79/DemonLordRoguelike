@@ -28,18 +28,31 @@ public class ScenePrefabForBase : ScenePrefabBase
     protected Vector3 targetLookAtForBuildingCoreEye;
     //核心建筑眼球转动速度
     protected float speedRotationForBuildingCoreEye = 0.1f;
+    //核心建筑眼球默认看向位置
+    protected Vector3 positionDefLookAtForBuildingCoreEye = new Vector3(0, 0, -1000f);
     /// <summary>
     /// 处理核心建筑的眼睛
     /// </summary>
     public void HandleUpdateForBuildingCore()
     {
-        Camera mainCamera = CameraHandler.Instance.manager.mainCamera;
-        //看向摄像头
-        if (mainCamera != null)
+        var controlForBaseCreature = GameControlHandler.Instance.manager.controlTargetForCreature;
+        Vector3 targetLookAtPosition = positionDefLookAtForBuildingCoreEye;
+        if (controlForBaseCreature != null && controlForBaseCreature.gameObject.activeSelf)
         {
-            targetLookAtForBuildingCoreEye = Vector3.Lerp(mainCamera.transform.position, targetLookAtForBuildingCoreEye, Time.deltaTime * speedRotationForBuildingCoreEye);
-            objBuildingCoreEye.transform.LookAt(targetLookAtForBuildingCoreEye);
+            targetLookAtPosition = controlForBaseCreature.transform.position;
         }
+        else
+        {
+            Camera mainCamera = CameraHandler.Instance.manager.mainCamera;
+            //看向摄像头
+            if (mainCamera != null)
+            {
+                targetLookAtPosition = mainCamera.transform.position;
+            }
+        }
+        targetLookAtForBuildingCoreEye = Vector3.Lerp(targetLookAtPosition, targetLookAtForBuildingCoreEye, Time.deltaTime * speedRotationForBuildingCoreEye);
+        objBuildingCoreEye.transform.LookAt(targetLookAtForBuildingCoreEye);
+        return;
     }
     #endregion
 }

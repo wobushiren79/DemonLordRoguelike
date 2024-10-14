@@ -60,6 +60,7 @@ public class GameFightLogic : BaseGameLogic
         fightData.gameTime = fightData.gameTime + Time.deltaTime * fightData.gameSpeed;
         UpdateGameForSelectCreature();
         UpdateGameForAttCreate();
+        UpdateGameForFightBuff();
     }
 
     /// <summary>
@@ -92,7 +93,7 @@ public class GameFightLogic : BaseGameLogic
             RayUtil.RayToScreenPointForMousePosition(10, 1 << LayerInfo.Ground, out bool isCollider, out RaycastHit hit, CameraHandler.Instance.manager.mainCamera);
             if (isCollider && hit.collider != null)
             {
-                GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreaureSelectPreview(selectCreatureCard.cardData.fightCreatureData);
+                GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreaureSelectPreview(selectCreatureCard.cardData.creatureData);
                 objSelectPreivew.gameObject.SetActive(true);
                 Vector3 hitPoint = hit.point;
 
@@ -124,6 +125,25 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
+    /// 处理BUFF
+    /// </summary>
+    public void UpdateGameForFightBuff()
+    {
+        fightData.timeUpdateForFightBuff += (Time.deltaTime * fightData.gameSpeed);
+        if (fightData.timeUpdateForFightBuff > fightData.timeUpdateMaxForFightBuff)
+        {
+            fightData.timeUpdateForFightBuff = 0;
+            //获取所有拥有BUFF的生物
+            var listBuff = fightData.GetAllBuff();
+            for (int i = 0; i < listBuff.Count; i++)
+            {
+                var itemBuff = listBuff[i];
+                itemBuff.AddBuffTime(fightData.timeUpdateMaxForFightBuff);
+            }
+        }
+    }
+
+    /// <summary>
     /// 选择了一张防御卡
     /// </summary>
     public void SelectCard(UIViewCreatureCardItem targetView)
@@ -142,7 +162,7 @@ public class GameFightLogic : BaseGameLogic
             ClearSelectData();
         }
         selectCreatureCard = targetView;
-        CreatureHandler.Instance.CreateDefCreature(targetView.cardData.fightCreatureData.creatureData, (targetObj) =>
+        CreatureHandler.Instance.CreateDefCreature(targetView.cardData.creatureData, (targetObj) =>
         {
             selectCreature = targetObj;
         });
@@ -182,8 +202,16 @@ public class GameFightLogic : BaseGameLogic
         fightData.ChangeMagic(-createMagic);
         //设置生物位置
         selectCreature.transform.position = selectCreaturePutPost;
+
+        //设置生物进入战斗状态
+        selectCreatureCard.cardData.creatureData.creatureState = CreatureStateEnum.Fight;
+
+        //创建战斗生物数据
+        FightCreatureBean fightCreatureData = new FightCreatureBean(selectCreatureCard.cardData.creatureData);
+        fightCreatureData.positionCreate = selectCreaturePutPost;
+
         //创建战斗生物
-        GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(selectCreature, selectCreatureCard.cardData.fightCreatureData);
+        GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(selectCreature, fightCreatureData);
         gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefCreatureEntity>(actionBeforeStart: (targetEntity) =>
         {
             targetEntity.InitData(gameFightCreatureEntity);

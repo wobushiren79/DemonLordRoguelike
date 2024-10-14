@@ -139,10 +139,6 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     public void SetCardState(CardStateEnum cardState)
     {
         this.cardData.cardState = cardState;
-        if (this.cardData.fightCreatureData != null)
-        {
-            this.cardData.fightCreatureData.stateForCard = cardState;
-        }
         RefreshCardState(cardState);
     }
 
