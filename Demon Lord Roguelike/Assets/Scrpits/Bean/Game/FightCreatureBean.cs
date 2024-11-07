@@ -15,6 +15,7 @@ public class FightCreatureBean
     public int armorCurrent;//当前护甲值
     public int armorMax;//最大护甲值
 
+    public float moveSpeedCurrent;//当前移动速度
     public List<FightBuffBean> listBuff;//所有的buff
 
     public FightCreatureBean(int creatureId)
@@ -28,6 +29,7 @@ public class FightCreatureBean
         this.creatureData = creatureData;
         ResetData();
     }
+
     /// <summary>
     /// 重置数据
     /// </summary>
@@ -37,13 +39,49 @@ public class FightCreatureBean
         liftCurrent = creatureInfo.life;
         liftMax = creatureInfo.life;
         listBuff = new List<FightBuffBean>();
+
+        InitBaseAttribute();
+    }
+
+    /// <summary>
+    /// 初始化基础属性
+    /// </summary>
+    public void InitBaseAttribute()
+    {
+        moveSpeedCurrent = creatureData.GetMoveSpeed();
+        if (!listBuff.IsNull())
+        {
+            float changeMoveSpeed = 0;
+            float changeRateMoveSpeed = 0;
+            for (int i = 0; i < listBuff.Count; i++)
+            {
+                FightBuffBean itemBuff = listBuff[i];
+                var buffEntity = itemBuff.GetBuffEntity();
+                var targetChangeData = buffEntity.GetChangeDataForMoveSpeed();
+                changeMoveSpeed += targetChangeData.change;
+                changeRateMoveSpeed += targetChangeData.changeRate;
+            }
+            moveSpeedCurrent += changeMoveSpeed;
+            moveSpeedCurrent *= changeRateMoveSpeed;
+        }
+        if (moveSpeedCurrent < 0)
+            moveSpeedCurrent = 0;
+    }
+
+    /// <summary>
+    /// 获取角色移动速度
+    /// </summary>
+    /// <returns></returns>
+    public float GetMoveSpeed()
+    {
+        return moveSpeedCurrent;
     }
 
     /// <summary>
     /// 改变护甲
     /// </summary>
     /// <param name="changeArmorData"></param>
-    public int ChangeArmor(int changeArmorData,out int outArmorChangeData)
+    public int ChangeArmor(int changeArmorData, out int outArmorChangeData)
     {
         outArmorChangeData = 0;
         armorCurrent += changeArmorData;

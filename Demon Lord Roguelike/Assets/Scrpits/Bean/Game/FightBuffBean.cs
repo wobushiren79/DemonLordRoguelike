@@ -8,12 +8,12 @@ using UnityEngine.PlayerLoop;
 
 public class FightBuffBean
 {
+    public FightBuffInfoBean fightBuffInfo;
     public FightBuffStruct fightBuffStruct;
+
     public string creatureId;//作用的生物ID
     public float timeUpdate = 0;
     public int triggerNumLeft;//剩下的触发次数
-
-    protected FightBuffInfoBean fightBuffInfo;
 
     public FightBuffBean(FightBuffStruct fightBuffStruct,string creatureId)
     {
@@ -32,7 +32,7 @@ public class FightBuffBean
             {
                 timeUpdate = 0;
                 triggerNumLeft--;
-                var targetEntity = FightHandler.Instance.manager.GetBuffEntity(fightBuffInfo.class_entity);
+                var targetEntity = GetBuffEntity();
                 targetEntity.HandleBuff(this);
 
                 if (triggerNumLeft <= 0)
@@ -48,6 +48,39 @@ public class FightBuffBean
             {
                 GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
                 gameFightLogic.fightData.RemoveFightBuff(this);
+            }
+        }
+    }
+
+    public FightBuffBaseEntity GetBuffEntity()
+    {
+       return GetBuffEntity(fightBuffInfo.class_entity);
+    }
+
+
+    //buff的实例类
+    public static Dictionary<string, FightBuffBaseEntity> dicBuffEntity = new Dictionary<string, FightBuffBaseEntity>();
+    /// <summary>
+    /// 获取BUFF实例类
+    /// </summary>
+    public static FightBuffBaseEntity GetBuffEntity(string entityName)
+    {
+        string className = $"FightBuffFor{entityName}";
+        if (dicBuffEntity.TryGetValue(className, out var targetClass))
+        {
+            return targetClass;
+        }
+        else
+        {
+            targetClass = ReflexUtil.CreateInstance<FightBuffBaseEntity>(className);
+            if (targetClass == null)
+            {
+                return null;
+            }
+            else
+            {
+                dicBuffEntity.Add(className, targetClass);
+                return targetClass;
             }
         }
     }

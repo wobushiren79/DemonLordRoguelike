@@ -32,12 +32,16 @@ Shader "Universal Render Pipeline/2D/Spine/Sprite"
 		_BlendTex("Blend Texture", 2D) = "white" {}
 		_BlendAmount("Blend", Range(0,1)) = 0.0
 
+		[MaterialToggle(_LIGHT_AFFECTS_ADDITIVE)] _LightAffectsAdditive("Light Affects Additive", Float) = 0
+		[MaterialToggle(_TINT_BLACK_ON)]  _TintBlack("Tint Black", Float) = 0
+		_Black("Dark Color", Color) = (0,0,0,0)
+
 		[HideInInspector] _SrcBlend("__src", Float) = 1.0
 		[HideInInspector] _DstBlend("__dst", Float) = 0.0
 		[HideInInspector] _RenderQueue("__queue", Float) = 0.0
 		[HideInInspector] _Cull("__cull", Float) = 0.0
 		[HideInInspector] _StencilRef("Stencil Reference", Float) = 1.0
-		[Enum(UnityEngine.Rendering.CompareFunction)] _StencilComp("Stencil Compare", Float) = 0.0 // Disabled stencil test by default
+		[Enum(UnityEngine.Rendering.CompareFunction)] _StencilComp("Stencil Compare", Float) = 8 // Set to Always as default
 	}
 
 	HLSLINCLUDE
@@ -74,7 +78,7 @@ Shader "Universal Render Pipeline/2D/Spine/Sprite"
 
 			// -------------------------------------
 			// Material Keywords
-			#pragma shader_feature _ _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON _ADDITIVEBLEND _ADDITIVEBLEND_SOFT _MULTIPLYBLEND _MULTIPLYBLEND_X2
+			#pragma shader_feature _ _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON _ALPHAPREMULTIPLY_VERTEX_ONLY _ADDITIVEBLEND _ADDITIVEBLEND_SOFT _MULTIPLYBLEND _MULTIPLYBLEND_X2
 			#pragma shader_feature _ _FIXED_NORMALS_VIEWSPACE _FIXED_NORMALS_VIEWSPACE_BACKFACE _FIXED_NORMALS_MODELSPACE  _FIXED_NORMALS_MODELSPACE_BACKFACE
 			#pragma shader_feature _NORMALMAP
 			#pragma shader_feature _ALPHA_CLIP
@@ -82,10 +86,11 @@ Shader "Universal Render Pipeline/2D/Spine/Sprite"
 			#pragma shader_feature _COLOR_ADJUST
 			#pragma shader_feature _RIM_LIGHTING
 			#pragma shader_feature _TEXTURE_BLEND
+			#pragma shader_feature _LIGHT_AFFECTS_ADDITIVE
+			#pragma shader_feature _TINT_BLACK_ON
 
 			#pragma fragmentoption ARB_precision_hint_fastest
-			#pragma multi_compile _ PIXELSNAP_ON
-			#pragma multi_compile _ ETC1_EXTERNAL_ALPHA
+			#pragma multi_compile_local _ PIXELSNAP_ON
 
 			//--------------------------------------
 			// GPU Instancing
@@ -93,7 +98,6 @@ Shader "Universal Render Pipeline/2D/Spine/Sprite"
 
 			//--------------------------------------
 			// Spine related keywords
-			#pragma shader_feature _ _STRAIGHT_ALPHA_INPUT
 			#pragma vertex CombinedShapeLightVertex
 			#pragma fragment CombinedShapeLightFragment
 
@@ -104,8 +108,9 @@ Shader "Universal Render Pipeline/2D/Spine/Sprite"
 
 			#include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/LightingUtility.hlsl"
 
+			#define SPRITE_SHADER_2D
 			#include "../Include/Spine-Input-Sprite-URP.hlsl"
-			//#include "Include/Spine-Sprite-StandardPass-URP-2D.hlsl"
+			#include "Include/Spine-Sprite-StandardPass-URP-2D.hlsl"
 			ENDHLSL
 		}
 
@@ -128,8 +133,7 @@ Shader "Universal Render Pipeline/2D/Spine/Sprite"
 			#pragma shader_feature _NORMALMAP
 			#pragma shader_feature _ALPHA_CLIP
 
-			#pragma multi_compile _ PIXELSNAP_ON
-			#pragma multi_compile _ ETC1_EXTERNAL_ALPHA
+			#pragma multi_compile_local _ PIXELSNAP_ON
 
 			//--------------------------------------
 			// GPU Instancing
@@ -139,14 +143,32 @@ Shader "Universal Render Pipeline/2D/Spine/Sprite"
 			#define fixed4 half4
 			#define fixed3 half3
 			#define fixed half
-
+			#define SPRITE_SHADER_2D
 			#include "../Include/Spine-Input-Sprite-URP.hlsl"
 			#include "Include/Spine-Sprite-NormalsPass-URP-2D.hlsl"
 
 			ENDHLSL
 		}
 
-		UsePass "Universal Render Pipeline/2D/Spine/Skeleton Lit/UNLIT"
+		Pass
+		{
+			Name "Unlit"
+			Tags { "LightMode" = "UniversalForward" "Queue" = "Transparent" "RenderType" = "Transparent"}
+
+			ZWrite Off
+			Cull Off
+			Blend One OneMinusSrcAlpha
+
+			HLSLPROGRAM
+			#pragma shader_feature _ _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON _ALPHAPREMULTIPLY_VERTEX_ONLY _ADDITIVEBLEND _ADDITIVEBLEND_SOFT _MULTIPLYBLEND _MULTIPLYBLEND_X2
+
+			#pragma prefer_hlslcc gles
+			#pragma vertex UnlitVertex
+			#pragma fragment UnlitFragment
+
+			#include "Include/Spine-SkeletonLit-UnlitPass-URP-2D.hlsl"
+			ENDHLSL
+		}
 	}
 
 	FallBack "Universal Render Pipeline/2D/Spine/Skeleton Lit"

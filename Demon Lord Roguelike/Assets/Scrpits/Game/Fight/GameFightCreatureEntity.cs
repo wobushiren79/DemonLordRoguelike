@@ -148,6 +148,8 @@ public class GameFightCreatureEntity
                         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
                         gameFightLogic.fightData.AddFightBuff(targetBuff);
                     });
+                    //重新赋值基础属性
+                    fightCreatureData.InitBaseAttribute();
                 }
             }
         }

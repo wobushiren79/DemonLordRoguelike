@@ -286,6 +286,7 @@ public class FightBean
             if (targetCreature != null && targetCreature.fightCreatureData != null && !targetCreature.fightCreatureData.listBuff.IsNull())
             {
                 targetCreature.fightCreatureData.listBuff.Remove(fightBuffData);
+                targetCreature.fightCreatureData.InitBaseAttribute();
             }
         }
         catch (Exception e)

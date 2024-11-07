@@ -38,12 +38,16 @@ Shader "Universal Render Pipeline/Spine/Sprite"
 		_BlendTex("Blend Texture", 2D) = "white" {}
 		_BlendAmount("Blend", Range(0,1)) = 0.0
 
+		[MaterialToggle(_LIGHT_AFFECTS_ADDITIVE)] _LightAffectsAdditive("Light Affects Additive", Float) = 0
+		[MaterialToggle(_TINT_BLACK_ON)]  _TintBlack("Tint Black", Float) = 0
+		_Black("Dark Color", Color) = (0,0,0,0)
+
 		[HideInInspector] _SrcBlend("__src", Float) = 1.0
 		[HideInInspector] _DstBlend("__dst", Float) = 0.0
 		[HideInInspector] _RenderQueue("__queue", Float) = 0.0
 		[HideInInspector] _Cull("__cull", Float) = 0.0
 		[HideInInspector] _StencilRef("Stencil Reference", Float) = 1.0
-		[Enum(UnityEngine.Rendering.CompareFunction)] _StencilComp("Stencil Compare", Float) = 0.0 // Disabled stencil test by default
+		[Enum(UnityEngine.Rendering.CompareFunction)] _StencilComp("Stencil Compare", Float) = 8 // Set to Always as default
 	}
 
 	SubShader
@@ -79,7 +83,7 @@ Shader "Universal Render Pipeline/Spine/Sprite"
 
 			// -------------------------------------
 			// Material Keywords
-			#pragma shader_feature _ _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON _ADDITIVEBLEND _ADDITIVEBLEND_SOFT _MULTIPLYBLEND _MULTIPLYBLEND_X2
+			#pragma shader_feature _ _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON _ALPHAPREMULTIPLY_VERTEX_ONLY _ADDITIVEBLEND _ADDITIVEBLEND_SOFT _MULTIPLYBLEND _MULTIPLYBLEND_X2
 			#pragma shader_feature _ _FIXED_NORMALS_VIEWSPACE _FIXED_NORMALS_VIEWSPACE_BACKFACE _FIXED_NORMALS_MODELSPACE _FIXED_NORMALS_MODELSPACE_BACKFACE _FIXED_NORMALS_WORLDSPACE
 			#pragma shader_feature _ _SPECULAR _SPECULAR_GLOSSMAP
 			#pragma shader_feature _NORMALMAP
@@ -92,36 +96,39 @@ Shader "Universal Render Pipeline/Spine/Sprite"
 			#pragma shader_feature _TEXTURE_BLEND
 			#pragma shader_feature _FOG
 			#pragma shader_feature _RECEIVE_SHADOWS_OFF
+			#pragma shader_feature _LIGHT_AFFECTS_ADDITIVE
+			#pragma shader_feature _TINT_BLACK_ON
 
 			#pragma fragmentoption ARB_precision_hint_fastest
 			#pragma multi_compile_fog
 			#pragma multi_compile _ PIXELSNAP_ON
-			#pragma multi_compile _ ETC1_EXTERNAL_ALPHA
 
 			// -------------------------------------
 			// Universal Pipeline keywords
-			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS
-			#pragma multi_compile _ MAIN_LIGHT_CALCULATE_SHADOWS
-			#pragma multi_compile _ REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR
-			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
 			#pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
 			#pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
 			#pragma multi_compile _ _SHADOWS_SOFT
 			#pragma multi_compile _ _MIXED_LIGHTING_SUBTRACTIVE
+			#pragma multi_compile_fragment _ _LIGHT_COOKIES
+
+			// Farward+ renderer keywords
+			#pragma multi_compile_fragment _ _LIGHT_LAYERS
+			#pragma multi_compile _ _FORWARD_PLUS
+			#pragma multi_compile_fragment _ _WRITE_RENDERING_LAYERS
 
 			// -------------------------------------
 			// Unity defined keywords
 			#pragma multi_compile _ DIRLIGHTMAP_COMBINED
 			#pragma multi_compile _ LIGHTMAP_ON
-			#pragma multi_compile_fog
 
 			//--------------------------------------
 			// GPU Instancing
 			#pragma multi_compile_instancing
+			#pragma instancing_options renderinglayer
 
 			//--------------------------------------
 			// Spine related keywords
-			#pragma shader_feature _ _STRAIGHT_ALPHA_INPUT
 			#pragma vertex ForwardPassVertexSprite
 			#pragma fragment ForwardPassFragmentSprite
 
@@ -140,6 +147,7 @@ Shader "Universal Render Pipeline/Spine/Sprite"
 			Tags{"LightMode" = "ShadowCaster"}
 
 			ZWrite On
+			ColorMask 0
 			ZTest LEqual
 			Cull Off
 
@@ -176,7 +184,7 @@ Shader "Universal Render Pipeline/Spine/Sprite"
 			Tags{"LightMode" = "DepthOnly"}
 
 			ZWrite On
-			ColorMask 0
+			ColorMask R
 			Cull Off
 
 			HLSLPROGRAM
@@ -204,8 +212,70 @@ Shader "Universal Render Pipeline/Spine/Sprite"
 			#include "Include/Spine-Sprite-DepthOnlyPass-URP.hlsl"
 			ENDHLSL
 		}
+
+		// This pass is used when drawing to a _CameraNormalsTexture texture
+		Pass
+		{
+			Name "DepthNormals"
+			Tags{"LightMode" = "DepthNormals"}
+
+			ZWrite On
+			Cull[_Cull]
+
+			HLSLPROGRAM
+			#pragma vertex DepthNormalsVertexSprite
+			#pragma fragment DepthNormalsFragmentSprite
+
+			// -------------------------------------
+			// Material Keywords
+			#pragma shader_feature _ _FIXED_NORMALS_VIEWSPACE _FIXED_NORMALS_VIEWSPACE_BACKFACE _FIXED_NORMALS_MODELSPACE _FIXED_NORMALS_MODELSPACE_BACKFACE _FIXED_NORMALS_WORLDSPACE
+			#pragma shader_feature _NORMALMAP
+			#pragma shader_feature _ALPHA_CLIP
+
+			// -------------------------------------
+			// Universal Pipeline keywords
+			#pragma multi_compile_fragment _ _WRITE_RENDERING_LAYERS
+
+			//--------------------------------------
+			// GPU Instancing
+			#pragma multi_compile_instancing
+
+			#define USE_URP
+			#define fixed4 half4
+			#define fixed3 half3
+			#define fixed half
+			#include "Include/Spine-Input-Sprite-URP.hlsl"
+			#include "Include/Spine-Sprite-DepthNormalsPass-URP.hlsl"
+			ENDHLSL
+		}
+
+		Pass
+		{
+			Name "Unlit"
+			Tags { "LightMode" = "UniversalForward" "Queue" = "Transparent" "RenderType" = "Transparent"}
+
+			ZWrite Off
+			Cull Off
+			Blend One OneMinusSrcAlpha
+
+			HLSLPROGRAM
+			#pragma shader_feature _ _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON _ALPHAPREMULTIPLY_VERTEX_ONLY _ADDITIVEBLEND _ADDITIVEBLEND_SOFT _MULTIPLYBLEND _MULTIPLYBLEND_X2
+			#pragma prefer_hlslcc gles
+			#pragma vertex vert
+			#pragma fragment frag
+
+			#undef LIGHTMAP_ON
+
+			#define USE_URP
+			#define fixed4 half4
+			#define fixed3 half3
+			#define fixed half
+			#include "Include/Spine-Input-URP.hlsl"
+			#include "Include/Spine-Skeleton-ForwardPass-URP.hlsl"
+			ENDHLSL
+		}
 	}
 
-	FallBack "Hidden/InternalErrorShader"
+	FallBack "Universal Render Pipeline/Spine/Skeleton"
 	CustomEditor "SpineSpriteShaderGUI"
 }

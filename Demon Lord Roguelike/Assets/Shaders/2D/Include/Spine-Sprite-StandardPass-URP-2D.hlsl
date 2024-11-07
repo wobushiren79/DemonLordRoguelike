@@ -1,10 +1,14 @@
 #ifndef SPRITE_STANDARD_PASS_URP_INCLUDED
 #define SPRITE_STANDARD_PASS_URP_INCLUDED
 
-#include "Packages/com.unity.render-pipelines.universal/Shaders/2D/Include/LightingUtility.hlsl"
-
 #include "../Include/SpineCoreShaders/ShaderShared.cginc"
 #include "../Include/SpineCoreShaders/SpriteLighting.cginc"
+#if defined(_ALPHAPREMULTIPLY_ON)
+	#undef _STRAIGHT_ALPHA_INPUT
+#elif !defined(_STRAIGHT_ALPHA_INPUT)
+	#define _STRAIGHT_ALPHA_INPUT
+#endif
+#include "../Include/SpineCoreShaders/Spine-Skeleton-Tint-Common.cginc"
 
 #if USE_SHAPE_LIGHT_TYPE_0
 SHAPE_LIGHT(0)
@@ -28,7 +32,7 @@ SAMPLER(sampler_MaskTex);
 struct VertexOutputSpriteURP2D
 {
 	float4 pos : SV_POSITION;
-	fixed4 vertexColor : COLOR;
+	half4 vertexColor : COLOR;
 	float3 texcoord : TEXCOORD0;
 	float2 lightingUV : TEXCOORD1;
 
@@ -44,6 +48,10 @@ struct VertexOutputSpriteURP2D
 #if defined(_RIM_LIGHTING)
 	float4 positionWS : TEXCOORD8;
 #endif
+
+#if defined(_TINT_BLACK_ON)
+	float3 darkColor : TEXCOORD9;
+#endif
 };
 
 VertexOutputSpriteURP2D CombinedShapeLightVertex(VertexInput input)
@@ -57,6 +65,11 @@ VertexOutputSpriteURP2D CombinedShapeLightVertex(VertexInput input)
 	output.lightingUV = ComputeScreenPos(clipVertex).xy;
 
 	output.vertexColor = calculateVertexColor(input.color);
+#if defined(_TINT_BLACK_ON)
+	output.darkColor = GammaToTargetSpace(
+		half3(input.tintBlackRG.r, input.tintBlackRG.g, input.tintBlackB.r)) + (_Black.rgb * input.color.a);
+#endif
+
 	output.texcoord = float3(calculateTextureCoord(input.texcoord), 0);
 
 	float3 positionWS = TransformObjectToWorld(input.vertex.xyz);
@@ -87,13 +100,29 @@ VertexOutputSpriteURP2D CombinedShapeLightVertex(VertexInput input)
 half4 CombinedShapeLightFragment(VertexOutputSpriteURP2D input) : SV_Target
 {
 	fixed4 texureColor = calculateTexturePixel(input.texcoord.xy);
-	RETURN_UNLIT_IF_ADDITIVE_SLOT(texureColor, input.vertexColor) // shall be called before ALPHA_CLIP
+	RETURN_UNLIT_IF_ADDITIVE_SLOT_TINT(texureColor, input.vertexColor, input.darkColor, _Color.a, _Black.a) // shall be called before ALPHA_CLIP
 	ALPHA_CLIP(texureColor, input.vertexColor)
-
-	texureColor *= input.vertexColor;
+#if defined(_TINT_BLACK_ON)
+	half4 main = fragTintedColor(texureColor, input.darkColor, input.vertexColor, _Color.a, _Black.a);
+#else
+	half4 main = texureColor * input.vertexColor;
+#endif
 
 	half4 mask = SAMPLE_TEXTURE2D(_MaskTex, sampler_MaskTex, input.texcoord.xy);
-	half4 pixel = CombinedShapeLightShared(texureColor, mask, input.lightingUV);
+	// un-premultiply for additive lights in CombinedShapeLightShared, reapply afterwards
+	main.rgb = main.a < 0.001 ? main.rgb : main.rgb / main.a; // < epsilon prevents imprecision issues on some HW.
+#if UNITY_VERSION  < 202120
+	half4 pixel = half4(CombinedShapeLightShared(half4(main.rgb, 1), mask, input.lightingUV).rgb * main.a, main.a);
+#else
+	SurfaceData2D surfaceData;
+	InputData2D inputData;
+	surfaceData.albedo = main.rgb;
+	surfaceData.alpha = 1;
+	surfaceData.mask = mask;
+	inputData.uv = input.texcoord.xy;
+	inputData.lightingUV = input.lightingUV;
+	half4 pixel = half4(CombinedShapeLightShared(surfaceData, inputData).rgb * main.a, main.a);
+#endif
 
 #if defined(_RIM_LIGHTING)
 	#if defined(_NORMALMAP)
@@ -105,8 +134,8 @@ half4 CombinedShapeLightFragment(VertexOutputSpriteURP2D input) : SV_Target
 	pixel.rgb = applyRimLighting(input.positionWS.xyz, normalWS, pixel);
 #endif
 
-	APPLY_EMISSION(pixel.rgb, input.texcoord)
-	pixel = prepareLitPixelForOutput(pixel, input.vertexColor);
+	APPLY_EMISSION(pixel.rgb, input.texcoord.xy)
+	pixel = prepareLitPixelForOutput(pixel, texureColor.a, input.vertexColor.a);
 	COLORISE(pixel)
 	return pixel;
 }

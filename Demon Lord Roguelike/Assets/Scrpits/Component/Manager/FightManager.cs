@@ -25,9 +25,6 @@ public class FightManager : BaseManager
     public List<GameTimeCountDownBean> listTimeCountDown = new List<GameTimeCountDownBean>();
     public Queue<GameTimeCountDownBean> poolTimeCountDown = new Queue<GameTimeCountDownBean>();
 
-    //buff的实例类
-    public Dictionary<string, FightBuffBaseEntity> dicBuffEntity = new Dictionary<string, FightBuffBaseEntity>();
-
     /// <summary>
     /// 清理所有数据
     /// </summary>
@@ -247,31 +244,6 @@ public class FightManager : BaseManager
             Queue<BaseAttackMode> poolNew = new Queue<BaseAttackMode>();
             poolNew.Enqueue(targetMode);
             dicPoolAttackModeObj.Add(targetMode.attackModeInfo.id, poolNew);
-        }
-    }
-
-    /// <summary>
-    /// 获取BUFF实例类
-    /// </summary>
-    public FightBuffBaseEntity GetBuffEntity(string entityName)
-    {
-        string className = $"FightBuffFor{entityName}";
-        if (dicBuffEntity.TryGetValue(className, out var targetClass))
-        {
-            return targetClass;
-        }
-        else
-        {
-            targetClass = ReflexUtil.CreateInstance<FightBuffBaseEntity>(className);
-            if (targetClass == null)
-            {
-                return null;
-            }
-            else
-            {
-                dicBuffEntity.Add(className, targetClass);
-                return targetClass;
-            }
         }
     }
 }

@@ -6,11 +6,13 @@ Shader "Universal Render Pipeline/Spine/Outline/Skeleton-OutlineOnly" {
 
 		// Outline properties are drawn via custom editor.
 		[HideInInspector] _OutlineWidth("Outline Width", Range(0,8)) = 3.0
+		[HideInInspector][MaterialToggle(_USE_SCREENSPACE_OUTLINE_WIDTH)] _UseScreenSpaceOutlineWidth("Width in Screen Space", Float) = 0
 		[HideInInspector] _OutlineColor("Outline Color", Color) = (1,1,0,1)
 		[HideInInspector] _OutlineReferenceTexWidth("Reference Texture Width", Int) = 1024
 		[HideInInspector] _ThresholdEnd("Outline Threshold", Range(0,1)) = 0.25
 		[HideInInspector] _OutlineSmoothness("Outline Smoothness", Range(0,1)) = 1.0
 		[HideInInspector][MaterialToggle(_USE8NEIGHBOURHOOD_ON)] _Use8Neighbourhood("Sample 8 Neighbours", Float) = 1
+		[HideInInspector] _OutlineOpaqueAlpha("Opaque Alpha", Range(0,1)) = 1.0
 		[HideInInspector] _OutlineMipLevel("Outline Mip Level", Range(0,3)) = 0
 	}
 
@@ -43,17 +45,18 @@ Shader "Universal Render Pipeline/Spine/Outline/Skeleton-OutlineOnly" {
 			#pragma vertex vertOutline
 			#pragma fragment fragOutline
 			#pragma shader_feature _ _USE8NEIGHBOURHOOD_ON
+			#pragma shader_feature _ _USE_SCREENSPACE_OUTLINE_WIDTH
 
 			#define USE_URP
 			#define fixed4 half4
 			#define fixed3 half3
 			#define fixed half
+			#define NO_CUTOFF_PARAM
 			#include "../Include/Spine-Input-Outline-URP.hlsl"
 			#include "../Include/Spine-Outline-Pass-URP.hlsl"
 			ENDHLSL
 		}
 	}
 
-	FallBack "Hidden/InternalErrorShader"
 	CustomEditor "SpineShaderWithOutlineGUI"
 }
