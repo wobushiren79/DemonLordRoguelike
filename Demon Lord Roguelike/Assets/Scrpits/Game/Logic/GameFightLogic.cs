@@ -57,10 +57,11 @@ public class GameFightLogic : BaseGameLogic
     public override void UpdateGame()
     {
         base.UpdateGame();
-        fightData.gameTime = fightData.gameTime + Time.deltaTime * fightData.gameSpeed;
-        UpdateGameForSelectCreature();
-        UpdateGameForAttCreate();
-        UpdateGameForFightBuff();
+        float updateTime = Time.deltaTime * fightData.gameSpeed;
+        fightData.gameTime = fightData.gameTime + updateTime;
+        UpdateGameForSelectCreature(updateTime);
+        UpdateGameForAttCreate(updateTime);
+        UpdateGameForFightCreature(updateTime);
     }
 
     /// <summary>
@@ -85,7 +86,7 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>
     /// 更新-选中物体
     /// </summary>
-    public void UpdateGameForSelectCreature()
+    public void UpdateGameForSelectCreature(float updateTime)
     {
         //如果有选中的物体
         if (selectCreature != null)
@@ -113,9 +114,9 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>
     /// 更新-进攻方生成
     /// </summary>
-    public void UpdateGameForAttCreate()
+    public void UpdateGameForAttCreate(float updateTime)
     {
-        fightData.timeUpdateForAttCreate += (Time.deltaTime * fightData.gameSpeed);
+        fightData.timeUpdateForAttCreate += updateTime;
         if (fightData.timeUpdateForAttCreate > fightData.timeUpdateTargetForAttCreate)
         {
             fightData.timeUpdateForAttCreate = 0;
@@ -125,20 +126,22 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// 处理BUFF
+    /// 更新-战斗的生物
     /// </summary>
-    public void UpdateGameForFightBuff()
+    public void UpdateGameForFightCreature(float updateTime)
     {
-        fightData.timeUpdateForFightBuff += (Time.deltaTime * fightData.gameSpeed);
-        if (fightData.timeUpdateForFightBuff > fightData.timeUpdateMaxForFightBuff)
+        fightData.timeUpdateForFightCreature += updateTime;
+        if (fightData.timeUpdateForFightCreature > fightData.timeUpdateTargetForFightCreature)
         {
-            fightData.timeUpdateForFightBuff = 0;
-            //获取所有拥有BUFF的生物
-            var listBuff = fightData.GetAllBuff();
-            for (int i = 0; i < listBuff.Count; i++)
+            fightData.timeUpdateForFightCreature = 0;
+            var allCreature = fightData.dicCreatureEntity;
+            foreach (var item in allCreature)
             {
-                var itemBuff = listBuff[i];
-                itemBuff.AddBuffTime(fightData.timeUpdateMaxForFightBuff);
+                var itemCreature = item.Value;
+                if (itemCreature != null)
+                {
+                    itemCreature.Update(updateTime);
+                }
             }
         }
     }

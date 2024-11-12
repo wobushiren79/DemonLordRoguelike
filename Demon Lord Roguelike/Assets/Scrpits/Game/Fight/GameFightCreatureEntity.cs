@@ -31,6 +31,36 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
+    /// 更新
+    /// </summary>
+    public void Update(float updateTime)
+    {
+        UpdateForBuffs(updateTime);
+    }
+
+    /// <summary>
+    /// 更新buffs
+    /// </summary>
+    public void UpdateForBuffs(float updateTime)
+    {
+        if (IsDead())
+            return;
+        if (fightCreatureData == null)
+            return;
+        if (fightCreatureData.listBuff.IsNull())
+            return;
+        for (int i = 0; i < fightCreatureData.listBuff.Count; i++)
+        {
+            var itemBuff = fightCreatureData.listBuff[i];
+            itemBuff.AddBuffTime(updateTime,out bool isRemove);
+            if (isRemove)
+            {
+                i--;
+            }
+        }
+    }
+
+    /// <summary>
     /// 修改皮肤 根据生物数据修改
     /// </summary>
     public void ChangeSkin(CreatureBean creatureData)
@@ -143,13 +173,7 @@ public class GameFightCreatureEntity
                 var buffsTrigger = FightBuffBean.GetTriggerFightBuff(buffs,fightCreatureData.creatureData.creatureId);
                 if (!buffsTrigger.IsNull())
                 {
-                    FightBuffBean.CombineBuff(fightCreatureData.listBuff, buffsTrigger, actionForCombineNew: (targetBuff) =>
-                    {
-                        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-                        gameFightLogic.fightData.AddFightBuff(targetBuff);
-                    });
-                    //重新赋值基础属性
-                    fightCreatureData.InitBaseAttribute();
+                    fightCreatureData.AddBuff(buffsTrigger);
                 }
             }
         }

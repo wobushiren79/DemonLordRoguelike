@@ -17,6 +17,9 @@ public class FightBean
     public float timeUpdateForAttCreate = 0;//更新时间-怪物生成
     public float timeUpdateTargetForAttCreate = 0;//更新目标时间-怪物生成
 
+    public float timeUpdateForFightCreature = 0;//更新目标时间-生物
+    public float timeUpdateTargetForFightCreature = 0.1f;//更新目标时间-生物
+
     public int currentMagic;//当前魔力值
     public FightAttCreateDetailsBean currentFightAttCreateDetails;//当前进攻数据
 
@@ -32,11 +35,6 @@ public class FightBean
     public FightCreatureBean fightDefCoreData;//防守核心数据
     public GameFightCreatureEntity fightDefCoreCreature;//防守方核心生物实例
 
-
-    public float timeUpdateForFightBuff = 0;//更新时间-战斗buff
-    public float timeUpdateMaxForFightBuff = 0.1f;//更新时间-战斗buff
-
-    public List<FightBuffBean> listBuff = new List<FightBuffBean>();//场上所有的buff
     /// <summary>
     /// 清理数据
     /// </summary>
@@ -66,9 +64,6 @@ public class FightBean
         }
         fightDefCoreCreature = null;
         fightDefCoreData = null;
-
-        timeUpdateForFightBuff = 0;
-        listBuff.Clear();
     }
 
     /// <summary>
@@ -85,15 +80,6 @@ public class FightBean
         {
             timeUpdateTargetForAttCreate = currentFightAttCreateDetails.createDelay;
         }
-    }
-
-    /// <summary>
-    /// 获取所有buff
-    /// </summary>
-    /// <returns></returns>
-    public List<FightBuffBean> GetAllBuff()
-    {
-        return listBuff;
     }
 
     /// <summary>
@@ -263,35 +249,5 @@ public class FightBean
             return targetCreature;
         }
         return null;
-    }
-
-    /// <summary>
-    /// 添加一个战斗BUFF
-    /// </summary>
-    /// <param name="fightBuffData"></param>
-    public void AddFightBuff(FightBuffBean fightBuffData)
-    {
-        listBuff.Add(fightBuffData);
-    }
-     
-    /// <summary>
-    /// 移除一个战斗BUFF
-    /// </summary>
-    public void RemoveFightBuff(FightBuffBean fightBuffData)
-    {
-        try
-        {
-            listBuff.Remove(fightBuffData);
-            var targetCreature = GetFightCreatureById(fightBuffData.creatureId);
-            if (targetCreature != null && targetCreature.fightCreatureData != null && !targetCreature.fightCreatureData.listBuff.IsNull())
-            {
-                targetCreature.fightCreatureData.listBuff.Remove(fightBuffData);
-                targetCreature.fightCreatureData.InitBaseAttribute();
-            }
-        }
-        catch (Exception e)
-        {
-            LogUtil.LogError($"移除战斗buff失败  {e.ToString()}");
-        }
     }
 }

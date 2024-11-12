@@ -23,9 +23,13 @@ public class FightBuffBean
         this.triggerNumLeft = fightBuffStruct.triggerNum;
     }
 
-    public void AddBuffTime(float buffTime)
+    /// <summary>
+    /// buff持续时间增加
+    /// </summary>
+    public void AddBuffTime(float buffTime,out bool isRemove)
     {
         timeUpdate += buffTime;
+        isRemove = false;
         if (fightBuffInfo.time_trigger > 0)
         {
             if (timeUpdate >= fightBuffInfo.time_trigger)
@@ -37,8 +41,8 @@ public class FightBuffBean
 
                 if (triggerNumLeft <= 0)
                 {
-                    GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-                    gameFightLogic.fightData.RemoveFightBuff(this);
+                    isRemove = true;
+                    RemoveBuff();
                 }
             }
         }
@@ -46,9 +50,30 @@ public class FightBuffBean
         {
             if (timeUpdate >= fightBuffStruct.triggerTime)
             {
-                GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-                gameFightLogic.fightData.RemoveFightBuff(this);
+                timeUpdate = 0;
+                isRemove = true;
+                RemoveBuff();
             }
+        }
+    }
+
+    /// <summary>
+    /// 移除buff
+    /// </summary>
+    public void RemoveBuff()
+    {
+        try
+        {
+            GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+            var targetCreature = gameFightLogic.fightData.GetFightCreatureById(creatureId);
+            if (targetCreature != null && targetCreature.fightCreatureData != null)
+            {
+                targetCreature.fightCreatureData.RemoveBuff(this);
+            }
+        }
+        catch (Exception e)
+        {
+            LogUtil.LogError($"移除战斗buff失败  {e.ToString()}");
         }
     }
 
@@ -85,6 +110,12 @@ public class FightBuffBean
         }
     }
 
+    /// <summary>
+    /// 获取触发的BUFF
+    /// </summary>
+    /// <param name="targetBuff"></param>
+    /// <param name="creatureId"></param>
+    /// <returns></returns>
     public static List<FightBuffBean> GetTriggerFightBuff(FightBuffStruct[] targetBuff,string creatureId)
     {
         List<FightBuffBean> listData = new List<FightBuffBean>();
@@ -104,36 +135,6 @@ public class FightBuffBean
             listData.Add(fightBuff);
         }
         return listData;
-    }
-
-    /// <summary>
-    /// 合并buff
-    /// </summary>
-    public static void CombineBuff(List<FightBuffBean> listBuff, List<FightBuffBean> targetBuffs,
-        Action<FightBuffBean> actionForCombineNew = null, Action<FightBuffBean> actionForCombineOld = null)
-    {
-        for (int f = 0; f < targetBuffs.Count; f++)
-        {
-            var targetBuff = targetBuffs[f];
-            bool hasOldBuff = false;
-            for (int i = 0; i < listBuff.Count; i++)
-            {
-                var itemBuff = listBuff[i];
-                if (itemBuff.fightBuffStruct.id == targetBuff.fightBuffStruct.id)
-                {
-                    hasOldBuff = true;
-                    itemBuff.triggerNumLeft = targetBuff.triggerNumLeft;
-                    actionForCombineOld?.Invoke(itemBuff);
-                    break;
-                }
-            }
-            if (!hasOldBuff)
-            {
-                listBuff.Add(targetBuff);
-                actionForCombineNew?.Invoke(targetBuff);
-
-            }
-        }
     }
 }
 

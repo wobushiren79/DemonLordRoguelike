@@ -15,7 +15,7 @@ public class FightBuffBaseEntity
     public virtual FightBuffEntityChangeDataStruct GetChangeDataForMoveSpeed()
     {
         FightBuffEntityChangeDataStruct targetData = new FightBuffEntityChangeDataStruct();
-        targetData.changeRate = 1;
+        targetData.changeRate = 0;
         targetData.change = 0;
         return targetData;
     }

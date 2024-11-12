@@ -62,7 +62,7 @@ public class FightCreatureBean
                 changeRateMoveSpeed += targetChangeData.changeRate;
             }
             moveSpeedCurrent += changeMoveSpeed;
-            moveSpeedCurrent *= changeRateMoveSpeed;
+            moveSpeedCurrent *= 1 + changeRateMoveSpeed;
         }
         if (moveSpeedCurrent < 0)
             moveSpeedCurrent = 0;
@@ -113,6 +113,48 @@ public class FightCreatureBean
             liftCurrent = liftMax;
         }
         return liftCurrent;
+    }
+
+    /// <summary>
+    /// Ìí¼ÓBUFF
+    /// </summary>
+    public void AddBuff(List<FightBuffBean> targetBuffs, Action<FightBuffBean> actionForCombineNew = null, Action<FightBuffBean> actionForCombineOld = null)
+    {
+        for (int f = 0; f < targetBuffs.Count; f++)
+        {
+            var targetBuff = targetBuffs[f];
+            bool hasOldBuff = false;
+            for (int i = 0; i < listBuff.Count; i++)
+            {
+                var itemBuff = listBuff[i];
+                if (itemBuff.fightBuffStruct.id == targetBuff.fightBuffStruct.id)
+                {
+                    hasOldBuff = true;
+                    itemBuff.triggerNumLeft = targetBuff.triggerNumLeft;
+                    actionForCombineOld?.Invoke(itemBuff);
+                    break;
+                }
+            }
+            if (!hasOldBuff)
+            {
+                listBuff.Add(targetBuff);
+                actionForCombineNew?.Invoke(targetBuff);
+
+            }
+        }
+        InitBaseAttribute();
+    }
+
+    /// <summary>
+    /// ÒÆ³ýBUFF
+    /// </summary>
+    public void RemoveBuff(FightBuffBean targetBuff)
+    {
+        if (!listBuff.IsNull())
+        {
+            listBuff.Remove(targetBuff);
+        }
+        InitBaseAttribute();
     }
 
 }
