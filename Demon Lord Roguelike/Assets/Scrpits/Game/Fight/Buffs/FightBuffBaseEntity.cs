@@ -3,7 +3,11 @@ using UnityEngine;
 
 public class FightBuffBaseEntity
 {
-    public virtual void HandleBuff(FightBuffBean fightBuffData)
+    /// <summary>
+    /// 触发BUFF
+    /// </summary>
+    /// <param name="fightBuffData"></param>
+    public virtual void TriggerBuff(FightBuffBean fightBuffData)
     {
         //GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         //var targetCreature = gameFightLogic.fightData.GetFightCreatureById(fightBuffData.creatureId);
@@ -12,7 +16,7 @@ public class FightBuffBaseEntity
     /// <summary>
     /// 获取移动速度影响BUFF
     /// </summary>
-    public virtual FightBuffEntityChangeDataStruct GetChangeDataForMoveSpeed()
+    public virtual FightBuffEntityChangeDataStruct GetChangeDataForMoveSpeed(FightBuffBean fightBuffData)
     {
         FightBuffEntityChangeDataStruct targetData = new FightBuffEntityChangeDataStruct();
         targetData.changeRate = 0;

@@ -18,6 +18,10 @@ public class FightBuffBean
     public FightBuffBean(FightBuffStruct fightBuffStruct,string creatureId)
     {
         fightBuffInfo = FightBuffInfoCfg.GetItemData(fightBuffStruct.id);
+        if (fightBuffInfo == null)
+        {
+            LogUtil.LogError($"buff初始化失败 没有找到creatureId_{creatureId} buffId_{fightBuffStruct.id}");
+        }
         this.fightBuffStruct = fightBuffStruct;
         this.creatureId = creatureId;
         this.triggerNumLeft = fightBuffStruct.triggerNum;
@@ -30,14 +34,15 @@ public class FightBuffBean
     {
         timeUpdate += buffTime;
         isRemove = false;
-        if (fightBuffInfo.time_trigger > 0)
+        //触发式BUFF（指定时间后触发 达到触发次数max之后结束）
+        if (fightBuffStruct.triggerNum > 0)
         {
-            if (timeUpdate >= fightBuffInfo.time_trigger)
+            if (timeUpdate >= fightBuffStruct.triggerTime)
             {
                 timeUpdate = 0;
                 triggerNumLeft--;
                 var targetEntity = GetBuffEntity();
-                targetEntity.HandleBuff(this);
+                targetEntity.TriggerBuff(this);
 
                 if (triggerNumLeft <= 0)
                 {
@@ -45,9 +50,11 @@ public class FightBuffBean
                     RemoveBuff();
                 }
             }
-        }
+        }           
+        //持续型BUFF（持续指定时间后结束）
         else
         {
+
             if (timeUpdate >= fightBuffStruct.triggerTime)
             {
                 timeUpdate = 0;
@@ -90,7 +97,7 @@ public class FightBuffBean
     /// </summary>
     public static FightBuffBaseEntity GetBuffEntity(string entityName)
     {
-        string className = $"FightBuffFor{entityName}";
+        string className = $"FightBuffEntityFor{entityName}";
         if (dicBuffEntity.TryGetValue(className, out var targetClass))
         {
             return targetClass;
@@ -144,7 +151,9 @@ public struct FightBuffStruct
     public float buffOdds;//buff触发几率
     public int triggerNum;//触发次数
     public float triggerTime;//触发时间
-    public int demage;//伤害
+
+    public float triggerValue;//值
+    public float triggerValueRate;//值百分比
 
     public static FightBuffStruct[] GetData(string targetData)
     {
@@ -176,13 +185,21 @@ public struct FightBuffStruct
             {
                 fightBuffStruct.triggerNum = int.Parse(itemDataValue);
             }
-            else if (itemDataName.Equals("demage"))
+            else if (itemDataName.Equals("triggerTime"))
             {
-                fightBuffStruct.id = int.Parse(itemDataValue);
+                fightBuffStruct.triggerTime = float.Parse(itemDataValue);
+            }
+            else if (itemDataName.Equals("triggerValue"))
+            {
+                fightBuffStruct.triggerValue = float.Parse(itemDataValue);
+            }
+            else if (itemDataName.Equals("triggerValueRate"))
+            {
+                fightBuffStruct.triggerValueRate = float.Parse(itemDataValue);
             }
             else if (itemDataName.Equals("buffOdds"))
             {
-                fightBuffStruct.id = int.Parse(itemDataValue);
+                fightBuffStruct.buffOdds = float.Parse(itemDataValue);
             }
         }
         return fightBuffStruct;

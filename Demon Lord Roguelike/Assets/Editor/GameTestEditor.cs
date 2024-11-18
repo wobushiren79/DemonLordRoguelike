@@ -118,7 +118,7 @@ public class GameTestEditor : Editor
         attCreateData1.stage = 1;
         attCreateData1.timeDuration = 180;
         attCreateData1.createNum = 1;
-        attCreateData1.createDelay = 0.5f;
+        attCreateData1.createDelay = 5f;
         attCreateData1.timePointForCreatures = new List<FightAttCreateDetailsTimePointBean>()
         {
             new FightAttCreateDetailsTimePointBean(0f, 0.5f, new List<int>() { 2 }),

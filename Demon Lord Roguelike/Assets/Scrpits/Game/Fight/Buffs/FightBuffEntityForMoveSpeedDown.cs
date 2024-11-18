@@ -3,9 +3,11 @@ using UnityEngine;
 
 public class FightBuffEntityForMoveSpeedDown : FightBuffBaseEntity
 {
-    public override void HandleBuff(FightBuffBean fightBuffData)
+    public override FightBuffEntityChangeDataStruct GetChangeDataForMoveSpeed(FightBuffBean fightBuffData)
     {
-        //GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        //var targetCreature = gameFightLogic.fightData.GetFightCreatureById(fightBuffData.creatureId);
+        FightBuffEntityChangeDataStruct fightBuffEntityChangeData = new FightBuffEntityChangeDataStruct();
+        fightBuffEntityChangeData.change = fightBuffData.fightBuffStruct.triggerValue;
+        fightBuffEntityChangeData.changeRate = fightBuffData.fightBuffStruct.triggerValueRate;
+        return fightBuffEntityChangeData;
     }
 }

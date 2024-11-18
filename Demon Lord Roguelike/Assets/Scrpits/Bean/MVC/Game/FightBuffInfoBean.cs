@@ -8,10 +8,6 @@ public partial class FightBuffInfoBean : BaseBean
 	/// </summary>
 	public string class_entity;
 	/// <summary>
-	///触发事件（-1为一直触发）
-	/// </summary>
-	public float time_trigger;
-	/// <summary>
 	///图标名字
 	/// </summary>
 	public string icon_res;

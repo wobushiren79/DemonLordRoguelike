@@ -49,6 +49,7 @@ public class FightCreatureBean
     public void InitBaseAttribute()
     {
         moveSpeedCurrent = creatureData.GetMoveSpeed();
+        
         if (!listBuff.IsNull())
         {
             float changeMoveSpeed = 0;
@@ -57,12 +58,16 @@ public class FightCreatureBean
             {
                 FightBuffBean itemBuff = listBuff[i];
                 var buffEntity = itemBuff.GetBuffEntity();
-                var targetChangeData = buffEntity.GetChangeDataForMoveSpeed();
+                var targetChangeData = buffEntity.GetChangeDataForMoveSpeed(itemBuff);
                 changeMoveSpeed += targetChangeData.change;
                 changeRateMoveSpeed += targetChangeData.changeRate;
             }
             moveSpeedCurrent += changeMoveSpeed;
+            if (moveSpeedCurrent < 0)
+                moveSpeedCurrent = 0;
             moveSpeedCurrent *= 1 + changeRateMoveSpeed;
+            if (moveSpeedCurrent < 0)
+                moveSpeedCurrent = 0;
         }
         if (moveSpeedCurrent < 0)
             moveSpeedCurrent = 0;
