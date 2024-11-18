@@ -8,6 +8,10 @@ public partial class FightBuffInfoBean : BaseBean
 	/// </summary>
 	public string class_entity;
 	/// <summary>
+	///身体变色
+	/// </summary>
+	public string color_body;
+	/// <summary>
 	///图标名字
 	/// </summary>
 	public string icon_res;

@@ -30,7 +30,7 @@ public class FightBuffBean
     /// <summary>
     /// buff持续时间增加
     /// </summary>
-    public void AddBuffTime(float buffTime,out bool isRemove)
+    public void AddBuffTime(float buffTime,out bool isRemove, Action actionForCompleteRemove = null)
     {
         timeUpdate += buffTime;
         isRemove = false;
@@ -47,7 +47,7 @@ public class FightBuffBean
                 if (triggerNumLeft <= 0)
                 {
                     isRemove = true;
-                    RemoveBuff();
+                    RemoveBuff(actionForCompleteRemove);
                 }
             }
         }           
@@ -59,7 +59,7 @@ public class FightBuffBean
             {
                 timeUpdate = 0;
                 isRemove = true;
-                RemoveBuff();
+                RemoveBuff(actionForCompleteRemove);
             }
         }
     }
@@ -67,7 +67,7 @@ public class FightBuffBean
     /// <summary>
     /// 移除buff
     /// </summary>
-    public void RemoveBuff()
+    public void RemoveBuff(Action actionForCompleteRemove = null)
     {
         try
         {
@@ -75,7 +75,7 @@ public class FightBuffBean
             var targetCreature = gameFightLogic.fightData.GetFightCreatureById(creatureId);
             if (targetCreature != null && targetCreature.fightCreatureData != null)
             {
-                targetCreature.fightCreatureData.RemoveBuff(this);
+                targetCreature.fightCreatureData.RemoveBuff(this, actionForCompleteRemove);
             }
         }
         catch (Exception e)

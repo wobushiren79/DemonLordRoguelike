@@ -1,6 +1,7 @@
 using DG.Tweening;
 using Spine;
 using Spine.Unity;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameFightCreatureEntity
@@ -28,6 +29,8 @@ public class GameFightCreatureEntity
         creatureLifeShow?.ShowObj(false);
 
         ChangeSkin(fightCreatureData.creatureData);
+        //设置身体颜色
+        SetBodyColor();
     }
 
     /// <summary>
@@ -52,13 +55,14 @@ public class GameFightCreatureEntity
         for (int i = 0; i < fightCreatureData.listBuff.Count; i++)
         {
             var itemBuff = fightCreatureData.listBuff[i];
-            itemBuff.AddBuffTime(updateTime,out bool isRemove);
+            itemBuff.AddBuffTime(updateTime, out bool isRemove, actionForCompleteRemove : CallBackForRemoveBuff);
             if (isRemove)
             {
                 i--;
             }
         }
     }
+
 
     /// <summary>
     /// 修改皮肤 根据生物数据修改
@@ -71,6 +75,24 @@ public class GameFightCreatureEntity
             return;
         string[] skinArray = creatureData.GetSkinArray();
         SpineHandler.Instance.ChangeSkeletonSkin(creatureSkeletionAnimation.skeleton, skinArray);
+    }
+
+
+    /// <summary>
+    ///  设置身体颜色
+    /// </summary>
+    public void SetBodyColor(Color bodyColor)
+    {
+        //初始化身体颜色
+        if (creatureSkeletionAnimation != null && creatureSkeletionAnimation.skeleton != null)
+        {
+            creatureSkeletionAnimation.skeleton.SetColor(bodyColor);
+        }
+    }
+    public void SetBodyColor()
+    {
+        Color bodyColor = fightCreatureData.GetBodyColor();
+        SetBodyColor(bodyColor);
     }
 
     /// <summary>
@@ -135,6 +157,23 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
+    /// 增加BUFF
+    /// </summary>
+    public void AddBuff(BaseAttackMode baseAttackMode)
+    {
+        //触发buff
+        var buffs = baseAttackMode.attackModeInfo.GetBuff();
+        if (!buffs.IsNull())
+        {
+            var buffsTrigger = FightBuffBean.GetTriggerFightBuff(buffs, fightCreatureData.creatureData.creatureId);
+            if (!buffsTrigger.IsNull())
+            {
+                fightCreatureData.AddBuff(buffsTrigger, actionForComplete: CallBackForAddBuff);
+            }
+        }
+    }
+
+    /// <summary>
     /// 收到攻击
     /// </summary>
     public void UnderAttack(BaseAttackMode baseAttackMode, out int leftLife, out int leftArmor)
@@ -150,6 +189,8 @@ public class GameFightCreatureEntity
         //如果还有生命值 
         if (leftLife > 0)
         {
+            //增加BUFF
+            AddBuff(baseAttackMode);
             //触发被攻击特效
             if (creatureSkeletionAnimation != null)
             {
@@ -165,16 +206,6 @@ public class GameFightCreatureEntity
                 creatureLifeShow?.material.SetFloat("_Progress_1", leftLife / (float)fightCreatureData.liftMax);
                 //设置护盾进度
                 creatureLifeShow?.material.SetFloat("_Progress_2", leftArmor / (float)fightCreatureData.armorMax);
-            }
-            //触发buff
-            var buffs = baseAttackMode.attackModeInfo.GetBuff();
-            if (!buffs.IsNull())
-            {
-                var buffsTrigger = FightBuffBean.GetTriggerFightBuff(buffs,fightCreatureData.creatureData.creatureId);
-                if (!buffsTrigger.IsNull())
-                {
-                    fightCreatureData.AddBuff(buffsTrigger);
-                }
             }
         }
         else
@@ -196,9 +227,9 @@ public class GameFightCreatureEntity
     /// 颜色动画-受到攻击
     /// </summary>
     public void AnimForUnderAttackColor()
-    {        
+    {
         // 定义初始颜色和目标颜色
-        Color startColor = Color.white;
+        Color startColor = fightCreatureData.GetBodyColor();
         Color endColor = Color.red;
         // 创建颜色渐变动画
         if (animForUnderAttackColor != null && animForUnderAttackColor.IsPlaying())
@@ -210,11 +241,11 @@ public class GameFightCreatureEntity
             .OnUpdate(() => 
             {
                 // 在每帧更新时执行的操作
-                creatureSkeletionAnimation.skeleton.SetColor(startColor);
+                SetBodyColor(startColor);
             })
-            .OnComplete(() => {
-
-                creatureSkeletionAnimation.skeleton.SetColor(Color.white);
+            .OnComplete(() => 
+            {
+                SetBodyColor();
                 animForUnderAttackColor = null;
             });
     }
@@ -250,5 +281,21 @@ public class GameFightCreatureEntity
             aiEntity.ChangeIntent(AIIntentEnum.DefCreatureDead);
         }
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDead, fightCreatureData);
+    }
+
+    /// <summary>
+    /// 回调移除BUFF
+    /// </summary>
+    public void CallBackForRemoveBuff()
+    {
+        SetBodyColor();
+    }
+
+    /// <summary>
+    /// 回调增加BUFF
+    /// </summary>
+    public void CallBackForAddBuff()
+    {
+        SetBodyColor();
     }
 }

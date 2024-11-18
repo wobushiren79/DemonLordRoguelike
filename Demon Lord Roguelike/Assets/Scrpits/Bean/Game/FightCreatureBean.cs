@@ -16,6 +16,7 @@ public class FightCreatureBean
     public int armorMax;//最大护甲值
 
     public float moveSpeedCurrent;//当前移动速度
+    public Color colorBodyCurrent;//当前身体颜色
     public List<FightBuffBean> listBuff;//所有的buff
 
     public FightCreatureBean(int creatureId)
@@ -46,10 +47,10 @@ public class FightCreatureBean
     /// <summary>
     /// 初始化基础属性
     /// </summary>
-    public void InitBaseAttribute()
+    public void InitBaseAttribute(Action actionForComplete = null)
     {
         moveSpeedCurrent = creatureData.GetMoveSpeed();
-        
+        colorBodyCurrent = Color.white;
         if (!listBuff.IsNull())
         {
             float changeMoveSpeed = 0;
@@ -58,9 +59,15 @@ public class FightCreatureBean
             {
                 FightBuffBean itemBuff = listBuff[i];
                 var buffEntity = itemBuff.GetBuffEntity();
+                //设置速度相关
                 var targetChangeData = buffEntity.GetChangeDataForMoveSpeed(itemBuff);
                 changeMoveSpeed += targetChangeData.change;
                 changeRateMoveSpeed += targetChangeData.changeRate;
+                //设置身体颜色
+                if (!itemBuff.fightBuffInfo.color_body.IsNull())
+                {
+                    colorBodyCurrent = itemBuff.fightBuffInfo.GetBodyColor();
+                }
             }
             moveSpeedCurrent += changeMoveSpeed;
             if (moveSpeedCurrent < 0)
@@ -71,6 +78,7 @@ public class FightCreatureBean
         }
         if (moveSpeedCurrent < 0)
             moveSpeedCurrent = 0;
+        actionForComplete?.Invoke();
     }
 
     /// <summary>
@@ -80,6 +88,15 @@ public class FightCreatureBean
     public float GetMoveSpeed()
     {
         return moveSpeedCurrent;
+    }
+
+    /// <summary>
+    /// 获取身体颜色
+    /// </summary>
+    /// <returns></returns>
+    public Color GetBodyColor()
+    {
+        return colorBodyCurrent;
     }
 
     /// <summary>
@@ -123,7 +140,7 @@ public class FightCreatureBean
     /// <summary>
     /// 添加BUFF
     /// </summary>
-    public void AddBuff(List<FightBuffBean> targetBuffs, Action<FightBuffBean> actionForCombineNew = null, Action<FightBuffBean> actionForCombineOld = null)
+    public void AddBuff(List<FightBuffBean> targetBuffs, Action<FightBuffBean> actionForCombineNew = null, Action<FightBuffBean> actionForCombineOld = null, Action actionForComplete = null)
     {
         for (int f = 0; f < targetBuffs.Count; f++)
         {
@@ -147,19 +164,19 @@ public class FightCreatureBean
 
             }
         }
-        InitBaseAttribute();
+        InitBaseAttribute(actionForComplete);
     }
 
     /// <summary>
     /// 移除BUFF
     /// </summary>
-    public void RemoveBuff(FightBuffBean targetBuff)
+    public void RemoveBuff(FightBuffBean targetBuff, Action actionForComplete = null)
     {
         if (!listBuff.IsNull())
         {
             listBuff.Remove(targetBuff);
         }
-        InitBaseAttribute();
+        InitBaseAttribute(actionForComplete);
     }
 
 }
