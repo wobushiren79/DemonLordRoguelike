@@ -1,5 +1,9 @@
 public class PathInfo
-{    
+{
+    //天空盒 框架
+    public static string SkyboxMatFrameWorkPath = "Assets/FrameWork/Materials/Skybox";
+
+
     //通用资源
     public static string CommonPrefabPath = "Assets/LoadResources/Common";
     //战斗场景资源

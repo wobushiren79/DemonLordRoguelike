@@ -85,13 +85,29 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     public void LoadFightScene(int fightSceneId, Action<GameObject> actionForComplete)
     {
         UnLoadFightScene();
-        manager.GetFightScene(fightSceneId, (targetScene) =>
+
+        FightSceneBean fightSceneData = FightSceneCfg.GetItemData(fightSceneId);
+        if (fightSceneData == null)
         {
-            currentFightScene = Instantiate(targetScene);
-            currentFightScene.SetActive(true);
-            currentFightScene.transform.position = Vector3.zero;
-            currentFightScene.transform.eulerAngles = Vector3.zero;
-            actionForComplete?.Invoke(currentFightScene);
+            LogUtil.LogError($"查询FightScene战斗场景失败  没有找到id为{fightSceneId}的战斗场景");
+            return;
+        }
+
+        //获取天空盒
+        manager.GetSkybox(fightSceneData.skybox_mat, (skyboxMat) =>
+        {
+            //设置天空盒
+            RenderSettings.skybox = skyboxMat;
+            //获取场景
+            string dataPath = $"{PathInfo.FightScenePrefabPath}/{fightSceneData.name_res}";
+            manager.GetFightScene(dataPath, (targetScene) =>
+            {
+                currentFightScene = Instantiate(targetScene);
+                currentFightScene.SetActive(true);
+                currentFightScene.transform.position = Vector3.zero;
+                currentFightScene.transform.eulerAngles = Vector3.zero;
+                actionForComplete?.Invoke(currentFightScene);
+            });
         });
     }
 
@@ -100,10 +116,13 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     /// </summary>
     public void UnLoadFightScene()
     {
+        //删除已有的战斗场景
         if (currentFightScene != null)
         {
             DestroyImmediate(currentFightScene);
         }
+        //移除天空盒
+        manager.RemoveSkybox();
     }
 
     /// <summary>
@@ -115,6 +134,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         {
             DestroyImmediate(currentBaseScene);
         }
+        //移除天空盒
+        manager.RemoveSkybox();
     }
 
     /// <summary>

@@ -8,6 +8,10 @@ public partial class FightSceneBean : BaseBean
 	/// </summary>
 	public string name_res;
 	/// <summary>
+	///天空盒子
+	/// </summary>
+	public string skybox_mat;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

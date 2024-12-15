@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
-  m_Name: FightScene
+  m_Name: Skybox
   m_EditorClassIdentifier: 
-  m_GroupName: FightScene
-  m_GUID: 7251369fdc99b0c4cad7c85a5a185754
+  m_GroupName: Skybox
+  m_GUID: e17ba135f766cf24c8b50fdd03a8dd10
   m_SerializeEntries:
-  - m_GUID: 3e5d3c1ef2205ac44816a6e02b71c8e7
-    m_Address: Assets/LoadResources/FightScene/FightScene_Forest_1.prefab
+  - m_GUID: 97bfeba6097ae194baa356dd43f9df20
+    m_Address: Assets/FrameWork/Materials/Skybox/Skybox_2.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 9cd2a322889916541905df2c9e288592
-    m_Address: Assets/LoadResources/FightScene/FightScene_Test.prefab
+  - m_GUID: f0c9139b9f8fcb340834eae5b2b5adfc
+    m_Address: Assets/FrameWork/Materials/Skybox/Skybox_1.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -29,5 +29,5 @@ MonoBehaviour:
   m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}
   m_SchemaSet:
     m_Schemas:
-    - {fileID: 11400000, guid: 3729657a8ce43cd4e889adfc5d2de7de, type: 2}
-    - {fileID: 11400000, guid: 880662b8080179b4da933d82a9e6eb01, type: 2}
+    - {fileID: 11400000, guid: a517610e502c8bd4481d82d7516f52bb, type: 2}
+    - {fileID: 11400000, guid: f094a093005c2df459ad87ddaf6fdf81, type: 2}

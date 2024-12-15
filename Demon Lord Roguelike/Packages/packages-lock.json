@@ -1,11 +1,11 @@
 {
   "dependencies": {
     "com.unity.2d.animation": {
-      "version": "10.1.3",
+      "version": "10.1.4",
       "depth": 0,
       "source": "registry",
       "dependencies": {
-        "com.unity.2d.common": "9.0.6",
+        "com.unity.2d.common": "9.0.7",
         "com.unity.2d.sprite": "1.0.0",
         "com.unity.collections": "1.2.4",
         "com.unity.modules.animation": "1.0.0",
@@ -14,7 +14,7 @@
       "url": "https://packages.unity.cn"
     },
     "com.unity.2d.common": {
-      "version": "9.0.6",
+      "version": "9.0.7",
       "depth": 1,
       "source": "registry",
       "dependencies": {
@@ -67,7 +67,7 @@
       "url": "https://packages.unity.cn"
     },
     "com.unity.cinemachine": {
-      "version": "2.10.1",
+      "version": "2.10.2",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -140,7 +140,7 @@
       "url": "https://packages.unity.cn"
     },
     "com.unity.inputsystem": {
-      "version": "1.11.1",
+      "version": "1.11.2",
       "depth": 0,
       "source": "registry",
       "dependencies": {
