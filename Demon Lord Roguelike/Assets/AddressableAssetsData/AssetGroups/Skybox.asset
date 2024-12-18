@@ -15,8 +15,38 @@ MonoBehaviour:
   m_GroupName: Skybox
   m_GUID: e17ba135f766cf24c8b50fdd03a8dd10
   m_SerializeEntries:
+  - m_GUID: 133347283e115d147a5fcce7f47a538f
+    m_Address: Assets/FrameWork/Materials/Skybox/Sky_LowPoly_01_Day_a.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 50bf15468c19e0e40b5bf26662770a34
+    m_Address: Assets/FrameWork/Materials/Skybox/Sky_Anime_15_Day_a.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 55e64e617a8bfff4ba846574e2651eb9
+    m_Address: Assets/FrameWork/Materials/Skybox/Sky_Anime_03_Day_a.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8162517b6ec2309499f99e303b29f146
+    m_Address: Assets/FrameWork/Materials/Skybox/Sky_Anime_11_morning_a.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 97bfeba6097ae194baa356dd43f9df20
     m_Address: Assets/FrameWork/Materials/Skybox/Skybox_2.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b2f1a98efccfb644f8e084200a249527
+    m_Address: Assets/FrameWork/Materials/Skybox/Sky_Anime_18_day_a.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c1c961cbd00909b45b34d97fd7df5cbf
+    m_Address: Assets/FrameWork/Materials/Skybox/Sky_LowPoly_02_Night_a.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
