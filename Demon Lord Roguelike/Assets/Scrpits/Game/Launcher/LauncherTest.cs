@@ -19,17 +19,7 @@ public class LauncherTest : BaseLauncher
     /// <param name="fightData"></param>
     public void StartForFightSceneTest(FightBean fightData)
     {
-        WorldHandler.Instance.ClearWorldData(() =>
-        {
-            //打开加载UI
-            UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
-            //镜头初始化
-            CameraHandler.Instance.InitData();
-            //环境参数初始化
-            VolumeHandler.Instance.InitData(GameSceneTypeEnum.Fight);
-            //测试数据
-            GameHandler.Instance.StartGameFight(fightData);
-        });
+        WorldHandler.Instance.EnterGameForFightScene(fightData);
     }
 
     /// <summary>

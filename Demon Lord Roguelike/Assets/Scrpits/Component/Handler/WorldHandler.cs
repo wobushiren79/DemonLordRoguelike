@@ -10,6 +10,31 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     //基地场景
     public GameObject currentBaseScene;
 
+    /// <summary>
+    /// 进入游戏进入主界面选项
+    /// </summary>
+    public void EnterMainForBaseScene()
+    {
+        ClearWorldData(() =>
+        {
+            //打开加载UI
+            UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
+            //镜头初始化
+            CameraHandler.Instance.InitData();
+            //环境参数初始化
+            VolumeHandler.Instance.InitData(GameSceneTypeEnum.Base);
+            //加载基地场景
+            LoadBaseScene((targetObj) =>
+            {
+                //关闭LoadingUI 打开开始UI
+                UIHandler.Instance.OpenUIAndCloseOther<UIMainStart>();
+            });
+        });
+    }
+
+    /// <summary>
+    /// 进入游戏中 基地场景
+    /// </summary>
     public void EnterGameForBaseScene(UserDataBean userData,bool isInitScene)
     {
         Action actionForStart = () =>
@@ -43,7 +68,12 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         }
     }
 
-    public void EnterMainForBaseScene()
+
+
+    /// <summary>
+    /// 进入战斗场景
+    /// </summary>
+    public void EnterGameForFightScene(FightBean fightData)
     {
         ClearWorldData(() =>
         {
@@ -52,13 +82,9 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             //镜头初始化
             CameraHandler.Instance.InitData();
             //环境参数初始化
-            VolumeHandler.Instance.InitData(GameSceneTypeEnum.Base);
-            //加载基地场景
-            LoadBaseScene((targetObj) =>
-            {
-                //关闭LoadingUI 打开开始UI
-                UIHandler.Instance.OpenUIAndCloseOther<UIMainStart>();
-            });
+            VolumeHandler.Instance.InitData(GameSceneTypeEnum.Fight);
+            //开始战斗
+            GameHandler.Instance.StartGameFight(fightData);
         });
     }
 

@@ -11,17 +11,19 @@ public class VolumeHandler : BaseHandler<VolumeHandler, VolumeManager>
     public void InitData(GameSceneTypeEnum gameSceneType)
     {
         GameConfigBean gameConfig = GameDataHandler.Instance.manager.GetGameConfig();
-        SetDepthOfField(DepthOfFieldMode.Bokeh, 4, 140, 10);
         switch (gameSceneType)
         {
             case GameSceneTypeEnum.Base:
+                SetDepthOfField(DepthOfFieldMode.Bokeh, 4, 140, 10);
                 SetSkyBox(null);
                 break;
             case GameSceneTypeEnum.Fight:
+                SetDepthOfField(DepthOfFieldMode.Bokeh, 4, 80, 10);
                 SetSkyBox(null);
                 break;
             default:
                 SetSkyBox(null);
+                SetDepthOfField(DepthOfFieldMode.Bokeh, 4, 140, 10);
                 break;
         }
     }

@@ -111,18 +111,8 @@ public partial class UIViewGameWorldMapPoint : BaseUIView
         dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
         dialogData.actionSubmit = (view, data) =>
         {
-            WorldHandler.Instance.ClearWorldData(() =>
-            {
-                FightBean fightData = new FightBean();
-                //打开加载UI
-                UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
-                //镜头初始化
-                CameraHandler.Instance.InitData();
-                //环境参数初始化
-                VolumeHandler.Instance.InitData(GameSceneTypeEnum.Fight);
-                //测试数据
-                GameHandler.Instance.StartGameFight(fightData);
-            });
+            FightBean fightData = new FightBean();
+            WorldHandler.Instance.EnterGameForFightScene(fightData);
         };
         UIHandler.Instance.ShowDialog<UIDialogNormal>(dialogData);
     }

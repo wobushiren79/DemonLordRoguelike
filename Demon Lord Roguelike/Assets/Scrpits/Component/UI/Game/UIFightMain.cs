@@ -50,9 +50,8 @@ public partial class UIFightMain : BaseUIComponent
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         //初始所有卡片
         SetCreatureCardList(gameFightLogic.fightData.listDefCreatureData);
-        //设置进攻波次
-        gameFightLogic.fightData.GetAttCreatureInitData(out int fightNum);
-        SetAttCreateData(fightNum);
+        //设置进攻数据
+        SetAttackData(gameFightLogic.fightData.fightAttackData);
         //刷新一次UI
         RefreshUIData();
     }
@@ -63,14 +62,16 @@ public partial class UIFightMain : BaseUIComponent
     public void RefreshUIData()
     {
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        SetAttCreateProgress(gameFightLogic.fightData.gameStage, gameFightLogic.fightData.gameProgress);
+        float progressAttack = gameFightLogic.fightData.fightAttackData.GetAttackProgress();
+        SetAttCreateProgress(progressAttack);
     }
 
     /// <summary>
     /// 设置进攻数据
     /// </summary>
-    public void SetAttCreateData(int fightNum)
+    public void SetAttackData(FightAttackBean fightAttackData)
     {
+        int fightNum = 1;
         foreach (var itemData in dicAttProgress)
         {
             DestroyImmediate(itemData.Value.gameObject);
@@ -97,8 +98,9 @@ public partial class UIFightMain : BaseUIComponent
     /// <summary>
     /// 设置进攻数据进度
     /// </summary>
-    public void SetAttCreateProgress(int stage, float progress)
+    public void SetAttCreateProgress(float progress)
     {
+        int stage = 1;
         if (dicAttProgress.TryGetValue(stage, out UIViewFightMainAttCreateProgress progressView))
         {
             progressView.SetProgress(progress);

@@ -179,9 +179,8 @@ public class GashaponMachineLogic : BaseGameLogic
 
     public override void ClearGame()
     {
-        base.ClearGame();
-
         CameraHandler.Instance.SetGashaponMachineCamera(0, false);
+        base.ClearGame();
         if (!listEggObjPool.IsNull())
         {
             for (int i = 0; i < listEggObjPool.Count; i++)

@@ -22,7 +22,7 @@ public class GameFightLogic : BaseGameLogic
         CameraHandler.Instance.InitFightSceneCamera(() =>
         {
             //加载战斗场景
-            WorldHandler.Instance.LoadFightScene(fightData.fightSceneId,async (targetObj) =>
+            WorldHandler.Instance.LoadFightScene(fightData.fightSceneId, async (targetObj) =>
             {
                 //延迟0.1秒 防止一些镜头的1，2帧误差
                 await new WaitForSeconds(0.1f);
@@ -60,7 +60,7 @@ public class GameFightLogic : BaseGameLogic
         float updateTime = Time.deltaTime * fightData.gameSpeed;
         fightData.gameTime = fightData.gameTime + updateTime;
         UpdateGameForSelectCreature(updateTime);
-        UpdateGameForAttCreate(updateTime);
+        UpdateGameForAttackCreate(updateTime);
         UpdateGameForFightCreature(updateTime);
     }
 
@@ -114,14 +114,20 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>
     /// 更新-进攻方生成
     /// </summary>
-    public void UpdateGameForAttCreate(float updateTime)
+    public void UpdateGameForAttackCreate(float updateTime)
     {
-        fightData.timeUpdateForAttCreate += updateTime;
-        if (fightData.timeUpdateForAttCreate > fightData.timeUpdateTargetForAttCreate)
+        fightData.timeUpdateForAttackCreate += updateTime;
+        if (fightData.timeUpdateForAttackCreate > fightData.timeUpdateTargetForAttackCreate)
         {
-            fightData.timeUpdateForAttCreate = 0;
+            fightData.timeUpdateForAttackCreate = 0;
             //生成一次生物
-            CreatureHandler.Instance.CreateAttCreature(fightData.gameProgress, fightData.currentFightAttCreateDetails);
+            var attackDetailsData = fightData.fightAttackData.GetNextAttackDetailsData();
+            if (attackDetailsData == null)
+            {
+                return;
+            }
+            fightData.timeUpdateTargetForAttackCreate = attackDetailsData.timeAttack;
+            CreatureHandler.Instance.CreateAttackCreature(attackDetailsData);
         }
     }
 

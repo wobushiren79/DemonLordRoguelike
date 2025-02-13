@@ -8,32 +8,37 @@ using UnityEngine;
 public class FightBean
 {
     public float gameTime = 0;//游戏时间
-    public float gameProgress = 0;//游戏进度
     public float gameSpeed = 1;//游戏速度
-    public int gameStage = 0;//游戏波次
 
     public int fightSceneId;//战斗场景Id;
 
-    public float timeUpdateForAttCreate = 0;//更新时间-怪物生成
-    public float timeUpdateTargetForAttCreate = 0;//更新目标时间-怪物生成
+    public float timeUpdateForAttackCreate = 0;//更新时间-怪物生成
+    public float timeUpdateTargetForAttackCreate = 0;//更新目标时间-怪物生成
 
     public float timeUpdateForFightCreature = 0;//更新目标时间-生物
     public float timeUpdateTargetForFightCreature = 0.1f;//更新目标时间-生物
 
     public int currentMagic;//当前魔力值
-    public FightAttCreateDetailsBean currentFightAttCreateDetails;//当前进攻数据
 
-    public List<CreatureBean> listDefCreatureData = new List<CreatureBean>();//当前可用防御生物数据
+    //进攻数据
+    public FightAttackBean fightAttackData;
 
-    public Dictionary<Vector3Int, FightPositionBean> dicFightPosition = new Dictionary<Vector3Int, FightPositionBean>();//放置在场上的生物数据
+    //所有卡片防御生物数据
+    public List<CreatureBean> listDefCreatureData = new List<CreatureBean>();
 
-    public FightAttCreateBean fightAttCreateData;//进攻数据
-    public Dictionary<int, List<GameFightCreatureEntity>> dicAttCreatureEntity = new Dictionary<int, List<GameFightCreatureEntity>>();//进攻方的所有生物实例
+    //防守生物位置数据
+    public Dictionary<Vector3Int, FightPositionBean> dicFightPosition = new Dictionary<Vector3Int, FightPositionBean>();
 
-    public Dictionary<string, GameFightCreatureEntity> dicCreatureEntity = new Dictionary<string, GameFightCreatureEntity>();//所有生物实例
+    //所有进攻方生物实例
+    public Dictionary<int, List<GameFightCreatureEntity>> dicAttCreatureEntity = new Dictionary<int, List<GameFightCreatureEntity>>();
 
-    public FightCreatureBean fightDefCoreData;//防守核心数据
-    public GameFightCreatureEntity fightDefCoreCreature;//防守方核心生物实例
+    //所有生物（包含进攻和防守）
+    public Dictionary<string, GameFightCreatureEntity> dicCreatureEntity = new Dictionary<string, GameFightCreatureEntity>();
+
+    //防守核心数据
+    public FightCreatureBean fightDefCoreData;
+    //防守方核心生物实例
+    public GameFightCreatureEntity fightDefCoreCreature;
 
     /// <summary>
     /// 清理数据
@@ -69,31 +74,11 @@ public class FightBean
     /// <summary>
     /// 初始化波数数据
     /// </summary>
-    public void InitDataForAttCreateStage(int gameStage)
+    public void InitData()
     {
-        this.gameStage = gameStage;
-        gameProgress = 0;
-        timeUpdateForAttCreate = 0;
-        timeUpdateTargetForAttCreate = 0;
-        currentFightAttCreateDetails = fightAttCreateData.GetDetailData(gameStage);
-        if (currentFightAttCreateDetails != null)
-        {
-            timeUpdateTargetForAttCreate = currentFightAttCreateDetails.createDelay;
-        }
-    }
-
-    /// <summary>
-    /// 获取进攻生物 进攻波次初始化数据
-    /// </summary>
-    public void GetAttCreatureInitData(out int fightNum)
-    {
-        fightNum = 0;
-        if (fightAttCreateData == null)
-            return;
-        if (!fightAttCreateData.dicDetailsData.IsNull())
-        {
-            fightNum = fightAttCreateData.dicDetailsData.Count;
-        }
+        timeUpdateForAttackCreate = 0;
+        timeUpdateTargetForAttackCreate = 0;
+        timeUpdateForFightCreature = 0;
     }
 
     /// <summary>

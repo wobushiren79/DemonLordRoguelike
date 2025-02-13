@@ -50,28 +50,14 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// <summary>
     /// 创建进攻生物
     /// </summary>
-    public void CreateAttCreature(float curTimeProgress, FightAttCreateDetailsBean fightAttCreateData)
+    public void CreateAttackCreature(FightAttackDetailsBean fightAttackDetails)
     {
-        List<FightAttCreateDetailsTimePointBean> listTimePoint = fightAttCreateData.timePointForCreatures;
-        FightAttCreateDetailsTimePointBean targetTimePoint = null;
-        for (int f = 0; f < listTimePoint.Count; f++)
-        {
-            var itemTimePoint = listTimePoint[f];
-            if (curTimeProgress >= itemTimePoint.startTimeProgress && curTimeProgress < itemTimePoint.endTimeProgress)
-            {
-                targetTimePoint = itemTimePoint;
-                break;
-            }
-        }
-        if (targetTimePoint == null)
-            return;
         //一次创建的数量
-        int numCreature = fightAttCreateData.createNum;
+        int numCreature = fightAttackDetails.creatureIds.Count;
         for (int i = 0; i < numCreature; i++)
         {
-            int randomCreatureIndex = UnityEngine.Random.Range(0, targetTimePoint.creatureIds.Count);
-            int targetCreatureId = targetTimePoint.creatureIds[randomCreatureIndex];
-            CreateAttCreature(targetCreatureId, (targetObj) =>
+            var creatureId = fightAttackDetails.creatureIds[i];
+            CreateAttCreature(creatureId, (targetObj) =>
             {
 
             });

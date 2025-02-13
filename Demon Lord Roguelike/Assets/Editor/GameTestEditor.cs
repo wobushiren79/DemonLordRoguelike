@@ -111,42 +111,14 @@ public class GameTestEditor : Editor
     {
         FightBean fightData = new FightBean();
         fightData.currentMagic = testDataCurrentMagic;
-        fightData.fightAttCreateData = new FightAttCreateBean();
 
-        //进攻数据1
-        FightAttCreateDetailsBean attCreateData1 = new FightAttCreateDetailsBean();
-        attCreateData1.stage = 1;
-        attCreateData1.timeDuration = 180;
-        attCreateData1.createNum = 1;
-        attCreateData1.createDelay = 5f;
-        attCreateData1.timePointForCreatures = new List<FightAttCreateDetailsTimePointBean>()
+        //生成进攻数据
+        fightData.fightAttackData = new FightAttackBean();
+        for (int i = 0; i < 10; i++)
         {
-            new FightAttCreateDetailsTimePointBean(0f, 0.5f, new List<int>() { 2 }),
-            new FightAttCreateDetailsTimePointBean(0.5f, 1f, new List<int>() { 2 })
-        };
-        attCreateData1.creatureEndIds = new Dictionary<int, int>()
-        {
-            {1, 10},
-        };
-        FightAttCreateDetailsBean attCreateData2 = new FightAttCreateDetailsBean();
-        attCreateData2.stage = 2;
-        attCreateData2.timeDuration = 60;
-        attCreateData2.createNum = 2;
-        attCreateData2.createDelay = 2;
-        attCreateData2.timePointForCreatures = new List<FightAttCreateDetailsTimePointBean>()
-        {
-            new FightAttCreateDetailsTimePointBean(0, 0.5f, new List<int>() { 2 }),
-            new FightAttCreateDetailsTimePointBean(0.5f, 1f, new List<int>() { 2 })
-        };
-        attCreateData2.creatureEndIds = new Dictionary<int, int>()
-        {
-            {1, 10},
-        };
-        fightData.fightAttCreateData.dicDetailsData = new Dictionary<int, FightAttCreateDetailsBean>()
-        {
-            {1,attCreateData1},
-            {2,attCreateData2},
-        };
+            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(i * 5, 2);
+            fightData.fightAttackData.AddAttackQueue(fightAttackDetails);
+        }
 
         //所有的卡皮数据
         List<CreatureBean> listCreatureData = new List<CreatureBean>();
@@ -167,7 +139,7 @@ public class GameTestEditor : Editor
         fightDefCoreData.creatureData.AddSkin(1020030);
         fightData.fightDefCoreData = fightDefCoreData;
 
-        fightData.InitDataForAttCreateStage(1);
+        fightData.InitData();
         fightData.fightSceneId = fightSceneId;
 
         return fightData;
