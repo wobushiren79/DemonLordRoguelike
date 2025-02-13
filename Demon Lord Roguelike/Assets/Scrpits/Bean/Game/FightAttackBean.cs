@@ -7,6 +7,8 @@ public class FightAttackBean
 {
     //进攻列表
     public Queue<FightAttackDetailsBean> queueAttackDetails = new Queue<FightAttackDetailsBean>();
+    //当前进攻数据
+    public FightAttackDetailsBean currentAttackDetail;
     //总共进攻时间
     public float timeAttackTotal = 0;
     //已经进行过的进攻时间
@@ -18,21 +20,30 @@ public class FightAttackBean
     public void AddAttackQueue(FightAttackDetailsBean fightAttackDetails)
     {
         queueAttackDetails.Enqueue(fightAttackDetails);
-        timeAttackTotal += fightAttackDetails.timeAttack;
+        timeAttackTotal += fightAttackDetails.timeNextAttack;
     }
 
     /// <summary>
     /// 获取下一次进攻数据
     /// </summary>
-    public FightAttackDetailsBean GetNextAttackDetailsData()
+    public FightAttackDetailsBean GetNextAttackDetailData()
     {
         if (queueAttackDetails.Count <= 0)
         {
             return null;
         }
-        var fightAttackDetails = queueAttackDetails.Dequeue();
-        timeAttackCurrent += fightAttackDetails.timeAttack;
-        return fightAttackDetails;
+        currentAttackDetail = queueAttackDetails.Dequeue();
+        timeAttackCurrent += currentAttackDetail.timeNextAttack;
+        return currentAttackDetail;
+    }
+
+    /// <summary>
+    /// 获取当前进攻数据
+    /// </summary>
+    /// <returns></returns>
+    public FightAttackDetailsBean GetCurrentAttackDetailData()
+    {
+        return currentAttackDetail;
     }
 
     /// <summary>
@@ -50,14 +61,13 @@ public class FightAttackBean
 public class FightAttackDetailsBean
 {
     //进攻时间 时间结束后执行下一个进攻数据
-    public float timeAttack = 0;
-
+    public float timeNextAttack = 0;
+    //进攻生物
     public List<int> creatureIds;
 
-    public FightAttackDetailsBean(float timeAttack,int creatureId)
+    public FightAttackDetailsBean(float timeNextAttack, int creatureId)
     {
-        this.timeAttack = timeAttack;
-        creatureIds = new List<int>();
-        creatureIds.Add(creatureId);
+        this.timeNextAttack = timeNextAttack;
+        creatureIds = new List<int>() { creatureId };
     }
 }

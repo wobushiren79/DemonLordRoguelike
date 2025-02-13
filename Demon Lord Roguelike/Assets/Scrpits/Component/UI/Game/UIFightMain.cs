@@ -63,7 +63,10 @@ public partial class UIFightMain : BaseUIComponent
     {
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         float progressAttack = gameFightLogic.fightData.fightAttackData.GetAttackProgress();
-        SetAttCreateProgress(progressAttack);
+        float progressAttackTime = 0;
+        var currentAttackDetail = gameFightLogic.fightData.fightAttackData.GetCurrentAttackDetailData();
+        if (currentAttackDetail != null) progressAttackTime = currentAttackDetail.timeNextAttack;
+        SetAttCreateProgress(progressAttack, progressAttackTime);
     }
 
     /// <summary>
@@ -98,12 +101,12 @@ public partial class UIFightMain : BaseUIComponent
     /// <summary>
     /// 设置进攻数据进度
     /// </summary>
-    public void SetAttCreateProgress(float progress)
+    public void SetAttCreateProgress(float progress, float progressAnimTime)
     {
         int stage = 1;
         if (dicAttProgress.TryGetValue(stage, out UIViewFightMainAttCreateProgress progressView))
         {
-            progressView.SetProgress(progress);
+            progressView.SetProgress(progress, animTime: progressAnimTime);
         }
     }
 

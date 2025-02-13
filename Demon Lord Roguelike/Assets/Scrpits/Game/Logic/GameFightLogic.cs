@@ -121,12 +121,12 @@ public class GameFightLogic : BaseGameLogic
         {
             fightData.timeUpdateForAttackCreate = 0;
             //生成一次生物
-            var attackDetailsData = fightData.fightAttackData.GetNextAttackDetailsData();
+            var attackDetailsData = fightData.fightAttackData.GetNextAttackDetailData();
             if (attackDetailsData == null)
             {
                 return;
             }
-            fightData.timeUpdateTargetForAttackCreate = attackDetailsData.timeAttack;
+            fightData.timeUpdateTargetForAttackCreate = attackDetailsData.timeNextAttack;
             CreatureHandler.Instance.CreateAttackCreature(attackDetailsData);
         }
     }

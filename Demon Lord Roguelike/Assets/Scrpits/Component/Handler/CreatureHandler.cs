@@ -62,6 +62,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
 
             });
         }
+        UIHandler.Instance.RefreshUI();
     }
 
     /// <summary>
