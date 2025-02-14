@@ -13,7 +13,7 @@ public class AIDefCreatureEntity : AICreatureEntity
     /// </summary>
     public void InitData(GameFightCreatureEntity selfDefCreatureEntity)
     {
-        EventHandler.Instance.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
         this.selfDefCreatureEntity = selfDefCreatureEntity;
     }
 
@@ -22,8 +22,8 @@ public class AIDefCreatureEntity : AICreatureEntity
     /// </summary>
     public override void ClearData()
     {
+        base.ClearData();
         selfDefCreatureEntity = null;
-        EventHandler.Instance.UnRegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
     }
 
     /// <summary>

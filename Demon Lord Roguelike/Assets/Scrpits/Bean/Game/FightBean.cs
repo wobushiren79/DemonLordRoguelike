@@ -30,7 +30,7 @@ public class FightBean
     public Dictionary<Vector3Int, FightPositionBean> dicFightPosition = new Dictionary<Vector3Int, FightPositionBean>();
 
     //所有进攻方生物实例
-    public Dictionary<int, List<GameFightCreatureEntity>> dicAttCreatureEntity = new Dictionary<int, List<GameFightCreatureEntity>>();
+    public Dictionary<int, List<GameFightCreatureEntity>> dicAttackCreatureEntity = new Dictionary<int, List<GameFightCreatureEntity>>();
 
     //所有生物（包含进攻和防守）
     public Dictionary<string, GameFightCreatureEntity> dicCreatureEntity = new Dictionary<string, GameFightCreatureEntity>();
@@ -39,6 +39,22 @@ public class FightBean
     public FightCreatureBean fightDefCoreData;
     //防守方核心生物实例
     public GameFightCreatureEntity fightDefCoreCreature;
+
+    /// <summary>
+    /// 检测是否还拥有进攻生物
+    /// </summary>
+    public bool CheckHasAttackCreature()
+    {
+        bool HasAttackCreature = false;
+        foreach (var itemData in dicAttackCreatureEntity)
+        {
+            if (itemData.Value.Count > 0)
+            {
+                HasAttackCreature = true;
+            }
+        }
+        return HasAttackCreature;
+    }
 
     /// <summary>
     /// 清理数据
@@ -61,7 +77,7 @@ public class FightBean
         }
         dicCreatureEntity.Clear();
         dicFightPosition.Clear();
-        dicAttCreatureEntity.Clear();
+        dicAttackCreatureEntity.Clear();
 
         if (fightDefCoreCreature != null && fightDefCoreCreature.creatureObj != null)
         {
@@ -178,13 +194,13 @@ public class FightBean
     /// </summary>
     public void AddFightAttCreature(int road, GameFightCreatureEntity targetEntity)
     {
-        if (dicAttCreatureEntity.TryGetValue(road, out List<GameFightCreatureEntity> valueList))
+        if (dicAttackCreatureEntity.TryGetValue(road, out List<GameFightCreatureEntity> valueList))
         {
             valueList.Add(targetEntity);
         }
         else
         {
-            dicAttCreatureEntity.Add(road, new List<GameFightCreatureEntity>() { targetEntity });
+            dicAttackCreatureEntity.Add(road, new List<GameFightCreatureEntity>() { targetEntity });
         }
 
         if (!dicCreatureEntity.ContainsKey(targetEntity.fightCreatureData.creatureData.creatureId))
@@ -198,7 +214,7 @@ public class FightBean
     /// </summary>
     public void RemoveFightAttCreature(GameFightCreatureEntity targetEntity)
     {
-        if (dicAttCreatureEntity.TryGetValue(targetEntity.fightCreatureData.positionCreate.z, out List<GameFightCreatureEntity> valueList))
+        if (dicAttackCreatureEntity.TryGetValue(targetEntity.fightCreatureData.positionCreate.z, out List<GameFightCreatureEntity> valueList))
         {
             valueList.Remove(targetEntity);
         }
@@ -215,7 +231,7 @@ public class FightBean
     /// <returns></returns>
     public List<GameFightCreatureEntity> GetFightAttCreatureByRoad(int road)
     {
-        if (dicAttCreatureEntity.TryGetValue(road, out List<GameFightCreatureEntity> valueList))
+        if (dicAttackCreatureEntity.TryGetValue(road, out List<GameFightCreatureEntity> valueList))
         {
             return valueList;
         }

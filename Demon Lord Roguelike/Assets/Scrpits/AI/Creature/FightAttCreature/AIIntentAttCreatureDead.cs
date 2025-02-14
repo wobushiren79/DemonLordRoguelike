@@ -22,7 +22,9 @@ public class AIIntentAttCreatureDead : AIBaseIntent
         if (timeUpdateForDead >= timeForDeadTime)
         {
             timeUpdateForDead = 0;
+            var selfFightCreatureData = selfAIEntity.selfAttCreatureEntity.fightCreatureData;
             CreatureHandler.Instance.RemoveCreatureEntity(selfAIEntity.selfAttCreatureEntity, CreatureTypeEnum.FightAtt);
+            EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadEnd, selfFightCreatureData);
         }
     }
 

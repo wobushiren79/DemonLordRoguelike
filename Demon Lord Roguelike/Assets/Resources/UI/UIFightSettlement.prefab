@@ -380,9 +380,9 @@ GameObject:
   m_Component:
   - component: {fileID: 5851314731992454110}
   - component: {fileID: 5851314731992454104}
-  - component: {fileID: 8173228820715964907}
+  - component: {fileID: 1335999621515713961}
   m_Layer: 5
-  m_Name: UIGameSetting
+  m_Name: UIFightSettlement
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -418,7 +418,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5851314731992454111}
   m_CullTransparentMesh: 1
---- !u!114 &8173228820715964907
+--- !u!114 &1335999621515713961
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -427,19 +427,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 5851314731992454111}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1b3732ee56099964caf1ff35581898f0, type: 3}
+  m_Script: {fileID: 11500000, guid: 30c4d91b5d2200f438bb5b84f8284814, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   uiManager: {fileID: 0}
   remarkData: 
-  currentSettingType: 1
-  enterType: 0
   ui_ViewExit: {fileID: 8096945526354119724}
-  ui_TitleRadioGroup: {fileID: 7423128443706345186}
-  ui_GameSetttingLabel_Game: {fileID: 7189810996019967593}
-  ui_List: {fileID: 1838512329081939269}
-  ui_GameSetttingLabel_Display: {fileID: 7009214391004783219}
-  ui_GameSetttingLabel_Audio: {fileID: 8453142474346925143}
 --- !u!1 &6274628060924241915
 GameObject:
   m_ObjectHideFlags: 0

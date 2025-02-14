@@ -5,18 +5,14 @@ using Unity.VisualScripting;
 using UnityEngine;
 
 [Serializable]
-public abstract class BaseGameLogic
+public abstract class BaseGameLogic : BaseEvent
 {
-    //所有注册事件
-    private List<string> listEvents = new List<string>();
-
     /// <summary>
     /// 准备游戏数据
     /// </summary>
     public virtual void PreGame()
     {
         GameHandler.Instance.manager.SetGameState(GameStateEnum.Pre);
-        PreGameForRegisterEvent();
     }
 
     /// <summary>
@@ -49,54 +45,7 @@ public abstract class BaseGameLogic
     public virtual void ClearGame()
     {
         GameHandler.Instance.manager.SetGameState(GameStateEnum.End);
-        EndGameForUnRegisterEvent();
+        UnRegisterAllEvent();
         System.GC.Collect();
     }
-
-    #region 事件相关
-    /// <summary>
-    /// 注册事件
-    /// </summary>
-    public abstract void PreGameForRegisterEvent();
-
-    /// <summary>
-    /// 游戏结束注销所有事件
-    /// </summary>
-    public virtual void EndGameForUnRegisterEvent()
-    {
-        for (int i = 0; i < listEvents.Count; i++)
-        {
-            string itemEventName = listEvents[i];
-            EventHandler.Instance.UnRegisterEvent(itemEventName);
-        }
-        listEvents.Clear();
-    }
-
-    public void RegisterEvent(string eventName, Action action)
-    {
-        EventHandler.Instance.RegisterEvent(eventName, action);
-        listEvents.Add(eventName);
-    }
-
-    public void RegisterEvent<A>(string eventName, Action<A> action)
-    {
-        EventHandler.Instance.RegisterEvent(eventName, action);
-        listEvents.Add(eventName);
-    }
-    public void RegisterEvent<A, B>(string eventName, Action<A, B> action)
-    {
-        EventHandler.Instance.RegisterEvent(eventName, action);
-        listEvents.Add(eventName);
-    }
-    public void RegisterEvent<A, B, C>(string eventName, Action<A, B, C> action)
-    {
-        EventHandler.Instance.RegisterEvent(eventName, action);
-        listEvents.Add(eventName);
-    }
-    public void RegisterEvent<A, B, C, D>(string eventName, Action<A, B, C, D> action)
-    {
-        EventHandler.Instance.RegisterEvent(eventName, action);
-        listEvents.Add(eventName);
-    }
-    #endregion
 }

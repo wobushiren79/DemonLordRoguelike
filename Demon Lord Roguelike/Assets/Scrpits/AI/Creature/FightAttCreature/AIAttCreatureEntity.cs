@@ -18,8 +18,8 @@ public class AIAttCreatureEntity : AICreatureEntity
     /// <param name="selfAttCreatureEntity"></param>
     public void InitData(GameFightCreatureEntity selfAttCreatureEntity)
     {
-        EventHandler.Instance.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
-        EventHandler.Instance.RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_CreatureDead, EventForGameFightLogicCreatureDead);
+        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
+        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_CreatureDeadStart, EventForGameFightLogicCreatureDeadStart);
         this.selfAttCreatureEntity = selfAttCreatureEntity;
     }
 
@@ -36,10 +36,9 @@ public class AIAttCreatureEntity : AICreatureEntity
 
     public override void ClearData()
     {
+        base.ClearData();
         selfAttCreatureEntity = null;
         targetDefCreatureEntity = null;
-        EventHandler.Instance.UnRegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
-        EventHandler.Instance.UnRegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_CreatureDead, EventForGameFightLogicCreatureDead);
     }
 
     /// <summary>
@@ -102,7 +101,7 @@ public class AIAttCreatureEntity : AICreatureEntity
         }
     }
 
-    public void EventForGameFightLogicCreatureDead(FightCreatureBean fightCreatureData)
+    public void EventForGameFightLogicCreatureDeadStart(FightCreatureBean fightCreatureData)
     {
         //如果自己是在攻击中
         if (currentIntentEnum == AIIntentEnum.AttCreatureAttack)

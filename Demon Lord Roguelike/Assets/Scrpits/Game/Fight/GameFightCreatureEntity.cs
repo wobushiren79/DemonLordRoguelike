@@ -280,7 +280,7 @@ public class GameFightCreatureEntity
         {
             aiEntity.ChangeIntent(AIIntentEnum.DefCreatureDead);
         }
-        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDead, fightCreatureData);
+        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadStart, fightCreatureData);
     }
 
     /// <summary>

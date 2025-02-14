@@ -7,6 +7,7 @@ public enum GameStateEnum
     None = 0,
     Pre,//准备中
     Gaming,//游戏中
+    Settlement,//结算中
     End,//游戏结束
 }
 

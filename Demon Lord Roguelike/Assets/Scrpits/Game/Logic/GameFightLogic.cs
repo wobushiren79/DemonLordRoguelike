@@ -18,6 +18,8 @@ public class GameFightLogic : BaseGameLogic
     public override void PreGame()
     {
         base.PreGame();
+        //注册事件
+        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_CreatureDeadEnd, EventForGameFightLogicCreatureDeadEnd);
         //设置战斗场景视角
         CameraHandler.Instance.InitFightSceneCamera(() =>
         {
@@ -41,14 +43,6 @@ public class GameFightLogic : BaseGameLogic
                 });
             });
         });
-    }
-
-    /// <summary>
-    /// 注册事件
-    /// </summary>
-    public override void PreGameForRegisterEvent()
-    {
-
     }
 
     /// <summary>
@@ -256,5 +250,27 @@ public class GameFightLogic : BaseGameLogic
         selectCreatureCard = null;
     }
 
+    /// <summary>
+    /// 检测游戏是否结束
+    /// </summary>
+    public void CheckGameEnd()
+    {
+        //如果已经没有下一波敌人 并且场上没有敌人
+        if (fightData.fightAttackData.queueAttackDetails.Count == 0 && !fightData.CheckHasAttackCreature())
+        {
+            //进入结算状态
+            GameHandler.Instance.manager.SetGameState(GameStateEnum.Settlement);
+            //打开结算UI
+            var uiFightSettlement = UIHandler.Instance.OpenUIAndCloseOther<UIFightSettlement>();
+        }
+    }
 
+    /// <summary>
+    /// 角色死亡
+    /// </summary>
+    public void EventForGameFightLogicCreatureDeadEnd(FightCreatureBean fightCreature)
+    {
+        //检测一下游戏是否结束
+        CheckGameEnd();
+    }
 }

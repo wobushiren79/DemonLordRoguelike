@@ -21,7 +21,8 @@ public static class EventsInfo
     public static string GameFightLogic_PutCard = "GameFightLogic_PutCard";//放置卡片选择    
     public static string GameFightLogic_RefreshCard = "GameFightLogic_RefreshCard";//刷新卡片  
 
-    public static string GameFightLogic_CreatureDead = "GameFightLogic_CreatureDead";//生物死亡  
+    public static string GameFightLogic_CreatureDeadStart = "GameFightLogic_CreatureDeadStart";//生物开始死亡  
+    public static string GameFightLogic_CreatureDeadEnd = "GameFightLogic_CreatureDeadEnd";//生物结束死亡
 
     public static string Toast_NoEnoughCreateMagic = "Toast_NoEnoughCreateMagic";//没有足够的创建魔力
 

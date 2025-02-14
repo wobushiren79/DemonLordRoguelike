@@ -33,8 +33,11 @@ public class GashaponMachineLogic : BaseGameLogic
 
     public string eggChildFbxName = "Egg_1";
     public string eggChildRendererName = "Renderer";
-    public override void PreGameForRegisterEvent()
+
+    public override void PreGame()
     {
+        base.PreGame();
+        //注册事件
         if (!isRegisterEvent)
         {
             isRegisterEvent = true;
@@ -43,11 +46,6 @@ public class GashaponMachineLogic : BaseGameLogic
             this.RegisterEvent(EventsInfo.GashaponMachine_ClickReset, EventForReset);
             this.RegisterEvent(EventsInfo.GashaponMachine_ClickEnd, EventForEnd);
         }
-    }
-
-    public override void PreGame()
-    {
-        base.PreGame();
         //初始化场景
         InitSceneData();
         //初始化数据
