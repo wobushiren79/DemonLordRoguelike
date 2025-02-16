@@ -13,17 +13,20 @@ MonoBehaviour:
   m_Name: Spine
   m_EditorClassIdentifier: 
   m_GroupName: Spine
-  m_Data:
-    m_SerializedData: []
   m_GUID: ee849c7e9432d834b951501fb68c702e
   m_SerializeEntries:
-  - m_GUID: fd81f03112dcbda4d8741c0b5a16e9b0
-    m_Address: Assets/LoadResources/Spine/Creature/Skeleton/Skeleton_SkeletonData.asset
+  - m_GUID: 0552f6153ae222b488db4000b52e1ac4
+    m_Address: Assets/LoadResources/Spine/Creature/Slime/Slime_SkeletonData.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8a3e0ac3150dc72439a6cd6a57a961e5
     m_Address: Assets/LoadResources/Spine/Creature/Human/Human_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fd81f03112dcbda4d8741c0b5a16e9b0
+    m_Address: Assets/LoadResources/Spine/Creature/Skeleton/Skeleton_SkeletonData.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
