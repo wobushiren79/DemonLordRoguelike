@@ -88,7 +88,7 @@ GameObject:
   - component: {fileID: 5660061851387380203}
   - component: {fileID: 7589537179392810494}
   m_Layer: 5
-  m_Name: ViewGashaponCardGroupItem
+  m_Name: UIViewGashaponCardGroupItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

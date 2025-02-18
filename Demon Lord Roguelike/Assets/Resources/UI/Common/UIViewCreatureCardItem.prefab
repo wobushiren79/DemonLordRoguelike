@@ -688,7 +688,7 @@ GameObject:
   - component: {fileID: 8575153422984284731}
   - component: {fileID: 328644363354151163}
   m_Layer: 5
-  m_Name: ViewCreatureCardItem
+  m_Name: UIViewCreatureCardItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -743,27 +743,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _rectTransform: {fileID: 0}
   cardData:
-    fightCreatureData:
-      creatureData:
-        creatureId: 
-        id: 0
-        creatureName: 
-        level: 0
-        rarity: 0
-        listSkinData: []
-      positionCreate: {x: 0, y: 0, z: 0}
-      liftCurrent: 0
-      liftMax: 0
-      armorCurrent: 0
-      armorMax: 0
-      stateForCard: 0
     creatureData:
       creatureId: 
       id: 0
       creatureName: 
       level: 0
       rarity: 0
-      listSkinData: []
+      creatureState: 0
     cardUseState: 0
     cardState: 0
     originalCardPos: {x: 0, y: 0}

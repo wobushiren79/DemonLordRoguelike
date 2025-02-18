@@ -671,7 +671,7 @@ GameObject:
   - component: {fileID: 6492014847937903363}
   - component: {fileID: 7933257876934081918}
   m_Layer: 5
-  m_Name: ViewCreatureCardDetails
+  m_Name: UIViewCreatureCardDetails
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

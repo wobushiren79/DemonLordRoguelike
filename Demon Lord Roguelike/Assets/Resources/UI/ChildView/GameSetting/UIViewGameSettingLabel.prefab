@@ -164,7 +164,7 @@ GameObject:
   - component: {fileID: 1896544647745492112}
   - component: {fileID: 6108402067437202936}
   m_Layer: 5
-  m_Name: GameSetttingLabel
+  m_Name: UIViewGameSettingLabel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

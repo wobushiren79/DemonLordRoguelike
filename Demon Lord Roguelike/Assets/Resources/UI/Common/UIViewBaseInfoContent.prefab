@@ -590,7 +590,7 @@ GameObject:
   - component: {fileID: 7525997833325248985}
   - component: {fileID: 8430215893047523667}
   m_Layer: 5
-  m_Name: ViewBaseInfoContent
+  m_Name: UIViewBaseInfoContent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

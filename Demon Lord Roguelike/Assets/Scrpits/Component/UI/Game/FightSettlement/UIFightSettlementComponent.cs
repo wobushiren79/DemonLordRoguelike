@@ -13,7 +13,9 @@ public partial class UIFightSettlement
 
     public UIViewBaseInfoContent ui_ViewBaseInfoContent;
 
-    public Button ui_OrderBtn_Sustain ;
+    public Button ui_OrderBtn_Sustain;
+
+    public Button ui_OrderBtn_Num;
 
 
 }
