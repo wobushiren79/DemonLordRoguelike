@@ -5,8 +5,6 @@ public partial class UIViewCreatureCardDetails : BaseUIView
 {
     public CreatureBean creatureData;
 
-    protected static string pathCardScene = "Assets/LoadResources/Textures/CardScene";//卡片场景路径
-
     /// <summary>
     /// 设置数据
     /// </summary>
@@ -67,39 +65,6 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     /// </summary>
     public void SetCardIcon(CreatureBean creatureData)
     {
-        //设置骨骼数据
-        creatureData.creatureModel.GetShowRes(out string resName, out int skinType);
-
-        SpineHandler.Instance.SetSkeletonDataAsset(ui_Icon, resName);
-        string[] skinArray = creatureData.GetSkinArray(skinType);
-        //修改皮肤
-        SpineHandler.Instance.ChangeSkeletonSkin(ui_Icon.Skeleton, skinArray);
-        //播放动画
-        SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, true);
-        ui_Icon.ShowObj(true);
-        //设置UI大小和坐标
-        creatureData.creatureModel.ChangeUISizeForB(ui_Icon.rectTransform);
-
-        //设置背景图片
-        Texture2D targetSceneText = null;
-        if (creatureData.creatureInfo.card_scene.IsNull())
-        {
-            //如果没有背景图片 使用通用
-            targetSceneText = IconHandler.Instance.manager.GetTextureSync($"{pathCardScene}/Card_Scene_4.png");
-        }
-        else
-        {
-            //如果有背景图片 加载
-            targetSceneText = IconHandler.Instance.manager.GetTextureSync($"{pathCardScene}/{creatureData.creatureInfo.card_scene}.png");
-        }
-        if (targetSceneText != null)
-        {
-            ui_CardScene.ShowObj(true);
-            ui_CardScene.texture = targetSceneText;
-        }
-        else
-        {
-            ui_CardScene.ShowObj(false);
-        }
+        GameUIUtil.SetCreatureUIForDetails(ui_Icon, ui_CardScene, creatureData);
     }
 }

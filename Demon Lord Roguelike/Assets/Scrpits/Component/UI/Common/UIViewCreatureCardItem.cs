@@ -121,16 +121,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     /// </summary>
     public void SetCardIcon(CreatureBean creatureData)
     {
-        //设置骨骼数据
-        SpineHandler.Instance.SetSkeletonDataAsset(ui_Icon, creatureData.creatureModel.res_name);
-        string[] skinArray = creatureData.GetSkinArray();
-        //修改皮肤
-        SpineHandler.Instance.ChangeSkeletonSkin(ui_Icon.Skeleton, skinArray);
-
-        ui_Icon.ShowObj(true);
-
-        //设置UI大小和坐标
-        creatureData.creatureModel.ChangeUISizeForS(ui_Icon.rectTransform);
+        GameUIUtil.SetCreatureUIForSimple(ui_Icon, creatureData);
     }
 
     /// <summary>

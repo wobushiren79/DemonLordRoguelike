@@ -9,7 +9,7 @@ public class GameTestEditor : Editor
     public int testDataCurrentMagic = 1000;
     public int testDataCardNum = 20;
     public int fightSceneId = 1;
-    public int fightCardId= 1;
+    public int fightCardId = 1;
 
     public int creatureId = 0;
     public int creatureModelId = 0;
@@ -77,7 +77,7 @@ public class GameTestEditor : Editor
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("测试数据-测试场景");
-        fightSceneId =  EditorGUILayout.IntField(fightSceneId);
+        fightSceneId = EditorGUILayout.IntField(fightSceneId);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
@@ -121,16 +121,16 @@ public class GameTestEditor : Editor
         }
 
         //所有的卡皮数据
-        List<CreatureBean> listCreatureData = new List<CreatureBean>();
+        fightData.dicDefCreatureData.Clear();
         for (int i = 0; i < testDataCardNum; i++)
         {
             CreatureBean itemData = new CreatureBean(fightCardId);
             itemData.AddAllSkin();
+            itemData.order = i;
             //itemData.creatureData.AddSkin(1000001);
             //itemData.creatureData.AddSkin(1010010);
-            listCreatureData.Add(itemData); ;
-        }
-        fightData.listDefCreatureData = listCreatureData;
+            fightData.dicDefCreatureData.Add(itemData.creatureId, itemData);
+        };
 
 
         FightCreatureBean fightDefCoreData = new FightCreatureBean(1);

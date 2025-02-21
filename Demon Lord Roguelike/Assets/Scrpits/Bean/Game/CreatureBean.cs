@@ -57,7 +57,9 @@ public class CreatureBean
         }
     }
 
-
+    [Newtonsoft.Json.JsonIgnore]
+    [NonSerialized]
+    public int order;//≈≈–Ú
     public CreatureBean(long id)
     {
         this.id = id;

@@ -176,18 +176,23 @@ public class GameFightCreatureEntity
     /// <summary>
     /// 收到攻击
     /// </summary>
-    public void UnderAttack(BaseAttackMode baseAttackMode, out int leftLife, out int leftArmor)
+    public void UnderAttack(BaseAttackMode baseAttackMode)
     {
-        //先扣除护甲
-        leftArmor = fightCreatureData.ChangeArmor(-baseAttackMode.attackerDamage, out int outArmorChangeData);
-        //如果护甲已经全部扣完 再扣除生命
-        if (outArmorChangeData != 0)
-        {
-            fightCreatureData.ChangeLife(outArmorChangeData);
-        }
-        leftLife = fightCreatureData.liftCurrent;
+        var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        var fightRecordsData = gameLogic.fightData.fightRecordsData;
+
+        //先扣除护甲 再扣除生命
+        fightCreatureData.ChangeArmorAndLife(-baseAttackMode.attackerDamage,
+        out int curArmor, out int curLife,
+        out int changeArmorReal, out int changeLifeReal);
+        //真实造成的伤害
+        int damageReal = Mathf.Abs(changeArmorReal + changeLifeReal);
+        //记录数据
+        fightRecordsData.AddCreatureDamage(baseAttackMode.attackerId, damageReal);
+        fightRecordsData.AddCreatureDamageReceived(baseAttackMode.attackedId, damageReal);
+
         //如果还有生命值 
-        if (leftLife > 0)
+        if (curLife > 0)
         {
             //增加BUFF
             AddBuff(baseAttackMode);
@@ -203,13 +208,17 @@ public class GameFightCreatureEntity
                 //展示血条
                 creatureLifeShow?.ShowObj(true);
                 //设置血条进度
-                creatureLifeShow?.material.SetFloat("_Progress_1", leftLife / (float)fightCreatureData.liftMax);
+                creatureLifeShow?.material.SetFloat("_Progress_1", curLife / (float)fightCreatureData.lifeMax);
                 //设置护盾进度
-                creatureLifeShow?.material.SetFloat("_Progress_2", leftArmor / (float)fightCreatureData.armorMax);
+                creatureLifeShow?.material.SetFloat("_Progress_2", curArmor / (float)fightCreatureData.armorMax);
             }
         }
         else
-        {   //掉落金币
+        {
+            //记录数据
+            fightRecordsData.AddCreatureKillNum(baseAttackMode.attackerId, 1);
+
+            //掉落金币
             FightHandler.Instance.CreateDropCoin(creatureObj.transform.position);
             //如果被攻击对象死亡 
             SetCreatureDead();
@@ -259,7 +268,7 @@ public class GameFightCreatureEntity
         if (creatureFightState == CreatureFightStateEnum.Dead)
             return true;
         //如果目标生物已经无了
-        //if (creatureObj == null || fightCreatureData == null || fightCreatureData.liftCurrent <= 0)
+        //if (creatureObj == null || fightCreatureData == null || fightCreatureData.lifeCurrent <= 0)
         //{
         //    return true;
         //}

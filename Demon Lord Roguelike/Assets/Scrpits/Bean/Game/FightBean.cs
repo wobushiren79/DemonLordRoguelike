@@ -24,7 +24,7 @@ public class FightBean
     public FightAttackBean fightAttackData;
 
     //所有卡片防御生物数据
-    public List<CreatureBean> listDefCreatureData = new List<CreatureBean>();
+    public Dictionary<string, CreatureBean> dicDefCreatureData = new Dictionary<string, CreatureBean>();
 
     //防守生物位置数据
     public Dictionary<Vector3Int, FightPositionBean> dicFightPosition = new Dictionary<Vector3Int, FightPositionBean>();
@@ -39,6 +39,9 @@ public class FightBean
     public FightCreatureBean fightDefCoreData;
     //防守方核心生物实例
     public GameFightCreatureEntity fightDefCoreCreature;
+
+    //战斗数据记录
+    public FightRecordsBean fightRecordsData = new FightRecordsBean();
 
     /// <summary>
     /// 检测是否还拥有进攻生物
@@ -61,9 +64,9 @@ public class FightBean
     /// </summary>
     public void Clear()
     {
-        for (int i = 0; i < listDefCreatureData.Count; i++)
+        foreach (var itemData in dicDefCreatureData)
         {
-            var itemCreature = listDefCreatureData[i];
+            var itemCreature = itemData.Value;
             itemCreature.creatureState = CreatureStateEnum.Idle;
         }
 
@@ -75,6 +78,7 @@ public class FightBean
                 GameObject.DestroyImmediate(itemValue.creatureObj);
             }
         }
+        dicDefCreatureData.Clear();
         dicCreatureEntity.Clear();
         dicFightPosition.Clear();
         dicAttackCreatureEntity.Clear();
@@ -128,7 +132,7 @@ public class FightBean
     /// </summary>
     public void RemoveFightPosition(Vector3Int targetPos)
     {
-        if (dicFightPosition.TryGetValue(targetPos,out FightPositionBean fightPosition))
+        if (dicFightPosition.TryGetValue(targetPos, out FightPositionBean fightPosition))
         {
             dicFightPosition.Remove(targetPos);
 
@@ -245,7 +249,7 @@ public class FightBean
     /// <returns></returns>
     public GameFightCreatureEntity GetFightCreatureById(string creatureId)
     {
-        if (dicCreatureEntity.TryGetValue(creatureId,out GameFightCreatureEntity targetCreature))
+        if (dicCreatureEntity.TryGetValue(creatureId, out GameFightCreatureEntity targetCreature))
         {
             return targetCreature;
         }

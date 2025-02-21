@@ -1,8 +1,10 @@
 using DG.Tweening;
+using Spine.Collections;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Rendering;
 using UnityEngine;
+using System.Linq;
 
 public partial class UIFightMain : BaseUIComponent
 {
@@ -48,8 +50,10 @@ public partial class UIFightMain : BaseUIComponent
     public void InitData()
     {
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        var listCreatureData = gameFightLogic.fightData.dicDefCreatureData.ToListForValue();
+
         //初始所有卡片
-        SetCreatureCardList(gameFightLogic.fightData.listDefCreatureData);
+        SetCreatureCardList(listCreatureData);
         //设置进攻数据
         SetAttackData(gameFightLogic.fightData.fightAttackData);
         //刷新一次UI
@@ -122,6 +126,14 @@ public partial class UIFightMain : BaseUIComponent
             LogUtil.LogError($"初始化卡片列表失败，卡片数据为null");
             return;
         }
+        //排个序
+        listCreatureData = listCreatureData
+            .OrderBy((itemData) => 
+            {
+                return itemData.order;
+            })
+            .ToList();
+
         for (int i = 0; i < listCreatureData.Count; i++)
         {
             var itemData = listCreatureData[i];

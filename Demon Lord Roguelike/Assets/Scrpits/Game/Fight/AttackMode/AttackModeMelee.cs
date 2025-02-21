@@ -11,7 +11,7 @@ public class AttackModeMelee : BaseAttackMode
         if (attacker != null && attacked != null && !attacked.IsDead())
         {
             //扣血
-            attacked.UnderAttack(this, out int leftLife, out int leftArmor);
+            attacked.UnderAttack(this);
         }
 
         //攻击完了就回收这个攻击

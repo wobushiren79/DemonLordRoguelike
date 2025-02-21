@@ -19,6 +19,10 @@ public class BaseAttackMode
     //被攻击者的层级
     public int attackedLayer;
 
+    //攻击者ID
+    public string attackerId;
+    //被攻击者ID
+    public string attackedId;
     /// <summary>
     /// 开始攻击
     /// </summary>
@@ -31,8 +35,13 @@ public class BaseAttackMode
         {
             if (attacker.fightCreatureData != null)
             {
-                //设置伤害
-                attackerDamage = attacker.fightCreatureData.creatureData.GetAttDamage();
+                if (attacker.fightCreatureData.creatureData != null)
+                {
+                    //设置攻击者ID
+                    attackerId = attacker.fightCreatureData.creatureData.creatureId;
+                    //设置伤害
+                    attackerDamage = attacker.fightCreatureData.creatureData.GetAttDamage();
+                }
             }
         }
         if (attacked != null)
@@ -42,6 +51,15 @@ public class BaseAttackMode
                 targetPos = attacked.creatureObj.transform.position;
                 attackDirection = Vector3.Normalize(attacked.creatureObj.transform.position - attacker.creatureObj.transform.position);
                 attackedLayer = attacked.creatureObj.layer;
+    
+            }
+            if (attacked.fightCreatureData != null)
+            {
+                if (attacked.fightCreatureData.creatureData != null)
+                {
+                    //设置被攻击者ID
+                    attackedId = attacked.fightCreatureData.creatureData.creatureId;
+                }
             }
             //LogUtil.Log($"attacker_{attacker.creatureObj.transform.position} attacked_{attacked.creatureObj.transform.position} attackDirection_{attackDirection}");
         }

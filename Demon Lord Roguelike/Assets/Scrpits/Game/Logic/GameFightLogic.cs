@@ -262,6 +262,7 @@ public class GameFightLogic : BaseGameLogic
             GameHandler.Instance.manager.SetGameState(GameStateEnum.Settlement);
             //´ò¿ª½áËãUI
             var uiFightSettlement = UIHandler.Instance.OpenUIAndCloseOther<UIFightSettlement>();
+            uiFightSettlement.SetData(fightData.fightRecordsData);
         }
     }
 
