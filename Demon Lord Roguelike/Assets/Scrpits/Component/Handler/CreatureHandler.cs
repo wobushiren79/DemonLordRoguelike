@@ -111,6 +111,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             Transform lifeShowTF = targetObj.transform.Find("LifeShow");
             if (rendererTF != null)
             {
+                //rendererTF.eulerAngles = Vector3.zero;
                 rendererTF.eulerAngles = mainCamera.transform.eulerAngles;
                 //如果没有加载过spine 则加载一次 
                 if (rendererTF.GetComponent<SkeletonAnimation>() == null)
@@ -128,6 +129,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             }
             if (lifeShowTF != null)
             {
+                //lifeShowTF.eulerAngles = Vector3.zero;
                 lifeShowTF.eulerAngles = mainCamera.transform.eulerAngles;
                 lifeShowTF.ShowObj(false);
             }

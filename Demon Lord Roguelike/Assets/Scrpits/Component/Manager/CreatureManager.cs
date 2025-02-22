@@ -53,6 +53,7 @@ public class CreatureManager : BaseManager
             Transform spineTF = objCreatureSelectPreview.transform.Find("Spine");
             skeletonAnimationSelectPreview = spineTF.GetComponent<SkeletonAnimation>();
         }
+        //objCreatureSelectPreview.transform.eulerAngles = Vector3.zero;
         var mainCamera = CameraHandler.Instance.manager.mainCamera;
         objCreatureSelectPreview.transform.eulerAngles = mainCamera.transform.eulerAngles;
 
