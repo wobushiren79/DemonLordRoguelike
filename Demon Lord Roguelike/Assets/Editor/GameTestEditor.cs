@@ -110,6 +110,8 @@ public class GameTestEditor : Editor
     public FightBean GetTestData()
     {
         FightBean fightData = new FightBean();
+
+        fightData.gameFightType = GameFightTypeEnum.Test;
         fightData.currentMagic = testDataCurrentMagic;
 
         //生成进攻数据

@@ -7,6 +7,8 @@ using UnityEngine;
 [Serializable]
 public class FightBean
 {
+    public GameFightTypeEnum gameFightType;//游戏模式
+
     public float gameTime = 0;//游戏时间
     public float gameSpeed = 1;//游戏速度
 
@@ -250,6 +252,20 @@ public class FightBean
     public GameFightCreatureEntity GetFightCreatureById(string creatureId)
     {
         if (dicCreatureEntity.TryGetValue(creatureId, out GameFightCreatureEntity targetCreature))
+        {
+            return targetCreature;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 通过ID获取生物数据（仅限防御生物）
+    /// </summary>
+    /// <param name="creatureId"></param>
+    /// <returns></returns>
+    public CreatureBean GetCreatureDataById(string creatureId)
+    {
+        if (dicDefCreatureData.TryGetValue(creatureId, out CreatureBean targetCreature))
         {
             return targetCreature;
         }

@@ -72,6 +72,17 @@ public partial class UIFightSettlement : BaseUIComponent
     /// </summary>
     public void OnClickForExit()
     {
-
+        var fightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        switch (fightLogic.fightData.gameFightType)
+        {
+            case GameFightTypeEnum.Test:
+                UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+                WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+                break;
+            case GameFightTypeEnum.Infinite:
+                break;
+            case GameFightTypeEnum.Conquer:
+                break;
+        }
     }
 }

@@ -73,3 +73,11 @@ public enum CinemachineCameraEnum
     Base,
     Fight,
 }
+
+//战斗类型
+public enum GameFightTypeEnum
+{
+    Test,//测试模式
+    Infinite,//无限模式
+    Conquer,//征服模式
+}

@@ -246,8 +246,8 @@ MonoBehaviour:
     y: 0
     width: 573
     height: 745
-  m_MinSize: {x: 275, y: 50}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 276, y: 76}
+  m_MaxSize: {x: 4001, y: 4026}
   m_ActualView: {fileID: 18}
   m_Panes:
   - {fileID: 18}
@@ -272,8 +272,8 @@ MonoBehaviour:
     y: 745
     width: 573
     height: 50
-  m_MinSize: {x: 100, y: 100}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 101, y: 126}
+  m_MaxSize: {x: 4001, y: 4026}
   m_ActualView: {fileID: 19}
   m_Panes:
   - {fileID: 19}
@@ -378,8 +378,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Game\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 2818
-    y: 265
+    x: 259
+    y: 24
     width: 1087
     height: 769
   m_SerializedDataModeController:
@@ -478,8 +478,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Hierarchy\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 2560
-    y: 265
+    x: 0
+    y: 24
     width: 257
     height: 769
   m_SerializedDataModeController:
@@ -496,23 +496,23 @@ MonoBehaviour:
   m_SceneHierarchy:
     m_TreeViewState:
       scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 94d40000
-      m_LastClickedID: 54420
+      m_SelectedIDs: 
+      m_LastClickedID: 0
       m_ExpandedIDs: f27dffff7080ffff6883ffff7683ffffa683ffffee83fffff683ffff0084ffff628bffff808bffff708effff788effff868effffb68effff108fffff0c93ffff6ea1ffff54c1ffff8ac4fffff0e2fffff0e3ffff40e7ffffccfafffff4ffffff
       m_RenameOverlay:
         m_UserAcceptedRename: 0
-        m_Name: CameraData(Clone)
-        m_OriginalName: CameraData(Clone)
+        m_Name: 
+        m_OriginalName: 
         m_EditFieldRect:
           serializedVersion: 2
           x: 0
           y: 0
           width: 0
           height: 0
-        m_UserData: -29824
+        m_UserData: 0
         m_IsWaitingForDelay: 0
         m_IsRenaming: 0
-        m_OriginalEventType: 0
+        m_OriginalEventType: 11
         m_IsRenamingFilename: 0
         m_TrimLeadingAndTrailingWhitespace: 0
         m_ClientGUIView: {fileID: 7}
@@ -1138,7 +1138,7 @@ MonoBehaviour:
   m_Rotation:
     m_Target: {x: 0.16951978, y: -0.103251114, z: 0.018184878, w: 0.9800375}
     speed: 2
-    m_Value: {x: 0.16950266, y: -0.10324069, z: 0.018183041, w: 0.97993857}
+    m_Value: {x: -0.16951978, y: 0.103251114, z: -0.018184876, w: -0.9800375}
   m_Size:
     m_Target: 0.464515
     speed: 2
@@ -1194,8 +1194,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Inspector\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 3907
-    y: 265
+    x: 1
+    y: 24
     width: 572
     height: 719
   m_SerializedDataModeController:
@@ -1243,8 +1243,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Console\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 3907
-    y: 1010
+    x: 1
+    y: 769
     width: 572
     height: 24
   m_SerializedDataModeController:
@@ -1279,8 +1279,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Project\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 2560
-    y: 1060
+    x: 0
+    y: 24
     width: 1177
     height: 160
   m_SerializedDataModeController:
@@ -1324,7 +1324,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 143}
     m_SelectedIDs: dad70000
     m_LastClickedID: 55258
-    m_ExpandedIDs: 00000000fed4000000d5000002d5000004d5000006d5000008d500000ad500000cd500000ed5000010d5000012d5000014d5000016d5000018d500001ad500001cd500001ed5000020d5000022d5000024d5000026d5000028d500002ad500002cd500002ed5000030d5000032d5000034d5000036d5000038d500003ad500003cd500003ed5000040d5000042d5000044d5000046d5000048d500004ad500004cd500004ed5000050d5000052d5000054d5000056d5000058d500005ad500005cd500005ed5000060d5000062d5000064d5000066d5000068d500006ad500006cd500006ed5000000ca9a3bffffff7f
+    m_ExpandedIDs: 0000000002d5000004d5000006d5000008d500000ad500000cd500000ed5000010d5000012d5000014d5000016d5000018d500001ad500001cd500001ed5000020d5000022d5000024d5000026d5000028d500002ad500002cd500002ed5000030d5000032d5000034d5000036d5000038d500003ad500003cd500003ed5000040d5000042d5000044d5000046d5000048d500004ad500004cd500004ed5000050d5000052d5000054d5000056d5000058d500005ad500005cd500005ed5000060d5000062d5000064d5000066d5000068d500006ad500006cd500006ed5000070d5000072d50000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1353,7 +1353,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000fed4000000d5000002d5000004d5000006d5000008d500000ad500000cd500000ed5000010d5000012d5000014d5000016d5000018d500001ad500001cd500001ed5000020d5000022d5000024d5000026d5000028d500002ad500002cd500002ed5000030d5000032d5000034d5000036d5000038d500003ad500003cd500003ed5000040d5000042d5000044d5000046d5000048d500004ad500004cd500004ed5000050d5000052d5000054d5000056d5000058d500005ad500005cd500005ed5000060d5000062d5000064d5000066d5000068d500006ad500006cd500006ed50000
+    m_ExpandedIDs: 0000000002d5000004d5000006d5000008d500000ad500000cd500000ed5000010d5000012d5000014d5000016d5000018d500001ad500001cd500001ed5000020d5000022d5000024d5000026d5000028d500002ad500002cd500002ed5000030d5000032d5000034d5000036d5000038d500003ad500003cd500003ed5000040d5000042d5000044d5000046d5000048d500004ad500004cd500004ed5000050d5000052d5000054d5000056d5000058d500005ad500005cd500005ed5000060d5000062d5000064d5000066d5000068d500006ad500006cd500006ed5000070d5000072d50000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1432,8 +1432,8 @@ MonoBehaviour:
     m_TextWithWhitespace: "Project Settings\u200B"
   m_Pos:
     serializedVersion: 2
-    x: 3738
-    y: 1060
+    x: 1179
+    y: 24
     width: 741
     height: 160
   m_SerializedDataModeController:
