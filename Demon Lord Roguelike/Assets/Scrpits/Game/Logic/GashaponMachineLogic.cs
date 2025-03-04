@@ -1,4 +1,4 @@
-﻿using DG.Tweening;
+using DG.Tweening;
 using Spine.Unity;
 using System;
 using System.Collections.Generic;

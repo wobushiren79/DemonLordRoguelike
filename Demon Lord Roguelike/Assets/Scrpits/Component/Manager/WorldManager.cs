@@ -7,17 +7,17 @@ using UnityEngine;
 
 public class WorldManager : BaseManager
 {
-    //Õ½¶·³¡¾°
+    //æˆ˜æ–—åœºæ™¯
     public Dictionary<string, GameObject> dicScene = new Dictionary<string, GameObject>();
-    //µ±Ç°Ìì¿ÕºĞ
+    //å½“å‰å¤©ç©ºç›’
     public Material currentSkyBoxMat;
 
     /// <summary>
-    /// »ñÈ¡Õ½¶·³¡¾°
+    /// è·å–æˆ˜æ–—åœºæ™¯
     /// </summary>
     public void GetFightScene(string dataPath, Action<GameObject> actionForComplete)
     {
-        //¼ÓÔØÕ½¶·³¡¾°
+        //åŠ è½½æˆ˜æ–—åœºæ™¯
         GetModelForAddressables(dicScene, dataPath, (target) =>
         {
             actionForComplete?.Invoke(target);
@@ -25,13 +25,13 @@ public class WorldManager : BaseManager
     }
 
     /// <summary>
-    /// »ñÈ¡Ìì¿Õ²¢ÉãÖÆ
+    /// è·å–å¤©ç©ºå¹¶æ‘„åˆ¶
     /// </summary>
     /// <param name="skyboxPath"></param>
     /// <param name="actionForComplete"></param>
     public void GetSkybox(string skyboxPath, Action<Material> actionForComplete)
     {
-        //¼ÓÔØÌì¿ÕºĞ×Ó
+        //åŠ è½½å¤©ç©ºç›’å­
         LoadAddressablesUtil.LoadAssetAsync<Material>(skyboxPath, data =>
         {
             currentSkyBoxMat = data.Result;
@@ -40,7 +40,7 @@ public class WorldManager : BaseManager
     }
 
     /// <summary>
-    /// »ñÈ¡»ùµØ³¡¾°
+    /// è·å–åŸºåœ°åœºæ™¯
     /// </summary>
     public void GetBaseScene(Action<GameObject> actionForComplete)
     {
@@ -52,11 +52,11 @@ public class WorldManager : BaseManager
     }
 
     /// <summary>
-    /// ÒÆ³ıÌì¿ÕºĞ
+    /// ç§»é™¤å¤©ç©ºç›’
     /// </summary>
     public void RemoveSkybox()
     {
-        //¼ÓÔØÌì¿ÕºĞ×Ó
+        //åŠ è½½å¤©ç©ºç›’å­
         if (currentSkyBoxMat != null)
         {
             LoadAddressablesUtil.Release(currentSkyBoxMat);

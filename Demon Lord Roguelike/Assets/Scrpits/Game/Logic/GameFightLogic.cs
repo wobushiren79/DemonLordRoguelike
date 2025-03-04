@@ -5,40 +5,40 @@ using UnityEngine;
 
 public class GameFightLogic : BaseGameLogic
 {
-    //Õ½¶·Êı¾İ
+    //æˆ˜æ–—æ•°æ®
     public FightBean fightData;
 
-    public GameObject selectCreature;    //Ñ¡ÔñµÄÉúÎï
-    public UIViewCreatureCardItem selectCreatureCard;//Ñ¡ÖĞÉúÎï¿¨Æ¬
-    public Vector3Int selectCreaturePutPost;    //Ñ¡ÔñµÄÉúÎïµÄ·ÅÖÃÎ»ÖÃ
+    public GameObject selectCreature;    //é€‰æ‹©çš„ç”Ÿç‰©
+    public UIViewCreatureCardItem selectCreatureCard;//é€‰ä¸­ç”Ÿç‰©å¡ç‰‡
+    public Vector3Int selectCreaturePutPost;    //é€‰æ‹©çš„ç”Ÿç‰©çš„æ”¾ç½®ä½ç½®
 
     /// <summary>
-    /// ×¼±¸ÓÎÏ·
+    /// å‡†å¤‡æ¸¸æˆ
     /// </summary>
     public override void PreGame()
     {
         base.PreGame();
-        //×¢²áÊÂ¼ş
+        //æ³¨å†Œäº‹ä»¶
         RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_CreatureDeadEnd, EventForGameFightLogicCreatureDeadEnd);
-        //ÉèÖÃÕ½¶·³¡¾°ÊÓ½Ç
+        //è®¾ç½®æˆ˜æ–—åœºæ™¯è§†è§’
         CameraHandler.Instance.InitFightSceneCamera(() =>
         {
-            //¼ÓÔØÕ½¶·³¡¾°
+            //åŠ è½½æˆ˜æ–—åœºæ™¯
             WorldHandler.Instance.LoadFightScene(fightData.fightSceneId, async (targetObj) =>
             {
-                //ÑÓ³Ù0.1Ãë ·ÀÖ¹Ò»Ğ©¾µÍ·µÄ1£¬2Ö¡Îó²î
+                //å»¶è¿Ÿ0.1ç§’ é˜²æ­¢ä¸€äº›é•œå¤´çš„1ï¼Œ2å¸§è¯¯å·®
                 await new WaitForSeconds(0.1f);
-                //¼ÓÔØºËĞÄ£¨Ä§Íõ£©ÊµÀı
+                //åŠ è½½æ ¸å¿ƒï¼ˆé­”ç‹ï¼‰å®ä¾‹
                 CreatureHandler.Instance.CreateDefCoreCreature((defCoreCreatureEntity) =>
                 {
-                    //ÉèÖÃÄ§ÍõºËĞÄ
+                    //è®¾ç½®é­”ç‹æ ¸å¿ƒ
                     fightData.fightDefCoreCreature = defCoreCreatureEntity;
-                    //¿ªÆôÕ½¶·¿ØÖÆ
+                    //å¼€å¯æˆ˜æ–—æ§åˆ¶
                     GameControlHandler.Instance.SetFightControl();
-                    //¹Ø±ÕLoadingUI
+                    //å…³é—­LoadingUI
                     var uiFightMain = UIHandler.Instance.OpenUIAndCloseOther<UIFightMain>();
                     uiFightMain.InitData();
-                    //¿ªÊ¼ÓÎÏ·
+                    //å¼€å§‹æ¸¸æˆ
                     StartGame();
                 });
             });
@@ -46,7 +46,7 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// ¸üĞÂ
+    /// æ›´æ–°
     /// </summary>
     public override void UpdateGame()
     {
@@ -59,30 +59,30 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// ÇåÀíÓÎÏ·
+    /// æ¸…ç†æ¸¸æˆ
     /// </summary>
     public override void ClearGame()
     {
         base.ClearGame();
         ClearSelectData(true);
-        //ÇåÀíÕ½¶·Êı¾İ
+        //æ¸…ç†æˆ˜æ–—æ•°æ®
         fightData.Clear();
-        //ÉúÎïÇåÀí
+        //ç”Ÿç‰©æ¸…ç†
         CreatureHandler.Instance.manager.Clear();
-        //Õ½³¡ÇåÀí
+        //æˆ˜åœºæ¸…ç†
         FightHandler.Instance.manager.Clear();
-        //AIÇåÀí
+        //AIæ¸…ç†
         AIHandler.Instance.manager.Clear();
-        //ÇåÀíÕ½¶·³¡¾°
+        //æ¸…ç†æˆ˜æ–—åœºæ™¯
         WorldHandler.Instance.UnLoadFightScene();
     }
 
     /// <summary>
-    /// ¸üĞÂ-Ñ¡ÖĞÎïÌå
+    /// æ›´æ–°-é€‰ä¸­ç‰©ä½“
     /// </summary>
     public void UpdateGameForSelectCreature(float updateTime)
     {
-        //Èç¹ûÓĞÑ¡ÖĞµÄÎïÌå
+        //å¦‚æœæœ‰é€‰ä¸­çš„ç‰©ä½“
         if (selectCreature != null)
         {
             RayUtil.RayToScreenPointForMousePosition(10, 1 << LayerInfo.Ground, out bool isCollider, out RaycastHit hit, CameraHandler.Instance.manager.mainCamera);
@@ -106,7 +106,7 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// ¸üĞÂ-½ø¹¥·½Éú³É
+    /// æ›´æ–°-è¿›æ”»æ–¹ç”Ÿæˆ
     /// </summary>
     public void UpdateGameForAttackCreate(float updateTime)
     {
@@ -114,7 +114,7 @@ public class GameFightLogic : BaseGameLogic
         if (fightData.timeUpdateForAttackCreate > fightData.timeUpdateTargetForAttackCreate)
         {
             fightData.timeUpdateForAttackCreate = 0;
-            //Éú³ÉÒ»´ÎÉúÎï
+            //ç”Ÿæˆä¸€æ¬¡ç”Ÿç‰©
             var attackDetailsData = fightData.fightAttackData.GetNextAttackDetailData();
             if (attackDetailsData == null)
             {
@@ -126,7 +126,7 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// ¸üĞÂ-Õ½¶·µÄÉúÎï
+    /// æ›´æ–°-æˆ˜æ–—çš„ç”Ÿç‰©
     /// </summary>
     public void UpdateGameForFightCreature(float updateTime)
     {
@@ -147,19 +147,19 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// Ñ¡ÔñÁËÒ»ÕÅ·ÀÓù¿¨
+    /// é€‰æ‹©äº†ä¸€å¼ é˜²å¾¡å¡
     /// </summary>
     public void SelectCard(UIViewCreatureCardItem targetView)
     {
-        //Èç¹ûÔ­À´Ã»ÓĞÑ¡ÖĞ
+        //å¦‚æœåŸæ¥æ²¡æœ‰é€‰ä¸­
         if (selectCreatureCard == null)
         {
 
         }
-        //Èç¹ûÔ­À´ÓĞÑ¡ÖĞ ĞèÒªÈ¡ÏûÔ­À´µÄÑ¡ÖĞÎïÌå
+        //å¦‚æœåŸæ¥æœ‰é€‰ä¸­ éœ€è¦å–æ¶ˆåŸæ¥çš„é€‰ä¸­ç‰©ä½“
         else
         {
-            //Èç¹ûÑ¡ÖĞµÄÊı¾İÊÇµ±Ç°µÄÊı¾İ Ôò²»×ö´¦Àí
+            //å¦‚æœé€‰ä¸­çš„æ•°æ®æ˜¯å½“å‰çš„æ•°æ® åˆ™ä¸åšå¤„ç†
             if (targetView == selectCreatureCard)
                 return;
             ClearSelectData();
@@ -173,7 +173,7 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// È¡ÏûÑ¡ÔñÁËÒ»ÕÅ¿¨
+    /// å–æ¶ˆé€‰æ‹©äº†ä¸€å¼ å¡
     /// </summary>
     public void UnSelectCard()
     {
@@ -182,7 +182,7 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// ·ÅÖÃ¿¨Æ¬
+    /// æ”¾ç½®å¡ç‰‡
     /// </summary>
     public void PutCard()
     {
@@ -191,29 +191,29 @@ public class GameFightLogic : BaseGameLogic
         bool checkPosHasMainCreature = fightData.CheckFightPositionHasCreature(selectCreaturePutPost);
         if (checkPosHasMainCreature)
         {
-            //ÒÑ¾­ÓĞÉúÎïÁË
+            //å·²ç»æœ‰ç”Ÿç‰©äº†
             return;
         }
         int createMagic = selectCreatureCard.cardData.creatureData.GetCreateMagic();
         if (fightData.currentMagic < createMagic)
         {
-            //Ä§Á¦²»×ã
+            //é­”åŠ›ä¸è¶³
             EventHandler.Instance.TriggerEvent(EventsInfo.Toast_NoEnoughCreateMagic);
             return;
         }
-        //¿Û³ıÄ§Á¦
+        //æ‰£é™¤é­”åŠ›
         fightData.ChangeMagic(-createMagic);
-        //ÉèÖÃÉúÎïÎ»ÖÃ
+        //è®¾ç½®ç”Ÿç‰©ä½ç½®
         selectCreature.transform.position = selectCreaturePutPost;
 
-        //ÉèÖÃÉúÎï½øÈëÕ½¶·×´Ì¬
+        //è®¾ç½®ç”Ÿç‰©è¿›å…¥æˆ˜æ–—çŠ¶æ€
         selectCreatureCard.cardData.creatureData.creatureState = CreatureStateEnum.Fight;
 
-        //´´½¨Õ½¶·ÉúÎïÊı¾İ
+        //åˆ›å»ºæˆ˜æ–—ç”Ÿç‰©æ•°æ®
         FightCreatureBean fightCreatureData = new FightCreatureBean(selectCreatureCard.cardData.creatureData);
         fightCreatureData.positionCreate = selectCreaturePutPost;
 
-        //´´½¨Õ½¶·ÉúÎï
+        //åˆ›å»ºæˆ˜æ–—ç”Ÿç‰©
         GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(selectCreature, fightCreatureData);
         gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefCreatureEntity>(actionBeforeStart: (targetEntity) =>
         {
@@ -228,13 +228,13 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// ÇåÀíÑ¡ÔñµÄÊı¾İ
+    /// æ¸…ç†é€‰æ‹©çš„æ•°æ®
     /// </summary>
     public void ClearSelectData(bool isDestroyImm = false)
     {
         GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreaureSelectPreview();
         objSelectPreivew.gameObject.SetActive(false);
-        //»ØÊÕÔ¤ÖÆ
+        //å›æ”¶é¢„åˆ¶
         if (selectCreature != null)
         {
             if (isDestroyImm)
@@ -251,27 +251,27 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// ¼ì²âÓÎÏ·ÊÇ·ñ½áÊø
+    /// æ£€æµ‹æ¸¸æˆæ˜¯å¦ç»“æŸ
     /// </summary>
     public void CheckGameEnd()
     {
-        //Èç¹ûÒÑ¾­Ã»ÓĞÏÂÒ»²¨µĞÈË ²¢ÇÒ³¡ÉÏÃ»ÓĞµĞÈË
+        //å¦‚æœå·²ç»æ²¡æœ‰ä¸‹ä¸€æ³¢æ•Œäºº å¹¶ä¸”åœºä¸Šæ²¡æœ‰æ•Œäºº
         if (fightData.fightAttackData.queueAttackDetails.Count == 0 && !fightData.CheckHasAttackCreature())
         {
-            //½øÈë½áËã×´Ì¬
+            //è¿›å…¥ç»“ç®—çŠ¶æ€
             GameHandler.Instance.manager.SetGameState(GameStateEnum.Settlement);
-            //´ò¿ª½áËãUI
+            //æ‰“å¼€ç»“ç®—UI
             var uiFightSettlement = UIHandler.Instance.OpenUIAndCloseOther<UIFightSettlement>();
             uiFightSettlement.SetData(fightData.fightRecordsData);
         }
     }
 
     /// <summary>
-    /// ½ÇÉ«ËÀÍö
+    /// è§’è‰²æ­»äº¡
     /// </summary>
     public void EventForGameFightLogicCreatureDeadEnd(FightCreatureBean fightCreature)
     {
-        //¼ì²âÒ»ÏÂÓÎÏ·ÊÇ·ñ½áÊø
+        //æ£€æµ‹ä¸€ä¸‹æ¸¸æˆæ˜¯å¦ç»“æŸ
         CheckGameEnd();
     }
 }
