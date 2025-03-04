@@ -101,7 +101,7 @@ public class GashaponMachineLogic : BaseGameLogic
         List<string> listPreLoadSpineData = new List<string>();
         for (int i = 0; i < eggNum; i++)
         {
-            GashaponItemBean itemGashapon = new GashaponItemBean(999990+i);
+            GashaponItemBean itemGashapon = new GashaponItemBean(999990 + i);
             listGashaponData.Add(itemGashapon);
 
             var creatureInfo = itemGashapon.creatureData.creatureInfo;
@@ -242,7 +242,7 @@ public class GashaponMachineLogic : BaseGameLogic
     /// 动画-蛋破壳
     /// </summary>
     /// <param name="targetEgg"></param>
-    public void AnimForEggBreak(GameObject targetEgg, GashaponItemBean gashaponItemData,Action actionForComplete)
+    public void AnimForEggBreak(GameObject targetEgg, GashaponItemBean gashaponItemData, Action actionForComplete)
     {
         var eggTF = targetEgg.transform.Find(eggChildFbxName);
         var eggSpine = targetEgg.transform.Find(eggChildRendererName).GetComponent<SkeletonAnimation>();
@@ -325,7 +325,7 @@ public class GashaponMachineLogic : BaseGameLogic
 
         MeshRenderer eggRenderer = eggTF.GetComponentInChildren<MeshRenderer>();
         eggRenderer.material.SetColor("_Color_1", Color.white);
-        eggRenderer.material.SetColor("_Color_2", new Color(UnityEngine.Random.Range(0f,1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f),1));
+        eggRenderer.material.SetColor("_Color_2", new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), 1));
         float startPos;
         if (gashaponMachineData.gashaponNum == 1)
         {

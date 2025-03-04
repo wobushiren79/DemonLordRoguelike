@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class LauncherTest : BaseLauncher
 {
-    [Header("²âÊÔÀàĞÍ")]
+    [Header("æµ‹è¯•ç±»å‹")]
     public TestSceneTypeEnum testSceneType = TestSceneTypeEnum.FightSceneTest;
 
     public override void Launch()
@@ -14,7 +14,7 @@ public class LauncherTest : BaseLauncher
     }
 
     /// <summary>
-    /// ¿ªÊ¼Õ½¶·³¡¾°²âÊÔ
+    /// å¼€å§‹æˆ˜æ–—åœºæ™¯æµ‹è¯•
     /// </summary>
     /// <param name="fightData"></param>
     public void StartForFightSceneTest(FightBean fightData)
@@ -23,7 +23,7 @@ public class LauncherTest : BaseLauncher
     }
 
     /// <summary>
-    /// ¿ªÊ¼¿¨Æ¬²âÊÔ
+    /// å¼€å§‹å¡ç‰‡æµ‹è¯•
     /// </summary>
     /// <param name="fightCreature"></param>
     public void StartForCardTest(FightCreatureBean fightCreature)
@@ -31,16 +31,16 @@ public class LauncherTest : BaseLauncher
         WorldHandler.Instance.ClearWorldData(() =>
         {
             VolumeHandler.Instance.SetDepthOfField(UnityEngine.Rendering.Universal.DepthOfFieldMode.Off, 0, 0, 0);
-            //¾µÍ·³õÊ¼»¯
+            //é•œå¤´åˆå§‹åŒ–
             CameraHandler.Instance.InitData();
-            //¹Ø±Õ¶îÍâµÄÉãÏñÍ·
+            //å…³é—­é¢å¤–çš„æ‘„åƒå¤´
             var ui = UIHandler.Instance.OpenUIAndCloseOther<UITestCard>();
             ui.SetData(fightCreature);
         });
     }
 
     /// <summary>
-    /// »ùµØ²âÊÔ
+    /// åŸºåœ°æµ‹è¯•
     /// </summary>
     public void StartForBaseTest(CreatureBean creatureData)
     {

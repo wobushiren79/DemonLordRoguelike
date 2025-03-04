@@ -34,7 +34,6 @@ public partial class UIFightSettlement : BaseUIComponent
     /// <summary>
     /// 设置列表数据
     /// </summary>
-    /// <param name="listCreatureData"></param>
     public void SetListData(List<FightRecordsCreatureBean> listRecordsCreatureData)
     {
         if (listRecordsCreatureData == null)
@@ -57,7 +56,7 @@ public partial class UIFightSettlement : BaseUIComponent
         itemView.SetData(fightRecordsData, itemData);
     }
 
-
+    #region 按钮
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
@@ -85,4 +84,5 @@ public partial class UIFightSettlement : BaseUIComponent
                 break;
         }
     }
+    #endregion
 }

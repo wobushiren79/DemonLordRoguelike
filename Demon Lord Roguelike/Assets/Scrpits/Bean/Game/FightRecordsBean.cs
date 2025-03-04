@@ -51,8 +51,9 @@ public class FightRecordsBean
         {
             if (isAdd)
             {
-                dicRecordsCreatureData.Add(creatureId, new FightRecordsCreatureBean(creatureId));
-                return targetData;
+                var addData = new FightRecordsCreatureBean(creatureId);
+                dicRecordsCreatureData.Add(creatureId, addData);
+                return addData;
             }
             else
             {

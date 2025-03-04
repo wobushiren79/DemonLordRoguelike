@@ -10,13 +10,13 @@ public class AttackModeMelee : BaseAttackMode
         base.StartAttack(attacker, attacked, actionForAttackEnd);
         if (attacker != null && attacked != null && !attacked.IsDead())
         {
-            //¿ÛÑª
+            //æ‰£è¡€
             attacked.UnderAttack(this);
         }
 
-        //¹¥»÷ÍêÁË¾Í»ØÊÕÕâ¸ö¹¥»÷
+        //æ”»å‡»å®Œäº†å°±å›æ”¶è¿™ä¸ªæ”»å‡»
         Destory();
-        //¹¥»÷½áÊø»Øµ÷
+        //æ”»å‡»ç»“æŸå›è°ƒ
         actionForAttackEnd?.Invoke();
     }
 }

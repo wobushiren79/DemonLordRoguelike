@@ -52,7 +52,8 @@ public partial class UIViewFightSettlementItem : BaseUIView
     /// </summary>
     public void SetProgressForKill(int maxKill, int kill)
     {
-        ui_UIViewFightSettlementItemProgress_Kill.SetData(maxKill, kill);
+        string title = TextHandler.Instance.GetTextById(50002);
+        ui_UIViewFightSettlementItemProgress_Kill.SetData(title, maxKill, kill);
     }
 
     /// <summary>
@@ -60,7 +61,8 @@ public partial class UIViewFightSettlementItem : BaseUIView
     /// </summary>
     public void SetProgressForDamage(int maxDamage, int damage)
     {
-        ui_UIViewFightSettlementItemProgress_Damage.SetData(maxDamage, damage);
+        string title = TextHandler.Instance.GetTextById(50001);
+        ui_UIViewFightSettlementItemProgress_Damage.SetData(title, maxDamage, damage);
     }
 
     /// <summary>
@@ -68,7 +70,8 @@ public partial class UIViewFightSettlementItem : BaseUIView
     /// </summary>
     public void SetProgressForDamageReceived(int maxDamageReceived, int damageReceived)
     {
-        ui_UIViewFightSettlementItemProgress_DamageReceived.SetData(maxDamageReceived, damageReceived);
+        string title = TextHandler.Instance.GetTextById(50004);
+        ui_UIViewFightSettlementItemProgress_DamageReceived.SetData(title, maxDamageReceived, damageReceived);
     }
 
     /// <summary>
@@ -76,6 +79,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
     /// </summary>
     public void SetPrgoressForExp(int maxExp, int exp)
     {
-        ui_UIViewFightSettlementItemProgress_Exp.SetData(maxExp, exp);
+        string title = TextHandler.Instance.GetTextById(50003);
+        ui_UIViewFightSettlementItemProgress_Exp.SetData(title, maxExp, exp);
     }
 }

@@ -10,21 +10,21 @@ public class BaseLauncher : BaseMonoBehaviour
     }
 
     /// <summary>
-    /// Æô¶¯
+    /// å¯åŠ¨
     /// </summary>
     public virtual void Launch()
     {
-        //³õÊ¼»¯Í¼¼¯
+        //åˆå§‹åŒ–å›¾é›†
         IconHandler.Instance.InitData();
-        //ÏÈÇåÀíÒ»ÏÂÄÚ´æ
+        //å…ˆæ¸…ç†ä¸€ä¸‹å†…å­˜
         SystemUtil.GCCollect();
 
         GameConfigBean gameConfig = GameDataHandler.Instance.manager.GetGameConfig();
-        //ÉèÖÃÈ«ÆÁ
+        //è®¾ç½®å…¨å±
         Screen.fullScreen = gameConfig.window == 1 ? true : false;
-        //ÉèÖÃFPS
+        //è®¾ç½®FPS
         FPSHandler.Instance.SetData(gameConfig.stateForFrames, gameConfig.frames);
-        //ĞŞ¸Ä¿¹¾â³İ
+        //ä¿®æ”¹æŠ—é”¯é½¿
         //CameraHandler.Instance.ChangeAntialiasing(gameConfig.GetAntialiasingMode(), gameConfig.antialiasingQualityLevel);
     }
 }
