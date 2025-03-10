@@ -4,18 +4,18 @@ using UnityEngine;
 
 public partial class UIViewGashaponCardGroupItem : BaseUIView
 {
-    public CardGroupInfoBean cardGroupInfo;
+    public StoreGashaponMachineInfoBean storeGashaponMachineInfo;
 
     /// <summary>
-    /// ÉèÖÃÊı¾İ
+    /// è®¾ç½®æ•°æ®
     /// </summary>
-    public void SetData(CardGroupInfoBean cardGroupInfo)
+    public void SetData(StoreGashaponMachineInfoBean storeGashaponMachineInfo)
     {
-        this.cardGroupInfo = cardGroupInfo;
+        this.storeGashaponMachineInfo = storeGashaponMachineInfo;
     }
 
     /// <summary>
-    /// ÉèÖÃÑ¡ÖĞ×´Ì¬
+    /// è®¾ç½®é€‰ä¸­çŠ¶æ€
     /// </summary>
     public void SetSelectState(bool isSelect)
     {

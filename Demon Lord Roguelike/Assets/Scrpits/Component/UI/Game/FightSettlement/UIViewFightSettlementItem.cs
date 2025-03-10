@@ -1,14 +1,10 @@
 
-
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
-using UnityEditor.Experimental.GraphView;
-
 public partial class UIViewFightSettlementItem : BaseUIView
 {
     protected FightRecordsCreatureBean fightRecordsCreatureData;
 
     /// <summary>
-    /// ÉèÖÃÊı¾İ
+    /// è®¾ç½®æ•°æ®
     /// </summary>
     public void SetData(FightRecordsBean fightRecordsData, FightRecordsCreatureBean fightRecordsCreatureData)
     {
@@ -27,12 +23,12 @@ public partial class UIViewFightSettlementItem : BaseUIView
         }
         else
         {
-            LogUtil.LogError($"ÉèÖÃ¼ÇÂ¼Êı¾İÊ§°Ü£¬UIViewFightSettlementItem {fightRecordsCreatureData.creatureId}");
+            LogUtil.LogError($"è®¾ç½®è®°å½•æ•°æ®å¤±è´¥ï¼ŒUIViewFightSettlementItem {fightRecordsCreatureData.creatureId}");
         }
     }
 
     /// <summary>
-    /// ÉèÖÃÉúÎïÃû×Ö
+    /// è®¾ç½®ç”Ÿç‰©åå­—
     /// </summary>
     public void SetCreatureName(string creatureName)
     {
@@ -40,7 +36,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
     }
 
     /// <summary>
-    /// ÉèÖÃÉúÎïÍ¼±ê
+    /// è®¾ç½®ç”Ÿç‰©å›¾æ ‡
     /// </summary>
     public void SetCreatureIcon(CreatureBean creatureData)
     {
@@ -48,7 +44,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
     }
 
     /// <summary>
-    /// ÉèÖÃ»÷É±Êı
+    /// è®¾ç½®å‡»æ€æ•°
     /// </summary>
     public void SetProgressForKill(int maxKill, int kill)
     {
@@ -57,7 +53,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
     }
 
     /// <summary>
-    /// ÉèÖÃÉËº¦
+    /// è®¾ç½®ä¼¤å®³
     /// </summary>
     public void SetProgressForDamage(int maxDamage, int damage)
     {
@@ -66,7 +62,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
     }
 
     /// <summary>
-    /// ÉèÖÃÊÜµ½µÄÉËº¦
+    /// è®¾ç½®å—åˆ°çš„ä¼¤å®³
     /// </summary>
     public void SetProgressForDamageReceived(int maxDamageReceived, int damageReceived)
     {
@@ -75,7 +71,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
     }
 
     /// <summary>
-    /// ÉèÖÃ¾­Ñé
+    /// è®¾ç½®ç»éªŒ
     /// </summary>
     public void SetPrgoressForExp(int maxExp, int exp)
     {

@@ -13,15 +13,11 @@ public partial class UIGashaponMachine
 
     public RectTransform ui_Content;
 
-    public ScrollRect ui_ScrollView;
+    public Button ui_BTBuy;
 
-    public Button ui_BTTen;
+    public TextMeshProUGUI ui_BTTextBuy;
 
-    public Button ui_BTOne;
-
-    public TextMeshProUGUI ui_BTTextOne;
-
-    public TextMeshProUGUI ui_BTTextTen;
+    public ScrollGridVertical ui_List;
 
 
 }
