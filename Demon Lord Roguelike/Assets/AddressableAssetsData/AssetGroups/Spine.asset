@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ce4f5d8f19586894bba7ed0ef5071bf8
+    m_Address: Assets/LoadResources/Spine/Creature/Succubus/Succubus_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: fd81f03112dcbda4d8741c0b5a16e9b0
     m_Address: Assets/LoadResources/Spine/Creature/Skeleton/Skeleton_SkeletonData.asset
     m_ReadOnly: 0

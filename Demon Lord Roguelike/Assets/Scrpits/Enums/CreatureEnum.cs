@@ -1,52 +1,54 @@
 
 public enum CreatureStateEnum
 {
-    Idle = 1,//ÏĞÖÃ
-    Fight = 2,//Õ½¶·ÖĞ
+    Idle = 1,//é—²ç½®
+    Fight = 2,//æˆ˜æ–—ä¸­
 }
 
 public enum CreatureTypeEnum
 {
-    FightDef = 1,//Õ½¶··ÀÊØ·½
-    FightAtt = 2,//Õ½¶·½ø¹¥·½
-    FightDefCore = 99,//·ÀÊØ·½ºËĞÄ
+    FightDef = 1,//æˆ˜æ–—é˜²å®ˆæ–¹
+    FightAtt = 2,//æˆ˜æ–—è¿›æ”»æ–¹
+    FightDefCore = 99,//é˜²å®ˆæ–¹æ ¸å¿ƒ
 }
 
 public enum CreatureFightStateEnum
 {
     None = 0,
-    Live = 1,//´æ»î
-    Dead = 2,//ËÀÍö
+    Live = 1,//å­˜æ´»
+    Dead = 2,//æ­»äº¡
 }
 
 public enum CreatureSkinTypeEnum
 {
     Base = 0,
-    Head = 1,//Í·²¿
-    Hat = 2,//Ã±×Ó
-    Hair = 3,//·¢ĞÍ
-    Body = 4,//ÉíÌå
-    Eye = 5,//ÑÛ¾¦
-    Mouth = 6,//×ì°Í
-    Clothes = 10,//ÒÂ·ş
-    Pants = 12,//¿ã×Ó
+    Head = 1,//å¤´éƒ¨
+    Hat = 2,//å¸½å­
+    Hair = 3,//å‘å‹
+    Body = 4,//èº«ä½“
+    Eye = 5,//çœ¼ç›
+    Mouth = 6,//å˜´å·´
+    Horn = 7,//è§’
+    Wing = 8,//ç¿…è†€
+    Clothes = 10,//è¡£æœ
+    Pants = 12,//è£¤å­
 
-    Armor_Arm_Up_L = 20,//×ó¼çÉÏ
-    Armor_Arm_Down_L = 21,//×ó¼çÉÏ
-    Armor_Palm_Up_L = 22,//ÊÖÌ××ó
-    Armor_Arm_Up_R = 25,//×ó¼çÉÏ
-    Armor_Arm_Down_R = 26,//×ó¼çÉÏ
-    Armor_Palm_Up_R = 27,//ÊÖÌ×ÓÒ
+    Armor_Arm_Up_L = 20,//å·¦è‚©ä¸Š
+    Armor_Arm_Down_L = 21,//å·¦è‚©ä¸Š
+    Armor_Palm_Up_L = 22,//æ‰‹å¥—å·¦
+    Armor_Arm_Up_R = 25,//å·¦è‚©ä¸Š
+    Armor_Arm_Down_R = 26,//å·¦è‚©ä¸Š
+    Armor_Palm_Up_R = 27,//æ‰‹å¥—å³
 
-    Armor_Thigh_L = 30,//´óÍÈ
-    Armor_Calf_L = 31,//Ğ¡ÍÈ
-    Shoe_L = 32,//Ğ¬×Ó
+    Armor_Thigh_L = 30,//å¤§è…¿
+    Armor_Calf_L = 31,//å°è…¿
+    Shoe_L = 32,//é‹å­
     Armor_Thigh_R = 35,
     Armor_Calf_R = 36,
     Shoe_R = 37,
 
-    Weapon_L = 90,//ÎäÆ÷×ó
-    Weapon_R = 91//ÎäÆ÷ÓÒ
+    Weapon_L = 90,//æ­¦å™¨å·¦
+    Weapon_R = 91//æ­¦å™¨å³
 }
 
 public class CreatureEnum

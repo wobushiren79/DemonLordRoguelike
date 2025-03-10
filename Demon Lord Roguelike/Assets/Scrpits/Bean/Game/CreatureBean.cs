@@ -7,20 +7,20 @@ using static Cinemachine.CinemachineOrbitalTransposer;
 [Serializable]
 public class CreatureBean
 {
-    //ÉúÎïID
+    //ç”Ÿç‰©ID
     public string creatureId;
     //ID
     public long id;
-    //ÉúÎïÃû×Ö
+    //ç”Ÿç‰©åå­—
     public string creatureName;
-    //µÈ¼¶
+    //ç­‰çº§
     public int level;
-    //Ï¡ÓĞ¶È
+    //ç¨€æœ‰åº¦
     public int rarity;
 
-    //ËùÓĞµÄÆ¤·ôÊı¾İ
+    //æ‰€æœ‰çš„çš®è‚¤æ•°æ®
     public Dictionary<CreatureSkinTypeEnum, CreatureSkinBean> dicSkinData = new Dictionary<CreatureSkinTypeEnum, CreatureSkinBean>();
-    //ÉúÎï×´Ì¬ Ä¬ÈÏÏĞÖÃ
+    //ç”Ÿç‰©çŠ¶æ€ é»˜è®¤é—²ç½®
     public CreatureStateEnum creatureState = CreatureStateEnum.Idle;
 
     [Newtonsoft.Json.JsonIgnore]
@@ -59,7 +59,7 @@ public class CreatureBean
 
     [Newtonsoft.Json.JsonIgnore]
     [NonSerialized]
-    public int order;//ÅÅĞò
+    public int order;//æ’åº
     public CreatureBean(long id)
     {
         this.id = id;
@@ -67,7 +67,7 @@ public class CreatureBean
     }
 
     /// <summary>
-    /// Çå¿ÕÆ¤·ô
+    /// æ¸…ç©ºçš®è‚¤
     /// </summary>
     public void ClearSkin(bool isAddBase = true)
     {
@@ -77,11 +77,11 @@ public class CreatureBean
     }
 
     /// <summary>
-    /// Ìí¼Ó»ù´¡Æ¤·ô
+    /// æ·»åŠ åŸºç¡€çš®è‚¤
     /// </summary>
     public void AddSkinForBase(int skinId = -1)
     {
-        //Ìí¼Ó»ù´¡Æ¤·ô
+        //æ·»åŠ åŸºç¡€çš®è‚¤
         var listBaseSkin = CreatureModelInfoCfg.GetData(creatureInfo.model_id, CreatureSkinTypeEnum.Base);
         if (!listBaseSkin.IsNull())
         {
@@ -105,7 +105,7 @@ public class CreatureBean
     }
 
     /// <summary>
-    /// Ìí¼ÓËùÓĞÆ¤·ô ÓÃÓÚ²âÊÔ
+    /// æ·»åŠ æ‰€æœ‰çš®è‚¤ ç”¨äºæµ‹è¯•
     /// </summary>
     public void AddAllSkin()
     {
@@ -123,7 +123,7 @@ public class CreatureBean
     }
 
     /// <summary>
-    /// Ìí¼ÓÆ¤·ô
+    /// æ·»åŠ çš®è‚¤
     /// </summary>
     public void AddSkin(long skinId)
     {
@@ -141,7 +141,7 @@ public class CreatureBean
     }
 
     /// <summary>
-    /// »ñÈ¡Æ¤·ôÁĞ±í
+    /// è·å–çš®è‚¤åˆ—è¡¨
     /// </summary>
     public string[] GetSkinArray(int showType = 0)
     {
@@ -152,7 +152,7 @@ public class CreatureBean
             var itemSkinInfo = CreatureModelInfoCfg.GetItemData(itemSkinData.skinId);
             if (itemSkinInfo == null)
             {
-                LogUtil.LogError($"»ñÈ¡CreatureModelInfoCfgÊı¾İÊ§°Ü Ã»ÓĞÕÒµ½ID_{itemSkinData.skinId} µÄÊı¾İ");
+                LogUtil.LogError($"è·å–CreatureModelInfoCfgæ•°æ®å¤±è´¥ æ²¡æœ‰æ‰¾åˆ°ID_{itemSkinData.skinId} çš„æ•°æ®");
             }
             else
             {
@@ -166,7 +166,7 @@ public class CreatureBean
     }
 
     /// <summary>
-    /// »ñÈ¡ÉúÃüÖµ
+    /// è·å–ç”Ÿå‘½å€¼
     /// </summary>
     /// <returns></returns>
     public int GetLife()
@@ -175,7 +175,7 @@ public class CreatureBean
     }
 
     /// <summary>
-    /// »ñÈ¡¹¥»÷
+    /// è·å–æ”»å‡»
     /// </summary>
     /// <returns></returns>
     public int GetAttDamage()
@@ -184,7 +184,7 @@ public class CreatureBean
     }
 
     /// <summary>
-    /// »ñÈ¡ÒÆ¶¯ËÙ¶È
+    /// è·å–ç§»åŠ¨é€Ÿåº¦
     /// </summary>
     /// <returns></returns>
     public float GetMoveSpeed()
@@ -193,7 +193,7 @@ public class CreatureBean
     }
 
     /// <summary>
-    /// »ñÈ¡¹¥»÷CD
+    /// è·å–æ”»å‡»CD
     /// </summary>
     /// <returns></returns>
     public float GetAttCD()
@@ -202,7 +202,7 @@ public class CreatureBean
     }
 
     /// <summary>
-    /// »ñÈ¡¹¥»÷¶¯»­³öÊÖÊ±¼ä
+    /// è·å–æ”»å‡»åŠ¨ç”»å‡ºæ‰‹æ—¶é—´
     /// </summary>
     /// <returns></returns>
     public float GetAttAnimCastTime()
@@ -212,7 +212,7 @@ public class CreatureBean
 
 
     /// <summary>
-    /// »ñÈ¡´´½¨µÄÄ§Á¦
+    /// è·å–åˆ›å»ºçš„é­”åŠ›
     /// </summary>
     public int GetCreateMagic()
     {
