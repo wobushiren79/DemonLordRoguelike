@@ -35,6 +35,10 @@ public class CreatureBean
             if(_creatureInfo == null)
             {
                 _creatureInfo = CreatureInfoCfg.GetItemData(id);
+                if(_creatureInfo == null)
+                {
+                    LogUtil.LogError($"获取CreatureInfoBean失败 id_{id}");
+                }
             }
             return _creatureInfo;
         }

@@ -1,4 +1,5 @@
 using UnityEngine.UI;
+using TMPro;
 
 
 public partial class UITestBase
@@ -8,6 +9,12 @@ public partial class UITestBase
     public Button ui_BtnAddAllCreature;
 
     public Button ui_BtnAddTestCreature;
+
+    public TMP_InputField ui_InputData;
+
+    public Button ui_BtnAddUnlock;
+
+    public Button ui_BtnAddUnlockCreature;
 
 
 }

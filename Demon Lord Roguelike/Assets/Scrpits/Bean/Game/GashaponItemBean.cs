@@ -5,7 +5,7 @@ public class GashaponItemBean
 {
     public CreatureBean creatureData;
 
-    public GashaponItemBean(int creatureId)
+    public GashaponItemBean(long creatureId)
     {
         creatureData = new CreatureBean(creatureId);
         creatureData.AddAllSkin();

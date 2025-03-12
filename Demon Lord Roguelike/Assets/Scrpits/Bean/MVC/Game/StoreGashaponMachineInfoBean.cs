@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public partial class StoreGashaponMachineInfoBean : BaseBean
 {
 	/// <summary>
-	///包含的生物ID
+	///包含的生物ID（,分割 -表示范围）
 	/// </summary>
 	public string creature_ids;
 	/// <summary>
@@ -19,6 +19,10 @@ public partial class StoreGashaponMachineInfoBean : BaseBean
 	///内容
 	/// </summary>
 	public string icon;
+	/// <summary>
+	///解锁ID
+	/// </summary>
+	public string unlock_ids;
 	/// <summary>
 	///备注
 	/// </summary>

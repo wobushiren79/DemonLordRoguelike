@@ -101,7 +101,11 @@ public class GashaponMachineLogic : BaseGameLogic
         List<string> listPreLoadSpineData = new List<string>();
         for (int i = 0; i < eggNum; i++)
         {
-            GashaponItemBean itemGashapon = new GashaponItemBean(999990 + i);
+            //随机一个生物
+            int randomCreatureIndex = UnityEngine.Random.Range(0, gashaponMachineData.listCreatureRandomData.Count);
+            var randomCreatureData = gashaponMachineData.listCreatureRandomData[randomCreatureIndex];
+
+            GashaponItemBean itemGashapon = new GashaponItemBean(randomCreatureData.creatureId);
             listGashaponData.Add(itemGashapon);
 
             var creatureInfo = itemGashapon.creatureData.creatureInfo;

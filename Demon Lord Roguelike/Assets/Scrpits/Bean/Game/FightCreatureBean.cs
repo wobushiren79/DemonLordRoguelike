@@ -6,18 +6,18 @@ using UnityEngine;
 [Serializable]
 public class FightCreatureBean
 {
-    public CreatureBean creatureData;    //ÉúÎïÊı¾İ
-    public Vector3Int positionCreate;//Éú³ÉÎ»ÖÃ
+    public CreatureBean creatureData;    //ç”Ÿç‰©æ•°æ®
+    public Vector3Int positionCreate;//ç”Ÿæˆä½ç½®
 
-    public int lifeCurrent;//µ±Ç°ÉúÃüÖµ
-    public int lifeMax;//×î´óÉúÃüÖµ
+    public int lifeCurrent;//å½“å‰ç”Ÿå‘½å€¼
+    public int lifeMax;//æœ€å¤§ç”Ÿå‘½å€¼
 
-    public int armorCurrent;//µ±Ç°»¤¼×Öµ
-    public int armorMax;//×î´ó»¤¼×Öµ
+    public int armorCurrent;//å½“å‰æŠ¤ç”²å€¼
+    public int armorMax;//æœ€å¤§æŠ¤ç”²å€¼
 
-    public float moveSpeedCurrent;//µ±Ç°ÒÆ¶¯ËÙ¶È
-    public Color colorBodyCurrent;//µ±Ç°ÉíÌåÑÕÉ«
-    public List<FightBuffBean> listBuff;//ËùÓĞµÄbuff
+    public float moveSpeedCurrent;//å½“å‰ç§»åŠ¨é€Ÿåº¦
+    public Color colorBodyCurrent;//å½“å‰èº«ä½“é¢œè‰²
+    public List<FightBuffBean> listBuff;//æ‰€æœ‰çš„buff
 
     public FightCreatureBean(int creatureId)
     {
@@ -32,7 +32,7 @@ public class FightCreatureBean
     }
 
     /// <summary>
-    /// ÖØÖÃÊı¾İ
+    /// é‡ç½®æ•°æ®
     /// </summary>
     public void ResetData()
     {
@@ -45,7 +45,7 @@ public class FightCreatureBean
     }
 
     /// <summary>
-    /// ³õÊ¼»¯»ù´¡ÊôĞÔ
+    /// åˆå§‹åŒ–åŸºç¡€å±æ€§
     /// </summary>
     public void InitBaseAttribute(Action actionForComplete = null)
     {
@@ -59,11 +59,11 @@ public class FightCreatureBean
             {
                 FightBuffBean itemBuff = listBuff[i];
                 var buffEntity = itemBuff.GetBuffEntity();
-                //ÉèÖÃËÙ¶ÈÏà¹Ø
+                //è®¾ç½®é€Ÿåº¦ç›¸å…³
                 var targetChangeData = buffEntity.GetChangeDataForMoveSpeed(itemBuff);
                 changeMoveSpeed += targetChangeData.change;
                 changeRateMoveSpeed += targetChangeData.changeRate;
-                //ÉèÖÃÉíÌåÑÕÉ«
+                //è®¾ç½®èº«ä½“é¢œè‰²
                 if (!itemBuff.fightBuffInfo.color_body.IsNull())
                 {
                     colorBodyCurrent = itemBuff.fightBuffInfo.GetBodyColor();
@@ -82,7 +82,7 @@ public class FightCreatureBean
     }
 
     /// <summary>
-    /// »ñÈ¡½ÇÉ«ÒÆ¶¯ËÙ¶È
+    /// è·å–è§’è‰²ç§»åŠ¨é€Ÿåº¦
     /// </summary>
     /// <returns></returns>
     public float GetMoveSpeed()
@@ -91,7 +91,7 @@ public class FightCreatureBean
     }
 
     /// <summary>
-    /// »ñÈ¡ÉíÌåÑÕÉ«
+    /// è·å–èº«ä½“é¢œè‰²
     /// </summary>
     /// <returns></returns>
     public Color GetBodyColor()
@@ -107,14 +107,14 @@ public class FightCreatureBean
         changeArmorReal = 0;
         changeLifeReal = 0;
 
-        //ÏÈ¸Ä±ä»¤¼×
+        //å…ˆæ”¹å˜æŠ¤ç”²
         ChangeArmor(changeValue, out int leftArmor, out changeArmorReal);
-        //Èç¹ûÕæÊµ¸Ä±äµÄ»¤¼×Öµ==¸Ä±äµÄÖµ£¨Ã»ÓĞÈßÓà£©
+        //å¦‚æœçœŸå®æ”¹å˜çš„æŠ¤ç”²å€¼==æ”¹å˜çš„å€¼ï¼ˆæ²¡æœ‰å†—ä½™ï¼‰
         if (changeValue == changeArmorReal)
         {
 
         }
-        //Èç¹ûÕæÊµ¸Ä±äµÄ»¤¼×Öµ!=¸Ä±äµÄÖµÓĞÈßÓà£¨ÓĞÈßÓà ĞèÒªÔÙ¸Ä±äÉúÃüÖµ£©
+        //å¦‚æœçœŸå®æ”¹å˜çš„æŠ¤ç”²å€¼!=æ”¹å˜çš„å€¼æœ‰å†—ä½™ï¼ˆæœ‰å†—ä½™ éœ€è¦å†æ”¹å˜ç”Ÿå‘½å€¼ï¼‰
         else
         {
             int changeValue2 = changeValue - changeArmorReal;
@@ -126,11 +126,11 @@ public class FightCreatureBean
 
 
     /// <summary>
-    /// ¸Ä±ä»¤¼×
+    /// æ”¹å˜æŠ¤ç”²
     /// </summary>
-    /// <param name="changeArmor">¸Ä±äÖµ</param>
-    /// <param name="leftArmor">Ê£ÓàÖµ</param>
-    /// <param name="changeArmorReal">ÕæÊµ¸Ä±äÖµ</param>
+    /// <param name="changeArmor">æ”¹å˜å€¼</param>
+    /// <param name="leftArmor">å‰©ä½™å€¼</param>
+    /// <param name="changeArmorReal">çœŸå®æ”¹å˜å€¼</param>
     public void ChangeArmor(int changeArmor, out int leftArmor, out int changeArmorReal)
     {
         armorCurrent += changeArmor;
@@ -150,11 +150,11 @@ public class FightCreatureBean
 
 
     /// <summary>
-    /// ¸Ä±äÉúÃüÖµ
+    /// æ”¹å˜ç”Ÿå‘½å€¼
     /// </summary>
-    /// <param name="changeLife">¸Ä±äÖµ</param>
-    /// <param name="leftLife">Ê£ÓàÖµ</param>
-    /// <param name="changeLifeReal">ÕæÊµ¸Ä±äÖµ</param>
+    /// <param name="changeLife">æ”¹å˜å€¼</param>
+    /// <param name="leftLife">å‰©ä½™å€¼</param>
+    /// <param name="changeLifeReal">çœŸå®æ”¹å˜å€¼</param>
     public void ChangeLife(int changeLife, out int leftLife, out int changeLifeReal)
     {
         lifeCurrent += changeLife;
@@ -173,7 +173,7 @@ public class FightCreatureBean
     }
 
     /// <summary>
-    /// Ìí¼ÓBUFF
+    /// æ·»åŠ BUFF
     /// </summary>
     public void AddBuff(List<FightBuffBean> targetBuffs, Action<FightBuffBean> actionForCombineNew = null, Action<FightBuffBean> actionForCombineOld = null, Action actionForComplete = null)
     {
@@ -203,7 +203,7 @@ public class FightCreatureBean
     }
 
     /// <summary>
-    /// ÒÆ³ıBUFF
+    /// ç§»é™¤BUFF
     /// </summary>
     public void RemoveBuff(FightBuffBean targetBuff, Action actionForComplete = null)
     {

@@ -5,7 +5,7 @@ using UnityEngine;
 public class GameHandler : BaseHandler<GameHandler,GameManager>
 {   
     /// <summary>
-    /// ¿ªÊ¼ÓÎÏ·Õ½¶·
+    /// å¼€å§‹æ¸¸æˆæˆ˜æ–—
     /// </summary>
     public void StartGameFight(FightBean fightData)
     {
@@ -17,7 +17,7 @@ public class GameHandler : BaseHandler<GameHandler,GameManager>
     }
 
     /// <summary>
-    /// ¿ªÊ¼Å¤µ°
+    /// å¼€å§‹æ‰­è›‹
     /// </summary>
     public void StartGashaponMachine(GashaponMachineBean gashaponMachineData)
     {
@@ -29,7 +29,7 @@ public class GameHandler : BaseHandler<GameHandler,GameManager>
     }
 
     /// <summary>
-    /// ´´½¨ÓÎÏ·ÊÀ½çµØÍ¼Êı¾İ
+    /// åˆ›å»ºæ¸¸æˆä¸–ç•Œåœ°å›¾æ•°æ®
     /// </summary>
     public GameWorldMapBean CreateGameWorldMapData(long worldId)
     {
@@ -38,7 +38,7 @@ public class GameHandler : BaseHandler<GameHandler,GameManager>
     }
 
     /// <summary>
-    /// ½áÊøÓÎÏ·Õ½¶·-Ç¿ÖÆ
+    /// ç»“æŸæ¸¸æˆæˆ˜æ–—-å¼ºåˆ¶
     /// </summary>
     public void EndGameFight()
     {

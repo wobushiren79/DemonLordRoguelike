@@ -20,8 +20,8 @@ public partial class UITestCard : BaseUIComponent
         ui_InputText_B_X.onValueChanged.AddListener(ListenerForBX);
         ui_InputText_B_Y.onValueChanged.AddListener(ListenerForBY);
 
-        //测试标准模型
-        CreatureBean creatureNormalTest = new CreatureBean(1);
+        //娴嬭瘯鏍囧噯妯″瀷
+        CreatureBean creatureNormalTest = new CreatureBean(2001);
         creatureNormalTest.AddAllSkin();
         SpineHandler.Instance.SetSkeletonDataAsset(ui_NormalModel, creatureNormalTest.creatureModel.res_name);
         string[] skinArray = creatureNormalTest.GetSkinArray();
@@ -47,7 +47,7 @@ public partial class UITestCard : BaseUIComponent
     }
 
     /// <summary>
-    /// 设置数据
+    /// 璁剧疆鏁版嵁
     /// </summary>
     /// <param name="fightCreatureData"></param>
     public void SetData(FightCreatureBean fightCreatureData)
@@ -57,7 +57,7 @@ public partial class UITestCard : BaseUIComponent
         ui_CreatureCardItem.SetData(creatureData, CardUseState.Show);
         ui_ViewCreatureCardDetails.SetData(creatureData);
 
-        //测试目标模型
+        //娴嬭瘯鐩爣妯″瀷
         SpineHandler.Instance.SetSkeletonDataAsset(ui_TargetModel, creatureData.creatureModel.res_name);
         SpineHandler.Instance.ChangeSkeletonSkin(ui_TargetModel.skeleton, creatureData.GetSkinArray());
         SpineHandler.Instance.PlayAnim(ui_TargetModel, SpineAnimationStateEnum.Idle, true);
@@ -76,7 +76,7 @@ public partial class UITestCard : BaseUIComponent
     }
 
     /// <summary>
-    /// 点击生成数据
+    /// 鐐瑰嚮鐢熸垚鏁版嵁
     /// </summary>
     public void OnClickForCreateData()
     {
@@ -92,9 +92,9 @@ public partial class UITestCard : BaseUIComponent
         string sData = $"{ssize};{sposX},{sposY}";
         string bData = $"{bsize};{bposX},{bposY}";
 
-        LogUtil.LogError($"小卡：{sData}");
-        LogUtil.LogError($"大卡：{bData}");
-        LogUtil.LogError($"实体大小：{objSize}");
+        LogUtil.LogError($"灏忓崱锛歿sData}");
+        LogUtil.LogError($"澶у崱锛歿bData}");
+        LogUtil.LogError($"瀹炰綋澶у皬锛歿objSize}");
 #if UNITY_EDITOR
         List<ExcelChangeData> listData = new List<ExcelChangeData>() 
         {
@@ -102,7 +102,7 @@ public partial class UITestCard : BaseUIComponent
             new ExcelChangeData(fightCreatureData.creatureData.id,"ui_data_b",bData),
             new ExcelChangeData(fightCreatureData.creatureData.id,"size_spine",$"{objSize}")
         };
-        ExcelUtil.SetExcelData("Assets/Data/Excel/excel_creature_model[生物模型信息].xlsx", "CreatureModel", listData);
+        ExcelUtil.SetExcelData("Assets/Data/Excel/excel_creature_model[鐢熺墿妯″瀷淇℃伅].xlsx", "CreatureModel", listData);
 #endif
     }
 

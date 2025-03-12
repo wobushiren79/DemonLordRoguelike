@@ -30,7 +30,7 @@ public partial class UIViewMainLoadItem : BaseUIView
     }
 
     /// <summary>
-    /// ÉèÖÃÓÃ»§ĞÅÏ¢
+    /// è®¾ç½®ç”¨æˆ·ä¿¡æ¯
     /// </summary>
     public void SetData(int userDataIndex, UserDataBean userData)
     {
@@ -53,24 +53,24 @@ public partial class UIViewMainLoadItem : BaseUIView
     }
 
     /// <summary>
-    /// ÉèÖÃÉúÎïUI
+    /// è®¾ç½®ç”Ÿç‰©UI
     /// </summary>
     public void SetCreatureUI(CreatureBean creatureData)
     {
-        //»ñÈ¡Õ¹Ê¾×ÊÔ´
+        //è·å–å±•ç¤ºèµ„æº
         creatureData.creatureModel.GetShowRes(out string resName, out int skinType);
 
         SpineHandler.Instance.SetSkeletonDataAsset(ui_Icon, resName);
         string[] skinArray =  creatureData.GetSkinArray(skinType);
         SpineHandler.Instance.ChangeSkeletonSkin(ui_Icon.Skeleton, skinArray);
         SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, true);
-        //ÉèÖÃUI´óĞ¡ºÍ×ø±ê
+        //è®¾ç½®UIå¤§å°å’Œåæ ‡
         creatureData.creatureModel.ChangeUISizeForB(ui_Icon.rectTransform);
         ui_Icon.raycastTarget = false;
     }
 
     /// <summary>
-    /// ÉèÖÃÓÃ»§Ãû×Ö
+    /// è®¾ç½®ç”¨æˆ·åå­—
     /// </summary>
     public void SetUserName(string userName)
     {
@@ -78,7 +78,7 @@ public partial class UIViewMainLoadItem : BaseUIView
     }
     
     /// <summary>
-    /// ÉèÖÃ½ğ±Ò
+    /// è®¾ç½®é‡‘å¸
     /// </summary>
     public void SetCoin(long coin)
     {
@@ -86,7 +86,7 @@ public partial class UIViewMainLoadItem : BaseUIView
     }
 
     /// <summary>
-    /// µã»÷½øÈëÓÎÏ·
+    /// ç‚¹å‡»è¿›å…¥æ¸¸æˆ
     /// </summary>
     public void OnClickForEnterGame()
     {
@@ -95,7 +95,7 @@ public partial class UIViewMainLoadItem : BaseUIView
     }
 
     /// <summary>
-    /// µã»÷´´½¨ÓÎÏ·
+    /// ç‚¹å‡»åˆ›å»ºæ¸¸æˆ
     /// </summary>
     public void OnClickForCreateGame()
     {
@@ -104,7 +104,7 @@ public partial class UIViewMainLoadItem : BaseUIView
     }
 
     /// <summary>
-    /// µã»÷É¾³ı´æµµ
+    /// ç‚¹å‡»åˆ é™¤å­˜æ¡£
     /// </summary>
     public void OnClickForDelete()
     {

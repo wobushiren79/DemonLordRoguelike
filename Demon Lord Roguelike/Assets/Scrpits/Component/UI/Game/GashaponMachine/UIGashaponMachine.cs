@@ -1,14 +1,12 @@
 using System.Collections.Generic;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using UnityEngine;
 using UnityEngine.UI;
 
 public partial class UIGashaponMachine : BaseUIComponent
 {
-    //单个卡片所占的比例宽
-    protected float itemCardGroupViewW;
-    //当前选中的卡住下标
-    protected int currentSelectCardGroupIndex = 0;
+    public List<StoreGashaponMachineInfoBean> listStoreData;
 
     public override void Awake()
     {
@@ -19,16 +17,23 @@ public partial class UIGashaponMachine : BaseUIComponent
     public override void OpenUI()
     {
         base.OpenUI();
-        currentSelectCardGroupIndex = -1;
-        SetCardGroupList();
+
         GameControlHandler.Instance.SetBaseControl(false);
         CameraHandler.Instance.SetBaseCoreCamera(int.MaxValue, true);
+
+        InitStoreListData();
     }
 
     public override void CloseUI()
     {
         base.CloseUI();
         ui_List.ClearAllCell();
+    }
+
+    public override void RefreshUI(bool isOpenInit = false)
+    {
+        base.RefreshUI(isOpenInit);
+        RefreshUIData();
     }
 
     /// <summary>
@@ -44,13 +49,8 @@ public partial class UIGashaponMachine : BaseUIComponent
     /// </summary>
     public void OnCellChangeForItem(ScrollGridCell itemCell)
     {
-
-    }
-
-    public override void RefreshUI(bool isOpenInit = false)
-    {
-        base.RefreshUI(isOpenInit);
-        RefreshUIData();
+        var itemView = itemCell.GetComponent<UIViewStoreItem>();
+        itemView.SetData(itemCell.index, listStoreData[itemCell.index], CallBackForItemOnClickyBuy);
     }
 
     public override void OnClickForButton(Button viewButton)
@@ -59,10 +59,6 @@ public partial class UIGashaponMachine : BaseUIComponent
         if (viewButton == ui_ViewExit)
         {
             OnClickForExit();
-        }
-        else if (viewButton == ui_BTBuy)
-        {
-            StartGashaponMachine(1);
         }
     }
 
@@ -75,29 +71,34 @@ public partial class UIGashaponMachine : BaseUIComponent
     }
 
     /// <summary>
-    /// 开始扭蛋游戏
-    /// </summary>
-    /// <param name="num"></param>
-    public void StartGashaponMachine(int num)
-    {
-        GashaponMachineBean gashaponMachine = new GashaponMachineBean();
-        gashaponMachine.gashaponNum = num;
-        GameHandler.Instance.StartGashaponMachine(gashaponMachine);
-    }
-
-    /// <summary>
     /// 设置卡组列表
     /// </summary>
-    public void SetCardGroupList()
+    public void InitStoreListData()
     {
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userLockData = userData.GetUserUnlockData();
+        listStoreData = new List<StoreGashaponMachineInfoBean>();
         var allData = StoreGashaponMachineInfoCfg.GetAllData();
         foreach (var item in allData)
         {
             var itemData = item.Value;
-            GameObject objItem = Instantiate(ui_Content.gameObject, ui_ViewGashaponCardGroupItem.gameObject);
-            var itemView = objItem.GetComponent<UIViewGashaponCardGroupItem>();
-            itemView.SetData(itemData);
+            if (!itemData.unlock_ids.IsNull())
+            {
+                //检测是否解锁普通
+                if (!userLockData.CheckIsUnlock(itemData.unlock_ids))
+                {
+                    continue;
+                }
+                //检测是否解锁生物
+                var listCreatureIds = itemData.GetCreatureIds();
+                if(!userLockData.CheckIsUnlockForCreature(listCreatureIds))
+                {
+                    continue;
+                }
+            }
+            listStoreData.Add(itemData);
         }
+        ui_List.SetCellCount(listStoreData.Count);
     }
 
     /// <summary>
@@ -107,4 +108,58 @@ public partial class UIGashaponMachine : BaseUIComponent
     {
         UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
     }
+
+    /// <summary>
+    /// 回调-item购买
+    /// </summary>
+    public void CallBackForItemOnClickyBuy(int storeIndex)
+    {
+        var itemStore = listStoreData[storeIndex];
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        //检测是否有足够的魔晶
+        if (userData.CheckHasCoin(itemStore.pay_coin, isHint: true, isAddCoin: true))
+        {
+            StartGashaponMachine(itemStore);
+        }
+    }
+
+    /// <summary>
+    /// 开始扭蛋游戏
+    /// </summary>
+    /// <param name="num"></param>
+    public void StartGashaponMachine(StoreGashaponMachineInfoBean storeGashaponMachineInfoData)
+    {        
+        List<GashaponMachineCreatureStruct> listCreatureRandomData = new List<GashaponMachineCreatureStruct>();
+        GashaponMachineBean gashaponMachine = new GashaponMachineBean();
+        //设置扭蛋数量
+        gashaponMachine.gashaponNum = storeGashaponMachineInfoData.buy_num;
+        gashaponMachine.listCreatureRandomData = listCreatureRandomData;
+
+        //获取所有生物ID
+        var listCreatureId = storeGashaponMachineInfoData.GetCreatureIds();
+
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userLockData = userData.GetUserUnlockData();
+
+        for (int i = 0; i < listCreatureId.Count; i++)
+        {
+            long itemCreatureId = listCreatureId[i];
+            //检测是否解锁该生物
+            if(!userLockData.CheckIsUnlockForCreature(itemCreatureId))
+                continue;
+            CreatureInfoRandomBean creatureInfoRandomData = CreatureInfoRandomCfg.GetItemData(itemCreatureId);
+
+            if (creatureInfoRandomData != null)
+            {
+                GashaponMachineCreatureStruct gashaponMachineCreature = new GashaponMachineCreatureStruct();
+                gashaponMachineCreature.creatureId = itemCreatureId;
+                //获取所有随机的身体部件
+                gashaponMachineCreature.randomCreatureMode = creatureInfoRandomData.GetRandomData();
+
+                listCreatureRandomData.Add(gashaponMachineCreature);
+            }
+        }
+        GameHandler.Instance.StartGashaponMachine(gashaponMachine);
+    }
+
 }

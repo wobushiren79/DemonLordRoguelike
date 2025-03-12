@@ -1,0 +1,1 @@
+[{"creature_type":1,"create_magic":100,"name_res":"test","speed_move":1.0,"buff_type":1,"model_id":1,"remark":"测试数据","id":1000001,"valid":0,"name_cn":"拾金不昧","name_en":"Honesty in returning lost items"}]

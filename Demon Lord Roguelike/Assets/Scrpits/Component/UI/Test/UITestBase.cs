@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework.Interfaces;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
@@ -36,6 +37,14 @@ public partial class UITestBase : BaseUIComponent
         else if (viewButton == ui_BtnAddTestCreature)
         {
             OnClickForAddTestCreature();
+        }
+        else if (viewButton == ui_BtnAddUnlock)
+        {
+            OnClickForAddUnlock();
+        }
+        else if (viewButton == ui_BtnAddUnlockCreature)
+        {
+            OnClickForAddUnlockCreature();
         }
     }
 
@@ -83,5 +92,57 @@ public partial class UITestBase : BaseUIComponent
         }
 
         UIHandler.Instance.ToastHint<ToastView>("添加成功！");
+    }
+
+    /// <summary>
+    /// 添加解锁信息
+    /// </summary>
+    public void OnClickForAddUnlock()
+    {
+        string inputData = ui_InputData.text;
+        if (inputData.IsNull())
+        {
+            LogUtil.LogError("还未输入解锁ID");
+            return;
+        }
+        if (long.TryParse(inputData, out long outValue))
+        {
+            var userData = GameDataHandler.Instance.manager.GetUserData();
+            var userUnlockDasta = userData.GetUserUnlockData();
+            userUnlockDasta.AddUnlock(outValue);
+            LogUtil.Log("添加成功");
+        }
+        else
+        {
+            LogUtil.LogError("输入数据错误 必须是long类型");
+            return;
+        }
+    }
+
+    public void OnClickForAddUnlockCreature()
+    {
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlockDasta = userData.GetUserUnlockData();
+        string inputData = ui_InputData.text;
+        if (inputData.IsNull())
+        {
+            var all = CreatureInfoCfg.GetAllData();
+            foreach (var item in all)
+            {
+                userUnlockDasta.AddUnlockForCreature(item.Key);
+            }
+            LogUtil.Log($"解锁所有生物成功");
+            return;
+        }
+        if (long.TryParse(inputData, out long outValue))
+        {
+            userUnlockDasta.AddUnlockForCreature(outValue);
+            LogUtil.Log($"解锁生物成功 {outValue}");
+        }
+        else
+        {
+            LogUtil.LogError("输入数据错误 必须是long类型");
+            return;
+        }
     }
 }

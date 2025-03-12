@@ -12,33 +12,33 @@ public partial class UIBasePortal : BaseUIComponent
     {
         base.OpenUI();
 
-        //¿ªÆô¿ØÖÆ
+        //å¼€å¯æ§åˆ¶
         GameControlHandler.Instance.SetBaseControl(false);
-        //¿ªÆôÉãÏñÍ·
+        //å¼€å¯æ‘„åƒå¤´
         CameraHandler.Instance.SetBasePortalCamera(int.MaxValue, true);
-        //¹Ø±ÕÔ¶¾°
+        //å…³é—­è¿œæ™¯
         VolumeHandler.Instance.SetDepthOfFieldActive(false);
-        //³õÊ¼»¯µØÍ¼
+        //åˆå§‹åŒ–åœ°å›¾
         InitMap();
     }
 
     public override void CloseUI()
     {
         base.CloseUI();
-        //¹Ø±ÕÔ¶¾°
+        //å…³é—­è¿œæ™¯
         VolumeHandler.Instance.SetDepthOfFieldActive(true);
         ui_Content.DestroyAllChild();
     }
 
     /// <summary>
-    /// ³õÊ¼»¯µØÍ¼
+    /// åˆå§‹åŒ–åœ°å›¾
     /// </summary>
     public void InitMap()
     {
-        //»ñÈ¡ÓÃ»§Êı¾İ
+        //è·å–ç”¨æˆ·æ•°æ®
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UserUnlockBean userUnlockData = userData.GetUserUnlockData();
-        //ËùÓĞÒÑ½âËøµÄÊÀ½ç
+        //æ‰€æœ‰å·²è§£é”çš„ä¸–ç•Œ
         long[] keys = userUnlockData.unlockWorldData.Keys.ToArray();
 
         List<Vector2> listOldPos = new List<Vector2>();
@@ -46,29 +46,29 @@ public partial class UIBasePortal : BaseUIComponent
         {
             int randomWorldKey = UnityEngine.Random.Range(0, keys.Length);
             long randomWorldId = keys[randomWorldKey];
-            //»ñÈ¡½âËøÊÀ½çÊı¾İ
+            //è·å–è§£é”ä¸–ç•Œæ•°æ®
             UserUnlockWorldBean userUnlockWorldData = userUnlockData.GetUnlockWorldData(randomWorldId);
-            //»ñÈ¡ÊÀ½çÊı¾İ
+            //è·å–ä¸–ç•Œæ•°æ®
             var worldInfo = GameWorldInfoCfg.GetItemData(randomWorldId);
             GameObject objItem = Instantiate(ui_Content.gameObject, ui_UIViewBasePortalItem.gameObject);
             objItem.ShowObj(true);
             UIViewBasePortalItem itemView = objItem.GetComponent<UIViewBasePortalItem>();
-            //Ëæ»úÄÑ¶È
+            //éšæœºéš¾åº¦
             int randomDifficultyLevel = UnityEngine.Random.Range(1, userUnlockWorldData.difficultyLevel + 1);
-            //Ëæ»úµØÍ¼Î»ÖÃ
+            //éšæœºåœ°å›¾ä½ç½®
             Vector2 randomMapPos = GetRandomMapPos(listOldPos);
             listOldPos.Add(randomMapPos);
-            //Ëæ»ú¹Ø¿¨³¤¶È
+            //éšæœºå…³å¡é•¿åº¦
             var difficultyData = worldInfo.GetDifficultyData(randomDifficultyLevel);
             int randomLevelMax = UnityEngine.Random.Range(difficultyData.minLevelNum, difficultyData.maxLevelNum + 1);
 
-            //ÉèÖÃÊı¾İ
+            //è®¾ç½®æ•°æ®
             itemView.SetData(worldInfo, randomDifficultyLevel, randomLevelMax, randomMapPos);
         }
     }
 
     /// <summary>
-    /// Ëæ»ú»ñÈ¡µØÍ¼ÉÏµÄµãÎ»
+    /// éšæœºè·å–åœ°å›¾ä¸Šçš„ç‚¹ä½
     /// </summary>
     protected Vector2 GetRandomMapPos(List<Vector2> listOldPos)
     {
@@ -114,7 +114,7 @@ public partial class UIBasePortal : BaseUIComponent
     }
 
     /// <summary>
-    /// µã»÷ÍË³ö
+    /// ç‚¹å‡»é€€å‡º
     /// </summary>
     public void OnClickForExit()
     {

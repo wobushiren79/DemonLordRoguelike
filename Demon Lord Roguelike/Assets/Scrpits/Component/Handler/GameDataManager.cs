@@ -15,7 +15,7 @@ public partial class GameDataManager : IUserDataView
     }
 
     /// <summary>
-    /// 获取用户数据
+    /// 鑾峰彇鐢ㄦ埛鏁版嵁
     /// </summary>
     public UserDataBean GetUserData()
     {
@@ -27,7 +27,7 @@ public partial class GameDataManager : IUserDataView
     }
 
     /// <summary>
-    /// 设置用户信息
+    /// 璁剧疆鐢ㄦ埛淇℃伅
     /// </summary>
     /// <param name="targetUserData"></param>
     public void SetUserData(UserDataBean targetUserData)
@@ -36,7 +36,7 @@ public partial class GameDataManager : IUserDataView
     }
 
     /// <summary>
-    /// 保存用户数据
+    /// 淇濆瓨鐢ㄦ埛鏁版嵁
     /// </summary>
     public void SaveUserData()
     {
@@ -49,7 +49,7 @@ public partial class GameDataManager : IUserDataView
     }
 
     /// <summary>
-    /// 删除用户数据
+    /// 鍒犻櫎鐢ㄦ埛鏁版嵁
     /// </summary>
     public void DeleteUserData(UserDataBean targetUserData)
     {
@@ -57,7 +57,7 @@ public partial class GameDataManager : IUserDataView
     }
 
     /// <summary>
-    /// 读取用户数据
+    /// 璇诲彇鐢ㄦ埛鏁版嵁
     /// </summary>
     public void LoadUserData(int index, Action<int, UserDataBean> actionForComplete)
     {
@@ -67,7 +67,7 @@ public partial class GameDataManager : IUserDataView
         });
     }
 
-    #region 回调
+    #region 鍥炶皟
     public void GetUserDataFail(string failMsg, Action action)
     {
         action?.Invoke();

@@ -10,24 +10,24 @@ public partial class UIMainCreate : BaseUIComponent
 {
     protected int userDataIndex;
 
-    //Ô¤ÀÀÔ¤ÖÆ
+    //é¢„è§ˆé¢„åˆ¶
     public GameObject previewObj;
     public SkeletonAnimation previewSpine;
 
-    //´´½¨µÄÉúÎïÊı¾İ
+    //åˆ›å»ºçš„ç”Ÿç‰©æ•°æ®
     protected CreatureBean createCreatureData;
 
-    //Ñ¡ÖĞ¿Ø¼ş
+    //é€‰ä¸­æ§ä»¶
     protected List<UIViewMainCreateSelectItem> listSelectView = new List<UIViewMainCreateSelectItem>();
 
-    //ÎïÖÖÊı¾İ
+    //ç‰©ç§æ•°æ®
     protected List<int> listSelectForSpecies = new List<int>()
     {
         1,2
     };
-    //ÎïÖÖÊı¾İ
+    //ç‰©ç§æ•°æ®
     protected Dictionary<int, Dictionary<CreatureSkinTypeEnum, List<int>>> dicSelectData = new Dictionary<int, Dictionary<CreatureSkinTypeEnum, List<int>>>();
-    //Ñ¡ÖĞµÄÎïÖÖ
+    //é€‰ä¸­çš„ç‰©ç§
     protected int selectSpeciesIndex = 0;
 
     public override void OpenUI()
@@ -45,7 +45,7 @@ public partial class UIMainCreate : BaseUIComponent
     }
 
     /// <summary>
-    /// ³õÊ¼»¯Êı¾İ
+    /// åˆå§‹åŒ–æ•°æ®
     /// </summary>
     public void InitData()
     {
@@ -64,7 +64,7 @@ public partial class UIMainCreate : BaseUIComponent
         dicSelectData.Add(1, dicSkin1);
         dicSelectData.Add(2, dicSkin2);
 
-        //ÉèÖÃÑ¡Ïî
+        //è®¾ç½®é€‰é¡¹
         List<string> listSpeciesStr = new List<string>();
         for (int i = 0; i < listSelectForSpecies.Count; i++)
         {
@@ -77,13 +77,13 @@ public partial class UIMainCreate : BaseUIComponent
     }
 
     /// <summary>
-    /// Õ¹Ê¾Ô¤ÀÀÉúÎï
+    /// å±•ç¤ºé¢„è§ˆç”Ÿç‰©
     /// </summary>
     public void ShowPreviewCreate(bool isShow)
     {
         if (isShow)
         {
-            //³¡¾°ÊµÀı
+            //åœºæ™¯å®ä¾‹
             var baseSceneObj = WorldHandler.Instance.currentBaseScene;
             previewObj = baseSceneObj.transform.Find("PreviewCreate").gameObject;
             previewSpine = previewObj.transform.Find("Renderer").GetComponent<SkeletonAnimation>();
@@ -98,20 +98,20 @@ public partial class UIMainCreate : BaseUIComponent
     }
 
     /// <summary>
-    /// ÉèÖÃÔ¤ÀÀÉúÎïÊı¾İ
+    /// è®¾ç½®é¢„è§ˆç”Ÿç‰©æ•°æ®
     /// </summary>
     public void SetPreviewCreate(CreatureBean createCreatureData)
     {
         SpineHandler.Instance.SetSkeletonDataAsset(previewSpine, createCreatureData.creatureModel.res_name);
         string[] skinArray = createCreatureData.GetSkinArray();
-        //ĞŞ¸ÄÆ¤·ô
+        //ä¿®æ”¹çš®è‚¤
         SpineHandler.Instance.ChangeSkeletonSkin(previewSpine.skeleton, skinArray);
-        //²¥·Åspine¶¯»­
+        //æ’­æ”¾spineåŠ¨ç”»
         SpineHandler.Instance.PlayAnim(previewSpine, SpineAnimationStateEnum.Idle, true);
     }
 
     /// <summary>
-    /// ÉèÖÃÊı¾İ
+    /// è®¾ç½®æ•°æ®
     /// </summary>
     public void SetData(int userDataIndex)
     {
@@ -145,7 +145,7 @@ public partial class UIMainCreate : BaseUIComponent
     }
 
     /// <summary>
-    /// µã»÷ÍË³ö
+    /// ç‚¹å‡»é€€å‡º
     /// </summary>
     public void OnClickForExit()
     {
@@ -153,7 +153,7 @@ public partial class UIMainCreate : BaseUIComponent
     }
 
     /// <summary>
-    /// ´´½¨
+    /// åˆ›å»º
     /// </summary>
     public void OnClickForCreate()
     {
@@ -188,7 +188,7 @@ public partial class UIMainCreate : BaseUIComponent
     }
 
     /// <summary>
-    /// Ëæ»ú
+    /// éšæœº
     /// </summary>
     public void OnClickForRandom()
     {
@@ -197,7 +197,7 @@ public partial class UIMainCreate : BaseUIComponent
     }
 
     /// <summary>
-    /// Ñ¡Ôñ»Øµ÷
+    /// é€‰æ‹©å›è°ƒ
     /// </summary>
     public void ActionForSelect(UIViewMainCreateSelectItem targetView, int select, bool isInit)
     {
@@ -212,7 +212,7 @@ public partial class UIMainCreate : BaseUIComponent
     }
 
     /// <summary>
-    /// ´¦ÀíÑ¡ÔñÆäËû
+    /// å¤„ç†é€‰æ‹©å…¶ä»–
     /// </summary>
     /// <param name="targetView"></param>
     /// <param name="select"></param>
@@ -229,7 +229,7 @@ public partial class UIMainCreate : BaseUIComponent
     }
 
     /// <summary>
-    /// ´¦ÀíÑ¡ÔñÎïÖÖ
+    /// å¤„ç†é€‰æ‹©ç‰©ç§
     /// </summary>
     public void HandleForSelectSpecies(int select, bool isRandom = false)
     {
@@ -238,12 +238,12 @@ public partial class UIMainCreate : BaseUIComponent
         createCreatureData = new CreatureBean(creatureId);
         createCreatureData.id = creatureId;
         createCreatureData.ClearSkin();
-        //Òş²ØËùÓĞÑ¡Ïî
+        //éšè—æ‰€æœ‰é€‰é¡¹
         for (int i = 0; i < listSelectView.Count; i++)
         {
             listSelectView[i].ShowObj(false);
         }
-        //»ñÈ¡Æ¤·ôÊı¾İ
+        //è·å–çš®è‚¤æ•°æ®
         dicSelectData.TryGetValue(creatureId, out Dictionary<CreatureSkinTypeEnum, List<int>> dicSkinData);
         int index = 0;
 
@@ -251,14 +251,14 @@ public partial class UIMainCreate : BaseUIComponent
         {
             List<int> listSkin = item.Value;
             List<string> listSkinName = new List<string>();
-            //ÉèÖÃÆ¤·ôÑ¡ÔñÁĞ±íÃû×Ö
+            //è®¾ç½®çš®è‚¤é€‰æ‹©åˆ—è¡¨åå­—
             string skinName = CreatureEnum.GetCreatureSkinTypeEnumName(item.Key);
             for (int i = 0; i < listSkin.Count; i++)
             {
                 var skinId = listSkin[i];
                 listSkinName.Add($"{skinName} {i + 1}");
             }
-            //»ñÈ¡¿Ø¼ş
+            //è·å–æ§ä»¶
             UIViewMainCreateSelectItem targetView;
             if (index >= listSelectView.Count)
             {

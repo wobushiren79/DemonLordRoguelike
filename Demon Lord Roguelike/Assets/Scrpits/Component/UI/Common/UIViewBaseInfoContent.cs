@@ -43,7 +43,7 @@ public partial class UIViewBaseInfoContent : BaseUIView
     }
 
     /// <summary>
-    /// 设置当前魔力
+    /// 璁剧疆褰撳墠榄斿姏
     /// </summary>
     public void SetMagicData(int magic)
     {
@@ -51,7 +51,7 @@ public partial class UIViewBaseInfoContent : BaseUIView
     }
 
     /// <summary>
-    /// 设置当前金币（魔晶）
+    /// 璁剧疆褰撳墠閲戝竵锛堥瓟鏅讹級
     /// </summary>
     public void SetCoinData(long coin)
     {
@@ -59,7 +59,7 @@ public partial class UIViewBaseInfoContent : BaseUIView
     }
 
     /// <summary>
-    /// 魔力不够动画
+    /// 榄斿姏涓嶅鍔ㄧ敾
     /// </summary>
     public void PlayAnimForMagicNoEnough()
     {

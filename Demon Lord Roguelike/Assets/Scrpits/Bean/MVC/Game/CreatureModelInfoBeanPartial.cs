@@ -2,6 +2,12 @@ using System;
 using System.Collections.Generic;
 public partial class CreatureModelInfoBean
 {
+    
+    public CreatureSkinTypeEnum GetPartType()
+    {
+        return (CreatureSkinTypeEnum)part_type;
+    }
+    
 }
 public partial class CreatureModelInfoCfg
 {
@@ -21,19 +27,19 @@ public partial class CreatureModelInfoCfg
             }
             else
             {
-                LogUtil.Log($"CreatureModelInfoCfg Ã»ÓĞÕÒµ½ modelId_{modelId} CreatureModelPartTypeEnum_{modelType.ToString()}µÄÊı¾İ");
+                LogUtil.Log($"CreatureModelInfoCfg æ²¡æœ‰æ‰¾åˆ° modelId_{modelId} CreatureModelPartTypeEnum_{modelType.ToString()}çš„æ•°æ®");
                 return null;
             }
         }
         else
         {
-            LogUtil.Log($"CreatureModelInfoCfg Ã»ÓĞÕÒµ½ modelId_{modelId}µÄÊı¾İ");
+            LogUtil.Log($"CreatureModelInfoCfg æ²¡æœ‰æ‰¾åˆ° modelId_{modelId}çš„æ•°æ®");
             return null;
         }
     }
 
     /// <summary>
-    /// ³õÊ¼»¯Êı¾İ
+    /// åˆå§‹åŒ–æ•°æ®
     /// </summary>
     public static void InitDetailsData()
     {

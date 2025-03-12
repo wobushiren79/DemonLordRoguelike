@@ -9,8 +9,6 @@ public partial class UIGashaponMachine
 
     public Button ui_ViewExit;
 
-    public UIViewGashaponCardGroupItem ui_ViewGashaponCardGroupItem;
-
     public RectTransform ui_Content;
 
     public Button ui_BTBuy;

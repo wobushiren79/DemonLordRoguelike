@@ -12,44 +12,44 @@ using System.Collections.Generic;
 [Serializable]
 public class UserDataBean : BaseBean
 {
-    //±£´æÏÂ±ê
+    //ä¿å­˜ä¸‹æ ‡
     public int saveIndex = 0;
-    //ÓµÓĞµÄ½ğ±ÒÊıÁ¿£¨Ä§¾§Ê¯£©
+    //æ‹¥æœ‰çš„é‡‘å¸æ•°é‡ï¼ˆé­”æ™¶çŸ³ï¼‰
     public long coin;
-    //ÕóÈİ×î´óÊıÁ¿
+    //é˜µå®¹æœ€å¤§æ•°é‡
     public int lineupMax = 10;
-    //ÓÃ»§Ãû×Ö
+    //ç”¨æˆ·åå­—
     public string userName;
 
-    //ÕóÈİÉúÎï
+    //é˜µå®¹ç”Ÿç‰©
     public Dictionary<int, List<string>> dicLineupCreature = new Dictionary<int, List<string>>();
-    //±³°üÀïµÄËùÓĞÉúÎï
+    //èƒŒåŒ…é‡Œçš„æ‰€æœ‰ç”Ÿç‰©
     public List<CreatureBean> listBackpackCreature = new List<CreatureBean>();
-    //Ä§Íõ×Ô¼ºµÄÊı¾İ
+    //é­”ç‹è‡ªå·±çš„æ•°æ®
     public CreatureBean selfCreature;
 
-    //ÓÎÏ·½ø¶ÈµØÍ¼
+    //æ¸¸æˆè¿›åº¦åœ°å›¾
     public GameWorldMapBean gameWorldMapData;
 
-    //ÓÃ»§½âËøÊı¾İ
+    //ç”¨æˆ·è§£é”æ•°æ®
     public UserUnlockBean userUnlockData;
 
     /// <summary>
-    /// »ñÈ¡ÓÃ»§½âËøÊı¾İ
+    /// è·å–ç”¨æˆ·è§£é”æ•°æ®
     /// </summary>
     /// <returns></returns>
-    public UserUnlockBean GetUserUnlockData()
+    public UserUnlockBean  GetUserUnlockData()
     {
         if(userUnlockData == null)
             userUnlockData = new UserUnlockBean();
-        //Èİ´í´¦Àí
+        //å®¹é”™å¤„ç†
         if (userUnlockData.unlockWorldMapRefreshNum > 50)
             userUnlockData.unlockWorldMapRefreshNum = 50;
         return userUnlockData;
     }
 
     /// <summary>
-    /// Çå³ıÓÎÏ·µØÍ¼½ø¶È
+    /// æ¸…é™¤æ¸¸æˆåœ°å›¾è¿›åº¦
     /// </summary>
     public void ClearGameWorldMapData()
     {
@@ -57,7 +57,33 @@ public class UserDataBean : BaseBean
     }
 
     /// <summary>
-    /// Ôö¼Ó½ğ±Ò
+    /// æ£€æµ‹æ˜¯å¦æœ‰è¶³å¤Ÿçš„é‡‘å¸
+    /// </summary>
+    /// <param name="checkNum">æ£€æµ‹æ•°é‡</param>
+    /// <param name="isHint">æ˜¯å¦æç¤º</param>
+    /// <param name="isAddCoin">æ˜¯å¦æ‰£é™¤</param>
+    public bool CheckHasCoin(int checkNum, bool isHint = false,bool isAddCoin = false)
+    {
+        if(coin >= checkNum)
+        {
+            if(isAddCoin)
+            {
+                AddCoin(-checkNum);
+            }
+            return true;
+        }
+        else
+        {
+            if (isHint)
+            {     
+                UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(3000001));
+            }
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// å¢åŠ é‡‘å¸
     /// </summary>
     public void AddCoin(int coinNum)
     {
@@ -70,7 +96,7 @@ public class UserDataBean : BaseBean
     }
 
     /// <summary>
-    /// »ñÈ¡ÕóÈİÉúÎï
+    /// è·å–é˜µå®¹ç”Ÿç‰©
     /// </summary>
     public List<string> GetLineupCreature(int lineupIndex)
     {
@@ -87,7 +113,7 @@ public class UserDataBean : BaseBean
     }
 
     /// <summary>
-    /// »ñÈ¡ÕóÈİÉúÎïËùÔÚÎ»ÖÃ
+    /// è·å–é˜µå®¹ç”Ÿç‰©æ‰€åœ¨ä½ç½®
     /// </summary>
     public int GetLineupCreaturePosIndex(int lineupIndex, string creatureId)
     {
@@ -109,7 +135,7 @@ public class UserDataBean : BaseBean
     }
 
     /// <summary>
-    /// Ìí¼ÓÕóÈİÉúÎï
+    /// æ·»åŠ é˜µå®¹ç”Ÿç‰©
     /// </summary>
     public bool AddLineupCreature(int lineupIndex, string creatureId)
     {
@@ -132,7 +158,7 @@ public class UserDataBean : BaseBean
     }
 
     /// <summary>
-    /// ÒÆ³ıÕóÈİÉúÎï
+    /// ç§»é™¤é˜µå®¹ç”Ÿç‰©
     /// </summary>
     public bool RemoveLineupCreature(int lineupIndex, string creatureId)
     {
@@ -152,7 +178,7 @@ public class UserDataBean : BaseBean
     }
 
     /// <summary>
-    /// Ìí¼Ó±³°üÉúÎï
+    /// æ·»åŠ èƒŒåŒ…ç”Ÿç‰©
     /// </summary>
     public void AddBackpackCreature(CreatureBean creatureData)
     {
@@ -160,7 +186,7 @@ public class UserDataBean : BaseBean
     }
 
     /// <summary>
-    /// »ñÈ¡±³°üÀïµÄÉúÎï
+    /// è·å–èƒŒåŒ…é‡Œçš„ç”Ÿç‰©
     /// </summary>
     public CreatureBean GetBackpackCreature(string creatureId)
     {
@@ -176,7 +202,7 @@ public class UserDataBean : BaseBean
     }
 
     /// <summary>
-    /// ¼ì²âÊÇ·ñ°üº¬ÔÚÕóÈİÀï
+    /// æ£€æµ‹æ˜¯å¦åŒ…å«åœ¨é˜µå®¹é‡Œ
     /// </summary>
     public bool CheckIsLineup(int lineupIndex,string creatureId)
     {
