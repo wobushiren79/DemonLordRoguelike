@@ -16,5 +16,7 @@ public partial class UITestBase
 
     public Button ui_BtnAddUnlockCreature;
 
+    public Button ui_BtnAddCoin;
+
 
 }

@@ -46,7 +46,7 @@ public partial class UIBaseCore : BaseUIComponent
     }
 
     /// <summary>
-    /// Ë¢ĞÂUIÊı¾İ
+    /// åˆ·æ–°UIæ•°æ®
     /// </summary>
     public void RefreshUIData()
     {
@@ -54,7 +54,7 @@ public partial class UIBaseCore : BaseUIComponent
     }
 
     /// <summary>
-    /// µã»÷ÍË³ö
+    /// ç‚¹å‡»é€€å‡º
     /// </summary>
     public void OnClickForExit()
     {
@@ -62,7 +62,7 @@ public partial class UIBaseCore : BaseUIComponent
     }
 
     /// <summary>
-    /// µã»÷ÕóÈİ¹ÜÀí
+    /// ç‚¹å‡»é˜µå®¹ç®¡ç†
     /// </summary>
     public void OnClickForLineup()
     {
@@ -70,7 +70,7 @@ public partial class UIBaseCore : BaseUIComponent
     }
 
     /// <summary>
-    /// µã»÷´ò¿ªÅ¤µ°»ú
+    /// ç‚¹å‡»æ‰“å¼€æ‰­è›‹æœº
     /// </summary>
     public void OnClickForGashapon()
     {

@@ -105,7 +105,7 @@ public class GashaponMachineLogic : BaseGameLogic
             int randomCreatureIndex = UnityEngine.Random.Range(0, gashaponMachineData.listCreatureRandomData.Count);
             var randomCreatureData = gashaponMachineData.listCreatureRandomData[randomCreatureIndex];
 
-            GashaponItemBean itemGashapon = new GashaponItemBean(randomCreatureData.creatureId);
+            GashaponItemBean itemGashapon = new GashaponItemBean(randomCreatureData.creatureId,randomCreatureData);
             listGashaponData.Add(itemGashapon);
 
             var creatureInfo = itemGashapon.creatureData.creatureInfo;

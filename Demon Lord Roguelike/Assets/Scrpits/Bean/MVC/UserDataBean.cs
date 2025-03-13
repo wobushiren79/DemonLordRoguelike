@@ -85,7 +85,7 @@ public class UserDataBean : BaseBean
     /// <summary>
     /// 增加金币
     /// </summary>
-    public void AddCoin(int coinNum)
+    public void AddCoin(long coinNum)
     {
         coin += coinNum;
         if (coin < 0)

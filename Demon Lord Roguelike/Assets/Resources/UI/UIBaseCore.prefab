@@ -177,6 +177,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6d96a2f030aa484db5f3dfa3eceaa5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uiOpenAnimType: 1
+  uiOpenAnimTarget: {fileID: 4858926371702655025}
   uiManager: {fileID: 0}
   remarkData: 
   ui_ViewBaseInfoContent: {fileID: 1692143287008850840}

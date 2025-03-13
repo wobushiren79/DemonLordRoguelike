@@ -30,6 +30,10 @@ public partial class UITestBase : BaseUIComponent
         {
             OnClickForExit();
         }
+        else if(viewButton == ui_BtnAddCoin)
+        {
+            OnClickForAddCoin();
+        }
         else if (viewButton == ui_BtnAddAllCreature)
         {
             OnClickForAddAllCreature();
@@ -54,6 +58,27 @@ public partial class UITestBase : BaseUIComponent
     public void OnClickForExit()
     {
         UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
+    }
+
+    /// <summary>
+    /// 点击增加魔晶
+    /// </summary>
+    public void OnClickForAddCoin()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        string inputData = ui_InputData.text;
+        if (inputData.IsNull())
+        {
+             userData.AddCoin(999999);
+        }
+        else
+        {
+            if(long.TryParse(inputData,out var addCoin)){
+                userData.AddCoin(addCoin);
+            }else{
+                LogUtil.LogError("请输入数字");
+            }
+        }
     }
 
     /// <summary>
@@ -98,17 +123,23 @@ public partial class UITestBase : BaseUIComponent
     /// 添加解锁信息
     /// </summary>
     public void OnClickForAddUnlock()
-    {
+    {            
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlockDasta = userData.GetUserUnlockData();
         string inputData = ui_InputData.text;
         if (inputData.IsNull())
-        {
-            LogUtil.LogError("还未输入解锁ID");
+        {      
+            var all = UnlockInfoCfg.GetAllData();
+            foreach(var item in all)
+            {
+                userUnlockDasta.AddUnlock(item.Key);
+            }
+            LogUtil.Log($"解锁所有成功");
             return;
         }
         if (long.TryParse(inputData, out long outValue))
         {
-            var userData = GameDataHandler.Instance.manager.GetUserData();
-            var userUnlockDasta = userData.GetUserUnlockData();
+
             userUnlockDasta.AddUnlock(outValue);
             LogUtil.Log("添加成功");
         }
