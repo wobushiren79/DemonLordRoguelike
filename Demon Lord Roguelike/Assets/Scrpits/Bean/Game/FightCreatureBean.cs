@@ -9,11 +9,11 @@ public class FightCreatureBean
     public CreatureBean creatureData;    //生物数据
     public Vector3Int positionCreate;//生成位置
 
-    public int lifeCurrent;//当前生命值
-    public int lifeMax;//最大生命值
+    public int HPCurrent;//当前生命值
+    public int HPMax;//最大生命值
 
-    public int armorCurrent;//当前护甲值
-    public int armorMax;//最大护甲值
+    public int DRCurrent;//当前护甲值
+    public int DRMax;//最大护甲值
 
     public float moveSpeedCurrent;//当前移动速度
     public Color colorBodyCurrent;//当前身体颜色
@@ -37,8 +37,8 @@ public class FightCreatureBean
     public void ResetData()
     {
         var creatureInfo = creatureData.creatureInfo;
-        lifeCurrent = creatureInfo.life;
-        lifeMax = creatureInfo.life;
+        HPCurrent = creatureInfo.HP;
+        HPMax = creatureInfo.HP;
         listBuff = new List<FightBuffBean>();
 
         InitBaseAttribute();
@@ -100,76 +100,76 @@ public class FightCreatureBean
     }
 
 
-    public void ChangeArmorAndLife(int changeValue,
-        out int curArmor, out int curLife,
-        out int changeArmorReal, out int changeLifeReal)
+    public void ChangeDRAndHP(int changeValue,
+        out int curDR, out int curHP,
+        out int changeDRReal, out int changeHPReal)
     {
-        changeArmorReal = 0;
-        changeLifeReal = 0;
+        changeDRReal = 0;
+        changeHPReal = 0;
 
         //先改变护甲
-        ChangeArmor(changeValue, out int leftArmor, out changeArmorReal);
+        ChangeDR(changeValue, out int leftDR, out changeDRReal);
         //如果真实改变的护甲值==改变的值（没有冗余）
-        if (changeValue == changeArmorReal)
+        if (changeValue == changeDRReal)
         {
 
         }
         //如果真实改变的护甲值!=改变的值有冗余（有冗余 需要再改变生命值）
         else
         {
-            int changeValue2 = changeValue - changeArmorReal;
-            ChangeLife(changeValue2, out int leftLife, out changeLifeReal);
+            int changeValue2 = changeValue - changeDRReal;
+            ChangeHP(changeValue2, out int leftHP, out changeHPReal);
         }
-        curArmor = armorCurrent;
-        curLife = lifeCurrent;
+        curDR = DRCurrent;
+        curHP = HPCurrent;
     }
 
 
     /// <summary>
     /// 改变护甲
     /// </summary>
-    /// <param name="changeArmor">改变值</param>
-    /// <param name="leftArmor">剩余值</param>
-    /// <param name="changeArmorReal">真实改变值</param>
-    public void ChangeArmor(int changeArmor, out int leftArmor, out int changeArmorReal)
+    /// <param name="ChangeDR">改变值</param>
+    /// <param name="leftDR">剩余值</param>
+    /// <param name="changeDRReal">真实改变值</param>
+    public void ChangeDR(int ChangeDR, out int leftDR, out int changeDRReal)
     {
-        armorCurrent += changeArmor;
-        changeArmorReal = changeArmor;
-        if (armorCurrent < 0)
+        DRCurrent += ChangeDR;
+        changeDRReal = ChangeDR;
+        if (DRCurrent < 0)
         {
-            changeArmorReal = changeArmor - armorCurrent;
-            armorCurrent = 0;
+            changeDRReal = ChangeDR - DRCurrent;
+            DRCurrent = 0;
         }
-        if (armorCurrent > armorMax)
+        if (DRCurrent > DRMax)
         {
-            changeArmorReal = changeArmor - (armorCurrent - armorMax);
-            armorCurrent = armorMax;
+            changeDRReal = ChangeDR - (DRCurrent - DRMax);
+            DRCurrent = DRMax;
         }
-        leftArmor = armorCurrent;
+        leftDR = DRCurrent;
     }
 
 
     /// <summary>
     /// 改变生命值
     /// </summary>
-    /// <param name="changeLife">改变值</param>
-    /// <param name="leftLife">剩余值</param>
-    /// <param name="changeLifeReal">真实改变值</param>
-    public void ChangeLife(int changeLife, out int leftLife, out int changeLifeReal)
+    /// <param name="ChangeHP">改变值</param>
+    /// <param name="leftHP">剩余值</param>
+    /// <param name="changeHPReal">真实改变值</param>
+    public void ChangeHP(int ChangeHP, out int leftHP, out int changeHPReal)
     {
-        lifeCurrent += changeLife;
-        changeLifeReal = changeLife;
-        if (lifeCurrent < 0)
+        HPCurrent += ChangeHP;
+        changeHPReal = ChangeHP;
+        if (HPCurrent < 0)
         {
-            changeLifeReal = changeLife - lifeCurrent;
-            lifeCurrent = 0;
+            changeHPReal = ChangeHP - HPCurrent;
+            HPCurrent = 0;
         }
-        if (lifeCurrent > lifeMax)
+        if (HPCurrent > HPMax)
         {
-            changeLifeReal = changeLife - (lifeCurrent - lifeMax);
-            lifeCurrent = lifeMax;
+            changeHPReal = ChangeHP - (HPCurrent - HPMax);
+            HPCurrent = HPMax;
         }
-        leftLife = lifeCurrent;
+        leftHP = HPCurrent;
     }
 
     /// <summary>

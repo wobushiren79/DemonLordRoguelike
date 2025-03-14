@@ -8,21 +8,13 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public int creature_type;
 	/// <summary>
+	///创建cd(秒)
+	/// </summary>
+	public float create_cd;
+	/// <summary>
 	///创建魔力
 	/// </summary>
 	public int create_magic;
-	/// <summary>
-	///内容
-	/// </summary>
-	public string name_res;
-	/// <summary>
-	///移动速度
-	/// </summary>
-	public float speed_move;
-	/// <summary>
-	///生命值
-	/// </summary>
-	public int life;
 	/// <summary>
 	///
 	/// </summary>
@@ -40,9 +32,25 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public float att_anim_cast_time;
 	/// <summary>
+	///生命值
+	/// </summary>
+	public int HP;
+	/// <summary>
+	///护甲
+	/// </summary>
+	public int DR;
+	/// <summary>
 	///攻击力
 	/// </summary>
-	public int att_damage;
+	public int ATK;
+	/// <summary>
+	///攻击速度
+	/// </summary>
+	public int ASPD;
+	/// <summary>
+	///移动速度
+	/// </summary>
+	public float MSPD;
 	/// <summary>
 	///模组ID
 	/// </summary>

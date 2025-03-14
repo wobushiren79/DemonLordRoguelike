@@ -26,7 +26,7 @@ public partial class UIViewBasePortalItem : BaseUIView
     }
 
     /// <summary>
-    /// ÉèÖÃÊı¾İ
+    /// è®¾ç½®æ•°æ®
     /// </summary>
     public void SetData(GameWorldInfoBean gameWorldInfo, int difficulty, int maxLevel, Vector2 targetMapPos)
     {
@@ -40,13 +40,13 @@ public partial class UIViewBasePortalItem : BaseUIView
 
         string targetName = gameWorldInfo.GetName();
         SetName(targetName);
-
-        //³õÊ¼»¯µ¯´°
+        SetIcon();
+        //åˆå§‹åŒ–å¼¹çª—
         popupForPortalDetails.SetData((gameWorldInfo, difficulty, maxLevel), PopupEnum.ProtalDetails);
     }
 
     /// <summary>
-    /// ÉèÖÃµØÍ¼Î»ÖÃ
+    /// è®¾ç½®åœ°å›¾ä½ç½®
     /// </summary>
     /// <param name="targetPos"></param>
     public void SetMapPosition(Vector2 targetPos)
@@ -55,15 +55,19 @@ public partial class UIViewBasePortalItem : BaseUIView
     }
 
     /// <summary>
-    /// ÉèÖÃÍ¼±ê
+    /// è®¾ç½®å›¾æ ‡
     /// </summary>
     public void SetIcon()
     {
-
+        int seed = Random.Range(0,int.MaxValue);
+        CreateToolsForPlanetTextureBean createData = new CreateToolsForPlanetTextureBean(seed);
+        var planetTex = CreateTools.CreatePlanetTexture(createData);
+        ui_Icon.texture = planetTex;
+        ui_Icon.gameObject.SetActive(true);
     }
 
     /// <summary>
-    /// ÉèÖÃÃû×Ö
+    /// è®¾ç½®åå­—
     /// </summary>
     public void SetName(string name)
     {
@@ -71,7 +75,7 @@ public partial class UIViewBasePortalItem : BaseUIView
     }
 
     /// <summary>
-    /// µã»÷-½øÈëÊÀ½ç
+    /// ç‚¹å‡»-è¿›å…¥ä¸–ç•Œ
     /// </summary>
     public void OnClickForEnterWorld()
     {

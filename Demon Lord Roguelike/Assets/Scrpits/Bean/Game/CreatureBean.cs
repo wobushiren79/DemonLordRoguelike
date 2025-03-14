@@ -172,19 +172,17 @@ public class CreatureBean
     /// <summary>
     /// 获取生命值
     /// </summary>
-    /// <returns></returns>
-    public int GetLife()
+    public int GetHP()
     {
-        return creatureInfo.life;
+        return creatureInfo.HP;
     }
 
     /// <summary>
     /// 获取攻击
     /// </summary>
-    /// <returns></returns>
-    public int GetAttDamage()
+    public int GetAttackDamage()
     {
-        return creatureInfo.att_damage;
+        return creatureInfo.ATK;
     }
 
     /// <summary>
@@ -193,14 +191,14 @@ public class CreatureBean
     /// <returns></returns>
     public float GetMoveSpeed()
     {
-        return creatureInfo.speed_move;
+        return creatureInfo.MSPD;
     }
 
     /// <summary>
     /// 获取攻击CD
     /// </summary>
     /// <returns></returns>
-    public float GetAttCD()
+    public float GetAttackCD()
     {
         return creatureInfo.att_cd;
     }
@@ -209,7 +207,7 @@ public class CreatureBean
     /// 获取攻击动画出手时间
     /// </summary>
     /// <returns></returns>
-    public float GetAttAnimCastTime()
+    public float GetAttackAnimCastTime()
     {
         return creatureInfo.att_anim_cast_time;
     }

@@ -5,29 +5,29 @@ using UnityEngine;
 
 public class BaseAttackMode
 {
-    //µ±Ç°obj
+    //å½“å‰obj
     public GameObject gameObject;
     public SpriteRenderer spriteRenderer;
-    //ĞÅÏ¢
+    //ä¿¡æ¯
     public AttackModeInfoBean attackModeInfo;
-    //¹¥»÷ÕßµÄ¹¥»÷Á¦
+    //æ”»å‡»è€…çš„æ”»å‡»åŠ›
     public int attackerDamage;
-    //Ä¿±êÎ»ÖÃ
+    //ç›®æ ‡ä½ç½®
     public Vector3 targetPos;
-    //¹¥»÷·½Ïò
+    //æ”»å‡»æ–¹å‘
     public Vector3 attackDirection;
-    //±»¹¥»÷ÕßµÄ²ã¼¶
+    //è¢«æ”»å‡»è€…çš„å±‚çº§
     public int attackedLayer;
 
-    //¹¥»÷ÕßID
+    //æ”»å‡»è€…ID
     public string attackerId;
-    //±»¹¥»÷ÕßID
+    //è¢«æ”»å‡»è€…ID
     public string attackedId;
     /// <summary>
-    /// ¿ªÊ¼¹¥»÷
+    /// å¼€å§‹æ”»å‡»
     /// </summary>
-    /// <param name="attacker">¹¥»÷·½</param>
-    /// <param name="attacked">±»¹¥»÷·½</param>
+    /// <param name="attacker">æ”»å‡»æ–¹</param>
+    /// <param name="attacked">è¢«æ”»å‡»æ–¹</param>
     public virtual void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action actionForAttackEnd)
     {
         attackerDamage = 0;
@@ -37,10 +37,10 @@ public class BaseAttackMode
             {
                 if (attacker.fightCreatureData.creatureData != null)
                 {
-                    //ÉèÖÃ¹¥»÷ÕßID
+                    //è®¾ç½®æ”»å‡»è€…ID
                     attackerId = attacker.fightCreatureData.creatureData.creatureId;
-                    //ÉèÖÃÉËº¦
-                    attackerDamage = attacker.fightCreatureData.creatureData.GetAttDamage();
+                    //è®¾ç½®ä¼¤å®³
+                    attackerDamage = attacker.fightCreatureData.creatureData.GetAttackDamage();
                 }
             }
         }
@@ -57,7 +57,7 @@ public class BaseAttackMode
             {
                 if (attacked.fightCreatureData.creatureData != null)
                 {
-                    //ÉèÖÃ±»¹¥»÷ÕßID
+                    //è®¾ç½®è¢«æ”»å‡»è€…ID
                     attackedId = attacked.fightCreatureData.creatureData.creatureId;
                 }
             }
@@ -66,7 +66,7 @@ public class BaseAttackMode
     }
 
     /// <summary>
-    /// ¸üĞÂ
+    /// æ›´æ–°
     /// </summary>
     public virtual void Update()
     {
@@ -74,7 +74,7 @@ public class BaseAttackMode
     }
 
     /// <summary>
-    /// ÇåÀí×Ô¼º
+    /// æ¸…ç†è‡ªå·±
     /// </summary>
     public virtual void Destory()
     {

@@ -146,14 +146,14 @@ GameObject:
   m_Component:
   - component: {fileID: 267843414593613242}
   - component: {fileID: 8659546009520569036}
-  - component: {fileID: 1875215531654471184}
+  - component: {fileID: 5846995631852047538}
   m_Layer: 5
   m_Name: Icon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &267843414593613242
 RectTransform:
   m_ObjectHideFlags: 0
@@ -181,7 +181,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3263271987084969990}
   m_CullTransparentMesh: 1
---- !u!114 &1875215531654471184
+--- !u!114 &5846995631852047538
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -190,27 +190,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 3263271987084969990}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 0
+  m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: a43bb47107e97dd49a55c6f9511f754d, type: 3}
-  m_Type: 0
-  m_PreserveAspect: 1
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
+  m_Texture: {fileID: 0}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
 --- !u!1 &5346231277854795136
 GameObject:
   m_ObjectHideFlags: 0
@@ -272,10 +269,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc8702152b33a98478abf73a170fd7c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}
-  ui_Icon: {fileID: 1875215531654471184}
   ui_Name: {fileID: 8290737605131845130}
   ui_BG: {fileID: 6558164647575660837}
+  ui_Icon: {fileID: 5846995631852047538}
 --- !u!95 &7559934089002443513
 Animator:
   serializedVersion: 7
@@ -431,4 +430,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16e10e1ab6287e34bb1c2a56fb2273e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}

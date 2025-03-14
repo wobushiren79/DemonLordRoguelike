@@ -6,7 +6,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     public CreatureBean creatureData;
 
     /// <summary>
-    /// ÉèÖÃÊı¾İ
+    /// è®¾ç½®æ•°æ®
     /// </summary>
     /// <param name="creatureData"></param>
     public void SetData(CreatureBean creatureData)
@@ -17,14 +17,14 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         SetName(creatureData.creatureName);
         SetLevel(creatureData.level);
 
-        int attDamage = creatureData.GetAttDamage();
-        int lifeMax = creatureData.GetLife();
-        SetAttribute(attDamage, lifeMax);
+        int attDamage = creatureData.GetAttackDamage();
+        int HPMax = creatureData.GetHP();
+        SetAttribute(attDamage, HPMax);
         SetRarity(creatureData.rarity);
     }
 
     /// <summary>
-    /// ÉèÖÃÏ¡ÓĞ¶È
+    /// è®¾ç½®ç¨€æœ‰åº¦
     /// </summary>
     public void SetRarity(int rarity)
     {
@@ -36,7 +36,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     }
 
     /// <summary>
-    /// ÉèÖÃÃû×Ö
+    /// è®¾ç½®åå­—
     /// </summary>
     public void SetName(string name)
     {
@@ -44,7 +44,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     }
 
     /// <summary>
-    /// ÉèÖÃµÈ¼¶
+    /// è®¾ç½®ç­‰çº§
     /// </summary>
     public void SetLevel(int level)
     {
@@ -52,16 +52,16 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     }
 
     /// <summary>
-    /// ÉèÖÃÊôĞÔ
+    /// è®¾ç½®å±æ€§
     /// </summary>
-    public void SetAttribute(int attDamage, int lifeMax)
+    public void SetAttribute(int attDamage, int HPMax)
     {
         ui_AttributeItemText_Att.text = $"{attDamage}";
-        ui_AttributeItemText_Life.text = $"{lifeMax}";
+        ui_AttributeItemText_Life.text = $"{HPMax}";
     }
 
     /// <summary>
-    /// ÉèÖÃÍ¼Æ¬
+    /// è®¾ç½®å›¾ç‰‡
     /// </summary>
     public void SetCardIcon(CreatureBean creatureData)
     {

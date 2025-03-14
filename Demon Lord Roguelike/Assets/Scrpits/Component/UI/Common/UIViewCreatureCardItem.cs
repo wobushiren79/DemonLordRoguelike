@@ -9,36 +9,36 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
 {
     public CreatureCardItemBean cardData = new CreatureCardItemBean();
 
-    [Header("¿¨Æ¬´´½¨¶¯»­ÑÓ³ÙÊ±¼ä")]
+    [Header("å¡ç‰‡åˆ›å»ºåŠ¨ç”»å»¶è¿Ÿæ—¶é—´")]
     public float animCardCreateDelayTime = 0.05f;
-    [Header("¿¨Æ¬´´½¨¶¯»­Ê±¼ä")]
+    [Header("å¡ç‰‡åˆ›å»ºåŠ¨ç”»æ—¶é—´")]
     public float animCardCreateTimeType1 = 0.8f;
-    [Header("¿¨Æ¬´´½¨¶¯»­Ê±¼ä")]
+    [Header("å¡ç‰‡åˆ›å»ºåŠ¨ç”»æ—¶é—´")]
     public float animCardCreateTimeType2 = 0.4f;
-    [Header("¿¨Æ¬´´½¨¶¯»­»º¶¯º¯Êı")]
+    [Header("å¡ç‰‡åˆ›å»ºåŠ¨ç”»ç¼“åŠ¨å‡½æ•°")]
     public Ease animCardCreateEase = Ease.OutBack;
 
-    [Header("¿¨Æ¬Ñ¡Ôñ¶¯»­½øÈëÊ±¼ä")]
+    [Header("å¡ç‰‡é€‰æ‹©åŠ¨ç”»è¿›å…¥æ—¶é—´")]
     public float animCardSelectStartTime = 0.25f;
-    [Header("¿¨Æ¬Ñ¡Ôñ¶¯»­»º¶¯º¯Êı-½øÈë")]
+    [Header("å¡ç‰‡é€‰æ‹©åŠ¨ç”»ç¼“åŠ¨å‡½æ•°-è¿›å…¥")]
     public Ease animCardSelectStart = Ease.OutBack;
-    [Header("¿¨Æ¬Ñ¡Ôñ¶¯»­·Å´ó²ÎÊı")]
+    [Header("å¡ç‰‡é€‰æ‹©åŠ¨ç”»æ”¾å¤§å‚æ•°")]
     public float animCardSelectStartScale = 1.6f;
 
-    [Header("¿¨Æ¬Ñ¡Ôñ¶¯»­ÍË³öÊ±¼ä")]
+    [Header("å¡ç‰‡é€‰æ‹©åŠ¨ç”»é€€å‡ºæ—¶é—´")]
     public float animCardSelectEndTime = 0.5f;
-    [Header("¿¨Æ¬Ñ¡Ôñ¶¯»­»º¶¯º¯Êı-ÍË³ö")]
+    [Header("å¡ç‰‡é€‰æ‹©åŠ¨ç”»ç¼“åŠ¨å‡½æ•°-é€€å‡º")]
     public Ease animCardSelectEnd = Ease.OutBack;
 
-    protected Tween animForCreate;//´´½¨¿¨Æ¬¶¯»­
-    protected Tween animForSelectStart;//Ñ¡Ôñ¿¨Æ¬¶¯»­
-    protected Tween animForSelectEnd;//Ñ¡Ôñ¿¨Æ¬¶¯»­
-    protected Tween animForSelectKeepStart;//Ñ¡Ôñ¿¨Æ¬±ÜÈÃ¶¯»­
-    protected Tween animForSelectKeepEnd;//Ñ¡Ôñ¿¨Æ¬±ÜÈÃ¶¯»­
+    protected Tween animForCreate;//åˆ›å»ºå¡ç‰‡åŠ¨ç”»
+    protected Tween animForSelectStart;//é€‰æ‹©å¡ç‰‡åŠ¨ç”»
+    protected Tween animForSelectEnd;//é€‰æ‹©å¡ç‰‡åŠ¨ç”»
+    protected Tween animForSelectKeepStart;//é€‰æ‹©å¡ç‰‡é¿è®©åŠ¨ç”»
+    protected Tween animForSelectKeepEnd;//é€‰æ‹©å¡ç‰‡é¿è®©åŠ¨ç”»
 
-    public MaskUIView maskUI;//ÕÚÕÖ´¦Àí
+    public MaskUIView maskUI;//é®ç½©å¤„ç†
 
-    //³¤ÊÂ¼şÑ¡ÔñÕ¹Ê¾ÏêÇé
+    //é•¿äº‹ä»¶é€‰æ‹©å±•ç¤ºè¯¦æƒ…
     protected float timeUpdateForShowDetails = -1;
     protected float timeMaxForShowDetails = 1;
 
@@ -62,24 +62,24 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     }
 
     /// <summary>
-    /// ÉèÖÃÊı¾İ
+    /// è®¾ç½®æ•°æ®
     /// </summary>
     public void SetData(CreatureBean creatureData,CardUseState cardUseState)
     {
         this.cardData.cardUseState = cardUseState;
         this.cardData.creatureData = creatureData;
-        int attDamage = creatureData.GetAttDamage();
-        int lifeMax = creatureData.GetLife();
+        int attDamage = creatureData.GetAttackDamage();
+        int HPMax = creatureData.GetHP();
 
         SetCardIcon(creatureData);
-        SetAttribute(attDamage, lifeMax);
+        SetAttribute(attDamage, HPMax);
         SetName(creatureData.creatureName);
         SetLevel(creatureData.level);
         SetRarity(creatureData.rarity);
     }
 
     /// <summary>
-    /// ÉèÖÃÏ¡ÓĞ¶È
+    /// è®¾ç½®ç¨€æœ‰åº¦
     /// </summary>
     public void SetRarity(int rarity)
     {
@@ -92,7 +92,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     }
 
     /// <summary>
-    /// ÉèÖÃÃû×Ö
+    /// è®¾ç½®åå­—
     /// </summary>
     public void SetName(string name)
     {
@@ -100,7 +100,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     }
 
     /// <summary>
-    /// ÉèÖÃµÈ¼¶
+    /// è®¾ç½®ç­‰çº§
     /// </summary>
     public void SetLevel(int level)
     {
@@ -108,16 +108,16 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     }
 
     /// <summary>
-    /// ÉèÖÃÊôĞÔ
+    /// è®¾ç½®å±æ€§
     /// </summary>
-    public void SetAttribute(int attDamage, int lifeMax)
+    public void SetAttribute(int attDamage, int HPMax)
     {
         ui_AttributeItemText_Att.text = $"{attDamage}";
-        ui_AttributeItemText_Life.text = $"{lifeMax}";
+        ui_AttributeItemText_Life.text = $"{HPMax}";
     }
 
     /// <summary>
-    /// ÉèÖÃ¿¨Æ¬Í¼Ïñ
+    /// è®¾ç½®å¡ç‰‡å›¾åƒ
     /// </summary>
     public void SetCardIcon(CreatureBean creatureData)
     {
@@ -125,7 +125,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     }
 
     /// <summary>
-    /// ÉèÖÃ¿¨µÄ×´Ì¬
+    /// è®¾ç½®å¡çš„çŠ¶æ€
     /// </summary>
     public void SetCardState(CardStateEnum cardState)
     {
@@ -134,7 +134,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     }
 
     /// <summary>
-    /// Ë¢ĞÂ¿¨µÄ×´Ì¬
+    /// åˆ·æ–°å¡çš„çŠ¶æ€
     /// </summary>
     public void RefreshCardState(CardStateEnum cardState)
     {
@@ -162,7 +162,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     }
 
     /// <summary>
-    /// °´Å¥µã»÷
+    /// æŒ‰é’®ç‚¹å‡»
     /// </summary>
     public override void OnClickForButton(Button viewButton)
     {
@@ -174,17 +174,17 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     }
     
     /// <summary>
-    /// µã»÷Ñ¡Ôñ
+    /// ç‚¹å‡»é€‰æ‹©
     /// </summary>
     public void OnClickSelect()
     {
         TriggerEvent(EventsInfo.UIViewCreatureCardItem_OnClickSelect, this);
     }
 
-    #region µã»÷´¥·¢
+    #region ç‚¹å‡»è§¦å‘
 
     /// <summary>
-    /// ´¥Ãş-½øÈë
+    /// è§¦æ‘¸-è¿›å…¥
     /// </summary>
     /// <param name="eventData"></param>
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
@@ -199,7 +199,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     }
 
     /// <summary>
-    /// ´¥Ãş-ÍË³ö
+    /// è§¦æ‘¸-é€€å‡º
     /// </summary>
     /// <param name="eventData"></param>
     void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
@@ -214,9 +214,9 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     }
     #endregion
 
-    #region ¶¯»­Ïà¹Ø
+    #region åŠ¨ç”»ç›¸å…³
     /// <summary>
-    /// ´´½¨¶¯»­
+    /// åˆ›å»ºåŠ¨ç”»
     /// </summary>
     public void AnimForCreateShow(int animType, int index)
     {
@@ -240,7 +240,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     }
 
     /// <summary>
-    /// Çå³ıËùÓĞ¶¯»­
+    /// æ¸…é™¤æ‰€æœ‰åŠ¨ç”»
     /// </summary>
     public void ClearAnim()
     {
@@ -267,7 +267,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     }
 
     /// <summary>
-    /// Keep¶¯»­¹Ø±Õ
+    /// KeepåŠ¨ç”»å…³é—­
     /// </summary>
     public void KillAnimForKeep()
     {
@@ -278,7 +278,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler, 
     }
 
     /// <summary>
-    /// ¹Ø±ÕÑ¡Ôñ¶¯»­
+    /// å…³é—­é€‰æ‹©åŠ¨ç”»
     /// </summary>
     public void KillAnimForSelect()
     {

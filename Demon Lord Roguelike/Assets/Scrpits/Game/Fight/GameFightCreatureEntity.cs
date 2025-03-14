@@ -10,11 +10,11 @@ public class GameFightCreatureEntity
     public FightCreatureBean fightCreatureData;
     public AIBaseEntity aiEntity;
     public CreatureFightStateEnum creatureFightState = CreatureFightStateEnum.None;
-    //spineÊı¾İ
+    //spineæ•°æ®
     public SkeletonAnimation creatureSkeletionAnimation;
-    //ÉúÃüÌõÏÔÊ¾
+    //ç”Ÿå‘½æ¡æ˜¾ç¤º
     public SpriteRenderer creatureLifeShow;
-    //ÑÕÉ«¶¯»­-ÊÜµ½¹¥»÷
+    //é¢œè‰²åŠ¨ç”»-å—åˆ°æ”»å‡»
     Tween animForUnderAttackColor;
     public GameFightCreatureEntity(GameObject creatureObj, FightCreatureBean fightCreatureData)
     {
@@ -22,19 +22,19 @@ public class GameFightCreatureEntity
         this.creatureObj = creatureObj;
         this.fightCreatureData = fightCreatureData;
         this.creatureObj.name = fightCreatureData.creatureData.creatureId;
-        //»ñÈ¡¹Ç÷ÀÊı¾İ
+        //è·å–éª¨éª¼æ•°æ®
         creatureSkeletionAnimation = creatureObj.transform.Find("Spine")?.GetComponent<SkeletonAnimation>();
-        //»ñÈ¡ÉúÃüÖµÏÔÊ¾
+        //è·å–ç”Ÿå‘½å€¼æ˜¾ç¤º
         creatureLifeShow = creatureObj.transform.Find("LifeShow")?.GetComponent<SpriteRenderer>();
         creatureLifeShow?.ShowObj(false);
 
         ChangeSkin(fightCreatureData.creatureData);
-        //ÉèÖÃÉíÌåÑÕÉ«
+        //è®¾ç½®èº«ä½“é¢œè‰²
         SetBodyColor();
     }
 
     /// <summary>
-    /// ¸üĞÂ
+    /// æ›´æ–°
     /// </summary>
     public void Update(float updateTime)
     {
@@ -42,7 +42,7 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
-    /// ¸üĞÂbuffs
+    /// æ›´æ–°buffs
     /// </summary>
     public void UpdateForBuffs(float updateTime)
     {
@@ -65,7 +65,7 @@ public class GameFightCreatureEntity
 
 
     /// <summary>
-    /// ĞŞ¸ÄÆ¤·ô ¸ù¾İÉúÎïÊı¾İĞŞ¸Ä
+    /// ä¿®æ”¹çš®è‚¤ æ ¹æ®ç”Ÿç‰©æ•°æ®ä¿®æ”¹
     /// </summary>
     public void ChangeSkin(CreatureBean creatureData)
     {
@@ -79,11 +79,11 @@ public class GameFightCreatureEntity
 
 
     /// <summary>
-    ///  ÉèÖÃÉíÌåÑÕÉ«
+    ///  è®¾ç½®èº«ä½“é¢œè‰²
     /// </summary>
     public void SetBodyColor(Color bodyColor)
     {
-        //³õÊ¼»¯ÉíÌåÑÕÉ«
+        //åˆå§‹åŒ–èº«ä½“é¢œè‰²
         if (creatureSkeletionAnimation != null && creatureSkeletionAnimation.skeleton != null)
         {
             creatureSkeletionAnimation.skeleton.SetColor(bodyColor);
@@ -96,7 +96,7 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
-    /// ²¥·Å¶¯»­
+    /// æ’­æ”¾åŠ¨ç”»
     /// </summary>
     /// <param name="animationCreatureState"></param>
     public TrackEntry PlayAnim(SpineAnimationStateEnum animationCreatureState, bool isLoop, float mixDuration = -1)
@@ -112,7 +112,7 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
-    /// Ôö¼Ó¶¯»­
+    /// å¢åŠ åŠ¨ç”»
     /// </summary>
     public void AddAnim(int trackIndex, SpineAnimationStateEnum animationCreatureState, bool isLoop, float delay)
     {
@@ -122,16 +122,16 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
-    /// ÇåÀí¶¯»­
+    /// æ¸…ç†åŠ¨ç”»
     /// </summary>
     public void ClearAnim()
     {
         if (creatureSkeletionAnimation == null)
             return;
-        //ÔÙÇå³ı¶¯»­
+        //å†æ¸…é™¤åŠ¨ç”»
         //creatureSkeletionAnimation.AnimationState.ClearTracks();
         var trackEntry = PlayAnim(SpineAnimationStateEnum.Idle, true, 0);
-       //ÇåÀíÊı¾İ
+       //æ¸…ç†æ•°æ®
         if (animForUnderAttackColor != null && animForUnderAttackColor.IsPlaying())
         {
             animForUnderAttackColor.Complete();
@@ -139,7 +139,7 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
-    /// ÉèÖÃÁ³µÄ³¯Ïò
+    /// è®¾ç½®è„¸çš„æœå‘
     /// </summary>
     public void SetFaceDirection(Direction2DEnum direction2DEnum)
     {
@@ -157,11 +157,11 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
-    /// Ôö¼ÓBUFF
+    /// å¢åŠ BUFF
     /// </summary>
     public void AddBuff(BaseAttackMode baseAttackMode)
     {
-        //´¥·¢buff
+        //è§¦å‘buff
         var buffs = baseAttackMode.attackModeInfo.GetBuff();
         if (!buffs.IsNull())
         {
@@ -174,73 +174,73 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
-    /// ÊÕµ½¹¥»÷
+    /// æ”¶åˆ°æ”»å‡»
     /// </summary>
     public void UnderAttack(BaseAttackMode baseAttackMode)
     {
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var fightRecordsData = gameLogic.fightData.fightRecordsData;
 
-        //ÏÈ¿Û³ı»¤¼× ÔÙ¿Û³ıÉúÃü
-        fightCreatureData.ChangeArmorAndLife(-baseAttackMode.attackerDamage,
-        out int curArmor, out int curLife,
-        out int changeArmorReal, out int changeLifeReal);
-        //ÕæÊµÔì³ÉµÄÉËº¦
-        int damageReal = Mathf.Abs(changeArmorReal + changeLifeReal);
-        //¼ÇÂ¼Êı¾İ
+        //å…ˆæ‰£é™¤æŠ¤ç”² å†æ‰£é™¤ç”Ÿå‘½
+        fightCreatureData.ChangeDRAndHP(-baseAttackMode.attackerDamage,
+        out int curDR, out int curHP,
+        out int changeDRReal, out int changeHPReal);
+        //çœŸå®é€ æˆçš„ä¼¤å®³
+        int damageReal = Mathf.Abs(changeDRReal + changeHPReal);
+        //è®°å½•æ•°æ®
         fightRecordsData.AddCreatureDamage(baseAttackMode.attackerId, damageReal);
         fightRecordsData.AddCreatureDamageReceived(baseAttackMode.attackedId, damageReal);
 
-        //Èç¹û»¹ÓĞÉúÃüÖµ 
-        if (curLife > 0)
+        //å¦‚æœè¿˜æœ‰ç”Ÿå‘½å€¼ 
+        if (curHP > 0)
         {
-            //Ôö¼ÓBUFF
+            //å¢åŠ BUFF
             AddBuff(baseAttackMode);
-            //´¥·¢±»¹¥»÷ÌØĞ§
+            //è§¦å‘è¢«æ”»å‡»ç‰¹æ•ˆ
             if (creatureSkeletionAnimation != null)
             {
-                //²ü¶¶
+                //é¢¤æŠ–
                 creatureSkeletionAnimation.transform.DOShakePosition(0.06f, strength: 0.05f, vibrato: 10, randomness: 180);
-                //Á÷Ñª
+                //æµè¡€
                 EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
-                //ÑÕÉ«±ä»¯¶¯»­
+                //é¢œè‰²å˜åŒ–åŠ¨ç”»
                 AnimForUnderAttackColor();
-                //Õ¹Ê¾ÑªÌõ
+                //å±•ç¤ºè¡€æ¡
                 creatureLifeShow?.ShowObj(true);
-                //ÉèÖÃÑªÌõ½ø¶È
-                creatureLifeShow?.material.SetFloat("_Progress_1", curLife / (float)fightCreatureData.lifeMax);
-                //ÉèÖÃ»¤¶Ü½ø¶È
-                creatureLifeShow?.material.SetFloat("_Progress_2", curArmor / (float)fightCreatureData.armorMax);
+                //è®¾ç½®è¡€æ¡è¿›åº¦
+                creatureLifeShow?.material.SetFloat("_Progress_1", curHP / (float)fightCreatureData.HPMax);
+                //è®¾ç½®æŠ¤ç›¾è¿›åº¦
+                creatureLifeShow?.material.SetFloat("_Progress_2", curDR / (float)fightCreatureData.DRMax);
             }
         }
         else
         {
-            //¼ÇÂ¼Êı¾İ
+            //è®°å½•æ•°æ®
             fightRecordsData.AddCreatureKillNum(baseAttackMode.attackerId, 1);
 
-            //µôÂä½ğ±Ò
+            //æ‰è½é‡‘å¸
             FightHandler.Instance.CreateDropCoin(creatureObj.transform.position);
-            //Èç¹û±»¹¥»÷¶ÔÏóËÀÍö 
+            //å¦‚æœè¢«æ”»å‡»å¯¹è±¡æ­»äº¡ 
             SetCreatureDead();
-            //Á÷Ñª
+            //æµè¡€
             EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
-            //ÑÕÉ«±ä»¯¶¯»­
+            //é¢œè‰²å˜åŒ–åŠ¨ç”»
             AnimForUnderAttackColor();
-            //Òş²ØÑªÌõ
+            //éšè—è¡€æ¡
             creatureLifeShow?.ShowObj(false);
         }
     }
 
 
     /// <summary>
-    /// ÑÕÉ«¶¯»­-ÊÜµ½¹¥»÷
+    /// é¢œè‰²åŠ¨ç”»-å—åˆ°æ”»å‡»
     /// </summary>
     public void AnimForUnderAttackColor()
     {
-        // ¶¨Òå³õÊ¼ÑÕÉ«ºÍÄ¿±êÑÕÉ«
+        // å®šä¹‰åˆå§‹é¢œè‰²å’Œç›®æ ‡é¢œè‰²
         Color startColor = fightCreatureData.GetBodyColor();
         Color endColor = Color.red;
-        // ´´½¨ÑÕÉ«½¥±ä¶¯»­
+        // åˆ›å»ºé¢œè‰²æ¸å˜åŠ¨ç”»
         if (animForUnderAttackColor != null && animForUnderAttackColor.IsPlaying())
         {
             animForUnderAttackColor.Complete();
@@ -249,7 +249,7 @@ public class GameFightCreatureEntity
             .To(() => startColor, x => startColor = x, endColor, 0.2f)
             .OnUpdate(() => 
             {
-                // ÔÚÃ¿Ö¡¸üĞÂÊ±Ö´ĞĞµÄ²Ù×÷
+                // åœ¨æ¯å¸§æ›´æ–°æ—¶æ‰§è¡Œçš„æ“ä½œ
                 SetBodyColor(startColor);
             })
             .OnComplete(() => 
@@ -260,14 +260,14 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
-    /// ÊÇ·ñÒÑ¾­ËÀÍö
+    /// æ˜¯å¦å·²ç»æ­»äº¡
     /// </summary>
     /// <returns></returns>
     public bool IsDead()
     {
         if (creatureFightState == CreatureFightStateEnum.Dead)
             return true;
-        //Èç¹ûÄ¿±êÉúÎïÒÑ¾­ÎŞÁË
+        //å¦‚æœç›®æ ‡ç”Ÿç‰©å·²ç»æ— äº†
         //if (creatureObj == null || fightCreatureData == null || fightCreatureData.lifeCurrent <= 0)
         //{
         //    return true;
@@ -276,7 +276,7 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
-    /// ÉèÖÃÉúÎïËÀÍö
+    /// è®¾ç½®ç”Ÿç‰©æ­»äº¡
     /// </summary>
     public void SetCreatureDead()
     {
@@ -293,7 +293,7 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
-    /// »Øµ÷ÒÆ³ıBUFF
+    /// å›è°ƒç§»é™¤BUFF
     /// </summary>
     public void CallBackForRemoveBuff()
     {
@@ -301,7 +301,7 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
-    /// »Øµ÷Ôö¼ÓBUFF
+    /// å›è°ƒå¢åŠ BUFF
     /// </summary>
     public void CallBackForAddBuff()
     {

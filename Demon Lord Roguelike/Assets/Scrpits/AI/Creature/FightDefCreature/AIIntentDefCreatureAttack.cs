@@ -2,13 +2,13 @@ using UnityEngine;
 
 public class AIIntentDefCreatureAttack : AIBaseIntent
 {
-    //¹¥»÷×¼±¸Ê±¼ä
+    //æ”»å‡»å‡†å¤‡æ—¶é—´
     public float timeUpdateAttackPre = 0;
     public float timeUpdateAttacking = 0;
 
-    //Ä¿±êAI
+    //ç›®æ ‡AI
     public AIDefCreatureEntity selfAIEntity;
-    //¹¥»÷×´Ì¬ 0×¼±¸ÖĞ 1¹¥»÷ÖĞ
+    //æ”»å‡»çŠ¶æ€ 0å‡†å¤‡ä¸­ 1æ”»å‡»ä¸­
     public int attackState = 0;
 
     public override void IntentEntering(AIBaseEntity aiEntity)
@@ -21,22 +21,22 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
-        //¹¥»÷×¼±¸ÖĞ
+        //æ”»å‡»å‡†å¤‡ä¸­
         if (attackState == 0)
         {
             timeUpdateAttackPre += Time.deltaTime;
-            float attCD = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.GetAttCD();
+            float attCD = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.GetAttackCD();
             if (timeUpdateAttackPre >= attCD)
             {
                 timeUpdateAttackPre = 0;
                 AttackAttCreature();
             }
         }
-        //¹¥»÷ÖĞ
+        //æ”»å‡»ä¸­
         else if (attackState == 1)
         {
             timeUpdateAttacking += Time.deltaTime;
-            float attAnimCastTime = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.GetAttAnimCastTime();
+            float attAnimCastTime = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.GetAttackAnimCastTime();
             if (timeUpdateAttacking >= attAnimCastTime)
             {
                 timeUpdateAttacking = 0;
@@ -51,55 +51,55 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
     }
 
     /// <summary>
-    /// ¹¥»÷ÉúÎï
+    /// æ”»å‡»ç”Ÿç‰©
     /// </summary>
     public virtual void AttackAttCreature()
     {
         attackState = 1;
-        //Èç¹ûÄ¿±êÉúÎïÒÑ¾­ÎŞÁË
+        //å¦‚æœç›®æ ‡ç”Ÿç‰©å·²ç»æ— äº†
         if (selfAIEntity.targetAttCreatureEntity == null || selfAIEntity.targetAttCreatureEntity.IsDead())
         {
             ChangeIntent(AIIntentEnum.DefCreatureIdle);
             return;
         }
-        //Èç¹û×Ô¼ºËÀÁË
+        //å¦‚æœè‡ªå·±æ­»äº†
         if (selfAIEntity.selfDefCreatureEntity == null || selfAIEntity.selfDefCreatureEntity.IsDead())
         {
             ChangeIntent(AIIntentEnum.DefCreatureDead);
             return;
         }
-        //²¥·Å¹¥»÷¶¯»­
+        //æ’­æ”¾æ”»å‡»åŠ¨ç”»
         selfAIEntity.selfDefCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false);
         selfAIEntity.selfDefCreatureEntity.AddAnim(0, SpineAnimationStateEnum.Idle, true, 1);
     }
 
     /// <summary>
-    /// ¹¥»÷½áÊø
+    /// æ”»å‡»ç»“æŸ
     /// </summary>
     public virtual void AttackDefCreatureStartEnd()
     {
         attackState = 2;
         var creatureInfo = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.creatureInfo;
-        //»ñÈ¡¹¥»÷·½Ê½
+        //è·å–æ”»å‡»æ–¹å¼
         FightHandler.Instance.CreateAttackModePrefab(creatureInfo.att_mode, (targetAttackMode) =>
         {
-            //¿ªÊ¼¹¥»÷
+            //å¼€å§‹æ”»å‡»
             targetAttackMode.StartAttack(selfAIEntity.selfDefCreatureEntity, selfAIEntity.targetAttCreatureEntity, ActionForAttackEnd);
         });
     }
 
     /// <summary>
-    /// ¹¥»÷½áÊø»Øµ÷
+    /// æ”»å‡»ç»“æŸå›è°ƒ
     /// </summary>
     public void ActionForAttackEnd()
     {
-        //Èç¹ûÄ¿±êÉúÎïÒÑ¾­ÎŞÁË ÔòÖØĞÂÑ°ÕÒÄ¿±ê
+        //å¦‚æœç›®æ ‡ç”Ÿç‰©å·²ç»æ— äº† åˆ™é‡æ–°å¯»æ‰¾ç›®æ ‡
         if (selfAIEntity.targetAttCreatureEntity == null || selfAIEntity.targetAttCreatureEntity.IsDead())
         {
             ChangeIntent(AIIntentEnum.DefCreatureIdle);
             return;
         }
-        //¼ÌĞø¹¥»÷
+        //ç»§ç»­æ”»å‡»
         else
         {
             attackState = 0;
