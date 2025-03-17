@@ -8,9 +8,9 @@ using System.Linq;
 
 public partial class UIFightMain : BaseUIComponent
 {
-    //ËùÓĞÉú³ÉµÄ¿¨Æ¬
-    public List<UIViewCreatureCardItem> listCreatureCard = new List<UIViewCreatureCardItem>();
-    //ËùÓĞµÄ½ø¹¥½ø¶È
+    //æ‰€æœ‰ç”Ÿæˆçš„å¡ç‰‡
+    public List<UIViewCreatureCardItemForFight> listCreatureCard = new List<UIViewCreatureCardItemForFight>();
+    //æ‰€æœ‰çš„è¿›æ”»è¿›åº¦
     public Dictionary<int, UIViewFightMainAttCreateProgress> dicAttProgress = new Dictionary<int, UIViewFightMainAttCreateProgress>();
 
     public override void Awake()
@@ -45,23 +45,23 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// ³õÊ¼»¯Êı¾İ
+    /// åˆå§‹åŒ–æ•°æ®
     /// </summary>
     public void InitData()
     {
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        var listCreatureData = gameFightLogic.fightData.dicDefCreatureData.ToListForValue();
+        var listCreatureData = gameFightLogic.fightData.dlDefenseCreatureData.List;
 
-        //³õÊ¼ËùÓĞ¿¨Æ¬
+        //åˆå§‹æ‰€æœ‰å¡ç‰‡
         SetCreatureCardList(listCreatureData);
-        //ÉèÖÃ½ø¹¥Êı¾İ
+        //è®¾ç½®è¿›æ”»æ•°æ®
         SetAttackData(gameFightLogic.fightData.fightAttackData);
-        //Ë¢ĞÂÒ»´ÎUI
+        //åˆ·æ–°ä¸€æ¬¡UI
         RefreshUIData();
     }
 
     /// <summary>
-    /// Ë¢ĞÂUIÊı¾İ
+    /// åˆ·æ–°UIæ•°æ®
     /// </summary>
     public void RefreshUIData()
     {
@@ -74,7 +74,7 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// ÉèÖÃ½ø¹¥Êı¾İ
+    /// è®¾ç½®è¿›æ”»æ•°æ®
     /// </summary>
     public void SetAttackData(FightAttackBean fightAttackData)
     {
@@ -84,9 +84,9 @@ public partial class UIFightMain : BaseUIComponent
             DestroyImmediate(itemData.Value.gameObject);
         }
         dicAttProgress.Clear();
-        //»ñÈ¡×óÓÒXµÄ×î´óÖµ
+        //è·å–å·¦å³Xçš„æœ€å¤§å€¼
         float contentXMax = ui_AttCreate.sizeDelta.x / 2;
-        //»ñÈ¡µ¥¸ö½ø¶ÈÌõ³¤¶È
+        //è·å–å•ä¸ªè¿›åº¦æ¡é•¿åº¦
         float itemW = ui_AttCreate.sizeDelta.x / fightNum;
         for (int i = 0; i < fightNum; i++)
         {
@@ -103,7 +103,7 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// ÉèÖÃ½ø¹¥Êı¾İ½ø¶È
+    /// è®¾ç½®è¿›æ”»æ•°æ®è¿›åº¦
     /// </summary>
     public void SetAttCreateProgress(float progress, float progressAnimTime)
     {
@@ -115,18 +115,18 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// ³õÊ¼»¯¿¨Æ¬ÁĞ±í
+    /// åˆå§‹åŒ–å¡ç‰‡åˆ—è¡¨
     /// </summary>
     public void SetCreatureCardList(List<CreatureBean> listCreatureData)
     {
-        //ÏÈÇå¿ÕÒ»ÏÂ¿¨Æ¬
+        //å…ˆæ¸…ç©ºä¸€ä¸‹å¡ç‰‡
         ClearCardList();
         if (listCreatureData.IsNull())
         {
-            LogUtil.LogError($"³õÊ¼»¯¿¨Æ¬ÁĞ±íÊ§°Ü£¬¿¨Æ¬Êı¾İÎªnull");
+            LogUtil.LogError($"åˆå§‹åŒ–å¡ç‰‡åˆ—è¡¨å¤±è´¥ï¼Œå¡ç‰‡æ•°æ®ä¸ºnull");
             return;
         }
-        //ÅÅ¸öĞò
+        //æ’ä¸ªåº
         listCreatureData = listCreatureData
             .OrderBy((itemData) => 
             {
@@ -138,21 +138,21 @@ public partial class UIFightMain : BaseUIComponent
         {
             var itemData = listCreatureData[i];
             var itemCardObj = Instantiate(ui_CardContent.gameObject, ui_CreatureCardItem.gameObject);
-            var itemCardView = itemCardObj.GetComponent<UIViewCreatureCardItem>();
+            var itemCardView = itemCardObj.GetComponent<UIViewCreatureCardItemForFight>();
             var posTarget = GetCardItemPos(i, listCreatureData.Count);
-            //ÉèÖÃÊı¾İ
-            itemCardView.SetData(itemData, posTarget);
+            //è®¾ç½®æ•°æ®
+            itemCardView.SetData(itemData, CardUseState.Fight, posTarget);
 
             listCreatureCard.Add(itemCardView);
         }
 
-        //Õ¹Ê¾¿¨Æ¬´´½¨¶¯»­
+        //å±•ç¤ºå¡ç‰‡åˆ›å»ºåŠ¨ç”»
         int animTypeRandom = Random.Range(1, 3);
         ShowCardCreateAnim(animTypeRandom);
     }
 
     /// <summary>
-    /// Õ¹Ê¾¿¨Æ¬´´½¨¶¯»­
+    /// å±•ç¤ºå¡ç‰‡åˆ›å»ºåŠ¨ç”»
     /// </summary>
     public void ShowCardCreateAnim(int animType)
     {
@@ -166,7 +166,7 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// »ñÈ¡¿¨Æ¬Ô­Ê¼Î»ÖÃ
+    /// è·å–å¡ç‰‡åŸå§‹ä½ç½®
     /// </summary>
     /// <param name="currentIndex"></param>
     /// <param name="maxIndex"></param>
@@ -177,10 +177,10 @@ public partial class UIFightMain : BaseUIComponent
         float cardH = ui_CreatureCardItem.sizeDelta.y;
         float screenWidth = Screen.width - cardW;
 
-        //Èç¹û³¬³öÁËÆÁÄ»
+        //å¦‚æœè¶…å‡ºäº†å±å¹•
         if ((cardW * maxIndex) > screenWidth)
         {
-            //Ëã³ö³¬³öµÄ¿í¶È Ã¿¸ö¿¨Æ¬¶¼¼õÈ¥Õâ¸ö¿í¶È
+            //ç®—å‡ºè¶…å‡ºçš„å®½åº¦ æ¯ä¸ªå¡ç‰‡éƒ½å‡å»è¿™ä¸ªå®½åº¦
             float ovrW = (cardW * maxIndex) - screenWidth;
             cardW = cardW - (ovrW / maxIndex);
         }
@@ -190,7 +190,7 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// Çå¿Õ¿¨Æ¬
+    /// æ¸…ç©ºå¡ç‰‡
     /// </summary>
     public void ClearCardList()
     {
@@ -204,10 +204,10 @@ public partial class UIFightMain : BaseUIComponent
         listCreatureCard.Clear();
     }
 
-    #region ÊÂ¼ş
+    #region äº‹ä»¶
 
     /// <summary>
-    /// Ã»ÓĞ×ã¹»µÄÄ§Á¦
+    /// æ²¡æœ‰è¶³å¤Ÿçš„é­”åŠ›
     /// </summary>
     public void EventForNoEnoughCreateMagic()
     {
@@ -215,7 +215,7 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// ÊÂ¼ş-Ñ¡Ôñ¿¨Æ¬
+    /// äº‹ä»¶-é€‰æ‹©å¡ç‰‡
     /// </summary>
     /// <param name="targetData"></param>
     public void EventForGameFightLogicSelectCard(UIViewCreatureCardItem targetView)
@@ -224,7 +224,7 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// ÊÂ¼ş-È¡ÏûÑ¡ÔñµÄ¿¨Æ¬
+    /// äº‹ä»¶-å–æ¶ˆé€‰æ‹©çš„å¡ç‰‡
     /// </summary>
     public void EventForGameFightLogicUnSelectCard(UIViewCreatureCardItem targetView)
     {
@@ -232,7 +232,7 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// ÊÂ¼ş-·ÅÖÃ¿¨Æ¬
+    /// äº‹ä»¶-æ”¾ç½®å¡ç‰‡
     /// </summary>
     public void EventForGameFightLogicPutCard(UIViewCreatureCardItem targetView)
     {
@@ -242,7 +242,7 @@ public partial class UIFightMain : BaseUIComponent
     public void EventForShowCardDetails(UIViewCreatureCardItem targetView)
     {
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        //Ã»ÓĞÑ¡ÖĞ¿¨Æ¬Ê±²ÅÏÔÊ¾
+        //æ²¡æœ‰é€‰ä¸­å¡ç‰‡æ—¶æ‰æ˜¾ç¤º
         if (gameFightLogic.selectCreature != null)
             return;
         ui_ViewCreatureCardDetails.ShowObj(true);
@@ -256,7 +256,7 @@ public partial class UIFightMain : BaseUIComponent
 
 
     /// <summary>
-    /// ÊÂ¼ş-½¹µãÑ¡ÖĞ¿¨Æ¬
+    /// äº‹ä»¶-ç„¦ç‚¹é€‰ä¸­å¡ç‰‡
     /// </summary>
     public void EventForCardPointerEnter(UIViewCreatureCardItem targetView)
     {
@@ -264,7 +264,7 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// ÊÂ¼ş-½¹µãÀë¿ª
+    /// äº‹ä»¶-ç„¦ç‚¹ç¦»å¼€
     /// </summary>
     public void EventForCardPointerExit(UIViewCreatureCardItem targetView)
     {
@@ -272,18 +272,21 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// ÊÂ¼ş-µã»÷
+    /// äº‹ä»¶-ç‚¹å‡»
     /// </summary>
     public void EventForOnClickSelect(UIViewCreatureCardItem targetView)
     {
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        //Õ½¶·ÖĞµÄ¿¨Æ¬²»ÄÜµã»÷
+        //æˆ˜æ–—ä¸­çš„å¡ç‰‡ä¸èƒ½ç‚¹å‡»
         if (targetView.cardData.cardState == CardStateEnum.Fighting)
             return;
+        if (targetView.cardData.cardState == CardStateEnum.FightRest)
+            return;
+
         int createMagic = targetView.cardData.creatureData.GetCreateMagic();
         if (gameFightLogic.fightData.currentMagic < createMagic)
         {
-            //Ä§Á¦²»×ã
+            //é­”åŠ›ä¸è¶³
             EventHandler.Instance.TriggerEvent(EventsInfo.Toast_NoEnoughCreateMagic);
             return;
         }

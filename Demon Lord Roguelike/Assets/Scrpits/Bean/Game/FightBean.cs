@@ -1,100 +1,103 @@
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [Serializable]
 public class FightBean
 {
-    public GameFightTypeEnum gameFightType;//ÓÎÏ·Ä£Ê½
+    public GameFightTypeEnum gameFightType;//æ¸¸æˆæ¨¡å¼
 
-    public float gameTime = 0;//ÓÎÏ·Ê±¼ä
-    public float gameSpeed = 1;//ÓÎÏ·ËÙ¶È
+    public float gameTime = 0;//æ¸¸æˆæ—¶é—´
+    public float gameSpeed = 1;//æ¸¸æˆé€Ÿåº¦
 
-    public int fightSceneId;//Õ½¶·³¡¾°Id;
+    public int fightSceneId;//æˆ˜æ–—åœºæ™¯Id;
 
-    public float timeUpdateForAttackCreate = 0;//¸üĞÂÊ±¼ä-¹ÖÎïÉú³É
-    public float timeUpdateTargetForAttackCreate = 0;//¸üĞÂÄ¿±êÊ±¼ä-¹ÖÎïÉú³É
+    public float timeUpdateForAttackCreate = 0;//æ›´æ–°æ—¶é—´-æ€ªç‰©ç”Ÿæˆ
+    public float timeUpdateTargetForAttackCreate = 0;//æ›´æ–°ç›®æ ‡æ—¶é—´-æ€ªç‰©ç”Ÿæˆ
 
-    public float timeUpdateForFightCreature = 0;//¸üĞÂÄ¿±êÊ±¼ä-ÉúÎï
-    public float timeUpdateTargetForFightCreature = 0.1f;//¸üĞÂÄ¿±êÊ±¼ä-ÉúÎï
+    public float timeUpdateForFightCreature = 0;//æ›´æ–°ç›®æ ‡æ—¶é—´-ç”Ÿç‰©
+    public float timeUpdateTargetForFightCreature = 0.1f;//æ›´æ–°ç›®æ ‡æ—¶é—´-ç”Ÿç‰©
 
-    public int currentMagic;//µ±Ç°Ä§Á¦Öµ
+    public int currentMagic;//å½“å‰é­”åŠ›å€¼
 
-    //½ø¹¥Êı¾İ
+    //è¿›æ”»æ•°æ®
     public FightAttackBean fightAttackData;
 
-    //ËùÓĞ¿¨Æ¬·ÀÓùÉúÎïÊı¾İ
-    public Dictionary<string, CreatureBean> dicDefCreatureData = new Dictionary<string, CreatureBean>();
+    //æ‰€æœ‰å¡ç‰‡é˜²å¾¡ç”Ÿç‰©æ•°æ®
+    public DictionaryList<string, CreatureBean> dlDefenseCreatureData = new DictionaryList<string, CreatureBean>();
 
-    //·ÀÊØÉúÎïÎ»ÖÃÊı¾İ
-    public Dictionary<Vector3Int, FightPositionBean> dicFightPosition = new Dictionary<Vector3Int, FightPositionBean>();
+    //æ‰€æœ‰çš„è¿›æ”»å®ä¾‹
+    public DictionaryList<string, GameFightCreatureEntity> dlAttackCreatureEntity = new DictionaryList<string, GameFightCreatureEntity>();
+    //æ‰€æœ‰çš„é˜²å®ˆå®ä¾‹
+    public DictionaryList<string, GameFightCreatureEntity> dlDefenseCreatureEntity = new DictionaryList<string, GameFightCreatureEntity>();
 
-    //ËùÓĞ½ø¹¥·½ÉúÎïÊµÀı
-    public Dictionary<int, List<GameFightCreatureEntity>> dicAttackCreatureEntity = new Dictionary<int, List<GameFightCreatureEntity>>();
+    //é˜²å®ˆæ ¸å¿ƒæ•°æ®
+    public FightCreatureBean fightDefenseCoreData;
+    //é˜²å®ˆæ–¹æ ¸å¿ƒç”Ÿç‰©å®ä¾‹
+    public GameFightCreatureEntity fightDefenseCoreCreature;
 
-    //ËùÓĞÉúÎï£¨°üº¬½ø¹¥ºÍ·ÀÊØ£©
-    public Dictionary<string, GameFightCreatureEntity> dicCreatureEntity = new Dictionary<string, GameFightCreatureEntity>();
-
-    //·ÀÊØºËĞÄÊı¾İ
-    public FightCreatureBean fightDefCoreData;
-    //·ÀÊØ·½ºËĞÄÉúÎïÊµÀı
-    public GameFightCreatureEntity fightDefCoreCreature;
-
-    //Õ½¶·Êı¾İ¼ÇÂ¼
+    //æˆ˜æ–—æ•°æ®è®°å½•
     public FightRecordsBean fightRecordsData = new FightRecordsBean();
 
     /// <summary>
-    /// ¼ì²âÊÇ·ñ»¹ÓµÓĞ½ø¹¥ÉúÎï
+    /// æ£€æµ‹æ˜¯å¦è¿˜æ‹¥æœ‰è¿›æ”»ç”Ÿç‰©
     /// </summary>
     public bool CheckHasAttackCreature()
     {
-        bool HasAttackCreature = false;
-        foreach (var itemData in dicAttackCreatureEntity)
+        if (dlAttackCreatureEntity.List.Count > 0)
         {
-            if (itemData.Value.Count > 0)
-            {
-                HasAttackCreature = true;
-            }
+            return true;
         }
-        return HasAttackCreature;
+        return false;
     }
 
     /// <summary>
-    /// ÇåÀíÊı¾İ
+    /// æ¸…ç†æ•°æ®
     /// </summary>
     public void Clear()
     {
-        foreach (var itemData in dicDefCreatureData)
+        //è¿˜åŸç”Ÿç‰©æ•°æ®
+        for (int i = 0; i < dlDefenseCreatureData.List.Count; i++)
         {
-            var itemCreature = itemData.Value;
-            itemCreature.creatureState = CreatureStateEnum.Idle;
+            var itemCreatureData = dlDefenseCreatureData.List[i];
+            itemCreatureData.ClearTempData();
         }
-
-        foreach (var item in dicCreatureEntity)
+        //åˆ é™¤ç”Ÿç‰©å®ä¾‹
+        for(int i = 0; i < dlDefenseCreatureEntity.List.Count; i++)
         {
-            var itemValue = item.Value;
-            if (itemValue != null && itemValue.creatureObj != null)
+            var itemCreature = dlDefenseCreatureEntity.List[i];
+            if (itemCreature != null && itemCreature.creatureObj != null)
             {
-                GameObject.DestroyImmediate(itemValue.creatureObj);
+                GameObject.DestroyImmediate(itemCreature.creatureObj);
             }
         }
-        dicDefCreatureData.Clear();
-        dicCreatureEntity.Clear();
-        dicFightPosition.Clear();
-        dicAttackCreatureEntity.Clear();
-
-        if (fightDefCoreCreature != null && fightDefCoreCreature.creatureObj != null)
+        for(int i = 0; i < dlAttackCreatureEntity.List.Count; i++)
         {
-            GameObject.DestroyImmediate(fightDefCoreCreature.creatureObj);
+            var itemCreature = dlAttackCreatureEntity.List[i];
+            if (itemCreature != null && itemCreature.creatureObj != null)
+            {
+                GameObject.DestroyImmediate(itemCreature.creatureObj);
+            }
         }
-        fightDefCoreCreature = null;
-        fightDefCoreData = null;
+
+        dlDefenseCreatureData.Clear();
+        dlDefenseCreatureEntity.Clear();
+        dlAttackCreatureEntity.Clear();
+
+        if (fightDefenseCoreCreature != null && fightDefenseCoreCreature.creatureObj != null)
+        {
+            GameObject.DestroyImmediate(fightDefenseCoreCreature.creatureObj);
+        }
+        fightDefenseCoreCreature = null;
+        fightDefenseCoreData = null;
     }
 
     /// <summary>
-    /// ³õÊ¼»¯²¨ÊıÊı¾İ
+    /// åˆå§‹åŒ–æ³¢æ•°æ•°æ®
     /// </summary>
     public void InitData()
     {
@@ -104,7 +107,7 @@ public class FightBean
     }
 
     /// <summary>
-    /// ¸Ä±äÄ§Á¦
+    /// æ”¹å˜é­”åŠ›
     /// </summary>
     public void ChangeMagic(int changeData)
     {
@@ -115,13 +118,14 @@ public class FightBean
     }
 
     /// <summary>
-    /// ¼ì²âÖ¸¶¨Õ½¶·Î»ÖÃÉÏÊÇ·ñÓĞÉúÎï
+    /// æ£€æµ‹æŒ‡å®šä½ç½®ä¸Šæ˜¯å¦æœ‰é˜²å®ˆç”Ÿç‰©
     /// </summary>
-    public bool CheckFightPositionHasCreature(Vector3Int targetPos)
+    public bool CheckDefenseCreatureByPos(Vector3Int targetPos)
     {
-        if (dicFightPosition.TryGetValue(targetPos, out FightPositionBean targetPositionData))
+        for (int i = 0; i < dlDefenseCreatureEntity.List.Count; i++)
         {
-            if (targetPositionData.creatureMain != null)
+            var itemCreature = dlDefenseCreatureEntity.List[i];
+            if (itemCreature.fightCreatureData.positionCreate == targetPos)
             {
                 return true;
             }
@@ -130,142 +134,144 @@ public class FightBean
     }
 
     /// <summary>
-    /// ÒÆ³ıÕ½¶·Î»ÖÃÊı¾İ
+    /// è·å–ä½ç½®ä¸Šçš„é˜²å®ˆç”Ÿç‰©
     /// </summary>
-    public void RemoveFightPosition(Vector3Int targetPos)
+    public GameFightCreatureEntity GetDefenseCreatureByPos(Vector3Int targetPos)
     {
-        if (dicFightPosition.TryGetValue(targetPos, out FightPositionBean fightPosition))
+        for (int i = 0; i < dlDefenseCreatureEntity.List.Count; i++)
         {
-            dicFightPosition.Remove(targetPos);
-
-            if (fightPosition.creatureMain != null && dicCreatureEntity.ContainsKey(fightPosition.creatureMain.fightCreatureData.creatureData.creatureId))
+            var itemCreature = dlDefenseCreatureEntity.List[i];
+            if (itemCreature.fightCreatureData.positionCreate == targetPos)
             {
-                dicCreatureEntity.Remove(fightPosition.creatureMain.fightCreatureData.creatureData.creatureId);
-            }
-            if (fightPosition.creatureAssist != null && dicCreatureEntity.ContainsKey(fightPosition.creatureAssist.fightCreatureData.creatureData.creatureId))
-            {
-                dicCreatureEntity.Remove(fightPosition.creatureAssist.fightCreatureData.creatureData.creatureId);
+                return itemCreature;
             }
         }
+        return null;
     }
 
     /// <summary>
-    /// ÉèÖÃÕ½¶·Î»ÖÃÊı¾İ
+    /// è·å–è·¯å¾„ä¸Šçš„é˜²å®ˆç”Ÿç‰©
     /// </summary>
-    public void SetFightPosition(Vector3Int targetPos, GameFightCreatureEntity fightCreature)
+    public List<GameFightCreatureEntity> GetDefenseCreatureByRoad(int roadIndex)
     {
-        if (dicFightPosition.TryGetValue(targetPos, out FightPositionBean targetPositionData))
+        List<GameFightCreatureEntity> listData = new List<GameFightCreatureEntity>();
+        for (int i = 0; i < dlDefenseCreatureEntity.List.Count; i++)
         {
-            targetPositionData.creatureMain = fightCreature;
-            targetPositionData.creatureMain.fightCreatureData.positionCreate = targetPos;
-        }
-        else
-        {
-            FightPositionBean newPositionData = new FightPositionBean();
-            newPositionData.creatureMain = fightCreature;
-            newPositionData.creatureMain.fightCreatureData.positionCreate = targetPos;
-            dicFightPosition.Add(targetPos, newPositionData);
-        }
-
-        if (!dicCreatureEntity.ContainsKey(fightCreature.fightCreatureData.creatureData.creatureId))
-        {
-            dicCreatureEntity.Add(fightCreature.fightCreatureData.creatureData.creatureId, fightCreature);
-        }
-    }
-
-    /// <summary>
-    /// »ñÈ¡Õ½¶·Î»ÖÃÊı¾İ
-    /// </summary>
-    /// <returns></returns>
-    public List<FightPositionBean> GetFightPosition(int roadIndex)
-    {
-        List<FightPositionBean> listData = new List<FightPositionBean>();
-        for (int i = 1; i <= 10; i++)
-        {
-            Vector3Int targetPosition = new Vector3Int(i, 0, roadIndex);
-            if (dicFightPosition.TryGetValue(targetPosition, out FightPositionBean targetPositionData))
+            var itemCreature = dlDefenseCreatureEntity.List[i];
+            if (itemCreature == null)
+                continue;
+            if (itemCreature.fightCreatureData.positionCreate.z == roadIndex)
             {
-                if (targetPositionData != null)
-                {
-                    listData.Add(targetPositionData);
-                }
+                listData.Add(itemCreature);
             }
         }
         return listData;
     }
 
-
     /// <summary>
-    /// Ôö¼ÓÕ½¶·ÉúÎï
+    /// ç§»é™¤ä½ç½®ä¸Šçš„é˜²å®ˆç”Ÿç‰©
     /// </summary>
-    public void AddFightAttCreature(int road, GameFightCreatureEntity targetEntity)
+    public void RemoveDefenseCreatureByPos(Vector3Int targetPos)
     {
-        if (dicAttackCreatureEntity.TryGetValue(road, out List<GameFightCreatureEntity> valueList))
-        {
-            valueList.Add(targetEntity);
-        }
-        else
-        {
-            dicAttackCreatureEntity.Add(road, new List<GameFightCreatureEntity>() { targetEntity });
-        }
-
-        if (!dicCreatureEntity.ContainsKey(targetEntity.fightCreatureData.creatureData.creatureId))
-        {
-            dicCreatureEntity.Add(targetEntity.fightCreatureData.creatureData.creatureId, targetEntity);
-        }
+        var targetCreature = GetDefenseCreatureByPos(targetPos);
+        if(targetCreature == null)
+            return;
+        dlDefenseCreatureEntity.RemoveByKey(targetCreature.fightCreatureData.creatureData.creatureId);
     }
 
     /// <summary>
-    /// ÒÆ³ıÕ½¶·ÉúÎï
+    /// è®¾ç½®ä½ç½®ä¸Šçš„é˜²å®ˆç”Ÿç‰©
     /// </summary>
-    public void RemoveFightAttCreature(GameFightCreatureEntity targetEntity)
+    public void AddDefenseCreatureByPos(Vector3Int targetPos, GameFightCreatureEntity targetEntity)
     {
-        if (dicAttackCreatureEntity.TryGetValue(targetEntity.fightCreatureData.positionCreate.z, out List<GameFightCreatureEntity> valueList))
-        {
-            valueList.Remove(targetEntity);
-        }
-        if (dicCreatureEntity.ContainsKey(targetEntity.fightCreatureData.creatureData.creatureId))
-        {
-            dicCreatureEntity.Remove(targetEntity.fightCreatureData.creatureData.creatureId);
-        }
+        if (targetEntity == null)
+            return;
+        targetEntity.fightCreatureData.positionCreate = targetPos;
+        targetEntity.fightCreatureData.roadIndex = targetPos.z;
+        dlDefenseCreatureEntity.Add(targetEntity.fightCreatureData.creatureData.creatureId, targetEntity);
     }
 
     /// <summary>
-    /// »ñÈ¡Ä³Ò»Â·ËùÓĞµÄ½ø¹¥ÉúÎï
+    /// å¢åŠ è¿›æ”»ç”Ÿç‰©
     /// </summary>
-    /// <param name="road"></param>
-    /// <returns></returns>
-    public List<GameFightCreatureEntity> GetFightAttCreatureByRoad(int road)
+    public void AddAttackCreatureByRoad(int road, GameFightCreatureEntity targetEntity)
     {
-        if (dicAttackCreatureEntity.TryGetValue(road, out List<GameFightCreatureEntity> valueList))
+        targetEntity.fightCreatureData.positionCreate = new Vector3Int(0, 0, road);
+        targetEntity.fightCreatureData.roadIndex = road;
+        dlAttackCreatureEntity.Add(targetEntity.fightCreatureData.creatureData.creatureId, targetEntity);
+    }
+
+    /// <summary>
+    /// ç§»é™¤æˆ˜æ–—ç”Ÿç‰©
+    /// </summary>
+    public void RemoveAttackCreature(GameFightCreatureEntity targetEntity)
+    {
+        dlAttackCreatureEntity.RemoveByKey(targetEntity.fightCreatureData.creatureData.creatureId);
+    }
+
+    /// <summary>
+    /// è·å–æŸä¸€è·¯æ‰€æœ‰çš„è¿›æ”»ç”Ÿç‰©
+    /// </summary>
+    public List<GameFightCreatureEntity> GetAttackCreatureByRoad(int road)
+    {
+        List<GameFightCreatureEntity> listData = new List<GameFightCreatureEntity>();
+        for (int i = 0; i < dlAttackCreatureEntity.List.Count; i++)
         {
-            return valueList;
+            var itemCreature = dlAttackCreatureEntity.List[i];
+            if (itemCreature.fightCreatureData.roadIndex == road)
+            {
+                listData.Add(itemCreature);
+            }
+        }
+        return listData;
+    }
+
+    /// <summary>
+    /// é€šè¿‡IDè·å–æŸä¸€ç”Ÿç‰©
+    /// </summary>
+    public GameFightCreatureEntity GetCreatureById(string creatureId, CreatureTypeEnum creatureType = CreatureTypeEnum.None)
+    {
+        if (creatureType == CreatureTypeEnum.None)
+        {
+            if (dlAttackCreatureEntity.TryGetValue(creatureId, out var attackCreature))
+            {
+                return attackCreature;
+            }
+            if (dlDefenseCreatureEntity.TryGetValue(creatureId, out var defenseCreature))
+            {
+                return defenseCreature;
+            }
+            return fightDefenseCoreCreature;
+        }
+        else if (creatureType == CreatureTypeEnum.FightAttack)
+        {
+            if (dlAttackCreatureEntity.TryGetValue(creatureId, out var attackCreature))
+            {
+                return attackCreature;
+            }
+        }
+        else if (creatureType == CreatureTypeEnum.FightDefense)
+        {
+            if (dlDefenseCreatureEntity.TryGetValue(creatureId, out var defenseCreature))
+            {
+                return defenseCreature;
+            }
+        }
+        else if (creatureType == CreatureTypeEnum.FightDefenseCore)
+        {
+            return fightDefenseCoreCreature;
         }
         return null;
     }
 
     /// <summary>
-    /// Í¨¹ıID»ñÈ¡Ä³Ò»ÉúÎï
-    /// </summary>
-    /// <param name="creatureId"></param>
-    /// <returns></returns>
-    public GameFightCreatureEntity GetFightCreatureById(string creatureId)
-    {
-        if (dicCreatureEntity.TryGetValue(creatureId, out GameFightCreatureEntity targetCreature))
-        {
-            return targetCreature;
-        }
-        return null;
-    }
-
-    /// <summary>
-    /// Í¨¹ıID»ñÈ¡ÉúÎïÊı¾İ£¨½öÏŞ·ÀÓùÉúÎï£©
+    /// é€šè¿‡IDè·å–ç”Ÿç‰©æ•°æ®ï¼ˆä»…é™é˜²å¾¡ç”Ÿç‰©ï¼‰
     /// </summary>
     /// <param name="creatureId"></param>
     /// <returns></returns>
     public CreatureBean GetCreatureDataById(string creatureId)
     {
-        if (dicDefCreatureData.TryGetValue(creatureId, out CreatureBean targetCreature))
+        if (dlDefenseCreatureData.TryGetValue(creatureId, out CreatureBean targetCreature))
         {
             return targetCreature;
         }

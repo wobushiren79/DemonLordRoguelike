@@ -147,6 +147,7 @@ public partial class UIGashaponMachine : BaseUIComponent
             //检测是否解锁该生物
             if(!userLockData.CheckIsUnlockForCreature(itemCreatureId))
                 continue;
+                
             CreatureInfoRandomBean creatureInfoRandomData = CreatureInfoRandomCfg.GetItemData(itemCreatureId);
 
             if (creatureInfoRandomData != null)

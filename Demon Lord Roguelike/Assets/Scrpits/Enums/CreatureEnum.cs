@@ -3,13 +3,15 @@ public enum CreatureStateEnum
 {
     Idle = 1,//闲置
     Fight = 2,//战斗中
+    Rest = 3,//战斗休息
 }
 
 public enum CreatureTypeEnum
 {
-    FightDef = 1,//战斗防守方
-    FightAtt = 2,//战斗进攻方
-    FightDefCore = 99,//防守方核心
+    None = 0,
+    FightDefense = 1,//战斗防守方
+    FightAttack = 2,//战斗进攻方
+    FightDefenseCore = 99,//防守方核心
 }
 
 public enum CreatureFightStateEnum

@@ -7,7 +7,8 @@ using UnityEngine;
 public class FightCreatureBean
 {
     public CreatureBean creatureData;    //生物数据
-    public Vector3Int positionCreate;//生成位置
+    public Vector3Int positionCreate;//生成位置（用于防守生物）
+    public int roadIndex;//当前道路（用于进攻生物）
 
     public int HPCurrent;//当前生命值
     public int HPMax;//最大生命值

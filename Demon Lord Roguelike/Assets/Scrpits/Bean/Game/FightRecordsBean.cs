@@ -79,7 +79,7 @@ public class FightRecordsBean
     {
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         //是否是防守生物
-        if (gameLogic.fightData.dicDefCreatureData.ContainsKey(creatureId))
+        if (gameLogic.fightData.dlDefenseCreatureData.ContainsKey(creatureId))
         {
             var recordsData = GetRecordsForCreatureData(creatureId, true);
             recordsData.AddDamage(addValue);
@@ -98,7 +98,7 @@ public class FightRecordsBean
     {
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         //是否是防守生物
-        if (gameLogic.fightData.dicDefCreatureData.ContainsKey(creatureId))
+        if (gameLogic.fightData.dlDefenseCreatureData.ContainsKey(creatureId))
         {
             var recordsData = GetRecordsForCreatureData(creatureId, true);
             recordsData.AddDamageReceived(addValue);
@@ -117,7 +117,7 @@ public class FightRecordsBean
     {
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         //是否是防守生物
-        if (gameLogic.fightData.dicDefCreatureData.ContainsKey(creatureId))
+        if (gameLogic.fightData.dlDefenseCreatureData.ContainsKey(creatureId))
         {
             var recordsData = GetRecordsForCreatureData(creatureId, true);
             recordsData.AddKillNum(addValue);

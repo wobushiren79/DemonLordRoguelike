@@ -8,9 +8,9 @@ public class LauncherTest : BaseLauncher
     public override void Launch()
     {
         base.Launch();
-        CreatureBean itemData = new CreatureBean(999998);
-        itemData.AddAllSkin();
-        StartForBaseTest(itemData);
+        // CreatureBean itemData = new CreatureBean(999998);
+        // itemData.AddAllSkin();
+        // StartForBaseTest(itemData);
     }
 
     /// <summary>

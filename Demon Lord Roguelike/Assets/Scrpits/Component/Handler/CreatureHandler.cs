@@ -7,17 +7,16 @@ using UnityEngine;
 public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
 {
     /// <summary>
-    /// Éú³É·ÀÓùºËĞÄÉúÎï
+    /// ç”Ÿæˆé˜²å¾¡æ ¸å¿ƒç”Ÿç‰©
     /// </summary>
-    public void CreateDefCoreCreature(Action<GameFightCreatureEntity> actionForComplete)
+    public void CreateDefCoreCreature(CreatureBean creatureData,Action<GameFightCreatureEntity> actionForComplete)
     {
-        int creatureId = 99;
-        GetCreatureObj(creatureId, (targetObj) =>
+        GetCreatureObj(creatureData.id, (targetObj) =>
         {
             targetObj.transform.position = new Vector3(-1f, 0, 3.5f);
             GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-            //´´½¨ÉúÎï
-            FightCreatureBean fightCreatureData = gameFightLogic.fightData.fightDefCoreData;
+            //åˆ›å»ºç”Ÿç‰©
+            FightCreatureBean fightCreatureData = gameFightLogic.fightData.fightDefenseCoreData;
             fightCreatureData.positionCreate = new Vector3Int(-1, 0, 0);
 
             GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
@@ -30,7 +29,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     }
 
     /// <summary>
-    ///  ´´½¨·ÀÓùÉúÎï
+    ///  åˆ›å»ºé˜²å¾¡ç”Ÿç‰©
     /// </summary>
     public void CreateDefCreature(CreatureBean creatureData, Action<GameObject> actionForComplete)
     {
@@ -48,11 +47,11 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     }
 
     /// <summary>
-    /// ´´½¨½ø¹¥ÉúÎï
+    /// åˆ›å»ºè¿›æ”»ç”Ÿç‰©
     /// </summary>
     public void CreateAttackCreature(FightAttackDetailsBean fightAttackDetails)
     {
-        //Ò»´Î´´½¨µÄÊıÁ¿
+        //ä¸€æ¬¡åˆ›å»ºçš„æ•°é‡
         int numCreature = fightAttackDetails.creatureIds.Count;
         for (int i = 0; i < numCreature; i++)
         {
@@ -66,26 +65,23 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     }
 
     /// <summary>
-    /// ´´½¨½ø¹¥ÉúÎï
+    /// åˆ›å»ºè¿›æ”»ç”Ÿç‰©
     /// </summary>
-    /// <param name="targetRoad">Ä¿±ê½ø¹¥Â·Ïß 0ÎªËæ»ú</param>
+    /// <param name="targetRoad">ç›®æ ‡è¿›æ”»è·¯çº¿ 0ä¸ºéšæœº</param>
     public void CreateAttCreature(int creatureId, Action<GameObject> actionForComplete, int targetRoad = 0)
     {
         GetCreatureObj(creatureId, (targetObj) =>
         {
-            //Ëæ»úÉú³ÉÄ³Ò»Â·
+            //éšæœºç”ŸæˆæŸä¸€è·¯
             if (targetRoad == 0)
             {
                 targetRoad = UnityEngine.Random.Range(1, 7);
             }
             targetObj.transform.position = new Vector3(10f, 0, targetRoad);
 
-            //´´½¨Õ½¶·ÉúÎï
+            //åˆ›å»ºæˆ˜æ–—ç”Ÿç‰©
             FightCreatureBean fightCreatureData = new FightCreatureBean(creatureId);
-            fightCreatureData.creatureData.AddSkin(2000001);
-            fightCreatureData.creatureData.AddSkin(2040001);
-            fightCreatureData.creatureData.AddSkin(2900001);
-            fightCreatureData.creatureData.AddSkin(2020001);
+            fightCreatureData.creatureData.AddTestSkin();
             fightCreatureData.positionCreate = new Vector3Int(0, 0, targetRoad);
             GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
             gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIAttCreatureEntity>(actionBeforeStart: (targetEntity) =>
@@ -94,15 +90,15 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             });
 
             var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-            gameLogic.fightData.AddFightAttCreature(targetRoad, gameFightCreatureEntity);
+            gameLogic.fightData.AddAttackCreatureByRoad(targetRoad, gameFightCreatureEntity);
             actionForComplete?.Invoke(targetObj);
         });
     }
 
     /// <summary>
-    /// »ñÈ¡Ò»¸öÉúÎïµÄobj
+    /// è·å–ä¸€ä¸ªç”Ÿç‰©çš„obj
     /// </summary>
-    public void GetCreatureObj(int creatureId, Action<GameObject> actionForComplete)
+    public void GetCreatureObj(long creatureId, Action<GameObject> actionForComplete)
     {
         manager.LoadCreatureObj(creatureId, (targetObj) =>
         {
@@ -113,7 +109,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             {
                 //rendererTF.eulerAngles = Vector3.zero;
                 rendererTF.eulerAngles = mainCamera.transform.eulerAngles;
-                //Èç¹ûÃ»ÓĞ¼ÓÔØ¹ıspine Ôò¼ÓÔØÒ»´Î 
+                //å¦‚æœæ²¡æœ‰åŠ è½½è¿‡spine åˆ™åŠ è½½ä¸€æ¬¡ 
                 if (rendererTF.GetComponent<SkeletonAnimation>() == null)
                 {
                     var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
@@ -138,7 +134,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     }
 
     /// <summary>
-    /// ÒÆ³ıÉúÎïobj
+    /// ç§»é™¤ç”Ÿç‰©obj
     /// </summary>
     /// <param name="targetObj"></param>
     public void RemoveCreatureObj(GameObject targetObj, CreatureTypeEnum creatureType)
@@ -158,14 +154,14 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     }
 
     /// <summary>
-    /// ÒÆ³ıÉúÎïÊµÀı
+    /// ç§»é™¤ç”Ÿç‰©å®ä¾‹
     /// </summary>
     /// <param name="targetObj"></param>
     public void RemoveCreatureEntity(GameFightCreatureEntity targetEntity, CreatureTypeEnum creatureType)
     {
         if (targetEntity == null)
             return;
-        //ÇåÀí¶¯»­
+        //æ¸…ç†åŠ¨ç”»
         targetEntity.ClearAnim();
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         if (targetEntity.creatureObj != null)
@@ -176,17 +172,17 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         {
             AIHandler.Instance.RemoveAIEntity(targetEntity.aiEntity);
         }
-        //Èç¹ûÊÇ·ÀÊØÉúÎï »¹ĞèÒªÒÆ³ıÎ»ÖÃĞÅÏ¢ ºÍ»¹Ô­¿¨Æ¬
-        if (creatureType == CreatureTypeEnum.FightDef)
+        //å¦‚æœæ˜¯é˜²å®ˆç”Ÿç‰© è¿˜éœ€è¦ç§»é™¤ä½ç½®ä¿¡æ¯ å’Œè¿˜åŸå¡ç‰‡
+        if (creatureType == CreatureTypeEnum.FightDefense)
         {
-            gameFightLogic.fightData.RemoveFightPosition(targetEntity.fightCreatureData.positionCreate);
-            targetEntity.fightCreatureData.creatureData.creatureState =  CreatureStateEnum.Idle;
+            gameFightLogic.fightData.RemoveDefenseCreatureByPos(targetEntity.fightCreatureData.positionCreate);
+            targetEntity.fightCreatureData.creatureData.creatureState =  CreatureStateEnum.Rest;
             targetEntity.fightCreatureData.ResetData();
-            EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_RefreshCard, targetEntity.fightCreatureData);
+            EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureChangeState, targetEntity.fightCreatureData.creatureData.creatureId, CreatureStateEnum.Rest);
         }
-        else if (creatureType == CreatureTypeEnum.FightAtt)
+        else if (creatureType == CreatureTypeEnum.FightAttack)
         {
-            gameFightLogic.fightData.RemoveFightAttCreature(targetEntity);
+            gameFightLogic.fightData.RemoveAttackCreature(targetEntity);
         }
 
     }

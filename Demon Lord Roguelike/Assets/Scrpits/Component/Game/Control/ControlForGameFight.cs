@@ -13,7 +13,7 @@ public class ControlForGameFight : BaseControl
     public InputAction inputActionUseL;
     public InputAction inputActionUseR;
 
-    [Header("¾µÍ·ÒÆ¶¯ËÙ¶È")]
+    [Header("é•œå¤´ç§»åŠ¨é€Ÿåº¦")]
     public float speedForCameraMoveX = 2f;
     public float speedForCameraMoveZ = 2f;
 
@@ -52,7 +52,7 @@ public class ControlForGameFight : BaseControl
     }
 
     /// <summary>
-    /// ÒÆ¶¯´¦Àí
+    /// ç§»åŠ¨å¤„ç†
     /// </summary>
     public void HandleForMoveUpdate()
     {
@@ -72,20 +72,20 @@ public class ControlForGameFight : BaseControl
     }
 
     /// <summary>
-    /// µã»÷Ê°È¡ÎïÆ·
+    /// ç‚¹å‡»æ‹¾å–ç‰©å“
     /// </summary>
     public void HandleForClickDropUpdate()
     {
         if (!enabledControl)
             return;
         var gameState = GameHandler.Instance.manager.GetGameState();
-        //Èç¹ûÊÇÕıÔÚÓÎÏ·ÖĞ
+        //å¦‚æœæ˜¯æ­£åœ¨æ¸¸æˆä¸­
         if (gameState != GameStateEnum.Gaming)
             return;
         if (CheckUtil.CheckIsPointerUI())
             return;
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        //ÊÖÀïÃ»ÓĞÎïÆ·
+        //æ‰‹é‡Œæ²¡æœ‰ç‰©å“
         if (gameFightLogic.selectCreature != null)
             return;
         float inputValue = inputActionUseL.ReadValue<float>();
@@ -98,11 +98,11 @@ public class ControlForGameFight : BaseControl
             if (fightDropPrefab == null)
                 return;
             fightDropPrefab.SetState(GameFightPrefabStateEnum.Droping);
-            Vector3 targetPos = gameFightLogic.fightData.fightDefCoreCreature.creatureObj.transform.position;
+            Vector3 targetPos = gameFightLogic.fightData.fightDefenseCoreCreature.creatureObj.transform.position;
             float moveSpeed = 5
                 ;
             float moveTime = Vector3.Distance(targetPos, fightDropPrefab.gameObject.transform.position) / moveSpeed;
-            //²¥·Å¶¯»­
+            //æ’­æ”¾åŠ¨ç”»
             fightDropPrefab.gameObject.transform
                 .DOJump(targetPos + new Vector3(0f, 0.5f, 0.5f), Random.Range(0, 0.5f), 1, moveTime)
                 .SetEase(Ease.OutCubic)
@@ -111,14 +111,14 @@ public class ControlForGameFight : BaseControl
                     UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
                     userData.AddCoin(fightDropPrefab.valueInt);
                     fightDropPrefab.Destroy();
-                    //Ë¢ĞÂËùÓĞ´ò¿ªµÄUI
+                    //åˆ·æ–°æ‰€æœ‰æ‰“å¼€çš„UI
                     UIHandler.Instance.RefreshUI();
                 });
         }
     }
 
     /// <summary>
-    /// Êó±ê×ó¼üÈ·ÈÏ-°´ÏÂ
+    /// é¼ æ ‡å·¦é”®ç¡®è®¤-æŒ‰ä¸‹
     /// </summary>
     /// <param name="callback"></param>
     public void HandleForUseLDown(CallbackContext callback)
@@ -128,7 +128,7 @@ public class ControlForGameFight : BaseControl
     }
 
     /// <summary>
-    /// Êó±ê×ó¼üÈ·ÈÏ-Ì§Æğ
+    /// é¼ æ ‡å·¦é”®ç¡®è®¤-æŠ¬èµ·
     /// </summary>
     /// <param name="callback"></param>
     public void HandleForUseLUp(CallbackContext callback)
@@ -138,7 +138,7 @@ public class ControlForGameFight : BaseControl
         if (CheckUtil.CheckIsPointerUI())
             return;
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        //Èç¹ûÓĞÑ¡ÔñµÄÎïÌå ·ÅÖÃÎïÌå
+        //å¦‚æœæœ‰é€‰æ‹©çš„ç‰©ä½“ æ”¾ç½®ç‰©ä½“
         if (gameFightLogic.selectCreature != null)
         {
             gameFightLogic.PutCard();
@@ -147,7 +147,7 @@ public class ControlForGameFight : BaseControl
     }
 
     /// <summary>
-    /// Êó±êÓÒ¼üÈ¡Ïû-°´ÏÂ
+    /// é¼ æ ‡å³é”®å–æ¶ˆ-æŒ‰ä¸‹
     /// </summary>
     /// <param name="callback"></param>
     public void HandleForUseRDown(CallbackContext callback)
@@ -157,7 +157,7 @@ public class ControlForGameFight : BaseControl
     }
 
     /// <summary>
-    /// Êó±êÓÒ¼üÈ¡Ïû-Ì§Æğ
+    /// é¼ æ ‡å³é”®å–æ¶ˆ-æŠ¬èµ·
     /// </summary>
     /// <param name="callback"></param>
     public void HandleForUseRUp(CallbackContext callback)
@@ -168,7 +168,7 @@ public class ControlForGameFight : BaseControl
             return;
 
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        //Èç¹ûÓĞÑ¡ÔñµÄÎïÌå ·ÅÖÃÎïÌå
+        //å¦‚æœæœ‰é€‰æ‹©çš„ç‰©ä½“ æ”¾ç½®ç‰©ä½“
         if (gameFightLogic.selectCreature != null)
         {
             gameFightLogic.UnSelectCard();

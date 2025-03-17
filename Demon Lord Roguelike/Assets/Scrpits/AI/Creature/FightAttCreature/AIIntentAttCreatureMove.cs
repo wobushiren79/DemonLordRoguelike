@@ -4,38 +4,38 @@ using UnityEngine;
 
 public class AIIntentAttCreatureMove : AIBaseIntent
 {
-    //Ä¿±êAI
+    //ç›®æ ‡AI
     public AIAttCreatureEntity selfAIEntity;
 
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         selfAIEntity = aiEntity as AIAttCreatureEntity;
-        //ÉèÖÃÒÆ¶¯¶¯×÷
+        //è®¾ç½®ç§»åŠ¨åŠ¨ä½œ
         selfAIEntity.selfAttCreatureEntity.PlayAnim(SpineAnimationStateEnum.Walk, true);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
-        //Èç¹ûÄ¿±êÊÇÄ§Íõ
+        //å¦‚æœç›®æ ‡æ˜¯é­”ç‹
         if (selfAIEntity.targetMovePos.x <= 0)
         {
-            //¼ì²âÊÇ·ñ¿¿½üÄ¿±ê
+            //æ£€æµ‹æ˜¯å¦é è¿‘ç›®æ ‡
             if (CheckIsCloseTarget())
             {
                 selfAIEntity.selfAttCreatureEntity.SetCreatureDead();
                 return;
             }
         }
-        //Èç¹û²»ÊÇÄ§Íõ
+        //å¦‚æœä¸æ˜¯é­”ç‹
         else
         {
-            //Èç¹ûÄ¿±êÒÑ¾­ËÀÁË
+            //å¦‚æœç›®æ ‡å·²ç»æ­»äº†
             if (selfAIEntity.targetDefCreatureEntity == null || selfAIEntity.targetDefCreatureEntity.IsDead())
             {
                 selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureIdle);
                 return;
             }
-            //¼à²âÊÇ·ñÔÚ¹¥»÷·¶Î§ÄÚ
+            //ç›‘æµ‹æ˜¯å¦åœ¨æ”»å‡»èŒƒå›´å†…
             if (CheckIsAttRange())
             {
                 selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureAttack);
@@ -54,7 +54,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
     }
 
     /// <summary>
-    /// ¼ì²âÊÇ·ñÔÚ¹¥»÷·¶Î§ÄÚ
+    /// æ£€æµ‹æ˜¯å¦åœ¨æ”»å‡»èŒƒå›´å†…
     /// </summary>
     public bool CheckIsAttRange()
     {
@@ -70,7 +70,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
     }
     
     /// <summary>
-    /// ¼ì²âÊÇ·ñ¿¿½üÁËÄ¿±ê
+    /// æ£€æµ‹æ˜¯å¦é è¿‘äº†ç›®æ ‡
     /// </summary>
     /// <returns></returns>
     public bool CheckIsCloseTarget()

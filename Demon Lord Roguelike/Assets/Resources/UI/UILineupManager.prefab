@@ -308,6 +308,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5e40ca741d18f143abd73c9fe6a7e33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
   uiManager: {fileID: 0}
   remarkData: 
   listShowCardLineup: []
@@ -317,7 +319,7 @@ MonoBehaviour:
   ui_ViewBaseInfoContent: {fileID: 1692143287008850840}
   ui_BackpackContent: {fileID: 8712527677418259481}
   ui_LineupContent: {fileID: 1348662215215295317}
-  ui_ViewCreatureCardItem: {fileID: 7269223337885210321}
+  ui_ViewCreatureCardItem: {fileID: 5763292161076554575}
   ui_ViewCreatureCardDetails: {fileID: 995415804985549477}
   ui_OrderBtn_Rarity: {fileID: 8373766001299447757}
   ui_OrderBtn_Level: {fileID: 6094274068836238989}
@@ -718,27 +720,57 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -15
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8575153422984284731, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6607275696344688825, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5763292161076554575}
   m_SourcePrefab: {fileID: 100100000, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
 --- !u!1 &5211133965412791379 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6607275696344688825, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
   m_PrefabInstance: {fileID: 1432259608265923818}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7269223337885210321 stripped
+--- !u!114 &5763292161076554575
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8575153422984284731, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
-  m_PrefabInstance: {fileID: 1432259608265923818}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5211133965412791379}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aaf2aa48634a83444aca6acb095dc16f, type: 3}
+  m_Script: {fileID: 11500000, guid: fb1e7563490ad23449a11fb72e6cebb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
+  _rectTransform: {fileID: 0}
+  cardData:
+    creatureData:
+      creatureId: 
+      id: 0
+      creatureName: 
+      level: 0
+      rarity: 0
+      creatureState: 0
+    cardUseState: 0
+    cardState: 0
+    originalCardPos: {x: 0, y: 0}
+    originalSibling: 0
+    indexList: 0
+  maskUI: {fileID: 0}
+  ui_BtnSelect: {fileID: 0}
+  ui_CardBg: {fileID: 0}
+  ui_Icon: {fileID: 0}
+  ui_AttributeItemText_Life: {fileID: 0}
+  ui_AttributeItemText_Att: {fileID: 0}
+  ui_Name: {fileID: 0}
+  ui_Level: {fileID: 0}
+  ui_CardBgBorad: {fileID: 0}
 --- !u!224 &8272645482953681052 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}

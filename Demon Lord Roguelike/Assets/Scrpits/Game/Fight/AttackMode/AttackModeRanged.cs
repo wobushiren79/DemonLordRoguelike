@@ -18,18 +18,18 @@ public class AttackModeRanged : BaseAttackMode
         {
             string creatureId = hit.collider.gameObject.name;
             GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-            var targetCreature = gameFightLogic.fightData.GetFightCreatureById(creatureId);
+            var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, CreatureTypeEnum.None);
             if (targetCreature != null && !targetCreature.IsDead())
             {
-                //¿ÛÑª
+                //æ‰£è¡€
                 targetCreature.UnderAttack(this);
-                //¹¥»÷ÍêÁË¾Í»ØÊÕÕâ¸ö¹¥»÷
+                //æ”»å‡»å®Œäº†å°±å›žæ”¶è¿™ä¸ªæ”»å‡»
                 Destory();
                 return;
             }
         }
         gameObject.transform.Translate(attackDirection * Time.deltaTime * attackModeInfo.speed_move);
-        //±ß½ç´¦Àí
+        //è¾¹ç•Œå¤„ç†
         if (gameObject.transform.position.x > 15 || gameObject.transform.position.x < -5)
         {
             Destory();

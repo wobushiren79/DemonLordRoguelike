@@ -94,7 +94,7 @@ public partial class UITestBase : BaseUIComponent
             CreatureBean creatureData = new CreatureBean(itemCreatureInfo.id);
             creatureData.rarity = Random.Range(1, 7);
             creatureData.level = 0;
-            creatureData.AddAllSkin();
+            creatureData.AddTestSkin();
             userData.AddBackpackCreature(creatureData);
         }
 
@@ -112,7 +112,7 @@ public partial class UITestBase : BaseUIComponent
             CreatureBean creatureData = new CreatureBean(1);
             creatureData.rarity = Random.Range(1, 7);
             creatureData.level = Random.Range(0, 101);
-            creatureData.AddAllSkin();
+            creatureData.AddTestSkin();
             userData.AddBackpackCreature(creatureData);
         }
 

@@ -9,7 +9,7 @@ public class GameTestEditor : Editor
     public int testDataCurrentMagic = 1000;
     public int testDataCardNum = 20;
     public int fightSceneId = 1;
-    public int fightCardId = 1;
+    public int fightCardId = 2001;
 
     public int creatureId = 0;
     public int creatureModelId = 0;
@@ -34,77 +34,77 @@ public class GameTestEditor : Editor
     }
 
     /// <summary>
-    /// ¿¨Æ¬²âÊÔUI
+    /// å¡ç‰‡æµ‹è¯•UI
     /// </summary>
     public void UIForCardTest()
     {
-        if (GUILayout.Button("ÏÔÊ¾¿¨Æ¬") && Application.isPlaying)
+        if (GUILayout.Button("æ˜¾ç¤ºå¡ç‰‡") && Application.isPlaying)
         {
             FightCreatureBean fightCreature = new FightCreatureBean(creatureId);
-            fightCreature.creatureData.AddAllSkin();
+            fightCreature.creatureData.AddTestSkin();
             launcher.StartForCardTest(fightCreature);
         }
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("ÉúÎïID");
+        EditorGUILayout.LabelField("ç”Ÿç‰©ID");
         creatureId = EditorGUILayout.IntField(creatureId);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("ÉúÎïmodeId");
+        EditorGUILayout.LabelField("ç”Ÿç‰©modeId");
         creatureModelId = EditorGUILayout.IntField(creatureModelId);
         EditorGUILayout.EndHorizontal();
     }
 
     /// <summary>
-    /// Õ½¶·³¡¾°²âÊÔUI
+    /// æˆ˜æ–—åœºæ™¯æµ‹è¯•UI
     /// </summary>
     public void UIForFightSceneTest()
     {
-        if (GUILayout.Button("¿ªÊ¼") && Application.isPlaying)
+        if (GUILayout.Button("å¼€å§‹") && Application.isPlaying)
         {
             FightBean fightData = GetTestData();
             launcher.StartForFightSceneTest(fightData);
         }
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("²âÊÔÊı¾İ-µ±Ç°Ä§Á¦");
+        EditorGUILayout.LabelField("æµ‹è¯•æ•°æ®-å½“å‰é­”åŠ›");
         testDataCurrentMagic = EditorGUILayout.IntField(testDataCurrentMagic);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("²âÊÔÊı¾İ-¿¨Æ¬ÊıÁ¿");
+        EditorGUILayout.LabelField("æµ‹è¯•æ•°æ®-å¡ç‰‡æ•°é‡");
         testDataCardNum = EditorGUILayout.IntField(testDataCardNum);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("²âÊÔÊı¾İ-²âÊÔ³¡¾°");
+        EditorGUILayout.LabelField("æµ‹è¯•æ•°æ®-æµ‹è¯•åœºæ™¯");
         fightSceneId = EditorGUILayout.IntField(fightSceneId);
         EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("²âÊÔÊı¾İ-¿¨Æ¬ÉúÎïID");
+        EditorGUILayout.LabelField("æµ‹è¯•æ•°æ®-å¡ç‰‡ç”Ÿç‰©ID");
         fightCardId = EditorGUILayout.IntField(fightCardId);
         EditorGUILayout.EndHorizontal();
     }
 
     /// <summary>
-    /// »ùµØ²âÊÔUI
+    /// åŸºåœ°æµ‹è¯•UI
     /// </summary>
     public void UIForFightBase()
     {
-        if (GUILayout.Button("¿ªÊ¼") && Application.isPlaying)
+        if (GUILayout.Button("å¼€å§‹") && Application.isPlaying)
         {
             CreatureBean creatureData = new CreatureBean(fightCardId);
-            creatureData.AddAllSkin();
+            creatureData.AddTestSkin();
             launcher.StartForBaseTest(creatureData);
         }
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("ÉúÎïID");
+        EditorGUILayout.LabelField("ç”Ÿç‰©ID");
         fightCardId = EditorGUILayout.IntField(fightCardId);
         EditorGUILayout.EndHorizontal();
     }
 
     /// <summary>
-    ///   ²âÊÔÊı¾İ
+    ///   æµ‹è¯•æ•°æ®
     /// </summary>
     /// <returns></returns>
     public FightBean GetTestData()
@@ -114,32 +114,30 @@ public class GameTestEditor : Editor
         fightData.gameFightType = GameFightTypeEnum.Test;
         fightData.currentMagic = testDataCurrentMagic;
 
-        //Éú³É½ø¹¥Êı¾İ
+        //ç”Ÿæˆè¿›æ”»æ•°æ®
         fightData.fightAttackData = new FightAttackBean();
-        for (int i = 1; i < 4; i++)
+        for (int i = 0; i < 100; i++)
         {
-            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(i * 5, 2);
+            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(3, 1001);
             fightData.fightAttackData.AddAttackQueue(fightAttackDetails);
         }
 
-        //ËùÓĞµÄ¿¨Æ¤Êı¾İ
-        fightData.dicDefCreatureData.Clear();
+        //æ‰€æœ‰çš„å¡çš®æ•°æ®
+        fightData.dlDefenseCreatureData.Clear();
         for (int i = 0; i < testDataCardNum; i++)
         {
             CreatureBean itemData = new CreatureBean(fightCardId);
-            itemData.AddAllSkin();
+            itemData.AddTestSkin();
             itemData.order = i;
-            //itemData.creatureData.AddSkin(1000001);
-            //itemData.creatureData.AddSkin(1010010);
-            fightData.dicDefCreatureData.Add(itemData.creatureId, itemData);
+            fightData.dlDefenseCreatureData.Add(itemData.creatureId, itemData);
         };
 
 
-        FightCreatureBean fightDefCoreData = new FightCreatureBean(1);
-        fightDefCoreData.creatureData.AddSkin(1000001);
-        fightDefCoreData.creatureData.AddSkin(1010011);
-        fightDefCoreData.creatureData.AddSkin(1020030);
-        fightData.fightDefCoreData = fightDefCoreData;
+        FightCreatureBean fightDefCoreData = new FightCreatureBean(2001);
+        fightDefCoreData.creatureData.AddSkin(2000001);
+        fightDefCoreData.creatureData.AddSkin(2010011);
+        fightDefCoreData.creatureData.AddSkin(2020030);
+        fightData.fightDefenseCoreData = fightDefCoreData;
 
         fightData.InitData();
         fightData.fightSceneId = fightSceneId;

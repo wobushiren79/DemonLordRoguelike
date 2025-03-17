@@ -5,7 +5,7 @@ using UnityEngine;
 using static Cinemachine.CinemachineOrbitalTransposer;
 
 [Serializable]
-public class CreatureBean
+public partial class CreatureBean
 {
     //生物ID
     public string creatureId;
@@ -20,50 +20,7 @@ public class CreatureBean
 
     //所有的皮肤数据
     public Dictionary<CreatureSkinTypeEnum, CreatureSkinBean> dicSkinData = new Dictionary<CreatureSkinTypeEnum, CreatureSkinBean>();
-    //生物状态 默认闲置
-    public CreatureStateEnum creatureState = CreatureStateEnum.Idle;
 
-    [Newtonsoft.Json.JsonIgnore]
-    [NonSerialized]
-    protected CreatureInfoBean _creatureInfo;
-
-    [Newtonsoft.Json.JsonIgnore]
-    public CreatureInfoBean creatureInfo
-    {
-        get
-        {
-            if(_creatureInfo == null)
-            {
-                _creatureInfo = CreatureInfoCfg.GetItemData(id);
-                if(_creatureInfo == null)
-                {
-                    LogUtil.LogError($"获取CreatureInfoBean失败 id_{id}");
-                }
-            }
-            return _creatureInfo;
-        }
-    }
-
-    [Newtonsoft.Json.JsonIgnore]
-    [NonSerialized]
-    protected CreatureModelBean _creatureModel;
-
-    [Newtonsoft.Json.JsonIgnore]
-    public CreatureModelBean creatureModel
-    {
-        get
-        {
-            if (_creatureModel == null)
-            {
-                _creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
-            }
-            return _creatureModel;
-        }
-    }
-
-    [Newtonsoft.Json.JsonIgnore]
-    [NonSerialized]
-    public int order;//排序
     public CreatureBean(long id)
     {
         this.id = id;
@@ -111,7 +68,7 @@ public class CreatureBean
     /// <summary>
     /// 添加所有皮肤 用于测试
     /// </summary>
-    public void AddAllSkin()
+    public void AddTestSkin()
     {
         dicSkinData.Clear();
         var allData = CreatureModelInfoCfg.GetAllData();

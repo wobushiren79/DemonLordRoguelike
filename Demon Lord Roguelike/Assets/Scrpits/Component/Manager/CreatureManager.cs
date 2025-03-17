@@ -6,18 +6,18 @@ using UnityEngine;
 
 public class CreatureManager : BaseManager
 {
-    //ËùÓĞµÄÄ£ĞÍ
+    //æ‰€æœ‰çš„æ¨¡å‹
     public Dictionary<string, GameObject> dicCreatureModel = new Dictionary<string, GameObject>();
-    //ËùÓĞÉúÎïµÄ»º´æ³Ø
+    //æ‰€æœ‰ç”Ÿç‰©çš„ç¼“å­˜æ± 
     public Dictionary<CreatureTypeEnum, Queue<GameObject>> dicPoolForCreature = new Dictionary<CreatureTypeEnum, Queue<GameObject>>();
 
-    //ÉúÎïÔ¤ÀÀ
+    //ç”Ÿç‰©é¢„è§ˆ
     public GameObject objCreatureSelectPreview;
     public SkeletonAnimation skeletonAnimationSelectPreview;
     public CreatureBean creatureDataSelectPreview;
 
     /// <summary>
-    /// ÇåÀíÊı¾İ
+    /// æ¸…ç†æ•°æ®
     /// </summary>
     public void Clear()
     {
@@ -39,7 +39,7 @@ public class CreatureManager : BaseManager
     }
 
     /// <summary>
-    /// »ñÈ¡ÉúÎïÔ¤ÀÀ
+    /// è·å–ç”Ÿç‰©é¢„è§ˆ
     /// </summary>
     /// <returns></returns>
     public GameObject GetCreaureSelectPreview(CreatureBean creatureData = null)
@@ -61,14 +61,14 @@ public class CreatureManager : BaseManager
         {
             if (creatureDataSelectPreview == null || creatureData != creatureDataSelectPreview)
             {
-                //ÉèÖÃ¹Ç÷ÀÊı¾İ
+                //è®¾ç½®éª¨éª¼æ•°æ®
                 SpineHandler.Instance.SetSkeletonDataAsset(skeletonAnimationSelectPreview, creatureData.creatureModel.res_name);
                 string[] skinArray = creatureData.GetSkinArray();
-                //ĞŞ¸ÄÆ¤·ô
+                //ä¿®æ”¹çš®è‚¤
                 SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimationSelectPreview.skeleton, skinArray);
                 creatureDataSelectPreview = creatureData;
 
-                //ĞŞ¸Ä²ÄÖÊÇòÑÕÉ«
+                //ä¿®æ”¹æè´¨çƒé¢œè‰²
                 skeletonAnimationSelectPreview.skeleton.A = 0.65f;
 
                 Transform spineTF = objCreatureSelectPreview.transform.Find("Spine");
@@ -79,44 +79,44 @@ public class CreatureManager : BaseManager
     }
 
     /// <summary>
-    /// ¼ÓÔØÒ»¸öÉúÎïobj
+    /// åŠ è½½ä¸€ä¸ªç”Ÿç‰©obj
     /// </summary>
     /// <param name="creatureId"></param>
     /// <param name="actionForComplete"></param>
-    public void LoadCreatureObj(int creatureId, Action<GameObject> actionForComplete)
+    public void LoadCreatureObj(long creatureId, Action<GameObject> actionForComplete)
     {
         var itemCreatureInfo = CreatureInfoCfg.GetItemData(creatureId);
         if (itemCreatureInfo == null)
         {
-            LogUtil.LogError($"´´½¨ÉúÎïÊ§°Ü£ºÃ»ÓĞÕÒµ½IDÎª{creatureId}µÄÉúÎï");
+            LogUtil.LogError($"åˆ›å»ºç”Ÿç‰©å¤±è´¥ï¼šæ²¡æœ‰æ‰¾åˆ°IDä¸º{creatureId}çš„ç”Ÿç‰©");
             return;
         }
   
         CreatureTypeEnum creatureType = itemCreatureInfo.GetCreatureType();
-        //Ê×ÏÈ»ñÈ¡»º´æ³ØÀïµÄÎïÌå
+        //é¦–å…ˆè·å–ç¼“å­˜æ± é‡Œçš„ç‰©ä½“
         GameObject objItem = null;
         if (dicPoolForCreature.TryGetValue(creatureType, out Queue<GameObject> poolForCreature))
         {
             objItem = GetCreaureFromPool(poolForCreature);
         }
 
-        //Èç¹ûÃ»ÓĞ Ôò¼ÓÔØ´´½¨ĞÂµÄÔ¤ÖÆ
+        //å¦‚æœæ²¡æœ‰ åˆ™åŠ è½½åˆ›å»ºæ–°çš„é¢„åˆ¶
         if (objItem == null)
         {
             string creatureModelName;
             switch (creatureType)
             {
-                case CreatureTypeEnum.FightDef:
+                case CreatureTypeEnum.FightDefense:
                     creatureModelName = "FightCreature_Def_1.prefab";
                     break;
-                case CreatureTypeEnum.FightAtt:
+                case CreatureTypeEnum.FightAttack:
                     creatureModelName = "FightCreature_Att_1.prefab";
                     break;
-                case CreatureTypeEnum.FightDefCore:
+                case CreatureTypeEnum.FightDefenseCore:
                     creatureModelName = "FightCreature_DefCore_1.prefab";
                     break;
                 default:
-                    LogUtil.LogError($"´´½¨ÉúÎïÊ§°Ü£ºÃ»ÓĞÕÒµ½creature_typeÎª{itemCreatureInfo.creature_type}µÄÉúÎï");
+                    LogUtil.LogError($"åˆ›å»ºç”Ÿç‰©å¤±è´¥ï¼šæ²¡æœ‰æ‰¾åˆ°creature_typeä¸º{itemCreatureInfo.creature_type}çš„ç”Ÿç‰©");
                     return;
             }
 
@@ -124,7 +124,7 @@ public class CreatureManager : BaseManager
             var targetModel = GetModelForAddressablesSync(dicCreatureModel, resPath);
             if (targetModel == null)
             {
-                LogUtil.LogError($"´´½¨ÉúÎïÊ§°Ü£ºÃ»ÓĞÕÒµ½×ÊÔ´Â·¾¶Îª{resPath}µÄÉúÎï");
+                LogUtil.LogError($"åˆ›å»ºç”Ÿç‰©å¤±è´¥ï¼šæ²¡æœ‰æ‰¾åˆ°èµ„æºè·¯å¾„ä¸º{resPath}çš„ç”Ÿç‰©");
                 return;
             }
             objItem = Instantiate(gameObject, targetModel);
@@ -135,7 +135,7 @@ public class CreatureManager : BaseManager
     }
 
     /// <summary>
-    /// ´Ó»º´æ³ØÖĞ»ñÈ¡¶ÔÏó
+    /// ä»ç¼“å­˜æ± ä¸­è·å–å¯¹è±¡
     /// </summary>
     /// <param name="pool"></param>
     public GameObject GetCreaureFromPool(Queue<GameObject> pool)
@@ -148,12 +148,12 @@ public class CreatureManager : BaseManager
     }
 
     /// <summary>
-    /// »ØÊÕ¶ÔÏó
+    /// å›æ”¶å¯¹è±¡
     /// </summary>
     public async void DestoryCreature(Queue<GameObject> pool, GameObject targetObj)
     {
         targetObj.transform.position = new Vector3(0,-100,0);
-        //µÈ´ı1Ö¡·ÀÖ¹ µ±Ç°¶¯×÷ÉÁÏÖÎÊÌâ
+        //ç­‰å¾…1å¸§é˜²æ­¢ å½“å‰åŠ¨ä½œé—ªç°é—®é¢˜
         await new WaitNextFrame();
         targetObj.SetActive(false);
         pool.Enqueue(targetObj);

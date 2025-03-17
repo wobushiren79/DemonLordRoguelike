@@ -9,7 +9,7 @@ public class AIDefCreatureEntity : AICreatureEntity
     public GameFightCreatureEntity targetAttCreatureEntity;
 
     /// <summary>
-    /// ³õÊ¼»¯Êı¾İ
+    /// åˆå§‹åŒ–æ•°æ®
     /// </summary>
     public void InitData(GameFightCreatureEntity selfDefCreatureEntity)
     {
@@ -18,7 +18,7 @@ public class AIDefCreatureEntity : AICreatureEntity
     }
 
     /// <summary>
-    /// Çå¿ÕÊı¾İ
+    /// æ¸…ç©ºæ•°æ®
     /// </summary>
     public override void ClearData()
     {
@@ -27,16 +27,16 @@ public class AIDefCreatureEntity : AICreatureEntity
     }
 
     /// <summary>
-    /// ¿ªÊ¼AI
+    /// å¼€å§‹AI
     /// </summary>
     public override void StartAIEntity()
     {
-        //Ä¬ÈÏÏĞÖÃ
+        //é»˜è®¤é—²ç½®
         ChangeIntent(AIIntentEnum.DefCreatureIdle);
     }
 
     /// <summary>
-    /// ¹Ø±ÕAI
+    /// å…³é—­AI
     /// </summary>
     public override void CloseAIEntity()
     {
@@ -44,7 +44,7 @@ public class AIDefCreatureEntity : AICreatureEntity
     }
 
     /// <summary>
-    ///  ³õÊ¼»¯ÒâÍ¼Ã¶¾Ù
+    ///  åˆå§‹åŒ–æ„å›¾æšä¸¾
     /// </summary>
     /// <param name="listIntentEnum"></param>
     public override void InitIntentEnum(List<AIIntentEnum> listIntentEnum)
@@ -55,21 +55,21 @@ public class AIDefCreatureEntity : AICreatureEntity
     }
 
     /// <summary>
-    /// ²éÑ¯Òª¹¥»÷µÄ·ÀÓùÉúÎï(¾àÀë×î½ü)
+    /// æŸ¥è¯¢è¦æ”»å‡»çš„é˜²å¾¡ç”Ÿç‰©(è·ç¦»æœ€è¿‘)
     /// </summary>
     /// <returns></returns>
     public GameFightCreatureEntity FindAttCreatureDisMinEntity(int roadIndex, DirectionEnum direction = DirectionEnum.Right)
     {
-        //Ê×ÏÈ²éÑ¯Í¬Ò»Â·µÄ·ÀÊØÉúÎï
+        //é¦–å…ˆæŸ¥è¯¢åŒä¸€è·¯çš„é˜²å®ˆç”Ÿç‰©
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        List<GameFightCreatureEntity> listTargetData = gameFightLogic.fightData.GetFightAttCreatureByRoad(roadIndex);
+        List<GameFightCreatureEntity> listTargetData = gameFightLogic.fightData.GetAttackCreatureByRoad(roadIndex);
         if (listTargetData.IsNull())
             return null;
         float disMin = float.MaxValue;
         GameFightCreatureEntity targetEntity = null;
         for (int i = 0; i < listTargetData.Count; i++)
         {
-            //»ñÈ¡¾àÀë×î½üµÄ·ÀÊØÉúÎï
+            //è·å–è·ç¦»æœ€è¿‘çš„é˜²å®ˆç”Ÿç‰©
             var itemTargetEntity = listTargetData[i];
             if (itemTargetEntity != null && !itemTargetEntity.IsDead())
             {
@@ -88,7 +88,7 @@ public class AIDefCreatureEntity : AICreatureEntity
         return targetEntity;
     }
 
-    #region ÊÂ¼ş»Øµ÷
+    #region äº‹ä»¶å›è°ƒ
     public void EventForGameFightLogicPutCard(UIViewCreatureCardItem targetView)
     {
 

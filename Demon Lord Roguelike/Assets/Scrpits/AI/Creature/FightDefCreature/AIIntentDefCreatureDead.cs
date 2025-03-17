@@ -7,7 +7,7 @@ public class AIIntentDefCreatureDead : AIBaseIntent
     public float timeUpdateForDead = 0f;
     public float timeForDeadTime = 1.1f;
 
-    //Ä¿±êAI
+    //ç›®æ ‡AI
     public AIDefCreatureEntity selfAIEntity;
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
@@ -22,7 +22,7 @@ public class AIIntentDefCreatureDead : AIBaseIntent
         if (timeUpdateForDead >= timeForDeadTime)
         {
             timeUpdateForDead = 0;
-            CreatureHandler.Instance.RemoveCreatureEntity(selfAIEntity.selfDefCreatureEntity, CreatureTypeEnum.FightDef);
+            CreatureHandler.Instance.RemoveCreatureEntity(selfAIEntity.selfDefCreatureEntity, CreatureTypeEnum.FightDefense);
         }
     }
 

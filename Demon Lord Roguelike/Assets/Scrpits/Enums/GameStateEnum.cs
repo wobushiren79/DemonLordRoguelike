@@ -5,10 +5,10 @@ using UnityEngine;
 public enum GameStateEnum
 {
     None = 0,
-    Pre,//×¼±¸ÖĞ
-    Gaming,//ÓÎÏ·ÖĞ
-    Settlement,//½áËãÖĞ
-    End,//ÓÎÏ·½áÊø
+    Pre,//å‡†å¤‡ä¸­
+    Gaming,//æ¸¸æˆä¸­
+    Settlement,//ç»“ç®—ä¸­
+    End,//æ¸¸æˆç»“æŸ
 }
 
 public enum Rarity
@@ -21,50 +21,50 @@ public enum Rarity
     L = 6
 }
 
-//¿¨Æ¬ÓÃÍ¾
+//å¡ç‰‡ç”¨é€”
 public enum CardUseState
 {
-    Show,//Õ¹Ê¾
-    Fight,//Õ½¶·
-    Lineup,//ÕóÈİ
-    LineupBackpack,//ÕóÈİ±³°ü
+    Show,//å±•ç¤º
+    Fight,//æˆ˜æ–—
+    Lineup,//é˜µå®¹
+    LineupBackpack,//é˜µå®¹èƒŒåŒ…
 }
 
-//¿¨Æ¬×´Ì¬
+//å¡ç‰‡çŠ¶æ€
 public enum CardStateEnum
 {
-    None = 0,//¿Õ
-    FightIdle = 101,//´ı»ú
-    FightSelect = 102,//Ñ¡Ôñ
-    Fighting = 103,//ÉÏ³¡Õ½¶·
-    FightRest = 104,//ĞİÏ¢
+    None = 0,//ç©º
+    FightIdle = 101,//å¾…æœº
+    FightSelect = 102,//é€‰æ‹©
+    Fighting = 103,//ä¸Šåœºæˆ˜æ–—
+    FightRest = 104,//ä¼‘æ¯
 
-    LineupNoSelect = 201,//ÕóÈİÎ´Ñ¡ÖĞ
-    LineupSelect = 202,//ÕóÈİÑ¡ÖĞ
+    LineupNoSelect = 201,//é˜µå®¹æœªé€‰ä¸­
+    LineupSelect = 202,//é˜µå®¹é€‰ä¸­
 }
 
-//ÓÎÏ·Õ½¶·Ô¤ÖÆ×´Ì¬
+//æ¸¸æˆæˆ˜æ–—é¢„åˆ¶çŠ¶æ€
 public enum GameFightPrefabStateEnum
 {
     None = 0,
-    DropCheck = 1,//Ê°È¡¼ì²âÖĞ£¬
-    Droping = 2,//Ê°È¡ÖĞ
+    DropCheck = 1,//æ‹¾å–æ£€æµ‹ä¸­ï¼Œ
+    Droping = 2,//æ‹¾å–ä¸­
 }
 
-//ÓÎÏ·³¡¾°
+//æ¸¸æˆåœºæ™¯
 public enum GameSceneTypeEnum
 {
     None = 0,
-    Base = 1,//»ùµØ
-    Fight = 2,//Õ½¶·
+    Base = 1,//åŸºåœ°
+    Fight = 2,//æˆ˜æ–—
 }
 
 public enum TestSceneTypeEnum
 {
     None = 0,
-    FightSceneTest = 1,//Õ½¶·³¡¾°²âÊÔ
-    CardTest = 2,//¿¨Æ¬Ğ§¹û²âÊÔ
-    Base = 3,//»ùµØ²âÊÔ
+    FightSceneTest = 1,//æˆ˜æ–—åœºæ™¯æµ‹è¯•
+    CardTest = 2,//å¡ç‰‡æ•ˆæœæµ‹è¯•
+    Base = 3,//åŸºåœ°æµ‹è¯•
 }
 
 public enum CinemachineCameraEnum
@@ -74,10 +74,10 @@ public enum CinemachineCameraEnum
     Fight,
 }
 
-//Õ½¶·ÀàĞÍ
+//æˆ˜æ–—ç±»å‹
 public enum GameFightTypeEnum
 {
-    Test,//²âÊÔÄ£Ê½
-    Infinite,//ÎŞÏŞÄ£Ê½
-    Conquer,//Õ÷·şÄ£Ê½
+    Test,//æµ‹è¯•æ¨¡å¼
+    Infinite,//æ— é™æ¨¡å¼
+    Conquer,//å¾æœæ¨¡å¼
 }

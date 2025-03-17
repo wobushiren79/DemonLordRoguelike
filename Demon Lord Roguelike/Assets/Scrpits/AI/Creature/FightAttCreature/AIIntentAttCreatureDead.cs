@@ -6,7 +6,7 @@ public class AIIntentAttCreatureDead : AIBaseIntent
 {
     public float timeUpdateForDead = 0f;
     public float timeForDeadTime = 1.1f;
-    //Ä¿±êAI
+    //Ä¿ï¿½ï¿½AI
     public AIAttCreatureEntity selfAIEntity;
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
@@ -23,7 +23,7 @@ public class AIIntentAttCreatureDead : AIBaseIntent
         {
             timeUpdateForDead = 0;
             var selfFightCreatureData = selfAIEntity.selfAttCreatureEntity.fightCreatureData;
-            CreatureHandler.Instance.RemoveCreatureEntity(selfAIEntity.selfAttCreatureEntity, CreatureTypeEnum.FightAtt);
+            CreatureHandler.Instance.RemoveCreatureEntity(selfAIEntity.selfAttCreatureEntity, CreatureTypeEnum.FightAttack);
             EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadEnd, selfFightCreatureData);
         }
     }

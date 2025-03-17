@@ -72,7 +72,7 @@ public class FightBuffBean
         try
         {
             GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-            var targetCreature = gameFightLogic.fightData.GetFightCreatureById(creatureId);
+            var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, CreatureTypeEnum.None);
             if (targetCreature != null && targetCreature.fightCreatureData != null)
             {
                 targetCreature.fightCreatureData.RemoveBuff(this, actionForCompleteRemove);

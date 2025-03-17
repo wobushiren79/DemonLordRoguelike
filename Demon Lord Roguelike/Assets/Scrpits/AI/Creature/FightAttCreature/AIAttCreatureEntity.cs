@@ -5,15 +5,15 @@ using UnityEngine;
 
 public class AIAttCreatureEntity : AICreatureEntity
 {
-    //×Ô¼º
+    //è‡ªå·±
     public GameFightCreatureEntity selfAttCreatureEntity;
-    //Ä¿±ê¹¥»÷
+    //ç›®æ ‡æ”»å‡»
     public GameFightCreatureEntity targetDefCreatureEntity;
-    //Ä¿±êÒÆ¶¯Î»ÖÃ
+    //ç›®æ ‡ç§»åŠ¨ä½ç½®
     public Vector3 targetMovePos;
 
     /// <summary>
-    /// ³õÊ¼»¯Êı¾İ
+    /// åˆå§‹åŒ–æ•°æ®
     /// </summary>
     /// <param name="selfAttCreatureEntity"></param>
     public void InitData(GameFightCreatureEntity selfAttCreatureEntity)
@@ -25,7 +25,7 @@ public class AIAttCreatureEntity : AICreatureEntity
 
     public override void StartAIEntity()
     {
-        //Ä¬ÈÏÏĞÖÃ
+        //é»˜è®¤é—²ç½®
         ChangeIntent(AIIntentEnum.AttCreatureIdle);
     }
 
@@ -42,7 +42,7 @@ public class AIAttCreatureEntity : AICreatureEntity
     }
 
     /// <summary>
-    ///  ³õÊ¼»¯ÒâÍ¼Ã¶¾Ù
+    ///  åˆå§‹åŒ–æ„å›¾æšä¸¾
     /// </summary>
     /// <param name="listIntentEnum"></param>
     public override void InitIntentEnum(List<AIIntentEnum> listIntentEnum)
@@ -54,30 +54,30 @@ public class AIAttCreatureEntity : AICreatureEntity
     }
 
     /// <summary>
-    /// ²éÑ¯Òª¹¥»÷µÄ·ÀÓùÉúÎï(¾àÀë×î½ü)
+    /// æŸ¥è¯¢è¦æ”»å‡»çš„é˜²å¾¡ç”Ÿç‰©(è·ç¦»æœ€è¿‘)
     /// </summary>
     /// <returns></returns>
     public GameFightCreatureEntity FindDefCreatureDisMinEntity(int roadIndex, DirectionEnum direction = DirectionEnum.Left)
     {
-        //Ê×ÏÈ²éÑ¯Í¬Ò»Â·µÄ·ÀÊØÉúÎï
+        //é¦–å…ˆæŸ¥è¯¢åŒä¸€è·¯çš„é˜²å®ˆç”Ÿç‰©
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        List<FightPositionBean> listFightPosition = gameFightLogic.fightData.GetFightPosition(roadIndex);
+        List<GameFightCreatureEntity> listDefenseCreature = gameFightLogic.fightData.GetDefenseCreatureByRoad(roadIndex);
         float disMin = float.MaxValue;
         GameFightCreatureEntity targetEntity = null;
-        for (int i = 0; i < listFightPosition.Count; i++)
+        for (int i = 0; i < listDefenseCreature.Count; i++)
         {
-            //»ñÈ¡¾àÀë×î½üµÄ·ÀÊØÉúÎï
-            var itemFightPosition = listFightPosition[i];
-            if (itemFightPosition.creatureMain != null && !itemFightPosition.creatureMain.IsDead())
+            //è·å–è·ç¦»æœ€è¿‘çš„é˜²å®ˆç”Ÿç‰©
+            var itemCreature = listDefenseCreature[i];
+            if (itemCreature != null && !itemCreature.IsDead())
             {
-                var creatureObj = itemFightPosition.creatureMain.creatureObj;
+                var creatureObj = itemCreature.creatureObj;
                 if (direction == DirectionEnum.Left && creatureObj.transform.position.x <= selfAttCreatureEntity.creatureObj.transform.position.x)
                 {
                     float dis = Vector3.Distance(creatureObj.transform.position, selfAttCreatureEntity.creatureObj.transform.position);
                     if (dis < disMin)
                     {
                         disMin = dis;
-                        targetEntity = itemFightPosition.creatureMain;
+                        targetEntity = itemCreature;
                     }
                 }
             }
@@ -85,15 +85,15 @@ public class AIAttCreatureEntity : AICreatureEntity
         return targetEntity;
     }
 
-    #region ÊÂ¼ş»Øµ÷
+    #region äº‹ä»¶å›è°ƒ
     public void EventForGameFightLogicPutCard(UIViewCreatureCardItem targetView)
     {
-        //Èç¹ûÊÇÍ¬Ò»Â·Ïß
+        //å¦‚æœæ˜¯åŒä¸€è·¯çº¿
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        var gameFightEntity =  gameFightLogic.fightData.GetFightCreatureById(targetView.cardData.creatureData.creatureId);
-        if (gameFightEntity.fightCreatureData.positionCreate.z == selfAttCreatureEntity.fightCreatureData.positionCreate.z)
+        var defenseCreature =  gameFightLogic.fightData.GetCreatureById(targetView.cardData.creatureData.creatureId, CreatureTypeEnum.FightDefense);
+        if (defenseCreature.fightCreatureData.positionCreate.z == selfAttCreatureEntity.fightCreatureData.positionCreate.z)
         {
-            //Èç¹ûÕıÔÚÇ°ÍùÄ¿±ê ÔòÖØĞÂÑ°ÕÒÄ¿±ê
+            //å¦‚æœæ­£åœ¨å‰å¾€ç›®æ ‡ åˆ™é‡æ–°å¯»æ‰¾ç›®æ ‡
             if (currentIntentEnum == AIIntentEnum.AttCreatureMove || currentIntentEnum == AIIntentEnum.AttCreatureAttack)
             {
                 ChangeIntent(AIIntentEnum.AttCreatureIdle);
@@ -103,11 +103,11 @@ public class AIAttCreatureEntity : AICreatureEntity
 
     public void EventForGameFightLogicCreatureDeadStart(FightCreatureBean fightCreatureData)
     {
-        //Èç¹û×Ô¼ºÊÇÔÚ¹¥»÷ÖĞ
+        //å¦‚æœè‡ªå·±æ˜¯åœ¨æ”»å‡»ä¸­
         if (currentIntentEnum == AIIntentEnum.AttCreatureAttack)
-        {   //Èç¹ûÊÇ·ÀÓùÉúÎïËÀÁË ²¢ÇÒÊÇ×Ô¼º¹¥»÷µÄÉúÎï
+        {   //å¦‚æœæ˜¯é˜²å¾¡ç”Ÿç‰©æ­»äº† å¹¶ä¸”æ˜¯è‡ªå·±æ”»å‡»çš„ç”Ÿç‰©
             CreatureInfoBean creatureInfo = fightCreatureData.creatureData.creatureInfo;
-            if (creatureInfo.GetCreatureType() == CreatureTypeEnum.FightDef && fightCreatureData == targetDefCreatureEntity.fightCreatureData)
+            if (creatureInfo.GetCreatureType() == CreatureTypeEnum.FightDefense && fightCreatureData == targetDefCreatureEntity.fightCreatureData)
             {
                 ChangeIntent(AIIntentEnum.AttCreatureIdle);
             }

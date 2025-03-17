@@ -7,29 +7,29 @@ public static class EventsInfo
     public static string Coin_Change = "Coin_Change";
     public static string Magic_Change = "Magic_Change";
 
-    public static string UIViewCreatureCardItem_SelectKeep = "UIViewCreatureCardItem_SelectKeep";//¿¨Æ¬±ÜÈÃ
-    public static string UIViewCreatureCardItem_ShowDetails = "UIViewCreatureCardItem_ShowDetails";//Õ¹Ê¾¿¨Æ¬ÏêÇé
-    public static string UIViewCreatureCardItem_HideDetails = "UIViewCreatureCardItem_HideDetails";//Òş²Ø¿¨Æ¬ÏêÇé
+    public static string UIViewCreatureCardItem_SelectKeep = "UIViewCreatureCardItem_SelectKeep";//å¡ç‰‡é¿è®©
+    public static string UIViewCreatureCardItem_ShowDetails = "UIViewCreatureCardItem_ShowDetails";//å±•ç¤ºå¡ç‰‡è¯¦æƒ…
+    public static string UIViewCreatureCardItem_HideDetails = "UIViewCreatureCardItem_HideDetails";//éšè—å¡ç‰‡è¯¦æƒ…
 
-    public static string UIViewCreatureCardItem_OnPointerEnter = "UIViewCreatureCardItem_OnPointerEnter";//¿¨Æ¬½øÈë
-    public static string UIViewCreatureCardItem_OnPointerExit = "UIViewCreatureCardItem_OnPointerExit";//¿¨Æ¬Àë¿ª
+    public static string UIViewCreatureCardItem_OnPointerEnter = "UIViewCreatureCardItem_OnPointerEnter";//å¡ç‰‡è¿›å…¥
+    public static string UIViewCreatureCardItem_OnPointerExit = "UIViewCreatureCardItem_OnPointerExit";//å¡ç‰‡ç¦»å¼€
 
-    public static string UIViewCreatureCardItem_OnClickSelect = "UIViewCreatureCardItem_OnClickSelect";//µã»÷Ñ¡Ôñ
+    public static string UIViewCreatureCardItem_OnClickSelect = "UIViewCreatureCardItem_OnClickSelect";//ç‚¹å‡»é€‰æ‹©
 
-    public static string GameFightLogic_SelectCard = "GameFightLogic_SelectCard";//¿¨Æ¬Ñ¡Ôñ
-    public static string GameFightLogic_UnSelectCard = "GameFightLogic_UnSelectCard";//È¡Ïû¿¨Æ¬Ñ¡Ôñ
-    public static string GameFightLogic_PutCard = "GameFightLogic_PutCard";//·ÅÖÃ¿¨Æ¬Ñ¡Ôñ    
-    public static string GameFightLogic_RefreshCard = "GameFightLogic_RefreshCard";//Ë¢ĞÂ¿¨Æ¬  
+    public static string GameFightLogic_SelectCard = "GameFightLogic_SelectCard";//å¡ç‰‡é€‰æ‹©
+    public static string GameFightLogic_UnSelectCard = "GameFightLogic_UnSelectCard";//å–æ¶ˆå¡ç‰‡é€‰æ‹©
+    public static string GameFightLogic_PutCard = "GameFightLogic_PutCard";//æ”¾ç½®å¡ç‰‡é€‰æ‹©    
+    public static string GameFightLogic_CreatureChangeState = "GameFightLogic_CreatureChangeState";//ç”Ÿç‰©çŠ¶æ€ä¿®æ”¹
 
-    public static string GameFightLogic_CreatureDeadStart = "GameFightLogic_CreatureDeadStart";//ÉúÎï¿ªÊ¼ËÀÍö  
-    public static string GameFightLogic_CreatureDeadEnd = "GameFightLogic_CreatureDeadEnd";//ÉúÎï½áÊøËÀÍö
+    public static string GameFightLogic_CreatureDeadStart = "GameFightLogic_CreatureDeadStart";//ç”Ÿç‰©å¼€å§‹æ­»äº¡  
+    public static string GameFightLogic_CreatureDeadEnd = "GameFightLogic_CreatureDeadEnd";//ç”Ÿç‰©ç»“æŸæ­»äº¡
 
-    public static string Toast_NoEnoughCreateMagic = "Toast_NoEnoughCreateMagic";//Ã»ÓĞ×ã¹»µÄ´´½¨Ä§Á¦
+    public static string Toast_NoEnoughCreateMagic = "Toast_NoEnoughCreateMagic";//æ²¡æœ‰è¶³å¤Ÿçš„åˆ›å»ºé­”åŠ›
 
-    #region Å¤µ°»ú
-    public static string GashaponMachine_ClickBreak = "GashaponMachine_ClickBreak";//µã»÷ÆÆËé 
-    public static string GashaponMachine_ClickNext = "GashaponMachine_ClickNext";//µã»÷ÏÂÒ»¸ö
-    public static string GashaponMachine_ClickReset = "GashaponMachine_ClickReset";//µã»÷ÖØÖÃ
-    public static string GashaponMachine_ClickEnd = "GashaponMachine_ClickEnd";//µã»÷½áÊø
+    #region æ‰­è›‹æœº
+    public static string GashaponMachine_ClickBreak = "GashaponMachine_ClickBreak";//ç‚¹å‡»ç ´ç¢ 
+    public static string GashaponMachine_ClickNext = "GashaponMachine_ClickNext";//ç‚¹å‡»ä¸‹ä¸€ä¸ª
+    public static string GashaponMachine_ClickReset = "GashaponMachine_ClickReset";//ç‚¹å‡»é‡ç½®
+    public static string GashaponMachine_ClickEnd = "GashaponMachine_ClickEnd";//ç‚¹å‡»ç»“æŸ
     #endregion
 }

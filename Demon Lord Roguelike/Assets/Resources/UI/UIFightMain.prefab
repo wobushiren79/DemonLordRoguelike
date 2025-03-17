@@ -173,6 +173,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a75a5c73a7c17534483dbe9ffb622575, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
   uiManager: {fileID: 0}
   remarkData: 
   listCreatureCard: []
@@ -607,6 +609,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -625,6 +631,10 @@ PrefabInstance:
     - target: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
       propertyPath: m_LocalRotation.z
       value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -686,11 +696,66 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -42.5
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8575153422984284731, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6607275696344688825, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1654691023037518390}
   m_SourcePrefab: {fileID: 100100000, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
+--- !u!1 &908241607300541607 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6607275696344688825, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
+  m_PrefabInstance: {fileID: 6281249152639861790}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1654691023037518390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 908241607300541607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfbaa3984f8d0ea41ab151707ed37812, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
+  _rectTransform: {fileID: 0}
+  cardData:
+    creatureData:
+      creatureId: 
+      id: 0
+      creatureName: 
+      level: 0
+      rarity: 0
+      creatureState: 0
+    cardUseState: 0
+    cardState: 0
+    originalCardPos: {x: 0, y: 0}
+    originalSibling: 0
+    indexList: 0
+  maskUI: {fileID: 0}
+  ui_BtnSelect: {fileID: 0}
+  ui_CardBg: {fileID: 0}
+  ui_Icon: {fileID: 0}
+  ui_AttributeItemText_Life: {fileID: 0}
+  ui_AttributeItemText_Att: {fileID: 0}
+  ui_Name: {fileID: 0}
+  ui_Level: {fileID: 0}
+  ui_CardBgBorad: {fileID: 0}
+  animCardCreateDelayTime: 0.05
+  animCardCreateTimeType1: 0.8
+  animCardCreateTimeType2: 0.4
+  animCardCreateEase: 27
+  animCardSelectStartTime: 0.25
+  animCardSelectStart: 27
+  animCardSelectStartScale: 1.6
+  animCardSelectEndTime: 0.5
+  animCardSelectEnd: 27
 --- !u!224 &3892593773765963880 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}

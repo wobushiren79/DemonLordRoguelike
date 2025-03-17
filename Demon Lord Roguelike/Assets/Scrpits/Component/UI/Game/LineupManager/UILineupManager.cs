@@ -10,18 +10,18 @@ using UnityEngine.UI;
 
 public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
 {
-    // »º´æ³ØÀïµÄÕóÈİ¿¨Æ¬
+    // ç¼“å­˜æ± é‡Œçš„é˜µå®¹å¡ç‰‡
     public Queue<UIViewCreatureCardItem> queuePoolCardLineup = new Queue<UIViewCreatureCardItem>();
-    // Õ¹Ê¾ÖĞµÄÕóÈİ¿¨Æ¬
+    // å±•ç¤ºä¸­çš„é˜µå®¹å¡ç‰‡
     public List<UIViewCreatureCardItem> listShowCardLineup = new List<UIViewCreatureCardItem>();
 
 
     public List<CreatureBean> listBackpackCreature = new List<CreatureBean>();
-    //µ±Ç°ÕóÈİµÄĞòºÅ
+    //å½“å‰é˜µå®¹çš„åºå·
     public int currentLineupIndex = 1;
-    //ÕóÈİ¶¯»­¿¨Æ¬ÒÆ¶¯Ê±¼ä
+    //é˜µå®¹åŠ¨ç”»å¡ç‰‡ç§»åŠ¨æ—¶é—´
     protected float timeForLineupCardMove = 0.2f;
-    //ÕóÈİ¶¯»­¿¨Æ¬ÒÆ¶¯Ê±¼ä(³õÊ¼»¯)
+    //é˜µå®¹åŠ¨ç”»å¡ç‰‡ç§»åŠ¨æ—¶é—´(åˆå§‹åŒ–)
     protected float timeForLineupCardMoveInit = 0.4f;
 
     public override void Awake()
@@ -41,7 +41,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForOnClickSelect);
         InitBackpackData();
         InitLineupData();
-        //³õÊ¼»¯ÉèÖÃ±êÌâ
+        //åˆå§‹åŒ–è®¾ç½®æ ‡é¢˜
         ui_LineupIndexTitle.SetPosition(0,false);
     }
 
@@ -64,7 +64,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// item¹ö¶¯±ä»¯
+    /// itemæ»šåŠ¨å˜åŒ–
     /// </summary>
     /// <param name="itemCell"></param>
     public void OnCellChangeForBackpack(ScrollGridCell itemCell)
@@ -74,7 +74,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         itemView.cardData.indexList = itemCell.index;
         itemView.SetData(itemData, CardUseState.LineupBackpack);
 
-        //ÉèÖÃÑ¡ÖĞºÍÎ´Ñ¡ÖĞ×´Ì¬
+        //è®¾ç½®é€‰ä¸­å’Œæœªé€‰ä¸­çŠ¶æ€
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         if (userData.CheckIsLineup(currentLineupIndex, itemData.creatureId))
         {
@@ -87,21 +87,21 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// ³õÊ¼»¯±³°ü¿¨Æ¬Êı¾İ
+    /// åˆå§‹åŒ–èƒŒåŒ…å¡ç‰‡æ•°æ®
     /// </summary>
     public void InitBackpackData()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         listBackpackCreature.Clear();
         listBackpackCreature.AddRange(userData.listBackpackCreature);
-        //³õÊ¼»¯ÅÅĞò
+        //åˆå§‹åŒ–æ’åº
         OrderBackpackCreature(3, false);
-        //ÉèÖÃÊıÁ¿
+        //è®¾ç½®æ•°é‡
         ui_BackpackContent.SetCellCount(userData.listBackpackCreature.Count);
     }
 
     /// <summary>
-    /// ³õÊ¼»¯ÕóÈİÄÚÈİ
+    /// åˆå§‹åŒ–é˜µå®¹å†…å®¹
     /// </summary>
     public void InitLineupData()
     {
@@ -118,7 +118,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// »ñÈ¡ÕóÈİ¿¨Æ¬Î»ÖÃ
+    /// è·å–é˜µå®¹å¡ç‰‡ä½ç½®
     /// </summary>
     public Vector3 GetLineupPostion(int maxLineupNum, int lineupPosIndex)
     {
@@ -132,22 +132,22 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// ²¥·ÅËùÓĞlineup¿¨Æ¬ÖØÖÃÎ»ÖÃ¶¯»­
+    /// æ’­æ”¾æ‰€æœ‰lineupå¡ç‰‡é‡ç½®ä½ç½®åŠ¨ç”»
     /// </summary>
-    /// <param name="animType">0Ä¬ÈÏ 1³õÊ¼»¯</param>
+    /// <param name="animType">0é»˜è®¤ 1åˆå§‹åŒ–</param>
     /// <param name="actionForComplete"></param>
     public void AnimForAllLineupCardPosReset(int animType, Action actionForComplete)
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         int completeNum = 0;
-        //Í¨Öª¿¨Æ¬ÒÆ¶¯Î»ÖÃ
+        //é€šçŸ¥å¡ç‰‡ç§»åŠ¨ä½ç½®
         for (int i = 0; i < listShowCardLineup.Count; i++)
         {
             var itemCardView = listShowCardLineup[i];
             itemCardView.transform.SetAsLastSibling();
             var itemLineupPosIndex = userData.GetLineupCreaturePosIndex(currentLineupIndex, itemCardView.cardData.creatureData.creatureId);
             Vector3 itemLineupPos = GetLineupPostion(listShowCardLineup.Count, itemLineupPosIndex);
-            //²¥·Å¶¯»­
+            //æ’­æ”¾åŠ¨ç”»
             float timeForMove = timeForLineupCardMove;
             Ease animEase = Ease.OutBack;
             if (animType == 1)
@@ -171,7 +171,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// Ôö¼ÓÕóÈİÀïÃæµÄ¿¨Æ¬
+    /// å¢åŠ é˜µå®¹é‡Œé¢çš„å¡ç‰‡
     /// </summary>
     public void AddLineupCard(CreatureBean creatureData, Vector3 startPos, int animType = 0)
     {
@@ -190,7 +190,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         lineupView.transform.localPosition = startPos;
         listShowCardLineup.Add(lineupView);
         lineupView.gameObject.SetActive(true);
-        //²¥·Å¶¯»­
+        //æ’­æ”¾åŠ¨ç”»
         AnimForAllLineupCardPosReset(animType, () =>
         {
             //UIHandler.Instance.HideScreenLock();
@@ -198,7 +198,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// ÒÆ³ıÕóÈİÀïµÄ¿¨Æ¬
+    /// ç§»é™¤é˜µå®¹é‡Œçš„å¡ç‰‡
     /// </summary>
     /// <param name="targetView"></param>
     public void RemoveLineupCard(UIViewCreatureCardItem targetView, int animType = 0)
@@ -215,7 +215,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// ÒÆ³ıËùÓĞÕ¹Ê¾µÄÕóÈİ¿¨Æ¬
+    /// ç§»é™¤æ‰€æœ‰å±•ç¤ºçš„é˜µå®¹å¡ç‰‡
     /// </summary>
     public void RemoveLineupCardShow()
     {
@@ -259,21 +259,21 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// ¸Ä±ä¶ÓÎéĞòºÅ
+    /// æ”¹å˜é˜Ÿä¼åºå·
     /// </summary>
     public void ChangeLineupIndex(int indexLineup)
     {
         currentLineupIndex = indexLineup;
-        //ÒÆ³ıËùÓĞÕ¹Ê¾ÖĞµÄÕóÈİ¿¨Æ¬
+        //ç§»é™¤æ‰€æœ‰å±•ç¤ºä¸­çš„é˜µå®¹å¡ç‰‡
         RemoveLineupCardShow();
-        //³õÊ¼»¯ÕóÈİ¿¨Æ¬
+        //åˆå§‹åŒ–é˜µå®¹å¡ç‰‡
         InitLineupData();
-        //Ë¢ĞÂ±³°ü¿¨Æ¬
+        //åˆ·æ–°èƒŒåŒ…å¡ç‰‡
         ui_BackpackContent.RefreshAllCells();
     }
 
     /// <summary>
-    /// ÅÅĞò±³°üÀïµÄÉúÎï
+    /// æ’åºèƒŒåŒ…é‡Œçš„ç”Ÿç‰©
     /// </summary>
     /// <param name="orderType"></param>
     public void OrderBackpackCreature(int orderType, bool isRefreshUI = true)
@@ -282,7 +282,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
 
         switch (orderType)
         {
-            case 1://°´Ï¡ÓĞ¶ÈÅÅĞò
+            case 1://æŒ‰ç¨€æœ‰åº¦æ’åº
                 listBackpackCreature = listBackpackCreature
                     .OrderByDescending((itemData) =>
                     {
@@ -295,7 +295,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
                     .ToList();
                 break;
             case 2:
-                //°´µÈ¼¶ÅÅĞò
+                //æŒ‰ç­‰çº§æ’åº
                 listBackpackCreature = listBackpackCreature
                     .OrderByDescending((itemData) =>
                     {
@@ -308,7 +308,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
                     .ToList();
                 break;
             case 3:
-                //°´Ñ¡ÖĞÅÅĞò
+                //æŒ‰é€‰ä¸­æ’åº
                 listBackpackCreature = listBackpackCreature
                     .OrderBy((itemData) =>
                     {
@@ -337,7 +337,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// µã»÷ÍË³ö
+    /// ç‚¹å‡»é€€å‡º
     /// </summary>
     public void OnClickForExit()
     {
@@ -345,7 +345,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// ÊÂ¼ş-½¹µãÑ¡ÖĞ¿¨Æ¬
+    /// äº‹ä»¶-ç„¦ç‚¹é€‰ä¸­å¡ç‰‡
     /// </summary>
     public void EventForCardPointerEnter(UIViewCreatureCardItem targetView)
     {
@@ -354,7 +354,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// ÊÂ¼ş-½¹µãÀë¿ª
+    /// äº‹ä»¶-ç„¦ç‚¹ç¦»å¼€
     /// </summary>
     public void EventForCardPointerExit(UIViewCreatureCardItem targetView)
     {
@@ -362,7 +362,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// ÊÂ¼ş-µã»÷
+    /// äº‹ä»¶-ç‚¹å‡»
     /// </summary>
     public void EventForOnClickSelect(UIViewCreatureCardItem targetView)
     {
@@ -372,7 +372,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
             userData.AddLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureId);
             ui_BackpackContent.RefreshCell(targetView.cardData.indexList);
 
-            //Ôö¼ÓÕóÈİ¿¨
+            //å¢åŠ é˜µå®¹å¡
             Vector3 posStart = UGUIUtil.GetUIRootPos(ui_LineupContent.transform, targetView.transform);
             AddLineupCard(targetView.cardData.creatureData, posStart);
         }
@@ -380,7 +380,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         {
             userData.RemoveLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureId);
 
-            //Ë¢ĞÂ
+            //åˆ·æ–°
             var allCell = ui_BackpackContent.GetAllCell();
             for (int i = 0; i < allCell.Count; i++)
             {
@@ -392,7 +392,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
                     break;
                 }
             }
-            //ÒÆ³ıÕóÈİ¿¨
+            //ç§»é™¤é˜µå®¹å¡
             RemoveLineupCard(targetView);
         }
     }

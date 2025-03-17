@@ -29,10 +29,10 @@ public class GameFightLogic : BaseGameLogic
                 //延迟0.1秒 防止一些镜头的1，2帧误差
                 await new WaitForSeconds(0.1f);
                 //加载核心（魔王）实例
-                CreatureHandler.Instance.CreateDefCoreCreature((defCoreCreatureEntity) =>
+                CreatureHandler.Instance.CreateDefCoreCreature(fightData.fightDefenseCoreData.creatureData, (defCoreCreatureEntity) =>
                 {
                     //设置魔王核心
-                    fightData.fightDefCoreCreature = defCoreCreatureEntity;
+                    fightData.fightDefenseCoreCreature = defCoreCreatureEntity;
                     //开启战斗控制
                     GameControlHandler.Instance.SetFightControl();
                     //关闭LoadingUI
@@ -126,7 +126,7 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// 更新-战斗的生物
+    /// 更新-战斗的生物 buff cd时间
     /// </summary>
     public void UpdateGameForFightCreature(float updateTime)
     {
@@ -134,13 +134,39 @@ public class GameFightLogic : BaseGameLogic
         if (fightData.timeUpdateForFightCreature > fightData.timeUpdateTargetForFightCreature)
         {
             fightData.timeUpdateForFightCreature = 0;
-            var allCreature = fightData.dicCreatureEntity;
-            foreach (var item in allCreature)
+            var allAttackCreature = fightData.dlAttackCreatureEntity;
+            //处理进攻生物的buff
+            for (int i = 0; i < allAttackCreature.List.Count; i++)
             {
-                var itemCreature = item.Value;
-                if (itemCreature != null)
+                var itemCreature = allAttackCreature.List[i];
+                if (itemCreature == null)
+                    continue;
+                itemCreature.Update(updateTime);
+            }
+            //处理防守生物的buff
+            var allDefenseCreature = fightData.dlDefenseCreatureEntity;
+            for (int i = 0; i < allDefenseCreature.List.Count; i++)
+            {
+                var itemCreature = allDefenseCreature.List[i];
+                if (itemCreature == null)
+                    continue;
+                itemCreature.Update(updateTime);
+            }
+
+            //处理CD
+            var allDefenseCreatureData = fightData.dlDefenseCreatureData;
+            for (int i = 0; i < allDefenseCreatureData.List.Count; i++)
+            {
+                var itemCreatureData = allDefenseCreatureData.List[i];
+                if (itemCreatureData.creatureState == CreatureStateEnum.Rest)
                 {
-                    itemCreature.Update(updateTime);
+                    itemCreatureData.creatureStateTimeUpdate += fightData.timeUpdateTargetForFightCreature;
+                    if (itemCreatureData.creatureStateTimeUpdate > itemCreatureData.creatureInfo.create_cd)
+                    {
+                        itemCreatureData.creatureStateTimeUpdate = 0;
+                        itemCreatureData.creatureState = CreatureStateEnum.Idle;
+                        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureChangeState, itemCreatureData.creatureId,CreatureStateEnum.Idle);
+                    }
                 }
             }
         }
@@ -188,21 +214,22 @@ public class GameFightLogic : BaseGameLogic
     {
         if (selectCreature == null)
             return;
-        bool checkPosHasMainCreature = fightData.CheckFightPositionHasCreature(selectCreaturePutPost);
+        bool checkPosHasMainCreature = fightData.CheckDefenseCreatureByPos(selectCreaturePutPost);
         if (checkPosHasMainCreature)
         {
             //已经有生物了
             return;
         }
-        int createMagic = selectCreatureCard.cardData.creatureData.GetCreateMagic();
-        if (fightData.currentMagic < createMagic)
-        {
-            //魔力不足
-            EventHandler.Instance.TriggerEvent(EventsInfo.Toast_NoEnoughCreateMagic);
-            return;
-        }
+        // int createMagic = selectCreatureCard.cardData.creatureData.GetCreateMagic();
+        // if (fightData.currentMagic < createMagic)
+        // {
+        //     //魔力不足
+        //     EventHandler.Instance.TriggerEvent(EventsInfo.Toast_NoEnoughCreateMagic);
+        //     return;
+        // }
         //扣除魔力
-        fightData.ChangeMagic(-createMagic);
+        //fightData.ChangeMagic(-createMagic);
+
         //设置生物位置
         selectCreature.transform.position = selectCreaturePutPost;
 
@@ -220,7 +247,7 @@ public class GameFightLogic : BaseGameLogic
             targetEntity.InitData(gameFightCreatureEntity);
         });
 
-        fightData.SetFightPosition(selectCreaturePutPost, gameFightCreatureEntity);
+        fightData.AddDefenseCreatureByPos(selectCreaturePutPost, gameFightCreatureEntity);
         selectCreature = null;
 
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_PutCard, selectCreatureCard);
@@ -243,7 +270,7 @@ public class GameFightLogic : BaseGameLogic
             }
             else
             {
-                CreatureHandler.Instance.RemoveCreatureObj(selectCreature, CreatureTypeEnum.FightDef);
+                CreatureHandler.Instance.RemoveCreatureObj(selectCreature, CreatureTypeEnum.FightDefense);
             }
         }
         selectCreature = null;

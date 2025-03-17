@@ -7,7 +7,7 @@ public class AIIntentDefCoreCreatureDead : AIBaseIntent
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         var targetDefCreatureEntity = aiEntity as AIDefCreatureEntity;
-        CreatureHandler.Instance.RemoveCreatureEntity(targetDefCreatureEntity.selfDefCreatureEntity, CreatureTypeEnum.FightDefCore);
+        CreatureHandler.Instance.RemoveCreatureEntity(targetDefCreatureEntity.selfDefCreatureEntity, CreatureTypeEnum.FightDefenseCore);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)

@@ -12,7 +12,7 @@ public partial class UILineupManager
 
     public RectTransform ui_LineupContent;
 
-    public UIViewCreatureCardItem ui_ViewCreatureCardItem;
+    public UIViewCreatureCardItemForLineup ui_ViewCreatureCardItem;
 
     public UIViewCreatureCardDetails ui_ViewCreatureCardDetails;
 

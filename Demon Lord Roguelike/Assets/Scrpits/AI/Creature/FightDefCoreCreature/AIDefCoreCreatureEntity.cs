@@ -8,7 +8,7 @@ public class AIDefCoreCreatureEntity : AICreatureEntity
     public GameFightCreatureEntity selfDefCoreCreatureEntity;
 
     /// <summary>
-    /// ³õÊ¼»¯Êı¾İ
+    /// åˆå§‹åŒ–æ•°æ®
     /// </summary>
     public void InitData(GameFightCreatureEntity selfDefCoreCreatureEntity)
     {
@@ -17,7 +17,7 @@ public class AIDefCoreCreatureEntity : AICreatureEntity
     }
 
     /// <summary>
-    /// Çå¿ÕÊı¾İ
+    /// æ¸…ç©ºæ•°æ®
     /// </summary>
     public override void ClearData()
     {
@@ -26,16 +26,16 @@ public class AIDefCoreCreatureEntity : AICreatureEntity
     }
 
     /// <summary>
-    /// ¿ªÊ¼AI
+    /// å¼€å§‹AI
     /// </summary>
     public override void StartAIEntity()
     {
-        //Ä¬ÈÏÏĞÖÃ
+        //é»˜è®¤é—²ç½®
         ChangeIntent(AIIntentEnum.DefCoreCreatureIdle);
     }
 
     /// <summary>
-    /// ¹Ø±ÕAI
+    /// å…³é—­AI
     /// </summary>
     public override void CloseAIEntity()
     {
@@ -43,7 +43,7 @@ public class AIDefCoreCreatureEntity : AICreatureEntity
     }
 
     /// <summary>
-    ///  ³õÊ¼»¯ÒâÍ¼Ã¶¾Ù
+    ///  åˆå§‹åŒ–æ„å›¾æšä¸¾
     /// </summary>
     /// <param name="listIntentEnum"></param>
     public override void InitIntentEnum(List<AIIntentEnum> listIntentEnum)
@@ -52,7 +52,7 @@ public class AIDefCoreCreatureEntity : AICreatureEntity
         listIntentEnum.Add(AIIntentEnum.DefCoreCreatureDead);
     }
 
-    #region ÊÂ¼ş»Øµ÷
+    #region äº‹ä»¶å›è°ƒ
     public void EventForGameFightLogicPutCard(UIViewCreatureCardItem targetView)
     {
 

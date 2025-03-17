@@ -4,26 +4,26 @@ using UnityEngine;
 
 public class AIIntentAttCreatureIdle : AIBaseIntent
 {
-    //Ä¿±êAI
+    //ç›®æ ‡AI
     public AIAttCreatureEntity selfAIEntity;
 
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         selfAIEntity = aiEntity as AIAttCreatureEntity;
-        //Ñ°ÕÒÒ»ÌõÂ·ÏßÉÏµÄµĞÈË
+        //å¯»æ‰¾ä¸€æ¡è·¯çº¿ä¸Šçš„æ•Œäºº
         selfAIEntity.targetDefCreatureEntity = null;
         int selfRoad = selfAIEntity.selfAttCreatureEntity.fightCreatureData.positionCreate.z;
         selfAIEntity.targetDefCreatureEntity = selfAIEntity.FindDefCreatureDisMinEntity(selfRoad);
 
-        //´¥·¢´ı»ú¶¯×÷
+        //è§¦å‘å¾…æœºåŠ¨ä½œ
         selfAIEntity.selfAttCreatureEntity.SetFaceDirection(Direction2DEnum.Left);
         selfAIEntity.selfAttCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true);
 
-        //Èç¹ûÃ»ÓĞÊı¾İ ËµÃ÷ÕâÌõÂ·ÉÏÃ»ÓĞ·ÀÊØÉúÎï£¬ÔòÖ±½ÓÇ°ÍùÂ·µÄ¾¡Í·
+        //å¦‚æœæ²¡æœ‰æ•°æ® è¯´æ˜è¿™æ¡è·¯ä¸Šæ²¡æœ‰é˜²å®ˆç”Ÿç‰©ï¼Œåˆ™ç›´æ¥å‰å¾€è·¯çš„å°½å¤´
         if (selfAIEntity.targetDefCreatureEntity == null)
         {
             var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-            selfAIEntity.targetDefCreatureEntity = gameFightLogic.fightData.fightDefCoreCreature;
+            selfAIEntity.targetDefCreatureEntity = gameFightLogic.fightData.fightDefenseCoreCreature;
             selfAIEntity.targetMovePos = new Vector3(0, 0, selfRoad);
         }
         else
