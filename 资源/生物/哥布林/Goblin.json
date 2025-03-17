@@ -1,14 +1,5 @@
 {
-"skeleton": {
-	"hash": "EpNyn4X9DgLzdhqy29VJccO+hHo",
-	"spine": "3.8.75",
-	"x": 5,
-	"y": 1,
-	"width": 14,
-	"height": 51,
-	"images": "./images/",
-	"audio": "E:/Unity/DemonLordRoguelike/资源/生物/哥布林"
-},
+"skeleton": { "hash": "EpNyn4X9DgLzdhqy29VJccO+hHo", "spine": "3.8.75", "images": "./images/", "audio": "E:/Unity/DemonLordRoguelike/资源/生物/哥布林" },
 "bones": [
 	{ "name": "root" },
 	{ "name": "Pelvis_Base", "parent": "root", "y": 15 },

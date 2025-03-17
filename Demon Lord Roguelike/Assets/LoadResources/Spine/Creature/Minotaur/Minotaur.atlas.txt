@@ -1,0 +1,258 @@
+
+Minotaur.png
+size: 227,78
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+ArmDown_L
+  rotate: true
+  xy: 108, 5
+  size: 27, 17
+  orig: 27, 17
+  offset: 0, 0
+  index: -1
+ArmDown_R
+  rotate: true
+  xy: 170, 52
+  size: 24, 20
+  orig: 24, 20
+  offset: 0, 0
+  index: -1
+ArmUp_L
+  rotate: false
+  xy: 127, 2
+  size: 33, 34
+  orig: 33, 34
+  offset: 0, 0
+  index: -1
+ArmUp_R
+  rotate: false
+  xy: 143, 41
+  size: 25, 35
+  orig: 25, 35
+  offset: 0, 0
+  index: -1
+Belt_1
+  rotate: true
+  xy: 192, 55
+  size: 21, 19
+  orig: 21, 19
+  offset: 0, 0
+  index: -1
+Body
+  rotate: true
+  xy: 78, 34
+  size: 42, 36
+  orig: 42, 36
+  offset: 0, 0
+  index: -1
+Calf_L
+  rotate: true
+  xy: 32, 2
+  size: 16, 13
+  orig: 16, 13
+  offset: 0, 0
+  index: -1
+Calf_R
+  rotate: true
+  xy: 32, 2
+  size: 16, 13
+  orig: 16, 13
+  offset: 0, 0
+  index: -1
+Eye_1
+  rotate: true
+  xy: 190, 2
+  size: 18, 5
+  orig: 18, 5
+  offset: 0, 0
+  index: -1
+Eye_10
+  rotate: true
+  xy: 221, 2
+  size: 10, 4
+  orig: 10, 4
+  offset: 0, 0
+  index: -1
+Eye_11
+  rotate: true
+  xy: 209, 42
+  size: 11, 7
+  orig: 11, 7
+  offset: 0, 0
+  index: -1
+Eye_2
+  rotate: true
+  xy: 218, 42
+  size: 11, 4
+  orig: 11, 4
+  offset: 0, 0
+  index: -1
+Eye_3
+  rotate: true
+  xy: 215, 2
+  size: 10, 4
+  orig: 10, 4
+  offset: 0, 0
+  index: -1
+Eye_4
+  rotate: true
+  xy: 213, 64
+  size: 12, 5
+  orig: 12, 5
+  offset: 0, 0
+  index: -1
+Eye_5
+  rotate: true
+  xy: 217, 29
+  size: 11, 5
+  orig: 11, 5
+  offset: 0, 0
+  index: -1
+Eye_6
+  rotate: false
+  xy: 18, 11
+  size: 12, 7
+  orig: 12, 7
+  offset: 0, 0
+  index: -1
+Eye_7
+  rotate: true
+  xy: 207, 14
+  size: 11, 6
+  orig: 11, 6
+  offset: 0, 0
+  index: -1
+Eye_8
+  rotate: true
+  xy: 220, 64
+  size: 12, 5
+  orig: 12, 5
+  offset: 0, 0
+  index: -1
+Eye_9
+  rotate: true
+  xy: 207, 2
+  size: 10, 6
+  orig: 10, 6
+  offset: 0, 0
+  index: -1
+Foot_L
+  rotate: true
+  xy: 215, 14
+  size: 11, 6
+  orig: 11, 6
+  offset: 0, 0
+  index: -1
+Foot_R
+  rotate: true
+  xy: 215, 14
+  size: 11, 6
+  orig: 11, 6
+  offset: 0, 0
+  index: -1
+Hat_1
+  rotate: false
+  xy: 2, 2
+  size: 28, 5
+  orig: 28, 5
+  offset: 0, 0
+  index: -1
+Hat_2
+  rotate: true
+  xy: 170, 41
+  size: 9, 14
+  orig: 9, 14
+  offset: 0, 0
+  index: -1
+Head
+  rotate: true
+  xy: 46, 23
+  size: 53, 30
+  orig: 53, 30
+  offset: 0, 0
+  index: -1
+Horn_1
+  rotate: true
+  xy: 18, 20
+  size: 56, 26
+  orig: 56, 26
+  offset: 0, 0
+  index: -1
+Horn_2
+  rotate: true
+  xy: 116, 38
+  size: 38, 25
+  orig: 38, 25
+  offset: 0, 0
+  index: -1
+Horn_3
+  rotate: false
+  xy: 47, 2
+  size: 37, 19
+  orig: 37, 19
+  offset: 0, 0
+  index: -1
+Horn_4
+  rotate: true
+  xy: 2, 9
+  size: 67, 14
+  orig: 67, 14
+  offset: 0, 0
+  index: -1
+NoseRing_1
+  rotate: true
+  xy: 197, 7
+  size: 13, 8
+  orig: 13, 8
+  offset: 0, 0
+  index: -1
+NoseRing_2
+  rotate: true
+  xy: 207, 27
+  size: 13, 8
+  orig: 13, 8
+  offset: 0, 0
+  index: -1
+NoseRing_3
+  rotate: false
+  xy: 213, 55
+  size: 11, 7
+  orig: 11, 7
+  offset: 0, 0
+  index: -1
+Pelvis
+  rotate: false
+  xy: 186, 42
+  size: 21, 8
+  orig: 21, 8
+  offset: 0, 0
+  index: -1
+Plam_L
+  rotate: true
+  xy: 162, 5
+  size: 34, 26
+  orig: 34, 26
+  offset: 0, 0
+  index: -1
+Plam_R
+  rotate: true
+  xy: 86, 2
+  size: 30, 20
+  orig: 30, 20
+  offset: 0, 0
+  index: -1
+Thigh_L
+  rotate: true
+  xy: 190, 22
+  size: 18, 15
+  orig: 18, 15
+  offset: 0, 0
+  index: -1
+Thigh_R
+  rotate: true
+  xy: 190, 22
+  size: 18, 15
+  orig: 18, 15
+  offset: 0, 0
+  index: -1
