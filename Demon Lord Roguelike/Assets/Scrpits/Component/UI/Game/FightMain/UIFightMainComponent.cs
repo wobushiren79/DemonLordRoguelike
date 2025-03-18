@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 
 public partial class UIFightMain
@@ -14,6 +15,8 @@ public partial class UIFightMain
     public UIViewBaseInfoContent ui_ViewBaseInfoContent;
 
     public UIViewCreatureCardDetails ui_ViewCreatureCardDetails;
+
+    public Button ui_BtnRemoveCreature;
 
 
 }

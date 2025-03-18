@@ -2,18 +2,17 @@ using DG.Tweening;
 using Spine;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
 using UnityEngine.ResourceManagement.ResourceProviders.Simulation;
 using UnityEngine.UI;
 
 public partial class UIViewCreatureCardItem : BaseUIView
 {
     public CreatureCardItemBean cardData = new CreatureCardItemBean();
-    public MaskUIView maskUI;//遮罩处理
 
     public override void Awake()
     {
         base.Awake();
-        maskUI = transform.GetComponent<MaskUIView>();
     }
 
     /// <summary>
@@ -31,6 +30,8 @@ public partial class UIViewCreatureCardItem : BaseUIView
         SetName(creatureData.creatureName);
         SetLevel(creatureData.level);
         SetRarity(creatureData.rarity);
+
+        RefreshCardState(this.cardData.cardState);
     }
 
     /// <summary>
@@ -43,7 +44,6 @@ public partial class UIViewCreatureCardItem : BaseUIView
         var rarityInfo = RarityInfoCfg.GetItemData(rarity);
         ColorUtility.TryParseHtmlString(rarityInfo.ui_board_color, out Color boardColor);
         ui_CardBgBorad.color = boardColor;
-        maskUI.ChangeDefColor(ui_CardBgBorad, boardColor);
     }
 
     /// <summary>
@@ -80,6 +80,15 @@ public partial class UIViewCreatureCardItem : BaseUIView
     }
 
     /// <summary>
+    /// 设置倒计时
+    /// </summary>
+    public void SetCDTime(string cdStr,float progress)
+    {
+        ui_CDTime.text = $"{cdStr}";
+        ui_Mask.fillAmount = progress;
+    }
+
+    /// <summary>
     /// 设置卡的状态
     /// </summary>
     public virtual void SetCardState(CardStateEnum cardState)
@@ -93,8 +102,10 @@ public partial class UIViewCreatureCardItem : BaseUIView
     /// </summary>
     public virtual void RefreshCardState(CardStateEnum cardState)
     {
-        ui_CardBg.color = Color.white;
-        maskUI.HideMask();
+        ColorUtility.TryParseHtmlString("#575149",out var colorBG);
+        ui_CardBg.color = colorBG;
+        ui_CDTime.gameObject.SetActive(false);
+        ui_Mask.gameObject.SetActive(false);
     }
 
     /// <summary>

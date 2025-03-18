@@ -441,7 +441,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &6426279933399321674
 RectTransform:
   m_ObjectHideFlags: 0
@@ -458,9 +458,9 @@ RectTransform:
   - {fileID: 9176639890938047020}
   m_Father: {fileID: 3721551844498362209}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 100, y: -30}
   m_SizeDelta: {x: 200, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5008225726793431508
@@ -677,7 +677,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 182e72f3f5a48224fb9ef8dec2674abe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rectTransform: {fileID: 0}
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
+  _rectTransform: {fileID: 0}
   ui_MagicText: {fileID: 8520989111694353109}
   ui_CoinText: {fileID: 6667212881552220506}
   ui_Magic: {fileID: 6426279933399321674}

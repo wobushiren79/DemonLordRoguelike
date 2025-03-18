@@ -88,6 +88,8 @@ public class ControlForGameFight : BaseControl
         //手里没有物品
         if (gameFightLogic.selectCreature != null)
             return;
+        if (gameFightLogic.selectCreatureDestory != null)
+            return;
         float inputValue = inputActionUseL.ReadValue<float>();
         if (inputValue < 1)
             return;
@@ -141,7 +143,14 @@ public class ControlForGameFight : BaseControl
         //如果有选择的物体 放置物体
         if (gameFightLogic.selectCreature != null)
         {
+            //如果是选择的生物
             gameFightLogic.PutCard();
+            return;
+        }
+        if (gameFightLogic.selectCreatureDestory != null)
+        {
+            //如果是选择的删除生物
+            gameFightLogic.SelectCreatureDestoryHandle();
             return;
         }
     }
@@ -172,7 +181,10 @@ public class ControlForGameFight : BaseControl
         if (gameFightLogic.selectCreature != null)
         {
             gameFightLogic.UnSelectCard();
-            return;
+        }
+        if (gameFightLogic.selectCreatureDestory != null)
+        {
+            gameFightLogic.UnSelectCreatureDestory();
         }
     }
 }

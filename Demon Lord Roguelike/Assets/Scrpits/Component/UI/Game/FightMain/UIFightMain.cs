@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEditor.Rendering;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.UI;
 
 public partial class UIFightMain : BaseUIComponent
 {
@@ -42,6 +43,15 @@ public partial class UIFightMain : BaseUIComponent
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, EventForCardPointerEnter);
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerExit, EventForCardPointerExit);
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForOnClickSelect);
+    }
+
+    public override void OnClickForButton(Button viewButton)
+    {
+        base.OnClickForButton(viewButton);
+        if (viewButton == ui_BtnRemoveCreature)
+        {
+            OnClickForRemoveCreature();
+        }
     }
 
     /// <summary>
@@ -128,7 +138,7 @@ public partial class UIFightMain : BaseUIComponent
         }
         //排个序
         listCreatureData = listCreatureData
-            .OrderBy((itemData) => 
+            .OrderBy((itemData) =>
             {
                 return itemData.order;
             })
@@ -204,6 +214,14 @@ public partial class UIFightMain : BaseUIComponent
         listCreatureCard.Clear();
     }
 
+    #region 点击按钮
+    public void OnClickForRemoveCreature()
+    {
+        var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        gameFightLogic.SelectCreatureDestory();
+    }
+    #endregion
+
     #region 事件
 
     /// <summary>
@@ -245,6 +263,8 @@ public partial class UIFightMain : BaseUIComponent
         //没有选中卡片时才显示
         if (gameFightLogic.selectCreature != null)
             return;
+        if (gameFightLogic.selectCreatureDestory != null)
+            return;
         ui_ViewCreatureCardDetails.ShowObj(true);
         ui_ViewCreatureCardDetails.SetData(targetView.cardData.creatureData);
     }
@@ -280,6 +300,7 @@ public partial class UIFightMain : BaseUIComponent
         //战斗中的卡片不能点击
         if (targetView.cardData.cardState == CardStateEnum.Fighting)
             return;
+        //CD中的卡片不能点击
         if (targetView.cardData.cardState == CardStateEnum.FightRest)
             return;
 

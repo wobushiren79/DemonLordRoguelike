@@ -8,9 +8,10 @@ public class GameFightLogic : BaseGameLogic
     //战斗数据
     public FightBean fightData;
 
+    public GameObject selectCreatureDestory;    //选择删除生物
     public GameObject selectCreature;    //选择的生物
     public UIViewCreatureCardItem selectCreatureCard;//选中生物卡片
-    public Vector3Int selectCreaturePutPost;    //选择的生物的放置位置
+    public Vector3Int selectTargetPos;    //选择的位置
 
     /// <summary>
     /// 准备游戏
@@ -83,24 +84,31 @@ public class GameFightLogic : BaseGameLogic
     public void UpdateGameForSelectCreature(float updateTime)
     {
         //如果有选中的物体
-        if (selectCreature != null)
+        if (selectCreature != null || selectCreatureDestory != null)
         {
             RayUtil.RayToScreenPointForMousePosition(10, 1 << LayerInfo.Ground, out bool isCollider, out RaycastHit hit, CameraHandler.Instance.manager.mainCamera);
             if (isCollider && hit.collider != null)
-            {
-                GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreaureSelectPreview(selectCreatureCard.cardData.creatureData);
-                objSelectPreivew.gameObject.SetActive(true);
+            {                
                 Vector3 hitPoint = hit.point;
-
                 if (hitPoint.x < 1) hitPoint.x = 1;
                 if (hitPoint.x > 10) hitPoint.x = 10;
                 if (hitPoint.z > 6) hitPoint.z = 6;
                 if (hitPoint.z < 1) hitPoint.z = 1;
-
                 Vector3Int targetPos = Vector3Int.RoundToInt(hitPoint);
-                selectCreature.transform.position = hitPoint;
-                objSelectPreivew.transform.position = targetPos;
-                selectCreaturePutPost = targetPos;
+                //如果选择的生物
+                if(selectCreature != null)
+                {                
+                    selectCreature.transform.position = hitPoint;
+                    GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreatureSelectPreview(selectCreatureCard.cardData.creatureData);
+                    objSelectPreivew.gameObject.SetActive(true);
+                    objSelectPreivew.transform.position = targetPos;
+                }
+                //如果选择的是删除生物
+                if(selectCreatureDestory != null)
+                {
+                    selectCreatureDestory.transform.position = targetPos;
+                }
+                selectTargetPos = targetPos;
             }
         }
     }
@@ -173,23 +181,35 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
+    /// 选择了删除生物
+    /// </summary>
+    public void SelectCreatureDestory()
+    {
+        //先取消所有选择
+        ClearSelectData();
+        //设置选择的预制
+        selectCreatureDestory = CreatureHandler.Instance.manager.GetCreatureSelectDestory();
+        selectCreatureDestory.gameObject.SetActive(true);
+    }
+
+    /// <summary>
+    /// 处理删除生物(仅限于防守)
+    /// </summary>
+    public void SelectCreatureDestoryHandle()
+    {
+        var targetCreature = fightData.GetDefenseCreatureByPos(selectTargetPos);
+        if(targetCreature == null)
+            return;
+        CreatureHandler.Instance.RemoveCreatureEntity(targetCreature, CreatureTypeEnum.FightDefense);
+    }
+
+    /// <summary>
     /// 选择了一张防御卡
     /// </summary>
     public void SelectCard(UIViewCreatureCardItem targetView)
     {
-        //如果原来没有选中
-        if (selectCreatureCard == null)
-        {
-
-        }
-        //如果原来有选中 需要取消原来的选中物体
-        else
-        {
-            //如果选中的数据是当前的数据 则不做处理
-            if (targetView == selectCreatureCard)
-                return;
-            ClearSelectData();
-        }
+        //先取消所有选择
+        ClearSelectData();
         selectCreatureCard = targetView;
         CreatureHandler.Instance.CreateDefCreature(targetView.cardData.creatureData, (targetObj) =>
         {
@@ -203,7 +223,14 @@ public class GameFightLogic : BaseGameLogic
     /// </summary>
     public void UnSelectCard()
     {
-        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_UnSelectCard, selectCreatureCard);
+        ClearSelectData();
+    }
+
+    /// <summary>
+    /// 取消选择删除生物
+    /// </summary>
+    public void UnSelectCreatureDestory()
+    {
         ClearSelectData();
     }
 
@@ -214,8 +241,8 @@ public class GameFightLogic : BaseGameLogic
     {
         if (selectCreature == null)
             return;
-        bool checkPosHasMainCreature = fightData.CheckDefenseCreatureByPos(selectCreaturePutPost);
-        if (checkPosHasMainCreature)
+        bool checkPosHasCreature = fightData.CheckDefenseCreatureByPos(selectTargetPos);
+        if (checkPosHasCreature)
         {
             //已经有生物了
             return;
@@ -231,14 +258,14 @@ public class GameFightLogic : BaseGameLogic
         //fightData.ChangeMagic(-createMagic);
 
         //设置生物位置
-        selectCreature.transform.position = selectCreaturePutPost;
+        selectCreature.transform.position = selectTargetPos;
 
         //设置生物进入战斗状态
         selectCreatureCard.cardData.creatureData.creatureState = CreatureStateEnum.Fight;
 
         //创建战斗生物数据
         FightCreatureBean fightCreatureData = new FightCreatureBean(selectCreatureCard.cardData.creatureData);
-        fightCreatureData.positionCreate = selectCreaturePutPost;
+        fightCreatureData.positionCreate = selectTargetPos;
 
         //创建战斗生物
         GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(selectCreature, fightCreatureData);
@@ -247,7 +274,7 @@ public class GameFightLogic : BaseGameLogic
             targetEntity.InitData(gameFightCreatureEntity);
         });
 
-        fightData.AddDefenseCreatureByPos(selectCreaturePutPost, gameFightCreatureEntity);
+        fightData.AddDefenseCreatureByPos(selectTargetPos, gameFightCreatureEntity);
         selectCreature = null;
 
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_PutCard, selectCreatureCard);
@@ -259,9 +286,9 @@ public class GameFightLogic : BaseGameLogic
     /// </summary>
     public void ClearSelectData(bool isDestroyImm = false)
     {
-        GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreaureSelectPreview();
+        GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreatureSelectPreview();
         objSelectPreivew.gameObject.SetActive(false);
-        //回收预制
+        //回收生物预制
         if (selectCreature != null)
         {
             if (isDestroyImm)
@@ -273,7 +300,17 @@ public class GameFightLogic : BaseGameLogic
                 CreatureHandler.Instance.RemoveCreatureObj(selectCreature, CreatureTypeEnum.FightDefense);
             }
         }
+        if (selectCreatureCard != null)
+        {
+            EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_UnSelectCard, selectCreatureCard);
+        }
+        if (selectCreatureDestory != null)
+        {
+            selectCreatureDestory.gameObject.SetActive(false);
+        }
+
         selectCreature = null;
+        selectCreatureDestory = null;
         selectCreatureCard = null;
     }
 

@@ -13,7 +13,7 @@ public partial class UIViewCreatureCardItemForLineup : UIViewCreatureCardItem
         switch (cardState)
         {
             case CardStateEnum.LineupSelect:
-                maskUI.ShowMask();
+                ui_Mask.gameObject.SetActive(true);
                 break;
             case CardStateEnum.LineupNoSelect:
                 break;

@@ -13,6 +13,8 @@ public class CreatureManager : BaseManager
 
     //生物预览
     public GameObject objCreatureSelectPreview;
+    public GameObject objCreatureSelectDestory;
+
     public SkeletonAnimation skeletonAnimationSelectPreview;
     public CreatureBean creatureDataSelectPreview;
 
@@ -42,7 +44,7 @@ public class CreatureManager : BaseManager
     /// 获取生物预览
     /// </summary>
     /// <returns></returns>
-    public GameObject GetCreaureSelectPreview(CreatureBean creatureData = null)
+    public GameObject GetCreatureSelectPreview(CreatureBean creatureData = null)
     {
         if (objCreatureSelectPreview == null)
         {
@@ -79,6 +81,21 @@ public class CreatureManager : BaseManager
     }
 
     /// <summary>
+    /// 获取选择生物删除
+    /// </summary>
+    /// <returns></returns>
+    public GameObject GetCreatureSelectDestory()
+    {
+        if (objCreatureSelectDestory == null)
+        {
+            string resPath = $"{PathInfo.CreaturesPrefabPath}/FightCreature_Destory.prefab";
+            var targetModel = GetModelForAddressablesSync(dicCreatureModel, resPath);
+            objCreatureSelectDestory = Instantiate(gameObject, targetModel);
+        }
+        return objCreatureSelectDestory;
+    }
+
+    /// <summary>
     /// 加载一个生物obj
     /// </summary>
     /// <param name="creatureId"></param>
@@ -91,7 +108,7 @@ public class CreatureManager : BaseManager
             LogUtil.LogError($"创建生物失败：没有找到ID为{creatureId}的生物");
             return;
         }
-  
+
         CreatureTypeEnum creatureType = itemCreatureInfo.GetCreatureType();
         //首先获取缓存池里的物体
         GameObject objItem = null;
@@ -152,7 +169,7 @@ public class CreatureManager : BaseManager
     /// </summary>
     public async void DestoryCreature(Queue<GameObject> pool, GameObject targetObj)
     {
-        targetObj.transform.position = new Vector3(0,-100,0);
+        targetObj.transform.position = new Vector3(0, -100, 0);
         //等待1帧防止 当前动作闪现问题
         await new WaitNextFrame();
         targetObj.SetActive(false);

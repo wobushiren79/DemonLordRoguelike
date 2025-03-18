@@ -21,5 +21,9 @@ public partial class UIViewCreatureCardItem
 
     public Image ui_CardBgBorad;
 
+    public TextMeshProUGUI ui_CDTime;
+
+    public Image ui_Mask;
+
 
 }

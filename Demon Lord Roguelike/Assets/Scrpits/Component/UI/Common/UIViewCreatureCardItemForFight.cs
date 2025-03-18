@@ -40,6 +40,7 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     protected float timeMaxForShowDetails = 1;
     public void Update()
     {
+        //处理详情展示
         if (timeUpdateForShowDetails >= 0)
         {
             timeUpdateForShowDetails += Time.deltaTime;
@@ -48,6 +49,23 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
                 timeUpdateForShowDetails = -1;
                 TriggerEvent(EventsInfo.UIViewCreatureCardItem_ShowDetails, this);
             }
+        }
+        //处理cd倒计时
+        if(cardData.cardState == CardStateEnum.FightRest)
+        {
+            CreatureBean creatureData = cardData.creatureData;
+            if(creatureData.creatureInfo.create_cd == 0)
+            {
+                ui_CDTime.gameObject.SetActive(false);
+                return;
+            } 
+            int cdTime = Mathf.CeilToInt(creatureData.creatureInfo.create_cd - creatureData.creatureStateTimeUpdate);
+            float progress = (creatureData.creatureInfo.create_cd - creatureData.creatureStateTimeUpdate) / creatureData.creatureInfo.create_cd;
+            if (cdTime < 0)
+                cdTime = 0;
+            if (progress < 0)
+                progress = 0;
+            SetCDTime($"{cdTime}",progress);
         }
     }
 
@@ -87,10 +105,11 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
                 ui_CardBg.color = Color.green;
                 break;
             case CardStateEnum.Fighting:
-                maskUI.ShowMask();
+                ui_Mask.gameObject.SetActive(true);
                 break;
             case CardStateEnum.FightRest:
-                maskUI.ShowMask();
+                ui_Mask.gameObject.SetActive(true);
+                ui_CDTime.gameObject.SetActive(true);
                 break;
         }
     }
@@ -201,10 +220,11 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
         {
             switch (cardData.cardState)
             {
-                case CardStateEnum.Fighting:
+                //如果是其他选择状态 要取消选择
+                case CardStateEnum.FightSelect:
+                    SetCardState(CardStateEnum.FightIdle);
                     break;
                 default:
-                    SetCardState(CardStateEnum.FightIdle);
                     break;
             }
         }
@@ -226,6 +246,8 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
             {
                 case CardStateEnum.FightSelect:
                     SetCardState(CardStateEnum.FightIdle);
+                    break;
+                default:
                     break;
             }
         }
