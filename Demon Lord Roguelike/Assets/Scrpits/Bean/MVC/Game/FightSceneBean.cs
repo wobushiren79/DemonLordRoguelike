@@ -8,6 +8,14 @@ public partial class FightSceneBean : BaseBean
 	/// </summary>
 	public string name_res;
 	/// <summary>
+	///道路方格颜色1
+	/// </summary>
+	public string road_color_a;
+	/// <summary>
+	///道路方格颜色2
+	/// </summary>
+	public string road_color_b;
+	/// <summary>
 	///天空盒子
 	/// </summary>
 	public string skybox_mat;
