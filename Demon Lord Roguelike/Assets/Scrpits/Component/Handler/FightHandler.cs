@@ -16,7 +16,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     }
 
     /// <summary>
-    /// ¸üĞÂ¹¥»÷Ä£×é
+    /// æ›´æ–°æ”»å‡»æ¨¡ç»„
     /// </summary>
     public void UpdateHandleForAttackModePrefab()
     {
@@ -31,7 +31,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     }
 
     /// <summary>
-    /// ¸üĞÂÕ½¶·Ô¤ÖÆ
+    /// æ›´æ–°æˆ˜æ–—é¢„åˆ¶
     /// </summary>
     public void UpdateHandleForFightPrefab()
     {
@@ -46,7 +46,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     }
 
     /// <summary>
-    /// ¸üĞÂµ¹¼ÆÊ±
+    /// æ›´æ–°å€’è®¡æ—¶
     /// </summary>
     public void UpdateHandleTimeCountDown()
     {
@@ -61,7 +61,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     }
 
     /// <summary>
-    /// ´´½¨Ò»¸öµ¹¼ÆÊ±
+    /// åˆ›å»ºä¸€ä¸ªå€’è®¡æ—¶
     /// </summary>
     public void CreateTimeCountDown(float countDownTime, Action<GameTimeCountDownBean> actionForEnd)
     {
@@ -71,7 +71,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     }
 
     /// <summary>
-    /// ÒÆ³ıÒ»¸öµ¹¼ÆÊ±
+    /// ç§»é™¤ä¸€ä¸ªå€’è®¡æ—¶
     /// </summary>
 
     public void RemoveTimeCountDown(GameTimeCountDownBean targetData)
@@ -80,7 +80,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     }
 
     /// <summary>
-    /// ´´½¨Ò»¸ö¹¥»÷Ô¤ÖÆ
+    /// åˆ›å»ºä¸€ä¸ªæ”»å‡»é¢„åˆ¶
     /// </summary>
     public void CreateAttackModePrefab(int attackModeId, Action<BaseAttackMode> actionForComplete)
     {
@@ -97,7 +97,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     }
 
     /// <summary>
-    /// ÒÆ³ıÒ»¸ö¹¥»÷Ô¤ÖÆ
+    /// ç§»é™¤ä¸€ä¸ªæ”»å‡»é¢„åˆ¶
     /// </summary>
     public void RemoveAttackModePrefab(BaseAttackMode targetMode)
     {
@@ -106,7 +106,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     }
 
     /// <summary>
-    /// ´´½¨µôÂä½ğ±Ò
+    /// åˆ›å»ºæ‰è½é‡‘å¸
     /// </summary>
     /// <param name="dropPos"></param>
     public void CreateDropCoin(Vector3 dropPos)
@@ -128,7 +128,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
 
             if (targetPrefab.spriteRenderer != null)
             {
-                //ÉèÖÃÓÚÉãÏñÍ·½Ç¶È³ÖÆ½
+                //è®¾ç½®äºæ‘„åƒå¤´è§’åº¦æŒå¹³
                 var mainCamera = CameraHandler.Instance.manager.mainCamera;
                 targetPrefab.spriteRenderer.transform.eulerAngles = mainCamera.transform.eulerAngles;
             }
@@ -137,16 +137,16 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
                 targetPrefab.collider.enabled = false;
             }
 
-            //²¥·ÅÒ»¸öµôÂä¶¯»­
+            //æ’­æ”¾ä¸€ä¸ªæ‰è½åŠ¨ç”»
             float randomX = UnityEngine.Random.Range(-0.5f, 0.5f);
             float randomZ = UnityEngine.Random.Range(-0.5f, 0.5f);
             Vector3 endPos = new Vector3(dropPos.x + randomX, dropPos.y + 0.1f, dropPos.z + randomZ);
             Vector3 startPos = dropPos + new Vector3(0, 0.5f, 0);
-            // Ê¹ÓÃDOPath´´½¨Å×ÎïÏßÒÆ¶¯¶¯»­
+            // ä½¿ç”¨DOPathåˆ›å»ºæŠ›ç‰©çº¿ç§»åŠ¨åŠ¨ç”»
             targetPrefab.gameObject.transform.position = startPos;
             targetPrefab.gameObject.transform
                 .DOJump(endPos, 0.3f, 2, 0.8f)
-                .SetEase(Ease.Linear)// ÉèÖÃ¶¯»­µÄ»º¶¯Ğ§¹û
+                .SetEase(Ease.Linear)// è®¾ç½®åŠ¨ç”»çš„ç¼“åŠ¨æ•ˆæœ
                 .OnComplete(() =>
                 {
                     targetPrefab.SetState(GameFightPrefabStateEnum.DropCheck);
@@ -159,7 +159,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     }
 
     /// <summary>
-    /// ´´½¨µôÂäÄ§Á¦
+    /// åˆ›å»ºæ‰è½é­”åŠ›
     /// </summary>
     /// <param name="dropPos"></param>
     public void CreateDropMagic(Vector3 dropPos)
@@ -181,7 +181,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
 
             if (targetPrefab.spriteRenderer != null)
             {
-                //ÉèÖÃÓÚÉãÏñÍ·½Ç¶È³ÖÆ½
+                //è®¾ç½®äºæ‘„åƒå¤´è§’åº¦æŒå¹³
                 var mainCamera = CameraHandler.Instance.manager.mainCamera;
                 targetPrefab.spriteRenderer.transform.eulerAngles = mainCamera.transform.eulerAngles;
             }
@@ -195,7 +195,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     }
 
     /// <summary>
-    /// ÒÆ³ıÕ½¶·Ô¤ÖÆ
+    /// ç§»é™¤æˆ˜æ–—é¢„åˆ¶
     /// </summary>
     public void RemoveFightPrefab(GameFightPrefabEntity targetEntity)
     {

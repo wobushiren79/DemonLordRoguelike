@@ -4,33 +4,33 @@ using UnityEngine;
 
 public class FightManager : BaseManager
 {
-    //¹¥»÷Ô¤ÖÆobj
+    //æ”»å‡»é¢„åˆ¶obj
     public Dictionary<string, GameObject> dicAttackModeObj = new Dictionary<string, GameObject>();
-    //¹¥»÷Ô¤ÖÆµÄ»º´æ³Ø
+    //æ”»å‡»é¢„åˆ¶çš„ç¼“å­˜æ± 
     public Dictionary<long, Queue<BaseAttackMode>> dicPoolAttackModeObj = new Dictionary<long, Queue<BaseAttackMode>>();
-    //¹¥»÷Ô¤ÖÆÁĞ±í
+    //æ”»å‡»é¢„åˆ¶åˆ—è¡¨
     public List<BaseAttackMode> listAttackModePrefab = new List<BaseAttackMode>();
 
 
     public static string pathDropMagicPrefab = "Assets/LoadResources/Common/FightDropMagic.prefab";
     public static string pathDropCoinPrefab = "Assets/LoadResources/Common/FightDropCoin.prefab";
-    //Ò»Ğ©Õ½¶·ÔÓÏîÔ¤ÖÆ
+    //ä¸€äº›æˆ˜æ–—æ‚é¡¹é¢„åˆ¶
     public Dictionary<string, GameObject> dicFightModeObj = new Dictionary<string, GameObject>();
-    //Õ½¶·ÔÓÏî»º´æ³Ø
+    //æˆ˜æ–—æ‚é¡¹ç¼“å­˜æ± 
     public Dictionary<string, Queue<GameFightPrefabEntity>> dicPoolFightObj = new Dictionary<string, Queue<GameFightPrefabEntity>>();
-    //Õ½¶·ÔÓÏîÁĞ±í
+    //æˆ˜æ–—æ‚é¡¹åˆ—è¡¨
     public List<GameFightPrefabEntity> listFightPrefab = new List<GameFightPrefabEntity>();
 
-    //µ¹¼ÆÊ±
+    //å€’è®¡æ—¶
     public List<GameTimeCountDownBean> listTimeCountDown = new List<GameTimeCountDownBean>();
     public Queue<GameTimeCountDownBean> poolTimeCountDown = new Queue<GameTimeCountDownBean>();
 
     /// <summary>
-    /// ÇåÀíËùÓĞÊı¾İ
+    /// æ¸…ç†æ‰€æœ‰æ•°æ®
     /// </summary>
     public void Clear()
     {
-        //Õ½¶·Ô¤ÖÆÇåÀí
+        //æˆ˜æ–—é¢„åˆ¶æ¸…ç†
         for (int i = 0; i < listAttackModePrefab.Count; i++)
         {
             var item = listAttackModePrefab[i];
@@ -48,7 +48,7 @@ public class FightManager : BaseManager
         }
         dicPoolAttackModeObj.Clear();
 
-        //Õ½¶·ÔÓÏîÇåÀí
+        //æˆ˜æ–—æ‚é¡¹æ¸…ç†
         for (int i = 0; i < listFightPrefab.Count; i++)
         {
             var item = listFightPrefab[i];
@@ -66,13 +66,13 @@ public class FightManager : BaseManager
         }
         dicPoolFightObj.Clear();
 
-        //µ¹¼ÆÊ±ÇåÀí
+        //å€’è®¡æ—¶æ¸…ç†
         listTimeCountDown.Clear();
         poolTimeCountDown.Clear();
     }
 
     /// <summary>
-    /// »ñÈ¡Ò»¸öĞÂµÄµ¹¼ÆÊ±
+    /// è·å–ä¸€ä¸ªæ–°çš„å€’è®¡æ—¶
     /// </summary>
     public GameTimeCountDownBean GetNewTimeCountDown()
     {
@@ -89,7 +89,7 @@ public class FightManager : BaseManager
     }
 
     /// <summary>
-    /// ÒÆ³ıµ¹¼ÆÊ±
+    /// ç§»é™¤å€’è®¡æ—¶
     /// </summary>
     /// <param name="targetData"></param>
     public void RemoveTimeCountDown(GameTimeCountDownBean targetData)
@@ -100,7 +100,7 @@ public class FightManager : BaseManager
     }
 
     /// <summary>
-    /// »ñÈ¡FightPrefab
+    /// è·å–FightPrefab
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
@@ -114,12 +114,12 @@ public class FightManager : BaseManager
                 return itemFightPrefab;
             }
         }
-        LogUtil.LogError($"GetFightPrefab Ê§°ÜÃ»ÓĞÕÒµ½id_{id}");
+        LogUtil.LogError($"GetFightPrefab å¤±è´¥æ²¡æœ‰æ‰¾åˆ°id_{id}");
         return null;
     }
 
     /// <summary>
-    /// »ñÈ¡µôÂä½ğ±ÒÔ¤ÖÆ
+    /// è·å–æ‰è½é‡‘å¸é¢„åˆ¶
     /// </summary>
     public void GetDropCoinPrefab(Action<GameFightPrefabEntity> actionForComplete)
     {
@@ -134,7 +134,7 @@ public class FightManager : BaseManager
     }
 
     /// <summary>
-    /// »ñÈ¡µôÂäÄ§Á¦Ô¤ÖÆ
+    /// è·å–æ‰è½é­”åŠ›é¢„åˆ¶
     /// </summary>
     public void GetDropMagicPrefab(Action<GameFightPrefabEntity> actionForComplete)
     {
@@ -149,7 +149,7 @@ public class FightManager : BaseManager
     }
 
     /// <summary>
-    /// ÒÆ³ı¹¥»÷Ä£×é
+    /// ç§»é™¤æ”»å‡»æ¨¡ç»„
     /// </summary>
     /// <param name="targetMode"></param>
     public void RemoveFightPrefabCommon(GameFightPrefabEntity targetEntity)
@@ -169,7 +169,7 @@ public class FightManager : BaseManager
 
 
     /// <summary>
-    /// »ñÈ¡Õ½¶·Ô¤ÖÆ-Í¨ÓÃ
+    /// è·å–æˆ˜æ–—é¢„åˆ¶-é€šç”¨
     /// </summary>
     /// <param name="assetsPath"></param>
     /// <param name="actionForComplete"></param>
@@ -202,7 +202,7 @@ public class FightManager : BaseManager
     }
 
     /// <summary>
-    /// »ñÈ¡¹¥»÷Ä£×é
+    /// è·å–æ”»å‡»æ¨¡ç»„
     /// </summary>
     public void GetAttackModePrefab(int attackModeId, Action<BaseAttackMode> actionForComplete)
     {
@@ -229,7 +229,7 @@ public class FightManager : BaseManager
     }
 
     /// <summary>
-    /// ÒÆ³ı¹¥»÷Ä£×é
+    /// ç§»é™¤æ”»å‡»æ¨¡ç»„
     /// </summary>
     /// <param name="targetMode"></param>
     public void RemoveAttackModePrefab(BaseAttackMode targetMode)

@@ -128,7 +128,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             {
                 currentFightScene = Instantiate(targetScene);
                 currentFightScene.SetActive(true);
-                currentFightScene.transform.position = Vector3.zero;
+                currentFightScene.transform.position = new Vector3(0, 0, -(fightData.sceneRoadNumMax - fightData.sceneRoadNum) / 2f);
                 currentFightScene.transform.eulerAngles = Vector3.zero;
 
                 //获取战斗道路

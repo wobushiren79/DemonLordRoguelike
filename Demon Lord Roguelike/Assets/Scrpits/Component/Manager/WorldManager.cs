@@ -4,13 +4,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class WorldManager : BaseManager
 {
     //战斗场景
     public Dictionary<string, GameObject> dicScene = new Dictionary<string, GameObject>();
     //当前天空盒
-    public Material currentSkyBoxMat;
+    public AsyncOperationHandle<Material> currentSkyBox;
 
     /// <summary>
     /// 获取战斗场景
@@ -34,7 +35,7 @@ public class WorldManager : BaseManager
         //加载天空盒子
         LoadAddressablesUtil.LoadAssetAsync<Material>(skyboxPath, data =>
         {
-            currentSkyBoxMat = data.Result;
+            currentSkyBox = data; 
             actionForComplete?.Invoke(data.Result);
         });
     }
@@ -69,11 +70,10 @@ public class WorldManager : BaseManager
     /// </summary>
     public void RemoveSkybox()
     {
-        //加载天空盒子
-        if (currentSkyBoxMat != null)
+        if (currentSkyBox.IsValid() && currentSkyBox.Status == AsyncOperationStatus.Succeeded)
         {
-            LoadAddressablesUtil.Release(currentSkyBoxMat);
-            RenderSettings.skybox = null;
+            currentSkyBox.Release();
         }
+        RenderSettings.skybox = null;
     }
 }

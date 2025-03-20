@@ -107,6 +107,7 @@ public partial class UIViewCreatureCardItem : BaseUIView
         ui_CardBg.color = colorBG;
         ui_CDTime.gameObject.SetActive(false);
         ui_Mask.gameObject.SetActive(false);
+        ui_Mask.fillAmount = 1;
     }
 
     /// <summary>

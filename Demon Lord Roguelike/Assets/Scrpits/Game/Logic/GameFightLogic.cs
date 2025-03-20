@@ -30,7 +30,8 @@ public class GameFightLogic : BaseGameLogic
                 //延迟0.1秒 防止一些镜头的1，2帧误差
                 await new WaitForSeconds(0.1f);
                 //加载核心（魔王）实例
-                CreatureHandler.Instance.CreateDefCoreCreature(fightData.fightDefenseCoreData.creatureData, (defCoreCreatureEntity) =>
+                Vector3 creaturePos= new Vector3(-1f, 0, fightData.sceneRoadNum / 2f + 0.5f);
+                CreatureHandler.Instance.CreateDefenseCoreCreature(fightData.fightDefenseCoreData.creatureData, creaturePos, (defCoreCreatureEntity) =>
                 {
                     //设置魔王核心
                     fightData.fightDefenseCoreCreature = defCoreCreatureEntity;
@@ -130,7 +131,7 @@ public class GameFightLogic : BaseGameLogic
                 return;
             }
             fightData.timeUpdateTargetForAttackCreate = attackDetailsData.timeNextAttack;
-            CreatureHandler.Instance.CreateAttackCreature(attackDetailsData);
+            CreatureHandler.Instance.CreateAttackCreature(attackDetailsData, fightData.sceneRoadNum);
         }
     }
 
@@ -212,7 +213,7 @@ public class GameFightLogic : BaseGameLogic
         //先取消所有选择
         ClearSelectData();
         selectCreatureCard = targetView;
-        CreatureHandler.Instance.CreateDefCreature(targetView.cardData.creatureData, (targetObj) =>
+        CreatureHandler.Instance.CreateDefenseCreature(targetView.cardData.creatureData, (targetObj) =>
         {
             selectCreature = targetObj;
         });

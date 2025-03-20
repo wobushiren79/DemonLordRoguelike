@@ -9,11 +9,11 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// <summary>
     /// 生成防御核心生物
     /// </summary>
-    public void CreateDefCoreCreature(CreatureBean creatureData,Action<GameFightCreatureEntity> actionForComplete)
+    public void CreateDefenseCoreCreature(CreatureBean creatureData, Vector3 creaturePos, Action<GameFightCreatureEntity> actionForComplete)
     {
         GetCreatureObj(creatureData.id, (targetObj) =>
         {
-            targetObj.transform.position = new Vector3(-1f, 0, 3.5f);
+            targetObj.transform.position = creaturePos;
             GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
             //创建生物
             FightCreatureBean fightCreatureData = gameFightLogic.fightData.fightDefenseCoreData;
@@ -31,7 +31,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// <summary>
     ///  创建防御生物
     /// </summary>
-    public void CreateDefCreature(CreatureBean creatureData, Action<GameObject> actionForComplete)
+    public void CreateDefenseCreature(CreatureBean creatureData, Action<GameObject> actionForComplete)
     {
         GetCreatureObj((int)creatureData.id, (targetObj) =>
         {
@@ -49,14 +49,14 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// <summary>
     /// 创建进攻生物
     /// </summary>
-    public void CreateAttackCreature(FightAttackDetailsBean fightAttackDetails)
+    public void CreateAttackCreature(FightAttackDetailsBean fightAttackDetails,int roadNum)
     {
         //一次创建的数量
         int numCreature = fightAttackDetails.creatureIds.Count;
         for (int i = 0; i < numCreature; i++)
         {
             var creatureId = fightAttackDetails.creatureIds[i];
-            CreateAttCreature(creatureId, (targetObj) =>
+            CreateAttackCreature(creatureId, roadNum, (targetObj) =>
             {
 
             });
@@ -68,16 +68,16 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// 创建进攻生物
     /// </summary>
     /// <param name="targetRoad">目标进攻路线 0为随机</param>
-    public void CreateAttCreature(int creatureId, Action<GameObject> actionForComplete, int targetRoad = 0)
+    public void CreateAttackCreature(int creatureId,int roadNum, Action<GameObject> actionForComplete, int targetRoad = 0)
     {
         GetCreatureObj(creatureId, (targetObj) =>
         {
             //随机生成某一路
             if (targetRoad == 0)
             {
-                targetRoad = UnityEngine.Random.Range(1, 7);
+                targetRoad = UnityEngine.Random.Range(1, roadNum + 1);
             }
-            targetObj.transform.position = new Vector3(10f, 0, targetRoad);
+            targetObj.transform.position = new Vector3(12f, 0, targetRoad);
 
             //创建战斗生物
             FightCreatureBean fightCreatureData = new FightCreatureBean(creatureId);
@@ -176,7 +176,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         if (creatureType == CreatureTypeEnum.FightDefense)
         {
             gameFightLogic.fightData.RemoveDefenseCreatureByPos(targetEntity.fightCreatureData.positionCreate);
-            targetEntity.fightCreatureData.creatureData.creatureState =  CreatureStateEnum.Rest;
+            targetEntity.fightCreatureData.creatureData.creatureState = CreatureStateEnum.Rest;
             targetEntity.fightCreatureData.ResetData();
             EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureChangeState, targetEntity.fightCreatureData.creatureData.creatureId, CreatureStateEnum.Rest);
         }

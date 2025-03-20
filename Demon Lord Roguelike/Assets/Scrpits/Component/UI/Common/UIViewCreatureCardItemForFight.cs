@@ -222,21 +222,14 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     /// </summary>
     public void EventForGameFightLogicUnSelectCard(UIViewCreatureCardItem targetView)
     {
-        if (this != targetView)
+        //设置卡片状态
+        switch (cardData.cardState)
         {
-            switch (cardData.cardState)
-            {
-                case CardStateEnum.FightSelect:
-                    SetCardState(CardStateEnum.FightIdle);
-                    break;
-                default:
-                    break;
-            }
-        }
-        else
-        {
-            //设置卡片状态
-            SetCardState(CardStateEnum.FightIdle);
+            case CardStateEnum.FightSelect:
+                SetCardState(CardStateEnum.FightIdle);
+                break;
+            default:
+                break;
         }
     }
 
@@ -252,7 +245,7 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     }
 
     /// <summary>
-    /// 事件-生物状态修啊给i
+    /// 事件-生物状态修改
     /// </summary>
     public void EventForGameFightLogicCreatureChangeState(string creatureId,CreatureStateEnum creatureState)
     {

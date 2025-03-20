@@ -24,6 +24,7 @@ public class FightBean
 
     public int currentMagic;//当前魔力值
 
+    public int sceneRoadNumMax = 6;//路线数量最大值
     public int sceneRoadNum = 6;//场景路线数量
     public int sceneRoadLength = 10;//场景路线长度
     //进攻数据
