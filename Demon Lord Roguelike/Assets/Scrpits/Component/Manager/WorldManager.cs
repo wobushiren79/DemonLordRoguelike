@@ -52,6 +52,19 @@ public class WorldManager : BaseManager
     }
 
     /// <summary>
+    /// 获取战斗场景的道路
+    /// </summary>
+    /// <param name="actionForComplete"></param>
+    public void GetFightSceneRoad(Action<GameObject> actionForComplete)
+    {
+        string dataPath = $"{PathInfo.CommonPrefabPath}/FightSceneRoad.prefab";
+        GetModelForAddressables(dicScene, dataPath, (target) =>
+        {
+            actionForComplete?.Invoke(target);
+        });
+    }
+
+    /// <summary>
     /// 移除天空盒
     /// </summary>
     public void RemoveSkybox()

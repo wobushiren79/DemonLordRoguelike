@@ -8,7 +8,7 @@ public class UIPopupProtalDetails : PopupShowCommonView
 {
 
     /// <summary>
-    /// 设置数据
+    /// 璁剧疆鏁版嵁
     /// </summary>
     /// <param name="data"></param>
     public override void SetData(object data)
@@ -26,7 +26,7 @@ public class UIPopupProtalDetails : PopupShowCommonView
     }
 
     /// <summary>
-    /// 设置单个数据
+    /// 璁剧疆鍗曚釜鏁版嵁
     /// </summary>
     public void SetItemContente(int index, string title, string content)
     {

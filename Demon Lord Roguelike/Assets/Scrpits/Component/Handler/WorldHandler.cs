@@ -1,61 +1,59 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
 {
-    //µ±Ç°Õ½¶·³¡¾°
+    //å½“å‰æˆ˜æ–—åœºæ™¯
     public GameObject currentFightScene;
-    //»ùµØ³¡¾°
+    //åŸºåœ°åœºæ™¯
     public GameObject currentBaseScene;
 
     /// <summary>
-    /// ½øÈëÓÎÏ·½øÈëÖ÷½çÃæÑ¡Ïî
+    /// è¿›å…¥æ¸¸æˆè¿›å…¥ä¸»ç•Œé¢é€‰é¡¹
     /// </summary>
     public void EnterMainForBaseScene()
     {
         ClearWorldData(() =>
         {
-            //´ò¿ª¼ÓÔØUI
+            //æ‰“å¼€åŠ è½½UI
             UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
-            //¾µÍ·³õÊ¼»¯
+            //é•œå¤´åˆå§‹åŒ–
             CameraHandler.Instance.InitData();
-            //»·¾³²ÎÊı³õÊ¼»¯
+            //ç¯å¢ƒå‚æ•°åˆå§‹åŒ–
             VolumeHandler.Instance.InitData(GameSceneTypeEnum.Base);
-            //¼ÓÔØ»ùµØ³¡¾°
+            //åŠ è½½åŸºåœ°åœºæ™¯
             LoadBaseScene((targetObj) =>
             {
-                //¹Ø±ÕLoadingUI ´ò¿ª¿ªÊ¼UI
+                //å…³é—­LoadingUI æ‰“å¼€å¼€å§‹UI
                 UIHandler.Instance.OpenUIAndCloseOther<UIMainStart>();
             });
         });
     }
 
     /// <summary>
-    /// ½øÈëÓÎÏ·ÖĞ »ùµØ³¡¾°
+    /// è¿›å…¥æ¸¸æˆä¸­ åŸºåœ°åœºæ™¯
     /// </summary>
-    public void EnterGameForBaseScene(UserDataBean userData,bool isInitScene)
+    public void EnterGameForBaseScene(UserDataBean userData, bool isInitScene)
     {
         Action actionForStart = () =>
         {
-            //¾µÍ·³õÊ¼»¯
+            //é•œå¤´åˆå§‹åŒ–
             CameraHandler.Instance.InitData();
-            //»·¾³²ÎÊı³õÊ¼»¯
+            //ç¯å¢ƒå‚æ•°åˆå§‹åŒ–
             VolumeHandler.Instance.InitData(GameSceneTypeEnum.Base);
-            //ÉèÖÃ»ùµØ³¡¾°ÊÓ½Ç
+            //è®¾ç½®åŸºåœ°åœºæ™¯è§†è§’
             CameraHandler.Instance.InitBaseSceneControlCamera(() =>
             {
-                //¹Ø±ÕLoadingUI
+                //å…³é—­LoadingUI
                 var uiBaseMain = UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
             }, userData.selfCreature);
         };
         if (isInitScene)
         {
-            //ÇåÀíÊÀ½çÊı¾İ
+            //æ¸…ç†ä¸–ç•Œæ•°æ®
             ClearWorldData(() =>
-            {                   
-                //¼ÓÔØ»ùµØ³¡¾°
+            {
+                //åŠ è½½åŸºåœ°åœºæ™¯
                 LoadBaseScene((targetObj) =>
                 {
                     actionForStart?.Invoke();
@@ -71,25 +69,25 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
 
 
     /// <summary>
-    /// ½øÈëÕ½¶·³¡¾°
+    /// è¿›å…¥æˆ˜æ–—åœºæ™¯
     /// </summary>
     public void EnterGameForFightScene(FightBean fightData)
     {
         ClearWorldData(() =>
         {
-            //´ò¿ª¼ÓÔØUI
+            //æ‰“å¼€åŠ è½½UI
             UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
-            //¾µÍ·³õÊ¼»¯
+            //é•œå¤´åˆå§‹åŒ–
             CameraHandler.Instance.InitData();
-            //»·¾³²ÎÊı³õÊ¼»¯
+            //ç¯å¢ƒå‚æ•°åˆå§‹åŒ–
             VolumeHandler.Instance.InitData(GameSceneTypeEnum.Fight);
-            //¿ªÊ¼Õ½¶·
+            //å¼€å§‹æˆ˜æ–—
             GameHandler.Instance.StartGameFight(fightData);
         });
     }
 
     /// <summary>
-    /// ¼ÓÔØ»ùµØ³¡¾°
+    /// åŠ è½½åŸºåœ°åœºæ™¯
     /// </summary>
     /// <param name="actionForComplete"></param>
     public void LoadBaseScene(Action<GameObject> actionForComplete)
@@ -106,25 +104,25 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     }
 
     /// <summary>
-    /// ¼ÓÔØÕ½¶·³¡¾°
+    /// åŠ è½½æˆ˜æ–—åœºæ™¯
     /// </summary>
-    public void LoadFightScene(int fightSceneId, Action<GameObject> actionForComplete)
+    public void LoadFightScene(FightBean fightData, Action<GameObject> actionForComplete)
     {
         UnLoadFightScene();
 
-        FightSceneBean fightSceneData = FightSceneCfg.GetItemData(fightSceneId);
+        FightSceneBean fightSceneData = FightSceneCfg.GetItemData(fightData.fightSceneId);
         if (fightSceneData == null)
         {
-            LogUtil.LogError($"²éÑ¯FightSceneÕ½¶·³¡¾°Ê§°Ü  Ã»ÓĞÕÒµ½idÎª{fightSceneId}µÄÕ½¶·³¡¾°");
+            LogUtil.LogError($"æŸ¥è¯¢FightSceneæˆ˜æ–—åœºæ™¯å¤±è´¥  æ²¡æœ‰æ‰¾åˆ°idä¸º{fightData.fightSceneId}çš„æˆ˜æ–—åœºæ™¯");
             return;
         }
-
-        //»ñÈ¡Ìì¿ÕºĞ
+        //è·å–å¤©ç©ºç›’
         manager.GetSkybox(fightSceneData.skybox_mat, (skyboxMat) =>
         {
-            //ÉèÖÃÌì¿ÕºĞ
+
+            //è®¾ç½®å¤©ç©ºç›’
             RenderSettings.skybox = skyboxMat;
-            //»ñÈ¡³¡¾°
+            //è·å–åœºæ™¯
             string dataPath = $"{PathInfo.FightScenePrefabPath}/{fightSceneData.name_res}";
             manager.GetFightScene(dataPath, (targetScene) =>
             {
@@ -132,27 +130,40 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
                 currentFightScene.SetActive(true);
                 currentFightScene.transform.position = Vector3.zero;
                 currentFightScene.transform.eulerAngles = Vector3.zero;
-                actionForComplete?.Invoke(currentFightScene);
+
+                //è·å–æˆ˜æ–—é“è·¯
+                manager.GetFightSceneRoad((targetSceneRoad) =>
+                {
+                    var sceneRoad = Instantiate(targetSceneRoad);
+                    sceneRoad.transform.SetParent(currentFightScene.transform);
+                    //è®¾ç½®é“è·¯æ•°æ®
+                    sceneRoad.transform.localScale = new Vector3(fightData.sceneRoadLength, fightData.sceneRoadNum, 1);
+                    sceneRoad.transform.eulerAngles = new Vector3(90, 0, 0);
+                    sceneRoad.transform.position = new Vector3(fightData.sceneRoadLength / 2f + 0.5f, 0, fightData.sceneRoadNum / 2f + 0.5f);
+                    var roadMR = sceneRoad.GetComponent<MeshRenderer>();
+                    roadMR.sharedMaterial.SetVector("_GridSize", new Vector2(fightData.sceneRoadLength, fightData.sceneRoadNum));
+                    actionForComplete?.Invoke(currentFightScene);
+                });
             });
         });
     }
 
     /// <summary>
-    /// Ğ¶ÔØÕ½¶·³¡¾°
+    /// å¸è½½æˆ˜æ–—åœºæ™¯
     /// </summary>
     public void UnLoadFightScene()
     {
-        //É¾³ıÒÑÓĞµÄÕ½¶·³¡¾°
+        //åˆ é™¤å·²æœ‰çš„æˆ˜æ–—åœºæ™¯
         if (currentFightScene != null)
         {
             DestroyImmediate(currentFightScene);
         }
-        //ÒÆ³ıÌì¿ÕºĞ
+        //ç§»é™¤å¤©ç©ºç›’
         manager.RemoveSkybox();
     }
 
     /// <summary>
-    /// Ğ¶ÔØ»ùµØ³¡¾°
+    /// å¸è½½åŸºåœ°åœºæ™¯
     /// </summary>
     public void UnLoadBaseScene()
     {
@@ -160,35 +171,35 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         {
             DestroyImmediate(currentBaseScene);
         }
-        //ÒÆ³ıÌì¿ÕºĞ
+        //ç§»é™¤å¤©ç©ºç›’
         manager.RemoveSkybox();
     }
 
     /// <summary>
-    /// ÇåÀíÊÀ½çËùÓĞÊı¾İ
+    /// æ¸…ç†ä¸–ç•Œæ‰€æœ‰æ•°æ®
     /// </summary>
-    public async void ClearWorldData(Action actionForComplete,bool isShowLoading = true)
-    {      
-        //´ò¿ª¼ÓÔØUI
-        if(isShowLoading)
+    public async void ClearWorldData(Action actionForComplete, bool isShowLoading = true)
+    {
+        //æ‰“å¼€åŠ è½½UI
+        if (isShowLoading)
             UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
-        //¹Ø±ÕËùÓĞ¿ØÖÆ
+        //å…³é—­æ‰€æœ‰æ§åˆ¶
         GameControlHandler.Instance.manager.EnableAllControl(false);
 
         await new WaitNextFrame();
         UnLoadBaseScene();
         await new WaitNextFrame();
-        //logicÇåÀí
-        BaseGameLogic gameLogic =  GameHandler.Instance.manager.GetGameLogic<BaseGameLogic>();
+        //logicæ¸…ç†
+        BaseGameLogic gameLogic = GameHandler.Instance.manager.GetGameLogic<BaseGameLogic>();
         if (gameLogic != null)
         {
             gameLogic.ClearGame();
         }
         await new WaitNextFrame();
-        //ÇåÀíÁ£×Ó
+        //æ¸…ç†ç²’å­
         EffectHandler.Instance.manager.Clear();
         await new WaitNextFrame();
-        //ÇåÀí»º´æ
+        //æ¸…ç†ç¼“å­˜
         System.GC.Collect();
         await new WaitNextFrame();
         actionForComplete?.Invoke();

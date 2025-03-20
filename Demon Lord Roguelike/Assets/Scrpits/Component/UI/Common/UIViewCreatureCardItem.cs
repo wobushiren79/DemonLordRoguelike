@@ -9,7 +9,6 @@ using UnityEngine.UI;
 public partial class UIViewCreatureCardItem : BaseUIView
 {
     public CreatureCardItemBean cardData = new CreatureCardItemBean();
-
     public override void Awake()
     {
         base.Awake();
@@ -32,6 +31,8 @@ public partial class UIViewCreatureCardItem : BaseUIView
         SetRarity(creatureData.rarity);
 
         RefreshCardState(this.cardData.cardState);
+        //设置弹窗气泡数据
+        ui_BtnSelect_PopupButtonCommonView.SetData((creatureData),PopupEnum.CreatureCardDetails);
     }
 
     /// <summary>
@@ -114,7 +115,7 @@ public partial class UIViewCreatureCardItem : BaseUIView
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
-        if (viewButton == ui_BtnSelect)
+        if (viewButton == ui_BtnSelect_Button)
         {
             OnClickSelect();
         }

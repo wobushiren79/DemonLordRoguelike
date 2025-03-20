@@ -1,4 +1,4 @@
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 using UnityEngine;
 
 
@@ -13,8 +13,6 @@ public partial class UILineupManager
     public RectTransform ui_LineupContent;
 
     public UIViewCreatureCardItemForLineup ui_ViewCreatureCardItem;
-
-    public UIViewCreatureCardDetails ui_ViewCreatureCardDetails;
 
     public Button ui_OrderBtn_Rarity;
 

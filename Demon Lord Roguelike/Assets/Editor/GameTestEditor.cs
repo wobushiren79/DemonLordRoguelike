@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -9,7 +10,9 @@ public class GameTestEditor : Editor
     public int testDataCurrentMagic = 1000;
     public int testDataCardNum = 20;
     public int fightSceneId = 1;
-    public int fightCardId = 2001;
+    public string fightCardId = "2001";
+    public int fightSceneRoadNum = 6;    //道路数量
+    public int fightSceneRoadLength = 10;    //道路长度
 
     public int creatureId = 0;
     public int creatureModelId = 0;
@@ -82,7 +85,17 @@ public class GameTestEditor : Editor
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("测试数据-卡片生物ID");
-        fightCardId = EditorGUILayout.IntField(fightCardId);
+        fightCardId = EditorGUILayout.TextField(fightCardId);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("测试数据-测试场景道路数量");
+        fightSceneRoadNum = EditorGUILayout.IntField(fightSceneRoadNum);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("测试数据-测试场景道路长度");
+        fightSceneRoadLength = EditorGUILayout.IntField(fightSceneRoadLength);
         EditorGUILayout.EndHorizontal();
     }
 
@@ -93,13 +106,17 @@ public class GameTestEditor : Editor
     {
         if (GUILayout.Button("开始") && Application.isPlaying)
         {
-            CreatureBean creatureData = new CreatureBean(fightCardId);
-            creatureData.AddTestSkin();
-            launcher.StartForBaseTest(creatureData);
+            var ids = fightCardId.SplitForArrayLong(',');
+            if (ids.Length > 0)
+            {
+                CreatureBean creatureData = new CreatureBean(ids[0]);
+                creatureData.AddTestSkin();
+                launcher.StartForBaseTest(creatureData);
+            }
         }
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("生物ID");
-        fightCardId = EditorGUILayout.IntField(fightCardId);
+        fightCardId = EditorGUILayout.TextField(fightCardId);
         EditorGUILayout.EndHorizontal();
     }
 
@@ -110,7 +127,8 @@ public class GameTestEditor : Editor
     public FightBean GetTestData()
     {
         FightBean fightData = new FightBean();
-
+        fightData.sceneRoadNum = fightSceneRoadNum;
+        fightData.sceneRoadLength = fightSceneRoadLength;
         fightData.gameFightType = GameFightTypeEnum.Test;
         fightData.currentMagic = testDataCurrentMagic;
 
@@ -124,14 +142,15 @@ public class GameTestEditor : Editor
 
         //所有的卡皮数据
         fightData.dlDefenseCreatureData.Clear();
+        var ids = fightCardId.SplitForArrayLong(',');
         for (int i = 0; i < testDataCardNum; i++)
         {
-            CreatureBean itemData = new CreatureBean(fightCardId);
+            int index = i % ids.Length;
+            CreatureBean itemData = new CreatureBean(ids[index]);
             itemData.AddTestSkin();
             itemData.order = i;
             fightData.dlDefenseCreatureData.Add(itemData.creatureId, itemData);
         };
-
 
         FightCreatureBean fightDefCoreData = new FightCreatureBean(2001);
         fightDefCoreData.creatureData.AddSkin(2000001);

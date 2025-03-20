@@ -1,22 +1,22 @@
 public class PathInfo
 {
-    //Ìì¿ÕºĞ ¿ò¼Ü
+    //å¤©ç©ºç›’ æ¡†æ¶
     public static string SkyboxMatFrameWorkPath = "Assets/FrameWork/Materials/Skybox";
 
 
-    //Í¨ÓÃ×ÊÔ´
+    //é€šç”¨èµ„æº
     public static string CommonPrefabPath = "Assets/LoadResources/Common";
-    //Õ½¶·³¡¾°×ÊÔ´
+    //æˆ˜æ–—åœºæ™¯èµ„æº
     public static string FightScenePrefabPath = "Assets/LoadResources/FightScene";
-    //äÖÈ¾ Volume
+    //æ¸²æŸ“ Volume
     public static string RenderVolumePath = "Assets/LoadResources/Render/Volume.prefab";
-    //ÉãÏñÍ·
+    //æ‘„åƒå¤´
     public static string CameraDataPath = "Assets/LoadResources/Common/CameraData.prefab";
-    //¿ØÖÆ
+    //æ§åˆ¶
     public static string ControlDataPath = "Assets/LoadResources/Common/ControlData.prefab";
-    //ÉúÎïÔ¤ÖÆÂ·¾¶µØÖ·
+    //ç”Ÿç‰©é¢„åˆ¶è·¯å¾„åœ°å€
     public static string CreaturesPrefabPath = "Assets/LoadResources/Creatures";
-    //¹¥»÷Ô¤ÖÆ
+    //æ”»å‡»é¢„åˆ¶
     public static string AttackModePrefabPath = "Assets/LoadResources/AttackMode";
 
 }

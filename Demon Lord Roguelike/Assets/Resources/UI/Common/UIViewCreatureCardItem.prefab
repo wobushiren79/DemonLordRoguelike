@@ -968,7 +968,8 @@ MonoBehaviour:
     originalCardPos: {x: 0, y: 0}
     originalSibling: 0
     indexList: 0
-  ui_BtnSelect: {fileID: 882455290871425186}
+  ui_BtnSelect_Button: {fileID: 882455290871425186}
+  ui_BtnSelect_PopupButtonCommonView: {fileID: 7523531228887641337}
   ui_CardBg: {fileID: 8200156635581598641}
   ui_Icon: {fileID: 2992929411199304094}
   ui_AttributeItemText_Life: {fileID: 8866968502071271271}
@@ -1126,6 +1127,7 @@ GameObject:
   - component: {fileID: 1718613386269755034}
   - component: {fileID: 8269038274452040938}
   - component: {fileID: 882455290871425186}
+  - component: {fileID: 7523531228887641337}
   m_Layer: 5
   m_Name: BtnSelect
   m_TagString: Untagged
@@ -1234,6 +1236,22 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7523531228887641337
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8309540662255301359}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16e10e1ab6287e34bb1c2a56fb2273e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
+  _rectTransform: {fileID: 0}
+  timeDelayShow: 1
 --- !u!1001 &6164046366165247795
 PrefabInstance:
   m_ObjectHideFlags: 0

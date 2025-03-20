@@ -25,7 +25,7 @@ public class GameFightLogic : BaseGameLogic
         CameraHandler.Instance.InitFightSceneCamera(() =>
         {
             //加载战斗场景
-            WorldHandler.Instance.LoadFightScene(fightData.fightSceneId, async (targetObj) =>
+            WorldHandler.Instance.LoadFightScene(fightData, async (targetObj) =>
             {
                 //延迟0.1秒 防止一些镜头的1，2帧误差
                 await new WaitForSeconds(0.1f);
@@ -86,13 +86,14 @@ public class GameFightLogic : BaseGameLogic
         //如果有选中的物体
         if (selectCreature != null || selectCreatureDestory != null)
         {
-            RayUtil.RayToScreenPointForMousePosition(10, 1 << LayerInfo.Ground, out bool isCollider, out RaycastHit hit, CameraHandler.Instance.manager.mainCamera);
+            RayUtil.RayToScreenPointForMousePosition(50, 1 << LayerInfo.Ground, out bool isCollider, out RaycastHit hit, CameraHandler.Instance.manager.mainCamera);
             if (isCollider && hit.collider != null)
             {                
                 Vector3 hitPoint = hit.point;
+                
                 if (hitPoint.x < 1) hitPoint.x = 1;
-                if (hitPoint.x > 10) hitPoint.x = 10;
-                if (hitPoint.z > 6) hitPoint.z = 6;
+                if (hitPoint.x > fightData.sceneRoadLength) hitPoint.x = fightData.sceneRoadLength;
+                if (hitPoint.z > fightData.sceneRoadNum) hitPoint.z = fightData.sceneRoadNum;
                 if (hitPoint.z < 1) hitPoint.z = 1;
                 Vector3Int targetPos = Vector3Int.RoundToInt(hitPoint);
                 //如果选择的生物

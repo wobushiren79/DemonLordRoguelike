@@ -11,7 +11,7 @@ using UnityEngine;
 public partial class CameraHandler
 {
     /// <summary>
-    /// ³õÊ¼»¯Êı¾İ
+    /// åˆå§‹åŒ–æ•°æ®
     /// </summary>
     public void InitData()
     {
@@ -19,7 +19,7 @@ public partial class CameraHandler
     }
 
     /// <summary>
-    /// ³õÊ¼»¯»ùµØ³¡¾°ÉãÏñÍ·
+    /// åˆå§‹åŒ–åŸºåœ°åœºæ™¯æ‘„åƒå¤´
     /// </summary>
     public async void InitBaseSceneControlCamera(Action actionForComplete, CreatureBean creatureData)
     {
@@ -33,17 +33,17 @@ public partial class CameraHandler
 
         var targetSkeletonAnimation = targetRenderer.GetComponent<SkeletonAnimation>();
 
-        //ÉèÖÃ´óĞ¡
+        //è®¾ç½®å¤§å°
         targetRenderer.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine;
-        //ÉèÖÃ¹Ç÷ÀÊı¾İ
+        //è®¾ç½®éª¨éª¼æ•°æ®
         SpineHandler.Instance.SetSkeletonDataAsset(targetSkeletonAnimation, creatureData.creatureModel.res_name);
         string[] skinArray = creatureData.GetSkinArray();
-        //ĞŞ¸ÄÆ¤·ô
+        //ä¿®æ”¹çš®è‚¤
         SpineHandler.Instance.ChangeSkeletonSkin(targetSkeletonAnimation.skeleton, skinArray);
 
         controlTarget.transform.position = new Vector3(0, 0, -3);
 
-        //¹Ø±ÕÇĞ»»¶¯»­
+        //å…³é—­åˆ‡æ¢åŠ¨ç”»
         manager.SetMainCameraDefaultBlend(0);
 
         SetCameraForControl(CinemachineCameraEnum.Base);
@@ -52,14 +52,14 @@ public partial class CameraHandler
         manager.cm_Base.LookAt = targetRenderer;
         manager.cm_Base.PreviousStateIsValid = false;
         await new WaitNextFrame();
-        //ÉèÖÃÆ«×ª
+        //è®¾ç½®åè½¬
         targetRenderer.transform.eulerAngles = mainCamera.transform.eulerAngles;
 
         actionForComplete?.Invoke();
     }
 
     /// <summary>
-    /// ³õÊ¼»¯Õ½¶·³¡¾°ÊÓ½Ç
+    /// åˆå§‹åŒ–æˆ˜æ–—åœºæ™¯è§†è§’
     /// </summary>
     public async void InitFightSceneCamera(Action actionForComplete)
     {
@@ -69,7 +69,7 @@ public partial class CameraHandler
         var controlTarget = GameControlHandler.Instance.manager.controlTargetForEmpty;
         controlTarget.transform.position = new Vector3(3, 0, 3);
 
-        //¹Ø±ÕÇĞ»»¶¯»­
+        //å…³é—­åˆ‡æ¢åŠ¨ç”»
         manager.SetMainCameraDefaultBlend(0);
 
         SetCameraForControl(CinemachineCameraEnum.Fight);
@@ -82,7 +82,7 @@ public partial class CameraHandler
     }
 
     /// <summary>
-    /// ÉèÖÃºËĞÄUI
+    /// è®¾ç½®æ ¸å¿ƒUI
     /// </summary>
     public CinemachineVirtualCamera SetBaseCoreCamera(int priority, bool isEnable)
     {
@@ -90,7 +90,7 @@ public partial class CameraHandler
     }
 
     /// <summary>
-    /// ÉèÖÃ´«ËÍÃÅ
+    /// è®¾ç½®ä¼ é€é—¨
     /// </summary>
     public CinemachineVirtualCamera SetBasePortalCamera(int priority, bool isEnable)
     {
@@ -98,7 +98,7 @@ public partial class CameraHandler
     }
 
     /// <summary>
-    /// ÉèÖÃÅ¤µ°»úUI
+    /// è®¾ç½®æ‰­è›‹æœºUI
     /// </summary>
     public CinemachineVirtualCamera SetGashaponMachineCamera(int priority, bool isEnable)
     {
@@ -106,7 +106,7 @@ public partial class CameraHandler
     }
 
     /// <summary>
-    /// ÉèÖÃÅ¤µ°ÆÆËéÉãÏñÍ·
+    /// è®¾ç½®æ‰­è›‹ç ´ç¢æ‘„åƒå¤´
     /// </summary>
     public CinemachineVirtualCamera SetGashaponBreakCamera(int priority, bool isEnable)
     {
@@ -114,7 +114,7 @@ public partial class CameraHandler
     }
 
     /// <summary>
-    /// ÉèÖÃÓÎÏ·¿ªÊ¼ÉãÏñÍ·
+    /// è®¾ç½®æ¸¸æˆå¼€å§‹æ‘„åƒå¤´
     /// </summary>
     public CinemachineVirtualCamera SetGameStartCamera(int priority, bool isEnable)
     {
@@ -122,7 +122,7 @@ public partial class CameraHandler
     }
 
     /// <summary>
-    /// ÉèÖÃ´´½¨
+    /// è®¾ç½®åˆ›å»º
     /// </summary>
     public CinemachineVirtualCamera SetPreviewCreateCamera(int priority, bool isEnable)
     {
@@ -130,7 +130,7 @@ public partial class CameraHandler
     }
 
     /// <summary>
-    /// ÉèÖÃ»ù´¡³¡¾°µÄÉãÏñÍ·
+    /// è®¾ç½®åŸºç¡€åœºæ™¯çš„æ‘„åƒå¤´
     /// </summary>
     protected CinemachineVirtualCamera SetCameraForBaseScene(int priority, bool isEnable, string cvName)
     {
@@ -138,16 +138,16 @@ public partial class CameraHandler
         var targetBaseScene = WorldHandler.Instance.currentBaseScene;
         if (targetBaseScene == null)
         {
-            LogUtil.LogError("ÉèÖÃÉãÏñÍ·Ê§°Ü Ã»ÓĞÕÒµ½¶ÔÓ¦³¡¾°");
+            LogUtil.LogError("è®¾ç½®æ‘„åƒå¤´å¤±è´¥ æ²¡æœ‰æ‰¾åˆ°å¯¹åº”åœºæ™¯");
             return null;
         }
         var targetCVListTF = targetBaseScene.transform.Find($"CV_List");
         if (targetCVListTF == null)
         {
-            LogUtil.LogError("ÉèÖÃÉãÏñÍ·Ê§°Ü Ã»ÓĞÕÒµ½¶ÔÓ¦CV_List Transfrom");
+            LogUtil.LogError("è®¾ç½®æ‘„åƒå¤´å¤±è´¥ æ²¡æœ‰æ‰¾åˆ°å¯¹åº”CV_List Transfrom");
             return null;
         }
-        //»¹Ô­ËùÓĞÉãÏñÍ·
+        //è¿˜åŸæ‰€æœ‰æ‘„åƒå¤´
         var cvList = targetCVListTF.GetComponentsInChildren<CinemachineVirtualCamera>(true);
         CinemachineVirtualCamera targetCV = null;
         for (int i = 0; i < cvList.Length; i++)
@@ -155,7 +155,7 @@ public partial class CameraHandler
             var targetCVItem = cvList[i];
             if (targetCVItem.name.Equals($"{cvName}"))
             {
-                //´ò¿ªÇĞ»»¶¯»­
+                //æ‰“å¼€åˆ‡æ¢åŠ¨ç”»
                 manager.SetMainCameraDefaultBlend(0.5f);
                 targetCVItem.gameObject.SetActive(isEnable);
                 targetCVItem.Priority = priority;
@@ -171,7 +171,7 @@ public partial class CameraHandler
     }
 
     /// <summary>
-    /// Òş²ØËùÓĞ³¡¾°ÉãÏñÍ·
+    /// éšè—æ‰€æœ‰åœºæ™¯æ‘„åƒå¤´
     /// </summary>
     protected void HideCameraForBaseScene()
     {
@@ -180,7 +180,7 @@ public partial class CameraHandler
 
 
     /// <summary>
-    /// ÉèÖÃ¿¨Æ¬²âÊÔ¾µÍ·
+    /// è®¾ç½®å¡ç‰‡æµ‹è¯•é•œå¤´
     /// </summary>
     public void SetCardTestCamera()
     {
@@ -189,12 +189,12 @@ public partial class CameraHandler
         var mainCamera = manager.mainCamera;
         mainCamera.gameObject.SetActive(true);
 
-        //¹Ø±ÕÇĞ»»¶¯»­
+        //å…³é—­åˆ‡æ¢åŠ¨ç”»
         manager.SetMainCameraDefaultBlend(0);
     }
 
     /// <summary>
-    /// ÉèÖÃ¿ØÖÆÉãÏñÍ·
+    /// è®¾ç½®æ§åˆ¶æ‘„åƒå¤´
     /// </summary>
     public void SetCameraForControl(CinemachineCameraEnum cinemachineCameraEnum)
     {

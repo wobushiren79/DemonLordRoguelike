@@ -18,7 +18,6 @@ public partial class UIFightMain : BaseUIComponent
     {
         base.Awake();
         ui_CreatureCardItem.gameObject.SetActive(false);
-        ui_ViewCreatureCardDetails.gameObject.SetActive(false);
         ui_UIViewFightMainAttCreateProgress.gameObject.SetActive(false);
     }
 
@@ -36,9 +35,6 @@ public partial class UIFightMain : BaseUIComponent
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_SelectCard, EventForGameFightLogicSelectCard);
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
-
-        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_ShowDetails, EventForShowCardDetails);
-        RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_HideDetails, EventForHideCardDetails);
 
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, EventForCardPointerEnter);
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerExit, EventForCardPointerExit);
@@ -238,7 +234,7 @@ public partial class UIFightMain : BaseUIComponent
     /// <param name="targetData"></param>
     public void EventForGameFightLogicSelectCard(UIViewCreatureCardItem targetView)
     {
-        EventForHideCardDetails(targetView);
+        
     }
 
     /// <summary>
@@ -256,24 +252,6 @@ public partial class UIFightMain : BaseUIComponent
     {
         RefreshUIData();
     }
-
-    public void EventForShowCardDetails(UIViewCreatureCardItem targetView)
-    {
-        var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        //没有选中卡片时才显示
-        if (gameFightLogic.selectCreature != null)
-            return;
-        if (gameFightLogic.selectCreatureDestory != null)
-            return;
-        ui_ViewCreatureCardDetails.ShowObj(true);
-        ui_ViewCreatureCardDetails.SetData(targetView.cardData.creatureData);
-    }
-
-    public void EventForHideCardDetails(UIViewCreatureCardItem targetView)
-    {
-        ui_ViewCreatureCardDetails.ShowObj(false);
-    }
-
 
     /// <summary>
     /// 事件-焦点选中卡片

@@ -34,22 +34,8 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     protected Tween animForSelectEnd;//选择卡片动画
     protected Tween animForSelectKeepStart;//选择卡片避让动画
     protected Tween animForSelectKeepEnd;//选择卡片避让动画
-
-    //长事件选择展示详情
-    protected float timeUpdateForShowDetails = -1;
-    protected float timeMaxForShowDetails = 1;
     public void Update()
     {
-        //处理详情展示
-        if (timeUpdateForShowDetails >= 0)
-        {
-            timeUpdateForShowDetails += Time.deltaTime;
-            if (timeUpdateForShowDetails >= timeMaxForShowDetails)
-            {
-                timeUpdateForShowDetails = -1;
-                TriggerEvent(EventsInfo.UIViewCreatureCardItem_ShowDetails, this);
-            }
-        }
         //处理cd倒计时
         if(cardData.cardState == CardStateEnum.FightRest)
         {
@@ -123,7 +109,6 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {
         //LogUtil.Log($"OnPointerEnter_{cardData.originalSibling}");
-        timeUpdateForShowDetails = 0;
         KillAnimForSelect();
         animForSelectStart = rectTransform
                 .DOScale(new Vector3(animCardSelectStartScale, animCardSelectStartScale, animCardSelectStartScale), animCardSelectStartTime)
@@ -143,7 +128,6 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
     {
         //LogUtil.Log($"OnPointerExit_{cardData.originalSibling}");
-        timeUpdateForShowDetails = -1;
         KillAnimForSelect();
         animForSelectEnd = rectTransform
                 .DOScale(Vector3.one, animCardSelectEndTime)
@@ -152,8 +136,6 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
         transform.SetSiblingIndex(cardData.originalSibling);
         //触发避让事件
         TriggerEvent(EventsInfo.UIViewCreatureCardItem_SelectKeep, cardData.originalSibling, cardData.originalCardPos, false);
-        //隐藏卡片详情
-        TriggerEvent(EventsInfo.UIViewCreatureCardItem_HideDetails, this);
         //离开事件
         TriggerEvent(EventsInfo.UIViewCreatureCardItem_OnPointerExit, this);
     }

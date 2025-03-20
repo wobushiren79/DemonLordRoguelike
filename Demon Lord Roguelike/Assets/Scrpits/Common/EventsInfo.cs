@@ -8,8 +8,6 @@ public static class EventsInfo
     public static string Magic_Change = "Magic_Change";
 
     public static string UIViewCreatureCardItem_SelectKeep = "UIViewCreatureCardItem_SelectKeep";//卡片避让
-    public static string UIViewCreatureCardItem_ShowDetails = "UIViewCreatureCardItem_ShowDetails";//展示卡片详情
-    public static string UIViewCreatureCardItem_HideDetails = "UIViewCreatureCardItem_HideDetails";//隐藏卡片详情
 
     public static string UIViewCreatureCardItem_OnPointerEnter = "UIViewCreatureCardItem_OnPointerEnter";//卡片进入
     public static string UIViewCreatureCardItem_OnPointerExit = "UIViewCreatureCardItem_OnPointerExit";//卡片离开

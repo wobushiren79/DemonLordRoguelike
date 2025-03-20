@@ -35,7 +35,6 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     {
         base.OpenUI();
         currentLineupIndex = 1;
-        ui_ViewCreatureCardDetails.gameObject.SetActive(false);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, EventForCardPointerEnter);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerExit, EventForCardPointerExit);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForOnClickSelect);
@@ -349,8 +348,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     /// </summary>
     public void EventForCardPointerEnter(UIViewCreatureCardItem targetView)
     {
-        ui_ViewCreatureCardDetails.gameObject.SetActive(true);
-        ui_ViewCreatureCardDetails.SetData(targetView.cardData.creatureData);
+
     }
 
     /// <summary>
@@ -358,7 +356,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     /// </summary>
     public void EventForCardPointerExit(UIViewCreatureCardItem targetView)
     {
-        //ui_ViewCreatureCardDetails.gameObject.SetActive(false);
+
     }
 
     /// <summary>
