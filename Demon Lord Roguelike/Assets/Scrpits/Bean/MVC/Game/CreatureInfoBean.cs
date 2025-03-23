@@ -16,21 +16,29 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public int create_magic;
 	/// <summary>
-	///
+	///身体的基础模块
 	/// </summary>
-	public int att_mode;
+	public string spine_base;
+	/// <summary>
+	///身体的可替换模块类型
+	/// </summary>
+	public string spine_skin_change_type;
+	/// <summary>
+	///攻击模式
+	/// </summary>
+	public int attack_mode;
 	/// <summary>
 	///攻击范围
 	/// </summary>
-	public float att_range;
+	public float attack_range;
 	/// <summary>
 	///攻击间隔
 	/// </summary>
-	public float att_cd;
+	public float attack_cd;
 	/// <summary>
 	///攻击动画出手时间
 	/// </summary>
-	public float att_anim_cast_time;
+	public float attack_anim_cast_time;
 	/// <summary>
 	///生命值
 	/// </summary>

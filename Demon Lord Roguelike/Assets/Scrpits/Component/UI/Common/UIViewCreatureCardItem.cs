@@ -1,9 +1,6 @@
 using DG.Tweening;
 using Spine;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.Rendering;
-using UnityEngine.ResourceManagement.ResourceProviders.Simulation;
 using UnityEngine.UI;
 
 public partial class UIViewCreatureCardItem : BaseUIView
@@ -21,13 +18,9 @@ public partial class UIViewCreatureCardItem : BaseUIView
     {
         this.cardData.cardUseState = cardUseState;
         this.cardData.creatureData = creatureData;
-        int attDamage = creatureData.GetAttackDamage();
-        int HPMax = creatureData.GetHP();
 
         SetCardIcon(creatureData);
-        SetAttribute(attDamage, HPMax);
         SetName(creatureData.creatureName);
-        SetLevel(creatureData.level);
         SetRarity(creatureData.rarity);
 
         RefreshCardState(this.cardData.cardState);
@@ -53,23 +46,6 @@ public partial class UIViewCreatureCardItem : BaseUIView
     public void SetName(string name)
     {
         ui_Name.text = $"{name}";
-    }
-
-    /// <summary>
-    /// 设置等级
-    /// </summary>
-    public void SetLevel(int level)
-    {
-        ui_Level.text = $"{level}";
-    }
-
-    /// <summary>
-    /// 设置属性
-    /// </summary>
-    public void SetAttribute(int attDamage, int HPMax)
-    {
-        ui_AttributeItemText_Att.text = $"{attDamage}";
-        ui_AttributeItemText_Life.text = $"{HPMax}";
     }
 
     /// <summary>
@@ -103,8 +79,6 @@ public partial class UIViewCreatureCardItem : BaseUIView
     /// </summary>
     public virtual void RefreshCardState(CardStateEnum cardState)
     {
-        ColorUtility.TryParseHtmlString("#575149",out var colorBG);
-        ui_CardBg.color = colorBG;
         ui_CDTime.gameObject.SetActive(false);
         ui_Mask.gameObject.SetActive(false);
         ui_Mask.fillAmount = 1;

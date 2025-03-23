@@ -38,8 +38,8 @@ public class FightCreatureBean
     public void ResetData()
     {
         var creatureInfo = creatureData.creatureInfo;
-        HPCurrent = creatureInfo.HP;
-        HPMax = creatureInfo.HP;
+        HPCurrent = creatureInfo.GetHP();
+        HPMax = creatureInfo.GetHP();
         listBuff = new List<FightBuffBean>();
 
         InitBaseAttribute();
@@ -50,7 +50,7 @@ public class FightCreatureBean
     /// </summary>
     public void InitBaseAttribute(Action actionForComplete = null)
     {
-        moveSpeedCurrent = creatureData.GetMoveSpeed();
+        moveSpeedCurrent = creatureData.GetMSPD();
         colorBodyCurrent = Color.white;
         if (!listBuff.IsNull())
         {

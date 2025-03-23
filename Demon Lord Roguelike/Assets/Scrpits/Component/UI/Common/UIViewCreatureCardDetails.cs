@@ -15,11 +15,13 @@ public partial class UIViewCreatureCardDetails : BaseUIView
 
         SetCardIcon(creatureData);
         SetName(creatureData.creatureName);
-        SetLevel(creatureData.level);
 
-        int attDamage = creatureData.GetAttackDamage();
-        int HPMax = creatureData.GetHP();
-        SetAttribute(attDamage, HPMax);
+        int hp = creatureData.GetHPOrigin();
+        int dr = creatureData.GetDROrigin();
+        int atk = creatureData.GetATK();
+        int aspd = creatureData.GetASPD();
+        
+        SetAttribute(hp, dr,atk,aspd);
         SetRarity(creatureData.rarity);
     }
 
@@ -32,7 +34,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
             rarity = 1;
         var rarityInfo = RarityInfoCfg.GetItemData(rarity);
         ColorUtility.TryParseHtmlString(rarityInfo.ui_board_color, out Color boardColor);
-        ui_CardBgBoard.color = boardColor;
+        ui_CardRate.color = boardColor;
     }
 
     /// <summary>
@@ -44,20 +46,14 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     }
 
     /// <summary>
-    /// 设置等级
-    /// </summary>
-    public void SetLevel(int level)
-    {
-        ui_Level.text = $"{level}";
-    }
-
-    /// <summary>
     /// 设置属性
     /// </summary>
-    public void SetAttribute(int attDamage, int HPMax)
+    public void SetAttribute(int HP, int DR, int atk, int aspk)
     {
-        ui_AttributeItemText_Att.text = $"{attDamage}";
-        ui_AttributeItemText_Life.text = $"{HPMax}";
+        ui_AttributeItemText_Life.text = $"{HP}";
+        ui_AttributeItemText_Def.text = $"{DR}";
+        ui_AttributeItemText_Att.text = $"{atk}";
+        ui_AttributeItemText_Speed.text = $"{aspk}";
     }
 
     /// <summary>

@@ -15,8 +15,9 @@ public class GashaponItemBean
             int randomIndex = Random.Range(0, listSkin.Count);
             var randomSkin = listSkin[randomIndex];
             creatureData.AddSkin(randomSkin);
-            creatureData.AddSkinForBase();
         }
+        //添加基础皮肤
+        creatureData.AddSkinForBase();
         //creatureData.AddAllSkin();
     }
 }

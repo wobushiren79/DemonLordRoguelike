@@ -9,17 +9,9 @@ public partial class UIViewCreatureCardItem
 
     public PopupButtonCommonView ui_BtnSelect_PopupButtonCommonView;
 
-    public Image ui_CardBg;
-
     public SkeletonGraphic ui_Icon;
 
-    public TextMeshProUGUI ui_AttributeItemText_Life;
-
-    public TextMeshProUGUI ui_AttributeItemText_Att;
-
     public TextMeshProUGUI ui_Name;
-
-    public TextMeshProUGUI ui_Level;
 
     public Image ui_CardBgBorad;
 

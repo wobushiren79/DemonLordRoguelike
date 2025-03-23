@@ -1,0 +1,216 @@
+
+Orc.png
+size: 260,46
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+ArmDown_L
+  rotate: false
+  xy: 233, 23
+  size: 13, 21
+  orig: 13, 21
+  offset: 0, 0
+  index: -1
+ArmDown_R
+  rotate: true
+  xy: 157, 2
+  size: 14, 18
+  orig: 14, 18
+  offset: 0, 0
+  index: -1
+ArmUp_L
+  rotate: false
+  xy: 171, 18
+  size: 19, 26
+  orig: 19, 26
+  offset: 0, 0
+  index: -1
+ArmUp_R
+  rotate: false
+  xy: 37, 14
+  size: 16, 30
+  orig: 16, 30
+  offset: 0, 0
+  index: -1
+Belt_1
+  rotate: false
+  xy: 55, 15
+  size: 27, 29
+  orig: 27, 29
+  offset: 0, 0
+  index: -1
+Belt_2
+  rotate: true
+  xy: 144, 18
+  size: 26, 25
+  orig: 26, 25
+  offset: 0, 0
+  index: -1
+Body
+  rotate: false
+  xy: 2, 7
+  size: 33, 37
+  orig: 33, 37
+  offset: 0, 0
+  index: -1
+Calf_L
+  rotate: true
+  xy: 177, 2
+  size: 14, 18
+  orig: 14, 18
+  offset: 0, 0
+  index: -1
+Calf_R
+  rotate: false
+  xy: 230, 6
+  size: 14, 15
+  orig: 14, 15
+  offset: 0, 0
+  index: -1
+Eye_1
+  rotate: true
+  xy: 52, 2
+  size: 10, 7
+  orig: 10, 7
+  offset: 0, 0
+  index: -1
+Eye_2
+  rotate: true
+  xy: 246, 11
+  size: 10, 4
+  orig: 10, 4
+  offset: 0, 0
+  index: -1
+Eye_3
+  rotate: false
+  xy: 2, 2
+  size: 10, 3
+  orig: 10, 3
+  offset: 0, 0
+  index: -1
+Eye_4
+  rotate: true
+  xy: 248, 25
+  size: 8, 5
+  orig: 8, 5
+  offset: 0, 0
+  index: -1
+Eye_5
+  rotate: true
+  xy: 254, 38
+  size: 6, 4
+  orig: 6, 4
+  offset: 0, 0
+  index: -1
+Foot_L
+  rotate: false
+  xy: 37, 2
+  size: 13, 10
+  orig: 13, 10
+  offset: 0, 0
+  index: -1
+Foot_R
+  rotate: false
+  xy: 109, 2
+  size: 16, 12
+  orig: 16, 12
+  offset: 0, 0
+  index: -1
+Hair_1
+  rotate: false
+  xy: 88, 2
+  size: 19, 12
+  orig: 19, 12
+  offset: 0, 0
+  index: -1
+Hair_2
+  rotate: true
+  xy: 220, 4
+  size: 17, 8
+  orig: 17, 8
+  offset: 0, 0
+  index: -1
+Head
+  rotate: true
+  xy: 192, 23
+  size: 21, 20
+  orig: 21, 20
+  offset: 0, 0
+  index: -1
+Mouth_1
+  rotate: false
+  xy: 246, 3
+  size: 8, 6
+  orig: 8, 6
+  offset: 0, 0
+  index: -1
+Mouth_2
+  rotate: true
+  xy: 248, 35
+  size: 9, 4
+  orig: 9, 4
+  offset: 0, 0
+  index: -1
+Mouth_3
+  rotate: false
+  xy: 21, 2
+  size: 4, 3
+  orig: 4, 3
+  offset: 0, 0
+  index: -1
+Mouth_4
+  rotate: false
+  xy: 14, 2
+  size: 5, 3
+  orig: 5, 3
+  offset: 0, 0
+  index: -1
+Mouth_5
+  rotate: false
+  xy: 27, 3
+  size: 7, 2
+  orig: 7, 2
+  offset: 0, 0
+  index: -1
+Pelvis
+  rotate: false
+  xy: 61, 2
+  size: 25, 11
+  orig: 25, 11
+  offset: 0, 0
+  index: -1
+Plam_L
+  rotate: false
+  xy: 127, 2
+  size: 13, 12
+  orig: 13, 12
+  offset: 0, 0
+  index: -1
+Plam_R
+  rotate: true
+  xy: 142, 2
+  size: 12, 13
+  orig: 12, 13
+  offset: 0, 0
+  index: -1
+Thigh_L
+  rotate: true
+  xy: 197, 3
+  size: 18, 21
+  orig: 18, 21
+  offset: 0, 0
+  index: -1
+Thigh_R
+  rotate: false
+  xy: 214, 23
+  size: 17, 21
+  orig: 17, 21
+  offset: 0, 0
+  index: -1
+Weapon_R_1
+  rotate: true
+  xy: 84, 16
+  size: 28, 58
+  orig: 28, 58
+  offset: 0, 0
+  index: -1

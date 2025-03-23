@@ -1,19 +1,15 @@
-using Spine.Unity;
+﻿using Spine.Unity;
 using UnityEngine.UI;
 using TMPro;
 
 
 public partial class UIViewCreatureCardDetails
 {
-    public UIViewCreatureCardDetails ui_ViewCreatureCardDetails;
-
     public SkeletonGraphic ui_Icon;
 
     public RawImage ui_CardScene;
 
     public TextMeshProUGUI ui_Name;
-
-    public TextMeshProUGUI ui_Level;
 
     public TextMeshProUGUI ui_AttributeItemText_Life;
 
@@ -22,6 +18,16 @@ public partial class UIViewCreatureCardDetails
     public TextMeshProUGUI ui_AttributeItemText_Def;
 
     public Image ui_CardBgBoard;
+
+    public Image ui_Class;
+
+    public Image ui_Star;
+
+    public TextMeshProUGUI ui_StarText;
+
+    public Image ui_CardRate;
+
+    public TextMeshProUGUI ui_AttributeItemText_Speed;
 
 
 }

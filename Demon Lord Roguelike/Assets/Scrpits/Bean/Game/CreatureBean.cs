@@ -33,34 +33,31 @@ public partial class CreatureBean
     public void ClearSkin(bool isAddBase = true)
     {
         dicSkinData.Clear();
-        if(isAddBase)
+        if (isAddBase)
             AddSkinForBase();
     }
 
     /// <summary>
     /// 添加基础皮肤
     /// </summary>
-    public void AddSkinForBase(int skinId = -1)
+    public void AddSkinForBase()
     {
         //添加基础皮肤
-        var listBaseSkin = CreatureModelInfoCfg.GetData(creatureInfo.model_id, CreatureSkinTypeEnum.Base);
-        if (!listBaseSkin.IsNull())
+        List<long> listSpineBaseIds = creatureInfo.GetSpineBaseIds();
+        if (!listSpineBaseIds.IsNull())
         {
-            if (skinId == -1)
+            listSpineBaseIds.ForEach((index, itemData) =>
+            {
+                AddSkin(itemData);
+            });
+        }
+        //容错处理 如果没有设置数据 默认添加第一个基础皮肤
+        else
+        {
+            var listBaseSkin = CreatureModelInfoCfg.GetData(creatureInfo.model_id, CreatureSkinTypeEnum.Base);
+            if (!listBaseSkin.IsNull())
             {
                 AddSkin(listBaseSkin[0].id);
-            }
-            else
-            {
-                for (int i = 0; i < listBaseSkin.Count; i++)
-                {
-                   var itemSkinData= listBaseSkin[i];
-                    if (itemSkinData.id == skinId)
-                    {
-                        AddSkin(skinId);
-                        break;
-                    }
-                }
             }
         }
     }
@@ -131,22 +128,46 @@ public partial class CreatureBean
     /// </summary>
     public int GetHP()
     {
-        return creatureInfo.HP;
+        return creatureInfo.GetHP();
+    }
+    public int GetHPOrigin()
+    {
+        return creatureInfo.GetHPOrigin();
     }
 
     /// <summary>
+    /// 获取护甲值
+    /// </summary>
+    public int GetDR()
+    {
+        return creatureInfo.GetDR();
+    }
+    public int GetDROrigin()
+    {
+        return creatureInfo.GetDROrigin();
+    }
+    
+    /// <summary>
     /// 获取攻击
     /// </summary>
-    public int GetAttackDamage()
+    public int GetATK()
     {
         return creatureInfo.ATK;
     }
 
     /// <summary>
-    /// 获取移动速度
+    /// 获取攻击速度
     /// </summary>
     /// <returns></returns>
-    public float GetMoveSpeed()
+    public int GetASPD()
+    {
+        return creatureInfo.ASPD;
+    }
+
+    /// <summary>
+    /// 获取移动速度
+    /// </summary>
+    public float GetMSPD()
     {
         return creatureInfo.MSPD;
     }
@@ -157,7 +178,7 @@ public partial class CreatureBean
     /// <returns></returns>
     public float GetAttackCD()
     {
-        return creatureInfo.att_cd;
+        return creatureInfo.attack_cd;
     }
 
     /// <summary>
@@ -166,7 +187,7 @@ public partial class CreatureBean
     /// <returns></returns>
     public float GetAttackAnimCastTime()
     {
-        return creatureInfo.att_anim_cast_time;
+        return creatureInfo.attack_anim_cast_time;
     }
 
 

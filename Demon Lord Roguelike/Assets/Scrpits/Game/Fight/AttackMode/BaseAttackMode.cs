@@ -40,7 +40,7 @@ public class BaseAttackMode
                     //设置攻击者ID
                     attackerId = attacker.fightCreatureData.creatureData.creatureId;
                     //设置伤害
-                    attackerDamage = attacker.fightCreatureData.creatureData.GetAttackDamage();
+                    attackerDamage = attacker.fightCreatureData.creatureData.GetATK();
                 }
             }
         }

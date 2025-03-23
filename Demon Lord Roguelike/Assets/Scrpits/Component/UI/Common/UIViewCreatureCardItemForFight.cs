@@ -88,7 +88,6 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
             case CardStateEnum.FightIdle:
                 break;
             case CardStateEnum.FightSelect:
-                ui_CardBg.color = Color.green;
                 break;
             case CardStateEnum.Fighting:
                 ui_Mask.gameObject.SetActive(true);
