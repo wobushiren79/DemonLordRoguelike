@@ -652,7 +652,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7002604542947046518
 RectTransform:
   m_ObjectHideFlags: 0
@@ -708,6 +708,7 @@ MonoBehaviour:
       id: 0
       creatureName: 
       level: 0
+      starLevel: 0
       rarity: 0
     cardUseState: 0
     cardState: 0
@@ -721,6 +722,7 @@ MonoBehaviour:
   ui_CardBgBorad: {fileID: 8175520546131530261}
   ui_CDTime: {fileID: 482341786483857265}
   ui_Mask: {fileID: 3458295303103649737}
+  ui_StarText: {fileID: 7790007710188705406}
 --- !u!1 &6698657121091642649
 GameObject:
   m_ObjectHideFlags: 0

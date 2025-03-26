@@ -117,7 +117,7 @@ public partial class UIGashaponMachine : BaseUIComponent
         var itemStore = listStoreData[storeIndex];
         var userData = GameDataHandler.Instance.manager.GetUserData();
         //检测是否有足够的魔晶
-        if (userData.CheckHasCoin(itemStore.pay_coin, isHint: true, isAddCoin: true))
+        if (userData.CheckHasCrystal(itemStore.pay_crystal, isHint: true, isAddCrystal: true))
         {
             StartGashaponMachine(itemStore);
         }

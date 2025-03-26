@@ -12,7 +12,7 @@ public partial class UIViewBaseInfoContent : BaseUIView
 
     public override void Awake()
     {
-        this.RegisterEvent(EventsInfo.Coin_Change, RefreshUIData);
+        this.RegisterEvent(EventsInfo.Backpack_Item_Change, RefreshUIData);
         this.RegisterEvent(EventsInfo.Magic_Change, RefreshUIData);
     }
 
@@ -34,12 +34,12 @@ public partial class UIViewBaseInfoContent : BaseUIView
 
     public void RefreshUIData(bool isAnim)
     {
-        if (ui_Coin.gameObject.activeSelf)
+        if (ui_Crystal.gameObject.activeSelf)
         {
             UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
             if (userData != null)
             {
-                SetCoinData(userData.coin, isAnim);
+                SetCrystalData(userData.crystal, isAnim);
             }
         }
         if (ui_Magic.gameObject.activeSelf)
@@ -61,18 +61,18 @@ public partial class UIViewBaseInfoContent : BaseUIView
     }
 
     /// <summary>
-    /// 设置当前金币（魔晶）
+    /// 设置当前魔晶
     /// </summary>
-    public void SetCoinData(long coin, bool isAnim = true)
+    public void SetCrystalData(long coin, bool isAnim = true)
     {
         ClearAnim();
         if (isAnim)
         {
-            AnimateNumber(ui_CoinText, long.Parse(ui_CoinText.text), coin, 1f);
+            AnimateNumber(ui_CrystalText, long.Parse(ui_CrystalText.text), coin, 1f);
         }
         else
         {
-            ui_CoinText.text = $"{coin}";
+            ui_CrystalText.text = $"{coin}";
         }
     }
 
@@ -83,7 +83,7 @@ public partial class UIViewBaseInfoContent : BaseUIView
     {
         animForCoinChange?.Kill();
         animForCoinScale?.Kill();
-        ui_CoinText.transform.localScale = Vector3.one;
+        ui_CrystalText.transform.localScale = Vector3.one;
     }
 
     /// <summary>

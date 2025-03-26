@@ -15,39 +15,33 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     // 展示中的阵容卡片
     public List<UIViewCreatureCardItem> listShowCardLineup = new List<UIViewCreatureCardItem>();
 
-
-    public List<CreatureBean> listBackpackCreature = new List<CreatureBean>();
-    //当前阵容的序号
-    public int currentLineupIndex = 1;
     //阵容动画卡片移动时间
     protected float timeForLineupCardMove = 0.2f;
     //阵容动画卡片移动时间(初始化)
     protected float timeForLineupCardMoveInit = 0.4f;
-
+    //当前阵容的序号
+    protected int currentLineupIndex = 1;
     public override void Awake()
     {
         base.Awake();
-        ui_BackpackContent.AddCellListener(OnCellChangeForBackpack);
         ui_LineupIndexTitle.SetCallBack(this);
     }
 
     public override void OpenUI()
     {
         base.OpenUI();
-        currentLineupIndex = 1;
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, EventForCardPointerEnter);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerExit, EventForCardPointerExit);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForOnClickSelect);
-        InitBackpackData();
+        InitCreatureData();
         InitLineupData();
         //初始化设置标题
-        ui_LineupIndexTitle.SetPosition(0,false);
+        ui_LineupIndexTitle.SetPosition(0, false);
     }
 
     public override void CloseUI()
     {
-        ui_BackpackContent.SetCellCount(0);
-        ui_BackpackContent.ClearAllCell();
+        ui_UIViewCreatureCardList.CloseUI();
         while (queuePoolCardLineup.Count > 0)
         {
             var targetView = queuePoolCardLineup.Dequeue();
@@ -63,40 +57,12 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// item滚动变化
-    /// </summary>
-    /// <param name="itemCell"></param>
-    public void OnCellChangeForBackpack(ScrollGridCell itemCell)
-    {
-        var itemData = listBackpackCreature[itemCell.index];
-        var itemView = itemCell.GetComponent<UIViewCreatureCardItem>();
-        itemView.cardData.indexList = itemCell.index;
-        itemView.SetData(itemData, CardUseState.LineupBackpack);
-
-        //设置选中和未选中状态
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        if (userData.CheckIsLineup(currentLineupIndex, itemData.creatureId))
-        {
-            itemView.SetCardState(CardStateEnum.LineupSelect);
-        }
-        else
-        {
-            itemView.SetCardState(CardStateEnum.LineupNoSelect);
-        }
-    }
-
-    /// <summary>
     /// 初始化背包卡片数据
     /// </summary>
-    public void InitBackpackData()
+    public void InitCreatureData()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        listBackpackCreature.Clear();
-        listBackpackCreature.AddRange(userData.listBackpackCreature);
-        //初始化排序
-        OrderBackpackCreature(3, false);
-        //设置数量
-        ui_BackpackContent.SetCellCount(userData.listBackpackCreature.Count);
+        ui_UIViewCreatureCardList.SetData(userData.listBackpackCreature, CardUseState.LineupBackpack, OnCellChangeForBackpackCreature);
     }
 
     /// <summary>
@@ -113,6 +79,23 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
             if (creatureData == null)
                 continue;
             AddLineupCard(creatureData, new Vector3(Screen.width / 2f + 120, 0, 0), 1);
+        }
+    }
+
+    /// <summary>
+    /// 背包列表变化
+    /// </summary>
+    public void OnCellChangeForBackpackCreature(UIViewCreatureCardItem itemView, CreatureBean itemData)
+    {
+        //设置选中和未选中状态
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        if (userData.CheckIsLineup(currentLineupIndex, itemData.creatureId))
+        {
+            itemView.SetCardState(CardStateEnum.LineupSelect);
+        }
+        else
+        {
+            itemView.SetCardState(CardStateEnum.LineupNoSelect);
         }
     }
 
@@ -234,18 +217,6 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         {
             OnClickForExit();
         }
-        else if (viewButton == ui_OrderBtn_Rarity)
-        {
-            OrderBackpackCreature(1);
-        }
-        else if (viewButton == ui_OrderBtn_Level)
-        {
-            OrderBackpackCreature(2);
-        }
-        else if (viewButton == ui_OrderBtn_Lineup)
-        {
-            OrderBackpackCreature(3);
-        }
     }
 
     public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
@@ -268,71 +239,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         //初始化阵容卡片
         InitLineupData();
         //刷新背包卡片
-        ui_BackpackContent.RefreshAllCells();
-    }
-
-    /// <summary>
-    /// 排序背包里的生物
-    /// </summary>
-    /// <param name="orderType"></param>
-    public void OrderBackpackCreature(int orderType, bool isRefreshUI = true)
-    {
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-
-        switch (orderType)
-        {
-            case 1://按稀有度排序
-                listBackpackCreature = listBackpackCreature
-                    .OrderByDescending((itemData) =>
-                    {
-                        return itemData.rarity;
-                    })
-                    .ThenByDescending((itemData) =>
-                    {
-                        return itemData.level;
-                    })
-                    .ToList();
-                break;
-            case 2:
-                //按等级排序
-                listBackpackCreature = listBackpackCreature
-                    .OrderByDescending((itemData) =>
-                    {
-                        return itemData.level;
-                    })
-                    .ThenByDescending((itemData) =>
-                    {
-                        return itemData.rarity;
-                    })
-                    .ToList();
-                break;
-            case 3:
-                //按选中排序
-                listBackpackCreature = listBackpackCreature
-                    .OrderBy((itemData) =>
-                    {
-                        if (userData.CheckIsLineup(currentLineupIndex, itemData.creatureId))
-                        {
-                            return 0;
-                        }
-                        else
-                        {
-                            return 1;
-                        }
-                    })
-                    .ThenByDescending((itemData) =>
-                    {
-                        return itemData.rarity;
-                    })
-                    .ThenByDescending((itemData) =>
-                    {
-                        return itemData.level;
-                    })
-                    .ToList();
-                break;
-        }
-        if (isRefreshUI)
-            ui_BackpackContent.RefreshAllCells();
+        ui_UIViewCreatureCardList.RefreshAllCard();
     }
 
     /// <summary>
@@ -368,8 +275,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         if (targetView.cardData.cardUseState == CardUseState.LineupBackpack && targetView.cardData.cardState == CardStateEnum.LineupNoSelect)
         {
             userData.AddLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureId);
-            ui_BackpackContent.RefreshCell(targetView.cardData.indexList);
-
+            //刷新背包里的卡片
+            ui_UIViewCreatureCardList.RefreshCardByIndex(targetView.cardData.indexList);
             //增加阵容卡
             Vector3 posStart = UGUIUtil.GetUIRootPos(ui_LineupContent.transform, targetView.transform);
             AddLineupCard(targetView.cardData.creatureData, posStart);
@@ -377,19 +284,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         else if (targetView.cardData.cardUseState == CardUseState.Lineup)
         {
             userData.RemoveLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureId);
-
-            //刷新
-            var allCell = ui_BackpackContent.GetAllCell();
-            for (int i = 0; i < allCell.Count; i++)
-            {
-                var itemCell = allCell[i];
-                var itemCardView = itemCell.GetComponent<UIViewCreatureCardItem>();
-                if (itemCardView.cardData.creatureData.creatureId.Equals(targetView.cardData.creatureData.creatureId))
-                {
-                    ui_BackpackContent.RefreshCell(i);
-                    break;
-                }
-            }
+            //刷新背包里的卡片
+            ui_UIViewCreatureCardList.RefreshCardByCreatureId(targetView.cardData.creatureData.creatureId);
             //移除阵容卡
             RemoveLineupCard(targetView);
         }

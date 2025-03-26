@@ -16,6 +16,6 @@ public partial class UIViewStoreItem
         this.actionForOnClickBuy = actionForOnClickBuy;
 
         SetName(storeGashaponMachineInfoData.GetName());
-        SetPrice(storeGashaponMachineInfoData.pay_coin);
+        SetPrice(storeGashaponMachineInfoData.pay_crystal);
     }
 }

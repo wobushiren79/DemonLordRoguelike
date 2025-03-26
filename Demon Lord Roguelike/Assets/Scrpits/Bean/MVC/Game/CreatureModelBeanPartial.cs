@@ -4,7 +4,7 @@ using UnityEngine;
 public partial class CreatureModelBean
 {
     /// <summary>
-    /// »ñÈ¡Õ¹Ê¾×ÊÔ´
+    /// è·å–å±•ç¤ºèµ„æº
     /// </summary>
     public void GetShowRes(out string resName,out int skinType)
     {
@@ -21,11 +21,11 @@ public partial class CreatureModelBean
     }
 
     /// <summary>
-    /// ¸Ä±äUI´óĞ¡
+    /// æ”¹å˜UIå¤§å°
     /// </summary>
     public void ChangeUISizeForS(RectTransform targetUI)
     {
-        //ÉèÖÃUI´óĞ¡ºÍ×ø±ê
+        //è®¾ç½®UIå¤§å°å’Œåæ ‡
         if (ui_data_s.IsNull())
         {
             targetUI.anchoredPosition = Vector2.zero;
@@ -42,11 +42,11 @@ public partial class CreatureModelBean
     }
 
     /// <summary>
-    /// ¸Ä±äUI´óĞ¡
+    /// æ”¹å˜UIå¤§å°
     /// </summary>
     public void ChangeUISizeForB(RectTransform targetUI)
     {
-        //ÉèÖÃUI´óĞ¡ºÍ×ø±ê
+        //è®¾ç½®UIå¤§å°å’Œåæ ‡
         if (ui_data_b.IsNull())
         {
             targetUI.anchoredPosition = Vector2.zero;

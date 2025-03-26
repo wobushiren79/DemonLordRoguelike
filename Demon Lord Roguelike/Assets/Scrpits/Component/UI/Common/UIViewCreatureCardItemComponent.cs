@@ -19,5 +19,7 @@ public partial class UIViewCreatureCardItem
 
     public Image ui_Mask;
 
+    public TextMeshProUGUI ui_StarText;
+
 
 }

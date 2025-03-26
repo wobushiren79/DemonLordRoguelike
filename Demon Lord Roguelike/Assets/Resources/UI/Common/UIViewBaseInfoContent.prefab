@@ -87,7 +87,7 @@ GameObject:
   - component: {fileID: 2754410337783323930}
   - component: {fileID: 3175229740010141987}
   m_Layer: 5
-  m_Name: Coin
+  m_Name: Crystal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -164,7 +164,7 @@ GameObject:
   - component: {fileID: 8530408310033519731}
   - component: {fileID: 6667212881552220506}
   m_Layer: 5
-  m_Name: CoinText
+  m_Name: CrystalText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -513,7 +513,7 @@ GameObject:
   - component: {fileID: 3041513977377383954}
   - component: {fileID: 379489442334600338}
   m_Layer: 5
-  m_Name: CoinIcon
+  m_Name: CrystalIcon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -681,6 +681,6 @@ MonoBehaviour:
   uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}
   ui_MagicText: {fileID: 8520989111694353109}
-  ui_CoinText: {fileID: 6667212881552220506}
   ui_Magic: {fileID: 6426279933399321674}
-  ui_Coin: {fileID: 6279611112104395941}
+  ui_Crystal: {fileID: 3175229740010141987}
+  ui_CrystalText: {fileID: 6667212881552220506}

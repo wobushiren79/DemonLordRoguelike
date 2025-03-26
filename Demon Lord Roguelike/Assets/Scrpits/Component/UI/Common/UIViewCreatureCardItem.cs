@@ -22,10 +22,10 @@ public partial class UIViewCreatureCardItem : BaseUIView
         SetCardIcon(creatureData);
         SetName(creatureData.creatureName);
         SetRarity(creatureData.rarity);
-
+        SetStarLevel(creatureData.starLevel);
         RefreshCardState(this.cardData.cardState);
         //设置弹窗气泡数据
-        ui_BtnSelect_PopupButtonCommonView.SetData((creatureData),PopupEnum.CreatureCardDetails);
+        ui_BtnSelect_PopupButtonCommonView.SetData((creatureData), PopupEnum.CreatureCardDetails);
     }
 
     /// <summary>
@@ -38,6 +38,14 @@ public partial class UIViewCreatureCardItem : BaseUIView
         var rarityInfo = RarityInfoCfg.GetItemData(rarity);
         ColorUtility.TryParseHtmlString(rarityInfo.ui_board_color, out Color boardColor);
         ui_CardBgBorad.color = boardColor;
+    }
+
+    /// <summary>
+    /// 设置星级
+    /// </summary>
+    public void SetStarLevel(int starLevel)
+    {
+        ui_StarText.text = $"{starLevel}";
     }
 
     /// <summary>
@@ -59,7 +67,7 @@ public partial class UIViewCreatureCardItem : BaseUIView
     /// <summary>
     /// 设置倒计时
     /// </summary>
-    public void SetCDTime(string cdStr,float progress)
+    public void SetCDTime(string cdStr, float progress)
     {
         ui_CDTime.text = $"{cdStr}";
         ui_Mask.fillAmount = progress;

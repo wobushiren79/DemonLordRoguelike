@@ -1,4 +1,4 @@
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 
 
 public partial class UIBaseCore
@@ -10,6 +10,8 @@ public partial class UIBaseCore
     public Button ui_ViewExit;
 
     public Button ui_ViewBaseCoreItemFunction_Lineup;
+
+    public Button ui_ViewBaseCoreItemFunction_Creature;
 
 
 }

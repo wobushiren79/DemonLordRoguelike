@@ -14,7 +14,7 @@ public partial class StoreGashaponMachineInfoBean : BaseBean
 	/// <summary>
 	///消耗的魔晶
 	/// </summary>
-	public int pay_coin;
+	public int pay_crystal;
 	/// <summary>
 	///内容
 	/// </summary>

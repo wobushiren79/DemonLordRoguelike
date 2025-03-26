@@ -1,16 +1,17 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 
 public partial class UIViewBaseInfoContent
 {
     public TextMeshProUGUI ui_MagicText;
 
-    public TextMeshProUGUI ui_CoinText;
-
     public RectTransform ui_Magic;
 
-    public RectTransform ui_Coin;
+    public Image ui_Crystal;
+
+    public TextMeshProUGUI ui_CrystalText;
 
 
 }

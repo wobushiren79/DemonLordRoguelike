@@ -111,7 +111,7 @@ public class ControlForGameFight : BaseControl
                 .OnComplete(() =>
                 {
                     UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-                    userData.AddCoin(fightDropPrefab.valueInt);
+                    userData.AddCrystal(fightDropPrefab.valueInt);
                     fightDropPrefab.Destroy();
                     //刷新所有打开的UI
                     UIHandler.Instance.RefreshUI();

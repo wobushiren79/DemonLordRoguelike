@@ -48,7 +48,7 @@ public partial class UIViewMainLoadItem : BaseUIView
 
             SetCreatureUI(userData.selfCreature);
             SetUserName(userData.userName);
-            SetCoin(userData.coin);
+            SetCrystal(userData.crystal);
         }
     }
 
@@ -80,9 +80,9 @@ public partial class UIViewMainLoadItem : BaseUIView
     /// <summary>
     /// 设置金币
     /// </summary>
-    public void SetCoin(long coin)
+    public void SetCrystal(long crystal)
     {
-        ui_CoinText.text = $"{coin}";
+        ui_CoinText.text = $"{crystal}";
     }
 
     /// <summary>

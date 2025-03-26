@@ -28,6 +28,7 @@ public enum CardUseState
     Fight,//战斗
     Lineup,//阵容
     LineupBackpack,//阵容背包
+    CreatureManager,//魔物管理
 }
 
 //卡片状态
@@ -80,4 +81,10 @@ public enum GameFightTypeEnum
     Test,//测试模式
     Infinite,//无限模式
     Conquer,//征服模式
+}
+
+//道具枚举
+public enum ItemTypeEnum
+{
+
 }

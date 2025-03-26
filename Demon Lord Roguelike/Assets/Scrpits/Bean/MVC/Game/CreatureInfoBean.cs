@@ -20,9 +20,29 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public string spine_base;
 	/// <summary>
+	///身体的基础武器模块
+	/// </summary>
+	public string spine_base_weapon;
+	/// <summary>
 	///身体的可替换模块类型
 	/// </summary>
 	public string spine_skin_change_type;
+	/// <summary>
+	///等待动画名字
+	/// </summary>
+	public string anim_idle;
+	/// <summary>
+	///死亡动画名字
+	/// </summary>
+	public string anim_dead;
+	/// <summary>
+	///走路动画名字
+	/// </summary>
+	public string anim_walk;
+	/// <summary>
+	///攻击动画名字
+	/// </summary>
+	public string anim_attack;
 	/// <summary>
 	///攻击模式
 	/// </summary>

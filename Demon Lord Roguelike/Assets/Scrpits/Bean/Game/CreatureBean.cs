@@ -15,6 +15,8 @@ public partial class CreatureBean
     public string creatureName;
     //等级
     public int level;
+    //星级
+    public int starLevel;
     //稀有度
     public int rarity;
 

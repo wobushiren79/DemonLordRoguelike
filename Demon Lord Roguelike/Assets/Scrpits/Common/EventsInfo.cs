@@ -4,7 +4,8 @@ using UnityEngine;
 
 public static class EventsInfo
 {
-    public static string Coin_Change = "Coin_Change";
+    public static string Backpack_Coin_Change = "Backpack_Coin_Change";
+    public static string Backpack_Item_Change = "Backpack_Item_Change";
     public static string Magic_Change = "Magic_Change";
 
     public static string UIViewCreatureCardItem_SelectKeep = "UIViewCreatureCardItem_SelectKeep";//卡片避让

@@ -1,4 +1,4 @@
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 using TMPro;
 
 
@@ -17,6 +17,8 @@ public partial class UITestBase
     public Button ui_BtnAddUnlockCreature;
 
     public Button ui_BtnAddCoin;
+
+    public Button ui_BtnAddItem;
 
 
 }

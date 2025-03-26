@@ -32,7 +32,11 @@ public partial class UITestBase : BaseUIComponent
         }
         else if(viewButton == ui_BtnAddCoin)
         {
-            OnClickForAddCoin();
+            OnClickForAddCrystal();
+        }
+        else if(viewButton == ui_BtnAddItem)
+        {
+            OnClickForAddItem();
         }
         else if (viewButton == ui_BtnAddAllCreature)
         {
@@ -63,18 +67,39 @@ public partial class UITestBase : BaseUIComponent
     /// <summary>
     /// 点击增加魔晶
     /// </summary>
-    public void OnClickForAddCoin()
+    public void OnClickForAddCrystal()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         string inputData = ui_InputData.text;
         if (inputData.IsNull())
         {
-             userData.AddCoin(999999);
+             userData.AddCrystal(999999);
         }
         else
         {
             if(long.TryParse(inputData,out var addCoin)){
-                userData.AddCoin(addCoin);
+                userData.AddCrystal(addCoin);
+            }else{
+                LogUtil.LogError("请输入数字");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 点击添加道具
+    /// </summary>
+    public void OnClickForAddItem()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        string inputData = ui_InputData.text;
+        if (inputData.IsNull())
+        {
+             userData.AddCrystal(999999);
+        }
+        else
+        {
+            if(long.TryParse(inputData,out var itemId)){
+                userData.AddItem(itemId);
             }else{
                 LogUtil.LogError("请输入数字");
             }
@@ -107,14 +132,18 @@ public partial class UITestBase : BaseUIComponent
     public void OnClickForAddTestCreature()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        for (int i = 0; i < 100; i++)
+        string inputData = ui_InputData.text;
+        if (inputData.IsNull() || !long.TryParse(inputData, out long targetId))
         {
-            CreatureBean creatureData = new CreatureBean(1);
-            creatureData.rarity = Random.Range(1, 7);
-            creatureData.level = Random.Range(0, 101);
-            creatureData.AddTestSkin();
-            userData.AddBackpackCreature(creatureData);
+            LogUtil.LogError("添加测试生物失败，请输入生物ID");
+            return;
         }
+        CreatureBean creatureData = new CreatureBean(targetId);
+        creatureData.rarity = Random.Range(1, 7);
+        creatureData.starLevel= Random.Range(0, 11);
+        creatureData.level = Random.Range(0, 101);
+        creatureData.AddTestSkin();
+        userData.AddBackpackCreature(creatureData);
 
         UIHandler.Instance.ToastHint<ToastView>("添加成功！");
     }

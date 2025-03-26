@@ -35,6 +35,10 @@ public partial class UIBaseCore : BaseUIComponent
         {
             OnClickForExit();
         }
+        else if (viewButton == ui_ViewBaseCoreItemFunction_Creature)
+        {
+            OnClickForCreature();
+        }
         else if (viewButton == ui_ViewBaseCoreItemFunction_Lineup)
         {
             OnClickForLineup();
@@ -59,6 +63,14 @@ public partial class UIBaseCore : BaseUIComponent
     public void OnClickForExit()
     {
         UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
+    }
+
+    /// <summary>
+    /// 点击生物管理
+    /// </summary>
+    public void OnClickForCreature()
+    {
+        var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UICreatureManager>();
     }
 
     /// <summary>
