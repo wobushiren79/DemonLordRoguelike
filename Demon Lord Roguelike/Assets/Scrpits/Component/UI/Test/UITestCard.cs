@@ -22,7 +22,7 @@ public partial class UITestCard : BaseUIComponent
 
         //测试标准模型
         CreatureBean creatureNormalTest = new CreatureBean(2001);
-        creatureNormalTest.AddTestSkin();
+        creatureNormalTest.AddSkinForBase();
         SpineHandler.Instance.SetSkeletonDataAsset(ui_NormalModel, creatureNormalTest.creatureModel.res_name);
         string[] skinArray = creatureNormalTest.GetSkinArray();
         SpineHandler.Instance.ChangeSkeletonSkin(ui_NormalModel.skeleton, skinArray);

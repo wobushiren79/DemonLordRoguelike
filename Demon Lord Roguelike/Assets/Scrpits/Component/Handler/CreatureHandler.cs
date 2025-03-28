@@ -81,7 +81,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
 
             //创建战斗生物
             FightCreatureBean fightCreatureData = new FightCreatureBean(creatureId);
-            fightCreatureData.creatureData.AddTestSkin();
+            fightCreatureData.creatureData.AddSkinForBase();
             fightCreatureData.positionCreate = new Vector3Int(0, 0, targetRoad);
             GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
             gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIAttCreatureEntity>(actionBeforeStart: (targetEntity) =>

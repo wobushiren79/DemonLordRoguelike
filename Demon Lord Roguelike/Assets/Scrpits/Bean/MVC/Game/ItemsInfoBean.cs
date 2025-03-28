@@ -12,9 +12,9 @@ public partial class ItemsInfoBean : BaseBean
 	/// </summary>
 	public int num_max;
 	/// <summary>
-	///专属生物模组ID
+	///生物模组信息ID
 	/// </summary>
-	public long belong_creature_model;
+	public long creature_model_info_id;
 	/// <summary>
 	///图标
 	/// </summary>

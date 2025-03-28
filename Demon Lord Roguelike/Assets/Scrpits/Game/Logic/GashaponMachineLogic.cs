@@ -115,6 +115,10 @@ public class GashaponMachineLogic : BaseGameLogic
             {
                 listPreLoadSpineData.Add(caretureModelInfo.ui_show_spine);
             }
+            //添加生成的数据
+            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+            userData.AddBackpackCreature(itemGashapon.creatureData);
+
         }
         SpineHandler.Instance.PreLoadSkeletonDataAsset(listPreLoadSpineData, (dicData) =>
         {

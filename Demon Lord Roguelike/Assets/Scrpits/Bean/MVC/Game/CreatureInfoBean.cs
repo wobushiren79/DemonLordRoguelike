@@ -24,9 +24,9 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public string spine_base_weapon;
 	/// <summary>
-	///身体的可替换模块类型
+	///可装备类型
 	/// </summary>
-	public string spine_skin_change_type;
+	public string equip_items_type;
 	/// <summary>
 	///等待动画名字
 	/// </summary>

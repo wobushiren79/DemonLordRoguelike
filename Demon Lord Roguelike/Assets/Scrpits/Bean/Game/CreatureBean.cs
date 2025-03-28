@@ -20,8 +20,10 @@ public partial class CreatureBean
     //稀有度
     public int rarity;
 
-    //所有的皮肤数据
+    //所有的皮肤数据（只保存身体基本皮肤 装备的皮肤保存再装备数据里 如果是初始默认装备也保存在这里）
     public Dictionary<CreatureSkinTypeEnum, CreatureSkinBean> dicSkinData = new Dictionary<CreatureSkinTypeEnum, CreatureSkinBean>();
+    //装备数据
+    public Dictionary<ItemTypeEnum, ItemBean> dicEquipItemData = new Dictionary<ItemTypeEnum, ItemBean>();
 
     public CreatureBean(long id)
     {
@@ -42,7 +44,7 @@ public partial class CreatureBean
     /// <summary>
     /// 添加基础皮肤
     /// </summary>
-    public void AddSkinForBase()
+    public void AddSkinForBase(bool hasWeapon = true)
     {
         //添加基础皮肤
         List<long> listSpineBaseIds = creatureInfo.GetSpineBaseIds();
@@ -62,22 +64,13 @@ public partial class CreatureBean
                 AddSkin(listBaseSkin[0].id);
             }
         }
-    }
-
-    /// <summary>
-    /// 添加所有皮肤 用于测试
-    /// </summary>
-    public void AddTestSkin()
-    {
-        dicSkinData.Clear();
-        var allData = CreatureModelInfoCfg.GetAllData();
-        var creatureInfo = CreatureInfoCfg.GetItemData(id);
-        foreach (var itemData in allData)
+        //添加武器
+        if (hasWeapon)
         {
-            var itemCreatureModelInfo = itemData.Value;
-            if (itemCreatureModelInfo.model_id == creatureInfo.model_id)
+            long weaponId = creatureInfo.GetSpineBaseWeaponId();
+            if (weaponId != 0)
             {
-                AddSkin(itemCreatureModelInfo.id);
+                AddSkin(weaponId);
             }
         }
     }
@@ -88,6 +81,11 @@ public partial class CreatureBean
     public void AddSkin(long skinId)
     {
         var modelDetailsInfo = CreatureModelInfoCfg.GetItemData(skinId);
+        if (modelDetailsInfo == null)
+        {
+            LogUtil.LogError($"添加皮肤失败 没有找到skinId_{skinId}的皮肤");
+            return;
+        }
         CreatureSkinTypeEnum targetSkinType = (CreatureSkinTypeEnum)modelDetailsInfo.part_type;
         if (dicSkinData.TryGetValue(targetSkinType, out CreatureSkinBean creatureSkin))
         {
@@ -100,16 +98,22 @@ public partial class CreatureBean
         }
     }
 
+
     /// <summary>
     /// 获取皮肤列表
     /// </summary>
-    public string[] GetSkinArray(int showType = 0)
+    /// <param name="showType">0普通皮肤 1立绘皮肤（表情）</param>
+    /// <returns></returns>
+    public string[] GetSkinArray(int showType = 0, bool isNeedWeapon = true)
     {
         List<string> listSkin = new List<string>();
+
+        //处理所有身体皮肤
         foreach (var itemSkin in dicSkinData)
         {
+            var itemPartType = itemSkin.Key;
             var itemSkinData = itemSkin.Value;
-            var itemSkinInfo = CreatureModelInfoCfg.GetItemData(itemSkinData.skinId);
+            CreatureModelInfoBean itemSkinInfo = CreatureModelInfoCfg.GetItemData(itemSkinData.skinId);
             if (itemSkinInfo == null)
             {
                 LogUtil.LogError($"获取CreatureModelInfoCfg数据失败 没有找到ID_{itemSkinData.skinId} 的数据");
@@ -117,10 +121,50 @@ public partial class CreatureBean
             else
             {
                 if (itemSkinInfo.show_type == showType)
-                {
+                { 
+                    //特殊处理
+                    if (showType == 0)
+                    {
+                        //是否需要展示武器
+                        if (!isNeedWeapon)
+                        {
+                            if (itemPartType == CreatureSkinTypeEnum.Weapon_L || itemPartType == CreatureSkinTypeEnum.Weapon_R)
+                            {
+                                continue;
+                            }
+                        }
+                        //如果有帽子 不需要展示头发
+                        if (dicEquipItemData.ContainsKey(ItemTypeEnum.Hat) && itemPartType == CreatureSkinTypeEnum.Hair)
+                        {
+                            continue;
+                        }
+                        //如果有装备武器 则不需要再添加基础武器
+                        if (dicEquipItemData.ContainsKey(ItemTypeEnum.Weapon) && (itemPartType == CreatureSkinTypeEnum.Weapon_L || itemPartType == CreatureSkinTypeEnum.Weapon_R))
+                        {
+                            continue;
+                        }
+                    }
                     listSkin.Add(itemSkinInfo.res_name);
                 }
             }
+        }
+
+        //处理装备
+        foreach(var itemEquip in dicEquipItemData)
+        {
+            var itemType = itemEquip.Key;
+            var itemData = itemEquip.Value;
+            //是否需要展示武器
+            if (!isNeedWeapon)
+            {
+                if (itemType == ItemTypeEnum.Weapon)
+                {
+                    continue;
+                }
+            }
+            ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
+            CreatureModelInfoBean itemSkinInfo = CreatureModelInfoCfg.GetItemData(itemInfo.creature_model_info_id);
+            listSkin.Add(itemSkinInfo.res_name);
         }
         return listSkin.ToArray();
     }
@@ -148,7 +192,7 @@ public partial class CreatureBean
     {
         return creatureInfo.GetDROrigin();
     }
-    
+
     /// <summary>
     /// 获取攻击
     /// </summary>

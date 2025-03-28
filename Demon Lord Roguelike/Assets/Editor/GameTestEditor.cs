@@ -44,7 +44,7 @@ public class GameTestEditor : Editor
         if (GUILayout.Button("显示卡片") && Application.isPlaying)
         {
             FightCreatureBean fightCreature = new FightCreatureBean(creatureId);
-            fightCreature.creatureData.AddTestSkin();
+            fightCreature.creatureData.AddSkinForBase();
             launcher.StartForCardTest(fightCreature);
         }
         EditorGUILayout.BeginHorizontal();
@@ -110,7 +110,7 @@ public class GameTestEditor : Editor
             if (ids.Length > 0)
             {
                 CreatureBean creatureData = new CreatureBean(ids[0]);
-                creatureData.AddTestSkin();
+                creatureData.AddSkinForBase();
                 launcher.StartForBaseTest(creatureData);
             }
         }
@@ -147,15 +147,13 @@ public class GameTestEditor : Editor
         {
             int index = i % ids.Length;
             CreatureBean itemData = new CreatureBean(ids[index]);
-            itemData.AddTestSkin();
+            itemData.AddSkinForBase();
             itemData.order = i;
             fightData.dlDefenseCreatureData.Add(itemData.creatureId, itemData);
         };
 
         FightCreatureBean fightDefCoreData = new FightCreatureBean(2001);
-        fightDefCoreData.creatureData.AddSkin(2000001);
-        fightDefCoreData.creatureData.AddSkin(2010011);
-        fightDefCoreData.creatureData.AddSkin(2020030);
+        fightDefCoreData.creatureData.AddSkinForBase();
         fightData.fightDefenseCoreData = fightDefCoreData;
 
         fightData.InitData();

@@ -30,11 +30,11 @@ public partial class UITestBase : BaseUIComponent
         {
             OnClickForExit();
         }
-        else if(viewButton == ui_BtnAddCoin)
+        else if (viewButton == ui_BtnAddCoin)
         {
             OnClickForAddCrystal();
         }
-        else if(viewButton == ui_BtnAddItem)
+        else if (viewButton == ui_BtnAddItem)
         {
             OnClickForAddItem();
         }
@@ -73,13 +73,16 @@ public partial class UITestBase : BaseUIComponent
         string inputData = ui_InputData.text;
         if (inputData.IsNull())
         {
-             userData.AddCrystal(999999);
+            userData.AddCrystal(999999);
         }
         else
         {
-            if(long.TryParse(inputData,out var addCoin)){
+            if (long.TryParse(inputData, out var addCoin))
+            {
                 userData.AddCrystal(addCoin);
-            }else{
+            }
+            else
+            {
                 LogUtil.LogError("请输入数字");
             }
         }
@@ -94,13 +97,16 @@ public partial class UITestBase : BaseUIComponent
         string inputData = ui_InputData.text;
         if (inputData.IsNull())
         {
-             userData.AddCrystal(999999);
+            userData.AddCrystal(999999);
         }
         else
         {
-            if(long.TryParse(inputData,out var itemId)){
+            if (long.TryParse(inputData, out var itemId))
+            {
                 userData.AddItem(itemId);
-            }else{
+            }
+            else
+            {
                 LogUtil.LogError("请输入数字");
             }
         }
@@ -119,7 +125,7 @@ public partial class UITestBase : BaseUIComponent
             CreatureBean creatureData = new CreatureBean(itemCreatureInfo.id);
             creatureData.rarity = Random.Range(1, 7);
             creatureData.level = 0;
-            creatureData.AddTestSkin();
+            creatureData.AddSkinForBase();
             userData.AddBackpackCreature(creatureData);
         }
 
@@ -140,9 +146,9 @@ public partial class UITestBase : BaseUIComponent
         }
         CreatureBean creatureData = new CreatureBean(targetId);
         creatureData.rarity = Random.Range(1, 7);
-        creatureData.starLevel= Random.Range(0, 11);
+        creatureData.starLevel = Random.Range(0, 11);
         creatureData.level = Random.Range(0, 101);
-        creatureData.AddTestSkin();
+        creatureData.AddSkinForBase();
         userData.AddBackpackCreature(creatureData);
 
         UIHandler.Instance.ToastHint<ToastView>("添加成功！");
@@ -152,14 +158,14 @@ public partial class UITestBase : BaseUIComponent
     /// 添加解锁信息
     /// </summary>
     public void OnClickForAddUnlock()
-    {            
+    {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlockDasta = userData.GetUserUnlockData();
         string inputData = ui_InputData.text;
         if (inputData.IsNull())
-        {      
+        {
             var all = UnlockInfoCfg.GetAllData();
-            foreach(var item in all)
+            foreach (var item in all)
             {
                 userUnlockDasta.AddUnlock(item.Key);
             }

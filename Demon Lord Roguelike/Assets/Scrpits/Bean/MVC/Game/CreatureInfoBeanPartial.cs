@@ -6,7 +6,7 @@ public partial class CreatureInfoBean
     //spine身体基础部位IDs
     protected List<long> listSpineBaseIds;
     //spine身体可替换部位类型
-    protected List<CreatureSkinTypeEnum> listSpineChangeSkinTypes;
+    protected List<ItemTypeEnum> listEquipItemsType;
 
     public int GetHP()
     {
@@ -32,13 +32,12 @@ public partial class CreatureInfoBean
     /// <summary>
     /// 获取所有基础部位IDs
     /// </summary>
-
     public List<long> GetSpineBaseIds()
     {
         if (listSpineBaseIds == null)
         {
             listSpineBaseIds = new List<long>();
-            if(!spine_base.IsNull())
+            if (!spine_base.IsNull())
             {
                 listSpineBaseIds = spine_base.SplitForListLong(',');
             }
@@ -47,19 +46,34 @@ public partial class CreatureInfoBean
     }
 
     /// <summary>
+    /// 获取基础武器部件ID
+    /// </summary>
+    public long GetSpineBaseWeaponId()
+    {
+        if (spine_base_weapon.IsNull())
+        {
+            return 0;
+        }
+        else
+        {
+            return long.Parse(spine_base_weapon);
+        }
+    }
+
+    /// <summary>
     /// 获取所有可替换皮肤类型
     /// </summary>
-    public List<CreatureSkinTypeEnum> GetSpineSkinChangeTypes()
+    public List<ItemTypeEnum> GetEquipItemsType()
     {
-        if (listSpineChangeSkinTypes == null)
+        if (listEquipItemsType == null)
         {
-            listSpineChangeSkinTypes = new List<CreatureSkinTypeEnum>();
-            if(!spine_skin_change_type.IsNull())
+            listEquipItemsType = new List<ItemTypeEnum>();
+            if (!equip_items_type.IsNull())
             {
-                listSpineChangeSkinTypes = spine_base.SplitForListEnum<CreatureSkinTypeEnum>(',');
+                listEquipItemsType = spine_base.SplitForListEnum<ItemTypeEnum>(',');
             }
         }
-        return listSpineChangeSkinTypes;
+        return listEquipItemsType;
     }
 }
 public partial class CreatureInfoCfg

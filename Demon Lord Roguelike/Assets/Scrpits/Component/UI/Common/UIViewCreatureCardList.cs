@@ -12,7 +12,7 @@ public partial class UIViewCreatureCardList : BaseUIView
     //卡片的使用地方
     protected CardUseState cardUseState;
     //卡片变化回调
-    protected Action<UIViewCreatureCardItem, CreatureBean> actionForOnCellChange;
+    protected Action<int, UIViewCreatureCardItem, CreatureBean> actionForOnCellChange;
     public override void Awake()
     {
         base.Awake();
@@ -56,9 +56,9 @@ public partial class UIViewCreatureCardList : BaseUIView
     /// </summary>
     public void RefreshCardByCreatureId(string creatureId)
     {
-        listCreatureData.ForEach((index,itemData)=>
+        listCreatureData.ForEach((index, itemData) =>
         {
-            if(creatureId.Equals(itemData.creatureId))
+            if (creatureId.Equals(itemData.creatureId))
             {
                 RefreshCardByIndex(index);
             }
@@ -76,7 +76,7 @@ public partial class UIViewCreatureCardList : BaseUIView
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(List<CreatureBean> listData, CardUseState cardUseState,Action<UIViewCreatureCardItem, CreatureBean> actionForOnCellChange = null)
+    public void SetData(List<CreatureBean> listData, CardUseState cardUseState, Action<int, UIViewCreatureCardItem, CreatureBean> actionForOnCellChange = null)
     {
         this.cardUseState = cardUseState;
         this.actionForOnCellChange = actionForOnCellChange;
@@ -99,7 +99,7 @@ public partial class UIViewCreatureCardList : BaseUIView
         var itemView = itemCell.GetComponent<UIViewCreatureCardItem>();
         itemView.cardData.indexList = itemCell.index;
         itemView.SetData(itemData, cardUseState);
-        actionForOnCellChange?.Invoke(itemView, itemData);
+        actionForOnCellChange?.Invoke(itemCell.index, itemView, itemData);
     }
 
     /// <summary>

@@ -86,5 +86,9 @@ public enum GameFightTypeEnum
 //道具枚举
 public enum ItemTypeEnum
 {
-
+    Hat = 1,
+    Clothes = 2,
+    Pants = 3,
+    Shoe = 4,
+    Weapon = 10
 }

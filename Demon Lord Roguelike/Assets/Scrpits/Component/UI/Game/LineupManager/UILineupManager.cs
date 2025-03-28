@@ -85,7 +85,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     /// <summary>
     /// 背包列表变化
     /// </summary>
-    public void OnCellChangeForBackpackCreature(UIViewCreatureCardItem itemView, CreatureBean itemData)
+    public void OnCellChangeForBackpackCreature(int index, UIViewCreatureCardItem itemView, CreatureBean itemData)
     {
         //设置选中和未选中状态
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();

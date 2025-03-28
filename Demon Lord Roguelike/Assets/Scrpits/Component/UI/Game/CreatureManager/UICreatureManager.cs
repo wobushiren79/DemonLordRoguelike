@@ -5,18 +5,20 @@ using UnityEngine.UI;
 
 public partial class UICreatureManager : BaseUIComponent
 {
-    public List<ItemBean> listBackpackItem = new List<ItemBean>();
+
     public override void OpenUI()
     {
         base.OpenUI();
         InitCreaturekData();
+        InitBackpackItemsData();
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForCardClickSelect);
     }
 
-    public override void Awake()
+    public override void CloseUI()
     {
-        base.Awake();
-        ui_BackpackContent.AddCellListener(OnCellChangeForBackpackItem);
+        base.CloseUI();
+        ui_UIViewCreatureCardList.CloseUI();
+        ui_UIViewItemBackpackList.CloseUI();
     }
 
     public override void OnClickForButton(Button viewButton)
@@ -43,20 +45,13 @@ public partial class UICreatureManager : BaseUIComponent
     public void InitBackpackItemsData()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        var listItems = userData.listBackpackItems;
-        // List<ItemBean> listShowItems = new List<ItemBean>();
-        // for (int i = 0; i < listItems.Count; i++)
-        // {
-
-        // }
-        listBackpackItem = listItems;
-        ui_BackpackContent.SetCellCount(listBackpackItem.Count);
+        ui_UIViewItemBackpackList.SetData(userData.listBackpackItems, OnCellChangeForBackpackItem);
     }
 
     /// <summary>
     /// 背包生物列表变化
     /// </summary>
-    public void OnCellChangeForBackpackCreature(UIViewCreatureCardItem itemView, CreatureBean itemData)
+    public void OnCellChangeForBackpackCreature(int index, UIViewCreatureCardItem itemView, CreatureBean itemData)
     {
 
     }
@@ -64,7 +59,7 @@ public partial class UICreatureManager : BaseUIComponent
     /// <summary>
     /// 背包道具变化
     /// </summary>
-    public void OnCellChangeForBackpackItem(ScrollGridCell itemCell)
+    public void OnCellChangeForBackpackItem(int index, UIViewItemBackpack itemView, ItemBean itemData)
     {
 
     }
