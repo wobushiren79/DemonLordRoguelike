@@ -97,7 +97,7 @@ public partial class UITestBase : BaseUIComponent
         string inputData = ui_InputData.text;
         if (inputData.IsNull())
         {
-            userData.AddCrystal(999999);
+            LogUtil.LogError("请输入道具ID");
         }
         else
         {
