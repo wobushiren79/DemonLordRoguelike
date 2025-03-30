@@ -10,15 +10,24 @@ public partial class UIViewItemBackpack : BaseUIView
     {
         this.itemData = itemData;
         SetNum(itemData.itemNum);
-        SetIcon(itemData.itemsInfo.icon_res);
+        SetIcon(itemData.itemId);
+        SetItemPopup(itemData);
+    }
+
+    /// <summary>
+    /// 设置弹窗信息
+    /// </summary>
+    public void SetItemPopup(ItemBean itemData)
+    {
+        ui_UIViewItemBackpack.SetData(itemData, PopupEnum.ItemInfo);
     }
 
     /// <summary>
     /// 设置头像
     /// </summary>
-    public void SetIcon(string iconName)
+    public void SetIcon(long itemId)
     {
-        IconHandler.Instance.SetItemIcon(iconName,ui_ItemIcon);
+        IconHandler.Instance.SetItemIcon(itemId, ui_ItemIcon);
     }
 
     /// <summary>

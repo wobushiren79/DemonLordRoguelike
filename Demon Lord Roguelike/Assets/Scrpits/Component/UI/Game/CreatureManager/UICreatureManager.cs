@@ -80,7 +80,7 @@ public partial class UICreatureManager : BaseUIComponent
     /// </summary>
     public void EventForCardClickSelect(UIViewCreatureCardItem targetView)
     {
-        ui_UIViewCreatureCardDetails.SetData(targetView.cardData.creatureData);
+        ui_UIViewCreatureCardEquipDetails.SetData(targetView.cardData.creatureData);
     }
     #endregion
 }

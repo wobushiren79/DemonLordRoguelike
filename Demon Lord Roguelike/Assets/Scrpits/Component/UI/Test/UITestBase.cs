@@ -97,7 +97,11 @@ public partial class UITestBase : BaseUIComponent
         string inputData = ui_InputData.text;
         if (inputData.IsNull())
         {
-            LogUtil.LogError("请输入道具ID");
+            var allData = ItemsInfoCfg.GetAllData();
+            foreach(var itemData in allData)
+            {
+                userData.AddItem(itemData.Value.id);
+            }
         }
         else
         {

@@ -23,11 +23,17 @@ public partial class UIViewItemBackpackList : BaseUIView
         ui_BackpackContent.ClearAllCell();
     }
 
+    public override void OpenUI()
+    {
+        base.OpenUI();
+    }
+
     /// <summary>
     /// 设置数据
     /// </summary>
     public void SetData(List<ItemBean> listBackpackItems, Action<int, UIViewItemBackpack, ItemBean> actionForOnCellChange)
     {
+        OpenUI();
         this.listBackpackItems = listBackpackItems;
         this.actionForOnCellChange = actionForOnCellChange;
         ui_BackpackContent.SetCellCount(listBackpackItems.Count);

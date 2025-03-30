@@ -20,6 +20,10 @@ public partial class ItemsInfoBean : BaseBean
 	/// </summary>
 	public string icon_res;
 	/// <summary>
+	///图标旋转
+	/// </summary>
+	public float icon_rotate_z;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

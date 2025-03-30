@@ -70,7 +70,7 @@ public partial class CreatureInfoBean
             listEquipItemsType = new List<ItemTypeEnum>();
             if (!equip_items_type.IsNull())
             {
-                listEquipItemsType = spine_base.SplitForListEnum<ItemTypeEnum>(',');
+                listEquipItemsType = equip_items_type.SplitForListEnum<ItemTypeEnum>(',');
             }
         }
         return listEquipItemsType;

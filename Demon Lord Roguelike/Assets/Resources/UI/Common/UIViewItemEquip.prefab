@@ -277,9 +277,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: e085c901038582d4798906fc0f0b9fff, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a43bb47107e97dd49a55c6f9511f754d, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -298,6 +298,8 @@ GameObject:
   - component: {fileID: 1207748875610503165}
   - component: {fileID: 1800170817577436100}
   - component: {fileID: 288679109784005222}
+  - component: {fileID: 8962626176750863643}
+  - component: {fileID: 2822988439585080938}
   m_Layer: 5
   m_Name: UIViewItemEquip
   m_TagString: Untagged
@@ -364,3 +366,38 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &8962626176750863643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3473223220127272987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c31a2e2534e69cd458da950f20389663, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
+  _rectTransform: {fileID: 0}
+  ui_ItemIcon: {fileID: 1074320824586657121}
+  ui_ItemNameBg: {fileID: 1205608625590379459}
+  ui_ItemName: {fileID: 1111591687804410508}
+  ui_UIViewItemEquip: {fileID: 2822988439585080938}
+--- !u!114 &2822988439585080938
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3473223220127272987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16e10e1ab6287e34bb1c2a56fb2273e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
+  _rectTransform: {fileID: 0}
+  timeDelayShow: 0

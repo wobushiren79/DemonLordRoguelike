@@ -19,6 +19,11 @@ public partial class UIViewCreatureCardList : BaseUIView
         ui_CreatureListContent.AddCellListener(OnCellChangeForCreatrue);
     }
 
+    public override void OpenUI()
+    {
+        base.OpenUI();
+    }
+
     public override void CloseUI()
     {
         base.CloseUI();
@@ -78,6 +83,7 @@ public partial class UIViewCreatureCardList : BaseUIView
     /// </summary>
     public void SetData(List<CreatureBean> listData, CardUseState cardUseState, Action<int, UIViewCreatureCardItem, CreatureBean> actionForOnCellChange = null)
     {
+        OpenUI();
         this.cardUseState = cardUseState;
         this.actionForOnCellChange = actionForOnCellChange;
         listCreatureData.Clear();
