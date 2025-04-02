@@ -5,6 +5,7 @@ using UnityEngine;
 using DG.Tweening;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 using Spine.Unity;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
 
 public class FightHandler : BaseHandler<FightHandler, FightManager>
 {
@@ -82,16 +83,30 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     /// <summary>
     /// 创建一个攻击预制
     /// </summary>
-    public void CreateAttackModePrefab(int attackModeId, Action<BaseAttackMode> actionForComplete)
+    public void CreateAttackModePrefab(CreatureBean creatureData , Action<BaseAttackMode> actionForComplete)
     {
+        //只保存基础生物ID和武器ID 用于初始化攻击的样式
+        long weaponItemId = 0;
+        long creatureId = creatureData.creatureInfo.id;
+        int attackModeId = creatureData.creatureInfo.attack_mode;
+        var weaponItemData = creatureData.GetEquip(ItemTypeEnum.Weapon);
+        if (weaponItemData != null)
+        {
+            weaponItemId = weaponItemData.itemId;
+        }
+
         manager.GetAttackModePrefab(attackModeId, (targetPrefab) =>
         {
+            //只保存基础生物ID和武器ID 用于初始化攻击的样式
+            targetPrefab.creatureId = creatureId;
+            targetPrefab.weaponItemId = weaponItemId;
+            targetPrefab.InitAttackModeShow();
+            
             targetPrefab.gameObject.SetActive(true);
             if (targetPrefab.spriteRenderer != null)
             {
                 targetPrefab.spriteRenderer.transform.eulerAngles = CameraHandler.Instance.manager.mainCamera.transform.eulerAngles;
             }
-
             actionForComplete?.Invoke(targetPrefab);
         });
     }

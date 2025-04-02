@@ -22,7 +22,7 @@ public partial class CreatureInfoBean : BaseBean
 	/// <summary>
 	///身体的基础武器模块
 	/// </summary>
-	public string spine_base_weapon;
+	public long equip_item_base_weapon;
 	/// <summary>
 	///可装备类型
 	/// </summary>

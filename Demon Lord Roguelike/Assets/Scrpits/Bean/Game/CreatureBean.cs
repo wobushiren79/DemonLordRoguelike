@@ -31,6 +31,38 @@ public partial class CreatureBean
         this.creatureId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
     }
 
+    #region 装备相关
+    public void ChangeEquip(ItemTypeEnum itemType, ItemBean changeItem, out ItemBean beforeItem)
+    {
+        beforeItem = null;
+        //首先卸下原来的装备
+        if (dicEquipItemData.TryGetValue(itemType, out var equipItem))
+        {
+            beforeItem = equipItem;
+            dicEquipItemData.Remove(itemType);
+        }
+        //如果需要 装备新得装备
+        if (changeItem != null && changeItem.itemId > 0)
+        {
+            dicEquipItemData.Add(itemType, changeItem);
+        }
+    }
+
+    /// <summary>
+    /// 获取装备
+    /// </summary>
+    public ItemBean GetEquip(ItemTypeEnum itemType)
+    {
+        //首先卸下原来的装备
+        if (dicEquipItemData.TryGetValue(itemType, out var equipItem))
+        {
+            return equipItem;
+        }
+        return null;
+    }
+    #endregion
+
+    #region  皮肤相关
     /// <summary>
     /// 清空皮肤
     /// </summary>
@@ -67,10 +99,18 @@ public partial class CreatureBean
         //添加武器
         if (hasWeapon)
         {
-            long weaponId = creatureInfo.GetSpineBaseWeaponId();
+            long weaponId = creatureInfo.GetEquipBaseWeaponId();
             if (weaponId != 0)
             {
-                AddSkin(weaponId);
+                var weponInfo = ItemsInfoCfg.GetItemData(weaponId);
+                if (weponInfo != null)
+                {
+                    AddSkin(weponInfo.creature_model_info_id);
+                }
+                else
+                {
+                    LogUtil.LogError($"添加基础皮肤武器失败 weaponId_{weaponId}");
+                }
             }
         }
     }
@@ -121,7 +161,7 @@ public partial class CreatureBean
             else
             {
                 if (itemSkinInfo.show_type == showType)
-                { 
+                {
                     //特殊处理
                     if (showType == 0)
                     {
@@ -150,7 +190,7 @@ public partial class CreatureBean
         }
 
         //处理装备
-        foreach(var itemEquip in dicEquipItemData)
+        foreach (var itemEquip in dicEquipItemData)
         {
             var itemType = itemEquip.Key;
             var itemData = itemEquip.Value;
@@ -169,6 +209,9 @@ public partial class CreatureBean
         return listSkin.ToArray();
     }
 
+    #endregion
+
+    #region 属性相关
     /// <summary>
     /// 获取生命值
     /// </summary>
@@ -245,4 +288,5 @@ public partial class CreatureBean
         var creatureInfo = CreatureInfoCfg.GetItemData(id);
         return creatureInfo.create_magic;
     }
+    #endregion
 }

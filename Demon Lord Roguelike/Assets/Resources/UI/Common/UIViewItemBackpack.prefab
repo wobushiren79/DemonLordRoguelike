@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8701509893515076106}
   - component: {fileID: 5283719187312359229}
   - component: {fileID: 3338631688152641542}
+  - component: {fileID: 6623542376943365085}
   m_Layer: 5
   m_Name: UIViewItemBackpack
   m_TagString: Untagged
@@ -97,7 +98,8 @@ MonoBehaviour:
   ui_ItemIcon: {fileID: 8226000789966542093}
   ui_ItemNum: {fileID: 8335402029201019616}
   ui_ItemNumBg: {fileID: 7816929075275312047}
-  ui_UIViewItemBackpack: {fileID: 3338631688152641542}
+  ui_UIViewItemBackpack_PopupButtonCommonView: {fileID: 3338631688152641542}
+  ui_UIViewItemBackpack_Button: {fileID: 6623542376943365085}
 --- !u!114 &3338631688152641542
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -113,7 +115,51 @@ MonoBehaviour:
   uiOpenAnimType: 0
   uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}
-  timeDelayShow: 0
+  timeDelayShow: 0.2
+--- !u!114 &6623542376943365085
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5544845000024529015}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 8701509893515076106}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &7408502962675271955
 GameObject:
   m_ObjectHideFlags: 0
@@ -149,7 +195,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -10, y: -10}
+  m_SizeDelta: {x: -24, y: -24}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6871861118057896831
 CanvasRenderer:

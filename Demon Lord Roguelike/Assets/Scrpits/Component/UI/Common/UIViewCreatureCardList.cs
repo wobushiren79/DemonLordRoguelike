@@ -83,7 +83,7 @@ public partial class UIViewCreatureCardList : BaseUIView
     /// </summary>
     public void SetData(List<CreatureBean> listData, CardUseState cardUseState, Action<int, UIViewCreatureCardItem, CreatureBean> actionForOnCellChange = null)
     {
-        OpenUI();
+        gameObject.SetActive(true);
         this.cardUseState = cardUseState;
         this.actionForOnCellChange = actionForOnCellChange;
         listCreatureData.Clear();
@@ -94,6 +94,18 @@ public partial class UIViewCreatureCardList : BaseUIView
         ui_CreatureListContent.SetCellCount(listCreatureData.Count);
     }
 
+    /// <summary>
+    /// 获取列表单个数据
+    /// </summary>
+    public CreatureBean GetItemData(int index)
+    {
+        if(index >= listCreatureData.Count)
+        {
+            LogUtil.LogError($"获取道具失败 超过下标 index_{index} Count_{listCreatureData.Count}");
+            return null;
+        }
+        return listCreatureData[index];
+    }
 
     /// <summary>
     /// item滚动变化

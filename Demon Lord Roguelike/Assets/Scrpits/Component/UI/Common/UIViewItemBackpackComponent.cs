@@ -10,7 +10,9 @@ public partial class UIViewItemBackpack
 
     public Image ui_ItemNumBg;
 
-    public PopupButtonCommonView ui_UIViewItemBackpack;
+    public PopupButtonCommonView ui_UIViewItemBackpack_PopupButtonCommonView;
+
+    public Button ui_UIViewItemBackpack_Button;
 
 
 }

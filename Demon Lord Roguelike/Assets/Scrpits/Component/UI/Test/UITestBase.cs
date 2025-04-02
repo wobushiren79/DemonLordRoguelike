@@ -86,6 +86,7 @@ public partial class UITestBase : BaseUIComponent
                 LogUtil.LogError("请输入数字");
             }
         }
+        UIHandler.Instance.ToastHint<ToastView>("添加成功！");
     }
 
     /// <summary>
@@ -114,6 +115,7 @@ public partial class UITestBase : BaseUIComponent
                 LogUtil.LogError("请输入数字");
             }
         }
+        UIHandler.Instance.ToastHint<ToastView>("添加成功！");
     }
 
     /// <summary>

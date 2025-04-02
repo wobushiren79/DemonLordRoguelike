@@ -87,6 +87,7 @@ public partial class UIViewCreatureCardItem : BaseUIView
     /// </summary>
     public virtual void RefreshCardState(CardStateEnum cardState)
     {
+        ui_SelectBg.gameObject.SetActive(false);
         ui_CDTime.gameObject.SetActive(false);
         ui_Mask.gameObject.SetActive(false);
         ui_Mask.fillAmount = 1;
@@ -111,5 +112,4 @@ public partial class UIViewCreatureCardItem : BaseUIView
     {
         TriggerEvent(EventsInfo.UIViewCreatureCardItem_OnClickSelect, this);
     }
-
 }

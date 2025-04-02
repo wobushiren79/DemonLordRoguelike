@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7127078073351741257}
   m_Layer: 0
-  m_Name: AttackMode_RangedBone
+  m_Name: AttackMode_RangedNormal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

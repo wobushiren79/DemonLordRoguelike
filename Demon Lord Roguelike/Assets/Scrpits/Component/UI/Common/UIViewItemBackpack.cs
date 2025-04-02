@@ -1,8 +1,23 @@
 ﻿
 
+using UnityEngine.UI;
+
 public partial class UIViewItemBackpack : BaseUIView
 {
-    protected ItemBean itemData;
+    public ItemBean itemData;
+
+    /// <summary>
+    /// 点击
+    /// </summary>
+    public override void OnClickForButton(Button viewButton)
+    {
+        base.OnClickForButton(viewButton);
+        if (viewButton == ui_UIViewItemBackpack_Button)
+        {
+            OnClickForSelect();
+        }
+    }
+
     /// <summary>
     /// 设置数据
     /// </summary>
@@ -19,7 +34,7 @@ public partial class UIViewItemBackpack : BaseUIView
     /// </summary>
     public void SetItemPopup(ItemBean itemData)
     {
-        ui_UIViewItemBackpack.SetData(itemData, PopupEnum.ItemInfo);
+        ui_UIViewItemBackpack_PopupButtonCommonView.SetData(itemData, PopupEnum.ItemInfo);
     }
 
     /// <summary>
@@ -44,5 +59,13 @@ public partial class UIViewItemBackpack : BaseUIView
             ui_ItemNumBg.gameObject.SetActive(true);
             ui_ItemNum.text = $"{num}";
         }
+    }
+
+    /// <summary>
+    /// 点击
+    /// </summary>
+    public void OnClickForSelect()
+    {
+        this.TriggerEvent(EventsInfo.UIViewItemBackpack_OnClickSelect,this);
     }
 }

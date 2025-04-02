@@ -262,8 +262,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tempCell: {fileID: 6607275696344688825, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
   movementType: 1
-  cellSpaceX: 16
-  cellSpaceY: 16
+  cellSpaceX: 19
+  cellSpaceY: 19
   verticalScrollbar: {fileID: 6364237860105447300}
 --- !u!1 &6743845578387598907
 GameObject:

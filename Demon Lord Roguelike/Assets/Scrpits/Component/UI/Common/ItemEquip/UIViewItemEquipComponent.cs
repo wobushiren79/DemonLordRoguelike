@@ -10,7 +10,9 @@ public partial class UIViewItemEquip
 
     public TextMeshProUGUI ui_ItemName;
 
-    public PopupButtonCommonView ui_UIViewItemEquip;
+    public PopupButtonCommonView ui_UIViewItemEquip_PopupButtonCommonView;
+
+    public Button ui_UIViewItemEquip_Button;
 
 
 }

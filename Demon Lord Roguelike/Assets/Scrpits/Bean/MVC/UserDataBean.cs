@@ -155,6 +155,17 @@ public class UserDataBean : BaseBean
         }
         EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Item_Change);
     }
+    
+    /// <summary>
+    /// 移除背包里的道具
+    /// </summary>
+    public void RemoveItem(ItemBean itemData)
+    {
+        if (itemData == null || itemData.itemId == 0)
+            return;
+        listBackpackItems.Remove(itemData);
+        EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Item_Change);
+    }
     #endregion
 
     #region 阵容生物相关

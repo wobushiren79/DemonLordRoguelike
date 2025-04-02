@@ -48,16 +48,9 @@ public partial class CreatureInfoBean
     /// <summary>
     /// 获取基础武器部件ID
     /// </summary>
-    public long GetSpineBaseWeaponId()
+    public long GetEquipBaseWeaponId()
     {
-        if (spine_base_weapon.IsNull())
-        {
-            return 0;
-        }
-        else
-        {
-            return long.Parse(spine_base_weapon);
-        }
+        return equip_item_base_weapon;
     }
 
     /// <summary>

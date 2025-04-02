@@ -1,8 +1,63 @@
 using System;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
 using UnityEngine;
 
 public class AttackModeRanged : BaseAttackMode
 {
+    /// <summary>
+    /// 初始化展示
+    /// </summary>
+    public override void InitAttackModeShow()
+    {
+        base.InitAttackModeShow();
+
+        long targetWeaponId = 0;
+        //首先检测是否有武器道具
+        if (weaponItemId != 0)
+        {
+            targetWeaponId = weaponItemId;
+        }
+        //如果没有道具 则使用角色默认的武器
+        else
+        {
+            if (creatureId != 0)
+            {
+                var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
+                if (creatureInfo != null)
+                {
+                    long baseWeaponId = creatureInfo.GetEquipBaseWeaponId();
+                    if (baseWeaponId != 0)
+                    {
+                        targetWeaponId = baseWeaponId;
+                    }
+                }
+            }
+        }
+        //如果没有找到对应武器 则使用?图标
+        if (targetWeaponId == 0)
+        {
+            IconHandler.Instance.GetUnKnowSprite((targetSprite) =>
+            {
+                if (spriteRenderer != null)
+                {
+                    spriteRenderer.sprite = targetSprite;
+                }
+            });
+        }
+        else
+        {
+            IconHandler.Instance.SetItemIconForAttackMode(weaponItemId, spriteRenderer);
+            var weaponItemInfo = ItemsInfoCfg.GetItemData(weaponItemId);
+            if (weaponItemInfo != null && !weaponItemInfo.attack_mode_data.IsNull())
+            {
+                weaponItemInfo.HandleItemsInfoAttackModeData(spriteRenderer);
+            }
+        }  
+    }
+
+    /// <summary>
+    /// 开始攻击
+    /// </summary>
     public override void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);

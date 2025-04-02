@@ -140,7 +140,7 @@ public class GameTestEditor : Editor
             fightData.fightAttackData.AddAttackQueue(fightAttackDetails);
         }
 
-        //所有的卡皮数据
+        //所有的卡片数据
         fightData.dlDefenseCreatureData.Clear();
         var ids = fightCardId.SplitForArrayLong(',');
         for (int i = 0; i < testDataCardNum; i++)
@@ -148,6 +148,9 @@ public class GameTestEditor : Editor
             int index = i % ids.Length;
             CreatureBean itemData = new CreatureBean(ids[index]);
             itemData.AddSkinForBase();
+
+            itemData.ChangeEquip(ItemTypeEnum.Weapon,new ItemBean(21000001),out var beforeItem);
+
             itemData.order = i;
             fightData.dlDefenseCreatureData.Add(itemData.creatureId, itemData);
         };

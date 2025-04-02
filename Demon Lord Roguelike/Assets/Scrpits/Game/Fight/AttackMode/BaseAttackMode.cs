@@ -23,6 +23,20 @@ public class BaseAttackMode
     public string attackerId;
     //被攻击者ID
     public string attackedId;
+
+    //发出攻击的生物ID
+    public long creatureId; 
+    //发出攻击的武器
+    public long weaponItemId;
+
+    /// <summary>
+    /// 初始化攻击样式
+    /// </summary>
+    public virtual void InitAttackModeShow()
+    {
+
+    }
+
     /// <summary>
     /// 开始攻击
     /// </summary>
@@ -79,6 +93,10 @@ public class BaseAttackMode
     public virtual void Destory()
     {
         attackerDamage = 0;
+        attackerId = null;
+        attackedId = null;
+        creatureId = 0;
+        weaponItemId = 0;
         FightHandler.Instance.RemoveAttackModePrefab(this);
     }
 }

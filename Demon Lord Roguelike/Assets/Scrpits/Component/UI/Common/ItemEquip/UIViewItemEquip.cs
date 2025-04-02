@@ -1,9 +1,23 @@
 ﻿
 
+using UnityEngine.UI;
+
 public partial class UIViewItemEquip : BaseUIView
 {
-    protected ItemTypeEnum itemTypeEnum;
-    protected ItemBean itemData;
+    public ItemTypeEnum itemTypeEnum;
+    public ItemBean itemData;
+
+    /// <summary>
+    /// 点击
+    /// </summary>
+    public override void OnClickForButton(Button viewButton)
+    {
+        base.OnClickForButton(viewButton);
+        if (viewButton == ui_UIViewItemEquip_Button)
+        {
+            OnClickForSelect();
+        }
+    }
 
     /// <summary>
     /// 设置数据
@@ -18,25 +32,62 @@ public partial class UIViewItemEquip : BaseUIView
     /// </summary>
     public void SetData(ItemBean itemData)
     {
+        if (itemData != null && this.itemData == itemData)
+            return;
         this.itemData = itemData;
-        SetIcon(itemData.itemId);
-        SetItemPopup(itemData);
+        //设置为null
+        if (itemData == null)
+        {
+            SetIcon(itemTypeEnum, 0);
+            SetItemPopup(itemTypeEnum, null);
+        }
+        //设置显示道具
+        else
+        {
+            this.itemData = itemData;
+            SetIcon(itemTypeEnum, itemData.itemId);
+            SetItemPopup(itemTypeEnum, itemData);
+        }
     }
 
     /// <summary>
     /// 设置弹窗信息
     /// </summary>
-    public void SetItemPopup(ItemBean itemData)
+    public void SetItemPopup(ItemTypeEnum itemType, ItemBean itemData)
     {
-        ui_UIViewItemEquip.SetData(itemData, PopupEnum.ItemInfo);
+        if (itemData == null)
+        {
+            var itemsTypeInfo = ItemsTypeCfg.GetItemData(itemType);
+            string itemsTypeName = itemsTypeInfo.GetName();
+            ui_UIViewItemEquip_PopupButtonCommonView.SetData(itemsTypeName, PopupEnum.Text);
+        }
+        else
+        {
+            ui_UIViewItemEquip_PopupButtonCommonView.SetData(itemData, PopupEnum.ItemInfo);
+        }
     }
 
     /// <summary>
     /// 设置头像
     /// </summary>
-    public void SetIcon(long itemId)
+    public void SetIcon(ItemTypeEnum itemType, long itemId)
     {
-        IconHandler.Instance.SetItemIcon(itemId, ui_ItemIcon);
+        if (itemId <= 0)
+        {
+            var itemsTypeInfo = ItemsTypeCfg.GetItemData(itemType);
+            IconHandler.Instance.SetUIIcon(itemsTypeInfo.icon_res, ui_ItemIcon);
+        }
+        else
+        {
+            IconHandler.Instance.SetItemIcon(itemId, ui_ItemIcon);
+        }
     }
 
+    /// <summary>
+    /// 点击
+    /// </summary>
+    public void OnClickForSelect()
+    {
+        this.TriggerEvent(EventsInfo.UIViewItemEquip_OnClickSelect,this);
+    }
 }

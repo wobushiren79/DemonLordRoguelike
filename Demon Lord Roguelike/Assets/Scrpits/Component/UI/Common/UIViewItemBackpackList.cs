@@ -33,7 +33,7 @@ public partial class UIViewItemBackpackList : BaseUIView
     /// </summary>
     public void SetData(List<ItemBean> listBackpackItems, Action<int, UIViewItemBackpack, ItemBean> actionForOnCellChange)
     {
-        OpenUI();
+        gameObject.SetActive(true);
         this.listBackpackItems = listBackpackItems;
         this.actionForOnCellChange = actionForOnCellChange;
         ui_BackpackContent.SetCellCount(listBackpackItems.Count);
@@ -49,5 +49,13 @@ public partial class UIViewItemBackpackList : BaseUIView
         UIViewItemBackpack itemView = itemCell.GetComponent<UIViewItemBackpack>();
         itemView.SetData(itemData);
         actionForOnCellChange?.Invoke(itemCell.index, itemView, itemData);
+    }
+
+    /// <summary>
+    /// 刷新所有Item
+    /// </summary>
+    public void RefreshAllItem()
+    {
+        ui_BackpackContent.RefreshAllCells();
     }
 }

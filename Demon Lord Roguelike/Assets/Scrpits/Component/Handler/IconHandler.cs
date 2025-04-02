@@ -24,4 +24,31 @@ public partial class IconHandler
         var itemInfo = ItemsInfoCfg.GetItemData(itemId);
         SetItemIcon(itemInfo.icon_res, itemInfo.icon_rotate_z, targetIV);
     }
+
+    public void SetItemIconForAttackMode(long itemId, SpriteRenderer spriteRenderer)
+    {  
+        var itemInfo = ItemsInfoCfg.GetItemData(itemId);
+        GetIconSprite(SpriteAtlasType.Items, itemInfo.icon_res, (sprite) =>
+        {
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.sprite = sprite;
+                //spriteRenderer.transform.eulerAngles = new Vector3(0, 0, rotateZ);
+            }
+        });
+    }
+
+    /// <summary>
+    /// 设置UI头像
+    /// </summary>
+    public void SetUIIcon(string iconName, Image targetIV)
+    {
+        GetIconSprite(SpriteAtlasType.UI, iconName, (sprite) =>
+        {
+            if (targetIV != null)
+            {
+                targetIV.sprite = sprite;
+            }
+        });
+    }
 }

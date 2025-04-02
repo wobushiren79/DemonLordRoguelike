@@ -21,5 +21,7 @@ public partial class UIViewCreatureCardItem
 
     public TextMeshProUGUI ui_StarText;
 
+    public Image ui_SelectBg;
+
 
 }

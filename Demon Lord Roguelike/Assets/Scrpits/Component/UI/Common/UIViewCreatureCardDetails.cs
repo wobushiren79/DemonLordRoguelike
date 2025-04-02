@@ -6,11 +6,21 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     public CreatureBean creatureData;
 
     /// <summary>
+    /// 刷新显示
+    /// </summary>
+    public void RefreshCard()
+    {
+        SetData(creatureData);
+    }
+
+    /// <summary>
     /// 设置数据
     /// </summary>
     /// <param name="creatureData"></param>
     public void SetData(CreatureBean creatureData)
     {
+        if (creatureData == null)
+            return;
         this.creatureData = creatureData;
 
         SetCardIcon(creatureData);

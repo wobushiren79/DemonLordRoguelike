@@ -42,6 +42,9 @@ public enum CardStateEnum
 
     LineupNoSelect = 201,//阵容未选中
     LineupSelect = 202,//阵容选中
+
+    CreatureManagerNoSelect = 301,//生物管理未选中
+    CreatureManagerSelect = 302,//生物管理选中
 }
 
 //游戏战斗预制状态
@@ -81,14 +84,4 @@ public enum GameFightTypeEnum
     Test,//测试模式
     Infinite,//无限模式
     Conquer,//征服模式
-}
-
-//道具枚举
-public enum ItemTypeEnum
-{
-    Hat = 1,
-    Clothes = 2,
-    Pants = 3,
-    Shoe = 4,
-    Weapon = 10
 }
