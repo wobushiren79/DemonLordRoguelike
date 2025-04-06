@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
 using UnityEngine;
 
 public class BaseAttackMode
@@ -12,6 +13,8 @@ public class BaseAttackMode
     public AttackModeInfoBean attackModeInfo;
     //攻击者的攻击力
     public int attackerDamage;
+    //起始位置
+    public Vector3 startPostion;
     //目标位置
     public Vector3 targetPos;
     //攻击方向
@@ -34,7 +37,28 @@ public class BaseAttackMode
     /// </summary>
     public virtual void InitAttackModeShow()
     {
-
+        //如果没有找到对应武器 则使用?图标
+        if (weaponItemId == 0)
+        {
+            if (spriteRenderer != null)
+            {
+                IconHandler.Instance.GetUnKnowSprite((targetSprite) =>
+                {
+                    if (spriteRenderer != null)
+                    {
+                        spriteRenderer.sprite = targetSprite;
+                    }
+                });
+            }
+        }
+        else
+        {
+            var weaponItemInfo = ItemsInfoCfg.GetItemData(weaponItemId);
+            if (weaponItemInfo != null && !weaponItemInfo.attack_mode_data.IsNull())
+            {
+                weaponItemInfo.HandleItemsInfoAttackModeData(this);
+            }
+        }
     }
 
     /// <summary>
@@ -42,7 +66,7 @@ public class BaseAttackMode
     /// </summary>
     /// <param name="attacker">攻击方</param>
     /// <param name="attacked">被攻击方</param>
-    public virtual void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action actionForAttackEnd)
+    public virtual void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         attackerDamage = 0;
         if (attacker != null)
@@ -65,7 +89,7 @@ public class BaseAttackMode
                 targetPos = attacked.creatureObj.transform.position;
                 attackDirection = Vector3.Normalize(attacked.creatureObj.transform.position - attacker.creatureObj.transform.position);
                 attackedLayer = attacked.creatureObj.layer;
-    
+
             }
             if (attacked.fightCreatureData != null)
             {

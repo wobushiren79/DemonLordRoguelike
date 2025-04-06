@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class AttackModeMelee : BaseAttackMode
 {
-    public override void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action actionForAttackEnd)
+    public override void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
         if (attacker != null && attacked != null && !attacked.IsDead())
@@ -17,6 +17,6 @@ public class AttackModeMelee : BaseAttackMode
         //攻击完了就回收这个攻击
         Destory();
         //攻击结束回调
-        actionForAttackEnd?.Invoke();
+        actionForAttackEnd?.Invoke(this);
     }
 }

@@ -26,7 +26,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 90a8f4c76b4ae6b428e14c8f4dc2c8eb
-    m_Address: Assets/LoadResources/Common/FightDropCoin.prefab
+    m_Address: Assets/LoadResources/Common/FightDropCrystal.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

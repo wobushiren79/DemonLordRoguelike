@@ -149,8 +149,6 @@ public class GameTestEditor : Editor
             CreatureBean itemData = new CreatureBean(ids[index]);
             itemData.AddSkinForBase();
 
-            itemData.ChangeEquip(ItemTypeEnum.Weapon,new ItemBean(21000001),out var beforeItem);
-
             itemData.order = i;
             fightData.dlDefenseCreatureData.Add(itemData.creatureId, itemData);
         };

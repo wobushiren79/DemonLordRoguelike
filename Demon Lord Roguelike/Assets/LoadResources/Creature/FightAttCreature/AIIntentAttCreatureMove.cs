@@ -11,7 +11,8 @@ public class AIIntentAttCreatureMove : AIBaseIntent
     {
         selfAIEntity = aiEntity as AIAttCreatureEntity;
         //设置移动动作
-        selfAIEntity.selfAttCreatureEntity.PlayAnim(SpineAnimationStateEnum.Walk, true);
+        string animNameAppoint = selfAIEntity.selfAttCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_walk;
+        selfAIEntity.selfAttCreatureEntity.PlayAnim(SpineAnimationStateEnum.Walk, true, animNameAppoint:animNameAppoint);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)

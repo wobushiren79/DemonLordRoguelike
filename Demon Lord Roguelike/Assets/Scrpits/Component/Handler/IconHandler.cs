@@ -25,10 +25,11 @@ public partial class IconHandler
         SetItemIcon(itemInfo.icon_res, itemInfo.icon_rotate_z, targetIV);
     }
 
-    public void SetItemIconForAttackMode(long itemId, SpriteRenderer spriteRenderer)
-    {  
-        var itemInfo = ItemsInfoCfg.GetItemData(itemId);
-        GetIconSprite(SpriteAtlasType.Items, itemInfo.icon_res, (sprite) =>
+    public void SetItemIconForAttackMode(string showSpriteName, SpriteRenderer spriteRenderer)
+    {
+        if (spriteRenderer == null)
+            return;
+        GetIconSprite(SpriteAtlasType.Items, showSpriteName, (sprite) =>
         {
             if (spriteRenderer != null)
             {

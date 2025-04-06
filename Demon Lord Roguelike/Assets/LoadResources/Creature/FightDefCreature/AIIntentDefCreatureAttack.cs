@@ -16,7 +16,9 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
         timeUpdateAttackPre = 0;
         attackState = 0;
         selfAIEntity = aiEntity as AIDefCreatureEntity;
-        selfAIEntity.selfDefCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, false);
+
+        string animNameAppoint = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_idle;
+        selfAIEntity.selfDefCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, false, animNameAppoint: animNameAppoint);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
@@ -69,8 +71,10 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
             return;
         }
         //播放攻击动画
-        selfAIEntity.selfDefCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false);
-        selfAIEntity.selfDefCreatureEntity.AddAnim(0, SpineAnimationStateEnum.Idle, true, 1);
+        string animNameAppointAttack = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_attack;
+        selfAIEntity.selfDefCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false, animNameAppoint: animNameAppointAttack);
+        string animNameAppointIdle = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_idle;
+        selfAIEntity.selfDefCreatureEntity.AddAnim(0, SpineAnimationStateEnum.Idle, true, 1, animNameAppoint: animNameAppointIdle);
     }
 
     /// <summary>
@@ -79,19 +83,14 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
     public virtual void AttackDefCreatureStartEnd()
     {
         attackState = 2;
-        var creatureInfo = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.creatureInfo;
-        //获取攻击方式
-        FightHandler.Instance.CreateAttackModePrefab(selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData, (targetAttackMode) =>
-        {
-            //开始攻击
-            targetAttackMode.StartAttack(selfAIEntity.selfDefCreatureEntity, selfAIEntity.targetAttCreatureEntity, ActionForAttackEnd);
-        });
+        //开始创建攻击模块
+        FightHandler.Instance.StartCreateAttackMode(selfAIEntity.selfDefCreatureEntity, selfAIEntity.targetAttCreatureEntity, ActionForAttackEnd);
     }
 
     /// <summary>
     /// 攻击结束回调
     /// </summary>
-    public void ActionForAttackEnd()
+    public void ActionForAttackEnd(BaseAttackMode attackMode)
     {
         //如果目标生物已经无了 则重新寻找目标
         if (selfAIEntity.targetAttCreatureEntity == null || selfAIEntity.targetAttCreatureEntity.IsDead())

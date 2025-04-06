@@ -17,7 +17,9 @@ public class AIIntentAttCreatureIdle : AIBaseIntent
 
         //触发待机动作
         selfAIEntity.selfAttCreatureEntity.SetFaceDirection(Direction2DEnum.Left);
-        selfAIEntity.selfAttCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true);
+
+        string animNameAppoint = selfAIEntity.selfAttCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_idle;
+        selfAIEntity.selfAttCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true, animNameAppoint: animNameAppoint);
 
         //如果没有数据 说明这条路上没有防守生物，则直接前往路的尽头
         if (selfAIEntity.targetDefCreatureEntity == null)

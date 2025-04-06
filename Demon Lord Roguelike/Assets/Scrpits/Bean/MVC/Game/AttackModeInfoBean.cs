@@ -20,6 +20,10 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public float collider_size;
 	/// <summary>
+	///碰撞范围检测
+	/// </summary>
+	public float collider_area_size;
+	/// <summary>
 	///移动速度
 	/// </summary>
 	public float speed_move;

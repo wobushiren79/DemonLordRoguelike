@@ -18,7 +18,8 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
         attackState = 0;
 
         //设置待机动作
-        selfAIEntity.selfAttCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true);
+        string animNameAppoint = selfAIEntity.selfAttCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_idle;
+        selfAIEntity.selfAttCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true,animNameAppoint : animNameAppoint);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
@@ -71,7 +72,8 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
             return;
         }
         //播放攻击动画
-        selfAIEntity.selfAttCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false);
+        string animNameAppoint = selfAIEntity.selfAttCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_attack;
+        selfAIEntity.selfAttCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false, animNameAppoint : animNameAppoint);
     }
 
     /// <summary>
@@ -80,19 +82,14 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
     public virtual void AttackDefCreatureStartEnd()
     {
         attackState = 2;
-        var creatureInfo = selfAIEntity.selfAttCreatureEntity.fightCreatureData.creatureData.creatureInfo;
-        //获取攻击方式
-        FightHandler.Instance.CreateAttackModePrefab(selfAIEntity.selfAttCreatureEntity.fightCreatureData.creatureData, (targetAttackMode) =>
-        {
-            //开始攻击
-            targetAttackMode.StartAttack(selfAIEntity.selfAttCreatureEntity, selfAIEntity.targetDefCreatureEntity, ActionForAttackEnd);
-        });
+        //开始创建攻击模块
+        FightHandler.Instance.StartCreateAttackMode(selfAIEntity.selfAttCreatureEntity, selfAIEntity.targetDefCreatureEntity, ActionForAttackEnd);
     }
 
     /// <summary>
     /// 攻击结束回调
     /// </summary>
-    public void ActionForAttackEnd()
+    public void ActionForAttackEnd(BaseAttackMode attackMode)
     {
         //如果目标生物已经无了 则重新寻找目标
         if (selfAIEntity.targetDefCreatureEntity == null || selfAIEntity.targetDefCreatureEntity.IsDead())

@@ -1,18 +1,9 @@
 {
-"skeleton": {
-	"hash": "wKxsbBQjECs5BvPf8t00Sq85CNU",
-	"spine": "3.8.75",
-	"x": -28,
-	"y": 27.5,
-	"width": 23,
-	"height": 8,
-	"images": "./images/",
-	"audio": "E:/Unity/DemonLordRoguelike/资源/生物/骷髅"
-},
+"skeleton": { "hash": "WsFt4MVvc2OZTbCP6UBINKOzS9M", "spine": "3.8.75", "images": "./images/", "audio": "E:/Unity/DemonLordRoguelike/资源/生物/骷髅" },
 "bones": [
 	{ "name": "root" },
 	{ "name": "Pelvis", "parent": "root", "y": 35 },
-	{ "name": "Body", "parent": "Pelvis", "length": 20, "rotation": 90, "x": 0.35, "y": 3.94 },
+	{ "name": "Body", "parent": "Pelvis", "length": 20, "rotation": 90.06, "x": 0.35, "y": 3.94 },
 	{ "name": "Head", "parent": "Body", "length": 15, "rotation": -31.79, "x": 19.35, "y": 0.32 },
 	{ "name": "Thigh_L", "parent": "Pelvis", "length": 14.5, "rotation": -104.19, "x": -4.4, "y": -3.81 },
 	{ "name": "Calf_L", "parent": "Thigh_L", "length": 14, "rotation": -7.07, "x": 14.47, "y": 0.15 },
@@ -32,10 +23,29 @@
 	{ "name": "Weapon_L", "parent": "Palm_L", "rotation": 91.41, "x": 5.04, "y": 0.12 }
 ],
 "slots": [
+	{ "name": "Clothes_5_Cape", "bone": "Body", "attachment": "Clothes_5_Cape" },
+	{ "name": "Clothes_4_Cape", "bone": "Body", "attachment": "Clothes_4_Cape" },
 	{ "name": "ArmUp_R", "bone": "ArmUp_R", "attachment": "ArmUp_R" },
 	{ "name": "ArmDown_R", "bone": "ArmDown_R", "attachment": "ArmDown_R" },
+	{ "name": "Clothes_11_ArmDown_R", "bone": "ArmDown_R", "attachment": "Clothes_11_ArmDown_R" },
+	{ "name": "Clothes_10_ArmDown_R", "bone": "ArmDown_R", "attachment": "Clothes_10_ArmDown_R" },
+	{ "name": "Clothes_7_ArmDown_R", "bone": "ArmDown_R", "attachment": "Clothes_7_ArmDown_R" },
+	{ "name": "Weapon_R_20", "bone": "Weapon_R", "attachment": "Weapon_R_20" },
+	{ "name": "Weapon_R_19", "bone": "Weapon_R", "attachment": "Weapon_R_19" },
+	{ "name": "Weapon_R_18", "bone": "Weapon_R", "attachment": "Weapon_R_18" },
+	{ "name": "Weapon_R_17", "bone": "Weapon_R", "attachment": "Weapon_R_17" },
+	{ "name": "Weapon_R_16", "bone": "Weapon_R", "attachment": "Weapon_R_16" },
+	{ "name": "Weapon_R_15", "bone": "Weapon_R", "attachment": "Weapon_R_15" },
+	{ "name": "Weapon_R_14", "bone": "Weapon_R", "attachment": "Weapon_R_14" },
+	{ "name": "Weapon_R_13", "bone": "Weapon_R", "attachment": "Weapon_R_13" },
 	{ "name": "Weapon_R_12", "bone": "Weapon_R", "attachment": "Weapon_R_12" },
 	{ "name": "Weapon_R_11", "bone": "Weapon_R", "attachment": "Weapon_R_11" },
+	{ "name": "Weapon_R_10", "bone": "Weapon_R", "attachment": "Weapon_R_10" },
+	{ "name": "Weapon_R_9", "bone": "Weapon_R", "attachment": "Weapon_R_9" },
+	{ "name": "Weapon_R_8", "bone": "Weapon_R", "attachment": "Weapon_R_8" },
+	{ "name": "Weapon_R_7", "bone": "Weapon_R", "attachment": "Weapon_R_7" },
+	{ "name": "Weapon_R_6", "bone": "Weapon_R", "attachment": "Weapon_R_6" },
+	{ "name": "Weapon_R_5", "bone": "Weapon_R", "attachment": "Weapon_R_5" },
 	{ "name": "Weapon_R_4", "bone": "Weapon_R", "attachment": "Weapon_R_4" },
 	{ "name": "Weapon_R_3", "bone": "Weapon_R", "attachment": "Weapon_R_3" },
 	{ "name": "Weapon_R_2", "bone": "Weapon_R", "attachment": "Weapon_R_2" },
@@ -44,21 +54,57 @@
 	{ "name": "Foot_R", "bone": "Foot_R", "attachment": "Foot_R" },
 	{ "name": "Calf_R", "bone": "Calf_R", "attachment": "Calf_R" },
 	{ "name": "Thigh_R", "bone": "Thigh_R", "attachment": "Thigh_R" },
+	{ "name": "Pants_5_Calf_R", "bone": "Calf_R", "attachment": "Pants_5_Calf_R" },
+	{ "name": "Pants_4_Calf_R", "bone": "Calf_R", "attachment": "Pants_4_Calf_R" },
 	{ "name": "Foot_L", "bone": "Foot_L", "attachment": "Foot_L" },
 	{ "name": "Calf_L", "bone": "Calf_L", "attachment": "Calf_L" },
 	{ "name": "Thigh_L", "bone": "Thigh_L", "attachment": "Thigh_L" },
+	{ "name": "Pants_5_Calf_L", "bone": "Calf_L", "attachment": "Pants_5_Calf_L" },
+	{ "name": "Pants_4_Calf_L", "bone": "Calf_L", "attachment": "Pants_4_Calf_L" },
 	{ "name": "Pelvis", "bone": "Pelvis_Base", "attachment": "Pelvis" },
 	{ "name": "Body", "bone": "Body", "attachment": "Body" },
+	{ "name": "Pants_5_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_5_Pelvis" },
+	{ "name": "Pants_4_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_4_Pelvis" },
+	{ "name": "Pants_3_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_3_Pelvis" },
+	{ "name": "Pants_2_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_2_Pelvis" },
 	{ "name": "Pants_1_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_1_Pelvis" },
+	{ "name": "Clothes_11_Body", "bone": "Body", "attachment": "Clothes_11_Body" },
+	{ "name": "Clothes_9_Body", "bone": "Body", "attachment": "Clothes_9_Body" },
+	{ "name": "Clothes_8_Body", "bone": "Body", "attachment": "Clothes_8_Body" },
+	{ "name": "Clothes_7_Body", "bone": "Body", "attachment": "Clothes_7_Body" },
+	{ "name": "Clothes_6_Body", "bone": "Body", "attachment": "Clothes_6_Body" },
+	{ "name": "Clothes_5_Body", "bone": "Body", "attachment": "Clothes_5_Body" },
+	{ "name": "Clothes_4_Body", "bone": "Body", "attachment": "Clothes_4_Body" },
 	{ "name": "Clothes_3_Body", "bone": "Body", "attachment": "Clothes_3_Body" },
+	{ "name": "Clothes_11_ArmUp_R", "bone": "ArmUp_R", "attachment": "Clothes_11_ArmUp_R" },
+	{ "name": "Clothes_10_ArmUp_R", "bone": "ArmUp_R", "attachment": "Clothes_10_ArmUp_R" },
+	{ "name": "Clothes_7_ArmUp_R", "bone": "ArmUp_R", "attachment": "Clothes_7_ArmUp_R" },
+	{ "name": "Weapon_L_10", "bone": "Weapon_L", "attachment": "Weapon_L_10" },
+	{ "name": "Weapon_L_9", "bone": "Weapon_L", "attachment": "Weapon_L_9" },
+	{ "name": "Weapon_L_8", "bone": "Weapon_L", "attachment": "Weapon_L_8" },
+	{ "name": "Weapon_L_7", "bone": "Weapon_L", "attachment": "Weapon_L_7" },
+	{ "name": "Weapon_L_6", "bone": "Weapon_L", "attachment": "Weapon_L_6" },
+	{ "name": "Weapon_L_5", "bone": "Weapon_L", "attachment": "Weapon_L_5" },
+	{ "name": "Weapon_L_4", "bone": "Weapon_L", "attachment": "Weapon_L_4" },
+	{ "name": "Weapon_L_3", "bone": "Weapon_L", "attachment": "Weapon_L_3" },
 	{ "name": "Weapon_L_2", "bone": "Weapon_L", "attachment": "Weapon_L_2" },
 	{ "name": "Weapon_L_1", "bone": "Weapon_L", "attachment": "Weapon_L_1" },
 	{ "name": "ArmUp_L", "bone": "ArmUp_L", "attachment": "ArmUp_L" },
 	{ "name": "ArmDown_L", "bone": "ArmDown_L", "attachment": "ArmDown_L" },
 	{ "name": "Palm_L", "bone": "Palm_L", "attachment": "Palm_L" },
+	{ "name": "Clothes_11_ArmDown_L", "bone": "ArmDown_L", "attachment": "Clothes_11_ArmDown_L" },
+	{ "name": "Clothes_10_ArmDown_L", "bone": "ArmDown_L", "attachment": "Clothes_10_ArmDown_L" },
+	{ "name": "Clothes_7_ArmDown_L", "bone": "ArmDown_L", "attachment": "Clothes_7_ArmDown_L" },
+	{ "name": "Clothes_11_ArmUp_L", "bone": "ArmUp_L", "attachment": "Clothes_11_ArmUp_L" },
+	{ "name": "Clothes_10_ArmUp_L", "bone": "ArmUp_L", "attachment": "Clothes_10_ArmUp_L" },
+	{ "name": "Clothes_9_ArmUp_L", "bone": "ArmUp_L", "attachment": "Clothes_9_ArmUp_L" },
+	{ "name": "Clothes_7_ArmUp_L", "bone": "ArmUp_L", "attachment": "Clothes_7_ArmUp_L" },
+	{ "name": "Clothes_4_ArmUp_L", "bone": "ArmUp_L", "attachment": "Clothes_4_ArmUp_L" },
 	{ "name": "Clothes_3_ArmUp_L", "bone": "ArmUp_L", "attachment": "Clothes_3_ArmUp_L" },
 	{ "name": "Clothes_2_ArmUp_L", "bone": "ArmUp_L", "attachment": "Clothes_2_ArmUp_L" },
 	{ "name": "Clothes_1_ArmUp_L", "bone": "ArmUp_L", "attachment": "Clothes_1_ArmUp_L" },
+	{ "name": "Hat_Bg_4", "bone": "Hat", "attachment": "Hat_Bg_4" },
+	{ "name": "Hat_Bg_3", "bone": "Hat", "attachment": "Hat_Bg_3" },
 	{ "name": "Head_1", "bone": "Head", "attachment": "Head_1" },
 	{ "name": "Head_2", "bone": "Head", "attachment": "Head_2" },
 	{ "name": "Head_3", "bone": "Head", "attachment": "Head_3" },
@@ -72,7 +118,13 @@
 	{ "name": "Head_11", "bone": "Head", "attachment": "Head_11" },
 	{ "name": "Head_12", "bone": "Head", "attachment": "Head_12" },
 	{ "name": "Head_13", "bone": "Head", "attachment": "Head_13" },
-	{ "name": "Hat_1", "bone": "Hat", "attachment": "Hat_1" }
+	{ "name": "Hat_1", "bone": "Hat", "attachment": "Hat_1" },
+	{ "name": "Hat_2", "bone": "Hat", "attachment": "Hat_2" },
+	{ "name": "Hat_3", "bone": "Hat", "attachment": "Hat_3" },
+	{ "name": "Hat_4", "bone": "Hat", "attachment": "Hat_4" },
+	{ "name": "Hat_5", "bone": "Hat", "attachment": "Hat_5" },
+	{ "name": "Hat_6", "bone": "Hat", "attachment": "Hat_6" },
+	{ "name": "Hat_7", "bone": "Hat", "attachment": "Hat_7" }
 ],
 "skins": [
 	{
@@ -150,10 +202,173 @@
 		}
 	},
 	{
+		"name": "Clothes/Clothes_4",
+		"attachments": {
+			"Clothes_4_Cape": {
+				"Clothes_4_Cape": { "x": 4.56, "y": -0.65, "rotation": -90, "width": 24, "height": 31 }
+			},
+			"Clothes_4_ArmUp_L": {
+				"Clothes_4_ArmUp_L": { "x": 5.08, "y": 0.65, "rotation": 130.56, "width": 11, "height": 12 }
+			},
+			"Clothes_4_Body": {
+				"Clothes_4_Body": { "x": 11.06, "y": -2.15, "rotation": -90, "width": 19, "height": 16 }
+			}
+		}
+	},
+	{
+		"name": "Clothes/Clothes_5",
+		"attachments": {
+			"Clothes_5_Body": {
+				"Clothes_5_Body": { "x": 9.56, "y": -3.15, "rotation": -90, "width": 23, "height": 23 }
+			},
+			"Clothes_5_Cape": {
+				"Clothes_5_Cape": { "x": 5.56, "y": -1.65, "rotation": -90, "width": 24, "height": 29 }
+			}
+		}
+	},
+	{
+		"name": "Clothes/Clothes_6",
+		"attachments": {
+			"Clothes_6_Body": {
+				"Clothes_6_Body": { "x": 12.56, "y": -2.15, "rotation": -90, "width": 19, "height": 15 }
+			}
+		}
+	},
+	{
+		"name": "Clothes/Clothes_7",
+		"attachments": {
+			"Clothes_7_Body": {
+				"Clothes_7_Body": { "x": 15.56, "y": -2.15, "rotation": -90, "width": 11, "height": 9 }
+			},
+			"Clothes_7_ArmUp_L": {
+				"Clothes_7_ArmUp_L": { "x": 4.65, "y": -0.38, "rotation": 130.56, "width": 10, "height": 8 }
+			},
+			"Clothes_7_ArmUp_R": {
+				"Clothes_7_ArmUp_R": { "x": 0.8, "y": 1.01, "rotation": 84.73, "width": 8, "height": 9 }
+			},
+			"Clothes_7_ArmDown_L": {
+				"Clothes_7_ArmDown_L": { "x": 10.5, "y": -0.07, "rotation": 111.22, "width": 7, "height": 8 }
+			},
+			"Clothes_7_ArmDown_R": {
+				"Clothes_7_ArmDown_R": { "x": 8.52, "y": -0.18, "rotation": 80.67, "width": 6, "height": 7 }
+			}
+		}
+	},
+	{
+		"name": "Clothes/Clothes_8",
+		"attachments": {
+			"Clothes_8_Body": {
+				"Clothes_8_Body": { "x": 10.56, "y": -2.65, "rotation": -90, "width": 18, "height": 23 }
+			}
+		}
+	},
+	{
+		"name": "Clothes/Clothes_9",
+		"attachments": {
+			"Clothes_9_ArmUp_L": {
+				"Clothes_9_ArmUp_L": { "x": 3.62, "y": 0.06, "rotation": 130.56, "width": 12, "height": 13 }
+			},
+			"Clothes_9_Body": {
+				"Clothes_9_Body": { "x": 16.56, "y": -3.15, "rotation": -90, "width": 17, "height": 9 }
+			}
+		}
+	},
+	{
+		"name": "Clothes/Clothes_10",
+		"attachments": {
+			"Clothes_10_ArmUp_L": {
+				"Clothes_10_ArmUp_L": { "x": 3.56, "y": -0.65, "rotation": 130.56, "width": 19, "height": 14 }
+			},
+			"Clothes_10_ArmUp_R": {
+				"Clothes_10_ArmUp_R": { "x": 3.52, "y": 3.27, "rotation": 84.73, "width": 9, "height": 12 }
+			},
+			"Clothes_10_ArmDown_L": {
+				"Clothes_10_ArmDown_L": { "x": 8.17, "y": -0.98, "rotation": 111.22, "width": 11, "height": 13 }
+			},
+			"Clothes_10_ArmDown_R": {
+				"Clothes_10_ArmDown_R": { "x": 6.71, "y": 1.13, "rotation": 80.67, "width": 10, "height": 11 }
+			}
+		}
+	},
+	{
+		"name": "Clothes/Clothes_11",
+		"attachments": {
+			"Clothes_11_ArmUp_L": {
+				"Clothes_11_ArmUp_L": { "x": 4.65, "y": -0.38, "rotation": 130.56, "width": 16, "height": 12 }
+			},
+			"Clothes_11_ArmUp_R": {
+				"Clothes_11_ArmUp_R": { "x": 0.4, "y": 2.05, "rotation": 84.73, "width": 8, "height": 10 }
+			},
+			"Clothes_11_ArmDown_L": {
+				"Clothes_11_ArmDown_L": { "x": 8.64, "y": -0.8, "rotation": 111.22, "width": 9, "height": 14 }
+			},
+			"Clothes_11_ArmDown_R": {
+				"Clothes_11_ArmDown_R": { "x": 6.55, "y": 0.15, "rotation": 80.67, "width": 8, "height": 11 }
+			},
+			"Clothes_11_Body": {
+				"Clothes_11_Body": { "x": 12.06, "y": -2.65, "rotation": -90, "width": 20, "height": 16 }
+			}
+		}
+	},
+	{
 		"name": "Hat/Hat_1",
 		"attachments": {
 			"Hat_1": {
 				"Hat_1": { "x": 6.29, "y": 1.65, "rotation": -90, "width": 13, "height": 8 }
+			}
+		}
+	},
+	{
+		"name": "Hat/Hat_2",
+		"attachments": {
+			"Hat_2": {
+				"Hat_2": { "x": 4.79, "y": 6.65, "rotation": -90, "width": 28, "height": 27 }
+			}
+		}
+	},
+	{
+		"name": "Hat/Hat_3",
+		"attachments": {
+			"Hat_Bg_3": {
+				"Hat_Bg_3": { "x": -4.21, "y": 1.65, "rotation": -90, "width": 14, "height": 17 }
+			},
+			"Hat_3": {
+				"Hat_3": { "x": -3.71, "y": 3.15, "rotation": -90, "width": 21, "height": 26 }
+			}
+		}
+	},
+	{
+		"name": "Hat/Hat_4",
+		"attachments": {
+			"Hat_Bg_4": {
+				"Hat_Bg_4": { "x": -3.71, "y": 1.15, "rotation": -90, "width": 15, "height": 16 }
+			},
+			"Hat_4": {
+				"Hat_4": { "x": -2.71, "y": 4.15, "rotation": -90, "width": 25, "height": 22 }
+			}
+		}
+	},
+	{
+		"name": "Hat/Hat_5",
+		"attachments": {
+			"Hat_5": {
+				"Hat_5": { "x": 5.29, "y": 1.65, "rotation": -90, "width": 26, "height": 8 }
+			}
+		}
+	},
+	{
+		"name": "Hat/Hat_6",
+		"attachments": {
+			"Hat_6": {
+				"Hat_6": { "x": -3.21, "y": 0.65, "rotation": -90, "width": 20, "height": 25 }
+			}
+		}
+	},
+	{
+		"name": "Hat/Hat_7",
+		"attachments": {
+			"Hat_7": {
+				"Hat_7": { "x": 5.79, "y": 1.15, "rotation": -90, "width": 17, "height": 7 }
 			}
 		}
 	},
@@ -270,6 +485,50 @@
 		}
 	},
 	{
+		"name": "Pants/Pants_2",
+		"attachments": {
+			"Pants_2_Pelvis": {
+				"Pants_2_Pelvis": { "x": 1.88, "y": 0.57, "rotation": 91.46, "width": 17, "height": 12 }
+			}
+		}
+	},
+	{
+		"name": "Pants/Pants_3",
+		"attachments": {
+			"Pants_3_Pelvis": {
+				"Pants_3_Pelvis": { "x": 14.9, "y": -0.1, "rotation": 91.46, "width": 25, "height": 38 }
+			}
+		}
+	},
+	{
+		"name": "Pants/Pants_4",
+		"attachments": {
+			"Pants_4_Calf_L": {
+				"Pants_4_Calf_L": { "x": 6.04, "y": -0.01, "rotation": 111.26, "width": 10, "height": 13 }
+			},
+			"Pants_4_Pelvis": {
+				"Pants_4_Pelvis": { "x": 6.88, "y": 0.7, "rotation": 91.46, "width": 17, "height": 22 }
+			},
+			"Pants_4_Calf_R": {
+				"Pants_4_Calf_R": { "x": 7.66, "y": -0.13, "rotation": 90, "width": 9, "height": 15 }
+			}
+		}
+	},
+	{
+		"name": "Pants/Pants_5",
+		"attachments": {
+			"Pants_5_Calf_L": {
+				"Pants_5_Calf_L": { "x": 5.22, "y": 0.74, "rotation": 111.26, "width": 12, "height": 14 }
+			},
+			"Pants_5_Pelvis": {
+				"Pants_5_Pelvis": { "x": 6.86, "y": 1.2, "rotation": 91.46, "width": 24, "height": 26 }
+			},
+			"Pants_5_Calf_R": {
+				"Pants_5_Calf_R": { "x": 6.16, "y": -0.13, "rotation": 90, "width": 9, "height": 14 }
+			}
+		}
+	},
+	{
 		"name": "Weapon/Weapon_L_1",
 		"attachments": {
 			"Weapon_L_1": {
@@ -282,6 +541,70 @@
 		"attachments": {
 			"Weapon_L_2": {
 				"Weapon_L_2": { "x": 3.5, "y": -0.5, "width": 28, "height": 12 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_L_3",
+		"attachments": {
+			"Weapon_L_3": {
+				"Weapon_L_3": { "x": 0.5, "y": -3.5, "width": 14, "height": 10 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_L_4",
+		"attachments": {
+			"Weapon_L_4": {
+				"Weapon_L_4": { "width": 17, "height": 17 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_L_5",
+		"attachments": {
+			"Weapon_L_5": {
+				"Weapon_L_5": { "x": 0.5, "y": 0.5, "width": 30, "height": 30 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_L_6",
+		"attachments": {
+			"Weapon_L_6": {
+				"Weapon_L_6": { "x": -0.5, "width": 14, "height": 17 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_L_7",
+		"attachments": {
+			"Weapon_L_7": {
+				"Weapon_L_7": { "y": 0.5, "width": 13, "height": 10 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_L_8",
+		"attachments": {
+			"Weapon_L_8": {
+				"Weapon_L_8": { "x": 0.5, "y": 2, "width": 14, "height": 17 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_L_9",
+		"attachments": {
+			"Weapon_L_9": {
+				"Weapon_L_9": { "x": 4, "y": -0.5, "width": 25, "height": 10 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_L_10",
+		"attachments": {
+			"Weapon_L_10": {
+				"Weapon_L_10": { "x": 0.5, "y": 0.5, "width": 8, "height": 8 }
 			}
 		}
 	},
@@ -318,10 +641,58 @@
 		}
 	},
 	{
+		"name": "Weapon/Weapon_R_5",
+		"attachments": {
+			"Weapon_R_5": {
+				"Weapon_R_5": { "x": 0.5, "y": 12, "width": 9, "height": 34 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_6",
+		"attachments": {
+			"Weapon_R_6": {
+				"Weapon_R_6": { "x": 0.5, "y": 21.5, "width": 19, "height": 55 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_7",
+		"attachments": {
+			"Weapon_R_7": {
+				"Weapon_R_7": { "x": 0.5, "y": 19.5, "width": 15, "height": 51 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_8",
+		"attachments": {
+			"Weapon_R_8": {
+				"Weapon_R_8": { "x": 0.5, "y": 10.5, "width": 13, "height": 41 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_9",
+		"attachments": {
+			"Weapon_R_9": {
+				"Weapon_R_9": { "x": 0.5, "y": 21, "width": 17, "height": 62 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_10",
+		"attachments": {
+			"Weapon_R_10": {
+				"Weapon_R_10": { "x": 0.5, "y": 21, "width": 17, "height": 62 }
+			}
+		}
+	},
+	{
 		"name": "Weapon/Weapon_R_11",
 		"attachments": {
 			"Weapon_R_11": {
-				"Weapon_R_11": { "x": 0.5, "y": 6, "width": 13, "height": 72 }
+				"Weapon_R_11": { "x": 0.5, "y": 6, "width": 13, "height": 73 }
 			}
 		}
 	},
@@ -330,6 +701,70 @@
 		"attachments": {
 			"Weapon_R_12": {
 				"Weapon_R_12": { "x": 3, "y": 6.5, "width": 14, "height": 73 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_13",
+		"attachments": {
+			"Weapon_R_13": {
+				"Weapon_R_13": { "y": 11, "width": 14, "height": 80 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_14",
+		"attachments": {
+			"Weapon_R_14": {
+				"Weapon_R_14": { "y": 7.5, "width": 16, "height": 75 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_15",
+		"attachments": {
+			"Weapon_R_15": {
+				"Weapon_R_15": { "y": 5, "width": 26, "height": 70 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_16",
+		"attachments": {
+			"Weapon_R_16": {
+				"Weapon_R_16": { "x": -1.5, "y": 10, "width": 29, "height": 80 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_17",
+		"attachments": {
+			"Weapon_R_17": {
+				"Weapon_R_17": { "x": 0.5, "y": 10, "width": 47, "height": 80 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_18",
+		"attachments": {
+			"Weapon_R_18": {
+				"Weapon_R_18": { "y": 8.5, "width": 20, "height": 77 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_19",
+		"attachments": {
+			"Weapon_R_19": {
+				"Weapon_R_19": { "x": 0.5, "y": 11, "width": 15, "height": 80 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_20",
+		"attachments": {
+			"Weapon_R_20": {
+				"Weapon_R_20": { "x": 0.5, "y": 13, "width": 25, "height": 84 }
 			}
 		}
 	}

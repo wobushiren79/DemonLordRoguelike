@@ -13,12 +13,15 @@ MonoBehaviour:
   m_Name: Effect
   m_EditorClassIdentifier: 
   m_GroupName: Effect
-  m_Data:
-    m_SerializedData: []
   m_GUID: d91bf32a1b0997040bd70f62c55964e7
   m_SerializeEntries:
   - m_GUID: 6e30d327e4eff0043b4830b3c04f44d6
     m_Address: Assets/LoadResources/Effects/EffectBlood_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 945d56bedeb6f38459a14be6aab46326
+    m_Address: Assets/LoadResources/Effects/EffectBoom_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

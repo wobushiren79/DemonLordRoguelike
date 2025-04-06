@@ -10,7 +10,9 @@
 
     public enum ItemsInfoAttackModeDataEnum
     {
+        ShowSprite,//展示的精灵图片
         VertexRotateAxis,//模型旋转角度0,0,-1
         VertexRotateSpeed,//模型旋转速度 10
         UVRotateSpeed,//UV旋转速度
+        StartPosition,//开始位置
     }

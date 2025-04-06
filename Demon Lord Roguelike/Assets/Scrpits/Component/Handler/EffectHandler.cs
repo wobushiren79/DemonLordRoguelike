@@ -9,12 +9,12 @@ public partial class EffectHandler
     protected string effectBloodName = "EffectBlood_1";
 
     /// <summary>
-    /// 播放血粒子
+    /// 鎾斁琛�绮掑瓙
     /// </summary>
     /// <param name="targetPos"></param>
     public void ShowBloodEffect(Vector3 targetPos, Vector3 attDirection)
-    {       
-        //播放粒子
+    {
+        //鎾斁绮掑瓙
         Action<EffectBase> playEffect = (targetEffect) =>
         {
             if (targetEffect == null)
@@ -34,26 +34,36 @@ public partial class EffectHandler
             targetEffect.PlayEffect();
         };
 
-        //获取粒子实例
-        manager.GetEffectForEnduring(effectBloodName, (targetEffect) => 
+        //鑾峰彇绮掑瓙瀹炰緥
+        manager.GetEffectForEnduring(effectBloodName, (targetEffect) =>
+        {
+            playEffect?.Invoke(targetEffect);
+        });
+    }
+
+    /// <summary>
+    /// 璁剧疆鐖嗙偢绮掑瓙
+    /// </summary>
+    public void ShowBoomEffect(string effectName, Vector3 targetPos, float size)
+    {
+        //鎾斁绮掑瓙
+        Action<EffectBase> playEffect = (targetEffect) =>
         {
             if (targetEffect == null)
-            {
-                EffectBean effectData = new EffectBean();
-                effectData.effectName = "EffectBlood_1";
-                effectData.effectType = EffectTypeEnum.Visual;
-                effectData.effectShowType = EffectShowTypeEnum.Enduring;
-                effectData.isPlayInShow = false;
-                effectData.timeForShow = -1;
-                ShowEffect(gameObject, effectData, callBackShow: (targetEffect) =>
-                {
-                    playEffect?.Invoke(targetEffect);
-                });
-            }
-            else
-            {
-                playEffect?.Invoke(targetEffect);
-            }
+                return;
+            var targetVisualEffect = targetEffect.GetVisualEffect();
+            targetVisualEffect.SetVector3("StartPosition", targetPos);
+            targetVisualEffect.SetFloat("LifeTime", 0.5f);
+            targetVisualEffect.SetFloat("WaveSize", size * 2);
+            targetVisualEffect.SetFloat("BoomSize", size);
+            targetVisualEffect.SetFloat("SmokeSize", size);
+            targetEffect.PlayEffect();
+        };
+
+        //鑾峰彇绮掑瓙瀹炰緥
+        manager.GetEffectForEnduring(effectName, (targetEffect) =>
+        {
+            playEffect?.Invoke(targetEffect);
         });
     }
 }

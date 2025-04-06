@@ -13,7 +13,7 @@ public class FightManager : BaseManager
 
 
     public static string pathDropMagicPrefab = "Assets/LoadResources/Common/FightDropMagic.prefab";
-    public static string pathDropCoinPrefab = "Assets/LoadResources/Common/FightDropCoin.prefab";
+    public static string pathDropCrystalPrefab = "Assets/LoadResources/Common/FightDropCrystal.prefab";
     //一些战斗杂项预制
     public Dictionary<string, GameObject> dicFightModeObj = new Dictionary<string, GameObject>();
     //战斗杂项缓存池
@@ -119,13 +119,13 @@ public class FightManager : BaseManager
     }
 
     /// <summary>
-    /// 获取掉落金币预制
+    /// 获取掉落水晶预制
     /// </summary>
-    public void GetDropCoinPrefab(Action<GameFightPrefabEntity> actionForComplete)
+    public void GetDropCrystalPrefab(Action<GameFightPrefabEntity> actionForComplete)
     {
-        GetFightPrefabCommon(pathDropCoinPrefab, (targetPrefab) =>
+        GetFightPrefabCommon(pathDropCrystalPrefab, (targetPrefab) =>
         {
-            targetPrefab.pathAsstes = pathDropCoinPrefab;
+            targetPrefab.pathAsstes = pathDropCrystalPrefab;
             targetPrefab.SetState(GameFightPrefabStateEnum.None);
             targetPrefab.valueInt = 10;
             targetPrefab.lifeTime = 30;

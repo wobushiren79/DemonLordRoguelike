@@ -55,7 +55,7 @@ public class GameFightCreatureEntity
         for (int i = 0; i < fightCreatureData.listBuff.Count; i++)
         {
             var itemBuff = fightCreatureData.listBuff[i];
-            itemBuff.AddBuffTime(updateTime, out bool isRemove, actionForCompleteRemove : CallBackForRemoveBuff);
+            itemBuff.AddBuffTime(updateTime, out bool isRemove, actionForCompleteRemove: CallBackForRemoveBuff);
             if (isRemove)
             {
                 i--;
@@ -99,11 +99,11 @@ public class GameFightCreatureEntity
     /// 播放动画
     /// </summary>
     /// <param name="animationCreatureState"></param>
-    public TrackEntry PlayAnim(SpineAnimationStateEnum animationCreatureState, bool isLoop, float mixDuration = -1)
+    public TrackEntry PlayAnim(SpineAnimationStateEnum animationCreatureState, bool isLoop, float mixDuration = -1, string animNameAppoint = null)
     {
         if (creatureSkeletionAnimation == null)
             return null;
-        var animData =  SpineHandler.Instance.PlayAnim(creatureSkeletionAnimation, animationCreatureState, isLoop);
+        var animData = SpineHandler.Instance.PlayAnim(creatureSkeletionAnimation, animationCreatureState, isLoop, animNameAppoint);
         if (animData != null && mixDuration != -1)
         {
             animData.MixDuration = mixDuration;
@@ -114,11 +114,12 @@ public class GameFightCreatureEntity
     /// <summary>
     /// 增加动画
     /// </summary>
-    public void AddAnim(int trackIndex, SpineAnimationStateEnum animationCreatureState, bool isLoop, float delay)
+    public TrackEntry AddAnim(int trackIndex, SpineAnimationStateEnum animationCreatureState, bool isLoop, float delay, string animNameAppoint = null)
     {
         if (creatureSkeletionAnimation == null)
-            return;
-        creatureSkeletionAnimation.AnimationState.AddAnimation(trackIndex, animationCreatureState.GetEnumName(), isLoop, delay);
+            return null;
+        var animData = SpineHandler.Instance.AddAnimation(creatureSkeletionAnimation, trackIndex, animationCreatureState, isLoop, delay, animNameAppoint);
+        return animData;
     }
 
     /// <summary>
@@ -130,8 +131,9 @@ public class GameFightCreatureEntity
             return;
         //再清除动画
         //creatureSkeletionAnimation.AnimationState.ClearTracks();
-        var trackEntry = PlayAnim(SpineAnimationStateEnum.Idle, true, 0);
-       //清理数据
+        string animNameAppoint = fightCreatureData.creatureData.creatureInfo.anim_idle;
+        var trackEntry = PlayAnim(SpineAnimationStateEnum.Idle, true, 0,animNameAppoint:animNameAppoint);
+        //清理数据
         if (animForUnderAttackColor != null && animForUnderAttackColor.IsPlaying())
         {
             animForUnderAttackColor.Complete();
@@ -218,8 +220,8 @@ public class GameFightCreatureEntity
             //记录数据
             fightRecordsData.AddCreatureKillNum(baseAttackMode.attackerId, 1);
 
-            //掉落金币
-            FightHandler.Instance.CreateDropCoin(creatureObj.transform.position);
+            //掉落水晶
+            FightHandler.Instance.CreateDropCrystal(creatureObj.transform.position);
             //如果被攻击对象死亡 
             SetCreatureDead();
             //流血
@@ -247,12 +249,12 @@ public class GameFightCreatureEntity
         }
         animForUnderAttackColor = DOTween
             .To(() => startColor, x => startColor = x, endColor, 0.2f)
-            .OnUpdate(() => 
+            .OnUpdate(() =>
             {
                 // 在每帧更新时执行的操作
                 SetBodyColor(startColor);
             })
-            .OnComplete(() => 
+            .OnComplete(() =>
             {
                 SetBodyColor();
                 animForUnderAttackColor = null;

@@ -8,8 +8,9 @@ public class AIIntentDefCoreCreatureIdle : AIBaseIntent
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         selfAIEntity = aiEntity as AIDefCoreCreatureEntity;
-        //设置移动动作
-        selfAIEntity.selfDefCoreCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true);
+        //璁剧疆鍔ㄤ綔
+        string animNameAppoint = selfAIEntity.selfDefCoreCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_idle;
+        selfAIEntity.selfDefCoreCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true, animNameAppoint : animNameAppoint);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)

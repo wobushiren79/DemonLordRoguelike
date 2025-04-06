@@ -24,7 +24,7 @@ public partial class ItemsInfoBean : BaseBean
 	/// </summary>
 	public float icon_rotate_z;
 	/// <summary>
-	///攻击模式相关数据(VertexRotateAxis,VertexRotateSpeed,UVRotateSpeed)
+	///攻击模式相关数据(ShowSprite,VertexRotateAxis,VertexRotateSpeed,UVRotateSpeed,StartPosition)
 	/// </summary>
 	public string attack_mode_data;
 	/// <summary>

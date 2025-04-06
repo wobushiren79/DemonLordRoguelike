@@ -16,6 +16,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
         UpdateHandleTimeCountDown();
     }
 
+    #region  Update更新
     /// <summary>
     /// 更新攻击模组
     /// </summary>
@@ -60,7 +61,9 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
             }
         }
     }
+    #endregion
 
+    #region  战斗相关计时
     /// <summary>
     /// 创建一个倒计时
     /// </summary>
@@ -79,35 +82,53 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     {
         manager.RemoveTimeCountDown(targetData);
     }
+    #endregion
 
+    #region  攻击模块相关
     /// <summary>
-    /// 创建一个攻击预制
+    /// 开始创建攻击模块
     /// </summary>
-    public void CreateAttackModePrefab(CreatureBean creatureData , Action<BaseAttackMode> actionForComplete)
+    /// <param name="attacker">攻击者</param>
+    /// <param name="attacked">被攻击者</param>
+    /// <param name="actionForCreateEnd">创建结束</param>
+    public void StartCreateAttackMode(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action<BaseAttackMode> actionForCreateEnd)
     {
         //只保存基础生物ID和武器ID 用于初始化攻击的样式
         long weaponItemId = 0;
-        long creatureId = creatureData.creatureInfo.id;
-        int attackModeId = creatureData.creatureInfo.attack_mode;
-        var weaponItemData = creatureData.GetEquip(ItemTypeEnum.Weapon);
+        long creatureId = attacker.fightCreatureData.creatureData.creatureInfo.id;
+        int attackModeId = attacker.fightCreatureData.creatureData.creatureInfo.attack_mode;
+        var weaponItemData = attacker.fightCreatureData.creatureData.GetEquip(ItemTypeEnum.Weapon);
         if (weaponItemData != null)
         {
             weaponItemId = weaponItemData.itemId;
         }
-
-        manager.GetAttackModePrefab(attackModeId, (targetPrefab) =>
+        else
+        {
+            weaponItemId = attacker.fightCreatureData.creatureData.creatureInfo.GetEquipBaseWeaponId();
+        }
+        manager.GetAttackModePrefab(attackModeId, (attackMode) =>
         {
             //只保存基础生物ID和武器ID 用于初始化攻击的样式
-            targetPrefab.creatureId = creatureId;
-            targetPrefab.weaponItemId = weaponItemId;
-            targetPrefab.InitAttackModeShow();
-            
-            targetPrefab.gameObject.SetActive(true);
-            if (targetPrefab.spriteRenderer != null)
+            attackMode.creatureId = creatureId;
+            attackMode.weaponItemId =  weaponItemId;
+            if(attacker == null)
             {
-                targetPrefab.spriteRenderer.transform.eulerAngles = CameraHandler.Instance.manager.mainCamera.transform.eulerAngles;
+                attackMode.startPostion = Vector3.zero;
             }
-            actionForComplete?.Invoke(targetPrefab);
+            else
+            {
+                attackMode.startPostion = attacker.creatureObj.transform.position;
+            }
+            attackMode.gameObject.transform.position = attackMode.startPostion;
+            attackMode.gameObject.SetActive(true);
+            attackMode.InitAttackModeShow();
+
+            if (attackMode.spriteRenderer != null)
+            {
+                attackMode.spriteRenderer.transform.eulerAngles = CameraHandler.Instance.manager.mainCamera.transform.eulerAngles;
+            }
+
+            attackMode.StartAttack(attacker,attacked,actionForCreateEnd);
         });
     }
 
@@ -119,14 +140,16 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
         targetMode.gameObject.SetActive(false);
         manager.RemoveAttackModePrefab(targetMode);
     }
+    #endregion
 
+    #region  战斗场景物品
     /// <summary>
     /// 创建掉落金币
     /// </summary>
     /// <param name="dropPos"></param>
-    public void CreateDropCoin(Vector3 dropPos)
+    public void CreateDropCrystal(Vector3 dropPos)
     {
-        manager.GetDropCoinPrefab((targetPrefab) =>
+        manager.GetDropCrystalPrefab((targetPrefab) =>
         {
             if (targetPrefab.spriteRenderer == null)
             {
@@ -217,5 +240,5 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
         targetEntity.gameObject.SetActive(false);
         manager.RemoveFightPrefabCommon(targetEntity);
     }
-
+    #endregion
 }

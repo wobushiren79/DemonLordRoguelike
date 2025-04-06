@@ -15,8 +15,18 @@ MonoBehaviour:
   m_GroupName: AttackMode
   m_GUID: 03a5a40d7ff95bf47b8e343184f4accd
   m_SerializeEntries:
+  - m_GUID: 0f154e140ca5e794091990ac290953c3
+    m_Address: Assets/LoadResources/AttackMode/AttackMode_RangedFireBall.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 18c7408bb1cf63c40bbce7397146a1db
     m_Address: Assets/LoadResources/AttackMode/AttackMode_MeleeNormal.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5cab35740f03a26428d60ce8918b841b
+    m_Address: Assets/LoadResources/AttackMode/AttackMode_RangedIceBall.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

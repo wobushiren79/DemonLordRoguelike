@@ -14,7 +14,7 @@ public static class GameUIUtil
     {
         //设置骨骼数据
         SpineHandler.Instance.SetSkeletonDataAsset(ui_Icon, creatureData.creatureModel.res_name);
-        string[] skinArray = creatureData.GetSkinArray();
+        string[] skinArray = creatureData.GetSkinArray(isNeedWeapon:false);
         //修改皮肤
         SpineHandler.Instance.ChangeSkeletonSkin(ui_Icon.Skeleton, skinArray);
         ui_Icon.ShowObj(true);
