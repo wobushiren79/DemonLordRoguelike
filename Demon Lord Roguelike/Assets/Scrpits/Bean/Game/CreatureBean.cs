@@ -204,6 +204,11 @@ public partial class CreatureBean
             }
             ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
             CreatureModelInfoBean itemSkinInfo = CreatureModelInfoCfg.GetItemData(itemInfo.creature_model_info_id);
+            if (itemSkinInfo == null)
+            {
+                LogUtil.LogError($"没有找到CreatureModelInfoCfg creature_model_info_id_{itemInfo.creature_model_info_id}");
+                continue;
+            }
             listSkin.Add(itemSkinInfo.res_name);
         }
         return listSkin.ToArray();
