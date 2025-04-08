@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 9202322129336648842}
   - component: {fileID: 2525283845599630242}
   m_Layer: 0
-  m_Name: EffectBoom_1
+  m_Name: EffectBoom_Ice_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -42,7 +42,7 @@ VisualEffect:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8104884778387397714}
   m_Enabled: 1
-  m_Asset: {fileID: 8926484042661614526, guid: d5ae20837f92bf14f8c052c727a38fb1, type: 3}
+  m_Asset: {fileID: 8926484042661614526, guid: 0f939a48bf8720149ae527abbccc3bb7, type: 3}
   m_InitialEventName: OnPlay
   m_InitialEventNameOverriden: 0
   m_StartSeed: 0
@@ -103,13 +103,13 @@ VisualEffect:
       - m_Value: {x: 0.5754717, y: 0, z: 0, w: 1}
         m_Name: BloodColor
         m_Overridden: 1
-      - m_Value: {x: 0.0047169775, y: 0.0008061448, z: 0, w: 1}
+      - m_Value: {x: 0.10720008, y: 0.47010964, z: 0.6886792, w: 1}
         m_Name: SmokeColor
         m_Overridden: 1
-      - m_Value: {x: 0.745283, y: 0.18636459, z: 0.0738252, w: 0}
+      - m_Value: {x: 0.07450978, y: 0.5808341, z: 0.74509805, w: 0}
         m_Name: WaveColor
         m_Overridden: 1
-      - m_Value: {x: 0.8679245, y: 0.34443626, z: 0.08597365, w: 0}
+      - m_Value: {x: 0.086274505, y: 0.5225223, z: 0.8666667, w: 0}
         m_Name: FlareColor
         m_Overridden: 1
     m_Uint:
