@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class LauncherTest : BaseLauncher
@@ -46,6 +47,15 @@ public class LauncherTest : BaseLauncher
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         userData.selfCreature = creatureData;
+        for (int i = 0; i < 50; i++)
+        {
+            CreatureBean creatureItem = new CreatureBean(2001);
+            creatureItem.rarity = Random.Range(1, 7);
+            creatureItem.starLevel = Random.Range(0, 11);
+            creatureItem.level = Random.Range(0, 101);
+            creatureItem.AddSkinForBase();
+            userData.AddBackpackCreature(creatureItem);
+        }
         WorldHandler.Instance.EnterGameForBaseScene(userData, true);
     }
 }

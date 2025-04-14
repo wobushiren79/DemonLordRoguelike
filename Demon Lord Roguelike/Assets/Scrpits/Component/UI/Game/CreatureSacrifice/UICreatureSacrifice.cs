@@ -121,16 +121,18 @@ public partial class UICreatureSacrifice : BaseUIComponent
     /// </summary>
     public void EventForCardClickSelect(UIViewCreatureCardItem selectItemView)
     {
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        var limmitData = userData.GetUserLimmitData();
-        if (listSelectCreature.Count >= limmitData.sacrificeMax)
-        {
-            UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(61002));
-            return;
-        }
         var selectCreatureData = selectItemView.cardData.creatureData;
         if (selectItemView.cardData.cardState == CardStateEnum.CreatureSacrificeNoSelect)
         {
+            //上限检测
+            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+            var limmitData = userData.GetUserLimmitData();
+            if (listSelectCreature.Count >= limmitData.sacrificeMax)
+            {
+                UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(61002));
+                return;
+            }
+            //添加
             if (!listSelectCreature.Contains(selectCreatureData))
             {
                 listSelectCreature.Add(selectCreatureData);
@@ -138,6 +140,7 @@ public partial class UICreatureSacrifice : BaseUIComponent
         }
         else
         {
+            //删除
             if (listSelectCreature.Contains(selectCreatureData))
             {
                 listSelectCreature.Remove(selectCreatureData);

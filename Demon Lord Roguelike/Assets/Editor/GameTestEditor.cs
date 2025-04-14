@@ -111,7 +111,7 @@ public class GameTestEditor : Editor
             {
                 CreatureBean creatureData = new CreatureBean(ids[0]);
                 creatureData.AddSkinForBase();
-                launcher.StartForBaseTest(creatureData);
+                launcher.StartForBaseTest(creatureData);             
             }
         }
         EditorGUILayout.BeginHorizontal();

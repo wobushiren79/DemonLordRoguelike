@@ -1,3 +1,4 @@
+using Cinemachine;
 using DG.Tweening;
 using Spine.Unity;
 using System;
@@ -14,7 +15,8 @@ public class CreatureSacrificeLogic : BaseGameLogic
     public CreatureSacrificeBean creatureSacrificeData;
     //蛋预制的资源路径
     public string pathForSacrificeCreature = "Assets/LoadResources/Creatures/SacrificeCreature_1.prefab";
-
+    //子控件名字
+    public string spineChildTFName = "Spine";
     //场景预制
     public ScenePrefabForBase scenePrefab;
     //目标生物模型
@@ -26,6 +28,8 @@ public class CreatureSacrificeLogic : BaseGameLogic
     public List<VisualEffect> listVFXLight;
     public VisualEffect VFXAltar;
 
+    //献祭摄像头
+    public CinemachineVirtualCamera sacrificeCamera;
     public override void PreGame()
     {
         base.PreGame();
@@ -56,7 +60,7 @@ public class CreatureSacrificeLogic : BaseGameLogic
         //设置祭坛粒子
         SetAltarEffect(true);
         //设置摄像头
-        CameraHandler.Instance.SetCreatureSacrificeCamera(int.MaxValue, true);
+        sacrificeCamera = CameraHandler.Instance.SetCreatureSacrificeCamera(int.MaxValue, true);
         //先暂时关闭所有UI
         UIHandler.Instance.CloseAllUI();
         //现在场景中心加载目标生物
@@ -92,17 +96,31 @@ public class CreatureSacrificeLogic : BaseGameLogic
     /// </summary>
     public void StartSacrifice()
     {
-        List<GameObject> listCreatureObj = new List<GameObject>();
-        //播放粒子
+        float timeCenterDelay = 2;
+        float timeCenterLifetime = 3;
+        float timeReset = 0.5f;
+        //献祭生物
+        List<GameObject> listFodderCreatureObj = new List<GameObject>();
         listObjFodderCreatures.ForEach((int index, GameObject itemCreatureObj) =>
         {
-            if(itemCreatureObj.activeSelf)
+            if (itemCreatureObj.activeSelf)
             {
-                listCreatureObj.Add(itemCreatureObj);
+                listFodderCreatureObj.Add(itemCreatureObj);
             }
         });
-        EffectHandler.Instance.ShowSacrficeEffect(listCreatureObj, objTargetCreature.transform.position);
+        //关闭所有UI
+        UIHandler.Instance.CloseAllUI();
+        //播放生物动画
+        AnimForCreatureObj(listFodderCreatureObj, objTargetCreature, timeCenterDelay + timeCenterLifetime, timeReset);
+        //播放粒子动画
+        AnimForSacrficeEffect(listFodderCreatureObj, timeCenterDelay, timeCenterLifetime);
+        //播放摄像头动画
+        AnimForSacrficeCamera(timeCenterDelay + timeCenterLifetime, timeReset, () =>
+        {
+            UIHandler.Instance.OpenUIAndCloseOther<UICreatureSacrifice>();
+        });
     }
+
 
     /// <summary>
     /// 清理数据
@@ -179,7 +197,7 @@ public class CreatureSacrificeLogic : BaseGameLogic
         {
             return;
         }
-        SkeletonAnimation creatureSpine = targetObj.transform.Find("Spine").GetComponent<SkeletonAnimation>();
+        SkeletonAnimation creatureSpine = targetObj.transform.Find(spineChildTFName).GetComponent<SkeletonAnimation>();
         SpineHandler.Instance.SetSkeletonDataAsset(creatureSpine, creatureData.creatureModel.res_name);
         string[] skinArray = creatureData.GetSkinArray();
         //修改皮肤
@@ -215,6 +233,7 @@ public class CreatureSacrificeLogic : BaseGameLogic
                 {
                     itemCreatureObj = listObjFodderCreatures[i];
                 }
+                itemCreatureObj.SetActive(true);
                 itemCreatureObj.transform.position = new Vector3(itemPosition.x, 0, itemPosition.y);
                 itemCreatureObj.transform.localScale = Vector3.one;
                 SetCreatureData(itemCreatureObj, listSelectCreature[i]);
@@ -264,5 +283,80 @@ public class CreatureSacrificeLogic : BaseGameLogic
 
     #region 动画
 
+    /// <summary>
+    /// 动画-生物
+    /// </summary>
+    public void AnimForCreatureObj(List<GameObject> listFodderCreatureObj, GameObject targetCreature, float timeAnim, float timeReset)
+    {
+        listFodderCreatureObj.ForEach((int index,GameObject objItemCreature)=>
+        {
+            SkeletonAnimation creatureSpine = objItemCreature.transform.Find(spineChildTFName).GetComponent<SkeletonAnimation>();
+            creatureSpine.skeleton.SetColor(Color.white);
+            DOTween.
+            To(() => creatureSpine.skeleton.GetColor(),
+                x => creatureSpine.skeleton.SetColor(x),
+                new Color(1, 1, 1, 0),
+                timeAnim * 0.7f);
+        });
+
+        //被献祭生物漂浮再落下
+        Vector3 originPosition = targetCreature.transform.position;
+        DG.Tweening.Sequence animForSacrificeCreature = DOTween.Sequence();
+        animForSacrificeCreature.Append(targetCreature.transform
+            .DOMoveY(0.2f,timeAnim));
+        animForSacrificeCreature.Append(targetCreature.transform
+            .DOMove(originPosition,timeReset));
+    }
+
+    /// <summary>
+    /// 动画-粒子
+    /// </summary>
+    public void AnimForSacrficeEffect(List<GameObject> listFodderCreatureObj, float timeCenterDelay, float timeCenterLifetime)
+    {
+        EffectHandler.Instance.ShowSacrficeEffect(listFodderCreatureObj, objTargetCreature.transform.position, timeCenterDelay, timeCenterLifetime);
+    }
+
+    /// <summary>
+    /// 动画-献祭摄像头
+    /// </summary>
+    public void AnimForSacrficeCamera(float timeAnim, float timeReset, Action actionForComplete)
+    {
+        //播放摄像头动画
+        // 获取噪声组件
+        var cameraNoise = sacrificeCamera.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
+        // 创建动画序列
+        float originalFOV = sacrificeCamera.m_Lens.FieldOfView;
+        float originalFrequencyGain = cameraNoise.m_FrequencyGain;
+        DG.Tweening.Sequence animForSacrificeCamera = DOTween.Sequence();
+        //开始抖动
+        animForSacrificeCamera.AppendCallback(() =>
+        {
+            cameraNoise.m_FrequencyGain = 1;
+        });
+        //拉近镜头 (改变FOV)
+        animForSacrificeCamera.Append(DOTween.To(
+            () => sacrificeCamera.m_Lens.FieldOfView,
+            x => sacrificeCamera.m_Lens.FieldOfView = x,
+            originalFOV - 20,
+            timeAnim
+            ).SetEase(Ease.InOutQuad));
+        //延迟后恢复原始FOV
+        animForSacrificeCamera.Append(DOTween.To(
+            () => sacrificeCamera.m_Lens.FieldOfView,
+            x => sacrificeCamera.m_Lens.FieldOfView = x,
+            originalFOV,
+            timeReset
+        ).SetEase(Ease.OutQuad));
+        //延迟后恢复原始抖动
+        animForSacrificeCamera.AppendCallback(() =>
+        {
+            cameraNoise.m_FrequencyGain = originalFrequencyGain;
+        });
+
+        animForSacrificeCamera.onComplete = () =>
+        {
+            actionForComplete?.Invoke();
+        };
+    }
     #endregion
 }
