@@ -16,8 +16,6 @@ public class UserDataBean : BaseBean
     public int saveIndex = 0;
     //拥有的魔晶
     public long crystal;
-    //阵容最大数量
-    public int lineupMax = 10;
     //用户名字
     public string userName;
 
@@ -32,10 +30,11 @@ public class UserDataBean : BaseBean
 
     //游戏进度地图
     public GameWorldMapBean gameWorldMapData;
-
     //用户解锁数据
     public UserUnlockBean userUnlockData;
-
+    //用户限制数据
+    public UserLimmitBean userLimmitData;
+    
     /// <summary>
     /// 获取用户解锁数据
     /// </summary>
@@ -48,6 +47,17 @@ public class UserDataBean : BaseBean
         if (userUnlockData.unlockWorldMapRefreshNum > 50)
             userUnlockData.unlockWorldMapRefreshNum = 50;
         return userUnlockData;
+    }
+
+    /// <summary>
+    /// 获取用户限制数据
+    /// </summary>
+    /// <returns></returns>
+    public UserLimmitBean GetUserLimmitData()
+    {
+        if (userLimmitData == null)
+            userLimmitData = new UserLimmitBean();
+        return userLimmitData;
     }
 
     /// <summary>

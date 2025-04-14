@@ -41,14 +41,17 @@ SpriteAtlas:
     - 0289815018dcc504c83bc6ab826cb4dc: 21300000
     - 84cc03c03c176a549abedfa214f55ee2: 21300000
     - d23b13019f0e88046a94efc0c82194ff: 21300000
+    - a4111111e602cac4b9789108a4f58cf5: 21300000
     - 61352331213f8794ebd42dcd3b417ae0: 21300000
     - bcd1c2514a10f954cbce8557ae97dded: 21300000
     - 5894e903716327c4881e613956589a99: 21300000
     - 39b079848d987ff4f9f2c6dc551eb8ec: 21300000
     - 845317a68ca9e264cae76a6f3b5073dd: 21300000
     - cbc4f1f67e09a524fb85b47573785e41: 21300000
+    - 5653cc57bf2346d4e94271fbf1bcd6f3: 21300000
     - 2c115f6724c01104ca719ffdb405c492: 21300000
     - 58639438d7fa61f49bec2f009b3bfbe4: 21300000
+    - 608561a8174320f42b34f259c795d019: 21300000
     - 2f7c29791c5349e4d8e744b5611c7b81: 21300000
     - a9ab952af9a2bfd4ab7918832803f02d: 21300000
     - 8ad4c01ba972352428d06834e8b6d21f: 21300000
@@ -61,14 +64,17 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 0289815018dcc504c83bc6ab826cb4dc, type: 3}
   - {fileID: 21300000, guid: 84cc03c03c176a549abedfa214f55ee2, type: 3}
   - {fileID: 21300000, guid: d23b13019f0e88046a94efc0c82194ff, type: 3}
+  - {fileID: 21300000, guid: a4111111e602cac4b9789108a4f58cf5, type: 3}
   - {fileID: 21300000, guid: 61352331213f8794ebd42dcd3b417ae0, type: 3}
   - {fileID: 21300000, guid: bcd1c2514a10f954cbce8557ae97dded, type: 3}
   - {fileID: 21300000, guid: 5894e903716327c4881e613956589a99, type: 3}
   - {fileID: 21300000, guid: 39b079848d987ff4f9f2c6dc551eb8ec, type: 3}
   - {fileID: 21300000, guid: 845317a68ca9e264cae76a6f3b5073dd, type: 3}
   - {fileID: 21300000, guid: cbc4f1f67e09a524fb85b47573785e41, type: 3}
+  - {fileID: 21300000, guid: 5653cc57bf2346d4e94271fbf1bcd6f3, type: 3}
   - {fileID: 21300000, guid: 2c115f6724c01104ca719ffdb405c492, type: 3}
   - {fileID: 21300000, guid: 58639438d7fa61f49bec2f009b3bfbe4, type: 3}
+  - {fileID: 21300000, guid: 608561a8174320f42b34f259c795d019, type: 3}
   - {fileID: 21300000, guid: 2f7c29791c5349e4d8e744b5611c7b81, type: 3}
   - {fileID: 21300000, guid: a9ab952af9a2bfd4ab7918832803f02d, type: 3}
   - {fileID: 21300000, guid: 8ad4c01ba972352428d06834e8b6d21f, type: 3}
@@ -80,14 +86,17 @@ SpriteAtlas:
   - Show_Life_3
   - Show_Life_2
   - Fireball_1
+  - hexagram_3
   - Iceball_1
   - Iceball_5
   - Crystal_1
   - Iceball_3
   - Iceball_4
   - Iceball_8
+  - hexagram_1
   - Iceball_7
   - Iceball_2
+  - hexagram_2
   - Iceball_6
   - Snowflake_1
   - Fireball_2

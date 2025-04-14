@@ -29,6 +29,18 @@ public class GameHandler : BaseHandler<GameHandler,GameManager>
     }
 
     /// <summary>
+    /// 开始献祭
+    /// </summary>
+    public void StartCreatureSacrifice(CreatureSacrificeBean creatureSacrificeData)
+    {
+        if (manager.gameLogic == null)
+            manager.gameLogic = new CreatureSacrificeLogic();
+        var gameLogic = manager.gameLogic as CreatureSacrificeLogic;
+        gameLogic.creatureSacrificeData = creatureSacrificeData;
+        manager.gameLogic.PreGame();
+    }
+
+    /// <summary>
     /// 创建游戏世界地图数据
     /// </summary>
     public GameWorldMapBean CreateGameWorldMapData(long worldId)
@@ -41,6 +53,16 @@ public class GameHandler : BaseHandler<GameHandler,GameManager>
     /// 结束游戏战斗-强制
     /// </summary>
     public void EndGameFight()
+    {
+        if (manager.gameLogic == null)
+            return;
+        manager.gameLogic.EndGame();
+    }
+
+    /// <summary>
+    /// 结束生物献祭-强制
+    /// </summary>
+    public void EndCreatureSacrifice()
     {
         if (manager.gameLogic == null)
             return;

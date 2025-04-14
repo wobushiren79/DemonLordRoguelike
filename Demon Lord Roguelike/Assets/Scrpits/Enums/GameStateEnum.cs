@@ -29,6 +29,7 @@ public enum CardUseState
     Lineup,//阵容
     LineupBackpack,//阵容背包
     CreatureManager,//魔物管理
+    CreatureSacrifice,//魔物献祭
 }
 
 //卡片状态
@@ -45,6 +46,9 @@ public enum CardStateEnum
 
     CreatureManagerNoSelect = 301,//生物管理未选中
     CreatureManagerSelect = 302,//生物管理选中
+
+    CreatureSacrificeNoSelect = 401,//生物献祭未选中
+    CreatureSacrificeSelect = 402,//生物献祭选中
 }
 
 //游戏战斗预制状态

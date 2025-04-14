@@ -24,8 +24,27 @@ public partial class UIViewCreatureCardItem : BaseUIView
         SetRarity(creatureData.rarity);
         SetStarLevel(creatureData.starLevel);
         RefreshCardState(this.cardData.cardState);
+
+    }
+
+    /// <summary>
+    /// 设置气泡弹窗展示
+    /// </summary>
+    public void SetPopupShow(CreatureBean creatureData, CardUseState cardUseState)
+    {
         //设置弹窗气泡数据
-        ui_BtnSelect_PopupButtonCommonView.SetData((creatureData), PopupEnum.CreatureCardDetails);
+        switch (cardUseState)
+        {
+            case CardUseState.Fight:
+            case CardUseState.CreatureManager:
+                ui_BtnSelect_PopupButtonCommonView.enabled = false;
+                break;
+            default:
+                ui_BtnSelect_PopupButtonCommonView.enabled = true;
+                ui_BtnSelect_PopupButtonCommonView.SetData(creatureData, PopupEnum.CreatureCardDetails);
+                break;
+        }
+
     }
 
     /// <summary>

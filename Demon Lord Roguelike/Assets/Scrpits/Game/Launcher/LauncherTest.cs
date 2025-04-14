@@ -3,7 +3,7 @@ using UnityEngine;
 public class LauncherTest : BaseLauncher
 {
     [Header("测试类型")]
-    public TestSceneTypeEnum testSceneType = TestSceneTypeEnum.FightSceneTest;
+    public TestSceneTypeEnum testSceneType = TestSceneTypeEnum.Base;
 
     public override void Launch()
     {

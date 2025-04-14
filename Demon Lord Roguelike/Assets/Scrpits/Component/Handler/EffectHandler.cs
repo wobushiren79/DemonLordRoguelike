@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 
 public partial class EffectHandler
 {
@@ -62,6 +63,46 @@ public partial class EffectHandler
 
         //获取粒子实例
         manager.GetEffectForEnduring(effectName, (targetEffect) =>
+        {
+            playEffect?.Invoke(targetEffect);
+        });
+    }
+
+    public float timeCenterDelay = 2;
+    public float timeCenterLifetime = 5;
+    public float timeItemLifeTime = 3;
+    public float attractorSpeed = 1;
+    /// <summary>
+    /// 展示献祭粒子
+    /// </summary>
+    public void ShowSacrficeEffect(List<GameObject> listSacrficeTarget, Vector3 endPostion)
+    {
+        //播放粒子
+        Action<EffectBase> playEffect = (targetEffect) =>
+        {
+            if (targetEffect == null)
+                return;
+            listSacrficeTarget.ForEach((int index, GameObject itemObj) =>
+            {
+                VisualEffect visualEffect = itemObj.GetComponentInChildren<VisualEffect>(true);
+                visualEffect.gameObject.SetActive(true);
+
+                visualEffect.SetFloat("LifeTime", timeItemLifeTime);
+                visualEffect.SetVector3("StartPosition", visualEffect.transform.position);
+                visualEffect.SetVector3("EndPosition", endPostion + new Vector3(0, 0.5f, 0));
+                visualEffect.SetFloat("AttractorSpeed", attractorSpeed);
+                visualEffect.Play();
+            });
+
+            var targetVisualEffect = targetEffect.GetVisualEffect();
+            targetVisualEffect.SetFloat("StartDelay", timeCenterDelay);
+            targetVisualEffect.SetFloat("LifeTime", timeCenterLifetime);
+            targetVisualEffect.SetVector3("EndPosition", endPostion + new Vector3(0, 0.5f, 0));
+            targetEffect.PlayEffect();    
+        };
+
+        //获取粒子实例
+        manager.GetEffectForEnduring("EffectSacrfice_1", (targetEffect) =>
         {
             playEffect?.Invoke(targetEffect);
         });

@@ -101,7 +101,7 @@ public partial class UIViewCreatureCardList : BaseUIView
     {
         if(index >= listCreatureData.Count)
         {
-            LogUtil.LogError($"获取道具失败 超过下标 index_{index} Count_{listCreatureData.Count}");
+            LogUtil.LogError($"获取单个生物数据失败 超过下标 index_{index} Count_{listCreatureData.Count}");
             return null;
         }
         return listCreatureData[index];

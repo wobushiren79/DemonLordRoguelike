@@ -13,5 +13,7 @@ public partial class UICreatureManager
 
     public UIViewCreatureCardEquipDetails ui_UIViewCreatureCardEquipDetails;
 
+    public Button ui_BtnStarLevelUp;
+
 
 }

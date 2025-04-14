@@ -33,4 +33,10 @@ public static class EventsInfo
     public static string GashaponMachine_ClickReset = "GashaponMachine_ClickReset";//点击重置
     public static string GashaponMachine_ClickEnd = "GashaponMachine_ClickEnd";//点击结束
     #endregion
+
+    #region 生物献祭
+    public static string CreatureSacrifice_SelectCreature = "CreatureSacrifice_SelectCreature";//生物选择完成
+    public static string CreatureSacrifice_SacrificeSuccess = "CreatureSacrifice_SacrificeSuccess";//献祭成功
+    public static string CreatureSacrifice_SacrificeFail = "CreatureSacrifice_SacrificeFail";//献祭失败
+    #endregion
 }

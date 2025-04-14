@@ -3,12 +3,14 @@ using UnityEngine.VFX;
 
 public class ScenePrefabForBase : ScenePrefabBase
 {
-    //ºËĞÄ½¨Öş
+    //æ ¸å¿ƒå»ºç­‘
     public GameObject objBuildingCore;
-    //ºËĞÄÑÛ¾¦
+    //æ ¸å¿ƒçœ¼ç›
     public GameObject objBuildingCoreEye;
 
     public VisualEffect effectEggBreak;
+    //ç¥­å›
+    public GameObject objBuildingAltar;
 
 
     //public void Awake()
@@ -23,15 +25,15 @@ public class ScenePrefabForBase : ScenePrefabBase
     }
 
 
-    #region ºËĞÄ½¨ÖşÑÛÇò´¦Àí
-    //ºËĞÄ½¨ÖşÑÛÇò¿´ÏòÄ¿±ê
+    #region æ ¸å¿ƒå»ºç­‘çœ¼çƒå¤„ç†
+    //æ ¸å¿ƒå»ºç­‘çœ¼çƒçœ‹å‘ç›®æ ‡
     protected Vector3 targetLookAtForBuildingCoreEye;
-    //ºËĞÄ½¨ÖşÑÛÇò×ª¶¯ËÙ¶È
+    //æ ¸å¿ƒå»ºç­‘çœ¼çƒè½¬åŠ¨é€Ÿåº¦
     protected float speedRotationForBuildingCoreEye = 0.1f;
-    //ºËĞÄ½¨ÖşÑÛÇòÄ¬ÈÏ¿´ÏòÎ»ÖÃ
+    //æ ¸å¿ƒå»ºç­‘çœ¼çƒé»˜è®¤çœ‹å‘ä½ç½®
     protected Vector3 positionDefLookAtForBuildingCoreEye = new Vector3(0, 0, -1000f);
     /// <summary>
-    /// ´¦ÀíºËĞÄ½¨ÖşµÄÑÛ¾¦
+    /// å¤„ç†æ ¸å¿ƒå»ºç­‘çš„çœ¼ç›
     /// </summary>
     public void HandleUpdateForBuildingCore()
     {
@@ -44,7 +46,7 @@ public class ScenePrefabForBase : ScenePrefabBase
         else
         {
             Camera mainCamera = CameraHandler.Instance.manager.mainCamera;
-            //¿´ÏòÉãÏñÍ·
+            //çœ‹å‘æ‘„åƒå¤´
             if (mainCamera != null)
             {
                 targetLookAtPosition = mainCamera.transform.position;

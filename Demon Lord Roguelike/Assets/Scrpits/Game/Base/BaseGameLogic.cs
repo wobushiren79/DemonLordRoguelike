@@ -8,7 +8,7 @@ using UnityEngine;
 public abstract class BaseGameLogic : BaseEvent
 {
     /// <summary>
-    /// ×¼±¸ÓÎÏ·Êı¾İ
+    /// å‡†å¤‡æ¸¸æˆæ•°æ®
     /// </summary>
     public virtual void PreGame()
     {
@@ -16,7 +16,7 @@ public abstract class BaseGameLogic : BaseEvent
     }
 
     /// <summary>
-    /// ¿ªÊ¼ÓÎÏ·
+    /// å¼€å§‹æ¸¸æˆ
     /// </summary>
     public virtual void StartGame()
     {
@@ -24,7 +24,7 @@ public abstract class BaseGameLogic : BaseEvent
     }
 
     /// <summary>
-    /// ÓÎÏ·ÖĞ
+    /// æ¸¸æˆä¸­
     /// </summary>
     public virtual void UpdateGame()
     {
@@ -32,7 +32,7 @@ public abstract class BaseGameLogic : BaseEvent
     }
 
     /// <summary>
-    /// ½áÊøÓÎÏ·
+    /// ç»“æŸæ¸¸æˆ
     /// </summary>
     public virtual void EndGame()
     {
@@ -40,7 +40,7 @@ public abstract class BaseGameLogic : BaseEvent
     }
 
     /// <summary>
-    /// ÇåÀíÊı¾İ
+    /// æ¸…ç†æ•°æ®
     /// </summary>
     public virtual void ClearGame()
     {

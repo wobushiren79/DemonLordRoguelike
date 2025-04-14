@@ -11,6 +11,9 @@ public partial class UICreatureManager : BaseUIComponent
     public override void OpenUI()
     {
         base.OpenUI();
+        GameControlHandler.Instance.SetBaseControl(false);
+        CameraHandler.Instance.SetBaseCoreCamera(int.MaxValue,true);
+
         InitCreaturekData();
         InitBackpackItemsData();
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForCardClickSelect);
@@ -32,6 +35,10 @@ public partial class UICreatureManager : BaseUIComponent
         if (viewButton == ui_ViewExit)
         {
             OnClickForExit();
+        }
+        else if (viewButton == ui_BtnStarLevelUp)
+        {
+            OnClickForCreatureSacrifice();
         }
     }
 
@@ -164,6 +171,22 @@ public partial class UICreatureManager : BaseUIComponent
     public void OnClickForExit()
     {
         UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
+    }
+
+    /// <summary>
+    /// 点击献祭
+    /// </summary>
+    public void OnClickForCreatureSacrifice()
+    {
+        var itemCreatureData = ui_UIViewCreatureCardList.GetItemData(selectCreatureIndex);
+        if (itemCreatureData == null)
+        {
+            LogUtil.LogError("没有献祭生物");
+            return;
+        }
+        CreatureSacrificeBean creatureSacrificeData = new CreatureSacrificeBean();
+        creatureSacrificeData.targetCreature = itemCreatureData;
+        GameHandler.Instance.StartCreatureSacrifice(creatureSacrificeData);
     }
     #endregion
 

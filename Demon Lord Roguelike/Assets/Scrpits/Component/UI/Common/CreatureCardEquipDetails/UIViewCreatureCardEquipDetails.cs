@@ -24,6 +24,11 @@ public partial class UIViewCreatureCardEquipDetails : BaseUIView
     /// </summary>
     public void SetData(CreatureBean creatureData)
     {
+        if (creatureData == null)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
         this.creatureData = creatureData;
         gameObject.SetActive(true);
         SetCardDetails(creatureData);
@@ -80,7 +85,7 @@ public partial class UIViewCreatureCardEquipDetails : BaseUIView
     {
         var equipData = creatureData.dicEquipItemData;
         //先清空原来得装备栏
-        foreach(var itemData in dicShowEquipView)
+        foreach (var itemData in dicShowEquipView)
         {
             itemData.Value.SetData(null);
         }

@@ -41,7 +41,7 @@ public partial class CameraHandler
         //修改皮肤
         SpineHandler.Instance.ChangeSkeletonSkin(targetSkeletonAnimation.skeleton, skinArray);
 
-        controlTarget.transform.position = new Vector3(0, 0, -3);
+        controlTarget.transform.position = new Vector3(0, 0, 0);
 
         //关闭切换动画
         manager.SetMainCameraDefaultBlend(0);
@@ -98,7 +98,15 @@ public partial class CameraHandler
     }
 
     /// <summary>
-    /// 设置扭蛋机UI
+    /// 设置生物献祭摄像头
+    /// </summary>
+    public CinemachineVirtualCamera SetCreatureSacrificeCamera(int priority, bool isEnable)
+    {
+        return SetCameraForBaseScene(priority, isEnable, "CV_CreatureSacrifice");
+    }
+
+    /// <summary>
+    /// 设置扭蛋机摄像头
     /// </summary>
     public CinemachineVirtualCamera SetGashaponMachineCamera(int priority, bool isEnable)
     {

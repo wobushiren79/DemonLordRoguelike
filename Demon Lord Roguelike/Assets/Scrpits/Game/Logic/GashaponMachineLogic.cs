@@ -31,9 +31,12 @@ public class GashaponMachineLogic : BaseGameLogic
 
     public bool isRegisterEvent = false;
 
+    //蛋的模型子层级名字
     public string eggChildFbxName = "Egg_1";
+    //蛋的渲染子层级名字
     public string eggChildRendererName = "Renderer";
-
+    //蛋预制的资源路径
+    public string pathForEggPrefab="Assets/LoadResources/Common/Gashapon_1.prefab";
     public override void PreGame()
     {
         base.PreGame();
@@ -54,10 +57,6 @@ public class GashaponMachineLogic : BaseGameLogic
             //开始
             StartGame();
         });
-        //设置摄像头
-        CameraHandler.Instance.SetGashaponMachineCamera(int.MaxValue, true);
-        //先暂时关闭所有UI
-        UIHandler.Instance.CloseAllUI();
     }
 
     public override void StartGame()
@@ -87,6 +86,10 @@ public class GashaponMachineLogic : BaseGameLogic
             eggTF.ShowObj(false);
             eggSpine.ShowObj(false);
         }
+        //设置摄像头
+        CameraHandler.Instance.SetGashaponMachineCamera(int.MaxValue, true);
+        //先暂时关闭所有UI
+        UIHandler.Instance.CloseAllUI();
     }
 
     /// <summary>
@@ -186,7 +189,6 @@ public class GashaponMachineLogic : BaseGameLogic
     public override void ClearGame()
     {
         CameraHandler.Instance.SetGashaponMachineCamera(0, false);
-        base.ClearGame();
         if (!listEggObjPool.IsNull())
         {
             for (int i = 0; i < listEggObjPool.Count; i++)
@@ -197,6 +199,7 @@ public class GashaponMachineLogic : BaseGameLogic
             listEggObjPool.Clear();
         }
         isRegisterEvent = false;
+        base.ClearGame();
     }
 
     #region 事件
@@ -316,7 +319,7 @@ public class GashaponMachineLogic : BaseGameLogic
         else
         {
             //创建一个新蛋
-            objEgg = GameHandler.Instance.manager.GetGameObjectSync("Assets/LoadResources/Common/Gashapon_1.prefab");
+            objEgg = GameHandler.Instance.manager.GetGameObjectSync(pathForEggPrefab);
             listEggObjPool.Add(objEgg);
         }
         var baseSceneObj = WorldHandler.Instance.currentBaseScene;

@@ -172,21 +172,24 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 20
+      - m_Value: 10
         m_Name: CenterStrength
         m_Overridden: 1
-      - m_Value: 2
+      - m_Value: 1
         m_Name: CenterRotateSpeed
         m_Overridden: 1
-      - m_Value: 0.5
+      - m_Value: 1
         m_Name: CenterAlpha
         m_Overridden: 1
-      - m_Value: 1
+      - m_Value: 0
         m_Name: CenterAlphaStrength
+        m_Overridden: 1
+      - m_Value: 1.5
+        m_Name: Size
         m_Overridden: 1
     m_Vector2f:
       m_Array:
-      - m_Value: {x: 0.9, y: 1}
+      - m_Value: {x: 1, y: 1}
         m_Name: CenterSize
         m_Overridden: 1
       - m_Value: {x: 0.01, y: 0.01}
@@ -196,7 +199,7 @@ VisualEffect:
       m_Array: []
     m_Vector4f:
       m_Array:
-      - m_Value: {x: 0.6698113, y: 0.31910822, z: 0.31910822, w: 1}
+      - m_Value: {x: 0.009002561, y: 0, z: 0.103773594, w: 1}
         m_Name: CenterColor
         m_Overridden: 1
     m_Uint:
@@ -213,6 +216,9 @@ VisualEffect:
       m_Array:
       - m_Value: {fileID: 2800000, guid: 0486fa77d2e501e46a879f097988ee17, type: 3}
         m_Name: Effect_1_Tex
+        m_Overridden: 1
+      - m_Value: {fileID: 2800000, guid: b877e78236f3ed54d9e2f4f1719bdcd6, type: 3}
+        m_Name: CenterTex
         m_Overridden: 1
     m_Bool:
       m_Array: []

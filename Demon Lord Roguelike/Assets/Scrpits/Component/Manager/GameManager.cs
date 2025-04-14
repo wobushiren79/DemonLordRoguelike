@@ -4,13 +4,13 @@ using UnityEngine;
 
 public partial class GameManager : BaseManager
 {
-    public GameStateEnum gameState; //ÓÎÏ·×´Ì¬
-    public BaseGameLogic gameLogic;//Õ½¶·Âß¼­
+    public GameStateEnum gameState; //æ¸¸æˆçŠ¶æ€
+    public BaseGameLogic gameLogic;//æˆ˜æ–—é€»è¾‘
 
     public Dictionary<string, GameObject> dicObjModel = new Dictionary<string, GameObject>();
 
     /// <summary>
-    /// Í¬²½»ñÈ¡obj
+    /// åŒæ­¥è·å–obj
     /// </summary>
     public GameObject GetGameObjectSync(string objPath)
     {
@@ -24,7 +24,7 @@ public partial class GameManager : BaseManager
     }
 
     /// <summary>
-    /// ÉèÖÃÓÎÏ·×´Ì¬
+    /// è®¾ç½®æ¸¸æˆçŠ¶æ€
     /// </summary>
     /// <param name="gameState"></param>
     public void SetGameState(GameStateEnum gameState)
@@ -33,7 +33,7 @@ public partial class GameManager : BaseManager
     }
 
     /// <summary>
-    /// »ñÈ¡ÓÎÏ·×´Ì¬
+    /// è·å–æ¸¸æˆçŠ¶æ€
     /// </summary>
     public GameStateEnum GetGameState()
     {
@@ -41,7 +41,7 @@ public partial class GameManager : BaseManager
     }
 
     /// <summary>
-    /// »ñÈ¡ÓÎÏ·Âß¼­
+    /// è·å–æ¸¸æˆé€»è¾‘
     /// </summary>
     public T GetGameLogic<T>() where T : BaseGameLogic
     {

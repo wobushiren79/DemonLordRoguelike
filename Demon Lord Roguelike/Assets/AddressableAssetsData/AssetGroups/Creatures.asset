@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: Creatures
   m_GUID: f5aa8dfe4b705284e89d4a69ab8f6298
   m_SerializeEntries:
+  - m_GUID: 1eb53c681c4fa1945b794173c958c379
+    m_Address: Assets/LoadResources/Creatures/SacrificeCreature_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3d983e44fe2151b49acf84866db655e1
     m_Address: Assets/LoadResources/Creatures/FightCreature_DefCore_1.prefab
     m_ReadOnly: 0
