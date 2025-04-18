@@ -1,10 +1,13 @@
 ﻿
 
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine.UI;
 
 public partial class UICreatureSacrifice : BaseUIComponent
-{
+{    
+    //进度文本动画
+    Sequence animForSuccessRateText;
     //当前选择的生物
     public List<CreatureBean> listSelectCreature = new List<CreatureBean>();
     //展示的生物数据
@@ -32,6 +35,7 @@ public partial class UICreatureSacrifice : BaseUIComponent
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         var limmitData = userData.GetUserLimmitData();
         SetLimmitSelect(listSelectCreature.Count, limmitData.sacrificeMax);
+        SetSuccessRate(listSelectCreature.Count * 0.2f);
     }
 
     /// <summary>
@@ -67,6 +71,19 @@ public partial class UICreatureSacrifice : BaseUIComponent
     }
 
     /// <summary>
+    /// 设置成功率
+    /// </summary>
+    public void SetSuccessRate(float successRate)
+    {
+        int targetPercentage = (int)MathUtil.GetPercentage(successRate, 2);
+        //播放进度动画
+        ui_SuccessRateProgress.DOFillAmount(successRate, 0.5f);
+        //播放文本变化动画
+        animForSuccessRateText = AnimUtil.AnimForUINumberChange(animForSuccessRateText, ui_SuccessRateText, int.Parse(ui_SuccessRateText.text.Replace("%", "")), targetPercentage, 0.5f, "{0}%");
+        ui_SuccessRateTextTitle.text = $"{TextHandler.Instance.GetTextById(60002)}";
+    }
+
+    /// <summary>
     /// 背包生物列表变化
     /// </summary>
     public void OnCellChangeForBackpackCreature(int index, UIViewCreatureCardItem itemView, CreatureBean itemData)
@@ -96,21 +113,36 @@ public partial class UICreatureSacrifice : BaseUIComponent
 
 
     #region 点击事件
+    /// <summary>
+    /// 点击离开
+    /// </summary>
     public void OnClickForExit()
     {
         GameHandler.Instance.EndCreatureSacrifice();
     }
 
+    /// <summary>
+    /// 点击开始
+    /// </summary>
     public void OnClickForStart()
     {
-        if (listCreatureData.IsNull())
+        if (listSelectCreature.IsNull())
         {
             UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(61001));
             return;
         }
-        //开始献祭
-        CreatureSacrificeLogic gameLogic = GameHandler.Instance.manager.GetGameLogic<CreatureSacrificeLogic>();
-        gameLogic.StartSacrifice();
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(62001), $"{MathUtil.GetPercentage(0.2f, 2)}%");
+        dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
+        dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
+        dialogData.actionSubmit = (view, data) =>
+        {
+            //开始献祭
+            CreatureSacrificeLogic gameLogic = GameHandler.Instance.manager.GetGameLogic<CreatureSacrificeLogic>();
+            gameLogic.StartSacrifice();
+        };
+        UIHandler.Instance.ShowDialog<UIDialogNormal>(dialogData);
+
     }
     #endregion
 

@@ -14,5 +14,11 @@ public partial class UICreatureSacrifice
 
     public TextMeshProUGUI ui_LimmitText;
 
+    public TextMeshProUGUI ui_SuccessRateText;
+
+    public Image ui_SuccessRateProgress;
+
+    public TextMeshProUGUI ui_SuccessRateTextTitle;
+
 
 }

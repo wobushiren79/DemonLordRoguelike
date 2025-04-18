@@ -10,6 +10,32 @@ using UnityEngine.VFX;
 public partial class EffectHandler
 {
     protected string effectBloodName = "EffectBlood_1";
+    protected string effectShieldHitName = "EffectShieldHit_1";
+
+    /// <summary>
+    /// 播放护盾打击粒子
+    /// </summary>
+    /// <param name="targetPos"></param>
+    /// <param name="direction">护盾朝向 0左 1右</param>
+    public void ShowShieldHitEffect(Vector3 targetPos, Vector3 attDirection)
+    {
+        //播放粒子
+        Action<EffectBase> playEffect = (targetEffect) =>
+        {
+            if (targetEffect == null)
+                return;
+            var targetVisualEffect = targetEffect.GetVisualEffect();
+            targetVisualEffect.SetVector3("Position", targetPos);
+            targetVisualEffect.SetInt("Direction", attDirection.x < 0 ? 0 : 1);
+            targetEffect.PlayEffect();
+        };
+
+        //获取粒子实例
+        manager.GetEffectForEnduring(effectShieldHitName, (targetEffect) =>
+        {
+            playEffect?.Invoke(targetEffect);
+        });
+    }
 
     /// <summary>
     /// 播放血粒子
@@ -71,13 +97,16 @@ public partial class EffectHandler
     }
 
     public Tween animForShowSacrficeEffect;
+    public Tween animForShowSacrficeEffectComplete;
     /// <summary>
     /// 展示献祭粒子
     /// </summary>
-    public void ShowSacrficeEffect(List<GameObject> listSacrficeTarget, Vector3 endPostion, float timeCenterDelay, float timeCenterLifetime)
+    public void ShowSacrficeEffect(List<GameObject> listSacrficeTarget, Vector3 endPostion, float timeCenterDelay, float timeCenterLifetime, Action actionForComplete)
     {
         if (animForShowSacrficeEffect != null)
             animForShowSacrficeEffect.Kill();
+        if (animForShowSacrficeEffectComplete != null)
+            animForShowSacrficeEffectComplete.Kill();
         //播放粒子
         Action<EffectBase> playEffect = (targetEffect) =>
         {
@@ -98,7 +127,6 @@ public partial class EffectHandler
             targetVisualEffect.SetFloat("LifeTime", timeCenterLifetime);
             targetVisualEffect.SetVector3("EndPosition", endPostion + new Vector3(0, 0.5f, 0));
             targetEffect.PlayEffect();
-
         };
 
         //获取粒子实例
@@ -114,6 +142,11 @@ public partial class EffectHandler
                 VisualEffect visualEffect = itemObj.GetComponentInChildren<VisualEffect>(true);
                 visualEffect.Stop();
             });
+        });
+
+        animForShowSacrficeEffectComplete = DOVirtual.DelayedCall(timeCenterDelay + timeCenterLifetime, () =>
+        {
+            actionForComplete?.Invoke();
         });
     }
 }

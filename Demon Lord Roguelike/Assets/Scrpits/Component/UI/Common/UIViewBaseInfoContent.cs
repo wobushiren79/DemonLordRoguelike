@@ -7,8 +7,7 @@ using UnityEngine.UI;
 
 public partial class UIViewBaseInfoContent : BaseUIView
 {
-    protected Tween animForCoinChange;//魔晶变化动画
-    protected Tween animForCoinScale;//魔晶变化动画
+    Sequence animForCrystalChange;//魔晶变化动画
 
     public override void Awake()
     {
@@ -63,16 +62,16 @@ public partial class UIViewBaseInfoContent : BaseUIView
     /// <summary>
     /// 设置当前魔晶
     /// </summary>
-    public void SetCrystalData(long coin, bool isAnim = true)
+    public void SetCrystalData(long crystal, bool isAnim = true)
     {
         ClearAnim();
         if (isAnim)
         {
-            AnimateNumber(ui_CrystalText, long.Parse(ui_CrystalText.text), coin, 1f);
+            animForCrystalChange = AnimUtil.AnimForUINumberChange(animForCrystalChange, ui_CrystalText, long.Parse(ui_CrystalText.text), crystal, 1f);
         }
         else
         {
-            ui_CrystalText.text = $"{coin}";
+            ui_CrystalText.text = $"{crystal}";
         }
     }
 
@@ -81,26 +80,8 @@ public partial class UIViewBaseInfoContent : BaseUIView
     /// </summary>
     public void ClearAnim()
     {
-        animForCoinChange?.Kill();
-        animForCoinScale?.Kill();
+        animForCrystalChange?.Kill();
         ui_CrystalText.transform.localScale = Vector3.one;
-    }
-
-    /// <summary>
-    /// 数字变化动画
-    /// </summary>
-    public void AnimateNumber(TextMeshProUGUI textView, long from, long to, float duration, Action onComplete = null)
-    {
-        animForCoinScale = textView.transform.DOPunchScale(Vector3.one * 0.1f, duration);
-        animForCoinChange = DOTween.To
-        (
-            () => { return from; },
-            (value) => { textView.text = value.ToString(); },
-            to,
-            duration)
-        .SetEase(Ease.Linear)
-        .OnComplete(() => onComplete?.Invoke()
-        );
     }
 
     /// <summary>

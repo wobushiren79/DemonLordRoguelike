@@ -41,7 +41,7 @@ public partial class UIViewFightSettlementItemProgress : BaseUIView
     public void SetProgress(int data, float progress, bool isAnim)
     {
         ui_ProgressValue.DOKill();
-        int percentage = MathUtil.GetPercentage(progress, 2);
+        int percentage = (int)MathUtil.GetPercentage(progress, 2);
         ui_ProgressContent.text = $"{data}({percentage}%)";
         ui_ProgressValue.fillAmount = progress;
         if (isAnim)

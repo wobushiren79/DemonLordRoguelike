@@ -40,6 +40,9 @@ public class FightCreatureBean
         var creatureInfo = creatureData.creatureInfo;
         HPCurrent = creatureInfo.GetHP();
         HPMax = creatureInfo.GetHP();
+
+        DRCurrent = creatureInfo.GetDR();
+        DRMax = creatureInfo.GetDR();
         listBuff = new List<FightBuffBean>();
 
         InitBaseAttribute();

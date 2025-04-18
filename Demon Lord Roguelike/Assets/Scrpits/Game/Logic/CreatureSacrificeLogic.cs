@@ -111,9 +111,15 @@ public class CreatureSacrificeLogic : BaseGameLogic
         //关闭所有UI
         UIHandler.Instance.CloseAllUI();
         //播放生物动画
-        AnimForCreatureObj(listFodderCreatureObj, objTargetCreature, timeCenterDelay + timeCenterLifetime, timeReset);
+        AnimForCreatureObjSacrfice(listFodderCreatureObj, objTargetCreature, timeCenterDelay + timeCenterLifetime, timeReset, () =>
+        {
+
+        });
         //播放粒子动画
-        AnimForSacrficeEffect(listFodderCreatureObj, timeCenterDelay, timeCenterLifetime);
+        AnimForSacrficeEffect(listFodderCreatureObj, timeCenterDelay, timeCenterLifetime, () =>
+        {
+
+        });
         //播放摄像头动画
         AnimForSacrficeCamera(timeCenterDelay + timeCenterLifetime, timeReset, () =>
         {
@@ -131,16 +137,19 @@ public class CreatureSacrificeLogic : BaseGameLogic
         {
             listObjFodderCreatures.ForEach((int index, GameObject itemData) =>
             {
+                itemData.transform.DOKill();
                 GameObject.DestroyImmediate(itemData);
 
             });
             listObjFodderCreatures.Clear();
         }
+        objTargetCreature.transform.DOKill();
         GameObject.DestroyImmediate(objTargetCreature);
         base.ClearGame();
     }
 
     #region  设置数据
+
     /// <summary>
     /// 设置祭坛粒子
     /// </summary>
@@ -217,6 +226,7 @@ public class CreatureSacrificeLogic : BaseGameLogic
         Transform altarTF = scenePrefab.objBuildingAltar.transform;
         Vector2 startPosition = new Vector2(altarTF.position.x, altarTF.position.z);
         Vector2[] arrayPosition = VectorUtil.GetListCirclePosition(listSelectCreature.Count, -90f, startPosition, 1.9f);
+
         //如果是添加生物
         if (listSelectCreature.Count >= listObjFodderCreatures.Count)
         {
@@ -227,15 +237,15 @@ public class CreatureSacrificeLogic : BaseGameLogic
                 if (i >= listObjFodderCreatures.Count)
                 {
                     itemCreatureObj = GameHandler.Instance.manager.GetGameObjectSync(pathForSacrificeCreature);
+                    itemCreatureObj.SetActive(false);
                     listObjFodderCreatures.Add(itemCreatureObj);
                 }
                 else
                 {
                     itemCreatureObj = listObjFodderCreatures[i];
                 }
+                AnimForCreatureShow(itemCreatureObj, itemPosition);
                 itemCreatureObj.SetActive(true);
-                itemCreatureObj.transform.position = new Vector3(itemPosition.x, 0, itemPosition.y);
-                itemCreatureObj.transform.localScale = Vector3.one;
                 SetCreatureData(itemCreatureObj, listSelectCreature[i]);
             }
         }
@@ -254,14 +264,14 @@ public class CreatureSacrificeLogic : BaseGameLogic
                 else
                 {
                     var itemPosition = arrayPosition[i];
+                    AnimForCreatureShow(itemCreatureObj, itemPosition);
                     itemCreatureObj.gameObject.SetActive(true);
-                    itemCreatureObj.transform.position = new Vector3(itemPosition.x, 0, itemPosition.y);
-                    itemCreatureObj.transform.localScale = Vector3.one;
                     SetCreatureData(itemCreatureObj, listSelectCreature[i]);
                 }
             }
         }
     }
+
 
     /// <summary>
     /// 事件-献祭成功
@@ -282,13 +292,34 @@ public class CreatureSacrificeLogic : BaseGameLogic
     #endregion
 
     #region 动画
+    /// <summary>
+    /// 动画-生物出现
+    /// </summary>
+    public void AnimForCreatureShow(GameObject itemCreatureObj, Vector3 itemPosition)
+    {
+        float animMoveTime = 0.2f;
+        float animScaleTime = 0.2f;
+        //如果之前已经显示 则只播放移动动画
+        if (itemCreatureObj.activeSelf)
+        {
+            itemCreatureObj.transform.DOMove(new Vector3(itemPosition.x, 0, itemPosition.y), animMoveTime);
+            itemCreatureObj.transform.localScale = Vector3.one;
+        }
+        //如果之前未显示 则只播放缩放动画
+        else
+        {
+            itemCreatureObj.transform.position = new Vector3(itemPosition.x, 0, itemPosition.y);
+            itemCreatureObj.transform.localScale = Vector3.zero;
+            itemCreatureObj.transform.DOScale(Vector3.one, animScaleTime).SetEase(Ease.OutBack);
+        }
+    }
 
     /// <summary>
     /// 动画-生物
     /// </summary>
-    public void AnimForCreatureObj(List<GameObject> listFodderCreatureObj, GameObject targetCreature, float timeAnim, float timeReset)
+    public void AnimForCreatureObjSacrfice(List<GameObject> listFodderCreatureObj, GameObject targetCreature, float timeAnim, float timeReset, Action actionForComplete)
     {
-        listFodderCreatureObj.ForEach((int index,GameObject objItemCreature)=>
+        listFodderCreatureObj.ForEach((int index, GameObject objItemCreature) =>
         {
             SkeletonAnimation creatureSpine = objItemCreature.transform.Find(spineChildTFName).GetComponent<SkeletonAnimation>();
             creatureSpine.skeleton.SetColor(Color.white);
@@ -303,17 +334,39 @@ public class CreatureSacrificeLogic : BaseGameLogic
         Vector3 originPosition = targetCreature.transform.position;
         DG.Tweening.Sequence animForSacrificeCreature = DOTween.Sequence();
         animForSacrificeCreature.Append(targetCreature.transform
-            .DOMoveY(0.2f,timeAnim));
+            .DOMoveY(0.2f, timeAnim));
         animForSacrificeCreature.Append(targetCreature.transform
-            .DOMove(originPosition,timeReset));
+            .DOMove(originPosition, timeReset));
+        animForSacrificeCreature.OnComplete(() =>
+        {
+            listFodderCreatureObj.ForEach((int index, GameObject objItemCreature) =>
+            {
+                SkeletonAnimation creatureSpine = objItemCreature.transform.Find(spineChildTFName).GetComponent<SkeletonAnimation>();
+                creatureSpine.skeleton.SetColor(Color.white);
+                objItemCreature.SetActive(false);
+            });
+            actionForComplete?.Invoke();
+        });
     }
 
     /// <summary>
     /// 动画-粒子
     /// </summary>
-    public void AnimForSacrficeEffect(List<GameObject> listFodderCreatureObj, float timeCenterDelay, float timeCenterLifetime)
+    public void AnimForSacrficeEffect(List<GameObject> listFodderCreatureObj, float timeCenterDelay, float timeCenterLifetime, Action actionForComplete)
     {
-        EffectHandler.Instance.ShowSacrficeEffect(listFodderCreatureObj, objTargetCreature.transform.position, timeCenterDelay, timeCenterLifetime);
+        string CenterAngleSpeedName = "CenterAngleSpeed";
+        Vector3 originCenterAngleSpeed = VFXAltar.GetVector3(CenterAngleSpeedName);
+        VFXAltar.SetVector3(CenterAngleSpeedName, originCenterAngleSpeed * 10);
+        EffectHandler.Instance.ShowSacrficeEffect(listFodderCreatureObj, objTargetCreature.transform.position, timeCenterDelay, timeCenterLifetime, () =>
+        {
+            VFXAltar.SetVector3(CenterAngleSpeedName, originCenterAngleSpeed);
+            listObjFodderCreatures.ForEach((int index, GameObject itemObj) =>
+            {
+                VisualEffect visualEffect = itemObj.GetComponentInChildren<VisualEffect>(true);
+                visualEffect.gameObject.SetActive(false);
+            });
+            actionForComplete?.Invoke();
+        });
     }
 
     /// <summary>

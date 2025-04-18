@@ -54,6 +54,11 @@ public class LauncherTest : BaseLauncher
             creatureItem.starLevel = Random.Range(0, 11);
             creatureItem.level = Random.Range(0, 101);
             creatureItem.AddSkinForBase();
+            //史莱姆加一个身体皮肤
+            if (creatureItem.id > 3000 && creatureItem.id < 4000)
+            {
+                creatureItem.AddSkin(3040001);
+            }
             userData.AddBackpackCreature(creatureItem);
         }
         WorldHandler.Instance.EnterGameForBaseScene(userData, true);

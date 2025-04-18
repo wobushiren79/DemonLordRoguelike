@@ -13,8 +13,8 @@ public class AIIntentDefCreatureDead : AIBaseIntent
     {
         timeUpdateForDead = 0;
         selfAIEntity = aiEntity as AIDefCreatureEntity;
-        string animNameAppoint = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_dead;
-        selfAIEntity.selfDefCreatureEntity.PlayAnim(SpineAnimationStateEnum.Dead, false, animNameAppoint: animNameAppoint);
+        string animNameAppoint = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_dead;
+        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Dead, false, animNameAppoint: animNameAppoint);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
@@ -23,7 +23,7 @@ public class AIIntentDefCreatureDead : AIBaseIntent
         if (timeUpdateForDead >= timeForDeadTime)
         {
             timeUpdateForDead = 0;
-            CreatureHandler.Instance.RemoveCreatureEntity(selfAIEntity.selfDefCreatureEntity, CreatureTypeEnum.FightDefense);
+            CreatureHandler.Instance.RemoveCreatureEntity(selfAIEntity.selfCreatureEntity, CreatureTypeEnum.FightDefense);
         }
     }
 

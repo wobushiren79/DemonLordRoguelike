@@ -132,7 +132,7 @@ public class GameFightCreatureEntity
         //再清除动画
         //creatureSkeletionAnimation.AnimationState.ClearTracks();
         string animNameAppoint = fightCreatureData.creatureData.creatureInfo.anim_idle;
-        var trackEntry = PlayAnim(SpineAnimationStateEnum.Idle, true, 0,animNameAppoint:animNameAppoint);
+        var trackEntry = PlayAnim(SpineAnimationStateEnum.Idle, true, 0, animNameAppoint: animNameAppoint);
         //清理数据
         if (animForUnderAttackColor != null && animForUnderAttackColor.IsPlaying())
         {
@@ -203,8 +203,21 @@ public class GameFightCreatureEntity
             {
                 //颤抖
                 creatureSkeletionAnimation.transform.DOShakePosition(0.06f, strength: 0.05f, vibrato: 10, randomness: 180);
-                //流血
-                EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
+
+                //如果是打到肉
+                if (changeHPReal == 0)
+                {
+                    //护甲
+                    EffectHandler.Instance.ShowShieldHitEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
+            
+                }
+                //如果是打击到护甲
+                else
+                {
+                    //流血
+                    EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
+                }
+
                 //颜色变化动画
                 AnimForUnderAttackColor();
                 //展示血条

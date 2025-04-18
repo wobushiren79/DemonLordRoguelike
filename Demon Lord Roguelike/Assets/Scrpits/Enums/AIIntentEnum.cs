@@ -11,6 +11,7 @@ public enum AIIntentEnum
     DefCreatureIdle,//闲置
     DefCreatureAttack,//攻击
     DefCreatureDead,//死亡
+    DefCreatureDefend,//防守
 
     DefCoreCreatureIdle,//闲置
     DefCoreCreatureDead,//死亡

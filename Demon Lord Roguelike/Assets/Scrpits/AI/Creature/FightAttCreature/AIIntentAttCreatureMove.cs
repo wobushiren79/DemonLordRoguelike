@@ -11,8 +11,8 @@ public class AIIntentAttCreatureMove : AIBaseIntent
     {
         selfAIEntity = aiEntity as AIAttCreatureEntity;
         //设置移动动作
-        string animNameAppoint = selfAIEntity.selfAttCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_walk;
-        selfAIEntity.selfAttCreatureEntity.PlayAnim(SpineAnimationStateEnum.Walk, true, animNameAppoint:animNameAppoint);
+        string animNameAppoint = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_walk;
+        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Walk, true, animNameAppoint:animNameAppoint);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
@@ -23,7 +23,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
             //检测是否靠近目标
             if (CheckIsCloseTarget())
             {
-                selfAIEntity.selfAttCreatureEntity.SetCreatureDead();
+                selfAIEntity.selfCreatureEntity.SetCreatureDead();
                 return;
             }
         }
@@ -31,7 +31,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
         else
         {
             //如果目标已经死了
-            if (selfAIEntity.targetDefCreatureEntity == null || selfAIEntity.targetDefCreatureEntity.IsDead())
+            if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.IsDead())
             {
                 selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureIdle);
                 return;
@@ -44,8 +44,8 @@ public class AIIntentAttCreatureMove : AIBaseIntent
             }
         }
 
-        float moveSpeed = selfAIEntity.selfAttCreatureEntity.fightCreatureData.GetMoveSpeed();
-        Transform selfTF = selfAIEntity.selfAttCreatureEntity.creatureObj.transform;
+        float moveSpeed = selfAIEntity.selfCreatureEntity.fightCreatureData.GetMoveSpeed();
+        Transform selfTF = selfAIEntity.selfCreatureEntity.creatureObj.transform;
         selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeed);
     }
 
@@ -59,10 +59,10 @@ public class AIIntentAttCreatureMove : AIBaseIntent
     /// </summary>
     public bool CheckIsAttRange()
     {
-        var currentPosition = selfAIEntity.selfAttCreatureEntity.creatureObj.transform.position;
+        var currentPosition = selfAIEntity.selfCreatureEntity.creatureObj.transform.position;
         var targetMovePos = selfAIEntity.targetMovePos;
         float dis = Vector3.Distance(currentPosition, targetMovePos);
-        var creatureInfo = selfAIEntity.selfAttCreatureEntity.fightCreatureData.creatureData.creatureInfo;
+        var creatureInfo = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo;
         if (dis <= creatureInfo.attack_range)
         {
             return true;
@@ -76,7 +76,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
     /// <returns></returns>
     public bool CheckIsCloseTarget()
     {
-        var currentPosition = selfAIEntity.selfAttCreatureEntity.creatureObj.transform.position;
+        var currentPosition = selfAIEntity.selfCreatureEntity.creatureObj.transform.position;
         var targetMovePos = selfAIEntity.targetMovePos;
         float dis = Vector3.Distance(currentPosition, targetMovePos);
         if (dis <= 0.05f)

@@ -15,12 +15,25 @@ SpriteAtlas:
       compressionQuality: 50
       maxTextureSize: 2048
       textureCompression: 0
-      filterMode: 1
+      filterMode: 0
       generateMipMaps: 0
       readable: 0
       crunchedCompression: 0
       sRGB: 1
-    platformSettings: []
+    platformSettings:
+    - serializedVersion: 4
+      m_BuildTarget: DefaultTexturePlatform
+      m_MaxTextureSize: 2048
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: -1
+      m_TextureCompression: 0
+      m_CompressionQuality: 50
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 0
+      m_IgnorePlatformSupport: 0
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
     packingSettings:
       serializedVersion: 2
       padding: 4
@@ -38,8 +51,6 @@ SpriteAtlas:
     cachedData: {fileID: 0}
     packedSpriteRenderDataKeys:
     - 1ceb344001374704aa1de981e3693ac3: 21300000
-    - 0289815018dcc504c83bc6ab826cb4dc: 21300000
-    - 84cc03c03c176a549abedfa214f55ee2: 21300000
     - d23b13019f0e88046a94efc0c82194ff: 21300000
     - a4111111e602cac4b9789108a4f58cf5: 21300000
     - 61352331213f8794ebd42dcd3b417ae0: 21300000
@@ -57,12 +68,9 @@ SpriteAtlas:
     - 8ad4c01ba972352428d06834e8b6d21f: 21300000
     - 0b4c124bc1478e7418bea9cf6e993853: 21300000
     - 10c4beddea1b5b9458fb210beda50eac: 21300000
-    - 90a4341ee09fcaf4380ede475f592f8e: 21300000
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: 1ceb344001374704aa1de981e3693ac3, type: 3}
-  - {fileID: 21300000, guid: 0289815018dcc504c83bc6ab826cb4dc, type: 3}
-  - {fileID: 21300000, guid: 84cc03c03c176a549abedfa214f55ee2, type: 3}
   - {fileID: 21300000, guid: d23b13019f0e88046a94efc0c82194ff, type: 3}
   - {fileID: 21300000, guid: a4111111e602cac4b9789108a4f58cf5, type: 3}
   - {fileID: 21300000, guid: 61352331213f8794ebd42dcd3b417ae0, type: 3}
@@ -80,11 +88,8 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 8ad4c01ba972352428d06834e8b6d21f, type: 3}
   - {fileID: 21300000, guid: 0b4c124bc1478e7418bea9cf6e993853, type: 3}
   - {fileID: 21300000, guid: 10c4beddea1b5b9458fb210beda50eac, type: 3}
-  - {fileID: 21300000, guid: 90a4341ee09fcaf4380ede475f592f8e, type: 3}
   m_PackedSpriteNamesToIndex:
   - Crystal_2
-  - Show_Life_3
-  - Show_Life_2
   - Fireball_1
   - hexagram_3
   - Iceball_1
@@ -102,7 +107,6 @@ SpriteAtlas:
   - Fireball_2
   - Weapon_1
   - effect_star_1
-  - Show_Life_1
   m_RenderDataMap: {}
   m_Tag: AtlasForGame
   m_IsVariant: 0

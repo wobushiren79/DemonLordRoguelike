@@ -17,8 +17,8 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
         attackState = 0;
         selfAIEntity = aiEntity as AIDefCreatureEntity;
 
-        string animNameAppoint = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_idle;
-        selfAIEntity.selfDefCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, false, animNameAppoint: animNameAppoint);
+        string animNameAppoint = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_idle;
+        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, false, animNameAppoint: animNameAppoint);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
@@ -27,7 +27,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
         if (attackState == 0)
         {
             timeUpdateAttackPre += Time.deltaTime;
-            float attCD = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.GetAttackCD();
+            float attCD = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.GetAttackCD();
             if (timeUpdateAttackPre >= attCD)
             {
                 timeUpdateAttackPre = 0;
@@ -38,7 +38,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
         else if (attackState == 1)
         {
             timeUpdateAttacking += Time.deltaTime;
-            float attAnimCastTime = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.GetAttackAnimCastTime();
+            float attAnimCastTime = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.GetAttackAnimCastTime();
             if (timeUpdateAttacking >= attAnimCastTime)
             {
                 timeUpdateAttacking = 0;
@@ -59,22 +59,22 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
     {
         attackState = 1;
         //如果目标生物已经无了
-        if (selfAIEntity.targetAttCreatureEntity == null || selfAIEntity.targetAttCreatureEntity.IsDead())
+        if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.IsDead())
         {
             ChangeIntent(AIIntentEnum.DefCreatureIdle);
             return;
         }
         //如果自己死了
-        if (selfAIEntity.selfDefCreatureEntity == null || selfAIEntity.selfDefCreatureEntity.IsDead())
+        if (selfAIEntity.selfCreatureEntity == null || selfAIEntity.selfCreatureEntity.IsDead())
         {
             ChangeIntent(AIIntentEnum.DefCreatureDead);
             return;
         }
         //播放攻击动画
-        string animNameAppointAttack = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_attack;
-        selfAIEntity.selfDefCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false, animNameAppoint: animNameAppointAttack);
-        string animNameAppointIdle = selfAIEntity.selfDefCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_idle;
-        selfAIEntity.selfDefCreatureEntity.AddAnim(0, SpineAnimationStateEnum.Idle, true, 1, animNameAppoint: animNameAppointIdle);
+        string animNameAppointAttack = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_attack;
+        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false, animNameAppoint: animNameAppointAttack);
+        string animNameAppointIdle = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_idle;
+        selfAIEntity.selfCreatureEntity.AddAnim(0, SpineAnimationStateEnum.Idle, true, 1, animNameAppoint: animNameAppointIdle);
     }
 
     /// <summary>
@@ -84,7 +84,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
     {
         attackState = 2;
         //开始创建攻击模块
-        FightHandler.Instance.StartCreateAttackMode(selfAIEntity.selfDefCreatureEntity, selfAIEntity.targetAttCreatureEntity, ActionForAttackEnd);
+        FightHandler.Instance.StartCreateAttackMode(selfAIEntity.selfCreatureEntity, selfAIEntity.targetCreatureEntity, ActionForAttackEnd);
     }
 
     /// <summary>
@@ -93,7 +93,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
     public void ActionForAttackEnd(BaseAttackMode attackMode)
     {
         //如果目标生物已经无了 则重新寻找目标
-        if (selfAIEntity.targetAttCreatureEntity == null || selfAIEntity.targetAttCreatureEntity.IsDead())
+        if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.IsDead())
         {
             ChangeIntent(AIIntentEnum.DefCreatureIdle);
             return;

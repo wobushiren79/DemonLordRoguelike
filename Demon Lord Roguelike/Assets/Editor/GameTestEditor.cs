@@ -148,7 +148,11 @@ public class GameTestEditor : Editor
             int index = i % ids.Length;
             CreatureBean itemData = new CreatureBean(ids[index]);
             itemData.AddSkinForBase();
-
+            //史莱姆加一个身体皮肤
+            if (itemData.id > 3000 && itemData.id < 4000)
+            {
+                itemData.AddSkin(3040001);
+            }
             itemData.order = i;
             fightData.dlDefenseCreatureData.Add(itemData.creatureId, itemData);
         };
