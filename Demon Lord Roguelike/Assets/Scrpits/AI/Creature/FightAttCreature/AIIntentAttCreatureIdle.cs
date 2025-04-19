@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using UnityEngine;
 
 public class AIIntentAttCreatureIdle : AIBaseIntent
@@ -11,9 +12,8 @@ public class AIIntentAttCreatureIdle : AIBaseIntent
     {
         selfAIEntity = aiEntity as AIAttCreatureEntity;
         //寻找一条路线上的敌人
-        selfAIEntity.targetCreatureEntity = null;
-        int selfRoad = selfAIEntity.selfCreatureEntity.fightCreatureData.positionCreate.z;
-        selfAIEntity.targetCreatureEntity = selfAIEntity.FindDefCreatureDisMinEntity(selfRoad);
+        var fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
+        selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntityForDis(Vector3.left, CreatureTypeEnum.FightAttack);
 
         //触发待机动作
         selfAIEntity.selfCreatureEntity.SetFaceDirection(Direction2DEnum.Left);
@@ -26,7 +26,7 @@ public class AIIntentAttCreatureIdle : AIBaseIntent
         {
             var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
             selfAIEntity.targetCreatureEntity = gameFightLogic.fightData.fightDefenseCoreCreature;
-            selfAIEntity.targetMovePos = new Vector3(0, 0, selfRoad);
+            selfAIEntity.targetMovePos = new Vector3(0, 0, fightCreatureData.roadIndex);
         }
         else
         {

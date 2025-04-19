@@ -23,10 +23,9 @@ public class AIIntentDefCreatureIdle : AIBaseIntent
         if (timeUpdateForFindTarget > 0.25f)
         {
             timeUpdateForFindTarget = 0;
-            selfAIEntity.targetCreatureEntity = null;
             var selfCreatureInfo = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo;
-            selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntityForDisMinByRay(selfAIEntity.selfCreatureEntity.fightCreatureData.positionCreate + new Vector3(0,0.5f,0), Vector3.right, selfCreatureInfo.attack_range, CreatureTypeEnum.FightAttack);
-            //selfAIEntity.targetAttCreatureEntity = selfAIEntity.FindAttCreatureDisMinEntity(selfAIEntity.selfDefCreatureEntity.fightCreatureData.positionCreate.z);
+            //搜索目标
+            selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntityForDis(Vector3.right, CreatureTypeEnum.FightAttack);
             if (selfAIEntity.targetCreatureEntity != null)
             {
                 //如果攻击模式是防守则进入防守状态

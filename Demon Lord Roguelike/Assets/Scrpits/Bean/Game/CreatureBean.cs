@@ -279,9 +279,9 @@ public partial class CreatureBean
     /// 获取攻击动画出手时间
     /// </summary>
     /// <returns></returns>
-    public float GetAttackAnimCastTime()
+    public float GetAttackAnimTime()
     {
-        return creatureInfo.attack_anim_cast_time;
+        return creatureInfo.anim_attack_time;
     }
 
 

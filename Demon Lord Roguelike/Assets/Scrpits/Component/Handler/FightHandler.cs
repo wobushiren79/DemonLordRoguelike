@@ -119,8 +119,12 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
             {
                 attackMode.startPostion = attacker.creatureObj.transform.position;
             }
-            attackMode.gameObject.transform.position = attackMode.startPostion;
-            attackMode.gameObject.SetActive(true);
+            if (attackMode.gameObject != null)
+            {
+                attackMode.gameObject.transform.position = attackMode.startPostion;
+                attackMode.gameObject.SetActive(true);
+            }
+
             attackMode.InitAttackModeShow();
 
             if (attackMode.spriteRenderer != null)
@@ -137,7 +141,10 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     /// </summary>
     public void RemoveAttackModePrefab(BaseAttackMode targetMode)
     {
-        targetMode.gameObject.SetActive(false);
+        if(targetMode.gameObject != null)
+        {
+            targetMode.gameObject.SetActive(false);
+        }
         manager.RemoveAttackModePrefab(targetMode);
     }
     #endregion

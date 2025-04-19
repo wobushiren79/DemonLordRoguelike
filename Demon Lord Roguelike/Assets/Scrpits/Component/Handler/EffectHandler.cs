@@ -81,11 +81,20 @@ public partial class EffectHandler
             if (targetEffect == null)
                 return;
             var targetVisualEffect = targetEffect.GetVisualEffect();
-            targetVisualEffect.SetVector3("StartPosition", targetPos);
-            targetVisualEffect.SetFloat("LifeTime", 0.5f);
-            targetVisualEffect.SetFloat("WaveSize", size * 2);
-            targetVisualEffect.SetFloat("BoomSize", size);
-            targetVisualEffect.SetFloat("SmokeSize", size);
+            if (effectName.Equals("EffectExplosion_1"))
+            {
+                targetVisualEffect.SetVector3("StartPosition", targetPos + new Vector3(0,0.001f,0));
+                targetVisualEffect.SetFloat("SizeFloor", size * 3);
+                targetVisualEffect.SetFloat("CircleSize", size * 2);
+            }
+            else
+            {
+                targetVisualEffect.SetVector3("StartPosition", targetPos);
+                targetVisualEffect.SetFloat("LifeTime", 0.5f);
+                targetVisualEffect.SetFloat("WaveSize", size * 2);
+                targetVisualEffect.SetFloat("BoomSize", size);
+                targetVisualEffect.SetFloat("SmokeSize", size);
+            }
             targetEffect.PlayEffect();
         };
 

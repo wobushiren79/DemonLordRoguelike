@@ -30,27 +30,6 @@ public class AttackModeRanged : BaseAttackMode
     }
 
     /// <summary>
-    /// 检测是否击中生物
-    /// </summary>
-    public virtual bool CheckHitTarget(out GameFightCreatureEntity gameFightCreatureEntity)
-    {
-        gameFightCreatureEntity = null;
-        RayUtil.RayToCast(gameObject.transform.position, attackDirection, attackModeInfo.collider_size, 1 << attackedLayer, out RaycastHit hit);
-        if (hit.collider != null)
-        {
-            string creatureId = hit.collider.gameObject.name;
-            GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-            var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, CreatureTypeEnum.None);
-            if (targetCreature != null && !targetCreature.IsDead())
-            {
-                gameFightCreatureEntity = targetCreature;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /// <summary>
     /// 处理击中生物之后的逻辑
     /// </summary>
     public virtual void HandleForHitTarget(GameFightCreatureEntity gameFightCreatureEntity)

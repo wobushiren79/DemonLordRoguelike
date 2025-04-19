@@ -34,7 +34,10 @@ public class FightManager : BaseManager
         for (int i = 0; i < listAttackModePrefab.Count; i++)
         {
             var item = listAttackModePrefab[i];
-            Destroy(item.gameObject);
+            if (item.gameObject != null)
+            {
+                Destroy(item.gameObject);
+            }
         }
         listAttackModePrefab.Clear();
         foreach (var itemData in dicPoolAttackModeObj)
@@ -43,7 +46,10 @@ public class FightManager : BaseManager
             while (queue.Count > 0)
             {
                 var targetData = queue.Dequeue();
-                Destroy(targetData.gameObject);
+                if (targetData.gameObject != null)
+                {
+                    Destroy(targetData.gameObject);
+                }
             }
         }
         dicPoolAttackModeObj.Clear();
@@ -217,11 +223,16 @@ public class FightManager : BaseManager
                 return;
             }
         }
-        GameObject objModel = GetModelForAddressablesSync(dicAttackModeObj, $"{PathInfo.AttackModePrefabPath}/{attackModeInfo.prefab_name}.prefab");
-        GameObject objTarget = Instantiate(gameObject, objModel);
+
         BaseAttackMode targetModeNew = ReflexUtil.CreateInstance<BaseAttackMode>(attackModeInfo.class_name);
-        targetModeNew.gameObject = objTarget;
-        targetModeNew.spriteRenderer = objTarget.GetComponentInChildren<SpriteRenderer>();
+        if (!attackModeInfo.prefab_name.IsNull())
+        {
+            GameObject objModel = GetModelForAddressablesSync(dicAttackModeObj, $"{PathInfo.AttackModePrefabPath}/{attackModeInfo.prefab_name}.prefab");
+            GameObject objTarget = Instantiate(gameObject, objModel);
+
+            targetModeNew.gameObject = objTarget;
+            targetModeNew.spriteRenderer = objTarget.GetComponentInChildren<SpriteRenderer>();
+        }
         targetModeNew.attackModeInfo = attackModeInfo;
 
         listAttackModePrefab.Add(targetModeNew);

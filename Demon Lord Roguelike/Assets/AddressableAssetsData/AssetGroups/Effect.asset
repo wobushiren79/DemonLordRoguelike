@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 458b12f4750e6a0428995e6a4a2e4eb7
+    m_Address: Assets/LoadResources/Effects/EffectExplosion_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6e30d327e4eff0043b4830b3c04f44d6
     m_Address: Assets/LoadResources/Effects/EffectBlood_1.prefab
     m_ReadOnly: 0

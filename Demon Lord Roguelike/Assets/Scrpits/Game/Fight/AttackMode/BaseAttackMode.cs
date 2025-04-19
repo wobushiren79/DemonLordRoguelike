@@ -28,7 +28,7 @@ public class BaseAttackMode
     public string attackedId;
 
     //发出攻击的生物ID
-    public long creatureId; 
+    public long creatureId;
     //发出攻击的武器
     public long weaponItemId;
 
@@ -123,4 +123,64 @@ public class BaseAttackMode
         weaponItemId = 0;
         FightHandler.Instance.RemoveAttackModePrefab(this);
     }
+
+    #region  检测相关
+    /// <summary>
+    /// 检测是否击中生物
+    /// </summary>
+    public virtual bool CheckHitTarget(out GameFightCreatureEntity gameFightCreatureEntity)
+    {
+        gameFightCreatureEntity = null;
+        RayUtil.RayToCast(gameObject.transform.position, attackDirection, attackModeInfo.collider_size, 1 << attackedLayer, out RaycastHit hit);
+        if (hit.collider != null)
+        {
+            string creatureId = hit.collider.gameObject.name;
+            GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+            var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, CreatureTypeEnum.None);
+            if (targetCreature != null && !targetCreature.IsDead())
+            {
+                gameFightCreatureEntity = targetCreature;
+                return true;
+            }
+        }
+        return false;
+    }
+    /// <summary>
+    /// 检测范围内敌人
+    /// </summary>
+    public bool CheckHitTargetArea(Vector3 checkPosition, Action<GameFightCreatureEntity> actionForHitItem)
+    {
+        bool hasHitter = false;
+        Collider[] targetColliders = RayUtil.OverlapToSphere(checkPosition, attackModeInfo.collider_area_size, 1 << attackedLayer);
+        //绘制测试范围
+        DrawTestArea(checkPosition, attackModeInfo.collider_area_size, 1);
+
+        if (targetColliders != null)
+        {
+            for (int i = 0; i < targetColliders.Length; i++)
+            {
+                var itemHitterCollder = targetColliders[i];
+                string creatureId = itemHitterCollder.gameObject.name;
+                GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+                var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, CreatureTypeEnum.None);
+                if (targetCreature != null && !targetCreature.IsDead())
+                {
+                    hasHitter = true;
+                    actionForHitItem?.Invoke(targetCreature);
+                }
+            }
+        }
+        return hasHitter;
+    }
+
+    public void DrawTestArea(Vector3 startPostion, float areaSize, float duration)
+    {
+#if UNITY_EDITOR
+        Debug.DrawRay(startPostion, new Vector3(areaSize, 0, 0), Color.red, duration);
+        Debug.DrawRay(startPostion, new Vector3(-areaSize, 0, 0), Color.red, duration);
+        Debug.DrawRay(startPostion, new Vector3(0, 0, areaSize), Color.red, duration);
+        Debug.DrawRay(startPostion, new Vector3(0, 0, -areaSize), Color.red, duration);
+#endif
+    }
+    #endregion
 }

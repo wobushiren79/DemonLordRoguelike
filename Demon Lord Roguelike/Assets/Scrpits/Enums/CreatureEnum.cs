@@ -1,4 +1,10 @@
 
+public enum CreatureAttackSearchType{
+    Ray = 0,//默认射线
+    Area = 1,//范围
+    RoadForeach = 2,//遍历同一路线所有生物
+}
+
 public enum CreatureStateEnum
 {
     Idle = 1,//闲置

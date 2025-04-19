@@ -38,7 +38,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
         else if (attackState == 1)
         {
             timeUpdateAttacking += Time.deltaTime;
-            float attAnimCastTime = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.GetAttackAnimCastTime();
+            float attAnimCastTime = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.GetAttackAnimTime();
             if (timeUpdateAttacking >= attAnimCastTime)
             {
                 timeUpdateAttacking = 0;

@@ -68,6 +68,15 @@ public partial class CreatureInfoBean
         }
         return listEquipItemsType;
     }
+
+    /// <summary>
+    /// 获取生物攻击搜索模式
+    /// </summary>
+    /// <returns></returns>
+    public CreatureAttackSearchType GetCreatureAttackSearchType()
+    {
+        return (CreatureAttackSearchType)attack_search_type;
+    }
 }
 public partial class CreatureInfoCfg
 {

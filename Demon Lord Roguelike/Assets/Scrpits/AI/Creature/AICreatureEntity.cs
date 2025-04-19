@@ -1,3 +1,4 @@
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
 using Spine.Unity;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,17 +12,24 @@ public abstract class AICreatureEntity : AIBaseEntity
     public GameFightCreatureEntity targetCreatureEntity;
 
     /// <summary>
-    /// 找寻最近的生物
+    /// 搜索离自己最近的目标
     /// </summary>
-    /// <returns></returns>
-    public GameFightCreatureEntity FindCreatureEntityForDisMinByRay(Vector3 startPosition, Vector3 direction, float maxDistance, CreatureTypeEnum creatureType)
+    public GameFightCreatureEntity FindCreatureEntityForDis(Vector3 direction, CreatureTypeEnum searchCreatureType)
     {
+        var fightCreatureData = selfCreatureEntity.fightCreatureData;
+        //搜索范围
+        float searchRange = fightCreatureData.creatureData.creatureInfo.attack_search_range;
+        //搜索模式
+        CreatureAttackSearchType searchType = fightCreatureData.creatureData.creatureInfo.GetCreatureAttackSearchType();
+        //起始搜索点
+        Vector3 startPosition = fightCreatureData.positionCreate + new Vector3(0, 0.5f, 0);
+
         int layoutInfo;
-        if (creatureType == CreatureTypeEnum.FightDefense)
+        if (searchCreatureType == CreatureTypeEnum.FightDefense)
         {
             layoutInfo = LayerInfo.CreatureDef;
         }
-        else if (creatureType == CreatureTypeEnum.FightAttack)
+        else if (searchCreatureType == CreatureTypeEnum.FightAttack)
         {
             layoutInfo = LayerInfo.CreatureAtt;
         }
@@ -29,11 +37,33 @@ public abstract class AICreatureEntity : AIBaseEntity
         {
             return null;
         }
+
+        switch (searchType)
+        {
+            case CreatureAttackSearchType.Ray:
+                return FindCreatureEntityForDisMinByRay(startPosition, direction, searchRange, searchCreatureType,layoutInfo);
+            case CreatureAttackSearchType.Area:
+                return FindCreatureEntityForDisMinByArea(startPosition, searchRange, searchCreatureType, layoutInfo);
+            case CreatureAttackSearchType.RoadForeach:
+                //搜索路径
+                int searchRoadIndex = fightCreatureData.roadIndex;
+                return FindCreatureEntityForDisMinByRoadForeach(searchRoadIndex, searchCreatureType, direction.x > 0 ? DirectionEnum.Right : DirectionEnum.Left);
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 找寻最近的生物-射线
+    /// </summary>
+    /// <returns></returns>
+    public GameFightCreatureEntity FindCreatureEntityForDisMinByRay(Vector3 startPosition, Vector3 direction, float maxDistance, CreatureTypeEnum searchCreatureType,int layoutInfo)
+    {
+
         if (RayUtil.RayToCast(startPosition, direction, maxDistance, 1 << layoutInfo, out RaycastHit hit))
         {
             string creatureId = hit.collider.gameObject.name;
             GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-            var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, creatureType);
+            var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, searchCreatureType);
             if (targetCreature != null && !targetCreature.IsDead())
             {
                 return targetCreature;
@@ -43,22 +73,54 @@ public abstract class AICreatureEntity : AIBaseEntity
     }
 
     /// <summary>
-    /// 查询要攻击的防御生物(距离最近)
+    /// 查询范围内最近的敌人
     /// </summary>
     /// <returns></returns>
-    public GameFightCreatureEntity FindAttCreatureDisMinEntity(int roadIndex, DirectionEnum direction = DirectionEnum.Right)
+    public GameFightCreatureEntity FindCreatureEntityForDisMinByArea(Vector3 startPosition, float radius, CreatureTypeEnum searchCreatureType, int layoutInfo)
+    {
+        Collider[] colliders = RayUtil.OverlapToSphere(startPosition, radius, 1 << layoutInfo);
+        if (colliders.IsNull())
+        {
+            return null;
+        }
+        for (int i = 0; i < colliders.Length; i++)
+        {
+            string creatureId = colliders[i].gameObject.name;
+            GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+            var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, searchCreatureType);
+            if (targetCreature != null && !targetCreature.IsDead())
+            {
+                return targetCreature;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 找寻最近的生物-路径遍历
+    /// </summary>
+    /// <returns></returns>
+    public GameFightCreatureEntity FindCreatureEntityForDisMinByRoadForeach(int roadIndex, CreatureTypeEnum searchCreatureType, DirectionEnum direction = DirectionEnum.Right)
     {
         //首先查询同一路的防守生物
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        List<GameFightCreatureEntity> listTargetData = gameFightLogic.fightData.GetAttackCreatureByRoad(roadIndex);
-        if (listTargetData.IsNull())
+        List<GameFightCreatureEntity> listTargetCreature = null;
+        if (searchCreatureType == CreatureTypeEnum.FightAttack)
+        {
+            listTargetCreature = gameFightLogic.fightData.GetAttackCreatureByRoad(roadIndex);
+        }
+        else if (searchCreatureType == CreatureTypeEnum.FightDefense)
+        {
+            listTargetCreature = gameFightLogic.fightData.GetDefenseCreatureByRoad(roadIndex);
+        }
+
+        if (listTargetCreature.IsNull())
             return null;
         float disMin = float.MaxValue;
         GameFightCreatureEntity targetEntity = null;
-        for (int i = 0; i < listTargetData.Count; i++)
+        for (int i = 0; i < listTargetCreature.Count; i++)
         {
-            //获取距离最近的防守生物
-            var itemTargetEntity = listTargetData[i];
+            var itemTargetEntity = listTargetCreature[i];
             if (itemTargetEntity != null && !itemTargetEntity.IsDead())
             {
                 var creatureObj = itemTargetEntity.creatureObj;
@@ -71,38 +133,13 @@ public abstract class AICreatureEntity : AIBaseEntity
                         targetEntity = itemTargetEntity;
                     }
                 }
-            }
-        }
-        return targetEntity;
-    }
-
-
-
-    /// <summary>
-    /// 查询要攻击的防御生物(距离最近)
-    /// </summary>
-    /// <returns></returns>
-    public GameFightCreatureEntity FindDefCreatureDisMinEntity(int roadIndex, DirectionEnum direction = DirectionEnum.Left)
-    {
-        //首先查询同一路的防守生物
-        var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        List<GameFightCreatureEntity> listDefenseCreature = gameFightLogic.fightData.GetDefenseCreatureByRoad(roadIndex);
-        float disMin = float.MaxValue;
-        GameFightCreatureEntity targetEntity = null;
-        for (int i = 0; i < listDefenseCreature.Count; i++)
-        {
-            //获取距离最近的防守生物
-            var itemCreature = listDefenseCreature[i];
-            if (itemCreature != null && !itemCreature.IsDead())
-            {
-                var creatureObj = itemCreature.creatureObj;
                 if (direction == DirectionEnum.Left && creatureObj.transform.position.x <= selfCreatureEntity.creatureObj.transform.position.x)
                 {
                     float dis = Vector3.Distance(creatureObj.transform.position, selfCreatureEntity.creatureObj.transform.position);
                     if (dis < disMin)
                     {
                         disMin = dis;
-                        targetEntity = itemCreature;
+                        targetEntity = itemTargetEntity;
                     }
                 }
             }

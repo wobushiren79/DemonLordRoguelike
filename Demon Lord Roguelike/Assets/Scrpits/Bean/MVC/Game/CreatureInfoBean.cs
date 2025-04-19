@@ -48,17 +48,25 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public int attack_mode;
 	/// <summary>
-	///攻击范围
+	///攻击搜索敌人类型0直线 1范围 2遍历路线
 	/// </summary>
-	public float attack_range;
+	public int attack_search_type;
+	/// <summary>
+	///攻击搜索范围
+	/// </summary>
+	public float attack_search_range;
 	/// <summary>
 	///攻击间隔
 	/// </summary>
 	public float attack_cd;
 	/// <summary>
+	///死亡动画时间
+	/// </summary>
+	public float anim_dead_time;
+	/// <summary>
 	///攻击动画出手时间
 	/// </summary>
-	public float attack_anim_cast_time;
+	public float anim_attack_time;
 	/// <summary>
 	///生命值
 	/// </summary>
