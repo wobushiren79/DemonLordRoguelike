@@ -8,6 +8,14 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public int creature_type;
 	/// <summary>
+	///生物位置优先级
+	/// </summary>
+	public string creature_layer;
+	/// <summary>
+	///生物优先级搜寻
+	/// </summary>
+	public string creature_layer_find;
+	/// <summary>
 	///创建cd(秒)
 	/// </summary>
 	public float create_cd;
@@ -43,6 +51,10 @@ public partial class CreatureInfoBean : BaseBean
 	///攻击动画名字
 	/// </summary>
 	public string anim_attack;
+	/// <summary>
+	///攻击动画循环状态
+	/// </summary>
+	public int anim_attack_loop;
 	/// <summary>
 	///攻击模式
 	/// </summary>

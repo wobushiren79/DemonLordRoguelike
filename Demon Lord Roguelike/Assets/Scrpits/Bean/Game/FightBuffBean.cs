@@ -54,7 +54,6 @@ public class FightBuffBean
         //持续型BUFF（持续指定时间后结束）
         else
         {
-
             if (timeUpdate >= fightBuffStruct.triggerTime)
             {
                 timeUpdate = 0;

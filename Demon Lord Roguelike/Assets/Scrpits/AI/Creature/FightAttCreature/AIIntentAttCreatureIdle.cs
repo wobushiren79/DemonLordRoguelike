@@ -11,9 +11,9 @@ public class AIIntentAttCreatureIdle : AIBaseIntent
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         selfAIEntity = aiEntity as AIAttCreatureEntity;
-        //寻找一条路线上的敌人
+        //寻找路线上的敌人
         var fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
-        selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntityForDis(Vector3.left, CreatureTypeEnum.FightAttack);
+        selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntityForDis(Vector3.left, CreatureTypeEnum.FightDefense);
 
         //触发待机动作
         selfAIEntity.selfCreatureEntity.SetFaceDirection(Direction2DEnum.Left);

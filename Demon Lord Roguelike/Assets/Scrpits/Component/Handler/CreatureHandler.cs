@@ -83,14 +83,19 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             FightCreatureBean fightCreatureData = new FightCreatureBean(creatureId);
             fightCreatureData.creatureData.AddSkinForBase();
             fightCreatureData.positionCreate = new Vector3Int(0, 0, targetRoad);
+
             GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
+
+            //先添加数据
+            var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+            gameLogic.fightData.AddAttackCreatureByRoad(targetRoad, gameFightCreatureEntity);
+            
+            //再创建数据
             gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIAttCreatureEntity>(actionBeforeStart: (targetEntity) =>
             {
                 targetEntity.InitData(gameFightCreatureEntity);
             });
 
-            var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-            gameLogic.fightData.AddAttackCreatureByRoad(targetRoad, gameFightCreatureEntity);
             actionForComplete?.Invoke(targetObj);
         });
     }
@@ -101,8 +106,30 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     public void GetCreatureObj(long creatureId, Action<GameObject> actionForComplete)
     {
         manager.LoadCreatureObj(creatureId, (targetObj) =>
-        {
+        {                   
+            var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
+            var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
             var mainCamera = CameraHandler.Instance.manager.mainCamera;
+
+            //设置层级
+            if (!creatureInfo.creature_layer.IsNull())
+            {
+                targetObj.layer = LayerMask.NameToLayer($"{creatureInfo.creature_layer}");
+            }
+            else
+            {
+                var creatureType = creatureInfo.GetCreatureType();
+                switch(creatureType)
+                {
+                    case CreatureTypeEnum.FightAttack:
+                        targetObj.layer = LayerInfo.CreatureAtt;
+                        break;
+                    case CreatureTypeEnum.FightDefense:
+                        targetObj.layer = LayerInfo.CreatureDef;
+                        break;
+                }
+            }
+
             Transform rendererTF = targetObj.transform.Find("Spine");
             Transform lifeShowTF = targetObj.transform.Find("LifeShow");
             if (rendererTF != null)
@@ -112,8 +139,6 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
                 //如果没有加载过spine 则加载一次 
                 if (rendererTF.GetComponent<SkeletonAnimation>() == null)
                 {
-                    var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
-                    var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
                     SpineHandler.Instance.AddSkeletonAnimation(rendererTF.gameObject, creatureModel.res_name);
                     rendererTF.transform.localScale = Vector3.one * creatureModel.size_spine;
                     //var render = rendererTF.GetComponent<MeshRenderer>();
@@ -121,6 +146,21 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
                     //{
                     //    render.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                     //}
+                }
+
+                rendererTF.localPosition = Vector3.zero;
+                //设置前后
+                if (targetObj.layer == LayerInfo.CreatureDef_Front || targetObj.layer == LayerInfo.CreatureAtt_Front)
+                {
+                    rendererTF.position = rendererTF.position.AddZ(-0.1f);
+                }
+                else if (targetObj.layer == LayerInfo.CreatureDef_Front || targetObj.layer == LayerInfo.CreatureAtt_Front)
+                {
+                    rendererTF.position = rendererTF.position.AddZ(0.1f);
+                }
+                else
+                {
+
                 }
             }
             if (lifeShowTF != null)

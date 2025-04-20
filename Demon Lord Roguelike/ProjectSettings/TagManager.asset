@@ -16,13 +16,13 @@ TagManager:
   - UI
   - Ground
   - CreatureDef
+  - CreatureDef_Front
+  - CreatureDef_Back
   - CreatureAtt
+  - CreatureAtt_Front
+  - CreatureAtt_Back
   - Drop
   - Obstacle
-  - 
-  - 
-  - 
-  - 
   - 
   - 
   - 

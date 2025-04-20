@@ -22,16 +22,16 @@ public abstract class AICreatureEntity : AIBaseEntity
         //搜索模式
         CreatureAttackSearchType searchType = fightCreatureData.creatureData.creatureInfo.GetCreatureAttackSearchType();
         //起始搜索点
-        Vector3 startPosition = fightCreatureData.positionCreate + new Vector3(0, 0.5f, 0);
+        Vector3 startPosition = selfCreatureEntity.creatureObj.transform.position + new Vector3(0, 0.5f, 0);
 
         int layoutInfo;
         if (searchCreatureType == CreatureTypeEnum.FightDefense)
         {
-            layoutInfo = LayerInfo.CreatureDef;
+            layoutInfo = 1 << LayerInfo.CreatureDef;
         }
         else if (searchCreatureType == CreatureTypeEnum.FightAttack)
         {
-            layoutInfo = LayerInfo.CreatureAtt;
+            layoutInfo = 1 << LayerInfo.CreatureAtt;
         }
         else
         {
@@ -58,8 +58,7 @@ public abstract class AICreatureEntity : AIBaseEntity
     /// <returns></returns>
     public GameFightCreatureEntity FindCreatureEntityForDisMinByRay(Vector3 startPosition, Vector3 direction, float maxDistance, CreatureTypeEnum searchCreatureType,int layoutInfo)
     {
-
-        if (RayUtil.RayToCast(startPosition, direction, maxDistance, 1 << layoutInfo, out RaycastHit hit))
+        if (RayUtil.RayToCast(startPosition, direction, maxDistance, layoutInfo, out RaycastHit hit))
         {
             string creatureId = hit.collider.gameObject.name;
             GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
@@ -78,7 +77,7 @@ public abstract class AICreatureEntity : AIBaseEntity
     /// <returns></returns>
     public GameFightCreatureEntity FindCreatureEntityForDisMinByArea(Vector3 startPosition, float radius, CreatureTypeEnum searchCreatureType, int layoutInfo)
     {
-        Collider[] colliders = RayUtil.OverlapToSphere(startPosition, radius, 1 << layoutInfo);
+        Collider[] colliders = RayUtil.OverlapToSphere(startPosition, radius, layoutInfo);
         if (colliders.IsNull())
         {
             return null;

@@ -134,7 +134,7 @@ public class GameTestEditor : Editor
 
         //生成进攻数据
         fightData.fightAttackData = new FightAttackBean();
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 1; i++)
         {
             FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(3, 1001);
             fightData.fightAttackData.AddAttackQueue(fightAttackDetails);

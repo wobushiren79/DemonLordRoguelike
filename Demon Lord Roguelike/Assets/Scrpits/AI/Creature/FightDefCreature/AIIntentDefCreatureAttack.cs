@@ -14,11 +14,12 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         timeUpdateAttackPre = 0;
-        attackState = 0;
+        timeUpdateAttacking = 0;
         selfAIEntity = aiEntity as AIDefCreatureEntity;
 
-        string animNameAppoint = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_idle;
-        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, false, animNameAppoint: animNameAppoint);
+        attackState = 0;
+        //刚进来立即开始一次攻击
+        timeUpdateAttackPre = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.GetAttackCD();
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
@@ -49,7 +50,8 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
 
     public override void IntentLeaving(AIBaseEntity aiEntity)
     {
-
+        timeUpdateAttackPre = 0;
+        timeUpdateAttacking = 0;
     }
 
     /// <summary>
@@ -70,11 +72,19 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
             ChangeIntent(AIIntentEnum.DefCreatureDead);
             return;
         }
+        var selfCreatureInfo = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo;
+        string animNameAppointAttack = selfCreatureInfo.anim_attack;
+        string animNameAppointIdle = selfCreatureInfo.anim_idle;
         //播放攻击动画
-        string animNameAppointAttack = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_attack;
-        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false, animNameAppoint: animNameAppointAttack);
-        string animNameAppointIdle = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_idle;
-        selfAIEntity.selfCreatureEntity.AddAnim(0, SpineAnimationStateEnum.Idle, true, 1, animNameAppoint: animNameAppointIdle);
+        if (selfCreatureInfo.anim_attack_loop == 1)//如果是循环 只播放攻击动画
+        {
+            selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, true, animNameAppoint: animNameAppointAttack);
+        }
+        else//如果不是循环，先播放打击再播放待机
+        {
+            selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false, animNameAppoint: animNameAppointAttack);
+            selfAIEntity.selfCreatureEntity.AddAnim(0, SpineAnimationStateEnum.Idle, true, 1, animNameAppoint: animNameAppointIdle);
+        }
     }
 
     /// <summary>
@@ -91,7 +101,19 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
     /// 攻击结束回调
     /// </summary>
     public void ActionForAttackEnd(BaseAttackMode attackMode)
-    {
+    {        
+        var findTargetCreature = selfAIEntity.FindCreatureEntityForDis(Vector3.right, CreatureTypeEnum.FightAttack);
+        //如果没有找到最近的生物
+        if(findTargetCreature == null)
+        {
+            ChangeIntent(AIIntentEnum.DefCreatureIdle);
+            return;
+        }
+        //设置新目标
+        if(findTargetCreature != selfAIEntity.targetCreatureEntity)
+        {
+            selfAIEntity.targetCreatureEntity = findTargetCreature;
+        }
         //如果目标生物已经无了 则重新寻找目标
         if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.IsDead())
         {

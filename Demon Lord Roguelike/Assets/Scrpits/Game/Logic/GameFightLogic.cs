@@ -151,7 +151,7 @@ public class GameFightLogic : BaseGameLogic
                 var itemCreature = allAttackCreature.List[i];
                 if (itemCreature == null)
                     continue;
-                itemCreature.Update(updateTime);
+                itemCreature.Update(fightData.timeUpdateTargetForFightCreature);
             }
             //处理防守生物的buff
             var allDefenseCreature = fightData.dlDefenseCreatureEntity;
@@ -160,7 +160,7 @@ public class GameFightLogic : BaseGameLogic
                 var itemCreature = allDefenseCreature.List[i];
                 if (itemCreature == null)
                     continue;
-                itemCreature.Update(updateTime);
+                itemCreature.Update(fightData.timeUpdateTargetForFightCreature);
             }
 
             //处理CD
@@ -268,15 +268,16 @@ public class GameFightLogic : BaseGameLogic
         //创建战斗生物数据
         FightCreatureBean fightCreatureData = new FightCreatureBean(selectCreatureCard.cardData.creatureData);
         fightCreatureData.positionCreate = selectTargetPos;
-
         //创建战斗生物
         GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(selectCreature, fightCreatureData);
+        //先添加数据
+        fightData.AddDefenseCreatureByPos(selectTargetPos, gameFightCreatureEntity);
+        //再创建AI
         gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefCreatureEntity>(actionBeforeStart: (targetEntity) =>
         {
             targetEntity.InitData(gameFightCreatureEntity);
         });
 
-        fightData.AddDefenseCreatureByPos(selectTargetPos, gameFightCreatureEntity);
         selectCreature = null;
 
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_PutCard, selectCreatureCard);

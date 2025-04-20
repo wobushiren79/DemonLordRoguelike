@@ -1,3 +1,4 @@
+using System;
 using DG.Tweening;
 using Spine;
 using Spine.Unity;
@@ -167,6 +168,7 @@ public class GameFightCreatureEntity
         var buffs = baseAttackMode.attackModeInfo.GetBuff();
         if (!buffs.IsNull())
         {
+            //获取触发的buff 计算触发概率
             var buffsTrigger = FightBuffBean.GetTriggerFightBuff(buffs, fightCreatureData.creatureData.creatureId);
             if (!buffsTrigger.IsNull())
             {
@@ -176,48 +178,72 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
-    /// 收到攻击
+    /// 受到攻击
     /// </summary>
     public void UnderAttack(BaseAttackMode baseAttackMode)
+    {
+        UnderAttack(baseAttackMode.attackerId, baseAttackMode.attackedId, baseAttackMode.attackerDamage,
+            actionForNoDead: (changeDRReal, changeHPReal) =>
+            {
+                //增加BUFF
+                AddBuff(baseAttackMode);
+                //播放受伤特效
+                if (baseAttackMode.attackModeInfo.effect_damage.IsNull())
+                {
+                    //如果是打到肉
+                    if (changeHPReal == 0)
+                    {
+                        //护甲
+                        EffectHandler.Instance.ShowShieldHitEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
+
+                    }
+                    //如果是打击到护甲
+                    else
+                    {
+                        //流血
+                        EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
+                    }
+                }
+                //不播放受伤特效
+                else if (baseAttackMode.attackModeInfo.effect_damage.Equals("0"))
+                {
+
+                }
+            },
+            actionForDead: (changeDRReal, changeHPReal) =>
+            {
+                //流血
+                EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
+            });
+    }
+
+    /// <summary>
+    /// 受到攻击
+    /// </summary>
+    public void UnderAttack(string attackerId, string attackedId, int attackerDamage, Action<int, int> actionForNoDead = null, Action<int, int> actionForDead = null)
     {
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var fightRecordsData = gameLogic.fightData.fightRecordsData;
 
         //先扣除护甲 再扣除生命
-        fightCreatureData.ChangeDRAndHP(-baseAttackMode.attackerDamage,
+        fightCreatureData.ChangeDRAndHP(-attackerDamage,
         out int curDR, out int curHP,
         out int changeDRReal, out int changeHPReal);
         //真实造成的伤害
         int damageReal = Mathf.Abs(changeDRReal + changeHPReal);
         //记录数据
-        fightRecordsData.AddCreatureDamage(baseAttackMode.attackerId, damageReal);
-        fightRecordsData.AddCreatureDamageReceived(baseAttackMode.attackedId, damageReal);
+        fightRecordsData.AddCreatureDamage(attackerId, damageReal);
+        fightRecordsData.AddCreatureDamageReceived(attackedId, damageReal);
 
         //如果还有生命值 
         if (curHP > 0)
         {
-            //增加BUFF
-            AddBuff(baseAttackMode);
+            actionForNoDead?.Invoke(changeDRReal, changeHPReal);
             //触发被攻击特效
             if (creatureSkeletionAnimation != null)
             {
                 //颤抖
                 creatureSkeletionAnimation.transform.DOShakePosition(0.06f, strength: 0.05f, vibrato: 10, randomness: 180);
-
-                //如果是打到肉
-                if (changeHPReal == 0)
-                {
-                    //护甲
-                    EffectHandler.Instance.ShowShieldHitEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
-            
-                }
-                //如果是打击到护甲
-                else
-                {
-                    //流血
-                    EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
-                }
-
                 //颜色变化动画
                 AnimForUnderAttackColor();
                 //展示血条
@@ -230,22 +256,19 @@ public class GameFightCreatureEntity
         }
         else
         {
+            actionForDead?.Invoke(changeDRReal, changeHPReal);
             //记录数据
-            fightRecordsData.AddCreatureKillNum(baseAttackMode.attackerId, 1);
-
+            fightRecordsData.AddCreatureKillNum(attackerId, 1);
             //掉落水晶
             FightHandler.Instance.CreateDropCrystal(creatureObj.transform.position);
             //如果被攻击对象死亡 
             SetCreatureDead();
-            //流血
-            EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
             //颜色变化动画
             AnimForUnderAttackColor();
             //隐藏血条
             creatureLifeShow?.ShowObj(false);
         }
     }
-
 
     /// <summary>
     /// 颜色动画-受到攻击

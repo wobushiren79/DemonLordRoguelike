@@ -91,6 +91,18 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
     /// </summary>
     public void ActionForAttackEnd(BaseAttackMode attackMode)
     {
+        var findTargetCreature = selfAIEntity.FindCreatureEntityForDis(Vector3.left, CreatureTypeEnum.FightDefense);
+        //如果没有找到最近的生物
+        if(findTargetCreature == null)
+        {
+            ChangeIntent(AIIntentEnum.AttCreatureIdle);
+            return;
+        }
+        //设置新目标
+        if(findTargetCreature != selfAIEntity.targetCreatureEntity)
+        {
+            selfAIEntity.targetCreatureEntity = findTargetCreature;
+        }
         //如果目标生物已经无了 则重新寻找目标
         if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.IsDead())
         {

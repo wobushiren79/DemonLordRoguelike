@@ -65,7 +65,7 @@ GameObject:
   m_Component:
   - component: {fileID: 433413239840919889}
   - component: {fileID: 4176830474284722914}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: LifeShow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -151,7 +151,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 157381623310266708}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Spine
   m_TagString: Untagged
   m_Icon: {fileID: 0}

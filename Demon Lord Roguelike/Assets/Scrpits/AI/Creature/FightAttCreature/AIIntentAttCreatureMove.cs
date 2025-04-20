@@ -6,9 +6,10 @@ public class AIIntentAttCreatureMove : AIBaseIntent
 {
     //目标AI
     public AIAttCreatureEntity selfAIEntity;
-
+    public float timeUpdateForFindTarget = 0;
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
+        timeUpdateForFindTarget = 0;
         selfAIEntity = aiEntity as AIAttCreatureEntity;
         //设置移动动作
         string animNameAppoint = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_walk;
@@ -17,6 +18,20 @@ public class AIIntentAttCreatureMove : AIBaseIntent
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
+        //查询敌人
+        timeUpdateForFindTarget += Time.deltaTime;
+        if (timeUpdateForFindTarget > 0.25f)
+        {
+            timeUpdateForFindTarget = 0;
+            var findTargetCreature = selfAIEntity.FindCreatureEntityForDis(Vector3.left, CreatureTypeEnum.FightDefense);
+            if (findTargetCreature != null)
+            {
+                selfAIEntity.targetCreatureEntity = findTargetCreature;
+                selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureAttack);
+                return;
+            }
+        }
+
         //如果目标是魔王
         if (selfAIEntity.targetMovePos.x <= 0)
         {
@@ -36,12 +51,6 @@ public class AIIntentAttCreatureMove : AIBaseIntent
                 selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureIdle);
                 return;
             }
-            //监测是否在攻击范围内
-            if (CheckIsAttRange())
-            {
-                selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureAttack);
-                return;
-            }
         }
 
         float moveSpeed = selfAIEntity.selfCreatureEntity.fightCreatureData.GetMoveSpeed();
@@ -51,25 +60,9 @@ public class AIIntentAttCreatureMove : AIBaseIntent
 
     public override void IntentLeaving(AIBaseEntity aiEntity)
     {
-
+        timeUpdateForFindTarget = 0;
     }
 
-    /// <summary>
-    /// 检测是否在攻击范围内
-    /// </summary>
-    public bool CheckIsAttRange()
-    {
-        var currentPosition = selfAIEntity.selfCreatureEntity.creatureObj.transform.position;
-        var targetMovePos = selfAIEntity.targetMovePos;
-        float dis = Vector3.Distance(currentPosition, targetMovePos);
-        var creatureInfo = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo;
-        if (dis <= creatureInfo.attack_search_range)
-        {
-            return true;
-        }
-        return false;
-    }
-    
     /// <summary>
     /// 检测是否靠近了目标
     /// </summary>

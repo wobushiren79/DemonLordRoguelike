@@ -6,7 +6,7 @@ public class AIIntentAttCreatureDead : AIBaseIntent
 {
     public float timeUpdateForDead = 0f;
     public float timeForDeadTime = 1.1f;
-    //Ŀ��AI
+    
     public AIAttCreatureEntity selfAIEntity;
     public override void IntentEntering(AIBaseEntity aiEntity)
     {

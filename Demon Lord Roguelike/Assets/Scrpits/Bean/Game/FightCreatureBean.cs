@@ -62,6 +62,7 @@ public class FightCreatureBean
             for (int i = 0; i < listBuff.Count; i++)
             {
                 FightBuffBean itemBuff = listBuff[i];
+                //获取buff执行实例
                 var buffEntity = itemBuff.GetBuffEntity();
                 //设置速度相关
                 var targetChangeData = buffEntity.GetChangeDataForMoveSpeed(itemBuff);

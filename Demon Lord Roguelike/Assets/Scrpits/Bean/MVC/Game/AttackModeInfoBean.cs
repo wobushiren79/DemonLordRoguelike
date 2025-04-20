@@ -16,17 +16,21 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public string buff;
 	/// <summary>
-	///碰撞检测大小
+	///碰撞检测大小（用于点到点）
 	/// </summary>
 	public float collider_size;
 	/// <summary>
-	///碰撞范围检测
+	///碰撞范围检测（用于范围）
 	/// </summary>
 	public float collider_area_size;
 	/// <summary>
-	///碰撞之后的特效
+	///打击之后的特效
 	/// </summary>
 	public string effect_hit;
+	/// <summary>
+	///受伤特效（默认不填，0为关闭）
+	/// </summary>
+	public string effect_damage;
 	/// <summary>
 	///移动速度
 	/// </summary>
