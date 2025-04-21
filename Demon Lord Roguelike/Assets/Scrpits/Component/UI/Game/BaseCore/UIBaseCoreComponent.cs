@@ -13,5 +13,7 @@ public partial class UIBaseCore
 
     public Button ui_ViewBaseCoreItemFunction_Creature;
 
+    public Button ui_ViewBaseCoreItemFunction_Store;
+
 
 }

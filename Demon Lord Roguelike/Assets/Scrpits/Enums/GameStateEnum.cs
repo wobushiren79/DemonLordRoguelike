@@ -89,3 +89,11 @@ public enum GameFightTypeEnum
     Infinite,//无限模式
     Conquer,//征服模式
 }
+
+
+public enum StoreInfoTypeEnum
+{   
+    Building = 1,//设施相关
+    Strengthen = 2,//强化相关
+    Creature = 3,//生物相关
+}

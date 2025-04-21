@@ -11,7 +11,7 @@ public partial class UIBaseCore : BaseUIComponent
     {
         base.OpenUI();
         GameControlHandler.Instance.SetBaseControl(false);
-        CameraHandler.Instance.SetBaseCoreCamera(int.MaxValue,true);
+        CameraHandler.Instance.SetBaseCoreCamera(int.MaxValue, true);
     }
 
     public override void RefreshUI(bool isOpenInit = false)
@@ -46,6 +46,10 @@ public partial class UIBaseCore : BaseUIComponent
         else if (viewButton == ui_ViewBaseCoreItemFunction_Gashapon)
         {
             OnClickForGashapon();
+        }
+        else if (viewButton == ui_ViewBaseCoreItemFunction_Store)
+        {
+            OnClickForStore();
         }
     }
 
@@ -87,5 +91,13 @@ public partial class UIBaseCore : BaseUIComponent
     public void OnClickForGashapon()
     {
         var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIGashaponMachine>();
+    }
+
+    /// <summary>
+    /// 点击打开商店
+    /// </summary>
+    public void OnClickForStore()
+    {
+        var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBaseStore>();
     }
 }
