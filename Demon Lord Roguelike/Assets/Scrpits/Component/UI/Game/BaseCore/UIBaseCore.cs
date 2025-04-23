@@ -47,9 +47,9 @@ public partial class UIBaseCore : BaseUIComponent
         {
             OnClickForGashapon();
         }
-        else if (viewButton == ui_ViewBaseCoreItemFunction_Store)
+        else if (viewButton == ui_ViewBaseCoreItemFunction_Research)
         {
-            OnClickForStore();
+            OnClickForResearch();
         }
     }
 
@@ -96,8 +96,8 @@ public partial class UIBaseCore : BaseUIComponent
     /// <summary>
     /// 点击打开商店
     /// </summary>
-    public void OnClickForStore()
+    public void OnClickForResearch()
     {
-        var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBaseStore>();
+        var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBaseResearch>();
     }
 }

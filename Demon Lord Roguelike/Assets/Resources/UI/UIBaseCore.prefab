@@ -188,7 +188,6 @@ MonoBehaviour:
   ui_ViewExit: {fileID: 6667647910633107081}
   ui_ViewBaseCoreItemFunction_Lineup: {fileID: 3893603700093201422}
   ui_ViewBaseCoreItemFunction_Creature: {fileID: 7320116890934906920}
-  ui_ViewBaseCoreItemFunction_Store: {fileID: 4874151090956658772}
 --- !u!1001 &2797327858591407620
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -566,7 +565,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4676161509213193462, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
       propertyPath: m_Name
-      value: ViewBaseCoreItemFunction_Store
+      value: ViewBaseCoreItemFunction_Research
       objectReference: {fileID: 0}
     - target: {fileID: 6915073408995454095, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
       propertyPath: m_Pivot.x
@@ -658,17 +657,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 6915073408995454095, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
   m_PrefabInstance: {fileID: 6521287106637596205}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &4874151090956658772 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1811628500066889337, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
-  m_PrefabInstance: {fileID: 6521287106637596205}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &7171305013737310923
 PrefabInstance:
   m_ObjectHideFlags: 0

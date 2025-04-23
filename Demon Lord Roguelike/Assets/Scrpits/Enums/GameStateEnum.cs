@@ -91,7 +91,7 @@ public enum GameFightTypeEnum
 }
 
 
-public enum StoreInfoTypeEnum
+public enum ResearchInfoTypeEnum
 {   
     Building = 1,//设施相关
     Strengthen = 2,//强化相关

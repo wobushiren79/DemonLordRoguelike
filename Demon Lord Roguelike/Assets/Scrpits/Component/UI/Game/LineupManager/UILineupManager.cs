@@ -278,7 +278,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
             //刷新背包里的卡片
             ui_UIViewCreatureCardList.RefreshCardByIndex(targetView.cardData.indexList);
             //增加阵容卡
-            Vector3 posStart = UGUIUtil.GetUIRootPos(ui_LineupContent.transform, targetView.transform);
+            Vector3 posStart = UGUIUtil.GetRootPos(ui_LineupContent.transform, targetView.transform);
             AddLineupCard(targetView.cardData.creatureData, posStart);
         }
         else if (targetView.cardData.cardUseState == CardUseState.Lineup)
