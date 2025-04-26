@@ -92,8 +92,18 @@ public enum GameFightTypeEnum
 
 
 public enum ResearchInfoTypeEnum
-{   
+{
     Building = 1,//设施相关
     Strengthen = 2,//强化相关
     Creature = 3,//生物相关
+}
+
+public enum ColliderAreaCheckTypeEnum
+{
+    Default = 0,//默认
+    SphereCenter = 11,//中心圆形
+    SphereFront = 12,//前方圆形
+
+    BoxCenter = 21,//中心方块
+    BoxFront = 22,//前方方块
 }

@@ -10,7 +10,8 @@ public class AttackModeRangedArea : AttackModeRanged
         //播放一个范围攻击特效
         if (!attackModeInfo.effect_hit.IsNull())
         {
-            EffectHandler.Instance.ShowBoomEffect(attackModeInfo.effect_hit, gameObject.transform.position, attackModeInfo.collider_area_size);
+            float[] colliderAreaSize = attackModeInfo.GetColliderAreaSize();
+            EffectHandler.Instance.ShowBoomEffect(attackModeInfo.effect_hit, gameObject.transform.position, colliderAreaSize[0]);
         }
         //检测范围内的敌人
         CheckHitTargetArea(gameObject.transform.position, (targetCreature) =>

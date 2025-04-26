@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public partial class UIGameWorldMap : BaseUIComponent
 {
-    //µãÎ»ÁĞ±í
+    //ç‚¹ä½åˆ—è¡¨
     public Dictionary<string, GameObject> dicMapPoint = new Dictionary<string, GameObject>();
 
     public override void OpenUI()
@@ -23,7 +23,7 @@ public partial class UIGameWorldMap : BaseUIComponent
     }
 
     /// <summary>
-    /// Çå³ıµØÍ¼µãÎ»Êı¾İ
+    /// æ¸…é™¤åœ°å›¾ç‚¹ä½æ•°æ®
     /// </summary>
     public void ClearMapData()
     {
@@ -32,7 +32,7 @@ public partial class UIGameWorldMap : BaseUIComponent
     }
 
     /// <summary>
-    /// ³õÊ¼»¯µØÍ¼Êı¾İ
+    /// åˆå§‹åŒ–åœ°å›¾æ•°æ®
     /// </summary>
     public void InitMapData()
     {
@@ -45,13 +45,13 @@ public partial class UIGameWorldMap : BaseUIComponent
             return;
         }
         var mapDetailsData = gameWorldMapData.GetDetailsData();
-        //Éú³ÉµãÎ»
+        //ç”Ÿæˆç‚¹ä½
         foreach (var item in mapDetailsData)
         {
             GameWorldMapDetailsBean gameWorldMapDetails = item.Value;
             CreateMapPoint(gameWorldMapData, gameWorldMapDetails);
         }
-        //Éú³ÉÁ¬Ïß
+        //ç”Ÿæˆè¿çº¿
         foreach (var item in mapDetailsData)
         {
             GameWorldMapDetailsBean gameWorldMapDetails = item.Value;
@@ -60,27 +60,27 @@ public partial class UIGameWorldMap : BaseUIComponent
     }
 
     /// <summary>
-    /// ´´½¨µØÍ¼µãÎ»
+    /// åˆ›å»ºåœ°å›¾ç‚¹ä½
     /// </summary>
     public void CreateMapPoint(GameWorldMapBean gameWorldMapData, GameWorldMapDetailsBean gameWorldMapDetails)
     {
-        //´´½¨µØÍ¼µãÎ»
+        //åˆ›å»ºåœ°å›¾ç‚¹ä½
         GameObject objItemPoint = Instantiate(ui_Map.gameObject, ui_UIViewGameWorldMapPoint.gameObject);
         objItemPoint.gameObject.SetActive(true);
 
         UIViewGameWorldMapPoint itemView = objItemPoint.GetComponent<UIViewGameWorldMapPoint>();
         itemView.SetData(gameWorldMapDetails, gameWorldMapData.currentMapPosition, ui_Map);
-        //¼ÇÂ¼ËùÓĞµãÎ»obj
+        //è®°å½•æ‰€æœ‰ç‚¹ä½obj
         dicMapPoint.Add(gameWorldMapDetails.id, objItemPoint);
     }
 
     /// <summary>
-    /// ´´½¨µØÍ¼Á¬Ïß
+    /// åˆ›å»ºåœ°å›¾è¿çº¿
     /// </summary>
     /// <param name="gameWorldMapDetails"></param>
     public void CreateMapPointLine(GameWorldMapBean gameWorldMapData, GameWorldMapDetailsBean gameWorldMapDetails)
     {
-        //Ö»ÏÔÊ¾µ±Ç°µØÍ¼Î»ÖÃµÄÏÂÒ»²½ºÍÖ®Ç°µÄÁ¬Ïß
+        //åªæ˜¾ç¤ºå½“å‰åœ°å›¾ä½ç½®çš„ä¸‹ä¸€æ­¥å’Œä¹‹å‰çš„è¿çº¿
         if (gameWorldMapDetails.mapPosition.x > gameWorldMapData.currentMapPosition.x)
         {
             return;
@@ -101,7 +101,7 @@ public partial class UIGameWorldMap : BaseUIComponent
             UIViewGameWorldMapPointLine itemView = objItemPointLine.GetComponent<UIViewGameWorldMapPointLine>();
             itemView.SetData(startPosition, ((RectTransform)objPointEnd.transform).anchoredPosition);
 
-            //ÉèÖÃÁ¬ÏßÑÕÉ«
+            //è®¾ç½®è¿çº¿é¢œè‰²
             if (gameWorldMapDetails.mapPosition.x == gameWorldMapData.currentMapPosition.x)
             {
                 itemView.SetState(0);
@@ -123,7 +123,7 @@ public partial class UIGameWorldMap : BaseUIComponent
     }
 
     /// <summary>
-    /// °´Å¥µã»÷
+    /// æŒ‰é’®ç‚¹å‡»
     /// </summary>
     public override void OnClickForButton(Button viewButton)
     {
@@ -135,14 +135,12 @@ public partial class UIGameWorldMap : BaseUIComponent
     }
 
     /// <summary>
-    /// µã»÷-ÍË³ö
+    /// ç‚¹å‡»-é€€å‡º
     /// </summary>
     public void OnClickForExit()
     {
         DialogBean dialogData = new DialogBean();
         dialogData.content = TextHandler.Instance.GetTextById(501);
-        dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
-        dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
         dialogData.actionSubmit = (view, data) =>
         {
             UIHandler.Instance.ShowMask(2f,
@@ -157,11 +155,11 @@ public partial class UIGameWorldMap : BaseUIComponent
                     WorldHandler.Instance.EnterGameForBaseScene(userData, true);
                 }, false);
         };
-        var targetDialog = UIHandler.Instance.ShowDialog<UIDialogNormal>(dialogData);
+        var targetDialog = UIHandler.Instance.ShowDialogNormal(dialogData);
     }
 
     /// <summary>
-    /// ¶¯»­Õ¹¿ª¶¯»­
+    /// åŠ¨ç”»å±•å¼€åŠ¨ç”»
     /// </summary>
     public void AnimForShowUI(float animTime)
     {
@@ -178,7 +176,7 @@ public partial class UIGameWorldMap : BaseUIComponent
     }
 
     /// <summary>
-    /// ¶¯»­¹Ø±Õ
+    /// åŠ¨ç”»å…³é—­
     /// </summary>
     public void AnimForHideUI(float animTime)
     {

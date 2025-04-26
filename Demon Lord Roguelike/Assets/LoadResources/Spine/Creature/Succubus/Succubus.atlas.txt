@@ -1,468 +1,832 @@
 
 Succubus.png
-size: 268,78
+size: 681,78
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
 ArmDown_L
   rotate: true
-  xy: 235, 29
+  xy: 505, 15
   size: 8, 13
   orig: 8, 13
   offset: 0, 0
   index: -1
 ArmDown_R
   rotate: false
-  xy: 251, 56
+  xy: 580, 14
   size: 7, 9
   orig: 7, 9
   offset: 0, 0
   index: -1
 ArmUp_L
   rotate: false
-  xy: 229, 39
+  xy: 494, 15
   size: 9, 12
   orig: 9, 12
   offset: 0, 0
   index: -1
 ArmUp_R
-  rotate: true
-  xy: 239, 67
+  rotate: false
+  xy: 406, 2
   size: 9, 15
   orig: 9, 15
   offset: 0, 0
   index: -1
-Armor_ArmUp_L_1
-  rotate: true
-  xy: 257, 48
-  size: 6, 5
-  orig: 6, 5
-  offset: 0, 0
-  index: -1
-Armor_ArmUp_R_1
-  rotate: false
-  xy: 259, 41
-  size: 6, 5
-  orig: 6, 5
-  offset: 0, 0
-  index: -1
-Armor_Calf_L_1
-  rotate: true
-  xy: 221, 67
-  size: 9, 16
-  orig: 9, 16
-  offset: 0, 0
-  index: -1
-Armor_Calf_R_1
-  rotate: true
-  xy: 209, 53
-  size: 6, 12
-  orig: 6, 12
-  offset: 0, 0
-  index: -1
-Armor_Foot_L_1
-  rotate: false
-  xy: 221, 61
-  size: 8, 4
-  orig: 8, 4
-  offset: 0, 0
-  index: -1
-Armor_Foot_R_1
-  rotate: false
-  xy: 221, 61
-  size: 8, 4
-  orig: 8, 4
-  offset: 0, 0
-  index: -1
-Armor_Mimi_L_1
-  rotate: false
-  xy: 237, 54
-  size: 12, 5
-  orig: 12, 5
-  offset: 0, 0
-  index: -1
-Armor_Mimi_L_2
-  rotate: false
-  xy: 217, 15
-  size: 12, 12
-  orig: 12, 12
-  offset: 0, 0
-  index: -1
-Armor_Mimi_R_1
-  rotate: false
-  xy: 256, 71
-  size: 10, 5
-  orig: 10, 5
-  offset: 0, 0
-  index: -1
-Armor_Mimi_R_2
-  rotate: true
-  xy: 250, 29
-  size: 10, 9
-  orig: 10, 9
-  offset: 0, 0
-  index: -1
-Armor_Pelvis_1
-  rotate: false
-  xy: 217, 5
-  size: 15, 8
-  orig: 15, 8
-  offset: 0, 0
-  index: -1
-Armor_Pelvis_2
-  rotate: false
-  xy: 231, 19
-  size: 15, 8
-  orig: 15, 8
-  offset: 0, 0
-  index: -1
-Armor_Thigh_L_1
-  rotate: false
-  xy: 234, 6
-  size: 11, 11
-  orig: 11, 11
-  offset: 0, 0
-  index: -1
-Armor_Thigh_R_1
-  rotate: false
-  xy: 209, 61
-  size: 10, 15
-  orig: 10, 15
-  offset: 0, 0
-  index: -1
 Body
-  rotate: true
-  xy: 45, 2
-  size: 16, 22
-  orig: 16, 22
+  rotate: false
+  xy: 592, 22
+  size: 16, 23
+  orig: 16, 23
   offset: 0, 0
   index: -1
 Calf_L
-  rotate: false
-  xy: 218, 35
+  rotate: true
+  xy: 353, 22
   size: 9, 16
   orig: 9, 16
   offset: 0, 0
   index: -1
 Calf_R
   rotate: true
-  xy: 223, 53
+  xy: 505, 25
   size: 6, 12
   orig: 6, 12
   offset: 0, 0
   index: -1
+Clothes_1_ArmUp_L
+  rotate: false
+  xy: 533, 26
+  size: 6, 5
+  orig: 6, 5
+  offset: 0, 0
+  index: -1
+Clothes_1_ArmUp_R
+  rotate: true
+  xy: 640, 7
+  size: 6, 5
+  orig: 6, 5
+  offset: 0, 0
+  index: -1
+Clothes_1_Mimi_L
+  rotate: false
+  xy: 445, 19
+  size: 12, 5
+  orig: 12, 5
+  offset: 0, 0
+  index: -1
+Clothes_1_Mimi_R
+  rotate: true
+  xy: 567, 2
+  size: 10, 5
+  orig: 10, 5
+  offset: 0, 0
+  index: -1
+Clothes_2_Mimi_L
+  rotate: false
+  xy: 468, 15
+  size: 12, 12
+  orig: 12, 12
+  offset: 0, 0
+  index: -1
+Clothes_2_Mimi_R
+  rotate: false
+  xy: 557, 14
+  size: 10, 9
+  orig: 10, 9
+  offset: 0, 0
+  index: -1
+Clothes_3_ArmDown_L
+  rotate: false
+  xy: 574, 3
+  size: 7, 9
+  orig: 7, 9
+  offset: 0, 0
+  index: -1
+Clothes_3_ArmDown_R
+  rotate: true
+  xy: 647, 12
+  size: 7, 9
+  orig: 7, 9
+  offset: 0, 0
+  index: -1
+Clothes_3_ArmUp_L
+  rotate: true
+  xy: 669, 24
+  size: 4, 6
+  orig: 4, 6
+  offset: 0, 0
+  index: -1
+Clothes_3_Body
+  rotate: false
+  xy: 317, 25
+  size: 15, 22
+  orig: 15, 22
+  offset: 0, 0
+  index: -1
+Clothes_3_Body_Front
+  rotate: false
+  xy: 669, 30
+  size: 10, 12
+  orig: 10, 12
+  offset: 0, 0
+  index: -1
+Clothes_3_Mimi_L
+  rotate: true
+  xy: 482, 15
+  size: 12, 10
+  orig: 12, 10
+  offset: 0, 0
+  index: -1
+Clothes_3_Mimi_R
+  rotate: false
+  xy: 556, 2
+  size: 9, 10
+  orig: 9, 10
+  offset: 0, 0
+  index: -1
+Clothes_4_Body
+  rotate: true
+  xy: 388, 19
+  size: 17, 19
+  orig: 17, 19
+  offset: 0, 0
+  index: -1
+Clothes_4_Mimi_L
+  rotate: true
+  xy: 504, 2
+  size: 11, 9
+  orig: 11, 9
+  offset: 0, 0
+  index: -1
+Clothes_4_Mimi_R
+  rotate: true
+  xy: 534, 15
+  size: 8, 7
+  orig: 8, 7
+  offset: 0, 0
+  index: -1
+Clothes_5_Body
+  rotate: false
+  xy: 468, 29
+  size: 14, 7
+  orig: 14, 7
+  offset: 0, 0
+  index: -1
+Clothes_5_Body_Front
+  rotate: true
+  xy: 583, 2
+  size: 8, 7
+  orig: 8, 7
+  offset: 0, 0
+  index: -1
+Clothes_5_Mimi_L
+  rotate: false
+  xy: 658, 12
+  size: 7, 7
+  orig: 7, 7
+  offset: 0, 0
+  index: -1
+Clothes_5_Mimi_R
+  rotate: true
+  xy: 592, 2
+  size: 8, 6
+  orig: 8, 6
+  offset: 0, 0
+  index: -1
+Clothes_6_Body_Front
+  rotate: false
+  xy: 477, 2
+  size: 12, 11
+  orig: 12, 11
+  offset: 0, 0
+  index: -1
+Clothes_6_Mimi_L
+  rotate: false
+  xy: 597, 14
+  size: 9, 6
+  orig: 9, 6
+  offset: 0, 0
+  index: -1
+Clothes_6_Mimi_R
+  rotate: true
+  xy: 589, 12
+  size: 8, 6
+  orig: 8, 6
+  offset: 0, 0
+  index: -1
 Eye_1
   rotate: false
-  xy: 251, 41
+  xy: 345, 22
   size: 6, 3
   orig: 6, 3
   offset: 0, 0
   index: -1
 Eye_10
-  rotate: true
-  xy: 261, 33
+  rotate: false
+  xy: 661, 6
   size: 6, 4
   orig: 6, 4
   offset: 0, 0
   index: -1
 Eye_2
-  rotate: true
-  xy: 262, 25
+  rotate: false
+  xy: 649, 2
   size: 6, 3
   orig: 6, 3
   offset: 0, 0
   index: -1
 Eye_3
   rotate: false
-  xy: 207, 29
+  xy: 459, 21
   size: 7, 3
   orig: 7, 3
   offset: 0, 0
   index: -1
 Eye_4
   rotate: false
-  xy: 208, 24
+  xy: 640, 2
   size: 7, 3
   orig: 7, 3
   offset: 0, 0
   index: -1
 Eye_5
   rotate: false
-  xy: 69, 2
+  xy: 484, 29
   size: 9, 2
   orig: 9, 2
   offset: 0, 0
   index: -1
 Eye_6
   rotate: false
-  xy: 187, 24
+  xy: 334, 22
   size: 9, 3
   orig: 9, 3
   offset: 0, 0
   index: -1
 Eye_7
-  rotate: false
-  xy: 198, 24
+  rotate: true
+  xy: 630, 2
   size: 8, 3
   orig: 8, 3
   offset: 0, 0
   index: -1
 Eye_8
   rotate: false
-  xy: 216, 29
+  xy: 647, 7
   size: 7, 3
   orig: 7, 3
   offset: 0, 0
   index: -1
 Eye_9
   rotate: false
-  xy: 80, 2
+  xy: 495, 29
   size: 7, 2
   orig: 7, 2
   offset: 0, 0
   index: -1
 Foot_L
-  rotate: false
-  xy: 231, 61
+  rotate: true
+  xy: 600, 2
   size: 8, 4
   orig: 8, 4
   offset: 0, 0
   index: -1
 Foot_R
-  rotate: false
-  xy: 225, 29
+  rotate: true
+  xy: 606, 2
   size: 8, 4
   orig: 8, 4
   offset: 0, 0
   index: -1
 Hair_1
-  rotate: false
-  xy: 187, 53
+  rotate: true
+  xy: 567, 25
   size: 20, 23
   orig: 20, 23
   offset: 0, 0
   index: -1
-Hair_2
+Hair_10
   rotate: false
-  xy: 187, 29
+  xy: 541, 25
+  size: 24, 20
+  orig: 24, 20
+  offset: 0, 0
+  index: -1
+Hair_2
+  rotate: true
+  xy: 302, 2
   size: 18, 22
   orig: 18, 22
   offset: 0, 0
   index: -1
 Hair_3
-  rotate: true
-  xy: 116, 2
+  rotate: false
+  xy: 409, 19
   size: 16, 17
   orig: 16, 17
   offset: 0, 0
   index: -1
 Hair_4
   rotate: false
-  xy: 151, 2
+  xy: 254, 25
   size: 40, 20
   orig: 40, 20
   offset: 0, 0
   index: -1
 Hair_5
   rotate: true
-  xy: 193, 4
+  xy: 326, 2
   size: 18, 22
   orig: 18, 22
   offset: 0, 0
   index: -1
+Hair_6
+  rotate: false
+  xy: 88, 2
+  size: 44, 32
+  orig: 44, 32
+  offset: 0, 0
+  index: -1
+Hair_7
+  rotate: true
+  xy: 427, 19
+  size: 17, 16
+  orig: 17, 16
+  offset: 0, 0
+  index: -1
+Hair_8
+  rotate: false
+  xy: 610, 28
+  size: 23, 18
+  orig: 23, 18
+  offset: 0, 0
+  index: -1
+Hair_9
+  rotate: false
+  xy: 296, 25
+  size: 19, 20
+  orig: 19, 20
+  offset: 0, 0
+  index: -1
+Hat_3
+  rotate: false
+  xy: 334, 27
+  size: 17, 20
+  orig: 17, 20
+  offset: 0, 0
+  index: -1
+Hat_3_BG
+  rotate: false
+  xy: 648, 44
+  size: 28, 32
+  orig: 28, 32
+  offset: 0, 0
+  index: -1
 Head
   rotate: true
-  xy: 125, 20
-  size: 14, 16
-  orig: 14, 16
+  xy: 371, 22
+  size: 14, 15
+  orig: 14, 15
   offset: 0, 0
   index: -1
 Horn_1
   rotate: true
-  xy: 259, 6
+  xy: 526, 2
   size: 11, 7
   orig: 11, 7
   offset: 0, 0
   index: -1
+Horn_10
+  rotate: false
+  xy: 353, 33
+  size: 13, 14
+  orig: 13, 14
+  offset: 0, 0
+  index: -1
 Horn_2
   rotate: false
-  xy: 248, 19
+  xy: 520, 15
   size: 12, 8
   orig: 12, 8
   offset: 0, 0
   index: -1
 Horn_3
   rotate: false
-  xy: 69, 6
+  xy: 514, 33
   size: 25, 12
   orig: 25, 12
   offset: 0, 0
   index: -1
 Horn_4
   rotate: true
-  xy: 135, 3
+  xy: 378, 2
   size: 15, 14
   orig: 15, 14
   offset: 0, 0
   index: -1
 Horn_5
-  rotate: false
-  xy: 143, 24
+  rotate: true
+  xy: 635, 26
   size: 20, 10
   orig: 20, 10
   offset: 0, 0
   index: -1
+Horn_6
+  rotate: false
+  xy: 229, 39
+  size: 19, 6
+  orig: 19, 6
+  offset: 0, 0
+  index: -1
+Horn_7
+  rotate: false
+  xy: 569, 14
+  size: 9, 9
+  orig: 9, 9
+  offset: 0, 0
+  index: -1
+Horn_8
+  rotate: true
+  xy: 289, 2
+  size: 21, 11
+  orig: 21, 11
+  offset: 0, 0
+  index: -1
+Horn_9
+  rotate: false
+  xy: 484, 33
+  size: 28, 12
+  orig: 28, 12
+  offset: 0, 0
+  index: -1
 Mimi_L
   rotate: true
-  xy: 247, 5
+  xy: 544, 3
   size: 12, 10
   orig: 12, 10
   offset: 0, 0
   index: -1
 Mimi_R
   rotate: false
-  xy: 240, 41
+  xy: 515, 2
   size: 9, 11
   orig: 9, 11
   offset: 0, 0
   index: -1
 Mouth_1
   rotate: false
-  xy: 2, 2
+  xy: 162, 36
   size: 2, 1
   orig: 2, 1
   offset: 0, 0
   index: -1
 Mouth_10
   rotate: false
-  xy: 10, 2
+  xy: 589, 22
   size: 1, 1
   orig: 1, 1
   offset: 0, 0
   index: -1
 Mouth_2
-  rotate: false
-  xy: 89, 2
+  rotate: true
+  xy: 250, 41
   size: 4, 2
   orig: 4, 2
   offset: 0, 0
   index: -1
 Mouth_3
-  rotate: false
-  xy: 107, 2
+  rotate: true
+  xy: 677, 25
   size: 3, 2
   orig: 3, 2
   offset: 0, 0
   index: -1
 Mouth_4
   rotate: false
-  xy: 262, 20
+  xy: 656, 7
   size: 3, 3
   orig: 3, 3
   offset: 0, 0
   index: -1
 Mouth_5
   rotate: false
-  xy: 95, 2
+  xy: 462, 17
   size: 4, 2
   orig: 4, 2
   offset: 0, 0
   index: -1
 Mouth_6
   rotate: false
-  xy: 112, 2
+  xy: 665, 22
   size: 2, 2
   orig: 2, 2
   offset: 0, 0
   index: -1
 Mouth_7
-  rotate: false
-  xy: 101, 2
+  rotate: true
+  xy: 665, 26
   size: 4, 2
   orig: 4, 2
   offset: 0, 0
   index: -1
 Mouth_8
-  rotate: true
-  xy: 6, 2
+  rotate: false
+  xy: 368, 34
   size: 1, 2
   orig: 1, 2
   offset: 0, 0
   index: -1
 Mouth_9
   rotate: false
-  xy: 143, 20
+  xy: 677, 21
   size: 2, 2
   orig: 2, 2
   offset: 0, 0
   index: -1
 Palm_L
   rotate: false
-  xy: 241, 61
+  xy: 608, 12
   size: 8, 4
   orig: 8, 4
   offset: 0, 0
   index: -1
 Palm_R
   rotate: true
-  xy: 251, 46
+  xy: 612, 2
   size: 8, 4
   orig: 8, 4
   offset: 0, 0
   index: -1
-Pelvis
+Pants_1_Calf_L
   rotate: true
-  xy: 207, 34
-  size: 17, 9
-  orig: 17, 9
+  xy: 647, 21
+  size: 9, 16
+  orig: 9, 16
+  offset: 0, 0
+  index: -1
+Pants_1_Calf_R
+  rotate: true
+  xy: 519, 25
+  size: 6, 12
+  orig: 6, 12
+  offset: 0, 0
+  index: -1
+Pants_1_Foot_L
+  rotate: false
+  xy: 618, 12
+  size: 8, 4
+  orig: 8, 4
+  offset: 0, 0
+  index: -1
+Pants_1_Foot_R
+  rotate: false
+  xy: 618, 12
+  size: 8, 4
+  orig: 8, 4
+  offset: 0, 0
+  index: -1
+Pants_1_Pelvis
+  rotate: true
+  xy: 428, 2
+  size: 15, 8
+  orig: 15, 8
+  offset: 0, 0
+  index: -1
+Pants_1_Thigh_L
+  rotate: false
+  xy: 491, 2
+  size: 11, 11
+  orig: 11, 11
+  offset: 0, 0
+  index: -1
+Pants_1_Thigh_R
+  rotate: false
+  xy: 394, 2
+  size: 10, 15
+  orig: 10, 15
+  offset: 0, 0
+  index: -1
+Pants_2_Pelvis
+  rotate: true
+  xy: 438, 2
+  size: 15, 8
+  orig: 15, 8
+  offset: 0, 0
+  index: -1
+Pants_3_Calf_L
+  rotate: false
+  xy: 417, 2
+  size: 9, 15
+  orig: 9, 15
+  offset: 0, 0
+  index: -1
+Pants_3_Calf_R
+  rotate: false
+  xy: 535, 2
+  size: 7, 11
+  orig: 7, 11
+  offset: 0, 0
+  index: -1
+Pants_3_Foot_L
+  rotate: true
+  xy: 618, 2
+  size: 8, 4
+  orig: 8, 4
+  offset: 0, 0
+  index: -1
+Pants_3_Foot_R
+  rotate: true
+  xy: 618, 2
+  size: 8, 4
+  orig: 8, 4
+  offset: 0, 0
+  index: -1
+Pants_3_Pelvis
+  rotate: true
+  xy: 254, 4
+  size: 19, 33
+  orig: 19, 33
+  offset: 0, 0
+  index: -1
+Pants_3_Pelvis_BG
+  rotate: false
+  xy: 484, 47
+  size: 40, 29
+  orig: 40, 29
+  offset: 0, 0
+  index: -1
+Pants_3_Thigh_L
+  rotate: false
+  xy: 448, 4
+  size: 12, 13
+  orig: 12, 13
+  offset: 0, 0
+  index: -1
+Pants_3_Thigh_R
+  rotate: true
+  xy: 462, 2
+  size: 11, 13
+  orig: 11, 13
+  offset: 0, 0
+  index: -1
+Pants_4_Calf_L
+  rotate: true
+  xy: 629, 15
+  size: 9, 16
+  orig: 9, 16
+  offset: 0, 0
+  index: -1
+Pants_4_Calf_R
+  rotate: true
+  xy: 543, 17
+  size: 6, 12
+  orig: 6, 12
+  offset: 0, 0
+  index: -1
+Pants_4_Foot_L
+  rotate: true
+  xy: 635, 2
+  size: 8, 3
+  orig: 8, 3
+  offset: 0, 0
+  index: -1
+Pants_4_Foot_R
+  rotate: true
+  xy: 624, 2
+  size: 8, 4
+  orig: 8, 4
+  offset: 0, 0
+  index: -1
+Pants_4_Thigh_L
+  rotate: false
+  xy: 350, 2
+  size: 12, 18
+  orig: 12, 18
+  offset: 0, 0
+  index: -1
+Pants_4_Thigh_R
+  rotate: true
+  xy: 445, 26
+  size: 10, 21
+  orig: 10, 21
+  offset: 0, 0
+  index: -1
+Pelvis
+  rotate: false
+  xy: 610, 18
+  size: 17, 8
+  orig: 17, 8
   offset: 0, 0
   index: -1
 Show
   rotate: false
-  xy: 2, 5
+  xy: 45, 5
   size: 41, 71
   orig: 41, 71
   offset: 0, 0
   index: -1
 Thigh_L
-  rotate: true
-  xy: 96, 6
+  rotate: false
+  xy: 364, 2
   size: 12, 18
   orig: 12, 18
   offset: 0, 0
   index: -1
 Thigh_R
   rotate: true
-  xy: 165, 24
+  xy: 647, 32
   size: 10, 20
   orig: 10, 20
   offset: 0, 0
   index: -1
-Wing_L_1
+Weapon_L_1
   rotate: true
-  xy: 125, 36
+  xy: 162, 39
+  size: 37, 65
+  orig: 37, 65
+  offset: 0, 0
+  index: -1
+Weapon_L_2
+  rotate: true
+  xy: 300, 49
+  size: 27, 66
+  orig: 27, 66
+  offset: 0, 0
+  index: -1
+Weapon_L_3
+  rotate: true
+  xy: 229, 47
+  size: 29, 69
+  orig: 29, 69
+  offset: 0, 0
+  index: -1
+Weapon_L_4
+  rotate: false
+  xy: 2, 4
+  size: 41, 72
+  orig: 41, 72
+  offset: 0, 0
+  index: -1
+Weapon_L_5
+  rotate: true
+  xy: 88, 36
+  size: 40, 72
+  orig: 40, 72
+  offset: 0, 0
+  index: -1
+Wing_L_1
+  rotate: false
+  xy: 526, 47
   size: 40, 29
   orig: 40, 29
   offset: 0, 0
   index: -1
 Wing_L_2
-  rotate: false
-  xy: 45, 20
+  rotate: true
+  xy: 368, 38
   size: 38, 56
   orig: 38, 56
   offset: 0, 0
   index: -1
-Wing_R_1
+Wing_L_3
+  rotate: false
+  xy: 134, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+Wing_L_4
   rotate: true
-  xy: 156, 36
+  xy: 168, 2
+  size: 35, 41
+  orig: 35, 41
+  offset: 0, 0
+  index: -1
+Wing_R_1
+  rotate: false
+  xy: 568, 47
   size: 40, 29
   orig: 40, 29
   offset: 0, 0
   index: -1
 Wing_R_2
-  rotate: false
-  xy: 85, 20
+  rotate: true
+  xy: 426, 38
   size: 38, 56
   orig: 38, 56
+  offset: 0, 0
+  index: -1
+Wing_R_3
+  rotate: true
+  xy: 610, 48
+  size: 28, 36
+  orig: 28, 36
+  offset: 0, 0
+  index: -1
+Wing_R_4
+  rotate: true
+  xy: 211, 2
+  size: 35, 41
+  orig: 35, 41
   offset: 0, 0
   index: -1

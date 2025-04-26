@@ -17,7 +17,7 @@ public partial class UIViewGameWorldMapPoint : BaseUIView
     }
 
     /// <summary>
-    /// ÉèÖÃÊý¾Ý
+    /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public void SetData(GameWorldMapDetailsBean gameWorldMapDetails, Vector2 currentMapPosition, RectTransform mapContent)
     {
@@ -25,14 +25,14 @@ public partial class UIViewGameWorldMapPoint : BaseUIView
         this.currentMapPosition = currentMapPosition;
 
         SetPosition(mapContent.rect.width, mapContent.rect.height, gameWorldMapDetails.mapLength, gameWorldMapDetails.mapIndexNum, gameWorldMapDetails.mapPosition);
-        //ÉèÖÃitem×´Ì¬
+        //ï¿½ï¿½ï¿½ï¿½item×´Ì¬
         SetState(gameWorldMapDetails.mapPosition, currentMapPosition);
-        //ÉèÖÃµØÍ¼ÀàÐÍ
+        //ï¿½ï¿½ï¿½Ãµï¿½Í¼ï¿½ï¿½ï¿½ï¿½
         SetMapType(gameWorldMapDetails.mapType, gameWorldMapDetails.mapPosition, currentMapPosition);
     }
 
     /// <summary>
-    /// ÉèÖÃµØÍ¼ÀàÐÍ
+    /// ï¿½ï¿½ï¿½Ãµï¿½Í¼ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public void SetMapType(int mapType, Vector2 itemPosition, Vector2 currentMapPosition)
     {
@@ -67,11 +67,11 @@ public partial class UIViewGameWorldMapPoint : BaseUIView
     }
 
     /// <summary>
-    /// ÉèÖÃ×´Ì¬
+    /// ï¿½ï¿½ï¿½ï¿½×´Ì¬
     /// </summary>
     public void SetState(Vector2 itemPosition, Vector2 currentMapPosition)
     {
-        //Ö»ÓÐÏÂÒ»²½ÄÜµã»÷
+        //Ö»ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Üµï¿½ï¿½
         if (itemPosition.x == currentMapPosition.x + 1)
         {
             ui_UIViewGameWorldMapPoint.interactable = true;
@@ -83,37 +83,35 @@ public partial class UIViewGameWorldMapPoint : BaseUIView
     }
 
     /// <summary>
-    /// ÉèÖÃµØÍ¼Î»ÖÃ
+    /// ï¿½ï¿½ï¿½Ãµï¿½Í¼Î»ï¿½ï¿½
     /// </summary>
     public void SetPosition(float sizeMapW, float sizeMapH, int mapLength, int mapIndexNum, Vector2 mapPosition)
     {
-        //ºáµÄµØÍ¼µãÎ»×ÜÊý
+        //ï¿½ï¿½Äµï¿½Í¼ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½
         int xPointNum = mapLength + 2;
         int yPointNum = mapIndexNum;
-        //µãÎ»¼ä¸ô£¨×óÓÒ±ß½ç»¹»á¶à³öÒ»¸ö¼ä¸ô£©
+        //ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò±ß½ç»¹ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         float itemPointW = sizeMapW / (xPointNum - 1);
         float itemPointH = sizeMapH / (yPointNum + 1);
 
-        //ÉèÖÃµãÎ»×ø±ê
+        //ï¿½ï¿½ï¿½Ãµï¿½Î»ï¿½ï¿½ï¿½ï¿½
         float xPosition = itemPointW * mapPosition.x - sizeMapW / 2f;
         float yPosition = itemPointH * mapPosition.y - sizeMapH / 2f + itemPointH;
         rectTransform.anchoredPosition = new Vector2(xPosition, yPosition);
     }
 
     /// <summary>
-    /// µã»÷Ñ¡ÖÐ
+    /// ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½
     /// </summary>
     public void OnClickForSelect()
     {
         DialogBean dialogData = new DialogBean();
         dialogData.content = TextHandler.Instance.GetTextById(502);
-        dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
-        dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
         dialogData.actionSubmit = (view, data) =>
         {
             FightBean fightData = new FightBean();
             WorldHandler.Instance.EnterGameForFightScene(fightData);
         };
-        UIHandler.Instance.ShowDialog<UIDialogNormal>(dialogData);
+        UIHandler.Instance.ShowDialogNormal(dialogData);
     }
 }

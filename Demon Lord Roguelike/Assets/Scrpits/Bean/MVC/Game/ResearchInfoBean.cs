@@ -40,6 +40,10 @@ public partial class ResearchInfoBean : BaseBean
 	/// </summary>
 	public string pre_research_ids;
 	/// <summary>
+	///解锁的ID
+	/// </summary>
+	public long unlock_id;
+	/// <summary>
 	///需要支付的水晶
 	/// </summary>
 	public int pay_crystal;

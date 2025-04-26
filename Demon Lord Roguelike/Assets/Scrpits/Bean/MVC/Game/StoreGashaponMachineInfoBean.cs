@@ -22,7 +22,7 @@ public partial class StoreGashaponMachineInfoBean : BaseBean
 	/// <summary>
 	///解锁ID
 	/// </summary>
-	public string unlock_ids;
+	public long unlock_id;
 	/// <summary>
 	///备注
 	/// </summary>

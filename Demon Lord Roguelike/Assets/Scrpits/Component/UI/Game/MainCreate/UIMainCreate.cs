@@ -164,8 +164,6 @@ public partial class UIMainCreate : BaseUIComponent
         }
         DialogBean dialogData = new DialogBean();
         dialogData.content = string.Format(TextHandler.Instance.GetTextById(304), ui_NameET.text);
-        dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
-        dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
         dialogData.actionSubmit = ((view, data) =>
         {
             UserDataBean userData = new UserDataBean();
@@ -183,7 +181,7 @@ public partial class UIMainCreate : BaseUIComponent
             GameDataHandler.Instance.manager.SetUserData(userData);
             WorldHandler.Instance.EnterGameForBaseScene(userData, false);
         });
-        UIHandler.Instance.ShowDialog<UIDialogNormal>(dialogData);
+        UIHandler.Instance.ShowDialogNormal(dialogData);
 
     }
 

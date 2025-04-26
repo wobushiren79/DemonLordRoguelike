@@ -110,14 +110,11 @@ public partial class UIViewMainLoadItem : BaseUIView
     {
         DialogBean dialogData = new DialogBean();
         dialogData.content = string.Format(TextHandler.Instance.GetTextById(203),userData.userName);
-        dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
-        dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
         dialogData.actionSubmit = (dialogView, dialogData) =>
         {
             GameDataHandler.Instance.manager.DeleteUserData(userData);
             UIHandler.Instance.RefreshUI();
         };
-
-        UIHandler.Instance.ShowDialog<UIDialogNormal>(dialogData);
+        UIHandler.Instance.ShowDialogNormal(dialogData);
     }
 }

@@ -6,9 +6,15 @@ public partial class UIViewBaseResearchItem
 {
     public Image ui_Icon;
 
-    public CanvasRenderer ui_BG;
+    public Image ui_BG_Image;
 
-    public RectTransform ui_Line;
+    public Button ui_BG_Button;
+
+    public Image ui_Board;
+
+    public MaskUIView ui_UIViewBaseResearchItem_MaskUIView;
+
+    public RectTransform ui_UIViewBaseResearchItem_RectTransform;
 
 
 }

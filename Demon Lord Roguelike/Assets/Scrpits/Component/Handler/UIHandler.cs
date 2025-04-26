@@ -5,6 +5,9 @@ using UnityEngine;
 
 public partial class UIHandler
 {
+    /// <summary>
+    /// 展示遮罩UI
+    /// </summary>
     public void ShowMask(float maskTime, Action acionForStart, Action acionForComplete, bool isCloseOther)
     {
         UICommonMask maskUI;
@@ -23,6 +26,18 @@ public partial class UIHandler
     {
         var maskUI = OpenUIAndCloseOther<UICommonMask>();
         maskUI.EndMask(maskTime, acionForStart, acionForComplete, isCloseSelf);
+    }
+
+    /// <summary>
+    /// 展示默认普通谈拆给你
+    /// </summary>
+    public UIDialogNormal ShowDialogNormal(DialogBean dialogData)
+    {        
+        if(dialogData.submitStr.IsNull())
+            dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
+        if(dialogData.cancelStr.IsNull())
+            dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
+        return ShowDialog<UIDialogNormal>(dialogData);
     }
 
 }

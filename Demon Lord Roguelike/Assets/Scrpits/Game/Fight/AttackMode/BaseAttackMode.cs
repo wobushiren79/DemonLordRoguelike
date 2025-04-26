@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
+using Unity.Burst.Intrinsics;
 using UnityEngine;
 
 public class BaseAttackMode
@@ -151,10 +152,7 @@ public class BaseAttackMode
     public bool CheckHitTargetArea(Vector3 checkPosition, Action<GameFightCreatureEntity> actionForHitItem)
     {
         bool hasHitter = false;
-        Collider[] targetColliders = RayUtil.OverlapToSphere(checkPosition, attackModeInfo.collider_area_size, 1 << attackedLayer);
-        //绘制测试范围
-        DrawTestArea(checkPosition, attackModeInfo.collider_area_size, 1);
-
+        Collider[] targetColliders = GetHitTargetAreaCollider(checkPosition);
         if (targetColliders != null)
         {
             for (int i = 0; i < targetColliders.Length; i++)
@@ -173,13 +171,66 @@ public class BaseAttackMode
         return hasHitter;
     }
 
-    public void DrawTestArea(Vector3 startPostion, float areaSize, float duration)
+    /// <summary>
+    /// 获取打击区域内的Collider
+    /// </summary>
+    /// <returns></returns>
+    public Collider[] GetHitTargetAreaCollider(Vector3 checkPosition)
+    {
+        ColliderAreaCheckTypeEnum colliderAreaCheckType = attackModeInfo.GetColliderAreaCheckType();
+        float[] colliderAreaSize = attackModeInfo.GetColliderAreaSize();
+        Collider[] colliders = null;
+        switch (colliderAreaCheckType)
+        {
+            case ColliderAreaCheckTypeEnum.SphereCenter:
+                //圆形半径
+                colliders = RayUtil.OverlapToSphere(checkPosition, colliderAreaSize[0], 1 << attackedLayer);
+                //绘制测试范围
+                DrawTestAreaForSphere(checkPosition, colliderAreaSize[0], 1);
+                break;
+            case ColliderAreaCheckTypeEnum.SphereFront:
+                break;
+            case ColliderAreaCheckTypeEnum.BoxCenter:
+                break;
+            case ColliderAreaCheckTypeEnum.BoxFront:
+                Vector3 offsetPosition;
+                if (attackDirection.x > 0)
+                {
+                    offsetPosition = new Vector3(colliderAreaSize[0], 0, 0);
+                }
+                else
+                {
+                    offsetPosition = new Vector3(-colliderAreaSize[0], 0, 0);
+                }
+                Vector3 halfEx = new Vector3(colliderAreaSize[0], colliderAreaSize[1], colliderAreaSize[2]);
+                colliders = RayUtil.OverlapToBox(checkPosition + offsetPosition, halfEx, 1 << attackedLayer);
+                DrawTestAreaForBox(checkPosition + offsetPosition, halfEx, 1);
+                break;
+            default:
+                break;
+        }
+        return colliders;
+    }
+
+    public void DrawTestAreaForSphere(Vector3 startPostion, float areaSize, float duration)
     {
 #if UNITY_EDITOR
         Debug.DrawRay(startPostion, new Vector3(areaSize, 0, 0), Color.red, duration);
         Debug.DrawRay(startPostion, new Vector3(-areaSize, 0, 0), Color.red, duration);
         Debug.DrawRay(startPostion, new Vector3(0, 0, areaSize), Color.red, duration);
         Debug.DrawRay(startPostion, new Vector3(0, 0, -areaSize), Color.red, duration);
+#endif
+    }
+
+    public void DrawTestAreaForBox(Vector3 startPostion, Vector3 halfEx, float duration)
+    {
+#if UNITY_EDITOR
+        Debug.DrawRay(startPostion, new Vector3(halfEx[0], 0, 0), Color.red, duration);
+        Debug.DrawRay(startPostion, new Vector3(-halfEx[0], 0, 0), Color.red, duration);
+        Debug.DrawRay(startPostion, new Vector3(0, halfEx[1], 0), Color.red, duration);
+        Debug.DrawRay(startPostion, new Vector3(0, -halfEx[1], 0), Color.red, duration);
+        Debug.DrawRay(startPostion, new Vector3(0, 0, halfEx[2]), Color.red, duration);
+        Debug.DrawRay(startPostion, new Vector3(0, 0, -halfEx[2]), Color.red, duration);
 #endif
     }
     #endregion

@@ -82,10 +82,10 @@ public partial class UIGashaponMachine : BaseUIComponent
         foreach (var item in allData)
         {
             var itemData = item.Value;
-            if (!itemData.unlock_ids.IsNull())
+            if (itemData.unlock_id != 0)
             {
                 //检测是否解锁普通
-                if (!userLockData.CheckIsUnlock(itemData.unlock_ids))
+                if (!userLockData.CheckIsUnlock(itemData.unlock_id))
                 {
                     continue;
                 }

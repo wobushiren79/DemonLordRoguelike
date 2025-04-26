@@ -20,9 +20,13 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public float collider_size;
 	/// <summary>
+	///碰撞范围类型11中心圆形 12前方圆形 21中心box 22前方box
+	/// </summary>
+	public int collider_area_type;
+	/// <summary>
 	///碰撞范围检测（用于范围）
 	/// </summary>
-	public float collider_area_size;
+	public string collider_area_size;
 	/// <summary>
 	///打击之后的特效
 	/// </summary>

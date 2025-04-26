@@ -133,15 +133,13 @@ public partial class UICreatureSacrifice : BaseUIComponent
         }
         DialogBean dialogData = new DialogBean();
         dialogData.content = string.Format(TextHandler.Instance.GetTextById(62001), $"{MathUtil.GetPercentage(0.2f, 2)}%");
-        dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
-        dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
         dialogData.actionSubmit = (view, data) =>
         {
             //开始献祭
             CreatureSacrificeLogic gameLogic = GameHandler.Instance.manager.GetGameLogic<CreatureSacrificeLogic>();
             gameLogic.StartSacrifice();
         };
-        UIHandler.Instance.ShowDialog<UIDialogNormal>(dialogData);
+        UIHandler.Instance.ShowDialogNormal(dialogData);
 
     }
     #endregion

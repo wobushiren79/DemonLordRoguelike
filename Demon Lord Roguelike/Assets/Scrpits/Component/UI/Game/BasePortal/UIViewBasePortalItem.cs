@@ -81,8 +81,6 @@ public partial class UIViewBasePortalItem : BaseUIView
     {
         DialogBean dialogData = new DialogBean();
         dialogData.content = string.Format(TextHandler.Instance.GetTextById(401), gameWorldInfo.GetName());
-        dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
-        dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
         float animTimeForShowMask = 2f;
         float animTimeForHideMask = 1f;
         dialogData.actionSubmit = ((view, data) =>
@@ -107,6 +105,6 @@ public partial class UIViewBasePortalItem : BaseUIView
                 }, false);
             }, true);
         });
-        UIHandler.Instance.ShowDialog<UIDialogNormal>(dialogData);
+        UIHandler.Instance.ShowDialogNormal(dialogData);
     }
 }
