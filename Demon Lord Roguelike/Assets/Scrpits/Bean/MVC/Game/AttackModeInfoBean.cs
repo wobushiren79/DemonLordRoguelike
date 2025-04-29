@@ -30,7 +30,7 @@ public partial class AttackModeInfoBean : BaseBean
 	/// <summary>
 	///打击之后的特效
 	/// </summary>
-	public string effect_hit;
+	public long effect_hit;
 	/// <summary>
 	///受伤特效（默认不填，0为关闭）
 	/// </summary>

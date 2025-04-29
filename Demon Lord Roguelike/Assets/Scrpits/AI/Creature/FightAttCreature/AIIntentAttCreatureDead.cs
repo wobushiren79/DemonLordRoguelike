@@ -5,7 +5,7 @@ using UnityEngine;
 public class AIIntentAttCreatureDead : AIBaseIntent
 {
     public float timeUpdateForDead = 0f;
-    public float timeForDeadTime = 1.1f;
+    public float timeUpdateForDeadCD = 1.1f;
     
     public AIAttCreatureEntity selfAIEntity;
     public override void IntentEntering(AIBaseEntity aiEntity)
@@ -20,7 +20,7 @@ public class AIIntentAttCreatureDead : AIBaseIntent
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
         timeUpdateForDead += Time.deltaTime;
-        if (timeUpdateForDead >= timeForDeadTime)
+        if (timeUpdateForDead >= timeUpdateForDeadCD)
         {
             timeUpdateForDead = 0;
             var selfFightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;

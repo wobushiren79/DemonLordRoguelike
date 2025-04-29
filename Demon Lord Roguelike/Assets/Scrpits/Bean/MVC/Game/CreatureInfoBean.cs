@@ -64,13 +64,21 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public int attack_search_type;
 	/// <summary>
+	///攻击搜索目标类型
+	/// </summary>
+	public int attack_search_creature_type;
+	/// <summary>
 	///攻击搜索范围
 	/// </summary>
 	public float attack_search_range;
 	/// <summary>
-	///攻击间隔
+	///攻击搜索间隔（搜索敌人间隔）
 	/// </summary>
-	public float attack_cd;
+	public float attack_search_time;
+	/// <summary>
+	///攻击间隔（每次攻击间隔）
+	/// </summary>
+	public float attack_cd_time;
 	/// <summary>
 	///死亡动画时间
 	/// </summary>

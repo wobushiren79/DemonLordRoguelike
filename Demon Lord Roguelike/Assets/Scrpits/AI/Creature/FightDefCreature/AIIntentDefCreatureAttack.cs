@@ -4,22 +4,25 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
 {
     //攻击准备时间
     public float timeUpdateAttackPre = 0;
+    public float timeUpdateAttackPreCD = 0.2f;
     public float timeUpdateAttacking = 0;
-
+    public float timeUpdateAttackingCD = 0.2f;
     //目标AI
     public AIDefCreatureEntity selfAIEntity;
     //攻击状态 0准备中 1攻击中
     public int attackState = 0;
-
+    public FightCreatureBean fightCreatureData;
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         timeUpdateAttackPre = 0;
         timeUpdateAttacking = 0;
         selfAIEntity = aiEntity as AIDefCreatureEntity;
-
+        fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
         attackState = 0;
+        timeUpdateAttackPreCD = fightCreatureData.creatureData.GetAttackCDTime();
+        timeUpdateAttackingCD = fightCreatureData.creatureData.GetAttackAnimTime();
         //刚进来立即开始一次攻击
-        timeUpdateAttackPre = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.GetAttackCD();
+        timeUpdateAttackPre = timeUpdateAttackPreCD;
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
@@ -28,10 +31,10 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
         if (attackState == 0)
         {
             timeUpdateAttackPre += Time.deltaTime;
-            float attCD = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.GetAttackCD();
-            if (timeUpdateAttackPre >= attCD)
+            if (timeUpdateAttackPre >= timeUpdateAttackPreCD)
             {
                 timeUpdateAttackPre = 0;
+                timeUpdateAttackPreCD = fightCreatureData.creatureData.GetAttackCDTime();
                 AttackAttCreature();
             }
         }
@@ -39,10 +42,11 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
         else if (attackState == 1)
         {
             timeUpdateAttacking += Time.deltaTime;
-            float attAnimCastTime = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.GetAttackAnimTime();
-            if (timeUpdateAttacking >= attAnimCastTime)
+             
+            if (timeUpdateAttacking >= timeUpdateAttackingCD)
             {
                 timeUpdateAttacking = 0;
+                timeUpdateAttackingCD = fightCreatureData.creatureData.GetAttackAnimTime();
                 AttackDefCreatureStartEnd();
             }
         }
@@ -72,7 +76,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
             ChangeIntent(AIIntentEnum.DefCreatureDead);
             return;
         }
-        var selfCreatureInfo = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo;
+        var selfCreatureInfo = fightCreatureData.creatureData.creatureInfo;
         string animNameAppointAttack = selfCreatureInfo.anim_attack;
         string animNameAppointIdle = selfCreatureInfo.anim_idle;
         //播放攻击动画
@@ -102,7 +106,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
     /// </summary>
     public void ActionForAttackEnd(BaseAttackMode attackMode)
     {        
-        var findTargetCreature = selfAIEntity.FindCreatureEntityForDis(Vector3.right, CreatureTypeEnum.FightAttack);
+        var findTargetCreature = selfAIEntity.FindCreatureEntityForDis(Vector3.right);
         //如果没有找到最近的生物
         if(findTargetCreature == null)
         {

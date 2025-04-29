@@ -71,35 +71,45 @@ public partial class EffectHandler
     }
 
     /// <summary>
-    /// 设置爆炸粒子
+    /// 展示粒子
     /// </summary>
-    public void ShowBoomEffect(string effectName, Vector3 targetPos, float size)
+    public void ShowEffect(long effectId, Vector3 targetPos, float size)
     {
+        var effectInfo = EffectInfoCfg.GetItemData(effectId);
         //播放粒子
         Action<EffectBase> playEffect = (targetEffect) =>
         {
             if (targetEffect == null)
                 return;
             var targetVisualEffect = targetEffect.GetVisualEffect();
-            if (effectName.Equals("EffectExplosion_1"))
+            var dicEffectData = effectInfo.GetEffectItemData();
+            dicEffectData.ForEach((index, value) =>
             {
-                targetVisualEffect.SetVector3("StartPosition", targetPos + new Vector3(0,0.001f,0));
-                targetVisualEffect.SetFloat("SizeFloor", size * 3);
-                targetVisualEffect.SetFloat("CircleSize", size * 2);
-            }
-            else
-            {
-                targetVisualEffect.SetVector3("StartPosition", targetPos);
-                targetVisualEffect.SetFloat("LifeTime", 0.5f);
-                targetVisualEffect.SetFloat("WaveSize", size * 2);
-                targetVisualEffect.SetFloat("BoomSize", size);
-                targetVisualEffect.SetFloat("SmokeSize", size);
-            }
+                switch(value.dataType)
+                {
+                    case 1://float
+                        float targetFloatData = value.dataFloat;
+                        if (value.isSize)
+                        {
+                            targetFloatData = size;
+                        }
+                        targetVisualEffect.SetFloat(value.dataName, targetFloatData);
+                        break;
+                    case 5://vector3
+                        Vector3 targetVector3Data = value.dataVector3;
+                        if (value.isStartPosition)
+                        {
+                            targetVector3Data = targetPos;
+                        }
+                        targetVisualEffect.SetVector3(value.dataName, targetVector3Data);
+                        break;
+                }
+            });
             targetEffect.PlayEffect();
         };
 
         //获取粒子实例
-        manager.GetEffectForEnduring(effectName, (targetEffect) =>
+        manager.GetEffectForEnduring(effectInfo.res_name, (targetEffect) =>
         {
             playEffect?.Invoke(targetEffect);
         });

@@ -1,4 +1,5 @@
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using Spine.Unity;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,11 +15,13 @@ public abstract class AICreatureEntity : AIBaseEntity
     /// <summary>
     /// 搜索离自己最近的目标
     /// </summary>
-    public GameFightCreatureEntity FindCreatureEntityForDis(Vector3 direction, CreatureTypeEnum searchCreatureType)
+    public GameFightCreatureEntity FindCreatureEntityForDis(Vector3 direction)
     {
         var fightCreatureData = selfCreatureEntity.fightCreatureData;
+        var creatureInfo = fightCreatureData.creatureData.creatureInfo;
         //搜索范围
-        float searchRange = fightCreatureData.creatureData.creatureInfo.attack_search_range;
+        float searchRange = creatureInfo.attack_search_range;
+        CreatureTypeEnum searchCreatureType = creatureInfo.GetAttackSearchCreatureType();
         //搜索模式
         CreatureAttackSearchType searchType = fightCreatureData.creatureData.creatureInfo.GetCreatureAttackSearchType();
         //起始搜索点
@@ -41,9 +44,13 @@ public abstract class AICreatureEntity : AIBaseEntity
         switch (searchType)
         {
             case CreatureAttackSearchType.Ray:
+                //射线搜索
                 return FindCreatureEntityForDisMinByRay(startPosition, direction, searchRange, searchCreatureType,layoutInfo);
             case CreatureAttackSearchType.Area:
-                return FindCreatureEntityForDisMinByArea(startPosition, searchRange, searchCreatureType, layoutInfo);
+            case CreatureAttackSearchType.AreaHPNoMax:
+            case CreatureAttackSearchType.AreaDRNoMax:
+                //范围搜索
+                return FindCreatureEntityByArea(searchType, startPosition, searchRange, searchCreatureType, layoutInfo);
             case CreatureAttackSearchType.RoadForeach:
                 //搜索路径
                 int searchRoadIndex = fightCreatureData.roadIndex;
@@ -72,10 +79,10 @@ public abstract class AICreatureEntity : AIBaseEntity
     }
 
     /// <summary>
-    /// 查询范围内最近的敌人
+    /// 查询范围敌人
     /// </summary>
     /// <returns></returns>
-    public GameFightCreatureEntity FindCreatureEntityForDisMinByArea(Vector3 startPosition, float radius, CreatureTypeEnum searchCreatureType, int layoutInfo)
+    public GameFightCreatureEntity FindCreatureEntityByArea(CreatureAttackSearchType creatureAttackSearchType, Vector3 startPosition, float radius, CreatureTypeEnum searchCreatureType, int layoutInfo)
     {
         Collider[] colliders = RayUtil.OverlapToSphere(startPosition, radius, layoutInfo);
         if (colliders.IsNull())
@@ -89,7 +96,26 @@ public abstract class AICreatureEntity : AIBaseEntity
             var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, searchCreatureType);
             if (targetCreature != null && !targetCreature.IsDead())
             {
-                return targetCreature;
+                var fightCreatureData = targetCreature.fightCreatureData;
+                switch (creatureAttackSearchType)
+                {
+                    case CreatureAttackSearchType.AreaHPNoMax:
+                        //不是满血
+                        if (fightCreatureData.HPCurrent < fightCreatureData.HPMax)
+                        {
+                            return targetCreature;
+                        }
+                        break;
+                    case CreatureAttackSearchType.AreaDRNoMax:
+                        //不是满甲
+                        if (fightCreatureData.DRCurrent < fightCreatureData.DRMax)
+                        {
+                            return targetCreature;
+                        }
+                        break;
+                    default:
+                        return targetCreature;
+                }
             }
         }
         return null;

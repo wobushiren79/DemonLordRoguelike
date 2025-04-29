@@ -6,24 +6,30 @@ public class AIIntentAttCreatureMove : AIBaseIntent
 {
     //目标AI
     public AIAttCreatureEntity selfAIEntity;
+    public FightCreatureBean fightCreatureData;
     public float timeUpdateForFindTarget = 0;
+    public float timeUpdateForFindTargetCD = 0;
+
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         timeUpdateForFindTarget = 0;
         selfAIEntity = aiEntity as AIAttCreatureEntity;
+        fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
+        timeUpdateForFindTargetCD = fightCreatureData.creatureData.GetAttackSearchTime();
         //设置移动动作
-        string animNameAppoint = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_walk;
-        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Walk, true, animNameAppoint:animNameAppoint);
+        string animNameAppoint = fightCreatureData.creatureData.creatureInfo.anim_walk;
+        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Walk, true, animNameAppoint: animNameAppoint);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
         //查询敌人
         timeUpdateForFindTarget += Time.deltaTime;
-        if (timeUpdateForFindTarget > 0.25f)
+        if (timeUpdateForFindTarget > timeUpdateForFindTargetCD)
         {
             timeUpdateForFindTarget = 0;
-            var findTargetCreature = selfAIEntity.FindCreatureEntityForDis(Vector3.left, CreatureTypeEnum.FightDefense);
+            timeUpdateForFindTargetCD = fightCreatureData.creatureData.GetAttackSearchTime();
+            var findTargetCreature = selfAIEntity.FindCreatureEntityForDis(Vector3.left);
             if (findTargetCreature != null)
             {
                 selfAIEntity.targetCreatureEntity = findTargetCreature;
@@ -61,6 +67,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
     public override void IntentLeaving(AIBaseEntity aiEntity)
     {
         timeUpdateForFindTarget = 0;
+        timeUpdateForFindTargetCD = 0.2f;
     }
 
     /// <summary>

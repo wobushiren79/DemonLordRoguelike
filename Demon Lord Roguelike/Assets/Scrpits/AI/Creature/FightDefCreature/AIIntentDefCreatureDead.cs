@@ -5,7 +5,7 @@ using UnityEngine;
 public class AIIntentDefCreatureDead : AIBaseIntent
 {
     public float timeUpdateForDead = 0f;
-    public float timeForDeadTime = 1.1f;
+    public float timeUpdateForDeadCD = 1.1f;
 
     //目标AI
     public AIDefCreatureEntity selfAIEntity;
@@ -20,7 +20,7 @@ public class AIIntentDefCreatureDead : AIBaseIntent
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
         timeUpdateForDead += Time.deltaTime;
-        if (timeUpdateForDead >= timeForDeadTime)
+        if (timeUpdateForDead >= timeUpdateForDeadCD)
         {
             timeUpdateForDead = 0;
             CreatureHandler.Instance.RemoveCreatureEntity(selfAIEntity.selfCreatureEntity, CreatureTypeEnum.FightDefense);

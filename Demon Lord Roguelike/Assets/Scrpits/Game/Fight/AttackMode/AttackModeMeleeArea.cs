@@ -15,10 +15,10 @@ public class AttackModeMeleeArea : BaseAttackMode
             targetFightCreatureEntity.UnderAttack(this);
         });
         //播放一个范围攻击特效
-        if (!attackModeInfo.effect_hit.IsNull())
+        if (attackModeInfo.effect_hit != 0)
         {
             float[] colliderAreaSize = attackModeInfo.GetColliderAreaSize();
-            EffectHandler.Instance.ShowBoomEffect(attackModeInfo.effect_hit, gameObject.transform.position, colliderAreaSize[0]);
+            EffectHandler.Instance.ShowEffect(attackModeInfo.effect_hit, gameObject.transform.position, colliderAreaSize[0]);
         }
         //攻击完了就回收这个攻击
         Destory();

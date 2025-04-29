@@ -29,6 +29,11 @@ public partial class CreatureInfoBean
         return (CreatureTypeEnum)creature_type;
     }
 
+    public CreatureTypeEnum GetAttackSearchCreatureType()
+    {
+        return (CreatureTypeEnum)attack_search_creature_type;
+    }
+
     /// <summary>
     /// 获取所有基础部位IDs
     /// </summary>

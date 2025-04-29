@@ -15,10 +15,10 @@ public class AttackModeExplosion : BaseAttackMode
             return;
         }
         //播放一个范围攻击特效
-        if (!attackModeInfo.effect_hit.IsNull())
+        if (attackModeInfo.effect_hit != 0)
         {
             float[] colliderAreaSize = attackModeInfo.GetColliderAreaSize();
-            EffectHandler.Instance.ShowBoomEffect(attackModeInfo.effect_hit, attacker.creatureObj.transform.position, colliderAreaSize[0]);
+            EffectHandler.Instance.ShowEffect(attackModeInfo.effect_hit, attacker.creatureObj.transform.position, colliderAreaSize[0]);
         }
         //检测周围的敌人
         CheckHitTargetArea(attacker.creatureObj.transform.position, (GameFightCreatureEntity itemAttacked) =>

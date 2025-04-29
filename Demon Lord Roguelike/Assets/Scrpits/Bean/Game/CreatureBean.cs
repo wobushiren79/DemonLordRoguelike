@@ -270,9 +270,20 @@ public partial class CreatureBean
     /// 获取攻击CD
     /// </summary>
     /// <returns></returns>
-    public float GetAttackCD()
+    public float GetAttackCDTime()
     {
-        return creatureInfo.attack_cd;
+        return creatureInfo.attack_cd_time;
+    }
+
+    /// <summary>
+    /// 获取间隔搜索敌人时间
+    /// </summary>
+    public float GetAttackSearchTime()
+    {
+        //保底容错
+        if (creatureInfo.attack_search_time <= 0)
+            creatureInfo.attack_search_time = 0.2f;
+        return creatureInfo.attack_search_time;
     }
 
     /// <summary>

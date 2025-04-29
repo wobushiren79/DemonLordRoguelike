@@ -1,8 +1,10 @@
 
 public enum CreatureAttackSearchType{
     Ray = 0,//默认射线
-    Area = 1,//范围
-    RoadForeach = 2,//遍历同一路线所有生物
+    Area = 11,//范围
+    AreaHPNoMax = 12,//范围内hp不满
+    AreaDRNoMax = 13,//范围内dr不满
+    RoadForeach = 21,//遍历同一路线所有生物
 }
 
 public enum CreatureStateEnum
