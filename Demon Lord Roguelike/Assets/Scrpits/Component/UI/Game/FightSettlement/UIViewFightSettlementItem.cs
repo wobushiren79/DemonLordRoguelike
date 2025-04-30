@@ -46,7 +46,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
     /// <summary>
     /// 设置击杀数
     /// </summary>
-    public void SetProgressForKill(int maxKill, int kill)
+    public void SetProgressForKill(long maxKill, long kill)
     {
         string title = TextHandler.Instance.GetTextById(50002);
         ui_UIViewFightSettlementItemProgress_Kill.SetData(title, maxKill, kill);
@@ -55,7 +55,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
     /// <summary>
     /// 设置伤害
     /// </summary>
-    public void SetProgressForDamage(int maxDamage, int damage)
+    public void SetProgressForDamage(long maxDamage, long damage)
     {
         string title = TextHandler.Instance.GetTextById(50001);
         ui_UIViewFightSettlementItemProgress_Damage.SetData(title, maxDamage, damage);
@@ -64,7 +64,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
     /// <summary>
     /// 设置受到的伤害
     /// </summary>
-    public void SetProgressForDamageReceived(int maxDamageReceived, int damageReceived)
+    public void SetProgressForDamageReceived(long maxDamageReceived, long damageReceived)
     {
         string title = TextHandler.Instance.GetTextById(50004);
         ui_UIViewFightSettlementItemProgress_DamageReceived.SetData(title, maxDamageReceived, damageReceived);
@@ -73,7 +73,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
     /// <summary>
     /// 设置经验
     /// </summary>
-    public void SetPrgoressForExp(int maxExp, int exp)
+    public void SetPrgoressForExp(long maxExp, long exp)
     {
         string title = TextHandler.Instance.GetTextById(50003);
         ui_UIViewFightSettlementItemProgress_Exp.SetData(title, maxExp, exp);

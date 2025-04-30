@@ -125,6 +125,22 @@ public class BaseAttackMode
         FightHandler.Instance.RemoveAttackModePrefab(this);
     }
 
+    #region  特效
+    /// <summary>
+    /// 播放攻击特效
+    /// </summary>
+    /// <param name="startPosition"></param>
+    public void PlayEffectForHit(Vector3 startPosition)
+    {
+        if (attackModeInfo.effect_hit != 0)
+        {
+            float[] colliderAreaSize = attackModeInfo.GetColliderAreaSize();
+            Direction2DEnum effectDirection = attackDirection.x > 0 ? Direction2DEnum.Right : Direction2DEnum.Left;
+            EffectHandler.Instance.ShowEffect(attackModeInfo.effect_hit, startPosition, effectDirection, colliderAreaSize[0]);
+        }
+    }
+    #endregion
+    
     #region  检测相关
     /// <summary>
     /// 检测是否击中生物

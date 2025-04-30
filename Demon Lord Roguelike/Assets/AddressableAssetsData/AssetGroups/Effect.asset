@@ -30,6 +30,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 61201823851cf114083dbe189ce0d380
+    m_Address: Assets/LoadResources/Effects/EffectBuff_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6e30d327e4eff0043b4830b3c04f44d6
     m_Address: Assets/LoadResources/Effects/EffectBlood_1.prefab
     m_ReadOnly: 0
@@ -42,6 +47,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 96cc022574babe1489ef077f9d026990
     m_Address: Assets/LoadResources/Effects/EffectSacrfice_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ac5939a3c99bf6543ab24381bd5b9f23
+    m_Address: Assets/LoadResources/Effects/EffectSlash_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

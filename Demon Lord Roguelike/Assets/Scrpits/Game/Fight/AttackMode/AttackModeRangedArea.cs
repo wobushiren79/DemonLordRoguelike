@@ -7,12 +7,8 @@ public class AttackModeRangedArea : AttackModeRanged
 {
     public override void HandleForHitTarget(GameFightCreatureEntity gameFightCreatureEntity)
     {
-        //播放一个范围攻击特效
-        if(attackModeInfo.effect_hit != 0)
-        {
-            float[] colliderAreaSize = attackModeInfo.GetColliderAreaSize();
-            EffectHandler.Instance.ShowEffect(attackModeInfo.effect_hit, gameObject.transform.position, colliderAreaSize[0]);
-        }
+        //播放击中粒子特效
+        PlayEffectForHit(gameObject.transform.position);
         //检测范围内的敌人
         CheckHitTargetArea(gameObject.transform.position, (targetCreature) =>
         {

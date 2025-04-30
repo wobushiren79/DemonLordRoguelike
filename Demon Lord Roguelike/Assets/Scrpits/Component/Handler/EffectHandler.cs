@@ -1,6 +1,7 @@
 using DG.Tweening;
 using DG.Tweening.Core;
 using NUnit.Framework.Constraints;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -73,8 +74,9 @@ public partial class EffectHandler
     /// <summary>
     /// 展示粒子
     /// </summary>
-    public void ShowEffect(long effectId, Vector3 targetPos, float size)
+    public void ShowEffect(long effectId, Vector3 targetPos, Direction2DEnum direction, float size)
     {
+        targetPos += new Vector3(0, 0.002f, 0f);
         var effectInfo = EffectInfoCfg.GetItemData(effectId);
         //播放粒子
         Action<EffectBase> playEffect = (targetEffect) =>
@@ -95,24 +97,50 @@ public partial class EffectHandler
                         }
                         targetVisualEffect.SetFloat(value.dataName, targetFloatData);
                         break;
+                    case 2://int
+                        int targetIntData = value.dataInt;
+                        if (value.isDirection)
+                        {
+                            targetIntData = (int)direction;
+                        }
+                        targetVisualEffect.SetInt(value.dataName, targetIntData);
+                        break;
                     case 5://vector3
                         Vector3 targetVector3Data = value.dataVector3;
                         if (value.isStartPosition)
                         {
-                            targetVector3Data = targetPos;
+                            targetVector3Data = targetPos + targetVector3Data;
                         }
                         targetVisualEffect.SetVector3(value.dataName, targetVector3Data);
+                        break;
+                    case 6://vector4
+                        Vector4 targetVector4Data = value.dataVector4;
+                        targetVisualEffect.SetVector4(value.dataName, targetVector4Data);
                         break;
                 }
             });
             targetEffect.PlayEffect();
         };
-
-        //获取粒子实例
-        manager.GetEffectForEnduring(effectInfo.res_name, (targetEffect) =>
+        EffectShowTypeEnum showType = effectInfo.GetShowType();
+        //如果是持久
+        if (showType == EffectShowTypeEnum.Enduring)
         {
-            playEffect?.Invoke(targetEffect);
-        });
+            //获取粒子实例
+            manager.GetEffectForEnduring(effectInfo.res_name, (targetEffect) =>
+            {
+                playEffect?.Invoke(targetEffect);
+            });
+        }
+        //如果是一次性
+        else if(showType == EffectShowTypeEnum.Once)
+        {
+            EffectBean effectData = effectInfo.GetEffectData();
+            effectData.effectPosition = targetPos + new Vector3(0, 0f, -0.1f);
+            ShowEffect(effectData, (targetEffect) =>
+            {
+                playEffect?.Invoke(targetEffect);
+            });
+        }
     }
 
     public Tween animForShowSacrficeEffect;

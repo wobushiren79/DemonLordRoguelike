@@ -3,21 +3,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AttackModeMelee : BaseAttackMode
+public class AttackModeRegain : BaseAttackMode
 {
     public override void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
         if (attacker != null && attacked != null && !attacked.IsDead())
         {
-            //扣血
-            attacked.UnderAttack(this);
+            HandleRegain(attacker, attacked);
+            //播放一个范围攻击特效
+            PlayEffectForHit(attacked.creatureObj.transform.position);
         }
-        //播放击中粒子特效
-        PlayEffectForHit(attacker.creatureObj.transform.position);
         //攻击完了就回收这个攻击
         Destory();
         //攻击结束回调
         actionForAttackEnd?.Invoke(this);
+    }
+
+    /// <summary>
+    /// 处理回复逻辑
+    /// </summary>
+    public virtual void HandleRegain(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked)
+    {
+
     }
 }

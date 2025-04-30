@@ -8,13 +8,33 @@ public partial class EffectInfoBean : BaseBean
 	/// </summary>
 	public string res_name;
 	/// <summary>
+	///展示类型 0一次性 1持久性
+	/// </summary>
+	public int show_type;
+	/// <summary>
+	///粒子实例存在时间
+	/// </summary>
+	public float show_time;
+	/// <summary>
 	///float数据
 	/// </summary>
 	public string float_data;
 	/// <summary>
+	///int数据
+	/// </summary>
+	public string int_data;
+	/// <summary>
+	///long数据
+	/// </summary>
+	public string long_data;
+	/// <summary>
 	///vector3数据
 	/// </summary>
 	public string vector3_data;
+	/// <summary>
+	///vector4数据
+	/// </summary>
+	public string vector4_data;
 	/// <summary>
 	///备注
 	/// </summary>

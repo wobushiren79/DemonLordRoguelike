@@ -17,7 +17,7 @@ public partial class UIViewFightSettlementItemProgress : BaseUIView
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(string title, int maxData, int data, bool isAnim = true)
+    public void SetData(string title, long maxData, long data, bool isAnim = true)
     {
         float progress = 0;
         if (maxData != 0)
@@ -38,7 +38,7 @@ public partial class UIViewFightSettlementItemProgress : BaseUIView
     /// <summary>
     /// 设置进度
     /// </summary>
-    public void SetProgress(int data, float progress, bool isAnim)
+    public void SetProgress(long data, float progress, bool isAnim)
     {
         ui_ProgressValue.DOKill();
         int percentage = (int)MathUtil.GetPercentage(progress, 2);
