@@ -10,16 +10,31 @@ public class ControlForGameFight : BaseControl
 {
     [HideInInspector]
     public InputAction inputActionMove;
+    //public InputAction inputActionMoveMouse;
+
     public InputAction inputActionUseL;
     public InputAction inputActionUseR;
 
     [Header("镜头移动速度")]
-    public float speedForCameraMoveX = 2f;
-    public float speedForCameraMoveZ = 2f;
+    public float speedForCameraMoveX = 5f;
+    public float speedForCameraMoveZ = 5f;
+    public bool isUserRClick = false;
+    public bool isUserLClick = false;
+
+    //是否正在拖拽摄像头
+    public bool isDraggingCamera = false;
+    protected float speedForDargCamera = 500f;
+    protected float minX = 3;
+    protected float maxX = 7f;
+    protected float minZ = 3f;
+    protected float maxZ = 6f;
+
+    private Vector3 dragCameraOrigin;
 
     public void Awake()
     {
         inputActionMove = InputHandler.Instance.manager.GetInputPlayerData("Move");
+        //inputActionMoveMouse = InputHandler.Instance.manager.GetInputPlayerData("MoveMouse");
 
         inputActionUseL = InputHandler.Instance.manager.GetInputPlayerData("UseL");
         inputActionUseL.started += HandleForUseLDown;
@@ -35,6 +50,11 @@ public class ControlForGameFight : BaseControl
         inputActionUseL.canceled -= HandleForUseLUp;
         inputActionUseR.started -= HandleForUseRDown;
         inputActionUseR.canceled -= HandleForUseRUp;
+    }
+
+    public void Update()
+    {
+        HandleForMoveMouseUpdate();
     }
 
     public void FixedUpdate()
@@ -68,7 +88,50 @@ public class ControlForGameFight : BaseControl
             Vector3 targetMoveOffset = new Vector3(moveData.x * Time.deltaTime * speedForCameraMoveX, 0, moveData.y * Time.deltaTime * speedForCameraMoveZ);
             var targetMove = GameControlHandler.Instance.manager.controlTargetForEmpty;
             targetMove.transform.position = targetMove.transform.position + targetMoveOffset;
+            ClampCameraPosition();
         }
+    }
+
+    /// <summary>
+    /// 鼠标移动
+    /// </summary>
+    public void HandleForMoveMouseUpdate()
+    {       
+        if (Input.GetMouseButtonDown(1))
+        {
+            dragCameraOrigin = Input.mousePosition;
+            isDraggingCamera = true;
+        }
+        else if (Input.GetMouseButtonUp(1))
+        {
+            isDraggingCamera = false;
+        } 
+        if (!enabledControl)
+            return;
+
+        if (isDraggingCamera)
+        {
+            Vector3 pos = Camera.main.ScreenToViewportPoint(Input.mousePosition - dragCameraOrigin);
+            Vector3 targetMoveOffset = new Vector3(-pos.x * Time.deltaTime * speedForDargCamera, 0, -pos.y * Time.deltaTime * speedForDargCamera);
+
+            var targetMove = GameControlHandler.Instance.manager.controlTargetForEmpty;
+            targetMove.transform.position = targetMove.transform.position + targetMoveOffset;
+            ClampCameraPosition();
+            dragCameraOrigin = Input.mousePosition;
+        }
+    }
+
+    /// <summary>
+    /// 限制摄像头位置
+    /// </summary>
+    public void ClampCameraPosition()
+    {        
+        var targetMove = GameControlHandler.Instance.manager.controlTargetForEmpty;
+        // 限制相机移动范围
+        Vector3 clampedPosition = targetMove.transform.position;
+        clampedPosition.x = Mathf.Clamp(clampedPosition.x, minX, maxX);
+        clampedPosition.z = Mathf.Clamp(clampedPosition.z, minZ, maxZ);
+        targetMove.transform.position = clampedPosition;
     }
 
     /// <summary>
@@ -125,6 +188,7 @@ public class ControlForGameFight : BaseControl
     /// <param name="callback"></param>
     public void HandleForUseLDown(CallbackContext callback)
     {
+        isUserLClick = true;
         if (!enabledControl)
             return;
     }
@@ -135,6 +199,7 @@ public class ControlForGameFight : BaseControl
     /// <param name="callback"></param>
     public void HandleForUseLUp(CallbackContext callback)
     {
+        isUserLClick = false;
         if (!enabledControl)
             return;
         if (CheckUtil.CheckIsPointerUI())
@@ -161,6 +226,7 @@ public class ControlForGameFight : BaseControl
     /// <param name="callback"></param>
     public void HandleForUseRDown(CallbackContext callback)
     {
+        isUserRClick = true;
         if (!enabledControl)
             return;
     }
@@ -171,6 +237,7 @@ public class ControlForGameFight : BaseControl
     /// <param name="callback"></param>
     public void HandleForUseRUp(CallbackContext callback)
     {
+        isUserRClick = false;
         if (!enabledControl)
             return;
         if (CheckUtil.CheckIsPointerUI())
