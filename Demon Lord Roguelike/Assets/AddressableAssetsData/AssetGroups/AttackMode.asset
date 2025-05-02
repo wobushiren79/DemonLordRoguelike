@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 322a23e182aaa824f8710e7dcf0b938d
+    m_Address: Assets/LoadResources/AttackMode/AttackMode_RangedLove.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5cab35740f03a26428d60ce8918b841b
     m_Address: Assets/LoadResources/AttackMode/AttackMode_RangedIceBall.prefab
     m_ReadOnly: 0

@@ -60,6 +60,10 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public int attack_mode;
 	/// <summary>
+	///攻击起始位置
+	/// </summary>
+	public string attack_start_position;
+	/// <summary>
 	///攻击搜索敌人类型0直线 11范围 12范围内血量不满 13范围内护甲不满 21遍历路线
 	/// </summary>
 	public int attack_search_type;

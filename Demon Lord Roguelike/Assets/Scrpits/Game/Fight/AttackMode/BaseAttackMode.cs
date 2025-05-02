@@ -140,28 +140,26 @@ public class BaseAttackMode
         }
     }
     #endregion
-    
+
     #region  检测相关
     /// <summary>
     /// 检测是否击中生物
     /// </summary>
-    public virtual bool CheckHitTarget(out GameFightCreatureEntity gameFightCreatureEntity)
+    public virtual GameFightCreatureEntity CheckHitTarget()
     {
-        gameFightCreatureEntity = null;
-        RayUtil.RayToCast(gameObject.transform.position, attackDirection, attackModeInfo.collider_size, 1 << attackedLayer, out RaycastHit hit);
-        if (hit.collider != null)
+        CreatureSearchType searchType = attackModeInfo.GetCreatureSerachType();
+        CreatureTypeEnum searchCreatureType = CreatureTypeEnum.None;
+        if (attackedLayer == LayerInfo.CreatureAtt)
         {
-            string creatureId = hit.collider.gameObject.name;
-            GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-            var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, CreatureTypeEnum.None);
-            if (targetCreature != null && !targetCreature.IsDead())
-            {
-                gameFightCreatureEntity = targetCreature;
-                return true;
-            }
+            searchCreatureType = CreatureTypeEnum.FightAttack;
         }
-        return false;
+        else if (attackedLayer == LayerInfo.CreatureDef)
+        {
+            searchCreatureType = CreatureTypeEnum.FightDefense;
+        }
+        return FightCreatureSearchUtil.FindCreatureEntity(searchType, searchCreatureType, gameObject.transform.position, attackDirection, Vector3.zero, attackModeInfo.collider_size);
     }
+
     /// <summary>
     /// 检测范围内敌人
     /// </summary>
@@ -193,22 +191,22 @@ public class BaseAttackMode
     /// <returns></returns>
     public Collider[] GetHitTargetAreaCollider(Vector3 checkPosition)
     {
-        ColliderAreaCheckTypeEnum colliderAreaCheckType = attackModeInfo.GetColliderAreaCheckType();
+        CreatureSearchType searchType = attackModeInfo.GetColliderAreaSerachType();
         float[] colliderAreaSize = attackModeInfo.GetColliderAreaSize();
         Collider[] colliders = null;
-        switch (colliderAreaCheckType)
+        switch (searchType)
         {
-            case ColliderAreaCheckTypeEnum.SphereCenter:
+            case CreatureSearchType.AreaSphere:
                 //圆形半径
                 colliders = RayUtil.OverlapToSphere(checkPosition, colliderAreaSize[0], 1 << attackedLayer);
                 //绘制测试范围
                 DrawTestAreaForSphere(checkPosition, colliderAreaSize[0], 1);
                 break;
-            case ColliderAreaCheckTypeEnum.SphereFront:
+            case CreatureSearchType.AreaSphereFront:
                 break;
-            case ColliderAreaCheckTypeEnum.BoxCenter:
+            case CreatureSearchType.AreaBox:
                 break;
-            case ColliderAreaCheckTypeEnum.BoxFront:
+            case CreatureSearchType.AreaBoxFront:
                 Vector3 offsetPosition;
                 if (attackDirection.x > 0)
                 {

@@ -31,9 +31,14 @@ public partial class AttackModeInfoBean
     /// 获取碰撞范围检测类型
     /// </summary>
     /// <returns></returns>
-    public ColliderAreaCheckTypeEnum GetColliderAreaCheckType()
+    public CreatureSearchType GetColliderAreaSerachType()
     {
-        return (ColliderAreaCheckTypeEnum)collider_area_type;
+        return (CreatureSearchType)collider_area_type;
+    }
+
+    public CreatureSearchType GetCreatureSerachType()
+    {
+        return (CreatureSearchType)attack_search_type;
     }
 }
 public partial class AttackModeInfoCfg

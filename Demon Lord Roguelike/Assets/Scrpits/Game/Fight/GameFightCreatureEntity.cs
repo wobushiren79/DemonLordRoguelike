@@ -118,6 +118,19 @@ public class GameFightCreatureEntity
     #endregion
 
     #region 状态相关
+    //改变路线
+    public void ChangeRoad(int targetRoadIndex)
+    {
+        fightCreatureData.roadIndex = targetRoadIndex;
+        var creatureType = fightCreatureData.creatureData.creatureInfo.GetCreatureType();
+        switch(creatureType)
+        {
+            case CreatureTypeEnum.FightAttack:
+                aiEntity.ChangeIntent(AIIntentEnum.AttCreatureLured);
+                break;
+        }
+    }
+
     /// <summary>
     /// 增加BUFF
     /// </summary>

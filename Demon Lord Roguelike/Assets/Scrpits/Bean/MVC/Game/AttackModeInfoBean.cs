@@ -16,11 +16,15 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public string buff;
 	/// <summary>
+	///攻击搜索敌人类型
+	/// </summary>
+	public int attack_search_type;
+	/// <summary>
 	///碰撞检测大小（用于点到点）
 	/// </summary>
 	public float collider_size;
 	/// <summary>
-	///碰撞范围类型11中心圆形 12前方圆形 21中心box 22前方box
+	///碰撞范围搜索敌人类型
 	/// </summary>
 	public int collider_area_type;
 	/// <summary>

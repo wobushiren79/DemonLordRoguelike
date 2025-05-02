@@ -19,7 +19,6 @@ public class FightCreatureBean
     public float moveSpeedCurrent;//当前移动速度
     public Color colorBodyCurrent;//当前身体颜色
     public List<FightBuffBean> listBuff;//所有的buff
-
     public FightCreatureBean(int creatureId)
     {
         creatureData = new CreatureBean(creatureId);

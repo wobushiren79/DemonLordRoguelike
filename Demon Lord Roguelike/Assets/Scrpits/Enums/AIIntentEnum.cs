@@ -7,6 +7,7 @@ public enum AIIntentEnum
     AttCreatureMove,//移动
     AttCreatureAttack,//攻击
     AttCreatureDead,//死亡
+    AttCreatureLured,//被诱惑中
 
     DefCreatureIdle,//闲置
     DefCreatureAttack,//攻击

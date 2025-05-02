@@ -158,19 +158,32 @@ public class FightBean
     public List<GameFightCreatureEntity> GetDefenseCreatureByRoad(int roadIndex)
     {
         List<GameFightCreatureEntity> listData = new List<GameFightCreatureEntity>();
-        for (int i = 0; i < dlDefenseCreatureEntity.List.Count; i++)
+        dlDefenseCreatureEntity.List.ForEach((index, itemCreature) =>
         {
-            var itemCreature = dlDefenseCreatureEntity.List[i];
             if (itemCreature == null)
-                continue;
-            if (itemCreature.fightCreatureData.positionCreate.z == roadIndex)
+                return;
+            if (itemCreature.fightCreatureData.roadIndex == roadIndex)
             {
                 listData.Add(itemCreature);
             }
-        }
+        });
         return listData;
     }
 
+    public List<GameFightCreatureEntity> GetDefenseCreatureByRoad(List<int> roadIndexs)
+    {
+        List<GameFightCreatureEntity> listData = new List<GameFightCreatureEntity>();
+        dlDefenseCreatureEntity.List.ForEach((index, itemCreature) =>
+        {
+            if (itemCreature == null)
+                return;
+            if (roadIndexs.Contains(itemCreature.fightCreatureData.roadIndex))
+            {
+                listData.Add(itemCreature);
+            }
+        });
+        return listData;
+    }
     /// <summary>
     /// 移除位置上的防守生物
     /// </summary>
@@ -218,14 +231,35 @@ public class FightBean
     public List<GameFightCreatureEntity> GetAttackCreatureByRoad(int road)
     {
         List<GameFightCreatureEntity> listData = new List<GameFightCreatureEntity>();
-        for (int i = 0; i < dlAttackCreatureEntity.List.Count; i++)
+        dlAttackCreatureEntity.List.ForEach((index, itemCreature) =>
         {
-            var itemCreature = dlAttackCreatureEntity.List[i];
+            if (itemCreature == null)
+                return;
             if (itemCreature.fightCreatureData.roadIndex == road)
             {
                 listData.Add(itemCreature);
             }
-        }
+        });
+        return listData;
+    }
+
+    /// <summary>
+    /// 获取某些路所有的进攻生物
+    /// </summary>
+    /// <param name="roads"></param>
+    /// <returns></returns>
+    public List<GameFightCreatureEntity> GetAttackCreatureByRoad(List<int> roads)
+    {
+        List<GameFightCreatureEntity> listData = new List<GameFightCreatureEntity>();
+        dlAttackCreatureEntity.List.ForEach((index, itemCreature) =>
+        {
+            if (itemCreature == null)
+                return;
+            if (roads.Contains(itemCreature.fightCreatureData.roadIndex))
+            {
+                listData.Add(itemCreature);
+            }
+        });
         return listData;
     }
 

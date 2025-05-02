@@ -3,7 +3,7 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
-public class AnimUtil
+public static class AnimUtil
 {
     /// <summary>
     /// 数字变化动画

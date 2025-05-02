@@ -84,15 +84,13 @@ public partial class EffectInfoBean
                     if(value.Contains("+"))
                     {
                         string[] valueArray = value.Split('+');
-                        float[] targetDataArray = valueArray[0].SplitForArrayFloat(',');
-                        targetData = new Vector3(targetDataArray[0], targetDataArray[1], targetDataArray[2]);
+                        targetData = valueArray[0].SplitForVector3(',');
                     }
                     effectInfoItemData.isStartPosition = true;
                 }
                 else
                 {
-                    float[] floatData = value.SplitForArrayFloat(',');
-                    targetData = new Vector3(floatData[0], floatData[1], floatData[2]);
+                    targetData = value.SplitForVector3(',');
                 }
                 effectInfoItemData.dataType = 5;
                 effectInfoItemData.dataVector3 = targetData;
@@ -106,8 +104,7 @@ public partial class EffectInfoBean
                 if(vector4_data.IsNull())
                     return;
                 EffectInfoItemDataBean effectInfoItemData = new EffectInfoItemDataBean();
-                float[] floatData = value.SplitForArrayFloat(',');
-                Vector4  targetData = new Vector4(floatData[0], floatData[1], floatData[2], floatData[3]);
+                Vector4  targetData =  value.SplitForVector4(',');
 
                 effectInfoItemData.dataType = 6;
                 effectInfoItemData.dataVector4 = targetData;

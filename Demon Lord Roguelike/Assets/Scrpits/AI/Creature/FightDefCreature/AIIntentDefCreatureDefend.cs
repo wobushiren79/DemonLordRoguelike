@@ -24,7 +24,7 @@ public class AIIntentDefCreatureDefend : AIBaseIntent
         {
             timeUpdateForFindTarget = 0;
             //搜索敌人
-            selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntityForDis(Vector3.right);
+            selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntity(DirectionEnum.Right);
             //如果没有敌人了 就进入待机状态  
             if (selfAIEntity.targetCreatureEntity == null)
             {

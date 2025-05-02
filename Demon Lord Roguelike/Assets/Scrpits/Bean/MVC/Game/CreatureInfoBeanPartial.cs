@@ -1,12 +1,16 @@
 using System;
 using System.Collections.Generic;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
+using UnityEngine;
 public partial class CreatureInfoBean
 {
     //spine身体基础部位IDs
     protected List<long> listSpineBaseIds;
     //spine身体可替换部位类型
     protected List<ItemTypeEnum> listEquipItemsType;
+    //攻击起始位置
+    protected bool isInitAttackStartPosition = false;
+    protected Vector3 attackStartPosition;
 
     public int GetHP()
     {
@@ -32,6 +36,16 @@ public partial class CreatureInfoBean
     public CreatureTypeEnum GetAttackSearchCreatureType()
     {
         return (CreatureTypeEnum)attack_search_creature_type;
+    }
+
+    public  Vector3 GetAttackStartPosition()
+    {
+        if(!isInitAttackStartPosition)
+        {
+            attackStartPosition = attack_start_position.SplitForVector3(',');
+            isInitAttackStartPosition = true;
+        }
+        return attackStartPosition;
     }
 
     /// <summary>
@@ -78,9 +92,9 @@ public partial class CreatureInfoBean
     /// 获取生物攻击搜索模式
     /// </summary>
     /// <returns></returns>
-    public CreatureAttackSearchType GetCreatureAttackSearchType()
+    public CreatureSearchType GetCreatureSearchType()
     {
-        return (CreatureAttackSearchType)attack_search_type;
+        return (CreatureSearchType)attack_search_type;
     }
 }
 public partial class CreatureInfoCfg

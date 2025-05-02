@@ -36,8 +36,8 @@ public partial class CreatureModelBean
             string[] uiDataStr = ui_data_s.Split(';');
             targetUI.localScale = Vector3.one * float.Parse(uiDataStr[0]);
 
-            float[] uiDataPosStr = uiDataStr[1].SplitForArrayFloat(',');
-            targetUI.anchoredPosition = new Vector2(uiDataPosStr[0], uiDataPosStr[1]);
+            Vector2 uiDataPos = uiDataStr[1].SplitForVector2(',');
+            targetUI.anchoredPosition = uiDataPos;
         }
     }
 
@@ -57,8 +57,8 @@ public partial class CreatureModelBean
             string[] uiDataStr = ui_data_b.Split(';');
             targetUI.localScale = Vector3.one * float.Parse(uiDataStr[0]);
 
-            float[] uiDataPosStr = uiDataStr[1].SplitForArrayFloat(',');
-            targetUI.anchoredPosition = new Vector2(uiDataPosStr[0], uiDataPosStr[1]);
+            Vector2 uiDataPos = uiDataStr[1].SplitForVector2(',');
+            targetUI.anchoredPosition = uiDataPos;
         }
     }
 }

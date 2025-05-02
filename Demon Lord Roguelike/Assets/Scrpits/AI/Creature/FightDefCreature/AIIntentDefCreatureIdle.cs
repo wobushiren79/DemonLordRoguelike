@@ -29,7 +29,7 @@ public class AIIntentDefCreatureIdle : AIBaseIntent
             timeUpdateForFindTarget = 0;
             timeUpdateForFindTargetCD = fightCreatureData.creatureData.GetAttackSearchTime();
             //搜索目标
-            selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntityForDis(Vector3.right);
+            selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntity(DirectionEnum.Right);
             if (selfAIEntity.targetCreatureEntity != null)
             {
                 //如果攻击模式是防守则进入防守状态

@@ -7,7 +7,7 @@ public partial class GameWorldInfoBean
     public Dictionary<int, GameWorldInfoDifficultyBean> dicDifficultyData = new Dictionary<int, GameWorldInfoDifficultyBean>();
 
     /// <summary>
-    /// 获取地图坐标
+    /// 鑾峰彇鍦板浘鍧愭爣
     /// </summary>
     /// <returns></returns>
     public Vector2 GetMapPosition()
@@ -16,12 +16,11 @@ public partial class GameWorldInfoBean
         {
             return Vector2.zero;
         }
-        var posArray = map_pos.SplitForArrayFloat(',');
-        return new Vector2(posArray[0], posArray[1]);
+        return map_pos.SplitForVector2(',');
     }
 
     /// <summary>
-    /// 获取难度数据
+    /// 鑾峰彇闅惧害鏁版嵁
     /// </summary>
     public GameWorldInfoDifficultyBean GetDifficultyData(int difficulty)
     {

@@ -47,6 +47,7 @@ public class AIAttCreatureEntity : AICreatureEntity
         listIntentEnum.Add(AIIntentEnum.AttCreatureDead);
         listIntentEnum.Add(AIIntentEnum.AttCreatureAttack);
         listIntentEnum.Add(AIIntentEnum.AttCreatureMove);
+        listIntentEnum.Add(AIIntentEnum.AttCreatureLured);
     }
 
     #region 事件回调

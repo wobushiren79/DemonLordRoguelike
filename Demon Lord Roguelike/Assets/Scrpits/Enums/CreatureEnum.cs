@@ -1,10 +1,20 @@
 
-public enum CreatureAttackSearchType{
+public enum CreatureSearchType{
     Ray = 0,//默认射线
-    Area = 11,//范围
-    AreaHPNoMax = 12,//范围内hp不满
-    AreaDRNoMax = 13,//范围内dr不满
-    RoadForeach = 21,//遍历同一路线所有生物
+
+    AreaSphere = 11,//范围Sphere
+    AreaSphereHPNoMax = 12,//范围内hp不满
+    AreaSphereDRNoMax = 13,//范围内dr不满
+    AreaSphereFront = 14,//范围Sphere前方
+
+    AreaBox = 21,//范围Box
+    AreaBoxHPNoMax = 22,//范围内hp不满
+    AreaBoxDRNoMax = 23,//范围内dr不满
+    AreaBoxFront = 24,//范围Box前方
+
+    DisMinByAll = 30,//遍历距离最近的生物
+    DisMinByRoad = 31,//遍历同一路线所有生物
+    DisMinByRoadAdjacentUpDown = 32,//遍历相邻2条路
 }
 
 public enum CreatureStateEnum

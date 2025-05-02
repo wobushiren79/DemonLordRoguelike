@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1831820620876c244b90d12425b3b886
+    m_Address: Assets/LoadResources/Effects/EffectBuff_2.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1be9f894eda04154197a2f0d4bc84597
     m_Address: Assets/LoadResources/Effects/EffectBoom_Ice_1.prefab
     m_ReadOnly: 0

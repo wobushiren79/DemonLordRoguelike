@@ -95,29 +95,33 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     {
         //只保存基础生物ID和武器ID 用于初始化攻击的样式
         long weaponItemId = 0;
-        long creatureId = attacker.fightCreatureData.creatureData.creatureInfo.id;
-        int attackModeId = attacker.fightCreatureData.creatureData.creatureInfo.attack_mode;
-        var weaponItemData = attacker.fightCreatureData.creatureData.GetEquip(ItemTypeEnum.Weapon);
+        CreatureBean attackerCreatureData = attacker.fightCreatureData.creatureData;
+        CreatureInfoBean attackerCreatureInfo = attackerCreatureData.creatureInfo;
+        
+        long creatureId = attackerCreatureInfo.id;
+        int attackModeId = attackerCreatureInfo.attack_mode;
+        var weaponItemData = attackerCreatureData.GetEquip(ItemTypeEnum.Weapon);
         if (weaponItemData != null)
         {
             weaponItemId = weaponItemData.itemId;
         }
         else
         {
-            weaponItemId = attacker.fightCreatureData.creatureData.creatureInfo.GetEquipBaseWeaponId();
+            weaponItemId = attackerCreatureInfo.GetEquipBaseWeaponId();
         }
         manager.GetAttackModePrefab(attackModeId, (attackMode) =>
         {
             //只保存基础生物ID和武器ID 用于初始化攻击的样式
             attackMode.creatureId = creatureId;
-            attackMode.weaponItemId =  weaponItemId;
-            if(attacker == null)
+            attackMode.weaponItemId = weaponItemId;
+            if (attacker == null)
             {
                 attackMode.startPostion = Vector3.zero;
             }
             else
             {
-                attackMode.startPostion = attacker.creatureObj.transform.position;
+                Vector3 offsetPosition = attackerCreatureInfo.GetAttackStartPosition();
+                attackMode.startPostion = attacker.creatureObj.transform.position + offsetPosition;
             }
             if (attackMode.gameObject != null)
             {
@@ -132,7 +136,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
                 attackMode.spriteRenderer.transform.eulerAngles = CameraHandler.Instance.manager.mainCamera.transform.eulerAngles;
             }
 
-            attackMode.StartAttack(attacker,attacked,actionForCreateEnd);
+            attackMode.StartAttack(attacker, attacked, actionForCreateEnd);
         });
     }
 

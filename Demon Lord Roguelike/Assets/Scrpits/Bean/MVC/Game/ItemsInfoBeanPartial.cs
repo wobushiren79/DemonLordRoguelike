@@ -30,8 +30,8 @@ public partial class ItemsInfoBean
                 case ItemsInfoAttackModeDataEnum.VertexRotateAxis:
                     if(attackMode.spriteRenderer != null) 
                     {
-                        var itemVertexRotateAxis = item.Value.SplitForArrayFloat(',');
-                        attackMode.spriteRenderer.material.SetVector("_VertexRotateAxis", new Vector3(itemVertexRotateAxis[0],itemVertexRotateAxis[1],itemVertexRotateAxis[2]));
+                        var itemVertexRotateAxis = item.Value.SplitForVector3(',');
+                        attackMode.spriteRenderer.material.SetVector("_VertexRotateAxis", itemVertexRotateAxis);
                     }
                     break;
                 case ItemsInfoAttackModeDataEnum.VertexRotateSpeed:
@@ -52,8 +52,8 @@ public partial class ItemsInfoBean
                 case ItemsInfoAttackModeDataEnum.StartPosition:     
                     if(attackMode.gameObject != null)
                     {
-                        var itemStartPosition = item.Value.SplitForArrayFloat(',');
-                        attackMode.gameObject.transform.position += new Vector3(itemStartPosition[0],itemStartPosition[1],itemStartPosition[2]);
+                        var itemStartPosition = item.Value.SplitForVector3(',');
+                        attackMode.gameObject.transform.position += itemStartPosition;
                     }
                     break;
             }

@@ -19,9 +19,11 @@ public class AttackModeRanged : BaseAttackMode
     public override void Update()
     {
         base.Update();
-        if (CheckHitTarget(out GameFightCreatureEntity gameFightCreatureEntity))
+        GameFightCreatureEntity gameFightCreatureEntity = CheckHitTarget();
+        if (gameFightCreatureEntity != null)
         {
             HandleForHitTarget(gameFightCreatureEntity);
+            return;
         }
         //移动处理
         HandleForMove();
@@ -53,7 +55,7 @@ public class AttackModeRanged : BaseAttackMode
     /// </summary>
     public virtual void HandleForBound()
     {
-        if (gameObject.transform.position.x > 15 || gameObject.transform.position.x < -5 || gameObject.transform.position.y < -5)
+        if (gameObject.transform.position.x > 15 || gameObject.transform.position.x < -5 || gameObject.transform.position.y < -5 || gameObject.transform.position.y > 15)
         {
             Destory();
         }
