@@ -164,6 +164,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   defaultColor: {r: 0.2264151, g: 0.2264151, b: 0.2264151, a: 1}
+  grayMat: {fileID: 2100000, guid: a52da24929b68ef498163248583a4efe, type: 2}
   targetGraphics:
   - {fileID: 1866733347581520550}
   - {fileID: 7690327373327117877}

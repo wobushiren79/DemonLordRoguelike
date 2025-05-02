@@ -97,12 +97,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
         };
         UIHandler.Instance.ShowDialogNormal(dialogData);
     }
-    public float animScaleTime1 = 3;
-    public float animScaleTime2 = 0.2f;
-    public float animShakeTime = 3;
-    public float shakeS = 1;
-    public int vibrato = 10;
-    public float randomness = 90f;
+
     /// <summary>
     /// 动画解锁
     /// </summary>
@@ -112,13 +107,18 @@ public partial class UIViewBaseResearchItem : BaseUIView
         ClearAnim();
         //UI放大
         animForUnlock = DOTween.Sequence();
-        animForUnlock.Append(transform.DOScale(Vector3.one * 2f, animScaleTime1));
-        animForUnlock.Join(transform.DOShakePosition(animShakeTime,shakeS,vibrato,randomness));
-        animForUnlock.Append(transform.DOScale(Vector3.one, animScaleTime2));
+        animForUnlock.Append(transform.DOScale(Vector3.one * 2f, 1));
+        animForUnlock.Join(transform.DOShakePosition(1, 25, 50));
+        animForUnlock.Append(transform.DOScale(Vector3.one, 0.1f));
         animForUnlock.OnComplete(() =>
         {
             ui_UIViewBaseResearchItem_MaskUIView.HideMask();
             UIHandler.Instance.HideScreenLock();
+            //播放粒子特效
+            var targetUI = UIHandler.Instance.GetUI<UIBaseResearch>();
+            targetUI.AnimForShowUnlockEffect(transform.position);
+            //刷新数据
+            targetUI.InitResearchItems();
         });
     }
 

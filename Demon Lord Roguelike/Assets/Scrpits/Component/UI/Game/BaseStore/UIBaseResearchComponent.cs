@@ -16,5 +16,7 @@ public partial class UIBaseResearch
 
     public UIViewBaseInfoContent ui_ViewBaseInfoContent;
 
+    public ParticleSystem ui_EffectUnlock;
+
 
 }

@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -10,17 +11,22 @@ public partial class UIBaseResearch : BaseUIComponent
 {
     protected List<UIViewBaseResearchItem> listResearchItemView = new List<UIViewBaseResearchItem>();
     protected List<GameObject> listLineObj = new List<GameObject>();
-
+    public float SpeedForChangeContentSize = 10;
+    protected Tween animForShowUnlockEffect;
+    protected ResearchInfoTypeEnum researchInfoType;
     public override void CloseUI()
     {
         base.CloseUI();
         ClearData(true);
+        ClearAnim();
     }
 
     public override void OpenUI()
     {
         base.OpenUI();
-        InitResearchItems(ResearchInfoTypeEnum.Strengthen);
+        ui_EffectUnlock.gameObject.SetActive(false);
+        this.researchInfoType = ResearchInfoTypeEnum.Strengthen;
+        InitResearchItems(researchInfoType);
     }
 
     public override void OnClickForButton(Button viewButton)
@@ -39,11 +45,30 @@ public partial class UIBaseResearch : BaseUIComponent
         {
             OnClickForExit();
         }
+        else if(inputType == InputActionUIEnum.ScrollWheel)
+        {
+            Vector2 wheelData = callback.ReadValue<Vector2>();
+            ChangeContentSize(wheelData.y);
+        }
+    }
+
+    public void ChangeContentSize(float changeSize)
+    {
+        ui_Content.transform.localScale +=  Vector3.one * (changeSize * Time.deltaTime * SpeedForChangeContentSize);
+        Vector3 clampedPosition = ui_Content.transform.localScale;
+        clampedPosition.x = Mathf.Clamp(clampedPosition.x, 0.5f, 1f);
+        clampedPosition.y = Mathf.Clamp(clampedPosition.y, 0.5f, 1f);
+        ui_Content.transform.localScale = clampedPosition;
     }
 
     /// <summary>
     /// 初始化
     /// </summary>
+    public void InitResearchItems()
+    {        
+        InitResearchItems(researchInfoType);
+    }
+
     public void InitResearchItems(ResearchInfoTypeEnum researchInfoType)
     {        
         ClearData(false);
@@ -99,6 +124,7 @@ public partial class UIBaseResearch : BaseUIComponent
             {
                 var newResearchItemObj = Instantiate(ui_Content.gameObject, ui_UIViewBaseResearchItem.gameObject);
                 itemView =  newResearchItemObj.GetComponent<UIViewBaseResearchItem>();
+                listResearchItemView.Add(itemView);
             }
             itemView.gameObject.SetActive(true);
             itemView.SetData(researchInfo);
@@ -175,6 +201,17 @@ public partial class UIBaseResearch : BaseUIComponent
     }
 
     /// <summary>
+    /// 清理动画
+    /// </summary>
+    public void ClearAnim()
+    {
+        if (animForShowUnlockEffect != null && animForShowUnlockEffect.IsPlaying())
+        {
+            animForShowUnlockEffect.Kill();
+        }
+    }
+
+    /// <summary>
     /// 清理数据
     /// </summary>
     /// <param name="isDestory"></param>
@@ -215,5 +252,22 @@ public partial class UIBaseResearch : BaseUIComponent
     public void OnClickForExit()
     {
         UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
+    }
+
+    /// <summary>
+    /// 动画-播放解锁粒子动画
+    /// </summary>
+    public void AnimForShowUnlockEffect(Vector2 position)
+    {       
+        ClearAnim();
+        ui_EffectUnlock.transform.position = position;
+        ui_EffectUnlock.gameObject.SetActive(true);
+        ui_EffectUnlock.Clear(); 
+        ui_EffectUnlock.Play();
+        animForShowUnlockEffect =  DOVirtual.DelayedCall(1.5f,()=>
+        { 
+            ui_EffectUnlock.Stop(); 
+            ui_EffectUnlock.gameObject.SetActive(false);
+        });
     }
 }
