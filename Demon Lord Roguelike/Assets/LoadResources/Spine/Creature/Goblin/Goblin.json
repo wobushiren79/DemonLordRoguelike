@@ -1,20 +1,29 @@
 {
-"skeleton": { "hash": "EpNyn4X9DgLzdhqy29VJccO+hHo", "spine": "3.8" "images": "./images/", "audio": "E:/Unity/DemonLordRoguelike/资源/生物/哥布林" },
+"skeleton": {
+	"hash": "uKz43Eb+i2B+yFhqxZQiEHYZoDg",
+	"spine": "3.8"
+	"x": 5,
+	"y": 1,
+	"width": 14,
+	"height": 51,
+	"images": "./images/",
+	"audio": "E:/Unity/DemonLordRoguelike/资源/生物/哥布林"
+},
 "bones": [
 	{ "name": "root" },
-	{ "name": "Pelvis_Base", "parent": "root", "y": 15 },
-	{ "name": "Thigh_L", "parent": "Pelvis_Base", "length": 5.75, "rotation": -120, "x": -2.5, "y": -1 },
+	{ "name": "Pelvis", "parent": "root", "y": 15 },
+	{ "name": "Thigh_L", "parent": "Pelvis", "length": 5.75, "rotation": -120, "x": -2.5, "y": -1 },
 	{ "name": "Calf_L", "parent": "Thigh_L", "length": 4.81, "rotation": 10, "x": 5.83, "y": -0.1 },
 	{ "name": "Foot_L", "parent": "Calf_L", "length": 4.18, "rotation": 20, "x": 4.27, "y": -0.04 },
-	{ "name": "Thigh_R", "parent": "Pelvis_Base", "length": 4.87, "rotation": -60, "x": 2.5, "y": -1 },
+	{ "name": "Thigh_R", "parent": "Pelvis", "length": 4.87, "rotation": -60, "x": 2.5, "y": -1 },
 	{ "name": "Calf_R", "parent": "Thigh_R", "length": 4.59, "rotation": -20, "x": 4.71, "y": 0.17 },
 	{ "name": "Foot_R", "parent": "Calf_R", "length": 5.02, "rotation": -10, "x": 5.1, "y": 0.12 },
-	{ "name": "Body", "parent": "Pelvis_Base", "length": 12.31, "rotation": 90 },
-	{ "name": "Head", "parent": "Pelvis_Base", "length": 7.83, "rotation": 90, "x": 4, "y": 15 },
-	{ "name": "ArmUp_L", "parent": "Pelvis_Base", "length": 6.46, "rotation": -131.19, "x": -5.92, "y": 12.34 },
+	{ "name": "Body", "parent": "Pelvis", "length": 12.31, "rotation": 90 },
+	{ "name": "Head", "parent": "Pelvis", "length": 7.83, "rotation": 90, "x": 4, "y": 15 },
+	{ "name": "ArmUp_L", "parent": "Pelvis", "length": 6.46, "rotation": -131.19, "x": -5.92, "y": 12.34 },
 	{ "name": "ArmDown_L", "parent": "ArmUp_L", "length": 6.36, "rotation": 29.47, "x": 6.46 },
 	{ "name": "Palm_L", "parent": "ArmDown_L", "length": 3.71, "rotation": 34.6, "x": 6.36 },
-	{ "name": "ArmUp_R", "parent": "Pelvis_Base", "length": 4.84, "rotation": -47.54, "x": 5.93, "y": 10.51 },
+	{ "name": "ArmUp_R", "parent": "Pelvis", "length": 4.84, "rotation": -47.54, "x": 5.93, "y": 10.51 },
 	{ "name": "ArmDown_R", "parent": "ArmUp_R", "length": 4.96, "rotation": -6.82, "x": 4.84 },
 	{ "name": "Palm_R", "parent": "ArmDown_R", "length": 3.03, "rotation": -10.36, "x": 4.96 },
 	{ "name": "Hat", "parent": "Head", "length": 4.64, "x": 8 },
@@ -22,12 +31,13 @@
 	{ "name": "Weapon_R", "parent": "Palm_R", "rotation": 64.72, "x": 1, "y": -0.02 },
 	{ "name": "Line_Up", "parent": "Weapon_R", "length": 7.37, "rotation": -90, "y": 8 },
 	{ "name": "Line_Down", "parent": "Weapon_R", "length": 7.37, "rotation": 90, "y": -7 },
-	{ "name": "Pelvis", "parent": "Pelvis_Base", "x": -0.5 }
+	{ "name": "Pelvis_Base", "parent": "Pelvis", "x": -0.5 }
 ],
 "slots": [
 	{ "name": "ArmDown_R", "bone": "ArmDown_R", "attachment": "ArmDown_R" },
 	{ "name": "ArmUp_R", "bone": "ArmUp_R", "attachment": "ArmUp_R" },
 	{ "name": "Palm_R", "bone": "Palm_R", "attachment": "Palm_R" },
+	{ "name": "Clothes_2_ArmUp_R", "bone": "ArmUp_R", "attachment": "Clothes_2_ArmUp_R" },
 	{ "name": "Foot_L", "bone": "Foot_L", "attachment": "Foot_L" },
 	{ "name": "Calf_L", "bone": "Calf_L", "attachment": "Calf_L" },
 	{ "name": "Thigh_L", "bone": "Thigh_L", "attachment": "Thigh_L" },
@@ -35,21 +45,44 @@
 	{ "name": "Calf_R", "bone": "Calf_R", "attachment": "Calf_R" },
 	{ "name": "Thigh_R", "bone": "Thigh_R", "attachment": "Thigh_R" },
 	{ "name": "Body", "bone": "Body", "attachment": "Body" },
-	{ "name": "Pelvis", "bone": "Pelvis", "attachment": "Pelvis" },
-	{ "name": "Armor_Calf_L_1", "bone": "Calf_L", "attachment": "Armor_Calf_L_1" },
-	{ "name": "Armor_Thigh_L_1", "bone": "Thigh_L", "attachment": "Armor_Thigh_L_1" },
-	{ "name": "Armor_Calf_R_1", "bone": "Calf_R", "attachment": "Armor_Calf_R_1" },
-	{ "name": "Armor_Thigh_R_1", "bone": "Thigh_R", "attachment": "Armor_Thigh_R_1" },
-	{ "name": "Armor_Pelvis_1", "bone": "Pelvis", "attachment": "Armor_Pelvis_1" },
-	{ "name": "Armor_Pelvis_2", "bone": "Pelvis", "attachment": "Armor_Pelvis_2" },
-	{ "name": "Weapon_1", "bone": "Weapon_R", "attachment": "Weapon_1" },
-	{ "name": "Weapon_2", "bone": "Weapon_R", "attachment": "Weapon_2" },
-	{ "name": "Weapon_3", "bone": "Weapon_R", "attachment": "Weapon_3" },
+	{ "name": "Pelvis_Base", "bone": "Pelvis_Base", "attachment": "Pelvis_Base" },
+	{ "name": "Pants_1_Calf_L", "bone": "Calf_L", "attachment": "Pants_1_Calf_L" },
+	{ "name": "Pants_1_Thigh_L", "bone": "Thigh_L", "attachment": "Pants_1_Thigh_L" },
+	{ "name": "Pants_1_Calf_R", "bone": "Calf_R", "attachment": "Pants_1_Calf_R" },
+	{ "name": "Pants_1_Thigh_R", "bone": "Thigh_R", "attachment": "Pants_1_Thigh_R" },
+	{ "name": "Clothes_1_Body", "bone": "Body", "attachment": "Clothes_1_Body" },
+	{ "name": "Clothes_2_Body", "bone": "Body", "attachment": "Clothes_2_Body" },
+	{ "name": "Pants_5_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_5_Pelvis" },
+	{ "name": "Pants_4_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_4_Pelvis" },
+	{ "name": "Pants_3_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_3_Pelvis" },
+	{ "name": "Pants_2_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_2_Pelvis" },
+	{ "name": "Pants_1_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_1_Pelvis" },
+	{ "name": "Weapon_R_1", "bone": "Weapon_R", "attachment": "Weapon_R_1" },
+	{ "name": "Weapon_R_2", "bone": "Weapon_R", "attachment": "Weapon_R_2" },
+	{ "name": "Weapon_R_3", "bone": "Weapon_R", "attachment": "Weapon_R_3" },
+	{ "name": "Weapon_R_4", "bone": "Weapon_R", "attachment": "Weapon_R_4" },
+	{ "name": "Weapon_R_5", "bone": "Weapon_R", "attachment": "Weapon_R_5" },
+	{ "name": "Weapon_R_6", "bone": "Weapon_R", "attachment": "Weapon_R_6" },
+	{ "name": "Weapon_R_7", "bone": "Weapon_R", "attachment": "Weapon_R_7" },
+	{ "name": "Weapon_R_8", "bone": "Weapon_R", "attachment": "Weapon_R_8" },
+	{ "name": "Weapon_R_9", "bone": "Weapon_R", "attachment": "Weapon_R_9" },
+	{ "name": "Weapon_R_10", "bone": "Weapon_R", "attachment": "Weapon_R_10" },
+	{ "name": "Weapon_R_11", "bone": "Weapon_R", "attachment": "Weapon_R_11" },
+	{ "name": "Weapon_R_12", "bone": "Weapon_R", "attachment": "Weapon_R_12" },
+	{ "name": "Weapon_R_13", "bone": "Weapon_R", "attachment": "Weapon_R_13" },
+	{ "name": "Weapon_R_14", "bone": "Weapon_R", "attachment": "Weapon_R_14" },
+	{ "name": "Weapon_R_15", "bone": "Weapon_R", "attachment": "Weapon_R_15" },
+	{ "name": "Weapon_R_16", "bone": "Weapon_R", "attachment": "Weapon_R_16" },
+	{ "name": "Weapon_R_17", "bone": "Weapon_R", "attachment": "Weapon_R_17" },
+	{ "name": "Weapon_R_18", "bone": "Weapon_R", "attachment": "Weapon_R_18" },
+	{ "name": "Weapon_R_19", "bone": "Weapon_R", "attachment": "Weapon_R_19" },
+	{ "name": "Weapon_R_20", "bone": "Weapon_R", "attachment": "Weapon_R_20" },
 	{ "name": "Line_Up", "bone": "Line_Up", "attachment": "Line_Up" },
 	{ "name": "Line_Down", "bone": "Line_Down", "attachment": "Line_Down" },
 	{ "name": "ArmDown_L", "bone": "ArmDown_L", "attachment": "ArmDown_L" },
 	{ "name": "ArmUp_L", "bone": "ArmUp_L", "attachment": "ArmUp_L" },
 	{ "name": "Palm_L", "bone": "Palm_L", "attachment": "Palm_L" },
+	{ "name": "Clothes_2_ArmUp_L", "bone": "ArmUp_L", "attachment": "Clothes_2_ArmUp_L" },
 	{ "name": "Head", "bone": "Head", "attachment": "Head" },
 	{ "name": "Eye_1", "bone": "Head", "attachment": "Eye_1" },
 	{ "name": "Eye_2", "bone": "Head", "attachment": "Eye_2" },
@@ -76,11 +109,15 @@
 	{ "name": "Hat_3", "bone": "Hat", "attachment": "Hat_3" },
 	{ "name": "Hat_4", "bone": "Hat", "attachment": "Hat_4" },
 	{ "name": "Hat_5", "bone": "Hat", "attachment": "Hat_5" },
-	{ "name": "Hat_6", "bone": "Hat", "attachment": "Hat_6" }
+	{ "name": "Hat_6", "bone": "Hat", "attachment": "Hat_6" },
+	{ "name": "Hat_7", "bone": "Hat", "attachment": "Hat_7" },
+	{ "name": "Hat_8", "bone": "Hat", "attachment": "Hat_8" },
+	{ "name": "Hat_9", "bone": "Hat", "attachment": "Hat_9" },
+	{ "name": "Hat_10", "bone": "Hat", "attachment": "Hat_10" }
 ],
 "skins": [
 	{
-		"name": "Base",
+		"name": "Base/Base_1",
 		"attachments": {
 			"Head": {
 				"Head": { "x": 5.5, "y": 1.5, "rotation": -90, "width": 21, "height": 13 }
@@ -97,17 +134,14 @@
 			"Calf_L": {
 				"Calf_L": { "x": 3.16, "y": 0.09, "rotation": 110, "width": 5, "height": 8 }
 			},
-			"Pelvis": {
-				"Pelvis": { "y": -0.5, "width": 13, "height": 5 }
+			"Thigh_R": {
+				"Thigh_R": { "x": 1.98, "y": -0.57, "rotation": 60, "width": 8, "height": 8 }
 			},
 			"ArmUp_R": {
 				"ArmUp_R": { "x": 1.8, "y": 0.47, "rotation": 47.54, "width": 5, "height": 7 }
 			},
 			"Calf_R": {
 				"Calf_R": { "x": 3.04, "y": -0.03, "rotation": 80, "width": 5, "height": 10 }
-			},
-			"Thigh_R": {
-				"Thigh_R": { "x": 1.98, "y": -0.57, "rotation": 60, "width": 8, "height": 8 }
 			},
 			"ArmDown_R": {
 				"ArmDown_R": { "x": 2.22, "y": 0.62, "rotation": 54.36, "width": 6, "height": 5 }
@@ -126,6 +160,31 @@
 			},
 			"Palm_R": {
 				"Palm_R": { "x": 1, "y": -0.02, "rotation": 64.72, "width": 5, "height": 4 }
+			},
+			"Pelvis_Base": {
+				"Pelvis_Base": { "name": "Pelvis", "y": -0.5, "width": 13, "height": 5 }
+			}
+		}
+	},
+	{
+		"name": "Clothes/Clothes_1",
+		"attachments": {
+			"Clothes_1_Body": {
+				"Clothes_1_Body": { "x": 8, "rotation": -90, "width": 14, "height": 16 }
+			}
+		}
+	},
+	{
+		"name": "Clothes/Clothes_2",
+		"attachments": {
+			"Clothes_2_Body": {
+				"Clothes_2_Body": { "x": 7.5, "y": 0.5, "rotation": -90, "width": 15, "height": 15 }
+			},
+			"Clothes_2_ArmUp_L": {
+				"Clothes_2_ArmUp_L": { "x": 2.7, "y": -1.06, "rotation": 131.19, "width": 7, "height": 6 }
+			},
+			"Clothes_2_ArmUp_R": {
+				"Clothes_2_ArmUp_R": { "x": 3.55, "y": 0.9, "rotation": 47.54, "width": 4, "height": 7 }
 			}
 		}
 	},
@@ -258,6 +317,38 @@
 		}
 	},
 	{
+		"name": "Hat/Hat_7",
+		"attachments": {
+			"Hat_7": {
+				"Hat_7": { "x": 5, "y": 2.5, "rotation": -90, "width": 15, "height": 10 }
+			}
+		}
+	},
+	{
+		"name": "Hat/Hat_8",
+		"attachments": {
+			"Hat_8": {
+				"Hat_8": { "x": -3.5, "y": 1, "rotation": -90, "width": 20, "height": 23 }
+			}
+		}
+	},
+	{
+		"name": "Hat/Hat_9",
+		"attachments": {
+			"Hat_9": {
+				"Hat_9": { "x": -3, "y": 1.5, "rotation": -90, "width": 9, "height": 8 }
+			}
+		}
+	},
+	{
+		"name": "Hat/Hat_10",
+		"attachments": {
+			"Hat_10": {
+				"Hat_10": { "x": 3.5, "y": 1.5, "rotation": -90, "width": 17, "height": 17 }
+			}
+		}
+	},
+	{
 		"name": "Other/Line_1",
 		"attachments": {
 			"Line_Up": {
@@ -351,52 +442,212 @@
 	{
 		"name": "Pants/Pants_1",
 		"attachments": {
-			"Armor_Thigh_L_1": {
-				"Armor_Thigh_L_1": { "x": 3.78, "y": 0.45, "rotation": 120, "width": 8, "height": 7 }
+			"Pants_1_Thigh_L": {
+				"Pants_1_Thigh_L": { "x": 3.78, "y": 0.45, "rotation": 120, "width": 8, "height": 7 }
 			},
-			"Armor_Calf_L_1": {
-				"Armor_Calf_L_1": { "x": 2.22, "y": -0.26, "rotation": 110, "width": 7, "height": 6 }
+			"Pants_1_Calf_L": {
+				"Pants_1_Calf_L": { "x": 2.22, "y": -0.26, "rotation": 110, "width": 7, "height": 6 }
 			},
-			"Armor_Thigh_R_1": {
-				"Armor_Thigh_R_1": { "x": 4.46, "y": -0.27, "rotation": 60, "width": 7, "height": 8 }
+			"Pants_1_Thigh_R": {
+				"Pants_1_Thigh_R": { "x": 4.46, "y": -0.27, "rotation": 60, "width": 7, "height": 8 }
 			},
-			"Armor_Calf_R_1": {
-				"Armor_Calf_R_1": { "x": 3.04, "y": -0.03, "rotation": 80, "width": 7, "height": 6 }
+			"Pants_1_Pelvis": {
+				"Pants_1_Pelvis": { "y": -1.5, "width": 13, "height": 5 }
 			},
-			"Armor_Pelvis_1": {
-				"Armor_Pelvis_1": { "y": -1.5, "width": 13, "height": 5 }
+			"Pants_1_Calf_R": {
+				"Pants_1_Calf_R": { "x": 3.04, "y": -0.03, "rotation": 80, "width": 7, "height": 6 }
 			}
 		}
 	},
 	{
 		"name": "Pants/Pants_2",
 		"attachments": {
-			"Armor_Pelvis_2": {
-				"Armor_Pelvis_2": { "width": 19, "height": 12 }
+			"Pants_2_Pelvis": {
+				"Pants_2_Pelvis": { "width": 19, "height": 12 }
 			}
 		}
 	},
 	{
-		"name": "Weapon/Weapon_1",
+		"name": "Pants/Pants_3",
 		"attachments": {
-			"Weapon_1": {
-				"Weapon_1": { "x": 7.5, "y": 6.5, "width": 20, "height": 19 }
+			"Pants_3_Pelvis": {
+				"Pants_3_Pelvis": { "y": -1.5, "width": 15, "height": 7 }
 			}
 		}
 	},
 	{
-		"name": "Weapon/Weapon_2",
+		"name": "Pants/Pants_4",
 		"attachments": {
-			"Weapon_2": {
-				"Weapon_2": { "x": 0.5, "y": 0.5, "width": 6, "height": 23 }
+			"Pants_4_Pelvis": {
+				"Pants_4_Pelvis": { "y": -1.5, "width": 13, "height": 7 }
 			}
 		}
 	},
 	{
-		"name": "Weapon/Weapon_3",
+		"name": "Pants/Pants_5",
 		"attachments": {
-			"Weapon_3": {
-				"Weapon_3": { "x": -0.5, "y": 9.5, "width": 14, "height": 51 }
+			"Pants_5_Pelvis": {
+				"Pants_5_Pelvis": { "y": -1, "width": 15, "height": 6 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_1",
+		"attachments": {
+			"Weapon_R_1": {
+				"Weapon_R_1": { "x": 7.5, "y": 6.5, "width": 20, "height": 19 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_2",
+		"attachments": {
+			"Weapon_R_2": {
+				"Weapon_R_2": { "x": 0.5, "y": 0.5, "width": 6, "height": 23 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_3",
+		"attachments": {
+			"Weapon_R_3": {
+				"Weapon_R_3": { "x": -0.5, "y": 9.5, "width": 14, "height": 51 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_4",
+		"attachments": {
+			"Weapon_R_4": {
+				"Weapon_R_4": { "x": 1, "y": 7, "width": 9, "height": 48 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_5",
+		"attachments": {
+			"Weapon_R_5": {
+				"Weapon_R_5": { "y": 9.5, "width": 19, "height": 53 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_6",
+		"attachments": {
+			"Weapon_R_6": {
+				"Weapon_R_6": { "x": 0.5, "y": 9.5, "width": 8, "height": 27 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_7",
+		"attachments": {
+			"Weapon_R_7": {
+				"Weapon_R_7": { "x": 2.5, "y": 4, "width": 8, "height": 10 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_8",
+		"attachments": {
+			"Weapon_R_8": {
+				"Weapon_R_8": { "y": 4, "width": 5, "height": 12 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_9",
+		"attachments": {
+			"Weapon_R_9": {
+				"Weapon_R_9": { "x": 7.5, "y": 7, "width": 16, "height": 16 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_10",
+		"attachments": {
+			"Weapon_R_10": {
+				"Weapon_R_10": { "x": 7.5, "y": 7, "width": 24, "height": 24 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_11",
+		"attachments": {
+			"Weapon_R_11": {
+				"Weapon_R_11": { "x": 7.5, "y": 8, "width": 24, "height": 24 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_12",
+		"attachments": {
+			"Weapon_R_12": {
+				"Weapon_R_12": { "x": 8.5, "y": 8.5, "width": 20, "height": 25 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_13",
+		"attachments": {
+			"Weapon_R_13": {
+				"Weapon_R_13": { "x": 1, "y": 0.5, "width": 9, "height": 25 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_14",
+		"attachments": {
+			"Weapon_R_14": {
+				"Weapon_R_14": { "x": 1.5, "y": 0.5, "width": 10, "height": 23 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_15",
+		"attachments": {
+			"Weapon_R_15": {
+				"Weapon_R_15": { "x": 4.5, "y": 0.5, "width": 16, "height": 25 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_16",
+		"attachments": {
+			"Weapon_R_16": {
+				"Weapon_R_16": { "x": 3.5, "y": 0.5, "width": 14, "height": 25 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_17",
+		"attachments": {
+			"Weapon_R_17": {
+				"Weapon_R_17": { "x": -12.5, "y": -1, "width": 16, "height": 16 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_18",
+		"attachments": {
+			"Weapon_R_18": {
+				"Weapon_R_18": { "x": -13, "y": -1.5, "width": 13, "height": 21 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_19",
+		"attachments": {
+			"Weapon_R_19": {
+				"Weapon_R_19": { "x": -12.5, "y": -1, "width": 16, "height": 22 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_R_20",
+		"attachments": {
+			"Weapon_R_20": {
+				"Weapon_R_20": { "x": -12.5, "width": 16, "height": 14 }
 			}
 		}
 	}
@@ -404,7 +655,7 @@
 "animations": {
 	"Attack": {
 		"bones": {
-			"Pelvis_Base": {
+			"Pelvis": {
 				"rotate": [
 					{},
 					{ "time": 0.5, "angle": 22.98 },
@@ -725,7 +976,7 @@
 	},
 	"Dead": {
 		"bones": {
-			"Pelvis_Base": {
+			"Pelvis": {
 				"rotate": [
 					{},
 					{ "time": 0.5, "angle": 88.15 }
@@ -838,7 +1089,7 @@
 					{ "time": 1 }
 				]
 			},
-			"Pelvis": {
+			"Pelvis_Base": {
 				"translate": [
 					{},
 					{ "time": 0.5, "y": -0.86 },
@@ -963,7 +1214,7 @@
 					{ "time": 1 }
 				]
 			},
-			"Pelvis": {
+			"Pelvis_Base": {
 				"translate": [
 					{},
 					{ "time": 0.5, "y": -1.51 },

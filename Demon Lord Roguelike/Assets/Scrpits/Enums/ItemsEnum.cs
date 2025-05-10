@@ -5,6 +5,7 @@
         Clothes = 2,
         Pants = 3,
         Shoe = 4,
+        NoseRing = 5,
         Weapon = 10
     }
 

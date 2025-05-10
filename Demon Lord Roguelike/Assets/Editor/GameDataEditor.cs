@@ -9,7 +9,7 @@ public class GameDataEditor
     {
         string inputPath = "Assets/LoadResources/Spine/Creature";
         string outputPath = "Assets/LoadResources/Textures/Items";
-        string filterSkinName = "Clothes,Pants,Weapon,Shoes,Hat,Mask";//筛选名字
+        string filterSkinName = "Clothes,Pants,Weapon,Shoes,Hat,Mask,NoseRing";//筛选名字
         SpineWindow.ExtractSkinTextures(inputPath, outputPath, null, true, null, filterSkinName);
 
 

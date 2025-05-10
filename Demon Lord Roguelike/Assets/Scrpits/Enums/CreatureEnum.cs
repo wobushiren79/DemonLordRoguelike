@@ -50,6 +50,7 @@ public enum CreatureSkinTypeEnum
     Mouth = 6,//嘴巴
     Horn = 7,//角
     Wing = 8,//翅膀
+    NoseRing = 9,//鼻环
     //---------------------穿戴
     Hat = 50,//帽子
     Clothes = 51,//衣服
@@ -57,6 +58,8 @@ public enum CreatureSkinTypeEnum
     Shoe = 53,//鞋子
     Belt = 54,//腰带
     Gloves = 55,//手套
+    //---------------------其他
+    Weapon_Line = 80,//武器线
     //---------------------武器
     Weapon_L = 90,//武器左手
     Weapon_R = 91//武器右手

@@ -1,21 +1,30 @@
 {
-"skeleton": { "hash": "iRgxYp1KhLI+f8fFALEFp9R9PHQ", "spine": "3.8.75", "images": "./images/", "audio": "E:/Unity/DemonLordRoguelike/资源/生物/牛头人" },
+"skeleton": {
+	"hash": "vDMloh/TAX8vrOK2R2hAQwUiLY4",
+	"spine": "3.8.75",
+	"x": 17,
+	"y": 40,
+	"width": 13,
+	"height": 8,
+	"images": "./images/",
+	"audio": "E:/Unity/DemonLordRoguelike/资源/生物/牛头人"
+},
 "bones": [
 	{ "name": "root" },
-	{ "name": "Pelvis_Base", "parent": "root", "y": 30 },
-	{ "name": "Body", "parent": "Pelvis_Base", "length": 34.81, "rotation": 90 },
+	{ "name": "Pelvis", "parent": "root", "y": 30 },
+	{ "name": "Body", "parent": "Pelvis", "length": 34.81, "rotation": 90 },
 	{ "name": "Head", "parent": "Body", "length": 21.53, "x": 20, "y": -16 },
-	{ "name": "Pelvis", "parent": "Pelvis_Base", "length": 3.84, "rotation": -90 },
+	{ "name": "Pelvis_Base", "parent": "Pelvis", "length": 3.84, "rotation": -90 },
 	{ "name": "ArmUp_L", "parent": "Body", "length": 27.06, "rotation": 157, "x": 30, "y": 11 },
 	{ "name": "ArmDown_L", "parent": "ArmUp_L", "length": 10.93, "rotation": 23, "x": 26.92, "y": 0.56 },
 	{ "name": "Plam_L", "parent": "ArmDown_L", "length": 22.78, "x": 11, "y": 1 },
 	{ "name": "ArmUp_R", "parent": "Body", "length": 23.73, "rotation": -170, "x": 30, "y": -24 },
 	{ "name": "ArmDown_R", "parent": "ArmUp_R", "length": 14.26, "rotation": 2, "x": 24.33, "y": -0.23 },
 	{ "name": "Plam_R", "parent": "ArmDown_R", "length": 20.77, "rotation": -12, "x": 14.53, "y": 1 },
-	{ "name": "Thigh_R", "parent": "Pelvis_Base", "length": 13.68, "rotation": -32, "x": 2, "y": -3 },
+	{ "name": "Thigh_R", "parent": "Pelvis", "length": 13.68, "rotation": -32, "x": 2, "y": -3 },
 	{ "name": "Calf_R", "parent": "Thigh_R", "length": 14.45, "rotation": -100, "x": 12.19, "y": -0.64 },
 	{ "name": "Foot_R", "parent": "Calf_R", "length": 8.5, "rotation": 42, "x": 13.53, "y": 1.42 },
-	{ "name": "Thigh_L", "parent": "Pelvis_Base", "length": 13.68, "rotation": -32, "x": -12, "y": -3 },
+	{ "name": "Thigh_L", "parent": "Pelvis", "length": 13.68, "rotation": -32, "x": -12, "y": -3 },
 	{ "name": "Calf_L", "parent": "Thigh_L", "length": 14.45, "rotation": -100, "x": 12.19, "y": -0.64 },
 	{ "name": "Foot_L", "parent": "Calf_L", "length": 8.5, "rotation": 42, "x": 13.53, "y": 1.42 }
 ],
@@ -23,18 +32,26 @@
 	{ "name": "Plam_R", "bone": "Plam_R", "attachment": "Plam_R" },
 	{ "name": "ArmDown_R", "bone": "ArmDown_R", "attachment": "ArmDown_R" },
 	{ "name": "ArmUp_R", "bone": "ArmUp_R", "attachment": "ArmUp_R" },
+	{ "name": "Clothes_2_ArmDown_R", "bone": "ArmDown_R", "attachment": "Clothes_2_ArmDown_R" },
+	{ "name": "Clothes_1_ArmDown_R", "bone": "ArmDown_R", "attachment": "Clothes_1_ArmDown_R" },
 	{ "name": "Foot_R", "bone": "Foot_R", "attachment": "Foot_R" },
 	{ "name": "Thigh_R", "bone": "Thigh_R", "attachment": "Thigh_R" },
 	{ "name": "Calf_R", "bone": "Calf_R", "attachment": "Calf_R" },
-	{ "name": "Pelvis", "bone": "Pelvis", "attachment": "Pelvis" },
+	{ "name": "Pelvis_Base", "bone": "Pelvis_Base", "attachment": "Pelvis_Base" },
 	{ "name": "Body", "bone": "Body", "attachment": "Body" },
-	{ "name": "Belt_1", "bone": "Pelvis", "attachment": "Belt_1" },
+	{ "name": "Pants_2_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_2_Pelvis" },
+	{ "name": "Pants_1_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_1_Pelvis" },
 	{ "name": "Foot_L", "bone": "Foot_L", "attachment": "Foot_L" },
 	{ "name": "Thigh_L", "bone": "Thigh_L", "attachment": "Thigh_L" },
 	{ "name": "Calf_L", "bone": "Calf_L", "attachment": "Calf_L" },
+	{ "name": "Clothes_3_Body", "bone": "Body", "attachment": "Clothes_3_Body" },
+	{ "name": "Clothes_2_Body", "bone": "Body", "attachment": "Clothes_2_Body" },
 	{ "name": "Plam_L", "bone": "Plam_L", "attachment": "Plam_L" },
 	{ "name": "ArmDown_L", "bone": "ArmDown_L", "attachment": "ArmDown_L" },
 	{ "name": "ArmUp_L", "bone": "ArmUp_L", "attachment": "ArmUp_L" },
+	{ "name": "Clothes_2_ArmDown_L", "bone": "ArmDown_L", "attachment": "Clothes_2_ArmDown_L" },
+	{ "name": "Clothes_1_ArmDown_L", "bone": "ArmDown_L", "attachment": "Clothes_1_ArmDown_L" },
+	{ "name": "Clothes_1_ArmUp_L", "bone": "ArmUp_L", "attachment": "Clothes_1_ArmUp_L" },
 	{ "name": "Head", "bone": "Head", "attachment": "Head" },
 	{ "name": "Eye_1", "bone": "Head", "attachment": "Eye_1" },
 	{ "name": "Eye_2", "bone": "Head", "attachment": "Eye_2" },
@@ -50,12 +67,16 @@
 	{ "name": "NoseRing_1", "bone": "Head", "attachment": "NoseRing_1" },
 	{ "name": "NoseRing_2", "bone": "Head", "attachment": "NoseRing_2" },
 	{ "name": "NoseRing_3", "bone": "Head", "attachment": "NoseRing_3" },
+	{ "name": "NoseRing_4", "bone": "Head", "attachment": "NoseRing_4" },
+	{ "name": "NoseRing_5", "bone": "Head", "attachment": "NoseRing_5" },
 	{ "name": "Hat_1", "bone": "Head", "attachment": "Hat_1" },
 	{ "name": "Hat_2", "bone": "Head", "attachment": "Hat_2" },
+	{ "name": "Hat_3", "bone": "Head", "attachment": "Hat_3" },
 	{ "name": "Horn_1", "bone": "Head", "attachment": "Horn_1" },
 	{ "name": "Horn_2", "bone": "Head", "attachment": "Horn_2" },
 	{ "name": "Horn_3", "bone": "Head", "attachment": "Horn_3" },
-	{ "name": "Horn_4", "bone": "Head", "attachment": "Horn_4" }
+	{ "name": "Horn_4", "bone": "Head", "attachment": "Horn_4" },
+	{ "name": "Horn_5", "bone": "Head", "attachment": "Horn_5" }
 ],
 "skins": [
 	{
@@ -76,17 +97,14 @@
 			"Calf_L": {
 				"Calf_L": { "x": 8.92, "y": 1.3, "rotation": 132, "width": 16, "height": 13 }
 			},
-			"Pelvis": {
-				"Pelvis": { "y": -2.5, "rotation": 90, "width": 21, "height": 8 }
+			"Thigh_R": {
+				"Thigh_R": { "x": 8.32, "y": -0.11, "rotation": 32, "width": 18, "height": 15 }
 			},
 			"ArmUp_R": {
 				"ArmUp_R": { "x": 10.77, "y": 0.64, "rotation": 80, "width": 25, "height": 35 }
 			},
 			"ArmDown_L": {
 				"ArmDown_L": { "x": 4.5, "y": -0.5, "rotation": 90, "width": 27, "height": 17 }
-			},
-			"Thigh_R": {
-				"Thigh_R": { "x": 8.32, "y": -0.11, "rotation": 32, "width": 18, "height": 15 }
 			},
 			"ArmDown_R": {
 				"ArmDown_R": { "x": 7.68, "y": 2.46, "rotation": 78, "width": 24, "height": 20 }
@@ -103,16 +121,47 @@
 			"Foot_L": {
 				"Foot_L": { "x": 6, "y": 1.5, "rotation": 90, "width": 11, "height": 6 }
 			},
+			"Pelvis_Base": {
+				"Pelvis_Base": { "name": "Pelvis", "y": -2.5, "rotation": 90, "width": 21, "height": 8 }
+			},
 			"Calf_R": {
 				"Calf_R": { "x": 8.92, "y": 1.3, "rotation": 132, "width": 16, "height": 13 }
 			}
 		}
 	},
 	{
-		"name": "Belt/Belt_1",
+		"name": "Clothes/Clothes_1",
 		"attachments": {
-			"Belt_1": {
-				"Belt_1": { "x": 5.5, "y": -2.5, "rotation": 90, "width": 21, "height": 19 }
+			"Clothes_1_ArmUp_L": {
+				"Clothes_1_ArmUp_L": { "x": -2.24, "y": -3.67, "rotation": 113, "width": 29, "height": 29 }
+			},
+			"Clothes_1_ArmDown_L": {
+				"Clothes_1_ArmDown_L": { "x": 3, "y": -1.5, "rotation": 90, "width": 29, "height": 20 }
+			},
+			"Clothes_1_ArmDown_R": {
+				"Clothes_1_ArmDown_R": { "x": 7.37, "y": 0.99, "rotation": 78, "width": 27, "height": 20 }
+			}
+		}
+	},
+	{
+		"name": "Clothes/Clothes_2",
+		"attachments": {
+			"Clothes_2_Body": {
+				"Clothes_2_Body": { "x": 26, "y": -5, "rotation": -90, "width": 48, "height": 22 }
+			},
+			"Clothes_2_ArmDown_L": {
+				"Clothes_2_ArmDown_L": { "x": 5, "y": -0.5, "rotation": 90, "width": 27, "height": 16 }
+			},
+			"Clothes_2_ArmDown_R": {
+				"Clothes_2_ArmDown_R": { "x": 6.11, "y": 2.28, "rotation": 78, "width": 23, "height": 17 }
+			}
+		}
+	},
+	{
+		"name": "Clothes/Clothes_3",
+		"attachments": {
+			"Clothes_3_Body": {
+				"Clothes_3_Body": { "x": 19, "y": -4, "rotation": -90, "width": 36, "height": 34 }
 			}
 		}
 	},
@@ -221,6 +270,14 @@
 		}
 	},
 	{
+		"name": "Hat/Hat_3",
+		"attachments": {
+			"Hat_3": {
+				"Hat_3": { "x": 28, "rotation": -90, "width": 16, "height": 16 }
+			}
+		}
+	},
+	{
 		"name": "Horn/Horn_1",
 		"attachments": {
 			"Horn_1": {
@@ -253,7 +310,15 @@
 		}
 	},
 	{
-		"name": "NoiseRing/NoiseRing_1",
+		"name": "Horn/Horn_5",
+		"attachments": {
+			"Horn_5": {
+				"Horn_5": { "x": 21.5, "y": -2, "rotation": -90, "width": 66, "height": 33 }
+			}
+		}
+	},
+	{
+		"name": "NoseRing/NoseRing_1",
 		"attachments": {
 			"NoseRing_1": {
 				"NoseRing_1": { "x": -6, "y": -7.5, "rotation": -90, "width": 13, "height": 8 }
@@ -261,7 +326,7 @@
 		}
 	},
 	{
-		"name": "NoiseRing/NoiseRing_2",
+		"name": "NoseRing/NoseRing_2",
 		"attachments": {
 			"NoseRing_2": {
 				"NoseRing_2": { "x": 3, "y": -7.5, "rotation": -90, "width": 13, "height": 8 }
@@ -269,10 +334,42 @@
 		}
 	},
 	{
-		"name": "NoiseRing/NoseRing_3",
+		"name": "NoseRing/NoseRing_3",
 		"attachments": {
 			"NoseRing_3": {
 				"NoseRing_3": { "x": -4.5, "y": -7.5, "rotation": -90, "width": 11, "height": 7 }
+			}
+		}
+	},
+	{
+		"name": "NoseRing/NoseRing_4",
+		"attachments": {
+			"NoseRing_4": {
+				"NoseRing_4": { "x": -4.5, "y": -7.5, "rotation": -90, "width": 11, "height": 7 }
+			}
+		}
+	},
+	{
+		"name": "NoseRing/NoseRing_5",
+		"attachments": {
+			"NoseRing_5": {
+				"NoseRing_5": { "x": -8, "y": -8, "rotation": -90, "width": 12, "height": 12 }
+			}
+		}
+	},
+	{
+		"name": "Pants/Pants_1",
+		"attachments": {
+			"Pants_1_Pelvis": {
+				"Pants_1_Pelvis": { "x": 5.5, "y": -2.5, "rotation": 90, "width": 21, "height": 19 }
+			}
+		}
+	},
+	{
+		"name": "Pants/Pants_2",
+		"attachments": {
+			"Pants_2_Pelvis": {
+				"Pants_2_Pelvis": { "x": 5, "y": -2.5, "rotation": 90, "width": 21, "height": 16 }
 			}
 		}
 	}
@@ -381,7 +478,7 @@
 					{ "time": 0.5 }
 				]
 			},
-			"Pelvis": {
+			"Pelvis_Base": {
 				"rotate": [
 					{},
 					{ "time": 0.3333, "angle": 13.65 },
@@ -414,7 +511,7 @@
 	},
 	"Dead": {
 		"bones": {
-			"Pelvis_Base": {
+			"Pelvis": {
 				"rotate": [
 					{},
 					{ "time": 0.5, "angle": 100.39 }
@@ -496,7 +593,7 @@
 					{ "time": 1 }
 				]
 			},
-			"Pelvis": {
+			"Pelvis_Base": {
 				"translate": [
 					{},
 					{ "time": 0.5, "y": -0.94 },
@@ -627,7 +724,7 @@
 					{ "time": 1 }
 				]
 			},
-			"Pelvis": {
+			"Pelvis_Base": {
 				"rotate": [
 					{},
 					{ "time": 0.5, "angle": -6.75 },
