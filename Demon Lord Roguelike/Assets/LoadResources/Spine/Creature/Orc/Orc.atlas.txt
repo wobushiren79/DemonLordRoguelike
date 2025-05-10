@@ -1,216 +1,335 @@
 
 Orc.png
-size: 260,46
+size: 275,78
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
 ArmDown_L
   rotate: false
-  xy: 233, 23
+  xy: 183, 4
   size: 13, 21
   orig: 13, 21
   offset: 0, 0
   index: -1
 ArmDown_R
-  rotate: true
-  xy: 157, 2
+  rotate: false
+  xy: 180, 27
   size: 14, 18
   orig: 14, 18
   offset: 0, 0
   index: -1
 ArmUp_L
-  rotate: false
-  xy: 171, 18
+  rotate: true
+  xy: 40, 2
   size: 19, 26
   orig: 19, 26
   offset: 0, 0
   index: -1
 ArmUp_R
   rotate: false
-  xy: 37, 14
+  xy: 130, 46
   size: 16, 30
   orig: 16, 30
   offset: 0, 0
   index: -1
-Belt_1
-  rotate: false
-  xy: 55, 15
-  size: 27, 29
-  orig: 27, 29
-  offset: 0, 0
-  index: -1
-Belt_2
-  rotate: true
-  xy: 144, 18
-  size: 26, 25
-  orig: 26, 25
-  offset: 0, 0
-  index: -1
 Body
   rotate: false
-  xy: 2, 7
+  xy: 95, 39
   size: 33, 37
   orig: 33, 37
   offset: 0, 0
   index: -1
 Calf_L
-  rotate: true
-  xy: 177, 2
+  rotate: false
+  xy: 212, 7
   size: 14, 18
   orig: 14, 18
   offset: 0, 0
   index: -1
 Calf_R
   rotate: false
-  xy: 230, 6
+  xy: 232, 31
   size: 14, 15
   orig: 14, 15
   offset: 0, 0
   index: -1
+Clothes_1_ArmUp_L
+  rotate: false
+  xy: 196, 27
+  size: 20, 19
+  orig: 20, 19
+  offset: 0, 0
+  index: -1
+Clothes_1_Body
+  rotate: true
+  xy: 219, 48
+  size: 28, 24
+  orig: 28, 24
+  offset: 0, 0
+  index: -1
+Clothes_2_ArmDown_L
+  rotate: false
+  xy: 117, 27
+  size: 11, 10
+  orig: 11, 10
+  offset: 0, 0
+  index: -1
+Clothes_2_ArmDown_R
+  rotate: false
+  xy: 248, 32
+  size: 12, 15
+  orig: 12, 15
+  offset: 0, 0
+  index: -1
+Clothes_2_ArmUp_L
+  rotate: true
+  xy: 163, 27
+  size: 18, 15
+  orig: 18, 15
+  offset: 0, 0
+  index: -1
+Clothes_2_Body
+  rotate: true
+  xy: 190, 48
+  size: 28, 27
+  orig: 28, 27
+  offset: 0, 0
+  index: -1
 Eye_1
   rotate: true
-  xy: 52, 2
+  xy: 262, 39
   size: 10, 7
   orig: 10, 7
   offset: 0, 0
   index: -1
 Eye_2
-  rotate: true
-  xy: 246, 11
+  rotate: false
+  xy: 90, 28
   size: 10, 4
   orig: 10, 4
   offset: 0, 0
   index: -1
 Eye_3
   rotate: false
-  xy: 2, 2
+  xy: 212, 2
   size: 10, 3
   orig: 10, 3
   offset: 0, 0
   index: -1
 Eye_4
-  rotate: true
-  xy: 248, 25
+  rotate: false
+  xy: 29, 16
   size: 8, 5
   orig: 8, 5
   offset: 0, 0
   index: -1
 Eye_5
   rotate: true
-  xy: 254, 38
+  xy: 267, 60
   size: 6, 4
   orig: 6, 4
   offset: 0, 0
   index: -1
 Foot_L
   rotate: false
-  xy: 37, 2
+  xy: 102, 27
   size: 13, 10
   orig: 13, 10
   offset: 0, 0
   index: -1
 Foot_R
-  rotate: false
-  xy: 109, 2
+  rotate: true
+  xy: 218, 30
   size: 16, 12
   orig: 16, 12
   offset: 0, 0
   index: -1
 Hair_1
-  rotate: false
-  xy: 88, 2
+  rotate: true
+  xy: 198, 6
   size: 19, 12
   orig: 19, 12
   offset: 0, 0
   index: -1
 Hair_2
   rotate: true
-  xy: 220, 4
+  xy: 153, 27
   size: 17, 8
   orig: 17, 8
   offset: 0, 0
   index: -1
+Hat_1
+  rotate: false
+  xy: 105, 3
+  size: 17, 22
+  orig: 17, 22
+  offset: 0, 0
+  index: -1
 Head
   rotate: true
-  xy: 192, 23
+  xy: 124, 4
   size: 21, 20
   orig: 21, 20
   offset: 0, 0
   index: -1
 Mouth_1
-  rotate: false
-  xy: 246, 3
+  rotate: true
+  xy: 267, 68
   size: 8, 6
   orig: 8, 6
   offset: 0, 0
   index: -1
 Mouth_2
-  rotate: true
-  xy: 248, 35
+  rotate: false
+  xy: 262, 33
   size: 9, 4
   orig: 9, 4
   offset: 0, 0
   index: -1
 Mouth_3
   rotate: false
-  xy: 21, 2
+  xy: 95, 34
   size: 4, 3
   orig: 4, 3
   offset: 0, 0
   index: -1
 Mouth_4
-  rotate: false
-  xy: 14, 2
+  rotate: true
+  xy: 85, 27
   size: 5, 3
   orig: 5, 3
   offset: 0, 0
   index: -1
 Mouth_5
   rotate: false
-  xy: 27, 3
+  xy: 55, 23
   size: 7, 2
   orig: 7, 2
   offset: 0, 0
   index: -1
-Pelvis
+Pants_1
   rotate: false
-  xy: 61, 2
+  xy: 161, 47
+  size: 27, 29
+  orig: 27, 29
+  offset: 0, 0
+  index: -1
+Pants_2
+  rotate: true
+  xy: 228, 2
+  size: 26, 25
+  orig: 26, 25
+  offset: 0, 0
+  index: -1
+Pants_3
+  rotate: false
+  xy: 2, 2
+  size: 36, 12
+  orig: 36, 12
+  offset: 0, 0
+  index: -1
+Pants_4
+  rotate: false
+  xy: 68, 3
+  size: 35, 22
+  orig: 35, 22
+  offset: 0, 0
+  index: -1
+Pelvis
+  rotate: true
+  xy: 254, 51
   size: 25, 11
   orig: 25, 11
   offset: 0, 0
   index: -1
 Plam_L
-  rotate: false
-  xy: 127, 2
+  rotate: true
+  xy: 255, 17
   size: 13, 12
   orig: 13, 12
   offset: 0, 0
   index: -1
 Plam_R
-  rotate: true
-  xy: 142, 2
+  rotate: false
+  xy: 255, 2
   size: 12, 13
   orig: 12, 13
   offset: 0, 0
   index: -1
 Thigh_L
-  rotate: true
-  xy: 197, 3
+  rotate: false
+  xy: 146, 4
   size: 18, 21
   orig: 18, 21
   offset: 0, 0
   index: -1
 Thigh_R
-  rotate: false
-  xy: 214, 23
+  rotate: true
+  xy: 130, 27
   size: 17, 21
   orig: 17, 21
   offset: 0, 0
   index: -1
-Weapon_R_1
+Weapon_L_1
   rotate: true
-  xy: 84, 16
-  size: 28, 58
-  orig: 28, 58
+  xy: 85, 34
+  size: 42, 8
+  orig: 42, 8
+  offset: 0, 0
+  index: -1
+Weapon_L_2
+  rotate: true
+  xy: 42, 25
+  size: 51, 11
+  orig: 51, 11
+  offset: 0, 0
+  index: -1
+Weapon_L_3
+  rotate: true
+  xy: 72, 27
+  size: 49, 11
+  orig: 49, 11
+  offset: 0, 0
+  index: -1
+Weapon_R_1
+  rotate: false
+  xy: 2, 16
+  size: 25, 60
+  orig: 25, 60
+  offset: 0, 0
+  index: -1
+Weapon_R_2
+  rotate: false
+  xy: 55, 27
+  size: 15, 49
+  orig: 15, 49
+  offset: 0, 0
+  index: -1
+Weapon_R_3
+  rotate: false
+  xy: 29, 23
+  size: 11, 53
+  orig: 11, 53
+  offset: 0, 0
+  index: -1
+Weapon_R_4
+  rotate: false
+  xy: 148, 46
+  size: 11, 30
+  orig: 11, 30
+  offset: 0, 0
+  index: -1
+Weapon_R_5
+  rotate: false
+  xy: 166, 4
+  size: 15, 21
+  orig: 15, 21
+  offset: 0, 0
+  index: -1
+Weapon_R_6
+  rotate: false
+  xy: 245, 49
+  size: 7, 27
+  orig: 7, 27
   offset: 0, 0
   index: -1
