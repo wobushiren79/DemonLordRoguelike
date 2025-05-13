@@ -106,6 +106,14 @@ public partial class CameraHandler
     }
 
     /// <summary>
+    /// 设置生物容器摄像头
+    /// </summary>
+    public CinemachineVirtualCamera SetCreatureVatCamera(int priority, bool isEnable)
+    {
+        return SetCameraForBaseScene(priority, isEnable, "CV_CreatureVat");
+    }
+
+    /// <summary>
     /// 设置扭蛋机摄像头
     /// </summary>
     public CinemachineVirtualCamera SetGashaponMachineCamera(int priority, bool isEnable)

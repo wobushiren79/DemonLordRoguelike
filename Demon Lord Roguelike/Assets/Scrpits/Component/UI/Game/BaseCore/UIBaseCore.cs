@@ -51,6 +51,10 @@ public partial class UIBaseCore : BaseUIComponent
         {
             OnClickForResearch();
         }
+        else if(viewButton == ui_ViewBaseCoreItemFunction_Vat)
+        {
+            OnClickForVat();
+        }
     }
 
     /// <summary>
@@ -99,5 +103,13 @@ public partial class UIBaseCore : BaseUIComponent
     public void OnClickForResearch()
     {
         var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBaseResearch>();
+    }
+
+    /// <summary>
+    /// 点击打开-蜕变
+    /// </summary>
+    public void OnClickForVat()
+    {
+        var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UICreatureVat>();
     }
 }

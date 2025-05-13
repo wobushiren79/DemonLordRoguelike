@@ -36,7 +36,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     public void EnterGameForBaseScene(UserDataBean userData, bool isInitScene)
     {
         Action actionForStart = () =>
-        {
+        {        
             //镜头初始化
             CameraHandler.Instance.InitData();
             //环境参数初始化
@@ -99,6 +99,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             currentBaseScene.SetActive(true);
             currentBaseScene.transform.position = Vector3.zero;
             currentBaseScene.transform.eulerAngles = Vector3.zero;
+            ScenePrefabBase scenePrefabBase = currentBaseScene.GetComponent<ScenePrefabBase>();
+            scenePrefabBase.InitSceneData();
             actionForComplete?.Invoke(currentBaseScene);
         });
     }

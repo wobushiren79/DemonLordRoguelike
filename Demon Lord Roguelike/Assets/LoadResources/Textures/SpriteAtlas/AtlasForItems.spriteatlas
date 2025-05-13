@@ -73,7 +73,6 @@ SpriteAtlas:
     - 9bac5ab2a1f7e344999dca403b4e2375: 21300000
     - 2a728fc2cf5a7c1499910494a6afb537: 21300000
     - 092b59e2817fee84a80e4e6b2e160751: 21300000
-    - e3f9f5039ef787d4098394284d532f8f: 21300000
     - cf7ac703b55a7fd49aa44b3d312c9e7f: 21300000
     - 7d02f8231d77a214197c67c221947ab4: 21300000
     - c88f333379618f344afc654d5aec8435: 21300000
@@ -93,12 +92,10 @@ SpriteAtlas:
     - 461faf94150803840a6a16528f16b532: 21300000
     - 276e32f4cab664241aecffdf95bfce4f: 21300000
     - 09a224f405264c24f802ec4153997d12: 21300000
-    - cab789f43a35f6346b84ae29058b650d: 21300000
     - 886c7415a79ec2848b82e85febf72948: 21300000
     - 4ebc8645269117749843d2977407775a: 21300000
     - aac27d4511d967949aae2314275af796: 21300000
     - 44a2bb858ae6c61449106770334be44e: 21300000
-    - b4e17e95c7b619a4da7bd313afd405ab: 21300000
     - 2ad8dfa5b88c0794891d38c22fbc3544: 21300000
     - 68f02fb540b8c1d42bd33486f8558bda: 21300000
     - f93edbc513106604fa73605983fdfd1a: 21300000
@@ -127,7 +124,6 @@ SpriteAtlas:
     - fc917019bfc71434981612e4f24c1dc7: 21300000
     - c0262d299767711468cff9ac8993836c: 21300000
     - ed791d5978ff01447a8cdf28fac0f3ba: 21300000
-    - a304b969f2163c9458bec0aba42236e5: 21300000
     - 719bc489834e0b440ad0e33950d6a425: 21300000
     - 93bf6889ff69a3243a8cb7d4272cb172: 21300000
     - 0a40ee890fa28dc4abec85aff9622873: 21300000
@@ -234,7 +230,6 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 9bac5ab2a1f7e344999dca403b4e2375, type: 3}
   - {fileID: 21300000, guid: 2a728fc2cf5a7c1499910494a6afb537, type: 3}
   - {fileID: 21300000, guid: 092b59e2817fee84a80e4e6b2e160751, type: 3}
-  - {fileID: 21300000, guid: e3f9f5039ef787d4098394284d532f8f, type: 3}
   - {fileID: 21300000, guid: cf7ac703b55a7fd49aa44b3d312c9e7f, type: 3}
   - {fileID: 21300000, guid: 7d02f8231d77a214197c67c221947ab4, type: 3}
   - {fileID: 21300000, guid: c88f333379618f344afc654d5aec8435, type: 3}
@@ -254,12 +249,10 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 461faf94150803840a6a16528f16b532, type: 3}
   - {fileID: 21300000, guid: 276e32f4cab664241aecffdf95bfce4f, type: 3}
   - {fileID: 21300000, guid: 09a224f405264c24f802ec4153997d12, type: 3}
-  - {fileID: 21300000, guid: cab789f43a35f6346b84ae29058b650d, type: 3}
   - {fileID: 21300000, guid: 886c7415a79ec2848b82e85febf72948, type: 3}
   - {fileID: 21300000, guid: 4ebc8645269117749843d2977407775a, type: 3}
   - {fileID: 21300000, guid: aac27d4511d967949aae2314275af796, type: 3}
   - {fileID: 21300000, guid: 44a2bb858ae6c61449106770334be44e, type: 3}
-  - {fileID: 21300000, guid: b4e17e95c7b619a4da7bd313afd405ab, type: 3}
   - {fileID: 21300000, guid: 2ad8dfa5b88c0794891d38c22fbc3544, type: 3}
   - {fileID: 21300000, guid: 68f02fb540b8c1d42bd33486f8558bda, type: 3}
   - {fileID: 21300000, guid: f93edbc513106604fa73605983fdfd1a, type: 3}
@@ -288,7 +281,6 @@ SpriteAtlas:
   - {fileID: 21300000, guid: fc917019bfc71434981612e4f24c1dc7, type: 3}
   - {fileID: 21300000, guid: c0262d299767711468cff9ac8993836c, type: 3}
   - {fileID: 21300000, guid: ed791d5978ff01447a8cdf28fac0f3ba, type: 3}
-  - {fileID: 21300000, guid: a304b969f2163c9458bec0aba42236e5, type: 3}
   - {fileID: 21300000, guid: 719bc489834e0b440ad0e33950d6a425, type: 3}
   - {fileID: 21300000, guid: 93bf6889ff69a3243a8cb7d4272cb172, type: 3}
   - {fileID: 21300000, guid: 0a40ee890fa28dc4abec85aff9622873, type: 3}
@@ -394,7 +386,6 @@ SpriteAtlas:
   - Succubus_Atlas_Weapon_Weapon_L_3
   - Goblin_Atlas_Weapon_Weapon_R_20
   - Skeleton_Atlas_Pants_Pants_4
-  - Human_Atlas_Hat_Hat_1
   - Succubus_Atlas_Pants_Pants_4
   - Skeleton_Atlas_Hat_Hat_6
   - Skeleton_Atlas_Clothes_Clothes_4
@@ -414,12 +405,10 @@ SpriteAtlas:
   - Orc_Atlas_Weapon_Weapon_R_6
   - Goblin_Atlas_Weapon_Weapon_R_9
   - Goblin_Atlas_Pants_Pants_3
-  - Human_Atlas_Pants_Pants_1
   - Goblin_Atlas_Weapon_Weapon_R_7
   - Skeleton_Atlas_Hat_Hat_4
   - Succubus_Atlas_Hat_Hat_3
   - Minotaur_Atlas_Pants_Pants_2
-  - Human_Atlas_Weapon_L_Weapon_1
   - Slime_Atlas_Hat_Hat_5
   - Skeleton_Atlas_Hat_Hat_3
   - Goblin_Atlas_Hat_Hat_9
@@ -448,7 +437,6 @@ SpriteAtlas:
   - Slime_Atlas_Hat_Hat_10
   - Goblin_Atlas_Pants_Pants_1
   - Goblin_Atlas_Weapon_Weapon_R_15
-  - Human_Atlas_Clothes_Clothes_1
   - Goblin_Atlas_Pants_Pants_5
   - Slime_Atlas_Hat_Hat_15
   - Slime_Atlas_Hat_Hat_18

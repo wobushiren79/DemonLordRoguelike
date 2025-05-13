@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VFX;
 
@@ -11,13 +12,18 @@ public class ScenePrefabForBase : ScenePrefabBase
     public VisualEffect effectEggBreak;
     //祭坛
     public GameObject objBuildingAltar;
-
-
+    //容器
+    public GameObject objBuildingVat;
     //public void Awake()
     //{
     //    objBuildingCore = transform.Find("Core/Building").gameObject;
     //    effectEggBreak = transform.Find("Effect/EggBreak").GetComponent<VisualEffect>();
     //}
+    public override void InitSceneData()
+    {
+        base.InitSceneData();
+        RefreshBuildingVat();
+    }
 
     public void Update()
     {
@@ -55,6 +61,28 @@ public class ScenePrefabForBase : ScenePrefabBase
         targetLookAtForBuildingCoreEye = Vector3.Lerp(targetLookAtPosition, targetLookAtForBuildingCoreEye, Time.deltaTime * speedRotationForBuildingCoreEye);
         objBuildingCoreEye.transform.LookAt(targetLookAtForBuildingCoreEye);
         return;
+    }
+    #endregion
+
+    #region Vat相关
+    /// <summary>
+    /// 刷新建筑容器
+    /// </summary>
+    public void RefreshBuildingVat()
+    {
+        int showVatNum = 5;
+        for (int i = 0; i < objBuildingVat.transform.childCount; i++)
+        {
+            var itemVat = objBuildingVat.transform.GetChild(i);
+            if(i < showVatNum)
+            {
+                itemVat.gameObject.SetActive(true);
+            }
+            else
+            {
+                itemVat.gameObject.SetActive(false);
+            }
+        }
     }
     #endregion
 }

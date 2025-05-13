@@ -15,5 +15,7 @@ public partial class UIBaseCore
 
     public Button ui_ViewBaseCoreItemFunction_Research;
 
+    public Button ui_ViewBaseCoreItemFunction_Vat;
+
 
 }
