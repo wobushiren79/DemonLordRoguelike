@@ -98,9 +98,9 @@ public partial class UITestCard : BaseUIComponent
 #if UNITY_EDITOR
         List<ExcelChangeData> listData = new List<ExcelChangeData>() 
         {
-            new ExcelChangeData(fightCreatureData.creatureData.id,"ui_data_s",sData),
-            new ExcelChangeData(fightCreatureData.creatureData.id,"ui_data_b",bData),
-            new ExcelChangeData(fightCreatureData.creatureData.id,"size_spine",$"{objSize}")
+            new ExcelChangeData(fightCreatureData.creatureData.creatureModel.id,"ui_data_s",sData),
+            new ExcelChangeData(fightCreatureData.creatureData.creatureModel.id,"ui_data_b",bData),
+            new ExcelChangeData(fightCreatureData.creatureData.creatureModel.id,"size_spine",$"{objSize}")
         };
         ExcelUtil.SetExcelData("Assets/Data/Excel/excel_creature_model[生物模型信息].xlsx", "CreatureModel", listData);
 #endif

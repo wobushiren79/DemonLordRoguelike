@@ -20,8 +20,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 259784ad148eedb4bbd1cef9aba48533
+    m_Address: Assets/LoadResources/Spine/Creature/Goblin/Goblin_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8a3e0ac3150dc72439a6cd6a57a961e5
     m_Address: Assets/LoadResources/Spine/Creature/Human/Human_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a207e7f65adcfb6479dd3c491bbbd0c7
+    m_Address: Assets/LoadResources/Spine/Creature/Orc/Orc_SkeletonData.asset
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c356b4f9f7b59a041ae975d350099e22
+    m_Address: Assets/LoadResources/Spine/Creature/Minotaur/Minotaur_SkeletonData.asset
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
