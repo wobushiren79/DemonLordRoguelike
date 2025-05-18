@@ -64,12 +64,9 @@ public class CreatureManager : BaseManager
             if (creatureDataSelectPreview == null || creatureData != creatureDataSelectPreview)
             {
                 //设置骨骼数据
-                SpineHandler.Instance.SetSkeletonDataAsset(skeletonAnimationSelectPreview, creatureData.creatureModel.res_name);
-                string[] skinArray = creatureData.GetSkinArray();
-                //修改皮肤
-                SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimationSelectPreview.skeleton, skinArray);
-                creatureDataSelectPreview = creatureData;
+                CreatureHandler.Instance.SetCreatureData(skeletonAnimationSelectPreview, creatureData, isNeedWeapon: false);
 
+                creatureDataSelectPreview = creatureData;
                 //修改材质球颜色
                 skeletonAnimationSelectPreview.skeleton.A = 0.65f;
 

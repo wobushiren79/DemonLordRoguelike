@@ -77,8 +77,8 @@ public class GameFightCreatureEntity
             return;
         if (creatureData == null)
             return;
-        string[] skinArray = creatureData.GetSkinArray();
-        SpineHandler.Instance.ChangeSkeletonSkin(creatureSkeletionAnimation.skeleton, skinArray);
+        //设置spine
+        CreatureHandler.Instance.SetCreatureData(creatureSkeletionAnimation, creatureData, isSetSkeletonDataAsset: false);
     }
 
     /// <summary>

@@ -57,12 +57,9 @@ public partial class UIViewMainLoadItem : BaseUIView
     /// </summary>
     public void SetCreatureUI(CreatureBean creatureData)
     {
-        //获取展示资源
-        creatureData.creatureModel.GetShowRes(out string resName, out int skinType);
-
-        SpineHandler.Instance.SetSkeletonDataAsset(ui_Icon, resName);
-        string[] skinArray =  creatureData.GetSkinArray(skinType);
-        SpineHandler.Instance.ChangeSkeletonSkin(ui_Icon.Skeleton, skinArray);
+        //设置spine
+        CreatureHandler.Instance.SetCreatureData(ui_Icon, creatureData,isUIShow : true);
+        //播放动画
         SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, true);
         //设置UI大小和坐标
         creatureData.creatureModel.ChangeUISizeForB(ui_Icon.rectTransform);

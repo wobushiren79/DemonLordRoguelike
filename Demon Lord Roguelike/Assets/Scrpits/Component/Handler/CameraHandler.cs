@@ -35,12 +35,9 @@ public partial class CameraHandler
 
         //设置大小
         targetRenderer.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine;
-        //设置骨骼数据
-        SpineHandler.Instance.SetSkeletonDataAsset(targetSkeletonAnimation, creatureData.creatureModel.res_name);
-        string[] skinArray = creatureData.GetSkinArray();
-        //修改皮肤
-        SpineHandler.Instance.ChangeSkeletonSkin(targetSkeletonAnimation.skeleton, skinArray);
-
+        //展示生物数据
+        CreatureHandler.Instance.SetCreatureData(targetSkeletonAnimation,creatureData);
+        //初始化位置
         controlTarget.transform.position = new Vector3(0, 0, 0);
 
         //关闭切换动画

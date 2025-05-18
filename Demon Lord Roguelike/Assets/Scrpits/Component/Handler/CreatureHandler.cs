@@ -7,6 +7,61 @@ using UnityEngine;
 public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
 {
     /// <summary>
+    /// 设置生物数据
+    /// </summary>
+    public void SetCreatureData(SkeletonAnimation skeletonAnimation, CreatureBean creatureData, bool isSetSkeletonDataAsset = true, bool isUIShow = false, bool isNeedWeapon = true)
+    {
+        SetCreatureData(skeletonAnimation, null, creatureData, isSetSkeletonDataAsset, isUIShow, isNeedWeapon);
+    }
+
+    /// <summary>
+    /// 设置生物数据
+    /// </summary>
+    public void SetCreatureData(SkeletonGraphic skeletonGraphic, CreatureBean creatureData, bool isSetSkeletonDataAsset = true, bool isUIShow = false, bool isNeedWeapon = true)
+    {
+        SetCreatureData(null, skeletonGraphic, creatureData, isSetSkeletonDataAsset, isUIShow, isNeedWeapon);
+    }
+
+    /// <summary>
+    /// 设置生物数据
+    /// </summary>
+    public void SetCreatureData(SkeletonAnimation skeletonAnimation, SkeletonGraphic skeletonGraphic, CreatureBean creatureData, bool isSetSkeletonDataAsset = true, bool isUIShow = false, bool isNeedWeapon = true)
+    {
+        if (creatureData == null)
+        {
+            LogUtil.LogError("设置spine错误 没有生物数据");
+            return;
+        }
+        string resName = creatureData.creatureModel.res_name;
+        int skinType = 0;
+        if (isUIShow)
+        {
+            creatureData.creatureModel.GetShowRes(out resName, out skinType);
+        }
+        string[] skinArray = creatureData.GetSkinArray(showType: skinType, isNeedWeapon: isNeedWeapon);
+        //设置SkeletonAnimation
+        if (skeletonAnimation != null)
+        {
+            if (isSetSkeletonDataAsset)
+            {
+                SpineHandler.Instance.SetSkeletonDataAsset(skeletonAnimation, resName);
+            }
+            //修改皮肤
+            SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, skinArray);
+        }
+        //设置SkeletonGraphic
+        if (skeletonGraphic != null)
+        {
+            if (isSetSkeletonDataAsset)
+            {
+                SpineHandler.Instance.SetSkeletonDataAsset(skeletonGraphic, resName);
+            }
+            //修改皮肤
+            SpineHandler.Instance.ChangeSkeletonSkin(skeletonGraphic.Skeleton, skinArray);
+        }
+    }
+
+    /// <summary>
     /// 生成防御核心生物
     /// </summary>
     public void CreateDefenseCoreCreature(CreatureBean creatureData, Vector3 creaturePos, Action<GameFightCreatureEntity> actionForComplete)
@@ -37,11 +92,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         {
             Transform rendererTF = targetObj.transform.Find("Spine");
             SkeletonAnimation targetSkeletonAnimation = rendererTF.GetComponent<SkeletonAnimation>();
-            if (targetSkeletonAnimation != null)
-            {
-                string[] skinArray = creatureData.GetSkinArray();
-                SpineHandler.Instance.ChangeSkeletonSkin(targetSkeletonAnimation.skeleton, skinArray);
-            }
+            SetCreatureData(targetSkeletonAnimation, creatureData, isSetSkeletonDataAsset: false);
             actionForComplete?.Invoke(targetObj);
         });
     }

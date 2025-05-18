@@ -102,10 +102,8 @@ public partial class UIMainCreate : BaseUIComponent
     /// </summary>
     public void SetPreviewCreate(CreatureBean createCreatureData)
     {
-        SpineHandler.Instance.SetSkeletonDataAsset(previewSpine, createCreatureData.creatureModel.res_name);
-        string[] skinArray = createCreatureData.GetSkinArray();
-        //修改皮肤
-        SpineHandler.Instance.ChangeSkeletonSkin(previewSpine.skeleton, skinArray);
+        //设置spine
+        CreatureHandler.Instance.SetCreatureData(previewSpine, createCreatureData);
         //播放spine动画
         SpineHandler.Instance.PlayAnim(previewSpine, SpineAnimationStateEnum.Idle, true);
     }

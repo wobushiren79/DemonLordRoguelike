@@ -9,5 +9,15 @@ public partial class UICreatureVat
 
     public Button ui_BtnRight;
 
+    public UIViewCreatureCardList ui_UIViewCreatureCardList_Material;
+
+    public UIViewCreatureCardList ui_UIViewCreatureCardList_Target;
+
+    public Button ui_BtnStart;
+
+    public Button ui_BtnEnd;
+
+    public Button ui_BtnComplete;
+
 
 }

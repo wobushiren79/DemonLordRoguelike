@@ -30,6 +30,9 @@ public enum CardUseState
     LineupBackpack,//阵容背包
     CreatureManager,//魔物管理
     CreatureSacrifice,//魔物献祭
+
+    CreatureAscendTarget,//魔物进阶
+    CreatureAscendMaterial,//魔物进阶
 }
 
 //卡片状态
@@ -49,6 +52,9 @@ public enum CardStateEnum
 
     CreatureSacrificeNoSelect = 401,//生物献祭未选中
     CreatureSacrificeSelect = 402,//生物献祭选中
+
+    CreatureAscendNoSelect = 501,//生物进阶未选中
+    CreatureAscendSelect = 502,//生物进阶选中
 }
 
 //游戏战斗预制状态

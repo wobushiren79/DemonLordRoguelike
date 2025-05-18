@@ -82,7 +82,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
             return;
         }
         DialogBean dialogData = new DialogBean();
-        dialogData.content = string.Format(TextHandler.Instance.GetTextById(72001), researchInfo.pay_crystal);
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(62002), researchInfo.pay_crystal);
         dialogData.actionSubmit = (view, data) =>
         {
             //扣除魔晶

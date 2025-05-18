@@ -267,10 +267,8 @@ public class GashaponMachineLogic : BaseGameLogic
         var creatureData = gashaponItemData.creatureData;
         //设置大小
         eggSpine.transform.localScale = Vector3.zero;
-        SpineHandler.Instance.SetSkeletonDataAsset(eggSpine, creatureData.creatureModel.res_name);
-        string[] skinArray = creatureData.GetSkinArray();
-        //修改皮肤
-        SpineHandler.Instance.ChangeSkeletonSkin(eggSpine.skeleton, skinArray);
+        //设置spine
+        CreatureHandler.Instance.SetCreatureData(eggSpine, creatureData);
         //播放缩放动画
         eggSpine.transform.DOScale(Vector3.one * creatureData.creatureModel.size_spine, 0.2f).OnComplete(() =>
         {

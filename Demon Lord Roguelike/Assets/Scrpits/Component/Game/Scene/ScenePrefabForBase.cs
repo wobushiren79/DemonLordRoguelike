@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Spine.Unity;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.VFX;
 
@@ -74,7 +76,7 @@ public class ScenePrefabForBase : ScenePrefabBase
         for (int i = 0; i < objBuildingVat.transform.childCount; i++)
         {
             var itemVat = objBuildingVat.transform.GetChild(i);
-            if(i < showVatNum)
+            if (i < showVatNum)
             {
                 itemVat.gameObject.SetActive(true);
             }
@@ -82,6 +84,38 @@ public class ScenePrefabForBase : ScenePrefabBase
             {
                 itemVat.gameObject.SetActive(false);
             }
+        }
+    }
+
+
+    /// <summary>
+    /// 设置容器的状态
+    /// </summary>
+    /// <param name="state">0关闭未设置生物 1打开未设置生物 2打开设置了生物 </param>
+    public void SetBuildingVatState(Transform targetVat, int state, CreatureBean creatureData)
+    {
+        Animator vatAnim = targetVat.GetComponent<Animator>();
+        vatAnim.SetInteger("State", 0);
+
+        Transform tfWater = targetVat.Find("Water");
+        tfWater.gameObject.SetActive(false);
+
+        Transform tfCreature = targetVat.Find("Creature");
+        tfCreature.gameObject.SetActive(false);
+
+        SkeletonAnimation skeletonAnimation = tfCreature.GetComponent<SkeletonAnimation>();
+        switch (state)
+        {
+            case 0:
+                break;
+            case 1:
+                vatAnim.SetInteger("State", 1);
+                break;
+            case 2:
+                vatAnim.SetInteger("State", 1);
+                tfCreature.gameObject.SetActive(true);
+                CreatureHandler.Instance.SetCreatureData(skeletonAnimation, creatureData);
+                break;
         }
     }
     #endregion

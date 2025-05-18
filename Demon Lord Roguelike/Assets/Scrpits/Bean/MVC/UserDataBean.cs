@@ -34,7 +34,19 @@ public class UserDataBean : BaseBean
     public UserUnlockBean userUnlockData;
     //用户限制数据
     public UserLimmitBean userLimmitData;
+    //用户进阶数据
+    public UserAscendBean userAscendData;
     
+    /// <summary>
+    /// 获取用户进阶数据
+    /// </summary>
+    public UserAscendBean GetUserAscendData()
+    {
+        if (userAscendData == null)
+            userAscendData = new UserAscendBean();
+        return userAscendData;
+    }
+
     /// <summary>
     /// 获取用户解锁数据
     /// </summary>

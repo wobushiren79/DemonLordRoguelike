@@ -207,10 +207,9 @@ public class CreatureSacrificeLogic : BaseGameLogic
             return;
         }
         SkeletonAnimation creatureSpine = targetObj.transform.Find(spineChildTFName).GetComponent<SkeletonAnimation>();
-        SpineHandler.Instance.SetSkeletonDataAsset(creatureSpine, creatureData.creatureModel.res_name);
-        string[] skinArray = creatureData.GetSkinArray();
-        //修改皮肤
-        SpineHandler.Instance.ChangeSkeletonSkin(creatureSpine.skeleton, skinArray);
+
+        //设置spine
+        CreatureHandler.Instance.SetCreatureData(creatureSpine, creatureData);
         //播放spine动画
         SpineHandler.Instance.PlayAnim(creatureSpine, SpineAnimationStateEnum.Idle, true);
         targetObj.name = creatureData.creatureId;

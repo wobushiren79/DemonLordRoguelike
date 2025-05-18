@@ -14,11 +14,11 @@ public partial class CameraManager
     public CinemachineBrain cinemachineBrain;
 
     /// <summary>
-    /// ¼ÓÔØÖ÷ÉãÏñÍ·
+    /// åŠ è½½ä¸»æ‘„åƒå¤´
     /// </summary>
     public void LoadMainCamera()
     {       
-        //Èç¹ûÃ»ÓĞÕÒµ½Ö÷ÉãÏñÍ· Ôò¼ÓÔØÒ»¸ö
+        //å¦‚æœæ²¡æœ‰æ‰¾åˆ°ä¸»æ‘„åƒå¤´ åˆ™åŠ è½½ä¸€ä¸ª
         if (mainCamera == null)
         {
             GameObject objCameraDataModel = LoadAddressablesUtil.LoadAssetSync<GameObject>(PathInfo.CameraDataPath);
@@ -39,7 +39,7 @@ public partial class CameraManager
     }
 
     /// <summary>
-    /// Òş²ØËùÓĞÉãÏñÍ·
+    /// éšè—æ‰€æœ‰æ‘„åƒå¤´
     /// </summary>
     public void HideAllCM()
     {
@@ -48,7 +48,7 @@ public partial class CameraManager
     }
 
     /// <summary>
-    /// ÉèÖÃÖ÷ÉãÏñÍ·µÄÄ¬ÈÏÇĞ»»¶¯»­
+    /// è®¾ç½®ä¸»æ‘„åƒå¤´çš„é»˜è®¤åˆ‡æ¢åŠ¨ç”»
     /// </summary>
     public void SetMainCameraDefaultBlend(float time, Style style = Style.EaseInOut)
     {
