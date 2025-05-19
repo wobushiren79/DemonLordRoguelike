@@ -25,6 +25,38 @@ public class UserAscendBean
         }
         return null;
     }
+
+    /// <summary>
+    /// 添加进阶数据
+    /// </summary>
+    public UserAscendDetailsBean AddAscendData(int index, CreatureBean creatureData)
+    {
+        if (dicAscendData.TryGetValue(index, out var targetData))
+        {
+            LogUtil.LogError($"添加进阶数据错误,已经存在index_{index}的数据 progress_{targetData.progress} creatureId_{targetData.creatureId}");
+        }
+        UserAscendDetailsBean newData = new UserAscendDetailsBean();
+        newData.progress = 0;
+        newData.index = index;
+        newData.creatureId = creatureData.creatureId;
+        dicAscendData[index] = newData;
+        return newData;
+    }
+
+    /// <summary>
+    /// 移除进阶数据
+    /// </summary>
+    public void RemoveAscendData(int index)
+    {
+        if (dicAscendData.ContainsKey(index))
+        {
+            dicAscendData.Remove(index);
+        }
+        else
+        {
+            LogUtil.LogError($"溢出进阶数据错误,没有数据index_{index}");
+        }
+    }
 }
 
 [Serializable]

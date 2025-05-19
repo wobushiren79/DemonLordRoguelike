@@ -24,14 +24,19 @@ public class ScenePrefabForBase : ScenePrefabBase
     public override void InitSceneData()
     {
         base.InitSceneData();
-        RefreshBuildingVat();
+        BuildingVatRefresh();
+        EventHandler.Instance.RegisterEvent<int>(EventsInfo.CreatureAscend_UpdateVat, EventForCreatureAscendUpdateVat);
+    }
+
+    public void OnDestroy()
+    {
+        EventHandler.Instance.UnRegisterEvent<int>(EventsInfo.CreatureAscend_UpdateVat, EventForCreatureAscendUpdateVat);
     }
 
     public void Update()
     {
         HandleUpdateForBuildingCore();
     }
-
 
     #region 核心建筑眼球处理
     //核心建筑眼球看向目标
@@ -68,10 +73,21 @@ public class ScenePrefabForBase : ScenePrefabBase
 
     #region Vat相关
     /// <summary>
+    /// 事件-刷新数据
+    /// </summary>
+    /// <param name="targetIndex"></param>
+    public void EventForCreatureAscendUpdateVat(int targetIndex)
+    {
+
+    }
+
+    /// <summary>
     /// 刷新建筑容器
     /// </summary>
-    public void RefreshBuildingVat()
+    public void BuildingVatRefresh()
     {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        UserAscendBean userAscend = userData.GetUserAscendData();
         int showVatNum = 5;
         for (int i = 0; i < objBuildingVat.transform.childCount; i++)
         {
@@ -79,6 +95,16 @@ public class ScenePrefabForBase : ScenePrefabBase
             if (i < showVatNum)
             {
                 itemVat.gameObject.SetActive(true);
+                var itemAscendDetails = userAscend.GetAscendData(i);
+                if (itemAscendDetails != null)
+                {
+                    var creatureData = userData.GetBackpackCreature(itemAscendDetails.creatureId);
+                    BuildingVatSetState(itemVat, 3, creatureData);
+                }
+                else
+                {
+                    BuildingVatSetState(itemVat, 0, null);
+                }
             }
             else
             {
@@ -87,12 +113,58 @@ public class ScenePrefabForBase : ScenePrefabBase
         }
     }
 
+    /// <summary>
+    /// 展示VAT
+    /// </summary>
+    /// <param name="targetIndex"></param>
+    public void BuildingVatShow(int targetIndex)
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        UserAscendBean userAscend = userData.GetUserAscendData();
+
+        for (int i = 0; i < objBuildingVat.transform.childCount; i++)
+        {
+            var itemVat = objBuildingVat.transform.GetChild(i);
+            if (itemVat.gameObject.activeSelf && itemVat.gameObject.activeInHierarchy)
+            {
+                var itemAscendDetails = userAscend.GetAscendData(i);
+                //如果是结束展示
+                if(targetIndex == -1)
+                {
+                    //如果VAT是空的。则直接关闭舱门
+                    if(itemAscendDetails == null)
+                    {
+                        BuildingVatSetState(itemVat, 0, null);
+                    }
+                    continue;
+                }
+                //是展示的VAT
+                if(i == targetIndex)
+                {
+                    //如果VAT是空的，则打开舱门
+                    if(itemAscendDetails == null)
+                    {
+                        BuildingVatSetState(itemVat, 1, null);
+                    }
+                }
+                //不是展示的VAT
+                else
+                {
+                    //如果VAT是空的。则直接关闭舱门
+                    if(itemAscendDetails == null)
+                    {
+                        BuildingVatSetState(itemVat, 0, null);
+                    }
+                }
+            }
+        }
+    }
 
     /// <summary>
     /// 设置容器的状态
     /// </summary>
     /// <param name="state">0关闭未设置生物 1打开未设置生物 2打开设置了生物 </param>
-    public void SetBuildingVatState(Transform targetVat, int state, CreatureBean creatureData)
+    public void BuildingVatSetState(Transform targetVat, int state, CreatureBean creatureData)
     {
         Animator vatAnim = targetVat.GetComponent<Animator>();
         vatAnim.SetInteger("State", 0);
@@ -113,6 +185,11 @@ public class ScenePrefabForBase : ScenePrefabBase
                 break;
             case 2:
                 vatAnim.SetInteger("State", 1);
+                tfCreature.gameObject.SetActive(true);
+                CreatureHandler.Instance.SetCreatureData(skeletonAnimation, creatureData);
+                break;
+            case 3:
+                tfWater.gameObject.SetActive(true);
                 tfCreature.gameObject.SetActive(true);
                 CreatureHandler.Instance.SetCreatureData(skeletonAnimation, creatureData);
                 break;

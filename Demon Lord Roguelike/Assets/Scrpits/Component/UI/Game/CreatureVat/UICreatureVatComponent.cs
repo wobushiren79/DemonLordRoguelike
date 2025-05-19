@@ -1,4 +1,5 @@
 ﻿using UnityEngine.UI;
+using TMPro;
 
 
 public partial class UICreatureVat
@@ -18,6 +19,10 @@ public partial class UICreatureVat
     public Button ui_BtnEnd;
 
     public Button ui_BtnComplete;
+
+    public Button ui_BtnAddProgress;
+
+    public TextMeshProUGUI ui_BtnAddProgressText;
 
 
 }

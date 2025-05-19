@@ -1,8 +1,12 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using Cinemachine;
+using DG.Tweening;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
 using Unity.Burst.Intrinsics;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,8 +25,11 @@ public partial class UICreatureVat : BaseUIComponent
 
     //当前选中的生物
     public CreatureBean targetCreatureSelect;
-     public List<CreatureBean> listMaterialCreatureSelect = new List<CreatureBean>();
+    public List<CreatureBean> listMaterialCreatureSelect = new List<CreatureBean>();
 
+    //用户进阶数据
+    protected UserAscendDetailsBean userAscendDetails;
+    protected Transform targetVat;
     public override void OpenUI()
     {
         base.OpenUI();
@@ -40,6 +47,17 @@ public partial class UICreatureVat : BaseUIComponent
         RefreshVatState();
     }
 
+    public override void CloseUI()
+    {
+        base.CloseUI();
+        listTargetCreatureShow.Clear();
+        listMaterialCreatureShow.Clear();
+        ui_UIViewCreatureCardList_Target.CloseUI();
+        ui_UIViewCreatureCardList_Material.CloseUI();
+        //设置展示vat
+        scenePrefab.BuildingVatShow(-1);
+    }
+
     /// <summary>
     /// 设置容器状态
     /// </summary>
@@ -48,24 +66,22 @@ public partial class UICreatureVat : BaseUIComponent
         ui_BtnStart.gameObject.SetActive(false);
         ui_BtnEnd.gameObject.SetActive(false);
         ui_BtnComplete.gameObject.SetActive(false);
-
+        ui_BtnAddProgress.gameObject.SetActive(false);
         AnimForListShow(ui_UIViewCreatureCardList_Target.transform, false, false);
         AnimForListShow(ui_UIViewCreatureCardList_Material.transform, false, false);
 
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        UserAscendBean userAscend = userData.GetUserAscendData();
-        //检测是否有数据
-        var ascendData = userAscend.GetAscendData(currentIndexVat);
-        if (ascendData != null)
+        if (userAscendDetails != null)
         {
             //是否已经完成
-            if (ascendData.progress == 1)
+            if (userAscendDetails.progress == 1)
             {
                 ui_BtnComplete.gameObject.SetActive(true);
             }
             else
             {
                 ui_BtnEnd.gameObject.SetActive(true);
+                ui_BtnAddProgress.gameObject.SetActive(true);
+                ui_BtnAddProgressText.text = string.Format(TextHandler.Instance.GetTextById(80009), 1);
             }
         }
         //如果没有数据
@@ -86,12 +102,21 @@ public partial class UICreatureVat : BaseUIComponent
         listMaterialCreatureSelect.Clear();
 
         currentIndexVat = indexVat;
-        var targetTFVat = scenePrefab.objBuildingVat.transform.GetChild(indexVat);
 
-        vatCamera.Follow = targetTFVat;
-        vatCamera.LookAt = targetTFVat;
+        //检测是否有数据
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        UserAscendBean userAscend = userData.GetUserAscendData();
+        userAscendDetails = userAscend.GetAscendData(currentIndexVat);
+        //获取容器模型
+        targetVat = scenePrefab.objBuildingVat.transform.GetChild(indexVat);
+
+        vatCamera.Follow = targetVat;
+        vatCamera.LookAt = targetVat;
 
         InitCreaturekDataForTarget();
+
+        //设置展示vat
+        scenePrefab.BuildingVatShow(currentIndexVat);
     }
 
     /// <summary>
@@ -117,7 +142,10 @@ public partial class UICreatureVat : BaseUIComponent
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         userData.listBackpackCreature.ForEach((int index, CreatureBean creatureData) =>
         {
-            listMaterialCreatureShow.Add(creatureData);
+            if (creatureData != targetCreatureSelect)
+            {
+                listMaterialCreatureShow.Add(creatureData);
+            }
         });
         ui_UIViewCreatureCardList_Material.SetData(listMaterialCreatureShow, CardUseState.CreatureAscendMaterial, OnCellChangeForBackpackCreatureMaterial);
     }
@@ -172,16 +200,28 @@ public partial class UICreatureVat : BaseUIComponent
         }
         else if (viewButton == ui_BtnStart)
         {
-
+            OnClickForStart();
         }
         else if (viewButton == ui_BtnEnd)
         {
-
+            OnClickForEnd();
         }
         else if (viewButton == ui_BtnComplete)
         {
-
+            OnClickForComplete();
         }
+        else if(viewButton == ui_BtnAddProgress)
+        {
+            OnClickForAddProgress();
+        }
+    }
+
+    /// <summary>
+    /// 点击增加进度
+    /// </summary>
+    public void OnClickForAddProgress()
+    {
+
     }
 
     /// <summary>
@@ -189,7 +229,20 @@ public partial class UICreatureVat : BaseUIComponent
     /// </summary>
     public void OnClickForStart()
     {
-
+        if(targetCreatureSelect == null)
+        {
+            string hintStr = TextHandler.Instance.GetTextById(80008);
+            UIHandler.Instance.ToastHint<ToastView>(hintStr);
+            return;
+        }
+        //设置数据
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        UserAscendBean userAscend = userData.GetUserAscendData();
+        userAscendDetails = userAscend.AddAscendData(currentIndexVat,targetCreatureSelect);
+        //设置状态
+        scenePrefab.BuildingVatSetState(targetVat, 3, targetCreatureSelect);
+        //刷新状态
+        RefreshVatState();
     }
 
     /// <summary>
@@ -197,7 +250,21 @@ public partial class UICreatureVat : BaseUIComponent
     /// </summary>
     public void OnClickForEnd()
     {
-
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = TextHandler.Instance.GetTextById(80004);
+        dialogData.actionSubmit = (voew, data) =>
+        {
+            //设置数据
+            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+            UserAscendBean userAscend = userData.GetUserAscendData();
+            userAscend.RemoveAscendData(currentIndexVat);
+            userAscendDetails = null;
+            //设置状态
+            scenePrefab.BuildingVatSetState(targetVat, 1, targetCreatureSelect);
+            //刷新状态
+            RefreshVatState();
+        };
+        UIHandler.Instance.ShowDialogNormal(dialogData);
     }
 
     /// <summary>
@@ -256,7 +323,7 @@ public partial class UICreatureVat : BaseUIComponent
         {
             SetCurrentVat(targetIndex);
         }
-        RefreshVatState(false);
+        RefreshVatState();
     }
     #endregion
 
@@ -270,16 +337,25 @@ public partial class UICreatureVat : BaseUIComponent
         //目标选择
         if (selectItemView.cardData.cardUseState == CardUseState.CreatureAscendTarget)
         {
+            listMaterialCreatureSelect.Clear();
             if (selectItemView.cardData.cardState == CardStateEnum.CreatureAscendSelect)
             {
+                //取消选择
                 if (targetCreatureSelect != null && targetCreatureSelect == selectCreatureData)
                 {
                     targetCreatureSelect = null;
+                    AnimForListShow(ui_UIViewCreatureCardList_Material.transform, false, true);
+                    scenePrefab.BuildingVatSetState(targetVat, 1, null);
                 }
             }
             else
             {
+                //切换目标魔物
+                AnimForListShow(ui_UIViewCreatureCardList_Material.transform, true, true);
                 targetCreatureSelect = selectCreatureData;
+                scenePrefab.BuildingVatSetState(targetVat, 2, selectCreatureData);
+                //初始化材料
+                InitCreaturekDataForMaterial();
             }
             ui_UIViewCreatureCardList_Target.RefreshAllCard();
         }
@@ -300,23 +376,33 @@ public partial class UICreatureVat : BaseUIComponent
     #endregion
 
     #region 动画相关
-    public void AnimForListShow(Transform targetList, bool isShow, bool isAnim)
+    public void AnimForListShow(Transform targetList, bool isShow, bool isAnim,float animTime = 0.2f)
     {
         RectTransform tragetRTF = (RectTransform)targetList;
+        tragetRTF.DOKill();
+        Vector2 targetPos;
         if (isShow)
         {
-            tragetRTF.anchoredPosition = Vector2.zero;
+            targetPos = Vector2.zero;
         }
         else
         {
             if (tragetRTF.pivot.x == 1)
             {
-                tragetRTF.anchoredPosition = new Vector2(600, 0);
+                targetPos = new Vector2(600, 0);
             }
             else
             {
-                tragetRTF.anchoredPosition = new Vector2(-600, 0);
+                targetPos = new Vector2(-600, 0);
             }
+        }
+        if (isAnim)
+        {
+            tragetRTF.DOAnchorPos(targetPos, animTime);
+        }
+        else
+        {
+            tragetRTF.anchoredPosition = targetPos;
         }
     }
     #endregion

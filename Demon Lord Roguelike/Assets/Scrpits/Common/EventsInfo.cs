@@ -39,4 +39,8 @@ public static class EventsInfo
     public static string CreatureSacrifice_SacrificeSuccess = "CreatureSacrifice_SacrificeSuccess";//献祭成功
     public static string CreatureSacrifice_SacrificeFail = "CreatureSacrifice_SacrificeFail";//献祭失败
     #endregion
+
+    #region 生物进阶
+    public static string CreatureAscend_UpdateVat = "CreatureAscend_UpdateVat";//更新Vat
+    #endregion
 }
