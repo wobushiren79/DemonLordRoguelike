@@ -84,18 +84,22 @@ public partial class EffectHandler
             if (targetEffect == null)
                 return;
             var targetVisualEffect = targetEffect.GetVisualEffect();
+            var targetParticleSystem = targetEffect.GetParticleSystem();
+            //粒子系统处理
             var dicEffectData = effectInfo.GetEffectItemData();
             dicEffectData.ForEach((index, value) =>
             {
-                switch(value.dataType)
+                switch (value.dataType)
                 {
                     case 1://float
                         float targetFloatData = value.dataFloat;
                         if (value.isSize)
                         {
-                            targetFloatData = size;
+                            targetFloatData = size * targetFloatData;
+                            //设置PS系统的起始位置
+                            if (targetParticleSystem != null) targetEffect.SetParticleSystemSize(targetFloatData);
                         }
-                        targetVisualEffect.SetFloat(value.dataName, targetFloatData);
+                        targetVisualEffect?.SetFloat(value.dataName, targetFloatData);
                         break;
                     case 2://int
                         int targetIntData = value.dataInt;
@@ -103,19 +107,21 @@ public partial class EffectHandler
                         {
                             targetIntData = (int)direction;
                         }
-                        targetVisualEffect.SetInt(value.dataName, targetIntData);
+                        targetVisualEffect?.SetInt(value.dataName, targetIntData);
                         break;
                     case 5://vector3
                         Vector3 targetVector3Data = value.dataVector3;
                         if (value.isStartPosition)
                         {
                             targetVector3Data = targetPos + targetVector3Data;
+                            //设置PS系统的起始位置
+                            if (targetParticleSystem != null) targetEffect.SetParticleSystemStartPosition(targetVector3Data);
                         }
-                        targetVisualEffect.SetVector3(value.dataName, targetVector3Data);
+                        targetVisualEffect?.SetVector3(value.dataName, targetVector3Data);
                         break;
                     case 6://vector4
                         Vector4 targetVector4Data = value.dataVector4;
-                        targetVisualEffect.SetVector4(value.dataName, targetVector4Data);
+                        targetVisualEffect?.SetVector4(value.dataName, targetVector4Data);
                         break;
                 }
             });

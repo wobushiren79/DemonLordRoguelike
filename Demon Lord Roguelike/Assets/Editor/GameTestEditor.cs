@@ -111,7 +111,7 @@ public class GameTestEditor : Editor
             {
                 CreatureBean creatureData = new CreatureBean(ids[0]);
                 creatureData.AddSkinForBase();
-                launcher.StartForBaseTest(creatureData);             
+                launcher.StartForBaseTest(creatureData);
             }
         }
         EditorGUILayout.BeginHorizontal();
@@ -134,9 +134,9 @@ public class GameTestEditor : Editor
 
         //生成进攻数据
         fightData.fightAttackData = new FightAttackBean();
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < 10; i++)
         {
-            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(3, 1001);
+            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(3, new List<int> { 1001, 1001, 1001 });
             fightData.fightAttackData.AddAttackQueue(fightAttackDetails);
         }
 
@@ -155,7 +155,8 @@ public class GameTestEditor : Editor
             }
             itemData.order = i;
             fightData.dlDefenseCreatureData.Add(itemData.creatureId, itemData);
-        };
+        }
+        ;
 
         FightCreatureBean fightDefCoreData = new FightCreatureBean(2001);
         fightDefCoreData.creatureData.AddSkinForBase();

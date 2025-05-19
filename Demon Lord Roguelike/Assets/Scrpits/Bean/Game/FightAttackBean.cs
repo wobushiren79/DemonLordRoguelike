@@ -70,4 +70,10 @@ public class FightAttackDetailsBean
         this.timeNextAttack = timeNextAttack;
         creatureIds = new List<int>() { creatureId };
     }
+
+        public FightAttackDetailsBean(float timeNextAttack, List<int> creatureIds)
+    {
+        this.timeNextAttack = timeNextAttack;
+        this.creatureIds = creatureIds;
+    }
 }
