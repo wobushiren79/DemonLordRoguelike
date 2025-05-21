@@ -41,7 +41,7 @@ public partial class UIGameSystem : BaseUIComponent
     }
 
     /// <summary>
-    /// µã»÷ÍË³ö
+    /// ç‚¹å‡»é€€å‡º
     /// </summary>
     public void OnClickForExit()
     {
@@ -49,7 +49,7 @@ public partial class UIGameSystem : BaseUIComponent
     }
 
     /// <summary>
-    /// µã»÷·µ»ØÖ÷½çÃæ
+    /// ç‚¹å‡»è¿”å›ä¸»ç•Œé¢
     /// </summary>
     public void OnClickForBackMain()
     {
@@ -57,7 +57,7 @@ public partial class UIGameSystem : BaseUIComponent
     }
 
     /// <summary>
-    /// µã»÷½øÈëÓÎÏ·ÉèÖÃ
+    /// ç‚¹å‡»è¿›å…¥æ¸¸æˆè®¾ç½®
     /// </summary>
     public void OnClickForGameSetting()
     {
@@ -66,7 +66,7 @@ public partial class UIGameSystem : BaseUIComponent
     }
 
     /// <summary>
-    /// Àë¿ªÓÎÏ·
+    /// ç¦»å¼€æ¸¸æˆ
     /// </summary>
     public void OnClickForExitGame()
     {

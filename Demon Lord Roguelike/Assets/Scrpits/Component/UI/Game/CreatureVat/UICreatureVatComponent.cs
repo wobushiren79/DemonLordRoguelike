@@ -24,5 +24,9 @@ public partial class UICreatureVat
 
     public TextMeshProUGUI ui_BtnAddProgressText;
 
+    public TextMeshProUGUI ui_ProgressText;
+
+    public Image ui_Progress;
+
 
 }

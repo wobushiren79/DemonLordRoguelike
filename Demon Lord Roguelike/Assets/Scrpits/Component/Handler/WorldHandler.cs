@@ -15,6 +15,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     {
         ClearWorldData(() =>
         {
+            //清理掉用户数据
+            GameDataHandler.Instance.ClearUserData();
             //打开加载UI
             UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
             //镜头初始化

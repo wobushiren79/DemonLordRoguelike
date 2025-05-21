@@ -163,7 +163,7 @@ public class ScenePrefabForBase : ScenePrefabBase
     /// <summary>
     /// 设置容器的状态
     /// </summary>
-    /// <param name="state">0关闭未设置生物 1打开未设置生物 2打开设置了生物 </param>
+    /// <param name="state">0关闭未设置生物 1打开未设置生物 2打开设置了生物 3关闭开始加强</param>
     public void BuildingVatSetState(Transform targetVat, int state, CreatureBean creatureData)
     {
         Animator vatAnim = targetVat.GetComponent<Animator>();

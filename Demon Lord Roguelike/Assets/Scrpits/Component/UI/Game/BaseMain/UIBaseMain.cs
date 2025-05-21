@@ -8,9 +8,9 @@ public partial class UIBaseMain : BaseUIComponent
     public override void OpenUI()
     {
         base.OpenUI();
-        //¿ªÆô¿ØÖÆ
+        //å¼€å¯æ§åˆ¶
         GameControlHandler.Instance.SetBaseControl();
-        //¿ªÆôÉãÏñÍ·
+        //å¼€å¯æ‘„åƒå¤´
         CameraHandler.Instance.SetCameraForControl(CinemachineCameraEnum.Base);
     }
 
@@ -38,7 +38,7 @@ public partial class UIBaseMain : BaseUIComponent
     }
 
     /// <summary>
-    /// Ë¢ĞÂUIÊı¾İ
+    /// åˆ·æ–°UIæ•°æ®
     /// </summary>
     public void RefreshUIData()
     {

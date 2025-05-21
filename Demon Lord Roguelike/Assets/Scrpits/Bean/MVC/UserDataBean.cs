@@ -18,7 +18,8 @@ public class UserDataBean : BaseBean
     public long crystal;
     //用户名字
     public string userName;
-
+    //游戏事件
+    public long gameTime;
     //背包里的所有道具
     public List<ItemBean> listBackpackItems = new List<ItemBean>();
     //阵容生物

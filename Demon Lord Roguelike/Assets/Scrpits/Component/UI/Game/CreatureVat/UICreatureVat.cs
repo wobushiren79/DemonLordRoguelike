@@ -35,6 +35,7 @@ public partial class UICreatureVat : BaseUIComponent
         base.OpenUI();
 
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForCardClickSelect);
+        this.RegisterEvent(EventsInfo.CreatureAscend_AddProgress, EventForRefreshVatProgress);
 
         //场景实例
         var baseSceneObj = WorldHandler.Instance.currentBaseScene;
@@ -45,6 +46,7 @@ public partial class UICreatureVat : BaseUIComponent
         //设置数据
         SetCurrentVat(0);
         RefreshVatState();
+        RefreshVatProgress();
     }
 
     public override void CloseUI()
@@ -73,7 +75,7 @@ public partial class UICreatureVat : BaseUIComponent
         if (userAscendDetails != null)
         {
             //是否已经完成
-            if (userAscendDetails.progress == 1)
+            if (userAscendDetails.progress >= 1)
             {
                 ui_BtnComplete.gameObject.SetActive(true);
             }
@@ -91,6 +93,25 @@ public partial class UICreatureVat : BaseUIComponent
             ui_UIViewCreatureCardList_Material.gameObject.SetActive(true);
             AnimForListShow(ui_UIViewCreatureCardList_Target.transform, true, false);
         }
+    }
+
+    /// <summary>
+    /// 刷新进度
+    /// </summary>
+    public void RefreshVatProgress()
+    {
+        float progress = 0;
+        if (userAscendDetails != null)
+        {
+            progress = userAscendDetails.progress;
+        }
+        if (progress > 1)
+        {
+            progress = 1;
+            RefreshVatState();
+        }
+        ui_ProgressText.text = $"{MathUtil.GetPercentage(progress, 2)}%";
+        ui_Progress.fillAmount = progress;
     }
 
     /// <summary>
@@ -229,7 +250,7 @@ public partial class UICreatureVat : BaseUIComponent
     /// </summary>
     public void OnClickForStart()
     {
-        if(targetCreatureSelect == null)
+        if (targetCreatureSelect == null)
         {
             string hintStr = TextHandler.Instance.GetTextById(80008);
             UIHandler.Instance.ToastHint<ToastView>(hintStr);
@@ -238,11 +259,12 @@ public partial class UICreatureVat : BaseUIComponent
         //设置数据
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UserAscendBean userAscend = userData.GetUserAscendData();
-        userAscendDetails = userAscend.AddAscendData(currentIndexVat,targetCreatureSelect);
+        userAscendDetails = userAscend.AddAscendData(currentIndexVat, targetCreatureSelect);
         //设置状态
         scenePrefab.BuildingVatSetState(targetVat, 3, targetCreatureSelect);
         //刷新状态
         RefreshVatState();
+        RefreshVatProgress();
     }
 
     /// <summary>
@@ -263,6 +285,7 @@ public partial class UICreatureVat : BaseUIComponent
             scenePrefab.BuildingVatSetState(targetVat, 1, targetCreatureSelect);
             //刷新状态
             RefreshVatState();
+            RefreshVatProgress();
         };
         UIHandler.Instance.ShowDialogNormal(dialogData);
     }
@@ -272,7 +295,14 @@ public partial class UICreatureVat : BaseUIComponent
     /// </summary>
     public void OnClickForComplete()
     {
-
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        UserAscendBean userAscend = userData.GetUserAscendData();
+        userAscend.RemoveAscendData(currentIndexVat);
+        userAscendDetails = null;
+        //设置状态
+        scenePrefab.BuildingVatSetState(targetVat,0, null);
+        RefreshVatState();
+        RefreshVatProgress();
     }
 
     /// <summary>
@@ -324,10 +354,22 @@ public partial class UICreatureVat : BaseUIComponent
             SetCurrentVat(targetIndex);
         }
         RefreshVatState();
+        RefreshVatProgress();
     }
     #endregion
 
     #region 事件
+    /// <summary>
+    /// 刷新进度
+    /// </summary>
+    public void EventForRefreshVatProgress()
+    {
+        if (userAscendDetails != null)
+        {
+            RefreshVatProgress();
+        }
+    }
+
     /// <summary>
     /// 选择
     /// </summary>

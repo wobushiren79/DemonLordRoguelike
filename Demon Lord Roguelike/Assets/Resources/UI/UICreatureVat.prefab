@@ -1681,6 +1681,8 @@ MonoBehaviour:
   ui_BtnComplete: {fileID: 1124779924901958384}
   ui_BtnAddProgress: {fileID: 8447705033363330517}
   ui_BtnAddProgressText: {fileID: 5458933106695709452}
+  ui_ProgressText: {fileID: 8432805390681118050}
+  ui_Progress: {fileID: 8388824968125616833}
 --- !u!1 &6342195220575958966
 GameObject:
   m_ObjectHideFlags: 0

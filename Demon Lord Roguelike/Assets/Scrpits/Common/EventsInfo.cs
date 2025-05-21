@@ -42,5 +42,6 @@ public static class EventsInfo
 
     #region 生物进阶
     public static string CreatureAscend_UpdateVat = "CreatureAscend_UpdateVat";//更新Vat
+    public static string CreatureAscend_AddProgress = "CreatureAscend_AddProgress";//增加进度
     #endregion
 }

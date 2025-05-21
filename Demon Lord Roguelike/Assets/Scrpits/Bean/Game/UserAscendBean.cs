@@ -65,4 +65,9 @@ public class UserAscendDetailsBean
     public int index;
     public float progress;
     public string creatureId;
+
+    public void AddProgress()
+    {
+        progress += 0.0001f;
+    }
 }
