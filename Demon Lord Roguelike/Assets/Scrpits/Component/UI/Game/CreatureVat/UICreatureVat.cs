@@ -69,8 +69,8 @@ public partial class UICreatureVat : BaseUIComponent
         ui_BtnEnd.gameObject.SetActive(false);
         ui_BtnComplete.gameObject.SetActive(false);
         ui_BtnAddProgress.gameObject.SetActive(false);
-        AnimForListShow(ui_UIViewCreatureCardList_Target.transform, false, false);
-        AnimForListShow(ui_UIViewCreatureCardList_Material.transform, false, false);
+        AnimForListShow(ui_UIViewCreatureCardList_Target.transform, false, hasAnim);
+        AnimForListShow(ui_UIViewCreatureCardList_Material.transform, false, hasAnim);
 
         if (userAscendDetails != null)
         {
@@ -256,15 +256,23 @@ public partial class UICreatureVat : BaseUIComponent
             UIHandler.Instance.ToastHint<ToastView>(hintStr);
             return;
         }
-        //设置数据
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        UserAscendBean userAscend = userData.GetUserAscendData();
-        userAscendDetails = userAscend.AddAscendData(currentIndexVat, targetCreatureSelect);
-        //设置状态
-        scenePrefab.BuildingVatSetState(targetVat, 3, targetCreatureSelect);
-        //刷新状态
-        RefreshVatState();
-        RefreshVatProgress();
+        //先关闭UI
+        UIHandler.Instance.ShowScreenLock();
+        gameObject.SetActive(false);
+        Action actionForAnimEnd = () =>
+        {
+            UIHandler.Instance.HideScreenLock();
+            gameObject.SetActive(true);
+            //设置数据
+            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+            UserAscendBean userAscend = userData.GetUserAscendData();
+            userAscendDetails = userAscend.AddAscendData(currentIndexVat, targetCreatureSelect);
+
+            //刷新状态
+            RefreshVatState();
+            RefreshVatProgress();
+        };
+        scenePrefab.BuildingVatAnimForStart(targetVat, targetCreatureSelect,listMaterialCreatureSelect, actionForAnimEnd);
     }
 
     /// <summary>
@@ -406,11 +414,17 @@ public partial class UICreatureVat : BaseUIComponent
         {
             if (selectItemView.cardData.cardState == CardStateEnum.CreatureAscendSelect)
             {
-
+                if (listMaterialCreatureSelect.Contains(selectCreatureData))
+                {
+                    listMaterialCreatureSelect.Remove(selectCreatureData);
+                }
             }
             else
             {
-
+                if (!listMaterialCreatureSelect.Contains(selectCreatureData))
+                {
+                    listMaterialCreatureSelect.Add(selectCreatureData);
+                }
             }
             ui_UIViewCreatureCardList_Material.RefreshAllCard();
         }
