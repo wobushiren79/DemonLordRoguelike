@@ -30,6 +30,13 @@ public partial class UICreatureVat : BaseUIComponent
     //用户进阶数据
     protected UserAscendDetailsBean userAscendDetails;
     protected Transform targetVat;
+
+    public override void Awake()
+    {
+        base.Awake();
+        ui_BtnAddProgress_LongPressButton.AddLongEventAction(OnClickLongForAddProgress);
+    }
+
     public override void OpenUI()
     {
         base.OpenUI();
@@ -68,7 +75,7 @@ public partial class UICreatureVat : BaseUIComponent
         ui_BtnStart.gameObject.SetActive(false);
         ui_BtnEnd.gameObject.SetActive(false);
         ui_BtnComplete.gameObject.SetActive(false);
-        ui_BtnAddProgress.gameObject.SetActive(false);
+        ui_BtnAddProgress_Button.gameObject.SetActive(false);
         AnimForListShow(ui_UIViewCreatureCardList_Target.transform, false, hasAnim);
         AnimForListShow(ui_UIViewCreatureCardList_Material.transform, false, hasAnim);
 
@@ -82,7 +89,7 @@ public partial class UICreatureVat : BaseUIComponent
             else
             {
                 ui_BtnEnd.gameObject.SetActive(true);
-                ui_BtnAddProgress.gameObject.SetActive(true);
+                ui_BtnAddProgress_Button.gameObject.SetActive(true);
                 ui_BtnAddProgressText.text = string.Format(TextHandler.Instance.GetTextById(80009), 1);
             }
         }
@@ -231,18 +238,39 @@ public partial class UICreatureVat : BaseUIComponent
         {
             OnClickForComplete();
         }
-        else if(viewButton == ui_BtnAddProgress)
+        else if(viewButton == ui_BtnAddProgress_Button)
         {
             OnClickForAddProgress();
         }
     }
 
     /// <summary>
+    /// 事件-长按增加进度
+    /// </summary>
+    public void OnClickLongForAddProgress()
+    {
+        OnClickForAddProgress(isHintEnoughCrystal: false);
+    }
+
+    /// <summary>
     /// 点击增加进度
     /// </summary>
-    public void OnClickForAddProgress()
+    public void OnClickForAddProgress(bool isHintEnoughCrystal = true)
     {
+        if (targetVat == null || userAscendDetails == null)
+            return;
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        int payCrystal = 1;
+        //检测水晶是否足够
+        if (userData.CheckHasCrystal(payCrystal, isHintEnoughCrystal, true))
+        {
+            userAscendDetails.AddProgress(0.01f);
+            EventHandler.Instance.TriggerEvent(EventsInfo.CreatureAscend_AddProgress);
 
+            Vector3 startPosition = targetVat.transform.position + new Vector3(0, 2.5f, 0);
+            Vector3 endPosition = targetVat.transform.position + new Vector3(0, 1.2f, 0);
+            EffectHandler.Instance.ShowCreatureAscendAddProgressEffect(payCrystal, startPosition, endPosition);       
+        }
     }
 
     /// <summary>

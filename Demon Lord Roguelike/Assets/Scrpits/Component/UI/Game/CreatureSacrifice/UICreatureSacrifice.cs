@@ -79,7 +79,7 @@ public partial class UICreatureSacrifice : BaseUIComponent
         //播放进度动画
         ui_SuccessRateProgress.DOFillAmount(successRate, 0.5f);
         //播放文本变化动画
-        animForSuccessRateText = AnimUtil.AnimForUINumberChange(animForSuccessRateText, ui_SuccessRateText, int.Parse(ui_SuccessRateText.text.Replace("%", "")), targetPercentage, 0.5f, "{0}%");
+        animForSuccessRateText = AnimUtil.AnimForUINumberChange(animForSuccessRateText, ui_SuccessRateText, long.Parse(ui_SuccessRateText.text.Replace("%", "")), (long)targetPercentage, 0.5f, "{0}%");
         ui_SuccessRateTextTitle.text = $"{TextHandler.Instance.GetTextById(60002)}";
     }
 

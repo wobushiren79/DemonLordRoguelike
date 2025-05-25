@@ -10,6 +10,7 @@ using UnityEngine.VFX;
 
 public partial class EffectHandler
 {
+    protected string effectCreatureAscendAddProgressName = "EffectMove_1";
     protected string effectBloodName = "EffectBlood_1";
     protected string effectShieldHitName = "EffectShieldHit_1";
 
@@ -66,6 +67,34 @@ public partial class EffectHandler
 
         //获取粒子实例
         manager.GetEffectForEnduring(effectBloodName, (targetEffect) =>
+        {
+            playEffect?.Invoke(targetEffect);
+        });
+    }
+
+    /// <summary>
+    /// 展示生物进阶增加进度粒子
+    /// </summary>
+    public void ShowCreatureAscendAddProgressEffect(int addNum, Vector3 startPosition, Vector3 endPosition)
+    {
+        //播放粒子
+        Action<EffectBase> playEffect = (targetEffect) =>
+        {
+            if (targetEffect == null)
+                return;
+            var targetVisualEffect = targetEffect.GetVisualEffect();
+            float randomRange = 0.5f;
+            targetVisualEffect.SetInt("EffectNum", addNum);
+            targetVisualEffect.SetFloat("StartSize", 0.2f);
+            targetVisualEffect.SetFloat("MoveSpeed", 0.02f); 
+            targetVisualEffect.SetVector3("StartPositionRandomA", startPosition + new Vector3(-randomRange, -randomRange, -randomRange));
+            targetVisualEffect.SetVector3("StartPositionRandomB", startPosition + new Vector3(randomRange, randomRange, randomRange));
+            targetVisualEffect.SetVector3("EndPosition", endPosition);
+            targetEffect.PlayEffect();
+        };
+
+        //获取粒子实例
+        manager.GetEffectForEnduring(effectCreatureAscendAddProgressName, (targetEffect) =>
         {
             playEffect?.Invoke(targetEffect);
         });
@@ -138,7 +167,7 @@ public partial class EffectHandler
             });
         }
         //如果是一次性
-        else if(showType == EffectShowTypeEnum.Once)
+        else if (showType == EffectShowTypeEnum.Once)
         {
             EffectBean effectData = effectInfo.GetEffectData();
             effectData.effectPosition = targetPos + new Vector3(0, 0f, -0.1f);

@@ -19,6 +19,10 @@ public class ScenePrefabForBase : ScenePrefabBase
     //容器
     public GameObject objBuildingVat;
     public GameObject objVatMaterialCreature;
+
+    public Color vatColorStart = new Color(0, 0.4f, 1f, 0.4f);
+    public Color vatColorEnd = new Color(0.11f, 0.06f, 0.5f, 0.7f);
+
     //public void Awake()
     //{
     //    objBuildingCore = transform.Find("Core/Building").gameObject;
@@ -28,12 +32,12 @@ public class ScenePrefabForBase : ScenePrefabBase
     {
         base.InitSceneData();
         BuildingVatRefresh();
-        EventHandler.Instance.RegisterEvent<int>(EventsInfo.CreatureAscend_UpdateVat, EventForCreatureAscendUpdateVat);
+        EventHandler.Instance.RegisterEvent(EventsInfo.CreatureAscend_AddProgress, EventForCreatureAscendAddProgress);
     }
 
     public void OnDestroy()
     {
-        EventHandler.Instance.UnRegisterEvent<int>(EventsInfo.CreatureAscend_UpdateVat, EventForCreatureAscendUpdateVat);
+        EventHandler.Instance.UnRegisterEvent(EventsInfo.CreatureAscend_AddProgress, EventForCreatureAscendAddProgress);
     }
 
     public void Update()
@@ -78,10 +82,9 @@ public class ScenePrefabForBase : ScenePrefabBase
     /// <summary>
     /// 事件-刷新数据
     /// </summary>
-    /// <param name="targetIndex"></param>
-    public void EventForCreatureAscendUpdateVat(int targetIndex)
+    public void EventForCreatureAscendAddProgress()
     {
-
+        BuildingVatRefresh();
     }
 
     /// <summary>
@@ -102,7 +105,7 @@ public class ScenePrefabForBase : ScenePrefabBase
                 if (itemAscendDetails != null)
                 {
                     var creatureData = userData.GetBackpackCreature(itemAscendDetails.creatureId);
-                    BuildingVatSetState(itemVat, 3, creatureData);
+                    BuildingVatSetState(itemVat, 3, creatureData, itemAscendDetails.progress);
                 }
                 else
                 {
@@ -167,37 +170,49 @@ public class ScenePrefabForBase : ScenePrefabBase
     /// 设置容器的状态
     /// </summary>
     /// <param name="state">0关闭未设置生物 1打开未设置生物 2打开设置了生物 3关闭开始加强</param>
-    public void BuildingVatSetState(Transform targetVat, int state, CreatureBean creatureData)
+    public void BuildingVatSetState(Transform targetVat, int state, CreatureBean creatureData, float progress = 0)
     {
         Animator vatAnim = targetVat.GetComponent<Animator>();
-        vatAnim.SetInteger("State", 0);
-
         Transform tfWater = targetVat.Find("Water");
-        tfWater.gameObject.SetActive(false);
-
+        MeshRenderer renderWater = targetVat.Find("Water/Water").GetComponent<MeshRenderer>();
         Transform tfCreature = targetVat.Find("Creature");
-        tfCreature.gameObject.SetActive(false);
-
         SkeletonAnimation skeletonAnimation = tfCreature.GetComponent<SkeletonAnimation>();
         switch (state)
         {
             case 0:
+                tfWater.gameObject.SetActive(false);
+                tfCreature.gameObject.SetActive(false);
+                vatAnim.SetInteger("State", 0);
                 break;
             case 1:
+                tfWater.gameObject.SetActive(false);
+                tfCreature.gameObject.SetActive(false);
                 vatAnim.SetInteger("State", 1);
                 break;
             case 2:
-                vatAnim.SetInteger("State", 1);
+                tfWater.gameObject.SetActive(false);
                 tfCreature.gameObject.SetActive(true);
+                vatAnim.SetInteger("State", 1);
+
                 CreatureHandler.Instance.SetCreatureData(skeletonAnimation, creatureData);
                 break;
             case 3:
                 tfWater.gameObject.SetActive(true);
                 tfCreature.gameObject.SetActive(true);
+                vatAnim.SetInteger("State", 0);
+
                 CreatureHandler.Instance.SetCreatureData(skeletonAnimation, creatureData);
+                renderWater.material.SetFloat("_WaterLevel", 1);
+                if (progress != -1)
+                {
+                    Color water = Color.Lerp(vatColorStart, vatColorEnd, progress);
+                    renderWater.material.SetColor("_Color", water);
+                }
                 break;
         }
     }
+
+
 
     /// <summary>
     /// 开始添加
@@ -219,6 +234,7 @@ public class ScenePrefabForBase : ScenePrefabBase
         tfWater.gameObject.SetActive(true);
         MeshRenderer renderWater = targetVat.Find("Water/Water").GetComponent<MeshRenderer>();
         renderWater.material.SetFloat("_WaterLevel", -1);
+        renderWater.material.SetColor("_Color", vatColorStart);
         //水位上升动画
         renderWater.material.DOFloat(1, "_WaterLevel", animTimeWater).OnComplete(() =>
         {
@@ -227,8 +243,7 @@ public class ScenePrefabForBase : ScenePrefabBase
         //生物添加完毕之后关闭盖子
         DOVirtual.DelayedCall(animTimeAddCreature, () =>
         {
-            //设置状态
-            BuildingVatSetState(targetVat, 3, creatureData);
+            vatAnim.SetInteger("State", 0);
         });
         //材料生物生成
         if (!listMaterialCreatureData.IsNull())

@@ -1234,6 +1234,8 @@ MonoBehaviour:
   objBuildingAltar: {fileID: 2136410845176740309}
   objBuildingVat: {fileID: 4257372905907905356}
   objVatMaterialCreature: {fileID: 374123714860515663}
+  vatColorStart: {r: 0, g: 0.4, b: 1, a: 0.4}
+  vatColorEnd: {r: 0.11, g: 0.06, b: 0.5, a: 0.69803923}
 --- !u!1 &2561203288753819648
 GameObject:
   m_ObjectHideFlags: 0
@@ -4115,6 +4117,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7620123925218559677}
     m_Modifications:
+    - target: {fileID: 892536512498459601, guid: 1384643de852b044aba7f31061737ce6, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5354564539170374178, guid: 1384643de852b044aba7f31061737ce6, type: 3}
       propertyPath: m_LocalPosition.x
       value: -2.5
@@ -4153,6 +4159,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5354564539170374178, guid: 1384643de852b044aba7f31061737ce6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6269987926980444988, guid: 1384643de852b044aba7f31061737ce6, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6613948419224382907, guid: 1384643de852b044aba7f31061737ce6, type: 3}
