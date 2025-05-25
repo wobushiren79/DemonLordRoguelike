@@ -133,7 +133,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
 
             if (attackMode.spriteRenderer != null)
             {
-                attackMode.spriteRenderer.transform.eulerAngles = CameraHandler.Instance.manager.mainCamera.transform.eulerAngles;
+                CameraHandler.Instance.ChangeAngleForCamera(attackMode.spriteRenderer.transform);
             }
 
             attackMode.StartAttack(attacker, attacked, actionForCreateEnd);

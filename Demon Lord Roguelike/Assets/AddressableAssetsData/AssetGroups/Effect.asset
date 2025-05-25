@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: Effect
   m_GUID: d91bf32a1b0997040bd70f62c55964e7
   m_SerializeEntries:
+  - m_GUID: 0374bcc315e70ca4aa18d7420b2c68d2
+    m_Address: Assets/LoadResources/Effects/EffectPillarBlast_Ice_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0d96510eddaf1764cb5b6208a63be7ba
     m_Address: Assets/LoadResources/Effects/EffectShieldHit_1.prefab
     m_ReadOnly: 0
@@ -32,6 +37,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 458b12f4750e6a0428995e6a4a2e4eb7
     m_Address: Assets/LoadResources/Effects/EffectExplosion_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 601135c5466da40468a50ae306ddec51
+    m_Address: Assets/LoadResources/Effects/EffectPillarBlast_Fire_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

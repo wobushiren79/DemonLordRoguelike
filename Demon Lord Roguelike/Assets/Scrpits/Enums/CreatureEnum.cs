@@ -1,5 +1,6 @@
 
-public enum CreatureSearchType{
+public enum CreatureSearchType
+{
     Ray = 0,//默认射线
 
     AreaSphere = 11,//范围Sphere
@@ -13,8 +14,12 @@ public enum CreatureSearchType{
     AreaBoxFront = 24,//范围Box前方
 
     DisMinByAll = 30,//遍历距离最近的生物
-    DisMinByRoad = 31,//遍历同一路线所有生物
+    DisMinByRoad = 31,//遍历同一路线距离最近生物
     DisMinByRoadAdjacentUpDown = 32,//遍历相邻2条路
+
+    DisMaxByAll = 40,//遍历距离最远的生物
+    DisMaxByRoad = 41,//遍历同一路线距离最远生物
+    DisMaxByRoadAdjacentUpDown = 42,//遍历相邻2条路
 }
 
 public enum CreatureStateEnum

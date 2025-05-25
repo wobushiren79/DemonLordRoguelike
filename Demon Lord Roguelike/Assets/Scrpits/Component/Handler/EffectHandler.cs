@@ -105,7 +105,7 @@ public partial class EffectHandler
     /// </summary>
     public void ShowEffect(long effectId, Vector3 targetPos, Direction2DEnum direction, float size)
     {
-        targetPos += new Vector3(0, 0.002f, 0f);
+        targetPos += new Vector3(0, 0.002f, -0.001f);
         var effectInfo = EffectInfoCfg.GetItemData(effectId);
         //播放粒子
         Action<EffectBase> playEffect = (targetEffect) =>

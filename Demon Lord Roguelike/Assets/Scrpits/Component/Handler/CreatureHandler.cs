@@ -160,8 +160,6 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         {                   
             var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
             var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
-            var mainCamera = CameraHandler.Instance.manager.mainCamera;
-
             //设置层级
             if (!creatureInfo.creature_layer.IsNull())
             {
@@ -185,8 +183,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             Transform lifeShowTF = targetObj.transform.Find("LifeShow");
             if (rendererTF != null)
             {
-                //rendererTF.eulerAngles = Vector3.zero;
-                rendererTF.eulerAngles = mainCamera.transform.eulerAngles;
+                CameraHandler.Instance.ChangeAngleForCamera(rendererTF);
                 //如果没有加载过spine 则加载一次 
                 if (rendererTF.GetComponent<SkeletonAnimation>() == null)
                 {
@@ -216,8 +213,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             }
             if (lifeShowTF != null)
             {
-                //lifeShowTF.eulerAngles = Vector3.zero;
-                lifeShowTF.eulerAngles = mainCamera.transform.eulerAngles;
+                CameraHandler.Instance.ChangeAngleForCamera(lifeShowTF);
                 lifeShowTF.ShowObj(false);
             }
             actionForComplete?.Invoke(targetObj);

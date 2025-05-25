@@ -16,4 +16,5 @@
         VertexRotateSpeed,//模型旋转速度 10
         UVRotateSpeed,//UV旋转速度
         StartPosition,//开始位置
+        StartSize,//开始大小
     }

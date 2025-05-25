@@ -22,20 +22,25 @@ public partial class ItemsInfoBean
         {
             dicAttackModeData = attack_mode_data.SplitForDictionary<ItemsInfoAttackModeDataEnum>();
         }
+        //先还原一下预制
+        if (attackMode.spriteRenderer != null)
+        {
+            attackMode.spriteRenderer.transform.localScale = Vector3.one;
+        }
         bool isShowSprite = false;
         foreach (var item in dicAttackModeData)
         {
             switch (item.Key)
             {
                 case ItemsInfoAttackModeDataEnum.VertexRotateAxis:
-                    if(attackMode.spriteRenderer != null) 
+                    if (attackMode.spriteRenderer != null)
                     {
                         var itemVertexRotateAxis = item.Value.SplitForVector3(',');
                         attackMode.spriteRenderer.material.SetVector("_VertexRotateAxis", itemVertexRotateAxis);
                     }
                     break;
                 case ItemsInfoAttackModeDataEnum.VertexRotateSpeed:
-                    if(attackMode.spriteRenderer != null) 
+                    if (attackMode.spriteRenderer != null)
                     {
                         var itemVertexRotateSpeed = float.Parse(item.Value);
                         attackMode.spriteRenderer.material.SetFloat("_VertexRotateSpeed", itemVertexRotateSpeed);
@@ -49,11 +54,18 @@ public partial class ItemsInfoBean
                         isShowSprite = true;
                     }
                     break;
-                case ItemsInfoAttackModeDataEnum.StartPosition:     
-                    if(attackMode.gameObject != null)
+                case ItemsInfoAttackModeDataEnum.StartPosition:
+                    if (attackMode.gameObject != null)
                     {
                         var itemStartPosition = item.Value.SplitForVector3(',');
                         attackMode.gameObject.transform.position += itemStartPosition;
+                    }
+                    break;
+                case ItemsInfoAttackModeDataEnum.StartSize:
+                    if (attackMode.gameObject != null)
+                    {
+                        var itemStartSize = float.Parse(item.Value);
+                        attackMode.spriteRenderer.transform.localScale = Vector3.one * itemStartSize;
                     }
                     break;
             }

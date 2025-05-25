@@ -41,11 +41,19 @@ public static class FightCreatureSearchUtil
 
             case CreatureSearchType.DisMinByAll:
                 //所有生物距离最最近的
-                return FindCreatureEntityForDisMinByAll(startSearchPosition, searchCreatureType, direction);
+                return FindCreatureEntityForDisByAll(startSearchPosition, searchCreatureType, direction, 0);
             case CreatureSearchType.DisMinByRoad:
             case CreatureSearchType.DisMinByRoadAdjacentUpDown:
                 //搜索路径
-                return FindCreatureEntityForDisMinByRoad(searchRoadIndex, searchType, searchCreatureType, startSearchPosition, direction);
+                return FindCreatureEntityForDisByRoad(searchRoadIndex, searchType, searchCreatureType, startSearchPosition, direction, 0);
+
+            case CreatureSearchType.DisMaxByAll:
+                //所有生物距离最最远的
+                return FindCreatureEntityForDisByAll(startSearchPosition, searchCreatureType, direction, 1);
+            case CreatureSearchType.DisMaxByRoad:
+            case CreatureSearchType.DisMaxByRoadAdjacentUpDown:
+                //搜索路径
+                return FindCreatureEntityForDisByRoad(searchRoadIndex, searchType, searchCreatureType, startSearchPosition, direction, 1);
         }
         return null;
     }
@@ -73,7 +81,7 @@ public static class FightCreatureSearchUtil
     /// 查询范围敌人
     /// </summary>
     /// <returns></returns>
-    public static GameFightCreatureEntity FindCreatureEntityByArea(CreatureSearchType creatureSearchType, CreatureTypeEnum searchCreatureType, Vector3 direction, Vector3 startPosition, Vector3 halfEx, float radius,  int layoutInfo)
+    public static GameFightCreatureEntity FindCreatureEntityByArea(CreatureSearchType creatureSearchType, CreatureTypeEnum searchCreatureType, Vector3 direction, Vector3 startPosition, Vector3 halfEx, float radius, int layoutInfo)
     {
         Collider[] colliders = null;
         Vector3 offsetPosition;
@@ -81,7 +89,7 @@ public static class FightCreatureSearchUtil
         {
             case CreatureSearchType.AreaSphere:
             case CreatureSearchType.AreaBoxHPNoMax:
-            case CreatureSearchType.AreaSphereHPNoMax:         
+            case CreatureSearchType.AreaSphereHPNoMax:
                 colliders = RayUtil.OverlapToSphere(startPosition, radius, layoutInfo);
                 break;
             case CreatureSearchType.AreaSphereFront:
@@ -156,7 +164,7 @@ public static class FightCreatureSearchUtil
     /// 找寻最近的生物-路径遍历
     /// </summary>
     /// <returns></returns>
-    public static GameFightCreatureEntity FindCreatureEntityForDisMinByRoad(int roadIndex,CreatureSearchType creatureSearchType, CreatureTypeEnum searchCreatureType, Vector3 startSearchPosition,  Vector3 direction)
+    public static GameFightCreatureEntity FindCreatureEntityForDisByRoad(int roadIndex, CreatureSearchType creatureSearchType, CreatureTypeEnum searchCreatureType, Vector3 startSearchPosition, Vector3 direction, int disType)
     {
         //首先查询同一路的防守生物
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
@@ -184,14 +192,14 @@ public static class FightCreatureSearchUtil
                 listTargetCreature = gameFightLogic.fightData.GetDefenseCreatureByRoad(roadIndex);
             }
         }
-        return FindCreatureEntityForDisMin(listTargetCreature,  startSearchPosition,  direction);
+        return FindCreatureEntityForDis(listTargetCreature, startSearchPosition, direction, disType);
     }
 
     /// <summary>
     /// 找寻最近的生物-所有遍历
     /// </summary>
     /// <returns></returns>
-    public static GameFightCreatureEntity FindCreatureEntityForDisMinByAll(Vector3 startSearchPosition, CreatureTypeEnum searchCreatureType, Vector3 direction)
+    public static GameFightCreatureEntity FindCreatureEntityForDisByAll(Vector3 startSearchPosition, CreatureTypeEnum searchCreatureType, Vector3 direction, int disType)
     {
         //首先查询同一路的防守生物
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
@@ -204,15 +212,27 @@ public static class FightCreatureSearchUtil
         {
             dicTargetCreature = gameFightLogic.fightData.dlDefenseCreatureEntity;
         }
-
-        return FindCreatureEntityForDisMin(dicTargetCreature.List,  startSearchPosition,  direction);
+        return FindCreatureEntityForDis(dicTargetCreature.List, startSearchPosition, direction, disType);
     }
 
-    public static GameFightCreatureEntity FindCreatureEntityForDisMin(List<GameFightCreatureEntity> listCreature, Vector3 startSearchPosition, Vector3 direction)
-    {       
-        if(listCreature.IsNull())
+    /// <summary>
+    /// 查询距离最近的生物
+    /// </summary>
+    public static GameFightCreatureEntity FindCreatureEntityForDis(List<GameFightCreatureEntity> listCreature, Vector3 startSearchPosition, Vector3 direction, int disType)
+    {
+        if (listCreature.IsNull())
             return null;
-        float disMin = float.MaxValue;
+        float disLimit;
+        //距离最近
+        if (disType == 0)
+        {
+            disLimit = float.MaxValue;
+        }
+        //距离最远
+        else
+        {
+            disLimit = float.MinValue;
+        }
         GameFightCreatureEntity targetEntity = null;
         for (int i = 0; i < listCreature.Count; i++)
         {
@@ -223,18 +243,18 @@ public static class FightCreatureSearchUtil
                 if (direction.x > 0 && creatureObj.transform.position.x >= startSearchPosition.x)
                 {
                     float dis = Vector3.Distance(creatureObj.transform.position, startSearchPosition);
-                    if (dis < disMin)
+                    if ((disType == 0 && dis < disLimit) || (disType == 1 && dis > disLimit))
                     {
-                        disMin = dis;
+                        disLimit = dis;
                         targetEntity = itemTargetEntity;
                     }
                 }
-                if (direction.x <= 0  && creatureObj.transform.position.x <= startSearchPosition.x)
+                if (direction.x <= 0 && creatureObj.transform.position.x <= startSearchPosition.x)
                 {
                     float dis = Vector3.Distance(creatureObj.transform.position, startSearchPosition);
-                    if (dis < disMin)
+                    if ((disType == 0 && dis < disLimit) || (disType == 1 && dis > disLimit))
                     {
-                        disMin = dis;
+                        disLimit = dis;
                         targetEntity = itemTargetEntity;
                     }
                 }
