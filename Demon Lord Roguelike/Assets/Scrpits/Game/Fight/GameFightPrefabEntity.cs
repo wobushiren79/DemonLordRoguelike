@@ -7,13 +7,13 @@ public class GameFightPrefabEntity
     public string id;
     public string pathAsstes;
 
-    public int valueInt;//¼ÛÖµ
-    public GameObject gameObject;//Ä¿±êÔ¤ÖÆ
-    public SpriteRenderer spriteRenderer;//Ä¿±êäÖÈ¾
-    public Collider collider;//Ä¿±êÅö×²
+    public int valueInt;//ä»·å€¼
+    public GameObject gameObject;//ç›®æ ‡é¢„åˆ¶
+    public SpriteRenderer spriteRenderer;//ç›®æ ‡æ¸²æŸ“
+    public Collider collider;//ç›®æ ‡ç¢°æ’
 
-    public GameFightPrefabStateEnum state =  GameFightPrefabStateEnum.None;//×´Ì¬
-    public float lifeTime = -1;//ÉúÃüÖÜÆÚ
+    public GameFightPrefabStateEnum state =  GameFightPrefabStateEnum.None;//çŠ¶æ€
+    public float lifeTime = -1;//ç”Ÿå‘½å‘¨æœŸ
 
     public void Update()
     {
@@ -28,16 +28,26 @@ public class GameFightPrefabEntity
     }
 
     /// <summary>
-    /// Ïú»Ù×Ô¼º
+    /// é”€æ¯è‡ªå·±
     /// </summary>
-    public virtual void Destroy()
+    public virtual void Destroy(bool isPermanently = false)
     {
-        SetState(GameFightPrefabStateEnum.None);
-        FightHandler.Instance.RemoveFightPrefab(this);
+        if (isPermanently)
+        {
+            if (gameObject != null)
+            {
+                GameObject.Destroy(gameObject);
+            }
+        }
+        else
+        {
+            SetState(GameFightPrefabStateEnum.None);
+            FightHandler.Instance.RemoveFightPrefab(this); 
+        }
     }
 
     /// <summary>
-    /// ÉèÖÃ×´Ì¬
+    /// è®¾ç½®çŠ¶æ€
     /// </summary>
     /// <param name="targetState"></param>
     public virtual void SetState(GameFightPrefabStateEnum targetState)

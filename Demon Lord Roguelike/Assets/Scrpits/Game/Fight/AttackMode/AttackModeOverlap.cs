@@ -11,7 +11,7 @@ public class AttackModeOverlap : BaseAttackMode
         if (attacker == null || attacker.IsDead())
         {
             //攻击完了就回收这个攻击
-            Destory();
+            Destroy();
             return;
         }
         //检测周围的敌人
@@ -25,7 +25,7 @@ public class AttackModeOverlap : BaseAttackMode
         });
 
         //攻击完了就回收这个攻击
-        Destory();
+        Destroy();
         //攻击结束回调
         actionForAttackEnd?.Invoke(this);
     }

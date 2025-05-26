@@ -13,7 +13,7 @@ public class AIIntentAttCreatureIdle : AIBaseIntent
         selfAIEntity = aiEntity as AIAttCreatureEntity;
         //寻找路线上的敌人
         var fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
-        selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntity(DirectionEnum.Left);
+        selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntityForSinge(DirectionEnum.Left);
 
         //触发待机动作
         selfAIEntity.selfCreatureEntity.SetFaceDirection(Direction2DEnum.Left);

@@ -18,7 +18,7 @@ public class AttackModeRangedTracking :  AttackModeRanged
         }
         else
         {
-            Destory();
+            Destroy();
         }
     }
 
@@ -35,7 +35,7 @@ public class AttackModeRangedTracking :  AttackModeRanged
             //高度不变
             attackDirection = attackDirection.SetY(0);
             //检测是否击中目标
-            GameFightCreatureEntity gameFightCreatureEntity = CheckHitTarget();
+            GameFightCreatureEntity gameFightCreatureEntity = CheckHitTargetForSingle();
             if (gameFightCreatureEntity != null)
             {
                 HandleForHitTarget(gameFightCreatureEntity);

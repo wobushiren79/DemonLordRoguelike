@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
 using Unity.Burst.Intrinsics;
 using UnityEngine;
@@ -115,14 +116,24 @@ public class BaseAttackMode
     /// <summary>
     /// 清理自己
     /// </summary>
-    public virtual void Destory()
+    public virtual void Destroy(bool isPermanently = false)
     {
-        attackerDamage = 0;
-        attackerId = null;
-        attackedId = null;
-        creatureId = 0;
-        weaponItemId = 0;
-        FightHandler.Instance.RemoveAttackModePrefab(this);
+        if (isPermanently)
+        {
+            if (gameObject != null)
+            {
+                GameObject.Destroy(gameObject);  
+            }
+        }
+        else
+        {
+            attackerDamage = 0;
+            attackerId = null;
+            attackedId = null;
+            creatureId = 0;
+            weaponItemId = 0;
+            FightHandler.Instance.RemoveAttackModePrefab(this);
+        }
     }
 
     #region  特效
@@ -142,10 +153,40 @@ public class BaseAttackMode
     #endregion
 
     #region  检测相关
+
     /// <summary>
     /// 检测是否击中生物
     /// </summary>
-    public virtual GameFightCreatureEntity CheckHitTarget()
+    public virtual GameFightCreatureEntity CheckHitTargetForSingle()
+    {
+        return CheckHitTargetForSingle(gameObject.transform.position);
+    }
+
+    /// <summary>
+    /// 检测是否击中生物
+    /// </summary>
+    public virtual List<GameFightCreatureEntity> CheckHitTarget()
+    {
+        return CheckHitTarget(gameObject.transform.position);
+    }
+
+    /// <summary>
+    /// 检测是否击中生物
+    /// </summary>
+    public virtual GameFightCreatureEntity CheckHitTargetForSingle(Vector3 checkPosition)
+    {
+        List<GameFightCreatureEntity> listData = CheckHitTarget(checkPosition);
+        if (listData.IsNull())
+        {
+            return null;
+        }
+        return listData[0];
+    }
+
+    /// <summary>
+    /// 检测是否击中生物
+    /// </summary>
+    public virtual List<GameFightCreatureEntity> CheckHitTarget(Vector3 checkPosition)
     {
         CreatureSearchType searchType = attackModeInfo.GetCreatureSerachType();
         CreatureTypeEnum searchCreatureType = CreatureTypeEnum.None;

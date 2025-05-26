@@ -1,7 +1,8 @@
 
 public enum CreatureSearchType
 {
-    Ray = 0,//默认射线
+    Ray = 0,//默认射线 从自己射向远处
+    RaySelf = 1,//射线 远处射向自己
 
     AreaSphere = 11,//范围Sphere
     AreaSphereHPNoMax = 12,//范围内hp不满

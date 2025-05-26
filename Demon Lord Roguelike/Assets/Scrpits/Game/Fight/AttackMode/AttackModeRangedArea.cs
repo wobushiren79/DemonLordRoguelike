@@ -14,6 +14,6 @@ public class AttackModeRangedArea : AttackModeRanged
         {
             targetCreature.UnderAttack(this);
         });
-        Destory();
+        Destroy();
     }
 }

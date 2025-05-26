@@ -106,7 +106,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
     /// </summary>
     public void ActionForAttackEnd(BaseAttackMode attackMode)
     {        
-        var findTargetCreature = selfAIEntity.FindCreatureEntity(DirectionEnum.Right);
+        var findTargetCreature = selfAIEntity.FindCreatureEntityForSinge(DirectionEnum.Right);
         //如果没有找到最近的生物
         if(findTargetCreature == null)
         {

@@ -79,7 +79,7 @@ public class CreatureManager : BaseManager
     /// 获取选择生物删除
     /// </summary>
     /// <returns></returns>
-    public GameObject GetCreatureSelectDestory()
+    public GameObject GetCreatureSelectDestroy()
     {
         if (objCreatureSelectDestory == null)
         {

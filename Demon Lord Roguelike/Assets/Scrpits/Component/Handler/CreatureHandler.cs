@@ -128,7 +128,8 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             {
                 targetRoad = UnityEngine.Random.Range(1, roadNum + 1);
             }
-            targetObj.transform.position = new Vector3(12f, 0, targetRoad);
+            float randomX = UnityEngine.Random.Range(11f, 12f);
+            targetObj.transform.position = new Vector3(randomX, 0, targetRoad);
 
             //创建战斗生物
             FightCreatureBean fightCreatureData = new FightCreatureBean(creatureId);

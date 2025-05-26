@@ -11,7 +11,7 @@ public class AttackModeExplosion : BaseAttackMode
         if (attacker == null || attacker.IsDead())
         {
             //攻击完了就回收这个攻击
-            Destory();
+            Destroy();
             return;
         }
         //播放击中粒子特效
@@ -27,7 +27,7 @@ public class AttackModeExplosion : BaseAttackMode
         });
 
         //攻击完了就回收这个攻击
-        Destory();
+        Destroy();
         //攻击结束回调
         actionForAttackEnd?.Invoke(this);
         //自己也死

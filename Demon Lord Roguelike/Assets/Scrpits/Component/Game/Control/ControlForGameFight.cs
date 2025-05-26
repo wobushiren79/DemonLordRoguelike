@@ -251,7 +251,7 @@ public class ControlForGameFight : BaseControl
         }
         if (gameFightLogic.selectCreatureDestory != null)
         {
-            gameFightLogic.UnSelectCreatureDestory();
+            gameFightLogic.UnSelectCreatureDestroy();
         }
     }
 }

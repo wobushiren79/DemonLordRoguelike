@@ -185,12 +185,12 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>
     /// 选择了删除生物
     /// </summary>
-    public void SelectCreatureDestory()
+    public void SelectCreatureDestroy()
     {
         //先取消所有选择
         ClearSelectData();
         //设置选择的预制
-        selectCreatureDestory = CreatureHandler.Instance.manager.GetCreatureSelectDestory();
+        selectCreatureDestory = CreatureHandler.Instance.manager.GetCreatureSelectDestroy();
         selectCreatureDestory.gameObject.SetActive(true);
     }
 
@@ -231,7 +231,7 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>
     /// 取消选择删除生物
     /// </summary>
-    public void UnSelectCreatureDestory()
+    public void UnSelectCreatureDestroy()
     {
         ClearSelectData();
     }

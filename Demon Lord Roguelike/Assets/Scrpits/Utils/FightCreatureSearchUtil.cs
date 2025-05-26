@@ -6,8 +6,16 @@ public static class FightCreatureSearchUtil
     /// <summary>
     /// 搜索离自己最近的目标
     /// </summary>
-    public static GameFightCreatureEntity FindCreatureEntity(CreatureSearchType searchType, CreatureTypeEnum searchCreatureType, Vector3 startSearchPosition, Vector3 direction, Vector3 halfEx,
-        float searchRange = 1, int searchRoadIndex = 1)
+    public static List<GameFightCreatureEntity> FindCreatureEntity
+    (
+        CreatureSearchType searchType,
+        CreatureTypeEnum searchCreatureType,
+        Vector3 startSearchPosition,
+        Vector3 direction,
+        Vector3 halfEx,
+        float searchRange = 1,
+        int searchRoadIndex = 1
+    )
     {
         int searchLayoutInfo;
         //搜索范围
@@ -27,8 +35,11 @@ public static class FightCreatureSearchUtil
         switch (searchType)
         {
             case CreatureSearchType.Ray:
-                //射线搜索
-                return FindCreatureEntityForDisMinByRay(startSearchPosition, direction, searchRange, searchCreatureType, searchLayoutInfo);
+                //射线搜索-从自己射向远处
+                return FindCreatureEntityByRay(startSearchPosition, direction, searchRange, searchCreatureType, searchLayoutInfo);
+            case CreatureSearchType.RaySelf:
+                //射线搜索-从远处射向自己
+                return FindCreatureEntityByRaySelf(startSearchPosition, direction, searchRange, searchCreatureType, searchLayoutInfo);
             case CreatureSearchType.AreaSphere:
             case CreatureSearchType.AreaSphereHPNoMax:
             case CreatureSearchType.AreaSphereDRNoMax:
@@ -59,29 +70,58 @@ public static class FightCreatureSearchUtil
     }
 
     /// <summary>
-    /// 找寻最近的生物-射线
+    /// 找寻生物-射线
     /// </summary>
     /// <returns></returns>
-    public static GameFightCreatureEntity FindCreatureEntityForDisMinByRay(Vector3 startPosition, Vector3 direction, float maxDistance, CreatureTypeEnum searchCreatureType, int layoutInfo)
+    public static List<GameFightCreatureEntity> FindCreatureEntityByRay(Vector3 startPosition, Vector3 direction, float maxDistance, CreatureTypeEnum searchCreatureType, int layoutInfo)
     {
-        if (RayUtil.RayToCast(startPosition, direction, maxDistance, layoutInfo, out RaycastHit hit))
+        var hits = RayUtil.RayToCastAll(startPosition, direction, maxDistance, layoutInfo);
+        if (!hits.IsNull())
         {
-            string creatureId = hit.collider.gameObject.name;
-            GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-            var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, searchCreatureType);
-            if (targetCreature != null && !targetCreature.IsDead())
+            List<GameFightCreatureEntity> listData = null;
+            for (int i = 0; i < hits.Length; i++)
             {
-                return targetCreature;
+                var hit = hits[i];
+                string creatureId = hit.collider.gameObject.name;
+                GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+                var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, searchCreatureType);
+                if (targetCreature != null && !targetCreature.IsDead())
+                {
+                    if (listData == null)
+                    {
+                        listData = new List<GameFightCreatureEntity>();
+                    }
+                    listData.Add(targetCreature);
+                }
             }
+            return listData;
         }
         return null;
+    }
+
+    /// <summary>
+    /// 找寻生物-射线-远处射向自己
+    /// </summary>
+    /// <returns></returns>
+    public static List<GameFightCreatureEntity> FindCreatureEntityByRaySelf(Vector3 startPosition, Vector3 direction, float maxDistance, CreatureTypeEnum searchCreatureType, int layoutInfo)
+    {
+        Vector3 startSearchPositionForSelf;
+        if (direction.x > 0)
+        {
+            startSearchPositionForSelf = startPosition + new Vector3(maxDistance, 0, 0);
+        }
+        else
+        {
+            startSearchPositionForSelf = startPosition + new Vector3(-maxDistance, 0, 0);
+        }
+        return FindCreatureEntityByRay(startSearchPositionForSelf, -direction, maxDistance, searchCreatureType, layoutInfo);
     }
 
     /// <summary>
     /// 查询范围敌人
     /// </summary>
     /// <returns></returns>
-    public static GameFightCreatureEntity FindCreatureEntityByArea(CreatureSearchType creatureSearchType, CreatureTypeEnum searchCreatureType, Vector3 direction, Vector3 startPosition, Vector3 halfEx, float radius, int layoutInfo)
+    public static List<GameFightCreatureEntity> FindCreatureEntityByArea(CreatureSearchType creatureSearchType, CreatureTypeEnum searchCreatureType, Vector3 direction, Vector3 startPosition, Vector3 halfEx, float radius, int layoutInfo)
     {
         Collider[] colliders = null;
         Vector3 offsetPosition;
@@ -126,6 +166,7 @@ public static class FightCreatureSearchUtil
         {
             return null;
         }
+        List<GameFightCreatureEntity> listData = new List<GameFightCreatureEntity>();
         for (int i = 0; i < colliders.Length; i++)
         {
             string creatureId = colliders[i].gameObject.name;
@@ -141,7 +182,7 @@ public static class FightCreatureSearchUtil
                         //不是满血
                         if (fightCreatureData.HPCurrent < fightCreatureData.HPMax)
                         {
-                            return targetCreature;
+                            listData.Add(targetCreature);
                         }
                         break;
                     case CreatureSearchType.AreaSphereDRNoMax:
@@ -149,22 +190,23 @@ public static class FightCreatureSearchUtil
                         //不是满甲
                         if (fightCreatureData.DRCurrent < fightCreatureData.DRMax)
                         {
-                            return targetCreature;
+                            listData.Add(targetCreature);
                         }
                         break;
                     default:
-                        return targetCreature;
+                        listData.Add(targetCreature);
+                        break;
                 }
             }
         }
-        return null;
+        return listData;
     }
 
     /// <summary>
     /// 找寻最近的生物-路径遍历
     /// </summary>
     /// <returns></returns>
-    public static GameFightCreatureEntity FindCreatureEntityForDisByRoad(int roadIndex, CreatureSearchType creatureSearchType, CreatureTypeEnum searchCreatureType, Vector3 startSearchPosition, Vector3 direction, int disType)
+    public static List<GameFightCreatureEntity> FindCreatureEntityForDisByRoad(int roadIndex, CreatureSearchType creatureSearchType, CreatureTypeEnum searchCreatureType, Vector3 startSearchPosition, Vector3 direction, int disType)
     {
         //首先查询同一路的防守生物
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
@@ -199,7 +241,7 @@ public static class FightCreatureSearchUtil
     /// 找寻最近的生物-所有遍历
     /// </summary>
     /// <returns></returns>
-    public static GameFightCreatureEntity FindCreatureEntityForDisByAll(Vector3 startSearchPosition, CreatureTypeEnum searchCreatureType, Vector3 direction, int disType)
+    public static List<GameFightCreatureEntity> FindCreatureEntityForDisByAll(Vector3 startSearchPosition, CreatureTypeEnum searchCreatureType, Vector3 direction, int disType)
     {
         //首先查询同一路的防守生物
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
@@ -218,7 +260,7 @@ public static class FightCreatureSearchUtil
     /// <summary>
     /// 查询距离最近的生物
     /// </summary>
-    public static GameFightCreatureEntity FindCreatureEntityForDis(List<GameFightCreatureEntity> listCreature, Vector3 startSearchPosition, Vector3 direction, int disType)
+    public static List<GameFightCreatureEntity> FindCreatureEntityForDis(List<GameFightCreatureEntity> listCreature, Vector3 startSearchPosition, Vector3 direction, int disType)
     {
         if (listCreature.IsNull())
             return null;
@@ -260,7 +302,9 @@ public static class FightCreatureSearchUtil
                 }
             }
         }
-        return targetEntity;
+
+        List<GameFightCreatureEntity> listData = new List<GameFightCreatureEntity>() { targetEntity };
+        return listData;
     }
 
 }

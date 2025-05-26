@@ -15,7 +15,7 @@ public class AttackModeRegain : BaseAttackMode
             PlayEffectForHit(attacked.creatureObj.transform.position);
         }
         //攻击完了就回收这个攻击
-        Destory();
+        Destroy();
         //攻击结束回调
         actionForAttackEnd?.Invoke(this);
     }

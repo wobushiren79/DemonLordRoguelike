@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
 using UnityEngine;
 
@@ -21,14 +22,14 @@ public class AttackModeRangedArc : AttackModeRanged
     /// 检测碰撞
     /// </summary>
     /// <returns></returns>
-    public override GameFightCreatureEntity CheckHitTarget()
+    public override GameFightCreatureEntity CheckHitTargetForSingle()
     {
         //前面抛物线不检测
         if (progress < 0.5f)
         {
             return null;
         }
-        return base.CheckHitTarget();
+        return base.CheckHitTargetForSingle();
     }
 
     /// <summary>
@@ -52,7 +53,7 @@ public class AttackModeRangedArc : AttackModeRanged
             // 到达终点
             gameObject.transform.position = targetPos;
             //攻击完了就回收这个攻击
-            Destory();
+            Destroy();
         }
     }
 

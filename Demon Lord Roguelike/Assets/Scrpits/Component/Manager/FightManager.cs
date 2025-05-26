@@ -34,10 +34,7 @@ public class FightManager : BaseManager
         for (int i = 0; i < listAttackModePrefab.Count; i++)
         {
             var item = listAttackModePrefab[i];
-            if (item.gameObject != null)
-            {
-                Destroy(item.gameObject);
-            }
+            item.Destroy(true);
         }
         listAttackModePrefab.Clear();
         foreach (var itemData in dicPoolAttackModeObj)
@@ -46,10 +43,7 @@ public class FightManager : BaseManager
             while (queue.Count > 0)
             {
                 var targetData = queue.Dequeue();
-                if (targetData.gameObject != null)
-                {
-                    Destroy(targetData.gameObject);
-                }
+                targetData.Destroy(true);
             }
         }
         dicPoolAttackModeObj.Clear();
@@ -67,7 +61,7 @@ public class FightManager : BaseManager
             while (queue.Count > 0)
             {
                 var targetData = queue.Dequeue();
-                Destroy(targetData.gameObject);
+                targetData.Destroy(true);
             }
         }
         dicPoolFightObj.Clear();

@@ -214,7 +214,7 @@ public partial class UIFightMain : BaseUIComponent
     public void OnClickForRemoveCreature()
     {
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        gameFightLogic.SelectCreatureDestory();
+        gameFightLogic.SelectCreatureDestroy();
     }
     #endregion
 

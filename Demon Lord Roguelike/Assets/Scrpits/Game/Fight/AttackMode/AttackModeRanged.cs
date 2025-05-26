@@ -19,7 +19,7 @@ public class AttackModeRanged : BaseAttackMode
     public override void Update()
     {
         base.Update();
-        GameFightCreatureEntity gameFightCreatureEntity = CheckHitTarget();
+        GameFightCreatureEntity gameFightCreatureEntity = CheckHitTargetForSingle();
         if (gameFightCreatureEntity != null)
         {
             HandleForHitTarget(gameFightCreatureEntity);
@@ -39,7 +39,7 @@ public class AttackModeRanged : BaseAttackMode
         //扣血
         gameFightCreatureEntity.UnderAttack(this);
         //攻击完了就回收这个攻击
-        Destory();
+        Destroy();
     }
 
     /// <summary>
@@ -58,7 +58,7 @@ public class AttackModeRanged : BaseAttackMode
         if (gameObject.transform.position.x > 15 || gameObject.transform.position.x < -5 ||
             gameObject.transform.position.y < -5 || gameObject.transform.position.y > 15)
         {
-            Destory();
+            Destroy();
         }
     }
 }

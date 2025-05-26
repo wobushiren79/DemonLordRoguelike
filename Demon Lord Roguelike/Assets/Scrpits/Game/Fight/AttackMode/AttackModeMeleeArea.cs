@@ -12,7 +12,7 @@ public class AttackModeMeleeArea : BaseAttackMode
         if (attacker == null || attacker.IsDead())
         {
             //攻击完了就回收这个攻击
-            Destory();
+            Destroy();
             return;
         }
         //击中之后的回调
@@ -24,7 +24,7 @@ public class AttackModeMeleeArea : BaseAttackMode
         //播放击中粒子特效
         PlayEffectForHit(attacker.creatureObj.transform.position);
         //攻击完了就回收这个攻击
-        Destory();
+        Destroy();
         //攻击结束回调
         actionForAttackEnd?.Invoke(this);
     }

@@ -29,7 +29,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
         {
             timeUpdateForFindTarget = 0;
             timeUpdateForFindTargetCD = fightCreatureData.creatureData.GetAttackSearchTime();
-            var findTargetCreature = selfAIEntity.FindCreatureEntity(DirectionEnum.Left);
+            var findTargetCreature = selfAIEntity.FindCreatureEntityForSinge(DirectionEnum.Left);
             if (findTargetCreature != null)
             {
                 selfAIEntity.targetCreatureEntity = findTargetCreature;

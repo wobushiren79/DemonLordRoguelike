@@ -46,6 +46,21 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
+    /// 删除
+    /// </summary>
+    /// <param name="isPermanently">是否永久删除</param>
+    public void Destory(bool isPermanently)
+    {
+        if (isPermanently)
+        {
+            if (creatureObj != null)
+            {
+                GameObject.Destroy(creatureObj);
+            }
+        }
+    }
+
+    /// <summary>
     /// 更新buffs
     /// </summary>
     public void UpdateForBuffs(float updateTime)
@@ -462,4 +477,5 @@ public class GameFightCreatureEntity
     {
         SetBodyColor();
     }
+    
 }

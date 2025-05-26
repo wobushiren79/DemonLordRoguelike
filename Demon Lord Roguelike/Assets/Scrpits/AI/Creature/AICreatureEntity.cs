@@ -14,9 +14,22 @@ public abstract class AICreatureEntity : AIBaseEntity
     public GameFightCreatureEntity targetCreatureEntity;
 
     /// <summary>
-    /// 搜索离自己最近的目标
+    /// 搜索目标
     /// </summary>
-    public GameFightCreatureEntity FindCreatureEntity(DirectionEnum direction)
+    public GameFightCreatureEntity FindCreatureEntityForSinge(DirectionEnum direction)
+    {
+        var listData = FindCreatureEntity(direction);
+        if (listData.IsNull())
+        {
+            return null;
+        }
+        return listData[0];
+    }
+
+    /// <summary>
+    /// 搜索目标
+    /// </summary>
+    public List<GameFightCreatureEntity> FindCreatureEntity(DirectionEnum direction)
     {
         Vector3 directionV = Vector3.right;
         switch (direction)
@@ -31,7 +44,23 @@ public abstract class AICreatureEntity : AIBaseEntity
         return FindCreatureEntity(directionV);
     }
 
-    public GameFightCreatureEntity FindCreatureEntity(Vector3 direction)
+    /// <summary>
+    /// 搜索目标
+    /// </summary>
+    public GameFightCreatureEntity FindCreatureEntityForSinge(Vector3 direction)
+    {
+        var listData = FindCreatureEntity(direction);
+        if (listData.IsNull())
+        {
+            return null;
+        }
+        return listData[0];
+    }
+
+    /// <summary>
+    /// 搜索目标
+    /// </summary>
+    public List<GameFightCreatureEntity> FindCreatureEntity(Vector3 direction)
     {
         var fightCreatureData = selfCreatureEntity.fightCreatureData;
         var creatureInfo = fightCreatureData.creatureData.creatureInfo;
