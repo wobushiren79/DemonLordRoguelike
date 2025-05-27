@@ -153,6 +153,19 @@ public class BaseAttackMode
     #endregion
 
     #region  检测相关
+    /// <summary>
+    /// 检测是否到达边界
+    /// </summary>
+    /// <returns></returns>
+    public virtual bool CheckIsMoveBound(GameObject targetObj)
+    {
+        if (targetObj.transform.position.x > 15 || targetObj.transform.position.x < -5 ||
+               targetObj.transform.position.y < -5 || targetObj.transform.position.y > 15)
+        {
+            return true;
+        }
+        return false;
+    }
 
     /// <summary>
     /// 检测是否击中生物
@@ -198,7 +211,7 @@ public class BaseAttackMode
         {
             searchCreatureType = CreatureTypeEnum.FightDefense;
         }
-        return FightCreatureSearchUtil.FindCreatureEntity(searchType, searchCreatureType, gameObject.transform.position, attackDirection, Vector3.zero, attackModeInfo.collider_size);
+        return FightCreatureSearchUtil.FindCreatureEntity(searchType, searchCreatureType, checkPosition, attackDirection, Vector3.zero, attackModeInfo.collider_size);
     }
 
     /// <summary>

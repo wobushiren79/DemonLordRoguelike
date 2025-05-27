@@ -55,8 +55,7 @@ public class AttackModeRanged : BaseAttackMode
     /// </summary>
     public virtual void HandleForBound()
     {
-        if (gameObject.transform.position.x > 15 || gameObject.transform.position.x < -5 ||
-            gameObject.transform.position.y < -5 || gameObject.transform.position.y > 15)
+        if (CheckIsMoveBound(gameObject))
         {
             Destroy();
         }
