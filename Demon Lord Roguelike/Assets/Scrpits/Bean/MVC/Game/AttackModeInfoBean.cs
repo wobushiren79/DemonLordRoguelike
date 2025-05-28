@@ -16,7 +16,7 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public string buff;
 	/// <summary>
-	///攻击搜索敌人类型
+	///攻击搜索敌人类型（用于检测弹道是否打到）
 	/// </summary>
 	public int attack_search_type;
 	/// <summary>
@@ -24,7 +24,7 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public float collider_size;
 	/// <summary>
-	///碰撞范围搜索敌人类型
+	///碰撞范围搜索敌人类型（用于范围弹道检测）
 	/// </summary>
 	public int collider_area_type;
 	/// <summary>
