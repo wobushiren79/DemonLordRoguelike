@@ -18,7 +18,7 @@ public class FightCreatureBean
 
     public float moveSpeedCurrent;//当前移动速度
     public Color colorBodyCurrent;//当前身体颜色
-    public List<FightBuffBean> listBuff;//所有的buff
+    public List<BuffEntityBean> listBuffEntityData;//所有的buff实例
     public FightCreatureBean(int creatureId)
     {
         creatureData = new CreatureBean(creatureId);
@@ -42,7 +42,7 @@ public class FightCreatureBean
 
         DRCurrent = creatureInfo.GetDR();
         DRMax = creatureInfo.GetDR();
-        listBuff = new List<FightBuffBean>();
+        listBuffEntityData = new List<BuffEntityBean>();
 
         InitBaseAttribute();
     }
@@ -54,13 +54,13 @@ public class FightCreatureBean
     {
         moveSpeedCurrent = creatureData.GetMSPD();
         colorBodyCurrent = Color.white;
-        if (!listBuff.IsNull())
+        if (!listBuffEntityData.IsNull())
         {
             float changeMoveSpeed = 0;
             float changeRateMoveSpeed = 0;
-            for (int i = 0; i < listBuff.Count; i++)
+            for (int i = 0; i < listBuffEntityData.Count; i++)
             {
-                FightBuffBean itemBuff = listBuff[i];
+                BuffEntityBean itemBuff = listBuffEntityData[i];
                 //获取buff执行实例
                 var buffEntity = itemBuff.GetBuffEntity();
                 //设置速度相关
@@ -68,9 +68,9 @@ public class FightCreatureBean
                 changeMoveSpeed += targetChangeData.change;
                 changeRateMoveSpeed += targetChangeData.changeRate;
                 //设置身体颜色
-                if (!itemBuff.fightBuffInfo.color_body.IsNull())
+                if (!itemBuff.buffInfo.color_body.IsNull())
                 {
-                    colorBodyCurrent = itemBuff.fightBuffInfo.GetBodyColor();
+                    colorBodyCurrent = itemBuff.buffInfo.GetBodyColor();
                 }
             }
             moveSpeedCurrent += changeMoveSpeed;
@@ -179,26 +179,26 @@ public class FightCreatureBean
     /// <summary>
     /// 添加BUFF
     /// </summary>
-    public void AddBuff(List<FightBuffBean> targetBuffs, Action<FightBuffBean> actionForCombineNew = null, Action<FightBuffBean> actionForCombineOld = null, Action actionForComplete = null)
+    public void AddBuff(List<BuffEntityBean> targetListBuffEntityData, Action<BuffEntityBean> actionForCombineNew = null, Action<BuffEntityBean> actionForCombineOld = null, Action actionForComplete = null)
     {
-        for (int f = 0; f < targetBuffs.Count; f++)
+        for (int f = 0; f < targetListBuffEntityData.Count; f++)
         {
-            var targetBuff = targetBuffs[f];
+            var targetBuff = targetListBuffEntityData[f];
             bool hasOldBuff = false;
-            for (int i = 0; i < listBuff.Count; i++)
+            for (int i = 0; i < listBuffEntityData.Count; i++)
             {
-                var itemBuff = listBuff[i];
-                if (itemBuff.fightBuffStruct.id == targetBuff.fightBuffStruct.id)
+                var itemBuffEntityData = listBuffEntityData[i];
+                if (itemBuffEntityData.buffInfo.id == targetBuff.buffInfo.id)
                 {
                     hasOldBuff = true;
-                    itemBuff.triggerNumLeft = targetBuff.triggerNumLeft;
-                    actionForCombineOld?.Invoke(itemBuff);
+                    itemBuffEntityData.triggerNumLeft = targetBuff.triggerNumLeft;
+                    actionForCombineOld?.Invoke(itemBuffEntityData);
                     break;
                 }
             }
             if (!hasOldBuff)
             {
-                listBuff.Add(targetBuff);
+                listBuffEntityData.Add(targetBuff);
                 actionForCombineNew?.Invoke(targetBuff);
 
             }
@@ -209,11 +209,11 @@ public class FightCreatureBean
     /// <summary>
     /// 移除BUFF
     /// </summary>
-    public void RemoveBuff(FightBuffBean targetBuff, Action actionForComplete = null)
+    public void RemoveBuff(BuffEntityBean buffEntityData, Action actionForComplete = null)
     {
-        if (!listBuff.IsNull())
+        if (!listBuffEntityData.IsNull())
         {
-            listBuff.Remove(targetBuff);
+            listBuffEntityData.Remove(buffEntityData);
         }
         InitBaseAttribute(actionForComplete);
     }

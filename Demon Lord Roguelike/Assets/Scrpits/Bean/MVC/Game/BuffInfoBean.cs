@@ -4,29 +4,41 @@ using System.Collections.Generic;
 public partial class BuffInfoBean : BaseBean
 {
 	/// <summary>
-	///生物类型1：防御 2进攻
+	///图标名字
 	/// </summary>
-	public int creature_type;
+	public string icon_res;
 	/// <summary>
-	///创建魔力
-	/// </summary>
-	public int create_magic;
-	/// <summary>
-	///内容
-	/// </summary>
-	public string name_res;
-	/// <summary>
-	///移动速度
-	/// </summary>
-	public float speed_move;
-	/// <summary>
-	///类型1：天赋 2：固定加成 3：条件触发
+	///类型1:攻击模块 2：生物自带 
 	/// </summary>
 	public int buff_type;
 	/// <summary>
-	///模组ID
+	///引用实例
 	/// </summary>
-	public int model_id;
+	public string class_entity;
+	/// <summary>
+	///身体变色
+	/// </summary>
+	public string color_body;
+	/// <summary>
+	///触发改变的值
+	/// </summary>
+	public float trigger_value;
+	/// <summary>
+	///触发改变的值百分比
+	/// </summary>
+	public float trigger_value_rate;
+	/// <summary>
+	///触发几率
+	/// </summary>
+	public float trigger_chance;
+	/// <summary>
+	///触发次数
+	/// </summary>
+	public int trigger_num;
+	/// <summary>
+	///触发时间
+	/// </summary>
+	public float trigger_time;
 	/// <summary>
 	///备注
 	/// </summary>

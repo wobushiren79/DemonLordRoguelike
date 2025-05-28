@@ -69,11 +69,11 @@ public class GameFightCreatureEntity
             return;
         if (fightCreatureData == null)
             return;
-        if (fightCreatureData.listBuff.IsNull())
+        if (fightCreatureData.listBuffEntityData.IsNull())
             return;
-        for (int i = 0; i < fightCreatureData.listBuff.Count; i++)
+        for (int i = 0; i < fightCreatureData.listBuffEntityData.Count; i++)
         {
-            var itemBuff = fightCreatureData.listBuff[i];
+            var itemBuff = fightCreatureData.listBuffEntityData[i];
             itemBuff.AddBuffTime(updateTime, out bool isRemove, actionForCompleteRemove: CallBackForRemoveBuff);
             if (isRemove)
             {
@@ -152,11 +152,11 @@ public class GameFightCreatureEntity
     public void AddBuff(BaseAttackMode baseAttackMode)
     {
         //触发buff
-        var buffs = baseAttackMode.attackModeInfo.GetBuff();
-        if (!buffs.IsNull())
+        var buffIds = baseAttackMode.attackModeInfo.GetBuffIds();
+        if (!buffIds.IsNull())
         {
             //获取触发的buff 计算触发概率
-            var buffsTrigger = FightBuffBean.GetTriggerFightBuff(buffs, fightCreatureData.creatureData.creatureId);
+            var buffsTrigger = BuffEntityBean.GetTriggerBuff(buffIds, fightCreatureData.creatureData.creatureId);
             if (!buffsTrigger.IsNull())
             {
                 fightCreatureData.AddBuff(buffsTrigger, actionForComplete: CallBackForAddBuff);
@@ -178,12 +178,20 @@ public class GameFightCreatureEntity
         fightRecordsData.AddCreatureRegainHPReceived(baseAttackMode.attackedId, changeHPReal);
 
         //检测一下是否死亡
-        CheckDead(
-        () =>
+        CheckDead
+        (
+            //没有死亡
+            actionForNoDead: () =>
             {
                 //增加BUFF
                 AddBuff(baseAttackMode);
-            });
+            },
+            //死亡之后
+            actionForDead:()=>
+            {
+                
+            }
+        );
     }
 
     /// <summary>
@@ -199,12 +207,20 @@ public class GameFightCreatureEntity
         fightRecordsData.AddCreatureRegainDR(baseAttackMode.attackerId, changeDRReal);
         fightRecordsData.AddCreatureRegainDRReceived(baseAttackMode.attackedId, changeDRReal);
         //检测一下是否死亡
-        CheckDead(
-        () =>
+        CheckDead
+        (
+            //没有死亡
+            actionForNoDead: () =>
             {
                 //增加BUFF
                 AddBuff(baseAttackMode);
-            });
+            },
+            //死亡之后
+            actionForDead:()=>
+            {
+                
+            }
+        );
     }
 
     /// <summary>
@@ -272,15 +288,19 @@ public class GameFightCreatureEntity
         fightRecordsData.AddCreatureDamageReceived(attackedId, damageReal);
 
         //检测一下是否死亡
-        CheckDead(
-            () =>
+        CheckDead
+        (
+            //没有死亡
+            actionForNoDead: () =>
             {
                 actionForNoDead?.Invoke(changeDRReal, changeHPReal);
             },
-            () =>
+            //死亡之后
+            actionForDead:()=>
             {
                 actionForDead?.Invoke(changeDRReal, changeHPReal);
-            });
+            }
+        );
     }
     #endregion
 

@@ -2,18 +2,18 @@ using System;
 using System.Collections.Generic;
 public partial class AttackModeInfoBean
 {
-    protected FightBuffStruct[] fightBuff;
-    public FightBuffStruct[] GetBuff()
+    protected long[] buffIds;
+    public long[] GetBuffIds()
     {
         if (buff.IsNull())
         {
             return null;
         }
-        if (fightBuff.IsNull())
+        if (buffIds.IsNull())
         {
-            fightBuff = FightBuffStruct.GetData(buff);
+            buffIds = buff.SplitForArrayLong(',');
         }
-        return fightBuff;
+        return buffIds;
     }
 
     protected float[] colliderAreaSize;
