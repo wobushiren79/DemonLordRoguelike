@@ -6,6 +6,10 @@ public partial class BuffInfoBean
 {
     protected Color colorBody = Color.white;
 
+    /// <summary>
+    /// 获取身体颜色
+    /// </summary>
+    /// <returns></returns>
     public Color GetBodyColor()
     {
         if (color_body.IsNull())
@@ -21,6 +25,24 @@ public partial class BuffInfoBean
             }
             return colorBody;
         }
+    }
+
+    protected Dictionary<long, float> dicBuffPre;
+
+    /// <summary>
+    /// 检测是否满足前置条件
+    /// </summary>
+    public Dictionary<long, float> GetPreInfo()
+    {
+        if (pre_info.IsNull())
+        {
+            return null;
+        }
+        if (dicBuffPre == null)
+        {
+            dicBuffPre = pre_info.SplitForDictionaryLongFloat();
+        }
+        return dicBuffPre;
     }
 }
 

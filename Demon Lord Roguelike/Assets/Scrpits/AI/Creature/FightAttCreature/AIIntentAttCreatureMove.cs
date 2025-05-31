@@ -59,7 +59,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
             }
         }
 
-        float moveSpeed = selfAIEntity.selfCreatureEntity.fightCreatureData.GetMoveSpeed();
+        float moveSpeed = selfAIEntity.selfCreatureEntity.fightCreatureData.GetMSPD();
         Transform selfTF = selfAIEntity.selfCreatureEntity.creatureObj.transform;
         selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeed);
     }

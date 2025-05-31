@@ -46,7 +46,7 @@ public partial class UIViewBaseInfoContent : BaseUIView
             var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
             if (gameFightLogic != null)
             {
-                SetMagicData(gameFightLogic.fightData.currentMagic);
+                SetMagicData(0);
             }
         }
     }

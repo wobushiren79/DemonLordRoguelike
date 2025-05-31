@@ -16,7 +16,12 @@ public class FightCreatureBean
     public int DRCurrent;//当前护甲值
     public int DRMax;//最大护甲值
 
-    public float moveSpeedCurrent;//当前移动速度
+    public int ATKCurrent;//当前攻击力
+    public float ASPDCurrent;//当前攻击间隔
+    public float MSPDCurrent;//当前移动速度
+    public float EVACurrent;//当前闪避率
+    public float CRTCurrent;//暴击率
+
     public Color colorBodyCurrent;//当前身体颜色
     public List<BuffEntityBean> listBuffEntityData;//所有的buff实例
     public FightCreatureBean(int creatureId)
@@ -42,8 +47,9 @@ public class FightCreatureBean
 
         DRCurrent = creatureInfo.GetDR();
         DRMax = creatureInfo.GetDR();
-        listBuffEntityData = new List<BuffEntityBean>();
 
+        listBuffEntityData = new List<BuffEntityBean>();
+        //刷新一下基础属性
         InitBaseAttribute();
     }
 
@@ -52,46 +58,100 @@ public class FightCreatureBean
     /// </summary>
     public void InitBaseAttribute(Action actionForComplete = null)
     {
-        moveSpeedCurrent = creatureData.GetMSPD();
+        //先还原基础数据
+        MSPDCurrent = creatureData.GetMSPD();
+        CRTCurrent = creatureData.GetCRT();
+        EVACurrent = creatureData.GetEVA();
+        ATKCurrent = creatureData.GetATK();
+        ASPDCurrent = creatureData.GetASPD();
+
         colorBodyCurrent = Color.white;
+
+        //buff相关加成
         if (!listBuffEntityData.IsNull())
         {
-            float changeMoveSpeed = 0;
-            float changeRateMoveSpeed = 0;
             for (int i = 0; i < listBuffEntityData.Count; i++)
             {
                 BuffEntityBean itemBuff = listBuffEntityData[i];
                 //获取buff执行实例
                 var buffEntity = itemBuff.GetBuffEntity();
-                //设置速度相关
-                var targetChangeData = buffEntity.GetChangeDataForMoveSpeed(itemBuff);
-                changeMoveSpeed += targetChangeData.change;
-                changeRateMoveSpeed += targetChangeData.changeRate;
+                //设置攻击力相关
+                ATKCurrent += (int)buffEntity.GetChangeDataForATK(itemBuff);
+                ATKCurrent = ATKCurrent + (int)(ATKCurrent * buffEntity.GetChangeRateDataForATK(itemBuff));
+                //设置攻击速度相关
+                ASPDCurrent += buffEntity.GetChangeDataForASPD(itemBuff);
+                ASPDCurrent = ASPDCurrent + (ASPDCurrent * buffEntity.GetChangeRateDataForASPD(itemBuff));
+                //设置移动速度相关
+                MSPDCurrent += buffEntity.GetChangeDataForMSPD(itemBuff);
+                MSPDCurrent *= 1 + buffEntity.GetChangeRateDataForMSPD(itemBuff);
+                //设置暴击相关
+                CRTCurrent += buffEntity.GetChangeRateDataForCRT(itemBuff);
+                //设置闪避相关
+                EVACurrent += buffEntity.GetChangeRateDataForEVA(itemBuff);
+
                 //设置身体颜色
                 if (!itemBuff.buffInfo.color_body.IsNull())
                 {
-                    colorBodyCurrent = itemBuff.buffInfo.GetBodyColor();
+                    colorBodyCurrent = buffEntity.GetChangeBodyColor(itemBuff);
                 }
             }
-            moveSpeedCurrent += changeMoveSpeed;
-            if (moveSpeedCurrent < 0)
-                moveSpeedCurrent = 0;
-            moveSpeedCurrent *= 1 + changeRateMoveSpeed;
-            if (moveSpeedCurrent < 0)
-                moveSpeedCurrent = 0;
         }
-        if (moveSpeedCurrent < 0)
-            moveSpeedCurrent = 0;
+        if (ATKCurrent < 0)
+            ATKCurrent = 0;
+        if (ASPDCurrent < 0)
+            ASPDCurrent = 0;
+        if (MSPDCurrent < 0)
+            MSPDCurrent = 0;
+        if (CRTCurrent <= 0)
+            CRTCurrent = 0;
+        if (EVACurrent <= 0)
+            EVACurrent = 0;
+
         actionForComplete?.Invoke();
+    }
+
+    /// <summary>
+    /// 获取攻击力
+    /// </summary>
+    /// <returns></returns>
+    public int GetATK()
+    {
+        return ATKCurrent;
+    }
+    
+    /// <summary>
+    /// 获取攻击速度
+    /// </summary>
+    /// <returns></returns>
+    public float GetASPD()
+    {
+        return ASPDCurrent;
     }
 
     /// <summary>
     /// 获取角色移动速度
     /// </summary>
     /// <returns></returns>
-    public float GetMoveSpeed()
+    public float GetMSPD()
     {
-        return moveSpeedCurrent;
+        return MSPDCurrent;
+    }
+
+    /// <summary>
+    /// 获取闪避概率
+    /// </summary>
+    /// <returns></returns>
+    public float GetEVA()
+    {
+        return EVACurrent;
+    }
+
+    /// <summary>
+    /// 获取暴击率
+    /// </summary>
+    public float GetCRT()
+    {
+        return CRTCurrent;
     }
 
     /// <summary>
@@ -150,6 +210,8 @@ public class FightCreatureBean
             DRCurrent = DRMax;
         }
         leftDR = DRCurrent;
+        //刷新一下基础属性
+        InitBaseAttribute();
     }
 
 
@@ -174,6 +236,8 @@ public class FightCreatureBean
             HPCurrent = HPMax;
         }
         leftHP = HPCurrent;
+        //刷新一下基础属性
+        InitBaseAttribute();
     }
 
     /// <summary>

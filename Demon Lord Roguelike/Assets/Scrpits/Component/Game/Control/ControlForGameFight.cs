@@ -156,7 +156,7 @@ public class ControlForGameFight : BaseControl
         float inputValue = inputActionUseL.ReadValue<float>();
         if (inputValue < 1)
             return;
-        RayUtil.RayToScreenPointForMousePosition(10, 1 << LayerInfo.Drop, out bool isCollider, out RaycastHit hit, CameraHandler.Instance.manager.mainCamera);
+        RayUtil.RayToScreenPointForMousePosition(100, 1 << LayerInfo.Drop, out bool isCollider, out RaycastHit hit, CameraHandler.Instance.manager.mainCamera);
         if (isCollider && hit.collider != null)
         {
             var fightDropPrefab = FightHandler.Instance.manager.GetFightPrefab(hit.collider.gameObject.name);
@@ -164,8 +164,7 @@ public class ControlForGameFight : BaseControl
                 return;
             fightDropPrefab.SetState(GameFightPrefabStateEnum.Droping);
             Vector3 targetPos = gameFightLogic.fightData.fightDefenseCoreCreature.creatureObj.transform.position;
-            float moveSpeed = 5
-                ;
+            float moveSpeed = 5;
             float moveTime = Vector3.Distance(targetPos, fightDropPrefab.gameObject.transform.position) / moveSpeed;
             //播放动画
             fightDropPrefab.gameObject.transform

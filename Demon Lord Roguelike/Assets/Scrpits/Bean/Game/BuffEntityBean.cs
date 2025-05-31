@@ -53,11 +53,20 @@ public class BuffEntityBean
         //持续型BUFF（持续指定时间后结束）
         else
         {
-            if (timeUpdate >= buffInfo.trigger_time)
+            //如果是永久存在
+            if (buffInfo.trigger_time == -1)
             {
-                timeUpdate = 0;
-                isRemove = true;
-                RemoveBuff(actionForCompleteRemove);
+
+            }
+            //如果不是永久存在
+            else
+            {
+                if (timeUpdate >= buffInfo.trigger_time)
+                {
+                    timeUpdate = 0;
+                    isRemove = true;
+                    RemoveBuff(actionForCompleteRemove);
+                }
             }
         }
     }
@@ -82,64 +91,11 @@ public class BuffEntityBean
         }
     }
 
+    /// <summary>
+    /// 获取buff实例
+    /// </summary>
     public BuffBaseEntity GetBuffEntity()
     {
-        return GetBuffEntity(buffInfo.class_entity);
-    }
-
-
-    //buff的实例类
-    public static Dictionary<string, BuffBaseEntity> dicBuffEntity = new Dictionary<string, BuffBaseEntity>();
-    /// <summary>
-    /// 获取BUFF实例类
-    /// </summary>
-    public static BuffBaseEntity GetBuffEntity(string entityName)
-    {
-        string className = $"FightBuffEntityFor{entityName}";
-        if (dicBuffEntity.TryGetValue(className, out var targetClass))
-        {
-            return targetClass;
-        }
-        else
-        {
-            targetClass = ReflexUtil.CreateInstance<BuffBaseEntity>(className);
-            if (targetClass == null)
-            {
-                return null;
-            }
-            else
-            {
-                dicBuffEntity.Add(className, targetClass);
-                return targetClass;
-            }
-        }
-    }
-
-    /// <summary>
-    /// 获取触发的BUFF
-    /// </summary>
-    /// <param name="buffIds"></param>
-    /// <param name="creatureId"></param>
-    /// <returns></returns>
-    public static List<BuffEntityBean> GetTriggerBuff(long[] buffIds, string creatureId)
-    {
-        List<BuffEntityBean> listData = new List<BuffEntityBean>();
-        for (int i = 0; i < buffIds.Length; i++)
-        {
-            var itemBuffId = buffIds[i];
-            var buffInfo = BuffInfoCfg.GetItemData(itemBuffId);
-            if (buffInfo.trigger_chance > 0)
-            {
-                var randomOdds = UnityEngine.Random.Range(0f, 1f);
-                if (randomOdds >= buffInfo.trigger_chance)
-                {
-                    continue;
-                }
-            }
-
-            BuffEntityBean buffData = new BuffEntityBean(creatureId,itemBuffId);
-            listData.Add(buffData);
-        }
-        return listData;
+        return BuffUtil.GetBuffEntity(buffInfo);
     }
 }

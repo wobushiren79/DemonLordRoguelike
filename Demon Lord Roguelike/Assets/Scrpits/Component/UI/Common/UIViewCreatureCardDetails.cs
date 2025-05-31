@@ -29,9 +29,9 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         int hp = creatureData.GetHPOrigin();
         int dr = creatureData.GetDROrigin();
         int atk = creatureData.GetATK();
-        int aspd = creatureData.GetASPD();
+        float aspd = creatureData.GetASPD();
         
-        SetAttribute(hp, dr,atk,aspd);
+        SetAttribute(hp, dr,atk, aspd);
         SetRarity(creatureData.rarity);
     }
 
@@ -58,12 +58,12 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     /// <summary>
     /// 设置属性
     /// </summary>
-    public void SetAttribute(int HP, int DR, int atk, int aspk)
+    public void SetAttribute(int HP, int DR, int atk, float aspk)
     {
         ui_AttributeItemText_Life.text = $"{HP}";
         ui_AttributeItemText_Def.text = $"{DR}";
         ui_AttributeItemText_Att.text = $"{atk}";
-        ui_AttributeItemText_Speed.text = $"{aspk}";
+        ui_AttributeItemText_Speed.text = $"{aspk}s";
     }
 
     /// <summary>

@@ -20,6 +20,10 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public string color_body;
 	/// <summary>
+	///前置条件
+	/// </summary>
+	public string pre_info;
+	/// <summary>
 	///触发改变的值
 	/// </summary>
 	public float trigger_value;

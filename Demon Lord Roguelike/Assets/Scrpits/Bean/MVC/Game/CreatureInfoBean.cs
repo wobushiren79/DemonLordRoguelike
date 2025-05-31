@@ -20,9 +20,9 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public float create_cd;
 	/// <summary>
-	///创建魔力
+	///生物buff
 	/// </summary>
-	public int create_magic;
+	public string create_buff;
 	/// <summary>
 	///身体的基础模块
 	/// </summary>
@@ -64,11 +64,11 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public string attack_start_position;
 	/// <summary>
-	///攻击搜索敌人类型0直线 11范围 12范围内血量不满 13范围内护甲不满 21遍历路线
+	///攻击搜索敌人类型
 	/// </summary>
 	public int attack_search_type;
 	/// <summary>
-	///攻击搜索目标类型
+	///攻击搜索目标类型1：防御 2进攻
 	/// </summary>
 	public int attack_search_creature_type;
 	/// <summary>
@@ -79,10 +79,6 @@ public partial class CreatureInfoBean : BaseBean
 	///攻击搜索间隔（搜索敌人间隔）
 	/// </summary>
 	public float attack_search_time;
-	/// <summary>
-	///攻击间隔（每次攻击间隔）
-	/// </summary>
-	public float attack_cd_time;
 	/// <summary>
 	///死亡动画时间
 	/// </summary>
@@ -104,9 +100,9 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public int ATK;
 	/// <summary>
-	///攻击速度
+	///攻击间隔
 	/// </summary>
-	public int ASPD;
+	public float ASPD;
 	/// <summary>
 	///移动速度
 	/// </summary>

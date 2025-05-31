@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-public class BuffEntityForPoison : BuffBaseEntity
+public class BuffEntityForHPChange : BuffBaseEntity
 {
     public override void TriggerBuff(BuffEntityBean buffEntityData)
     {
@@ -14,18 +14,27 @@ public class BuffEntityForPoison : BuffBaseEntity
         }
         else
         {
-            int damage = 0;
+            int changeHPData = 0;
             //固定伤害计算
             if (buffEntityData.buffInfo.trigger_value > 0)
             {
-                damage += (int)buffEntityData.buffInfo.trigger_value;
+                changeHPData += (int)buffEntityData.buffInfo.trigger_value;
             }
             //百分比伤害计算
             if (buffEntityData.buffInfo.trigger_value_rate > 0)
             {
-                damage += (int)((targetCreature.fightCreatureData.HPMax + targetCreature.fightCreatureData.DRMax) * buffEntityData.buffInfo.trigger_value_rate);
+                changeHPData += (int)(targetCreature.fightCreatureData.HPMax * buffEntityData.buffInfo.trigger_value_rate);
             }
-            targetCreature.UnderAttack(buffEntityData.creatureId,buffEntityData.creatureId, damage);
+            //如果改变的HP大于0 则回复HP
+            if (changeHPData > 0)
+            {
+                targetCreature.RegainHP(buffEntityData.creatureId, buffEntityData.creatureId, changeHPData);
+            }
+            //如果小于0 则受到攻击
+            else
+            {
+                targetCreature.UnderAttack(buffEntityData.creatureId, buffEntityData.creatureId, -changeHPData, 0);
+            }
         }
     }
 }

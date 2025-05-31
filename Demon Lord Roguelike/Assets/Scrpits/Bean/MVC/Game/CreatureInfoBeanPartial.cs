@@ -11,7 +11,8 @@ public partial class CreatureInfoBean
     //攻击起始位置
     protected bool isInitAttackStartPosition = false;
     protected Vector3 attackStartPosition;
-
+    //生物buff
+   protected long[] creatureBuffArray;
     public int GetHP()
     {
         return HP * 10;
@@ -38,9 +39,9 @@ public partial class CreatureInfoBean
         return (CreatureTypeEnum)attack_search_creature_type;
     }
 
-    public  Vector3 GetAttackStartPosition()
+    public Vector3 GetAttackStartPosition()
     {
-        if(!isInitAttackStartPosition)
+        if (!isInitAttackStartPosition)
         {
             attackStartPosition = attack_start_position.SplitForVector3(',');
             isInitAttackStartPosition = true;
@@ -95,6 +96,22 @@ public partial class CreatureInfoBean
     public CreatureSearchType GetCreatureSearchType()
     {
         return (CreatureSearchType)attack_search_type;
+    }
+
+    /// <summary>
+    /// 获取生物自带buff
+    /// </summary>
+    public long[] GetCreatureBuff()
+    {
+        if (create_buff.IsNull())
+        {
+            return null;
+        }
+        if (creatureBuffArray == null)
+        {
+            creatureBuffArray = create_buff.SplitForArrayLong(',');
+        }
+        return creatureBuffArray;
     }
 }
 public partial class CreatureInfoCfg

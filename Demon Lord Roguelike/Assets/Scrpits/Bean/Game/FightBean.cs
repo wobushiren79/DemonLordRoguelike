@@ -22,8 +22,6 @@ public class FightBean
     public float timeUpdateForFightCreature = 0;//更新目标时间-生物
     public float timeUpdateTargetForFightCreature = 0.1f;//更新目标时间-生物
 
-    public int currentMagic;//当前魔力值
-
     public int sceneRoadNumMax = 6;//路线数量最大值
     public int sceneRoadNum = 6;//场景路线数量
     public int sceneRoadLength = 10;//场景路线长度
@@ -107,17 +105,6 @@ public class FightBean
         timeUpdateForAttackCreate = 0;
         timeUpdateTargetForAttackCreate = 0;
         timeUpdateForFightCreature = 0;
-    }
-
-    /// <summary>
-    /// 改变魔力
-    /// </summary>
-    public void ChangeMagic(int changeData)
-    {
-        currentMagic += changeData;
-        if (currentMagic < 0)
-            currentMagic = 0;
-        EventHandler.Instance.TriggerEvent(EventsInfo.Magic_Change);
     }
 
     /// <summary>

@@ -15,6 +15,8 @@ public class BaseAttackMode
     public AttackModeInfoBean attackModeInfo;
     //攻击者的攻击力
     public int attackerDamage;
+    //攻击者暴击概率
+    public float attackerCRT;
     //起始位置
     public Vector3 startPostion;
     //目标位置
@@ -75,12 +77,15 @@ public class BaseAttackMode
         {
             if (attacker.fightCreatureData != null)
             {
-                if (attacker.fightCreatureData.creatureData != null)
+                var creatureData = attacker.fightCreatureData.creatureData;
+                if (creatureData != null)
                 {
                     //设置攻击者ID
-                    attackerId = attacker.fightCreatureData.creatureData.creatureId;
+                    attackerId = creatureData.creatureId;
                     //设置伤害
-                    attackerDamage = attacker.fightCreatureData.creatureData.GetATK();
+                    attackerDamage = attacker.fightCreatureData.GetATK();
+                    //提示设置暴击概率 
+                    attackerCRT = attacker.fightCreatureData.GetCRT();
                 }
             }
         }

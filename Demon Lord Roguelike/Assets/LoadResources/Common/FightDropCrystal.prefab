@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5799818453694488592}
   - component: {fileID: 8882908430881241561}
-  m_Layer: 9
+  m_Layer: 13
   m_Name: FightDropCrystal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -64,7 +64,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1561869070857047480}
   - component: {fileID: 697497570495573718}
-  m_Layer: 9
+  m_Layer: 13
   m_Name: Renderer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -105,6 +105,7 @@ SpriteRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:

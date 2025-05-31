@@ -274,21 +274,12 @@ public partial class UIFightMain : BaseUIComponent
     /// </summary>
     public void EventForOnClickSelect(UIViewCreatureCardItem targetView)
     {
-        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         //战斗中的卡片不能点击
         if (targetView.cardData.cardState == CardStateEnum.Fighting)
             return;
         //CD中的卡片不能点击
         if (targetView.cardData.cardState == CardStateEnum.FightRest)
             return;
-
-        int createMagic = targetView.cardData.creatureData.GetCreateMagic();
-        if (gameFightLogic.fightData.currentMagic < createMagic)
-        {
-            //魔力不足
-            EventHandler.Instance.TriggerEvent(EventsInfo.Toast_NoEnoughCreateMagic);
-            return;
-        }
         GameFightLogic fightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         fightLogic.SelectCard(targetView);
     }

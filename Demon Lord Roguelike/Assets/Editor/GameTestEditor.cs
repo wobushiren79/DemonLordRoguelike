@@ -7,12 +7,14 @@ using static ExcelUtil;
 [CustomEditor(typeof(LauncherTest))]
 public class GameTestEditor : Editor
 {
-    public int testDataCurrentMagic = 1000;
+
     public int testDataCardNum = 20;
     public int fightSceneId = 1;
     public string fightCardId = "2001";
     public int fightSceneRoadNum = 6;    //道路数量
     public int fightSceneRoadLength = 10;    //道路长度
+    public int fightSceneAttackNum = 1;//进攻者数量
+    public float fightSceneAttackDelay = 1;//进攻者间隔
 
     public int creatureId = 0;
     public int creatureModelId = 0;
@@ -68,10 +70,6 @@ public class GameTestEditor : Editor
             FightBean fightData = GetTestData();
             launcher.StartForFightSceneTest(fightData);
         }
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("测试数据-当前魔力");
-        testDataCurrentMagic = EditorGUILayout.IntField(testDataCurrentMagic);
-        EditorGUILayout.EndHorizontal();
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("测试数据-卡片数量");
@@ -96,6 +94,16 @@ public class GameTestEditor : Editor
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("测试数据-测试场景道路长度");
         fightSceneRoadLength = EditorGUILayout.IntField(fightSceneRoadLength);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("测试数据-进攻生物数量");
+        fightSceneAttackNum = EditorGUILayout.IntField(fightSceneAttackNum);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("测试数据-进攻生物间隔");
+        fightSceneAttackDelay = EditorGUILayout.FloatField(fightSceneAttackDelay);
         EditorGUILayout.EndHorizontal();
     }
 
@@ -130,13 +138,12 @@ public class GameTestEditor : Editor
         fightData.sceneRoadNum = fightSceneRoadNum;
         fightData.sceneRoadLength = fightSceneRoadLength;
         fightData.gameFightType = GameFightTypeEnum.Test;
-        fightData.currentMagic = testDataCurrentMagic;
 
         //生成进攻数据
         fightData.fightAttackData = new FightAttackBean();
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < fightSceneAttackNum; i++)
         {
-            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(3, new List<int> { 1001, 1001, 1001 });
+            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(fightSceneAttackDelay, new List<int> { 1001});
             fightData.fightAttackData.AddAttackQueue(fightAttackDetails);
         }
 

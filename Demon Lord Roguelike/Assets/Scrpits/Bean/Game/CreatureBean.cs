@@ -253,7 +253,7 @@ public partial class CreatureBean
     /// 获取攻击速度
     /// </summary>
     /// <returns></returns>
-    public int GetASPD()
+    public float GetASPD()
     {
         return creatureInfo.ASPD;
     }
@@ -267,12 +267,21 @@ public partial class CreatureBean
     }
 
     /// <summary>
-    /// 获取攻击CD
+    /// 获取闪避率
     /// </summary>
     /// <returns></returns>
-    public float GetAttackCDTime()
+    public float GetEVA()
     {
-        return creatureInfo.attack_cd_time;
+        return 0;
+    }
+
+    /// <summary>
+    /// 获取暴击率
+    /// </summary>
+    /// <returns></returns>
+    public float GetCRT()
+    {
+        return 0;
     }
 
     /// <summary>
@@ -293,16 +302,6 @@ public partial class CreatureBean
     public float GetAttackAnimTime()
     {
         return creatureInfo.anim_attack_time;
-    }
-
-
-    /// <summary>
-    /// 获取创建的魔力
-    /// </summary>
-    public int GetCreateMagic()
-    {
-        var creatureInfo = CreatureInfoCfg.GetItemData(id);
-        return creatureInfo.create_magic;
     }
     #endregion
 }
