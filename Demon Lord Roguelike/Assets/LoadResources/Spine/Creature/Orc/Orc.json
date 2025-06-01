@@ -1,11 +1,11 @@
 {
 "skeleton": {
-	"hash": "fI5CpUNLo09mzwl7ZYjBZDUe1wQ",
+	"hash": "OWZbSK/4+OfNbF8J8X3qzWAMfOM",
 	"spine": "3.8"
-	"x": -32,
+	"x": -32.06,
 	"y": 37,
-	"width": 51,
-	"height": 42,
+	"width": 51.06,
+	"height": 42.02,
 	"images": "./images/",
 	"audio": "E:/Unity/DemonLordRoguelike/资源/生物/兽人"
 },
@@ -15,7 +15,7 @@
 	{ "name": "Body", "parent": "Pelvis", "length": 37.16, "rotation": 90, "x": 0.1 },
 	{ "name": "Pelvis_Base", "parent": "Pelvis" },
 	{ "name": "Head", "parent": "Body", "length": 9.18, "x": 37, "y": -3.9 },
-	{ "name": "ArmUp_L", "parent": "Body", "length": 16.59, "rotation": 158.04, "x": 29.95, "y": 16.69 },
+	{ "name": "ArmUp_L", "parent": "Body", "length": 16.59, "rotation": 157.92, "x": 29.95, "y": 16.69 },
 	{ "name": "ArmDown_L", "parent": "ArmUp_L", "length": 16.06, "rotation": 21.96, "x": 16.95, "y": -0.22 },
 	{ "name": "Plam_L", "parent": "ArmDown_L", "length": 9.86, "rotation": 12.96, "x": 16.06 },
 	{ "name": "ArmUp_R", "parent": "Body", "length": 19.56, "rotation": -170.5, "x": 31.65, "y": -7.28 },
@@ -585,7 +585,7 @@
 			"ArmUp_L": {
 				"rotate": [
 					{},
-					{ "time": 0.5, "angle": 116.34 },
+					{ "time": 0.5, "angle": -12.39 },
 					{ "time": 1 }
 				],
 				"translate": [
@@ -660,17 +660,17 @@
 	},
 	"Attack3": {
 		"slots": {
-			"Weapon_L_3": {
-				"attachment": [
-					{ "time": 0.4667, "name": null }
-				]
-			},
 			"Weapon_L_2": {
 				"attachment": [
 					{ "time": 0.4667, "name": null }
 				]
 			},
 			"Weapon_L_1": {
+				"attachment": [
+					{ "time": 0.4667, "name": null }
+				]
+			},
+			"Weapon_L_3": {
 				"attachment": [
 					{ "time": 0.4667, "name": null }
 				]

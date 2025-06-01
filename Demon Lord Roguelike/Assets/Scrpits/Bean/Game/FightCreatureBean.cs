@@ -118,7 +118,7 @@ public class FightCreatureBean
     {
         return ATKCurrent;
     }
-    
+
     /// <summary>
     /// 获取攻击速度
     /// </summary>
@@ -166,13 +166,14 @@ public class FightCreatureBean
 
     public void ChangeDRAndHP(int changeValue,
         out int curDR, out int curHP,
-        out int changeDRReal, out int changeHPReal)
+        out int changeDRReal, out int changeHPReal,
+        bool isRefreshAttribute = true)
     {
         changeDRReal = 0;
         changeHPReal = 0;
 
         //先改变护甲
-        ChangeDR(changeValue, out int leftDR, out changeDRReal);
+        ChangeDR(changeValue, out int leftDR, out changeDRReal, isRefreshAttribute: false);
         //如果真实改变的护甲值==改变的值（没有冗余）
         if (changeValue == changeDRReal)
         {
@@ -182,10 +183,16 @@ public class FightCreatureBean
         else
         {
             int changeValue2 = changeValue - changeDRReal;
-            ChangeHP(changeValue2, out int leftHP, out changeHPReal);
+            ChangeHP(changeValue2, out int leftHP, out changeHPReal, isRefreshAttribute: false);
         }
         curDR = DRCurrent;
         curHP = HPCurrent;
+
+        //刷新一下基础属性
+        if (isRefreshAttribute)
+        {
+            InitBaseAttribute();
+        }
     }
 
 
@@ -195,7 +202,12 @@ public class FightCreatureBean
     /// <param name="ChangeDR">改变值</param>
     /// <param name="leftDR">剩余值</param>
     /// <param name="changeDRReal">真实改变值</param>
-    public void ChangeDR(int ChangeDR, out int leftDR, out int changeDRReal)
+    public void ChangeDR
+    (
+        int ChangeDR,
+        out int leftDR, out int changeDRReal,
+        bool isRefreshAttribute = true
+    )
     {
         DRCurrent += ChangeDR;
         changeDRReal = ChangeDR;
@@ -211,7 +223,10 @@ public class FightCreatureBean
         }
         leftDR = DRCurrent;
         //刷新一下基础属性
-        InitBaseAttribute();
+        if (isRefreshAttribute)
+        {
+            InitBaseAttribute();
+        }
     }
 
 
@@ -221,7 +236,12 @@ public class FightCreatureBean
     /// <param name="ChangeHP">改变值</param>
     /// <param name="leftHP">剩余值</param>
     /// <param name="changeHPReal">真实改变值</param>
-    public void ChangeHP(int ChangeHP, out int leftHP, out int changeHPReal)
+    public void ChangeHP
+    (
+        int ChangeHP,
+        out int leftHP, out int changeHPReal,
+        bool isRefreshAttribute = true
+    )
     {
         HPCurrent += ChangeHP;
         changeHPReal = ChangeHP;
@@ -237,7 +257,10 @@ public class FightCreatureBean
         }
         leftHP = HPCurrent;
         //刷新一下基础属性
-        InitBaseAttribute();
+        if (isRefreshAttribute)
+        {
+            InitBaseAttribute();
+        }
     }
 
     /// <summary>
