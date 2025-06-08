@@ -6,7 +6,7 @@ using UnityEngine.Rendering.Universal;
 public class VolumeHandler : BaseHandler<VolumeHandler, VolumeManager>
 {
     /// <summary>
-    /// ³õÊ¼»¯Êı¾İ
+    /// åˆå§‹åŒ–æ•°æ®
     /// </summary>
     public void InitData(GameSceneTypeEnum gameSceneType)
     {
@@ -22,14 +22,14 @@ public class VolumeHandler : BaseHandler<VolumeHandler, VolumeManager>
                 SetSkyBox(null);
                 break;
             default:
+                SetDepthOfField(DepthOfFieldMode.Bokeh, 4, 140, 10);            
                 SetSkyBox(null);
-                SetDepthOfField(DepthOfFieldMode.Bokeh, 4, 140, 10);
                 break;
         }
     }
 
     /// <summary>
-    /// ÉèÖÃÌì¿ÕºĞ
+    /// è®¾ç½®å¤©ç©ºç›’
     /// </summary>
     /// <param name="skybox"></param>
     public void SetSkyBox(Material skybox)
@@ -38,12 +38,12 @@ public class VolumeHandler : BaseHandler<VolumeHandler, VolumeManager>
     }
 
     /// <summary>
-    /// ÉèÖÃÔ¶¾°Ä£ºı
+    /// è®¾ç½®è¿œæ™¯æ¨¡ç³Š
     /// </summary>
-    /// <param name="mode">Off£ºÑ¡Ôñ´ËÑ¡Ïî¿É½ûÓÃ¾°Éî¡£Gaussian£ºÑ¡Ôñ´ËÑ¡Ïî¿ÉÊ¹ÓÃ¸ü¿ìµ«¸üÓĞÏŞµÄ¾°ÉîÄ£Ê½¡£Bokeh£ºÑ¡Ôñ´ËÑ¡Ïî¿ÉÊ¹ÓÃ»ùÓÚÉ¢¾°µÄ¾°ÉîÄ£Ê½¡£</param>
-    /// <param name="focusDistance">ÉèÖÃ´ÓÉãÏñ»úµ½½¹µãµÄ¾àÀë</param>
-    /// <param name="focalLength">	ÉèÖÃÉãÏñ»ú´«¸ĞÆ÷ºÍÉãÏñ»ú¾µÍ·Ö®¼äµÄ¾àÀë£¨ÒÔºÁÃ×Îªµ¥Î»£©¡£ÖµÔ½´ó£¬¾°ÉîÔ½Ç³¡£</param>
-    /// <param name="aperture">ÉèÖÃ¿×¾¶±È£¨Ò²³ÆÎª f Öµ (f-stop) »ò f Êı (f-number)£©¡£ÖµÔ½Ğ¡£¬¾°ÉîÔ½Ç³¡£</param>
+    /// <param name="mode">Offï¼šé€‰æ‹©æ­¤é€‰é¡¹å¯ç¦ç”¨æ™¯æ·±ã€‚Gaussianï¼šé€‰æ‹©æ­¤é€‰é¡¹å¯ä½¿ç”¨æ›´å¿«ä½†æ›´æœ‰é™çš„æ™¯æ·±æ¨¡å¼ã€‚Bokehï¼šé€‰æ‹©æ­¤é€‰é¡¹å¯ä½¿ç”¨åŸºäºæ•£æ™¯çš„æ™¯æ·±æ¨¡å¼ã€‚</param>
+    /// <param name="focusDistance">è®¾ç½®ä»æ‘„åƒæœºåˆ°ç„¦ç‚¹çš„è·ç¦»</param>
+    /// <param name="focalLength">	è®¾ç½®æ‘„åƒæœºä¼ æ„Ÿå™¨å’Œæ‘„åƒæœºé•œå¤´ä¹‹é—´çš„è·ç¦»ï¼ˆä»¥æ¯«ç±³ä¸ºå•ä½ï¼‰ã€‚å€¼è¶Šå¤§ï¼Œæ™¯æ·±è¶Šæµ…ã€‚</param>
+    /// <param name="aperture">è®¾ç½®å­”å¾„æ¯”ï¼ˆä¹Ÿç§°ä¸º f å€¼ (f-stop) æˆ– f æ•° (f-number)ï¼‰ã€‚å€¼è¶Šå°ï¼Œæ™¯æ·±è¶Šæµ…ã€‚</param>
     public void SetDepthOfField(DepthOfFieldMode mode, float focusDistance, float focalLength, float aperture)
     {
         var depthOfField = manager.depthOfField;
@@ -58,7 +58,7 @@ public class VolumeHandler : BaseHandler<VolumeHandler, VolumeManager>
     }
 
     /// <summary>
-    /// ÊÇ·ñ¿ªÆôÔ¶¾°Ä£ºı
+    /// æ˜¯å¦å¼€å¯è¿œæ™¯æ¨¡ç³Š
     /// </summary>
     /// <param name="isActive"></param>
     public void SetDepthOfFieldActive(bool isActive)

@@ -28,11 +28,24 @@ public class ScenePrefabForBase : ScenePrefabBase
     //    objBuildingCore = transform.Find("Core/Building").gameObject;
     //    effectEggBreak = transform.Find("Effect/EggBreak").GetComponent<VisualEffect>();
     //}
+    /// <summary>
+    /// 初始化场景
+    /// </summary>
     public override void InitSceneData()
     {
         base.InitSceneData();
-        BuildingVatRefresh();
         EventHandler.Instance.RegisterEvent(EventsInfo.CreatureAscend_AddProgress, EventForCreatureAscendAddProgress);
+        RefreshScene();
+    }
+
+    /// <summary>
+    /// 刷新场景
+    /// </summary>
+    public override void RefreshScene()
+    {
+        base.RefreshScene();
+        BuildingVatRefresh();
+        BuildingAltarRefresh();
     }
 
     public void OnDestroy()
@@ -45,7 +58,7 @@ public class ScenePrefabForBase : ScenePrefabBase
         HandleUpdateForBuildingCore();
     }
 
-    #region 核心建筑眼球处理
+    #region 核心建筑眼球
     //核心建筑眼球看向目标
     protected Vector3 targetLookAtForBuildingCoreEye;
     //核心建筑眼球转动速度
@@ -78,6 +91,25 @@ public class ScenePrefabForBase : ScenePrefabBase
     }
     #endregion
 
+    #region 献祭相关
+    public void BuildingAltarRefresh()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        UserUnlockBean userUnlock = userData.GetUserUnlockData();
+        bool isUnlockAltar = userUnlock.CheckIsUnlock(21001001);
+        //是否解锁祭坛
+        if (isUnlockAltar)
+        {
+            objBuildingAltar.gameObject.SetActive(true);
+        }
+        else
+        {
+            objBuildingAltar.gameObject.SetActive(false);
+        }
+    }
+
+    #endregion
+
     #region Vat相关
     /// <summary>
     /// 事件-刷新数据
@@ -92,9 +124,20 @@ public class ScenePrefabForBase : ScenePrefabBase
     /// </summary>
     public void BuildingVatRefresh()
     {
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();     
         UserAscendBean userAscend = userData.GetUserAscendData();
-        int showVatNum = 5;
+        UserUnlockBean userUnlock = userData.GetUserUnlockData();
+        int showVatNum = 0;
+        //解锁id 210000001-210000006 一共6个
+        for (int i = 1; i <= 6; i++)
+        {
+            bool isUnlockVat = userUnlock.CheckIsUnlock(21000000 + i);
+            if (isUnlockVat)
+            {
+                showVatNum++;
+            }
+        }
+
         for (int i = 0; i < objBuildingVat.transform.childCount; i++)
         {
             var itemVat = objBuildingVat.transform.GetChild(i);

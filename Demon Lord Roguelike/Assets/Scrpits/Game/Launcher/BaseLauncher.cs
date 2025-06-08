@@ -26,5 +26,7 @@ public class BaseLauncher : BaseMonoBehaviour
         FPSHandler.Instance.SetData(gameConfig.stateForFrames, gameConfig.frames);
         //修改抗锯齿
         //CameraHandler.Instance.ChangeAntialiasing(gameConfig.GetAntialiasingMode(), gameConfig.antialiasingQualityLevel);
+        //音效初始化
+        AudioHandler.Instance.InitAudio();
     }
 }

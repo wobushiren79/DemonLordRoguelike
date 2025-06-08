@@ -35,6 +35,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7edb6a41b0390fd45a268789b9cdeaba
+    m_Address: Assets/FrameWork/Materials/Skybox/TFF_Skybox_Day_01A.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 856e040d0daec3c4a90e8aa49c27eeb1
+    m_Address: Assets/FrameWork/Materials/Skybox/TFF_Skybox_Night_01A.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8a80c525ceffc63439d8d069168c9321
     m_Address: Assets/FrameWork/Materials/Skybox/Skybox_1.mat
     m_ReadOnly: 0
@@ -47,6 +57,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ade0c71928b76fc4ca5c8e3d3508452f
     m_Address: Assets/FrameWork/Materials/Skybox/Skybox_4.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e09c2740b280e044ca969e4704e4da35
+    m_Address: Assets/FrameWork/Materials/Skybox/TFF_Skybox_Sunset_01A.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

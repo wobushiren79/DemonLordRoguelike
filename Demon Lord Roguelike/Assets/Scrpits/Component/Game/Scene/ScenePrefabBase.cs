@@ -9,4 +9,12 @@ public class ScenePrefabBase : BaseMonoBehaviour
     {
 
     }
+
+    /// <summary>
+    /// 刷新场景
+    /// </summary>
+    public virtual void RefreshScene()
+    {
+
+    }
 }
