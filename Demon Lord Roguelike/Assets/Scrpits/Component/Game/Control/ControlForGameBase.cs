@@ -3,6 +3,7 @@ using Spine.Unity;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using static UnityEngine.InputSystem.InputAction;
@@ -13,17 +14,17 @@ public class ControlForGameBase : BaseControl
     public InputAction inputActionMove;
     public InputAction inputActionUseE;
 
-    [Header("½ÇÉ«ÒÆ¶¯ËÙ¶È")]
+    [Header("è§’è‰²ç§»åŠ¨é€Ÿåº¦")]
     public float speedForCreatureMoveX = 2f;
     public float speedForCreatureMoveZ = 2f;
 
     public SkeletonAnimation controlTargetForCreatureSkeletonAnimation;
     public SpineAnimationStateEnum controlTargetForCreatureAnim = SpineAnimationStateEnum.None;
 
-    //½»»¥ÌáÊ¾
+    //äº¤äº’æç¤º
     public GameObject controlTargetForInteraction;
 
-    //½»»¥Ë¢ĞÂÊ±¼ä
+    //äº¤äº’åˆ·æ–°æ—¶é—´
     protected float timeUpdateForInteraction;
     protected float timeMaxForInteraction = 0.2f;
 
@@ -59,13 +60,13 @@ public class ControlForGameBase : BaseControl
             else
             {
                 GameControlHandler.Instance.manager.controlTargetForCreature.SetActive(true);
-                //²¥·Å¶¯»­
+                //æ’­æ”¾åŠ¨ç”»
                 PlayAnimForControlTarget(SpineAnimationStateEnum.Idle);
             }
             return;
         }
         GameControlHandler.Instance.manager.controlTargetForCreature.SetActive(true);
-        //²¥·Å¶¯»­
+        //æ’­æ”¾åŠ¨ç”»
         PlayAnimForControlTarget(SpineAnimationStateEnum.Idle);
     }
 
@@ -76,7 +77,7 @@ public class ControlForGameBase : BaseControl
     }
 
     /// <summary>
-    /// ²¥·Å¿ØÖÆÎïÌåµÄ¶¯»­
+    /// æ’­æ”¾æ§åˆ¶ç‰©ä½“çš„åŠ¨ç”»
     /// </summary>
     /// <param name="animationCreatureState"></param>
     /// <param name="isLoop"></param>
@@ -95,7 +96,7 @@ public class ControlForGameBase : BaseControl
     }
 
     /// <summary>
-    /// ÒÆ¶¯´¦Àí
+    /// ç§»åŠ¨å¤„ç†
     /// </summary>
     public void HandleForMoveUpdate()
     {
@@ -104,14 +105,19 @@ public class ControlForGameBase : BaseControl
         Vector2 moveData = inputActionMove.ReadValue<Vector2>();
         if (moveData.x == 0 && moveData.y == 0)
         {
-            //²¥·Å¶¯»­
+            //æ’­æ”¾åŠ¨ç”»
             PlayAnimForControlTarget(SpineAnimationStateEnum.Idle);
         }
         else
         {
             Vector3 targetMoveOffset = new Vector3(moveData.x * Time.deltaTime * speedForCreatureMoveX, 0, moveData.y * Time.deltaTime * speedForCreatureMoveZ);
             var targetMove = GameControlHandler.Instance.manager.controlTargetForCreature;
-            targetMove.transform.position = targetMove.transform.position + targetMoveOffset;
+            //æ£€æµ‹è¾¹ç•Œ
+            Vector3 targetPosition = targetMove.transform.position + targetMoveOffset;
+            if (!CheckSceneBoard(targetPosition))
+            {
+                targetMove.transform.position = targetPosition;
+            }
 
             Vector3 sizeOriginal = controlTargetForCreatureSkeletonAnimation.transform.localScale;
             float directionXSize = Mathf.Abs(sizeOriginal.x);
@@ -123,16 +129,30 @@ public class ControlForGameBase : BaseControl
             {
                 controlTargetForCreatureSkeletonAnimation.transform.localScale = new Vector3(-directionXSize, sizeOriginal.y, sizeOriginal.z);
             }
-            //²¥·Å¶¯»­
+            //æ’­æ”¾åŠ¨ç”»
             PlayAnimForControlTarget(SpineAnimationStateEnum.Walk);
+     
         }
     }
 
     /// <summary>
-    /// ´¦Àí½»»¥
+    /// æ£€æµ‹åœºæ™¯è¾¹ç•Œ
+    /// </summary>
+    public bool CheckSceneBoard(Vector3 endPosition)
+    {
+        float dis = Vector3.Distance(endPosition, Vector3.zero);
+        if (dis > 8.3)
+        {
+           return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// å¤„ç†äº¤äº’
     /// </summary>
     public void HandleForInteraction()
-    { 
+    {
         if (!enabledControl)
             return;
         timeUpdateForInteraction += Time.deltaTime;
@@ -158,7 +178,7 @@ public class ControlForGameBase : BaseControl
     }
 
     /// <summary>
-    /// ´¦ÀíÊÓÏß×èµ²
+    /// å¤„ç†è§†çº¿é˜»æŒ¡
     /// </summary>
     public void HandleForCameraBlock()
     {
@@ -178,12 +198,12 @@ public class ControlForGameBase : BaseControl
         if (allHit.Length <= 0)
             return;
         var firstHit = allHit[0];
-        //ºËĞÄ
+        //æ ¸å¿ƒ
         if (firstHit.gameObject.name.Equals("CoreInteraction"))
         {
             UIBaseCore targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
         }
-        //´«ËÍÃÅ
+        //ä¼ é€é—¨
         else if (firstHit.gameObject.name.Equals("PortalInteraction"))
         {
             UIBasePortal targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBasePortal>();

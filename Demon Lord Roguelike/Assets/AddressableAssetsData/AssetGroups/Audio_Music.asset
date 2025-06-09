@@ -14,7 +14,77 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_GroupName: Audio_Music
   m_GUID: 5ff27782fd190784c87724e62c5ad4b4
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 033d9f6469f807c48804bc11701ddd97
+    m_Address: Assets/LoadResources/Audio/Music/music_gaming_6.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 12a1bc1212a38644ca8f698f3d848a12
+    m_Address: Assets/LoadResources/Audio/Music/music_gaming_5.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1735b10932299934584a3555c3f76365
+    m_Address: Assets/LoadResources/Audio/Music/music_fight_6.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 17c5bbe2dbdfb7d41a4e23446f98e6db
+    m_Address: Assets/LoadResources/Audio/Music/music_fight_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 24493c8030f79ea4a92a20bc110f0566
+    m_Address: Assets/LoadResources/Audio/Music/music_gaming_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2c12c5c7a9800e14f8480e937471933e
+    m_Address: Assets/LoadResources/Audio/Music/music_gaming_4.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 32280218090ab6847b6a9d6b45ec9cbc
+    m_Address: Assets/LoadResources/Audio/Music/music_fight_3.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 34f8dafc7b11faa44a1c16f5e2e47546
+    m_Address: Assets/LoadResources/Audio/Music/music_fight_5.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 52c3269f025dc6d40bb54ae5e68b3bd0
+    m_Address: Assets/LoadResources/Audio/Music/music_fight_2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5775092f6c9450047a5d8ad584566a46
+    m_Address: Assets/LoadResources/Audio/Music/music_gaming_2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c708cbbb9f44f0a4493dde9cf928d495
+    m_Address: Assets/LoadResources/Audio/Music/music_fight_4.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ca5d1905c87a86349818ee37d2f45c7d
+    m_Address: Assets/LoadResources/Audio/Music/music_gaming_7.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d17be7b8572c87a469bcf94b3273fb7e
+    m_Address: Assets/LoadResources/Audio/Music/music_gaming_3.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e9a32b7c28f89b74eaf4227d5016e978
+    m_Address: Assets/LoadResources/Audio/Music/music_main_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}
   m_SchemaSet:

@@ -29,6 +29,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
                 //关闭LoadingUI 打开开始UI
                 UIHandler.Instance.OpenUIAndCloseOther<UIMainStart>();
             });
+            //播放音乐
+            AudioHandler.Instance.PlayMusicForMain();
         });
     }
 
@@ -38,7 +40,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     public void EnterGameForBaseScene(UserDataBean userData, bool isInitScene)
     {
         Action actionForStart = () =>
-        {        
+        {
             //镜头初始化
             CameraHandler.Instance.InitData();
             //环境参数初始化
@@ -48,7 +50,9 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             {
                 //关闭LoadingUI
                 var uiBaseMain = UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
-            }, userData.selfCreature);
+            }, userData.selfCreature);    
+            //播放音乐
+            AudioHandler.Instance.PlayMusicForGaming();
         };
         if (isInitScene)
         {
@@ -85,6 +89,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             VolumeHandler.Instance.InitData(GameSceneTypeEnum.Fight);
             //开始战斗
             GameHandler.Instance.StartGameFight(fightData);
+            //播放音乐
+            AudioHandler.Instance.PlayMusicForFight();
         });
     }
 
