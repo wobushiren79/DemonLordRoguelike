@@ -80,6 +80,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b5190257842049945adada67cd6f18bd
+    m_Address: Assets/LoadResources/Effects/EffectTextNumber_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bcb06139528cc7d46ac53acce7e2d30a
     m_Address: Assets/LoadResources/Effects/EffectMove_1.prefab
     m_ReadOnly: 0

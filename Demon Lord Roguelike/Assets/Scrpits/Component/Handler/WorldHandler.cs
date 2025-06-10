@@ -72,8 +72,6 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         }
     }
 
-
-
     /// <summary>
     /// 进入战斗场景
     /// </summary>
@@ -110,6 +108,12 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             ScenePrefabBase scenePrefabBase = currentBaseScene.GetComponent<ScenePrefabBase>();
             scenePrefabBase.InitSceneData();
             actionForComplete?.Invoke(currentBaseScene);
+
+            //设置天空颜色
+            ColorUtility.TryParseHtmlString("#120C30", out var targetColorSky);
+            manager.SetSkyboxColor(CameraClearFlags.SolidColor, targetColorSky);
+            //移除天空盒 设置纯粹的颜色
+            manager.RemoveSkybox();
         });
     }
 
@@ -129,7 +133,6 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         //获取天空盒
         manager.GetSkybox(fightSceneData.skybox_mat, (skyboxMat) =>
         {
-
             //设置天空盒
             RenderSettings.skybox = skyboxMat;
             RenderSettings.skybox.SetFloat("_RotateX", -15);
@@ -162,6 +165,10 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
                     roadMR.sharedMaterial.SetColor("_ColorB", colorB);
                     actionForComplete?.Invoke(currentFightScene);
                 });
+
+                //设置天空盒颜色
+                ColorUtility.TryParseHtmlString("#00000000", out var targetColorSky);
+                manager.SetSkyboxColor(CameraClearFlags.Skybox, targetColorSky);
             });
         });
     }

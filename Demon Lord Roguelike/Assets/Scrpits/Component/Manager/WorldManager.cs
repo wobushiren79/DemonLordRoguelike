@@ -26,21 +26,6 @@ public class WorldManager : BaseManager
     }
 
     /// <summary>
-    /// 获取天空并摄制
-    /// </summary>
-    /// <param name="skyboxPath"></param>
-    /// <param name="actionForComplete"></param>
-    public void GetSkybox(string skyboxPath, Action<Material> actionForComplete)
-    {
-        //加载天空盒子
-        LoadAddressablesUtil.LoadAssetAsync<Material>(skyboxPath, data =>
-        {
-            currentSkyBox = data; 
-            actionForComplete?.Invoke(data.Result);
-        });
-    }
-
-    /// <summary>
     /// 获取基地场景
     /// </summary>
     public void GetBaseScene(Action<GameObject> actionForComplete)
@@ -64,6 +49,21 @@ public class WorldManager : BaseManager
             actionForComplete?.Invoke(target);
         });
     }
+    #region 天空盒
+    /// <summary>
+    /// 获取天空盒材质
+    /// </summary>
+    /// <param name="skyboxPath"></param>
+    /// <param name="actionForComplete"></param>
+    public void GetSkybox(string skyboxPath, Action<Material> actionForComplete)
+    {
+        //加载天空盒子
+        LoadAddressablesUtil.LoadAssetAsync<Material>(skyboxPath, data =>
+        {
+            currentSkyBox = data;
+            actionForComplete?.Invoke(data.Result);
+        });
+    }
 
     /// <summary>
     /// 移除天空盒
@@ -76,4 +76,16 @@ public class WorldManager : BaseManager
         }
         RenderSettings.skybox = null;
     }
+
+    /// <summary>
+    /// 设置天空盒颜色
+    /// </summary>
+    /// <param name="colorSky"></param>
+    public void SetSkyboxColor(CameraClearFlags cameraClearFlags, Color colorSky)
+    {
+        var mainCamera = CameraHandler.Instance.manager.mainCamera;    
+        mainCamera.clearFlags = cameraClearFlags;
+        mainCamera.backgroundColor = colorSky;
+    }
+    #endregion
 }

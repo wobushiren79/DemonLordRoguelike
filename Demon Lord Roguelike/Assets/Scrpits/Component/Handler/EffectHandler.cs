@@ -13,6 +13,19 @@ public partial class EffectHandler
     protected string effectCreatureAscendAddProgressName = "EffectMove_1";
     protected string effectBloodName = "EffectBlood_1";
     protected string effectShieldHitName = "EffectShieldHit_1";
+    protected string effectTextNumberName = "EffectTextNumber_1";
+
+    
+    //普通伤害颜色
+    protected Color colorDamage = new Color(1f,0.647f,0);
+    //闪避伤害颜色
+    protected Color colorDamageEVA= new Color(1f,1f,1f);
+    //暴击伤害颜色
+    protected Color colorDamageCRT= new Color(0.698f,0.133f,0.133f);
+    //HP颜色
+    protected Color colorHPAdd= new Color(0.196f,0.804f,0.196f);
+    //DR颜色
+    protected Color colorDRAdd= new Color(0.255f,0.412f,1f);
 
     /// <summary>
     /// 播放护盾打击粒子
@@ -72,6 +85,52 @@ public partial class EffectHandler
         });
     }
 
+
+    /// <summary>
+    /// 播放数字粒子
+    /// </summary>
+    public void ShowTextNumEffect(Vector3 targetPos, int number, int type)
+    {
+        //播放粒子
+        Action<EffectBase> playEffect = (targetEffect) =>
+        {
+            if (targetEffect == null)
+                return;
+            var targetVisualEffect = targetEffect.GetVisualEffect();
+            targetVisualEffect.SetVector3("StartPosition", targetPos);
+            Vector4 targetTextColor = Vector4.zero;
+            switch (type)
+            {
+                case 0://普通伤害
+                    targetTextColor = colorDamage;
+                    break;
+                case 1://闪避伤害
+                    targetTextColor = colorDamageEVA;
+                    break;
+                case 2://暴击伤害
+                    targetTextColor = colorDamageCRT;
+                    break;
+                case 3://HP增加
+                    targetTextColor = colorHPAdd;
+                    break;
+                case 4://护甲增加
+                    targetTextColor = colorDRAdd;
+                    break;
+
+            }
+            targetVisualEffect.SetVector3("StartPosition", targetPos);
+            targetVisualEffect.SetVector4("Color", targetTextColor);
+
+            targetEffect.PlayEffect();
+        };
+
+        //获取粒子实例
+        manager.GetEffectForEnduring(effectTextNumberName, (targetEffect) =>
+        {
+            playEffect?.Invoke(targetEffect);
+        });
+    }
+
     /// <summary>
     /// 展示生物进阶增加进度粒子
     /// </summary>
@@ -86,7 +145,7 @@ public partial class EffectHandler
             float randomRange = 0.5f;
             targetVisualEffect.SetInt("EffectNum", addNum);
             targetVisualEffect.SetFloat("StartSize", 0.2f);
-            targetVisualEffect.SetFloat("MoveSpeed", 0.02f); 
+            targetVisualEffect.SetFloat("MoveSpeed", 0.02f);
             targetVisualEffect.SetVector3("StartPositionRandomA", startPosition + new Vector3(-randomRange, -randomRange, -randomRange));
             targetVisualEffect.SetVector3("StartPositionRandomB", startPosition + new Vector3(randomRange, randomRange, randomRange));
             targetVisualEffect.SetVector3("EndPosition", endPosition);
