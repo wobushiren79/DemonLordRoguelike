@@ -166,11 +166,12 @@ public class CreatureSacrificeLogic : BaseGameLogic
                     VisualEffect visualEffect = itemTF.GetComponent<VisualEffect>();
                     listVFXLight.Add(visualEffect);
                 }
-                if (itemTF.name.Contains("VFX_Altar"))
-                {
-                    VisualEffect visualEffect = itemTF.GetComponent<VisualEffect>();
-                    VFXAltar = visualEffect;
-                }
+            }
+            var magicArray = scenePrefab.transform.Find("MagicArray");
+            if (magicArray != null)
+            {
+                VisualEffect visualEffect = magicArray.GetComponent<VisualEffect>();
+                VFXAltar = visualEffect;
             }
         }
         //设置灯光

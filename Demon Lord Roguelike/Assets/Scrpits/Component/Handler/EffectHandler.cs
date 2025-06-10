@@ -85,7 +85,6 @@ public partial class EffectHandler
         });
     }
 
-
     /// <summary>
     /// 播放数字粒子
     /// </summary>
@@ -99,6 +98,7 @@ public partial class EffectHandler
             var targetVisualEffect = targetEffect.GetVisualEffect();
             targetVisualEffect.SetVector3("StartPosition", targetPos);
             Vector4 targetTextColor = Vector4.zero;
+            float targetTextSize = 0.05f;
             switch (type)
             {
                 case 0://普通伤害
@@ -109,6 +109,7 @@ public partial class EffectHandler
                     break;
                 case 2://暴击伤害
                     targetTextColor = colorDamageCRT;
+                    targetTextSize = 0.1f;
                     break;
                 case 3://HP增加
                     targetTextColor = colorHPAdd;
@@ -118,9 +119,15 @@ public partial class EffectHandler
                     break;
 
             }
+            targetVisualEffect.SetFloat("Size", targetTextSize);
             targetVisualEffect.SetVector3("StartPosition", targetPos);
             targetVisualEffect.SetVector4("Color", targetTextColor);
-
+            List<int> listNumberText = MathUtil.GetDigits(number);
+            listNumberText.ForEach((index, itemData) =>
+            {
+                targetVisualEffect.SetInt($"NumInput{index + 1}", itemData);
+            });
+            targetVisualEffect.SetInt("NumCount", listNumberText.Count);
             targetEffect.PlayEffect();
         };
 

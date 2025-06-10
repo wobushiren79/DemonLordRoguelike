@@ -237,6 +237,9 @@ public class GameFightCreatureEntity
                 actionForDead?.Invoke(changeHPReal);
             }
         );
+
+        //显示数字
+        EffectHandler.Instance.ShowTextNumEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), changeHPReal, 3);
     }
 
     /// <summary>
@@ -266,6 +269,8 @@ public class GameFightCreatureEntity
 
             }
         );
+        //显示数字
+        EffectHandler.Instance.ShowTextNumEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), changeDRReal, 4);
     }
 
     /// <summary>
@@ -334,6 +339,8 @@ public class GameFightCreatureEntity
         float randomEVA = UnityEngine.Random.Range(0f,1f);
         if (randomEVA <= evaRate)
         {
+            //显示数字
+            EffectHandler.Instance.ShowTextNumEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), 0, 1);
             return;
         }
         //判断是否受到暴击
@@ -351,6 +358,19 @@ public class GameFightCreatureEntity
         //记录数据
         fightRecordsData.AddCreatureDamage(attackerId, damageReal);
         fightRecordsData.AddCreatureDamageReceived(attackedId, damageReal);
+
+        //是否暴击
+        if (randomCRT <= attackerCRT)
+        {
+            //显示数字
+            EffectHandler.Instance.ShowTextNumEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), damageReal, 2);
+        }
+        else
+        {
+            //显示数字
+            EffectHandler.Instance.ShowTextNumEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), damageReal, 0);
+        }
+        
         //检测一下是否死亡
         CheckDead
         (

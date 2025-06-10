@@ -25,8 +25,9 @@ public partial class UIMainCreate : BaseUIComponent
     {
         1,2
     };
+
     //物种数据
-    protected Dictionary<int, Dictionary<CreatureSkinTypeEnum, List<int>>> dicSelectData = new Dictionary<int, Dictionary<CreatureSkinTypeEnum, List<int>>>();
+    protected Dictionary<long, Dictionary<CreatureSkinTypeEnum, List<long>>> dicSelectData = new Dictionary<long, Dictionary<CreatureSkinTypeEnum, List<long>>>();
     //选中的物种
     protected int selectSpeciesIndex = 0;
 
@@ -49,26 +50,17 @@ public partial class UIMainCreate : BaseUIComponent
     /// </summary>
     public void InitData()
     {
-        dicSelectData.Clear();
-        Dictionary<CreatureSkinTypeEnum, List<int>> dicSkin1 = new Dictionary<CreatureSkinTypeEnum, List<int>>()
-        {
-            {CreatureSkinTypeEnum.Head, new List<int>(){ 1010010, 1010011,1010012}},
-        };
-        Dictionary<CreatureSkinTypeEnum, List<int>> dicSkin2 = new Dictionary<CreatureSkinTypeEnum, List<int>>()
-        {
-            {CreatureSkinTypeEnum.Hair, new List<int>(){ 2030001, 2030002, 2030003, 2030004}},
-            {CreatureSkinTypeEnum.Body, new List<int>(){ 2040001, 2040002}},
-            {CreatureSkinTypeEnum.Eye, new List<int>(){ 2050001, 2050002, 2050003, 2050004, 2050005, 2050006, 2050007, 2050008}},
-            {CreatureSkinTypeEnum.Mouth, new List<int>(){ 2060001, 2060002}},
-        };
-        dicSelectData.Add(1, dicSkin1);
-        dicSelectData.Add(2, dicSkin2);
-
         //设置选项
         List<string> listSpeciesStr = new List<string>();
+        dicSelectData.Clear();
         for (int i = 0; i < listSelectForSpecies.Count; i++)
         {
             var targetCreatureId = listSelectForSpecies[i];
+            //添加随机数据
+            var randomCreatureData = CreatureInfoRandomCfg.GetItemData(targetCreatureId);
+            var randomSkinData = randomCreatureData.GetRandomData();
+            dicSelectData.Add(targetCreatureId, randomSkinData);
+            //设置选项名字
             var targetCreatureInfo = CreatureInfoCfg.GetItemData(targetCreatureId);
             listSpeciesStr.Add($"{targetCreatureInfo.GetName()}");
         }
@@ -214,8 +206,8 @@ public partial class UIMainCreate : BaseUIComponent
     /// <param name="select"></param>
     public void HandleForSelectOther(UIViewMainCreateSelectItem targetView, int select, bool isInit)
     {
-        dicSelectData.TryGetValue(targetView.creatureId, out Dictionary<CreatureSkinTypeEnum, List<int>> dicSkinData);
-        dicSkinData.TryGetValue(targetView.creatureSkinType, out List<int> listSkin);
+        dicSelectData.TryGetValue(targetView.creatureId, out Dictionary<CreatureSkinTypeEnum, List<long>> dicSkinData);
+        dicSkinData.TryGetValue(targetView.creatureSkinType, out List<long> listSkin);
         var selectSkin = listSkin[select];
         createCreatureData.AddSkin(selectSkin);
         if (!isInit)
@@ -240,12 +232,12 @@ public partial class UIMainCreate : BaseUIComponent
             listSelectView[i].ShowObj(false);
         }
         //获取皮肤数据
-        dicSelectData.TryGetValue(creatureId, out Dictionary<CreatureSkinTypeEnum, List<int>> dicSkinData);
+        dicSelectData.TryGetValue(creatureId, out Dictionary<CreatureSkinTypeEnum, List<long>> dicSkinData);
         int index = 0;
 
         foreach (var item in dicSkinData)
         {
-            List<int> listSkin = item.Value;
+            List<long> listSkin = item.Value;
             List<string> listSkinName = new List<string>();
             //设置皮肤选择列表名字
             string skinName = CreatureEnum.GetCreatureSkinTypeEnumName(item.Key);

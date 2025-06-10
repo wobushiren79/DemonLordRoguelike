@@ -432,7 +432,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BindingMode: 1
-  m_FollowOffset: {x: 0, y: 1, z: -2}
+  m_FollowOffset: {x: 0, y: 1, z: -3}
   m_XDamping: 1
   m_YDamping: 1
   m_ZDamping: 1
@@ -1083,7 +1083,6 @@ Transform:
   - {fileID: 4260140894689483946}
   - {fileID: 3670679887365124448}
   - {fileID: 7922205229224650736}
-  - {fileID: 7751184158396476449}
   - {fileID: 7422919591417082653}
   - {fileID: 5623938626213638893}
   - {fileID: 4163424196382516689}
@@ -1239,6 +1238,7 @@ Transform:
   - {fileID: 6135071711525881223}
   - {fileID: 5823486028419226096}
   - {fileID: 6408438068667943305}
+  - {fileID: 7751184158396476449}
   - {fileID: 5405594421136702936}
   - {fileID: 6202370949231018814}
   - {fileID: 2657560572856404708}
@@ -1438,7 +1438,7 @@ Transform:
   m_GameObject: {fileID: 3419912159764809131}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -3}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3126,7 +3126,7 @@ GameObject:
   - component: {fileID: 931780003729789960}
   - component: {fileID: 7291607468138572991}
   m_Layer: 0
-  m_Name: VFX_Altar_1
+  m_Name: MagicArray
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3145,7 +3145,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5405594421136702936}
+  m_Father: {fileID: 8950400730904514427}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!2083052967 &931780003729789960
 VisualEffect:
