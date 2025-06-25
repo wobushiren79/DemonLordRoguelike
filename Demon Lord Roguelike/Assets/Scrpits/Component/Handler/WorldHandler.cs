@@ -21,11 +21,11 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
             //镜头初始化
             CameraHandler.Instance.InitData();
-            //环境参数初始化
-            VolumeHandler.Instance.InitData(GameSceneTypeEnum.Base);
             //加载基地场景
             LoadBaseScene((targetObj) =>
             {
+                //环境参数初始化
+                VolumeHandler.Instance.InitData(GameSceneTypeEnum.BaseMain);
                 //关闭LoadingUI 打开开始UI
                 UIHandler.Instance.OpenUIAndCloseOther<UIMainStart>();
             });
@@ -43,11 +43,11 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         {
             //镜头初始化
             CameraHandler.Instance.InitData();
-            //环境参数初始化
-            VolumeHandler.Instance.InitData(GameSceneTypeEnum.Base);
             //设置基地场景视角
             CameraHandler.Instance.InitBaseSceneControlCamera(() =>
             {
+                //环境参数初始化
+                VolumeHandler.Instance.InitData(GameSceneTypeEnum.BaseGaming);
                 //关闭LoadingUI
                 var uiBaseMain = UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
             }, userData.selfCreature);    
@@ -83,12 +83,12 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
             //镜头初始化
             CameraHandler.Instance.InitData();
-            //环境参数初始化
-            VolumeHandler.Instance.InitData(GameSceneTypeEnum.Fight);
-            //开始战斗
+              //开始战斗
             GameHandler.Instance.StartGameFight(fightData);
             //播放音乐
             AudioHandler.Instance.PlayMusicForFight();
+            //环境参数初始化
+            VolumeHandler.Instance.InitData(GameSceneTypeEnum.Fight);
         });
     }
 
@@ -110,7 +110,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             actionForComplete?.Invoke(currentBaseScene);
 
             //设置天空颜色
-            ColorUtility.TryParseHtmlString("#120C30", out var targetColorSky);
+            ColorUtility.TryParseHtmlString("#080613", out var targetColorSky);
             manager.SetSkyboxColor(CameraClearFlags.SolidColor, targetColorSky);
             //移除天空盒 设置纯粹的颜色
             manager.RemoveSkybox();

@@ -9,7 +9,7 @@ public class VolumeManager : BaseManager
     public Dictionary<string, Material> dicSkybox = new Dictionary<string, Material>();
 
 
-    //基础设置
+    //鍩虹璁剧疆
     protected Volume _volume;
     public Volume volume
     {
@@ -30,7 +30,7 @@ public class VolumeManager : BaseManager
         }
     }
 
-    //设置文件
+    //璁剧疆鏂囦欢
     protected VolumeProfile _volumeProfile;
     public VolumeProfile volumeProfile
     {
@@ -44,7 +44,7 @@ public class VolumeManager : BaseManager
         }
     }
 
-    //远近模糊
+    //杩滆繎妯＄硦
     protected DepthOfField _depthOfField;
     public DepthOfField depthOfField
     {

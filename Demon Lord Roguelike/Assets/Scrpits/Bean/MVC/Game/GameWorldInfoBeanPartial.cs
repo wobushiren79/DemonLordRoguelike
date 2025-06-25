@@ -4,8 +4,6 @@ using UnityEngine;
 
 public partial class GameWorldInfoBean
 {
-    public Dictionary<int, GameWorldInfoDifficultyBean> dicDifficultyData = new Dictionary<int, GameWorldInfoDifficultyBean>();
-
     /// <summary>
     /// 获取地图坐标
     /// </summary>
@@ -18,81 +16,35 @@ public partial class GameWorldInfoBean
         }
         return map_pos.SplitForVector2(',');
     }
+}
+
+/// <summary>
+/// 游戏世界随机数据
+/// </summary>
+public partial class GameWorldInfoRandomBean
+{
+    //游戏类型
+    public GameFightTypeEnum gameFightType;
+    //道路数量
+    public int roadNum;
+    //UI显示位置
+    public Vector2 uiPosition;
 
     /// <summary>
-    /// 获取难度数据
+    /// 随机设置游戏类型
     /// </summary>
-    public GameWorldInfoDifficultyBean GetDifficultyData(int difficulty)
+    public void SetGameFightTypeRandom(UserUnlockWorldBean userUnlockWorldData)
     {
-        if (dicDifficultyData.TryGetValue(difficulty, out GameWorldInfoDifficultyBean targetDifficultyData))
+        //随机世界模式
+        List<GameFightTypeEnum> listRandomGameFightType = new List<GameFightTypeEnum>() { GameFightTypeEnum.Conquer };
+        //如果无尽模式解锁了
+        if (userUnlockWorldData.difficultyInfinite == 1)
         {
-            return targetDifficultyData;
+            listRandomGameFightType.Add(GameFightTypeEnum.Infinite);
         }
-        string difficultyData = null;
-        targetDifficultyData = new GameWorldInfoDifficultyBean();
-        targetDifficultyData.difficulty = difficulty;
-
-        switch (difficulty)
-        {
-            case 1:
-                difficultyData = difficulty_1;
-                break;
-            case 2:
-                difficultyData = difficulty_2;
-                break;
-            case 3:
-                difficultyData = difficulty_3;
-                break;
-            case 4:
-                difficultyData = difficulty_4;
-                break;
-            case 5:
-                difficultyData = difficulty_5;
-                break;
-            case 6:
-                difficultyData = difficulty_6;
-                break;
-            case 7:
-                difficultyData = difficulty_7;
-                break;
-            case 8:
-                difficultyData = difficulty_8;
-                break;
-            case 9:
-                difficultyData = difficulty_9;
-                break;
-            case 10:
-                difficultyData = difficulty_10;
-                break;
-        }
-        if (!difficultyData.IsNull())
-        {
-            var difficultyDataArray = difficultyData.Split('|');
-            for (int i = 0; i < difficultyDataArray.Length; i++)
-            {
-                var itemData = difficultyDataArray[i];
-                if (itemData.Contains("maxLevel:"))
-                {
-                    var maxLevelData = itemData.Split(":");
-                    var maxLevelDetailsData = maxLevelData[1].Split("-");
-                    targetDifficultyData.minLevelNum = int.Parse(maxLevelDetailsData[0]);
-                    targetDifficultyData.maxLevelNum = int.Parse(maxLevelDetailsData[1]);
-                }
-            }
-        }
-        dicDifficultyData[difficulty] = targetDifficultyData;
-        return targetDifficultyData;
+        var randomIndex = Random.Range(0, listRandomGameFightType.Count);
+        gameFightType = listRandomGameFightType[randomIndex];
     }
-}
 
-public class GameWorldInfoDifficultyBean
-{
-    public int difficulty;
-    public int minLevelNum;
-    public int maxLevelNum;
-}
-
-
-public partial class GameWorldInfoCfg
-{
+    
 }

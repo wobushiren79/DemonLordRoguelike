@@ -8,50 +8,6 @@ public partial class GameWorldInfoBean : BaseBean
 	/// </summary>
 	public string icon_res;
 	/// <summary>
-	///难度数据-无尽模式
-	/// </summary>
-	public string difficulty_0;
-	/// <summary>
-	///难度数据
-	/// </summary>
-	public string difficulty_1;
-	/// <summary>
-	///难度数据
-	/// </summary>
-	public string difficulty_2;
-	/// <summary>
-	///难度数据
-	/// </summary>
-	public string difficulty_3;
-	/// <summary>
-	///难度数据
-	/// </summary>
-	public string difficulty_4;
-	/// <summary>
-	///难度数据
-	/// </summary>
-	public string difficulty_5;
-	/// <summary>
-	///难度数据
-	/// </summary>
-	public string difficulty_6;
-	/// <summary>
-	///难度数据
-	/// </summary>
-	public string difficulty_7;
-	/// <summary>
-	///难度数据
-	/// </summary>
-	public string difficulty_8;
-	/// <summary>
-	///难度数据
-	/// </summary>
-	public string difficulty_9;
-	/// <summary>
-	///难度数据
-	/// </summary>
-	public string difficulty_10;
-	/// <summary>
 	///地图坐标
 	/// </summary>
 	public string map_pos;

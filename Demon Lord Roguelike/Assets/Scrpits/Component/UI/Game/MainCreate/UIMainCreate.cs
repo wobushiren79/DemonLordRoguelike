@@ -58,7 +58,7 @@ public partial class UIMainCreate : BaseUIComponent
             var targetCreatureId = listSelectForSpecies[i];
             //添加随机数据
             var randomCreatureData = CreatureInfoRandomCfg.GetItemData(targetCreatureId);
-            var randomSkinData = randomCreatureData.GetRandomData();
+            var randomSkinData = randomCreatureData.GetAllRandomData();
             dicSelectData.Add(targetCreatureId, randomSkinData);
             //设置选项名字
             var targetCreatureInfo = CreatureInfoCfg.GetItemData(targetCreatureId);
@@ -158,14 +158,40 @@ public partial class UIMainCreate : BaseUIComponent
         {
             UserDataBean userData = new UserDataBean();
             userData.saveIndex = userDataIndex;
+            //设置名字
             userData.userName = ui_NameET.text;
-
+            //设置魔王
             createCreatureData.creatureId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
             createCreatureData.creatureName = ui_NameET.text;
             createCreatureData.level = 0;
             createCreatureData.rarity = 0;
 
             userData.selfCreature = createCreatureData;
+            //添加4个初始魔物 2个近战 2个远程
+            for (int i = 0; i < 4; i++)
+            {
+                long targetCreatureId;
+                if (i < 2)
+                {
+                    targetCreatureId = 2001;
+                }
+                else
+                {
+                    targetCreatureId = 2002;
+                }
+                CreatureBean creatureData = new CreatureBean(targetCreatureId);
+                var randomData = CreatureInfoRandomCfg.GetItemData(targetCreatureId);
+                var listRandomSkin = randomData.GetRandomData();
+                listRandomSkin.ForEach((index, itemData) =>
+                {
+                    creatureData.AddSkin(itemData);
+                });
+                creatureData.AddSkinForBase();
+                //添加到背包
+                userData.AddBackpackCreature(creatureData);
+                //添加到阵容1
+                userData.AddLineupCreature(1, creatureData.creatureId);
+            }
 
             GameDataHandler.Instance.manager.SaveUserData(userData);
             GameDataHandler.Instance.manager.SetUserData(userData);

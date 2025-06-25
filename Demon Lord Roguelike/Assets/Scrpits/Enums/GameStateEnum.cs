@@ -69,8 +69,9 @@ public enum GameFightPrefabStateEnum
 public enum GameSceneTypeEnum
 {
     None = 0,
-    Base = 1,//基地
-    Fight = 2,//战斗
+    BaseMain = 1,//基地主界面
+    BaseGaming = 2,//基地游玩中
+    Fight = 3,//战斗
 }
 
 public enum TestSceneTypeEnum

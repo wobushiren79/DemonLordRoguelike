@@ -1,10 +1,16 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cinemachine;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class VolumeHandler : BaseHandler<VolumeHandler, VolumeManager>
 {
+    //当前天空盒
+    public AsyncOperationHandle<Material> currentSkyBox;
+    
     /// <summary>
     /// 初始化数据
     /// </summary>
@@ -13,28 +19,21 @@ public class VolumeHandler : BaseHandler<VolumeHandler, VolumeManager>
         GameConfigBean gameConfig = GameDataHandler.Instance.manager.GetGameConfig();
         switch (gameSceneType)
         {
-            case GameSceneTypeEnum.Base:
-                SetDepthOfField(DepthOfFieldMode.Bokeh, 4, 140, 10);
-                SetSkyBox(null);
+            case GameSceneTypeEnum.BaseMain:
+                SetDepthOfField(DepthOfFieldMode.Bokeh, 5, 150, 10);
+                break;
+            case GameSceneTypeEnum.BaseGaming:
+                float disFollowBase = CameraHandler.Instance.GetDistanceFollow(CameraHandler.Instance.manager.cm_Base);
+                SetDepthOfField(DepthOfFieldMode.Bokeh, disFollowBase, 200, 20);
                 break;
             case GameSceneTypeEnum.Fight:
-                SetDepthOfField(DepthOfFieldMode.Bokeh, 4, 80, 10);
-                SetSkyBox(null);
+                float disFollowFight = CameraHandler.Instance.GetDistanceFollow(CameraHandler.Instance.manager.cm_Fight);
+                SetDepthOfField(DepthOfFieldMode.Bokeh, disFollowFight, 260, 12);
                 break;
             default:
-                SetDepthOfField(DepthOfFieldMode.Bokeh, 4, 140, 10);            
-                SetSkyBox(null);
+                SetDepthOfField(DepthOfFieldMode.Bokeh, 4, 140, 10);
                 break;
         }
-    }
-
-    /// <summary>
-    /// 设置天空盒
-    /// </summary>
-    /// <param name="skybox"></param>
-    public void SetSkyBox(Material skybox)
-    {
-        RenderSettings.skybox = skybox;
     }
 
     /// <summary>
@@ -44,7 +43,7 @@ public class VolumeHandler : BaseHandler<VolumeHandler, VolumeManager>
     /// <param name="focusDistance">设置从摄像机到焦点的距离</param>
     /// <param name="focalLength">	设置摄像机传感器和摄像机镜头之间的距离（以毫米为单位）。值越大，景深越浅。</param>
     /// <param name="aperture">设置孔径比（也称为 f 值 (f-stop) 或 f 数 (f-number)）。值越小，景深越浅。</param>
-    public void SetDepthOfField(DepthOfFieldMode mode, float focusDistance, float focalLength, float aperture)
+    public void SetDepthOfField(DepthOfFieldMode mode, float focusDistance, float focalLength, float aperture, bool isActive = true)
     {
         var depthOfField = manager.depthOfField;
         depthOfField.mode.overrideState = true;
@@ -55,6 +54,7 @@ public class VolumeHandler : BaseHandler<VolumeHandler, VolumeManager>
         depthOfField.focalLength.value = focalLength;
         depthOfField.aperture.overrideState = true;
         depthOfField.aperture.value = aperture;
+        SetDepthOfFieldActive(isActive);
     }
 
     /// <summary>

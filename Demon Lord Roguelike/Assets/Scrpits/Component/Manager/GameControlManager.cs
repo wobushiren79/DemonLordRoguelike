@@ -10,7 +10,7 @@ public class GameControlManager : BaseManager
     public GameObject controlTargetForCreature;
 
     /// <summary>
-    /// ËùÓĞµÄ¿ØÖÆ
+    /// æ‰€æœ‰çš„æ§åˆ¶
     /// </summary>
     public List<BaseControl> listControl = new List<BaseControl>();
 
@@ -23,7 +23,7 @@ public class GameControlManager : BaseManager
     }
 
     /// <summary>
-    /// ¿ªÆô»ò¹Ø±ÕËùÓĞ¿ØÖÆ
+    /// å¼€å¯æˆ–å…³é—­æ‰€æœ‰æ§åˆ¶
     /// </summary>
     /// <param name="isEnable"></param>
     public void EnableAllControl(bool isEnable)
@@ -40,7 +40,7 @@ public class GameControlManager : BaseManager
 
     public void LoadControlData()
     {
-        //Èç¹ûÃ»ÓĞÕÒµ½Ö÷ÉãÏñÍ· Ôò¼ÓÔØÒ»¸ö
+        //å¦‚æœæ²¡æœ‰æ‰¾åˆ°ä¸»æ‘„åƒå¤´ åˆ™åŠ è½½ä¸€ä¸ª
         if (objControlData == null)
         {
             GameObject objCameraDataModel = LoadAddressablesUtil.LoadAssetSync<GameObject>(PathInfo.ControlDataPath);
@@ -52,7 +52,7 @@ public class GameControlManager : BaseManager
     }
 
     /// <summary>
-    /// Õ½¶·ÓÎÏ·¿ØÖÆ
+    /// æˆ˜æ–—æ¸¸æˆæ§åˆ¶
     /// </summary>
     protected ControlForGameFight _controlForGameFight;
 
@@ -70,7 +70,7 @@ public class GameControlManager : BaseManager
     }
 
     /// <summary>
-    /// »ù´¡ÓÎÏ·¿ØÖÆ
+    /// åŸºç¡€æ¸¸æˆæ§åˆ¶
     /// </summary>
     protected ControlForGameBase _controlForGameBase;
     public ControlForGameBase controlForGameBase

@@ -6,8 +6,6 @@ using UnityEngine.UI;
 public partial class UIViewBasePortalItem : BaseUIView
 {
     protected GameWorldInfoBean gameWorldInfo;
-    protected int difficulty;
-    protected int maxLevel;
     protected PopupButtonCommonView popupForPortalDetails;
 
     public override void Awake()
@@ -28,21 +26,18 @@ public partial class UIViewBasePortalItem : BaseUIView
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(GameWorldInfoBean gameWorldInfo, int difficulty, int maxLevel, Vector2 targetMapPos)
+    public void SetData(GameWorldInfoBean gameWorldInfo,  GameWorldInfoRandomBean gameWorldInfoRandom)
     {
         this.gameWorldInfo = gameWorldInfo;
-        this.difficulty = difficulty;
-        this.maxLevel = maxLevel;
-
-
-        //Vector2 targetMapPos = gameWorldInfo.GetMapPosition();
-        SetMapPosition(targetMapPos);
-
+        //设置地图位置
+        SetMapPosition(gameWorldInfoRandom.uiPosition);
+        //设置名字
         string targetName = gameWorldInfo.GetName();
         SetName(targetName);
-        SetIcon();
+        //设置图标
+        SetIcon(gameWorldInfo.icon_res);
         //初始化弹窗
-        popupForPortalDetails.SetData((gameWorldInfo, difficulty, maxLevel), PopupEnum.ProtalDetails);
+        popupForPortalDetails.SetData((gameWorldInfo, gameWorldInfoRandom), PopupEnum.ProtalDetails);
     }
 
     /// <summary>
@@ -57,13 +52,16 @@ public partial class UIViewBasePortalItem : BaseUIView
     /// <summary>
     /// 设置图标
     /// </summary>
-    public void SetIcon()
+    public void SetIcon(string iconRes)
     {
-        int seed = Random.Range(0,int.MaxValue);
-        CreateToolsForPlanetTextureBean createData = new CreateToolsForPlanetTextureBean(seed);
-        var planetTex = CreateTools.CreatePlanetTexture(createData);
-        ui_Icon.texture = planetTex;
-        ui_Icon.gameObject.SetActive(true);
+        if (iconRes.IsNull())
+        {
+            int seed = Random.Range(0, int.MaxValue);
+            CreateToolsForPlanetTextureBean createData = new CreateToolsForPlanetTextureBean(seed);
+            var planetTex = CreateTools.CreatePlanetTexture(createData);
+            ui_Icon.texture = planetTex;
+            ui_Icon.gameObject.SetActive(true);
+        }
     }
 
     /// <summary>
@@ -94,8 +92,6 @@ public partial class UIViewBasePortalItem : BaseUIView
                         {
                             UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
                             GameWorldMapBean gameWorldMapData = GameHandler.Instance.CreateGameWorldMapData(gameWorldInfo.id);
-                            gameWorldMapData.difficutly = difficulty;
-                            gameWorldMapData.maxMapLevel = maxLevel;
 
                             userData.gameWorldMapData = gameWorldMapData;
                             var mapUI = UIHandler.Instance.OpenUI<UIGameWorldMap>(layer: 0);

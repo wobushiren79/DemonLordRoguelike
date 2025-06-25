@@ -17,7 +17,7 @@ public partial class UIViewGameWorldMapPoint : BaseUIView
     }
 
     /// <summary>
-    /// ��������
+    /// 设置数据
     /// </summary>
     public void SetData(GameWorldMapDetailsBean gameWorldMapDetails, Vector2 currentMapPosition, RectTransform mapContent)
     {
@@ -25,30 +25,28 @@ public partial class UIViewGameWorldMapPoint : BaseUIView
         this.currentMapPosition = currentMapPosition;
 
         SetPosition(mapContent.rect.width, mapContent.rect.height, gameWorldMapDetails.mapLength, gameWorldMapDetails.mapIndexNum, gameWorldMapDetails.mapPosition);
-        //����item״̬
+
         SetState(gameWorldMapDetails.mapPosition, currentMapPosition);
-        //���õ�ͼ����
+
         SetMapType(gameWorldMapDetails.mapType, gameWorldMapDetails.mapPosition, currentMapPosition);
     }
 
     /// <summary>
-    /// ���õ�ͼ����
+    /// 设置地图类型
     /// </summary>
     public void SetMapType(int mapType, Vector2 itemPosition, Vector2 currentMapPosition)
     {
         ui_Icon.color = Color.white;
         if (itemPosition.x == currentMapPosition.x + 1)
         {
-            var mapTypeInfo = GameWorldMapTypeInfoCfg.GetItemData(mapType);
-            IconHandler.Instance.manager.GetUISpriteByName(mapTypeInfo.icon_res, (sprite) =>
+            IconHandler.Instance.manager.GetUISpriteByName("", (sprite) =>
             {
                 ui_Icon.sprite = sprite;
             });
         }
         else if (itemPosition.x < currentMapPosition.x + 1)
         {
-            var mapTypeInfo = GameWorldMapTypeInfoCfg.GetItemData(mapType);
-            IconHandler.Instance.manager.GetUISpriteByName(mapTypeInfo.icon_res, (sprite) =>
+            IconHandler.Instance.manager.GetUISpriteByName("", (sprite) =>
             {
                 ui_Icon.sprite = sprite;
                 if (itemPosition.x != 0)
@@ -66,12 +64,8 @@ public partial class UIViewGameWorldMapPoint : BaseUIView
         }
     }
 
-    /// <summary>
-    /// ����״̬
-    /// </summary>
     public void SetState(Vector2 itemPosition, Vector2 currentMapPosition)
     {
-        //ֻ����һ���ܵ��
         if (itemPosition.x == currentMapPosition.x + 1)
         {
             ui_UIViewGameWorldMapPoint.interactable = true;
@@ -82,27 +76,21 @@ public partial class UIViewGameWorldMapPoint : BaseUIView
         }
     }
 
-    /// <summary>
-    /// ���õ�ͼλ��
-    /// </summary>
     public void SetPosition(float sizeMapW, float sizeMapH, int mapLength, int mapIndexNum, Vector2 mapPosition)
     {
-        //��ĵ�ͼ��λ����
         int xPointNum = mapLength + 2;
         int yPointNum = mapIndexNum;
-        //��λ��������ұ߽绹����һ�������
+
         float itemPointW = sizeMapW / (xPointNum - 1);
         float itemPointH = sizeMapH / (yPointNum + 1);
 
-        //���õ�λ����
+
         float xPosition = itemPointW * mapPosition.x - sizeMapW / 2f;
         float yPosition = itemPointH * mapPosition.y - sizeMapH / 2f + itemPointH;
         rectTransform.anchoredPosition = new Vector2(xPosition, yPosition);
     }
 
-    /// <summary>
-    /// ���ѡ��
-    /// </summary>
+
     public void OnClickForSelect()
     {
         DialogBean dialogData = new DialogBean();

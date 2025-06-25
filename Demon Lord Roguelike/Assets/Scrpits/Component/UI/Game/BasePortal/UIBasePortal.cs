@@ -44,26 +44,26 @@ public partial class UIBasePortal : BaseUIComponent
         List<Vector2> listOldPos = new List<Vector2>();
         for (int i = 0; i < userUnlockData.unlockWorldMapRefreshNum; i++)
         {
+            //随机一个世界
             int randomWorldKey = UnityEngine.Random.Range(0, keys.Length);
             long randomWorldId = keys[randomWorldKey];
             //获取解锁世界数据
             UserUnlockWorldBean userUnlockWorldData = userUnlockData.GetUnlockWorldData(randomWorldId);
+            
+            GameWorldInfoRandomBean gameWorldInfoRandomData = new GameWorldInfoRandomBean();
+            //设置游戏类型随机
+            gameWorldInfoRandomData.SetGameFightTypeRandom(userUnlockWorldData);
             //获取世界数据
             var worldInfo = GameWorldInfoCfg.GetItemData(randomWorldId);
             GameObject objItem = Instantiate(ui_Content.gameObject, ui_UIViewBasePortalItem.gameObject);
             objItem.ShowObj(true);
             UIViewBasePortalItem itemView = objItem.GetComponent<UIViewBasePortalItem>();
-            //随机难度
-            int randomDifficultyLevel = UnityEngine.Random.Range(1, userUnlockWorldData.difficultyLevel + 1);
             //随机地图位置
             Vector2 randomMapPos = GetRandomMapPos(listOldPos);
             listOldPos.Add(randomMapPos);
-            //随机关卡长度
-            var difficultyData = worldInfo.GetDifficultyData(randomDifficultyLevel);
-            int randomLevelMax = UnityEngine.Random.Range(difficultyData.minLevelNum, difficultyData.maxLevelNum + 1);
-
+            gameWorldInfoRandomData.uiPosition = randomMapPos;
             //设置数据
-            itemView.SetData(worldInfo, randomDifficultyLevel, randomLevelMax, randomMapPos);
+            itemView.SetData(worldInfo, gameWorldInfoRandomData);
         }
     }
 

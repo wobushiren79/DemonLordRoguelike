@@ -50,7 +50,7 @@ public partial class CameraHandler
         manager.cm_Base.PreviousStateIsValid = false;
         await new WaitNextFrame();
         //设置偏转
-        targetRenderer.transform.eulerAngles = mainCamera.transform.eulerAngles;
+        CameraHandler.Instance.ChangeAngleForCamera(targetRenderer.transform);
 
         actionForComplete?.Invoke();
     }

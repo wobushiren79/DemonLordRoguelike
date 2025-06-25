@@ -13,16 +13,13 @@ public class UIPopupProtalDetails : PopupShowCommonView
     /// <param name="data"></param>
     public override void SetData(object data)
     {
-        var targetData = ((GameWorldInfoBean, int, int))data;
+        var targetData = ((GameWorldInfoBean, GameWorldInfoRandomBean))data;
         GameWorldInfoBean gameWorldInfo = targetData.Item1;
-        int difficulty = targetData.Item2;
-        int maxLevel = targetData.Item3;
-
-        var difficultyInfo = GameWorldDifficultyInfoCfg.GetItemData(difficulty);
+        GameWorldInfoRandomBean gameWorldInfoRandom = targetData.Item2;
 
         SetItemContente(0, TextHandler.Instance.GetTextById(2000001), $"{gameWorldInfo.GetName()}");
-        SetItemContente(1, TextHandler.Instance.GetTextById(2000002), $"{difficultyInfo.GetName()}");
-        SetItemContente(2, TextHandler.Instance.GetTextById(2000003), $"{maxLevel}");
+        SetItemContente(1, TextHandler.Instance.GetTextById(2000002), $"{1}");
+        SetItemContente(2, TextHandler.Instance.GetTextById(2000003), $"{1}");
     }
 
     /// <summary>

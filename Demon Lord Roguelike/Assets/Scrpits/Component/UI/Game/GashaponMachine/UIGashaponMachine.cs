@@ -155,7 +155,7 @@ public partial class UIGashaponMachine : BaseUIComponent
                 GashaponMachineCreatureStruct gashaponMachineCreature = new GashaponMachineCreatureStruct();
                 gashaponMachineCreature.creatureId = itemCreatureId;
                 //获取所有随机的身体部件
-                gashaponMachineCreature.randomCreatureMode = creatureInfoRandomData.GetRandomData();
+                gashaponMachineCreature.randomCreatureMode = creatureInfoRandomData.GetAllRandomData();
 
                 listCreatureRandomData.Add(gashaponMachineCreature);
             }
