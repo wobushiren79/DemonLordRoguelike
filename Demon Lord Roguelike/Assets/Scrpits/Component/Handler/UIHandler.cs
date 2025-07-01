@@ -32,12 +32,21 @@ public partial class UIHandler
     /// 展示默认普通谈拆给你
     /// </summary>
     public UIDialogNormal ShowDialogNormal(DialogBean dialogData)
-    {        
-        if(dialogData.submitStr.IsNull())
+    {
+        if (dialogData.submitStr.IsNull())
             dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
-        if(dialogData.cancelStr.IsNull())
+        if (dialogData.cancelStr.IsNull())
             dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
         return ShowDialog<UIDialogNormal>(dialogData);
     }
 
+
+    public UIDialogPortalDetails ShowDialogPortalDetails(DialogBean dialogData)
+    {
+        if (dialogData.submitStr.IsNull())
+            dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
+        if (dialogData.cancelStr.IsNull())
+            dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
+        return ShowDialog<UIDialogPortalDetails>(dialogData);
+    }
 }

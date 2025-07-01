@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2938148442540788134}
   - component: {fileID: 3891799841264269806}
   m_Layer: 5
-  m_Name: UIPopupProtalDetailsItem
+  m_Name: UIPopupPortalDetailsItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
