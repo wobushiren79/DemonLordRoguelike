@@ -36,7 +36,7 @@ public partial class CameraHandler
         //设置大小
         targetRenderer.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine;
         //展示生物数据
-        CreatureHandler.Instance.SetCreatureData(targetSkeletonAnimation,creatureData);
+        CreatureHandler.Instance.SetCreatureData(targetSkeletonAnimation, creatureData);
         //初始化位置
         controlTarget.transform.position = new Vector3(0, 0, 0);
 
@@ -91,7 +91,7 @@ public partial class CameraHandler
     /// </summary>
     public CinemachineVirtualCamera SetBasePortalCamera(int priority, bool isEnable)
     {
-        return SetCameraForBaseScene(priority, isEnable, "CV_Portal");
+        return SetCameraForBaseScene(priority, isEnable, "CV_Portal", blendTime: 0);
     }
 
     /// <summary>
@@ -145,7 +145,7 @@ public partial class CameraHandler
     /// <summary>
     /// 设置基础场景的摄像头
     /// </summary>
-    protected CinemachineVirtualCamera SetCameraForBaseScene(int priority, bool isEnable, string cvName)
+    protected CinemachineVirtualCamera SetCameraForBaseScene(int priority, bool isEnable, string cvName, float blendTime = 0.5f)
     {
         manager.HideAllCM();
         var targetBaseScene = WorldHandler.Instance.currentBaseScene;
@@ -169,7 +169,7 @@ public partial class CameraHandler
             if (targetCVItem.name.Equals($"{cvName}"))
             {
                 //打开切换动画
-                manager.SetMainCameraDefaultBlend(0.5f);
+                manager.SetMainCameraDefaultBlend(blendTime);
                 targetCVItem.gameObject.SetActive(isEnable);
                 targetCVItem.Priority = priority;
                 targetCV = targetCVItem;

@@ -19,6 +19,9 @@ public class ScenePrefabForBase : ScenePrefabBase
     //容器
     public GameObject objBuildingVat;
     public GameObject objVatMaterialCreature;
+    //光线
+    public Light lightSun;
+    public GameObject lightRay;
 
     public Color vatColorStart = new Color(0, 0.4f, 1f, 0.4f);
     public Color vatColorEnd = new Color(0.11f, 0.06f, 0.5f, 0.7f);

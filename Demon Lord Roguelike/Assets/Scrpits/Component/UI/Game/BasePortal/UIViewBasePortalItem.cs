@@ -2,13 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public partial class UIViewBasePortalItem : BaseUIView
 {
     protected GameWorldInfoBean gameWorldInfo;
     protected PopupButtonCommonView popupForPortalDetails;
     protected bool isRotate = false;
-
+    protected bool isSelectWorld = false;
     protected Vector2 rotateCenter = new Vector2(0, 0); // 指定旋转中心点
     protected float rotateSpeed = 50f;
     protected float rotateRadius = 0; // 旋转半径
@@ -23,7 +24,7 @@ public partial class UIViewBasePortalItem : BaseUIView
 
     public void Update()
     {
-        if (isRotate)
+        if (!isSelectWorld && isRotate)
         {
             currentRotateAngle += rotateSpeed * Time.deltaTime;
             // 计算新位置
@@ -64,8 +65,19 @@ public partial class UIViewBasePortalItem : BaseUIView
         rotateRadius = offset.magnitude;
         currentRotateAngle = Mathf.Atan2(offset.y, offset.x) * Mathf.Rad2Deg;
         //随机旋转速度
-        rotateSpeed = Random.Range(10f, 50f);
+        rotateSpeed = Random.Range(1f, 10f);
         isRotate = true;
+        //出现动画
+        AnimForShow();
+    }
+
+    /// <summary>
+    /// 出现动画
+    /// </summary>
+    public void AnimForShow()
+    {
+        transform.localScale = Vector3.zero;
+        rectTransform.DOScale(Vector3.one,0.5f).SetEase(Ease.OutBack);
     }
 
     /// <summary>
@@ -105,12 +117,18 @@ public partial class UIViewBasePortalItem : BaseUIView
     /// </summary>
     public void OnClickForEnterWorld()
     {
+        isSelectWorld = true;
         DialogBean dialogData = new DialogBean();
         dialogData.content = string.Format(TextHandler.Instance.GetTextById(401), gameWorldInfo.GetName());
-        float animTimeForShowMask = 2f;
+        float animTimeForShowMask = 1f;
         float animTimeForHideMask = 1f;
         dialogData.actionSubmit = ((view, data) =>
         {
+            //展示靠近动画
+            rectTransform.DOAnchorPos(rotateCenter, animTimeForShowMask);
+            rectTransform.DOScale(Vector3.one * 8, animTimeForShowMask);
+            rectTransform.SetAsFirstSibling();
+            //展示mask遮罩
             UIHandler.Instance.ShowMask(animTimeForShowMask, null, () =>
             {
                 WorldHandler.Instance.ClearWorldData(() =>
@@ -127,8 +145,12 @@ public partial class UIViewBasePortalItem : BaseUIView
                         },
                         null);
                 }, false);
-            }, true);
+            }, false);
         });
+        dialogData.actionCancel = (view, data) =>
+        {
+            isSelectWorld = false;
+        };
         UIHandler.Instance.ShowDialogNormal(dialogData);
     }
     #endregion

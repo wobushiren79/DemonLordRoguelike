@@ -11,7 +11,6 @@ public partial class UIBasePortal : BaseUIComponent
     public override void OpenUI()
     {
         base.OpenUI();
-
         //开启控制
         GameControlHandler.Instance.SetBaseControl(false);
         //开启摄像头

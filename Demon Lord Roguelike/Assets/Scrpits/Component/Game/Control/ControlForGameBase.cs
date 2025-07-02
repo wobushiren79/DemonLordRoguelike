@@ -188,11 +188,14 @@ public class ControlForGameBase : BaseControl
 
     public void HandleForUseEDown(CallbackContext callback)
     {
-
+        if (!enabledControl)
+            return;
     }
 
     public void HandleForUseEUp(CallbackContext callback)
     {
+        if (!enabledControl)
+            return;
         var controlTarget = GameControlHandler.Instance.manager.controlTargetForCreature;
         var allHit = RayUtil.OverlapToSphere(controlTarget.transform.position, 0.1f, 1 << LayerInfo.Interaction);
         if (allHit.Length <= 0)

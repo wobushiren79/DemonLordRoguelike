@@ -13,11 +13,11 @@ public partial class UIHandler
         UICommonMask maskUI;
         if (isCloseOther)
         {
-            maskUI = OpenUIAndCloseOther<UICommonMask>();
+            maskUI = OpenUIAndCloseOther<UICommonMask>(layer: 99);
         }
         else
         {
-            maskUI = OpenUI<UICommonMask>();
+            maskUI = OpenUI<UICommonMask>(layer: 99);
         }
         maskUI.StartMask(maskTime, acionForStart, acionForComplete);
     }
