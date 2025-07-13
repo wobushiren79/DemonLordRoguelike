@@ -37,6 +37,8 @@ public class UserDataBean : BaseBean
     public UserLimmitBean userLimmitData;
     //用户进阶数据
     public UserAscendBean userAscendData;
+    //临时存储数据
+    public UserTempBean userTempBean;
     
     /// <summary>
     /// 获取用户进阶数据
@@ -46,6 +48,16 @@ public class UserDataBean : BaseBean
         if (userAscendData == null)
             userAscendData = new UserAscendBean();
         return userAscendData;
+    }
+
+    /// <summary>
+    /// 获取用户临时数据
+    /// </summary>
+    public UserTempBean GetUserTempData()
+    {
+        if (userTempBean == null)
+            userTempBean = new UserTempBean();
+        return userTempBean;
     }
 
     /// <summary>

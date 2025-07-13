@@ -56,7 +56,7 @@ public partial class UIViewBasePortalItem : BaseUIView
         string targetName = gameWorldInfo.GetName();
         SetName(targetName);
         //设置图标
-        SetIcon(gameWorldInfo.icon_res);
+        SetIcon(gameWorldInfo.icon_res, gameWorldInfoRandom.iconSeed);
         //初始化弹窗
         popupForPortalDetails.SetData((gameWorldInfo, gameWorldInfoRandom), PopupEnum.PortalDetails);
 
@@ -92,12 +92,11 @@ public partial class UIViewBasePortalItem : BaseUIView
     /// <summary>
     /// 设置图标
     /// </summary>
-    public void SetIcon(string iconRes)
+    public void SetIcon(string iconRes,int iconSeed)
     {
         if (iconRes.IsNull())
         {
-            int seed = Random.Range(0, int.MaxValue);
-            CreateToolsForPlanetTextureBean createData = new CreateToolsForPlanetTextureBean(seed);
+            CreateToolsForPlanetTextureBean createData = new CreateToolsForPlanetTextureBean(iconSeed);
             var planetTex = CreateTools.CreatePlanetTexture(createData);
             ui_Icon.texture = planetTex;
             ui_Icon.gameObject.SetActive(true);

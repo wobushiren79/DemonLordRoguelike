@@ -17,20 +17,34 @@ public class UIPopupPortalDetails : PopupShowCommonView
         GameWorldInfoBean gameWorldInfo = targetData.Item1;
         GameWorldInfoRandomBean gameWorldInfoRandom = targetData.Item2;
 
+        //设置名字
         SetItemContente(0, TextHandler.Instance.GetTextById(2000001), $"{gameWorldInfo.GetName()}");
-        SetItemContente(1, TextHandler.Instance.GetTextById(2000002), $"{1}");
-        SetItemContente(2, TextHandler.Instance.GetTextById(2000003), $"{1}");
+        //设置线路数量
+        SetItemContente(1, TextHandler.Instance.GetTextById(2000002), $"{gameWorldInfoRandom.roadNum}");
+        //设置战斗关卡
+        if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Infinite)
+        {
+            SetItemContente(2, TextHandler.Instance.GetTextById(2000003), $"{gameWorldInfoRandom.fightNum}",isShow:false);
+        }
+        else
+        {
+            SetItemContente(2, TextHandler.Instance.GetTextById(2000003), $"{gameWorldInfoRandom.fightNum}");
+        }
     }
 
     /// <summary>
     /// 设置单个数据
     /// </summary>
-    public void SetItemContente(int index, string title, string content)
+    public void SetItemContente(int index, string title, string content,bool isShow=true)
     {
         var itemView = transform.GetChild(index);
+        itemView.gameObject.SetActive(isShow);
+
+        Transform tfContent = itemView.Find("Content");
+
         TextMeshProUGUI textTitle = itemView.Find("Title").GetComponent<TextMeshProUGUI>();
-        TextMeshProUGUI textContent = itemView.Find("Content").GetComponent<TextMeshProUGUI>();
-        Text textContent2 = itemView.Find("Content").GetComponent<Text>();
+        TextMeshProUGUI textContent = tfContent.GetComponent<TextMeshProUGUI>();
+        Text textContent2 = tfContent.GetComponent<Text>();
 
         if (textTitle != null)
             textTitle.text = title;

@@ -1,5 +1,6 @@
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 using UnityEngine;
+using TMPro;
 
 
 public partial class UIBasePortal
@@ -13,6 +14,14 @@ public partial class UIBasePortal
     public RectTransform ui_MapContent;
 
     public RectTransform ui_Content;
+
+    public Button ui_BtnRefresh;
+
+    public TextMeshProUGUI ui_BtnRefreshText;
+
+    public TextMeshProUGUI ui_BtnRefreshNum;
+
+    public Image ui_BtnRefreshIcon;
 
 
 }

@@ -26,6 +26,14 @@ public partial class UIBasePortal : BaseUIComponent
         base.CloseUI();
         //关闭远景
         VolumeHandler.Instance.SetDepthOfFieldActive(true);
+        ClearMap();
+    }
+
+    /// <summary>
+    /// 清理地图
+    /// </summary>
+    public void ClearMap()
+    {
         ui_Content.DestroyAllChild();
     }
 
@@ -41,29 +49,54 @@ public partial class UIBasePortal : BaseUIComponent
         long[] keys = userUnlockData.unlockWorldData.Keys.ToArray();
 
         List<Vector2> listOldPos = new List<Vector2>();
-        for (int i = 0; i < userUnlockData.unlockWorldMapRefreshNum; i++)
+        UserTempBean userTempData = userData.GetUserTempData();
+
+        if (userTempData.listPortalWorldInfoRandomData.IsNull())
         {
-            //随机一个世界
-            int randomWorldKey = UnityEngine.Random.Range(0, keys.Length);
-            long randomWorldId = keys[randomWorldKey];
-            //获取解锁世界数据
-            UserUnlockWorldBean userUnlockWorldData = userUnlockData.GetUnlockWorldData(randomWorldId);
-            
-            GameWorldInfoRandomBean gameWorldInfoRandomData = new GameWorldInfoRandomBean();
-            //设置游戏类型随机
-            gameWorldInfoRandomData.SetGameFightTypeRandom(userUnlockWorldData);
-            //获取世界数据
-            var worldInfo = GameWorldInfoCfg.GetItemData(randomWorldId);
-            GameObject objItem = Instantiate(ui_Content.gameObject, ui_UIViewBasePortalItem.gameObject);
-            objItem.ShowObj(true);
-            UIViewBasePortalItem itemView = objItem.GetComponent<UIViewBasePortalItem>();
-            //随机地图位置
-            Vector2 randomMapPos = GetRandomMapPos(listOldPos);
-            listOldPos.Add(randomMapPos);
-            gameWorldInfoRandomData.uiPosition = randomMapPos;
-            //设置数据
-            itemView.SetData(worldInfo, gameWorldInfoRandomData);
+            for (int i = 0; i < userUnlockData.unlockWorldMapRefreshNum; i++)
+            {
+                //随机一个世界
+                int randomWorldKey = UnityEngine.Random.Range(0, keys.Length);
+                long randomWorldId = keys[randomWorldKey];
+                //获取解锁世界数据
+                UserUnlockWorldBean userUnlockWorldData = userUnlockData.GetUnlockWorldData(randomWorldId);
+                GameWorldInfoRandomBean gameWorldInfoRandomData = new GameWorldInfoRandomBean();
+                //设置游戏类型随机
+                gameWorldInfoRandomData.SetGameFightTypeRandom(userUnlockWorldData);
+                //随机地图位置
+                Vector2 randomMapPos = GetRandomMapPos(listOldPos);
+                listOldPos.Add(randomMapPos);
+                gameWorldInfoRandomData.uiPosition = randomMapPos;
+                //设置地图icon种子
+                int iconSeed = Random.Range(0, int.MaxValue);
+                gameWorldInfoRandomData.iconSeed = iconSeed;
+
+                SetItemMapData(gameWorldInfoRandomData);
+                userTempData.AddPortalWorldInfoRandomData(gameWorldInfoRandomData);
+            }
         }
+        else
+        {
+            for (int i = 0; i < userTempData.listPortalWorldInfoRandomData.Count; i++)
+            {
+                SetItemMapData(userTempData.listPortalWorldInfoRandomData[i]);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 设置地图数据
+    /// </summary>
+    /// <param name="gameWorldInfoRandomData"></param>
+    public void SetItemMapData(GameWorldInfoRandomBean gameWorldInfoRandomData)
+    {
+        //获取世界数据
+        var worldInfo = GameWorldInfoCfg.GetItemData(gameWorldInfoRandomData.worldId);
+        GameObject objItem = Instantiate(ui_Content.gameObject, ui_UIViewBasePortalItem.gameObject);
+        objItem.ShowObj(true);
+        UIViewBasePortalItem itemView = objItem.GetComponent<UIViewBasePortalItem>();
+        //设置数据
+        itemView.SetData(worldInfo, gameWorldInfoRandomData);
     }
 
     /// <summary>
@@ -110,6 +143,10 @@ public partial class UIBasePortal : BaseUIComponent
         {
             OnClickForExit();
         }
+        else if (viewButton == ui_BtnRefresh)
+        {
+            OnClickForRefresh();
+        }
     }
 
     /// <summary>
@@ -120,4 +157,16 @@ public partial class UIBasePortal : BaseUIComponent
         UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
     }
 
+    /// <summary>
+    /// 点击刷新
+    /// </summary>
+    public void OnClickForRefresh()
+    {
+        //获取用户数据
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        UserTempBean userTempData = userData.GetUserTempData();
+        userTempData.ClearPortalWorldInfoRandomData();
+        ClearMap();
+        InitMap();
+    }
 }

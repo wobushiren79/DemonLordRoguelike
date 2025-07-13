@@ -133,6 +133,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c76eaea07df14764199f7731dc7987d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}
   offsetX: 0
   offsetY: 0
@@ -147,7 +149,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 258632986510439303, guid: 1fa88238e97c4f24b874118a79d86cbd, type: 3}
       propertyPath: m_Name
-      value: UIPopupProtalDetailsItem_Name
+      value: UIPopupProtalDetailsItem
       objectReference: {fileID: 0}
     - target: {fileID: 2086843628042361760, guid: 1fa88238e97c4f24b874118a79d86cbd, type: 3}
       propertyPath: m_Pivot.x
@@ -249,7 +251,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 258632986510439303, guid: 1fa88238e97c4f24b874118a79d86cbd, type: 3}
       propertyPath: m_Name
-      value: UIPopupProtalDetailsItem_Difficulty
+      value: UIPopupProtalDetailsItem
       objectReference: {fileID: 0}
     - target: {fileID: 2086843628042361760, guid: 1fa88238e97c4f24b874118a79d86cbd, type: 3}
       propertyPath: m_Pivot.x
@@ -414,7 +416,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 258632986510439303, guid: 1fa88238e97c4f24b874118a79d86cbd, type: 3}
       propertyPath: m_Name
-      value: UIPopupProtalDetailsItem_LevelMax
+      value: UIPopupProtalDetailsItem
       objectReference: {fileID: 0}
     - target: {fileID: 2086843628042361760, guid: 1fa88238e97c4f24b874118a79d86cbd, type: 3}
       propertyPath: m_Pivot.x
