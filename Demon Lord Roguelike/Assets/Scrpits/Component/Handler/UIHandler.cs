@@ -29,7 +29,7 @@ public partial class UIHandler
     }
 
     /// <summary>
-    /// 展示默认普通谈拆给你
+    /// 展示默认普通
     /// </summary>
     public UIDialogNormal ShowDialogNormal(DialogBean dialogData)
     {
@@ -40,7 +40,11 @@ public partial class UIHandler
         return ShowDialog<UIDialogNormal>(dialogData);
     }
 
-
+    /// <summary>
+    /// 展示传送门
+    /// </summary>
+    /// <param name="dialogData"></param>
+    /// <returns></returns>
     public UIDialogPortalDetails ShowDialogPortalDetails(DialogBean dialogData)
     {
         if (dialogData.submitStr.IsNull())

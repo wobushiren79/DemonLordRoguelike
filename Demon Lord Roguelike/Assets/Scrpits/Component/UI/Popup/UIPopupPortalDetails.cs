@@ -18,17 +18,17 @@ public class UIPopupPortalDetails : PopupShowCommonView
         GameWorldInfoRandomBean gameWorldInfoRandom = targetData.Item2;
 
         //设置名字
-        SetItemContente(0, TextHandler.Instance.GetTextById(2000001), $"{gameWorldInfo.GetName()}");
+        SetItemContente(0, TextHandler.Instance.GetTextById(411), $"{gameWorldInfo.GetName()}");
         //设置线路数量
-        SetItemContente(1, TextHandler.Instance.GetTextById(2000002), $"{gameWorldInfoRandom.roadNum}");
+        SetItemContente(1, TextHandler.Instance.GetTextById(412), $"{gameWorldInfoRandom.roadNum}");
         //设置战斗关卡
         if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Infinite)
         {
-            SetItemContente(2, TextHandler.Instance.GetTextById(2000003), $"{gameWorldInfoRandom.fightNum}",isShow:false);
+            SetItemContente(2, TextHandler.Instance.GetTextById(413), $"{gameWorldInfoRandom.fightNum}",isShow:false);
         }
         else
         {
-            SetItemContente(2, TextHandler.Instance.GetTextById(2000003), $"{gameWorldInfoRandom.fightNum}");
+            SetItemContente(2, TextHandler.Instance.GetTextById(413), $"{gameWorldInfoRandom.fightNum}");
         }
     }
 

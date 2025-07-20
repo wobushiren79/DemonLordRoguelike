@@ -6,7 +6,10 @@ using DG.Tweening;
 
 public partial class UIViewBasePortalItem : BaseUIView
 {
+    protected GameWorldInfoRandomBean gameWorldInfoRandom;
     protected GameWorldInfoBean gameWorldInfo;
+
+
     protected PopupButtonCommonView popupForPortalDetails;
     protected bool isRotate = false;
     protected bool isSelectWorld = false;
@@ -50,6 +53,8 @@ public partial class UIViewBasePortalItem : BaseUIView
     public void SetData(GameWorldInfoBean gameWorldInfo, GameWorldInfoRandomBean gameWorldInfoRandom)
     {
         this.gameWorldInfo = gameWorldInfo;
+
+        this.gameWorldInfoRandom = gameWorldInfoRandom;
         //设置地图位置
         SetMapPosition(gameWorldInfoRandom.uiPosition);
         //设置名字
@@ -118,7 +123,9 @@ public partial class UIViewBasePortalItem : BaseUIView
     {
         isSelectWorld = true;
         DialogBean dialogData = new DialogBean();
+        dialogData.dialogType = DialogEnum.PortalDetails;
         dialogData.content = string.Format(TextHandler.Instance.GetTextById(401), gameWorldInfo.GetName());
+        
         float animTimeForShowMask = 1f;
         float animTimeForHideMask = 1f;
         dialogData.actionSubmit = ((view, data) =>
@@ -150,7 +157,8 @@ public partial class UIViewBasePortalItem : BaseUIView
         {
             isSelectWorld = false;
         };
-        UIHandler.Instance.ShowDialogNormal(dialogData);
+        UIDialogPortalDetails uiDialogPortalDetails = UIHandler.Instance.ShowDialogPortalDetails(dialogData);
+        uiDialogPortalDetails.SetData(gameWorldInfo, gameWorldInfoRandom);
     }
     #endregion
 

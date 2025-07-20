@@ -59,10 +59,9 @@ public partial class UIBasePortal : BaseUIComponent
                 int randomWorldKey = UnityEngine.Random.Range(0, keys.Length);
                 long randomWorldId = keys[randomWorldKey];
                 //获取解锁世界数据
-                UserUnlockWorldBean userUnlockWorldData = userUnlockData.GetUnlockWorldData(randomWorldId);
                 GameWorldInfoRandomBean gameWorldInfoRandomData = new GameWorldInfoRandomBean();
                 //设置游戏类型随机
-                gameWorldInfoRandomData.SetGameFightTypeRandom(userUnlockWorldData);
+                gameWorldInfoRandomData.SetGameFightTypeRandom(randomWorldId);
                 //随机地图位置
                 Vector2 randomMapPos = GetRandomMapPos(listOldPos);
                 listOldPos.Add(randomMapPos);
@@ -107,8 +106,8 @@ public partial class UIBasePortal : BaseUIComponent
         float itemWidth = ui_UIViewBasePortalItem.rectTransform.rect.width / 2f;
         float itemHeight = ui_UIViewBasePortalItem.rectTransform.rect.height / 2f;
 
-        float width = (ui_Content.rect.width / 2f) - itemWidth;
-        float height = (ui_Content.rect.height / 2f) - itemHeight;
+        float width = (ui_Content.rect.width / 2f * 0.9f) - itemWidth;
+        float height = (ui_Content.rect.height / 2f * 0.9f) - itemHeight;
 
         float xRandom = UnityEngine.Random.Range(-width, width);
         float yRandom = UnityEngine.Random.Range(-height, height);

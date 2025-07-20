@@ -18,8 +18,10 @@ public class GameTestEditor : Editor
 
     public int creatureId = 0;
     public int creatureModelId = 0;
-    LauncherTest launcher;
 
+    public List<int> enemyIds = new List<int>() { 101001 };
+    
+    LauncherTest launcher;
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
@@ -96,6 +98,24 @@ public class GameTestEditor : Editor
         fightSceneRoadLength = EditorGUILayout.IntField(fightSceneRoadLength);
         EditorGUILayout.EndHorizontal();
 
+
+        EditorGUILayout.LabelField("测试数据-进攻生物Ids");
+        for (int i = 0; i < enemyIds.Count; i++)
+        {
+            enemyIds[i] = EditorGUILayout.IntField(enemyIds[i]);
+        }
+        EditorGUILayout.BeginHorizontal();
+        // 添加/删除按钮
+        if (GUILayout.Button("Add"))
+        {
+            enemyIds.Add(0);
+        }
+        if (GUILayout.Button("Remove") && enemyIds.Count > 0)
+        {
+            enemyIds.RemoveAt(enemyIds.Count - 1);
+        }
+        EditorGUILayout.EndHorizontal();
+
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("测试数据-进攻生物数量");
         fightSceneAttackNum = EditorGUILayout.IntField(fightSceneAttackNum);
@@ -143,7 +163,7 @@ public class GameTestEditor : Editor
         fightData.fightAttackData = new FightAttackBean();
         for (int i = 0; i < fightSceneAttackNum; i++)
         {
-            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(fightSceneAttackDelay, new List<int> { 1001});
+            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(fightSceneAttackDelay, enemyIds);
             fightData.fightAttackData.AddAttackQueue(fightAttackDetails);
         }
 

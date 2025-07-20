@@ -36,13 +36,29 @@ public partial class GameWorldInfoRandomBean
     public int fightNum;
     //图标种子
     public int iconSeed;
+    //难度等级
+    public int difficultyLevel;
+
+    /// <summary>
+    /// 获取解锁世界数据
+    /// </summary>
+    /// <returns></returns>
+    public UserUnlockWorldBean GetUserUnlockWorldData()
+    {
+        //获取用户数据
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        UserUnlockBean userUnlockData = userData.GetUserUnlockData();
+        return userUnlockData.GetUnlockWorldData(worldId);
+    }
 
     /// <summary>
     /// 随机设置游戏类型
     /// </summary>
-    public void SetGameFightTypeRandom(UserUnlockWorldBean userUnlockWorldData)
+    public void SetGameFightTypeRandom(long worldId)
     {
-        worldId = userUnlockWorldData.worldId;
+        this.worldId = worldId;
+        //获取用户数据
+        UserUnlockWorldBean userUnlockWorldData = GetUserUnlockWorldData();
         //随机世界模式
         List<GameFightTypeEnum> listRandomGameFightType = new List<GameFightTypeEnum>() { GameFightTypeEnum.Conquer };
         //如果无尽模式解锁了
@@ -74,15 +90,28 @@ public partial class GameWorldInfoRandomBean
         }
     }
 
+
+    /// <summary>
+    /// 设置征服模式数据
+    /// </summary>
     public void SetRandomDataForConquer()
     {
+        //获取用户数据
+        UserUnlockWorldBean userUnlockWorldData = GetUserUnlockWorldData();
+
         int roadNumRandom = UnityEngine.Random.Range(1, 7);
         roadNum = roadNumRandom;
 
         int fightNumRandom = UnityEngine.Random.Range(5, 10);
         fightNum = fightNumRandom;
+
+        //设置默认难度等级（默认最高）
+        difficultyLevel = userUnlockWorldData.difficultyLevel;
     }
 
+    /// <summary>
+    /// 设置无限模式数据
+    /// </summary>
     public void SetRandomDataForInfinite()
     {
         int roadNumRandom = UnityEngine.Random.Range(1, 7);
