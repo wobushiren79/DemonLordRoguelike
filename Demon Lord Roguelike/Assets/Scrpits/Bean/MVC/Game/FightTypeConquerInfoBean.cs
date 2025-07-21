@@ -4,6 +4,18 @@ using System.Collections.Generic;
 public partial class FightTypeConquerInfoBean : BaseBean
 {
 	/// <summary>
+	///世界ID
+	/// </summary>
+	public long world_id;
+	/// <summary>
+	///战斗场景列表
+	/// </summary>
+	public string fight_scene_ids;
+	/// <summary>
+	///boss战斗场景列表
+	/// </summary>
+	public string fight_scene_boss_ids;
+	/// <summary>
 	///敌人列表
 	/// </summary>
 	public string enemy_ids;
@@ -12,9 +24,37 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	/// </summary>
 	public string enemy_boss_ids;
 	/// <summary>
+	///关卡次数-最小
+	/// </summary>
+	public int fight_num_min;
+	/// <summary>
+	///关卡次数-最大
+	/// </summary>
+	public int fight_num_max;
+	/// <summary>
+	///道路数量-最小
+	/// </summary>
+	public int road_num_min;
+	/// <summary>
+	///道路数量-最大
+	/// </summary>
+	public int road_num_max;
+	/// <summary>
+	///道路长度-最小
+	/// </summary>
+	public int road_length_min;
+	/// <summary>
+	///道路长度-最大
+	/// </summary>
+	public int road_length_max;
+	/// <summary>
 	///难度
 	/// </summary>
 	public int level;
+	/// <summary>
+	///难度数值加成
+	/// </summary>
+	public float level_add;
 	/// <summary>
 	///备注
 	/// </summary>

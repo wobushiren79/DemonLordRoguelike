@@ -10,11 +10,16 @@ using UnityEngine;
 public class FightBean
 {
     public GameFightTypeEnum gameFightType;//游戏模式
+    public GameWorldInfoRandomBean gameWorldInfoRandomData;//游戏随机数据
+
 
     public float gameTime = 0;//游戏时间
     public float gameSpeed = 1;//游戏速度
 
-    public int fightSceneId;//战斗场景Id;
+    public long fightSceneId;//战斗场景Id;
+
+    public int fightNum;//当前关卡数
+    public int fingthNumMax;//最大关卡数
 
     public float timeUpdateForAttackCreate = 0;//更新时间-怪物生成
     public float timeUpdateTargetForAttackCreate = 0;//更新目标时间-怪物生成
@@ -44,6 +49,50 @@ public class FightBean
     //战斗数据记录
     public FightRecordsBean fightRecordsData = new FightRecordsBean();
 
+    #region 构造函数
+    public FightBean()
+    {
+
+    }
+
+    public FightBean(GameWorldInfoRandomBean gameWorldInfoRandomData)
+    {
+        this.gameWorldInfoRandomData = gameWorldInfoRandomData;
+        gameFightType = gameWorldInfoRandomData.gameFightType;
+        switch (gameFightType)
+        {
+            case GameFightTypeEnum.Conquer:
+                InitForTypeConquer();
+                break;
+            case GameFightTypeEnum.Infinite:
+                break;
+        }   
+    }
+
+    /// <summary>
+    /// 初始化征服模式
+    /// </summary>
+    public void InitForTypeConquer()
+    {
+        FightTypeConquerInfoBean fightTypeConquerInfo = FightTypeConquerInfoCfg.GetItemData(gameWorldInfoRandomData.worldId, gameWorldInfoRandomData.difficultyLevel);
+        if (fightTypeConquerInfo == null)
+        {
+            LogUtil.LogError($"初始化征服游戏模式失败 worldId:{gameWorldInfoRandomData.worldId} difficultyLevel:{gameWorldInfoRandomData.difficultyLevel}");
+            return;
+        }
+        //设置道路数量
+        sceneRoadNum = gameWorldInfoRandomData.roadNum;
+        //设置道路长度
+        sceneRoadLength = gameWorldInfoRandomData.roadLength;
+        //设置最大关卡数量
+        fingthNumMax = gameWorldInfoRandomData.fightNum;
+        //设置当前关卡数量
+        fightNum = 1;
+        //设置战斗场景ID
+        fightSceneId = fightTypeConquerInfo.GetRandomFightScene(false);
+    }
+    #endregion
+
     /// <summary>
     /// 检测是否还拥有进攻生物
     /// </summary>
@@ -56,6 +105,7 @@ public class FightBean
         return false;
     }
 
+    #region  数据清理
     /// <summary>
     /// 清理数据
     /// </summary>
@@ -68,7 +118,7 @@ public class FightBean
             itemCreatureData.ClearTempData();
         }
         //删除生物实例
-        for(int i = 0; i < dlDefenseCreatureEntity.List.Count; i++)
+        for (int i = 0; i < dlDefenseCreatureEntity.List.Count; i++)
         {
             var itemCreature = dlDefenseCreatureEntity.List[i];
             if (itemCreature != null && itemCreature.creatureObj != null)
@@ -76,7 +126,7 @@ public class FightBean
                 GameObject.DestroyImmediate(itemCreature.creatureObj);
             }
         }
-        for(int i = 0; i < dlAttackCreatureEntity.List.Count; i++)
+        for (int i = 0; i < dlAttackCreatureEntity.List.Count; i++)
         {
             var itemCreature = dlAttackCreatureEntity.List[i];
             if (itemCreature != null && itemCreature.creatureObj != null)
@@ -96,6 +146,8 @@ public class FightBean
         fightDefenseCoreCreature = null;
         fightDefenseCoreData = null;
     }
+    #endregion
+
 
     /// <summary>
     /// 初始化波数数据
@@ -177,7 +229,7 @@ public class FightBean
     public void RemoveDefenseCreatureByPos(Vector3Int targetPos)
     {
         var targetCreature = GetDefenseCreatureByPos(targetPos);
-        if(targetCreature == null)
+        if (targetCreature == null)
             return;
         dlDefenseCreatureEntity.RemoveByKey(targetCreature.fightCreatureData.creatureData.creatureId);
     }

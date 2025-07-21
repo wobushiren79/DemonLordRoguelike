@@ -9,7 +9,6 @@ public partial class UIViewBasePortalItem : BaseUIView
     protected GameWorldInfoRandomBean gameWorldInfoRandom;
     protected GameWorldInfoBean gameWorldInfo;
 
-
     protected PopupButtonCommonView popupForPortalDetails;
     protected bool isRotate = false;
     protected bool isSelectWorld = false;
@@ -127,7 +126,7 @@ public partial class UIViewBasePortalItem : BaseUIView
         dialogData.content = string.Format(TextHandler.Instance.GetTextById(401), gameWorldInfo.GetName());
         
         float animTimeForShowMask = 1f;
-        float animTimeForHideMask = 1f;
+        //float animTimeForHideMask = 1f;
         dialogData.actionSubmit = ((view, data) =>
         {
             //展示靠近动画
@@ -137,20 +136,9 @@ public partial class UIViewBasePortalItem : BaseUIView
             //展示mask遮罩
             UIHandler.Instance.ShowMask(animTimeForShowMask, null, () =>
             {
-                WorldHandler.Instance.ClearWorldData(() =>
-                {
-                    UIHandler.Instance.HideMask(animTimeForHideMask,
-                        () =>
-                        {
-                            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-                            GameWorldMapBean gameWorldMapData = GameHandler.Instance.CreateGameWorldMapData(gameWorldInfo.id);
-
-                            userData.gameWorldMapData = gameWorldMapData;
-                            var mapUI = UIHandler.Instance.OpenUI<UIGameWorldMap>(layer: 0);
-                            mapUI.AnimForShowUI(animTimeForHideMask);
-                        },
-                        null);
-                }, false);
+                FightBean fightData = new FightBean(gameWorldInfoRandom);
+                WorldHandler.Instance.EnterGameForFightScene(fightData);
+                //UIHandler.Instance.HideMask(animTimeForHideMask, null, null);
             }, false);
         });
         dialogData.actionCancel = (view, data) =>

@@ -83,7 +83,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
             //镜头初始化
             CameraHandler.Instance.InitData();
-              //开始战斗
+            //开始战斗
             GameHandler.Instance.StartGameFight(fightData);
             //播放音乐
             AudioHandler.Instance.PlayMusicForFight();

@@ -30,6 +30,8 @@ public partial class GameWorldInfoRandomBean
     public GameFightTypeEnum gameFightType;
     //道路数量
     public int roadNum;
+    //道路长度
+    public int roadLength;
     //UI显示位置
     public Vector2 uiPosition;
     //关卡数量
@@ -98,13 +100,22 @@ public partial class GameWorldInfoRandomBean
     {
         //获取用户数据
         UserUnlockWorldBean userUnlockWorldData = GetUserUnlockWorldData();
-
-        int roadNumRandom = UnityEngine.Random.Range(1, 7);
+        //获取征服模式游戏数据
+        FightTypeConquerInfoBean fightTypeConquerInfo = FightTypeConquerInfoCfg.GetItemData(worldId, difficultyLevel);
+        if (fightTypeConquerInfo == null)
+        {
+            LogUtil.LogError($"初始化征服游戏模式失败 worldId:{worldId} difficultyLevel:{difficultyLevel}");
+            return;
+        }
+        //随机道路数量
+        int roadNumRandom = UnityEngine.Random.Range(fightTypeConquerInfo.road_num_min, fightTypeConquerInfo.road_num_max + 1);
         roadNum = roadNumRandom;
-
-        int fightNumRandom = UnityEngine.Random.Range(5, 10);
+        //随机道路长度
+        int roadLengthRandom = UnityEngine.Random.Range(fightTypeConquerInfo.road_length_min, fightTypeConquerInfo.road_length_max + 1);
+        roadLength = roadLengthRandom;
+        //随机关卡数量
+        int fightNumRandom = UnityEngine.Random.Range(fightTypeConquerInfo.fight_num_min, fightTypeConquerInfo.fight_num_max + 1);
         fightNum = fightNumRandom;
-
         //设置默认难度等级（默认最高）
         difficultyLevel = userUnlockWorldData.difficultyLevel;
     }
