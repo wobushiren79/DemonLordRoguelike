@@ -90,6 +90,13 @@ public class FightBean
         fightNum = 1;
         //设置战斗场景ID
         fightSceneId = fightTypeConquerInfo.GetRandomFightScene(false);
+        //设置进攻生物数据
+        fightAttackData = new FightAttackBean();
+        // for (int i = 0; i < 10; i++)
+        // {
+        //     FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(fightSceneAttackDelay, enemyIds);
+        //     fightData.fightAttackData.AddAttackQueue(fightAttackDetails);
+        // }
     }
     #endregion
 

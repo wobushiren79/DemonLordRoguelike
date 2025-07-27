@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public partial class ItemsInfoBean : BaseBean
 {
 	/// <summary>
-	///道具类型1:帽子 2衣服 3裤子 4鞋子 10武器
+	///道具类型1:帽子 2衣服 3裤子 4鞋子 5鼻环 10武器
 	/// </summary>
 	public int item_type;
 	/// <summary>
