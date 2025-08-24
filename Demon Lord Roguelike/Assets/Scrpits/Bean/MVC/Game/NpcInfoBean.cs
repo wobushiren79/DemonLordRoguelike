@@ -12,6 +12,10 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public int npc_type;
 	/// <summary>
+	///随机皮肤数据
+	/// </summary>
+	public long skin_random_id;
+	/// <summary>
 	///装备道具Ids
 	/// </summary>
 	public string equip_item_ids;

@@ -7,7 +7,7 @@ public class BuffEntityForHPChange : BuffBaseEntity
     {
         base.TriggerBuff(buffEntityData);
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        var targetCreature = gameFightLogic.fightData.GetCreatureById(buffEntityData.creatureId, CreatureTypeEnum.None);
+        var targetCreature = gameFightLogic.fightData.GetCreatureById(buffEntityData.getCreatureId, CreatureTypeEnum.None);
         if (targetCreature == null || targetCreature.fightCreatureData == null)
         {
             return;
@@ -28,12 +28,13 @@ public class BuffEntityForHPChange : BuffBaseEntity
             //如果改变的HP大于0 则回复HP
             if (changeHPData > 0)
             {
-                targetCreature.RegainHP(buffEntityData.creatureId, buffEntityData.creatureId, changeHPData);
+                targetCreature.RegainHP(buffEntityData.getCreatureId, buffEntityData.getCreatureId, changeHPData);
             }
             //如果小于0 则受到攻击
             else
             {
-                targetCreature.UnderAttack(buffEntityData.creatureId, buffEntityData.creatureId, -changeHPData, 0);
+                FightUnderAttackStruct fightUnderAttackStruct = new FightUnderAttackStruct(buffEntityData, -changeHPData);
+                targetCreature.UnderAttack(fightUnderAttackStruct);
             }
         }
     }

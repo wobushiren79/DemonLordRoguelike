@@ -10,19 +10,23 @@ using UnityEngine.PlayerLoop;
 public class BuffEntityBean
 {
     public BuffInfoBean buffInfo;
+    //buff施加者
+    public string giveCreatureId;
+    //buff触发者
+    public string getCreatureId;
 
-    public string creatureId;//作用的生物ID
     public float timeUpdate = 0;
     public int triggerNumLeft;//剩下的触发次数
 
-    public BuffEntityBean(string creatureId, long buffId)
+    public BuffEntityBean(string giveCreatureId, string getCreatureId, long buffId)
     {
         buffInfo = BuffInfoCfg.GetItemData(buffId);
         if (buffInfo == null)
         {
-            LogUtil.LogError($"buff初始化失败 没有找到creatureId_{creatureId} buffId_{buffId}");
+            LogUtil.LogError($"buff初始化失败 没有找到giveCreatureId_{giveCreatureId} getCreatureId_{getCreatureId}  buffId_{buffId}");
         }
-        this.creatureId = creatureId;
+        this.giveCreatureId = giveCreatureId;
+        this.getCreatureId = getCreatureId;
         this.triggerNumLeft = buffInfo.trigger_num;
     }
 
@@ -79,7 +83,7 @@ public class BuffEntityBean
         try
         {
             GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-            var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, CreatureTypeEnum.None);
+            var targetCreature = gameFightLogic.fightData.GetCreatureById(getCreatureId, CreatureTypeEnum.None);
             if (targetCreature != null && targetCreature.fightCreatureData != null)
             {
                 targetCreature.fightCreatureData.RemoveBuff(this, actionForCompleteRemove);

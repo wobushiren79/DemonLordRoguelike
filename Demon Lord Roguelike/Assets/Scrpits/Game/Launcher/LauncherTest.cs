@@ -60,6 +60,9 @@ public class LauncherTest : BaseLauncher
                 creatureItem.AddSkin(3040001);
             }
             userData.AddBackpackCreature(creatureItem);
+
+            //添加到阵容1
+            userData.AddLineupCreature(1, creatureItem.creatureId);
         }
         WorldHandler.Instance.EnterGameForBaseScene(userData, true);
     }

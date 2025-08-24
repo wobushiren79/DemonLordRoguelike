@@ -63,17 +63,17 @@ public class FightAttackDetailsBean
     //进攻时间 时间结束后执行下一个进攻数据
     public float timeNextAttack = 0;
     //进攻生物
-    public List<int> creatureIds;
+    public List<long> npcIds;
 
-    public FightAttackDetailsBean(float timeNextAttack, int creatureId)
+    public FightAttackDetailsBean(float timeNextAttack, long creatureId)
     {
         this.timeNextAttack = timeNextAttack;
-        creatureIds = new List<int>() { creatureId };
+        npcIds = new List<long>() { creatureId };
     }
 
-        public FightAttackDetailsBean(float timeNextAttack, List<int> creatureIds)
+        public FightAttackDetailsBean(float timeNextAttack, List<long> npcIds)
     {
         this.timeNextAttack = timeNextAttack;
-        this.creatureIds = creatureIds;
+        this.npcIds = npcIds;
     }
 }

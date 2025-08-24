@@ -2,23 +2,69 @@ using System;
 using System.Collections.Generic;
 public partial class FightTypeConquerInfoBean
 {
+    protected long[] fightSceneIds;
+    protected long[] fightSceneBossIds;
+    protected long[] emenyIds;
+    protected long[] emenyBossIds;
+
     /// <summary>
     /// 获取随机战斗场景
     /// </summary>
     public long GetRandomFightScene(bool isBoss)
     {
-        string sceneStr;
+        long[] targetIds;
         if (isBoss)
         {
-            sceneStr = fight_scene_ids;
+            targetIds = fightSceneBossIds;
         }
         else
         {
-            sceneStr = fight_scene_boss_ids;
+            targetIds = fightSceneIds;
         }
-        return sceneStr.SplitAndRandomForLong(',');
+        if (targetIds == null)
+        {
+
+            if (isBoss)
+            {
+                targetIds = fight_scene_boss_ids.SplitForArrayLong('&');
+            }
+            else
+            {
+                targetIds = fight_scene_ids.SplitForArrayLong('&');
+            }
+        }
+        return targetIds.GetRandomData();
     }
-    
+
+    /// <summary>
+    /// 获取战斗敌人数据
+    /// </summary>
+    /// <param name="isBoss"></param>
+    public long GetRandomEmenyId(bool isBoss)
+    {
+        long[] targetIds;
+        if (isBoss)
+        {
+            targetIds = emenyBossIds;
+        }
+        else
+        {
+            targetIds = emenyIds;
+        }
+        if (targetIds == null)
+        {
+
+            if (isBoss)
+            {
+                targetIds = enemy_boss_ids.SplitForArrayLong('&');
+            }
+            else
+            {
+                targetIds = enemy_ids.SplitForArrayLong('&');
+            }
+        }
+        return targetIds.GetRandomData();
+    }
 }
 public partial class FightTypeConquerInfoCfg
 {

@@ -44,6 +44,14 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public float speed_move;
 	/// <summary>
+	///音效-miss
+	/// </summary>
+	public int sound_miss;
+	/// <summary>
+	///音效-击中
+	/// </summary>
+	public int sound_hit;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

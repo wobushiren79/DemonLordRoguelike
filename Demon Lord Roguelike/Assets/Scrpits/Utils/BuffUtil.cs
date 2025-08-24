@@ -3,7 +3,7 @@ using UnityEngine;
 
 public static class BuffUtil
 {
-    
+
     //buff的实例类
     public static Dictionary<long, BuffBaseEntity> dicBuffEntity = new Dictionary<long, BuffBaseEntity>();
 
@@ -66,7 +66,7 @@ public static class BuffUtil
     /// <param name="buffIds"></param>
     /// <param name="creatureId"></param>
     /// <returns></returns>
-    public static List<BuffEntityBean> GetTriggerBuff(long[] buffIds, string creatureId)
+    public static List<BuffEntityBean> GetTriggerBuff(long[] buffIds, string giveCreatureId, string getCreatureId)
     {
         List<BuffEntityBean> listData = new List<BuffEntityBean>();
         for (int i = 0; i < buffIds.Length; i++)
@@ -82,7 +82,7 @@ public static class BuffUtil
                 }
             }
 
-            BuffEntityBean buffData = new BuffEntityBean(creatureId,itemBuffId);
+            BuffEntityBean buffData = new BuffEntityBean(giveCreatureId, getCreatureId, itemBuffId);
             listData.Add(buffData);
         }
         return listData;

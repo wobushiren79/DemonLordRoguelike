@@ -71,13 +71,10 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     public void InitLineupData()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        List<string> listLineupCreature = userData.GetLineupCreature(currentLineupIndex);
+        List<CreatureBean> listLineupCreature = userData.GetLineupCreature(currentLineupIndex);
         for (int i = 0; i < listLineupCreature.Count; i++)
         {
-            string creatureId = listLineupCreature[i];
-            var creatureData = userData.GetBackpackCreature(creatureId);
-            if (creatureData == null)
-                continue;
+            var creatureData = listLineupCreature[i];
             AddLineupCard(creatureData, new Vector3(Screen.width / 2f + 120, 0, 0), 1);
         }
     }

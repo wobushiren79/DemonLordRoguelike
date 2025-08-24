@@ -19,7 +19,7 @@ public class GameTestEditor : Editor
     public int creatureId = 0;
     public int creatureModelId = 0;
 
-    public List<int> enemyIds = new List<int>() { 101001 };
+    public List<long> enemyIds = new List<long>() { 1010010001 };
     
     LauncherTest launcher;
     public override void OnInspectorGUI()
@@ -102,7 +102,7 @@ public class GameTestEditor : Editor
         EditorGUILayout.LabelField("测试数据-进攻生物Ids");
         for (int i = 0; i < enemyIds.Count; i++)
         {
-            enemyIds[i] = EditorGUILayout.IntField(enemyIds[i]);
+            enemyIds[i] = EditorGUILayout.LongField(enemyIds[i]);
         }
         EditorGUILayout.BeginHorizontal();
         // 添加/删除按钮

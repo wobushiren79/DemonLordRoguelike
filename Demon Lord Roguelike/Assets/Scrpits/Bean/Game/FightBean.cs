@@ -80,6 +80,7 @@ public class FightBean
             LogUtil.LogError($"初始化征服游戏模式失败 worldId:{gameWorldInfoRandomData.worldId} difficultyLevel:{gameWorldInfoRandomData.difficultyLevel}");
             return;
         }
+        var userData = GameDataHandler.Instance.manager.GetUserData();
         //设置道路数量
         sceneRoadNum = gameWorldInfoRandomData.roadNum;
         //设置道路长度
@@ -90,13 +91,29 @@ public class FightBean
         fightNum = 1;
         //设置战斗场景ID
         fightSceneId = fightTypeConquerInfo.GetRandomFightScene(false);
+        //初始化防御核心
+        FightCreatureBean fightCreatureDefenseCore = new FightCreatureBean(userData.selfCreature);
+        fightDefenseCoreData = fightCreatureDefenseCore;
+        //设置防御生物
+        dlDefenseCreatureData.Clear();
+        var lineupCreature = userData.GetLineupCreature(1);
+        for (int i = 0; i < lineupCreature.Count; i++)
+        {
+            var itemLineupCreature = lineupCreature[i];;
+            dlDefenseCreatureData.Add(itemLineupCreature.creatureId, itemLineupCreature);
+        }
         //设置进攻生物数据
         fightAttackData = new FightAttackBean();
-        // for (int i = 0; i < 10; i++)
-        // {
-        //     FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(fightSceneAttackDelay, enemyIds);
-        //     fightData.fightAttackData.AddAttackQueue(fightAttackDetails);
-        // }
+        int waveNum = UnityEngine.Random.Range(fightTypeConquerInfo.attack_wave_min, fightTypeConquerInfo.attack_wave_max + 1);
+        float waveDelay = 5;
+        for (int i = 0; i < waveNum; i++)
+        {
+            long enemyId = fightTypeConquerInfo.GetRandomEmenyId(false);
+            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(waveDelay - i * (waveDelay / waveNum), enemyId);
+            fightAttackData.AddAttackQueue(fightAttackDetails);
+        }
+
+
     }
     #endregion
 

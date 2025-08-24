@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Collections.Generic;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 
 [Serializable]
 public class UserDataBean : BaseBean
@@ -205,9 +206,9 @@ public class UserDataBean : BaseBean
 
     #region 阵容生物相关
     /// <summary>
-    /// 获取阵容生物
+    /// 获取阵容生物ID
     /// </summary>
-    public List<string> GetLineupCreature(int lineupIndex)
+    public List<string> GetLineupCreatureIds(int lineupIndex)
     {
         if (dicLineupCreature.TryGetValue(lineupIndex, out List<string> listCreatureId))
         {
@@ -222,6 +223,24 @@ public class UserDataBean : BaseBean
     }
 
     /// <summary>
+    /// 获取阵容生物
+    /// </summary>
+    public List<CreatureBean> GetLineupCreature(int lineupIndex)
+    {
+        List<CreatureBean> listCreature = new List<CreatureBean>();
+        List<string> listLineupCreature = GetLineupCreatureIds(lineupIndex);
+        for (int i = 0; i < listLineupCreature.Count; i++)
+        {
+            string creatureId = listLineupCreature[i];
+            var creatureData = GetBackpackCreature(creatureId);
+            if (creatureData == null)
+                continue;
+            listCreature.Add(creatureData);
+        }
+        return listCreature;
+    }
+
+    /// <summary>
     /// 获取阵容生物所在位置
     /// </summary>
     public int GetLineupCreaturePosIndex(int lineupIndex, string creatureId)
@@ -230,7 +249,7 @@ public class UserDataBean : BaseBean
         {
             if (listCreatureId.Contains(creatureId))
             {
-                return listCreatureId.IndexOf(creatureId); ;
+                return listCreatureId.IndexOf(creatureId);
             }
             else
             {

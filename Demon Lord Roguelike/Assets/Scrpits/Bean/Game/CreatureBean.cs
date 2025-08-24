@@ -32,6 +32,25 @@ public partial class CreatureBean
     }
 
     #region 装备相关
+    /// <summary>
+    /// 设置装备
+    /// </summary>
+    /// <param name="npcInfo"></param>
+    public void SetEquip(NpcInfoBean npcInfo)
+    {
+        var listEquipItems = npcInfo.GetEquipItems();
+        for (int i = 0; i < listEquipItems.Count; i++)
+        {
+            var itemId = listEquipItems[i];
+            ItemsInfoBean itemsInfo = ItemsInfoCfg.GetItemData(itemId);
+            ItemBean itemData = new ItemBean(itemsInfo.id);
+            ChangeEquip(itemsInfo.GetItemType(), itemData, out ItemBean beforeItem);
+        }
+    }
+
+    /// <summary>
+    /// 改变装备
+    /// </summary>
     public void ChangeEquip(ItemTypeEnum itemType, ItemBean changeItem, out ItemBean beforeItem)
     {
         beforeItem = null;
@@ -112,6 +131,39 @@ public partial class CreatureBean
                     LogUtil.LogError($"添加基础皮肤武器失败 weaponId_{weaponId}");
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// 添加皮肤
+    /// </summary>
+    public void SetSkin(NpcInfoBean npcInfo)
+    {
+        //添加基础皮肤
+        AddSkinForBase();
+        if (npcInfo.skin_random_id == 0)
+        {
+            return;
+        }
+        var creatureInfoRandomBean = CreatureInfoRandomCfg.GetItemData(npcInfo.skin_random_id);
+        List<long> listRandomSkin = creatureInfoRandomBean.GetRandomData();
+        //添加配置皮肤
+        AddSkin(listRandomSkin);
+    }
+
+    /// <summary>
+    /// 添加皮肤
+    /// </summary>
+    public void AddSkin(List<long> skinIds)
+    {
+        if (skinIds == null)
+        {
+            return;
+        }
+        for (int i = 0; i < skinIds.Count; i++)
+        {
+            var itemSkinId = skinIds[i];
+            AddSkin(itemSkinId);
         }
     }
 

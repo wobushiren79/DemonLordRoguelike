@@ -2,23 +2,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-
-public partial class GameWorldInfoBean
-{
-    /// <summary>
-    /// 获取地图坐标
-    /// </summary>
-    /// <returns></returns>
-    public Vector2 GetMapPosition()
-    {
-        if (map_pos.IsNull())
-        {
-            return Vector2.zero;
-        }
-        return map_pos.SplitForVector2(',');
-    }
-}
-
 [Serializable]
 /// <summary>
 /// 游戏世界随机数据
@@ -40,6 +23,11 @@ public partial class GameWorldInfoRandomBean
     public int iconSeed;
     //难度等级
     public int difficultyLevel;
+
+    public GameWorldInfoRandomBean()
+    {
+        difficultyLevel = 1;
+    }
 
     /// <summary>
     /// 获取解锁世界数据

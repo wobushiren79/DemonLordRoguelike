@@ -10,6 +10,9 @@ public class BuffBasePreEntity
         return false;
     }
 
+    /// <summary>
+    /// 获取触发生物
+    /// </summary>
     public GameFightCreatureEntity GetTargetCreatureEntity(string creatureId)
     {
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();

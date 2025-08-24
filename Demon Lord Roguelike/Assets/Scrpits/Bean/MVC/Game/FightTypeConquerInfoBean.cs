@@ -24,6 +24,22 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	/// </summary>
 	public string enemy_boss_ids;
 	/// <summary>
+	///敌人数量
+	/// </summary>
+	public int enemy_num;
+	/// <summary>
+	///起始敌人数量
+	/// </summary>
+	public int attack_start_num;
+	/// <summary>
+	///最小进攻次数
+	/// </summary>
+	public int attack_wave_min;
+	/// <summary>
+	///最大进攻次数
+	/// </summary>
+	public int attack_wave_max;
+	/// <summary>
 	///关卡次数-最小
 	/// </summary>
 	public int fight_num_min;

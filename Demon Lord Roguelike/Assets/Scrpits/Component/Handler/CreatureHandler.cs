@@ -103,11 +103,11 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     public void CreateAttackCreature(FightAttackDetailsBean fightAttackDetails,int roadNum)
     {
         //一次创建的数量
-        int numCreature = fightAttackDetails.creatureIds.Count;
+        int numCreature = fightAttackDetails.npcIds.Count;
         for (int i = 0; i < numCreature; i++)
         {
-            var creatureId = fightAttackDetails.creatureIds[i];
-            CreateAttackCreature(creatureId, roadNum, (targetObj) =>
+            var npcId = fightAttackDetails.npcIds[i];
+            CreateAttackCreature(npcId, roadNum, (targetObj) =>
             {
 
             });
@@ -119,9 +119,10 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// 创建进攻生物
     /// </summary>
     /// <param name="targetRoad">目标进攻路线 0为随机</param>
-    public void CreateAttackCreature(int creatureId,int roadNum, Action<GameObject> actionForComplete, int targetRoad = 0)
+    public void CreateAttackCreature(long npcId, int roadNum, Action<GameObject> actionForComplete, int targetRoad = 0)
     {
-        GetCreatureObj(creatureId, (targetObj) =>
+        var npcInfo = NpcInfoCfg.GetItemData(npcId);
+        GetCreatureObj(npcInfo.creature_id, (targetObj) =>
         {
             //随机生成某一路
             if (targetRoad == 0)
@@ -132,8 +133,12 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             targetObj.transform.position = new Vector3(randomX, 0, targetRoad);
 
             //创建战斗生物
-            FightCreatureBean fightCreatureData = new FightCreatureBean(creatureId);
-            fightCreatureData.creatureData.AddSkinForBase();
+            FightCreatureBean fightCreatureData = new FightCreatureBean(npcInfo.creature_id);
+            //添加随机皮肤
+            fightCreatureData.creatureData.SetSkin(npcInfo);
+            //添加装备
+            fightCreatureData.creatureData.SetEquip(npcInfo);
+
             fightCreatureData.positionCreate = new Vector3Int(0, 0, targetRoad);
 
             GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
@@ -141,7 +146,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             //先添加数据
             var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
             gameLogic.fightData.AddAttackCreatureByRoad(targetRoad, gameFightCreatureEntity);
-            
+
             //再创建数据
             gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIAttCreatureEntity>(actionBeforeStart: (targetEntity) =>
             {
@@ -155,7 +160,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// <summary>
     /// 获取一个生物的obj
     /// </summary>
-    public void GetCreatureObj(long creatureId, Action<GameObject> actionForComplete)
+    public void  GetCreatureObj(long creatureId, Action<GameObject> actionForComplete)
     {
         manager.LoadCreatureObj(creatureId, (targetObj) =>
         {                   

@@ -24,7 +24,7 @@ public class FightCreatureBean
 
     public Color colorBodyCurrent;//当前身体颜色
     public List<BuffEntityBean> listBuffEntityData;//所有的buff实例
-    public FightCreatureBean(int creatureId)
+    public FightCreatureBean(long creatureId)
     {
         creatureData = new CreatureBean(creatureId);
         ResetData();

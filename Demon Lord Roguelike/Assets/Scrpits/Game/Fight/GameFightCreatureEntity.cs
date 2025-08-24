@@ -8,6 +8,8 @@ using UnityEngine;
 
 public class GameFightCreatureEntity
 {
+
+
     public GameObject creatureObj;
     public FightCreatureBean fightCreatureData;
     public AIBaseEntity aiEntity;
@@ -38,7 +40,7 @@ public class GameFightCreatureEntity
         SetBodyColor();
         //设置buff数据
         long[] creatureBuffs = fightCreatureData.creatureData.creatureInfo.GetCreatureBuff();
-        AddBuff(creatureBuffs);
+        AddBuff(creatureBuffs,fightCreatureData.creatureData.creatureId, fightCreatureData.creatureData.creatureId);
     }
 
     /// <summary>
@@ -153,16 +155,16 @@ public class GameFightCreatureEntity
     /// <summary>
     /// 增加buff
     /// </summary>
-    public void AddBuff(List<BuffBean> listBuffData)
+    public void AddBuff(List<BuffBean> listBuffData, string giveCreatureId, string getCreatureId)
     {
         if (!listBuffData.IsNull())
         {
             long[] buffIds = new long[listBuffData.Count];
-            listBuffData.ForEach((index,itemData) =>
+            listBuffData.ForEach((index, itemData) =>
             {
                 buffIds[index] = itemData.buffId;
             });
-            AddBuff(buffIds);
+            AddBuff(buffIds, giveCreatureId, getCreatureId);
         }
     }
 
@@ -173,18 +175,18 @@ public class GameFightCreatureEntity
     {
         //触发buff
         var buffIds = baseAttackMode.attackModeInfo.GetBuffIds();
-        AddBuff(buffIds);
+        AddBuff(buffIds,baseAttackMode.attackerId, baseAttackMode.attackedId);
     }
 
     /// <summary>
     /// 增加BUFF
     /// </summary>
-    public void AddBuff(long[] buffIds)
+    public void AddBuff(long[] buffIds, string giveCreatureId, string getCreatureId)
     {
         if (!buffIds.IsNull())
         {
             //获取触发的buff 计算触发概率
-            var buffsTrigger = BuffUtil.GetTriggerBuff(buffIds, fightCreatureData.creatureData.creatureId);
+            var buffsTrigger = BuffUtil.GetTriggerBuff(buffIds, giveCreatureId, getCreatureId);
             if (!buffsTrigger.IsNull())
             {
                 fightCreatureData.AddBuff(buffsTrigger, actionForComplete: CallBackForAddBuff);
@@ -278,9 +280,8 @@ public class GameFightCreatureEntity
     /// </summary>
     public void UnderAttack(BaseAttackMode baseAttackMode)
     {
-        UnderAttack(
-            baseAttackMode.attackerId, baseAttackMode.attackedId,
-            baseAttackMode.attackerDamage, baseAttackMode.attackerCRT,
+        FightUnderAttackStruct fightUnderAttackStruct = new FightUnderAttackStruct(baseAttackMode);
+        UnderAttack(fightUnderAttackStruct,
             actionForNoDead: (changeDRReal, changeHPReal) =>
             {
                 //触发被攻击特效
@@ -324,43 +325,40 @@ public class GameFightCreatureEntity
     /// <summary>
     /// 受到攻击
     /// </summary>
-    public void UnderAttack
-    (
-        string attackerId, string attackedId,
-        int attackerDamage, float attackerCRT,
-        Action<int, int> actionForNoDead = null, Action<int, int> actionForDead = null
-    )
+    public void UnderAttack(FightUnderAttackStruct fightUnderAttackStruct, Action<int, int> actionForNoDead = null, Action<int, int> actionForDead = null)
     {
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var fightData = gameLogic.fightData;
         var fightRecordsData = fightData.fightRecordsData;
         //判断是否闪避
         float evaRate = fightCreatureData.GetEVA();
-        float randomEVA = UnityEngine.Random.Range(0f,1f);
+        float randomEVA = UnityEngine.Random.Range(0f, 1f);
         if (randomEVA <= evaRate)
         {
             //显示数字
             EffectHandler.Instance.ShowTextNumEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), 0, 1);
+            //播放闪避音效
+            AudioHandler.Instance.PlaySound(fightUnderAttackStruct.soundMissId);
             return;
         }
         //判断是否受到暴击
         float randomCRT = UnityEngine.Random.Range(0f, 1f);
-        if (randomCRT <= attackerCRT)
+        if (randomCRT <= fightUnderAttackStruct.attackerCRT)
         {
-            attackerDamage = (int)(1.5f * attackerDamage);
+            fightUnderAttackStruct.attackerDamage = (int)(1.5f * fightUnderAttackStruct.attackerDamage);
         }
         //先扣除护甲 再扣除生命
-        fightCreatureData.ChangeDRAndHP(-attackerDamage,
+        fightCreatureData.ChangeDRAndHP(-fightUnderAttackStruct.attackerDamage,
         out int curDR, out int curHP,
         out int changeDRReal, out int changeHPReal);
         //真实造成的伤害
         int damageReal = Mathf.Abs(changeDRReal + changeHPReal);
         //记录数据
-        fightRecordsData.AddCreatureDamage(attackerId, damageReal);
-        fightRecordsData.AddCreatureDamageReceived(attackedId, damageReal);
+        fightRecordsData.AddCreatureDamage(fightUnderAttackStruct.attackerId, damageReal);
+        fightRecordsData.AddCreatureDamageReceived(fightUnderAttackStruct.attackedId, damageReal);
 
         //是否暴击
-        if (randomCRT <= attackerCRT)
+        if (randomCRT <= fightUnderAttackStruct.attackerCRT)
         {
             //显示数字
             EffectHandler.Instance.ShowTextNumEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), damageReal, 2);
@@ -370,7 +368,9 @@ public class GameFightCreatureEntity
             //显示数字
             EffectHandler.Instance.ShowTextNumEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), damageReal, 0);
         }
-        
+        //播放闪避音效
+        AudioHandler.Instance.PlaySound(fightUnderAttackStruct.soundHitId);
+
         //检测一下是否死亡
         CheckDead
         (
