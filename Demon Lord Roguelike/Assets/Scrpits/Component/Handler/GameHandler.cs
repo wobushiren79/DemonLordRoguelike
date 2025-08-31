@@ -1,19 +1,33 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class GameHandler : BaseHandler<GameHandler,GameManager>
-{   
+{
+
+    // 定义战斗类型与逻辑类型的映射
+    static Dictionary<GameFightTypeEnum, Type> dicGamefightLogicType = new Dictionary<GameFightTypeEnum, Type>
+    {
+        { GameFightTypeEnum.Conquer, typeof(GameFightLogicConquer) },
+        { GameFightTypeEnum.Infinite, typeof(GameFightLogicInfinite) },
+        { GameFightTypeEnum.Test, typeof(GameFightLogicTest) }
+    };
+
     /// <summary>
     /// 开始游戏战斗
     /// </summary>
     public void StartGameFight(FightBean fightData)
     {
-        if (manager.gameLogic == null || manager.gameLogic is not GameFightLogic)
-            manager.gameLogic = new GameFightLogic();
-        var gameLogic = manager.gameLogic as GameFightLogic;
-        gameLogic.fightData = fightData;
-        manager.gameLogic.PreGame();
+        // 检查是否需要创建新的逻辑实例
+        Type targetType = dicGamefightLogicType.GetValueOrDefault(fightData.gameFightType, typeof(GameFightLogic));
+        if (manager.gameLogic?.GetType() != targetType)
+        {
+            manager.gameLogic = (GameFightLogic)Activator.CreateInstance(targetType);
+        }
+        GameFightLogic gameFightLogic = (GameFightLogic)manager.gameLogic;
+        gameFightLogic.fightData = fightData;
+        gameFightLogic.PreGame();
     }
 
     /// <summary>

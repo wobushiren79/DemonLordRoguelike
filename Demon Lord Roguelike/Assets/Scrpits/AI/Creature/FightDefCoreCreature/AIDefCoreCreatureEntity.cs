@@ -5,15 +5,13 @@ using UnityEngine;
 
 public class AIDefCoreCreatureEntity : AICreatureEntity
 {
-    public GameFightCreatureEntity selfDefCoreCreatureEntity;
-
     /// <summary>
     /// 初始化数据
     /// </summary>
     public void InitData(GameFightCreatureEntity selfDefCoreCreatureEntity)
     {
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
-        this.selfDefCoreCreatureEntity = selfDefCoreCreatureEntity;
+        this.selfCreatureEntity = selfDefCoreCreatureEntity;
     }
 
     /// <summary>
@@ -22,7 +20,7 @@ public class AIDefCoreCreatureEntity : AICreatureEntity
     public override void ClearData()
     {
         base.ClearData();
-        selfDefCoreCreatureEntity = null;
+        this.selfCreatureEntity = null;
     }
 
     /// <summary>

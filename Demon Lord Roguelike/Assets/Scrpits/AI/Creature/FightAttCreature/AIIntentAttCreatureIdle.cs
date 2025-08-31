@@ -18,17 +18,22 @@ public class AIIntentAttCreatureIdle : AIBaseIntent
         //触发待机动作
         selfAIEntity.selfCreatureEntity.SetFaceDirection(Direction2DEnum.Left);
 
-        string animNameAppoint = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_idle;
+        string animNameAppoint = fightCreatureData.creatureData.creatureInfo.anim_idle;
         selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true, animNameAppoint: animNameAppoint);
 
-        //如果没有数据 说明这条路上没有防守生物，则直接前往路的尽头
+        //如果没有数据 说明这条路上没有防守生物，则目标设置为魔王
         if (selfAIEntity.targetCreatureEntity == null)
         {
             var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+            var fightDefenseCoreCreature = gameFightLogic.fightData.fightDefenseCoreCreature;
+            if (fightDefenseCoreCreature != null && fightDefenseCoreCreature.IsDead())
+            {
+                selfAIEntity.targetCreatureEntity = null;
+                return;
+            }
             selfAIEntity.targetCreatureEntity = gameFightLogic.fightData.fightDefenseCoreCreature;
-            selfAIEntity.targetMovePos = new Vector3(0, 0, fightCreatureData.roadIndex);
         }
-        else
+        if (selfAIEntity.targetCreatureEntity != null)
         {
             selfAIEntity.targetMovePos = selfAIEntity.targetCreatureEntity.creatureObj.transform.position;
         }
@@ -36,7 +41,10 @@ public class AIIntentAttCreatureIdle : AIBaseIntent
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
-        selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureMove);
+        if (selfAIEntity.targetCreatureEntity != null)
+        {  
+            selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureMove);
+        }
     }
 
     public override void IntentLeaving(AIBaseEntity aiEntity)

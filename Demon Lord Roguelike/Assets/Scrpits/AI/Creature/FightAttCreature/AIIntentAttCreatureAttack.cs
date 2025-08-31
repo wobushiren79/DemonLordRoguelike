@@ -109,6 +109,7 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
         {
             selfAIEntity.targetCreatureEntity = findTargetCreature;
         }
+
         //如果目标生物已经无了 则重新寻找目标
         if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.IsDead())
         {

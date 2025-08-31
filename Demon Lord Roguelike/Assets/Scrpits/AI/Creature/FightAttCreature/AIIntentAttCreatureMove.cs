@@ -38,29 +38,35 @@ public class AIIntentAttCreatureMove : AIBaseIntent
             }
         }
 
-        //如果目标是魔王
-        if (selfAIEntity.targetMovePos.x <= 0)
+        //如果目标已经死了
+        if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.IsDead())
         {
-            //检测是否靠近目标
-            if (CheckIsCloseTarget())
-            {
-                selfAIEntity.selfCreatureEntity.SetCreatureDead();
-                return;
-            }
-        }
-        //如果不是魔王
-        else
-        {
-            //如果目标已经死了
-            if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.IsDead())
-            {
-                selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureIdle);
-                return;
-            }
+            selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureIdle);
+            return;
         }
 
         float moveSpeed = selfAIEntity.selfCreatureEntity.fightCreatureData.GetMSPD();
         Transform selfTF = selfAIEntity.selfCreatureEntity.creatureObj.transform;
+        
+        //如果目标是魔王
+        if (selfAIEntity.targetCreatureEntity.fightCreatureData.creatureData.creatureInfo.GetCreatureType() == CreatureTypeEnum.FightDefenseCore)
+        {
+            //首先检测是否到达路径终点
+            if (selfTF.position.x <= 0)
+            {
+                //检测是否靠近目标
+                if (CheckIsCloseTarget())
+                {
+                    selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureAttack);
+                    return;
+                }
+            }
+            else
+            {
+                selfTF.Translate(Vector3.Normalize(new Vector3(0, 0, selfAIEntity.selfCreatureEntity.fightCreatureData.roadIndex) - selfTF.transform.position) * Time.deltaTime * moveSpeed);
+                return;
+            }
+        }
         selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeed);
     }
 

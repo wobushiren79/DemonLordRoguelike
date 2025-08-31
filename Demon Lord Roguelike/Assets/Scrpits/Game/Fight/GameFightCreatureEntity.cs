@@ -563,6 +563,10 @@ public class GameFightCreatureEntity
         {
             aiEntity.ChangeIntent(AIIntentEnum.DefCreatureDead);
         }
+        else if (aiEntity is AIDefCoreCreatureEntity)
+        {
+            aiEntity.ChangeIntent(AIIntentEnum.DefCoreCreatureDead);
+        }
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadStart, fightCreatureData);
     }
 

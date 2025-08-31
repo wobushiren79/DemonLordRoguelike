@@ -30,7 +30,7 @@ public class GameFightLogic : BaseGameLogic
                 //延迟0.1秒 防止一些镜头的1，2帧误差
                 await new WaitForSeconds(0.1f);
                 //加载核心（魔王）实例
-                Vector3 creaturePos= new Vector3(-1f, 0, fightData.sceneRoadNum / 2f + 0.5f);
+                Vector3 creaturePos = new Vector3(-1f, 0, fightData.sceneRoadNum / 2f + 0.5f);
                 CreatureHandler.Instance.CreateDefenseCoreCreature(fightData.fightDefenseCoreData.creatureData, creaturePos, (defCoreCreatureEntity) =>
                 {
                     //设置魔王核心
@@ -80,6 +80,16 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
+    /// 先简单清理数据（AI和选择 防止执行）
+    /// </summary>
+    public void ClearGameForSimple()
+    {
+        ClearSelectData(true);
+        //AI清理
+        AIHandler.Instance.manager.Clear();
+    }
+
+    /// <summary>
     /// 更新-选中物体
     /// </summary>
     public void UpdateGameForSelectCreature(float updateTime)
@@ -89,24 +99,24 @@ public class GameFightLogic : BaseGameLogic
         {
             RayUtil.RayToScreenPointForMousePosition(50, 1 << LayerInfo.Ground, out bool isCollider, out RaycastHit hit, CameraHandler.Instance.manager.mainCamera);
             if (isCollider && hit.collider != null)
-            {                
+            {
                 Vector3 hitPoint = hit.point;
-                
+
                 if (hitPoint.x < 1) hitPoint.x = 1;
                 if (hitPoint.x > fightData.sceneRoadLength) hitPoint.x = fightData.sceneRoadLength;
                 if (hitPoint.z > fightData.sceneRoadNum) hitPoint.z = fightData.sceneRoadNum;
                 if (hitPoint.z < 1) hitPoint.z = 1;
                 Vector3Int targetPos = Vector3Int.RoundToInt(hitPoint);
                 //如果选择的生物
-                if(selectCreature != null)
-                {                
+                if (selectCreature != null)
+                {
                     selectCreature.transform.position = hitPoint;
                     GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreatureSelectPreview(selectCreatureCard.cardData.creatureData);
                     objSelectPreivew.gameObject.SetActive(true);
                     objSelectPreivew.transform.position = targetPos;
                 }
                 //如果选择的是删除生物
-                if(selectCreatureDestory != null)
+                if (selectCreatureDestory != null)
                 {
                     selectCreatureDestory.transform.position = targetPos;
                 }
@@ -175,7 +185,7 @@ public class GameFightLogic : BaseGameLogic
                     {
                         itemCreatureData.creatureStateTimeUpdate = 0;
                         itemCreatureData.creatureState = CreatureStateEnum.Idle;
-                        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureChangeState, itemCreatureData.creatureId,CreatureStateEnum.Idle);
+                        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureChangeState, itemCreatureData.creatureId, CreatureStateEnum.Idle);
                     }
                 }
             }
@@ -200,7 +210,7 @@ public class GameFightLogic : BaseGameLogic
     public void SelectCreatureDestoryHandle()
     {
         var targetCreature = fightData.GetDefenseCreatureByPos(selectTargetPos);
-        if(targetCreature == null)
+        if (targetCreature == null)
             return;
         CreatureHandler.Instance.RemoveCreatureEntity(targetCreature, CreatureTypeEnum.FightDefense);
     }
@@ -320,19 +330,36 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>
     /// 检测游戏是否结束
     /// </summary>
-    public void CheckGameEnd()
+    public virtual void CheckGameEnd()
     {
+        bool isEnd = false;
+        bool isWin = false;
         //如果已经没有下一波敌人 并且场上没有敌人
         if (fightData.fightAttackData.queueAttackDetails.Count == 0 && !fightData.CheckHasAttackCreature())
+        {
+            isEnd = true;
+            isWin = true;
+        }
+        //如果魔王死了
+        if (fightData.fightDefenseCoreCreature.IsDead())
+        {
+            isEnd = true;
+            isWin = false;
+        }
+        //有是否结束
+        if (isEnd)
         {
             //进入结算状态
             GameHandler.Instance.manager.SetGameState(GameStateEnum.Settlement);
             //打开结算UI
             var uiFightSettlement = UIHandler.Instance.OpenUIAndCloseOther<UIFightSettlement>();
             uiFightSettlement.SetData(fightData.fightRecordsData);
+            //先简单清理数据
+            ClearGameForSimple();
         }
     }
 
+    #region 事件
     /// <summary>
     /// 角色死亡
     /// </summary>
@@ -341,4 +368,5 @@ public class GameFightLogic : BaseGameLogic
         //检测一下游戏是否结束
         CheckGameEnd();
     }
+    #endregion
 }

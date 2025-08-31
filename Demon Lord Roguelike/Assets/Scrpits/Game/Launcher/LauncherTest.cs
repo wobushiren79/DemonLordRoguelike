@@ -49,7 +49,7 @@ public class LauncherTest : BaseLauncher
         userData.selfCreature = creatureData;
         for (int i = 0; i < 50; i++)
         {
-            CreatureBean creatureItem = new CreatureBean(2001);
+            CreatureBean creatureItem = new CreatureBean(1);
             creatureItem.rarity = Random.Range(1, 7);
             creatureItem.starLevel = Random.Range(0, 11);
             creatureItem.level = Random.Range(0, 101);
