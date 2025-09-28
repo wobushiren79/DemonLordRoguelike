@@ -48,4 +48,13 @@ public abstract class BaseGameLogic : BaseEvent
         UnRegisterAllEvent();
         System.GC.Collect();
     }
+
+    /// <summary>
+    /// 改变游戏状态
+    /// </summary>
+    /// <param name="gameState"></param>
+    public virtual void ChangeGameState(GameStateEnum gameState)
+    {
+
+    }
 }

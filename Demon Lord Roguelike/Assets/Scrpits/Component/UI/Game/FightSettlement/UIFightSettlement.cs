@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -7,7 +8,11 @@ using UnityEngine.UI;
 public partial class UIFightSettlement : BaseUIComponent
 {
     protected List<FightRecordsCreatureBean> listRecordsCreatureData;
-    protected FightRecordsBean fightRecordsData;
+    protected FightBean fightData;
+
+    public Action actionForNext;
+
+
     public override void Awake()
     {
         base.Awake();
@@ -24,10 +29,10 @@ public partial class UIFightSettlement : BaseUIComponent
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(FightRecordsBean fightRecordsData)
+    public void SetData(FightBean fightData)
     {
-        this.fightRecordsData = fightRecordsData;
-        var listRecordsCreatureData = fightRecordsData.GetRecordsForCreatureData();
+        this.fightData = fightData;
+        var listRecordsCreatureData = fightData.fightRecordsData.GetRecordsForCreatureData();
         SetListData(listRecordsCreatureData);
     }
 
@@ -53,7 +58,7 @@ public partial class UIFightSettlement : BaseUIComponent
         if (itemData == null)
             return;
         var itemView = itemCell.GetComponent<UIViewFightSettlementItem>();
-        itemView.SetData(fightRecordsData, itemData);
+        itemView.SetData(fightData.fightRecordsData, itemData);
     }
 
     #region 按钮
@@ -63,6 +68,11 @@ public partial class UIFightSettlement : BaseUIComponent
         if (viewButton == ui_ViewExit)
         {
             OnClickForExit();
+        }
+        else if (viewButton == ui_BtnNext)
+        {
+            actionForNext?.Invoke();
+            actionForNext = null;
         }
     }
 
@@ -75,13 +85,47 @@ public partial class UIFightSettlement : BaseUIComponent
         switch (fightLogic.fightData.gameFightType)
         {
             case GameFightTypeEnum.Test:
-                UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-                WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+                OnClickForExitTest();
                 break;
             case GameFightTypeEnum.Infinite:
+                OnClickForExitInfinite();
                 break;
             case GameFightTypeEnum.Conquer:
+                OnClickForExitConquer();
                 break;
+        }
+    }
+
+    public void OnClickForExitTest()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+    }
+
+    public void OnClickForExitInfinite()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+    }
+
+    public void OnClickForExitConquer()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        if (fightData.gameIsWin)
+        {
+            if (fightData.fightNum == fightData.figthNumMax)
+            {
+
+            }
+            //TODO 结算发奖
+            else
+            {
+
+            }
+        }
+        else
+        {
+            WorldHandler.Instance.EnterGameForBaseScene(userData, true);  
         }
     }
     #endregion

@@ -13,6 +13,7 @@ public class GameFightLogic : BaseGameLogic
     public UIViewCreatureCardItem selectCreatureCard;//选中生物卡片
     public Vector3Int selectTargetPos;    //选择的位置
 
+    #region  重写方法
     /// <summary>
     /// 准备游戏
     /// </summary>
@@ -78,6 +79,7 @@ public class GameFightLogic : BaseGameLogic
         //清理战斗场景
         WorldHandler.Instance.UnLoadFightScene();
     }
+    #endregion
 
     /// <summary>
     /// 先简单清理数据（AI和选择 防止执行）
@@ -88,6 +90,40 @@ public class GameFightLogic : BaseGameLogic
         //AI清理
         AIHandler.Instance.manager.Clear();
     }
+
+    /// <summary>
+    /// 清理选择的数据
+    /// </summary>
+    public void ClearSelectData(bool isDestroyImm = false)
+    {
+        GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreatureSelectPreview();
+        objSelectPreivew.gameObject.SetActive(false);
+        //回收生物预制
+        if (selectCreature != null)
+        {
+            if (isDestroyImm)
+            {
+                GameObject.DestroyImmediate(selectCreature);
+            }
+            else
+            {
+                CreatureHandler.Instance.RemoveCreatureObj(selectCreature, CreatureTypeEnum.FightDefense);
+            }
+        }
+        if (selectCreatureCard != null)
+        {
+            EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_UnSelectCard, selectCreatureCard);
+        }
+        if (selectCreatureDestory != null)
+        {
+            selectCreatureDestory.gameObject.SetActive(false);
+        }
+
+        selectCreature = null;
+        selectCreatureDestory = null;
+        selectCreatureCard = null;
+    }
+
 
     /// <summary>
     /// 更新-选中物体
@@ -295,67 +331,28 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// 清理选择的数据
-    /// </summary>
-    public void ClearSelectData(bool isDestroyImm = false)
-    {
-        GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreatureSelectPreview();
-        objSelectPreivew.gameObject.SetActive(false);
-        //回收生物预制
-        if (selectCreature != null)
-        {
-            if (isDestroyImm)
-            {
-                GameObject.DestroyImmediate(selectCreature);
-            }
-            else
-            {
-                CreatureHandler.Instance.RemoveCreatureObj(selectCreature, CreatureTypeEnum.FightDefense);
-            }
-        }
-        if (selectCreatureCard != null)
-        {
-            EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_UnSelectCard, selectCreatureCard);
-        }
-        if (selectCreatureDestory != null)
-        {
-            selectCreatureDestory.gameObject.SetActive(false);
-        }
-
-        selectCreature = null;
-        selectCreatureDestory = null;
-        selectCreatureCard = null;
-    }
-
-    /// <summary>
     /// 检测游戏是否结束
     /// </summary>
     public virtual void CheckGameEnd()
     {
         bool isEnd = false;
-        bool isWin = false;
         //如果已经没有下一波敌人 并且场上没有敌人
         if (fightData.fightAttackData.queueAttackDetails.Count == 0 && !fightData.CheckHasAttackCreature())
         {
             isEnd = true;
-            isWin = true;
+            fightData.gameIsWin = true;
         }
         //如果魔王死了
         if (fightData.fightDefenseCoreCreature.IsDead())
         {
             isEnd = true;
-            isWin = false;
+            fightData.gameIsWin = false;
         }
         //有是否结束
         if (isEnd)
         {
             //进入结算状态
             GameHandler.Instance.manager.SetGameState(GameStateEnum.Settlement);
-            //打开结算UI
-            var uiFightSettlement = UIHandler.Instance.OpenUIAndCloseOther<UIFightSettlement>();
-            uiFightSettlement.SetData(fightData.fightRecordsData);
-            //先简单清理数据
-            ClearGameForSimple();
         }
     }
 

@@ -16,7 +16,7 @@ public class GameTestEditor : Editor
     public int fightSceneAttackNum = 1;//进攻者数量
     public float fightSceneAttackDelay = 1;//进攻者间隔
 
-    public int creatureId = 0;
+    public int creatureId = 1 ;
     public int creatureModelId = 0;
 
     public List<long> enemyIds = new List<long>() { 1010010001 };
@@ -137,13 +137,18 @@ public class GameTestEditor : Editor
             var ids = fightCardId.SplitForArrayLong(',');
             if (ids.Length > 0)
             {
-                CreatureBean creatureData = new CreatureBean(ids[0]);
+                CreatureBean creatureData = new CreatureBean(creatureId);
                 creatureData.AddSkinForBase();
                 launcher.StartForBaseTest(creatureData);
             }
         }
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("生物ID");
+        EditorGUILayout.LabelField("魔王生物ID");
+        creatureId = EditorGUILayout.IntField(creatureId);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("手下生物ID");
         fightCardId = EditorGUILayout.TextField(fightCardId);
         EditorGUILayout.EndHorizontal();
     }

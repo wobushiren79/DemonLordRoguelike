@@ -20,17 +20,17 @@ public class UIGameSettingForDisplay : UIGameSettingBase
     {
         base.Open();
 
-        //ÆÁÄ»·Ö±æÂÊ
+        //å±å¹•åˆ†è¾¨ç‡
         string textScreenTitle = TextHandler.Instance.GetTextById(42001);
         selectForScreen = CreatureItemForSelect(textScreenTitle, GameSystemInfo.ListScreenResolutionData);
         selectForScreen.SetSelcet(GameSystemInfo.ListScreenResolutionData.IndexOf(gameConfig.screenResolution));
 
-        //Ö¡ÊıËø¶¨
+        //å¸§æ•°é”å®š
         string textFrameLockTitle = TextHandler.Instance.GetTextById(42002);
         checkboxForFrameLock = CreatureItemForCheckBox(textFrameLockTitle);
         checkboxForFrameLock.SetSelect(gameConfig.stateForFrames == 1 ? true : false);
 
-        //Ö¡Êı
+        //å¸§æ•°
         string textFrameTitle = TextHandler.Instance.GetTextById(42003);
         rangeForFrame = CreatureItemForRange(textFrameTitle, 30, 120);
         rangeForFrame.SetProgress((float)gameConfig.frames);
@@ -55,7 +55,7 @@ public class UIGameSettingForDisplay : UIGameSettingBase
         {
             gameConfig.screenResolution = GameSystemInfo.ListScreenResolutionData[index];
             gameConfig.GetScreenResolution(out int w, out int h);
-            //Ö»ÓĞÈ«ÆÁÄ£Ê½²ÅÊ¹ÓÃ¹Ì¶¨·Ö±æÂÊ£¬´°¿ÚÄ£Ê½Ê±Ê¹ÓÃ×Ô¼ºµÄ·Ö±æÂÊ
+            //åªæœ‰å…¨å±æ¨¡å¼æ‰ä½¿ç”¨å›ºå®šåˆ†è¾¨ç‡ï¼Œçª—å£æ¨¡å¼æ—¶ä½¿ç”¨è‡ªå·±çš„åˆ†è¾¨ç‡
             Screen.SetResolution(w, h, false);
         }
     }

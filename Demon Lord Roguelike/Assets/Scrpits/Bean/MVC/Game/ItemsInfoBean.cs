@@ -28,6 +28,10 @@ public partial class ItemsInfoBean : BaseBean
 	/// </summary>
 	public string attack_mode_data;
 	/// <summary>
+	///名字
+	/// </summary>
+	public long name;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

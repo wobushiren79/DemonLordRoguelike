@@ -44,6 +44,14 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public float trigger_time;
 	/// <summary>
+	///名字-中文
+	/// </summary>
+	public string name_cn;
+	/// <summary>
+	///名字-英文
+	/// </summary>
+	public string name_en;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

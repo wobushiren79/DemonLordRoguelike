@@ -7,7 +7,7 @@ public partial class UIPopupItemInfo : PopupShowCommonView
     {
         ItemBean itemData = (ItemBean)data;
         var itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
-        string itemName = itemInfo.GetName();
+        string itemName = TextHandler.Instance.GetTextById(itemInfo.name);
         SetIcon(itemData.itemId);
         SetName(itemName);
     }

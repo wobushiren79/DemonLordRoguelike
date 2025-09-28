@@ -24,6 +24,10 @@ public partial class StoreGashaponMachineInfoBean : BaseBean
 	/// </summary>
 	public long unlock_id;
 	/// <summary>
+	///名字
+	/// </summary>
+	public long name_en;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

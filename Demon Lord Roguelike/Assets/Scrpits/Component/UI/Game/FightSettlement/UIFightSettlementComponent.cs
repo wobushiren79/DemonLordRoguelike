@@ -1,4 +1,4 @@
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 
 
 public partial class UIFightSettlement
@@ -16,6 +16,8 @@ public partial class UIFightSettlement
     public Button ui_OrderBtn_Sustain;
 
     public Button ui_OrderBtn_Num;
+
+    public Button ui_BtnNext;
 
 
 }

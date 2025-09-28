@@ -1,1 +1,1 @@
-[{"class_entity":"BuffPreEntityForHPRateLess","remark":"血量低于百分比","id":1001,"valid":0,"name_cn":"血量低于{0}%","name_en":""}]
+[{"class_entity":"BuffPreEntityForHPRateLess","name_cn":"血量低于{0}%","name_en":"","remark":"血量低于百分比","id":1001,"valid":0}]

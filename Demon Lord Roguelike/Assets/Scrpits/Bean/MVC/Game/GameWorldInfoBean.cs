@@ -12,6 +12,10 @@ public partial class GameWorldInfoBean : BaseBean
 	/// </summary>
 	public string map_pos;
 	/// <summary>
+	///名字
+	/// </summary>
+	public long name;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

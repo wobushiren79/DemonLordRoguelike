@@ -8,9 +8,13 @@ public partial class RarityInfoBean : BaseBean
 	/// </summary>
 	public string ui_board_color;
 	/// <summary>
-	///是否有效
+	///名字-中文
 	/// </summary>
-	public int valid;
+	public string name_cn;
+	/// <summary>
+	///名字-英文
+	/// </summary>
+	public string name_en;
 	/// <summary>
 	///备注
 	/// </summary>

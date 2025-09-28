@@ -8,6 +8,10 @@ public partial class ItemsTypeBean : BaseBean
 	/// </summary>
 	public string icon_res;
 	/// <summary>
+	///名字
+	/// </summary>
+	public long name;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

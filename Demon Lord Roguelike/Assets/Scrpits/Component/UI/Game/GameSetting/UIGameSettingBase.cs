@@ -6,7 +6,7 @@ using UnityEngine;
 public class UIGameSettingBase
 {
     public GameObject objListContainer;
-    //ÓÎÏ·ÉèÖÃ
+    //ï¿½ï¿½Ï·ï¿½ï¿½ï¿½ï¿½
     public GameConfigBean gameConfig;
 
     public UIGameSettingBase(GameObject objListContainer)
@@ -59,7 +59,7 @@ public class UIGameSettingBase
     }
 
     /// <summary>
-    ///  ¶ÁÈ¡¿Ø¼þ
+    ///  ï¿½ï¿½È¡ï¿½Ø¼ï¿½
     /// </summary>
     protected GameObject LoadItem(string itemName)
     {
@@ -70,7 +70,7 @@ public class UIGameSettingBase
 
 
     /// <summary>
-    /// »Øµ÷
+    /// ï¿½Øµï¿½
     /// </summary>
     public virtual void ActionForRangeValueChange(UIViewGameSettingRange targetView, float progress)
     {

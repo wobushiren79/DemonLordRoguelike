@@ -14,6 +14,8 @@ public class BaseLauncher : BaseMonoBehaviour
     /// </summary>
     public virtual void Launch()
     {
+        //设置多语言
+        TextHandler.Instance.InitData();
         //初始化图集
         IconHandler.Instance.InitData();
         //先清理一下内存

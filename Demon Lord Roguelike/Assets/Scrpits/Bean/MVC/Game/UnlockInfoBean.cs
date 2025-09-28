@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public partial class UnlockInfoBean : BaseBean
 {
 	/// <summary>
-	///解锁类型 1扭蛋机 0生物
+	///解锁类型 0生物 1扭蛋机  2研究
 	/// </summary>
 	public int unlock_type;
 	/// <summary>

@@ -116,6 +116,10 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public string card_scene;
 	/// <summary>
+	///名字-中文
+	/// </summary>
+	public long name;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

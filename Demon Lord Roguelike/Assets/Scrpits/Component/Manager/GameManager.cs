@@ -30,6 +30,7 @@ public partial class GameManager : BaseManager
     public void SetGameState(GameStateEnum gameState)
     {
         this.gameState = gameState;
+        gameLogic.ChangeGameState(gameState);
     }
 
     /// <summary>

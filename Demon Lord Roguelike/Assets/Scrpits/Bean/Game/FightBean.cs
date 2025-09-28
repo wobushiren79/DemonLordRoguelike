@@ -19,7 +19,7 @@ public class FightBean
     public long fightSceneId;//战斗场景Id;
 
     public int fightNum;//当前关卡数
-    public int fingthNumMax;//最大关卡数
+    public int figthNumMax;//最大关卡数
 
     public float timeUpdateForAttackCreate = 0;//更新时间-怪物生成
     public float timeUpdateTargetForAttackCreate = 0;//更新目标时间-怪物生成
@@ -32,6 +32,8 @@ public class FightBean
     public int sceneRoadLength = 10;//场景路线长度
     //进攻数据
     public FightAttackBean fightAttackData;
+    //游戏是否胜利
+    public bool gameIsWin = false;
 
     //所有卡片防御生物数据
     public DictionaryList<string, CreatureBean> dlDefenseCreatureData = new DictionaryList<string, CreatureBean>();
@@ -86,7 +88,7 @@ public class FightBean
         //设置道路长度
         sceneRoadLength = gameWorldInfoRandomData.roadLength;
         //设置最大关卡数量
-        fingthNumMax = gameWorldInfoRandomData.fightNum;
+        figthNumMax = gameWorldInfoRandomData.fightNum;
         //设置当前关卡数量
         fightNum = 1;
         //设置战斗场景ID

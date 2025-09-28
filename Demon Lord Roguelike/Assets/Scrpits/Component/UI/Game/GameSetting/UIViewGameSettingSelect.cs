@@ -14,7 +14,7 @@ public partial class UIViewGameSettingSelect : BaseUIView
     }
 
     /// <summary>
-    /// 回调
+    /// 鍥炶皟
     /// </summary>
     public void OnValueChanged(int index)
     {
@@ -22,7 +22,7 @@ public partial class UIViewGameSettingSelect : BaseUIView
     }
 
     /// <summary>
-    /// 设置选项
+    /// 璁剧疆閫夐」
     /// </summary>
     public void SetSelcet(int index)
     {
@@ -30,7 +30,7 @@ public partial class UIViewGameSettingSelect : BaseUIView
     }
 
     /// <summary>
-    /// 设置回调
+    /// 璁剧疆鍥炶皟
     /// </summary>
     public void SetCallBack(Action<UIViewGameSettingSelect, int> actionForCallBack)
     {
@@ -38,7 +38,7 @@ public partial class UIViewGameSettingSelect : BaseUIView
     }
 
     /// <summary>
-    /// 设置标题
+    /// 璁剧疆鏍囬
     /// </summary>
     public void SetTitle(string title)
     {
@@ -46,7 +46,7 @@ public partial class UIViewGameSettingSelect : BaseUIView
     }
 
     /// <summary>
-    /// 设置选项
+    /// 璁剧疆閫夐」
     /// </summary>
     public void SetListSelect(List<string> listSelect)
     {

@@ -1,0 +1,1 @@
+[{"icon_res":"","blessing_type":1,"name":10000000001,"details":10000000002,"remark":"增殖-随机复制一个已有的魔物","id":1000000001,"valid":0}]

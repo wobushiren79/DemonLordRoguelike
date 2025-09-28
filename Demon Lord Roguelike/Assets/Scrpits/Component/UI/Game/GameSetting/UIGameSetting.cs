@@ -55,16 +55,16 @@ public partial class UIGameSetting : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// µã»÷ÍË³ö
+    /// ç‚¹å‡»é€€å‡º
     /// </summary>
     public void OnClickForExit()
     {
-        //Ö÷½çÃæ½øÈë
+        //ä¸»ç•Œé¢è¿›å…¥
         if (enterType == 0)
         {
             UIHandler.Instance.OpenUIAndCloseOther<UIMainStart>();
         }
-        //»ùµØ½øÈë
+        //åŸºåœ°è¿›å…¥
         else if (enterType == 1)
         {
             UIHandler.Instance.OpenUIAndCloseOther<UIGameSystem>();
@@ -72,7 +72,7 @@ public partial class UIGameSetting : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// ÉèÖÃÉèÖÃÀàĞÍ
+    /// è®¾ç½®è®¾ç½®ç±»å‹
     /// </summary>
     /// <param name="type"></param>
     public void SetSettingType(int type)
@@ -93,7 +93,7 @@ public partial class UIGameSetting : BaseUIComponent, IRadioGroupCallBack
     }
 
 
-    #region ÊÂ¼ş»Øµ÷
+    #region äº‹ä»¶å›è°ƒ
     public void RadioButtonSelected(RadioGroupView rgView, int position, RadioButtonView rbview)
     {
         if (rbview == ui_GameSetttingLabel_Game)

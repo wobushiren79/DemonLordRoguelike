@@ -57,7 +57,7 @@ public partial class UIViewBasePortalItem : BaseUIView
         //设置地图位置
         SetMapPosition(gameWorldInfoRandom.uiPosition);
         //设置名字
-        string targetName = gameWorldInfo.GetName();
+        string targetName = TextHandler.Instance.GetTextById(gameWorldInfo.name);
         SetName(targetName);
         //设置图标
         SetIcon(gameWorldInfo.icon_res, gameWorldInfoRandom.iconSeed);
@@ -123,8 +123,8 @@ public partial class UIViewBasePortalItem : BaseUIView
         isSelectWorld = true;
         DialogBean dialogData = new DialogBean();
         dialogData.dialogType = DialogEnum.PortalDetails;
-        dialogData.content = string.Format(TextHandler.Instance.GetTextById(401), gameWorldInfo.GetName());
-        
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(401), TextHandler.Instance.GetTextById(gameWorldInfo.name));
+
         float animTimeForShowMask = 1f;
         //float animTimeForHideMask = 1f;
         dialogData.actionSubmit = ((view, data) =>

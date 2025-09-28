@@ -58,7 +58,7 @@ public partial class UIViewItemEquip : BaseUIView
         if (itemData == null)
         {
             var itemsTypeInfo = ItemsTypeCfg.GetItemData(itemType);
-            string itemsTypeName = itemsTypeInfo.GetName();
+            string itemsTypeName = TextHandler.Instance.GetTextById(itemsTypeInfo.name);
             ui_UIViewItemEquip_PopupButtonCommonView.SetData(itemsTypeName, PopupEnum.Text);
         }
         else

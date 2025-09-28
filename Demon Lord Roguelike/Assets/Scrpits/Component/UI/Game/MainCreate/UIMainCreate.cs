@@ -62,7 +62,7 @@ public partial class UIMainCreate : BaseUIComponent
             dicSelectData.Add(targetCreatureId, randomSkinData);
             //设置选项名字
             var targetCreatureInfo = CreatureInfoCfg.GetItemData(targetCreatureId);
-            listSpeciesStr.Add($"{targetCreatureInfo.GetName()}");
+            listSpeciesStr.Add($"{TextHandler.Instance.GetTextById(targetCreatureInfo.name)}");
         }
         string speciesStr = TextHandler.Instance.GetTextById(303);
         ui_UIViewMainCreateSelectItem_Species.SetData(listSpeciesStr, ActionForSelect);
