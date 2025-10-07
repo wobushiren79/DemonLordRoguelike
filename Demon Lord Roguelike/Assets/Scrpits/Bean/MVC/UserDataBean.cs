@@ -243,13 +243,13 @@ public class UserDataBean : BaseBean
     /// <summary>
     /// 获取阵容生物所在位置
     /// </summary>
-    public int GetLineupCreaturePosIndex(int lineupIndex, string creatureId)
+    public int GetLineupCreaturePosIndex(int lineupIndex, string creatureUUId)
     {
-        if (dicLineupCreature.TryGetValue(lineupIndex, out List<string> listCreatureId))
+        if (dicLineupCreature.TryGetValue(lineupIndex, out List<string> listCreatureUUId))
         {
-            if (listCreatureId.Contains(creatureId))
+            if (listCreatureUUId.Contains(creatureUUId))
             {
-                return listCreatureId.IndexOf(creatureId);
+                return listCreatureUUId.IndexOf(creatureUUId);
             }
             else
             {
@@ -265,22 +265,22 @@ public class UserDataBean : BaseBean
     /// <summary>
     /// 添加阵容生物
     /// </summary>
-    public bool AddLineupCreature(int lineupIndex, string creatureId)
+    public bool AddLineupCreature(int lineupIndex, string creatureUUId)
     {
-        if (dicLineupCreature.TryGetValue(lineupIndex, out List<string> listCreatureId))
+        if (dicLineupCreature.TryGetValue(lineupIndex, out List<string> listCreatureUUId))
         {
-            if (listCreatureId.Contains(creatureId))
+            if (listCreatureUUId.Contains(creatureUUId))
             {
                 return false;
             }
             else
             {
-                listCreatureId.Add(creatureId);
+                listCreatureUUId.Add(creatureUUId);
             }
         }
         else
         {
-            dicLineupCreature.Add(lineupIndex, new List<string>() { creatureId });
+            dicLineupCreature.Add(lineupIndex, new List<string>() { creatureUUId });
         }
         return true;
     }
@@ -333,12 +333,12 @@ public class UserDataBean : BaseBean
     /// <summary>
     /// 获取背包里的生物
     /// </summary>
-    public CreatureBean GetBackpackCreature(string creatureId)
+    public CreatureBean GetBackpackCreature(string creatureUUId)
     {
         for (int i = 0; i < listBackpackCreature.Count; i++)
         {
             var itemCreature = listBackpackCreature[i];
-            if (itemCreature.creatureId.Equals(creatureId))
+            if (itemCreature.creatureUUId.Equals(creatureUUId))
             {
                 return itemCreature;
             }

@@ -1,12 +1,8 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using Cinemachine;
+using Unity.Cinemachine;
 using DG.Tweening;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
-using Unity.Burst.Intrinsics;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,7 +13,7 @@ public partial class UICreatureVat : BaseUIComponent
     //场景预制
     public ScenePrefabForBase scenePrefab;
     //摄像头
-    public CinemachineVirtualCamera vatCamera;
+    public CinemachineCamera vatCamera;
 
     //当前目标生物
     public List<CreatureBean> listTargetCreatureShow = new List<CreatureBean>();

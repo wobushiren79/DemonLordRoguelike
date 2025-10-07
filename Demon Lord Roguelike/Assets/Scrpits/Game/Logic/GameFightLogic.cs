@@ -59,6 +59,8 @@ public class GameFightLogic : BaseGameLogic
         UpdateGameForSelectCreature(updateTime);
         UpdateGameForAttackCreate(updateTime);
         UpdateGameForFightCreature(updateTime);
+        //更新BUFF
+        BuffHandler.Instance.UpdateData(updateTime);
     }
 
     /// <summary>
@@ -76,8 +78,12 @@ public class GameFightLogic : BaseGameLogic
         FightHandler.Instance.manager.Clear();
         //AI清理
         AIHandler.Instance.manager.Clear();
+        //Buff清理
+        BuffHandler.Instance.manager.Clear();
         //清理战斗场景
         WorldHandler.Instance.UnLoadFightScene();
+        //清理缓存
+        System.GC.Collect();
     }
     #endregion
 
@@ -88,7 +94,9 @@ public class GameFightLogic : BaseGameLogic
     {
         ClearSelectData(true);
         //AI清理
-        AIHandler.Instance.manager.Clear();
+        AIHandler.Instance.manager.Clear();     
+        //Buff清理
+        BuffHandler.Instance.manager.Clear();
     }
 
     /// <summary>

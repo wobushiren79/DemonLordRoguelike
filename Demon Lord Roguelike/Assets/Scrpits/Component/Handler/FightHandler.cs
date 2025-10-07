@@ -112,8 +112,8 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
         manager.GetAttackModePrefab(attackModeId, (attackMode) =>
         {
             //只保存基础生物ID和武器ID 用于初始化攻击的样式
-            attackMode.creatureId = creatureId;
-            attackMode.weaponItemId = weaponItemId;
+            attackMode.attackerCreatureId = creatureId;
+            attackMode.attackerWeaponItemId = weaponItemId;
             if (attacker == null)
             {
                 attackMode.startPostion = Vector3.zero;

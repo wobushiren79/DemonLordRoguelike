@@ -1,11 +1,6 @@
-using Cinemachine;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
+using Unity.Cinemachine;
 using Spine.Unity;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Xml.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public partial class CameraHandler
@@ -81,7 +76,7 @@ public partial class CameraHandler
     /// <summary>
     /// 设置核心UI
     /// </summary>
-    public CinemachineVirtualCamera SetBaseCoreCamera(int priority, bool isEnable)
+    public CinemachineCamera SetBaseCoreCamera(int priority, bool isEnable)
     {
         return SetCameraForBaseScene(priority, isEnable, "CV_Core");
     }
@@ -89,7 +84,7 @@ public partial class CameraHandler
     /// <summary>
     /// 设置传送门
     /// </summary>
-    public CinemachineVirtualCamera SetBasePortalCamera(int priority, bool isEnable)
+    public CinemachineCamera SetBasePortalCamera(int priority, bool isEnable)
     {
         return SetCameraForBaseScene(priority, isEnable, "CV_Portal", blendTime: 0);
     }
@@ -97,7 +92,7 @@ public partial class CameraHandler
     /// <summary>
     /// 设置生物献祭摄像头
     /// </summary>
-    public CinemachineVirtualCamera SetCreatureSacrificeCamera(int priority, bool isEnable)
+    public CinemachineCamera SetCreatureSacrificeCamera(int priority, bool isEnable)
     {
         return SetCameraForBaseScene(priority, isEnable, "CV_CreatureSacrifice");
     }
@@ -105,7 +100,7 @@ public partial class CameraHandler
     /// <summary>
     /// 设置生物容器摄像头
     /// </summary>
-    public CinemachineVirtualCamera SetCreatureVatCamera(int priority, bool isEnable)
+    public CinemachineCamera SetCreatureVatCamera(int priority, bool isEnable)
     {
         return SetCameraForBaseScene(priority, isEnable, "CV_CreatureVat");
     }
@@ -113,7 +108,7 @@ public partial class CameraHandler
     /// <summary>
     /// 设置扭蛋机摄像头
     /// </summary>
-    public CinemachineVirtualCamera SetGashaponMachineCamera(int priority, bool isEnable)
+    public CinemachineCamera SetGashaponMachineCamera(int priority, bool isEnable)
     {
         return SetCameraForBaseScene(priority, isEnable, "CV_GashaponMachine");
     }
@@ -121,7 +116,7 @@ public partial class CameraHandler
     /// <summary>
     /// 设置扭蛋破碎摄像头
     /// </summary>
-    public CinemachineVirtualCamera SetGashaponBreakCamera(int priority, bool isEnable)
+    public CinemachineCamera SetGashaponBreakCamera(int priority, bool isEnable)
     {
         return SetCameraForBaseScene(priority, isEnable, "CV_GashaponBreak");
     }
@@ -129,7 +124,7 @@ public partial class CameraHandler
     /// <summary>
     /// 设置游戏开始摄像头
     /// </summary>
-    public CinemachineVirtualCamera SetGameStartCamera(int priority, bool isEnable)
+    public CinemachineCamera SetGameStartCamera(int priority, bool isEnable)
     {
         return SetCameraForBaseScene(priority, isEnable, "CV_GameStart");
     }
@@ -137,7 +132,7 @@ public partial class CameraHandler
     /// <summary>
     /// 设置创建
     /// </summary>
-    public CinemachineVirtualCamera SetPreviewCreateCamera(int priority, bool isEnable)
+    public CinemachineCamera SetPreviewCreateCamera(int priority, bool isEnable)
     {
         return SetCameraForBaseScene(priority, isEnable, "CV_PreviewCreate");
     }
@@ -145,7 +140,7 @@ public partial class CameraHandler
     /// <summary>
     /// 设置基础场景的摄像头
     /// </summary>
-    protected CinemachineVirtualCamera SetCameraForBaseScene(int priority, bool isEnable, string cvName, float blendTime = 0.5f)
+    protected CinemachineCamera SetCameraForBaseScene(int priority, bool isEnable, string cvName, float blendTime = 0.5f)
     {
         manager.HideAllCM();
         var targetBaseScene = WorldHandler.Instance.currentBaseScene;
@@ -161,8 +156,8 @@ public partial class CameraHandler
             return null;
         }
         //还原所有摄像头
-        var cvList = targetCVListTF.GetComponentsInChildren<CinemachineVirtualCamera>(true);
-        CinemachineVirtualCamera targetCV = null;
+        var cvList = targetCVListTF.GetComponentsInChildren<CinemachineCamera>(true);
+        CinemachineCamera targetCV = null;
         for (int i = 0; i < cvList.Length; i++)
         {
             var targetCVItem = cvList[i];

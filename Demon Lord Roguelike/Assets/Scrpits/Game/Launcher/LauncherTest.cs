@@ -55,14 +55,14 @@ public class LauncherTest : BaseLauncher
             creatureItem.level = Random.Range(0, 101);
             creatureItem.AddSkinForBase();
             //史莱姆加一个身体皮肤
-            if (creatureItem.id > 3000 && creatureItem.id < 4000)
+            if (creatureItem.creatureId > 3000 && creatureItem.creatureId < 4000)
             {
                 creatureItem.AddSkin(3040001);
             }
             userData.AddBackpackCreature(creatureItem);
 
             //添加到阵容1
-            userData.AddLineupCreature(1, creatureItem.creatureId);
+            userData.AddLineupCreature(1, creatureItem.creatureUUId);
         }
         WorldHandler.Instance.EnterGameForBaseScene(userData, true);
     }

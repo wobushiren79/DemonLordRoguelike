@@ -1,15 +1,10 @@
-using Cinemachine;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
+using Unity.Cinemachine;
 using UnityEngine;
-using UnityEngine.Rendering;
-using static Cinemachine.CinemachineBlendDefinition;
 
 public partial class CameraManager
 {
-    public CinemachineVirtualCamera cm_Fight;
-    public CinemachineVirtualCamera cm_Base;
+    public CinemachineCamera cm_Fight;
+    public CinemachineCamera cm_Base;
 
     public CinemachineBrain cinemachineBrain;
 
@@ -26,8 +21,8 @@ public partial class CameraManager
             objCameraData.transform.localPosition = Vector3.zero;
             mainCamera = objCameraData.transform.Find("MainCamera").GetComponent<Camera>();
 
-            cm_Fight = objCameraData.transform.Find("CMFollow").GetComponent<CinemachineVirtualCamera>();
-            cm_Base = objCameraData.transform.Find("CMBase").GetComponent<CinemachineVirtualCamera>();
+            cm_Fight = objCameraData.transform.Find("CMFollow").GetComponent<CinemachineCamera>();
+            cm_Base = objCameraData.transform.Find("CMBase").GetComponent<CinemachineCamera>();
 
             cinemachineBrain = mainCamera.GetComponent<CinemachineBrain>();
         }
@@ -50,12 +45,12 @@ public partial class CameraManager
     /// <summary>
     /// 设置主摄像头的默认切换动画
     /// </summary>
-    public void SetMainCameraDefaultBlend(float time, Style style = Style.EaseInOut)
+    public void SetMainCameraDefaultBlend(float time, CinemachineBlendDefinition.Styles style = CinemachineBlendDefinition.Styles.EaseInOut)
     {
         if (cinemachineBrain != null)
         {
-            cinemachineBrain.m_DefaultBlend.m_Style = style;
-            cinemachineBrain.m_DefaultBlend.m_Time = time;
+            cinemachineBrain.DefaultBlend.Style = style;
+            cinemachineBrain.DefaultBlend.Time = time;
         }
     }
 }

@@ -150,7 +150,7 @@ public class ScenePrefabForBase : ScenePrefabBase
                 var itemAscendDetails = userAscend.GetAscendData(i);
                 if (itemAscendDetails != null)
                 {
-                    var creatureData = userData.GetBackpackCreature(itemAscendDetails.creatureId);
+                    var creatureData = userData.GetBackpackCreature(itemAscendDetails.creatureUUId);
                     BuildingVatSetState(itemVat, 3, creatureData, itemAscendDetails.progress);
                 }
                 else

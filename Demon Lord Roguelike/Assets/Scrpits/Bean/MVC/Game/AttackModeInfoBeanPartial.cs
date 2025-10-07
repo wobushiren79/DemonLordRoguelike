@@ -44,4 +44,17 @@ public partial class AttackModeInfoBean
 public partial class AttackModeInfoCfg
 {
 
+    /// <summary>
+    /// 初始化测试数据
+    /// </summary>
+    public static void InitTestData(string buffTestData)
+    {
+        var allData = GetAllData();
+        allData.ForEach((key, value) =>
+        {
+            value.buff = buffTestData;
+            value.GetBuffIds();
+        });
+    }
+    
 }

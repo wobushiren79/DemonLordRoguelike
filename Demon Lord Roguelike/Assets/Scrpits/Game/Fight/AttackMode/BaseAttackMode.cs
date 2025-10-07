@@ -23,18 +23,18 @@ public class BaseAttackMode
     public Vector3 targetPos;
     //攻击方向
     public Vector3 attackDirection;
-    //被攻击者的层级
-    public int attackedLayer;
 
     //攻击者ID
-    public string attackerId;
-    //被攻击者ID
-    public string attackedId;
+    public string attackerId;  
+    //攻击者的生物ID
+    public long attackerCreatureId;
+    //攻击者的武器道具ID
+    public long attackerWeaponItemId;
 
-    //发出攻击的生物ID
-    public long creatureId;
-    //发出攻击的武器
-    public long weaponItemId;
+    //目标被攻击者（不一定击中，只是一开始锁定的目标）
+    public string attackedIdTarget;
+    //目标被攻击者的层级（不一定击中，只是一开始锁定的目标）
+    public int attackedLayerTarget;
 
     /// <summary>
     /// 初始化攻击样式
@@ -42,7 +42,7 @@ public class BaseAttackMode
     public virtual void InitAttackModeShow()
     {
         //如果没有找到对应武器 则使用?图标
-        if (weaponItemId == 0)
+        if (attackerWeaponItemId == 0)
         {
             if (spriteRenderer != null)
             {
@@ -57,7 +57,7 @@ public class BaseAttackMode
         }
         else
         {
-            var weaponItemInfo = ItemsInfoCfg.GetItemData(weaponItemId);
+            var weaponItemInfo = ItemsInfoCfg.GetItemData(attackerWeaponItemId);
             if (weaponItemInfo != null && !weaponItemInfo.attack_mode_data.IsNull())
             {
                 weaponItemInfo.HandleItemsInfoAttackModeData(this);
@@ -81,7 +81,7 @@ public class BaseAttackMode
                 if (creatureData != null)
                 {
                     //设置攻击者ID
-                    attackerId = creatureData.creatureId;
+                    attackerId = creatureData.creatureUUId;
                     //设置伤害
                     attackerDamage = attacker.fightCreatureData.GetATK();
                     //提示设置暴击概率 
@@ -95,7 +95,7 @@ public class BaseAttackMode
             {
                 targetPos = attacked.creatureObj.transform.position;
                 attackDirection = Vector3.Normalize(attacked.creatureObj.transform.position - attacker.creatureObj.transform.position);
-                attackedLayer = attacked.creatureObj.layer;
+                attackedLayerTarget = attacked.creatureObj.layer;
 
             }
             if (attacked.fightCreatureData != null)
@@ -103,7 +103,7 @@ public class BaseAttackMode
                 if (attacked.fightCreatureData.creatureData != null)
                 {
                     //设置被攻击者ID
-                    attackedId = attacked.fightCreatureData.creatureData.creatureId;
+                    attackedIdTarget = attacked.fightCreatureData.creatureData.creatureUUId;
                 }
             }
             //LogUtil.Log($"attacker_{attacker.creatureObj.transform.position} attacked_{attacked.creatureObj.transform.position} attackDirection_{attackDirection}");
@@ -134,9 +134,9 @@ public class BaseAttackMode
         {
             attackerDamage = 0;
             attackerId = null;
-            attackedId = null;
-            creatureId = 0;
-            weaponItemId = 0;
+            attackedIdTarget = null;
+            attackerCreatureId = 0;
+            attackerWeaponItemId = 0;
             FightHandler.Instance.RemoveAttackModePrefab(this);
         }
     }
@@ -208,11 +208,11 @@ public class BaseAttackMode
     {
         CreatureSearchType searchType = attackModeInfo.GetCreatureSerachType();
         CreatureTypeEnum searchCreatureType = CreatureTypeEnum.None;
-        if (attackedLayer == LayerInfo.CreatureAtt)
+        if (attackedLayerTarget == LayerInfo.CreatureAtt)
         {
             searchCreatureType = CreatureTypeEnum.FightAttack;
         }
-        else if (attackedLayer == LayerInfo.CreatureDef)
+        else if (attackedLayerTarget == LayerInfo.CreatureDef)
         {
             searchCreatureType = CreatureTypeEnum.FightDefense;
         }
@@ -257,7 +257,7 @@ public class BaseAttackMode
         {
             case CreatureSearchType.AreaSphere:
                 //圆形半径
-                colliders = RayUtil.OverlapToSphere(checkPosition, colliderAreaSize[0], 1 << attackedLayer);
+                colliders = RayUtil.OverlapToSphere(checkPosition, colliderAreaSize[0], 1 << attackedLayerTarget);
                 //绘制测试范围
                 DrawTestAreaForSphere(checkPosition, colliderAreaSize[0], 1);
                 break;
@@ -276,7 +276,7 @@ public class BaseAttackMode
                     offsetPosition = new Vector3(-colliderAreaSize[0], 0, 0);
                 }
                 Vector3 halfEx = new Vector3(colliderAreaSize[0], colliderAreaSize[1], colliderAreaSize[2]);
-                colliders = RayUtil.OverlapToBox(checkPosition + offsetPosition, halfEx, 1 << attackedLayer);
+                colliders = RayUtil.OverlapToBox(checkPosition + offsetPosition, halfEx, 1 << attackedLayerTarget);
                 DrawTestAreaForBox(checkPosition + offsetPosition, halfEx, 1);
                 break;
             default:

@@ -1,11 +1,8 @@
-using Cinemachine;
+using Unity.Cinemachine;
 using DG.Tweening;
 using Spine.Unity;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using Unity.Burst.Intrinsics;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.VFX;
 
@@ -29,7 +26,7 @@ public class CreatureSacrificeLogic : BaseGameLogic
     public VisualEffect VFXAltar;
 
     //献祭摄像头
-    public CinemachineVirtualCamera sacrificeCamera;
+    public CinemachineCamera sacrificeCamera;
     public override void PreGame()
     {
         base.PreGame();
@@ -213,7 +210,7 @@ public class CreatureSacrificeLogic : BaseGameLogic
         CreatureHandler.Instance.SetCreatureData(creatureSpine, creatureData);
         //播放spine动画
         SpineHandler.Instance.PlayAnim(creatureSpine, SpineAnimationStateEnum.Idle, true);
-        targetObj.name = creatureData.creatureId;
+        targetObj.name = creatureData.creatureUUId;
     }
     #endregion
 
@@ -376,34 +373,34 @@ public class CreatureSacrificeLogic : BaseGameLogic
     {
         //播放摄像头动画
         // 获取噪声组件
-        var cameraNoise = sacrificeCamera.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
+        var cameraNoise = sacrificeCamera.GetComponent<CinemachineBasicMultiChannelPerlin>();
         // 创建动画序列
-        float originalFOV = sacrificeCamera.m_Lens.FieldOfView;
-        float originalFrequencyGain = cameraNoise.m_FrequencyGain;
+        float originalFOV = sacrificeCamera.Lens.FieldOfView;
+        float originalFrequencyGain = cameraNoise.FrequencyGain;
         DG.Tweening.Sequence animForSacrificeCamera = DOTween.Sequence();
         //开始抖动
         animForSacrificeCamera.AppendCallback(() =>
         {
-            cameraNoise.m_FrequencyGain = 1;
+            cameraNoise.FrequencyGain = 1;
         });
         //拉近镜头 (改变FOV)
         animForSacrificeCamera.Append(DOTween.To(
-            () => sacrificeCamera.m_Lens.FieldOfView,
-            x => sacrificeCamera.m_Lens.FieldOfView = x,
+            () => sacrificeCamera.Lens.FieldOfView,
+            x => sacrificeCamera.Lens.FieldOfView = x,
             originalFOV - 20,
             timeAnim
             ).SetEase(Ease.InOutQuad));
         //延迟后恢复原始FOV
         animForSacrificeCamera.Append(DOTween.To(
-            () => sacrificeCamera.m_Lens.FieldOfView,
-            x => sacrificeCamera.m_Lens.FieldOfView = x,
+            () => sacrificeCamera.Lens.FieldOfView,
+            x => sacrificeCamera.Lens.FieldOfView = x,
             originalFOV,
             timeReset
         ).SetEase(Ease.OutQuad));
         //延迟后恢复原始抖动
         animForSacrificeCamera.AppendCallback(() =>
         {
-            cameraNoise.m_FrequencyGain = originalFrequencyGain;
+            cameraNoise.FrequencyGain = originalFrequencyGain;
         });
 
         animForSacrificeCamera.onComplete = () =>

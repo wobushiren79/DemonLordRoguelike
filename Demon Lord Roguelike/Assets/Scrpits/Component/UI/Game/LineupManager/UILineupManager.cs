@@ -86,7 +86,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     {
         //设置选中和未选中状态
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        if (userData.CheckIsLineup(currentLineupIndex, itemData.creatureId))
+        if (userData.CheckIsLineup(currentLineupIndex, itemData.creatureUUId))
         {
             itemView.SetCardState(CardStateEnum.LineupSelect);
         }
@@ -124,7 +124,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         {
             var itemCardView = listShowCardLineup[i];
             itemCardView.transform.SetAsLastSibling();
-            var itemLineupPosIndex = userData.GetLineupCreaturePosIndex(currentLineupIndex, itemCardView.cardData.creatureData.creatureId);
+            var itemLineupPosIndex = userData.GetLineupCreaturePosIndex(currentLineupIndex, itemCardView.cardData.creatureData.creatureUUId);
             Vector3 itemLineupPos = GetLineupPostion(listShowCardLineup.Count, itemLineupPosIndex);
             //播放动画
             float timeForMove = timeForLineupCardMove;
@@ -271,7 +271,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         if (targetView.cardData.cardUseState == CardUseState.LineupBackpack && targetView.cardData.cardState == CardStateEnum.LineupNoSelect)
         {
-            userData.AddLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureId);
+            userData.AddLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureUUId);
             //刷新背包里的卡片
             ui_UIViewCreatureCardList.RefreshCardByIndex(targetView.cardData.indexList);
             //增加阵容卡
@@ -280,9 +280,9 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         }
         else if (targetView.cardData.cardUseState == CardUseState.Lineup)
         {
-            userData.RemoveLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureId);
+            userData.RemoveLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureUUId);
             //刷新背包里的卡片
-            ui_UIViewCreatureCardList.RefreshCardByCreatureId(targetView.cardData.creatureData.creatureId);
+            ui_UIViewCreatureCardList.RefreshCardByCreatureUUId(targetView.cardData.creatureData.creatureUUId);
             //移除阵容卡
             RemoveLineupCard(targetView);
         }

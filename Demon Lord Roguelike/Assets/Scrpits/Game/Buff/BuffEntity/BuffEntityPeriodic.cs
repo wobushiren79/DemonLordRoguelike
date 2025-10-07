@@ -1,13 +1,13 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEngine;
 
-public class BuffEntityForHPChange : BuffBaseEntity
-{
+public class BuffEntityPeriodic : BuffBaseEntity
+{ 
     public override void TriggerBuff(BuffEntityBean buffEntityData)
     {
         base.TriggerBuff(buffEntityData);
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        var targetCreature = gameFightLogic.fightData.GetCreatureById(buffEntityData.getCreatureId, CreatureTypeEnum.None);
+        var targetCreature = gameFightLogic.fightData.GetCreatureById(buffEntityData.targetCreatureId, CreatureTypeEnum.None);
         if (targetCreature == null || targetCreature.fightCreatureData == null)
         {
             return;
@@ -28,7 +28,7 @@ public class BuffEntityForHPChange : BuffBaseEntity
             //如果改变的HP大于0 则回复HP
             if (changeHPData > 0)
             {
-                targetCreature.RegainHP(buffEntityData.getCreatureId, buffEntityData.getCreatureId, changeHPData);
+                targetCreature.RegainHP(buffEntityData.targetCreatureId, buffEntityData.targetCreatureId, changeHPData);
             }
             //如果小于0 则受到攻击
             else

@@ -1,7 +1,4 @@
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -102,7 +99,7 @@ public class FightBean
         for (int i = 0; i < lineupCreature.Count; i++)
         {
             var itemLineupCreature = lineupCreature[i];;
-            dlDefenseCreatureData.Add(itemLineupCreature.creatureId, itemLineupCreature);
+            dlDefenseCreatureData.Add(itemLineupCreature.creatureUUId, itemLineupCreature);
         }
         //设置进攻生物数据
         fightAttackData = new FightAttackBean();
@@ -257,7 +254,7 @@ public class FightBean
         var targetCreature = GetDefenseCreatureByPos(targetPos);
         if (targetCreature == null)
             return;
-        dlDefenseCreatureEntity.RemoveByKey(targetCreature.fightCreatureData.creatureData.creatureId);
+        dlDefenseCreatureEntity.RemoveByKey(targetCreature.fightCreatureData.creatureData.creatureUUId);
     }
 
     /// <summary>
@@ -269,7 +266,7 @@ public class FightBean
             return;
         targetEntity.fightCreatureData.positionCreate = targetPos;
         targetEntity.fightCreatureData.roadIndex = targetPos.z;
-        dlDefenseCreatureEntity.Add(targetEntity.fightCreatureData.creatureData.creatureId, targetEntity);
+        dlDefenseCreatureEntity.Add(targetEntity.fightCreatureData.creatureData.creatureUUId, targetEntity);
     }
 
     /// <summary>
@@ -279,7 +276,7 @@ public class FightBean
     {
         targetEntity.fightCreatureData.positionCreate = new Vector3Int(0, 0, road);
         targetEntity.fightCreatureData.roadIndex = road;
-        dlAttackCreatureEntity.Add(targetEntity.fightCreatureData.creatureData.creatureId, targetEntity);
+        dlAttackCreatureEntity.Add(targetEntity.fightCreatureData.creatureData.creatureUUId, targetEntity);
     }
 
     /// <summary>
@@ -287,7 +284,7 @@ public class FightBean
     /// </summary>
     public void RemoveAttackCreature(GameFightCreatureEntity targetEntity)
     {
-        dlAttackCreatureEntity.RemoveByKey(targetEntity.fightCreatureData.creatureData.creatureId);
+        dlAttackCreatureEntity.RemoveByKey(targetEntity.fightCreatureData.creatureData.creatureUUId);
     }
 
     /// <summary>

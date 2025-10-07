@@ -16,6 +16,10 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public string class_entity;
 	/// <summary>
+	///实例数据
+	/// </summary>
+	public string class_entity_data;
+	/// <summary>
 	///身体变色
 	/// </summary>
 	public string color_body;

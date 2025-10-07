@@ -161,7 +161,7 @@ public partial class UIMainCreate : BaseUIComponent
             //设置名字
             userData.userName = ui_NameET.text;
             //设置魔王
-            createCreatureData.creatureId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
+            createCreatureData.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
             createCreatureData.creatureName = ui_NameET.text;
             createCreatureData.level = 0;
             createCreatureData.rarity = 0;
@@ -190,7 +190,7 @@ public partial class UIMainCreate : BaseUIComponent
                 //添加到背包
                 userData.AddBackpackCreature(creatureData);
                 //添加到阵容1
-                userData.AddLineupCreature(1, creatureData.creatureId);
+                userData.AddLineupCreature(1, creatureData.creatureUUId);
             }
 
             GameDataHandler.Instance.manager.SaveUserData(userData);
@@ -250,7 +250,7 @@ public partial class UIMainCreate : BaseUIComponent
         this.selectSpeciesIndex = select;
         int creatureId = listSelectForSpecies[select];
         createCreatureData = new CreatureBean(creatureId);
-        createCreatureData.id = creatureId;
+        createCreatureData.creatureId = creatureId;
         createCreatureData.ClearSkin();
         //隐藏所有选项
         for (int i = 0; i < listSelectView.Count; i++)

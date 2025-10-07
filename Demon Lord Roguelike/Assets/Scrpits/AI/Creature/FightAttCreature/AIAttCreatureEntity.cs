@@ -55,7 +55,7 @@ public class AIAttCreatureEntity : AICreatureEntity
     {
         //如果是同一路线
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        var defenseCreature =  gameFightLogic.fightData.GetCreatureById(targetView.cardData.creatureData.creatureId, CreatureTypeEnum.FightDefense);
+        var defenseCreature =  gameFightLogic.fightData.GetCreatureById(targetView.cardData.creatureData.creatureUUId, CreatureTypeEnum.FightDefense);
         if (defenseCreature.fightCreatureData.positionCreate.z == selfCreatureEntity.fightCreatureData.positionCreate.z)
         {
             //如果正在前往目标 则重新寻找目标

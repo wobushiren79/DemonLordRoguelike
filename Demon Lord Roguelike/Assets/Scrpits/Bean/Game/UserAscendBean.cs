@@ -33,12 +33,12 @@ public class UserAscendBean
     {
         if (dicAscendData.TryGetValue(index, out var targetData))
         {
-            LogUtil.LogError($"添加进阶数据错误,已经存在index_{index}的数据 progress_{targetData.progress} creatureId_{targetData.creatureId}");
+            LogUtil.LogError($"添加进阶数据错误,已经存在index_{index}的数据 progress_{targetData.progress} creatureUUId_{targetData.creatureUUId}");
         }
         UserAscendDetailsBean newData = new UserAscendDetailsBean();
         newData.progress = 0;
         newData.index = index;
-        newData.creatureId = creatureData.creatureId;
+        newData.creatureUUId = creatureData.creatureUUId;
         dicAscendData[index] = newData;
         return newData;
     }
@@ -64,7 +64,7 @@ public class UserAscendDetailsBean
 {
     public int index;
     public float progress;
-    public string creatureId;
+    public string creatureUUId;
 
     public void AddProgress(float value = 0.0001f)
     {

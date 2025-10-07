@@ -45,6 +45,18 @@ public enum CreatureFightStateEnum
     Dead = 2,//死亡
 }
 
+public enum CreatureAttributeTypeEnum
+{
+    None = 0,
+    HP,//生命
+    DR,//护甲
+    EVA,//闪避
+    ASPD,//攻击速度
+    ATK,//攻击力
+    CRT,//暴击率
+    MSPD,//移动速度
+}
+
 public enum CreatureSkinTypeEnum
 {
     //---------------------身体

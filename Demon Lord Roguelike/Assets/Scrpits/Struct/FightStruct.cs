@@ -17,9 +17,9 @@ public struct FightUnderAttackStruct
     //未命中音效
     public int soundMissId;
 
-    public FightUnderAttackStruct(BaseAttackMode baseAttackMode)
+    public FightUnderAttackStruct(BaseAttackMode baseAttackMode,string attackedId)
     {
-        attackedId = baseAttackMode.attackedId;
+        this.attackedId = attackedId;
         attackerId = baseAttackMode.attackerId;
         attackerDamage = baseAttackMode.attackerDamage;
         attackerCRT = baseAttackMode.attackerCRT;
@@ -29,8 +29,8 @@ public struct FightUnderAttackStruct
 
     public FightUnderAttackStruct(BuffEntityBean buffEntityData, int attackerDamage)
     {
-        attackedId = buffEntityData.giveCreatureId;
-        attackerId = buffEntityData.getCreatureId;
+        attackedId = buffEntityData.applierCreatureId;
+        attackerId = buffEntityData.targetCreatureId;
         this.attackerDamage = attackerDamage;
         attackerCRT = 0;
         soundHitId = 0;

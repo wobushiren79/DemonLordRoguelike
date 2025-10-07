@@ -10,15 +10,22 @@ public class GameTestEditor : Editor
 
     public int testDataCardNum = 20;
     public int fightSceneId = 1;
-    public string fightCardId = "2001";
-    public int fightSceneRoadNum = 6;    //道路数量
+    public string fightCardId = "2002";
+    public int fightSceneRoadNum = 1;    //道路数量
     public int fightSceneRoadLength = 10;    //道路长度
-    public int fightSceneAttackNum = 1;//进攻者数量
+    public int fightSceneAttackNum = 2;//进攻者数量
     public float fightSceneAttackDelay = 1;//进攻者间隔
 
     public int creatureId = 1 ;
     public int creatureModelId = 0;
 
+    public int attackModeAttackTestId = 0;//攻击模式测试ID
+    public int attackModeDefenseTestId = 0;//攻击模式测试ID
+
+    public string buffSelfAttackTestId = "";//buff测试ID
+    public string buffSelfDefenseTestId = "";//buff测试ID
+
+    public string buffTestId = "1000100001";//攻击模式测试ID
     public List<long> enemyIds = new List<long>() { 1010010001 };
     
     LauncherTest launcher;
@@ -125,6 +132,32 @@ public class GameTestEditor : Editor
         EditorGUILayout.LabelField("测试数据-进攻生物间隔");
         fightSceneAttackDelay = EditorGUILayout.FloatField(fightSceneAttackDelay);
         EditorGUILayout.EndHorizontal();
+
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("测试数据-进攻生物攻击模块");
+        attackModeAttackTestId = EditorGUILayout.IntField(attackModeAttackTestId);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("测试数据-防守生物攻击模块");
+        attackModeDefenseTestId = EditorGUILayout.IntField(attackModeDefenseTestId);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("测试数据-进攻生物携带BUFF");
+        buffSelfAttackTestId = EditorGUILayout.TextField(buffSelfAttackTestId);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("测试数据-防守生物携带BUFF");
+        buffSelfDefenseTestId = EditorGUILayout.TextField(buffSelfDefenseTestId);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("测试数据-攻击BUFF");
+        buffTestId = EditorGUILayout.TextField(buffTestId);
+        EditorGUILayout.EndHorizontal();
     }
 
     /// <summary>
@@ -181,22 +214,40 @@ public class GameTestEditor : Editor
             CreatureBean itemData = new CreatureBean(ids[index]);
             itemData.AddSkinForBase();
             //史莱姆加一个身体皮肤
-            if (itemData.id > 3000 && itemData.id < 4000)
+            if (itemData.creatureId > 3000 && itemData.creatureId < 4000)
             {
                 itemData.AddSkin(3040001);
             }
             itemData.order = i;
-            fightData.dlDefenseCreatureData.Add(itemData.creatureId, itemData);
+            fightData.dlDefenseCreatureData.Add(itemData.creatureUUId, itemData);
+
+            // 攻击模式测试
+            if (attackModeDefenseTestId != 0)
+            {
+                itemData.creatureInfo.attack_mode = attackModeDefenseTestId;
+            }
+
+            // BUFF测试
+            if (!buffSelfDefenseTestId.IsNull())
+            {
+                itemData.creatureInfo.create_buff = buffSelfDefenseTestId;
+                itemData.creatureInfo.GetCreatureBuff();
+            }
         }
-        ;
 
         FightCreatureBean fightDefCoreData = new FightCreatureBean(2001);
         fightDefCoreData.creatureData.AddSkinForBase();
+        fightDefCoreData.creatureData.creatureInfo.creature_type = (int)CreatureTypeEnum.FightDefenseCore;
         fightData.fightDefenseCoreData = fightDefCoreData;
 
         fightData.InitData();
         fightData.fightSceneId = fightSceneId;
 
+        //初始化BUFF
+        if (!buffTestId.IsNull())
+        {
+            AttackModeInfoCfg.InitTestData(buffTestId);
+        }
         return fightData;
     }
 }

@@ -28,10 +28,10 @@ public partial class CreatureBean
         {
             if(_creatureInfo == null)
             {
-                _creatureInfo = CreatureInfoCfg.GetItemData(id);
+                _creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
                 if(_creatureInfo == null)
                 {
-                    LogUtil.LogError($"获取CreatureInfoBean失败 id_{id}");
+                    LogUtil.LogError($"获取CreatureInfoBean失败 id_{creatureId}");
                 }
             }
             return _creatureInfo;

@@ -1,16 +1,13 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using static Cinemachine.CinemachineOrbitalTransposer;
 
 [Serializable]
 public partial class CreatureBean
 {
     //生物ID
-    public string creatureId;
-    //ID
-    public long id;
+    public long creatureId;
+    //生物唯一ID
+    public string creatureUUId;
     //生物名字
     public string creatureName;
     //等级
@@ -25,10 +22,10 @@ public partial class CreatureBean
     //装备数据
     public Dictionary<ItemTypeEnum, ItemBean> dicEquipItemData = new Dictionary<ItemTypeEnum, ItemBean>();
 
-    public CreatureBean(long id)
+    public CreatureBean(long creatureId)
     {
-        this.id = id;
-        this.creatureId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
+        this.creatureId = creatureId;
+        this.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
     }
 
     #region 装备相关

@@ -59,7 +59,7 @@ public partial class UIViewCreatureCardList : BaseUIView
     /// <summary>
     /// 刷新指定卡片
     /// </summary>
-    public void RefreshCardByCreatureId(string creatureId)
+    public void RefreshCardByCreatureUUId(string creatureId)
     {
         listCreatureData.ForEach((index, itemData) =>
         {

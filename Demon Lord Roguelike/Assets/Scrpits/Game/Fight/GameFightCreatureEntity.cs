@@ -8,8 +8,6 @@ using UnityEngine;
 
 public class GameFightCreatureEntity
 {
-
-
     public GameObject creatureObj;
     public FightCreatureBean fightCreatureData;
     public AIBaseEntity aiEntity;
@@ -28,7 +26,7 @@ public class GameFightCreatureEntity
         this.creatureFightState = CreatureFightStateEnum.Live;
         this.creatureObj = creatureObj;
         this.fightCreatureData = fightCreatureData;
-        this.creatureObj.name = fightCreatureData.creatureData.creatureId;
+        this.creatureObj.name = fightCreatureData.creatureData.creatureUUId;
         //获取骨骼数据
         creatureSkeletionAnimation = creatureObj.transform.Find("Spine")?.GetComponent<SkeletonAnimation>();
         //获取生命值显示
@@ -36,11 +34,11 @@ public class GameFightCreatureEntity
         creatureLifeShow?.ShowObj(false);
         //设置皮肤
         ChangeSkin(fightCreatureData.creatureData);
-        //设置身体颜色
-        SetBodyColor();
         //设置buff数据
         long[] creatureBuffs = fightCreatureData.creatureData.creatureInfo.GetCreatureBuff();
-        AddBuff(creatureBuffs,fightCreatureData.creatureData.creatureId, fightCreatureData.creatureData.creatureId);
+        BuffHandler.Instance.AddBuff(creatureBuffs, fightCreatureData.creatureData.creatureUUId, fightCreatureData.creatureData.creatureUUId);  
+        //设置身体颜色
+        SetBodyColor();
     }
 
     /// <summary>
@@ -48,7 +46,7 @@ public class GameFightCreatureEntity
     /// </summary>
     public void Update(float updateTime)
     {
-        UpdateForBuffs(updateTime);
+
     }
 
     /// <summary>
@@ -62,28 +60,6 @@ public class GameFightCreatureEntity
             if (creatureObj != null)
             {
                 GameObject.Destroy(creatureObj);
-            }
-        }
-    }
-
-    /// <summary>
-    /// 更新buffs
-    /// </summary>
-    public void UpdateForBuffs(float updateTime)
-    {
-        if (IsDead())
-            return;
-        if (fightCreatureData == null)
-            return;
-        if (fightCreatureData.listBuffEntityData.IsNull())
-            return;
-        for (int i = 0; i < fightCreatureData.listBuffEntityData.Count; i++)
-        {
-            var itemBuff = fightCreatureData.listBuffEntityData[i];
-            itemBuff.AddBuffTime(updateTime, out bool isRemove, actionForCompleteRemove: CallBackForRemoveBuff);
-            if (isRemove)
-            {
-                i--;
             }
         }
     }
@@ -153,44 +129,17 @@ public class GameFightCreatureEntity
     }
 
     /// <summary>
-    /// 增加buff
-    /// </summary>
-    public void AddBuff(List<BuffBean> listBuffData, string giveCreatureId, string getCreatureId)
-    {
-        if (!listBuffData.IsNull())
-        {
-            long[] buffIds = new long[listBuffData.Count];
-            listBuffData.ForEach((index, itemData) =>
-            {
-                buffIds[index] = itemData.buffId;
-            });
-            AddBuff(buffIds, giveCreatureId, getCreatureId);
-        }
-    }
-
-    /// <summary>
     /// 增加BUFF
     /// </summary>
     public void AddBuff(BaseAttackMode baseAttackMode)
     {
         //触发buff
         var buffIds = baseAttackMode.attackModeInfo.GetBuffIds();
-        AddBuff(buffIds,baseAttackMode.attackerId, baseAttackMode.attackedId);
-    }
-
-    /// <summary>
-    /// 增加BUFF
-    /// </summary>
-    public void AddBuff(long[] buffIds, string giveCreatureId, string getCreatureId)
-    {
-        if (!buffIds.IsNull())
+        bool isAdd = BuffHandler.Instance.AddBuff(buffIds, baseAttackMode.attackerId, fightCreatureData.creatureData.creatureUUId);
+        if (isAdd)
         {
-            //获取触发的buff 计算触发概率
-            var buffsTrigger = BuffUtil.GetTriggerBuff(buffIds, giveCreatureId, getCreatureId);
-            if (!buffsTrigger.IsNull())
-            {
-                fightCreatureData.AddBuff(buffsTrigger, actionForComplete: CallBackForAddBuff);
-            }
+            //刷新一下身体颜色
+            SetBodyColor();
         }
     }
 
@@ -199,7 +148,7 @@ public class GameFightCreatureEntity
     /// </summary>
     public void RegainHP(BaseAttackMode baseAttackMode)
     {
-        RegainHP(baseAttackMode.attackerId, baseAttackMode.attackedId, baseAttackMode.attackerDamage,
+        RegainHP(baseAttackMode.attackerId, fightCreatureData.creatureData.creatureUUId, baseAttackMode.attackerDamage,
             actionForNoDead: (changeHPReal) =>
             {
                 //增加BUFF
@@ -255,7 +204,7 @@ public class GameFightCreatureEntity
 
         //记录数据
         fightRecordsData.AddCreatureRegainDR(baseAttackMode.attackerId, changeDRReal);
-        fightRecordsData.AddCreatureRegainDRReceived(baseAttackMode.attackedId, changeDRReal);
+        fightRecordsData.AddCreatureRegainDRReceived(fightCreatureData.creatureData.creatureUUId, changeDRReal);
         //检测一下是否死亡
         CheckDead
         (
@@ -280,7 +229,7 @@ public class GameFightCreatureEntity
     /// </summary>
     public void UnderAttack(BaseAttackMode baseAttackMode)
     {
-        FightUnderAttackStruct fightUnderAttackStruct = new FightUnderAttackStruct(baseAttackMode);
+        FightUnderAttackStruct fightUnderAttackStruct = new FightUnderAttackStruct(baseAttackMode,fightCreatureData.creatureData.creatureUUId);
         UnderAttack(fightUnderAttackStruct,
             actionForNoDead: (changeDRReal, changeHPReal) =>
             {
@@ -520,6 +469,9 @@ public class GameFightCreatureEntity
         }
         else
         {
+            //死掉之后设置BUFF信息为无效
+            BuffHandler.Instance.SetCreatureBuffsActivieIsValid(fightCreatureData.creatureData.creatureUUId, false);
+
             actionForDead?.Invoke();
             //掉落水晶
             FightHandler.Instance.CreateDropCrystal(creatureObj.transform.position);
@@ -569,21 +521,4 @@ public class GameFightCreatureEntity
         }
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadStart, fightCreatureData);
     }
-
-    /// <summary>
-    /// 回调移除BUFF
-    /// </summary>
-    public void CallBackForRemoveBuff()
-    {
-        SetBodyColor();
-    }
-
-    /// <summary>
-    /// 回调增加BUFF
-    /// </summary>
-    public void CallBackForAddBuff()
-    {
-        SetBodyColor();
-    }
-
 }

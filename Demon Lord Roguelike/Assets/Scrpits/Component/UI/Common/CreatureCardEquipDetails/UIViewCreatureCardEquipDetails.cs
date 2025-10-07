@@ -50,7 +50,7 @@ public partial class UIViewCreatureCardEquipDetails : BaseUIView
     public void ShowEquipUI(CreatureBean creatureData)
     {
         dicShowEquipView.Clear();
-        var itemInfo = CreatureInfoCfg.GetItemData(creatureData.id);
+        var itemInfo = CreatureInfoCfg.GetItemData(creatureData.creatureId);
         List<ItemTypeEnum> listEquipType = new List<ItemTypeEnum>();
         if (itemInfo != null)
         {

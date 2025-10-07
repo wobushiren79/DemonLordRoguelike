@@ -66,7 +66,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// </summary>
     public void CreateDefenseCoreCreature(CreatureBean creatureData, Vector3 creaturePos, Action<GameFightCreatureEntity> actionForComplete)
     {
-        GetCreatureObj(creatureData.id, (targetObj) =>
+        GetCreatureObj(creatureData.creatureId, (targetObj) =>
         {
             targetObj.transform.position = creaturePos;
             GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
@@ -88,7 +88,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// </summary>
     public void CreateDefenseCreature(CreatureBean creatureData, Action<GameObject> actionForComplete)
     {
-        GetCreatureObj((int)creatureData.id, (targetObj) =>
+        GetCreatureObj(creatureData.creatureId, (targetObj) =>
         {
             Transform rendererTF = targetObj.transform.Find("Spine");
             SkeletonAnimation targetSkeletonAnimation = rendererTF.GetComponent<SkeletonAnimation>();

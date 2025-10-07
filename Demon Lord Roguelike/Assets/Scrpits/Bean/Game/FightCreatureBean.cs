@@ -23,10 +23,10 @@ public class FightCreatureBean
     public float CRTCurrent;//暴击率
 
     public Color colorBodyCurrent;//当前身体颜色
-    public List<BuffEntityBean> listBuffEntityData;//所有的buff实例
-    public FightCreatureBean(long creatureId)
+
+    public FightCreatureBean(long id)
     {
-        creatureData = new CreatureBean(creatureId);
+        creatureData = new CreatureBean(id);
         ResetData();
     }
 
@@ -48,15 +48,14 @@ public class FightCreatureBean
         DRCurrent = creatureInfo.GetDR();
         DRMax = creatureInfo.GetDR();
 
-        listBuffEntityData = new List<BuffEntityBean>();
         //刷新一下基础属性
-        InitBaseAttribute();
+        RefreshBaseAttribute();
     }
 
     /// <summary>
     /// 初始化基础属性
     /// </summary>
-    public void InitBaseAttribute(Action actionForComplete = null)
+    public void RefreshBaseAttribute(Action actionForComplete = null)
     {
         //先还原基础数据
         MSPDCurrent = creatureData.GetMSPD();
@@ -67,32 +66,37 @@ public class FightCreatureBean
 
         colorBodyCurrent = Color.white;
 
+        var listBuffEntity = BuffHandler.Instance.manager.GetCreatureBuffsActivie(creatureData.creatureUUId);
         //buff相关加成
-        if (!listBuffEntityData.IsNull())
+        if (!listBuffEntity.IsNull())
         {
-            for (int i = 0; i < listBuffEntityData.Count; i++)
+            for (int i = 0; i < listBuffEntity.Count; i++)
             {
-                BuffEntityBean itemBuff = listBuffEntityData[i];
-                //获取buff执行实例
-                var buffEntity = itemBuff.GetBuffEntity();
-                //设置攻击力相关
-                ATKCurrent += (int)buffEntity.GetChangeDataForATK(itemBuff);
-                ATKCurrent = ATKCurrent + (int)(ATKCurrent * buffEntity.GetChangeRateDataForATK(itemBuff));
-                //设置攻击速度相关
-                ASPDCurrent += buffEntity.GetChangeDataForASPD(itemBuff);
-                ASPDCurrent = ASPDCurrent + (ASPDCurrent * buffEntity.GetChangeRateDataForASPD(itemBuff));
-                //设置移动速度相关
-                MSPDCurrent += buffEntity.GetChangeDataForMSPD(itemBuff);
-                MSPDCurrent *= 1 + buffEntity.GetChangeRateDataForMSPD(itemBuff);
-                //设置暴击相关
-                CRTCurrent += buffEntity.GetChangeRateDataForCRT(itemBuff);
-                //设置闪避相关
-                EVACurrent += buffEntity.GetChangeRateDataForEVA(itemBuff);
+                BuffBaseEntity buffEntity = listBuffEntity[i];
+                BuffEntityBean buffEntityData = buffEntity.buffEntityData;
+                
+                if (buffEntity is BuffEntityAttribute buffEntityAttribute)
+                {
+                    //设置攻击力相关
+                    ATKCurrent += (int)buffEntityAttribute.GetChangeData(CreatureAttributeTypeEnum.ATK);
+                    ATKCurrent = ATKCurrent + (int)(ATKCurrent * buffEntityAttribute.GetChangeRateData(CreatureAttributeTypeEnum.ATK));
+                    //设置攻击速度相关
+                    ASPDCurrent += buffEntityAttribute.GetChangeData(CreatureAttributeTypeEnum.ASPD);
+                    ASPDCurrent = ASPDCurrent + (ASPDCurrent * buffEntityAttribute.GetChangeRateData(CreatureAttributeTypeEnum.ASPD));
+                    //设置移动速度相关
+                    MSPDCurrent += buffEntityAttribute.GetChangeData(CreatureAttributeTypeEnum.MSPD);
+                    MSPDCurrent *= 1 + buffEntityAttribute.GetChangeRateData(CreatureAttributeTypeEnum.MSPD);
+                    //设置暴击相关
+                    CRTCurrent += buffEntityAttribute.GetChangeRateData(CreatureAttributeTypeEnum.CRT);
+                    //设置闪避相关
+                    EVACurrent += buffEntityAttribute.GetChangeRateData(CreatureAttributeTypeEnum.EVA);
+                }
+
 
                 //设置身体颜色
-                if (!itemBuff.buffInfo.color_body.IsNull())
+                if (!buffEntityData.buffInfo.color_body.IsNull())
                 {
-                    colorBodyCurrent = buffEntity.GetChangeBodyColor(itemBuff);
+                    colorBodyCurrent = buffEntity.GetChangeBodyColor(buffEntityData);
                 }
             }
         }
@@ -191,7 +195,7 @@ public class FightCreatureBean
         //刷新一下基础属性
         if (isRefreshAttribute)
         {
-            InitBaseAttribute();
+            RefreshBaseAttribute();
         }
     }
 
@@ -225,7 +229,7 @@ public class FightCreatureBean
         //刷新一下基础属性
         if (isRefreshAttribute)
         {
-            InitBaseAttribute();
+            RefreshBaseAttribute();
         }
     }
 
@@ -259,50 +263,7 @@ public class FightCreatureBean
         //刷新一下基础属性
         if (isRefreshAttribute)
         {
-            InitBaseAttribute();
+            RefreshBaseAttribute();
         }
     }
-
-    /// <summary>
-    /// 添加BUFF
-    /// </summary>
-    public void AddBuff(List<BuffEntityBean> targetListBuffEntityData, Action<BuffEntityBean> actionForCombineNew = null, Action<BuffEntityBean> actionForCombineOld = null, Action actionForComplete = null)
-    {
-        for (int f = 0; f < targetListBuffEntityData.Count; f++)
-        {
-            var targetBuff = targetListBuffEntityData[f];
-            bool hasOldBuff = false;
-            for (int i = 0; i < listBuffEntityData.Count; i++)
-            {
-                var itemBuffEntityData = listBuffEntityData[i];
-                if (itemBuffEntityData.buffInfo.id == targetBuff.buffInfo.id)
-                {
-                    hasOldBuff = true;
-                    itemBuffEntityData.triggerNumLeft = targetBuff.triggerNumLeft;
-                    actionForCombineOld?.Invoke(itemBuffEntityData);
-                    break;
-                }
-            }
-            if (!hasOldBuff)
-            {
-                listBuffEntityData.Add(targetBuff);
-                actionForCombineNew?.Invoke(targetBuff);
-
-            }
-        }
-        InitBaseAttribute(actionForComplete);
-    }
-
-    /// <summary>
-    /// 移除BUFF
-    /// </summary>
-    public void RemoveBuff(BuffEntityBean buffEntityData, Action actionForComplete = null)
-    {
-        if (!listBuffEntityData.IsNull())
-        {
-            listBuffEntityData.Remove(buffEntityData);
-        }
-        InitBaseAttribute(actionForComplete);
-    }
-
 }

@@ -24,7 +24,7 @@ public class AttackModeRanged​Piercing : AttackModeRanged​
             for (int i = 0; i < listHitTarget.Count; i++)
             {
                 var itemCreature = listHitTarget[i];
-                string itemCreatureId = itemCreature.fightCreatureData.creatureData.creatureId;
+                string itemCreatureId = itemCreature.fightCreatureData.creatureData.creatureUUId;
                 if (listPierceCreature.Contains(itemCreatureId))
                 {
                     continue;
