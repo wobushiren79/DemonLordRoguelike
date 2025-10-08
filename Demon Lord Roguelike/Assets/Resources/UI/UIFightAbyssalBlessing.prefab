@@ -655,6 +655,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UIViewFightAbyssalBlessingItem_3
       objectReference: {fileID: 0}
+    - target: {fileID: 4158887273797488304, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -669,7 +673,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchorMin.x
@@ -677,7 +681,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_SizeDelta.x
@@ -717,7 +721,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 1460
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -947,6 +951,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UIViewFightAbyssalBlessingItem_5
       objectReference: {fileID: 0}
+    - target: {fileID: 4158887273797488304, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -961,7 +969,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchorMin.x
@@ -969,7 +977,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_SizeDelta.x
@@ -1009,7 +1017,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 2200
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -1341,6 +1349,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UIViewFightAbyssalBlessingItem_2
       objectReference: {fileID: 0}
+    - target: {fileID: 4158887273797488304, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1355,7 +1367,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchorMin.x
@@ -1363,7 +1375,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_SizeDelta.x
@@ -1403,7 +1415,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 960
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -1589,6 +1601,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UIViewFightAbyssalBlessingItem_4
       objectReference: {fileID: 0}
+    - target: {fileID: 4158887273797488304, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1603,7 +1619,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchorMin.x
@@ -1611,7 +1627,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_SizeDelta.x
@@ -1651,7 +1667,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 1700
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -1691,6 +1707,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: UIViewFightAbyssalBlessingItem_1
       objectReference: {fileID: 0}
+    - target: {fileID: 4158887273797488304, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1705,7 +1725,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchorMin.x
@@ -1713,7 +1733,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_SizeDelta.x
@@ -1753,7 +1773,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 460
       objectReference: {fileID: 0}
     - target: {fileID: 6081941987341336215, guid: 1d885e7b4d636c44abc50aa280895225, type: 3}
       propertyPath: m_AnchoredPosition.y

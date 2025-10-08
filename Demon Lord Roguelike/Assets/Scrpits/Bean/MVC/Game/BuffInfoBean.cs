@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 [Serializable]
 public partial class BuffInfoBean : BaseBean
 {
@@ -8,7 +9,7 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public string icon_res;
 	/// <summary>
-	///类型1:攻击模块 2：生物自带 
+	///类型1:攻击模块 2：生物自带 3:全局
 	/// </summary>
 	public int buff_type;
 	/// <summary>
@@ -48,13 +49,11 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public float trigger_time;
 	/// <summary>
-	///名字-中文
+	///名字
 	/// </summary>
-	public string name_cn;
-	/// <summary>
-	///名字-英文
-	/// </summary>
-	public string name_en;
+	public long name;
+	[JsonIgnore]
+	public string name_language { get { return TextHandler.Instance.GetTextById(name); } }
 	/// <summary>
 	///备注
 	/// </summary>

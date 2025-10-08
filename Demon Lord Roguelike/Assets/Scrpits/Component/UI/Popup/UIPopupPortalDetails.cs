@@ -18,7 +18,7 @@ public class UIPopupPortalDetails : PopupShowCommonView
         GameWorldInfoRandomBean gameWorldInfoRandom = targetData.Item2;
 
         //设置名字
-        SetItemContente(0, TextHandler.Instance.GetTextById(411), $"{TextHandler.Instance.GetTextById(gameWorldInfo.name)}");
+        SetItemContente(0, TextHandler.Instance.GetTextById(411), $"{gameWorldInfo.name_language}");
         //设置线路数量
         SetItemContente(1, TextHandler.Instance.GetTextById(412), $"{gameWorldInfoRandom.roadNum}");
         //设置战斗关卡

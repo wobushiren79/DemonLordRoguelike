@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 [Serializable]
 public partial class GameWorldInfoBean : BaseBean
 {
@@ -15,6 +16,8 @@ public partial class GameWorldInfoBean : BaseBean
 	///名字
 	/// </summary>
 	public long name;
+	[JsonIgnore]
+	public string name_language { get { return TextHandler.Instance.GetTextById(name); } }
 	/// <summary>
 	///备注
 	/// </summary>

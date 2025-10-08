@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 [Serializable]
 public partial class AbyssalBlessingInfoBean : BaseBean
 {
@@ -8,17 +9,25 @@ public partial class AbyssalBlessingInfoBean : BaseBean
 	/// </summary>
 	public string icon_res;
 	/// <summary>
-	///馈赠类型
+	///buff_id
+	/// </summary>
+	public long buff_id;
+	/// <summary>
+	///馈赠类型1:触发一次 2:Buff持续性
 	/// </summary>
 	public int blessing_type;
 	/// <summary>
 	///名字-中文
 	/// </summary>
 	public long name;
+	[JsonIgnore]
+	public string name_language { get { return TextHandler.Instance.GetTextById(name); } }
 	/// <summary>
 	///描述中文
 	/// </summary>
 	public long details;
+	[JsonIgnore]
+	public string details_language { get { return TextHandler.Instance.GetTextById(details); } }
 	/// <summary>
 	///备注
 	/// </summary>

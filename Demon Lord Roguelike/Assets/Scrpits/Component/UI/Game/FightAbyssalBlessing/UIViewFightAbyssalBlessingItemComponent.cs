@@ -10,5 +10,7 @@ public partial class UIViewFightAbyssalBlessingItem
 
     public Image ui_Icon;
 
+    public Button ui_Content;
+
 
 }
