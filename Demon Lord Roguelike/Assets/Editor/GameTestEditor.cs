@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using static ExcelUtil;
@@ -192,7 +193,7 @@ public class GameTestEditor : Editor
     /// <returns></returns>
     public FightBean GetTestData()
     {
-        FightBean fightData = new FightBean();
+        FightBeanForTest fightData = new FightBeanForTest();
         fightData.sceneRoadNum = fightSceneRoadNum;
         fightData.sceneRoadLength = fightSceneRoadLength;
         fightData.gameFightType = GameFightTypeEnum.Test;
@@ -204,6 +205,7 @@ public class GameTestEditor : Editor
             FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(fightSceneAttackDelay, enemyIds);
             fightData.fightAttackData.AddAttackQueue(fightAttackDetails);
         }
+        fightData.fightAttackDataRemark = ClassUtil.DeepCopy(fightData.fightAttackData);
 
         //所有的卡片数据
         fightData.dlDefenseCreatureData.Clear();

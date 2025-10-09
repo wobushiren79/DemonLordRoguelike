@@ -71,7 +71,7 @@ public class GameFightLogic : BaseGameLogic
         base.ClearGame();
         ClearSelectData(true);
         //清理战斗数据
-        fightData.Clear();
+        fightData.ClearEntity();
         //生物清理
         CreatureHandler.Instance.manager.Clear();
         //战场清理
@@ -79,7 +79,7 @@ public class GameFightLogic : BaseGameLogic
         //AI清理
         AIHandler.Instance.manager.Clear();
         //Buff清理
-        BuffHandler.Instance.manager.Clear();
+        BuffHandler.Instance.manager.ClearBuff();
         //清理战斗场景
         WorldHandler.Instance.UnLoadFightScene();
         //清理缓存
@@ -96,7 +96,7 @@ public class GameFightLogic : BaseGameLogic
         //AI清理
         AIHandler.Instance.manager.Clear();     
         //Buff清理
-        BuffHandler.Instance.manager.Clear();
+        BuffHandler.Instance.manager.ClearBuff();
     }
 
     /// <summary>

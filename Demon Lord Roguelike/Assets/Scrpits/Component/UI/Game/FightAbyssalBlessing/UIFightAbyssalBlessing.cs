@@ -7,12 +7,16 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
 {
     //选择回调
     public Action<AbyssalBlessingInfoBean> actionForSelect;
-
+    //跳过回调
+    public Action actionForSkip;
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData()
+    public void SetData(Action<AbyssalBlessingInfoBean> actionForSelect = null, Action actionForSkip = null)
     {
+        this.actionForSelect = actionForSelect;
+        this.actionForSkip = actionForSkip;
+        
         var allData = AbyssalBlessingInfoCfg.GetAllData();
         int showNum = 3;
         for (int i = 0; i < ui_AbyssalBlessingList.childCount; i++)
@@ -56,7 +60,7 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     /// </summary>
     public void OnClickForSkip()
     {
-        actionForSelect?.Invoke(null);
-        actionForSelect = null;
+        actionForSkip?.Invoke();
+        actionForSkip = null;
     }
 }

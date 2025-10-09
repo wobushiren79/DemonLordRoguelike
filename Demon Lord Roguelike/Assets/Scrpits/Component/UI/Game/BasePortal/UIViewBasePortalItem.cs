@@ -136,7 +136,16 @@ public partial class UIViewBasePortalItem : BaseUIView
             //展示mask遮罩
             UIHandler.Instance.ShowMask(animTimeForShowMask, null, () =>
             {
-                FightBean fightData = new FightBean(gameWorldInfoRandom);
+                FightBean fightData = null;
+                switch (gameWorldInfoRandom.gameFightType)
+                {
+                    case GameFightTypeEnum.Conquer:
+                        fightData = new FightBeanForConquer(gameWorldInfoRandom);
+                        break;
+                    case GameFightTypeEnum.Infinite:
+                        fightData = new FightBeanForInfinite(gameWorldInfoRandom);
+                        break;
+                }
                 WorldHandler.Instance.EnterGameForFightScene(fightData);
                 //UIHandler.Instance.HideMask(animTimeForHideMask, null, null);
             }, false);

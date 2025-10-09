@@ -58,61 +58,17 @@ public class FightBean
     {
         this.gameWorldInfoRandomData = gameWorldInfoRandomData;
         gameFightType = gameWorldInfoRandomData.gameFightType;
-        switch (gameFightType)
-        {
-            case GameFightTypeEnum.Conquer:
-                InitForTypeConquer();
-                break;
-            case GameFightTypeEnum.Infinite:
-                break;
-        }   
+        InitData();
     }
 
     /// <summary>
-    /// 初始化征服模式
+    /// 初始化波数数据
     /// </summary>
-    public void InitForTypeConquer()
+    public virtual void InitData()
     {
-        FightTypeConquerInfoBean fightTypeConquerInfo = FightTypeConquerInfoCfg.GetItemData(gameWorldInfoRandomData.worldId, gameWorldInfoRandomData.difficultyLevel);
-        if (fightTypeConquerInfo == null)
-        {
-            LogUtil.LogError($"初始化征服游戏模式失败 worldId:{gameWorldInfoRandomData.worldId} difficultyLevel:{gameWorldInfoRandomData.difficultyLevel}");
-            return;
-        }
-        var userData = GameDataHandler.Instance.manager.GetUserData();
-        //设置道路数量
-        sceneRoadNum = gameWorldInfoRandomData.roadNum;
-        //设置道路长度
-        sceneRoadLength = gameWorldInfoRandomData.roadLength;
-        //设置最大关卡数量
-        figthNumMax = gameWorldInfoRandomData.fightNum;
-        //设置当前关卡数量
-        fightNum = 1;
-        //设置战斗场景ID
-        fightSceneId = fightTypeConquerInfo.GetRandomFightScene(false);
-        //初始化防御核心
-        FightCreatureBean fightCreatureDefenseCore = new FightCreatureBean(userData.selfCreature);
-        fightDefenseCoreData = fightCreatureDefenseCore;
-        //设置防御生物
-        dlDefenseCreatureData.Clear();
-        var lineupCreature = userData.GetLineupCreature(1);
-        for (int i = 0; i < lineupCreature.Count; i++)
-        {
-            var itemLineupCreature = lineupCreature[i];;
-            dlDefenseCreatureData.Add(itemLineupCreature.creatureUUId, itemLineupCreature);
-        }
-        //设置进攻生物数据
-        fightAttackData = new FightAttackBean();
-        int waveNum = UnityEngine.Random.Range(fightTypeConquerInfo.attack_wave_min, fightTypeConquerInfo.attack_wave_max + 1);
-        float waveDelay = 5;
-        for (int i = 0; i < waveNum; i++)
-        {
-            long enemyId = fightTypeConquerInfo.GetRandomEmenyId(false);
-            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(waveDelay - i * (waveDelay / waveNum), enemyId);
-            fightAttackData.AddAttackQueue(fightAttackDetails);
-        }
-
-
+        timeUpdateForAttackCreate = 0;
+        timeUpdateTargetForAttackCreate = 0;
+        timeUpdateForFightCreature = 0;
     }
     #endregion
 
@@ -132,7 +88,7 @@ public class FightBean
     /// <summary>
     /// 清理数据
     /// </summary>
-    public void Clear()
+    public void ClearEntity()
     {
         //还原生物数据
         for (int i = 0; i < dlDefenseCreatureData.List.Count; i++)
@@ -158,7 +114,6 @@ public class FightBean
             }
         }
 
-        dlDefenseCreatureData.Clear();
         dlDefenseCreatureEntity.Clear();
         dlAttackCreatureEntity.Clear();
 
@@ -167,20 +122,8 @@ public class FightBean
             GameObject.DestroyImmediate(fightDefenseCoreCreature.creatureObj);
         }
         fightDefenseCoreCreature = null;
-        fightDefenseCoreData = null;
     }
     #endregion
-
-
-    /// <summary>
-    /// 初始化波数数据
-    /// </summary>
-    public void InitData()
-    {
-        timeUpdateForAttackCreate = 0;
-        timeUpdateTargetForAttackCreate = 0;
-        timeUpdateForFightCreature = 0;
-    }
 
     /// <summary>
     /// 检测指定位置上是否有防守生物

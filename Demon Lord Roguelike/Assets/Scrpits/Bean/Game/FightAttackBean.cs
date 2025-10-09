@@ -71,7 +71,12 @@ public class FightAttackDetailsBean
         npcIds = new List<long>() { creatureId };
     }
 
-        public FightAttackDetailsBean(float timeNextAttack, List<long> npcIds)
+    public FightAttackDetailsBean()
+    {
+
+    }
+
+    public FightAttackDetailsBean(float timeNextAttack, List<long> npcIds)
     {
         this.timeNextAttack = timeNextAttack;
         this.npcIds = npcIds;

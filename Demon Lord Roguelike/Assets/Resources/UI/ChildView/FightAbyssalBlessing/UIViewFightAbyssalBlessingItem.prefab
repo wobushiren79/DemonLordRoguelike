@@ -544,6 +544,7 @@ MonoBehaviour:
   ui_NameText: {fileID: 1623857328500593240}
   ui_DetailsText: {fileID: 4457716361158109879}
   ui_Icon: {fileID: 7201113233569823613}
+  ui_Content: {fileID: 8008113643518808951}
 --- !u!1 &6731674132181104820
 GameObject:
   m_ObjectHideFlags: 0

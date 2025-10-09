@@ -9,13 +9,9 @@ public partial class AbyssalBlessingInfoBean : BaseBean
 	/// </summary>
 	public string icon_res;
 	/// <summary>
-	///buff_id
+	///buff_ids
 	/// </summary>
-	public long buff_id;
-	/// <summary>
-	///馈赠类型1:触发一次 2:Buff持续性
-	/// </summary>
-	public int blessing_type;
+	public string buff_ids;
 	/// <summary>
 	///名字-中文
 	/// </summary>

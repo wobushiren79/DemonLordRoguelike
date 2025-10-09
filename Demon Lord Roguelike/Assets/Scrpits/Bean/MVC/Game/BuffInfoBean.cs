@@ -9,7 +9,7 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public string icon_res;
 	/// <summary>
-	///类型1:攻击模块 2：生物自带 3:全局
+	///类型1:攻击模块 2：生物自带 3:深渊馈赠
 	/// </summary>
 	public int buff_type;
 	/// <summary>

@@ -38,7 +38,7 @@ public class BuffBaseEntity
         else
         {
             //如果是永久存在
-            if (buffEntityData.buffInfo.trigger_time == -1)
+            if (buffEntityData.buffInfo.trigger_time < 0)
             {
 
             }

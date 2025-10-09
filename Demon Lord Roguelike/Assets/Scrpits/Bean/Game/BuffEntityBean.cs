@@ -1,13 +1,4 @@
-﻿using NUnit.Framework;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
-using Spine;
-using System;
-using System.Collections.Generic;
-using UnityEditor;
-using UnityEngine;
-using UnityEngine.PlayerLoop;
-
-public class BuffEntityBean
+﻿public class BuffEntityBean
 {
     public BuffInfoBean buffInfo;
     //是否有效
