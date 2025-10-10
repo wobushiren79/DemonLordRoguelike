@@ -5,7 +5,7 @@ using UnityEngine;
 public class AIIntentAttCreatureLured : AIBaseIntent
 {
     //目标AI
-    public AIAttCreatureEntity selfAIEntity;
+    public AIAttackCreatureEntity selfAIEntity;
     public GameFightCreatureEntity selfFightCreatureEntity;
     public FightCreatureBean fightCreatureData;
     //被引诱时移动速率加倍
@@ -13,7 +13,7 @@ public class AIIntentAttCreatureLured : AIBaseIntent
 
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
-        selfAIEntity = aiEntity as AIAttCreatureEntity;
+        selfAIEntity = aiEntity as AIAttackCreatureEntity;
         selfFightCreatureEntity = selfAIEntity.selfCreatureEntity;
         fightCreatureData = selfFightCreatureEntity.fightCreatureData;
         //设置移动目标
@@ -30,7 +30,7 @@ public class AIIntentAttCreatureLured : AIBaseIntent
         if (CheckIsCloseTarget())
         {
             selfFightCreatureEntity.creatureObj.transform.position = selfAIEntity.targetMovePos;
-            selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureIdle);
+            selfAIEntity.ChangeIntent(AIIntentEnum.AttackCreatureIdle);
             return;
         }
         float moveSpeed = fightCreatureData.GetMSPD();

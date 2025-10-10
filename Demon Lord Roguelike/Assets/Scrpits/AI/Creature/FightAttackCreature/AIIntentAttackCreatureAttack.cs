@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class AIIntentAttCreatureAttack : AIBaseIntent
+public class AIIntentAttackCreatureAttack : AIBaseIntent
 {
     //攻击准备时间
     public float timeUpdateAttackPre = 0;
@@ -8,13 +8,13 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
     public float timeUpdateAttacking = 0;
     public float timeUpdateAttackingCD = 0.2f;
     //目标AI
-    public AIAttCreatureEntity selfAIEntity;
+    public AIAttackCreatureEntity selfAIEntity;
     public FightCreatureBean fightCreatureData;
     //攻击状态 0准备中 1攻击中
     public int attackState = 0;
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
-        selfAIEntity = aiEntity as AIAttCreatureEntity;
+        selfAIEntity = aiEntity as AIAttackCreatureEntity;
         fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
         timeUpdateAttackPre = 0;
         timeUpdateAttacking = 0;
@@ -68,13 +68,13 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
         //如果目标生物已经无了
         if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.IsDead())
         {
-            ChangeIntent(AIIntentEnum.AttCreatureIdle);
+            ChangeIntent(AIIntentEnum.AttackCreatureIdle);
             return;
         }
         //如果自己死了
         if (selfAIEntity.selfCreatureEntity == null || selfAIEntity.selfCreatureEntity.IsDead())
         {
-            ChangeIntent(AIIntentEnum.AttCreatureDead);
+            ChangeIntent(AIIntentEnum.AttackCreatureDead);
             return;
         }
         //播放攻击动画
@@ -101,7 +101,7 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
         //如果没有找到最近的生物
         if (findTargetCreature == null)
         {
-            ChangeIntent(AIIntentEnum.AttCreatureIdle);
+            ChangeIntent(AIIntentEnum.AttackCreatureIdle);
             return;
         }
         //设置新目标
@@ -113,7 +113,7 @@ public class AIIntentAttCreatureAttack : AIBaseIntent
         //如果目标生物已经无了 则重新寻找目标
         if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.IsDead())
         {
-            ChangeIntent(AIIntentEnum.AttCreatureIdle);
+            ChangeIntent(AIIntentEnum.AttackCreatureIdle);
             return;
         }
         //继续攻击

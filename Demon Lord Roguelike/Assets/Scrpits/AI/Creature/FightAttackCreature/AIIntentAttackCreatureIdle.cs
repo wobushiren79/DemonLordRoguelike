@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using UnityEngine;
 
-public class AIIntentAttCreatureIdle : AIBaseIntent
+public class AIIntentAttackCreatureIdle : AIBaseIntent
 {
     //目标AI
-    public AIAttCreatureEntity selfAIEntity;
+    public AIAttackCreatureEntity selfAIEntity;
 
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
-        selfAIEntity = aiEntity as AIAttCreatureEntity;
+        selfAIEntity = aiEntity as AIAttackCreatureEntity;
         //寻找路线上的敌人
         var fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
         selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntityForSinge(DirectionEnum.Left);
@@ -43,7 +43,7 @@ public class AIIntentAttCreatureIdle : AIBaseIntent
     {
         if (selfAIEntity.targetCreatureEntity != null)
         {  
-            selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureMove);
+            selfAIEntity.ChangeIntent(AIIntentEnum.AttackCreatureMove);
         }
     }
 

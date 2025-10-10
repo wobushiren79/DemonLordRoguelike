@@ -167,9 +167,12 @@ public class BuffManager : BaseManager
         for (int i = 0; i < listBuffEntity.Count; i++)
         {
             BuffBaseEntity itemBuffEntity = listBuffEntity[i];
-            //移除数据到缓存
-            RemoveBuffEntityBean(itemBuffEntity.buffEntityData);
-            RemoveBuffEntity(itemBuffEntity);
+            if (itemBuffEntity != null)
+            {
+                //移除数据到缓存
+                RemoveBuffEntityBean(itemBuffEntity.buffEntityData);
+                RemoveBuffEntity(itemBuffEntity);
+            }
         }
     }
     #endregion

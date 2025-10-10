@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class AIIntentDefCreatureAttack : AIBaseIntent
+public class AIIntentDefenseCreatureAttack : AIBaseIntent
 {
     //攻击准备时间
     public float timeUpdateAttackPre = 0;
@@ -8,7 +8,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
     public float timeUpdateAttacking = 0;
     public float timeUpdateAttackingCD = 0.2f;
     //目标AI
-    public AIDefCreatureEntity selfAIEntity;
+    public AIDefenseCreatureEntity selfAIEntity;
     //攻击状态 0准备中 1攻击中
     public int attackState = 0;
     public FightCreatureBean fightCreatureData;
@@ -16,7 +16,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
     {
         timeUpdateAttackPre = 0;
         timeUpdateAttacking = 0;
-        selfAIEntity = aiEntity as AIDefCreatureEntity;
+        selfAIEntity = aiEntity as AIDefenseCreatureEntity;
         fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
         attackState = 0;
         timeUpdateAttackPreCD = fightCreatureData.GetASPD();
@@ -67,13 +67,13 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
         //如果目标生物已经无了
         if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.IsDead())
         {
-            ChangeIntent(AIIntentEnum.DefCreatureIdle);
+            ChangeIntent(AIIntentEnum.DefenseCreatureIdle);
             return;
         }
         //如果自己死了
         if (selfAIEntity.selfCreatureEntity == null || selfAIEntity.selfCreatureEntity.IsDead())
         {
-            ChangeIntent(AIIntentEnum.DefCreatureDead);
+            ChangeIntent(AIIntentEnum.DefenseCreatureDead);
             return;
         }
         var selfCreatureInfo = fightCreatureData.creatureData.creatureInfo;
@@ -110,7 +110,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
         //如果没有找到最近的生物
         if(findTargetCreature == null)
         {
-            ChangeIntent(AIIntentEnum.DefCreatureIdle);
+            ChangeIntent(AIIntentEnum.DefenseCreatureIdle);
             return;
         }
         //设置新目标
@@ -121,7 +121,7 @@ public class AIIntentDefCreatureAttack : AIBaseIntent
         //如果目标生物已经无了 则重新寻找目标
         if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.IsDead())
         {
-            ChangeIntent(AIIntentEnum.DefCreatureIdle);
+            ChangeIntent(AIIntentEnum.DefenseCreatureIdle);
             return;
         }
         //继续攻击

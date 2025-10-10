@@ -3,15 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AIIntentDefCreatureIdle : AIBaseIntent
+public class AIIntentDefenseCreatureIdle : AIBaseIntent
 {
-    AIDefCreatureEntity selfAIEntity;
+    AIDefenseCreatureEntity selfAIEntity;
     public float timeUpdateForFindTarget = 0;
     public float timeUpdateForFindTargetCD = 0.2f;
     FightCreatureBean fightCreatureData;
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
-        selfAIEntity = aiEntity as AIDefCreatureEntity;
+        selfAIEntity = aiEntity as AIDefenseCreatureEntity;
         fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
         timeUpdateForFindTarget = 0;
         //初始化相关数据
@@ -35,12 +35,12 @@ public class AIIntentDefCreatureIdle : AIBaseIntent
                 //如果攻击模式是防守则进入防守状态
                 if (fightCreatureData.creatureData.creatureInfo.attack_mode == 0)
                 {
-                    ChangeIntent(AIIntentEnum.DefCreatureDefend);
+                    ChangeIntent(AIIntentEnum.DefenseCreatureDefend);
                 }
                 //其他情况进入攻击状态
                 else
                 {
-                    ChangeIntent(AIIntentEnum.DefCreatureAttack);
+                    ChangeIntent(AIIntentEnum.DefenseCreatureAttack);
                 }
             }
         }

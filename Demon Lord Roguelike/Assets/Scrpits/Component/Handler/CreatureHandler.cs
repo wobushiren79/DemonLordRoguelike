@@ -75,7 +75,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             fightCreatureData.positionCreate = new Vector3Int(-1, 0, 0);
 
             GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
-            gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefCoreCreatureEntity>(actionBeforeStart: (targetEntity) =>
+            gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefenseCoreCreatureEntity>(actionBeforeStart: (targetEntity) =>
             {
                 targetEntity.InitData(gameFightCreatureEntity);
             });
@@ -148,7 +148,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             gameLogic.fightData.AddAttackCreatureByRoad(targetRoad, gameFightCreatureEntity);
 
             //再创建数据
-            gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIAttCreatureEntity>(actionBeforeStart: (targetEntity) =>
+            gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIAttackCreatureEntity>(actionBeforeStart: (targetEntity) =>
             {
                 targetEntity.InitData(gameFightCreatureEntity);
             });

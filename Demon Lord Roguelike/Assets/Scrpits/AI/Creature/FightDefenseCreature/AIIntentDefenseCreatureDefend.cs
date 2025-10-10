@@ -1,14 +1,14 @@
 using UnityEngine;
 
-public class AIIntentDefCreatureDefend : AIBaseIntent
+public class AIIntentDefenseCreatureDefend : AIBaseIntent
 {
     //目标AI
-    public AIDefCreatureEntity selfAIEntity;
+    public AIDefenseCreatureEntity selfAIEntity;
     public float timeUpdateForFindTarget = 0;
     public float timeUpdateForFindTargetCD = 0.2f;
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
-        selfAIEntity = aiEntity as AIDefCreatureEntity;
+        selfAIEntity = aiEntity as AIDefenseCreatureEntity;
         var creatureData = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData;
         //初始化相关数据
         timeUpdateForFindTargetCD = creatureData.GetAttackSearchTime();
@@ -28,7 +28,7 @@ public class AIIntentDefCreatureDefend : AIBaseIntent
             //如果没有敌人了 就进入待机状态  
             if (selfAIEntity.targetCreatureEntity == null)
             {
-                ChangeIntent(AIIntentEnum.DefCoreCreatureIdle);
+                ChangeIntent(AIIntentEnum.DefenseCoreCreatureIdle);
             }
         }
     }

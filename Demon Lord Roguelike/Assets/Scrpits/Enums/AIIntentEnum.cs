@@ -3,17 +3,17 @@ using UnityEngine;
 
 public enum AIIntentEnum
 {
-    AttCreatureIdle,//闲置
-    AttCreatureMove,//移动
-    AttCreatureAttack,//攻击
-    AttCreatureDead,//死亡
-    AttCreatureLured,//被诱惑中
+    AttackCreatureIdle,//闲置
+    AttackCreatureMove,//移动
+    AttackCreatureAttack,//攻击
+    AttackCreatureDead,//死亡
+    AttackCreatureLured,//被诱惑中
 
-    DefCreatureIdle,//闲置
-    DefCreatureAttack,//攻击
-    DefCreatureDead,//死亡
-    DefCreatureDefend,//防守
+    DefenseCreatureIdle,//闲置
+    DefenseCreatureAttack,//攻击
+    DefenseCreatureDead,//死亡
+    DefenseCreatureDefend,//防守
 
-    DefCoreCreatureIdle,//闲置
-    DefCoreCreatureDead,//死亡
+    DefenseCoreCreatureIdle,//闲置
+    DefenseCoreCreatureDead,//死亡
 }

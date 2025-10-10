@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AIIntentAttCreatureMove : AIBaseIntent
+public class AIIntentAttackCreatureMove : AIBaseIntent
 {
     //目标AI
-    public AIAttCreatureEntity selfAIEntity;
+    public AIAttackCreatureEntity selfAIEntity;
     public FightCreatureBean fightCreatureData;
     public float timeUpdateForFindTarget = 0;
     public float timeUpdateForFindTargetCD = 0;
@@ -13,7 +13,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         timeUpdateForFindTarget = 0;
-        selfAIEntity = aiEntity as AIAttCreatureEntity;
+        selfAIEntity = aiEntity as AIAttackCreatureEntity;
         fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
         timeUpdateForFindTargetCD = fightCreatureData.creatureData.GetAttackSearchTime();
         //设置移动动作
@@ -33,7 +33,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
             if (findTargetCreature != null)
             {
                 selfAIEntity.targetCreatureEntity = findTargetCreature;
-                selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureAttack);
+                selfAIEntity.ChangeIntent(AIIntentEnum.AttackCreatureAttack);
                 return;
             }
         }
@@ -41,7 +41,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
         //如果目标已经死了
         if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.IsDead())
         {
-            selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureIdle);
+            selfAIEntity.ChangeIntent(AIIntentEnum.AttackCreatureIdle);
             return;
         }
 
@@ -57,7 +57,7 @@ public class AIIntentAttCreatureMove : AIBaseIntent
                 //检测是否靠近目标
                 if (CheckIsCloseTarget())
                 {
-                    selfAIEntity.ChangeIntent(AIIntentEnum.AttCreatureAttack);
+                    selfAIEntity.ChangeIntent(AIIntentEnum.AttackCreatureAttack);
                     return;
                 }
             }

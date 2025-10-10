@@ -123,7 +123,7 @@ public class GameFightCreatureEntity
         switch (creatureType)
         {
             case CreatureTypeEnum.FightAttack:
-                aiEntity.ChangeIntent(AIIntentEnum.AttCreatureLured);
+                aiEntity.ChangeIntent(AIIntentEnum.AttackCreatureLured);
                 break;
         }
     }
@@ -507,17 +507,17 @@ public class GameFightCreatureEntity
     public void SetCreatureDead()
     {
         creatureFightState = CreatureFightStateEnum.Dead;
-        if (aiEntity is AIAttCreatureEntity)
+        if (aiEntity is AIAttackCreatureEntity)
         {
-            aiEntity.ChangeIntent(AIIntentEnum.AttCreatureDead);
+            aiEntity.ChangeIntent(AIIntentEnum.AttackCreatureDead);
         }
-        else if (aiEntity is AIDefCreatureEntity)
+        else if (aiEntity is AIDefenseCreatureEntity)
         {
-            aiEntity.ChangeIntent(AIIntentEnum.DefCreatureDead);
+            aiEntity.ChangeIntent(AIIntentEnum.DefenseCreatureDead);
         }
-        else if (aiEntity is AIDefCoreCreatureEntity)
+        else if (aiEntity is AIDefenseCoreCreatureEntity)
         {
-            aiEntity.ChangeIntent(AIIntentEnum.DefCoreCreatureDead);
+            aiEntity.ChangeIntent(AIIntentEnum.DefenseCoreCreatureDead);
         }
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadStart, fightCreatureData);
     }

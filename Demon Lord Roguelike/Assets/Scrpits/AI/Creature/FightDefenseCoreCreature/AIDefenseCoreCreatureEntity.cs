@@ -3,16 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AIDefCreatureEntity : AICreatureEntity
+public class AIDefenseCoreCreatureEntity : AICreatureEntity
 {
-
     /// <summary>
     /// 初始化数据
     /// </summary>
-    public void InitData(GameFightCreatureEntity selfDefCreatureEntity)
+    public void InitData(GameFightCreatureEntity selfDefenseCoreCreatureEntity)
     {
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
-        this.selfCreatureEntity = selfDefCreatureEntity;
+        this.selfCreatureEntity = selfDefenseCoreCreatureEntity;
     }
 
     /// <summary>
@@ -21,7 +20,7 @@ public class AIDefCreatureEntity : AICreatureEntity
     public override void ClearData()
     {
         base.ClearData();
-        selfCreatureEntity = null;
+        this.selfCreatureEntity = null;
     }
 
     /// <summary>
@@ -30,7 +29,7 @@ public class AIDefCreatureEntity : AICreatureEntity
     public override void StartAIEntity()
     {
         //默认闲置
-        ChangeIntent(AIIntentEnum.DefCreatureIdle);
+        ChangeIntent(AIIntentEnum.DefenseCoreCreatureIdle);
     }
 
     /// <summary>
@@ -47,10 +46,8 @@ public class AIDefCreatureEntity : AICreatureEntity
     /// <param name="listIntentEnum"></param>
     public override void InitIntentEnum(List<AIIntentEnum> listIntentEnum)
     {
-        listIntentEnum.Add(AIIntentEnum.DefCreatureIdle);
-        listIntentEnum.Add(AIIntentEnum.DefCreatureAttack);
-        listIntentEnum.Add(AIIntentEnum.DefCreatureDefend);
-        listIntentEnum.Add(AIIntentEnum.DefCreatureDead);
+        listIntentEnum.Add(AIIntentEnum.DefenseCoreCreatureIdle);
+        listIntentEnum.Add(AIIntentEnum.DefenseCoreCreatureDead);
     }
 
     #region 事件回调

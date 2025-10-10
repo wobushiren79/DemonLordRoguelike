@@ -327,7 +327,7 @@ public class GameFightLogic : BaseGameLogic
         //先添加数据
         fightData.AddDefenseCreatureByPos(selectTargetPos, gameFightCreatureEntity);
         //再创建AI
-        gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefCreatureEntity>(actionBeforeStart: (targetEntity) =>
+        gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefenseCreatureEntity>(actionBeforeStart: (targetEntity) =>
         {
             targetEntity.InitData(gameFightCreatureEntity);
         });
