@@ -145,7 +145,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     /// </summary>
     public void RemoveAttackModePrefab(BaseAttackMode targetMode)
     {
-        if(targetMode.gameObject != null)
+        if (targetMode.gameObject != null)
         {
             targetMode.gameObject.SetActive(false);
         }
@@ -157,11 +157,12 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     /// <summary>
     /// 创建掉落金币
     /// </summary>
-    /// <param name="dropPos"></param>
-    public void CreateDropCrystal(Vector3 dropPos)
+    public void CreateDropCrystal(FightDropCrystalBean fightDropCrystal)
     {
         manager.GetDropCrystalPrefab((targetPrefab) =>
         {
+            targetPrefab.valueInt = fightDropCrystal.crystalNum;
+            targetPrefab.lifeTime = fightDropCrystal.lifeTime;
             if (targetPrefab.spriteRenderer == null)
             {
                 Transform rendererTF = targetPrefab.gameObject.transform.Find("Renderer");
@@ -189,8 +190,8 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
             //播放一个掉落动画
             float randomX = UnityEngine.Random.Range(-0.5f, 0.5f);
             float randomZ = UnityEngine.Random.Range(-0.5f, 0.5f);
-            Vector3 endPos = new Vector3(dropPos.x + randomX, dropPos.y + 0.1f, dropPos.z + randomZ);
-            Vector3 startPos = dropPos + new Vector3(0, 0.5f, 0);
+            Vector3 endPos = new Vector3(fightDropCrystal.dropPos.x + randomX, fightDropCrystal.dropPos.y + 0.1f, fightDropCrystal.dropPos.z + randomZ);
+            Vector3 startPos = fightDropCrystal.dropPos + new Vector3(0, 0.5f, 0);
             // 使用DOPath创建抛物线移动动画
             targetPrefab.gameObject.transform.position = startPos;
             targetPrefab.gameObject.transform
@@ -204,6 +205,8 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
                         targetPrefab.collider.enabled = true;
                     }
                 });
+            //移除掉落数据到缓存
+            manager.RemoveFightDropCrystalBean(fightDropCrystal);
         });
     }
 

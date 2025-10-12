@@ -6,6 +6,11 @@ using UnityEngine.UI;
 
 public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
 {
+    public override void Awake()
+    {
+        base.Awake();
+    }
+
     /// <summary>
     /// 更新数据
     /// </summary>
@@ -45,6 +50,13 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
                 for (int f = 0; f < listBuff.Count; f++)
                 {
                     BuffBaseEntity itemBuffEntity = listBuff[f];
+                    if (itemBuffEntity.buffEntityData.isValid == false)
+                    {
+                        //即刻触发 触发之后移除
+                        manager.RemoveBuffEntity(itemBuffEntity);
+                        f--;
+                        continue;
+                    }
                     itemBuffEntity.AddBuffTime(updateTime);
                 }
             }

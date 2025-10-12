@@ -57,6 +57,7 @@ public class BuffManager : BaseManager
     /// <param name="itemBuffEntity"></param>
     public void RemoveBuffEntity(BuffBaseEntity itemBuffEntity)
     {
+        itemBuffEntity.ClearData();
         Type actualType = itemBuffEntity.GetType();
         string className = actualType.Name; // 获取类名（不包含命名空间）
         //添加到缓存
@@ -170,7 +171,6 @@ public class BuffManager : BaseManager
             if (itemBuffEntity != null)
             {
                 //移除数据到缓存
-                RemoveBuffEntityBean(itemBuffEntity.buffEntityData);
                 RemoveBuffEntity(itemBuffEntity);
             }
         }
@@ -198,7 +198,6 @@ public class BuffManager : BaseManager
     {
         listBuffEntity.Remove(itemBuffEntity);
         //移除数据到缓存
-        RemoveBuffEntityBean(itemBuffEntity.buffEntityData);
         RemoveBuffEntity(itemBuffEntity);
     }
     #endregion

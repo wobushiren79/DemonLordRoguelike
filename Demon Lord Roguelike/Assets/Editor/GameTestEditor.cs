@@ -27,6 +27,8 @@ public class GameTestEditor : Editor
     public string buffSelfDefenseTestId = "";//buff测试ID
 
     public string buffTestId = "1000100001";//攻击模式测试ID
+
+    public string abyssalBlessingIds = "2000001001";//深渊的馈赠
     public List<long> enemyIds = new List<long>() { 1010010001 };
     
     LauncherTest launcher;
@@ -159,6 +161,12 @@ public class GameTestEditor : Editor
         EditorGUILayout.LabelField("测试数据-攻击BUFF");
         buffTestId = EditorGUILayout.TextField(buffTestId);
         EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("测试数据-深渊馈赠Ids");
+        abyssalBlessingIds = EditorGUILayout.TextField(abyssalBlessingIds);
+        EditorGUILayout.EndHorizontal();
+        
     }
 
     /// <summary>
@@ -249,6 +257,18 @@ public class GameTestEditor : Editor
         if (!buffTestId.IsNull())
         {
             AttackModeInfoCfg.InitTestData(buffTestId);
+        }
+        //设置深渊馈赠
+        if (!abyssalBlessingIds.IsNull())
+        {
+            long[] arrayAbyssalBlessingIds = abyssalBlessingIds.SplitForArrayLong(',');
+            for (int i = 0; i < arrayAbyssalBlessingIds.Length; i++)
+            {
+                var itemID = arrayAbyssalBlessingIds[i];
+                AbyssalBlessingInfoBean abyssalBlessingInfo = AbyssalBlessingInfoCfg.GetItemData(itemID);
+                AbyssalBlessingEntityBean abyssalBlessingEntityData = new AbyssalBlessingEntityBean(abyssalBlessingInfo);
+                BuffHandler.Instance.AddAbyssalBlessing(abyssalBlessingEntityData);
+            }
         }
         return fightData;
     }

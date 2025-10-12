@@ -17,6 +17,7 @@ public static class EventsInfo
     public static string UIViewItemBackpack_OnClickSelect = "UIViewItemBackpack_OnClickSelect";//背包道具点击
     public static string UIViewItemEquip_OnClickSelect = "UIViewItemEquip_OnClickSelect";//装备道具点击
 
+    #region 战斗中
     public static string GameFightLogic_SelectCard = "GameFightLogic_SelectCard";//卡片选择
     public static string GameFightLogic_UnSelectCard = "GameFightLogic_UnSelectCard";//取消卡片选择
     public static string GameFightLogic_PutCard = "GameFightLogic_PutCard";//放置卡片选择    
@@ -24,7 +25,9 @@ public static class EventsInfo
 
     public static string GameFightLogic_CreatureDeadStart = "GameFightLogic_CreatureDeadStart";//生物开始死亡  
     public static string GameFightLogic_CreatureDeadEnd = "GameFightLogic_CreatureDeadEnd";//生物结束死亡
-
+    public static string GameFightLogic_CreatureDeadDropCrystal = "GameFightLogic_CreatureDeadDropCrystal";//生物死亡掉落水晶
+    #endregion
+    
     public static string Toast_NoEnoughCreateMagic = "Toast_NoEnoughCreateMagic";//没有足够的创建魔力
 
     #region 扭蛋机

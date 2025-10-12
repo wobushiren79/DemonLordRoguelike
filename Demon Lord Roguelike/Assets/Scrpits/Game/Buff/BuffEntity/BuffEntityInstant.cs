@@ -4,9 +4,8 @@ public class BuffEntityInstant : BuffBaseEntity
     {
         base.SetData(buffEntityData);
         TriggerBuff(buffEntityData);
-        //即刻触发 触发之后移除
-        BuffHandler.Instance.manager.RemoveBuffEntity(this);
-        BuffHandler.Instance.manager.RemoveBuffEntityBean(buffEntityData);
+
+        buffEntityData.isValid = false;
     }
 
     /// <summary>

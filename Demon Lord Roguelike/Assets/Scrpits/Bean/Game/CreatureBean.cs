@@ -22,6 +22,11 @@ public partial class CreatureBean
     //装备数据
     public Dictionary<ItemTypeEnum, ItemBean> dicEquipItemData = new Dictionary<ItemTypeEnum, ItemBean>();
 
+    public CreatureBean()
+    {
+        
+    }
+
     public CreatureBean(long creatureId)
     {
         this.creatureId = creatureId;

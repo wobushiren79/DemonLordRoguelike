@@ -1,4 +1,6 @@
 
+using UnityEngine;
+
 /// <summary>
 /// 受到攻击数据
 /// </summary>
@@ -17,7 +19,7 @@ public struct FightUnderAttackStruct
     //未命中音效
     public int soundMissId;
 
-    public FightUnderAttackStruct(BaseAttackMode baseAttackMode,string attackedId)
+    public FightUnderAttackStruct(BaseAttackMode baseAttackMode, string attackedId)
     {
         this.attackedId = attackedId;
         attackerId = baseAttackMode.attackerId;

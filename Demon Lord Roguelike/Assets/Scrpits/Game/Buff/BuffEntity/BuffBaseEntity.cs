@@ -11,10 +11,16 @@ public class BuffBaseEntity
         this.buffEntityData = buffEntityData;
     }
 
+    public virtual void ClearData()
+    {
+        if(buffEntityData != null)
+            BuffHandler.Instance.manager.RemoveBuffEntityBean(buffEntityData);
+    }
+
     /// <summary>
     /// buff持续时间增加
     /// </summary>
-    public void AddBuffTime(float buffTime)
+    public virtual void AddBuffTime(float buffTime)
     {
         buffEntityData.timeUpdate += buffTime;
         //触发式BUFF（指定时间后触发 达到触发次数max之后结束）

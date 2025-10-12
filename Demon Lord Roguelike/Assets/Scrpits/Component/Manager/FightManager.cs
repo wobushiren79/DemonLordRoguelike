@@ -25,6 +25,9 @@ public class FightManager : BaseManager
     public List<GameTimeCountDownBean> listTimeCountDown = new List<GameTimeCountDownBean>();
     public Queue<GameTimeCountDownBean> poolTimeCountDown = new Queue<GameTimeCountDownBean>();
 
+    //掉落魔晶数据缓存池
+    public Queue<FightDropCrystalBean> poolFightDropCrystalBean = new Queue<FightDropCrystalBean>();
+
     /// <summary>
     /// 清理所有数据
     /// </summary>
@@ -69,8 +72,72 @@ public class FightManager : BaseManager
         //倒计时清理
         listTimeCountDown.Clear();
         poolTimeCountDown.Clear();
+
+        poolFightDropCrystalBean.Clear();
     }
 
+    #region 掉落水晶
+    /// <summary>
+    /// 获取掉落数据类
+    /// </summary>
+    public FightDropCrystalBean GetFightDropCrystalBean()
+    {
+        if (poolFightDropCrystalBean.Count > 0)
+        {
+            var targetData = poolFightDropCrystalBean.Dequeue();
+            return targetData;
+        }
+        return new FightDropCrystalBean();
+    }
+
+    public FightDropCrystalBean GetFightDropCrystalBean(FightDropCrystalBean targetData)
+    {
+        FightDropCrystalBean newTargetData = GetFightDropCrystalBean();
+        newTargetData.dropPos = targetData.dropPos;
+        newTargetData.crystalNum = targetData.crystalNum;
+        newTargetData.lifeTime = targetData.lifeTime;
+        return newTargetData;
+    }
+
+    /// <summary>
+    /// 移除掉落数据类
+    /// </summary>
+    /// <param name="targetData"></param>
+    public void RemoveFightDropCrystalBean(FightDropCrystalBean targetData)
+    {
+        poolFightDropCrystalBean.Enqueue(targetData);
+    }
+
+    /// <summary>
+    /// 获取掉落水晶预制
+    /// </summary>
+    public void GetDropCrystalPrefab(Action<GameFightPrefabEntity> actionForComplete)
+    {
+        GetFightPrefabCommon(pathDropCrystalPrefab, (targetPrefab) =>
+        {
+            targetPrefab.pathAsstes = pathDropCrystalPrefab;
+            targetPrefab.SetState(GameFightPrefabStateEnum.None);
+            actionForComplete?.Invoke(targetPrefab);
+        });
+    }
+
+    /// <summary>
+    /// 获取掉落魔力预制
+    /// </summary>
+    public void GetDropMagicPrefab(Action<GameFightPrefabEntity> actionForComplete)
+    {
+        GetFightPrefabCommon(pathDropMagicPrefab, (targetPrefab) =>
+        {
+            targetPrefab.pathAsstes = pathDropMagicPrefab;
+            targetPrefab.SetState(GameFightPrefabStateEnum.None);
+            targetPrefab.valueInt = 100;
+            targetPrefab.lifeTime = 30;
+            actionForComplete?.Invoke(targetPrefab);
+        });
+    }
+    #endregion
+
+    #region 倒计时
     /// <summary>
     /// 获取一个新的倒计时
     /// </summary>
@@ -98,7 +165,9 @@ public class FightManager : BaseManager
         targetData.Clear();
         poolTimeCountDown.Enqueue(targetData);
     }
+    #endregion
 
+    #region  FightPrefab
     /// <summary>
     /// 获取FightPrefab
     /// </summary>
@@ -116,36 +185,6 @@ public class FightManager : BaseManager
         }
         LogUtil.LogError($"GetFightPrefab 失败没有找到id_{id}");
         return null;
-    }
-
-    /// <summary>
-    /// 获取掉落水晶预制
-    /// </summary>
-    public void GetDropCrystalPrefab(Action<GameFightPrefabEntity> actionForComplete)
-    {
-        GetFightPrefabCommon(pathDropCrystalPrefab, (targetPrefab) =>
-        {
-            targetPrefab.pathAsstes = pathDropCrystalPrefab;
-            targetPrefab.SetState(GameFightPrefabStateEnum.None);
-            targetPrefab.valueInt = 10;
-            targetPrefab.lifeTime = 30;
-            actionForComplete?.Invoke(targetPrefab);
-        });
-    }
-
-    /// <summary>
-    /// 获取掉落魔力预制
-    /// </summary>
-    public void GetDropMagicPrefab(Action<GameFightPrefabEntity> actionForComplete)
-    {
-        GetFightPrefabCommon(pathDropMagicPrefab, (targetPrefab) =>
-        {
-            targetPrefab.pathAsstes = pathDropMagicPrefab;
-            targetPrefab.SetState(GameFightPrefabStateEnum.None);
-            targetPrefab.valueInt = 100;
-            targetPrefab.lifeTime = 30;
-            actionForComplete?.Invoke(targetPrefab);
-        });
     }
 
     /// <summary>
@@ -200,7 +239,9 @@ public class FightManager : BaseManager
         listFightPrefab.Add(fightPrefab);
         actionForComplete?.Invoke(fightPrefab);
     }
+    #endregion
 
+    #region 攻击模块
     /// <summary>
     /// 获取攻击模组
     /// </summary>
@@ -251,4 +292,5 @@ public class FightManager : BaseManager
             dicPoolAttackModeObj.Add(targetMode.attackModeInfo.id, poolNew);
         }
     }
+    #endregion
 }

@@ -471,16 +471,35 @@ public class GameFightCreatureEntity
         {
             //死掉之后设置BUFF信息为无效
             BuffHandler.Instance.SetCreatureBuffsActivieIsValid(fightCreatureData.creatureData.creatureUUId, false);
-
-            actionForDead?.Invoke();
-            //掉落水晶
-            FightHandler.Instance.CreateDropCrystal(creatureObj.transform.position);
+            //死亡掉落水晶
+            DeadDropCrystal();
             //如果被攻击对象死亡 
             SetCreatureDead();
             //颜色变化动画
             AnimForUnderAttackColor();
             //隐藏血条
             creatureLifeShow?.ShowObj(false);
+            //死亡回调触发
+            actionForDead?.Invoke();
+        }
+    }
+
+    /// <summary>
+    /// 死亡掉落水晶
+    /// </summary>
+    public void DeadDropCrystal()
+    {
+        //只有进攻生物才掉落水晶
+        if (fightCreatureData.creatureData.creatureInfo.GetCreatureType() == CreatureTypeEnum.FightAttack)
+        {
+            FightDropCrystalBean fightDropCrystal = new FightDropCrystalBean();
+            fightDropCrystal.crystalNum = 1;
+            fightDropCrystal.lifeTime = 30;
+            fightDropCrystal.dropPos = creatureObj.transform.position;
+            //掉落水晶
+            FightHandler.Instance.CreateDropCrystal(fightDropCrystal);
+            //事件通知
+            EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadDropCrystal, fightDropCrystal);
         }
     }
 
