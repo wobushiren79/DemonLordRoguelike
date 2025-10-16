@@ -11,9 +11,9 @@ public class BuffEntityInstant : BuffBaseEntity
     /// <summary>
     /// 触发BUFF
     /// </summary>
-    public override void TriggerBuff(BuffEntityBean buffEntityData)
+    public override bool TriggerBuff(BuffEntityBean buffEntityData)
     {
-        base.TriggerBuff(buffEntityData);
-        
+        bool isTriggerSuccess = base.TriggerBuff(buffEntityData);
+        return isTriggerSuccess;
     }
 }

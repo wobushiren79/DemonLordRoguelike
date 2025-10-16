@@ -50,11 +50,12 @@ public enum CreatureAttributeTypeEnum
     None = 0,
     HP,//生命
     DR,//护甲
-    EVA,//闪避
-    ASPD,//攻击速度
     ATK,//攻击力
-    CRT,//暴击率
     MSPD,//移动速度
+    ASPD,//攻击速度
+    CRT,//暴击率
+    EVA,//闪避
+    RCD,//复活CD
 }
 
 public enum CreatureSkinTypeEnum

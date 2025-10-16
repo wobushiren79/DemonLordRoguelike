@@ -106,8 +106,7 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
     /// <summary>
     /// 添加buff
     /// </summary>
-    /// <param name="buffEntity"></param>
-    public bool AddBuff(long[] buffIds, string applierCreatureId, string targetCreatureId)
+    public bool AddBuff(Dictionary<long, float> buffIds, string applierCreatureId, string targetCreatureId)
     {
         if (buffIds.IsNull())
         {
@@ -120,6 +119,25 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
             AddBuff(applierCreatureId, targetCreatureId, buffsTrigger);
             return true;
         }
+        return false;
+    }
+
+    /// <summary>
+    /// 添加BUFF 必定添加成功
+    /// </summary>
+    public bool AddBuff(long[] buffIds, string applierCreatureId, string targetCreatureId)
+    {
+        if (buffIds.IsNull())
+        {
+            return false;
+        }
+        Dictionary<long, float> dicBuffIds = new Dictionary<long, float>();
+        for (int i = 0; i < buffIds.Length; i++)
+        {
+            var buffId = buffIds[i];
+            dicBuffIds.Add(buffId, 1);
+        }
+        AddBuff(dicBuffIds, applierCreatureId, targetCreatureId);
         return false;
     }
 
@@ -189,17 +207,17 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
     /// <summary>
     /// 尝试触发buff，根据触发概率看是否触发成功
     /// </summary>
-    public List<BuffEntityBean> CheckTriggerBuff(long[] buffIds, string applierCreatureId, string targetCreatureId)
+    public List<BuffEntityBean> CheckTriggerBuff(Dictionary<long, float> buffIds, string applierCreatureId, string targetCreatureId)
     {
         List<BuffEntityBean> listData = new List<BuffEntityBean>();
-        for (int i = 0; i < buffIds.Length; i++)
+        foreach (var item in buffIds)
         {
-            var itemBuffId = buffIds[i];
-            var buffInfo = BuffInfoCfg.GetItemData(itemBuffId);
-            if (buffInfo.trigger_chance > 0)
+            var itemBuffId = item.Key;
+            var itemBuffChance = item.Value;
+            if (itemBuffChance > 0)
             {
                 var randomOdds = UnityEngine.Random.Range(0f, 1f);
-                if (randomOdds >= buffInfo.trigger_chance)
+                if (randomOdds >= itemBuffChance)
                 {
                     continue;
                 }

@@ -224,12 +224,12 @@ public class GameFightLogic : BaseGameLogic
                 var itemCreatureData = allDefenseCreatureData.List[i];
                 if (itemCreatureData.creatureState == CreatureStateEnum.Rest)
                 {
-                    itemCreatureData.creatureStateTimeUpdate += fightData.timeUpdateTargetForFightCreature;
-                    if (itemCreatureData.creatureStateTimeUpdate > itemCreatureData.creatureInfo.create_cd)
+                    itemCreatureData.RCDTimeUpdate += fightData.timeUpdateTargetForFightCreature;
+                    if (itemCreatureData.RCDTimeUpdate > itemCreatureData.GetRCD())
                     {
-                        itemCreatureData.creatureStateTimeUpdate = 0;
+                        itemCreatureData.RCDTimeUpdate = 0;
                         itemCreatureData.creatureState = CreatureStateEnum.Idle;
-                        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureChangeState, itemCreatureData.creatureId, CreatureStateEnum.Idle);
+                        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureChangeState, itemCreatureData.creatureUUId, CreatureStateEnum.Idle);
                     }
                 }
             }

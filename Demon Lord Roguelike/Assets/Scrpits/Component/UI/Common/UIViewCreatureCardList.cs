@@ -59,11 +59,11 @@ public partial class UIViewCreatureCardList : BaseUIView
     /// <summary>
     /// 刷新指定卡片
     /// </summary>
-    public void RefreshCardByCreatureUUId(string creatureId)
+    public void RefreshCardByCreatureUUId(string creatureUUId)
     {
         listCreatureData.ForEach((index, itemData) =>
         {
-            if (creatureId.Equals(itemData.creatureId))
+            if (creatureUUId.Equals(itemData.creatureUUId))
             {
                 RefreshCardByIndex(index);
             }

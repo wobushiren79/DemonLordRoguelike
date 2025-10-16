@@ -6,9 +6,9 @@ public class BuffEntityConditional : BuffBaseEntity
         //条件型触发BUFF 不增加触发时间
     }
 
-    public override void TriggerBuff(BuffEntityBean buffEntityData)
+    public override bool TriggerBuff(BuffEntityBean buffEntityData)
     {
-        base.TriggerBuff(buffEntityData);
-
+        bool isTriggerSuccess = base.TriggerBuff(buffEntityData);
+        return isTriggerSuccess;
     }
 }

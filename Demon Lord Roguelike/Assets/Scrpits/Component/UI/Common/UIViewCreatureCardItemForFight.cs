@@ -34,24 +34,33 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     protected Tween animForSelectEnd;//选择卡片动画
     protected Tween animForSelectKeepStart;//选择卡片避让动画
     protected Tween animForSelectKeepEnd;//选择卡片避让动画
+    protected float FightRestRCDTime = 0;//复活CD时间（需要在重置是刷新数据）
+
+
     public void Update()
     {
+        GameStateEnum gameState = GameHandler.Instance.manager.GetGameState();
+        //游戏中才刷新
+        if (gameState != GameStateEnum.Gaming)
+        {
+            return;
+        }
         //处理cd倒计时
-        if(cardData.cardState == CardStateEnum.FightRest)
+        if (cardData.cardState == CardStateEnum.FightRest)
         {
             CreatureBean creatureData = cardData.creatureData;
-            if(creatureData.creatureInfo.create_cd == 0)
+            if (FightRestRCDTime == 0)
             {
                 ui_CDTime.gameObject.SetActive(false);
                 return;
-            } 
-            int cdTime = Mathf.CeilToInt(creatureData.creatureInfo.create_cd - creatureData.creatureStateTimeUpdate);
-            float progress = (creatureData.creatureInfo.create_cd - creatureData.creatureStateTimeUpdate) / creatureData.creatureInfo.create_cd;
+            }
+            int cdTime = Mathf.CeilToInt(FightRestRCDTime - creatureData.RCDTimeUpdate);
+            float progress = (FightRestRCDTime - creatureData.RCDTimeUpdate) / FightRestRCDTime;
             if (cdTime < 0)
                 cdTime = 0;
             if (progress < 0)
                 progress = 0;
-            SetCDTime($"{cdTime}",progress);
+            SetCDTime($"{cdTime}", progress);
         }
     }
 
@@ -94,6 +103,7 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
                 ui_Mask.gameObject.SetActive(true);
                 break;
             case CardStateEnum.FightRest:
+                FightRestRCDTime = cardData.creatureData.GetRCD();
                 ui_Mask.gameObject.SetActive(true);
                 ui_CDTime.gameObject.SetActive(true);
                 break;
@@ -247,15 +257,15 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     /// <summary>
     /// 事件-生物状态修改
     /// </summary>
-    public void EventForGameFightLogicCreatureChangeState(string creatureId,CreatureStateEnum creatureState)
+    public void EventForGameFightLogicCreatureChangeState(string creatureUUID, CreatureStateEnum creatureState)
     {
-        if (!cardData.creatureData.creatureId.Equals(creatureId))
+        if (!cardData.creatureData.creatureUUId.Equals(creatureUUID))
             return;
-        if(creatureState == CreatureStateEnum.Idle)
+        if (creatureState == CreatureStateEnum.Idle)
         {
             SetCardState(CardStateEnum.FightIdle);
         }
-        else if(creatureState == CreatureStateEnum.Rest)
+        else if (creatureState == CreatureStateEnum.Rest)
         {
             SetCardState(CardStateEnum.FightRest);
         }

@@ -13,6 +13,10 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public int buff_type;
 	/// <summary>
+	///buff触发对象类型0所有 1：防御 2进攻
+	/// </summary>
+	public int trigger_creature_type;
+	/// <summary>
 	///引用实例
 	/// </summary>
 	public string class_entity;

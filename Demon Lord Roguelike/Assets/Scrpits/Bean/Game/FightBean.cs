@@ -22,7 +22,7 @@ public class FightBean
     public float timeUpdateTargetForAttackCreate = 0;//更新目标时间-怪物生成
 
     public float timeUpdateForFightCreature = 0;//更新目标时间-生物
-    public float timeUpdateTargetForFightCreature = 0.1f;//更新目标时间-生物
+    public float timeUpdateTargetForFightCreature = 0.2f;//更新目标时间-生物
 
     public int sceneRoadNumMax = 6;//路线数量最大值
     public int sceneRoadNum = 6;//场景路线数量

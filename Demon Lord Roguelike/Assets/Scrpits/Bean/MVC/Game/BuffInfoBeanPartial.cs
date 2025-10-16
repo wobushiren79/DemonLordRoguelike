@@ -7,6 +7,15 @@ public partial class BuffInfoBean
     protected Color colorBody = Color.white;
 
     /// <summary>
+    /// 获取触发BUFF生物类型
+    /// </summary>
+    /// <returns></returns>
+    public CreatureTypeEnum GetTriggerCreatureType()
+    {
+        return (CreatureTypeEnum)trigger_creature_type;
+    }
+
+    /// <summary>
     /// 获取身体颜色
     /// </summary>
     /// <returns></returns>

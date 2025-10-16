@@ -200,7 +200,7 @@ public class CreatureSacrificeLogic : BaseGameLogic
     public void SetCreatureData(GameObject targetObj, CreatureBean creatureData)
     {
         //不重复设置数据
-        if (targetObj.name.Equals(creatureData.creatureId))
+        if (targetObj.name.Equals(creatureData.creatureUUId))
         {
             return;
         }

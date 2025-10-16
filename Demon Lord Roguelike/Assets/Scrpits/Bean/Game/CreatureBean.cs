@@ -278,6 +278,7 @@ public partial class CreatureBean
     {
         return creatureInfo.GetHP();
     }
+
     public int GetHPOrigin()
     {
         return creatureInfo.GetHPOrigin();
@@ -290,9 +291,36 @@ public partial class CreatureBean
     {
         return creatureInfo.GetDR();
     }
+    
     public int GetDROrigin()
     {
         return creatureInfo.GetDROrigin();
+    }
+
+    /// <summary>
+    /// 获取复活CD 不建议每帧获取
+    /// </summary>
+    public float GetRCD()
+    {
+        float RCDTime = creatureInfo.RCD;
+        //深渊馈赠buff加成
+        var abyssalBlessingBuffs = BuffHandler.Instance.manager.dicAbyssalBlessingBuffsActivie;
+        if (!abyssalBlessingBuffs.List.IsNull())
+        {
+            for (int i = 0; i < abyssalBlessingBuffs.List.Count; i++)
+            {
+                var itemAbyssalBlessingBuff = abyssalBlessingBuffs.List[i];
+                for (int j = 0; j < itemAbyssalBlessingBuff.Count; j++)
+                {
+                    BuffBaseEntity buffEntity = itemAbyssalBlessingBuff[j];
+                    if (buffEntity is BuffEntityAttribute buffEntityAttribute && buffEntityAttribute.attributeType == CreatureAttributeTypeEnum.RCD)
+                    {
+                        RCDTime = buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.RCD, RCDTime);
+                    }
+                }
+            }
+        }
+        return RCDTime;
     }
 
     /// <summary>

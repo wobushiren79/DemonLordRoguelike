@@ -3,14 +3,16 @@ using UnityEngine;
 
 public class BuffEntityPeriodic : BuffBaseEntity
 { 
-    public override void TriggerBuff(BuffEntityBean buffEntityData)
+    public override bool TriggerBuff(BuffEntityBean buffEntityData)
     {
-        base.TriggerBuff(buffEntityData);
+        bool isTriggerSuccess = base.TriggerBuff(buffEntityData);
+        if (isTriggerSuccess == false) return false;
+
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var targetCreature = gameFightLogic.fightData.GetCreatureById(buffEntityData.targetCreatureId, CreatureTypeEnum.None);
         if (targetCreature == null || targetCreature.fightCreatureData == null)
         {
-            return;
+            return false;
         }
         else
         {
@@ -36,6 +38,7 @@ public class BuffEntityPeriodic : BuffBaseEntity
                 FightUnderAttackStruct fightUnderAttackStruct = new FightUnderAttackStruct(buffEntityData, -changeHPData);
                 targetCreature.UnderAttack(fightUnderAttackStruct);
             }
+             return true;
         }
     }
 }

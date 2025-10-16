@@ -42,10 +42,12 @@ public class BuffEntityConditionalAddCrystal : BuffEntityConditional
     /// <summary>
     /// 触发BUFF
     /// </summary>
-    public override void TriggerBuff(BuffEntityBean buffEntityData)
+    public override bool TriggerBuff(BuffEntityBean buffEntityData)
     {
-        base.TriggerBuff(buffEntityData);
+        bool isTriggerSuccess = base.TriggerBuff(buffEntityData);
+        if(isTriggerSuccess == false) return false;
         //掉落水晶
         FightHandler.Instance.CreateDropCrystal(addFightDropCrystal);
+        return true;
     }
 }

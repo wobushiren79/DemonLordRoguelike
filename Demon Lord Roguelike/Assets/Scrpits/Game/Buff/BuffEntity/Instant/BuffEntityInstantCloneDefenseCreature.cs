@@ -3,9 +3,11 @@ public class BuffEntityInstantCloneDefenseCreature : BuffEntityInstant
     /// <summary>
     /// 触发BUFF
     /// </summary>
-    public override void TriggerBuff(BuffEntityBean buffEntityData)
+    public override bool TriggerBuff(BuffEntityBean buffEntityData)
     {
-        base.TriggerBuff(buffEntityData);
+        bool isTriggerSuccess = base.TriggerBuff(buffEntityData);
+        if (isTriggerSuccess == false) return false;
+        
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var allDefenseCreature = gameFightLogic.fightData.dlDefenseCreatureData;
         CreatureBean randomCreatureData = allDefenseCreature.List.GetRandomData();
@@ -14,5 +16,6 @@ public class BuffEntityInstantCloneDefenseCreature : BuffEntityInstant
         copyCreatureData.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
 
         gameFightLogic.fightData.dlDefenseCreatureData.Add(copyCreatureData.creatureUUId, copyCreatureData);
+        return true;
     }
 }

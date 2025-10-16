@@ -21,7 +21,6 @@ public class FightCreatureBean
     public float MSPDCurrent;//当前移动速度
     public float EVACurrent;//当前闪避率
     public float CRTCurrent;//暴击率
-
     public Color colorBodyCurrent;//当前身体颜色
 
     public FightCreatureBean(long id)
@@ -41,15 +40,10 @@ public class FightCreatureBean
     /// </summary>
     public void ResetData()
     {
-        var creatureInfo = creatureData.creatureInfo;
-        HPCurrent = creatureInfo.GetHP();
-        HPMax = creatureInfo.GetHP();
-
-        DRCurrent = creatureInfo.GetDR();
-        DRMax = creatureInfo.GetDR();
-
         //刷新一下基础属性
         RefreshBaseAttribute();
+        HPCurrent = HPMax;
+        DRCurrent = DRMax;
     }
 
     /// <summary>
@@ -58,6 +52,9 @@ public class FightCreatureBean
     public void RefreshBaseAttribute(Action actionForComplete = null)
     {
         //先还原基础数据
+        HPMax = creatureData.GetHP();
+        DRMax = creatureData.GetDR();
+
         MSPDCurrent = creatureData.GetMSPD();
         CRTCurrent = creatureData.GetCRT();
         EVACurrent = creatureData.GetEVA();
@@ -66,52 +63,65 @@ public class FightCreatureBean
 
         colorBodyCurrent = Color.white;
 
-        var listBuffEntity = BuffHandler.Instance.manager.GetCreatureBuffsActivie(creatureData.creatureUUId);
-        //buff相关加成
-        if (!listBuffEntity.IsNull())
+        var creatureBuffs = BuffHandler.Instance.manager.GetCreatureBuffsActivie(creatureData.creatureUUId);
+        //生物buff相关加成
+        if (!creatureBuffs.IsNull())
         {
-            for (int i = 0; i < listBuffEntity.Count; i++)
+            for (int i = 0; i < creatureBuffs.Count; i++)
             {
-                BuffBaseEntity buffEntity = listBuffEntity[i];
-                BuffEntityBean buffEntityData = buffEntity.buffEntityData;
-                
-                if (buffEntity is BuffEntityAttribute buffEntityAttribute)
+                BuffBaseEntity buffEntity = creatureBuffs[i];
+                SetAttributeBaseForBuff(buffEntity);
+            }
+        }
+        //深渊馈赠buff加成
+        var abyssalBlessingBuffs = BuffHandler.Instance.manager.dicAbyssalBlessingBuffsActivie;
+        if (!abyssalBlessingBuffs.List.IsNull())
+        {
+            for (int i = 0; i < abyssalBlessingBuffs.List.Count; i++)
+            {
+                var itemAbyssalBlessingBuff = abyssalBlessingBuffs.List[i];
+                for (int j = 0; j < itemAbyssalBlessingBuff.Count; j++)
                 {
-                    //设置攻击力相关
-                    ATKCurrent += (int)buffEntityAttribute.GetChangeData(CreatureAttributeTypeEnum.ATK);
-                    ATKCurrent = ATKCurrent + (int)(ATKCurrent * buffEntityAttribute.GetChangeRateData(CreatureAttributeTypeEnum.ATK));
-                    //设置攻击速度相关
-                    ASPDCurrent += buffEntityAttribute.GetChangeData(CreatureAttributeTypeEnum.ASPD);
-                    ASPDCurrent = ASPDCurrent + (ASPDCurrent * buffEntityAttribute.GetChangeRateData(CreatureAttributeTypeEnum.ASPD));
-                    //设置移动速度相关
-                    MSPDCurrent += buffEntityAttribute.GetChangeData(CreatureAttributeTypeEnum.MSPD);
-                    MSPDCurrent *= 1 + buffEntityAttribute.GetChangeRateData(CreatureAttributeTypeEnum.MSPD);
-                    //设置暴击相关
-                    CRTCurrent += buffEntityAttribute.GetChangeRateData(CreatureAttributeTypeEnum.CRT);
-                    //设置闪避相关
-                    EVACurrent += buffEntityAttribute.GetChangeRateData(CreatureAttributeTypeEnum.EVA);
-                }
-
-
-                //设置身体颜色
-                if (!buffEntityData.buffInfo.color_body.IsNull())
-                {
-                    colorBodyCurrent = buffEntity.GetChangeBodyColor(buffEntityData);
+                    BuffBaseEntity buffEntity = itemAbyssalBlessingBuff[j];
+                    SetAttributeBaseForBuff(buffEntity);
                 }
             }
         }
-        if (ATKCurrent < 0)
-            ATKCurrent = 0;
-        if (ASPDCurrent < 0)
-            ASPDCurrent = 0;
-        if (MSPDCurrent < 0)
-            MSPDCurrent = 0;
-        if (CRTCurrent <= 0)
-            CRTCurrent = 0;
-        if (EVACurrent <= 0)
-            EVACurrent = 0;
-
         actionForComplete?.Invoke();
+    }
+
+    /// <summary>
+    /// 根据BUFF设置属性
+    /// </summary>
+    protected void SetAttributeBaseForBuff(BuffBaseEntity buffEntity)
+    {
+        BuffEntityBean buffEntityData = buffEntity.buffEntityData;
+        //如果不是全触发 需要判断一下生物类型
+        CreatureTypeEnum triggerCreatureType = buffEntity.buffEntityData.buffInfo.GetTriggerCreatureType();
+        if (triggerCreatureType != CreatureTypeEnum.None)
+        {
+            if (triggerCreatureType != creatureData.creatureInfo.GetCreatureType())
+            {
+                return;
+            }
+        }
+        
+        if (buffEntity is BuffEntityAttribute buffEntityAttribute)
+        { 
+            HPMax = (int)buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.HP, HPMax);
+            DRMax = (int)buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.DR, DRMax);
+
+            ATKCurrent = (int)buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.ATK, ATKCurrent);
+            ASPDCurrent = buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.ASPD, ASPDCurrent);
+            MSPDCurrent = buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.MSPD, MSPDCurrent);
+            CRTCurrent = buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.CRT, CRTCurrent);
+            EVACurrent = buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.EVA, EVACurrent);
+        }
+        //设置身体颜色
+        if (!buffEntityData.buffInfo.color_body.IsNull())
+        {
+            colorBodyCurrent = buffEntity.GetChangeBodyColor(buffEntityData);
+        }
     }
 
     /// <summary>

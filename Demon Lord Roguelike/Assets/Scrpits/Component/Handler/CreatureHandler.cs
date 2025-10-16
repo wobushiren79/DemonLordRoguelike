@@ -271,7 +271,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             gameFightLogic.fightData.RemoveDefenseCreatureByPos(targetEntity.fightCreatureData.positionCreate);
             targetEntity.fightCreatureData.creatureData.creatureState = CreatureStateEnum.Rest;
             targetEntity.fightCreatureData.ResetData();
-            EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureChangeState, targetEntity.fightCreatureData.creatureData.creatureId, CreatureStateEnum.Rest);
+            EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureChangeState, targetEntity.fightCreatureData.creatureData.creatureUUId, CreatureStateEnum.Rest);
         }
         else if (creatureType == CreatureTypeEnum.FightAttack)
         {

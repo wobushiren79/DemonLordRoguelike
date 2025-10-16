@@ -15,7 +15,10 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
         timeUpdateForFindTarget = 0;
         selfAIEntity = aiEntity as AIAttackCreatureEntity;
         fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
+        //这里的攻击检测时间可能过长 后续考虑可以减少
         timeUpdateForFindTargetCD = fightCreatureData.creatureData.GetAttackSearchTime();
+        //第一次进来检测一次攻击
+        timeUpdateForFindTarget = timeUpdateForFindTargetCD;
         //设置移动动作
         string animNameAppoint = fightCreatureData.creatureData.creatureInfo.anim_walk;
         selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Walk, true, animNameAppoint: animNameAppoint);
@@ -25,7 +28,7 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
     {
         //查询敌人
         timeUpdateForFindTarget += Time.deltaTime;
-        if (timeUpdateForFindTarget > timeUpdateForFindTargetCD)
+        if (timeUpdateForFindTarget >= timeUpdateForFindTargetCD)
         {
             timeUpdateForFindTarget = 0;
             timeUpdateForFindTargetCD = fightCreatureData.creatureData.GetAttackSearchTime();
@@ -33,8 +36,14 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
             if (findTargetCreature != null)
             {
                 selfAIEntity.targetCreatureEntity = findTargetCreature;
+                selfAIEntity.targetMovePos = selfAIEntity.targetCreatureEntity.creatureObj.transform.position;
                 selfAIEntity.ChangeIntent(AIIntentEnum.AttackCreatureAttack);
                 return;
+            }
+            else
+            {
+                var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+                selfAIEntity.targetCreatureEntity = gameFightLogic.fightData.fightDefenseCoreCreature;
             }
         }
 

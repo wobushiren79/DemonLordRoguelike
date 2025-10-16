@@ -14,8 +14,8 @@ public partial class CreatureBean
 
     [Newtonsoft.Json.JsonIgnore]
     [NonSerialized]
-    //生物状态持续时间
-    public float creatureStateTimeUpdate = 0;
+    //生物复活更新时间
+    public float RCDTimeUpdate = 0;
 
     [Newtonsoft.Json.JsonIgnore]
     [NonSerialized]
@@ -61,7 +61,7 @@ public partial class CreatureBean
     public void ClearTempData()
     {
         order = 0;
-        creatureStateTimeUpdate = 0;
+        RCDTimeUpdate = 0;
         creatureState = CreatureStateEnum.Idle;
     }
 

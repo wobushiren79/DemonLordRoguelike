@@ -26,9 +26,9 @@ public class GameTestEditor : Editor
     public string buffSelfAttackTestId = "";//buff测试ID
     public string buffSelfDefenseTestId = "";//buff测试ID
 
-    public string buffTestId = "1000100001";//攻击模式测试ID
+    public string buffTestId = "1000100001:1";//攻击模式测试ID
 
-    public string abyssalBlessingIds = "2000001001";//深渊的馈赠
+    public string abyssalBlessingIds = "2000002001,2000003001";//深渊的馈赠
     public List<long> enemyIds = new List<long>() { 1010010001 };
     
     LauncherTest launcher;

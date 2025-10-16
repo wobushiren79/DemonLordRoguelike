@@ -17,10 +17,6 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public string creature_layer_find;
 	/// <summary>
-	///创建cd(秒)
-	/// </summary>
-	public float create_cd;
-	/// <summary>
 	///生物buff
 	/// </summary>
 	public string create_buff;
@@ -88,6 +84,10 @@ public partial class CreatureInfoBean : BaseBean
 	///攻击动画出手时间
 	/// </summary>
 	public float anim_attack_time;
+	/// <summary>
+	///创建cd(秒)
+	/// </summary>
+	public float RCD;
 	/// <summary>
 	///生命值
 	/// </summary>

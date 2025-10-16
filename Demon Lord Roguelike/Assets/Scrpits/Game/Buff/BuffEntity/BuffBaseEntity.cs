@@ -64,9 +64,18 @@ public class BuffBaseEntity
     /// 触发BUFF
     /// </summary>
     /// <param name="buffEntityData"></param>
-    public virtual void TriggerBuff(BuffEntityBean buffEntityData)
+    public virtual bool TriggerBuff(BuffEntityBean buffEntityData)
     {
-
+        var itemBuffChance = buffEntityData.buffInfo.trigger_chance;
+        if (itemBuffChance > 0)
+        {
+            var randomOdds = UnityEngine.Random.Range(0f, 1f);
+            if (randomOdds >= itemBuffChance)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     /// <summary>
