@@ -65,13 +65,14 @@ public enum GameFightPrefabStateEnum
     Droping = 2,//拾取中
 }
 
-//游戏场景
+//游戏场景(预制)
 public enum GameSceneTypeEnum
 {
     None = 0,
     BaseMain = 1,//基地主界面
-    BaseGaming = 2,//基地游玩中
+    BaseGaming = 2,//基地游玩中(场景预制以这个为准)
     Fight = 3,//战斗
+    RewardSelect = 4,//奖励选择
 }
 
 public enum TestSceneTypeEnum

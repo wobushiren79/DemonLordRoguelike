@@ -41,7 +41,7 @@ public partial class UICreatureVat : BaseUIComponent
         this.RegisterEvent(EventsInfo.CreatureAscend_AddProgress, EventForRefreshVatProgress);
 
         //场景实例
-        var baseSceneObj = WorldHandler.Instance.currentBaseScene;
+        var baseSceneObj = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.BaseGaming);
         scenePrefab = baseSceneObj.GetComponent<ScenePrefabForBase>();
         //获取摄像头
         GameControlHandler.Instance.SetBaseControl(false);

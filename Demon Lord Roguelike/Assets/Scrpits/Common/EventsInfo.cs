@@ -27,6 +27,10 @@ public static class EventsInfo
     public static string GameFightLogic_CreatureDeadEnd = "GameFightLogic_CreatureDeadEnd";//生物结束死亡
     public static string GameFightLogic_CreatureDeadDropCrystal = "GameFightLogic_CreatureDeadDropCrystal";//生物死亡掉落水晶
     #endregion
+
+    #region BUFF
+    public static string Buff_AbyssalBlessingChange = "Buff_AbyssalBlessingChange";//BUFF系统-深渊馈赠变化
+    #endregion
     
     public static string Toast_NoEnoughCreateMagic = "Toast_NoEnoughCreateMagic";//没有足够的创建魔力
 

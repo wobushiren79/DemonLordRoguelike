@@ -2,6 +2,7 @@ using Spine.Unity;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
@@ -61,56 +62,88 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         }
     }
 
+    #region  防御核心生物
     /// <summary>
     /// 生成防御核心生物
     /// </summary>
-    public void CreateDefenseCoreCreature(CreatureBean creatureData, Vector3 creaturePos, Action<GameFightCreatureEntity> actionForComplete)
+    public async Task<GameFightCreatureEntity> CreateDefenseCoreCreature(CreatureBean creatureData, Vector3 creaturePos)
     {
-        GetCreatureObj(creatureData.creatureId, (targetObj) =>
+        var targetObj = GetCreatureObj(creatureData.creatureId);
+
+        targetObj.transform.position = creaturePos;
+        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        //创建生物
+        FightCreatureBean fightCreatureData = gameFightLogic.fightData.fightDefenseCoreData;
+        fightCreatureData.positionCreate = new Vector3Int(-1, 0, 0);
+
+        GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
+        gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefenseCoreCreatureEntity>(actionBeforeStart: (targetEntity) =>
         {
-            targetObj.transform.position = creaturePos;
-            GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-            //创建生物
-            FightCreatureBean fightCreatureData = gameFightLogic.fightData.fightDefenseCoreData;
-            fightCreatureData.positionCreate = new Vector3Int(-1, 0, 0);
-
-            GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
-            gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefenseCoreCreatureEntity>(actionBeforeStart: (targetEntity) =>
-            {
-                targetEntity.InitData(gameFightCreatureEntity);
-            });
-            actionForComplete?.Invoke(gameFightCreatureEntity);
+            targetEntity.InitData(gameFightCreatureEntity);
         });
+        return gameFightCreatureEntity;
     }
+    #endregion
 
+    #region 防御生物
     /// <summary>
     ///  创建防御生物
     /// </summary>
-    public void CreateDefenseCreature(CreatureBean creatureData, Action<GameObject> actionForComplete)
+    public GameObject CreateDefenseCreature(CreatureBean creatureData)
     {
-        GetCreatureObj(creatureData.creatureId, (targetObj) =>
-        {
-            Transform rendererTF = targetObj.transform.Find("Spine");
-            SkeletonAnimation targetSkeletonAnimation = rendererTF.GetComponent<SkeletonAnimation>();
-            SetCreatureData(targetSkeletonAnimation, creatureData, isSetSkeletonDataAsset: false);
-            actionForComplete?.Invoke(targetObj);
-        });
+        var targetObj = GetCreatureObj(creatureData.creatureId);
+
+        Transform rendererTF = targetObj.transform.Find("Spine");
+        SkeletonAnimation targetSkeletonAnimation = rendererTF.GetComponent<SkeletonAnimation>();
+        SetCreatureData(targetSkeletonAnimation, creatureData, isSetSkeletonDataAsset: false);
+        return targetObj;
     }
 
     /// <summary>
+    ///  创建防御生物实例
+    /// </summary>
+    public GameFightCreatureEntity CreateDefenseCreatureEntity(CreatureBean creatureData, Vector3Int creaturePos)
+    {
+        var targetObj = CreateDefenseCreature(creatureData);
+        return CreateDefenseCreatureEntity(targetObj, creatureData, creaturePos);
+    }
+
+    /// <summary>
+    ///  创建防御生物实例
+    /// </summary>
+    public GameFightCreatureEntity CreateDefenseCreatureEntity(GameObject targetObj, CreatureBean creatureData, Vector3Int creaturePos)
+    {
+        //创建战斗生物数据
+        FightCreatureBean fightCreatureData = new FightCreatureBean(creatureData);
+        fightCreatureData.positionCreate = creaturePos;
+        //创建战斗生物
+        GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
+        //先添加数据
+        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        gameFightLogic.fightData.AddDefenseCreatureByPos(creaturePos, gameFightCreatureEntity);
+        //再创建AI
+        gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefenseCreatureEntity>(actionBeforeStart: (targetEntity) =>
+        {
+            targetEntity.InitData(gameFightCreatureEntity);
+        });
+        //设置位置
+        targetObj.transform.position = creaturePos;
+        return gameFightCreatureEntity;
+    }
+    #endregion
+
+    #region  进攻生物
+    /// <summary>
     /// 创建进攻生物
     /// </summary>
-    public void CreateAttackCreature(FightAttackDetailsBean fightAttackDetails,int roadNum)
+    public void CreateAttackCreature(FightAttackDetailsBean fightAttackDetails, int roadNum)
     {
         //一次创建的数量
         int numCreature = fightAttackDetails.npcIds.Count;
         for (int i = 0; i < numCreature; i++)
         {
             var npcId = fightAttackDetails.npcIds[i];
-            CreateAttackCreature(npcId, roadNum, (targetObj) =>
-            {
-
-            });
+            CreateAttackCreature(npcId, roadNum);
         }
         UIHandler.Instance.RefreshUI();
     }
@@ -119,111 +152,109 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// 创建进攻生物
     /// </summary>
     /// <param name="targetRoad">目标进攻路线 0为随机</param>
-    public void CreateAttackCreature(long npcId, int roadNum, Action<GameObject> actionForComplete, int targetRoad = 0)
+    public GameObject CreateAttackCreature(long npcId, int roadNum, int targetRoad = 0)
     {
         var npcInfo = NpcInfoCfg.GetItemData(npcId);
-        GetCreatureObj(npcInfo.creature_id, (targetObj) =>
+        var targetObj = GetCreatureObj(npcInfo.creature_id);
+        //随机生成某一路
+        if (targetRoad == 0)
         {
-            //随机生成某一路
-            if (targetRoad == 0)
-            {
-                targetRoad = UnityEngine.Random.Range(1, roadNum + 1);
-            }
-            float randomX = UnityEngine.Random.Range(11f, 12f);
-            targetObj.transform.position = new Vector3(randomX, 0, targetRoad);
+            targetRoad = UnityEngine.Random.Range(1, roadNum + 1);
+        }
+        float randomX = UnityEngine.Random.Range(11f, 12f);
+        targetObj.transform.position = new Vector3(randomX, 0, targetRoad);
 
-            //创建战斗生物
-            FightCreatureBean fightCreatureData = new FightCreatureBean(npcInfo.creature_id);
-            //添加随机皮肤
-            fightCreatureData.creatureData.SetSkin(npcInfo);
-            //添加装备
-            fightCreatureData.creatureData.SetEquip(npcInfo);
+        //创建战斗生物
+        FightCreatureBean fightCreatureData = new FightCreatureBean(npcInfo.creature_id);
+        //添加随机皮肤
+        fightCreatureData.creatureData.SetSkin(npcInfo);
+        //添加装备
+        fightCreatureData.creatureData.SetEquip(npcInfo);
 
-            fightCreatureData.positionCreate = new Vector3Int(0, 0, targetRoad);
+        fightCreatureData.positionCreate = new Vector3Int(0, 0, targetRoad);
 
-            GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
+        GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
 
-            //先添加数据
-            var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-            gameLogic.fightData.AddAttackCreatureByRoad(targetRoad, gameFightCreatureEntity);
+        //先添加数据
+        var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        gameLogic.fightData.AddAttackCreatureByRoad(targetRoad, gameFightCreatureEntity);
 
-            //再创建数据
-            gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIAttackCreatureEntity>(actionBeforeStart: (targetEntity) =>
-            {
-                targetEntity.InitData(gameFightCreatureEntity);
-            });
-
-            actionForComplete?.Invoke(targetObj);
+        //再创建数据
+        gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIAttackCreatureEntity>(actionBeforeStart: (targetEntity) =>
+        {
+            targetEntity.InitData(gameFightCreatureEntity);
         });
+        return targetObj;
     }
+    #endregion
 
+
+    #region 基础
     /// <summary>
     /// 获取一个生物的obj
     /// </summary>
-    public void  GetCreatureObj(long creatureId, Action<GameObject> actionForComplete)
+    public GameObject GetCreatureObj(long creatureId)
     {
-        manager.LoadCreatureObj(creatureId, (targetObj) =>
-        {                   
-            var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
-            var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
-            //设置层级
-            if (!creatureInfo.creature_layer.IsNull())
+        var targetObj = manager.LoadCreatureObj(creatureId);
+        var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
+        var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
+        //设置层级
+        if (!creatureInfo.creature_layer.IsNull())
+        {
+            targetObj.layer = LayerMask.NameToLayer($"{creatureInfo.creature_layer}");
+        }
+        else
+        {
+            var creatureType = creatureInfo.GetCreatureType();
+            switch (creatureType)
             {
-                targetObj.layer = LayerMask.NameToLayer($"{creatureInfo.creature_layer}");
+                case CreatureTypeEnum.FightAttack:
+                    targetObj.layer = LayerInfo.CreatureAtt;
+                    break;
+                case CreatureTypeEnum.FightDefense:
+                    targetObj.layer = LayerInfo.CreatureDef;
+                    break;
+            }
+        }
+
+        Transform rendererTF = targetObj.transform.Find("Spine");
+        Transform lifeShowTF = targetObj.transform.Find("LifeShow");
+        if (rendererTF != null)
+        {
+            CameraHandler.Instance.ChangeAngleForCamera(rendererTF);
+            //如果没有加载过spine 则加载一次 
+            if (rendererTF.GetComponent<SkeletonAnimation>() == null)
+            {
+                SpineHandler.Instance.AddSkeletonAnimation(rendererTF.gameObject, creatureModel.res_name);
+                rendererTF.transform.localScale = Vector3.one * creatureModel.size_spine;
+                //var render = rendererTF.GetComponent<MeshRenderer>();
+                //if (render != null)
+                //{
+                //    render.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                //}
+            }
+
+            rendererTF.localPosition = Vector3.zero;
+            //设置前后
+            if (targetObj.layer == LayerInfo.CreatureDef_Front || targetObj.layer == LayerInfo.CreatureAtt_Front)
+            {
+                rendererTF.position = rendererTF.position.AddZ(-0.1f);
+            }
+            else if (targetObj.layer == LayerInfo.CreatureDef_Front || targetObj.layer == LayerInfo.CreatureAtt_Front)
+            {
+                rendererTF.position = rendererTF.position.AddZ(0.1f);
             }
             else
             {
-                var creatureType = creatureInfo.GetCreatureType();
-                switch(creatureType)
-                {
-                    case CreatureTypeEnum.FightAttack:
-                        targetObj.layer = LayerInfo.CreatureAtt;
-                        break;
-                    case CreatureTypeEnum.FightDefense:
-                        targetObj.layer = LayerInfo.CreatureDef;
-                        break;
-                }
-            }
 
-            Transform rendererTF = targetObj.transform.Find("Spine");
-            Transform lifeShowTF = targetObj.transform.Find("LifeShow");
-            if (rendererTF != null)
-            {
-                CameraHandler.Instance.ChangeAngleForCamera(rendererTF);
-                //如果没有加载过spine 则加载一次 
-                if (rendererTF.GetComponent<SkeletonAnimation>() == null)
-                {
-                    SpineHandler.Instance.AddSkeletonAnimation(rendererTF.gameObject, creatureModel.res_name);
-                    rendererTF.transform.localScale = Vector3.one * creatureModel.size_spine;
-                    //var render = rendererTF.GetComponent<MeshRenderer>();
-                    //if (render != null)
-                    //{
-                    //    render.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                    //}
-                }
-
-                rendererTF.localPosition = Vector3.zero;
-                //设置前后
-                if (targetObj.layer == LayerInfo.CreatureDef_Front || targetObj.layer == LayerInfo.CreatureAtt_Front)
-                {
-                    rendererTF.position = rendererTF.position.AddZ(-0.1f);
-                }
-                else if (targetObj.layer == LayerInfo.CreatureDef_Front || targetObj.layer == LayerInfo.CreatureAtt_Front)
-                {
-                    rendererTF.position = rendererTF.position.AddZ(0.1f);
-                }
-                else
-                {
-
-                }
             }
-            if (lifeShowTF != null)
-            {
-                CameraHandler.Instance.ChangeAngleForCamera(lifeShowTF);
-                lifeShowTF.ShowObj(false);
-            }
-            actionForComplete?.Invoke(targetObj);
-        });
+        }
+        if (lifeShowTF != null)
+        {
+            CameraHandler.Instance.ChangeAngleForCamera(lifeShowTF);
+            lifeShowTF.ShowObj(false);
+        }
+        return targetObj;
     }
 
     /// <summary>
@@ -277,6 +308,6 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         {
             gameFightLogic.fightData.RemoveAttackCreature(targetEntity);
         }
-
     }
+    #endregion
 }

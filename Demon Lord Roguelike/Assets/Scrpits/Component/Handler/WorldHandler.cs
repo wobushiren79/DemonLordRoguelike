@@ -1,128 +1,162 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
 {
-    //当前战斗场景
-    public GameObject currentFightScene;
-    //基地场景
-    public GameObject currentBaseScene;
+    //当前场景
+    public Dictionary<GameSceneTypeEnum, GameObject> dicCurrentScene = new Dictionary<GameSceneTypeEnum, GameObject>();
+    
+    public GameObject GetCurrentScene(GameSceneTypeEnum gameSceneType)
+    {
+        if(gameSceneType == GameSceneTypeEnum.BaseMain)
+        {
+            gameSceneType = GameSceneTypeEnum.BaseGaming;
+        }
+        if (dicCurrentScene.TryGetValue(gameSceneType,out var targetScene))
+        {
+            return targetScene;
+        }
+        return null;
+    }
+
+    #region 进入场景
+    /// <summary>
+    /// 进入奖励选择场景
+    /// </summary>
+    /// <returns></returns>
+    public async Task EnterRewardSelectScene(bool isClearWorldData = false)
+    {
+        if (isClearWorldData)
+        {
+            await ClearWorldData();
+        }
+        //加载奖励选择
+        var targetObj = await LoadRewardSelectScene();
+        //镜头初始化
+        CameraHandler.Instance.InitData();
+        //环境参数初始化
+        VolumeHandler.Instance.InitData(GameSceneTypeEnum.RewardSelect);
+
+    }
 
     /// <summary>
     /// 进入游戏进入主界面选项
     /// </summary>
-    public void EnterMainForBaseScene()
+    public async void EnterMainForBaseScene()
     {
-        ClearWorldData(() =>
-        {
-            //清理掉用户数据
-            GameDataHandler.Instance.ClearUserData();
-            //打开加载UI
-            UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
-            //镜头初始化
-            CameraHandler.Instance.InitData();
-            //加载基地场景
-            LoadBaseScene((targetObj) =>
-            {
-                //环境参数初始化
-                VolumeHandler.Instance.InitData(GameSceneTypeEnum.BaseMain);
-                //关闭LoadingUI 打开开始UI
-                UIHandler.Instance.OpenUIAndCloseOther<UIMainStart>();
-            });
-            //播放音乐
-            AudioHandler.Instance.PlayMusicForMain();
-        });
+        await ClearWorldData();
+        //清理掉用户数据
+        GameDataHandler.Instance.ClearUserData();
+        //打开加载UI
+        UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
+        //镜头初始化
+        CameraHandler.Instance.InitData();
+        //加载基地场景
+        var targetObj = await LoadBaseScene();
+        //环境参数初始化
+        VolumeHandler.Instance.InitData(GameSceneTypeEnum.BaseMain);
+        //关闭LoadingUI 打开开始UI
+        UIHandler.Instance.OpenUIAndCloseOther<UIMainStart>();
+        //播放音乐
+        AudioHandler.Instance.PlayMusicForMain();
     }
 
     /// <summary>
     /// 进入游戏中 基地场景
     /// </summary>
-    public void EnterGameForBaseScene(UserDataBean userData, bool isInitScene)
+    public async void EnterGameForBaseScene(UserDataBean userData, bool isInitScene)
     {
-        Action actionForStart = () =>
-        {
-            //镜头初始化
-            CameraHandler.Instance.InitData();
-            //设置基地场景视角
-            CameraHandler.Instance.InitBaseSceneControlCamera(() =>
-            {
-                //环境参数初始化
-                VolumeHandler.Instance.InitData(GameSceneTypeEnum.BaseGaming);
-                //关闭LoadingUI
-                var uiBaseMain = UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
-            }, userData.selfCreature);    
-            //播放音乐
-            AudioHandler.Instance.PlayMusicForGaming();
-        };
+        //镜头初始化
+        CameraHandler.Instance.InitData();
         if (isInitScene)
         {
             //清理世界数据
-            ClearWorldData(() =>
-            {
-                //加载基地场景
-                LoadBaseScene((targetObj) =>
-                {
-                    actionForStart?.Invoke();
-                });
-            });
+            await ClearWorldData();
+            //加载基地场景
+            await LoadBaseScene();
         }
-        else
-        {
-            actionForStart?.Invoke();
-        }
+        //设置基地场景视角
+        await CameraHandler.Instance.InitBaseSceneControlCamera(userData.selfCreature);
+        //环境参数初始化
+        VolumeHandler.Instance.InitData(GameSceneTypeEnum.BaseGaming);
+        //关闭LoadingUI
+        var uiBaseMain = UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
+        //播放音乐
+        AudioHandler.Instance.PlayMusicForGaming();
     }
 
     /// <summary>
     /// 进入战斗场景
     /// </summary>
-    public void EnterGameForFightScene(FightBean fightData)
+    public async void EnterGameForFightScene(FightBean fightData)
     {
-        ClearWorldData(() =>
-        {
-            //打开加载UI
-            UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
-            //镜头初始化
-            CameraHandler.Instance.InitData();
-            //开始战斗
-            GameHandler.Instance.StartGameFight(fightData);
-            //播放音乐
-            AudioHandler.Instance.PlayMusicForFight();
-            //环境参数初始化
-            VolumeHandler.Instance.InitData(GameSceneTypeEnum.Fight);
-        });
+        //清理世界数据
+        await ClearWorldData();
+        //打开加载UI
+        UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
+        //镜头初始化
+        CameraHandler.Instance.InitData();
+        //开始战斗
+        GameHandler.Instance.StartGameFight(fightData);
+        //播放音乐
+        AudioHandler.Instance.PlayMusicForFight();
+        //环境参数初始化
+        VolumeHandler.Instance.InitData(GameSceneTypeEnum.Fight);
+    }
+    #endregion
+
+    #region 加载场景
+
+    public async Task<GameObject> LoadRewardSelectScene()
+    {
+        UnLoadScene(GameSceneTypeEnum.RewardSelect);
+        var targetScene = await manager.GetRewardSelectScene();
+        targetScene.SetActive(true);
+        targetScene.transform.position = Vector3.zero;
+        targetScene.transform.eulerAngles = Vector3.zero;
+        dicCurrentScene.Add(GameSceneTypeEnum.RewardSelect, targetScene);
+
+        //设置天空颜色
+        ColorUtility.TryParseHtmlString("#080613", out var targetColorSky);
+        manager.SetSkyboxColor(CameraClearFlags.SolidColor, targetColorSky);
+        //移除天空盒 设置纯粹的颜色
+        manager.RemoveSkybox();
+        return targetScene;
     }
 
     /// <summary>
     /// 加载基地场景
     /// </summary>
     /// <param name="actionForComplete"></param>
-    public void LoadBaseScene(Action<GameObject> actionForComplete)
+    public async Task<GameObject> LoadBaseScene()
     {
-        UnLoadBaseScene();
-        manager.GetBaseScene((targetScene) =>
-        {
-            currentBaseScene = Instantiate(targetScene);
-            currentBaseScene.SetActive(true);
-            currentBaseScene.transform.position = Vector3.zero;
-            currentBaseScene.transform.eulerAngles = Vector3.zero;
-            ScenePrefabBase scenePrefabBase = currentBaseScene.GetComponent<ScenePrefabBase>();
-            scenePrefabBase.InitSceneData();
-            actionForComplete?.Invoke(currentBaseScene);
+        UnLoadScene(GameSceneTypeEnum.BaseGaming);
 
-            //设置天空颜色
-            ColorUtility.TryParseHtmlString("#080613", out var targetColorSky);
-            manager.SetSkyboxColor(CameraClearFlags.SolidColor, targetColorSky);
-            //移除天空盒 设置纯粹的颜色
-            manager.RemoveSkybox();
-        });
+        var targetScene = await manager.GetBaseScene();
+        targetScene.SetActive(true);
+        targetScene.transform.position = Vector3.zero;
+        targetScene.transform.eulerAngles = Vector3.zero;
+        ScenePrefabBase scenePrefabBase = targetScene.GetComponent<ScenePrefabBase>();
+        scenePrefabBase.InitSceneData();
+
+        dicCurrentScene.Add(GameSceneTypeEnum.BaseGaming, targetScene);
+
+        //设置天空颜色
+        ColorUtility.TryParseHtmlString("#080613", out var targetColorSky);
+        manager.SetSkyboxColor(CameraClearFlags.SolidColor, targetColorSky);
+        //移除天空盒 设置纯粹的颜色
+        manager.RemoveSkybox();
+        return targetScene;
     }
 
     /// <summary>
     /// 加载战斗场景
     /// </summary>
-    public void LoadFightScene(FightBean fightData, Action<GameObject> actionForComplete)
+    public async Task LoadFightScene(FightBean fightData)
     {
-        UnLoadFightScene();
+        UnLoadScene(GameSceneTypeEnum.Fight);
 
         FightSceneBean fightSceneData = FightSceneCfg.GetItemData(fightData.fightSceneId);
         if (fightSceneData == null)
@@ -130,89 +164,93 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             LogUtil.LogError($"查询FightScene战斗场景失败  没有找到id为{fightData.fightSceneId}的战斗场景");
             return;
         }
-        //获取天空盒
-        manager.GetSkybox(fightSceneData.skybox_mat, (skyboxMat) =>
-        {
-            //设置天空盒
-            RenderSettings.skybox = skyboxMat;
-            RenderSettings.skybox.SetFloat("_RotateX", -15);
-            RenderSettings.skybox.SetFloat("_RotateY", 0);
-            RenderSettings.skybox.SetFloat("_RotateZ", 0);
-            //获取场景
-            string dataPath = $"{PathInfo.FightScenePrefabPath}/{fightSceneData.name_res}";
-            manager.GetFightScene(dataPath, (targetScene) =>
-            {
-                currentFightScene = Instantiate(targetScene);
-                currentFightScene.SetActive(true);
-                currentFightScene.transform.position = new Vector3(0, 0, -(fightData.sceneRoadNumMax - fightData.sceneRoadNum) / 2f);
-                currentFightScene.transform.eulerAngles = Vector3.zero;
+        //加载天空盒-----------------------------------------------------------
+        var skyboxMat = await manager.GetSkybox(fightSceneData.skybox_mat);
+        //设置天空盒
+        RenderSettings.skybox = skyboxMat;
+        RenderSettings.skybox.SetFloat("_RotateX", -15);
+        RenderSettings.skybox.SetFloat("_RotateY", 0);
+        RenderSettings.skybox.SetFloat("_RotateZ", 0);
 
-                //获取战斗道路
-                manager.GetFightSceneRoad((targetSceneRoad) =>
-                {
-                    var sceneRoad = Instantiate(targetSceneRoad);
-                    sceneRoad.transform.SetParent(currentFightScene.transform);
-                    //设置道路数据
-                    sceneRoad.transform.localScale = new Vector3(fightData.sceneRoadLength, fightData.sceneRoadNum, 1);
-                    sceneRoad.transform.eulerAngles = new Vector3(90, 0, 0);
-                    sceneRoad.transform.position = new Vector3(fightData.sceneRoadLength / 2f + 0.5f, 0, fightData.sceneRoadNum / 2f + 0.5f);
-                    var roadMR = sceneRoad.GetComponent<MeshRenderer>();
-                    roadMR.sharedMaterial.SetVector("_GridSize", new Vector2(fightData.sceneRoadLength, fightData.sceneRoadNum));
+        //获取场景-----------------------------------------------------------
+        string dataPath = $"{PathInfo.FightScenePrefabPath}/{fightSceneData.name_res}";
+        var targetScene = await manager.GetFightScene(dataPath);
+        targetScene.SetActive(true);
+        targetScene.transform.position = new Vector3(0, 0, -(fightData.sceneRoadNumMax - fightData.sceneRoadNum) / 2f);
+        targetScene.transform.eulerAngles = Vector3.zero;
+        dicCurrentScene.Add(GameSceneTypeEnum.Fight, targetScene);
 
-                    ColorUtility.TryParseHtmlString($"{fightSceneData.road_color_a}", out var colorA);
-                    ColorUtility.TryParseHtmlString($"{fightSceneData.road_color_b}", out var colorB);
-                    roadMR.sharedMaterial.SetColor("_ColorA", colorA);
-                    roadMR.sharedMaterial.SetColor("_ColorB", colorB);
-                    actionForComplete?.Invoke(currentFightScene);
-                });
+        //设置天空盒颜色
+        ColorUtility.TryParseHtmlString("#00000000", out var targetColorSky);
+        manager.SetSkyboxColor(CameraClearFlags.Skybox, targetColorSky);
 
-                //设置天空盒颜色
-                ColorUtility.TryParseHtmlString("#00000000", out var targetColorSky);
-                manager.SetSkyboxColor(CameraClearFlags.Skybox, targetColorSky);
-            });
-        });
+        //获取战斗道路-----------------------------------------------------------
+        var sceneRoad = await manager.GetFightSceneRoad();
+        sceneRoad.transform.SetParent(targetScene.transform);
+        //设置道路数据
+        sceneRoad.transform.localScale = new Vector3(fightData.sceneRoadLength, fightData.sceneRoadNum, 1);
+        sceneRoad.transform.eulerAngles = new Vector3(90, 0, 0);
+        sceneRoad.transform.position = new Vector3(fightData.sceneRoadLength / 2f + 0.5f, 0, fightData.sceneRoadNum / 2f + 0.5f);
+        var roadMR = sceneRoad.GetComponent<MeshRenderer>();
+        roadMR.sharedMaterial.SetVector("_GridSize", new Vector2(fightData.sceneRoadLength, fightData.sceneRoadNum));
+
+        ColorUtility.TryParseHtmlString($"{fightSceneData.road_color_a}", out var colorA);
+        ColorUtility.TryParseHtmlString($"{fightSceneData.road_color_b}", out var colorB);
+        roadMR.sharedMaterial.SetColor("_ColorA", colorA);
+        roadMR.sharedMaterial.SetColor("_ColorB", colorB);
     }
+    #endregion
 
+    #region 卸载场景
     /// <summary>
     /// 卸载战斗场景
     /// </summary>
-    public void UnLoadFightScene()
+    public void UnLoadScene(GameSceneTypeEnum gameSceneType, bool isRemoveSkybox = true)
     {
-        //删除已有的战斗场景
-        if (currentFightScene != null)
+        if (dicCurrentScene.TryGetValue(gameSceneType, out var targetScene))
         {
-            DestroyImmediate(currentFightScene);
+            DestroyImmediate(targetScene);
+            dicCurrentScene.Remove(gameSceneType);
         }
         //移除天空盒
-        manager.RemoveSkybox();
+        if (isRemoveSkybox)
+        {
+            manager.RemoveSkybox();
+        }
     }
 
     /// <summary>
-    /// 卸载基地场景
+    /// 卸载所有场景
     /// </summary>
-    public void UnLoadBaseScene()
+    public void UnLoadAllScene(bool isRemoveSkybox = true)
     {
-        if (currentBaseScene != null)
+        foreach (var itemData in dicCurrentScene)
         {
-            DestroyImmediate(currentBaseScene);
+            DestroyImmediate(itemData.Value);
         }
+        dicCurrentScene.Clear();
         //移除天空盒
-        manager.RemoveSkybox();
+        if (isRemoveSkybox)
+        {
+            manager.RemoveSkybox();
+        }
     }
+    #endregion
 
+    #region 清理
     /// <summary>
     /// 清理世界所有数据
     /// </summary>
-    public async void ClearWorldData(Action actionForComplete, bool isShowLoading = true)
+    public async Task ClearWorldData(bool isShowLoading = true)
     {
         //打开加载UI
         if (isShowLoading)
             UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
         //关闭所有控制
         GameControlHandler.Instance.manager.EnableAllControl(false);
-
         await new WaitNextFrame();
-        UnLoadBaseScene();
+        //卸载场景
+        UnLoadAllScene();
         await new WaitNextFrame();
         //logic清理
         BaseGameLogic gameLogic = GameHandler.Instance.manager.GetGameLogic<BaseGameLogic>();
@@ -227,6 +265,6 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         //清理缓存
         System.GC.Collect();
         await new WaitNextFrame();
-        actionForComplete?.Invoke();
     }
+    #endregion
 }

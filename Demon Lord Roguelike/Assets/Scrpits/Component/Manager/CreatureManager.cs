@@ -93,15 +93,13 @@ public class CreatureManager : BaseManager
     /// <summary>
     /// 加载一个生物obj
     /// </summary>
-    /// <param name="creatureId"></param>
-    /// <param name="actionForComplete"></param>
-    public void LoadCreatureObj(long creatureId, Action<GameObject> actionForComplete)
+    public GameObject LoadCreatureObj(long creatureId)
     {
         var itemCreatureInfo = CreatureInfoCfg.GetItemData(creatureId);
         if (itemCreatureInfo == null)
         {
             LogUtil.LogError($"创建生物失败：没有找到ID为{creatureId}的生物");
-            return;
+            return null;
         }
 
         CreatureTypeEnum creatureType = itemCreatureInfo.GetCreatureType();
@@ -129,7 +127,7 @@ public class CreatureManager : BaseManager
                     break;
                 default:
                     LogUtil.LogError($"创建生物失败：没有找到creature_type为{itemCreatureInfo.creature_type}的生物");
-                    return;
+                    return null;
             }
 
             string resPath = $"{PathInfo.CreaturesPrefabPath}/{creatureModelName}";
@@ -137,13 +135,13 @@ public class CreatureManager : BaseManager
             if (targetModel == null)
             {
                 LogUtil.LogError($"创建生物失败：没有找到资源路径为{resPath}的生物");
-                return;
+                return null;
             }
             objItem = Instantiate(gameObject, targetModel);
         }
 
-        objItem.gameObject.SetActive(true);
-        actionForComplete?.Invoke(objItem);
+        objItem.SetActive(true);
+        return objItem;
     }
 
     /// <summary>

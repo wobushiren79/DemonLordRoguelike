@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class GameFightLogic : BaseGameLogic
@@ -17,35 +18,53 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>
     /// 准备游戏
     /// </summary>
-    public override void PreGame()
+    public override async void PreGame()
     {
         base.PreGame();
         //注册事件
         RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_CreatureDeadEnd, EventForGameFightLogicCreatureDeadEnd);
+
         //设置战斗场景视角
-        CameraHandler.Instance.InitFightSceneCamera(() =>
-        {
-            //加载战斗场景
-            WorldHandler.Instance.LoadFightScene(fightData, async (targetObj) =>
-            {
-                //延迟0.1秒 防止一些镜头的1，2帧误差
-                await new WaitForSeconds(0.1f);
-                //加载核心（魔王）实例
-                Vector3 creaturePos = new Vector3(-1f, 0, fightData.sceneRoadNum / 2f + 0.5f);
-                CreatureHandler.Instance.CreateDefenseCoreCreature(fightData.fightDefenseCoreData.creatureData, creaturePos, (defCoreCreatureEntity) =>
-                {
-                    //设置魔王核心
-                    fightData.fightDefenseCoreCreature = defCoreCreatureEntity;
-                    //开启战斗控制
-                    GameControlHandler.Instance.SetFightControl();
-                    //关闭LoadingUI
-                    var uiFightMain = UIHandler.Instance.OpenUIAndCloseOther<UIFightMain>();
-                    uiFightMain.InitData();
-                    //开始游戏
-                    StartGame();
-                });
-            });
-        });
+        await CameraHandler.Instance.InitFightSceneCamera();
+        //设置战斗场景视角之后
+        await PreGameForAfterInitFightSceneCamera();
+
+        //加载战斗场景
+        await WorldHandler.Instance.LoadFightScene(fightData);
+        //加载战斗场景之后
+        await PreGameForAfterLoadFightScene();
+
+        //延迟0.1秒 防止一些镜头的1，2帧误差
+        await new WaitForSeconds(0.1f);
+
+        //加载核心（魔王）实例
+        Vector3 creaturePos = new Vector3(-1f, 0, fightData.sceneRoadNum / 2f + 0.5f);
+        var  defCoreCreatureEntity = await CreatureHandler.Instance.CreateDefenseCoreCreature(fightData.fightDefenseCoreData.creatureData, creaturePos);
+        //设置魔王核心
+        fightData.fightDefenseCoreCreature = defCoreCreatureEntity;
+        //开启战斗控制
+        GameControlHandler.Instance.SetFightControl();
+        //关闭LoadingUI
+        var uiFightMain = UIHandler.Instance.OpenUIAndCloseOther<UIFightMain>();
+        uiFightMain.InitData();
+        //开始游戏
+        StartGame();
+    }
+
+    /// <summary>
+    /// 准备游戏-设置战斗场景视角之后
+    /// </summary>
+    public virtual async Task PreGameForAfterInitFightSceneCamera()
+    {
+
+    }
+
+    /// <summary>
+    /// 准备游戏-加载战斗场景之后
+    /// </summary>
+    public virtual async Task PreGameForAfterLoadFightScene()
+    {
+
     }
 
     /// <summary>
@@ -81,7 +100,7 @@ public class GameFightLogic : BaseGameLogic
         //Buff清理
         BuffHandler.Instance.manager.ClearBuff();
         //清理战斗场景
-        WorldHandler.Instance.UnLoadFightScene();
+        WorldHandler.Instance.UnLoadScene(GameSceneTypeEnum.Fight);
         //清理缓存
         System.GC.Collect();
     }
@@ -267,10 +286,7 @@ public class GameFightLogic : BaseGameLogic
         //先取消所有选择
         ClearSelectData();
         selectCreatureCard = targetView;
-        CreatureHandler.Instance.CreateDefenseCreature(targetView.cardData.creatureData, (targetObj) =>
-        {
-            selectCreature = targetObj;
-        });
+        selectCreature = CreatureHandler.Instance.CreateDefenseCreature(targetView.cardData.creatureData);
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_SelectCard, selectCreatureCard);
     }
 
@@ -312,28 +328,11 @@ public class GameFightLogic : BaseGameLogic
         // }
         //扣除魔力
         //fightData.ChangeMagic(-createMagic);
-
-        //设置生物位置
-        selectCreature.transform.position = selectTargetPos;
-
         //设置生物进入战斗状态
         selectCreatureCard.cardData.creatureData.creatureState = CreatureStateEnum.Fight;
-
         //创建战斗生物数据
-        FightCreatureBean fightCreatureData = new FightCreatureBean(selectCreatureCard.cardData.creatureData);
-        fightCreatureData.positionCreate = selectTargetPos;
-        //创建战斗生物
-        GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(selectCreature, fightCreatureData);
-        //先添加数据
-        fightData.AddDefenseCreatureByPos(selectTargetPos, gameFightCreatureEntity);
-        //再创建AI
-        gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefenseCreatureEntity>(actionBeforeStart: (targetEntity) =>
-        {
-            targetEntity.InitData(gameFightCreatureEntity);
-        });
-
+        CreatureHandler.Instance.CreateDefenseCreatureEntity(selectCreature, selectCreatureCard.cardData.creatureData, selectTargetPos);
         selectCreature = null;
-
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_PutCard, selectCreatureCard);
         ClearSelectData();
     }

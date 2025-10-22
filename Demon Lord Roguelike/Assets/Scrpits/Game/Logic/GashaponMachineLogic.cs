@@ -74,7 +74,7 @@ public class GashaponMachineLogic : BaseGameLogic
     public void InitSceneData()
     {
         //场景实例
-        var baseSceneObj = WorldHandler.Instance.currentBaseScene;
+        var baseSceneObj = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.BaseGaming);
         scenePrefab = baseSceneObj.GetComponent<ScenePrefabForBase>();
 
         listEggObj.Clear();
@@ -320,7 +320,7 @@ public class GashaponMachineLogic : BaseGameLogic
             objEgg = GameHandler.Instance.manager.GetGameObjectSync(pathForEggPrefab);
             listEggObjPool.Add(objEgg);
         }
-        var baseSceneObj = WorldHandler.Instance.currentBaseScene;
+        var baseSceneObj = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.BaseGaming);
         objEgg.transform.SetParent(baseSceneObj.transform);
         objEgg.gameObject.SetActive(true);
         objEgg.transform.position = scenePrefab.objBuildingCore.transform.position + new Vector3(0, 0.5f, -0.2f);

@@ -69,7 +69,18 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     /// </summary>
     public void SetData(CreatureBean creatureData, CardUseState cardUseState, Vector2 originalCardPos)
     {
-        this.cardData.cardState = CardStateEnum.FightIdle;
+        //判断一下场上是否已经有该生物
+        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        //如果场上已经有该生物 则设置为战斗中
+        if (gameFightLogic.fightData.GetCreatureById(creatureData.creatureUUId, CreatureTypeEnum.FightDefense) != null)
+        {
+            this.cardData.cardState = CardStateEnum.Fighting;
+        }
+        //如果场上没有该生物 则设置为待机
+        else
+        {
+            this.cardData.cardState = CardStateEnum.FightIdle;
+        }
 
         this.cardData.originalCardPos = originalCardPos;
         this.cardData.originalSibling = transform.GetSiblingIndex();

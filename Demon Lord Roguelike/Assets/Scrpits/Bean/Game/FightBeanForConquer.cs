@@ -4,7 +4,10 @@ using System.Collections.Generic;
 [Serializable]
 public class FightBeanForConquer : FightBean
 {
-    public List<AbyssalBlessingEntityBean> listAbyssalBlessingEntity = new List<AbyssalBlessingEntityBean>();
+    //征服模式数据
+    protected FightTypeConquerInfoBean fightTypeConquerInfo;
+    //上一场还在场上的生物
+    public List<FightCreatureBean> listLastDefenseFightCreatureData;
 
     public FightBeanForConquer(GameWorldInfoRandomBean gameWorldInfoRandomData) : base(gameWorldInfoRandomData)
     {
@@ -20,8 +23,6 @@ public class FightBeanForConquer : FightBean
         AbyssalBlessingEntityBean abyssalBlessingEntityData = new AbyssalBlessingEntityBean(abyssalBlessingInfo);
         //添加BUFF
         BuffHandler.Instance.AddAbyssalBlessing(abyssalBlessingEntityData);
-        //添加数据
-        listAbyssalBlessingEntity.Add(abyssalBlessingEntityData);
     }
 
     /// <summary>
@@ -30,7 +31,8 @@ public class FightBeanForConquer : FightBean
     public override void InitData()
     {
         base.InitData();
-        FightTypeConquerInfoBean fightTypeConquerInfo = FightTypeConquerInfoCfg.GetItemData(gameWorldInfoRandomData.worldId, gameWorldInfoRandomData.difficultyLevel);
+        //获取征服模式游戏数据
+        fightTypeConquerInfo = FightTypeConquerInfoCfg.GetItemData(gameWorldInfoRandomData.worldId, gameWorldInfoRandomData.difficultyLevel);
         if (fightTypeConquerInfo == null)
         {
             LogUtil.LogError($"初始化征服游戏模式失败 worldId:{gameWorldInfoRandomData.worldId} difficultyLevel:{gameWorldInfoRandomData.difficultyLevel}");
@@ -45,8 +47,6 @@ public class FightBeanForConquer : FightBean
         figthNumMax = gameWorldInfoRandomData.fightNum;
         //设置当前关卡数量
         fightNum = 1;
-        //设置战斗场景ID
-        fightSceneId = fightTypeConquerInfo.GetRandomFightScene(false);
         //初始化防御核心
         FightCreatureBean fightCreatureDefenseCore = new FightCreatureBean(userData.selfCreature);
         fightDefenseCoreData = fightCreatureDefenseCore;
@@ -58,6 +58,18 @@ public class FightBeanForConquer : FightBean
             var itemLineupCreature = lineupCreature[i]; ;
             dlDefenseCreatureData.Add(itemLineupCreature.creatureUUId, itemLineupCreature);
         }
+        
+        //设置战斗场景ID
+        fightSceneId = fightTypeConquerInfo.GetRandomFightScene(false);
+        //初始化战斗数据
+        InitFightAttackData();
+    }
+
+    /// <summary>
+    /// 初始化战斗数据
+    /// </summary>
+    public void InitFightAttackData()
+    {
         //设置进攻生物数据
         fightAttackData = new FightAttackBean();
         int waveNum = UnityEngine.Random.Range(fightTypeConquerInfo.attack_wave_min, fightTypeConquerInfo.attack_wave_max + 1);
@@ -69,12 +81,23 @@ public class FightBeanForConquer : FightBean
             fightAttackData.AddAttackQueue(fightAttackDetails);
         }
     }
-
+    
     /// <summary>
     /// 初始化下一关数据
     /// </summary>
     public void InitNextData()
     {
+        //保留还在场上的生物数据
+        listLastDefenseFightCreatureData = new List<FightCreatureBean>();
+        for (int i = 0; i < dlDefenseCreatureEntity.List.Count; i++)
+        { 
+            var creatureEntity = dlDefenseCreatureEntity.List[i];
+            listLastDefenseFightCreatureData.Add(creatureEntity.fightCreatureData);
+        }
         fightNum++;
+        //设置战斗场景ID
+        fightSceneId = fightTypeConquerInfo.GetRandomFightScene(false);
+        //初始化战斗数据
+        InitFightAttackData();
     }
 }

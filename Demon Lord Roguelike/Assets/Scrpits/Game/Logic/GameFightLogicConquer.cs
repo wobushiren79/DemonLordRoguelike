@@ -1,7 +1,28 @@
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class GameFightLogicConquer : GameFightLogic
 {
+    /// <summary>
+    /// 加载场景之后
+    /// </summary>
+    public override async Task PreGameForAfterLoadFightScene()
+    {
+        await base.PreGameForAfterLoadFightScene();
+        //加载上一场比赛还在场上的防御生物
+        FightBeanForConquer fightBeanForConquer = fightData as FightBeanForConquer;
+        var listLastDefenseFightCreatureData = fightBeanForConquer.listLastDefenseFightCreatureData;
+        if (listLastDefenseFightCreatureData != null)
+        {
+            for (int i = 0; i < listLastDefenseFightCreatureData.Count; i++)
+            {
+                var itemFightCreatureData = listLastDefenseFightCreatureData[i];
+                CreatureHandler.Instance.CreateDefenseCreatureEntity(itemFightCreatureData.creatureData, itemFightCreatureData.positionCreate);
+            }
+            fightBeanForConquer.listLastDefenseFightCreatureData = null;
+        }
+        return;
+    }
 
     /// <summary>
     /// 改变游戏状态
@@ -62,11 +83,9 @@ public class GameFightLogicConquer : GameFightLogic
         //如果已经是最后一关 打开奖励UI
         if (fightData.fightNum >= fightData.figthNumMax)
         {
-            //TODO 先返回基地
-            //清理深渊馈赠数据
-            BuffHandler.Instance.manager.ClearAbyssalBlessing();
-            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-            WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+            //打开领奖界面
+            var uiRewardSelect = UIHandler.Instance.OpenUIAndCloseOther<UIRewardSelect>();
+            uiRewardSelect.SetData(ActionForUIRewardSelectEnd);
         }
         //如果不是最后一关 打开深渊馈赠UI
         else
@@ -75,6 +94,18 @@ public class GameFightLogicConquer : GameFightLogic
             var uiFightAbyssalBlessing = UIHandler.Instance.OpenUIAndCloseOther<UIFightAbyssalBlessing>();
             uiFightAbyssalBlessing.SetData(ActionForUIFightAbyssalBlessingSelect, ActionForUIFightAbyssalBlessingSkip);
         }
+    }
+
+    /// <summary>
+    /// 回调-领奖结束
+    /// </summary>
+    public void ActionForUIRewardSelectEnd()
+    {
+        //清理深渊馈赠数据
+        BuffHandler.Instance.manager.ClearAbyssalBlessing();
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        //返回基地
+        WorldHandler.Instance.EnterGameForBaseScene(userData, true);
     }
 
     /// <summary>

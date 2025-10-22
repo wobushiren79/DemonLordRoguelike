@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class BuffManager : BaseManager
 {
     //活跃的深渊馈赠BUFF
-    public DictionaryList<string, List<BuffBaseEntity>> dicAbyssalBlessingBuffsActivie = new DictionaryList<string, List<BuffBaseEntity>>();
+    public DictionaryList<AbyssalBlessingEntityBean, List<BuffBaseEntity>> dicAbyssalBlessingBuffsActivie = new DictionaryList<AbyssalBlessingEntityBean, List<BuffBaseEntity>>();
     //活跃的生物BUFF
     public DictionaryList<string, List<BuffBaseEntity>> dicCreatureBuffsActivie = new DictionaryList<string, List<BuffBaseEntity>>();
 
@@ -148,12 +148,9 @@ public class BuffManager : BaseManager
     #endregion
 
     #region 深渊馈赠BUFF
-    /// <summary>
-    /// 获取指定深渊馈赠的buff
-    /// </summary>
-    public List<BuffBaseEntity> GetAbyssalBlessingBuffsActivie(string abyssalBlessingUUID)
+    public List<BuffBaseEntity>  GetAbyssalBlessingBuffsActivie(AbyssalBlessingEntityBean abyssalBlessingEntityBean)
     {
-        if (dicAbyssalBlessingBuffsActivie.TryGetValue(abyssalBlessingUUID, out var abyssalBlessingBuffsActivieList))
+        if (dicAbyssalBlessingBuffsActivie.TryGetValue(abyssalBlessingEntityBean, out var abyssalBlessingBuffsActivieList))
         {
             return abyssalBlessingBuffsActivieList;
         }

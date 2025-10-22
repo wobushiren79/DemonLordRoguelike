@@ -3,66 +3,78 @@ using Steamworks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class WorldManager : BaseManager
-{
-    //战斗场景
+{    
+    //场景相关
     public Dictionary<string, GameObject> dicScene = new Dictionary<string, GameObject>();
     //当前天空盒
     public AsyncOperationHandle<Material> currentSkyBox;
 
+    #region 场景相关
+    public async Task<GameObject> GetScene(string dataPath)
+    {
+        var target = await GetModelForAddressables(dicScene, dataPath);
+        return Instantiate(target);
+    }
+
     /// <summary>
     /// 获取战斗场景
     /// </summary>
-    public void GetFightScene(string dataPath, Action<GameObject> actionForComplete)
+    public async Task<GameObject> GetFightScene(string dataPath)
     {
-        //加载战斗场景
-        GetModelForAddressables(dicScene, dataPath, (target) =>
-        {
-            actionForComplete?.Invoke(target);
-        });
+        var targetScene = await GetScene(dataPath);
+        return targetScene;
     }
 
     /// <summary>
     /// 获取基地场景
     /// </summary>
-    public void GetBaseScene(Action<GameObject> actionForComplete)
+    public async Task<GameObject> GetRewardSelectScene()
     {
-        string dataPath = $"{PathInfo.CommonPrefabPath}/BaseScene.prefab";
-        GetModelForAddressables(dicScene, dataPath, (target) =>
-        {
-            actionForComplete?.Invoke(target);
-        });
+        string dataPath = $"{PathInfo.CommonPrefabScenesPath}/RewardSelect.prefab";
+        var targetScene = await GetScene(dataPath);
+        return targetScene;
+    }
+
+    /// <summary>
+    /// 获取基地场景
+    /// </summary>
+    public async Task<GameObject> GetBaseScene()
+    {
+        string dataPath = $"{PathInfo.CommonPrefabScenesPath}/BaseScene.prefab";
+        var targetScene = await GetScene(dataPath);
+        return targetScene;
     }
 
     /// <summary>
     /// 获取战斗场景的道路
     /// </summary>
     /// <param name="actionForComplete"></param>
-    public void GetFightSceneRoad(Action<GameObject> actionForComplete)
+    public async Task<GameObject> GetFightSceneRoad()
     {
-        string dataPath = $"{PathInfo.CommonPrefabPath}/FightSceneRoad.prefab";
-        GetModelForAddressables(dicScene, dataPath, (target) =>
-        {
-            actionForComplete?.Invoke(target);
-        });
+        string dataPath = $"{PathInfo.CommonPrefabScenesPath}/FightSceneRoad.prefab";
+        var targetScene = await GetScene(dataPath);
+        return targetScene;
     }
+#endregion
+
     #region 天空盒
+
     /// <summary>
     /// 获取天空盒材质
     /// </summary>
     /// <param name="skyboxPath"></param>
     /// <param name="actionForComplete"></param>
-    public void GetSkybox(string skyboxPath, Action<Material> actionForComplete)
+    public async Task<Material> GetSkybox(string skyboxPath)
     {
         //加载天空盒子
-        LoadAddressablesUtil.LoadAssetAsync<Material>(skyboxPath, data =>
-        {
-            currentSkyBox = data;
-            actionForComplete?.Invoke(data.Result);
-        });
+        AsyncOperationHandle<Material> data = await LoadAddressablesUtil.LoadAssetAsync<Material>(skyboxPath);
+        currentSkyBox = data;
+        return data.Result;
     }
 
     /// <summary>

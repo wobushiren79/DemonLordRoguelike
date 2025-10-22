@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: Common
   m_GUID: 8d34367864ba6d841ad6c55b768c2978
   m_SerializeEntries:
+  - m_GUID: 2a3d32b33586c204eb52d5e70b6d25e0
+    m_Address: Assets/LoadResources/Common/Scenes/RewardSelect.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5aafe8a0c98d1e741a8c73e1268aea5b
     m_Address: Assets/LoadResources/Common/ControlData.prefab
     m_ReadOnly: 0
@@ -31,7 +36,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b1da58324ac511d4d83fb4496f1f4851
-    m_Address: Assets/LoadResources/Common/FightSceneRoad.prefab
+    m_Address: Assets/LoadResources/Common/Scenes/FightSceneRoad.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -46,7 +51,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ffc13e3f9d2d6384a830ab0998aa3705
-    m_Address: Assets/LoadResources/Common/BaseScene.prefab
+    m_Address: Assets/LoadResources/Common/Scenes/BaseScene.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

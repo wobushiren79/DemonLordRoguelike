@@ -225,7 +225,7 @@ public partial class UIFightMain : BaseUIComponent
     /// </summary>
     public void EventForNoEnoughCreateMagic()
     {
-        ui_ViewBaseInfoContent.PlayAnimForMagicNoEnough();
+        ui_UIViewBaseInfoContent.PlayAnimForMagicNoEnough();
     }
 
     /// <summary>

@@ -3,9 +3,10 @@ public class PathInfo
     //天空盒 框架
     public static string SkyboxMatFrameWorkPath = "Assets/FrameWork/Materials/Skybox";
 
-
     //通用资源
     public static string CommonPrefabPath = "Assets/LoadResources/Common";
+    //通用资源-场景相关
+    public static string CommonPrefabScenesPath = "Assets/LoadResources/Common/Scenes";
     //战斗场景资源
     public static string FightScenePrefabPath = "Assets/LoadResources/FightScene";
     //渲染 Volume

@@ -10,7 +10,8 @@ public partial class UIViewBaseInfoContent : BaseUIView
     Sequence animForCrystalChange;//魔晶变化动画
 
     public override void Awake()
-    {
+    { 
+        base.Awake();
         this.RegisterEvent(EventsInfo.Backpack_Item_Change, RefreshUIData);
         this.RegisterEvent(EventsInfo.Magic_Change, RefreshUIData);
     }

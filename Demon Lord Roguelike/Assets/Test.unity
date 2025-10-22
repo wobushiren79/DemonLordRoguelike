@@ -350,10 +350,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89de36de3878e4443965be2ad621a784, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  size: 32
-  scale1: 0.15
-  scale2: 0.05
-  rawImage: {fileID: 1517984434}
+  visualEffect: {fileID: 0}
 --- !u!114 &1517984434
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -27,17 +27,16 @@ public class LauncherTest : BaseLauncher
     /// 开始卡片测试
     /// </summary>
     /// <param name="fightCreature"></param>
-    public void StartForCardTest(FightCreatureBean fightCreature)
+    public async void StartForCardTest(FightCreatureBean fightCreature)
     {
-        WorldHandler.Instance.ClearWorldData(() =>
-        {
-            VolumeHandler.Instance.SetDepthOfField(UnityEngine.Rendering.Universal.DepthOfFieldMode.Off, 0, 0, 0);
-            //镜头初始化
-            CameraHandler.Instance.InitData();
-            //关闭额外的摄像头
-            var ui = UIHandler.Instance.OpenUIAndCloseOther<UITestCard>();
-            ui.SetData(fightCreature);
-        });
+        await WorldHandler.Instance.ClearWorldData();
+        //设置焦距
+        VolumeHandler.Instance.SetDepthOfField(UnityEngine.Rendering.Universal.DepthOfFieldMode.Off, 0, 0, 0);
+        //镜头初始化
+        CameraHandler.Instance.InitData();
+        //关闭额外的摄像头
+        var ui = UIHandler.Instance.OpenUIAndCloseOther<UITestCard>();
+        ui.SetData(fightCreature);
     }
 
     /// <summary>
@@ -49,7 +48,7 @@ public class LauncherTest : BaseLauncher
         userData.selfCreature = creatureData;
         for (int i = 0; i < 50; i++)
         {
-            CreatureBean creatureItem = new CreatureBean(1);
+            CreatureBean creatureItem = new CreatureBean(2002);
             creatureItem.rarity = Random.Range(1, 7);
             creatureItem.starLevel = Random.Range(0, 11);
             creatureItem.level = Random.Range(0, 101);

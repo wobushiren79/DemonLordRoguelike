@@ -2,6 +2,7 @@ using Unity.Cinemachine;
 using Spine.Unity;
 using System;
 using UnityEngine;
+using System.Threading.Tasks;
 
 public partial class CameraHandler
 {
@@ -16,7 +17,7 @@ public partial class CameraHandler
     /// <summary>
     /// 初始化基地场景摄像头
     /// </summary>
-    public async void InitBaseSceneControlCamera(Action actionForComplete, CreatureBean creatureData)
+    public async Task InitBaseSceneControlCamera(CreatureBean creatureData)
     {
         HideCameraForBaseScene();
 
@@ -46,14 +47,12 @@ public partial class CameraHandler
         await new WaitNextFrame();
         //设置偏转
         CameraHandler.Instance.ChangeAngleForCamera(targetRenderer.transform);
-
-        actionForComplete?.Invoke();
     }
 
     /// <summary>
     /// 初始化战斗场景视角
     /// </summary>
-    public async void InitFightSceneCamera(Action actionForComplete)
+    public async Task InitFightSceneCamera()
     {
         var mainCamera = manager.mainCamera;
         mainCamera.gameObject.SetActive(true);
@@ -70,7 +69,6 @@ public partial class CameraHandler
         manager.cm_Fight.LookAt = controlTarget.transform;
         manager.cm_Fight.PreviousStateIsValid = false;
         await new WaitNextFrame();
-        actionForComplete?.Invoke();
     }
 
     /// <summary>
@@ -143,7 +141,7 @@ public partial class CameraHandler
     protected CinemachineCamera SetCameraForBaseScene(int priority, bool isEnable, string cvName, float blendTime = 0.5f)
     {
         manager.HideAllCM();
-        var targetBaseScene = WorldHandler.Instance.currentBaseScene;
+        var targetBaseScene = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.BaseGaming);
         if (targetBaseScene == null)
         {
             LogUtil.LogError("设置摄像头失败 没有找到对应场景");

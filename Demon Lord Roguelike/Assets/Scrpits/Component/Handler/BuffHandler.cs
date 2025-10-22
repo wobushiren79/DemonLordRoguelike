@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
+using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -80,7 +81,9 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
             var buffEntity = manager.GetBuffEntity(buffEntityBean);
             listBuffEntity.Add(buffEntity);
         }
-        manager.dicAbyssalBlessingBuffsActivie.Add(abyssalBlessingEntityData.abyssalBlessingUUID, listBuffEntity);
+        manager.dicAbyssalBlessingBuffsActivie.Add(abyssalBlessingEntityData, listBuffEntity);
+        //事件通知
+        EventHandler.Instance.TriggerEvent(EventsInfo.Buff_AbyssalBlessingChange, abyssalBlessingEntityData);
     }
     #endregion
 

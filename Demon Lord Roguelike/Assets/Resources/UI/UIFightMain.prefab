@@ -264,6 +264,7 @@ RectTransform:
   - {fileID: 3892593773765963880}
   - {fileID: 6202559896042871952}
   - {fileID: 704758273159337763}
+  - {fileID: 261766928982350690}
   - {fileID: 1098469313493265250}
   - {fileID: 2591218358197924406}
   m_Father: {fileID: 0}
@@ -302,8 +303,118 @@ MonoBehaviour:
   ui_CreatureCardItem: {fileID: 3892593773765963880}
   ui_AttCreate: {fileID: 1098469313493265250}
   ui_UIViewFightMainAttCreateProgress: {fileID: 3126770437501463976}
-  ui_ViewBaseInfoContent: {fileID: 5664528830071267601}
   ui_BtnRemoveCreature: {fileID: 1009593625283077946}
+  ui_UIViewBaseInfoContent: {fileID: 5664528830071267601}
+--- !u!1001 &3263136514275658102
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5851314731992454110}
+    m_Modifications:
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_Pivot.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_Pivot.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5654488689631815272, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_Name
+      value: UIViewAbyssalBlessingInfoContent
+      objectReference: {fileID: 0}
+    - target: {fileID: 7840085861480771340, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7840085861480771340, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+--- !u!224 &261766928982350690 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+  m_PrefabInstance: {fileID: 3263136514275658102}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3842657340709112577
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -535,7 +646,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8942428072542398370, guid: a1530300b44151a4b8de382110a4de62, type: 3}
       propertyPath: m_Name
-      value: ViewBaseInfoContent
+      value: UIViewBaseInfoContent
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -721,10 +832,11 @@ MonoBehaviour:
   _rectTransform: {fileID: 0}
   cardData:
     creatureData:
-      creatureId: 
-      id: 0
+      creatureId: 0
+      creatureUUId: 
       creatureName: 
       level: 0
+      starLevel: 0
       rarity: 0
     cardUseState: 0
     cardState: 0
@@ -738,6 +850,8 @@ MonoBehaviour:
   ui_CardBgBorad: {fileID: 0}
   ui_CDTime: {fileID: 0}
   ui_Mask: {fileID: 0}
+  ui_StarText: {fileID: 0}
+  ui_SelectBg: {fileID: 0}
   animCardCreateDelayTime: 0.05
   animCardCreateTimeType1: 0.8
   animCardCreateTimeType2: 0.4

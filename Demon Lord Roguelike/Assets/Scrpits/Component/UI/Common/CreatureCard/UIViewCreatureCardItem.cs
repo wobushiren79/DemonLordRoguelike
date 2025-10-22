@@ -23,8 +23,8 @@ public partial class UIViewCreatureCardItem : BaseUIView
         SetName(creatureData.creatureName);
         SetRarity(creatureData.rarity);
         SetStarLevel(creatureData.starLevel);
+        SetPopupShow(creatureData, cardUseState);
         RefreshCardState(this.cardData.cardState);
-
     }
 
     /// <summary>
@@ -35,7 +35,6 @@ public partial class UIViewCreatureCardItem : BaseUIView
         //设置弹窗气泡数据
         switch (cardUseState)
         {
-            case CardUseState.Fight:
             case CardUseState.CreatureManager:
                 ui_BtnSelect_PopupButtonCommonView.enabled = false;
                 break;

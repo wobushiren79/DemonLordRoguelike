@@ -12,9 +12,9 @@ public partial class UIFightMain
 
     public UIViewFightMainAttCreateProgress ui_UIViewFightMainAttCreateProgress;
 
-    public UIViewBaseInfoContent ui_ViewBaseInfoContent;
-
     public Button ui_BtnRemoveCreature;
+
+    public UIViewBaseInfoContent ui_UIViewBaseInfoContent;
 
 
 }

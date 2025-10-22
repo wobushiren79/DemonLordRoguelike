@@ -76,7 +76,7 @@ public partial class UIMainCreate : BaseUIComponent
         if (isShow)
         {
             //场景实例
-            var baseSceneObj = WorldHandler.Instance.currentBaseScene;
+            var baseSceneObj = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.BaseGaming);
             previewObj = baseSceneObj.transform.Find("PreviewCreate").gameObject;
             previewSpine = previewObj.transform.Find("Renderer").GetComponent<SkeletonAnimation>();
 
