@@ -33,7 +33,7 @@ public partial class ItemsInfoBean : BaseBean
 	/// </summary>
 	public long name;
 	[JsonIgnore]
-	public string name_language { get { return TextHandler.Instance.GetTextById(name); } }
+	public string name_language { get { return TextHandler.Instance.GetTextById(ItemsInfoCfg.fileName, name); } }
 	/// <summary>
 	///备注
 	/// </summary>

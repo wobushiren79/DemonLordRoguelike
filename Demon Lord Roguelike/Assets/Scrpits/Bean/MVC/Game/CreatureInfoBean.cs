@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 public partial class CreatureInfoBean : BaseBean
 {
 	/// <summary>
-	///生物类型1：防御 2进攻
+	///生物类型1：防御 2进攻 99防守核心
 	/// </summary>
 	public int creature_type;
 	/// <summary>
@@ -65,7 +65,7 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public int attack_search_type;
 	/// <summary>
-	///攻击搜索目标类型1：防御 2进攻
+	///攻击搜索目标类型1防御 2进攻 99防守核心
 	/// </summary>
 	public int attack_search_creature_type;
 	/// <summary>
@@ -121,7 +121,7 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public long name;
 	[JsonIgnore]
-	public string name_language { get { return TextHandler.Instance.GetTextById(name); } }
+	public string name_language { get { return TextHandler.Instance.GetTextById(CreatureInfoCfg.fileName, name); } }
 	/// <summary>
 	///备注
 	/// </summary>

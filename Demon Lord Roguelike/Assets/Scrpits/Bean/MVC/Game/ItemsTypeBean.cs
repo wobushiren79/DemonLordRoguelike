@@ -13,7 +13,7 @@ public partial class ItemsTypeBean : BaseBean
 	/// </summary>
 	public long name;
 	[JsonIgnore]
-	public string name_language { get { return TextHandler.Instance.GetTextById(name); } }
+	public string name_language { get { return TextHandler.Instance.GetTextById(ItemsTypeCfg.fileName, name); } }
 	/// <summary>
 	///备注
 	/// </summary>

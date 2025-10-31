@@ -17,13 +17,13 @@ public partial class AbyssalBlessingInfoBean : BaseBean
 	/// </summary>
 	public long name;
 	[JsonIgnore]
-	public string name_language { get { return TextHandler.Instance.GetTextById(name); } }
+	public string name_language { get { return TextHandler.Instance.GetTextById(AbyssalBlessingInfoCfg.fileName, name); } }
 	/// <summary>
 	///描述中文
 	/// </summary>
 	public long details;
 	[JsonIgnore]
-	public string details_language { get { return TextHandler.Instance.GetTextById(details); } }
+	public string details_language { get { return TextHandler.Instance.GetTextById(AbyssalBlessingInfoCfg.fileName, details); } }
 	/// <summary>
 	///备注
 	/// </summary>

@@ -13,7 +13,7 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public int buff_type;
 	/// <summary>
-	///buff触发对象类型0所有 1：防御 2进攻
+	///buff触发对象类型0所有 1防御 2进攻 99防守核心
 	/// </summary>
 	public int trigger_creature_type;
 	/// <summary>
@@ -57,7 +57,7 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public long name;
 	[JsonIgnore]
-	public string name_language { get { return TextHandler.Instance.GetTextById(name); } }
+	public string name_language { get { return TextHandler.Instance.GetTextById(BuffInfoCfg.fileName, name); } }
 	/// <summary>
 	///备注
 	/// </summary>
