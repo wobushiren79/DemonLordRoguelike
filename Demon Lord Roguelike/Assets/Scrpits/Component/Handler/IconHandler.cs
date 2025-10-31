@@ -19,10 +19,28 @@ public partial class IconHandler
         });
     }
 
+    public void SetItemIcon(string iconName, float rotateZ, SpriteRenderer spriteRenderer)
+    {
+        GetIconSprite(SpriteAtlasType.Items, iconName, (sprite) =>
+        {
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.sprite = sprite;
+                spriteRenderer.transform.eulerAngles = new Vector3(0, 0, rotateZ);
+            }
+        });
+    }
+
     public void SetItemIcon(long itemId, Image targetIV)
     {
         var itemInfo = ItemsInfoCfg.GetItemData(itemId);
         SetItemIcon(itemInfo.icon_res, itemInfo.icon_rotate_z, targetIV);
+    }
+
+    public void SetItemIcon(long itemId, SpriteRenderer spriteRenderer)
+    {
+        var itemInfo = ItemsInfoCfg.GetItemData(itemId);
+        SetItemIcon(itemInfo.icon_res, itemInfo.icon_rotate_z, spriteRenderer);
     }
 
     public void SetItemIconForAttackMode(string showSpriteName, SpriteRenderer spriteRenderer)

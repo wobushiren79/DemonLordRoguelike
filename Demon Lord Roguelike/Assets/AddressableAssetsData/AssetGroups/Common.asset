@@ -16,7 +16,7 @@ MonoBehaviour:
   m_GUID: 8d34367864ba6d841ad6c55b768c2978
   m_SerializeEntries:
   - m_GUID: 2a3d32b33586c204eb52d5e70b6d25e0
-    m_Address: Assets/LoadResources/Common/Scenes/RewardSelect.prefab
+    m_Address: Assets/LoadResources/Common/Scenes/RewardSelectScene.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -27,6 +27,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5c8e40565acdae3458e07b57cf27c25b
     m_Address: Assets/LoadResources/Common/CameraData.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8acf41526ac3ddf4784f997bb8e3ce5f
+    m_Address: Assets/LoadResources/Common/RewardSelectBoxItem.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -42,6 +47,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: cb7e36e9f0f4a124d9dade6879189963
     m_Address: Assets/LoadResources/Common/Gashapon_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dd4ce195c3ce1d0429b24002084d2a62
+    m_Address: Assets/LoadResources/Common/RewardSelectBox.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

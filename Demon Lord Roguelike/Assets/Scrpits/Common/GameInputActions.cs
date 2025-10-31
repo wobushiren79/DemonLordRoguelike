@@ -617,7 +617,7 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
                     ""name"": ""Submit"",
                     ""type"": ""Button"",
                     ""id"": ""fd8e0b75-61c3-4e0b-8ff9-9619fb8830ea"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -642,9 +642,9 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": ""Click"",
-                    ""type"": ""PassThrough"",
+                    ""type"": ""Button"",
                     ""id"": ""e0c2bb89-c4dc-4e56-b298-5a16e5c39c11"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -660,7 +660,7 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": ""MiddleClick"",
-                    ""type"": ""PassThrough"",
+                    ""type"": ""Button"",
                     ""id"": ""7ed19213-4472-4a02-8b3f-a5c4951845b8"",
                     ""expectedControlType"": """",
                     ""processors"": """",
@@ -669,7 +669,7 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": ""RightClick"",
-                    ""type"": ""PassThrough"",
+                    ""type"": ""Button"",
                     ""id"": ""eb63a82a-dff6-4892-b233-25f7461d4d01"",
                     ""expectedControlType"": """",
                     ""processors"": """",
@@ -707,7 +707,7 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
                     ""name"": ""F2"",
                     ""type"": ""Button"",
                     ""id"": ""5500924d-44ad-4218-bf78-82e1b980e3d0"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -725,7 +725,7 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
                     ""name"": ""F4"",
                     ""type"": ""Button"",
                     ""id"": ""77810c9c-ef5f-4bcf-8285-c106d2ae77b6"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false

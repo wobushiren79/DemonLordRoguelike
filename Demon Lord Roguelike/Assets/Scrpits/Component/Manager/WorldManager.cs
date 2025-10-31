@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
 public class WorldManager : BaseManager
-{    
+{
     //场景相关
     public Dictionary<string, GameObject> dicScene = new Dictionary<string, GameObject>();
     //当前天空盒
@@ -35,7 +35,7 @@ public class WorldManager : BaseManager
     /// </summary>
     public async Task<GameObject> GetRewardSelectScene()
     {
-        string dataPath = $"{PathInfo.CommonPrefabScenesPath}/RewardSelect.prefab";
+        string dataPath = $"{PathInfo.CommonPrefabScenesPath}/RewardSelectScene.prefab";
         var targetScene = await GetScene(dataPath);
         return targetScene;
     }
@@ -60,7 +60,7 @@ public class WorldManager : BaseManager
         var targetScene = await GetScene(dataPath);
         return targetScene;
     }
-#endregion
+    #endregion
 
     #region 天空盒
 
@@ -95,7 +95,7 @@ public class WorldManager : BaseManager
     /// <param name="colorSky"></param>
     public void SetSkyboxColor(CameraClearFlags cameraClearFlags, Color colorSky)
     {
-        var mainCamera = CameraHandler.Instance.manager.mainCamera;    
+        var mainCamera = CameraHandler.Instance.manager.mainCamera;
         mainCamera.clearFlags = cameraClearFlags;
         mainCamera.backgroundColor = colorSky;
     }

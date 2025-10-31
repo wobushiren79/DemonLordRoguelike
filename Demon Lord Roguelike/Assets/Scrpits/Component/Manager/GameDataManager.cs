@@ -38,9 +38,10 @@ public partial class GameDataManager : IUserDataView
     /// <summary>
     /// 保存用户数据
     /// </summary>
-    public void SaveUserData()
+    public UserDataBean SaveUserData()
     {
         SaveUserData(userData);
+        return userData;
     }
 
     public void SaveUserData(UserDataBean targetUserData)

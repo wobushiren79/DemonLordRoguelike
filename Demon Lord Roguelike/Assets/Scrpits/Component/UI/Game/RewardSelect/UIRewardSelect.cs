@@ -1,35 +1,161 @@
-﻿
+
 
 using System;
+using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public partial class UIRewardSelect : BaseUIComponent
 {
     public Action actionForEnd = null;
+    public RewardSelectBean rewardSelectData;
+    public ScenePrefabForRewardSelect scenePrefab;
 
-    public override void Awake()
+    public override void RefreshUI(bool isOpenInit = false)
     {
-        base.Awake();
+        base.RefreshUI(isOpenInit);
+        if (!isOpenInit)
+        {
+            SetSelectNumText(rewardSelectData.selectNum, rewardSelectData.selectNumMax); 
+        }
     }
 
     /// <summary>
     /// 设置数据
     /// </summary>
-    public async void SetData(Action actionForEnd = null)
+    public async void SetData(RewardSelectBean rewardSelectData, Action actionForEnd = null)
     {
+        this.rewardSelectData = rewardSelectData;
         gameObject.SetActive(false);
         this.actionForEnd = actionForEnd;
-        ui_TitleTextNum.text =  string.Format(TextHandler.Instance.GetTextById(52003), 3, 3);
+
         await WorldHandler.Instance.EnterRewardSelectScene();
+        //场景实例
+        var baseSceneObj = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.RewardSelect);
+        scenePrefab = baseSceneObj.GetComponent<ScenePrefabForRewardSelect>();
+        //初始化宝箱
+        scenePrefab.InitBox(rewardSelectData.listReward);
+
         gameObject.SetActive(true);
+        //刷新UI显示
+        RefreshUI();
     }
+
+    /// <summary>
+    /// 设置剩余选择次数
+    /// </summary>
+    public void SetSelectNumText(int selectNum, int selectNumMax)
+    {
+        ui_TitleTextNum.text = string.Format(TextHandler.Instance.GetTextById(52003), selectNumMax - selectNum, selectNumMax);
+    }
+
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
         if (viewButton == ui_SkipBtn)
         {
-            actionForEnd?.Invoke();
+            OnClickForSkip();
         }
     }
-    
+
+    public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
+    {
+        base.OnInputActionForStarted(inputType, callback);
+        switch (inputType)
+        {
+            case InputActionUIEnum.Click:
+                OnClickForSelectBox();
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 点击选择宝箱
+    /// </summary>
+    public void OnClickForSelectBox()
+    {
+        ShowItemDetails(false, null);
+        LogUtil.Log("OnClickForSelectBox");
+        RayUtil.RayToScreenPointForMousePosition(100, 1 << LayerInfo.Other, out bool isCollider, out RaycastHit hit);
+        if (isCollider)
+        {
+            Collider targetCollider = hit.collider;
+            int boxIndex = int.Parse(targetCollider.gameObject.name);
+            ItemBean itemData = rewardSelectData.listReward[boxIndex];
+            //设置是否能选择 如果已经超过选择次数 则不能选择
+            bool isCanSelect = rewardSelectData.selectNum >= rewardSelectData.selectNumMax ? false : true;
+            int boxState = scenePrefab.SelectBox(targetCollider.gameObject, isCanSelect);
+            switch (boxState)
+            {
+                case 0://打开失败 没有次数
+                    UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(52004));
+                    break;
+                case 1://打开宝箱
+                    UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+                    //添加道具到背包里
+                    userData.AddItem(itemData);
+                    //数量+1
+                    rewardSelectData.selectNum++;
+                    //刷新UI
+                    RefreshUI();
+                    //展示道具详情
+                    ShowItemDetails(true, itemData);
+                    break;
+                case 2://展示道具详情
+                    ShowItemDetails(true, itemData);
+                    break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 展示道具详情
+    /// </summary>
+    public void ShowItemDetails(bool isShowDetails, ItemBean itemData)
+    {
+        if (isShowDetails)
+        {
+            ui_UIPopupItemInfo.gameObject.SetActive(true);
+            ui_UIPopupItemInfo.SetData(itemData);
+        }
+        else
+        {
+            ui_UIPopupItemInfo.gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// 点击跳过
+    /// </summary>
+    public void OnClickForSkip()
+    {
+        LogUtil.Log("OnClickForSkip");
+        ShowItemDetails(false, null);
+        //如果还有未选择次数 提示一下
+        if (rewardSelectData.selectNum < rewardSelectData.selectNumMax)
+        {
+            DialogBean dialogData = new DialogBean();
+            dialogData.content = TextHandler.Instance.GetTextById(52005);
+            dialogData.actionSubmit = (view, data) =>
+            {
+                ShowOtherBoxAndEnd();
+            };
+            UIHandler.Instance.ShowDialogNormal(dialogData);
+            return;
+        }
+        //展示其他未选择的宝箱物品并且结束
+        ShowOtherBoxAndEnd();
+    }
+
+    /// <summary>
+    /// 展示其他未选择的宝箱物品并且结束
+    /// </summary>
+    public async void ShowOtherBoxAndEnd()
+    {
+        gameObject.SetActive(false);
+        //展示所有宝箱
+        await scenePrefab.ShowAllBoxItem();
+        //结束回调
+        actionForEnd?.Invoke();
+    }
 }

@@ -10,5 +10,7 @@ public partial class UIRewardSelect
 
     public TextMeshProUGUI ui_TitleTextNum;
 
+    public UIPopupItemInfo ui_UIPopupItemInfo;
+
 
 }

@@ -17,6 +17,8 @@ public class UserDataBean : BaseBean
     public int saveIndex = 0;
     //拥有的魔晶
     public long crystal;
+    //拥有的声望
+    public long reputation;
     //用户名字
     public string userName;
     //游戏事件

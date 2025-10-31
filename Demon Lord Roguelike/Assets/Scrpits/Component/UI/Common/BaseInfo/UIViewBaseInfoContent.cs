@@ -8,23 +8,18 @@ using UnityEngine.UI;
 public partial class UIViewBaseInfoContent : BaseUIView
 {
     Sequence animForCrystalChange;//魔晶变化动画
+    Sequence animForReputationChange;//声望变化动画
 
     public override void Awake()
     { 
         base.Awake();
         this.RegisterEvent(EventsInfo.Backpack_Item_Change, RefreshUIData);
-        this.RegisterEvent(EventsInfo.Magic_Change, RefreshUIData);
     }
 
     public override void OnEnable()
     {
         base.OnEnable();
         RefreshUIData(false);
-    }
-
-    public override void OnDisable()
-    {
-        base.OnDisable();
     }
 
     public void RefreshUIData()
@@ -42,22 +37,14 @@ public partial class UIViewBaseInfoContent : BaseUIView
                 SetCrystalData(userData.crystal, isAnim);
             }
         }
-        if (ui_Magic.gameObject.activeSelf)
+        if (ui_Reputation.gameObject.activeSelf)
         {
-            var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-            if (gameFightLogic != null)
+            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+            if (userData != null)
             {
-                SetMagicData(0);
+                SetReputationData(userData.reputation, isAnim);
             }
         }
-    }
-
-    /// <summary>
-    /// 设置当前魔力
-    /// </summary>
-    public void SetMagicData(int magic)
-    {
-        ui_MagicText.text = $"{magic}";
     }
 
     /// <summary>
@@ -77,23 +64,28 @@ public partial class UIViewBaseInfoContent : BaseUIView
     }
 
     /// <summary>
+    /// 设置当前声望
+    /// </summary>
+    public void SetReputationData(long reputation, bool isAnim = true)
+    {
+        if (isAnim)
+        {
+            animForReputationChange = AnimUtil.AnimForUINumberChange(animForReputationChange, ui_ReputationText, long.Parse(ui_ReputationText.text), reputation, 1f);
+        }
+        else
+        {
+            ui_ReputationText.text = $"{reputation}";
+        }
+    }
+
+    /// <summary>
     /// 清理动画
     /// </summary>
     public void ClearAnim()
     {
         animForCrystalChange?.Kill();
+        animForReputationChange?.Kill();
         ui_CrystalText.transform.localScale = Vector3.one;
-    }
-
-    /// <summary>
-    /// 魔力不够动画
-    /// </summary>
-    public void PlayAnimForMagicNoEnough()
-    {
-        ui_MagicText.DOKill();
-        ui_MagicText.DOColor(Color.red, 0.05f).SetLoops(6, LoopType.Yoyo).OnComplete(() =>
-        {
-            ui_MagicText.color = Color.white;
-        });
+        ui_ReputationText.transform.localScale = Vector3.one;
     }
 }

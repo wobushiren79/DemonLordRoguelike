@@ -1,10 +1,11 @@
 {
   "dependencies": {
     "com.coffee.ui-particle": "https://github.com/mob-sakai/ParticleEffectForUGUI.git#4.9.0",
+    "com.cqf.urpvolumetricfog": "https://github.com/CristianQiu/Unity-URP-Volumetric-Light.git",
     "com.unity.2d.animation": "12.0.2",
     "com.unity.addressables": "2.7.4",
     "com.unity.ai.navigation": "2.0.9",
-    "com.unity.cinemachine": "3.1.4",
+    "com.unity.cinemachine": "3.1.5",
     "com.unity.collab-proxy": "2.9.3",
     "com.unity.feature.development": "1.0.2",
     "com.unity.ide.rider": "3.0.38",
@@ -14,7 +15,7 @@
     "com.unity.timeline": "1.8.9",
     "com.unity.ugui": "2.0.0",
     "com.unity.visualeffectgraph": "17.2.0",
-    "com.unity.visualscripting": "1.9.8",
+    "com.unity.visualscripting": "1.9.9",
     "jillejr.newtonsoft.json-for-unity": "13.0.102",
     "com.unity.modules.accessibility": "1.0.0",
     "com.unity.modules.ai": "1.0.0",

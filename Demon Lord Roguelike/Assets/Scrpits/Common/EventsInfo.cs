@@ -6,7 +6,6 @@ public static class EventsInfo
 {
     public static string Backpack_Coin_Change = "Backpack_Coin_Change";
     public static string Backpack_Item_Change = "Backpack_Item_Change";
-    public static string Magic_Change = "Magic_Change";
 
     public static string UIViewCreatureCardItem_SelectKeep = "UIViewCreatureCardItem_SelectKeep";//卡片避让
 
@@ -31,8 +30,6 @@ public static class EventsInfo
     #region BUFF
     public static string Buff_AbyssalBlessingChange = "Buff_AbyssalBlessingChange";//BUFF系统-深渊馈赠变化
     #endregion
-    
-    public static string Toast_NoEnoughCreateMagic = "Toast_NoEnoughCreateMagic";//没有足够的创建魔力
 
     #region 扭蛋机
     public static string GashaponMachine_ClickBreak = "GashaponMachine_ClickBreak";//点击破碎 

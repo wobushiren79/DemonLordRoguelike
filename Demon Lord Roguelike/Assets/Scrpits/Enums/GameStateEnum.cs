@@ -81,6 +81,8 @@ public enum TestSceneTypeEnum
     FightSceneTest = 1,//战斗场景测试
     CardTest = 2,//卡片效果测试
     Base = 3,//基地测试
+    RewardSelect = 4,//奖励选择
+    DoomCouncil = 5,//终焉议会
 }
 
 public enum CinemachineCameraEnum

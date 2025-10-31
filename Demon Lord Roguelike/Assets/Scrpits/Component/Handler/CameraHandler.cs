@@ -14,6 +14,61 @@ public partial class CameraHandler
         manager.LoadMainCamera();
     }
 
+    #region 奖励选择摄像头
+    /// <summary>
+    /// 设置基础场景的摄像头
+    /// </summary>
+    public CinemachineCamera SetCameraForRewardSelectScene(float blendTime = 0.5f)
+    {
+        manager.HideAllCM();
+        var targetBaseScene = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.RewardSelect);
+        if (targetBaseScene == null)
+        {
+            LogUtil.LogError("设置摄像头失败 没有找到对应场景");
+            return null;
+        }
+        var targetCVListTF = targetBaseScene.transform.Find($"CV_List");
+        if (targetCVListTF == null)
+        {
+            LogUtil.LogError("设置摄像头失败 没有找到对应CV_List Transfrom");
+            return null;
+        }
+        var targetCV = targetCVListTF.GetComponentInChildren<CinemachineCamera>(true);
+        //打开切换动画
+        manager.SetMainCameraDefaultBlend(blendTime);
+        targetCV.gameObject.SetActive(true);
+        targetCV.Priority = int.MaxValue;
+        return targetCV;
+    }
+    #endregion
+
+
+    #region 战斗场景摄像头
+
+    /// <summary>
+    /// 初始化战斗场景视角
+    /// </summary>
+    public async Task InitFightSceneCamera()
+    {
+        var mainCamera = manager.mainCamera;
+        mainCamera.gameObject.SetActive(true);
+
+        var controlTarget = GameControlHandler.Instance.manager.controlTargetForEmpty;
+        controlTarget.transform.position = new Vector3(3, 0, 3);
+
+        //关闭切换动画
+        manager.SetMainCameraDefaultBlend(0);
+
+        SetCameraForControl(CinemachineCameraEnum.Fight);
+
+        manager.cm_Fight.Follow = controlTarget.transform;
+        manager.cm_Fight.LookAt = controlTarget.transform;
+        manager.cm_Fight.PreviousStateIsValid = false;
+        await new WaitNextFrame();
+    }
+    #endregion
+
+    #region  基地场景摄像头相关
     /// <summary>
     /// 初始化基地场景摄像头
     /// </summary>
@@ -47,28 +102,6 @@ public partial class CameraHandler
         await new WaitNextFrame();
         //设置偏转
         CameraHandler.Instance.ChangeAngleForCamera(targetRenderer.transform);
-    }
-
-    /// <summary>
-    /// 初始化战斗场景视角
-    /// </summary>
-    public async Task InitFightSceneCamera()
-    {
-        var mainCamera = manager.mainCamera;
-        mainCamera.gameObject.SetActive(true);
-
-        var controlTarget = GameControlHandler.Instance.manager.controlTargetForEmpty;
-        controlTarget.transform.position = new Vector3(3, 0, 3);
-
-        //关闭切换动画
-        manager.SetMainCameraDefaultBlend(0);
-
-        SetCameraForControl(CinemachineCameraEnum.Fight);
-
-        manager.cm_Fight.Follow = controlTarget.transform;
-        manager.cm_Fight.LookAt = controlTarget.transform;
-        manager.cm_Fight.PreviousStateIsValid = false;
-        await new WaitNextFrame();
     }
 
     /// <summary>
@@ -183,8 +216,10 @@ public partial class CameraHandler
     {
         SetCameraForBaseScene(int.MinValue, false, "");
     }
+    #endregion
 
 
+    #region  卡片测试摄像头
     /// <summary>
     /// 设置卡片测试镜头
     /// </summary>
@@ -198,7 +233,9 @@ public partial class CameraHandler
         //关闭切换动画
         manager.SetMainCameraDefaultBlend(0);
     }
+    #endregion
 
+    #region  控制操作摄像头
     /// <summary>
     /// 设置控制摄像头
     /// </summary>
@@ -218,4 +255,5 @@ public partial class CameraHandler
                 break;
         }
     }
+    #endregion
 }

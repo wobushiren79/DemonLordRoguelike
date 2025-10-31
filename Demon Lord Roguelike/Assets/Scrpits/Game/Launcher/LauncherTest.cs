@@ -1,4 +1,4 @@
-using Unity.VisualScripting;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class LauncherTest : BaseLauncher
@@ -21,6 +21,32 @@ public class LauncherTest : BaseLauncher
     public void StartForFightSceneTest(FightBean fightData)
     {
         WorldHandler.Instance.EnterGameForFightScene(fightData);
+    }
+
+    /// <summary>
+    /// 开始终焉议会测试
+    /// </summary>
+    public void StartForDoomCouncil()
+    {
+        //打开终焉ui
+        var uiDoomCouncil = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilMain>();
+    }
+
+    /// <summary>
+    /// 开始奖励选择
+    /// </summary>
+    public async void StartForRewardSelect()
+    {
+        //打开领奖界面
+        var uiRewardSelect = UIHandler.Instance.OpenUIAndCloseOther<UIRewardSelect>();
+        RewardSelectBean rewardSelectData = new RewardSelectBean();
+        rewardSelectData.selectNum = 0;
+        rewardSelectData.selectNumMax = 1;
+        rewardSelectData.listReward = new List<ItemBean>();
+        rewardSelectData.listReward.Add(new ItemBean(10100001));
+        rewardSelectData.listReward.Add(new ItemBean(10100002));
+        rewardSelectData.listReward.Add(new ItemBean(10100003));
+        uiRewardSelect.SetData(rewardSelectData, null);
     }
 
     /// <summary>

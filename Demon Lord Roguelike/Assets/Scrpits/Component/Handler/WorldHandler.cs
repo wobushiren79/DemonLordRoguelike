@@ -32,13 +32,14 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         {
             await ClearWorldData();
         }
-        //加载奖励选择
-        var targetObj = await LoadRewardSelectScene();
         //镜头初始化
         CameraHandler.Instance.InitData();
+        //加载奖励选择
+        var targetObj = await LoadRewardSelectScene();
         //环境参数初始化
         VolumeHandler.Instance.InitData(GameSceneTypeEnum.RewardSelect);
-
+        //镜头切换
+        CameraHandler.Instance.SetCameraForRewardSelectScene(0);
     }
 
     /// <summary>

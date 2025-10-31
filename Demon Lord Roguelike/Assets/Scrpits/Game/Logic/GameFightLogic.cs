@@ -160,7 +160,7 @@ public class GameFightLogic : BaseGameLogic
         //如果有选中的物体
         if (selectCreature != null || selectCreatureDestory != null)
         {
-            RayUtil.RayToScreenPointForMousePosition(50, 1 << LayerInfo.Ground, out bool isCollider, out RaycastHit hit, CameraHandler.Instance.manager.mainCamera);
+            RayUtil.RayToScreenPointForMousePosition(50, 1 << LayerInfo.Ground, out bool isCollider, out RaycastHit hit);
             if (isCollider && hit.collider != null)
             {
                 Vector3 hitPoint = hit.point;

@@ -48,6 +48,36 @@ public class GameTestEditor : Editor
         {
             UIForFightBase();
         }
+        else if (launcher.testSceneType == TestSceneTypeEnum.RewardSelect)
+        {
+            UIForRewardSelect();
+        }
+        else if (launcher.testSceneType == TestSceneTypeEnum.DoomCouncil)
+        {
+            UIForDoomCouncil();
+        }
+    }
+
+    /// <summary>
+    /// 终焉议会UI
+    /// </summary>
+    public void UIForDoomCouncil()
+    {
+        if (GUILayout.Button("开始终焉议会") && Application.isPlaying)
+        {
+            launcher.StartForDoomCouncil();
+        }
+    }
+    
+    /// <summary>
+    /// 奖励选择UI
+    /// </summary>
+    public void UIForRewardSelect()
+    {
+        if (GUILayout.Button("开始奖励选择") && Application.isPlaying)
+        {
+            launcher.StartForRewardSelect();
+        }
     }
 
     /// <summary>

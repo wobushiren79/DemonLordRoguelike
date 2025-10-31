@@ -85,7 +85,8 @@ public class GameFightLogicConquer : GameFightLogic
         {
             //打开领奖界面
             var uiRewardSelect = UIHandler.Instance.OpenUIAndCloseOther<UIRewardSelect>();
-            uiRewardSelect.SetData(ActionForUIRewardSelectEnd);
+            RewardSelectBean rewardSelectData = new RewardSelectBean();
+            uiRewardSelect.SetData(rewardSelectData, ActionForUIRewardSelectEnd);
         }
         //如果不是最后一关 打开深渊馈赠UI
         else
@@ -101,11 +102,16 @@ public class GameFightLogicConquer : GameFightLogic
     /// </summary>
     public void ActionForUIRewardSelectEnd()
     {
-        //清理深渊馈赠数据
-        BuffHandler.Instance.manager.ClearAbyssalBlessing();
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        //返回基地
-        WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+        //展示mask
+        UIHandler.Instance.ShowMask(1, null, () =>
+        {
+            //清理深渊馈赠数据
+            BuffHandler.Instance.manager.ClearAbyssalBlessing();
+            //保存用户数据
+            UserDataBean userData = GameDataHandler.Instance.manager.SaveUserData();
+            //返回基地
+            WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+        }, false);
     }
 
     /// <summary>

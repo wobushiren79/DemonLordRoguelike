@@ -156,7 +156,7 @@ public class ControlForGameFight : BaseControl
         float inputValue = inputActionUseL.ReadValue<float>();
         if (inputValue < 1)
             return;
-        RayUtil.RayToScreenPointForMousePosition(100, 1 << LayerInfo.Drop, out bool isCollider, out RaycastHit hit, CameraHandler.Instance.manager.mainCamera);
+        RayUtil.RayToScreenPointForMousePosition(100, 1 << LayerInfo.Drop, out bool isCollider, out RaycastHit hit);
         if (isCollider && hit.collider != null)
         {
             var fightDropPrefab = FightHandler.Instance.manager.GetFightPrefab(hit.collider.gameObject.name);

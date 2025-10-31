@@ -31,7 +31,6 @@ public partial class UIFightMain : BaseUIComponent
     public override void OpenUI()
     {
         base.OpenUI();
-        RegisterEvent(EventsInfo.Toast_NoEnoughCreateMagic, EventForNoEnoughCreateMagic);
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_SelectCard, EventForGameFightLogicSelectCard);
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
@@ -219,15 +218,6 @@ public partial class UIFightMain : BaseUIComponent
     #endregion
 
     #region 事件
-
-    /// <summary>
-    /// 没有足够的魔力
-    /// </summary>
-    public void EventForNoEnoughCreateMagic()
-    {
-        ui_UIViewBaseInfoContent.PlayAnimForMagicNoEnough();
-    }
-
     /// <summary>
     /// 事件-选择卡片
     /// </summary>

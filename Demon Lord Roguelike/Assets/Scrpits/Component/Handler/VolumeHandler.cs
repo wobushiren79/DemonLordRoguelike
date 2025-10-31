@@ -26,6 +26,9 @@ public class VolumeHandler : BaseHandler<VolumeHandler, VolumeManager>
                 float disFollowFight = CameraHandler.Instance.GetDistanceFollow(CameraHandler.Instance.manager.cm_Fight);
                 SetDepthOfField(DepthOfFieldMode.Bokeh, disFollowFight, 260, 12);
                 break;
+            case GameSceneTypeEnum.RewardSelect:
+                SetDepthOfField(DepthOfFieldMode.Bokeh, 6, 150, 10);
+                break;
             default:
                 SetDepthOfField(DepthOfFieldMode.Bokeh, 4, 140, 10);
                 break;
