@@ -513,6 +513,7 @@ MonoBehaviour:
   offsetX: 0
   offsetY: 0
   offsetPivot: {x: 0, y: 0}
+  isUpdatePosition: 1
   ui_Icon: {fileID: 8325225510420339543}
   ui_DetailsText: {fileID: 7552840554487154432}
   ui_NameText: {fileID: 9093614194259671896}

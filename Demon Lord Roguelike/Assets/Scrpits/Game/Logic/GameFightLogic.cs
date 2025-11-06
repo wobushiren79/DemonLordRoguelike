@@ -134,7 +134,7 @@ public class GameFightLogic : BaseGameLogic
             }
             else
             {
-                CreatureHandler.Instance.RemoveCreatureObj(selectCreature, CreatureTypeEnum.FightDefense);
+                CreatureHandler.Instance.RemoveFightCreatureObj(selectCreature, CreatureTypeEnum.FightDefense);
             }
         }
         if (selectCreatureCard != null)
@@ -275,7 +275,7 @@ public class GameFightLogic : BaseGameLogic
         var targetCreature = fightData.GetDefenseCreatureByPos(selectTargetPos);
         if (targetCreature == null)
             return;
-        CreatureHandler.Instance.RemoveCreatureEntity(targetCreature, CreatureTypeEnum.FightDefense);
+        CreatureHandler.Instance.RemoveFightCreatureEntity(targetCreature, CreatureTypeEnum.FightDefense);
     }
 
     /// <summary>

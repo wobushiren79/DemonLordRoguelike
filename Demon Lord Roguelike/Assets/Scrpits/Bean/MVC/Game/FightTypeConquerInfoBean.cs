@@ -85,10 +85,18 @@ public partial class FightTypeConquerInfoCfg : BaseCfg<long, FightTypeConquerInf
 	{
 		if (dicData == null)
 		{
-			FightTypeConquerInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static FightTypeConquerInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static FightTypeConquerInfoBean GetItemData(long key)
 	{

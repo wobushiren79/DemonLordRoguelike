@@ -31,10 +31,18 @@ public partial class GameWorldInfoCfg : BaseCfg<long, GameWorldInfoBean>
 	{
 		if (dicData == null)
 		{
-			GameWorldInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static GameWorldInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static GameWorldInfoBean GetItemData(long key)
 	{

@@ -29,10 +29,18 @@ public partial class BuffPreInfoCfg : BaseCfg<long, BuffPreInfoBean>
 	{
 		if (dicData == null)
 		{
-			BuffPreInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static BuffPreInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static BuffPreInfoBean GetItemData(long key)
 	{

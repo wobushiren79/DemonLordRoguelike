@@ -69,10 +69,18 @@ public partial class ResearchInfoCfg : BaseCfg<long, ResearchInfoBean>
 	{
 		if (dicData == null)
 		{
-			ResearchInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static ResearchInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static ResearchInfoBean GetItemData(long key)
 	{

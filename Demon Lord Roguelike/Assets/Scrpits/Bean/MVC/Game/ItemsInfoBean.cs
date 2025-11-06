@@ -47,10 +47,18 @@ public partial class ItemsInfoCfg : BaseCfg<long, ItemsInfoBean>
 	{
 		if (dicData == null)
 		{
-			ItemsInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static ItemsInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static ItemsInfoBean GetItemData(long key)
 	{

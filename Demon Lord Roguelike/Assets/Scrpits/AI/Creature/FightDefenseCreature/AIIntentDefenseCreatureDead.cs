@@ -23,7 +23,7 @@ public class AIIntentDefenseCreatureDead : AIBaseIntent
         if (timeUpdateForDead >= timeUpdateForDeadCD)
         {
             timeUpdateForDead = 0;
-            CreatureHandler.Instance.RemoveCreatureEntity(selfAIEntity.selfCreatureEntity, CreatureTypeEnum.FightDefense);
+            CreatureHandler.Instance.RemoveFightCreatureEntity(selfAIEntity.selfCreatureEntity, CreatureTypeEnum.FightDefense);
         }
     }
 

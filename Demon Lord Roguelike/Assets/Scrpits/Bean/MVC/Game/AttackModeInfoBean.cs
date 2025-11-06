@@ -65,10 +65,18 @@ public partial class AttackModeInfoCfg : BaseCfg<long, AttackModeInfoBean>
 	{
 		if (dicData == null)
 		{
-			AttackModeInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static AttackModeInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static AttackModeInfoBean GetItemData(long key)
 	{

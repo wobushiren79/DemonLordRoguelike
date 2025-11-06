@@ -21,10 +21,18 @@ public partial class CreatureInfoRandomCfg : BaseCfg<long, CreatureInfoRandomBea
 	{
 		if (dicData == null)
 		{
-			CreatureInfoRandomBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static CreatureInfoRandomBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static CreatureInfoRandomBean GetItemData(long key)
 	{

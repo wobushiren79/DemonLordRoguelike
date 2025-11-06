@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.VFX;
 using DG.Tweening;
 using Unity.Burst.Intrinsics;
+using System.Threading.Tasks;
 
 public class ScenePrefabForBase : ScenePrefabBase
 {
@@ -34,19 +35,19 @@ public class ScenePrefabForBase : ScenePrefabBase
     /// <summary>
     /// 初始化场景
     /// </summary>
-    public override void InitSceneData()
+    public override async Task InitSceneData()
     {
-        base.InitSceneData();
+        await base.InitSceneData();
         EventHandler.Instance.RegisterEvent(EventsInfo.CreatureAscend_AddProgress, EventForCreatureAscendAddProgress);
-        RefreshScene();
+        await RefreshScene();
     }
 
     /// <summary>
     /// 刷新场景
     /// </summary>
-    public override void RefreshScene()
+    public override async Task RefreshScene()
     {
-        base.RefreshScene();
+        await base.RefreshScene();
         BuildingVatRefresh();
         BuildingAltarRefresh();
     }

@@ -45,6 +45,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b207357df965a3d47ba0392a31f68d27
+    m_Address: Assets/LoadResources/Common/Scenes/DoomCouncilScene.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: cb7e36e9f0f4a124d9dade6879189963
     m_Address: Assets/LoadResources/Common/Gashapon_1.prefab
     m_ReadOnly: 0

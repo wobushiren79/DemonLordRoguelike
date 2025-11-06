@@ -29,10 +29,18 @@ public partial class RarityInfoCfg : BaseCfg<long, RarityInfoBean>
 	{
 		if (dicData == null)
 		{
-			RarityInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static RarityInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static RarityInfoBean GetItemData(long key)
 	{

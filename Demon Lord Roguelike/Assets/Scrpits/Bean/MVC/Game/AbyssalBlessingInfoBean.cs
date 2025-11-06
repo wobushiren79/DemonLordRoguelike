@@ -37,10 +37,18 @@ public partial class AbyssalBlessingInfoCfg : BaseCfg<long, AbyssalBlessingInfoB
 	{
 		if (dicData == null)
 		{
-			AbyssalBlessingInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static AbyssalBlessingInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static AbyssalBlessingInfoBean GetItemData(long key)
 	{

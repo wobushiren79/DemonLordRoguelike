@@ -62,13 +62,28 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         }
     }
 
+    #region 终焉议会议员
+    /// <summary>
+    /// 生成议会议员
+    /// </summary>
+    public async Task<GameObject> CreateDoomCouncilCreature(CreatureBean creatureData, Vector3 creaturePos)
+    {
+        var targetObj = manager.LoadDoomCouncilCreatureObj();
+        Transform rendererTF = targetObj.transform.Find("Spine");
+        SkeletonAnimation skeletonAnimation = rendererTF.GetComponent<SkeletonAnimation>();
+        SetCreatureData(skeletonAnimation, creatureData, isNeedWeapon: false);
+        targetObj.transform.position = creaturePos;
+        return targetObj;
+    }
+    #endregion
+
     #region  防御核心生物
     /// <summary>
     /// 生成防御核心生物
     /// </summary>
     public async Task<GameFightCreatureEntity> CreateDefenseCoreCreature(CreatureBean creatureData, Vector3 creaturePos)
     {
-        var targetObj = GetCreatureObj(creatureData.creatureId);
+        var targetObj = GetFightCreatureObj(creatureData.creatureId);
 
         targetObj.transform.position = creaturePos;
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
@@ -91,7 +106,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// </summary>
     public GameObject CreateDefenseCreature(CreatureBean creatureData)
     {
-        var targetObj = GetCreatureObj(creatureData.creatureId);
+        var targetObj = GetFightCreatureObj(creatureData.creatureId);
 
         Transform rendererTF = targetObj.transform.Find("Spine");
         SkeletonAnimation targetSkeletonAnimation = rendererTF.GetComponent<SkeletonAnimation>();
@@ -155,7 +170,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     public GameObject CreateAttackCreature(long npcId, int roadNum, int targetRoad = 0)
     {
         var npcInfo = NpcInfoCfg.GetItemData(npcId);
-        var targetObj = GetCreatureObj(npcInfo.creature_id);
+        var targetObj = GetFightCreatureObj(npcInfo.creature_id);
         //随机生成某一路
         if (targetRoad == 0)
         {
@@ -193,9 +208,9 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// <summary>
     /// 获取一个生物的obj
     /// </summary>
-    public GameObject GetCreatureObj(long creatureId)
+    public GameObject GetFightCreatureObj(long creatureId)
     {
-        var targetObj = manager.LoadCreatureObj(creatureId);
+        var targetObj = manager.LoadFightCreatureObj(creatureId);
         var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
         var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
         //设置层级
@@ -261,19 +276,19 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// 移除生物obj
     /// </summary>
     /// <param name="targetObj"></param>
-    public void RemoveCreatureObj(GameObject targetObj, CreatureTypeEnum creatureType)
+    public void RemoveFightCreatureObj(GameObject targetObj, CreatureTypeEnum creatureType)
     {
         if (targetObj == null)
             return;
         if (manager.dicPoolForCreature.TryGetValue(creatureType, out Queue<GameObject> poolForCreature))
         {
-            manager.DestoryCreature(poolForCreature, targetObj);
+            manager.DestoryFightCreature(poolForCreature, targetObj);
         }
         else
         {
             Queue<GameObject> newPool = new Queue<GameObject>();
             manager.dicPoolForCreature.Add(creatureType, newPool);
-            manager.DestoryCreature(newPool, targetObj);
+            manager.DestoryFightCreature(newPool, targetObj);
         }
     }
 
@@ -281,7 +296,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// 移除生物实例
     /// </summary>
     /// <param name="targetObj"></param>
-    public void RemoveCreatureEntity(GameFightCreatureEntity targetEntity, CreatureTypeEnum creatureType)
+    public void RemoveFightCreatureEntity(GameFightCreatureEntity targetEntity, CreatureTypeEnum creatureType)
     {
         if (targetEntity == null)
             return;
@@ -290,7 +305,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         if (targetEntity.creatureObj != null)
         {
-            RemoveCreatureObj(targetEntity.creatureObj, creatureType);
+            RemoveFightCreatureObj(targetEntity.creatureObj, creatureType);
         }
         if (targetEntity.aiEntity != null)
         {

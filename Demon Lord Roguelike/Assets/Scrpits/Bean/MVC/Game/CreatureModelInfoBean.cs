@@ -33,10 +33,18 @@ public partial class CreatureModelInfoCfg : BaseCfg<long, CreatureModelInfoBean>
 	{
 		if (dicData == null)
 		{
-			CreatureModelInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static CreatureModelInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static CreatureModelInfoBean GetItemData(long key)
 	{

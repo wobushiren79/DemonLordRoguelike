@@ -34,7 +34,7 @@ public partial class UIRewardSelect : BaseUIComponent
         var baseSceneObj = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.RewardSelect);
         scenePrefab = baseSceneObj.GetComponent<ScenePrefabForRewardSelect>();
         //初始化宝箱
-        scenePrefab.InitBox(rewardSelectData.listReward);
+        await scenePrefab.InitRewardBox(rewardSelectData.listReward);
 
         gameObject.SetActive(true);
         //刷新UI显示
@@ -74,6 +74,8 @@ public partial class UIRewardSelect : BaseUIComponent
     /// </summary>
     public void OnClickForSelectBox()
     {
+        if (gameObject.activeSelf == false) return;
+        
         ShowItemDetails(false, null);
         LogUtil.Log("OnClickForSelectBox");
         RayUtil.RayToScreenPointForMousePosition(100, 1 << LayerInfo.Other, out bool isCollider, out RaycastHit hit);
@@ -84,8 +86,8 @@ public partial class UIRewardSelect : BaseUIComponent
             ItemBean itemData = rewardSelectData.listReward[boxIndex];
             //设置是否能选择 如果已经超过选择次数 则不能选择
             bool isCanSelect = rewardSelectData.selectNum >= rewardSelectData.selectNumMax ? false : true;
-            int boxState = scenePrefab.SelectBox(targetCollider.gameObject, isCanSelect);
-            switch (boxState)
+            int boxOpenState = scenePrefab.OpenRewardBox(targetCollider.gameObject, isCanSelect);
+            switch (boxOpenState)
             {
                 case 0://打开失败 没有次数
                     UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(52004));
@@ -138,23 +140,23 @@ public partial class UIRewardSelect : BaseUIComponent
             dialogData.content = TextHandler.Instance.GetTextById(52005);
             dialogData.actionSubmit = (view, data) =>
             {
-                ShowOtherBoxAndEnd();
+                OpenAllRewardBoxPreview();
             };
             UIHandler.Instance.ShowDialogNormal(dialogData);
             return;
         }
         //展示其他未选择的宝箱物品并且结束
-        ShowOtherBoxAndEnd();
+        OpenAllRewardBoxPreview();
     }
 
     /// <summary>
     /// 展示其他未选择的宝箱物品并且结束
     /// </summary>
-    public async void ShowOtherBoxAndEnd()
+    public async void OpenAllRewardBoxPreview()
     {
         gameObject.SetActive(false);
         //展示所有宝箱
-        await scenePrefab.ShowAllBoxItem();
+        await scenePrefab.OpenAllRewardBoxPreview();
         //结束回调
         actionForEnd?.Invoke();
     }

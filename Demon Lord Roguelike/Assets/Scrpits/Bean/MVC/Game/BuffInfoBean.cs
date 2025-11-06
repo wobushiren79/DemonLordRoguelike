@@ -71,10 +71,18 @@ public partial class BuffInfoCfg : BaseCfg<long, BuffInfoBean>
 	{
 		if (dicData == null)
 		{
-			BuffInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static BuffInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static BuffInfoBean GetItemData(long key)
 	{

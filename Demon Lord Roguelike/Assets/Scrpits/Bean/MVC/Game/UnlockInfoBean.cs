@@ -21,10 +21,18 @@ public partial class UnlockInfoCfg : BaseCfg<long, UnlockInfoBean>
 	{
 		if (dicData == null)
 		{
-			UnlockInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static UnlockInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static UnlockInfoBean GetItemData(long key)
 	{

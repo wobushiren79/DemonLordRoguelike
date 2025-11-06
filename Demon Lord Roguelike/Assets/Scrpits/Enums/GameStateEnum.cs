@@ -73,6 +73,7 @@ public enum GameSceneTypeEnum
     BaseGaming = 2,//基地游玩中(场景预制以这个为准)
     Fight = 3,//战斗
     RewardSelect = 4,//奖励选择
+    DoomCouncil = 5,//终焉议会
 }
 
 public enum TestSceneTypeEnum

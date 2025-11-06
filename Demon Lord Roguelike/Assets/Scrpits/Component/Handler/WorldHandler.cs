@@ -7,14 +7,14 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
 {
     //当前场景
     public Dictionary<GameSceneTypeEnum, GameObject> dicCurrentScene = new Dictionary<GameSceneTypeEnum, GameObject>();
-    
+
     public GameObject GetCurrentScene(GameSceneTypeEnum gameSceneType)
     {
-        if(gameSceneType == GameSceneTypeEnum.BaseMain)
+        if (gameSceneType == GameSceneTypeEnum.BaseMain)
         {
             gameSceneType = GameSceneTypeEnum.BaseGaming;
         }
-        if (dicCurrentScene.TryGetValue(gameSceneType,out var targetScene))
+        if (dicCurrentScene.TryGetValue(gameSceneType, out var targetScene))
         {
             return targetScene;
         }
@@ -22,6 +22,27 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     }
 
     #region 进入场景
+    /// <summary>
+    /// 进入终焉议会场景
+    /// </summary>
+    /// <returns></returns>
+    public async Task EnterDoomCouncilScene()
+    {
+        await ClearWorldData();
+        //镜头初始化
+        CameraHandler.Instance.InitData();
+        //加载奖励选择
+        var baseSceneObj = await LoadDoomCouncilScene();
+        var scenePrefabForDoomCouncil = baseSceneObj.GetComponent<ScenePrefabForRewardSelect>();
+        await scenePrefabForDoomCouncil.InitSceneData();
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        
+        //设置基地场景视角
+        await CameraHandler.Instance.InitBaseSceneControlCamera(userData.selfCreature);
+        //环境参数初始化
+        VolumeHandler.Instance.InitData(GameSceneTypeEnum.DoomCouncil);
+    }
+
     /// <summary>
     /// 进入奖励选择场景
     /// </summary>
@@ -109,7 +130,31 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     #endregion
 
     #region 加载场景
+    /// <summary>
+    /// 加载终焉议会场景
+    /// </summary>
+    /// <returns></returns>
+    public async Task<GameObject> LoadDoomCouncilScene()
+    {
+        UnLoadScene(GameSceneTypeEnum.DoomCouncil);
+        var targetScene = await manager.GetDoomCouncilScene();
+        targetScene.SetActive(true);
+        targetScene.transform.position = Vector3.zero;
+        targetScene.transform.eulerAngles = Vector3.zero;
+        dicCurrentScene.Add(GameSceneTypeEnum.DoomCouncil, targetScene);
 
+        //设置天空颜色
+        ColorUtility.TryParseHtmlString("#080613", out var targetColorSky);
+        manager.SetSkyboxColor(CameraClearFlags.SolidColor, targetColorSky);
+        //移除天空盒 设置纯粹的颜色
+        manager.RemoveSkybox();
+        return targetScene;
+    }
+    
+    /// <summary>
+    /// 加载奖励场景
+    /// </summary>
+    /// <returns></returns>
     public async Task<GameObject> LoadRewardSelectScene()
     {
         UnLoadScene(GameSceneTypeEnum.RewardSelect);
@@ -140,7 +185,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         targetScene.transform.position = Vector3.zero;
         targetScene.transform.eulerAngles = Vector3.zero;
         ScenePrefabBase scenePrefabBase = targetScene.GetComponent<ScenePrefabBase>();
-        scenePrefabBase.InitSceneData();
+        await scenePrefabBase.InitSceneData();
 
         dicCurrentScene.Add(GameSceneTypeEnum.BaseGaming, targetScene);
 

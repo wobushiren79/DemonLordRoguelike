@@ -27,10 +27,18 @@ public partial class ItemsTypeCfg : BaseCfg<long, ItemsTypeBean>
 	{
 		if (dicData == null)
 		{
-			ItemsTypeBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static ItemsTypeBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static ItemsTypeBean GetItemData(long key)
 	{

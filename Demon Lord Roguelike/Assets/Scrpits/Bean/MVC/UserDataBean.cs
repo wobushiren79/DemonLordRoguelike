@@ -111,12 +111,25 @@ public class UserDataBean : BaseBean
     }
 
     /// <summary>
-    /// 检测是否有足够的
+    /// 增加声望
+    /// </summary>
+    public void AddReputation(long reputationNum)
+    {
+        reputation += reputationNum;
+        if (reputation < 0)
+        {
+            reputation = 0;
+        }
+        EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Item_Change);
+    }
+
+    /// <summary>
+    /// 检测是否有足够的魔晶
     /// </summary>
     /// <param name="checkNum">检测数量</param>
     /// <param name="isHint">是否提示</param>
     /// <param name="isAddCrystal">是否扣除</param>
-    public bool CheckHasCrystal(int checkNum, bool isHint = false, bool isAddCrystal = false)
+    public bool CheckHasCrystal(long checkNum, bool isHint = false, bool isAddCrystal = false)
     {
         if (crystal >= checkNum)
         {
@@ -131,6 +144,33 @@ public class UserDataBean : BaseBean
             if (isHint)
             {
                 UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(3000001));
+            }
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 检测是否有足够的声望
+    /// </summary>
+    /// <param name="checkNum">检测数量</param>
+    /// <param name="isHint">是否提示</param>
+    /// <param name="isAddReputation">是否扣除</param>
+    /// <returns></returns>
+    public bool CheckHasReputation(long checkNum, bool isHint = false, bool isAddReputation = false)
+    {
+        if (reputation >= checkNum)
+        {
+            if (isAddReputation)
+            {
+                AddReputation(-checkNum);
+            }
+            return true;
+        }
+        else
+        {
+            if (isHint)
+            {
+                UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(3000002));
             }
             return false;
         }

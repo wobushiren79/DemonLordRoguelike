@@ -33,10 +33,18 @@ public partial class FightSceneCfg : BaseCfg<long, FightSceneBean>
 	{
 		if (dicData == null)
 		{
-			FightSceneBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static FightSceneBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static FightSceneBean GetItemData(long key)
 	{

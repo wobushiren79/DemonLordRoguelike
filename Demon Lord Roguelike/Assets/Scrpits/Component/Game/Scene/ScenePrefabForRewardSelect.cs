@@ -13,103 +13,98 @@ public class ScenePrefabForRewardSelect : ScenePrefabBase
     public GameObject objBoxModel;
     //箱子容积
     public GameObject objBoxContainer;
+    //箱子列表
+    public List<RewardSelectBoxComponent> listRewardSelectBox = new List<RewardSelectBoxComponent>();
 
     /// <summary>
     /// 初始化场景
     /// </summary>
-    public override void InitSceneData()
+    public override async Task InitSceneData()
     {
-        base.InitSceneData();
+        await base.InitSceneData();
     }
 
     /// <summary>
     /// 刷新场景
     /// </summary>
-    public override void RefreshScene()
+    public override async Task RefreshScene()
     {
-        base.RefreshScene();
+        await base.RefreshScene();
     }
 
     /// <summary>
     /// 初始化宝箱
     /// </summary>
-    public void InitBox(List<ItemBean> listReward)
+    public async Task InitRewardBox(List<ItemBean> listReward)
     {
+        float totalTimeShowDelay = 0;
         for (int i = 0; i < listReward.Count; i++)
         {
             ItemBean itemData = listReward[i];
             GameObject objItemBox = Instantiate(objBoxContainer, objBoxModel);
+            var itemBox = objItemBox.GetComponent<RewardSelectBoxComponent>();
+
+            //设置箱子名字和位置
             float offsetX = VectorUtil.GetCenterToTwoSide(0, 2.5f, listReward.Count, i);
             objItemBox.transform.position = new Vector3(offsetX, 0, 0);
+            objItemBox.transform.eulerAngles = new Vector3(0, 180, 0);
             objItemBox.name = $"{i}";
-            InitBoxItem(objItemBox, itemData);
+            //随机等待一段时间出现
+            float timeShowDelay = UnityEngine.Random.Range(0f, 0.2f);
+            totalTimeShowDelay += timeShowDelay;
+            //初始化箱子
+            var taskInitData = itemBox.InitData(itemData, timeShowDelay);
+            //添加箱子到列表
+            listRewardSelectBox.Add(itemBox);
         }
-    }
-
-    /// <summary>
-    /// 初始化宝箱道具
-    /// </summary>
-    public void InitBoxItem(GameObject objBox, ItemBean itemData)
-    {
-        Transform tfItem = objBox.transform.Find("RewardSelectBoxItem");
-        Transform tfItemRenderer = tfItem.Find("Renderer");
-        SpriteRenderer srItemRenderer = tfItemRenderer.GetComponent<SpriteRenderer>();
-        IconHandler.Instance.SetItemIcon(itemData.itemsInfo.icon_res, itemData.itemsInfo.icon_rotate_z, srItemRenderer);
-        //先隐藏道具 点选之后再显示
-        tfItem.gameObject.SetActive(false);
+        await new WaitForSeconds(totalTimeShowDelay);    
     }
 
     /// <summary>
     /// 选择宝箱
     /// </summary>
     /// <param name="objBox"></param>
-    public int SelectBox(GameObject objBox, bool isCanSelect)
+    public int OpenRewardBox(GameObject objBox, bool isCanOpen)
     {
-        Transform tfItem = objBox.transform.Find("RewardSelectBoxItem");
-        Transform tfBox = objBox.transform.Find("Box");
-        //如果宝箱已经打开 则展示道具详情
-        if (tfBox.gameObject.activeSelf == false)
-        {
-            return 2;
-        }
-        //如果宝箱没有打开 则打开宝箱
-        else
+        var targetBoxView = objBox.GetComponent<RewardSelectBoxComponent>();
+        //如果宝箱还未打开
+        if (targetBoxView.rewardSelectBoxState == RewardSelectBoxStateEnum.Idle)
         {
             //能否打开
-            if (isCanSelect)
+            if (isCanOpen)
             {
-                tfBox.gameObject.SetActive(false);
-                tfItem.gameObject.SetActive(true);
-
-                var taskShowBoxItem = ShowBoxItem(objBox);
+                var openTask = targetBoxView.OpenBox();
                 return 1;
             }
+            //不能打开 次数已经使用完
             else
             {
                 return 0;
             }
         }
+        //如果宝箱已经打开
+        else
+        {
+            return 2;
+        }
     }
     
     /// <summary>
-    /// 打开所有宝箱
+    /// 打开所有宝箱预览
     /// </summary>
     /// <returns></returns>
-    public async Task ShowAllBoxItem()
+    public async Task OpenAllRewardBoxPreview()
     {
-        for (int i = 0; i < objBoxContainer.transform.childCount; i++)
+        float showTimeMax = 0;
+        for (int i = 0; i < listRewardSelectBox.Count; i++)
         {
-            var itemObjBox = objBoxContainer.transform.GetChild(i);
-            await ShowBoxItem(itemObjBox.gameObject);
+            var itemView = listRewardSelectBox[i];
+            showTimeMax = await itemView.OpenBoxForPreview();
         }
+        //再额外等2秒
+        showTimeMax += 2;
+
+        await new WaitForSeconds(showTimeMax);
     }
 
-    /// <summary>
-    /// 打开宝箱展示物品
-    /// </summary>
-    /// <returns></returns>
-    public async Task ShowBoxItem(GameObject objBox)
-    {
-        
-    }
 }

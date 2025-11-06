@@ -91,9 +91,28 @@ public class CreatureManager : BaseManager
     }
 
     /// <summary>
-    /// 加载一个生物obj
+    /// 加载一个议会议员obj
     /// </summary>
-    public GameObject LoadCreatureObj(long creatureId)
+    /// <returns></returns>
+    public GameObject LoadDoomCouncilCreatureObj()
+    {
+        string creatureModelName = "DoomCouncilCreature_1.prefab";
+        string resPath = $"{PathInfo.CreaturesPrefabPath}/{creatureModelName}";
+        var targetModel = GetModelForAddressablesSync(dicCreatureModel, resPath);
+        if (targetModel == null)
+        {
+            LogUtil.LogError($"创建生物失败：没有找到资源路径为{resPath}的生物");
+            return null;
+        }
+        var objItem = Instantiate(gameObject, targetModel);
+        objItem.SetActive(true);
+        return objItem;
+    }
+
+    /// <summary>
+    /// 加载一个战斗生物obj
+    /// </summary>
+    public GameObject LoadFightCreatureObj(long creatureId)
     {
         var itemCreatureInfo = CreatureInfoCfg.GetItemData(creatureId);
         if (itemCreatureInfo == null)
@@ -107,7 +126,7 @@ public class CreatureManager : BaseManager
         GameObject objItem = null;
         if (dicPoolForCreature.TryGetValue(creatureType, out Queue<GameObject> poolForCreature))
         {
-            objItem = GetCreaureFromPool(poolForCreature);
+            objItem = GetFightCreaureFromPool(poolForCreature);
         }
 
         //如果没有 则加载创建新的预制
@@ -148,7 +167,7 @@ public class CreatureManager : BaseManager
     /// 从缓存池中获取对象
     /// </summary>
     /// <param name="pool"></param>
-    public GameObject GetCreaureFromPool(Queue<GameObject> pool)
+    public GameObject GetFightCreaureFromPool(Queue<GameObject> pool)
     {
         if (pool.Count <= 0)
         {
@@ -160,7 +179,7 @@ public class CreatureManager : BaseManager
     /// <summary>
     /// 回收对象
     /// </summary>
-    public async void DestoryCreature(Queue<GameObject> pool, GameObject targetObj)
+    public async void DestoryFightCreature(Queue<GameObject> pool, GameObject targetObj)
     {
         targetObj.transform.position = new Vector3(0, -100, 0);
         //等待1帧防止 当前动作闪现问题

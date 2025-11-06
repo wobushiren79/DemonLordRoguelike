@@ -41,10 +41,18 @@ public partial class NpcInfoCfg : BaseCfg<long, NpcInfoBean>
 	{
 		if (dicData == null)
 		{
-			NpcInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static NpcInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static NpcInfoBean GetItemData(long key)
 	{

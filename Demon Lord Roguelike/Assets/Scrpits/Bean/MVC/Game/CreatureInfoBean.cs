@@ -135,10 +135,18 @@ public partial class CreatureInfoCfg : BaseCfg<long, CreatureInfoBean>
 	{
 		if (dicData == null)
 		{
-			CreatureInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static CreatureInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static CreatureInfoBean GetItemData(long key)
 	{

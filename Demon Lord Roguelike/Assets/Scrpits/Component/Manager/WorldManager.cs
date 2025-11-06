@@ -31,7 +31,17 @@ public class WorldManager : BaseManager
     }
 
     /// <summary>
-    /// 获取基地场景
+    /// 获取终焉议会
+    /// </summary>
+    public async Task<GameObject> GetDoomCouncilScene()
+    {
+        string dataPath = $"{PathInfo.CommonPrefabScenesPath}/DoomCouncilScene.prefab";
+        var targetScene = await GetScene(dataPath);
+        return targetScene;
+    }
+
+    /// <summary>
+    /// 获取奖励场景
     /// </summary>
     public async Task<GameObject> GetRewardSelectScene()
     {

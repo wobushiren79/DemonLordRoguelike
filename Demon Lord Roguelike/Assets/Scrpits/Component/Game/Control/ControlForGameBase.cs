@@ -211,5 +211,10 @@ public class ControlForGameBase : BaseControl
         {
             UIBasePortal targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBasePortal>();
         }
+        //终焉议会
+        else if (firstHit.gameObject.name.Equals("DoomCouncilInteraction"))
+        {
+            UIDoomCouncilMain targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilMain>();
+        }
     }
 }

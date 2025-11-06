@@ -537,6 +537,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScenePrefabForRewardSelect
   objBoxModel: {fileID: 1930101985832902862}
   objBoxContainer: {fileID: 2434462647863677786}
+  listRewardSelectBox: []
 --- !u!1001 &7224899421782658426
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -591,7 +592,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9118353528465616308, guid: dd4ce195c3ce1d0429b24002084d2a62, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

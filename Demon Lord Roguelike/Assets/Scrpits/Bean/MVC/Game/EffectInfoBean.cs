@@ -49,10 +49,18 @@ public partial class EffectInfoCfg : BaseCfg<long, EffectInfoBean>
 	{
 		if (dicData == null)
 		{
-			EffectInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static EffectInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static EffectInfoBean GetItemData(long key)
 	{

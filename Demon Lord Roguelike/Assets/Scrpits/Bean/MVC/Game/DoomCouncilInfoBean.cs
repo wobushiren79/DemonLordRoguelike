@@ -5,6 +5,10 @@ using Newtonsoft.Json;
 public partial class DoomCouncilInfoBean : BaseBean
 {
 	/// <summary>
+	///通过率
+	/// </summary>
+	public float success_rate;
+	/// <summary>
 	///消耗的声望
 	/// </summary>
 	public long cost_reputation;
@@ -41,10 +45,18 @@ public partial class DoomCouncilInfoCfg : BaseCfg<long, DoomCouncilInfoBean>
 	{
 		if (dicData == null)
 		{
-			DoomCouncilInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static DoomCouncilInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static DoomCouncilInfoBean GetItemData(long key)
 	{

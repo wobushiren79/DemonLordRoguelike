@@ -41,10 +41,18 @@ public partial class StoreGashaponMachineInfoCfg : BaseCfg<long, StoreGashaponMa
 	{
 		if (dicData == null)
 		{
-			StoreGashaponMachineInfoBean[] arrayData = GetInitData(fileName);
+			var arrayData = GetAllArrayData();
 			InitData(arrayData);
 		}
 		return dicData;
+	}
+	public static StoreGashaponMachineInfoBean[] GetAllArrayData()
+	{
+		if (arrayData == null)
+		{
+			arrayData = GetInitData(fileName);
+		}
+		return arrayData;
 	}
 	public static StoreGashaponMachineInfoBean GetItemData(long key)
 	{

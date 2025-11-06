@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: MatSpriteRewardSelectItem
-  m_Shader: {fileID: -6465566751694194690, guid: c61bcfa7382852740836c456f3aa8d4b, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: bf497560403af3b4bb3f8e7ec0f27278, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
