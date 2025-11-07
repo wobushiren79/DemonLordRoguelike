@@ -29,15 +29,27 @@ public class WorldManager : BaseManager
         var targetScene = await GetScene(dataPath);
         return targetScene;
     }
+    
+    /// <summary>
+    /// 获取游戏场景
+    /// </summary>
+    public async Task<GameObject> GetGameScene(string sceneName)
+    {
+        string dataPath = $"{PathInfo.CommonPrefabScenesPath}/{sceneName}.prefab";
+        var targetScene = await GetScene(dataPath);
+        targetScene.gameObject.SetActive(true);
+        //初始化数据
+        ScenePrefabBase scenePrefabBase = targetScene.GetComponent<ScenePrefabBase>();
+        await scenePrefabBase.InitSceneData();
+        return targetScene;
+    } 
 
     /// <summary>
     /// 获取终焉议会
     /// </summary>
     public async Task<GameObject> GetDoomCouncilScene()
     {
-        string dataPath = $"{PathInfo.CommonPrefabScenesPath}/DoomCouncilScene.prefab";
-        var targetScene = await GetScene(dataPath);
-        return targetScene;
+        return await GetGameScene("RewardSelectScene");
     }
 
     /// <summary>
@@ -45,9 +57,7 @@ public class WorldManager : BaseManager
     /// </summary>
     public async Task<GameObject> GetRewardSelectScene()
     {
-        string dataPath = $"{PathInfo.CommonPrefabScenesPath}/RewardSelectScene.prefab";
-        var targetScene = await GetScene(dataPath);
-        return targetScene;
+         return await GetGameScene("RewardSelectScene");
     }
 
     /// <summary>
@@ -55,9 +65,7 @@ public class WorldManager : BaseManager
     /// </summary>
     public async Task<GameObject> GetBaseScene()
     {
-        string dataPath = $"{PathInfo.CommonPrefabScenesPath}/BaseScene.prefab";
-        var targetScene = await GetScene(dataPath);
-        return targetScene;
+        return await GetGameScene("BaseScene");
     }
 
     /// <summary>
@@ -66,7 +74,7 @@ public class WorldManager : BaseManager
     /// <param name="actionForComplete"></param>
     public async Task<GameObject> GetFightSceneRoad()
     {
-        string dataPath = $"{PathInfo.CommonPrefabScenesPath}/FightSceneRoad.prefab";
+        string dataPath = $"{PathInfo.CommonPrefabPath}/FightSceneRoad.prefab";
         var targetScene = await GetScene(dataPath);
         return targetScene;
     }

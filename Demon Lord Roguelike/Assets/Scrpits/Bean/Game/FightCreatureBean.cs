@@ -29,6 +29,12 @@ public class FightCreatureBean
         ResetData();
     }
 
+    public FightCreatureBean(NpcInfoBean npcInfo)
+    {
+        creatureData = new CreatureBean(npcInfo);
+        ResetData();
+    }
+
     public FightCreatureBean(CreatureBean creatureData)
     {
         this.creatureData = creatureData;

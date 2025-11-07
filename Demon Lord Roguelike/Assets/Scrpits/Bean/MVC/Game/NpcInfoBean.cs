@@ -9,7 +9,7 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public long creature_id;
 	/// <summary>
-	///NPC类型
+	///NPC类型（0默认 2议会）
 	/// </summary>
 	public int npc_type;
 	/// <summary>
@@ -21,13 +21,11 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public string equip_item_ids;
 	/// <summary>
-	///名字-中文
+	///名字
 	/// </summary>
-	public string name_cn;
-	/// <summary>
-	///名字-英文
-	/// </summary>
-	public string name_en;
+	public long name;
+	[JsonIgnore]
+	public string name_language { get { return TextHandler.Instance.GetTextById(NpcInfoCfg.fileName, name); } }
 	/// <summary>
 	///备注
 	/// </summary>

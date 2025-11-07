@@ -15,6 +15,19 @@ public class GameHandler : BaseHandler<GameHandler,GameManager>
     };
 
     /// <summary>
+    /// 开始终焉议会
+    /// </summary>
+    /// <param name="doomCouncilInfo"></param>
+    public void StartDoomCouncil(DoomCouncilBean doomCouncilData)
+    {
+        if (manager.gameLogic == null || manager.gameLogic is not DoomCouncilLogic)
+            manager.gameLogic = new DoomCouncilLogic();
+        var gameLogic = manager.gameLogic as DoomCouncilLogic;
+        gameLogic.doomCouncilData = doomCouncilData;
+        manager.gameLogic.PreGame();
+    }
+
+    /// <summary>
     /// 开始游戏战斗
     /// </summary>
     public void StartGameFight(FightBean fightData)
@@ -88,7 +101,7 @@ public class GameHandler : BaseHandler<GameHandler,GameManager>
     /// </summary>
     public void Update()
     {
-        if (manager.gameState == GameStateEnum.Gaming && manager.gameLogic != null)
+        if (manager.gameLogic != null && manager.gameLogic.gameState == GameStateEnum.Gaming)
         {
             manager.gameLogic.UpdateGame();
         }

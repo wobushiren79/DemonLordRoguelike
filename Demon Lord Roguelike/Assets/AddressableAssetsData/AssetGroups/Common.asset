@@ -41,7 +41,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b1da58324ac511d4d83fb4496f1f4851
-    m_Address: Assets/LoadResources/Common/Scenes/FightSceneRoad.prefab
+    m_Address: Assets/LoadResources/Common/FightSceneRoad.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

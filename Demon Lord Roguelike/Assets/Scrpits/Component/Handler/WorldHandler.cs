@@ -5,8 +5,10 @@ using UnityEngine;
 
 public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
 {
+    //当前场景 用于处理同时存在多个场景
+    protected Dictionary<GameSceneTypeEnum, GameObject> dicCurrentScene = new Dictionary<GameSceneTypeEnum, GameObject>();
     //当前场景
-    public Dictionary<GameSceneTypeEnum, GameObject> dicCurrentScene = new Dictionary<GameSceneTypeEnum, GameObject>();
+    protected GameObject currentScene;
 
     public GameObject GetCurrentScene(GameSceneTypeEnum gameSceneType)
     {
@@ -19,6 +21,11 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             return targetScene;
         }
         return null;
+    }
+    
+    public GameObject GetCurrentScene()
+    {
+        return currentScene;
     }
 
     #region 进入场景
@@ -33,12 +40,6 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         CameraHandler.Instance.InitData();
         //加载奖励选择
         var baseSceneObj = await LoadDoomCouncilScene();
-        var scenePrefabForDoomCouncil = baseSceneObj.GetComponent<ScenePrefabForRewardSelect>();
-        await scenePrefabForDoomCouncil.InitSceneData();
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        
-        //设置基地场景视角
-        await CameraHandler.Instance.InitBaseSceneControlCamera(userData.selfCreature);
         //环境参数初始化
         VolumeHandler.Instance.InitData(GameSceneTypeEnum.DoomCouncil);
     }
@@ -100,7 +101,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             await LoadBaseScene();
         }
         //设置基地场景视角
-        await CameraHandler.Instance.InitBaseSceneControlCamera(userData.selfCreature);
+        await CameraHandler.Instance.InitBaseSceneControlCamera(userData.selfCreature, Vector3.zero);
         //环境参数初始化
         VolumeHandler.Instance.InitData(GameSceneTypeEnum.BaseGaming);
         //关闭LoadingUI
@@ -136,12 +137,14 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     /// <returns></returns>
     public async Task<GameObject> LoadDoomCouncilScene()
     {
-        UnLoadScene(GameSceneTypeEnum.DoomCouncil);
+        await UnLoadScene(GameSceneTypeEnum.DoomCouncil);
         var targetScene = await manager.GetDoomCouncilScene();
         targetScene.SetActive(true);
         targetScene.transform.position = Vector3.zero;
         targetScene.transform.eulerAngles = Vector3.zero;
+
         dicCurrentScene.Add(GameSceneTypeEnum.DoomCouncil, targetScene);
+        currentScene = targetScene;
 
         //设置天空颜色
         ColorUtility.TryParseHtmlString("#080613", out var targetColorSky);
@@ -157,12 +160,14 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     /// <returns></returns>
     public async Task<GameObject> LoadRewardSelectScene()
     {
-        UnLoadScene(GameSceneTypeEnum.RewardSelect);
+        await UnLoadScene(GameSceneTypeEnum.RewardSelect);
         var targetScene = await manager.GetRewardSelectScene();
         targetScene.SetActive(true);
         targetScene.transform.position = Vector3.zero;
         targetScene.transform.eulerAngles = Vector3.zero;
+
         dicCurrentScene.Add(GameSceneTypeEnum.RewardSelect, targetScene);
+        currentScene = targetScene;
 
         //设置天空颜色
         ColorUtility.TryParseHtmlString("#080613", out var targetColorSky);
@@ -178,16 +183,15 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     /// <param name="actionForComplete"></param>
     public async Task<GameObject> LoadBaseScene()
     {
-        UnLoadScene(GameSceneTypeEnum.BaseGaming);
+        await UnLoadScene(GameSceneTypeEnum.BaseGaming);
 
         var targetScene = await manager.GetBaseScene();
         targetScene.SetActive(true);
         targetScene.transform.position = Vector3.zero;
         targetScene.transform.eulerAngles = Vector3.zero;
-        ScenePrefabBase scenePrefabBase = targetScene.GetComponent<ScenePrefabBase>();
-        await scenePrefabBase.InitSceneData();
 
         dicCurrentScene.Add(GameSceneTypeEnum.BaseGaming, targetScene);
+        currentScene = targetScene;
 
         //设置天空颜色
         ColorUtility.TryParseHtmlString("#080613", out var targetColorSky);
@@ -202,7 +206,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     /// </summary>
     public async Task LoadFightScene(FightBean fightData)
     {
-        UnLoadScene(GameSceneTypeEnum.Fight);
+        await UnLoadScene(GameSceneTypeEnum.Fight);
 
         FightSceneBean fightSceneData = FightSceneCfg.GetItemData(fightData.fightSceneId);
         if (fightSceneData == null)
@@ -224,8 +228,9 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         targetScene.SetActive(true);
         targetScene.transform.position = new Vector3(0, 0, -(fightData.sceneRoadNumMax - fightData.sceneRoadNum) / 2f);
         targetScene.transform.eulerAngles = Vector3.zero;
-        dicCurrentScene.Add(GameSceneTypeEnum.Fight, targetScene);
 
+        dicCurrentScene.Add(GameSceneTypeEnum.Fight, targetScene);
+        currentScene = targetScene;
         //设置天空盒颜色
         ColorUtility.TryParseHtmlString("#00000000", out var targetColorSky);
         manager.SetSkyboxColor(CameraClearFlags.Skybox, targetColorSky);
@@ -251,11 +256,20 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     /// <summary>
     /// 卸载战斗场景
     /// </summary>
-    public void UnLoadScene(GameSceneTypeEnum gameSceneType, bool isRemoveSkybox = true)
+    public async Task UnLoadScene(GameSceneTypeEnum gameSceneType, bool isRemoveSkybox = true)
     {
         if (dicCurrentScene.TryGetValue(gameSceneType, out var targetScene))
         {
-            DestroyImmediate(targetScene);
+            var scenePrefabBase = targetScene.GetComponent<ScenePrefabBase>();
+            if (scenePrefabBase != null)
+            {
+                await scenePrefabBase.DestoryScene();
+            }
+            else
+            {
+                //战斗场景没有ScenePrefabBase
+                DestroyImmediate(scenePrefabBase.gameObject);
+            }
             dicCurrentScene.Remove(gameSceneType);
         }
         //移除天空盒
@@ -268,11 +282,21 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     /// <summary>
     /// 卸载所有场景
     /// </summary>
-    public void UnLoadAllScene(bool isRemoveSkybox = true)
+    public async Task UnLoadAllScene(bool isRemoveSkybox = true)
     {
         foreach (var itemData in dicCurrentScene)
         {
-            DestroyImmediate(itemData.Value);
+            var targetScene = itemData.Value;
+            var scenePrefabBase = targetScene.GetComponent<ScenePrefabBase>();
+            if (scenePrefabBase != null)
+            {
+                await scenePrefabBase.DestoryScene();
+            }
+            else
+            {
+                //战斗场景没有ScenePrefabBase
+                DestroyImmediate(scenePrefabBase.gameObject);
+            }
         }
         dicCurrentScene.Clear();
         //移除天空盒
@@ -280,6 +304,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         {
             manager.RemoveSkybox();
         }
+        currentScene = null;
     }
     #endregion
 
@@ -296,7 +321,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         GameControlHandler.Instance.manager.EnableAllControl(false);
         await new WaitNextFrame();
         //卸载场景
-        UnLoadAllScene();
+        await UnLoadAllScene();
         await new WaitNextFrame();
         //logic清理
         BaseGameLogic gameLogic = GameHandler.Instance.manager.GetGameLogic<BaseGameLogic>();

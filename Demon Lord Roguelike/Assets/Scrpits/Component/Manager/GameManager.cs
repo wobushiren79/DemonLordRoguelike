@@ -4,7 +4,6 @@ using UnityEngine;
 
 public partial class GameManager : BaseManager
 {
-    public GameStateEnum gameState; //游戏状态
     public BaseGameLogic gameLogic;//战斗逻辑
 
     public Dictionary<string, GameObject> dicObjModel = new Dictionary<string, GameObject>();
@@ -17,7 +16,7 @@ public partial class GameManager : BaseManager
         GameObject objModel = GetModelForAddressablesSync(dicObjModel, objPath);
         if (objModel != null)
         {
-            GameObject targetObj= Instantiate(objModel);
+            GameObject targetObj = Instantiate(objModel);
             return targetObj; 
         }
         return null;
@@ -29,7 +28,11 @@ public partial class GameManager : BaseManager
     /// <param name="gameState"></param>
     public void SetGameState(GameStateEnum gameState)
     {
-        this.gameState = gameState;
+        if (gameLogic == null)
+        {
+            LogUtil.LogError("设置游戏状态失败 没有找到游戏逻辑");
+            return;
+        }
         gameLogic.ChangeGameState(gameState);
     }
 
@@ -37,8 +40,13 @@ public partial class GameManager : BaseManager
     /// 获取游戏状态
     /// </summary>
     public GameStateEnum GetGameState()
-    {
-        return gameState;
+    {        
+        if (gameLogic == null)
+        {
+            LogUtil.LogError("获取游戏状态失败 没有找到游戏逻辑");
+            return GameStateEnum.None;
+        }
+        return gameLogic.GetGameState();
     }
 
     /// <summary>

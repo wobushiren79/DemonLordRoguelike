@@ -16,6 +16,18 @@ public class ScenePrefabBase : BaseMonoBehaviour
     /// </summary>
     public virtual async Task RefreshScene()
     {
-        
+
+    }
+    
+    /// <summary>
+    /// 删除场景
+    /// </summary>
+    /// <returns></returns>
+    public virtual async Task DestoryScene()
+    {
+        if (gameObject != null)
+        {
+           DestroyImmediate(gameObject); 
+        }
     }
 }

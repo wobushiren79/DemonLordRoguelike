@@ -67,9 +67,6 @@ public class CreatureManager : BaseManager
                 creatureDataSelectPreview = creatureData;
                 //修改材质球颜色
                 skeletonAnimationSelectPreview.skeleton.A = 0.65f;
-
-                Transform spineTF = objCreatureSelectPreview.transform.Find("Spine");
-                spineTF.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine;
             }
         }
         return objCreatureSelectPreview;

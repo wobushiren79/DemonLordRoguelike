@@ -211,10 +211,22 @@ public class ControlForGameBase : BaseControl
         {
             UIBasePortal targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBasePortal>();
         }
-        //终焉议会
+        //终焉议会入口
         else if (firstHit.gameObject.name.Equals("DoomCouncilInteraction"))
         {
             UIDoomCouncilMain targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilMain>();
+        }
+        //终焉议会讲台
+        else if (firstHit.gameObject.name.Equals("DoomCouncilPodium"))
+        {
+            DoomCouncilLogic doomCouncilLogic = GameHandler.Instance.manager.GetGameLogic<DoomCouncilLogic>();
+            doomCouncilLogic.InteractPodium();
+        }
+        //终焉议会议员
+        else if (firstHit.gameObject.name.Contains("DoomCouncilCreature"))
+        {
+            DoomCouncilLogic doomCouncilLogic = GameHandler.Instance.manager.GetGameLogic<DoomCouncilLogic>();
+            doomCouncilLogic.InteractCouncilor(firstHit.gameObject);
         }
     }
 }

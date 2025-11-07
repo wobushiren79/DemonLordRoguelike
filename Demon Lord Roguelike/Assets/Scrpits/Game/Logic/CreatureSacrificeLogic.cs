@@ -38,18 +38,17 @@ public class CreatureSacrificeLogic : BaseGameLogic
         this.RegisterEvent(EventsInfo.CreatureSacrifice_SacrificeFail, EventForSacrificeFail);
 
         //初始化场景
-        InitSceneData(() =>
-        {
-            //开始
-            StartGame();
-        });
+        InitSceneData();
+
+        //开始
+        StartGame();
     }
 
 
     /// <summary>
     /// 处理场景数据
     /// </summary>
-    public void InitSceneData(Action actionForComplete)
+    public void InitSceneData()
     {
         //场景实例
         var baseSceneObj = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.BaseGaming);
@@ -67,8 +66,7 @@ public class CreatureSacrificeLogic : BaseGameLogic
         listObjFodderCreatures = new List<GameObject>();
 
         //设置生物数据
-        SetCreatureData(objTargetCreature, creatureSacrificeData.targetCreature);
-        actionForComplete?.Invoke();
+        SetCreatureData(objTargetCreature, creatureSacrificeData.targetCreature);     
     }
 
     /// <summary>

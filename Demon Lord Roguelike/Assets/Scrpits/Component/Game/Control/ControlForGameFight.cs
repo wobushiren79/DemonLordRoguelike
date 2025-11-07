@@ -141,13 +141,14 @@ public class ControlForGameFight : BaseControl
     {
         if (!enabledControl)
             return;
-        var gameState = GameHandler.Instance.manager.GetGameState();
+        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        if (gameFightLogic == null)
+            return;
         //如果是正在游戏中
-        if (gameState != GameStateEnum.Gaming)
+        if (gameFightLogic.gameState != GameStateEnum.Gaming)
             return;
         if (CheckUtil.CheckIsPointerUI())
             return;
-        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         //手里没有物品
         if (gameFightLogic.selectCreature != null)
             return;

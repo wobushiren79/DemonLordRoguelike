@@ -6,7 +6,7 @@ using UnityEngine;
 public class GameControlHandler : BaseHandler<GameControlHandler,GameControlManager>
 {
     /// <summary>
-    /// 设置战斗控制
+    /// 璁剧疆鎴樻枟鎺у埗
     /// </summary>
     public void SetFightControl()
     {
@@ -15,7 +15,7 @@ public class GameControlHandler : BaseHandler<GameControlHandler,GameControlMana
     }
 
     /// <summary>
-    /// 设置基础移动控制
+    /// 璁剧疆鍩虹绉诲姩鎺у埗
     /// </summary>
     public void SetBaseControl(bool isEnable = true, bool isHideControlTarget = true)
     {

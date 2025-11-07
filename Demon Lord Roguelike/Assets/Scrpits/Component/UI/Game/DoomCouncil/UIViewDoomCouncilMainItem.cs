@@ -78,8 +78,9 @@ public partial class UIViewDoomCouncilMainItem : BaseUIView
             }
             UIHandler.Instance.ShowMask(0.2f, null, async () =>
             {
-                //进入议会场景
-                await WorldHandler.Instance.EnterDoomCouncilScene();
+                DoomCouncilBean doomCouncilData = new DoomCouncilBean();
+                doomCouncilData.doomCouncilInfo = doomCouncilInfo;
+                GameHandler.Instance.StartDoomCouncil(doomCouncilData);
             }, false);
         };
         UIHandler.Instance.ShowDialogNormal(dialogData);

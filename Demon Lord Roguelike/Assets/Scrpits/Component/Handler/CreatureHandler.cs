@@ -49,6 +49,8 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             }
             //修改皮肤
             SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, skinArray);
+            //设置模型大小
+            skeletonAnimation.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine;
         }
         //设置SkeletonGraphic
         if (skeletonGraphic != null)
@@ -180,12 +182,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         targetObj.transform.position = new Vector3(randomX, 0, targetRoad);
 
         //创建战斗生物
-        FightCreatureBean fightCreatureData = new FightCreatureBean(npcInfo.creature_id);
-        //添加随机皮肤
-        fightCreatureData.creatureData.SetSkin(npcInfo);
-        //添加装备
-        fightCreatureData.creatureData.SetEquip(npcInfo);
-
+        FightCreatureBean fightCreatureData = new FightCreatureBean(npcInfo);
         fightCreatureData.positionCreate = new Vector3Int(0, 0, targetRoad);
 
         GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
@@ -241,7 +238,6 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             if (rendererTF.GetComponent<SkeletonAnimation>() == null)
             {
                 SpineHandler.Instance.AddSkeletonAnimation(rendererTF.gameObject, creatureModel.res_name);
-                rendererTF.transform.localScale = Vector3.one * creatureModel.size_spine;
                 //var render = rendererTF.GetComponent<MeshRenderer>();
                 //if (render != null)
                 //{

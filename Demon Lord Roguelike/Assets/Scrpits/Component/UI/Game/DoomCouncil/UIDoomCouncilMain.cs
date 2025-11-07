@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.UI;
 
 public partial class UIDoomCouncilMain : BaseUIComponent
 {
@@ -45,5 +46,22 @@ public partial class UIDoomCouncilMain : BaseUIComponent
         var itemView = itemCell.GetComponent<UIViewDoomCouncilMainItem>();
         var itemData = listShowData[itemCell.index];
         itemView.SetData(itemData);
+    }
+
+    public override void OnClickForButton(Button viewButton)
+    {
+        base.OnClickForButton(viewButton);
+        if (viewButton == ui_ViewExit)
+        {
+            OnClickForExit();
+        }
+    }
+    
+    /// <summary>
+    /// 点击退出
+    /// </summary>
+    public void OnClickForExit()
+    {
+        UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
     }
 }

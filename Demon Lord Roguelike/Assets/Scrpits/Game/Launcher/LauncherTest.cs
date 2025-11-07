@@ -9,9 +9,40 @@ public class LauncherTest : BaseLauncher
     public override void Launch()
     {
         base.Launch();
+        InitTestData();
+
         // CreatureBean itemData = new CreatureBean(999998);
         // itemData.AddAllSkin();
         // StartForBaseTest(itemData);
+    }
+
+    /// <summary>
+    /// 初始化测试数据
+    /// </summary>
+    public void InitTestData()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        var npcInfo = NpcInfoCfg.GetItemData(1010010001);
+        userData.selfCreature = new CreatureBean(npcInfo);
+        for (int i = 0; i < 50; i++)
+        {
+            CreatureBean creatureItem = new CreatureBean(2002);
+            creatureItem.rarity = Random.Range(1, 7);
+            creatureItem.starLevel = Random.Range(0, 11);
+            creatureItem.level = Random.Range(0, 101);
+            creatureItem.AddSkinForBase();
+            //史莱姆加一个身体皮肤
+            if (creatureItem.creatureId > 3000 && creatureItem.creatureId < 4000)
+            {
+                creatureItem.AddSkin(3040001);
+            }
+            userData.AddBackpackCreature(creatureItem);
+
+            //添加到阵容1
+            userData.AddLineupCreature(1, creatureItem.creatureUUId);
+        }
+        userData.AddCrystal(999);
+        userData.AddReputation(1000);
     }
 
     /// <summary>
@@ -26,10 +57,16 @@ public class LauncherTest : BaseLauncher
     /// <summary>
     /// 开始终焉议会测试
     /// </summary>
-    public void StartForDoomCouncil()
+    public async void StartForDoomCouncil(long billId)
     {
         //打开终焉ui
-        var uiDoomCouncil = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilMain>();
+        //var uiDoomCouncil = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilMain>();
+
+        DoomCouncilInfoBean doomCouncilInfo = DoomCouncilInfoCfg.GetItemData(billId);
+        //进入议会场景
+        DoomCouncilBean doomCouncilData = new DoomCouncilBean();
+        doomCouncilData.doomCouncilInfo = doomCouncilInfo;
+        GameHandler.Instance.StartDoomCouncil(doomCouncilData);
     }
 
     /// <summary>
@@ -72,23 +109,6 @@ public class LauncherTest : BaseLauncher
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         userData.selfCreature = creatureData;
-        for (int i = 0; i < 50; i++)
-        {
-            CreatureBean creatureItem = new CreatureBean(2002);
-            creatureItem.rarity = Random.Range(1, 7);
-            creatureItem.starLevel = Random.Range(0, 11);
-            creatureItem.level = Random.Range(0, 101);
-            creatureItem.AddSkinForBase();
-            //史莱姆加一个身体皮肤
-            if (creatureItem.creatureId > 3000 && creatureItem.creatureId < 4000)
-            {
-                creatureItem.AddSkin(3040001);
-            }
-            userData.AddBackpackCreature(creatureItem);
-
-            //添加到阵容1
-            userData.AddLineupCreature(1, creatureItem.creatureUUId);
-        }
         WorldHandler.Instance.EnterGameForBaseScene(userData, true);
     }
 }

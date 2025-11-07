@@ -9,7 +9,7 @@ public partial class UIMainStart : BaseUIComponent
     public override void OpenUI()
     {
         base.OpenUI();
-        //ÉèÖÃ»ùµØ³¡¾°ÊÓ½Ç
+        //è®¾ç½®åŸºåœ°åœºæ™¯è§†è§’
         CameraHandler.Instance.SetGameStartCamera(int.MaxValue, true);
     }
 
@@ -48,7 +48,7 @@ public partial class UIMainStart : BaseUIComponent
     }
 
     /// <summary>
-    /// Ë¢ĞÂUIÊı¾İ
+    /// åˆ·æ–°UIæ•°æ®
     /// </summary>
     public void RefreshUIData()
     {
@@ -56,7 +56,7 @@ public partial class UIMainStart : BaseUIComponent
     }
 
     /// <summary>
-    /// µã»÷¿ªÊ¼ÓÎÏ·
+    /// ç‚¹å‡»å¼€å§‹æ¸¸æˆ
     /// </summary>
     public void OnClickForStartGame()
     {
@@ -64,7 +64,7 @@ public partial class UIMainStart : BaseUIComponent
     }
 
     /// <summary>
-    /// µã»÷Àë¿ªÓÎÏ·
+    /// ç‚¹å‡»ç¦»å¼€æ¸¸æˆ
     /// </summary>
     public void OnClickForExitGame()
     {
@@ -72,7 +72,7 @@ public partial class UIMainStart : BaseUIComponent
     }
 
     /// <summary>
-    /// µã»÷ÓÎÏ·ÉèÖÃ
+    /// ç‚¹å‡»æ¸¸æˆè®¾ç½®
     /// </summary>
     public void OnClickForGameSettting()
     {
@@ -81,7 +81,7 @@ public partial class UIMainStart : BaseUIComponent
     }
 
     /// <summary>
-    /// µã»÷½øÈëÓÎÏ·ÖÆ×÷ÈË
+    /// ç‚¹å‡»è¿›å…¥æ¸¸æˆåˆ¶ä½œäºº
     /// </summary>
     public void OnClickForMaker()
     {

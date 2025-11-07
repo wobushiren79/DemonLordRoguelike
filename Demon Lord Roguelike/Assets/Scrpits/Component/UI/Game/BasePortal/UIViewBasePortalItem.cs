@@ -122,7 +122,6 @@ public partial class UIViewBasePortalItem : BaseUIView
     {
         isSelectWorld = true;
         DialogBean dialogData = new DialogBean();
-        dialogData.dialogType = DialogEnum.PortalDetails;
         dialogData.content = string.Format(TextHandler.Instance.GetTextById(401), gameWorldInfo.name_language);
 
         float animTimeForShowMask = 1f;

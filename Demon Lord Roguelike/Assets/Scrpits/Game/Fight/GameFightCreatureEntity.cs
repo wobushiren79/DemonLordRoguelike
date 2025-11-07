@@ -32,13 +32,13 @@ public class GameFightCreatureEntity
         //获取生命值显示
         creatureLifeShow = creatureObj.transform.Find("LifeShow")?.GetComponent<SpriteRenderer>();
         creatureLifeShow?.ShowObj(false);
-        //设置皮肤
-        ChangeSkin(fightCreatureData.creatureData);
+        //设置spine
+        CreatureHandler.Instance.SetCreatureData(creatureSkeletionAnimation, fightCreatureData.creatureData, isSetSkeletonDataAsset: false);
         //设置buff数据
         long[] creatureBuffs = fightCreatureData.creatureData.creatureInfo.GetCreatureBuff();
         BuffHandler.Instance.AddBuff(creatureBuffs, fightCreatureData.creatureData.creatureUUId, fightCreatureData.creatureData.creatureUUId);  
         //设置身体颜色
-        SetBodyColor();
+        RefreshBodyColor();
     }
 
     /// <summary>
@@ -66,19 +66,6 @@ public class GameFightCreatureEntity
 
     #region  身体相关
     /// <summary>
-    /// 修改皮肤 根据生物数据修改
-    /// </summary>
-    public void ChangeSkin(CreatureBean creatureData)
-    {
-        if (creatureSkeletionAnimation == null)
-            return;
-        if (creatureData == null)
-            return;
-        //设置spine
-        CreatureHandler.Instance.SetCreatureData(creatureSkeletionAnimation, creatureData, isSetSkeletonDataAsset: false);
-    }
-
-    /// <summary>
     ///  设置身体颜色
     /// </summary>
     public void SetBodyColor(Color bodyColor)
@@ -89,7 +76,7 @@ public class GameFightCreatureEntity
             creatureSkeletionAnimation.skeleton.SetColor(bodyColor);
         }
     }
-    public void SetBodyColor()
+    public void RefreshBodyColor()
     {
         Color bodyColor = fightCreatureData.GetBodyColor();
         SetBodyColor(bodyColor);
@@ -139,7 +126,7 @@ public class GameFightCreatureEntity
         if (isAdd)
         {
             //刷新一下身体颜色
-            SetBodyColor();
+            RefreshBodyColor();
         }
     }
 
@@ -425,7 +412,7 @@ public class GameFightCreatureEntity
             })
             .OnComplete(() =>
             {
-                SetBodyColor();
+                RefreshBodyColor();
                 animForUnderAttackColor = null;
             });
     }

@@ -72,7 +72,7 @@ public partial class CameraHandler
     /// <summary>
     /// 初始化基地场景摄像头
     /// </summary>
-    public async Task InitBaseSceneControlCamera(CreatureBean creatureData)
+    public async Task InitBaseSceneControlCamera(CreatureBean creatureData, Vector3 startPosition)
     {
         HideCameraForBaseScene();
 
@@ -84,12 +84,10 @@ public partial class CameraHandler
 
         var targetSkeletonAnimation = targetRenderer.GetComponent<SkeletonAnimation>();
 
-        //设置大小
-        targetRenderer.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine;
         //展示生物数据
-        CreatureHandler.Instance.SetCreatureData(targetSkeletonAnimation, creatureData);
+        CreatureHandler.Instance.SetCreatureData(targetSkeletonAnimation, creatureData, isNeedWeapon : false);
         //初始化位置
-        controlTarget.transform.position = new Vector3(0, 0, 0);
+        controlTarget.transform.position = startPosition; 
 
         //关闭切换动画
         manager.SetMainCameraDefaultBlend(0);
@@ -101,7 +99,7 @@ public partial class CameraHandler
         manager.cm_Base.PreviousStateIsValid = false;
         await new WaitNextFrame();
         //设置偏转
-        CameraHandler.Instance.ChangeAngleForCamera(targetRenderer.transform);
+        ChangeAngleForCamera(targetRenderer.transform);
     }
 
     /// <summary>
@@ -174,7 +172,7 @@ public partial class CameraHandler
     protected CinemachineCamera SetCameraForBaseScene(int priority, bool isEnable, string cvName, float blendTime = 0.5f)
     {
         manager.HideAllCM();
-        var targetBaseScene = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.BaseGaming);
+        var targetBaseScene = WorldHandler.Instance.GetCurrentScene();
         if (targetBaseScene == null)
         {
             LogUtil.LogError("设置摄像头失败 没有找到对应场景");

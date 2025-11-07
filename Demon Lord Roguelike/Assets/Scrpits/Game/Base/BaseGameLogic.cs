@@ -7,6 +7,8 @@ using UnityEngine;
 [Serializable]
 public abstract class BaseGameLogic : BaseEvent
 {
+    public GameStateEnum gameState; //游戏状态
+        
     /// <summary>
     /// 准备游戏数据
     /// </summary>
@@ -55,6 +57,14 @@ public abstract class BaseGameLogic : BaseEvent
     /// <param name="gameState"></param>
     public virtual void ChangeGameState(GameStateEnum gameState)
     {
+        this.gameState = gameState;
+    }
 
+    /// <summary>
+    /// 获取游戏状态
+    /// </summary>
+    public GameStateEnum GetGameState()
+    {
+        return gameState;
     }
 }

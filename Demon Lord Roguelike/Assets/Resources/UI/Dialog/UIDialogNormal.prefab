@@ -59,14 +59,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 230c668bd353d5a4ab00c2c735ce057d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}
   ui_Submit: {fileID: 38939591358087056}
   ui_SubmitText: {fileID: 2737186648464764832}
+  ui_SubmitTextPro: {fileID: 0}
   ui_Cancel: {fileID: 3318238141600336401}
   ui_CancelText: {fileID: 7600867190627009320}
+  ui_CancelTextPro: {fileID: 0}
   ui_Background: {fileID: 7926945100473861547}
   ui_Title: {fileID: 0}
   ui_Content: {fileID: 4444200723785630107}
+  ui_TitlePro: {fileID: 0}
+  ui_ContentPro: {fileID: 0}
   dialogData:
     dialogType: 0
     title: 

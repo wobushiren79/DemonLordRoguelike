@@ -31,6 +31,7 @@ public class GameTestEditor : Editor
     public string abyssalBlessingIds = "2000002001,2000003001";//深渊的馈赠
     public List<long> enemyIds = new List<long>() { 1010010001 };
     
+    public long doomCouncilBillId = 1000000001;//终焉议会ID
     LauncherTest launcher;
     public override void OnInspectorGUI()
     {
@@ -65,8 +66,12 @@ public class GameTestEditor : Editor
     {
         if (GUILayout.Button("开始终焉议会") && Application.isPlaying)
         {
-            launcher.StartForDoomCouncil();
+            launcher.StartForDoomCouncil(doomCouncilBillId);
         }
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("终焉议会议案ID");
+        doomCouncilBillId = EditorGUILayout.LongField(doomCouncilBillId);
+        EditorGUILayout.EndHorizontal();
     }
     
     /// <summary>

@@ -33,6 +33,16 @@ public partial class CreatureBean
         this.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
     }
 
+    public CreatureBean(NpcInfoBean npcInfo)
+    {       
+        this.creatureId = npcInfo.creature_id;
+        this.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
+        //添加随机皮肤
+        SetSkin(npcInfo);
+        //添加装备
+        SetEquip(npcInfo);
+    }
+
     #region 装备相关
     /// <summary>
     /// 设置装备

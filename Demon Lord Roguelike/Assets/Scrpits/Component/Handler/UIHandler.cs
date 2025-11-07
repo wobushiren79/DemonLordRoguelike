@@ -33,11 +33,21 @@ public partial class UIHandler
     /// </summary>
     public UIDialogNormal ShowDialogNormal(DialogBean dialogData)
     {
+        dialogData.dialogType = DialogEnum.Normal;
         if (dialogData.submitStr.IsNull())
             dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
         if (dialogData.cancelStr.IsNull())
             dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
         return ShowDialog<UIDialogNormal>(dialogData);
+    }
+    
+    /// <summary>
+    /// 展示选项提示
+    /// </summary>
+    public UIDialogSelect ShowDialogSelect(DialogSelectBean dialogData)
+    {
+        dialogData.dialogType = DialogEnum.Select;
+        return ShowDialog<UIDialogSelect>(dialogData);
     }
 
     /// <summary>
@@ -47,6 +57,7 @@ public partial class UIHandler
     /// <returns></returns>
     public UIDialogPortalDetails ShowDialogPortalDetails(DialogBean dialogData)
     {
+        dialogData.dialogType = DialogEnum.PortalDetails;
         if (dialogData.submitStr.IsNull())
             dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
         if (dialogData.cancelStr.IsNull())

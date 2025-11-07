@@ -27,7 +27,6 @@ public partial class UITestCard : BaseUIComponent
         //设置spine
         CreatureHandler.Instance.SetCreatureData(ui_NormalModel, creatureNormalTest);
 
-        ui_NormalModel.transform.localScale = Vector3.one * creatureNormalTest.creatureModel.size_spine;
         SpineHandler.Instance.PlayAnim(ui_NormalModel, SpineAnimationStateEnum.Idle, true);
     }
 
@@ -61,10 +60,8 @@ public partial class UITestCard : BaseUIComponent
         //测试目标模型
         //设置spine
         CreatureHandler.Instance.SetCreatureData(ui_TargetModel, creatureData);
-        
+        //播放待机动画
         SpineHandler.Instance.PlayAnim(ui_TargetModel, SpineAnimationStateEnum.Idle, true);
-
-        ui_TargetModel.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine;
 
         ui_InputText_S_Size.text = $"{ui_CreatureCardItem.ui_Icon.transform.localScale.x}";
         ui_InputText_S_X.text = $"{ui_CreatureCardItem.ui_Icon.rectTransform.anchoredPosition.x}";
