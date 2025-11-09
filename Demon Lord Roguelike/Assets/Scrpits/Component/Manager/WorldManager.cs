@@ -49,7 +49,7 @@ public class WorldManager : BaseManager
     /// </summary>
     public async Task<GameObject> GetDoomCouncilScene()
     {
-        return await GetGameScene("RewardSelectScene");
+        return await GetGameScene("DoomCouncilScene");
     }
 
     /// <summary>

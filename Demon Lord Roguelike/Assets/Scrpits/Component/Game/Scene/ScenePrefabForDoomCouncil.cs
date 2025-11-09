@@ -25,7 +25,8 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
                 break;
             }
             CreatureBean creatureData = listCouncilor[i];
-            var itemPosition = councilorPosition.transform.GetChild(i);
+            var itemTable = councilorPosition.transform.GetChild(i);
+            var itemPosition = itemTable.Find("Position");
             var targetCreatureObj = await CreatureHandler.Instance.CreateDoomCouncilCreature(creatureData, itemPosition.position);
             targetCreatureObj.name = creatureData.creatureUUId;
             listCouncilorObj.Add(targetCreatureObj);
