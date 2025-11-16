@@ -11,9 +11,4 @@ public class FightBeanForTest : FightBean
     {
         
     }
-
-    public FightBeanForTest(GameWorldInfoRandomBean gameWorldInfoRandomData) : base(gameWorldInfoRandomData)
-    {
-
-    }
 }

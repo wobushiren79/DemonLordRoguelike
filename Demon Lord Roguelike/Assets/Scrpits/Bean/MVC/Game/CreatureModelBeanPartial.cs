@@ -23,7 +23,7 @@ public partial class CreatureModelBean
     /// <summary>
     /// 改变UI大小
     /// </summary>
-    public void ChangeUISizeForS(RectTransform targetUI)
+    public void ChangeUISizeForS(RectTransform targetUI, float scale = 1)
     {
         //设置UI大小和坐标
         if (ui_data_s.IsNull())
@@ -34,9 +34,9 @@ public partial class CreatureModelBean
         else
         {
             string[] uiDataStr = ui_data_s.Split(';');
-            targetUI.localScale = Vector3.one * float.Parse(uiDataStr[0]);
+            targetUI.localScale = Vector3.one * float.Parse(uiDataStr[0]) * scale;
 
-            Vector2 uiDataPos = uiDataStr[1].SplitForVector2(',');
+            Vector2 uiDataPos = uiDataStr[1].SplitForVector2(',') * scale;
             targetUI.anchoredPosition = uiDataPos;
         }
     }

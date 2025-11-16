@@ -13,6 +13,30 @@ public partial class CameraHandler
     {
         manager.LoadMainCamera();
     }
+    #region 终焉议会摄像头
+    public CinemachineCamera SetCameraForDoomCouncilVote(float blendTime = 0.5f)
+    {
+        manager.HideAllCM();
+        var targetBaseScene = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.DoomCouncil);
+        if (targetBaseScene == null)
+        {
+            LogUtil.LogError("设置摄像头失败 没有找到对应场景");
+            return null;
+        }
+        var targetCVListTF = targetBaseScene.transform.Find($"CV_List");
+        if (targetCVListTF == null)
+        {
+            LogUtil.LogError("设置摄像头失败 没有找到对应CV_List Transfrom");
+            return null;
+        }
+        var targetCV = targetCVListTF.GetComponentInChildren<CinemachineCamera>(true);
+        //打开切换动画
+        manager.SetMainCameraDefaultBlend(blendTime);
+        targetCV.gameObject.SetActive(true);
+        targetCV.Priority = int.MaxValue;
+        return targetCV;
+    }
+    #endregion
 
     #region 奖励选择摄像头
     /// <summary>
@@ -78,10 +102,12 @@ public partial class CameraHandler
 
         var mainCamera = manager.mainCamera;
         mainCamera.gameObject.SetActive(true);
-
+        //设置控制数据
+        var controlForGame = GameControlHandler.Instance.manager.controlForGameBase;
+        controlForGame.creatureData = creatureData;
+        
         var controlTarget = GameControlHandler.Instance.manager.controlTargetForCreature;
         var targetRenderer = controlTarget.transform.Find("Renderer");
-
         var targetSkeletonAnimation = targetRenderer.GetComponent<SkeletonAnimation>();
 
         //展示生物数据
@@ -243,15 +269,43 @@ public partial class CameraHandler
         switch (cinemachineCameraEnum)
         {
             case CinemachineCameraEnum.Base:
-                HideCameraForBaseScene();
-                manager.cm_Base.gameObject.SetActive(true);
-                manager.cm_Base.Priority = int.MaxValue;
+                SetCameraForControlBase();
                 break;
             case CinemachineCameraEnum.Fight:
-                manager.cm_Fight.gameObject.SetActive(true);
-                manager.cm_Fight.Priority = int.MaxValue;
+                SetCameraForControlFight();
                 break;
         }
+    }
+
+    protected void SetCameraForControlBase()
+    {
+        HideCameraForBaseScene();
+        manager.cm_Base.gameObject.SetActive(true);
+        manager.cm_Base.Priority = int.MaxValue;
+        var currentScene = WorldHandler.Instance.GetCurrentScene();
+        if (currentScene == null)
+        {
+            return;
+        }
+        var scenePrefabBase = currentScene.GetComponent<ScenePrefabBase>();
+        if (scenePrefabBase == null)
+        {
+            return;
+        }
+        if (scenePrefabBase is ScenePrefabForBase scenePrefabForBase)
+        {
+            manager.cm_Base.Lens.FieldOfView = 55;
+        }
+        else if (scenePrefabBase is ScenePrefabForDoomCouncil scenePrefabForDoomCouncil)
+        {
+            manager.cm_Base.Lens.FieldOfView = 50;
+        }
+    }
+    
+    protected void SetCameraForControlFight()
+    {
+        manager.cm_Fight.gameObject.SetActive(true);
+        manager.cm_Fight.Priority = int.MaxValue;
     }
     #endregion
 }

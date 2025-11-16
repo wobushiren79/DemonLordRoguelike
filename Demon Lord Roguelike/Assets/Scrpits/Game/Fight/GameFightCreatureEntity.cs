@@ -329,16 +329,9 @@ public class GameFightCreatureEntity
     /// 播放动画
     /// </summary>
     /// <param name="animationCreatureState"></param>
-    public TrackEntry PlayAnim(SpineAnimationStateEnum animationCreatureState, bool isLoop, float mixDuration = -1, string animNameAppoint = null)
+    public TrackEntry PlayAnim(SpineAnimationStateEnum animationCreatureState, bool isLoop, float mixDuration = -1)
     {
-        if (creatureSkeletionAnimation == null)
-            return null;
-        var animData = SpineHandler.Instance.PlayAnim(creatureSkeletionAnimation, animationCreatureState, isLoop, animNameAppoint);
-        if (animData != null && mixDuration != -1)
-        {
-            animData.MixDuration = mixDuration;
-        }
-        return animData;
+        return SpineHandler.Instance.PlayAnim(creatureSkeletionAnimation, animationCreatureState, fightCreatureData.creatureData, isLoop, mixDuration);
     }
 
     /// <summary>
@@ -360,9 +353,8 @@ public class GameFightCreatureEntity
         if (creatureSkeletionAnimation == null)
             return;
         //再清除动画
-        //creatureSkeletionAnimation.AnimationState.ClearTracks();
-        string animNameAppoint = fightCreatureData.creatureData.creatureInfo.anim_idle;
-        var trackEntry = PlayAnim(SpineAnimationStateEnum.Idle, true, 0, animNameAppoint: animNameAppoint);
+        //creatureSkeletionAnimation.AnimationState.ClearTracks();;
+        var trackEntry = PlayAnim(SpineAnimationStateEnum.Idle, true, 0);
         //清理数据
         if (animForUnderAttackColor != null && animForUnderAttackColor.IsPlaying())
         {

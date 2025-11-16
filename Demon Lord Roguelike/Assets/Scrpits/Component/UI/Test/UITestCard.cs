@@ -27,7 +27,7 @@ public partial class UITestCard : BaseUIComponent
         //设置spine
         CreatureHandler.Instance.SetCreatureData(ui_NormalModel, creatureNormalTest);
 
-        SpineHandler.Instance.PlayAnim(ui_NormalModel, SpineAnimationStateEnum.Idle, true);
+        SpineHandler.Instance.PlayAnim(ui_NormalModel, SpineAnimationStateEnum.Idle, creatureNormalTest, true);
     }
 
     public override void OpenUI()
@@ -61,7 +61,7 @@ public partial class UITestCard : BaseUIComponent
         //设置spine
         CreatureHandler.Instance.SetCreatureData(ui_TargetModel, creatureData);
         //播放待机动画
-        SpineHandler.Instance.PlayAnim(ui_TargetModel, SpineAnimationStateEnum.Idle, true);
+        SpineHandler.Instance.PlayAnim(ui_TargetModel, SpineAnimationStateEnum.Idle, creatureData, true);
 
         ui_InputText_S_Size.text = $"{ui_CreatureCardItem.ui_Icon.transform.localScale.x}";
         ui_InputText_S_X.text = $"{ui_CreatureCardItem.ui_Icon.rectTransform.anchoredPosition.x}";

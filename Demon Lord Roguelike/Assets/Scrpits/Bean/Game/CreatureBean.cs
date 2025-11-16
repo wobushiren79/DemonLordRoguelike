@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 [Serializable]
 public partial class CreatureBean
@@ -16,9 +17,11 @@ public partial class CreatureBean
     public int starLevel;
     //稀有度
     public int rarity;
+    //生物关系
+    public int relationship;
 
     //所有的皮肤数据（只保存身体基本皮肤 装备的皮肤保存再装备数据里 如果是初始默认装备也保存在这里）
-    public Dictionary<CreatureSkinTypeEnum, CreatureSkinBean> dicSkinData = new Dictionary<CreatureSkinTypeEnum, CreatureSkinBean>();
+    public Dictionary<CreatureSkinTypeEnum, SpineSkinBean> dicSkinData = new Dictionary<CreatureSkinTypeEnum, SpineSkinBean>();
     //装备数据
     public Dictionary<ItemTypeEnum, ItemBean> dicEquipItemData = new Dictionary<ItemTypeEnum, ItemBean>();
 
@@ -34,14 +37,21 @@ public partial class CreatureBean
     }
 
     public CreatureBean(NpcInfoBean npcInfo)
-    {       
+    {
         this.creatureId = npcInfo.creature_id;
         this.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
+        this.creatureName = npcInfo.name_language;
         //添加随机皮肤
         SetSkin(npcInfo);
         //添加装备
         SetEquip(npcInfo);
     }
+    #region 杂项
+    public NpcRelationshipEnum GetRelationshipForNpc()
+    {
+        return NpcRelationshipInfoCfg.GetNpcRelationship(relationship);
+    }
+    #endregion
 
     #region 装备相关
     /// <summary>
@@ -184,34 +194,42 @@ public partial class CreatureBean
     /// </summary>
     public void AddSkin(long skinId)
     {
-        var modelDetailsInfo = CreatureModelInfoCfg.GetItemData(skinId);
+        SpineSkinBean spineSkinData = new SpineSkinBean(skinId);
+        AddSkin(spineSkinData);
+    }
+
+    /// <summary>
+    /// 添加皮肤
+    /// </summary>
+    public void AddSkin(SpineSkinBean spineSkinData)
+    {
+        var modelDetailsInfo = CreatureModelInfoCfg.GetItemData(spineSkinData.skinId);
         if (modelDetailsInfo == null)
         {
-            LogUtil.LogError($"添加皮肤失败 没有找到skinId_{skinId}的皮肤");
+            LogUtil.LogError($"添加皮肤失败 没有找到skinId_{spineSkinData.skinId}的皮肤");
             return;
         }
         CreatureSkinTypeEnum targetSkinType = (CreatureSkinTypeEnum)modelDetailsInfo.part_type;
-        if (dicSkinData.TryGetValue(targetSkinType, out CreatureSkinBean creatureSkin))
+        //如果已经有这个类型的皮肤类型，则覆盖原来的
+        if (dicSkinData.ContainsKey(targetSkinType))
         {
-            creatureSkin.skinId = skinId;
+            dicSkinData[targetSkinType] = spineSkinData;
         }
+        //如果没有这个类型的皮肤类型 添加
         else
         {
-            CreatureSkinBean creatureSkinBean = new CreatureSkinBean(skinId);
-            dicSkinData.Add(targetSkinType, creatureSkinBean);
+            dicSkinData.Add(targetSkinType, spineSkinData);
         }
     }
-
 
     /// <summary>
     /// 获取皮肤列表
     /// </summary>
     /// <param name="showType">0普通皮肤 1立绘皮肤（表情）</param>
     /// <returns></returns>
-    public string[] GetSkinArray(int showType = 0, bool isNeedWeapon = true)
+    public Dictionary<string, SpineSkinBean> GetSkinData(int showType = 0, bool isNeedWeapon = true)
     {
-        List<string> listSkin = new List<string>();
-
+        Dictionary<string, SpineSkinBean> dicSkin = new Dictionary<string, SpineSkinBean>();
         //处理所有身体皮肤
         foreach (var itemSkin in dicSkinData)
         {
@@ -248,7 +266,7 @@ public partial class CreatureBean
                             continue;
                         }
                     }
-                    listSkin.Add(itemSkinInfo.res_name);
+                    dicSkin.Add(itemSkinInfo.res_name, itemSkinData);
                 }
             }
         }
@@ -273,9 +291,10 @@ public partial class CreatureBean
                 LogUtil.LogError($"没有找到CreatureModelInfoCfg creature_model_info_id_{itemInfo.creature_model_info_id}");
                 continue;
             }
-            listSkin.Add(itemSkinInfo.res_name);
+            SpineSkinBean spineSkinData = new SpineSkinBean(0);
+            dicSkin.Add(itemSkinInfo.res_name, spineSkinData);
         }
-        return listSkin.ToArray();
+        return dicSkin;
     }
 
     #endregion

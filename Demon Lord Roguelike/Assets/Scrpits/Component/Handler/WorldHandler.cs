@@ -207,33 +207,46 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     public async Task LoadFightScene(FightBean fightData)
     {
         await UnLoadScene(GameSceneTypeEnum.Fight);
-
-        FightSceneBean fightSceneData = FightSceneCfg.GetItemData(fightData.fightSceneId);
-        if (fightSceneData == null)
+        GameObject targetScene;//目标场景
+        string roadColorA = "#ffffff00";//道路颜色A
+        string roadColorB= "#ffffff00";//道路颜色B
+        //如果议会 特殊加载议会场景
+        if (fightData.gameFightType== GameFightTypeEnum.DoomCouncil)
         {
-            LogUtil.LogError($"查询FightScene战斗场景失败  没有找到id为{fightData.fightSceneId}的战斗场景");
-            return;
+            targetScene = await LoadDoomCouncilScene();
         }
-        //加载天空盒-----------------------------------------------------------
-        var skyboxMat = await manager.GetSkybox(fightSceneData.skybox_mat);
-        //设置天空盒
-        RenderSettings.skybox = skyboxMat;
-        RenderSettings.skybox.SetFloat("_RotateX", -15);
-        RenderSettings.skybox.SetFloat("_RotateY", 0);
-        RenderSettings.skybox.SetFloat("_RotateZ", 0);
+        else
+        {
+            FightSceneBean fightSceneData = FightSceneCfg.GetItemData(fightData.fightSceneId);
+            if (fightSceneData == null)
+            {
+                LogUtil.LogError($"查询FightScene战斗场景失败  没有找到id为{fightData.fightSceneId}的战斗场景");
+                return;
+            }
+            //加载天空盒-----------------------------------------------------------
+            var skyboxMat = await manager.GetSkybox(fightSceneData.skybox_mat);
+            //设置天空盒
+            RenderSettings.skybox = skyboxMat;
+            RenderSettings.skybox.SetFloat("_RotateX", -15);
+            RenderSettings.skybox.SetFloat("_RotateY", 0);
+            RenderSettings.skybox.SetFloat("_RotateZ", 0);
 
-        //获取场景-----------------------------------------------------------
-        string dataPath = $"{PathInfo.FightScenePrefabPath}/{fightSceneData.name_res}";
-        var targetScene = await manager.GetFightScene(dataPath);
-        targetScene.SetActive(true);
-        targetScene.transform.position = new Vector3(0, 0, -(fightData.sceneRoadNumMax - fightData.sceneRoadNum) / 2f);
-        targetScene.transform.eulerAngles = Vector3.zero;
+            //获取场景-----------------------------------------------------------
+            string dataPath = $"{PathInfo.FightScenePrefabPath}/{fightSceneData.name_res}";
+            targetScene = await manager.GetFightScene(dataPath);
+            targetScene.SetActive(true);
+            targetScene.transform.position = new Vector3(0, 0, -(fightData.sceneRoadNumMax - fightData.sceneRoadNum) / 2f);
+            targetScene.transform.eulerAngles = Vector3.zero;
 
-        dicCurrentScene.Add(GameSceneTypeEnum.Fight, targetScene);
-        currentScene = targetScene;
-        //设置天空盒颜色
-        ColorUtility.TryParseHtmlString("#00000000", out var targetColorSky);
-        manager.SetSkyboxColor(CameraClearFlags.Skybox, targetColorSky);
+            dicCurrentScene.Add(GameSceneTypeEnum.Fight, targetScene);
+            currentScene = targetScene;
+            //设置天空盒颜色
+            ColorUtility.TryParseHtmlString("#00000000", out var targetColorSky);
+            manager.SetSkyboxColor(CameraClearFlags.Skybox, targetColorSky);
+
+            roadColorA = fightSceneData.road_color_a;
+            roadColorB = fightSceneData.road_color_b;
+        }
 
         //获取战斗道路-----------------------------------------------------------
         var sceneRoad = await manager.GetFightSceneRoad();
@@ -245,8 +258,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         var roadMR = sceneRoad.GetComponent<MeshRenderer>();
         roadMR.sharedMaterial.SetVector("_GridSize", new Vector2(fightData.sceneRoadLength, fightData.sceneRoadNum));
 
-        ColorUtility.TryParseHtmlString($"{fightSceneData.road_color_a}", out var colorA);
-        ColorUtility.TryParseHtmlString($"{fightSceneData.road_color_b}", out var colorB);
+        ColorUtility.TryParseHtmlString($"{roadColorA}", out var colorA);
+        ColorUtility.TryParseHtmlString($"{roadColorB}", out var colorB);
         roadMR.sharedMaterial.SetColor("_ColorA", colorA);
         roadMR.sharedMaterial.SetColor("_ColorB", colorB);
     }

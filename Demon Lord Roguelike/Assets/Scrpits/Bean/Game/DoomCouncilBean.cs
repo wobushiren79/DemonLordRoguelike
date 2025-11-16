@@ -25,4 +25,22 @@ public class DoomCouncilBean
         }
         return null;
     }
+
+    /// <summary>
+    /// 获取所有议员的NPCID
+    /// </summary>
+    /// <returns></returns>
+    public List<long> GetCouncilorAllNpcId()
+    {
+        List<long> listNPCId = new List<long>();
+        if (listCouncilor.IsNull())
+        {
+            return listNPCId;
+        }
+        for (int i = 0; i < listCouncilor.Count; i++)
+        {
+            listNPCId.Add(listCouncilor[i].creatureId);
+        }
+        return listNPCId;
+    }
 }

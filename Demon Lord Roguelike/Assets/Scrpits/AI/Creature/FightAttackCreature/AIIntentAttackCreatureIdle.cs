@@ -18,8 +18,7 @@ public class AIIntentAttackCreatureIdle : AIBaseIntent
         //触发待机动作
         selfAIEntity.selfCreatureEntity.SetFaceDirection(Direction2DEnum.Left);
 
-        string animNameAppoint = fightCreatureData.creatureData.creatureInfo.anim_idle;
-        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true, animNameAppoint: animNameAppoint);
+        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true);
 
         //如果没有数据 说明这条路上没有防守生物，则目标设置为魔王
         if (selfAIEntity.targetCreatureEntity == null)

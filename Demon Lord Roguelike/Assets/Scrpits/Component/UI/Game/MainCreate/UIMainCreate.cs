@@ -97,7 +97,7 @@ public partial class UIMainCreate : BaseUIComponent
         //设置spine
         CreatureHandler.Instance.SetCreatureData(previewSpine, createCreatureData);
         //播放spine动画
-        SpineHandler.Instance.PlayAnim(previewSpine, SpineAnimationStateEnum.Idle, true);
+        SpineHandler.Instance.PlayAnim(previewSpine, SpineAnimationStateEnum.Idle, createCreatureData, true);
     }
 
     /// <summary>

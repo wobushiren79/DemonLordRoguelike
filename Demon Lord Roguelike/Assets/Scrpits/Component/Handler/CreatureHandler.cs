@@ -39,7 +39,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         {
             creatureData.creatureModel.GetShowRes(out resName, out skinType);
         }
-        string[] skinArray = creatureData.GetSkinArray(showType: skinType, isNeedWeapon: isNeedWeapon);
+        Dictionary<string, SpineSkinBean> skinData = creatureData.GetSkinData(showType: skinType, isNeedWeapon: isNeedWeapon);
         //设置SkeletonAnimation
         if (skeletonAnimation != null)
         {
@@ -48,7 +48,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
                 SpineHandler.Instance.SetSkeletonDataAsset(skeletonAnimation, resName);
             }
             //修改皮肤
-            SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, skinArray);
+            SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, skinData);
             //设置模型大小
             skeletonAnimation.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine;
         }
@@ -60,7 +60,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
                 SpineHandler.Instance.SetSkeletonDataAsset(skeletonGraphic, resName);
             }
             //修改皮肤
-            SpineHandler.Instance.ChangeSkeletonSkin(skeletonGraphic.Skeleton, skinArray);
+            SpineHandler.Instance.ChangeSkeletonSkin(skeletonGraphic.Skeleton, skinData);
         }
     }
 
@@ -74,7 +74,12 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         Transform rendererTF = targetObj.transform.Find("Spine");
         SkeletonAnimation skeletonAnimation = rendererTF.GetComponent<SkeletonAnimation>();
         SetCreatureData(skeletonAnimation, creatureData, isNeedWeapon: false);
+        targetObj.name = $"Councilor_{creatureData.creatureUUId}";
+        //设置议员位置
         targetObj.transform.position = creaturePos;
+        //议员播放待机动画
+        float animStartTime = UnityEngine.Random.Range(0f, 1f);
+        var animData = SpineHandler.Instance.PlayAnim(skeletonAnimation, SpineAnimationStateEnum.Idle, creatureData, true, animStartTime: animStartTime);
         return targetObj;
     }
     #endregion

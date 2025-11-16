@@ -18,6 +18,9 @@ public class ControlForGameBase : BaseControl
     public float speedForCreatureMoveX = 2f;
     public float speedForCreatureMoveZ = 2f;
 
+    //控制的生物数据
+    public CreatureBean creatureData;
+
     public SkeletonAnimation controlTargetForCreatureSkeletonAnimation;
     public SpineAnimationStateEnum controlTargetForCreatureAnim = SpineAnimationStateEnum.None;
 
@@ -90,7 +93,7 @@ public class ControlForGameBase : BaseControl
         }
         if (controlTargetForCreatureAnim != animationCreatureState && controlTargetForCreatureSkeletonAnimation != null)
         {
-            SpineHandler.Instance.PlayAnim(controlTargetForCreatureSkeletonAnimation, animationCreatureState, isLoop);
+            SpineHandler.Instance.PlayAnim(controlTargetForCreatureSkeletonAnimation, animationCreatureState, creatureData, isLoop);
             controlTargetForCreatureAnim = animationCreatureState;
         }
     }
@@ -154,7 +157,10 @@ public class ControlForGameBase : BaseControl
     public void HandleForInteraction()
     {
         if (!enabledControl)
+        {
+            controlTargetForInteraction?.SetActive(false);
             return;
+        }  
         timeUpdateForInteraction += Time.deltaTime;
         if (timeUpdateForInteraction > timeMaxForInteraction)
         {
@@ -168,11 +174,11 @@ public class ControlForGameBase : BaseControl
             var allHit = RayUtil.OverlapToSphere(controlTarget.transform.position, 0.1f, 1 << LayerInfo.Interaction);
             if (allHit.Length > 0)
             {
-                controlTargetForInteraction.SetActive(true);
+                controlTargetForInteraction?.SetActive(true);
             }
             else
             {
-                controlTargetForInteraction.SetActive(false);
+                controlTargetForInteraction?.SetActive(false);
             }
         }
     }
@@ -223,7 +229,7 @@ public class ControlForGameBase : BaseControl
             doomCouncilLogic.InteractPodium();
         }
         //终焉议会议员
-        else if (firstHit.gameObject.name.Contains("DoomCouncilCreature"))
+        else if (firstHit.gameObject.name.Contains("Councilor"))
         {
             DoomCouncilLogic doomCouncilLogic = GameHandler.Instance.manager.GetGameLogic<DoomCouncilLogic>();
             doomCouncilLogic.InteractCouncilor(firstHit.gameObject);

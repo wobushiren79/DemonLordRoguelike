@@ -20,8 +20,7 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
         //第一次进来检测一次攻击
         timeUpdateForFindTarget = timeUpdateForFindTargetCD;
         //设置移动动作
-        string animNameAppoint = fightCreatureData.creatureData.creatureInfo.anim_walk;
-        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Walk, true, animNameAppoint: animNameAppoint);
+        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Walk, true);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)

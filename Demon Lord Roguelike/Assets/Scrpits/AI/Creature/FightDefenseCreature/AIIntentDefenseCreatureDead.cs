@@ -13,8 +13,7 @@ public class AIIntentDefenseCreatureDead : AIBaseIntent
     {
         timeUpdateForDead = 0;
         selfAIEntity = aiEntity as AIDefenseCreatureEntity;
-        string animNameAppoint = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_dead;
-        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Dead, false, animNameAppoint: animNameAppoint);
+        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Dead, false);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)

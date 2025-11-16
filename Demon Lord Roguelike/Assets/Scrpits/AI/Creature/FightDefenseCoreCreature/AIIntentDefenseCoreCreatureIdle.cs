@@ -9,8 +9,7 @@ public class AIIntentDefenseCoreCreatureIdle : AIBaseIntent
     {
         selfAIEntity = aiEntity as AIDefenseCoreCreatureEntity;
         //设置动作
-        string animNameAppoint = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData.creatureInfo.anim_idle;
-        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true, animNameAppoint : animNameAppoint);
+        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)

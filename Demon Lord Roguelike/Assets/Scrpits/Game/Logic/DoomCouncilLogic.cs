@@ -19,13 +19,14 @@ public class DoomCouncilLogic : BaseGameLogic
         //生成议员
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         var listCouncilorInfo = NpcInfoCfg.GetNpcInfosByType(NpcTypeEnum.Councilor);
-        List<CreatureBean> listCouncilor = new List<CreatureBean>(); 
+        List<CreatureBean> listCouncilor = new List<CreatureBean>();
         for (int i = 0; i < listCouncilorInfo.Count; i++)
         {
             var itemInfo = listCouncilorInfo[i];
             CreatureBean creatureData = new CreatureBean(itemInfo);
             listCouncilor.Add(creatureData);
         }
+        doomCouncilData.listCouncilor = listCouncilor;
         await scenePrefab.InitCouncilor(listCouncilor);
 
         //设置基地场景视角
@@ -51,10 +52,86 @@ public class DoomCouncilLogic : BaseGameLogic
     /// <summary>
     /// 开始投票
     /// </summary>
-    public void StartVote()
+    public async void StartVote()
     {
+        //关闭角色控制
+        GameControlHandler.Instance.SetBaseControl(false, isHideControlTarget: false);
+        //控制角色位移到讲台
+        var controlTarget = GameControlHandler.Instance.manager.controlTargetForCreature;
+        controlTarget.transform.position = scenePrefab.podium.transform.position;
+        //设置到投票视角
+        CameraHandler.Instance.SetCameraForDoomCouncilVote();
+        //等待0.5秒镜头切换
+        await new WaitForSeconds(0.5f);       
+        //打开投票UI
         UIDoomCouncilVote targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilVote>();
         targetUI.SetData(doomCouncilData);
+        //获取所有议员
+        List<GameObject> listCouncilorObj = scenePrefab.listCouncilorObj;
+        int ayeVoteNum = 0;
+        int nayVoteNum = 0;
+
+        for (int i = 0; i < listCouncilorObj.Count; i++)
+        {
+            await new WaitForSeconds(0.2f);
+            var itemCouncilorObj = listCouncilorObj[i];
+            //计算成功率
+            NpcVoteTypeEnum npcVoteType = NpcVoteTypeEnum.None;
+            float successRate = UnityEngine.Random.Range(0f, 1f);
+            if (successRate <= doomCouncilData.doomCouncilInfo.success_rate)
+            {
+                npcVoteType = NpcVoteTypeEnum.Aye;
+            }
+            else
+            {
+                npcVoteType = NpcVoteTypeEnum.Nay;
+            }
+            //正常情况有30%的概率睡觉 (后续通过升级可以减小这个概率)
+            float sleepRate = UnityEngine.Random.Range(0f, 1f);
+            if (sleepRate <= 0.3f)
+            {
+                npcVoteType = NpcVoteTypeEnum.Sleep;
+            }
+            int voteNum = 1;
+            if (npcVoteType == NpcVoteTypeEnum.Aye)
+            {
+                ayeVoteNum += voteNum;
+            }
+            else if (npcVoteType == NpcVoteTypeEnum.Nay)
+            {
+                nayVoteNum += voteNum;
+            }
+            //播放议员投票动画 
+            scenePrefab.CouncilorVote(itemCouncilorObj, npcVoteType);
+            //刷新UI
+            targetUI.AddVoteData(npcVoteType, voteNum);
+        }
+        
+
+        await new WaitForSeconds(0.5f);
+        //计算是否通过
+        bool isPass = ayeVoteNum >= nayVoteNum ? true : false;
+        //展示投票结果
+        targetUI.VoteEndShow(isPass);
+        await new WaitForSeconds(2f);
+        //弹出下一步提示
+        DialogSelectBean dialogSelectData = new DialogSelectBean();
+        //暴力说服
+        dialogSelectData.AddSelect(TextHandler.Instance.GetTextById(53010), () =>
+        {
+            FightBeanForDoomCouncil fightData = new FightBeanForDoomCouncil(doomCouncilData);
+            WorldHandler.Instance.EnterGameForFightScene(fightData);
+        });
+        //离开议会
+        dialogSelectData.AddSelect(TextHandler.Instance.GetTextById(53005), () =>
+        {
+            EndGame();
+        });
+        dialogSelectData.actionCancel = (view,data) =>
+        {
+            EndGame();
+        };
+        UIDialogSelect dialogSelect = UIHandler.Instance.ShowDialogSelect(dialogSelectData);
     }
 
     /// <summary>
@@ -77,7 +154,14 @@ public class DoomCouncilLogic : BaseGameLogic
         {
             EndGame();
         });
+        dialogSelectData.actionCancel = (view,data) =>
+        {
+            //恢复控制
+            GameControlHandler.Instance.SetBaseControl(true);
+        };
         UIDialogSelect targetUI = UIHandler.Instance.ShowDialogSelect(dialogSelectData);
+        //停止控制
+        GameControlHandler.Instance.SetBaseControl(false, isHideControlTarget: false);
     }
 
     /// <summary>
@@ -89,13 +173,34 @@ public class DoomCouncilLogic : BaseGameLogic
         {
             return;
         }
+        string creatureUUId = targetObj.name.Replace("Councilor_", "");
         //获取议员数据
-        var councilorData = doomCouncilData.GetCouncilor(targetObj.name);
+        var councilorData = doomCouncilData.GetCouncilor(creatureUUId);
         if (councilorData == null)
         {
             LogUtil.LogError($"获取议员数据失败 没有找到议员数据 uuid:{targetObj.name}");
             return;
         }
-         UIGameConversation targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIGameConversation>();
+        //获取和该议员的关系
+        NpcRelationshipEnum npcRelationship = councilorData.GetRelationshipForNpc();
+        //获取该关系下的所有对话
+        var listCouncilorInfo = ConversationCouncilorInfoCfg.GetDataByRelationship(npcRelationship);
+        //随机获取一条交谈内容
+        var randomConversationInfo = listCouncilorInfo[UnityEngine.Random.Range(0, listCouncilorInfo.Count)];
+        string conversationContent = randomConversationInfo.content_language;
+
+        UIGameConversation targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIGameConversation>();
+        targetUI.SetData(councilorData, conversationContent, ActionForCouncilorConversationEnd);
+        //停止控制
+        GameControlHandler.Instance.SetBaseControl(false, isHideControlTarget: false);
+    }
+
+    /// <summary>
+    /// 回调-结束议员谈话
+    /// </summary>
+    public void ActionForCouncilorConversationEnd()
+    {
+        //恢复控制
+        GameControlHandler.Instance.SetBaseControl(true);   
     }
 }

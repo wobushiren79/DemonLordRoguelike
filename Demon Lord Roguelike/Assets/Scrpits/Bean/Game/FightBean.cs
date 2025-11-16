@@ -7,8 +7,6 @@ using UnityEngine;
 public class FightBean
 {
     public GameFightTypeEnum gameFightType;//游戏模式
-    public GameWorldInfoRandomBean gameWorldInfoRandomData;//游戏随机数据
-
 
     public float gameTime = 0;//游戏时间
     public float gameSpeed = 1;//游戏速度
@@ -51,14 +49,7 @@ public class FightBean
     #region 构造函数
     public FightBean()
     {
-
-    }
-
-    public FightBean(GameWorldInfoRandomBean gameWorldInfoRandomData)
-    {
-        this.gameWorldInfoRandomData = gameWorldInfoRandomData;
-        gameFightType = gameWorldInfoRandomData.gameFightType;
-        InitData();
+        
     }
 
     /// <summary>

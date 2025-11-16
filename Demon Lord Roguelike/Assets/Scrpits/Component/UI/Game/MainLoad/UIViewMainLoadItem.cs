@@ -60,7 +60,7 @@ public partial class UIViewMainLoadItem : BaseUIView
         //设置spine
         CreatureHandler.Instance.SetCreatureData(ui_Icon, creatureData,isUIShow : true);
         //播放动画
-        SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, true);
+        SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle,creatureData, true);
         //设置UI大小和坐标
         creatureData.creatureModel.ChangeUISizeForB(ui_Icon.rectTransform);
         ui_Icon.raycastTarget = false;

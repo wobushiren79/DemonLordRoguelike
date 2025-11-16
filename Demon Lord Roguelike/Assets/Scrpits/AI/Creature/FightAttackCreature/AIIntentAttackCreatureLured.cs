@@ -20,8 +20,7 @@ public class AIIntentAttCreatureLured : AIBaseIntent
         Transform selfTF = selfFightCreatureEntity.creatureObj.transform;
         selfAIEntity.targetMovePos = new Vector3(selfTF.position.x, selfTF.position.y, fightCreatureData.roadIndex);
         //设置移动动作
-        string animNameAppoint = fightCreatureData.creatureData.creatureInfo.anim_walk;
-        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Walk, true, animNameAppoint: animNameAppoint);
+        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Walk, true);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)

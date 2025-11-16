@@ -12,9 +12,8 @@ public class AIIntentDefenseCreatureDefend : AIBaseIntent
         var creatureData = selfAIEntity.selfCreatureEntity.fightCreatureData.creatureData;
         //初始化相关数据
         timeUpdateForFindTargetCD = creatureData.GetAttackSearchTime();
-        string animNameAppoint = creatureData.creatureInfo.anim_idle;
         //播放待机动作
-        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true, animNameAppoint: animNameAppoint);
+        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)

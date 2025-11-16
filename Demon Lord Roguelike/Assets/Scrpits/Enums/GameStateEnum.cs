@@ -99,6 +99,7 @@ public enum GameFightTypeEnum
     Test,//测试模式
     Infinite,//无限模式
     Conquer,//征服模式
+    DoomCouncil,//终焉议会
 }
 
 

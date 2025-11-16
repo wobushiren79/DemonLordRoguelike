@@ -10,13 +10,13 @@ public static class GameUIUtil
     /// <summary>
     /// 设置生物简易UI
     /// </summary>
-    public static void SetCreatureUIForSimple(SkeletonGraphic ui_Icon, CreatureBean creatureData)
+    public static void SetCreatureUIForSimple(SkeletonGraphic ui_Icon, CreatureBean creatureData, float scale = 1)
     {
         //设置spine
-        CreatureHandler.Instance.SetCreatureData(ui_Icon, creatureData,isNeedWeapon:false);
+        CreatureHandler.Instance.SetCreatureData(ui_Icon, creatureData, isNeedWeapon: false);
         ui_Icon.ShowObj(true);
         //设置UI大小和坐标
-        creatureData.creatureModel.ChangeUISizeForS(ui_Icon.rectTransform);
+        creatureData.creatureModel.ChangeUISizeForS(ui_Icon.rectTransform, scale);
     }
 
     /// <summary>
@@ -27,7 +27,7 @@ public static class GameUIUtil
         //设置spine
         CreatureHandler.Instance.SetCreatureData(ui_Icon, creatureData, isUIShow: true);
         //播放动画
-        SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, true);
+        SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, creatureData, true);
         ui_Icon.ShowObj(true);
         //设置UI大小和坐标
         creatureData.creatureModel.ChangeUISizeForB(ui_Icon.rectTransform);

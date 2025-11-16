@@ -29,6 +29,15 @@ public partial class UIHandler
     }
 
     /// <summary>
+    /// 展示道具选择弹窗
+    /// </summary>
+    public UIDialogItemSelect ShowDialogItemSelect(DialogBean dialogData)
+    {
+        dialogData.dialogType = DialogEnum.ItemSelect;
+        return ShowDialog<UIDialogItemSelect>(dialogData);
+    }
+
+    /// <summary>
     /// 展示默认普通
     /// </summary>
     public UIDialogNormal ShowDialogNormal(DialogBean dialogData)

@@ -22,8 +22,7 @@ public class AIIntentAttackCreatureAttack : AIBaseIntent
         timeUpdateAttackPreCD = fightCreatureData.GetASPD();
         timeUpdateAttackingCD = fightCreatureData.creatureData.GetAttackAnimTime();
         //设置待机动作
-        string animNameAppoint = fightCreatureData.creatureData.creatureInfo.anim_idle;
-        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true, animNameAppoint: animNameAppoint);
+        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
@@ -78,8 +77,7 @@ public class AIIntentAttackCreatureAttack : AIBaseIntent
             return;
         }
         //播放攻击动画
-        string animNameAppoint = fightCreatureData.creatureData.creatureInfo.anim_attack;
-        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false, animNameAppoint: animNameAppoint);
+        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false);
     }
 
     /// <summary>

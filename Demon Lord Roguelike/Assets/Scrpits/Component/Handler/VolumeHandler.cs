@@ -31,7 +31,7 @@ public class VolumeHandler : BaseHandler<VolumeHandler, VolumeManager>
                 break;
             case GameSceneTypeEnum.DoomCouncil:
                 float disFollowDoomCouncil = CameraHandler.Instance.GetDistanceFollow(CameraHandler.Instance.manager.cm_Base);
-                SetDepthOfField(DepthOfFieldMode.Bokeh, disFollowDoomCouncil, 200, 20);
+                SetDepthOfField(DepthOfFieldMode.Bokeh, disFollowDoomCouncil * 1.5f, 200, 20);
                 break;
             default:
                 SetDepthOfField(DepthOfFieldMode.Bokeh, 4, 140, 10);

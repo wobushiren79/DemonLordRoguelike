@@ -207,7 +207,7 @@ public class CreatureSacrificeLogic : BaseGameLogic
         //设置spine
         CreatureHandler.Instance.SetCreatureData(creatureSpine, creatureData);
         //播放spine动画
-        SpineHandler.Instance.PlayAnim(creatureSpine, SpineAnimationStateEnum.Idle, true);
+        SpineHandler.Instance.PlayAnim(creatureSpine, SpineAnimationStateEnum.Idle, creatureData, true);
         targetObj.name = creatureData.creatureUUId;
     }
     #endregion

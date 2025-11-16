@@ -8,10 +8,13 @@ public class FightBeanForConquer : FightBean
     protected FightTypeConquerInfoBean fightTypeConquerInfo;
     //上一场还在场上的生物
     public List<FightCreatureBean> listLastDefenseFightCreatureData;
-
-    public FightBeanForConquer(GameWorldInfoRandomBean gameWorldInfoRandomData) : base(gameWorldInfoRandomData)
+    //游戏随机数据
+    public GameWorldInfoRandomBean gameWorldInfoRandomData;
+    public FightBeanForConquer(GameWorldInfoRandomBean gameWorldInfoRandomData) : base()
     {
-
+        this.gameWorldInfoRandomData = gameWorldInfoRandomData;
+        gameFightType = gameWorldInfoRandomData.gameFightType;
+        InitData();
     }
 
     /// <summary>

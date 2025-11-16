@@ -77,17 +77,16 @@ public class AIIntentDefenseCreatureAttack : AIBaseIntent
             return;
         }
         var selfCreatureInfo = fightCreatureData.creatureData.creatureInfo;
-        string animNameAppointAttack = selfCreatureInfo.anim_attack;
-        string animNameAppointIdle = selfCreatureInfo.anim_idle;
         //播放攻击动画
         if (selfCreatureInfo.anim_attack_loop == 1)//如果是循环 只播放攻击动画
         {
-            selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, true, animNameAppoint: animNameAppointAttack);
+            selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, true);
         }
-        else//如果不是循环，先播放打击再播放待机
+        else
+        //如果不是循环，先播放打击再播放待机
         {
-            selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false, animNameAppoint: animNameAppointAttack);
-            selfAIEntity.selfCreatureEntity.AddAnim(0, SpineAnimationStateEnum.Idle, true, 1, animNameAppoint: animNameAppointIdle);
+            selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false);
+            selfAIEntity.selfCreatureEntity.AddAnim(0, SpineAnimationStateEnum.Idle, true, 1);
         }
     }
 

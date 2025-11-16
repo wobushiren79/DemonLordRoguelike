@@ -275,7 +275,7 @@ public class GashaponMachineLogic : BaseGameLogic
             actionForComplete?.Invoke();
         });
         //播放spine动画
-        SpineHandler.Instance.PlayAnim(eggSpine, SpineAnimationStateEnum.Idle, true);
+        SpineHandler.Instance.PlayAnim(eggSpine, SpineAnimationStateEnum.Idle, creatureData, true);
 
         MeshRenderer eggRenderer = eggTF.GetComponentInChildren<MeshRenderer>();
         Color eggColor1 = eggRenderer.material.GetColor("_Color_1");
