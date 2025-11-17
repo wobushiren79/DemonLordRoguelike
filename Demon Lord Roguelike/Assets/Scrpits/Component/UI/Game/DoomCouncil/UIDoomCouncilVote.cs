@@ -84,7 +84,25 @@ public partial class UIDoomCouncilVote : BaseUIComponent
     /// 设置进度
     /// </summary>
     public void SetProgress()
-    {
+    {        
+        float leftProgress;
+        float rightProgress;
 
+        if (ayeVoteNum + nayVoteNum == 0)
+        {
+            leftProgress = 0.5f;
+            rightProgress = 0.5f;
+        }
+        else
+        {
+            leftProgress = (float)ayeVoteNum / (ayeVoteNum + nayVoteNum);
+            rightProgress = (float)nayVoteNum / (ayeVoteNum + nayVoteNum);
+        }
+
+        ui_ProgressLeft.fillAmount = leftProgress;
+        ui_ProgressRight.fillAmount = rightProgress;
+
+        ui_ProgressLeftTitleText.text = $"{TextHandler.Instance.GetTextById(53006)}/t{ayeVoteNum}";
+        ui_ProgressRightTitleText.text = $"{TextHandler.Instance.GetTextById(53007)}/t{nayVoteNum}"; 
     }
 }

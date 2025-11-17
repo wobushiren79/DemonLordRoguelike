@@ -18,5 +18,9 @@ public partial class UIDoomCouncilVote
 
     public TextMeshProUGUI ui_VoteEndText;
 
+    public TextMeshProUGUI ui_ProgressRightTitleText;
+
+    public TextMeshProUGUI ui_ProgressLeftTitleText;
+
 
 }

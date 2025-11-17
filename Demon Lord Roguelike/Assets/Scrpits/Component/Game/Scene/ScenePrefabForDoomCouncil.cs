@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DG.Tweening;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using TMPro;
 using UnityEngine;
@@ -87,6 +88,16 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
                 voteText.text = TextHandler.Instance.GetTextById(53007);
                 voteText.color = targetColorNay;
                 break;
+        }
+        //是否要跳上桌子
+        if(NpcVoteTypeEnum.Aye == voteType || NpcVoteTypeEnum.Nay == voteType)
+        {
+            float randomJumpTable = UnityEngine.Random.Range(0f, 1f);
+            if (randomJumpTable <= 0.3f)
+            {
+                var targetPosition = targetCouncilor.transform.position;
+                targetCouncilor.transform.DOJump(targetPosition + new Vector3(0, 0.5f, -0.5f), 0.5f, 1, 0.2f);
+            }
         }
     }
 }

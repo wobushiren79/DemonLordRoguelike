@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 8895011045474605357}
   - component: {fileID: 6633683276277366743}
   - component: {fileID: 8222465537169917512}
-  - component: {fileID: 5789045633074419470}
   m_Layer: 5
   m_Name: ProgressLeftTitleText
   m_TagString: Untagged
@@ -137,19 +136,81 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &5789045633074419470
+--- !u!1 &483177568383825675
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4096911380742271339}
+  - component: {fileID: 7442464055783689837}
+  - component: {fileID: 1953098380030674945}
+  m_Layer: 5
+  m_Name: ProgressCenter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &4096911380742271339
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 483177568383825675}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8204308464267435843}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &7442464055783689837
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 483177568383825675}
+  m_CullTransparentMesh: 1
+--- !u!114 &1953098380030674945
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 169755658607126685}
+  m_GameObject: {fileID: 483177568383825675}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 54a1ddd45d638eb43b42b485fab6a44d, type: 3}
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UITextLanguageView
-  textId: 53006
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &554323459106045119
 GameObject:
   m_ObjectHideFlags: 0
@@ -182,6 +243,7 @@ RectTransform:
   m_Children:
   - {fileID: 6299784064438361698}
   - {fileID: 6556720065593928243}
+  - {fileID: 4096911380742271339}
   m_Father: {fileID: 6405598437215710811}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -425,7 +487,6 @@ GameObject:
   - component: {fileID: 7055349561711788470}
   - component: {fileID: 7395788537435584099}
   - component: {fileID: 6025239518106509087}
-  - component: {fileID: 6146565734295628764}
   m_Layer: 5
   m_Name: ProgressRightTitleText
   m_TagString: Untagged
@@ -551,19 +612,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &6146565734295628764
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2074564755590757972}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 54a1ddd45d638eb43b42b485fab6a44d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UITextLanguageView
-  textId: 53007
 --- !u!1 &2308034258177400168
 GameObject:
   m_ObjectHideFlags: 0
@@ -971,6 +1019,8 @@ MonoBehaviour:
   ui_ProgressRightTitle: {fileID: 8910457625667089556}
   ui_VoteEnd: {fileID: 528919494205144344}
   ui_VoteEndText: {fileID: 7007811008616298955}
+  ui_ProgressRightTitleText: {fileID: 6025239518106509087}
+  ui_ProgressLeftTitleText: {fileID: 8222465537169917512}
 --- !u!1 &6552309093651584463
 GameObject:
   m_ObjectHideFlags: 0
@@ -1072,14 +1122,14 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8171070194567640238}
-  m_LocalRotation: {x: 0, y: 0, z: -0.13052624, w: 0.9914449}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7055349561711788470}
   m_Father: {fileID: 6405598437215710811}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -15}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 500, y: 100}

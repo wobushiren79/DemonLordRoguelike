@@ -68,6 +68,7 @@ public class DoomCouncilLogic : BaseGameLogic
         targetUI.SetData(doomCouncilData);
         //获取所有议员
         List<GameObject> listCouncilorObj = scenePrefab.listCouncilorObj;
+
         int ayeVoteNum = 0;
         int nayVoteNum = 0;
 
