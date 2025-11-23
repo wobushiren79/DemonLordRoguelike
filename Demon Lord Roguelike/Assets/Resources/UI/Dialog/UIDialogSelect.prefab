@@ -63,6 +63,18 @@ MonoBehaviour:
   uiOpenAnimType: 1
   uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}
+  dialogData:
+    dialogType: 0
+    title: 
+    content: 
+    submitStr: 
+    cancelStr: 
+    dialogPosition: 0
+    remark: 
+    timeDestroyDelay: 0
+    isDestroySubmit: 1
+    isDestroyCancel: 1
+    isDestroyBG: 1
   ui_Submit: {fileID: 0}
   ui_SubmitText: {fileID: 0}
   ui_SubmitTextPro: {fileID: 0}
@@ -74,15 +86,6 @@ MonoBehaviour:
   ui_Content: {fileID: 0}
   ui_TitlePro: {fileID: 0}
   ui_ContentPro: {fileID: 2576639021653572080}
-  dialogData:
-    dialogType: 0
-    title: 
-    content: 
-    submitStr: 
-    cancelStr: 
-    dialogPosition: 0
-    remark: 
-    delayDelete: 0
   listButtonSelect: []
   ui_SelectBtn: {fileID: 3318238141600336401}
   ui_DialogContent: {fileID: 7113864888751565931}

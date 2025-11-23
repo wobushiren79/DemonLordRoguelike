@@ -64,21 +64,29 @@ public class FightAttackDetailsBean
     public float timeNextAttack = 0;
     //进攻生物
     public List<long> npcIds;
-
-    public FightAttackDetailsBean(float timeNextAttack, long creatureId)
-    {
-        this.timeNextAttack = timeNextAttack;
-        npcIds = new List<long>() { creatureId };
-    }
+    //进攻生物创建位置
+    public List<float> npcCreatePosX;
 
     public FightAttackDetailsBean()
     {
 
     }
 
-    public FightAttackDetailsBean(float timeNextAttack, List<long> npcIds)
+    public FightAttackDetailsBean(float timeNextAttack, long creatureId) : this(timeNextAttack, null, null)
+    {
+        npcIds = new List<long>() { creatureId };
+    }
+
+
+    public FightAttackDetailsBean(float timeNextAttack, List<long> npcIds) : this(timeNextAttack, npcIds, null)
+    {
+
+    }
+
+    public FightAttackDetailsBean(float timeNextAttack, List<long> npcIds, List<float> npcCreatePosX)
     {
         this.timeNextAttack = timeNextAttack;
         this.npcIds = npcIds;
+        this.npcCreatePosX = npcCreatePosX;
     }
 }

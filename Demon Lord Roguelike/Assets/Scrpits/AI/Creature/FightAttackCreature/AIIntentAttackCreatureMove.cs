@@ -57,10 +57,10 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
         Transform selfTF = selfAIEntity.selfCreatureEntity.creatureObj.transform;
         
         //如果目标是魔王
-        if (selfAIEntity.targetCreatureEntity.fightCreatureData.creatureData.creatureInfo.GetCreatureType() == CreatureTypeEnum.FightDefenseCore)
+        if (selfAIEntity.targetCreatureEntity.fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightDefenseCore)
         {
-            //首先检测是否到达路径终点
-            if (selfTF.position.x <= 0)
+            //首先检测是否到达路径终点 魔王在位置x0 第一排在x1 这里取0.5
+            if (selfTF.position.x <= 0.5f)
             {
                 //检测是否靠近目标
                 if (CheckIsCloseTarget())
@@ -75,7 +75,7 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
                 return;
             }
         }
-        selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeed);
+         selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeed);
     }
 
     public override void IntentLeaving(AIBaseEntity aiEntity)

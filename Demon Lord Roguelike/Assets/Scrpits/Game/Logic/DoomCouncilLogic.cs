@@ -28,7 +28,12 @@ public class DoomCouncilLogic : BaseGameLogic
         }
         doomCouncilData.listCouncilor = listCouncilor;
         await scenePrefab.InitCouncilor(listCouncilor);
-
+        //初始化位置数据
+        doomCouncilData.dicCouncilorPosition = new Dictionary<string, Vector3>();
+        foreach (var itemCouncilor in scenePrefab.dicCouncilorObj)
+        {
+            doomCouncilData.dicCouncilorPosition.Add(itemCouncilor.Key, itemCouncilor.Value.transform.position);
+        }
         //设置基地场景视角
         await CameraHandler.Instance.InitBaseSceneControlCamera(userData.selfCreature, scenePrefab.podium.transform.position);
         //开始
@@ -67,15 +72,14 @@ public class DoomCouncilLogic : BaseGameLogic
         UIDoomCouncilVote targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilVote>();
         targetUI.SetData(doomCouncilData);
         //获取所有议员
-        List<GameObject> listCouncilorObj = scenePrefab.listCouncilorObj;
+        Dictionary<string, GameObject> dicCouncilorObj = scenePrefab.dicCouncilorObj;
 
         int ayeVoteNum = 0;
         int nayVoteNum = 0;
 
-        for (int i = 0; i < listCouncilorObj.Count; i++)
+        foreach (var itemCouncilor in dicCouncilorObj)
         {
             await new WaitForSeconds(0.2f);
-            var itemCouncilorObj = listCouncilorObj[i];
             //计算成功率
             NpcVoteTypeEnum npcVoteType = NpcVoteTypeEnum.None;
             float successRate = UnityEngine.Random.Range(0f, 1f);
@@ -102,12 +106,12 @@ public class DoomCouncilLogic : BaseGameLogic
             {
                 nayVoteNum += voteNum;
             }
-            //播放议员投票动画 
+            //播放议员投票动画
+            var itemCouncilorObj = itemCouncilor.Value;
             scenePrefab.CouncilorVote(itemCouncilorObj, npcVoteType);
             //刷新UI
             targetUI.AddVoteData(npcVoteType, voteNum);
         }
-        
 
         await new WaitForSeconds(0.5f);
         //计算是否通过
@@ -117,21 +121,22 @@ public class DoomCouncilLogic : BaseGameLogic
         await new WaitForSeconds(2f);
         //弹出下一步提示
         DialogSelectBean dialogSelectData = new DialogSelectBean();
-        //暴力说服
-        dialogSelectData.AddSelect(TextHandler.Instance.GetTextById(53010), () =>
+        dialogSelectData.isDestroyBG = false;
+        //如果没有通过
+        if (!isPass)
         {
-            FightBeanForDoomCouncil fightData = new FightBeanForDoomCouncil(doomCouncilData);
-            WorldHandler.Instance.EnterGameForFightScene(fightData);
-        });
+            //暴力说服
+            dialogSelectData.AddSelect(TextHandler.Instance.GetTextById(53010), () =>
+            {
+                FightBeanForDoomCouncil fightData = new FightBeanForDoomCouncil(doomCouncilData);
+                WorldHandler.Instance.EnterGameForFightScene(fightData);
+            });
+        }
         //离开议会
         dialogSelectData.AddSelect(TextHandler.Instance.GetTextById(53005), () =>
         {
             EndGame();
         });
-        dialogSelectData.actionCancel = (view,data) =>
-        {
-            EndGame();
-        };
         UIDialogSelect dialogSelect = UIHandler.Instance.ShowDialogSelect(dialogSelectData);
     }
 
@@ -145,21 +150,23 @@ public class DoomCouncilLogic : BaseGameLogic
             return;
         }
         DialogSelectBean dialogSelectData = new DialogSelectBean();
+        dialogSelectData.isDestroyBG = false;
         //开始投票
         dialogSelectData.AddSelect(TextHandler.Instance.GetTextById(53004), () =>
         {
             StartVote();
+        });
+        //自由活动
+        dialogSelectData.AddSelect(TextHandler.Instance.GetTextById(53011), () =>
+        {
+           //恢复控制
+            GameControlHandler.Instance.SetBaseControl(true);
         });
         //离开议会
         dialogSelectData.AddSelect(TextHandler.Instance.GetTextById(53005), () =>
         {
             EndGame();
         });
-        dialogSelectData.actionCancel = (view,data) =>
-        {
-            //恢复控制
-            GameControlHandler.Instance.SetBaseControl(true);
-        };
         UIDialogSelect targetUI = UIHandler.Instance.ShowDialogSelect(dialogSelectData);
         //停止控制
         GameControlHandler.Instance.SetBaseControl(false, isHideControlTarget: false);

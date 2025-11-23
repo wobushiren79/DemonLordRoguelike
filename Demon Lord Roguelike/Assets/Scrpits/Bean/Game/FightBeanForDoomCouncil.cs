@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 [Serializable]
 public class FightBeanForDoomCouncil : FightBean
@@ -8,10 +9,11 @@ public class FightBeanForDoomCouncil : FightBean
     public FightBeanForDoomCouncil(DoomCouncilBean doomCouncilData) : base()
     {
         this.doomCouncilData = doomCouncilData;
+        gameFightType = GameFightTypeEnum.DoomCouncil;
         InitData();
     }
-    
-        /// <summary>
+
+    /// <summary>
     /// 初始化征服模式
     /// </summary>
     public override void InitData()
@@ -28,7 +30,7 @@ public class FightBeanForDoomCouncil : FightBean
         //设置当前关卡数量
         fightNum = 1;
         //初始化防御核心
-        FightCreatureBean fightCreatureDefenseCore = new FightCreatureBean(userData.selfCreature);
+        FightCreatureBean fightCreatureDefenseCore = new FightCreatureBean(userData.selfCreature, CreatureFightTypeEnum.FightDefenseCore);
         fightDefenseCoreData = fightCreatureDefenseCore;
         //设置防御生物
         dlDefenseCreatureData.Clear();
@@ -41,7 +43,9 @@ public class FightBeanForDoomCouncil : FightBean
         //设置进攻生物数据 一波进攻
         fightAttackData = new FightAttackBean();
         var councilorAllNpcId = doomCouncilData.GetCouncilorAllNpcId();
-        FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(0, councilorAllNpcId);
+        var councilorPositionX = doomCouncilData.GetCouncilorAllPositionX();
+
+        FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(0, councilorAllNpcId, councilorPositionX);
         fightAttackData.AddAttackQueue(fightAttackDetails);
     }
 }

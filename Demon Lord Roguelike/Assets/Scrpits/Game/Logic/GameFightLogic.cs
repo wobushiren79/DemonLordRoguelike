@@ -38,7 +38,7 @@ public class GameFightLogic : BaseGameLogic
         await new WaitForSeconds(0.1f);
 
         //加载核心（魔王）实例
-        Vector3 creaturePos = new Vector3(-1f, 0, fightData.sceneRoadNum / 2f + 0.5f);
+        Vector3 creaturePos = new Vector3(0, 0, fightData.sceneRoadNum / 2f + 0.5f);
         var  defCoreCreatureEntity = await CreatureHandler.Instance.CreateDefenseCoreCreature(fightData.fightDefenseCoreData.creatureData, creaturePos);
         //设置魔王核心
         fightData.fightDefenseCoreCreature = defCoreCreatureEntity;
@@ -134,7 +134,7 @@ public class GameFightLogic : BaseGameLogic
             }
             else
             {
-                CreatureHandler.Instance.RemoveFightCreatureObj(selectCreature, CreatureTypeEnum.FightDefense);
+                CreatureHandler.Instance.RemoveFightCreatureObj(selectCreature, CreatureFightTypeEnum.FightDefense);
             }
         }
         if (selectCreatureCard != null)
@@ -275,7 +275,7 @@ public class GameFightLogic : BaseGameLogic
         var targetCreature = fightData.GetDefenseCreatureByPos(selectTargetPos);
         if (targetCreature == null)
             return;
-        CreatureHandler.Instance.RemoveFightCreatureEntity(targetCreature, CreatureTypeEnum.FightDefense);
+        CreatureHandler.Instance.RemoveFightCreatureEntity(targetCreature, CreatureFightTypeEnum.FightDefense);
     }
 
     /// <summary>

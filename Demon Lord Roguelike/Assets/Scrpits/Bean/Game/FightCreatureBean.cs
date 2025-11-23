@@ -5,7 +5,8 @@ using UnityEngine;
 
 [Serializable]
 public class FightCreatureBean
-{
+{ 
+    public CreatureFightTypeEnum creatureFightType;//生物战斗类型
     public CreatureBean creatureData;    //生物数据
     public Vector3Int positionCreate;//生成位置（用于防守生物）
     public int roadIndex;//当前道路（用于进攻生物）
@@ -23,20 +24,23 @@ public class FightCreatureBean
     public float CRTCurrent;//暴击率
     public Color colorBodyCurrent;//当前身体颜色
 
-    public FightCreatureBean(long id)
+    public FightCreatureBean(long id, CreatureFightTypeEnum creatureFightType)
     {
+        this.creatureFightType = creatureFightType;
         creatureData = new CreatureBean(id);
         ResetData();
     }
 
-    public FightCreatureBean(NpcInfoBean npcInfo)
+    public FightCreatureBean(NpcInfoBean npcInfo, CreatureFightTypeEnum creatureFightType)
     {
+        this.creatureFightType = creatureFightType;
         creatureData = new CreatureBean(npcInfo);
         ResetData();
     }
 
-    public FightCreatureBean(CreatureBean creatureData)
+    public FightCreatureBean(CreatureBean creatureData, CreatureFightTypeEnum creatureFightType)
     {
+        this.creatureFightType = creatureFightType;
         this.creatureData = creatureData;
         ResetData();
     }
@@ -103,10 +107,10 @@ public class FightCreatureBean
     {
         BuffEntityBean buffEntityData = buffEntity.buffEntityData;
         //如果不是全触发 需要判断一下生物类型
-        CreatureTypeEnum triggerCreatureType = buffEntity.buffEntityData.buffInfo.GetTriggerCreatureType();
-        if (triggerCreatureType != CreatureTypeEnum.None)
+        CreatureFightTypeEnum triggerCreatureType = buffEntity.buffEntityData.buffInfo.GetTriggerCreatureType();
+        if (triggerCreatureType != CreatureFightTypeEnum.None)
         {
-            if (triggerCreatureType != creatureData.creatureInfo.GetCreatureType())
+            if (triggerCreatureType != creatureFightType)
             {
                 return;
             }

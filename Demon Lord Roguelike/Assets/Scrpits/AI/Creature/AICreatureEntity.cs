@@ -66,13 +66,13 @@ public abstract class AICreatureEntity : AIBaseEntity
         var creatureInfo = fightCreatureData.creatureData.creatureInfo;
         //搜索范围
         float searchRange = creatureInfo.attack_search_range;
-        CreatureTypeEnum searchCreatureType = creatureInfo.GetAttackSearchCreatureType();
+        CreatureFightTypeEnum searchCreatureFightType = creatureInfo.GetAttackSearchCreatureFightType();
         //搜索模式
         CreatureSearchType searchType = fightCreatureData.creatureData.creatureInfo.GetCreatureSearchType();
         //起始搜索点
         Vector3 startPosition = selfCreatureEntity.creatureObj.transform.position + new Vector3(0, 0.5f, 0);
 
         int searchRoadIndex = fightCreatureData.roadIndex;
-        return FightCreatureSearchUtil.FindCreatureEntity(searchType, searchCreatureType, startPosition, direction, Vector3.zero, searchRange, searchRoadIndex);
+        return FightCreatureSearchUtil.FindCreatureEntity(searchType, searchCreatureFightType, startPosition, direction, Vector3.zero, searchRange, searchRoadIndex);
     }
 }

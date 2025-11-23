@@ -12,7 +12,7 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
     //讲台
     public GameObject podium;
 
-    public List<GameObject> listCouncilorObj = new List<GameObject>();
+    public Dictionary<string,GameObject> dicCouncilorObj = new Dictionary<string,GameObject>();
 
     /// <summary>
     /// 初始化所有议员
@@ -37,8 +37,9 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
             //随机一个席位
             var itemTable = listTable[Random.Range(0, listTable.Count)];
             var itemPosition = itemTable.Find("Position");
-            var targetCreatureObj = await CreatureHandler.Instance.CreateDoomCouncilCreature(listCouncilor[i], itemPosition.position);
-            listCouncilorObj.Add(targetCreatureObj);
+            var itemCreatureData = listCouncilor[i];
+            var targetCreatureObj = await CreatureHandler.Instance.CreateDoomCouncilCreature(itemCreatureData, itemPosition.position);
+            dicCouncilorObj.Add(itemCreatureData.creatureUUId, targetCreatureObj);
             //列表里移除席位
             listTable.Remove(itemTable);
         }
@@ -59,12 +60,12 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
     /// </summary>
     public void DestoryAllCouncilor()
     {
-        for (int i = 0; i < listCouncilorObj.Count; i++)
+        foreach (var item in dicCouncilorObj)
         {
-            var itemObj = listCouncilorObj[i];
+            var itemObj = item.Value;
             Destroy(itemObj);
         }
-        listCouncilorObj.Clear();
+        dicCouncilorObj.Clear();
     }
 
     /// <summary>

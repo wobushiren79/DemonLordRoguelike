@@ -32,6 +32,13 @@ public enum CreatureStateEnum
 
 public enum CreatureTypeEnum
 {
+    Create = 0,//创建魔王生物
+    GashaponMachine = 1,//抽卡获取
+    Emeny = 2,//敌人
+}
+
+public enum CreatureFightTypeEnum
+{
     None = 0,
     FightDefense = 1,//战斗防守方
     FightAttack = 2,//战斗进攻方

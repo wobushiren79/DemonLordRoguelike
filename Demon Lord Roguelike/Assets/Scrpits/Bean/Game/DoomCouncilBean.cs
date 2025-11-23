@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 public class DoomCouncilBean
 {
@@ -6,6 +7,8 @@ public class DoomCouncilBean
     public DoomCouncilInfoBean doomCouncilInfo;
     //所有的议员
     public List<CreatureBean> listCouncilor;
+    //议员位置
+    public Dictionary<string, Vector3> dicCouncilorPosition;
 
     /// <summary>
     /// 获取议员数据
@@ -39,8 +42,26 @@ public class DoomCouncilBean
         }
         for (int i = 0; i < listCouncilor.Count; i++)
         {
-            listNPCId.Add(listCouncilor[i].creatureId);
+            var itemCreature = listCouncilor[i];
+            var creatureNpcData = itemCreature.GetCreatureNpcData();
+            listNPCId.Add(creatureNpcData.npcId);
         }
         return listNPCId;
+    }
+
+    /// <summary>
+    /// 获取所有议员的位置X
+    /// </summary>
+    /// <returns></returns>
+    public List<float> GetCouncilorAllPositionX()
+    {
+        List<float> listData = new List<float>();
+        for (int i = 0; i < listCouncilor.Count; i++)
+        {
+            var itemCreature = listCouncilor[i];
+            dicCouncilorPosition.TryGetValue(itemCreature.creatureUUId, out Vector3 position);
+            listData.Add(position.z);
+        } 
+        return listData;
     }
 }

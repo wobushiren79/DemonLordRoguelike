@@ -51,7 +51,7 @@ public class FightBeanForConquer : FightBean
         //设置当前关卡数量
         fightNum = 1;
         //初始化防御核心
-        FightCreatureBean fightCreatureDefenseCore = new FightCreatureBean(userData.selfCreature);
+        FightCreatureBean fightCreatureDefenseCore = new FightCreatureBean(userData.selfCreature, CreatureFightTypeEnum.FightDefenseCore);
         fightDefenseCoreData = fightCreatureDefenseCore;
         //设置防御生物
         dlDefenseCreatureData.Clear();

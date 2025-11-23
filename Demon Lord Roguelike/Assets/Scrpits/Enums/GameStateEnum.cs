@@ -84,6 +84,7 @@ public enum TestSceneTypeEnum
     Base = 3,//基地测试
     RewardSelect = 4,//奖励选择
     DoomCouncil = 5,//终焉议会
+    NpcCreate = 6,//NPC创建
 }
 
 public enum CinemachineCameraEnum

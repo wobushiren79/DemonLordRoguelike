@@ -9,7 +9,7 @@ public class CreatureManager : BaseManager
     //所有的模型
     public Dictionary<string, GameObject> dicCreatureModel = new Dictionary<string, GameObject>();
     //所有生物的缓存池
-    public Dictionary<CreatureTypeEnum, Queue<GameObject>> dicPoolForCreature = new Dictionary<CreatureTypeEnum, Queue<GameObject>>();
+    public Dictionary<CreatureFightTypeEnum, Queue<GameObject>> dicPoolForCreature = new Dictionary<CreatureFightTypeEnum, Queue<GameObject>>();
 
     //生物预览
     public GameObject objCreatureSelectPreview;
@@ -109,7 +109,7 @@ public class CreatureManager : BaseManager
     /// <summary>
     /// 加载一个战斗生物obj
     /// </summary>
-    public GameObject LoadFightCreatureObj(long creatureId)
+    public GameObject LoadFightCreatureObj(long creatureId, CreatureFightTypeEnum creatureFightType)
     {
         var itemCreatureInfo = CreatureInfoCfg.GetItemData(creatureId);
         if (itemCreatureInfo == null)
@@ -118,10 +118,9 @@ public class CreatureManager : BaseManager
             return null;
         }
 
-        CreatureTypeEnum creatureType = itemCreatureInfo.GetCreatureType();
         //首先获取缓存池里的物体
         GameObject objItem = null;
-        if (dicPoolForCreature.TryGetValue(creatureType, out Queue<GameObject> poolForCreature))
+        if (dicPoolForCreature.TryGetValue(creatureFightType, out Queue<GameObject> poolForCreature))
         {
             objItem = GetFightCreaureFromPool(poolForCreature);
         }
@@ -130,15 +129,15 @@ public class CreatureManager : BaseManager
         if (objItem == null)
         {
             string creatureModelName;
-            switch (creatureType)
+            switch (creatureFightType)
             {
-                case CreatureTypeEnum.FightDefense:
+                case CreatureFightTypeEnum.FightDefense:
                     creatureModelName = "FightCreature_Def_1.prefab";
                     break;
-                case CreatureTypeEnum.FightAttack:
+                case CreatureFightTypeEnum.FightAttack:
                     creatureModelName = "FightCreature_Att_1.prefab";
                     break;
-                case CreatureTypeEnum.FightDefenseCore:
+                case CreatureFightTypeEnum.FightDefenseCore:
                     creatureModelName = "FightCreature_DefCore_1.prefab";
                     break;
                 default:

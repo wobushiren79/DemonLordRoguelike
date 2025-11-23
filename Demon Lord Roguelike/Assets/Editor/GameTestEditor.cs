@@ -37,25 +37,37 @@ public class GameTestEditor : Editor
     {
         base.OnInspectorGUI();
         launcher = (LauncherTest)target;
-        if (launcher.testSceneType == TestSceneTypeEnum.FightSceneTest)
+        switch (launcher.testSceneType)
         {
-            UIForFightSceneTest();
+            case TestSceneTypeEnum.FightSceneTest:
+                UIForFightSceneTest();
+                break;
+            case TestSceneTypeEnum.CardTest:
+                UIForCardTest();
+                break;
+            case TestSceneTypeEnum.Base:
+                UIForFightBase();
+                break;
+            case TestSceneTypeEnum.RewardSelect:
+                UIForRewardSelect();
+                break;
+            case TestSceneTypeEnum.DoomCouncil:
+                UIForDoomCouncil();
+                break;
+            case TestSceneTypeEnum.NpcCreate:
+                UIForNpcCreate();
+                break;
         }
-        else if (launcher.testSceneType == TestSceneTypeEnum.CardTest)
+    }
+
+    /// <summary>
+    /// 创建NPC
+    /// </summary>
+    public void UIForNpcCreate()
+    {
+        if (GUILayout.Button("开始NPC创建") && Application.isPlaying)
         {
-            UIForCardTest();
-        }
-        else if (launcher.testSceneType == TestSceneTypeEnum.Base)
-        {
-            UIForFightBase();
-        }
-        else if (launcher.testSceneType == TestSceneTypeEnum.RewardSelect)
-        {
-            UIForRewardSelect();
-        }
-        else if (launcher.testSceneType == TestSceneTypeEnum.DoomCouncil)
-        {
-            UIForDoomCouncil();
+            launcher.StartNpcCreate();
         }
     }
 
@@ -92,7 +104,7 @@ public class GameTestEditor : Editor
     {
         if (GUILayout.Button("显示卡片") && Application.isPlaying)
         {
-            FightCreatureBean fightCreature = new FightCreatureBean(creatureId);
+            FightCreatureBean fightCreature = new FightCreatureBean(creatureId, CreatureFightTypeEnum.FightDefense);
             fightCreature.creatureData.AddSkinForBase();
             launcher.StartForCardTest(fightCreature);
         }
@@ -280,11 +292,9 @@ public class GameTestEditor : Editor
             }
         }
 
-        FightCreatureBean fightDefCoreData = new FightCreatureBean(2001);
+        FightCreatureBean fightDefCoreData = new FightCreatureBean(2001, CreatureFightTypeEnum.FightDefenseCore);
         fightDefCoreData.creatureData.AddSkinForBase();
-        fightDefCoreData.creatureData.creatureInfo.creature_type = (int)CreatureTypeEnum.FightDefenseCore;
         fightData.fightDefenseCoreData = fightDefCoreData;
-
         fightData.InitData();
         fightData.fightSceneId = fightSceneId;
 

@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 public partial class CreatureInfoBean : BaseBean
 {
 	/// <summary>
-	///生物类型1：防御 2进攻 99防守核心
+	///生物类型0创建 1抽卡 2敌人
 	/// </summary>
 	public int creature_type;
 	/// <summary>
@@ -67,7 +67,7 @@ public partial class CreatureInfoBean : BaseBean
 	/// <summary>
 	///攻击搜索目标类型1防御 2进攻 99防守核心
 	/// </summary>
-	public int attack_search_creature_type;
+	public int attack_search_creature_fight_type;
 	/// <summary>
 	///攻击搜索范围
 	/// </summary>

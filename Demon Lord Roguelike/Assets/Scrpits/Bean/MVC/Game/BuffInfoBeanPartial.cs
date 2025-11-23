@@ -10,9 +10,9 @@ public partial class BuffInfoBean
     /// 获取触发BUFF生物类型
     /// </summary>
     /// <returns></returns>
-    public CreatureTypeEnum GetTriggerCreatureType()
+    public CreatureFightTypeEnum GetTriggerCreatureType()
     {
-        return (CreatureTypeEnum)trigger_creature_type;
+        return (CreatureFightTypeEnum)trigger_creature_type;
     }
 
     /// <summary>

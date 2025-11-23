@@ -103,6 +103,20 @@ public class LauncherTest : BaseLauncher
     }
 
     /// <summary>
+    /// 开始NPC创建
+    /// </summary>
+    public async void StartNpcCreate()
+    {
+        await WorldHandler.Instance.ClearWorldData();
+        //设置焦距
+        VolumeHandler.Instance.SetDepthOfField(UnityEngine.Rendering.Universal.DepthOfFieldMode.Off, 0, 0, 0);
+        //镜头初始化
+        CameraHandler.Instance.InitData();
+        //关闭额外的摄像头
+        var ui = UIHandler.Instance.OpenUIAndCloseOther<UITestNpcCreate>();
+    }
+
+    /// <summary>
     /// 基地测试
     /// </summary>
     public void StartForBaseTest(CreatureBean creatureData)

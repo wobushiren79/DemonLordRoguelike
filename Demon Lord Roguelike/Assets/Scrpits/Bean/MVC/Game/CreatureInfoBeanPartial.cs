@@ -34,9 +34,9 @@ public partial class CreatureInfoBean
         return (CreatureTypeEnum)creature_type;
     }
 
-    public CreatureTypeEnum GetAttackSearchCreatureType()
+    public CreatureFightTypeEnum GetAttackSearchCreatureFightType()
     {
-        return (CreatureTypeEnum)attack_search_creature_type;
+        return (CreatureFightTypeEnum)attack_search_creature_fight_type;
     }
 
     public Vector3 GetAttackStartPosition()

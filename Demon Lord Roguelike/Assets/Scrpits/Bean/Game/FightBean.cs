@@ -262,9 +262,9 @@ public class FightBean
     /// <summary>
     /// 通过ID获取某一生物
     /// </summary>
-    public GameFightCreatureEntity GetCreatureById(string creatureId, CreatureTypeEnum creatureType = CreatureTypeEnum.None)
+    public GameFightCreatureEntity GetCreatureById(string creatureId, CreatureFightTypeEnum creatureType = CreatureFightTypeEnum.None)
     {
-        if (creatureType == CreatureTypeEnum.None)
+        if (creatureType == CreatureFightTypeEnum.None)
         {
             if (dlAttackCreatureEntity.TryGetValue(creatureId, out var attackCreature))
             {
@@ -276,21 +276,21 @@ public class FightBean
             }
             return fightDefenseCoreCreature;
         }
-        else if (creatureType == CreatureTypeEnum.FightAttack)
+        else if (creatureType == CreatureFightTypeEnum.FightAttack)
         {
             if (dlAttackCreatureEntity.TryGetValue(creatureId, out var attackCreature))
             {
                 return attackCreature;
             }
         }
-        else if (creatureType == CreatureTypeEnum.FightDefense)
+        else if (creatureType == CreatureFightTypeEnum.FightDefense)
         {
             if (dlDefenseCreatureEntity.TryGetValue(creatureId, out var defenseCreature))
             {
                 return defenseCreature;
             }
         }
-        else if (creatureType == CreatureTypeEnum.FightDefenseCore)
+        else if (creatureType == CreatureFightTypeEnum.FightDefenseCore)
         {
             return fightDefenseCoreCreature;
         }

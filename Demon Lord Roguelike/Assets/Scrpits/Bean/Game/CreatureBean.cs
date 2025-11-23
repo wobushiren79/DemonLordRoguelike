@@ -24,6 +24,8 @@ public partial class CreatureBean
     public Dictionary<CreatureSkinTypeEnum, SpineSkinBean> dicSkinData = new Dictionary<CreatureSkinTypeEnum, SpineSkinBean>();
     //装备数据
     public Dictionary<ItemTypeEnum, ItemBean> dicEquipItemData = new Dictionary<ItemTypeEnum, ItemBean>();
+    //NPC数据(只有NPC才有)
+    public CreatureNpcBean creatureNpcData;
 
     public CreatureBean()
     {
@@ -38,6 +40,8 @@ public partial class CreatureBean
 
     public CreatureBean(NpcInfoBean npcInfo)
     {
+        creatureNpcData = new CreatureNpcBean(npcInfo.id);
+
         this.creatureId = npcInfo.creature_id;
         this.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
         this.creatureName = npcInfo.name_language;
@@ -50,6 +54,11 @@ public partial class CreatureBean
     public NpcRelationshipEnum GetRelationshipForNpc()
     {
         return NpcRelationshipInfoCfg.GetNpcRelationship(relationship);
+    }
+
+    public CreatureNpcBean GetCreatureNpcData()
+    {
+        return creatureNpcData;
     }
     #endregion
 

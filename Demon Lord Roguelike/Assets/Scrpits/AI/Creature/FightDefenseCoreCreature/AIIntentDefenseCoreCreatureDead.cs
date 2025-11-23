@@ -23,7 +23,7 @@ public class AIIntentDefenseCoreCreatureDead : AIBaseIntent
         {
             timeUpdateForDead = 0;
             var selfFightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
-            CreatureHandler.Instance.RemoveFightCreatureEntity(selfAIEntity.selfCreatureEntity, CreatureTypeEnum.FightDefenseCore);    
+            CreatureHandler.Instance.RemoveFightCreatureEntity(selfAIEntity.selfCreatureEntity, CreatureFightTypeEnum.FightDefenseCore);    
             EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadEnd, selfFightCreatureData);
         }
     }

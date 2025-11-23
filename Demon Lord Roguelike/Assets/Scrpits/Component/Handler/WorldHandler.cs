@@ -211,9 +211,13 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         string roadColorA = "#ffffff00";//道路颜色A
         string roadColorB= "#ffffff00";//道路颜色B
         //如果议会 特殊加载议会场景
-        if (fightData.gameFightType== GameFightTypeEnum.DoomCouncil)
+        if (fightData.gameFightType == GameFightTypeEnum.DoomCouncil)
         {
             targetScene = await LoadDoomCouncilScene();
+
+            targetScene.SetActive(true);
+            targetScene.transform.position = new Vector3(-0.5f, -0.00001f, 1f);
+            targetScene.transform.eulerAngles = new Vector3(0, 90, 0);
         }
         else
         {
@@ -234,12 +238,11 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             //获取场景-----------------------------------------------------------
             string dataPath = $"{PathInfo.FightScenePrefabPath}/{fightSceneData.name_res}";
             targetScene = await manager.GetFightScene(dataPath);
+
             targetScene.SetActive(true);
-            targetScene.transform.position = new Vector3(0, 0, -(fightData.sceneRoadNumMax - fightData.sceneRoadNum) / 2f);
+            targetScene.transform.position = new Vector3(0, -0.00001f, -(fightData.sceneRoadNumMax - fightData.sceneRoadNum) / 2f);
             targetScene.transform.eulerAngles = Vector3.zero;
 
-            dicCurrentScene.Add(GameSceneTypeEnum.Fight, targetScene);
-            currentScene = targetScene;
             //设置天空盒颜色
             ColorUtility.TryParseHtmlString("#00000000", out var targetColorSky);
             manager.SetSkyboxColor(CameraClearFlags.Skybox, targetColorSky);
@@ -247,6 +250,9 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             roadColorA = fightSceneData.road_color_a;
             roadColorB = fightSceneData.road_color_b;
         }
+
+        dicCurrentScene.Add(GameSceneTypeEnum.Fight, targetScene);
+        currentScene = targetScene;
 
         //获取战斗道路-----------------------------------------------------------
         var sceneRoad = await manager.GetFightSceneRoad();
@@ -308,7 +314,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             else
             {
                 //战斗场景没有ScenePrefabBase
-                DestroyImmediate(scenePrefabBase.gameObject);
+                DestroyImmediate(targetScene);
             }
         }
         dicCurrentScene.Clear();

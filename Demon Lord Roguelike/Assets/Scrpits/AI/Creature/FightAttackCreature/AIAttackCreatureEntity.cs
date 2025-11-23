@@ -55,7 +55,7 @@ public class AIAttackCreatureEntity : AICreatureEntity
     {
         //如果是同一路线
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        var defenseCreature =  gameFightLogic.fightData.GetCreatureById(targetView.cardData.creatureData.creatureUUId, CreatureTypeEnum.FightDefense);
+        var defenseCreature =  gameFightLogic.fightData.GetCreatureById(targetView.cardData.creatureData.creatureUUId, CreatureFightTypeEnum.FightDefense);
         if (defenseCreature.fightCreatureData.positionCreate.z == selfCreatureEntity.fightCreatureData.positionCreate.z)
         {
             //如果正在前往目标 则重新寻找目标
@@ -71,8 +71,7 @@ public class AIAttackCreatureEntity : AICreatureEntity
         //如果自己是在攻击中
         if (currentIntentEnum == AIIntentEnum.AttackCreatureAttack)
         {   //如果是防御生物死了 并且是自己攻击的生物
-            CreatureInfoBean creatureInfo = fightCreatureData.creatureData.creatureInfo;
-            if (creatureInfo.GetCreatureType() == CreatureTypeEnum.FightDefense && fightCreatureData == targetCreatureEntity.fightCreatureData)
+            if (fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightDefense && fightCreatureData == targetCreatureEntity.fightCreatureData)
             {
                 ChangeIntent(AIIntentEnum.AttackCreatureIdle);
             }

@@ -41,7 +41,6 @@ public partial class UIDialogSelect : DialogView
             itemView.onClick.RemoveAllListeners();
             itemView.onClick.AddListener(() =>
             {
-                actionCancel?.Invoke(this, dialogData);
                 DestroyDialog();
                 selectAction?.Invoke();
             });

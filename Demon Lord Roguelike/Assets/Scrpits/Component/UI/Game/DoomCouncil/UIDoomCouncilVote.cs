@@ -102,7 +102,7 @@ public partial class UIDoomCouncilVote : BaseUIComponent
         ui_ProgressLeft.fillAmount = leftProgress;
         ui_ProgressRight.fillAmount = rightProgress;
 
-        ui_ProgressLeftTitleText.text = $"{TextHandler.Instance.GetTextById(53006)}/t{ayeVoteNum}";
-        ui_ProgressRightTitleText.text = $"{TextHandler.Instance.GetTextById(53007)}/t{nayVoteNum}"; 
+        ui_ProgressLeftTitleText.text = $"{TextHandler.Instance.GetTextById(53006)}\n{ayeVoteNum}";
+        ui_ProgressRightTitleText.text = $"{TextHandler.Instance.GetTextById(53007)}\n{nayVoteNum}"; 
     }
 }

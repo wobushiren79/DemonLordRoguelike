@@ -26,7 +26,7 @@ public class ControlForGameFight : BaseControl
     protected float speedForDargCamera = 500f;
     protected float minX = 3;
     protected float maxX = 7f;
-    protected float minZ = 3f;
+    protected float minZ = 2f;
     protected float maxZ = 6f;
 
     private Vector3 dragCameraOrigin;

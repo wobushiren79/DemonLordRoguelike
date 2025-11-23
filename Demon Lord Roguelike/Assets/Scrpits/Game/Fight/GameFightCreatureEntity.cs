@@ -106,10 +106,10 @@ public class GameFightCreatureEntity
     public void ChangeRoad(int targetRoadIndex)
     {
         fightCreatureData.roadIndex = targetRoadIndex;
-        var creatureType = fightCreatureData.creatureData.creatureInfo.GetCreatureType();
-        switch (creatureType)
+        var creatureFightType = fightCreatureData.creatureFightType;
+        switch (creatureFightType)
         {
-            case CreatureTypeEnum.FightAttack:
+            case CreatureFightTypeEnum.FightAttack:
                 aiEntity.ChangeIntent(AIIntentEnum.AttackCreatureLured);
                 break;
         }
@@ -469,7 +469,7 @@ public class GameFightCreatureEntity
     public void DeadDropCrystal()
     {
         //只有进攻生物才掉落水晶
-        if (fightCreatureData.creatureData.creatureInfo.GetCreatureType() == CreatureTypeEnum.FightAttack)
+        if (fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightAttack)
         {
             FightDropCrystalBean fightDropCrystal = new FightDropCrystalBean();
             fightDropCrystal.crystalNum = 1;

@@ -207,14 +207,14 @@ public class BaseAttackMode
     public virtual List<GameFightCreatureEntity> CheckHitTarget(Vector3 checkPosition)
     {
         CreatureSearchType searchType = attackModeInfo.GetCreatureSerachType();
-        CreatureTypeEnum searchCreatureType = CreatureTypeEnum.None;
+        CreatureFightTypeEnum searchCreatureType = CreatureFightTypeEnum.None;
         if (attackedLayerTarget == LayerInfo.CreatureAtt)
         {
-            searchCreatureType = CreatureTypeEnum.FightAttack;
+            searchCreatureType = CreatureFightTypeEnum.FightAttack;
         }
         else if (attackedLayerTarget == LayerInfo.CreatureDef)
         {
-            searchCreatureType = CreatureTypeEnum.FightDefense;
+            searchCreatureType = CreatureFightTypeEnum.FightDefense;
         }
         return FightCreatureSearchUtil.FindCreatureEntity(searchType, searchCreatureType, checkPosition, attackDirection, Vector3.zero, attackModeInfo.collider_size);
     }
@@ -233,7 +233,7 @@ public class BaseAttackMode
                 var itemHitterCollder = targetColliders[i];
                 string creatureId = itemHitterCollder.gameObject.name;
                 GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-                var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, CreatureTypeEnum.None);
+                var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, CreatureFightTypeEnum.None);
                 if (targetCreature != null && !targetCreature.IsDead())
                 {
                     hasHitter = true;

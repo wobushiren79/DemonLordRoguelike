@@ -9,7 +9,7 @@ public class BuffEntityPeriodic : BuffBaseEntity
         if (isTriggerSuccess == false) return false;
 
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        var targetCreature = gameFightLogic.fightData.GetCreatureById(buffEntityData.targetCreatureId, CreatureTypeEnum.None);
+        var targetCreature = gameFightLogic.fightData.GetCreatureById(buffEntityData.targetCreatureId, CreatureFightTypeEnum.None);
         if (targetCreature == null || targetCreature.fightCreatureData == null)
         {
             return false;
