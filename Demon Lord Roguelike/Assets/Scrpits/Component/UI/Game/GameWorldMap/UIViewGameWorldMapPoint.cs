@@ -39,14 +39,14 @@ public partial class UIViewGameWorldMapPoint : BaseUIView
         ui_Icon.color = Color.white;
         if (itemPosition.x == currentMapPosition.x + 1)
         {
-            IconHandler.Instance.manager.GetUISpriteByName("", (sprite) =>
+            IconHandler.Instance.GetIconSprite(SpriteAtlasType.UI, "", (sprite) =>
             {
                 ui_Icon.sprite = sprite;
             });
         }
         else if (itemPosition.x < currentMapPosition.x + 1)
         {
-            IconHandler.Instance.manager.GetUISpriteByName("", (sprite) =>
+            IconHandler.Instance.GetIconSprite(SpriteAtlasType.UI, "", (sprite) =>
             {
                 ui_Icon.sprite = sprite;
                 if (itemPosition.x != 0)

@@ -26,12 +26,17 @@ public partial class CreatureInfoRandomBean
         return dicRandomData;
     }
 
-    public List<long> GetRandomData()
+    public List<long> GetRandomData(List<CreatureSkinTypeEnum> excludePartType = null)
     {
         List<long> listSkinRandom = new List<long>();
         var allRandomData = GetAllRandomData();
         foreach (var item in allRandomData)
         {
+            //是否要排除固定类型
+            if (!excludePartType.IsNull() && excludePartType.Contains(item.Key))
+            {
+               continue;
+            }
             List<long> listSkin = item.Value;
             int targetSkinRandomIndex = UnityEngine.Random.Range(0, listSkin.Count);
             long targetSkinRandom = listSkin[targetSkinRandomIndex];

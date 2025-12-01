@@ -46,9 +46,9 @@ public partial class CreatureBean
         this.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
         this.creatureName = npcInfo.name_language;
         //添加随机皮肤
-        SetSkin(npcInfo);
+        InitSkin(npcInfo);
         //添加装备
-        SetEquip(npcInfo);
+        InitEquip(npcInfo);
     }
     #region 杂项
     public NpcRelationshipEnum GetRelationshipForNpc()
@@ -63,13 +63,27 @@ public partial class CreatureBean
     #endregion
 
     #region 装备相关
+
     /// <summary>
-    /// 设置装备
+    /// 清空装备
     /// </summary>
-    /// <param name="npcInfo"></param>
-    public void SetEquip(NpcInfoBean npcInfo)
+    public void ClearEquip()
     {
-        var listEquipItems = npcInfo.GetEquipItems();
+        dicEquipItemData.Clear();
+    }
+
+    /// <summary>
+    /// 初始化装备
+    /// </summary>
+    public void InitEquip(NpcInfoBean npcInfo)
+    {
+        List<long> listEquipItems = npcInfo.GetEquipItems();
+        InitEquip(listEquipItems);
+    }
+
+    public void InitEquip(List<long> listEquipItems)
+    {
+        ClearEquip();
         for (int i = 0; i < listEquipItems.Count; i++)
         {
             var itemId = listEquipItems[i];
@@ -116,11 +130,9 @@ public partial class CreatureBean
     /// <summary>
     /// 清空皮肤
     /// </summary>
-    public void ClearSkin(bool isAddBase = true)
+    public void ClearSkin()
     {
         dicSkinData.Clear();
-        if (isAddBase)
-            AddSkinForBase();
     }
 
     /// <summary>
@@ -166,20 +178,26 @@ public partial class CreatureBean
     }
 
     /// <summary>
-    /// 添加皮肤
+    /// 初始化皮肤-NPC
     /// </summary>
-    public void SetSkin(NpcInfoBean npcInfo)
+    public void InitSkin(NpcInfoBean npcInfo)
     {
+        //获取皮肤
+        List<long> listSkin = npcInfo.GetSkins();
+        InitSkin(listSkin);
+    }
+
+    /// <summary>
+    /// 初始化皮肤-自定义
+    /// </summary>
+    public void InitSkin(List<long> listSkin)
+    {
+        //清理所有皮肤
+        ClearSkin();
         //添加基础皮肤
         AddSkinForBase();
-        if (npcInfo.skin_random_id == 0)
-        {
-            return;
-        }
-        var creatureInfoRandomBean = CreatureInfoRandomCfg.GetItemData(npcInfo.skin_random_id);
-        List<long> listRandomSkin = creatureInfoRandomBean.GetRandomData();
         //添加配置皮肤
-        AddSkin(listRandomSkin);
+        AddSkin(listSkin);
     }
 
     /// <summary>
@@ -236,7 +254,8 @@ public partial class CreatureBean
     /// </summary>
     /// <param name="showType">0普通皮肤 1立绘皮肤（表情）</param>
     /// <returns></returns>
-    public Dictionary<string, SpineSkinBean> GetSkinData(int showType = 0, bool isNeedWeapon = true)
+    public Dictionary<string, SpineSkinBean> GetSkinData(int showType = 0, 
+        bool isNeedWeapon = true, bool isNeedEquip = true)
     {
         Dictionary<string, SpineSkinBean> dicSkin = new Dictionary<string, SpineSkinBean>();
         //处理所有身体皮肤
@@ -259,11 +278,14 @@ public partial class CreatureBean
                         //是否需要展示武器
                         if (!isNeedWeapon)
                         {
-                            if (itemPartType == CreatureSkinTypeEnum.Weapon_L || itemPartType == CreatureSkinTypeEnum.Weapon_R)
+                            switch (itemPartType)
                             {
-                                continue;
+                                case CreatureSkinTypeEnum.Weapon_L:
+                                case CreatureSkinTypeEnum.Weapon_R:
+                                    continue;
                             }
                         }
+
                         //如果有帽子 不需要展示头发
                         if (dicEquipItemData.ContainsKey(ItemTypeEnum.Hat) && itemPartType == CreatureSkinTypeEnum.Hair)
                         {
@@ -279,29 +301,32 @@ public partial class CreatureBean
                 }
             }
         }
-
-        //处理装备
-        foreach (var itemEquip in dicEquipItemData)
+        //是否需要展示装备
+        if (isNeedEquip)
         {
-            var itemType = itemEquip.Key;
-            var itemData = itemEquip.Value;
-            //是否需要展示武器
-            if (!isNeedWeapon)
+            //处理装备
+            foreach (var itemEquip in dicEquipItemData)
             {
-                if (itemType == ItemTypeEnum.Weapon)
+                var itemType = itemEquip.Key;
+                var itemData = itemEquip.Value;
+                //是否需要展示武器
+                if (!isNeedWeapon)
                 {
+                    if (itemType == ItemTypeEnum.Weapon)
+                    {
+                        continue;
+                    }
+                }
+                ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
+                CreatureModelInfoBean itemSkinInfo = CreatureModelInfoCfg.GetItemData(itemInfo.creature_model_info_id);
+                if (itemSkinInfo == null)
+                {
+                    LogUtil.LogError($"没有找到CreatureModelInfoCfg creature_model_info_id_{itemInfo.creature_model_info_id}");
                     continue;
                 }
+                SpineSkinBean spineSkinData = new SpineSkinBean(0);
+                dicSkin.Add(itemSkinInfo.res_name, spineSkinData);
             }
-            ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
-            CreatureModelInfoBean itemSkinInfo = CreatureModelInfoCfg.GetItemData(itemInfo.creature_model_info_id);
-            if (itemSkinInfo == null)
-            {
-                LogUtil.LogError($"没有找到CreatureModelInfoCfg creature_model_info_id_{itemInfo.creature_model_info_id}");
-                continue;
-            }
-            SpineSkinBean spineSkinData = new SpineSkinBean(0);
-            dicSkin.Add(itemSkinInfo.res_name, spineSkinData);
         }
         return dicSkin;
     }

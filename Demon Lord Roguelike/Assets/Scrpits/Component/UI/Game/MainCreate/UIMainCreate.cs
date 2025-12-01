@@ -252,6 +252,8 @@ public partial class UIMainCreate : BaseUIComponent
         createCreatureData = new CreatureBean(creatureId);
         createCreatureData.creatureId = creatureId;
         createCreatureData.ClearSkin();
+        createCreatureData.AddSkinForBase();
+        
         //隐藏所有选项
         for (int i = 0; i < listSelectView.Count; i++)
         {

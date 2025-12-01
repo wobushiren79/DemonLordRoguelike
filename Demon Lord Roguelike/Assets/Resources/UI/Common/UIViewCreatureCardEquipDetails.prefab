@@ -54,12 +54,15 @@ MonoBehaviour:
   uiOpenAnimTarget: {fileID: 3928612769931266904}
   _rectTransform: {fileID: 0}
   creatureData:
-    creatureId: 
-    id: 0
+    creatureId: 0
+    creatureUUId: 
     creatureName: 
     level: 0
     starLevel: 0
     rarity: 0
+    relationship: 0
+    creatureNpcData:
+      npcId: 0
   ui_EquipList: {fileID: 7819496328589069120}
   ui_UIViewCreatureCardDetails: {fileID: 604584904103839791}
 --- !u!1 &8865355246796418439

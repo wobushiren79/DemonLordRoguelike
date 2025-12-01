@@ -5,15 +5,6 @@ using UnityEngine;
 
 public class GameHandler : BaseHandler<GameHandler,GameManager>
 {
-
-    // 定义战斗类型与逻辑类型的映射
-    static Dictionary<GameFightTypeEnum, Type> dicGamefightLogicType = new Dictionary<GameFightTypeEnum, Type>
-    {
-        { GameFightTypeEnum.Conquer, typeof(GameFightLogicConquer) },
-        { GameFightTypeEnum.Infinite, typeof(GameFightLogicInfinite) },
-        { GameFightTypeEnum.Test, typeof(GameFightLogicTest) }
-    };
-
     /// <summary>
     /// 开始终焉议会
     /// </summary>
@@ -33,11 +24,8 @@ public class GameHandler : BaseHandler<GameHandler,GameManager>
     public void StartGameFight(FightBean fightData)
     {
         // 检查是否需要创建新的逻辑实例
-        Type targetType = dicGamefightLogicType.GetValueOrDefault(fightData.gameFightType, typeof(GameFightLogic));
-        if (manager.gameLogic?.GetType() != targetType)
-        {
-            manager.gameLogic = (GameFightLogic)Activator.CreateInstance(targetType);
-        }
+        string fightTypeName = $"GameFightLogic{fightData.gameFightType.GetEnumName()}";
+        manager.gameLogic = ReflexUtil.CreateInstance<GameFightLogic>(fightTypeName);
         GameFightLogic gameFightLogic = (GameFightLogic)manager.gameLogic;
         gameFightLogic.fightData = fightData;
         gameFightLogic.PreGame();

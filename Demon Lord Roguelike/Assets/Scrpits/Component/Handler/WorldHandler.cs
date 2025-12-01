@@ -306,6 +306,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         foreach (var itemData in dicCurrentScene)
         {
             var targetScene = itemData.Value;
+            if (targetScene == null)
+                continue;
             var scenePrefabBase = targetScene.GetComponent<ScenePrefabBase>();
             if (scenePrefabBase != null)
             {

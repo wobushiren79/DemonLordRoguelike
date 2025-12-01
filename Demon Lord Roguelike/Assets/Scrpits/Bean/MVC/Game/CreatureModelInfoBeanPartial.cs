@@ -7,19 +7,32 @@ public partial class CreatureModelInfoBean
     {
         return (CreatureSkinTypeEnum)part_type;
     }
-    
 }
 public partial class CreatureModelInfoCfg
 {
     public static Dictionary<long, Dictionary<CreatureSkinTypeEnum, List<CreatureModelInfoBean>>> dicDetailsModelInfo;
 
-    public static List<CreatureModelInfoBean> GetData(long modelId, CreatureSkinTypeEnum modelType)
+    public static Dictionary<CreatureSkinTypeEnum, List<CreatureModelInfoBean>> GetData(long modelId)
     {
         if (dicDetailsModelInfo == null || dicDetailsModelInfo.Count == 0)
         {
             InitDetailsData();
         }
         if (dicDetailsModelInfo.TryGetValue(modelId, out Dictionary<CreatureSkinTypeEnum, List<CreatureModelInfoBean>> valueModel))
+        {
+            return valueModel;
+        }
+        else
+        {
+            LogUtil.Log($"CreatureModelInfoCfg 没有找到 modelId_{modelId}的数据");
+            return null;
+        }
+    }
+
+    public static List<CreatureModelInfoBean> GetData(long modelId, CreatureSkinTypeEnum modelType)
+    {
+        Dictionary<CreatureSkinTypeEnum, List<CreatureModelInfoBean>> valueModel = GetData( modelId);
+        if (valueModel != null)
         {
             if (valueModel.TryGetValue(modelType, out List<CreatureModelInfoBean> creatureModelInfoList))
             {
@@ -31,13 +44,9 @@ public partial class CreatureModelInfoCfg
                 return null;
             }
         }
-        else
-        {
-            LogUtil.Log($"CreatureModelInfoCfg 没有找到 modelId_{modelId}的数据");
-            return null;
-        }
+        return null;
     }
-
+    
     /// <summary>
     /// 初始化数据
     /// </summary>

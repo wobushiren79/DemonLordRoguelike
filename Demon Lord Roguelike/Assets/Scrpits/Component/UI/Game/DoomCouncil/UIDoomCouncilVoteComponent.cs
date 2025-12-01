@@ -14,10 +14,6 @@ public partial class UIDoomCouncilVote
 
     public Image ui_ProgressRightTitle;
 
-    public Image ui_VoteEnd;
-
-    public TextMeshProUGUI ui_VoteEndText;
-
     public TextMeshProUGUI ui_ProgressRightTitleText;
 
     public TextMeshProUGUI ui_ProgressLeftTitleText;

@@ -14,7 +14,7 @@ public abstract class BaseGameLogic : BaseEvent
     /// </summary>
     public virtual void PreGame()
     {
-        GameHandler.Instance.manager.SetGameState(GameStateEnum.Pre);
+        ChangeGameState(GameStateEnum.Pre);
     }
 
     /// <summary>
@@ -22,7 +22,7 @@ public abstract class BaseGameLogic : BaseEvent
     /// </summary>
     public virtual void StartGame()
     {
-        GameHandler.Instance.manager.SetGameState(GameStateEnum.Gaming);
+        ChangeGameState(GameStateEnum.Gaming);
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public abstract class BaseGameLogic : BaseEvent
     /// </summary>
     public virtual void ClearGame()
     {
-        GameHandler.Instance.manager.SetGameState(GameStateEnum.End);
+        ChangeGameState(GameStateEnum.End);
         UnRegisterAllEvent();
         System.GC.Collect();
     }

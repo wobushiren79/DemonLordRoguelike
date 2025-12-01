@@ -1680,12 +1680,15 @@ MonoBehaviour:
   listTargetCreatureShow: []
   listMaterialCreatureShow: []
   targetCreatureSelect:
-    creatureId: 
-    id: 0
+    creatureId: 0
+    creatureUUId: 
     creatureName: 
     level: 0
     starLevel: 0
     rarity: 0
+    relationship: 0
+    creatureNpcData:
+      npcId: 0
   listMaterialCreatureSelect: []
   ui_ViewExit: {fileID: 4245406790760456673}
   ui_BtnLeft: {fileID: 8718417084815027686}
@@ -2731,12 +2734,15 @@ MonoBehaviour:
   _rectTransform: {fileID: 0}
   cardData:
     creatureData:
-      creatureId: 
-      id: 0
+      creatureId: 0
+      creatureUUId: 
       creatureName: 
       level: 0
       starLevel: 0
       rarity: 0
+      relationship: 0
+      creatureNpcData:
+        npcId: 0
     cardUseState: 0
     cardState: 0
     originalCardPos: {x: 0, y: 0}
@@ -2751,6 +2757,7 @@ MonoBehaviour:
   ui_Mask: {fileID: 0}
   ui_StarText: {fileID: 0}
   ui_SelectBg: {fileID: 0}
+  ui_IconContent: {fileID: 0}
 --- !u!224 &7208947163169238971 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}

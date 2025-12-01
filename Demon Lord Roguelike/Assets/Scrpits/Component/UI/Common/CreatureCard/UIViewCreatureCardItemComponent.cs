@@ -23,5 +23,7 @@ public partial class UIViewCreatureCardItem
 
     public Image ui_SelectBg;
 
+    public Image ui_IconContent;
+
 
 }

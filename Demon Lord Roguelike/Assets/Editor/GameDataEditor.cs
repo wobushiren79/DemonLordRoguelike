@@ -5,7 +5,7 @@ using UnityEngine.U2D;
 public class GameDataEditor
 {
     [MenuItem("游戏/生成所有spine里的道具图标")]
-    public static void SpineAllInit()
+    public static void SpineAllItemInit()
     {
         string inputPath = "Assets/LoadResources/Spine/Creature";
         string outputPath = "Assets/LoadResources/Textures/Items";
@@ -15,6 +15,28 @@ public class GameDataEditor
 
         // 指定路径（示例路径：Assets/Art/Atlases）
         string targetPath = "Assets/LoadResources/Textures/SpriteAtlas/AtlasForItems.spriteatlas";
+        SpriteAtlas atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(targetPath);
+        if (atlas != null)
+        {
+            // 重新打包图集
+            SpriteAtlasUtility.PackAtlases(new[] { atlas }, EditorUserBuildSettings.activeBuildTarget);
+            Debug.Log($"已重新生成图集: {atlas.name}");
+        }
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+    }
+
+    [MenuItem("游戏/生成所有spine里的皮肤图标")]
+    public static void SpineAllSkinInit()
+    {
+        string inputPath = "Assets/LoadResources/Spine/Creature";
+        string outputPath = "Assets/LoadResources/Textures/Skins";
+        string filterSkinName = "Eye,Head,Mouth,Body,Hair,Horn,Wing";//筛选名字
+        SpineWindow.ExtractSkinTextures(inputPath, outputPath, null, true, null, filterSkinName);
+
+
+        // 指定路径（示例路径：Assets/Art/Atlases）
+        string targetPath = "Assets/LoadResources/Textures/SpriteAtlas/AtlasForSkins.spriteatlas";
         SpriteAtlas atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(targetPath);
         if (atlas != null)
         {

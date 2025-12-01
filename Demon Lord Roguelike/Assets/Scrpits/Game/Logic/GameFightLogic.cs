@@ -359,7 +359,7 @@ public class GameFightLogic : BaseGameLogic
         if (isEnd)
         {
             //进入结算状态
-            GameHandler.Instance.manager.SetGameState(GameStateEnum.Settlement);
+            ChangeGameState(GameStateEnum.Settlement);
         }
     }
 

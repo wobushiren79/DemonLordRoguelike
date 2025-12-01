@@ -408,6 +408,9 @@ MonoBehaviour:
       level: 0
       starLevel: 0
       rarity: 0
+      relationship: 0
+      creatureNpcData:
+        npcId: 0
     cardUseState: 0
     cardState: 0
     originalCardPos: {x: 0, y: 0}
@@ -422,6 +425,7 @@ MonoBehaviour:
   ui_Mask: {fileID: 0}
   ui_StarText: {fileID: 0}
   ui_SelectBg: {fileID: 0}
+  ui_IconContent: {fileID: 0}
 --- !u!224 &7208947163169238971 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}

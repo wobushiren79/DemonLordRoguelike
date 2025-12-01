@@ -137,6 +137,7 @@ MonoBehaviour:
   offsetX: 0
   offsetY: 50
   offsetPivot: {x: -0.5, y: 0}
+  isUpdatePosition: 1
   ui_UIViewCreatureCardDetails: {fileID: 6707752262272847040}
 --- !u!1001 &3678914390287004094
 PrefabInstance:

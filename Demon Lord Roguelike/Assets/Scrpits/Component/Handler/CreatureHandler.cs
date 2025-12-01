@@ -10,23 +10,26 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// <summary>
     /// 设置生物数据
     /// </summary>
-    public void SetCreatureData(SkeletonAnimation skeletonAnimation, CreatureBean creatureData, bool isSetSkeletonDataAsset = true, bool isUIShow = false, bool isNeedWeapon = true)
+    public void SetCreatureData(SkeletonAnimation skeletonAnimation, CreatureBean creatureData, 
+        bool isSetSkeletonDataAsset = true, bool isUIShow = false, bool isNeedWeapon = true, bool isNeedEquip = true)
     {
-        SetCreatureData(skeletonAnimation, null, creatureData, isSetSkeletonDataAsset, isUIShow, isNeedWeapon);
+        SetCreatureData(skeletonAnimation, null, creatureData, isSetSkeletonDataAsset, isUIShow, isNeedWeapon, isNeedEquip);
     }
 
     /// <summary>
     /// 设置生物数据
     /// </summary>
-    public void SetCreatureData(SkeletonGraphic skeletonGraphic, CreatureBean creatureData, bool isSetSkeletonDataAsset = true, bool isUIShow = false, bool isNeedWeapon = true)
+    public void SetCreatureData(SkeletonGraphic skeletonGraphic, CreatureBean creatureData, 
+        bool isSetSkeletonDataAsset = true, bool isUIShow = false, bool isNeedWeapon = true, bool isNeedEquip = true)
     {
-        SetCreatureData(null, skeletonGraphic, creatureData, isSetSkeletonDataAsset, isUIShow, isNeedWeapon);
+        SetCreatureData(null, skeletonGraphic, creatureData, isSetSkeletonDataAsset, isUIShow, isNeedWeapon, isNeedEquip);
     }
 
     /// <summary>
     /// 设置生物数据
     /// </summary>
-    public void SetCreatureData(SkeletonAnimation skeletonAnimation, SkeletonGraphic skeletonGraphic, CreatureBean creatureData, bool isSetSkeletonDataAsset = true, bool isUIShow = false, bool isNeedWeapon = true)
+    public void SetCreatureData(SkeletonAnimation skeletonAnimation, SkeletonGraphic skeletonGraphic, CreatureBean creatureData, 
+    bool isSetSkeletonDataAsset = true, bool isUIShow = false, bool isNeedWeapon = true, bool isNeedEquip = true)
     {
         if (creatureData == null)
         {
@@ -39,7 +42,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         {
             creatureData.creatureModel.GetShowRes(out resName, out skinType);
         }
-        Dictionary<string, SpineSkinBean> skinData = creatureData.GetSkinData(showType: skinType, isNeedWeapon: isNeedWeapon);
+        Dictionary<string, SpineSkinBean> skinData = creatureData.GetSkinData(showType: skinType, isNeedWeapon: isNeedWeapon, isNeedEquip: isNeedEquip);
         //设置SkeletonAnimation
         if (skeletonAnimation != null)
         {

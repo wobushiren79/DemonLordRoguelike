@@ -70,16 +70,13 @@ MonoBehaviour:
   listShowCardLineup: []
   ui_ViewExit: {fileID: 4245406790760456673}
   ui_ViewBaseInfoContent: {fileID: 1692143287008850840}
-  ui_BackpackContent: {fileID: 8712527677418259481}
   ui_LineupContent: {fileID: 1348662215215295317}
   ui_ViewCreatureCardItem: {fileID: 5763292161076554575}
-  ui_OrderBtn_Rarity: {fileID: 8373766001299447757}
-  ui_OrderBtn_Level: {fileID: 6094274068836238989}
-  ui_OrderBtn_Lineup: {fileID: 5214906414688262587}
   ui_LineupIndexBtn_1: {fileID: 4752695907296468939}
   ui_LineupIndexBtn_3: {fileID: 4725244676936222144}
   ui_LineupIndexBtn_2: {fileID: 2809101986183553235}
   ui_LineupIndexTitle: {fileID: 1799854468323847424}
+  ui_UIViewCreatureCardList: {fileID: 0}
 --- !u!1 &5854666776001289543
 GameObject:
   m_ObjectHideFlags: 0
@@ -406,50 +403,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 699329859100296908, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
   m_PrefabInstance: {fileID: 421760808867920720}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5214906414688262587 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5585999528716575467, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
-  m_PrefabInstance: {fileID: 421760808867920720}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &6094274068836238989 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5857301587010731485, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
-  m_PrefabInstance: {fileID: 421760808867920720}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &8373766001299447757 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8210047790461658269, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
-  m_PrefabInstance: {fileID: 421760808867920720}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &8712527677418259481 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 9021687495376944969, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
-  m_PrefabInstance: {fileID: 421760808867920720}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0fb65841913946d47b46156fa38901f5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &1432259608265923818
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -661,11 +614,15 @@ MonoBehaviour:
   _rectTransform: {fileID: 0}
   cardData:
     creatureData:
-      creatureId: 
-      id: 0
+      creatureId: 0
+      creatureUUId: 
       creatureName: 
       level: 0
+      starLevel: 0
       rarity: 0
+      relationship: 0
+      creatureNpcData:
+        npcId: 0
     cardUseState: 0
     cardState: 0
     originalCardPos: {x: 0, y: 0}
@@ -678,6 +635,9 @@ MonoBehaviour:
   ui_CardBgBorad: {fileID: 0}
   ui_CDTime: {fileID: 0}
   ui_Mask: {fileID: 0}
+  ui_StarText: {fileID: 0}
+  ui_SelectBg: {fileID: 0}
+  ui_IconContent: {fileID: 0}
 --- !u!224 &8272645482953681052 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}

@@ -13,7 +13,11 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public int npc_type;
 	/// <summary>
-	///随机皮肤数据
+	///皮肤固定数据
+	/// </summary>
+	public string skin_data;
+	/// <summary>
+	///随机皮肤数据-CreatureInfoRandom
 	/// </summary>
 	public long skin_random_id;
 	/// <summary>

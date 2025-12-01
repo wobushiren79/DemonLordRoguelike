@@ -23,6 +23,7 @@ public class UserDataService : BaseDataStorage
     /// </summary>
     public UserDataBean QueryData(int index)
     {
+        dataStoragePath =  $"{Application.persistentDataPath}/{saveFileName}_{index}";
         return BaseLoadData<UserDataBean>($"{saveFileName}_{index}", jsonType: JsonType.Net);
     }
 
@@ -31,6 +32,21 @@ public class UserDataService : BaseDataStorage
     /// </summary>
     public void UpdateData(UserDataBean data, int index)
     {
+        //创建文件 如果没有的话
+        dataStoragePath =  $"{Application.persistentDataPath}/{saveFileName}_{index}";
+        FileUtil.CreateDirectory(dataStoragePath);
+        //备份数据最多备份3份
+        if (data.saveRemarkIndex >= 3)
+        {
+            data.saveRemarkIndex = 0;
+        }
+        //先复制一份原来的数据（备份）
+        bool isRemarkSuccess = FileUtil.CopyFile($"{dataStoragePath}/{saveFileName}_{index}", $"{dataStoragePath}/{saveFileName}_{index}_Remark_{data.saveRemarkIndex}", true);
+        if (isRemarkSuccess)
+        { 
+            data.saveRemarkIndex ++;
+        }
+        //再生成新的
         BaseSaveData<UserDataBean>($"{saveFileName}_{index}", data, jsonType: JsonType.Net);
     }
 
@@ -39,6 +55,7 @@ public class UserDataService : BaseDataStorage
     /// </summary>
     public void DeleteData(int index)
     {
+        dataStoragePath =  $"{Application.persistentDataPath}/{saveFileName}_{index}";
         BaseDeleteFile($"{saveFileName}_{index}");
     }
 }

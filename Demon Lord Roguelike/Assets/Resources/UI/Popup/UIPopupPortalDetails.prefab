@@ -139,6 +139,7 @@ MonoBehaviour:
   offsetX: 0
   offsetY: 0
   offsetPivot: {x: 0, y: 0}
+  isUpdatePosition: 1
 --- !u!1001 &1711568048902810129
 PrefabInstance:
   m_ObjectHideFlags: 0

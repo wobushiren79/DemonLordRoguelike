@@ -3,6 +3,19 @@ using UnityEngine.UI;
 
 public partial class IconHandler
 {
+    /// <summary>
+    /// 设置皮肤图标
+    /// </summary>
+    public void SetSkinIcon(string iconName, Image targetIV)
+    {
+        GetIconSprite(SpriteAtlasType.Skins, iconName, (sprite) =>
+        {
+            if (targetIV != null)
+            {
+                targetIV.sprite = sprite;
+            }
+        });
+    }
 
     /// <summary>
     /// 设置道具图标

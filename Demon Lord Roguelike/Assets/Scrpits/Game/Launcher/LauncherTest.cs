@@ -43,6 +43,11 @@ public class LauncherTest : BaseLauncher
         }
         userData.AddCrystal(999);
         userData.AddReputation(1000);
+        //添加道具
+        userData.AddItem(new ItemBean(10100001));
+        userData.AddItem(new ItemBean(10100002));
+        userData.AddItem(new ItemBean(10100003));
+        userData.AddItem(new ItemBean(10100004));
     }
 
     /// <summary>

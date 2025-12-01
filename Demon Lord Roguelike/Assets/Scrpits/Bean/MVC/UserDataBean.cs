@@ -15,6 +15,8 @@ public class UserDataBean : BaseBean
 {
     //保存下标
     public int saveIndex = 0;
+    //备份保存的下表
+    public int saveRemarkIndex = 0;
     //拥有的魔晶
     public long crystal;
     //拥有的声望

@@ -40,8 +40,13 @@ public class GameFightLogicDoomCouncil : GameFightLogic
     /// <summary>
     /// 回调-结算界面关闭
     /// </summary> 
-    public void ActionForUIFightSettlementNext()
-    {
+    public async void ActionForUIFightSettlementNext()
+    {                    
+        //展示投票结果
+        var voteEndUI = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilVoteEnd>();    
+        voteEndUI.VoteEndShow(fightData.gameIsWin);
+        await new WaitForSeconds(2f);
+
         //展示mask
         UIHandler.Instance.ShowMask(1, null, () =>
         {

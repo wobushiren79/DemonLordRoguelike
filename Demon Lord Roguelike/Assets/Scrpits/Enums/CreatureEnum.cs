@@ -67,6 +67,7 @@ public enum CreatureAttributeTypeEnum
 
 public enum CreatureSkinTypeEnum
 {
+    None = -1,
     //---------------------身体
     Base = 0,//基础
     Head = 1,//头部

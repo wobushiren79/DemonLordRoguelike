@@ -11,8 +11,8 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
     public GameObject councilorPosition;
     //讲台
     public GameObject podium;
-
-    public Dictionary<string,GameObject> dicCouncilorObj = new Dictionary<string,GameObject>();
+    //所有议员的预制体
+    public Dictionary<string, GameObject> dicCouncilorObj = new Dictionary<string, GameObject>();
 
     /// <summary>
     /// 初始化所有议员

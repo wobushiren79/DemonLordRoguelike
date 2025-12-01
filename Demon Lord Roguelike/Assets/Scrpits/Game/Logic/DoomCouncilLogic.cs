@@ -28,14 +28,18 @@ public class DoomCouncilLogic : BaseGameLogic
         }
         doomCouncilData.listCouncilor = listCouncilor;
         await scenePrefab.InitCouncilor(listCouncilor);
+
         //初始化位置数据
         doomCouncilData.dicCouncilorPosition = new Dictionary<string, Vector3>();
         foreach (var itemCouncilor in scenePrefab.dicCouncilorObj)
         {
             doomCouncilData.dicCouncilorPosition.Add(itemCouncilor.Key, itemCouncilor.Value.transform.position);
         }
+
         //设置基地场景视角
-        await CameraHandler.Instance.InitBaseSceneControlCamera(userData.selfCreature, scenePrefab.podium.transform.position);
+        //Vector3 startPosition = scenePrefab.podium.transform.position;
+        Vector3 startPosition = doomCouncilData.dicCouncilorPosition[doomCouncilData.listCouncilor[0].creatureUUId];
+        await CameraHandler.Instance.InitBaseSceneControlCamera(userData.selfCreature, startPosition);
         //开始
         StartGame();
     }
@@ -50,7 +54,8 @@ public class DoomCouncilLogic : BaseGameLogic
     public override void EndGame()
     {
         base.EndGame();
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        //保存用户数据
+        UserDataBean userData = GameDataHandler.Instance.manager.SaveUserData();
         WorldHandler.Instance.EnterGameForBaseScene(userData, true);
     }
 
@@ -69,8 +74,8 @@ public class DoomCouncilLogic : BaseGameLogic
         //等待0.5秒镜头切换
         await new WaitForSeconds(0.5f);       
         //打开投票UI
-        UIDoomCouncilVote targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilVote>();
-        targetUI.SetData(doomCouncilData);
+        UIDoomCouncilVote voteUI = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilVote>();
+        voteUI.SetData(doomCouncilData);
         //获取所有议员
         Dictionary<string, GameObject> dicCouncilorObj = scenePrefab.dicCouncilorObj;
 
@@ -110,14 +115,15 @@ public class DoomCouncilLogic : BaseGameLogic
             var itemCouncilorObj = itemCouncilor.Value;
             scenePrefab.CouncilorVote(itemCouncilorObj, npcVoteType);
             //刷新UI
-            targetUI.AddVoteData(npcVoteType, voteNum);
+            voteUI.AddVoteData(npcVoteType, voteNum);
         }
 
         await new WaitForSeconds(0.5f);
         //计算是否通过
         bool isPass = ayeVoteNum >= nayVoteNum ? true : false;
         //展示投票结果
-        targetUI.VoteEndShow(isPass);
+        var voteEndUI = UIHandler.Instance.OpenUI<UIDoomCouncilVoteEnd>();    
+        voteEndUI.VoteEndShow(isPass);
         await new WaitForSeconds(2f);
         //弹出下一步提示
         DialogSelectBean dialogSelectData = new DialogSelectBean();
@@ -208,7 +214,7 @@ public class DoomCouncilLogic : BaseGameLogic
     /// </summary>
     public void ActionForCouncilorConversationEnd()
     {
-        //恢复控制
-        GameControlHandler.Instance.SetBaseControl(true);   
+        //打开主UI 并且恢复移动
+        var uiBaseMain = UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
     }
 }

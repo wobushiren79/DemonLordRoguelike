@@ -85,4 +85,38 @@ public partial class ItemsInfoBean
 }
 public partial class ItemsInfoCfg
 {
+    public static Dictionary<long,List<ItemsInfoBean>> dicDataForCreatureModel;
+
+    /// <summary>
+    /// 根据生物模型获取数据
+    /// </summary>
+    /// <param name="creatureModelId"></param>
+    /// <returns></returns>
+    public static List<ItemsInfoBean> GetDataByCreatureModelId(long creatureModelId)
+    {
+        if (dicDataForCreatureModel == null)
+        {  
+            dicDataForCreatureModel = new Dictionary<long, List<ItemsInfoBean>>();
+            var allData = GetAllArrayData();
+            for (int i = 0; i < allData.Length; i++)
+            {
+                var itemData = allData[i];
+                var creatureModelInfo = CreatureModelInfoCfg.GetItemData(itemData.creature_model_info_id);
+               
+                if (dicDataForCreatureModel.ContainsKey(creatureModelInfo.model_id))
+                {
+                    dicDataForCreatureModel[creatureModelInfo.model_id].Add(itemData);
+                }
+                else
+                {
+                    dicDataForCreatureModel.Add(creatureModelInfo.model_id, new List<ItemsInfoBean>() { itemData });
+                }
+            }
+        }
+        if (dicDataForCreatureModel.TryGetValue(creatureModelId, out List<ItemsInfoBean> valueData))
+        {
+            return valueData;
+        }
+        return null;    
+    }
 }

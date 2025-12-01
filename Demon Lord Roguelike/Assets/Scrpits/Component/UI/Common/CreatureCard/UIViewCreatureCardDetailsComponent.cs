@@ -1,6 +1,7 @@
 ﻿using Spine.Unity;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
 
 
 public partial class UIViewCreatureCardDetails
@@ -28,6 +29,10 @@ public partial class UIViewCreatureCardDetails
     public Image ui_CardRate;
 
     public TextMeshProUGUI ui_AttributeItemText_Speed;
+
+    public RectTransform ui_AttributeList_RectTransform;
+
+    public Image ui_AttributeList_Image;
 
 
 }

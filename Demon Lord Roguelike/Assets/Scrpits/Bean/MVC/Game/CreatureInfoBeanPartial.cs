@@ -74,7 +74,7 @@ public partial class CreatureInfoBean
     }
 
     /// <summary>
-    /// 获取所有可替换皮肤类型
+    /// 获取所有可装备道具类型
     /// </summary>
     public List<ItemTypeEnum> GetEquipItemsType()
     {

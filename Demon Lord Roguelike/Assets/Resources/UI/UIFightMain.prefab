@@ -838,6 +838,9 @@ MonoBehaviour:
       level: 0
       starLevel: 0
       rarity: 0
+      relationship: 0
+      creatureNpcData:
+        npcId: 0
     cardUseState: 0
     cardState: 0
     originalCardPos: {x: 0, y: 0}
@@ -852,6 +855,7 @@ MonoBehaviour:
   ui_Mask: {fileID: 0}
   ui_StarText: {fileID: 0}
   ui_SelectBg: {fileID: 0}
+  ui_IconContent: {fileID: 0}
   animCardCreateDelayTime: 0.05
   animCardCreateTimeType1: 0.8
   animCardCreateTimeType2: 0.4

@@ -56,6 +56,8 @@ public partial class UIViewCreatureCardItem : BaseUIView
         var rarityInfo = RarityInfoCfg.GetItemData(rarity);
         ColorUtility.TryParseHtmlString(rarityInfo.ui_board_color, out Color boardColor);
         ui_CardBgBorad.color = boardColor;
+        ColorUtility.TryParseHtmlString(rarityInfo.ui_board_other_color, out Color boardOtherColor);
+        ui_IconContent.color = boardOtherColor;
     }
 
     /// <summary>
