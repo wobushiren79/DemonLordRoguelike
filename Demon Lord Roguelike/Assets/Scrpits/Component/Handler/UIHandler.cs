@@ -34,7 +34,9 @@ public partial class UIHandler
     public UIDialogItemSelect ShowDialogItemSelect(DialogBean dialogData)
     {
         dialogData.dialogType = DialogEnum.ItemSelect;
-        return ShowDialog<UIDialogItemSelect>(dialogData);
+        var dialogView = ShowDialog<UIDialogItemSelect>(dialogData);
+        dialogView.InitBackpackItemsData();
+        return dialogView;
     }
 
     /// <summary>

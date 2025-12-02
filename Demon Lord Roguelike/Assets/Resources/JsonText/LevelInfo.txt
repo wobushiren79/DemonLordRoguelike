@@ -1,0 +1,1 @@
+[{"level_exp":"1000","id":1},{"level_exp":"2000","id":2},{"level_exp":"4000","id":3},{"level_exp":"8000","id":4},{"level_exp":"16000","id":5},{"level_exp":"32000","id":6},{"level_exp":"64000","id":7},{"level_exp":"128000","id":8},{"level_exp":"256000","id":9},{"level_exp":"512000","id":10}]

@@ -5,7 +5,43 @@ public partial class NpcInfoBean
     protected List<long> equipItems;
     protected List<long> listSkin;
     protected List<CreatureSkinTypeEnum> listSkinType;
+    protected List<long> listTitle;
 
+    /// <summary>
+    /// 获取议员评级
+    /// </summary>
+    /// <returns></returns>
+    public int GetCouncilorRatings()
+    {
+        int rating = 1;
+        if (councilor_ratings != 0)
+        {
+            rating = councilor_ratings;
+        }
+        return rating;
+    }
+
+    /// <summary>
+    /// 获取称号
+    /// </summary>
+    public List<long> GetTitles()
+    {
+        if (listTitle.IsNull())
+        {
+            listTitle = new List<long>();
+            if (!title_data.IsNull())
+            {
+                listTitle = title_data.SplitForListLong('&');
+            }
+        }
+        return listTitle;
+    }
+
+    /// <summary>
+    /// 获取皮肤
+    /// </summary>
+    /// <param name="hasRandomData">是否包含随机皮肤</param>
+    /// <returns></returns>
     public List<long> GetSkins(bool hasRandomData = true)
     {
         List<long> listData = new List<long>();
@@ -38,6 +74,10 @@ public partial class NpcInfoBean
         return listData;
     }
 
+    /// <summary>
+    /// 获取装备
+    /// </summary>
+    /// <returns></returns>
     public List<long> GetEquipItems()
     {
         if (equipItems.IsNull())
@@ -47,6 +87,10 @@ public partial class NpcInfoBean
         return equipItems;
     }
 
+    /// <summary>
+    /// 获取装备
+    /// </summary>
+    /// <returns></returns>
     public List<ItemsInfoBean> GetEquipItemsInfo()
     {
         List<ItemsInfoBean> listData = new List<ItemsInfoBean>();
@@ -60,11 +104,16 @@ public partial class NpcInfoBean
         return listData;
     }
 
+    /// <summary>
+    /// 获取NPC类型
+    /// </summary>
+    /// <returns></returns>
     public NpcTypeEnum GetNpcType()
     {
         return (NpcTypeEnum)npc_type;
     }
 }
+
 public partial class NpcInfoCfg
 {
     /// <summary>

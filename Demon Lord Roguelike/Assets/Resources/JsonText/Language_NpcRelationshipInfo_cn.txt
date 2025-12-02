@@ -1,0 +1,1 @@
+[{"content":"仇恨","id":1},{"content":"冷淡","id":2},{"content":"中立","id":3},{"content":"友好","id":4},{"content":"迷恋","id":5}]

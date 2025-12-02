@@ -4,25 +4,10 @@ using UnityEngine.UI;
 
 public partial class UIDialogItemSelect : DialogView
 {
-    public override void OnClickForButton(Button viewButton)
+    public override void InitData()
     {
-        base.OnClickForButton(viewButton);
-        if (viewButton == ui_UIViewExit || viewButton == ui_Background)
-        {
-            OnClickForExit();
-        }
-    }
-
-    public override void OpenUI()
-    {
-        base.OpenUI();
-        InitBackpackItemsData();
-    }
-
-    public override void CloseUI()
-    {
-        base.CloseUI();
-        ui_UIViewItemBackpackList.CloseUI();
+        base.InitData();
+        RegisterEvent<UIViewItemBackpack>(EventsInfo.UIViewItemBackpack_OnClickSelect, EventForItemBackpackClickSelect);
     }
 
     /// <summary>
@@ -41,7 +26,16 @@ public partial class UIDialogItemSelect : DialogView
     {
 
     }
-    
+
+    #region 点击事件
+    public override void OnClickForButton(Button viewButton)
+    {
+        base.OnClickForButton(viewButton);
+        if (viewButton == ui_UIViewExit || viewButton == ui_Background)
+        {
+            OnClickForExit();
+        }
+    }
     /// <summary>
     /// 点击离开
     /// </summary>
@@ -49,4 +43,13 @@ public partial class UIDialogItemSelect : DialogView
     {
         DestroyDialog();
     }
+    #endregion
+
+    #region 回调事件
+    public void EventForItemBackpackClickSelect(UIViewItemBackpack itemView)
+    {
+        //打开选项
+    }
+    #endregion
+
 }

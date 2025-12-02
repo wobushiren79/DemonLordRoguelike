@@ -85,9 +85,8 @@ public partial class UITestNpcCreate : BaseUIComponent
     public void InitCreatureEquipData()
     {
         List<ItemTypeEnum> listEquipType = creatureData.creatureInfo.GetEquipItemsType();
-        CreatureNpcBean creatureNpcData = creatureData.GetCreatureNpcData();
-        NpcInfoBean npcInfoData = NpcInfoCfg.GetItemData(creatureNpcData.npcId);
-        List<ItemsInfoBean> listEquipItems = npcInfoData.GetEquipItemsInfo();
+        List<long> listEquipItems = listCreatureEquipItemIds;
+
         for (int i = 0; i < ui_UIDataEquipItem.childCount; i++)
         {
             var itemView = ui_UIDataEquipItem.GetChild(i).GetComponent<UIViewTestIconShow>();
@@ -97,10 +96,11 @@ public partial class UITestNpcCreate : BaseUIComponent
                 ItemsInfoBean targetItemData = null;
                 for (int j = 0; j < listEquipItems.Count; j++)
                 {
-                    var itemData = listEquipItems[j];
-                    if (itemData.GetItemType() == equipItemType)
+                    var itemDataId = listEquipItems[j];
+                    var itemInfo = ItemsInfoCfg.GetItemData(itemDataId);
+                    if (itemInfo.GetItemType() == equipItemType)
                     {
-                        targetItemData = itemData;
+                        targetItemData = itemInfo;
                     }
                 }
                 string iconRes = null;
@@ -128,6 +128,8 @@ public partial class UITestNpcCreate : BaseUIComponent
     {
         //使用自定义皮肤
         creatureData.InitSkin(listCreatureSkinData);
+        //使用自定义装备
+        creatureData.InitEquip(listCreatureEquipItemIds);
         //设置spine
         CreatureHandler.Instance.SetCreatureData(ui_TargetModel, creatureData, isNeedEquip: isShowEquip);
         //播放待机动画
@@ -248,6 +250,14 @@ public partial class UITestNpcCreate : BaseUIComponent
         CreatureSkinTypeEnum creatureSkinType = (CreatureSkinTypeEnum)showType;
         ui_ListSelectContent.DestroyAllChild();
         var creatureModelData = CreatureModelCfg.GetItemData(creatureData.creatureInfo.model_id);
+        
+        //添加一个空白的显示 用于取消不放置
+        GameObject itemShowObjNull = Instantiate(ui_ListSelectContent.gameObject, ui_UIViewTestIconShow.gameObject);
+        itemShowObjNull.gameObject.SetActive(true);
+        var itemShowViewNull = itemShowObjNull.GetComponent<UIViewTestIconShow>();
+        itemShowViewNull.SetDataForSkin(showType, 0, null, "取消");
+        itemShowViewNull.actionForOnClick = ActionForSelectItemForCreatureBody;
+
         //加载改角色所有的皮肤类型
         var dicAllSkins = CreatureModelInfoCfg.GetData(creatureData.creatureInfo.model_id);
         if (dicAllSkins.TryGetValue(creatureSkinType, out var listSkinData))
@@ -267,6 +277,7 @@ public partial class UITestNpcCreate : BaseUIComponent
                 itemShowView.actionForOnClick = ActionForSelectItemForCreatureBody;
             }
         }
+        
     }
 
     public void ActionForCreatureEquipOnClick(int showType, long showId)
@@ -274,6 +285,14 @@ public partial class UITestNpcCreate : BaseUIComponent
         ui_ListSelectBG_RectTransform.gameObject.SetActive(true);
         ItemTypeEnum itemType = (ItemTypeEnum)showType;
         ui_ListSelectContent.DestroyAllChild();
+
+        //添加一个空白的显示 用于取消不放置
+        GameObject itemShowObjNull = Instantiate(ui_ListSelectContent.gameObject, ui_UIViewTestIconShow.gameObject);
+        itemShowObjNull.gameObject.SetActive(true);
+        var itemShowViewNull = itemShowObjNull.GetComponent<UIViewTestIconShow>();
+        itemShowViewNull.SetDataForItem(showType, 0, null, "取消");
+        itemShowViewNull.actionForOnClick = ActionForSelectItemForCreatureEquip;
+
         var creatureModelData = CreatureModelCfg.GetItemData(creatureData.creatureInfo.model_id);
         var listItemInfo = ItemsInfoCfg.GetDataByCreatureModelId(creatureModelData.id);
         for (int i = 0; i < listItemInfo.Count; i++)
@@ -284,8 +303,8 @@ public partial class UITestNpcCreate : BaseUIComponent
                 GameObject itemShowObj = Instantiate(ui_ListSelectContent.gameObject, ui_UIViewTestIconShow.gameObject);
                 itemShowObj.gameObject.SetActive(true);
                 var itemShowView = itemShowObj.GetComponent<UIViewTestIconShow>();
-                itemShowView.SetDataForItem(2, itemInfo.id, itemInfo.icon_res, itemType.GetEnumName());
-                itemShowView.actionForOnClick = ActionForSelectItemForCreatureBody;
+                itemShowView.SetDataForItem(showType, itemInfo.id, itemInfo.icon_res, itemType.GetEnumName());
+                itemShowView.actionForOnClick = ActionForSelectItemForCreatureEquip;
             }
         }
     }
@@ -297,19 +316,21 @@ public partial class UITestNpcCreate : BaseUIComponent
     {
         OnClickForHideSelect();
         var creatureModelInfo = CreatureModelInfoCfg.GetItemData(showId);
+        var partType = creatureModelInfo.GetPartType();
         for (int i = 0; i < listCreatureSkinData.Count; i++)
         {
-            var itemData = listCreatureSkinData[i];
-            var itemCreatureModelInfo = CreatureModelInfoCfg.GetItemData(itemData);
+            var itemDataId = listCreatureSkinData[i];
+            var itemCreatureModelInfo = CreatureModelInfoCfg.GetItemData(itemDataId);
             //如果是同一个部位的 去掉
-            if (itemCreatureModelInfo.GetPartType() == creatureModelInfo.GetPartType())
+            if (itemCreatureModelInfo.GetPartType() == partType)
             {
-                listCreatureSkinData.Remove(itemData);
+                listCreatureSkinData.Remove(itemDataId);
                 i--;
             }
         }
         //添加该部位
-        listCreatureSkinData.Add(creatureModelInfo.id);
+        if (creatureModelInfo != null)
+            listCreatureSkinData.Add(creatureModelInfo.id);
         //刷新
         RefreshCreature();
     }
@@ -320,6 +341,21 @@ public partial class UITestNpcCreate : BaseUIComponent
     public void ActionForSelectItemForCreatureEquip(int showType, long showId)
     {
         OnClickForHideSelect();
+        var targetItemsInfo = ItemsInfoCfg.GetItemData(showId);
+        var itemType = (ItemTypeEnum)showType;
+        for (int i = 0; i < listCreatureEquipItemIds.Count; i++)
+        {
+            var itemDataId = listCreatureEquipItemIds[i];
+            var itemsInfo = ItemsInfoCfg.GetItemData(itemDataId);
+           //如果是同一个部位的 去掉
+            if(itemsInfo.GetItemType() == itemType)
+            {
+                listCreatureEquipItemIds.Remove(itemDataId);
+                i--;
+            }
+        }
+        if (showId != 0)
+            listCreatureEquipItemIds.Add(showId);
         RefreshCreature();
     }
     #endregion;

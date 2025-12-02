@@ -31,6 +31,14 @@ public partial class NpcInfoBean : BaseBean
 	[JsonIgnore]
 	public string name_language { get { return TextHandler.Instance.GetTextById(NpcInfoCfg.fileName, name); } }
 	/// <summary>
+	///议会评级
+	/// </summary>
+	public int councilor_ratings;
+	/// <summary>
+	///称号数据
+	/// </summary>
+	public string title_data;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

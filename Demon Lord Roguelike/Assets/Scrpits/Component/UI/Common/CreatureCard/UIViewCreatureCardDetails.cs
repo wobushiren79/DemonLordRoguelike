@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.UI;
 
 public partial class UIViewCreatureCardDetails : BaseUIView
 {
@@ -33,6 +35,104 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         
         SetAttribute(hp, dr,atk, aspd);
         SetRarity(creatureData.rarity);
+        SetLevelData(creatureData.level, creatureData.levelExp);
+
+        SetRelationship(creatureData.relationship);
+        SetTitle();
+        SetDoomCouncilData();
+
+        RefreshUILayout();
+    }
+
+    /// <summary>
+    /// 设置终焉议会数据
+    /// </summary>
+    public void SetDoomCouncilData()
+    {
+        var npcData = creatureData.GetCreatureNpcData();
+        //如果是NPC数据
+        if (npcData != null && npcData.npcId != 0)
+        {
+            var npcInfo = NpcInfoCfg.GetItemData(npcData.npcId);
+            if (npcInfo.GetNpcType() == NpcTypeEnum.Councilor)
+            {
+                ui_Relationship.gameObject.SetActive(true);
+                int rating = npcInfo.GetCouncilorRatings();
+                var rarityInfo = DoomCouncilRatingsInfoCfg.GetItemData(rating);
+                ui_RelationshipText.text = $"{TextHandler.Instance.GetTextById(53000)}{rarityInfo.name_language}({rarityInfo.vote})";
+                return;   
+            }
+        }
+        ui_Relationship.gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// 设置关系
+    /// </summary>
+    public void SetRelationship(int relationship)
+    {
+        var npcData = creatureData.GetCreatureNpcData();
+        //如果是NPC数据
+        if (npcData != null && npcData.npcId != 0)
+        {
+            var npcRelationshipInfo = NpcRelationshipInfoCfg.GetNpcRelationship(relationship);
+            ui_Relationship.gameObject.SetActive(true);
+            IconHandler.Instance.SetUIIcon(npcRelationshipInfo.icon_res, ui_RelationshipIcon);
+            ui_RelationshipText.text = $"{npcRelationshipInfo.name_language}";
+        }
+        else
+        {
+            ui_Relationship.gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// 设置称号
+    /// </summary>
+    public void SetTitle()
+    {
+        var npcData = creatureData.GetCreatureNpcData();
+        List<long> titleList = null;
+        if (npcData != null && npcData.npcId != 0)
+        {
+            var npcInfo = NpcInfoCfg.GetItemData(npcData.npcId);
+            titleList = npcInfo.GetTitles();
+        }
+        if (titleList.IsNull())
+        {
+            ui_NameTitle.gameObject.SetActive(false);
+        }
+        else
+        {
+            ui_NameTitle.gameObject.SetActive(true);
+            string titleText = "";
+            for (int i = 0; i < titleList.Count; i++)
+            {
+                var titleInfo = TitleInfoCfg.GetItemData(titleList[i]);
+                titleText += $"{titleInfo.name_language} ";
+            }
+            ui_NameTitleText.text = titleText;
+        }
+    }
+
+    /// <summary>
+    /// 设置等级数据
+    /// </summary>
+    public void SetLevelData(int level, long levelExp)
+    {
+        ui_LevelText.text = string.Format(TextHandler.Instance.GetTextById(1001001), level);
+        var levelInfo = LevelInfoCfg.GetItemData(level + 1);
+        //如果没有下一级的数据了
+        if (levelInfo.id == 0)
+        {
+            ui_LevelProgressData.fillAmount = 1;
+        }
+        else
+        {
+            float percentage = (float)levelExp / long.Parse(levelInfo.level_exp);
+            ui_LevelProgressData.fillAmount = percentage;
+            ui_LevelProgressText.text = $"{MathUtil.GetPercentage(percentage, 2)}%";
+        }
     }
 
     /// <summary>
@@ -74,5 +174,13 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     public void SetCardIcon(CreatureBean creatureData)
     {
         GameUIUtil.SetCreatureUIForDetails(ui_Icon, ui_CardScene, creatureData);
+    }
+
+    /// <summary>
+    /// 刷新一下UI布局
+    /// </summary>
+    public void RefreshUILayout()
+    {
+        UGUIUtil.RefreshUISize(ui_Details);
     }
 }

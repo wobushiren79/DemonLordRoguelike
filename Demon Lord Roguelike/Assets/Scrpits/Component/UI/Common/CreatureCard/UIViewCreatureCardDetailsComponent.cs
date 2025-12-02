@@ -34,5 +34,29 @@ public partial class UIViewCreatureCardDetails
 
     public Image ui_AttributeList_Image;
 
+    public Image ui_LevelProgress;
+
+    public Image ui_LevelProgressData;
+
+    public TextMeshProUGUI ui_LevelText;
+
+    public TextMeshProUGUI ui_LevelProgressText;
+
+    public RectTransform ui_NameTitle;
+
+    public TextMeshProUGUI ui_NameTitleText;
+
+    public RectTransform ui_Details;
+
+    public RectTransform ui_Relationship;
+
+    public Image ui_RelationshipIcon;
+
+    public TextMeshProUGUI ui_RelationshipText;
+
+    public RectTransform ui_NameDoomCouncil;
+
+    public TextMeshProUGUI ui_NameDoomCouncilText;
+
 
 }

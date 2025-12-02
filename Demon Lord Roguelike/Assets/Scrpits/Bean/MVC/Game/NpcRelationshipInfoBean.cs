@@ -5,6 +5,16 @@ using Newtonsoft.Json;
 public partial class NpcRelationshipInfoBean : BaseBean
 {
 	/// <summary>
+	///图标资源
+	/// </summary>
+	public string icon_res;
+	/// <summary>
+	///名称
+	/// </summary>
+	public long name;
+	[JsonIgnore]
+	public string name_language { get { return TextHandler.Instance.GetTextById(NpcRelationshipInfoCfg.fileName, name); } }
+	/// <summary>
 	///范围最小值
 	/// </summary>
 	public int relationship_min;

@@ -13,6 +13,8 @@ public partial class CreatureBean
     public string creatureName;
     //等级
     public int level;
+    //等级经验
+    public long levelExp;
     //星级
     public int starLevel;
     //稀有度
@@ -53,7 +55,7 @@ public partial class CreatureBean
     #region 杂项
     public NpcRelationshipEnum GetRelationshipForNpc()
     {
-        return NpcRelationshipInfoCfg.GetNpcRelationship(relationship);
+        return NpcRelationshipInfoCfg.GetNpcRelationshipEnum(relationship);
     }
 
     public CreatureNpcBean GetCreatureNpcData()
@@ -287,7 +289,7 @@ public partial class CreatureBean
                         }
 
                         //如果有帽子 不需要展示头发
-                        if (dicEquipItemData.ContainsKey(ItemTypeEnum.Hat) && itemPartType == CreatureSkinTypeEnum.Hair)
+                        if (isNeedEquip && dicEquipItemData.ContainsKey(ItemTypeEnum.Hat) && itemPartType == CreatureSkinTypeEnum.Hair)
                         {
                             continue;
                         }

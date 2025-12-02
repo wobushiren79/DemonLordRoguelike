@@ -2102,6 +2102,7 @@ MonoBehaviour:
     relationship: 0
     creatureNpcData:
       npcId: 0
+  isShowEquip: 1
   listCreatureSkinData: 
   listCreatureEquipItemIds: 
   ui_NormalModel: {fileID: 46893139072815255}

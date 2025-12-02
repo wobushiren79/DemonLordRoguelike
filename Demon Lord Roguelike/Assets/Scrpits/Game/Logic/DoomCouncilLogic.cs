@@ -84,6 +84,9 @@ public class DoomCouncilLogic : BaseGameLogic
 
         foreach (var itemCouncilor in dicCouncilorObj)
         {
+            string creatureUUId = itemCouncilor.Key;
+            GameObject creatureObj = itemCouncilor.Value;
+
             await new WaitForSeconds(0.2f);
             //计算成功率
             NpcVoteTypeEnum npcVoteType = NpcVoteTypeEnum.None;
@@ -102,7 +105,19 @@ public class DoomCouncilLogic : BaseGameLogic
             {
                 npcVoteType = NpcVoteTypeEnum.Sleep;
             }
+            var creatureData = doomCouncilData.GetCouncilor(creatureUUId);
+            var creatureNpcData = creatureData.GetCreatureNpcData();
+            
             int voteNum = 1;
+            //获取该NPC的投票数
+            if (creatureNpcData!=null&&creatureNpcData.npcId!=0)
+            {
+                var npcInfo = NpcInfoCfg.GetItemData(creatureNpcData.npcId);
+                int councilorRatings=npcInfo.GetCouncilorRatings();
+                var rarityInfo =  DoomCouncilRatingsInfoCfg.GetItemData(councilorRatings);
+                voteNum = rarityInfo.vote;
+            }
+
             if (npcVoteType == NpcVoteTypeEnum.Aye)
             {
                 ayeVoteNum += voteNum;
@@ -112,8 +127,7 @@ public class DoomCouncilLogic : BaseGameLogic
                 nayVoteNum += voteNum;
             }
             //播放议员投票动画
-            var itemCouncilorObj = itemCouncilor.Value;
-            scenePrefab.CouncilorVote(itemCouncilorObj, npcVoteType);
+            scenePrefab.CouncilorVote(creatureObj, npcVoteType);
             //刷新UI
             voteUI.AddVoteData(npcVoteType, voteNum);
         }
