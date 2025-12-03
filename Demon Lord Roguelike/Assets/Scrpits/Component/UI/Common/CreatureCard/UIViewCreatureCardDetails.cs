@@ -40,8 +40,33 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         SetRelationship(creatureData.relationship);
         SetTitle();
         SetDoomCouncilData();
+        SetEquipData();
 
         RefreshUILayout();
+    }
+
+    /// <summary>
+    /// 设置装备数据
+    /// </summary>
+    public void SetEquipData()
+    {
+        List<ItemTypeEnum> listEquipType = creatureData.creatureInfo.GetEquipItemsType();  
+        for (int i = 0; i < ui_Equip.transform.childCount; i++)
+        {
+            var itemChildTF = ui_Equip.transform.GetChild(i);
+            if (i < listEquipType.Count)
+            {       
+                itemChildTF.gameObject.SetActive(true);
+                var viewItemEquip =  itemChildTF.GetComponent<UIViewItemEquip>();
+                var itemType = listEquipType[i];
+                var itemData = creatureData.GetEquip(itemType);
+                viewItemEquip.SetData(itemData);
+            }
+            else
+            {
+                itemChildTF.gameObject.SetActive(false);
+            }
+        }
     }
 
     /// <summary>
@@ -56,14 +81,14 @@ public partial class UIViewCreatureCardDetails : BaseUIView
             var npcInfo = NpcInfoCfg.GetItemData(npcData.npcId);
             if (npcInfo.GetNpcType() == NpcTypeEnum.Councilor)
             {
-                ui_Relationship.gameObject.SetActive(true);
+                ui_NameDoomCouncil.gameObject.SetActive(true);
                 int rating = npcInfo.GetCouncilorRatings();
                 var rarityInfo = DoomCouncilRatingsInfoCfg.GetItemData(rating);
-                ui_RelationshipText.text = $"{TextHandler.Instance.GetTextById(53000)}{rarityInfo.name_language}({rarityInfo.vote})";
+                ui_NameDoomCouncilText.text = $"{TextHandler.Instance.GetTextById(53000)}{rarityInfo.name_language}({rarityInfo.vote})";
                 return;   
             }
         }
-        ui_Relationship.gameObject.SetActive(false);
+        ui_NameDoomCouncil.gameObject.SetActive(false);
     }
 
     /// <summary>

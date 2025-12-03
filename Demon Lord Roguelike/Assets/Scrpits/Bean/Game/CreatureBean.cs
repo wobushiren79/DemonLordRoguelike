@@ -47,6 +47,8 @@ public partial class CreatureBean
         this.creatureId = npcInfo.creature_id;
         this.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
         this.creatureName = npcInfo.name_language;
+        this.level = npcInfo.level;
+        
         //添加随机皮肤
         InitSkin(npcInfo);
         //添加装备

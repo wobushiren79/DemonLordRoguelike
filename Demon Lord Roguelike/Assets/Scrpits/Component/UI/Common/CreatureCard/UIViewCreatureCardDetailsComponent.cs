@@ -58,5 +58,7 @@ public partial class UIViewCreatureCardDetails
 
     public TextMeshProUGUI ui_NameDoomCouncilText;
 
+    public RectTransform ui_Equip;
+
 
 }
