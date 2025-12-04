@@ -50,15 +50,16 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     /// </summary>
     public void SetEquipData()
     {
-        List<ItemTypeEnum> listEquipType = creatureData.creatureInfo.GetEquipItemsType();  
+        List<ItemTypeEnum> listEquipType = creatureData.creatureInfo.GetEquipItemsType();
+        
         for (int i = 0; i < ui_Equip.transform.childCount; i++)
         {
             var itemChildTF = ui_Equip.transform.GetChild(i);
             if (i < listEquipType.Count)
             {       
-                itemChildTF.gameObject.SetActive(true);
                 var viewItemEquip =  itemChildTF.GetComponent<UIViewItemEquip>();
                 var itemType = listEquipType[i];
+                itemChildTF.gameObject.SetActive(true);
                 var itemData = creatureData.GetEquip(itemType);
                 viewItemEquip.SetData(itemData);
             }

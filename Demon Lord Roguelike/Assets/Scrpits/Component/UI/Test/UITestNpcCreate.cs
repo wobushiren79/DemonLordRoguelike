@@ -14,6 +14,7 @@ public partial class UITestNpcCreate : BaseUIComponent
     public List<long> listCreatureSkinData;
     public List<long> listCreatureEquipItemIds;
 
+    public Color colorHair = Color.white;//头发颜色
     public override void Awake()
     {
         base.Awake();
@@ -27,6 +28,8 @@ public partial class UITestNpcCreate : BaseUIComponent
         SpineHandler.Instance.PlayAnim(ui_NormalModel, SpineAnimationStateEnum.Idle, creatureNormalTest, true);
 
         ui_LoadInput.text = "2000000001";
+
+        ui_UIViewColorSelect_Hair.SetData("头发颜色", colorHair, ActionForHairColorChange);
     }
 
     /// <summary>
@@ -45,6 +48,8 @@ public partial class UITestNpcCreate : BaseUIComponent
         {
             listSkinType.Add(item.Key);
         }
+
+        bool isShowHairColorSelect = false;
         for (int i = 0; i < ui_UIDataBody.childCount; i++)
         {
             var itemView = ui_UIDataBody.GetChild(i).GetComponent<UIViewTestIconShow>();
@@ -59,6 +64,10 @@ public partial class UITestNpcCreate : BaseUIComponent
                     if (itemData.GetPartType() == skinType)
                     {
                         targetItemData = itemData;
+                        if (skinType == CreatureSkinTypeEnum.Hair && itemData.color_state != 0)
+                        {
+                            isShowHairColorSelect = true;
+                        }
                     }
                 }
                 string iconRes = null;
@@ -77,6 +86,8 @@ public partial class UITestNpcCreate : BaseUIComponent
                 itemView.gameObject.SetActive(false);
             }
         }
+        //颜色选择
+        ui_UIViewColorSelect_Hair.gameObject.SetActive(isShowHairColorSelect ? true : false);
     }
 
     /// <summary>
@@ -130,6 +141,9 @@ public partial class UITestNpcCreate : BaseUIComponent
         creatureData.InitSkin(listCreatureSkinData);
         //使用自定义装备
         creatureData.InitEquip(listCreatureEquipItemIds);
+        //修改头发颜色
+        creatureData.ChangeSkinColor(CreatureSkinTypeEnum.Hair, colorHair);
+
         //设置spine
         CreatureHandler.Instance.SetCreatureData(ui_TargetModel, creatureData, isNeedEquip: isShowEquip);
         //播放待机动画
@@ -244,6 +258,12 @@ public partial class UITestNpcCreate : BaseUIComponent
     #endregion
 
     #region  事件回调
+    public void ActionForHairColorChange(Color changeColor)
+    {
+        colorHair = changeColor;
+        RefreshCreature();
+    }
+
     public void ActionForCreatureBodyOnClick(int showType, long showId)
     {
         ui_ListSelectBG_RectTransform.gameObject.SetActive(true);

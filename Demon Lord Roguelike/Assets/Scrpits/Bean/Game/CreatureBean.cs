@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using UnityEngine;
 
 [Serializable]
@@ -48,7 +49,7 @@ public partial class CreatureBean
         this.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
         this.creatureName = npcInfo.name_language;
         this.level = npcInfo.level;
-        
+
         //添加随机皮肤
         InitSkin(npcInfo);
         //添加装备
@@ -250,6 +251,35 @@ public partial class CreatureBean
         else
         {
             dicSkinData.Add(targetSkinType, spineSkinData);
+        }
+    }
+
+    /// <summary>
+    /// 改变皮肤颜色
+    /// </summary>
+    public void ChangeSkinColor(CreatureSkinTypeEnum creatureSkinType, Color skinColor)
+    {
+        //如果已经有这个类型的皮肤类型，则覆盖原来的
+        if (dicSkinData.TryGetValue(creatureSkinType,out var spineSkinData))
+        {
+            if (spineSkinData != null)
+            {
+                var creatureModelInfo = CreatureModelInfoCfg.GetItemData(spineSkinData.skinId);
+                if(creatureModelInfo != null && creatureModelInfo.color_state != 0)
+                {
+                    spineSkinData.hasColor = true;
+                    spineSkinData.skinColor.SetColor(skinColor);
+                }
+                else
+                {
+                    LogUtil.Log($"creatureName:{creatureName} 不支持改变 {creatureSkinType.ToString()} 皮肤颜色");
+                }
+            }
+        }
+        //如果没有这个类型的皮肤类型
+        else
+        {
+            LogUtil.LogError($"creatureName:{creatureName} 没有找到类型{creatureSkinType.ToString()} 皮肤类型");
         }
     }
 

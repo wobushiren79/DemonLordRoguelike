@@ -36,5 +36,7 @@ public partial class UITestNpcCreate
 
     public Button ui_ShowEquipBtn;
 
+    public UIViewColorShow ui_UIViewColorSelect_Hair;
+
 
 }

@@ -21,6 +21,10 @@ public partial class CreatureModelInfoBean : BaseBean
 	/// </summary>
 	public string res_name;
 	/// <summary>
+	///颜色状态：0不可设置 1可设置不透明颜色 2可设置透明颜色
+	/// </summary>
+	public int color_state;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

@@ -29,6 +29,19 @@ public partial class UIHandler
     }
 
     /// <summary>
+    /// 展示颜色选择
+    /// </summary>
+    /// <param name="dialogData"></param>
+    /// <returns></returns>
+    public UIDialogSelectColor ShowDialogSelectColor(DialogSelectColorBean dialogData)
+    {
+        dialogData.dialogType = DialogEnum.SelectColor;
+        if (dialogData.submitStr.IsNull())
+            dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
+        return ShowDialog<UIDialogSelectColor>(dialogData);
+    }
+
+    /// <summary>
     /// 展示道具选择弹窗
     /// </summary>
     public UIDialogItemSelect ShowDialogItemSelect(DialogBean dialogData)
