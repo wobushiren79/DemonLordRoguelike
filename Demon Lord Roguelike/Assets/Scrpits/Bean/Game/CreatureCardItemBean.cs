@@ -5,7 +5,7 @@ using UnityEngine;
 public class CreatureCardItemBean
 {
     public CreatureBean creatureData;//卡片数据
-    public CardUseState cardUseState;//卡片用途
+    public CardUseStateEnum cardUseState;//卡片用途
     public CardStateEnum cardState;//卡片状态(用于UI展示)
 
     public Vector2 originalCardPos;//卡片的起始位置

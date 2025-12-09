@@ -55,6 +55,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 74c87d989c9a9774385d74eb4c6f477e
+    m_Address: Assets/LoadResources/Effects/EffectAddRelationship_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8a0e657a2d2a0e74d9046c889202acef
     m_Address: Assets/LoadResources/Effects/EffectBodySlam_1.prefab
     m_ReadOnly: 0

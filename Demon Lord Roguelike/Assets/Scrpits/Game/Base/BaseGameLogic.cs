@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -36,15 +37,15 @@ public abstract class BaseGameLogic : BaseEvent
     /// <summary>
     /// 结束游戏
     /// </summary>
-    public virtual void EndGame()
+    public virtual async void EndGame()
     {
-        ClearGame();
+        await ClearGame();
     }
 
     /// <summary>
     /// 清理数据
     /// </summary>
-    public virtual void ClearGame()
+    public virtual async Task ClearGame()
     {
         ChangeGameState(GameStateEnum.End);
         UnRegisterAllEvent();

@@ -146,7 +146,7 @@ public partial class UIFightMain : BaseUIComponent
             var itemCardView = itemCardObj.GetComponent<UIViewCreatureCardItemForFight>();
             var posTarget = GetCardItemPos(i, listCreatureData.Count);
             //设置数据
-            itemCardView.SetData(itemData, CardUseState.Fight, posTarget);
+            itemCardView.SetData(itemData, CardUseStateEnum.Fight, posTarget);
 
             listCreatureCard.Add(itemCardView);
         }

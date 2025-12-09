@@ -1,0 +1,1 @@
+[{"content":"普通","id":1},{"content":"稀有","id":2},{"content":"超凡","id":3},{"content":"至尊","id":4},{"content":"神话","id":5},{"content":"传说","id":6}]

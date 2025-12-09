@@ -82,12 +82,18 @@ public class GameFightLogic : BaseGameLogic
         BuffHandler.Instance.UpdateData(updateTime);
     }
 
+    public override void EndGame()
+    {
+        base.EndGame();
+        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_EndGame, fightData.gameFightType);
+    }
+
     /// <summary>
     /// 清理游戏
     /// </summary>
-    public override void ClearGame()
+    public override async Task ClearGame()
     {
-        base.ClearGame();
+        await base.ClearGame();
         ClearSelectData(true);
         //清理战斗数据
         fightData.ClearEntity();
@@ -100,7 +106,7 @@ public class GameFightLogic : BaseGameLogic
         //Buff清理
         BuffHandler.Instance.manager.ClearBuff();
         //清理战斗场景
-        WorldHandler.Instance.UnLoadScene(GameSceneTypeEnum.Fight);
+        await WorldHandler.Instance.UnLoadScene(GameSceneTypeEnum.Fight);
         //清理缓存
         System.GC.Collect();
     }

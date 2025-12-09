@@ -19,7 +19,7 @@ public partial class UIMainCreate : BaseUIComponent
 
     //选中控件
     protected List<UIViewMainCreateSelectItem> listSelectView = new List<UIViewMainCreateSelectItem>();
-
+    protected Dictionary<CreatureSkinTypeEnum,UIViewColorShow> dicSelectColorShow = new Dictionary<CreatureSkinTypeEnum, UIViewColorShow>();
     //物种数据
     protected List<int> listSelectForSpecies = new List<int>()
     {
@@ -107,7 +107,7 @@ public partial class UIMainCreate : BaseUIComponent
     {
         this.userDataIndex = userDataIndex;
     }
-
+    #region 按钮事件
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
@@ -167,8 +167,8 @@ public partial class UIMainCreate : BaseUIComponent
             createCreatureData.rarity = 0;
 
             userData.selfCreature = createCreatureData;
-            //添加4个初始魔物 2个近战 2个远程
-            for (int i = 0; i < 4; i++)
+            //添加3个初始魔物 2个近战 1个远程
+            for (int i = 0; i < 3; i++)
             {
                 long targetCreatureId;
                 if (i < 2)
@@ -209,6 +209,22 @@ public partial class UIMainCreate : BaseUIComponent
         int randomSelect = Random.Range(0, listSelectForSpecies.Count);
         HandleForSelectSpecies(randomSelect, true);
     }
+    #endregion
+
+    #region 回调处理
+    public void ActionForSelectColor(UIViewColorShow viewColorShow, Color targetColor)
+    {
+        foreach (var item in dicSelectColorShow)
+        {
+            var skinType = item.Key;
+            var colorShow = item.Value;
+            if (colorShow == viewColorShow)
+            {
+                createCreatureData.ChangeSkinColor(skinType, targetColor);  
+                SetPreviewCreate(createCreatureData);
+            }
+        }
+    }
 
     /// <summary>
     /// 选择回调
@@ -221,7 +237,7 @@ public partial class UIMainCreate : BaseUIComponent
         }
         else
         {
-            HandleForSelectOther(targetView, select, isInit);
+            HandleForSelectSkin(targetView, select, isInit);
         }
     }
 
@@ -230,12 +246,44 @@ public partial class UIMainCreate : BaseUIComponent
     /// </summary>
     /// <param name="targetView"></param>
     /// <param name="select"></param>
-    public void HandleForSelectOther(UIViewMainCreateSelectItem targetView, int select, bool isInit)
+    public void HandleForSelectSkin(UIViewMainCreateSelectItem targetView, int select, bool isInit)
     {
+        Color colorForSkin = Color.white;
+        bool hasColorForSkin = false;
+        //清理颜色选择
+        if (dicSelectColorShow.TryGetValue(targetView.creatureSkinType, out UIViewColorShow oldColorShow))
+        {
+            colorForSkin = oldColorShow.showColor;
+            DestroyImmediate(oldColorShow.gameObject);
+            dicSelectColorShow.Remove(targetView.creatureSkinType);
+        }
+
+        //获取当前选择的数据
         dicSelectData.TryGetValue(targetView.creatureId, out Dictionary<CreatureSkinTypeEnum, List<long>> dicSkinData);
         dicSkinData.TryGetValue(targetView.creatureSkinType, out List<long> listSkin);
         var selectSkin = listSkin[select];
-        createCreatureData.AddSkin(selectSkin);
+        var creatureModelInfo  =  CreatureModelInfoCfg.GetItemData(selectSkin);
+        
+        //如果当前选择的皮肤包含颜色选择
+        if (creatureModelInfo.color_state != 0)
+        {
+            GameObject targetObj = Instantiate(ui_SelectContent.gameObject, ui_UIViewColorShow.gameObject);
+            targetObj.transform.SetSiblingIndex(targetView.transform.GetSiblingIndex() + 1);
+            UIViewColorShow colorShow = targetObj.GetComponent<UIViewColorShow>();
+            dicSelectColorShow.Add(targetView.creatureSkinType, colorShow);
+
+            string skinName = CreatureEnum.GetCreatureSkinTypeEnumName(targetView.creatureSkinType);
+            colorShow.SetData(skinName, colorForSkin, ActionForSelectColor);
+            hasColorForSkin = true;
+        }
+        else
+        {
+            colorForSkin = Color.white;
+            hasColorForSkin = false;
+        }
+
+        SpineSkinBean spineSkin = new SpineSkinBean(selectSkin, hasColorForSkin, colorForSkin);
+        createCreatureData.AddSkin(spineSkin);
         if (!isInit)
         {
             SetPreviewCreate(createCreatureData);
@@ -253,12 +301,19 @@ public partial class UIMainCreate : BaseUIComponent
         createCreatureData.creatureId = creatureId;
         createCreatureData.ClearSkin();
         createCreatureData.AddSkinForBase();
-        
+
         //隐藏所有选项
         for (int i = 0; i < listSelectView.Count; i++)
         {
             listSelectView[i].ShowObj(false);
         }
+        //删除所有颜色选择
+        foreach (var item in dicSelectColorShow)
+        {
+            DestroyImmediate(item.Value.gameObject);
+        }
+        dicSelectColorShow.Clear();
+
         //获取皮肤数据
         dicSelectData.TryGetValue(creatureId, out Dictionary<CreatureSkinTypeEnum, List<long>> dicSkinData);
         int index = 0;
@@ -299,4 +354,5 @@ public partial class UIMainCreate : BaseUIComponent
         }
         SetPreviewCreate(createCreatureData);
     }
+    #endregion
 }

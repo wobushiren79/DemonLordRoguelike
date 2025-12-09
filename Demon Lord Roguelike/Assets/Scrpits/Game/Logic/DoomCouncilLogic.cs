@@ -37,8 +37,8 @@ public class DoomCouncilLogic : BaseGameLogic
         }
 
         //设置基地场景视角
-        //Vector3 startPosition = scenePrefab.podium.transform.position;
-        Vector3 startPosition = doomCouncilData.dicCouncilorPosition[doomCouncilData.listCouncilor[0].creatureUUId];
+        Vector3 startPosition = scenePrefab.podium.transform.position;
+        //Vector3 startPosition = doomCouncilData.dicCouncilorPosition[doomCouncilData.listCouncilor[0].creatureUUId];
         await CameraHandler.Instance.InitBaseSceneControlCamera(userData.selfCreature, startPosition);
         //开始
         StartGame();
@@ -72,7 +72,7 @@ public class DoomCouncilLogic : BaseGameLogic
         //设置到投票视角
         CameraHandler.Instance.SetCameraForDoomCouncilVote();
         //等待0.5秒镜头切换
-        await new WaitForSeconds(0.5f);       
+        await new WaitForSeconds(0.5f);
         //打开投票UI
         UIDoomCouncilVote voteUI = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilVote>();
         voteUI.SetData(doomCouncilData);
@@ -107,14 +107,14 @@ public class DoomCouncilLogic : BaseGameLogic
             }
             var creatureData = doomCouncilData.GetCouncilor(creatureUUId);
             var creatureNpcData = creatureData.GetCreatureNpcData();
-            
+
             int voteNum = 1;
             //获取该NPC的投票数
-            if (creatureNpcData!=null&&creatureNpcData.npcId!=0)
+            if (creatureNpcData != null && creatureNpcData.npcId != 0)
             {
                 var npcInfo = NpcInfoCfg.GetItemData(creatureNpcData.npcId);
-                int councilorRatings=npcInfo.GetCouncilorRatings();
-                var rarityInfo =  DoomCouncilRatingsInfoCfg.GetItemData(councilorRatings);
+                int councilorRatings = npcInfo.GetCouncilorRatings();
+                var rarityInfo = DoomCouncilRatingsInfoCfg.GetItemData(councilorRatings);
                 voteNum = rarityInfo.vote;
             }
 
@@ -136,7 +136,7 @@ public class DoomCouncilLogic : BaseGameLogic
         //计算是否通过
         bool isPass = ayeVoteNum >= nayVoteNum ? true : false;
         //展示投票结果
-        var voteEndUI = UIHandler.Instance.OpenUI<UIDoomCouncilVoteEnd>();    
+        var voteEndUI = UIHandler.Instance.OpenUI<UIDoomCouncilVoteEnd>();
         voteEndUI.VoteEndShow(isPass);
         await new WaitForSeconds(2f);
         //弹出下一步提示
@@ -179,7 +179,7 @@ public class DoomCouncilLogic : BaseGameLogic
         //自由活动
         dialogSelectData.AddSelect(TextHandler.Instance.GetTextById(53011), () =>
         {
-           //恢复控制
+            //恢复控制
             GameControlHandler.Instance.SetBaseControl(true);
         });
         //离开议会
@@ -218,7 +218,7 @@ public class DoomCouncilLogic : BaseGameLogic
         string conversationContent = randomConversationInfo.content_language;
 
         UIGameConversation targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIGameConversation>();
-        targetUI.SetData(councilorData, conversationContent, ActionForCouncilorConversationEnd);
+        targetUI.SetData(targetObj, councilorData, conversationContent, ActionForCouncilorConversationEnd);
         //停止控制
         GameControlHandler.Instance.SetBaseControl(false, isHideControlTarget: false);
     }

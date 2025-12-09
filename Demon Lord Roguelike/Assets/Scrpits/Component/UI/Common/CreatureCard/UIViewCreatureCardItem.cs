@@ -14,7 +14,7 @@ public partial class UIViewCreatureCardItem : BaseUIView
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(CreatureBean creatureData, CardUseState cardUseState)
+    public void SetData(CreatureBean creatureData, CardUseStateEnum cardUseState)
     {
         this.cardData.cardUseState = cardUseState;
         this.cardData.creatureData = creatureData;
@@ -30,12 +30,12 @@ public partial class UIViewCreatureCardItem : BaseUIView
     /// <summary>
     /// 设置气泡弹窗展示
     /// </summary>
-    public void SetPopupShow(CreatureBean creatureData, CardUseState cardUseState)
+    public void SetPopupShow(CreatureBean creatureData, CardUseStateEnum cardUseState)
     {
         //设置弹窗气泡数据
         switch (cardUseState)
         {
-            case CardUseState.CreatureManager:
+            case CardUseStateEnum.CreatureManager:
                 ui_BtnSelect_PopupButtonCommonView.enabled = false;
                 break;
             default:

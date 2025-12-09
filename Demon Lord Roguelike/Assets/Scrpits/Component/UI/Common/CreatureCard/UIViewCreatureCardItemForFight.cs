@@ -67,7 +67,7 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(CreatureBean creatureData, CardUseState cardUseState, Vector2 originalCardPos)
+    public void SetData(CreatureBean creatureData, CardUseStateEnum cardUseState, Vector2 originalCardPos)
     {
         //判断一下场上是否已经有该生物
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();

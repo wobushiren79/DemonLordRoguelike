@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine.UI;
 using UnityEngine;
 using Spine.Unity;
@@ -21,6 +21,12 @@ public partial class UIViewMainLoadItem
     public TextMeshProUGUI ui_CoinText;
 
     public Button ui_Delete;
+
+    public RectTransform ui_Error;
+
+    public Button ui_OpenSave;
+
+    public Button ui_UseBackups;
 
 
 }

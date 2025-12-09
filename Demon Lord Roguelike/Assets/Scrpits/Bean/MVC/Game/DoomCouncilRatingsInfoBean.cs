@@ -13,7 +13,7 @@ public partial class DoomCouncilRatingsInfoBean : BaseBean
 	/// </summary>
 	public int vote;
 	/// <summary>
-	///名字-中文
+	///名字
 	/// </summary>
 	public long name;
 	[JsonIgnore]

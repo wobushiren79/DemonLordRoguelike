@@ -78,8 +78,7 @@ public partial class UIViewDoomCouncilMainItem : BaseUIView
             }
             UIHandler.Instance.ShowMask(0.2f, null, async () =>
             {
-                DoomCouncilBean doomCouncilData = new DoomCouncilBean();
-                doomCouncilData.doomCouncilInfo = doomCouncilInfo;
+                DoomCouncilBean doomCouncilData = new DoomCouncilBean(doomCouncilInfo.id);
                 GameHandler.Instance.StartDoomCouncil(doomCouncilData);
             }, false);
         };

@@ -6,16 +6,19 @@ public partial class ItemBean
     public long itemId;
     //道具数量
     public int itemNum;
-    
+    //道具品质
+    public int rarity;
+
     public ItemBean()
     {
 
     }
 
-    public ItemBean(long itemId, int itemNum = 1)
+    public ItemBean(long itemId, int itemNum = 1, int rarity = 1)
     {
         this.itemId = itemId;
         this.itemNum = itemNum;
+        this.rarity = rarity;
     }
 
     /// <summary>

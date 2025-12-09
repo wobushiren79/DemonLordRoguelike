@@ -108,6 +108,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         var uiBaseMain = UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
         //播放音乐
         AudioHandler.Instance.PlayMusicForGaming();
+        //事件通知
+        EventHandler.Instance.TriggerEvent(EventsInfo.World_EnterGameForBaseScene);
     }
 
     /// <summary>
@@ -348,7 +350,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         BaseGameLogic gameLogic = GameHandler.Instance.manager.GetGameLogic<BaseGameLogic>();
         if (gameLogic != null)
         {
-            gameLogic.ClearGame();
+           await gameLogic.ClearGame();
         }
         await new WaitNextFrame();
         //清理粒子

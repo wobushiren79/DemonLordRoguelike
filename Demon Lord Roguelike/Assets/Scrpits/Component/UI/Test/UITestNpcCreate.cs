@@ -151,7 +151,7 @@ public partial class UITestNpcCreate : BaseUIComponent
         //设置生物名字
         ui_UIDataNameInput.text = creatureData.creatureName;
         //设置UI显示数据
-        ui_CreatureCardItem.SetData(creatureData, CardUseState.Show);
+        ui_CreatureCardItem.SetData(creatureData, CardUseStateEnum.Show);
         ui_ViewCreatureCardDetails.SetData(creatureData);
         //设置生物装备
         InitCreatureEquipData();
@@ -258,10 +258,13 @@ public partial class UITestNpcCreate : BaseUIComponent
     #endregion
 
     #region  事件回调
-    public void ActionForHairColorChange(Color changeColor)
+    public void ActionForHairColorChange(UIViewColorShow viewColorShow, Color changeColor)
     {
-        colorHair = changeColor;
-        RefreshCreature();
+        if (viewColorShow == ui_UIViewColorSelect_Hair)
+        {
+            colorHair = changeColor;
+            RefreshCreature();
+        }
     }
 
     public void ActionForCreatureBodyOnClick(int showType, long showId)

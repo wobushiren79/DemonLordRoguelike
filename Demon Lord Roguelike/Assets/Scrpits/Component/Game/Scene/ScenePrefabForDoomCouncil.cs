@@ -74,6 +74,8 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
     public void CouncilorVote(GameObject targetCouncilor, NpcVoteTypeEnum voteType)
     {
         var voteSign = targetCouncilor.transform.Find("VoteSign");
+        var sleepState = targetCouncilor.transform.Find("SleepState");
+        
         var voteText = voteSign.GetComponentInChildren<TextMeshPro>();
         switch (voteType)
         {
@@ -88,6 +90,9 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
                 ColorUtility.TryParseHtmlString($"#D61515", out Color targetColorNay);
                 voteText.text = TextHandler.Instance.GetTextById(53007);
                 voteText.color = targetColorNay;
+                break;
+            case NpcVoteTypeEnum.Sleep:
+                sleepState.gameObject.SetActive(true);
                 break;
         }
         //是否要跳上桌子

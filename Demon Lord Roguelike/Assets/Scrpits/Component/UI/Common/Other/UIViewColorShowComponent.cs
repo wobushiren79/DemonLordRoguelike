@@ -8,7 +8,9 @@ public partial class UIViewColorShow
 
     public Image ui_SelectColor;
 
-    public Button ui_UIViewColorShow;
+    public Button ui_SelectTextBG;
+
+    public Button ui_SelectColorBG;
 
 
 }

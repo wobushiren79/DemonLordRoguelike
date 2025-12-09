@@ -1,10 +1,12 @@
 ﻿
 
 using System;
+using UnityEngine;
 using UnityEngine.UI;
 
 public partial class UIGameConversation : BaseUIComponent
 {
+    public GameObject creatureObj;
     public CreatureBean creatureData;
     public Action acionForEnd;
 
@@ -17,8 +19,9 @@ public partial class UIGameConversation : BaseUIComponent
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(CreatureBean creatureData,string content, Action acionForEnd)
+    public void SetData(GameObject creatureObj, CreatureBean creatureData, string content, Action acionForEnd)
     {
+        this.creatureObj = creatureObj;
         this.creatureData = creatureData;
         this.acionForEnd = acionForEnd;
         SetCardIcon(creatureData);
@@ -53,6 +56,7 @@ public partial class UIGameConversation : BaseUIComponent
         GameUIUtil.SetCreatureUIForSimple(ui_Icon, creatureData, scale: 2);
     }
 
+    #region 点击事件
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
@@ -73,13 +77,37 @@ public partial class UIGameConversation : BaseUIComponent
     {
         acionForEnd?.Invoke();
     }
-    
+
     /// <summary>
     /// 点击贿赂
     /// </summary>
     public void OnClickForGift()
     {
-        DialogBean dialogData = new DialogBean();
+        DialogItemSelectBean dialogData = new DialogItemSelectBean();
+        dialogData.actionForSelectGift = ActionForItemSelectGift;
         UIHandler.Instance.ShowDialogItemSelect(dialogData);
     }
+    #endregion
+    
+    #region 道具使用回调
+    public void ActionForItemSelectGift(UIDialogItemSelect dialogView, ItemBean itemData)
+    {
+        dialogView.DestroyDialog();
+        //从背包里删除这个道具
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        userData.RemoveItem(itemData);
+        //添加好感
+        var rarityInfo = RarityInfoCfg.GetItemData(itemData.rarity);
+        if (rarityInfo != null)
+        {
+            creatureData.AddRelationship(rarityInfo.item_add_relationship);
+        }
+        //播放增加好感的粒子
+        EffectBean effectData = new EffectBean();
+        effectData.effectName = "EffectAddRelationship_1";
+        effectData.timeForShow = 1f;
+        effectData.effectPosition = creatureObj.transform.position;
+        EffectHandler.Instance.ShowEffect(effectData);
+    }
+    #endregion
 }

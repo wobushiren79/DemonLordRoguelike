@@ -154,7 +154,7 @@ public partial class UICreatureVat : BaseUIComponent
         {
             listTargetCreatureShow.Add(creatureData);
         });
-        ui_UIViewCreatureCardList_Target.SetData(listTargetCreatureShow, CardUseState.CreatureAscendTarget, OnCellChangeForBackpackCreatureTarget);
+        ui_UIViewCreatureCardList_Target.SetData(listTargetCreatureShow, CardUseStateEnum.CreatureAscendTarget, OnCellChangeForBackpackCreatureTarget);
     }
 
     /// <summary>
@@ -171,7 +171,7 @@ public partial class UICreatureVat : BaseUIComponent
                 listMaterialCreatureShow.Add(creatureData);
             }
         });
-        ui_UIViewCreatureCardList_Material.SetData(listMaterialCreatureShow, CardUseState.CreatureAscendMaterial, OnCellChangeForBackpackCreatureMaterial);
+        ui_UIViewCreatureCardList_Material.SetData(listMaterialCreatureShow, CardUseStateEnum.CreatureAscendMaterial, OnCellChangeForBackpackCreatureMaterial);
     }
 
     /// <summary>
@@ -409,7 +409,7 @@ public partial class UICreatureVat : BaseUIComponent
     {
         var selectCreatureData = selectItemView.cardData.creatureData;
         //目标选择
-        if (selectItemView.cardData.cardUseState == CardUseState.CreatureAscendTarget)
+        if (selectItemView.cardData.cardUseState == CardUseStateEnum.CreatureAscendTarget)
         {
             listMaterialCreatureSelect.Clear();
             if (selectItemView.cardData.cardState == CardStateEnum.CreatureAscendSelect)
@@ -434,7 +434,7 @@ public partial class UICreatureVat : BaseUIComponent
             ui_UIViewCreatureCardList_Target.RefreshAllCard();
         }
         //材料选择
-        else if (selectItemView.cardData.cardUseState == CardUseState.CreatureAscendMaterial)
+        else if (selectItemView.cardData.cardUseState == CardUseStateEnum.CreatureAscendMaterial)
         {
             if (selectItemView.cardData.cardState == CardStateEnum.CreatureAscendSelect)
             {

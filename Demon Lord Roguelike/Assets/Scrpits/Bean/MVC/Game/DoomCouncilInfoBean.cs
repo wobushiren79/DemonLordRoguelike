@@ -21,6 +21,14 @@ public partial class DoomCouncilInfoBean : BaseBean
 	/// </summary>
 	public string icon_res;
 	/// <summary>
+	///实例名字
+	/// </summary>
+	public string class_entity_name;
+	/// <summary>
+	///实例参数
+	/// </summary>
+	public string class_entity_data;
+	/// <summary>
 	///名字-中文
 	/// </summary>
 	public long name;

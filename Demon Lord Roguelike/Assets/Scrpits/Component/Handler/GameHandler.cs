@@ -3,8 +3,29 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameHandler : BaseHandler<GameHandler,GameManager>
+public class GameHandler : BaseHandler<GameHandler, GameManager>
 {
+    public override void Awake()
+    {
+        base.Awake();
+        EventHandler.Instance.RegisterEvent(EventsInfo.World_EnterGameForBaseScene, EventForWorldEnterGameForBaseScene);
+        EventHandler.Instance.RegisterEvent(EventsInfo.GameFightLogic_EndGame, EventForGameFightLogicEndGame);
+        EventHandler.Instance.RegisterEvent<int>(EventsInfo.GameFightLogic_DropAddCrystal, EventForGameFightLogicDropAddCrystal);
+        EventHandler.Instance.RegisterEvent<int>(EventsInfo.GameFightLogic_AddExp, EventForGameFightLogicAddExp);
+    }
+
+    /// <summary>
+    /// Update
+    /// </summary>
+    public void Update()
+    {
+        if (manager.gameLogic != null && manager.gameLogic.gameState == GameStateEnum.Gaming)
+        {
+            manager.gameLogic.UpdateGame();
+        }
+    }
+
+    #region  开始一种游戏模式
     /// <summary>
     /// 开始终焉议会
     /// </summary>
@@ -54,44 +75,47 @@ public class GameHandler : BaseHandler<GameHandler,GameManager>
         gameLogic.creatureSacrificeData = creatureSacrificeData;
         manager.gameLogic.PreGame();
     }
+    #endregion
 
+    #region 回调事件通知
     /// <summary>
-    /// 创建游戏世界地图数据
+    /// 场景切换-基地
     /// </summary>
-    public GameWorldMapBean CreateGameWorldMapData(long worldId)
+    public void EventForWorldEnterGameForBaseScene()
     {
-        GameWorldMapBean gameWorldMapData = new GameWorldMapBean(worldId);
-        return gameWorldMapData;
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userTempData = userData.GetUserTempData();
+        userTempData.TriggerDoomCouncil(TriggerTypeDoomCouncilEntityEnum.WorldEnterGameForBaseScene);
     }
 
     /// <summary>
-    /// 结束游戏战斗-强制
+    /// 游戏结束
     /// </summary>
-    public void EndGameFight()
+    public void EventForGameFightLogicEndGame()
     {
-        if (manager.gameLogic == null)
-            return;
-        manager.gameLogic.EndGame();
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userTempData = userData.GetUserTempData();
+        userTempData.TriggerDoomCouncil(TriggerTypeDoomCouncilEntityEnum.GameFightLogicEndGame);
     }
 
     /// <summary>
-    /// 结束生物献祭-强制
+    /// 掉落宝石拾取
     /// </summary>
-    public void EndCreatureSacrifice()
+    public void EventForGameFightLogicDropAddCrystal(int addCrystal)
     {
-        if (manager.gameLogic == null)
-            return;
-        manager.gameLogic.EndGame();
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userTempData = userData.GetUserTempData();
+        userTempData.TriggerDoomCouncil(TriggerTypeDoomCouncilEntityEnum.GameFightLogicDropAddCrystal, dataInt: addCrystal);
     }
 
     /// <summary>
-    /// Update
+    /// 增加经验
     /// </summary>
-    public void Update()
+    public void EventForGameFightLogicAddExp(int addExp)
     {
-        if (manager.gameLogic != null && manager.gameLogic.gameState == GameStateEnum.Gaming)
-        {
-            manager.gameLogic.UpdateGame();
-        }
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userTempData = userData.GetUserTempData();
+        userTempData.TriggerDoomCouncil(TriggerTypeDoomCouncilEntityEnum.GameFightLogicAddExp, dataInt: addExp);
     }
+    #endregion
 }

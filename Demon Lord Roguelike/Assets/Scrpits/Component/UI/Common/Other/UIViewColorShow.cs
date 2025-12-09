@@ -6,18 +6,18 @@ using UnityEngine.UI;
 public partial class UIViewColorShow : BaseUIView
 {
     public Color showColor;
-    public Action<Color> actionForColorChange;
+    public Action<UIViewColorShow, Color> actionForColorChange;
 
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
-        if (viewButton == ui_UIViewColorShow)
+        if (viewButton == ui_SelectColorBG || viewButton == ui_SelectTextBG)
         {
             OnClickForSelect();
         }
     }
 
-    public void SetData(string title, Color showColor, Action<Color> actionForColorChange)
+    public void SetData(string title, Color showColor, Action<UIViewColorShow, Color> actionForColorChange)
     {
         this.actionForColorChange = actionForColorChange;
         SetTitle(title);
@@ -52,7 +52,7 @@ public partial class UIViewColorShow : BaseUIView
         dialogData.color = showColor;
         dialogData.actionSubmit = (view, data) =>
         {
-            actionForColorChange?.Invoke(dialogData.color);
+            actionForColorChange?.Invoke(this, dialogData.color);
             SetShowColor(dialogData.color);
         };
         UIHandler.Instance.ShowDialogSelectColor(dialogData);

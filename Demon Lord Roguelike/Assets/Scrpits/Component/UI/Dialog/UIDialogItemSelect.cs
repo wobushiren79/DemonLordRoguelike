@@ -1,9 +1,15 @@
 ﻿
 
+using UnityEngine;
 using UnityEngine.UI;
 
 public partial class UIDialogItemSelect : DialogView
 {
+    /// <summary>
+    /// 选中的道具
+    /// </summary>
+    public ItemBean selectItem = null;
+
     public override void InitData()
     {
         base.InitData();
@@ -35,7 +41,51 @@ public partial class UIDialogItemSelect : DialogView
         {
             OnClickForExit();
         }
+        else if(viewButton== ui_SelectContent_Button)
+        {
+            OnClickForCloseSelect();
+        }
+        else if (viewButton == ui_UIViewDialogItemSelectChild_Delete)
+        {
+            OnClickForDeleteItem();
+        }
+        else if (viewButton == ui_UIViewDialogItemSelectChild_Gift)
+        {
+            OnClickForGiftItem();
+        }
     }
+
+    /// <summary>
+    /// 点击关闭选项
+    /// </summary>
+    public void OnClickForCloseSelect()
+    {
+        selectItem = null;
+        ui_SelectContent_RectTransform.gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// 点击丢弃道具
+    /// </summary>
+    public void OnClickForDeleteItem()
+    {
+        var dialogItemSelect = dialogData as DialogItemSelectBean;
+        dialogItemSelect.actionForSelectDelete?.Invoke(this, selectItem);
+
+        OnClickForCloseSelect();
+    }
+
+    /// <summary>
+    /// 点击送礼
+    /// </summary>
+    public void OnClickForGiftItem()
+    {        
+        var dialogItemSelect = dialogData as DialogItemSelectBean;
+        dialogItemSelect.actionForSelectGift?.Invoke(this, selectItem);
+
+        OnClickForCloseSelect();
+    }
+
     /// <summary>
     /// 点击离开
     /// </summary>
@@ -46,9 +96,15 @@ public partial class UIDialogItemSelect : DialogView
     #endregion
 
     #region 回调事件
+
     public void EventForItemBackpackClickSelect(UIViewItemBackpack itemView)
     {
+        //选中的道具
+        selectItem = itemView.itemData;
         //打开选项
+        ui_SelectContent_RectTransform.gameObject.SetActive(true);
+        Vector3 targetPos = UGUIUtil.GetRootPos(ui_SelectContent_RectTransform, itemView.transform);
+        ui_SelectList.transform.localPosition = targetPos;
     }
     #endregion
 

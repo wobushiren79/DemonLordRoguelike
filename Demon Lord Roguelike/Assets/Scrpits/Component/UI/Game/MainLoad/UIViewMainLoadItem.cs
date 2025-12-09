@@ -1,4 +1,7 @@
 
+using System;
+using System.Diagnostics;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -19,13 +22,21 @@ public partial class UIViewMainLoadItem : BaseUIView
         {
             OnClickForEnterGame();
         }
-        else if (viewButton == ui_CreateGame) 
+        else if (viewButton == ui_CreateGame)
         {
             OnClickForCreateGame();
         }
         else if (viewButton == ui_Delete)
         {
             OnClickForDelete();
+        }
+        else if (viewButton == ui_OpenSave)
+        {
+            OnClickForOpenSave();
+        }
+        else if (viewButton == ui_UseBackups)
+        {
+            OnClickForUseBackups();
         }
     }
 
@@ -36,19 +47,28 @@ public partial class UIViewMainLoadItem : BaseUIView
     {
         this.userData = userData;
         this.userDataIndex = userDataIndex;
+        ui_Continue.ShowObj(false);
+        ui_Create.ShowObj(false);
+        ui_Error.ShowObj(false);
         if (userData == null)
         {
-            ui_Continue.ShowObj(false);
             ui_Create.ShowObj(true);
         }
         else
         {
-            ui_Continue.ShowObj(true);
-            ui_Create.ShowObj(false);
+            //如果数据损坏
+            if (userData.isErrorData)
+            {
+                ui_Error.ShowObj(true);
+            }
+            else
+            {
+                ui_Continue.ShowObj(true);
 
-            SetCreatureUI(userData.selfCreature);
-            SetUserName(userData.userName);
-            SetCrystal(userData.crystal);
+                SetCreatureUI(userData.selfCreature);
+                SetUserName(userData.userName);
+                SetCrystal(userData.crystal);
+            }
         }
     }
 
@@ -58,9 +78,9 @@ public partial class UIViewMainLoadItem : BaseUIView
     public void SetCreatureUI(CreatureBean creatureData)
     {
         //设置spine
-        CreatureHandler.Instance.SetCreatureData(ui_Icon, creatureData,isUIShow : true);
+        CreatureHandler.Instance.SetCreatureData(ui_Icon, creatureData, isUIShow: true);
         //播放动画
-        SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle,creatureData, true);
+        SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, creatureData, true);
         //设置UI大小和坐标
         creatureData.creatureModel.ChangeUISizeForB(ui_Icon.rectTransform);
         ui_Icon.raycastTarget = false;
@@ -73,7 +93,7 @@ public partial class UIViewMainLoadItem : BaseUIView
     {
         ui_Name.text = userName;
     }
-    
+
     /// <summary>
     /// 设置金币
     /// </summary>
@@ -88,7 +108,7 @@ public partial class UIViewMainLoadItem : BaseUIView
     public void OnClickForEnterGame()
     {
         GameDataHandler.Instance.manager.SetUserData(userData);
-        WorldHandler.Instance.EnterGameForBaseScene(userData,false);
+        WorldHandler.Instance.EnterGameForBaseScene(userData, false);
     }
 
     /// <summary>
@@ -106,12 +126,44 @@ public partial class UIViewMainLoadItem : BaseUIView
     public void OnClickForDelete()
     {
         DialogBean dialogData = new DialogBean();
-        dialogData.content = string.Format(TextHandler.Instance.GetTextById(203),userData.userName);
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(203), userData.userName);
         dialogData.actionSubmit = (dialogView, dialogData) =>
         {
             GameDataHandler.Instance.manager.DeleteUserData(userData);
             UIHandler.Instance.RefreshUI();
         };
         UIHandler.Instance.ShowDialogNormal(dialogData);
+    }
+
+    /// <summary>
+    /// 点击打开存档目录
+    /// </summary>
+    public void OnClickForOpenSave()
+    {
+        try
+        {
+            string path = Application.persistentDataPath;
+            Process.Start(path);
+        }
+        catch (Exception e)
+        {
+            LogUtil.LogError($"打开存档失败 {e.ToString()}");
+        }
+    }
+
+    /// <summary>
+    /// 点击使用备份数据
+    /// </summary>
+    public void OnClickForUseBackups()
+    {
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = TextHandler.Instance.GetTextById(207);
+        dialogData.actionSubmit = (dialogView, data) =>
+        {
+            // GameDataHandler.Instance.manager.SetUserData(userData);
+            // WorldHandler.Instance.EnterGameForBaseScene(userData, false);
+        };
+        UIHandler.Instance.ShowDialogNormal(dialogData);
+
     }
 }

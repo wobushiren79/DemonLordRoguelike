@@ -66,11 +66,8 @@ public class LauncherTest : BaseLauncher
     {
         //打开终焉ui
         //var uiDoomCouncil = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilMain>();
-
-        DoomCouncilInfoBean doomCouncilInfo = DoomCouncilInfoCfg.GetItemData(billId);
         //进入议会场景
-        DoomCouncilBean doomCouncilData = new DoomCouncilBean();
-        doomCouncilData.doomCouncilInfo = doomCouncilInfo;
+        DoomCouncilBean doomCouncilData = new DoomCouncilBean(billId);
         GameHandler.Instance.StartDoomCouncil(doomCouncilData);
     }
 

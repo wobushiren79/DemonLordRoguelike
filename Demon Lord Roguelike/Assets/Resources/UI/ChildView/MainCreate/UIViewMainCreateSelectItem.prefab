@@ -86,7 +86,7 @@ GameObject:
   - component: {fileID: 9207277362193552139}
   - component: {fileID: 8118626942192199946}
   m_Layer: 5
-  m_Name: Content
+  m_Name: SelectItemContent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -110,9 +110,9 @@ RectTransform:
   m_Father: {fileID: 4901864999529846066}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -20, y: -20}
+  m_SizeDelta: {x: 280, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8118626942192199946
 CanvasRenderer:
@@ -391,6 +391,8 @@ GameObject:
   - component: {fileID: 4987429403885696652}
   - component: {fileID: 2293527025355522797}
   - component: {fileID: 5466637535249244293}
+  - component: {fileID: 3559036030979340008}
+  - component: {fileID: 1015798586831173717}
   m_Layer: 5
   m_Name: UIViewMainCreateSelectItem
   m_TagString: Untagged
@@ -478,6 +480,46 @@ MonoBehaviour:
   ui_LeftBtn: {fileID: 8533125359467447838}
   ui_Title: {fileID: 4502253943916831993}
   ui_RightBtn: {fileID: 745388117336970794}
+--- !u!114 &3559036030979340008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5524679956448142218}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 4
+  m_Spacing: 0
+  m_ChildForceExpandWidth: 0
+  m_ChildForceExpandHeight: 0
+  m_ChildControlWidth: 0
+  m_ChildControlHeight: 0
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
+--- !u!114 &1015798586831173717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5524679956448142218}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
+  m_HorizontalFit: 0
+  m_VerticalFit: 2
 --- !u!1 &5879489446047924760
 GameObject:
   m_ObjectHideFlags: 0

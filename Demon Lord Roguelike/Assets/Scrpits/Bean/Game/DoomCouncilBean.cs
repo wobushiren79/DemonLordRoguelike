@@ -3,12 +3,32 @@ using UnityEngine;
 
 public class DoomCouncilBean
 {
+    //议案ID
+    public long doomCouncilBillId;
+
     //议会信息
-    public DoomCouncilInfoBean doomCouncilInfo;
+    protected DoomCouncilInfoBean _doomCouncilInfo;
+    public DoomCouncilInfoBean doomCouncilInfo
+    {
+        get
+        {
+            if (_doomCouncilInfo == null)
+            {
+                _doomCouncilInfo = DoomCouncilInfoCfg.GetItemData(doomCouncilBillId);
+            }
+            return _doomCouncilInfo;
+        }
+    }
+
     //所有的议员
     public List<CreatureBean> listCouncilor;
     //议员位置
     public Dictionary<string, Vector3> dicCouncilorPosition;
+
+    public DoomCouncilBean(long doomCouncilBillId)
+    {
+        this.doomCouncilBillId = doomCouncilBillId;
+    }
 
     /// <summary>
     /// 获取议员数据

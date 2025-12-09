@@ -13,13 +13,19 @@ public partial class RarityInfoBean : BaseBean
 	/// </summary>
 	public string ui_board_other_color;
 	/// <summary>
+	///ui外边框颜色(道具)
+	/// </summary>
+	public string ui_board_color_item;
+	/// <summary>
+	///不同品质道具关系加成
+	/// </summary>
+	public int item_add_relationship;
+	/// <summary>
 	///名字-中文
 	/// </summary>
-	public string name_cn;
-	/// <summary>
-	///名字-英文
-	/// </summary>
-	public string name_en;
+	public long name;
+	[JsonIgnore]
+	public string name_language { get { return TextHandler.Instance.GetTextById(RarityInfoCfg.fileName, name); } }
 	/// <summary>
 	///备注
 	/// </summary>

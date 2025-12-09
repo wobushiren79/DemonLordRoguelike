@@ -39,7 +39,7 @@ public partial class UIMainLoad : BaseUIComponent
     }
 
     /// <summary>
-    /// µã»÷ÍË³ö
+    /// ç‚¹å‡»é€€å‡º
     /// </summary>
     public void OnClickForExit()
     {
@@ -47,7 +47,7 @@ public partial class UIMainLoad : BaseUIComponent
     }
 
     /// <summary>
-    /// »ñÈ¡ÓÃ»§Êı¾İ»Øµ÷
+    /// è·å–ç”¨æˆ·æ•°æ®å›è°ƒ
     /// </summary>
     public void ActionForLoadUserData(int index, UserDataBean userData)
     {

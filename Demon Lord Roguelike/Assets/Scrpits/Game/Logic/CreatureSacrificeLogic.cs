@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VFX;
+using System.Threading.Tasks;
 
 [Serializable]
 public class CreatureSacrificeLogic : BaseGameLogic
@@ -126,7 +127,7 @@ public class CreatureSacrificeLogic : BaseGameLogic
     /// <summary>
     /// 清理数据
     /// </summary>
-    public override void ClearGame()
+    public override async Task ClearGame()
     {
         if (!listObjFodderCreatures.IsNull())
         {
@@ -140,7 +141,7 @@ public class CreatureSacrificeLogic : BaseGameLogic
         }
         objTargetCreature.transform.DOKill();
         GameObject.DestroyImmediate(objTargetCreature);
-        base.ClearGame();
+        await base.ClearGame();
     }
 
     #region  设置数据

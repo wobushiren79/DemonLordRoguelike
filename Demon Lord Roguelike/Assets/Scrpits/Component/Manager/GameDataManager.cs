@@ -62,10 +62,20 @@ public partial class GameDataManager : IUserDataView
     /// </summary>
     public void LoadUserData(int index, Action<int, UserDataBean> actionForComplete)
     {
-        controllerForUserData.GetUserDataData(index, (userData) =>
+        try
         {
-            actionForComplete?.Invoke(index, userData);
-        });
+            controllerForUserData.GetUserDataData(index, (userData) =>
+            {
+                actionForComplete?.Invoke(index, userData);
+            });
+        }
+        catch (Exception e)
+        {
+            LogUtil.LogError($"读取用户数据失败:{e.Message}");
+            UserDataBean errorData = new UserDataBean();
+            errorData.isErrorData = true;
+            actionForComplete?.Invoke(index, errorData);
+        }
     }
 
     #region 回调

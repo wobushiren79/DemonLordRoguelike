@@ -13,7 +13,8 @@ public partial class UIViewBaseInfoContent : BaseUIView
     public override void Awake()
     { 
         base.Awake();
-        this.RegisterEvent(EventsInfo.Backpack_Item_Change, RefreshUIData);
+        this.RegisterEvent(EventsInfo.Backpack_Crystal_Change, RefreshUIData);
+        this.RegisterEvent(EventsInfo.Backpack_Reputation_Change, RefreshUIData);
     }
 
     public override void OnEnable()

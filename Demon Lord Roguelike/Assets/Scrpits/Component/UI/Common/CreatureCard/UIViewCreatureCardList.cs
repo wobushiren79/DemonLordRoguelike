@@ -10,7 +10,7 @@ public partial class UIViewCreatureCardList : BaseUIView
     //生物数据
     protected List<CreatureBean> listCreatureData = new List<CreatureBean>();
     //卡片的使用地方
-    protected CardUseState cardUseState;
+    protected CardUseStateEnum cardUseState;
     //卡片变化回调
     protected Action<int, UIViewCreatureCardItem, CreatureBean> actionForOnCellChange;
     public override void Awake()
@@ -81,7 +81,7 @@ public partial class UIViewCreatureCardList : BaseUIView
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(List<CreatureBean> listData, CardUseState cardUseState, Action<int, UIViewCreatureCardItem, CreatureBean> actionForOnCellChange = null)
+    public void SetData(List<CreatureBean> listData, CardUseStateEnum cardUseState, Action<int, UIViewCreatureCardItem, CreatureBean> actionForOnCellChange = null)
     {
         gameObject.SetActive(true);
         this.cardUseState = cardUseState;

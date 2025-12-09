@@ -3,6 +3,7 @@ using Spine.Unity;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.VFX;
@@ -186,7 +187,7 @@ public class GashaponMachineLogic : BaseGameLogic
         UIHandler.Instance.OpenUIAndCloseOther<UIGashaponMachine>();
     }
 
-    public override void ClearGame()
+    public override async Task ClearGame()
     {
         CameraHandler.Instance.SetGashaponMachineCamera(0, false);
         if (!listEggObjPool.IsNull())
@@ -199,7 +200,7 @@ public class GashaponMachineLogic : BaseGameLogic
             listEggObjPool.Clear();
         }
         isRegisterEvent = false;
-        base.ClearGame();
+        await base.ClearGame();
     }
 
     #region 事件

@@ -11,7 +11,7 @@ public enum GameStateEnum
     End,//游戏结束
 }
 
-public enum Rarity
+public enum RarityEnum
 {
     N = 1,
     R = 2,
@@ -22,7 +22,7 @@ public enum Rarity
 }
 
 //卡片用途
-public enum CardUseState
+public enum CardUseStateEnum
 {
     Show,//展示
     Fight,//战斗
@@ -97,6 +97,7 @@ public enum CinemachineCameraEnum
 //战斗类型
 public enum GameFightTypeEnum
 {
+    None,
     Test,//测试模式
     Infinite,//无限模式
     Conquer,//征服模式
@@ -109,4 +110,12 @@ public enum ResearchInfoTypeEnum
     Building = 1,//设施相关
     Strengthen = 2,//强化相关
     Creature = 3,//生物相关
+}
+
+public enum TriggerTypeDoomCouncilEntityEnum
+{
+    WorldEnterGameForBaseScene,//进入游戏中 基地场景
+    GameFightLogicEndGame,//战斗结束
+    GameFightLogicAddExp,//战斗增加经验
+    GameFightLogicDropAddCrystal,//战斗掉落增加水晶
 }

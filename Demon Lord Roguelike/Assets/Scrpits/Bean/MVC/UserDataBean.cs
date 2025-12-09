@@ -13,6 +13,7 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 [Serializable]
 public class UserDataBean : BaseBean
 {
+    public bool isErrorData = false;
     //保存下标
     public int saveIndex = 0;
     //备份保存的下表
@@ -109,7 +110,7 @@ public class UserDataBean : BaseBean
         {
             crystal = 0;
         }
-        EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Item_Change);
+        EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Crystal_Change);
     }
 
     /// <summary>
@@ -122,7 +123,7 @@ public class UserDataBean : BaseBean
         {
             reputation = 0;
         }
-        EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Item_Change);
+        EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Reputation_Change);
     }
 
     /// <summary>

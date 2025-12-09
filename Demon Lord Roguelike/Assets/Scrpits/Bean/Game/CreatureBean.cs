@@ -56,6 +56,23 @@ public partial class CreatureBean
         InitEquip(npcInfo);
     }
     #region 杂项
+    /// <summary>
+    /// 添加好感
+    /// </summary>
+    public int AddRelationship(int addData)
+    {
+        relationship += addData;
+        if (relationship < 0)
+        {
+            relationship = 0;
+        }
+        return relationship;
+    }
+
+    /// <summary>
+    /// 获取NPC关系枚举
+    /// </summary>
+    /// <returns></returns>
     public NpcRelationshipEnum GetRelationshipForNpc()
     {
         return NpcRelationshipInfoCfg.GetNpcRelationshipEnum(relationship);

@@ -4,9 +4,16 @@ using UnityEngine;
 
 public static class EventsInfo
 {
-    public static string Backpack_Coin_Change = "Backpack_Coin_Change";
+
+    #region 通用
+    public static string Backpack_Crystal_Change = "Backpack_Crystal_Change";
+    public static string Backpack_Reputation_Change = "Backpack_Reputation_Change";
     public static string Backpack_Item_Change = "Backpack_Item_Change";
 
+    public static string World_EnterGameForBaseScene = "World_EnterGameForBaseScene";//场景改变-基地
+    #endregion
+
+    #region UI
     public static string UIViewCreatureCardItem_SelectKeep = "UIViewCreatureCardItem_SelectKeep";//卡片避让
 
     public static string UIViewCreatureCardItem_OnPointerEnter = "UIViewCreatureCardItem_OnPointerEnter";//卡片进入
@@ -15,6 +22,8 @@ public static class EventsInfo
 
     public static string UIViewItemBackpack_OnClickSelect = "UIViewItemBackpack_OnClickSelect";//背包道具点击
     public static string UIViewItemEquip_OnClickSelect = "UIViewItemEquip_OnClickSelect";//装备道具点击
+    #endregion
+
 
     #region 战斗中
     public static string GameFightLogic_SelectCard = "GameFightLogic_SelectCard";//卡片选择
@@ -25,6 +34,10 @@ public static class EventsInfo
     public static string GameFightLogic_CreatureDeadStart = "GameFightLogic_CreatureDeadStart";//生物开始死亡  
     public static string GameFightLogic_CreatureDeadEnd = "GameFightLogic_CreatureDeadEnd";//生物结束死亡
     public static string GameFightLogic_CreatureDeadDropCrystal = "GameFightLogic_CreatureDeadDropCrystal";//生物死亡掉落水晶
+
+    public static string GameFightLogic_EndGame = "GameFightLogic_EndGame";//结束游戏
+    public static string GameFightLogic_AddExp = "GameFightLogic_AddExp";//增加经验
+    public static string GameFightLogic_DropAddCrystal= "GameFightLogic_DropAddCrystal";//掉落拾取水晶
     #endregion
 
     #region BUFF

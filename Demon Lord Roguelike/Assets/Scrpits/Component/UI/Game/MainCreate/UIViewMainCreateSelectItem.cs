@@ -14,7 +14,7 @@ public partial class UIViewMainCreateSelectItem : BaseUIView
     public int creatureId;
 
     /// <summary>
-    /// 设置数据
+    /// 璁剧疆鏁版嵁
     /// </summary>
     public void SetData(List<string> listSelect, Action<UIViewMainCreateSelectItem, int, bool> actionForSelect,int startIndex = 0)
     {
@@ -25,7 +25,7 @@ public partial class UIViewMainCreateSelectItem : BaseUIView
     }
 
     /// <summary>
-    /// 设置标题
+    /// 璁剧疆鏍囬
     /// </summary>
     public void SetTitle(string titleStr)
     {
@@ -56,7 +56,7 @@ public partial class UIViewMainCreateSelectItem : BaseUIView
     }
 
     /// <summary>
-    /// 改变选择
+    /// 鏀瑰彉閫夋嫨
     /// </summary>
     public void ChangeSelect(int changeSelect, bool isInit)
     {

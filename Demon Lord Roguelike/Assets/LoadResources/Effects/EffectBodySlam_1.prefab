@@ -47,11 +47,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainPS: {fileID: 0}
   listPS:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 6211908074045773745}
+  - {fileID: 6211908074045740391}
+  - {fileID: 6211908074045757403}
+  - {fileID: 6211908074045702351}
   listVE: []
 --- !u!1001 &6211908074061313979
 PrefabInstance:
@@ -110,6 +109,26 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
+--- !u!198 &6211908074045702351 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 19806068, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
+  m_PrefabInstance: {fileID: 6211908074061313979}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &6211908074045740391 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 19833564, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
+  m_PrefabInstance: {fileID: 6211908074061313979}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &6211908074045757403 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 19849312, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
+  m_PrefabInstance: {fileID: 6211908074061313979}
+  m_PrefabAsset: {fileID: 0}
+--- !u!198 &6211908074045773745 stripped
+ParticleSystem:
+  m_CorrespondingSourceObject: {fileID: 19865610, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
+  m_PrefabInstance: {fileID: 6211908074061313979}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &6211908074060924887 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 421996, guid: a07608802ac497743a7f19f6633fdd70, type: 3}

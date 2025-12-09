@@ -175,6 +175,9 @@ public class ControlForGameFight : BaseControl
                 {
                     UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
                     userData.AddCrystal(fightDropPrefab.valueInt);
+                    //事件通知
+                    EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_DropAddCrystal, fightDropPrefab.valueInt);
+                    //掉落删除
                     fightDropPrefab.Destroy();
                     //刷新所有打开的UI
                     UIHandler.Instance.RefreshUI();

@@ -57,7 +57,7 @@ public partial class UICreatureSacrifice : BaseUIComponent
                 listCreatureData.Add(creatureData);
             }
         });
-        ui_UIViewCreatureCardList.SetData(listCreatureData, CardUseState.CreatureSacrifice, OnCellChangeForBackpackCreature);
+        ui_UIViewCreatureCardList.SetData(listCreatureData, CardUseStateEnum.CreatureSacrifice, OnCellChangeForBackpackCreature);
         //设置展示
         ui_UIViewCreatureCardDetails.SetData(gameLogic.creatureSacrificeData.targetCreature);
     }
@@ -118,7 +118,8 @@ public partial class UICreatureSacrifice : BaseUIComponent
     /// </summary>
     public void OnClickForExit()
     {
-        GameHandler.Instance.EndCreatureSacrifice();
+        CreatureSacrificeLogic gameLogic = GameHandler.Instance.manager.GetGameLogic<CreatureSacrificeLogic>();
+        gameLogic.EndGame();
     }
 
     /// <summary>

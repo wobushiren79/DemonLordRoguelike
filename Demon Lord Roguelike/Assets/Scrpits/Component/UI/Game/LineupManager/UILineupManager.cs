@@ -62,7 +62,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     public void InitCreatureData()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        ui_UIViewCreatureCardList.SetData(userData.listBackpackCreature, CardUseState.LineupBackpack, OnCellChangeForBackpackCreature);
+        ui_UIViewCreatureCardList.SetData(userData.listBackpackCreature, CardUseStateEnum.LineupBackpack, OnCellChangeForBackpackCreature);
     }
 
     /// <summary>
@@ -165,7 +165,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
             GameObject ObjNewCard = Instantiate(ui_LineupContent.gameObject, ui_ViewCreatureCardItem.gameObject);
             lineupView = ObjNewCard.GetComponent<UIViewCreatureCardItem>();
         }
-        lineupView.SetData(creatureData, CardUseState.Lineup);
+        lineupView.SetData(creatureData, CardUseStateEnum.Lineup);
         lineupView.transform.localPosition = startPos;
         listShowCardLineup.Add(lineupView);
         lineupView.gameObject.SetActive(true);
@@ -269,7 +269,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     public void EventForOnClickSelect(UIViewCreatureCardItem targetView)
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        if (targetView.cardData.cardUseState == CardUseState.LineupBackpack && targetView.cardData.cardState == CardStateEnum.LineupNoSelect)
+        if (targetView.cardData.cardUseState == CardUseStateEnum.LineupBackpack && targetView.cardData.cardState == CardStateEnum.LineupNoSelect)
         {
             userData.AddLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureUUId);
             //刷新背包里的卡片
@@ -278,7 +278,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
             Vector3 posStart = UGUIUtil.GetRootPos(ui_LineupContent.transform, targetView.transform);
             AddLineupCard(targetView.cardData.creatureData, posStart);
         }
-        else if (targetView.cardData.cardUseState == CardUseState.Lineup)
+        else if (targetView.cardData.cardUseState == CardUseStateEnum.Lineup)
         {
             userData.RemoveLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureUUId);
             //刷新背包里的卡片

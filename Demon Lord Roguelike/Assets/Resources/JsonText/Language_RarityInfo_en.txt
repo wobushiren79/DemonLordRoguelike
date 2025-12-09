@@ -1,0 +1,1 @@
+[{"content":"Normal","id":1},{"content":"Rare","id":2},{"content":"Epic ","id":3},{"content":"Ultra","id":4},{"content":"Mythic","id":5},{"content":"Legendary","id":6}]

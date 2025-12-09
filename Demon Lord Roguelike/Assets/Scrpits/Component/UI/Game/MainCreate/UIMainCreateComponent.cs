@@ -1,4 +1,4 @@
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 using TMPro;
 using UnityEngine;
 
@@ -18,6 +18,8 @@ public partial class UIMainCreate
     public UIViewMainCreateSelectItem ui_UIViewMainCreateSelectItem_Species;
 
     public RectTransform ui_SelectContent;
+
+    public RectTransform ui_UIViewColorShow;
 
 
 }
