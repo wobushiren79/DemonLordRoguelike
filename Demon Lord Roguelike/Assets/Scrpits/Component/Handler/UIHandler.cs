@@ -6,6 +6,23 @@ using UnityEngine;
 public partial class UIHandler
 {
     /// <summary>
+    /// 清理所有主界面UI-用于进游戏
+    /// </summary>
+    public void DestoryAllMainUI()
+    {
+        for (int i = 0; i < manager.uiList.Count; i++)
+        {
+            var itemUI =  manager.uiList[i];
+            if (itemUI.name.Contains("UIMain"))
+            {
+                i--;
+                itemUI.SetUICloseType(UICloseTypeEnum.Destory);
+                itemUI.CloseUI();
+            }
+        }
+    }
+
+    /// <summary>
     /// 展示遮罩UI
     /// </summary>
     public void ShowMask(float maskTime, Action acionForStart, Action acionForComplete, bool isCloseOther)

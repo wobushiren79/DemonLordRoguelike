@@ -68,7 +68,7 @@ public partial class UIViewItemEquip : BaseUIView
     }
 
     /// <summary>
-    /// 设置头像
+    /// 设置
     /// </summary>
     public void SetIcon(ItemTypeEnum itemType, long itemId)
     {

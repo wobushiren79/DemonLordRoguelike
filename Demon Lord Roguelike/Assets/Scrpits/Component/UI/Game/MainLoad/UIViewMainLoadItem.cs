@@ -107,8 +107,12 @@ public partial class UIViewMainLoadItem : BaseUIView
     /// </summary>
     public void OnClickForEnterGame()
     {
-        GameDataHandler.Instance.manager.SetUserData(userData);
-        WorldHandler.Instance.EnterGameForBaseScene(userData, false);
+        //展示mask
+        UIHandler.Instance.ShowMask(1, null, () =>
+        {
+            GameDataHandler.Instance.manager.SetUserData(userData);
+            WorldHandler.Instance.EnterGameForBaseScene(userData, false);
+        }, false);
     }
 
     /// <summary>

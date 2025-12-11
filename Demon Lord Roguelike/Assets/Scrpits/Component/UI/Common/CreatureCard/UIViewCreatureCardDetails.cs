@@ -6,7 +6,8 @@ using UnityEngine.UI;
 public partial class UIViewCreatureCardDetails : BaseUIView
 {
     public CreatureBean creatureData;
-
+    //是否展示装备道具
+    public bool isShowEquipItem = true;
     /// <summary>
     /// 刷新显示
     /// </summary>
@@ -39,6 +40,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
 
         SetRelationship(creatureData.relationship);
         SetTitle();
+
         SetDoomCouncilData();
         SetEquipData();
 
@@ -50,6 +52,13 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     /// </summary>
     public void SetEquipData()
     {
+        //如果不展示装备数据
+        if (!isShowEquipItem)
+        {
+            ui_Equip.gameObject.SetActive(false);
+            return;
+        }
+        ui_Equip.gameObject.SetActive(true);
         List<ItemTypeEnum> listEquipType = creatureData.creatureInfo.GetEquipItemsType();
         
         for (int i = 0; i < ui_Equip.transform.childCount; i++)
@@ -57,8 +66,9 @@ public partial class UIViewCreatureCardDetails : BaseUIView
             var itemChildTF = ui_Equip.transform.GetChild(i);
             if (i < listEquipType.Count)
             {       
-                var viewItemEquip =  itemChildTF.GetComponent<UIViewItemEquip>();
                 var itemType = listEquipType[i];
+                var viewItemEquip =  itemChildTF.GetComponent<UIViewItemEquip>();
+                viewItemEquip.SetData(itemType);
                 itemChildTF.gameObject.SetActive(true);
                 var itemData = creatureData.GetEquip(itemType);
                 viewItemEquip.SetData(itemData);
@@ -207,6 +217,16 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     /// </summary>
     public void RefreshUILayout()
     {
+        //如果2个UI都没了
+        if (!ui_NameTitle.gameObject.activeSelf && !ui_Relationship.gameObject.activeSelf)
+        {
+            ui_Details_Child_1.gameObject.SetActive(false);
+        }
+        else
+        {
+            ui_Details_Child_1.gameObject.SetActive(true);
+        }
+        //刷新UI
         UGUIUtil.RefreshUISize(ui_Details);
     }
 }

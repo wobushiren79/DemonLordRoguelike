@@ -287,7 +287,7 @@ public class GameTestEditor : Editor
             // BUFF测试
             if (!buffSelfDefenseTestId.IsNull())
             {
-                itemData.creatureInfo.create_buff = buffSelfDefenseTestId;
+                itemData.creatureInfo.creature_buff = buffSelfDefenseTestId;
                 itemData.creatureInfo.GetCreatureBuff();
             }
         }

@@ -21,6 +21,8 @@ public partial class UIViewBaseInfoContent : BaseUIView
     {
         base.OnEnable();
         RefreshUIData(false);
+        ui_Crystal_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000002), PopupEnum.Text);
+        ui_Reputation_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000003), PopupEnum.Text);
     }
 
     public void RefreshUIData()
@@ -30,17 +32,28 @@ public partial class UIViewBaseInfoContent : BaseUIView
 
     public void RefreshUIData(bool isAnim)
     {
-        if (ui_Crystal.gameObject.activeSelf)
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        UserUnlockBean userUnlockData = userData.GetUserUnlockData();
+        //判断是否解锁终焉议会
+        bool isUnlockDoomCouncil = userUnlockData.CheckIsUnlock(UnlockEnum.DoomCouncil);
+        if (isUnlockDoomCouncil)
         {
-            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+            ui_Reputation_Image.gameObject.SetActive(true);
+        }
+        else
+        {
+            ui_Reputation_Image.gameObject.SetActive(false);
+        }
+
+        if (ui_Crystal_Image.gameObject.activeSelf)
+        {
             if (userData != null)
             {
                 SetCrystalData(userData.crystal, isAnim);
             }
         }
-        if (ui_Reputation.gameObject.activeSelf)
+        if (ui_Reputation_Image.gameObject.activeSelf)
         {
-            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
             if (userData != null)
             {
                 SetReputationData(userData.reputation, isAnim);

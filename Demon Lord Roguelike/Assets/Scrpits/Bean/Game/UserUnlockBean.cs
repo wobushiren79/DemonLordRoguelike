@@ -95,6 +95,10 @@ public class UserUnlockBean
         }
         return true;
     }
+    public bool CheckIsUnlock(UnlockEnum unlockEnum)
+    {
+        return CheckIsUnlock((long)unlockEnum);
+    }
     public bool CheckIsUnlock(long unlockId)
     {
         if (unlockInfoData.ContainsKey(unlockId))

@@ -98,14 +98,22 @@ public partial class UIFightSettlement : BaseUIComponent
 
     public void OnClickForExitTest()
     {
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+        //展示mask
+        UIHandler.Instance.ShowMask(1, null, () =>
+        {
+            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+            WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+        }, false);
     }
 
     public void OnClickForExitInfinite()
     {
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+        //展示mask
+        UIHandler.Instance.ShowMask(1, null, () =>
+        {
+            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+            WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+        }, false);
     }
 
     public void OnClickForExitConquer()
@@ -124,8 +132,12 @@ public partial class UIFightSettlement : BaseUIComponent
             }
         }
         else
-        {
-            WorldHandler.Instance.EnterGameForBaseScene(userData, true);  
+        {   
+            //展示mask
+            UIHandler.Instance.ShowMask(1, null, () =>
+            {
+                WorldHandler.Instance.EnterGameForBaseScene(userData, true);  
+            }, false);
         }
     }
     #endregion

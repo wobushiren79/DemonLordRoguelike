@@ -1,1 +1,0 @@
-[{"content":"Hat","id":1},{"content":"Clothes","id":2},{"content":"Pants","id":3},{"content":"Shoes","id":4},{"content":"Weapon","id":10}]

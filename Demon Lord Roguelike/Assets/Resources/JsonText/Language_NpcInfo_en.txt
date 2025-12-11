@@ -1,1 +1,1 @@
-[{"content":"Warrior","id":1},{"content":"Archer","id":2},{"content":"Mage (Fire)","id":3},{"content":"Mage (Ice)","id":4},{"content":"","id":2000000001},{"content":"","id":2000000002}]
+[{"content":"","id":1},{"content":"","id":2},{"content":"","id":3},{"content":"Warrior","id":1010010001},{"content":"Archer","id":1020010001},{"content":"Mage (Fire)","id":1030010001},{"content":"Mage (Ice)","id":1030020001},{"content":"","id":2000000001},{"content":"","id":2000000002}]

@@ -60,5 +60,7 @@ public partial class UIViewCreatureCardDetails
 
     public RectTransform ui_Equip;
 
+    public RectTransform ui_Details_Child_1;
+
 
 }

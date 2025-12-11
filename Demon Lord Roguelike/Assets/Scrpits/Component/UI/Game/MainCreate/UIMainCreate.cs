@@ -56,8 +56,9 @@ public partial class UIMainCreate : BaseUIComponent
         for (int i = 0; i < listSelectForSpecies.Count; i++)
         {
             var targetCreatureId = listSelectForSpecies[i];
+            var creatureInfo = CreatureInfoCfg.GetItemData(targetCreatureId);
             //添加随机数据
-            var randomCreatureData = CreatureInfoRandomCfg.GetItemData(targetCreatureId);
+            var randomCreatureData = CreatureRandomInfoCfg.GetItemData(creatureInfo.creature_random_id);
             var randomSkinData = randomCreatureData.GetAllRandomData();
             dicSelectData.Add(targetCreatureId, randomSkinData);
             //设置选项名字
@@ -170,32 +171,29 @@ public partial class UIMainCreate : BaseUIComponent
             //添加3个初始魔物 2个近战 1个远程
             for (int i = 0; i < 3; i++)
             {
-                long targetCreatureId;
-                if (i < 2)
-                {
-                    targetCreatureId = 2001;
-                }
-                else
-                {
-                    targetCreatureId = 2002;
-                }
+                //获取初始魔物的NPC数据
+                var npcInfo = NpcInfoCfg.GetItemData(i + 1);
+                //创建魔物数据
+                long targetCreatureId = npcInfo.creature_id;
                 CreatureBean creatureData = new CreatureBean(targetCreatureId);
-                var randomData = CreatureInfoRandomCfg.GetItemData(targetCreatureId);
-                var listRandomSkin = randomData.GetRandomData();
-                listRandomSkin.ForEach((index, itemData) =>
-                {
-                    creatureData.AddSkin(itemData);
-                });
+                //给魔物取名 不高兴 没头脑和忠心 
+                creatureData.creatureName = $"{npcInfo.name_language}";
+                //添加皮肤
+                List<long> skins = npcInfo.GetSkins();
                 creatureData.AddSkinForBase();
+                creatureData.AddSkin(skins);
                 //添加到背包
                 userData.AddBackpackCreature(creatureData);
                 //添加到阵容1
                 userData.AddLineupCreature(1, creatureData.creatureUUId);
             }
-
             GameDataHandler.Instance.manager.SaveUserData(userData);
             GameDataHandler.Instance.manager.SetUserData(userData);
-            WorldHandler.Instance.EnterGameForBaseScene(userData, false);
+            //展示mask
+            UIHandler.Instance.ShowMask(1, null, () =>
+            {
+                WorldHandler.Instance.EnterGameForBaseScene(userData, false);
+            }, false);
         });
         UIHandler.Instance.ShowDialogNormal(dialogData);
 

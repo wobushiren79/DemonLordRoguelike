@@ -2200,6 +2200,7 @@ MonoBehaviour:
     relationship: 0
     creatureNpcData:
       npcId: 0
+  isShowEquipItem: 1
   ui_Icon: {fileID: 2992929411199304094}
   ui_CardScene: {fileID: 486630122230598588}
   ui_Name: {fileID: 4296180375066215962}
@@ -2227,6 +2228,7 @@ MonoBehaviour:
   ui_NameDoomCouncil: {fileID: 8143736239840118897}
   ui_NameDoomCouncilText: {fileID: 7001190775932344389}
   ui_Equip: {fileID: 8753384113514602036}
+  ui_Details_Child_1: {fileID: 5168184470540056294}
 --- !u!1 &6694089840708241386
 GameObject:
   m_ObjectHideFlags: 0

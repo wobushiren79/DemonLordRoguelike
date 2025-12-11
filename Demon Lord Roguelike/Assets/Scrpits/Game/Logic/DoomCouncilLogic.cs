@@ -54,9 +54,13 @@ public class DoomCouncilLogic : BaseGameLogic
     public override void EndGame()
     {
         base.EndGame();
-        //保存用户数据
-        UserDataBean userData = GameDataHandler.Instance.manager.SaveUserData();
-        WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+        //展示mask
+        UIHandler.Instance.ShowMask(1, null, () =>
+        {
+            //保存用户数据
+            UserDataBean userData = GameDataHandler.Instance.manager.SaveUserData();
+            WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+        }, false);
     }
 
     /// <summary>

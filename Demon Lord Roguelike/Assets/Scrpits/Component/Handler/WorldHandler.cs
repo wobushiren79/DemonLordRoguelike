@@ -110,6 +110,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         AudioHandler.Instance.PlayMusicForGaming();
         //事件通知
         EventHandler.Instance.TriggerEvent(EventsInfo.World_EnterGameForBaseScene);
+        //清理所有游戏主界面UI
+        UIHandler.Instance.DestoryAllMainUI();
     }
 
     /// <summary>

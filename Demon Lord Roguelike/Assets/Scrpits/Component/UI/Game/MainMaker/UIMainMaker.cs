@@ -7,10 +7,11 @@ using UnityEngine.UI;
 
 public partial class UIMainMaker : BaseUIComponent
 {
+    
     public override void OpenUI()
     {
         base.OpenUI();
-        //ÉèÖÃ»ùµØ³¡¾°ÊÓ½Ç
+        //è®¾ç½®åŸºåœ°åœºæ™¯è§†è§’
         CameraHandler.Instance.SetGameStartCamera(int.MaxValue, true);
     }
 
@@ -33,7 +34,7 @@ public partial class UIMainMaker : BaseUIComponent
     }
 
     /// <summary>
-    /// µã»÷ÍË³ö
+    /// ç‚¹å‡»é€€å‡º
     /// </summary>
     public void OnClickForExit()
     {

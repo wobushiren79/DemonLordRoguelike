@@ -1,5 +1,6 @@
+using System;
 using System.Collections.Generic;
-public partial class CreatureInfoRandomBean
+public partial class CreatureRandomInfoBean
 {
     protected Dictionary<CreatureSkinTypeEnum, List<long>> dicRandomData;
 
@@ -9,7 +10,7 @@ public partial class CreatureInfoRandomBean
         {
             dicRandomData = new Dictionary<CreatureSkinTypeEnum, List<long>>();
         }
-        List<long> listRandomData = random_data.SplitForListLong(',', '-');
+        List<long> listRandomData = skin_random_data.SplitForListLong(',', '-');
         for (int i = 0; i < listRandomData.Count; i++)
         {
             var itemId = listRandomData[i];
@@ -35,7 +36,7 @@ public partial class CreatureInfoRandomBean
             //是否要排除固定类型
             if (!excludePartType.IsNull() && excludePartType.Contains(item.Key))
             {
-               continue;
+                continue;
             }
             List<long> listSkin = item.Value;
             int targetSkinRandomIndex = UnityEngine.Random.Range(0, listSkin.Count);
@@ -45,8 +46,6 @@ public partial class CreatureInfoRandomBean
         return listSkinRandom;
     }
 }
-
-public partial class CreatureInfoRandomCfg
+public partial class CreatureRandomInfoCfg
 {
-
 }

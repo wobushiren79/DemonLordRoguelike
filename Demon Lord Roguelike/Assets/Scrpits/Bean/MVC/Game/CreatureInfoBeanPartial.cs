@@ -103,13 +103,13 @@ public partial class CreatureInfoBean
     /// </summary>
     public long[] GetCreatureBuff()
     {
-        if (create_buff.IsNull())
+        if (creature_buff.IsNull())
         {
             return null;
         }
         if (creatureBuffArray == null)
         {
-            creatureBuffArray = create_buff.SplitForArrayLong(',');
+            creatureBuffArray = creature_buff.SplitForArrayLong(',');
         }
         return creatureBuffArray;
     }

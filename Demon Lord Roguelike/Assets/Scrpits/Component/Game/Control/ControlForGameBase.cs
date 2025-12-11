@@ -1,8 +1,10 @@
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 using OfficeOpenXml.Packaging;
 using Spine.Unity;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -26,6 +28,8 @@ public class ControlForGameBase : BaseControl
 
     //交互提示
     public GameObject controlTargetForInteraction;
+    public ControlInteractionEnum currentInteractionEnum = ControlInteractionEnum.None;
+    public TextMeshPro interactionText;
 
     //交互刷新时间
     protected float timeUpdateForInteraction;
@@ -134,7 +138,7 @@ public class ControlForGameBase : BaseControl
             }
             //播放动画
             PlayAnimForControlTarget(SpineAnimationStateEnum.Walk);
-     
+
         }
     }
 
@@ -146,7 +150,7 @@ public class ControlForGameBase : BaseControl
         float dis = Vector3.Distance(endPosition, Vector3.zero);
         if (dis > 8.3)
         {
-           return true;
+            return true;
         }
         return false;
     }
@@ -158,27 +162,22 @@ public class ControlForGameBase : BaseControl
     {
         if (!enabledControl)
         {
-            controlTargetForInteraction?.SetActive(false);
+            ShowInteractionUI(false);
             return;
-        }  
+        }
         timeUpdateForInteraction += Time.deltaTime;
         if (timeUpdateForInteraction > timeMaxForInteraction)
         {
             timeUpdateForInteraction = 0;
             var controlTarget = GameControlHandler.Instance.manager.controlTargetForCreature;
-
-            if (controlTargetForInteraction == null)
-            {
-                controlTargetForInteraction = controlTarget.transform.Find("Interaction").gameObject;
-            }
             var allHit = RayUtil.OverlapToSphere(controlTarget.transform.position, 0.1f, 1 << LayerInfo.Interaction);
             if (allHit.Length > 0)
             {
-                controlTargetForInteraction?.SetActive(true);
+                ShowInteractionUI(true, allHit[0].gameObject);
             }
             else
             {
-                controlTargetForInteraction?.SetActive(false);
+                ShowInteractionUI(false);
             }
         }
     }
@@ -207,32 +206,91 @@ public class ControlForGameBase : BaseControl
         if (allHit.Length <= 0)
             return;
         var firstHit = allHit[0];
-        //核心
-        if (firstHit.gameObject.name.Equals("CoreInteraction"))
+        var interactionEnum = GetInteractionEnum(firstHit.gameObject);
+        switch (interactionEnum)
         {
-            UIBaseCore targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
+            case ControlInteractionEnum.CoreInteraction: //核心
+                UIBaseCore baseCore = UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
+                break;
+            case ControlInteractionEnum.PortalInteraction://传送门
+                UIBasePortal basePortal = UIHandler.Instance.OpenUIAndCloseOther<UIBasePortal>();
+                break;
+            case ControlInteractionEnum.DoomCouncilInteraction://终焉议会入口
+                UIDoomCouncilMain doomCouncilMain = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilMain>();
+                break;
+            case ControlInteractionEnum.DoomCouncilPodium://终焉议会讲台
+                DoomCouncilLogic doomCouncilLogic1 = GameHandler.Instance.manager.GetGameLogic<DoomCouncilLogic>();
+                doomCouncilLogic1.InteractPodium();
+                break;
+            case ControlInteractionEnum.Councilor://终焉议会议员
+                DoomCouncilLogic doomCouncilLogic2 = GameHandler.Instance.manager.GetGameLogic<DoomCouncilLogic>();
+                doomCouncilLogic2.InteractCouncilor(firstHit.gameObject);
+                break;
         }
-        //传送门
-        else if (firstHit.gameObject.name.Equals("PortalInteraction"))
+    }
+
+    /// <summary>
+    /// 展示互动
+    /// </summary>
+    public void ShowInteractionUI(bool isShow, GameObject targetInteraction = null)
+    {
+        if (controlTargetForInteraction == null)
         {
-            UIBasePortal targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBasePortal>();
+            var controlTarget = GameControlHandler.Instance.manager.controlTargetForCreature;
+            controlTargetForInteraction = controlTarget.transform.Find("Interaction").gameObject;
+            interactionText = controlTarget.transform.Find("Interaction/InteractionText").GetComponent<TextMeshPro>();
         }
-        //终焉议会入口
-        else if (firstHit.gameObject.name.Equals("DoomCouncilInteraction"))
+        if (controlTargetForInteraction == null)
         {
-            UIDoomCouncilMain targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilMain>();
+            return;
         }
-        //终焉议会讲台
-        else if (firstHit.gameObject.name.Equals("DoomCouncilPodium"))
+        if (isShow)
         {
-            DoomCouncilLogic doomCouncilLogic = GameHandler.Instance.manager.GetGameLogic<DoomCouncilLogic>();
-            doomCouncilLogic.InteractPodium();
+            controlTargetForInteraction.SetActive(true);
+            //设置显示提示文本
+            if (interactionText != null)
+            {
+                var interactionEnum = GetInteractionEnum(targetInteraction);
+                //如果当前枚举不同再设置文本 节约一点性能
+                if (interactionEnum != currentInteractionEnum)
+                {
+                    var interactionName = GetInteractionEnumName(interactionEnum);
+                    interactionText.text = interactionName;
+                }
+                currentInteractionEnum = interactionEnum;
+            }
         }
-        //终焉议会议员
-        else if (firstHit.gameObject.name.Contains("Councilor"))
+        else
         {
-            DoomCouncilLogic doomCouncilLogic = GameHandler.Instance.manager.GetGameLogic<DoomCouncilLogic>();
-            doomCouncilLogic.InteractCouncilor(firstHit.gameObject);
+            controlTargetForInteraction.SetActive(false);
         }
+    }
+
+    /// <summary>
+    /// 获取交互枚举
+    /// </summary>
+    public ControlInteractionEnum GetInteractionEnum(GameObject targetInteraction)
+    {
+        if (targetInteraction == null)
+            return ControlInteractionEnum.None;
+        string targetName = targetInteraction.name;
+        return targetName.GetEnum<ControlInteractionEnum>();
+    }
+
+    /// <summary>
+    /// 获取交互名字
+    /// </summary>
+    public string GetInteractionEnumName(ControlInteractionEnum interactionEnum)
+    {
+        long textId;
+        if (interactionEnum == ControlInteractionEnum.None)
+        {
+            return "";
+        }
+        else
+        {
+            textId = 2000 + (int)interactionEnum;
+        }
+        return TextHandler.Instance.GetTextById(textId);
     }
 }

@@ -104,7 +104,9 @@ public enum GameFightTypeEnum
     DoomCouncil,//终焉议会
 }
 
-
+/// <summary>
+/// 研究类型
+/// </summary>
 public enum ResearchInfoTypeEnum
 {
     Building = 1,//设施相关
@@ -112,6 +114,10 @@ public enum ResearchInfoTypeEnum
     Creature = 3,//生物相关
 }
 
+
+/// <summary>
+/// 终焉议会议案触发时机
+/// </summary>
 public enum TriggerTypeDoomCouncilEntityEnum
 {
     WorldEnterGameForBaseScene,//进入游戏中 基地场景
@@ -119,3 +125,26 @@ public enum TriggerTypeDoomCouncilEntityEnum
     GameFightLogicAddExp,//战斗增加经验
     GameFightLogicDropAddCrystal,//战斗掉落增加水晶
 }
+
+/// <summary>
+/// 重点解锁枚举-用于判断关键模块解锁
+/// </summary>
+public enum UnlockEnum
+{
+    CreatureVat = 21000001,//生物进阶
+    DoomCouncil = 21002001,//终焉议会模块
+}
+
+/// <summary>
+/// 控制物体的交互枚举
+/// </summary>
+public enum ControlInteractionEnum
+{
+    None = 0,
+    CoreInteraction,//核心交互
+    PortalInteraction,//传送门交互
+    DoomCouncilInteraction,//终焉议会交互
+    DoomCouncilPodium,//终焉议会讲台
+    Councilor,//议会成员
+}
+

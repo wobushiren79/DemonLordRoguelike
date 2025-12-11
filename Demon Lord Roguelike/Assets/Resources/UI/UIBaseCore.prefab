@@ -42,7 +42,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1200, y: 820}
+  m_SizeDelta: {x: 1200, y: 360}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4813355513080544291
 CanvasRenderer:
@@ -99,10 +99,10 @@ MonoBehaviour:
     m_Right: 10
     m_Top: 20
     m_Bottom: 20
-  m_ChildAlignment: 1
+  m_ChildAlignment: 4
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 190, y: 260}
+  m_CellSize: {x: 228, y: 304}
   m_Spacing: {x: 0, y: 0}
   m_Constraint: 0
   m_ConstraintCount: 2
@@ -557,7 +557,7 @@ PrefabInstance:
     - target: {fileID: 603786919709831696, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 45d60e7a798b6294299ee711e00c030a, type: 3}
+      objectReference: {fileID: 21300000, guid: d2fa29027fd8d4343a5ceaef005aff04, type: 3}
     - target: {fileID: 1478507664880537427, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
       propertyPath: textId
       value: 20005
@@ -682,7 +682,7 @@ PrefabInstance:
     - target: {fileID: 603786919709831696, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: 45d60e7a798b6294299ee711e00c030a, type: 3}
+      objectReference: {fileID: 21300000, guid: 3282ea04ec9f41646a899d941a871c14, type: 3}
     - target: {fileID: 1478507664880537427, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
       propertyPath: textId
       value: 20004
@@ -694,6 +694,10 @@ PrefabInstance:
     - target: {fileID: 4676161509213193462, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
       propertyPath: m_Name
       value: ViewBaseCoreItemFunction_Research
+      objectReference: {fileID: 0}
+    - target: {fileID: 4676161509213193462, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6915073408995454095, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
       propertyPath: m_Pivot.x

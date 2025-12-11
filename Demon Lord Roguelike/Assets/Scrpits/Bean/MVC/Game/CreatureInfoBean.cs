@@ -5,6 +5,10 @@ using Newtonsoft.Json;
 public partial class CreatureInfoBean : BaseBean
 {
 	/// <summary>
+	///创建需要的魔力
+	/// </summary>
+	public int create_mana;
+	/// <summary>
 	///生物类型0创建 1抽卡 2敌人
 	/// </summary>
 	public int creature_type;
@@ -19,7 +23,7 @@ public partial class CreatureInfoBean : BaseBean
 	/// <summary>
 	///生物buff
 	/// </summary>
-	public string create_buff;
+	public string creature_buff;
 	/// <summary>
 	///身体的基础模块
 	/// </summary>
@@ -112,6 +116,10 @@ public partial class CreatureInfoBean : BaseBean
 	///模组ID
 	/// </summary>
 	public long model_id;
+	/// <summary>
+	///随机皮肤数据-CreatureRandomInfo
+	/// </summary>
+	public long creature_random_id;
 	/// <summary>
 	///卡片背景
 	/// </summary>
