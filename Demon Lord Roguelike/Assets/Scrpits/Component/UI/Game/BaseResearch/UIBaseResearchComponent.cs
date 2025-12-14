@@ -18,5 +18,15 @@ public partial class UIBaseResearch
 
     public ParticleSystem ui_EffectUnlock;
 
+    public RadioButtonView ui_UIViewCommonLabel_Building;
+
+    public RadioButtonView ui_UIViewCommonLabel_Strengthen;
+
+    public RadioButtonView ui_UIViewCommonLabel_Creature;
+
+    public RadioGroupView ui_TitleRadioGroup;
+
+    public Button ui_TestSaveBtn;
+
 
 }

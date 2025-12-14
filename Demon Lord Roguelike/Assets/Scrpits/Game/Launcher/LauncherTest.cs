@@ -48,6 +48,13 @@ public class LauncherTest : BaseLauncher
         userData.AddItem(new ItemBean(10100002));
         userData.AddItem(new ItemBean(10100003));
         userData.AddItem(new ItemBean(10100004));
+        //解锁所有unlock
+        var userUnlockData = userData.GetUserUnlockData();
+        var allUnlockInfo = UnlockInfoCfg.GetAllArrayData();
+        allUnlockInfo.ForEach((index,value) =>
+        {
+            userUnlockData.AddUnlock(value.id);
+        });
     }
 
     /// <summary>
@@ -127,4 +134,14 @@ public class LauncherTest : BaseLauncher
         userData.selfCreature = creatureData;
         WorldHandler.Instance.EnterGameForBaseScene(userData, true);
     }
+
+    /// <summary>
+    /// 研究UI测试
+    /// </summary>
+    public void StartForResearchUI()
+    {
+        UIBaseResearch uiBaseResearch = UIHandler.Instance.OpenUIAndCloseOther<UIBaseResearch>();
+        uiBaseResearch.SetDataForTest();
+    }
+    
 }

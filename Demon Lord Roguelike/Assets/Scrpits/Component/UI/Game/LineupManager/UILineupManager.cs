@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -30,9 +31,12 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     public override void OpenUI()
     {
         base.OpenUI();
+        //默认打开第一套阵容
+        currentLineupIndex = 1;
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, EventForCardPointerEnter);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerExit, EventForCardPointerExit);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForOnClickSelect);
+        InitLineupTag();
         InitCreatureData();
         InitLineupData();
         //初始化设置标题
@@ -76,7 +80,50 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         {
             var creatureData = listLineupCreature[i];
             AddLineupCard(creatureData, new Vector3(Screen.width / 2f + 120, 0, 0), 1);
+        }     
+    }
+
+    /// <summary>
+    /// 初始化阵容标签
+    /// </summary>
+    public void InitLineupTag()
+    {
+        SetLineupTagText(ui_LineupIndexBtn_1, 1);
+        SetLineupTagText(ui_LineupIndexBtn_2, 2);
+        SetLineupTagText(ui_LineupIndexBtn_3, 3);
+        SetLineupTagText(ui_LineupIndexBtn_4, 4);
+        SetLineupTagText(ui_LineupIndexBtn_5, 5);
+
+        CheckLineupUnlock(UnlockEnum.Lineup2,ui_LineupIndexBtn_2,2);
+        CheckLineupUnlock(UnlockEnum.Lineup3,ui_LineupIndexBtn_3,3);
+        CheckLineupUnlock(UnlockEnum.Lineup4,ui_LineupIndexBtn_4,4);
+        CheckLineupUnlock(UnlockEnum.Lineup5,ui_LineupIndexBtn_5,5);
+    }
+
+    public void CheckLineupUnlock(UnlockEnum unlockEnum, RadioButtonView radioButtonView,int index)
+    {        
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        //初始化阵容数量
+        var unlockData = userData.GetUserUnlockData();
+        bool isUnlock = unlockData.CheckIsUnlock(unlockEnum);
+        if (isUnlock)
+        {
+            radioButtonView.gameObject.SetActive(true);
+
         }
+        else
+        {
+            radioButtonView.gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// 设置阵容选择标签文本
+    /// </summary>
+    public void SetLineupTagText(RadioButtonView radioButtonView, int index)
+    {
+        var titleTex = radioButtonView.GetComponentInChildren<TextMeshProUGUI>();
+        titleTex.text = string.Format(TextHandler.Instance.GetTextById(30005), index);
     }
 
     /// <summary>
@@ -301,6 +348,14 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         else if (rbview == ui_LineupIndexBtn_3)
         {
             ChangeLineupIndex(3);
+        }
+        else if (rbview == ui_LineupIndexBtn_4)
+        {
+            ChangeLineupIndex(4);
+        }
+        else if (rbview == ui_LineupIndexBtn_5)
+        {
+            ChangeLineupIndex(5);
         }
     }
 

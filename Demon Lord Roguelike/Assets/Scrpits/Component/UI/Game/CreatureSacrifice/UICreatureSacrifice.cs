@@ -133,7 +133,7 @@ public partial class UICreatureSacrifice : BaseUIComponent
             return;
         }
         DialogBean dialogData = new DialogBean();
-        dialogData.content = string.Format(TextHandler.Instance.GetTextById(62001), $"{MathUtil.GetPercentage(0.2f, 2)}%");
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(61003), $"{MathUtil.GetPercentage(0.2f, 2)}%");
         dialogData.actionSubmit = (view, data) =>
         {
             //开始献祭

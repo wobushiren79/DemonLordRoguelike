@@ -6,9 +6,7 @@ public partial class UIViewBaseResearchItem
 {
     public Image ui_Icon;
 
-    public Image ui_BG_Image;
-
-    public Button ui_BG_Button;
+    public Button ui_BG;
 
     public Image ui_Board;
 

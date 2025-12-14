@@ -85,6 +85,7 @@ public enum TestSceneTypeEnum
     RewardSelect = 4,//奖励选择
     DoomCouncil = 5,//终焉议会
     NpcCreate = 6,//NPC创建
+    ResearchUI = 7,//研究ui
 }
 
 public enum CinemachineCameraEnum
@@ -129,10 +130,14 @@ public enum TriggerTypeDoomCouncilEntityEnum
 /// <summary>
 /// 重点解锁枚举-用于判断关键模块解锁
 /// </summary>
-public enum UnlockEnum
+public enum UnlockEnum : uint
 {
-    CreatureVat = 21000001,//生物进阶
-    DoomCouncil = 21002001,//终焉议会模块
+    CreatureVat = 2100000001,//生物进阶
+    DoomCouncil = 2100200001,//终焉议会模块
+    Lineup2 = 2200100001,//解锁阵容2
+    Lineup3 = 2200100002,//解锁阵容3
+    Lineup4 = 2200100003,//解锁阵容4
+    Lineup5 = 2200100004,//解锁阵容5
 }
 
 /// <summary>

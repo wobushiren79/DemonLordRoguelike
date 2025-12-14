@@ -2,20 +2,20 @@ using System;
 using System.Collections.Generic;
 public partial class ResearchInfoBean
 {
-    public long[] preResearchIds;
+    public long[] preUnlockIds;
     
     /// <summary>
     /// 获取所有前置商店道具ID
     /// </summary>
     /// <returns></returns>
-    public long[] GetPreResearchIds()
+    public long[] GetPreUnlockIds()
     {
-        if (preResearchIds == null)
+        if (preUnlockIds == null)
         {
-            preResearchIds = new long[0];
-            preResearchIds = pre_research_ids.SplitForArrayLong(',');
+            preUnlockIds = new long[0];
+            preUnlockIds = pre_unlock_ids.SplitForArrayLong(',');
         }
-        return preResearchIds;
+        return preUnlockIds;
     }
 
     /// <summary>
@@ -29,7 +29,29 @@ public partial class ResearchInfoBean
 }
 public partial class ResearchInfoCfg
 {
-   public static Dictionary<ResearchInfoTypeEnum, List<ResearchInfoBean>> dicResearchInfoByType;
+    public static Dictionary<ResearchInfoTypeEnum, List<ResearchInfoBean>> dicResearchInfoByType;
+    public static Dictionary<long, ResearchInfoBean> dicResearchInfoByUnlockId;
+
+    /// <summary>
+    /// 通过解锁ID获取研究
+    /// </summary>
+    public static ResearchInfoBean GetItemDataByUnlockId(long unlockId)
+    {
+        if (dicResearchInfoByUnlockId == null)
+        {
+            dicResearchInfoByUnlockId = new Dictionary<long, ResearchInfoBean>();
+            var allData = GetAllArrayData();
+            allData.ForEach((key, value) =>
+            {
+                dicResearchInfoByUnlockId.Add(value.unlock_id, value);
+            });
+        }
+        if (dicResearchInfoByUnlockId.TryGetValue(unlockId, out var data))
+        {
+            return data;
+        }
+        return null;
+    }
 
     /// <summary>
     /// 按类型获取数据

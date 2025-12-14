@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 public partial class UnlockInfoBean : BaseBean
 {
 	/// <summary>
-	///解锁类型 0生物 1扭蛋机  2研究
+	///解锁类型 0研究 1扭蛋机
 	/// </summary>
 	public int unlock_type;
 	/// <summary>

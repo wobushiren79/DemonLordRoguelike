@@ -62,9 +62,9 @@ public partial class NpcInfoBean
            listData.AddRange(listSkin);   
         }
         //再添加随机皮肤
-        if (hasRandomData && skin_random_id != 0)
+        if (hasRandomData && creature_random_id != 0)
         {
-            var creatureInfoRandomBean = CreatureRandomInfoCfg.GetItemData(skin_random_id);
+            var creatureInfoRandomBean = CreatureRandomInfoCfg.GetItemData(creature_random_id);
             List<long> listRandomSkin = creatureInfoRandomBean.GetRandomData(listSkinType);
             if (!listRandomSkin.IsNull())
             {

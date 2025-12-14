@@ -21,9 +21,9 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public string skin_data;
 	/// <summary>
-	///随机皮肤数据-CreatureInfoRandom
+	///随机皮肤数据-CreatureRandomInfo
 	/// </summary>
-	public long skin_random_id;
+	public long creature_random_id;
 	/// <summary>
 	///装备道具Ids
 	/// </summary>

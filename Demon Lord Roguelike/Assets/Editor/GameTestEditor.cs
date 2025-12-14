@@ -57,6 +57,20 @@ public class GameTestEditor : Editor
             case TestSceneTypeEnum.NpcCreate:
                 UIForNpcCreate();
                 break;
+            case TestSceneTypeEnum.ResearchUI:
+                UIForResearchUI();
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 研究UI测试
+    /// </summary>
+    public void UIForResearchUI()
+    {
+         if (GUILayout.Button("打开研究UI") && Application.isPlaying)
+        {
+            launcher.StartForResearchUI();
         }
     }
 

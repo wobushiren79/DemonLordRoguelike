@@ -7,13 +7,22 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public partial class UIBaseResearch : BaseUIComponent
+public partial class UIBaseResearch : BaseUIComponent, IRadioGroupCallBack
 {
     protected List<UIViewBaseResearchItem> listResearchItemView = new List<UIViewBaseResearchItem>();
     protected List<GameObject> listLineObj = new List<GameObject>();
     public float SpeedForChangeContentSize = 10;
     protected Tween animForShowUnlockEffect;
-    protected ResearchInfoTypeEnum researchInfoType;
+    
+    public ResearchInfoTypeEnum researchInfoType;
+
+    public override void Awake()
+    {
+        base.Awake();
+        ui_TitleRadioGroup.SetCallBack(this);
+        ui_TitleRadioGroup.SetPosition(0, false);
+    }
+
     public override void CloseUI()
     {
         base.CloseUI();
@@ -25,13 +34,19 @@ public partial class UIBaseResearch : BaseUIComponent
     {
         base.OpenUI();
         ui_EffectUnlock.gameObject.SetActive(false);
-        this.researchInfoType = ResearchInfoTypeEnum.Strengthen;
+        ui_TestSaveBtn.gameObject.SetActive(false);
+    }
+
+    public void SetData()
+    {
+        researchInfoType = ResearchInfoTypeEnum.Building;
         InitResearchItems(researchInfoType);
     }
 
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
+        OnClickForButtonTest(viewButton);
         if(viewButton == ui_ViewExit)
         {
             OnClickForExit();
@@ -61,16 +76,9 @@ public partial class UIBaseResearch : BaseUIComponent
         ui_Content.transform.localScale = clampedPosition;
     }
 
-    /// <summary>
-    /// 初始化
-    /// </summary>
-    public void InitResearchItems()
-    {        
-        InitResearchItems(researchInfoType);
-    }
-
     public void InitResearchItems(ResearchInfoTypeEnum researchInfoType)
     {        
+        this.researchInfoType = researchInfoType;
         ClearData(false);
         List<ResearchInfoBean> listData = ResearchInfoCfg.GetResearchInfoByType(researchInfoType);
         //创建item
@@ -86,28 +94,19 @@ public partial class UIBaseResearch : BaseUIComponent
         });
     }
 
-
     /// <summary>
     /// 检测前置是否解锁
     /// </summary>
     public bool CheckPreIsUnlock(ResearchInfoBean researchInfo)
     {
-        long[] preIds =  researchInfo.GetPreResearchIds();
-        if(preIds.IsNull())
+        long[] preUnlockIds =  researchInfo.GetPreUnlockIds();
+        if(preUnlockIds.IsNull())
         {
             return true;
         }
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlockData = userData.GetUserUnlockData();
-        for (int i = 0; i < preIds.Length; i++)
-        {
-            long preId = preIds[i];
-            var preResearchInfo = ResearchInfoCfg.GetItemData(preId);
-            bool isUnlock = userUnlockData.CheckIsUnlock(preResearchInfo.unlock_id);
-            if (isUnlock == false)
-                return false;
-        }
-        return true;
+        return userUnlockData.CheckIsUnlock(preUnlockIds);
     }
 
     /// <summary>
@@ -138,17 +137,19 @@ public partial class UIBaseResearch : BaseUIComponent
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlockData = userData.GetUserUnlockData();
         Vector2 itemPosition = new Vector2(researchInfo.position_x, researchInfo.position_y);
-        long[] preResearchIds = researchInfo.GetPreResearchIds();
-        if (preResearchIds.IsNull())
+        long[] preUnlockIds = researchInfo.GetPreUnlockIds();
+        if (preUnlockIds.IsNull())
             return;
         bool isUnlockSelf = userUnlockData.CheckIsUnlock(researchInfo.unlock_id);
         ColorUtility.TryParseHtmlString("#382087",out Color color1);
         ColorUtility.TryParseHtmlString("#3C0031",out Color color2Unlock);
         ColorUtility.TryParseHtmlString("#3C003100",out Color color2Lock);
 
-        preResearchIds.ForEach((index, value) =>
+        preUnlockIds.ForEach((index, value) =>
         {
-            var researchInfo = ResearchInfoCfg.GetItemData(value);
+            var researchInfo = ResearchInfoCfg.GetItemDataByUnlockId(value);
+            if(researchInfo == null)
+                return;
             GameObject objItemLine = null;
             //查询所有缓存的线
             for (int i = 0; i < listLineObj.Count; i++)
@@ -270,4 +271,27 @@ public partial class UIBaseResearch : BaseUIComponent
             ui_EffectUnlock.gameObject.SetActive(false);
         });
     }
+
+    #region 事件回调
+    public void RadioButtonSelected(RadioGroupView rgView, int position, RadioButtonView rbview)
+    {
+        if (rbview == ui_UIViewCommonLabel_Building)
+        {
+            InitResearchItems(ResearchInfoTypeEnum.Building);
+        }
+        else if (rbview == ui_UIViewCommonLabel_Strengthen)
+        {
+            InitResearchItems(ResearchInfoTypeEnum.Strengthen);
+        }
+        else if (rbview == ui_UIViewCommonLabel_Creature)
+        {
+            InitResearchItems(ResearchInfoTypeEnum.Creature);
+        }
+    }
+
+    public void RadioButtonUnSelected(RadioGroupView rgView, int position, RadioButtonView rbview)
+    {
+        
+    }
+    #endregion
 }

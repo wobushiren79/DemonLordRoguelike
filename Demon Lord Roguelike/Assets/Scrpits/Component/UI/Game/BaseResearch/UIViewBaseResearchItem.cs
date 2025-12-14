@@ -13,7 +13,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
-        if (viewButton == ui_BG_Button)
+        if (viewButton == ui_BG)
         {
             OnClickForPay();
         }
@@ -82,7 +82,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
             return;
         }
         DialogBean dialogData = new DialogBean();
-        dialogData.content = string.Format(TextHandler.Instance.GetTextById(62002), researchInfo.pay_crystal);
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(62001), researchInfo.pay_crystal);
         dialogData.actionSubmit = (view, data) =>
         {
             //扣除魔晶
@@ -118,7 +118,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
             var targetUI = UIHandler.Instance.GetUI<UIBaseResearch>();
             targetUI.AnimForShowUnlockEffect(transform.position);
             //刷新数据
-            targetUI.InitResearchItems();
+            targetUI.InitResearchItems(targetUI.researchInfoType);
         });
     }
 

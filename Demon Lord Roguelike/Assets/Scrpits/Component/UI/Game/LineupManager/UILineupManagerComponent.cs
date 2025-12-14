@@ -22,5 +22,9 @@ public partial class UILineupManager
 
     public UIViewCreatureCardList ui_UIViewCreatureCardList;
 
+    public RadioButtonView ui_LineupIndexBtn_4;
+
+    public RadioButtonView ui_LineupIndexBtn_5;
+
 
 }

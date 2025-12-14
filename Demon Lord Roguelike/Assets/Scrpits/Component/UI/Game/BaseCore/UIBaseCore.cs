@@ -103,6 +103,7 @@ public partial class UIBaseCore : BaseUIComponent
     public void OnClickForResearch()
     {
         var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBaseResearch>();
+        targetUI.SetData();
     }
 
     /// <summary>

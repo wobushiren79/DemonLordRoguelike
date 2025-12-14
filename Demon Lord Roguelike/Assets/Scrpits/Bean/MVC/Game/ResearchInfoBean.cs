@@ -5,22 +5,6 @@ using Newtonsoft.Json;
 public partial class ResearchInfoBean : BaseBean
 {
 	/// <summary>
-	///生物类型1：防御 2进攻
-	/// </summary>
-	public int creature_type;
-	/// <summary>
-	///创建魔力
-	/// </summary>
-	public int create_magic;
-	/// <summary>
-	///内容
-	/// </summary>
-	public string name_res;
-	/// <summary>
-	///移动速度
-	/// </summary>
-	public float speed_move;
-	/// <summary>
 	///类型 1设施 2强化 3魔物
 	/// </summary>
 	public int research_type;
@@ -37,13 +21,13 @@ public partial class ResearchInfoBean : BaseBean
 	/// </summary>
 	public float position_y;
 	/// <summary>
-	///前置条件
-	/// </summary>
-	public string pre_research_ids;
-	/// <summary>
 	///解锁的ID
 	/// </summary>
 	public long unlock_id;
+	/// <summary>
+	///前置条件
+	/// </summary>
+	public string pre_unlock_ids;
 	/// <summary>
 	///需要支付的水晶
 	/// </summary>
@@ -51,11 +35,9 @@ public partial class ResearchInfoBean : BaseBean
 	/// <summary>
 	///名字-中文
 	/// </summary>
-	public string name_cn;
-	/// <summary>
-	///名字-英文
-	/// </summary>
-	public string name_en;
+	public long name;
+	[JsonIgnore]
+	public string name_language { get { return TextHandler.Instance.GetTextById(ResearchInfoCfg.fileName, name); } }
 	/// <summary>
 	///备注
 	/// </summary>
