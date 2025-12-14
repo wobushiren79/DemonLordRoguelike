@@ -1,6 +1,7 @@
 
 using System.Collections.Generic;
 using UnityEngine.UI;
+using static ExcelUtil;
 
 public partial class UIBaseResearch
 {
@@ -32,9 +33,14 @@ public partial class UIBaseResearch
     /// </summary>
     public void SaveResearchDataForTest()
     {
+        List<ExcelChangeData> listData = new List<ExcelChangeData>();
         for (int i = 0; i < listResearchItemView.Count; i++)
         {
-
+            var itemResearchItemView = listResearchItemView[i];
+            long researchId=itemResearchItemView.researchInfo.id;
+            listData.Add(new ExcelChangeData(researchId,"position_x",$"{(int)itemResearchItemView.rectTransform.anchoredPosition.x}"));
+            listData.Add(new ExcelChangeData(researchId,"position_y",$"{(int)itemResearchItemView.rectTransform.anchoredPosition.y}"));
         }
+        ExcelUtil.SetExcelData("Assets/Data/Excel/excel_research_info[研究信息].xlsx", "ResearchInfo", listData);
     }
 }

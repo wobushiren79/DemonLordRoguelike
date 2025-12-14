@@ -138,6 +138,18 @@ MonoBehaviour:
   uiOpenAnimType: 0
   uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}
+  researchInfo:
+    id: 0
+    research_type: 0
+    icon_res: 
+    position_x: 0
+    position_y: 0
+    unlock_id: 0
+    pre_unlock_ids: 
+    pay_crystal: 0
+    name: 0
+    remark: 
+    preUnlockIds: 
   ui_Icon: {fileID: 4828232006872769703}
   ui_BG: {fileID: 3642393640608232637}
   ui_Board: {fileID: 7690327373327117877}
@@ -156,13 +168,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   defaultColor: {r: 0.2264151, g: 0.2264151, b: 0.2264151, a: 1}
-  grayMat: {fileID: 2100000, guid: a52da24929b68ef498163248583a4efe, type: 2}
+  grayMat: {fileID: 0}
   targetGraphics:
-  - {fileID: 1866733347581520550}
   - {fileID: 7690327373327117877}
   - {fileID: 4828232006872769703}
   targetColors:
-  - {r: 0, g: 0, b: 0, a: 0}
   - {r: 1, g: 1, b: 1, a: 1}
   - {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &8177340408363107475
@@ -232,8 +242,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 7f9fe721e914e234cb8d2d5583b8c955, type: 3}
-  m_Type: 0
+  m_Sprite: {fileID: 21300000, guid: e094426b07eca1447884a939c13fd58f, type: 3}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4

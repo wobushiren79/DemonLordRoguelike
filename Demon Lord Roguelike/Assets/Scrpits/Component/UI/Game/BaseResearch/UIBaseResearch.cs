@@ -164,16 +164,15 @@ public partial class UIBaseResearch : BaseUIComponent, IRadioGroupCallBack
             //如果没有缓存的线 则创建一个新的
             if (objItemLine == null)
             {
-                objItemLine = Instantiate(ui_Line.gameObject, ui_Line_Item.gameObject);
+                objItemLine = Instantiate(ui_Line.gameObject, ui_Line_Item.gameObject);    
+                listLineObj.Add(objItemLine);
             }
-            objItemLine.SetActive(true);      
-            listLineObj.Add(objItemLine);
+            objItemLine.SetActive(true);  
             RectTransform rtfLine = (RectTransform)objItemLine.transform;
             Image ivLine = objItemLine.GetComponent<Image>();
             Vector2 originalPosition = new Vector2(researchInfo.position_x, researchInfo.position_y);
             //设置线段位置
-            Vector2 targetPosition = UGUIUtil.GetRootPosForUI(originalPosition, ui_Content, ui_Line);
-            rtfLine.anchoredPosition = targetPosition;
+            rtfLine.anchoredPosition = originalPosition;
             //设置线段长度
             float lineLength = Vector2.Distance(itemPosition, originalPosition);
             rtfLine.sizeDelta = new Vector2(lineLength, 100);

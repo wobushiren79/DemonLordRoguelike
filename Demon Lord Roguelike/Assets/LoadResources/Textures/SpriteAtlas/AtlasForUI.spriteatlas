@@ -177,6 +177,7 @@ SpriteAtlas:
     - 02dfbd3fd988d8047a02241869547c11: 21300000
     - d8fa227f7aa0c964d9f90a76a46300d9: 21300000
     - 9b7ff97fbf86308489dc48699c1e4323: 21300000
+    - c8e5029fd2a5bf64eac20ef86f2e021f: 21300000
     - 4578deaf7adf7af449a4797554c3d40d: 21300000
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
@@ -307,6 +308,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 02dfbd3fd988d8047a02241869547c11, type: 3}
   - {fileID: 21300000, guid: d8fa227f7aa0c964d9f90a76a46300d9, type: 3}
   - {fileID: 21300000, guid: 9b7ff97fbf86308489dc48699c1e4323, type: 3}
+  - {fileID: 21300000, guid: c8e5029fd2a5bf64eac20ef86f2e021f, type: 3}
   - {fileID: 21300000, guid: 4578deaf7adf7af449a4797554c3d40d, type: 3}
   m_PackedSpriteNamesToIndex:
   - ui_research_21
@@ -436,6 +438,7 @@ SpriteAtlas:
   - ui_research_20
   - ui_slider_4
   - ui_research_2
+  - ui_unlock_1
   - ui_equip_9
   m_RenderDataMap: {}
   m_Tag: AtlasForUI

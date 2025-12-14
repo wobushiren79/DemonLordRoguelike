@@ -6049,18 +6049,6 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8922930111069524431, guid: 7a5ac63cae04b264f8142bdfce9a3d6d, type: 3}
-      propertyPath: targetColors.Array.data[0].b
-      value: 0.5660378
-      objectReference: {fileID: 0}
-    - target: {fileID: 8922930111069524431, guid: 7a5ac63cae04b264f8142bdfce9a3d6d, type: 3}
-      propertyPath: targetColors.Array.data[0].g
-      value: 0.11480955
-      objectReference: {fileID: 0}
-    - target: {fileID: 8922930111069524431, guid: 7a5ac63cae04b264f8142bdfce9a3d6d, type: 3}
-      propertyPath: targetColors.Array.data[0].r
-      value: 0.44598255
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

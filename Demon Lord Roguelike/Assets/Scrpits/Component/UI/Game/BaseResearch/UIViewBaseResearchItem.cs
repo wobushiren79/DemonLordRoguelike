@@ -7,7 +7,7 @@ using DG.Tweening;
 
 public partial class UIViewBaseResearchItem : BaseUIView
 {
-    protected ResearchInfoBean researchInfo;
+    public ResearchInfoBean researchInfo;
     protected Vector2 itemPosition;
     protected Sequence animForUnlock;//解锁动画
     public override void OnClickForButton(Button viewButton)
@@ -34,7 +34,6 @@ public partial class UIViewBaseResearchItem : BaseUIView
         itemPosition = new Vector2(researchInfo.position_x, researchInfo.position_y);
         SetPosition(itemPosition);
         SetState();
-        SetIcon(researchInfo.icon_res);
     }
 
     /// <summary>
@@ -51,14 +50,17 @@ public partial class UIViewBaseResearchItem : BaseUIView
     public void SetState()
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
-        bool isUnlock = userData.GetUserUnlockData().CheckIsUnlock(researchInfo.unlock_id);
+        var userUnlockData = userData.GetUserUnlockData();
+        bool isUnlock = userUnlockData.CheckIsUnlock(researchInfo.unlock_id);
         if (isUnlock)
         {
             ui_UIViewBaseResearchItem_MaskUIView.HideMask();
+            SetIcon(researchInfo.icon_res);
         }
         else
         {
             ui_UIViewBaseResearchItem_MaskUIView.ShowMask();
+            SetIcon("ui_unlock_1");
         }
     }
 
@@ -105,6 +107,8 @@ public partial class UIViewBaseResearchItem : BaseUIView
     {
         UIHandler.Instance.ShowScreenLock();
         ClearAnim();
+        //先隐藏mask
+        ui_UIViewBaseResearchItem_MaskUIView.HideMask();
         //UI放大
         animForUnlock = DOTween.Sequence();
         animForUnlock.Append(transform.DOScale(Vector3.one * 2f, 1));
