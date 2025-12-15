@@ -52,8 +52,7 @@ public class CreatureSacrificeLogic : BaseGameLogic
     public void InitSceneData()
     {
         //场景实例
-        var baseSceneObj = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.BaseGaming);
-        scenePrefab = baseSceneObj.GetComponent<ScenePrefabForBase>();
+        var scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForBase>(GameSceneTypeEnum.BaseGaming);
         //设置祭坛粒子
         SetAltarEffect(true);
         //设置摄像头

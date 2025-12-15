@@ -53,6 +53,7 @@ public partial class UIGameSystem : BaseUIComponent
     /// </summary>
     public void OnClickForBackMain()
     {
+        GameDataHandler.Instance.manager.SaveUserData();
         WorldHandler.Instance.EnterMainForBaseScene();
     }
 
@@ -70,6 +71,7 @@ public partial class UIGameSystem : BaseUIComponent
     /// </summary>
     public void OnClickForExitGame()
     {
+        GameDataHandler.Instance.manager.SaveUserData();
         GameUtil.ExitGame();
     }
 }

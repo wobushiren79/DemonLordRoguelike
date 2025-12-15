@@ -27,11 +27,6 @@ public class ScenePrefabForBase : ScenePrefabBase
     public Color vatColorStart = new Color(0, 0.4f, 1f, 0.4f);
     public Color vatColorEnd = new Color(0.11f, 0.06f, 0.5f, 0.7f);
 
-    //public void Awake()
-    //{
-    //    objBuildingCore = transform.Find("Core/Building").gameObject;
-    //    effectEggBreak = transform.Find("Effect/EggBreak").GetComponent<VisualEffect>();
-    //}
     /// <summary>
     /// 初始化场景
     /// </summary>
@@ -39,7 +34,8 @@ public class ScenePrefabForBase : ScenePrefabBase
     {
         await base.InitSceneData();
         EventHandler.Instance.RegisterEvent(EventsInfo.CreatureAscend_AddProgress, EventForCreatureAscendAddProgress);
-        await RefreshScene();
+        objBuildingVat.gameObject.SetActive(false);
+        objBuildingAltar.gameObject.SetActive(false);
     }
 
     /// <summary>
@@ -52,6 +48,16 @@ public class ScenePrefabForBase : ScenePrefabBase
         BuildingAltarRefresh();
     }
 
+    /// <summary>
+    /// 动画-建筑出现
+    /// </summary>
+    public async Task AnimForBuildingShow(float timeForShow)
+    {
+        var taskAltar = AnimForBuildingAltarShow(timeForShow);
+        var taskVat = AnimForBuildingVatShow(timeForShow);
+        await new WaitForSeconds(timeForShow);
+    }
+
     public void OnDestroy()
     {
         EventHandler.Instance.UnRegisterEvent(EventsInfo.CreatureAscend_AddProgress, EventForCreatureAscendAddProgress);
@@ -62,7 +68,7 @@ public class ScenePrefabForBase : ScenePrefabBase
         HandleUpdateForBuildingCore();
     }
 
-    #region 核心建筑眼球
+    #region 核心建筑
     //核心建筑眼球看向目标
     protected Vector3 targetLookAtForBuildingCoreEye;
     //核心建筑眼球转动速度
@@ -93,6 +99,15 @@ public class ScenePrefabForBase : ScenePrefabBase
         objBuildingCoreEye.transform.LookAt(targetLookAtForBuildingCoreEye);
         return;
     }
+
+    /// <summary>
+    /// 动画-核心建筑吐出
+    /// </summary>
+    public void AnimForBuildingCoreSpit(float timeAnim = 0.3f)
+    {
+        objBuildingCore.transform.localScale = Vector3.one;
+        objBuildingCore.transform.DOPunchScale(new Vector3(0.2f, -0.2f, 0.2f), timeAnim, 2, 0.5f);
+    }
     #endregion
 
     #region 献祭相关
@@ -100,7 +115,7 @@ public class ScenePrefabForBase : ScenePrefabBase
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UserUnlockBean userUnlock = userData.GetUserUnlockData();
-        bool isUnlockAltar = userUnlock.CheckIsUnlock(21001001);
+        bool isUnlockAltar = userUnlock.CheckIsUnlock(UnlockEnum.Altar);
         //是否解锁祭坛
         if (isUnlockAltar)
         {
@@ -112,6 +127,20 @@ public class ScenePrefabForBase : ScenePrefabBase
         }
     }
 
+    /// <summary>
+    /// 动画-祭坛出现
+    /// </summary>
+    public async Task AnimForBuildingAltarShow(float timeForShow)
+    {
+        for (int i = 1; i <= 4; i++)
+        {
+            //4个柱子从地下出现
+            var targetItemTF = objBuildingAltar.transform.Find($"Altar_{i}");
+            targetItemTF.position = targetItemTF.position.SetY(-1);
+            targetItemTF.DOMoveY(0, timeForShow);
+        }
+        await new WaitForSeconds(timeForShow);
+    }
     #endregion
 
     #region Vat相关
@@ -124,6 +153,23 @@ public class ScenePrefabForBase : ScenePrefabBase
     }
 
     /// <summary>
+    /// 动画-祭坛出现
+    /// </summary>
+    public async Task AnimForBuildingVatShow(float timeForShow)
+    {
+        for (int i = 0; i < objBuildingVat.transform.childCount; i++)
+        {
+            var itemVat = objBuildingVat.transform.GetChild(i);
+            if (itemVat.gameObject.activeSelf)
+            {
+                itemVat.position = itemVat.position.SetY(-1.8f);
+                itemVat.DOMoveY(0, timeForShow);
+            }
+        }
+        await new WaitForSeconds(timeForShow);
+    }
+
+    /// <summary>
     /// 刷新建筑容器
     /// </summary>
     public void BuildingVatRefresh()
@@ -132,16 +178,27 @@ public class ScenePrefabForBase : ScenePrefabBase
         UserAscendBean userAscend = userData.GetUserAscendData();
         UserUnlockBean userUnlock = userData.GetUserUnlockData();
         int showVatNum = 0;
-        //解锁id 210000001-210000006 一共6个
-        for (int i = 1; i <= 6; i++)
+        //解锁id 10000001-10000006 一共6个
+        if (userUnlock.CheckIsUnlock(UnlockEnum.CreatureVatAdd1))
+            showVatNum++;
+        if (userUnlock.CheckIsUnlock(UnlockEnum.CreatureVatAdd2))
+            showVatNum++;
+        if (userUnlock.CheckIsUnlock(UnlockEnum.CreatureVatAdd3))
+            showVatNum++;
+        if (userUnlock.CheckIsUnlock(UnlockEnum.CreatureVatAdd4))
+            showVatNum++;
+        if (userUnlock.CheckIsUnlock(UnlockEnum.CreatureVatAdd5))
+            showVatNum++;
+        if (userUnlock.CheckIsUnlock(UnlockEnum.CreatureVatAdd6))
+            showVatNum++;
+        if (showVatNum > 0)
         {
-            bool isUnlockVat = userUnlock.CheckIsUnlock(21000000 + i);
-            if (isUnlockVat)
-            {
-                showVatNum++;
-            }
+            objBuildingVat.gameObject.SetActive(true);
         }
-
+        else
+        {
+            objBuildingVat.gameObject.SetActive(false);
+        }
         for (int i = 0; i < objBuildingVat.transform.childCount; i++)
         {
             var itemVat = objBuildingVat.transform.GetChild(i);

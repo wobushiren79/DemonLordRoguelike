@@ -13,9 +13,7 @@ public class DoomCouncilLogic : BaseGameLogic
         base.PreGame();
         //进入议会场景
         await WorldHandler.Instance.EnterDoomCouncilScene();
-        var scenePrefabObj = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.DoomCouncil);
-        scenePrefab = scenePrefabObj.GetComponent<ScenePrefabForDoomCouncil>();
-
+        var scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForDoomCouncil>(GameSceneTypeEnum.DoomCouncil);
         //生成议员
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         var listCouncilorInfo = NpcInfoCfg.GetNpcInfosByType(NpcTypeEnum.Councilor);
@@ -59,7 +57,7 @@ public class DoomCouncilLogic : BaseGameLogic
         {
             //保存用户数据
             UserDataBean userData = GameDataHandler.Instance.manager.SaveUserData();
-            WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+            WorldHandler.Instance.EnterGameForBaseScene(userData);
         }, false);
     }
 

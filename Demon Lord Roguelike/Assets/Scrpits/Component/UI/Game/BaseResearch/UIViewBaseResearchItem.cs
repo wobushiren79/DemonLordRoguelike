@@ -13,7 +13,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
-        if (viewButton == ui_BG)
+        if (viewButton == ui_BG_Button)
         {
             OnClickForPay();
         }
@@ -34,6 +34,8 @@ public partial class UIViewBaseResearchItem : BaseUIView
         itemPosition = new Vector2(researchInfo.position_x, researchInfo.position_y);
         SetPosition(itemPosition);
         SetState();
+        //设置浮窗信息
+        ui_BG_PopupButtonCommonView.SetData(researchInfo, PopupEnum.ResearchInfo);
     }
 
     /// <summary>
@@ -79,6 +81,13 @@ public partial class UIViewBaseResearchItem : BaseUIView
     {
         //先检测魔晶够不够
         var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlock = userData.GetUserUnlockData();
+        //检测是否已经解锁
+        if (userUnlock.CheckIsUnlock(researchInfo.unlock_id))
+        {
+            return;
+        }
+        //检测魔晶够不够
         if (!userData.CheckHasCrystal(researchInfo.pay_crystal, isHint: true))
         {
             return;
@@ -92,7 +101,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
             {
                 return;
             }
-            //解锁成就
+            //添加解锁ID
             userData.GetUserUnlockData().AddUnlock(researchInfo.unlock_id);
             //播放解锁动画
             AnimForUnlock();

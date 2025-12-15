@@ -65,36 +65,8 @@ PrefabInstance:
       value: Effect_CombatHit_Slam_1
       objectReference: {fileID: 0}
     - target: {fileID: 421996, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 3.22894
-      objectReference: {fileID: 0}
-    - target: {fileID: 421996, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 421996, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0.2118
-      objectReference: {fileID: 0}
-    - target: {fileID: 421996, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.7071067
-      objectReference: {fileID: 0}
-    - target: {fileID: 421996, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0.7071068
-      objectReference: {fileID: 0}
-    - target: {fileID: 421996, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 421996, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 421996, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: -89.980194
+      value: -90
       objectReference: {fileID: 0}
     - target: {fileID: 421996, guid: a07608802ac497743a7f19f6633fdd70, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y

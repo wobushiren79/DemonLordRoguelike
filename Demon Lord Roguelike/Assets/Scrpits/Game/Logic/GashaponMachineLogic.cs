@@ -75,8 +75,7 @@ public class GashaponMachineLogic : BaseGameLogic
     public void InitSceneData()
     {
         //场景实例
-        var baseSceneObj = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.BaseGaming);
-        scenePrefab = baseSceneObj.GetComponent<ScenePrefabForBase>();
+        var scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForBase>(GameSceneTypeEnum.BaseGaming);
 
         listEggObj.Clear();
         for (int i = 0; i < listEggObjPool.Count; i++)
@@ -358,9 +357,8 @@ public class GashaponMachineLogic : BaseGameLogic
             {
                 actionForComplete?.Invoke(objEgg);
             });
-
-        scenePrefab.objBuildingCore.transform.localScale = Vector3.one;
-        scenePrefab.objBuildingCore.transform.DOPunchScale(new Vector3(0.2f, -0.2f, 0.2f), timeForAnimShowEggInterval, 2, 0.5f);
+        //监视之塔做一个吐出的动作
+        scenePrefab.AnimForBuildingCoreSpit(timeForAnimShowEggInterval);
     }
     #endregion
 }

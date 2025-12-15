@@ -40,9 +40,16 @@ public partial class UIHandler
     }
 
     public void HideMask(float maskTime, Action acionForStart, Action acionForComplete, bool isCloseSelf = true)
-    {
+    {     
         var maskUI = OpenUIAndCloseOther<UICommonMask>();
-        maskUI.EndMask(maskTime, acionForStart, acionForComplete, isCloseSelf);
+        if (maskTime <= 0)
+        {
+            maskUI.CloseUI();
+        }
+        else
+        {
+            maskUI.EndMask(maskTime, acionForStart, acionForComplete, isCloseSelf);
+        }
     }
 
     /// <summary>

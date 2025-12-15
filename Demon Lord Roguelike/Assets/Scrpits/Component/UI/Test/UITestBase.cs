@@ -87,6 +87,7 @@ public partial class UITestBase : BaseUIComponent
             }
         }
         UIHandler.Instance.ToastHint<ToastView>("添加成功！");
+        GameDataHandler.Instance.manager.SaveUserData();
     }
 
     /// <summary>
@@ -116,6 +117,7 @@ public partial class UITestBase : BaseUIComponent
             }
         }
         UIHandler.Instance.ToastHint<ToastView>("添加成功！");
+        GameDataHandler.Instance.manager.SaveUserData();
     }
 
     /// <summary>
@@ -136,6 +138,7 @@ public partial class UITestBase : BaseUIComponent
         }
 
         UIHandler.Instance.ToastHint<ToastView>("添加成功！");
+        GameDataHandler.Instance.manager.SaveUserData();
     }
 
     /// <summary>
@@ -158,6 +161,7 @@ public partial class UITestBase : BaseUIComponent
         userData.AddBackpackCreature(creatureData);
 
         UIHandler.Instance.ToastHint<ToastView>("添加成功！");
+        GameDataHandler.Instance.manager.SaveUserData();
     }
 
     /// <summary>
@@ -189,6 +193,7 @@ public partial class UITestBase : BaseUIComponent
             LogUtil.LogError("输入数据错误 必须是long类型");
             return;
         }
+        GameDataHandler.Instance.manager.SaveUserData();
     }
 
     public void OnClickForAddUnlockCreature()
@@ -216,5 +221,6 @@ public partial class UITestBase : BaseUIComponent
             LogUtil.LogError("输入数据错误 必须是long类型");
             return;
         }
+        GameDataHandler.Instance.manager.SaveUserData();
     }
 }

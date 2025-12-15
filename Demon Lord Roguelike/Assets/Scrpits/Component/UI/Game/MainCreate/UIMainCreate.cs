@@ -192,7 +192,7 @@ public partial class UIMainCreate : BaseUIComponent
             //展示mask
             UIHandler.Instance.ShowMask(1, null, () =>
             {
-                WorldHandler.Instance.EnterGameForBaseScene(userData, false);
+                WorldHandler.Instance.EnterGameForBaseScene(userData, isClearWorld : false, isAnimForBuildingShow : true);
             }, false);
         });
         UIHandler.Instance.ShowDialogNormal(dialogData);

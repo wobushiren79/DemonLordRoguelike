@@ -132,7 +132,7 @@ public class LauncherTest : BaseLauncher
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         userData.selfCreature = creatureData;
-        WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+        WorldHandler.Instance.EnterGameForBaseScene(userData);
     }
 
     /// <summary>

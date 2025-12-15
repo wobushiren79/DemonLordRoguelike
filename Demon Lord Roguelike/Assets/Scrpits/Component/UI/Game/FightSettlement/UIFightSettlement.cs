@@ -102,7 +102,7 @@ public partial class UIFightSettlement : BaseUIComponent
         UIHandler.Instance.ShowMask(1, null, () =>
         {
             UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-            WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+            WorldHandler.Instance.EnterGameForBaseScene(userData);
         }, false);
     }
 
@@ -112,7 +112,7 @@ public partial class UIFightSettlement : BaseUIComponent
         UIHandler.Instance.ShowMask(1, null, () =>
         {
             UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-            WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+            WorldHandler.Instance.EnterGameForBaseScene(userData);
         }, false);
     }
 
@@ -136,7 +136,7 @@ public partial class UIFightSettlement : BaseUIComponent
             //展示mask
             UIHandler.Instance.ShowMask(1, null, () =>
             {
-                WorldHandler.Instance.EnterGameForBaseScene(userData, true);  
+                WorldHandler.Instance.EnterGameForBaseScene(userData);  
             }, false);
         }
     }

@@ -53,7 +53,7 @@ public class GameFightLogicDoomCouncil : GameFightLogic
             //保存用户数据
             UserDataBean userData = GameDataHandler.Instance.manager.SaveUserData();
             //返回基地
-            WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+            WorldHandler.Instance.EnterGameForBaseScene(userData);
         }, false);
     }
     #endregion

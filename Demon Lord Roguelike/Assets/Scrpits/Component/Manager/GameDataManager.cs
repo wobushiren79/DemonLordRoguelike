@@ -40,7 +40,10 @@ public partial class GameDataManager : IUserDataView
     /// </summary>
     public UserDataBean SaveUserData()
     {
-        SaveUserData(userData);
+        if (userData != null)
+        {
+            SaveUserData(userData);
+        }
         return userData;
     }
 

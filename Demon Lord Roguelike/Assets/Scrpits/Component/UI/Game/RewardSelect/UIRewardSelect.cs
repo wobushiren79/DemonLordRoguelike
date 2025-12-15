@@ -31,8 +31,7 @@ public partial class UIRewardSelect : BaseUIComponent
 
         await WorldHandler.Instance.EnterRewardSelectScene();
         //场景实例
-        var baseSceneObj = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.RewardSelect);
-        scenePrefab = baseSceneObj.GetComponent<ScenePrefabForRewardSelect>();
+        var scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForRewardSelect>(GameSceneTypeEnum.RewardSelect);
         //初始化宝箱
         await scenePrefab.InitRewardBox(rewardSelectData.listReward);
 

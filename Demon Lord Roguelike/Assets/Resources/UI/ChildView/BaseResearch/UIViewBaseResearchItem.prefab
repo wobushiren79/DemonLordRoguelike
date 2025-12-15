@@ -151,7 +151,8 @@ MonoBehaviour:
     remark: 
     preUnlockIds: 
   ui_Icon: {fileID: 4828232006872769703}
-  ui_BG: {fileID: 3642393640608232637}
+  ui_BG_Button: {fileID: 3642393640608232637}
+  ui_BG_PopupButtonCommonView: {fileID: 608725517868466673}
   ui_Board: {fileID: 7690327373327117877}
   ui_UIViewBaseResearchItem_MaskUIView: {fileID: 8922930111069524431}
   ui_UIViewBaseResearchItem_RectTransform: {fileID: 4805604851495491402}
@@ -277,6 +278,7 @@ GameObject:
   - component: {fileID: 2080446529810247911}
   - component: {fileID: 1866733347581520550}
   - component: {fileID: 3642393640608232637}
+  - component: {fileID: 608725517868466673}
   m_Layer: 5
   m_Name: BG
   m_TagString: Untagged
@@ -385,3 +387,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &608725517868466673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9151464007255039032}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16e10e1ab6287e34bb1c2a56fb2273e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PopupButtonCommonView
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
+  _rectTransform: {fileID: 0}
+  timeDelayShow: 0

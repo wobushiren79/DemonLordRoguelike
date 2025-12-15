@@ -41,7 +41,7 @@ public partial class UIGameWorldMap : BaseUIComponent
         var gameWorldMapData = userData.gameWorldMapData;
         if (gameWorldMapData == null)
         {
-            WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+            WorldHandler.Instance.EnterGameForBaseScene(userData);
             return;
         }
         var mapDetailsData = gameWorldMapData.GetDetailsData();
@@ -152,7 +152,7 @@ public partial class UIGameWorldMap : BaseUIComponent
                 {
                     UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
                     userData.ClearGameWorldMapData();
-                    WorldHandler.Instance.EnterGameForBaseScene(userData, true);
+                    WorldHandler.Instance.EnterGameForBaseScene(userData);
                 }, false);
         };
         var targetDialog = UIHandler.Instance.ShowDialogNormal(dialogData);

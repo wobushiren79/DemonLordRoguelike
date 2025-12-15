@@ -10,6 +10,12 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     //当前场景
     protected GameObject currentScene;
 
+    public T GetCurrentScenePrefab<T>(GameSceneTypeEnum gameSceneType) where T : ScenePrefabBase
+    {
+        var baseSceneObj = GetCurrentScene(gameSceneType);
+        return baseSceneObj?.GetComponent<T>();
+    }
+
     public GameObject GetCurrentScene(GameSceneTypeEnum gameSceneType)
     {
         if (gameSceneType == GameSceneTypeEnum.BaseMain)
@@ -26,6 +32,11 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     public GameObject GetCurrentScene()
     {
         return currentScene;
+    }
+
+    public T GetCurrentScenePrefab<T>() where T : ScenePrefabForBase
+    {
+        return currentScene?.GetComponent<T>();
     }
 
     #region 进入场景
@@ -89,11 +100,15 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     /// <summary>
     /// 进入游戏中 基地场景
     /// </summary>
-    public async void EnterGameForBaseScene(UserDataBean userData, bool isInitScene)
+    public async void EnterGameForBaseScene(
+        UserDataBean userData, 
+        bool isClearWorld = true,//是否要清理世界并重新加载
+        bool isAnimForBuildingShow = false//是否要播放建筑出现动画
+    )
     {
         //镜头初始化
         CameraHandler.Instance.InitData();
-        if (isInitScene)
+        if (isClearWorld)
         {
             //清理世界数据
             await ClearWorldData();
@@ -101,7 +116,25 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             await LoadBaseScene();
         }
         //设置基地场景视角
-        await CameraHandler.Instance.InitBaseSceneControlCamera(userData.selfCreature, Vector3.zero);
+        Vector3 startControlPos = Vector3.zero;
+        await CameraHandler.Instance.InitBaseSceneControlCamera(userData.selfCreature, startControlPos);
+
+        var baseSceneObj = GetCurrentScene(GameSceneTypeEnum.BaseGaming);
+        var scenePrefab = baseSceneObj.GetComponent<ScenePrefabForBase>();
+        await scenePrefab.RefreshScene();
+        //如果有遮罩 需要隐藏遮罩
+        UIHandler.Instance.HideMask(0, null, null);
+        //是否要播放建筑出现动画
+        float timeAnimBuildingShow = 1;
+        if (isAnimForBuildingShow)
+        {
+            //播放建筑出现动画
+            var taskAnimBuildingShow = scenePrefab.AnimForBuildingShow(timeAnimBuildingShow);
+            //播放基地控制器出现动画
+            GameControlHandler.Instance.AnimForBaseControlShow(startControlPos, animTime: 1);
+        }
+        //等待1秒动画
+        await new WaitForSeconds(timeAnimBuildingShow);
         //环境参数初始化
         VolumeHandler.Instance.InitData(GameSceneTypeEnum.BaseGaming);
         //关闭LoadingUI

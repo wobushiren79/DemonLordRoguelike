@@ -111,7 +111,7 @@ public partial class UIViewMainLoadItem : BaseUIView
         UIHandler.Instance.ShowMask(1, null, () =>
         {
             GameDataHandler.Instance.manager.SetUserData(userData);
-            WorldHandler.Instance.EnterGameForBaseScene(userData, false);
+            WorldHandler.Instance.EnterGameForBaseScene(userData, isClearWorld : false, isAnimForBuildingShow : true);
         }, false);
     }
 

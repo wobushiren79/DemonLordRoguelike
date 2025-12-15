@@ -121,7 +121,7 @@ public partial class CameraHandler
         SetCameraForControl(CinemachineCameraEnum.Base);
 
         manager.cm_Base.Follow = controlTarget.transform;
-        manager.cm_Base.LookAt = targetRenderer;
+        manager.cm_Base.LookAt = controlTarget.transform;;
         manager.cm_Base.PreviousStateIsValid = false;
         await new WaitNextFrame();
         //设置偏转
