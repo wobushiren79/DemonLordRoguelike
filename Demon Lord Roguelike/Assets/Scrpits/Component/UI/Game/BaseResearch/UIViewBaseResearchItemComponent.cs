@@ -1,5 +1,6 @@
 ﻿using UnityEngine.UI;
 using UnityEngine;
+using TMPro;
 
 
 public partial class UIViewBaseResearchItem
@@ -15,6 +16,8 @@ public partial class UIViewBaseResearchItem
     public MaskUIView ui_UIViewBaseResearchItem_MaskUIView;
 
     public RectTransform ui_UIViewBaseResearchItem_RectTransform;
+
+    public TextMeshProUGUI ui_Level;
 
 
 }

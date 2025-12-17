@@ -130,14 +130,14 @@ public enum TriggerTypeDoomCouncilEntityEnum
 /// <summary>
 /// 重点解锁枚举-用于判断关键模块解锁
 /// </summary>
-public enum UnlockEnum : uint
+public enum UnlockEnum : long
 {
-    CreatureVatAdd1 = 100000001,//生物进阶
-    CreatureVatAdd2 = 100000002,//生物进阶设置+1;
-    CreatureVatAdd3 = 100000003,//生物进阶设置+1;
-    CreatureVatAdd4 = 100000004,//生物进阶设置+1;
-    CreatureVatAdd5 = 100000005,//生物进阶设置+1;
-    CreatureVatAdd6 = 100000006,//生物进阶设置+1;
+    CreatureVatAdd1 = 100000000,//生物进阶
+    CreatureVatAdd2 = 100000001,//生物进阶设置+1;
+    CreatureVatAdd3 = 100000002,//生物进阶设置+1;
+    CreatureVatAdd4 = 100000003,//生物进阶设置+1;
+    CreatureVatAdd5 = 100000004,//生物进阶设置+1;
+    CreatureVatAdd6 = 100000005,//生物进阶设置+1;
     Altar = 100100001,//祭坛
     DoomCouncil = 100200001,//终焉议会模块
     Lineup2 = 200100001,//解锁阵容2

@@ -13,6 +13,10 @@ public partial class ResearchInfoBean : BaseBean
 	/// </summary>
 	public string icon_res;
 	/// <summary>
+	///升级上限
+	/// </summary>
+	public int level_max;
+	/// <summary>
 	///位置x
 	/// </summary>
 	public float position_x;
@@ -31,7 +35,7 @@ public partial class ResearchInfoBean : BaseBean
 	/// <summary>
 	///需要支付的水晶
 	/// </summary>
-	public int pay_crystal;
+	public string pay_crystal;
 	/// <summary>
 	///名字-中文
 	/// </summary>

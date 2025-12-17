@@ -13,5 +13,9 @@ public partial class UIPopupResearchInfo
 
     public RectTransform ui_UnlockPre;
 
+    public RectTransform ui_Level;
+
+    public TextMeshProUGUI ui_LevelText;
+
 
 }

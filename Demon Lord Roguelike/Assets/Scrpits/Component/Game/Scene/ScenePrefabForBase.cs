@@ -20,6 +20,8 @@ public class ScenePrefabForBase : ScenePrefabBase
     //容器
     public GameObject objBuildingVat;
     public GameObject objVatMaterialCreature;
+    //终焉议会
+    public GameObject obBuildingjDoomCouncil;
     //光线
     public Light lightSun;
     public GameObject lightRay;
@@ -34,6 +36,8 @@ public class ScenePrefabForBase : ScenePrefabBase
     {
         await base.InitSceneData();
         EventHandler.Instance.RegisterEvent(EventsInfo.CreatureAscend_AddProgress, EventForCreatureAscendAddProgress);
+        EventHandler.Instance.RegisterEvent<long>(EventsInfo.User_AddUnlock, EventForUserAddUnlock);
+
         objBuildingVat.gameObject.SetActive(false);
         objBuildingAltar.gameObject.SetActive(false);
     }
@@ -46,6 +50,7 @@ public class ScenePrefabForBase : ScenePrefabBase
         await base.RefreshScene();
         BuildingVatRefresh();
         BuildingAltarRefresh();
+        BuildingDoomCouncilRefresh();
     }
 
     /// <summary>
@@ -55,12 +60,14 @@ public class ScenePrefabForBase : ScenePrefabBase
     {
         var taskAltar = AnimForBuildingAltarShow(timeForShow);
         var taskVat = AnimForBuildingVatShow(timeForShow);
+        var taskDoomCouncil = AnimForBuildingDoomCouncilShow(timeForShow);
         await new WaitForSeconds(timeForShow);
     }
 
     public void OnDestroy()
     {
         EventHandler.Instance.UnRegisterEvent(EventsInfo.CreatureAscend_AddProgress, EventForCreatureAscendAddProgress);
+        EventHandler.Instance.UnRegisterEvent<long>(EventsInfo.User_AddUnlock, EventForUserAddUnlock);
     }
 
     public void Update()
@@ -110,6 +117,36 @@ public class ScenePrefabForBase : ScenePrefabBase
     }
     #endregion
 
+    #region 终焉议会
+    public void BuildingDoomCouncilRefresh()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        UserUnlockBean userUnlock = userData.GetUserUnlockData();
+        bool isUnlockDoomCouncil = userUnlock.CheckIsUnlock(UnlockEnum.DoomCouncil);
+        //是否解锁祭坛
+        if (isUnlockDoomCouncil)
+        {
+            obBuildingjDoomCouncil.gameObject.SetActive(true);
+        }
+        else
+        {
+            obBuildingjDoomCouncil.gameObject.SetActive(false);
+        }
+    }
+    /// <summary>
+    /// 动画-祭坛出现
+    /// </summary>
+    public async Task AnimForBuildingDoomCouncilShow(float timeForShow)
+    {        
+        if (!obBuildingjDoomCouncil.activeSelf)
+        {
+            return;
+        }
+        AnimForBuildingShowItem(obBuildingjDoomCouncil.transform, -1f, timeForShow);
+        await new WaitForSeconds(timeForShow);
+    }
+    #endregion
+
     #region 献祭相关
     public void BuildingAltarRefresh()
     {
@@ -132,12 +169,15 @@ public class ScenePrefabForBase : ScenePrefabBase
     /// </summary>
     public async Task AnimForBuildingAltarShow(float timeForShow)
     {
+        if (!objBuildingAltar.activeSelf)
+        {
+            return;
+        }
         for (int i = 1; i <= 4; i++)
         {
             //4个柱子从地下出现
             var targetItemTF = objBuildingAltar.transform.Find($"Altar_{i}");
-            targetItemTF.position = targetItemTF.position.SetY(-1);
-            targetItemTF.DOMoveY(0, timeForShow);
+            AnimForBuildingShowItem(targetItemTF, -1f, timeForShow);
         }
         await new WaitForSeconds(timeForShow);
     }
@@ -145,36 +185,11 @@ public class ScenePrefabForBase : ScenePrefabBase
 
     #region Vat相关
     /// <summary>
-    /// 事件-刷新数据
-    /// </summary>
-    public void EventForCreatureAscendAddProgress()
-    {
-        BuildingVatRefresh();
-    }
-
-    /// <summary>
-    /// 动画-祭坛出现
-    /// </summary>
-    public async Task AnimForBuildingVatShow(float timeForShow)
-    {
-        for (int i = 0; i < objBuildingVat.transform.childCount; i++)
-        {
-            var itemVat = objBuildingVat.transform.GetChild(i);
-            if (itemVat.gameObject.activeSelf)
-            {
-                itemVat.position = itemVat.position.SetY(-1.8f);
-                itemVat.DOMoveY(0, timeForShow);
-            }
-        }
-        await new WaitForSeconds(timeForShow);
-    }
-
-    /// <summary>
     /// 刷新建筑容器
     /// </summary>
     public void BuildingVatRefresh()
     {
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();     
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UserAscendBean userAscend = userData.GetUserAscendData();
         UserUnlockBean userUnlock = userData.GetUserUnlockData();
         int showVatNum = 0;
@@ -316,8 +331,6 @@ public class ScenePrefabForBase : ScenePrefabBase
         }
     }
 
-
-
     /// <summary>
     /// 开始添加
     /// </summary>
@@ -393,6 +406,92 @@ public class ScenePrefabForBase : ScenePrefabBase
             }
         }
     }
+    
+    /// <summary>
+    /// 动画-祭坛出现
+    /// </summary>
+    public async Task AnimForBuildingVatShow(float timeForShow,int targetVatIndex = -1)
+    {
+        if (!objBuildingVat.activeSelf)
+        {
+            return;
+        }
+        for (int i = 0; i < objBuildingVat.transform.childCount; i++)
+        {
+            var itemVat = objBuildingVat.transform.GetChild(i);
+            if (itemVat.gameObject.activeSelf)
+            {
+                //如果没有指定的vat
+                if (targetVatIndex > 0)
+                {
+                    if (targetVatIndex == i)
+                    {
+                        AnimForBuildingShowItem(itemVat, 0, timeForShow);
+                    }
+                }
+                //如果有指定vat
+                else
+                {
+                    AnimForBuildingShowItem(itemVat, -1.8f, timeForShow);
+                }
+            }
+        }
+        await new WaitForSeconds(timeForShow);
+    }
+    #endregion
 
+    #region 回调
+    public void EventForUserAddUnlock(long unlockId)
+    {
+        float timeForShow = 1;
+        UnlockEnum unlockEnum = (UnlockEnum)unlockId;
+        Task taskRefresh = null;
+        Task taskAnimShow = null;
+        switch (unlockEnum)
+        {
+            case UnlockEnum.Altar:
+                taskRefresh = RefreshScene();
+                taskAnimShow = AnimForBuildingAltarShow(timeForShow);
+                break;
+            case UnlockEnum.DoomCouncil:
+                taskRefresh = RefreshScene();
+                taskAnimShow = AnimForBuildingDoomCouncilShow(timeForShow);
+                break;
+            case UnlockEnum.CreatureVatAdd1:
+            case UnlockEnum.CreatureVatAdd2:
+            case UnlockEnum.CreatureVatAdd3:
+            case UnlockEnum.CreatureVatAdd4:
+            case UnlockEnum.CreatureVatAdd5:
+            case UnlockEnum.CreatureVatAdd6:
+                taskRefresh = RefreshScene();
+                int targetIndexVat = (int)(unlockId - (long)UnlockEnum.CreatureVatAdd1);
+                taskAnimShow = AnimForBuildingVatShow(timeForShow, targetIndexVat);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 事件-生物进阶进度变化
+    /// </summary>
+    public void EventForCreatureAscendAddProgress()
+    {
+        BuildingVatRefresh();
+    }
+
+    #endregion
+    #region 其他
+    public void AnimForBuildingShowItem(Transform targetTF, float originY, float timeForShow)
+    {
+        //播放粒子
+        EffectBean effectData = new EffectBean();
+        effectData.timeForShow = 3f;
+        effectData.effectName = "EffectSmoke_1";
+        effectData.effectPosition = targetTF.position + new Vector3(0, 0.2f, 0);
+        effectData.isDestoryPlayEnd = true;
+        EffectHandler.Instance.ShowEffect(effectData);
+        //播放移动动画
+        targetTF.position = targetTF.position.SetY(originY);
+        targetTF.DOMoveY(0, timeForShow);
+    }
     #endregion
 }

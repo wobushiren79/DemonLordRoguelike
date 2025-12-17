@@ -66,6 +66,7 @@ public class UserUnlockBean
         if (!unlockInfoData.ContainsKey(unlockId))
         {
             unlockInfoData.Add(unlockId, new UserUnlockInfoBean(unlockId));
+            EventHandler.Instance.TriggerEvent(EventsInfo.User_AddUnlock, unlockId);
         }
     }
 

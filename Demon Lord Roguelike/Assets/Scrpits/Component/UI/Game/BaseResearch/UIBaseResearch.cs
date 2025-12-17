@@ -28,6 +28,8 @@ public partial class UIBaseResearch : BaseUIComponent, IRadioGroupCallBack
         base.CloseUI();
         ClearData(true);
         ClearAnim();
+        //保存一下数据
+        GameDataHandler.Instance.manager.SaveUserData();
     }
 
     public override void OpenUI()

@@ -1182,6 +1182,7 @@ MonoBehaviour:
   objBuildingAltar: {fileID: 2136410845176740309}
   objBuildingVat: {fileID: 4257372905907905356}
   objVatMaterialCreature: {fileID: 374123714860515663}
+  obBuildingjDoomCouncil: {fileID: 5900574542876834370}
   lightSun: {fileID: 754532165140812993}
   lightRay: {fileID: 2049881128164388091}
   vatColorStart: {r: 0, g: 0.4, b: 1, a: 0.4}

@@ -34,8 +34,27 @@ public partial class UIViewBaseResearchItem : BaseUIView
         itemPosition = new Vector2(researchInfo.position_x, researchInfo.position_y);
         SetPosition(itemPosition);
         SetState();
+        SetLevel();
         //设置浮窗信息
         ui_BG_PopupButtonCommonView.SetData(researchInfo, PopupEnum.ResearchInfo);
+    }
+
+    /// <summary>
+    /// 设置等级
+    /// </summary>
+    public void SetLevel()
+    {
+        int maxLevel = researchInfo.level_max;
+        int level = researchInfo.GetResearchLevel();
+        if (level == maxLevel || level == 0)
+        {
+            ui_Level.gameObject.SetActive(false);
+        }
+        else
+        {
+            ui_Level.gameObject.SetActive(true);
+            ui_Level.text = $"{level}";
+        }
     }
 
     /// <summary>
@@ -82,27 +101,29 @@ public partial class UIViewBaseResearchItem : BaseUIView
         //先检测魔晶够不够
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
+        int level = researchInfo.GetResearchLevel();
         //检测是否已经解锁
-        if (userUnlock.CheckIsUnlock(researchInfo.unlock_id))
+        if (level == researchInfo.level_max)
         {
             return;
         }
         //检测魔晶够不够
-        if (!userData.CheckHasCrystal(researchInfo.pay_crystal, isHint: true))
+        long payCrystal = researchInfo.GetPayCrystal(level + 1);
+        if (!userData.CheckHasCrystal(payCrystal, isHint: true))
         {
             return;
         }
         DialogBean dialogData = new DialogBean();
-        dialogData.content = string.Format(TextHandler.Instance.GetTextById(62001), researchInfo.pay_crystal);
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(62001), payCrystal);
         dialogData.actionSubmit = (view, data) =>
         {
             //扣除魔晶
-            if (!userData.CheckHasCrystal(researchInfo.pay_crystal, isHint: true, isAddCrystal: true))
+            if (!userData.CheckHasCrystal(payCrystal, isHint: true, isAddCrystal: true))
             {
                 return;
             }
             //添加解锁ID
-            userData.GetUserUnlockData().AddUnlock(researchInfo.unlock_id);
+            userData.GetUserUnlockData().AddUnlock(researchInfo.unlock_id + level);
             //播放解锁动画
             AnimForUnlock();
         };

@@ -6,9 +6,10 @@ public static class EventsInfo
 {
 
     #region 通用
-    public static string Backpack_Crystal_Change = "Backpack_Crystal_Change";
-    public static string Backpack_Reputation_Change = "Backpack_Reputation_Change";
-    public static string Backpack_Item_Change = "Backpack_Item_Change";
+    public static string User_AddUnlock = "User_AddUnlock";//解锁
+    public static string Backpack_Crystal_Change = "Backpack_Crystal_Change";//魔晶变化
+    public static string Backpack_Reputation_Change = "Backpack_Reputation_Change";//声望变化
+    public static string Backpack_Item_Change = "Backpack_Item_Change";//道具变化
 
     public static string World_EnterGameForBaseScene = "World_EnterGameForBaseScene";//场景改变-基地
     #endregion
