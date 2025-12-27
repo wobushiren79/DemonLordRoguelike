@@ -14,7 +14,7 @@ public class GashaponMachineLogic : BaseGameLogic
     public GashaponMachineBean gashaponMachineData;
 
     //展示吐蛋的间隔
-    public float timeForAnimShowEggInterval = 0.3f;
+    public float timeForAnimShowEggInterval = 0.2f;
 
     //场景预制
     public ScenePrefabForBase scenePrefab;
@@ -58,6 +58,8 @@ public class GashaponMachineLogic : BaseGameLogic
             //开始
             StartGame();
         });
+        //关闭静态模糊
+        VolumeHandler.Instance.SetDepthOfFieldActive(false);
     }
 
     public override void StartGame()
@@ -69,13 +71,26 @@ public class GashaponMachineLogic : BaseGameLogic
         });
     }
 
+    public override void UpdateGame()
+    {
+        base.UpdateGame();
+    }
+
+    public override void EndGame()
+    {
+        base.EndGame();
+        VolumeHandler.Instance.SetDepthOfFieldActive(true);
+        UIHandler.Instance.OpenUIAndCloseOther<UIGashaponMachine>();
+    }
+
+
     /// <summary>
     /// 处理场景数据
     /// </summary>
     public void InitSceneData()
     {
         //场景实例
-        var scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForBase>(GameSceneTypeEnum.BaseGaming);
+        scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForBase>(GameSceneTypeEnum.BaseGaming);
 
         listEggObj.Clear();
         for (int i = 0; i < listEggObjPool.Count; i++)
@@ -172,18 +187,6 @@ public class GashaponMachineLogic : BaseGameLogic
         targetUI.InitForClick(targetEggObj, targetEggData);
         //晃动蛋
         AnimForEggPunch(targetEggObj);
-    }
-
-    public override void UpdateGame()
-    {
-        base.UpdateGame();
-    }
-
-    public override void EndGame()
-    {
-        base.EndGame();
-
-        UIHandler.Instance.OpenUIAndCloseOther<UIGashaponMachine>();
     }
 
     public override async Task ClearGame()
@@ -335,23 +338,12 @@ public class GashaponMachineLogic : BaseGameLogic
         MeshRenderer eggRenderer = eggTF.GetComponentInChildren<MeshRenderer>();
         eggRenderer.material.SetColor("_Color_1", Color.white);
         eggRenderer.material.SetColor("_Color_2", new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), 1));
-        float startPos;
-        if (gashaponMachineData.gashaponNum == 1)
-        {
-            startPos = 0;
-        }
-        else if (gashaponMachineData.gashaponNum == 10)
-        {
-            startPos = 4.5f;
-        }
-        else
-        {
-            startPos = gashaponMachineData.gashaponNum / 2f;
-        }
-        float animTimeForEggJump = 1;
+
+        float startPos = VectorUtil.GetCenterToTwoSide(0, 1, gashaponMachineData.gashaponNum,  index);
+        float animTimeForEggJump = 0.5f;
         objEgg.transform.DOScale(Vector3.one, animTimeForEggJump / 2f);
         objEgg.transform
-            .DOJump(scenePrefab.objBuildingCore.transform.position + new Vector3(-startPos + index, 0, -2), 1, 5, animTimeForEggJump)
+            .DOJump(scenePrefab.objBuildingCore.transform.position + new Vector3(startPos, 0, -2), 0.5f, 3, animTimeForEggJump)
             .SetEase(Ease.Linear)
             .OnComplete(() =>
             {

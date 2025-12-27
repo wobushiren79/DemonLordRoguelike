@@ -15,8 +15,9 @@ public partial class UIViewStoreItem
         this.storeGashaponMachineInfoData = itemData;
         this.actionForOnClickBuy = actionForOnClickBuy;
 
-        string name = TextHandler.Instance.GetTextById(storeGashaponMachineInfoData.id);
+        string name = storeGashaponMachineInfoData.name_language;
         SetName(name);
         SetPrice(storeGashaponMachineInfoData.pay_crystal);
+        SetIcon(storeGashaponMachineInfoData.icon_res);
     }
 }

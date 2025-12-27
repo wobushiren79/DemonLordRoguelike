@@ -19,7 +19,7 @@ public partial class StoreGashaponMachineInfoBean : BaseBean
 	/// <summary>
 	///内容
 	/// </summary>
-	public string icon;
+	public string icon_res;
 	/// <summary>
 	///解锁ID
 	/// </summary>

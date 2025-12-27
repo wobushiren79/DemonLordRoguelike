@@ -28,9 +28,9 @@ public partial class UIViewStoreItem : BaseUIView
     /// <summary>
     /// 设置图标
     /// </summary>
-    public void SetIcon()
+    public void SetIcon(string iconRes)
     {
-
+        IconHandler.Instance.SetUIIcon(iconRes, ui_ItemIcon);
     }
 
     /// <summary>

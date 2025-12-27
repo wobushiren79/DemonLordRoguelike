@@ -125,6 +125,10 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public string card_scene;
 	/// <summary>
+	///解锁ID
+	/// </summary>
+	public long unlock_id;
+	/// <summary>
 	///名字-中文
 	/// </summary>
 	public long name;
