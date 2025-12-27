@@ -44,16 +44,19 @@ public partial class UIDialogPortalDetails : DialogView
     /// </summary>
     public void OnClickForChangeDifficultyLevel(int changeLevel)
     {
-        UserUnlockWorldBean userUnlockWorldData = gameWorldInfoRandom.GetUserUnlockWorldData();
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlock = userData.GetUserUnlockData();
+        //用户可以选择的最高难度
+        int userDifficultyLevel = userUnlock.GetUnlockGameWorldConquerDifficultyLevel(gameWorldInfoRandom.worldId);
 
         gameWorldInfoRandom.difficultyLevel += changeLevel;
         if (gameWorldInfoRandom.difficultyLevel < 1)
         {
             gameWorldInfoRandom.difficultyLevel = 1;
         }
-        else if (gameWorldInfoRandom.difficultyLevel > userUnlockWorldData.difficultyLevel)
+        else if (gameWorldInfoRandom.difficultyLevel > userDifficultyLevel)
         {
-            gameWorldInfoRandom.difficultyLevel = userUnlockWorldData.difficultyLevel;
+            gameWorldInfoRandom.difficultyLevel = userDifficultyLevel;
         }
         SetDifficultyLevel(gameWorldInfoRandom.difficultyLevel);
     }

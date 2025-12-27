@@ -50,10 +50,6 @@ public partial class UITestBase : BaseUIComponent
         {
             OnClickForAddUnlock();
         }
-        else if (viewButton == ui_BtnAddUnlockCreature)
-        {
-            OnClickForAddUnlockCreature();
-        }
     }
 
     /// <summary>
@@ -187,34 +183,6 @@ public partial class UITestBase : BaseUIComponent
 
             userUnlockDasta.AddUnlock(outValue);
             LogUtil.Log("添加成功");
-        }
-        else
-        {
-            LogUtil.LogError("输入数据错误 必须是long类型");
-            return;
-        }
-        GameDataHandler.Instance.manager.SaveUserData();
-    }
-
-    public void OnClickForAddUnlockCreature()
-    {
-        var userData = GameDataHandler.Instance.manager.GetUserData();
-        var userUnlockDasta = userData.GetUserUnlockData();
-        string inputData = ui_InputData.text;
-        if (inputData.IsNull())
-        {
-            var all = CreatureInfoCfg.GetAllData();
-            foreach (var item in all)
-            {
-                userUnlockDasta.AddUnlockForCreature(item.Key);
-            }
-            LogUtil.Log($"解锁所有生物成功");
-            return;
-        }
-        if (long.TryParse(inputData, out long outValue))
-        {
-            userUnlockDasta.AddUnlockForCreature(outValue);
-            LogUtil.Log($"解锁生物成功 {outValue}");
         }
         else
         {

@@ -30,6 +30,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
     /// </summary>
     public void SetData(ResearchInfoBean researchInfo)
     {
+        gameObject.name = $"{researchInfo.id}";
         this.researchInfo = researchInfo;
         itemPosition = new Vector2(researchInfo.position_x, researchInfo.position_y);
         SetPosition(itemPosition);
@@ -43,9 +44,11 @@ public partial class UIViewBaseResearchItem : BaseUIView
     /// 设置等级
     /// </summary>
     public void SetLevel()
-    {
+    {        
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlock = userData.GetUserUnlockData();
         int maxLevel = researchInfo.level_max;
-        int level = researchInfo.GetResearchLevel();
+        int level = userUnlock.GetUnlockResearchLevel(researchInfo);
         if (level == maxLevel || level == 0)
         {
             ui_Level.gameObject.SetActive(false);
@@ -71,17 +74,34 @@ public partial class UIViewBaseResearchItem : BaseUIView
     public void SetState()
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
-        var userUnlockData = userData.GetUserUnlockData();
-        bool isUnlock = userUnlockData.CheckIsUnlock(researchInfo.unlock_id);
-        if (isUnlock)
-        {
-            ui_UIViewBaseResearchItem_MaskUIView.HideMask();
-            SetIcon(researchInfo.icon_res);
-        }
-        else
+        var userUnlock = userData.GetUserUnlockData();
+        int unlockLevel = userUnlock.GetUnlockResearchLevel(researchInfo);
+        //未解锁
+        if (unlockLevel == 0)
         {
             ui_UIViewBaseResearchItem_MaskUIView.ShowMask();
             SetIcon("ui_unlock_1");
+        }
+        else
+        {
+            ui_UIViewBaseResearchItem_MaskUIView.HideMask();
+            SetIcon(researchInfo.icon_res);
+            
+            //全解锁
+            if (unlockLevel == researchInfo.level_max)
+            {
+                ColorUtility.TryParseHtmlString("#5D19D4", out Color targetColor);
+                //ColorUtility.TryParseHtmlString("#DDC420", out Color targetColor);
+                ui_Board.color = targetColor;
+                ui_Icon.color = targetColor;
+            }
+            //还有未解锁
+            else
+            {
+                ColorUtility.TryParseHtmlString("#FFFFFF", out Color targetColor);
+                ui_Board.color = targetColor;
+                ui_Icon.color = targetColor;
+            }
         }
     }
 
@@ -101,7 +121,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
         //先检测魔晶够不够
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
-        int level = researchInfo.GetResearchLevel();
+        int level = userUnlock.GetUnlockResearchLevel(researchInfo);
         //检测是否已经解锁
         if (level == researchInfo.level_max)
         {

@@ -46,18 +46,19 @@ public partial class UIBasePortal : BaseUIComponent
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UserUnlockBean userUnlockData = userData.GetUserUnlockData();
         //所有已解锁的世界
-        long[] keys = userUnlockData.unlockWorldData.Keys.ToArray();
+        List<long> unlockWorldIds = userUnlockData.GetUnlockGameWorldIds();
 
         List<Vector2> listOldPos = new List<Vector2>();
         UserTempBean userTempData = userData.GetUserTempData();
-
+        //获取显示数量
+        int showCount = userUnlockData.GetUnlockPortalShowCount();
         if (userTempData.listPortalWorldInfoRandomData.IsNull())
         {
-            for (int i = 0; i < userUnlockData.unlockWorldMapRefreshNum; i++)
+            for (int i = 0; i < showCount; i++)
             {
                 //随机一个世界
-                int randomWorldKey = UnityEngine.Random.Range(0, keys.Length);
-                long randomWorldId = keys[randomWorldKey];
+                int randomWorldKey = UnityEngine.Random.Range(0, unlockWorldIds.Count);
+                long randomWorldId = unlockWorldIds[randomWorldKey];
                 //获取解锁世界数据
                 GameWorldInfoRandomBean gameWorldInfoRandomData = new GameWorldInfoRandomBean();
                 //设置游戏类型随机

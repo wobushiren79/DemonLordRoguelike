@@ -9,54 +9,7 @@ public class UserUnlockBean
 {
     //基础解锁数据
     public Dictionary<long, UserUnlockInfoBean> unlockInfoData = new Dictionary<long, UserUnlockInfoBean>();
-    //解锁的生物
-    public HashSet<long> unlockCreatureData = new HashSet<long>();
-    //解锁的世界难度
-    public Dictionary<long, UserUnlockWorldBean> unlockWorldData;
 
-    //解锁的世界刷新数量
-    public int unlockWorldMapRefreshNum = 3;
-
-    public UserUnlockBean()
-    {
-        unlockWorldData = new Dictionary<long, UserUnlockWorldBean>() { { 1, new UserUnlockWorldBean(1) } };
-    }
-
-    /// <summary>
-    /// 增加解锁生物
-    /// </summary>
-    public void AddUnlockForCreature(long unlockId)
-    {
-        if (!unlockCreatureData.Contains(unlockId))
-        {
-            unlockCreatureData.Add(unlockId);
-        }
-    }
-
-    /// <summary>
-    /// 检测是否解锁生物
-    /// </summary>
-    public bool CheckIsUnlockForCreature(List<long> unlockIds)
-    {
-        for (int i = 0; i < unlockIds.Count; i++)
-        {
-            var unlockId = unlockIds[i];
-            //只要有一个未解锁 那就都未解锁
-            if (!CheckIsUnlockForCreature(unlockId))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-    public bool CheckIsUnlockForCreature(long unlockId)
-    {
-        if (unlockCreatureData.Contains(unlockId))
-        {
-            return true;
-        }
-        return false;
-    }
 
     /// <summary>
     /// 增加解锁
@@ -71,6 +24,56 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 检测解锁了多少个
+    /// </summary>
+    public int CheckIsUnlockNum(long[] unlockIds)
+    {
+        int unlockNum = 0;
+        for (int i = 0; i < unlockIds.Length; i++)
+        {
+            var unlockId = unlockIds[i];
+            //只要有一个未解锁 那就都未解锁
+            if (CheckIsUnlock(unlockId))
+            {
+                unlockNum++;
+            }
+        }
+        return unlockNum;
+    }
+
+    /// <summary>
+    /// 检测解锁了多少个
+    /// </summary>
+    public int CheckIsUnlockNum(UnlockEnum[] unlockIds)
+    {
+        long[] unlockIdsArray = TypeConversionUtil.EnumToLongArray(unlockIds);
+        return CheckIsUnlockNum(unlockIdsArray);
+    }
+
+    /// <summary>
+    /// 检测解锁了多少个-从start开始
+    /// </summary>
+    /// <param name="startUnlockEnum"></param>
+    /// <param name="count"></param>
+    /// <returns></returns>
+    public int CheckIsUnlockNumByStart(UnlockEnum startUnlockEnum, int count)
+    {
+        long startId = (long)startUnlockEnum;
+        return CheckIsUnlockNumByStart(startId, count);
+    }
+
+    public int CheckIsUnlockNumByStart(long startId, int count)
+    {
+        var ids = new long[count];
+        for (int i = 0; i < count; i++)
+        {
+            ids[i] = startId + i;
+        }
+        int unlockCount = CheckIsUnlockNum(ids);
+        return unlockCount;
+    }
+
+    /// <summary>
     /// 检测是否解锁
     /// </summary>
     public bool CheckIsUnlock(string unlockStr)
@@ -80,9 +83,41 @@ public class UserUnlockBean
             LogUtil.LogError("检测解锁失败，unlockStr为null");
             return false;
         }
-        long[] unlockIds = unlockStr.SplitForArrayLong(',');
-        return CheckIsUnlock(unlockIds);
+        string[] arrayDataStr = unlockStr.SplitForArrayStr(',');
+        for (int i = 0; i < arrayDataStr.Length; i++)
+        {
+            var itemData = arrayDataStr[i];
+            bool isUnlock = true;
+            //如果包含或判定
+            if (itemData.Contains("|"))
+            {
+                var unlockIdsOR = itemData.SplitForArrayLong('|');
+                isUnlock = false;
+                for (int f = 0; f < unlockIdsOR.Length; f++)
+                {
+                    //或判定 只要有一个解锁那这一组就都解锁了
+                    var itemDataOR = unlockIdsOR[f];
+                    if (CheckIsUnlock(itemDataOR))
+                    {
+                        isUnlock = true;
+                        break;
+                    }
+                }
+            }
+            //其他情况直接转long
+            else
+            {
+               isUnlock = CheckIsUnlock(long.Parse(itemData));
+            }
+            //只要有一个未解锁 那就都未解锁
+            if(isUnlock == false)
+            {
+                return false;
+            }
+        }
+        return true;
     }
+
     public bool CheckIsUnlock(long[] unlockIds)
     {
         for (int i = 0; i < unlockIds.Length; i++)
@@ -110,27 +145,85 @@ public class UserUnlockBean
     }
 
     /// <summary>
-    /// 检测是否解锁对应的世界
+    /// 获取解锁的当前研究等级
     /// </summary>
-    public bool CheckIsUnlockWorld(long worldId)
+    public int GetUnlockResearchLevel(ResearchInfoBean researchInfo)
     {
-        if (unlockWorldData.ContainsKey(worldId))
+        int researchLevel = 0;
+        for (int i = 0; i < researchInfo.level_max; i++)
         {
-            return true;
+            bool isUnlock = CheckIsUnlock(researchInfo.unlock_id + i);
+            if (isUnlock)
+            {
+                researchLevel++;
+            }
+            else
+            {
+                break;
+            }
         }
-        return false;
+        return researchLevel;
+    }
+
+
+    /// <summary>
+    /// 获取解锁传送门显示数量
+    /// </summary>
+    /// <returns></returns>
+    public int GetUnlockPortalShowCount()
+    {
+        return 3 + CheckIsUnlockNumByStart(UnlockEnum.PortalShowNum1, 10);
     }
 
     /// <summary>
-    /// 获取解锁世界数据
+    /// 获取解锁阵容数量
     /// </summary>
-    public UserUnlockWorldBean GetUnlockWorldData(long worldId)
+    /// <returns></returns>
+    public int GetUnlockLineupNum()
     {
-        if (unlockWorldData.TryGetValue(worldId, out UserUnlockWorldBean targetData))
+        return 1 + CheckIsUnlockNumByStart(UnlockEnum.Lineup2, 4);
+    }
+
+    /// <summary>
+    /// 获取阵容生物上限
+    /// </summary>
+    /// <returns></returns>
+    public int GetUnlockLineupCreatureNum()
+    {
+        return 6 + CheckIsUnlockNumByStart(UnlockEnum.LineupCreature1, 30);
+    }
+
+    /// <summary>
+    /// 获取游戏世界-征服模式-难度
+    /// </summary>
+    /// <returns></returns>
+    public int GetUnlockGameWorldConquerDifficultyLevel(long worldId)
+    {
+        var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
+        return 1 + CheckIsUnlockNumByStart(gameWorldInfo.unlock_id_conquer_difficulty_level, 9);
+    }
+
+    /// <summary>
+    /// 获取解锁的世界
+    /// </summary>
+    /// <returns></returns>
+    public List<long> GetUnlockGameWorldIds()
+    {
+        List<long> listUnlockWorld = new List<long>()
         {
-            return targetData;
+            //默认解锁第一个世界
+            1,
+        };
+        var arrayWorld = GameWorldInfoCfg.GetAllArrayData();
+        for (int i = 0; i < arrayWorld.Length; i++)
+        {
+            var itemWorldInfo = arrayWorld[i];
+            if (CheckIsUnlock(itemWorldInfo.unlock_id))
+            {
+                listUnlockWorld.Add(itemWorldInfo.id);
+            }
         }
-        return null;
+        return listUnlockWorld;
     }
 }
 
@@ -142,19 +235,5 @@ public class UserUnlockInfoBean
     public UserUnlockInfoBean(long unlockId)
     {
         this.unlockId = unlockId;
-    }
-}
-
-//世界相关解锁数据
-public class UserUnlockWorldBean
-{
-    public long worldId;
-    public int difficultyLevel = 1;
-    public int difficultyInfinite = 0;
-
-    public UserUnlockWorldBean(long worldId)
-    {
-        this.worldId = worldId;
-        difficultyLevel = 1;
     }
 }

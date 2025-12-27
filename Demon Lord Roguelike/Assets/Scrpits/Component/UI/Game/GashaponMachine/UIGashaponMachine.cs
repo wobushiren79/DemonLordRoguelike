@@ -82,19 +82,11 @@ public partial class UIGashaponMachine : BaseUIComponent
         foreach (var item in allData)
         {
             var itemData = item.Value;
-            if (itemData.unlock_id != 0)
+            bool isUnlock = userLockData.CheckIsUnlock(itemData.pre_unlock_ids);
+            //检测是否解锁
+            if (!isUnlock)
             {
-                //检测是否解锁普通
-                if (!userLockData.CheckIsUnlock(itemData.unlock_id))
-                {
-                    continue;
-                }
-                //检测是否解锁生物
-                var listCreatureIds = itemData.GetCreatureIds();
-                if(!userLockData.CheckIsUnlockForCreature(listCreatureIds))
-                {
-                    continue;
-                }
+                continue;
             }
             listStoreData.Add(itemData);
         }
@@ -144,9 +136,6 @@ public partial class UIGashaponMachine : BaseUIComponent
         for (int i = 0; i < listCreatureId.Count; i++)
         {
             long itemCreatureId = listCreatureId[i];
-            //检测是否解锁该生物
-            if(!userLockData.CheckIsUnlockForCreature(itemCreatureId))
-                continue;
             var creatureInfo = CreatureInfoCfg.GetItemData(itemCreatureId);
             //获取该生物的数据数据
             CreatureRandomInfoBean creatureInfoRandomData = CreatureRandomInfoCfg.GetItemData(creatureInfo.creature_random_id);

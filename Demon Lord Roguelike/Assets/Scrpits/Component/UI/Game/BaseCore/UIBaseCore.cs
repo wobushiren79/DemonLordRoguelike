@@ -62,7 +62,10 @@ public partial class UIBaseCore : BaseUIComponent
     /// </summary>
     public void RefreshUIData()
     {
-
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlock = userData.GetUserUnlockData();
+        bool isUnlockVat = userUnlock.CheckIsUnlock(UnlockEnum.CreatureVatAdd1);
+        ui_ViewBaseCoreItemFunction_Vat.gameObject.SetActive(isUnlockVat);
     }
 
     /// <summary>
@@ -103,7 +106,6 @@ public partial class UIBaseCore : BaseUIComponent
     public void OnClickForResearch()
     {
         var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIBaseResearch>();
-        targetUI.SetData();
     }
 
     /// <summary>

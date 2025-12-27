@@ -491,7 +491,8 @@ public class ScenePrefabForBase : ScenePrefabBase
         EffectHandler.Instance.ShowEffect(effectData);
         //播放移动动画
         targetTF.position = targetTF.position.SetY(originY);
-        targetTF.DOMoveY(0, timeForShow);
+        float timeForShowReal = UnityEngine.Random.Range(timeForShow / 2f, timeForShow);
+        targetTF.DOMoveY(0, timeForShowReal);
     }
     #endregion
 }

@@ -23,11 +23,13 @@ public partial class StoreGashaponMachineInfoBean : BaseBean
 	/// <summary>
 	///解锁ID
 	/// </summary>
-	public long unlock_id;
+	public string pre_unlock_ids;
 	/// <summary>
 	///名字
 	/// </summary>
-	public long name_en;
+	public long name;
+	[JsonIgnore]
+	public string name_language { get { return TextHandler.Instance.GetTextById(StoreGashaponMachineInfoCfg.fileName, name); } }
 	/// <summary>
 	///备注
 	/// </summary>

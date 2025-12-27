@@ -9,6 +9,18 @@ public partial class GameWorldInfoBean : BaseBean
 	/// </summary>
 	public string icon_res;
 	/// <summary>
+	///解锁ID
+	/// </summary>
+	public long unlock_id;
+	/// <summary>
+	///解锁ID-无尽模式
+	/// </summary>
+	public long unlock_id_infinite;
+	/// <summary>
+	///解锁ID-征服模式-难度起始ID
+	/// </summary>
+	public long unlock_id_conquer_difficulty_level;
+	/// <summary>
 	///地图坐标
 	/// </summary>
 	public string map_pos;

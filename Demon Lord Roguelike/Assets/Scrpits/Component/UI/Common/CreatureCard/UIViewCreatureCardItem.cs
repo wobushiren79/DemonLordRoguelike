@@ -43,7 +43,6 @@ public partial class UIViewCreatureCardItem : BaseUIView
                 ui_BtnSelect_PopupButtonCommonView.SetData(creatureData, PopupEnum.CreatureCardDetails);
                 break;
         }
-
     }
 
     /// <summary>

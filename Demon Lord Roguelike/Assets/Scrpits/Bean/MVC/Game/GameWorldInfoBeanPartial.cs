@@ -30,29 +30,21 @@ public partial class GameWorldInfoRandomBean
     }
 
     /// <summary>
-    /// 获取解锁世界数据
-    /// </summary>
-    /// <returns></returns>
-    public UserUnlockWorldBean GetUserUnlockWorldData()
-    {
-        //获取用户数据
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        UserUnlockBean userUnlockData = userData.GetUserUnlockData();
-        return userUnlockData.GetUnlockWorldData(worldId);
-    }
-
-    /// <summary>
     /// 随机设置游戏类型
     /// </summary>
     public void SetGameFightTypeRandom(long worldId)
     {
         this.worldId = worldId;
-        //获取用户数据
-        UserUnlockWorldBean userUnlockWorldData = GetUserUnlockWorldData();
+        var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
         //随机世界模式
-        List<GameFightTypeEnum> listRandomGameFightType = new List<GameFightTypeEnum>() { GameFightTypeEnum.Conquer };
+        List<GameFightTypeEnum> listRandomGameFightType = new List<GameFightTypeEnum>() 
+        { 
+            GameFightTypeEnum.Conquer //默认有征服模式
+        };
         //如果无尽模式解锁了
-        if (userUnlockWorldData.difficultyInfinite == 1)
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var UserUnlock = userData.GetUserUnlockData();
+        if (UserUnlock.CheckIsUnlock(gameWorldInfo.unlock_id_infinite))
         {
             listRandomGameFightType.Add(GameFightTypeEnum.Infinite);
         }
@@ -86,8 +78,10 @@ public partial class GameWorldInfoRandomBean
     /// </summary>
     public void SetRandomDataForConquer()
     {
-        //获取用户数据
-        UserUnlockWorldBean userUnlockWorldData = GetUserUnlockWorldData();
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlock = userData.GetUserUnlockData();
+        //设置默认难度等级（默认最高）
+        difficultyLevel = userUnlock.GetUnlockGameWorldConquerDifficultyLevel(worldId);
         //获取征服模式游戏数据
         FightTypeConquerInfoBean fightTypeConquerInfo = FightTypeConquerInfoCfg.GetItemData(worldId, difficultyLevel);
         if (fightTypeConquerInfo == null)
@@ -104,8 +98,6 @@ public partial class GameWorldInfoRandomBean
         //随机关卡数量
         int fightNumRandom = UnityEngine.Random.Range(fightTypeConquerInfo.fight_num_min, fightTypeConquerInfo.fight_num_max + 1);
         fightNum = fightNumRandom;
-        //设置默认难度等级（默认最高）
-        difficultyLevel = userUnlockWorldData.difficultyLevel;
     }
 
     /// <summary>

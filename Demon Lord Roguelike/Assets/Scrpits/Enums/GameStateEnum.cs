@@ -140,9 +140,11 @@ public enum UnlockEnum : long
     CreatureVatAdd6 = 100000005,//生物进阶设置+1;
     Altar = 100100001,//祭坛
     DoomCouncil = 100200001,//终焉议会模块
+    PortalShowNum1 = 100300001, //传送门显示数量
+    PortalShowNum10 = 1003000010,
+    LineupCreature1 = 200000001,//解锁阵容生物上限1
+    LineupCreature10 = 200000010,//解锁阵容生物上限10
     Lineup2 = 200100001,//解锁阵容2
-    Lineup3 = 200100002,//解锁阵容3
-    Lineup4 = 200100003,//解锁阵容4
     Lineup5 = 200100004,//解锁阵容5
 }
 

@@ -74,9 +74,6 @@ public class UserDataBean : BaseBean
     {
         if (userUnlockData == null)
             userUnlockData = new UserUnlockBean();
-        //容错处理
-        if (userUnlockData.unlockWorldMapRefreshNum > 50)
-            userUnlockData.unlockWorldMapRefreshNum = 50;
         return userUnlockData;
     }
 

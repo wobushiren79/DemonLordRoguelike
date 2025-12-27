@@ -49,12 +49,12 @@ public class LauncherTest : BaseLauncher
         userData.AddItem(new ItemBean(10100003));
         userData.AddItem(new ItemBean(10100004));
         //解锁所有unlock
-        // var userUnlockData = userData.GetUserUnlockData();
-        // var allUnlockInfo = UnlockInfoCfg.GetAllArrayData();
-        // allUnlockInfo.ForEach((index,value) =>
-        // {
-        //     userUnlockData.AddUnlock(value.id);
-        // });
+        var userUnlockData = userData.GetUserUnlockData();
+        var allUnlockInfo = UnlockInfoCfg.GetAllArrayData();
+        allUnlockInfo.ForEach((index,value) =>
+        {
+            userUnlockData.AddUnlock(value.id);
+        });
     }
 
     /// <summary>

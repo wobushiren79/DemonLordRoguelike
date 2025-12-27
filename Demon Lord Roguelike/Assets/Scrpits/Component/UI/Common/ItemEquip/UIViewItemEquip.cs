@@ -1,7 +1,7 @@
 ﻿
 
 using UnityEngine.UI;
-
+using UnityEngine;
 public partial class UIViewItemEquip : BaseUIView
 {
     public ItemTypeEnum itemTypeEnum;
@@ -76,10 +76,12 @@ public partial class UIViewItemEquip : BaseUIView
         {
             var itemsTypeInfo = ItemsTypeCfg.GetItemData(itemType);
             IconHandler.Instance.SetUIIcon(itemsTypeInfo.icon_res, ui_ItemIcon);
+            ui_ItemIcon.color = new Color(1, 1, 1, 0.3f);
         }
         else
         {
             IconHandler.Instance.SetItemIcon(itemId, ui_ItemIcon);
+            ui_ItemIcon.color = Color.white;
         }
     }
 

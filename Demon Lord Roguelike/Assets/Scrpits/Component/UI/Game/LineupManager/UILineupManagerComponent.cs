@@ -1,5 +1,6 @@
 ﻿using UnityEngine.UI;
 using UnityEngine;
+using TMPro;
 
 
 public partial class UILineupManager
@@ -12,19 +13,13 @@ public partial class UILineupManager
 
     public UIViewCreatureCardItemForLineup ui_ViewCreatureCardItem;
 
-    public RadioButtonView ui_LineupIndexBtn_1;
-
-    public RadioButtonView ui_LineupIndexBtn_3;
-
-    public RadioButtonView ui_LineupIndexBtn_2;
-
     public RadioGroupView ui_LineupIndexTitle;
 
     public UIViewCreatureCardList ui_UIViewCreatureCardList;
 
-    public RadioButtonView ui_LineupIndexBtn_4;
+    public RadioButtonView ui_LineupIndexBtn;
 
-    public RadioButtonView ui_LineupIndexBtn_5;
+    public TextMeshProUGUI ui_LineupHint;
 
 
 }

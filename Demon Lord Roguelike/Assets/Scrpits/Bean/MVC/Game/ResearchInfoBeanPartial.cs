@@ -2,42 +2,32 @@ using System;
 using System.Collections.Generic;
 public partial class ResearchInfoBean
 {
-    public long[] preUnlockIds;
+    public List<long> preUnlockIds;
     public long[] arrayPayCrystal;
-
-    /// <summary>
-    /// 获取当前研究等级
-    /// </summary>
-    public int GetResearchLevel()
-    {
-        int researchLevel = 0;
-        var userData = GameDataHandler.Instance.manager.GetUserData();
-        var userUnlock = userData.GetUserUnlockData();
-        for (int i = 0; i < level_max; i++)
-        {
-            bool isUnlock = userUnlock.CheckIsUnlock(unlock_id + i);
-            if (isUnlock)
-            {
-                researchLevel++;
-            }
-            else
-            {
-                break;
-            }
-        }
-        return researchLevel;
-    }
 
     /// <summary>
     /// 获取所有前置商店道具ID
     /// </summary>
     /// <returns></returns>
-    public long[] GetPreUnlockIds()
+    public List<long> GetPreUnlockIdsForLine()
     {
         if (preUnlockIds == null)
         {
-            preUnlockIds = new long[0];
-            preUnlockIds = pre_unlock_ids.SplitForArrayLong(',');
+            preUnlockIds = new List<long>();
+            var arrayData = pre_unlock_ids.SplitForArrayStr(',');
+            for (int i = 0; i < arrayData.Length; i++)
+            {
+                var itemData = arrayData[i];
+                if (itemData.Contains("|"))
+                {
+                    var arrayIds = itemData.SplitForArrayLong('|');
+                    preUnlockIds.AddRange(arrayIds);
+                }
+                else
+                {
+                    preUnlockIds.Add(long.Parse(itemData));
+                }
+            }
         }
         return preUnlockIds;
     }
@@ -73,6 +63,7 @@ public partial class ResearchInfoBean
         return arrayPayCrystal[researchLevel - 1];
     }
 }
+
 public partial class ResearchInfoCfg
 {
     public static Dictionary<ResearchInfoTypeEnum, List<ResearchInfoBean>> dicResearchInfoByType;

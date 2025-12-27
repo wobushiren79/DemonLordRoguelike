@@ -37,12 +37,12 @@ public partial class UIBaseResearch : BaseUIComponent, IRadioGroupCallBack
         base.OpenUI();
         ui_EffectUnlock.gameObject.SetActive(false);
         ui_TestSaveBtn.gameObject.SetActive(false);
+        SetData();
     }
 
     public void SetData()
     {
-        researchInfoType = ResearchInfoTypeEnum.Building;
-        InitResearchItems(researchInfoType);
+        ui_TitleRadioGroup.SetPosition(0, true);
     }
 
     public override void OnClickForButton(Button viewButton)
@@ -101,14 +101,13 @@ public partial class UIBaseResearch : BaseUIComponent, IRadioGroupCallBack
     /// </summary>
     public bool CheckPreIsUnlock(ResearchInfoBean researchInfo)
     {
-        long[] preUnlockIds =  researchInfo.GetPreUnlockIds();
-        if(preUnlockIds.IsNull())
+        if(researchInfo.pre_unlock_ids.IsNull())
         {
             return true;
         }
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlockData = userData.GetUserUnlockData();
-        return userUnlockData.CheckIsUnlock(preUnlockIds);
+        return userUnlockData.CheckIsUnlock(researchInfo.pre_unlock_ids);
     }
 
     /// <summary>
@@ -139,7 +138,7 @@ public partial class UIBaseResearch : BaseUIComponent, IRadioGroupCallBack
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlockData = userData.GetUserUnlockData();
         Vector2 itemPosition = new Vector2(researchInfo.position_x, researchInfo.position_y);
-        long[] preUnlockIds = researchInfo.GetPreUnlockIds();
+        List<long> preUnlockIds = researchInfo.GetPreUnlockIdsForLine();
         if (preUnlockIds.IsNull())
             return;
         bool isUnlockSelf = userUnlockData.CheckIsUnlock(researchInfo.unlock_id);

@@ -181,8 +181,6 @@ MonoBehaviour:
   ui_ViewBaseInfoContent: {fileID: 1692143287008850840}
   ui_ViewExit: {fileID: 4245406790760456673}
   ui_Content: {fileID: 1888784004051642910}
-  ui_BTBuy: {fileID: 0}
-  ui_BTTextBuy: {fileID: 0}
   ui_List: {fileID: 8780202298452558191}
 --- !u!1 &6873056101828145947
 GameObject:
@@ -398,6 +396,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0fb65841913946d47b46156fa38901f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maskState: 0
   tempCell: {fileID: 3418894948618200470, guid: 0fd5bf427ed7f9340bf47889f1d0bdad, type: 3}
   movementType: 1
   cellSpaceX: 20
@@ -579,6 +578,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5851314731992454110}
     m_Modifications:
+    - target: {fileID: 2926761824598082290, guid: a1530300b44151a4b8de382110a4de62, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2926761824598082290, guid: a1530300b44151a4b8de382110a4de62, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2926761824598082290, guid: a1530300b44151a4b8de382110a4de62, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2926761824598082290, guid: a1530300b44151a4b8de382110a4de62, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3721551844498362209, guid: a1530300b44151a4b8de382110a4de62, type: 3}
       propertyPath: m_Pivot.x
       value: 0
