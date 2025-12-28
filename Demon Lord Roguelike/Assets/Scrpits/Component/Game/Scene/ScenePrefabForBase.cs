@@ -480,19 +480,22 @@ public class ScenePrefabForBase : ScenePrefabBase
 
     #endregion
     #region 其他
-    public void AnimForBuildingShowItem(Transform targetTF, float originY, float timeForShow)
-    {
+    public async void AnimForBuildingShowItem(Transform targetTF, float originY, float timeForShow)
+    {       
         //播放粒子
         EffectBean effectData = new EffectBean();
         effectData.timeForShow = 3f;
         effectData.effectName = "EffectSmoke_1";
         effectData.effectPosition = targetTF.position + new Vector3(0, 0.2f, 0);
         effectData.isDestoryPlayEnd = true;
-        EffectHandler.Instance.ShowEffect(effectData);
         //播放移动动画
         targetTF.position = targetTF.position.SetY(originY);
         float timeForShowReal = UnityEngine.Random.Range(timeForShow / 2f, timeForShow);
-        targetTF.DOMoveY(0, timeForShowReal);
+        float timeForDelayShow = timeForShow - timeForShowReal;
+        targetTF.DOMoveY(0, timeForShowReal).SetDelay(timeForDelayShow);
+        await new WaitForSeconds(timeForDelayShow);
+
+        EffectHandler.Instance.ShowEffect(effectData);
     }
     #endregion
 }

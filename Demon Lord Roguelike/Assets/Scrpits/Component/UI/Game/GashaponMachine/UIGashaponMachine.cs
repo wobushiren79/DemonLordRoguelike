@@ -137,6 +137,11 @@ public partial class UIGashaponMachine : BaseUIComponent
         {
             long itemCreatureId = listCreatureId[i];
             var creatureInfo = CreatureInfoCfg.GetItemData(itemCreatureId);
+            //检测该生物职业是否解锁
+            if (!userLockData.CheckIsUnlock(creatureInfo.unlock_id))
+            {
+                continue;
+            }
             //获取该生物的数据数据
             CreatureRandomInfoBean creatureInfoRandomData = CreatureRandomInfoCfg.GetItemData(creatureInfo.creature_random_id);
 

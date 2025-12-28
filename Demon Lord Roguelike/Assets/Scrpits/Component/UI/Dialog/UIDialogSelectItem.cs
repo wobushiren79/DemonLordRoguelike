@@ -3,7 +3,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public partial class UIDialogItemSelect : DialogView
+public partial class UIDialogSelectItem : DialogView
 {
     /// <summary>
     /// 选中的道具
@@ -69,7 +69,7 @@ public partial class UIDialogItemSelect : DialogView
     /// </summary>
     public void OnClickForDeleteItem()
     {
-        var dialogItemSelect = dialogData as DialogItemSelectBean;
+        var dialogItemSelect = dialogData as DialogSelectItemBean;
         dialogItemSelect.actionForSelectDelete?.Invoke(this, selectItem);
 
         OnClickForCloseSelect();
@@ -80,7 +80,7 @@ public partial class UIDialogItemSelect : DialogView
     /// </summary>
     public void OnClickForGiftItem()
     {        
-        var dialogItemSelect = dialogData as DialogItemSelectBean;
+        var dialogItemSelect = dialogData as DialogSelectItemBean;
         dialogItemSelect.actionForSelectGift?.Invoke(this, selectItem);
 
         OnClickForCloseSelect();

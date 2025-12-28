@@ -121,6 +121,10 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public long creature_random_id;
 	/// <summary>
+	///职业图标
+	/// </summary>
+	public string class_icon_res;
+	/// <summary>
 	///卡片背景
 	/// </summary>
 	public string card_scene;

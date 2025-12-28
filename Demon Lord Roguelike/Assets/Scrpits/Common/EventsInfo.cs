@@ -50,6 +50,7 @@ public static class EventsInfo
     public static string GashaponMachine_ClickNext = "GashaponMachine_ClickNext";//点击下一个
     public static string GashaponMachine_ClickReset = "GashaponMachine_ClickReset";//点击重置
     public static string GashaponMachine_ClickEnd = "GashaponMachine_ClickEnd";//点击结束
+    public static string GashaponMachine_ClickShowAll = "GashaponMachine_ClickShowAll";//点击跳过所有
     #endregion
 
     #region 生物献祭

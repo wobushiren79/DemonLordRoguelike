@@ -2,7 +2,7 @@
 using UnityEngine;
 
 
-public partial class UIDialogItemSelect
+public partial class UIDialogSelectItem
 {
     public Button ui_UIViewExit;
 

@@ -83,14 +83,14 @@ public partial class UIGameConversation : BaseUIComponent
     /// </summary>
     public void OnClickForGift()
     {
-        DialogItemSelectBean dialogData = new DialogItemSelectBean();
+        DialogSelectItemBean dialogData = new DialogSelectItemBean();
         dialogData.actionForSelectGift = ActionForItemSelectGift;
         UIHandler.Instance.ShowDialogItemSelect(dialogData);
     }
     #endregion
     
     #region 道具使用回调
-    public void ActionForItemSelectGift(UIDialogItemSelect dialogView, ItemBean itemData)
+    public void ActionForItemSelectGift(UIDialogSelectItem dialogView, ItemBean itemData)
     {
         dialogView.DestroyDialog();
         //从背包里删除这个道具

@@ -35,6 +35,7 @@ public partial class UIViewCreatureCardItem : BaseUIView
         //设置弹窗气泡数据
         switch (cardUseState)
         {
+            case CardUseStateEnum.ShowNoPopup:
             case CardUseStateEnum.CreatureManager:
                 ui_BtnSelect_PopupButtonCommonView.enabled = false;
                 break;

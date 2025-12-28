@@ -88,6 +88,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0fb65841913946d47b46156fa38901f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maskState: 0
   tempCell: {fileID: 5544845000024529015, guid: 9db713948711ac240814cfe155f80b76, type: 3}
   movementType: 1
   cellSpaceX: 0
@@ -314,6 +315,10 @@ MonoBehaviour:
   uiOpenAnimTarget: {fileID: 8271098732324372405}
   _rectTransform: {fileID: 0}
   ui_BackpackContent: {fileID: 1062958334655933486}
+  ui_OrderBtn_Rarity_PopupButtonCommonView: {fileID: 4268710853512479894}
+  ui_OrderBtn_Rarity_Button: {fileID: 6736921275612823344}
+  ui_OrderBtn_Name_PopupButtonCommonView: {fileID: 3887966473232272083}
+  ui_OrderBtn_Name_Button: {fileID: 6032306972894196085}
 --- !u!1 &3365119248423824543
 GameObject:
   m_ObjectHideFlags: 0
@@ -506,6 +511,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1510518722131227436}
     m_Modifications:
+    - target: {fileID: 1610863029437462408, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 8936a9b833ecb9c44be784f2620083a2, type: 3}
     - target: {fileID: 2700558200219982771, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
       propertyPath: m_Name
       value: OrderBtn_Name
@@ -607,6 +616,28 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+--- !u!114 &3887966473232272083 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7478552130072616985, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+  m_PrefabInstance: {fileID: 5926160289012345546}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16e10e1ab6287e34bb1c2a56fb2273e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PopupButtonCommonView
+--- !u!114 &6032306972894196085 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 111178601279462335, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+  m_PrefabInstance: {fileID: 5926160289012345546}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &7170184982033277370 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3583860495913077616, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
@@ -623,6 +654,10 @@ PrefabInstance:
     - target: {fileID: 2700558200219982771, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
       propertyPath: m_Name
       value: OrderBtn_Rarity
+      objectReference: {fileID: 0}
+    - target: {fileID: 3201978458517000370, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+      propertyPath: m_Type
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3583860495913077616, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
       propertyPath: m_Pivot.x
@@ -713,6 +748,28 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+--- !u!114 &4268710853512479894 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7478552130072616985, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+  m_PrefabInstance: {fileID: 6698161535359870095}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16e10e1ab6287e34bb1c2a56fb2273e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PopupButtonCommonView
+--- !u!114 &6736921275612823344 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 111178601279462335, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+  m_PrefabInstance: {fileID: 6698161535359870095}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &7874764192572190719 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3583860495913077616, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}

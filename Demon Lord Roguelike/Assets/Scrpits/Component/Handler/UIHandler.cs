@@ -68,10 +68,10 @@ public partial class UIHandler
     /// <summary>
     /// 展示道具选择弹窗
     /// </summary>
-    public UIDialogItemSelect ShowDialogItemSelect(DialogItemSelectBean dialogData)
+    public UIDialogSelectItem ShowDialogItemSelect(DialogSelectItemBean dialogData)
     {
-        dialogData.dialogType = DialogEnum.ItemSelect;
-        var dialogView = ShowDialog<UIDialogItemSelect>(dialogData);
+        dialogData.dialogType = DialogEnum.SelectItem;
+        var dialogView = ShowDialog<UIDialogSelectItem>(dialogData);
         dialogView.InitBackpackItemsData();
         return dialogView;
     }

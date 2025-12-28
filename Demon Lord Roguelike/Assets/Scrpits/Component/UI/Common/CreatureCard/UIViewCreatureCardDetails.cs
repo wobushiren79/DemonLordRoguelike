@@ -39,6 +39,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         SetLevelData(creatureData.level, creatureData.levelExp);
 
         SetRelationship(creatureData.relationship);
+        SetClass(creatureData.creatureInfo.class_icon_res, creatureData.creatureInfo.name_language);
         SetTitle();
 
         SetDoomCouncilData();
@@ -120,6 +121,17 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         {
             ui_Relationship.gameObject.SetActive(false);
         }
+    }
+
+    /// <summary>
+    /// 设置职业
+    /// </summary>
+    /// <param name="iconRes"></param>
+    /// <param name="className"></param>
+    public void SetClass(string iconRes, string className)
+    {
+        ui_ClassName.text = className;
+        IconHandler.Instance.SetUIIcon(iconRes, ui_ClassIcon);
     }
 
     /// <summary>

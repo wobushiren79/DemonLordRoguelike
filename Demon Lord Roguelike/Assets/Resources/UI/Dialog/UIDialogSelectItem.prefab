@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 393064996818997635}
   - component: {fileID: 4231271455567556372}
   m_Layer: 5
-  m_Name: UIDialogItemSelect
+  m_Name: UIDialogSelectItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

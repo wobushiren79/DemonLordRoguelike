@@ -3,10 +3,14 @@ using UnityEngine;
 
 public class GashaponItemBean
 {
+    //生物数据
     public CreatureBean creatureData;
+    //是否打开
+    public bool isBreak;
 
     public GashaponItemBean(long creatureId, GashaponMachineCreatureStruct gashaponMachineCreature)
     {
+        isBreak = false;
         creatureData = new CreatureBean(creatureId);
         //随机皮肤
         foreach (var item in gashaponMachineCreature.randomCreatureMode)

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
+using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.VFX;
@@ -49,6 +50,7 @@ public class GashaponMachineLogic : BaseGameLogic
             this.RegisterEvent(EventsInfo.GashaponMachine_ClickNext, EventForNextEgg);
             this.RegisterEvent(EventsInfo.GashaponMachine_ClickReset, EventForReset);
             this.RegisterEvent(EventsInfo.GashaponMachine_ClickEnd, EventForEnd);
+            this.RegisterEvent(EventsInfo.GashaponMachine_ClickShowAll, EventForShowAll);  
         }
         //初始化场景
         InitSceneData();
@@ -67,7 +69,7 @@ public class GashaponMachineLogic : BaseGameLogic
         base.StartGame();
         ProcessForShowEgg((listEgg) =>
         {
-            ProcessForEggBreak(currentBreakIndex);
+            ProcessForFocusEgg(currentBreakIndex);
         });
     }
 
@@ -119,7 +121,7 @@ public class GashaponMachineLogic : BaseGameLogic
         List<string> listPreLoadSpineData = new List<string>();
         for (int i = 0; i < eggNum; i++)
         {
-            //随机一个生物
+            //随机一个已经解锁的生物
             int randomCreatureIndex = UnityEngine.Random.Range(0, gashaponMachineData.listCreatureRandomData.Count);
             var randomCreatureData = gashaponMachineData.listCreatureRandomData[randomCreatureIndex];
 
@@ -170,9 +172,21 @@ public class GashaponMachineLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// 流程-蛋破碎
+    /// 流程-展示所有蛋
     /// </summary>
-    public void ProcessForEggBreak(int targetIndex)
+    public void ProcessForShowAllEgg()
+    {        
+        //设置摄像头
+        var targetCamera = CameraHandler.Instance.SetGashaponMachineCamera(int.MaxValue, true);
+        //打开UI
+        var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIGashaponBreak>();
+        targetUI.InitForEnd(listGashaponData);
+    }
+
+    /// <summary>
+    /// 流程-焦点某一个蛋
+    /// </summary>
+    public void ProcessForFocusEgg(int targetIndex)
     {
         this.currentBreakIndex = targetIndex;
         //获取列表中第一个蛋
@@ -184,7 +198,7 @@ public class GashaponMachineLogic : BaseGameLogic
         targetCamera.Follow = targetEggObj.transform;
         //打开UI
         var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIGashaponBreak>();
-        targetUI.InitForClick(targetEggObj, targetEggData);
+        targetUI.InitForShow(targetEggObj, targetEggData);
         //晃动蛋
         AnimForEggPunch(targetEggObj);
     }
@@ -214,14 +228,7 @@ public class GashaponMachineLogic : BaseGameLogic
         Action aciontForComplete = () =>
         {
             var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIGashaponBreak>();
-            if (currentBreakIndex == gashaponMachineData.gashaponNum - 1)
-            {
-                targetUI.InitFoEnd();
-            }
-            else
-            {
-                targetUI.InitForBreak(targetEgg, gashaponItemData);
-            }
+            targetUI.InitForBreak(targetEgg, gashaponItemData);
         };
         AnimForEggBreak(targetEgg, gashaponItemData, aciontForComplete);
     }
@@ -231,7 +238,16 @@ public class GashaponMachineLogic : BaseGameLogic
     /// </summary>
     public void EventForNextEgg()
     {
-        ProcessForEggBreak(currentBreakIndex + 1);
+        //如果已经没有蛋了
+        int nextIndex = currentBreakIndex + 1;
+        if (nextIndex >= listEggObj.Count)
+        {
+            ProcessForShowAllEgg();
+        }
+        else
+        {
+            ProcessForFocusEgg(nextIndex);
+        }
     }
 
     /// <summary>
@@ -246,8 +262,27 @@ public class GashaponMachineLogic : BaseGameLogic
     /// 事件-结束
     /// </summary>
     public void EventForEnd()
-    {
+    {        
         EndGame();
+    }
+
+    /// <summary>
+    /// 事件-展示所有
+    /// </summary>
+    public async void EventForShowAll()
+    {
+        ProcessForShowAllEgg();
+        for (int i = 0; i < listGashaponData.Count; i++)
+        {
+            var targetEggData = listGashaponData[i];
+            if (targetEggData.isBreak)
+            {
+               continue; 
+            } 
+            var targetEggObj = listEggObj[i];
+            AnimForEggBreak(targetEggObj, targetEggData, null); 
+            await new WaitNextFrame();
+        }
     }
     #endregion
 
@@ -256,27 +291,42 @@ public class GashaponMachineLogic : BaseGameLogic
     /// 动画-蛋破壳
     /// </summary>
     /// <param name="targetEgg"></param>
-    public void AnimForEggBreak(GameObject targetEgg, GashaponItemBean gashaponItemData, Action actionForComplete)
+    public void AnimForEggBreak(GameObject targetEgg, GashaponItemBean targetGashaponData, Action actionForComplete)
     {
+        targetGashaponData.isBreak = true;
+
         var eggTF = targetEgg.transform.Find(eggChildFbxName);
         var eggSpine = targetEgg.transform.Find(eggChildRendererName).GetComponent<SkeletonAnimation>();
 
         targetEgg.transform.DOKill();
         eggSpine.transform.DOKill();
+        targetEgg.transform.eulerAngles = Vector3.zero;
+        
+        Vector3 originEggSize = eggTF.localScale;
+        eggTF.ShowObj(true);
+        //蛋壳放大
+        eggTF
+            .DOScale(originEggSize * 2f, 0.1f)
+            .SetEase(Ease.OutBack)
+            .OnComplete(() =>
+            {
+                eggTF.localScale = originEggSize;
+                eggTF.ShowObj(false);
+            });
 
-        eggTF.ShowObj(false);
         eggSpine.ShowObj(true);
-
-        var creatureData = gashaponItemData.creatureData;
+        var creatureData = targetGashaponData.creatureData;
         //设置大小
         eggSpine.transform.localScale = Vector3.zero;
         //设置spine
         CreatureHandler.Instance.SetCreatureData(eggSpine, creatureData);
         //播放缩放动画
-        eggSpine.transform.DOScale(Vector3.one * creatureData.creatureModel.size_spine, 0.2f).OnComplete(() =>
-        {
-            actionForComplete?.Invoke();
-        });
+        eggSpine.transform
+            .DOScale(Vector3.one * creatureData.creatureModel.size_spine, 0.2f)
+            .OnComplete(() =>
+            {
+                actionForComplete?.Invoke();
+            });
         //播放spine动画
         SpineHandler.Instance.PlayAnim(eggSpine, SpineAnimationStateEnum.Idle, creatureData, true);
 

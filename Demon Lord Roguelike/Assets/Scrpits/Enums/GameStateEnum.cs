@@ -25,6 +25,7 @@ public enum RarityEnum
 public enum CardUseStateEnum
 {
     Show,//展示
+    ShowNoPopup,//展示但不弹详情
     Fight,//战斗
     Lineup,//阵容
     LineupBackpack,//阵容背包
