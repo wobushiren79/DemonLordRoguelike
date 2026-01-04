@@ -166,7 +166,7 @@ public partial class UIMainCreate : BaseUIComponent
             createCreatureData.creatureName = ui_NameET.text;
             createCreatureData.level = 0;
             createCreatureData.rarity = 0;
-
+            createCreatureData.creatureName = userData.userName;
             userData.selfCreature = createCreatureData;
             //添加3个初始魔物 2个近战 1个远程
             for (int i = 0; i < 3; i++)

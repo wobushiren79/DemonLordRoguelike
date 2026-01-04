@@ -53,6 +53,46 @@ public partial class UIHandler
     }
 
     /// <summary>
+    /// 生物选择
+    /// </summary>
+    /// <param name="dialogData"></param>
+    /// <returns></returns>
+    public UIDialogSelectCreature ShowDialogSelectCreature(DialogSelectCreatureBean dialogData)
+    {
+        dialogData.dialogType = DialogEnum.SelectCreature;
+        if (dialogData.content.IsNull())
+        {
+            dialogData.content = TextHandler.Instance.GetTextById(1005001);
+        }
+        if (dialogData.submitStr.IsNull())
+            dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
+        if (dialogData.cancelStr.IsNull())
+            dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
+        return ShowDialog<UIDialogSelectCreature>(dialogData);
+    }
+
+    /// <summary>
+    /// 文本修改
+    /// </summary>
+    /// <param name="dialogData"></param>
+    /// <returns></returns>
+    public UIDialogRename ShowDialogRename(DialogRenameBean dialogData)
+    {
+        dialogData.dialogType = DialogEnum.Rename;
+        if (dialogData.characterLimit <= 0)
+        {
+            dialogData.characterLimit = 10;
+        }
+        dialogData.content = TextHandler.Instance.GetTextById(1004001);   
+        dialogData.inputHint = TextHandler.Instance.GetTextById(1004002);
+        if (dialogData.submitStr.IsNull())
+            dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
+        if (dialogData.cancelStr.IsNull())
+            dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
+        return ShowDialog<UIDialogRename>(dialogData);
+    }
+
+    /// <summary>
     /// 展示颜色选择
     /// </summary>
     /// <param name="dialogData"></param>

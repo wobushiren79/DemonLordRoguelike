@@ -37,7 +37,9 @@ public partial class CreatureBean
 
     public CreatureBean(long creatureId)
     {
+        var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
         this.creatureId = creatureId;
+        this.creatureName = creatureInfo.name_language;
         this.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
     }
 

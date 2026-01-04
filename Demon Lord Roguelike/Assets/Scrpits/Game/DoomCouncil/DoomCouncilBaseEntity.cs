@@ -1,7 +1,20 @@
 public class DoomCouncilBaseEntity
 {
     public long doomCouncilBillId;
-
+    //议会信息
+    protected DoomCouncilInfoBean _doomCouncilInfo;
+    public DoomCouncilInfoBean doomCouncilInfo
+    {
+        get
+        {
+            if (_doomCouncilInfo == null)
+            {
+                _doomCouncilInfo = DoomCouncilInfoCfg.GetItemData(doomCouncilBillId);
+            }
+            return _doomCouncilInfo;
+        }
+    }
+    
     /// <summary>
     /// 首次添加时触发
     /// </summary>

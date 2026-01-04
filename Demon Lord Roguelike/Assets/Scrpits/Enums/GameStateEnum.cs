@@ -34,6 +34,8 @@ public enum CardUseStateEnum
 
     CreatureAscendTarget,//魔物进阶
     CreatureAscendMaterial,//魔物进阶
+
+    SelectCreature,//生物选择
 }
 
 //卡片状态
@@ -56,6 +58,9 @@ public enum CardStateEnum
 
     CreatureAscendNoSelect = 501,//生物进阶未选中
     CreatureAscendSelect = 502,//生物进阶选中
+
+    SelectCreatureNoSelect = 601,//生物未选中
+    SelectCreatureSelect = 602,//生物选中
 }
 
 //游戏战斗预制状态
@@ -143,6 +148,7 @@ public enum UnlockEnum : long
     DoomCouncil = 100200001,//终焉议会模块
     PortalShowNum1 = 100300001, //传送门显示数量
     PortalShowNum10 = 1003000010,
+    GashaponShowAll = 100400001,//显示所有抽取
     LineupCreature1 = 200000001,//解锁阵容生物上限1
     LineupCreature10 = 200000010,//解锁阵容生物上限10
     Lineup2 = 200100001,//解锁阵容2

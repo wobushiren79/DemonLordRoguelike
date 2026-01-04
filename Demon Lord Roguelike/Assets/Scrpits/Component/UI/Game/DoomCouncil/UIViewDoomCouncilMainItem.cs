@@ -14,8 +14,16 @@ public partial class UIViewDoomCouncilMainItem : BaseUIView
 
         SetContent(doomCouncilInfo.name_language);
         SetCost(doomCouncilInfo.cost_crystal, doomCouncilInfo.cost_reputation);
-
+        SetIcon(doomCouncilInfo.icon_res);
         ui_UIViewDoomCouncilMainItem_PopupButtonCommonView.SetData(doomCouncilInfo, PopupEnum.DoomCouncilMainDetails);
+    }
+
+    /// <summary>
+    /// 设置图标
+    /// </summary>
+    public void SetIcon(string iconRes)
+    {
+        IconHandler.Instance.SetUIIcon(iconRes, ui_Icon);
     }
 
     /// <summary>
@@ -61,9 +69,19 @@ public partial class UIViewDoomCouncilMainItem : BaseUIView
         {
             return;
         }
+        string dialogContent;
+        //如果是100%通过
+        if (doomCouncilInfo.success_rate >= 1)
+        {
+            dialogContent = string.Format(TextHandler.Instance.GetTextById(53012), doomCouncilInfo.name_language); 
+        }
+        else
+        {
+            dialogContent = string.Format(TextHandler.Instance.GetTextById(53002), doomCouncilInfo.name_language); 
+        }
         //弹出确认框
         DialogBean dialogData = new DialogBean();
-        dialogData.content = string.Format(TextHandler.Instance.GetTextById(53002), doomCouncilInfo.name_language);
+        dialogData.content = dialogContent;
         dialogData.actionSubmit = (view, data) =>
         {
             //检测是否有足够的魔晶
@@ -76,11 +94,22 @@ public partial class UIViewDoomCouncilMainItem : BaseUIView
             {
                 return;
             }
-            UIHandler.Instance.ShowMask(0.2f, null, async () =>
+            DoomCouncilBean doomCouncilData = new DoomCouncilBean(doomCouncilInfo.id);
+            var userTempData = userData.GetUserTempData();
+            //如果是100%通过 则直接添加
+            if (doomCouncilInfo.success_rate >= 1)
             {
-                DoomCouncilBean doomCouncilData = new DoomCouncilBean(doomCouncilInfo.id);
-                GameHandler.Instance.StartDoomCouncil(doomCouncilData);
-            }, false);
+                userTempData.AddDoomCouncil(doomCouncilData);
+                return;
+            }
+            //小于100%则进入议会
+            else
+            {
+                UIHandler.Instance.ShowMask(0.2f, null, async () =>
+                {
+                    GameHandler.Instance.StartDoomCouncil(doomCouncilData);
+                }, false);
+            }
         };
         UIHandler.Instance.ShowDialogNormal(dialogData);
     }

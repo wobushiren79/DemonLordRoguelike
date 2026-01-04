@@ -13,6 +13,15 @@ public partial class UIPopupDoomCouncilMainDetails : PopupShowCommonView
         SetName(doomCouncilInfo.name_language);
         SetContent(doomCouncilInfo.details_language);
         SetSuccessRate(doomCouncilInfo.success_rate);
+        SetIcon(doomCouncilInfo.icon_res);
+    }
+
+    /// <summary>
+    /// 设置图标
+    /// </summary>
+    public void SetIcon(string iconRes)
+    {
+        IconHandler.Instance.SetUIIcon(iconRes, ui_Icon);
     }
 
     /// <summary>

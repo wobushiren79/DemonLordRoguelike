@@ -34,6 +34,10 @@ public partial class UITestBase : BaseUIComponent
         {
             OnClickForAddCrystal();
         }
+        else if (viewButton == ui_BtnAddReputation)
+        {
+            OnClickForAddReputation();
+        }
         else if (viewButton == ui_BtnAddItem)
         {
             OnClickForAddItem();
@@ -76,6 +80,32 @@ public partial class UITestBase : BaseUIComponent
             if (long.TryParse(inputData, out var addCoin))
             {
                 userData.AddCrystal(addCoin);
+            }
+            else
+            {
+                LogUtil.LogError("请输入数字");
+            }
+        }
+        UIHandler.Instance.ToastHint<ToastView>("添加成功！");
+        GameDataHandler.Instance.manager.SaveUserData();
+    }
+
+    /// <summary>
+    /// 点击添加声望
+    /// </summary>
+    public void OnClickForAddReputation()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        string inputData = ui_InputData.text;
+        if (inputData.IsNull())
+        {
+            userData.AddReputation(999999);
+        }
+        else
+        {
+            if (long.TryParse(inputData, out var addCoin))
+            {
+                userData.AddReputation(addCoin);
             }
             else
             {

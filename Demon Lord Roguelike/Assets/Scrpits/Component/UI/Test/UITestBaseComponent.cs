@@ -18,5 +18,7 @@ public partial class UITestBase
 
     public Button ui_BtnAddItem;
 
+    public Button ui_BtnAddReputation;
+
 
 }

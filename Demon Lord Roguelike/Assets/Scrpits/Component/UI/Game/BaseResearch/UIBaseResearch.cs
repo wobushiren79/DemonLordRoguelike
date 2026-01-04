@@ -133,24 +133,31 @@ public partial class UIBaseResearch : BaseUIComponent, IRadioGroupCallBack
     /// <summary>
     /// 设置连线
     /// </summary>
-    public void CreateLine(ResearchInfoBean researchInfo)
+    public void CreateLine(ResearchInfoBean targetResearchInfo)
     {                   
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlockData = userData.GetUserUnlockData();
-        Vector2 itemPosition = new Vector2(researchInfo.position_x, researchInfo.position_y);
-        List<long> preUnlockIds = researchInfo.GetPreUnlockIdsForLine();
+        Vector2 itemPosition = new Vector2(targetResearchInfo.position_x, targetResearchInfo.position_y);
+        List<long> preUnlockIds = targetResearchInfo.GetPreUnlockIdsForLine();
         if (preUnlockIds.IsNull())
             return;
-        bool isUnlockSelf = userUnlockData.CheckIsUnlock(researchInfo.unlock_id);
+        bool isUnlockSelf = userUnlockData.CheckIsUnlock(targetResearchInfo.unlock_id);
         ColorUtility.TryParseHtmlString("#382087",out Color color1);
         ColorUtility.TryParseHtmlString("#3C0031",out Color color2Unlock);
         ColorUtility.TryParseHtmlString("#3C003100",out Color color2Lock);
-
-        preUnlockIds.ForEach((index, value) =>
+        for (int p = 0; p < preUnlockIds.Count; p++)
         {
-            var researchInfo = ResearchInfoCfg.GetItemDataByUnlockId(value);
-            if(researchInfo == null)
-                return;
+            long preUnlockId = preUnlockIds[p];
+            var researchInfo = ResearchInfoCfg.GetItemDataByUnlockId(preUnlockId);
+            //如果不是同类型 直接跳过这条线
+            if (researchInfo.research_type != targetResearchInfo.research_type)
+            {
+                continue;
+            }
+            if (researchInfo == null)
+            {
+                continue;
+            }
             GameObject objItemLine = null;
             //查询所有缓存的线
             for (int i = 0; i < listLineObj.Count; i++)
@@ -198,7 +205,8 @@ public partial class UIBaseResearch : BaseUIComponent, IRadioGroupCallBack
                 uniqueMat.SetFloat("_Amplitude", 0.2f);      
             }
             ivLine.material = uniqueMat;
-        });
+        }
+
     }
 
     /// <summary>

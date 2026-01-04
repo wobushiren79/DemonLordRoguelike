@@ -12,6 +12,7 @@ public static class EventsInfo
     public static string Backpack_Item_Change = "Backpack_Item_Change";//道具变化
 
     public static string World_EnterGameForBaseScene = "World_EnterGameForBaseScene";//场景改变-基地
+    public static string Creature_Rename = "Creature_Rename";//改名
     #endregion
 
     #region UI

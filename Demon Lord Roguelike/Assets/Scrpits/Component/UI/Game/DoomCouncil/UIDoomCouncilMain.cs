@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public partial class UIDoomCouncilMain : BaseUIComponent
 {
-    public List<DoomCouncilInfoBean> listShowData = new List<DoomCouncilInfoBean>();
+    public List<DoomCouncilInfoBean> listShowData;
 
     public override void Awake()
     {
@@ -24,6 +24,7 @@ public partial class UIDoomCouncilMain : BaseUIComponent
     public override void OpenUI()
     {
         base.OpenUI();
+        GameControlHandler.Instance.SetBaseControl(false);
         InitData();
     }
 
@@ -33,8 +34,21 @@ public partial class UIDoomCouncilMain : BaseUIComponent
     public void InitData()
     {
         var arrayData = DoomCouncilInfoCfg.GetAllArrayData();
-        listShowData = arrayData.ToList();
-
+        if (listShowData == null)
+        {
+            listShowData = new List<DoomCouncilInfoBean>();
+        }
+        listShowData.Clear();
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlock = userData.GetUserUnlockData();
+        for (int i = 0; i < arrayData.Length; i++)
+        {
+            var itemData = arrayData[i];
+            if (userUnlock.CheckIsUnlock(itemData.unlock_id))
+            {
+                listShowData.Add(itemData);
+            }
+        }
         ui_List.SetCellCount(listShowData.Count);
     }
 

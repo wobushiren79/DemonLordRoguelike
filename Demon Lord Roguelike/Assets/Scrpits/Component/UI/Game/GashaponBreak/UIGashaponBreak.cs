@@ -13,6 +13,12 @@ public partial class UIGashaponBreak : BaseUIComponent
     //UI状态 0:Null 1:展示 2:破碎
     public int uiState = 0;
 
+    public override void OpenUI()
+    {
+        base.OpenUI();
+        this.RegisterEvent<CreatureBean>(EventsInfo.Creature_Rename, EventForCreatureRename);
+    }
+
     /// <summary>
     /// 所有点击事件
     /// </summary>
@@ -86,8 +92,15 @@ public partial class UIGashaponBreak : BaseUIComponent
         this.objTargetEgg = objTargetEgg;
         this.gashaponItemData = gashaponItemData;
         ui_BGClick.ShowObj(true);
-        ui_BtnShowAll.ShowObj(true);
         ui_BtnBreak.ShowObj(true);
+
+        //检测是否解锁跳过所有
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlock = userData.GetUserUnlockData();
+        if (userUnlock.CheckIsUnlock(UnlockEnum.GashaponShowAll))
+        {
+            ui_BtnShowAll.ShowObj(true);
+        }
         RefreshUILayout();
     }
 
@@ -101,9 +114,16 @@ public partial class UIGashaponBreak : BaseUIComponent
         this.objTargetEgg = objTargetEgg;
         this.gashaponItemData = gashaponItemData;
         ui_BGClick.ShowObj(true);
-        ui_UIShow.ShowObj(true);
-        ui_BtnShowAll.ShowObj(true);
+        ui_UIShow.ShowObj(true);  
         ui_BtnNext.ShowObj(true);
+        
+        //检测是否解锁跳过所有
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlock = userData.GetUserUnlockData();
+        if (userUnlock.CheckIsUnlock(UnlockEnum.GashaponShowAll))
+        {
+            ui_BtnShowAll.ShowObj(true);
+        }
         InitCardData();
         RefreshUILayout();
     }
@@ -220,5 +240,18 @@ public partial class UIGashaponBreak : BaseUIComponent
     {
         LayoutRebuilder.ForceRebuildLayoutImmediate(ui_AllList);
         LayoutRebuilder.ForceRebuildLayoutImmediate(ui_UIBtn);
+    }
+
+    
+    /// <summary>
+    /// 事件-重命名
+    /// </summary>
+    /// <param name="creatureData"></param>
+    public void EventForCreatureRename(CreatureBean creatureData)
+    {
+        if (gashaponItemData.creatureData.creatureUUId.Equals(creatureData.creatureUUId) )
+        { 
+            InitCardData();
+        }
     }
 }

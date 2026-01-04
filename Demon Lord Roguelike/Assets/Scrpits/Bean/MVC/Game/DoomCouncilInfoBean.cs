@@ -29,6 +29,10 @@ public partial class DoomCouncilInfoBean : BaseBean
 	/// </summary>
 	public string class_entity_data;
 	/// <summary>
+	///解锁ID
+	/// </summary>
+	public long unlock_id;
+	/// <summary>
 	///名字-中文
 	/// </summary>
 	public long name;

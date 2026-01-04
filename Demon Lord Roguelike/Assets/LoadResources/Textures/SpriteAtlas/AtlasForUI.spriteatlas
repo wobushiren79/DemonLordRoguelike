@@ -125,7 +125,10 @@ SpriteAtlas:
     - 925eda382a1de41459822db9cdb47cdf: 21300000
     - 4f399e38d4e168e4da32545e216fe580: 21300000
     - 83174e4860c54504c865fb310e361bd2: 21300000
+    - e10ff7782e59d424c9871f769ec8786c: 21300000
     - a8e31d986b4b9bf418f17103b2bb61b0: 21300000
+    - bd1ee5b8891811246a7b98d7271c3674: 21300000
+    - 8936a9b833ecb9c44be784f2620083a2: 21300000
     - e3fc80c84d9fe5744b0b62b409272db1: 21300000
     - 0e9d89c800384e34eafc0558b8da283d: 21300000
     - 0d80a2d85aa7e124ab3758c66f37cd87: 21300000
@@ -151,6 +154,7 @@ SpriteAtlas:
     - e929f1fad1fa61645accc15f3b16aa61: 21300000
     - d2c084fa1692fa64996ffa5b108bc37f: 21300000
     - 4e414f0b94e653e44aa290822c5afec2: 21300000
+    - 6b0e791b0741f8646b29c04dc63552ce: 21300000
     - 1bfa2c1baa72c8f4b9159033ab60a12d: 21300000
     - 648b3d2b9d9278f48bace4aaee0fad8f: 21300000
     - 1aa90c3b1a3c4f546be4973d2d0fa994: 21300000
@@ -171,6 +175,7 @@ SpriteAtlas:
     - 9426ca0cadd86074db31cd44e5371690: 21300000
     - 25a2a67cb80c9d04ea2740f958a9f095: 21300000
     - 0cec619cd9584e1459992662c4b0a76b: 21300000
+    - 0ea7ba9cfe68488429623413ac0d333b: 21300000
     - ce55b5acc71a55642b1aded44a10cb48: 21300000
     - 003526dc8e477e042b74e6f63c3fba4b: 21300000
     - 0cfdfa7dbfb17ad4ba39f4bcb6949938: 21300000
@@ -203,6 +208,7 @@ SpriteAtlas:
     - 9b7ff97fbf86308489dc48699c1e4323: 21300000
     - c8e5029fd2a5bf64eac20ef86f2e021f: 21300000
     - 4578deaf7adf7af449a4797554c3d40d: 21300000
+    - 29b329cfdc0aa314c8de7e5ceab2265e: 21300000
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: 544b7a10c17e3cd43a26df9083a57c3b, type: 3}
@@ -280,7 +286,10 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 925eda382a1de41459822db9cdb47cdf, type: 3}
   - {fileID: 21300000, guid: 4f399e38d4e168e4da32545e216fe580, type: 3}
   - {fileID: 21300000, guid: 83174e4860c54504c865fb310e361bd2, type: 3}
+  - {fileID: 21300000, guid: e10ff7782e59d424c9871f769ec8786c, type: 3}
   - {fileID: 21300000, guid: a8e31d986b4b9bf418f17103b2bb61b0, type: 3}
+  - {fileID: 21300000, guid: bd1ee5b8891811246a7b98d7271c3674, type: 3}
+  - {fileID: 21300000, guid: 8936a9b833ecb9c44be784f2620083a2, type: 3}
   - {fileID: 21300000, guid: e3fc80c84d9fe5744b0b62b409272db1, type: 3}
   - {fileID: 21300000, guid: 0e9d89c800384e34eafc0558b8da283d, type: 3}
   - {fileID: 21300000, guid: 0d80a2d85aa7e124ab3758c66f37cd87, type: 3}
@@ -306,6 +315,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: e929f1fad1fa61645accc15f3b16aa61, type: 3}
   - {fileID: 21300000, guid: d2c084fa1692fa64996ffa5b108bc37f, type: 3}
   - {fileID: 21300000, guid: 4e414f0b94e653e44aa290822c5afec2, type: 3}
+  - {fileID: 21300000, guid: 6b0e791b0741f8646b29c04dc63552ce, type: 3}
   - {fileID: 21300000, guid: 1bfa2c1baa72c8f4b9159033ab60a12d, type: 3}
   - {fileID: 21300000, guid: 648b3d2b9d9278f48bace4aaee0fad8f, type: 3}
   - {fileID: 21300000, guid: 1aa90c3b1a3c4f546be4973d2d0fa994, type: 3}
@@ -326,6 +336,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 9426ca0cadd86074db31cd44e5371690, type: 3}
   - {fileID: 21300000, guid: 25a2a67cb80c9d04ea2740f958a9f095, type: 3}
   - {fileID: 21300000, guid: 0cec619cd9584e1459992662c4b0a76b, type: 3}
+  - {fileID: 21300000, guid: 0ea7ba9cfe68488429623413ac0d333b, type: 3}
   - {fileID: 21300000, guid: ce55b5acc71a55642b1aded44a10cb48, type: 3}
   - {fileID: 21300000, guid: 003526dc8e477e042b74e6f63c3fba4b, type: 3}
   - {fileID: 21300000, guid: 0cfdfa7dbfb17ad4ba39f4bcb6949938, type: 3}
@@ -358,6 +369,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 9b7ff97fbf86308489dc48699c1e4323, type: 3}
   - {fileID: 21300000, guid: c8e5029fd2a5bf64eac20ef86f2e021f, type: 3}
   - {fileID: 21300000, guid: 4578deaf7adf7af449a4797554c3d40d, type: 3}
+  - {fileID: 21300000, guid: 29b329cfdc0aa314c8de7e5ceab2265e, type: 3}
   m_PackedSpriteNamesToIndex:
   - ui_research_21
   - ui_slider_1
@@ -434,7 +446,10 @@ SpriteAtlas:
   - ui_cancel_3
   - ui_research_11
   - ui_slider_9
+  - ui_other_1
   - ui_research_24
+  - ui_other_5
+  - ui_other_2
   - ui_equip_5
   - ui_slider_2
   - ui_card_bg_4
@@ -460,6 +475,7 @@ SpriteAtlas:
   - ui_creature_star_1
   - ui_research_8
   - ui_next_1
+  - ui_other_4
   - ui_research_17
   - ui_icon_2
   - ui_icon_1
@@ -480,6 +496,7 @@ SpriteAtlas:
   - ui_research_52
   - ui_research_54
   - ui_research_28
+  - ui_research_57
   - ui_equip_3
   - ui_border_17
   - ui_research_7
@@ -512,6 +529,7 @@ SpriteAtlas:
   - ui_research_2
   - ui_unlock_1
   - ui_equip_9
+  - ui_other_3
   m_RenderDataMap: {}
   m_Tag: AtlasForUI
   m_IsVariant: 0

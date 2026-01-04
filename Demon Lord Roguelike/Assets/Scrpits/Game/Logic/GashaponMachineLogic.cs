@@ -138,7 +138,8 @@ public class GashaponMachineLogic : BaseGameLogic
             //添加生成的数据
             UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
             userData.AddBackpackCreature(itemGashapon.creatureData);
-
+            //保存数据
+            GameDataHandler.Instance.manager.SaveUserData();
         }
         SpineHandler.Instance.PreLoadSkeletonDataAsset(listPreLoadSpineData, (dicData) =>
         {

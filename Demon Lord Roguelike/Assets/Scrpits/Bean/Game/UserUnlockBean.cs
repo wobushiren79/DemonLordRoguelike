@@ -137,6 +137,10 @@ public class UserUnlockBean
     }
     public bool CheckIsUnlock(long unlockId)
     {
+        if (unlockId == 0)
+        {
+            return true;
+        }
         if (unlockInfoData.ContainsKey(unlockId))
         {
             return true;
