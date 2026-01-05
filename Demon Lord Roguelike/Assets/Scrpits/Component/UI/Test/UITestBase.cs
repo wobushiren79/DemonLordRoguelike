@@ -86,7 +86,7 @@ public partial class UITestBase : BaseUIComponent
                 LogUtil.LogError("请输入数字");
             }
         }
-        UIHandler.Instance.ToastHint<ToastView>("添加成功！");
+        UIHandler.Instance.ToastHintText("添加成功！",1);
         GameDataHandler.Instance.manager.SaveUserData();
     }
 
@@ -112,7 +112,7 @@ public partial class UITestBase : BaseUIComponent
                 LogUtil.LogError("请输入数字");
             }
         }
-        UIHandler.Instance.ToastHint<ToastView>("添加成功！");
+        UIHandler.Instance.ToastHintText("添加成功！",1);
         GameDataHandler.Instance.manager.SaveUserData();
     }
 
@@ -142,7 +142,7 @@ public partial class UITestBase : BaseUIComponent
                 LogUtil.LogError("请输入数字");
             }
         }
-        UIHandler.Instance.ToastHint<ToastView>("添加成功！");
+        UIHandler.Instance.ToastHintText("添加成功！",1);
         GameDataHandler.Instance.manager.SaveUserData();
     }
 
@@ -163,7 +163,7 @@ public partial class UITestBase : BaseUIComponent
             userData.AddBackpackCreature(creatureData);
         }
 
-        UIHandler.Instance.ToastHint<ToastView>("添加成功！");
+        UIHandler.Instance.ToastHintText("添加成功！",1);
         GameDataHandler.Instance.manager.SaveUserData();
     }
 
@@ -186,7 +186,7 @@ public partial class UITestBase : BaseUIComponent
         creatureData.AddSkinForBase();
         userData.AddBackpackCreature(creatureData);
 
-        UIHandler.Instance.ToastHint<ToastView>("添加成功！");
+        UIHandler.Instance.ToastHintText("添加成功！",1);
         GameDataHandler.Instance.manager.SaveUserData();
     }
 

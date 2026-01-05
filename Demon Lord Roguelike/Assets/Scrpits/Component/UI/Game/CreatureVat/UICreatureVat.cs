@@ -276,7 +276,7 @@ public partial class UICreatureVat : BaseUIComponent
         if (targetCreatureSelect == null)
         {
             string hintStr = TextHandler.Instance.GetTextById(80008);
-            UIHandler.Instance.ToastHint<ToastView>(hintStr);
+            UIHandler.Instance.ToastHintText(hintStr);
             return;
         }
         //先关闭UI

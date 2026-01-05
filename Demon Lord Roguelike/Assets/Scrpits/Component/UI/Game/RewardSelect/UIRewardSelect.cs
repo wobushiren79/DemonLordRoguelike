@@ -89,7 +89,7 @@ public partial class UIRewardSelect : BaseUIComponent
             switch (boxOpenState)
             {
                 case 0://打开失败 没有次数
-                    UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(52004));
+                    UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(52004));
                     break;
                 case 1://打开宝箱
                     UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();

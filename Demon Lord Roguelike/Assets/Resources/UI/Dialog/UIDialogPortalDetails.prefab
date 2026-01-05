@@ -154,15 +154,15 @@ MonoBehaviour:
     isDestroyBG: 1
   ui_Submit: {fileID: 38939591358087056}
   ui_SubmitText: {fileID: 0}
-  ui_SubmitTextPro: {fileID: 0}
+  ui_SubmitTextPro: {fileID: 6265165654599785986}
   ui_Cancel: {fileID: 3318238141600336401}
   ui_CancelText: {fileID: 0}
-  ui_CancelTextPro: {fileID: 0}
+  ui_CancelTextPro: {fileID: 4936984293646627388}
   ui_Background: {fileID: 7926945100473861547}
   ui_Title: {fileID: 0}
   ui_Content: {fileID: 0}
   ui_TitlePro: {fileID: 0}
-  ui_ContentPro: {fileID: 0}
+  ui_ContentPro: {fileID: 1634720593251403299}
   ui_DifficultySelectLeftBtn: {fileID: 1043906369407295686}
   ui_DifficultySelectRightBtn: {fileID: 4743679383298646648}
   ui_DifficultyContent: {fileID: 6669578137478173335}
@@ -181,7 +181,7 @@ GameObject:
   - component: {fileID: 1229697053853869620}
   - component: {fileID: 1634720593251403299}
   m_Layer: 5
-  m_Name: Content
+  m_Name: ContentPro
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1158,7 +1158,7 @@ GameObject:
   - component: {fileID: 7065787807297951140}
   - component: {fileID: 6265165654599785986}
   m_Layer: 5
-  m_Name: SubmitText
+  m_Name: SubmitTextPro
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1294,7 +1294,7 @@ GameObject:
   - component: {fileID: 520400608114982963}
   - component: {fileID: 4936984293646627388}
   m_Layer: 5
-  m_Name: CancelText
+  m_Name: CancelTextPro
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

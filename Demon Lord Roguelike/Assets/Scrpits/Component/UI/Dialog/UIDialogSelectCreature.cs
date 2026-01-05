@@ -75,7 +75,7 @@ public partial class UIDialogSelectCreature : DialogView
             //如果已经超过最大选择数量
             if (listSelect.Count >= dialogSelectCreatureData.selectNumMax)
             {
-                UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(1005003));
+                UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(1005003));
             }
             else
             {
@@ -97,7 +97,7 @@ public partial class UIDialogSelectCreature : DialogView
     {
         if (listSelect.IsNull())
         {
-            UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(3000004));
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(3000004));
             return;            
         }
         base.SubmitOnClick();

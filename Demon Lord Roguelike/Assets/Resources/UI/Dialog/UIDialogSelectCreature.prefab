@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1657727805179184071}
   - component: {fileID: 5094206268728380841}
   m_Layer: 5
-  m_Name: SubmitText
+  m_Name: SubmitTextPro
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -633,7 +633,7 @@ GameObject:
   - component: {fileID: 8336816030805590177}
   - component: {fileID: 5374974398764959632}
   m_Layer: 5
-  m_Name: Content
+  m_Name: ContentPro
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1025,7 +1025,7 @@ GameObject:
   - component: {fileID: 8285222600303640804}
   - component: {fileID: 691190402731378365}
   m_Layer: 5
-  m_Name: CancelText
+  m_Name: CancelTextPro
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

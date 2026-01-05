@@ -143,7 +143,7 @@ public class UserDataBean : BaseBean
         {
             if (isHint)
             {
-                UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(3000001));
+                UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(3000001));
             }
             return false;
         }
@@ -170,7 +170,7 @@ public class UserDataBean : BaseBean
         {
             if (isHint)
             {
-                UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(3000002));
+                UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(3000002));
             }
             return false;
         }
@@ -350,16 +350,31 @@ public class UserDataBean : BaseBean
     /// <summary>
     /// 检测是否包含在阵容里
     /// </summary>
-    public bool CheckIsLineup(int lineupIndex, string creatureId)
+    public bool CheckIsLineup(int lineupIndex, string creatureUUId)
     {
         if (dicLineupCreature.TryGetValue(lineupIndex, out List<string> listCreatureId))
         {
-            if (listCreatureId != null && listCreatureId.Contains(creatureId))
+            if (listCreatureId != null && listCreatureId.Contains(creatureUUId))
             {
                 return true;
             }
         }
         return false;
+    }
+
+    /// <summary>
+    /// 获取生物所在阵容
+    /// </summary>
+    public int GetLinupIndex(string creatureUUId)
+    {
+        foreach (var item in dicLineupCreature)
+        {
+            if (item.Value.Contains(creatureUUId))
+            {
+                return item.Key;
+            }
+        }
+        return 0;
     }
     #endregion
 

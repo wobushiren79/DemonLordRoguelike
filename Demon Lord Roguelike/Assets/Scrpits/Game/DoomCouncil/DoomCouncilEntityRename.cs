@@ -14,7 +14,7 @@ public class DoomCouncilEntityRename : DoomCouncilBaseEntity
             {
                 var targetSelectView = selectView as UIDialogSelectCreature;
                 if (!targetSelectView.listSelect.IsNull())
-                {               
+                {
                     var targetCreature = targetSelectView.listSelect[0];
                     ShowRenameDialog(targetCreature);
                 }
@@ -50,7 +50,7 @@ public class DoomCouncilEntityRename : DoomCouncilBaseEntity
         {
             if (doomCouncilInfo.class_entity_data.Equals("1"))
             {
-                
+
             }
             else if (doomCouncilInfo.class_entity_data.Equals("2"))
             {
@@ -60,7 +60,7 @@ public class DoomCouncilEntityRename : DoomCouncilBaseEntity
             //保存数据
             GameDataHandler.Instance.manager.SaveUserData();
             //弹出提示
-            UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(3000003));
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(3000003), 1);
             BackDoomCouncilMain();
         };
         dialogRenameData.actionCancel = (view, data) =>

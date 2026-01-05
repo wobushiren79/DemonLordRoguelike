@@ -150,7 +150,7 @@ public partial class UIMainCreate : BaseUIComponent
     {
         if (ui_NameET.text.IsNull())
         {
-            UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(305));
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(305));
             return;
         }
         DialogBean dialogData = new DialogBean();

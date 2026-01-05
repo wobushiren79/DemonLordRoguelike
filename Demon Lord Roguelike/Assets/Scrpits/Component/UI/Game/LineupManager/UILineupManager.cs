@@ -351,7 +351,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
             if (listLineupCreatureId.Count >= creatureNumMax)
             {       
                 //弹出提示
-                UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(30006));
+                UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(30006));
                 return;
             }
             userData.AddLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureUUId);

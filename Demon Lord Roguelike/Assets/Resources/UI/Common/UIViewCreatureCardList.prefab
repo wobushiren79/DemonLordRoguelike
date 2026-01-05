@@ -94,11 +94,15 @@ MonoBehaviour:
   uiOpenAnimType: 1
   uiOpenAnimTarget: {fileID: 699329859100296908}
   _rectTransform: {fileID: 0}
-  ui_OrderBtn_Rarity: {fileID: 8210047790461658269}
-  ui_OrderBtn_Level: {fileID: 5857301587010731485}
-  ui_OrderBtn_Lineup: {fileID: 5585999528716575467}
+  ui_OrderBtn_Rarity_Button: {fileID: 8210047790461658269}
+  ui_OrderBtn_Rarity_PopupButtonCommonView: {fileID: 1705783594463108923}
+  ui_OrderBtn_Level_Button: {fileID: 5857301587010731485}
+  ui_OrderBtn_Level_PopupButtonCommonView: {fileID: 3966135330553202299}
+  ui_OrderBtn_Lineup_Button: {fileID: 5585999528716575467}
+  ui_OrderBtn_Lineup_PopupButtonCommonView: {fileID: 3154401188112079181}
   ui_CreatureListContent: {fileID: 9021687495376944969}
-  ui_OrderBtn_Name: {fileID: 7164809290007946714}
+  ui_OrderBtn_Name_Button: {fileID: 7164809290007946714}
+  ui_OrderBtn_Name_PopupButtonCommonView: {fileID: 373059647722790524}
 --- !u!1 &5341341714805063167
 GameObject:
   m_ObjectHideFlags: 0
@@ -622,6 +626,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+--- !u!114 &3154401188112079181 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7478552130072616985, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+  m_PrefabInstance: {fileID: 5480749496390760788}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16e10e1ab6287e34bb1c2a56fb2273e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PopupButtonCommonView
 --- !u!114 &5585999528716575467 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 111178601279462335, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
@@ -751,6 +766,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+--- !u!114 &3966135330553202299 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7478552130072616985, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+  m_PrefabInstance: {fileID: 5819684928970303074}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16e10e1ab6287e34bb1c2a56fb2273e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PopupButtonCommonView
 --- !u!114 &5857301587010731485 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 111178601279462335, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
@@ -884,6 +910,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+--- !u!114 &373059647722790524 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7478552130072616985, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+  m_PrefabInstance: {fileID: 7125952795092762213}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16e10e1ab6287e34bb1c2a56fb2273e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PopupButtonCommonView
 --- !u!224 &6005574764444316949 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3583860495913077616, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
@@ -1001,6 +1038,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+--- !u!114 &1705783594463108923 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7478552130072616985, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}
+  m_PrefabInstance: {fileID: 8098895646197661474}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16e10e1ab6287e34bb1c2a56fb2273e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PopupButtonCommonView
 --- !u!224 &4744929837761033298 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3583860495913077616, guid: f21a5a4bebefd1342b667294c2f57916, type: 3}

@@ -5,6 +5,33 @@ using UnityEngine;
 
 public partial class UIHandler
 {
+
+    /// <summary>
+    /// toast提示
+    /// </summary>
+    /// <param name="hintContent"></param>
+    /// <param name="state">0失败 1成功</param>
+    public void ToastHintText(string hintContent, int state = 0)
+    {
+        string iconRes = "icon_unknow";
+        Color iconColor = Color.white;
+        switch (state)
+        {
+            case 0:
+                iconRes = "ui_other_3";
+                ColorUtility.TryParseHtmlString("#E32626",out iconColor);
+                break;
+            case 1:
+                iconRes = "ui_other_6";
+                ColorUtility.TryParseHtmlString("#25BC29",out iconColor);
+                break;
+        }
+        IconHandler.Instance.GetIconSprite(SpriteAtlasType.UI, iconRes, (sprite) =>
+        {
+            ToastHint<ToastView>(sprite, iconColor, hintContent);
+        });
+    }
+
     /// <summary>
     /// 清理所有主界面UI-用于进游戏
     /// </summary>

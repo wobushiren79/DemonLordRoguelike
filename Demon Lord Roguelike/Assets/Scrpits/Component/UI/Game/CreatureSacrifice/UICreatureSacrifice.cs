@@ -129,7 +129,7 @@ public partial class UICreatureSacrifice : BaseUIComponent
     {
         if (listSelectCreature.IsNull())
         {
-            UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(61001));
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61001));
             return;
         }
         DialogBean dialogData = new DialogBean();
@@ -160,7 +160,7 @@ public partial class UICreatureSacrifice : BaseUIComponent
             var limmitData = userData.GetUserLimmitData();
             if (listSelectCreature.Count >= limmitData.sacrificeMax)
             {
-                UIHandler.Instance.ToastHint<ToastView>(TextHandler.Instance.GetTextById(61002));
+                UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61002));
                 return;
             }
             //添加

@@ -17,6 +17,10 @@ public partial class UIViewCreatureCardList : BaseUIView
     {
         base.Awake();
         ui_CreatureListContent.AddCellListener(OnCellChangeForCreatrue);
+        ui_OrderBtn_Rarity_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000004),PopupEnum.Text);
+        ui_OrderBtn_Level_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000005),PopupEnum.Text);
+        ui_OrderBtn_Lineup_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000006),PopupEnum.Text);
+        ui_OrderBtn_Name_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000007),PopupEnum.Text);
     }
 
     public override void OpenUI()
@@ -34,17 +38,21 @@ public partial class UIViewCreatureCardList : BaseUIView
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
-        if (viewButton == ui_OrderBtn_Rarity)
+        if (viewButton == ui_OrderBtn_Rarity_Button)
         {
-            OrderBackpackCreature(1);
+            OrderListCreature(1);
         }
-        else if (viewButton == ui_OrderBtn_Level)
+        else if (viewButton == ui_OrderBtn_Level_Button)
         {
-            OrderBackpackCreature(2);
+            OrderListCreature(2);
         }
-        else if (viewButton == ui_OrderBtn_Lineup)
+        else if (viewButton == ui_OrderBtn_Lineup_Button)
         {
-            OrderBackpackCreature(3);
+            OrderListCreature(3);
+        }
+        else if (viewButton == ui_OrderBtn_Name_Button)
+        {
+            OrderListCreature(4);
         }
     }
 
@@ -89,7 +97,7 @@ public partial class UIViewCreatureCardList : BaseUIView
         listCreatureData.Clear();
         listCreatureData.AddRange(listData);
         //初始化排序
-        OrderBackpackCreature(1, false);
+        OrderListCreature(1, false);
         //设置数量
         ui_CreatureListContent.SetCellCount(listCreatureData.Count);
     }
@@ -99,7 +107,7 @@ public partial class UIViewCreatureCardList : BaseUIView
     /// </summary>
     public CreatureBean GetItemData(int index)
     {
-        if(index >= listCreatureData.Count)
+        if (index >= listCreatureData.Count)
         {
             LogUtil.LogError($"获取单个生物数据失败 超过下标 index_{index} Count_{listCreatureData.Count}");
             return null;
@@ -124,64 +132,54 @@ public partial class UIViewCreatureCardList : BaseUIView
     /// 排序背包里的生物
     /// </summary>
     /// <param name="orderType"></param>
-    public void OrderBackpackCreature(int orderType, bool isRefreshUI = true)
+    public void OrderListCreature(int orderType, bool isRefreshUI = true)
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        // 统一处理阵容索引排序逻辑
+        Func<CreatureBean, int> lineupOrder = itemData =>
+        {
+            int lineupIndex = userData.GetLinupIndex(itemData.creatureUUId);
+            return lineupIndex > 0 ? lineupIndex : int.MaxValue;
+        };
 
         switch (orderType)
         {
             case 1://按稀有度排序
                 listCreatureData = listCreatureData
-                    .OrderByDescending((itemData) =>
-                    {
-                        return itemData.rarity;
-                    })
-                    .ThenByDescending((itemData) =>
-                    {
-                        return itemData.level;
-                    })
+                    .OrderByDescending((itemData) => itemData.rarity)
+                    .ThenByDescending((itemData) => itemData.level)
+                    .ThenBy((itemData) => lineupOrder)
+                    .ThenBy((itemData) => itemData.creatureName)
                     .ToList();
                 break;
             case 2:
                 //按等级排序
                 listCreatureData = listCreatureData
-                    .OrderByDescending((itemData) =>
-                    {
-                        return itemData.level;
-                    })
-                    .ThenByDescending((itemData) =>
-                    {
-                        return itemData.rarity;
-                    })
+                    .OrderByDescending((itemData) => itemData.level)
+                    .ThenByDescending((itemData) => itemData.rarity)
+                    .ThenBy((itemData) => lineupOrder)
+                    .ThenBy((itemData) => itemData.creatureName)
                     .ToList();
                 break;
             case 3:
-                // //按选中排序
-                // listCreatureData = listCreatureData
-                //     .OrderBy((itemData) =>
-                //     {
-                //         if (userData.CheckIsLineup(currentLineupIndex, itemData.creatureId))
-                //         {
-                //             return 0;
-                //         }
-                //         else
-                //         {
-                //             return 1;
-                //         }
-                //         return 1;
-                //     })
-                //     .ThenByDescending((itemData) =>
-                //     {
-                //         return itemData.rarity;
-                //     })
-                //     .ThenByDescending((itemData) =>
-                //     {
-                //         return itemData.level;
-                //     })
-                //     .ToList();
+                //按选中排序
+                listCreatureData = listCreatureData
+                    .OrderBy((itemData) => lineupOrder)
+                    .ThenByDescending((itemData) => itemData.rarity)
+                    .ThenByDescending((itemData) => itemData.level)
+                    .ThenBy((itemData) => itemData.creatureName)
+                    .ToList();
+                break;
+            case 4://名字排序
+                listCreatureData = listCreatureData
+                    .OrderBy((itemData) => itemData.creatureName)
+                    .ThenByDescending((itemData) => itemData.rarity)
+                    .ThenBy((itemData) => lineupOrder)
+                    .ThenByDescending((itemData) => itemData.level)
+                    .ToList();
                 break;
         }
         if (isRefreshUI)
-            ui_CreatureListContent.RefreshAllCells();
+            RefreshAllCard();
     }
 }
