@@ -11,7 +11,7 @@ public partial class UIViewMainCreateSelectItem : BaseUIView
     public Action<UIViewMainCreateSelectItem, int, bool> actionForSelect;
 
     public CreatureSkinTypeEnum creatureSkinType;
-    public int creatureId;
+    public long creatureId;
 
     /// <summary>
     /// 设置数据

@@ -106,12 +106,12 @@ public partial class UICreatureManager : BaseUIComponent
         ItemTypeEnum itemType = itemInfo.GetItemType();
         //从背包里移除
         var userData = GameDataHandler.Instance.manager.GetUserData();
-        userData.RemoveItem(itemData);
+        userData.RemoveBackpackItem(itemData);
         //添加到角色装备里
         creatureData.ChangeEquip(itemType, itemData, out var beforeItem);
         //把换下来得装备添加到背包里
         if (beforeItem != null)
-            userData.AddItem(beforeItem);
+            userData.AddBackpackItem(beforeItem);
 
         //刷新相关UI
         ui_UIViewCreatureCardEquipDetails.RefreshShowEquip();
@@ -134,7 +134,7 @@ public partial class UICreatureManager : BaseUIComponent
         creatureData.ChangeEquip(itemType, null, out var beforeItem);
         //把换下来得装备添加到背包里
         if (beforeItem != null)
-            userData.AddItem(beforeItem);
+            userData.AddBackpackItem(beforeItem);
 
         //刷新相关UI
         ui_UIViewCreatureCardEquipDetails.RefreshShowEquip();

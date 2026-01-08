@@ -128,14 +128,14 @@ public partial class UITestBase : BaseUIComponent
             var allData = ItemsInfoCfg.GetAllData();
             foreach(var itemData in allData)
             {
-                userData.AddItem(itemData.Value.id);
+                userData.AddBackpackItem(itemData.Value.id);
             }
         }
         else
         {
             if (long.TryParse(inputData, out var itemId))
             {
-                userData.AddItem(itemId);
+                userData.AddBackpackItem(itemId);
             }
             else
             {

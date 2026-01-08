@@ -135,6 +135,25 @@ public partial class CreatureBean
             dicEquipItemData.Add(itemType, changeItem);
         }
     }
+    
+    public void ChangeEquip(ItemTypeEnum itemType, ItemBean changeItem)
+    {
+        ChangeEquip(itemType, changeItem, out ItemBean beforeItem);
+    }
+
+    /// <summary>
+    /// 卸下所有装备到背包里
+    /// </summary>
+    public void RemoveAllEquipToBackpack()
+    {
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        foreach (var item in dicEquipItemData)
+        {
+            var itemEquipData = item.Value;
+            userData.AddBackpackItem(itemEquipData);
+        }
+        dicEquipItemData.Clear();
+    }
 
     /// <summary>
     /// 获取装备

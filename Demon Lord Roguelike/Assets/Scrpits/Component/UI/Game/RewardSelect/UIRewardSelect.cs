@@ -94,7 +94,7 @@ public partial class UIRewardSelect : BaseUIComponent
                 case 1://打开宝箱
                     UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
                     //添加道具到背包里
-                    userData.AddItem(itemData);
+                    userData.AddBackpackItem(itemData);
                     //数量+1
                     rewardSelectData.selectNum++;
                     //刷新UI

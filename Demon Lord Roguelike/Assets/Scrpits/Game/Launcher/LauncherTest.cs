@@ -44,10 +44,10 @@ public class LauncherTest : BaseLauncher
         userData.AddCrystal(99999);
         userData.AddReputation(1000);
         //添加道具
-        userData.AddItem(new ItemBean(10100001));
-        userData.AddItem(new ItemBean(10100002));
-        userData.AddItem(new ItemBean(10100003));
-        userData.AddItem(new ItemBean(10100004));
+        userData.AddBackpackItem(new ItemBean(10100001));
+        userData.AddBackpackItem(new ItemBean(10100002));
+        userData.AddBackpackItem(new ItemBean(10100003));
+        userData.AddBackpackItem(new ItemBean(10100004));
         //解锁所有unlock
         var userUnlockData = userData.GetUserUnlockData();
         var allUnlockInfo = UnlockInfoCfg.GetAllArrayData();

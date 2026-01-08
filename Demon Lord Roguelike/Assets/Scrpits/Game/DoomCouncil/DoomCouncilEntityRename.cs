@@ -69,14 +69,4 @@ public class DoomCouncilEntityRename : DoomCouncilBaseEntity
         };
         UIHandler.Instance.ShowDialogRename(dialogRenameData);
     }
-
-    /// <summary>
-    /// 返回议会主界面
-    /// </summary>
-    public void BackDoomCouncilMain()
-    {
-        //弹出议会UI
-        UIDoomCouncilMain doomCouncilMain = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilMain>();
-    }
-
 }

@@ -181,7 +181,7 @@ public class UserDataBean : BaseBean
     /// <summary>
     /// 增加道具
     /// </summary>
-    public void AddItem(ItemBean itemData)
+    public void AddBackpackItem(ItemBean itemData)
     {
         if (itemData == null || itemData.itemId == 0)
             return;
@@ -189,7 +189,7 @@ public class UserDataBean : BaseBean
         EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Item_Change);
     }
 
-    public void AddItem(long itemId, int num = 1)
+    public void AddBackpackItem(long itemId, int num = 1)
     {
         var itemInfo = ItemsInfoCfg.GetItemData(itemId);
         if (itemInfo == null)
@@ -237,7 +237,7 @@ public class UserDataBean : BaseBean
     /// <summary>
     /// 移除背包里的道具
     /// </summary>
-    public void RemoveItem(ItemBean itemData)
+    public void RemoveBackpackItem(ItemBean itemData)
     {
         if (itemData == null || itemData.itemId == 0)
             return;

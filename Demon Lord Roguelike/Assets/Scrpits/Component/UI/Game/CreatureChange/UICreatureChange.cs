@@ -1,48 +1,58 @@
-using Spine.Unity;
-using System.Collections;
+﻿
+
+using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
+using Spine.Unity;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public partial class UIMainCreate : BaseUIComponent
+public partial class UICreatureChange : BaseUIComponent
 {
-    protected int userDataIndex;
-
     //预览预制
     public GameObject previewObj;
     public SkeletonAnimation previewSpine;
 
-    //创建的生物数据
-    protected CreatureBean createCreatureData;
+    //新的生物数据
+    protected CreatureBean currentCreatureData;
 
     //选中控件
     protected List<UIViewMainCreateSelectItem> listSelectView = new List<UIViewMainCreateSelectItem>();
-    protected Dictionary<CreatureSkinTypeEnum,UIViewColorShow> dicSelectColorShow = new Dictionary<CreatureSkinTypeEnum, UIViewColorShow>();
+    protected Dictionary<CreatureSkinTypeEnum, UIViewColorShow> dicSelectColorShow = new Dictionary<CreatureSkinTypeEnum, UIViewColorShow>();
     //物种数据
-    protected List<int> listSelectForCreature = new List<int>()
-    {
-        1,2
-    };
+    protected List<long> listSelectForCreature = new List<long>();
 
     //物种数据
     protected Dictionary<long, Dictionary<CreatureSkinTypeEnum, List<long>>> dicSelectData = new Dictionary<long, Dictionary<CreatureSkinTypeEnum, List<long>>>();
     //选中的物种
     protected int selectCreatureIndex = 0;
-
+    protected Action<CreatureBean> actionForSubmit;
+    protected Action actionForCancel;
     public override void OpenUI()
     {
         base.OpenUI();
         ShowPreviewCreate(true);
-        InitData();
     }
 
     public override void CloseUI()
     {
         base.CloseUI();
         ShowPreviewCreate(false);
-        createCreatureData = null;
+        currentCreatureData = null;
+    }
+
+    /// <summary>
+    /// 设置数据
+    /// </summary>
+    public void SetData(List<long> listSelectForCreature,
+        Action<CreatureBean> actionForSubmit, Action actionForCancel,
+        string contentStr = null)
+    {
+        this.listSelectForCreature = listSelectForCreature;
+        this.actionForSubmit = actionForSubmit;
+        this.actionForCancel = actionForCancel;
+        InitData();
+        SetContentText(contentStr);
     }
 
     /// <summary>
@@ -64,7 +74,7 @@ public partial class UIMainCreate : BaseUIComponent
             //设置选项名字
             var targetCreatureInfo = CreatureInfoCfg.GetItemData(targetCreatureId);
             listCreatureStr.Add($"{targetCreatureInfo.name_language}");
-        }
+        } 
         ui_UIViewMainCreateSelectItem_Species.SetData(listCreatureStr, ActionForSelect);
     }
 
@@ -90,23 +100,33 @@ public partial class UIMainCreate : BaseUIComponent
     }
 
     /// <summary>
-    /// 设置预览生物数据
+    /// 设置提示文本
     /// </summary>
-    public void SetPreviewCreate(CreatureBean createCreatureData)
+    /// <param name="contentStr"></param>
+    public void SetContentText(string contentStr)
     {
-        //设置spine
-        CreatureHandler.Instance.SetCreatureData(previewSpine, createCreatureData);
-        //播放spine动画
-        SpineHandler.Instance.PlayAnim(previewSpine, SpineAnimationStateEnum.Idle, createCreatureData, true);
+        if (contentStr.IsNull())
+        {
+            ui_ContentShow.gameObject.SetActive(false);
+        }
+        else
+        {
+            ui_ContentShow.gameObject.SetActive(true);
+            ui_ContentPro.text = contentStr;
+        }
     }
 
     /// <summary>
-    /// 设置数据
+    /// 设置预览生物数据
     /// </summary>
-    public void SetData(int userDataIndex)
+    public void SetPreviewCreate(CreatureBean currentCreatureData)
     {
-        this.userDataIndex = userDataIndex;
+        //设置spine
+        CreatureHandler.Instance.SetCreatureData(previewSpine, currentCreatureData);
+        //播放spine动画
+        SpineHandler.Instance.PlayAnim(previewSpine, SpineAnimationStateEnum.Idle, currentCreatureData, true);
     }
+
     #region 按钮事件
     public override void OnClickForButton(Button viewButton)
     {
@@ -115,9 +135,9 @@ public partial class UIMainCreate : BaseUIComponent
         {
             OnClickForExit();
         }
-        else if (viewButton == ui_BtnCreate)
+        else if (viewButton == ui_BtnSubmit)
         {
-            OnClickForCreate();
+            OnClickForSubmit();
         }
         else if (viewButton == ui_BtnRandom)
         {
@@ -139,63 +159,21 @@ public partial class UIMainCreate : BaseUIComponent
     /// </summary>
     public void OnClickForExit()
     {
-        UIHandler.Instance.OpenUIAndCloseOther<UIMainLoad>();
+        actionForCancel?.Invoke();
     }
 
     /// <summary>
     /// 创建
     /// </summary>
-    public void OnClickForCreate()
+    public void OnClickForSubmit()
     {
-        if (ui_NameET.text.IsNull())
-        {
-            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(305));
-            return;
-        }
         DialogBean dialogData = new DialogBean();
-        dialogData.content = string.Format(TextHandler.Instance.GetTextById(304), ui_NameET.text);
+        dialogData.content = TextHandler.Instance.GetTextById(63003);
         dialogData.actionSubmit = ((view, data) =>
         {
-            UserDataBean userData = new UserDataBean();
-            userData.saveIndex = userDataIndex;
-            //设置名字
-            userData.userName = ui_NameET.text;
-            //设置魔王
-            createCreatureData.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
-            createCreatureData.creatureName = ui_NameET.text;
-            createCreatureData.level = 0;
-            createCreatureData.rarity = 0;
-            createCreatureData.creatureName = userData.userName;
-            userData.selfCreature = createCreatureData;
-            //添加3个初始魔物 2个近战 1个远程
-            for (int i = 0; i < 3; i++)
-            {
-                //获取初始魔物的NPC数据
-                var npcInfo = NpcInfoCfg.GetItemData(i + 1);
-                //创建魔物数据
-                long targetCreatureId = npcInfo.creature_id;
-                CreatureBean creatureData = new CreatureBean(targetCreatureId);
-                //给魔物取名 不高兴 没头脑和忠心 
-                creatureData.creatureName = $"{npcInfo.name_language}";
-                //添加皮肤
-                List<long> skins = npcInfo.GetSkins();
-                creatureData.AddSkinForBase();
-                creatureData.AddSkin(skins);
-                //添加到背包
-                userData.AddBackpackCreature(creatureData);
-                //添加到阵容1
-                userData.AddLineupCreature(1, creatureData.creatureUUId);
-            }
-            GameDataHandler.Instance.manager.SaveUserData(userData);
-            GameDataHandler.Instance.manager.SetUserData(userData);
-            //展示mask
-            UIHandler.Instance.ShowMask(1, null, () =>
-            {
-                WorldHandler.Instance.EnterGameForBaseScene(userData, isClearWorld : false, isAnimForBuildingShow : true);
-            }, false);
+            actionForSubmit?.Invoke(currentCreatureData);
         });
         UIHandler.Instance.ShowDialogNormal(dialogData);
-
     }
 
     /// <summary>
@@ -203,7 +181,7 @@ public partial class UIMainCreate : BaseUIComponent
     /// </summary>
     public void OnClickForRandom()
     {
-        int randomSelect = Random.Range(0, listSelectForCreature.Count);
+        int randomSelect = UnityEngine.Random.Range(0, listSelectForCreature.Count);
         HandleForSelectCreature(randomSelect, true);
     }
     #endregion
@@ -217,8 +195,8 @@ public partial class UIMainCreate : BaseUIComponent
             var colorShow = item.Value;
             if (colorShow == viewColorShow)
             {
-                createCreatureData.ChangeSkinColor(skinType, targetColor);  
-                SetPreviewCreate(createCreatureData);
+                currentCreatureData.ChangeSkinColor(skinType, targetColor);
+                SetPreviewCreate(currentCreatureData);
             }
         }
     }
@@ -259,8 +237,8 @@ public partial class UIMainCreate : BaseUIComponent
         dicSelectData.TryGetValue(targetView.creatureId, out Dictionary<CreatureSkinTypeEnum, List<long>> dicSkinData);
         dicSkinData.TryGetValue(targetView.creatureSkinType, out List<long> listSkin);
         var selectSkin = listSkin[select];
-        var creatureModelInfo  =  CreatureModelInfoCfg.GetItemData(selectSkin);
-        
+        var creatureModelInfo = CreatureModelInfoCfg.GetItemData(selectSkin);
+
         //如果当前选择的皮肤包含颜色选择
         if (creatureModelInfo.color_state != 0)
         {
@@ -280,10 +258,10 @@ public partial class UIMainCreate : BaseUIComponent
         }
 
         SpineSkinBean spineSkin = new SpineSkinBean(selectSkin, hasColorForSkin, colorForSkin);
-        createCreatureData.AddSkin(spineSkin);
+        currentCreatureData.AddSkin(spineSkin);
         if (!isInit)
         {
-            SetPreviewCreate(createCreatureData);
+            SetPreviewCreate(currentCreatureData);
         }
     }
 
@@ -293,11 +271,11 @@ public partial class UIMainCreate : BaseUIComponent
     public void HandleForSelectCreature(int select, bool isRandom = false)
     {
         this.selectCreatureIndex = select;
-        int creatureId = listSelectForCreature[select];
-        createCreatureData = new CreatureBean(creatureId);
-        createCreatureData.creatureId = creatureId;
-        createCreatureData.ClearSkin();
-        createCreatureData.AddSkinForBase();
+        long creatureId = listSelectForCreature[select];
+        currentCreatureData = new CreatureBean(creatureId);
+        currentCreatureData.creatureId = creatureId;
+        currentCreatureData.ClearSkin();
+        currentCreatureData.AddSkinForBase();
 
         //隐藏所有选项
         for (int i = 0; i < listSelectView.Count; i++)
@@ -344,12 +322,12 @@ public partial class UIMainCreate : BaseUIComponent
             int startRandomIndex = 0;
             if (isRandom)
             {
-                startRandomIndex = Random.Range(0, listSkinName.Count);
+                startRandomIndex = UnityEngine.Random.Range(0, listSkinName.Count);
             }
             targetView.SetData(listSkinName, ActionForSelect, startRandomIndex);
             index++;
         }
-        SetPreviewCreate(createCreatureData);
+        SetPreviewCreate(currentCreatureData);
     }
     #endregion
 }

@@ -59,4 +59,13 @@ public class DoomCouncilBaseEntity
     {
         return false;
     }
+
+    /// <summary>
+    /// 返回议会主界面
+    /// </summary>
+    public void BackDoomCouncilMain()
+    {
+        //弹出议会UI
+        UIDoomCouncilMain doomCouncilMain = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilMain>();
+    }
 }

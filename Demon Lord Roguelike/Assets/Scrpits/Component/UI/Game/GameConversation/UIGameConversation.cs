@@ -95,7 +95,7 @@ public partial class UIGameConversation : BaseUIComponent
         dialogView.DestroyDialog();
         //从背包里删除这个道具
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        userData.RemoveItem(itemData);
+        userData.RemoveBackpackItem(itemData);
         //添加好感
         var rarityInfo = RarityInfoCfg.GetItemData(itemData.rarity);
         if (rarityInfo != null)
