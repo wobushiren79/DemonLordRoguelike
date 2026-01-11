@@ -116,6 +116,7 @@ public enum GameFightTypeEnum
 /// </summary>
 public enum ResearchInfoTypeEnum
 {
+    None = 0,//空
     Building = 1,//设施相关
     Strengthen = 2,//强化相关
     Creature = 3,//生物相关

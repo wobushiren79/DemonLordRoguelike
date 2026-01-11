@@ -29,7 +29,8 @@ public partial class CreatureBean
     public Dictionary<ItemTypeEnum, ItemBean> dicEquipItemData = new Dictionary<ItemTypeEnum, ItemBean>();
     //NPC数据(只有NPC才有)
     public CreatureNpcBean creatureNpcData;
-
+    //生物状态
+    public CreatureStateEnum creatureState = CreatureStateEnum.Idle;
     public CreatureBean()
     {
         

@@ -1,14 +1,5 @@
 {
-"skeleton": {
-	"hash": "WeRINx7CJN3lxBJxmfYgoN3aWHU",
-	"spine": "3.8.75",
-	"x": -16,
-	"y": 21.63,
-	"width": 36,
-	"height": 14,
-	"images": "./images/",
-	"audio": "E:/Unity/DemonLordRoguelike/资源/生物/史莱姆"
-},
+"skeleton": { "hash": "qzsh3DBOuHqc7bT6NMk/dcXKUjw", "spine": "3.8.75", "images": "./images/", "audio": "E:/Unity/DemonLordRoguelike/资源/生物/史莱姆" },
 "bones": [
 	{ "name": "root" },
 	{ "name": "Pelvis", "parent": "root", "y": 7 },
@@ -26,6 +17,7 @@
 	{ "name": "Hat_7_Bg", "bone": "Hat", "attachment": "Hat_7_Bg" },
 	{ "name": "Hat_6_Bg", "bone": "Hat", "attachment": "Hat_6_Bg" },
 	{ "name": "Hat_2_Bg", "bone": "Hat", "attachment": "Hat_2_Bg" },
+	{ "name": "Body_0", "bone": "Body", "attachment": "Body_0" },
 	{ "name": "Body_1", "bone": "Body", "attachment": "Body_1" },
 	{ "name": "Body_2", "bone": "Body", "attachment": "Body_2" },
 	{ "name": "Body_3", "bone": "Body", "attachment": "Body_3" },
@@ -65,6 +57,14 @@
 	{ "name": "Hat_17", "bone": "Hat_NoAnim", "attachment": "Hat_17" }
 ],
 "skins": [
+	{
+		"name": "Body/Body_0",
+		"attachments": {
+			"Body_0": {
+				"Body_0": { "x": 5.5, "rotation": -90, "width": 30, "height": 25 }
+			}
+		}
+	},
 	{
 		"name": "Body/Body_1",
 		"attachments": {
@@ -454,7 +454,7 @@
 		"bones": {
 			"Body": {
 				"translate": [
-					{},
+					{ "x": 2 },
 					{ "time": 0.5, "y": 1.21 },
 					{ "time": 1 }
 				],

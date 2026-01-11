@@ -38,7 +38,10 @@ public class FightBeanForDoomCouncil : FightBean
         for (int i = 0; i < lineupCreature.Count; i++)
         {
             var itemLineupCreature = lineupCreature[i]; ;
-            dlDefenseCreatureData.Add(itemLineupCreature.creatureUUId, itemLineupCreature);
+            if (itemLineupCreature.creatureState == CreatureStateEnum.Idle)
+            {
+                dlDefenseCreatureData.Add(itemLineupCreature.creatureUUId, itemLineupCreature); 
+            }
         }
         //设置进攻生物数据 一波进攻
         fightAttackData = new FightAttackBean();

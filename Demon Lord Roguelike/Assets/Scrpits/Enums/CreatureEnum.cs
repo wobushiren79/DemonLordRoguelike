@@ -27,7 +27,8 @@ public enum CreatureStateEnum
 {
     Idle = 1,//闲置
     Fight = 2,//战斗中
-    Rest = 3,//战斗休息
+    Rest = 3,//战斗休息 
+    Vat = 4,//在VAT
 }
 
 public enum CreatureTypeEnum

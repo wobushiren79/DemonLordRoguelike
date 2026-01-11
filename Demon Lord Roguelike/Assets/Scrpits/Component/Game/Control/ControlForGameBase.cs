@@ -23,8 +23,21 @@ public class ControlForGameBase : BaseControl
     //控制的生物数据
     public CreatureBean creatureData;
 
-    public SkeletonAnimation controlTargetForCreatureSkeletonAnimation;
-    public SpineAnimationStateEnum controlTargetForCreatureAnim = SpineAnimationStateEnum.None;
+    protected SkeletonAnimation _skeletonAnimation;
+    public SkeletonAnimation skeletonAnimation
+    {
+        get
+        {
+            if (_skeletonAnimation != null)
+            {
+                return _skeletonAnimation;
+            }
+            var targetMove = GameControlHandler.Instance.manager.controlTargetForCreature;
+            _skeletonAnimation = targetMove.transform.Find("Renderer").GetComponent<SkeletonAnimation>();
+            return _skeletonAnimation;
+        }
+    }
+    public SpineAnimationStateEnum creatureAnimEnum = SpineAnimationStateEnum.None;
 
     //交互提示
     public GameObject controlTargetForInteraction;
@@ -84,21 +97,27 @@ public class ControlForGameBase : BaseControl
     }
 
     /// <summary>
+    /// 设置生物数据
+    /// </summary>
+    /// <param name="creatureData"></param>
+    public void SetCreatureData(CreatureBean creatureData)
+    {        
+        this.creatureData = creatureData;
+        //展示生物数据
+        CreatureHandler.Instance.SetCreatureData(skeletonAnimation, creatureData, isNeedWeapon : false);
+    }
+
+    /// <summary>
     /// 播放控制物体的动画
     /// </summary>
     /// <param name="animationCreatureState"></param>
     /// <param name="isLoop"></param>
     public void PlayAnimForControlTarget(SpineAnimationStateEnum animationCreatureState, bool isLoop = true)
     {
-        if (controlTargetForCreatureSkeletonAnimation == null)
+        if (creatureAnimEnum != animationCreatureState && skeletonAnimation != null)
         {
-            var targetMove = GameControlHandler.Instance.manager.controlTargetForCreature;
-            controlTargetForCreatureSkeletonAnimation = targetMove.transform.Find("Renderer").GetComponent<SkeletonAnimation>();
-        }
-        if (controlTargetForCreatureAnim != animationCreatureState && controlTargetForCreatureSkeletonAnimation != null)
-        {
-            SpineHandler.Instance.PlayAnim(controlTargetForCreatureSkeletonAnimation, animationCreatureState, creatureData, isLoop);
-            controlTargetForCreatureAnim = animationCreatureState;
+            SpineHandler.Instance.PlayAnim(skeletonAnimation, animationCreatureState, creatureData, isLoop);
+            creatureAnimEnum = animationCreatureState;
         }
     }
 
@@ -126,15 +145,15 @@ public class ControlForGameBase : BaseControl
                 targetMove.transform.position = targetPosition;
             }
 
-            Vector3 sizeOriginal = controlTargetForCreatureSkeletonAnimation.transform.localScale;
+            Vector3 sizeOriginal = skeletonAnimation.transform.localScale;
             float directionXSize = Mathf.Abs(sizeOriginal.x);
             if (moveData.x > 0)
             {
-                controlTargetForCreatureSkeletonAnimation.transform.localScale = new Vector3(directionXSize, sizeOriginal.y, sizeOriginal.z);
+                skeletonAnimation.transform.localScale = new Vector3(directionXSize, sizeOriginal.y, sizeOriginal.z);
             }
             else if (moveData.x < 0)
             {
-                controlTargetForCreatureSkeletonAnimation.transform.localScale = new Vector3(-directionXSize, sizeOriginal.y, sizeOriginal.z);
+                skeletonAnimation.transform.localScale = new Vector3(-directionXSize, sizeOriginal.y, sizeOriginal.z);
             }
             //播放动画
             PlayAnimForControlTarget(SpineAnimationStateEnum.Walk);

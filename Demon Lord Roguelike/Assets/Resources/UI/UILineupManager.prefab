@@ -537,6 +537,22 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6005574764444316949, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6005574764444316949, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6005574764444316949, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6005574764444316949, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7025548047179083026, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -557,6 +573,22 @@ PrefabInstance:
       propertyPath: tempCell
       value: 
       objectReference: {fileID: 5211133965412791379}
+    - target: {fileID: 9057836725689250340, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057836725689250340, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057836725689250340, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9057836725689250340, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -791,6 +823,7 @@ MonoBehaviour:
       relationship: 0
       creatureNpcData:
         npcId: 0
+      creatureState: 1
     cardUseState: 0
     cardState: 0
     originalCardPos: {x: 0, y: 0}

@@ -13,7 +13,9 @@ public partial class UICreatureManager
 
     public UIViewCreatureCardEquipDetails ui_UIViewCreatureCardEquipDetails;
 
-    public Button ui_BtnStarLevelUp;
+    public Button ui_BtnLevelUpSacrifice_Button;
+
+    public PopupButtonCommonView ui_BtnLevelUpSacrifice_PopupButtonCommonView;
 
 
 }

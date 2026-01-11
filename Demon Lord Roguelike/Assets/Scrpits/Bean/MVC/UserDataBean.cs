@@ -330,18 +330,35 @@ public class UserDataBean : BaseBean
     /// <summary>
     /// 移除阵容生物
     /// </summary>
-    public bool RemoveLineupCreature(int lineupIndex, string creatureId)
+    public bool RemoveLineupCreature(int lineupIndex, string creatureUUId)
     {
-        if (dicLineupCreature.TryGetValue(lineupIndex, out List<string> listCreatureId))
+        if (dicLineupCreature.TryGetValue(lineupIndex, out List<string> listCreatureUUId))
         {
-            if (listCreatureId.Contains(creatureId))
+            if (listCreatureUUId.Contains(creatureUUId))
             {
-                listCreatureId.Remove(creatureId);
+                listCreatureUUId.Remove(creatureUUId);
                 return true;
             }
             else
             {
                 return false;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 移除阵容生物
+    /// </summary>
+    public bool RemoveLineupCreature(string creatureUUId)
+    {
+        foreach (var item in dicLineupCreature)
+        {
+            var listCreatureUUId = item.Value;
+            if (listCreatureUUId.Contains(creatureUUId))
+            {
+                listCreatureUUId.Remove(creatureUUId);
+                return true;
             }
         }
         return false;
@@ -385,6 +402,17 @@ public class UserDataBean : BaseBean
     public void AddBackpackCreature(CreatureBean creatureData)
     {
         listBackpackCreature.Add(creatureData);
+    }
+
+    public void RemoveBackpackCreature(CreatureBean creatureData)
+    {
+        //背包删除
+        if (listBackpackCreature.Contains(creatureData))
+        {
+            listBackpackCreature.Remove(creatureData);
+        }
+        //阵容删除
+        RemoveLineupCreature(creatureData.creatureUUId);
     }
 
     /// <summary>

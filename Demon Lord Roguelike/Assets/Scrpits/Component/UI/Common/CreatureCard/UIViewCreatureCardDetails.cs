@@ -171,7 +171,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         ui_LevelText.text = string.Format(TextHandler.Instance.GetTextById(1001001), level);
         var levelInfo = LevelInfoCfg.GetItemData(level + 1);
         //如果没有下一级的数据了
-        if (levelInfo.id == 0)
+        if (levelInfo == null || levelInfo.id == 0)
         {
             ui_LevelProgressData.fillAmount = 1;
         }

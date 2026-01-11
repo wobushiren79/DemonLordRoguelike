@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 
 [Serializable]
 public class UserAscendBean
@@ -48,8 +49,14 @@ public class UserAscendBean
     /// </summary>
     public void RemoveAscendData(int index)
     {
-        if (dicAscendData.ContainsKey(index))
+        if (dicAscendData.TryGetValue(index, out var targetData))
         {
+            var userData = GameDataHandler.Instance.manager.GetUserData();
+            var targetCreature = userData.GetBackpackCreature(targetData.creatureUUId);
+            if (targetCreature != null)
+            {
+                targetCreature.creatureState = CreatureStateEnum.Idle;
+            }
             dicAscendData.Remove(index);
         }
         else

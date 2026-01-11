@@ -78,7 +78,7 @@ public partial class UIBaseResearch : BaseUIComponent, IRadioGroupCallBack
         ui_Content.transform.localScale = clampedPosition;
     }
 
-    public void InitResearchItems(ResearchInfoTypeEnum researchInfoType)
+    public void InitResearchItems(ResearchInfoTypeEnum researchInfoType,bool isInitContentPos = false)
     {        
         this.researchInfoType = researchInfoType;
         ClearData(false);
@@ -94,6 +94,10 @@ public partial class UIBaseResearch : BaseUIComponent, IRadioGroupCallBack
                 CreateLine(itemData);
             }
         });
+        if (isInitContentPos)
+        {
+            ui_Content.anchoredPosition = Vector2.zero;
+        }
     }
 
     /// <summary>
@@ -285,15 +289,15 @@ public partial class UIBaseResearch : BaseUIComponent, IRadioGroupCallBack
     {
         if (rbview == ui_UIViewCommonLabel_Building)
         {
-            InitResearchItems(ResearchInfoTypeEnum.Building);
+            InitResearchItems(ResearchInfoTypeEnum.Building, true);
         }
         else if (rbview == ui_UIViewCommonLabel_Strengthen)
         {
-            InitResearchItems(ResearchInfoTypeEnum.Strengthen);
+            InitResearchItems(ResearchInfoTypeEnum.Strengthen, true);
         }
         else if (rbview == ui_UIViewCommonLabel_Creature)
         {
-            InitResearchItems(ResearchInfoTypeEnum.Creature);
+            InitResearchItems(ResearchInfoTypeEnum.Creature, true);
         }
     }
 

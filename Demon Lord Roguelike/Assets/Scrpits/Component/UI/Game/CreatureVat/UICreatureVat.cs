@@ -41,10 +41,12 @@ public partial class UICreatureVat : BaseUIComponent
         this.RegisterEvent(EventsInfo.CreatureAscend_AddProgress, EventForRefreshVatProgress);
 
         //场景实例
-        var scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForBase>(GameSceneTypeEnum.BaseGaming);
+        scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForBase>(GameSceneTypeEnum.BaseGaming);
         //获取摄像头
         GameControlHandler.Instance.SetBaseControl(false);
         vatCamera = CameraHandler.Instance.SetCreatureVatCamera(int.MaxValue, true);
+        //关闭远景
+        VolumeHandler.Instance.SetDepthOfFieldActive(false);
         //设置数据
         SetCurrentVat(0);
         RefreshVatState();
@@ -60,6 +62,8 @@ public partial class UICreatureVat : BaseUIComponent
         ui_UIViewCreatureCardList_Material.CloseUI();
         //设置展示vat
         scenePrefab.BuildingVatShow(-1);
+        //关闭远景
+        VolumeHandler.Instance.SetDepthOfFieldActive(true);
     }
 
     /// <summary>
@@ -149,8 +153,11 @@ public partial class UICreatureVat : BaseUIComponent
     {
         listTargetCreatureShow.Clear();
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        UserAscendBean userAscend = userData.GetUserAscendData();
         userData.listBackpackCreature.ForEach((int index, CreatureBean creatureData) =>
         {
+            if (creatureData.creatureState != CreatureStateEnum.Idle)
+                return;
             listTargetCreatureShow.Add(creatureData);
         });
         ui_UIViewCreatureCardList_Target.SetData(listTargetCreatureShow, CardUseStateEnum.CreatureAscendTarget, OnCellChangeForBackpackCreatureTarget);
@@ -165,10 +172,11 @@ public partial class UICreatureVat : BaseUIComponent
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         userData.listBackpackCreature.ForEach((int index, CreatureBean creatureData) =>
         {
-            if (creatureData != targetCreatureSelect)
-            {
-                listMaterialCreatureShow.Add(creatureData);
-            }
+            if (creatureData == targetCreatureSelect)
+                return;
+            if (creatureData.creatureState != CreatureStateEnum.Idle)
+                return;
+            listMaterialCreatureShow.Add(creatureData);
         });
         ui_UIViewCreatureCardList_Material.SetData(listMaterialCreatureShow, CardUseStateEnum.CreatureAscendMaterial, OnCellChangeForBackpackCreatureMaterial);
     }
@@ -279,23 +287,47 @@ public partial class UICreatureVat : BaseUIComponent
             UIHandler.Instance.ToastHintText(hintStr);
             return;
         }
-        //先关闭UI
-        UIHandler.Instance.ShowScreenLock();
-        gameObject.SetActive(false);
-        Action actionForAnimEnd = () =>
+        DialogBean dialogData = new DialogBean();
+        string materialCreatureName = "";
+        for (int i = 0; i < listMaterialCreatureSelect.Count; i++)
         {
-            UIHandler.Instance.HideScreenLock();
-            gameObject.SetActive(true);
-            //设置数据
-            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-            UserAscendBean userAscend = userData.GetUserAscendData();
-            userAscendDetails = userAscend.AddAscendData(currentIndexVat, targetCreatureSelect);
+            materialCreatureName += $"{listMaterialCreatureSelect[i].creatureName} ";
+        }
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(80010), materialCreatureName, targetCreatureSelect.creatureName);
+        dialogData.actionSubmit = (view, data) =>
+        {
+            //先关闭UI
+            UIHandler.Instance.ShowScreenLock();
+            gameObject.SetActive(false);
+            Action actionForAnimEnd = () =>
+            {
+                UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+                UserAscendBean userAscend = userData.GetUserAscendData();
 
-            //刷新状态
-            RefreshVatState();
-            RefreshVatProgress();
+                for (int i = 0; i < listMaterialCreatureSelect.Count; i++)
+                {
+                    var itemCreatureData = listMaterialCreatureSelect[i];
+                    //脱掉所有素材生物的装备
+                    itemCreatureData.RemoveAllEquipToBackpack();
+                    //删除素材生物
+                    userData.RemoveBackpackCreature(itemCreatureData);
+                }
+                //设置生物状态
+                targetCreatureSelect.creatureState = CreatureStateEnum.Vat;
+                //设置数据
+                userAscendDetails = userAscend.AddAscendData(currentIndexVat, targetCreatureSelect);
+                //保存数据
+                GameDataHandler.Instance.manager.SaveUserData();
+                //解锁UI锁定
+                UIHandler.Instance.HideScreenLock();
+                gameObject.SetActive(true);
+                //刷新状态
+                RefreshVatState();
+                RefreshVatProgress();
+            };
+            scenePrefab.BuildingVatAnimForStart(targetVat, targetCreatureSelect, listMaterialCreatureSelect, actionForAnimEnd);
         };
-        scenePrefab.BuildingVatAnimForStart(targetVat, targetCreatureSelect,listMaterialCreatureSelect, actionForAnimEnd);
+        UIHandler.Instance.ShowDialogNormal(dialogData);
     }
 
     /// <summary>

@@ -19,6 +19,8 @@ public partial class UICreatureManager : BaseUIComponent
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForCardClickSelect);
         this.RegisterEvent<UIViewItemBackpack>(EventsInfo.UIViewItemBackpack_OnClickSelect, EventForItemBackpackClickSelect);
         this.RegisterEvent<UIViewItemEquip>(EventsInfo.UIViewItemEquip_OnClickSelect, EventForItemEquipClickSelect);
+
+        ui_BtnLevelUpSacrifice_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(60000), PopupEnum.Text);
     }
 
     public override void CloseUI()
@@ -36,7 +38,7 @@ public partial class UICreatureManager : BaseUIComponent
         {
             OnClickForExit();
         }
-        else if (viewButton == ui_BtnStarLevelUp)
+        else if (viewButton == ui_BtnLevelUpSacrifice_Button)
         {
             OnClickForCreatureSacrifice();
         }
@@ -80,6 +82,20 @@ public partial class UICreatureManager : BaseUIComponent
         this.selectCreatureIndex = indexSelect;
         ui_UIViewCreatureCardEquipDetails.SetData(creatureData);
         ui_UIViewCreatureCardList.RefreshAllCard();
+
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlock = userData.GetUserUnlockData();
+
+        //设置是否能献祭
+        ui_BtnLevelUpSacrifice_Button.gameObject.SetActive(false);
+        if (userUnlock.CheckIsUnlock(UnlockEnum.Altar))
+        {
+            var levelInfo = LevelInfoCfg.GetItemData(creatureData.level + 1);
+            if (levelInfo != null && levelInfo.id > 0 && creatureData.levelExp >= long.Parse(levelInfo.level_exp))
+            {
+                ui_BtnLevelUpSacrifice_Button.gameObject.SetActive(true);
+            }
+        }
     }
 
     /// <summary>

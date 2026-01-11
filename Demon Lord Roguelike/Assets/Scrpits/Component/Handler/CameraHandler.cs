@@ -104,16 +104,11 @@ public partial class CameraHandler
         mainCamera.gameObject.SetActive(true);
         //设置控制数据
         var controlForGame = GameControlHandler.Instance.manager.controlForGameBase;
-        controlForGame.creatureData = creatureData;
-        
+        //设置生物显示
+        controlForGame.SetCreatureData(creatureData);
         var controlTarget = GameControlHandler.Instance.manager.controlTargetForCreature;
-        var targetRenderer = controlTarget.transform.Find("Renderer");
-        var targetSkeletonAnimation = targetRenderer.GetComponent<SkeletonAnimation>();
-
-        //展示生物数据
-        CreatureHandler.Instance.SetCreatureData(targetSkeletonAnimation, creatureData, isNeedWeapon : false);
         //初始化位置
-        controlTarget.transform.position = startPosition; 
+        GameControlHandler.Instance.manager.controlTargetForCreature.transform.position = startPosition; 
 
         //关闭切换动画
         manager.SetMainCameraDefaultBlend(0);
@@ -125,7 +120,7 @@ public partial class CameraHandler
         manager.cm_Base.PreviousStateIsValid = false;
         await new WaitNextFrame();
         //设置偏转
-        ChangeAngleForCamera(targetRenderer.transform);
+        ChangeAngleForCamera(controlForGame.skeletonAnimation.transform);
     }
 
     /// <summary>

@@ -1,320 +1,327 @@
 
 Slime.png
-size: 62,465
+size: 205,142
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
+Body_0
+  rotate: false
+  xy: 65, 85
+  size: 30, 25
+  orig: 30, 25
+  offset: 0, 0
+  index: -1
 Body_1
   rotate: false
-  xy: 2, 231
+  xy: 29, 48
   size: 30, 25
   orig: 30, 25
   offset: 0, 0
   index: -1
 Body_10
   rotate: false
-  xy: 2, 96
+  xy: 129, 28
   size: 30, 25
   orig: 30, 25
   offset: 0, 0
   index: -1
 Body_2
-  rotate: true
-  xy: 34, 204
+  rotate: false
+  xy: 29, 21
   size: 30, 25
   orig: 30, 25
   offset: 0, 0
   index: -1
 Body_3
   rotate: false
-  xy: 2, 204
+  xy: 65, 58
   size: 30, 25
   orig: 30, 25
   offset: 0, 0
   index: -1
 Body_4
   rotate: false
-  xy: 2, 177
+  xy: 97, 60
   size: 30, 25
   orig: 30, 25
   offset: 0, 0
   index: -1
 Body_5
-  rotate: true
-  xy: 34, 172
+  rotate: false
+  xy: 61, 31
   size: 30, 25
   orig: 30, 25
   offset: 0, 0
   index: -1
 Body_6
   rotate: false
-  xy: 2, 150
+  xy: 64, 4
   size: 30, 25
   orig: 30, 25
   offset: 0, 0
   index: -1
 Body_7
-  rotate: true
-  xy: 34, 140
+  rotate: false
+  xy: 97, 33
   size: 30, 25
   orig: 30, 25
   offset: 0, 0
   index: -1
 Body_8
   rotate: false
-  xy: 2, 123
+  xy: 96, 6
   size: 30, 25
   orig: 30, 25
   offset: 0, 0
   index: -1
 Body_9
   rotate: true
-  xy: 34, 108
+  xy: 129, 55
   size: 30, 25
   orig: 30, 25
   offset: 0, 0
   index: -1
 Eye_1
   rotate: true
-  xy: 55, 283
+  xy: 198, 24
   size: 9, 5
   orig: 9, 5
   offset: 0, 0
   index: -1
 Eye_10
-  rotate: false
-  xy: 38, 301
+  rotate: true
+  xy: 196, 124
   size: 16, 7
   orig: 16, 7
   offset: 0, 0
   index: -1
 Eye_2
-  rotate: false
-  xy: 41, 364
+  rotate: true
+  xy: 93, 37
   size: 19, 2
   orig: 19, 2
   offset: 0, 0
   index: -1
 Eye_3
-  rotate: true
-  xy: 49, 10
+  rotate: false
+  xy: 141, 89
   size: 13, 7
   orig: 13, 7
   offset: 0, 0
   index: -1
 Eye_4
   rotate: true
-  xy: 54, 236
+  xy: 200, 56
   size: 14, 3
   orig: 14, 3
   offset: 0, 0
   index: -1
 Eye_5
-  rotate: true
-  xy: 38, 285
+  rotate: false
+  xy: 160, 9
   size: 14, 15
   orig: 14, 15
   offset: 0, 0
   index: -1
 Eye_6
   rotate: false
-  xy: 49, 25
+  xy: 192, 35
   size: 11, 7
   orig: 11, 7
   offset: 0, 0
   index: -1
 Eye_7
   rotate: true
-  xy: 56, 294
+  xy: 192, 19
   size: 14, 4
   orig: 14, 4
   offset: 0, 0
   index: -1
 Eye_8
-  rotate: true
-  xy: 54, 252
+  rotate: false
+  xy: 128, 6
   size: 13, 4
   orig: 13, 4
   offset: 0, 0
   index: -1
 Eye_9
   rotate: true
-  xy: 54, 267
+  xy: 133, 87
   size: 14, 6
   orig: 14, 6
   offset: 0, 0
   index: -1
 Hat_1
-  rotate: false
-  xy: 2, 408
+  rotate: true
+  xy: 2, 36
   size: 38, 25
   orig: 38, 25
   offset: 0, 0
   index: -1
 Hat_10
   rotate: false
-  xy: 2, 435
+  xy: 65, 112
   size: 38, 28
   orig: 38, 28
   offset: 0, 0
   index: -1
 Hat_11
-  rotate: false
-  xy: 33, 65
+  rotate: true
+  xy: 161, 26
   size: 27, 11
   orig: 27, 11
   offset: 0, 0
   index: -1
 Hat_12
   rotate: false
-  xy: 40, 322
+  xy: 156, 73
   size: 20, 23
   orig: 20, 23
   offset: 0, 0
   index: -1
 Hat_13
-  rotate: false
-  xy: 2, 283
+  rotate: true
+  xy: 38, 75
   size: 34, 25
   orig: 34, 25
   offset: 0, 0
   index: -1
 Hat_14
   rotate: false
-  xy: 33, 2
+  xy: 176, 2
   size: 14, 14
   orig: 14, 14
   offset: 0, 0
   index: -1
 Hat_15
   rotate: false
-  xy: 2, 345
+  xy: 105, 103
   size: 36, 14
   orig: 36, 14
   offset: 0, 0
   index: -1
 Hat_16
-  rotate: true
-  xy: 41, 347
+  rotate: false
+  xy: 156, 55
   size: 15, 16
   orig: 15, 16
   offset: 0, 0
   index: -1
 Hat_16_Bg
-  rotate: true
-  xy: 42, 391
+  rotate: false
+  xy: 46, 2
   size: 16, 17
   orig: 16, 17
   offset: 0, 0
   index: -1
 Hat_17
   rotate: false
-  xy: 34, 78
+  xy: 173, 57
   size: 25, 13
   orig: 25, 13
   offset: 0, 0
   index: -1
 Hat_17_Bg
-  rotate: false
-  xy: 38, 310
+  rotate: true
+  xy: 184, 118
   size: 22, 10
   orig: 22, 10
   offset: 0, 0
   index: -1
 Hat_18_Bg
   rotate: false
-  xy: 42, 368
+  xy: 174, 34
   size: 16, 21
   orig: 16, 21
   offset: 0, 0
   index: -1
 Hat_19_Bg
   rotate: true
-  xy: 33, 34
+  xy: 180, 87
   size: 29, 23
   orig: 29, 23
   offset: 0, 0
   index: -1
 Hat_2
-  rotate: false
-  xy: 2, 258
+  rotate: true
+  xy: 2, 2
   size: 32, 23
   orig: 32, 23
   offset: 0, 0
   index: -1
 Hat_20_Bg
   rotate: false
-  xy: 42, 409
+  xy: 27, 2
   size: 17, 17
   orig: 17, 17
   offset: 0, 0
   index: -1
 Hat_2_Bg
   rotate: false
-  xy: 34, 93
+  xy: 178, 72
   size: 25, 13
   orig: 25, 13
   offset: 0, 0
   index: -1
 Hat_3
-  rotate: true
-  xy: 42, 428
+  rotate: false
+  xy: 143, 98
   size: 35, 18
   orig: 35, 18
   offset: 0, 0
   index: -1
 Hat_4
   rotate: false
-  xy: 2, 80
+  xy: 128, 12
   size: 30, 14
   orig: 30, 14
   offset: 0, 0
   index: -1
 Hat_5
-  rotate: true
-  xy: 2, 17
+  rotate: false
+  xy: 2, 111
   size: 61, 29
   orig: 61, 29
   offset: 0, 0
   index: -1
 Hat_6
   rotate: false
-  xy: 2, 385
+  xy: 105, 119
   size: 38, 21
   orig: 38, 21
   offset: 0, 0
   index: -1
 Hat_6_Bg
-  rotate: true
-  xy: 38, 249
+  rotate: false
+  xy: 97, 87
   size: 34, 14
   orig: 34, 14
   offset: 0, 0
   index: -1
 Hat_7
   rotate: false
-  xy: 33, 18
+  xy: 176, 18
   size: 14, 14
   orig: 14, 14
   offset: 0, 0
   index: -1
 Hat_7_Bg
-  rotate: false
-  xy: 34, 236
+  rotate: true
+  xy: 192, 44
   size: 10, 11
   orig: 10, 11
   offset: 0, 0
   index: -1
 Hat_8
   rotate: false
-  xy: 2, 310
+  xy: 2, 76
   size: 34, 33
   orig: 34, 33
   offset: 0, 0
   index: -1
 Hat_9
   rotate: false
-  xy: 2, 361
+  xy: 145, 118
   size: 37, 22
   orig: 37, 22
   offset: 0, 0

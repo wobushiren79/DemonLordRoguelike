@@ -570,6 +570,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: ViewBaseCoreItemFunction_Vat
       objectReference: {fileID: 0}
+    - target: {fileID: 4676161509213193462, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6915073408995454095, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5

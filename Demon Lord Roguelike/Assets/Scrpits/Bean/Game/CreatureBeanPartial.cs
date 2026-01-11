@@ -7,10 +7,6 @@ public partial class CreatureBean
     [NonSerialized]
     public int order;//排序
 
-    [Newtonsoft.Json.JsonIgnore]
-    [NonSerialized]
-    //生物状态 默认闲置
-    public CreatureStateEnum creatureState = CreatureStateEnum.Idle;
 
     [Newtonsoft.Json.JsonIgnore]
     [NonSerialized]

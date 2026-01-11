@@ -18,15 +18,15 @@ public class DoomCouncilEntityReincarnation : DoomCouncilBaseEntity
             userData.selfCreature.RemoveAllEquipToBackpack();
             //设置魔王
             userData.selfCreature.ClearSkin();
-            //设置魔王皮肤 
-            List<long> listSkin = new List<long>();
-            foreach (var itemSkin in selectCreatureData.dicSkinData)
-            {
-                listSkin.Add(itemSkin.Value.skinId);
-            }
             //设置魔王
             userData.selfCreature.creatureId = selectCreatureData.creatureId;
-            userData.selfCreature.InitSkin(listSkin);
+            userData.selfCreature.ClearSkin();
+            userData.selfCreature.AddSkinForBase();
+            //设置魔王皮肤 
+            foreach (var itemSkin in selectCreatureData.dicSkinData)
+            {
+                userData.selfCreature.AddSkin(itemSkin.Value);
+            }
             //保存数据
             GameDataHandler.Instance.manager.SaveUserData(userData);
             //弹出提示

@@ -58,8 +58,11 @@ public class FightBeanForConquer : FightBean
         var lineupCreature = userData.GetLineupCreature(1);
         for (int i = 0; i < lineupCreature.Count; i++)
         {
-            var itemLineupCreature = lineupCreature[i]; ;
-            dlDefenseCreatureData.Add(itemLineupCreature.creatureUUId, itemLineupCreature);
+            var itemLineupCreature = lineupCreature[i];
+            if (itemLineupCreature.creatureState == CreatureStateEnum.Idle)
+            {
+                dlDefenseCreatureData.Add(itemLineupCreature.creatureUUId, itemLineupCreature); 
+            }
         }
         
         //设置战斗场景ID

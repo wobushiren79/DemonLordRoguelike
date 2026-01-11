@@ -184,10 +184,12 @@ public class ScenePrefabForBase : ScenePrefabBase
     #endregion
 
     #region Vat相关
+
     /// <summary>
     /// 刷新建筑容器
     /// </summary>
-    public void BuildingVatRefresh()
+    /// <param name="refeshState">刷新状态 0：刷新所有 1只刷新有进度的</param>
+    public void BuildingVatRefresh(int refeshState = 0)
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UserAscendBean userAscend = userData.GetUserAscendData();
@@ -221,14 +223,27 @@ public class ScenePrefabForBase : ScenePrefabBase
             {
                 itemVat.gameObject.SetActive(true);
                 var itemAscendDetails = userAscend.GetAscendData(i);
-                if (itemAscendDetails != null)
+                //所有刷新
+                if (refeshState == 0)
                 {
-                    var creatureData = userData.GetBackpackCreature(itemAscendDetails.creatureUUId);
-                    BuildingVatSetState(itemVat, 3, creatureData, itemAscendDetails.progress);
+                    if (itemAscendDetails != null)
+                    {
+                        var creatureData = userData.GetBackpackCreature(itemAscendDetails.creatureUUId);
+                        BuildingVatSetState(itemVat, 3, creatureData, itemAscendDetails.progress);
+                    }
+                    else
+                    {
+                        BuildingVatSetState(itemVat, 0, null);
+                    }
                 }
-                else
+                //只刷新有进度的
+                else if (refeshState == 1)
                 {
-                    BuildingVatSetState(itemVat, 0, null);
+                    if (itemAscendDetails != null)
+                    {
+                        var creatureData = userData.GetBackpackCreature(itemAscendDetails.creatureUUId);
+                        BuildingVatSetState(itemVat, 3, creatureData, itemAscendDetails.progress);
+                    }
                 }
             }
             else
@@ -294,8 +309,8 @@ public class ScenePrefabForBase : ScenePrefabBase
         Animator vatAnim = targetVat.GetComponent<Animator>();
         Transform tfWater = targetVat.Find("Water");
         MeshRenderer renderWater = targetVat.Find("Water/Water").GetComponent<MeshRenderer>();
-        Transform tfCreature = targetVat.Find("Creature");
-        SkeletonAnimation skeletonAnimation = tfCreature.GetComponent<SkeletonAnimation>();
+        Transform tfCreature = targetVat.Find("CreatureObj");
+        SkeletonAnimation skeletonAnimation = tfCreature.GetComponentInChildren<SkeletonAnimation>();
         switch (state)
         {
             case 0:
@@ -313,14 +328,14 @@ public class ScenePrefabForBase : ScenePrefabBase
                 tfCreature.gameObject.SetActive(true);
                 vatAnim.SetInteger("State", 1);
 
-                CreatureHandler.Instance.SetCreatureData(skeletonAnimation, creatureData);
+                CreatureHandler.Instance.SetCreatureData(skeletonAnimation, creatureData, isNeedEquip: false, isNeedWeapon: false);
                 break;
             case 3:
                 tfWater.gameObject.SetActive(true);
                 tfCreature.gameObject.SetActive(true);
                 vatAnim.SetInteger("State", 0);
 
-                CreatureHandler.Instance.SetCreatureData(skeletonAnimation, creatureData);
+                CreatureHandler.Instance.SetCreatureData(skeletonAnimation, creatureData, isNeedEquip: false, isNeedWeapon: false);
                 renderWater.material.SetFloat("_WaterLevel", 1);
                 if (progress != -1)
                 {
@@ -344,7 +359,7 @@ public class ScenePrefabForBase : ScenePrefabBase
         Animator vatAnim = targetVat.GetComponent<Animator>();
         vatAnim.SetInteger("State", 1);
 
-        Transform tfCreature = targetVat.Find("Creature");
+        Transform tfCreature = targetVat.Find("CreatureObj");
         tfCreature.gameObject.SetActive(true);
 
         Transform tfWater = targetVat.Find("Water");
@@ -370,17 +385,19 @@ public class ScenePrefabForBase : ScenePrefabBase
                 var itemCreatureData = listMaterialCreatureData[i];
                 var targetCreatureObj = Instantiate(gameObject, objVatMaterialCreature);
                 targetCreatureObj.SetActive(false);
-                float delayShowTime = UnityEngine.Random.Range(0f, animTimeAddCreature * 0.9f);
+                float delayShowTime = UnityEngine.Random.Range(0f, animTimeAddCreature * 0.1f);
                 DOVirtual.DelayedCall(delayShowTime, () =>
                 {
                     //设置生物样子      
                     SkeletonAnimation skeletonAnimation = targetCreatureObj.GetComponentInChildren<SkeletonAnimation>();
-                    CreatureHandler.Instance.SetCreatureData(skeletonAnimation, itemCreatureData);
+                    CreatureHandler.Instance.SetCreatureData(skeletonAnimation, itemCreatureData, isNeedEquip: false, isNeedWeapon: false);
                     targetCreatureObj.SetActive(true);
                     //设置生物位置
-                    Vector3 startPosition = tfCreature.position + new Vector3(UnityEngine.Random.Range(-1.5f, 1.5f), 1, UnityEngine.Random.Range(0.5f, 1.5f));
+                    float randomX = UnityEngine.Random.Range(0, 2) == 0 ? -1f : 1f;
+                    float randomY = UnityEngine.Random.Range(1f, 1.5f);
+                    Vector3 startPosition = tfCreature.position + new Vector3(randomX, randomY, 0);
                     targetCreatureObj.transform.position = startPosition;
-                    targetCreatureObj.transform.localScale = Vector3.one;
+                    targetCreatureObj.transform.localScale = Vector3.one * 0.8f;
                     targetCreatureObj.transform.eulerAngles = new Vector3(0, 0, UnityEngine.Random.Range(0, 360));
                     Sequence itemJumAnim = DOTween.Sequence();
 
@@ -394,8 +411,8 @@ public class ScenePrefabForBase : ScenePrefabBase
                         // 在每帧更新时执行的操作
                         skeletonAnimation.skeleton.SetColor(startColor);
                     });
-                    itemJumAnim.Append(targetCreatureObj.transform.DOJump(tfCreature.position + new Vector3(0, -0.15f, 0), 1.5f, 1, timeAnimJump));
-                    itemJumAnim.Join(targetCreatureObj.transform.DOScale(Vector3.one * 0.75f, timeAnimJump));
+                    itemJumAnim.Append(targetCreatureObj.transform.DOJump(tfCreature.position + new Vector3(0, 0.5f, 0), 1.75f, 1, timeAnimJump));
+                    itemJumAnim.Join(targetCreatureObj.transform.DOScale(Vector3.one * 0.2f, timeAnimJump));
                     itemJumAnim.Join(targetCreatureObj.transform.DORotate(new Vector3(0, 0, 360), timeAnimJump, RotateMode.WorldAxisAdd));
                     itemJumAnim.OnComplete(() =>
                     {
@@ -475,7 +492,7 @@ public class ScenePrefabForBase : ScenePrefabBase
     /// </summary>
     public void EventForCreatureAscendAddProgress()
     {
-        BuildingVatRefresh();
+        BuildingVatRefresh(1);
     }
 
     #endregion
