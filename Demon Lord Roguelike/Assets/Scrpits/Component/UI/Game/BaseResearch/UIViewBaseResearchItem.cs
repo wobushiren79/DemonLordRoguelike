@@ -4,6 +4,7 @@ using Unity.Burst.Intrinsics;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 
 public partial class UIViewBaseResearchItem : BaseUIView
 {
@@ -143,7 +144,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
                 return;
             }
             //添加解锁ID
-            userData.GetUserUnlockData().AddUnlock(researchInfo.unlock_id + level);
+            userUnlock.AddUnlock(researchInfo.unlock_id, level + 1);
             //播放解锁动画
             AnimForUnlock();
         };

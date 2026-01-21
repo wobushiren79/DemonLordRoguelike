@@ -53,7 +53,15 @@ public class LauncherTest : BaseLauncher
         var allUnlockInfo = UnlockInfoCfg.GetAllArrayData();
         allUnlockInfo.ForEach((index,value) =>
         {
-            userUnlockData.AddUnlock(value.id);
+            var researchInfo = ResearchInfoCfg.GetItemDataByUnlockId(value.id);
+            if (researchInfo == null)
+            {
+                userUnlockData.AddUnlock(value.id);
+            }
+            else
+            {
+                userUnlockData.AddUnlock(value.id, researchInfo.level_max);
+            }
         });
     }
 

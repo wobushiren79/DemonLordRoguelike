@@ -12,23 +12,8 @@ public partial class CreatureInfoBean
     protected bool isInitAttackStartPosition = false;
     protected Vector3 attackStartPosition;
     //生物buff
-   protected long[] creatureBuffArray;
-    public int GetHP()
-    {
-        return HP * 10;
-    }
-    public int GetHPOrigin()
-    {
-        return HP;
-    }
-    public int GetDR()
-    {
-        return DR * 10;
-    }
-    public int GetDROrigin()
-    {
-        return DR;
-    }
+    protected long[] creatureBuffArray;
+
     public CreatureTypeEnum GetCreatureType()
     {
         return (CreatureTypeEnum)creature_type;

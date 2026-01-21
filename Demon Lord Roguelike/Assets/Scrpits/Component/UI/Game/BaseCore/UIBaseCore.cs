@@ -64,7 +64,7 @@ public partial class UIBaseCore : BaseUIComponent
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
-        bool isUnlockVat = userUnlock.CheckIsUnlock(UnlockEnum.CreatureVatAdd1);
+        bool isUnlockVat = userUnlock.CheckIsUnlock(UnlockEnum.CreatureVat);
         ui_ViewBaseCoreItemFunction_Vat.gameObject.SetActive(isUnlockVat);
     }
 

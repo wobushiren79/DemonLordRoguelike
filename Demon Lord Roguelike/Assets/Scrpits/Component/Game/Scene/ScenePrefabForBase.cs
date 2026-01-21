@@ -194,20 +194,8 @@ public class ScenePrefabForBase : ScenePrefabBase
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UserAscendBean userAscend = userData.GetUserAscendData();
         UserUnlockBean userUnlock = userData.GetUserUnlockData();
-        int showVatNum = 0;
-        //解锁id 10000001-10000006 一共6个
-        if (userUnlock.CheckIsUnlock(UnlockEnum.CreatureVatAdd1))
-            showVatNum++;
-        if (userUnlock.CheckIsUnlock(UnlockEnum.CreatureVatAdd2))
-            showVatNum++;
-        if (userUnlock.CheckIsUnlock(UnlockEnum.CreatureVatAdd3))
-            showVatNum++;
-        if (userUnlock.CheckIsUnlock(UnlockEnum.CreatureVatAdd4))
-            showVatNum++;
-        if (userUnlock.CheckIsUnlock(UnlockEnum.CreatureVatAdd5))
-            showVatNum++;
-        if (userUnlock.CheckIsUnlock(UnlockEnum.CreatureVatAdd6))
-            showVatNum++;
+        //需要展示的容器数量
+        int showVatNum = userUnlock.GetUnlockCreatureVatNum();
         if (showVatNum > 0)
         {
             objBuildingVat.gameObject.SetActive(true);
@@ -216,6 +204,7 @@ public class ScenePrefabForBase : ScenePrefabBase
         {
             objBuildingVat.gameObject.SetActive(false);
         }
+
         for (int i = 0; i < objBuildingVat.transform.childCount; i++)
         {
             var itemVat = objBuildingVat.transform.GetChild(i);
@@ -474,14 +463,13 @@ public class ScenePrefabForBase : ScenePrefabBase
                 taskRefresh = RefreshScene();
                 taskAnimShow = AnimForBuildingDoomCouncilShow(timeForShow);
                 break;
-            case UnlockEnum.CreatureVatAdd1:
-            case UnlockEnum.CreatureVatAdd2:
-            case UnlockEnum.CreatureVatAdd3:
-            case UnlockEnum.CreatureVatAdd4:
-            case UnlockEnum.CreatureVatAdd5:
-            case UnlockEnum.CreatureVatAdd6:
+            case UnlockEnum.CreatureVat:
+            case UnlockEnum.CreatureVatAdd:
                 taskRefresh = RefreshScene();
-                int targetIndexVat = (int)(unlockId - (long)UnlockEnum.CreatureVatAdd1);
+                UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+                UserUnlockBean userUnlock = userData.GetUserUnlockData();
+                int showVatNum = userUnlock.GetUnlockCreatureVatNum();
+                int targetIndexVat = showVatNum - 1;
                 taskAnimShow = AnimForBuildingVatShow(timeForShow, targetIndexVat);
                 break;
         }

@@ -139,21 +139,26 @@ public enum TriggerTypeDoomCouncilEntityEnum
 /// </summary>
 public enum UnlockEnum : long
 {
-    CreatureVatAdd1 = 100000000,//生物进阶
-    CreatureVatAdd2 = 100000001,//生物进阶设置+1;
-    CreatureVatAdd3 = 100000002,//生物进阶设置+1;
-    CreatureVatAdd4 = 100000003,//生物进阶设置+1;
-    CreatureVatAdd5 = 100000004,//生物进阶设置+1;
-    CreatureVatAdd6 = 100000005,//生物进阶设置+1;
+    CreatureVat = 100000000,//生物进阶
+    CreatureVatAdd = 100000001,//生物进阶设置+1;
     Altar = 100100001,//祭坛
     DoomCouncil = 100200001,//终焉议会模块
-    PortalShowNum1 = 100300001, //传送门显示数量
-    PortalShowNum10 = 1003000010,
+    PortalShowNum = 100300001, //传送门显示数量
     GashaponShowAll = 100400001,//显示所有抽取
-    LineupCreature1 = 200000001,//解锁阵容生物上限1
-    LineupCreature10 = 200000010,//解锁阵容生物上限10
-    Lineup2 = 200100001,//解锁阵容2
-    Lineup5 = 200100004,//解锁阵容5
+
+    GashaponRarityR = 100401000,//稀有度R
+    GashaponRarityRRate = 100401001,//稀有度R +1%
+    GashaponRaritySR = 100402000,//稀有度SR    
+    GashaponRaritySRRate = 100402001,//稀有度SR +1%
+    GashaponRaritySSR = 100403000,//稀有度SSR    
+    GashaponRaritySSRRate = 100403001,//稀有度SSR +1%
+    GashaponRarityUR = 100404000,//稀有度UR
+    GashaponRarityURRate = 100404001,//稀有度UR +1%
+    GashaponRarityL = 100405000,//稀有度L
+    GashaponRarityLRate = 100405001,//稀有度UR +1%
+
+    LineupCreatureAddNum = 200000001,//解锁阵容生物上限1
+    LineupNum = 200100001,//解锁多阵容
 }
 
 /// <summary>

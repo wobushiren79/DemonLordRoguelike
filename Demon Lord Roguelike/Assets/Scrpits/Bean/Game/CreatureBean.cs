@@ -31,6 +31,10 @@ public partial class CreatureBean
     public CreatureNpcBean creatureNpcData;
     //生物状态
     public CreatureStateEnum creatureState = CreatureStateEnum.Idle;
+    //生物属性
+    public CreatureAttributeBean creatureAttribute = new CreatureAttributeBean();
+
+
     public CreatureBean()
     {
         
@@ -407,17 +411,13 @@ public partial class CreatureBean
     #endregion
 
     #region 属性相关
+
     /// <summary>
     /// 获取生命值
     /// </summary>
     public int GetHP()
     {
-        return creatureInfo.GetHP();
-    }
-
-    public int GetHPOrigin()
-    {
-        return creatureInfo.GetHPOrigin();
+        return creatureInfo.HP + creatureAttribute.addHP;
     }
 
     /// <summary>
@@ -425,14 +425,9 @@ public partial class CreatureBean
     /// </summary>
     public int GetDR()
     {
-        return creatureInfo.GetDR();
+        return creatureInfo.DR + creatureAttribute.addDR;
     }
     
-    public int GetDROrigin()
-    {
-        return creatureInfo.GetDROrigin();
-    }
-
     /// <summary>
     /// 获取复活CD 不建议每帧获取
     /// </summary>
@@ -464,7 +459,7 @@ public partial class CreatureBean
     /// </summary>
     public int GetATK()
     {
-        return creatureInfo.ATK;
+        return creatureInfo.ATK + creatureAttribute.addATK;
     }
 
     /// <summary>
@@ -473,7 +468,7 @@ public partial class CreatureBean
     /// <returns></returns>
     public float GetASPD()
     {
-        return creatureInfo.ASPD;
+        return creatureInfo.ASPD + creatureAttribute.addASPD;
     }
 
     /// <summary>
@@ -481,7 +476,7 @@ public partial class CreatureBean
     /// </summary>
     public float GetMSPD()
     {
-        return creatureInfo.MSPD;
+        return creatureInfo.MSPD + creatureAttribute.addASPD;
     }
 
     /// <summary>

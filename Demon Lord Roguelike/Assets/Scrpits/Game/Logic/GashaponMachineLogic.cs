@@ -38,7 +38,7 @@ public class GashaponMachineLogic : BaseGameLogic
     //蛋的渲染子层级名字
     public string eggChildRendererName = "Renderer";
     //蛋预制的资源路径
-    public string pathForEggPrefab="Assets/LoadResources/Common/Gashapon_1.prefab";
+    public string pathForEggPrefab = "Assets/LoadResources/Common/Gashapon_1.prefab";
     public override void PreGame()
     {
         base.PreGame();
@@ -50,7 +50,7 @@ public class GashaponMachineLogic : BaseGameLogic
             this.RegisterEvent(EventsInfo.GashaponMachine_ClickNext, EventForNextEgg);
             this.RegisterEvent(EventsInfo.GashaponMachine_ClickReset, EventForReset);
             this.RegisterEvent(EventsInfo.GashaponMachine_ClickEnd, EventForEnd);
-            this.RegisterEvent(EventsInfo.GashaponMachine_ClickShowAll, EventForShowAll);  
+            this.RegisterEvent(EventsInfo.GashaponMachine_ClickShowAll, EventForShowAll);
         }
         //初始化场景
         InitSceneData();
@@ -125,7 +125,7 @@ public class GashaponMachineLogic : BaseGameLogic
             int randomCreatureIndex = UnityEngine.Random.Range(0, gashaponMachineData.listCreatureRandomData.Count);
             var randomCreatureData = gashaponMachineData.listCreatureRandomData[randomCreatureIndex];
 
-            GashaponItemBean itemGashapon = new GashaponItemBean(randomCreatureData.creatureId,randomCreatureData);
+            GashaponItemBean itemGashapon = new GashaponItemBean(randomCreatureData.creatureId, randomCreatureData);
             listGashaponData.Add(itemGashapon);
 
             var creatureInfo = itemGashapon.creatureData.creatureInfo;
@@ -176,7 +176,7 @@ public class GashaponMachineLogic : BaseGameLogic
     /// 流程-展示所有蛋
     /// </summary>
     public void ProcessForShowAllEgg()
-    {        
+    {
         //设置摄像头
         var targetCamera = CameraHandler.Instance.SetGashaponMachineCamera(int.MaxValue, true);
         //打开UI
@@ -263,7 +263,7 @@ public class GashaponMachineLogic : BaseGameLogic
     /// 事件-结束
     /// </summary>
     public void EventForEnd()
-    {        
+    {
         EndGame();
     }
 
@@ -278,10 +278,10 @@ public class GashaponMachineLogic : BaseGameLogic
             var targetEggData = listGashaponData[i];
             if (targetEggData.isBreak)
             {
-               continue; 
-            } 
+                continue;
+            }
             var targetEggObj = listEggObj[i];
-            AnimForEggBreak(targetEggObj, targetEggData, null); 
+            AnimForEggBreak(targetEggObj, targetEggData, null);
             await new WaitNextFrame();
         }
     }
@@ -302,7 +302,7 @@ public class GashaponMachineLogic : BaseGameLogic
         targetEgg.transform.DOKill();
         eggSpine.transform.DOKill();
         targetEgg.transform.eulerAngles = Vector3.zero;
-        
+
         Vector3 originEggSize = eggTF.localScale;
         eggTF.ShowObj(true);
         //蛋壳放大
@@ -390,7 +390,7 @@ public class GashaponMachineLogic : BaseGameLogic
         eggRenderer.material.SetColor("_Color_1", Color.white);
         eggRenderer.material.SetColor("_Color_2", new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), 1));
 
-        float startPos = VectorUtil.GetCenterToTwoSide(0, 1, gashaponMachineData.gashaponNum,  index);
+        float startPos = VectorUtil.GetCenterToTwoSide(0, 1, gashaponMachineData.gashaponNum, index);
         float animTimeForEggJump = 0.5f;
         objEgg.transform.DOScale(Vector3.one, animTimeForEggJump / 2f);
         objEgg.transform

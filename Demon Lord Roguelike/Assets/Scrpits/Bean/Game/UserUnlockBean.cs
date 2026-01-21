@@ -10,13 +10,16 @@ public class UserUnlockBean
     //基础解锁数据
     public Dictionary<long, UserUnlockInfoBean> unlockInfoData = new Dictionary<long, UserUnlockInfoBean>();
 
-
     /// <summary>
     /// 增加解锁
     /// </summary>
-    public void AddUnlock(long unlockId)
+    public void AddUnlock(long unlockId,int unlockLevel = 1)
     {
-        if (!unlockInfoData.ContainsKey(unlockId))
+        if (unlockInfoData.TryGetValue(unlockId, out var unlockData))
+        {
+            unlockData.unlockLevel = unlockLevel;
+        }
+        else
         {
             unlockInfoData.Add(unlockId, new UserUnlockInfoBean(unlockId));
             EventHandler.Instance.TriggerEvent(EventsInfo.User_AddUnlock, unlockId);
@@ -39,38 +42,6 @@ public class UserUnlockBean
             }
         }
         return unlockNum;
-    }
-
-    /// <summary>
-    /// 检测解锁了多少个
-    /// </summary>
-    public int CheckIsUnlockNum(UnlockEnum[] unlockIds)
-    {
-        long[] unlockIdsArray = TypeConversionUtil.EnumToLongArray(unlockIds);
-        return CheckIsUnlockNum(unlockIdsArray);
-    }
-
-    /// <summary>
-    /// 检测解锁了多少个-从start开始
-    /// </summary>
-    /// <param name="startUnlockEnum"></param>
-    /// <param name="count"></param>
-    /// <returns></returns>
-    public int CheckIsUnlockNumByStart(UnlockEnum startUnlockEnum, int count)
-    {
-        long startId = (long)startUnlockEnum;
-        return CheckIsUnlockNumByStart(startId, count);
-    }
-
-    public int CheckIsUnlockNumByStart(long startId, int count)
-    {
-        var ids = new long[count];
-        for (int i = 0; i < count; i++)
-        {
-            ids[i] = startId + i;
-        }
-        int unlockCount = CheckIsUnlockNum(ids);
-        return unlockCount;
     }
 
     /// <summary>
@@ -151,22 +122,39 @@ public class UserUnlockBean
     /// <summary>
     /// 获取解锁的当前研究等级
     /// </summary>
+    public int GetUnlockResearchLeveByUnlockEnum(UnlockEnum unlockEnum)
+    {
+        return GetUnlockResearchLeveByUnlockId((long)unlockEnum);
+    }
+
+    /// <summary>
+    /// 获取解锁的当前研究等级
+    /// </summary>
+    public int GetUnlockResearchLeveByUnlockId(long unlockId)
+    {
+        ResearchInfoBean researchInfo = ResearchInfoCfg.GetItemDataByUnlockId(unlockId);
+        return GetUnlockResearchLevel(researchInfo);
+    }
+
+    /// <summary>
+    /// 获取解锁的当前研究等级
+    /// </summary>
+    public int GetUnlockResearchLeveByResearchId(long researchId)
+    {
+        ResearchInfoBean researchInfo = ResearchInfoCfg.GetItemData(researchId);
+        return GetUnlockResearchLevel(researchInfo);
+    }
+
+    /// <summary>
+    /// 获取解锁的当前研究等级
+    /// </summary>
     public int GetUnlockResearchLevel(ResearchInfoBean researchInfo)
     {
-        int researchLevel = 0;
-        for (int i = 0; i < researchInfo.level_max; i++)
+        if (unlockInfoData.TryGetValue(researchInfo.unlock_id, out var unlockData))
         {
-            bool isUnlock = CheckIsUnlock(researchInfo.unlock_id + i);
-            if (isUnlock)
-            {
-                researchLevel++;
-            }
-            else
-            {
-                break;
-            }
+            return unlockData.unlockLevel;
         }
-        return researchLevel;
+        return 0;
     }
 
 
@@ -176,7 +164,7 @@ public class UserUnlockBean
     /// <returns></returns>
     public int GetUnlockPortalShowCount()
     {
-        return 3 + CheckIsUnlockNumByStart(UnlockEnum.PortalShowNum1, 10);
+        return 3 + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.PortalShowNum);
     }
 
     /// <summary>
@@ -185,7 +173,7 @@ public class UserUnlockBean
     /// <returns></returns>
     public int GetUnlockLineupNum()
     {
-        return 1 + CheckIsUnlockNumByStart(UnlockEnum.Lineup2, 4);
+        return 1 + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.LineupNum);
     }
 
     /// <summary>
@@ -194,7 +182,7 @@ public class UserUnlockBean
     /// <returns></returns>
     public int GetUnlockLineupCreatureNum()
     {
-        return 6 + CheckIsUnlockNumByStart(UnlockEnum.LineupCreature1, 30);
+        return 6 + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.LineupCreatureAddNum);
     }
 
     /// <summary>
@@ -204,8 +192,27 @@ public class UserUnlockBean
     public int GetUnlockGameWorldConquerDifficultyLevel(long worldId)
     {
         var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
-        return 1 + CheckIsUnlockNumByStart(gameWorldInfo.unlock_id_conquer_difficulty_level, 9);
+        return 1 + GetUnlockResearchLeveByUnlockId(gameWorldInfo.unlock_id_conquer_difficulty_level);
     }
+
+    /// <summary>
+    /// 获取生物升阶容器数量
+    /// </summary>
+    /// <returns></returns>
+    public int GetUnlockCreatureVatNum()
+    {
+        bool isUnlockVat = CheckIsUnlock(UnlockEnum.CreatureVat);
+        if (isUnlockVat)
+        {
+            int unlockLevel = GetUnlockResearchLeveByUnlockEnum(UnlockEnum.CreatureVatAdd);
+            return 1 + unlockLevel;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
 
     /// <summary>
     /// 获取解锁的世界
@@ -234,10 +241,14 @@ public class UserUnlockBean
 //基础解锁数据
 public class UserUnlockInfoBean
 {
+    //解锁ID
     public long unlockId;
+    //解锁等级
+    public int unlockLevel;
 
     public UserUnlockInfoBean(long unlockId)
     {
         this.unlockId = unlockId;
+        unlockLevel = 1;
     }
 }

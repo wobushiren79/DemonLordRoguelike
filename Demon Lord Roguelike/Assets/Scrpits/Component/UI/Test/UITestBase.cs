@@ -196,22 +196,37 @@ public partial class UITestBase : BaseUIComponent
     public void OnClickForAddUnlock()
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
-        var userUnlockDasta = userData.GetUserUnlockData();
+        var userUnlockData = userData.GetUserUnlockData();
         string inputData = ui_InputData.text;
         if (inputData.IsNull())
         {
             var all = UnlockInfoCfg.GetAllData();
             foreach (var item in all)
             {
-                userUnlockDasta.AddUnlock(item.Key);
+                var researchInfo = ResearchInfoCfg.GetItemDataByUnlockId(item.Key);
+                if (researchInfo == null)
+                {
+                    userUnlockData.AddUnlock(item.Key);
+                }
+                else
+                {
+                    userUnlockData.AddUnlock(item.Key, researchInfo.level_max);
+                }
             }
             LogUtil.Log($"解锁所有成功");
             return;
         }
         if (long.TryParse(inputData, out long outValue))
         {
-
-            userUnlockDasta.AddUnlock(outValue);
+            var researchInfo = ResearchInfoCfg.GetItemDataByUnlockId(outValue);
+            if(researchInfo == null)
+            {
+                userUnlockData.AddUnlock(outValue);
+            }
+            else
+            {
+                userUnlockData.AddUnlock(outValue, researchInfo.level_max);  
+            }
             LogUtil.Log("添加成功");
         }
         else

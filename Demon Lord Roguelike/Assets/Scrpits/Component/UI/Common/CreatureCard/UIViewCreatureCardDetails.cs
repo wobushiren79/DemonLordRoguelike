@@ -29,8 +29,8 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         SetCardIcon(creatureData);
         SetName(creatureData.creatureName);
 
-        int hp = creatureData.GetHPOrigin();
-        int dr = creatureData.GetDROrigin();
+        int hp = creatureData.GetHP();
+        int dr = creatureData.GetDR();
         int atk = creatureData.GetATK();
         float aspd = creatureData.GetASPD();
         

@@ -50,7 +50,24 @@ public partial class ResearchInfoBean
     {
         if (arrayPayCrystal == null)
         {
-            arrayPayCrystal = pay_crystal.SplitForArrayLong(',');
+            if (pay_crystal.Contains(','))
+            {
+                arrayPayCrystal = pay_crystal.SplitForArrayLong(',');
+            }
+            else if (pay_crystal.Contains('*'))
+            {
+                float[] arrayBaseData = pay_crystal.SplitForArrayFloat('*');
+                arrayPayCrystal = new long[level_max];
+                float itemPay = arrayBaseData[0] * arrayBaseData[1]; 
+                for (int i = 0; i < arrayPayCrystal.Length; i++)
+                {
+                    arrayPayCrystal[i] = (long)(arrayBaseData[0] + (itemPay * i));   
+                }
+            }
+            else
+            {
+                arrayPayCrystal = new long[] { long.Parse(pay_crystal) };
+            }   
         }
         if (researchLevel > arrayPayCrystal.Length)
         {

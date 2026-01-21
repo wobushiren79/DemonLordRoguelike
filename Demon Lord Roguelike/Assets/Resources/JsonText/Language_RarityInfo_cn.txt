@@ -1,1 +1,1 @@
-[{"content":"普通","id":1},{"content":"稀有","id":2},{"content":"超凡","id":3},{"content":"至尊","id":4},{"content":"神话","id":5},{"content":"传说","id":6}]
+[{"content":"N","id":1},{"content":"R","id":2},{"content":"SR","id":3},{"content":"SSR","id":4},{"content":"UR","id":5},{"content":"L","id":6}]
