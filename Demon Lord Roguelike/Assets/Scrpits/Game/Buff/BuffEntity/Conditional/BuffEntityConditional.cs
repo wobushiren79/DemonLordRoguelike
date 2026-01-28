@@ -1,14 +1,8 @@
 public class BuffEntityConditional : BuffBaseEntity
 {
-
-    public override void AddBuffTime(float buffTime)
+    public override void UpdateBuffTime(float buffTime)
     {
-        //条件型触发BUFF 不增加触发时间
+        buffEntityData.timeUpdateTotal += buffTime;
     }
 
-    public override bool TriggerBuff(BuffEntityBean buffEntityData)
-    {
-        bool isTriggerSuccess = base.TriggerBuff(buffEntityData);
-        return isTriggerSuccess;
-    }
 }

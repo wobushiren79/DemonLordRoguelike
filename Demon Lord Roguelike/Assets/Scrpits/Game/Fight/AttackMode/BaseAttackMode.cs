@@ -25,7 +25,7 @@ public class BaseAttackMode
     public Vector3 attackDirection;
 
     //攻击者ID
-    public string attackerId;  
+    public string attackerId;
     //攻击者的生物ID
     public long attackerCreatureId;
     //攻击者的武器道具ID
@@ -83,9 +83,9 @@ public class BaseAttackMode
                     //设置攻击者ID
                     attackerId = creatureData.creatureUUId;
                     //设置伤害
-                    attackerDamage = attacker.fightCreatureData.GetATK();
+                    attackerDamage = (int)attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ATK);
                     //提示设置暴击概率 
-                    attackerCRT = attacker.fightCreatureData.GetCRT();
+                    attackerCRT = attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.CRT);
                 }
             }
         }
@@ -127,7 +127,7 @@ public class BaseAttackMode
         {
             if (gameObject != null)
             {
-                GameObject.Destroy(gameObject);  
+                GameObject.Destroy(gameObject);
             }
         }
         else

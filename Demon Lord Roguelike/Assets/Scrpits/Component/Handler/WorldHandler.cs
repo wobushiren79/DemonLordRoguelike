@@ -81,6 +81,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     public async void EnterMainForBaseScene()
     {
         await ClearWorldData();
+        //清理所有BUFF缓存
+        BuffHandler.Instance.manager.ClearAll();
         //清理掉用户数据
         GameDataHandler.Instance.ClearUserData();
         //打开加载UI

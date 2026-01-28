@@ -23,6 +23,8 @@ public class GameFightLogic : BaseGameLogic
         base.PreGame();
         //注册事件
         RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_CreatureDeadEnd, EventForGameFightLogicCreatureDeadEnd);
+        //发送事件通知
+        RegisterEvent<string,string>(EventsInfo.Buff_FightCreatureChange, EventForBuffFightCreatureChange);
 
         //设置战斗场景视角
         await CameraHandler.Instance.InitFightSceneCamera();
@@ -104,7 +106,7 @@ public class GameFightLogic : BaseGameLogic
         //AI清理
         AIHandler.Instance.manager.Clear();
         //Buff清理
-        BuffHandler.Instance.manager.ClearBuff();
+        BuffHandler.Instance.manager.ClearFightCreatureBuff();
         //清理战斗场景
         await WorldHandler.Instance.UnLoadScene(GameSceneTypeEnum.Fight);
         //清理缓存
@@ -121,7 +123,7 @@ public class GameFightLogic : BaseGameLogic
         //AI清理
         AIHandler.Instance.manager.Clear();     
         //Buff清理
-        BuffHandler.Instance.manager.ClearBuff();
+        BuffHandler.Instance.manager.ClearFightCreatureBuff();
     }
 
     /// <summary>
@@ -377,6 +379,21 @@ public class GameFightLogic : BaseGameLogic
     {
         //检测一下游戏是否结束
         CheckGameEnd();
+    }
+
+    /// <summary>
+    /// 战斗生物BUFF改变
+    /// </summary>
+    /// <param name="applierCreatureId">释放BUFF者</param>
+    /// <param name="targetCreatureId">作用对象</param>
+    public void EventForBuffFightCreatureChange(string applierCreatureId, string targetCreatureId)
+    {
+        //刷新一下生物属性
+        if (fightData != null)
+        {
+            GameFightCreatureEntity gameFightCreatureEntity = fightData.GetCreatureById(targetCreatureId);
+            gameFightCreatureEntity.fightCreatureData.RefreshBaseAttribute();
+        }
     }
     #endregion
 }

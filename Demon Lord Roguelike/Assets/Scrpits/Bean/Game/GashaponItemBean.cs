@@ -30,27 +30,72 @@ public class GashaponItemBean
         if (RandomRarityItem(UnlockEnum.GashaponRarityUR, UnlockEnum.GashaponRarityURRate))
         {
             creatureData.rarity = (int)RarityEnum.UR;
+            RandomRarityBuff(RarityEnum.R);
+            RandomRarityBuff(RarityEnum.SR);
+            RandomRarityBuff(RarityEnum.SSR);
+            RandomRarityBuff(RarityEnum.UR);
             return;
         }
         if (RandomRarityItem(UnlockEnum.GashaponRaritySSR, UnlockEnum.GashaponRaritySSRRate))
         {
             creatureData.rarity = (int)RarityEnum.SSR;
+            RandomRarityBuff(RarityEnum.R);
+            RandomRarityBuff(RarityEnum.SR);
+            RandomRarityBuff(RarityEnum.SSR);
             return;
         }
         if (RandomRarityItem(UnlockEnum.GashaponRaritySR, UnlockEnum.GashaponRaritySRRate))
         {
             creatureData.rarity = (int)RarityEnum.SR;
+            RandomRarityBuff(RarityEnum.R);
+            RandomRarityBuff(RarityEnum.SR);
             return;
         }
         if (RandomRarityItem(UnlockEnum.GashaponRarityR, UnlockEnum.GashaponRarityRRate))
         {
             creatureData.rarity = (int)RarityEnum.R;
+            RandomRarityBuff(RarityEnum.R);
             return;
         }
         creatureData.rarity = (int)RarityEnum.N;
     }
 
-    private bool RandomRarityItem(UnlockEnum unlockRarity,UnlockEnum unlockRarityRate)
+    /// <summary>
+    /// 随机稀有度BUFF
+    /// </summary>
+    public void RandomRarityBuff(RarityEnum rarityEnum)
+    {
+        BuffTypeEnum buffType = BuffTypeEnum.None;
+        switch (rarityEnum)
+        {
+            case RarityEnum.R:
+                buffType = BuffTypeEnum.CreatureRarityR;
+                break;
+            case RarityEnum.SR:
+                buffType = BuffTypeEnum.CreatureRaritySR;
+                break;
+            case RarityEnum.SSR:
+                buffType = BuffTypeEnum.CreatureRaritySSR;
+                break;
+        }
+        if (buffType == BuffTypeEnum.None)
+        {
+            return;
+        }
+        //通过BUFF类型获取BUFF
+        var listBuffInfo = BuffInfoCfg.GetItemDataByBuffType(buffType);
+        //随机一个BUFF
+        int randomIndex = Random.Range(0, listBuffInfo.Count);
+        var randomBuffInfo = listBuffInfo[randomIndex];
+        //添加BUFF
+        BuffBean buffData = new BuffBean(randomBuffInfo.id, isRandom: true);
+        creatureData.dicRarityBuff.Add(rarityEnum, buffData);
+    }
+
+    /// <summary>
+    /// 随机稀有度item
+    /// </summary>
+    private bool RandomRarityItem(UnlockEnum unlockRarity, UnlockEnum unlockRarityRate)
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
@@ -63,7 +108,7 @@ public class GashaponItemBean
             {
                 return true;
             }
-        }  
+        }
         return false;
     }
 
@@ -81,7 +126,7 @@ public class GashaponItemBean
             creatureData.AddSkin(randomSkin);
         }
         //添加基础皮肤
-        creatureData.AddSkinForBase();  
+        creatureData.AddSkinForBase();
     }
 
     /// <summary>
@@ -90,6 +135,6 @@ public class GashaponItemBean
     public void RandomAttribute()
     {
         int randomAttributeNum = 5;//随机属性点数
-        creatureData.creatureAttribute.AddRandomAttribute(randomAttributeNum);
+        creatureData.creatureAttribute.AddRandomAttributeForCreate(randomAttributeNum);
     }
 }

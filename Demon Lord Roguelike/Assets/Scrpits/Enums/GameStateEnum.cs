@@ -2,6 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum BuffTypeEnum
+{
+    None = 0,
+    Fight = 1,//攻击模块
+    CreatureSelf = 2,//生物自带
+    AbyssalBlessing = 3,//深渊馈赠
+
+    CreatureRarityR = 11,//生物稀有度R BUFF
+    CreatureRaritySR = 12,//生物稀有度SR BUFF
+    CreatureRaritySSR = 13,//生物稀有度SSR BUFF
+}
+
+
 public enum GameStateEnum
 {
     None = 0,

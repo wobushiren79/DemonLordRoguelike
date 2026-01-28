@@ -34,9 +34,9 @@ public class GameFightCreatureEntity
         creatureLifeShow?.ShowObj(false);
         //设置spine
         CreatureHandler.Instance.SetCreatureData(creatureSkeletionAnimation, fightCreatureData.creatureData, isSetSkeletonDataAsset: false);
-        //设置buff数据
-        long[] creatureBuffs = fightCreatureData.creatureData.creatureInfo.GetCreatureBuff();
-        BuffHandler.Instance.AddBuff(creatureBuffs, fightCreatureData.creatureData.creatureUUId, fightCreatureData.creatureData.creatureUUId);  
+        //设置生物BUFF
+        List<BuffBean> creatureBuffs = fightCreatureData.creatureData.GetAllBuffIds();
+        BuffHandler.Instance.AddFightCreatureBuff(creatureBuffs, fightCreatureData.creatureData.creatureUUId, fightCreatureData.creatureData.creatureUUId);
         //设置身体颜色
         RefreshBodyColor();
     }
@@ -121,12 +121,15 @@ public class GameFightCreatureEntity
     public void AddBuff(BaseAttackMode baseAttackMode)
     {
         //触发buff
-        var buffIds = baseAttackMode.attackModeInfo.GetBuffIds();
-        bool isAdd = BuffHandler.Instance.AddBuff(buffIds, baseAttackMode.attackerId, fightCreatureData.creatureData.creatureUUId);
-        if (isAdd)
+        var listBuffData = baseAttackMode.attackModeInfo.GetListBuff();
+        if (!listBuffData.IsNull())
         {
-            //刷新一下身体颜色
-            RefreshBodyColor();
+            bool isAdd = BuffHandler.Instance.AddFightCreatureBuff(listBuffData, baseAttackMode.attackerId, fightCreatureData.creatureData.creatureUUId);
+            if (isAdd)
+            {
+                //刷新一下身体颜色
+                RefreshBodyColor();
+            }
         }
     }
 
@@ -267,7 +270,7 @@ public class GameFightCreatureEntity
         var fightData = gameLogic.fightData;
         var fightRecordsData = fightData.fightRecordsData;
         //判断是否闪避
-        float evaRate = fightCreatureData.GetEVA();
+        float evaRate = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.EVA);
         float randomEVA = UnityEngine.Random.Range(0f, 1f);
         if (randomEVA <= evaRate)
         {
@@ -427,19 +430,20 @@ public class GameFightCreatureEntity
             creatureLifeShow?.ShowObj(true);
 
             //设置血条进度
-            if (fightCreatureData.HPMax > 0)
+            float HPMax = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.HP);
+            if (HPMax > 0)
             {
-                creatureLifeShow?.material.SetFloat("_Progress_1", fightCreatureData.HPCurrent / (float)fightCreatureData.HPMax);
+                creatureLifeShow?.material.SetFloat("_Progress_1", fightCreatureData.HPCurrent / HPMax);
             }
             else
             {
                 creatureLifeShow?.material.SetFloat("_Progress_1", 0);
             }
-
+            float DRMax = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.DR);
             //设置护盾进度
-            if (fightCreatureData.DRMax > 0)
+            if (DRMax > 0)
             {
-                creatureLifeShow?.material.SetFloat("_Progress_2", fightCreatureData.DRCurrent / (float)fightCreatureData.DRMax);
+                creatureLifeShow?.material.SetFloat("_Progress_2", fightCreatureData.DRCurrent / DRMax);
             }
             else
             {
@@ -449,7 +453,7 @@ public class GameFightCreatureEntity
         else
         {
             //死掉之后设置BUFF信息为无效
-            BuffHandler.Instance.SetCreatureBuffsActivieIsValid(fightCreatureData.creatureData.creatureUUId, false);
+            BuffHandler.Instance.RemoveFightCreatureBuffs(fightCreatureData.creatureData.creatureUUId);
             //死亡掉落水晶
             DeadDropCrystal();
             //如果被攻击对象死亡 

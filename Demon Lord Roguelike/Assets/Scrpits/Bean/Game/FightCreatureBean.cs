@@ -5,23 +5,28 @@ using UnityEngine;
 
 [Serializable]
 public class FightCreatureBean
-{ 
+{
     public CreatureFightTypeEnum creatureFightType;//生物战斗类型
     public CreatureBean creatureData;    //生物数据
     public Vector3Int positionCreate;//生成位置（用于防守生物）
     public int roadIndex;//当前道路（用于进攻生物）
 
     public int HPCurrent;//当前生命值
-    public int HPMax;//最大生命值
-
     public int DRCurrent;//当前护甲值
-    public int DRMax;//最大护甲值
 
-    public int ATKCurrent;//当前攻击力
-    public float ASPDCurrent;//当前攻击间隔
-    public float MSPDCurrent;//当前移动速度
-    public float EVACurrent;//当前闪避率
-    public float CRTCurrent;//暴击率
+    public static List<CreatureAttributeTypeEnum> listCreatureAttributeType = new List<CreatureAttributeTypeEnum>()
+    {
+        CreatureAttributeTypeEnum.HP,
+        CreatureAttributeTypeEnum.DR,
+        CreatureAttributeTypeEnum.ATK,
+        CreatureAttributeTypeEnum.ASPD,
+        CreatureAttributeTypeEnum.MSPD,
+        CreatureAttributeTypeEnum.EVA,
+        CreatureAttributeTypeEnum.CRT
+    };
+
+    public Dictionary<CreatureAttributeTypeEnum, float> dicAttribute = new Dictionary<CreatureAttributeTypeEnum, float>(); //属性
+
     public Color colorBodyCurrent;//当前身体颜色
 
     public FightCreatureBean(long id, CreatureFightTypeEnum creatureFightType)
@@ -52,8 +57,8 @@ public class FightCreatureBean
     {
         //刷新一下基础属性
         RefreshBaseAttribute();
-        HPCurrent = HPMax;
-        DRCurrent = DRMax;
+        HPCurrent = (int)GetAttribute(CreatureAttributeTypeEnum.HP);
+        DRCurrent = (int)GetAttribute(CreatureAttributeTypeEnum.DR);
     }
 
     /// <summary>
@@ -62,19 +67,18 @@ public class FightCreatureBean
     public void RefreshBaseAttribute(Action actionForComplete = null)
     {
         //先还原基础数据
-        HPMax = creatureData.GetHP();
-        DRMax = creatureData.GetDR();
-
-        MSPDCurrent = creatureData.GetMSPD();
-        CRTCurrent = creatureData.GetCRT();
-        EVACurrent = creatureData.GetEVA();
-        ATKCurrent = creatureData.GetATK();
-        ASPDCurrent = creatureData.GetASPD();
-
+        dicAttribute.Clear();
+        for (int i = 0; i < listCreatureAttributeType.Count; i++)
+        {
+            var creatureAttributeType = listCreatureAttributeType[i];
+            var attributeData = creatureData.GetAttribute(creatureAttributeType);
+            dicAttribute.Add(creatureAttributeType, attributeData);
+        }
+        //还原基础身体颜色
         colorBodyCurrent = Color.white;
 
-        var creatureBuffs = BuffHandler.Instance.manager.GetCreatureBuffsActivie(creatureData.creatureUUId);
-        //生物buff相关加成
+        //战斗生物buff相关加成
+        var creatureBuffs = BuffHandler.Instance.manager.GetFightCreatureBuffsActivie(creatureData.creatureUUId);
         if (!creatureBuffs.IsNull())
         {
             for (int i = 0; i < creatureBuffs.Count; i++)
@@ -105,9 +109,10 @@ public class FightCreatureBean
     /// </summary>
     protected void SetAttributeBaseForBuff(BuffBaseEntity buffEntity)
     {
-        BuffEntityBean buffEntityData = buffEntity.buffEntityData;
+        var buffEntityData = buffEntity.buffEntityData;
+        var buffInfo = buffEntityData.GetBuffInfo();
         //如果不是全触发 需要判断一下生物类型
-        CreatureFightTypeEnum triggerCreatureType = buffEntity.buffEntityData.buffInfo.GetTriggerCreatureType();
+        CreatureFightTypeEnum triggerCreatureType = buffInfo.GetTriggerCreatureType();
         if (triggerCreatureType != CreatureFightTypeEnum.None)
         {
             if (triggerCreatureType != creatureFightType)
@@ -115,67 +120,32 @@ public class FightCreatureBean
                 return;
             }
         }
-        
+        //如果是属性类
         if (buffEntity is BuffEntityAttribute buffEntityAttribute)
-        { 
-            HPMax = (int)buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.HP, HPMax);
-            DRMax = (int)buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.DR, DRMax);
-
-            ATKCurrent = (int)buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.ATK, ATKCurrent);
-            ASPDCurrent = buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.ASPD, ASPDCurrent);
-            MSPDCurrent = buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.MSPD, MSPDCurrent);
-            CRTCurrent = buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.CRT, CRTCurrent);
-            EVACurrent = buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.EVA, EVACurrent);
+        {
+            CreatureAttributeTypeEnum targetAttributeType = buffEntityAttribute.attributeType;
+            float targetAttributeData = GetAttribute(targetAttributeType);
+            //设置新加成后属性
+            targetAttributeData = buffEntityAttribute.ChangeData(targetAttributeType, targetAttributeData);
+            dicAttribute[targetAttributeType] = targetAttributeData;
         }
         //设置身体颜色
-        if (!buffEntityData.buffInfo.color_body.IsNull())
+        if (!buffInfo.color_body.IsNull())
         {
             colorBodyCurrent = buffEntity.GetChangeBodyColor(buffEntityData);
         }
     }
 
     /// <summary>
-    /// 获取攻击力
+    /// 获取基础属性
     /// </summary>
-    /// <returns></returns>
-    public int GetATK()
+    public float GetAttribute(CreatureAttributeTypeEnum attributeType)
     {
-        return ATKCurrent;
-    }
-
-    /// <summary>
-    /// 获取攻击速度
-    /// </summary>
-    /// <returns></returns>
-    public float GetASPD()
-    {
-        return ASPDCurrent;
-    }
-
-    /// <summary>
-    /// 获取角色移动速度
-    /// </summary>
-    /// <returns></returns>
-    public float GetMSPD()
-    {
-        return MSPDCurrent;
-    }
-
-    /// <summary>
-    /// 获取闪避概率
-    /// </summary>
-    /// <returns></returns>
-    public float GetEVA()
-    {
-        return EVACurrent;
-    }
-
-    /// <summary>
-    /// 获取暴击率
-    /// </summary>
-    public float GetCRT()
-    {
-        return CRTCurrent;
+        if (dicAttribute.TryGetValue(attributeType, out float targetValue))
+        {
+            return targetValue;
+        }
+        return 0;
     }
 
     /// <summary>
@@ -240,10 +210,11 @@ public class FightCreatureBean
             changeDRReal = ChangeDR - DRCurrent;
             DRCurrent = 0;
         }
-        if (DRCurrent > DRMax)
+        int DRMAX = (int)GetAttribute(CreatureAttributeTypeEnum.DR);
+        if (DRCurrent > DRMAX)
         {
-            changeDRReal = ChangeDR - (DRCurrent - DRMax);
-            DRCurrent = DRMax;
+            changeDRReal = ChangeDR - (DRCurrent - DRMAX);
+            DRCurrent = DRMAX;
         }
         leftDR = DRCurrent;
         //刷新一下基础属性
@@ -274,6 +245,7 @@ public class FightCreatureBean
             changeHPReal = ChangeHP - HPCurrent;
             HPCurrent = 0;
         }
+        int HPMax = (int)GetAttribute(CreatureAttributeTypeEnum.HP);
         if (HPCurrent > HPMax)
         {
             changeHPReal = ChangeHP - (HPCurrent - HPMax);

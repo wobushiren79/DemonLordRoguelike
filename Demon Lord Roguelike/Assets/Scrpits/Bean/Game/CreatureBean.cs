@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using UnityEngine;
 
@@ -33,7 +34,8 @@ public partial class CreatureBean
     public CreatureStateEnum creatureState = CreatureStateEnum.Idle;
     //生物属性
     public CreatureAttributeBean creatureAttribute = new CreatureAttributeBean();
-
+    //生物稀有度BUFF
+    public Dictionary<RarityEnum, BuffBean> dicRarityBuff = new Dictionary<RarityEnum, BuffBean>();
 
     public CreatureBean()
     {
@@ -88,6 +90,25 @@ public partial class CreatureBean
     public CreatureNpcBean GetCreatureNpcData()
     {
         return creatureNpcData;
+    }
+    #endregion
+
+    #region BUFF相关
+    public List<BuffBean> GetAllBuffIds()
+    {
+        List<BuffBean> listAllBuff = new List<BuffBean>();
+        //获取自身BUFF
+        List<BuffBean> listSelfBuff = creatureInfo.GetCreatureBuffs();
+        if (!listSelfBuff.IsNull())
+        {
+            listAllBuff.AddRange(listSelfBuff);
+        }
+        //获取稀有度BUFF
+        foreach (var item in dicRarityBuff)
+        {
+            listAllBuff.Add(item.Value);
+        }
+        return listAllBuff;
     }
     #endregion
 
@@ -412,22 +433,28 @@ public partial class CreatureBean
 
     #region 属性相关
 
-    /// <summary>
-    /// 获取生命值
-    /// </summary>
-    public int GetHP()
+    public float GetAttribute(CreatureAttributeTypeEnum typeEnum)
     {
-        return creatureInfo.HP + creatureAttribute.addHP;
+        switch (typeEnum)
+        {
+            case CreatureAttributeTypeEnum.HP://获取生命值
+                return creatureInfo.HP + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.HP);
+            case CreatureAttributeTypeEnum.DR://获取护甲值
+                return creatureInfo.DR + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.DR);
+            case CreatureAttributeTypeEnum.ATK://获取攻击力
+                return creatureInfo.ATK + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.ATK);
+            case CreatureAttributeTypeEnum.ASPD://获取攻击速度
+                return creatureInfo.ASPD + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.ASPD);
+            case CreatureAttributeTypeEnum.MSPD://获取移动速度
+                return creatureInfo.MSPD + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.MSPD);
+            case CreatureAttributeTypeEnum.EVA://获取闪避概率
+                return 0;
+            case CreatureAttributeTypeEnum.CRT://获取暴击率
+                return 0;
+        }
+        return 0;
     }
 
-    /// <summary>
-    /// 获取护甲值
-    /// </summary>
-    public int GetDR()
-    {
-        return creatureInfo.DR + creatureAttribute.addDR;
-    }
-    
     /// <summary>
     /// 获取复活CD 不建议每帧获取
     /// </summary>
@@ -452,49 +479,6 @@ public partial class CreatureBean
             }
         }
         return RCDTime;
-    }
-
-    /// <summary>
-    /// 获取攻击
-    /// </summary>
-    public int GetATK()
-    {
-        return creatureInfo.ATK + creatureAttribute.addATK;
-    }
-
-    /// <summary>
-    /// 获取攻击速度
-    /// </summary>
-    /// <returns></returns>
-    public float GetASPD()
-    {
-        return creatureInfo.ASPD + creatureAttribute.addASPD;
-    }
-
-    /// <summary>
-    /// 获取移动速度
-    /// </summary>
-    public float GetMSPD()
-    {
-        return creatureInfo.MSPD + creatureAttribute.addASPD;
-    }
-
-    /// <summary>
-    /// 获取闪避率
-    /// </summary>
-    /// <returns></returns>
-    public float GetEVA()
-    {
-        return 0;
-    }
-
-    /// <summary>
-    /// 获取暴击率
-    /// </summary>
-    /// <returns></returns>
-    public float GetCRT()
-    {
-        return 0;
     }
 
     /// <summary>

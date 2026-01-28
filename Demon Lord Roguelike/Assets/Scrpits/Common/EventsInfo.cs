@@ -44,6 +44,7 @@ public static class EventsInfo
 
     #region BUFF
     public static string Buff_AbyssalBlessingChange = "Buff_AbyssalBlessingChange";//BUFF系统-深渊馈赠变化
+    public static string Buff_FightCreatureChange = "Buff_FightCreatureChange";//BUFF系统-生物BUFF改变
     #endregion
 
     #region 扭蛋机

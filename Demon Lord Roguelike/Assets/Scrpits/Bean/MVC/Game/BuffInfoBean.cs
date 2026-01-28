@@ -9,7 +9,7 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public string icon_res;
 	/// <summary>
-	///类型1:攻击模块 2：生物自带 3:深渊馈赠
+	///类型1:攻击模块 2：生物自带 3:深渊馈赠 11 12 13:生物稀有度BUFF
 	/// </summary>
 	public int buff_type;
 	/// <summary>
@@ -37,13 +37,25 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public float trigger_value;
 	/// <summary>
+	///触发改变的值(最小值)
+	/// </summary>
+	public float trigger_value_min;
+	/// <summary>
 	///触发改变的值百分比
 	/// </summary>
 	public float trigger_value_rate;
 	/// <summary>
+	///触发改变的值百分比(最小值)
+	/// </summary>
+	public float trigger_value_rate_min;
+	/// <summary>
 	///触发几率
 	/// </summary>
 	public float trigger_chance;
+	/// <summary>
+	///触发几率(最小值)
+	/// </summary>
+	public float trigger_chance_min;
 	/// <summary>
 	///触发次数
 	/// </summary>

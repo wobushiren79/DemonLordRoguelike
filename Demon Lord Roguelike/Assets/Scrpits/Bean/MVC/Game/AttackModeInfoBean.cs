@@ -13,7 +13,7 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public string prefab_name;
 	/// <summary>
-	///攻击buff（id:概率&id:概率）
+	///攻击buff（id:创建概率&id:创建概率）
 	/// </summary>
 	public string buff;
 	/// <summary>

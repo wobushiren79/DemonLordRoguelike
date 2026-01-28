@@ -12,7 +12,7 @@ public partial class CreatureInfoBean
     protected bool isInitAttackStartPosition = false;
     protected Vector3 attackStartPosition;
     //生物buff
-    protected long[] creatureBuffArray;
+    protected List<BuffBean> listCreatureBuff;
 
     public CreatureTypeEnum GetCreatureType()
     {
@@ -86,17 +86,23 @@ public partial class CreatureInfoBean
     /// <summary>
     /// 获取生物自带buff
     /// </summary>
-    public long[] GetCreatureBuff()
+    public List<BuffBean> GetCreatureBuffs()
     {
         if (creature_buff.IsNull())
         {
             return null;
         }
-        if (creatureBuffArray == null)
+        if (listCreatureBuff == null)
         {
-            creatureBuffArray = creature_buff.SplitForArrayLong(',');
+            listCreatureBuff = new List<BuffBean>();
+            var buffIds = creature_buff.SplitForListLong(',');
+            for (int i = 0; i < buffIds.Count; i++)
+            {
+                BuffBean buffData = new BuffBean(buffIds[i]);
+                listCreatureBuff.Add(buffData);
+            }
         }
-        return creatureBuffArray;
+        return listCreatureBuff;
     }
 }
 public partial class CreatureInfoCfg

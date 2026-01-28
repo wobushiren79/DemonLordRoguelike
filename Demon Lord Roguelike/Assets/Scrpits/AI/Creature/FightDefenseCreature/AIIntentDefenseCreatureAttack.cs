@@ -19,7 +19,7 @@ public class AIIntentDefenseCreatureAttack : AIBaseIntent
         selfAIEntity = aiEntity as AIDefenseCreatureEntity;
         fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
         attackState = 0;
-        timeUpdateAttackPreCD = fightCreatureData.GetASPD();
+        timeUpdateAttackPreCD = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD);
         timeUpdateAttackingCD = fightCreatureData.creatureData.GetAttackAnimTime();
         //刚进来立即开始一次攻击
         timeUpdateAttackPre = timeUpdateAttackPreCD;
@@ -34,7 +34,7 @@ public class AIIntentDefenseCreatureAttack : AIBaseIntent
             if (timeUpdateAttackPre >= timeUpdateAttackPreCD)
             {
                 timeUpdateAttackPre = 0;
-                timeUpdateAttackPreCD = fightCreatureData.GetASPD();
+                timeUpdateAttackPreCD = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD);
                 AttackAttCreature();
             }
         }

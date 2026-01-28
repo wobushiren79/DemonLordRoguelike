@@ -8,15 +8,15 @@ public class BuffManager : BaseManager
 {
     //活跃的深渊馈赠BUFF
     public DictionaryList<AbyssalBlessingEntityBean, List<BuffBaseEntity>> dicAbyssalBlessingBuffsActivie = new DictionaryList<AbyssalBlessingEntityBean, List<BuffBaseEntity>>();
-    //活跃的生物BUFF
-    public DictionaryList<string, List<BuffBaseEntity>> dicCreatureBuffsActivie = new DictionaryList<string, List<BuffBaseEntity>>();
+    //活跃的战斗生物BUFF
+    public DictionaryList<string, List<BuffBaseEntity>> dicFightCreatureBuffsActivie = new DictionaryList<string, List<BuffBaseEntity>>();
 
-
-    //BUFF实例缓存池
+    //BUFFEntity缓存池
     public Dictionary<string, Queue<BuffBaseEntity>> dicBuffEntityPool = new Dictionary<string, Queue<BuffBaseEntity>>();
     //BuffBean缓存池
     public Queue<BuffEntityBean> queueBuffEntityPool = new Queue<BuffEntityBean>();
-    //buffpre的实例类
+
+    //buffPre的实例类 永久保存 不清除
     public Dictionary<long, BuffBasePreEntity> dicBuffPreEntity = new Dictionary<long, BuffBasePreEntity>();
 
     #region 数据清理
@@ -24,19 +24,47 @@ public class BuffManager : BaseManager
     /// 清理深渊馈赠数据
     /// </summary>
     public void ClearAbyssalBlessing()
-    {
+    {    
+        ClearBuffCollection(dicAbyssalBlessingBuffsActivie.List);
         dicAbyssalBlessingBuffsActivie.Clear();
     }
 
     /// <summary>
-    /// 清理Buff数据
+    /// 清理战斗生物Buff数据
     /// </summary>
-    public void ClearBuff()
+    public void ClearFightCreatureBuff()
     {
-        dicCreatureBuffsActivie.Clear();
+        ClearBuffCollection(dicFightCreatureBuffsActivie.List);
+        dicFightCreatureBuffsActivie.Clear();
+    }
+    
+    /// <summary>
+    /// 清理所有BUFF数据
+    /// </summary>
+    public void ClearAll()
+    {
+        ClearAbyssalBlessing();
+        ClearFightCreatureBuff();
+
         dicBuffEntityPool.Clear();
-        dicBuffPreEntity.Clear();
         queueBuffEntityPool.Clear();
+    }
+
+    /// <summary>
+    /// 清理BUFF集合
+    /// </summary>
+    protected void ClearBuffCollection(List<List<BuffBaseEntity>> listBuffCollection)
+    {
+        for (int i = 0; i < listBuffCollection.Count; i++)
+        {
+            var listBuff = listBuffCollection[i];
+            for (int f = listBuff.Count - 1; f >= 0; f--)
+            {
+                var itemBuff = listBuff[f];
+                itemBuff.buffEntityData.isValid = false;
+                RemoveBuffEntity(listBuff, itemBuff);
+            }
+        }
     }
     #endregion
 
@@ -52,9 +80,18 @@ public class BuffManager : BaseManager
     }
 
     /// <summary>
+    /// 删除指定BUFF 并添加到缓存池pool
+    /// </summary>
+    public void RemoveBuffEntity(List<BuffBaseEntity> listBuffEntity, BuffBaseEntity targetBuffEntity)
+    {
+        listBuffEntity.Remove(targetBuffEntity);
+        //移除数据到缓存
+        RemoveBuffEntity(targetBuffEntity);
+    }
+
+    /// <summary>
     /// 移除buffentity
     /// </summary>
-    /// <param name="itemBuffEntity"></param>
     public void RemoveBuffEntity(BuffBaseEntity itemBuffEntity)
     {
         itemBuffEntity.ClearData();
@@ -71,7 +108,7 @@ public class BuffManager : BaseManager
             newQueue.Enqueue(itemBuffEntity);
             dicBuffEntityPool.Add(className, newQueue);
         }
-    }
+    } 
 
     /// <summary>
     /// 获取BUFFPre实例类
@@ -101,29 +138,28 @@ public class BuffManager : BaseManager
     /// <summary>
     /// 创建buffentitybean
     /// </summary>
-    public BuffEntityBean GetBuffEntityBean(long buffId, string applierCreatureId, string targetCreatureId)
+    public BuffEntityBean GetBuffEntityBean(BuffBean buffData, string applierCreatureId, string targetCreatureId)
     {
         BuffEntityBean targetEntityBean = null;
         if (queueBuffEntityPool.Count > 0)
         {
             targetEntityBean = queueBuffEntityPool.Dequeue();
-            targetEntityBean.SetData(buffId, applierCreatureId, targetCreatureId);
+            targetEntityBean.SetData(buffData, applierCreatureId, targetCreatureId);
         }
         if (targetEntityBean == null)
         {
-            targetEntityBean = new BuffEntityBean(buffId, applierCreatureId, targetCreatureId);
+            targetEntityBean = new BuffEntityBean(buffData, applierCreatureId, targetCreatureId);
         }
         return targetEntityBean;
     }
-
-    
 
     /// <summary>
     /// 创建buffentity
     /// </summary>
     public BuffBaseEntity GetBuffEntity(BuffEntityBean buffEntity)
     {
-        string className = $"{buffEntity.buffInfo.class_entity}";
+        BuffInfoBean buffInfo = buffEntity.GetBuffInfo();
+        string className = $"{buffInfo.class_entity}";
         BuffBaseEntity targetEntity = null;
         if (dicBuffEntityPool.TryGetValue(className, out var targetQueue))
         {
@@ -145,10 +181,23 @@ public class BuffManager : BaseManager
         targetEntity.SetData(buffEntity);
         return targetEntity;
     }
+    
+    /// <summary>
+    /// 创建buffentity
+    /// </summary>
+    public BuffBaseEntity GetBuffEntity(BuffBean buffData, string applierCreatureId, string targetCreatureId)
+    {
+        var buffEntityBean = GetBuffEntityBean(buffData, applierCreatureId, targetCreatureId);
+        var buffEntity = GetBuffEntity(buffEntityBean);
+        return buffEntity;
+    }
     #endregion
 
     #region 深渊馈赠BUFF
-    public List<BuffBaseEntity>  GetAbyssalBlessingBuffsActivie(AbyssalBlessingEntityBean abyssalBlessingEntityBean)
+    /// <summary>
+    /// 获取指定深渊馈赠的BUFF
+    /// </summary>
+    public List<BuffBaseEntity> GetAbyssalBlessingBuffsActivie(AbyssalBlessingEntityBean abyssalBlessingEntityBean)
     {
         if (dicAbyssalBlessingBuffsActivie.TryGetValue(abyssalBlessingEntityBean, out var abyssalBlessingBuffsActivieList))
         {
@@ -156,46 +205,19 @@ public class BuffManager : BaseManager
         }
         return null;
     }
-
-    /// <summary>
-    /// 删除指定深渊馈赠的BUFF 并添加到缓存池pool
-    /// </summary>
-    public void RemoveAbyssalBlessingBuffsActivie(List<BuffBaseEntity> listBuffEntity)
-    {
-        for (int i = 0; i < listBuffEntity.Count; i++)
-        {
-            BuffBaseEntity itemBuffEntity = listBuffEntity[i];
-            if (itemBuffEntity != null)
-            {
-                //移除数据到缓存
-                RemoveBuffEntity(itemBuffEntity);
-            }
-        }
-    }
     #endregion
 
     #region 生物BUFF
     /// <summary>
     /// 获取指定生物的buff
     /// </summary>
-    public List<BuffBaseEntity> GetCreatureBuffsActivie(string creatureUUId)
+    public List<BuffBaseEntity> GetFightCreatureBuffsActivie(string creatureUUId)
     {
-        if (dicCreatureBuffsActivie.TryGetValue(creatureUUId, out var creatureBuffsActivieList))
+        if (dicFightCreatureBuffsActivie.TryGetValue(creatureUUId, out var creatureBuffsActivieList))
         {
             return creatureBuffsActivieList;
         }
         return null;
-    }
-
-
-    /// <summary>
-    /// 删除指定生物的BUFF 并添加到缓存池pool
-    /// </summary>
-    public void RemoveCreatureBuffActivie(List<BuffBaseEntity> listBuffEntity, BuffBaseEntity itemBuffEntity)
-    {
-        listBuffEntity.Remove(itemBuffEntity);
-        //移除数据到缓存
-        RemoveBuffEntity(itemBuffEntity);
     }
     #endregion
 }

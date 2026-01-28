@@ -19,7 +19,7 @@ public class AIIntentAttackCreatureAttack : AIBaseIntent
         timeUpdateAttackPre = 0;
         timeUpdateAttacking = 0;
         attackState = 0;
-        timeUpdateAttackPreCD = fightCreatureData.GetASPD();
+        timeUpdateAttackPreCD = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD);
         timeUpdateAttackingCD = fightCreatureData.creatureData.GetAttackAnimTime();
         //设置待机动作
         selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true);
@@ -35,7 +35,7 @@ public class AIIntentAttackCreatureAttack : AIBaseIntent
             if (timeUpdateAttackPre >= timeUpdateAttackPreCD)
             {
                 timeUpdateAttackPre = 0;
-                timeUpdateAttackPreCD = fightCreatureData.GetASPD();
+                timeUpdateAttackPreCD = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD);
                 AttackDefCreatureStart();
             }
         }

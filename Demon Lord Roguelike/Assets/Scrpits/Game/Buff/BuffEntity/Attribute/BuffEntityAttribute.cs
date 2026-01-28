@@ -9,10 +9,11 @@ public class BuffEntityAttribute : BuffBaseEntity
     public override void SetData(BuffEntityBean buffEntityData)
     {
         base.SetData(buffEntityData);
-        string classEntityData = buffEntityData.buffInfo.class_entity_data;
+        var buffInfo = buffEntityData.GetBuffInfo();
+        string classEntityData = buffInfo.class_entity_data;
         if (classEntityData.IsNull())
         {
-            LogUtil.LogError($"初始化BuffEntityAttribute失败，class_entity_data为空 buffID:{buffEntityData.buffInfo.id}");
+            LogUtil.LogError($"初始化BuffEntityAttribute失败，class_entity_data为空 buffID:{buffEntityData.buffId}");
         }
         else
         {
@@ -20,11 +21,17 @@ public class BuffEntityAttribute : BuffBaseEntity
         }
     }
 
+    public override void UpdateBuffTime(float buffTime)
+    {
+        buffEntityData.timeUpdate += buffTime;
+    }
+
     public virtual float GetChangeData(CreatureAttributeTypeEnum attributeTypeEnum)
     {
         if (attributeType == attributeTypeEnum && CheckIsPre(buffEntityData))
         {
-            return buffEntityData.buffInfo.trigger_value;
+            float triggerValue = buffEntityData.GetTriggerValue();
+            return triggerValue;
         }
         else
         {
@@ -36,7 +43,8 @@ public class BuffEntityAttribute : BuffBaseEntity
     {
         if (attributeType == attributeTypeEnum && CheckIsPre(buffEntityData))
         {
-            return buffEntityData.buffInfo.trigger_value_rate;
+            float triggerValueRate = buffEntityData.GetTriggerValueRate();
+            return triggerValueRate;
         }
         else
         {

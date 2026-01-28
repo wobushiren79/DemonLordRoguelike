@@ -53,7 +53,7 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
             return;
         }
 
-        float moveSpeed = selfAIEntity.selfCreatureEntity.fightCreatureData.GetMSPD();
+        float moveSpeed = selfAIEntity.selfCreatureEntity.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.MSPD);
         Transform selfTF = selfAIEntity.selfCreatureEntity.creatureObj.transform;
         
         //如果目标是魔王

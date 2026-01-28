@@ -180,7 +180,8 @@ public static class FightCreatureSearchUtil
                     case CreatureSearchType.AreaSphereHPNoMax:
                     case CreatureSearchType.AreaBoxHPNoMax:
                         //不是满血
-                        if (fightCreatureData.HPCurrent < fightCreatureData.HPMax)
+                        float HPMax = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.HP);
+                        if (fightCreatureData.HPCurrent < HPMax)
                         {
                             listData.Add(targetCreature);
                         }
@@ -188,7 +189,8 @@ public static class FightCreatureSearchUtil
                     case CreatureSearchType.AreaSphereDRNoMax:
                     case CreatureSearchType.AreaBoxDRNoMax:
                         //不是满甲
-                        if (fightCreatureData.DRCurrent < fightCreatureData.DRMax)
+                        float DRMax = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.DR);
+                        if (fightCreatureData.DRCurrent < DRMax)
                         {
                             listData.Add(targetCreature);
                         }

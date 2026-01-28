@@ -3,17 +3,13 @@ public class BuffEntityInstant : BuffBaseEntity
     public override void SetData(BuffEntityBean buffEntityData)
     {
         base.SetData(buffEntityData);
-        TriggerBuff(buffEntityData);
-
+        TriggerBuffInstant(buffEntityData);
         buffEntityData.isValid = false;
     }
 
-    /// <summary>
-    /// 触发BUFF
-    /// </summary>
-    public override bool TriggerBuff(BuffEntityBean buffEntityData)
+    public override void UpdateBuffTime(float buffTime)
     {
-        bool isTriggerSuccess = base.TriggerBuff(buffEntityData);
-        return isTriggerSuccess;
+        buffEntityData.timeUpdateTotal += buffTime;
     }
+
 }

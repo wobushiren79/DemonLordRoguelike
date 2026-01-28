@@ -3,9 +3,9 @@ public class BuffEntityInstantCloneDefenseCreature : BuffEntityInstant
     /// <summary>
     /// 触发BUFF
     /// </summary>
-    public override bool TriggerBuff(BuffEntityBean buffEntityData)
+    public override bool TriggerBuffInstant(BuffEntityBean buffEntityData)
     {
-        bool isTriggerSuccess = base.TriggerBuff(buffEntityData);
+        bool isTriggerSuccess = base.TriggerBuffInstant(buffEntityData);
         if (isTriggerSuccess == false) return false;
         
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();

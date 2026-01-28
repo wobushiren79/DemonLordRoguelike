@@ -302,7 +302,7 @@ public class GameTestEditor : Editor
             if (!buffSelfDefenseTestId.IsNull())
             {
                 itemData.creatureInfo.creature_buff = buffSelfDefenseTestId;
-                itemData.creatureInfo.GetCreatureBuff();
+                itemData.creatureInfo.GetCreatureBuffs();
             }
         }
 

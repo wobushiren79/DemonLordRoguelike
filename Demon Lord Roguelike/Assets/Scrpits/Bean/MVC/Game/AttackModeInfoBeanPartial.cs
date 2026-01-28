@@ -2,18 +2,28 @@ using System;
 using System.Collections.Generic;
 public partial class AttackModeInfoBean
 {
-    protected Dictionary<long,float> dicBuffIds;
-    public Dictionary<long,float> GetBuffIds()
+    protected List<BuffBean> listBuffData;
+    /// <summary>
+    /// 获取可能会触发的BUFF
+    /// </summary>
+    /// <returns></returns>
+    public List<BuffBean> GetListBuff()
     {
         if (buff.IsNull())
         {
             return null;
         }
-        if (dicBuffIds.IsNull())
+        if (listBuffData.IsNull())
         {
-            dicBuffIds = buff.SplitForDictionaryLongFloat();
+            listBuffData = new List<BuffBean>();
+            var dicBuffData = buff.SplitForDictionaryLongFloat();
+            foreach (var item in dicBuffData)
+            {
+                BuffBean buffData = new BuffBean(item.Key, createRate: item.Value);
+                listBuffData.Add(buffData);
+            }
         }
-        return dicBuffIds;
+        return listBuffData;
     }
 
     protected float[] colliderAreaSize;
@@ -53,7 +63,7 @@ public partial class AttackModeInfoCfg
         allData.ForEach((key, value) =>
         {
             value.buff = buffTestData;
-            value.GetBuffIds();
+            value.GetListBuff();
         });
     }
     

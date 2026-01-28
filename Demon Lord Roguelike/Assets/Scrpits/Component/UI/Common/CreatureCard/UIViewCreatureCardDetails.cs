@@ -29,10 +29,10 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         SetCardIcon(creatureData);
         SetName(creatureData.creatureName);
 
-        int hp = creatureData.GetHP();
-        int dr = creatureData.GetDR();
-        int atk = creatureData.GetATK();
-        float aspd = creatureData.GetASPD();
+        int hp = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.HP);
+        int dr = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.DR);
+        int atk =  (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK);;
+        float aspd = creatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD);
         
         SetAttribute(hp, dr,atk, aspd);
         SetRarity(creatureData.rarity);

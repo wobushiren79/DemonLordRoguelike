@@ -17,6 +17,10 @@ public partial class RarityInfoBean : BaseBean
 	/// </summary>
 	public string ui_board_color_item;
 	/// <summary>
+	///buff颜色
+	/// </summary>
+	public string buff_color;
+	/// <summary>
 	///不同品质道具关系加成
 	/// </summary>
 	public int item_add_relationship;
