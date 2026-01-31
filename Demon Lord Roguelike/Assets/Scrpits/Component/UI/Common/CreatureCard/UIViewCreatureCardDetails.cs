@@ -44,8 +44,38 @@ public partial class UIViewCreatureCardDetails : BaseUIView
 
         SetDoomCouncilData();
         SetEquipData();
+        SetBuff();
 
         RefreshUILayout();
+    }
+
+    /// <summary>
+    /// 设置BUFF
+    /// </summary>
+    public void SetBuff()
+    {
+        List<BuffBean> listBuffData = creatureData.GetAllBuffData();
+        if (listBuffData.IsNull())
+        {
+            ui_Buff.gameObject.SetActive(false);
+            return;
+        }
+        ui_Buff.gameObject.SetActive(true);
+        for (int i = 0; i < ui_Buff.childCount; i++)
+        {
+            var itemChildTF = ui_Buff.GetChild(i);
+            if (i < listBuffData.Count)
+            {       
+                itemChildTF.gameObject.SetActive(true);
+                var itemBuffData = listBuffData[i];
+                var viewItem =  itemChildTF.GetComponent<UIViewBuffShowItem>();
+                viewItem.SetData(itemBuffData);
+            }
+            else
+            {
+                itemChildTF.gameObject.SetActive(false);
+            }
+        }
     }
 
     /// <summary>

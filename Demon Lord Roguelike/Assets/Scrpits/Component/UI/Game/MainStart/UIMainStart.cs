@@ -22,7 +22,7 @@ public partial class UIMainStart : BaseUIComponent
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
-        if (viewButton == ui_GameTitle)
+        if (viewButton == ui_GameTitle_Button)
         {
             OnClickForMaker();
         }

@@ -137,7 +137,8 @@ MonoBehaviour:
   uiOpenAnimTarget: {fileID: 0}
   uiManager: {fileID: 0}
   remarkData: 
-  ui_GameTitle: {fileID: 3971855899946657997}
+  ui_GameTitle_Button: {fileID: 3971855899946657997}
+  ui_GameTitle_TextMeshProUGUI: {fileID: 653520863257734699}
   ui_UIMainStartBtn_StartGame: {fileID: 636682556456503890}
   ui_UIMainStartBtn_GameSetting: {fileID: 284613336282018351}
   ui_UIMainStartBtn_ExitGame: {fileID: 3751879138073010562}

@@ -13,6 +13,10 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public int buff_type;
 	/// <summary>
+	///稀有度
+	/// </summary>
+	public int rarity;
+	/// <summary>
 	///buff触发对象类型0所有 1防御 2进攻 99防守核心
 	/// </summary>
 	public int trigger_creature_type;
@@ -65,11 +69,21 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public float trigger_time;
 	/// <summary>
+	///触发时的粒子
+	/// </summary>
+	public long trigger_effect;
+	/// <summary>
 	///名字
 	/// </summary>
 	public long name;
 	[JsonIgnore]
 	public string name_language { get { return TextHandler.Instance.GetTextById(BuffInfoCfg.fileName, name); } }
+	/// <summary>
+	///描述
+	/// </summary>
+	public long content;
+	[JsonIgnore]
+	public string content_language { get { return TextHandler.Instance.GetTextById(BuffInfoCfg.fileName, content); } }
 	/// <summary>
 	///备注
 	/// </summary>

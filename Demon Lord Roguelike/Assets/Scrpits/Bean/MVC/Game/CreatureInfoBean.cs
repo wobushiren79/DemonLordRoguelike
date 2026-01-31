@@ -81,6 +81,10 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public float attack_search_time;
 	/// <summary>
+	///攻击准备时间
+	/// </summary>
+	public float attack_pre_time;
+	/// <summary>
 	///死亡动画时间
 	/// </summary>
 	public float anim_dead_time;

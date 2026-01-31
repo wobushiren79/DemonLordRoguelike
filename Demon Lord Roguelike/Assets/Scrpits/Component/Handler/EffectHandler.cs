@@ -169,7 +169,7 @@ public partial class EffectHandler
     /// <summary>
     /// 展示粒子
     /// </summary>
-    public void ShowEffect(long effectId, Vector3 targetPos, Direction2DEnum direction, float size)
+    public void ShowEffect(long effectId, Vector3 targetPos, Direction2DEnum direction = Direction2DEnum.None, float size = 1)
     {
         targetPos += new Vector3(0, 0.002f, -0.001f);
         var effectInfo = EffectInfoCfg.GetItemData(effectId);

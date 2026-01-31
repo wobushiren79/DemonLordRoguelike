@@ -1,0 +1,24 @@
+public class BuffEntityPeriodicAttackAgain : BuffEntityPeriodic
+{
+    public override bool TriggerBuffPeriodic(BuffEntityBean buffEntityData)
+    {
+        bool isTriggerSuccess = base.TriggerBuffPeriodic(buffEntityData);
+        if (isTriggerSuccess == false) return false;
+        
+        //获取指定战斗生物
+        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        var targetCreature = gameFightLogic.fightData.GetCreatureById(buffEntityData.targetCreatureId, CreatureFightTypeEnum.None);
+        if (targetCreature == null || targetCreature.fightCreatureData == null)
+        {
+            return false;
+        }
+        //如果生物没有再攻击中就不用执行
+        if (targetCreature.aiEntity.currentIntent is AIIntentCreatureAttack aIIntentCreatureAttack)
+        {
+            aIIntentCreatureAttack.AttackImm();
+            return true;
+        }
+        return false;
+    }
+
+}

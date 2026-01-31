@@ -136,6 +136,7 @@ public class FightCreatureBean
         }
     }
 
+    #region 获取
     /// <summary>
     /// 获取基础属性
     /// </summary>
@@ -157,7 +158,23 @@ public class FightCreatureBean
         return colorBodyCurrent;
     }
 
+    /// <summary>
+    /// 获取攻击时间数据
+    /// </summary>
+    /// <returns></returns>
+    public void GetAttackTimeData(out float timeAttackPre,out float timeAttacking)
+    {
+        float attributeASPD = GetAttribute(CreatureAttributeTypeEnum.ASPD);
+        
+        float attackPreTime = creatureData.GetAttackPreTime();
+        float attackAnimTime = creatureData.GetAttackAnimTime();
 
+        timeAttackPre =  MathUtil.InterpolationLerp(attributeASPD, 0, 100, attackPreTime, 0.02f);
+        timeAttacking =  MathUtil.InterpolationLerp(attributeASPD, 0, 100, attackAnimTime, 0.02f);
+    }
+    #endregion
+
+    #region 改变护甲和生命
     public void ChangeDRAndHP(int changeValue,
         out int curDR, out int curHP,
         out int changeDRReal, out int changeHPReal,
@@ -258,4 +275,5 @@ public class FightCreatureBean
             RefreshBaseAttribute();
         }
     }
+    #endregion
 }

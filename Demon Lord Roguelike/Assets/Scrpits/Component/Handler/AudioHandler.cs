@@ -46,7 +46,7 @@ public partial class AudioHandler
         if (tagetButton != null)
         {
             Image targetImage = tagetButton.image;
-            if (targetImage.sprite == null)
+            if (targetImage == null || targetImage.sprite == null)
             {
                 return;
             }

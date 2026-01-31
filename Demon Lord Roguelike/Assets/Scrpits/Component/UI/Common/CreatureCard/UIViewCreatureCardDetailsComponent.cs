@@ -20,7 +20,7 @@ public partial class UIViewCreatureCardDetails
 
     public Image ui_CardBgBoard;
 
-    public Image ui_Class_Image;
+    public Image ui_Class;
 
     public Image ui_Star;
 
@@ -65,6 +65,8 @@ public partial class UIViewCreatureCardDetails
     public Image ui_ClassIcon;
 
     public TextMeshProUGUI ui_ClassName;
+
+    public RectTransform ui_Buff;
 
 
 }

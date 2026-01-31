@@ -39,7 +39,7 @@ public partial class CreatureBean
 
     public CreatureBean()
     {
-        
+
     }
 
     public CreatureBean(long creatureId)
@@ -94,19 +94,30 @@ public partial class CreatureBean
     #endregion
 
     #region BUFF相关
-    public List<BuffBean> GetAllBuffIds()
+    /// <summary>
+    /// 获取所有buff
+    /// </summary>
+    /// <param name="hasSelfBuff">是否有自身BUFF</param>
+    /// <returns></returns>
+    public List<BuffBean> GetAllBuffData(bool getSelfBuff = true, bool getRarityBuff = true)
     {
         List<BuffBean> listAllBuff = new List<BuffBean>();
         //获取自身BUFF
-        List<BuffBean> listSelfBuff = creatureInfo.GetCreatureBuffs();
-        if (!listSelfBuff.IsNull())
+        if (getSelfBuff)
         {
-            listAllBuff.AddRange(listSelfBuff);
+            List<BuffBean> listSelfBuff = creatureInfo.GetCreatureBuffs();
+            if (!listSelfBuff.IsNull())
+            {
+                listAllBuff.AddRange(listSelfBuff);
+            }
         }
         //获取稀有度BUFF
-        foreach (var item in dicRarityBuff)
+        if (getRarityBuff)
         {
-            listAllBuff.Add(item.Value);
+            foreach (var item in dicRarityBuff)
+            {
+                listAllBuff.Add(item.Value);
+            }
         }
         return listAllBuff;
     }
@@ -161,7 +172,7 @@ public partial class CreatureBean
             dicEquipItemData.Add(itemType, changeItem);
         }
     }
-    
+
     public void ChangeEquip(ItemTypeEnum itemType, ItemBean changeItem)
     {
         ChangeEquip(itemType, changeItem, out ItemBean beforeItem);
@@ -324,12 +335,12 @@ public partial class CreatureBean
     public void ChangeSkinColor(CreatureSkinTypeEnum creatureSkinType, Color skinColor)
     {
         //如果已经有这个类型的皮肤类型，则覆盖原来的
-        if (dicSkinData.TryGetValue(creatureSkinType,out var spineSkinData))
+        if (dicSkinData.TryGetValue(creatureSkinType, out var spineSkinData))
         {
             if (spineSkinData != null)
             {
                 var creatureModelInfo = CreatureModelInfoCfg.GetItemData(spineSkinData.skinId);
-                if(creatureModelInfo != null && creatureModelInfo.color_state != 0)
+                if (creatureModelInfo != null && creatureModelInfo.color_state != 0)
                 {
                     spineSkinData.hasColor = true;
                     spineSkinData.skinColor.SetColor(skinColor);
@@ -352,7 +363,7 @@ public partial class CreatureBean
     /// </summary>
     /// <param name="showType">0普通皮肤 1立绘皮肤（表情）</param>
     /// <returns></returns>
-    public Dictionary<string, SpineSkinBean> GetSkinData(int showType = 0, 
+    public Dictionary<string, SpineSkinBean> GetSkinData(int showType = 0,
         bool isNeedWeapon = true, bool isNeedEquip = true)
     {
         Dictionary<string, SpineSkinBean> dicSkin = new Dictionary<string, SpineSkinBean>();
@@ -488,7 +499,7 @@ public partial class CreatureBean
     {
         //保底容错
         if (creatureInfo.attack_search_time <= 0)
-            creatureInfo.attack_search_time = 0.2f;
+            creatureInfo.attack_search_time = 1f;
         return creatureInfo.attack_search_time;
     }
 
@@ -499,6 +510,18 @@ public partial class CreatureBean
     public float GetAttackAnimTime()
     {
         return creatureInfo.anim_attack_time;
+    }
+
+    /// <summary>
+    /// 获取攻击准备时间
+    /// </summary>
+    /// <returns></returns>
+    public float GetAttackPreTime()
+    {
+        //保底容错
+        if (creatureInfo.attack_pre_time <= 0)
+            creatureInfo.attack_pre_time = 1f;
+        return creatureInfo.attack_pre_time;
     }
     #endregion
 }

@@ -35,7 +35,7 @@ public class GameFightCreatureEntity
         //设置spine
         CreatureHandler.Instance.SetCreatureData(creatureSkeletionAnimation, fightCreatureData.creatureData, isSetSkeletonDataAsset: false);
         //设置生物BUFF
-        List<BuffBean> creatureBuffs = fightCreatureData.creatureData.GetAllBuffIds();
+        List<BuffBean> creatureBuffs = fightCreatureData.creatureData.GetAllBuffData();
         BuffHandler.Instance.AddFightCreatureBuff(creatureBuffs, fightCreatureData.creatureData.creatureUUId, fightCreatureData.creatureData.creatureUUId);
         //设置身体颜色
         RefreshBodyColor();
@@ -154,7 +154,8 @@ public class GameFightCreatureEntity
     /// <summary>
     /// 回复HP
     /// </summary>
-    public void RegainHP(string attackerId, string attackedId, int hpChangeData, Action<int> actionForNoDead = null, Action<int> actionForDead = null)
+    public void RegainHP(string attackerId, string attackedId, int hpChangeData, 
+        Action<int> actionForNoDead = null, Action<int> actionForDead = null)
     {
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var fightRecordsData = gameLogic.fightData.fightRecordsData;
@@ -188,26 +189,44 @@ public class GameFightCreatureEntity
     /// </summary>
     public void RegainDR(BaseAttackMode baseAttackMode)
     {
+        RegainDR(baseAttackMode.attackerId, fightCreatureData.creatureData.creatureUUId, baseAttackMode.attackerDamage,
+            actionForNoDead: (changeHPReal) =>
+            {
+                //增加BUFF
+                AddBuff(baseAttackMode);
+            },
+            actionForDead: (changeHPReal) =>
+            {
+
+            }
+        );
+    }
+
+    /// <summary>
+    /// 回复护甲
+    /// </summary>
+    public void RegainDR(string attackerId, string attackedId, int drChangeData, 
+        Action<int> actionForNoDead = null, Action<int> actionForDead = null)
+    {
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var fightRecordsData = gameLogic.fightData.fightRecordsData;
-        fightCreatureData.ChangeDR(baseAttackMode.attackerDamage, out int leftDR, out int changeDRReal);
+        fightCreatureData.ChangeDR(drChangeData, out int leftDR, out int changeDRReal);
 
         //记录数据
-        fightRecordsData.AddCreatureRegainDR(baseAttackMode.attackerId, changeDRReal);
-        fightRecordsData.AddCreatureRegainDRReceived(fightCreatureData.creatureData.creatureUUId, changeDRReal);
+        fightRecordsData.AddCreatureRegainDR(attackerId, changeDRReal);
+        fightRecordsData.AddCreatureRegainDRReceived(attackedId, changeDRReal);
         //检测一下是否死亡
         CheckDead
         (
             //没有死亡
             actionForNoDead: () =>
             {
-                //增加BUFF
-                AddBuff(baseAttackMode);
+                actionForNoDead?.Invoke(changeDRReal);
             },
             //死亡之后
             actionForDead: () =>
             {
-
+                actionForDead?.Invoke(changeDRReal);
             }
         );
         //显示数字

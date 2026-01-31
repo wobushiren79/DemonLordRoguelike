@@ -5,6 +5,7 @@ public class BuffEntityPeriodicHPChange : BuffEntityPeriodic
         bool isTriggerSuccess = base.TriggerBuffPeriodic(buffEntityData);
         if (isTriggerSuccess == false) return false;
 
+        //获取指定生物
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var targetCreature = gameFightLogic.fightData.GetCreatureById(buffEntityData.targetCreatureId, CreatureFightTypeEnum.None);
         if (targetCreature == null || targetCreature.fightCreatureData == null)
@@ -16,14 +17,14 @@ public class BuffEntityPeriodicHPChange : BuffEntityPeriodic
             int changeHPData = 0;
             var buffInfo = buffEntityData.GetBuffInfo();
 
-            //固定伤害计算
+            //固定计算
             if (buffInfo.trigger_value > 0)
             {
                 float triggerValue = buffEntityData.GetTriggerValue();
                 changeHPData += (int)triggerValue;
             }
 
-            //百分比伤害计算
+            //百分比计算
             float triggerValueRate = buffEntityData.GetTriggerValueRate();
             if (triggerValueRate > 0)
             {

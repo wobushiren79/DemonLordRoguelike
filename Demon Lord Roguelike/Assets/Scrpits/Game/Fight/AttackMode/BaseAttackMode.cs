@@ -152,7 +152,7 @@ public class BaseAttackMode
         {
             float[] colliderAreaSize = attackModeInfo.GetColliderAreaSize();
             Direction2DEnum effectDirection = attackDirection.x > 0 ? Direction2DEnum.Right : Direction2DEnum.Left;
-            EffectHandler.Instance.ShowEffect(attackModeInfo.effect_hit, startPosition, effectDirection, colliderAreaSize[0]);
+            EffectHandler.Instance.ShowEffect(attackModeInfo.effect_hit, startPosition,direction: effectDirection,size: colliderAreaSize[0]);
         }
     }
     #endregion

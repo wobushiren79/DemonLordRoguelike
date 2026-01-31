@@ -133,6 +133,11 @@ public class UserUnlockBean
     public int GetUnlockResearchLeveByUnlockId(long unlockId)
     {
         ResearchInfoBean researchInfo = ResearchInfoCfg.GetItemDataByUnlockId(unlockId);
+        if (researchInfo == null)
+        {
+            LogUtil.LogError($"GetUnlockResearchLeveByUnlockId unlockId:{unlockId} 没有找到研究数据");
+            return 0;
+        }
         return GetUnlockResearchLevel(researchInfo);
     }
 

@@ -808,6 +808,7 @@ MonoBehaviour:
       relationship: 0
       creatureNpcData:
         npcId: 0
+      creatureState: 1
     cardUseState: 0
     cardState: 0
     originalCardPos: {x: 0, y: 0}

@@ -9,4 +9,8 @@ public partial class RarityInfoBean
 }
 public partial class RarityInfoCfg
 {
+    public static RarityInfoBean GetItemData(RarityEnum key)
+    {
+        return GetItemData((long)key);
+    }
 }

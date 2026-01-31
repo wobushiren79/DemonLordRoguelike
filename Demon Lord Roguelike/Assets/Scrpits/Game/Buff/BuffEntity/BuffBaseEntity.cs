@@ -118,11 +118,30 @@ public class BuffBaseEntity
                 return false;
             }
         }
+        ShowBuffEffect();
         return true;
     }
     #endregion
 
     #region 工具方法
+    /// <summary>
+    /// 展示BUFF粒子
+    /// </summary>
+    public virtual void ShowBuffEffect()
+    {
+        var buffInfo = buffEntityData.GetBuffInfo();
+        if (buffInfo.trigger_effect == 0)
+            return; 
+        //获取指定生物
+        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        var targetCreature = gameFightLogic.fightData.GetCreatureById(buffEntityData.targetCreatureId, CreatureFightTypeEnum.None);
+        if (targetCreature == null || targetCreature.fightCreatureData == null)
+        {
+            return;
+        }
+        EffectHandler.Instance.ShowEffect(buffInfo.trigger_effect, targetCreature.creatureObj.transform.position);
+    }
+
     /// <summary>
     /// 检测是否满足前置条件
     /// </summary>

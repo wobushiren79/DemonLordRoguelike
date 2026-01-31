@@ -6,6 +6,17 @@ public partial class BuffInfoBean
 {
     protected Color colorBody = Color.white;
 
+    /// <summary>
+    /// 获取BUFF稀有度
+    /// </summary>
+    public RarityEnum GetRarity()
+    {
+        return (RarityEnum)rarity;
+    }
+
+    /// <summary>
+    /// 获取BUFF类型
+    /// </summary>
     public BuffTypeEnum GetBuffType()
     {
         return (BuffTypeEnum)buff_type;

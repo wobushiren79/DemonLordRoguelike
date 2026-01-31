@@ -1,7 +1,7 @@
 public class BuffEntityConditionalAddCrystal : BuffEntityConditional
 {
-    public string nameRegisterEvent = null;
     public FightDropCrystalBean addFightDropCrystal;
+    public string nameRegisterEvent = null;
 
     public override void SetData(BuffEntityBean buffEntityData)
     {
@@ -10,10 +10,9 @@ public class BuffEntityConditionalAddCrystal : BuffEntityConditional
         if (!buffInfo.class_entity_data.IsNull())
         {
             nameRegisterEvent = buffInfo.class_entity_data;
-            //监听魔晶掉落事件
-            if (buffInfo.class_entity_data.Equals(EventsInfo.GameFightLogic_CreatureDeadDropCrystal))
+            if (nameRegisterEvent.Equals(EventsInfo.GameFightLogic_CreatureDeadDropCrystal))
             {
-                EventHandler.Instance.RegisterEvent<FightDropCrystalBean>(buffInfo.class_entity_data, EventForCreatureDeadDropCrystal);
+                EventHandler.Instance.RegisterEvent<FightDropCrystalBean>(nameRegisterEvent, EventForCreatureDeadDropCrystal);
             }
         }
     }
@@ -23,9 +22,8 @@ public class BuffEntityConditionalAddCrystal : BuffEntityConditional
         base.ClearData();
         //清理数据的时候需要清理一下注册的信息
         if (nameRegisterEvent != null)
-        {
-            var buffInfo = buffEntityData.GetBuffInfo();
-            if (buffInfo.class_entity_data.Equals(EventsInfo.GameFightLogic_CreatureDeadDropCrystal))
+        { 
+            if (nameRegisterEvent.Equals(EventsInfo.GameFightLogic_CreatureDeadDropCrystal))
             {
                 EventHandler.Instance.UnRegisterEvent<FightDropCrystalBean>(nameRegisterEvent, EventForCreatureDeadDropCrystal);
             }
