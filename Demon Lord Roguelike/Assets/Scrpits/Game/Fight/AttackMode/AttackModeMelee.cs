@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class AttackModeMelee : BaseAttackMode
 {
-    public override void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
+    public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
         if (attacker != null && attacked != null && !attacked.IsDead())

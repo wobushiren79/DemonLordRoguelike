@@ -31,19 +31,25 @@ public class FightCreatureBean
 
     public FightCreatureBean(long id, CreatureFightTypeEnum creatureFightType)
     {
-        this.creatureFightType = creatureFightType;
         creatureData = new CreatureBean(id);
-        ResetData();
+        SetData(creatureData, creatureFightType);
     }
 
     public FightCreatureBean(NpcInfoBean npcInfo, CreatureFightTypeEnum creatureFightType)
     {
-        this.creatureFightType = creatureFightType;
         creatureData = new CreatureBean(npcInfo);
-        ResetData();
+        SetData(creatureData, creatureFightType);
     }
 
     public FightCreatureBean(CreatureBean creatureData, CreatureFightTypeEnum creatureFightType)
+    {
+        SetData(creatureData, creatureFightType);
+    }
+
+    /// <summary>
+    /// 设置数据
+    /// </summary>
+    public void SetData(CreatureBean creatureData, CreatureFightTypeEnum creatureFightType)
     {
         this.creatureFightType = creatureFightType;
         this.creatureData = creatureData;
@@ -120,7 +126,7 @@ public class FightCreatureBean
                 return;
             }
         }
-        //如果是属性类
+        //如果是属性类 
         if (buffEntity is BuffEntityAttribute buffEntityAttribute)
         {
             CreatureAttributeTypeEnum targetAttributeType = buffEntityAttribute.attributeType;

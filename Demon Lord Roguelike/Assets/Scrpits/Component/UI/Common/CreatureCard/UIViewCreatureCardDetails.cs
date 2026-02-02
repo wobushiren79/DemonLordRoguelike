@@ -54,7 +54,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     /// </summary>
     public void SetBuff()
     {
-        List<BuffBean> listBuffData = creatureData.GetAllBuffData();
+        List<BuffBean> listBuffData = creatureData.GetListBuffData();
         if (listBuffData.IsNull())
         {
             ui_Buff.gameObject.SetActive(false);

@@ -8,7 +8,7 @@ public class AIDefenseCoreCreatureEntity : AICreatureEntity
     /// <summary>
     /// 初始化数据
     /// </summary>
-    public void InitData(GameFightCreatureEntity selfDefenseCoreCreatureEntity)
+    public void InitData(FightCreatureEntity selfDefenseCoreCreatureEntity)
     {
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
         this.selfCreatureEntity = selfDefenseCoreCreatureEntity;

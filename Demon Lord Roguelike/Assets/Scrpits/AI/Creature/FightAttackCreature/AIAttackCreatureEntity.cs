@@ -12,7 +12,7 @@ public class AIAttackCreatureEntity : AICreatureEntity
     /// 初始化数据
     /// </summary>
     /// <param name="selfAttCreatureEntity"></param>
-    public void InitData(GameFightCreatureEntity selfAttCreatureEntity)
+    public void InitData(FightCreatureEntity selfAttCreatureEntity)
     {
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
         RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_CreatureDeadStart, EventForGameFightLogicCreatureDeadStart);

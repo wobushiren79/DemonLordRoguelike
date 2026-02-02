@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class AttackModeRegainDR : AttackModeRegain
 {
-    public override void HandleRegain(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked)
+    public override void HandleRegain(FightCreatureEntity attacker, FightCreatureEntity attacked)
     {
         base.HandleRegain(attacker, attacked);
         attacked.RegainDR(this);

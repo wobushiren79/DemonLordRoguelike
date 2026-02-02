@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class AttackModeOverlap : BaseAttackMode
 {
-    public override void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
+    public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
         if (attacker == null || attacker.IsDead())
@@ -15,7 +15,7 @@ public class AttackModeOverlap : BaseAttackMode
             return;
         }
         //检测周围的敌人
-        CheckHitTargetArea(attacker.creatureObj.transform.position, (GameFightCreatureEntity itemAttacked) =>
+        CheckHitTargetArea(attacker.creatureObj.transform.position, (FightCreatureEntity itemAttacked) =>
         {
             if (itemAttacked != null && !itemAttacked.IsDead())
             {

@@ -7,7 +7,7 @@ public class AIIntentCreatureAttack : AIBaseIntent
     public float timeUpdateAttackPreCD = 0.2f;
     public float timeUpdateAttacking = 0;
     public float timeUpdateAttackingCD = 0.2f;
-    //目标AI
+    //当前AIEntity
     public AICreatureEntity selfAIEntity;
     //战斗生物数据
     public FightCreatureBean fightCreatureData;
@@ -20,7 +20,6 @@ public class AIIntentCreatureAttack : AIBaseIntent
 
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
-        selfAIEntity = aiEntity as AIAttackCreatureEntity;
         fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
         timeUpdateAttackPre = 0;
         timeUpdateAttacking = 0;

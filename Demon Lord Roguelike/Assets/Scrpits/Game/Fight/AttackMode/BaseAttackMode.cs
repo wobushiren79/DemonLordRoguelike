@@ -70,7 +70,7 @@ public class BaseAttackMode
     /// </summary>
     /// <param name="attacker">攻击方</param>
     /// <param name="attacked">被攻击方</param>
-    public virtual void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
+    public virtual void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         attackerDamage = 0;
         if (attacker != null)
@@ -175,7 +175,7 @@ public class BaseAttackMode
     /// <summary>
     /// 检测是否击中生物
     /// </summary>
-    public virtual GameFightCreatureEntity CheckHitTargetForSingle()
+    public virtual FightCreatureEntity CheckHitTargetForSingle()
     {
         return CheckHitTargetForSingle(gameObject.transform.position);
     }
@@ -183,7 +183,7 @@ public class BaseAttackMode
     /// <summary>
     /// 检测是否击中生物
     /// </summary>
-    public virtual List<GameFightCreatureEntity> CheckHitTarget()
+    public virtual List<FightCreatureEntity> CheckHitTarget()
     {
         return CheckHitTarget(gameObject.transform.position);
     }
@@ -191,9 +191,9 @@ public class BaseAttackMode
     /// <summary>
     /// 检测是否击中生物
     /// </summary>
-    public virtual GameFightCreatureEntity CheckHitTargetForSingle(Vector3 checkPosition)
+    public virtual FightCreatureEntity CheckHitTargetForSingle(Vector3 checkPosition)
     {
-        List<GameFightCreatureEntity> listData = CheckHitTarget(checkPosition);
+        List<FightCreatureEntity> listData = CheckHitTarget(checkPosition);
         if (listData.IsNull())
         {
             return null;
@@ -204,7 +204,7 @@ public class BaseAttackMode
     /// <summary>
     /// 检测是否击中生物
     /// </summary>
-    public virtual List<GameFightCreatureEntity> CheckHitTarget(Vector3 checkPosition)
+    public virtual List<FightCreatureEntity> CheckHitTarget(Vector3 checkPosition)
     {
         CreatureSearchType searchType = attackModeInfo.GetCreatureSerachType();
         CreatureFightTypeEnum searchCreatureType = CreatureFightTypeEnum.None;
@@ -222,7 +222,7 @@ public class BaseAttackMode
     /// <summary>
     /// 检测范围内敌人
     /// </summary>
-    public bool CheckHitTargetArea(Vector3 checkPosition, Action<GameFightCreatureEntity> actionForHitItem)
+    public bool CheckHitTargetArea(Vector3 checkPosition, Action<FightCreatureEntity> actionForHitItem)
     {
         bool hasHitter = false;
         Collider[] targetColliders = GetHitTargetAreaCollider(checkPosition);

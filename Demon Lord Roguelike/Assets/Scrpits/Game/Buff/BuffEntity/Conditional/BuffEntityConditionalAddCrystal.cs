@@ -36,6 +36,7 @@ public class BuffEntityConditionalAddCrystal : BuffEntityConditional
     /// </summary>
     public void EventForCreatureDeadDropCrystal(FightDropCrystalBean fightDropCrystal)
     {
+        if(buffEntityData.isValid == false) return;
         addFightDropCrystal = FightHandler.Instance.manager.GetFightDropCrystalBean(fightDropCrystal);
         //触发BUFF
         TriggerBuffConditional(buffEntityData);

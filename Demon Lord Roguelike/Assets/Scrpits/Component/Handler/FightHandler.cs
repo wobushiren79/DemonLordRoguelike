@@ -91,7 +91,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     /// <param name="attacker">攻击者</param>
     /// <param name="attacked">被攻击者</param>
     /// <param name="actionForCreateEnd">创建结束</param>
-    public void StartCreateAttackMode(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action<BaseAttackMode> actionForCreateEnd)
+    public void StartCreateAttackMode(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForCreateEnd)
     {
         //只保存基础生物ID和武器ID 用于初始化攻击的样式
         long weaponItemId = 0;
@@ -249,7 +249,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     /// <summary>
     /// 移除战斗预制
     /// </summary>
-    public void RemoveFightPrefab(GameFightPrefabEntity targetEntity)
+    public void RemoveFightPrefab(FightPrefabEntity targetEntity)
     {
         targetEntity.gameObject.SetActive(false);
         manager.RemoveFightPrefabCommon(targetEntity);

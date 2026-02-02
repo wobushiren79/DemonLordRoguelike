@@ -24,7 +24,7 @@ public class GameTestEditor : Editor
     public int attackModeDefenseTestId = 0;//攻击模式测试ID
 
     public string buffSelfAttackTestId = "";//buff测试ID
-    public string buffSelfDefenseTestId = "";//buff测试ID
+    public string buffSelfDefenseTestId = "11000100001";//buff测试ID
 
     public string buffTestId = "1000100001:1";//攻击模式测试ID
 
@@ -118,7 +118,7 @@ public class GameTestEditor : Editor
     {
         if (GUILayout.Button("显示卡片") && Application.isPlaying)
         {
-            FightCreatureBean fightCreature = new FightCreatureBean(creatureId, CreatureFightTypeEnum.FightDefense);
+            FightCreatureBean fightCreature = CreatureHandler.Instance.GetFightCreatureData(creatureId, CreatureFightTypeEnum.FightDefense);
             fightCreature.creatureData.AddSkinForBase();
             launcher.StartForCardTest(fightCreature);
         }
@@ -306,7 +306,7 @@ public class GameTestEditor : Editor
             }
         }
 
-        FightCreatureBean fightDefCoreData = new FightCreatureBean(2001, CreatureFightTypeEnum.FightDefenseCore);
+        FightCreatureBean fightDefCoreData = CreatureHandler.Instance.GetFightCreatureData(2001, CreatureFightTypeEnum.FightDefenseCore);
         fightDefCoreData.creatureData.AddSkinForBase();
         fightData.fightDefenseCoreData = fightDefCoreData;
         fightData.InitData();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.UI;
@@ -105,8 +106,33 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
         if (!listBuffBaseEntity.IsNull())
         {
             for (int i = 0; i < listBuffBaseEntity.Count; i++)
-            {
-                listBuffBaseEntity[i].buffEntityData.isValid = false;
+            { 
+                var buffEntity = listBuffBaseEntity[i];
+                //死亡后触发的BUFF不执行移除 会在内部方法里面自己移除
+                if (buffEntity is BuffEntityConditionalDead)
+                {
+                    continue;
+                }
+                buffEntity.buffEntityData.isValid = false;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 移除战斗生物BUFF 指定类型
+    /// </summary>
+    public void RemoveFightCreatureBuffs<T>(string creatureId) where T : BuffBaseEntity
+    {
+        List<BuffBaseEntity> listBuffBaseEntity = manager.GetFightCreatureBuffsActivie(creatureId);
+        if (!listBuffBaseEntity.IsNull())
+        {
+            for (int i = 0; i < listBuffBaseEntity.Count; i++)
+            { 
+                var buffEntity = listBuffBaseEntity[i];
+                if (buffEntity is T)
+                {
+                    buffEntity.buffEntityData.isValid = false;
+                }
             }
         }
     }

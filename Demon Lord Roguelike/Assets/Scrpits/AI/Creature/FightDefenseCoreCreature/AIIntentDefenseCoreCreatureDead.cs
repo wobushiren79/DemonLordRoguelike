@@ -2,34 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AIIntentDefenseCoreCreatureDead : AIBaseIntent
+public class AIIntentDefenseCoreCreatureDead : AIIntentCreatureDead
 {
-    public float timeUpdateForDead = 0f;
-    public float timeUpdateForDeadCD = 1.1f;
-
-    //目标AI
-    public AIDefenseCoreCreatureEntity selfAIEntity;
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
-        timeUpdateForDead = 0;
         selfAIEntity = aiEntity as AIDefenseCoreCreatureEntity;
-        selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Dead, false);
-    }
-
-    public override void IntentUpdate(AIBaseEntity aiEntity)
-    {
-        timeUpdateForDead += Time.deltaTime;
-        if (timeUpdateForDead >= timeUpdateForDeadCD)
-        {
-            timeUpdateForDead = 0;
-            var selfFightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
-            CreatureHandler.Instance.RemoveFightCreatureEntity(selfAIEntity.selfCreatureEntity, CreatureFightTypeEnum.FightDefenseCore);    
-            EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadEnd, selfFightCreatureData);
-        }
-    }
-
-    public override void IntentLeaving(AIBaseEntity aiEntity)
-    {
-
+        creatureFightType = CreatureFightTypeEnum.FightDefenseCore;
+        base.IntentEntering(selfAIEntity);
     }
 }

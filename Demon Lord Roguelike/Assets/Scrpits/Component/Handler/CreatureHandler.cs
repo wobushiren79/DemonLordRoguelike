@@ -73,7 +73,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// </summary>
     public async Task<GameObject> CreateDoomCouncilCreature(CreatureBean creatureData, Vector3 creaturePos)
     {
-        var targetObj = manager.LoadDoomCouncilCreatureObj();
+        var targetObj = manager.GetDoomCouncilCreatureObj();
         Transform rendererTF = targetObj.transform.Find("Spine");
         SkeletonAnimation skeletonAnimation = rendererTF.GetComponent<SkeletonAnimation>();
         SetCreatureData(skeletonAnimation, creatureData, isNeedWeapon: false);
@@ -91,7 +91,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// <summary>
     /// 生成防御核心生物
     /// </summary>
-    public async Task<GameFightCreatureEntity> CreateDefenseCoreCreature(CreatureBean creatureData, Vector3 creaturePos)
+    public async Task<FightCreatureEntity> CreateDefenseCoreCreature(CreatureBean creatureData, Vector3 creaturePos)
     {
         var targetObj = GetFightCreatureObj(creatureData.creatureId, CreatureFightTypeEnum.FightDefenseCore);
 
@@ -101,12 +101,12 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         FightCreatureBean fightCreatureData = gameFightLogic.fightData.fightDefenseCoreData;
         fightCreatureData.positionCreate = new Vector3Int(0, 0, 0);
 
-        GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
-        gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefenseCoreCreatureEntity>(actionBeforeStart: (targetEntity) =>
+        FightCreatureEntity fightCreatureEntity = GetFightCreatureEntity(targetObj, fightCreatureData);
+        fightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefenseCoreCreatureEntity>(actionBeforeStart: (targetEntity) =>
         {
-            targetEntity.InitData(gameFightCreatureEntity);
+            targetEntity.InitData(fightCreatureEntity);
         });
-        return gameFightCreatureEntity;
+        return fightCreatureEntity;
     }
     #endregion
 
@@ -127,7 +127,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// <summary>
     ///  创建防御生物实例
     /// </summary>
-    public GameFightCreatureEntity CreateDefenseCreatureEntity(CreatureBean creatureData, Vector3Int creaturePos)
+    public FightCreatureEntity CreateDefenseCreatureEntity(CreatureBean creatureData, Vector3Int creaturePos)
     {
         var targetObj = CreateDefenseCreature(creatureData);
         return CreateDefenseCreatureEntity(targetObj, creatureData, creaturePos);
@@ -136,24 +136,24 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// <summary>
     ///  创建防御生物实例
     /// </summary>
-    public GameFightCreatureEntity CreateDefenseCreatureEntity(GameObject targetObj, CreatureBean creatureData, Vector3Int creaturePos)
+    public FightCreatureEntity CreateDefenseCreatureEntity(GameObject targetObj, CreatureBean creatureData, Vector3Int creaturePos)
     {
         //创建战斗生物数据
-        FightCreatureBean fightCreatureData = new FightCreatureBean(creatureData, CreatureFightTypeEnum.FightDefense);
+        FightCreatureBean fightCreatureData = GetFightCreatureData(creatureData, CreatureFightTypeEnum.FightDefense);
         fightCreatureData.positionCreate = creaturePos;
         //创建战斗生物
-        GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
+        FightCreatureEntity fightCreatureEntity = GetFightCreatureEntity(targetObj, fightCreatureData);
         //先添加数据
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        gameFightLogic.fightData.AddDefenseCreatureByPos(creaturePos, gameFightCreatureEntity);
+        gameFightLogic.fightData.AddDefenseCreatureByPos(creaturePos, fightCreatureEntity);
         //再创建AI
-        gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefenseCreatureEntity>(actionBeforeStart: (targetEntity) =>
+        fightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefenseCreatureEntity>(actionBeforeStart: (targetEntity) =>
         {
-            targetEntity.InitData(gameFightCreatureEntity);
+            targetEntity.InitData(fightCreatureEntity);
         });
         //设置位置
         targetObj.transform.position = creaturePos;
-        return gameFightCreatureEntity;
+        return fightCreatureEntity;
     }
     #endregion
 
@@ -200,32 +200,64 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         targetObj.transform.position = new Vector3(randomX, 0, targetRoad);
 
         //创建战斗生物
-        FightCreatureBean fightCreatureData = new FightCreatureBean(npcInfo, CreatureFightTypeEnum.FightAttack);
+        FightCreatureBean fightCreatureData = GetFightCreatureData(npcInfo, CreatureFightTypeEnum.FightAttack);
         fightCreatureData.positionCreate = new Vector3Int(0, 0, targetRoad);
 
-        GameFightCreatureEntity gameFightCreatureEntity = new GameFightCreatureEntity(targetObj, fightCreatureData);
-
+        FightCreatureEntity fightCreatureEntity = GetFightCreatureEntity(targetObj, fightCreatureData);
         //先添加数据
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        gameLogic.fightData.AddAttackCreatureByRoad(targetRoad, gameFightCreatureEntity);
+        gameLogic.fightData.AddAttackCreatureByRoad(targetRoad, fightCreatureEntity);
 
         //再创建数据
-        gameFightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIAttackCreatureEntity>(actionBeforeStart: (targetEntity) =>
+        fightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIAttackCreatureEntity>(actionBeforeStart: (targetEntity) =>
         {
-            targetEntity.InitData(gameFightCreatureEntity);
+            targetEntity.InitData(fightCreatureEntity);
         });
         return targetObj;
     }
     #endregion
 
-
     #region 基础
+    /// <summary>
+    /// 获取战斗生物数据
+    /// </summary>
+    public FightCreatureBean GetFightCreatureData(long id, CreatureFightTypeEnum creatureFightType)
+    {   
+        var creatureData = new CreatureBean(id);
+        return manager.GetFightCreatureData(creatureData, creatureFightType);
+    }
+
+    /// <summary>
+    /// 获取战斗生物数据
+    /// </summary>
+    public FightCreatureBean GetFightCreatureData(NpcInfoBean npcInfo, CreatureFightTypeEnum creatureFightType)
+    {
+        var creatureData = new CreatureBean(npcInfo);
+        return manager.GetFightCreatureData(creatureData, creatureFightType);
+    }
+
+    /// <summary>
+    /// 获取战斗生物数据
+    /// </summary>
+    public FightCreatureBean GetFightCreatureData(CreatureBean creatureData, CreatureFightTypeEnum creatureFightType)
+    {
+        return manager.GetFightCreatureData(creatureData,creatureFightType);
+    }    
+    /// <summary>
+    /// 获取战斗生物Entity
+    /// </summary>
+
+    public FightCreatureEntity GetFightCreatureEntity(GameObject creatureObj, FightCreatureBean fightCreatureData)
+    {
+        return manager.GetFightCreatureEntity(creatureObj, fightCreatureData);
+    }
+
     /// <summary>
     /// 获取一个生物的obj
     /// </summary>
     public GameObject GetFightCreatureObj(long creatureId, CreatureFightTypeEnum creatureFightType)
     {
-        var targetObj = manager.LoadFightCreatureObj(creatureId, creatureFightType);
+        var targetObj = manager.GetFightCreatureObj(creatureId, creatureFightType);
         var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
         var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
         //设置层级
@@ -291,35 +323,28 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// <param name="targetObj"></param>
     public void RemoveFightCreatureObj(GameObject targetObj, CreatureFightTypeEnum creatureType)
     {
-        if (targetObj == null)
-            return;
-        if (manager.dicPoolForCreature.TryGetValue(creatureType, out Queue<GameObject> poolForCreature))
-        {
-            manager.DestoryFightCreature(poolForCreature, targetObj);
-        }
-        else
-        {
-            Queue<GameObject> newPool = new Queue<GameObject>();
-            manager.dicPoolForCreature.Add(creatureType, newPool);
-            manager.DestoryFightCreature(newPool, targetObj);
-        }
+        manager.RemoveFightCreatureObj(targetObj, creatureType);
     }
 
     /// <summary>
     /// 移除生物实例
     /// </summary>
     /// <param name="targetObj"></param>
-    public void RemoveFightCreatureEntity(GameFightCreatureEntity targetEntity, CreatureFightTypeEnum creatureType)
+    public void RemoveFightCreatureEntity(FightCreatureEntity targetEntity, CreatureFightTypeEnum creatureType)
     {
         if (targetEntity == null)
             return;
         //清理动画
         targetEntity.ClearAnim();
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        //删掉对应的BUFF数据
+        BuffHandler.Instance.RemoveFightCreatureBuffs(targetEntity.fightCreatureData.creatureData.creatureUUId);
+        //放进缓存
         if (targetEntity.creatureObj != null)
         {
             RemoveFightCreatureObj(targetEntity.creatureObj, creatureType);
         }
+        //放进缓存
         if (targetEntity.aiEntity != null)
         {
             AIHandler.Instance.RemoveAIEntity(targetEntity.aiEntity);
@@ -329,13 +354,19 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         {
             gameFightLogic.fightData.RemoveDefenseCreatureByPos(targetEntity.fightCreatureData.positionCreate);
             targetEntity.fightCreatureData.creatureData.creatureState = CreatureStateEnum.Rest;
-            targetEntity.fightCreatureData.ResetData();
             EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureChangeState, targetEntity.fightCreatureData.creatureData.creatureUUId, CreatureStateEnum.Rest);
         }
         else if (creatureType == CreatureFightTypeEnum.FightAttack)
         {
             gameFightLogic.fightData.RemoveAttackCreature(targetEntity);
         }
+        //放进缓存
+        if (targetEntity.fightCreatureData != null)
+        {
+            manager.RemoveFightCreatureData(targetEntity.fightCreatureData);
+        }
+        //放进缓存
+        manager.RemoveFightCreatureEntity(targetEntity);
     }
     #endregion
 }

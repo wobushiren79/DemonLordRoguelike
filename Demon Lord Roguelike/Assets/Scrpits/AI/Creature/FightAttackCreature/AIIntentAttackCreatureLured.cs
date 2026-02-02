@@ -6,7 +6,7 @@ public class AIIntentAttCreatureLured : AIBaseIntent
 {
     //目标AI
     public AIAttackCreatureEntity selfAIEntity;
-    public GameFightCreatureEntity selfFightCreatureEntity;
+    public FightCreatureEntity selfFightCreatureEntity;
     public FightCreatureBean fightCreatureData;
     //被引诱时移动速率加倍
     public float moveSpeedRate = 5;

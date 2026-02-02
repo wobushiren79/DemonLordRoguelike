@@ -98,8 +98,10 @@ public partial class CreatureBean
     /// 获取所有buff
     /// </summary>
     /// <param name="hasSelfBuff">是否有自身BUFF</param>
+    /// <param name="getRarityBuff">是否有稀有度BUFF</param>
+    /// <param name="getBuffAttribute">是否包含属性BUFF</param>
     /// <returns></returns>
-    public List<BuffBean> GetAllBuffData(bool getSelfBuff = true, bool getRarityBuff = true)
+    public List<BuffBean> GetListBuffData(bool getSelfBuff = true, bool getRarityBuff = true, bool getBuffAttribute = true)
     {
         List<BuffBean> listAllBuff = new List<BuffBean>();
         //获取自身BUFF
@@ -116,10 +118,34 @@ public partial class CreatureBean
         {
             foreach (var item in dicRarityBuff)
             {
-                listAllBuff.Add(item.Value);
+                var buffData = item.Value;
+                //如果不获取含属性BUFF 则判断是否是属性BUFF 如果是则跳过
+                if (getBuffAttribute == false && buffData.IsBuffEntityAttribute() != CreatureAttributeTypeEnum.None)
+                {
+                    continue;
+                }
+                listAllBuff.Add(buffData);
             }
         }
         return listAllBuff;
+    }
+
+    /// <summary>
+    /// 获取BUFF里改变的属性
+    /// </summary>
+    public float GetBuffChangeAttribute(CreatureAttributeTypeEnum creatureAttributeType, float targetData)
+    {
+        var listBuff = GetListBuffData();
+        for (int i = 0; i < listBuff.Count; i++)
+        {
+            var buffData = listBuff[i];
+            CreatureAttributeTypeEnum buufAttributeType = buffData.IsBuffEntityAttribute();
+            if (buufAttributeType!= CreatureAttributeTypeEnum.None && buufAttributeType == creatureAttributeType)
+            {
+                targetData = BuffEntityAttribute.ChangeData(buffData, creatureAttributeType, targetData);
+            }
+        }
+        return targetData;
     }
     #endregion
 
@@ -444,26 +470,36 @@ public partial class CreatureBean
 
     #region 属性相关
 
-    public float GetAttribute(CreatureAttributeTypeEnum typeEnum)
+    public float GetAttribute(CreatureAttributeTypeEnum creatureAttributeType)
     {
-        switch (typeEnum)
+        float targetData = 0;
+        switch (creatureAttributeType)
         {
             case CreatureAttributeTypeEnum.HP://获取生命值
-                return creatureInfo.HP + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.HP);
+                targetData= creatureInfo.HP + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.HP);
+                break;
             case CreatureAttributeTypeEnum.DR://获取护甲值
-                return creatureInfo.DR + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.DR);
+                targetData= creatureInfo.DR + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.DR);
+                break;
             case CreatureAttributeTypeEnum.ATK://获取攻击力
-                return creatureInfo.ATK + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.ATK);
+                targetData= creatureInfo.ATK + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.ATK);
+                break;
             case CreatureAttributeTypeEnum.ASPD://获取攻击速度
-                return creatureInfo.ASPD + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.ASPD);
+                targetData= creatureInfo.ASPD + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.ASPD);
+                break;
             case CreatureAttributeTypeEnum.MSPD://获取移动速度
-                return creatureInfo.MSPD + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.MSPD);
+                targetData= creatureInfo.MSPD + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.MSPD);
+                break;
             case CreatureAttributeTypeEnum.EVA://获取闪避概率
-                return 0;
+                targetData= 0;
+                break;
             case CreatureAttributeTypeEnum.CRT://获取暴击率
-                return 0;
+                targetData= 0;
+                break;
         }
-        return 0;
+        //获取BUFF改变后的属性加成
+        targetData = GetBuffChangeAttribute(creatureAttributeType, targetData);
+        return targetData;
     }
 
     /// <summary>

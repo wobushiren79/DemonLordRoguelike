@@ -21,43 +21,23 @@ public class BuffEntityAttribute : BuffBaseEntity
         }
     }
 
-    public override void UpdateBuffTime(float buffTime)
-    {
-        buffEntityData.timeUpdate += buffTime;
-    }
-
-    public virtual float GetChangeData(CreatureAttributeTypeEnum attributeTypeEnum)
-    {
-        if (attributeType == attributeTypeEnum && CheckIsPre(buffEntityData))
-        {
-            float triggerValue = buffEntityData.GetTriggerValue();
-            return triggerValue;
-        }
-        else
-        {
-            return 0;
-        }
-    }
-
-    public virtual float GetChangeRateData(CreatureAttributeTypeEnum attributeTypeEnum)
-    {
-        if (attributeType == attributeTypeEnum && CheckIsPre(buffEntityData))
-        {
-            float triggerValueRate = buffEntityData.GetTriggerValueRate();
-            return triggerValueRate;
-        }
-        else
-        {
-            return 0;
-        }
-    }
-
+    /// <summary>
+    /// 改变数据-内部
+    /// </summary>
     public float ChangeData(CreatureAttributeTypeEnum targetAttributeType, float targetData)
     {
-        if(targetAttributeType != attributeType)
+        if (targetAttributeType != attributeType)
         {
             return targetData;
         }
+        return ChangeData(buffEntityData.buffData, targetAttributeType, targetData);
+    }
+
+    /// <summary>
+    /// 改变数据-全局
+    /// </summary>
+    public static float ChangeData(BuffBean buffData, CreatureAttributeTypeEnum targetAttributeType, float targetData)
+    {
         switch (targetAttributeType)
         {
             case CreatureAttributeTypeEnum.HP:
@@ -66,20 +46,20 @@ public class BuffEntityAttribute : BuffBaseEntity
             case CreatureAttributeTypeEnum.ASPD:
             case CreatureAttributeTypeEnum.MSPD:
             case CreatureAttributeTypeEnum.RCD:
-                targetData += GetChangeData(targetAttributeType);
+                targetData += buffData.trigger_value;
                 //小于0特殊处理
                 if (targetData < 0) targetData = 0;
-                targetData *= 1 + GetChangeRateData(targetAttributeType);
+                targetData *= 1 + buffData.trigger_value_rate;
                 break;
             case CreatureAttributeTypeEnum.CRT:
             case CreatureAttributeTypeEnum.EVA:
-                targetData += GetChangeRateData(targetAttributeType);
+                targetData += buffData.trigger_value_rate;
                 break;
             default:
                 break;
         }
         if (targetData < 0)
-        {   
+        {
             targetData = 0;
         }
         return targetData;

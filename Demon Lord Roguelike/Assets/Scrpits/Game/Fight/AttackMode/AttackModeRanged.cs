@@ -7,7 +7,7 @@ public class AttackModeRanged : BaseAttackMode
     /// <summary>
     /// 开始攻击
     /// </summary>
-    public override void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
+    public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
         actionForAttackEnd?.Invoke(this);
@@ -19,10 +19,10 @@ public class AttackModeRanged : BaseAttackMode
     public override void Update()
     {
         base.Update();
-        GameFightCreatureEntity gameFightCreatureEntity = CheckHitTargetForSingle();
-        if (gameFightCreatureEntity != null)
+        FightCreatureEntity fightCreatureEntity = CheckHitTargetForSingle();
+        if (fightCreatureEntity != null)
         {
-            HandleForHitTarget(gameFightCreatureEntity);
+            HandleForHitTarget(fightCreatureEntity);
             return;
         }
         //移动处理
@@ -34,10 +34,10 @@ public class AttackModeRanged : BaseAttackMode
     /// <summary>
     /// 处理击中生物之后的逻辑
     /// </summary>
-    public virtual void HandleForHitTarget(GameFightCreatureEntity gameFightCreatureEntity)
+    public virtual void HandleForHitTarget(FightCreatureEntity FightCreatureEntity)
     {
         //扣血
-        gameFightCreatureEntity.UnderAttack(this);
+        FightCreatureEntity.UnderAttack(this);
         //攻击完了就回收这个攻击
         Destroy();
     }

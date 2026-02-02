@@ -26,7 +26,7 @@ public partial class UIHandler
                 ColorUtility.TryParseHtmlString("#25BC29",out iconColor);
                 break;
         }
-        IconHandler.Instance.GetIconSprite(SpriteAtlasType.UI, iconRes, (sprite) =>
+        IconHandler.Instance.GetIconSprite(SpriteAtlasTypeEnum.UI, iconRes, (sprite) =>
         {
             ToastHint<ToastView>(sprite, iconColor, hintContent);
         });

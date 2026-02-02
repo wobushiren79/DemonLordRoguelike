@@ -8,7 +8,7 @@ public partial class IconHandler
     /// </summary>
     public void SetSkinIcon(string iconName, Image targetIV)
     {
-        GetIconSprite(SpriteAtlasType.Skins, iconName, (sprite) =>
+        GetIconSprite(SpriteAtlasTypeEnum.Skins, iconName, (sprite) =>
         {
             if (targetIV != null)
             {
@@ -22,7 +22,7 @@ public partial class IconHandler
     /// </summary>
     public void SetItemIcon(string iconName, float rotateZ, Image targetIV)
     {
-        GetIconSprite(SpriteAtlasType.Items, iconName, (sprite) =>
+        GetIconSprite(SpriteAtlasTypeEnum.Items, iconName, (sprite) =>
         {
             if (targetIV != null)
             {
@@ -34,7 +34,7 @@ public partial class IconHandler
 
     public void SetItemIcon(string iconName, float rotateZ, SpriteRenderer spriteRenderer)
     {
-        GetIconSprite(SpriteAtlasType.Items, iconName, (sprite) =>
+        GetIconSprite(SpriteAtlasTypeEnum.Items, iconName, (sprite) =>
         {
             if (spriteRenderer != null)
             {
@@ -60,7 +60,7 @@ public partial class IconHandler
     {
         if (spriteRenderer == null)
             return;
-        GetIconSprite(SpriteAtlasType.Items, showSpriteName, (sprite) =>
+        GetIconSprite(SpriteAtlasTypeEnum.Items, showSpriteName, (sprite) =>
         {
             if (spriteRenderer != null)
             {
@@ -75,7 +75,7 @@ public partial class IconHandler
     /// </summary>
     public void SetUIIcon(string iconName, Image targetIV)
     {
-        GetIconSprite(SpriteAtlasType.UI, iconName, (sprite) =>
+        GetIconSprite(SpriteAtlasTypeEnum.UI, iconName, (sprite) =>
         {
             if (targetIV != null)
             {

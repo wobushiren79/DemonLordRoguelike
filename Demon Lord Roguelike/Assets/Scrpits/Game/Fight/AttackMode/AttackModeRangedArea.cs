@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class AttackModeRangedArea : AttackModeRanged
 {
-    public override void HandleForHitTarget(GameFightCreatureEntity gameFightCreatureEntity)
+    public override void HandleForHitTarget(FightCreatureEntity fightCreatureEntity)
     {
         //播放击中粒子特效
         PlayEffectForHit(gameObject.transform.position);

@@ -145,8 +145,6 @@ public class BuffBaseEntity
     /// <summary>
     /// 检测是否满足前置条件
     /// </summary>
-    /// <param name="buffEntityData"></param>
-    /// <returns></returns>
     public bool CheckIsPre(BuffEntityBean buffEntityData)
     {
         var buffInfo = buffEntityData.GetBuffInfo();
@@ -170,8 +168,6 @@ public class BuffBaseEntity
     /// <summary>
     /// 获取BUFF改变身体颜色
     /// </summary>
-    /// <param name="buffEntityData"></param>
-    /// <returns></returns>
     public virtual Color GetChangeBodyColor(BuffEntityBean buffEntityData)
     {
         var buffInfo = buffEntityData.GetBuffInfo();

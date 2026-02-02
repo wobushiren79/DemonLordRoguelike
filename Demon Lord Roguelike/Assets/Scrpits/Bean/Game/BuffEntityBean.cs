@@ -15,7 +15,7 @@
     public int triggerNumLeft;
 
     //buff数据 固定数据 不可以修改
-    protected BuffBean buffData;
+    public BuffBean buffData;
 
     public BuffEntityBean(BuffBean buffData, string applierCreatureId, string targetCreatureId)
     {

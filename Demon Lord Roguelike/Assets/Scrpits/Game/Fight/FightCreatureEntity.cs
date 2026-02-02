@@ -6,7 +6,7 @@ using Spine.Unity;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class GameFightCreatureEntity
+public class FightCreatureEntity
 {
     public GameObject creatureObj;
     public FightCreatureBean fightCreatureData;
@@ -21,7 +21,12 @@ public class GameFightCreatureEntity
     Tween animForUnderAttackColor;
     Tween animForUnderAttackShake;
 
-    public GameFightCreatureEntity(GameObject creatureObj, FightCreatureBean fightCreatureData)
+    public FightCreatureEntity(GameObject creatureObj, FightCreatureBean fightCreatureData)
+    {
+        SetData(creatureObj, fightCreatureData);
+    }
+
+    public void SetData(GameObject creatureObj, FightCreatureBean fightCreatureData)
     {
         this.creatureFightState = CreatureFightStateEnum.Live;
         this.creatureObj = creatureObj;
@@ -35,7 +40,7 @@ public class GameFightCreatureEntity
         //设置spine
         CreatureHandler.Instance.SetCreatureData(creatureSkeletionAnimation, fightCreatureData.creatureData, isSetSkeletonDataAsset: false);
         //设置生物BUFF
-        List<BuffBean> creatureBuffs = fightCreatureData.creatureData.GetAllBuffData();
+        List<BuffBean> creatureBuffs = fightCreatureData.creatureData.GetListBuffData(getBuffAttribute : false);
         BuffHandler.Instance.AddFightCreatureBuff(creatureBuffs, fightCreatureData.creatureData.creatureUUId, fightCreatureData.creatureData.creatureUUId);
         //设置身体颜色
         RefreshBodyColor();
@@ -471,16 +476,8 @@ public class GameFightCreatureEntity
         }
         else
         {
-            //死掉之后设置BUFF信息为无效
-            BuffHandler.Instance.RemoveFightCreatureBuffs(fightCreatureData.creatureData.creatureUUId);
-            //死亡掉落水晶
-            DeadDropCrystal();
             //如果被攻击对象死亡 
             SetCreatureDead();
-            //颜色变化动画
-            AnimForUnderAttackColor();
-            //隐藏血条
-            creatureLifeShow?.ShowObj(false);
             //死亡回调触发
             actionForDead?.Invoke();
         }
@@ -526,7 +523,14 @@ public class GameFightCreatureEntity
     /// 设置生物死亡
     /// </summary>
     public void SetCreatureDead()
-    {
+    {            
+        //死亡掉落水晶
+        DeadDropCrystal();
+        //颜色变化动画
+        AnimForUnderAttackColor();
+        //隐藏血条
+        creatureLifeShow?.ShowObj(false);   
+
         creatureFightState = CreatureFightStateEnum.Dead;
         if (aiEntity is AIAttackCreatureEntity)
         {
@@ -540,6 +544,5 @@ public class GameFightCreatureEntity
         {
             aiEntity.ChangeIntent(AIIntentEnum.DefenseCoreCreatureDead);
         }
-        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadStart, fightCreatureData);
     }
 }

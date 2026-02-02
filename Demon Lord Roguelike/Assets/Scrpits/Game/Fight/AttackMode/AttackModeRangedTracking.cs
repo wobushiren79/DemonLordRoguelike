@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class AttackModeRangedTracking :  AttackModeRanged
 {
-    public GameFightCreatureEntity attacked;
+    public FightCreatureEntity attacked;
 
     /// <summary>
     /// 开始攻击
     /// </summary>
-    public override void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
+    public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
         if(attacked != null && !attacked.IsDead())
@@ -35,10 +35,10 @@ public class AttackModeRangedTracking :  AttackModeRanged
             //高度不变
             attackDirection = attackDirection.SetY(0);
             //检测是否击中目标
-            GameFightCreatureEntity gameFightCreatureEntity = CheckHitTargetForSingle();
-            if (gameFightCreatureEntity != null)
+            FightCreatureEntity FightCreatureEntity = CheckHitTargetForSingle();
+            if (FightCreatureEntity != null)
             {
-                HandleForHitTarget(gameFightCreatureEntity);
+                HandleForHitTarget(FightCreatureEntity);
                 return;
             }
         }

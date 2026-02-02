@@ -11,7 +11,7 @@ public class AttackModeRangedArc : AttackModeRanged
     private Vector3 startPosition;
     private float progress = 0f;
 
-    public override void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
+    public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
         startPosition = gameObject.transform.position;
@@ -22,7 +22,7 @@ public class AttackModeRangedArc : AttackModeRanged
     /// 检测碰撞
     /// </summary>
     /// <returns></returns>
-    public override GameFightCreatureEntity CheckHitTargetForSingle()
+    public override FightCreatureEntity CheckHitTargetForSingle()
     {
         //前面抛物线不检测
         if (progress < 0.5f)

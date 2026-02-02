@@ -10,7 +10,7 @@ public class AttackModeRanged​Piercing : AttackModeRanged​
     //已经穿透的生物
     public HashSet<string> listPierceCreature;
 
-    public override void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
+    public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
         listPierceCreature = new HashSet<string>();
@@ -18,7 +18,7 @@ public class AttackModeRanged​Piercing : AttackModeRanged​
 
     public override void Update()
     {
-        List<GameFightCreatureEntity> listHitTarget = CheckHitTarget();
+        List<FightCreatureEntity> listHitTarget = CheckHitTarget();
         if (!listHitTarget.IsNull())
         {
             for (int i = 0; i < listHitTarget.Count; i++)
@@ -45,9 +45,9 @@ public class AttackModeRanged​Piercing : AttackModeRanged​
     }
 
 
-    public override void HandleForHitTarget(GameFightCreatureEntity gameFightCreatureEntity)
+    public override void HandleForHitTarget(FightCreatureEntity fghtCreatureEntity)
     {
         //扣血
-        gameFightCreatureEntity.UnderAttack(this);
+        fghtCreatureEntity.UnderAttack(this);
     }
 }

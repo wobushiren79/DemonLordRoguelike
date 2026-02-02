@@ -144,9 +144,6 @@ public class ControlForGameFight : BaseControl
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         if (gameFightLogic == null)
             return;
-        //如果是正在游戏中
-        if (gameFightLogic.gameState != GameStateEnum.Gaming)
-            return;
         if (CheckUtil.CheckIsPointerUI())
             return;
         //手里没有物品
@@ -157,32 +154,8 @@ public class ControlForGameFight : BaseControl
         float inputValue = inputActionUseL.ReadValue<float>();
         if (inputValue < 1)
             return;
-        RayUtil.RayToScreenPointForMousePosition(100, 1 << LayerInfo.Drop, out bool isCollider, out RaycastHit hit);
-        if (isCollider && hit.collider != null)
-        {
-            var fightDropPrefab = FightHandler.Instance.manager.GetFightPrefab(hit.collider.gameObject.name);
-            if (fightDropPrefab == null)
-                return;
-            fightDropPrefab.SetState(GameFightPrefabStateEnum.Droping);
-            Vector3 targetPos = gameFightLogic.fightData.fightDefenseCoreCreature.creatureObj.transform.position;
-            float moveSpeed = 5;
-            float moveTime = Vector3.Distance(targetPos, fightDropPrefab.gameObject.transform.position) / moveSpeed;
-            //播放动画
-            fightDropPrefab.gameObject.transform
-                .DOJump(targetPos + new Vector3(0f, 0.5f, 0.5f), Random.Range(0, 0.5f), 1, moveTime)
-                .SetEase(Ease.OutCubic)
-                .OnComplete(() =>
-                {
-                    UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-                    userData.AddCrystal(fightDropPrefab.valueInt);
-                    //事件通知
-                    EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_DropAddCrystal, fightDropPrefab.valueInt);
-                    //掉落删除
-                    fightDropPrefab.Destroy();
-                    //刷新所有打开的UI
-                    UIHandler.Instance.RefreshUI();
-                });
-        }
+        //拾取水晶
+        gameFightLogic.PickupCrystalForMouse();
     }
 
     /// <summary>

@@ -24,7 +24,7 @@ public class UserDataService : BaseDataStorage
     public UserDataBean QueryData(int index)
     {
         dataStoragePath =  $"{Application.persistentDataPath}/{saveFileName}_{index}";
-        return BaseLoadData<UserDataBean>($"{saveFileName}_{index}", jsonType: JsonType.Net);
+        return BaseLoadData<UserDataBean>($"{saveFileName}_{index}", jsonType: JsonTypeEnum.Net);
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ public class UserDataService : BaseDataStorage
             data.saveRemarkIndex ++;
         }
         //再生成新的
-        BaseSaveData<UserDataBean>($"{saveFileName}_{index}", data, jsonType: JsonType.Net);
+        BaseSaveData<UserDataBean>($"{saveFileName}_{index}", data, jsonType: JsonTypeEnum.Net);
     }
 
     /// <summary>

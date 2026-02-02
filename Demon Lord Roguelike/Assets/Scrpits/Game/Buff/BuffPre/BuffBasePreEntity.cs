@@ -13,7 +13,7 @@ public class BuffBasePreEntity
     /// <summary>
     /// 获取触发生物
     /// </summary>
-    public GameFightCreatureEntity GetTargetCreatureEntity(string creatureId)
+    public FightCreatureEntity GetTargetCreatureEntity(string creatureId)
     {
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         if (gameFightLogic == null)

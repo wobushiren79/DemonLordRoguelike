@@ -17,9 +17,9 @@ public class FightManager : BaseManager
     //一些战斗杂项预制
     public Dictionary<string, GameObject> dicFightModeObj = new Dictionary<string, GameObject>();
     //战斗杂项缓存池
-    public Dictionary<string, Queue<GameFightPrefabEntity>> dicPoolFightObj = new Dictionary<string, Queue<GameFightPrefabEntity>>();
+    public Dictionary<string, Queue<FightPrefabEntity>> dicPoolFightObj = new Dictionary<string, Queue<FightPrefabEntity>>();
     //战斗杂项列表
-    public List<GameFightPrefabEntity> listFightPrefab = new List<GameFightPrefabEntity>();
+    public List<FightPrefabEntity> listFightPrefab = new List<FightPrefabEntity>();
 
     //倒计时
     public List<GameTimeCountDownBean> listTimeCountDown = new List<GameTimeCountDownBean>();
@@ -111,7 +111,7 @@ public class FightManager : BaseManager
     /// <summary>
     /// 获取掉落水晶预制
     /// </summary>
-    public void GetDropCrystalPrefab(Action<GameFightPrefabEntity> actionForComplete)
+    public void GetDropCrystalPrefab(Action<FightPrefabEntity> actionForComplete)
     {
         GetFightPrefabCommon(pathDropCrystalPrefab, (targetPrefab) =>
         {
@@ -124,7 +124,7 @@ public class FightManager : BaseManager
     /// <summary>
     /// 获取掉落魔力预制
     /// </summary>
-    public void GetDropMagicPrefab(Action<GameFightPrefabEntity> actionForComplete)
+    public void GetDropMagicPrefab(Action<FightPrefabEntity> actionForComplete)
     {
         GetFightPrefabCommon(pathDropMagicPrefab, (targetPrefab) =>
         {
@@ -173,7 +173,7 @@ public class FightManager : BaseManager
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    public GameFightPrefabEntity GetFightPrefab(string id)
+    public FightPrefabEntity GetFightPrefab(string id)
     {
         for (int i = 0; i < listFightPrefab.Count; i++)
         {
@@ -191,16 +191,16 @@ public class FightManager : BaseManager
     /// 移除攻击模组
     /// </summary>
     /// <param name="targetMode"></param>
-    public void RemoveFightPrefabCommon(GameFightPrefabEntity targetEntity)
+    public void RemoveFightPrefabCommon(FightPrefabEntity targetEntity)
     {
         listFightPrefab.Remove(targetEntity);
-        if (dicPoolFightObj.TryGetValue(targetEntity.pathAsstes, out Queue<GameFightPrefabEntity> pool))
+        if (dicPoolFightObj.TryGetValue(targetEntity.pathAsstes, out Queue<FightPrefabEntity> pool))
         {
             pool.Enqueue(targetEntity);
         }
         else
         {
-            Queue<GameFightPrefabEntity> poolNew = new Queue<GameFightPrefabEntity>();
+            Queue<FightPrefabEntity> poolNew = new Queue<FightPrefabEntity>();
             poolNew.Enqueue(targetEntity);
             dicPoolFightObj.Add(targetEntity.pathAsstes, poolNew);
         }
@@ -212,13 +212,13 @@ public class FightManager : BaseManager
     /// </summary>
     /// <param name="assetsPath"></param>
     /// <param name="actionForComplete"></param>
-    public void GetFightPrefabCommon(string assetsPath, Action<GameFightPrefabEntity> actionForComplete)
+    public void GetFightPrefabCommon(string assetsPath, Action<FightPrefabEntity> actionForComplete)
     {
-        if (dicPoolFightObj.TryGetValue(assetsPath, out Queue<GameFightPrefabEntity> pool))
+        if (dicPoolFightObj.TryGetValue(assetsPath, out Queue<FightPrefabEntity> pool))
         {
             if (pool.Count > 0)
             {
-                GameFightPrefabEntity targetPrefab = pool.Dequeue();
+                FightPrefabEntity targetPrefab = pool.Dequeue();
                 listFightPrefab.Add(targetPrefab);
 
                 targetPrefab.id = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
@@ -231,7 +231,7 @@ public class FightManager : BaseManager
         GameObject objModel = GetModelForAddressablesSync(dicFightModeObj, assetsPath);
         GameObject objTarget = Instantiate(gameObject, objModel);
 
-        GameFightPrefabEntity fightPrefab = new GameFightPrefabEntity();
+        FightPrefabEntity fightPrefab = new FightPrefabEntity();
         fightPrefab.id = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
         objTarget.gameObject.name = fightPrefab.id;
         objTarget.gameObject.SetActive(true);

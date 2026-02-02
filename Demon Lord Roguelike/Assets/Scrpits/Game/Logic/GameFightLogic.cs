@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DG.Tweening;
 using UnityEngine;
 
 public class GameFightLogic : BaseGameLogic
@@ -24,7 +25,7 @@ public class GameFightLogic : BaseGameLogic
         //注册事件
         RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_CreatureDeadEnd, EventForGameFightLogicCreatureDeadEnd);
         //发送事件通知
-        RegisterEvent<string,string>(EventsInfo.Buff_FightCreatureChange, EventForBuffFightCreatureChange);
+        RegisterEvent<string, string>(EventsInfo.Buff_FightCreatureChange, EventForBuffFightCreatureChange);
 
         //设置战斗场景视角
         await CameraHandler.Instance.InitFightSceneCamera();
@@ -41,7 +42,7 @@ public class GameFightLogic : BaseGameLogic
 
         //加载核心（魔王）实例
         Vector3 creaturePos = new Vector3(0, 0, fightData.sceneRoadNum / 2f + 0.5f);
-        var  defCoreCreatureEntity = await CreatureHandler.Instance.CreateDefenseCoreCreature(fightData.fightDefenseCoreData.creatureData, creaturePos);
+        var defCoreCreatureEntity = await CreatureHandler.Instance.CreateDefenseCoreCreature(fightData.fightDefenseCoreData.creatureData, creaturePos);
         //设置魔王核心
         fightData.fightDefenseCoreCreature = defCoreCreatureEntity;
         //开启战斗控制
@@ -114,6 +115,7 @@ public class GameFightLogic : BaseGameLogic
     }
     #endregion
 
+    #region 清理数据
     /// <summary>
     /// 先简单清理数据（AI和选择 防止执行）
     /// </summary>
@@ -121,7 +123,7 @@ public class GameFightLogic : BaseGameLogic
     {
         ClearSelectData(true);
         //AI清理
-        AIHandler.Instance.manager.Clear();     
+        AIHandler.Instance.manager.Clear();
         //Buff清理
         BuffHandler.Instance.manager.ClearFightCreatureBuff();
     }
@@ -158,8 +160,9 @@ public class GameFightLogic : BaseGameLogic
         selectCreatureDestory = null;
         selectCreatureCard = null;
     }
+    #endregion
 
-
+    #region 更新
     /// <summary>
     /// 更新-选中物体
     /// </summary>
@@ -262,7 +265,9 @@ public class GameFightLogic : BaseGameLogic
             }
         }
     }
+    #endregion
 
+    #region 选择
     /// <summary>
     /// 选择了删除生物
     /// </summary>
@@ -344,7 +349,9 @@ public class GameFightLogic : BaseGameLogic
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_PutCard, selectCreatureCard);
         ClearSelectData();
     }
+    #endregion
 
+    #region 检测
     /// <summary>
     /// 检测游戏是否结束
     /// </summary>
@@ -370,6 +377,7 @@ public class GameFightLogic : BaseGameLogic
             ChangeGameState(GameStateEnum.Settlement);
         }
     }
+    #endregion
 
     #region 事件
     /// <summary>
@@ -391,9 +399,78 @@ public class GameFightLogic : BaseGameLogic
         //刷新一下生物属性
         if (fightData != null)
         {
-            GameFightCreatureEntity gameFightCreatureEntity = fightData.GetCreatureById(targetCreatureId);
-            gameFightCreatureEntity.fightCreatureData.RefreshBaseAttribute();
+            FightCreatureEntity FightCreatureEntity = fightData.GetCreatureById(targetCreatureId);
+            FightCreatureEntity.fightCreatureData.RefreshBaseAttribute();
         }
+    }
+    #endregion
+
+    #region 工具
+
+    /// <summary>
+    /// 通过鼠标拾取水晶
+    /// </summary>
+    public void PickupCrystalForMouse(float pickupDistance = 100)
+    {
+        RayUtil.RayToScreenPointForMousePosition(pickupDistance, 1 << LayerInfo.Drop, out bool isCollider, out RaycastHit hit);
+        if (isCollider && hit.collider != null)
+        {
+            PickupCrystal(hit.collider.gameObject);
+        }
+    }
+
+    /// <summary>
+    /// 通过生物拾取水晶
+    /// </summary>
+    public void PickupCrystalForCreature(FightCreatureEntity fightCreatureEntity, float pickupRadius)
+    {
+        //如果该生物已经死亡
+        if (fightCreatureEntity == null || fightCreatureEntity.IsDead())
+        {
+            return;
+        }
+        Collider[] colliders = RayUtil.OverlapToSphere(fightCreatureEntity.creatureObj.transform.position, pickupRadius, 1 << LayerInfo.Drop);
+        if (!colliders.IsNull())
+        {
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                PickupCrystal(colliders[i].gameObject);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 拾取水晶
+    /// </summary>
+    public void PickupCrystal(GameObject targetCrystal)
+    {
+        //如果是正在游戏中
+        if (gameState != GameStateEnum.Gaming)
+            return;
+
+        var fightDropPrefab = FightHandler.Instance.manager.GetFightPrefab(targetCrystal.name);
+        if (fightDropPrefab == null)
+            return;
+        //设置
+        fightDropPrefab.SetState(GameFightPrefabStateEnum.Droping);
+        Vector3 targetPos = fightData.fightDefenseCoreCreature.creatureObj.transform.position;
+        float moveSpeed = 5;
+        float moveTime = Vector3.Distance(targetPos, fightDropPrefab.gameObject.transform.position) / moveSpeed;
+        //播放动画
+        fightDropPrefab.gameObject.transform
+            .DOJump(targetPos + new Vector3(0f, 0.5f, 0.5f), UnityEngine.Random.Range(0, 0.5f), 1, moveTime)
+            .SetEase(Ease.OutCubic)
+            .OnComplete(() =>
+            {
+                UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+                userData.AddCrystal(fightDropPrefab.valueInt);
+                //事件通知
+                EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_DropAddCrystal, fightDropPrefab.valueInt);
+                //掉落删除
+                fightDropPrefab.Destroy();
+                //刷新所有打开的UI
+                UIHandler.Instance.RefreshUI();
+            });
     }
     #endregion
 }

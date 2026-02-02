@@ -1,5 +1,7 @@
 public class BuffEntityConditionalDead : BuffEntityConditional
 {
+    //战斗生物数据（注：该数据会在下一帧回收 请在当前帧数使用该数据）
+    public FightCreatureBean fightCreatureData;
     public string nameRegisterEvent;
     public override void SetData(BuffEntityBean buffEntityData)
     {
@@ -46,14 +48,17 @@ public class BuffEntityConditionalDead : BuffEntityConditional
     /// </summary>
     public virtual void EventForCreatureDeadStart(FightCreatureBean fightCreatureBean)
     {
-        
+        if(buffEntityData.isValid == false) return;
+        this.fightCreatureData = fightCreatureBean;
     }
 
     /// <summary>
     /// 时间-生物死亡结束
     /// </summary>
     public virtual void EventForCreatureDeadEnd(FightCreatureBean fightCreatureBean)
-    {
-        
+    { 
+        if(buffEntityData.isValid == false) return;
+        this.fightCreatureData = fightCreatureBean;
+        buffEntityData.isValid = false;
     }
 }

@@ -20,7 +20,7 @@ public class BuffBean
     public int  trigger_num = 0;
     //触发时间 -1为无限
     public float trigger_time = -1f;
-
+    
     public BuffBean(long id, bool isRandom = false, float createRate = 1f)
     {
         this.id = id;
@@ -40,5 +40,19 @@ public class BuffBean
         }
         this.trigger_num = buffInfo.trigger_num;
         this.trigger_time = buffInfo.trigger_time;
+    }
+
+    /// <summary>
+    /// 是否是基础属性BUFF
+    /// </summary>
+    /// <returns></returns>
+    public CreatureAttributeTypeEnum IsBuffEntityAttribute()
+    {
+        var buffInfo = BuffInfoCfg.GetItemData(id);
+        if (!buffInfo.class_entity.IsNull() && buffInfo.class_entity.Equals("BuffEntityAttribute"))
+        {
+            return buffInfo.class_entity_data.GetEnum<CreatureAttributeTypeEnum>();
+        }
+        return CreatureAttributeTypeEnum.None;
     }
 }

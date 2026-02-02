@@ -8,7 +8,7 @@ public class AttackModeRanged​Split : BaseAttackMode
     public List<GameObject> listSplitAttackObj;
     public List<int> listSplitRoad;
     public int splitNum = 2;
-    public override void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
+    public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
         //分裂子攻击
@@ -169,11 +169,11 @@ public class AttackModeRanged​Split : BaseAttackMode
     public virtual void HandleForHitTarget(GameObject targetObj, int targetRoad)
     {
         //检测是否碰撞
-        GameFightCreatureEntity gameFightCreatureEntity = CheckHitTargetForSingle(targetObj.transform.position);
-        if (gameFightCreatureEntity != null)
+        FightCreatureEntity FightCreatureEntity = CheckHitTargetForSingle(targetObj.transform.position);
+        if (FightCreatureEntity != null)
         {
             //扣血
-            gameFightCreatureEntity.UnderAttack(this);
+            FightCreatureEntity.UnderAttack(this);
             targetObj.SetActive(false);
         }
     }

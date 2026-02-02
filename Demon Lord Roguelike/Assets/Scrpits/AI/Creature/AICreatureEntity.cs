@@ -9,14 +9,14 @@ using UnityEngine;
 public abstract class AICreatureEntity : AIBaseEntity
 {
     //自己
-    public GameFightCreatureEntity selfCreatureEntity;
+    public FightCreatureEntity selfCreatureEntity;
     //目标
-    public GameFightCreatureEntity targetCreatureEntity;
+    public FightCreatureEntity targetCreatureEntity;
 
     /// <summary>
     /// 搜索目标
     /// </summary>
-    public GameFightCreatureEntity FindCreatureEntityForSinge(DirectionEnum direction)
+    public FightCreatureEntity FindCreatureEntityForSinge(DirectionEnum direction)
     {
         var listData = FindCreatureEntity(direction);
         if (listData.IsNull())
@@ -29,7 +29,7 @@ public abstract class AICreatureEntity : AIBaseEntity
     /// <summary>
     /// 搜索目标
     /// </summary>
-    public List<GameFightCreatureEntity> FindCreatureEntity(DirectionEnum direction)
+    public List<FightCreatureEntity> FindCreatureEntity(DirectionEnum direction)
     {
         Vector3 directionV = Vector3.right;
         switch (direction)
@@ -47,7 +47,7 @@ public abstract class AICreatureEntity : AIBaseEntity
     /// <summary>
     /// 搜索目标
     /// </summary>
-    public GameFightCreatureEntity FindCreatureEntityForSinge(Vector3 direction)
+    public FightCreatureEntity FindCreatureEntityForSinge(Vector3 direction)
     {
         var listData = FindCreatureEntity(direction);
         if (listData.IsNull())
@@ -60,7 +60,7 @@ public abstract class AICreatureEntity : AIBaseEntity
     /// <summary>
     /// 搜索目标
     /// </summary>
-    public List<GameFightCreatureEntity> FindCreatureEntity(Vector3 direction)
+    public List<FightCreatureEntity> FindCreatureEntity(Vector3 direction)
     {
         var fightCreatureData = selfCreatureEntity.fightCreatureData;
         var creatureInfo = fightCreatureData.creatureData.creatureInfo;

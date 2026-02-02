@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameFightPrefabEntity 
+public class FightPrefabEntity 
 {
     public string id;
     public string pathAsstes;

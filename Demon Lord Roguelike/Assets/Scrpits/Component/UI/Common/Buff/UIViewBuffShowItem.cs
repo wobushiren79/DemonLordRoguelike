@@ -1,6 +1,7 @@
 ﻿using TMPro;
 using UnityEngine.UI;
 using UnityEngine;
+using System.Collections.Generic;
 
 
 public partial class UIViewBuffShowItem : BaseUIView
@@ -25,7 +26,13 @@ public partial class UIViewBuffShowItem : BaseUIView
         //设置背景颜色
         ui_UIViewBuffShowItem_Image.color = buffColor;
         //设置提示弹窗
-        ui_UIViewBuffShowItem_PopupButtonCommonView.SetData(buffInfo.content_language, PopupEnum.Text);
+        Dictionary<TextReplaceEnum, string> dicReplace = new Dictionary<TextReplaceEnum, string>()
+        {
+            {TextReplaceEnum.Percentage, $"{MathUtil.GetPercentage(buffData.trigger_value_rate, 2)}"},
+            {TextReplaceEnum.Time_S, $"{Mathf.FloorToInt(buffData.trigger_time)}"},
+        };
+        string contentText = TextHandler.Instance.GetTextReplace(buffInfo.content_language, dicReplace);
+        ui_UIViewBuffShowItem_PopupButtonCommonView.SetData(contentText, PopupEnum.Text);
     }
 
 

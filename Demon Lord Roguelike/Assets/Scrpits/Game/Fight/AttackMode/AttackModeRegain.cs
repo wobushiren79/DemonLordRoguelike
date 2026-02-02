@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class AttackModeRegain : BaseAttackMode
 {
-    public override void StartAttack(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
+    public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
         if (attacker != null && attacked != null && !attacked.IsDead())
@@ -23,7 +23,7 @@ public class AttackModeRegain : BaseAttackMode
     /// <summary>
     /// 处理回复逻辑
     /// </summary>
-    public virtual void HandleRegain(GameFightCreatureEntity attacker, GameFightCreatureEntity attacked)
+    public virtual void HandleRegain(FightCreatureEntity attacker, FightCreatureEntity attacked)
     {
 
     }
