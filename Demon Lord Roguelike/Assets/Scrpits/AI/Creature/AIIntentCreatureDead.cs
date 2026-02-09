@@ -10,11 +10,11 @@ public class AIIntentCreatureDead : AIBaseIntent
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         timeUpdateForDead = 0;
-        selfAIEntity = aiEntity as AIAttackCreatureEntity;
         selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Dead, false);
 
-        var selfFightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
-        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadStart, selfFightCreatureData);
+        var selfFightCreatureEntity = selfAIEntity.selfCreatureEntity;
+        selfFightCreatureEntity.fightCreatureData.positionDead = selfFightCreatureEntity.creatureObj.transform.position;
+        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadStart, selfFightCreatureEntity);
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
@@ -23,9 +23,9 @@ public class AIIntentCreatureDead : AIBaseIntent
         if (timeUpdateForDead >= timeUpdateForDeadCD)
         {
             timeUpdateForDead = 0;
-            var selfFightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
+            var selfFightCreatureEntity = selfAIEntity.selfCreatureEntity;
             CreatureHandler.Instance.RemoveFightCreatureEntity(selfAIEntity.selfCreatureEntity, creatureFightType);
-            EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadEnd, selfFightCreatureData);
+            EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadEnd, selfFightCreatureEntity);
         }
     }
 

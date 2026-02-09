@@ -8,7 +8,7 @@ public class BuffPreEntityForHPRateLess : BuffBasePreEntity
     /// </summary>
     public override bool CheckIsPre(BuffEntityBean buffEntityData, float preValue)
     {
-        FightCreatureEntity creatureEntity = GetTargetCreatureEntity(buffEntityData.targetCreatureId);
+        FightCreatureEntity creatureEntity = GetTargetCreatureEntity(buffEntityData.targetCreatureUUId);
         if (creatureEntity == null)
         {
             return false;

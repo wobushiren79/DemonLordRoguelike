@@ -9,6 +9,12 @@ public class AttackModeRanged​Piercing : AttackModeRanged​
     public int numPierceMax = 3;
     //已经穿透的生物
     public HashSet<string> listPierceCreature;
+    
+    public override void StartAttack()
+    {
+        base.StartAttack();
+        listPierceCreature = new HashSet<string>();
+    }
 
     public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {

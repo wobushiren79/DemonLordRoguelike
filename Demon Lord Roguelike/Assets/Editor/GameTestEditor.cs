@@ -17,26 +17,65 @@ public class GameTestEditor : Editor
     public int fightSceneAttackNum = 2;//进攻者数量
     public float fightSceneAttackDelay = 1;//进攻者间隔
 
-    public int creatureId = 1 ;
+    public int creatureId = 1;
     public int creatureModelId = 0;
 
     public int attackModeAttackTestId = 0;//攻击模式测试ID
     public int attackModeDefenseTestId = 0;//攻击模式测试ID
 
-    public string buffSelfAttackTestId = "";//buff测试ID
-    public string buffSelfDefenseTestId = "11000100001";//buff测试ID
+    public string buffSelfAttackTestId;//buff测试ID
+    public string buffSelfDefenseTestId;//buff测试ID
 
-    public string buffTestId = "1000100001:1";//攻击模式测试ID
+    public string buffTestId;//攻击模式测试ID
 
-    public string abyssalBlessingIds = "2000002001,2000003001";//深渊的馈赠
+    public string abyssalBlessingIds;//深渊的馈赠
     public List<long> enemyIds = new List<long>() { 1010010001 };
-    
+
     public long doomCouncilBillId = 1000000001;//终焉议会ID
     LauncherTest launcher;
+
+    // 在OnEnable中加载保存的参数
+    private void OnEnable()
+    {
+        LoadAllPreferences();
+    }
+
+    // 使用键名来保存每个参数
+    private const string PREFS_KEY_PREFIX = "GameTestEditor_";
+    /// <summary>
+    /// 加载所有偏好设置
+    /// </summary>
+    private void LoadAllPreferences()
+    {        
+        fightSceneRoadNum = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneRoadNum", 1);
+        fightSceneAttackNum = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneAttackNum", 2);
+        buffSelfAttackTestId = EditorPrefs.GetString(PREFS_KEY_PREFIX + "buffSelfAttackTestId", "");
+        buffSelfDefenseTestId = EditorPrefs.GetString(PREFS_KEY_PREFIX + "buffSelfDefenseTestId", "");
+        buffTestId = EditorPrefs.GetString(PREFS_KEY_PREFIX + "buffTestId", "");
+        abyssalBlessingIds = EditorPrefs.GetString(PREFS_KEY_PREFIX + "abyssalBlessingIds", "");
+    }
+
+    /// <summary>
+    /// 保存所有偏好设置
+    /// </summary>
+    private void SaveAllPreferences()
+    {
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightSceneRoadNum", fightSceneRoadNum);
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightSceneAttackNum", fightSceneAttackNum);
+        EditorPrefs.SetString(PREFS_KEY_PREFIX + "buffSelfAttackTestId", buffSelfAttackTestId);
+        EditorPrefs.SetString(PREFS_KEY_PREFIX + "buffSelfDefenseTestId", buffSelfDefenseTestId);
+        EditorPrefs.SetString(PREFS_KEY_PREFIX + "buffTestId", buffTestId);
+        EditorPrefs.SetString(PREFS_KEY_PREFIX + "abyssalBlessingIds", abyssalBlessingIds);
+    }
+
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
         launcher = (LauncherTest)target;
+
+        // 在绘制UI前开始检查变化
+        EditorGUI.BeginChangeCheck();
+
         switch (launcher.testSceneType)
         {
             case TestSceneTypeEnum.FightSceneTest:
@@ -61,6 +100,12 @@ public class GameTestEditor : Editor
                 UIForResearchUI();
                 break;
         }
+
+        // 如果有任何变化，保存参数
+        if (EditorGUI.EndChangeCheck())
+        {
+            SaveAllPreferences();
+        }
     }
 
     /// <summary>
@@ -68,7 +113,7 @@ public class GameTestEditor : Editor
     /// </summary>
     public void UIForResearchUI()
     {
-         if (GUILayout.Button("打开研究UI") && Application.isPlaying)
+        if (GUILayout.Button("打开研究UI") && Application.isPlaying)
         {
             launcher.StartForResearchUI();
         }
@@ -99,7 +144,7 @@ public class GameTestEditor : Editor
         doomCouncilBillId = EditorGUILayout.LongField(doomCouncilBillId);
         EditorGUILayout.EndHorizontal();
     }
-    
+
     /// <summary>
     /// 奖励选择UI
     /// </summary>
@@ -227,7 +272,7 @@ public class GameTestEditor : Editor
         EditorGUILayout.LabelField("测试数据-深渊馈赠Ids");
         abyssalBlessingIds = EditorGUILayout.TextField(abyssalBlessingIds);
         EditorGUILayout.EndHorizontal();
-        
+
     }
 
     /// <summary>

@@ -262,30 +262,33 @@ public class FightBean
     /// <summary>
     /// 通过ID获取某一生物
     /// </summary>
-    public FightCreatureEntity GetCreatureById(string creatureId, CreatureFightTypeEnum creatureType = CreatureFightTypeEnum.None)
+    public FightCreatureEntity GetCreatureById(string creatureUUID, CreatureFightTypeEnum creatureType = CreatureFightTypeEnum.None)
     {
         if (creatureType == CreatureFightTypeEnum.None)
         {
-            if (dlAttackCreatureEntity.TryGetValue(creatureId, out var attackCreature))
+            if (dlAttackCreatureEntity.TryGetValue(creatureUUID, out var attackCreature))
             {
                 return attackCreature;
             }
-            if (dlDefenseCreatureEntity.TryGetValue(creatureId, out var defenseCreature))
+            if (dlDefenseCreatureEntity.TryGetValue(creatureUUID, out var defenseCreature))
             {
                 return defenseCreature;
             }
-            return fightDefenseCoreCreature;
+            if (fightDefenseCoreCreature.fightCreatureData.creatureData.creatureUUId.Equals(creatureUUID))
+            {
+                return fightDefenseCoreCreature;
+            }
         }
         else if (creatureType == CreatureFightTypeEnum.FightAttack)
         {
-            if (dlAttackCreatureEntity.TryGetValue(creatureId, out var attackCreature))
+            if (dlAttackCreatureEntity.TryGetValue(creatureUUID, out var attackCreature))
             {
                 return attackCreature;
             }
         }
         else if (creatureType == CreatureFightTypeEnum.FightDefense)
         {
-            if (dlDefenseCreatureEntity.TryGetValue(creatureId, out var defenseCreature))
+            if (dlDefenseCreatureEntity.TryGetValue(creatureUUID, out var defenseCreature))
             {
                 return defenseCreature;
             }

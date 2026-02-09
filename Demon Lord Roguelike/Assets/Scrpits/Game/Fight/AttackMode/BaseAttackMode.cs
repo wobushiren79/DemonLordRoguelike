@@ -8,33 +8,15 @@ using UnityEngine;
 
 public class BaseAttackMode
 {
+    public bool isValid = true;
     //当前obj
     public GameObject gameObject;
+    //sprite渲染（不一定有）
     public SpriteRenderer spriteRenderer;
-    //信息
+    //攻击模块信息
     public AttackModeInfoBean attackModeInfo;
-    //攻击者的攻击力
-    public int attackerDamage;
-    //攻击者暴击概率
-    public float attackerCRT;
-    //起始位置
-    public Vector3 startPostion;
-    //目标位置
-    public Vector3 targetPos;
-    //攻击方向
-    public Vector3 attackDirection;
-
-    //攻击者ID
-    public string attackerId;
-    //攻击者的生物ID
-    public long attackerCreatureId;
-    //攻击者的武器道具ID
-    public long attackerWeaponItemId;
-
-    //目标被攻击者（不一定击中，只是一开始锁定的目标）
-    public string attackedIdTarget;
-    //目标被攻击者的层级（不一定击中，只是一开始锁定的目标）
-    public int attackedLayerTarget;
+    //攻击模块数据
+    public AttackModeBean attackModeData;
 
     /// <summary>
     /// 初始化攻击样式
@@ -42,7 +24,7 @@ public class BaseAttackMode
     public virtual void InitAttackModeShow()
     {
         //如果没有找到对应武器 则使用?图标
-        if (attackerWeaponItemId == 0)
+        if (attackModeData.attackerWeaponItemId == 0)
         {
             if (spriteRenderer != null)
             {
@@ -57,7 +39,7 @@ public class BaseAttackMode
         }
         else
         {
-            var weaponItemInfo = ItemsInfoCfg.GetItemData(attackerWeaponItemId);
+            var weaponItemInfo = ItemsInfoCfg.GetItemData(attackModeData.attackerWeaponItemId);
             if (weaponItemInfo != null && !weaponItemInfo.attack_mode_data.IsNull())
             {
                 weaponItemInfo.HandleItemsInfoAttackModeData(this);
@@ -66,13 +48,49 @@ public class BaseAttackMode
     }
 
     /// <summary>
-    /// 开始攻击
+    /// 开始攻击初始化
+    /// </summary>
+    public virtual void StartAttackInit(AttackModeBean attackModeData)
+    {
+        this.isValid = true;
+        this.attackModeData = attackModeData;
+        //初始化攻击模块外形
+        InitAttackModeShow();
+        //设置渲染朝向
+        if (spriteRenderer != null)
+        {
+            CameraHandler.Instance.ChangeAngleForCamera(spriteRenderer.transform);
+        }
+    }
+
+    /// <summary>
+    /// 开始攻击 基础-每一个StartAttack都会调用
+    /// </summary>
+    public virtual void StartAttackBase()
+    {
+        if (gameObject != null)
+        {
+            gameObject.transform.position = attackModeData.startPos;
+            gameObject.SetActive(true);
+        }
+    }
+
+    /// <summary>
+    /// 开始攻击-默认
+    /// </summary>
+    public virtual void StartAttack()
+    {
+        StartAttackBase();
+    }
+
+    /// <summary>
+    /// 开始攻击-生物
     /// </summary>
     /// <param name="attacker">攻击方</param>
     /// <param name="attacked">被攻击方</param>
     public virtual void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
-        attackerDamage = 0;
+        attackModeData.attackerDamage = 0;
         if (attacker != null)
         {
             if (attacker.fightCreatureData != null)
@@ -81,33 +99,42 @@ public class BaseAttackMode
                 if (creatureData != null)
                 {
                     //设置攻击者ID
-                    attackerId = creatureData.creatureUUId;
+                    attackModeData.attackerId = creatureData.creatureUUId;
                     //设置伤害
-                    attackerDamage = (int)attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ATK);
+                    attackModeData.attackerDamage = (int)attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ATK);
                     //提示设置暴击概率 
-                    attackerCRT = attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.CRT);
+                    attackModeData.attackerCRT = attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.CRT);
+                    //设置起始位置
+                    Vector3 offsetPosition = creatureData.creatureInfo.GetAttackStartPosition();
+                    attackModeData.startPos = attacker.creatureObj.transform.position + offsetPosition;
+                    //获取被攻击者的层级
+                    attackModeData.attackedLayerTarget = attacker.fightCreatureData.GetCreatrueLayer(true);
                 }
             }
         }
+        else
+        {
+            attackModeData.startPos = Vector3.zero;
+        }    
         if (attacked != null)
         {
             if (attacked.creatureObj != null)
             {
-                targetPos = attacked.creatureObj.transform.position;
-                attackDirection = Vector3.Normalize(attacked.creatureObj.transform.position - attacker.creatureObj.transform.position);
-                attackedLayerTarget = attacked.creatureObj.layer;
-
+                //设置被攻击者位置
+                attackModeData.targetPos = attacked.creatureObj.transform.position;
+                //设置攻击方朝向
+                attackModeData.attackDirection = Vector3.Normalize(attacked.creatureObj.transform.position - attacker.creatureObj.transform.position);
             }
             if (attacked.fightCreatureData != null)
             {
                 if (attacked.fightCreatureData.creatureData != null)
                 {
                     //设置被攻击者ID
-                    attackedIdTarget = attacked.fightCreatureData.creatureData.creatureUUId;
+                    attackModeData.attackedId = attacked.fightCreatureData.creatureData.creatureUUId;
                 }
             }
-            //LogUtil.Log($"attacker_{attacker.creatureObj.transform.position} attacked_{attacked.creatureObj.transform.position} attackDirection_{attackDirection}");
         }
+        StartAttackBase();
     }
 
     /// <summary>
@@ -115,7 +142,7 @@ public class BaseAttackMode
     /// </summary>
     public virtual void Update()
     {
-
+        
     }
 
     /// <summary>
@@ -123,6 +150,7 @@ public class BaseAttackMode
     /// </summary>
     public virtual void Destroy(bool isPermanently = false)
     {
+        this.isValid = false;
         if (isPermanently)
         {
             if (gameObject != null)
@@ -132,12 +160,7 @@ public class BaseAttackMode
         }
         else
         {
-            attackerDamage = 0;
-            attackerId = null;
-            attackedIdTarget = null;
-            attackerCreatureId = 0;
-            attackerWeaponItemId = 0;
-            FightHandler.Instance.RemoveAttackModePrefab(this);
+            FightHandler.Instance.RemoveAttackMode(this);
         }
     }
 
@@ -151,8 +174,8 @@ public class BaseAttackMode
         if (attackModeInfo.effect_hit != 0)
         {
             float[] colliderAreaSize = attackModeInfo.GetColliderAreaSize();
-            Direction2DEnum effectDirection = attackDirection.x > 0 ? Direction2DEnum.Right : Direction2DEnum.Left;
-            EffectHandler.Instance.ShowEffect(attackModeInfo.effect_hit, startPosition,direction: effectDirection,size: colliderAreaSize[0]);
+            Direction2DEnum effectDirection = attackModeData.attackDirection.x > 0 ? Direction2DEnum.Right : Direction2DEnum.Left;
+            EffectHandler.Instance.ShowEffect(attackModeInfo.effect_hit, startPosition, direction: effectDirection, size: colliderAreaSize[0]);
         }
     }
     #endregion
@@ -208,15 +231,15 @@ public class BaseAttackMode
     {
         CreatureSearchType searchType = attackModeInfo.GetCreatureSerachType();
         CreatureFightTypeEnum searchCreatureType = CreatureFightTypeEnum.None;
-        if (attackedLayerTarget == LayerInfo.CreatureAtt)
+        if (attackModeData.attackedLayerTarget == LayerInfo.CreatureAtt)
         {
             searchCreatureType = CreatureFightTypeEnum.FightAttack;
         }
-        else if (attackedLayerTarget == LayerInfo.CreatureDef)
+        else if (attackModeData.attackedLayerTarget == LayerInfo.CreatureDef)
         {
             searchCreatureType = CreatureFightTypeEnum.FightDefense;
         }
-        return FightCreatureSearchUtil.FindCreatureEntity(searchType, searchCreatureType, checkPosition, attackDirection, Vector3.zero, attackModeInfo.collider_size);
+        return FightCreatureSearchUtil.FindCreatureEntity(searchType, searchCreatureType, checkPosition, attackModeData.attackDirection, Vector3.zero, attackModeInfo.collider_size);
     }
 
     /// <summary>
@@ -249,7 +272,7 @@ public class BaseAttackMode
     /// </summary>
     /// <returns></returns>
     public Collider[] GetHitTargetAreaCollider(Vector3 checkPosition)
-    {
+    {        
         CreatureSearchType searchType = attackModeInfo.GetColliderAreaSerachType();
         float[] colliderAreaSize = attackModeInfo.GetColliderAreaSize();
         Collider[] colliders = null;
@@ -257,7 +280,7 @@ public class BaseAttackMode
         {
             case CreatureSearchType.AreaSphere:
                 //圆形半径
-                colliders = RayUtil.OverlapToSphere(checkPosition, colliderAreaSize[0], 1 << attackedLayerTarget);
+                colliders = RayUtil.OverlapToSphere(checkPosition, colliderAreaSize[0], 1 << attackModeData.attackedLayerTarget);
                 //绘制测试范围
                 DrawTestAreaForSphere(checkPosition, colliderAreaSize[0], 1);
                 break;
@@ -267,7 +290,7 @@ public class BaseAttackMode
                 break;
             case CreatureSearchType.AreaBoxFront:
                 Vector3 offsetPosition;
-                if (attackDirection.x > 0)
+                if (attackModeData.attackDirection.x > 0)
                 {
                     offsetPosition = new Vector3(colliderAreaSize[0], 0, 0);
                 }
@@ -276,7 +299,7 @@ public class BaseAttackMode
                     offsetPosition = new Vector3(-colliderAreaSize[0], 0, 0);
                 }
                 Vector3 halfEx = new Vector3(colliderAreaSize[0], colliderAreaSize[1], colliderAreaSize[2]);
-                colliders = RayUtil.OverlapToBox(checkPosition + offsetPosition, halfEx, 1 << attackedLayerTarget);
+                colliders = RayUtil.OverlapToBox(checkPosition + offsetPosition, halfEx, 1 << attackModeData.attackedLayerTarget);
                 DrawTestAreaForBox(checkPosition + offsetPosition, halfEx, 1);
                 break;
             default:
@@ -285,7 +308,7 @@ public class BaseAttackMode
         return colliders;
     }
 
-    public void DrawTestAreaForSphere(Vector3 startPostion, float areaSize, float duration)
+    public static void DrawTestAreaForSphere(Vector3 startPostion, float areaSize, float duration)
     {
 #if UNITY_EDITOR
         Debug.DrawRay(startPostion, new Vector3(areaSize, 0, 0), Color.red, duration);
@@ -295,7 +318,7 @@ public class BaseAttackMode
 #endif
     }
 
-    public void DrawTestAreaForBox(Vector3 startPostion, Vector3 halfEx, float duration)
+    public static void DrawTestAreaForBox(Vector3 startPostion, Vector3 halfEx, float duration)
     {
 #if UNITY_EDITOR
         Debug.DrawRay(startPostion, new Vector3(halfEx[0], 0, 0), Color.red, duration);

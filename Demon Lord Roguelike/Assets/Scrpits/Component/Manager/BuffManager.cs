@@ -76,6 +76,7 @@ public class BuffManager : BaseManager
     {
         if (targetEntityBean == null)
             return;
+        targetEntityBean.ClearData();
         queueBuffEntityPool.Enqueue(targetEntityBean);
     }
 
@@ -94,6 +95,9 @@ public class BuffManager : BaseManager
     /// </summary>
     public void RemoveBuffEntity(BuffBaseEntity itemBuffEntity)
     {
+        //回收entityBean
+        RemoveBuffEntityBean(itemBuffEntity.buffEntityData);
+        //清理数据
         itemBuffEntity.ClearData();
         Type actualType = itemBuffEntity.GetType();
         string className = actualType.Name; // 获取类名（不包含命名空间）

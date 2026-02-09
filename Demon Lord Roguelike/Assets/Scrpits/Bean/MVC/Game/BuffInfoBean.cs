@@ -25,6 +25,10 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public string class_entity;
 	/// <summary>
+	///实例事件
+	/// </summary>
+	public string class_entity_events;
+	/// <summary>
 	///实例数据
 	/// </summary>
 	public string class_entity_data;
@@ -61,7 +65,7 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public float trigger_chance_min;
 	/// <summary>
-	///触发次数
+	///触发次数(0为触发一次 负数永久触发)
 	/// </summary>
 	public int trigger_num;
 	/// <summary>

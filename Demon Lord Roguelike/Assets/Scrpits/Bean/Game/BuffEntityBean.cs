@@ -4,9 +4,9 @@
     //是否有效
     public bool isValid;
     //buff施加者
-    public string applierCreatureId;
+    public string applierCreatureUUId;
     //buff触发者
-    public string targetCreatureId;
+    public string targetCreatureUUId;
     //buff持续时间
     public float timeUpdateTotal = 0;
     //触发时间
@@ -17,28 +17,41 @@
     //buff数据 固定数据 不可以修改
     public BuffBean buffData;
 
-    public BuffEntityBean(BuffBean buffData, string applierCreatureId, string targetCreatureId)
+    public BuffEntityBean(BuffBean buffData, string applierCreatureUUId, string targetCreatureUUId)
     {
-        SetData(buffData, applierCreatureId, targetCreatureId);
+        SetData(buffData, applierCreatureUUId, targetCreatureUUId);
     }
 
-    public void SetData(BuffBean buffData, string applierCreatureId, string targetCreatureId)
+    public void SetData(BuffBean buffData, string applierCreatureUUId, string targetCreatureUUId)
     {
+        timeUpdateTotal = 0;
+        timeUpdate = 0;
         this.buffId = buffData.id;
         this.buffData = buffData;
 
         var buffInfo = BuffInfoCfg.GetItemData(buffId);
         if (buffInfo == null)
         {
-            LogUtil.LogError($"buff初始化失败 没有找到applierCreatureId_{applierCreatureId} targetCreatureId_{targetCreatureId}  buffId_{buffId}");
+            LogUtil.LogError($"buff初始化失败 没有找到applierCreatureId_{applierCreatureUUId} targetCreatureId_{targetCreatureUUId}  buffId_{buffId}");
         }
         else
         {
             this.triggerNumLeft = buffInfo.trigger_num;
         }
-        this.applierCreatureId = applierCreatureId;
-        this.targetCreatureId = targetCreatureId;
+        this.applierCreatureUUId = applierCreatureUUId;
+        this.targetCreatureUUId = targetCreatureUUId;
         isValid = true;
+    }
+
+    public void ClearData()
+    {
+        buffId = 0;
+        isValid = false;  
+        applierCreatureUUId = null;
+        targetCreatureUUId = null;
+        timeUpdateTotal = 0;
+        timeUpdate = 0;   
+        triggerNumLeft = 0;
     }
 
     public BuffInfoBean GetBuffInfo()

@@ -27,7 +27,10 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
             for (int i = 0; i < manager.listAttackModePrefab.Count; i++)
             {
                 var itemAttackMode = manager.listAttackModePrefab[i];
-                itemAttackMode.Update();
+                if (itemAttackMode.isValid)
+                {
+                    itemAttackMode.Update();
+                }
             }
         }
     }
@@ -84,6 +87,36 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     }
     #endregion
 
+    #region  战斗相关
+    /// <summary>
+    /// 获取被攻击数据
+    /// </summary>
+    public FightUnderAttackBean GetFightUnderAttackData(BaseAttackMode baseAttackMode, string attackedId)
+    {
+        var targetData = manager.GetFightUnderAttackData();
+        targetData.SetData(baseAttackMode, attackedId);
+        return targetData;
+    }
+    
+    /// <summary>
+    /// 获取被攻击数据
+    /// </summary>
+    public FightUnderAttackBean GetFightUnderAttackData(BuffEntityBean buffEntityData, int attackerDamage)
+    {
+        var targetData = manager.GetFightUnderAttackData();
+        targetData.SetData(buffEntityData, attackerDamage);
+        return targetData;
+    }
+
+    /// <summary>
+    /// 移除被攻击数据
+    /// </summary>
+    public void RemoveFightUnderAttackData(FightUnderAttackBean fightUnderAttackData)
+    {
+        manager.RemoveFightUnderAttackData(fightUnderAttackData);
+    }
+    #endregion
+
     #region  攻击模块相关
     /// <summary>
     /// 开始创建攻击模块
@@ -109,47 +142,50 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
         {
             weaponItemId = attackerCreatureInfo.GetEquipBaseWeaponId();
         }
+        AttackModeBean attackModeData = manager.GetAttackModeData(attackModeId);
+        //保存基础生物ID和武器ID 用于初始化攻击的样式
+        attackModeData.attackerCreatureId = creatureId;
+        attackModeData.attackerWeaponItemId = weaponItemId;
+
         manager.GetAttackModePrefab(attackModeId, (attackMode) =>
         {
-            //只保存基础生物ID和武器ID 用于初始化攻击的样式
-            attackMode.attackerCreatureId = creatureId;
-            attackMode.attackerWeaponItemId = weaponItemId;
-            if (attacker == null)
-            {
-                attackMode.startPostion = Vector3.zero;
-            }
-            else
-            {
-                Vector3 offsetPosition = attackerCreatureInfo.GetAttackStartPosition();
-                attackMode.startPostion = attacker.creatureObj.transform.position + offsetPosition;
-            }
-            if (attackMode.gameObject != null)
-            {
-                attackMode.gameObject.transform.position = attackMode.startPostion;
-                attackMode.gameObject.SetActive(true);
-            }
-
-            attackMode.InitAttackModeShow();
-
-            if (attackMode.spriteRenderer != null)
-            {
-                CameraHandler.Instance.ChangeAngleForCamera(attackMode.spriteRenderer.transform);
-            }
-
+            attackMode.StartAttackInit(attackModeData);
             attackMode.StartAttack(attacker, attacked, actionForCreateEnd);
+        });
+    }
+
+    /// <summary>
+    /// 开始攻击
+    /// </summary>
+    public void StartCreateAttackMode(AttackModeBean attackModeData)
+    {
+        manager.GetAttackModePrefab(attackModeData.attackModeId, (attackMode) =>
+        {
+            attackMode.StartAttackInit(attackModeData);
+            attackMode.StartAttack();
         });
     }
 
     /// <summary>
     /// 移除一个攻击预制
     /// </summary>
-    public void RemoveAttackModePrefab(BaseAttackMode targetMode)
+    public async void RemoveAttackMode(BaseAttackMode targetMode)
     {
+        targetMode.isValid = false;
+        //延迟一帧执行
+        await new WaitNextFrame();
+        //移除预制
         if (targetMode.gameObject != null)
         {
             targetMode.gameObject.SetActive(false);
         }
         manager.RemoveAttackModePrefab(targetMode);
+        //移除数据
+        if (targetMode.attackModeData!=null)
+        {
+            manager.RemoveAttackModeData(targetMode.attackModeData);
+            targetMode.attackModeData = null;
+        }
     }
     #endregion
 

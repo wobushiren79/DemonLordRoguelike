@@ -6,6 +6,12 @@ public class AttackModeRangedTracking :  AttackModeRanged
 {
     public FightCreatureEntity attacked;
 
+    public override void StartAttack()
+    {
+        base.StartAttack();
+        Destroy();
+    }
+
     /// <summary>
     /// 开始攻击
     /// </summary>
@@ -31,9 +37,9 @@ public class AttackModeRangedTracking :  AttackModeRanged
         if (attacked != null && !attacked.IsDead())
         {
             //实时改变方向
-            attackDirection = Vector3.Normalize(attacked.creatureObj.transform.position - gameObject.transform.position);
+            attackModeData.attackDirection = Vector3.Normalize(attacked.creatureObj.transform.position - gameObject.transform.position);
             //高度不变
-            attackDirection = attackDirection.SetY(0);
+            attackModeData.attackDirection = attackModeData.attackDirection.SetY(0);
             //检测是否击中目标
             FightCreatureEntity FightCreatureEntity = CheckHitTargetForSingle();
             if (FightCreatureEntity != null)
@@ -53,7 +59,7 @@ public class AttackModeRangedTracking :  AttackModeRanged
     /// </summary>
     public override void HandleForMove()
     {
-        gameObject.transform.Translate(attackDirection * Time.deltaTime * attackModeInfo.speed_move);
+        gameObject.transform.Translate(attackModeData.attackDirection * Time.deltaTime * attackModeInfo.speed_move);
     }
 
 }

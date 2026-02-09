@@ -7,9 +7,9 @@ public class BuffEntityConditionalAddCrystal : BuffEntityConditional
     {
         base.SetData(buffEntityData);
         var buffInfo = buffEntityData.GetBuffInfo();
-        if (!buffInfo.class_entity_data.IsNull())
+        if (!buffInfo.class_entity_events.IsNull())
         {
-            nameRegisterEvent = buffInfo.class_entity_data;
+            nameRegisterEvent = buffInfo.class_entity_events;
             if (nameRegisterEvent.Equals(EventsInfo.GameFightLogic_CreatureDeadDropCrystal))
             {
                 EventHandler.Instance.RegisterEvent<FightDropCrystalBean>(nameRegisterEvent, EventForCreatureDeadDropCrystal);

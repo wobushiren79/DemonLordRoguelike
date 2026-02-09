@@ -130,7 +130,16 @@ public class AIIntentCreatureAttack : AIBaseIntent
     /// </summary>
     public void ActionForAttackEnd(BaseAttackMode attackMode)
     {
-        var findTargetCreature = selfAIEntity.FindCreatureEntityForSinge(DirectionEnum.Left);
+        DirectionEnum findDirectrion;
+        if (attackMode.attackModeData.attackDirection.x > 0)
+        {
+            findDirectrion= DirectionEnum.Right;
+        }
+        else
+        {
+            findDirectrion= DirectionEnum.Left;
+        }
+        var findTargetCreature = selfAIEntity.FindCreatureEntityForSinge(findDirectrion);
         //如果没有找到最近的生物
         if (findTargetCreature == null)
         {

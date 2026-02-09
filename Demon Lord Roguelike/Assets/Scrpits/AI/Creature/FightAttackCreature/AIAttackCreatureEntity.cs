@@ -15,7 +15,7 @@ public class AIAttackCreatureEntity : AICreatureEntity
     public void InitData(FightCreatureEntity selfAttCreatureEntity)
     {
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
-        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_CreatureDeadStart, EventForGameFightLogicCreatureDeadStart);
+        RegisterEvent<FightCreatureEntity>(EventsInfo.GameFightLogic_CreatureDeadStart, EventForGameFightLogicCreatureDeadStart);
         this.selfCreatureEntity = selfAttCreatureEntity;
     }
 
@@ -66,12 +66,12 @@ public class AIAttackCreatureEntity : AICreatureEntity
         }
     }
 
-    public void EventForGameFightLogicCreatureDeadStart(FightCreatureBean fightCreatureData)
+    public void EventForGameFightLogicCreatureDeadStart(FightCreatureEntity fightCreatureEntity)
     {
         //如果自己是在攻击中
         if (currentIntentEnum == AIIntentEnum.AttackCreatureAttack)
         {   //如果是防御生物死了 并且是自己攻击的生物
-            if (fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightDefense && fightCreatureData == targetCreatureEntity.fightCreatureData)
+            if (fightCreatureEntity.fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightDefense && fightCreatureEntity.fightCreatureData == targetCreatureEntity.fightCreatureData)
             {
                 ChangeIntent(AIIntentEnum.AttackCreatureIdle);
             }

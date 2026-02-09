@@ -8,6 +8,14 @@ public class AttackModeRanged​Split : BaseAttackMode
     public List<GameObject> listSplitAttackObj;
     public List<int> listSplitRoad;
     public int splitNum = 2;
+
+    public override void StartAttack()
+    {
+        base.StartAttack();
+        //分裂子攻击
+        CreatureSplitAttack();
+    }
+
     public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
@@ -63,7 +71,7 @@ public class AttackModeRanged​Split : BaseAttackMode
         {
             listSplitAttackObj = new List<GameObject>() { gameObject };
         }
-        listSplitRoad = new List<int> { (int)startPostion.z };
+        listSplitRoad = new List<int> { (int)attackModeData.startPos.z };
 
         List<GameObject> listNewSplitAttackObj = new List<GameObject>();
         for (int i = 0; i < splitNum; i++)
@@ -75,7 +83,7 @@ public class AttackModeRanged​Split : BaseAttackMode
             {
                 roadOffset = -roadOffset;
             }
-            int targetRoadIndex = (int)startPostion.z + roadOffset;
+            int targetRoadIndex = (int)attackModeData.startPos.z + roadOffset;
             if (targetRoadIndex <= gameFightLogic.fightData.sceneRoadNum && targetRoadIndex >= 1)
             {
                 listSplitRoad.Add(targetRoadIndex);
@@ -153,7 +161,7 @@ public class AttackModeRanged​Split : BaseAttackMode
                 Time.deltaTime * attackModeInfo.speed_move * 2
             );
         }
-        targetObj.transform.Translate(attackDirection * Time.deltaTime * attackModeInfo.speed_move);
+        targetObj.transform.Translate(attackModeData.attackDirection * Time.deltaTime * attackModeInfo.speed_move);
         //边界判定
         bool isBound = HandleForBound(targetObj, targetRoad);
         //如果没有超出边界 则进行打击判定

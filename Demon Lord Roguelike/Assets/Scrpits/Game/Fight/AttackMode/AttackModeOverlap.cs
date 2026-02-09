@@ -5,6 +5,12 @@ using UnityEngine;
 
 public class AttackModeOverlap : BaseAttackMode
 {
+    public override void StartAttack()
+    {
+        base.StartAttack();
+        AttackHandle();
+    }
+
     public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
@@ -14,8 +20,15 @@ public class AttackModeOverlap : BaseAttackMode
             Destroy();
             return;
         }
+        AttackHandle();
+        //攻击结束回调
+        actionForAttackEnd?.Invoke(this);
+    }
+
+    public void AttackHandle()
+    {
         //检测周围的敌人
-        CheckHitTargetArea(attacker.creatureObj.transform.position, (FightCreatureEntity itemAttacked) =>
+        CheckHitTargetArea(attackModeData.startPos, (FightCreatureEntity itemAttacked) =>
         {
             if (itemAttacked != null && !itemAttacked.IsDead())
             {
@@ -23,10 +36,7 @@ public class AttackModeOverlap : BaseAttackMode
                 itemAttacked.UnderAttack(this);
             }
         });
-
         //攻击完了就回收这个攻击
         Destroy();
-        //攻击结束回调
-        actionForAttackEnd?.Invoke(this);
     }
 }

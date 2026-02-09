@@ -14,8 +14,7 @@ public class BuffBaseEntity
 
     public virtual void ClearData()
     {
-        if (buffEntityData != null)
-            BuffHandler.Instance.manager.RemoveBuffEntityBean(buffEntityData);
+
     }
     #endregion
 
@@ -29,7 +28,7 @@ public class BuffBaseEntity
         buffEntityData.timeUpdate += buffTime;
         float triggerTime = buffEntityData.GetTriggerTime();
         int triggerNum = buffEntityData.GetTriggerNum();
-        //触发式BUFF（指定时间后触发 达到触发次数max之后结束）
+        //周期性触发，有次数限制
         if (triggerNum > 0)
         {
             if (buffEntityData.timeUpdate >= triggerTime)
@@ -37,8 +36,8 @@ public class BuffBaseEntity
                 buffEntityData.timeUpdate = 0;
                 //减少可触发次数
                 buffEntityData.triggerNumLeft--;
-                //周期性触发BUFF
-                TriggerBuffPeriodic(buffEntityData);
+                //周期性触发，有次数限制
+                TriggerBuffPecurrent(buffEntityData);
                 //如果剩余触发次数没了 则删除BUFF
                 if (buffEntityData.triggerNumLeft <= 0)
                 {
@@ -46,23 +45,23 @@ public class BuffBaseEntity
                 }
             }
         }
-        //持续型BUFF（持续指定时间后结束）
+        //倒计时结束后触发一次
+        else if (triggerNum == 0)
+        {
+            if (buffEntityData.timeUpdate >= triggerTime)
+            {
+                buffEntityData.timeUpdate = 0;
+                TriggerBuffExpire(buffEntityData);
+                buffEntityData.isValid = false;
+            }
+        }
+        //周期性触发，无次数限制
         else
         {
-            //如果是永久存在
-            if (triggerTime <= 0)
+            if (buffEntityData.timeUpdate >= triggerTime)
             {
-
-            }
-            //如果不是永久存在
-            else
-            {
-                if (buffEntityData.timeUpdate >= triggerTime)
-                {
-                    buffEntityData.timeUpdate = 0;
-                    TriggerBuffPersistent(buffEntityData);
-                    buffEntityData.isValid = false;
-                }
+                buffEntityData.timeUpdate = 0;
+                TriggerBuffPeriodic(buffEntityData);
             }
         }
     }
@@ -88,21 +87,29 @@ public class BuffBaseEntity
     }
 
     /// <summary>
-    /// 周期性触发BUFF 触发次数
+    ///  倒计时结束后触发一次
     /// </summary>
-    public virtual bool TriggerBuffPeriodic(BuffEntityBean buffEntityData)
+    public virtual bool TriggerBuffExpire(BuffEntityBean buffEntityData)
+    {
+         return TriggerBuff(buffEntityData);
+    }
+
+    /// <summary>
+    /// 周期性触发，有次数限制
+    /// </summary>
+    public virtual bool TriggerBuffPecurrent(BuffEntityBean buffEntityData)
     {
         return TriggerBuff(buffEntityData);
     }  
 
     /// <summary>
-    /// 持续型触发BUFF 时间触发
+    /// 周期性触发，无次数限制
     /// </summary>
-    public virtual bool TriggerBuffPersistent(BuffEntityBean buffEntityData)
+    public virtual bool TriggerBuffPeriodic(BuffEntityBean buffEntityData)
     {
         return TriggerBuff(buffEntityData);
     }  
-
+    
     /// <summary>
     /// 触发BUFF
     /// </summary>
@@ -125,16 +132,42 @@ public class BuffBaseEntity
 
     #region 工具方法
     /// <summary>
+    /// 获取BUFF的目标生物
+    /// </summary>
+    /// <returns></returns>
+    public virtual FightCreatureEntity GetFightCreatureEntityForTarget()
+    {
+        //获取指定生物
+        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        var fightCreatureEntity = gameFightLogic.fightData.GetCreatureById(buffEntityData.targetCreatureUUId, CreatureFightTypeEnum.None);
+        return fightCreatureEntity;
+    }
+    
+    /// <summary>
+    /// 获取BUFF的施加生物
+    /// </summary>
+    /// <returns></returns>
+    public virtual FightCreatureEntity GetFightCreatureEntityForApplier()
+    {
+        //获取指定生物
+        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        var fightCreatureEntity = gameFightLogic.fightData.GetCreatureById(buffEntityData.applierCreatureUUId, CreatureFightTypeEnum.None);
+        return fightCreatureEntity;
+    }
+
+    /// <summary>
     /// 展示BUFF粒子
     /// </summary>
     public virtual void ShowBuffEffect()
     {
         var buffInfo = buffEntityData.GetBuffInfo();
+        if(buffInfo == null)
+            return;
         if (buffInfo.trigger_effect == 0)
             return; 
         //获取指定生物
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        var targetCreature = gameFightLogic.fightData.GetCreatureById(buffEntityData.targetCreatureId, CreatureFightTypeEnum.None);
+        var targetCreature = gameFightLogic.fightData.GetCreatureById(buffEntityData.targetCreatureUUId, CreatureFightTypeEnum.None);
         if (targetCreature == null || targetCreature.fightCreatureData == null)
         {
             return;

@@ -39,9 +39,6 @@ public class FightCreatureEntity
         creatureLifeShow?.ShowObj(false);
         //设置spine
         CreatureHandler.Instance.SetCreatureData(creatureSkeletionAnimation, fightCreatureData.creatureData, isSetSkeletonDataAsset: false);
-        //设置生物BUFF
-        List<BuffBean> creatureBuffs = fightCreatureData.creatureData.GetListBuffData(getBuffAttribute : false);
-        BuffHandler.Instance.AddFightCreatureBuff(creatureBuffs, fightCreatureData.creatureData.creatureUUId, fightCreatureData.creatureData.creatureUUId);
         //设置身体颜色
         RefreshBodyColor();
     }
@@ -129,7 +126,7 @@ public class FightCreatureEntity
         var listBuffData = baseAttackMode.attackModeInfo.GetListBuff();
         if (!listBuffData.IsNull())
         {
-            bool isAdd = BuffHandler.Instance.AddFightCreatureBuff(listBuffData, baseAttackMode.attackerId, fightCreatureData.creatureData.creatureUUId);
+            bool isAdd = BuffHandler.Instance.AddFightCreatureBuff(listBuffData, baseAttackMode.attackModeData.attackerId, fightCreatureData.creatureData.creatureUUId);
             if (isAdd)
             {
                 //刷新一下身体颜色
@@ -143,7 +140,7 @@ public class FightCreatureEntity
     /// </summary>
     public void RegainHP(BaseAttackMode baseAttackMode)
     {
-        RegainHP(baseAttackMode.attackerId, fightCreatureData.creatureData.creatureUUId, baseAttackMode.attackerDamage,
+        RegainHP(baseAttackMode.attackModeData.attackerId, fightCreatureData.creatureData.creatureUUId, baseAttackMode.attackModeData.attackerDamage,
             actionForNoDead: (changeHPReal) =>
             {
                 //增加BUFF
@@ -194,7 +191,7 @@ public class FightCreatureEntity
     /// </summary>
     public void RegainDR(BaseAttackMode baseAttackMode)
     {
-        RegainDR(baseAttackMode.attackerId, fightCreatureData.creatureData.creatureUUId, baseAttackMode.attackerDamage,
+        RegainDR(baseAttackMode.attackModeData.attackerId, fightCreatureData.creatureData.creatureUUId, baseAttackMode.attackModeData.attackerDamage,
             actionForNoDead: (changeHPReal) =>
             {
                 //增加BUFF
@@ -243,8 +240,8 @@ public class FightCreatureEntity
     /// </summary>
     public void UnderAttack(BaseAttackMode baseAttackMode)
     {
-        FightUnderAttackStruct fightUnderAttackStruct = new FightUnderAttackStruct(baseAttackMode,fightCreatureData.creatureData.creatureUUId);
-        UnderAttack(fightUnderAttackStruct,
+        FightUnderAttackBean fightUnderAttackData = FightHandler.Instance.GetFightUnderAttackData(baseAttackMode, fightCreatureData.creatureData.creatureUUId);
+        UnderAttack(fightUnderAttackData,
             actionForNoDead: (changeDRReal, changeHPReal) =>
             {
                 //触发被攻击特效
@@ -258,14 +255,14 @@ public class FightCreatureEntity
                     if (changeHPReal == 0)
                     {
                         //护甲
-                        EffectHandler.Instance.ShowShieldHitEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
+                        EffectHandler.Instance.ShowShieldHitEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackModeData.attackDirection);
 
                     }
                     //如果是打击到护甲
                     else
                     {
                         //流血
-                        EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
+                        EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackModeData.attackDirection);
                     }
                 }
                 //不播放受伤特效
@@ -279,16 +276,16 @@ public class FightCreatureEntity
                 var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
                 var fightRecordsData = gameLogic.fightData.fightRecordsData;
                 //记录数据
-                fightRecordsData.AddCreatureKillNum(baseAttackMode.attackerId, 1);
+                fightRecordsData.AddCreatureKillNum(baseAttackMode.attackModeData.attackerId, 1);
                 //流血
-                EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackDirection);
+                EffectHandler.Instance.ShowBloodEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackModeData.attackDirection);
             });
     }
 
     /// <summary>
     /// 受到攻击
     /// </summary>
-    public void UnderAttack(FightUnderAttackStruct fightUnderAttackStruct, Action<int, int> actionForNoDead = null, Action<int, int> actionForDead = null)
+    public void UnderAttack(FightUnderAttackBean fightUnderAttackData, Action<int, int> actionForNoDead = null, Action<int, int> actionForDead = null)
     {
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var fightData = gameLogic.fightData;
@@ -301,27 +298,27 @@ public class FightCreatureEntity
             //显示数字
             EffectHandler.Instance.ShowTextNumEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), 0, 1);
             //播放闪避音效
-            AudioHandler.Instance.PlaySound(fightUnderAttackStruct.soundMissId);
+            AudioHandler.Instance.PlaySound(fightUnderAttackData.soundMissId);
             return;
         }
         //判断是否受到暴击
         float randomCRT = UnityEngine.Random.Range(0f, 1f);
-        if (randomCRT <= fightUnderAttackStruct.attackerCRT)
+        if (randomCRT <= fightUnderAttackData.attackerCRT)
         {
-            fightUnderAttackStruct.attackerDamage = (int)(1.5f * fightUnderAttackStruct.attackerDamage);
+            fightUnderAttackData.attackerDamage = (int)(1.5f * fightUnderAttackData.attackerDamage);
         }
         //先扣除护甲 再扣除生命
-        fightCreatureData.ChangeDRAndHP(-fightUnderAttackStruct.attackerDamage,
+        fightCreatureData.ChangeDRAndHP(-fightUnderAttackData.attackerDamage,
         out int curDR, out int curHP,
         out int changeDRReal, out int changeHPReal);
         //真实造成的伤害
         int damageReal = Mathf.Abs(changeDRReal + changeHPReal);
         //记录数据
-        fightRecordsData.AddCreatureDamage(fightUnderAttackStruct.attackerId, damageReal);
-        fightRecordsData.AddCreatureDamageReceived(fightUnderAttackStruct.attackedId, damageReal);
+        fightRecordsData.AddCreatureDamage(fightUnderAttackData.attackerId, damageReal);
+        fightRecordsData.AddCreatureDamageReceived(fightUnderAttackData.attackedId, damageReal);
 
         //是否暴击
-        if (randomCRT <= fightUnderAttackStruct.attackerCRT)
+        if (randomCRT <= fightUnderAttackData.attackerCRT)
         {
             //显示数字
             EffectHandler.Instance.ShowTextNumEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), damageReal, 2);
@@ -332,7 +329,7 @@ public class FightCreatureEntity
             EffectHandler.Instance.ShowTextNumEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), damageReal, 0);
         }
         //播放闪避音效
-        AudioHandler.Instance.PlaySound(fightUnderAttackStruct.soundHitId);
+        AudioHandler.Instance.PlaySound(fightUnderAttackData.soundHitId);
 
         //检测一下是否死亡
         CheckDead
@@ -348,6 +345,9 @@ public class FightCreatureEntity
                 actionForDead?.Invoke(changeDRReal, changeHPReal);
             }
         );
+
+        //攻击结束 回收攻击数据
+        FightHandler.Instance.RemoveFightUnderAttackData(fightUnderAttackData);
     }
     #endregion
 

@@ -5,7 +5,19 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class AttackModeFalluponArea : BaseAttackMode
-{
+{    
+    /// <summary>
+    /// 攻击-基础
+    /// </summary>
+    public override void StartAttack()
+    {
+        base.StartAttack();
+        AttackHandle();
+    }
+
+    /// <summary>
+    /// 攻击-生物
+    /// </summary>
     public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
@@ -15,17 +27,25 @@ public class AttackModeFalluponArea : BaseAttackMode
             Destroy();
             return;
         }
+        AttackHandle();
+        //攻击结束回调
+        actionForAttackEnd?.Invoke(this);
+    }
+
+    /// <summary>
+    /// 通用攻击处理
+    /// </summary>
+    public void AttackHandle()
+    {
         //击中之后的回调
-        CheckHitTargetArea(targetPos, (targetFightCreatureEntity) =>
+        CheckHitTargetArea(attackModeData.targetPos, (targetFightCreatureEntity) =>
         {
             //扣血
             targetFightCreatureEntity.UnderAttack(this);
         });
         //播放击中粒子特效
-        PlayEffectForHit(targetPos);
+        PlayEffectForHit(attackModeData.targetPos);
         //攻击完了就回收这个攻击
         Destroy();
-        //攻击结束回调
-        actionForAttackEnd?.Invoke(this);
     }
 }

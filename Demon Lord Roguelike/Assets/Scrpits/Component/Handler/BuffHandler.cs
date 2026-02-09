@@ -77,6 +77,9 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
     /// </summary>
     public void AddAbyssalBlessing(AbyssalBlessingEntityBean abyssalBlessingEntityData)
     {
+        var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        var defenseCoreCreature = gameLogic.fightData.GetCreatureById("", CreatureFightTypeEnum.FightDefenseCore);
+        var defenseCoreCreatureUUID = defenseCoreCreature.fightCreatureData.creatureData.creatureUUId;
         AbyssalBlessingInfoBean abyssalBlessingInfo = abyssalBlessingEntityData.abyssalBlessingInfo;
         List<BuffBaseEntity> listBuffEntity = new List<BuffBaseEntity>();
         //创建BUFFEntity列表
@@ -85,7 +88,7 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
         {
             long buffId = buffIds[i];
             BuffBean buffData = new BuffBean(buffId);
-            var buffEntity = manager.GetBuffEntity(buffData, abyssalBlessingEntityData.abyssalBlessingUUID, abyssalBlessingEntityData.abyssalBlessingUUID);
+            var buffEntity = manager.GetBuffEntity(buffData, defenseCoreCreatureUUID, defenseCoreCreatureUUID);
             listBuffEntity.Add(buffEntity);
         }
         manager.dicAbyssalBlessingBuffsActivie.Add(abyssalBlessingEntityData, listBuffEntity);

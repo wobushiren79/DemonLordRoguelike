@@ -47,7 +47,7 @@ public class AttackModeRanged : BaseAttackMode
     /// </summary>
     public virtual void HandleForMove()
     {
-        gameObject.transform.Translate(attackDirection * Time.deltaTime * attackModeInfo.speed_move);
+        gameObject.transform.Translate(attackModeData.attackDirection * Time.deltaTime * attackModeInfo.speed_move);
     }
 
     /// <summary>

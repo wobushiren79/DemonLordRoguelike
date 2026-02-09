@@ -8,13 +8,17 @@ public class AttackModeRangedArc : AttackModeRanged
     //抛物线高度
     public float arcHeight = 3f;
 
-    private Vector3 startPosition;
     private float progress = 0f;
+
+    public override void StartAttack()
+    {
+        base.StartAttack();
+        progress = 0f;
+    }
 
     public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
-        startPosition = gameObject.transform.position;
         progress = 0f;
     }
 
@@ -43,7 +47,7 @@ public class AttackModeRangedArc : AttackModeRanged
 
             // 计算抛物线路径
             float parabola = 1.0f - 4.0f * (progress - 0.5f) * (progress - 0.5f);
-            Vector3 nextPos = Vector3.Lerp(startPosition, targetPos, progress);
+            Vector3 nextPos = Vector3.Lerp(attackModeData.startPos, attackModeData.targetPos, progress);
             nextPos.y += parabola * arcHeight;
 
             gameObject.transform.position = nextPos;
@@ -51,7 +55,7 @@ public class AttackModeRangedArc : AttackModeRanged
         else
         {
             // 到达终点
-            gameObject.transform.position = targetPos;
+            gameObject.transform.position = attackModeData.targetPos;
             //攻击完了就回收这个攻击
             Destroy();
         }

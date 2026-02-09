@@ -5,6 +5,12 @@ using UnityEngine;
 
 public class AttackModeExplosion : BaseAttackMode
 {
+    public override void StartAttack()
+    {
+        base.StartAttack();
+        AttackHandle();
+    }
+
     public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
@@ -14,10 +20,19 @@ public class AttackModeExplosion : BaseAttackMode
             Destroy();
             return;
         }
+        AttackHandle();
+        //攻击结束回调
+        actionForAttackEnd?.Invoke(this);
+        //自己也死
+        attacker.SetCreatureDead();
+    }
+
+    public void AttackHandle()
+    {
         //播放击中粒子特效
-        PlayEffectForHit(attacker.creatureObj.transform.position);
+        PlayEffectForHit(attackModeData.startPos);
         //检测周围的敌人
-        CheckHitTargetArea(attacker.creatureObj.transform.position, (FightCreatureEntity itemAttacked) =>
+        CheckHitTargetArea(attackModeData.startPos, (FightCreatureEntity itemAttacked) =>
         {
             if (itemAttacked != null && !itemAttacked.IsDead())
             {
@@ -28,9 +43,5 @@ public class AttackModeExplosion : BaseAttackMode
 
         //攻击完了就回收这个攻击
         Destroy();
-        //攻击结束回调
-        actionForAttackEnd?.Invoke(this);
-        //自己也死
-        attacker.SetCreatureDead();
     }
 }

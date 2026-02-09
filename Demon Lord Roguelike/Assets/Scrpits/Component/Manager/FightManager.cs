@@ -10,7 +10,10 @@ public class FightManager : BaseManager
     public Dictionary<long, Queue<BaseAttackMode>> dicPoolAttackModeObj = new Dictionary<long, Queue<BaseAttackMode>>();
     //攻击预制列表
     public List<BaseAttackMode> listAttackModePrefab = new List<BaseAttackMode>();
-
+    //攻击模块数据缓存池
+    public Queue<AttackModeBean> poolAttackModeData = new Queue<AttackModeBean>();
+    //攻击数据缓存
+    public Queue<FightUnderAttackBean> poolFightUnderAttackData = new Queue<FightUnderAttackBean>();
 
     public static string pathDropMagicPrefab = "Assets/LoadResources/Common/FightDropMagic.prefab";
     public static string pathDropCrystalPrefab = "Assets/LoadResources/Common/FightDropCrystal.prefab";
@@ -74,6 +77,8 @@ public class FightManager : BaseManager
         poolTimeCountDown.Clear();
 
         poolFightDropCrystalBean.Clear();
+        poolAttackModeData.Clear();
+        poolFightUnderAttackData.Clear();
     }
 
     #region 掉落水晶
@@ -242,10 +247,57 @@ public class FightManager : BaseManager
     #endregion
 
     #region 攻击模块
+    public FightUnderAttackBean GetFightUnderAttackData()
+    {
+        FightUnderAttackBean targetData;
+        if (poolFightUnderAttackData.Count > 0)
+        {
+            targetData = poolFightUnderAttackData.Dequeue();
+            return targetData;
+        }
+        targetData = new FightUnderAttackBean();
+        return targetData;
+    }
+    
+    /// <summary>
+    /// 移除攻击模组
+    /// </summary>
+    public void RemoveFightUnderAttackData(FightUnderAttackBean fightUnderAttackData)
+    {
+        fightUnderAttackData.ClearData();
+        poolFightUnderAttackData.Enqueue(fightUnderAttackData);
+    }
+
+    /// <summary>
+    /// 获取攻击模组数据
+    /// </summary>
+    /// <returns></returns>
+    public AttackModeBean GetAttackModeData(long attackModeId)
+    {
+        AttackModeBean targetData;
+        if (poolAttackModeData.Count > 0)
+        {
+            targetData = poolAttackModeData.Dequeue();
+            targetData.InitData(attackModeId);
+            return targetData;
+        }
+        targetData = new AttackModeBean(attackModeId);
+        return targetData;
+    }
+
+    /// <summary>
+    /// 移除攻击模组
+    /// </summary>
+    public void RemoveAttackModeData(AttackModeBean attackModeData)
+    {
+        attackModeData.ClearData();
+        poolAttackModeData.Enqueue(attackModeData);
+    }
+
     /// <summary>
     /// 获取攻击模组
     /// </summary>
-    public void GetAttackModePrefab(int attackModeId, Action<BaseAttackMode> actionForComplete)
+    public void GetAttackModePrefab(long attackModeId, Action<BaseAttackMode> actionForComplete)
     {
         var attackModeInfo = AttackModeInfoCfg.GetItemData(attackModeId);
         if (dicPoolAttackModeObj.TryGetValue(attackModeInfo.id, out Queue<BaseAttackMode> pool))

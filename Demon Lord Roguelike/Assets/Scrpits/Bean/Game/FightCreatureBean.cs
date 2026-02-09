@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using UnityEngine;
 
 [Serializable]
@@ -9,6 +10,7 @@ public class FightCreatureBean
     public CreatureFightTypeEnum creatureFightType;//生物战斗类型
     public CreatureBean creatureData;    //生物数据
     public Vector3Int positionCreate;//生成位置（用于防守生物）
+    public Vector3 positionDead;//死亡位置
     public int roadIndex;//当前道路（用于进攻生物）
 
     public int HPCurrent;//当前生命值
@@ -143,6 +145,44 @@ public class FightCreatureBean
     }
 
     #region 获取
+    /// <summary>
+    /// 获取敌人的战斗生物类型
+    /// </summary>
+    /// <returns></returns>
+    public CreatureFightTypeEnum GetCreatureFightTypeForEnemy()
+    {
+        switch (creatureFightType)
+        {
+            case CreatureFightTypeEnum.FightAttack:
+                return CreatureFightTypeEnum.FightDefense;
+            case CreatureFightTypeEnum.FightDefenseCore:
+                return CreatureFightTypeEnum.FightAttack;
+            case CreatureFightTypeEnum.FightDefense:
+                return CreatureFightTypeEnum.FightAttack;
+            default:
+                return creatureFightType;
+        }
+    }
+
+    /// <summary>
+    ///  获取敌人的战斗生物层级
+    /// </summary>
+    /// <returns></returns>
+    public int GetCreatrueLayer(bool isEnemy)
+    {
+        CreatureFightTypeEnum targetTypeEnum = isEnemy ? GetCreatureFightTypeForEnemy() : creatureFightType; 
+        switch (targetTypeEnum)
+        {
+            case CreatureFightTypeEnum.FightAttack:
+                return LayerInfo.CreatureAtt;
+            case CreatureFightTypeEnum.FightDefense:
+                return LayerInfo.CreatureDef;
+            case CreatureFightTypeEnum.FightDefenseCore:
+                return 0;
+        }
+        return 0;
+    }
+
     /// <summary>
     /// 获取基础属性
     /// </summary>

@@ -1,3 +1,6 @@
+/// <summary>
+/// 初始化触发一次
+/// </summary>
 public class BuffEntityInstant : BuffBaseEntity
 {
     public override void SetData(BuffEntityBean buffEntityData)

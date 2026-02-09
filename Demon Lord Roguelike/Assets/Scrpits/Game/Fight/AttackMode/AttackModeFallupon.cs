@@ -5,6 +5,13 @@ using UnityEngine;
 
 public class AttackModeFallupon : BaseAttackMode
 {
+    public override void StartAttack()
+    {
+        base.StartAttack();
+        //攻击完了就回收这个攻击
+        Destroy();
+    }
+
     public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);

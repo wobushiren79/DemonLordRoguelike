@@ -23,7 +23,7 @@ public class GameFightLogic : BaseGameLogic
     {
         base.PreGame();
         //注册事件
-        RegisterEvent<FightCreatureBean>(EventsInfo.GameFightLogic_CreatureDeadEnd, EventForGameFightLogicCreatureDeadEnd);
+        RegisterEvent<FightCreatureEntity>(EventsInfo.GameFightLogic_CreatureDeadEnd, EventForGameFightLogicCreatureDeadEnd);
         //发送事件通知
         RegisterEvent<string, string>(EventsInfo.Buff_FightCreatureChange, EventForBuffFightCreatureChange);
 
@@ -286,7 +286,8 @@ public class GameFightLogic : BaseGameLogic
     public void SelectCreatureDestoryHandle()
     {
         var targetCreature = fightData.GetDefenseCreatureByPos(selectTargetPos);
-        if (targetCreature == null)
+        //如果没有这个生物 或者这个生物正在死亡 则无法处理
+        if (targetCreature == null || targetCreature.IsDead())
             return;
         CreatureHandler.Instance.RemoveFightCreatureEntity(targetCreature, CreatureFightTypeEnum.FightDefense);
     }
@@ -383,7 +384,7 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>
     /// 角色死亡
     /// </summary>
-    public void EventForGameFightLogicCreatureDeadEnd(FightCreatureBean fightCreature)
+    public void EventForGameFightLogicCreatureDeadEnd(FightCreatureEntity fightCreatureEntity)
     {
         //检测一下游戏是否结束
         CheckGameEnd();
@@ -400,6 +401,11 @@ public class GameFightLogic : BaseGameLogic
         if (fightData != null)
         {
             FightCreatureEntity FightCreatureEntity = fightData.GetCreatureById(targetCreatureId);
+            if (FightCreatureEntity ==null )
+            {
+                LogUtil.LogError($"EventForBuffFightCreatureChange 没有找到生物 targetCreatureId:{targetCreatureId}");
+                return;
+            }
             FightCreatureEntity.fightCreatureData.RefreshBaseAttribute();
         }
     }
