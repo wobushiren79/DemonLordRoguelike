@@ -13,6 +13,10 @@ public partial class CreatureModelBean : BaseBean
 	/// </summary>
 	public string res_name;
 	/// <summary>
+	///解锁ID
+	/// </summary>
+	public long unlock_id;
+	/// <summary>
 	///spine大小缩放
 	/// </summary>
 	public float size_spine;

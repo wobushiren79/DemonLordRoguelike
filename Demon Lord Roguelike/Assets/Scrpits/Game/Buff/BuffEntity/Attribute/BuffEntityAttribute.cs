@@ -24,7 +24,7 @@ public class BuffEntityAttribute : BuffBaseEntity
     /// <summary>
     /// 改变数据-内部
     /// </summary>
-    public float ChangeData(CreatureAttributeTypeEnum targetAttributeType, float targetData)
+    public virtual float ChangeData(CreatureAttributeTypeEnum targetAttributeType, float targetData)
     {
         if (targetAttributeType != attributeType)
         {

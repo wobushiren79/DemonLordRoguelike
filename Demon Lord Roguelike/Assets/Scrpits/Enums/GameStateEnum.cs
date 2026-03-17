@@ -172,6 +172,15 @@ public enum UnlockEnum : long
 
     LineupCreatureAddNum = 200000001,//解锁阵容生物上限1
     LineupNum = 200100001,//解锁多阵容
+
+    EquipRewardHuman = 300100301,//人类装备奖励
+    EquipRewardSkeleton = 300200301,
+    EquipRewardSlime = 300300301,
+    EquipRewardSuccubus = 300400301,
+    EquipRewardMinotaur = 300500301,
+    EquipRewardGoblin = 300600301,
+    EquipRewardOrc = 300700301,
+
 }
 
 /// <summary>

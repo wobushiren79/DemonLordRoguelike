@@ -162,7 +162,6 @@ public class UserUnlockBean
         return 0;
     }
 
-
     /// <summary>
     /// 获取解锁传送门显示数量
     /// </summary>
@@ -240,6 +239,25 @@ public class UserUnlockBean
             }
         }
         return listUnlockWorld;
+    }
+
+    /// <summary>
+    /// 获取解锁的生物模组ID
+    /// </summary>
+    /// <returns></returns>
+    public List<long> GetUnlockCreatureModelIds()
+    {
+        List<long> listUnlock = new List<long>();
+        var allCreatureModelInfo = CreatureModelCfg.GetAllArrayData();
+        for (int i = 0; i < allCreatureModelInfo.Length; i++)
+        {
+            var itemCreatureModelInfo = allCreatureModelInfo[i];
+            if (CheckIsUnlock(itemCreatureModelInfo.unlock_id))
+            {
+                listUnlock.Add(itemCreatureModelInfo.id);
+            }
+        }
+        return listUnlock;
     }
 }
 

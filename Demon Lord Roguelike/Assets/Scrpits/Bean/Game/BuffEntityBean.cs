@@ -13,6 +13,8 @@
     public float timeUpdate = 0;
     //剩下的触发次数
     public int triggerNumLeft;
+    //条件值记录 用于条件触发的记录
+    public float conditionalValue = 0;
 
     //buff数据 固定数据 不可以修改
     public BuffBean buffData;
@@ -52,6 +54,7 @@
         timeUpdateTotal = 0;
         timeUpdate = 0;   
         triggerNumLeft = 0;
+        conditionalValue = 0;
     }
 
     public BuffInfoBean GetBuffInfo()

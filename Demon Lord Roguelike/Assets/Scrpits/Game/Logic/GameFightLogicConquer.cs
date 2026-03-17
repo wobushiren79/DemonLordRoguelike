@@ -86,6 +86,7 @@ public class GameFightLogicConquer : GameFightLogic
             //打开领奖界面
             var uiRewardSelect = UIHandler.Instance.OpenUIAndCloseOther<UIRewardSelect>();
             RewardSelectBean rewardSelectData = new RewardSelectBean();
+            rewardSelectData.InitData(fightData);
             uiRewardSelect.SetData(rewardSelectData, ActionForUIRewardSelectEnd);
         }
         //如果不是最后一关 打开深渊馈赠UI

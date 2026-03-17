@@ -51,7 +51,7 @@ public class LauncherTest : BaseLauncher
         //解锁所有unlock
         var userUnlockData = userData.GetUserUnlockData();
         var allUnlockInfo = UnlockInfoCfg.GetAllArrayData();
-        allUnlockInfo.ForEach((index,value) =>
+        allUnlockInfo.ForEach((index, value) =>
         {
             var researchInfo = ResearchInfoCfg.GetItemDataByUnlockId(value.id);
             if (researchInfo == null)
@@ -94,12 +94,7 @@ public class LauncherTest : BaseLauncher
         //打开领奖界面
         var uiRewardSelect = UIHandler.Instance.OpenUIAndCloseOther<UIRewardSelect>();
         RewardSelectBean rewardSelectData = new RewardSelectBean();
-        rewardSelectData.selectNum = 0;
-        rewardSelectData.selectNumMax = 1;
-        rewardSelectData.listReward = new List<ItemBean>();
-        rewardSelectData.listReward.Add(new ItemBean(10100001));
-        rewardSelectData.listReward.Add(new ItemBean(10100002));
-        rewardSelectData.listReward.Add(new ItemBean(10100003));
+        rewardSelectData.InitData(null);
         uiRewardSelect.SetData(rewardSelectData, null);
     }
 
@@ -151,5 +146,5 @@ public class LauncherTest : BaseLauncher
         UIBaseResearch uiBaseResearch = UIHandler.Instance.OpenUIAndCloseOther<UIBaseResearch>();
         uiBaseResearch.SetDataForTest();
     }
-    
+
 }

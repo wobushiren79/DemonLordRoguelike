@@ -5,16 +5,44 @@ using UnityEngine;
 public class BuffBaseEntity
 {
     public BuffEntityBean buffEntityData;
+    public string nameRegisterEvent;
 
     #region 数据相关
     public virtual void SetData(BuffEntityBean buffEntityData)
     {
         this.buffEntityData = buffEntityData;
+        var buffInfo = buffEntityData.GetBuffInfo();
+        //注册事件
+        nameRegisterEvent = null;
+        if (!buffInfo.class_entity_events.IsNull())
+        {
+            nameRegisterEvent = buffInfo.class_entity_events;
+            if (nameRegisterEvent.Equals(EventsInfo.GameFightLogic_UnderAttack_Dead))
+            {
+                EventHandler.Instance.RegisterEvent<FightUnderAttackBean>(nameRegisterEvent, EventForUnderAttackDead);
+            }
+            else if (nameRegisterEvent.Equals(EventsInfo.GameFightLogic_UnderAttack))
+            {
+                EventHandler.Instance.RegisterEvent<FightUnderAttackBean>(nameRegisterEvent, EventForUnderAttack);
+            }
+        }
     }
 
     public virtual void ClearData()
     {
-
+        //清理数据的时候需要清理一下注册的信息
+        if (nameRegisterEvent != null)
+        {
+            if (nameRegisterEvent.Equals(EventsInfo.GameFightLogic_UnderAttack_Dead))
+            {
+                EventHandler.Instance.UnRegisterEvent<FightUnderAttackBean>(nameRegisterEvent, EventForUnderAttackDead);
+            }
+            else if (nameRegisterEvent.Equals(EventsInfo.GameFightLogic_UnderAttack))
+            {
+                EventHandler.Instance.UnRegisterEvent<FightUnderAttackBean>(nameRegisterEvent, EventForUnderAttack);
+            }
+        }
+        nameRegisterEvent = null;
     }
     #endregion
 
@@ -130,9 +158,51 @@ public class BuffBaseEntity
     }
     #endregion
 
+    #region 事件回调
+    /// <summary>
+    /// 事件触发-被攻击死亡
+    /// </summary>
+    public virtual void EventForUnderAttackDead(FightUnderAttackBean fightUnderAttack)
+    {
+        if (buffEntityData.isValid == false) return;
+        //如果攻击者不是自己 则不用处理
+        if (!fightUnderAttack.attackerId.Equals(buffEntityData.targetCreatureUUId))
+        {
+            return;
+        }
+        //条件触发记录
+        buffEntityData.conditionalValue++;
+        HandleForEvent();
+    }
+
+    /// <summary>
+    /// 事件触发-被攻击
+    /// </summary>
+    public virtual void EventForUnderAttack(FightUnderAttackBean fightUnderAttack)
+    {
+        if (buffEntityData.isValid == false) return;
+        //如果攻击者不是自己 则不用处理
+        if (!fightUnderAttack.attackerId.Equals(buffEntityData.targetCreatureUUId))
+        {
+            return;
+        }
+        //条件触发记录
+        buffEntityData.conditionalValue += fightUnderAttack.attackerDamage;
+        HandleForEvent();;
+    }
+    #endregion
+
     #region 工具方法
     /// <summary>
-    /// 获取BUFF的目标生物
+    /// 事件处理
+    /// </summary>
+    public virtual void HandleForEvent()
+    {
+        
+    }
+
+    /// <summary>
+    /// 获取BUFF的目标生物（被BUFF影响的生物）
     /// </summary>
     /// <returns></returns>
     public virtual FightCreatureEntity GetFightCreatureEntityForTarget()
@@ -144,7 +214,7 @@ public class BuffBaseEntity
     }
     
     /// <summary>
-    /// 获取BUFF的施加生物
+    /// 获取BUFF的施加生物（释放这个BUFF的生物）
     /// </summary>
     /// <returns></returns>
     public virtual FightCreatureEntity GetFightCreatureEntityForApplier()
@@ -176,7 +246,7 @@ public class BuffBaseEntity
     }
 
     /// <summary>
-    /// 检测是否满足前置条件
+    /// 检测是否满足触发前置条件
     /// </summary>
     public bool CheckIsPre(BuffEntityBean buffEntityData)
     {

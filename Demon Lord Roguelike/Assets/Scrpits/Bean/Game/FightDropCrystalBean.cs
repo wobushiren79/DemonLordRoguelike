@@ -11,4 +11,15 @@ public class FightDropCrystalBean
     public int crystalNum;
     //掉落持续时间
     public float lifeTime;
+    public FightDropCrystalBean()
+    {
+        
+    }
+
+    public FightDropCrystalBean(int crystalNum, Vector3 dropPos)
+    {
+        this.crystalNum = crystalNum;
+        this.dropPos = dropPos;
+        this.lifeTime = 30;
+    }
 }

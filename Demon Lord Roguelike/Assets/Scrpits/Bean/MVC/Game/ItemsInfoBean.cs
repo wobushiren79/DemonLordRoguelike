@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 public partial class ItemsInfoBean : BaseBean
 {
 	/// <summary>
-	///道具类型1:帽子 2衣服 3裤子 4鞋子 5鼻环 10武器
+	///道具类型1:帽子 2衣服 3裤子 4鞋子 5鼻环 10武器 1000魔晶
 	/// </summary>
 	public int item_type;
 	/// <summary>
@@ -14,6 +14,10 @@ public partial class ItemsInfoBean : BaseBean
 	public int num_max;
 	/// <summary>
 	///生物模组信息ID
+	/// </summary>
+	public long creature_model_id;
+	/// <summary>
+	///生物模组详细信息ID
 	/// </summary>
 	public long creature_model_info_id;
 	/// <summary>

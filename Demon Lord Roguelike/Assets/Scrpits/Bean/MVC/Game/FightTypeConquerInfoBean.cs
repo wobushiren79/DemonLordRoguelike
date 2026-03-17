@@ -73,6 +73,22 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	/// </summary>
 	public float level_add;
 	/// <summary>
+	///掉落魔晶
+	/// </summary>
+	public int drop_crystal;
+	/// <summary>
+	///奖励-魔晶
+	/// </summary>
+	public int reward_crystal;
+	/// <summary>
+	///奖励-装备稀有度
+	/// </summary>
+	public int reward_equip_rarity;
+	/// <summary>
+	///奖励-装备属性加成
+	/// </summary>
+	public int reward_equip_attribute_add;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

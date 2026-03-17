@@ -179,20 +179,40 @@ public class UserDataBean : BaseBean
 
     #region 道具相关
     /// <summary>
-    /// 增加道具
+    /// 增加特殊道具类型
+    /// </summary>
+    public bool AddBackpackItemForSpecial(long itemId, int num)
+    {
+        if (itemId == (long)ItemIdEnum.Crystal)
+        {
+            AddCrystal(num);
+            return true;
+        }
+        return false;
+    }
+    
+    /// <summary>
+    /// 增加道具（不会覆盖原来的道具）
     /// </summary>
     public void AddBackpackItem(ItemBean itemData)
     {
         if (itemData == null || itemData.itemId == 0)
             return;
+        if (AddBackpackItemForSpecial(itemData.itemId, itemData.itemNum))
+            return;
         listBackpackItems.Add(itemData);
         EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Item_Change);
     }
 
+    /// <summary>
+    /// 增加道具（会覆盖堆叠原来的道具）
+    /// </summary>
     public void AddBackpackItem(long itemId, int num = 1)
     {
         var itemInfo = ItemsInfoCfg.GetItemData(itemId);
         if (itemInfo == null)
+            return;
+        if (AddBackpackItemForSpecial(itemId, num))
             return;
         int maxNum = itemInfo.num_max;
         //容错处理 最大数量默认最小为1

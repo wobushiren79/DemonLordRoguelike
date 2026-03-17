@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class FightBeanForConquer : FightBean
 {
     //征服模式数据
-    protected FightTypeConquerInfoBean fightTypeConquerInfo;
+    public FightTypeConquerInfoBean fightTypeConquerInfo;
     //上一场还在场上的生物
     public List<FightCreatureBean> listLastDefenseFightCreatureData;
     //游戏随机数据

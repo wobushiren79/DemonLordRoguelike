@@ -107,7 +107,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             targetEntity.InitData(fightCreatureEntity);
         });
         //设置生物BUFF
-        List<BuffBean> creatureBuffs = fightCreatureData.creatureData.GetListBuffData(getBuffAttribute : false);
+        List<BuffBean> creatureBuffs = fightCreatureData.creatureData.GetListBuffData(getBuffAttributeBase : false);
         BuffHandler.Instance.AddFightCreatureBuff(creatureBuffs, fightCreatureData.creatureData.creatureUUId, fightCreatureData.creatureData.creatureUUId);
         return fightCreatureEntity;
     }
@@ -157,7 +157,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         //设置位置
         targetObj.transform.position = creaturePos;
         //设置生物BUFF
-        List<BuffBean> creatureBuffs = fightCreatureData.creatureData.GetListBuffData(getBuffAttribute : false);
+        List<BuffBean> creatureBuffs = fightCreatureData.creatureData.GetListBuffData(getBuffAttributeBase : false);
         BuffHandler.Instance.AddFightCreatureBuff(creatureBuffs, fightCreatureData.creatureData.creatureUUId, fightCreatureData.creatureData.creatureUUId);
         return fightCreatureEntity;
     }
@@ -221,7 +221,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         });
 
         //设置生物BUFF
-        List<BuffBean> creatureBuffs = fightCreatureData.creatureData.GetListBuffData(getBuffAttribute : false);
+        List<BuffBean> creatureBuffs = fightCreatureData.creatureData.GetListBuffData(getBuffAttributeBase : false);
         BuffHandler.Instance.AddFightCreatureBuff(creatureBuffs, fightCreatureData.creatureData.creatureUUId, fightCreatureData.creatureData.creatureUUId);
         return targetObj;
     }

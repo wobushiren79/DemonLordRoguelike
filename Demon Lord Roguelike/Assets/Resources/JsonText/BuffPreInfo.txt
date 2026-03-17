@@ -1,1 +1,1 @@
-[{"class_entity":"BuffPreEntityForHPRateLess","name_cn":"血量低于{0}%","name_en":"","remark":"血量低于百分比","id":1001}]
+[{"class_entity":"BuffPreEntityForHPRateLess","remark":"血量低于百分比","id":1001},{"class_entity":"BuffPreEntityForKillNum","remark":"击杀多少数量","id":2001},{"class_entity":"BuffPreEntityForUnderAttackDamage","remark":"受到多少伤害","id":3001}]

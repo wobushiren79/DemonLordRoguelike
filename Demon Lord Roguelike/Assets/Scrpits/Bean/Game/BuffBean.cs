@@ -43,10 +43,10 @@ public class BuffBean
     }
 
     /// <summary>
-    /// 是否是基础属性BUFF
+    /// 是否是基础属性BUFF(只添加属性没有额外条件)
     /// </summary>
     /// <returns></returns>
-    public CreatureAttributeTypeEnum IsBuffEntityAttribute()
+    public CreatureAttributeTypeEnum IsBuffEntityAttributeBase()
     {
         var buffInfo = BuffInfoCfg.GetItemData(id);
         if (!buffInfo.class_entity.IsNull() && buffInfo.class_entity.Equals("BuffEntityAttribute"))

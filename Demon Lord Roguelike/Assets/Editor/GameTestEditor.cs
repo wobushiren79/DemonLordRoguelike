@@ -47,6 +47,7 @@ public class GameTestEditor : Editor
     /// </summary>
     private void LoadAllPreferences()
     {        
+        fightCardId = EditorPrefs.GetString(PREFS_KEY_PREFIX + "fightCardId", "900002");
         fightSceneRoadNum = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneRoadNum", 1);
         fightSceneAttackNum = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneAttackNum", 2);
         buffSelfAttackTestId = EditorPrefs.GetString(PREFS_KEY_PREFIX + "buffSelfAttackTestId", "");
@@ -60,6 +61,7 @@ public class GameTestEditor : Editor
     /// </summary>
     private void SaveAllPreferences()
     {
+        EditorPrefs.SetString(PREFS_KEY_PREFIX + "fightCardId", fightCardId);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightSceneRoadNum", fightSceneRoadNum);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightSceneAttackNum", fightSceneAttackNum);
         EditorPrefs.SetString(PREFS_KEY_PREFIX + "buffSelfAttackTestId", buffSelfAttackTestId);

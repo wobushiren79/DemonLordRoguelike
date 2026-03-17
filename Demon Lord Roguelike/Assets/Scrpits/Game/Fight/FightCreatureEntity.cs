@@ -343,11 +343,13 @@ public class FightCreatureEntity
             actionForDead: () =>
             {
                 actionForDead?.Invoke(changeDRReal, changeHPReal);
+                EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_UnderAttack_Dead, fightUnderAttackData);
             }
         );
-
         //攻击结束 回收攻击数据
         FightHandler.Instance.RemoveFightUnderAttackData(fightUnderAttackData);
+        //事件通知
+        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_UnderAttack, fightUnderAttackData);
     }
     #endregion
 
@@ -491,10 +493,15 @@ public class FightCreatureEntity
         //只有进攻生物才掉落水晶
         if (fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightAttack)
         {
-            FightDropCrystalBean fightDropCrystal = new FightDropCrystalBean();
-            fightDropCrystal.crystalNum = 1;
-            fightDropCrystal.lifeTime = 30;
-            fightDropCrystal.dropPos = creatureObj.transform.position;
+            int dropCrystal = 1;
+            GameFightLogic gameFightLogic =  GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+            if (gameFightLogic.fightData.gameFightType == GameFightTypeEnum.Conquer)
+            {
+                FightBeanForConquer conquerFightData = gameFightLogic.fightData as FightBeanForConquer;
+                dropCrystal = conquerFightData.fightTypeConquerInfo.drop_crystal;
+            }
+            
+            FightDropCrystalBean fightDropCrystal = FightHandler.Instance.manager.GetFightDropCrystalBean(dropCrystal, creatureObj.transform.position);
             //掉落水晶
             FightHandler.Instance.CreateDropCrystal(fightDropCrystal);
             //事件通知

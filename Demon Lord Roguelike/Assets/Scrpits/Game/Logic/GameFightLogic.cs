@@ -400,13 +400,13 @@ public class GameFightLogic : BaseGameLogic
         //刷新一下生物属性
         if (fightData != null)
         {
-            FightCreatureEntity FightCreatureEntity = fightData.GetCreatureById(targetCreatureId);
-            if (FightCreatureEntity ==null )
+            FightCreatureEntity fightCreatureEntity = fightData.GetCreatureById(targetCreatureId);
+            if (fightCreatureEntity ==null )
             {
                 LogUtil.LogError($"EventForBuffFightCreatureChange 没有找到生物 targetCreatureId:{targetCreatureId}");
                 return;
             }
-            FightCreatureEntity.fightCreatureData.RefreshBaseAttribute();
+            fightCreatureEntity.fightCreatureData.RefreshBaseAttribute();
         }
     }
     #endregion

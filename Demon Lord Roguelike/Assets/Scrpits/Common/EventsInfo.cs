@@ -40,6 +40,9 @@ public static class EventsInfo
     public static string GameFightLogic_EndGame = "GameFightLogic_EndGame";//结束游戏
     public static string GameFightLogic_AddExp = "GameFightLogic_AddExp";//增加经验
     public static string GameFightLogic_DropAddCrystal= "GameFightLogic_DropAddCrystal";//掉落拾取水晶
+        
+    public static string GameFightLogic_UnderAttack = "GameFightLogic_UnderAttack";//生物收到攻击
+    public static string GameFightLogic_UnderAttack_Dead = "GameFightLogic_UnderAttack_Dead";//生物收到攻击死亡 
     #endregion
 
     #region BUFF

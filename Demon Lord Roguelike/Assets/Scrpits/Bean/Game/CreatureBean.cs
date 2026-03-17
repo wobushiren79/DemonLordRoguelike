@@ -99,9 +99,9 @@ public partial class CreatureBean
     /// </summary>
     /// <param name="hasSelfBuff">是否有自身BUFF</param>
     /// <param name="getRarityBuff">是否有稀有度BUFF</param>
-    /// <param name="getBuffAttribute">是否包含属性BUFF</param>
+    /// <param name="getBuffAttributeBase">是否包含属性BUFF(纯加属性)</param>
     /// <returns></returns>
-    public List<BuffBean> GetListBuffData(bool getSelfBuff = true, bool getRarityBuff = true, bool getBuffAttribute = true)
+    public List<BuffBean> GetListBuffData(bool getSelfBuff = true, bool getRarityBuff = true, bool getBuffAttributeBase = true)
     {
         List<BuffBean> listAllBuff = new List<BuffBean>();
         //获取自身BUFF
@@ -110,7 +110,16 @@ public partial class CreatureBean
             List<BuffBean> listSelfBuff = creatureInfo.GetCreatureBuffs();
             if (!listSelfBuff.IsNull())
             {
-                listAllBuff.AddRange(listSelfBuff);
+                for (int i = 0; i < listSelfBuff.Count; i++)
+                {
+                    var buffData = listSelfBuff[i];
+                    //如果不获取含属性BUFF 则判断是否是属性BUFF 如果是则跳过
+                    if (getBuffAttributeBase == false && buffData.IsBuffEntityAttributeBase() != CreatureAttributeTypeEnum.None)
+                    {
+                        continue;
+                    }
+                    listAllBuff.Add(buffData);
+                }
             }
         }
         //获取稀有度BUFF
@@ -120,7 +129,7 @@ public partial class CreatureBean
             {
                 var buffData = item.Value;
                 //如果不获取含属性BUFF 则判断是否是属性BUFF 如果是则跳过
-                if (getBuffAttribute == false && buffData.IsBuffEntityAttribute() != CreatureAttributeTypeEnum.None)
+                if (getBuffAttributeBase == false && buffData.IsBuffEntityAttributeBase() != CreatureAttributeTypeEnum.None)
                 {
                     continue;
                 }
@@ -139,8 +148,8 @@ public partial class CreatureBean
         for (int i = 0; i < listBuff.Count; i++)
         {
             var buffData = listBuff[i];
-            CreatureAttributeTypeEnum buufAttributeType = buffData.IsBuffEntityAttribute();
-            if (buufAttributeType!= CreatureAttributeTypeEnum.None && buufAttributeType == creatureAttributeType)
+            CreatureAttributeTypeEnum buufAttributeType = buffData.IsBuffEntityAttributeBase();
+            if (buufAttributeType != CreatureAttributeTypeEnum.None && buufAttributeType == creatureAttributeType)
             {
                 targetData = BuffEntityAttribute.ChangeData(buffData, creatureAttributeType, targetData);
             }
@@ -229,6 +238,20 @@ public partial class CreatureBean
             return equipItem;
         }
         return null;
+    }
+
+    /// <summary>
+    /// 获取装备属性
+    /// </summary>
+    public float GetEquipAttribute(CreatureAttributeTypeEnum attributeType)
+    {
+        float totalAttribute = 0;
+        foreach (var item in dicEquipItemData)
+        {
+            var itemEquip = item.Value;
+            totalAttribute += itemEquip.GetAttribute(attributeType);
+        }
+        return totalAttribute;
     }
     #endregion
 
@@ -476,27 +499,31 @@ public partial class CreatureBean
         switch (creatureAttributeType)
         {
             case CreatureAttributeTypeEnum.HP://获取生命值
-                targetData= creatureInfo.HP + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.HP);
+                targetData = creatureInfo.HP;
                 break;
             case CreatureAttributeTypeEnum.DR://获取护甲值
-                targetData= creatureInfo.DR + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.DR);
+                targetData = creatureInfo.DR;
                 break;
             case CreatureAttributeTypeEnum.ATK://获取攻击力
-                targetData= creatureInfo.ATK + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.ATK);
+                targetData = creatureInfo.ATK;
                 break;
             case CreatureAttributeTypeEnum.ASPD://获取攻击速度
-                targetData= creatureInfo.ASPD + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.ASPD);
+                targetData = creatureInfo.ASPD;
                 break;
             case CreatureAttributeTypeEnum.MSPD://获取移动速度
-                targetData= creatureInfo.MSPD + creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.MSPD);
+                targetData = creatureInfo.MSPD;
                 break;
             case CreatureAttributeTypeEnum.EVA://获取闪避概率
-                targetData= 0;
+                targetData = 0;
                 break;
             case CreatureAttributeTypeEnum.CRT://获取暴击率
-                targetData= 0;
+                targetData = 0;
                 break;
         }
+        //获取角色属性加成
+        targetData += creatureAttribute.GetAttribute(creatureAttributeType);
+        //获取装备属性
+        targetData += GetEquipAttribute(creatureAttributeType);
         //获取BUFF改变后的属性加成
         targetData = GetBuffChangeAttribute(creatureAttributeType, targetData);
         return targetData;

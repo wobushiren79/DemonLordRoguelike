@@ -85,21 +85,19 @@ public class FightManager : BaseManager
     /// <summary>
     /// 获取掉落数据类
     /// </summary>
-    public FightDropCrystalBean GetFightDropCrystalBean()
+    public FightDropCrystalBean GetFightDropCrystalBean(int crystalNum, Vector3 dropPos)
     {
         if (poolFightDropCrystalBean.Count > 0)
         {
             var targetData = poolFightDropCrystalBean.Dequeue();
             return targetData;
         }
-        return new FightDropCrystalBean();
+        return new FightDropCrystalBean(crystalNum, dropPos);
     }
 
     public FightDropCrystalBean GetFightDropCrystalBean(FightDropCrystalBean targetData)
     {
-        FightDropCrystalBean newTargetData = GetFightDropCrystalBean();
-        newTargetData.dropPos = targetData.dropPos;
-        newTargetData.crystalNum = targetData.crystalNum;
+        FightDropCrystalBean newTargetData = GetFightDropCrystalBean(targetData.crystalNum, targetData.dropPos);
         newTargetData.lifeTime = targetData.lifeTime;
         return newTargetData;
     }
