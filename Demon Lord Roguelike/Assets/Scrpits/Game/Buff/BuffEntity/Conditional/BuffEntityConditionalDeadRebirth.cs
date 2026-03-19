@@ -1,10 +1,5 @@
 public class BuffEntityConditionalDeadRebirth : BuffEntityConditionalDead
 {
-    public override void CreatureDeadEnd()
-    {
-        base.CreatureDeadEnd();
-        TriggerBuffConditional(buffEntityData);
-    }
     /// <summary>
     /// 触发BUFF
     /// </summary>

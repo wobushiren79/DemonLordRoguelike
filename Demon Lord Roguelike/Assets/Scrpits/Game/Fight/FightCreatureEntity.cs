@@ -346,10 +346,10 @@ public class FightCreatureEntity
                 EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_UnderAttack_Dead, fightUnderAttackData);
             }
         );
-        //攻击结束 回收攻击数据
-        FightHandler.Instance.RemoveFightUnderAttackData(fightUnderAttackData);
         //事件通知
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_UnderAttack, fightUnderAttackData);
+        //攻击结束 回收攻击数据
+        FightHandler.Instance.RemoveFightUnderAttackData(fightUnderAttackData);
     }
     #endregion
 
@@ -485,27 +485,41 @@ public class FightCreatureEntity
         }
     }
 
+
     /// <summary>
-    /// 死亡掉落水晶
+    /// 掉落水晶
     /// </summary>
-    public void DeadDropCrystal()
+    /// <param name="state">0:所有生物掉落水晶 1:只有进攻生物才掉落水晶 2只有防守生物才掉落水晶</param>
+    public void DropCrystal(int state)
     {
-        //只有进攻生物才掉落水晶
-        if (fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightAttack)
+        Action actionForDrop = () =>
         {
             int dropCrystal = 1;
-            GameFightLogic gameFightLogic =  GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+            GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
             if (gameFightLogic.fightData.gameFightType == GameFightTypeEnum.Conquer)
             {
                 FightBeanForConquer conquerFightData = gameFightLogic.fightData as FightBeanForConquer;
                 dropCrystal = conquerFightData.fightTypeConquerInfo.drop_crystal;
             }
-            
+
             FightDropCrystalBean fightDropCrystal = FightHandler.Instance.manager.GetFightDropCrystalBean(dropCrystal, creatureObj.transform.position);
             //掉落水晶
             FightHandler.Instance.CreateDropCrystal(fightDropCrystal);
             //事件通知
             EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadDropCrystal, fightDropCrystal);
+        };
+        //只有进攻生物才掉落水晶
+        if (state == 0)
+        {
+            actionForDrop?.Invoke();
+        }
+        else if (state == 1 && fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightAttack)
+        {
+            actionForDrop?.Invoke();
+        }
+        else if (state == 2 && fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightDefense)
+        {
+            actionForDrop?.Invoke();
         }
     }
 
@@ -532,7 +546,7 @@ public class FightCreatureEntity
     public void SetCreatureDead()
     {            
         //死亡掉落水晶
-        DeadDropCrystal();
+        DropCrystal(1);
         //颜色变化动画
         AnimForUnderAttackColor();
         //隐藏血条

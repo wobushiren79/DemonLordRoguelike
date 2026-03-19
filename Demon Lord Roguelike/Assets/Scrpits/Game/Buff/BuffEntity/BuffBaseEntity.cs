@@ -1,48 +1,75 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
 public class BuffBaseEntity
 {
     public BuffEntityBean buffEntityData;
+    //事件名字
     public string nameRegisterEvent;
-
+    //事件注销
+    public Action unregisterEventAction;
+    
     #region 数据相关
+    /// <summary>
+    /// 设置数据
+    /// </summary>
     public virtual void SetData(BuffEntityBean buffEntityData)
     {
         this.buffEntityData = buffEntityData;
         var buffInfo = buffEntityData.GetBuffInfo();
-        //注册事件
+
         nameRegisterEvent = null;
+        unregisterEventAction = null;
+
         if (!buffInfo.class_entity_events.IsNull())
         {
             nameRegisterEvent = buffInfo.class_entity_events;
-            if (nameRegisterEvent.Equals(EventsInfo.GameFightLogic_UnderAttack_Dead))
-            {
-                EventHandler.Instance.RegisterEvent<FightUnderAttackBean>(nameRegisterEvent, EventForUnderAttackDead);
-            }
-            else if (nameRegisterEvent.Equals(EventsInfo.GameFightLogic_UnderAttack))
-            {
-                EventHandler.Instance.RegisterEvent<FightUnderAttackBean>(nameRegisterEvent, EventForUnderAttack);
-            }
+            RegisterEvent(nameRegisterEvent);
         }
     }
 
+    /// <summary>
+    /// 清理数据
+    /// </summary>
     public virtual void ClearData()
     {
         //清理数据的时候需要清理一下注册的信息
-        if (nameRegisterEvent != null)
-        {
-            if (nameRegisterEvent.Equals(EventsInfo.GameFightLogic_UnderAttack_Dead))
-            {
-                EventHandler.Instance.UnRegisterEvent<FightUnderAttackBean>(nameRegisterEvent, EventForUnderAttackDead);
-            }
-            else if (nameRegisterEvent.Equals(EventsInfo.GameFightLogic_UnderAttack))
-            {
-                EventHandler.Instance.UnRegisterEvent<FightUnderAttackBean>(nameRegisterEvent, EventForUnderAttack);
-            }
-        }
+        unregisterEventAction?.Invoke();
+        unregisterEventAction = null;
         nameRegisterEvent = null;
+    }
+
+    /// <summary>
+    /// 注册事件
+    /// </summary>
+    /// <param name="eventName"></param>
+    private void RegisterEvent(string eventName)
+    {
+        switch (eventName)
+        {
+            case EventsInfo.GameFightLogic_UnderAttack_Dead:
+                EventHandler.Instance.RegisterEvent<FightUnderAttackBean>(eventName, EventForUnderAttackDead);
+                unregisterEventAction = () => EventHandler.Instance.UnRegisterEvent<FightUnderAttackBean>(eventName, EventForUnderAttackDead);
+                break;
+            case EventsInfo.GameFightLogic_UnderAttack:
+                EventHandler.Instance.RegisterEvent<FightUnderAttackBean>(eventName, EventForUnderAttack);
+                unregisterEventAction = () => EventHandler.Instance.UnRegisterEvent<FightUnderAttackBean>(eventName, EventForUnderAttack);
+                break;
+            case EventsInfo.GameFightLogic_CreatureDeadDropCrystal:
+                EventHandler.Instance.RegisterEvent<FightDropCrystalBean>(eventName, EventForCreatureDeadDropCrystal);
+                unregisterEventAction = () => EventHandler.Instance.UnRegisterEvent<FightDropCrystalBean>(eventName, EventForCreatureDeadDropCrystal);
+                break;
+            case EventsInfo.GameFightLogic_CreatureDeadStart:
+                EventHandler.Instance.RegisterEvent<FightCreatureEntity>(eventName, EventForCreatureDeadStart);
+                unregisterEventAction = () => EventHandler.Instance.UnRegisterEvent<FightCreatureEntity>(eventName, EventForCreatureDeadStart);
+                break;
+            case EventsInfo.GameFightLogic_CreatureDeadEnd:
+                EventHandler.Instance.RegisterEvent<FightCreatureEntity>(eventName, EventForCreatureDeadEnd);
+                unregisterEventAction = () => EventHandler.Instance.UnRegisterEvent<FightCreatureEntity>(eventName, EventForCreatureDeadEnd);
+                break;
+        }
     }
     #endregion
 
@@ -73,16 +100,6 @@ public class BuffBaseEntity
                 }
             }
         }
-        //倒计时结束后触发一次
-        else if (triggerNum == 0)
-        {
-            if (buffEntityData.timeUpdate >= triggerTime)
-            {
-                buffEntityData.timeUpdate = 0;
-                TriggerBuffExpire(buffEntityData);
-                buffEntityData.isValid = false;
-            }
-        }
         //周期性触发，无次数限制
         else
         {
@@ -102,7 +119,7 @@ public class BuffBaseEntity
     public virtual bool TriggerBuffConditional(BuffEntityBean buffEntityData)
     {
         return TriggerBuff(buffEntityData);
-    }  
+    }
 
     /// <summary>
     /// 初始化触发BUFF 
@@ -119,7 +136,7 @@ public class BuffBaseEntity
     /// </summary>
     public virtual bool TriggerBuffExpire(BuffEntityBean buffEntityData)
     {
-         return TriggerBuff(buffEntityData);
+        return TriggerBuff(buffEntityData);
     }
 
     /// <summary>
@@ -128,7 +145,7 @@ public class BuffBaseEntity
     public virtual bool TriggerBuffPecurrent(BuffEntityBean buffEntityData)
     {
         return TriggerBuff(buffEntityData);
-    }  
+    }
 
     /// <summary>
     /// 周期性触发，无次数限制
@@ -136,8 +153,8 @@ public class BuffBaseEntity
     public virtual bool TriggerBuffPeriodic(BuffEntityBean buffEntityData)
     {
         return TriggerBuff(buffEntityData);
-    }  
-    
+    }
+
     /// <summary>
     /// 触发BUFF
     /// </summary>
@@ -181,14 +198,55 @@ public class BuffBaseEntity
     public virtual void EventForUnderAttack(FightUnderAttackBean fightUnderAttack)
     {
         if (buffEntityData.isValid == false) return;
-        //如果攻击者不是自己 则不用处理
-        if (!fightUnderAttack.attackerId.Equals(buffEntityData.targetCreatureUUId))
+        var buffInfo = buffEntityData.GetBuffInfo();
+        var preInfo = buffInfo.GetPreInfo();
+        //如果被攻击者不是自己 则不用处理
+        if (preInfo.ContainsKey(1001) || preInfo.ContainsKey(3001))
         {
-            return;
+            if (!fightUnderAttack.attackedId.Equals(buffEntityData.targetCreatureUUId))
+            {
+                return;
+            }
+        }
+        //如果攻击者不是自己 则不用处理
+        if (preInfo.ContainsKey(4001))
+        {
+            if (!fightUnderAttack.attackerId.Equals(buffEntityData.targetCreatureUUId))
+            {
+                return;
+            }
         }
         //条件触发记录
         buffEntityData.conditionalValue += fightUnderAttack.attackerDamage;
-        HandleForEvent();;
+        HandleForEvent();
+    }
+
+    /// <summary>
+    /// 事件-生物死亡掉落水晶
+    /// </summary>
+    /// <param name="fightDropCrystalBean"></param>
+    public virtual void EventForCreatureDeadDropCrystal(FightDropCrystalBean fightDropCrystalBean)
+    {
+        if (buffEntityData.isValid == false) return;
+        HandleForEvent();
+    }
+
+    /// <summary>
+    /// 事件-生物死亡开始
+    /// </summary>
+    public virtual void EventForCreatureDeadStart(FightCreatureEntity eventFightCreatureEntity)
+    {
+        if (buffEntityData.isValid == false) return;
+        HandleForEvent();
+    }
+
+    /// <summary>
+    /// 事件-生物死亡结束
+    /// </summary>
+    public virtual void EventForCreatureDeadEnd(FightCreatureEntity eventFightCreatureEntity)
+    {
+        if (buffEntityData.isValid == false) return;
+        HandleForEvent();
     }
     #endregion
 
@@ -198,7 +256,7 @@ public class BuffBaseEntity
     /// </summary>
     public virtual void HandleForEvent()
     {
-        
+
     }
 
     /// <summary>
@@ -212,7 +270,7 @@ public class BuffBaseEntity
         var fightCreatureEntity = gameFightLogic.fightData.GetCreatureById(buffEntityData.targetCreatureUUId, CreatureFightTypeEnum.None);
         return fightCreatureEntity;
     }
-    
+
     /// <summary>
     /// 获取BUFF的施加生物（释放这个BUFF的生物）
     /// </summary>
@@ -231,10 +289,10 @@ public class BuffBaseEntity
     public virtual void ShowBuffEffect()
     {
         var buffInfo = buffEntityData.GetBuffInfo();
-        if(buffInfo == null)
+        if (buffInfo == null)
             return;
         if (buffInfo.trigger_effect == 0)
-            return; 
+            return;
         //获取指定生物
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var targetCreature = gameFightLogic.fightData.GetCreatureById(buffEntityData.targetCreatureUUId, CreatureFightTypeEnum.None);

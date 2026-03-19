@@ -11,9 +11,8 @@ public class BuffEntityConditionalCreateCrystal : BuffBaseEntity
         var fightCreatureEntity = GetFightCreatureEntityForTarget();
         if (fightCreatureEntity == null)
             return false;
-        FightDropCrystalBean fightDropCrystal = FightHandler.Instance.manager.GetFightDropCrystalBean(1, fightCreatureEntity.creatureObj.transform.position);
-        //掉落水晶
-        FightHandler.Instance.CreateDropCrystal(fightDropCrystal);
+        //掉落魔晶
+        fightCreatureEntity.DropCrystal(0);
         return true;
     }
 

@@ -15,7 +15,6 @@ public partial class UIViewBuffShowItem : BaseUIView
     {
         this.buffData = buffData;
         this.buffInfo = BuffInfoCfg.GetItemData(buffData.id);
-
         var rarityEnum = buffInfo.GetRarity();
         var rarityInfo = RarityInfoCfg.GetItemData(rarityEnum);
         ColorUtility.TryParseHtmlString(rarityInfo.buff_color, out Color buffColor);
@@ -31,6 +30,32 @@ public partial class UIViewBuffShowItem : BaseUIView
             {TextReplaceEnum.Percentage, $"{MathUtil.GetPercentage(buffData.trigger_value_rate, 2)}"},
             {TextReplaceEnum.Time_S, $"{Mathf.FloorToInt(buffData.trigger_time)}"},
         };
+        var preInfo = buffInfo.GetPreInfo();
+        if (!preInfo.IsNull())
+        {
+            foreach (var itemData in preInfo)
+            {
+                var buffPreInfo = BuffPreInfoCfg.GetItemData(itemData.Key);
+                var buffPreEntity = BuffHandler.Instance.manager.GetBuffPreEntity(buffPreInfo);
+                if (buffPreEntity is BuffPreEntityForKillNum)
+                {         
+                    dicReplace.Add(TextReplaceEnum.KillNum, $"{Mathf.FloorToInt(itemData.Value)}");
+                }
+                else if (buffPreEntity is BuffPreEntityForUnderAttackDamage)
+                {
+                    dicReplace.Add(TextReplaceEnum.UnderAttackDamage, $"{Mathf.FloorToInt(itemData.Value)}");
+                }    
+                else if (buffPreEntity is BuffPreEntityForAttackDamage)
+                {
+                    dicReplace.Add(TextReplaceEnum.AttackDamage, $"{Mathf.FloorToInt(itemData.Value)}");
+                }
+                else if (buffPreEntity is BuffPreEntityForHPRateLess)
+                {
+                    dicReplace.Add(TextReplaceEnum.HPRateLess, $"{MathUtil.GetPercentage(itemData.Value, 2)}");
+                }
+            }
+        }
+
         string contentText = TextHandler.Instance.GetTextReplace(buffInfo.content_language, dicReplace);
         ui_UIViewBuffShowItem_PopupButtonCommonView.SetData(contentText, PopupEnum.Text);
     }

@@ -123,8 +123,12 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     /// </summary>
     /// <param name="attacker">攻击者</param>
     /// <param name="attacked">被攻击者</param>
-    /// <param name="actionForCreateEnd">创建结束</param>
-    public void StartCreateAttackMode(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForCreateEnd)
+    /// <param name="actionForCreateEnd">创建结束回调</param>
+    /// <param name="customAttackModeId">自定义攻击模块</param>
+    public void StartCreateAttackMode(
+        FightCreatureEntity attacker, FightCreatureEntity attacked, 
+        Action<BaseAttackMode> actionForCreateEnd,
+        long customAttackModeId = 0)
     {
         //只保存基础生物ID和武器ID 用于初始化攻击的样式
         long weaponItemId = 0;
@@ -132,7 +136,17 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
         CreatureInfoBean attackerCreatureInfo = attackerCreatureData.creatureInfo;
         
         long creatureId = attackerCreatureInfo.id;
-        int attackModeId = attackerCreatureInfo.attack_mode;
+        long attackModeId;
+        //使用自定义攻击模块
+        if (customAttackModeId != 0)
+        {
+            attackModeId = customAttackModeId;
+        }
+        //使用生物自带攻击模块
+        else
+        {
+            attackModeId = attackerCreatureInfo.attack_mode;
+        }
         var weaponItemData = attackerCreatureData.GetEquip(ItemTypeEnum.Weapon);
         if (weaponItemData != null)
         {
@@ -153,7 +167,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
             attackMode.StartAttack(attacker, attacked, actionForCreateEnd);
         });
     }
-
+    
     /// <summary>
     /// 开始攻击
     /// </summary>
@@ -165,7 +179,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
             attackMode.StartAttack();
         });
     }
-
+    
     /// <summary>
     /// 移除一个攻击预制
     /// </summary>

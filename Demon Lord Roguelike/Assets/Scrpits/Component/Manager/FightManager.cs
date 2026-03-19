@@ -90,6 +90,8 @@ public class FightManager : BaseManager
         if (poolFightDropCrystalBean.Count > 0)
         {
             var targetData = poolFightDropCrystalBean.Dequeue();
+            targetData.crystalNum = crystalNum;
+            targetData.dropPos = dropPos;
             return targetData;
         }
         return new FightDropCrystalBean(crystalNum, dropPos);

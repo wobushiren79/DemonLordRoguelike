@@ -1,11 +1,5 @@
 public class BuffEntityConditionalDeadAreaDRChange : BuffEntityConditionalDead
 {
-    public override void CreatureDeadEnd()
-    {
-        base.CreatureDeadEnd();
-        TriggerBuffConditional(buffEntityData);
-    }
-
     /// <summary>
     /// 触发BUFF
     /// </summary>
@@ -14,6 +8,7 @@ public class BuffEntityConditionalDeadAreaDRChange : BuffEntityConditionalDead
         bool isTriggerSuccess = base.TriggerBuffConditional(buffEntityData);
         if (isTriggerSuccess == false)
             return false;
+        var targetFightCreatureEntity = GetFightCreatureEntityForTarget();
         if (targetFightCreatureEntity == null)
             return false;
         BuffEntityBaseDRChangeArea.DRChangeArea(buffEntityData, targetFightCreatureEntity);

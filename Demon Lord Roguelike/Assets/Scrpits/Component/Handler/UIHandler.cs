@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
 using UnityEngine;
 
 public partial class UIHandler
@@ -77,6 +78,12 @@ public partial class UIHandler
         {
             maskUI.EndMask(maskTime, acionForStart, acionForComplete, isCloseSelf);
         }
+    }
+
+    public UIDialogBossShow ShowDialogBossShow(DialogBossShowBean dialogData)
+    {
+        dialogData.dialogType = DialogEnum.BossShow;
+        return ShowDialog<UIDialogBossShow>(dialogData);
     }
 
     /// <summary>

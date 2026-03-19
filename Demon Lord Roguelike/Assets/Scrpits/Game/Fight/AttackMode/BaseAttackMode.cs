@@ -88,6 +88,7 @@ public class BaseAttackMode
     /// </summary>
     /// <param name="attacker">攻击方</param>
     /// <param name="attacked">被攻击方</param>
+    /// <param name="actionForAttackEnd">攻击结束回调</param>
     public virtual void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         attackModeData.attackerDamage = 0;
@@ -132,6 +133,14 @@ public class BaseAttackMode
                     //设置被攻击者ID
                     attackModeData.attackedId = attacked.fightCreatureData.creatureData.creatureUUId;
                 }
+            }
+        }
+        else
+        {
+            attackModeData.attackedId = "";
+            if (attacker != null)
+            {
+                attackModeData.attackDirection = attacker.fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightAttack ? Vector3.left : Vector3.right;
             }
         }
         StartAttackBase();

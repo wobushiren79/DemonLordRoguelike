@@ -22,7 +22,8 @@ public static class GameUIUtil
     /// <summary>
     /// 设置生物详细UI
     /// </summary>
-    public static void SetCreatureUIForDetails(SkeletonGraphic ui_Icon, RawImage ui_Scene, CreatureBean creatureData)
+    public static void SetCreatureUIForDetails(SkeletonGraphic ui_Icon, RawImage ui_Scene, CreatureBean creatureData,
+        float customUISize = 0, float customUIPosOffsetX = 0, float customUIPosOffsetY = 0)
     {
         //设置spine
         CreatureHandler.Instance.SetCreatureData(ui_Icon, creatureData, isUIShow: true);
@@ -31,7 +32,12 @@ public static class GameUIUtil
         ui_Icon.ShowObj(true);
         //设置UI大小和坐标
         creatureData.creatureModel.ChangeUISizeForB(ui_Icon.rectTransform);
-
+        //自定义UI大小
+        if (customUISize > 0)
+        {
+            ui_Icon.transform.localScale *= customUISize;
+        }
+        ui_Icon.rectTransform.anchoredPosition += new Vector2(customUIPosOffsetX, customUIPosOffsetY);
         //设置背景图片
         if (ui_Scene != null)
         {

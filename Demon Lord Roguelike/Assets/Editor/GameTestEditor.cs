@@ -77,7 +77,7 @@ public class GameTestEditor : Editor
 
         // 在绘制UI前开始检查变化
         EditorGUI.BeginChangeCheck();
-
+        UIForBaseTest();
         switch (launcher.testSceneType)
         {
             case TestSceneTypeEnum.FightSceneTest:
@@ -107,6 +107,24 @@ public class GameTestEditor : Editor
         if (EditorGUI.EndChangeCheck())
         {
             SaveAllPreferences();
+        }
+    }
+
+    /// <summary>
+    /// 基础测试
+    /// </summary>
+    public void UIForBaseTest()
+    {
+        if (GUILayout.Button("基础测试"))
+        {
+            DialogBossShowBean dialogData = new DialogBossShowBean();
+            dialogData.title = "一大波僵尸正在靠近中";
+            dialogData.npcIds = new List<long>()
+            {
+                1010010001,
+                1020010001
+            };
+            UIHandler.Instance.ShowDialogBossShow(dialogData);
         }
     }
 
