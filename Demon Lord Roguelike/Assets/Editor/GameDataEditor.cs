@@ -20,7 +20,7 @@ public class GameDataEditor
         {
             // 重新打包图集
             SpriteAtlasUtility.PackAtlases(new[] { atlas }, EditorUserBuildSettings.activeBuildTarget);
-            Debug.Log($"已重新生成图集: {atlas.name}");
+            LogUtil.Log($"已重新生成图集: {atlas.name}");
         }
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -42,7 +42,7 @@ public class GameDataEditor
         {
             // 重新打包图集
             SpriteAtlasUtility.PackAtlases(new[] { atlas }, EditorUserBuildSettings.activeBuildTarget);
-            Debug.Log($"已重新生成图集: {atlas.name}");
+            LogUtil.Log($"已重新生成图集: {atlas.name}");
         }
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -66,11 +66,23 @@ public class GameDataEditor
             {
                 // 重新打包图集
                 SpriteAtlasUtility.PackAtlases(new[] { atlas }, EditorUserBuildSettings.activeBuildTarget);
-                Debug.Log($"已重新生成图集: {path}");
+                LogUtil.Log($"已重新生成图集: {path}");
             }
         }
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
+    }
+
+    [MenuItem("游戏/一键生成所有资源")]
+    public static void GenerateAllResources()
+    {
+        LogUtil.Log("========== 开始生成所有资源 ==========");
+        
+        SpineAllItemInit();
+        SpineAllSkinInit();
+        RefreshAllAtlases();
+        
+        LogUtil.Log("========== 所有资源生成完成 ==========");
     }
 }
