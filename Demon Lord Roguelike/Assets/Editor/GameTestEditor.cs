@@ -185,10 +185,27 @@ public class GameTestEditor : Editor
                 break;
         }
 
+        DrawGlobalTest();
+
         if (EditorGUI.EndChangeCheck())
         {
             SaveAllPreferences();
         }
+    }
+
+    private void DrawGlobalTest()
+    {
+        EditorGUILayout.Space(10);
+        EditorGUILayout.LabelField("🔧 全局通用测试", EditorStyles.boldLabel);
+        EditorGUILayout.Space(5);
+
+        GUI.backgroundColor = new Color(0.8f, 0.6f, 0.2f);
+        if (GUILayout.Button("▶️ 执行通用测试", GUILayout.Height(30)) && Application.isPlaying)
+        {
+            // TODO: 后续添加具体执行内容
+        }
+        GUI.backgroundColor = Color.white;
+        EditorGUILayout.Space(10);
     }
 
     private void DrawHeader()
