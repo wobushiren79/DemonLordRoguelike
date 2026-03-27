@@ -1,10 +1,9 @@
-﻿
-
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 
 public partial class UIViewItemBackpack : BaseUIView
 {
     public ItemBean itemData;
+    public CreatureBean creatureData;
 
     /// <summary>
     /// 点击
@@ -21,9 +20,12 @@ public partial class UIViewItemBackpack : BaseUIView
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(ItemBean itemData)
+    /// <param name="itemData">道具数据</param>
+    /// <param name="creatureData">生物数据（用于判断道具是否可装备）</param>
+    public void SetData(ItemBean itemData, CreatureBean creatureData = null)
     {
         this.itemData = itemData;
+        this.creatureData = creatureData;
         SetNum(itemData.itemNum);
         SetIcon(itemData.itemId);
         SetItemPopup(itemData);

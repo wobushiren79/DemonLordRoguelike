@@ -15,6 +15,61 @@ public partial class ItemsInfoBean
     }
 
     /// <summary>
+    /// 获取武器类型（只有武器类型道具有效）
+    /// </summary>
+    public ItemTypeWeaponEnum GetWeaponType()
+    {
+        return (ItemTypeWeaponEnum)item_weapon_type;
+    }
+
+    /// <summary>
+    /// 判断生物是否可以装备该道具
+    /// </summary>
+    /// <param name="creatureInfo">生物配置信息</param>
+    /// <returns>是否可以装备</returns>
+    public bool CanEquipForCreature(CreatureInfoBean creatureInfo)
+    {
+        if (creatureInfo == null)
+        {
+            return false;
+        }
+
+        ItemTypeEnum itemType = GetItemType();
+        
+        // 检查生物是否可以装备该类型的道具
+        List<ItemTypeEnum> creatureEquipTypes = creatureInfo.GetEquipItemsType();
+        if (!creatureEquipTypes.Contains(itemType))
+        {
+            return false;
+        }
+
+        // 如果是武器类型，需要检查武器类型是否匹配
+        if (itemType == ItemTypeEnum.Weapon)
+        {
+            ItemTypeWeaponEnum weaponType = GetWeaponType();
+            // equip_items_weapon_type 为 0 表示可以装备所有武器类型
+            if (creatureInfo.equip_items_weapon_type != 0 && 
+                creatureInfo.equip_items_weapon_type != (int)weaponType)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// 判断生物是否可以装备该道具（通过 creatureId）
+    /// </summary>
+    /// <param name="creatureId">生物 ID</param>
+    /// <returns>是否可以装备</returns>
+    public bool CanEquipForCreature(long creatureId)
+    {
+        CreatureInfoBean creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
+        return CanEquipForCreature(creatureInfo);
+    }
+
+    /// <summary>
     /// 处理攻击模块数据
     /// </summary>
     public void HandleItemsInfoAttackModeData(BaseAttackMode attackMode)

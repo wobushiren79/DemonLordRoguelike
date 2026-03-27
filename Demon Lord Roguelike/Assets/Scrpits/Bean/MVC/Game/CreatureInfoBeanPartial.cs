@@ -104,6 +104,65 @@ public partial class CreatureInfoBean
         }
         return listCreatureBuff;
     }
+
+    /// <summary>
+    /// 判断是否可以装备某道具类型
+    /// </summary>
+    /// <param name="itemType">道具类型</param>
+    /// <returns>是否可以装备</returns>
+    public bool CanEquipItemType(ItemTypeEnum itemType)
+    {
+        List<ItemTypeEnum> equipTypes = GetEquipItemsType();
+        return equipTypes.Contains(itemType);
+    }
+
+    /// <summary>
+    /// 判断是否可以装备某武器类型
+    /// </summary>
+    /// <param name="weaponType">武器类型</param>
+    /// <returns>是否可以装备</returns>
+    public bool CanEquipWeaponType(ItemTypeWeaponEnum weaponType)
+    {
+        // equip_items_weapon_type 为 0 表示可以装备所有武器类型
+        if (equip_items_weapon_type == 0)
+        {
+            return true;
+        }
+        return equip_items_weapon_type == (int)weaponType;
+    }
+
+    /// <summary>
+    /// 判断是否可以装备某道具
+    /// </summary>
+    /// <param name="itemInfo">道具配置信息</param>
+    /// <returns>是否可以装备</returns>
+    public bool CanEquipItem(ItemsInfoBean itemInfo)
+    {
+        if (itemInfo == null)
+        {
+            return false;
+        }
+
+        ItemTypeEnum itemType = itemInfo.GetItemType();
+        
+        // 检查是否可以装备该类型的道具
+        if (!CanEquipItemType(itemType))
+        {
+            return false;
+        }
+
+        // 如果是武器类型，需要检查武器类型是否匹配
+        if (itemType == ItemTypeEnum.Weapon)
+        {
+            ItemTypeWeaponEnum weaponType = itemInfo.GetWeaponType();
+            if (!CanEquipWeaponType(weaponType))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
 public partial class CreatureInfoCfg
 {

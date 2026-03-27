@@ -71,7 +71,9 @@ public partial class UICreatureManager : BaseUIComponent
     public void InitBackpackItemsData()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        ui_UIViewItemBackpackList.SetData(userData.listBackpackItems, OnCellChangeForBackpackItem);
+        // 获取当前选中的生物数据
+        var creatureData = ui_UIViewCreatureCardEquipDetails.creatureData;
+        ui_UIViewItemBackpackList.SetData(userData.listBackpackItems, OnCellChangeForBackpackItem, creatureData);
     }
 
     /// <summary>
@@ -96,6 +98,9 @@ public partial class UICreatureManager : BaseUIComponent
                 ui_BtnLevelUpSacrifice_Button.gameObject.SetActive(true);
             }
         }
+
+        // 刷新背包道具显示（根据新选中的生物判断可装备性）
+        InitBackpackItemsData();
     }
 
     /// <summary>
@@ -119,6 +124,15 @@ public partial class UICreatureManager : BaseUIComponent
             LogUtil.LogError($"设置角色装备失败 没有生物数据");
             return;
         }
+
+        // 判断生物是否可以装备该道具
+        CreatureInfoBean creatureInfo = creatureData.creatureInfo;
+        if (!creatureInfo.CanEquipItem(itemInfo))
+        {
+            LogUtil.Log($"生物{creatureData.creatureName}无法装备该道具");
+            return;
+        }
+
         ItemTypeEnum itemType = itemInfo.GetItemType();
         //从背包里移除
         var userData = GameDataHandler.Instance.manager.GetUserData();

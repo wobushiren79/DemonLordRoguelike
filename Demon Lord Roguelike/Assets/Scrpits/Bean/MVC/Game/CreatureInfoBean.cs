@@ -9,7 +9,7 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public int create_mana;
 	/// <summary>
-	///生物类型0创建 1抽卡 2敌人
+	///生物类型0创建 1抽卡 2敌人 9测试
 	/// </summary>
 	public int creature_type;
 	/// <summary>
@@ -36,6 +36,10 @@ public partial class CreatureInfoBean : BaseBean
 	///可装备类型
 	/// </summary>
 	public string equip_items_type;
+	/// <summary>
+	///可装备武器类型
+	/// </summary>
+	public int equip_items_weapon_type;
 	/// <summary>
 	///等待动画名字
 	/// </summary>

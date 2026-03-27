@@ -57,6 +57,7 @@ public enum CreatureAttributeTypeEnum
 {
     None = 0,
     HP,//生命
+    MP,//魔法
     DR,//护甲
     ATK,//攻击力
     MSPD,//移动速度

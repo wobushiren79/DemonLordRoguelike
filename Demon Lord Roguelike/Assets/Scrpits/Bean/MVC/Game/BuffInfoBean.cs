@@ -17,6 +17,14 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public int rarity;
 	/// <summary>
+	///父级buffID
+	/// </summary>
+	public long buff_parent_id;
+	/// <summary>
+	///buff等级
+	/// </summary>
+	public int buff_level;
+	/// <summary>
 	///buff触发对象类型0所有 1防御 2进攻 99防守核心
 	/// </summary>
 	public int trigger_creature_type;
@@ -65,7 +73,7 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public float trigger_chance_min;
 	/// <summary>
-	///触发次数(0为触发一次 负数永久触发)
+	///触发次数(小于等于0永久触发)
 	/// </summary>
 	public int trigger_num;
 	/// <summary>

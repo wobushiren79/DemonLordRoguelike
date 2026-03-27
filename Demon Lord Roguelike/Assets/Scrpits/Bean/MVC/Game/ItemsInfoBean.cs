@@ -9,6 +9,10 @@ public partial class ItemsInfoBean : BaseBean
 	/// </summary>
 	public int item_type;
 	/// <summary>
+	///武器类型（只有武器有效）
+	/// </summary>
+	public int item_weapon_type;
+	/// <summary>
 	///道具上限
 	/// </summary>
 	public int num_max;

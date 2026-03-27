@@ -244,11 +244,7 @@ public class UserDataBean : BaseBean
         while (num > 0)
         {
             int addAmount = Math.Min(num, maxNum);
-            listBackpackItems.Add(new ItemBean
-            {
-                itemId = itemId,
-                itemNum = addAmount
-            });
+            listBackpackItems.Add(new ItemBean(itemId, num));
             num -= addAmount;
         }
         EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Item_Change);

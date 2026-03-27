@@ -12,18 +12,21 @@ public class RewardSelectBean
     //当前已经选择的次数
     public int selectNum;
     //可以选择的最大次数
-    public int selectNumMax;  
+    public int selectNumMax;
     //道具生成数量
     public int createItemNum;
     //装备生成数量
     public int createEquipNum;
-    
+    //装备是魔王专属的概率（默认 1/10）
+    public float createEquipDemonLordRate;
+
     public RewardSelectBean()
     {
         selectNum = 0;
         selectNumMax = 1;
         createItemNum = 3;
         createEquipNum = 1;
+        createEquipDemonLordRate = 0.1f;
     }
 
     /// <summary>
@@ -86,9 +89,15 @@ public class RewardSelectBean
                 addAttribute = fightBeanForConquer.fightTypeConquerInfo.reward_equip_attribute_add;
             }
         }
-        ItemBean itemData = new ItemBean(randomItemInfo.id, 1, rarityItem);
+        //根据概率决定是否生成魔王专属装备
+        int userType = 0;
+        if (Random.value < createEquipDemonLordRate)
+        {
+            userType = (int)ItemUserTypeEnum.DemonLord;
+        }
+        ItemBean itemData = new ItemBean(randomItemInfo.id, 1, rarityItem, userType);
         //随机添加属性
-        itemData.AddRandomAttributeForCreate(addAttribute);
+        itemData.InitRandomAttributeForCreate(addAttribute);
         listReward.Add(itemData);
     }
 

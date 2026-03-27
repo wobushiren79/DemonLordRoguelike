@@ -1,1 +1,1 @@
-[{"content":"","id":1},{"content":"","id":2},{"content":"","id":3},{"content":"","id":4},{"content":"","id":5},{"content":"","id":6},{"content":"","id":7},{"content":"","id":8}]
+[{"content":"Duplication","id":1},{"content":"Clone a random existing demon","id":2},{"content":"Hourglass","id":3},{"content":"Reduce all demon respawn CD by 10%","id":4},{"content":"Money Bags","id":5},{"content":"10% chance for extra crystal on each kill","id":6},{"content":"Gym Membership","id":7},{"content":"All demons gain 10% HP","id":8}]
