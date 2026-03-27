@@ -28,7 +28,26 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
                 UIViewFightAbyssalBlessingItem targetView = itemView.GetComponent<UIViewFightAbyssalBlessingItem>();
 
                 var itemData = allData.GetRandomData();
-                targetView.SetData(itemData);
+                // 解析有等级的BUFF，展示玩家当前等级的高一级（没有则展示1级）
+                BuffInfoBean resolvedBuffInfo = null;
+                if (!itemData.buff_ids.IsNull())
+                {
+                    long[] buffIds = itemData.buff_ids.SplitForArrayLong(',');
+                    for (int bi = 0; bi < buffIds.Length; bi++)
+                    {
+                        BuffInfoBean buffInfo = BuffInfoCfg.GetItemData(buffIds[bi]);
+                        if (buffInfo != null && buffInfo.buff_level > 0)
+                        {
+                            long parentId = buffInfo.buff_parent_id;
+                            int currentLevel = BuffHandler.Instance.GetAbyssalBlessingCurrentLevel(parentId);
+                            resolvedBuffInfo = BuffInfoCfg.GetBuffByParentAndLevel(parentId, currentLevel + 1);
+                            if (resolvedBuffInfo == null)
+                                resolvedBuffInfo = BuffInfoCfg.GetBuffByParentAndLevel(parentId, 1);
+                            break;
+                        }
+                    }
+                }
+                targetView.SetData(itemData, resolvedBuffInfo);
             }
             else
             {

@@ -74,6 +74,39 @@ public partial class BuffInfoBean
 public partial class BuffInfoCfg
 {
     public static Dictionary<BuffTypeEnum,List<BuffInfoBean>> dicBuffTypeData;
+    // 缓存：以 (parentId, level) 为键快速查找 BUFF
+    private static Dictionary<(long parentId, int level), BuffInfoBean> dicBuffByParentAndLevel;
+
+    /// <summary>
+    /// 获取指定父级BUFFID和等级的BUFF
+    /// </summary>
+    public static BuffInfoBean GetBuffByParentAndLevel(long parentId, int level)
+    {
+        // 初始化缓存
+        if (dicBuffByParentAndLevel == null)
+        {
+            dicBuffByParentAndLevel = new Dictionary<(long parentId, int level), BuffInfoBean>();
+            var allData = GetAllArrayData();
+            for (int i = 0; i < allData.Length; i++)
+            {
+                var item = allData[i];
+                if (item.buff_parent_id > 0 && item.buff_level > 0)
+                {
+                    var key = (item.buff_parent_id, item.buff_level);
+                    if (!dicBuffByParentAndLevel.ContainsKey(key))
+                    {
+                        dicBuffByParentAndLevel.Add(key, item);
+                    }
+                }
+            }
+        }
+        
+        if (dicBuffByParentAndLevel.TryGetValue((parentId, level), out BuffInfoBean result))
+        {
+            return result;
+        }
+        return null;
+    }
 
     /// <summary>
     /// 通过BUFF类型获取数据

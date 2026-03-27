@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
-using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -87,6 +84,17 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
         for (int i = 0; i < buffIds.Length; i++)
         {
             long buffId = buffIds[i];
+            BuffInfoBean buffInfo = BuffInfoCfg.GetItemData(buffId);
+            // 有等级的BUFF：替换旧的同族BUFF，并解析到正确的下一级
+            if (buffInfo != null && buffInfo.buff_level > 0)
+            {
+                long parentId = buffInfo.buff_parent_id;
+                int currentLevel = GetAbyssalBlessingCurrentLevel(parentId);
+                RemoveAbyssalBlessingByParentId(parentId);
+                BuffInfoBean nextLevelBuffInfo = BuffInfoCfg.GetBuffByParentAndLevel(parentId, currentLevel + 1);
+                if (nextLevelBuffInfo != null)
+                    buffId = nextLevelBuffInfo.id;
+            }
             BuffBean buffData = new BuffBean(buffId);
             var buffEntity = manager.GetBuffEntity(buffData, defenseCoreCreatureUUID, defenseCoreCreatureUUID);
             listBuffEntity.Add(buffEntity);
@@ -94,6 +102,57 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
         manager.dicAbyssalBlessingBuffsActivie.Add(abyssalBlessingEntityData, listBuffEntity);
         //事件通知
         EventHandler.Instance.TriggerEvent(EventsInfo.Buff_AbyssalBlessingChange, abyssalBlessingEntityData);
+    }
+
+    /// <summary>
+    /// 获取深渊馈赠中指定父级BUFFID当前已有的等级（0表示未拥有）
+    /// </summary>
+    public int GetAbyssalBlessingCurrentLevel(long parentId)
+    {
+        var valueLists = manager.dicAbyssalBlessingBuffsActivie.List;
+        for (int i = 0; i < valueLists.Count; i++)
+        {
+            var listBuff = valueLists[i];
+            for (int f = 0; f < listBuff.Count; f++)
+            {
+                var buffInfo = listBuff[f].buffEntityData.GetBuffInfo();
+                if (buffInfo != null && buffInfo.buff_parent_id == parentId && buffInfo.buff_level > 0)
+                    return buffInfo.buff_level;
+            }
+        }
+        return 0;
+    }
+
+    /// <summary>
+    /// 移除深渊馈赠中指定父级BUFFID对应的条目（用于等级替换）
+    /// </summary>
+    private void RemoveAbyssalBlessingByParentId(long parentId)
+    {
+        List<BuffBaseEntity> targetList = null;
+        var valueLists = manager.dicAbyssalBlessingBuffsActivie.List;
+        for (int i = 0; i < valueLists.Count; i++)
+        {
+            var listBuff = valueLists[i];
+            for (int f = 0; f < listBuff.Count; f++)
+            {
+                var buffInfo = listBuff[f].buffEntityData.GetBuffInfo();
+                if (buffInfo != null && buffInfo.buff_parent_id == parentId)
+                {
+                    targetList = listBuff;
+                    break;
+                }
+            }
+            if (targetList != null) break;
+        }
+        if (targetList != null)
+        {
+            for (int f = targetList.Count - 1; f >= 0; f--)
+            {
+                targetList[f].buffEntityData.isValid = false;
+                manager.RemoveBuffEntity(targetList, targetList[f]);
+            }
+            manager.dicAbyssalBlessingBuffsActivie.RemoveByValue(targetList);
+        }
     }
     #endregion
 

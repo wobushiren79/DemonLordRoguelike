@@ -9,11 +9,20 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(AbyssalBlessingInfoBean abyssalBlessingInfo)
+    /// <param name="resolvedBuffInfo">有等级的BUFF时，传入已解析的下一级BuffInfo用于展示；无等级时传null</param>
+    public void SetData(AbyssalBlessingInfoBean abyssalBlessingInfo, BuffInfoBean resolvedBuffInfo = null)
     {
         this.abyssalBlessingInfo = abyssalBlessingInfo;
-        SetName(abyssalBlessingInfo.name_language);
-        SetDetails(abyssalBlessingInfo.details_language);
+        if (resolvedBuffInfo != null)
+        {
+            SetName(resolvedBuffInfo.name_language);
+            SetDetails(resolvedBuffInfo.content_language);
+        }
+        else
+        {
+            SetName(abyssalBlessingInfo.name_language);
+            SetDetails(abyssalBlessingInfo.details_language);
+        }
     }
 
     /// <summary>
