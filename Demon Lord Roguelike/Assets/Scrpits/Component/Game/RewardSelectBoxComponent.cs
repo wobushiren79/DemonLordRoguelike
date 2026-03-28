@@ -15,7 +15,7 @@ public class RewardSelectBoxComponent : BaseMonoBehaviour
 
     public void Awake()
     {
-        boxTF = transform.Find("RewardBox_1");  
+        boxTF = transform.Find("RewardBox_1");
         boxAnim = boxTF.GetComponent<Animator>();
 
         itemTF = transform.Find("RewardSelectBoxItem");

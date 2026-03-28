@@ -1,0 +1,1 @@
+[{"content":"生命","id":1},{"content":"魔法","id":2},{"content":"护甲","id":3},{"content":"攻击力","id":4},{"content":"移动速度","id":5},{"content":"攻击速度","id":6},{"content":"暴击率","id":7},{"content":"闪避","id":8},{"content":"复活CD","id":9}]

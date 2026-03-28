@@ -247,7 +247,7 @@ public partial class UICreatureChange : BaseUIComponent
             UIViewColorShow colorShow = targetObj.GetComponent<UIViewColorShow>();
             dicSelectColorShow.Add(targetView.creatureSkinType, colorShow);
 
-            string skinName = CreatureEnum.GetCreatureSkinTypeEnumName(targetView.creatureSkinType);
+            string skinName = CreatureUtil.GetCreatureSkinTypeEnumName(targetView.creatureSkinType);
             colorShow.SetData(skinName, colorForSkin, ActionForSelectColor);
             hasColorForSkin = true;
         }
@@ -298,7 +298,7 @@ public partial class UICreatureChange : BaseUIComponent
             List<long> listSkin = item.Value;
             List<string> listSkinName = new List<string>();
             //设置皮肤选择列表名字
-            string skinName = CreatureEnum.GetCreatureSkinTypeEnumName(item.Key);
+            string skinName = CreatureUtil.GetCreatureSkinTypeEnumName(item.Key);
             for (int i = 0; i < listSkin.Count; i++)
             {
                 var skinId = listSkin[i];

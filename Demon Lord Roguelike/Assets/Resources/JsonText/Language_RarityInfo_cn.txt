@@ -1,1 +1,1 @@
-[{"content":"N","id":1},{"content":"R","id":2},{"content":"SR","id":3},{"content":"SSR","id":4},{"content":"UR","id":5},{"content":"L","id":6}]
+[{"content":"普通","id":1},{"content":"稀有","id":2},{"content":"特稀","id":3},{"content":"极稀","id":4},{"content":"绝稀","id":5},{"content":"传奇","id":6}]

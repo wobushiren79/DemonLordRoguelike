@@ -26,7 +26,7 @@ public partial class UIViewItemBackpack : BaseUIView
     {
         this.itemData = itemData;
         this.creatureData = creatureData;
-        SetNum(itemData.itemNum);
+        SetNum(itemData.itemId, itemData.itemNum);
         SetIcon(itemData.itemId);
         SetItemPopup(itemData);
     }
@@ -50,9 +50,15 @@ public partial class UIViewItemBackpack : BaseUIView
     /// <summary>
     /// 设置数量
     /// </summary>
-    public void SetNum(int num)
+    public void SetNum(long itemId, int num)
     {
-        if (num <= 1)
+        var itemInfo = ItemsInfoCfg.GetItemData(itemId);
+        // 如果道具上限为1，不显示数量
+        if (itemInfo != null && itemInfo.num_max == 1)
+        {
+            ui_ItemNumBg.gameObject.SetActive(false);
+        }
+        else if (num <= 1)
         {
             ui_ItemNumBg.gameObject.SetActive(false);
         }

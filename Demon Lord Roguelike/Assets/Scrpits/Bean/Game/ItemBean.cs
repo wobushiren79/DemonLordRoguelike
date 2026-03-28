@@ -92,20 +92,18 @@ public partial class ItemBean
     /// </summary>
     public void AddAttribute(CreatureAttributeTypeEnum attributeType, float addNum)
     {
-        float tempValue = 0;
         if (dicAttribute.TryGetValue(attributeType, out float targetValue))
         {
-            tempValue = targetValue + addNum;
+            float tempValue = targetValue + addNum;
+            if (tempValue < 0) tempValue = 0;
+            dicAttribute[attributeType] = tempValue;
         }
         else
         {
-            dicAttribute.Add(attributeType, 0);
+            float tempValue = addNum;
+            if (tempValue < 0) tempValue = 0;
+            dicAttribute.Add(attributeType, tempValue);
         }
-        if (tempValue < 0)
-        {
-            tempValue = 0;
-        }
-        dicAttribute[attributeType] = tempValue;
     }
 
     /// <summary>

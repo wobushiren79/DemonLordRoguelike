@@ -33,6 +33,12 @@ public partial class CreatureModelBean : BaseBean
 	/// </summary>
 	public string ui_data_b;
 	/// <summary>
+	///名字-中文
+	/// </summary>
+	public long name;
+	[JsonIgnore]
+	public string name_language { get { return TextHandler.Instance.GetTextById(CreatureModelCfg.fileName, name); } }
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;
