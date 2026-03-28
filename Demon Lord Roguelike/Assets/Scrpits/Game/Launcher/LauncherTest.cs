@@ -89,12 +89,13 @@ public class LauncherTest : BaseLauncher
     /// <summary>
     /// 开始奖励选择
     /// </summary>
-    public async void StartForRewardSelect()
+    /// <param name="testData">测试数据，可配置装备品质、使用者类型、属性加成</param>
+    public async void StartForRewardSelect(RewardSelectTestData testData = null)
     {
         //打开领奖界面
         var uiRewardSelect = UIHandler.Instance.OpenUIAndCloseOther<UIRewardSelect>();
         RewardSelectBean rewardSelectData = new RewardSelectBean();
-        rewardSelectData.InitData(null);
+        rewardSelectData.InitData(null, testData);
         uiRewardSelect.SetData(rewardSelectData, null);
     }
 
