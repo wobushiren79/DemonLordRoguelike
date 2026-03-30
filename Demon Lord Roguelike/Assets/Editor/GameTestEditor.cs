@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using Spine.Unity;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
@@ -63,7 +65,17 @@ public partial class GameTestEditor : Editor
         if (GUILayout.Button("▶️ 执行通用测试", GUILayout.Height(30)) && Application.isPlaying)
         {
             // TODO: 后续添加具体执行内容
+            string _modBasePath = Path.Combine(Application.dataPath, "../Library/com.unity.addressables/aa/Mods/StandaloneWindows64").Replace('\\', '/');
+            
+            
+            LoadAssetBundleUtil.LoadAssetSync<UnityEngine.Object>("mod_spine_assets_all_2ae1b07a8d2f00fb38896ed9a2934598.bundle", "Assets/LoadResources/Spine/Mod/Other_Common/GuideFairyTio_Avator/GuideFairyTio_Avator_GuideFairyTio_Avator.mat",_modBasePath);
+            LoadAssetBundleUtil.LoadAssetSync<UnityEngine.Object>("mod_spine_assets_all_2ae1b07a8d2f00fb38896ed9a2934598.bundle", "Assets/LoadResources/Spine/Mod/Other_Common/GuideFairyTio_Avator/GuideFairyTio_Avator_GuideFairyTio_Avator-Multiply.mat",_modBasePath);
+            LoadAssetBundleUtil.LoadAssetSync<UnityEngine.Object>("mod_spine_assets_all_2ae1b07a8d2f00fb38896ed9a2934598.bundle", "Assets/LoadResources/Spine/Mod/Other_Common/GuideFairyTio_Avator/GuideFairyTio_Avator_GuideFairyTio_Avator2.mat",_modBasePath);
+            LoadAssetBundleUtil.LoadAssetSync<UnityEngine.Object>("mod_spine_assets_all_2ae1b07a8d2f00fb38896ed9a2934598.bundle", "Assets/LoadResources/Spine/Mod/Other_Common/GuideFairyTio_Avator/GuideFairyTio_Avator_Atlas.mat",_modBasePath);
+            var targetData = LoadAssetBundleUtil.LoadAssetSync<UnityEngine.Object>("mod_spine_assets_all_2ae1b07a8d2f00fb38896ed9a2934598.bundle", "Assets/LoadResources/Spine/Mod/Other_Common/GuideFairyTio_Avator/GuideFairyTio_Avator_SkeletonData.asset",_modBasePath);
+            if (targetData != null) Debug.Log(targetData.GetType().FullName); // 打印实际类型
         }
+
         GUI.backgroundColor = Color.white;
         EditorGUILayout.Space(10);
     }

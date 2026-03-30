@@ -38,7 +38,7 @@ MonoBehaviour:
     m_Id: '[UnityEngine.AddressableAssets.Addressables.RuntimePath]/../Mods/[BuildTarget]'
   m_LoadPath:
     m_Id: '[UnityEngine.AddressableAssets.Addressables.RuntimePath]/../Mods/[BuildTarget]'
-  m_BundleMode: 1
+  m_BundleMode: 0
   m_AssetBundleProviderType:
     m_AssemblyName: Unity.ResourceManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     m_ClassName: UnityEngine.ResourceManagement.ResourceProviders.AssetBundleProvider
