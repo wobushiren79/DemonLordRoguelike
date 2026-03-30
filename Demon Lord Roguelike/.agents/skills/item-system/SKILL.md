@@ -50,7 +50,7 @@ ItemUserTypeEnum
 ### 1. 添加道具ID到枚举
 
 ```csharp
-// Assets/Scrpits/Enums/ItemsEnum.cs
+// Assets/Scripts/Enums/ItemsEnum.cs
 public enum ItemIdEnum
 {
     Crystal = 1,           // 魔晶
@@ -215,11 +215,11 @@ EventsInfo.UIViewItemBackpack_OnClickSelect
 
 | 功能 | 文件路径 |
 |------|----------|
-| 道具枚举 | `Assets/Scrpits/Enums/ItemsEnum.cs` |
-| 道具数据Bean | `Assets/Scrpits/Bean/Game/ItemBean.cs` |
-| 道具配置Bean | `Assets/Scrpits/Bean/MVC/Game/ItemsInfoBean.cs` |
-| 道具类型配置 | `Assets/Scrpits/Bean/MVC/Game/ItemsTypeBean.cs` |
-| 道具工具类 | `Assets/Scrpits/Utils/ItemsUtil.cs` |
-| 背包管理 | `Assets/Scrpits/Bean/MVC/UserDataBean.cs` |
-| 生物装备 | `Assets/Scrpits/Bean/Game/CreatureBean.cs` |
-| UI背包组件 | `Assets/Scrpits/Component/UI/Common/Backpack/` |
+| 道具枚举 | `Assets/Scripts/Enums/ItemsEnum.cs` |
+| 道具数据Bean | `Assets/Scripts/Bean/Game/ItemBean.cs` |
+| 道具配置Bean | `Assets/Scripts/Bean/MVC/Game/ItemsInfoBean.cs` |
+| 道具类型配置 | `Assets/Scripts/Bean/MVC/Game/ItemsTypeBean.cs` |
+| 道具工具类 | `Assets/Scripts/Utils/ItemsUtil.cs` |
+| 背包管理 | `Assets/Scripts/Bean/MVC/UserDataBean.cs` |
+| 生物装备 | `Assets/Scripts/Bean/Game/CreatureBean.cs` |
+| UI背包组件 | `Assets/Scripts/Component/UI/Common/Backpack/` |

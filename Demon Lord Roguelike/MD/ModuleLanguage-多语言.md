@@ -418,12 +418,12 @@ Buff名称和描述通过多语言系统实现本地化：
 
 | 功能 | 文件路径 |
 |------|----------|
-| 多语言数据Bean | `Assets/FrameWork/Scrpits/Bean/MVC/LanguageBean.cs` |
-| UI文本Bean | `Assets/FrameWork/Scrpits/Bean/MVC/UITextBean.cs` |
-| 语言枚举 | `Assets/FrameWork/Scrpits/Enums/BaseGameEnum.cs` |
-| 文本管理器 | `Assets/FrameWork/Scrpits/Component/Manager/TextManager.cs` |
-| 文本处理器 | `Assets/FrameWork/Scrpits/Component/Handler/TextHandler.cs` |
-| UI多语言组件 | `Assets/FrameWork/Scrpits/Component/UI/UITextLanguageView.cs` |
+| 多语言数据Bean | `Assets/FrameWork/Scripts/Bean/MVC/LanguageBean.cs` |
+| UI文本Bean | `Assets/FrameWork/Scripts/Bean/MVC/UITextBean.cs` |
+| 语言枚举 | `Assets/FrameWork/Scripts/Enums/BaseGameEnum.cs` |
+| 文本管理器 | `Assets/FrameWork/Scripts/Component/Manager/TextManager.cs` |
+| 文本处理器 | `Assets/FrameWork/Scripts/Component/Handler/TextHandler.cs` |
+| UI多语言组件 | `Assets/FrameWork/Scripts/Component/UI/UITextLanguageView.cs` |
 | 多语言JSON文件 | `Assets/Resources/JsonText/Language_*.txt` |
 
 ---

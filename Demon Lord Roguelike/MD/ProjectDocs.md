@@ -1,6 +1,6 @@
 # 魔王 Roguelike 项目文档
 
-> 最后更新：2026 年 3 月 25 日
+> 最后更新：2026 年 3 月 30 日
 > Unity Roguelike 塔防游戏
 > 架构设计详见 [ProjectFrame.md](ProjectFrame.md)
 
@@ -11,7 +11,7 @@
 1. [项目概述](#一项目概述)
 2. [目录结构](#二目录结构)
 3. [框架层 (FrameWork)](#三框架层-framework)
-4. [游戏逻辑层 (Scrpits)](#四游戏逻辑层-scrpits)
+4. [游戏逻辑层 (Scripts)](#四游戏逻辑层-scripts)
 5. [技术要点](#五技术要点)
 
 ---
@@ -32,12 +32,14 @@
 | 数据存储 | JSON (Newtonsoft.Json)、SQLite、PlayerPrefs |
 | 网络请求 | UnityWebRequest |
 | 平台集成 | Steamworks.NET |
+| 多语言 | 自定义 Localization |
+| Excel 处理 | EPPlus |
 
 ### 1.2 项目规模
 
 - **C# 脚本**: 921 个
-- **框架模块**: 13 个
-- **游戏逻辑模块**: 8 个
+- **框架模块**: 15 个
+- **游戏逻辑模块**: 10 个
 - **设计模式**: 9 种
 
 ---
@@ -48,19 +50,41 @@
 Assets/
 ├── FrameWork/                          # 框架代码层 - 通用基础框架
 │   ├── Editor/                         # 框架编辑器扩展
+│   │   ├── AssetBundles/              # AssetBundle 工具
+│   │   ├── Base/                      # 基础编辑器工具
+│   │   │   ├── Hierarchy/            # Hierarchy 扩展
+│   │   │   ├── Inspector/            # Inspector 扩展
+│   │   │   ├── NodeEditor/           # 节点编辑器
+│   │   │   ├── Utils/                # 编辑器工具类
+│   │   │   └── Window/               # 编辑器窗口
+│   │   ├── ScrpitsTemplates/         # 代码模板
+│   │   └── Steamworks.NET/           # Steam 编辑器工具
 │   ├── Addons/                         # 第三方插件
-│   │   ├── DOTween/                    # 动画补间插件
-│   │   └── Rotary Heart/              # 可序列化字典
+│   │   ├── DOTween/                   # 动画补间插件
+│   │   ├── Rotary Heart/             # 可序列化字典
+│   │   └── Spine/                    # Spine 动画运行时
 │   ├── Plugins/                        # 原生插件
-│   │   └── Steamworks.NET/             # Steam SDK
-│   └── Scrpits/                        # 框架脚本
+│   │   ├── Android/                  # Android 平台插件
+│   │   ├── EPPlus/                   # Excel 处理库
+│   │   ├── Steamworks.NET/           # Steam SDK
+│   │   ├── steam_api.bundle/         # Steam API Bundle
+│   │   ├── x86/                      # x86 原生库
+│   │   └── x86_64/                   # x86_64 原生库
+│   └── Scripts/                        # 框架脚本
 │       ├── AI/                         # AI 基础框架（状态机模式）
 │       ├── Base/                       # 基础类库（MVC、单例、事件等）
 │       ├── BaseSystem/                 # 基础系统（事件、SQLite、Steam）
 │       ├── Bean/                       # 数据模型
 │       ├── CallBack/                   # 回调接口
+│       │   ├── Load/                  # 加载回调
+│       │   └── View/                  # UI 回调
 │       ├── Common/                     # 通用组件
 │       ├── Component/                  # 框架组件（Manager、Handler、UI）
+│       │   ├── Control/               # 基础控制
+│       │   ├── Effect/                # 特效基础
+│       │   ├── Handler/               # 逻辑处理器
+│       │   ├── Manager/               # 资源管理器
+│       │   └── UI/                    # UI 基础组件
 │       ├── DataStorage/                # 数据存储读写
 │       ├── Enums/                      # 框架枚举
 │       ├── Extension/                  # 扩展方法
@@ -69,11 +93,27 @@ Assets/
 │       ├── Utils/                      # 工具函数
 │       └── Web/                        # 网络请求
 │
-├── Scrpits/                            # 游戏逻辑代码层
+├── Scripts/                            # 游戏逻辑代码层
 │   ├── AI/                             # 游戏 AI 实现（生物 AI）
+│   │   └── Creature/                  # 生物 AI
+│   │       ├── FightAttackCreature/   # 进攻生物
+│   │       ├── FightDefenseCreature/  # 防守生物
+│   │       └── FightDefenseCoreCreature/ # 核心生物
 │   ├── Bean/                           # 游戏数据模型
+│   │   ├── Game/                      # 游戏数据 Bean
+│   │   ├── MVC/                       # MVC 数据 Bean
+│   │   └── UI/                        # UI 数据 Bean
 │   ├── Common/                         # 游戏通用配置
 │   ├── Component/                      # 游戏组件
+│   │   ├── Game/                      # 游戏场景与控制
+│   │   ├── Handler/                   # 游戏逻辑处理器
+│   │   ├── Manager/                   # 游戏管理器
+│   │   └── UI/                        # 游戏 UI
+│   │       ├── Common/               # 通用 UI 组件
+│   │       ├── Dialog/               # 对话框 UI
+│   │       ├── Game/                 # 游戏 UI
+│   │       ├── Popup/                # 弹窗 UI
+│   │       └── Test/                 # 测试 UI
 │   ├── Enums/                          # 游戏枚举
 │   ├── Game/                           # 核心游戏逻辑
 │   │   ├── Base/                       # 游戏逻辑基类
@@ -86,10 +126,15 @@ Assets/
 │   ├── Struct/                         # 结构体定义
 │   └── Utils/                          # 游戏工具
 │
-├── Data/                               # 游戏数据配置 (Excel/JSON)
+├── Data/                               # 游戏数据配置
+│   ├── Addressable/                   # Addressable 数据
+│   └── Excel/                         # Excel 配置表
 ├── Resources/                          # Unity 资源
+│   ├── Fronts/                        # 字体资源
+│   ├── JsonText/                      # JSON 文本资源
+│   └── UI/                            # UI 预制体资源
 ├── Scenes/                             # 场景文件
-├── Editor/                             # 编辑器扩展
+├── Editor/                             # 项目编辑器扩展
 ├── LoadResources/                      # 加载资源
 └── AddressableAssetsData/              # Addressables 配置
 ```
@@ -224,11 +269,15 @@ public class BaseEvent
 |------|------|
 | `BaseMVCController<M,V>` | MVC 控制器基类 |
 | `BaseMVCModel` | MVC 模型基类 |
+| `BaseMVCService` | MVC 服务层基类 |
 | `BaseComponent` | 组件基类 |
+| `BaseUIComponent` | UI 组件基类 |
 | `BaseObservable` | 观察者模式基类 |
+| `IBaseObserver` | 观察者接口 |
 | `BaseUIManager` | UI 管理器基类 |
 | `BaseUIView` | UI 视图基类 |
 | `BaseUIInit` | UI 初始化基类，自动链接 UI 控件 |
+| `BaseControl` | 基础控制类 |
 
 ### 3.2 AI - AI 基础框架
 
@@ -266,13 +315,18 @@ public abstract class AIBaseIntent
 
 | 类别 | Bean 类 |
 |------|---------|
-| 基础 | `BaseBean`、`BaseDataBean`、`BaseInfoBean` |
+| 基础 | `BaseBean`、`BaseDataBean`、`BaseInfoBean`、`BaseInfoBeanPartial` |
 | 资源 | `AudioBean`、`AnimBean`、`EffectBean`、`IconBean`、`ImageResBean` |
 | UI | `DialogBean`、`PopupBean`、`ToastBean`、`ProgressBean` |
-| 数据 | `DataBean`、`DataStorageListBean`、`DictionaryListBean` |
+| 数据 | `DataBean`、`DataStorageListBean`、`DictionaryListBean`、`AddressableSaveBean`、`CartogramDataBean` |
 | 工具 | `ColorBean`、`NumberBean`、`TimeBean`、`Vector3Bean`、`Vector3IntBean` |
-| 游戏 | `GameConfigBean`、`ScenesChangeBean`、`GameTimeCountDownBean` |
-| 特殊 | `SpineSkinBean`、`TileBean`、`MeshDataCustom` |
+| 游戏 | `GameConfigBean`、`ScenesChangeBean`、`GameTimeCountDownBean`、`GameObjectBean` |
+| Spine | `SpineSkinBean`、`SpineAnimationStateBean`、`SpineAnimationStateBeanPartial` |
+| 多语言 | `LanguageBean`、`LanguageBeanPartial`、`UITextBean`、`UITextBeanPartial` |
+| 音频 | `AudioInfoBean`、`AudioInfoBeanPartial` |
+| 网格 | `MeshDataCustom`、`MeshDataDetailsCustom` |
+| 特殊 | `TileBean` |
+| Steam | `SteamLeaderboardEntryBean`、`SteamWebPlaySummariesBean`、`SteamWorkshopQueryInstallInfoBean`、`SteamWorkshopUpdateBean` |
 
 ### 3.4 Component - 框架组件
 
@@ -289,7 +343,7 @@ public abstract class AIBaseIntent
 | `IconManager` | 图标管理 |
 | `InputManager` | 输入管理 |
 | `SpineManager` | Spine 动画管理 |
-| `TextManager` | 文本管理 |
+| `TextManager` | 文本/多语言管理 |
 | `UIManager` | UI 管理 |
 
 #### Handler（逻辑处理，均为单例）
@@ -308,8 +362,45 @@ public abstract class AIBaseIntent
 | `InputHandler` | 输入处理 |
 | `SpineHandler` | Spine 处理 |
 | `SteamHandler` | Steam 处理 |
-| `TextHandler` | 文本处理 |
+| `TextHandler` | 文本/多语言处理 |
 | `UIHandler` | UI 逻辑处理 |
+
+#### UI 基础组件
+
+| 组件 | 功能 |
+|------|------|
+| `AudioView` | 音频视图控制 |
+| `BaseEffectView` | 特效视图基类 |
+| `ButtonAudio` | 按钮音效 |
+| `ButtonExtendView` | 扩展按钮 |
+| `CartogramBarView` / `CartogramBarForItem` / `CartogramBaseView` | 图表/柱状图组件 |
+| `CursorView` | 光标视图 |
+| `DialogView` | 对话框视图 |
+| `DropdownView` | 下拉框视图 |
+| `LineView` | 线条视图 |
+| `LongPressButton` | 长按按钮 |
+| `MaskUIView` | UI 遮罩 |
+| `MsgView` | 消息视图 |
+| `PopupButtonView` / `PopupButtonCommonView` | 弹窗按钮 |
+| `PopupShowView` / `PopupShowCommonView` | 弹窗显示 |
+| `ProgressView` | 进度条 |
+| `RadioButtonView` / `RadioGroupView` | 单选按钮/组 |
+| `ScrollGrid` (Horizontal/Vertical/Cell/BaseContent) | 滚动网格 |
+| `SecretCode` | 秘钥输入 |
+| `SelectView` / `SelectColorView` | 选择器/颜色选择器 |
+| `SortingGroupBugFix` | SortingGroup 修复 |
+| `ToastView` | Toast 提示 |
+| `UIScreenLock` / `UIScreenLockComponent` | UI 屏幕锁定 |
+| `UITestConsole` | UI 测试控制台 |
+| `UITextLanguageView` | 多语言文本视图 |
+
+#### Control & Effect
+
+| 类名 | 功能 |
+|------|------|
+| `BaseControl` | 基础控制类 |
+| `EffectBase` | 特效基类 |
+| `UIParticleSystemOld` | UI 粒子系统（旧版兼容） |
 
 ### 3.5 BaseSystem - 基础系统
 
@@ -318,8 +409,26 @@ BaseSystem/
 ├── Event/
 │   ├── EventEntity.cs      # 事件实体（EventSignal 泛型类）
 │   └── EventHandler.cs     # 全局事件管理器（单例）
-├── Sqlite/                  # SQLite 数据库支持
-└── Steam/                   # Steam SDK 集成
+├── Sqlite/
+│   ├── SQliteHandle.cs     # SQLite 操作句柄
+│   ├── SQLiteHelper.cs     # SQLite 辅助类
+│   └── SQliteInit.cs       # SQLite 初始化
+└── Steam/
+    ├── SteamManager.cs              # Steam 管理器
+    ├── SteamUserStatsHandle.cs      # Steam 用户统计
+    ├── SteamWorkshopHandle.cs       # Steam 创意工坊
+    ├── Impl/                        # Steam 接口实现
+    │   ├── SteamLeaderboardImpl.cs
+    │   ├── SteamUserStatsImpl.cs
+    │   ├── SteamWebImpl.cs
+    │   ├── SteamWorkshopQueryImpl.cs
+    │   └── SteamWorkshopUpdateImpl.cs
+    └── ISteam/                      # Steam 接口定义
+        ├── ISteamLeaderboard.cs
+        ├── ISteamUserStats.cs
+        ├── ISteamWorkshopQuery.cs
+        ├── ISteamWorkshopUpdate.cs
+        └── *CallBack.cs             # 各类回调接口
 ```
 
 **EventHandler** - 全局事件管理器（单例），支持 0-4 个参数的泛型事件，自动类型检查，提供 Dispose 机制防止内存泄漏。
@@ -358,14 +467,15 @@ public class EventHandler : BaseSingleton<EventHandler>
 
 | 类别 | 工具类 |
 |------|--------|
-| 数据处理 | `BeanUtil`、`JsonUtil`、`ExcelUtil`、`TypeConversionUtil` |
-| 资源加载 | `LoadAddressablesUtil`、`LoadAssetUtil`、`LoadResourcesUtil`、`LoadWWWUtil` |
+| 数据处理 | `BeanUtil`、`JsonUtil`、`ExcelUtil`、`TypeConversionUtil`、`GeneralDataUtil` |
+| 资源加载 | `LoadAddressablesUtil`、`LoadAssetUtil`、`LoadAssetBundleUtil`、`LoadResourcesUtil`、`LoadWWWUtil` |
 | 数学/随机 | `MathUtil`、`RandomUtil`、`FastNoise`、`SimplexNoiseUtil` |
 | 图形渲染 | `TextureUtil`、`MeshUtil`、`UGUIUtil` |
 | 游戏通用 | `GameUtil`、`SceneUtil`、`RayUtil`、`VectorUtil`、`CptUtil` |
 | 系统工具 | `FileUtil`、`LogUtil`、`SystemUtil`、`TimeUtil`、`UnitUtil` |
 | 反射/类型 | `ReflexUtil`、`ClassUtil`、`CheckUtil` |
 | 动画 | `DGEaseUtil`（DOTween Ease 工具） |
+| JSON | `UnityNewtonsoftJsonSerializer` |
 
 ### 3.8 Tools - 工具类
 
@@ -405,9 +515,39 @@ IGameConfigView       -->  视图接口
 | `IWebRequestForSpriteCallBack` | Sprite 请求回调 |
 | `IWebRequestForTextureCallBack` | Texture 请求回调 |
 
+### 3.12 CallBack - 回调接口
+
+| 接口 | 功能 |
+|------|------|
+| `ILoadCallBack` | 资源加载回调 |
+| `IRadioButtonCallBack` | 单选按钮回调 |
+| `IRadioGroupCallBack` | 单选按钮组回调 |
+
+### 3.13 Editor - 框架编辑器扩展
+
+| 工具/窗口 | 功能 |
+|-----------|------|
+| `AddressableWindow` | Addressable 管理窗口 |
+| `AnimSearchWindow` | 动画搜索窗口 |
+| `BaseUICreateWindow` | UI 创建窗口 |
+| `CubemapGeneratorWindow` | Cubemap 生成器 |
+| `ExcelEditorWindow` | Excel 编辑器 |
+| `FBXEditorWindow` | FBX 编辑器 |
+| `ImageResWindow` | 图片资源窗口 |
+| `MVCEditorWindow` | MVC 代码生成窗口 |
+| `ProjectAssetCollectorWindow` | 项目资源收集器 |
+| `SearchEditorWindow` | 搜索编辑器 |
+| `SkinMeshEditorWindow` | 皮肤网格编辑器 |
+| `SpineWindow` | Spine 工具窗口 |
+| `StyleBaseWindow` | 样式基础窗口 |
+| `UIEditorWindow` | UI 编辑器 |
+| `InspectorBaseUIComponent` / `InspectorBaseUIView` / `InspectorEffectBase` / `InspectorMaskUIView` | Inspector 扩展 |
+| `HierarchySelect` / `HierarchySelectPopupSelect` | Hierarchy 扩展 |
+| `NodeBaseEditorWindow` | 节点编辑器窗口 |
+
 ---
 
-## 四、游戏逻辑层 (Scrpits)
+## 四、游戏逻辑层 (Scripts)
 
 ### 4.1 Common - 游戏通用配置
 
@@ -489,8 +629,8 @@ Fight/
 | 类型 | 类名 |
 |------|------|
 | 近战 | `AttackModeMelee`、`AttackModeMeleeArea` |
-| 远程 | `AttackModeRanged`、`AttackModeRangedArc`、`AttackModeRangedArea`、`AttackModeRangedTracking` |
-| 特殊 | `AttackModeExplosion`、`AttackModeFallupon`、`AttackModeLure`、`AttackModeOverlap` |
+| 远程 | `AttackModeRanged`、`AttackModeRangedArc`、`AttackModeRangedArcArea`、`AttackModeRangedArea`、`AttackModeRangedPiercing`、`AttackModeRangedSplit`、`AttackModeRangedTracking` |
+| 特殊 | `AttackModeExplosion`、`AttackModeFallupon`、`AttackModeFalluponArea`、`AttackModeLure`、`AttackModeOverlap` |
 | 恢复 | `AttackModeRegain`、`AttackModeRegainHP`、`AttackModeRegainDR` |
 
 #### Buff - BUFF 系统
@@ -500,24 +640,56 @@ Buff/
 ├── BuffEntity/                 # BUFF 实体
 │   ├── BuffBaseEntity.cs       # BUFF 实体基类
 │   ├── Attribute/              # 属性类 BUFF（HP/DR 变化）
+│   │   └── BuffEntityAttribute.cs
 │   ├── Conditional/            # 条件类 BUFF（攻击/死亡触发）
+│   │   ├── BuffEntityConditional.cs
+│   │   ├── BuffEntityConditionalAddDropCrystal.cs
+│   │   ├── BuffEntityConditionalAttack.cs
+│   │   ├── BuffEntityConditionalAttackAgain.cs
+│   │   ├── BuffEntityConditionalAttribute.cs
+│   │   ├── BuffEntityConditionalCreateCrystal.cs
+│   │   ├── BuffEntityConditionalDead.cs
+│   │   ├── BuffEntityConditionalDeadAreaDRChange.cs
+│   │   ├── BuffEntityConditionalDeadAreaHPChange.cs
+│   │   ├── BuffEntityConditionalDeadAttack.cs
+│   │   ├── BuffEntityConditionalDeadCreateCrystal.cs
+│   │   └── BuffEntityConditionalDeadRebirth.cs
 │   ├── Instant/                # 瞬时类 BUFF（立即生效）
+│   │   ├── BuffEntityInstant.cs
+│   │   └── BuffEntityInstantCloneDefenseCreature.cs
+│   ├── Pecurrent/              # 持续类 BUFF
+│   │   └── BuffEntityPecurrent.cs
 │   └── Periodic/               # 周期性 BUFF（定时触发）
+│       ├── BuffEntityPeriodic.cs
+│       ├── BuffEntityPeriodicAttackAgain.cs
+│       └── BuffEntityPeriodicPickupCrystal.cs
 └── BuffPre/                    # BUFF 前置条件
-    └── BuffBasePreEntity.cs    # 前置条件基类
+    ├── BuffBasePreEntity.cs
+    ├── BuffPreEntityForAttackDamage.cs
+    ├── BuffPreEntityForHPRateLess.cs
+    ├── BuffPreEntityForKillNum.cs
+    └── BuffPreEntityForUnderAttackDamage.cs
 ```
 
 **BUFF 实体类型：**
 
 | 类型 | 类名 | 说明 |
 |------|------|------|
-| 属性变化 | `BuffEntityBaseHPChange` | HP 变化 |
-| 属性变化 | `BuffEntityBaseDRChange` | 防御变化 |
+| 属性变化 | `BuffEntityAttribute` | 属性变化基类 |
 | 条件触发 | `BuffEntityConditionalAttack` | 攻击时触发 |
+| 条件触发 | `BuffEntityConditionalAttackAgain` | 攻击时再次攻击 |
 | 条件触发 | `BuffEntityConditionalDead` | 死亡时触发 |
-| 死亡特殊 | `BuffEntityConditionalDeadAttack` | 死亡时发动攻击 |
-| 死亡特殊 | `BuffEntityConditionalDeadCreateCrystal` | 死亡时生成水晶 |
+| 条件触发 | `BuffEntityConditionalDeadAttack` | 死亡时发动攻击 |
+| 条件触发 | `BuffEntityConditionalDeadCreateCrystal` | 死亡时生成水晶 |
+| 条件触发 | `BuffEntityConditionalDeadRebirth` | 死亡时重生 |
+| 条件触发 | `BuffEntityConditionalAddDropCrystal` | 增加掉落水晶 |
+| 条件触发 | `BuffEntityConditionalCreateCrystal` | 创建水晶 |
+| 条件触发 | `BuffEntityConditionalDeadAreaHPChange` | 死亡时范围 HP 变化 |
+| 条件触发 | `BuffEntityConditionalDeadAreaDRChange` | 死亡时范围 DR 变化 |
 | 周期性 | `BuffEntityPeriodicAttackAgain` | 周期性再次攻击 |
+| 周期性 | `BuffEntityPeriodicPickupCrystal` | 周期性拾取水晶 |
+| 瞬时 | `BuffEntityInstantCloneDefenseCreature` | 克隆防守生物 |
+| 持续 | `BuffEntityPecurrent` | 持续效果基类 |
 
 #### DoomCouncil - 终焉议会系统
 
@@ -535,19 +707,34 @@ Buff/
 
 | Bean 类 | 功能 |
 |---------|------|
-| `CreatureBean` | 生物数据 |
+| `CreatureBean` / `CreatureBeanPartial` | 生物数据 |
 | `CreatureAttributeBean` | 生物属性 |
 | `CreatureCardItemBean` | 生物卡片 |
 | `CreatureNpcBean` | 生物 NPC |
+| `CreatureSacrificeBean` | 生物献祭数据 |
 | `FightBean` | 战斗数据 |
+| `FightBeanForConquer` | 征服模式战斗数据 |
+| `FightBeanForDoomCouncil` | 终焉议会战斗数据 |
+| `FightBeanForInfinite` | 无限模式战斗数据 |
+| `FightBeanForTest` | 测试战斗数据 |
 | `FightCreatureBean` | 战斗生物数据 |
 | `FightAttackBean` | 战斗攻击数据 |
+| `FightDropCrystalBean` | 战斗掉落水晶 |
+| `FightRecordsBean` | 战斗记录 |
+| `FightUnderAttackBean` | 受击数据 |
 | `BuffBean` / `BuffEntityBean` | BUFF 数据 |
-| `ItemBean` | 道具数据 |
+| `ItemBean` / `ItemBeanPartial` | 道具数据 |
 | `DoomCouncilBean` | 终焉议会数据 |
 | `UserTempBean` | 用户临时数据 |
 | `UserUnlockBean` | 用户解锁数据 |
+| `UserAscendBean` | 用户升阶数据 |
+| `UserLimmitBean` | 用户限制数据 |
 | `AbyssalBlessingEntityBean` | 深渊馈赠数据 |
+| `GameWorldMapBean` | 世界地图数据 |
+| `GashaponItemBean` | 扭蛋道具数据 |
+| `GashaponMachineBean` | 扭蛋机数据 |
+| `RewardSelectBean` | 奖励选择数据 |
+| `AttackModeBean` | 攻击模式数据 |
 
 #### MVC Bean
 
@@ -567,6 +754,7 @@ Buff/
 | `DialogBossShowBean` | BOSS 展示对话框 |
 | `DialogRenameBean` | 改名对话框 |
 | `DialogSelectBean` | 选择对话框 |
+| `DialogSelectColorBean` | 颜色选择对话框 |
 | `DialogSelectCreatureBean` | 生物选择对话框 |
 | `DialogSelectItemBean` | 道具选择对话框 |
 
@@ -633,24 +821,52 @@ UI/
 │   ├── Buff/               # BUFF 显示
 │   ├── CreatureCard/       # 生物卡片
 │   ├── ItemEquip/          # 道具装备
-│   └── ...
+│   ├── Store/              # 商店
+│   └── Other/              # 其他通用组件
 ├── Dialog/           # 对话框 UI
-│   ├── UIDialogBossShow    # BOSS 展示
+│   ├── BossShow/           # BOSS 展示
 │   ├── UIDialogNormal      # 普通对话框
 │   ├── UIDialogSelect      # 选择对话框
 │   └── ...
 ├── Game/             # 游戏 UI
 │   ├── BaseCore/           # 核心基地
 │   ├── BaseMain/           # 主基地
-│   ├── FightMain/          # 战斗主界面
+│   ├── BasePortal/         # 基地传送门
+│   ├── BaseResearch/       # 基地研究
+│   ├── CommonLoading/      # 通用加载
+│   ├── CommonMask/         # 通用遮罩
+│   ├── CreatureChange/     # 生物变更
+│   ├── CreatureManager/    # 生物管理
+│   ├── CreatureSacrifice/  # 生物献祭
+│   ├── CreatureVat/        # 生物培养舱
 │   ├── DoomCouncil/        # 终焉议会
+│   ├── FightAbyssalBlessing/ # 战斗深渊馈赠
+│   ├── FightMain/          # 战斗主界面
+│   ├── FightSettlement/    # 战斗结算
+│   ├── GameConversation/   # 游戏对话
+│   ├── GameSetting/        # 游戏设置
+│   ├── GameSystem/         # 游戏系统
+│   ├── GameWorldMap/       # 世界地图
+│   ├── GashaponBreak/      # 扭蛋破坏
 │   ├── GashaponMachine/    # 扭蛋机
-│   └── ...
+│   ├── LineupManager/      # 阵容管理
+│   ├── MainCreate/         # 创建主界面
+│   ├── MainLoad/           # 加载主界面
+│   ├── MainMaker/          # 制作主界面
+│   ├── MainStart/          # 开始主界面
+│   └── RewardSelect/       # 奖励选择
 ├── Popup/            # 弹窗 UI
+│   ├── ItemAttribute/      # 道具属性
+│   ├── ItemInfo/           # 道具信息
+│   ├── Text/               # 文本弹窗
 │   ├── UIPopupCreatureCardDetails     # 生物卡片详情
 │   ├── UIPopupDoomCouncilMainDetails  # 终焉议会详情
 │   └── ...
 └── Test/             # 测试 UI
+    ├── UITestBase          # 测试基础
+    ├── UITestCard          # 测试卡片
+    ├── UITestNpcCreate     # NPC 创建测试
+    └── UIViewTestIconShow  # 图标显示测试
 ```
 
 ### 4.6 MVC - 游戏 MVC 实现
@@ -679,16 +895,19 @@ AI/
     │   ├── AIAttackCreatureEntity
     │   ├── AIIntentAttackCreatureAttack
     │   ├── AIIntentAttackCreatureIdle
+    │   ├── AIIntentAttackCreatureLured   # 被引诱意图
     │   ├── AIIntentAttackCreatureMove
-    │   └── ...
+    │   └── AIIntentAttackCreatureDead
     ├── FightDefenseCreature/             # 防守生物 AI
     │   ├── AIDefenseCreatureEntity
     │   ├── AIIntentDefenseCreatureAttack
     │   ├── AIIntentDefenseCreatureDefend
-    │   └── ...
+    │   ├── AIIntentDefenseCreatureIdle
+    │   └── AIIntentDefenseCreatureDead
     └── FightDefenseCoreCreature/         # 核心生物 AI
         ├── AIDefenseCoreCreatureEntity
-        └── ...
+        ├── AIIntentDefenseCoreCreatureIdle
+        └── AIIntentDefenseCoreCreatureDead
 ```
 
 ### 4.8 Utils - 游戏工具
@@ -696,8 +915,22 @@ AI/
 | 工具类 | 功能 |
 |--------|------|
 | `AnimUtil` | 动画工具 |
+| `ColorUtil` | 颜色工具 |
+| `CreatureUtil` | 生物工具 |
 | `FightCreatureSearchUtil` | 战斗生物搜索工具 |
 | `GameUIUtil` | 游戏 UI 工具 |
+| `ItemsUtil` | 道具工具 |
+
+### 4.9 Struct - 结构体定义
+
+存放游戏中使用的结构体定义。
+
+### 4.10 Editor - 项目编辑器扩展
+
+| 类名 | 功能 |
+|------|------|
+| `GameDataEditor` | 游戏数据编辑器 |
+| `GameTestEditor` / `GameTestEditorPartial` | 游戏测试编辑器 |
 
 ---
 
@@ -709,7 +942,7 @@ AI/
 |------|--------|------|
 | Addressables | `LoadAddressablesUtil` | 异步资源加载，支持缓存 |
 | Resources | `LoadResourcesUtil` | 同步资源加载 |
-| AssetBundle | `LoadAssetUtil` | 资源包加载 |
+| AssetBundle | `LoadAssetUtil` / `LoadAssetBundleUtil` | 资源包加载 |
 | WWW | `LoadWWWUtil` | 网络资源加载 |
 
 **缓存机制：** Manager 中维护 `Dictionary<string, T>` 资源字典避免重复加载，SpriteAtlas 懒加载。
@@ -743,8 +976,8 @@ public void AutoLinkUI()
 ### 5.3 战斗系统
 
 - **实体组件：** `FightCreatureEntity`（战斗生物）、`FightPrefabEntity`（战斗预制体）
-- **攻击模式：** 基于策略模式，近战/远程/特殊/恢复四大类
-- **BUFF 系统：** 属性/条件/瞬时/周期性四种���型
+- **攻击模式：** 基于策略模式，近战/远程/特殊/恢复四大类，共 16 种攻击模式
+- **BUFF 系统：** 属性/条件/瞬时/周期性/持续五种类型
 - **AI 状态机：** 生物行为由状态机控制（Idle -> Move -> Attack -> Dead）
 
 ### 5.4 数据持久化
@@ -754,6 +987,31 @@ public void AutoLinkUI()
 | JSON | `JsonUtil`（封装 Newtonsoft.Json） | 复杂数据结构 |
 | PlayerPrefs | Unity 内置 | 简单键值对 |
 | SQLite | `BaseSystem/Sqlite` | 大量结构化数据 |
+| Excel | `ExcelUtil` / EPPlus | 配置表导出 |
+
+### 5.5 Localization 多语言系统
+
+**核心组件：**
+
+| 类名 | 功能 |
+|------|------|
+| `UITextLanguageView` | 多语言文本组件，自动根据 key 切换语言 |
+| `TextManager` | 多语言文本管理器，加载语言 JSON 资源 |
+| `TextHandler` | 多语言逻辑处理，提供语言切换接口 |
+| `LanguageBean` / `LanguageBeanPartial` | 多语言数据模型 |
+| `UITextBean` / `UITextBeanPartial` | UI 文本数据模型 |
+
+**语言资源：** 存放于 `Resources/JsonText/Language_UIText_*.txt`
+
+### 5.6 编辑器扩展
+
+项目提供丰富的编辑器工具支持快速开发：
+
+- **代码生成：** MVC 代码生成、UI 代码生成、Excel 配置导出
+- **资源管理：** Addressable 打包、图片资源收集、AssetBundle 构建
+- **动画工具：** Spine 工具、动画搜索
+- **美术工具：** FBX 编辑器、Cubemap 生成器、皮肤网格编辑器
+- **测试工具：** 游戏测试编辑器、节点编辑器
 
 ---
 

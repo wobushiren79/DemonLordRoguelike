@@ -62,7 +62,7 @@ BuffBasePreEntity                 - BUFF前置条件基类
 #### 属性BUFF示例
 
 ```csharp
-// Assets/Scrpits/Game/Buff/BuffEntity/Attribute/BuffEntityAttribute.cs
+// Assets/Scripts/Game/Buff/BuffEntity/Attribute/BuffEntityAttribute.cs
 public class BuffEntityAttribute : BuffBaseEntity
 {
     public CreatureAttributeTypeEnum attributeType = CreatureAttributeTypeEnum.None;
@@ -93,7 +93,7 @@ public class BuffEntityAttribute : BuffBaseEntity
 #### 条件触发BUFF示例
 
 ```csharp
-// Assets/Scrpits/Game/Buff/BuffEntity/Conditional/xxx.cs
+// Assets/Scripts/Game/Buff/BuffEntity/Conditional/xxx.cs
 public class BuffEntityConditionalAttack : BuffEntityConditional
 {
     public override void SetData(BuffEntityBean buffEntityData)
@@ -121,7 +121,7 @@ public class BuffEntityConditionalAttack : BuffEntityConditional
 #### 即时触发BUFF示例
 
 ```csharp
-// Assets/Scrpits/Game/Buff/BuffEntity/Instant/BuffEntityInstantCloneDefenseCreature.cs
+// Assets/Scripts/Game/Buff/BuffEntity/Instant/BuffEntityInstantCloneDefenseCreature.cs
 public class BuffEntityInstantCloneDefenseCreature : BuffEntityInstant
 {
     public override bool TriggerBuffInstant(BuffEntityBean buffEntityData)
@@ -162,7 +162,7 @@ public class BuffEntityInstantCloneDefenseCreature : BuffEntityInstant
 ### 5. 添加前置条件（可选）
 
 ```csharp
-// Assets/Scrpits/Game/Buff/BuffPre/BuffPreEntityForXXX.cs
+// Assets/Scripts/Game/Buff/BuffPre/BuffPreEntityForXXX.cs
 public class BuffPreEntityForCustomCondition : BuffBasePreEntity
 {
     public override bool CheckIsPre(BuffEntityBean buffEntityData, float preValue)
@@ -311,16 +311,16 @@ EventHandler.Instance.TriggerEvent(EventsInfo.Buff_AbyssalBlessingChange, abyssa
 
 | 功能 | 文件路径 |
 |------|----------|
-| BUFF基类 | `Assets/Scrpits/Game/Buff/BuffEntity/BuffBaseEntity.cs` |
-| BUFF前置条件基类 | `Assets/Scrpits/Game/Buff/BuffPre/BuffBasePreEntity.cs` |
-| BUFF数据Bean | `Assets/Scrpits/Bean/Game/BuffBean.cs` |
-| BUFF实例Bean | `Assets/Scrpits/Bean/Game/BuffEntityBean.cs` |
-| BUFF配置Bean | `Assets/Scrpits/Bean/MVC/Game/BuffInfoBean.cs` |
-| BUFF前置条件配置 | `Assets/Scrpits/Bean/MVC/Game/BuffPreInfoBean.cs` |
-| BUFF管理器 | `Assets/Scrpits/Component/Manager/BuffManager.cs` |
-| BUFF处理器 | `Assets/Scrpits/Component/Handler/BuffHandler.cs` |
-| 属性BUFF | `Assets/Scrpits/Game/Buff/BuffEntity/Attribute/` |
-| 条件BUFF | `Assets/Scrpits/Game/Buff/BuffEntity/Conditional/` |
-| 即时BUFF | `Assets/Scrpits/Game/Buff/BuffEntity/Instant/` |
-| 周期性BUFF | `Assets/Scrpits/Game/Buff/BuffEntity/Periodic/` |
-| 前置条件 | `Assets/Scrpits/Game/Buff/BuffPre/` |
+| BUFF基类 | `Assets/Scripts/Game/Buff/BuffEntity/BuffBaseEntity.cs` |
+| BUFF前置条件基类 | `Assets/Scripts/Game/Buff/BuffPre/BuffBasePreEntity.cs` |
+| BUFF数据Bean | `Assets/Scripts/Bean/Game/BuffBean.cs` |
+| BUFF实例Bean | `Assets/Scripts/Bean/Game/BuffEntityBean.cs` |
+| BUFF配置Bean | `Assets/Scripts/Bean/MVC/Game/BuffInfoBean.cs` |
+| BUFF前置条件配置 | `Assets/Scripts/Bean/MVC/Game/BuffPreInfoBean.cs` |
+| BUFF管理器 | `Assets/Scripts/Component/Manager/BuffManager.cs` |
+| BUFF处理器 | `Assets/Scripts/Component/Handler/BuffHandler.cs` |
+| 属性BUFF | `Assets/Scripts/Game/Buff/BuffEntity/Attribute/` |
+| 条件BUFF | `Assets/Scripts/Game/Buff/BuffEntity/Conditional/` |
+| 即时BUFF | `Assets/Scripts/Game/Buff/BuffEntity/Instant/` |
+| 周期性BUFF | `Assets/Scripts/Game/Buff/BuffEntity/Periodic/` |
+| 前置条件 | `Assets/Scripts/Game/Buff/BuffPre/` |

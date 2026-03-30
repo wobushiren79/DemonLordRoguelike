@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: 9d467b9f6cd27c7439094f582d24a622
   m_currentHash:
     serializedVersion: 2
-    Hash: 9e9e1525b05d895d53450baafe6bd021
+    Hash: 897a24431982011e5d25c1ab3e64efd2
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 0
   m_CatalogRequestsTimeout: 0
@@ -42,6 +42,7 @@ MonoBehaviour:
   m_BundleRedirectLimit: -1
   m_SharedBundleSettings: 0
   m_SharedBundleSettingsCustomGroupIndex: 0
+  m_simulatedLoadDelay: 0.1
   m_ContiguousBundles: 1
   m_StripUnityVersionFromBundleBuild: 0
   m_DisableVisibleSubAssetRepresentations: 0
@@ -68,9 +69,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 20b1e91026bd57e48ab7a40036902148, type: 2}
   - {fileID: 11400000, guid: a9cecd838b00d754da3992fc7e11bf82, type: 2}
   - {fileID: 11400000, guid: 0f8c678a4cfed844981300abdf655267, type: 2}
-  - {fileID: 11400000, guid: 91ab4241b5338404199040e9fd8c59e8, type: 2}
   - {fileID: 11400000, guid: f3932e12dfcb35f48848bf684be44500, type: 2}
-  - {fileID: 11400000, guid: 54dc48d63eea93d43a8d26f9914c2f4c, type: 2}
   - {fileID: 11400000, guid: b153677eef7bdab4fbb0f03bec4ca6b2, type: 2}
   - {fileID: 11400000, guid: 3a49f41406752c949adfcd7009a7b2c0, type: 2}
   - {fileID: 11400000, guid: c4237827b01bd244a94aec25da8988b8, type: 2}
@@ -91,6 +90,20 @@ MonoBehaviour:
         m_Value: 'ServerData/[BuildTarget]'
       - m_Id: ae9643af95aa0f549a3bf7e9667e6d5b
         m_Value: '[UnityEditor.EditorUserBuildSettings.activeBuildTarget]'
+      - m_Id: cbbb8c5ea70102f41b4a50cdc38b9a8d
+        m_Value: '{UnityEngine.AddressableAssets.Addressables.RuntimePath}/[BuildTarget]'
+      - m_Id: cd397ca0829efdf4284d73649173a980
+        m_Value: 'http://[PrivateIpAddress]:[HostingServicePort]'
+    - m_InheritedParent: 
+      m_Id: 2c83b076a8d6ad143945ab82bc8ca6f8
+      m_ProfileName: ModSpine
+      m_Values:
+      - m_Id: 233ee3f7880fa5a4884bb2bdb6d29843
+        m_Value: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
+      - m_Id: 9278453985e3b6e4b8a5e91d072e5196
+        m_Value: 'ServerData/[BuildTarget]'
+      - m_Id: ae9643af95aa0f549a3bf7e9667e6d5b
+        m_Value: '[UnityEngine.AddressableAssets.Addressables.RuntimePath]/../Mods/[BuildTarget]'
       - m_Id: cbbb8c5ea70102f41b4a50cdc38b9a8d
         m_Value: '{UnityEngine.AddressableAssets.Addressables.RuntimePath}/[BuildTarget]'
       - m_Id: cd397ca0829efdf4284d73649173a980

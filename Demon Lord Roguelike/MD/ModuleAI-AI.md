@@ -98,7 +98,7 @@ AIBaseEntity (AI 实体基类)
 
 ### 3.1 AIBaseEntity (AI 实体基类)
 
-**文件**: `FrameWork/Scrpits/AI/AIBaseEntity.cs`
+**文件**: `FrameWork/Scripts/AI/AIBaseEntity.cs`
 
 AI 实体的抽象基类，管理意图池和状态切换。
 
@@ -126,7 +126,7 @@ AI 实体的抽象基类，管理意图池和状态切换。
 
 ### 3.2 AIBaseIntent (意图基类)
 
-**文件**: `FrameWork/Scrpits/AI/AIBaseIntent.cs`
+**文件**: `FrameWork/Scripts/AI/AIBaseIntent.cs`
 
 定义单个状态的行为逻辑。
 
@@ -148,7 +148,7 @@ AI 实体的抽象基类，管理意图池和状态切换。
 
 ### 3.3 AICreatureEntity (生物 AI 基类)
 
-**文件**: `Scrpits/AI/Creature/AICreatureEntity.cs`
+**文件**: `Scripts/AI/Creature/AICreatureEntity.cs`
 
 生物类 AI 的基类，扩展了目标搜索功能。
 
@@ -168,7 +168,7 @@ AI 实体的抽象基类，管理意图池和状态切换。
 
 ### 3.4 AIManager (AI 管理器)
 
-**文件**: `FrameWork/Scrpits/Component/Manager/AIManager.cs`
+**文件**: `FrameWork/Scripts/Component/Manager/AIManager.cs`
 
 负责 AI 实例的创建、缓存和销毁。
 
@@ -188,7 +188,7 @@ AI 实体的抽象基类，管理意图池和状态切换。
 
 ### 3.5 AIHandler (AI 处理器)
 
-**文件**: `FrameWork/Scrpits/Component/Handler/AIHandler.cs`
+**文件**: `FrameWork/Scripts/Component/Handler/AIHandler.cs`
 
 AI 模块的入口，驱动所有 AI 更新。
 
@@ -205,7 +205,7 @@ AI 模块的入口，驱动所有 AI 更新。
 
 ## 四、意图枚举
 
-**文件**: `Scrpits/Enums/AIIntentEnum.cs`
+**文件**: `Scripts/Enums/AIIntentEnum.cs`
 
 ```csharp
 public enum AIIntentEnum
@@ -235,7 +235,7 @@ public enum AIIntentEnum
 
 ### 5.1 AIIntentAttackCreatureIdle (进攻生物闲置意图)
 
-**文件**: `Scrpits/AI/Creature/FightAttackCreature/AIIntentAttackCreatureIdle.cs`
+**文件**: `Scripts/AI/Creature/FightAttackCreature/AIIntentAttackCreatureIdle.cs`
 
 ```csharp
 public class AIIntentAttackCreatureIdle : AIBaseIntent
@@ -280,7 +280,7 @@ public class AIIntentAttackCreatureIdle : AIBaseIntent
 
 ### 5.2 AIIntentAttackCreatureAttack (进攻生物攻击意图)
 
-**文件**: `Scrpits/AI/Creature/FightAttackCreature/AIIntentAttackCreatureAttack.cs`
+**文件**: `Scripts/AI/Creature/FightAttackCreature/AIIntentAttackCreatureAttack.cs`
 
 继承通用的 `AIIntentCreatureAttack`，仅配置特定参数：
 
@@ -303,7 +303,7 @@ public class AIIntentAttackCreatureAttack : AIIntentCreatureAttack
 
 ### 6.1 AIBaseCommon (AI 通用工具)
 
-**文件**: `FrameWork/Scrpits/AI/AIBaseCommon.cs`
+**文件**: `FrameWork/Scripts/AI/AIBaseCommon.cs`
 
 ```csharp
 public static class AIBaseCommon

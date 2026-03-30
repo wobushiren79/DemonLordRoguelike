@@ -152,7 +152,7 @@ id  | name  | content | new_field  | ...
 **步骤1：创建配置Bean类**
 
 ```csharp
-// Assets/Scrpits/Bean/MVC/Game/MyFeatureInfoBean.cs
+// Assets/Scripts/Bean/MVC/Game/MyFeatureInfoBean.cs
 using System;
 using Newtonsoft.Json;
 
@@ -354,12 +354,12 @@ string text = TextHandler.Instance.GetTextByIdNoBreakingSpace("BuffInfo", 10001)
 
 | 功能 | 文件路径 |
 |------|----------|
-| 多语言数据Bean | `Assets/FrameWork/Scrpits/Bean/MVC/LanguageBean.cs` |
-| UI文本Bean | `Assets/FrameWork/Scrpits/Bean/MVC/UITextBean.cs` |
-| 语言枚举 | `Assets/FrameWork/Scrpits/Enums/BaseGameEnum.cs` |
-| 文本管理器 | `Assets/FrameWork/Scrpits/Component/Manager/TextManager.cs` |
-| 文本处理器 | `Assets/FrameWork/Scrpits/Component/Handler/TextHandler.cs` |
-| UI多语言组件 | `Assets/FrameWork/Scrpits/Component/UI/UITextLanguageView.cs` |
+| 多语言数据Bean | `Assets/FrameWork/Scripts/Bean/MVC/LanguageBean.cs` |
+| UI文本Bean | `Assets/FrameWork/Scripts/Bean/MVC/UITextBean.cs` |
+| 语言枚举 | `Assets/FrameWork/Scripts/Enums/BaseGameEnum.cs` |
+| 文本管理器 | `Assets/FrameWork/Scripts/Component/Manager/TextManager.cs` |
+| 文本处理器 | `Assets/FrameWork/Scripts/Component/Handler/TextHandler.cs` |
+| UI多语言组件 | `Assets/FrameWork/Scripts/Component/UI/UITextLanguageView.cs` |
 | 多语言JSON文件 | `Assets/Resources/JsonText/Language_*.txt` |
 | Bean代码模板 | `Assets/FrameWork/Editor/ScrpitsTemplates/Excel_LanguageEntity.txt` |
 

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e5d17a21594effb4e9591490b009e7aa, type: 3}
-  m_Name: SpineMod_Other_1_BundledAssetGroupSchema
+  m_Name: Mod_Spine_Other_1_BundledAssetGroupSchema
   m_EditorClassIdentifier: 
   m_Group: {fileID: 11400000, guid: ae9b3996115032445aae3ef7ac61a418, type: 2}
   m_InternalBundleIdMode: 1
@@ -24,6 +24,7 @@ MonoBehaviour:
   m_BundledAssetProviderType:
     m_AssemblyName: Unity.ResourceManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     m_ClassName: UnityEngine.ResourceManagement.ResourceProviders.BundledAssetProvider
+  m_StripDownloadOptions: 0
   m_ForceUniqueProvider: 0
   m_UseAssetBundleCache: 1
   m_UseAssetBundleCrc: 1
@@ -34,12 +35,14 @@ MonoBehaviour:
   m_RedirectLimit: -1
   m_RetryCount: 0
   m_BuildPath:
-    m_Id: 233ee3f7880fa5a4884bb2bdb6d29843
+    m_Id: '[UnityEngine.AddressableAssets.Addressables.RuntimePath]/../Mods/[BuildTarget]'
   m_LoadPath:
-    m_Id: cbbb8c5ea70102f41b4a50cdc38b9a8d
-  m_BundleMode: 0
+    m_Id: '[UnityEngine.AddressableAssets.Addressables.RuntimePath]/../Mods/[BuildTarget]'
+  m_BundleMode: 1
   m_AssetBundleProviderType:
     m_AssemblyName: Unity.ResourceManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     m_ClassName: UnityEngine.ResourceManagement.ResourceProviders.AssetBundleProvider
+  m_UseDefaultSchemaSettings: 0
+  m_SelectedPathPairIndex: 2
   m_BundleNaming: 0
   m_AssetLoadMode: 0
