@@ -1,17 +1,20 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
+using Spine.Unity;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.VFX;
-
 public class TestTemp : MonoBehaviour
 {
-    public ParticleSystem visualEffect;
+    public SkeletonAnimation skeletonAnimation;
     public async Task OnGUI()
     {
         if (GUILayout.Button("Test"))
         {
-            var itemData = BuffInfoCfg.GetItemData(1000100001);
+            var targetData = ModHandler.Instance.LoadAssetSync<SkeletonDataAsset>("Spine", "Assets/Spine/Common/Human/Human_SkeletonData.asset");
+            skeletonAnimation.skeletonDataAsset = targetData;
+            skeletonAnimation.Initialize(true);
+            var skinData = new Dictionary<string, SpineSkinBean>();
+            skinData.Add("Base/Base_1", new SpineSkinBean());
+            SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, skinData);
         }
     }
 }
