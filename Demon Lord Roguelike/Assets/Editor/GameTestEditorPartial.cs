@@ -13,7 +13,7 @@ public partial class GameTestEditor
     public float fightSceneAttackDelay = 1;
 
     public int creatureId = 1;
-    public int creatureModelId = 0;
+    public int npcInfoId = 1010010001;
 
     public int attackModeAttackTestId = 0;
     public int attackModeDefenseTestId = 0;
@@ -76,7 +76,7 @@ public partial class GameTestEditor
 
         // 生物相关
         creatureId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "creatureId", 1);
-        creatureModelId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "creatureModelId", 0);
+        npcInfoId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "npcInfoId", 1010010001);
 
         // 攻击模式
         attackModeAttackTestId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "attackModeAttackTestId", 0);
@@ -119,7 +119,7 @@ public partial class GameTestEditor
 
         // 生物相关
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "creatureId", creatureId);
-        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "creatureModelId", creatureModelId);
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "npcInfoId", npcInfoId);
 
         // 攻击模式
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "attackModeAttackTestId", attackModeAttackTestId);

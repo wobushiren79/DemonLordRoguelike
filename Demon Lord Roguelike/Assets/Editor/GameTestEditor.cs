@@ -187,7 +187,16 @@ public partial class GameTestEditor : Editor
         GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
         if (GUILayout.Button("▶️ 显示卡片", GUILayout.Height(30)) && Application.isPlaying)
         {
-            FightCreatureBean fightCreature = CreatureHandler.Instance.GetFightCreatureData(creatureId, CreatureFightTypeEnum.FightDefense);
+            FightCreatureBean fightCreature;
+            if (creatureId == 0)
+            {
+                var npcInfo = NpcInfoCfg.GetItemData(npcInfoId);
+                fightCreature = CreatureHandler.Instance.GetFightCreatureData(npcInfo, CreatureFightTypeEnum.FightDefense);
+            }
+            else
+            {
+                fightCreature = CreatureHandler.Instance.GetFightCreatureData(creatureId, CreatureFightTypeEnum.FightDefense);
+            }
             fightCreature.creatureData.AddSkinForBase();
             launcher.StartForCardTest(fightCreature);
         }
@@ -195,8 +204,8 @@ public partial class GameTestEditor : Editor
         EditorGUILayout.Space(10);
 
         EditorGUILayout.BeginVertical("box");
-        creatureId = EditorGUILayout.IntField(new GUIContent("生物 ID", "要显示的卡片生物 ID"), creatureId);
-        creatureModelId = EditorGUILayout.IntField(new GUIContent("模型 ID", "生物模型 ID，0 表示默认"), creatureModelId);
+        creatureId = EditorGUILayout.IntField(new GUIContent("生物 ID", "要显示的卡片生物 ID，0 表示使用 NPC ID"), creatureId);
+        npcInfoId = EditorGUILayout.IntField(new GUIContent("NPC ID", "NPC 信息 ID，当生物 ID 为 0 时使用"), npcInfoId);
         EditorGUILayout.EndVertical();
 
         EditorGUI.indentLevel--;
