@@ -109,7 +109,7 @@ public class BaseAttackMode
                     Vector3 offsetPosition = creatureData.creatureInfo.GetAttackStartPosition();
                     attackModeData.startPos = attacker.creatureObj.transform.position + offsetPosition;
                     //获取被攻击者的层级
-                    attackModeData.attackedLayerTarget = attacker.fightCreatureData.GetCreatrueLayer(true);
+                    attackModeData.attackedLayerTarget = attacker.fightCreatureData.GetCreatureLayer(true);
                 }
             }
         }

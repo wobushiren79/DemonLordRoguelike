@@ -20,7 +20,7 @@ public class BuffEntityBaseDRChangeArea : BuffEntityBaseDRChange
         //作用半径
         float checkRadius = float.Parse(buffInfo.class_entity_data);
         //圆形半径
-        var targetColliders = RayUtil.OverlapToSphere(fightCreatureEntity.fightCreatureData.positionDead, checkRadius, 1 << fightCreatureEntity.fightCreatureData.GetCreatrueLayer(false));
+        var targetColliders = RayUtil.OverlapToSphere(fightCreatureEntity.fightCreatureData.positionDead, checkRadius, 1 << fightCreatureEntity.fightCreatureData.GetCreatureLayer(false));
         if (targetColliders != null)
         {
             GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
