@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using UnityEngine;
 
 [Serializable]
@@ -148,8 +146,8 @@ public partial class CreatureBean
         for (int i = 0; i < listBuff.Count; i++)
         {
             var buffData = listBuff[i];
-            CreatureAttributeTypeEnum buufAttributeType = buffData.IsBuffEntityAttributeBase();
-            if (buufAttributeType != CreatureAttributeTypeEnum.None && buufAttributeType == creatureAttributeType)
+            CreatureAttributeTypeEnum buffAttributeType = buffData.IsBuffEntityAttributeBase();
+            if (buffAttributeType != CreatureAttributeTypeEnum.None && buffAttributeType == creatureAttributeType)
             {
                 targetData = BuffEntityAttribute.ChangeData(buffData, creatureAttributeType, targetData);
             }
@@ -513,10 +511,19 @@ public partial class CreatureBean
             case CreatureAttributeTypeEnum.MSPD://获取移动速度
                 targetData = creatureInfo.MSPD;
                 break;
+            case CreatureAttributeTypeEnum.MPR://魔力回复%
+                targetData = creatureInfo.MPR;
+                break;
+            case CreatureAttributeTypeEnum.MPF://魔力回复
+                targetData = creatureInfo.MPF;
+                break;
             case CreatureAttributeTypeEnum.EVA://获取闪避概率
                 targetData = 0;
                 break;
             case CreatureAttributeTypeEnum.CRT://获取暴击率
+                targetData = 0;
+                break;
+            default:
                 targetData = 0;
                 break;
         }

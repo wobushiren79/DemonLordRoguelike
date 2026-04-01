@@ -13,12 +13,15 @@ MonoBehaviour:
   m_Name: CardScene
   m_EditorClassIdentifier: 
   m_GroupName: CardScene
-  m_Data:
-    m_SerializedData: []
   m_GUID: 373f7d0e48d0a1a47a74da6c367f01bb
   m_SerializeEntries:
-  - m_GUID: 64bf6e379fa8b1a4391edfb9fa935ba5
-    m_Address: Assets/LoadResources/Textures/CardScene/Card_Scene_1.png
+  - m_GUID: 1258f258ebb74734686ce328b11519cb
+    m_Address: Assets/LoadResources/Textures/CardScene/Card_Scene_6.png
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 16d69a0e3eb42bf4f80081a4724615a7
+    m_Address: Assets/LoadResources/Textures/CardScene/Card_Scene_7.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -27,8 +30,8 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 885daa2403286dc42a95ed930f84e8b4
-    m_Address: Assets/LoadResources/Textures/CardScene/Card_Scene_4.png
+  - m_GUID: 64bf6e379fa8b1a4391edfb9fa935ba5
+    m_Address: Assets/LoadResources/Textures/CardScene/Card_Scene_1.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -37,13 +40,13 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a8b3f9708ae78b2409ae30eb72dee083
-    m_Address: Assets/LoadResources/Textures/CardScene/Card_Scene_3.png
+  - m_GUID: 885daa2403286dc42a95ed930f84e8b4
+    m_Address: Assets/LoadResources/Textures/CardScene/Card_Scene_4.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1258f258ebb74734686ce328b11519cb
-    m_Address: Assets/LoadResources/Textures/CardScene/Card_Scene_6.png
+  - m_GUID: a8b3f9708ae78b2409ae30eb72dee083
+    m_Address: Assets/LoadResources/Textures/CardScene/Card_Scene_3.png
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

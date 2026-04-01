@@ -1,5 +1,3 @@
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
-using UnityEditor;
 using UnityEngine;
 
 public class BuffEntityAttribute : BuffBaseEntity
@@ -40,22 +38,16 @@ public class BuffEntityAttribute : BuffBaseEntity
     {
         switch (targetAttributeType)
         {
-            case CreatureAttributeTypeEnum.HP:
-            case CreatureAttributeTypeEnum.DR:
-            case CreatureAttributeTypeEnum.ATK:
-            case CreatureAttributeTypeEnum.ASPD:
-            case CreatureAttributeTypeEnum.MSPD:
-            case CreatureAttributeTypeEnum.RCD:
-                targetData += buffData.trigger_value;
-                //小于0特殊处理
-                if (targetData < 0) targetData = 0;
-                targetData *= 1 + buffData.trigger_value_rate;
-                break;
+            //特殊属性 从0%开始叠加
             case CreatureAttributeTypeEnum.CRT:
             case CreatureAttributeTypeEnum.EVA:
                 targetData += buffData.trigger_value_rate;
                 break;
             default:
+                targetData += buffData.trigger_value;
+                //小于0特殊处理
+                if (targetData < 0) targetData = 0;
+                targetData *= 1 + buffData.trigger_value_rate;
                 break;
         }
         if (targetData < 0)

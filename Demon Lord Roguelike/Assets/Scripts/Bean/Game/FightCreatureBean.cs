@@ -15,18 +15,6 @@ public class FightCreatureBean
 
     public int HPCurrent;//当前生命值
     public int DRCurrent;//当前护甲值
-
-    public static List<CreatureAttributeTypeEnum> listCreatureAttributeType = new List<CreatureAttributeTypeEnum>()
-    {
-        CreatureAttributeTypeEnum.HP,
-        CreatureAttributeTypeEnum.DR,
-        CreatureAttributeTypeEnum.ATK,
-        CreatureAttributeTypeEnum.ASPD,
-        CreatureAttributeTypeEnum.MSPD,
-        CreatureAttributeTypeEnum.EVA,
-        CreatureAttributeTypeEnum.CRT
-    };
-
     public Dictionary<CreatureAttributeTypeEnum, float> dicAttribute = new Dictionary<CreatureAttributeTypeEnum, float>(); //属性
 
     public Color colorBodyCurrent;//当前身体颜色
@@ -76,6 +64,7 @@ public class FightCreatureBean
     {
         //先还原基础数据
         dicAttribute.Clear();
+        var listCreatureAttributeType = EnumExtension.GetEnumValue<CreatureAttributeTypeEnum>();
         for (int i = 0; i < listCreatureAttributeType.Count; i++)
         {
             var creatureAttributeType = listCreatureAttributeType[i];
@@ -168,7 +157,7 @@ public class FightCreatureBean
     ///  获取敌人的战斗生物层级
     /// </summary>
     /// <returns></returns>
-    public int GetCreatrueLayer(bool isEnemy)
+    public int GetCreatureLayer(bool isEnemy)
     {
         CreatureFightTypeEnum targetTypeEnum = isEnemy ? GetCreatureFightTypeForEnemy() : creatureFightType; 
         switch (targetTypeEnum)

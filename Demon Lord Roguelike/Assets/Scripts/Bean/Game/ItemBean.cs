@@ -54,7 +54,7 @@ public partial class ItemBean
             // userType=1 时固定加成 MSPD 和 MP，否则随机选择一种属性类型 (1~4)
             if (userType == 1)
             {
-                int randomIndex = Random.Range(1, 3);
+                int randomIndex = Random.Range(1, 4);
                 switch (randomIndex)
                 {
                     case 1:
@@ -63,6 +63,13 @@ public partial class ItemBean
                     case 2:
                         AddAttribute(CreatureAttributeTypeEnum.MP, 10 * addNum);
                         break;
+                    case 3:
+                        AddAttribute(CreatureAttributeTypeEnum.MPF, addNum);
+                        break;
+                    //暂时不开放速率回复
+                    // case 4:
+                    //     AddAttribute(CreatureAttributeTypeEnum.MPR, addNum);
+                    //     break;
                 }
             }
             else

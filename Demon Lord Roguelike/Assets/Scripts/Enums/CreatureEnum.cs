@@ -65,6 +65,8 @@ public enum CreatureAttributeTypeEnum
     CRT,//暴击率
     EVA,//闪避
     RCD,//复活CD
+    MPR,//魔法回复%
+    MPF,//魔法回复
 }
 
 public enum CreatureSkinTypeEnum

@@ -103,15 +103,19 @@ public partial class CreatureInfoBean : BaseBean
 	/// <summary>
 	///生命值
 	/// </summary>
-	public int HP;
+	public float HP;
+	/// <summary>
+	///魔力
+	/// </summary>
+	public float MP;
 	/// <summary>
 	///护甲
 	/// </summary>
-	public int DR;
+	public float DR;
 	/// <summary>
 	///攻击力
 	/// </summary>
-	public int ATK;
+	public float ATK;
 	/// <summary>
 	///攻击间隔
 	/// </summary>
@@ -120,6 +124,14 @@ public partial class CreatureInfoBean : BaseBean
 	///移动速度
 	/// </summary>
 	public float MSPD;
+	/// <summary>
+	///魔力回复（百分比）
+	/// </summary>
+	public float MPR;
+	/// <summary>
+	///魔力回复(固定值)
+	/// </summary>
+	public float MPF;
 	/// <summary>
 	///模组ID
 	/// </summary>
