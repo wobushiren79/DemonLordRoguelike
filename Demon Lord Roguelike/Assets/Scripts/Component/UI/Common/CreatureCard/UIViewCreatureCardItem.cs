@@ -82,6 +82,10 @@ public partial class UIViewCreatureCardItem : BaseUIView
     public void SetCardIcon(CreatureBean creatureData)
     {
         GameUIUtil.SetCreatureUIForSimple(ui_Icon, creatureData);
+        Vector2 iconScale = ui_Icon.transform.localScale;
+        RectTransform iconRect = (RectTransform)ui_Icon.transform;
+        //等比例设置大小 防止裁切
+        iconRect.sizeDelta = new Vector2(100f / iconScale.x, 100f / iconScale.y);
     }
 
     /// <summary>

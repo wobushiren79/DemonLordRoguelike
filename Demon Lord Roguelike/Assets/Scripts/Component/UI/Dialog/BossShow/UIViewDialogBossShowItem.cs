@@ -18,7 +18,7 @@ public partial class UIViewDialogBossShowItem : BaseUIView
             var creatureData = new CreatureBean(npcInfo);
             if (creatureData != null)
             {
-                GameUIUtil.SetCreatureUIForDetails(ui_Icon, null, creatureData, customUISize: 2, customUIPosOffsetY: -100);
+                GameUIUtil.SetCreatureUIForDetails(ui_Icon, null, creatureData, customUISize: 2);
             }
         }
     }

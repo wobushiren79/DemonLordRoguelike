@@ -1,11 +1,38 @@
 ---
 name: code-review
-description: Code review tool for analyzing code changes. Use when the user triggers with /code-review command to review uncommitted git changes or specific modules. Supports reviewing current working directory changes or targeted module analysis.
+description: Code review tool for analyzing code changes. Use when the user triggers with /code-review command to review uncommitted git changes or specific modules. Supports reviewing current working directory changes or targeted module analysis. Also provides post-modification code verification workflow.
 ---
 
 # Code Review Skill
 
 This skill provides automated code review for git-based projects.
+
+## 代码修改后验证流程 (Post-Modification Verification)
+
+每次完成代码修改后，必须执行以下验证步骤：
+
+### 步骤 1: 语法/编译检查
+根据项目类型执行对应的编译检查：
+
+**C# 项目 (Unity/.NET):**
+- 使用 `dotnet build` 或 Unity 编译检查
+- 检查是否有编译错误、引用错误、类型不匹配等
+
+**其他项目类型:**
+- 使用对应语言的编译器/语法检查工具
+
+### 步骤 2: 代码审查
+- 检查代码逻辑是否正确
+- 检查 API 使用是否符合规范
+- 检查命名规范、代码风格
+
+### 步骤 3: 修复问题
+- 如果发现错误，立即修复
+- 修复后重复步骤 1-2，直到没有错误
+
+---
+
+**注意**: 每次修改代码后都必须执行此验证流程，确保代码质量。
 
 ## Usage
 

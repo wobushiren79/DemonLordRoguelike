@@ -361,7 +361,7 @@ string text = TextHandler.Instance.GetTextByIdNoBreakingSpace("BuffInfo", 10001)
 | 文本处理器 | `Assets/FrameWork/Scripts/Component/Handler/TextHandler.cs` |
 | UI多语言组件 | `Assets/FrameWork/Scripts/Component/UI/UITextLanguageView.cs` |
 | 多语言JSON文件 | `Assets/Resources/JsonText/Language_*.txt` |
-| Bean代码模板 | `Assets/FrameWork/Editor/ScrpitsTemplates/Excel_LanguageEntity.txt` |
+| Bean代码模板 | `Assets/FrameWork/Editor/ScriptsTemplates/Excel_LanguageEntity.txt` |
 
 ---
 

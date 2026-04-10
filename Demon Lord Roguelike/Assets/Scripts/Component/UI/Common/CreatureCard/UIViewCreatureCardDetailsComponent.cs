@@ -68,5 +68,7 @@ public partial class UIViewCreatureCardDetails
 
     public RectTransform ui_Buff;
 
+    public Button ui_IconBtn;
+
 
 }

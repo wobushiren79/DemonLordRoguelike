@@ -57,7 +57,7 @@ Assets/
 │   │   │   ├── NodeEditor/           # 节点编辑器
 │   │   │   ├── Utils/                # 编辑器工具类
 │   │   │   └── Window/               # 编辑器窗口
-│   │   ├── ScrpitsTemplates/         # 代码模板
+│   │   ├── ScriptsTemplates/         # 代码模板
 │   │   └── Steamworks.NET/           # Steam 编辑器工具
 │   ├── Addons/                         # 第三方插件
 │   │   ├── DOTween/                   # 动画补间插件

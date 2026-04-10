@@ -3,13 +3,18 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// 生物卡片详情UI视图 - 用于展示生物的详细信息，包括属性、装备、BUFF等
+/// </summary>
 public partial class UIViewCreatureCardDetails : BaseUIView
 {
+    /// <summary>生物数据，包含当前展示的生物完整信息</summary>
     public CreatureBean creatureData;
-    //是否展示装备道具
+    /// <summary>是否展示装备道具，默认为true</summary>
     public bool isShowEquipItem = true;
+
     /// <summary>
-    /// 刷新显示
+    /// 刷新卡片显示
     /// </summary>
     public void RefreshCard()
     {
@@ -17,9 +22,9 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     }
 
     /// <summary>
-    /// 设置数据
+    /// 设置生物数据并刷新所有UI显示
     /// </summary>
-    /// <param name="creatureData"></param>
+    /// <param name="creatureData">生物数据</param>
     public void SetData(CreatureBean creatureData)
     {
         if (creatureData == null)
@@ -50,7 +55,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     }
 
     /// <summary>
-    /// 设置BUFF
+    /// 设置BUFF显示
     /// </summary>
     public void SetBuff()
     {
@@ -79,7 +84,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     }
 
     /// <summary>
-    /// 设置装备数据
+    /// 设置装备数据显示
     /// </summary>
     public void SetEquipData()
     {
@@ -109,10 +114,10 @@ public partial class UIViewCreatureCardDetails : BaseUIView
                 itemChildTF.gameObject.SetActive(false);
             }
         }
-    }
+    } 
 
     /// <summary>
-    /// 设置终焉议会数据
+    /// 设置终焉议会数据（如果是议会成员）
     /// </summary>
     public void SetDoomCouncilData()
     {
@@ -134,8 +139,9 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     }
 
     /// <summary>
-    /// 设置关系
+    /// 设置关系显示（如果是NPC）
     /// </summary>
+    /// <param name="relationship">关系值</param>
     public void SetRelationship(int relationship)
     {
         var npcData = creatureData.GetCreatureNpcData();
@@ -154,10 +160,10 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     }
 
     /// <summary>
-    /// 设置职业
+    /// 设置职业显示
     /// </summary>
-    /// <param name="iconRes"></param>
-    /// <param name="className"></param>
+    /// <param name="iconRes">职业图标资源路径</param>
+    /// <param name="className">职业名称</param>
     public void SetClass(string iconRes, string className)
     {
         ui_ClassName.text = className;
@@ -165,7 +171,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     }
 
     /// <summary>
-    /// 设置称号
+    /// 设置称号显示
     /// </summary>
     public void SetTitle()
     {
@@ -196,6 +202,8 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     /// <summary>
     /// 设置等级数据
     /// </summary>
+    /// <param name="level">等级</param>
+    /// <param name="levelExp">当前等级经验</param>
     public void SetLevelData(int level, long levelExp)
     {
         ui_LevelText.text = string.Format(TextHandler.Instance.GetTextById(1001001), level);
@@ -214,8 +222,9 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     }
 
     /// <summary>
-    /// 设置稀有度
+    /// 设置稀有度显示
     /// </summary>
+    /// <param name="rarity">稀有度等级</param>
     public void SetRarity(int rarity)
     {
         if (rarity == 0)
@@ -224,20 +233,25 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         ColorUtility.TryParseHtmlString(rarityInfo.ui_board_color, out Color boardColor);
         ui_CardRate.color = boardColor;
         ColorUtility.TryParseHtmlString(rarityInfo.ui_board_other_color, out Color boardOtherColor);
-        ui_AttributeList_Image.color = boardOtherColor;
+        //ui_AttributeList_Image.color = boardOtherColor;
     }
 
     /// <summary>
-    /// 设置名字
+    /// 设置生物名称
     /// </summary>
+    /// <param name="name">生物名称</param>
     public void SetName(string name)
     {
         ui_Name.text = $"{name}";
     }
 
     /// <summary>
-    /// 设置属性
+    /// 设置属性显示
     /// </summary>
+    /// <param name="HP">生命值</param>
+    /// <param name="DR">防御值</param>
+    /// <param name="atk">攻击力</param>
+    /// <param name="aspk">攻击速度</param>
     public void SetAttribute(int HP, int DR, int atk, float aspk)
     {
         ui_AttributeItemText_Life.text = $"{HP}";
@@ -247,17 +261,18 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     }
 
     /// <summary>
-    /// 设置图片
+    /// 设置卡片图标
     /// </summary>
+    /// <param name="creatureData">生物数据</param>
     public void SetCardIcon(CreatureBean creatureData)
     {
         GameUIUtil.SetCreatureUIForDetails(ui_Icon, ui_CardScene, creatureData);
     }
 
     /// <summary>
-    /// 设置详情位置
+    /// 设置详情面板位置方向
     /// </summary>
-    /// <param name="direction"></param>
+    /// <param name="direction">方向（左/右）</param>
     public void SetDetailsDirection(Direction2DEnum direction)
     {
         if (direction == Direction2DEnum.Left)
@@ -278,7 +293,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     }
 
     /// <summary>
-    /// 刷新一下UI布局
+    /// 刷新UI布局
     /// </summary>
     public void RefreshUILayout()
     {
@@ -293,5 +308,28 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         }
         //刷新UI
         UGUIUtil.RefreshUISize(ui_Details);
+    }
+
+    /// <summary>
+    /// 按钮点击事件处理
+    /// </summary>
+    /// <param name="viewButton">点击的按钮</param>
+    public override void OnClickForButton(Button viewButton)
+    {
+        base.OnClickForButton(viewButton);
+        if (viewButton == ui_IconBtn)
+        {
+            OnClickForIconShow();
+        }
+    }
+
+    /// <summary>
+    /// 点击生物图标打开生物展示弹窗
+    /// </summary>
+    public void OnClickForIconShow()
+    {
+        DialogCreatureShowBean dialogCreatureShow=new DialogCreatureShowBean();
+        dialogCreatureShow.creatureData = creatureData;
+        UIHandler.Instance.ShowDialogCreatureShow(dialogCreatureShow);
     }
 }

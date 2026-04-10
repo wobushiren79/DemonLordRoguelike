@@ -35,7 +35,8 @@ public static class GameUIUtil
         //自定义UI大小
         if (customUISize > 0)
         {
-            ui_Icon.transform.localScale *= customUISize;
+            ui_Icon.transform.localScale *= customUISize;    
+            ui_Icon.rectTransform.anchoredPosition *= customUISize;
         }
         ui_Icon.rectTransform.anchoredPosition += new Vector2(customUIPosOffsetX, customUIPosOffsetY);
         //设置背景图片
@@ -62,5 +63,10 @@ public static class GameUIUtil
                 ui_Scene.ShowObj(false);
             }
         }
+
+        //等比例设置大小 防止裁切
+        Vector2 iconScale = ui_Icon.transform.localScale;
+        RectTransform iconRect = (RectTransform)ui_Icon.transform;
+        iconRect.sizeDelta = new Vector2(100f / iconScale.x, 100f / iconScale.y);
     }
 }

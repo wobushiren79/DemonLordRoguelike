@@ -11,4 +11,5 @@ public enum DialogEnum
     PortalDetails,//传送门详情确认
     Rename,//重命名
     BossShow,//Boss展示
+    CreatureShow,//生物展示
 }

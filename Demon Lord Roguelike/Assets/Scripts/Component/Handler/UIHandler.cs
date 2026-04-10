@@ -87,6 +87,18 @@ public partial class UIHandler
     }
 
     /// <summary>
+    /// 生物展示
+    /// </summary>
+    /// <param name="dialogData"></param>
+    /// <returns></returns>
+    public UIDialogCreatureShow ShowDialogCreatureShow(DialogCreatureShowBean dialogData)
+    {
+        dialogData.dialogType = DialogEnum.CreatureShow;
+        dialogData.isDestroyBG = true;
+        return ShowDialog<UIDialogCreatureShow>(dialogData);
+    }
+
+    /// <summary>
     /// 生物选择
     /// </summary>
     /// <param name="dialogData"></param>
