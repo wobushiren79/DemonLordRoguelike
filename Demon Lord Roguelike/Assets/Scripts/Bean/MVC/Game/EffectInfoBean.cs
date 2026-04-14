@@ -5,6 +5,10 @@ using Newtonsoft.Json;
 public partial class EffectInfoBean : BaseBean
 {
 	/// <summary>
+	///序号
+	/// </summary>
+	public long id;
+	/// <summary>
 	///内容
 	/// </summary>
 	public string res_name;

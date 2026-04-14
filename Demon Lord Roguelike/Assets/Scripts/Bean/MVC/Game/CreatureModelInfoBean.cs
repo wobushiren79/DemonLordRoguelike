@@ -5,6 +5,10 @@ using Newtonsoft.Json;
 public partial class CreatureModelInfoBean : BaseBean
 {
 	/// <summary>
+	///序号
+	/// </summary>
+	public long id;
+	/// <summary>
 	///模组ID
 	/// </summary>
 	public int model_id;

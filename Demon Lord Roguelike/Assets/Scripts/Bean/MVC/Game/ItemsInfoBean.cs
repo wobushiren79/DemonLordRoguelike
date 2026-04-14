@@ -5,6 +5,10 @@ using Newtonsoft.Json;
 public partial class ItemsInfoBean : BaseBean
 {
 	/// <summary>
+	///序号
+	/// </summary>
+	public long id;
+	/// <summary>
 	///道具类型1:帽子 2衣服 3裤子 4鞋子 5鼻环 6戒指 10武器 1000魔晶
 	/// </summary>
 	public int item_type;
@@ -36,6 +40,10 @@ public partial class ItemsInfoBean : BaseBean
 	///攻击模式相关数据(ShowSprite,VertexRotateAxis,VertexRotateSpeed,UVRotateSpeed,StartPosition)
 	/// </summary>
 	public string attack_mode_data;
+	/// <summary>
+	///其他数据
+	/// </summary>
+	public string other_data;
 	/// <summary>
 	///名字
 	/// </summary>

@@ -27,6 +27,16 @@ public static class GameUIUtil
     {
         //设置spine
         CreatureHandler.Instance.SetCreatureData(ui_Icon, creatureData, isUIShow: true);
+        //如果装备了肖像道具 使用肖像资源替换spine
+        ItemBean portraitItem = creatureData.GetEquip(ItemTypeEnum.Portrait);
+        if (portraitItem != null)
+        {
+            ItemsInfoBean portraitItemInfo = ItemsInfoCfg.GetItemData(portraitItem.itemId);
+            if (portraitItemInfo != null && !portraitItemInfo.other_data.IsNull())
+            {
+                SpineHandler.Instance.SetSkeletonDataAsset(ui_Icon, portraitItemInfo.other_data);
+            }
+        }
         //播放动画
         SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, creatureData, true);
         ui_Icon.ShowObj(true);

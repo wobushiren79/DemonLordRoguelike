@@ -5,6 +5,10 @@ using Newtonsoft.Json;
 public partial class BuffPreInfoBean : BaseBean
 {
 	/// <summary>
+	///序号
+	/// </summary>
+	public long id;
+	/// <summary>
 	///引用实例
 	/// </summary>
 	public string class_entity;

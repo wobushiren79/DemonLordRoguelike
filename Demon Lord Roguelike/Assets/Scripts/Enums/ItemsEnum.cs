@@ -19,6 +19,7 @@ public enum ItemTypeEnum
     NoseRing = 5,
     FingerRing = 6,
     Weapon = 10,
+    Portrait = 101,
 }
 
 public enum ItemTypeWeaponEnum
