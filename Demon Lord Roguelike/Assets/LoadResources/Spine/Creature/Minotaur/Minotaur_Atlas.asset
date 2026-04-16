@@ -12,6 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6b194f808b1af6499c93410e504af42, type: 3}
   m_Name: Minotaur_Atlas
   m_EditorClassIdentifier: 
+  textureLoadingMode: 0
+  onDemandTextureLoader: {fileID: 0}
   atlasFile: {fileID: 4900000, guid: c9c1fc500ef0d264f9e6b59b23d57f8c, type: 3}
   materials:
   - {fileID: 2100000, guid: 77d477d0dfe6d6848bf40805d507ecac, type: 2}
