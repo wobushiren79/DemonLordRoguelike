@@ -252,9 +252,6 @@ bounds:214,49,9,12
 Clothes_7_ArmUp_R
 bounds:315,86,9,15
 rotate:90
-Clothes_7_BG
-bounds:226,166,17,21
-rotate:90
 Clothes_7_FG
 bounds:114,117,28,9
 rotate:90
@@ -661,6 +658,9 @@ Pants_6_Thigh_R
 bounds:155,52,10,17
 Pants_7
 bounds:225,255,32,28
+Pants_7_BG
+bounds:226,166,17,21
+rotate:90
 Pants_7_Calf_L
 bounds:315,119,10,15
 rotate:90

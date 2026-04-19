@@ -1,11 +1,11 @@
 {
 "skeleton": {
-	"hash": "uobcJ7C8ET4",
+	"hash": "ldmzRVlLkZ4",
 	"spine": "4.2.43",
-	"x": -17,
-	"y": 55,
-	"width": 24,
-	"height": 23,
+	"x": -46,
+	"y": 27,
+	"width": 73,
+	"height": 8,
 	"images": "./images/",
 	"audio": "E:/Unity/DemonLordRoguelike/资源/生物/人类"
 },
@@ -48,12 +48,12 @@
 "slots": [
 	{ "name": "Hat_2_BG", "bone": "Head", "attachment": "Hat_2_BG" },
 	{ "name": "Pants_1_BG", "bone": "Pelvis_Base", "attachment": "Pants_1_BG" },
+	{ "name": "Pants_7_BG", "bone": "Pelvis_Base", "attachment": "Pants_7_BG" },
 	{ "name": "Clothes_14_BG", "bone": "Body", "attachment": "Clothes_14_BG" },
 	{ "name": "Clothes_15_BG", "bone": "Body", "attachment": "Clothes_15_BG" },
 	{ "name": "Clothes_4_BG", "bone": "Body", "attachment": "Clothes_4_BG" },
 	{ "name": "Clothes_5_BG", "bone": "Body", "attachment": "Clothes_5_BG" },
 	{ "name": "Clothes_6_BG", "bone": "Body", "attachment": "Clothes_6_BG" },
-	{ "name": "Clothes_7_BG", "bone": "Body", "attachment": "Clothes_7_BG" },
 	{ "name": "Clothes_8_BG", "bone": "Body", "attachment": "Clothes_8_BG" },
 	{ "name": "Clothes_9_BG", "bone": "Body", "attachment": "Clothes_9_BG" },
 	{ "name": "Clothes_11_BG", "bone": "Body", "attachment": "Clothes_11_BG" },
@@ -609,9 +609,6 @@
 			},
 			"Clothes_7_ArmUp_R": {
 				"Clothes_7_ArmUp_R": { "x": 5.65, "y": 0.78, "rotation": 60, "width": 9, "height": 15 }
-			},
-			"Clothes_7_BG": {
-				"Clothes_7_BG": { "x": -11.5, "y": 0.5, "rotation": -90, "width": 17, "height": 21 }
 			},
 			"Clothes_7_FG": {
 				"Clothes_7_FG": { "x": 14.5, "y": 2, "rotation": -90, "width": 28, "height": 9 }
@@ -1460,6 +1457,9 @@
 			"Pants_7": {
 				"Pants_7": { "x": -1.08, "y": -7.99, "rotation": -0.59, "width": 32, "height": 28 }
 			},
+			"Pants_7_BG": {
+				"Pants_7_BG": { "x": -0.59, "y": -8.49, "rotation": -0.59, "width": 17, "height": 21 }
+			},
 			"Pants_7_Calf_L": {
 				"Pants_7_Calf_L": { "x": 6.5, "rotation": 90, "width": 10, "height": 15 }
 			},
@@ -1711,6 +1711,28 @@
 		}
 	},
 	{
+		"name": "Weapon/Weapon_LR_21",
+		"attachments": {
+			"Weapon_L_21": {
+				"Weapon_L_21": { "x": -0.5, "y": -0.5, "rotation": 90, "width": 19, "height": 19 }
+			},
+			"Weapon_R_21": {
+				"Weapon_R_21": { "x": 2.01, "y": 18, "rotation": 89.96, "width": 43, "height": 14 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_LR_22",
+		"attachments": {
+			"Weapon_L_22": {
+				"Weapon_L_22": { "x": -1, "y": -1, "rotation": 90, "width": 22, "height": 22 }
+			},
+			"Weapon_R_22": {
+				"Weapon_R_22": { "x": 2.51, "y": 17.5, "rotation": 89.96, "width": 46, "height": 13 }
+			}
+		}
+	},
+	{
 		"name": "Weapon/Weapon_L_1",
 		"attachments": {
 			"Weapon_L_1": {
@@ -1815,22 +1837,6 @@
 		}
 	},
 	{
-		"name": "Weapon/Weapon_L_21",
-		"attachments": {
-			"Weapon_L_21": {
-				"Weapon_L_21": { "x": -0.5, "y": -0.5, "rotation": 90, "width": 19, "height": 19 }
-			}
-		}
-	},
-	{
-		"name": "Weapon/Weapon_L_22",
-		"attachments": {
-			"Weapon_L_22": {
-				"Weapon_L_22": { "x": -1, "y": -1, "rotation": 90, "width": 22, "height": 22 }
-			}
-		}
-	},
-	{
 		"name": "Weapon/Weapon_R_1",
 		"attachments": {
 			"Weapon_R_1": {
@@ -1851,22 +1857,6 @@
 		"attachments": {
 			"Weapon_R_3": {
 				"Weapon_R_3": { "x": -2.5, "y": -8, "rotation": 90, "width": 29, "height": 45 }
-			}
-		}
-	},
-	{
-		"name": "Weapon/Weapon_R_21",
-		"attachments": {
-			"Weapon_R_21": {
-				"Weapon_R_21": { "x": 2, "y": 18, "rotation": 90, "width": 43, "height": 14 }
-			}
-		}
-	},
-	{
-		"name": "Weapon/Weapon_R_22",
-		"attachments": {
-			"Weapon_R_22": {
-				"Weapon_R_22": { "x": 2.51, "y": 17.5, "rotation": 89.96, "width": 46, "height": 13 }
 			}
 		}
 	}

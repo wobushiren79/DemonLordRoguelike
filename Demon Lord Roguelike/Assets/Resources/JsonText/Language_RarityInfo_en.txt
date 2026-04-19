@@ -1,1 +1,1 @@
-[{"content":"N","id":1},{"content":"R","id":2},{"content":"SR","id":3},{"content":"SSR","id":4},{"content":"UR","id":5},{"content":"L","id":6}]
+[{"id":1,"content":"N"},{"id":2,"content":"R"},{"id":3,"content":"SR"},{"id":4,"content":"SSR"},{"id":5,"content":"UR"},{"id":6,"content":"L"}]

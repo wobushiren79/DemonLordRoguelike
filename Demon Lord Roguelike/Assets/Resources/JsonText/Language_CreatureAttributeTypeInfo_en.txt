@@ -1,1 +1,1 @@
-[{"content":"HP","id":1},{"content":"MP","id":2},{"content":"DR","id":3},{"content":"ATK","id":4},{"content":"","id":5},{"content":"","id":6},{"content":"","id":7},{"content":"","id":8},{"content":"","id":9},{"content":"MPR","id":10},{"content":"MPF","id":11}]
+[{"id":1,"content":"HP"},{"id":2,"content":"MP"},{"id":3,"content":"DR"},{"id":4,"content":"ATK"},{"id":5,"content":""},{"id":6,"content":""},{"id":7,"content":""},{"id":8,"content":""},{"id":9,"content":""},{"id":10,"content":"MPR"},{"id":11,"content":"MPF"}]

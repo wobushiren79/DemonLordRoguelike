@@ -1,11 +1,11 @@
 {
 "skeleton": {
-	"hash": "pAhRS4YDbts",
+	"hash": "Dbtmt2Bnj7c",
 	"spine": "4.2.43",
-	"x": -10,
-	"y": 30,
-	"width": 25,
-	"height": 30.01,
+	"x": -23,
+	"y": 25,
+	"width": 14,
+	"height": 17,
 	"images": "./images/",
 	"audio": "E:/Unity/DemonLordRoguelike/资源/生物/骷髅"
 },
@@ -79,10 +79,7 @@
 	{ "name": "Pants_7_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_7_Pelvis" },
 	{ "name": "Pants_9_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_9_Pelvis" },
 	{ "name": "Pants_11_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_11_Pelvis" },
-	{ "name": "Pants_5_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_5_Pelvis" },
-	{ "name": "Pants_4_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_4_Pelvis" },
 	{ "name": "Pants_3_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_3_Pelvis" },
-	{ "name": "Pants_2_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_2_Pelvis" },
 	{ "name": "Pants_1_Pelvis", "bone": "Pelvis_Base", "attachment": "Pants_1_Pelvis" },
 	{ "name": "Clothes_11_Body", "bone": "Body", "attachment": "Clothes_11_Body" },
 	{ "name": "Clothes_9_Body", "bone": "Body", "attachment": "Clothes_9_Body" },
@@ -267,9 +264,6 @@
 			},
 			"Clothes_7_Body": {
 				"Clothes_7_Body": { "x": 15.56, "y": -2.15, "rotation": -90, "width": 11, "height": 9 }
-			},
-			"Pants_7_Pelvis": {
-				"Pants_7_Pelvis": { "x": 1.88, "y": 0.57, "rotation": 91.46, "width": 17, "height": 12 }
 			}
 		}
 	},
@@ -512,24 +506,10 @@
 		}
 	},
 	{
-		"name": "Pants/Pants_5",
-		"attachments": {
-			"Pants_5_Calf_L": {
-				"Pants_5_Calf_L": { "x": 5.22, "y": 0.74, "rotation": 111.26, "width": 12, "height": 14 }
-			},
-			"Pants_5_Calf_R": {
-				"Pants_5_Calf_R": { "x": 6.16, "y": -0.13, "rotation": 90, "width": 9, "height": 14 }
-			},
-			"Pants_5_Pelvis": {
-				"Pants_5_Pelvis": { "x": 6.86, "y": 1.2, "rotation": 91.46, "width": 24, "height": 26 }
-			}
-		}
-	},
-	{
 		"name": "Pants/Pants_7",
 		"attachments": {
-			"Pants_2_Pelvis": {
-				"Pants_2_Pelvis": { "x": 1.88, "y": 0.57, "rotation": 91.46, "width": 17, "height": 12 }
+			"Pants_7_Pelvis": {
+				"Pants_7_Pelvis": { "rotation": 91.46, "width": 17, "height": 12 }
 			}
 		}
 	},

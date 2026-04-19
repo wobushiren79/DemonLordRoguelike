@@ -1,1 +1,1 @@
-[{"content":"人类","id":1},{"content":"骷髅","id":2},{"content":"史莱姆","id":3},{"content":"魅魔","id":4},{"content":"牛头人","id":5},{"content":"哥布林","id":6},{"content":"兽人","id":7}]
+[{"id":1,"content":"人类"},{"id":2,"content":"骷髅"},{"id":3,"content":"史莱姆"},{"id":4,"content":"魅魔"},{"id":5,"content":"牛头人"},{"id":6,"content":"哥布林"},{"id":7,"content":"兽人"}]

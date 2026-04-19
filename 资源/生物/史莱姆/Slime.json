@@ -1,5 +1,14 @@
 {
-"skeleton": { "hash": "qzsh3DBOuHqc7bT6NMk/dcXKUjw", "spine": "3.8.75", "images": "./images/", "audio": "E:/Unity/DemonLordRoguelike/资源/生物/史莱姆" },
+"skeleton": {
+	"hash": "6GuyWNUIdNk",
+	"spine": "4.2.43",
+	"x": -8,
+	"y": 3,
+	"width": 17,
+	"height": 17,
+	"images": "./images/",
+	"audio": "E:/Unity/DemonLordRoguelike/资源/生物/史莱姆"
+},
 "bones": [
 	{ "name": "root" },
 	{ "name": "Pelvis", "parent": "root", "y": 7 },
@@ -58,90 +67,10 @@
 ],
 "skins": [
 	{
-		"name": "Body/Body_0",
-		"attachments": {
-			"Body_0": {
-				"Body_0": { "x": 5.5, "rotation": -90, "width": 30, "height": 25 }
-			}
-		}
-	},
-	{
 		"name": "Body/Body_1",
 		"attachments": {
 			"Body_1": {
 				"Body_1": { "x": 5.5, "rotation": -90, "width": 30, "height": 25 }
-			}
-		}
-	},
-	{
-		"name": "Body/Body_2",
-		"attachments": {
-			"Body_2": {
-				"Body_2": { "x": 5.5, "rotation": -90, "width": 30, "height": 25 }
-			}
-		}
-	},
-	{
-		"name": "Body/Body_3",
-		"attachments": {
-			"Body_3": {
-				"Body_3": { "x": 5.5, "rotation": -90, "width": 30, "height": 25 }
-			}
-		}
-	},
-	{
-		"name": "Body/Body_4",
-		"attachments": {
-			"Body_4": {
-				"Body_4": { "x": 5.5, "rotation": -90, "width": 30, "height": 25 }
-			}
-		}
-	},
-	{
-		"name": "Body/Body_5",
-		"attachments": {
-			"Body_5": {
-				"Body_5": { "x": 5.5, "rotation": -90, "width": 30, "height": 25 }
-			}
-		}
-	},
-	{
-		"name": "Body/Body_6",
-		"attachments": {
-			"Body_6": {
-				"Body_6": { "x": 5.5, "rotation": -90, "width": 30, "height": 25 }
-			}
-		}
-	},
-	{
-		"name": "Body/Body_7",
-		"attachments": {
-			"Body_7": {
-				"Body_7": { "x": 5.5, "rotation": -90, "width": 30, "height": 25 }
-			}
-		}
-	},
-	{
-		"name": "Body/Body_8",
-		"attachments": {
-			"Body_8": {
-				"Body_8": { "x": 5.5, "rotation": -90, "width": 30, "height": 25 }
-			}
-		}
-	},
-	{
-		"name": "Body/Body_9",
-		"attachments": {
-			"Body_9": {
-				"Body_9": { "x": 5.5, "rotation": -90, "width": 30, "height": 25 }
-			}
-		}
-	},
-	{
-		"name": "Body/Body_10",
-		"attachments": {
-			"Body_10": {
-				"Body_10": { "x": 5.5, "rotation": -90, "width": 30, "height": 25 }
 			}
 		}
 	},
@@ -236,11 +165,11 @@
 	{
 		"name": "Hat/Hat_2",
 		"attachments": {
-			"Hat_2_Bg": {
-				"Hat_2_Bg": { "x": 2.9, "y": -3.5, "rotation": -90, "width": 25, "height": 13 }
-			},
 			"Hat_2": {
 				"Hat_2": { "x": 8.4, "rotation": -90, "width": 32, "height": 23 }
+			},
+			"Hat_2_Bg": {
+				"Hat_2_Bg": { "x": 2.9, "y": -3.5, "rotation": -90, "width": 25, "height": 13 }
 			}
 		}
 	},
@@ -271,22 +200,22 @@
 	{
 		"name": "Hat/Hat_6",
 		"attachments": {
-			"Hat_6_Bg": {
-				"Hat_6_Bg": { "x": 13.35, "rotation": -90, "width": 34, "height": 14 }
-			},
 			"Hat_6": {
 				"Hat_6": { "x": 20.5, "rotation": -90, "width": 38, "height": 21 }
+			},
+			"Hat_6_Bg": {
+				"Hat_6_Bg": { "x": 13.35, "rotation": -90, "width": 34, "height": 14 }
 			}
 		}
 	},
 	{
 		"name": "Hat/Hat_7",
 		"attachments": {
-			"Hat_7_Bg": {
-				"Hat_7_Bg": { "x": 11.7, "y": 8, "rotation": -90, "width": 10, "height": 11 }
-			},
 			"Hat_7": {
-				"Hat_7": { "x": 22.15, "y": 17, "rotation": -90, "width": 14, "height": 14 }
+				"Hat_7": { "x": 20.5, "y": 17, "rotation": -90, "width": 14, "height": 14 }
+			},
+			"Hat_7_Bg": {
+				"Hat_7_Bg": { "x": 11, "y": 8, "rotation": -90, "width": 10, "height": 11 }
 			}
 		}
 	},
@@ -368,11 +297,11 @@
 	{
 		"name": "Hat/Hat_17",
 		"attachments": {
-			"Hat_17_Bg": {
-				"Hat_17_Bg": { "x": 2, "y": 3, "rotation": -90, "width": 22, "height": 10 }
-			},
 			"Hat_17": {
 				"Hat_17": { "x": 5.7, "y": -4.5, "rotation": -90, "width": 25, "height": 13 }
+			},
+			"Hat_17_Bg": {
+				"Hat_17_Bg": { "x": 2, "y": 3, "rotation": -90, "width": 22, "height": 10 }
 			}
 		}
 	},
@@ -419,7 +348,7 @@
 			"Hat": {
 				"rotate": [
 					{},
-					{ "time": 0.5, "angle": 5.63 },
+					{ "time": 0.5, "value": 5.63 },
 					{ "time": 1 }
 				],
 				"translate": [
@@ -488,7 +417,7 @@
 			"Hat": {
 				"rotate": [
 					{ "time": 0.1667 },
-					{ "time": 0.5, "angle": -2.91 }
+					{ "time": 0.5, "value": -2.91 }
 				],
 				"translate": [
 					{ "time": 0.1667 },
@@ -561,7 +490,7 @@
 			"Hat": {
 				"rotate": [
 					{},
-					{ "time": 0.4, "angle": 11.73 },
+					{ "time": 0.4, "value": 11.73 },
 					{ "time": 1 }
 				],
 				"translate": [
