@@ -5,10 +5,6 @@ using Newtonsoft.Json;
 public partial class NpcInfoBean : BaseBean
 {
 	/// <summary>
-	///序号
-	/// </summary>
-	public long id;
-	/// <summary>
 	///生物id
 	/// </summary>
 	public long creature_id;

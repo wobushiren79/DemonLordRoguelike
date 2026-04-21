@@ -5,10 +5,6 @@ using Newtonsoft.Json;
 public partial class ResearchInfoBean : BaseBean
 {
 	/// <summary>
-	///序号
-	/// </summary>
-	public long id;
-	/// <summary>
 	///类型 1设施 2强化 3魔物
 	/// </summary>
 	public int research_type;

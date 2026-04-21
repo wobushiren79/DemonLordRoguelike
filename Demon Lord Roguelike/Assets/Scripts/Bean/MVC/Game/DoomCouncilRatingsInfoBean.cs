@@ -5,10 +5,6 @@ using Newtonsoft.Json;
 public partial class DoomCouncilRatingsInfoBean : BaseBean
 {
 	/// <summary>
-	///序号
-	/// </summary>
-	public long id;
-	/// <summary>
 	///图标名字
 	/// </summary>
 	public string icon_res;

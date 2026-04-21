@@ -5,10 +5,6 @@ using Newtonsoft.Json;
 public partial class RarityInfoBean : BaseBean
 {
 	/// <summary>
-	///序号
-	/// </summary>
-	public long id;
-	/// <summary>
 	///ui外边框颜色
 	/// </summary>
 	public string ui_board_color;

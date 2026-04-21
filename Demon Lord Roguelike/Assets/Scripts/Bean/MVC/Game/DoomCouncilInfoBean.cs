@@ -5,10 +5,6 @@ using Newtonsoft.Json;
 public partial class DoomCouncilInfoBean : BaseBean
 {
 	/// <summary>
-	///序号
-	/// </summary>
-	public long id;
-	/// <summary>
 	///通过率
 	/// </summary>
 	public float success_rate;

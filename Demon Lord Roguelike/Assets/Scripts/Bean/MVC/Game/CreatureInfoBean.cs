@@ -5,10 +5,6 @@ using Newtonsoft.Json;
 public partial class CreatureInfoBean : BaseBean
 {
 	/// <summary>
-	///序号
-	/// </summary>
-	public long id;
-	/// <summary>
 	///创建需要的魔力
 	/// </summary>
 	public int create_mana;

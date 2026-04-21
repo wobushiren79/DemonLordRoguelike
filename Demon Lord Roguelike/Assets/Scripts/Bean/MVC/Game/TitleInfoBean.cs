@@ -5,10 +5,6 @@ using Newtonsoft.Json;
 public partial class TitleInfoBean : BaseBean
 {
 	/// <summary>
-	///序号
-	/// </summary>
-	public long id;
-	/// <summary>
 	///所需经验
 	/// </summary>
 	public long name;

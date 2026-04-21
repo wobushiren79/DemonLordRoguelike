@@ -5,10 +5,6 @@ using Newtonsoft.Json;
 public partial class LevelInfoBean : BaseBean
 {
 	/// <summary>
-	///序号
-	/// </summary>
-	public long id;
-	/// <summary>
 	///所需经验
 	/// </summary>
 	public string level_exp;

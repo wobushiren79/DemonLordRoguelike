@@ -5,10 +5,6 @@ using Newtonsoft.Json;
 public partial class ConversationCouncilorInfoBean : BaseBean
 {
 	/// <summary>
-	///序号
-	/// </summary>
-	public long id;
-	/// <summary>
 	///好感
 	/// </summary>
 	public int relationship;

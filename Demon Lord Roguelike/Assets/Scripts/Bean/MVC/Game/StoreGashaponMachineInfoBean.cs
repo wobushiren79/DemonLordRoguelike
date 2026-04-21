@@ -5,10 +5,6 @@ using Newtonsoft.Json;
 public partial class StoreGashaponMachineInfoBean : BaseBean
 {
 	/// <summary>
-	///序号
-	/// </summary>
-	public long id;
-	/// <summary>
 	///包含的生物ID（,分割 -表示范围）
 	/// </summary>
 	public string creature_ids;

@@ -12,6 +12,7 @@ public partial class GameDataManager : IUserDataView
     {
         controllerForUserData = new UserDataController(this, this);
         controllerForGameConfig = new GameConfigController(this, this);
+        controllerForModIdMap = new ModIdMapController(this, this);
     }
 
     /// <summary>

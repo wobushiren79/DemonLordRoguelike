@@ -5,10 +5,6 @@ using Newtonsoft.Json;
 public partial class FightTypeConquerInfoBean : BaseBean
 {
 	/// <summary>
-	///序号
-	/// </summary>
-	public long id;
-	/// <summary>
 	///世界ID
 	/// </summary>
 	public long world_id;

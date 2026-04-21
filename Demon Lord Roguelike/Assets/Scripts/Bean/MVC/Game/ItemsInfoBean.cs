@@ -5,10 +5,6 @@ using Newtonsoft.Json;
 public partial class ItemsInfoBean : BaseBean
 {
 	/// <summary>
-	///序号
-	/// </summary>
-	public long id;
-	/// <summary>
 	///道具类型1:帽子 2衣服 3裤子 4鞋子 5鼻环 6戒指 10武器 1000魔晶
 	/// </summary>
 	public int item_type;

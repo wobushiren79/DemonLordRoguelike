@@ -5,10 +5,6 @@ using Newtonsoft.Json;
 public partial class AttackModeInfoBean : BaseBean
 {
 	/// <summary>
-	///序号
-	/// </summary>
-	public long id;
-	/// <summary>
 	///类引用
 	/// </summary>
 	public string class_name;
