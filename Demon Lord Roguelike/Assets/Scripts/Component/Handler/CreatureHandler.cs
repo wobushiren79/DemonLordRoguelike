@@ -366,9 +366,11 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             targetEntity.fightCreatureData.creatureData.creatureState = CreatureStateEnum.Rest;
             EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureChangeState, targetEntity.fightCreatureData.creatureData.creatureUUId, CreatureStateEnum.Rest);
         }
+        //如果是进攻生物 还需要移除生物数据放入缓存
         else if (creatureType == CreatureFightTypeEnum.FightAttack)
         {
             gameFightLogic.fightData.RemoveAttackCreature(targetEntity);
+            manager.RemoveCreatureData(targetEntity.fightCreatureData.creatureData);         
         }
         //放进缓存
         if (targetEntity.fightCreatureData != null)

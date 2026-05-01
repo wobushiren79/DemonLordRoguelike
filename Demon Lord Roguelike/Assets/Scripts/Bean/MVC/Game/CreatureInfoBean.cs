@@ -37,7 +37,7 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public string equip_items_type;
 	/// <summary>
-	///可装备武器类型
+	///可装备武器类型（1法杖 2单手剑 3双手剑 4刀盾 5大剑 6大盾 7弓 8投掷物）
 	/// </summary>
 	public int equip_items_weapon_type;
 	/// <summary>

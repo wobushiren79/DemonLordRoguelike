@@ -18,7 +18,7 @@
 
 ## 一、项目概述
 
-基于 Unity 引擎开发的 **Roguelike 塔防游戏**，采用自定义 MVC 框架和组件化架构设计。
+基于 Unity 引擎开发的 **Roguelike 塔防游戏**，采用自定义数据服务框架和组件化架构设计。
 
 ### 1.1 技术栈
 
@@ -88,7 +88,7 @@ Assets/
 │       ├── DataStorage/                # 数据存储读写
 │       ├── Enums/                      # 框架枚举
 │       ├── Extension/                  # 扩展方法
-│       ├── MVC/                        # MVC 实现
+│       ├── MVC/                        # 数据服务实现（Bean + Service）
 │       ├── Tools/                      # 工具类
 │       ├── Utils/                      # 工具函数
 │       └── Web/                        # 网络请求
@@ -122,7 +122,7 @@ Assets/
 │   │   ├── Fight/                      # 战斗系统
 │   │   ├── Launcher/                   # 启动器
 │   │   └── Logic/                      # 游戏逻辑实现
-│   ├── MVC/                            # 游戏 MVC 实现
+│   ├── MVC/                            # 游戏数据服务实现（Bean + Service）
 │   ├── Struct/                         # 结构体定义
 │   └── Utils/                          # 游戏工具
 │
@@ -487,16 +487,16 @@ public class EventHandler : BaseSingleton<EventHandler>
 | `Serialization` | 序列化工具 |
 | `WorldRandTools` | 世界随机工具 |
 
-### 3.9 MVC - 框架 MVC 实现
+### 3.9 DataService - 数据服务实现
+
+基于 `BaseDataService<T>` 泛型基类，Manager 直接操作 Service 进行数据读写，
+无需传统的 Model/Controller/View 分层。
 
 ```
-GameConfigController  -->  控制器
-       |
-GameConfigModel       -->  模型
-       |
-GameConfigService     -->  服务层
-       |
-IGameConfigView       -->  视图接口
+GameDataManager
+    ├── BaseDataService<GameConfigBean>  -->  JSON 文件读写
+    ├── BaseDataService<ModIdMapBean>    -->  JSON 文件读写
+    └── UserDataService                  -->  JSON 文件读写 + 自动备份
 ```
 
 ### 3.10 DataStorage - 数据存储
@@ -534,7 +534,7 @@ IGameConfigView       -->  视图接口
 | `ExcelEditorWindow` | Excel 编辑器 |
 | `FBXEditorWindow` | FBX 编辑器 |
 | `ImageResWindow` | 图片资源窗口 |
-| `MVCEditorWindow` | MVC 代码生成窗口 |
+| `MVCEditorWindow` | 数据模块代码生成窗口 |
 | `ProjectAssetCollectorWindow` | 项目资源收集器 |
 | `SearchEditorWindow` | 搜索编辑器 |
 | `SkinMeshEditorWindow` | 皮肤网格编辑器 |
@@ -869,18 +869,12 @@ UI/
     └── UIViewTestIconShow  # 图标显示测试
 ```
 
-### 4.6 MVC - 游戏 MVC 实现
+### 4.6 DataService - 游戏数据服务实现
 
 ```
 MVC/
-├── Controller/
-│   └── UserDataController.cs
-├── Model/
-│   └── UserDataModel.cs
-├── Service/
-│   └── UserDataService.cs
-└── View/
-    └── IUserDataView.cs
+└── Service/
+    └── UserDataService.cs   (继承 BaseDataService<UserDataBean>)
 ```
 
 ### 4.7 AI - 游戏 AI 实现

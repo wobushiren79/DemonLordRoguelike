@@ -16,10 +16,6 @@ public class ControlForGameBase : BaseControl
     public InputAction inputActionMove;
     public InputAction inputActionUseE;
 
-    [Header("角色移动速度")]
-    public float speedForCreatureMoveX = 2f;
-    public float speedForCreatureMoveZ = 2f;
-
     //控制的生物数据
     public CreatureBean creatureData;
 
@@ -136,7 +132,11 @@ public class ControlForGameBase : BaseControl
         }
         else
         {
-            Vector3 targetMoveOffset = new Vector3(moveData.x * Time.deltaTime * speedForCreatureMoveX, 0, moveData.y * Time.deltaTime * speedForCreatureMoveZ);
+                    
+            float moveSpeed = creatureData.GetAttribute(CreatureAttributeTypeEnum.MSPD);
+            float moveSpeedFinal = MathUtil.InterpolationLerp(moveSpeed, 0, 100, 0, 5f);
+
+            Vector3 targetMoveOffset = new Vector3(moveData.x * Time.deltaTime * moveSpeedFinal, 0, moveData.y * Time.deltaTime * moveSpeedFinal);
             var targetMove = GameControlHandler.Instance.manager.controlTargetForCreature;
             //检测边界
             Vector3 targetPosition = targetMove.transform.position + targetMoveOffset;

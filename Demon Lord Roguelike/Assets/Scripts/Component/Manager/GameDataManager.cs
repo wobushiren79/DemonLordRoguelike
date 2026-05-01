@@ -3,16 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public partial class GameDataManager : IUserDataView
+public partial class GameDataManager : BaseManager
 {
     public UserDataBean userData;
-    public UserDataController controllerForUserData;
+    private UserDataService userDataService;
 
     public void Awake()
     {
-        controllerForUserData = new UserDataController(this, this);
-        controllerForGameConfig = new GameConfigController(this, this);
-        controllerForModIdMap = new ModIdMapController(this, this);
     }
 
     /// <summary>
@@ -30,7 +27,6 @@ public partial class GameDataManager : IUserDataView
     /// <summary>
     /// 设置用户信息
     /// </summary>
-    /// <param name="targetUserData"></param>
     public void SetUserData(UserDataBean targetUserData)
     {
         userData = targetUserData;
@@ -50,7 +46,11 @@ public partial class GameDataManager : IUserDataView
 
     public void SaveUserData(UserDataBean targetUserData)
     {
-        controllerForUserData.SaveUserData(targetUserData, null);
+        if (targetUserData == null)
+            return;
+        userDataService ??= new UserDataService();
+        userDataService.ChangeSlot(targetUserData.saveIndex);
+        userDataService.Save(targetUserData);
     }
 
     /// <summary>
@@ -58,7 +58,11 @@ public partial class GameDataManager : IUserDataView
     /// </summary>
     public void DeleteUserData(UserDataBean targetUserData)
     {
-        controllerForUserData.DeleteUserData(targetUserData);
+        if (targetUserData == null)
+            return;
+        userDataService ??= new UserDataService();
+        userDataService.ChangeSlot(targetUserData.saveIndex);
+        userDataService.Delete();
     }
 
     /// <summary>
@@ -68,10 +72,12 @@ public partial class GameDataManager : IUserDataView
     {
         try
         {
-            controllerForUserData.GetUserDataData(index, (userData) =>
-            {
-                actionForComplete?.Invoke(index, userData);
-            });
+            userDataService ??= new UserDataService();
+            userDataService.ChangeSlot(index);
+            UserDataBean data = userDataService.Load();
+            if (data == null)
+                data = new UserDataBean();
+            actionForComplete?.Invoke(index, data);
         }
         catch (Exception e)
         {
@@ -81,26 +87,4 @@ public partial class GameDataManager : IUserDataView
             actionForComplete?.Invoke(index, errorData);
         }
     }
-
-    #region 回调
-    public void GetUserDataFail(string failMsg, Action action)
-    {
-        action?.Invoke();
-    }
-
-    public void GetUserDataSuccess<T>(T data, Action<T> action)
-    {
-        action?.Invoke(data);
-    }
-
-    public void SetUserDataSuccess<T>(T data, Action<T> action)
-    {
-        action?.Invoke(data);
-    }
-
-    public void SetUserDataFail(string failMsg)
-    {
-
-    }
-    #endregion
 }

@@ -8,8 +8,6 @@ public class AIIntentAttCreatureLured : AIBaseIntent
     public AIAttackCreatureEntity selfAIEntity;
     public FightCreatureEntity selfFightCreatureEntity;
     public FightCreatureBean fightCreatureData;
-    //被引诱时移动速率加倍
-    public float moveSpeedRate = 5;
 
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
@@ -33,8 +31,10 @@ public class AIIntentAttCreatureLured : AIBaseIntent
             return;
         }
         float moveSpeed = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.MSPD);
+        float moveSpeedFinal = MathUtil.InterpolationLerp(moveSpeed, 0, 100, 0, 10f);
+
         Transform selfTF = selfFightCreatureEntity.creatureObj.transform;
-        selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeed * moveSpeedRate);
+        selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeedFinal);
     }
 
     public override void IntentLeaving(AIBaseEntity aiEntity)

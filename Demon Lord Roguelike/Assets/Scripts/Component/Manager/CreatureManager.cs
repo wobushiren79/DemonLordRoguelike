@@ -15,6 +15,8 @@ public class CreatureManager : BaseManager
     public Queue<FightCreatureEntity> queuePoolForFightCreatureEntity = new Queue<FightCreatureEntity>();
     //战斗生物数据缓存池
     public Queue<FightCreatureBean> queuePoolForFightCreatureData = new Queue<FightCreatureBean>();
+    //生物数据缓存池
+    public Queue<CreatureBean> queuePoolForCreatureData = new Queue<CreatureBean>();
 
     //生物预览
     public GameObject objCreatureSelectPreview;
@@ -55,6 +57,8 @@ public class CreatureManager : BaseManager
         queuePoolForFightCreatureEntity.Clear();
         //清除缓存战斗生物数据
         queuePoolForFightCreatureData.Clear();
+        //清除缓存生物数据
+        queuePoolForCreatureData.Clear();
     }
     #endregion
 
@@ -218,6 +222,42 @@ public class CreatureManager : BaseManager
         }
         return fightCreatureData;
     }
+
+    /// <summary>
+    /// 获取生物数据
+    /// </summary>
+    public CreatureBean GetCreatureData(long creatureId)
+    {
+        CreatureBean creatureData;
+        if (queuePoolForCreatureData.Count > 0)
+        {
+            creatureData = queuePoolForCreatureData.Dequeue();
+            creatureData.SetData(creatureId);
+        }
+        else
+        {
+            creatureData = new CreatureBean(creatureId);
+        }
+        return creatureData;
+    }
+
+    /// <summary>
+    /// 获取生物数据(NPC)
+    /// </summary>
+    public CreatureBean GetCreatureData(NpcInfoBean npcInfo)
+    {
+        CreatureBean creatureData;
+        if (queuePoolForCreatureData.Count > 0)
+        {
+            creatureData = queuePoolForCreatureData.Dequeue();
+            creatureData.SetData(npcInfo);
+        }
+        else
+        {
+            creatureData = new CreatureBean(npcInfo);
+        }
+        return creatureData;
+    }
     #endregion
 
     #region 回收
@@ -268,6 +308,17 @@ public class CreatureManager : BaseManager
         //等待1帧 防止一些死亡后的延迟处理
         await new WaitNextFrame();
         queuePoolForFightCreatureData.Enqueue(creatureData);
+    }
+
+    /// <summary>
+    /// 移除生物数据
+    /// </summary>
+    public async void RemoveCreatureData(CreatureBean creatureData)
+    {
+        //等待1帧 防止一些延迟处理
+        await new WaitNextFrame();
+        creatureData.ClearTempData();
+        queuePoolForCreatureData.Enqueue(creatureData);
     }
     #endregion
 }

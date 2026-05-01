@@ -17,8 +17,6 @@ public class DoomCouncilEntityReincarnation : DoomCouncilBaseEntity
             //清空装备
             userData.selfCreature.RemoveAllEquipToBackpack();
             //设置魔王
-            userData.selfCreature.ClearSkin();
-            //设置魔王
             userData.selfCreature.creatureId = selectCreatureData.creatureId;
             userData.selfCreature.ClearSkin();
             userData.selfCreature.AddSkinForBase();

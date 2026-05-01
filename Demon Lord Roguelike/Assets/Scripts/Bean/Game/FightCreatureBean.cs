@@ -21,13 +21,13 @@ public class FightCreatureBean
 
     public FightCreatureBean(long id, CreatureFightTypeEnum creatureFightType)
     {
-        creatureData = new CreatureBean(id);
+        creatureData =  CreatureHandler.Instance.manager.GetCreatureData(id);
         SetData(creatureData, creatureFightType);
     }
 
     public FightCreatureBean(NpcInfoBean npcInfo, CreatureFightTypeEnum creatureFightType)
     {
-        creatureData = new CreatureBean(npcInfo);
+        creatureData = CreatureHandler.Instance.manager.GetCreatureData(npcInfo);
         SetData(creatureData, creatureFightType);
     }
 

@@ -7,11 +7,9 @@ public partial class CreatureBean
     [NonSerialized]
     public int order;//排序
 
-
     [Newtonsoft.Json.JsonIgnore]
     [NonSerialized]
-    //生物复活更新时间
-    public float RCDTimeUpdate = 0;
+    public float RCDTimeUpdate = 0;    //生物复活更新时间
 
     [Newtonsoft.Json.JsonIgnore]
     [NonSerialized]
@@ -59,6 +57,15 @@ public partial class CreatureBean
         order = 0;
         RCDTimeUpdate = 0;
         creatureState = CreatureStateEnum.Idle;
+        level = 0;
+        levelExp = 0;
+        starLevel = 0;
+        rarity = 0;
+        relationship = 0;
+        creatureNpcData = null;
+        dicSkinData.Clear();
+        dicEquipItemData.Clear();
+        dicRarityBuff.Clear();
     }
 
 }

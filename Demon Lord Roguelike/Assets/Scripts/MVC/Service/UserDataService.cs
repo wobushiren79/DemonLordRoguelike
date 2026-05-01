@@ -1,61 +1,61 @@
 /*
-* FileName: UserData 
-* Author: AppleCoffee 
-* CreateTime: 2024-07-16-17:44:25 
+* FileName: UserDataService
+* Author: AppleCoffee
+* CreateTime: 2024-07-16-17:44:25
 */
 
 using UnityEngine;
-using UnityEditor;
 using System;
-using System.Collections.Generic;
 
-public class UserDataService : BaseDataStorage
+public class UserDataService : BaseDataService<UserDataBean>
 {
-    protected readonly string saveFileName;
+    private int slotIndex;
 
-    public UserDataService()
+    public UserDataService(int slotIndex = 0) : base($"UserData_{slotIndex}")
     {
-        saveFileName = "UserData";
+        this.slotIndex = slotIndex;
+        StoragePath = $"{Application.persistentDataPath}/UserData_{slotIndex}";
     }
 
     /// <summary>
-    /// 查询游戏配置数据
+    /// 切换存档槽位
     /// </summary>
-    public UserDataBean QueryData(int index)
+    public void ChangeSlot(int slotIndex)
     {
-        dataStoragePath =  $"{Application.persistentDataPath}/{saveFileName}_{index}";
-        return BaseLoadData<UserDataBean>($"{saveFileName}_{index}", jsonType: JsonTypeEnum.Net);
+        this.slotIndex = slotIndex;
+        FileName = $"UserData_{slotIndex}";
+        StoragePath = $"{Application.persistentDataPath}/UserData_{slotIndex}";
     }
 
     /// <summary>
-    /// 更新数据
+    /// 保存用户数据（带自动备份，最多保留3份）
     /// </summary>
-    public void UpdateData(UserDataBean data, int index)
+    public override void Save(UserDataBean data)
     {
-        //创建文件 如果没有的话
-        dataStoragePath =  $"{Application.persistentDataPath}/{saveFileName}_{index}";
-        FileUtil.CreateDirectory(dataStoragePath);
-        //备份数据最多备份3份
+        if (data == null)
+        {
+            LogUtil.Log("保存文件失败-没有数据");
+            return;
+        }
+
+        // 创建目录
+        FileUtil.CreateDirectory(StoragePath);
+
+        // 备份数据，最多保留3份，循环覆盖
         if (data.saveRemarkIndex >= 3)
         {
             data.saveRemarkIndex = 0;
         }
-        //先复制一份原来的数据（备份）
-        bool isRemarkSuccess = FileUtil.CopyFile($"{dataStoragePath}/{saveFileName}_{index}", $"{dataStoragePath}/{saveFileName}_{index}_Backups_{data.saveRemarkIndex}", true);
-        if (isRemarkSuccess)
-        { 
-            data.saveRemarkIndex ++;
-        }
-        //再生成新的
-        BaseSaveData<UserDataBean>($"{saveFileName}_{index}", data, jsonType: JsonTypeEnum.Net);
-    }
 
-    /// <summary>
-    /// 删除数据
-    /// </summary>
-    public void DeleteData(int index)
-    {
-        dataStoragePath =  $"{Application.persistentDataPath}/{saveFileName}_{index}";
-        BaseDeleteFile($"{saveFileName}_{index}");
+        string sourcePath = $"{StoragePath}/{FileName}";
+        string backupPath = $"{StoragePath}/{FileName}_Backups_{data.saveRemarkIndex}";
+        bool isRemarkSuccess = FileUtil.CopyFile(sourcePath, backupPath, true);
+        if (isRemarkSuccess)
+        {
+            data.saveRemarkIndex++;
+        }
+
+        // 写入新数据
+        base.Save(data);
     }
 }

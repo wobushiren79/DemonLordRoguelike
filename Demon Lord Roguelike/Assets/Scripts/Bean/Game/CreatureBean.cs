@@ -42,13 +42,29 @@ public partial class CreatureBean
 
     public CreatureBean(long creatureId)
     {
+        SetData(creatureId);
+    }
+
+    public CreatureBean(NpcInfoBean npcInfo)
+    {
+        SetData(npcInfo);
+    }
+
+    /// <summary>
+    /// 设置数据
+    /// </summary>
+    public void SetData(long creatureId)
+    {
         var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
         this.creatureId = creatureId;
         this.creatureName = creatureInfo.name_language;
         this.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
     }
 
-    public CreatureBean(NpcInfoBean npcInfo)
+    /// <summary>
+    /// 设置数据(NPC)
+    /// </summary>
+    public void SetData(NpcInfoBean npcInfo)
     {
         creatureNpcData = new CreatureNpcBean(npcInfo.id);
 
@@ -56,12 +72,13 @@ public partial class CreatureBean
         this.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
         this.creatureName = npcInfo.name_language;
         this.level = npcInfo.level;
-
         //添加随机皮肤
         InitSkin(npcInfo);
         //添加装备
         InitEquip(npcInfo);
     }
+
+
     #region 杂项
     /// <summary>
     /// 添加好感
@@ -305,6 +322,15 @@ public partial class CreatureBean
     }
 
     /// <summary>
+    /// 初始化属性
+    /// </summary>
+    /// <param name="npcInfo"></param>
+    public void InitAttribute(NpcInfoBean npcInfo)
+    {
+        
+    }
+
+    /// <summary>
     /// 初始化皮肤-NPC
     /// </summary>
     public void InitSkin(NpcInfoBean npcInfo)
@@ -494,22 +520,24 @@ public partial class CreatureBean
     public float GetAttribute(CreatureAttributeTypeEnum creatureAttributeType)
     {
         float targetData = 0;
+        //如果有NPC数据 优先使用NPC数据里的属性
+        var npcInfo = creatureNpcData?.npcInfo;
         switch (creatureAttributeType)
         {
             case CreatureAttributeTypeEnum.HP://获取生命值
-                targetData = creatureInfo.HP;
+                targetData = npcInfo != null ? npcInfo.HP : creatureInfo.HP;
                 break;
             case CreatureAttributeTypeEnum.DR://获取护甲值
-                targetData = creatureInfo.DR;
+                targetData = npcInfo != null ? npcInfo.DR : creatureInfo.DR;
                 break;
             case CreatureAttributeTypeEnum.ATK://获取攻击力
-                targetData = creatureInfo.ATK;
+                targetData = npcInfo != null ? npcInfo.ATK : creatureInfo.ATK;
                 break;
             case CreatureAttributeTypeEnum.ASPD://获取攻击速度
-                targetData = creatureInfo.ASPD;
+                targetData = npcInfo != null ? npcInfo.ASPD : creatureInfo.ASPD;
                 break;
             case CreatureAttributeTypeEnum.MSPD://获取移动速度
-                targetData = creatureInfo.MSPD;
+                targetData = npcInfo != null ? npcInfo.MSPD : creatureInfo.MSPD;
                 break;
             case CreatureAttributeTypeEnum.MPR://魔力回复%
                 targetData = creatureInfo.MPR;

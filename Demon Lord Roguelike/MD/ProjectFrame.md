@@ -91,27 +91,18 @@ BaseSingletonMonoBehaviour<T>          # Mono 单例
         └── ...
 ```
 
-### 2.3 MVC 体系
+### 2.3 数据服务体系
 
 ```
-BaseMVC                                # MVC 基类（mContent 上下文）
+BaseDataService<T>                     # 泛型数据服务基类（JSON 文件读写）
     │
-    ├── BaseMVCController<M, V>        # 控制器泛型基类
-    │   ├── GameConfigController       # 游戏配置控制器
-    │   └── UserDataController         # 用户数据控制器
-    │
-    └── BaseMVCModel                   # 模型基类
-        ├── GameConfigModel
-        └── UserDataModel
+    ├── BaseDataService<GameConfigBean># 游戏配置读写
+    ├── BaseDataService<ModIdMapBean>  # ModID 映射读写
+    └── UserDataService                # 用户存档读写（含自动备份）
 
-IBaseMVCView                           # 视图接口
-    ├── IGameConfigView
-    └── IUserDataView
-
-服务层：
-    BaseMVCService                     # 服务层基类
-    GameConfigService                  # 游戏配置服务
-    UserDataService                    # 用户数据服务
+保留的框架基类（业务层不再使用）：
+    BaseMVC / BaseMVCModel / BaseMVCController<M,V>
+    BaseMVCService（SQLite）
 ```
 
 ### 2.4 AI 状态机体系
@@ -286,7 +277,7 @@ EditorWindow (Unity)
 | 模式 | 应用场景 | 核心实现 |
 |------|----------|----------|
 | **单例模式** | 全局管理器 | `BaseSingleton<T>`、`BaseSingletonMonoBehaviour<T>`、所有 Handler |
-| **MVC 模式** | 数据与 UI 分离 | `BaseMVCController<M,V>` + `BaseMVCModel` + `IBaseMVCView` + `BaseMVCService` |
+| **数据服务模式** | 数据与 UI 分离 | `BaseDataService<T>` 泛型基类，Manager 直接操作 Service |
 | **状态机模式** | AI 行为控制 | `AIBaseEntity` + `AIBaseIntent` 意图切换 |
 | **观察者模式** | 模块间通信 | `BaseEvent` 实例事件 + `EventHandler` 全局事件 + `BaseObservable` |
 | **策略模式** | 攻击方式选择 | `BaseAttackMode` 及 16 种子类 |
@@ -330,9 +321,9 @@ LauncherGame.Launch()
     │   ├── TextHandler        --> 初始化多语言系统
     │   └── ...
     │
-    ├── 2. 初始化 MVC
-    │   ├── GameConfigController --> 加载游戏配置数据
-    │   └── UserDataController   --> 加载用户存档
+    ├── 2. 初始化数据服务
+    │   ├── BaseDataService<GameConfigBean> --> 加载游戏配置数据
+    │   └── UserDataService                 --> 加载用户存档
     │
     └── 3. 进入主场景
         └── WorldHandler.EnterMainForBaseScene()
@@ -405,7 +396,7 @@ ClearGame (清理数据)
 ├──────────────────────────────────────────────────┤
 │                   数据层                            │
 │  GameDataHandler ← Bean (Game/MVC/UI)             │
-│  UserDataController ← UserDataModel/Service       │
+│  GameDataManager ← UserDataService                │
 ├──────────────────────────────────────────────────┤
 │                   基础设施层                        │
 │  EventHandler (全局事件总线)                        │
@@ -512,7 +503,7 @@ UITextLanguageView 绑定 key
 - **新增 UI 组件：** 继承 `BaseUIComponent`
 - **新增终焉议会效果：** 继承 `DoomCouncilBaseEntity`
 - **新增多语言文本：** 在 Excel 中添加，通过 `ExcelEditorWindow` 导出
-- **新增 MVC 模块：** 使用 `MVCEditorWindow` 生成代码模板
+- **新增数据模块：** 使用 `MVCEditorWindow` 生成 Bean + Service 代码模板
 
 ---
 

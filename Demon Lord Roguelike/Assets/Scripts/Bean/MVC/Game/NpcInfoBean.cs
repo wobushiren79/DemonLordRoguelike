@@ -17,6 +17,30 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public int level;
 	/// <summary>
+	///生命值
+	/// </summary>
+	public float HP;
+	/// <summary>
+	///魔力
+	/// </summary>
+	public float MP;
+	/// <summary>
+	///护甲
+	/// </summary>
+	public float DR;
+	/// <summary>
+	///攻击力
+	/// </summary>
+	public float ATK;
+	/// <summary>
+	///攻击间隔
+	/// </summary>
+	public float ASPD;
+	/// <summary>
+	///移动速度
+	/// </summary>
+	public float MSPD;
+	/// <summary>
 	///皮肤固定数据
 	/// </summary>
 	public string skin_data;

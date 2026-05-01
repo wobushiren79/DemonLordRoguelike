@@ -53,7 +53,9 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
             return;
         }
 
-        float moveSpeed = selfAIEntity.selfCreatureEntity.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.MSPD);
+        float moveSpeed = selfAIEntity.selfCreatureEntity.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.MSPD);   
+        float moveSpeedFinal = MathUtil.InterpolationLerp(moveSpeed, 0, 100, 0, 2f);
+
         Transform selfTF = selfAIEntity.selfCreatureEntity.creatureObj.transform;
         
         //如果目标是魔王
@@ -71,11 +73,12 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
             }
             else
             {
-                selfTF.Translate(Vector3.Normalize(new Vector3(0, 0, selfAIEntity.selfCreatureEntity.fightCreatureData.roadIndex) - selfTF.transform.position) * Time.deltaTime * moveSpeed);
+                selfTF.Translate(Vector3.Normalize(new Vector3(0, 0, selfAIEntity.selfCreatureEntity.fightCreatureData.roadIndex) - selfTF.transform.position) * Time.deltaTime * moveSpeedFinal);
                 return;
             }
         }
-         selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeed);
+
+        selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeedFinal);
     }
 
     public override void IntentLeaving(AIBaseEntity aiEntity)
