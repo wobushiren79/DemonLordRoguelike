@@ -123,7 +123,7 @@ public partial class GameTestEditor : Editor
             fightSceneAttackDelay = EditorGUILayout.FloatField(new GUIContent("进攻间隔", "进攻波次之间的延迟时间"), fightSceneAttackDelay);
 
             EditorGUILayout.Space(5);
-            EditorGUILayout.LabelField("进攻生物 IDs", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("进攻生物 IDs （NPCID）", EditorStyles.boldLabel);
             for (int i = 0; i < enemyIds.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();

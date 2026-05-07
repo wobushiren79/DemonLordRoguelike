@@ -18,9 +18,16 @@ public class AIIntentCreatureAttack : AIBaseIntent
     //死亡意图
     public AIIntentEnum intentForDead;
 
+    public float attackPreTimeBase;
+    public float attackAnimTimeBase;
+
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
+
+        attackPreTimeBase = fightCreatureData.creatureData.GetAttackPreTime();
+        attackAnimTimeBase = fightCreatureData.creatureData.GetAttackAnimTime();
+
         timeUpdateAttackPre = 0;
         timeUpdateAttacking = 0;
         attackState = 0;
@@ -36,7 +43,8 @@ public class AIIntentCreatureAttack : AIBaseIntent
     /// </summary>
     public void RefreshData()
     {
-        fightCreatureData.GetAttackTimeData(out float timeAttackPre,out float timeAttacking);
+        fightCreatureData.GetAttackTimeData(out float timeAttackPre, out float timeAttacking);
+
         timeUpdateAttackPreCD = timeAttackPre;
         timeUpdateAttackingCD = timeAttacking;
     }
@@ -52,7 +60,7 @@ public class AIIntentCreatureAttack : AIBaseIntent
             {
                 timeUpdateAttackPre = 0;
                 RefreshData();
-                AttackDefCreatureStart();
+                AttackCreatureStart();
             }
         }
         //攻击中
@@ -64,7 +72,7 @@ public class AIIntentCreatureAttack : AIBaseIntent
             {
                 timeUpdateAttacking = 0;
                 RefreshData();
-                AttackDefCreatureStartEnd();
+                AttackCreatureStartEnd();
             }
         }
     }
@@ -86,7 +94,7 @@ public class AIIntentCreatureAttack : AIBaseIntent
     /// <summary>
     /// 攻击开始
     /// </summary>
-    public virtual void AttackDefCreatureStart()
+    public virtual void AttackCreatureStart()
     {
         attackState = 1;
         //如果目标生物已经无了
@@ -102,23 +110,29 @@ public class AIIntentCreatureAttack : AIBaseIntent
             return;
         }
         var selfCreatureInfo = fightCreatureData.creatureData.creatureInfo;
+        //根据基础动画时长和实际攻击CD等比例计算动画播放速度
+        float animSpeed = 1f;
+        if (attackAnimTimeBase > 0 && timeUpdateAttackingCD > 0)
+        {
+            animSpeed = attackAnimTimeBase / timeUpdateAttackingCD;
+        }
         //播放攻击动画
         if (selfCreatureInfo.anim_attack_loop == 1)//如果是循环 只播放攻击动画
         {
-            selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, true);
+            selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, true, animSpeed: animSpeed);
         }
         else
         //如果不是循环，先播放打击再播放待机
         {
-            selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false);
-            selfAIEntity.selfCreatureEntity.AddAnim(0, SpineAnimationStateEnum.Idle, true, 1);
+            selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false, animSpeed: animSpeed);
+            selfAIEntity.selfCreatureEntity.AddAnim(0, SpineAnimationStateEnum.Idle, true, 1, animSpeed: animSpeed);
         }
     }
 
     /// <summary>
     /// 攻击结束
     /// </summary>
-    public virtual void AttackDefCreatureStartEnd()
+    public virtual void AttackCreatureStartEnd()
     {
         attackState = 2;
         //开始创建攻击模块
@@ -133,11 +147,11 @@ public class AIIntentCreatureAttack : AIBaseIntent
         DirectionEnum findDirectrion;
         if (attackMode.attackModeData.attackDirection.x > 0)
         {
-            findDirectrion= DirectionEnum.Right;
+            findDirectrion = DirectionEnum.Right;
         }
         else
         {
-            findDirectrion= DirectionEnum.Left;
+            findDirectrion = DirectionEnum.Left;
         }
         var findTargetCreature = selfAIEntity.FindCreatureEntityForSinge(findDirectrion);
         //如果没有找到最近的生物

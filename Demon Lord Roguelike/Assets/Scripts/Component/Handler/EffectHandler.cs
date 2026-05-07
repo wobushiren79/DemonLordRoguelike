@@ -1,10 +1,7 @@
 using DG.Tweening;
-using DG.Tweening.Core;
-using NUnit.Framework.Constraints;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.VFX;
 
@@ -13,7 +10,13 @@ public partial class EffectHandler
     protected string effectCreatureAscendAddProgressName = "EffectMove_1";
     protected string effectBloodName = "EffectBlood_1";
     protected string effectShieldHitName = "EffectShieldHit_1";
-    protected string effectTextNumberName = "EffectTextNumber_1";
+    //protected string effectTextNumberName = "EffectTextNumber_1";
+    protected string effectTextNumberName = "Assets/LoadResources/Effects/EffectTextNumber_2.prefab";
+
+    // 飘字模型缓存
+    protected Dictionary<string, GameObject> dicTextNumModel = new Dictionary<string, GameObject>();
+    // 飘字对象缓存池
+    protected Queue<GameObject> queueTextNumPool = new Queue<GameObject>();
 
     
     //普通伤害颜色
@@ -88,53 +91,94 @@ public partial class EffectHandler
     /// <summary>
     /// 播放数字粒子
     /// </summary>
-    public void ShowTextNumEffect(Vector3 targetPos, int number, int type)
+    public void ShowTextNumEffect(Vector3 targetPos, int number, int type, float randomPosOffset = 0.2f)
     {
-        //播放粒子
-        Action<EffectBase> playEffect = (targetEffect) =>
+        // 从缓存池获取或实例化
+        GameObject textObj = null;
+        if (queueTextNumPool.Count > 0)
         {
-            if (targetEffect == null)
-                return;
-            var targetVisualEffect = targetEffect.GetVisualEffect();
-            targetVisualEffect.SetVector3("StartPosition", targetPos);
-            Vector4 targetTextColor = Vector4.zero;
-            float targetTextSize = 0.05f;
-            switch (type)
+            textObj = queueTextNumPool.Dequeue();
+            textObj.ShowObj(true);
+        }
+        else
+        {
+            GameObject objModel = null;
+            if (!dicTextNumModel.TryGetValue(effectTextNumberName, out objModel))
             {
-                case 0://普通伤害
-                    targetTextColor = colorDamage;
-                    break;
-                case 1://闪避伤害
-                    targetTextColor = colorDamageEVA;
-                    break;
-                case 2://暴击伤害
-                    targetTextColor = colorDamageCRT;
-                    targetTextSize = 0.1f;
-                    break;
-                case 3://HP增加
-                    targetTextColor = colorHPAdd;
-                    break;
-                case 4://护甲增加
-                    targetTextColor = colorDRAdd;
-                    break;
-
+                objModel = LoadAddressablesUtil.LoadAssetSync<GameObject>(effectTextNumberName);
+                if (objModel != null)
+                    dicTextNumModel.Add(effectTextNumberName, objModel);
             }
-            targetVisualEffect.SetFloat("Size", targetTextSize);
-            targetVisualEffect.SetVector3("StartPosition", targetPos);
-            targetVisualEffect.SetVector4("Color", targetTextColor);
-            List<int> listNumberText = MathUtil.GetDigits(number);
-            listNumberText.ForEach((index, itemData) =>
+            if (objModel == null)
             {
-                targetVisualEffect.SetInt($"NumInput{index + 1}", itemData);
-            });
-            targetVisualEffect.SetInt("NumCount", listNumberText.Count);
-            targetEffect.PlayEffect();
-        };
+                LogUtil.LogError($"飘字预制体加载失败：{effectTextNumberName}");
+                return;
+            }
+            textObj = Instantiate(objModel);
+        }
 
-        //获取粒子实例
-        manager.GetEffectForEnduring(effectTextNumberName, (targetEffect) =>
+        // 清除可能残留的Tween
+        textObj.transform.DOKill();
+        textObj.transform.localScale = Vector3.one;
+
+        TextMeshPro textMesh = textObj.GetComponent<TextMeshPro>();
+        if (textMesh == null)
         {
-            playEffect?.Invoke(targetEffect);
+            LogUtil.LogError($"飘字预制体缺少TextMeshPro组件：{effectTextNumberName}");
+            Destroy(textObj);
+            return;
+        }
+        textMesh.DOKill();
+
+        // 确定颜色、大小、文本
+        Color targetColor = Color.white;
+        float targetTextSize = 2f;
+        string textContent = number.ToString();
+        switch (type)
+        {
+            case 0: // 普通伤害
+                targetColor = colorDamage;
+                break;
+            case 1: // 闪避
+                targetColor = colorDamageEVA;
+                textContent = "闪避";
+                break;
+            case 2: // 暴击伤害
+                targetColor = colorDamageCRT;
+                targetTextSize = 3f;
+                break;
+            case 3: // HP增加
+                targetColor = colorHPAdd;
+                break;
+            case 4: // 护甲增加
+                targetColor = colorDRAdd;
+                break;
+        }
+
+        // 设置随机起始位置
+        Vector3 startPos = RandomUtil.GetRandomVector3(targetPos, randomPosOffset);
+        textObj.transform.position = startPos;
+
+        // 设置文本和样式
+        textMesh.text = textContent;
+        textMesh.color = targetColor;
+        textMesh.fontSize = targetTextSize;
+        textMesh.alpha = 1f;
+
+        // DG.Tweening动画：向上飘动 + 淡出 + 缩放弹出
+        Sequence sequence = DOTween.Sequence();
+        sequence.Append(textObj.transform.DOMoveY(startPos.y + 0.5f, 1f).SetEase(Ease.OutQuad));
+        sequence.Join(textMesh.DOFade(0f, 0.8f).SetEase(Ease.InQuad));
+        sequence.Join(textObj.transform.DOScale(1.2f, 0.15f).SetLoops(2, LoopType.Yoyo));
+
+        sequence.OnComplete(() =>
+        {
+            textMesh.DOKill();
+            textObj.transform.DOKill();
+            textMesh.alpha = 1f;
+            textObj.transform.localScale = Vector3.one;
+            textObj.ShowObj(false);
+            queueTextNumPool.Enqueue(textObj);
         });
     }
 

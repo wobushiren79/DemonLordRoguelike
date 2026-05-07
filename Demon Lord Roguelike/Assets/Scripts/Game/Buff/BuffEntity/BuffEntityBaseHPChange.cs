@@ -29,18 +29,14 @@ public class BuffEntityBaseHPChange : BuffBaseEntity
             var buffInfo = buffEntityData.GetBuffInfo();
 
             //固定计算
-            if (buffInfo.trigger_value > 0)
-            {
-                float triggerValue = buffEntityData.GetTriggerValue();
-                changeHPData += (int)triggerValue;
-            }
+            float triggerValue = buffEntityData.GetTriggerValue();
+            changeHPData += (int)triggerValue;
+
             //百分比计算
             float triggerValueRate = buffEntityData.GetTriggerValueRate();
-            if (triggerValueRate > 0)
-            {
-                float HPMax = fightCreatureEntity.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.HP);
-                changeHPData += (int)(HPMax * triggerValueRate);
-            }
+            float HPMax = fightCreatureEntity.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.HP);
+            changeHPData += (int)(HPMax * triggerValueRate);
+            
             //如果改变的HP大于0 则回复HP
             if (changeHPData > 0)
             {

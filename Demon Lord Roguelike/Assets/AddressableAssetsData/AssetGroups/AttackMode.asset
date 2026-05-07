@@ -35,6 +35,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d465129e233225546a7c22b06aa2c20b
+    m_Address: Assets/LoadResources/AttackMode/AttackMode_RangedWaterBall.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f2069d7e3090ab142b23c7869889b716
     m_Address: Assets/LoadResources/AttackMode/AttackMode_RangedNormal.prefab
     m_ReadOnly: 0

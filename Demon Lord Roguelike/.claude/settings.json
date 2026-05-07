@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\skills\\*)",
+      "Write(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\skills\\*)",
+      "Edit(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\skills\\*)"
+    ]
+  }
+}

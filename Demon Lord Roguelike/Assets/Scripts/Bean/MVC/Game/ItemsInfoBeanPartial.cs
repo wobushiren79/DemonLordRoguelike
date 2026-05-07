@@ -35,7 +35,7 @@ public partial class ItemsInfoBean
         }
 
         ItemTypeEnum itemType = GetItemType();
-        
+
         // 检查生物是否可以装备该类型的道具
         List<ItemTypeEnum> creatureEquipTypes = creatureInfo.GetEquipItemsType();
         if (!creatureEquipTypes.Contains(itemType))
@@ -48,7 +48,7 @@ public partial class ItemsInfoBean
         {
             ItemTypeWeaponEnum weaponType = GetWeaponType();
             // equip_items_weapon_type 为 0 表示可以装备所有武器类型
-            if (creatureInfo.equip_items_weapon_type != 0 && 
+            if (creatureInfo.equip_items_weapon_type != 0 &&
                 creatureInfo.equip_items_weapon_type != (int)weaponType)
             {
                 return false;
@@ -82,6 +82,9 @@ public partial class ItemsInfoBean
         if (attackMode.spriteRenderer != null)
         {
             attackMode.spriteRenderer.transform.localScale = Vector3.one;
+            attackMode.spriteRenderer.material.SetFloat("_StartAngle", 0);
+            attackMode.spriteRenderer.material.SetFloat("_VertexRotateSpeed", 0);
+            attackMode.spriteRenderer.material.SetVector("_VertexRotateAxis", Vector3.one);
         }
         bool isShowSprite = false;
         foreach (var item in dicAttackModeData)
@@ -122,6 +125,13 @@ public partial class ItemsInfoBean
                     {
                         var itemStartSize = float.Parse(item.Value);
                         attackMode.spriteRenderer.transform.localScale = Vector3.one * itemStartSize;
+                    }
+                    break;
+                case ItemInfoAttackModeDataEnum.StartRotate:
+                    if (attackMode.spriteRenderer != null)
+                    {
+                        var itemStartAngle = float.Parse(item.Value);
+                        attackMode.spriteRenderer.material.SetFloat("_StartAngle", itemStartAngle);
                     }
                     break;
             }

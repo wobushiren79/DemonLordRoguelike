@@ -39,7 +39,7 @@ SpriteAtlas:
       padding: 8
       blockOffset: 1
       allowAlphaSplitting: 0
-      enableRotation: 1
+      enableRotation: 0
       enableTightPacking: 1
       enableAlphaDilation: 0
     secondaryTextureSettings: {}
@@ -99,6 +99,7 @@ SpriteAtlas:
     - 9bac5ab2a1f7e344999dca403b4e2375: 21300000
     - 2a728fc2cf5a7c1499910494a6afb537: 21300000
     - 380579f23d846a64db32191031b8c093: 21300000
+    - 74b745037de5dfb4f9d83e53b6060135: 21300000
     - cf7ac703b55a7fd49aa44b3d312c9e7f: 21300000
     - 7d02f8231d77a214197c67c221947ab4: 21300000
     - 71b279235b0196b44a1b3e1f7b9f7347: 21300000
@@ -325,6 +326,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 9bac5ab2a1f7e344999dca403b4e2375, type: 3}
   - {fileID: 21300000, guid: 2a728fc2cf5a7c1499910494a6afb537, type: 3}
   - {fileID: 21300000, guid: 380579f23d846a64db32191031b8c093, type: 3}
+  - {fileID: 21300000, guid: 74b745037de5dfb4f9d83e53b6060135, type: 3}
   - {fileID: 21300000, guid: cf7ac703b55a7fd49aa44b3d312c9e7f, type: 3}
   - {fileID: 21300000, guid: 7d02f8231d77a214197c67c221947ab4, type: 3}
   - {fileID: 21300000, guid: 71b279235b0196b44a1b3e1f7b9f7347, type: 3}
@@ -550,6 +552,7 @@ SpriteAtlas:
   - Succubus_Atlas_Weapon_Weapon_L_3
   - Goblin_Atlas_Weapon_Weapon_R_20
   - Human_Atlas_Weapon_Weapon_L_9
+  - Human_Atlas_Other_Arrow_1
   - Succubus_Atlas_Pants_Pants_4
   - Skeleton_Atlas_Hat_Hat_6
   - Human_Atlas_Weapon_Weapon_L_10

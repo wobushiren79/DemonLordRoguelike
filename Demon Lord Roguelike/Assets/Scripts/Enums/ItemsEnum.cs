@@ -53,5 +53,6 @@ public enum ItemInfoAttackModeDataEnum
     UVRotateSpeed,//UV旋转速度
     StartPosition,//开始位置
     StartSize,//开始大小
+    StartRotate,//开始旋转
 }
 

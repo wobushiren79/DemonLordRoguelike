@@ -206,6 +206,9 @@ public class FightCreatureBean
 
         timeAttackPre =  MathUtil.InterpolationLerp(attributeASPD, 0, 100, attackPreTime, 0.02f);
         timeAttacking =  MathUtil.InterpolationLerp(attributeASPD, 0, 100, attackAnimTime, 0.02f);
+
+        //根据BUFF改变攻击时间
+        BuffHandler.Instance.ChangeAttackTimeDataForBuff(creatureData.creatureUUId, ref timeAttackPre, ref timeAttacking);
     }
     #endregion
 

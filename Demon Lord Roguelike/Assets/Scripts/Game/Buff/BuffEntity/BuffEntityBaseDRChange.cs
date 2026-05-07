@@ -33,19 +33,14 @@ public class BuffEntityBaseDRChange : BuffBaseEntity
             var buffInfo = buffEntityData.GetBuffInfo();
 
             //固定计算
-            if (buffInfo.trigger_value > 0)
-            {
-                float triggerValue = buffEntityData.GetTriggerValue();
-                changeDRData += (int)triggerValue;
-            }
+             float triggerValue = buffEntityData.GetTriggerValue();
+            changeDRData += (int)triggerValue;
 
             //百分比计算
             float triggerValueRate = buffEntityData.GetTriggerValueRate();
-            if (triggerValueRate > 0)
-            {
-                float DRMax = fightCreatureEntity.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.DR);
-                changeDRData += (int)(DRMax * triggerValueRate);
-            }
+            float DRMax = fightCreatureEntity.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.DR);
+            changeDRData += (int)(DRMax * triggerValueRate);
+            
             //如果改变的DR大于0 则回复DR
             if (changeDRData > 0)
             {

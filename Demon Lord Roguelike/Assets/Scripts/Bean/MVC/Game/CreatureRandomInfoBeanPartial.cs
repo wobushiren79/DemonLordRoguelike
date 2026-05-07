@@ -15,6 +15,10 @@ public partial class CreatureRandomInfoBean
         {
             var itemId = listRandomData[i];
             var itemInfo = CreatureModelInfoCfg.GetItemData(itemId);
+            if (itemInfo == null)
+            {
+                continue;
+            }
             if (dicRandomData.TryGetValue(itemInfo.GetPartType(), out var itemList))
             {
                 itemList.Add(itemId);

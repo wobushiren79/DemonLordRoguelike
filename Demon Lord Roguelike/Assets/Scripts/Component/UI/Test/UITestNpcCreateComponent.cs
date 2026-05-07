@@ -38,5 +38,17 @@ public partial class UITestNpcCreate
 
     public UIViewColorShow ui_UIViewColorSelect_Hair;
 
+    public TMP_InputField ui_UIDataNameInput_HP;
+
+    public TMP_InputField ui_UIDataNameInput_DR;
+
+    public TMP_InputField ui_UIDataNameInput_MP;
+
+    public TMP_InputField ui_UIDataNameInput_ATK;
+
+    public TMP_InputField ui_UIDataNameInput_ASPD;
+
+    public TMP_InputField ui_UIDataNameInput_MSPD;
+
 
 }

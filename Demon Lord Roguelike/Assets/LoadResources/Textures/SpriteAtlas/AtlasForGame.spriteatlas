@@ -39,7 +39,7 @@ SpriteAtlas:
       padding: 4
       blockOffset: 1
       allowAlphaSplitting: 0
-      enableRotation: 1
+      enableRotation: 0
       enableTightPacking: 1
       enableAlphaDilation: 0
     secondaryTextureSettings: {}
@@ -67,6 +67,7 @@ SpriteAtlas:
     - a9ab952af9a2bfd4ab7918832803f02d: 21300000
     - 8ad4c01ba972352428d06834e8b6d21f: 21300000
     - 0b4c124bc1478e7418bea9cf6e993853: 21300000
+    - 7d6bdf7c90d8ec64ba9112f00a98f70c: 21300000
     - 10c4beddea1b5b9458fb210beda50eac: 21300000
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
@@ -87,6 +88,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: a9ab952af9a2bfd4ab7918832803f02d, type: 3}
   - {fileID: 21300000, guid: 8ad4c01ba972352428d06834e8b6d21f, type: 3}
   - {fileID: 21300000, guid: 0b4c124bc1478e7418bea9cf6e993853, type: 3}
+  - {fileID: 21300000, guid: 7d6bdf7c90d8ec64ba9112f00a98f70c, type: 3}
   - {fileID: 21300000, guid: 10c4beddea1b5b9458fb210beda50eac, type: 3}
   m_PackedSpriteNamesToIndex:
   - Crystal_2
@@ -106,6 +108,7 @@ SpriteAtlas:
   - Snowflake_1
   - Fireball_2
   - Weapon_1
+  - bubble_1
   - effect_star_1
   m_RenderDataMap: {}
   m_Tag: AtlasForGame

@@ -282,6 +282,29 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
     }
     #endregion
 
+    #region 攻击时间BUFF
+    /// <summary>
+    /// 根据生物BUFF改变攻击时间数据
+    /// </summary>
+    /// <param name="creatureUUId">生物UUID</param>
+    /// <param name="timeAttackPre">攻击前摇时间</param>
+    /// <param name="timeAttacking">攻击动画时间</param>
+    public void ChangeAttackTimeDataForBuff(string creatureUUId, ref float timeAttackPre, ref float timeAttacking)
+    {
+        var creatureBuffs = manager.GetFightCreatureBuffsActivie(creatureUUId);
+        if (!creatureBuffs.IsNull())
+        {
+            for (int i = 0; i < creatureBuffs.Count; i++)
+            {
+                if (creatureBuffs[i] is BuffEntityAttributeAttackTime buffAttackTime)
+                {
+                    buffAttackTime.ChangeAttackTimeData(ref timeAttackPre, ref timeAttacking);
+                }
+            }
+        }
+    }
+    #endregion
+
     #region 触发BUFF判定
     /// <summary>
     /// 尝试创建buff，根据创建概率看是否创建成功
@@ -293,6 +316,11 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
         {
             var item = listBuffData[i];
             var targetEntityBean = CheckBuffCreate(item, applierCreatureId, targetCreatureId);
+            //如果创建失败
+            if (targetEntityBean == null)
+            {
+                continue;
+            }
             listData.Add(targetEntityBean);
         }
         return listData;

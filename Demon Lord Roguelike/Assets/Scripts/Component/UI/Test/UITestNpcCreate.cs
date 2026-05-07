@@ -8,13 +8,16 @@ using static ExcelUtil;
 
 public partial class UITestNpcCreate : BaseUIComponent
 {
-    public CreatureBean creatureData;
+    public CreatureBean creatureData;//生物数据
     public bool isShowEquip = true;//是否展示装备
 
-    public List<long> listCreatureSkinData;
-    public List<long> listCreatureEquipItemIds;
+    public List<long> listCreatureSkinData;//自定义皮肤ID列表
+    public List<long> listCreatureEquipItemIds;//自定义装备ID列表
 
     public Color colorHair = Color.white;//头发颜色
+    /// <summary>
+    /// 初始化界面，加载测试模型并绑定数据
+    /// </summary>
     public override void Awake()
     {
         base.Awake();
@@ -137,6 +140,8 @@ public partial class UITestNpcCreate : BaseUIComponent
     /// </summary>
     public void RefreshCreature()
     {
+        //从UI更新属性
+        UpdateCreatureAttributeFromUI();
         //使用自定义皮肤
         creatureData.InitSkin(listCreatureSkinData);
         //使用自定义装备
@@ -160,6 +165,9 @@ public partial class UITestNpcCreate : BaseUIComponent
     }
 
     #region  按钮点击
+    /// <summary>
+    /// 按钮点击分发
+    /// </summary>
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
@@ -215,12 +223,20 @@ public partial class UITestNpcCreate : BaseUIComponent
                 creatureEquipItemIds += $"{item}&";
             }
 #if UNITY_EDITOR
+            //先同步UI属性到数据
+            UpdateCreatureAttributeFromUI();
             var creatureNpcData = creatureData.GetCreatureNpcData();
             long npciD = creatureNpcData.npcId;
             List<ExcelChangeData> listData = new List<ExcelChangeData>()
             {
                 new ExcelChangeData(npciD,"skin_data",creatureSkinData),
                 new ExcelChangeData(npciD,"equip_item_ids",creatureEquipItemIds),
+                new ExcelChangeData(npciD,"HP",$"{creatureNpcData.npcInfo.HP}"),
+                new ExcelChangeData(npciD,"DR",$"{creatureNpcData.npcInfo.DR}"),
+                new ExcelChangeData(npciD,"MP",$"{creatureNpcData.npcInfo.MP}"),
+                new ExcelChangeData(npciD,"ATK",$"{creatureNpcData.npcInfo.ATK}"),
+                new ExcelChangeData(npciD,"ASPD",$"{creatureNpcData.npcInfo.ASPD}"),
+                new ExcelChangeData(npciD,"MSPD",$"{creatureNpcData.npcInfo.MSPD}"),
             };
             ExcelUtil.SetExcelData("Assets/Data/Excel/excel_npc_info[NPC信息].xlsx", "NpcInfo", listData);
 #endif
@@ -244,7 +260,47 @@ public partial class UITestNpcCreate : BaseUIComponent
         var creatureNpcData = creatureData.GetCreatureNpcData();
         listCreatureSkinData = creatureNpcData.npcInfo.skin_data.SplitForListLong('&');
         listCreatureEquipItemIds = creatureNpcData.npcInfo.equip_item_ids.SplitForListLong('&');
+        //初始化属性UI
+        InitCreatureAttributeUI();
         RefreshCreature();
+    }
+
+    /// <summary>
+    /// 初始化NPC属性UI
+    /// </summary>
+    public void InitCreatureAttributeUI()
+    {
+        if (creatureData?.creatureNpcData?.npcInfo == null)
+            return;
+        var npcInfo = creatureData.creatureNpcData.npcInfo;
+        ui_UIDataNameInput_HP.text = $"{npcInfo.HP}";
+        ui_UIDataNameInput_DR.text = $"{npcInfo.DR}";
+        ui_UIDataNameInput_MP.text = $"{npcInfo.MP}";
+        ui_UIDataNameInput_ATK.text = $"{npcInfo.ATK}";
+        ui_UIDataNameInput_ASPD.text = $"{npcInfo.ASPD}";
+        ui_UIDataNameInput_MSPD.text = $"{npcInfo.MSPD}";
+    }
+
+    /// <summary>
+    /// 从UI更新NPC属性
+    /// </summary>
+    public void UpdateCreatureAttributeFromUI()
+    {
+        if (creatureData?.creatureNpcData?.npcInfo == null)
+            return;
+        var npcInfo = creatureData.creatureNpcData.npcInfo;
+        if (float.TryParse(ui_UIDataNameInput_HP.text, out float hp))
+            npcInfo.HP = hp;
+        if (float.TryParse(ui_UIDataNameInput_DR.text, out float dr))
+            npcInfo.DR = dr;
+        if (float.TryParse(ui_UIDataNameInput_MP.text, out float mp))
+            npcInfo.MP = mp;
+        if (float.TryParse(ui_UIDataNameInput_ATK.text, out float atk))
+            npcInfo.ATK = atk;
+        if (float.TryParse(ui_UIDataNameInput_ASPD.text, out float aspd))
+            npcInfo.ASPD = aspd;
+        if (float.TryParse(ui_UIDataNameInput_MSPD.text, out float mspd))
+            npcInfo.MSPD = mspd;
     }
 
     /// <summary>
@@ -258,6 +314,9 @@ public partial class UITestNpcCreate : BaseUIComponent
     #endregion
 
     #region  事件回调
+    /// <summary>
+    /// 头发颜色变更回调
+    /// </summary>
     public void ActionForHairColorChange(UIViewColorShow viewColorShow, Color changeColor)
     {
         if (viewColorShow == ui_UIViewColorSelect_Hair)
@@ -267,6 +326,9 @@ public partial class UITestNpcCreate : BaseUIComponent
         }
     }
 
+    /// <summary>
+    /// 身体部件点击回调，展示该部位可选皮肤列表
+    /// </summary>
     public void ActionForCreatureBodyOnClick(int showType, long showId)
     {
         ui_ListSelectBG_RectTransform.gameObject.SetActive(true);
@@ -303,6 +365,9 @@ public partial class UITestNpcCreate : BaseUIComponent
         
     }
 
+    /// <summary>
+    /// 装备槽点击回调，展示该类型可选装备列表
+    /// </summary>
     public void ActionForCreatureEquipOnClick(int showType, long showId)
     {
         ui_ListSelectBG_RectTransform.gameObject.SetActive(true);

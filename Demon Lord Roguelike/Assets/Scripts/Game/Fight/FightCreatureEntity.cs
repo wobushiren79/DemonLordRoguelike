@@ -358,19 +358,20 @@ public class FightCreatureEntity
     /// 播放动画
     /// </summary>
     /// <param name="animationCreatureState"></param>
-    public TrackEntry PlayAnim(SpineAnimationStateEnum animationCreatureState, bool isLoop, float mixDuration = -1)
+    public TrackEntry PlayAnim(SpineAnimationStateEnum animationCreatureState, bool isLoop, float mixDuration = -1, float animSpeed = 1)
     {
-        return SpineHandler.Instance.PlayAnim(creatureSkeletionAnimation, animationCreatureState, fightCreatureData.creatureData, isLoop, mixDuration);
+        var trackEntry = SpineHandler.Instance.PlayAnim(creatureSkeletionAnimation, animationCreatureState, fightCreatureData.creatureData, isLoop, mixDuration: mixDuration, animSpeed: animSpeed);
+        return trackEntry;
     }
 
     /// <summary>
     /// 增加动画
     /// </summary>
-    public TrackEntry AddAnim(int trackIndex, SpineAnimationStateEnum animationCreatureState, bool isLoop, float delay, string animNameAppoint = null)
+    public TrackEntry AddAnim(int trackIndex, SpineAnimationStateEnum animationCreatureState, bool isLoop, float delay, string animNameAppoint = null, float animSpeed = 1)
     {
         if (creatureSkeletionAnimation == null)
             return null;
-        var animData = SpineHandler.Instance.AddAnimation(creatureSkeletionAnimation, trackIndex, animationCreatureState, isLoop, delay, animNameAppoint);
+        var animData = SpineHandler.Instance.AddAnimation(creatureSkeletionAnimation, trackIndex, animationCreatureState, isLoop, delay, animNameAppoint, animSpeed: animSpeed);
         return animData;
     }
 

@@ -322,15 +322,6 @@ public partial class CreatureBean
     }
 
     /// <summary>
-    /// 初始化属性
-    /// </summary>
-    /// <param name="npcInfo"></param>
-    public void InitAttribute(NpcInfoBean npcInfo)
-    {
-        
-    }
-
-    /// <summary>
     /// 初始化皮肤-NPC
     /// </summary>
     public void InitSkin(NpcInfoBean npcInfo)
@@ -338,25 +329,25 @@ public partial class CreatureBean
         //获取皮肤
         List<long> listSkin = npcInfo.GetSkins();
         InitSkin(listSkin);
-    }
+    } 
 
     /// <summary>
     /// 初始化皮肤-自定义
     /// </summary>
-    public void InitSkin(List<long> listSkin)
+    public void InitSkin(List<long> listSkin, bool isRandomColor = true)
     {
         //清理所有皮肤
         ClearSkin();
         //添加基础皮肤
         AddSkinForBase();
         //添加配置皮肤
-        AddSkin(listSkin);
+        AddSkin(listSkin, isRandomColor);
     }
 
     /// <summary>
     /// 添加皮肤
     /// </summary>
-    public void AddSkin(List<long> skinIds)
+    public void AddSkin(List<long> skinIds, bool isRandomColor = true)
     {
         if (skinIds == null)
         {
@@ -365,16 +356,25 @@ public partial class CreatureBean
         for (int i = 0; i < skinIds.Count; i++)
         {
             var itemSkinId = skinIds[i];
-            AddSkin(itemSkinId);
+            AddSkin(itemSkinId, isRandomColor);
         }
     }
 
     /// <summary>
     /// 添加皮肤
     /// </summary>
-    public void AddSkin(long skinId)
+    public void AddSkin(long skinId, bool isRandomColor = true)
     {
         SpineSkinBean spineSkinData = new SpineSkinBean(skinId);
+        if(isRandomColor)
+        {
+            var itemSkinInfo = CreatureModelInfoCfg.GetItemData(skinId);
+            if (itemSkinInfo.color_state == 1)
+            {
+                spineSkinData.hasColor = true;
+                spineSkinData.skinColor = ColorBean.Random();
+            }
+        }
         AddSkin(spineSkinData);
     }
 

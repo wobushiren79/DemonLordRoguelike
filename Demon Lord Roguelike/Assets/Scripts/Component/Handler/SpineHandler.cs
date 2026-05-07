@@ -5,7 +5,7 @@ public partial class SpineHandler
 {
     public TrackEntry PlayAnim(
         SkeletonAnimation skeletonAnimation, SpineAnimationStateEnum animationCreatureState, CreatureBean creatureData, bool isLoop,
-        float mixDuration = -1, float animStartTime = 0)
+        float mixDuration = -1, float animStartTime = 0, float animSpeed = 1)
     {
         if (skeletonAnimation == null)
         {
@@ -18,7 +18,7 @@ public partial class SpineHandler
             return null;
         }
         var animNameAppoint = GetAnimNameAppoint(animationCreatureState, creatureData);
-        var animData = PlayAnim(skeletonAnimation, animationCreatureState, isLoop, animNameAppoint: animNameAppoint, animStartTime: animStartTime);
+        var animData = PlayAnim(skeletonAnimation, animationCreatureState, isLoop, animNameAppoint: animNameAppoint, animStartTime: animStartTime, animSpeed: animSpeed);
         if (animData != null && mixDuration != -1)
         {
             animData.MixDuration = mixDuration;
@@ -28,7 +28,7 @@ public partial class SpineHandler
 
     public TrackEntry PlayAnim(
         SkeletonGraphic skeletonGraphic, SpineAnimationStateEnum animationCreatureState, CreatureBean creatureData, bool isLoop,
-        float mixDuration = -1, float animStartTime = 0)
+        float mixDuration = -1, float animStartTime = 0, float animSpeed = 1)
     {
         if (skeletonGraphic == null)
         {
@@ -41,7 +41,7 @@ public partial class SpineHandler
             return null;
         }
         var animNameAppoint = GetAnimNameAppoint(animationCreatureState, creatureData);
-        var animData = PlayAnim(skeletonGraphic, animationCreatureState, isLoop, animNameAppoint: animNameAppoint, animStartTime: animStartTime);
+        var animData = PlayAnim(skeletonGraphic, animationCreatureState, isLoop, animNameAppoint: animNameAppoint, animStartTime: animStartTime, animSpeed: animSpeed);
         if (animData != null && mixDuration != -1)
         {
             animData.MixDuration = mixDuration;

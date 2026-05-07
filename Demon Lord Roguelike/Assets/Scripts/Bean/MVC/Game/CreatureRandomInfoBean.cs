@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 public partial class CreatureRandomInfoBean : BaseBean
 {
 	/// <summary>
-	///随机数据
+	///随机数据-CreatureModelInfo
 	/// </summary>
 	public string skin_random_data;
 	/// <summary>
