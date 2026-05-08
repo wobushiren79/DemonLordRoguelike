@@ -44,7 +44,7 @@ public class AttackModeFalluponChain : BaseAttackMode
         originalDamage = attackModeData.attackerDamage;
 
         //执行初始攻击
-        ExecuteAttack(attacked, originalDamage);
+        ExecuteAttack(attacked, originalDamage, true);
 
         //如果已达到连锁上限，结束
         if (currentChainCount >= chainNum)
@@ -152,7 +152,7 @@ public class AttackModeFalluponChain : BaseAttackMode
         attackModeData.targetPos = nextTarget.creatureObj.transform.position;
 
         //执行攻击
-        ExecuteAttack(nextTarget, chainDamage);
+        ExecuteAttack(nextTarget, chainDamage, false);
         currentAttacked = nextTarget;
 
         return true;
@@ -161,12 +161,22 @@ public class AttackModeFalluponChain : BaseAttackMode
     /// <summary>
     /// 执行攻击
     /// </summary>
-    private void ExecuteAttack(FightCreatureEntity target, int damage)
+    private void ExecuteAttack(FightCreatureEntity target, int damage, bool isFirst)
     {
         attackModeData.attackerDamage = damage;
         target.UnderAttack(this);
         PlayEffectForHit(target.creatureObj.transform.position);
         listAttackedCreatureId.Add(target.fightCreatureData.creatureData.creatureUUId);
+
+        //是否是第一次攻击
+        if (isFirst)
+        {
+            gameObject?.transform.Find("Start")?.GetComponent<ParticleSystem>()?.Play(); //播放粒子特效>
+        }
+        else
+        {
+            gameObject?.transform.Find("Chain")?.GetComponent<ParticleSystem>()?.Play(); //播放粒子特效>
+        }
     }
 
     /// <summary>

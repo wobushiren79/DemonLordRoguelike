@@ -95,7 +95,7 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public long content;
 	[JsonIgnore]
-	public string content_language { get { return TextHandler.Instance.GetTextById(BuffInfoCfg.fileName, content); } }
+	public string content_language { get { return TextHandler.Instance.GetTextById(BuffInfoCfg.fileName, content, 1); } }
 	/// <summary>
 	///备注
 	/// </summary>

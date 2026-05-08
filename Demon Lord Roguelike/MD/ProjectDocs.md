@@ -630,7 +630,7 @@ Fight/
 |------|------|
 | 近战 | `AttackModeMelee`、`AttackModeMeleeArea` |
 | 远程 | `AttackModeRanged`、`AttackModeRangedArc`、`AttackModeRangedArcArea`、`AttackModeRangedArea`、`AttackModeRangedPiercing`、`AttackModeRangedSplit`、`AttackModeRangedTracking` |
-| 特殊 | `AttackModeExplosion`、`AttackModeFallupon`、`AttackModeFalluponArea`、`AttackModeLure`、`AttackModeOverlap` |
+| 特殊 | `AttackModeExplosion`、`AttackModeFallupon`、`AttackModeFalluponArea`、`AttackModeFalluponChain`、`AttackModeLure`、`AttackModeOverlap` |
 | 恢复 | `AttackModeRegain`、`AttackModeRegainHP`、`AttackModeRegainDR` |
 
 #### Buff - BUFF 系统
@@ -970,7 +970,7 @@ public void AutoLinkUI()
 ### 5.3 战斗系统
 
 - **实体组件：** `FightCreatureEntity`（战斗生物）、`FightPrefabEntity`（战斗预制体）
-- **攻击模式：** 基于策略模式，近战/远程/特殊/恢复四大类，共 16 种攻击模式
+- **攻击模式：** 基于策略模式，近战/远程/特殊/恢复四大类，共 17 种攻击模式
 - **BUFF 系统：** 属性/条件/瞬时/周期性/持续五种类型
 - **AI 状态机：** 生物行为由状态机控制（Idle -> Move -> Attack -> Dead）
 

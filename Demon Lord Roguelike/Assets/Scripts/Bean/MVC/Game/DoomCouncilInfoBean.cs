@@ -43,7 +43,7 @@ public partial class DoomCouncilInfoBean : BaseBean
 	/// </summary>
 	public long details;
 	[JsonIgnore]
-	public string details_language { get { return TextHandler.Instance.GetTextById(DoomCouncilInfoCfg.fileName, details); } }
+	public string details_language { get { return TextHandler.Instance.GetTextById(DoomCouncilInfoCfg.fileName, details, 1); } }
 	/// <summary>
 	///备注
 	/// </summary>

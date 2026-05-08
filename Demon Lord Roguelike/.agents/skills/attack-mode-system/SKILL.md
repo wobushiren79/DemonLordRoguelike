@@ -1,6 +1,6 @@
 ---
 name: attack-mode-system
-description: Demon Lord Roguelike 游戏的攻击模块(AttackMode)系统开发指南。使用此SKILL当需要创建或修改攻击模式、战斗弹道、攻击特效、攻击伤害逻辑等，包括近战/远程/范围/追踪/抛物线/爆炸/回复等攻击类型。
+description: Demon Lord Roguelike 游戏的攻击模块(AttackMode)系统开发指南。使用此SKILL当需要创建或修改攻击模式、战斗弹道、攻击特效、攻击伤害逻辑等，包括近战/远程/范围/追踪/抛物线/爆炸/回复/连锁/穿透/分裂等攻击类型。
 ---
 
 # 攻击模块系统开发指南
@@ -18,24 +18,25 @@ BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播
 ### 攻击模式类型体系
 
 ```
-BaseAttackMode                    - 攻击模式基类
-├── AttackModeMelee               - 近战单体（瞬间命中目标）
-├── AttackModeMeleeArea           - 近战范围（起点范围伤害）
-├── AttackModeRanged              - 远程直线弹道（逐帧移动+碰撞检测）
-│   ├── AttackModeRangedArea      - 远程范围弹道（击中时范围AOE）
-│   ├── AttackModeRangedArc       - 远程抛物线弹道
+BaseAttackMode                      - 攻击模式基类
+├── AttackModeMelee                 - 近战单体（瞬间命中目标）
+├── AttackModeMeleeArea             - 近战范围（起点范围伤害）
+├── AttackModeRanged                - 远程直线弹道（逐帧移动+碰撞检测）
+│   ├── AttackModeRangedArea        - 远程范围弹道（击中时范围AOE）
+│   ├── AttackModeRangedArc         - 远程抛物线弹道
 │   │   └── AttackModeRangedArcArea - 抛物线范围（继承抛物线轨迹）
-│   ├── AttackModeRangedTracking  - 远程追踪弹道（实时改变方向追击目标）
-│   ├── AttackModeRanged​Piercing  - 远程穿透弹道（可穿透多个目标）
-│   └── AttackModeRanged​Split     - 远程分裂弹道（分裂为多条线路）
-├── AttackModeExplosion           - 爆炸（以自身为中心范围伤害，攻击者死亡）
-├── AttackModeFallupon            - 天降单体（直接对锁定目标造成伤害）
-├── AttackModeFalluponArea        - 天降范围（对目标位置范围伤害）
-├── AttackModeOverlap             - 重叠检测（范围伤害，无击中特效）
-├── AttackModeLure                - 引诱（改变被攻击者线路）
-└── AttackModeRegain              - 回复基类（不造成伤害，提供增益）
-    ├── AttackModeRegainHP        - 回复生命
-    └── AttackModeRegainDR        - 回复护甲
+│   ├── AttackModeRangedTracking    - 远程追踪弹道（实时改变方向追击目标）
+│   ├── AttackModeRangedPiercing    - 远程穿透弹道（可穿透多个目标）
+│   └── AttackModeRangedSplit       - 远程分裂弹道（分裂为多条线路）
+├── AttackModeExplosion             - 爆炸（以自身为中心范围伤害，攻击者死亡）
+├── AttackModeFallupon              - 天降单体（直接对锁定目标造成伤害）
+├── AttackModeFalluponArea          - 天降范围（对目标位置范围伤害）
+├── AttackModeFalluponChain         - 天降连锁（连锁弹射多个目标，伤害递减）
+├── AttackModeOverlap               - 重叠检测（范围伤害，无击中特效）
+├── AttackModeLure                  - 引诱（改变被攻击者线路）
+└── AttackModeRegain                - 回复基类（不造成伤害，提供增益）
+    ├── AttackModeRegainHP          - 回复生命
+    └── AttackModeRegainDR          - 回复护甲
 ```
 
 ## 创建新攻击模式
@@ -59,9 +60,12 @@ BaseAttackMode                    - 攻击模式基类
 | `AttackModeRangedArea` | 飞行弹道+击中AOE | 爆炸箭、火球术 |
 | `AttackModeRangedArc` | 抛物线飞行 | 投石、抛物线炸弹 |
 | `AttackModeRangedTracking` | 追踪目标飞行 | 追踪弹、导弹 |
+| `AttackModeRangedPiercing` | 可穿透多个目标 | 穿透箭、激光 |
+| `AttackModeRangedSplit` | 分裂为多路弹道 | 散射弹、分叉箭 |
 | `AttackModeExplosion` | 自爆范围伤害 | 自杀式爆炸、亡语 |
 | `AttackModeFallupon` | 直接对目标造成伤害 | 天降打击、瞬移攻击 |
 | `AttackModeFalluponArea` | 对目标位置范围伤害 | 陨石、天降AOE |
+| `AttackModeFalluponChain` | 连锁弹射递减伤害 | 闪电链、弹射攻击 |
 | `AttackModeRegain` | 回复而非伤害 | 治疗术、护盾恢复 |
 | `BaseAttackMode` | 完全自定义 | 特殊机制攻击 |
 
@@ -161,6 +165,86 @@ public class AttackModeMeleeArea : BaseAttackMode
 }
 ```
 
+#### 穿透弹道示例
+
+```csharp
+// Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedPiercing.cs
+public class AttackModeRangedPiercing : AttackModeRanged
+{
+    public int numPierceMax = 3;
+    public HashSet<string> listPierceCreature;
+
+    public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
+    {
+        base.StartAttack(attacker, attacked, actionForAttackEnd);
+        listPierceCreature = new HashSet<string>();
+    }
+
+    public override void Update()
+    {
+        List<FightCreatureEntity> listHitTarget = CheckHitTarget();
+        if (!listHitTarget.IsNull())
+        {
+            for (int i = 0; i < listHitTarget.Count; i++)
+            {
+                var itemCreature = listHitTarget[i];
+                string itemCreatureId = itemCreature.fightCreatureData.creatureData.creatureUUId;
+                if (listPierceCreature.Contains(itemCreatureId))
+                {
+                    continue;
+                }
+                HandleForHitTarget(itemCreature);
+                listPierceCreature.Add(itemCreatureId);
+                if (listPierceCreature.Count >= numPierceMax)
+                {
+                    Destroy();
+                    return;
+                }
+            }
+        }
+        HandleForMove();
+        HandleForBound();
+    }
+
+    public override void HandleForHitTarget(FightCreatureEntity fghtCreatureEntity)
+    {
+        fghtCreatureEntity.UnderAttack(this);
+    }
+}
+```
+
+#### 天降连锁示例
+
+```csharp
+// Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponChain.cs
+public class AttackModeFalluponChain : BaseAttackMode
+{
+    public int chainNum = 3;
+    public float timeForChainChange = 0.1f;
+    private HashSet<string> listAttackedCreatureId = new HashSet<string>();
+    private int currentChainCount = 0;
+    private int originalDamage = 0;
+
+    public override async void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
+    {
+        base.StartAttack(attacker, attacked, actionForAttackEnd);
+        // 记录原始伤害并执行初始攻击
+        originalDamage = attackModeData.attackerDamage;
+        ExecuteAttack(attacked, originalDamage, true);
+
+        // 连锁攻击
+        for (int i = 0; i < chainNum; i++)
+        {
+            await new WaitForSeconds(timeForChainChange);
+            // 在范围内查找未攻击过的目标，伤害减半
+            // ...
+        }
+        Destroy();
+        actionForAttackEnd?.Invoke(this);
+    }
+}
+```
+
 #### 完全自定义示例
 
 ```csharp
@@ -188,13 +272,13 @@ public class AttackModeCustom : BaseAttackMode
 // AttackModeInfoBean 关键配置字段
 {
     "id": 100001,                    // 攻击模式唯一ID
-    "class_name": "AttackModeRanged", // 攻击模式类名
+    "class_name": "AttackModeRanged", // 攻击模式类名（反射创建用）
     "prefab_name": "ArrowPrefab",    // 预制体名称（空表示无预制体）
     "buff": "1001:0.5|1002:1.0",     // 攻击附带的BUFF（ID:创建概率）
     "attack_search_type": 0,         // 攻击搜索类型（0射线 11球形范围 21盒形范围）
-    "collider_size": 0.5,            // 碰撞检测大小
+    "collider_size": 0.5,            // 碰撞检测大小（点到点）
     "collider_area_type": 11,        // 范围检测类型（11球形 21盒形）
-    "collider_area_size": "2,2,2",   // 范围检测大小（半径或半-extents）
+    "collider_area_size": "2,2,2",   // 范围检测大小（半径或半extents）
     "effect_hit": 1001,              // 击中特效ID
     "effect_damage": "1002",         // 受伤特效ID（默认不填，0关闭）
     "speed_move": 10,                // 移动速度（远程弹道用）
@@ -229,7 +313,7 @@ CreatureSearchType
 
 ## 常用代码模板
 
-### 创建攻击模块
+### 创建攻击模块（生物对战）
 
 ```csharp
 // 通过战斗处理器创建攻击（生物对战）
@@ -294,20 +378,43 @@ FightCreatureEntity hitTarget = CheckHitTargetForSingle(checkPosition);
 ## 攻击模块生命周期
 
 ```csharp
-// 1. 创建并初始化
-attackMode.StartAttackInit(attackModeData);
+// 1. 创建并初始化数据
+AttackModeBean attackModeData = FightManager.Instance.GetAttackModeData(attackModeId);
 
-// 2. 开始攻击（两个重载）
+// 2. 获取攻击模块实例（优先对象池，否则反射创建）
+FightManager.Instance.GetAttackModePrefab(attackModeId, (attackMode) =>
+{
+    attackMode.StartAttackInit(attackModeData);
+});
+
+// 3. 开始攻击（两个重载）
 attackMode.StartAttack();  // 无目标攻击
 attackMode.StartAttack(attacker, attacked, actionForAttackEnd);  // 生物对战
 
-// 3. 每帧更新（仅远程/持续型攻击模式）
+// 4. 每帧更新（仅远程/持续型攻击模式）
 attackMode.Update();
 
-// 4. 销毁（回收至对象池）
+// 5. 销毁（回收至对象池）
 attackMode.Destroy();  // 回收
 attackMode.Destroy(isPermanently: true);  // 永久销毁
 ```
+
+## BaseAttackMode 核心方法速查
+
+| 方法 | 说明 |
+|------|------|
+| `InitAttackModeShow()` | 初始化攻击样式（根据武器道具ID设置精灵图） |
+| `StartAttackInit(AttackModeBean)` | 攻击初始化（设置数据+外观） |
+| `StartAttackBase()` | 基础攻击开始（设置GO位置和激活） |
+| `StartAttack()` | 无目标攻击 |
+| `StartAttack(FightCreatureEntity, FightCreatureEntity, Action)` | 生物对战攻击 |
+| `Update()` | 每帧更新 |
+| `Destroy(bool isPermanently = false)` | 回收或永久销毁 |
+| `PlayEffectForHit(Vector3)` | 播放击中特效 |
+| `CheckHitTargetForSingle()` | 检测单个目标 |
+| `CheckHitTarget()` | 检测多个目标 |
+| `CheckHitTargetArea(Vector3, Action<FightCreatureEntity>)` | 范围检测并回调 |
+| `CheckIsMoveBound(GameObject)` | 检测是否超出边界 |
 
 ## 文件位置速查
 
@@ -324,9 +431,16 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁
 | 远程弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRanged.cs` |
 | 远程范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedArea.cs` |
 | 抛物线弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedArc.cs` |
+| 抛物线范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedArcArea.cs` |
 | 追踪弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedTracking.cs` |
+| 穿透弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedPiercing.cs` |
+| 分裂弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedSplit.cs` |
 | 爆炸 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeExplosion.cs` |
 | 天降单体 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFallupon.cs` |
 | 天降范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponArea.cs` |
+| 天降连锁 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponChain.cs` |
+| 重叠检测 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlap.cs` |
 | 回复基类 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRegain.cs` |
+| 回复生命 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRegainHP.cs` |
+| 回复护甲 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRegainDR.cs` |
 | 攻击预制体路径 | `Assets/LoadResources/AttackMode/` |
