@@ -1,6 +1,18 @@
 ---
 name: ai-system
 description: Demon Lord Roguelike 游戏的AI系统开发指南。使用此SKILL当需要创建或修改AI实体、AI意图、生物行为逻辑等，包括进攻生物AI、防守生物AI、核心生物AI、状态机切换等。
+watched_files:
+  - Assets/FrameWork/Scripts/AI/AIBaseEntity.cs
+  - Assets/FrameWork/Scripts/AI/AIBaseIntent.cs
+  - Assets/FrameWork/Scripts/AI/AIBaseCommon.cs
+  - Assets/FrameWork/Scripts/Component/Manager/AIManager.cs
+  - Assets/FrameWork/Scripts/Component/Handler/AIHandler.cs
+  - Assets/Scripts/Enums/AIIntentEnum.cs
+  - Assets/Scripts/AI/Creature/AICreatureEntity.cs
+  - Assets/Scripts/AI/Creature/AIIntentCreatureAttack.cs
+  - Assets/Scripts/AI/Creature/FightAttackCreature/AIAttackCreatureEntity.cs
+  - Assets/Scripts/AI/Creature/FightDefenseCreature/AIDefenseCreatureEntity.cs
+  - Assets/Scripts/AI/Creature/FightDefenseCoreCreature/AIDefenseCoreCreatureEntity.cs
 ---
 
 # AI系统开发指南

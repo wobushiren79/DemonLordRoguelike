@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($client = New-Object System.Net.Sockets.TcpClient; try { $client.Connect\\(\"127.0.0.1\", 8080\\); Write-Output \"MCP HTTP server is running on port 8080\"; $client.Close\\(\\) } catch { Write-Output \"Server still not reachable on port 8080\" })",
+      "Bash(curl -s http://127.0.0.1:8080/sse)",
+      "Bash(Select-Object -First 20)",
+      "Bash(curl.exe -s http://127.0.0.1:8080/)",
+      "Bash(curl.exe -s http://127.0.0.1:8080/health)",
+      "Bash(curl.exe -s -X POST http://127.0.0.1:8080/tools/list -H \"Content-Type: application/json\")",
+      "Bash(curl.exe -s -X POST http://127.0.0.1:8080/message -H \"Content-Type: application/json\" -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{}}')",
+      "PowerShell(.\\\\\".agents\\\\check-unity-mcp.ps1\\\\\" -CheckOnly)",
+      "PowerShell(& \".agents\\\\check-unity-mcp.ps1\" -CheckOnly)",
+      "Bash(curl.exe -s -X POST \"http://127.0.0.1:8080/mcp\" -H \"Content-Type: application/json\" -d \"{\\\\\"jsonrpc\\\\\":\\\\\"2.0\\\\\",\\\\\"id\\\\\":1,\\\\\"method\\\\\":\\\\\"initialize\\\\\",\\\\\"params\\\\\":{\\\\\"protocolVersion\\\\\":\\\\\"2024-11-05\\\\\",\\\\\"capabilities\\\\\":{},\\\\\"clientInfo\\\\\":{\\\\\"name\\\\\":\\\\\"claude-code\\\\\",\\\\\"version\\\\\":\\\\\"1.0\\\\\"}}}\")",
+      "Bash(curl.exe -s -X POST \"http://127.0.0.1:8080/tools/call\" -H \"Content-Type: application/json\" -d \"{\\\\\"jsonrpc\\\\\":\\\\\"2.0\\\\\",\\\\\"id\\\\\":1,\\\\\"method\\\\\":\\\\\"tools/list\\\\\",\\\\\"params\\\\\":{}}\")",
+      "Bash(curl.exe -s -N \"http://127.0.0.1:8080/sse\" -H \"Accept: text/event-stream\" --max-time 3)",
+      "Bash(curl.exe -s -X POST \"http://127.0.0.1:8080/mcp\" -H \"Content-Type: application/json\" -H \"Accept: application/json, text/event-stream\" -d '{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\",\"params\":{}}')",
+      "Bash(curl.exe -s -N \"http://127.0.0.1:8080/mcp\" -H \"Accept: text/event-stream\" --max-time 5)",
+      "Bash(curl.exe -v \"http://127.0.0.1:8080/\")",
+      "Bash(curl.exe -s -X POST \"http://127.0.0.1:8080/mcp\" -H \"Content-Type: application/json\" -H \"Accept: application/json, text/event-stream\" -H \"Mcp-Session-Id: 4ab43759551b4a63addbfba9990dd46a\" -d '{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\",\"params\":{}}')",
+      "Bash(curl.exe -s -X POST \"http://127.0.0.1:8080/mcp\" -H \"Content-Type: application/json\" -H \"Accept: application/json, text/event-stream\" -H \"Mcp-Session-Id: 4ab43759551b4a63addbfba9990dd46a\" -d '{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"resources/read\",\"params\":{\"uri\":\"mcpforunity://instances\"}}')",
+      "Bash(curl.exe -s -X POST \"http://127.0.0.1:8080/mcp\" -H \"Content-Type: application/json\" -H \"Accept: application/json, text/event-stream\" -H \"Mcp-Session-Id: 4ab43759551b4a63addbfba9990dd46a\" -d \"{\\\\\"jsonrpc\\\\\":\\\\\"2.0\\\\\",\\\\\"id\\\\\":4,\\\\\"method\\\\\":\\\\\"tools/call\\\\\",\\\\\"params\\\\\":{\\\\\"name\\\\\":\\\\\"manage_scene\\\\\",\\\\\"arguments\\\\\":{\\\\\"action\\\\\":\\\\\"get_info\\\\\",\\\\\"unity_instance\\\\\":\\\\\"Demon Lord Roguelike@742b8dd43152d9d1\\\\\"}}}\")",
+      "Bash(curl.exe -s -X POST \"http://127.0.0.1:8080/mcp\" -H \"Content-Type: application/json\" -H \"Accept: application/json, text/event-stream\" -H \"Mcp-Session-Id: 4ab43759551b4a63addbfba9990dd46a\" -d \"{\\\\\"jsonrpc\\\\\":\\\\\"2.0\\\\\",\\\\\"id\\\\\":5,\\\\\"method\\\\\":\\\\\"tools/call\\\\\",\\\\\"params\\\\\":{\\\\\"name\\\\\":\\\\\"manage_scene\\\\\",\\\\\"arguments\\\\\":{\\\\\"action\\\\\":\\\\\"get_active\\\\\",\\\\\"unity_instance\\\\\":\\\\\"Demon Lord Roguelike@742b8dd43152d9d1\\\\\"}}}\")",
+      "Bash(curl.exe -s -X POST \"http://127.0.0.1:8080/mcp\" -H \"Content-Type: application/json\" -H \"Accept: application/json, text/event-stream\" -H \"Mcp-Session-Id: 4ab43759551b4a63addbfba9990dd46a\" -d '{\"jsonrpc\":\"2.0\",\"id\":6,\"method\":\"tools/call\",\"params\":{\"name\":\"manage_gameobject\",\"arguments\":{\"action\":\"create\",\"name\":\"TestGameObject\",\"unity_instance\":\"Demon Lord Roguelike@742b8dd43152d9d1\"}}}')",
+      "Bash(powershell -ExecutionPolicy Bypass -File \".agents/check-unity-mcp.ps1\" -CheckOnly)",
+      "Bash(powershell -ExecutionPolicy Bypass -File \".agents/check-unity-mcp.ps1\")",
+      "Bash(Get-Content \"e:\\\\Unity\\\\DemonLordRoguelike\\\\Demon Lord Roguelike\\\\Assets\\\\Resources\\\\UI\\\\UITestBase.prefab\")",
+      "Bash(Select-Object -Last 50)",
+      "PowerShell(\\(Get-Content \"e:\\\\Unity\\\\DemonLordRoguelike\\\\Demon Lord Roguelike\\\\Assets\\\\Resources\\\\UI\\\\UITestBase.prefab\"\\).Count)",
+      "Bash(Remove-Item -Path \"C:\\\\Users\\\\AppleCoffee\\\\.claude\\\\projects\\\\e--Unity-DemonLordRoguelike\\\\memory\\\\unity-resource-mcp-only.md\", \"C:\\\\Users\\\\AppleCoffee\\\\.claude\\\\projects\\\\e--Unity-DemonLordRoguelike\\\\memory\\\\mcp-check-auto-confirm.md\", \"C:\\\\Users\\\\AppleCoffee\\\\.claude\\\\projects\\\\e--Unity-DemonLordRoguelike\\\\memory\\\\MEMORY.md\" -Force)",
+      "PowerShell($body = '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{}}'; try { $r = Invoke-RestMethod -Uri \"http://127.0.0.1:8080/mcp\" -Method POST -Body $body -ContentType \"application/json\" -TimeoutSec 5; $r | ConvertTo-Json -Depth 10 } catch { Write-Output \"POST failed: $_\"; try { $r2 = Invoke-WebRequest -Uri \"http://127.0.0.1:8080/sse\" -TimeoutSec 3; Write-Output \"SSE endpoint: $\\($r2.StatusCode\\)\" } catch { Write-Output \"SSE also failed: $_\" } })",
+      "PowerShell($body = '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"claude-code\",\"version\":\"1.0\"}}}'; $headers = @{\"Accept\"=\"application/json, text/event-stream\"; \"Content-Type\"=\"application/json\"}; try { $r = Invoke-RestMethod -Uri \"http://127.0.0.1:8080/mcp\" -Method POST -Body $body -Headers $headers -TimeoutSec 5; $r | ConvertTo-Json -Depth 10 } catch { Write-Output \"Error: $_\" })"
+    ]
+  }
+}

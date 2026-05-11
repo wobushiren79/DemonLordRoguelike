@@ -1,6 +1,18 @@
 ---
 name: game-fight-system
 description: Demon Lord Roguelike 游戏的战斗系统(GameFight)开发指南。使用此SKILL当需要创建或修改战斗逻辑、战斗流程、战斗数据管理、战斗生物实体、战斗场景控制、战斗UI、战斗结算等，包括征服模式/无限模式/终焉议会/测试模式等战斗类型。注意：攻击弹道逻辑请使用 attack-mode-system skill，BUFF逻辑请使用 buff-system skill，AI逻辑请使用 ai-system skill。
+watched_files:
+  - Assets/Scripts/Game/Logic/
+  - Assets/Scripts/Bean/Game/FightBean.cs
+  - Assets/Scripts/Game/Fight/FightCreatureEntity.cs
+  - Assets/Scripts/Game/Fight/FightPrefabEntity.cs
+  - Assets/Scripts/Component/Handler/FightHandler.cs
+  - Assets/Scripts/Component/Manager/FightManager.cs
+  - Assets/Scripts/Component/Game/Control/ControlForGameFight.cs
+  - Assets/Scripts/Component/UI/Game/FightMain/UIFightMain.cs
+  - Assets/Scripts/Component/UI/Game/FightSettlement/UIFightSettlement.cs
+  - Assets/Scripts/Component/Handler/CreatureHandler.cs
+  - Assets/Scripts/Component/Manager/CreatureManager.cs
 ---
 
 # 战斗系统开发指南

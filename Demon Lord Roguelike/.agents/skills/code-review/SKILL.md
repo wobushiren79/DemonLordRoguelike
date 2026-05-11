@@ -1,6 +1,9 @@
 ---
 name: code-review
 description: Code review tool for analyzing code changes. Use when the user triggers with /code-review command to review uncommitted git changes or specific modules. Supports reviewing current working directory changes or targeted module analysis. Also provides post-modification code verification workflow.
+watched_files:
+  - scripts/get-git-diff.ps1
+  - scripts/get-module-files.ps1
 ---
 
 # Code Review Skill

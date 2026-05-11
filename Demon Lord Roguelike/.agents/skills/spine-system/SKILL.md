@@ -1,6 +1,15 @@
 ---
 name: spine-system
 description: Demon Lord Roguelike 游戏的Spine动画系统开发指南。使用此SKILL当需要创建或修改Spine骨骼动画相关的代码，包括动画播放、皮肤切换、动画事件处理、Spine资源管理等。
+watched_files:
+  - Assets/FrameWork/Scripts/Component/Manager/SpineManager.cs
+  - Assets/FrameWork/Scripts/Component/Handler/SpineHandler.cs
+  - Assets/Scripts/Component/Handler/SpineHandler.cs
+  - Assets/FrameWork/Scripts/Bean/SpineSkinBean.cs
+  - Assets/FrameWork/Scripts/Bean/MVC/SpineAnimationStateBean.cs
+  - Assets/FrameWork/Scripts/Enums/BaseGameEnum.cs
+  - Assets/FrameWork/Editor/Base/SpineEditor.cs
+  - Assets/FrameWork/Editor/Base/Window/SpineWindow.cs
 ---
 
 # Spine动画系统开发指南

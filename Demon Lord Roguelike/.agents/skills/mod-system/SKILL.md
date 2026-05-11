@@ -1,6 +1,11 @@
 ---
 name: mod-system
 description: Demon Lord Roguelike 游戏的Mod系统开发指南。使用此SKILL当需要创建或修改Mod加载、Mod资源管理、ModID映射、Mod配置覆盖等，包括Mod目录结构、Catalog加载、资源异步/同步加载、JsonText扩展等。
+watched_files:
+  - Assets/FrameWork/Scripts/Component/Manager/ModManager.cs
+  - Assets/FrameWork/Scripts/Component/Handler/ModHandler.cs
+  - Assets/FrameWork/Scripts/Bean/ModIdMapBean.cs
+  - Assets/FrameWork/Scripts/Component/Manager/GameDataManager.cs
 ---
 
 # Mod系统开发指南

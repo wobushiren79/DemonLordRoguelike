@@ -1,6 +1,8 @@
 ---
 name: csharp-auto-comment
 description: 自动为C#类脚本添加XML注释和#region区域分隔。当用户输入/Note命令时触发，分析当前C#脚本文件，为每个方法、属性、字段添加规范的XML注释，并按类型（生命周期/公有/私有/属性等）使用#region进行分组。
+watched_files:
+  - scripts/add_comments.py
 ---
 
 # C# 自动注释工具

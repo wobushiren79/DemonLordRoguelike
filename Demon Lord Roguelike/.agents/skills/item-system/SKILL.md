@@ -1,6 +1,15 @@
 ---
 name: item-system
 description: Demon Lord Roguelike 游戏的道具系统开发指南。使用此SKILL当需要创建或修改道具(Item)、装备(Equip)、背包(Backpack)相关的代码，包括道具数据结构、装备系统、背包管理、道具配置等。
+watched_files:
+  - Assets/Scripts/Enums/ItemsEnum.cs
+  - Assets/Scripts/Bean/Game/ItemBean.cs
+  - Assets/Scripts/Bean/MVC/Game/ItemsInfoBean.cs
+  - Assets/Scripts/Bean/MVC/Game/ItemsTypeBean.cs
+  - Assets/Scripts/Utils/ItemsUtil.cs
+  - Assets/Scripts/Bean/MVC/UserDataBean.cs
+  - Assets/Scripts/Bean/Game/CreatureBean.cs
+  - Assets/Scripts/Component/UI/Common/Backpack/
 ---
 
 # 道具系统开发指南

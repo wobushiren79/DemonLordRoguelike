@@ -1,6 +1,14 @@
 ---
 name: buff-system
 description: Demon Lord Roguelike 游戏的BUFF系统开发指南。使用此SKILL当需要创建或修改BUFF效果、BUFF触发逻辑、BUFF配置等，包括属性BUFF、条件触发BUFF、周期性BUFF、即时BUFF、前置条件等。
+watched_files:
+  - Assets/Scripts/Game/Buff/
+  - Assets/Scripts/Bean/Game/BuffBean.cs
+  - Assets/Scripts/Bean/Game/BuffEntityBean.cs
+  - Assets/Scripts/Bean/MVC/Game/BuffInfoBean.cs
+  - Assets/Scripts/Bean/MVC/Game/BuffPreInfoBean.cs
+  - Assets/Scripts/Component/Manager/BuffManager.cs
+  - Assets/Scripts/Component/Handler/BuffHandler.cs
 ---
 
 # BUFF系统开发指南

@@ -1,6 +1,20 @@
 ---
 name: creature-card-system
 description: Demon Lord Roguelike 游戏的生物卡片(CreatureCard)系统开发指南。使用此SKILL当需要创建或修改生物卡片UI、卡片交互、卡片状态、卡片列表展示、卡片详情弹窗等，包括战斗卡片/阵容卡片/管理卡片/献祭卡片/进阶卡片等类型。
+watched_files:
+  - Assets/Scripts/Component/UI/Common/CreatureCard/
+  - Assets/Scripts/Component/UI/Popup/UIPopupCreatureCardDetails.cs
+  - Assets/Scripts/Bean/Game/CreatureCardItemBean.cs
+  - Assets/Scripts/Enums/GameStateEnum.cs
+  - Assets/Scripts/Common/EventsInfo.cs
+  - Assets/Scripts/Bean/Game/CreatureBean.cs
+  - Assets/Scripts/Utils/CreatureUtil.cs
+  - Assets/Scripts/Utils/GameUIUtil.cs
+  - Assets/Scripts/Game/Logic/GameFightLogic.cs
+  - Assets/Scripts/Component/UI/Game/LineupManager/UILineupManager.cs
+  - Assets/Scripts/Component/UI/Game/CreatureManager/UICreatureManager.cs
+  - Assets/Scripts/Component/UI/Game/CreatureSacrifice/UICreatureSacrifice.cs
+  - Assets/Scripts/Component/UI/Game/FightMain/UIFightMain.cs
 ---
 
 # 生物卡片系统开发指南

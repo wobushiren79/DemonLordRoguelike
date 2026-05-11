@@ -1,6 +1,24 @@
 ---
 name: ui-framework
 description: Demon Lord Roguelike 游戏的UI框架开发指南。使用此SKILL当需要创建或修改UI界面、弹窗(Dialog)、气泡(Popup)、提示(Toast)等，包括UI脚本创建、UI管理、UI事件处理等。
+watched_files:
+  - Assets/FrameWork/Scripts/Base/BaseUIInit.cs
+  - Assets/FrameWork/Scripts/Base/BaseUIView.cs
+  - Assets/FrameWork/Scripts/Base/BaseUIComponent.cs
+  - Assets/FrameWork/Scripts/Component/UI/DialogView.cs
+  - Assets/FrameWork/Scripts/Component/UI/PopupShowView.cs
+  - Assets/FrameWork/Scripts/Component/UI/ToastView.cs
+  - Assets/FrameWork/Scripts/Component/Manager/UIManager.cs
+  - Assets/FrameWork/Scripts/Component/Handler/UIHandler.cs
+  - Assets/FrameWork/Scripts/Enums/BaseGameEnum.cs
+  - Assets/FrameWork/Editor/Base/Window/BaseUICreateWindow.cs
+  - Assets/FrameWork/Editor/ScriptsTemplates/
+  - Assets/Scripts/Component/UI/Game/
+  - Assets/Scripts/Component/UI/Dialog/
+  - Assets/Scripts/Component/UI/Popup/
+  - Assets/Scripts/Component/UI/Toast/
+  - Assets/Scripts/Component/UI/Common/
+  - Assets/Prefabs/UI/
 ---
 
 # UI框架开发指南

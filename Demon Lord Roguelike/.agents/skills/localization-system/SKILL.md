@@ -1,6 +1,14 @@
 ---
 name: localization-system
 description: Demon Lord Roguelike 游戏的多语言(Localization)系统开发指南。使用此SKILL当需要添加新的多语言文本、创建带多语言的配置表、在UI中显示多语言文本、切换语言等。
+watched_files:
+  - Assets/FrameWork/Scripts/Bean/MVC/LanguageBean.cs
+  - Assets/FrameWork/Scripts/Bean/MVC/UITextBean.cs
+  - Assets/FrameWork/Scripts/Enums/BaseGameEnum.cs
+  - Assets/FrameWork/Scripts/Component/Manager/TextManager.cs
+  - Assets/FrameWork/Scripts/Component/Handler/TextHandler.cs
+  - Assets/FrameWork/Scripts/Component/UI/UITextLanguageView.cs
+  - Assets/Resources/JsonText/
 ---
 
 # 多语言系统开发指南

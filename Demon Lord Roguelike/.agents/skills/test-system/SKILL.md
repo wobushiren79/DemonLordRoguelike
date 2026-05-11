@@ -1,6 +1,16 @@
 ---
 name: test-system
 description: Demon Lord Roguelike 游戏的测试系统开发指南。使用此SKILL当需要创建或修改测试工具、测试UI、测试编辑器扩展、测试数据等，包括战斗场景测试、卡片测试、基地测试、奖励选择测试、终焉议会测试、NPC创建测试、研究UI测试等。
+watched_files:
+  - Assets/Scripts/Game/Launcher/LauncherTest.cs
+  - Assets/Editor/GameTestEditor.cs
+  - Assets/Editor/GameTestEditorPartial.cs
+  - Assets/Scripts/Game/Logic/GameFightLogicTest.cs
+  - Assets/Scripts/Bean/Game/FightBeanForTest.cs
+  - Assets/FrameWork/Scripts/Component/UI/UITestConsole.cs
+  - Assets/Scripts/Component/UI/Test/
+  - Assets/Scripts/Component/UI/Game/BaseResearch/UIBaseResearchTest.cs
+  - Assets/Scripts/Enums/GameStateEnum.cs
 ---
 
 # 测试系统开发指南

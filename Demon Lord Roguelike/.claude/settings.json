@@ -1,9 +1,44 @@
 {
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "(?i)(MCP|连接.*[Uu]nity|[Uu]nity.*连接|Start Session|HTTP server|uvx|Window.*MCP)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".agents/check-unity-mcp.ps1\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".agents/check-cs-changed.ps1\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Read(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\skills\\*)",
       "Write(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\skills\\*)",
-      "Edit(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\skills\\*)"
+      "Edit(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\skills\\*)",
+      "Read(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\agents\\*)",
+      "Write(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\agents\\*)",
+      "Edit(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\agents\\*)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".agents/*\")",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".agents/check-unity-mcp.ps1\")",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".agents/check-cs-changed.ps1\")",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".agents/check-watched.ps1\")",
+      "Bash(powerShell.exe -NoProfile -Command *)",
+      "PowerShell(*)"
     ]
   }
 }
