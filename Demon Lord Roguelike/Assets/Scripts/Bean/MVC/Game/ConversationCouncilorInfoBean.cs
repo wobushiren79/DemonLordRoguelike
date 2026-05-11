@@ -13,7 +13,8 @@ public partial class ConversationCouncilorInfoBean : BaseBean
 	/// </summary>
 	public long content;
 	[JsonIgnore]
-	public string content_language { get { return TextHandler.Instance.GetTextById(ConversationCouncilorInfoCfg.fileName, content); } }
+	public string content_language { get => _content_language.Get(() => TextHandler.Instance.GetTextById(ConversationCouncilorInfoCfg.fileName, content)); set => _content_language.Set(value); }
+	private LanguageCache _content_language;
 	/// <summary>
 	///备注
 	/// </summary>

@@ -37,13 +37,15 @@ public partial class DoomCouncilInfoBean : BaseBean
 	/// </summary>
 	public long name;
 	[JsonIgnore]
-	public string name_language { get { return TextHandler.Instance.GetTextById(DoomCouncilInfoCfg.fileName, name); } }
+	public string name_language { get => _name_language.Get(() => TextHandler.Instance.GetTextById(DoomCouncilInfoCfg.fileName, name)); set => _name_language.Set(value); }
+	private LanguageCache _name_language;
 	/// <summary>
 	///描述中文
 	/// </summary>
 	public long details;
 	[JsonIgnore]
-	public string details_language { get { return TextHandler.Instance.GetTextById(DoomCouncilInfoCfg.fileName, details, 1); } }
+	public string details_language { get => _details_language.Get(() => TextHandler.Instance.GetTextById(DoomCouncilInfoCfg.fileName, details, 1)); set => _details_language.Set(value); }
+	private LanguageCache _details_language;
 	/// <summary>
 	///备注
 	/// </summary>

@@ -13,7 +13,8 @@ public partial class NpcRelationshipInfoBean : BaseBean
 	/// </summary>
 	public long name;
 	[JsonIgnore]
-	public string name_language { get { return TextHandler.Instance.GetTextById(NpcRelationshipInfoCfg.fileName, name); } }
+	public string name_language { get => _name_language.Get(() => TextHandler.Instance.GetTextById(NpcRelationshipInfoCfg.fileName, name)); set => _name_language.Set(value); }
+	private LanguageCache _name_language;
 	/// <summary>
 	///范围最小值
 	/// </summary>

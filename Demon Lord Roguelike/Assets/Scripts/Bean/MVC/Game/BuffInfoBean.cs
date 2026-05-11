@@ -89,13 +89,15 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public long name;
 	[JsonIgnore]
-	public string name_language { get { return TextHandler.Instance.GetTextById(BuffInfoCfg.fileName, name); } }
+	public string name_language { get => _name_language.Get(() => TextHandler.Instance.GetTextById(BuffInfoCfg.fileName, name)); set => _name_language.Set(value); }
+	private LanguageCache _name_language;
 	/// <summary>
 	///描述
 	/// </summary>
 	public long content;
 	[JsonIgnore]
-	public string content_language { get { return TextHandler.Instance.GetTextById(BuffInfoCfg.fileName, content, 1); } }
+	public string content_language { get => _content_language.Get(() => TextHandler.Instance.GetTextById(BuffInfoCfg.fileName, content, 1)); set => _content_language.Set(value); }
+	private LanguageCache _content_language;
 	/// <summary>
 	///备注
 	/// </summary>

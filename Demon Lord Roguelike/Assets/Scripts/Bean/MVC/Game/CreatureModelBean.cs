@@ -37,7 +37,8 @@ public partial class CreatureModelBean : BaseBean
 	/// </summary>
 	public long name;
 	[JsonIgnore]
-	public string name_language { get { return TextHandler.Instance.GetTextById(CreatureModelCfg.fileName, name); } }
+	public string name_language { get => _name_language.Get(() => TextHandler.Instance.GetTextById(CreatureModelCfg.fileName, name)); set => _name_language.Set(value); }
+	private LanguageCache _name_language;
 	/// <summary>
 	///备注
 	/// </summary>
