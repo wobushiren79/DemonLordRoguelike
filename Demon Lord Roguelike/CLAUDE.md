@@ -24,3 +24,10 @@ C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 4. **通过Unity MCP工具操作场景/GameObject/资源**：调用 `manage_scene`、`manage_gameobject`、`manage_asset` 等 MCP 工具时，直接执行无需确认。
 
 以上操作的 PowerShell 命令（`Invoke-WebRequest`/`Invoke-RestMethod` 到 `http://127.0.0.1:8080/mcp`）均视为已授权。
+
+## 任务结束总结规则
+
+每次任务处理完成后的总结中，如果有 Agent 或 Skill 参与执行，必须列出：
+
+- **Agent**：每个 Agent 的名称及其执行的具体操作
+- **Skill**：每个 Skill 的名称及其执行的具体操作
