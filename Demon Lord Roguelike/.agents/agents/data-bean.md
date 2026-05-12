@@ -48,4 +48,4 @@ Bean/
 - Bean 类保持纯数据结构，不包含业务逻辑
 - 需要序列化的 Bean 使用 `[Serializable]` 标记
 - Bean 字段使用公共属性或字段，便于 JSON 序列化
-- Partial 类用于分离自动生成代码和手写代码
+- **`*InfoBean.cs` 和 `*Bean.cs` 是自动生成文件，禁止直接修改**。所有手写扩展方法、辅助属性、解析逻辑必须写在对应的 `*BeanPartial.cs` 文件中

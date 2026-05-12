@@ -28,7 +28,20 @@
       "PowerShell(\\(Get-Content \"e:\\\\Unity\\\\DemonLordRoguelike\\\\Demon Lord Roguelike\\\\Assets\\\\Resources\\\\UI\\\\UITestBase.prefab\"\\).Count)",
       "Bash(Remove-Item -Path \"C:\\\\Users\\\\AppleCoffee\\\\.claude\\\\projects\\\\e--Unity-DemonLordRoguelike\\\\memory\\\\unity-resource-mcp-only.md\", \"C:\\\\Users\\\\AppleCoffee\\\\.claude\\\\projects\\\\e--Unity-DemonLordRoguelike\\\\memory\\\\mcp-check-auto-confirm.md\", \"C:\\\\Users\\\\AppleCoffee\\\\.claude\\\\projects\\\\e--Unity-DemonLordRoguelike\\\\memory\\\\MEMORY.md\" -Force)",
       "PowerShell($body = '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{}}'; try { $r = Invoke-RestMethod -Uri \"http://127.0.0.1:8080/mcp\" -Method POST -Body $body -ContentType \"application/json\" -TimeoutSec 5; $r | ConvertTo-Json -Depth 10 } catch { Write-Output \"POST failed: $_\"; try { $r2 = Invoke-WebRequest -Uri \"http://127.0.0.1:8080/sse\" -TimeoutSec 3; Write-Output \"SSE endpoint: $\\($r2.StatusCode\\)\" } catch { Write-Output \"SSE also failed: $_\" } })",
-      "PowerShell($body = '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"claude-code\",\"version\":\"1.0\"}}}'; $headers = @{\"Accept\"=\"application/json, text/event-stream\"; \"Content-Type\"=\"application/json\"}; try { $r = Invoke-RestMethod -Uri \"http://127.0.0.1:8080/mcp\" -Method POST -Body $body -Headers $headers -TimeoutSec 5; $r | ConvertTo-Json -Depth 10 } catch { Write-Output \"Error: $_\" })"
+      "PowerShell($body = '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"claude-code\",\"version\":\"1.0\"}}}'; $headers = @{\"Accept\"=\"application/json, text/event-stream\"; \"Content-Type\"=\"application/json\"}; try { $r = Invoke-RestMethod -Uri \"http://127.0.0.1:8080/mcp\" -Method POST -Body $body -Headers $headers -TimeoutSec 5; $r | ConvertTo-Json -Depth 10 } catch { Write-Output \"Error: $_\" })",
+      "Bash(ls \"C:/Users/galasports/.claude/projects/e--Unity-Project-DLR-DemonLordRoguelike/memory/\")",
+      "Read(//c/Users/galasports/.claude/projects/e--Unity-Project-DLR-DemonLordRoguelike/memory/**)",
+      "Bash(npx ccusage *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:esotericsoftware.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(gh api *)",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(d['name']\\) for d in data]\")",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); [print\\(item['path']\\) for item in data.get\\('tree',[]\\) if 'Editor' in item['path'] and item['path'].endswith\\('.cs'\\)]\")",
+      "Bash(grep \"\\\\.cs$\")",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:discussions.unity.com)",
+      "WebFetch(domain:forum.esotericsoftware.com)"
     ]
   }
 }

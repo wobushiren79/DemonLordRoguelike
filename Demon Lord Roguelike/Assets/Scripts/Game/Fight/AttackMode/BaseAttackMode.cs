@@ -178,13 +178,14 @@ public class BaseAttackMode
     /// 播放攻击特效
     /// </summary>
     /// <param name="startPosition"></param>
-    public void PlayEffectForHit(Vector3 startPosition)
+    public void PlayEffectForHit(Vector3 startPosition, int effectIndex = 0)
     {
-        if (attackModeInfo.effect_hit != 0)
+        long effectId = attackModeInfo.GetEffectHitId(effectIndex);
+        if (effectId != 0)
         {
             float[] colliderAreaSize = attackModeInfo.GetColliderAreaSize();
             Direction2DEnum effectDirection = attackModeData.attackDirection.x > 0 ? Direction2DEnum.Right : Direction2DEnum.Left;
-            EffectHandler.Instance.ShowEffect(attackModeInfo.effect_hit, startPosition, direction: effectDirection, size: colliderAreaSize[0]);
+            EffectHandler.Instance.ShowEffect(effectId, startPosition, direction: effectDirection, size: colliderAreaSize[0]);
         }
     }
     #endregion

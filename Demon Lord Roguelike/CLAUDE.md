@@ -25,6 +25,26 @@ C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 
 以上操作的 PowerShell 命令（`Invoke-WebRequest`/`Invoke-RestMethod` 到 `http://127.0.0.1:8080/mcp`）均视为已授权。
 
+## 代码注释与分类规则
+
+所有 C# 文件中的方法和属性必须：
+
+- 使用 `/// <summary>` XML 注释说明用途
+- 用 `#region` / `#endregion` 按功能分类组织代码
+
+## Bean 修改规则
+
+`*InfoBean.cs` 和 `*Bean.cs` 文件是自动生成的，**禁止直接修改**。所有扩展方法、辅助属性、解析逻辑必须写在对应的 `*BeanPartial.cs` 文件中（如 `AttackModeInfoBeanPartial.cs`）。
+
+## 记忆系统
+
+项目记忆存储在 `.claude/memory/` 目录下，所有 AI 协作记忆（feedback、project、user、reference）均写入此目录，**禁止写入用户个人目录（C盘）**。读写记忆时路径统一使用：
+
+```
+.claude/memory/MEMORY.md         # 索引文件
+.claude/memory/<name>.md         # 各条记忆文件
+```
+
 ## 任务结束总结规则
 
 每次任务处理完成后的总结中，如果有 Agent 或 Skill 参与执行，必须列出：

@@ -21,6 +21,7 @@ public class AttackModeFalluponChain : BaseAttackMode
     //攻击者
     private FightCreatureEntity attackerEntity;
 
+
     public override void StartAttack()
     {
         base.StartAttack();
@@ -165,18 +166,8 @@ public class AttackModeFalluponChain : BaseAttackMode
     {
         attackModeData.attackerDamage = damage;
         target.UnderAttack(this);
-        PlayEffectForHit(target.creatureObj.transform.position);
+        PlayEffectForHit(target.creatureObj.transform.position, isFirst ? 0 : 1);
         listAttackedCreatureId.Add(target.fightCreatureData.creatureData.creatureUUId);
-
-        //是否是第一次攻击
-        if (isFirst)
-        {
-            gameObject?.transform.Find("Start")?.GetComponent<ParticleSystem>()?.Play(); //播放粒子特效>
-        }
-        else
-        {
-            gameObject?.transform.Find("Chain")?.GetComponent<ParticleSystem>()?.Play(); //播放粒子特效>
-        }
     }
 
     /// <summary>
@@ -186,5 +177,15 @@ public class AttackModeFalluponChain : BaseAttackMode
     {
         Destroy();
         actionForAttackEnd?.Invoke(this);
+    }
+
+    /// <summary>
+    /// 归还对象池时清空本次攻击状态，避免复用时残留
+    /// </summary>
+    public override void Destroy(bool isPermanently = false)
+    {
+        listAttackedCreatureId.Clear();
+        currentChainCount = 0;
+        base.Destroy(isPermanently);
     }
 }

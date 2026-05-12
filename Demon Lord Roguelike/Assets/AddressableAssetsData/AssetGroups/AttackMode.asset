@@ -15,11 +15,6 @@ MonoBehaviour:
   m_GroupName: AttackMode
   m_GUID: 03a5a40d7ff95bf47b8e343184f4accd
   m_SerializeEntries:
-  - m_GUID: 046fbf65d4e9bbd4ebb3ef7826b43fd3
-    m_Address: Assets/LoadResources/AttackMode/AttackMode_Thunder_1.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0f154e140ca5e794091990ac290953c3
     m_Address: Assets/LoadResources/AttackMode/AttackMode_RangedFireBall.prefab
     m_ReadOnly: 0

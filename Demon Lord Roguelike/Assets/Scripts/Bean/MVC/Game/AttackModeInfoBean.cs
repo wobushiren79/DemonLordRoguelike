@@ -33,9 +33,9 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public string collider_area_size;
 	/// <summary>
-	///打击之后的特效
+	///打击之后的特效(用&分隔)
 	/// </summary>
-	public long effect_hit;
+	public string effect_hit;
 	/// <summary>
 	///受伤特效（默认不填，0为关闭）
 	/// </summary>

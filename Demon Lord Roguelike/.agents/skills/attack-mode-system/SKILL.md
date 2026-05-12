@@ -286,7 +286,7 @@ public class AttackModeCustom : BaseAttackMode
     "collider_size": 0.5,            // 碰撞检测大小（点到点）
     "collider_area_type": 11,        // 范围检测类型（11球形 21盒形）
     "collider_area_size": "2,2,2",   // 范围检测大小（半径或半extents）
-    "effect_hit": 1001,              // 击中特效ID
+    "effect_hit": "10001&10002",     // 击中特效ID列表（&分隔，index 0=初始，index 1=连锁）
     "effect_damage": "1002",         // 受伤特效ID（默认不填，0关闭）
     "speed_move": 10,                // 移动速度（远程弹道用）
     "sound_miss": 1,                 // 未击中音效ID
@@ -351,6 +351,9 @@ AttackModeInfoBean attackModeInfo = AttackModeInfoCfg.GetItemData(attackModeId);
 string className = attackModeInfo.class_name;
 float moveSpeed = attackModeInfo.speed_move;
 List<BuffBean> buffList = attackModeInfo.GetListBuff();
+// effect_hit 为 & 分隔的多个粒子ID，用 GetEffectHitId(index) 获取指定位置的ID
+long effectId = attackModeInfo.GetEffectHitId(0);  // 第0个（默认/初始）
+long chainEffectId = attackModeInfo.GetEffectHitId(1);  // 第1个（连锁）
 ```
 
 ### 播放击中特效
