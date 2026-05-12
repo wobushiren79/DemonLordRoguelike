@@ -18,3 +18,4 @@
 - [`feedback_task_summary.md`](feedback_task_summary.md) — 任务总结必须列出参与的 Agent/Skill 名称及操作
 - [`feedback_bean_partial.md`](feedback_bean_partial.md) — Bean 文件是自动生成的，扩展代码必须写在 BeanPartial 文件中
 - [`feedback_code_style.md`](feedback_code_style.md) — 所有方法和属性必须加 XML 注释并用 #region 分类
+- [`feedback_comment_sync.md`](feedback_comment_sync.md) — 修改代码逻辑时必须同步更新对应的 XML 注释
