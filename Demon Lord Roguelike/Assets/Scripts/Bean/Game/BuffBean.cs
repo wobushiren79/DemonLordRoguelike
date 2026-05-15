@@ -28,7 +28,7 @@ public class BuffBean
         var buffInfo = BuffInfoCfg.GetItemData(id);
         if (isRandom)
         {
-            this.trigger_value = UnityEngine.Random.Range(buffInfo.trigger_chance_min, buffInfo.trigger_chance);
+            this.trigger_value = UnityEngine.Random.Range(buffInfo.trigger_value_min, buffInfo.trigger_value);
             this.trigger_value_rate = UnityEngine.Random.Range(buffInfo.trigger_value_rate_min, buffInfo.trigger_value_rate);
             this.trigger_chance = UnityEngine.Random.Range(buffInfo.trigger_chance_min, buffInfo.trigger_chance);
         }

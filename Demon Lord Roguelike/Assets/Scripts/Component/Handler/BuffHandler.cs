@@ -14,7 +14,7 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
         var fightCreatureBuffs = manager.dicFightCreatureBuffsActivie.List;
         if (fightCreatureBuffs.Count > 0)
         {
-            for (int i = 0; i < fightCreatureBuffs.Count; i++)
+            for (int i = fightCreatureBuffs.Count - 1; i >= 0; i--)
             {
                 List<BuffBaseEntity> listBuff = fightCreatureBuffs[i];
                 //如果都删完了。再删除这个生物
@@ -29,7 +29,7 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
         var abyssalBlessingBuffs = manager.dicAbyssalBlessingBuffsActivie.List;
         if (abyssalBlessingBuffs.Count > 0)
         {
-            for (int i = 0; i < abyssalBlessingBuffs.Count; i++)
+            for (int i = abyssalBlessingBuffs.Count - 1; i >= 0; i--)
             {
                 List<BuffBaseEntity> listBuff = abyssalBlessingBuffs[i];
                 //如果都删完了。馈赠暂时不处理
@@ -235,6 +235,7 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
                 var buffEntity = manager.GetBuffEntity(itemAddBuffEntityBean);
                 List<BuffBaseEntity> listBuffEntityNew = new List<BuffBaseEntity>() { buffEntity };
                 manager.dicFightCreatureBuffsActivie.Add(targetCreatureId, listBuffEntityNew);
+                listBuffEntityActivie = listBuffEntityNew;
             }
             //如果当前生物有BUFF列表 但是是空----------------------------------
             else if (listBuffEntityActivie.Count == 0)
@@ -250,11 +251,12 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
                 for (int f = 0; f < listBuffEntityActivie.Count; f++)
                 {
                     var buffEntityActivie = listBuffEntityActivie[f];
-                    //如果有相同的BUFF 则只是刷新时间和次数 
+                    //如果有相同的BUFF 则只是刷新时间和次数
                     if (buffEntityActivie.buffEntityData.buffId == itemAddBuffEntityBean.buffId)
                     {
                         hadBuff = true;
                         buffEntityActivie.buffEntityData.triggerNumLeft = itemAddBuffEntityBean.triggerNumLeft;
+                        buffEntityActivie.buffEntityData.applierCreatureUUId = itemAddBuffEntityBean.applierCreatureUUId;
                         //如果不是次数触发型 则刷新时间
                         int triggerNum = buffEntityActivie.buffEntityData.GetTriggerNum();
                         if (triggerNum <= 0)

@@ -14,6 +14,9 @@
 - AI: State machine pattern (AIBaseEntity + AIBaseIntent)
 - MVC: GameConfig + UserData controllers
 
+### PixelLab
+- [`feedback_pixellab_animation_output.md`](feedback_pixellab_animation_output.md) — 帧动画只保留合成精灵表，不保留单帧文件
+
 ### Collaboration Feedback
 - [`feedback_task_summary.md`](feedback_task_summary.md) — 任务总结必须列出参与的 Agent/Skill 名称及操作
 - [`feedback_bean_partial.md`](feedback_bean_partial.md) — Bean 文件是自动生成的，扩展代码必须写在 BeanPartial 文件中

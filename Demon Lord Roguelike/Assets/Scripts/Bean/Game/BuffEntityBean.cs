@@ -28,6 +28,7 @@
     {
         timeUpdateTotal = 0;
         timeUpdate = 0;
+        conditionalValue = 0;
         this.buffId = buffData.id;
         this.buffData = buffData;
 

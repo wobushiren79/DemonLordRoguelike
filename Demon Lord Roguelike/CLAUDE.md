@@ -45,6 +45,16 @@ C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 .claude/memory/<name>.md         # 各条记忆文件
 ```
 
+## Excel 读写规则
+
+所有通过脚本对 `.xlsx` 文件的读取和写入操作必须使用 **openpyxl** 库，并遵守以下规范：
+
+- 文件编码统一使用 **UTF-8**（openpyxl 默认支持，无需额外指定）
+- 读取时使用 `openpyxl.load_workbook(path)` 或 `load_workbook(path, read_only=True)`
+- 写入时调用 `workbook.save(path)` 保存，**不得覆盖原文件前未备份**
+- 禁止使用 `xlrd`、`xlwt`、`xlwings`、`pandas.read_excel` 等其他 Excel 库
+- Python 脚本文件统一存放在 `.agents/scripts/` 目录下
+
 ## 任务结束总结规则
 
 每次任务处理完成后的总结中，如果有 Agent 或 Skill 参与执行，必须列出：

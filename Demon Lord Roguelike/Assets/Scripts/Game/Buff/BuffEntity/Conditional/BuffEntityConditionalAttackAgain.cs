@@ -7,7 +7,7 @@ public class BuffEntityConditionalAttackAgain : BuffEntityConditional
     /// </summary>
     public override bool TriggerBuffConditional(BuffEntityBean buffEntityData)
     {
-        bool isTriggerSuccess = base.TriggerBuffPeriodic(buffEntityData);
+        bool isTriggerSuccess = base.TriggerBuffConditional(buffEntityData);
         if (isTriggerSuccess == false) return false;
         
         //获取指定战斗生物
