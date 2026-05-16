@@ -3,8 +3,17 @@ using UnityEngine;
 
 public class AttackModeFalluponArea : BaseAttackMode
 {
+    /// <summary>
+    /// 重力加速度（m/s²），用于模拟下落时的加速效果
+    /// </summary>
+    private const float GravityAcceleration = 9.81f;
+
     private bool isFalling = false;
     private Action<BaseAttackMode> actionForAttackEnd;
+    /// <summary>
+    /// 当前下落速度，每帧由重力加速度累加，使下落轨迹呈非线性
+    /// </summary>
+    private float currentFallSpeed;
 
     #region 攻击入口
     /// <summary>
@@ -44,6 +53,7 @@ public class AttackModeFalluponArea : BaseAttackMode
             float randomOffsetZ = UnityEngine.Random.Range(-0.1f, 0.1f);
             gameObject.transform.position = new Vector3(attackModeData.targetPos.x + randomOffsetX, attackModeData.startPos.y, attackModeData.targetPos.z + randomOffsetZ);
         }
+        currentFallSpeed = attackModeInfo.speed_move;
         isFalling = true;
     }
 
@@ -61,7 +71,8 @@ public class AttackModeFalluponArea : BaseAttackMode
             return;
         }
 
-        gameObject.transform.Translate(Vector3.down * Time.deltaTime * attackModeInfo.speed_move);
+        gameObject.transform.Translate(Vector3.down * (Time.deltaTime * currentFallSpeed));
+        currentFallSpeed += GravityAcceleration * Time.deltaTime;
 
         if (attackModeData.targetPos.y >= gameObject.transform.position.y)
         {
@@ -93,6 +104,7 @@ public class AttackModeFalluponArea : BaseAttackMode
     public override void Destroy(bool isPermanently = false)
     {
         isFalling = false;
+        currentFallSpeed = 0f;
         actionForAttackEnd = null;
         base.Destroy(isPermanently);
     }

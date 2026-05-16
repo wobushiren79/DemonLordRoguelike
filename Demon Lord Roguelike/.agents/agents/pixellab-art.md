@@ -59,6 +59,8 @@ get_character(character_id) / get_object(object_id) / get_topdown_tileset(tilese
 - 单张图像：`Assets/Out/<资源名>.<ext>`
 - 帧动画：**只保存合成后的精灵表** `Assets/Out/<资源名>_4x4.png`，**不保留**单帧图片（下载到临时目录合成后删除）
 
+**禁止替换项目原有资源**：新生成的图片只允许保存到 `Assets/Out/`，不得覆盖 `Assets/LoadResources/`、`Assets/Resources/` 等目录下已有的原图。若 `Assets/Out/` 下已存在同名文件，使用带版本号或后缀的新文件名（如 `<资源名>_v2_4x4.png`）。
+
 下载前确保目录存在：
 ```bash
 mkdir -p "Assets/Out/<资源名>"

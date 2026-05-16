@@ -913,7 +913,16 @@ Assets/Scripts/
 Temp/obj/Assembly-CSharp/.NETStandard,Version=v2.1.AssemblyAttributes.cs
 
 [metadataReferences]
-../../../../Editor/6000.3.11f1/Editor/Data/Managed/UnityEngine/
+Assets/FrameWork/
+ Addons/DOTween/DOTween.dll
+ Plugins/EPPlus/
+  EPPlus.dll
+  Excel.dll
+  ICSharpCode.SharpZipLib.dll
+ Plugins/
+  Mono.Data.dll
+  Mono.Data.Sqlite.dll
+F:/Unity/Unity/6000.3.11f1/Editor/Data/Managed/UnityEngine/
  UnityEditor.AccessibilityModule.dll
  UnityEditor.AdaptivePerformanceModule.dll
  UnityEditor.AssetComplianceModule.dll
@@ -1047,7 +1056,7 @@ Temp/obj/Assembly-CSharp/.NETStandard,Version=v2.1.AssemblyAttributes.cs
  UnityEngine.VRModule.dll
  UnityEngine.WindModule.dll
  UnityEngine.XRModule.dll
-../../../../Editor/6000.3.11f1/Editor/Data/NetStandard/compat/2.1.0/shims/netfx/
+F:/Unity/Unity/6000.3.11f1/Editor/Data/NetStandard/compat/2.1.0/shims/netfx/
  mscorlib.dll
  System.ComponentModel.Composition.dll
  System.Core.dll
@@ -1065,7 +1074,7 @@ Temp/obj/Assembly-CSharp/.NETStandard,Version=v2.1.AssemblyAttributes.cs
  System.Xml.dll
  System.Xml.Linq.dll
  System.Xml.Serialization.dll
-../../../../Editor/6000.3.11f1/Editor/Data/NetStandard/compat/2.1.0/shims/netstandard/
+F:/Unity/Unity/6000.3.11f1/Editor/Data/NetStandard/compat/2.1.0/shims/netstandard/
  Microsoft.Win32.Primitives.dll
  System.AppContext.dll
  System.Buffers.dll
@@ -1169,18 +1178,9 @@ Temp/obj/Assembly-CSharp/.NETStandard,Version=v2.1.AssemblyAttributes.cs
  System.Xml.XmlSerializer.dll
  System.Xml.XPath.dll
  System.Xml.XPath.XDocument.dll
-../../../../Editor/6000.3.11f1/Editor/Data/NetStandard/
+F:/Unity/Unity/6000.3.11f1/Editor/Data/NetStandard/
  Extensions/2.0.0/System.Runtime.InteropServices.WindowsRuntime.dll
  ref/2.1.0/netstandard.dll
-Assets/FrameWork/
- Addons/DOTween/DOTween.dll
- Plugins/EPPlus/
-  EPPlus.dll
-  Excel.dll
-  ICSharpCode.SharpZipLib.dll
- Plugins/
-  Mono.Data.dll
-  Mono.Data.Sqlite.dll
 Library/PackageCache/com.unity.collections@aea9d3bd5e19/
  Unity.Collections.LowLevel.ILSupport/Unity.Collections.LowLevel.ILSupport.dll
  Unity.Collections.Tests/
@@ -1287,11 +1287,11 @@ Library/ScriptAssemblies/
  UnityEngine.UI.dll
 
 [analyzerReferences]
-../../../../Editor/6000.3.11f1/Editor/Data/Tools/BuildPipeline/Unity.SourceGenerators/
+C:/Users/AppleCoffee/.vscode/extensions/visualstudiotoolsforunity.vstuc-1.2.2/Analyzers/Microsoft.Unity.Analyzers.dll
+F:/Unity/Unity/6000.3.11f1/Editor/Data/Tools/BuildPipeline/Unity.SourceGenerators/
  Unity.Properties.SourceGenerator.dll
  Unity.SourceGenerators.dll
  Unity.UIToolkit.SourceGenerator.dll
-C:/Users/galasports/.vscode/extensions/visualstudiotoolsforunity.vstuc-1.2.2/Analyzers/Microsoft.Unity.Analyzers.dll
 
 [analyzerConfigFiles]
 Temp/obj/Assembly-CSharp/Assembly-CSharp.GeneratedMSBuildEditorConfig.editorconfig

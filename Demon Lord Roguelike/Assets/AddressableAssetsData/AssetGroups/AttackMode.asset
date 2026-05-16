@@ -30,8 +30,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 43eff844c772694499b69282d2e0bf09
+    m_Address: Assets/LoadResources/AttackMode/AttackMode_Fallupon_Ice_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4ecb3e4946659304fb0c026481d5b5c7
+    m_Address: Assets/LoadResources/AttackMode/AttackMode_Fallupon_Water_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5cab35740f03a26428d60ce8918b841b
     m_Address: Assets/LoadResources/AttackMode/AttackMode_RangedIceBall.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c109a3dd26ee6dc4c918e50e643548b4
+    m_Address: Assets/LoadResources/AttackMode/AttackMode_Fallupon_Meteorite_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

@@ -55,6 +55,16 @@ C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 - 禁止使用 `xlrd`、`xlwt`、`xlwings`、`pandas.read_excel` 等其他 Excel 库
 - Python 脚本文件统一存放在 `.agents/scripts/` 目录下
 
+## 临时脚本清理规则
+
+为完成单次任务而临时生成的 **PowerShell**（`.ps1`）或 **Python**（`.py`）脚本，在任务结束后必须**及时删除**，避免污染项目目录：
+
+- **判定标准**：仅用于本次任务一次性执行（如临时图片合成、临时数据转换、一次性查询等），且不属于可复用工具链一部分的脚本，视为"临时脚本"。
+- **删除时机**：脚本执行完毕、产出结果已经被验证或落盘后，立即删除该脚本文件。
+- **保留例外**：明确具有复用价值、长期维护需求或被项目其他流程引用的脚本（例如位于 `.agents/scripts/` 下的通用工具脚本），不属于临时脚本，**不应删除**。是否保留如有疑问，须先与用户确认。
+- **委派给 Agent/Skill 执行任务**时，若过程中产生临时脚本，亦需在任务结束总结前完成清理，或在 prompt 中明确告知子代理执行该清理动作。
+- **任务结束总结**中如有创建过临时脚本，应在总结里简要说明已删除的脚本路径，便于用户审计。
+
 ## PixelLab 像素图生成规则
 
 使用 PixelLab MCP 工具生成像素图时，所有生成的图片中的物体轮廓必须带有 **outline（描边）**：
@@ -62,6 +72,17 @@ C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 - 调用任何生成类工具（`create_character`、`create_object`、`create_isometric_tile`、`create_topdown_tileset`、`create_sidescroller_tileset`、`create_tiles_pro` 等）时，必须在 `description` 或相关参数中明确要求 outline，例如添加描述词：`with black outline`、`outlined`、`with clear pixel outline`。
 - 若工具提供独立的 outline 参数，优先使用该参数开启描边。
 - 禁止生成无轮廓（no outline）的像素图片。
+
+### 生成等待与轮询规则
+
+PixelLab 所有生成类工具均为异步任务（返回 job/资源 ID 后需要后续查询）。**无论是主对话直接调用，还是通过 Agent（如 general-purpose、Explore、Plan 等子代理）或 Skill 间接调用 PixelLab MCP 工具**，在等待生成结果期间均必须遵守以下轮询规范：
+
+- **轮询间隔固定为 15 秒**：每次调用对应的 `get_*` 工具（如 `get_character`、`get_object`、`get_isometric_tile`、`get_topdown_tileset`、`get_sidescroller_tileset`、`get_tiles_pro` 等）查询状态后，若状态仍为 `processing` / `pending` / `review` 未完成，等待 15 秒再发起下一次查询，不要进行其他操作。
+- **不得使用更短的轮询间隔**（如每 1~5 秒查询一次），避免对 PixelLab 服务造成不必要的负担。
+- **不得使用更长的轮询间隔**（如每 60 秒查询一次），以保证及时获取生成完成的结果。
+- 等待过程中应通过 `ScheduleWakeup` 或带有 15 秒延迟的脚本/sleep 命令实现间隔检测，禁止使用空轮询或无延迟循环。
+- 一旦状态变为 `completed` 或 `failed`，立即停止轮询并处理结果。
+- **委派给 Agent/Skill 执行 PixelLab 任务时**，必须在 prompt 中明确写明"轮询间隔固定为 15 秒"的要求，确保子代理或技能内部循环亦遵守该规则。
 
 ## 任务结束总结规则
 
