@@ -55,6 +55,14 @@ C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 - 禁止使用 `xlrd`、`xlwt`、`xlwings`、`pandas.read_excel` 等其他 Excel 库
 - Python 脚本文件统一存放在 `.agents/scripts/` 目录下
 
+## PixelLab 像素图生成规则
+
+使用 PixelLab MCP 工具生成像素图时，所有生成的图片中的物体轮廓必须带有 **outline（描边）**：
+
+- 调用任何生成类工具（`create_character`、`create_object`、`create_isometric_tile`、`create_topdown_tileset`、`create_sidescroller_tileset`、`create_tiles_pro` 等）时，必须在 `description` 或相关参数中明确要求 outline，例如添加描述词：`with black outline`、`outlined`、`with clear pixel outline`。
+- 若工具提供独立的 outline 参数，优先使用该参数开启描边。
+- 禁止生成无轮廓（no outline）的像素图片。
+
 ## 任务结束总结规则
 
 每次任务处理完成后的总结中，如果有 Agent 或 Skill 参与执行，必须列出：

@@ -34,7 +34,10 @@ skill: pixellab-art
 **本项目通用风格参数**：
 - description 末尾加 `dark fantasy pixel art style, roguelike game`
 - `size`: 角色用 `48` 或 `64`，物体用 `32` 或 `64`
-- `outline`: `single color black outline`
+- `outline`: **必须显式传入**，不可省略或设为 `lineless`：
+  - 角色 / 物体：`"single color black outline"`
+  - 等轴测瓦片（`create_isometric_tile`）：`"single color"`（工具默认为 `lineless`，**必须覆盖**）
+  - 瓦片集（topdown/sidescroller/tiles_pro）：若支持 outline 参数则传 `"single color outline"`；否则在 description 中补充 `with clear pixel outline`
 - `detail`: `medium detail`
 - `n_directions`: 角色默认 `8`
 
@@ -160,6 +163,7 @@ mkdir -p "Assets/Out/<资源名>"
 
 ## 约束
 
+- **所有生成的像素图必须带 outline**：每次调用 `create_*` 工具时，必须显式设置 outline 参数（见上方通用风格参数），禁止使用 `lineless` 或省略 outline
 - 所有 `create_*` 调用会消耗 PixelLab 积分，批量生成前告知用户
 - `delete_*` 操作不可逆，执行前确认
 - `animate_character` 的 `confirm_cost=false` 时直接扣费，建议设为 `true`

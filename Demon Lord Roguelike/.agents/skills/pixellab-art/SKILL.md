@@ -293,6 +293,18 @@ powershell.exe -ExecutionPolicy Bypass -File ".agents/scripts/make_spritesheet.p
 
 ---
 
+## Outline 强制规则
+
+**所有生成的像素图片，物体轮廓必须有 outline（描边）**，这是本项目的硬性规定：
+
+- `create_character` / `create_character_state`：`outline` 参数必须设为 `"single color black outline"`（工具默认值即为此，禁止改为 `"no outline"` 或 `"lineless"`）
+- `create_map_object` / `create_object`：`outline` 参数必须设为 `"single color outline"` 或 `"single color black outline"`
+- `create_isometric_tile`：`outline` 参数必须设为 `"single color"`（**注意：工具默认值为 `"lineless"`，必须显式覆盖**）
+- `create_topdown_tileset` / `create_sidescroller_tileset` / `create_tiles_pro`：若工具支持 `outline` 参数，必须传入 `"single color outline"`；若不支持，在 description 中加入 `with clear pixel outline`
+- 禁止使用 `"lineless"`、`"no outline"` 或省略 outline 参数（等轴测瓦片除外不适用——实际上也必须显式设置）
+
+---
+
 ## DemonLordRoguelike 项目风格建议
 
 针对本项目像素风格，建议在 description 中加入以下风格关键词：
@@ -304,5 +316,5 @@ powershell.exe -ExecutionPolicy Bypass -File ".agents/scripts/make_spritesheet.p
 **推荐参数组合**：
 - 角色尺寸：`size=48` 或 `size=64`
 - 瓦片尺寸：`tile_size={"width": 16, "height": 16}`
-- 描边：`single color black outline`
+- 描边：`single color black outline`（**必填，不可省略**）
 - 细节：`medium detail`

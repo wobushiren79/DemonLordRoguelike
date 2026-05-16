@@ -50,7 +50,8 @@
       "Bash('/c/Program Files/WindowsApps/PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0/python3.12.exe' -c ' *)",
       "WebFetch(domain:api.pixellab.ai)",
       "mcp__pixellab__create_object",
-      "mcp__pixellab__animate_object"
+      "mcp__pixellab__animate_object",
+      "mcp__pixellab__get_object"
     ]
   },
   "enabledMcpjsonServers": [

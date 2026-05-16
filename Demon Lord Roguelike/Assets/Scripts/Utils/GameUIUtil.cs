@@ -7,6 +7,38 @@ public static class GameUIUtil
 {
     public static string pathCardScene = "Assets/LoadResources/Textures/CardScene";//卡片场景路径
 
+    #region 颜色工具
+    /// <summary>
+    /// 设置渐变颜色，支持单色和双色渐变
+    /// 单色格式: "#B9B9B9"，直接设置 Graphic.color
+    /// 双色格式: "#B9B9B9,#B9B9B1"，通过材质的 _StartColor / _EndColor 属性设置渐变
+    /// </summary>
+    public static void SetGradientColor(Graphic graphic, string colorStr)
+    {
+        if (graphic == null || colorStr.IsNull())
+            return;
+
+        string[] colors = colorStr.Split(',');
+        if (colors.Length >= 2)
+        {
+            ColorUtility.TryParseHtmlString(colors[0].Trim(), out Color startColor);
+            ColorUtility.TryParseHtmlString(colors[1].Trim(), out Color endColor);
+            var mat = new Material(graphic.material);
+            mat.SetColor("_StartColor", startColor);
+            mat.SetColor("_EndColor", endColor);
+            graphic.material = mat;
+        }
+        else
+        {
+            ColorUtility.TryParseHtmlString(colorStr.Trim(), out Color color);
+            var mat = new Material(graphic.material);
+            mat.SetColor("_StartColor", color);
+            mat.SetColor("_EndColor", color);
+            graphic.material = mat;
+        }
+    }
+    #endregion
+
     /// <summary>
     /// 设置生物简易UI
     /// </summary>

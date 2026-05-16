@@ -1,4 +1,3 @@
-using DG.Tweening;
 using Spine;
 using UnityEngine;
 using UnityEngine.UI;
@@ -54,10 +53,8 @@ public partial class UIViewCreatureCardItem : BaseUIView
         if (rarity == 0)
             rarity = 1;
         var rarityInfo = RarityInfoCfg.GetItemData(rarity);
-        ColorUtility.TryParseHtmlString(rarityInfo.ui_board_color, out Color boardColor);
-        ui_CardBgBorad.color = boardColor;
-        ColorUtility.TryParseHtmlString(rarityInfo.ui_board_other_color, out Color boardOtherColor);
-        ui_IconContent.color = boardOtherColor;
+        GameUIUtil.SetGradientColor(ui_CardBgBorad, rarityInfo.ui_board_color);
+        GameUIUtil.SetGradientColor(ui_IconContent, rarityInfo.ui_board_other_color);
     }
 
     /// <summary>
