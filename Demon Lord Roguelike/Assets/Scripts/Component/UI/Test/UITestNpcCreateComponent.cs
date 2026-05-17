@@ -50,5 +50,7 @@ public partial class UITestNpcCreate
 
     public TMP_InputField ui_UIDataNameInput_MSPD;
 
+    public TMP_InputField ui_UIDataNameInput_AttackSearchRange;
+
 
 }

@@ -237,6 +237,7 @@ public partial class UITestNpcCreate : BaseUIComponent
                 new ExcelChangeData(npciD,"ATK",$"{creatureNpcData.npcInfo.ATK}"),
                 new ExcelChangeData(npciD,"ASPD",$"{creatureNpcData.npcInfo.ASPD}"),
                 new ExcelChangeData(npciD,"MSPD",$"{creatureNpcData.npcInfo.MSPD}"),
+                new ExcelChangeData(npciD,"attack_search_range",$"{creatureNpcData.npcInfo.attack_search_range}"),
             };
             ExcelUtil.SetExcelData("Assets/Data/Excel/excel_npc_info[NPC信息].xlsx", "NpcInfo", listData);
 #endif
@@ -279,6 +280,7 @@ public partial class UITestNpcCreate : BaseUIComponent
         ui_UIDataNameInput_ATK.text = $"{npcInfo.ATK}";
         ui_UIDataNameInput_ASPD.text = $"{npcInfo.ASPD}";
         ui_UIDataNameInput_MSPD.text = $"{npcInfo.MSPD}";
+        ui_UIDataNameInput_AttackSearchRange.text = $"{npcInfo.attack_search_range}";
     }
 
     /// <summary>

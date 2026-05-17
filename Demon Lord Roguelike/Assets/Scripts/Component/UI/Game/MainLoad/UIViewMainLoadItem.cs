@@ -50,7 +50,7 @@ public partial class UIViewMainLoadItem : BaseUIView
         ui_Continue.ShowObj(false);
         ui_Create.ShowObj(false);
         ui_Error.ShowObj(false);
-        if (userData == null)
+        if (userData == null || userData.id == 0)
         {
             ui_Create.ShowObj(true);
         }

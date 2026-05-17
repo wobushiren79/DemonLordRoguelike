@@ -157,8 +157,9 @@ public enum UnlockEnum : long
     Altar = 100100001,//祭坛
     DoomCouncil = 100200001,//终焉议会模块
     PortalShowNum = 100300001, //传送门显示数量
+    
+    GashaponMachine = 100400000,//解锁孕育
     GashaponShowAll = 100400001,//显示所有抽取
-
     GashaponRarityR = 100401000,//稀有度R
     GashaponRarityRRate = 100401001,//稀有度R +1%
     GashaponRaritySR = 100402000,//稀有度SR    

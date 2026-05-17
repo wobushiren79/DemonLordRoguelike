@@ -12,5 +12,7 @@ public partial class UIGashaponMachine
 
     public ScrollGridVertical ui_List;
 
+    public UITextLanguageView ui_NullText;
+
 
 }

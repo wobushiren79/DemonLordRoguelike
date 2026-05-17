@@ -127,11 +127,11 @@ Material:
     - _ClipRect: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _EndColor: {r: 0.9333334, g: 0.509804, b: 0.9333334, a: 1}
+    - _EndColor: {r: 1, g: 1, b: 1, a: 1}
     - _GradientEnd: {r: 0, g: 0, b: 0, a: 0}
     - _GradientStart: {r: 0, g: 1, b: 0, a: 0}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
-    - _StartColor: {r: 0.72156864, g: 0.38431373, b: 0.8666667, a: 1}
+    - _StartColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &5859527434342218353

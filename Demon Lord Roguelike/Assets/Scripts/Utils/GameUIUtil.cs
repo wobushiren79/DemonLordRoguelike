@@ -8,34 +8,43 @@ public static class GameUIUtil
     public static string pathCardScene = "Assets/LoadResources/Textures/CardScene";//卡片场景路径
 
     #region 颜色工具
+    /// <summary>自定义材质实例名称，用于标记已克隆的材质副本</summary>
+    private const string customMatName = "MatCustom";
+
     /// <summary>
     /// 设置渐变颜色，支持单色和双色渐变
-    /// 单色格式: "#B9B9B9"，直接设置 Graphic.color
+    /// 单色格式: "#B9B9B9"，仍通过材质属性应用，保持渲染一致
     /// 双色格式: "#B9B9B9,#B9B9B1"，通过材质的 _StartColor / _EndColor 属性设置渐变
+    /// 注意：内部会自动实例化材质副本，避免污染共享材质资源
     /// </summary>
     public static void SetGradientColor(Graphic graphic, string colorStr)
     {
         if (graphic == null || colorStr.IsNull())
             return;
 
+        // 实例化独立材质副本，避免修改共享材质资源影响其他控件
+        Material mat = graphic.material;
+        if (mat != null && mat.name != customMatName)
+        {
+            mat = new Material(mat) { name = customMatName };
+            graphic.material = mat;
+        }
+
         string[] colors = colorStr.Split(',');
         if (colors.Length >= 2)
         {
             ColorUtility.TryParseHtmlString(colors[0].Trim(), out Color startColor);
             ColorUtility.TryParseHtmlString(colors[1].Trim(), out Color endColor);
-            var mat = new Material(graphic.material);
             mat.SetColor("_StartColor", startColor);
             mat.SetColor("_EndColor", endColor);
-            graphic.material = mat;
         }
         else
         {
             ColorUtility.TryParseHtmlString(colorStr.Trim(), out Color color);
-            var mat = new Material(graphic.material);
             mat.SetColor("_StartColor", color);
             mat.SetColor("_EndColor", color);
-            graphic.material = mat;
         }
+        graphic.color = Color.white;
     }
     #endregion
 

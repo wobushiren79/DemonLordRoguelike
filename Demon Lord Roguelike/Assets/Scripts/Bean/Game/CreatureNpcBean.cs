@@ -16,6 +16,8 @@ public class CreatureNpcBean
     {
         get
         {
+            if (npcId == 0)
+                return null;
             if (_npcInfo == null)
             {
                 _npcInfo = NpcInfoCfg.GetItemData(npcId);

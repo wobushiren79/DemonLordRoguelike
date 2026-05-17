@@ -157,6 +157,7 @@ public partial class UIMainCreate : BaseUIComponent
         dialogData.actionSubmit = ((view, data) =>
         {
             UserDataBean userData = new UserDataBean();
+            userData.id = userDataIndex;
             userData.saveIndex = userDataIndex;
             //设置名字
             userData.userName = ui_NameET.text;

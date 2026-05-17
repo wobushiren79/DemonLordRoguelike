@@ -59,8 +59,10 @@ public abstract class AICreatureEntity : AIBaseEntity
     {
         var fightCreatureData = selfCreatureEntity.fightCreatureData;
         var creatureInfo = fightCreatureData.creatureData.creatureInfo;
+        //如果有NPC数据 优先使用NPC数据里的属性
+        var npcInfo = fightCreatureData.creatureData.creatureNpcData?.npcInfo;
         //搜索范围
-        float searchRange = creatureInfo.attack_search_range;
+        float searchRange = npcInfo != null ? npcInfo.attack_search_range : creatureInfo.attack_search_range;
         CreatureFightTypeEnum searchCreatureFightType = creatureInfo.GetAttackSearchCreatureFightType();
         //搜索模式
         CreatureSearchType searchType = fightCreatureData.creatureData.creatureInfo.GetCreatureSearchType();

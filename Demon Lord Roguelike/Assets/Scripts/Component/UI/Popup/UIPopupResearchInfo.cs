@@ -13,7 +13,7 @@ public partial class UIPopupResearchInfo : PopupShowCommonView
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UserUnlockBean userUnlock = userData.GetUserUnlockData();
         //获取当前研究等级
-        int currentLevel = userUnlock.GetUnlockResearchLevel(researchInfo);
+        int currentLevel = userUnlock.GetUnlockResearchLevelByResearchInfo(researchInfo);
         //获取支付金额
         long payCrystal = researchInfo.GetPayCrystal(currentLevel + 1);
 
@@ -80,7 +80,7 @@ public partial class UIPopupResearchInfo : PopupShowCommonView
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UserUnlockBean userUnlock = userData.GetUserUnlockData();
-        int currentLevel = userUnlock.GetUnlockResearchLevel(researchInfo);
+        int currentLevel = userUnlock.GetUnlockResearchLevelByResearchInfo(researchInfo);
         //如果已经达到最大研究等级 也不用显示解锁条件
         if (currentLevel == researchInfo.level_max)
         {

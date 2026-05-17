@@ -108,11 +108,11 @@ public class ControlForGameBase : BaseControl
     /// </summary>
     /// <param name="animationCreatureState"></param>
     /// <param name="isLoop"></param>
-    public void PlayAnimForControlTarget(SpineAnimationStateEnum animationCreatureState, bool isLoop = true)
+    public void PlayAnimForControlTarget(SpineAnimationStateEnum animationCreatureState, bool isLoop = true, float animSpeed = 1)
     {
         if (creatureAnimEnum != animationCreatureState && skeletonAnimation != null)
         {
-            SpineHandler.Instance.PlayAnim(skeletonAnimation, animationCreatureState, creatureData, isLoop);
+            SpineHandler.Instance.PlayAnim(skeletonAnimation, animationCreatureState, creatureData, isLoop, animSpeed: animSpeed);
             creatureAnimEnum = animationCreatureState;
         }
     }
@@ -134,7 +134,7 @@ public class ControlForGameBase : BaseControl
         {
                     
             float moveSpeed = creatureData.GetAttribute(CreatureAttributeTypeEnum.MSPD);
-            float moveSpeedFinal = MathUtil.InterpolationLerp(moveSpeed, 0, 100, 0, 5f);
+            float moveSpeedFinal = MathUtil.InterpolationLerp(moveSpeed, 0, 100, 2f, 5f);
 
             Vector3 targetMoveOffset = new Vector3(moveData.x * Time.deltaTime * moveSpeedFinal, 0, moveData.y * Time.deltaTime * moveSpeedFinal);
             var targetMove = GameControlHandler.Instance.manager.controlTargetForCreature;
@@ -156,7 +156,7 @@ public class ControlForGameBase : BaseControl
                 skeletonAnimation.transform.localScale = new Vector3(-directionXSize, sizeOriginal.y, sizeOriginal.z);
             }
             //播放动画
-            PlayAnimForControlTarget(SpineAnimationStateEnum.Walk);
+            PlayAnimForControlTarget(SpineAnimationStateEnum.Walk,animSpeed: moveSpeedFinal * 0.8f);
 
         }
     }

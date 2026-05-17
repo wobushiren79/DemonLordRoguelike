@@ -64,8 +64,12 @@ public partial class UIBaseCore : BaseUIComponent
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
+        //是否解锁Vat
         bool isUnlockVat = userUnlock.CheckIsUnlock(UnlockEnum.CreatureVat);
         ui_ViewBaseCoreItemFunction_Vat.gameObject.SetActive(isUnlockVat);
+        //是否解锁孕育
+        bool isUnlockGashaponMachine = userUnlock.CheckIsUnlock(UnlockEnum.GashaponMachine);
+        ui_ViewBaseCoreItemFunction_Gashapon.gameObject.SetActive(isUnlockGashaponMachine);
     }
 
     /// <summary>

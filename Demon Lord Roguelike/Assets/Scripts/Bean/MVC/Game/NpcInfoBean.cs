@@ -41,6 +41,10 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public float MSPD;
 	/// <summary>
+	///攻击搜索范围
+	/// </summary>
+	public float attack_search_range;
+	/// <summary>
 	///皮肤固定数据
 	/// </summary>
 	public string skin_data;

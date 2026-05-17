@@ -49,7 +49,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
         int maxLevel = researchInfo.level_max;
-        int level = userUnlock.GetUnlockResearchLevel(researchInfo);
+        int level = userUnlock.GetUnlockResearchLevelByResearchInfo(researchInfo);
         if (level == maxLevel || level == 0)
         {
             ui_Level.gameObject.SetActive(false);
@@ -76,7 +76,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
-        int unlockLevel = userUnlock.GetUnlockResearchLevel(researchInfo);
+        int unlockLevel = userUnlock.GetUnlockResearchLevelByResearchInfo(researchInfo);
         //未解锁
         if (unlockLevel == 0)
         {
@@ -122,7 +122,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
         //先检测魔晶够不够
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
-        int level = userUnlock.GetUnlockResearchLevel(researchInfo);
+        int level = userUnlock.GetUnlockResearchLevelByResearchInfo(researchInfo);
         //检测是否已经解锁
         if (level == researchInfo.level_max)
         {

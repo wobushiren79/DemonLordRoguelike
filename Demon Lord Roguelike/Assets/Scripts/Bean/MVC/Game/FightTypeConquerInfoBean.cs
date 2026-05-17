@@ -9,19 +9,19 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	/// </summary>
 	public long world_id;
 	/// <summary>
-	///战斗场景列表
+	///战斗场景列表（用&分割）
 	/// </summary>
 	public string fight_scene_ids;
 	/// <summary>
-	///boss战斗场景列表
+	///boss战斗场景列表（用&分割）
 	/// </summary>
 	public string fight_scene_boss_ids;
 	/// <summary>
-	///敌人列表
+	///敌人列表（npcInfoId用&分割）（npcInfoId用&分割）
 	/// </summary>
 	public string enemy_ids;
 	/// <summary>
-	///boss列表
+	///boss列表（npcInfoId用&分割）
 	/// </summary>
 	public string enemy_boss_ids;
 	/// <summary>

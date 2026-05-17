@@ -21,7 +21,7 @@ public partial class StoreGashaponMachineInfoBean : BaseBean
 	/// </summary>
 	public string icon_res;
 	/// <summary>
-	///解锁ID
+	///解锁ID用,分割
 	/// </summary>
 	public string pre_unlock_ids;
 	/// <summary>

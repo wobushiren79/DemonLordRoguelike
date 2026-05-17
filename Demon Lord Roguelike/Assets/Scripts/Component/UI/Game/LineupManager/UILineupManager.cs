@@ -20,9 +20,11 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     public List<UIViewCreatureCardItem> listShowCardLineup = new List<UIViewCreatureCardItem>();
 
     //阵容动画卡片移动时间
-    protected float timeForLineupCardMove = 0.2f;
+    protected float timeForLineupCardMove = 0.3f;
     //阵容动画卡片移动时间(初始化)
-    protected float timeForLineupCardMoveInit = 0.4f;
+    protected float timeForLineupCardMoveInit = 0.5f;
+    //卡片动画错开间隔
+    protected float timeForLineupCardStagger = 0.04f;
     //当前阵容的序号
     protected int currentLineupIndex = 1;
     public override void Awake()
@@ -201,33 +203,62 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         int completeNum = 0;
+        int totalCard = listShowCardLineup.Count;
         //通知卡片移动位置
-        for (int i = 0; i < listShowCardLineup.Count; i++)
+        for (int i = 0; i < totalCard; i++)
         {
             var itemCardView = listShowCardLineup[i];
             itemCardView.transform.SetAsLastSibling();
             var itemLineupPosIndex = userData.GetLineupCreaturePosIndex(currentLineupIndex, itemCardView.cardData.creatureData.creatureUUId);
-            Vector3 itemLineupPos = GetLineupPostion(listShowCardLineup.Count, itemLineupPosIndex);
+            Vector3 itemLineupPos = GetLineupPostion(totalCard, itemLineupPosIndex);
+            //计算错开延迟
+            float delay = i * timeForLineupCardStagger;
             //播放动画
             float timeForMove = timeForLineupCardMove;
-            Ease animEase = Ease.OutBack;
+            itemCardView.transform.DOKill();
+            Sequence cardSequence = DOTween.Sequence();
             if (animType == 1)
             {
+                //初始化动画：从下方弹入，带缩放
                 timeForMove = timeForLineupCardMoveInit;
-                animEase = Ease.OutQuad;
-            }
-            itemCardView.transform.DOKill();
-            itemCardView.transform
-                .DOLocalMove(itemLineupPos, timeForMove)
-                .SetEase(animEase)
-                .OnComplete(() =>
-                {
-                    completeNum++;
-                    if (completeNum == listShowCardLineup.Count)
+                Vector3 startPos = itemLineupPos + new Vector3(0, -200f, 0);
+                itemCardView.transform.localPosition = startPos;
+                cardSequence
+                    .AppendInterval(delay)
+                    .Append(itemCardView.transform.DOLocalMove(itemLineupPos, timeForMove).SetEase(Ease.OutBack))
+                    .Join(itemCardView.transform.DOScale(1.15f, timeForMove * 0.6f).SetEase(Ease.OutQuad))
+                    .Append(itemCardView.transform.DOScale(1f, timeForMove * 0.4f).SetEase(Ease.InOutQuad))
+                    .OnComplete(() =>
                     {
-                        actionForComplete?.Invoke();
-                    }
-                });
+                        completeNum++;
+                        if (completeNum == totalCard)
+                        {
+                            actionForComplete?.Invoke();
+                        }
+                    });
+            }
+            else
+            {
+                //默认动画：带轻微缩放弹跳和错开效果
+                cardSequence
+                    .AppendInterval(delay)
+                    .Append(itemCardView.transform.DOLocalMove(itemLineupPos, timeForMove).SetEase(Ease.OutBack))
+                    .Join(itemCardView.transform.DOScale(1.08f, timeForMove * 0.5f).SetEase(Ease.OutQuad))
+                    .Append(itemCardView.transform.DOScale(1f, timeForMove * 0.5f).SetEase(Ease.InOutQuad))
+                    .OnComplete(() =>
+                    {
+                        completeNum++;
+                        if (completeNum == totalCard)
+                        {
+                            actionForComplete?.Invoke();
+                        }
+                    });
+            }
+        }
+        //如果没有卡片，直接回调
+        if (totalCard == 0)
+        {
+            actionForComplete?.Invoke();
         }
     }
     #endregion
