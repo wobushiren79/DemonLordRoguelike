@@ -51,7 +51,9 @@
       "WebFetch(domain:api.pixellab.ai)",
       "mcp__pixellab__create_object",
       "mcp__pixellab__animate_object",
-      "mcp__pixellab__get_object"
+      "mcp__pixellab__get_object",
+      "mcp__pixellab__select_object_frames",
+      "mcp__pixellab__list_objects"
     ]
   },
   "enabledMcpjsonServers": [
