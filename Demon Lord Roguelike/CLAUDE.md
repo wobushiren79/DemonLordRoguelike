@@ -77,12 +77,11 @@ C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 
 PixelLab 所有生成类工具均为异步任务（返回 job/资源 ID 后需要后续查询）。**无论是主对话直接调用，还是通过 Agent（如 general-purpose、Explore、Plan 等子代理）或 Skill 间接调用 PixelLab MCP 工具**，在等待生成结果期间均必须遵守以下轮询规范：
 
-- **轮询间隔固定为 15 秒**：每次调用对应的 `get_*` 工具（如 `get_character`、`get_object`、`get_isometric_tile`、`get_topdown_tileset`、`get_sidescroller_tileset`、`get_tiles_pro` 等）查询状态后，若状态仍为 `processing` / `pending` / `review` 未完成，等待 15 秒再发起下一次查询，不要进行其他操作。
-- **不得使用更短的轮询间隔**（如每 1~5 秒查询一次），避免对 PixelLab 服务造成不必要的负担。
-- **不得使用更长的轮询间隔**（如每 60 秒查询一次），以保证及时获取生成完成的结果。
-- 等待过程中应通过 `ScheduleWakeup` 或带有 15 秒延迟的脚本/sleep 命令实现间隔检测，禁止使用空轮询或无延迟循环。
+- **轮询间隔固定为 60 秒**：每次调用对应的 `get_*` 工具（如 `get_character`、`get_object`、`get_isometric_tile`、`get_topdown_tileset`、`get_sidescroller_tileset`、`get_tiles_pro` 等）查询状态后，若状态仍为 `processing` / `pending` / `review` 未完成，等待 60 秒再发起下一次查询，不要进行其他操作。
+- **不得使用更短的轮询间隔**（如每 1~15 秒查询一次），避免对 PixelLab 服务造成不必要的负担。
+- 等待过程中应通过 `ScheduleWakeup` 或带有 60 秒延迟的脚本/sleep 命令实现间隔检测，禁止使用空轮询或无延迟循环。
 - 一旦状态变为 `completed` 或 `failed`，立即停止轮询并处理结果。
-- **委派给 Agent/Skill 执行 PixelLab 任务时**，必须在 prompt 中明确写明"轮询间隔固定为 15 秒"的要求，确保子代理或技能内部循环亦遵守该规则。
+- **委派给 Agent/Skill 执行 PixelLab 任务时**，必须在 prompt 中明确写明"轮询间隔固定为 60 秒"的要求，确保子代理或技能内部循环亦遵守该规则。
 
 ## 任务结束总结规则
 

@@ -37,6 +37,9 @@ public class FightTypeConquerEditorWindow : EditorWindow
     /// <summary>NpcInfo Excel 文件路径</summary>
     private string npcInfoExcelPath;
 
+    /// <summary>战斗场景 Excel 文件路径</summary>
+    private string fightSceneExcelPath;
+
     /// <summary>Json 输出目录</summary>
     private string jsonFolderPath;
 
@@ -111,6 +114,7 @@ public class FightTypeConquerEditorWindow : EditorWindow
     {
         excelPath = Application.dataPath + "/Data/Excel/excel_fight_type_conquer_info[战斗-征服模式].xlsx";
         npcInfoExcelPath = Application.dataPath + "/Data/Excel/excel_npc_info[NPC信息].xlsx";
+        fightSceneExcelPath = Application.dataPath + "/Data/Excel/excel_fight_scene[战斗场景].xlsx";
         jsonFolderPath = Application.dataPath + "/Resources/JsonText";
 
         LoadWorldData();
@@ -131,6 +135,11 @@ public class FightTypeConquerEditorWindow : EditorWindow
 
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
 
+        // 快捷操作按钮
+        DrawOpenNpcInfoButton();
+
+        GUILayout.Space(10);
+
         // 顶部选择区域
         DrawSelectionArea();
 
@@ -149,11 +158,6 @@ public class FightTypeConquerEditorWindow : EditorWindow
         {
             EditorGUILayout.HelpBox($"未找到世界ID {GetSelectedWorldId()} 难度 {selectedDifficulty} 的数据", MessageType.Warning);
         }
-
-        GUILayout.Space(15);
-
-        // 打开NpcInfo Excel按钮
-        DrawOpenNpcInfoButton();
 
         EditorGUILayout.EndScrollView();
     }
@@ -838,6 +842,26 @@ public class FightTypeConquerEditorWindow : EditorWindow
         }
         GUI.backgroundColor = prevColor;
 
+        GUILayout.Space(10);
+
+        prevColor = GUI.backgroundColor;
+        GUI.backgroundColor = new Color(0.25f, 0.65f, 0.90f);
+        if (GUILayout.Button("打开 战斗场景 Excel 表格", GUILayout.Width(220), GUILayout.Height(35)))
+        {
+            OpenFightSceneExcel();
+        }
+        GUI.backgroundColor = prevColor;
+
+        GUILayout.Space(10);
+
+        prevColor = GUI.backgroundColor;
+        GUI.backgroundColor = new Color(0.65f, 0.35f, 0.90f);
+        if (GUILayout.Button("打开 战斗模式难度 Excel 表格", GUILayout.Width(220), GUILayout.Height(35)))
+        {
+            OpenFightTypeConquerExcel();
+        }
+        GUI.backgroundColor = prevColor;
+
         GUILayout.Space(15);
 
         // 重新加载Excel按钮
@@ -1023,6 +1047,36 @@ public class FightTypeConquerEditorWindow : EditorWindow
         else
         {
             EditorUtility.DisplayDialog("错误", $"NpcInfo Excel文件不存在:\n{npcInfoExcelPath}", "确定");
+        }
+    }
+
+    /// <summary>
+    /// 打开战斗模式难度 Excel表格
+    /// </summary>
+    private void OpenFightTypeConquerExcel()
+    {
+        if (File.Exists(excelPath))
+        {
+            System.Diagnostics.Process.Start(excelPath);
+        }
+        else
+        {
+            EditorUtility.DisplayDialog("错误", $"战斗模式难度 Excel文件不存在:\n{excelPath}", "确定");
+        }
+    }
+
+    /// <summary>
+    /// 打开战斗场景 Excel表格
+    /// </summary>
+    private void OpenFightSceneExcel()
+    {
+        if (File.Exists(fightSceneExcelPath))
+        {
+            System.Diagnostics.Process.Start(fightSceneExcelPath);
+        }
+        else
+        {
+            EditorUtility.DisplayDialog("错误", $"战斗场景 Excel文件不存在:\n{fightSceneExcelPath}", "确定");
         }
     }
 
