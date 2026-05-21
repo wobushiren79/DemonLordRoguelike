@@ -53,17 +53,29 @@ public class BuffManager : BaseManager
     /// <summary>
     /// 清理BUFF集合
     /// </summary>
+    /// <remarks>
+    /// 只负责回收entity到对象池并清空内层list内容，不修改外层结构。
+    /// 调用方在调用本方法后必须自行调用 dicXxx.Clear() 以保证DictionaryList反向映射一致。
+    /// </remarks>
     protected void ClearBuffCollection(List<List<BuffBaseEntity>> listBuffCollection)
     {
         for (int i = 0; i < listBuffCollection.Count; i++)
         {
             var listBuff = listBuffCollection[i];
-            for (int f = listBuff.Count - 1; f >= 0; f--)
+            if (listBuff == null) continue;
+            for (int f = 0; f < listBuff.Count; f++)
             {
                 var itemBuff = listBuff[f];
-                itemBuff.buffEntityData.isValid = false;
-                RemoveBuffEntity(listBuff, itemBuff);
+                if (itemBuff == null) continue;
+                //先标记失效，让残留事件回调跳过
+                if (itemBuff.buffEntityData != null)
+                {
+                    itemBuff.buffEntityData.isValid = false;
+                }
+                //仅回收到对象池，不动外层listBuff结构
+                RemoveBuffEntity(itemBuff);
             }
+            listBuff.Clear();
         }
     }
     #endregion
@@ -95,10 +107,12 @@ public class BuffManager : BaseManager
     /// </summary>
     public void RemoveBuffEntity(BuffBaseEntity itemBuffEntity)
     {
-        //回收entityBean
-        RemoveBuffEntityBean(itemBuffEntity.buffEntityData);
-        //清理数据
+        //先获取bean引用（ClearData会将其置null）
+        var beanToRecycle = itemBuffEntity.buffEntityData;
+        //先清理entity数据：注销事件、置空buffEntityData，避免回收过程中残留回调访问已回收的bean
         itemBuffEntity.ClearData();
+        //再回收entityBean
+        RemoveBuffEntityBean(beanToRecycle);
         Type actualType = itemBuffEntity.GetType();
         string className = actualType.Name; // 获取类名（不包含命名空间）
         //添加到缓存
@@ -112,7 +126,7 @@ public class BuffManager : BaseManager
             newQueue.Enqueue(itemBuffEntity);
             dicBuffEntityPool.Add(className, newQueue);
         }
-    } 
+    }
 
     /// <summary>
     /// 获取BUFFPre实例类

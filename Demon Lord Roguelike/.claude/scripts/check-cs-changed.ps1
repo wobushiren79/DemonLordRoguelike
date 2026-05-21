@@ -14,7 +14,7 @@ try {
 
     $normalized = $filePath -replace '\\', '/'
     if ($normalized -match '^Assets/.*\.cs$') {
-        $msg = '{"systemMessage":"C# file changed. Run .agents/check-watched.ps1 to check which agents/skills need updating."}'
+        $msg = '{"systemMessage":"C# file changed. Run .claude/scripts/check-watched.ps1 to check which agents/skills need updating."}'
         Write-Output $msg
     }
 } catch {

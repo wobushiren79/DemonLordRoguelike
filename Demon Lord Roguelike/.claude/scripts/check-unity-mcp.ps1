@@ -19,11 +19,11 @@
   Only check status, do not attempt to start the server.
 
 .EXAMPLE
-  .agents/check-unity-mcp.ps1
+  .claude/scripts/check-unity-mcp.ps1
   # Auto-detect and start if needed
 
 .EXAMPLE
-  .agents/check-unity-mcp.ps1 -CheckOnly
+  .claude/scripts/check-unity-mcp.ps1 -CheckOnly
   # Only report status without starting
 #>
 
@@ -86,7 +86,7 @@ function Start-McpHttpServer {
 
     $cmd = "`"$UvxPath`" --from mcpforunityserver mcp-for-unity --transport http --http-url http://127.0.0.1:$Port --project-scoped-tools"
 
-    $scriptsDir = Join-Path $PSScriptRoot ".." "Library" "MCPForUnity" "TerminalScripts"
+    $scriptsDir = Join-Path $PSScriptRoot ".." ".." "Library" "MCPForUnity" "TerminalScripts"
     New-Item -ItemType Directory -Force -Path $scriptsDir | Out-Null
     $scriptPath = Join-Path $scriptsDir "mcp-auto-start.cmd"
 

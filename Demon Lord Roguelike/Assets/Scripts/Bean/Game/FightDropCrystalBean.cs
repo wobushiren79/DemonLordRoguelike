@@ -11,9 +11,11 @@ public class FightDropCrystalBean
     public int crystalNum;
     //掉落持续时间
     public float lifeTime;
+    //掉落者生物UUID 用于BUFF事件筛选 BUFF自身追加的水晶应保持为空 避免被其他BUFF再次触发或自反馈
+    public string dropperCreatureUUId;
     public FightDropCrystalBean()
     {
-        
+
     }
 
     public FightDropCrystalBean(int crystalNum, Vector3 dropPos)

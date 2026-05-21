@@ -92,6 +92,8 @@ public class FightManager : BaseManager
             var targetData = poolFightDropCrystalBean.Dequeue();
             targetData.crystalNum = crystalNum;
             targetData.dropPos = dropPos;
+            //从池中取出时清理掉落者标记 由调用方按需重新赋值 防止脏数据污染BUFF筛选
+            targetData.dropperCreatureUUId = null;
             return targetData;
         }
         return new FightDropCrystalBean(crystalNum, dropPos);

@@ -4,8 +4,8 @@
   agents and skills need updating when their associated classes change.
 
 .DESCRIPTION
-  Reads watched_files from frontmatter of every .agents/agents/*.md and
-  .agents/skills/*/SKILL.md, then compares against files changed in the
+  Reads watched_files from frontmatter of every .claude/agents/*.md and
+  .claude/skills/*/SKILL.md, then compares against files changed in the
   working tree (git diff --name-only). Supports both exact file paths and
   directory prefixes (paths ending in /).
 
@@ -23,15 +23,15 @@
   Exit with non-zero code when any watched file has changed (for CI hooks).
 
 .EXAMPLE
-  .agents/check-watched.ps1
+  .claude/scripts/check-watched.ps1
   # Checks working-tree changes against HEAD
 
 .EXAMPLE
-  .agents/check-watched.ps1 -BaseRef origin/main
+  .claude/scripts/check-watched.ps1 -BaseRef origin/main
   # Checks all changes on this branch vs origin/main
 
 .EXAMPLE
-  .agents/check-watched.ps1 -StagedOnly
+  .claude/scripts/check-watched.ps1 -StagedOnly
   # Only checks staged changes (pre-commit hook)
 #>
 
@@ -43,8 +43,9 @@ param(
 )
 
 $ErrorActionPreference = "Continue"
-$agentsDir = Join-Path $PSScriptRoot "agents"
-$skillsDir = Join-Path $PSScriptRoot "skills"
+$claudeDir = Split-Path $PSScriptRoot -Parent
+$agentsDir = Join-Path $claudeDir "agents"
+$skillsDir = Join-Path $claudeDir "skills"
 
 # ------------------------------------------------------------------
 # 1. Collect changed files from git

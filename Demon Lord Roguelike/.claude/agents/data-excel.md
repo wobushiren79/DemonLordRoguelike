@@ -9,8 +9,8 @@ watched_files:
   - Assets/FrameWork/Editor/Base/Window/ExcelEditorWindow.cs
   - Assets/Data/Excel/
   - Assets/Resources/JsonText/
-  - .agents/scripts/excel_read.py
-  - .agents/scripts/excel_write.py
+  - .claude/scripts/excel_read.py
+  - .claude/scripts/excel_write.py
 ---
 
 # Excel 配置表 (Excel Config) 开发代理
@@ -20,24 +20,24 @@ watched_files:
 ## Excel 读写规则（重要）
 
 直接操作 `.xlsx` 文件时，必须使用 **openpyxl** 库，不得使用其他 Excel 库。
-详细操作方式参考 skill: **excel-io**（`.agents/skills/excel-io/SKILL.md`）。
+详细操作方式参考 skill: **excel-io**（`.claude/skills/excel-io/SKILL.md`）。
 
 ### 快捷脚本
 
 | 脚本 | 用途 |
 |------|------|
-| `.agents/scripts/excel_read.py` | 读取 Excel 表数据并打印 |
-| `.agents/scripts/excel_write.py` | 修改 Excel 单元格值 |
+| `.claude/scripts/excel_read.py` | 读取 Excel 表数据并打印 |
+| `.claude/scripts/excel_write.py` | 修改 Excel 单元格值 |
 
 ```bash
 # 读取示例
-python .agents/scripts/excel_read.py --path "Assets/Data/Excel/excel_creature_info[生物信息].xlsx" --rows 5
+python .claude/scripts/excel_read.py --path "Assets/Data/Excel/excel_creature_info[生物信息].xlsx" --rows 5
 
 # 写入示例（按行列）
-python .agents/scripts/excel_write.py --path "Assets/Data/Excel/excel_creature_info[生物信息].xlsx" --row 3 --col 4 --value 500 --backup
+python .claude/scripts/excel_write.py --path "Assets/Data/Excel/excel_creature_info[生物信息].xlsx" --row 3 --col 4 --value 500 --backup
 
 # 写入示例（按列名查找）
-python .agents/scripts/excel_write.py --path "Assets/Data/Excel/excel_creature_info[生物信息].xlsx" \
+python .claude/scripts/excel_write.py --path "Assets/Data/Excel/excel_creature_info[生物信息].xlsx" \
   --find-col id --find-id 1001 --set-col hp --value 500 --backup
 ```
 
@@ -57,8 +57,8 @@ python .agents/scripts/excel_write.py --path "Assets/Data/Excel/excel_creature_i
 
 | 文件 | 路径 |
 |------|------|
-| Excel 读取脚本 | `.agents/scripts/excel_read.py` |
-| Excel 写入脚本 | `.agents/scripts/excel_write.py` |
+| Excel 读取脚本 | `.claude/scripts/excel_read.py` |
+| Excel 写入脚本 | `.claude/scripts/excel_write.py` |
 | ExcelUtil (C#) | `Assets/FrameWork/Scripts/Utils/ExcelUtil.cs` |
 | ExcelEditorWindow | `Assets/FrameWork/Editor/Base/Window/ExcelEditorWindow.cs` |
 | 配置目录 | `Assets/Data/Excel/` |

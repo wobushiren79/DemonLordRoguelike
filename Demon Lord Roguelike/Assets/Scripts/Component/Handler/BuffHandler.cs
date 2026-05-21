@@ -97,6 +97,7 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
             }
             BuffBean buffData = new BuffBean(buffId);
             var buffEntity = manager.GetBuffEntity(buffData, defenseCoreCreatureUUID, defenseCoreCreatureUUID);
+            if (buffEntity == null) continue;
             listBuffEntity.Add(buffEntity);
         }
         manager.dicAbyssalBlessingBuffsActivie.Add(abyssalBlessingEntityData, listBuffEntity);
@@ -162,22 +163,31 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
     /// <summary>
     /// 移除战斗生物BUFF
     /// </summary>
+    /// <remarks>
+    /// 所有BUFF立即同步回收，事件订阅当场注销，避免泄漏。
+    /// 注意：调用此方法前，正常死亡流程应先 TriggerEvent(GameFightLogic_CreatureDeadEnd)，
+    /// 让 BuffEntityConditionalDead 有机会完成其触发逻辑；本方法不再为其保留BUFF。
+    /// 若清理后 list 已空，立即从 dict 中移除，不留脏 entry。
+    /// </remarks>
     public void RemoveFightCreatureBuffs(string creatureId)
     {
         List<BuffBaseEntity> listBuffBaseEntity = manager.GetFightCreatureBuffsActivie(creatureId);
-        if (!listBuffBaseEntity.IsNull())
+        if (listBuffBaseEntity.IsNull())
         {
-            for (int i = 0; i < listBuffBaseEntity.Count; i++)
-            { 
-                var buffEntity = listBuffBaseEntity[i];
-                //死亡后触发的BUFF不执行移除 会在内部方法里面自己移除
-                if (buffEntity is BuffEntityConditionalDead)
-                {
-                    continue;
-                }
+            return;
+        }
+        //反向遍历，立即同步回收所有BUFF（含已触发完毕的ConditionalDead）
+        for (int i = listBuffBaseEntity.Count - 1; i >= 0; i--)
+        {
+            var buffEntity = listBuffBaseEntity[i];
+            if (buffEntity.buffEntityData != null)
+            {
                 buffEntity.buffEntityData.isValid = false;
             }
+            manager.RemoveBuffEntity(listBuffBaseEntity, buffEntity);
         }
+        //list已空 立即从dict移除 不留脏entry
+        manager.dicFightCreatureBuffsActivie.RemoveByValue(listBuffBaseEntity);
     }
 
     /// <summary>
@@ -186,16 +196,25 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
     public void RemoveFightCreatureBuffs<T>(string creatureId) where T : BuffBaseEntity
     {
         List<BuffBaseEntity> listBuffBaseEntity = manager.GetFightCreatureBuffsActivie(creatureId);
-        if (!listBuffBaseEntity.IsNull())
+        if (listBuffBaseEntity.IsNull())
         {
-            for (int i = 0; i < listBuffBaseEntity.Count; i++)
-            { 
-                var buffEntity = listBuffBaseEntity[i];
-                if (buffEntity is T)
+            return;
+        }
+        for (int i = listBuffBaseEntity.Count - 1; i >= 0; i--)
+        {
+            var buffEntity = listBuffBaseEntity[i];
+            if (buffEntity is T)
+            {
+                if (buffEntity.buffEntityData != null)
                 {
                     buffEntity.buffEntityData.isValid = false;
                 }
+                manager.RemoveBuffEntity(listBuffBaseEntity, buffEntity);
             }
+        }
+        if (listBuffBaseEntity.Count == 0)
+        {
+            manager.dicFightCreatureBuffsActivie.RemoveByValue(listBuffBaseEntity);
         }
     }
 
@@ -229,10 +248,13 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
         for (int i = 0; i < addListBuffEntityData.Count; i++)
         {
             var itemAddBuffEntityBean = addListBuffEntityData[i];
+            //Instant类型BUFF：在SetData中立即触发并失效，每次添加都应独立触发，不走"刷新已有"分支
+            bool isInstantBuff = IsInstantBuff(itemAddBuffEntityBean);
             //如果当前生物没有BUFF 则直接添加----------------------------------
             if (listBuffEntityActivie == null)
             {
                 var buffEntity = manager.GetBuffEntity(itemAddBuffEntityBean);
+                if (buffEntity == null) continue;
                 List<BuffBaseEntity> listBuffEntityNew = new List<BuffBaseEntity>() { buffEntity };
                 manager.dicFightCreatureBuffsActivie.Add(targetCreatureId, listBuffEntityNew);
                 listBuffEntityActivie = listBuffEntityNew;
@@ -241,6 +263,7 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
             else if (listBuffEntityActivie.Count == 0)
             {
                 var buffEntity = manager.GetBuffEntity(itemAddBuffEntityBean);
+                if (buffEntity == null) continue;
                 listBuffEntityActivie.Add(buffEntity);
             }
             //如果当前生物有BUFF----------------------------------
@@ -248,28 +271,38 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
             {
                 //判断一下是否有相同的buff
                 bool hadBuff = false;
-                for (int f = 0; f < listBuffEntityActivie.Count; f++)
+                //Instant类型每次都独立触发，不查重
+                if (!isInstantBuff)
                 {
-                    var buffEntityActivie = listBuffEntityActivie[f];
-                    //如果有相同的BUFF 则只是刷新时间和次数
-                    if (buffEntityActivie.buffEntityData.buffId == itemAddBuffEntityBean.buffId)
+                    for (int f = 0; f < listBuffEntityActivie.Count; f++)
                     {
-                        hadBuff = true;
-                        buffEntityActivie.buffEntityData.triggerNumLeft = itemAddBuffEntityBean.triggerNumLeft;
-                        buffEntityActivie.buffEntityData.applierCreatureUUId = itemAddBuffEntityBean.applierCreatureUUId;
-                        //如果不是次数触发型 则刷新时间
-                        int triggerNum = buffEntityActivie.buffEntityData.GetTriggerNum();
-                        if (triggerNum <= 0)
+                        var buffEntityActivie = listBuffEntityActivie[f];
+                        //已失效的BUFF视为不存在 让本次添加按新增处理
+                        if (buffEntityActivie.buffEntityData == null || buffEntityActivie.buffEntityData.isValid == false)
                         {
-                            buffEntityActivie.buffEntityData.timeUpdate = itemAddBuffEntityBean.timeUpdate;
+                            continue;
                         }
-                        break;
+                        //如果有相同的BUFF 则只是刷新时间和次数
+                        if (buffEntityActivie.buffEntityData.buffId == itemAddBuffEntityBean.buffId)
+                        {
+                            hadBuff = true;
+                            buffEntityActivie.buffEntityData.triggerNumLeft = itemAddBuffEntityBean.triggerNumLeft;
+                            buffEntityActivie.buffEntityData.applierCreatureUUId = itemAddBuffEntityBean.applierCreatureUUId;
+                            //如果不是次数触发型 则刷新时间
+                            int triggerNum = buffEntityActivie.buffEntityData.GetTriggerNum();
+                            if (triggerNum <= 0)
+                            {
+                                buffEntityActivie.buffEntityData.timeUpdate = itemAddBuffEntityBean.timeUpdate;
+                            }
+                            break;
+                        }
                     }
                 }
                 //如果没有相同的buff 则添加一个新的
                 if (!hadBuff)
                 {
                     var buffEntity = manager.GetBuffEntity(itemAddBuffEntityBean);
+                    if (buffEntity == null) continue;
                     listBuffEntityActivie.Add(buffEntity);
                 }
                 else
@@ -281,6 +314,19 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
         }
         //发送事件通知
         EventHandler.Instance.TriggerEvent(EventsInfo.Buff_FightCreatureChange, applierCreatureId, targetCreatureId);
+    }
+
+    /// <summary>
+    /// 判断是否Instant类型BUFF（SetData中立即触发并失效）
+    /// </summary>
+    private bool IsInstantBuff(BuffEntityBean buffEntityBean)
+    {
+        var buffInfo = buffEntityBean?.GetBuffInfo();
+        if (buffInfo == null || buffInfo.class_entity.IsNull())
+        {
+            return false;
+        }
+        return buffInfo.class_entity.StartsWith("BuffEntityInstant");
     }
     #endregion
 

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 public class BuffBaseEntity
@@ -17,11 +15,13 @@ public class BuffBaseEntity
     /// </summary>
     public virtual void SetData(BuffEntityBean buffEntityData)
     {
+        //保护性注销：防止上一次SetData后未经ClearData又被再次调用导致重复订阅
+        unregisterEventAction?.Invoke();
+        unregisterEventAction = null;
+        nameRegisterEvent = null;
+
         this.buffEntityData = buffEntityData;
         var buffInfo = buffEntityData.GetBuffInfo();
-
-        nameRegisterEvent = null;
-        unregisterEventAction = null;
 
         if (!buffInfo.class_entity_events.IsNull())
         {
@@ -39,6 +39,8 @@ public class BuffBaseEntity
         unregisterEventAction?.Invoke();
         unregisterEventAction = null;
         nameRegisterEvent = null;
+        //清理BUFF数据引用 避免对象池复用时残留上一次的引用
+        buffEntityData = null;
     }
 
     /// <summary>
@@ -181,7 +183,7 @@ public class BuffBaseEntity
     /// </summary>
     public virtual void EventForUnderAttackDead(FightUnderAttackBean fightUnderAttack)
     {
-        if (buffEntityData.isValid == false) return;
+        if (buffEntityData == null || buffEntityData.isValid == false) return;
         //如果攻击者不是自己 则不用处理
         if (!fightUnderAttack.attackerId.Equals(buffEntityData.targetCreatureUUId))
         {
@@ -197,7 +199,7 @@ public class BuffBaseEntity
     /// </summary>
     public virtual void EventForUnderAttack(FightUnderAttackBean fightUnderAttack)
     {
-        if (buffEntityData.isValid == false) return;
+        if (buffEntityData == null || buffEntityData.isValid == false) return;
         var buffInfo = buffEntityData.GetBuffInfo();
         var preInfo = buffInfo.GetPreInfo();
         //如果被攻击者不是自己 则不用处理
@@ -227,7 +229,7 @@ public class BuffBaseEntity
     /// <param name="fightDropCrystalBean"></param>
     public virtual void EventForCreatureDeadDropCrystal(FightDropCrystalBean fightDropCrystalBean)
     {
-        if (buffEntityData.isValid == false) return;
+        if (buffEntityData == null || buffEntityData.isValid == false) return;
         HandleForEvent();
     }
 
@@ -236,7 +238,7 @@ public class BuffBaseEntity
     /// </summary>
     public virtual void EventForCreatureDeadStart(FightCreatureEntity eventFightCreatureEntity)
     {
-        if (buffEntityData.isValid == false) return;
+        if (buffEntityData == null || buffEntityData.isValid == false) return;
         HandleForEvent();
     }
 
@@ -245,7 +247,7 @@ public class BuffBaseEntity
     /// </summary>
     public virtual void EventForCreatureDeadEnd(FightCreatureEntity eventFightCreatureEntity)
     {
-        if (buffEntityData.isValid == false) return;
+        if (buffEntityData == null || buffEntityData.isValid == false) return;
         HandleForEvent();
     }
     #endregion

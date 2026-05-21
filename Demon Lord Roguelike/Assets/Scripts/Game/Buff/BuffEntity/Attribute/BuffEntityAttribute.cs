@@ -20,6 +20,15 @@ public class BuffEntityAttribute : BuffBaseEntity
     }
 
     /// <summary>
+    /// 清理数据
+    /// </summary>
+    public override void ClearData()
+    {
+        base.ClearData();
+        attributeType = CreatureAttributeTypeEnum.None;
+    }
+
+    /// <summary>
     /// 改变数据-内部
     /// </summary>
     public virtual float ChangeData(CreatureAttributeTypeEnum targetAttributeType, float targetData)

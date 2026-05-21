@@ -257,11 +257,11 @@ done
 
 ### 合成精灵图（PowerShell）
 
-使用 `.agents/scripts/make_spritesheet.ps1` 将帧合成为 NxN 精灵图，输出文件保存到 `Assets/Out/`：
+使用 `.claude/scripts/make_spritesheet.ps1` 将帧合成为 NxN 精灵图，输出文件保存到 `Assets/Out/`：
 
 ```powershell
 # 修改脚本中的变量后执行
-powershell.exe -ExecutionPolicy Bypass -File ".agents/scripts/make_spritesheet.ps1"
+powershell.exe -ExecutionPolicy Bypass -File ".claude/scripts/make_spritesheet.ps1"
 ```
 
 脚本变量说明（修改脚本顶部）：

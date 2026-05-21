@@ -14,12 +14,16 @@ public class BuffPreEntityForHPRateLess : BuffBasePreEntity
             return false;
         }
         FightCreatureBean fightCreatureData = creatureEntity.fightCreatureData;
-        float HPMax = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.HP);
-        if (fightCreatureData == null || HPMax == 0)
+        if (fightCreatureData == null)
         {
             return false;
         }
-        float currentHPRate = (float)creatureEntity.fightCreatureData.HPCurrent / HPMax;
+        float HPMax = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.HP);
+        if (HPMax == 0)
+        {
+            return false;
+        }
+        float currentHPRate = (float)fightCreatureData.HPCurrent / HPMax;
         //如果血量百分比小于值 则触发
         if (currentHPRate <= preValue)
         {

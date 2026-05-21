@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".agents/check-unity-mcp.ps1\"",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/check-unity-mcp.ps1\"",
             "timeout": 30
           }
         ]
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".agents/check-cs-changed.ps1\"",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/check-cs-changed.ps1\"",
             "timeout": 10
           }
         ]
@@ -27,16 +27,16 @@
   },
   "permissions": {
     "allow": [
-      "Read(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\skills\\*)",
-      "Write(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\skills\\*)",
-      "Edit(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\skills\\*)",
-      "Read(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\agents\\*)",
-      "Write(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\agents\\*)",
-      "Edit(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.agents\\agents\\*)",
-      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".agents/*\")",
-      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".agents/check-unity-mcp.ps1\")",
-      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".agents/check-cs-changed.ps1\")",
-      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".agents/check-watched.ps1\")",
+      "Read(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.claude\\skills\\*)",
+      "Write(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.claude\\skills\\*)",
+      "Edit(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.claude\\skills\\*)",
+      "Read(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.claude\\agents\\*)",
+      "Write(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.claude\\agents\\*)",
+      "Edit(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.claude\\agents\\*)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/*\")",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/check-unity-mcp.ps1\")",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/check-cs-changed.ps1\")",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/check-watched.ps1\")",
       "Bash(powerShell.exe -NoProfile -Command *)",
       "PowerShell(*)"
     ]

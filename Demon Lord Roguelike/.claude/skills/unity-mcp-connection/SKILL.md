@@ -2,7 +2,7 @@
 name: unity-mcp-connection
 description: Unity MCP连接状态检测与自动启动。当AI需要与Unity Editor通过MCP协议交互时，使用此SKILL检查MCP HTTP服务器和桥接会话状态，并在必要时自动启动服务器。适用于任何涉及Unity Editor操作、场景编辑、GameObject操作、资源管理、运行测试等需要MCP通信的场景。
 watched_files:
-  - .agents/check-unity-mcp.ps1
+  - .claude/scripts/check-unity-mcp.ps1
 ---
 
 # Unity MCP 连接管理
@@ -32,17 +32,17 @@ Unity Editor (MCPForUnity.Editor)
 
 ## 检测脚本
 
-使用 `.agents/check-unity-mcp.ps1` 脚本检测和自动启动MCP连接：
+使用 `.claude/scripts/check-unity-mcp.ps1` 脚本检测和自动启动MCP连接：
 
 ```powershell
 # 检测 + 自动启动（如果未运行）
-.agents/check-unity-mcp.ps1
+.claude/scripts/check-unity-mcp.ps1
 
 # 仅检测，不尝试启动
-.agents/check-unity-mcp.ps1 -CheckOnly
+.claude/scripts/check-unity-mcp.ps1 -CheckOnly
 
 # 指定端口（默认8080）
-.agents/check-unity-mcp.ps1 -Port 8080
+.claude/scripts/check-unity-mcp.ps1 -Port 8080
 ```
 
 脚本行为：
@@ -187,7 +187,7 @@ initialize (获取 Session ID)
 
 1. Unity Editor中打开MCP窗口
 2. 在Connection部分修改HTTP URL（如 `http://127.0.0.1:9090`）
-3. 同时修改脚本中的端口参数：`.agents/check-unity-mcp.ps1 -Port 9090`
+3. 同时修改脚本中的端口参数：`.claude/scripts/check-unity-mcp.ps1 -Port 9090`
 
 ## 注意事项
 

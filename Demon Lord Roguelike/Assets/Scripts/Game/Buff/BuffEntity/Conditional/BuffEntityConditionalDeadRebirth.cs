@@ -11,8 +11,9 @@ public class BuffEntityConditionalDeadRebirth : BuffEntityConditionalDead
         var fightCreatureEntity = GetFightCreatureEntityForTarget();
         if (fightCreatureEntity == null)
             return false;
-        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        var creatureData = gameFightLogic.fightData.GetCreatureDataById(buffEntityData.targetCreatureUUId);
+        var creatureData = fightCreatureEntity.fightCreatureData?.creatureData;
+        if (creatureData == null)
+            return false;
         //重生
         CreatureHandler.Instance.CreateDefenseCreatureEntity(creatureData, fightCreatureEntity.fightCreatureData.positionCreate);
         //重生不继承重生BUFF 所以要删除

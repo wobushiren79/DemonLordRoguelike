@@ -504,6 +504,8 @@ public class FightCreatureEntity
             }
 
             FightDropCrystalBean fightDropCrystal = FightHandler.Instance.manager.GetFightDropCrystalBean(dropCrystal, creatureObj.transform.position);
+            //标记掉落者 BUFF事件回调按此过滤 区分真实生物掉落与BUFF追加掉落
+            fightDropCrystal.dropperCreatureUUId = fightCreatureData?.creatureData?.creatureUUId;
             //掉落水晶
             FightHandler.Instance.CreateDropCrystal(fightDropCrystal);
             //事件通知

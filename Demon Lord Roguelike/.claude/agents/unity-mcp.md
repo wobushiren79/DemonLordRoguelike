@@ -20,8 +20,8 @@ skill: unity-mcp-connection
 
 | 文件 | 路径 |
 |------|------|
-| MCP检测脚本 | [.agents/check-unity-mcp.ps1](.agents/check-unity-mcp.ps1) |
-| MCP Skill | [.agents/skills/unity-mcp-connection/SKILL.md](.agents/skills/unity-mcp-connection/SKILL.md) |
+| MCP检测脚本 | [.claude/scripts/check-unity-mcp.ps1](.claude/scripts/check-unity-mcp.ps1) |
+| MCP Skill | [.claude/skills/unity-mcp-connection/SKILL.md](.claude/skills/unity-mcp-connection/SKILL.md) |
 | Unity MCP包 | `Library/PackageCache/com.coplaydev.unity-mcp@*/` |
 | MCP窗口 | `Window > MCP For Unity` (Unity Editor菜单) |
 
@@ -31,7 +31,7 @@ skill: unity-mcp-connection
 
 1. **检测状态**：运行检测脚本
    ```powershell
-   .agents/check-unity-mcp.ps1
+   .claude/scripts/check-unity-mcp.ps1
    ```
 
 2. **分析结果**：

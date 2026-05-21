@@ -159,7 +159,7 @@ mkdir -p "Assets/Out/<资源名>"
   done
 
 步骤五：运行精灵图合成脚本（修改 make_spritesheet.ps1 中的路径变量后执行）
-→ powershell.exe -ExecutionPolicy Bypass -File ".agents/scripts/make_spritesheet.ps1"
+→ powershell.exe -ExecutionPolicy Bypass -File ".claude/scripts/make_spritesheet.ps1"
 → 输出：Assets/Out/<name>_4x4.png（128x128px，16帧，每帧32x32）
 ```
 

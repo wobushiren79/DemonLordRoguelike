@@ -18,7 +18,7 @@ C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 
 以下MCP相关操作均为自动执行，无需征询用户确认：
 
-1. **MCP连接检测与建立**：运行 `.agents/check-unity-mcp.ps1` 检查HTTP服务器状态，若未运行则自动启动。
+1. **MCP连接检测与建立**：运行 `.claude/scripts/check-unity-mcp.ps1` 检查HTTP服务器状态，若未运行则自动启动。
 2. **MCP会话初始化**：发送 `initialize` 请求并获取 `Mcp-Session-Id`，随后发送 `notifications/initialized` 完成握手。
 3. **Unity实例查询与设置**：读取 `mcpforunity://instances` 资源获取活跃实例，调用 `set_active_instance` 设置目标实例。
 4. **通过Unity MCP工具操作场景/GameObject/资源**：调用 `manage_scene`、`manage_gameobject`、`manage_asset` 等 MCP 工具时，直接执行无需确认。
@@ -53,7 +53,7 @@ C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 - 读取时使用 `openpyxl.load_workbook(path)` 或 `load_workbook(path, read_only=True)`
 - 写入时调用 `workbook.save(path)` 保存，**不得覆盖原文件前未备份**
 - 禁止使用 `xlrd`、`xlwt`、`xlwings`、`pandas.read_excel` 等其他 Excel 库
-- Python 脚本文件统一存放在 `.agents/scripts/` 目录下
+- Python 脚本文件统一存放在 `.claude/scripts/` 目录下
 
 ## 临时脚本清理规则
 
@@ -61,7 +61,7 @@ C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 
 - **判定标准**：仅用于本次任务一次性执行（如临时图片合成、临时数据转换、一次性查询等），且不属于可复用工具链一部分的脚本，视为"临时脚本"。
 - **删除时机**：脚本执行完毕、产出结果已经被验证或落盘后，立即删除该脚本文件。
-- **保留例外**：明确具有复用价值、长期维护需求或被项目其他流程引用的脚本（例如位于 `.agents/scripts/` 下的通用工具脚本），不属于临时脚本，**不应删除**。是否保留如有疑问，须先与用户确认。
+- **保留例外**：明确具有复用价值、长期维护需求或被项目其他流程引用的脚本（例如位于 `.claude/scripts/` 下的通用工具脚本），不属于临时脚本，**不应删除**。是否保留如有疑问，须先与用户确认。
 - **委派给 Agent/Skill 执行任务**时，若过程中产生临时脚本，亦需在任务结束总结前完成清理，或在 prompt 中明确告知子代理执行该清理动作。
 - **任务结束总结**中如有创建过临时脚本，应在总结里简要说明已删除的脚本路径，便于用户审计。
 
