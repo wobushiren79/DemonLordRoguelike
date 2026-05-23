@@ -10,6 +10,7 @@ watched_files:
   - Assets/Scripts/Enums/AIIntentEnum.cs
   - Assets/Scripts/AI/Creature/AICreatureEntity.cs
   - Assets/Scripts/AI/Creature/AIIntentCreatureAttack.cs
+  - Assets/Scripts/AI/Creature/AIIntentFactory.cs
   - Assets/Scripts/AI/Creature/FightAttackCreature/AIAttackCreatureEntity.cs
   - Assets/Scripts/AI/Creature/FightDefenseCreature/AIDefenseCreatureEntity.cs
   - Assets/Scripts/AI/Creature/FightDefenseCoreCreature/AIDefenseCoreCreatureEntity.cs
@@ -174,6 +175,8 @@ public enum AIIntentEnum
 
 **命名规范**: 意图类名必须以 `AIIntent` 开头，后接枚举名称。例如 `AIIntentEnum.CustomCreatureIdle` 对应类 `AIIntentCustomCreatureIdle`。
 
+> 注意：当前优先通过 `AIIntentFactory` 显式注册工厂方法创建意图，**新增意图必须在 [AIIntentFactory.cs](Assets/Scripts/AI/Creature/AIIntentFactory.cs) 中追加一行注册**；仅在未注册时才回退到反射 + 字符串拼接类名（兼容旧扩展），因此类名拼写错误会在工厂注册环节于编译期暴露，避免运行时静默失败。
+
 ```csharp
 // Assets/Scripts/AI/Creature/xxx/AIIntentCustomCreatureIdle.cs
 public class AIIntentCustomCreatureIdle : AIBaseIntent
@@ -218,6 +221,19 @@ public override void InitIntentEnum(List<AIIntentEnum> listIntentEnum)
 }
 ```
 
+### 4. 在 AIIntentFactory 中注册工厂方法（必做）
+
+```csharp
+// Assets/Scripts/AI/Creature/AIIntentFactory.cs
+private static void RegisterAll()
+{
+    // ... 已有注册 ...
+    AIBaseEntity.RegisterIntentFactory(AIIntentEnum.CustomCreatureIdle, () => new AIIntentCustomCreatureIdle());
+}
+```
+
+`AIIntentFactory.RegisterAll()` 由 `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]` 在场景加载前自动调用，所有意图工厂在游戏启动早期就会注入 `AIBaseEntity` 的注册表。
+
 ---
 
 ## 核心类详解
@@ -238,10 +254,12 @@ public override void InitIntentEnum(List<AIIntentEnum> listIntentEnum)
 | `ChangeIntent(AIIntentEnum)` | 切换意图，触发离开/进入回调 |
 | `AddIntent(AIBaseIntent)` | 向意图池添加意图 |
 | `GetIntent<T>(AIIntentEnum)` | 从意图池获取指定类型的意图 |
-| `InitIntentEntity()` | 反射创建所有意图实例并初始化 |
+| `InitIntentEntity()` | 创建所有意图实例并初始化：优先调用工厂表，未注册时回退反射 |
 | `StartAIEntity()` | 启动AI (抽象方法) |
 | `CloseAIEntity()` | 关闭AI (抽象方法) |
 | `InitIntentEnum(List<AIIntentEnum>)` | 初始化意图枚举列表 (抽象方法) |
+| `static RegisterIntentFactory(AIIntentEnum, Func<AIBaseIntent>)` | 注册指定枚举的意图工厂方法（由 `AIIntentFactory` 统一调用） |
+| `static CreateIntentByFactory(AIIntentEnum)` | 通过工厂创建意图实例，找不到返回 null（私有，仅供 `InitIntentEntity` 使用） |
 
 ### AIBaseIntent (意图基类)
 
@@ -355,13 +373,15 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 
 ## 注意事项
 
-1. **意图命名规范**: 意图类名必须以 `AIIntent` 开头，后接枚举名称。例如 `AIIntentEnum.AttackCreatureIdle` 对应类 `AIIntentAttackCreatureIdle`。
+1. **意图命名规范**: 意图类名必须以 `AIIntent` 开头，后接枚举名称。例如 `AIIntentEnum.AttackCreatureIdle` 对应类 `AIIntentAttackCreatureIdle`。回退反射路径使用 `AIIntent + 枚举名称` 拼接类名，因此命名错位会在运行时静默失败（错误日志：`创建AI意图失败：未在工厂中注册且反射也未找到类 AIIntentXxx`）。
 
-2. **反射创建**: `AIBaseEntity.InitIntentEntity()` 使用反射自动创建意图实例，类名必须与枚举名匹配，否则创建失败。
+2. **意图工厂注册（优先路径）**: `AIBaseEntity.InitIntentEntity()` 优先通过工厂表创建意图实例，未命中时才回退到反射。**新增意图必须在 [AIIntentFactory.cs](Assets/Scripts/AI/Creature/AIIntentFactory.cs) 中添加一行 `AIBaseEntity.RegisterIntentFactory(AIIntentEnum.Xxx, () => new AIIntentXxx());`**，工厂方法在 `BeforeSceneLoad` 自动注入，编译期就能暴露类名/命名空间错误。
 
 3. **事件清理**: AI实体继承 `BaseEvent`，需要在 `ClearData()` 中调用 `UnRegisterAllEvent()` 避免内存泄漏。
 
 4. **对象池复用**: AI实例被移除时会进入对象池，下次创建同类型AI时会复用，因此 `InitData()` 必须能正确重置状态。
+
+5. **意图切换的目标枚举要与归属生物类型一致**：例如防守生物在搜索不到目标时应切回 `DefenseCreatureIdle` 而不是 `DefenseCoreCreatureIdle`，否则会因 `dicIntentPool` 中没有该枚举而触发 `ChangeIntent` 失败的日志告警，并保持当前意图不变。
 
 ---
 
@@ -377,6 +397,7 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 | 意图枚举 | `Assets/Scripts/Enums/AIIntentEnum.cs` |
 | 生物AI基类 | `Assets/Scripts/AI/Creature/AICreatureEntity.cs` |
 | 通用攻击意图 | `Assets/Scripts/AI/Creature/AIIntentCreatureAttack.cs` |
+| 意图工厂注册器 | `Assets/Scripts/AI/Creature/AIIntentFactory.cs` |
 | 进攻生物AI | `Assets/Scripts/AI/Creature/FightAttackCreature/AIAttackCreatureEntity.cs` |
 | 防守生物AI | `Assets/Scripts/AI/Creature/FightDefenseCreature/AIDefenseCreatureEntity.cs` |
 | 核心生物AI | `Assets/Scripts/AI/Creature/FightDefenseCoreCreature/AIDefenseCoreCreatureEntity.cs` |

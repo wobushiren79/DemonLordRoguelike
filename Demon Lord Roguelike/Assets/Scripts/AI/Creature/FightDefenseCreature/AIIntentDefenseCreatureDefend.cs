@@ -24,10 +24,10 @@ public class AIIntentDefenseCreatureDefend : AIBaseIntent
             timeUpdateForFindTarget = 0;
             //搜索敌人
             selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntityForSinge(DirectionEnum.Right);
-            //如果没有敌人了 就进入待机状态  
+            //如果没有敌人了 就进入待机状态
             if (selfAIEntity.targetCreatureEntity == null)
             {
-                ChangeIntent(AIIntentEnum.DefenseCoreCreatureIdle);
+                ChangeIntent(AIIntentEnum.DefenseCreatureIdle);
             }
         }
     }

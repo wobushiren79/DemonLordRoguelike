@@ -22,6 +22,16 @@ AttackModeInfoBean   - 攻击模块配置数据（来自配置表）
 BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播放、生命周期管理等）
 ```
 
+### BaseAttackMode 关键状态字段
+
+| 字段 | 类型 | 用途 |
+|------|------|------|
+| `isValid` | `bool` | 是否处于激活状态；`Destroy()` 时置 `false`，`UpdateHandleForAttackModePrefab` 据此跳过已回收对象 |
+| `instanceId` | `long` | 由 `FightManager` 分配的实例ID，`dlAttackModePrefab`（DictionaryList）按此 key 进行 O(1) 移除 |
+| `searchCreatureType` | `CreatureFightTypeEnum` | 由 `attackedLayerTarget` 推导出的搜索类型，`StartAttack` 时缓存，`Destroy` 时清零，避免每帧重算 |
+| `gameObject` / `spriteRenderer` | Unity 组件 | 攻击模块可视化对象（可选） |
+| `attackModeInfo` / `attackModeData` | Bean | 配置数据 / 运行时数据 |
+
 ### 攻击模式类型体系
 
 ```
@@ -228,29 +238,82 @@ public class AttackModeFalluponChain : BaseAttackMode
 {
     public int chainNum = 3;
     public float timeForChainChange = 0.1f;
+
+    //已攻击过的生物ID（用 HashSet 去重，避免重复弹射）
     private HashSet<string> listAttackedCreatureId = new HashSet<string>();
+    //连锁候选缓冲（复用，避免每次 new List 产生 GC）
+    private readonly List<FightCreatureEntity> listCandidate = new List<FightCreatureEntity>();
     private int currentChainCount = 0;
     private int originalDamage = 0;
+    private Action<BaseAttackMode> actionForAttackEnd;
+    private FightCreatureEntity currentAttacked;
+    private FightCreatureEntity attackerEntity;
 
     public override async void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
+        this.actionForAttackEnd = actionForAttackEnd;
+        this.attackerEntity = attacker;
+        this.currentAttacked = attacked;
+
+        if (attacker == null || attacked == null || attacked.IsDead())
+        {
+            EndAttack();
+            return;
+        }
+
         // 记录原始伤害并执行初始攻击
         originalDamage = attackModeData.attackerDamage;
         ExecuteAttack(attacked, originalDamage, true);
+
+        if (currentChainCount >= chainNum) { EndAttack(); return; }
 
         // 连锁攻击
         for (int i = 0; i < chainNum; i++)
         {
             await new WaitForSeconds(timeForChainChange);
-            // 在范围内查找未攻击过的目标，伤害减半
-            // ...
+            if (!CheckGameState()) { EndAttack(); return; }
+            if (currentAttacked == null || currentAttacked.creatureObj == null || currentAttacked.IsDead())
+            {
+                EndAttack();
+                return;
+            }
+            bool hasNextTarget = HandleChainAttack();
+            if (!hasNextTarget) { EndAttack(); return; }
         }
-        Destroy();
-        actionForAttackEnd?.Invoke(this);
+        EndAttack();
+    }
+
+    // 在 currentAttacked 处做范围检测，过滤已命中目标，随机挑一个作为下一个跳点；伤害按 chainCount 折半（最小 1）
+    private bool HandleChainAttack() { /* listCandidate.Clear() 后填充；attackDirection / targetPos 同步更新 */ }
+
+    private void ExecuteAttack(FightCreatureEntity target, int damage, bool isFirst)
+    {
+        attackModeData.attackerDamage = damage;
+        target.UnderAttack(this);
+        // 初始击中用 effect_hit[0]，连锁击中用 effect_hit[1]
+        PlayEffectForHit(target.creatureObj.transform.position, isFirst ? 0 : 1);
+        listAttackedCreatureId.Add(target.fightCreatureData.creatureData.creatureUUId);
+    }
+
+    private void EndAttack() { Destroy(); actionForAttackEnd?.Invoke(this); }
+
+    // 归还对象池时清空本次攻击状态，避免复用时残留
+    public override void Destroy(bool isPermanently = false)
+    {
+        listAttackedCreatureId.Clear();
+        listCandidate.Clear();
+        currentChainCount = 0;
+        base.Destroy(isPermanently);
     }
 }
 ```
+
+> **连锁实现要点**：
+> - 候选列表 `listCandidate` 与 `listAttackedCreatureId` 在 `Destroy` 中显式清空，确保对象池复用安全；
+> - 每次跳点会更新 `attackModeData.attackDirection` / `targetPos`，保证后续 `PlayEffectForHit` / `UnderAttack` 朝向正确；
+> - `PlayEffectForHit` 第 2 参数表示 `effect_hit` 中的索引：`0=初始击中特效`，`1=连锁击中特效`；
+> - `CheckGameState()` 在每次 `await` 后校验 `gameLogic.gameState == Gaming`，防止战斗结束/暂停期间继续推进连锁。
 
 #### 完全自定义示例
 
@@ -391,23 +454,28 @@ FightCreatureEntity hitTarget = CheckHitTargetForSingle(checkPosition);
 // 1. 创建并初始化数据
 AttackModeBean attackModeData = FightManager.Instance.GetAttackModeData(attackModeId);
 
-// 2. 获取攻击模块实例（优先对象池，否则反射创建）
+// 2. 获取攻击模块实例（优先对象池，否则反射创建）；
+//    出池/新建后 FightManager 会自增 instanceId 并以该 ID 注册到 dlAttackModePrefab
 FightManager.Instance.GetAttackModePrefab(attackModeId, (attackMode) =>
 {
     attackMode.StartAttackInit(attackModeData);
 });
 
-// 3. 开始攻击（两个重载）
+// 3. 开始攻击（两个重载）；StartAttack(attacker,...) 内部会缓存 searchCreatureType（由 attackedLayerTarget 推导）
 attackMode.StartAttack();  // 无目标攻击
 attackMode.StartAttack(attacker, attacked, actionForAttackEnd);  // 生物对战
 
-// 4. 每帧更新（仅远程/持续型攻击模式）
+// 4. 每帧更新（仅远程/持续型攻击模式）；
+//    UpdateHandleForAttackModePrefab 会在循环开始处一次性缓存 count，
+//    防止本帧内被 Update 新创建的攻击模块立刻被遍历到（避免一帧内多次 Update）
 attackMode.Update();
 
 // 5. 销毁（回收至对象池）
-attackMode.Destroy();  // 回收
-attackMode.Destroy(isPermanently: true);  // 永久销毁
+attackMode.Destroy();  // 回收，FightManager 通过 instanceId 在 DictionaryList 中 O(1) 移除
+attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 ```
+
+> **`FightManager.dlAttackModePrefab` 的演进**：旧版使用 `List<BaseAttackMode> listAttackModePrefab`，每次 `Destroy` 走 `List.Remove(item)` 是 O(N)；现在改用 `DictionaryList<long, BaseAttackMode>` + `instanceId` key，`RemoveByKey(instanceId)` 为 O(1)，同时通过 `.List` 仍保持顺序遍历能力。子类如有需要直接遍历，请使用 `manager.dlAttackModePrefab.List`。
 
 ## BaseAttackMode 核心方法速查
 
@@ -417,14 +485,25 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁
 | `StartAttackInit(AttackModeBean)` | 攻击初始化（设置数据+外观） |
 | `StartAttackBase()` | 基础攻击开始（设置GO位置和激活） |
 | `StartAttack()` | 无目标攻击 |
-| `StartAttack(FightCreatureEntity, FightCreatureEntity, Action)` | 生物对战攻击 |
+| `StartAttack(FightCreatureEntity, FightCreatureEntity, Action)` | 生物对战攻击；缓存 `searchCreatureType`，避免每帧重算 |
 | `Update()` | 每帧更新 |
-| `Destroy(bool isPermanently = false)` | 回收或永久销毁 |
-| `PlayEffectForHit(Vector3)` | 播放击中特效 |
+| `Destroy(bool isPermanently = false)` | 回收或永久销毁；同时将 `isValid=false` 并重置 `searchCreatureType` |
+| `PlayEffectForHit(Vector3, int effectIndex = 0)` | 播放击中特效，`effectIndex` 对应 `effect_hit` 中以 `&` 分隔的第几个粒子ID |
 | `CheckHitTargetForSingle()` | 检测单个目标 |
 | `CheckHitTarget()` | 检测多个目标 |
-| `CheckHitTargetArea(Vector3, Action<FightCreatureEntity>)` | 范围检测并回调 |
+| `CheckHitTarget(Vector3)` | 在指定位置检测多个目标，使用缓存的 `searchCreatureType` |
+| `CheckHitTargetArea(Vector3, Action<FightCreatureEntity>)` | 范围检测并回调；内部使用 `FightManager.GetCachedFightLogic()` 避免每个 collider 反射查询 |
+| `GetHitTargetAreaCollider(Vector3)` | 按配置 `collider_area_type` 取范围内 colliders |
 | `CheckIsMoveBound(GameObject)` | 检测是否超出边界 |
+
+## 热路径性能约束
+
+攻击模块在战斗每帧被大量遍历，扩展时请遵守：
+
+1. **避免热路径反射 / 字符串拼接查找战斗逻辑**：需要 `GameFightLogic` 时调用 `FightHandler.Instance.manager.GetCachedFightLogic()`，懒加载且 `FightManager.Clear()` 会自动失效，**禁止**直接 `GameHandler.Instance.manager.GetGameLogic<GameFightLogic>()`。
+2. **避免每帧 new List/HashSet**：连锁/穿透等类型需要复用候选缓冲（参考 `AttackModeFalluponChain.listCandidate` / `AttackModeRangedPiercing.listPierceCreature`），并在 `Destroy` 中 `Clear()` 防止对象池复用残留。
+3. **缓存搜索类型**：`StartAttack(attacker,...)` 已根据 `attackedLayerTarget` 缓存 `searchCreatureType`，子类的范围/射线检测应复用该字段，不要在 `Update()` 里重新推导。
+4. **遍历 `dlAttackModePrefab` 时缓存 `count`**：`UpdateHandleForAttackModePrefab` 在循环开始处一次性缓存 `List.Count`，确保本帧内 `Update` 新生成的攻击模块在下一帧才参与遍历（避免一帧多次 Update / 死循环）。
 
 ## 文件位置速查
 

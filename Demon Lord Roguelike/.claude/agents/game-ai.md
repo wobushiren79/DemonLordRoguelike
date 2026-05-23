@@ -14,8 +14,11 @@ watched_files:
 ## 职责范围
 
 ### 框架层 AI 基类
-- **AIBaseEntity** - AI 实体基类（意图池、意图切换 ChangeIntent）
+- **AIBaseEntity** - AI 实体基类（意图池、意图切换 ChangeIntent、意图工厂注册 `RegisterIntentFactory`）
 - **AIBaseIntent** - AI 意图基类（IntentEntering/Update/FixUpdate/Leaving）
+
+### 意图工厂
+- **AIIntentFactory** - 在 `[RuntimeInitializeOnLoadMethod(BeforeSceneLoad)]` 中统一向 `AIBaseEntity` 注册全部意图工厂方法，作为 `InitIntentEntity` 创建实例的**首选路径**；未注册时回退到旧的"反射 + 字符串拼接类名"。新增意图必须同步追加注册。
 
 ### 生物 AI 实体
 ```
@@ -59,9 +62,15 @@ public class AIIntentCustomIdle : AIBaseIntent
 }
 ```
 
+```csharp
+// AIIntentFactory.RegisterAll() 中同步追加（必做）
+AIBaseEntity.RegisterIntentFactory(AIIntentEnum.CustomIdle, () => new AIIntentCustomIdle());
+```
+
 ## 约束
 
 - 意图类名必须以 `AIIntent` 开头，后接枚举名称
-- `AIBaseEntity.InitIntentEntity()` 使用反射创建意图实例，类名必须与枚举名匹配
+- `AIBaseEntity.InitIntentEntity()` 优先走 `AIIntentFactory` 注册表创建意图实例，未注册时才回退反射 + 字符串拼接类名（兼容旧扩展）；**新增意图必须在 `AIIntentFactory.RegisterAll()` 内显式注册**
+- `ChangeIntent` 的目标枚举必须属于当前 AI 实体的 `listIntentEnum`，否则只会打印 `转换AI意图Xxx失败，意图池里没有此意图` 并保留当前意图（典型坑：防守生物错误切换到 `DefenseCoreCreatureXxx`）
 - AI 实体继承 BaseEvent，需在 ClearData 中调用 UnRegisterAllEvent
 - AI 实例有对象池复用，InitData 必须能正确重置状态

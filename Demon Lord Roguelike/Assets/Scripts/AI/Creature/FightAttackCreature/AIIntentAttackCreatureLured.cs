@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AIIntentAttCreatureLured : AIBaseIntent
+public class AIIntentAttackCreatureLured : AIBaseIntent
 {
     //目标AI
     public AIAttackCreatureEntity selfAIEntity;

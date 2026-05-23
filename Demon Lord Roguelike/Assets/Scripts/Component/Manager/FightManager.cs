@@ -8,8 +8,13 @@ public class FightManager : BaseManager
     public Dictionary<string, GameObject> dicAttackModeObj = new Dictionary<string, GameObject>();
     //攻击预制的缓存池
     public Dictionary<long, Queue<BaseAttackMode>> dicPoolAttackModeObj = new Dictionary<long, Queue<BaseAttackMode>>();
-    //攻击预制列表
-    public List<BaseAttackMode> listAttackModePrefab = new List<BaseAttackMode>();
+    //攻击预制列表（用 DictionaryList 便于按 instanceId 快速 Remove 同时保留可遍历 List）
+    public DictionaryList<long, BaseAttackMode> dlAttackModePrefab = new DictionaryList<long, BaseAttackMode>();
+    //攻击模块实例ID自增计数器
+    private long attackModeInstanceCounter = 0;
+
+    //战斗逻辑缓存（避免热路径每次 GetGameLogic 反射查找）
+    private GameFightLogic cachedGameFightLogic;
     //攻击模块数据缓存池
     public Queue<AttackModeBean> poolAttackModeData = new Queue<AttackModeBean>();
     //攻击数据缓存
@@ -37,12 +42,14 @@ public class FightManager : BaseManager
     public void Clear()
     {
         //战斗预制清理
-        for (int i = 0; i < listAttackModePrefab.Count; i++)
+        var listAttackMode = dlAttackModePrefab.List;
+        for (int i = 0; i < listAttackMode.Count; i++)
         {
-            var item = listAttackModePrefab[i];
+            var item = listAttackMode[i];
             item.Destroy(true);
         }
-        listAttackModePrefab.Clear();
+        dlAttackModePrefab.Clear();
+        attackModeInstanceCounter = 0;
         foreach (var itemData in dicPoolAttackModeObj)
         {
             var queue = itemData.Value;
@@ -53,6 +60,9 @@ public class FightManager : BaseManager
             }
         }
         dicPoolAttackModeObj.Clear();
+
+        //清理战斗逻辑缓存
+        cachedGameFightLogic = null;
 
         //战斗杂项清理
         for (int i = 0; i < listFightPrefab.Count; i++)
@@ -307,7 +317,8 @@ public class FightManager : BaseManager
             if (pool.Count > 0)
             {
                 BaseAttackMode targetMode = pool.Dequeue();
-                listAttackModePrefab.Add(targetMode);
+                targetMode.instanceId = ++attackModeInstanceCounter;
+                dlAttackModePrefab.Add(targetMode.instanceId, targetMode);
                 actionForComplete?.Invoke(targetMode);
                 return;
             }
@@ -323,8 +334,9 @@ public class FightManager : BaseManager
             targetModeNew.spriteRenderer = objTarget.GetComponentInChildren<SpriteRenderer>();
         }
         targetModeNew.attackModeInfo = attackModeInfo;
+        targetModeNew.instanceId = ++attackModeInstanceCounter;
 
-        listAttackModePrefab.Add(targetModeNew);
+        dlAttackModePrefab.Add(targetModeNew.instanceId, targetModeNew);
         actionForComplete?.Invoke(targetModeNew);
     }
 
@@ -334,7 +346,7 @@ public class FightManager : BaseManager
     /// <param name="targetMode"></param>
     public void RemoveAttackModePrefab(BaseAttackMode targetMode)
     {
-        listAttackModePrefab.Remove(targetMode);
+        dlAttackModePrefab.RemoveByKey(targetMode.instanceId);
         if (dicPoolAttackModeObj.TryGetValue(targetMode.attackModeInfo.id, out Queue<BaseAttackMode> pool))
         {
             pool.Enqueue(targetMode);
@@ -345,6 +357,20 @@ public class FightManager : BaseManager
             poolNew.Enqueue(targetMode);
             dicPoolAttackModeObj.Add(targetMode.attackModeInfo.id, poolNew);
         }
+    }
+    #endregion
+
+    #region 战斗逻辑缓存
+    /// <summary>
+    /// 获取缓存的战斗逻辑（懒加载，战斗 Clear 时自动失效）
+    /// </summary>
+    public GameFightLogic GetCachedFightLogic()
+    {
+        if (cachedGameFightLogic == null)
+        {
+            cachedGameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        }
+        return cachedGameFightLogic;
     }
     #endregion
 }

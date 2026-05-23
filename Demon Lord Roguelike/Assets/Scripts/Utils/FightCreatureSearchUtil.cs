@@ -76,27 +76,28 @@ public static class FightCreatureSearchUtil
     public static List<FightCreatureEntity> FindCreatureEntityByRay(Vector3 startPosition, Vector3 direction, float maxDistance, CreatureFightTypeEnum searchCreatureFightType, int layoutInfo)
     {
         var hits = RayUtil.RayToCastAll(startPosition, direction, maxDistance, layoutInfo);
-        if (!hits.IsNull())
+        if (hits.IsNull())
         {
-            List<FightCreatureEntity> listData = null;
-            for (int i = 0; i < hits.Length; i++)
-            {
-                var hit = hits[i];
-                string creatureId = hit.collider.gameObject.name;
-                GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-                var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, searchCreatureFightType);
-                if (targetCreature != null && !targetCreature.IsDead())
-                {
-                    if (listData == null)
-                    {
-                        listData = new List<FightCreatureEntity>();
-                    }
-                    listData.Add(targetCreature);
-                }
-            }
-            return listData;
+            return null;
         }
-        return null;
+        //循环外缓存 GameFightLogic，避免热路径下每次命中都做一次 GetGameLogic 查询
+        GameFightLogic gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
+        List<FightCreatureEntity> listData = null;
+        for (int i = 0; i < hits.Length; i++)
+        {
+            var hit = hits[i];
+            string creatureId = hit.collider.gameObject.name;
+            var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, searchCreatureFightType);
+            if (targetCreature != null && !targetCreature.IsDead())
+            {
+                if (listData == null)
+                {
+                    listData = new List<FightCreatureEntity>(hits.Length);
+                }
+                listData.Add(targetCreature);
+            }
+        }
+        return listData;
     }
 
     /// <summary>
@@ -128,8 +129,8 @@ public static class FightCreatureSearchUtil
         switch (creatureSearchType)
         {
             case CreatureSearchType.AreaSphere:
-            case CreatureSearchType.AreaBoxHPNoMax:
             case CreatureSearchType.AreaSphereHPNoMax:
+            case CreatureSearchType.AreaSphereDRNoMax:
                 colliders = RayUtil.OverlapToSphere(startPosition, radius, layoutInfo);
                 break;
             case CreatureSearchType.AreaSphereFront:
@@ -144,7 +145,7 @@ public static class FightCreatureSearchUtil
                 colliders = RayUtil.OverlapToSphere(startPosition + offsetPosition, radius, layoutInfo);
                 break;
             case CreatureSearchType.AreaBox:
-            case CreatureSearchType.AreaSphereDRNoMax:
+            case CreatureSearchType.AreaBoxHPNoMax:
             case CreatureSearchType.AreaBoxDRNoMax:
                 colliders = RayUtil.OverlapToBox(startPosition, halfEx, layoutInfo);
                 break;
@@ -166,11 +167,12 @@ public static class FightCreatureSearchUtil
         {
             return null;
         }
-        List<FightCreatureEntity> listData = new List<FightCreatureEntity>();
+        //循环外缓存 GameFightLogic，避免每个 collider 都做一次 GetGameLogic 查询
+        GameFightLogic gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
+        List<FightCreatureEntity> listData = new List<FightCreatureEntity>(colliders.Length);
         for (int i = 0; i < colliders.Length; i++)
         {
             string creatureId = colliders[i].gameObject.name;
-            GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
             var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, searchCreatureFightType);
             if (targetCreature != null && !targetCreature.IsDead())
             {
@@ -211,7 +213,7 @@ public static class FightCreatureSearchUtil
     public static List<FightCreatureEntity> FindCreatureEntityForDisByRoad(int roadIndex, CreatureSearchType creatureSearchType, CreatureFightTypeEnum searchCreatureFightType, Vector3 startSearchPosition, Vector3 direction, int disType)
     {
         //首先查询同一路的防守生物
-        var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        var gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
         List<FightCreatureEntity> listTargetCreature = null;
         if (searchCreatureFightType == CreatureFightTypeEnum.FightAttack)
         {
@@ -246,7 +248,7 @@ public static class FightCreatureSearchUtil
     public static List<FightCreatureEntity> FindCreatureEntityForDisByAll(Vector3 startSearchPosition, CreatureFightTypeEnum searchCreatureFightType, Vector3 direction, int disType)
     {
         //首先查询同一路的防守生物
-        var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        var gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
         DictionaryList<string, FightCreatureEntity> dicTargetCreature = null;
         if (searchCreatureFightType == CreatureFightTypeEnum.FightAttack)
         {
@@ -305,7 +307,13 @@ public static class FightCreatureSearchUtil
             }
         }
 
-        List<FightCreatureEntity> listData = new List<FightCreatureEntity>() { targetEntity };
+        //未找到任何目标时直接返回 null，避免再分配一个 [null] 的单元素列表（调用方 FindCreatureEntityForSinge 会再取 [0] 也得到 null）
+        if (targetEntity == null)
+        {
+            return null;
+        }
+        //命中一个目标时分配容量为 1 的列表，避免 List 内部默认 4 容量造成的额外内存
+        List<FightCreatureEntity> listData = new List<FightCreatureEntity>(1) { targetEntity };
         return listData;
     }
 

@@ -11,6 +11,10 @@ watched_files:
   - Assets/Resources/JsonText/
   - .claude/scripts/excel_read.py
   - .claude/scripts/excel_write.py
+  - .claude/scripts/excel_schema.py
+  - .claude/scripts/excel_find.py
+  - .claude/scripts/excel_add_row.py
+  - .claude/scripts/excel_delete_row.py
 ---
 
 # Excel 配置表 (Excel Config) 开发代理
@@ -22,24 +26,54 @@ watched_files:
 直接操作 `.xlsx` 文件时，必须使用 **openpyxl** 库，不得使用其他 Excel 库。
 详细操作方式参考 skill: **excel-io**（`.claude/skills/excel-io/SKILL.md`）。
 
+### 配置表行布局（统一规范）
+
+| 行号 | 用途 |
+|------|------|
+| 1 | 列名（英文，如 `id`、`hp`） |
+| 2 | 数据类型（`long`、`int`、`string`、`float`） |
+| 3 | 中文说明 |
+| 4+ | 实际数据 |
+
+所有脚本默认 `--header-rows 3`。如某张表布局不同可显式覆盖该参数。
+
 ### 快捷脚本
 
 | 脚本 | 用途 |
 |------|------|
-| `.claude/scripts/excel_read.py` | 读取 Excel 表数据并打印 |
-| `.claude/scripts/excel_write.py` | 修改 Excel 单元格值 |
+| `.claude/scripts/excel_read.py` | 读取 Excel 表数据并打印（含表头） |
+| `.claude/scripts/excel_schema.py` | 查看 Sheet 列表、单 Sheet 表头与样例 |
+| `.claude/scripts/excel_find.py` | 按列条件查询/过滤数据行 |
+| `.claude/scripts/excel_add_row.py` | 新增配置行（默认 id 查重） |
+| `.claude/scripts/excel_write.py` | 修改已有单元格（按行列 / 按 ID 单列 / 按 ID 多列） |
+| `.claude/scripts/excel_delete_row.py` | 删除配置行（表头受保护，支持 --dry-run） |
 
 ```bash
-# 读取示例
+# 查看表结构
+python .claude/scripts/excel_schema.py --path "Assets/Data/Excel/excel_creature_info[生物信息].xlsx" \
+  --sheet CreatureInfo --sample 2
+
+# 读取
 python .claude/scripts/excel_read.py --path "Assets/Data/Excel/excel_creature_info[生物信息].xlsx" --rows 5
 
-# 写入示例（按行列）
-python .claude/scripts/excel_write.py --path "Assets/Data/Excel/excel_creature_info[生物信息].xlsx" --row 3 --col 4 --value 500 --backup
+# 查询（数值范围/包含/精确）
+python .claude/scripts/excel_find.py --path "Assets/Data/Excel/excel_creature_info[生物信息].xlsx" \
+  --where id=1001 --col id --col hp
 
-# 写入示例（按列名查找）
+# 新增
+python .claude/scripts/excel_add_row.py --path "Assets/Data/Excel/excel_buff_pre_info[buff前置条件信息].xlsx" \
+  --set id=999001 --set class_entity=BuffPreEntityForTest --backup
+
+# 修改（按 ID 多列批量）
 python .claude/scripts/excel_write.py --path "Assets/Data/Excel/excel_creature_info[生物信息].xlsx" \
-  --find-col id --find-id 1001 --set-col hp --value 500 --backup
+  --find-col id --find-id 1001 --set hp=500 --set atk=80 --backup
+
+# 删除
+python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_pre_info[buff前置条件信息].xlsx" \
+  --id 999001 --backup
 ```
+
+> Python 调用：若 `python` 不在 PATH，使用绝对路径（如 `C:\Users\<USER>\AppData\Local\Programs\Python\Python312\python.exe`）
 
 ## 职责范围
 
@@ -154,8 +188,10 @@ python .claude/scripts/excel_write.py --path "Assets/Data/Excel/excel_creature_i
 
 - 读写 xlsx 必须使用 openpyxl，编码 UTF-8
 - 写入前使用 `--backup` 参数备份原文件
+- 配置表为统一 3 行表头规范（列名/类型/中文说明），数据从第 4 行开始；脚本默认 `--header-rows 3`
 - 配置表修改后必须通过 ExcelEditorWindow 导出 JSON
 - 导出的 JSON 文件编码为 UTF-8
 - 新增配置表需在编辑器工具中注册
 - 多语言文本通过 `excel_language[多语言_FrameWork].xlsx` 统一管理，各表的 `name[language]`、`content[language]` 列均引用该表
 - `*InfoBean.cs` 和 `*Bean.cs` 是自动生成的，禁止直接修改
+- PowerShell 操作含中文/方括号的文件路径时使用 `Copy-Item -LiteralPath` / `Remove-Item -LiteralPath` 避免方括号被解析为通配符

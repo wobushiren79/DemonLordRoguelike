@@ -22,15 +22,15 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     /// </summary>
     public void UpdateHandleForAttackModePrefab()
     {
-        if (manager.listAttackModePrefab.Count > 0)
+        var listAttackMode = manager.dlAttackModePrefab.List;
+        //缓存 count，避免本帧内 Update 中新创建的攻击模块在本帧立即被 Update 执行
+        int count = listAttackMode.Count;
+        for (int i = 0; i < count; i++)
         {
-            for (int i = 0; i < manager.listAttackModePrefab.Count; i++)
+            var itemAttackMode = listAttackMode[i];
+            if (itemAttackMode.isValid)
             {
-                var itemAttackMode = manager.listAttackModePrefab[i];
-                if (itemAttackMode.isValid)
-                {
-                    itemAttackMode.Update();
-                }
+                itemAttackMode.Update();
             }
         }
     }

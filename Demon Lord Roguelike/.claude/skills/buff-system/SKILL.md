@@ -1,12 +1,14 @@
 ---
 name: buff-system
-description: Demon Lord Roguelike 游戏的BUFF系统开发指南。使用此SKILL当需要创建或修改BUFF效果、BUFF触发逻辑、BUFF配置等，包括属性BUFF、条件触发BUFF、周期性BUFF、即时BUFF、前置条件等。
+description: Demon Lord Roguelike 游戏的BUFF系统开发指南。使用此SKILL当需要创建或修改BUFF效果、BUFF触发逻辑、BUFF配置、属性修改管线、BUFF堆叠策略等，包括属性BUFF、条件触发BUFF、周期性BUFF、即时BUFF、前置条件、BuffEventDispatcher、ModifierPipeline、深渊馈赠等级替换等。
 watched_files:
   - Assets/Scripts/Game/Buff/
   - Assets/Scripts/Bean/Game/BuffBean.cs
   - Assets/Scripts/Bean/Game/BuffEntityBean.cs
   - Assets/Scripts/Bean/MVC/Game/BuffInfoBean.cs
+  - Assets/Scripts/Bean/MVC/Game/BuffInfoBeanPartial.cs
   - Assets/Scripts/Bean/MVC/Game/BuffPreInfoBean.cs
+  - Assets/Scripts/Bean/MVC/Game/BuffPreInfoBeanPartial.cs
   - Assets/Scripts/Component/Manager/BuffManager.cs
   - Assets/Scripts/Component/Handler/BuffHandler.cs
 ---
@@ -15,304 +17,378 @@ watched_files:
 
 ## 核心概念
 
-### BUFF数据结构
+### BUFF数据三件套
 
 ```
-BuffBean          - BUFF基础数据（包含触发值、触发几率、触发次数等）
-BuffEntityBean    - BUFF运行时实例数据（包含目标生物、施加者、剩余触发次数等）
-BuffInfoBean      - BUFF配置数据（来自配置表）
+BuffBean          - BUFF静态数据（buffId + 实例化时确定的trigger_value/rate/chance/num/time）
+BuffEntityBean    - BUFF运行时实例数据（施加者/目标/剩余次数/堆叠层数/条件值）
+BuffInfoBean      - BUFF配置数据（来自BuffInfo配置表，含 class_entity / stack_mode / pre_info 等）
 ```
 
-### BUFF类型体系
+### BUFF 实体类型体系
 
 ```
-BuffBaseEntity                    - BUFF基类
-├── BuffEntityAttribute           - 属性修改BUFF（HP/DR/ATK等）
-├── BuffEntityInstant             - 即时触发BUFF（初始化时触发一次）
-├── BuffEntityConditional         - 条件触发BUFF（满足条件时触发）
-│   ├── BuffEntityConditionalAttack       - 攻击时触发
-│   ├── BuffEntityConditionalDead         - 死亡时触发
-│   ├── BuffEntityConditionalAttribute    - 属性变化时触发
-│   └── ...
-├── BuffEntityPeriodic            - 周期性触发BUFF（无次数限制）
-└── BuffEntityPecurrent           - 周期性触发BUFF（有次数限制）
-
-BuffBasePreEntity                 - BUFF前置条件基类
-├── BuffPreEntityForAttackDamage        - 累计造成伤害
-├── BuffPreEntityForUnderAttackDamage   - 累计受到伤害
-├── BuffPreEntityForHPRateLess          - 血量低于百分比
-└── BuffPreEntityForKillNum             - 击杀数量
+BuffBaseEntity                              # 抽象基类（事件回调 + ShowBuffEffect + CheckIsPre）
+├── BuffEntityAttribute                     # 属性BUFF（实现 IAttributeModifierSource）
+│   └── BuffEntityAttributeAttackTime       # 改攻击前摇/动画时间的属性BUFF（独立通道）
+├── BuffEntityInstant                       # 瞬时BUFF（SetData中立即触发并isValid=false）
+│   └── BuffEntityInstantCloneDefenseCreature
+├── BuffEntityConditional                   # 条件触发（UpdateBuffTime 只走总时长，不走周期）
+│   ├── BuffEntityConditionalAttack         # 攻击/受击事件触发：发起一次自定义AttackMode
+│   ├── BuffEntityConditionalAttackAgain    # 触发立即再攻击一次（复用当前AI意图）
+│   ├── BuffEntityConditionalAttribute      # 属性变化时触发
+│   ├── BuffEntityConditionalDead           # 自身死亡结束时触发
+│   ├── BuffEntityConditionalDeadAttack     # 死亡时发动一次攻击
+│   ├── BuffEntityConditionalDeadRebirth    # 死亡时重生
+│   ├── BuffEntityConditionalDeadAreaHPChange / DeadAreaDRChange  # 死亡时区域改HP/DR
+│   ├── BuffEntityConditionalDeadCreateCrystal                    # 死亡时生成水晶
+│   ├── BuffEntityConditionalAddDropCrystal                       # 死亡掉落水晶时叠加
+│   └── BuffEntityConditionalCreateCrystal                        # 生成水晶（事件类）
+├── BuffEntityPeriodic                      # 周期性触发（无次数限制）
+│   ├── BuffEntityPeriodicAttackAgain       # 周期性强制再攻击
+│   └── BuffEntityPeriodicPickupCrystal     # 周期性自动拾取水晶
+└── BuffEntityPecurrent                     # 周期性触发（有次数限制 = trigger_num）
 ```
+
+### BUFF 前置条件
+
+```
+BuffBasePreEntity                                # 前置基类（GetEventRole + CheckIsPre）
+├── BuffPreEntityForAttackDamage          # 累计造成伤害 (EventRole = Attacker)
+├── BuffPreEntityForUnderAttackDamage     # 累计受到伤害 (EventRole = Attacked)
+├── BuffPreEntityForHPRateLess            # 当前HP百分比低于阈值 (EventRole = Attacked)
+└── BuffPreEntityForKillNum               # 击杀数量 (EventRole = None)
+```
+
+`BuffPreEventRole`（None/Attacked/Attacker）用于在 `BuffBaseEntity.EventForUnderAttack` 中
+判断本次"被攻击/攻击"事件是否归属当前BUFF目标。**任何新增的前置条件实体必须重写 `GetEventRole()`**，
+否则在Attacker/Attacked事件中会被错误过滤掉。
+
+## 关键架构（必读）
+
+### 1. 事件绑定 — `BuffEventDispatcher`
+
+事件订阅/反订阅由 `Assets/Scripts/Game/Buff/BuffEventBinding.cs` 集中管理，
+**不再在 `BuffBaseEntity` 用 switch 硬编码**。
+
+```csharp
+//新增 BUFF 触发事件时，只需在 dicBindings 追加一行：
+{ EventsInfo.YourNewEvent,
+  new BuffEventBinding<YourArgType>(e => e.EventForYourNewEvent) },
+```
+
+然后在 `BuffBaseEntity` 中新增 `EventForYourNewEvent` 虚方法即可，子类按需重写。
+
+### 2. 属性修改管线 — `ModifierPipeline` (AttributeModifier.cs)
+
+属性BUFF不再用串行的 `ChangeData` 累乘（叠序敏感），而是通过 `IAttributeModifierSource` 收集
+`AttributeModifier`，再由 `ModifierPipeline.Apply` 按通道统一计算（叠序无关）：
+
+| 通道 | 行为 | 适用 |
+|------|------|------|
+| `Flat` | 直接相加 `value += m.value` | 平A加成（ATK +100） |
+| `PercentAdd` | 同通道 rate 累加，最后乘一次 `(1 + Σrate)` | 普通百分比加成（+15% 与 +20% = +35%） |
+| `PercentMul` | 每个 `(1+rate)` 连乘 | 独立倍率（克制系数、独立buff） |
+| `Override` | 取最高 `priority` 的值 | 锁血/锁攻速/特殊状态 |
+
+最终公式：`v = (base + flatSum) * (1 + pctAddSum) * pctMulProduct`，若有Override则取覆盖值。
+
+`BuffEntityAttribute.EmitModifiers` 默认把 `trigger_value` 走 Flat、`trigger_value_rate` 走 PercentAdd；
+但 `CRT` / `EVA` 例外：`rate` 本身就是百分比绝对值，直接 Flat 累加。
+
+### 3. 堆叠策略 — `BuffStackMode`
+
+向已有同ID BUFF的生物再次添加同ID BUFF时，由 `BuffInfoBean.stack_mode` 决定行为：
+
+| 值 | 模式 | 行为 |
+|----|------|------|
+| 0 | `Refresh` | 刷新次数/计时 + 施加者，不叠层（默认，兼容旧行为） |
+| 1 | `Stack` | `stackCount += 1`（受 `stack_max` 限制），层变化时 `RefreshBaseAttribute` |
+| 2 | `Independent` | 走新增分支，独立实例分别计时（多源DOT） |
+| 3 | `Ignore` | 完全忽略新BUFF |
+| 4 | `ReplaceStrongest` | 仅当新 `trigger_value` 更大时替换 |
+
+合并由 `BuffHandler.ApplyStackingPolicy` 处理。**Instant类型BUFF强制走独立分支**（每次添加都触发）。
+
+### 4. 对象池
+
+- `BuffManager.dicBuffEntityPool` 按类名缓存 `BuffBaseEntity` 实例
+- `BuffManager.queueBuffEntityPool` 缓存 `BuffEntityBean` 实例
+- `BuffManager.dicBuffPreEntity` 长期缓存前置条件实例（永不清理）
+
+回收路径：`RemoveBuffEntity` → 标记 `isValid=false` → `ClearData()`（注销事件 + 置空 buffEntityData）→ 入池。
+
+### 5. Instant 类型识别 — Type 继承检查
+
+`BuffInfoBean.IsInstantBuffEntity()` 通过 `Type.GetType(class_entity)` + `IsAssignableFrom` 判断，
+**不再用类名前缀**，避免改名后静默失效。结果按实例缓存。
 
 ## 创建新BUFF
 
-### 1. 定义BUFF ID
+### 1. 选择基类
+
+| 触发时机 | 基类 | 备注 |
+|---------|------|------|
+| 持续生效的属性加成 | `BuffEntityAttribute` | 实现 `CollectModifiers`，由 ModifierPipeline 统一计算 |
+| 改攻击时间 | `BuffEntityAttributeAttackTime` | 走独立分支（`BuffHandler.ChangeAttackTimeDataForBuff`） |
+| 添加时立即触发一次 | `BuffEntityInstant` | 复活、克隆等一次性效果 |
+| 特定事件触发 | `BuffEntityConditional` 或其子类 | 必须配置 `class_entity_events` |
+| 周期性无次数 | `BuffEntityPeriodic` | `trigger_num = 0` |
+| 周期性有次数 | `BuffEntityPecurrent` | `trigger_num > 0`，耗尽即销毁 |
+
+### 2. 实体类骨架
+
+#### 属性BUFF（带条件门控）
 
 ```csharp
-// 在 BuffInfoBean 配置表中添加
-// buff_type: 1攻击模块 2生物自带 3深渊馈赠 11/12/13生物稀有度BUFF
-```
-
-### 2. 选择BUFF实体类型
-
-根据触发时机选择合适的基类：
-
-| 实体类型 | 触发时机 | 适用场景 |
-|---------|---------|---------|
-| `BuffEntityAttribute` | 持续生效 | 属性加成（HP/DR/ATK等） |
-| `BuffEntityInstant` | 添加时立即触发一次 | 一次性效果（复活、克隆等） |
-| `BuffEntityConditional` | 特定事件触发 | 攻击/死亡/受击等条件触发 |
-| `BuffEntityPeriodic` | 周期性触发 | 持续回复、持续伤害 |
-| `BuffEntityPecurrent` | 周期性触发（有限次数） | 固定次数的效果触发 |
-
-### 3. 创建BUFF实体类
-
-#### 属性BUFF示例
-
-```csharp
-// Assets/Scripts/Game/Buff/BuffEntity/Attribute/BuffEntityAttribute.cs
-public class BuffEntityAttribute : BuffBaseEntity
+public class BuffEntityAttributeWhenLowHP : BuffEntityAttribute
 {
-    public CreatureAttributeTypeEnum attributeType = CreatureAttributeTypeEnum.None;
-
-    public override void SetData(BuffEntityBean buffEntityData)
+    public override void CollectModifiers(List<AttributeModifier> sink)
     {
-        base.SetData(buffEntityData);
-        var buffInfo = buffEntityData.GetBuffInfo();
-        attributeType = buffInfo.class_entity_data.GetEnum<CreatureAttributeTypeEnum>();
-    }
-
-    /// <summary>
-    /// 修改属性值
-    /// </summary>
-    public virtual float ChangeData(CreatureAttributeTypeEnum targetAttributeType, float targetData)
-    {
-        if (targetAttributeType != attributeType)
-            return targetData;
-        
-        // 数值加成逻辑
-        targetData += buffEntityData.buffData.trigger_value;
-        targetData *= 1 + buffEntityData.buffData.trigger_value_rate;
-        return targetData;
+        if (buffEntityData == null || !buffEntityData.isValid) return;
+        //自定义条件：HP < 50% 才生效
+        var targetCreature = GetFightCreatureEntityForTarget();
+        if (targetCreature == null) return;
+        float hpRate = (float)targetCreature.fightCreatureData.HPCurrent
+                       / targetCreature.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.HP);
+        if (hpRate > 0.5f) return;
+        //条件满足，正常 emit
+        EmitModifiers(sink, buffEntityData.buffData, attributeType, buffEntityData.stackCount, this);
     }
 }
 ```
 
-#### 条件触发BUFF示例
+#### 条件触发BUFF
 
 ```csharp
-// Assets/Scripts/Game/Buff/BuffEntity/Conditional/xxx.cs
-public class BuffEntityConditionalAttack : BuffEntityConditional
+public class BuffEntityConditionalCustom : BuffEntityConditional
 {
-    public override void SetData(BuffEntityBean buffEntityData)
+    public override bool TriggerBuffConditional(BuffEntityBean buffEntityData)
     {
-        base.SetData(buffEntityData);
-        // 注册攻击事件监听
-        nameRegisterEvent = EventsInfo.GameFightLogic_CreatureAttack;
-        RegisterEvent(nameRegisterEvent);
+        bool ok = base.TriggerBuffConditional(buffEntityData);  // 包含 triggerChance 判定 + ShowBuffEffect
+        if (!ok) return false;
+        //执行自定义效果...
+        return true;
     }
 
-    public override void EventForCreatureAttack(FightAttackBean fightAttack)
+    public override void HandleForEvent()
     {
-        if (buffEntityData.isValid == false) return;
-        
-        // 检查是否满足前置条件
-        if (!CheckIsPre(buffEntityData))
-            return;
-        
-        // 执行BUFF效果
-        TriggerBuffConditional(buffEntityData);
+        base.HandleForEvent();
+        if (CheckIsPre(buffEntityData))
+        {
+            buffEntityData.conditionalValue = 0;
+            TriggerBuffConditional(buffEntityData);
+        }
     }
 }
 ```
 
-#### 即时触发BUFF示例
+事件订阅通过 `BuffInfoBean.class_entity_events` 配置事件名（如 `EventsInfo.GameFightLogic_UnderAttack`），
+`BuffBaseEntity.SetData` 自动调用 `BuffEventDispatcher.Register`。
+
+#### 即时BUFF
 
 ```csharp
-// Assets/Scripts/Game/Buff/BuffEntity/Instant/BuffEntityInstantCloneDefenseCreature.cs
-public class BuffEntityInstantCloneDefenseCreature : BuffEntityInstant
+public class BuffEntityInstantCustom : BuffEntityInstant
 {
     public override bool TriggerBuffInstant(BuffEntityBean buffEntityData)
     {
         base.TriggerBuffInstant(buffEntityData);
-        
-        // 立即执行克隆逻辑
-        var targetCreature = GetFightCreatureEntityForTarget();
-        if (targetCreature != null)
-        {
-            // 克隆防御生物...
-        }
+        var target = GetFightCreatureEntityForTarget();
+        if (target == null) return false;
+        //执行一次性效果...
         return true;
     }
 }
 ```
 
-### 4. 配置BUFF参数
+#### 周期性BUFF
 
 ```csharp
-// BuffInfoBean 关键配置字段
+public class BuffEntityPeriodicCustom : BuffEntityPeriodic
 {
-    "id": 100001,                    // BUFF唯一ID
-    "buff_type": 1,                  // BUFF类型
-    "class_entity": "BuffEntityConditionalAttack",  // 实体类名
-    "class_entity_events": "GameFightLogic_CreatureAttack",  // 监听事件
-    "class_entity_data": "ATK",      // 实体数据（如属性类型）
-    "pre_info": "1001:500|2001:3",   // 前置条件（条件ID:数值）
-    "trigger_value": 100,            // 触发数值
-    "trigger_value_rate": 0.5,       // 触发数值百分比
-    "trigger_chance": 1.0,           // 触发几率（0-1）
-    "trigger_num": 5,                // 触发次数（0为无限）
-    "trigger_time": 1.0,             // 触发间隔（秒）
-    "trigger_effect": 1001           // 触发特效ID
+    public override bool TriggerBuffPeriodic(BuffEntityBean buffEntityData)
+    {
+        if (!base.TriggerBuffPeriodic(buffEntityData)) return false;
+        //每 trigger_time 秒执行一次...
+        return true;
+    }
 }
 ```
 
-### 5. 添加前置条件（可选）
+### 3. 配置 `BuffInfo` 关键字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `id` | long | BUFF唯一ID |
+| `buff_type` | int | 1攻击模块 / 2生物自带 / 3深渊馈赠 / 11/12/13稀有度BUFF |
+| `rarity` | int | 稀有度（用于UI显示） |
+| `buff_parent_id` / `buff_level` | long/int | 等级BUFF父链；同 parent 的新等级会替换旧的（仅深渊馈赠路径） |
+| `trigger_creature_type` | int | 0所有 1防御 2进攻 99防守核心 |
+| `class_entity` | string | BUFF实体类名（如 `BuffEntityAttribute`） |
+| `class_entity_events` | string | 监听事件名（必须在 `BuffEventDispatcher.dicBindings` 中已注册） |
+| `class_entity_data` | string | 实体数据（属性BUFF填 `CreatureAttributeTypeEnum`；Attack类填 attackModeId） |
+| `pre_info` | string | 前置条件 `preId:value\|preId2:value2` |
+| `trigger_value` / `trigger_value_min` | float | 触发值（min 用于随机化下限） |
+| `trigger_value_rate` / `trigger_value_rate_min` | float | 触发值百分比 |
+| `trigger_chance` / `trigger_chance_min` | float | 触发几率（0-1，0=必然触发） |
+| `trigger_num` | int | 触发次数，0为无限 |
+| `trigger_time` | float | 触发间隔（秒），-1为无限 |
+| `stack_mode` | int | 堆叠策略，见 `BuffStackMode` |
+| `stack_max` | int | 最大堆叠层数（0=无上限，仅Stack模式生效） |
+| `trigger_effect` | long | 触发特效ID |
+| `color_body` | string | 身体染色（hex） |
+
+### 4. 添加新事件类型
+
+1. 在 `EventsInfo` 添加事件常量
+2. 在 `BuffEventDispatcher.dicBindings` 追加一行：
+   ```csharp
+   { EventsInfo.YourEvent, new BuffEventBinding<TArg>(e => e.EventForYourEvent) },
+   ```
+3. 在 `BuffBaseEntity` 添加 `public virtual void EventForYourEvent(TArg arg)` 虚方法
+4. 在子类按需重写
+
+### 5. 添加新前置条件
 
 ```csharp
-// Assets/Scripts/Game/Buff/BuffPre/BuffPreEntityForXXX.cs
 public class BuffPreEntityForCustomCondition : BuffBasePreEntity
 {
+    //【必填】声明在 UnderAttack 事件中的归属角色
+    public override BuffPreEventRole GetEventRole() => BuffPreEventRole.Attacker;
+
     public override bool CheckIsPre(BuffEntityBean buffEntityData, float preValue)
     {
-        FightCreatureEntity creatureEntity = GetTargetCreatureEntity(buffEntityData.targetCreatureUUId);
-        if (creatureEntity == null)
-            return false;
-        
-        // 自定义条件判断逻辑
+        var creature = GetTargetCreatureEntity(buffEntityData.targetCreatureUUId);
+        if (creature == null) return false;
         return buffEntityData.conditionalValue >= preValue;
     }
 }
 ```
 
-## 使用BUFF系统
+然后在 `BuffPreInfo` 配置表添加一行，`class_entity` 填类名即可。
 
-### 添加BUFF到生物
+## 使用 BUFF 系统
+
+### 添加 BUFF 到生物（带创建概率）
 
 ```csharp
-// 创建BUFF数据
 BuffBean buffData = new BuffBean(buffId, isRandom: true, createRate: 1f);
-
-// 添加到战斗生物
 BuffHandler.Instance.AddFightCreatureBuff(
     new List<BuffBean>() { buffData },
-    applierCreatureId,    // 施加者ID
-    targetCreatureId      // 目标生物ID
+    applierCreatureUUId,
+    targetCreatureUUId
 );
 ```
 
-### 添加深渊馈赠BUFF
+`AddFightCreatureBuff` 内部会：
+1. 调用 `CheckBuffCreate` 用 `createRate` 过滤
+2. 走 `ApplyStackingPolicy` 判定是否合并到已有BUFF
+3. 触发 `EventsInfo.Buff_FightCreatureChange`
+
+### 添加深渊馈赠 BUFF（全局，作用于防守核心）
 
 ```csharp
-// 深渊馈赠是全局BUFF，作用于防御核心
-AbyssalBlessingEntityBean abyssalBlessing = new AbyssalBlessingEntityBean(abyssalBlessingId);
-BuffHandler.Instance.AddAbyssalBlessing(abyssalBlessing);
+AbyssalBlessingEntityBean blessing = new AbyssalBlessingEntityBean(abyssalBlessingId);
+BuffHandler.Instance.AddAbyssalBlessing(blessing);
 ```
 
-### 移除BUFF
+若 BUFF 配置了 `buff_parent_id` + `buff_level`，则会：
+- 查询同 parent 已有等级 → 移除旧条目 → 解析下一级 BUFF 加入。
+
+### 移除 BUFF
 
 ```csharp
-// 移除生物的所有BUFF
-BuffHandler.Instance.RemoveFightCreatureBuffs(creatureId);
-
-// 移除特定类型的BUFF
-BuffHandler.Instance.RemoveFightCreatureBuffs<BuffEntityAttribute>(creatureId);
+BuffHandler.Instance.RemoveFightCreatureBuffs(creatureUUId);              // 全部
+BuffHandler.Instance.RemoveFightCreatureBuffs<BuffEntityAttribute>(id);   // 指定类型
 ```
 
-### 检查BUFF创建概率
+**死亡流程注意**：调用 `RemoveFightCreatureBuffs` 之前，应先 TriggerEvent
+`GameFightLogic_CreatureDeadEnd`，让 `BuffEntityConditionalDead` 能完成触发。
+
+### 查询生物BUFF
 
 ```csharp
-// 检查BUFF是否满足创建概率
-BuffEntityBean buffEntity = BuffHandler.Instance.CheckBuffCreate(
-    buffData, 
-    applierCreatureId, 
-    targetCreatureId
-);
+List<BuffBaseEntity> buffs = BuffHandler.Instance.manager.GetFightCreatureBuffsActivie(creatureId);
+bool hasBuff = buffs?.Any(b => b.buffEntityData.buffId == targetBuffId) ?? false;
 ```
 
-## BUFF事件类型
+### 攻击时间修正（专用通道）
 
 ```csharp
-// 可用的事件名称（class_entity_events 字段）
-EventsInfo.GameFightLogic_UnderAttack_Dead      // 被攻击致死
-EventsInfo.GameFightLogic_UnderAttack           // 被攻击
-EventsInfo.GameFightLogic_CreatureDeadDropCrystal // 生物死亡掉落水晶
-EventsInfo.GameFightLogic_CreatureDeadStart     // 生物死亡开始
-EventsInfo.GameFightLogic_CreatureDeadEnd       // 生物死亡结束
+float timeAttackPre = 1.0f, timeAttacking = 0.5f;
+BuffHandler.Instance.ChangeAttackTimeDataForBuff(creatureUUId, ref timeAttackPre, ref timeAttacking);
 ```
 
-## 属性类型枚举
+只会遍历 `BuffEntityAttributeAttackTime`，不走 ModifierPipeline（因为对应的是时间常量而非属性）。
 
-```csharp
-CreatureAttributeTypeEnum
-├── None = 0
-├── HP = 1           // 生命值
-├── DR = 2           // 防御
-├── ATK = 3          // 攻击
-├── ASPD = 4         // 攻击速度
-├── MSPD = 5         // 移动速度
-├── CRT = 6          // 暴击率
-├── EVA = 7          // 闪避率
-├── RCD = 8          // 冷却缩减
-├── HPRegeneration = 11   // HP回复
-└── ...
+## 事件名速查（已注册到 BuffEventDispatcher）
+
+| 事件 | 参数 | 默认回调 |
+|------|------|----------|
+| `GameFightLogic_UnderAttack_Dead` | `FightUnderAttackBean` | `EventForUnderAttackDead` |
+| `GameFightLogic_UnderAttack` | `FightUnderAttackBean` | `EventForUnderAttack`（带前置角色过滤） |
+| `GameFightLogic_CreatureDeadDropCrystal` | `FightDropCrystalBean` | `EventForCreatureDeadDropCrystal` |
+| `GameFightLogic_CreatureDeadStart` | `FightCreatureEntity` | `EventForCreatureDeadStart` |
+| `GameFightLogic_CreatureDeadEnd` | `FightCreatureEntity` | `EventForCreatureDeadEnd` |
+
+新增事件参考前文「添加新事件类型」。
+
+## 属性类型枚举（`CreatureAttributeTypeEnum`）
+
+```
+None = 0
+HP = 1            // 生命值
+DR = 2            // 防御
+ATK = 3           // 攻击
+ASPD = 4          // 攻击速度
+MSPD = 5          // 移动速度
+CRT = 6           // 暴击率（rate 走 Flat）
+EVA = 7           // 闪避率（rate 走 Flat）
+RCD = 8           // 冷却缩减
+HPRegeneration = 11
+...
 ```
 
 ## 常用代码模板
 
-### 创建属性BUFF
+### 创建带创建概率与触发几率的BUFF
 
 ```csharp
-// 创建增加100点攻击力的BUFF
 BuffBean buffData = new BuffBean(100001);
+buffData.createRate = 0.3f;       // 30% 概率创建
+buffData.trigger_chance = 0.5f;   // 创建后每次触发50%命中
 buffData.trigger_value = 100;
-buffData.trigger_value_rate = 0;
-
+buffData.trigger_value_rate = 0.2f;
 BuffHandler.Instance.AddFightCreatureBuff(
-    new List<BuffBean>() { buffData },
-    applierId,
-    targetId
-);
+    new List<BuffBean>() { buffData }, applierId, targetId);
 ```
 
-### 创建带几率触发的BUFF
+### 获取属性BUFF对最终属性的修改（预览路径）
 
 ```csharp
-// 创建有30%几率触发的BUFF
-BuffBean buffData = new BuffBean(100002);
-buffData.createRate = 0.3f;  // 30%创建几率
-buffData.trigger_chance = 0.5f;  // 触发后50%执行效果
-```
-
-### 检查生物是否有特定BUFF
-
-```csharp
-List<BuffBaseEntity> buffs = BuffHandler.Instance.manager
-    .GetFightCreatureBuffsActivie(creatureId);
-
-bool hasBuff = buffs?.Any(b => b.buffEntityData.buffId == targetBuffId) ?? false;
-```
-
-### 获取BUFF属性加成
-
-```csharp
-// 在生物属性计算中使用
+//战斗中：FightCreatureBean.RefreshBaseAttribute 已统一走 ModifierPipeline。
+//预览/卡片路径：用兼容层
 float baseATK = 100;
-float buffBonus = BuffEntityAttribute.ChangeData(
-    buffData, 
-    CreatureAttributeTypeEnum.ATK, 
-    baseATK
-);
+float final = BuffEntityAttribute.ChangeData(
+    buffData, CreatureAttributeTypeEnum.ATK, baseATK, stackCount: 1);
 ```
 
-## 相关事件
+### 让自定义来源参与 ModifierPipeline
 
 ```csharp
-// BUFF变化事件
-EventHandler.Instance.TriggerEvent(EventsInfo.Buff_FightCreatureChange, applierId, targetId);
-
-// 深渊馈赠变化事件
-EventHandler.Instance.TriggerEvent(EventsInfo.Buff_AbyssalBlessingChange, abyssalBlessingData);
+public class MyEquip : IAttributeModifierSource
+{
+    public void CollectModifiers(List<AttributeModifier> sink)
+    {
+        sink.Add(new AttributeModifier {
+            attributeType = CreatureAttributeTypeEnum.ATK,
+            channel = ModifierChannel.PercentMul,
+            value = 0.5f,        // ×1.5
+            source = this,
+        });
+    }
+}
 ```
 
 ## 文件位置速查
@@ -320,15 +396,29 @@ EventHandler.Instance.TriggerEvent(EventsInfo.Buff_AbyssalBlessingChange, abyssa
 | 功能 | 文件路径 |
 |------|----------|
 | BUFF基类 | `Assets/Scripts/Game/Buff/BuffEntity/BuffBaseEntity.cs` |
-| BUFF前置条件基类 | `Assets/Scripts/Game/Buff/BuffPre/BuffBasePreEntity.cs` |
-| BUFF数据Bean | `Assets/Scripts/Bean/Game/BuffBean.cs` |
-| BUFF实例Bean | `Assets/Scripts/Bean/Game/BuffEntityBean.cs` |
-| BUFF配置Bean | `Assets/Scripts/Bean/MVC/Game/BuffInfoBean.cs` |
-| BUFF前置条件配置 | `Assets/Scripts/Bean/MVC/Game/BuffPreInfoBean.cs` |
-| BUFF管理器 | `Assets/Scripts/Component/Manager/BuffManager.cs` |
-| BUFF处理器 | `Assets/Scripts/Component/Handler/BuffHandler.cs` |
+| 事件分发 | `Assets/Scripts/Game/Buff/BuffEventBinding.cs` |
+| 属性修改管线 | `Assets/Scripts/Game/Buff/AttributeModifier.cs` |
+| HP/DR共享基类 | `Assets/Scripts/Game/Buff/BuffEntity/BuffEntityBase*Change*.cs` |
 | 属性BUFF | `Assets/Scripts/Game/Buff/BuffEntity/Attribute/` |
 | 条件BUFF | `Assets/Scripts/Game/Buff/BuffEntity/Conditional/` |
 | 即时BUFF | `Assets/Scripts/Game/Buff/BuffEntity/Instant/` |
-| 周期性BUFF | `Assets/Scripts/Game/Buff/BuffEntity/Periodic/` |
-| 前置条件 | `Assets/Scripts/Game/Buff/BuffPre/` |
+| 周期性BUFF（无次数） | `Assets/Scripts/Game/Buff/BuffEntity/Periodic/` |
+| 周期性BUFF（有次数） | `Assets/Scripts/Game/Buff/BuffEntity/Pecurrent/` |
+| 前置条件基类 | `Assets/Scripts/Game/Buff/BuffPre/BuffBasePreEntity.cs` |
+| 前置条件实现 | `Assets/Scripts/Game/Buff/BuffPre/` |
+| BUFF数据Bean | `Assets/Scripts/Bean/Game/BuffBean.cs` |
+| BUFF运行时实例 | `Assets/Scripts/Bean/Game/BuffEntityBean.cs` |
+| BUFF配置Bean | `Assets/Scripts/Bean/MVC/Game/BuffInfoBean.cs` |
+| BUFF配置扩展 | `Assets/Scripts/Bean/MVC/Game/BuffInfoBeanPartial.cs`（含 `BuffStackMode` 枚举） |
+| BUFF前置条件配置 | `Assets/Scripts/Bean/MVC/Game/BuffPreInfoBean.cs` |
+| BuffHandler | `Assets/Scripts/Component/Handler/BuffHandler.cs` |
+| BuffManager | `Assets/Scripts/Component/Manager/BuffManager.cs` |
+
+## 常见坑
+
+1. **新增前置条件忘记重写 `GetEventRole()`** → 在 Attacker/Attacked 事件中被错误过滤。
+2. **属性BUFF 试图修改 `BuffInfoBean.cs`** → 该文件自动生成，扩展请写在 `BuffInfoBeanPartial.cs`。
+3. **在 `ClearData` 后访问 `buffEntityData`** → 已置 null，请用 `isValid` 守卫。
+4. **`SetData` 重复调用** → 基类已做保护性 `Unregister`，但仍应避免；池化复用时务必先 `ClearData`。
+5. **Stack 模式忘配 `stack_max`** → 0 表示无上限；属性BUFF用 stack 时确保 `EmitModifiers` 已用 `stackCount`。
+6. **新增事件类型只改 `BuffBaseEntity` 不改 `BuffEventDispatcher`** → 事件订阅不会生效。

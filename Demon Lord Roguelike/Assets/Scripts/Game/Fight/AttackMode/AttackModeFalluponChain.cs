@@ -10,6 +10,8 @@ public class AttackModeFalluponChain : BaseAttackMode
 
     //已攻击过的生物ID
     private HashSet<string> listAttackedCreatureId = new HashSet<string>();
+    //连锁候选缓冲（复用，避免每次 new List 产生 GC）
+    private readonly List<FightCreatureEntity> listCandidate = new List<FightCreatureEntity>();
     //当前连锁次数
     private int currentChainCount = 0;
     //原始伤害
@@ -104,11 +106,12 @@ public class AttackModeFalluponChain : BaseAttackMode
     private bool HandleChainAttack()
     {
         Vector3 checkPosition = currentAttacked.creatureObj.transform.position;
-        List<FightCreatureEntity> listCandidate = new List<FightCreatureEntity>();
+        listCandidate.Clear();
         Collider[] targetColliders = GetHitTargetAreaCollider(checkPosition);
         if (targetColliders != null)
         {
-            GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+            //循环外缓存 GameFightLogic，避免每个 collider 都做 GetGameLogic 反射查询
+            GameFightLogic gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
             for (int i = 0; i < targetColliders.Length; i++)
             {
                 string creatureId = targetColliders[i].gameObject.name;
@@ -185,6 +188,7 @@ public class AttackModeFalluponChain : BaseAttackMode
     public override void Destroy(bool isPermanently = false)
     {
         listAttackedCreatureId.Clear();
+        listCandidate.Clear();
         currentChainCount = 0;
         base.Destroy(isPermanently);
     }

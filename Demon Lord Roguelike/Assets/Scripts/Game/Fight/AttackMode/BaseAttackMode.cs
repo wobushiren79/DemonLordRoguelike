@@ -9,6 +9,8 @@ using UnityEngine;
 public class BaseAttackMode
 {
     public bool isValid = true;
+    //实例ID（由 FightManager 分配，用于 DictionaryList 快速移除）
+    public long instanceId;
     //当前obj
     public GameObject gameObject;
     //sprite渲染（不一定有）
@@ -17,6 +19,8 @@ public class BaseAttackMode
     public AttackModeInfoBean attackModeInfo;
     //攻击模块数据
     public AttackModeBean attackModeData;
+    //攻击搜索的生物战斗类型（由 attackedLayerTarget 推导，StartAttack 时缓存，避免每帧重算）
+    protected CreatureFightTypeEnum searchCreatureType = CreatureFightTypeEnum.None;
 
     /// <summary>
     /// 初始化攻击样式
@@ -110,6 +114,19 @@ public class BaseAttackMode
                     attackModeData.startPos = attacker.creatureObj.transform.position + offsetPosition;
                     //获取被攻击者的层级
                     attackModeData.attackedLayerTarget = attacker.fightCreatureData.GetCreatureLayer(true);
+                    //缓存被攻击者战斗类型（用于范围检测时筛选 layer），避免每帧重算
+                    if (attackModeData.attackedLayerTarget == LayerInfo.CreatureAtt)
+                    {
+                        searchCreatureType = CreatureFightTypeEnum.FightAttack;
+                    }
+                    else if (attackModeData.attackedLayerTarget == LayerInfo.CreatureDef)
+                    {
+                        searchCreatureType = CreatureFightTypeEnum.FightDefense;
+                    }
+                    else
+                    {
+                        searchCreatureType = CreatureFightTypeEnum.None;
+                    }
                 }
             }
         }
@@ -160,6 +177,8 @@ public class BaseAttackMode
     public virtual void Destroy(bool isPermanently = false)
     {
         this.isValid = false;
+        //重置攻击搜索类型，避免对象池复用时残留上次的目标层级
+        this.searchCreatureType = CreatureFightTypeEnum.None;
         if (isPermanently)
         {
             if (gameObject != null)
@@ -240,15 +259,7 @@ public class BaseAttackMode
     public virtual List<FightCreatureEntity> CheckHitTarget(Vector3 checkPosition)
     {
         CreatureSearchType searchType = attackModeInfo.GetCreatureSerachType();
-        CreatureFightTypeEnum searchCreatureType = CreatureFightTypeEnum.None;
-        if (attackModeData.attackedLayerTarget == LayerInfo.CreatureAtt)
-        {
-            searchCreatureType = CreatureFightTypeEnum.FightAttack;
-        }
-        else if (attackModeData.attackedLayerTarget == LayerInfo.CreatureDef)
-        {
-            searchCreatureType = CreatureFightTypeEnum.FightDefense;
-        }
+        //使用 StartAttack 时缓存的 searchCreatureType，避免每帧重算
         return FightCreatureSearchUtil.FindCreatureEntity(searchType, searchCreatureType, checkPosition, attackModeData.attackDirection, Vector3.zero, attackModeInfo.collider_size);
     }
 
@@ -261,11 +272,12 @@ public class BaseAttackMode
         Collider[] targetColliders = GetHitTargetAreaCollider(checkPosition);
         if (targetColliders != null)
         {
+            //循环外缓存 GameFightLogic，避免每个 collider 命中都做 GetGameLogic 反射查询
+            GameFightLogic gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
             for (int i = 0; i < targetColliders.Length; i++)
             {
                 var itemHitterCollder = targetColliders[i];
                 string creatureId = itemHitterCollder.gameObject.name;
-                GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
                 var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, CreatureFightTypeEnum.None);
                 if (targetCreature != null && !targetCreature.IsDead())
                 {

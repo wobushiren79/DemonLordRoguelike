@@ -2,6 +2,12 @@ using System;
 
 public static class CreatureUtil
 {
+    #region 生物皮肤
+    /// <summary>
+    /// 获取生物皮肤类型的多语言显示名称
+    /// </summary>
+    /// <param name="creatureSkinType">生物皮肤类型枚举</param>
+    /// <returns>多语言名称；未匹配返回 "???"，Base 返回空串</returns>
     public static string GetCreatureSkinTypeEnumName(CreatureSkinTypeEnum creatureSkinType)
     {
         switch (creatureSkinType)
@@ -23,4 +29,5 @@ public static class CreatureUtil
         }
         return "???";
     }
+    #endregion
 }
