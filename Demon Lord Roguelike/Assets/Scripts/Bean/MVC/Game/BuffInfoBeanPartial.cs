@@ -2,9 +2,81 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// BUFF堆叠策略
+/// 当向已经存在同ID BUFF的生物再次添加同ID BUFF时如何处理
+/// </summary>
+public enum BuffStackMode
+{
+    /// <summary>
+    /// 刷新：刷新剩余次数/时间，不叠层（默认，兼容旧行为）
+    /// </summary>
+    Refresh = 0,
+    /// <summary>
+    /// 叠层：层数+1（受 stack_max 限制），每层独立加成
+    /// </summary>
+    Stack = 1,
+    /// <summary>
+    /// 独立：完全独立实例，分别计时（多源 DOT）
+    /// </summary>
+    Independent = 2,
+    /// <summary>
+    /// 忽略：已存在则忽略新添加（一次性免疫）
+    /// </summary>
+    Ignore = 3,
+    /// <summary>
+    /// 替换最强：仅当新BUFF的trigger_value更大时替换旧实例（同类减速取最强）
+    /// </summary>
+    ReplaceStrongest = 4,
+}
+
 public partial class BuffInfoBean
 {
     protected Color colorBody = Color.white;
+
+    /// <summary>
+    /// 获取堆叠策略
+    /// </summary>
+    public BuffStackMode GetStackMode()
+    {
+        return (BuffStackMode)stack_mode;
+    }
+
+    /// <summary>
+    /// 获取最大堆叠层数（0=无上限，仅 Stack 模式生效）
+    /// </summary>
+    public int GetStackMax()
+    {
+        return stack_max;
+    }
+
+    /// <summary>
+    /// 缓存：class_entity 对应的 Type 是否继承自 BuffEntityInstant
+    /// 通过 Type 继承检查代替类名前缀匹配，避免改名后静默失效
+    /// </summary>
+    private bool? cachedIsInstant;
+
+    /// <summary>
+    /// 是否为Instant类型BUFF（SetData中立即触发并失效）
+    /// 通过 class_entity 解析出 Type 后做继承检查并缓存结果
+    /// </summary>
+    public bool IsInstantBuffEntity()
+    {
+        if (cachedIsInstant.HasValue)
+            return cachedIsInstant.Value;
+
+        bool result = false;
+        if (!class_entity.IsNull())
+        {
+            Type type = Type.GetType(class_entity);
+            if (type != null)
+            {
+                result = typeof(BuffEntityInstant).IsAssignableFrom(type);
+            }
+        }
+        cachedIsInstant = result;
+        return result;
+    }
 
     /// <summary>
     /// 获取BUFF稀有度

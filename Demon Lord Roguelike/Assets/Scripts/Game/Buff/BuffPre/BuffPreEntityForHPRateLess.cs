@@ -4,6 +4,11 @@ using UnityEngine;
 public class BuffPreEntityForHPRateLess : BuffBasePreEntity
 {
     /// <summary>
+    /// 该前置在 UnderAttack 事件中关注"BUFF目标作为被攻击者"
+    /// </summary>
+    public override BuffPreEventRole GetEventRole() => BuffPreEventRole.Attacked;
+
+    /// <summary>
     /// 检测是否满足前置条件
     /// </summary>
     public override bool CheckIsPre(BuffEntityBean buffEntityData, float preValue)

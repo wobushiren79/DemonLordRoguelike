@@ -81,6 +81,14 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public float trigger_time;
 	/// <summary>
+	///堆叠策略 0=Refresh 1=Stack 2=Independent 3=Ignore 4=ReplaceStrongest
+	/// </summary>
+	public int stack_mode;
+	/// <summary>
+	///最大堆叠层数 0=无上限 仅Stack模式生效
+	/// </summary>
+	public int stack_max;
+	/// <summary>
 	///触发时的粒子
 	/// </summary>
 	public long trigger_effect;

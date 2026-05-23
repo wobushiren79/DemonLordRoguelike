@@ -1,30 +1,4 @@
 {
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "matcher": "(?i)(MCP|连接.*[Uu]nity|[Uu]nity.*连接|Start Session|HTTP server|uvx|Window.*MCP)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/check-unity-mcp.ps1\"",
-            "timeout": 30
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/check-cs-changed.ps1\"",
-            "timeout": 10
-          }
-        ]
-      }
-    ]
-  },
   "permissions": {
     "allow": [
       "Read(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.claude\\skills\\*)",
@@ -40,5 +14,51 @@
       "Bash(powerShell.exe -NoProfile -Command *)",
       "PowerShell(*)"
     ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "(?i)(MCP|连接.*[Uu]nity|[Uu]nity.*连接|Start Session|HTTP server|uvx|Window.*MCP)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/check-unity-mcp.ps1\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/block-unity-assets.ps1\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/block-bean-edits.ps1\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/check-cs-changed.ps1\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "claude-code-setup@claude-plugins-official": true
   }
 }

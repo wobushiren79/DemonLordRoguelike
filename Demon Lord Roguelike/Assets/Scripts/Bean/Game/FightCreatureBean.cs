@@ -57,8 +57,13 @@ public class FightCreatureBean
         DRCurrent = (int)GetAttribute(CreatureAttributeTypeEnum.DR);
     }
 
+    //modifier 收集缓冲区（复用以避免每次 Refresh 都重新分配）
+    private readonly List<AttributeModifier> modifierBuffer = new List<AttributeModifier>(32);
+
     /// <summary>
     /// 初始化基础属性
+    /// 采用 channel pipeline 计算：先把所有BUFF的 modifier 收集到 buffer，再按属性叠加 Flat → PercentAdd → PercentMul → Override
+    /// 叠序无关，跟主流方案一致
     /// </summary>
     public void RefreshBaseAttribute(Action actionForComplete = null)
     {
@@ -74,62 +79,60 @@ public class FightCreatureBean
         //还原基础身体颜色
         colorBodyCurrent = Color.white;
 
-        //战斗生物buff相关加成
+        //收集所有BUFF的 modifier，同时处理身体颜色等非属性副作用
+        modifierBuffer.Clear();
         var creatureBuffs = BuffHandler.Instance.manager.GetFightCreatureBuffsActivie(creatureData.creatureUUId);
-        if (!creatureBuffs.IsNull())
-        {
-            for (int i = 0; i < creatureBuffs.Count; i++)
-            {
-                BuffBaseEntity buffEntity = creatureBuffs[i];
-                SetAttributeBaseForBuff(buffEntity);
-            }
-        }
+        CollectFromBuffList(creatureBuffs);
         //深渊馈赠buff加成
         var abyssalBlessingBuffs = BuffHandler.Instance.manager.dicAbyssalBlessingBuffsActivie;
         if (!abyssalBlessingBuffs.List.IsNull())
         {
             for (int i = 0; i < abyssalBlessingBuffs.List.Count; i++)
             {
-                var itemAbyssalBlessingBuff = abyssalBlessingBuffs.List[i];
-                for (int j = 0; j < itemAbyssalBlessingBuff.Count; j++)
-                {
-                    BuffBaseEntity buffEntity = itemAbyssalBlessingBuff[j];
-                    SetAttributeBaseForBuff(buffEntity);
-                }
+                CollectFromBuffList(abyssalBlessingBuffs.List[i]);
             }
         }
+
+        //按通道叠加 modifier 计算最终属性
+        for (int i = 0; i < listCreatureAttributeType.Count; i++)
+        {
+            var attr = listCreatureAttributeType[i];
+            dicAttribute[attr] = ModifierPipeline.Apply(dicAttribute[attr], attr, modifierBuffer);
+        }
+
         actionForComplete?.Invoke();
     }
 
     /// <summary>
-    /// 根据BUFF设置属性
+    /// 把一组BUFF的 modifier 与副作用（身体颜色）汇入当前刷新
+    /// 仅在BUFF的 trigger_creature_type 匹配本生物时生效
     /// </summary>
-    protected void SetAttributeBaseForBuff(BuffBaseEntity buffEntity)
+    private void CollectFromBuffList(List<BuffBaseEntity> buffs)
     {
-        var buffEntityData = buffEntity.buffEntityData;
-        var buffInfo = buffEntityData.GetBuffInfo();
-        //如果不是全触发 需要判断一下生物类型
-        CreatureFightTypeEnum triggerCreatureType = buffInfo.GetTriggerCreatureType();
-        if (triggerCreatureType != CreatureFightTypeEnum.None)
+        if (buffs.IsNull()) return;
+        for (int i = 0; i < buffs.Count; i++)
         {
-            if (triggerCreatureType != creatureFightType)
+            var buff = buffs[i];
+            if (buff == null) continue;
+            var buffEntityData = buff.buffEntityData;
+            if (buffEntityData == null || !buffEntityData.isValid) continue;
+            var buffInfo = buffEntityData.GetBuffInfo();
+            //生物类型过滤：BUFF 配置指定了 trigger_creature_type 时只对匹配的生物生效
+            CreatureFightTypeEnum triggerCreatureType = buffInfo.GetTriggerCreatureType();
+            if (triggerCreatureType != CreatureFightTypeEnum.None && triggerCreatureType != creatureFightType)
             {
-                return;
+                continue;
             }
-        }
-        //如果是属性类 
-        if (buffEntity is BuffEntityAttribute buffEntityAttribute)
-        {
-            CreatureAttributeTypeEnum targetAttributeType = buffEntityAttribute.attributeType;
-            float targetAttributeData = GetAttribute(targetAttributeType);
-            //设置新加成后属性
-            targetAttributeData = buffEntityAttribute.ChangeData(targetAttributeType, targetAttributeData);
-            dicAttribute[targetAttributeType] = targetAttributeData;
-        }
-        //设置身体颜色
-        if (!buffInfo.color_body.IsNull())
-        {
-            colorBodyCurrent = buffEntity.GetChangeBodyColor(buffEntityData);
+            //属性 modifier 来源
+            if (buff is IAttributeModifierSource src)
+            {
+                src.CollectModifiers(modifierBuffer);
+            }
+            //身体颜色副作用（保留原逻辑，最后一个生效）
+            if (!buffInfo.color_body.IsNull())
+            {
+                colorBodyCurrent = buff.GetChangeBodyColor(buffEntityData);
+            }
         }
     }
 

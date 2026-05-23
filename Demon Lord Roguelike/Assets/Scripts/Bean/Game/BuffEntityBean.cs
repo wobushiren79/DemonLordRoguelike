@@ -15,6 +15,8 @@
     public int triggerNumLeft;
     //条件值记录 用于条件触发的记录
     public float conditionalValue = 0;
+    //当前堆叠层数（默认1，Stack 模式下增长，受 BuffInfoBean.stack_max 限制）
+    public int stackCount = 1;
 
     //buff数据 固定数据 不可以修改
     public BuffBean buffData;
@@ -29,6 +31,7 @@
         timeUpdateTotal = 0;
         timeUpdate = 0;
         conditionalValue = 0;
+        stackCount = 1;
         this.buffId = buffData.id;
         this.buffData = buffData;
 
@@ -49,13 +52,14 @@
     public void ClearData()
     {
         buffId = 0;
-        isValid = false;  
+        isValid = false;
         applierCreatureUUId = null;
         targetCreatureUUId = null;
         timeUpdateTotal = 0;
-        timeUpdate = 0;   
+        timeUpdate = 0;
         triggerNumLeft = 0;
         conditionalValue = 0;
+        stackCount = 1;
     }
 
     public BuffInfoBean GetBuffInfo()

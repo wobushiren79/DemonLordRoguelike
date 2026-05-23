@@ -4,11 +4,12 @@ using UnityEngine;
 public class BuffBaseEntity
 {
     public BuffEntityBean buffEntityData;
-    //事件名字
+    //当前已注册的事件名（用于反注册时定位 binding）
     public string nameRegisterEvent;
-    //事件注销
-    public Action unregisterEventAction;
-    
+    //缓存当前注册到 EventHandler 的 delegate（由 BuffEventBinding 设置）
+    //保留同一个引用以保证 Unregister 命中同一份 delegate（减少 GC）
+    internal Delegate cachedEventDelegate;
+
     #region 数据相关
     /// <summary>
     /// 设置数据
@@ -16,8 +17,10 @@ public class BuffBaseEntity
     public virtual void SetData(BuffEntityBean buffEntityData)
     {
         //保护性注销：防止上一次SetData后未经ClearData又被再次调用导致重复订阅
-        unregisterEventAction?.Invoke();
-        unregisterEventAction = null;
+        if (!nameRegisterEvent.IsNull())
+        {
+            BuffEventDispatcher.Unregister(this, nameRegisterEvent);
+        }
         nameRegisterEvent = null;
 
         this.buffEntityData = buffEntityData;
@@ -26,7 +29,7 @@ public class BuffBaseEntity
         if (!buffInfo.class_entity_events.IsNull())
         {
             nameRegisterEvent = buffInfo.class_entity_events;
-            RegisterEvent(nameRegisterEvent);
+            BuffEventDispatcher.Register(this, nameRegisterEvent);
         }
     }
 
@@ -36,42 +39,13 @@ public class BuffBaseEntity
     public virtual void ClearData()
     {
         //清理数据的时候需要清理一下注册的信息
-        unregisterEventAction?.Invoke();
-        unregisterEventAction = null;
+        if (!nameRegisterEvent.IsNull())
+        {
+            BuffEventDispatcher.Unregister(this, nameRegisterEvent);
+        }
         nameRegisterEvent = null;
         //清理BUFF数据引用 避免对象池复用时残留上一次的引用
         buffEntityData = null;
-    }
-
-    /// <summary>
-    /// 注册事件
-    /// </summary>
-    /// <param name="eventName"></param>
-    private void RegisterEvent(string eventName)
-    {
-        switch (eventName)
-        {
-            case EventsInfo.GameFightLogic_UnderAttack_Dead:
-                EventHandler.Instance.RegisterEvent<FightUnderAttackBean>(eventName, EventForUnderAttackDead);
-                unregisterEventAction = () => EventHandler.Instance.UnRegisterEvent<FightUnderAttackBean>(eventName, EventForUnderAttackDead);
-                break;
-            case EventsInfo.GameFightLogic_UnderAttack:
-                EventHandler.Instance.RegisterEvent<FightUnderAttackBean>(eventName, EventForUnderAttack);
-                unregisterEventAction = () => EventHandler.Instance.UnRegisterEvent<FightUnderAttackBean>(eventName, EventForUnderAttack);
-                break;
-            case EventsInfo.GameFightLogic_CreatureDeadDropCrystal:
-                EventHandler.Instance.RegisterEvent<FightDropCrystalBean>(eventName, EventForCreatureDeadDropCrystal);
-                unregisterEventAction = () => EventHandler.Instance.UnRegisterEvent<FightDropCrystalBean>(eventName, EventForCreatureDeadDropCrystal);
-                break;
-            case EventsInfo.GameFightLogic_CreatureDeadStart:
-                EventHandler.Instance.RegisterEvent<FightCreatureEntity>(eventName, EventForCreatureDeadStart);
-                unregisterEventAction = () => EventHandler.Instance.UnRegisterEvent<FightCreatureEntity>(eventName, EventForCreatureDeadStart);
-                break;
-            case EventsInfo.GameFightLogic_CreatureDeadEnd:
-                EventHandler.Instance.RegisterEvent<FightCreatureEntity>(eventName, EventForCreatureDeadEnd);
-                unregisterEventAction = () => EventHandler.Instance.UnRegisterEvent<FightCreatureEntity>(eventName, EventForCreatureDeadEnd);
-                break;
-        }
     }
     #endregion
 
@@ -202,18 +176,30 @@ public class BuffBaseEntity
         if (buffEntityData == null || buffEntityData.isValid == false) return;
         var buffInfo = buffEntityData.GetBuffInfo();
         var preInfo = buffInfo.GetPreInfo();
-        //如果被攻击者不是自己 则不用处理
-        if (preInfo.ContainsKey(1001) || preInfo.ContainsKey(3001))
+        //根据前置条件的事件角色过滤本次事件
+        //  Attacked  -> BUFF目标必须是被攻击者（HPRateLess、UnderAttackDamage）
+        //  Attacker  -> BUFF目标必须是攻击者（AttackDamage）
+        if (!preInfo.IsNull())
         {
-            if (!fightUnderAttack.attackedId.Equals(buffEntityData.targetCreatureUUId))
+            bool needAttacked = false;
+            bool needAttacker = false;
+            foreach (var itemData in preInfo)
+            {
+                var buffPreInfo = BuffPreInfoCfg.GetItemData(itemData.Key);
+                if (buffPreInfo == null) continue;
+                var buffPreEntity = BuffHandler.Instance.manager.GetBuffPreEntity(buffPreInfo);
+                if (buffPreEntity == null) continue;
+                switch (buffPreEntity.GetEventRole())
+                {
+                    case BuffPreEventRole.Attacked: needAttacked = true; break;
+                    case BuffPreEventRole.Attacker: needAttacker = true; break;
+                }
+            }
+            if (needAttacked && !fightUnderAttack.attackedId.Equals(buffEntityData.targetCreatureUUId))
             {
                 return;
             }
-        }
-        //如果攻击者不是自己 则不用处理
-        if (preInfo.ContainsKey(4001))
-        {
-            if (!fightUnderAttack.attackerId.Equals(buffEntityData.targetCreatureUUId))
+            if (needAttacker && !fightUnderAttack.attackerId.Equals(buffEntityData.targetCreatureUUId))
             {
                 return;
             }
