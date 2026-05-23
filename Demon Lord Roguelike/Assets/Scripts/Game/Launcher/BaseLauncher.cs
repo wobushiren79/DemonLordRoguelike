@@ -30,5 +30,7 @@ public class BaseLauncher : BaseMonoBehaviour
         //CameraHandler.Instance.ChangeAntialiasing(gameConfig.GetAntialiasingMode(), gameConfig.antialiasingQualityLevel);
         //音效初始化
         AudioHandler.Instance.InitAudio();
+        //成就系统初始化(事件注册)
+        AchievementHandler.Instance.InitData();
     }
 }

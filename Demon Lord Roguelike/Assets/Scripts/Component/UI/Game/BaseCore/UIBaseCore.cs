@@ -55,6 +55,10 @@ public partial class UIBaseCore : BaseUIComponent
         {
             OnClickForVat();
         }
+        else if (viewButton == ui_ViewBaseCoreItemFunction_Achievement)
+        {
+            OnClickForAchievement();
+        }
     }
 
     /// <summary>
@@ -70,6 +74,12 @@ public partial class UIBaseCore : BaseUIComponent
         //是否解锁孕育
         bool isUnlockGashaponMachine = userUnlock.CheckIsUnlock(UnlockEnum.GashaponMachine);
         ui_ViewBaseCoreItemFunction_Gashapon.gameObject.SetActive(isUnlockGashaponMachine);
+        //是否解锁成就
+        if (ui_ViewBaseCoreItemFunction_Achievement != null)
+        {
+            bool isUnlockAchievement = userUnlock.CheckIsUnlock(UnlockEnum.Achievement);
+            ui_ViewBaseCoreItemFunction_Achievement.gameObject.SetActive(isUnlockAchievement);
+        }
     }
 
     /// <summary>
@@ -118,5 +128,13 @@ public partial class UIBaseCore : BaseUIComponent
     public void OnClickForVat()
     {
         var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UICreatureVat>();
+    }
+
+    /// <summary>
+    /// 点击打开-成就
+    /// </summary>
+    public void OnClickForAchievement()
+    {
+        var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIAchievement>();
     }
 }

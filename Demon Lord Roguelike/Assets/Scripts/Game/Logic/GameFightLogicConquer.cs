@@ -103,6 +103,13 @@ public class GameFightLogicConquer : GameFightLogic
     /// </summary>
     public void ActionForUIRewardSelectEnd()
     {
+        //成就统计-征服模式完整通关
+        FightBeanForConquer fightDataForConquer = fightData as FightBeanForConquer;
+        if (fightDataForConquer != null && fightDataForConquer.fightTypeConquerInfo != null)
+        {
+            int difficultyLevel = fightDataForConquer.fightTypeConquerInfo.level;
+            EventHandler.Instance.TriggerEvent(EventsInfo.Achievement_ConquerComplete, difficultyLevel);
+        }
         //展示mask
         UIHandler.Instance.ShowMask(1, null, () =>
         {

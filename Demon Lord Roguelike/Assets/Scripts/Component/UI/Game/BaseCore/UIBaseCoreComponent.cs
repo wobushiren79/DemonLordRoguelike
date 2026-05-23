@@ -17,5 +17,7 @@ public partial class UIBaseCore
 
     public Button ui_ViewBaseCoreItemFunction_Vat;
 
+    public Button ui_ViewBaseCoreItemFunction_Achievement;
+
 
 }

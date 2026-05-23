@@ -182,6 +182,8 @@ public enum UnlockEnum : long
     EquipRewardGoblin = 300600301,
     EquipRewardOrc = 300700301,
 
+    Achievement = 100500001,//成就系统
+
 }
 
 /// <summary>

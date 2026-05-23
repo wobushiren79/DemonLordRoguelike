@@ -43,6 +43,8 @@ public class UserDataBean : BaseBean
     public UserLimmitBean userLimmitData;
     //用户进阶数据
     public UserAscendBean userAscendData;
+    //用户成就&统计数据
+    public UserAchievementBean userAchievementData;
     //临时存储数据
     public UserTempBean userTempBean;
     
@@ -75,6 +77,16 @@ public class UserDataBean : BaseBean
         if (userUnlockData == null)
             userUnlockData = new UserUnlockBean();
         return userUnlockData;
+    }
+
+    /// <summary>
+    /// 获取用户成就数据
+    /// </summary>
+    public UserAchievementBean GetUserAchievementData()
+    {
+        if (userAchievementData == null)
+            userAchievementData = new UserAchievementBean();
+        return userAchievementData;
     }
 
     /// <summary>
