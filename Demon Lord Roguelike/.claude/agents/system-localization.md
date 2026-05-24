@@ -6,6 +6,8 @@ watched_files:
   - Assets/FrameWork/Scripts/Component/Handler/TextHandler.cs
   - Assets/FrameWork/Scripts/Component/Manager/TextManager.cs
   - Assets/FrameWork/Scripts/Component/UI/UITextLanguageView.cs
+  - Assets/FrameWork/Scripts/Bean/MVC/LanguageBeanPartial.cs
+  - Assets/FrameWork/Scripts/Bean/GameConfigBean.cs
   - Assets/Resources/JsonText/
 ---
 
@@ -23,8 +25,18 @@ watched_files:
 - **UITextLanguageView** - 多语言文本组件，自动根据 key 切换语言 [FrameWork/Scripts/Component/UI/UITextLanguageView.cs](Assets/FrameWork/Scripts/Component/UI/UITextLanguageView.cs)
 
 ### 多语言数据
-- **LanguageBean / LanguageBeanPartial** - 多语言数据模型
+- **LanguageBean / LanguageBeanPartial** - 多语言数据模型；`LanguageBeanPartial.cs` 中的 `LanguageCfg` 静态构造与 `GetInitialLanguage()` 负责默认语言判定（Steam 优先）
 - **UITextBean / UITextBeanPartial** - UI 文本数据模型
+- **GameConfigBean** - `language` 字段默认空串；`GetLanguage()` 空串时回落到 `LanguageCfg.GetInitialLanguage()`
+
+### 默认语言初始化（Steam 优先）
+首次启动且无 GameConfig 存档时按以下规则决定语言：
+1. `SteamManager.Initialized == true` → `SteamApps.GetCurrentGameLanguage()`：含 `chinese` → `cn`，否则 → `en`
+2. 未连上 Steam / 抛异常 → `cn`
+
+实现位置：[LanguageBeanPartial.cs](Assets/FrameWork/Scripts/Bean/MVC/LanguageBeanPartial.cs)（静态构造 + `GetInitialLanguage()`），[GameConfigBean.cs](Assets/FrameWork/Scripts/Bean/GameConfigBean.cs)（`GetLanguage()` 空串回退）。
+
+> 注意：`LanguageBean.cs` 是自动生成的，`currentLanguage = ""` 不能直接改，必须用 `LanguageBeanPartial.cs` 的静态构造覆盖。
 
 ### 语言资源
 - 存放路径：`Assets/Resources/JsonText/Language_UIText_*.txt`

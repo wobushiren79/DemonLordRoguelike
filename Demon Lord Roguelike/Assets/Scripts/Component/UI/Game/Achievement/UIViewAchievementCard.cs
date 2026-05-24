@@ -11,13 +11,23 @@ public partial class UIViewAchievementCard : BaseUIView
     public AchievementInfoBean info;
     private Action<AchievementInfoBean> actionForUnlock;
 
+    /// <summary>
+    /// 已完成未领取时进度文本颜色（柔和绿，不刺眼）
+    /// </summary>
+    private static readonly Color ProgressColorReached = new Color(0.48f, 0.77f, 0.50f, 1f);
+
+    /// <summary>
+    /// 未达成时进度文本默认色
+    /// </summary>
+    private static readonly Color ProgressColorDefault = Color.white;
+
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
-        // if (viewButton == ui_BtnUnlock)
-        // {
-        //     OnClickForUnlock();
-        // }
+        if (viewButton == ui_UIViewAchievementCard_Button)
+        {
+            OnClickForUnlock();
+        }
     }
 
     /// <summary>
@@ -35,27 +45,12 @@ public partial class UIViewAchievementCard : BaseUIView
     /// </summary>
     public void RefreshShow()
     {
-        // if (info == null) return;
-        // //名字
-        // if (ui_TxtName != null) ui_TxtName.text = info.name_language;
-        // //描述
-        // if (ui_TxtDescription != null) ui_TxtDescription.text = info.description_language;
-        // //图标
-        // if (ui_Icon != null)
-        // {
-        //     if (!info.icon_res.IsNull())
-        //         IconHandler.Instance.SetUIIcon(info.icon_res, ui_Icon);
-        // }
-        // //奖励
-        // if (ui_TxtReward != null) ui_TxtReward.text = "x" + info.reward_crystal;
+        if (info == null) return;
 
-        //进度
-        long progress = AchievementHandler.Instance.GetAchievementProgress(info);
-        long target = info.target_value;
-        if (progress > target) progress = target;
-        if (ui_TxtProgress != null)
+        //图标
+        if (ui_Icon != null && !info.icon_res.IsNull())
         {
-            ui_TxtProgress.text = string.Format(TextHandler.Instance.GetTextById(4000006), progress, target);
+            IconHandler.Instance.SetUIIcon(info.icon_res, ui_Icon);
         }
 
         //状态
@@ -70,40 +65,37 @@ public partial class UIViewAchievementCard : BaseUIView
     /// </summary>
     private void RefreshStateUI(AchievementStateEnum state)
     {
-        bool canUnlock = state == AchievementStateEnum.Reached;
         bool unlocked = state == AchievementStateEnum.Unlocked;
+        bool reached = state == AchievementStateEnum.Reached;
 
-        // //按钮交互性
-        // if (ui_BtnUnlock != null)
-        // {
-        //     ui_BtnUnlock.interactable = canUnlock;
-        // }
-        // //图标遮罩(未达成/已领取均可显示灰色蒙版以做区分)
-        // if (ui_IconMask != null)
-        // {
-        //     ui_IconMask.gameObject.SetActive(state == AchievementStateEnum.NotReached);
-        // }
-        // //奖励显示(已解锁不再显示)
-        // if (ui_RewardRoot != null)
-        // {
-        //     ui_RewardRoot.SetActive(!unlocked);
-        // }
-        // //文本状态
-        // if (ui_TxtState != null)
-        // {
-        //     switch (state)
-        //     {
-        //         case AchievementStateEnum.NotReached:
-        //             ui_TxtState.text = TextHandler.Instance.GetTextById(4000003);
-        //             break;
-        //         case AchievementStateEnum.Reached:
-        //             ui_TxtState.text = TextHandler.Instance.GetTextById(4000004);
-        //             break;
-        //         case AchievementStateEnum.Unlocked:
-        //             ui_TxtState.text = TextHandler.Instance.GetTextById(4000005);
-        //             break;
-        //     }
-        // }
+        //进度容器：已领取隐藏，未达成/可领取显示
+        if (ui_Progress != null)
+        {
+            ui_Progress.gameObject.SetActive(!unlocked);
+        }
+
+        //进度文本与颜色
+        if (!unlocked && ui_TxtProgress != null)
+        {
+            long progress = AchievementHandler.Instance.GetAchievementProgress(info);
+            long target = info.target_value;
+            if (progress > target) progress = target;
+            ui_TxtProgress.text = string.Format(TextHandler.Instance.GetTextById(4000006), progress, target);
+            ui_TxtProgress.color = reached ? ProgressColorReached : ProgressColorDefault;
+        }
+
+        //置灰蒙版：已领取关闭，未达成/可领取打开
+        if (ui_UIViewAchievementCard_MaskUIView != null)
+        {
+            if (unlocked)
+            {
+                ui_UIViewAchievementCard_MaskUIView.HideMask();
+            }
+            else
+            {
+                ui_UIViewAchievementCard_MaskUIView.ShowMask();
+            }
+        }
     }
 
     public void OnClickForUnlock()

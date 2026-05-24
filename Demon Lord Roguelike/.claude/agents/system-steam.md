@@ -48,6 +48,14 @@ ISteam/
 - SteamWorkshopQueryInstallInfoBean
 - SteamWorkshopUpdateBean
 
+### 跨模块消费点
+
+| 消费方 | 调用 | 用途 |
+|--------|------|------|
+| 多语言初始化（[LanguageBeanPartial.cs](Assets/FrameWork/Scripts/Bean/MVC/LanguageBeanPartial.cs) `LanguageCfg.GetInitialLanguage()`） | `SteamManager.Initialized` + `SteamApps.GetCurrentGameLanguage()` | 新用户首次启动按 Steam 客户端语言推断默认语言（含 `chinese` → `cn`，否则 `en`），Steam 未连上回退 `cn` |
+
+> 在 Steam 类调用点务必做 `SteamManager.Initialized` 判断 + `try/catch`，保证非 Steam 环境（编辑器、Steam 未启动）也能优雅降级。
+
 ### SDK 文件
 - [Assets/FrameWork/Plugins/Steamworks.NET/](Assets/FrameWork/Plugins/Steamworks.NET/)
 - [Assets/FrameWork/Plugins/steam_api.bundle/](Assets/FrameWork/Plugins/steam_api.bundle/)

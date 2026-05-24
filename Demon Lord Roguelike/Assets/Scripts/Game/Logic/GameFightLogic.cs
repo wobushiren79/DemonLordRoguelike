@@ -133,6 +133,7 @@ public class GameFightLogic : BaseGameLogic
     /// </summary>
     public void ClearSelectData(bool isDestroyImm = false)
     {
+        bool wasInDestroyMode = selectCreatureDestory != null;
         GameObject objSelectPreivew = CreatureHandler.Instance.manager.GetCreatureSelectPreview();
         objSelectPreivew.gameObject.SetActive(false);
         //回收生物预制
@@ -159,6 +160,12 @@ public class GameFightLogic : BaseGameLogic
         selectCreature = null;
         selectCreatureDestory = null;
         selectCreatureCard = null;
+
+        //退出删除模式时还原光标
+        if (wasInDestroyMode)
+        {
+            UIHandler.Instance.SetCursorDef();
+        }
     }
     #endregion
 
@@ -278,6 +285,8 @@ public class GameFightLogic : BaseGameLogic
         //设置选择的预制
         selectCreatureDestory = CreatureHandler.Instance.manager.GetCreatureSelectDestroy();
         selectCreatureDestory.gameObject.SetActive(true);
+        //切换鼠标光标为删除图标
+        UIHandler.Instance.SetCursorByIconName(SpriteAtlasTypeEnum.UI, "ui_dead_2", pixelScale: 5);
     }
 
     /// <summary>

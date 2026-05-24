@@ -3,7 +3,9 @@ name: localization-system
 description: Demon Lord Roguelike 游戏的多语言(Localization)系统开发指南。使用此SKILL当需要添加新的多语言文本、创建带多语言的配置表、在UI中显示多语言文本、切换语言等。
 watched_files:
   - Assets/FrameWork/Scripts/Bean/MVC/LanguageBean.cs
+  - Assets/FrameWork/Scripts/Bean/MVC/LanguageBeanPartial.cs
   - Assets/FrameWork/Scripts/Bean/MVC/UITextBean.cs
+  - Assets/FrameWork/Scripts/Bean/GameConfigBean.cs
   - Assets/FrameWork/Scripts/Enums/BaseGameEnum.cs
   - Assets/FrameWork/Scripts/Component/Manager/TextManager.cs
   - Assets/FrameWork/Scripts/Component/Handler/TextHandler.cs
@@ -46,6 +48,94 @@ LanguageEnum
 ├── cn = 0    - 简体中文
 └── en = 1    - 英文
 ```
+
+---
+
+## 默认语言初始化（Steam 优先）
+
+### 初始化策略
+
+新用户（无 GameConfig 存档）首次启动时按下列优先级决定语言，已有存档则保留用户保存的偏好：
+
+```
+1. Steam 已连上（SteamManager.Initialized == true）
+   └─ SteamApps.GetCurrentGameLanguage() 返回值
+      ├─ 含 "chinese"（schinese / tchinese）→ cn
+      └─ 其他（english / german / ...）   → en
+2. 未连上 Steam 或异常 → cn
+```
+
+### 关键代码
+
+**[LanguageBeanPartial.cs](Assets/FrameWork/Scripts/Bean/MVC/LanguageBeanPartial.cs)** — 在 `LanguageCfg` 中提供 `GetInitialLanguage()` 和静态构造：
+
+```csharp
+public partial class LanguageCfg
+{
+    static LanguageCfg()
+    {
+        // 覆盖自动生成文件中的 currentLanguage = ""
+        currentLanguage = GetInitialLanguage();
+    }
+
+    public static string GetInitialLanguage()
+    {
+        try
+        {
+            if (SteamManager.Initialized)
+            {
+                string steamLanguage = SteamApps.GetCurrentGameLanguage();
+                if (!string.IsNullOrEmpty(steamLanguage))
+                {
+                    if (steamLanguage.IndexOf("chinese", StringComparison.OrdinalIgnoreCase) >= 0)
+                        return LanguageEnum.cn.GetEnumName();
+                    return LanguageEnum.en.GetEnumName();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LogUtil.LogError($"读取 Steam 语言失败，回退到默认语言 cn：{ex.Message}");
+        }
+        return LanguageEnum.cn.GetEnumName();
+    }
+}
+```
+
+**[GameConfigBean.cs](Assets/FrameWork/Scripts/Bean/GameConfigBean.cs)** — `language` 默认空串，`GetLanguage()` 空串时回落到 Steam 检测：
+
+```csharp
+//语言（留空时由 LanguageCfg.GetInitialLanguage 判定）
+public string language = "";
+
+public LanguageEnum GetLanguage()
+{
+    string lang = string.IsNullOrEmpty(language) ? LanguageCfg.GetInitialLanguage() : language;
+    return EnumExtension.GetEnum<LanguageEnum>(lang);
+}
+```
+
+### 初始化时序
+
+```
+BaseLauncher.Start()
+└─ TextHandler.Instance.InitData()
+   └─ GameDataHandler.Instance.manager.GetGameConfig()
+      ├─ Load() 成功 → 用户保存的 language（"cn" / "en"）
+      └─ Load() == null → new GameConfigBean() → language = ""
+   └─ gameConfig.GetLanguage()
+      └─ language 为空时 → LanguageCfg.GetInitialLanguage()（Steam → cn/en, 否则 cn）
+   └─ ChangeLanguageEnum(language)
+      └─ LanguageCfg.ChangeLanguageData(language)
+         └─ currentLanguage = language
+```
+
+### 注意事项
+
+1. **`LanguageBean.cs` 是自动生成文件**：`public static string currentLanguage = "";` 不能直接改，必须通过 `LanguageBeanPartial.cs` 的静态构造覆盖。
+2. **静态构造时机**：静态构造在首次访问 `LanguageCfg` 任意成员时触发，由 C# 运行时保证在字段初始化器之后执行——所以 `""` 会被 `GetInitialLanguage()` 的结果覆盖。
+3. **Steam 未初始化的窗口**：若 `LanguageCfg` 比 `SteamHandler.Awake()` 更早被访问，`SteamManager.Initialized` 为 false，会回退到 cn，符合"未连上 Steam"的预期。
+4. **`GameConfigBean.language` 不再硬编码 `"cn"`**：旧存档中字面值为空串的会触发 Steam 检测，已显式存了 `cn`/`en` 的不变。
 
 ---
 
@@ -362,8 +452,10 @@ string text = TextHandler.Instance.GetTextByIdNoBreakingSpace("BuffInfo", 10001)
 
 | 功能 | 文件路径 |
 |------|----------|
-| 多语言数据Bean | `Assets/FrameWork/Scripts/Bean/MVC/LanguageBean.cs` |
+| 多语言数据Bean（自动生成） | `Assets/FrameWork/Scripts/Bean/MVC/LanguageBean.cs` |
+| 多语言Bean手写扩展（含 Steam 默认语言判定） | `Assets/FrameWork/Scripts/Bean/MVC/LanguageBeanPartial.cs` |
 | UI文本Bean | `Assets/FrameWork/Scripts/Bean/MVC/UITextBean.cs` |
+| 游戏配置（含 language 字段、`GetLanguage()` 空串回退） | `Assets/FrameWork/Scripts/Bean/GameConfigBean.cs` |
 | 语言枚举 | `Assets/FrameWork/Scripts/Enums/BaseGameEnum.cs` |
 | 文本管理器 | `Assets/FrameWork/Scripts/Component/Manager/TextManager.cs` |
 | 文本处理器 | `Assets/FrameWork/Scripts/Component/Handler/TextHandler.cs` |

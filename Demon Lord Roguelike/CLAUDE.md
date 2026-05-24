@@ -55,6 +55,17 @@ C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 - 禁止使用 `xlrd`、`xlwt`、`xlwings`、`pandas.read_excel` 等其他 Excel 库
 - Python 脚本文件统一存放在 `.claude/scripts/` 目录下
 
+### 配置表数据修改：Excel 是唯一真实源
+
+当用户要求**新增/修改/删除配置表数据**时（例如 `excel_*[*].xlsx` 下的任何配置表），必须遵守：
+
+- **Excel 源表必须修改**：`Assets/Data/Excel/excel_*.xlsx` 是配置数据的唯一真实源（single source of truth），任何配置数据变更**必须落到对应的 Excel 文件**。
+- **对应的 JSON 可以不修改**：`Assets/Resources/JsonText/*.txt`（如 `UnlockInfo.txt`、`AchievementInfo.txt` 等）是由 Excel 通过 `ExcelEditorWindow` 编辑器工具导出生成的产物，理论上是可再生的派生数据。
+  - 如果只改 JSON 不改 Excel，下次运行编辑器导出工具时会**直接覆盖丢失**这次修改 —— 严禁此类操作。
+  - 仅修改 Excel 而不同步 JSON 时，应在任务总结中明确告知用户："JSON 未同步，需在 Unity 编辑器中运行配置导出工具重新生成"。
+- **当 Excel 与 JSON 数据不一致时**（例如 JSON 存在但 Excel 缺失），默认以 **JSON 现存的运行时数据为参考**补齐 Excel，并提示用户核对源头是否还有遗漏。
+- **禁止**仅修改 JSON 文件来"快速生效"配置变更，即使运行时立即可见，也是技术债，下一次导出就会丢失。
+
 ## 临时脚本清理规则
 
 为完成单次任务而临时生成的 **PowerShell**（`.ps1`）或 **Python**（`.py`）脚本，在任务结束后必须**及时删除**，避免污染项目目录：
