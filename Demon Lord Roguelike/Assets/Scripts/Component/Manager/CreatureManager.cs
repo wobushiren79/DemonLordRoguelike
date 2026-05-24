@@ -85,11 +85,13 @@ public class CreatureManager : BaseManager
             if (creatureDataSelectPreview == null || creatureData != creatureDataSelectPreview)
             {
                 //设置骨骼数据
-                CreatureHandler.Instance.SetCreatureData(skeletonAnimationSelectPreview, creatureData, isNeedWeapon: false);
+                CreatureHandler.Instance.SetCreatureData(skeletonAnimationSelectPreview, creatureData);
 
                 creatureDataSelectPreview = creatureData;
                 //修改材质球颜色
                 skeletonAnimationSelectPreview.skeleton.A = 0.65f;
+                //设置待机动画到第一帧
+                SpineHandler.Instance.SetAnimFirstFrame(skeletonAnimationSelectPreview, SpineAnimationStateEnum.Idle, creatureData);
             }
         }
         return objCreatureSelectPreview;

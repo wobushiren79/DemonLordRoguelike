@@ -20,6 +20,7 @@ public partial class UIViewCreatureCardItem : BaseUIView
 
         SetCardIcon(creatureData);
         SetName(creatureData.creatureName);
+        SetClass(creatureData.creatureInfo.class_icon_res);
         SetRarity(creatureData.rarity);
         SetStarLevel(creatureData.starLevel);
         SetPopupShow(creatureData, cardUseState);
@@ -79,6 +80,20 @@ public partial class UIViewCreatureCardItem : BaseUIView
     public void SetCardIcon(CreatureBean creatureData)
     {
         GameUIUtil.SetCreatureUIForSimple(ui_Icon, creatureData);
+    }
+
+    /// <summary>
+    /// 设置职业图标
+    /// </summary>
+    public void SetClass(string iconRes)
+    {
+        if (string.IsNullOrEmpty(iconRes))
+        {
+            ui_Class.gameObject.SetActive(false);
+            return;
+        }
+        ui_Class.gameObject.SetActive(true);
+        IconHandler.Instance.SetUIIcon(iconRes, ui_Class);
     }
 
     /// <summary>

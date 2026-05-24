@@ -124,6 +124,8 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         Transform rendererTF = targetObj.transform.Find("Spine");
         SkeletonAnimation targetSkeletonAnimation = rendererTF.GetComponent<SkeletonAnimation>();
         SetCreatureData(targetSkeletonAnimation, creatureData, isSetSkeletonDataAsset: false);
+        //设置待机动画到第一帧
+        SpineHandler.Instance.SetAnimFirstFrame(targetSkeletonAnimation, SpineAnimationStateEnum.Idle, creatureData);
         return targetObj;
     }
 

@@ -104,7 +104,21 @@ public partial class GameTestEditor : Editor
             EditorGUILayout.BeginVertical("box");
             testDataCardNum = EditorGUILayout.IntField(new GUIContent("卡片数量", "初始生成的卡片数量"), testDataCardNum);
             fightSceneId = EditorGUILayout.IntField(new GUIContent("测试场景 ID", "战斗场景的 ID"), fightSceneId);
+            EditorGUILayout.BeginHorizontal();
             fightCardId = EditorGUILayout.TextField(new GUIContent("卡片生物 ID", "防守方卡片的生物 ID，多个用逗号分隔"), fightCardId);
+            if (GUILayout.Button("📂 生物表", GUILayout.Width(80)))
+            {
+                string path = Path.Combine(Application.dataPath, "Data/Excel/excel_creature_info[生物信息].xlsx");
+                if (File.Exists(path))
+                {
+                    Application.OpenURL("file:///" + path.Replace("\\", "/"));
+                }
+                else
+                {
+                    EditorUtility.DisplayDialog("文件未找到", $"找不到生物配置表:\n{path}", "确定");
+                }
+            }
+            EditorGUILayout.EndHorizontal();
             fightSceneRoadNum = EditorGUILayout.IntField(new GUIContent("道路数量", "战斗场景的道路数量"), fightSceneRoadNum);
             fightSceneRoadLength = EditorGUILayout.IntField(new GUIContent("道路长度", "每条道路的长度"), fightSceneRoadLength);
             EditorGUILayout.EndVertical();
@@ -146,6 +160,18 @@ public partial class GameTestEditor : Editor
             if (enemyIds.Count > 0 && GUILayout.Button("🗑️ 移除最后一个"))
             {
                 enemyIds.RemoveAt(enemyIds.Count - 1);
+            }
+            if (GUILayout.Button("📂 NPC配置表", GUILayout.Width(100)))
+            {
+                string path = Path.Combine(Application.dataPath, "Data/Excel/excel_npc_info[NPC信息].xlsx");
+                if (File.Exists(path))
+                {
+                    Application.OpenURL("file:///" + path.Replace("\\", "/"));
+                }
+                else
+                {
+                    EditorUtility.DisplayDialog("文件未找到", $"找不到 NPC 配置表:\n{path}", "确定");
+                }
             }
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();

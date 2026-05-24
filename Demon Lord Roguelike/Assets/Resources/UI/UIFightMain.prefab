@@ -177,7 +177,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 879373d9355d19d46a93bd7086303b0a, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 9eb83b8fffcc3984f89300ccabd5f88d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -536,6 +536,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5851314731992454110}
     m_Modifications:
+    - target: {fileID: 2926761824598082290, guid: a1530300b44151a4b8de382110a4de62, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2926761824598082290, guid: a1530300b44151a4b8de382110a4de62, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2926761824598082290, guid: a1530300b44151a4b8de382110a4de62, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2926761824598082290, guid: a1530300b44151a4b8de382110a4de62, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3721551844498362209, guid: a1530300b44151a4b8de382110a4de62, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -836,11 +852,13 @@ MonoBehaviour:
       creatureUUId: 
       creatureName: 
       level: 0
+      levelExp: 0
       starLevel: 0
       rarity: 0
       relationship: 0
       creatureNpcData:
         npcId: 0
+      creatureState: 1
     cardUseState: 0
     cardState: 0
     originalCardPos: {x: 0, y: 0}
@@ -856,6 +874,7 @@ MonoBehaviour:
   ui_StarText: {fileID: 0}
   ui_SelectBg: {fileID: 0}
   ui_IconContent: {fileID: 0}
+  ui_Class: {fileID: 0}
   animCardCreateDelayTime: 0.05
   animCardCreateTimeType1: 0.8
   animCardCreateTimeType2: 0.4

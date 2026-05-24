@@ -73,4 +73,19 @@ public partial class SpineHandler
         }
         return animNameAppoint;
     }
+
+    /// <summary>
+    /// 设置动画到第一帧（静态姿势，不播放）
+    /// </summary>
+    public void SetAnimFirstFrame(SkeletonAnimation skeletonAnimation, SpineAnimationStateEnum spineAnimationState, CreatureBean creatureData)
+    {
+        if (skeletonAnimation == null || creatureData == null)
+            return;
+        var trackEntry = PlayAnim(skeletonAnimation, spineAnimationState, creatureData, false, animSpeed: 0);
+        if (trackEntry != null)
+        {
+            trackEntry.TrackTime = 0;
+            skeletonAnimation.Update(0);
+        }
+    }
 }
