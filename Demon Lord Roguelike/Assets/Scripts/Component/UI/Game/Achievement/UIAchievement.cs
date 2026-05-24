@@ -76,8 +76,8 @@ public partial class UIAchievement : BaseUIComponent, IRadioButtonCallBack
     public void SwitchTab(int tabIndex)
     {
         currentTab = tabIndex;
-        if (ui_TabAchievement != null) ui_TabAchievement.SetActive(tabIndex == 0);
-        if (ui_TabStatistic != null) ui_TabStatistic.SetActive(tabIndex == 1);
+        if (ui_TabAchievement != null) ui_TabAchievement.gameObject.SetActive(tabIndex == 0);
+        if (ui_TabStatistic != null) ui_TabStatistic.gameObject.SetActive(tabIndex == 1);
 
         if (ui_RbAchievement != null)
         {

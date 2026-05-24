@@ -14,10 +14,10 @@ public partial class UIViewAchievementCard : BaseUIView
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
-        if (viewButton == ui_BtnUnlock)
-        {
-            OnClickForUnlock();
-        }
+        // if (viewButton == ui_BtnUnlock)
+        // {
+        //     OnClickForUnlock();
+        // }
     }
 
     /// <summary>
@@ -35,19 +35,19 @@ public partial class UIViewAchievementCard : BaseUIView
     /// </summary>
     public void RefreshShow()
     {
-        if (info == null) return;
-        //名字
-        if (ui_TxtName != null) ui_TxtName.text = info.name_language;
-        //描述
-        if (ui_TxtDescription != null) ui_TxtDescription.text = info.description_language;
-        //图标
-        if (ui_Icon != null)
-        {
-            if (!info.icon_res.IsNull())
-                IconHandler.Instance.SetUIIcon(info.icon_res, ui_Icon);
-        }
-        //奖励
-        if (ui_TxtReward != null) ui_TxtReward.text = "x" + info.reward_crystal;
+        // if (info == null) return;
+        // //名字
+        // if (ui_TxtName != null) ui_TxtName.text = info.name_language;
+        // //描述
+        // if (ui_TxtDescription != null) ui_TxtDescription.text = info.description_language;
+        // //图标
+        // if (ui_Icon != null)
+        // {
+        //     if (!info.icon_res.IsNull())
+        //         IconHandler.Instance.SetUIIcon(info.icon_res, ui_Icon);
+        // }
+        // //奖励
+        // if (ui_TxtReward != null) ui_TxtReward.text = "x" + info.reward_crystal;
 
         //进度
         long progress = AchievementHandler.Instance.GetAchievementProgress(info);
@@ -73,37 +73,37 @@ public partial class UIViewAchievementCard : BaseUIView
         bool canUnlock = state == AchievementStateEnum.Reached;
         bool unlocked = state == AchievementStateEnum.Unlocked;
 
-        //按钮交互性
-        if (ui_BtnUnlock != null)
-        {
-            ui_BtnUnlock.interactable = canUnlock;
-        }
-        //图标遮罩(未达成/已领取均可显示灰色蒙版以做区分)
-        if (ui_IconMask != null)
-        {
-            ui_IconMask.gameObject.SetActive(state == AchievementStateEnum.NotReached);
-        }
-        //奖励显示(已解锁不再显示)
-        if (ui_RewardRoot != null)
-        {
-            ui_RewardRoot.SetActive(!unlocked);
-        }
-        //文本状态
-        if (ui_TxtState != null)
-        {
-            switch (state)
-            {
-                case AchievementStateEnum.NotReached:
-                    ui_TxtState.text = TextHandler.Instance.GetTextById(4000003);
-                    break;
-                case AchievementStateEnum.Reached:
-                    ui_TxtState.text = TextHandler.Instance.GetTextById(4000004);
-                    break;
-                case AchievementStateEnum.Unlocked:
-                    ui_TxtState.text = TextHandler.Instance.GetTextById(4000005);
-                    break;
-            }
-        }
+        // //按钮交互性
+        // if (ui_BtnUnlock != null)
+        // {
+        //     ui_BtnUnlock.interactable = canUnlock;
+        // }
+        // //图标遮罩(未达成/已领取均可显示灰色蒙版以做区分)
+        // if (ui_IconMask != null)
+        // {
+        //     ui_IconMask.gameObject.SetActive(state == AchievementStateEnum.NotReached);
+        // }
+        // //奖励显示(已解锁不再显示)
+        // if (ui_RewardRoot != null)
+        // {
+        //     ui_RewardRoot.SetActive(!unlocked);
+        // }
+        // //文本状态
+        // if (ui_TxtState != null)
+        // {
+        //     switch (state)
+        //     {
+        //         case AchievementStateEnum.NotReached:
+        //             ui_TxtState.text = TextHandler.Instance.GetTextById(4000003);
+        //             break;
+        //         case AchievementStateEnum.Reached:
+        //             ui_TxtState.text = TextHandler.Instance.GetTextById(4000004);
+        //             break;
+        //         case AchievementStateEnum.Unlocked:
+        //             ui_TxtState.text = TextHandler.Instance.GetTextById(4000005);
+        //             break;
+        //     }
+        // }
     }
 
     public void OnClickForUnlock()
