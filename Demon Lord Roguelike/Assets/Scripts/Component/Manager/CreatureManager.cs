@@ -25,7 +25,6 @@ public class CreatureManager : BaseManager
     public SkeletonAnimation skeletonAnimationSelectPreview;
     public CreatureBean creatureDataSelectPreview;
 
-
     #region 数据清理
     /// <summary>
     /// 清理数据
@@ -59,6 +58,8 @@ public class CreatureManager : BaseManager
         queuePoolForFightCreatureData.Clear();
         //清除缓存生物数据
         queuePoolForCreatureData.Clear();
+        //丢弃所有待回收项 (对应的对象池已被清空，再回收会污染状态)
+        ClearPendingRecycles();
     }
     #endregion
 
@@ -264,63 +265,101 @@ public class CreatureManager : BaseManager
 
     #region 回收
     /// <summary>
+    /// 移除生物obj (默认下一帧入池)
+    /// </summary>
+    public void RemoveFightCreatureObj(GameObject targetObj, CreatureFightTypeEnum creatureType)
+    {
+        RemoveFightCreatureObj(targetObj, creatureType, RecycleDelay.NextFrame);
+    }
+
+    /// <summary>
     /// 移除生物obj
     /// </summary>
-    /// <param name="targetObj"></param>
-    public void RemoveFightCreatureObj(GameObject targetObj, CreatureFightTypeEnum creatureType)
+    /// <param name="targetObj">要回收的对象</param>
+    /// <param name="creatureType">战斗生物类型 (决定入哪个子池)</param>
+    /// <param name="delay">回收时机；可用 <see cref="RecycleDelay.Immediate"/> / <see cref="RecycleDelay.NextFrame"/> / <see cref="RecycleDelay.Wait(float)"/></param>
+    public void RemoveFightCreatureObj(GameObject targetObj, CreatureFightTypeEnum creatureType, RecycleDelay delay)
     {
         if (targetObj == null)
             return;
-        if (dicPoolForFightCreatureObj.TryGetValue(creatureType, out Queue<GameObject> poolForCreature))
-        {
-            RemoveFightCreatureObj(poolForCreature, targetObj);
-        }
-        else
-        {
-            Queue<GameObject> newPool = new Queue<GameObject>();
-            dicPoolForFightCreatureObj.Add(creatureType, newPool);
-            RemoveFightCreatureObj(newPool, targetObj);
-        }
-    }
-
-    /// <summary>
-    /// 回收对象
-    /// </summary>
-    protected async void RemoveFightCreatureObj(Queue<GameObject> pool, GameObject targetObj)
-    {
+        //立即把对象挪出视野，避免本帧最后一次渲染时位置闪现
         targetObj.transform.position = new Vector3(0, -100, 0);
-        //等待1帧防止 当前动作闪现问题
-        await new WaitNextFrame();
-        targetObj.SetActive(false);
-        pool.Enqueue(targetObj);
+        ScheduleRecycle(() =>
+        {
+            if (targetObj == null)
+                return;
+            if (!dicPoolForFightCreatureObj.TryGetValue(creatureType, out Queue<GameObject> pool))
+            {
+                pool = new Queue<GameObject>();
+                dicPoolForFightCreatureObj.Add(creatureType, pool);
+            }
+            targetObj.SetActive(false);
+            pool.Enqueue(targetObj);
+        }, delay);
     }
 
     /// <summary>
-    /// 移除生物entity  
+    /// 移除生物entity (默认下一帧入池)
     /// </summary>
-    public async void RemoveFightCreatureEntity(FightCreatureEntity creatureEntity)
+    public void RemoveFightCreatureEntity(FightCreatureEntity creatureEntity)
     {
-        //等待1帧 防止一些死亡后的延迟处理
-        await new WaitNextFrame();
-        queuePoolForFightCreatureEntity.Enqueue(creatureEntity);
+        RemoveFightCreatureEntity(creatureEntity, RecycleDelay.NextFrame);
     }
 
-    public async void RemoveFightCreatureData(FightCreatureBean creatureData)
+    /// <summary>
+    /// 移除生物entity
+    /// </summary>
+    /// <param name="creatureEntity">要回收的实例</param>
+    /// <param name="delay">回收时机</param>
+    public void RemoveFightCreatureEntity(FightCreatureEntity creatureEntity, RecycleDelay delay)
     {
-        //等待1帧 防止一些死亡后的延迟处理
-        await new WaitNextFrame();
-        queuePoolForFightCreatureData.Enqueue(creatureData);
+        if (creatureEntity == null)
+            return;
+        ScheduleRecycle(() => queuePoolForFightCreatureEntity.Enqueue(creatureEntity), delay);
+    }
+
+    /// <summary>
+    /// 移除战斗生物数据 (默认下一帧入池)
+    /// </summary>
+    public void RemoveFightCreatureData(FightCreatureBean creatureData)
+    {
+        RemoveFightCreatureData(creatureData, RecycleDelay.NextFrame);
+    }
+
+    /// <summary>
+    /// 移除战斗生物数据
+    /// </summary>
+    /// <param name="creatureData">要回收的数据</param>
+    /// <param name="delay">回收时机</param>
+    public void RemoveFightCreatureData(FightCreatureBean creatureData, RecycleDelay delay)
+    {
+        if (creatureData == null)
+            return;
+        ScheduleRecycle(() => queuePoolForFightCreatureData.Enqueue(creatureData), delay);
+    }
+
+    /// <summary>
+    /// 移除生物数据 (默认下一帧入池)
+    /// </summary>
+    public void RemoveCreatureData(CreatureBean creatureData)
+    {
+        RemoveCreatureData(creatureData, RecycleDelay.NextFrame);
     }
 
     /// <summary>
     /// 移除生物数据
     /// </summary>
-    public async void RemoveCreatureData(CreatureBean creatureData)
+    /// <param name="creatureData">要回收的数据</param>
+    /// <param name="delay">回收时机</param>
+    public void RemoveCreatureData(CreatureBean creatureData, RecycleDelay delay)
     {
-        //等待1帧 防止一些延迟处理
-        await new WaitNextFrame();
-        creatureData.ClearTempData();
-        queuePoolForCreatureData.Enqueue(creatureData);
+        if (creatureData == null)
+            return;
+        ScheduleRecycle(() =>
+        {
+            creatureData.ClearTempData();
+            queuePoolForCreatureData.Enqueue(creatureData);
+        }, delay);
     }
     #endregion
 }

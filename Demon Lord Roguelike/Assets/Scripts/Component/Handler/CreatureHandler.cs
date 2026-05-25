@@ -330,19 +330,39 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     }
 
     /// <summary>
-    /// 移除生物obj
+    /// 移除生物obj (默认下一帧入池)
     /// </summary>
-    /// <param name="targetObj"></param>
     public void RemoveFightCreatureObj(GameObject targetObj, CreatureFightTypeEnum creatureType)
     {
-        manager.RemoveFightCreatureObj(targetObj, creatureType);
+        manager.RemoveFightCreatureObj(targetObj, creatureType, RecycleDelay.NextFrame);
+    }
+
+    /// <summary>
+    /// 移除生物obj
+    /// </summary>
+    /// <param name="targetObj">要回收的对象</param>
+    /// <param name="creatureType">战斗生物类型</param>
+    /// <param name="delay">回收时机；可用 <see cref="RecycleDelay.Immediate"/> / <see cref="RecycleDelay.NextFrame"/> / <see cref="RecycleDelay.Wait(float)"/></param>
+    public void RemoveFightCreatureObj(GameObject targetObj, CreatureFightTypeEnum creatureType, RecycleDelay delay)
+    {
+        manager.RemoveFightCreatureObj(targetObj, creatureType, delay);
+    }
+
+    /// <summary>
+    /// 移除生物实例 (默认下一帧入池)
+    /// </summary>
+    public void RemoveFightCreatureEntity(FightCreatureEntity targetEntity, CreatureFightTypeEnum creatureType)
+    {
+        RemoveFightCreatureEntity(targetEntity, creatureType, RecycleDelay.NextFrame);
     }
 
     /// <summary>
     /// 移除生物实例
     /// </summary>
-    /// <param name="targetObj"></param>
-    public void RemoveFightCreatureEntity(FightCreatureEntity targetEntity, CreatureFightTypeEnum creatureType)
+    /// <param name="targetEntity">要移除的战斗生物</param>
+    /// <param name="creatureType">战斗生物类型</param>
+    /// <param name="delay">回收时机；用于让死亡动画/特效/事件完整播完再回收</param>
+    public void RemoveFightCreatureEntity(FightCreatureEntity targetEntity, CreatureFightTypeEnum creatureType, RecycleDelay delay)
     {
         if (targetEntity == null)
             return;
@@ -354,7 +374,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         //放进缓存
         if (targetEntity.creatureObj != null)
         {
-            RemoveFightCreatureObj(targetEntity.creatureObj, creatureType);
+            RemoveFightCreatureObj(targetEntity.creatureObj, creatureType, delay);
         }
         //放进缓存
         if (targetEntity.aiEntity != null)
@@ -372,15 +392,15 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         else if (creatureType == CreatureFightTypeEnum.FightAttack)
         {
             gameFightLogic.fightData.RemoveAttackCreature(targetEntity);
-            manager.RemoveCreatureData(targetEntity.fightCreatureData.creatureData);         
+            manager.RemoveCreatureData(targetEntity.fightCreatureData.creatureData, delay);
         }
         //放进缓存
         if (targetEntity.fightCreatureData != null)
         {
-            manager.RemoveFightCreatureData(targetEntity.fightCreatureData);
+            manager.RemoveFightCreatureData(targetEntity.fightCreatureData, delay);
         }
         //放进缓存
-        manager.RemoveFightCreatureEntity(targetEntity);
+        manager.RemoveFightCreatureEntity(targetEntity, delay);
     }
     #endregion
 }
