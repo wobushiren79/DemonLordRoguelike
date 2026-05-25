@@ -181,25 +181,21 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     }
     
     /// <summary>
+    /// 移除一个攻击预制 (默认下一帧入池)
+    /// </summary>
+    public void RemoveAttackMode(BaseAttackMode targetMode)
+    {
+        manager.RemoveAttackMode(targetMode, RecycleDelay.NextFrame);
+    }
+
+    /// <summary>
     /// 移除一个攻击预制
     /// </summary>
-    public async void RemoveAttackMode(BaseAttackMode targetMode)
+    /// <param name="targetMode">要回收的攻击模组</param>
+    /// <param name="delay">回收时机；可用 <see cref="RecycleDelay.Immediate"/> / <see cref="RecycleDelay.NextFrame"/> / <see cref="RecycleDelay.Wait(float)"/></param>
+    public void RemoveAttackMode(BaseAttackMode targetMode, RecycleDelay delay)
     {
-        targetMode.isValid = false;
-        //延迟一帧执行
-        await new WaitNextFrame();
-        //移除预制
-        if (targetMode.gameObject != null)
-        {
-            targetMode.gameObject.SetActive(false);
-        }
-        manager.RemoveAttackModePrefab(targetMode);
-        //移除数据
-        if (targetMode.attackModeData!=null)
-        {
-            manager.RemoveAttackModeData(targetMode.attackModeData);
-            targetMode.attackModeData = null;
-        }
+        manager.RemoveAttackMode(targetMode, delay);
     }
     #endregion
 

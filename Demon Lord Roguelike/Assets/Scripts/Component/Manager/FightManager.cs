@@ -89,6 +89,9 @@ public class FightManager : BaseManager
         poolFightDropCrystalBean.Clear();
         poolAttackModeData.Clear();
         poolFightUnderAttackData.Clear();
+
+        //丢弃所有待回收项 (对应的对象池已被清空，再回收会污染状态)
+        ClearPendingRecycles();
     }
 
     #region 掉落水晶
@@ -357,6 +360,42 @@ public class FightManager : BaseManager
             poolNew.Enqueue(targetMode);
             dicPoolAttackModeObj.Add(targetMode.attackModeInfo.id, poolNew);
         }
+    }
+
+    /// <summary>
+    /// 移除一个攻击模组 (默认下一帧入池，等弹道/特效本帧逻辑跑完)
+    /// </summary>
+    public void RemoveAttackMode(BaseAttackMode targetMode)
+    {
+        RemoveAttackMode(targetMode, RecycleDelay.NextFrame);
+    }
+
+    /// <summary>
+    /// 移除一个攻击模组
+    /// </summary>
+    /// <param name="targetMode">要回收的攻击模组</param>
+    /// <param name="delay">回收时机；可用 <see cref="RecycleDelay.Immediate"/> / <see cref="RecycleDelay.NextFrame"/> / <see cref="RecycleDelay.Wait(float)"/></param>
+    public void RemoveAttackMode(BaseAttackMode targetMode, RecycleDelay delay)
+    {
+        if (targetMode == null)
+            return;
+        //立即标记失效，让本帧后续逻辑跳过这个攻击模组
+        targetMode.isValid = false;
+        ScheduleRecycle(() =>
+        {
+            //回收预制
+            if (targetMode.gameObject != null)
+            {
+                targetMode.gameObject.SetActive(false);
+            }
+            RemoveAttackModePrefab(targetMode);
+            //回收数据
+            if (targetMode.attackModeData != null)
+            {
+                RemoveAttackModeData(targetMode.attackModeData);
+                targetMode.attackModeData = null;
+            }
+        }, delay);
     }
     #endregion
 
