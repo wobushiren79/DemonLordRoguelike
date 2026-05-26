@@ -88,10 +88,9 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
             // 有等级的BUFF：替换旧的同族BUFF，并解析到正确的下一级
             if (buffInfo != null && buffInfo.buff_level > 0)
             {
-                long parentId = buffInfo.buff_parent_id;
-                int currentLevel = GetAbyssalBlessingCurrentLevel(parentId);
-                RemoveAbyssalBlessingByParentId(parentId);
-                BuffInfoBean nextLevelBuffInfo = BuffInfoCfg.GetBuffByParentAndLevel(parentId, currentLevel + 1);
+                //注意顺序：先解析下一级（依赖当前等级）→ 再移除旧条目
+                BuffInfoBean nextLevelBuffInfo = ResolveAbyssalBlessingNextBuffInfo(buffId);
+                RemoveAbyssalBlessingByParentId(buffInfo.buff_parent_id);
                 if (nextLevelBuffInfo != null)
                     buffId = nextLevelBuffInfo.id;
             }
@@ -103,6 +102,22 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
         manager.dicAbyssalBlessingBuffsActivie.Add(abyssalBlessingEntityData, listBuffEntity);
         //事件通知
         EventHandler.Instance.TriggerEvent(EventsInfo.Buff_AbyssalBlessingChange, abyssalBlessingEntityData);
+    }
+
+    /// <summary>
+    /// 解析深渊馈赠中某个原始 BUFFID 应实际使用的 BuffInfo（下一级 / 原始 / null）。
+    /// - 原始 BUFF 不存在：返回 null
+    /// - 原始 BUFF 无等级（buff_level &lt;= 0）：直接返回原始 BuffInfo
+    /// - 原始 BUFF 有等级：返回"当前等级+1"对应的 BuffInfo，等级链断裂时返回 null
+    /// 调用方负责"找不到下一级"时的兜底（Handler 保留原 buffId；UI 可 fallback 到 level 1）。
+    /// </summary>
+    public BuffInfoBean ResolveAbyssalBlessingNextBuffInfo(long originalBuffId)
+    {
+        BuffInfoBean buffInfo = BuffInfoCfg.GetItemData(originalBuffId);
+        if (buffInfo == null) return null;
+        if (buffInfo.buff_level <= 0) return buffInfo;
+        int currentLevel = GetAbyssalBlessingCurrentLevel(buffInfo.buff_parent_id);
+        return BuffInfoCfg.GetBuffByParentAndLevel(buffInfo.buff_parent_id, currentLevel + 1);
     }
 
     /// <summary>

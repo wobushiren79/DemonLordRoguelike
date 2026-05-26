@@ -73,19 +73,52 @@ public class FightBeanForConquer : FightBean
 
     /// <summary>
     /// 初始化战斗数据
+    /// 根据当前关卡数(fightNum)计算敌人数量，并将所有敌人在 attack_show_time 内随机但相对均匀地排布
     /// </summary>
     public void InitFightAttackData()
     {
         //设置进攻生物数据
         fightAttackData = new FightAttackBean();
-        int waveNum = UnityEngine.Random.Range(fightTypeConquerInfo.attack_wave_min, fightTypeConquerInfo.attack_wave_max + 1);
-        float waveDelay = 5;
+
+        //计算当前关卡的敌人数量
+        int waveNum = CalcCurrentEnemyNum();
+        if (waveNum <= 0) waveNum = 1;
+
+        //总进攻时间(秒)，至少 1 秒，避免被 0 除
+        float showTime = fightTypeConquerInfo.attack_show_time;
+        if (showTime <= 0f) showTime = 1f;
+
+        //将 [0, showTime] 区间均分为 waveNum 段，在每段内随机一个出现时刻
+        //保证整体随机但不至于过度聚集
+        float bucket = showTime / waveNum;
+        float prevTime = 0f;
         for (int i = 0; i < waveNum; i++)
         {
+            float spawnTime = (i + UnityEngine.Random.value) * bucket;
+            //确保单调递增
+            if (spawnTime < prevTime) spawnTime = prevTime;
+            float delay = spawnTime - prevTime;
+            prevTime = spawnTime;
+
             long enemyId = fightTypeConquerInfo.GetRandomEmenyId(false);
-            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(waveDelay - i * (waveDelay / waveNum), enemyId);
+            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(delay, enemyId);
             fightAttackData.AddAttackQueue(fightAttackDetails);
         }
+    }
+
+    /// <summary>
+    /// 根据当前关卡数(fightNum)计算应生成的敌人数量
+    /// 递推公式：next = current * attack_num_addrate + attack_num_add
+    /// 第一关(fightNum=1) 数量为 attack_start_num
+    /// </summary>
+    private int CalcCurrentEnemyNum()
+    {
+        int num = fightTypeConquerInfo.attack_start_num;
+        for (int i = 1; i < fightNum; i++)
+        {
+            num = UnityEngine.Mathf.RoundToInt(num * fightTypeConquerInfo.attack_num_addrate) + fightTypeConquerInfo.attack_num_add;
+        }
+        return num;
     }
     
     /// <summary>

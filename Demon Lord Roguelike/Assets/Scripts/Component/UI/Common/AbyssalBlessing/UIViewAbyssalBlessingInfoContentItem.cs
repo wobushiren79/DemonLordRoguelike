@@ -24,7 +24,7 @@ public partial class UIViewAbyssalBlessingInfoContentItem : BaseUIView
     /// </summary>
     public void SetIcon(string iconName)
     {
-        IconHandler.Instance.SetUIIcon(iconName, ui_Icon_Image);
+        IconHandler.Instance.SetAbyssalBlessingIcon(iconName, ui_Icon_Image);
     }
     
 }

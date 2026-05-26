@@ -22,6 +22,7 @@ public partial class GameTestEditor
     public string buffSelfDefenseTestId = "";
     public string buffTestId = "";
     public string abyssalBlessingIds = "";
+    public List<long> abyssalBlessingTestIds = new List<long>();
     public List<long> enemyIds = new List<long>() { 1010010001 };
     public long doomCouncilBillId = 1000000001;
 
@@ -43,6 +44,7 @@ public partial class GameTestEditor
     private bool showDoomCouncilTest = true;
     private bool showNpcCreateTest = true;
     private bool showResearchTest = true;
+    private bool showAbyssalBlessingTest = true;
 
     // 战斗场景测试折叠
     private bool showFightBasicSettings = true;
@@ -52,6 +54,8 @@ public partial class GameTestEditor
     private const string PREFS_KEY_PREFIX = "GameTestEditor_";
     private const string ENEMY_IDS_KEY = PREFS_KEY_PREFIX + "enemyIds";
     private const string ENEMY_IDS_COUNT_KEY = PREFS_KEY_PREFIX + "enemyIdsCount";
+    private const string ABYSSAL_BLESSING_TEST_IDS_KEY = PREFS_KEY_PREFIX + "abyssalBlessingTestIds";
+    private const string ABYSSAL_BLESSING_TEST_IDS_COUNT_KEY = PREFS_KEY_PREFIX + "abyssalBlessingTestIdsCount";
 
     private void OnEnable()
     {
@@ -89,6 +93,7 @@ public partial class GameTestEditor
 
         // 深渊馈赠
         abyssalBlessingIds = EditorPrefs.GetString(PREFS_KEY_PREFIX + "abyssalBlessingIds", "");
+        LoadAbyssalBlessingTestIds();
 
         // 终焉议会
         doomCouncilBillId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "doomCouncilBillId", 1000000001);
@@ -132,6 +137,7 @@ public partial class GameTestEditor
 
         // 深渊馈赠
         EditorPrefs.SetString(PREFS_KEY_PREFIX + "abyssalBlessingIds", abyssalBlessingIds);
+        SaveAbyssalBlessingTestIds();
 
         // 终焉议会
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "doomCouncilBillId", (int)doomCouncilBillId);
@@ -166,6 +172,26 @@ public partial class GameTestEditor
         {
             long id = EditorPrefs.GetInt(ENEMY_IDS_KEY + "_" + i, 1010010001);
             enemyIds.Add(id);
+        }
+    }
+
+    private void SaveAbyssalBlessingTestIds()
+    {
+        EditorPrefs.SetInt(ABYSSAL_BLESSING_TEST_IDS_COUNT_KEY, abyssalBlessingTestIds.Count);
+        for (int i = 0; i < abyssalBlessingTestIds.Count; i++)
+        {
+            EditorPrefs.SetInt(ABYSSAL_BLESSING_TEST_IDS_KEY + "_" + i, (int)abyssalBlessingTestIds[i]);
+        }
+    }
+
+    private void LoadAbyssalBlessingTestIds()
+    {
+        int count = EditorPrefs.GetInt(ABYSSAL_BLESSING_TEST_IDS_COUNT_KEY, 0);
+        abyssalBlessingTestIds.Clear();
+        for (int i = 0; i < count; i++)
+        {
+            long id = EditorPrefs.GetInt(ABYSSAL_BLESSING_TEST_IDS_KEY + "_" + i, 0);
+            abyssalBlessingTestIds.Add(id);
         }
     }
 }

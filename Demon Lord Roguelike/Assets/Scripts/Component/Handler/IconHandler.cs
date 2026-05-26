@@ -5,6 +5,14 @@ using System;
 public partial class IconHandler
 {
     /// <summary>
+    /// 获取图标（游戏层枚举重载）。内部转字符串后调用框架层 GetIconSprite。
+    /// </summary>
+    public void GetIconSprite(SpriteAtlasTypeEnum spriteAtlasType, string spriteName, Action<Sprite> callBack)
+    {
+        GetIconSprite(spriteAtlasType.ToAtlasTag(), spriteName, callBack);
+    }
+
+    /// <summary>
     /// 解析图标名称，获取图集类型和实际图标名
     /// 格式：icon_name,AtlasType  例如：icon_001,UI 或 icon_002,Skins
     /// </summary>
@@ -121,6 +129,20 @@ public partial class IconHandler
     public void SetUIIcon(string iconName, Image targetIV)
     {
         GetIconSprite(SpriteAtlasTypeEnum.UI, iconName, (sprite) =>
+        {
+            if (targetIV != null)
+            {
+                targetIV.sprite = sprite;
+            }
+        });
+    }
+
+    /// <summary>
+    /// 设置深渊馈赠图标
+    /// </summary>
+    public void SetAbyssalBlessingIcon(string iconName, Image targetIV)
+    {
+        GetIconSprite(SpriteAtlasTypeEnum.AbyssalBlessing, iconName, (sprite) =>
         {
             if (targetIV != null)
             {

@@ -148,4 +148,19 @@ public class LauncherTest : BaseLauncher
         uiBaseResearch.SetDataForTest();
     }
 
+    /// <summary>
+    /// 深渊馈赠 UI 测试-按指定 IDs 展示 UIFightAbyssalBlessing
+    /// </summary>
+    /// <param name="ids">深渊馈赠 ID 列表，null 或空时不展示任何卡片</param>
+    public void StartForAbyssalBlessingUI(List<long> ids)
+    {
+        long[] arrayIds = ids == null ? new long[0] : ids.ToArray();
+        var uiBlessing = UIHandler.Instance.OpenUIAndCloseOther<UIFightAbyssalBlessing>();
+        uiBlessing.SetDataForTest(
+            arrayIds,
+            info => LogUtil.Log($"[Test] 选择深渊馈赠: id={info.id}"),
+            () => LogUtil.Log("[Test] 跳过深渊馈赠")
+        );
+    }
+
 }

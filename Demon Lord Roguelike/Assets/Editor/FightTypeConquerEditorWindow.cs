@@ -515,10 +515,10 @@ public class FightTypeConquerEditorWindow : EditorWindow
         EditorGUILayout.LabelField("敌人配置", EditorStyles.boldLabel);
         currentBean.enemy_ids = DrawIdListField("敌人列表", currentBean.enemy_ids, "enemy_ids");
         currentBean.enemy_boss_ids = DrawIdListField("Boss列表", currentBean.enemy_boss_ids, "enemy_boss_ids");
-        currentBean.enemy_num = DrawIntField("敌人数量", currentBean.enemy_num);
-        currentBean.attack_start_num = DrawIntField("起始敌人数量", currentBean.attack_start_num);
-        currentBean.attack_wave_min = DrawIntField("最小进攻次数", currentBean.attack_wave_min);
-        currentBean.attack_wave_max = DrawIntField("最大进攻次数", currentBean.attack_wave_max);
+        currentBean.attack_start_num = DrawIntField("第一关敌人数量", currentBean.attack_start_num);
+        currentBean.attack_show_time = DrawFloatField("进攻时间(秒)", currentBean.attack_show_time);
+        currentBean.attack_num_addrate = DrawFloatField("每关敌人倍数", currentBean.attack_num_addrate);
+        currentBean.attack_num_add = DrawIntField("每关增加敌人数量", currentBean.attack_num_add);
 
         GUILayout.Space(5);
         lineRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(1));

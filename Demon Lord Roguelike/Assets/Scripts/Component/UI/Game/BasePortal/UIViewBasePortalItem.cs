@@ -131,7 +131,8 @@ public partial class UIViewBasePortalItem : BaseUIView
             //展示靠近动画
             rectTransform.DOAnchorPos(rotateCenter, animTimeForShowMask);
             rectTransform.DOScale(Vector3.one * 8, animTimeForShowMask);
-            rectTransform.SetAsFirstSibling();
+            //将当前世界 portal item 层级置顶，确保动画期间在所有 item 最前面
+            rectTransform.SetAsLastSibling();
             //展示mask遮罩
             UIHandler.Instance.ShowMask(animTimeForShowMask, null, () =>
             {

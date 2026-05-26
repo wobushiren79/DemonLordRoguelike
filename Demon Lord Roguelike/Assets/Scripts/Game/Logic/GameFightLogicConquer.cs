@@ -53,7 +53,7 @@ public class GameFightLogicConquer : GameFightLogic
         ClearGameForSimple();
         //打开结算UI
         var uiFightSettlement = UIHandler.Instance.OpenUIAndCloseOther<UIFightSettlement>();
-        uiFightSettlement.SetData(fightData);
+        uiFightSettlement.SetData(fightData, ActionForUIFightSettlementExit);
         uiFightSettlement.actionForNext = ActionForUIFightSettlementNext;
     }
 
@@ -75,6 +75,34 @@ public class GameFightLogicConquer : GameFightLogic
     }
 
     #region 回调
+    /// <summary>
+    /// 回调-点击退出
+    /// </summary>
+    public void ActionForUIFightSettlementExit()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        if (fightData.gameIsWin)
+        {
+            if (fightData.fightNum == fightData.figthNumMax)
+            {
+
+            }
+            //TODO 结算发奖
+            else
+            {
+
+            }
+        }
+        else
+        {
+            //展示mask
+            UIHandler.Instance.ShowMask(1, null, () =>
+            {
+                WorldHandler.Instance.EnterGameForBaseScene(userData);
+            }, false);
+        }
+    }
+
     /// <summary>
     /// 回调-结算界面关闭
     /// </summary>

@@ -45,6 +45,9 @@ public partial class GameTestEditor : Editor
             case TestSceneTypeEnum.ResearchUI:
                 DrawResearchTest();
                 break;
+            case TestSceneTypeEnum.AbyssalBlessing:
+                DrawAbyssalBlessingTest();
+                break;
         }
 
         DrawGlobalTest();
@@ -364,6 +367,67 @@ public partial class GameTestEditor : Editor
             launcher.StartForResearchUI();
         }
         GUI.backgroundColor = Color.white;
+
+        EditorGUI.indentLevel--;
+        EditorGUILayout.Space(10);
+    }
+
+    private void DrawAbyssalBlessingTest()
+    {
+        showAbyssalBlessingTest = EditorGUILayout.Foldout(showAbyssalBlessingTest, "🌀 深渊馈赠 UI 测试", true);
+        if (!showAbyssalBlessingTest) return;
+
+        EditorGUI.indentLevel++;
+        EditorGUILayout.Space(5);
+
+        GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
+        if (GUILayout.Button("▶️ 打开深渊馈赠 UI", GUILayout.Height(30)) && Application.isPlaying)
+        {
+            launcher.StartForAbyssalBlessingUI(abyssalBlessingTestIds);
+        }
+        GUI.backgroundColor = Color.white;
+        EditorGUILayout.Space(10);
+
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.LabelField("深渊馈赠 IDs （最多展示前 3 个）", EditorStyles.boldLabel);
+
+        for (int i = 0; i < abyssalBlessingTestIds.Count; i++)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField($"馈赠 {i + 1}", GUILayout.Width(60));
+            abyssalBlessingTestIds[i] = EditorGUILayout.LongField(abyssalBlessingTestIds[i]);
+            if (GUILayout.Button("🗑️", GUILayout.Width(30)))
+            {
+                abyssalBlessingTestIds.RemoveAt(i);
+                break;
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        EditorGUILayout.Space(5);
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("➕ 添加馈赠"))
+        {
+            abyssalBlessingTestIds.Add(0);
+        }
+        if (abyssalBlessingTestIds.Count > 0 && GUILayout.Button("🗑️ 移除最后一个"))
+        {
+            abyssalBlessingTestIds.RemoveAt(abyssalBlessingTestIds.Count - 1);
+        }
+        if (GUILayout.Button("📂 配置表", GUILayout.Width(100)))
+        {
+            string path = Path.Combine(Application.dataPath, "Data/Excel/excel_abyssal_blessing_info[深渊馈赠信息].xlsx");
+            if (File.Exists(path))
+            {
+                Application.OpenURL("file:///" + path.Replace("\\", "/"));
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("文件未找到", $"找不到深渊馈赠配置表:\n{path}", "确定");
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.EndVertical();
 
         EditorGUI.indentLevel--;
         EditorGUILayout.Space(10);

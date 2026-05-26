@@ -355,6 +355,77 @@ UIHandler.Instance.HideScreenLock();
 
 ---
 
+## ⚠️ 通用控件优先原则（强制约束）
+
+**凡是有通用解决方案的 UI 需求，必须优先调用 UIHandler 上的现成方法，禁止在业务 UI 中自己造轮子。**
+
+业务侧每次写"动画期间挂个 CanvasGroup 拦点击"、"自己拼一个确认框"、"自加 Toast Text"这类代码前，**先翻 UIHandler.cs 找现成方法**。
+
+### 常见通用需求 → 框架方法对照表
+
+| 业务需求 | ❌ 不要这样做 | ✅ 必须这样做 |
+|---------|------------|------------|
+| 动画 / 异步流程中阻挡点击 | 自挂 `CanvasGroup` + `interactable=false`、自加全屏 `Image(raycastTarget)`、自维护 isAnimating + 关闭按钮 interactable | `UIHandler.Instance.ShowScreenLock()` / `HideScreenLock()` |
+| 普通提示信息 | 自写飘字、自做 Tween 隐藏 | `UIHandler.Instance.ToastHint<UIToastNormal>(content)` |
+| 确认 / 选择 / 输入弹窗 | 自拼 UI + 按钮回调 | `UIHandler.Instance.ShowDialog<UIDialogNormal/UIDialogSelect/...>(dialogBean)` |
+| 悬浮详情气泡 | 自加 Tooltip 子物体 + 跟随逻辑 | `UIHandler.Instance.ShowPopup<UIPopupXXX>(popupBean)` |
+| 打开新 UI 并关掉当前所有 | 手动逐个 CloseUI 再 OpenUI | `UIHandler.Instance.OpenUIAndCloseOther<T>()` |
+| 刷新所有打开 UI | 自维护刷新列表 | `UIHandler.Instance.RefreshAllUI()` |
+| 关闭所有弹窗 | 自循环关 | `UIHandler.Instance.manager.CloseAllDialog()` |
+
+### 判断流程
+
+新代码遇到 UI 通用需求时：
+
+1. **先查** `UIHandler.cs` 是否已有同类方法（关键字：`Show*` / `Hide*` / `Open*` / `Close*` / `Toast*` / `Popup*` / `Dialog*` / `ScreenLock`）。
+2. **再查** `BaseUIView` / `BaseUIComponent` / `BaseUIInit` / `BaseUIManager` 基类是否已封装。
+3. **都没有**再考虑业务侧实现 —— 若评估为"通用能力"，应**沉淀到 UIHandler / 基类**而非在业务 UI 内私有实现，并同步更新本文档的对照表。
+
+### 典型案例：动画期间防止多次点击
+
+❌ **错误做法**（自维护遮罩，散落各处难维护）：
+
+```csharp
+private CanvasGroup canvasGroup;
+
+public void OnClickForSelect(...)
+{
+    if (canvasGroup == null) canvasGroup = gameObject.AddComponent<CanvasGroup>();
+    canvasGroup.interactable = false;
+    selectedView.AnimForSelect(() =>
+    {
+        canvasGroup.interactable = true;
+        actionForSelect?.Invoke(data);
+    });
+}
+```
+
+✅ **正确做法**（走框架统一通道）：
+
+```csharp
+public void OnClickForSelect(...)
+{
+    if (isAnimating) return;
+    isAnimating = true;
+    UIHandler.Instance.ShowScreenLock();
+
+    selectedView.AnimForSelect(() =>
+    {
+        UIHandler.Instance.HideScreenLock();
+        actionForSelect?.Invoke(data);
+    });
+}
+```
+
+`ShowScreenLock` 会同时：
+- 拉起 Overlay 层的全透明 `UIScreenLock`（`raycastTarget=1`）拦截所有 UI 点击；
+- 把 `UIManager.CanClickUIButtons` / `CanInputActionStarted` 置 false，键盘 / 手柄输入一起锁；
+- `HideScreenLock` 对称恢复。**比自挂 CanvasGroup 更彻底、可在跨 UI 流程中复用。**
+
+> 配套保留 `bool isAnimating` 做"同帧重入"双保险（ShowScreenLock 是异步 OpenUI，本帧内仍可能被点到第二次）。
+
+---
+
 ## UI生命周期与事件
 
 ### 生命周期方法
@@ -615,6 +686,7 @@ EventsInfo.Language_Change                // 语言切换
 | 日期 | 更新内容 | 更新人 |
 |------|----------|--------|
 | 2026-04-10 | 创建UI框架SKILL | - |
+| 2026-05-26 | 新增"通用控件优先原则"章节，强制要求遮罩/弹窗/Toast/气泡等通用需求走 UIHandler 已有方法 | - |
 
 ---
 

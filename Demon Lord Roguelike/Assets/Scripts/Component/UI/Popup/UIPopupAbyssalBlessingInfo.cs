@@ -18,7 +18,7 @@ public partial class UIPopupAbyssalBlessingInfo : PopupShowCommonView
     /// </summary>
     public void SetIcon(string iconName)
     {
-        IconHandler.Instance.SetUIIcon(iconName, ui_Icon);
+        IconHandler.Instance.SetAbyssalBlessingIcon(iconName, ui_Icon);
     }
 
     /// <summary>

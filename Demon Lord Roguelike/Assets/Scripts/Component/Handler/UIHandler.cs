@@ -8,6 +8,14 @@ public partial class UIHandler
 {
 
     /// <summary>
+    /// 通过图集图标名设置自定义光标（游戏层枚举重载）。
+    /// </summary>
+    public void SetCursorByIconName(SpriteAtlasTypeEnum atlasType, string iconName, Vector2? hotspotOverride = null, int pixelScale = 3)
+    {
+        SetCursorByIconName(atlasType.ToAtlasTag(), iconName, hotspotOverride, pixelScale);
+    }
+
+    /// <summary>
     /// toast提示
     /// </summary>
     /// <param name="hintContent"></param>

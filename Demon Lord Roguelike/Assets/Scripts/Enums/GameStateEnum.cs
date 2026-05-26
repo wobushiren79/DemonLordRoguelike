@@ -105,6 +105,7 @@ public enum TestSceneTypeEnum
     DoomCouncil = 5,//终焉议会
     NpcCreate = 6,//NPC创建
     ResearchUI = 7,//研究ui
+    AbyssalBlessing = 8,//深渊馈赠UI
 }
 
 public enum CinemachineCameraEnum
