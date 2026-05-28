@@ -7,14 +7,11 @@ public partial class UIFightMain : BaseUIComponent
 {
     //所有生成的卡片
     public List<UIViewCreatureCardItemForFight> listCreatureCard = new List<UIViewCreatureCardItemForFight>();
-    //所有的进攻进度
-    public Dictionary<int, UIViewFightMainAttCreateProgress> dicAttProgress = new Dictionary<int, UIViewFightMainAttCreateProgress>();
 
     public override void Awake()
     {
         base.Awake();
         ui_CreatureCardItem.gameObject.SetActive(false);
-        ui_UIViewFightMainAttCreateProgress.gameObject.SetActive(false);
     }
 
     public override void RefreshUI(bool isOpenInit = false)
@@ -55,8 +52,8 @@ public partial class UIFightMain : BaseUIComponent
 
         //初始所有卡片
         SetCreatureCardList(listCreatureData);
-        //设置进攻数据
-        SetAttackData(gameFightLogic.fightData.fightAttackData);
+        //初始进攻进度
+        ui_UIViewFightMainAttCreateProgress.SetProgress(0);
         //刷新一次UI
         RefreshUIData();
     }
@@ -75,44 +72,11 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// 设置进攻数据
-    /// </summary>
-    public void SetAttackData(FightAttackBean fightAttackData)
-    {
-        int fightNum = 1;
-        foreach (var itemData in dicAttProgress)
-        {
-            DestroyImmediate(itemData.Value.gameObject);
-        }
-        dicAttProgress.Clear();
-        //获取左右X的最大值
-        float contentXMax = ui_AttCreate.sizeDelta.x / 2;
-        //获取单个进度条长度
-        float itemW = ui_AttCreate.sizeDelta.x / fightNum;
-        for (int i = 0; i < fightNum; i++)
-        {
-            GameObject objItem = Instantiate(ui_AttCreate.gameObject, ui_UIViewFightMainAttCreateProgress.gameObject);
-            objItem.name = $"ProgressItem_{i + 1}";
-            objItem.transform.SetAsFirstSibling();
-            RectTransform rtf = (RectTransform)objItem.transform;
-            rtf.anchoredPosition = new Vector2(contentXMax - itemW * i, rtf.anchoredPosition.y);
-            rtf.sizeDelta = new Vector2(itemW, rtf.sizeDelta.y);
-            UIViewFightMainAttCreateProgress itemView = objItem.GetComponent<UIViewFightMainAttCreateProgress>();
-            itemView.SetProgress(0);
-            dicAttProgress.Add(i + 1, itemView);
-        }
-    }
-
-    /// <summary>
     /// 设置进攻数据进度
     /// </summary>
     public void SetAttCreateProgress(float progress, float progressAnimTime)
     {
-        int stage = 1;
-        if (dicAttProgress.TryGetValue(stage, out UIViewFightMainAttCreateProgress progressView))
-        {
-            progressView.SetProgress(progress, animTime: progressAnimTime);
-        }
+        ui_UIViewFightMainAttCreateProgress.SetProgress(progress, animTime: progressAnimTime);
     }
 
     /// <summary>

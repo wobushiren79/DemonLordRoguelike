@@ -8,8 +8,6 @@ public partial class UIFightMain
 
     public RectTransform ui_CreatureCardItem;
 
-    public RectTransform ui_AttCreate;
-
     public UIViewFightMainAttCreateProgress ui_UIViewFightMainAttCreateProgress;
 
     public Button ui_BtnRemoveCreature;

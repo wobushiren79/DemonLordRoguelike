@@ -1,4 +1,4 @@
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 using Spine.Unity;
 using TMPro;
 
@@ -18,6 +18,8 @@ public partial class UIViewFightSettlementItem
     public UIViewFightSettlementItemProgress ui_UIViewFightSettlementItemProgress_DamageReceived;
 
     public UIViewFightSettlementItemProgress ui_UIViewFightSettlementItemProgress_Kill;
+
+    public Image ui_Class;
 
 
 }

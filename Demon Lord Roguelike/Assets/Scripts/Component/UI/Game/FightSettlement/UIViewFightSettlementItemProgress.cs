@@ -1,6 +1,7 @@
 
 
 using DG.Tweening;
+using UnityEngine;
 
 public partial class UIViewFightSettlementItemProgress : BaseUIView
 {
@@ -25,6 +26,17 @@ public partial class UIViewFightSettlementItemProgress : BaseUIView
 
         SetTitle(title);
         SetProgress(data, progress, isAnim);
+    }
+
+    /// <summary>
+    /// 设置进度条颜色
+    /// </summary>
+    public void SetProgressColor(Color color)
+    {
+        if (ui_ProgressValue != null)
+        {
+            ui_ProgressValue.color = color;
+        }
     }
 
     /// <summary>

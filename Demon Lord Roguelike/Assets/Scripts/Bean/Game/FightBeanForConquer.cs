@@ -29,6 +29,22 @@ public class FightBeanForConquer : FightBean
     }
 
     /// <summary>
+    /// 是否为最后一关（BOSS关）
+    /// </summary>
+    public bool IsBossFight()
+    {
+        return figthNumMax > 0 && fightNum >= figthNumMax;
+    }
+
+    /// <summary>
+    /// 下一关是否为最后一关（BOSS关）
+    /// </summary>
+    public bool IsNextBossFight()
+    {
+        return figthNumMax > 0 && fightNum + 1 >= figthNumMax;
+    }
+
+    /// <summary>
     /// 初始化征服模式
     /// </summary>
     public override void InitData()
@@ -61,12 +77,12 @@ public class FightBeanForConquer : FightBean
             var itemLineupCreature = lineupCreature[i];
             if (itemLineupCreature.creatureState == CreatureStateEnum.Idle)
             {
-                dlDefenseCreatureData.Add(itemLineupCreature.creatureUUId, itemLineupCreature); 
+                dlDefenseCreatureData.Add(itemLineupCreature.creatureUUId, itemLineupCreature);
             }
         }
-        
-        //设置战斗场景ID
-        fightSceneId = fightTypeConquerInfo.GetRandomFightScene(false);
+
+        //设置战斗场景ID(根据是否为BOSS关选择不同场景)
+        fightSceneId = fightTypeConquerInfo.GetRandomFightScene(IsBossFight());
         //初始化战斗数据
         InitFightAttackData();
     }
@@ -88,6 +104,9 @@ public class FightBeanForConquer : FightBean
         float showTime = fightTypeConquerInfo.attack_show_time;
         if (showTime <= 0f) showTime = 1f;
 
+        //BOSS关使用BOSS敌人池，否则使用普通敌人池
+        bool isBoss = IsBossFight();
+
         //将 [0, showTime] 区间均分为 waveNum 段，在每段内随机一个出现时刻
         //保证整体随机但不至于过度聚集
         float bucket = showTime / waveNum;
@@ -100,7 +119,7 @@ public class FightBeanForConquer : FightBean
             float delay = spawnTime - prevTime;
             prevTime = spawnTime;
 
-            long enemyId = fightTypeConquerInfo.GetRandomEmenyId(false);
+            long enemyId = fightTypeConquerInfo.GetRandomEmenyId(isBoss);
             FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(delay, enemyId);
             fightAttackData.AddAttackQueue(fightAttackDetails);
         }
@@ -122,20 +141,36 @@ public class FightBeanForConquer : FightBean
     }
     
     /// <summary>
-    /// 初始化下一关数据
+    /// 初始化下一关数据(用于场景重载，例如进入BOSS场景)
     /// </summary>
     public void InitNextData()
     {
         //保留还在场上的生物数据
         listLastDefenseFightCreatureData = new List<FightCreatureBean>();
         for (int i = 0; i < dlDefenseCreatureEntity.List.Count; i++)
-        { 
+        {
             var creatureEntity = dlDefenseCreatureEntity.List[i];
             listLastDefenseFightCreatureData.Add(creatureEntity.fightCreatureData);
         }
         fightNum++;
-        //设置战斗场景ID
-        fightSceneId = fightTypeConquerInfo.GetRandomFightScene(false);
+        //设置战斗场景ID(根据是否为BOSS关选择不同场景)
+        fightSceneId = fightTypeConquerInfo.GetRandomFightScene(IsBossFight());
+        //初始化战斗数据
+        InitFightAttackData();
+    }
+
+    /// <summary>
+    /// 初始化下一关数据(用于同场景内继续战斗，不重新加载战斗场景)
+    /// </summary>
+    public void InitNextDataForContinue()
+    {
+        //不需要保留防御生物数据，它们仍在场上
+        listLastDefenseFightCreatureData = null;
+        fightNum++;
+        //不修改 fightSceneId（场景不重载）
+        //重置进攻相关计时器，确保新一关的进攻节奏从头开始
+        timeUpdateForAttackCreate = 0;
+        timeUpdateTargetForAttackCreate = 0;
         //初始化战斗数据
         InitFightAttackData();
     }

@@ -1,7 +1,32 @@
+using UnityEngine;
 
 public partial class UIViewFightSettlementItem : BaseUIView
 {
     protected FightRecordsCreatureBean fightRecordsCreatureData;
+
+    #region 进度条颜色
+
+    /// <summary>
+    /// 击杀进度条颜色（深红）
+    /// </summary>
+    protected static readonly Color KillProgressColor = ColorUtil.ParseHtmlString("#C0392B");
+
+    /// <summary>
+    /// 伤害进度条颜色（黄）
+    /// </summary>
+    protected static readonly Color DamageProgressColor = ColorUtil.ParseHtmlString("#F1C40F");
+
+    /// <summary>
+    /// 受到的伤害进度条颜色（蓝）
+    /// </summary>
+    protected static readonly Color DamageReceivedProgressColor = ColorUtil.ParseHtmlString("#3498DB");
+
+    /// <summary>
+    /// 经验进度条颜色（青绿）
+    /// </summary>
+    protected static readonly Color ExpProgressColor = ColorUtil.ParseHtmlString("#1ABC9C");
+
+    #endregion
 
     /// <summary>
     /// 设置数据
@@ -16,6 +41,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
         {
             SetCreatureName(creatureData.creatureName);
             SetCreatureIcon(creatureData);
+            SetClass(creatureData.creatureInfo.class_icon_res);
             SetProgressForKill(fightRecordsData.totalKillNumForDef, fightRecordsCreatureData.killNum);
             SetProgressForDamage(fightRecordsData.totalDamageForDef, fightRecordsCreatureData.damage);
             SetProgressForDamageReceived(fightRecordsData.totalDamageReceivedForDef, fightRecordsCreatureData.damageReceived);
@@ -44,11 +70,26 @@ public partial class UIViewFightSettlementItem : BaseUIView
     }
 
     /// <summary>
+    /// 设置职业图标
+    /// </summary>
+    public void SetClass(string iconRes)
+    {
+        if (string.IsNullOrEmpty(iconRes))
+        {
+            ui_Class.gameObject.SetActive(false);
+            return;
+        }
+        ui_Class.gameObject.SetActive(true);
+        IconHandler.Instance.SetUIIcon(iconRes, ui_Class);
+    }
+
+    /// <summary>
     /// 设置击杀数
     /// </summary>
     public void SetProgressForKill(long maxKill, long kill)
     {
         string title = TextHandler.Instance.GetTextById(50002);
+        ui_UIViewFightSettlementItemProgress_Kill.SetProgressColor(KillProgressColor);
         ui_UIViewFightSettlementItemProgress_Kill.SetData(title, maxKill, kill);
     }
 
@@ -58,6 +99,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
     public void SetProgressForDamage(long maxDamage, long damage)
     {
         string title = TextHandler.Instance.GetTextById(50001);
+        ui_UIViewFightSettlementItemProgress_Damage.SetProgressColor(DamageProgressColor);
         ui_UIViewFightSettlementItemProgress_Damage.SetData(title, maxDamage, damage);
     }
 
@@ -67,6 +109,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
     public void SetProgressForDamageReceived(long maxDamageReceived, long damageReceived)
     {
         string title = TextHandler.Instance.GetTextById(50004);
+        ui_UIViewFightSettlementItemProgress_DamageReceived.SetProgressColor(DamageReceivedProgressColor);
         ui_UIViewFightSettlementItemProgress_DamageReceived.SetData(title, maxDamageReceived, damageReceived);
     }
 
@@ -76,6 +119,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
     public void SetPrgoressForExp(long maxExp, long exp)
     {
         string title = TextHandler.Instance.GetTextById(50003);
+        ui_UIViewFightSettlementItemProgress_Exp.SetProgressColor(ExpProgressColor);
         ui_UIViewFightSettlementItemProgress_Exp.SetData(title, maxExp, exp);
     }
 }

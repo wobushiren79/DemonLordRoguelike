@@ -367,6 +367,10 @@ public class GameFightLogic : BaseGameLogic
     /// </summary>
     public virtual void CheckGameEnd()
     {
+        //已进入结算/结束状态时不再重复检测，防止 ChangeGameState 被反复触发
+        if (gameState == GameStateEnum.Settlement || gameState == GameStateEnum.End)
+            return;
+
         bool isEnd = false;
         //如果已经没有下一波敌人 并且场上没有敌人
         if (fightData.fightAttackData.queueAttackDetails.Count == 0 && !fightData.CheckHasAttackCreature())

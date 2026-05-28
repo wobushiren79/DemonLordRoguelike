@@ -50,12 +50,9 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     {
         var allData = AbyssalBlessingInfoCfg.GetAllData();
         int visibleCount = Mathf.Min(SHOW_NUM, ui_AbyssalBlessingList.childCount);
-        var showData = new AbyssalBlessingInfoBean[visibleCount];
-        for (int i = 0; i < visibleCount; i++)
-        {
-            showData[i] = allData.GetRandomData();
-        }
-        SetDataInternal(showData, actionForSelect, actionForSkip);
+        var pool = new System.Collections.Generic.List<AbyssalBlessingInfoBean>(allData.Values);
+        var picked = pool.GetRandomDataForNumberNR(visibleCount);
+        SetDataInternal(picked.ToArray(), actionForSelect, actionForSkip);
     }
 
     /// <summary>

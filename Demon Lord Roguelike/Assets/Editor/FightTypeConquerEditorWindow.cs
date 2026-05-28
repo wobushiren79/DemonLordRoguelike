@@ -875,6 +875,17 @@ public class FightTypeConquerEditorWindow : EditorWindow
         }
         GUI.backgroundColor = prevColor;
 
+        GUILayout.Space(10);
+
+        // 导出JSON按钮（不需要数据变更，直接从当前Excel重新生成Json）
+        prevColor = GUI.backgroundColor;
+        GUI.backgroundColor = new Color(0.30f, 0.55f, 0.90f);
+        if (GUILayout.Button("导出 JSON", GUILayout.Width(120), GUILayout.Height(35)))
+        {
+            ExportJsonOnly();
+        }
+        GUI.backgroundColor = prevColor;
+
         GUILayout.FlexibleSpace();
         EditorGUILayout.EndHorizontal();
 
@@ -944,6 +955,30 @@ public class FightTypeConquerEditorWindow : EditorWindow
         {
             EditorUtility.DisplayDialog("错误", $"保存失败: {e.Message}", "确定");
             LogUtil.LogError($"保存失败: {e}");
+        }
+    }
+
+    /// <summary>
+    /// 仅导出 Json（直接从当前 Excel 重新生成，不需要数据变更）
+    /// </summary>
+    private void ExportJsonOnly()
+    {
+        if (!File.Exists(excelPath))
+        {
+            EditorUtility.DisplayDialog("错误", $"Excel文件不存在:\n{excelPath}", "确定");
+            return;
+        }
+
+        try
+        {
+            RegenerateJson();
+            AssetDatabase.Refresh();
+            EditorUtility.DisplayDialog("完成", "已从 Excel 重新导出 Json 文件", "确定");
+        }
+        catch (Exception e)
+        {
+            EditorUtility.DisplayDialog("错误", $"导出失败: {e.Message}", "确定");
+            LogUtil.LogError($"导出失败: {e}");
         }
     }
 
