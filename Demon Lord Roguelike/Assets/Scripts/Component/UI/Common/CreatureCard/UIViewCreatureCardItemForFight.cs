@@ -96,6 +96,21 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
         SetData(creatureData, cardUseState);
     }
 
+    /// <summary>
+    /// 刷新卡片布局位置(卡片数量变化导致整体重排时调用，仅更新位置/层级，不改动卡片战斗状态)
+    /// </summary>
+    /// <param name="originalCardPos">重排后的目标位置</param>
+    /// <param name="sibling">重排后的层级序号</param>
+    public void RefreshCardPos(Vector2 originalCardPos, int sibling)
+    {
+        cardData.originalCardPos = originalCardPos;
+        cardData.originalSibling = sibling;
+        transform.SetSiblingIndex(sibling);
+        gameObject.name = $"UIViewCreatureCardItem_{sibling}";
+        //归位到新位置(直接设置，避免与选择/避让动画冲突)
+        rectTransform.anchoredPosition = originalCardPos;
+    }
+
     #region 重写
     /// <summary>
     /// 刷新状态

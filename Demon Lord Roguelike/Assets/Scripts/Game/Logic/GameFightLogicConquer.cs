@@ -60,6 +60,12 @@ public class GameFightLogicConquer : GameFightLogic
         bool isWin = fightData.gameIsWin;
         bool isBossFight = fightDataForConquer != null && fightDataForConquer.IsBossFight();
 
+        //关卡胜利 → 给本场出战阵容生物发放等级经验（每关进入结算时仅触发一次，失败不发）
+        if (isWin)
+        {
+            AddLevelExpForLineupCreature(fightDataForConquer, isBossFight);
+        }
+
         //失败或通关BOSS关 → 弹出结算UI(走完整结算流程，需要清理战场)
         if (!isWin || isBossFight)
         {
@@ -67,8 +73,7 @@ public class GameFightLogicConquer : GameFightLogic
             ClearGameForSimple();
             //打开结算UI
             var uiFightSettlement = UIHandler.Instance.OpenUIAndCloseOther<UIFightSettlement>();
-            uiFightSettlement.SetData(fightData, ActionForUIFightSettlementExit);
-            uiFightSettlement.actionForNext = ActionForUIFightSettlementNext;
+            uiFightSettlement.SetData(fightData, ActionForUIFightSettlementNext);
         }
         //非BOSS关胜利 → 直接弹出深渊馈赠选择UI（不清理战场，保留防御生物及BUFF）
         else
@@ -141,6 +146,8 @@ public class GameFightLogicConquer : GameFightLogic
 
         //重新打开战斗主UI（之前因为打开馈赠UI被关闭）
         var uiFightMain = UIHandler.Instance.OpenUIAndCloseOther<UIFightMain>();
+        //补齐在馈赠界面期间新增的防御生物卡片（如深渊馈赠增殖复制，触发时UIFightMain已关闭，事件无法送达）
+        uiFightMain.SyncCreatureCardList();
         //刷新进攻进度条（新一关的进攻数据从 0 开始）
         uiFightMain.RefreshUIData();
 
@@ -150,15 +157,6 @@ public class GameFightLogicConquer : GameFightLogic
     #endregion
 
     #region 回调
-    /// <summary>
-    /// 回调-点击退出结算UI
-    /// 失败或通关BOSS 都直接返回基地
-    /// </summary>
-    public void ActionForUIFightSettlementExit()
-    {
-        EndGameAndReturnToBase();
-    }
-
     /// <summary>
     /// 回调-点击下一步
     /// 通关BOSS → 进入奖励界面
@@ -224,6 +222,35 @@ public class GameFightLogicConquer : GameFightLogic
     #endregion
 
     #region 工具
+    /// <summary>
+    /// 关卡胜利后给本场出战阵容生物增加等级经验
+    /// 普通关卡发放 reward_exp，BOSS关卡发放 reward_exp_boss；
+    /// 经验直接累加到生物存档对象(CreatureBean.levelExp)，随返回基地时统一保存落盘
+    /// </summary>
+    /// <param name="fightDataForConquer">征服模式战斗数据</param>
+    /// <param name="isBossFight">当前是否为BOSS关</param>
+    private void AddLevelExpForLineupCreature(FightBeanForConquer fightDataForConquer, bool isBossFight)
+    {
+        if (fightDataForConquer == null || fightDataForConquer.fightTypeConquerInfo == null)
+            return;
+        var conquerInfo = fightDataForConquer.fightTypeConquerInfo;
+        //按关卡类型取对应经验值
+        int addExp = isBossFight ? conquerInfo.reward_exp_boss : conquerInfo.reward_exp;
+        if (addExp <= 0)
+            return;
+        //本场出战阵容(防御方)生物，dlDefenseCreatureData 内为存档生物对象的引用
+        var listDefenseCreature = fightDataForConquer.dlDefenseCreatureData?.List;
+        if (listDefenseCreature == null)
+            return;
+        for (int i = 0; i < listDefenseCreature.Count; i++)
+        {
+            var creatureData = listDefenseCreature[i];
+            if (creatureData == null)
+                continue;
+            creatureData.levelExp += addExp;
+        }
+    }
+
     /// <summary>
     /// 结束游戏返回基地
     /// </summary>

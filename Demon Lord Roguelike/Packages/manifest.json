@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.besty.unity-skills": "https://github.com/Besty0728/Unity-Skills.git?path=/SkillsForUnity",
     "com.coffee.ui-particle": "https://github.com/mob-sakai/ParticleEffectForUGUI.git#4.9.0",
     "com.coplaydev.unity-mcp": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main",
     "com.cqf.urpvolumetricfog": "https://github.com/CristianQiu/Unity-URP-Volumetric-Light.git",

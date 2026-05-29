@@ -66,7 +66,7 @@ public partial class UIBasePortal : BaseUIComponent
                 //随机地图位置
                 Vector2 randomMapPos = GetRandomMapPos(listOldPos);
                 listOldPos.Add(randomMapPos);
-                gameWorldInfoRandomData.uiPosition = randomMapPos;
+                gameWorldInfoRandomData.uiPosition = new Vector2Bean(randomMapPos);
                 //设置地图icon种子
                 int iconSeed = Random.Range(0, int.MaxValue);
                 gameWorldInfoRandomData.iconSeed = iconSeed;

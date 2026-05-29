@@ -118,6 +118,26 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
 
     #endregion
 
+    #region 生命周期
+
+    /// <summary>
+    /// 关闭UI-主动清理所有子控件的悬停动画
+    /// 避免鼠标停留在控件上时UI被关闭，未触发 OnPointerExit 导致动画残留
+    /// </summary>
+    public override void CloseUI()
+    {
+        base.CloseUI();
+        int childCount = ui_AbyssalBlessingList.childCount;
+        for (int i = 0; i < childCount; i++)
+        {
+            var view = ui_AbyssalBlessingList.GetChild(i).GetComponent<UIViewFightAbyssalBlessingItem>();
+            if (view != null)
+                view.KillHoverAnim();
+        }
+    }
+
+    #endregion
+
     #region 点击
 
     public override void OnClickForButton(Button viewButton)

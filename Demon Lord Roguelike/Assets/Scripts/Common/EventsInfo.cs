@@ -48,6 +48,7 @@ public static class EventsInfo
     #region BUFF
     public const string Buff_AbyssalBlessingChange = "Buff_AbyssalBlessingChange";//BUFF系统-深渊馈赠变化
     public const string Buff_FightCreatureChange = "Buff_FightCreatureChange";//BUFF系统-生物BUFF改变
+    public const string Buff_DefenseCreatureAdd = "Buff_DefenseCreatureAdd";//BUFF系统-新增防御生物(如深渊馈赠增殖复制)
     #endregion
 
     #region 扭蛋机

@@ -31,12 +31,11 @@ public class GameFightLogicTest : GameFightLogic
         ClearGameForSimple();
         //打开结算UI
         var uiFightSettlement = UIHandler.Instance.OpenUIAndCloseOther<UIFightSettlement>();
-        uiFightSettlement.SetData(fightData, ActionForUIFightSettlementExit);
-        uiFightSettlement.actionForNext = ActionForUIFightSettlementNext;
+        uiFightSettlement.SetData(fightData, ActionForUIFightSettlementNext);
     }
 
     /// <summary>
-    /// 回调-结算界面关闭
+    /// 回调-点击下一步 重启战斗
     /// </summary>
     public void ActionForUIFightSettlementNext()
     {
@@ -44,18 +43,5 @@ public class GameFightLogicTest : GameFightLogic
         fightData.fightAttackData = ClassUtil.DeepCopy(fightBeanForTest.fightAttackDataRemark);
         //清理深渊馈赠数据
         WorldHandler.Instance.EnterGameForFightScene(fightData);
-    }
-
-    /// <summary>
-    /// 回调-点击退出
-    /// </summary>
-    public void ActionForUIFightSettlementExit()
-    {
-        //展示mask
-        UIHandler.Instance.ShowMask(1, null, () =>
-        {
-            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-            WorldHandler.Instance.EnterGameForBaseScene(userData);
-        }, false);
     }
 }

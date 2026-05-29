@@ -3,8 +3,6 @@
 
 public partial class UIFightSettlement
 {
-    public Button ui_ViewExit;
-
     public Button ui_OrderBtn_Exp_Button;
 
     public PopupButtonCommonView ui_OrderBtn_Exp_PopupButtonCommonView;

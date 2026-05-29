@@ -82,10 +82,12 @@ public class FightBean
     public void ClearEntity()
     {
         //还原生物数据
+        //注意：这里的元素与玩家存档阵容生物 Bean 共享引用，只能重置战斗运行时状态，
+        //不可调用 ClearTempData()（会清空皮肤/装备等持久数据，导致下次进入战斗卡牌 Spine 空白）
         for (int i = 0; i < dlDefenseCreatureData.List.Count; i++)
         {
             var itemCreatureData = dlDefenseCreatureData.List[i];
-            itemCreatureData.ClearTempData();
+            itemCreatureData.ClearFightTempData();
         }
         //删除生物实例
         for (int i = 0; i < dlDefenseCreatureEntity.List.Count; i++)

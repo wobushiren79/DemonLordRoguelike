@@ -55,7 +55,7 @@ public partial class UIViewBasePortalItem : BaseUIView
 
         this.gameWorldInfoRandom = gameWorldInfoRandom;
         //设置地图位置
-        SetMapPosition(gameWorldInfoRandom.uiPosition);
+        SetMapPosition(gameWorldInfoRandom.uiPosition.GetVector());
         //设置名字
         string targetName = gameWorldInfo.name_language;
         SetName(targetName);

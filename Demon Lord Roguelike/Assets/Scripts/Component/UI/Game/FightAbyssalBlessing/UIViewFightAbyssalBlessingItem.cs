@@ -2,9 +2,10 @@
 using System;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public partial class UIViewFightAbyssalBlessingItem : BaseUIView
+public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterHandler, IPointerExitHandler
 {
     public AbyssalBlessingInfoBean abyssalBlessingInfo;
 
@@ -35,6 +36,60 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView
     {
         IconHandler.Instance.SetAbyssalBlessingIcon(iconName, ui_Icon);
     }
+
+    #region 悬停动画
+
+    /// <summary>
+    /// 鼠标悬停放大倍率
+    /// </summary>
+    private const float HOVER_SCALE = 1.08f;
+
+    /// <summary>
+    /// 悬停动画时长
+    /// </summary>
+    private const float HOVER_ANIM_DURATION = 0.15f;
+
+    /// <summary>
+    /// 悬停动画 Tween，复用时先 Kill 避免叠加
+    /// </summary>
+    private Tween hoverTween;
+
+    /// <summary>
+    /// 鼠标进入-放大强调
+    /// </summary>
+    void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
+    {
+        hoverTween?.Kill();
+        hoverTween = transform
+            .DOScale(Vector3.one * HOVER_SCALE, HOVER_ANIM_DURATION)
+            .SetEase(Ease.OutQuad)
+            .SetUpdate(UpdateType.Normal, isIndependentUpdate: true);
+    }
+
+    /// <summary>
+    /// 鼠标离开-还原大小
+    /// </summary>
+    void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
+    {
+        hoverTween?.Kill();
+        hoverTween = transform
+            .DOScale(Vector3.one, HOVER_ANIM_DURATION)
+            .SetEase(Ease.OutQuad)
+            .SetUpdate(UpdateType.Normal, isIndependentUpdate: true);
+    }
+
+    /// <summary>
+    /// 关闭悬停动画并复位缩放
+    /// 用于UI关闭时主动清理，避免鼠标停留在控件上未触发 OnPointerExit 导致动画残留
+    /// </summary>
+    public void KillHoverAnim()
+    {
+        hoverTween?.Kill();
+        hoverTween = null;
+        transform.localScale = Vector3.one;
+    }
+
+    #endregion
 
     #region 动画
 

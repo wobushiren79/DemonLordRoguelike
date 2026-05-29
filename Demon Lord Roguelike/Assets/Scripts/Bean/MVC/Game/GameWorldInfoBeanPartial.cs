@@ -15,8 +15,8 @@ public partial class GameWorldInfoRandomBean
     public int roadNum;
     //道路长度
     public int roadLength;
-    //UI显示位置
-    public Vector2 uiPosition;
+    //UI显示位置(用 Vector2Bean 包装,规避 Newtonsoft.Json 序列化 Vector2 时 normalized 属性递归导致的栈溢出)
+    public Vector2Bean uiPosition = new Vector2Bean();
     //关卡数量
     public int fightNum;
     //图标种子

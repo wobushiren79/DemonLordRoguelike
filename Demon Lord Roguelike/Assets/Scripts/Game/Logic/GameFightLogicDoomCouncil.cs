@@ -32,8 +32,7 @@ public class GameFightLogicDoomCouncil : GameFightLogic
         ClearGameForSimple();
         //打开结算UI
         var uiFightSettlement = UIHandler.Instance.OpenUIAndCloseOther<UIFightSettlement>();
-        uiFightSettlement.SetData(fightData);
-        uiFightSettlement.actionForNext = ActionForUIFightSettlementNext;
+        uiFightSettlement.SetData(fightData, ActionForUIFightSettlementNext);
     }
 
     #region 回调

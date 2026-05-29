@@ -16,6 +16,9 @@ public class BuffEntityInstantCloneDefenseCreature : BuffEntityInstant
         copyCreatureData.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
 
         gameFightLogic.fightData.dlDefenseCreatureData.Add(copyCreatureData.creatureUUId, copyCreatureData);
+
+        //通知UI新增一张防御生物卡片(增量添加，不重建整个卡片列表以保留其它卡片的Rest/Fighting状态)
+        EventHandler.Instance.TriggerEvent(EventsInfo.Buff_DefenseCreatureAdd, copyCreatureData);
         return true;
     }
 }

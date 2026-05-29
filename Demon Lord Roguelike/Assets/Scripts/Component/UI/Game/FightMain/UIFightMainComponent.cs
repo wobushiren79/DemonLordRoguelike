@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 
 public partial class UIFightMain
@@ -13,6 +14,8 @@ public partial class UIFightMain
     public Button ui_BtnRemoveCreature;
 
     public UIViewBaseInfoContent ui_UIViewBaseInfoContent;
+
+    public TextMeshProUGUI ui_FightLevel;
 
 
 }

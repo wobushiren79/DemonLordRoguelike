@@ -60,14 +60,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 2dddcb14140f4fd4b879b0117f760d84, type: 3}
+  m_Sprite: {fileID: 21300000, guid: d4982c7e611a2674b80a047219c577d1, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -177,6 +177,7 @@ MonoBehaviour:
   uiOpenAnimType: 0
   uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}
+  listItemAbyssalBlessing: []
   ui_Content: {fileID: 7840085861480771340}
   ui_UIViewAbyssalBlessingInfoContentItem: {fileID: 207825423990455295}
 --- !u!1001 &6377344184022226427

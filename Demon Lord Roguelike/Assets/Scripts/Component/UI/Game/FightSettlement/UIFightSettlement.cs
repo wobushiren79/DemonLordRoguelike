@@ -8,8 +8,7 @@ public partial class UIFightSettlement : BaseUIComponent
     protected List<FightRecordsCreatureBean> listRecordsCreatureData;
     protected FightBean fightData;
 
-    public Action actionForNext;
-    protected Action actionForExit;
+    protected Action actionForNext;
 
     //当前排序类型
     protected int currentOrderType = 1;
@@ -35,10 +34,10 @@ public partial class UIFightSettlement : BaseUIComponent
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(FightBean fightData, Action actionForExit = null)
+    public void SetData(FightBean fightData, Action actionForNext = null)
     {
         this.fightData = fightData;
-        this.actionForExit = actionForExit;
+        this.actionForNext = actionForNext;
         listRecordsCreatureData = fightData.fightRecordsData.GetRecordsForCreatureData();
         //默认按伤害降序
         OrderListData(currentOrderType, false);
@@ -116,12 +115,7 @@ public partial class UIFightSettlement : BaseUIComponent
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
-        if (viewButton == ui_ViewExit)
-        {
-            actionForExit?.Invoke();
-            actionForExit = null;
-        }
-        else if (viewButton == ui_BtnNext)
+        if (viewButton == ui_BtnNext)
         {
             actionForNext?.Invoke();
             actionForNext = null;

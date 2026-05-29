@@ -18,6 +18,9 @@
 - [`feedback_pixellab_animation_output.md`](feedback_pixellab_animation_output.md) — 帧动画只保留合成精灵表，不保留单帧文件
 - [`feedback_pixellab_auto_download.md`](feedback_pixellab_auto_download.md) — 生成完成后必须自动下载到 Assets/Out/<子目录>/，不能只给链接
 
+### Reference
+- [reference_unityskills_shadergraph_limits.md](reference_unityskills_shadergraph_limits.md) — Unity-Skills shadergraph 工具限制：节点白名单(无噪声/Time/NormalFromHeight)、Vector2 赋值 bug、值格式约定
+
 ### Collaboration Feedback
 - [`feedback_task_summary.md`](feedback_task_summary.md) — 任务总结必须列出参与的 Agent/Skill 名称及操作
 - [`feedback_bean_partial.md`](feedback_bean_partial.md) — Bean 文件是自动生成的，扩展代码必须写在 BeanPartial 文件中

@@ -1,5 +1,15 @@
 {
   "dependencies": {
+    "com.besty.unity-skills": {
+      "version": "https://github.com/Besty0728/Unity-Skills.git?path=/SkillsForUnity",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "3.0.2",
+        "com.unity.timeline": "1.7.7"
+      },
+      "hash": "b044dbebd93c4a2d6b8f5051b8fc88eb5c431609"
+    },
     "com.coffee.ui-particle": {
       "version": "https://github.com/mob-sakai/ParticleEffectForUGUI.git#4.9.0",
       "depth": 0,
