@@ -10,23 +10,20 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
     public AbyssalBlessingInfoBean abyssalBlessingInfo;
 
     /// <summary>
-    /// 设置数据
+    /// 等级1-5对应的文本颜色（十六进制）。索引0=Lv1 ... 索引4=Lv5。
     /// </summary>
-    /// <param name="resolvedBuffInfo">有等级的BUFF时，传入已解析的下一级BuffInfo用于展示；无等级时传null</param>
-    public void SetData(AbyssalBlessingInfoBean abyssalBlessingInfo, BuffInfoBean resolvedBuffInfo = null)
+    private static readonly string[] LEVEL_TEXT_COLORS = { "#FFFFFF", "#5BD15B", "#4FA8FF", "#C06BFF", "#FFB23E" };
+
+    /// <summary>
+    /// 设置数据。等级差异由等级角标体现，名字/详情统一取馈赠自身的多语言文本。
+    /// </summary>
+    public void SetData(AbyssalBlessingInfoBean abyssalBlessingInfo)
     {
         this.abyssalBlessingInfo = abyssalBlessingInfo;
-        if (resolvedBuffInfo != null)
-        {
-            SetName(resolvedBuffInfo.name_language);
-            SetDetails(resolvedBuffInfo.content_language);
-        }
-        else
-        {
-            SetName(abyssalBlessingInfo.name_language);
-            SetDetails(abyssalBlessingInfo.details_language);
-        }
+        SetName(abyssalBlessingInfo.name_language);
+        SetDetails(abyssalBlessingInfo.details_language);
         SetIcon(abyssalBlessingInfo.icon_res);
+        SetLevel(abyssalBlessingInfo.level);
     }
 
     /// <summary>
@@ -35,6 +32,27 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
     public void SetIcon(string iconName)
     {
         IconHandler.Instance.SetAbyssalBlessingIcon(iconName, ui_Icon);
+    }
+
+    /// <summary>
+    /// 设置等级角标：level&gt;0 时显示角标并按等级着色文本（Lv1-5 共 5 种颜色）；
+    /// level&lt;=0（可重复馈赠）隐藏角标。
+    /// </summary>
+    public void SetLevel(int level)
+    {
+        bool show = level > 0;
+        if (ui_Level != null)
+            ui_Level.gameObject.SetActive(show);
+        if (ui_LevelText != null)
+            ui_LevelText.gameObject.SetActive(show);
+        if (!show) return;
+        if (ui_LevelText != null)
+        {
+            ui_LevelText.text = $"{level}";
+            int idx = Mathf.Clamp(level - 1, 0, LEVEL_TEXT_COLORS.Length - 1);
+            if (ColorUtility.TryParseHtmlString(LEVEL_TEXT_COLORS[idx], out Color color))
+                ui_LevelText.color = color;
+        }
     }
 
     #region 悬停动画

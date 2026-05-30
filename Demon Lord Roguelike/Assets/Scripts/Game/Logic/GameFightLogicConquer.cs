@@ -261,6 +261,8 @@ public class GameFightLogicConquer : GameFightLogic
         {
             //清理深渊馈赠数据
             BuffHandler.Instance.manager.ClearAbyssalBlessing();
+            //存盘前还原阵容生物战斗状态(Fight/Rest → Idle)，避免中间状态写入存档导致阵容只剩1个
+            RestoreDefenseCreatureFightState();
             //保存用户数据
             GameDataHandler.Instance.manager.SaveUserData();
             //返回基地

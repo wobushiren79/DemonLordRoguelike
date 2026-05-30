@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public partial class UIFightMain : BaseUIComponent
@@ -42,6 +43,16 @@ public partial class UIFightMain : BaseUIComponent
         if (viewButton == ui_BtnRemoveCreature)
         {
             OnClickForRemoveCreature();
+        }
+    }
+
+    public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
+    {
+        base.OnInputActionForStarted(inputType, callback);
+        if (inputType == InputActionUIEnum.ESC)
+        {
+            //战斗中调出系统界面(仅显示结束战斗按钮)
+            UIHandler.Instance.OpenUIAndCloseOther<UIGameSystem>((ui) => ui.enterType = UIGameSystem.EnterTypeFight);
         }
     }
 

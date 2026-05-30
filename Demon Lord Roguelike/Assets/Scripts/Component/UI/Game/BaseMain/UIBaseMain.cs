@@ -26,7 +26,7 @@ public partial class UIBaseMain : BaseUIComponent
         }
         else if (inputType == InputActionUIEnum.ESC)
         {
-            UIHandler.Instance.OpenUIAndCloseOther<UIGameSystem>();
+            UIHandler.Instance.OpenUIAndCloseOther<UIGameSystem>((ui) => ui.enterType = UIGameSystem.EnterTypeBase);
         }
     }
 

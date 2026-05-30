@@ -49,6 +49,8 @@ public class GameFightLogicDoomCouncil : GameFightLogic
         //展示mask
         UIHandler.Instance.ShowMask(1, null, () =>
         {
+            //存盘前还原阵容生物战斗状态(Fight/Rest → Idle)，避免中间状态写入存档导致阵容只剩1个
+            RestoreDefenseCreatureFightState();
             //保存用户数据
             UserDataBean userData = GameDataHandler.Instance.manager.SaveUserData();
             //返回基地

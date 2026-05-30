@@ -201,7 +201,7 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
 
     #region  战斗场景物品
     /// <summary>
-    /// 创建掉落金币
+    /// 创建掉落魔晶
     /// </summary>
     public void CreateDropCrystal(FightDropCrystalBean fightDropCrystal)
     {

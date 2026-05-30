@@ -37,6 +37,23 @@ public class FightManager : BaseManager
     public Queue<FightDropCrystalBean> poolFightDropCrystalBean = new Queue<FightDropCrystalBean>();
 
     /// <summary>
+    /// 仅清理在途的攻击模块(弹道)预制
+    /// <para>用于战斗结束简易清场(ClearGameForSimple)：AI 实例被回收后，已发射的弹道仍会在 FightHandler.Update 中飞行并命中生物，</para>
+    /// <para>触发已被回收(selfCreatureEntity 置空)的 AI 死亡意图导致空引用。提前销毁在途弹道可从源头阻断该执行链。</para>
+    /// <para>仅销毁活跃弹道并清空活跃列表，不动对象池(后续完整 Clear 会统一处理)。</para>
+    /// </summary>
+    public void ClearAttackModePrefab()
+    {
+        var listAttackMode = dlAttackModePrefab.List;
+        for (int i = 0; i < listAttackMode.Count; i++)
+        {
+            var item = listAttackMode[i];
+            item.Destroy(true);
+        }
+        dlAttackModePrefab.Clear();
+    }
+
+    /// <summary>
     /// 清理所有数据
     /// </summary>
     public void Clear()

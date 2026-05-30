@@ -78,23 +78,20 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
         var defenseCoreCreature = gameLogic.fightData.GetCreatureById("", CreatureFightTypeEnum.FightDefenseCore);
         var defenseCoreCreatureUUID = defenseCoreCreature.fightCreatureData.creatureData.creatureUUId;
         AbyssalBlessingInfoBean abyssalBlessingInfo = abyssalBlessingEntityData.abyssalBlessingInfo;
+
+        //升级替换：可升级馈赠选到更高等级时，移除同族已拥有的旧馈赠（含其全部BUFF）
+        if (abyssalBlessingInfo.IsLevelUp())
+        {
+            long familyRootId = AbyssalBlessingInfoCfg.GetFamilyRootId(abyssalBlessingInfo.id);
+            RemoveAbyssalBlessingByFamilyRoot(familyRootId);
+        }
+
+        //创建BUFFEntity列表（直接使用配置的字面 buff_ids，等级差异由各馈赠行引用的不同BUFF体现）
         List<BuffBaseEntity> listBuffEntity = new List<BuffBaseEntity>();
-        //创建BUFFEntity列表
         long[] buffIds = abyssalBlessingInfo.buff_ids.SplitForArrayLong(',');
         for (int i = 0; i < buffIds.Length; i++)
         {
-            long buffId = buffIds[i];
-            BuffInfoBean buffInfo = BuffInfoCfg.GetItemData(buffId);
-            // 有等级的BUFF：替换旧的同族BUFF，并解析到正确的下一级
-            if (buffInfo != null && buffInfo.buff_level > 0)
-            {
-                //注意顺序：先解析下一级（依赖当前等级）→ 再移除旧条目
-                BuffInfoBean nextLevelBuffInfo = ResolveAbyssalBlessingNextBuffInfo(buffId);
-                RemoveAbyssalBlessingByParentId(buffInfo.buff_parent_id);
-                if (nextLevelBuffInfo != null)
-                    buffId = nextLevelBuffInfo.id;
-            }
-            BuffBean buffData = new BuffBean(buffId);
+            BuffBean buffData = new BuffBean(buffIds[i]);
             var buffEntity = manager.GetBuffEntity(buffData, defenseCoreCreatureUUID, defenseCoreCreatureUUID);
             if (buffEntity == null) continue;
             listBuffEntity.Add(buffEntity);
@@ -105,70 +102,50 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
     }
 
     /// <summary>
-    /// 解析深渊馈赠中某个原始 BUFFID 应实际使用的 BuffInfo（下一级 / 原始 / null）。
-    /// - 原始 BUFF 不存在：返回 null
-    /// - 原始 BUFF 无等级（buff_level &lt;= 0）：直接返回原始 BuffInfo
-    /// - 原始 BUFF 有等级：返回"当前等级+1"对应的 BuffInfo，等级链断裂时返回 null
-    /// 调用方负责"找不到下一级"时的兜底（Handler 保留原 buffId；UI 可 fallback 到 level 1）。
+    /// 获取指定升级族当前已拥有的等级（0表示未拥有该族任何馈赠）。
+    /// 由于升级采用"替换"机制，同族同时至多存在一个馈赠实例。
     /// </summary>
-    public BuffInfoBean ResolveAbyssalBlessingNextBuffInfo(long originalBuffId)
+    public int GetAbyssalBlessingFamilyLevel(long familyRootId)
     {
-        BuffInfoBean buffInfo = BuffInfoCfg.GetItemData(originalBuffId);
-        if (buffInfo == null) return null;
-        if (buffInfo.buff_level <= 0) return buffInfo;
-        int currentLevel = GetAbyssalBlessingCurrentLevel(buffInfo.buff_parent_id);
-        return BuffInfoCfg.GetBuffByParentAndLevel(buffInfo.buff_parent_id, currentLevel + 1);
-    }
-
-    /// <summary>
-    /// 获取深渊馈赠中指定父级BUFFID当前已有的等级（0表示未拥有）
-    /// </summary>
-    public int GetAbyssalBlessingCurrentLevel(long parentId)
-    {
-        var valueLists = manager.dicAbyssalBlessingBuffsActivie.List;
-        for (int i = 0; i < valueLists.Count; i++)
+        var keys = manager.dicAbyssalBlessingBuffsActivie.ListKey;
+        for (int i = 0; i < keys.Count; i++)
         {
-            var listBuff = valueLists[i];
-            for (int f = 0; f < listBuff.Count; f++)
-            {
-                var buffInfo = listBuff[f].buffEntityData.GetBuffInfo();
-                if (buffInfo != null && buffInfo.buff_parent_id == parentId && buffInfo.buff_level > 0)
-                    return buffInfo.buff_level;
-            }
+            var info = keys[i]?.abyssalBlessingInfo;
+            if (info == null || info.level <= 0) continue;
+            if (AbyssalBlessingInfoCfg.GetFamilyRootId(info.id) == familyRootId)
+                return info.level;
         }
         return 0;
     }
 
     /// <summary>
-    /// 移除深渊馈赠中指定父级BUFFID对应的条目（用于等级替换）
+    /// 移除指定升级族当前已拥有的馈赠条目（含其全部BUFF），用于升级替换。
     /// </summary>
-    private void RemoveAbyssalBlessingByParentId(long parentId)
+    private void RemoveAbyssalBlessingByFamilyRoot(long familyRootId)
     {
-        List<BuffBaseEntity> targetList = null;
-        var valueLists = manager.dicAbyssalBlessingBuffsActivie.List;
-        for (int i = 0; i < valueLists.Count; i++)
+        AbyssalBlessingEntityBean targetKey = null;
+        var keys = manager.dicAbyssalBlessingBuffsActivie.ListKey;
+        for (int i = 0; i < keys.Count; i++)
         {
-            var listBuff = valueLists[i];
-            for (int f = 0; f < listBuff.Count; f++)
+            var info = keys[i]?.abyssalBlessingInfo;
+            if (info == null || info.level <= 0) continue;
+            if (AbyssalBlessingInfoCfg.GetFamilyRootId(info.id) == familyRootId)
             {
-                var buffInfo = listBuff[f].buffEntityData.GetBuffInfo();
-                if (buffInfo != null && buffInfo.buff_parent_id == parentId)
-                {
-                    targetList = listBuff;
-                    break;
-                }
+                targetKey = keys[i];
+                break;
             }
-            if (targetList != null) break;
         }
-        if (targetList != null)
+        if (targetKey == null) return;
+        if (manager.dicAbyssalBlessingBuffsActivie.TryGetValue(targetKey, out List<BuffBaseEntity> targetList) && targetList != null)
         {
             for (int f = targetList.Count - 1; f >= 0; f--)
             {
-                targetList[f].buffEntityData.isValid = false;
+                if (targetList[f].buffEntityData != null)
+                    targetList[f].buffEntityData.isValid = false;
                 manager.RemoveBuffEntity(targetList, targetList[f]);
             }
-            manager.dicAbyssalBlessingBuffsActivie.RemoveByValue(targetList);
         }
+        manager.dicAbyssalBlessingBuffsActivie.RemoveByKey(targetKey);
     }
     #endregion
 

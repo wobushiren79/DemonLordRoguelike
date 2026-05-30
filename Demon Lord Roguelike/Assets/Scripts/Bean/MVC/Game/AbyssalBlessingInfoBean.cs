@@ -9,6 +9,14 @@ public partial class AbyssalBlessingInfoBean : BaseBean
 	/// </summary>
 	public string icon_res;
 	/// <summary>
+	///父级深渊馈赠ID
+	/// </summary>
+	public long parent_id;
+	/// <summary>
+	///等级
+	/// </summary>
+	public int level;
+	/// <summary>
 	///buff_ids
 	/// </summary>
 	public string buff_ids;
@@ -24,7 +32,7 @@ public partial class AbyssalBlessingInfoBean : BaseBean
 	/// </summary>
 	public long details;
 	[JsonIgnore]
-	public string details_language { get => _details_language.Get(() => TextHandler.Instance.GetTextById(AbyssalBlessingInfoCfg.fileName, details)); set => _details_language.Set(value); }
+	public string details_language { get => _details_language.Get(() => TextHandler.Instance.GetTextById(AbyssalBlessingInfoCfg.fileName, details, 1)); set => _details_language.Set(value); }
 	private LanguageCache _details_language;
 	/// <summary>
 	///备注

@@ -44,7 +44,7 @@ watched_files:
 | `.claude/scripts/excel_read.py` | 读取 Excel 表数据并打印（含表头） |
 | `.claude/scripts/excel_schema.py` | 查看 Sheet 列表、单 Sheet 表头与样例 |
 | `.claude/scripts/excel_find.py` | 按列条件查询/过滤数据行 |
-| `.claude/scripts/excel_add_row.py` | 新增配置行（默认 id 查重） |
+| `.claude/scripts/excel_add_row.py` | 新增配置行（默认 id 查重，并按 id 由小到大插入正确位置） |
 | `.claude/scripts/excel_write.py` | 修改已有单元格（按行列 / 按 ID 单列 / 按 ID 多列） |
 | `.claude/scripts/excel_delete_row.py` | 删除配置行（表头受保护，支持 --dry-run） |
 
@@ -187,6 +187,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 ## 约束
 
 - 读写 xlsx 必须使用 openpyxl，编码 UTF-8
+- **新增数据必须按 id 由小到大排序插入**：新增配置行时不要直接追加到表格末尾，而要根据 id 大小插入到中间对应位置，保证整张表的 id 始终保持升序。`excel_add_row.py` 已默认按 id 排序插入（新 id 比所有现有 id 都大时才落到末尾）；除非特殊需求，禁止使用 `--append` 强制追加打乱排序。
 - 写入前使用 `--backup` 参数备份原文件
 - 配置表为统一 3 行表头规范（列名/类型/中文说明），数据从第 4 行开始；脚本默认 `--header-rows 3`
 - 配置表修改后必须通过 ExcelEditorWindow 导出 JSON

@@ -1,4 +1,4 @@
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 
 
 public partial class UIGameSystem
@@ -10,6 +10,8 @@ public partial class UIGameSystem
     public Button ui_BtnBack;
 
     public Button ui_BtnExit;
+
+    public Button ui_BtnExitFight;
 
 
 }

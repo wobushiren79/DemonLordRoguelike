@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,12 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     /// 卡片出现动画的每张错位延迟（秒）
     /// </summary>
     private const float ITEM_SHOW_ANIM_STAGGER = 0.08f;
+
+    /// <summary>
+    /// 优先生成"已选过馈赠的更高等级"的概率（0~1）。
+    /// 当玩家已拥有可升级馈赠时，每个候选名额都按此概率独立判定是否优先填入升级项。
+    /// </summary>
+    private const float PRIORITY_OWNED_UPGRADE_CHANCE = 0.3f;
 
     #endregion
 
@@ -44,15 +51,89 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     #region 数据设置
 
     /// <summary>
-    /// 设置数据-正式流程，从所有馈赠中随机抽取 SHOW_NUM 个
+    /// 设置数据-正式流程：构建候选池 → 按规则抽取 SHOW_NUM 个 → 渲染
     /// </summary>
     public void SetData(Action<AbyssalBlessingInfoBean> actionForSelect = null, Action actionForSkip = null)
     {
-        var allData = AbyssalBlessingInfoCfg.GetAllData();
+        List<AbyssalBlessingInfoBean> pool = BuildCandidatePool();
         int visibleCount = Mathf.Min(SHOW_NUM, ui_AbyssalBlessingList.childCount);
-        var pool = new System.Collections.Generic.List<AbyssalBlessingInfoBean>(allData.Values);
-        var picked = pool.GetRandomDataForNumberNR(visibleCount);
+        List<AbyssalBlessingInfoBean> picked = RollCandidates(pool, visibleCount);
         SetDataInternal(picked.ToArray(), actionForSelect, actionForSkip);
+    }
+
+    /// <summary>
+    /// 构建本次可出现的候选池：遍历全部馈赠配置，按 <see cref="IsCandidateEligible"/> 过滤。
+    /// （level==0 可重复；level&gt;0 仅保留"已拥有升级族的下一级"）
+    /// </summary>
+    private List<AbyssalBlessingInfoBean> BuildCandidatePool()
+    {
+        var pool = new List<AbyssalBlessingInfoBean>();
+        foreach (var info in AbyssalBlessingInfoCfg.GetAllData().Values)
+        {
+            if (IsCandidateEligible(info))
+                pool.Add(info);
+        }
+        return pool;
+    }
+
+    /// <summary>
+    /// 从候选池中抽取最终展示的馈赠列表，叠加"优先升级"机制。
+    /// 规则：逐个名额独立判定，每格按 <see cref="PRIORITY_OWNED_UPGRADE_CHANCE"/> 的概率
+    /// 决定填入"已选过馈赠的更高等级"还是从剩余池随机补足；全程去重，最后打乱顺序。
+    /// </summary>
+    private List<AbyssalBlessingInfoBean> RollCandidates(List<AbyssalBlessingInfoBean> pool, int visibleCount)
+    {
+        if (visibleCount <= 0 || pool.IsNull())
+            return new List<AbyssalBlessingInfoBean>();
+
+        //关键点：筛出"已选过且仍可升级"的候选（已拥有该族 → 池中出现的必是其下一级）
+        List<AbyssalBlessingInfoBean> upgrades = pool.FindAll(IsOwnedFamilyUpgrade);
+
+        //快速路径：没有可升级项时纯随机抽取，省去后续列表拷贝
+        if (upgrades.Count <= 0)
+            return pool.GetRandomDataForNumberNR(visibleCount);
+
+        //逐名额抽取：每格独立 roll 概率，决定"优先升级项 / 普通随机"，并实时去重
+        var result = new List<AbyssalBlessingInfoBean>();
+        var restPool = new List<AbyssalBlessingInfoBean>(pool);
+        var restUpgrades = new List<AbyssalBlessingInfoBean>(upgrades);
+        while (result.Count < visibleCount && restPool.Count > 0)
+        {
+            //关键点：仍有升级项且命中概率 → 优先填升级项；否则从剩余池随机
+            bool pickUpgrade = restUpgrades.Count > 0 && UnityEngine.Random.value < PRIORITY_OWNED_UPGRADE_CHANCE;
+            AbyssalBlessingInfoBean pick = pickUpgrade ? restUpgrades.GetRandomData() : restPool.GetRandomData();
+            result.Add(pick);
+            restPool.Remove(pick);
+            restUpgrades.Remove(pick);   //pick 可能本身就是升级项，同步移除防重复
+        }
+        //关键点：打乱顺序，避免升级项因抽取顺序固定排在最前
+        return result.GetRandomList();
+    }
+
+    /// <summary>
+    /// 判断候选是否为"已选过馈赠的更高等级"：
+    /// 属于升级族（level&gt;0）且玩家已拥有该族（已拥有等级≥1，因此本次可出现的必是其下一级）。
+    /// </summary>
+    private bool IsOwnedFamilyUpgrade(AbyssalBlessingInfoBean info)
+    {
+        if (info == null || info.level <= 0) return false;
+        long familyRootId = AbyssalBlessingInfoCfg.GetFamilyRootId(info.id);
+        return BuffHandler.Instance.GetAbyssalBlessingFamilyLevel(familyRootId) >= 1;
+    }
+
+    /// <summary>
+    /// 判断馈赠是否可作为本次候选出现：
+    /// - level == 0：可重复选择的馈赠，始终可出现，不考虑等级；
+    /// - level &gt; 0：仅当它正好是"已拥有升级族的下一级"时出现
+    ///   （未拥有该族 → 仅 lv1 可出现；已拥有 lv(N) → 仅 lv(N+1) 可出现；已满级则该族不再出现）。
+    /// </summary>
+    private bool IsCandidateEligible(AbyssalBlessingInfoBean info)
+    {
+        if (info == null) return false;
+        if (info.level <= 0) return true;
+        long familyRootId = AbyssalBlessingInfoCfg.GetFamilyRootId(info.id);
+        int ownedLevel = BuffHandler.Instance.GetAbyssalBlessingFamilyLevel(familyRootId);
+        return info.level == ownedLevel + 1;
     }
 
     /// <summary>
@@ -88,32 +169,10 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
             if (!visible) continue;
 
             var itemData = showData[i];
-            var resolvedBuffInfo = ResolveBuffInfoForPreview(itemData);
             var targetView = itemView.GetComponent<UIViewFightAbyssalBlessingItem>();
-            targetView.SetData(itemData, resolvedBuffInfo);
+            targetView.SetData(itemData);
             targetView.AnimForShow(i * ITEM_SHOW_ANIM_STAGGER);
         }
-    }
-
-    /// <summary>
-    /// 解析馈赠中第一个"有等级 BUFF"用于预览展示。
-    /// 优先取玩家当前等级的下一级；等级链断裂时 fallback 到 1 级；
-    /// 无等级 BUFF 时返回 null（由 ItemView 走默认展示）。
-    /// </summary>
-    private BuffInfoBean ResolveBuffInfoForPreview(AbyssalBlessingInfoBean itemData)
-    {
-        if (itemData.buff_ids.IsNull()) return null;
-
-        long[] buffIds = itemData.buff_ids.SplitForArrayLong(',');
-        for (int i = 0; i < buffIds.Length; i++)
-        {
-            BuffInfoBean buffInfo = BuffInfoCfg.GetItemData(buffIds[i]);
-            if (buffInfo == null || buffInfo.buff_level <= 0) continue;
-
-            var nextLevelBuffInfo = BuffHandler.Instance.ResolveAbyssalBlessingNextBuffInfo(buffIds[i]);
-            return nextLevelBuffInfo ?? BuffInfoCfg.GetBuffByParentAndLevel(buffInfo.buff_parent_id, 1);
-        }
-        return null;
     }
 
     #endregion

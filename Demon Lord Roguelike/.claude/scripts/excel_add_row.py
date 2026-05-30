@@ -11,7 +11,9 @@ Excel 新增数据行工具 - 使用 openpyxl，UTF-8
 
 说明:
   - 未在 --set/--json 中指定的列会留空 (None)
-  - 新行追加到现有数据末尾（自动跳过空行后定位）
+  - 默认按 id 由小到大插入到正确位置（不再无脑追加到末尾）；
+    若新 id 比所有现有 id 都大，则自然落到末尾。
+  - 如确需强制追加到末尾（不排序），使用 --append
   - 若 id 已存在会拒绝写入（除非 --allow-duplicate-id）
 """
 import argparse
@@ -57,6 +59,8 @@ def main():
     parser.add_argument("--json", default=None, help="JSON 字符串，键为列名")
     parser.add_argument("--id-col", default="id", help="ID 列名（默认 'id'，用于查重）")
     parser.add_argument("--allow-duplicate-id", action="store_true", help="允许 id 重复")
+    parser.add_argument("--append", action="store_true",
+                        help="强制追加到末尾（不按 id 排序插入）")
     parser.add_argument("--header-rows", type=int, default=3,
                         help="表头行数（默认 3：列名/类型/中文说明；查重从第 header_rows+1 行开始）")
     parser.add_argument("--backup", action="store_true", help="写入前备份（追加 .bak）")
@@ -127,15 +131,45 @@ def main():
                 wb.close()
                 sys.exit(1)
 
+    # 计算插入位置：默认按 id 由小到大插入到正确位置（除非 --append 或缺少 id）
+    new_row = last_data_row + 1  # 默认末尾
+    if not args.append and args.id_col in header_idx and args.id_col in fields:
+        id_col_idx = header_idx[args.id_col]
+        new_id = fields[args.id_col]
+
+        def _as_num(v):
+            """尽量转为数值用于排序比较，失败则返回 None。"""
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                return None
+
+        new_num = _as_num(new_id)
+        for row_idx in range(args.header_rows + 1, last_data_row + 1):
+            existing = ws.cell(row=row_idx, column=id_col_idx).value
+            if existing is None or existing == "":
+                continue
+            exist_num = _as_num(existing)
+            # 双方均为数值则按数值比较，否则按字符串比较
+            if new_num is not None and exist_num is not None:
+                greater = exist_num > new_num
+            else:
+                greater = str(existing) > str(new_id)
+            if greater:
+                # 找到第一个比新 id 大的行，插入到它前面
+                ws.insert_rows(row_idx)
+                new_row = row_idx
+                break
+
     # 写入新行
-    new_row = last_data_row + 1
     for col_name, value in fields.items():
         col_idx = header_idx[col_name]
         ws.cell(row=new_row, column=col_idx).value = value
 
     wb.save(args.path)
     wb.close()
-    print(f"已新增第 {new_row} 行 -> {fields}")
+    pos_desc = "末尾" if new_row > last_data_row else f"第 {new_row} 行（按 id 排序插入）"
+    print(f"已新增到{pos_desc} -> {fields}")
     print(f"已保存: {args.path}")
 
 

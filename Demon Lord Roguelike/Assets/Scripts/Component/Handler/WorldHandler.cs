@@ -134,9 +134,9 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             var taskAnimBuildingShow = scenePrefab.AnimForBuildingShow(timeAnimBuildingShow);
             //播放基地控制器出现动画
             GameControlHandler.Instance.AnimForBaseControlShow(startControlPos, animTime: 1);
+            //等待1秒动画(仅在播放建筑出现动画时需要等待)
+            await new WaitForSeconds(timeAnimBuildingShow);
         }
-        //等待1秒动画
-        await new WaitForSeconds(timeAnimBuildingShow);
         //环境参数初始化
         VolumeHandler.Instance.InitData(GameSceneTypeEnum.BaseGaming);
         //关闭LoadingUI

@@ -18,7 +18,7 @@ public partial class UICommonMask : BaseUIComponent
         acionForStart?.Invoke();
         ui_BG.ShowObj(true);
         ui_BG.color = colorStartMask;
-        ui_BG.DOColor(colorEndMask, maskTime).OnComplete(() =>
+        ui_BG.DOColor(colorEndMask, maskTime).SetUpdate(true).OnComplete(() =>
         {
             ui_BG.color = colorEndMask;
             acionForComplete?.Invoke();
@@ -30,7 +30,7 @@ public partial class UICommonMask : BaseUIComponent
         acionForStart?.Invoke();
         ui_BG.ShowObj(true);
         ui_BG.color = colorEndMask;
-        ui_BG.DOColor(colorStartMask, maskTime).OnComplete(() =>
+        ui_BG.DOColor(colorStartMask, maskTime).SetUpdate(true).OnComplete(() =>
         {
             ui_BG.ShowObj(false);
             ui_BG.color = colorStartMask;

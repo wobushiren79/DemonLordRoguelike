@@ -12,5 +12,9 @@ public partial class UIViewFightAbyssalBlessingItem
 
     public Button ui_Content;
 
+    public TextMeshProUGUI ui_LevelText;
+
+    public Image ui_Level;
+
 
 }

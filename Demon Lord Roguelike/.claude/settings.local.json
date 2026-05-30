@@ -55,7 +55,10 @@
       "Bash(mkdir -p \"e:/Unity/DemonLordRoguelike/Demon Lord Roguelike/.claude/skills\")",
       "Bash(mkdir -p \"e:/Unity/DemonLordRoguelike/Demon Lord Roguelike/.claude/scripts\")",
       "Bash(sed -i 's|\\.claude/scripts/|\\.claude/scripts/|g' \"e:/Unity/DemonLordRoguelike/Demon Lord Roguelike/.claude/settings.json\" && echo \"Done\")",
-      "Bash(rm \".claude/scripts/inspect_buff_info.py\" 2>/dev/null && echo \"Removed temp script\")"
+      "Bash(rm \".claude/scripts/inspect_buff_info.py\" 2>/dev/null && echo \"Removed temp script\")",
+      "Write(**/*.py)",
+      "Edit(**/*.py)",
+      "Read(**/*.py)"
     ],
     "additionalDirectories": [
       "e:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.claude",

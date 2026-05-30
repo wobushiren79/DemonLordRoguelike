@@ -26,3 +26,4 @@
 - [`feedback_bean_partial.md`](feedback_bean_partial.md) — Bean 文件是自动生成的，扩展代码必须写在 BeanPartial 文件中
 - [`feedback_code_style.md`](feedback_code_style.md) — 所有方法和属性必须加 XML 注释并用 #region 分类
 - [`feedback_comment_sync.md`](feedback_comment_sync.md) — 修改代码逻辑时必须同步更新对应的 XML 注释
+- [`feedback_excel_id_sorted_insert.md`](feedback_excel_id_sorted_insert.md) — 新增配置表数据行必须按 id 升序插入，禁止 append 追加末尾（用 excel_add_row.py）

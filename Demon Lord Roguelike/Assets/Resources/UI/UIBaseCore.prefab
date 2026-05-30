@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1113765956134730019}
   - component: {fileID: 4935235358885688607}
   - component: {fileID: 7008190519568711244}
+  - component: {fileID: 2714279496672203354}
   m_Layer: 5
   m_Name: Content
   m_TagString: Untagged
@@ -43,7 +44,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1200, y: 360}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4813355513080544291
 CanvasRenderer:
@@ -96,17 +97,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Padding:
-    m_Left: 10
-    m_Right: 10
+    m_Left: 20
+    m_Right: 20
     m_Top: 20
     m_Bottom: 20
   m_ChildAlignment: 4
   m_StartCorner: 0
   m_StartAxis: 0
   m_CellSize: {x: 228, y: 304}
-  m_Spacing: {x: 0, y: 0}
-  m_Constraint: 0
-  m_ConstraintCount: 2
+  m_Spacing: {x: 10, y: 10}
+  m_Constraint: 2
+  m_ConstraintCount: 1
 --- !u!114 &7008190519568711244
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -121,6 +122,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Padding: {x: 0, y: 0, z: 0, w: 0}
   m_Softness: {x: 0, y: 0}
+--- !u!114 &2714279496672203354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4070619799118633172}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3245ec927659c4140ac4f8d17403cc18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.ContentSizeFitter
+  m_HorizontalFit: 2
+  m_VerticalFit: 2
 --- !u!1 &5851314731992454111
 GameObject:
   m_ObjectHideFlags: 0
@@ -192,7 +207,8 @@ MonoBehaviour:
   ui_ViewBaseCoreItemFunction_Creature: {fileID: 7320116890934906920}
   ui_ViewBaseCoreItemFunction_Research: {fileID: 4874151090956658772}
   ui_ViewBaseCoreItemFunction_Vat: {fileID: 5735370891931001329}
-  ui_ViewBaseCoreItemFunction_Achievement: {fileID: 0}
+  ui_ViewBaseCoreItemFunction_Achievement: {fileID: 2930725928021495951}
+  ui_Content: {fileID: 4858926371702655025}
 --- !u!1001 &2797327858591407620
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -451,6 +467,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4858926371702655025}
     m_Modifications:
+    - target: {fileID: 603786919709831696, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 4c64b5757dc65344983b3fffb0a4f177, type: 3}
     - target: {fileID: 4676161509213193462, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
       propertyPath: m_Name
       value: ViewBaseCoreItemFunction_Achievement
@@ -540,6 +560,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
+--- !u!114 &2930725928021495951 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1811628500066889337, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
+  m_PrefabInstance: {fileID: 3569161191589314294}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &7962209733629579897 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6915073408995454095, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}

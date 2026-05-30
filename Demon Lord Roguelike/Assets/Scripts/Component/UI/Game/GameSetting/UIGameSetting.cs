@@ -67,7 +67,7 @@ public partial class UIGameSetting : BaseUIComponent, IRadioGroupCallBack
         //基地进入
         else if (enterType == 1)
         {
-            UIHandler.Instance.OpenUIAndCloseOther<UIGameSystem>();
+            UIHandler.Instance.OpenUIAndCloseOther<UIGameSystem>((ui) => ui.enterType = UIGameSystem.EnterTypeBase);
         }
     }
 

@@ -122,6 +122,8 @@ public class GameFightLogic : BaseGameLogic
     public void ClearGameForSimple()
     {
         ClearSelectData(true);
+        //在途弹道清理：必须在 AI 清理之前，避免已发射弹道在 AI 回收后仍命中生物触发空引用死亡逻辑
+        FightHandler.Instance.manager.ClearAttackModePrefab();
         //AI清理
         AIHandler.Instance.manager.Clear();
         //Buff清理
@@ -425,6 +427,43 @@ public class GameFightLogic : BaseGameLogic
     #endregion
 
     #region 工具
+
+    /// <summary>
+    /// 结束当前战斗并返回基地
+    /// <para>由系统界面(UIGameSystem)的"结束战斗"按钮触发，主动放弃当前战斗回到基地。</para>
+    /// <para>存盘前清理深渊馈赠、还原阵容生物战斗状态，避免中间状态写入存档。</para>
+    /// </summary>
+    public virtual void ExitFightAndReturnToBase()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        UIHandler.Instance.ShowMask(1, null, () =>
+        {
+            //清理深渊馈赠数据
+            BuffHandler.Instance.manager.ClearAbyssalBlessing();
+            //存盘前还原阵容生物战斗状态(Fight/Rest → Idle)，避免中间状态写入存档导致阵容只剩1个
+            RestoreDefenseCreatureFightState();
+            //保存用户数据
+            GameDataHandler.Instance.manager.SaveUserData();
+            //返回基地
+            WorldHandler.Instance.EnterGameForBaseScene(userData);
+        }, false);
+    }
+
+    /// <summary>
+    /// 还原我方出战阵容生物的战斗运行时状态
+    /// <para>fightData.dlDefenseCreatureData 内为与玩家存档共享引用的生物 Bean，战斗中其 creatureState 会被改成 Fight/Rest 等中间状态。</para>
+    /// <para>必须在战斗结束 SaveUserData() 之前调用，把状态归位到待机(Idle)，否则中间状态会被写进存档，导致回基地后阵容生物按 Idle 过滤后"只剩 1 个"。</para>
+    /// </summary>
+    protected void RestoreDefenseCreatureFightState()
+    {
+        var listDefenseCreatureData = fightData?.dlDefenseCreatureData?.List;
+        if (listDefenseCreatureData == null)
+            return;
+        for (int i = 0; i < listDefenseCreatureData.Count; i++)
+        {
+            listDefenseCreatureData[i]?.ClearFightTempData();
+        }
+    }
 
     /// <summary>
     /// 通过鼠标拾取水晶

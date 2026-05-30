@@ -10,6 +10,10 @@ public class AIIntentCreatureDead : AIBaseIntent
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         timeUpdateForDead = 0;
+        //战斗结束清场(ClearGameForSimple)会回收AI实例并把 selfCreatureEntity 置空，
+        //若此时仍有在途逻辑触发死亡意图，直接跳过避免空引用
+        if (selfAIEntity == null || selfAIEntity.selfCreatureEntity == null)
+            return;
         selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Dead, false);
 
         var selfFightCreatureEntity = selfAIEntity.selfCreatureEntity;
@@ -23,6 +27,9 @@ public class AIIntentCreatureDead : AIBaseIntent
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
+        //AI实例可能已被清场回收，selfCreatureEntity 置空时跳过，避免空引用
+        if (selfAIEntity == null || selfAIEntity.selfCreatureEntity == null)
+            return;
         timeUpdateForDead += Time.deltaTime;
         if (timeUpdateForDead >= timeUpdateForDeadCD)
         {

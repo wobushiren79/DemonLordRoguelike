@@ -1,4 +1,5 @@
 ﻿using UnityEngine.UI;
+using UnityEngine;
 
 
 public partial class UIBaseCore
@@ -18,6 +19,8 @@ public partial class UIBaseCore
     public Button ui_ViewBaseCoreItemFunction_Vat;
 
     public Button ui_ViewBaseCoreItemFunction_Achievement;
+
+    public RectTransform ui_Content;
 
 
 }

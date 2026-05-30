@@ -52,6 +52,7 @@ public class FightPrefabEntity
     /// <param name="targetState"></param>
     public virtual void SetState(GameFightPrefabStateEnum targetState)
     {
+        state = targetState;
         switch (targetState)
         {
             case GameFightPrefabStateEnum.None:

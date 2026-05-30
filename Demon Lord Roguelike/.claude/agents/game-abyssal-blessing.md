@@ -1,6 +1,6 @@
 ---
 name: game-abyssal-blessing
-description: 深渊馈赠系统开发：征服模式关卡间馈赠选择、馈赠 BUFF 添加、buff_parent_id/buff_level 等级替换、AbyssalBlessingInfoBean 配置、UIFightAbyssalBlessing 选择界面、UIViewAbyssalBlessingInfoContent 常驻列表、UIPopupAbyssalBlessingInfo 详情气泡、Buff_AbyssalBlessingChange 事件。
+description: 深渊馈赠系统开发：征服模式关卡间馈赠选择、馈赠 BUFF 添加、深渊馈赠配置表(excel_abyssal_blessing_info)新增、parent_id/level 同族等级链升级替换、AbyssalBlessingInfoBean 配置、AbyssalBlessingInfoCfg.GetFamilyRootId 族根回溯、UIFightAbyssalBlessing 选择界面(RollCandidates 按族取下一级)、UIViewAbyssalBlessingInfoContent 常驻列表、UIPopupAbyssalBlessingInfo 详情气泡、Buff_AbyssalBlessingChange 事件。
 tools: Read, Write, Edit, Glob, Grep, Bash
 skill: abyssal-blessing-system
 watched_files:
@@ -27,7 +27,10 @@ watched_files:
 - **AbyssalBlessingEntityBean** - 馈赠运行时实例（含 UUID）
 
 ### 配置（Excel + JSON）
-- `excel_abyssal_blessing_info[深渊馈赠信息].xlsx` - 唯一真实源
+- `excel_abyssal_blessing_info[深渊馈赠信息].xlsx` - 唯一真实源（数据写在 **Sheet1**，三行表头：字段名/中文/类型）
+  - 列：`id`(long) `icon_res`(string) `parent_id`(long) `level`(int) `buff_ids`(string,逗号分隔) `name`(language) `details`(language) `remark`(string)
+  - **一个等级 = 一行**；同族升级链：lv1 `parent_id=0`，lv2 `parent_id=lv1.id`，lv3 `parent_id=lv2.id`……`level` 从 1 连续递增（`level=0` 为不可升级的常驻馈赠）
+  - id 约定 10 位（如 `2000001005`，末 3 位=等级序号）
 - `AbyssalBlessingInfo.txt` - Excel 导出 JSON（不可单独改）
 - `Language_AbyssalBlessingInfo_{cn,en}.txt` - 多语言
 
@@ -44,11 +47,18 @@ watched_files:
 - **GameFightLogicConquer.ActionForUIRewardSelectEnd** - 全通关后清空馈赠
 - **FightBeanForConquer.AddAbyssalBlessing** - 添加馈赠到征服数据
 
-### BUFF 联动（核心机制）
-- **BuffHandler.AddAbyssalBlessing** - 添加馈赠 BUFF（含等级替换）
-- **BuffHandler.GetAbyssalBlessingCurrentLevel** - 查询某 parent 当前等级
-- **BuffHandler.RemoveAbyssalBlessingByParentId** - 移除某 parent 的所有 BUFF（升级时用）
-- **BuffManager.dicAbyssalBlessingBuffsActivie** - 独立的馈赠 BUFF 容器
+### 升级链（核心机制，配置表自身负责）
+- **AbyssalBlessingInfoCfg.GetFamilyRootId(id)** - 沿 `parent_id` 回溯到族根（parent_id==0），防循环 64 层 + 缓存
+- **AbyssalBlessingInfoBean.IsLevelUp()** - `level > 0`
+- 升级链**由馈赠表 `parent_id`/`level` 定义，与 BUFF 的 buff_parent_id/buff_level 无关**（旧设计已废弃）
+
+### BUFF 联动
+- **BuffHandler.AddAbyssalBlessing** - 添加馈赠：`GetFamilyRootId` → `RemoveAbyssalBlessingByRootId`(移除同族旧级) → 解析 `buff_ids` 加到防守核心 → 触发事件
+- **BuffHandler.GetAbyssalBlessingOwnedLevel(rootId)** - 查询某族当前拥有等级（传**族根 id**，0=未拥有）
+- **BuffHandler.RemoveAbyssalBlessingByRootId(rootId)** - 移除某族的所有馈赠及其 BUFF（升级时用）
+- **BuffHandler.GetDefenseCoreUUID** - 馈赠 BUFF 的目标/施加者（防守核心）
+- **BuffManager.dicAbyssalBlessingBuffsActivie** - 独立的馈赠 BUFF 容器（key=馈赠实例）
+- **BuffManager.AddAbyssalBlessingEntity / AddAbyssalBlessingBuff** - 写入容器
 - **BuffManager.ClearAbyssalBlessing** - 清空所有馈赠（只在全通关后调）
 
 ### 事件
@@ -62,17 +72,22 @@ watched_files:
 ## 关键流程
 
 ```
-关卡结算 → 非最后一关 → 打开 UIFightAbyssalBlessing
+关卡结算 → 非最后一关 → 打开 UIFightAbyssalBlessing.SetData
+                          ↓
+          RollCandidates(SHOW_NUM=3)：按 GetFamilyRootId 分族 →
+          每族取"当前等级+1"那一行(未拥有取族根) → 洗牌取前 3
                           ↓
                        玩家选择 3 选 1（或跳过）
                           ↓
           FightBeanForConquer.AddAbyssalBlessing(info)
                           ↓
-          new AbyssalBlessingEntityBean(info)
+          new AbyssalBlessingEntityBean(info)   // 构造函数自动生成 UUID
                           ↓
           BuffHandler.AddAbyssalBlessing(entity)
             ↓
-            解析 buff_ids → 等级 BUFF 替换升级 → 添加到防守核心
+            GetFamilyRootId → RemoveAbyssalBlessingByRootId(移除同族旧级)
+            ↓
+            解析 buff_ids(逗号分隔) → 添加到防守核心
             ↓
             触发 Buff_AbyssalBlessingChange 事件
             ↓
@@ -81,12 +96,13 @@ watched_files:
 关卡全通关 → 领奖结束 → BuffHandler.manager.ClearAbyssalBlessing()
 ```
 
-## 等级替换机制（重点）
+## 等级链替换机制（重点）
 
-馈赠 BUFF 通过 `buff_parent_id` + `buff_level` 实现升级：
-1. 选择界面侧 `UIFightAbyssalBlessing` 预先解析"下一级 BUFF"用于展示（避免玩家看到"1 级"但实际加 2 级）
-2. `BuffHandler.AddAbyssalBlessing` 添加时：查当前等级 → 移除整条旧 entry → 解析下一级 BUFF
-3. 等级链断裂（`GetBuffByParentAndLevel` 找不到下一级）时**不会创建任何 BUFF**
+升级链**由馈赠配置表自身的 `parent_id` + `level` 定义**（链表式，每个等级一条独立配置行，`buff_ids` 只决定该级数值）：
+1. 选择界面 `RollCandidates` 用 `GetAbyssalBlessingOwnedLevel(rootId)` 取当前等级，只展示 `level == owned+1` 那一行（玩家看到的即"将获得"的等级）
+2. `BuffHandler.AddAbyssalBlessing` 添加时：`GetFamilyRootId(id)` → `RemoveAbyssalBlessingByRootId`(整条移除同族旧级) → 逐个解析 `buff_ids` 加到防守核心
+3. `parent_id` 链断裂（某级缺失或指向错误）→ `RollCandidates` 取不到下一级，该族卡住
+4. ⚠️ 与 BUFF 的 `buff_parent_id`/`buff_level` **无关**，那是旧设计已废弃
 
 ## 关键文件
 
@@ -114,11 +130,12 @@ watched_files:
 
 - 配置变更**必须改 Excel**（`excel_abyssal_blessing_info`），由 Unity 编辑器导出 JSON。仅改 JSON 会在下次导出被覆盖。
 - `AbyssalBlessingInfoBean.cs` 是自动生成的，**禁止直接修改**；扩展写到 `AbyssalBlessingInfoBeanPartial.cs`。
-- 添加馈赠必须经过 `BuffHandler.AddAbyssalBlessing`，**不要直接写 `manager.dicAbyssalBlessingBuffsActivie`**（会跳过等级替换 + 事件通知）。
-- 等级 BUFF 的 `buff_parent_id` + `buff_level` 必须**连续递增**（1, 2, 3, ...），等级链断裂会导致升级失败且不创建 BUFF。
+- 添加馈赠必须经过 `BuffHandler.AddAbyssalBlessing`，**不要直接写 `manager.dicAbyssalBlessingBuffsActivie`**（会跳过同族替换 + 事件通知）。
+- 升级链由**馈赠表 `parent_id`+`level`** 定义：`parent_id` 链表式逐级指向上一级 id（lv2→lv1，lv3→lv2），**不是都指向根**；`level` 从 1 连续递增。链断裂该族会卡住。
 - 馈赠 BUFF 目标固定为**防守核心**（CreatureFightTypeEnum.FightDefenseCore），施加者也是核心 UUID。
 - `ClearAbyssalBlessing` **只能在征服全通关 + 领奖结束后调用**，中途调用会丢失玩家选择。
-- 选择界面 UI 显示侧调用 `GetAbyssalBlessingCurrentLevel + 1` 解析"下一级"，避免与添加侧的等级不一致。
+- `GetAbyssalBlessingOwnedLevel` 必须传**族根 id**（`GetFamilyRootId` 取得），不是任意等级的 id。
+- 配置数据写在 Excel 的 **`Sheet1`**（不是 `Sort Title 1/2`）；改完 Excel 必须用 Unity 编辑器导出 JSON。
 - BUFF 具体实体类型 / 触发逻辑 / 属性管线请走 `game-buff` 代理 + `buff-system` SKILL。
 - 馈赠图标必须放入 `AtlasForAbyssalBlessing.spriteatlas`，加载只能走 `IconHandler.Instance.SetAbyssalBlessingIcon`；用 `SetUIIcon` 会去 UI 图集查找导致丢图。
 
