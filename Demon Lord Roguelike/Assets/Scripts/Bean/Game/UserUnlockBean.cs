@@ -226,49 +226,53 @@ public class UserUnlockBean
 
     /// <summary>
     /// 获取解锁传送门显示数量
-    /// 基础数量 3 + 对应研究等级
+    /// 基础数量取自 UserLimmitBean.portalShowMax + 对应研究等级
     /// </summary>
     /// <returns>传送门显示数量</returns>
     public int GetUnlockPortalShowCount()
     {
-        return 3 + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.PortalShowNum);
+        var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
+        return limmitData.portalShowMax + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.PortalShowNum);
     }
 
     /// <summary>
     /// 获取解锁阵容数量
-    /// 基础数量 1 + 对应研究等级
+    /// 基础数量取自 UserLimmitBean.lineupMax + 对应研究等级
     /// </summary>
     /// <returns>可使用的阵容数量</returns>
     public int GetUnlockLineupNum()
     {
-        return 1 + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.LineupNum);
+        var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
+        return limmitData.lineupMax + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.LineupNum);
     }
 
     /// <summary>
     /// 获取阵容生物上限
-    /// 基础数量 6 + 对应研究等级
+    /// 基础数量取自 UserLimmitBean.lineupCreatureMax + 对应研究等级
     /// </summary>
     /// <returns>单个阵容可容纳的生物数量上限</returns>
     public int GetUnlockLineupCreatureNum()
     {
-        return 6 + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.LineupCreatureAddNum);
+        var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
+        return limmitData.lineupCreatureMax + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.LineupCreatureAddNum);
     }
 
     /// <summary>
     /// 获取游戏世界-征服模式-难度等级
-    /// 基础难度 1 + 对应研究等级
+    /// 基础难度取自 UserLimmitBean.conquerDifficultyMax + 对应研究等级
     /// </summary>
     /// <param name="worldId">游戏世界ID</param>
     /// <returns>征服模式当前可挑战的最高难度等级</returns>
     public int GetUnlockGameWorldConquerDifficultyLevel(long worldId)
     {
+        var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
         var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
-        return 1 + GetUnlockResearchLeveByUnlockId(gameWorldInfo.unlock_id_conquer_difficulty_level);
+        return limmitData.conquerDifficultyMax + GetUnlockResearchLeveByUnlockId(gameWorldInfo.unlock_id_conquer_difficulty_level);
     }
 
     /// <summary>
     /// 获取生物升阶容器数量
-    /// 未解锁容器功能时返回 0；已解锁则返回 1 + 升阶研究等级
+    /// 未解锁容器功能时返回 0；已解锁则返回 UserLimmitBean.creatureVatMax + 升阶研究等级
     /// </summary>
     /// <returns>当前可用的生物升阶容器数量</returns>
     public int GetUnlockCreatureVatNum()
@@ -276,8 +280,9 @@ public class UserUnlockBean
         bool isUnlockVat = CheckIsUnlock(UnlockEnum.CreatureVat);
         if (isUnlockVat)
         {
+            var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
             int unlockLevel = GetUnlockResearchLeveByUnlockEnum(UnlockEnum.CreatureVatAdd);
-            return 1 + unlockLevel;
+            return limmitData.creatureVatMax + unlockLevel;
         }
         else
         {
