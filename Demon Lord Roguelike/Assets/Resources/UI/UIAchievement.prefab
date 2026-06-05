@@ -987,7 +987,6 @@ MonoBehaviour:
   listButton:
   - {fileID: 2071823963950125404}
   - {fileID: 304943222879725509}
-  - {fileID: 0}
 --- !u!1 &8730039002564617275
 GameObject:
   m_ObjectHideFlags: 0

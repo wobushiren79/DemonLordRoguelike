@@ -198,5 +198,6 @@ public enum ControlInteractionEnum
     DoomCouncilInteraction,//终焉议会交互
     DoomCouncilPodium,//终焉议会讲台
     Councilor,//议会成员
+    AchievementInteraction,//成就石碑交互
 }
 

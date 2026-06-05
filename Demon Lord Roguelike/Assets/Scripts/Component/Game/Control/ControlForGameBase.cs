@@ -245,6 +245,9 @@ public class ControlForGameBase : BaseControl
                 DoomCouncilLogic doomCouncilLogic2 = GameHandler.Instance.manager.GetGameLogic<DoomCouncilLogic>();
                 doomCouncilLogic2.InteractCouncilor(firstHit.gameObject);
                 break;
+            case ControlInteractionEnum.AchievementInteraction://成就石碑
+                UIAchievement achievement = UIHandler.Instance.OpenUIAndCloseOther<UIAchievement>();
+                break;
         }
     }
 

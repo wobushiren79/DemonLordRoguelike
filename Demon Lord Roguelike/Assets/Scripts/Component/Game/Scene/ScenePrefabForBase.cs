@@ -21,7 +21,9 @@ public class ScenePrefabForBase : ScenePrefabBase
     public GameObject objBuildingVat;
     public GameObject objVatMaterialCreature;
     //终焉议会
-    public GameObject obBuildingjDoomCouncil;
+    public GameObject objBuildingjDoomCouncil;
+    //成就石碑
+    public GameObject objBuildingAchievement;
     //光线
     public Light lightSun;
     public GameObject lightRay;
@@ -51,6 +53,7 @@ public class ScenePrefabForBase : ScenePrefabBase
         BuildingVatRefresh();
         BuildingAltarRefresh();
         BuildingDoomCouncilRefresh();
+        BuildingAchievementRefresh();
     }
 
     /// <summary>
@@ -61,6 +64,7 @@ public class ScenePrefabForBase : ScenePrefabBase
         var taskAltar = AnimForBuildingAltarShow(timeForShow);
         var taskVat = AnimForBuildingVatShow(timeForShow);
         var taskDoomCouncil = AnimForBuildingDoomCouncilShow(timeForShow);
+        var taskAchievement = AnimForBuildingAchievementShow(timeForShow);
         await new WaitForSeconds(timeForShow);
     }
 
@@ -126,23 +130,57 @@ public class ScenePrefabForBase : ScenePrefabBase
         //是否解锁祭坛
         if (isUnlockDoomCouncil)
         {
-            obBuildingjDoomCouncil.gameObject.SetActive(true);
+            objBuildingjDoomCouncil.gameObject.SetActive(true);
         }
         else
         {
-            obBuildingjDoomCouncil.gameObject.SetActive(false);
+            objBuildingjDoomCouncil.gameObject.SetActive(false);
         }
     }
     /// <summary>
     /// 动画-祭坛出现
     /// </summary>
     public async Task AnimForBuildingDoomCouncilShow(float timeForShow)
-    {        
-        if (!obBuildingjDoomCouncil.activeSelf)
+    {
+        if (!objBuildingjDoomCouncil.activeSelf)
         {
             return;
         }
-        AnimForBuildingShowItem(obBuildingjDoomCouncil.transform, -1f, timeForShow);
+        AnimForBuildingShowItem(objBuildingjDoomCouncil.transform, -1f, timeForShow);
+        await new WaitForSeconds(timeForShow);
+    }
+    #endregion
+
+    #region 成就石碑
+    /// <summary>
+    /// 刷新成就石碑
+    /// </summary>
+    public void BuildingAchievementRefresh()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        UserUnlockBean userUnlock = userData.GetUserUnlockData();
+        bool isUnlockAchievement = userUnlock.CheckIsUnlock(UnlockEnum.Achievement);
+        //是否解锁成就石碑
+        if (isUnlockAchievement)
+        {
+            objBuildingAchievement.gameObject.SetActive(true);
+        }
+        else
+        {
+            objBuildingAchievement.gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// 动画-成就石碑出现
+    /// </summary>
+    public async Task AnimForBuildingAchievementShow(float timeForShow)
+    {
+        if (!objBuildingAchievement.activeSelf)
+        {
+            return;
+        }
+        AnimForBuildingShowItem(objBuildingAchievement.transform, -1f, timeForShow);
         await new WaitForSeconds(timeForShow);
     }
     #endregion
@@ -462,6 +500,10 @@ public class ScenePrefabForBase : ScenePrefabBase
             case UnlockEnum.DoomCouncil:
                 taskRefresh = RefreshScene();
                 taskAnimShow = AnimForBuildingDoomCouncilShow(timeForShow);
+                break;
+            case UnlockEnum.Achievement:
+                taskRefresh = RefreshScene();
+                taskAnimShow = AnimForBuildingAchievementShow(timeForShow);
                 break;
             case UnlockEnum.CreatureVat:
             case UnlockEnum.CreatureVatAdd:
