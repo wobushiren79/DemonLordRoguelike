@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 public partial class AbyssalBlessingInfoBean
 {
     #region 升级链
@@ -51,6 +52,27 @@ public partial class AbyssalBlessingInfoCfg
         }
         dicFamilyRoot[abyssalBlessingId] = rootId;
         return rootId;
+    }
+
+    #endregion
+
+    #region 等级颜色
+
+    /// <summary>
+    /// 等级1-5对应的颜色（十六进制）。索引0=Lv1 ... 索引4=Lv5。
+    /// </summary>
+    private static readonly string[] LEVEL_COLORS = { "#FFFFFF", "#5BD15B", "#4FA8FF", "#C06BFF", "#FFB23E" };
+
+    /// <summary>
+    /// 按等级获取对应颜色（Lv1-5 共 5 种），等级超出范围时取边界值。
+    /// 供深渊馈赠相关 UI（角标文本 / 背景 / 图标底 / 详情底 等）统一着色使用。
+    /// </summary>
+    public static Color GetLevelColor(int level)
+    {
+        int idx = Mathf.Clamp(level - 1, 0, LEVEL_COLORS.Length - 1);
+        if (ColorUtility.TryParseHtmlString(LEVEL_COLORS[idx], out Color color))
+            return color;
+        return Color.white;
     }
 
     #endregion

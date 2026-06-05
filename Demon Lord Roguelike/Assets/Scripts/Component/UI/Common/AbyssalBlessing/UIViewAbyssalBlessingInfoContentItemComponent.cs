@@ -9,5 +9,7 @@ public partial class UIViewAbyssalBlessingInfoContentItem
 
     public PopupButtonCommonView ui_Icon_PopupButtonCommonView;
 
+    public Image ui_BG;
+
 
 }

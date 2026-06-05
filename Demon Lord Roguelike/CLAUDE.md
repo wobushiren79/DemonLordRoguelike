@@ -1,5 +1,21 @@
 # CLAUDE.md
 
+## Shell 优先级规则
+
+**执行命令行操作时一律优先使用 PowerShell（pwsh 7+）**，遵循 PowerShell 语法（`$null`、`$env:VAR`、反引号续行、动词-名词 cmdlet 等）。仅当任务确需 POSIX/Unix 脚本能力时才改用 Bash。
+
+## 路径动态化规则
+
+**所有需要记录/写入文件的路径（配置、脚本、权限规则、文档示例等）一律使用动态/相对地址，禁止写死静态绝对路径**（如 `E:\Unity\Project\DLR\...`、`C:\Users\galasports\...`）。原因：项目会在不同电脑、不同用户、不同盘符下打开，静态绝对路径换环境即失效。
+
+具体要求：
+
+- **权限规则（`.claude/settings*.json`）**：用相对项目根目录的写法（如 `Read(.claude/scripts/**)`），用户主目录用 `~`（如 `Read(~/.claude/projects/**/memory/**)`），禁止写绝对盘符路径。
+- **PowerShell 脚本**：用 `$PSScriptRoot` 推导脚本所在目录、`$env:USERPROFILE` 取用户主目录；项目根目录 = 脚本位置按层级 `Split-Path` 向上推导（`.claude/scripts/` 下脚本向上两级即项目根）。
+- **Python 脚本**：用 `os.path.dirname(__file__)` / `Path(__file__).resolve().parents[N]` 推导项目根，禁止硬编码绝对路径；可变路径通过命令行参数传入。
+- **文档/示例**：涉及用户名、盘符的路径用占位符（如 `C:\Users\<USER>\...`）或相对路径，不写具体机器路径。
+- **记忆文件**：统一存项目内 `.claude/memory/`（见下方「记忆系统」），随 git 共享，禁止写入 C 盘用户主目录。
+
 ## Unity资源修改规则
 
 所有Unity资源文件的修改（创建、编辑、删除）必须通过Unity MCP（mcpforunityserver）进行，禁止直接使用Write/Edit工具操作以下类型文件：
@@ -44,6 +60,8 @@ C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 .claude/memory/MEMORY.md         # 索引文件
 .claude/memory/<name>.md         # 各条记忆文件
 ```
+
+**团队共享机制**：`.claude/memory/` 随 git 提交，所有成员 clone/pull 即可获得。由于 Claude Code 原生只自动加载用户主目录下的记忆（不读仓库内的 `.claude/memory/`），项目通过 `.claude/settings.json` 的 **SessionStart Hook**（`.claude/scripts/load-memory.ps1`）在每次会话开始时把 `MEMORY.md` 索引注入上下文，确保任何成员的 AI 都能识别。新增/修改记忆后**必须同步更新 `MEMORY.md` 索引**，否则不会被注入。
 
 ## Excel 读写规则
 

@@ -13,6 +13,7 @@ public enum SpriteAtlasTypeEnum
     Sky,//天空
     Skins,//皮肤
     AbyssalBlessing,//深渊馈赠
+    Research,//研究
 }
 
 /// <summary>

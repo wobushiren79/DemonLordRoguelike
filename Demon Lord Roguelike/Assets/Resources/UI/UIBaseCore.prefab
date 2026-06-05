@@ -471,6 +471,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 4c64b5757dc65344983b3fffb0a4f177, type: 3}
+    - target: {fileID: 1478507664880537427, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
+      propertyPath: textId
+      value: 20006
+      objectReference: {fileID: 0}
     - target: {fileID: 4676161509213193462, guid: 4f8c5f6ea4ba8eb4395b9033a0cb5eb0, type: 3}
       propertyPath: m_Name
       value: ViewBaseCoreItemFunction_Achievement

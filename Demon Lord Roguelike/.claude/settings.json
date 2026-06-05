@@ -1,12 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Read(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.claude\\skills\\*)",
-      "Write(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.claude\\skills\\*)",
-      "Edit(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.claude\\skills\\*)",
-      "Read(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.claude\\agents\\*)",
-      "Write(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.claude\\agents\\*)",
-      "Edit(E:\\Unity\\DemonLordRoguelike\\Demon Lord Roguelike\\.claude\\agents\\*)",
+      "Read(.claude/skills/**)",
+      "Write(.claude/skills/**)",
+      "Edit(.claude/skills/**)",
+      "Read(.claude/agents/**)",
+      "Write(.claude/agents/**)",
+      "Edit(.claude/agents/**)",
       "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/*\")",
       "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/check-unity-mcp.ps1\")",
       "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/check-cs-changed.ps1\")",
@@ -16,6 +16,17 @@
     ]
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".claude/scripts/load-memory.ps1\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "matcher": "(?i)(MCP|连接.*[Uu]nity|[Uu]nity.*连接|Start Session|HTTP server|uvx|Window.*MCP)",

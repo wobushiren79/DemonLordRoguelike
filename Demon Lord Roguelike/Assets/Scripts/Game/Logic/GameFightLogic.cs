@@ -108,6 +108,8 @@ public class GameFightLogic : BaseGameLogic
         AIHandler.Instance.manager.Clear();
         //Buff清理
         BuffHandler.Instance.manager.ClearFightCreatureBuff();
+        //飘字粒子清理
+        EffectHandler.Instance.ClearTextNumEffect();
         //清理战斗场景
         await WorldHandler.Instance.UnLoadScene(GameSceneTypeEnum.Fight);
         //清理缓存

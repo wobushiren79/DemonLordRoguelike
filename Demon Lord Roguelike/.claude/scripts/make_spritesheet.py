@@ -1,8 +1,14 @@
 from PIL import Image
 import os
+import sys
 
-frames_dir = r"e:\Unity\Project\DLR\DemonLordRoguelike\Demon Lord Roguelike\Assets\Out\meteorite_frames"
-output_path = r"e:\Unity\Project\DLR\DemonLordRoguelike\Demon Lord Roguelike\Assets\Out\meteorite_fall_4x4.png"
+# 动态推导项目根目录：脚本位于 .claude/scripts/，向上两级即项目根
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+OUT_DIR = os.path.join(PROJECT_ROOT, "Assets", "Out")
+
+# 支持命令行参数覆盖；缺省回退到项目内默认路径
+frames_dir = sys.argv[1] if len(sys.argv) > 1 else os.path.join(OUT_DIR, "meteorite_frames")
+output_path = sys.argv[2] if len(sys.argv) > 2 else os.path.join(OUT_DIR, "meteorite_fall_4x4.png")
 
 cols, rows = 4, 4
 frame_count = cols * rows  # 16

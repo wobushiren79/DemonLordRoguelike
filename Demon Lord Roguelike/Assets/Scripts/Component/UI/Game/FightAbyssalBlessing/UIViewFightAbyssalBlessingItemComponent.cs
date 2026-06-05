@@ -10,11 +10,17 @@ public partial class UIViewFightAbyssalBlessingItem
 
     public Image ui_Icon;
 
-    public Button ui_Content;
-
     public TextMeshProUGUI ui_LevelText;
 
-    public Image ui_Level;
+    public Image ui_ContentBG;
+
+    public Image ui_NameBG;
+
+    public Image ui_IconContent;
+
+    public Image ui_DetailsBG;
+
+    public Image ui_LevelBG;
 
 
 }

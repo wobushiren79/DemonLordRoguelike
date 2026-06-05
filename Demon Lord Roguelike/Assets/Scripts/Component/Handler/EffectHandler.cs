@@ -17,6 +17,8 @@ public partial class EffectHandler
     protected Dictionary<string, GameObject> dicTextNumModel = new Dictionary<string, GameObject>();
     // 飘字对象缓存池
     protected Queue<GameObject> queueTextNumPool = new Queue<GameObject>();
+    // 飘字对象总表（含使用中与缓存池），用于战斗结束时统一清理
+    protected List<GameObject> listTextNumAll = new List<GameObject>();
 
     
     //普通伤害颜色
@@ -115,6 +117,8 @@ public partial class EffectHandler
                 return;
             }
             textObj = Instantiate(objModel);
+            //记录到总表，便于战斗结束时统一清理
+            listTextNumAll.Add(textObj);
         }
 
         // 清除可能残留的Tween
@@ -180,6 +184,27 @@ public partial class EffectHandler
             textObj.ShowObj(false);
             queueTextNumPool.Enqueue(textObj);
         });
+    }
+
+    /// <summary>
+    /// 清理所有飘字粒子（战斗结束时调用）
+    /// </summary>
+    public void ClearTextNumEffect()
+    {
+        for (int i = 0; i < listTextNumAll.Count; i++)
+        {
+            var textObj = listTextNumAll[i];
+            if (textObj == null)
+                continue;
+            //停止可能残留的Tween
+            textObj.transform.DOKill();
+            TextMeshPro textMesh = textObj.GetComponent<TextMeshPro>();
+            if (textMesh != null)
+                textMesh.DOKill();
+            Destroy(textObj);
+        }
+        listTextNumAll.Clear();
+        queueTextNumPool.Clear();
     }
 
     /// <summary>

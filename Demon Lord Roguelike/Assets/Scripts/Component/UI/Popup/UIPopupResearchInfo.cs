@@ -61,7 +61,7 @@ public partial class UIPopupResearchInfo : PopupShowCommonView
     /// </summary>
     public void SetIcon(string iconRes)
     {
-        IconHandler.Instance.SetUIIcon(iconRes, ui_Icon);
+        IconHandler.Instance.SetResearchIcon(iconRes, ui_Icon);
     }
 
     /// <summary>

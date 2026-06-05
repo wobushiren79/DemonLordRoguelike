@@ -9,7 +9,9 @@ param(
 )
 
 $base     = "https://backblaze.pixellab.ai/file/pixellab-characters/objects"
-$outDir   = "e:\Unity\Project\DLR\DemonLordRoguelike\Demon Lord Roguelike\Assets\Out\$OutName"
+# 动态推导项目根目录：脚本位于 .claude/scripts/，向上两级即项目根
+$projectRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$outDir   = Join-Path $projectRoot "Assets\Out\$OutName"
 $tmpDir   = "$outDir\_tmp_frames"
 
 New-Item -ItemType Directory -Force -Path $tmpDir | Out-Null

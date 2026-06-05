@@ -127,6 +127,8 @@ public partial class UIGashaponMachine : BaseUIComponent
         GashaponMachineBean gashaponMachine = new GashaponMachineBean();
         //设置扭蛋数量
         gashaponMachine.gashaponNum = storeGashaponMachineInfoData.buy_num;
+        //记录单次孕育消耗，供再次孕育（重置）时扣费
+        gashaponMachine.payCrystal = storeGashaponMachineInfoData.pay_crystal;
         gashaponMachine.listCreatureRandomData = listCreatureRandomData;
 
         //获取所有生物ID

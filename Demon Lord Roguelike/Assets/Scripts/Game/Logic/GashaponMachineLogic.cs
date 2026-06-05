@@ -256,6 +256,12 @@ public class GashaponMachineLogic : BaseGameLogic
     /// </summary>
     public void EventForReset()
     {
+        //再次孕育需要消耗魔晶，魔晶不足则不重置
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        if (!userData.CheckHasCrystal(gashaponMachineData.payCrystal, isHint: true, isAddCrystal: true))
+        {
+            return;
+        }
         PreGame();
     }
 

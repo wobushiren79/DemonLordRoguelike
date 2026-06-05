@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1184372071454517947}
   - component: {fileID: 8008113643518808951}
   m_Layer: 5
-  m_Name: Content
+  m_Name: ContentBG
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -63,7 +63,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 0
@@ -136,7 +136,7 @@ GameObject:
   - component: {fileID: 403142916772569452}
   - component: {fileID: 5512423206155345427}
   m_Layer: 5
-  m_Name: Level
+  m_Name: LevelBG
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -183,7 +183,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -212,7 +212,7 @@ GameObject:
   - component: {fileID: 1898435592652307294}
   - component: {fileID: 793053302276444844}
   m_Layer: 5
-  m_Name: Name
+  m_Name: NameBG
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -235,7 +235,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 250}
+  m_AnchoredPosition: {x: 0, y: 240}
   m_SizeDelta: {x: 350, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1898435592652307294
@@ -259,7 +259,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 0
@@ -614,6 +614,8 @@ MonoBehaviour:
   abyssalBlessingInfo:
     id: 0
     icon_res: 
+    parent_id: 0
+    level: 0
     buff_ids: 
     name: 0
     details: 0
@@ -621,9 +623,12 @@ MonoBehaviour:
   ui_NameText: {fileID: 1623857328500593240}
   ui_DetailsText: {fileID: 4457716361158109879}
   ui_Icon: {fileID: 7201113233569823613}
-  ui_Content: {fileID: 8008113643518808951}
-  ui_LevelText: {fileID: 0}
-  ui_Level: {fileID: 0}
+  ui_LevelText: {fileID: 815155869161449745}
+  ui_ContentBG: {fileID: 1184372071454517947}
+  ui_NameBG: {fileID: 793053302276444844}
+  ui_IconContent: {fileID: 5532524498355200320}
+  ui_DetailsBG: {fileID: 5333251665522093803}
+  ui_LevelBG: {fileID: 5512423206155345427}
 --- !u!1 &6731674132181104820
 GameObject:
   m_ObjectHideFlags: 0
@@ -636,7 +641,7 @@ GameObject:
   - component: {fileID: 6640142897997666834}
   - component: {fileID: 5333251665522093803}
   m_Layer: 5
-  m_Name: Details
+  m_Name: DetailsBG
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -683,7 +688,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 0
@@ -872,7 +877,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 55}
+  m_AnchoredPosition: {x: 0, y: 50}
   m_SizeDelta: {x: 350, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6613574858192331775
@@ -896,7 +901,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 0

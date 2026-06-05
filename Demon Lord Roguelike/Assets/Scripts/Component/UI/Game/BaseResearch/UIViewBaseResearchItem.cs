@@ -81,7 +81,8 @@ public partial class UIViewBaseResearchItem : BaseUIView
         if (unlockLevel == 0)
         {
             ui_UIViewBaseResearchItem_MaskUIView.ShowMask();
-            SetIcon("ui_unlock_1");
+            //未解锁占位图标仍在 UI 图集中
+            IconHandler.Instance.SetUIIcon("ui_unlock_1", ui_Icon);
         }
         else
         {
@@ -111,7 +112,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
     /// </summary>
     public void SetIcon(string iconRes)
     {
-        IconHandler.Instance.SetUIIcon(iconRes, ui_Icon);
+        IconHandler.Instance.SetResearchIcon(iconRes, ui_Icon);
     }
 
     /// <summary>

@@ -375,6 +375,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5851314731992454110}
     m_Modifications:
+    - target: {fileID: 328877502554637934, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_Color.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 328877502554637934, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_Color.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 328877502554637934, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3380240676816015892, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
       propertyPath: m_Pivot.x
       value: 1
@@ -465,6 +477,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7840085861480771340, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
       propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8376991023769938216, guid: 3a80bc2558bcdab4ea21cbd81db87030, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

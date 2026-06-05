@@ -10,11 +10,6 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
     public AbyssalBlessingInfoBean abyssalBlessingInfo;
 
     /// <summary>
-    /// 等级1-5对应的文本颜色（十六进制）。索引0=Lv1 ... 索引4=Lv5。
-    /// </summary>
-    private static readonly string[] LEVEL_TEXT_COLORS = { "#FFFFFF", "#5BD15B", "#4FA8FF", "#C06BFF", "#FFB23E" };
-
-    /// <summary>
     /// 设置数据。等级差异由等级角标体现，名字/详情统一取馈赠自身的多语言文本。
     /// </summary>
     public void SetData(AbyssalBlessingInfoBean abyssalBlessingInfo)
@@ -35,23 +30,33 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
     }
 
     /// <summary>
-    /// 设置等级角标：level&gt;0 时显示角标并按等级着色文本（Lv1-5 共 5 种颜色）；
-    /// level&lt;=0（可重复馈赠）隐藏角标。
+    /// 设置等级角标与等级配色：按等级统一为内容底/图标底/详情底着色（Lv1-5 共 5 种颜色）；
+    /// level&gt;0 时额外显示角标并为角标底/角标文本着色，level&lt;=0（可重复馈赠）隐藏角标。
     /// </summary>
     public void SetLevel(int level)
     {
+        Color levelColor = AbyssalBlessingInfoCfg.GetLevelColor(level);
+        if (ui_ContentBG != null)
+            ui_ContentBG.color = levelColor;
+        if (ui_IconContent != null)
+            ui_IconContent.color = levelColor;
+        if (ui_DetailsBG != null)
+            ui_DetailsBG.color = levelColor;
+
         bool show = level > 0;
-        if (ui_Level != null)
-            ui_Level.gameObject.SetActive(show);
+        if (ui_LevelBG != null)
+        {
+            ui_LevelBG.gameObject.SetActive(show);
+            if (show)
+                ui_LevelBG.color = levelColor;
+        }
         if (ui_LevelText != null)
             ui_LevelText.gameObject.SetActive(show);
         if (!show) return;
         if (ui_LevelText != null)
         {
             ui_LevelText.text = $"{level}";
-            int idx = Mathf.Clamp(level - 1, 0, LEVEL_TEXT_COLORS.Length - 1);
-            if (ColorUtility.TryParseHtmlString(LEVEL_TEXT_COLORS[idx], out Color color))
-                ui_LevelText.color = color;
+            ui_LevelText.color = levelColor;
         }
     }
 
@@ -155,14 +160,18 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
     }
 
     /// <summary>
-    /// 选中动画-先放大强调再缩小消失，结束回调用于触发后续逻辑
+    /// 选中动画-先柔和放大强调、短暂停顿，再回弹缩小消失，节奏更顺滑灵动，结束回调用于触发后续逻辑
     /// </summary>
     public void AnimForSelect(Action onComplete = null)
     {
         transform.DOKill();
         DOTween.Sequence()
-            .Append(transform.DOScale(Vector3.one * 1.15f, 0.1f).SetEase(Ease.OutQuad))
-            .Append(transform.DOScale(Vector3.zero, 0.2f).SetEase(Ease.InBack))
+            // 柔和放大强调：OutBack 带轻微回弹，时长拉长让动作更舒展
+            .Append(transform.DOScale(Vector3.one * 1.18f, 0.22f).SetEase(Ease.OutBack, 1.6f))
+            // 短暂停顿，给选中一个"定格"的强调感
+            .AppendInterval(0.05f)
+            // 平滑缩小消失：InBack 轻度蓄力，overshoot 调小避免突兀
+            .Append(transform.DOScale(Vector3.zero, 0.32f).SetEase(Ease.InBack, 1.2f))
             .SetUpdate(UpdateType.Normal, isIndependentUpdate: true)
             .OnComplete(() => onComplete?.Invoke());
     }
@@ -203,7 +212,7 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
-        if (viewButton == ui_Content)
+        if (viewButton == ui_ContentBG)
         {
             OnClickForSelect();
         }

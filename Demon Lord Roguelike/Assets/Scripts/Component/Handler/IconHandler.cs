@@ -150,4 +150,20 @@ public partial class IconHandler
             }
         });
     }
+
+    /// <summary>
+    /// 设置研究图标。研究图标统一存放于 AtlasForResearch，默认图集为 Research；
+    /// 个别研究借用其他图集的图标可通过 "iconName,UI" 等后缀强制指定图集。
+    /// </summary>
+    public void SetResearchIcon(string iconName, Image targetIV)
+    {
+        SpriteAtlasTypeEnum atlasType = ParseIconName(iconName, SpriteAtlasTypeEnum.Research, out string actualIconName);
+        GetIconSprite(atlasType, actualIconName, (sprite) =>
+        {
+            if (targetIV != null)
+            {
+                targetIV.sprite = sprite;
+            }
+        });
+    }
 }
