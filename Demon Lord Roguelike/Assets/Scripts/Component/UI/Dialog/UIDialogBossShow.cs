@@ -10,6 +10,23 @@ public partial class UIDialogBossShow : DialogView
     
     protected float timeScaleOrigin = 1f;
     protected float timeScaleSlow = 0.01f;
+
+    /// <summary>
+    /// Boss 项与标题淡入/淡出动画的持续时间（秒）
+    /// </summary>
+    protected float timeForAnim = 1f;
+    /// <summary>
+    /// Boss 展示完成（淡入后）到开始淡出之间的等待时间（秒）
+    /// </summary>
+    protected float timeForWait = 3f;
+
+    /// <summary>
+    /// 标题随机文本的多语言 ID 池（对应 UIText 表 55001~55007），展示时随机选取一条作为警示语
+    /// </summary>
+    protected List<long> listTitleTextId = new List<long>()
+    {
+        55001, 55002, 55003, 55004, 55005, 55006, 55007,
+    };
     /// <summary>
     /// 设置对话框数据并初始化 Boss 列表和动画
     /// </summary>
@@ -18,10 +35,22 @@ public partial class UIDialogBossShow : DialogView
     {
         base.SetData(dialogData);
         dialogBossShowData = dialogData as DialogBossShowBean;
+        SetRandomTitle();
         InitListBoss();
         AnimForShow();
         timeScaleOrigin = Time.timeScale;
         Time.timeScale = timeScaleSlow;
+    }
+
+    /// <summary>
+    /// 从多语言文本 ID 池中随机选取一条警示语设置到标题上
+    /// </summary>
+    public void SetRandomTitle()
+    {
+        if (ui_TitlePro == null)
+            return;
+        long textId = RandomUtil.GetRandomDataByList(listTitleTextId);
+        ui_TitlePro.text = TextHandler.Instance.GetTextById(textId);
     }
 
     /// <summary>
@@ -43,14 +72,11 @@ public partial class UIDialogBossShow : DialogView
 
     /// <summary>
     /// 播放 Boss 展示的完整动画序列
-    /// 流程：所有 Boss 项和标题淡入显示 -> 等待 2 秒 -> 所有 Boss 项和标题淡出隐藏 -> 销毁对话框
+    /// 流程：所有 Boss 项和标题淡入显示 -> 等待 3 秒 -> 所有 Boss 项和标题淡出隐藏 -> 销毁对话框
     /// 使用异步方式实现动画间的等待延迟
     /// </summary>
     public async void AnimForShow()
     {
-        float timeForAnim = 1f;  // 动画持续时间
-        float timeForWait = 2f;  // Boss 显示后的等待时间
-        
         // 第一阶段：所有 Boss 项和标题淡入显示
         for (int i = 0; i < listBossItemShow.Count; i++)
         {
