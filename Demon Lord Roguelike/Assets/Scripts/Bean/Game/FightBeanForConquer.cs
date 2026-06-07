@@ -89,7 +89,8 @@ public class FightBeanForConquer : FightBean
 
     /// <summary>
     /// 初始化战斗数据
-    /// 根据当前关卡数(fightNum)计算敌人数量，并将所有敌人在 attack_show_time 内随机但相对均匀地排布
+    /// 普通波次始终使用 enemy_ids 敌人池(BOSS关与非BOSS关逻辑一致)，在 attack_show_time 内随机但相对均匀地排布；
+    /// BOSS关额外从 enemy_boss_ids 生成BOSS敌人，出现在进攻总时间的中后段并触发BOSS特写UI
     /// </summary>
     public void InitFightAttackData()
     {
@@ -104,25 +105,86 @@ public class FightBeanForConquer : FightBean
         float showTime = fightTypeConquerInfo.attack_show_time;
         if (showTime <= 0f) showTime = 1f;
 
-        //BOSS关使用BOSS敌人池，否则使用普通敌人池
         bool isBoss = IsBossFight();
 
-        //将 [0, showTime] 区间均分为 waveNum 段，在每段内随机一个出现时刻
-        //保证整体随机但不至于过度聚集
+        //先收集所有出怪事件(绝对出现时间 + npcId)，最后统一按时间排序再转换为带相对延迟的进攻队列
+        List<SpawnEvent> spawnEvents = new List<SpawnEvent>();
+
+        //本关普通敌人的累计强度倍率(HP/护甲/攻击力)，第1关为1，之后按 attack_intensity_addrate 逐关相乘
+        float intensityRate = fightTypeConquerInfo.GetCurrentIntensityRate(fightNum);
+
+        //普通波次：将 [0, showTime] 区间均分为 waveNum 段，在每段内随机一个出现时刻，整体随机但不至于过度聚集
+        //BOSS关也照常出 enemy_ids 的普通敌人，逻辑与非BOSS关一致
         float bucket = showTime / waveNum;
-        float prevTime = 0f;
         for (int i = 0; i < waveNum; i++)
         {
             float spawnTime = (i + UnityEngine.Random.value) * bucket;
-            //确保单调递增
-            if (spawnTime < prevTime) spawnTime = prevTime;
-            float delay = spawnTime - prevTime;
-            prevTime = spawnTime;
+            long enemyId = fightTypeConquerInfo.GetRandomEmenyId(false);
+            SpawnEvent normalEvent = new SpawnEvent(spawnTime, enemyId);
+            //普通敌人按关卡强度倍率提升(BOSS 不受影响)
+            normalEvent.intensityRate = intensityRate;
+            spawnEvents.Add(normalEvent);
+        }
 
-            long enemyId = fightTypeConquerInfo.GetRandomEmenyId(isBoss);
-            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(delay, enemyId);
+        //BOSS关：额外生成BOSS敌人(来自 enemy_boss_ids)
+        if (isBoss)
+        {
+            AddBossSpawnEvents(spawnEvents, showTime);
+        }
+
+        //按出现时间升序排序，保证队列按时间顺序出怪
+        spawnEvents.Sort((a, b) => a.time.CompareTo(b.time));
+
+        //转换为带相对延迟的进攻队列
+        float prevTime = 0f;
+        for (int i = 0; i < spawnEvents.Count; i++)
+        {
+            SpawnEvent evt = spawnEvents[i];
+            float delay = evt.time - prevTime;
+            if (delay < 0) delay = 0;
+            prevTime = evt.time;
+
+            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(delay, evt.npcId);
+            //携带BOSS特写展示数据(仅BOSS首波非空)
+            fightAttackDetails.bossShowNpcIds = evt.bossShowNpcIds;
+            //携带强度倍率(普通敌人按关卡递增, BOSS 为1)
+            fightAttackDetails.intensityRate = evt.intensityRate;
             fightAttackData.AddAttackQueue(fightAttackDetails);
         }
+    }
+
+    /// <summary>
+    /// 生成BOSS出怪事件
+    /// BOSS数量由 attack_boss_num 决定(支持单值"x"或区间"x-y")，出现在进攻总时间的中后段[50%,90%]随机时刻，
+    /// 多个BOSS在该时刻略微错开依次入场，并由首个BOSS携带全部BOSS的npcId用于一次性BOSS特写展示
+    /// </summary>
+    /// <param name="spawnEvents">出怪事件列表(会被追加BOSS事件)</param>
+    /// <param name="showTime">本关进攻总时间</param>
+    private void AddBossSpawnEvents(List<SpawnEvent> spawnEvents, float showTime)
+    {
+        //BOSS数量
+        int bossNum = fightTypeConquerInfo.GetRandomBossNum();
+        if (bossNum <= 0)
+            return;
+
+        //BOSS出现在进攻总时间的中后段[50%,90%]随机一个时刻
+        float bossAppearTime = UnityEngine.Random.Range(showTime * 0.5f, showTime * 0.9f);
+        //多个BOSS在同一时刻略微错开依次入场
+        float bossStagger = 0.3f;
+
+        //收集本次出现的所有BOSS的npcId，用于一次性BOSS特写展示
+        List<long> bossNpcIds = new List<long>();
+        List<SpawnEvent> bossEvents = new List<SpawnEvent>();
+        for (int i = 0; i < bossNum; i++)
+        {
+            long bossId = fightTypeConquerInfo.GetRandomEmenyId(true);
+            bossNpcIds.Add(bossId);
+            float bossTime = bossAppearTime + i * bossStagger;
+            bossEvents.Add(new SpawnEvent(bossTime, bossId));
+        }
+        //首个BOSS出现时弹出BOSS特写UI(展示所有BOSS)
+        bossEvents[0].bossShowNpcIds = bossNpcIds;
+        spawnEvents.AddRange(bossEvents);
     }
 
     /// <summary>
@@ -173,5 +235,26 @@ public class FightBeanForConquer : FightBean
         timeUpdateTargetForAttackCreate = 0;
         //初始化战斗数据
         InitFightAttackData();
+    }
+
+    /// <summary>
+    /// 出怪事件(内部排程用)：记录某个敌人的绝对出现时间，BOSS首波额外携带BOSS特写展示数据
+    /// </summary>
+    private class SpawnEvent
+    {
+        //绝对出现时间(从本关开始计)
+        public float time;
+        //出现的敌人npcId
+        public long npcId;
+        //BOSS特写展示的npcId列表(仅BOSS首波非空)
+        public List<long> bossShowNpcIds;
+        //强度倍率(普通敌人按关卡递增; 默认1, BOSS 保持1)
+        public float intensityRate = 1f;
+
+        public SpawnEvent(float time, long npcId)
+        {
+            this.time = time;
+            this.npcId = npcId;
+        }
     }
 }

@@ -69,16 +69,15 @@ public static class EventsInfo
     public const string CreatureAscend_AddProgress = "CreatureAscend_AddProgress";//增加进度
     #endregion
 
+    #region 游戏设置
+    /// <summary>按键提示显示开关变更(无参) —— 所有 UIViewPressCommon 据此实时刷新显隐</summary>
+    public const string GameSetting_PressKeyTipShowChange = "GameSetting_PressKeyTipShowChange";
+    #endregion
+
     #region 成就
     /// <summary>生物被击杀(进攻方/防守方均触发) 参数: bool isAttacker</summary>
     public const string Achievement_CreatureKill = "Achievement_CreatureKill";
     /// <summary>征服模式完整通关 参数: int difficultyLevel</summary>
     public const string Achievement_ConquerComplete = "Achievement_ConquerComplete";
-    /// <summary>游玩时长发生变化(每秒触发一次)</summary>
-    public const string Achievement_GameTimeChange = "Achievement_GameTimeChange";
-    /// <summary>成就进度变化 参数: long achievementId</summary>
-    public const string Achievement_ProgressChange = "Achievement_ProgressChange";
-    /// <summary>成就状态变化(达成/解锁) 参数: long achievementId</summary>
-    public const string Achievement_StateChange = "Achievement_StateChange";
     #endregion
 }

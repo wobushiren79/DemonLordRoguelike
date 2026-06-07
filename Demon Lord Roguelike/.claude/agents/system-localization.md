@@ -57,3 +57,24 @@ TextManager 加载 Language_UIText_*.txt
 - 所有文本显示必须使用 UITextLanguageView 或通过 TextHandler 获取
 - 新增文本 key 需在 Excel 配置中添加
 - 语言切换触发全局事件，所有 UI 需响应刷新
+
+## ⚠️ 一个多语言ID承载多条文本（content / content_1 / content_2）
+
+**创建带多语言的配置表时必须遵守的核心规则。**
+
+同一个多语言ID（多语言JSON里的一行）最多承载 3 条文本，由 `GetTextById(cfgName, id, contentIndex)` 的 `contentIndex` 选择：
+
+| contentIndex | JSON字段 | 用途约定 |
+|--------------|----------|----------|
+| 0（默认） | `content`   | 名称 / 主文本 |
+| 1 | `content_1` | 详情 / 描述 |
+| 2 | `content_2` | 额外文本 |
+
+- **名称与详情默认共用同一个ID**：配置表里 `name` 与 `details` 字段指向**同一个 ID**，名称读 `content`（index 0）、详情读 `content_1`（index 1）。多语言JSON一行即写全：`{"id":1000001001,"content":"增殖","content_1":"随机复制一个已有的魔物"}`。
+- **标准范例**：深渊馈赠 `AbyssalBlessingInfo`（`Language_AbyssalBlessingInfo_*.txt`）。
+- **禁止**默认就把名称和详情拆成两个独立ID（如成就表早期写法 `4001001`=名称、`4001002`=详情）——浪费ID、割裂同一条目文本。仅当名称/详情需独立复用时才拆分。
+- Bean 两个 `_language` 属性须传入**同一个 id 字段**，仅 `contentIndex` 不同：
+  ```csharp
+  public string name_language    => TextHandler.Instance.GetTextById(Cfg.fileName, name);      // content
+  public string details_language => TextHandler.Instance.GetTextById(Cfg.fileName, name, 1);   // content_1（同一个 id）
+  ```

@@ -17,13 +17,17 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	/// </summary>
 	public string fight_scene_boss_ids;
 	/// <summary>
-	///敌人列表（npcInfoId用&分割）（npcInfoId用&分割）
+	///敌人列表（npcInfoId用&分割）
 	/// </summary>
 	public string enemy_ids;
 	/// <summary>
 	///boss列表（npcInfoId用&分割）
 	/// </summary>
 	public string enemy_boss_ids;
+	/// <summary>
+	///boss数量(单个数x或范围x-y)
+	/// </summary>
+	public string attack_boss_num;
 	/// <summary>
 	///第一关敌人数量
 	/// </summary>
@@ -41,29 +45,21 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	/// </summary>
 	public int attack_num_add;
 	/// <summary>
-	///关卡次数-最小
+	///普通敌人每关强度倍率(默认1,如1.1则每关HP/护甲/攻击力×1.1)
 	/// </summary>
-	public int fight_num_min;
+	public float attack_intensity_addrate;
 	/// <summary>
-	///关卡次数-最大
+	///关卡次数(单个数x或范围x-y)
 	/// </summary>
-	public int fight_num_max;
+	public string fight_num;
 	/// <summary>
-	///道路数量-最小
+	///道路数量(单个数x或范围x-y)
 	/// </summary>
-	public int road_num_min;
+	public string road_num;
 	/// <summary>
-	///道路数量-最大
+	///道路长度(单个数x或范围x-y)
 	/// </summary>
-	public int road_num_max;
-	/// <summary>
-	///道路长度-最小
-	/// </summary>
-	public int road_length_min;
-	/// <summary>
-	///道路长度-最大
-	/// </summary>
-	public int road_length_max;
+	public string road_length;
 	/// <summary>
 	///难度
 	/// </summary>
@@ -88,6 +84,14 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	///奖励-装备属性加成
 	/// </summary>
 	public int reward_equip_attribute_add;
+	/// <summary>
+	///奖励-普通关卡经验
+	/// </summary>
+	public int reward_exp;
+	/// <summary>
+	///奖励-BOSS关卡经验
+	/// </summary>
+	public int reward_exp_boss;
 	/// <summary>
 	///备注
 	/// </summary>

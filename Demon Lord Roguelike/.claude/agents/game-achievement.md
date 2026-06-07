@@ -25,15 +25,14 @@ watched_files:
 - **AchievementInfo.txt** - 成就数据（JsonText）
 
 ### 业务逻辑
-- **AchievementHandler** - 单例 Handler，注册事件、判定达成、处理领奖
+- **AchievementHandler** - 单例 Handler；运行期只累加统计数据，`GetAchievementState(info)` 实时算达成状态，`TryUnlockAchievement` 领奖后 `SaveUserData()` 落盘
 - **AchievementManager** - 配置缓存
-- **UserAchievementBean** - 用户存档（达成状态字典、累计击杀、按难度通关次数）
+- **UserAchievementBean** - 用户存档（**只存已领取 Unlocked** 的字典、累计击杀、按难度通关次数）
 
 ### 事件
-- `Achievement_CreatureKill` - 生物被击杀（在 AIIntentCreatureDead）
-- `Achievement_ConquerComplete` - 征服模式完整通关（在 GameFightLogicConquer）
-- `Achievement_GameTimeChange` - 游玩时间变化（在 GameDataHandler，每秒）
-- `Achievement_StateChange` / `Achievement_ProgressChange` - 状态/进度通知（用于 UI 刷新）
+- `Achievement_CreatureKill` - 生物被击杀（在 AIIntentCreatureDead，仅进攻方派发）→ 回调只 `AddKillCount`
+- `Achievement_ConquerComplete` - 征服模式完整通关（在 GameFightLogicConquer）→ 回调只 `AddConquerCompleteCount`
+- 注：两事件仅累加统计；运行期不做达成判定、不实时刷新 UI。达成在打开界面时实时计算。已移除 `Achievement_StateChange` / `Achievement_ProgressChange`（高频空转）与 `Achievement_GameTimeChange`（曾驱动每秒判定，现无消费者）
 
 ### UI
 - **UIAchievement** - 主界面，双 Tab（成就 / 统计），含 UIAchievementComponent partial

@@ -40,7 +40,7 @@ public partial class AchievementInfoBean : BaseBean
 	/// </summary>
 	public long description;
 	[JsonIgnore]
-	public string description_language { get => _description_language.Get(() => TextHandler.Instance.GetTextById(AchievementInfoCfg.fileName, description)); set => _description_language.Set(value); }
+	public string description_language { get => _description_language.Get(() => TextHandler.Instance.GetTextById(AchievementInfoCfg.fileName, description, 1)); set => _description_language.Set(value); }
 	private LanguageCache _description_language;
 	/// <summary>
 	///备注

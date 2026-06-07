@@ -89,15 +89,12 @@ public partial class GameWorldInfoRandomBean
             LogUtil.LogError($"初始化征服游戏模式失败 worldId:{worldId} difficultyLevel:{difficultyLevel}");
             return;
         }
-        //随机道路数量
-        int roadNumRandom = UnityEngine.Random.Range(fightTypeConquerInfo.road_num_min, fightTypeConquerInfo.road_num_max + 1);
-        roadNum = roadNumRandom;
-        //随机道路长度
-        int roadLengthRandom = UnityEngine.Random.Range(fightTypeConquerInfo.road_length_min, fightTypeConquerInfo.road_length_max + 1);
-        roadLength = roadLengthRandom;
-        //随机关卡数量
-        int fightNumRandom = UnityEngine.Random.Range(fightTypeConquerInfo.fight_num_min, fightTypeConquerInfo.fight_num_max + 1);
-        fightNum = fightNumRandom;
+        //随机道路数量(road_num 支持单值"x"或区间"x-y")
+        roadNum = fightTypeConquerInfo.GetRandomRoadNum();
+        //随机道路长度(road_length 支持单值"x"或区间"x-y")
+        roadLength = fightTypeConquerInfo.GetRandomRoadLength();
+        //随机关卡数量(fight_num 支持单值"x"或区间"x-y")
+        fightNum = fightTypeConquerInfo.GetRandomFightNum();
     }
 
     /// <summary>

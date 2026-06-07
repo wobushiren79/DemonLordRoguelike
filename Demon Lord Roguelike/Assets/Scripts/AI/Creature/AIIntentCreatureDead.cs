@@ -20,9 +20,11 @@ public class AIIntentCreatureDead : AIBaseIntent
         selfFightCreatureEntity.fightCreatureData.positionDead = selfFightCreatureEntity.creatureObj.transform.position;
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadStart, selfFightCreatureEntity);
 
-        //成就统计-击杀进攻方生物算作玩家击杀
-        bool isAttacker = selfFightCreatureEntity.fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightAttack;
-        EventHandler.Instance.TriggerEvent(EventsInfo.Achievement_CreatureKill, isAttacker);
+        //成就统计-只有进攻方(敌方)生物死亡算作玩家击杀; 防守方死亡当前无任何消费者, 不派发以减少战斗高峰的事件量
+        if (selfFightCreatureEntity.fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightAttack)
+        {
+            EventHandler.Instance.TriggerEvent(EventsInfo.Achievement_CreatureKill, true);
+        }
     }
 
     public override void IntentUpdate(AIBaseEntity aiEntity)

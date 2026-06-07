@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public partial class UIGashaponMachine : BaseUIComponent
@@ -57,6 +58,18 @@ public partial class UIGashaponMachine : BaseUIComponent
     {
         base.OnClickForButton(viewButton);
         if (viewButton == ui_ViewExit)
+        {
+            OnClickForExit();
+        }
+    }
+
+    /// <summary>
+    /// 输入响应（ESC 退出孕育模式）
+    /// </summary>
+    public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
+    {
+        base.OnInputActionForStarted(inputType, callback);
+        if (inputType == InputActionUIEnum.ESC)
         {
             OnClickForExit();
         }

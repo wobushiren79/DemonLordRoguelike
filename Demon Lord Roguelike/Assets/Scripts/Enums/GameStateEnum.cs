@@ -108,6 +108,15 @@ public enum TestSceneTypeEnum
     AbyssalBlessing = 8,//深渊馈赠UI
 }
 
+/// <summary>
+/// 战斗测试模式(战斗场景测试下的子模式)
+/// </summary>
+public enum FightTestModeEnum
+{
+    Normal = 0,//普通模式(自定义场景/敌人/BUFF的战斗测试)
+    ConquerBoss = 1,//征服模式BOSS关(指定世界与难度，直接进入征服BOSS关)
+}
+
 public enum CinemachineCameraEnum
 {
     None,

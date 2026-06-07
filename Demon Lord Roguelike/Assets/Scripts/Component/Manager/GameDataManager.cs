@@ -50,6 +50,7 @@ public partial class GameDataManager : BaseManager
             return;
         userDataService ??= new UserDataService();
         userDataService.ChangeSlot(targetUserData.saveIndex);
+        //UserDataService.Save 内部会一并保存拆分的解锁/成就独立文件
         userDataService.Save(targetUserData);
     }
 
@@ -62,6 +63,7 @@ public partial class GameDataManager : BaseManager
             return;
         userDataService ??= new UserDataService();
         userDataService.ChangeSlot(targetUserData.saveIndex);
+        //UserDataService.Delete 内部会一并删除拆分的解锁/成就独立文件
         userDataService.Delete();
     }
 
@@ -74,6 +76,7 @@ public partial class GameDataManager : BaseManager
         {
             userDataService ??= new UserDataService();
             userDataService.ChangeSlot(index);
+            //UserDataService.Load 内部会加载并注入拆分的解锁/成就数据
             UserDataBean data = userDataService.Load();
             if (data == null)
                 data = new UserDataBean();

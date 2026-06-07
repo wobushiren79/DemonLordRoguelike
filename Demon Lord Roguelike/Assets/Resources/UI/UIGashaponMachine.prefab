@@ -549,7 +549,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0fb65841913946d47b46156fa38901f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maskState: 0
+  maskState: 1
   tempCell: {fileID: 3418894948618200470, guid: 0fd5bf427ed7f9340bf47889f1d0bdad, type: 3}
   movementType: 1
   cellSpaceX: 20

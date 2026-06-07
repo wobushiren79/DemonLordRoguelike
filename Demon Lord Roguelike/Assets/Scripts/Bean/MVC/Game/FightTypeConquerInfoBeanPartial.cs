@@ -2,21 +2,6 @@ using System;
 using System.Collections.Generic;
 public partial class FightTypeConquerInfoBean
 {
-    #region 临时配置字段（待 Unity 导出工具重新生成 Bean.cs 后删除）
-    // 说明：以下字段已加入 Excel 源表(excel_fight_type_conquer_info)，
-    // 但因 Bean.cs 为自动生成且 hook 禁止手改，临时声明在此以便编译/反序列化。
-    // 待在 Unity 编辑器运行配置导出工具(ExcelEditorWindow)重新生成 Bean.cs 后，
-    // reward_exp / reward_exp_boss 会出现在 Bean.cs，届时必须删除此 region，否则字段重复编译报错。
-    /// <summary>
-    /// 奖励-普通关卡经验
-    /// </summary>
-    public int reward_exp;
-    /// <summary>
-    /// 奖励-BOSS关卡经验
-    /// </summary>
-    public int reward_exp_boss;
-    #endregion
-
     protected long[] fightSceneIds;
     protected long[] fightSceneBossIds;
     protected long[] emenyIds;
@@ -79,6 +64,87 @@ public partial class FightTypeConquerInfoBean
             }
         }
         return targetIds.GetRandomData();
+    }
+
+    /// <summary>
+    /// 获取随机关卡次数(解析 fight_num 字段, 支持单值"x"或区间"x-y")
+    /// </summary>
+    public int GetRandomFightNum()
+    {
+        return ParseRandomRange(fight_num, 1);
+    }
+
+    /// <summary>
+    /// 获取随机道路数量(解析 road_num 字段, 支持单值"x"或区间"x-y")
+    /// </summary>
+    public int GetRandomRoadNum()
+    {
+        return ParseRandomRange(road_num, 1);
+    }
+
+    /// <summary>
+    /// 获取随机道路长度(解析 road_length 字段, 支持单值"x"或区间"x-y")
+    /// </summary>
+    public int GetRandomRoadLength()
+    {
+        return ParseRandomRange(road_length, 1);
+    }
+
+    /// <summary>
+    /// 获取随机BOSS数量(解析 attack_boss_num 字段, 支持单值"x"或区间"x-y", 无配置返回0)
+    /// </summary>
+    public int GetRandomBossNum()
+    {
+        return ParseRandomRange(attack_boss_num, 0);
+    }
+
+    /// <summary>
+    /// 获取当前关卡普通敌人的累计强度倍率(HP/护甲/攻击力)
+    /// 以 attack_intensity_addrate 为每关倍率, 第 1 关为 1, 之后逐关相乘: rate^(currentFightNum-1)
+    /// attack_intensity_addrate 非法(≤0)时按 1 处理
+    /// </summary>
+    /// <param name="currentFightNum">当前关卡数(从 1 开始)</param>
+    public float GetCurrentIntensityRate(int currentFightNum)
+    {
+        float rate = attack_intensity_addrate;
+        if (rate <= 0f)
+            rate = 1f;
+        if (currentFightNum <= 1 || rate == 1f)
+            return 1f;
+        return UnityEngine.Mathf.Pow(rate, currentFightNum - 1);
+    }
+
+    /// <summary>
+    /// 解析 "x" 或 "x-y" 格式的字符串为一个随机整数
+    /// 单值"x"直接返回 x; 区间"x-y"返回 [x,y] 闭区间内的随机整数; 解析失败返回 defaultValue
+    /// </summary>
+    /// <param name="value">配置字符串</param>
+    /// <param name="defaultValue">解析失败或空时的默认值</param>
+    public static int ParseRandomRange(string value, int defaultValue = 0)
+    {
+        if (string.IsNullOrEmpty(value))
+            return defaultValue;
+        value = value.Trim();
+        int splitIndex = value.IndexOf('-');
+        //没有"-"则视为单个数值
+        if (splitIndex < 0)
+        {
+            return int.TryParse(value, out int single) ? single : defaultValue;
+        }
+        //区间格式 x-y
+        string minStr = value.Substring(0, splitIndex).Trim();
+        string maxStr = value.Substring(splitIndex + 1).Trim();
+        if (int.TryParse(minStr, out int min) && int.TryParse(maxStr, out int max))
+        {
+            if (min > max)
+            {
+                int temp = min;
+                min = max;
+                max = temp;
+            }
+            return UnityEngine.Random.Range(min, max + 1);
+        }
+        return defaultValue;
     }
 }
 public partial class FightTypeConquerInfoCfg

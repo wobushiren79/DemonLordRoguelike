@@ -17,6 +17,9 @@ public class FightCreatureBean
     public int DRCurrent;//当前护甲值
     public Dictionary<CreatureAttributeTypeEnum, float> dicAttribute = new Dictionary<CreatureAttributeTypeEnum, float>(); //属性
 
+    //强度倍率(用于征服模式普通进攻敌人按关卡递增强度; 默认1=不变, 对 HP/护甲(DR)/攻击力(ATK) 最终值整体相乘)
+    public float intensityRate = 1f;
+
     public Color colorBodyCurrent;//当前身体颜色
 
     public FightCreatureBean(long id, CreatureFightTypeEnum creatureFightType)
@@ -98,6 +101,14 @@ public class FightCreatureBean
         {
             var attr = listCreatureAttributeType[i];
             dicAttribute[attr] = ModifierPipeline.Apply(dicAttribute[attr], attr, modifierBuffer);
+        }
+
+        //强度倍率：征服模式普通进攻敌人按关卡递增强度，对最终的 HP/护甲(DR)/攻击力(ATK) 整体相乘
+        if (intensityRate != 1f)
+        {
+            dicAttribute[CreatureAttributeTypeEnum.HP] *= intensityRate;
+            dicAttribute[CreatureAttributeTypeEnum.DR] *= intensityRate;
+            dicAttribute[CreatureAttributeTypeEnum.ATK] *= intensityRate;
         }
 
         actionForComplete?.Invoke();

@@ -124,11 +124,13 @@ public partial class IconHandler
     }
 
     /// <summary>
-    /// 设置UI头像
+    /// 设置UI头像。默认图集为 UI；个别图标借用其他图集（如孕育模式图标已挪入研究图集）
+    /// 可通过 "iconName,Research" 等后缀强制指定图集加载。
     /// </summary>
     public void SetUIIcon(string iconName, Image targetIV)
     {
-        GetIconSprite(SpriteAtlasTypeEnum.UI, iconName, (sprite) =>
+        SpriteAtlasTypeEnum atlasType = ParseIconName(iconName, SpriteAtlasTypeEnum.UI, out string actualIconName);
+        GetIconSprite(atlasType, actualIconName, (sprite) =>
         {
             if (targetIV != null)
             {

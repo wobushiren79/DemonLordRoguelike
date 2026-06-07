@@ -226,6 +226,11 @@ public class GameFightLogic : BaseGameLogic
                 return;
             }
             fightData.timeUpdateTargetForAttackCreate = attackDetailsData.timeNextAttack;
+            //BOSS出现：弹出BOSS特写UI(仅BOSS首波携带 bossShowNpcIds)
+            if (attackDetailsData.bossShowNpcIds != null && attackDetailsData.bossShowNpcIds.Count > 0)
+            {
+                ShowBossDialog(attackDetailsData.bossShowNpcIds);
+            }
             CreatureHandler.Instance.CreateAttackCreature(attackDetailsData, fightData.sceneRoadNum);
         }
     }
@@ -429,6 +434,20 @@ public class GameFightLogic : BaseGameLogic
     #endregion
 
     #region 工具
+
+    /// <summary>
+    /// 弹出BOSS特写UI
+    /// 在BOSS出现时展示一组BOSS的特写(UIDialogBossShow 内部会短暂放慢时间并自动关闭)
+    /// </summary>
+    /// <param name="bossNpcIds">本次出现的所有BOSS的npcId</param>
+    protected void ShowBossDialog(List<long> bossNpcIds)
+    {
+        if (bossNpcIds == null || bossNpcIds.Count == 0)
+            return;
+        DialogBossShowBean dialogBossShowData = new DialogBossShowBean();
+        dialogBossShowData.npcIds = bossNpcIds;
+        UIHandler.Instance.ShowDialogBossShow(dialogBossShowData);
+    }
 
     /// <summary>
     /// 结束当前战斗并返回基地

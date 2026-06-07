@@ -48,6 +48,14 @@ C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 - 使用 `/// <summary>` XML 注释说明用途
 - 用 `#region` / `#endregion` 按功能分类组织代码
 
+## 输入处理规则
+
+游戏内所有键盘/手柄等输入处理一律走 **InputActionUIEnum + Unity InputSystem** 体系，**禁止使用旧版 `Input` API**（如 `Input.GetKeyDown`、`Input.GetKey`、`Input.GetMouseButton`、`Input.GetAxis` 等）。
+
+- UI 类（继承 `BaseUIInit`/`BaseUIView`/`BaseUIComponent`）通过重写 `OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)` 响应输入，输入动作来源于 `GameInputActions.inputactions`，由 `InputManager.dicInputUI` 映射到 `InputActionUIEnum`。
+- 新增按键需求时，应在 `GameInputActions.inputactions` 中配置绑定、在 `InputActionUIEnum` 中补充枚举，再通过 `OnInputActionForStarted` 派发，**不要**在 `Update()` 里轮询 `Input`。
+- 数字键已封装为 `InputActionUIEnum.N1~N9`（同时绑定主键盘与小键盘），可直接复用。
+
 ## Bean 修改规则
 
 `*InfoBean.cs` 和 `*Bean.cs` 文件是自动生成的，**禁止直接修改**。所有扩展方法、辅助属性、解析逻辑必须写在对应的 `*BeanPartial.cs` 文件中（如 `AttackModeInfoBeanPartial.cs`）。

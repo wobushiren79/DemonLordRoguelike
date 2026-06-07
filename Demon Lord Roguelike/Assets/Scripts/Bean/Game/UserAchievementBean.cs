@@ -11,10 +11,11 @@ public class UserAchievementBean
     #region 成就状态数据
 
     /// <summary>
-    /// 成就状态字典
+    /// 成就解锁(已领取)字典
     /// Key: 成就ID(对应 AchievementInfoBean.id)
-    /// Value: 成就状态(0未达成 1达成未解锁 2已解锁)
-    /// 未达成的成就不会存入字典(节省空间)
+    /// Value: 固定为 (int)AchievementStateEnum.Unlocked(=2)
+    /// 仅持久化"已领取"状态; "未达成/达成未领取"为运行时根据统计数据实时计算, 不入存档(节省空间且无需运行期判定)
+    /// 兼容旧存档: 旧版本可能写入过 1(达成未领取), 读取时一律按 IsAchievementUnlocked 只认 ==2, 残留的 1 视为未领取并被重新计算
     /// </summary>
     public Dictionary<long, int> achievementStates = new Dictionary<long, int>();
 
@@ -36,35 +37,25 @@ public class UserAchievementBean
 
     #endregion
 
-    #region 成就状态查询
+    #region 成就解锁(已领取)状态
 
     /// <summary>
-    /// 获取成就状态
+    /// 该成就是否已解锁(已领取奖励)
     /// </summary>
     /// <param name="achievementId">成就ID</param>
-    public AchievementStateEnum GetAchievementState(long achievementId)
+    public bool IsAchievementUnlocked(long achievementId)
     {
-        if (achievementStates.TryGetValue(achievementId, out int state))
-        {
-            return (AchievementStateEnum)state;
-        }
-        return AchievementStateEnum.NotReached;
+        return achievementStates.TryGetValue(achievementId, out int state)
+               && state == (int)AchievementStateEnum.Unlocked;
     }
 
     /// <summary>
-    /// 设置成就状态
+    /// 标记成就为已解锁(已领取奖励) —— 仅在领奖成功时调用
     /// </summary>
-    public void SetAchievementState(long achievementId, AchievementStateEnum state)
+    /// <param name="achievementId">成就ID</param>
+    public void SetAchievementUnlocked(long achievementId)
     {
-        if (state == AchievementStateEnum.NotReached)
-        {
-            achievementStates.Remove(achievementId);
-        }
-        else
-        {
-            achievementStates[achievementId] = (int)state;
-        }
-        EventHandler.Instance.TriggerEvent(EventsInfo.Achievement_StateChange, achievementId);
+        achievementStates[achievementId] = (int)AchievementStateEnum.Unlocked;
     }
 
     #endregion

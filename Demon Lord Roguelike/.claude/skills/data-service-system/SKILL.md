@@ -210,6 +210,23 @@ userData.AddLineupCreature(lineupId, uuid); // 添加到阵容
 // 3. 如果写入失败，尝试从备份恢复
 ```
 
+### 拆分存档(解锁/成就独立文件)
+
+`UserUnlockBean` / `UserAchievementBean` 数据量大，已从 `UserData_{slot}` 主存档**拆分为同槽目录下的独立文件**，避免主存档膨胀：
+
+```
+{persistentDataPath}/UserData_{slot}/
+├── UserData_{slot}              # 主存档(含备份 _Backups_0/1/2)
+├── UserUnlock_{slot}            # 解锁数据(独立)
+└── UserAchievement_{slot}       # 成就&统计数据(独立)
+```
+
+- `UserDataBean.userUnlockData` / `userAchievementData` 标注 `[Newtonsoft.Json.JsonIgnore]`，**不随主存档序列化**；仅保留 `GetUserUnlockData()` / `GetUserAchievementData()` 取数方法。
+- **拆分读写全部封装在 `UserDataService` 内部**（不另建子类服务）：`Save` 存完主存档后用即建的 `BaseDataService<UserUnlockBean>` / `<UserAchievementBean>` 实例写独立文件；`Load` 读主存档后注入拆分数据；`Delete` 一并删除。`GameDataManager` 仍只调 `userDataService.Save/Load/Delete`，对拆分无感知。
+- 关键技巧：`BaseDataService<T>` 是可实例化的具体类，`StoragePath` public、`FileName` 由构造函数传入，故 UserDataService 用 `new BaseDataService<T>(fileName){ StoragePath = ... }` 即可复用泛型读写，无需为每个类型建子类。
+- **不迁移旧存档**：旧版主存档内嵌的 unlock/achievement 在加 `JsonIgnore` 后被忽略，独立文件不存在时注入空数据（视为新开始）。
+- 独立文件**无备份**：`UserDataService` 的"使用备份"回滚只还原主存档，不联动 unlock/achievement，存在轻微不同步（按需自行扩展）。
+
 ---
 
 ## GameConfigBean - 游戏配置
@@ -436,7 +453,7 @@ PlayerPrefs.Save();
 | 功能 | 文件路径 |
 |------|----------|
 | 数据服务基类 | `Assets/FrameWork/Scripts/MVC/BaseDataService.cs` |
-| 用户数据服务 | `Assets/Scripts/MVC/Service/UserDataService.cs` |
+| 用户数据服务(含解锁/成就拆分存档读写) | `Assets/Scripts/MVC/Service/UserDataService.cs` |
 | 游戏数据管理器 | `Assets/FrameWork/Scripts/Component/Manager/GameDataManager.cs` |
 | 游戏数据处理器 | `Assets/FrameWork/Scripts/Component/Handler/GameDataHandler.cs` |
 | 用户数据Bean | `Assets/Scripts/Bean/MVC/UserDataBean.cs` |

@@ -12,7 +12,7 @@ public partial class UIFightMain : BaseUIComponent
     public override void Awake()
     {
         base.Awake();
-        ui_CreatureCardItem.gameObject.SetActive(false);
+        ui_UIViewCreatureCardItemForFight.gameObject.SetActive(false);
     }
 
     public override void RefreshUI(bool isOpenInit = false)
@@ -53,6 +53,13 @@ public partial class UIFightMain : BaseUIComponent
         {
             //战斗中调出系统界面(仅显示结束战斗按钮)
             UIHandler.Instance.OpenUIAndCloseOther<UIGameSystem>((ui) => ui.enterType = UIGameSystem.EnterTypeFight);
+            return;
+        }
+        //数字键 1-9：快捷选择对应阵容卡片(再次按下同一键取消选中)
+        int pressKeyNum = GetPressKeyNumByInputAction(inputType);
+        if (pressKeyNum > 0)
+        {
+            HandleForPressKeySelectCard(pressKeyNum);
         }
     }
 
@@ -68,6 +75,9 @@ public partial class UIFightMain : BaseUIComponent
         SetCreatureCardList(listCreatureData);
         //初始进攻进度
         ui_UIViewFightMainAttCreateProgress.SetProgress(0);
+        //设置删除生物按钮的按键提示(快捷键 C，与 ControlForGameFight 中的删除模式开关一致)
+        if (ui_UIViewPressButton_Remove != null)
+            ui_UIViewPressButton_Remove.SetData(KeyCode.C);
         //刷新一次UI
         RefreshUIData();
     }
@@ -151,7 +161,7 @@ public partial class UIFightMain : BaseUIComponent
         for (int i = 0; i < listCreatureData.Count; i++)
         {
             var itemData = listCreatureData[i];
-            var itemCardObj = Instantiate(ui_CardContent.gameObject, ui_CreatureCardItem.gameObject);
+            var itemCardObj = Instantiate(ui_CardContent.gameObject, ui_UIViewCreatureCardItemForFight.gameObject);
             var itemCardView = itemCardObj.GetComponent<UIViewCreatureCardItemForFight>();
             var posTarget = GetCardItemPos(i, listCreatureData.Count);
             //设置数据
@@ -186,7 +196,7 @@ public partial class UIFightMain : BaseUIComponent
         }
 
         //实例化单张卡片(位置先给0，随后统一重排)
-        var itemCardObj = Instantiate(ui_CardContent.gameObject, ui_CreatureCardItem.gameObject);
+        var itemCardObj = Instantiate(ui_CardContent.gameObject, ui_UIViewCreatureCardItemForFight.gameObject);
         var itemCardView = itemCardObj.GetComponent<UIViewCreatureCardItemForFight>();
         itemCardView.SetData(creatureData, CardUseStateEnum.Fight, Vector2.zero);
         listCreatureCard.Add(itemCardView);
@@ -251,8 +261,8 @@ public partial class UIFightMain : BaseUIComponent
     /// <returns></returns>
     public Vector2 GetCardItemPos(int currentIndex, int maxIndex)
     {
-        float cardW = ui_CreatureCardItem.sizeDelta.x + 10;
-        float cardH = ui_CreatureCardItem.sizeDelta.y;
+        float cardW = ui_UIViewCreatureCardItemForFight.sizeDelta.x + 10;
+        float cardH = ui_UIViewCreatureCardItemForFight.sizeDelta.y;
         float screenWidth = Screen.width - cardW;
 
         //如果超出了屏幕
@@ -281,6 +291,38 @@ public partial class UIFightMain : BaseUIComponent
         }
         listCreatureCard.Clear();
     }
+
+    #region 快捷按键
+    /// <summary>
+    /// 将 InputActionUIEnum.N1~N9 转换为对应的阵容卡片快捷键序号(1-9)；其它输入返回 -1。
+    /// </summary>
+    /// <param name="inputType">输入动作枚举</param>
+    /// <returns>快捷键序号(1-9)；非数字键返回 -1</returns>
+    private int GetPressKeyNumByInputAction(InputActionUIEnum inputType)
+    {
+        if (inputType >= InputActionUIEnum.N1 && inputType <= InputActionUIEnum.N9)
+            return inputType - InputActionUIEnum.N1 + 1;
+        return -1;
+    }
+
+    /// <summary>
+    /// 按快捷键序号查找对应阵容卡片并执行选择/取消选择(切换)。
+    /// </summary>
+    /// <param name="pressKeyNum">快捷键序号(1-9)</param>
+    private void HandleForPressKeySelectCard(int pressKeyNum)
+    {
+        for (int i = 0; i < listCreatureCard.Count; i++)
+        {
+            var itemCard = listCreatureCard[i];
+            if (itemCard == null)
+                continue;
+            if (itemCard.PressKeyNum != pressKeyNum)
+                continue;
+            itemCard.HandleForPressKeySelect();
+            break;
+        }
+    }
+    #endregion
 
     #region 点击按钮
     public void OnClickForRemoveCreature()

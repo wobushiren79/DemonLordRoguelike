@@ -181,7 +181,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             {
                 npcCreatePosX = fightAttackDetails.npcCreatePosX[i];
             }
-            CreateAttackCreature(npcId, roadNum, createPosX : npcCreatePosX);
+            CreateAttackCreature(npcId, roadNum, createPosX : npcCreatePosX, intensityRate : fightAttackDetails.intensityRate);
         }
         UIHandler.Instance.RefreshUI();
     }
@@ -190,7 +190,8 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// 创建进攻生物
     /// </summary>
     /// <param name="targetRoad">目标进攻路线 0为随机</param>
-    public GameObject CreateAttackCreature(long npcId, int roadNum, int targetRoad = 0 , float createPosX = 11.5f)
+    /// <param name="intensityRate">强度倍率(默认1; 征服模式普通敌人按关卡递增, 作用到 HP/护甲/攻击力)</param>
+    public GameObject CreateAttackCreature(long npcId, int roadNum, int targetRoad = 0 , float createPosX = 11.5f, float intensityRate = 1f)
     {
         var npcInfo = NpcInfoCfg.GetItemData(npcId);
         if (npcInfo == null)
@@ -210,6 +211,12 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         //创建战斗生物
         FightCreatureBean fightCreatureData = GetFightCreatureData(npcInfo, CreatureFightTypeEnum.FightAttack);
         fightCreatureData.positionCreate = new Vector3Int(0, 0, targetRoad);
+        //应用强度倍率(征服模式普通敌人按关卡递增强度; 改变 HP/护甲/攻击力 并刷新当前血量护甲)
+        if (intensityRate != 1f)
+        {
+            fightCreatureData.intensityRate = intensityRate;
+            fightCreatureData.ResetData();
+        }
 
         FightCreatureEntity fightCreatureEntity = GetFightCreatureEntity(targetObj, fightCreatureData);
         //先添加数据

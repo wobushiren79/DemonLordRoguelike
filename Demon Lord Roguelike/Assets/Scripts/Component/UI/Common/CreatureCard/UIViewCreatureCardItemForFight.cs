@@ -36,6 +36,15 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     protected Tween animForSelectKeepEnd;//选择卡片避让动画
     protected float FightRestRCDTime = 0;//复活CD时间（需要在重置是刷新数据）
 
+    //卡片快捷按键(1-9)，按阵容排序分配；-1 表示无快捷键(阵容序号超过9)
+    protected int pressKeyNum = -1;
+
+    /// <summary>
+    /// 当前卡片的快捷按键序号(1-9)；-1 表示无快捷键(阵容序号超过9)。
+    /// 由 UIFightMain 接收 InputActionUIEnum.N1~N9 后按此序号派发选择。
+    /// </summary>
+    public int PressKeyNum => pressKeyNum;
+
 
     public void Update()
     {
@@ -94,6 +103,8 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
         RegisterEvent<string, CreatureStateEnum>(EventsInfo.GameFightLogic_CreatureChangeState, EventForGameFightLogicCreatureChangeState);
 
         SetData(creatureData, cardUseState);
+        //按阵容排序设置快捷按键(1-9)与按键提示
+        SetPressKey(cardData.originalSibling);
     }
 
     /// <summary>
@@ -109,7 +120,62 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
         gameObject.name = $"UIViewCreatureCardItem_{sibling}";
         //归位到新位置(直接设置，避免与选择/避让动画冲突)
         rectTransform.anchoredPosition = originalCardPos;
+        //重排后同步刷新快捷按键(1-9)与按键提示
+        SetPressKey(sibling);
     }
+
+    #region 快捷按键
+    /// <summary>
+    /// 按阵容排序设置卡片的快捷按键(1-9)及按键提示显示。
+    /// index 0-8 对应按键 1-9；序号超过 9 (index&gt;=9) 的卡片不设置快捷键并隐藏提示。
+    /// </summary>
+    /// <param name="index">卡片在阵容中的排序序号(从0开始)</param>
+    public void SetPressKey(int index)
+    {
+        if (index >= 0 && index < 9)
+        {
+            pressKeyNum = index + 1;
+            //设置提示文本(显隐由 UIViewPressCommon 按全局「按键提示显示」设置控制)
+            if (ui_UIViewPressCommon != null)
+                ui_UIViewPressCommon.SetData($"{pressKeyNum}");
+        }
+        else
+        {
+            pressKeyNum = -1;
+            //超过9的卡片无快捷键，标记为无效并隐藏(不受全局开关影响)
+            if (ui_UIViewPressCommon != null)
+                ui_UIViewPressCommon.HideForNoKey();
+        }
+    }
+
+    /// <summary>
+    /// 快捷按键选择处理：等效于点击该卡片进行选择；若该卡片已处于选中状态，再次触发则取消选中(切换效果)。
+    /// 由 UIFightMain 接收 InputActionUIEnum.N1~N9 后按 pressKeyNum 派发调用(替代旧的 Input.GetKeyDown 轮询)。
+    /// 战斗中/CD中的卡片不可选择(与点击逻辑一致，最终由 UIFightMain.EventForOnClickSelect 校验)。
+    /// </summary>
+    public void HandleForPressKeySelect()
+    {
+        if (pressKeyNum < 1 || pressKeyNum > 9)
+            return;
+        //游戏中才响应快捷键
+        if (GameHandler.Instance.manager.GetGameState() != GameStateEnum.Gaming)
+            return;
+        //屏幕锁定/弹窗遮挡时(与按钮点击同一门禁)不响应快捷键
+        if (!UIHandler.Instance.manager.CanClickUIButtons)
+            return;
+        //战斗中/CD中的卡片不可选择
+        if (cardData.cardState == CardStateEnum.Fighting || cardData.cardState == CardStateEnum.FightRest)
+            return;
+        //已选中时再次触发同一快捷键则取消选中
+        if (cardData.cardState == CardStateEnum.FightSelect)
+        {
+            GameHandler.Instance.manager.GetGameLogic<GameFightLogic>().UnSelectCard();
+            return;
+        }
+        //触发与点击相同的选择流程
+        OnClickSelect();
+    }
+    #endregion
 
     #region 重写
     /// <summary>

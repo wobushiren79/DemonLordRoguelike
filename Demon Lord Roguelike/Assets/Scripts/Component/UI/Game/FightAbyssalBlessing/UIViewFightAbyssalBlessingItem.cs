@@ -38,6 +38,8 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
         Color levelColor = AbyssalBlessingInfoCfg.GetLevelColor(level);
         if (ui_ContentBG != null)
             ui_ContentBG.color = levelColor;
+        if (ui_NameBG != null)
+            ui_NameBG.color = levelColor;
         if (ui_IconContent != null)
             ui_IconContent.color = levelColor;
         if (ui_DetailsBG != null)
@@ -212,7 +214,9 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
-        if (viewButton == ui_ContentBG)
+        //ContentBG 上的 Button 与 ui_ContentBG(Image) 是同一 GameObject 上的不同组件实例，
+        //直接用 == 比较两个不同类型的组件恒为 false，需改为比较所在 GameObject
+        if (ui_ContentBG != null && viewButton.gameObject == ui_ContentBG.gameObject)
         {
             OnClickForSelect();
         }

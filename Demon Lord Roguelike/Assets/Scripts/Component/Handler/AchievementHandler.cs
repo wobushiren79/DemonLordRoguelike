@@ -12,16 +12,17 @@ public partial class AchievementHandler : BaseHandler<AchievementHandler, Achiev
     /// <summary>
     /// 初始化
     /// 注册全局事件监听(幂等)
+    /// 说明: 运行期只负责累加统计数据(击杀/通关), 不做任何达成判定;
+    /// "是否达成(Reached)"在打开成就界面时由 GetAchievementState 依据统计数据实时计算
     /// </summary>
     public void InitData()
     {
         if (manager.isInited)
             return;
         manager.isInited = true;
-        //注册事件
+        //注册事件(仅用于累加统计数据)
         EventHandler.Instance.RegisterEvent<bool>(EventsInfo.Achievement_CreatureKill, OnEventCreatureKill);
         EventHandler.Instance.RegisterEvent<int>(EventsInfo.Achievement_ConquerComplete, OnEventConquerComplete);
-        EventHandler.Instance.RegisterEvent(EventsInfo.Achievement_GameTimeChange, OnEventGameTimeChange);
     }
 
     #endregion
@@ -34,13 +35,13 @@ public partial class AchievementHandler : BaseHandler<AchievementHandler, Achiev
     /// <param name="isAttacker">true:进攻方被击杀(算玩家击杀敌方) false:防御方被击杀(不计入)</param>
     private void OnEventCreatureKill(bool isAttacker)
     {
-        //只统计击杀进攻方(敌方)
+        //只统计击杀进攻方(敌方); 源头已只为进攻方派发, 此处再做一次保险
         if (!isAttacker) return;
         var userData = GameDataHandler.Instance.manager.GetUserData();
         if (userData == null) return;
         var achievementData = userData.GetUserAchievementData();
+        //运行期只累加统计数据(廉价), 不做达成判定
         achievementData.AddKillCount(1);
-        CheckAchievementsByType(AchievementTypeEnum.Kill);
     }
 
     /// <summary>
@@ -52,59 +53,32 @@ public partial class AchievementHandler : BaseHandler<AchievementHandler, Achiev
         var userData = GameDataHandler.Instance.manager.GetUserData();
         if (userData == null) return;
         var achievementData = userData.GetUserAchievementData();
+        //运行期只累加统计数据, 不做达成判定
         achievementData.AddConquerCompleteCount(difficultyLevel, 1);
-        CheckAchievementsByType(AchievementTypeEnum.ConquerComplete);
-    }
-
-    /// <summary>
-    /// 游戏时间变化回调(每秒触发一次)
-    /// </summary>
-    private void OnEventGameTimeChange()
-    {
-        CheckAchievementsByType(AchievementTypeEnum.PlayTime);
     }
 
     #endregion
 
-    #region 成就达成判定
+    #region 成就状态/进度
 
     /// <summary>
-    /// 按类型批量检查成就达成情况
+    /// 实时计算成就状态(不持久化"达成"标记)
+    /// 已领取 -> 读存档返回 Unlocked; 未领取 -> 按统计数据与目标值比对返回 Reached / NotReached
     /// </summary>
-    public void CheckAchievementsByType(AchievementTypeEnum achievementType)
+    /// <param name="info">成就配置</param>
+    public AchievementStateEnum GetAchievementState(AchievementInfoBean info)
     {
+        if (info == null) return AchievementStateEnum.NotReached;
         var userData = GameDataHandler.Instance.manager.GetUserData();
-        if (userData == null) return;
+        if (userData == null) return AchievementStateEnum.NotReached;
         var achievementData = userData.GetUserAchievementData();
-
-        var allList = manager.GetAllAchievementsSorted();
-        for (int i = 0; i < allList.Count; i++)
-        {
-            var info = allList[i];
-            if (info.GetAchievementType() != achievementType)
-                continue;
-            //只检查"未达成"的成就
-            var state = achievementData.GetAchievementState(info.id);
-            if (state != AchievementStateEnum.NotReached)
-                continue;
-
-            long curProgress = GetAchievementProgress(info);
-            if (curProgress >= info.target_value)
-            {
-                achievementData.SetAchievementState(info.id, AchievementStateEnum.Reached);
-            }
-            EventHandler.Instance.TriggerEvent(EventsInfo.Achievement_ProgressChange, info.id);
-        }
-    }
-
-    /// <summary>
-    /// 全量检查所有成就(UI 打开时调用)
-    /// </summary>
-    public void CheckAllAchievements()
-    {
-        CheckAchievementsByType(AchievementTypeEnum.Kill);
-        CheckAchievementsByType(AchievementTypeEnum.PlayTime);
-        CheckAchievementsByType(AchievementTypeEnum.ConquerComplete);
+        //已领取的成就直接返回已解锁(只有该状态持久化在存档)
+        if (achievementData.IsAchievementUnlocked(info.id))
+            return AchievementStateEnum.Unlocked;
+        //未领取的成就按当前统计数据实时判定是否达成
+        if (GetAchievementProgress(info) >= info.target_value)
+            return AchievementStateEnum.Reached;
+        return AchievementStateEnum.NotReached;
     }
 
     /// <summary>
@@ -143,14 +117,15 @@ public partial class AchievementHandler : BaseHandler<AchievementHandler, Achiev
         var userData = GameDataHandler.Instance.manager.GetUserData();
         if (userData == null) return false;
         var achievementData = userData.GetUserAchievementData();
-        var state = achievementData.GetAchievementState(achievementId);
-        //只有处于"达成未解锁"状态才能领奖
-        if (state != AchievementStateEnum.Reached)
+        //只有处于"达成未领取"状态才能领奖(实时判定)
+        if (GetAchievementState(info) != AchievementStateEnum.Reached)
             return false;
         //发放奖励
         userData.AddCrystal(info.reward_crystal);
-        //更新状态
-        achievementData.SetAchievementState(achievementId, AchievementStateEnum.Unlocked);
+        //标记为已解锁(已领取) —— 只有该状态才持久化
+        achievementData.SetAchievementUnlocked(achievementId);
+        //领奖与发放的魔晶立即落盘
+        GameDataHandler.Instance.manager.SaveUserData();
         return true;
     }
 

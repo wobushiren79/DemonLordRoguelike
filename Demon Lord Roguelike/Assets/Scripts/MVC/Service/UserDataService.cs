@@ -28,7 +28,7 @@ public class UserDataService : BaseDataService<UserDataBean>
     }
 
     /// <summary>
-    /// 保存用户数据（带自动备份，最多保留3份）
+    /// 保存用户数据（主存档带自动备份最多3份；解锁/成就拆分为同槽目录下的独立文件一并保存）
     /// </summary>
     public override void Save(UserDataBean data)
     {
@@ -41,7 +41,7 @@ public class UserDataService : BaseDataService<UserDataBean>
         // 创建目录
         FileUtil.CreateDirectory(StoragePath);
 
-        // 备份数据，最多保留3份，循环覆盖
+        // 备份主存档，最多保留3份，循环覆盖
         if (data.saveRemarkIndex >= 3)
         {
             data.saveRemarkIndex = 0;
@@ -55,7 +55,45 @@ public class UserDataService : BaseDataService<UserDataBean>
             data.saveRemarkIndex++;
         }
 
-        // 写入新数据
+        // 写入主存档
         base.Save(data);
+
+        // 拆分存档：解锁/成就独立文件（同槽目录，复用 BaseDataService 泛型读写，不做备份）
+        GetSplitService<UserUnlockBean>($"UserUnlock_{slotIndex}").Save(data.GetUserUnlockData());
+        GetSplitService<UserAchievementBean>($"UserAchievement_{slotIndex}").Save(data.GetUserAchievementData());
+    }
+
+    /// <summary>
+    /// 读取用户数据（主存档 + 注入拆分的解锁/成就数据）
+    /// 拆分文件不存在时（全新槽位或旧存档）注入空数据，不读取旧版内嵌字段
+    /// </summary>
+    public override UserDataBean Load(bool isShowLog = true)
+    {
+        UserDataBean data = base.Load(isShowLog);
+        if (data == null)
+            return null;
+        data.userUnlockData = GetSplitService<UserUnlockBean>($"UserUnlock_{slotIndex}").Load(false) ?? new UserUnlockBean();
+        data.userAchievementData = GetSplitService<UserAchievementBean>($"UserAchievement_{slotIndex}").Load(false) ?? new UserAchievementBean();
+        return data;
+    }
+
+    /// <summary>
+    /// 删除用户数据（主存档 + 拆分的解锁/成就文件）
+    /// </summary>
+    public override void Delete()
+    {
+        base.Delete();
+        FileUtil.DeleteFile($"{StoragePath}/UserUnlock_{slotIndex}");
+        FileUtil.DeleteFile($"{StoragePath}/UserAchievement_{slotIndex}");
+    }
+
+    /// <summary>
+    /// 构造一个指向当前槽目录的拆分存档服务（按类型与文件名即用即建，复用泛型 Load/Save）
+    /// </summary>
+    /// <typeparam name="T">拆分数据类型</typeparam>
+    /// <param name="fileName">拆分文件名</param>
+    private BaseDataService<T> GetSplitService<T>(string fileName) where T : class, new()
+    {
+        return new BaseDataService<T>(fileName) { StoragePath = this.StoragePath };
     }
 }

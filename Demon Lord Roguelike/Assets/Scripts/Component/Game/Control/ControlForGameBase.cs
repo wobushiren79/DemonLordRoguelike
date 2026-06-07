@@ -46,9 +46,9 @@ public class ControlForGameBase : BaseControl
 
     public void Awake()
     {
-        inputActionMove = InputHandler.Instance.manager.GetInputPlayerData("Move");
+        inputActionMove = InputHandler.Instance.manager.GetInputPlayerData(InputActionPlayerEnum.Move);
 
-        inputActionUseE = InputHandler.Instance.manager.GetInputPlayerData("UseE");
+        inputActionUseE = InputHandler.Instance.manager.GetInputPlayerData(InputActionPlayerEnum.E);
         inputActionUseE.started += HandleForUseEDown;
         inputActionUseE.canceled += HandleForUseEUp;
     }
@@ -246,7 +246,11 @@ public class ControlForGameBase : BaseControl
                 doomCouncilLogic2.InteractCouncilor(firstHit.gameObject);
                 break;
             case ControlInteractionEnum.AchievementInteraction://成就石碑
-                UIAchievement achievement = UIHandler.Instance.OpenUIAndCloseOther<UIAchievement>();
+                //由场景互动打开: 退出时直接返回场景(UIBaseMain)，不再打开 UIBaseCore
+                UIHandler.Instance.OpenUIAndCloseOther<UIAchievement>((ui) =>
+                {
+                    ui.actionForExit = () => UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
+                });
                 break;
         }
     }

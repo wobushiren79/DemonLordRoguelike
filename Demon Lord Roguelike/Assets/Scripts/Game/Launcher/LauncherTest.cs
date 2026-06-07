@@ -75,6 +75,36 @@ public class LauncherTest : BaseLauncher
     }
 
     /// <summary>
+    /// 开始征服模式BOSS关测试
+    /// 指定世界与难度，将关卡总数设为1使首关即为BOSS关，直接进入征服模式BOSS关
+    /// </summary>
+    /// <param name="worldId">世界ID</param>
+    /// <param name="difficultyLevel">难度等级</param>
+    public void StartForConquerBossTest(long worldId, int difficultyLevel)
+    {
+        //校验征服模式配置是否存在
+        FightTypeConquerInfoBean conquerInfo = FightTypeConquerInfoCfg.GetItemData(worldId, difficultyLevel);
+        if (conquerInfo == null)
+        {
+            LogUtil.LogError($"征服模式BOSS关测试失败，找不到配置 worldId:{worldId} difficultyLevel:{difficultyLevel}");
+            return;
+        }
+        //构建征服模式随机数据
+        GameWorldInfoRandomBean gameWorldInfoRandomData = new GameWorldInfoRandomBean();
+        gameWorldInfoRandomData.worldId = worldId;
+        gameWorldInfoRandomData.gameFightType = GameFightTypeEnum.Conquer;
+        gameWorldInfoRandomData.difficultyLevel = difficultyLevel;
+        //随机道路数据(沿用征服配置)
+        gameWorldInfoRandomData.roadNum = conquerInfo.GetRandomRoadNum();
+        gameWorldInfoRandomData.roadLength = conquerInfo.GetRandomRoadLength();
+        //关卡总数设为1，使首关(fightNum=1)即满足 IsBossFight，直接进入BOSS关
+        gameWorldInfoRandomData.fightNum = 1;
+        //进入征服模式战斗
+        FightBeanForConquer fightData = new FightBeanForConquer(gameWorldInfoRandomData);
+        WorldHandler.Instance.EnterGameForFightScene(fightData);
+    }
+
+    /// <summary>
     /// 开始终焉议会测试
     /// </summary>
     public async void StartForDoomCouncil(long billId)

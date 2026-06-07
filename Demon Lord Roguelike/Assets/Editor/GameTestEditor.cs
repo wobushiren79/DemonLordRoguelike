@@ -89,6 +89,21 @@ public partial class GameTestEditor : Editor
         EditorGUI.indentLevel++;
         EditorGUILayout.Space(5);
 
+        // 战斗测试模式选择
+        EditorGUILayout.BeginVertical("box");
+        fightTestMode = (FightTestModeEnum)EditorGUILayout.EnumPopup(new GUIContent("战斗测试模式", "普通模式=自定义场景/敌人/BUFF的战斗；征服模式BOSS关=指定世界与难度直接进入征服BOSS关"), fightTestMode);
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.Space(5);
+
+        // 征服模式BOSS关：单独的简化配置，直接进入征服BOSS关
+        if (fightTestMode == FightTestModeEnum.ConquerBoss)
+        {
+            DrawFightSceneTestConquerBoss();
+            EditorGUI.indentLevel--;
+            EditorGUILayout.Space(10);
+            return;
+        }
+
         // 运行按钮
         GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
         if (GUILayout.Button("▶️ 开始战斗测试", GUILayout.Height(30)) && Application.isPlaying)
@@ -203,6 +218,56 @@ public partial class GameTestEditor : Editor
 
         EditorGUI.indentLevel--;
         EditorGUILayout.Space(10);
+    }
+
+    /// <summary>
+    /// 绘制征服模式BOSS关测试配置(指定世界与难度，直接进入征服BOSS关)
+    /// </summary>
+    private void DrawFightSceneTestConquerBoss()
+    {
+        // 运行按钮
+        GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
+        if (GUILayout.Button("▶️ 进入征服BOSS关", GUILayout.Height(30)) && Application.isPlaying)
+        {
+            launcher.StartForConquerBossTest(conquerTestWorldId, conquerTestDifficultyLevel);
+        }
+        GUI.backgroundColor = Color.white;
+        EditorGUILayout.Space(10);
+
+        // 参数配置
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.BeginHorizontal();
+        conquerTestWorldId = EditorGUILayout.LongField(new GUIContent("世界 ID", "征服模式的世界 ID (对应 world_id)"), conquerTestWorldId);
+        if (GUILayout.Button("📂 征服配置表", GUILayout.Width(110)))
+        {
+            string path = Path.Combine(Application.dataPath, "Data/Excel/excel_fight_type_conquer_info[战斗-征服模式].xlsx");
+            if (File.Exists(path))
+            {
+                Application.OpenURL("file:///" + path.Replace("\\", "/"));
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("文件未找到", $"找不到征服模式配置表:\n{path}", "确定");
+            }
+        }
+        //世界 ID 右侧：打开世界配置表(excel_game_world_info)
+        if (GUILayout.Button("📂 世界配置表", GUILayout.Width(110)))
+        {
+            string worldPath = Path.Combine(Application.dataPath, "Data/Excel/excel_game_world_info[游戏世界信息].xlsx");
+            if (File.Exists(worldPath))
+            {
+                Application.OpenURL("file:///" + worldPath.Replace("\\", "/"));
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("文件未找到", $"找不到世界配置表:\n{worldPath}", "确定");
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+        conquerTestDifficultyLevel = EditorGUILayout.IntField(new GUIContent("难度等级", "征服模式的难度等级 (对应 level)"), conquerTestDifficultyLevel);
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.HelpBox("将关卡总数设为 1，使首关即为 BOSS 关，启动后直接进入指定世界/难度的征服模式 BOSS 关。", MessageType.Info);
     }
 
     private void DrawCardTest()

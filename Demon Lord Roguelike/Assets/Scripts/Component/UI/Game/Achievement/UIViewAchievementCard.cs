@@ -53,11 +53,21 @@ public partial class UIViewAchievementCard : BaseUIView
             IconHandler.Instance.SetUIIcon(info.icon_res, ui_Icon);
         }
 
-        //状态
-        var userData = GameDataHandler.Instance.manager.GetUserData();
-        var achievementData = userData.GetUserAchievementData();
-        var state = achievementData.GetAchievementState(info.id);
+        //详情气泡（鼠标悬停/点击展示成就描述文本）
+        RefreshPopup();
+
+        //状态(实时计算: 已领取读存档, 其余按统计数据判定)
+        var state = AchievementHandler.Instance.GetAchievementState(info);
         RefreshStateUI(state);
+    }
+
+    /// <summary>
+    /// 刷新详情气泡：把成就描述文本注入文本气泡按钮，悬停/点击时以文本Popup展示详情
+    /// </summary>
+    private void RefreshPopup()
+    {
+        if (ui_UIViewAchievementCard_PopupButtonCommonView == null) return;
+        ui_UIViewAchievementCard_PopupButtonCommonView.SetData(info.description_language, PopupEnum.Text);
     }
 
     /// <summary>
@@ -80,7 +90,7 @@ public partial class UIViewAchievementCard : BaseUIView
             long progress = AchievementHandler.Instance.GetAchievementProgress(info);
             long target = info.target_value;
             if (progress > target) progress = target;
-            ui_TxtProgress.text = string.Format(TextHandler.Instance.GetTextById(4000006), progress, target);
+            ui_TxtProgress.text = string.Format(TextHandler.Instance.GetTextById(4000006), FormatProgressValue(progress), FormatProgressValue(target));
             ui_TxtProgress.color = reached ? ProgressColorReached : ProgressColorDefault;
         }
 
@@ -96,14 +106,49 @@ public partial class UIViewAchievementCard : BaseUIView
                 ui_UIViewAchievementCard_MaskUIView.ShowMask();
             }
         }
+
+        //锁图标：未领取时显示，已领取隐藏
+        if (ui_Lock != null)
+        {
+            ui_Lock.gameObject.SetActive(!unlocked);
+        }
+
+        //奖励图标：未领取时显示该成就可领取的奖励，已领取隐藏
+        if (ui_Reward != null)
+        {
+            ui_Reward.gameObject.SetActive(!unlocked);
+        }
+
+        //奖励数量：未领取时显示该成就的魔晶奖励数量，已领取隐藏
+        if (ui_RewardNum != null)
+        {
+            ui_RewardNum.gameObject.SetActive(!unlocked);
+            if (!unlocked)
+            {
+                ui_RewardNum.text = info.reward_crystal.ToString();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 格式化进度数值：游玩/通关时间(PlayTime)成就把秒转换为小时显示(如 1/2)，其余类型按原值显示
+    /// </summary>
+    private string FormatProgressValue(long value)
+    {
+        if (info != null && info.GetAchievementType() == AchievementTypeEnum.PlayTime)
+        {
+            //秒 -> 小时，保留至多一位小数(整点小时不显示小数)
+            const float secondsPerHour = 3600f;
+            return (value / secondsPerHour).ToString("0.#");
+        }
+        return value.ToString();
     }
 
     public void OnClickForUnlock()
     {
         if (info == null) return;
-        var userData = GameDataHandler.Instance.manager.GetUserData();
-        var state = userData.GetUserAchievementData().GetAchievementState(info.id);
-        if (state != AchievementStateEnum.Reached) return;
+        //仅"达成未领取"可领奖(实时判定)
+        if (AchievementHandler.Instance.GetAchievementState(info) != AchievementStateEnum.Reached) return;
         actionForUnlock?.Invoke(info);
     }
 }

@@ -203,6 +203,74 @@ tmpText.text = TextHandler.Instance.GetTextById(1001);
 
 ---
 
+## ⚠️ 一个多语言ID承载多条文本（content / content_1 / content_2）
+
+**这是创建带多语言的配置表时必须遵守的核心规则。**
+
+### 规则说明
+
+同一个多语言ID（多语言JSON里的**一行**）最多可以承载 **3 条文本**：
+
+| contentIndex | JSON字段 | 用途约定 |
+|--------------|----------|----------|
+| 0（默认） | `content`   | 名称 / 主文本 |
+| 1 | `content_1` | 详情 / 描述 |
+| 2 | `content_2` | 额外文本（备注等） |
+
+由 [TextManager.GetTextById](Assets/FrameWork/Scripts/Component/Manager/TextManager.cs) 的 `contentIndex` 参数选择读取哪一列：
+
+```csharp
+public string GetTextById(string cfgName, long id, int contentIndex = 0)
+{
+    // contentIndex: 0 → content, 1 → content_1, 2 → content_2
+}
+```
+
+**因此「名称」和「详情」应当共用同一个多语言ID**，分别用 `content`（index 0）和 `content_1`（index 1）取值，**而不是分配两个独立ID**。
+
+### 正确示例（深渊馈赠 AbyssalBlessingInfo —— 标准做法）
+
+配置表 `AbyssalBlessingInfo.txt`：`name` 与 `details` 指向**同一个ID**：
+```json
+{"name":1000001001,"details":1000001001,"id":1000001001, ...}
+```
+
+多语言表 `Language_AbyssalBlessingInfo_cn.txt`：一行同时给出名称和详情：
+```json
+{"id":1000001001,"content":"增殖","content_1":"随机复制一个已有的魔物"}
+```
+
+Bean 中名称读 index 0、详情读 index 1（注意两个属性传入**同一个 id 字段**）：
+```csharp
+[JsonIgnore]
+public string name_language {
+    get { return TextHandler.Instance.GetTextById(XxxInfoCfg.fileName, name); }          // content
+}
+[JsonIgnore]
+public string details_language {
+    get { return TextHandler.Instance.GetTextById(XxxInfoCfg.fileName, name, 1); }        // content_1（同一个 id）
+}
+```
+
+### 错误示例（应避免 —— 拆成两个ID）
+
+```json
+// ❌ 名称和详情各占一个独立ID，浪费ID、割裂同一条目的文本
+{"id":4001001,"content":"生物猎手 I"}
+{"id":4001002,"content":"累计击杀 1 只生物"}
+```
+```csharp
+// ❌ 两个独立字段、两个独立ID
+public long name;          // 4001001
+public long description;   // 4001002
+```
+
+### 何时仍可拆分
+
+仅当名称和详情**确实需要独立复用 / 独立维护**（例如多个条目共享同一个名称但详情不同）时，才使用独立ID。**默认一律共用一个ID + content_1。**
+
+---
+
 ## 添加新多语言文本
 
 ### 1. 添加到现有配置表
@@ -257,17 +325,16 @@ using Newtonsoft.Json;
 [Serializable]
 public partial class MyFeatureInfoBean : BaseBean
 {
-    public long name;           // 名称文本ID
-    public long description;    // 描述文本ID
+    public long name;           // 名称+详情共用的文本ID（推荐：一个ID承载 content/content_1）
     
     [JsonIgnore]
     public string name_language { 
-        get { return TextHandler.Instance.GetTextById(MyFeatureInfoCfg.fileName, name); } 
+        get { return TextHandler.Instance.GetTextById(MyFeatureInfoCfg.fileName, name); }        // content（index 0）
     }
     
     [JsonIgnore]
     public string description_language { 
-        get { return TextHandler.Instance.GetTextById(MyFeatureInfoCfg.fileName, description); } 
+        get { return TextHandler.Instance.GetTextById(MyFeatureInfoCfg.fileName, name, 1); }     // content_1（index 1，同一个 id）
     }
 }
 
@@ -300,19 +367,17 @@ public partial class MyFeatureInfoCfg : BaseCfg<long, MyFeatureInfoBean>
 
 **步骤2：创建多语言JSON文件**
 
-`Assets/Resources/JsonText/Language_MyFeatureInfo_cn.txt`：
+`Assets/Resources/JsonText/Language_MyFeatureInfo_cn.txt`（名称+详情共用一个ID）：
 ```json
 [
-    {"content":"功能名称","id":1},
-    {"content":"功能描述内容","id":2}
+    {"id":1,"content":"功能名称","content_1":"功能描述内容"}
 ]
 ```
 
 `Assets/Resources/JsonText/Language_MyFeatureInfo_en.txt`：
 ```json
 [
-    {"content":"Feature Name","id":1},
-    {"content":"Feature description content","id":2}
+    {"id":1,"content":"Feature Name","content_1":"Feature description content"}
 ]
 ```
 
@@ -468,7 +533,8 @@ string text = TextHandler.Instance.GetTextByIdNoBreakingSpace("BuffInfo", 10001)
 ## 注意事项
 
 1. **文本ID唯一性**：同一配置表内的文本ID必须唯一，不同配置表可以重复
-2. **JSON格式**：多语言JSON文件必须使用UTF-8编码，确保中文正常显示
-3. **字段命名**：配置表中的文本字段名建议与多语言属性名对应（如`name`对应`name_language`）
-4. **延迟加载**：多语言文本是按需加载的，首次访问时会从JSON文件读取
-5. **编辑器预览**：在Editor中可以直接使用`UITextLanguageView`预览多语言效果
+2. **一个ID承载多条文本**：名称与详情应共用同一个ID（`content` / `content_1` / `content_2`，最多3条），通过 `GetTextById(..., contentIndex)` 区分，禁止默认就拆成两个独立ID（详见上方 ⚠️ 专章）
+3. **JSON格式**：多语言JSON文件必须使用UTF-8编码，确保中文正常显示
+4. **字段命名**：配置表中的文本字段名建议与多语言属性名对应（如`name`对应`name_language`）
+5. **延迟加载**：多语言文本是按需加载的，首次访问时会从JSON文件读取
+6. **编辑器预览**：在Editor中可以直接使用`UITextLanguageView`预览多语言效果

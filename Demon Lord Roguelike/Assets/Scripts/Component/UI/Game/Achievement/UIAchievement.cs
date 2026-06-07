@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -7,12 +8,12 @@ using UnityEngine.UI;
 /// 成就UI主界面
 /// 包含两个页签：成就列表(5列网格) / 统计数据(1列列表)
 /// </summary>
-public partial class UIAchievement : BaseUIComponent, IRadioButtonCallBack
+public partial class UIAchievement : BaseUIComponent, IRadioGroupCallBack
 {
     /// <summary>
-    /// 当前激活的 Tab(0=成就 1=统计)
+    /// 页签单选按钮组(预制体上管理 RbAchievement/RbStatistic 的 RadioGroupView)
     /// </summary>
-    private int currentTab = 0;
+    private RadioGroupView _radioGroup;
 
     /// <summary>
     /// 成就列表缓存(按排序)
@@ -24,6 +25,12 @@ public partial class UIAchievement : BaseUIComponent, IRadioButtonCallBack
     /// </summary>
     private List<AchievementStatisticItemBean> _listStatistic;
 
+    /// <summary>
+    /// 退出回调(由各打开入口在打开前设置，决定退出时的关闭/跳转逻辑)
+    /// 例: 由 UIBaseCore 打开则返回 UIBaseCore; 由场景成就石碑打开则返回 UIBaseMain。
+    /// </summary>
+    public Action actionForExit;
+
     #region 生命周期
 
     public override void OpenUI()
@@ -32,15 +39,12 @@ public partial class UIAchievement : BaseUIComponent, IRadioButtonCallBack
         GameControlHandler.Instance.SetBaseControl(false);
         CameraHandler.Instance.SetBaseCoreCamera(int.MaxValue, true);
 
-        //刷新所有成就达成情况(防止后台未触发事件时进度未同步)
-        AchievementHandler.Instance.CheckAllAchievements();
+        //注册页签单选按钮组回调(预制体上的 RadioGroupView 会接管按钮点击，必须由本界面作为组回调接收)
+        InitRadioGroup();
 
         //初始化Tab
+        //运行期不做达成判定与实时刷新; 每次打开界面时由各卡片 GetAchievementState 依据统计数据实时计算达成状态
         SwitchTab(0);
-
-        //注册事件监听以便实时刷新
-        this.RegisterEvent<long>(EventsInfo.Achievement_StateChange, OnEventAchievementStateChange);
-        this.RegisterEvent<long>(EventsInfo.Achievement_ProgressChange, OnEventAchievementProgressChange);
     }
 
     public override void RefreshUI(bool isOpenInit = false)
@@ -71,25 +75,34 @@ public partial class UIAchievement : BaseUIComponent, IRadioButtonCallBack
     #region Tab 切换
 
     /// <summary>
+    /// 初始化页签单选按钮组并注册本界面为组回调
+    /// 预制体上挂有 RadioGroupView 管理 RbAchievement/RbStatistic，其 Start() 会接管按钮点击，
+    /// 因此必须通过 IRadioGroupCallBack 接收选中事件，而不能直接监听单个 RadioButton。
+    /// </summary>
+    private void InitRadioGroup()
+    {
+        if (_radioGroup == null && ui_RbAchievement != null)
+        {
+            _radioGroup = ui_RbAchievement.GetComponentInParent<RadioGroupView>(true);
+        }
+        if (_radioGroup != null)
+        {
+            _radioGroup.SetCallBack(this);
+        }
+    }
+
+    /// <summary>
     /// 切换页签
     /// </summary>
     public void SwitchTab(int tabIndex)
     {
-        currentTab = tabIndex;
         if (ui_TabAchievement != null) ui_TabAchievement.gameObject.SetActive(tabIndex == 0);
         if (ui_TabStatistic != null) ui_TabStatistic.gameObject.SetActive(tabIndex == 1);
 
-        if (ui_RbAchievement != null)
+        //同步单选按钮组的选中态(isCallBack=false 避免回调递归触发 SwitchTab)
+        if (_radioGroup != null)
         {
-            ui_RbAchievement.SetCallBack(null);
-            ui_RbAchievement.ChangeStates(tabIndex == 0);
-            ui_RbAchievement.SetCallBack(this);
-        }
-        if (ui_RbStatistic != null)
-        {
-            ui_RbStatistic.SetCallBack(null);
-            ui_RbStatistic.ChangeStates(tabIndex == 1);
-            ui_RbStatistic.SetCallBack(this);
+            _radioGroup.SetPosition(tabIndex, false);
         }
 
         if (tabIndex == 0)
@@ -103,13 +116,18 @@ public partial class UIAchievement : BaseUIComponent, IRadioButtonCallBack
     }
 
     /// <summary>
-    /// 回调-RadioButton 选择
+    /// 回调-按钮组选中(由 RadioGroupView 派发)
     /// </summary>
-    public void RadioButtonSelected(RadioButtonView radioButton, bool isSelect)
+    public void RadioButtonSelected(RadioGroupView rgView, int position, RadioButtonView rbview)
     {
-        if (!isSelect) return;
-        if (radioButton == ui_RbAchievement) SwitchTab(0);
-        else if (radioButton == ui_RbStatistic) SwitchTab(1);
+        SwitchTab(position);
+    }
+
+    /// <summary>
+    /// 回调-按钮组取消选中(本界面无需处理)
+    /// </summary>
+    public void RadioButtonUnSelected(RadioGroupView rgView, int position, RadioButtonView rbview)
+    {
     }
 
     #endregion
@@ -152,6 +170,8 @@ public partial class UIAchievement : BaseUIComponent, IRadioButtonCallBack
         if (ok)
         {
             UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(4000008));
+            //领取成功后本地刷新列表, 使该成就立即变为"已解锁"状态(无需重开界面)
+            RefreshAchievementList();
         }
     }
 
@@ -233,32 +253,14 @@ public partial class UIAchievement : BaseUIComponent, IRadioButtonCallBack
 
     #endregion
 
-    #region 事件回调
-
-    private void OnEventAchievementStateChange(long achievementId)
-    {
-        if (currentTab == 0) RefreshAchievementList();
-    }
-
-    private void OnEventAchievementProgressChange(long achievementId)
-    {
-        if (currentTab == 0)
-        {
-            //轻量刷新当前显示的cell
-            if (ui_ScrollAchievement != null)
-            {
-                ui_ScrollAchievement.RefreshAllCells();
-            }
-        }
-    }
-
-    #endregion
-
     #region 点击事件
 
+    /// <summary>
+    /// 点击退出: 执行由打开入口注入的退出回调(关闭/跳转逻辑由各入口自行处理)
+    /// </summary>
     public void OnClickForExit()
     {
-        UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
+        actionForExit?.Invoke();
     }
 
     #endregion

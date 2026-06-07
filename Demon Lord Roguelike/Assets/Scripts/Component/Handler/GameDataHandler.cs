@@ -27,8 +27,6 @@ public partial class GameDataHandler
         {
             manager.userData.gameTime += 1;
             HandleForAscendData();
-            //成就统计-游玩时间变化通知
-            EventHandler.Instance.TriggerEvent(EventsInfo.Achievement_GameTimeChange);
         }
     }
 

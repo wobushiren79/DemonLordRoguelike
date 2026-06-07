@@ -135,6 +135,10 @@ public partial class UIBaseCore : BaseUIComponent
     /// </summary>
     public void OnClickForAchievement()
     {
-        var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIAchievement>();
+        //由基地核心打开: 退出时返回 UIBaseCore
+        var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIAchievement>((ui) =>
+        {
+            ui.actionForExit = () => UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
+        });
     }
 }

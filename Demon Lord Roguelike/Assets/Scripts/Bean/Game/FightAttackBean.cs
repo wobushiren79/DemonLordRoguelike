@@ -63,6 +63,10 @@ public class FightAttackDetailsBean
     public List<long> npcIds;
     //进攻生物创建位置
     public List<float> npcCreatePosX;
+    //BOSS特写展示的npcId列表(不为空时, 该波进攻触发时弹出BOSS特写UI; 仅BOSS出现的首波携带)
+    public List<long> bossShowNpcIds;
+    //强度倍率(征服模式普通敌人按关卡递增强度; 默认1=不变, 创建生物时作用到 HP/护甲/攻击力)
+    public float intensityRate = 1f;
 
     public FightAttackDetailsBean()
     {

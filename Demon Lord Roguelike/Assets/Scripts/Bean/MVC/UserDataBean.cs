@@ -34,16 +34,18 @@ public class UserDataBean : BaseBean
     public List<CreatureBean> listBackpackCreature = new List<CreatureBean>();
     //魔王自己的数据
     public CreatureBean selfCreature;
-
     //游戏进度地图
     public GameWorldMapBean gameWorldMapData;
-    //用户解锁数据
-    public UserUnlockBean userUnlockData;
     //用户限制数据
     public UserLimmitBean userLimmitData;
     //用户进阶数据
     public UserAscendBean userAscendData;
-    //用户成就&统计数据
+
+    //用户解锁数据(已拆分为独立存档 UserUnlock_{slot}, 不再随 UserData 序列化; 由 GameDataManager 在加载/保存时注入与落盘)
+    [Newtonsoft.Json.JsonIgnore]
+    public UserUnlockBean userUnlockData;
+    //用户成就&统计数据(已拆分为独立存档 UserAchievement_{slot}, 不再随 UserData 序列化; 由 GameDataManager 在加载/保存时注入与落盘)
+    [Newtonsoft.Json.JsonIgnore]
     public UserAchievementBean userAchievementData;
     //临时存储数据
     public UserTempBean userTempBean;
@@ -70,8 +72,8 @@ public class UserDataBean : BaseBean
 
     /// <summary>
     /// 获取用户解锁数据
+    /// 数据由 GameDataManager 从独立存档 UserUnlock_{slot} 加载后注入; 此处仅做兜底懒初始化
     /// </summary>
-    /// <returns></returns>
     public UserUnlockBean GetUserUnlockData()
     {
         if (userUnlockData == null)
@@ -81,6 +83,7 @@ public class UserDataBean : BaseBean
 
     /// <summary>
     /// 获取用户成就数据
+    /// 数据由 GameDataManager 从独立存档 UserAchievement_{slot} 加载后注入; 此处仅做兜底懒初始化
     /// </summary>
     public UserAchievementBean GetUserAchievementData()
     {

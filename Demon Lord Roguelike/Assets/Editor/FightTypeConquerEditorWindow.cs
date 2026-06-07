@@ -40,6 +40,9 @@ public class FightTypeConquerEditorWindow : EditorWindow
     /// <summary>战斗场景 Excel 文件路径</summary>
     private string fightSceneExcelPath;
 
+    /// <summary>世界配置 Excel 文件路径</summary>
+    private string worldInfoExcelPath;
+
     /// <summary>Json 输出目录</summary>
     private string jsonFolderPath;
 
@@ -115,6 +118,7 @@ public class FightTypeConquerEditorWindow : EditorWindow
         excelPath = Application.dataPath + "/Data/Excel/excel_fight_type_conquer_info[战斗-征服模式].xlsx";
         npcInfoExcelPath = Application.dataPath + "/Data/Excel/excel_npc_info[NPC信息].xlsx";
         fightSceneExcelPath = Application.dataPath + "/Data/Excel/excel_fight_scene[战斗场景].xlsx";
+        worldInfoExcelPath = Application.dataPath + "/Data/Excel/excel_game_world_info[游戏世界信息].xlsx";
         jsonFolderPath = Application.dataPath + "/Resources/JsonText";
 
         LoadWorldData();
@@ -489,6 +493,13 @@ public class FightTypeConquerEditorWindow : EditorWindow
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("世界ID:", GUILayout.Width(120));
         EditorGUILayout.LongField(currentBean.world_id);
+        //世界ID 右侧：打开世界配置表
+        EditorGUI.EndDisabledGroup();
+        if (GUILayout.Button("打开世界配置表", GUILayout.Width(110), GUILayout.Height(18)))
+        {
+            OpenWorldInfoExcel();
+        }
+        EditorGUI.BeginDisabledGroup(true);
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("难度:", GUILayout.Width(120));
@@ -515,34 +526,23 @@ public class FightTypeConquerEditorWindow : EditorWindow
         EditorGUILayout.LabelField("敌人配置", EditorStyles.boldLabel);
         currentBean.enemy_ids = DrawIdListField("敌人列表", currentBean.enemy_ids, "enemy_ids");
         currentBean.enemy_boss_ids = DrawIdListField("Boss列表", currentBean.enemy_boss_ids, "enemy_boss_ids");
+        currentBean.attack_boss_num = DrawStringField("Boss数量(x或x-y)", currentBean.attack_boss_num);
         currentBean.attack_start_num = DrawIntField("第一关敌人数量", currentBean.attack_start_num);
         currentBean.attack_show_time = DrawFloatField("进攻时间(秒)", currentBean.attack_show_time);
         currentBean.attack_num_addrate = DrawFloatField("每关敌人倍数", currentBean.attack_num_addrate);
         currentBean.attack_num_add = DrawIntField("每关增加敌人数量", currentBean.attack_num_add);
+        currentBean.attack_intensity_addrate = DrawFloatField("每关强度倍率(HP/护甲/攻击)", currentBean.attack_intensity_addrate);
 
         GUILayout.Space(5);
         lineRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(1));
         EditorGUI.DrawRect(lineRect, new Color(0.4f, 0.4f, 0.4f, 0.3f));
         GUILayout.Space(5);
 
-        // 关卡配置
+        // 关卡配置(单值"x"或区间"x-y")
         EditorGUILayout.LabelField("关卡配置", EditorStyles.boldLabel);
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.BeginVertical();
-        currentBean.fight_num_min = DrawIntField("关卡次数-最小", currentBean.fight_num_min);
-        currentBean.fight_num_max = DrawIntField("关卡次数-最大", currentBean.fight_num_max);
-        EditorGUILayout.EndVertical();
-        GUILayout.Space(10);
-        EditorGUILayout.BeginVertical();
-        currentBean.road_num_min = DrawIntField("道路数量-最小", currentBean.road_num_min);
-        currentBean.road_num_max = DrawIntField("道路数量-最大", currentBean.road_num_max);
-        EditorGUILayout.EndVertical();
-        GUILayout.Space(10);
-        EditorGUILayout.BeginVertical();
-        currentBean.road_length_min = DrawIntField("道路长度-最小", currentBean.road_length_min);
-        currentBean.road_length_max = DrawIntField("道路长度-最大", currentBean.road_length_max);
-        EditorGUILayout.EndVertical();
-        EditorGUILayout.EndHorizontal();
+        currentBean.fight_num = DrawStringField("关卡次数(x或x-y)", currentBean.fight_num);
+        currentBean.road_num = DrawStringField("道路数量(x或x-y)", currentBean.road_num);
+        currentBean.road_length = DrawStringField("道路长度(x或x-y)", currentBean.road_length);
 
         GUILayout.Space(5);
         lineRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(1));
@@ -862,6 +862,16 @@ public class FightTypeConquerEditorWindow : EditorWindow
         }
         GUI.backgroundColor = prevColor;
 
+        GUILayout.Space(10);
+
+        prevColor = GUI.backgroundColor;
+        GUI.backgroundColor = new Color(0.35f, 0.80f, 0.55f);
+        if (GUILayout.Button("打开 世界配置 Excel 表格", GUILayout.Width(220), GUILayout.Height(35)))
+        {
+            OpenWorldInfoExcel();
+        }
+        GUI.backgroundColor = prevColor;
+
         GUILayout.Space(15);
 
         // 重新加载Excel按钮
@@ -1112,6 +1122,21 @@ public class FightTypeConquerEditorWindow : EditorWindow
         else
         {
             EditorUtility.DisplayDialog("错误", $"战斗场景 Excel文件不存在:\n{fightSceneExcelPath}", "确定");
+        }
+    }
+
+    /// <summary>
+    /// 打开世界配置 Excel表格
+    /// </summary>
+    private void OpenWorldInfoExcel()
+    {
+        if (File.Exists(worldInfoExcelPath))
+        {
+            System.Diagnostics.Process.Start(worldInfoExcelPath);
+        }
+        else
+        {
+            EditorUtility.DisplayDialog("错误", $"世界配置 Excel文件不存在:\n{worldInfoExcelPath}", "确定");
         }
     }
 

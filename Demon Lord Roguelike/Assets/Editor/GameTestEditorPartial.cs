@@ -3,6 +3,12 @@ using UnityEditor;
 
 public partial class GameTestEditor
 {
+    // 战斗测试模式(普通模式/征服模式BOSS关)
+    public FightTestModeEnum fightTestMode = FightTestModeEnum.Normal;
+    // 征服模式BOSS关测试参数
+    public long conquerTestWorldId = 1;
+    public int conquerTestDifficultyLevel = 1;
+
     // 基础测试参数
     public int testDataCardNum = 20;
     public int fightSceneId = 1;
@@ -69,6 +75,11 @@ public partial class GameTestEditor
 
     private void LoadAllPreferences()
     {
+        // 战斗测试模式
+        fightTestMode = (FightTestModeEnum)EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightTestMode", 0);
+        conquerTestWorldId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "conquerTestWorldId", 1);
+        conquerTestDifficultyLevel = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "conquerTestDifficultyLevel", 1);
+
         // 基础测试
         testDataCardNum = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "testDataCardNum", 20);
         fightSceneId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneId", 1);
@@ -113,6 +124,11 @@ public partial class GameTestEditor
 
     private void SaveAllPreferences()
     {
+        // 战斗测试模式
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightTestMode", (int)fightTestMode);
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "conquerTestWorldId", (int)conquerTestWorldId);
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "conquerTestDifficultyLevel", conquerTestDifficultyLevel);
+
         // 基础测试
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "testDataCardNum", testDataCardNum);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightSceneId", fightSceneId);
