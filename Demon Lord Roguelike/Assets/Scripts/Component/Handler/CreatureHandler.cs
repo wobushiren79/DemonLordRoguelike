@@ -206,7 +206,9 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             targetRoad = UnityEngine.Random.Range(1, roadNum + 1);
         }
         float randomX = UnityEngine.Random.Range(createPosX - 0.25f, createPosX + 0.25f);
-        targetObj.transform.position = new Vector3(randomX, 0, targetRoad);
+        //z轴叠加0.01范围的随机偏移, 防止同路生物完全重叠显示
+        float randomZ = targetRoad + UnityEngine.Random.Range(-0.01f, 0.01f);
+        targetObj.transform.position = new Vector3(randomX, 0, randomZ);
 
         //创建战斗生物
         FightCreatureBean fightCreatureData = GetFightCreatureData(npcInfo, CreatureFightTypeEnum.FightAttack);

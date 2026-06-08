@@ -5,9 +5,9 @@ using UnityEngine;
 public class CreatureAttributeBean
 {
     //创建时加成属性
-    Dictionary<CreatureAttributeTypeEnum, float> dicAttributeCreate = new Dictionary<CreatureAttributeTypeEnum, float>();
+    public Dictionary<CreatureAttributeTypeEnum, float> dicAttributeCreate = new Dictionary<CreatureAttributeTypeEnum, float>();
     //升级时加点
-    Dictionary<CreatureAttributeTypeEnum, float> dicAttributeLevelUp = new Dictionary<CreatureAttributeTypeEnum, float>();
+    public Dictionary<CreatureAttributeTypeEnum, float> dicAttributeLevelUp = new Dictionary<CreatureAttributeTypeEnum, float>();
 
     #region  获取属性点
     /// <summary>
