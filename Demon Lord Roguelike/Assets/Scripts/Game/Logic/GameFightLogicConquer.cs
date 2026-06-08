@@ -247,6 +247,9 @@ public class GameFightLogicConquer : GameFightLogic
             var creatureData = listDefenseCreature[i];
             if (creatureData == null)
                 continue;
+            //已达等级上限的生物不再累加经验
+            if (creatureData.IsMaxLevel())
+                continue;
             creatureData.levelExp += addExp;
         }
     }

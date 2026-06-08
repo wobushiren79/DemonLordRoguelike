@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 
 public partial class GameTestEditor
 {
@@ -32,6 +33,15 @@ public partial class GameTestEditor
     public List<long> enemyIds = new List<long>() { 1010010001 };
     public long doomCouncilBillId = 1000000001;
 
+    // 献祭升级测试参数
+    public int sacrificeTestSaveSlot = 0;
+    public bool sacrificeTestUseManualRate = false;
+    public float sacrificeTestManualRate = 1f;
+    public int sacrificeTestSelectIndex = 0;
+    // 运行时从存档加载的背包生物(不持久化,仅用于下拉选择)
+    private List<string> sacrificeTestCreatureUUIds = new List<string>();
+    private GUIContent[] sacrificeTestCreatureNames = new GUIContent[0];
+
     // 奖励选择测试参数
     public RarityEnum rewardSelectRarity = RarityEnum.N;
     public int rewardSelectAddAttribute = 5;
@@ -51,6 +61,8 @@ public partial class GameTestEditor
     private bool showNpcCreateTest = true;
     private bool showResearchTest = true;
     private bool showAbyssalBlessingTest = true;
+    private bool showCreatureSacrificeTest = true;
+    private bool showNormalGameTest = true;
 
     // 战斗场景测试折叠
     private bool showFightBasicSettings = true;
@@ -118,6 +130,12 @@ public partial class GameTestEditor
         rewardSelectNumMax = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "rewardSelectNumMax", 1);
         rewardSelectEquipDemonLordRate = EditorPrefs.GetFloat(PREFS_KEY_PREFIX + "rewardSelectEquipDemonLordRate", 0.1f);
 
+        // 献祭升级测试参数
+        sacrificeTestSaveSlot = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "sacrificeTestSaveSlot", 0);
+        sacrificeTestUseManualRate = EditorPrefs.GetBool(PREFS_KEY_PREFIX + "sacrificeTestUseManualRate", false);
+        sacrificeTestManualRate = EditorPrefs.GetFloat(PREFS_KEY_PREFIX + "sacrificeTestManualRate", 1f);
+        sacrificeTestSelectIndex = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "sacrificeTestSelectIndex", 0);
+
         // 敌人 IDs
         LoadEnemyIds();
     }
@@ -166,6 +184,12 @@ public partial class GameTestEditor
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "rewardSelectCreateItemNum", rewardSelectCreateItemNum);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "rewardSelectNumMax", rewardSelectNumMax);
         EditorPrefs.SetFloat(PREFS_KEY_PREFIX + "rewardSelectEquipDemonLordRate", rewardSelectEquipDemonLordRate);
+
+        // 献祭升级测试参数
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "sacrificeTestSaveSlot", sacrificeTestSaveSlot);
+        EditorPrefs.SetBool(PREFS_KEY_PREFIX + "sacrificeTestUseManualRate", sacrificeTestUseManualRate);
+        EditorPrefs.SetFloat(PREFS_KEY_PREFIX + "sacrificeTestManualRate", sacrificeTestManualRate);
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "sacrificeTestSelectIndex", sacrificeTestSelectIndex);
 
         // 敌人 IDs
         SaveEnemyIds();

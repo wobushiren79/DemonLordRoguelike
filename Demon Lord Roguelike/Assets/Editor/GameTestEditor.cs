@@ -48,6 +48,12 @@ public partial class GameTestEditor : Editor
             case TestSceneTypeEnum.AbyssalBlessing:
                 DrawAbyssalBlessingTest();
                 break;
+            case TestSceneTypeEnum.CreatureSacrifice:
+                DrawCreatureSacrificeTest();
+                break;
+            case TestSceneTypeEnum.NormalGame:
+                DrawNormalGameTest();
+                break;
         }
 
         DrawGlobalTest();
@@ -496,6 +502,137 @@ public partial class GameTestEditor : Editor
 
         EditorGUI.indentLevel--;
         EditorGUILayout.Space(10);
+    }
+
+    /// <summary>
+    /// 绘制正常游戏启动测试(走真实开始流程，免去切换 GameScene)
+    /// </summary>
+    private void DrawNormalGameTest()
+    {
+        showNormalGameTest = EditorGUILayout.Foldout(showNormalGameTest, "🎬 正常游戏启动", true);
+        if (!showNormalGameTest) return;
+
+        EditorGUI.indentLevel++;
+        EditorGUILayout.Space(5);
+
+        GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
+        if (GUILayout.Button("▶️ 正常启动游戏", GUILayout.Height(30)) && Application.isPlaying)
+        {
+            launcher.StartForNormalGame();
+        }
+        GUI.backgroundColor = Color.white;
+
+        EditorGUILayout.HelpBox("走与正式游戏一致的开始流程：清理运行时数据 → 加载基地场景 → 打开主菜单(UIMainStart)。无需切换到 GameScene。", MessageType.Info);
+
+        EditorGUI.indentLevel--;
+        EditorGUILayout.Space(10);
+    }
+
+    /// <summary>
+    /// 绘制生物献祭升级测试配置(选存档→选目标生物→手动/真实成功率→进入献祭)
+    /// </summary>
+    private void DrawCreatureSacrificeTest()
+    {
+        showCreatureSacrificeTest = EditorGUILayout.Foldout(showCreatureSacrificeTest, "🔮 献祭升级测试", true);
+        if (!showCreatureSacrificeTest) return;
+
+        EditorGUI.indentLevel++;
+        EditorGUILayout.Space(5);
+
+        // 存档槽位选择 + 加载存档生物
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.BeginHorizontal();
+        sacrificeTestSaveSlot = EditorGUILayout.IntPopup(
+            new GUIContent("存档槽位", "要读取数据的存档槽位(0~2)"),
+            sacrificeTestSaveSlot,
+            new[] { new GUIContent("存档 0"), new GUIContent("存档 1"), new GUIContent("存档 2") },
+            new[] { 0, 1, 2 });
+        if (GUILayout.Button("📂 加载存档生物", GUILayout.Width(120)))
+        {
+            LoadSacrificeTestCreatures();
+        }
+        EditorGUILayout.EndHorizontal();
+
+        // 目标生物选择
+        if (sacrificeTestCreatureNames != null && sacrificeTestCreatureNames.Length > 0)
+        {
+            sacrificeTestSelectIndex = EditorGUILayout.Popup(
+                new GUIContent("目标生物", "从该存档背包中选取要升级的目标生物"),
+                sacrificeTestSelectIndex,
+                sacrificeTestCreatureNames);
+        }
+        else
+        {
+            EditorGUILayout.HelpBox("请先点击「加载存档生物」读取该存档背包中的生物。", MessageType.Info);
+        }
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.Space(5);
+
+        // 成功率设置
+        EditorGUILayout.BeginVertical("box");
+        sacrificeTestUseManualRate = EditorGUILayout.Toggle(
+            new GUIContent("手动成功率", "勾选则用手动指定成功率掷骰；不勾选则使用该存档真实数据按公式计算"),
+            sacrificeTestUseManualRate);
+        if (sacrificeTestUseManualRate)
+        {
+            sacrificeTestManualRate = EditorGUILayout.Slider(
+                new GUIContent("成功率", "手动指定的献祭成功率(0~1)"),
+                sacrificeTestManualRate, 0f, 1f);
+        }
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.Space(10);
+
+        // 运行按钮
+        GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
+        if (GUILayout.Button("▶️ 开始献祭升级测试", GUILayout.Height(30)) && Application.isPlaying)
+        {
+            if (sacrificeTestCreatureUUIds == null || sacrificeTestCreatureUUIds.Count == 0)
+            {
+                EditorUtility.DisplayDialog("提示", "请先加载存档生物并选择目标生物。", "确定");
+            }
+            else
+            {
+                int index = Mathf.Clamp(sacrificeTestSelectIndex, 0, sacrificeTestCreatureUUIds.Count - 1);
+                launcher.StartForCreatureSacrificeTest(
+                    sacrificeTestSaveSlot,
+                    sacrificeTestCreatureUUIds[index],
+                    sacrificeTestUseManualRate,
+                    sacrificeTestManualRate);
+            }
+        }
+        GUI.backgroundColor = Color.white;
+
+        EditorGUILayout.HelpBox("读取所选存档的真实数据作为运行时数据，进入基地后直接对目标生物发起献祭。结算不会写回真实存档。", MessageType.Info);
+
+        EditorGUI.indentLevel--;
+        EditorGUILayout.Space(10);
+    }
+
+    /// <summary>
+    /// 加载所选存档槽位的背包生物，填充目标生物下拉选项(仅 Editor，不修改运行时数据)
+    /// </summary>
+    private void LoadSacrificeTestCreatures()
+    {
+        UserDataService dataService = new UserDataService();
+        dataService.ChangeSlot(sacrificeTestSaveSlot);
+        UserDataBean userData = dataService.Load(false);
+        sacrificeTestCreatureUUIds = new List<string>();
+        if (userData == null || userData.listBackpackCreature == null || userData.listBackpackCreature.Count == 0)
+        {
+            sacrificeTestCreatureNames = new GUIContent[0];
+            sacrificeTestSelectIndex = 0;
+            EditorUtility.DisplayDialog("提示", $"存档 {sacrificeTestSaveSlot} 不存在或没有背包生物数据。", "确定");
+            return;
+        }
+        List<GUIContent> listNames = new List<GUIContent>();
+        for (int i = 0; i < userData.listBackpackCreature.Count; i++)
+        {
+            var creatureData = userData.listBackpackCreature[i];
+            sacrificeTestCreatureUUIds.Add(creatureData.creatureUUId);
+            listNames.Add(new GUIContent($"[{i}] {creatureData.creatureName} (id:{creatureData.creatureId} Lv.{creatureData.level} 稀有度:{creatureData.rarity})"));
+        }
+        sacrificeTestCreatureNames = listNames.ToArray();
+        sacrificeTestSelectIndex = Mathf.Clamp(sacrificeTestSelectIndex, 0, sacrificeTestCreatureNames.Length - 1);
     }
 
     public FightBean GetTestData()

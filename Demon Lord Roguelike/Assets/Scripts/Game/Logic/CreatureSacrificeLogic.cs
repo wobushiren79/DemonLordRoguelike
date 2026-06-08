@@ -51,8 +51,8 @@ public class CreatureSacrificeLogic : BaseGameLogic
     /// </summary>
     public void InitSceneData()
     {
-        //场景实例
-        var scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForBase>(GameSceneTypeEnum.BaseGaming);
+        //场景实例(赋值给字段，SetAltarEffect/EventForSelectCreature 等依赖该字段，不能用局部变量遮蔽)
+        scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForBase>(GameSceneTypeEnum.BaseGaming);
         //设置祭坛粒子
         SetAltarEffect(true);
         //设置摄像头
@@ -87,13 +87,27 @@ public class CreatureSacrificeLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// 开始献祭
+    /// 开始献祭: 动画播放前先按成功率掷骰确定结果,动画结束后再做数据结算。
     /// </summary>
     public void StartSacrifice()
     {
         float timeCenterDelay = 2;
         float timeCenterLifetime = 3;
         float timeReset = 0.5f;
+
+        //计算本次献祭最终成功率(保底+祭品)并掷骰判定
+        //测试模式且开启手动成功率时, 直接使用手动指定的成功率, 否则按真实公式计算
+        float successRate;
+        if (creatureSacrificeData.isTestMode && creatureSacrificeData.useManualSuccessRate)
+        {
+            successRate = Mathf.Clamp01(creatureSacrificeData.manualSuccessRate);
+        }
+        else
+        {
+            successRate = CreatureUtil.GetSacrificeSuccessRate(creatureSacrificeData.targetCreature, creatureSacrificeData.fodderCreatures);
+        }
+        bool isSuccess = UnityEngine.Random.Range(0f, 1f) <= successRate;
+
         //献祭生物
         List<GameObject> listFodderCreatureObj = new List<GameObject>();
         listObjFodderCreatures.ForEach((int index, GameObject itemCreatureObj) =>
@@ -115,11 +129,62 @@ public class CreatureSacrificeLogic : BaseGameLogic
         {
 
         });
-        //播放摄像头动画
+        //播放摄像头动画,动画结束后结算
         AnimForSacrficeCamera(timeCenterDelay + timeCenterLifetime, timeReset, () =>
         {
-            UIHandler.Instance.OpenUIAndCloseOther<UICreatureSacrifice>();
+            SettleSacrifice(isSuccess, successRate);
         });
+    }
+
+    /// <summary>
+    /// 献祭结算: 处理祭品(装备退回背包+从背包移除)、成功则升级、失败则记录保底,最后存档并返回生物管理界面。
+    /// </summary>
+    /// <param name="isSuccess">本次献祭是否成功</param>
+    /// <param name="successRate">本次使用的最终成功率(失败时用于计算保底)</param>
+    public void SettleSacrifice(bool isSuccess, float successRate)
+    {
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var targetCreature = creatureSacrificeData.targetCreature;
+        var listFodder = creatureSacrificeData.fodderCreatures;
+
+        //处理祭品: 无论成功失败都消耗祭品,身上装备先退回背包,再从背包(及阵容)移除
+        if (!listFodder.IsNull())
+        {
+            for (int i = 0; i < listFodder.Count; i++)
+            {
+                var fodder = listFodder[i];
+                if (fodder == null)
+                    continue;
+                //祭品装备退回背包
+                fodder.RemoveAllEquipToBackpack();
+                //从背包移除祭品
+                userData.RemoveBackpackCreature(fodder);
+            }
+        }
+
+        if (isSuccess)
+        {
+            //升级一级并清空保底
+            targetCreature.UpLevelForSacrifice();
+            targetCreature.sacrificePityRate = 0f;
+            TriggerEvent(EventsInfo.CreatureSacrifice_SacrificeSuccess);
+        }
+        else
+        {
+            //失败只扣祭品,记录保底成功率为本次成功率的一半,下次献祭叠加
+            targetCreature.sacrificePityRate = successRate * 0.5f;
+            TriggerEvent(EventsInfo.CreatureSacrifice_SacrificeFail);
+        }
+
+        //清空本次祭品选择
+        creatureSacrificeData.fodderCreatures = null;
+        //保存存档(测试模式不落盘到真实存档,仅内存生效)
+        if (!creatureSacrificeData.isTestMode)
+        {
+            GameDataHandler.Instance.manager.SaveUserData();
+        }
+        //返回生物管理界面
+        EndGame();
     }
 
 
@@ -269,19 +334,21 @@ public class CreatureSacrificeLogic : BaseGameLogic
 
 
     /// <summary>
-    /// 事件-献祭成功
+    /// 事件-献祭成功(展示升级反馈提示)
     /// </summary>
     public void EventForSacrificeSuccess()
     {
-
+        //TODO 后续接入多语言 textId
+        UIHandler.Instance.ToastHintText("献祭成功，等级提升！", 1);
     }
 
     /// <summary>
-    /// 事件-献祭失败
+    /// 事件-献祭失败(展示失败反馈提示)
     /// </summary>
     public void EventForSacrificeFail()
     {
-
+        //TODO 后续接入多语言 textId
+        UIHandler.Instance.ToastHintText("献祭失败，祭品已消耗", 1);
     }
 
     #endregion

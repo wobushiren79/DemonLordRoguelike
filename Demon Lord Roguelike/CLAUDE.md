@@ -4,6 +4,20 @@
 
 **执行命令行操作时一律优先使用 PowerShell（pwsh 7+）**，遵循 PowerShell 语法（`$null`、`$env:VAR`、反引号续行、动词-名词 cmdlet 等）。仅当任务确需 POSIX/Unix 脚本能力时才改用 Bash。
 
+## Python 执行规则
+
+**运行任何 Python（脚本或 `-c` 内联）一律通过包装脚本 [.claude/scripts/run-python.ps1](.claude/scripts/run-python.ps1)，禁止用写死的 python.exe 绝对路径直接调用**。原因：本机 `python`/`py` 不一定在 PATH 上（python.exe 常只装在 `%LOCALAPPDATA%\Programs\Python\PythonXY\`），写死绝对路径既违反「路径动态化规则」，又无法被一条可复用的 allow 规则稳定命中，导致每次执行都弹权限确认。
+
+- **标准调用形式**（已被 `settings.json` 的 allow 规则预授权，永不弹窗）：
+
+  ```
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".claude/scripts/run-python.ps1" <脚本.py 或 -c "代码"> [参数...]
+  ```
+
+- `run-python.ps1` 会按 `PATH → py launcher → %LOCALAPPDATA%\Programs\Python\* → Program Files\Python*` 顺序动态定位 python，并自动设置 `PYTHONUTF8=1` 保证中文输出不乱码，退出码原样透传。
+- 自检解析到的解释器：加 `-WhichOnly` 参数。
+- **委派给 Agent/Skill 执行 Python 任务时**，须在 prompt 中告知统一走 `run-python.ps1`，不要写死 python.exe 绝对路径。
+
 ## 路径动态化规则
 
 **所有需要记录/写入文件的路径（配置、脚本、权限规则、文档示例等）一律使用动态/相对地址，禁止写死静态绝对路径**（如 `E:\Unity\Project\DLR\...`、`C:\Users\galasports\...`）。原因：项目会在不同电脑、不同用户、不同盘符下打开，静态绝对路径换环境即失效。
@@ -47,6 +61,15 @@ C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 
 - 使用 `/// <summary>` XML 注释说明用途
 - 用 `#region` / `#endregion` 按功能分类组织代码
+
+## Agent/Skill 文档同步规则
+
+每个 `.claude/agents/*.md` 与 `.claude/skills/*/SKILL.md` 在 frontmatter 里用 `watched_files` 声明了它所对应的代码文件/目录。**当你修改了某个被 `watched_files` 命中的代码文件时，必须在同一次任务内同步更新对应的 agent/skill 文档**（枚举值、流程、文件速查表、示例等），不得只改代码不更文档——文档过时等同于给后续协作者/AI 喂错误信息。
+
+- **自动提示机制**：`PostToolUse` Hook（[.claude/scripts/check-cs-changed.ps1](.claude/scripts/check-cs-changed.ps1)）会在每次 Write/Edit 改动 `Assets/**/*.cs` 后，调用 [.claude/scripts/check-watched.ps1](.claude/scripts/check-watched.ps1) 比对 git 改动与各 `watched_files`，用 `systemMessage` 列出**仅命中本次改动文件**的 Agent/Skill。收到该提示后必须逐一核对并同步，确认无需改动的也要在任务总结里说明原因。
+- **手动核对**：任何时候可运行 `.claude/scripts/check-watched.ps1`（可加 `-BaseRef origin/master` 比对整个分支）查看当前工作树命中了哪些 Agent/Skill。
+- **当前局限**：自动 Hook 仅在改动 `.cs` 文件时触发；若改的是被 `watched_files` 声明的 `.txt`/`.json`/`.asset` 等非 `.cs` 文件，需**手动**运行 `check-watched.ps1` 核对。
+- **脚本编码约束**：`.claude/scripts/*.ps1` 含中文注释时**必须存为 UTF-8 with BOM**——Hook 实际由 Windows PowerShell 5.1 (`powershell.exe`) 执行，无 BOM 时它会按系统 ANSI(GBK) 误读中文，导致脚本逻辑串位失效。
 
 ## 输入处理规则
 

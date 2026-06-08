@@ -42,7 +42,7 @@ watched_files:
   - 解锁操作：`AddUnlock(unlockId, unlockLevel = 1)`，新增时触发 `EventsInfo.User_AddUnlock`
   - 解锁检测：`CheckIsUnlock(string)` 支持 `,`（与）与 `|`（或）的复合表达式；以及 `long[] / UnlockEnum / long` 重载
   - 研究等级获取：`GetUnlockResearchLeveByUnlockEnum / ByUnlockId / ByResearchId / GetUnlockResearchLevelByResearchInfo`
-  - 解锁衍生数值：`GetUnlockPortalShowCount` / `GetUnlockLineupNum` / `GetUnlockLineupCreatureNum` / `GetUnlockGameWorldConquerDifficultyLevel` / `GetUnlockCreatureVatNum`
+  - 解锁衍生数值：`GetUnlockPortalShowCount` / `GetUnlockLineupNum` / `GetUnlockLineupCreatureNum` / `GetUnlockGameWorldConquerDifficultyLevel` / `GetUnlockCreatureVatNum` / `GetUnlockSacrificeMax`(献祭祭品上限 = 5 + `UnlockEnum.SacrificeNum` 研究等级,满级15)
   - 解锁列表：`GetUnlockGameWorldIds` / `GetUnlockCreatureModelIds`
 
 ### 关键文件

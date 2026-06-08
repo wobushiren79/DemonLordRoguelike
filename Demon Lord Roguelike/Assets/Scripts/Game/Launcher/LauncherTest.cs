@@ -6,6 +6,9 @@ public class LauncherTest : BaseLauncher
     [Header("测试类型")]
     public TestSceneTypeEnum testSceneType = TestSceneTypeEnum.Base;
 
+    //献祭升级测试:基地场景加载完成后待执行的回调
+    private System.Action actionForSacrificeTest;
+
     public override void Launch()
     {
         base.Launch();     
@@ -176,6 +179,78 @@ public class LauncherTest : BaseLauncher
     {
         UIBaseResearch uiBaseResearch = UIHandler.Instance.OpenUIAndCloseOther<UIBaseResearch>();
         uiBaseResearch.SetDataForTest();
+    }
+
+    /// <summary>
+    /// 开始生物献祭升级测试
+    /// 加载指定存档槽位的数据作为运行时数据，进入基地场景后直接对选中生物发起献祭(测试模式，结算不落盘到真实存档)
+    /// </summary>
+    /// <param name="saveSlot">存档槽位(0~2)</param>
+    /// <param name="targetCreatureUUId">目标生物 UUId(从该存档背包中选取)</param>
+    /// <param name="useManualSuccessRate">是否使用手动成功率(false 则使用该存档真实数据按公式计算)</param>
+    /// <param name="manualSuccessRate">手动成功率(0~1)</param>
+    public void StartForCreatureSacrificeTest(int saveSlot, string targetCreatureUUId, bool useManualSuccessRate, float manualSuccessRate)
+    {
+        //加载指定槽位存档数据
+        UserDataService dataService = new UserDataService();
+        dataService.ChangeSlot(saveSlot);
+        UserDataBean userData = dataService.Load(false);
+        if (userData == null)
+        {
+            LogUtil.LogError($"献祭升级测试失败，存档 {saveSlot} 不存在或为空");
+            return;
+        }
+        //定位目标生物(必须是存档背包中的同一引用，献祭逻辑按引用排除目标)
+        CreatureBean targetCreature = null;
+        foreach (var creatureData in userData.listBackpackCreature)
+        {
+            if (creatureData.creatureUUId == targetCreatureUUId)
+            {
+                targetCreature = creatureData;
+                break;
+            }
+        }
+        if (targetCreature == null)
+        {
+            LogUtil.LogError($"献祭升级测试失败，存档 {saveSlot} 中找不到目标生物 UUId:{targetCreatureUUId}");
+            return;
+        }
+        //以该存档数据替换运行时数据(测试模式不会落盘回真实存档)
+        GameDataHandler.Instance.manager.SetUserData(userData);
+
+        //清理上一次未触发的待执行回调，避免重复注册
+        if (actionForSacrificeTest != null)
+        {
+            EventHandler.Instance.UnRegisterEvent(EventsInfo.World_EnterGameForBaseScene, actionForSacrificeTest);
+            actionForSacrificeTest = null;
+        }
+
+        //基地场景加载完成后，直接进入献祭流程
+        actionForSacrificeTest = () =>
+        {
+            //一次性回调，触发后立即注销
+            EventHandler.Instance.UnRegisterEvent(EventsInfo.World_EnterGameForBaseScene, actionForSacrificeTest);
+            CreatureSacrificeBean creatureSacrificeData = new CreatureSacrificeBean();
+            creatureSacrificeData.targetCreature = targetCreature;
+            creatureSacrificeData.isTestMode = true;
+            creatureSacrificeData.useManualSuccessRate = useManualSuccessRate;
+            creatureSacrificeData.manualSuccessRate = manualSuccessRate;
+            GameHandler.Instance.StartCreatureSacrifice(creatureSacrificeData);
+        };
+        EventHandler.Instance.RegisterEvent(EventsInfo.World_EnterGameForBaseScene, actionForSacrificeTest);
+
+        //进入基地场景(使用该存档数据)
+        WorldHandler.Instance.EnterGameForBaseScene(userData);
+    }
+
+    /// <summary>
+    /// 正常游戏启动测试
+    /// 走与 LauncherGame 一致的真实开始流程(清理运行时数据→加载基地场景→打开主菜单 UIMainStart)，
+    /// 免去每次手动切换到 GameScene 再运行。
+    /// </summary>
+    public void StartForNormalGame()
+    {
+        WorldHandler.Instance.EnterMainForBaseScene();
     }
 
     /// <summary>

@@ -33,9 +33,22 @@ public partial class UICreatureSacrifice : BaseUIComponent
     public void RefreshUI()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        var limmitData = userData.GetUserLimmitData();
-        SetLimmitSelect(listSelectCreature.Count, limmitData.sacrificeMax);
-        SetSuccessRate(listSelectCreature.Count * 0.2f);
+        //选择上限 = 基础上限 + 献祭祭品数量研究等级
+        int sacrificeMax = userData.GetUserUnlockData().GetUnlockSacrificeMax();
+        SetLimmitSelect(listSelectCreature.Count, sacrificeMax);
+        //按真实公式计算成功率(保底+祭品)
+        SetSuccessRate(GetCurrentSuccessRate());
+    }
+
+    /// <summary>
+    /// 获取当前选择下的献祭成功率(保底 + 祭品,已截顶 0~1)
+    /// </summary>
+    /// <returns>0~1 的成功率</returns>
+    public float GetCurrentSuccessRate()
+    {
+        CreatureSacrificeLogic gameLogic = GameHandler.Instance.manager.GetGameLogic<CreatureSacrificeLogic>();
+        var targetCreature = gameLogic.creatureSacrificeData.targetCreature;
+        return CreatureUtil.GetSacrificeSuccessRate(targetCreature, listSelectCreature);
     }
 
     /// <summary>
@@ -132,12 +145,15 @@ public partial class UICreatureSacrifice : BaseUIComponent
             UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61001));
             return;
         }
+        //当前真实成功率
+        float successRate = GetCurrentSuccessRate();
         DialogBean dialogData = new DialogBean();
-        dialogData.content = string.Format(TextHandler.Instance.GetTextById(61003), $"{MathUtil.GetPercentage(0.2f, 2)}%");
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(61003), $"{MathUtil.GetPercentage(successRate, 2)}%");
         dialogData.actionSubmit = (view, data) =>
         {
-            //开始献祭
+            //开始献祭: 先把选中的祭品传给逻辑层,再开始
             CreatureSacrificeLogic gameLogic = GameHandler.Instance.manager.GetGameLogic<CreatureSacrificeLogic>();
+            gameLogic.creatureSacrificeData.fodderCreatures = new List<CreatureBean>(listSelectCreature);
             gameLogic.StartSacrifice();
         };
         UIHandler.Instance.ShowDialogNormal(dialogData);
@@ -155,10 +171,10 @@ public partial class UICreatureSacrifice : BaseUIComponent
         var selectCreatureData = selectItemView.cardData.creatureData;
         if (selectItemView.cardData.cardState == CardStateEnum.CreatureSacrificeNoSelect)
         {
-            //上限检测
+            //上限检测：基础上限 + 献祭祭品数量研究等级
             UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-            var limmitData = userData.GetUserLimmitData();
-            if (listSelectCreature.Count >= limmitData.sacrificeMax)
+            int sacrificeMax = userData.GetUserUnlockData().GetUnlockSacrificeMax();
+            if (listSelectCreature.Count >= sacrificeMax)
             {
                 UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61002));
                 return;

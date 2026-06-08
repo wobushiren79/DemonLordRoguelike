@@ -168,7 +168,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 | `excel_abyssal_blessing_info[深渊馈赠信息].xlsx` | AbyssalBlessingInfo | 6 | id, icon_res, buff_ids, name[language], details[language] |
 | `excel_effect_info[粒子信息].xlsx` | EffectInfo | 14 | id, res_name, show_type, show_time, float/int/long/vector3/vector4_data |
 | `excel_game_world_info[游戏世界信息].xlsx` | GameWorldInfo | 6 | id, icon_res, unlock_id, unlock_id_infinite/conquer_difficulty_level, map_pos, name[language] |
-| `excel_level_info[等级信息].xlsx` | LevelInfo | 12 | id, level_exp |
+| `excel_level_info[等级信息].xlsx` | LevelInfo | 12 | id, level_exp, sacrifice_num |
 | `excel_rarity_info[稀有度].xlsx` | RarityInfo | 8 | id, ui_board_color, buff_color, item_add_relationship, name[language] |
 | `excel_research_info[研究信息].xlsx` | ResearchInfo | 83 | id, research_type, icon_res, level_max, position_x/y, unlock_id, pre_unlock_ids, pay_crystal, name[language] |
 | `excel_title_info[称号信息].xlsx` | TitleInfo | 15 | id, name[language] |

@@ -55,9 +55,15 @@
       "Write(**/*.py)",
       "Edit(**/*.py)",
       "Read(**/*.py)",
+      "Write(**/*.md)",
+      "Edit(**/*.md)",
+      "Read(**/*.md)",
       "Write(.claude/scripts/**)",
       "Edit(.claude/scripts/**)",
-      "Read(.claude/scripts/**)"
+      "Read(.claude/scripts/**)",
+      "Read(**/*.ps1)",
+      "Write(**/*.ps1)",
+      "Edit(**/*.ps1)"
     ],
     "additionalDirectories": [
       ".claude",

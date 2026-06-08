@@ -271,6 +271,17 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 获取献祭祭品选择上限
+    /// 基础数量取自 UserLimmitBean.sacrificeMax + 对应研究等级（UnlockEnum.SacrificeNum）
+    /// </summary>
+    /// <returns>献祭时可选择的最大祭品数量</returns>
+    public int GetUnlockSacrificeMax()
+    {
+        var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
+        return limmitData.sacrificeMax + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.SacrificeNum);
+    }
+
+    /// <summary>
     /// 获取生物升阶容器数量
     /// 未解锁容器功能时返回 0；已解锁则返回 UserLimmitBean.creatureVatMax + 升阶研究等级
     /// </summary>

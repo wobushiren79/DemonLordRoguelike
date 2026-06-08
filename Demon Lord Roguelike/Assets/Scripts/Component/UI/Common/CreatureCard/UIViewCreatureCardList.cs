@@ -21,6 +21,7 @@ public partial class UIViewCreatureCardList : BaseUIView
         ui_OrderBtn_Level_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000005),PopupEnum.Text);
         ui_OrderBtn_Lineup_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000006),PopupEnum.Text);
         ui_OrderBtn_Name_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000007),PopupEnum.Text);
+        ui_OrderBtn_Class_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000011),PopupEnum.Text);
     }
 
     public override void OpenUI()
@@ -53,6 +54,10 @@ public partial class UIViewCreatureCardList : BaseUIView
         else if (viewButton == ui_OrderBtn_Name_Button)
         {
             OrderListCreature(4);
+        }
+        else if (viewButton == ui_OrderBtn_Class_Button)
+        {
+            OrderListCreature(5);
         }
     }
 
@@ -162,7 +167,7 @@ public partial class UIViewCreatureCardList : BaseUIView
                     .ToList();
                 break;
             case 3:
-                //按选中排序
+                //按阵容排序
                 listCreatureData = listCreatureData
                     .OrderBy((itemData) => lineupOrder)
                     .ThenByDescending((itemData) => itemData.rarity)
@@ -176,6 +181,14 @@ public partial class UIViewCreatureCardList : BaseUIView
                     .ThenByDescending((itemData) => itemData.rarity)
                     .ThenBy((itemData) => lineupOrder)
                     .ThenByDescending((itemData) => itemData.level)
+                    .ToList();
+                break;
+            case 5://按同类排序（相同生物ID的排一起）
+                listCreatureData = listCreatureData
+                    .OrderByDescending((itemData) => itemData.rarity)
+                    .ThenBy((itemData) => itemData.creatureId)
+                    .ThenByDescending((itemData) => itemData.level)
+                    .ThenBy((itemData) => lineupOrder)
                     .ToList();
                 break;
         }

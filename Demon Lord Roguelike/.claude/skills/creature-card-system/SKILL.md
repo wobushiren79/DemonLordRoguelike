@@ -93,6 +93,8 @@ UIViewCreatureCardDetails    // 卡片详情面板
 UIPopupCreatureCardDetails   // 卡片详情弹窗
 ```
 
+> **献祭卡片(`CreatureSacrifice*` 状态 / `UIViewCreatureCardItemForCreatureSacrifice`)的业务流程见 [`sacrifice-system`](../sacrifice-system/SKILL.md) Skill**：祭品选择、成功率公式、献祭升级、保底等机制都在那里；本 Skill 只负责献祭卡片的 UI 表现与状态。
+
 ## 创建/使用生物卡片
 
 ### 1. 基础卡片使用
@@ -310,6 +312,8 @@ cardList.OrderListCreature(2);
 cardList.OrderListCreature(3);
 // 按名字排序
 cardList.OrderListCreature(4);
+// 按同类排序（相同生物ID的排一起：稀有度→生物ID→等级）
+cardList.OrderListCreature(5);
 ```
 
 ## 文件位置速查

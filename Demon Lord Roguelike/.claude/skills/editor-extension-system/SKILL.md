@@ -190,13 +190,16 @@ Toolbar: UI脚本创建 按钮
 LauncherTest (Inspector)
 ├── Test Scene Type 下拉选择
 ├── ──── 根据类型显示对应参数 ────
+├── NormalGame: 正常游戏启动（走真实开始流程）
 ├── FightSceneTest: 战斗参数配置
 ├── CardTest: 卡片测试参数
 ├── Base: 基地测试参数
 ├── RewardSelect: 奖励选择参数
 ├── DoomCouncil: 终焉议会参数
 ├── NpcCreate: NPC创建参数
-└── ResearchUI: 研究UI参数
+├── ResearchUI: 研究UI参数
+├── AbyssalBlessing: 深渊馈赠UI参数
+└── CreatureSacrifice: 献祭升级测试参数
 └── ▶️ 开始测试 按钮（仅运行时可用）
 ```
 

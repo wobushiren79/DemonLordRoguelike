@@ -62,7 +62,22 @@ public partial class UICreatureManager : BaseUIComponent
         //初始化卡片详情
         var itemCreatureData = ui_UIViewCreatureCardList.GetItemData(selectCreatureIndex);
         ui_UIViewCreatureCardEquipDetails.SetData(itemCreatureData);
+        //刷新献祭升级按钮显隐(返回界面/升级后保持正确状态)
+        RefreshSacrificeButton(itemCreatureData);
+    }
 
+    /// <summary>
+    /// 刷新献祭升级按钮显隐: 默认隐藏,仅在已解锁祭坛 且 当前经验达到下一级所需(未满级)时显示。
+    /// </summary>
+    /// <param name="creatureData">当前选中的生物;为空则隐藏</param>
+    public void RefreshSacrificeButton(CreatureBean creatureData)
+    {
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlock = userData.GetUserUnlockData();
+        bool canSacrificeLevelUp = creatureData != null
+            && userUnlock.CheckIsUnlock(UnlockEnum.Altar)
+            && creatureData.CanUpLevel();
+        ui_BtnLevelUpSacrifice_Button.gameObject.SetActive(canSacrificeLevelUp);
     }
 
     /// <summary>
@@ -85,19 +100,8 @@ public partial class UICreatureManager : BaseUIComponent
         ui_UIViewCreatureCardEquipDetails.SetData(creatureData);
         ui_UIViewCreatureCardList.RefreshAllCard();
 
-        var userData = GameDataHandler.Instance.manager.GetUserData();
-        var userUnlock = userData.GetUserUnlockData();
-
-        //设置是否能献祭
-        ui_BtnLevelUpSacrifice_Button.gameObject.SetActive(false);
-        if (userUnlock.CheckIsUnlock(UnlockEnum.Altar))
-        {
-            var levelInfo = LevelInfoCfg.GetItemData(creatureData.level + 1);
-            if (levelInfo != null && levelInfo.id > 0 && creatureData.levelExp >= long.Parse(levelInfo.level_exp))
-            {
-                ui_BtnLevelUpSacrifice_Button.gameObject.SetActive(true);
-            }
-        }
+        //刷新献祭升级按钮显隐
+        RefreshSacrificeButton(creatureData);
 
         // 刷新背包道具显示（根据新选中的生物判断可装备性）
         InitBackpackItemsData();

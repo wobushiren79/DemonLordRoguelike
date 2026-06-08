@@ -98,14 +98,16 @@ public enum GameSceneTypeEnum
 public enum TestSceneTypeEnum
 {
     None = 0,
-    FightSceneTest = 1,//战斗场景测试
-    CardTest = 2,//卡片效果测试
-    Base = 3,//基地测试
-    RewardSelect = 4,//奖励选择
-    DoomCouncil = 5,//终焉议会
-    NpcCreate = 6,//NPC创建
-    ResearchUI = 7,//研究ui
-    AbyssalBlessing = 8,//深渊馈赠UI
+    NormalGame = 1,//正常游戏启动(走真实开始流程，免去切换 GameScene)
+    FightSceneTest = 2,//战斗场景测试
+    CardTest = 3,//卡片效果测试
+    Base = 4,//基地测试
+    RewardSelect = 5,//奖励选择
+    DoomCouncil = 6,//终焉议会
+    NpcCreate = 7,//NPC创建
+    ResearchUI = 8,//研究ui
+    AbyssalBlessing = 9,//深渊馈赠UI
+    CreatureSacrifice = 10,//生物献祭升级测试
 }
 
 /// <summary>
@@ -165,6 +167,7 @@ public enum UnlockEnum : long
     CreatureVat = 100000000,//生物进阶
     CreatureVatAdd = 100000001,//生物进阶设置+1;
     Altar = 100100001,//祭坛
+    SacrificeNum = 100100002,//献祭祭品数量+1
     DoomCouncil = 100200001,//终焉议会模块
     PortalShowNum = 100300001, //传送门显示数量
     

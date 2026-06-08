@@ -137,8 +137,8 @@ InitData(fightData, testData = null)
 
 - 征服模式**每关胜利**时，给本场出战阵容生物（`fightData.dlDefenseCreatureData.List`，存档对象引用）累加经验：普通关发 `reward_exp`、BOSS 关发 `reward_exp_boss`。
 - 挂钩点：`GameFightLogicConquer.HandleForChangeGameStateSettlement` 中 `isWin` 分支 → `AddLevelExpForLineupCreature(fightDataForConquer, isBossFight)`。每关进入结算时仅触发一次，失败不发。
-- 经验直接累加到 `CreatureBean.levelExp`，随 `EndGameAndReturnToBase → SaveUserData` 统一落盘。
-- **当前仅累加经验值，不做升级/属性提升**：`CreatureBean.level` / `LevelInfoBean`（等级所需经验）的升级链路尚未实现，待后续单独接入。
+- 经验直接累加到 `CreatureBean.levelExp`，随 `EndGameAndReturnToBase → SaveUserData` 统一落盘。已满级生物（`IsMaxLevel()`）不再累加经验。
+- **经验只是升级门槛，升级本身走"祭坛献祭"**：经验达标后由玩家在基地祭坛献祭祭品掷骰升级（成功才 `level++` 并加属性）。完整升级链路见 [`sacrifice-system`](../sacrifice-system/SKILL.md) Skill。
 
 ## 常见开发任务
 

@@ -21,5 +21,9 @@ public partial class UIViewCreatureCardList
 
     public PopupButtonCommonView ui_OrderBtn_Name_PopupButtonCommonView;
 
+    public PopupButtonCommonView ui_OrderBtn_Class_PopupButtonCommonView;
+
+    public Button ui_OrderBtn_Class_Button;
+
 
 }

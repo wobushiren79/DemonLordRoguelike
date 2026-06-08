@@ -8,6 +8,10 @@ public partial class LevelInfoBean : BaseBean
 	///所需经验
 	/// </summary>
 	public string level_exp;
+	/// <summary>
+	///升级所需祭品数量
+	/// </summary>
+	public int sacrifice_num;
 }
 public partial class LevelInfoCfg : BaseCfg<long, LevelInfoBean>
 {

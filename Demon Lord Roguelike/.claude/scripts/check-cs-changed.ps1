@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Hook helper: PostToolUse on Write/Edit. When a C# file under Assets/
   has just been modified, runs check-watched.ps1 and reports which
@@ -22,6 +22,13 @@ try {
     $normalized = $filePath -replace '\\', '/'
     if ($normalized -notmatch '(^|/)Assets/.*\.cs$') { exit 0 }
 
+    # 取【项目相对】路径(从 Assets/ 起)，用于把结果收敛到“刚改的这个文件”，
+    # 避免把整个工作树里其它未提交改动命中的 agent/skill 一并刷出来(告警疲劳)。
+    # 用 IndexOf/Substring 而非 -replace '$1'：后者在 Windows PowerShell 5.1 按非
+    # UTF-8 读取本文件时反向引用会失效导致结果为空，IndexOf 写法与编码无关更稳。
+    $assetsIdx = $normalized.IndexOf('Assets/')
+    $editedRel = if ($assetsIdx -ge 0) { $normalized.Substring($assetsIdx) } else { $normalized }
+
     $watchScript = Join-Path $PSScriptRoot 'check-watched.ps1'
     if (-not (Test-Path $watchScript)) { exit 0 }
 
@@ -29,8 +36,9 @@ try {
     if (-not $json) { exit 0 }
 
     $result = $json | ConvertFrom-Json
-    $agents = @($result.affected_agents)
-    $skills = @($result.affected_skills)
+    # 仅保留 watched_files 命中了【本次编辑文件】的条目
+    $agents = @($result.affected_agents | Where-Object { @($_.matched) -contains $editedRel })
+    $skills = @($result.affected_skills | Where-Object { @($_.matched) -contains $editedRel })
     if ($agents.Count -eq 0 -and $skills.Count -eq 0) { exit 0 }
 
     $parts = @()

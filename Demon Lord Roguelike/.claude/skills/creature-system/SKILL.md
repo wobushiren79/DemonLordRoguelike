@@ -78,6 +78,8 @@ public class CreatureBean
 }
 ```
 
+> **等级升级机制见 [`sacrifice-system`](../sacrifice-system/SKILL.md) Skill**：生物的 `level`/`levelExp` 升级走"基地祭坛献祭"——经验达标后献祭祭品掷骰，成功才升级并加属性（当前每级 +1 ATK，写入 `creatureAttribute.dicAttributeLevelUp`）。升级方法 `UpLevelForSacrifice`/`CanUpLevel`/`IsMaxLevel` 在 `CreatureBeanPartial.cs`，成功率公式在 `CreatureUtil`。
+
 ### 创建生物
 
 ```csharp
@@ -299,21 +301,21 @@ public class CreatureInfoBean : BaseBean
 **文件**: `Assets/Scripts/Utils/CreatureUtil.cs`
 
 ```csharp
-// 获取生物模型资产名
-string GetCreatureModelAssetName(long creatureId);
+// 获取生物皮肤类型的多语言显示名称
+string GetCreatureSkinTypeEnumName(CreatureSkinTypeEnum creatureSkinType);
 
-// 获取生物Spine资产名
-string GetCreatureSpineAssetName(long modelId);
+// === 生物献祭升级（详见 sacrifice-system Skill）===
 
-// 比较两个生物
-int CompareCreature(CreatureBean a, CreatureBean b, int sortType);
+// 计算一批祭品对目标生物的"献祭成功率(祭品部分,不含保底)"
+// 规则：单个相同 id+相同稀有度祭品基础成功率 = 1/sacrificeNum；
+//       id 不同 ×1/10；稀有度每低一级再 ×1/10（可叠加）；全部累加
+float GetSacrificeFoddersRate(CreatureBean targetCreature, List<CreatureBean> listFodder, int sacrificeNum);
 
-// 获取生物稀有度颜色
-Color GetRarityColor(int rarity);
-
-// 检查生物是否可装备某道具
-bool CanEquipItem(CreatureBean creature, ItemBean item);
+// 计算目标生物本次献祭的最终成功率（保底 sacrificePityRate + 祭品，统一 Clamp01）
+float GetSacrificeSuccessRate(CreatureBean targetCreature, List<CreatureBean> listFodder);
 ```
+
+> 注：稀有度颜色、模型/Spine 资产名、装备校验等并不在 `CreatureUtil` 内，分别由各自的 Handler/工具承担，勿在此查找。
 
 ---
 

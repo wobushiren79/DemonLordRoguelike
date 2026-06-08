@@ -205,6 +205,8 @@ public void InitNextDataForContinue();
 非BOSS关胜利     → OpenAbyssalBlessingUI()（不清场，保留防御生物 / BUFF）
 ```
 
+> `reward_exp` 只是给生物累加成长经验 `CreatureBean.levelExp`（满级不再加）；经验达标后的**升级走"祭坛献祭"**，见 [`sacrifice-system`](../sacrifice-system/SKILL.md) Skill。
+
 ### 关卡推进
 
 ```csharp

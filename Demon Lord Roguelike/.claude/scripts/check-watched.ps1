@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Cross-references git changes with agent/skill watched_files to flag which
   agents and skills need updating when their associated classes change.
@@ -58,7 +58,8 @@ if ($BaseRef -ne "HEAD") {
     $changedArgs += $BaseRef
 }
 
-$changedFiles = git -c core.autocrlf=false @changedArgs 2>$null
+# -c core.fsmonitor=false 避免某些环境下 "bad fsmonitor version" 报错污染输出
+$changedFiles = git -c core.autocrlf=false -c core.fsmonitor=false @changedArgs 2>$null
 if (-not $changedFiles) { $changedFiles = @() }
 $changedFiles = @($changedFiles | Where-Object { $_ -ne "" })
 
@@ -76,8 +77,20 @@ function Normalize-Path($p) {
     return ($p -replace '\\', '/').TrimEnd('/')
 }
 
+# git diff 返回的是【仓库根】相对路径；当项目位于仓库子目录时(本项目根=仓库根，
+# 项目在 "Demon Lord Roguelike/" 子目录)，需去掉该前缀，才能与各 agent/skill
+# 里【项目相对】的 watched_files 对齐，否则精确比对永远不命中。
+$gitPrefix = git -c core.autocrlf=false -c core.fsmonitor=false rev-parse --show-prefix 2>$null
+$gitPrefix = if ($gitPrefix) { Normalize-Path ([string]$gitPrefix) } else { "" }
+
 $changedSet = [System.Collections.Generic.HashSet[string]]::new(
-    [string[]]($changedFiles | ForEach-Object { Normalize-Path $_ })
+    [string[]]($changedFiles | ForEach-Object {
+        $n = Normalize-Path $_
+        if ($gitPrefix -and $n.StartsWith($gitPrefix + '/')) {
+            $n = $n.Substring($gitPrefix.Length + 1)
+        }
+        $n
+    })
 )
 
 # ------------------------------------------------------------------
@@ -87,11 +100,13 @@ function Get-WatchedFiles($filePath) {
     $content = Get-Content $filePath -Raw -Encoding UTF8
     if (-not $content) { return @() }
 
-    # Extract YAML frontmatter between --- delimiters
-    if ($content -match '---\s*\n(.*?)\n---') {
+    # Extract YAML frontmatter between --- delimiters.
+    # (?s) 开启 Singleline，使 . 能匹配换行，否则多行 frontmatter 永远提取失败；
+    # \r?\n 兼容 CRLF/LF 两种行尾。
+    if ($content -match '(?s)^\s*---\r?\n(.*?)\r?\n---') {
         $yaml = $Matches[1]
-        # Find watched_files line
-        if ($yaml -match 'watched_files:\s*\n((?:\s*-\s*.+\n?)*)') {
+        # Find watched_files line (不加 (?s)：逐行匹配列表项，避免 . 贪婪跨行吞掉后续键)
+        if ($yaml -match 'watched_files:\s*\r?\n((?:[ \t]*-[ \t]*\S.*\r?\n?)*)') {
             $block = $Matches[1]
             $paths = @()
             foreach ($line in ($block -split "`n")) {
@@ -99,7 +114,9 @@ function Get-WatchedFiles($filePath) {
                 if ($trimmed -match '^-\s*(.+)$') {
                     $path = $Matches[1].Trim()
                     if ($path) {
-                        $paths += Normalize-Path $path
+                        # 仅统一斜杠，【保留末尾 /】：目录前缀项靠末尾 / 区分，
+                        # 若用 Normalize-Path(会 TrimEnd '/') 会让目录匹配永远失效。
+                        $paths += ($path -replace '\\', '/')
                     }
                 }
             }
@@ -134,22 +151,23 @@ function Test-WatchedChanged($watchedPaths) {
 # 4. Collect matching changed files per entry
 # ------------------------------------------------------------------
 function Get-MatchingFiles($watchedPaths) {
-    $matches = @()
+    # 不用 $matches：它是 PowerShell 内置自动变量(被 -match 复用)，自定义赋值有副作用
+    $matched = @()
     foreach ($watched in $watchedPaths) {
         $isDir = $watched.EndsWith('/')
         foreach ($changed in $changedSet) {
             if ($isDir) {
                 if ($changed.StartsWith($watched)) {
-                    $matches += $changed
+                    $matched += $changed
                 }
             } else {
                 if ($changed -eq $watched) {
-                    $matches += $changed
+                    $matched += $changed
                 }
             }
         }
     }
-    return ($matches | Select-Object -Unique)
+    return ($matched | Select-Object -Unique)
 }
 
 # ------------------------------------------------------------------
