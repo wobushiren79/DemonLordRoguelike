@@ -46,7 +46,7 @@ GameHandler.StartCreatureSacrifice(CreatureSacrificeBean)   // GameHandler.cs
 CreatureSacrificeLogic (BaseGameLogic)   献祭玩法逻辑
     │  PreGame → 注册事件 / InitSceneData(祭坛粒子+摄像机+目标生物模型) / StartGame
     │  StartGame → OpenUIAndCloseOther<UICreatureSacrifice>()
-    │  EventForSelectCreature(选祭品) → 在祭坛周围环形摆放祭品模型
+    │  EventForSelectCreature(选祭品) → GetFodderPositions 整圈平均分布(360°/count)并以祭坛正前方(-90°)居中摆放祭品模型(数量变化时整圈重新居中旋转)
     │  StartSacrifice(): ① CreatureUtil.GetSacrificeSuccessRate 算成功率 → ② 掷骰 isSuccess
     │                    → ③ 播放生物/粒子/摄像机动画 → ④ 动画结束回调 SettleSacrifice()
     │  SettleSacrifice(isSuccess, rate):
@@ -187,6 +187,11 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择
 
 ### 调祭坛动画 / 摄像机
 改 `CreatureSacrificeLogic` 的 `AnimForCreatureObjSacrfice` / `AnimForSacrficeEffect` / `AnimForSacrficeCamera` / `SetAltarEffect`。祭坛对象 `scenePrefab.objBuildingAltar`，粒子 `VFX_LightFire*` / `MagicArray`。
+
+### 调祭品站位
+改 `CreatureSacrificeLogic.GetFodderPositions(count, centerPosition)`：沿整圈平均分布(相邻间隔 `360°/count`)，再以祭坛正前方 `centerAngle = -90°` 对整圈做居中偏移(`startAngle = centerAngle - step*(count-1)/2`，使角度中心落在 -90°)。`EventForSelectCreature` 每次选择变化都重算全部位置并经 `AnimForCreatureShow` 平滑移动，**数量变化时整圈重新居中旋转**(不会把第一个祭品固定钉在最下方)。`-90°` 经 `VectorUtil.GetCirclePosition` 映射为祭坛 -Z(屏幕最下方/朝镜头)。
+
+> **基地控制屏蔽**：`UICreatureSacrifice.OpenUI` 与其它基地子界面一致调用 `GameControlHandler.Instance.SetBaseControl(false)`，确保献祭界面及随后 `StartSacrifice` 关闭全部 UI 播放动画期间都**无法控制角色移动**(此前仅依赖前一界面 UICreatureManager 关闭控制，测试入口直接进献祭时会漏关)。
 
 ### 测试献祭升级（不落盘）
 测试模式 `TestSceneTypeEnum.CreatureSacrifice`：读取某个真实存档的数据对其中一只生物直接发起献祭，可手动控制成功率或用存档真实数据，**结果不写回真实存档**。详见 `test-system` Skill「献祭升级测试」。

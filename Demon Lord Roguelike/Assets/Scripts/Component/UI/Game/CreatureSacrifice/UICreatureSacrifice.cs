@@ -16,6 +16,8 @@ public partial class UICreatureSacrifice : BaseUIComponent
     public override void OpenUI()
     {
         base.OpenUI();
+        //关闭基地移动控制(与其它基地子界面一致):避免献祭界面及后续献祭动画期间仍能控制角色移动
+        GameControlHandler.Instance.SetBaseControl(false);
         InitCreaturekData();
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForCardClickSelect);
         RefreshUI();

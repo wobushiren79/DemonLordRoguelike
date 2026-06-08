@@ -63,7 +63,7 @@ public partial class UIViewCreatureCardItem : BaseUIView
     /// </summary>
     public void SetStarLevel(int starLevel)
     {
-        ui_StarText.text = $"{starLevel}";
+        ui_LevelText.text = $"{starLevel}";
     }
 
     /// <summary>

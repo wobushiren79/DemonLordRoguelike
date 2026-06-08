@@ -19,13 +19,13 @@ public partial class UIViewCreatureCardItem
 
     public Image ui_Mask;
 
-    public TextMeshProUGUI ui_StarText;
-
     public Image ui_SelectBg;
 
     public Image ui_IconContent;
 
     public Image ui_Class;
+
+    public TextMeshProUGUI ui_LevelText;
 
 
 }

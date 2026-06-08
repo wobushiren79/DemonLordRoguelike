@@ -285,7 +285,7 @@ public class CreatureSacrificeLogic : BaseGameLogic
     {
         Transform altarTF = scenePrefab.objBuildingAltar.transform;
         Vector2 startPosition = new Vector2(altarTF.position.x, altarTF.position.z);
-        Vector2[] arrayPosition = VectorUtil.GetListCirclePosition(listSelectCreature.Count, -90f, startPosition, 1.9f);
+        Vector2[] arrayPosition = GetFodderPositions(listSelectCreature.Count, startPosition);
 
         //如果是添加生物
         if (listSelectCreature.Count >= listObjFodderCreatures.Count)
@@ -332,6 +332,37 @@ public class CreatureSacrificeLogic : BaseGameLogic
         }
     }
 
+
+    /// <summary>
+    /// 计算祭品在祭坛周围的站位:沿整圈平均分布(相邻间隔 360°/count),
+    /// 并以祭坛正前方(-90°,屏幕最下方)为中心对整圈做居中偏移。
+    /// 这样祭品数量变化时整圈会重新居中旋转,而不是把第一个祭品固定钉在最下方,显示更生动。
+    /// </summary>
+    /// <param name="count">祭品数量</param>
+    /// <param name="centerPosition">祭坛中心(XZ 平面)</param>
+    /// <returns>各祭品的站位(XZ 平面),长度为 count</returns>
+    public Vector2[] GetFodderPositions(int count, Vector2 centerPosition)
+    {
+        const float radius = 1.9f;
+        //居中基准:祭坛正前方(屏幕最下方)
+        const float centerAngle = -90f;
+
+        Vector2[] listData = new Vector2[count];
+        if (count <= 0)
+        {
+            return listData;
+        }
+        //整圈平均分配
+        float stepAngle = 360f / count;
+        //让整圈的角度中心落在 centerAngle 上(对称居中)
+        float startAngle = centerAngle - stepAngle * (count - 1) / 2f;
+        for (int i = 0; i < count; i++)
+        {
+            float itemAngle = startAngle + stepAngle * i;
+            listData[i] = VectorUtil.GetCirclePosition(itemAngle, centerPosition, radius);
+        }
+        return listData;
+    }
 
     /// <summary>
     /// 事件-献祭成功(展示升级反馈提示)
