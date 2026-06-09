@@ -7,23 +7,24 @@ public static class CreatureUtil
     #region 生物献祭
     /// <summary>
     /// 计算一批祭品对目标生物的"献祭成功率(祭品部分,不含保底)"。
-    /// <para>规则: 单个相同生物且相同稀有度的祭品基础成功率 = 1 / sacrificeNum;</para>
-    /// <para>1. 祭品与目标生物 id 不同: 单个成功率再 ×1/10;</para>
-    /// <para>2. 祭品稀有度低于目标: 每低一级再 ×1/10(差2级即 ×1/100),与 id 惩罚可叠加;</para>
+    /// <para>规则: 单个「相同生物id」祭品的基础成功率 = 1 / sacrificeNum;</para>
+    /// <para>1. 祭品与目标生物 id 不同: 单个成功率 = differentIdRate(来自「不同生物id献祭成功率提升」研究,未解锁为0);</para>
+    /// <para>2. 祭品稀有度低于目标: 每低一级再 ×1/10(差2级即 ×1/100),同id/不同id均叠加;</para>
     /// <para>3. 全部祭品成功率累加;相同 id 且相同稀有度时,祭品数量达到 sacrificeNum 即可累加到 100%。</para>
     /// <para>注: 返回值不在此截顶,保底叠加后再统一 Clamp01。</para>
     /// </summary>
     /// <param name="targetCreature">接受献祭(升级)的目标生物</param>
     /// <param name="listFodder">作为祭品的生物列表</param>
     /// <param name="sacrificeNum">该等级所需祭品基础数量(来自 LevelInfo.sacrifice_num)</param>
+    /// <param name="differentIdRate">单个「不同生物id」祭品的成功率(来自研究 UnlockEnum.SacrificeDifferentIdRate,未解锁为0)</param>
     /// <returns>祭品部分累加成功率(未截顶,未含保底)</returns>
-    public static float GetSacrificeFoddersRate(CreatureBean targetCreature, List<CreatureBean> listFodder, int sacrificeNum)
+    public static float GetSacrificeFoddersRate(CreatureBean targetCreature, List<CreatureBean> listFodder, int sacrificeNum, float differentIdRate)
     {
         if (targetCreature == null || listFodder == null || listFodder.Count == 0)
             return 0f;
         if (sacrificeNum <= 0)
             sacrificeNum = 5;
-        //单个相同生物、相同稀有度祭品的基础成功率
+        //单个相同生物id祭品的基础成功率
         float baseSingleRate = 1f / sacrificeNum;
         float totalRate = 0f;
         for (int i = 0; i < listFodder.Count; i++)
@@ -31,11 +32,9 @@ public static class CreatureUtil
             var fodder = listFodder[i];
             if (fodder == null)
                 continue;
-            float rate = baseSingleRate;
-            //生物 id 不同: 再降一个数量级
-            if (fodder.creatureId != targetCreature.creatureId)
-                rate *= 0.1f;
-            //稀有度低于目标: 每低一级再降一个数量级(可与 id 惩罚叠加)
+            //同id用基础成功率;不同id用研究加成(默认0)
+            float rate = fodder.creatureId == targetCreature.creatureId ? baseSingleRate : differentIdRate;
+            //稀有度低于目标: 每低一级再降一个数量级(同id/不同id均叠加)
             int rarityDiff = targetCreature.rarity - fodder.rarity;
             if (rarityDiff > 0)
                 rate *= Mathf.Pow(0.1f, rarityDiff);
@@ -46,6 +45,7 @@ public static class CreatureUtil
 
     /// <summary>
     /// 计算目标生物本次献祭的最终成功率(保底 + 祭品,统一截顶到 100%)。
+    /// 不同生物id祭品的成功率由研究「不同生物id献祭成功率提升」(UnlockEnum.SacrificeDifferentIdRate)决定,未解锁时为0。
     /// </summary>
     /// <param name="targetCreature">接受献祭(升级)的目标生物</param>
     /// <param name="listFodder">作为祭品的生物列表</param>
@@ -59,8 +59,11 @@ public static class CreatureUtil
         var nextLevelInfo = targetCreature.GetNextLevelInfo();
         if (nextLevelInfo != null && nextLevelInfo.sacrifice_num > 0)
             sacrificeNum = nextLevelInfo.sacrifice_num;
+        //读取「不同生物id献祭成功率提升」研究等级换算出的单个不同id祭品成功率
+        var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+        float differentIdRate = userUnlock.GetUnlockSacrificeDifferentIdRate();
         //祭品成功率 + 保底成功率
-        float foddersRate = GetSacrificeFoddersRate(targetCreature, listFodder, sacrificeNum);
+        float foddersRate = GetSacrificeFoddersRate(targetCreature, listFodder, sacrificeNum, differentIdRate);
         float totalRate = targetCreature.sacrificePityRate + foddersRate;
         return Mathf.Clamp01(totalRate);
     }

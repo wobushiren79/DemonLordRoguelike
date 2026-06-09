@@ -307,9 +307,10 @@ string GetCreatureSkinTypeEnumName(CreatureSkinTypeEnum creatureSkinType);
 // === 生物献祭升级（详见 sacrifice-system Skill）===
 
 // 计算一批祭品对目标生物的"献祭成功率(祭品部分,不含保底)"
-// 规则：单个相同 id+相同稀有度祭品基础成功率 = 1/sacrificeNum；
-//       id 不同 ×1/10；稀有度每低一级再 ×1/10（可叠加）；全部累加
-float GetSacrificeFoddersRate(CreatureBean targetCreature, List<CreatureBean> listFodder, int sacrificeNum);
+// 规则：同 id 祭品基础成功率 = 1/sacrificeNum；
+//       不同 id = differentIdRate(研究 SacrificeDifferentIdRate 等级×5%,未解锁0)；
+//       稀有度每低一级再 ×1/10（同id/不同id均叠加）；全部累加
+float GetSacrificeFoddersRate(CreatureBean targetCreature, List<CreatureBean> listFodder, int sacrificeNum, float differentIdRate);
 
 // 计算目标生物本次献祭的最终成功率（保底 sacrificePityRate + 祭品，统一 Clamp01）
 float GetSacrificeSuccessRate(CreatureBean targetCreature, List<CreatureBean> listFodder);

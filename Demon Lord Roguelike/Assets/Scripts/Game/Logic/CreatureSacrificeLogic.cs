@@ -132,16 +132,15 @@ public class CreatureSacrificeLogic : BaseGameLogic
         //播放摄像头动画,动画结束后结算
         AnimForSacrficeCamera(timeCenterDelay + timeCenterLifetime, timeReset, () =>
         {
-            SettleSacrifice(isSuccess, successRate);
+            SettleSacrifice(isSuccess);
         });
     }
 
     /// <summary>
-    /// 献祭结算: 处理祭品(装备退回背包+从背包移除)、成功则升级、失败则记录保底,最后存档并返回生物管理界面。
+    /// 献祭结算: 处理祭品(装备退回背包+从背包移除)、成功则升级、失败则按研究等级累积保底,最后存档并返回生物管理界面。
     /// </summary>
     /// <param name="isSuccess">本次献祭是否成功</param>
-    /// <param name="successRate">本次使用的最终成功率(失败时用于计算保底)</param>
-    public void SettleSacrifice(bool isSuccess, float successRate)
+    public void SettleSacrifice(bool isSuccess)
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var targetCreature = creatureSacrificeData.targetCreature;
@@ -171,8 +170,9 @@ public class CreatureSacrificeLogic : BaseGameLogic
         }
         else
         {
-            //失败只扣祭品,记录保底成功率为本次成功率的一半,下次献祭叠加
-            targetCreature.sacrificePityRate = successRate * 0.5f;
+            //失败只扣祭品,按「献祭失败保底概率提升」研究等级累积保底(未解锁0级则不累积),下次献祭叠加,成功后清零
+            float pityAddRate = userData.GetUserUnlockData().GetUnlockSacrificeFailPityAddRate();
+            targetCreature.sacrificePityRate = Mathf.Clamp01(targetCreature.sacrificePityRate + pityAddRate);
             TriggerEvent(EventsInfo.CreatureSacrifice_SacrificeFail);
         }
 

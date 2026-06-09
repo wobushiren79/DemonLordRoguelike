@@ -2431,7 +2431,9 @@ MonoBehaviour:
     creatureNpcData:
       npcId: 0
     creatureState: 1
+    sacrificePityRate: 0
   isShowEquipItem: 1
+  directionInit: 2
   ui_Icon: {fileID: 2992929411199304094}
   ui_CardScene: {fileID: 486630122230598588}
   ui_Name: {fileID: 4296180375066215962}

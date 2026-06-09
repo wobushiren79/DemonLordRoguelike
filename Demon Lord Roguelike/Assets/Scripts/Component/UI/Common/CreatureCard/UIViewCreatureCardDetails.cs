@@ -12,6 +12,31 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     public CreatureBean creatureData;
     /// <summary>是否展示装备道具，默认为true</summary>
     public bool isShowEquipItem = true;
+    /// <summary>初始详情面板方向（可在编辑器中配置，默认右侧）；与 SetDetailsDirection 使用相同的参数逻辑</summary>
+    [Header("详情面板初始方向")]
+    public Direction2DEnum directionInit = Direction2DEnum.Right;
+
+    /// <summary>
+    /// 初始化，应用编辑器配置的初始详情面板方向
+    /// </summary>
+    public override void Awake()
+    {
+        base.Awake();
+        SetDetailsDirection(directionInit);
+    }
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// 编辑器下修改 directionInit 时实时应用方向，便于直接预览左右布局
+    /// </summary>
+    public void OnValidate()
+    {
+        if (ui_Details != null)
+        {
+            SetDetailsDirection(directionInit);
+        }
+    }
+#endif
 
     /// <summary>
     /// 刷新卡片显示

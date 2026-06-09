@@ -1,6 +1,6 @@
 ---
 name: game-sacrifice
-description: 生物献祭升级系统开发：CreatureSacrificeLogic 献祭逻辑、CreatureSacrificeBean 献祭数据、UICreatureSacrifice 献祭UI、献祭升级(等级提升/经验门槛/UpLevelForSacrifice)、成功率公式(祭品数量 1/sacrifice_num + 生物id/稀有度惩罚)、保底机制(sacrificePityRate)、祭品装备退回、等级上限、UICreatureManager 升级按钮显隐。
+description: 生物献祭升级系统开发：CreatureSacrificeLogic 献祭逻辑、CreatureSacrificeBean 献祭数据、UICreatureSacrifice 献祭UI、献祭升级(等级提升/经验门槛/UpLevelForSacrifice)、成功率公式(同id 1/sacrifice_num + 不同id研究率 + 稀有度惩罚)、保底机制(研究驱动 sacrificePityRate)、不同id/保底研究(SacrificeDifferentIdRate/SacrificePityRate)、祭品装备退回、等级上限、UICreatureManager 升级按钮显隐。
 tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Game/Logic/CreatureSacrificeLogic.cs
@@ -42,8 +42,9 @@ UICreatureManager(升级按钮) → GameHandler.StartCreatureSacrifice
 - **CreatureSacrificeBean** - `targetCreature` + `fodderCreatures`；测试字段 `isTestMode`(不落盘)/`useManualSuccessRate`(覆盖)/`manualSuccessRate`(手动成功率)
 
 ### 成功率公式
-- **CreatureUtil** - `GetSacrificeSuccessRate`(保底+祭品,截顶) / `GetSacrificeFoddersRate`(祭品部分)
-  - 单祭品基础 = `1/sacrifice_num`；生物 id 不同 ×1/10；稀有度每低一级 ×1/10（可叠加）；总和 + 保底，Clamp01
+- **CreatureUtil** - `GetSacrificeSuccessRate`(保底+祭品,截顶) / `GetSacrificeFoddersRate(target, listFodder, sacrificeNum, differentIdRate)`(祭品部分)
+  - 同 id 单祭品 = `1/sacrifice_num`；**不同 id = `differentIdRate`(研究 SacrificeDifferentIdRate 等级×5%，未解锁0；已去掉旧的 ×1/10)**；稀有度每低一级 ×1/10（同id/不同id均叠加）；总和 + 保底，Clamp01
+  - `GetSacrificeSuccessRate` 内部读 `GetUnlockSacrificeDifferentIdRate()` 传入 `differentIdRate`
 
 ### 等级配置
 - **LevelInfo**(`level_exp` 升级经验 / `sacrifice_num` 祭品基础数量)；Bean 自动生成，扩展写 Partial
@@ -52,8 +53,11 @@ UICreatureManager(升级按钮) → GameHandler.StartCreatureSacrifice
 - **UICreatureSacrifice** - 祭品选择、实时成功率显示、开始献祭；祭品选择上限走 `userData.GetUserUnlockData().GetUnlockSacrificeMax()`（基础 5 + `UnlockEnum.SacrificeNum=100100002` 研究等级，满级 15），不要再直接读 `limmitData.sacrificeMax`
 - **UICreatureManager** - `RefreshSacrificeButton`：默认隐藏，"解锁祭坛 && CanUpLevel()" 才显示
 
-### 祭品数量研究
-- 研究模块「设施」节点 `UnlockEnum.SacrificeNum = 100100002`（前置=开启献祭设施 Altar，`level_max=10`，水晶 1000~10000 每级+1000）提升祭品上限；衍生方法 `UserUnlockBean.GetUnlockSacrificeMax()`。配置见 `excel_research_info`/`excel_unlock_info`/`excel_language` id=100100002。详见 research-system / sacrifice-system Skill。
+### 献祭相关研究（设施节点，前置均=开启献祭设施 Altar，level_max=10）
+- `UnlockEnum.SacrificeNum = 100100002`（水晶 1000~10000 每级+1000）提升祭品上限；衍生 `GetUnlockSacrificeMax()`。
+- `UnlockEnum.SacrificePityRate = 100100003`（水晶 100,500,1000,5000,1万…10万）失败保底每级+5%；衍生 `GetUnlockSacrificeFailPityAddRate()`(等级×0.05)；`SettleSacrifice` 失败时 `sacrificePityRate = Clamp01(+=)`，**未解锁不累积**。
+- `UnlockEnum.SacrificeDifferentIdRate = 100100004`（同上水晶）不同id祭品成功率每级+5%(默认0)；衍生 `GetUnlockSacrificeDifferentIdRate()`(等级×0.05)。
+- 配置见 `excel_research_info`/`excel_unlock_info`/`excel_language` id=100100002/100100003/100100004。详见 research-system / sacrifice-system Skill。
 
 ### 测试模式（不落盘）
 - `TestSceneTypeEnum.CreatureSacrifice`：读取某个真实存档数据，对其中一只生物直接发起献祭，可手动成功率或用存档真实数据，结果不写回真实存档。

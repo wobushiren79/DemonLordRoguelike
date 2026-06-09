@@ -282,6 +282,26 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 获取献祭失败时累积的保底成功率增量
+    /// 未解锁(0级)返回 0；每级研究 +5%（UnlockEnum.SacrificePityRate，level_max=10，满级 +50%）
+    /// </summary>
+    /// <returns>本次失败应累加到 sacrificePityRate 上的保底增量(0~0.5)</returns>
+    public float GetUnlockSacrificeFailPityAddRate()
+    {
+        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.SacrificePityRate) * 0.05f;
+    }
+
+    /// <summary>
+    /// 获取「不同生物id」祭品的单个献祭成功率
+    /// 未解锁(0级)返回 0（默认不同id祭品成功率为0）；每级研究 +5%（UnlockEnum.SacrificeDifferentIdRate，level_max=10，满级 +50%）
+    /// </summary>
+    /// <returns>单个不同id祭品的基础成功率(0~0.5，稀有度惩罚在公式中另行叠加)</returns>
+    public float GetUnlockSacrificeDifferentIdRate()
+    {
+        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.SacrificeDifferentIdRate) * 0.05f;
+    }
+
+    /// <summary>
     /// 获取生物升阶容器数量
     /// 未解锁容器功能时返回 0；已解锁则返回 UserLimmitBean.creatureVatMax + 升阶研究等级
     /// </summary>

@@ -31,6 +31,13 @@ watched_files:
 ### 祭品数量研究（增加献祭祭品上限）
 献祭可选祭品上限可通过研究模块「设施」类节点提升：研究 `UnlockEnum.SacrificeNum = 100100002`（前置 = 开启献祭设施 `Altar`），`level_max=10`，每级 +1 祭品上限，水晶消耗 1000~10000（每级递增 1000）。上限计算统一走 `UserUnlockBean.GetUnlockSacrificeMax()` = `sacrificeMax`(基础 5) + 该研究等级，满级 5+10=15。配置见 `excel_research_info`/`excel_unlock_info`/`excel_language` 的 id=100100002 行。详见 research-system skill。
 
+### 保底/不同id 成功率研究（影响成功率公式）
+两个「设施」类研究节点(前置均 = 开启献祭设施 `Altar`，`level_max=10`，水晶消耗 `100,500,1000,5000,10000,20000,30000,40000,50000,100000`)直接决定成功率与保底：
+- **`UnlockEnum.SacrificePityRate = 100100003`（献祭失败保底概率提升）**：献祭**失败**时按研究等级累积保底，每级 +5%（满级每次失败 +50%），衍生方法 `UserUnlockBean.GetUnlockSacrificeFailPityAddRate()` = 等级×0.05。**未解锁(0级)则失败不累积任何保底**（已去掉旧的 `rate*0.5` 保底逻辑）。
+- **`UnlockEnum.SacrificeDifferentIdRate = 100100004`（不同魔物献祭成功率提升）**：**不同生物id** 祭品的单个成功率默认为 0，由该研究按等级给出，每级 +5%（满级 50%），衍生方法 `UserUnlockBean.GetUnlockSacrificeDifferentIdRate()` = 等级×0.05。**未解锁时不同id祭品成功率恒为 0**（已去掉旧的「不同id ×1/10」逻辑）。
+
+配置见 `excel_research_info`/`excel_unlock_info`/`excel_language` 的 id=100100003/100100004 行。详见 research-system skill。
+
 ## 系统架构
 
 ```
@@ -49,10 +56,10 @@ CreatureSacrificeLogic (BaseGameLogic)   献祭玩法逻辑
     │  EventForSelectCreature(选祭品) → GetFodderPositions 整圈平均分布(360°/count)并以祭坛正前方(-90°)居中摆放祭品模型(数量变化时整圈重新居中旋转)
     │  StartSacrifice(): ① CreatureUtil.GetSacrificeSuccessRate 算成功率 → ② 掷骰 isSuccess
     │                    → ③ 播放生物/粒子/摄像机动画 → ④ 动画结束回调 SettleSacrifice()
-    │  SettleSacrifice(isSuccess, rate):
+    │  SettleSacrifice(isSuccess):
     │      - 祭品: RemoveAllEquipToBackpack() 退装备 → RemoveBackpackCreature() 移除
     │      - 成功: targetCreature.UpLevelForSacrifice() + 清空 sacrificePityRate + 触发 Success
-    │      - 失败: sacrificePityRate = rate * 0.5 + 触发 Fail
+    │      - 失败: sacrificePityRate += GetUnlockSacrificeFailPityAddRate()(研究等级×5%,未解锁不累积) + 触发 Fail
     │      - SaveUserData() 落盘 → EndGame() 返回 UICreatureManager
     ▼
 UICreatureSacrifice (BaseUIComponent)   献祭选择界面
@@ -66,9 +73,9 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 公式实现在 **`CreatureUtil.cs`**（`Assets/Scripts/Utils/CreatureUtil.cs`），UI 显示与 Logic 掷骰共用，避免重复。
 
 ### 单个祭品成功率
-- **基础**：`baseSingleRate = 1 / sacrifice_num`（`sacrifice_num` 来自下一级 `LevelInfo` 配置，默认 5 → 单祭品 20%）
-- **生物 id 不同**：若祭品 `creatureId != 目标 creatureId`，单个成功率 `×1/10`（如 20%→2%）
-- **稀有度低于目标**：`rarityDiff = 目标.rarity - 祭品.rarity`，每低一级再 `×1/10`（差 2 级即 `×1/100`），**与 id 惩罚叠加**
+- **同 id 基础**：祭品 `creatureId == 目标 creatureId` 时 `baseSingleRate = 1 / sacrifice_num`（`sacrifice_num` 来自下一级 `LevelInfo` 配置，默认 5 → 单祭品 20%）
+- **生物 id 不同**：单个成功率 = `differentIdRate`（来自研究 `UnlockEnum.SacrificeDifferentIdRate`，每级 5%，**未解锁恒为 0**）。⚠️ 旧的「不同id ×1/10」逻辑已删除
+- **稀有度低于目标**：`rarityDiff = 目标.rarity - 祭品.rarity`，每低一级再 `×1/10`（差 2 级即 `×1/100`），**同 id 基础率与不同 id 研究率都叠加**
 - 祭品稀有度 ≥ 目标时不惩罚
 
 ### 总成功率
@@ -76,24 +83,24 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 - **最终成功率 = Clamp01(sacrificePityRate 保底 + 祭品总成功率)**，封顶 100%
 - 相同 id 同稀有度时，祭品数量达到 `sacrifice_num` 即累加到 100%
 
-### 公式举例（以 sacrifice_num = 10 为例，base = 10%）
+### 公式举例（以 sacrifice_num = 10 为例，同 id base = 10%；不同 id 研究 N 级 → 5%×N）
 | 场景 | 单祭品成功率 |
 |------|------------|
 | 相同 id、相同稀有度 | 10%（数量达 10 个即 100%） |
-| 不同 id | 10% × 1/10 = 1% |
+| 不同 id（研究未解锁） | 0% |
+| 不同 id（研究 3 级=15%） | 15% |
 | 同 id、稀有度低 1 级 | 10% × 1/10 = 1% |
-| 不同 id 且 稀有度低 1 级 | 10% × 1/10 × 1/10 = 0.1% |
-| 不同 id 且 稀有度低 2 级 | 10% × 1/10 × 1/100 = 0.01% |
+| 不同 id（研究 3 级）且 稀有度低 1 级 | 15% × 1/10 = 1.5% |
 
 ### 两个公开方法
-- `CreatureUtil.GetSacrificeFoddersRate(target, listFodder, sacrificeNum)` —— 仅祭品部分，**不含保底、不截顶**
-- `CreatureUtil.GetSacrificeSuccessRate(target, listFodder)` —— 内部取 `target.GetNextLevelInfo().sacrifice_num`，叠加 `target.sacrificePityRate` 保底，`Clamp01` 截顶；**UI 与 Logic 都调用这个**
+- `CreatureUtil.GetSacrificeFoddersRate(target, listFodder, sacrificeNum, differentIdRate)` —— 仅祭品部分，**不含保底、不截顶**；`differentIdRate` 为单个不同 id 祭品成功率(由调用方读研究等级传入)
+- `CreatureUtil.GetSacrificeSuccessRate(target, listFodder)` —— 内部取 `target.GetNextLevelInfo().sacrifice_num`、读 `GetUnlockSacrificeDifferentIdRate()` 得不同id率，叠加 `target.sacrificePityRate` 保底，`Clamp01` 截顶；**UI 与 Logic 都调用这个**
 
 ## 保底机制 (Pity)
 
-字段：`CreatureBean.sacrificePityRate`（持久化，写在 `CreatureBeanPartial.cs`）。
+字段：`CreatureBean.sacrificePityRate`（持久化，写在 `CreatureBeanPartial.cs`）。保底增量由研究 `UnlockEnum.SacrificePityRate` 决定（旧的 `rate*0.5` 逻辑已删除）。
 
-- 献祭**失败**：`sacrificePityRate = 本次最终成功率 × 0.5`（"上一次 80% → 下次保底基础 40%"）
+- 献祭**失败**：`sacrificePityRate = Clamp01(sacrificePityRate + GetUnlockSacrificeFailPityAddRate())`，每级研究 +5%，**未解锁(0级)则失败不累积保底**
 - 下一次献祭：最终成功率 = `sacrificePityRate(保底) + 新祭品总成功率`，再 `Clamp01`
 - 献祭**成功**：`sacrificePityRate = 0` 清零
 - 保底随存档持久（`CreatureBean` 通过 Newtonsoft 序列化），`ClearTempData()` 会重置为 0
@@ -174,7 +181,7 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择
 ## 接入 / 修改流程
 
 ### 调成功率公式
-改 `CreatureUtil.GetSacrificeFoddersRate` / `GetSacrificeSuccessRate`（id 惩罚系数、稀有度惩罚、保底叠加方式）。UI 与 Logic 自动同步，无需两处改。
+改 `CreatureUtil.GetSacrificeFoddersRate` / `GetSacrificeSuccessRate`（同id基础率、不同id研究率应用方式、稀有度惩罚、保底叠加方式）。UI 与 Logic 自动同步，无需两处改。
 
 ### 调升级属性成长
 改 `CreatureBean.UpLevelForSacrifice()`（当前 +1 ATK）。如需按等级配表，给 `LevelInfo` 加成长列并在此读取；如需按稀有度/星级缩放，在此乘系数。
@@ -183,7 +190,10 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择
 改 Excel `excel_level_info` 的 `sacrifice_num` / `level_exp` 列（唯一真实源），再 `ExcelEditorWindow` 导出 JSON。新增等级行按 id 升序插入。
 
 ### 调失败惩罚 / 保底
-改 `CreatureSacrificeLogic.SettleSacrifice`（保底系数 `* 0.5`、是否退经验、祭品是否返还）+ `CreatureBean.sacrificePityRate` 处理。
+保底增量由研究 `UnlockEnum.SacrificePityRate` 驱动：改 `UserUnlockBean.GetUnlockSacrificeFailPityAddRate()`(每级系数)或 `CreatureSacrificeLogic.SettleSacrifice`(累积/清零方式、是否退经验、祭品是否返还) + `CreatureBean.sacrificePityRate` 处理。
+
+### 调不同 id 成功率
+不同 id 祭品成功率由研究 `UnlockEnum.SacrificeDifferentIdRate` 驱动：改 `UserUnlockBean.GetUnlockSacrificeDifferentIdRate()`(每级系数)；公式如何应用(per-fodder/稀有度叠加)改 `CreatureUtil.GetSacrificeFoddersRate`。
 
 ### 调祭坛动画 / 摄像机
 改 `CreatureSacrificeLogic` 的 `AnimForCreatureObjSacrfice` / `AnimForSacrficeEffect` / `AnimForSacrficeCamera` / `SetAltarEffect`。祭坛对象 `scenePrefab.objBuildingAltar`，粒子 `VFX_LightFire*` / `MagicArray`。
@@ -207,7 +217,7 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择
 - **生物系统**：`CreatureBean`(level/levelExp/rarity/creatureAttribute)、`CreatureInfoCfg`(基础属性)、`CreatureHandler.SetCreatureData`+`SpineHandler.PlayAnim`(模型展示)
 - **战斗/征服系统**：`GameFightLogicConquer.AddLevelExpForLineupCreature` 发放经验（满级跳过）
 - **道具系统**：`CreatureBean.RemoveAllEquipToBackpack()` 祭品装备退回 `userData.listBackpackItems`
-- **研究/解锁系统**：`UnlockEnum.Altar` 祭坛解锁；`ScenePrefabForBase` 据此显隐祭坛；`UnlockEnum.SacrificeNum` 研究等级经 `UserUnlockBean.GetUnlockSacrificeMax()` 提升祭品选择上限
+- **研究/解锁系统**：`UnlockEnum.Altar` 祭坛解锁；`ScenePrefabForBase` 据此显隐祭坛；`UnlockEnum.SacrificeNum` 研究等级经 `UserUnlockBean.GetUnlockSacrificeMax()` 提升祭品选择上限；`UnlockEnum.SacrificePityRate`(100100003)/`SacrificeDifferentIdRate`(100100004) 研究经 `GetUnlockSacrificeFailPityAddRate()`/`GetUnlockSacrificeDifferentIdRate()` 决定失败保底增量与不同id祭品成功率
 - **存档系统**：`UserDataBean.listBackpackCreature` + `GameDataHandler.Instance.manager.SaveUserData()`
 - **属性/BUFF 系统**：升级加点写 `creatureAttribute.dicAttributeLevelUp`，与稀有度 BUFF(`dicRarityBuff`)、装备属性在 `GetAttribute` 汇总
 

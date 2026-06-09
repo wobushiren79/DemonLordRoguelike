@@ -184,6 +184,8 @@ public enum UnlockEnum : long
     CreatureVatAdd = 100000001,        // 生物进阶设置+1
     Altar = 100100001,                 // 祭坛
     SacrificeNum = 100100002,          // 增加献祭祭品数量(+1/级, level_max=10)
+    SacrificePityRate = 100100003,     // 献祭失败保底概率提升(+5%/级, level_max=10)
+    SacrificeDifferentIdRate = 100100004, // 不同魔物献祭成功率提升(+5%/级, level_max=10)
     DoomCouncil = 100200001,           // 终焉议会模块
     PortalShowNum = 100300001,         // 传送门显示数量
     GashaponMachine = 100400000,       // 解锁孕育
@@ -267,6 +269,8 @@ public int GetUnlockLineupCreatureNum();               // 6 + LineupCreatureAddN
 public int GetUnlockGameWorldConquerDifficultyLevel(long worldId);
 public int GetUnlockCreatureVatNum();                  // 未解锁返回 0；已解锁返回 1+CreatureVatAdd
 public int GetUnlockSacrificeMax();                    // 献祭祭品选择上限 = 5(sacrificeMax) + SacrificeNum 等级(满级 15)
+public float GetUnlockSacrificeFailPityAddRate();      // 献祭失败保底增量 = SacrificePityRate 等级 × 5%(未解锁0,满级50%)
+public float GetUnlockSacrificeDifferentIdRate();      // 单个不同id祭品成功率 = SacrificeDifferentIdRate 等级 × 5%(未解锁0,满级50%)
 ```
 
 ### 解锁列表

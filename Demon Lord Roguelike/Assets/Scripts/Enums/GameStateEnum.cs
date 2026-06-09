@@ -168,6 +168,8 @@ public enum UnlockEnum : long
     CreatureVatAdd = 100000001,//生物进阶设置+1;
     Altar = 100100001,//祭坛
     SacrificeNum = 100100002,//献祭祭品数量+1
+    SacrificePityRate = 100100003,//献祭失败保底概率提升(每级失败累积的保底成功率+5%,满级+50%)
+    SacrificeDifferentIdRate = 100100004,//不同生物id献祭成功率提升(每个不同id祭品单个成功率+5%,满级+50%)
     DoomCouncil = 100200001,//终焉议会模块
     PortalShowNum = 100300001, //传送门显示数量
     
