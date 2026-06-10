@@ -7,7 +7,7 @@ public partial class CreatureInfoBean : BaseBean
 	/// <summary>
 	///创建需要的魔力
 	/// </summary>
-	public int create_mana;
+	public int create_mp;
 	/// <summary>
 	///生物类型0创建 1抽卡 2敌人 9测试
 	/// </summary>
@@ -117,7 +117,7 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public float ATK;
 	/// <summary>
-	///攻击间隔
+	///攻击速度
 	/// </summary>
 	public float ASPD;
 	/// <summary>

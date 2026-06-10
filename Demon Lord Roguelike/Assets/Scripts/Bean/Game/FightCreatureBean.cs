@@ -15,6 +15,7 @@ public class FightCreatureBean
 
     public int HPCurrent;//当前生命值
     public int DRCurrent;//当前护甲值
+    public float MPCurrent;//当前魔力值（仅战斗中有效 魔王核心创建魔物消耗的魔力 float用于累积每帧的MPF恢复量）
     public Dictionary<CreatureAttributeTypeEnum, float> dicAttribute = new Dictionary<CreatureAttributeTypeEnum, float>(); //属性
 
     //强度倍率(用于征服模式普通进攻敌人按关卡递增强度; 默认1=不变, 对 HP/护甲(DR)/攻击力(ATK) 最终值整体相乘)
@@ -58,6 +59,8 @@ public class FightCreatureBean
         RefreshBaseAttribute();
         HPCurrent = (int)GetAttribute(CreatureAttributeTypeEnum.HP);
         DRCurrent = (int)GetAttribute(CreatureAttributeTypeEnum.DR);
+        //战斗开始时魔力默认满值
+        MPCurrent = GetAttribute(CreatureAttributeTypeEnum.MP);
     }
 
     //modifier 收集缓冲区（复用以避免每次 Refresh 都重新分配）
@@ -76,7 +79,8 @@ public class FightCreatureBean
         for (int i = 0; i < listCreatureAttributeType.Count; i++)
         {
             var creatureAttributeType = listCreatureAttributeType[i];
-            var attributeData = creatureData.GetAttribute(creatureAttributeType);
+            //走含MP分支的属性获取（CreatureBean.GetAttribute 为自动生成代码缺少MP分支 由 CreatureBeanPartial.GetAttributeWithMP 补充）
+            var attributeData = creatureData.GetAttributeWithMP(creatureAttributeType);
             dicAttribute.Add(creatureAttributeType, attributeData);
         }
         //还原基础身体颜色
@@ -326,6 +330,34 @@ public class FightCreatureBean
         {
             RefreshBaseAttribute();
         }
+    }
+    #endregion
+
+    #region 改变魔力
+    /// <summary>
+    /// 改变魔力值（仅战斗中有效 魔王核心专用）
+    /// <para>正值=恢复魔力（如每秒恢复MPF点），负值=消耗魔力（如创建魔物扣除 create_mp）。</para>
+    /// <para>结果会被限制在 [0, 魔力上限MP] 区间内。</para>
+    /// </summary>
+    /// <param name="changeMP">改变值</param>
+    /// <param name="leftMP">剩余值</param>
+    /// <param name="changeMPReal">真实改变值</param>
+    public void ChangeMP(float changeMP, out float leftMP, out float changeMPReal)
+    {
+        MPCurrent += changeMP;
+        changeMPReal = changeMP;
+        if (MPCurrent < 0)
+        {
+            changeMPReal = changeMP - MPCurrent;
+            MPCurrent = 0;
+        }
+        float MPMax = GetAttribute(CreatureAttributeTypeEnum.MP);
+        if (MPCurrent > MPMax)
+        {
+            changeMPReal = changeMP - (MPCurrent - MPMax);
+            MPCurrent = MPMax;
+        }
+        leftMP = MPCurrent;
     }
     #endregion
 }

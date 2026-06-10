@@ -59,7 +59,7 @@ public class AttackModeRangedTracking :  AttackModeRanged
     /// </summary>
     public override void HandleForMove()
     {
-        gameObject.transform.Translate(attackModeData.attackDirection * Time.deltaTime * attackModeInfo.speed_move);
+        gameObject.transform.Translate(attackModeData.attackDirection * Time.deltaTime * GetMoveSpeed());
     }
 
 }

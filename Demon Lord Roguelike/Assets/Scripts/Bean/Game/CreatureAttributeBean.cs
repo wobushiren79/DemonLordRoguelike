@@ -100,14 +100,15 @@ public class CreatureAttributeBean
     /// </summary>
     public void AddAttribute(Dictionary<CreatureAttributeTypeEnum, float> dic, CreatureAttributeTypeEnum attributeType, float addNum)
     {
-        float tempValue = 0;
+        float tempValue;
         if (dic.TryGetValue(attributeType, out float targetValue))
         {
             tempValue = targetValue + addNum;
         }
         else
         {
-            dic.Add(attributeType, 0);
+            //首次加入该属性时直接以增量为初值(此前误置为0会丢失第一次加点)
+            tempValue = addNum;
         }
         if (tempValue < 0)
         {

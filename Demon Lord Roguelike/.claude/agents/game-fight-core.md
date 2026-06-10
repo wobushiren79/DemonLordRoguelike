@@ -17,7 +17,7 @@ watched_files:
 ## 职责范围
 
 ### 战斗实体
-- **FightCreatureEntity** - 战斗生物实体，管理生物在战斗中的完整生命周期
+- **FightCreatureEntity** - 战斗生物实体，管理生物在战斗中的完整生命周期；按生物类型拆分为 partial 文件：主文件（通用：SetData/受击/回复/动画/检测/死亡分发）、`FightCreatureEntityForAttack.cs`（进攻：ChangeRoad 换路诱导、死亡意图）、`FightCreatureEntityForDefense.cs`（防守：死亡意图）、`FightCreatureEntityForDefenseCore.cs`（魔王：魔力显示 `RefreshMPShow()`——MPShow 进度条 + MPText"当前/上限"文本，与 LifeShow 同款进度材质，非核心生物无该节点自动跳过；死亡意图）。新增类型专属逻辑时写入对应 partial 文件
 - **FightPrefabEntity** - 战斗预制体实体
 
 ### 战斗场景
@@ -46,7 +46,10 @@ watched_files:
 
 | 文件 | 路径 |
 |------|------|
-| 战斗生物实体 | Assets/Scripts/Game/Fight/FightCreatureEntity.cs |
+| 战斗生物实体(通用) | Assets/Scripts/Game/Fight/FightCreatureEntity.cs |
+| 战斗生物实体(进攻专属) | Assets/Scripts/Game/Fight/FightCreatureEntityForAttack.cs |
+| 战斗生物实体(防守专属) | Assets/Scripts/Game/Fight/FightCreatureEntityForDefense.cs |
+| 战斗生物实体(魔王专属) | Assets/Scripts/Game/Fight/FightCreatureEntityForDefenseCore.cs |
 | 预制体实体 | Assets/Scripts/Game/Fight/FightPrefabEntity.cs |
 | 场景基类 | Assets/Scripts/Component/Game/Scene/ScenePrefabBase.cs |
 | 战斗控制 | Assets/Scripts/Component/Game/Control/ControlForGameFight.cs |

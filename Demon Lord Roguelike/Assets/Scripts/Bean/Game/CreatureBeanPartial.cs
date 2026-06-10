@@ -85,15 +85,17 @@ public partial class CreatureBean
     }
 
     /// <summary>
-    /// 通过献祭升级一级: 扣除本级所需经验(跨级累加制,余量保留)、等级+1、并按规则加点属性。
+    /// 通过献祭升级一级: 扣除本级所需经验(跨级累加制,余量保留)、等级+1,并返回本次升级获得的可分配属性加点数。
+    /// <para>属性加点不再自动加成, 改由玩家在 UICreatureAddAttribute 界面手动分配(见献祭升级成功流程)。</para>
     /// <para>仅在献祭成功时调用;调用前应已通过 CanUpLevel() 校验。</para>
     /// </summary>
-    public void UpLevelForSacrifice()
+    /// <returns>本次升级获得的属性加点数(取下一级 LevelInfo.attribute_point, 未配置默认 1);已满级返回 0</returns>
+    public int UpLevelForSacrifice()
     {
         var nextLevelInfo = GetNextLevelInfo();
         //已满级,不再升级
         if (nextLevelInfo == null || nextLevelInfo.id == 0)
-            return;
+            return 0;
         //扣除升到下一级所需经验,余量保留用于后续升级
         long needExp = long.Parse(nextLevelInfo.level_exp);
         levelExp -= needExp;
@@ -101,8 +103,55 @@ public partial class CreatureBean
             levelExp = 0;
         //等级+1
         level++;
-        //每升一级暂加 1 点攻击(后续再优化升级属性成长规则)
-        creatureAttribute.AddAttributeForLevelUp(CreatureAttributeTypeEnum.ATK, 1);
+        //本次升级获得的加点数(配置驱动, 未配置默认 1)
+        int attributePoint = nextLevelInfo.attribute_point;
+        if (attributePoint <= 0)
+            attributePoint = 1;
+        return attributePoint;
+    }
+    #endregion
+
+    #region 创建随机属性
+    /// <summary>
+    /// 创建生物时随机属性加点(孕育扭蛋/新建存档初始魔物共用)
+    /// <para>总点数取自 UserLimmitBean.gashaponRandomAttributeNum, 配置异常(小于等于0)时兜底不加点。</para>
+    /// </summary>
+    /// <param name="userData">用户数据(新建存档时 GameDataHandler 尚未 SetUserData, 需显式传入新建的 UserDataBean)</param>
+    public void RandomAttributeForCreate(UserDataBean userData)
+    {
+        if (userData == null)
+            return;
+        int randomAttributeNum = userData.GetUserLimmitData().gashaponRandomAttributeNum;
+        if (randomAttributeNum <= 0)
+            return;
+        creatureAttribute.AddRandomAttributeForCreate(randomAttributeNum);
+    }
+    #endregion
+
+    #region 战斗属性
+    /// <summary>
+    /// 获取基础属性（含魔力上限 MP 分支）
+    /// <para>GetAttribute 位于自动生成的 CreatureBean.cs，其属性 switch 缺少 MP 分支且不可直接修改；</para>
+    /// <para>需要取魔力上限(MP)时统一走此方法，其余属性原样透传 GetAttribute。</para>
+    /// <para>MP/MPF 仅在战斗中有效：MP=魔王魔力上限（创建魔物消耗魔力），MPF=每秒恢复的魔力值。</para>
+    /// </summary>
+    /// <param name="creatureAttributeType">属性类型</param>
+    /// <returns>属性值</returns>
+    public float GetAttributeWithMP(CreatureAttributeTypeEnum creatureAttributeType)
+    {
+        //非MP属性直接透传原有逻辑
+        if (creatureAttributeType != CreatureAttributeTypeEnum.MP)
+            return GetAttribute(creatureAttributeType);
+        //MP魔力上限：与 GetAttribute 内其他属性相同的计算管线（基础值→角色加点→装备→BUFF）
+        var npcInfo = creatureNpcData?.npcInfo;
+        float targetData = npcInfo != null ? npcInfo.MP : creatureInfo.MP;
+        //获取角色属性加成
+        targetData += creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.MP);
+        //获取装备属性
+        targetData += GetEquipAttribute(CreatureAttributeTypeEnum.MP);
+        //获取BUFF改变后的属性加成
+        targetData = GetBuffChangeAttribute(CreatureAttributeTypeEnum.MP, targetData);
+        return targetData;
     }
     #endregion
 

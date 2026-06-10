@@ -161,10 +161,12 @@ public class CreatureSacrificeLogic : BaseGameLogic
             }
         }
 
+        //本次升级获得的可分配属性加点数(仅成功时 > 0)
+        int attributePoint = 0;
         if (isSuccess)
         {
-            //升级一级并清空保底
-            targetCreature.UpLevelForSacrifice();
+            //升级一级(返回可分配加点数)并清空保底;属性加点改由玩家在加点界面手动分配
+            attributePoint = targetCreature.UpLevelForSacrifice();
             targetCreature.sacrificePityRate = 0f;
             TriggerEvent(EventsInfo.CreatureSacrifice_SacrificeSuccess);
         }
@@ -178,12 +180,39 @@ public class CreatureSacrificeLogic : BaseGameLogic
 
         //清空本次祭品选择
         creatureSacrificeData.fodderCreatures = null;
-        //保存存档(测试模式不落盘到真实存档,仅内存生效)
+
+        //升级成功且有可分配点数: 弹出属性加点界面手动加点,存档与返回界面延迟到加点确认后执行
+        if (isSuccess && attributePoint > 0)
+        {
+            OpenAddAttributeUI(targetCreature, attributePoint);
+            return;
+        }
+        //其它情况(失败 / 满级无加点): 直接存档并返回
+        SaveAndEndGame();
+    }
+
+    /// <summary>
+    /// 打开属性加点界面: 玩家手动把本次升级获得的点数分配到 HP/护甲/攻击,确认后存档并返回生物管理界面。
+    /// </summary>
+    /// <param name="targetCreature">升级的目标生物</param>
+    /// <param name="attributePoint">本次可分配的属性加点数</param>
+    public void OpenAddAttributeUI(CreatureBean targetCreature, int attributePoint)
+    {
+        UIHandler.Instance.OpenUIAndCloseOther<UICreatureAddAttribute>((ui) =>
+        {
+            ui.SetData(targetCreature, attributePoint, SaveAndEndGame);
+        });
+    }
+
+    /// <summary>
+    /// 存档(测试模式不落盘到真实存档,仅内存生效)并返回生物管理界面。
+    /// </summary>
+    public void SaveAndEndGame()
+    {
         if (!creatureSacrificeData.isTestMode)
         {
             GameDataHandler.Instance.manager.SaveUserData();
         }
-        //返回生物管理界面
         EndGame();
     }
 

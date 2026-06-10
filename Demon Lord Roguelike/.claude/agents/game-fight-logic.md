@@ -40,6 +40,10 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 | GameHandler | Assets/Scripts/Component/Handler/GameHandler.cs |
 | GameManager | Assets/Scripts/Component/Manager/GameManager.cs |
 
+### 魔王魔力(MP)系统（仅战斗中有效）
+- `UpdateGameForMPRecover(updateTime)` - 每帧给魔王核心恢复 MPF*updateTime 点魔力（MPF=每秒恢复量），并调用 `RefreshMPShow()` 通知刷新魔力显示
+- `PutCard()` - 放置卡片前检查魔王 `MPCurrent >= create_mp`，不足则 Toast"魔力不足"(UIText 50006)；足够则 `ChangeMP(-create_mp)` 扣除并刷新显示
+
 ## 约束
 
 - 新增战斗模式需继承 GameFightLogic，实现 Pre/Start/Update/End/Clear

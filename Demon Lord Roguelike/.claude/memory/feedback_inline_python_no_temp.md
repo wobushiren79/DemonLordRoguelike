@@ -15,4 +15,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".claude/scripts/run-pyt
 
 **Why:** 用户问「为什么 Write `.claude/scripts/_tmp_dump_lang.py` 还弹确认」。根因是用**绝对路径**调 Write 时，两条本该命中的 allow 规则都失配：① `Write(.claude/scripts/**)` 是以项目根锚定的相对模式，绝对路径带盘符+项目前缀（不以 `.claude/scripts/` 开头）故不匹配；② `Write(**/*.py)` 的 `**`/`*` 默认**不穿透点目录** `.claude/`，捞不到其下的 `.py`。两条全落空 → 每个路径单独弹窗。建临时文件既弹窗又制造待清理垃圾，内联 `-c` 一举绕开。
 
-**How to apply:** 默认走内联 `-c`；只有「需反复执行/复用」才在 `.claude/scripts/` 落 `.py`。给 allow 规则配「绝对路径也能命中」的兜底时，用把点目录段写成字面量的浮动模式 `Write(**/.claude/scripts/**)`（`**/` 吃掉盘符前缀，`.claude/scripts/` 字面量避开点目录穿透问题），已加入 `settings.json`。相关：[[feedback-agent-skill-sync]]。
+**How to apply:** 默认走内联 `-c`；只有「需反复执行/复用」才在 `.claude/scripts/` 落 `.py`。给 allow 规则配「绝对路径也能命中」的兜底时，用把点目录段写成字面量的浮动模式（`**/` 吃掉盘符前缀，`.claude` 字面量避开点目录穿透问题）。2026-06-10 再次复发（编辑 `.claude/memory/*.md` 弹窗）：之前加的浮动兜底被回退丢失，且 `.claude/memory/**` 一直没有显式 Write/Edit 规则。已重新在 `settings.json` 加入 `Read/Write/Edit(**/.claude/**)` 浮动兜底 + `Write/Edit(.claude/memory/**)`，若再弹窗先核对这几条是否还在。相关：[[feedback-agent-skill-sync]]。

@@ -294,6 +294,8 @@ public void PutCard(Vector3 worldPosition)
     if (selectCreatureCard == null)
         return;
     
+    // 检测魔王魔力是否足够（create_mp=创建消耗），不足则Toast"魔力不足"(UIText 50006)并中止
+    // 足够则 ChangeMP(-create_mp) 扣除魔力并刷新魔王MPShow显示
     // 创建生物实体...
     TriggerEvent(EventsInfo.GameFightLogic_PutCard, selectCreatureCard);
     selectCreatureCard = null;

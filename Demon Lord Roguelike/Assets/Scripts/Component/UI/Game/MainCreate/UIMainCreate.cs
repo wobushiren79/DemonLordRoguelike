@@ -182,6 +182,8 @@ public partial class UIMainCreate : BaseUIComponent
                 List<long> skins = npcInfo.GetSkins();
                 creatureData.AddSkinForBase();
                 creatureData.AddSkin(skins);
+                //与孕育(扭蛋)一致: 创建时随机属性加点(此时存档尚未 SetUserData, 传入新建的 userData)
+                creatureData.RandomAttributeForCreate(userData);
                 //添加到背包
                 userData.AddBackpackCreature(creatureData);
                 //添加到阵容1

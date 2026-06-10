@@ -8,7 +8,7 @@
         "com.unity.nuget.newtonsoft-json": "3.0.2",
         "com.unity.timeline": "1.7.7"
       },
-      "hash": "b044dbebd93c4a2d6b8f5051b8fc88eb5c431609"
+      "hash": "ec0f32df120cd941fb6f769c7309a7d92a8ef7ab"
     },
     "com.coffee.ui-particle": {
       "version": "https://github.com/mob-sakai/ParticleEffectForUGUI.git#4.9.0",
@@ -28,7 +28,7 @@
         "com.unity.nuget.newtonsoft-json": "3.0.2",
         "com.unity.test-framework": "1.1.31"
       },
-      "hash": "b92c05a25820cfc9f59ce4094eb46aaec8632ea2"
+      "hash": "78ee5418415953b79c358bfe6355fcc3fde7912b"
     },
     "com.cqf.urpvolumetricfog": {
       "version": "https://github.com/CristianQiu/Unity-URP-Volumetric-Light.git",

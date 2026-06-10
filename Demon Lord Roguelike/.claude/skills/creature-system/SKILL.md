@@ -10,6 +10,9 @@ watched_files:
   - Assets/Scripts/Bean/MVC/Game/CreatureInfoBean.cs
   - Assets/Scripts/Utils/CreatureUtil.cs
   - Assets/Scripts/Game/Fight/FightCreatureEntity.cs
+  - Assets/Scripts/Game/Fight/FightCreatureEntityForAttack.cs
+  - Assets/Scripts/Game/Fight/FightCreatureEntityForDefense.cs
+  - Assets/Scripts/Game/Fight/FightCreatureEntityForDefenseCore.cs
   - Assets/Scripts/Enums/CreatureEnum.cs
   - Assets/Scripts/AI/Creature/AICreatureEntity.cs
 ---
@@ -78,7 +81,7 @@ public class CreatureBean
 }
 ```
 
-> **等级升级机制见 [`sacrifice-system`](../sacrifice-system/SKILL.md) Skill**：生物的 `level`/`levelExp` 升级走"基地祭坛献祭"——经验达标后献祭祭品掷骰，成功才升级并加属性（当前每级 +1 ATK，写入 `creatureAttribute.dicAttributeLevelUp`）。升级方法 `UpLevelForSacrifice`/`CanUpLevel`/`IsMaxLevel` 在 `CreatureBeanPartial.cs`，成功率公式在 `CreatureUtil`。
+> **等级升级机制见 [`sacrifice-system`](../sacrifice-system/SKILL.md) Skill**：生物的 `level`/`levelExp` 升级走"基地祭坛献祭"——经验达标后献祭祭品掷骰，成功才升级。升级**不再自动加属性**，而是按 `LevelInfo.attribute_point`(当前全等级配置5) 发放可分配点数，由玩家在 `UICreatureAddAttribute` 界面手动加点(HP/护甲每点+10、攻击/攻速每点+1，写入 `creatureAttribute.dicAttributeLevelUp`)。升级方法 `UpLevelForSacrifice`(返回本次加点数)/`CanUpLevel`/`IsMaxLevel` 在 `CreatureBeanPartial.cs`，单点增量 `CreatureUtil.GetAttributePointAddValue`，成功率公式在 `CreatureUtil`。
 
 ### 创建生物
 
@@ -109,6 +112,11 @@ float atk = finalAttr.GetAttribute(CreatureAttributeTypeEnum.ATK);
 float def = finalAttr.GetAttribute(CreatureAttributeTypeEnum.DR);
 float aspd = finalAttr.GetAttribute(CreatureAttributeTypeEnum.ASPD);
 float mspd = finalAttr.GetAttribute(CreatureAttributeTypeEnum.MSPD);
+
+// 魔力上限MP（仅战斗中有效 魔王创建魔物的资源池）：
+// CreatureBean.GetAttribute（自动生成代码）缺少MP分支，必须走 CreatureBeanPartial.GetAttributeWithMP
+float mp = creature.GetAttributeWithMP(CreatureAttributeTypeEnum.MP);
+// 创建魔物消耗的魔力配在 CreatureInfo.create_mp，魔力恢复速度为 MPF（每秒恢复量）
 
 // 配置信息
 CreatureInfoBean info = creature.creatureInfoBean;
@@ -163,39 +171,47 @@ public enum CreatureAttributeTypeEnum
 
 ## FightCreatureEntity - 战斗生物实体
 
-**文件**: `Assets/Scripts/Game/Fight/FightCreatureEntity.cs`
+**文件**: `Assets/Scripts/Game/Fight/FightCreatureEntity.cs`（partial 拆分：通用部分在主文件；进攻生物专属在 `FightCreatureEntityForAttack.cs`；防守生物专属在 `FightCreatureEntityForDefense.cs`；魔王(防守核心)专属(魔力MPShow显示等)在 `FightCreatureEntityForDefenseCore.cs`）
 
 ### 核心职责
 
 ```csharp
-public class FightCreatureEntity : BaseMonoBehaviour
+// 普通C#类（非MonoBehaviour），partial 拆分为 主文件 + ForAttack + ForDefense + ForDefenseCore
+public partial class FightCreatureEntity
 {
-    public FightCreatureBean fightCreatureData;  // 战斗生物数据
-    public CreatureBean creatureData;            // 原始生物数据
-    public GameObject creatureObj;               // Spine 游戏对象
-    public SkeletonAnimation skeletonAnimation;  // Spine 动画组件
-    public GameObject hpBar;                     // 血条
+    // === 数据（主文件） ===
+    public GameObject creatureObj;                        // 生物游戏物体
+    public FightCreatureBean fightCreatureData;           // 战斗生物数据（含 creatureData 原始生物数据）
+    public AIBaseEntity aiEntity;                         // AI实体
+    public CreatureFightStateEnum creatureFightState;     // 生物战斗状态
+    public SkeletonAnimation creatureSkeletionAnimation;  // Spine 动画组件
+    public SpriteRenderer creatureLifeShow;               // 血条（进度条材质 CheckDead 内刷新）
 
-    // === 生命周期 ===
-    public void InitCreatureEntity(FightCreatureBean data);  // 初始化
-    public void ClearData();                                  // 清理
-    
-    // === 战斗交互 ===
+    // === 生命周期（主文件） ===
+    public void SetData(GameObject creatureObj, FightCreatureBean fightCreatureData);  // 初始化（内部调用 SetDataForDefenseCore 挂接魔王MPShow）
+    public void Destory(bool isPermanently);                                           // 删除
+
+    // === 战斗交互（主文件） ===
     public void UnderAttack(BaseAttackMode attackMode);  // 受击
     public void RegainHP(BaseAttackMode attackMode);     // 回复HP
     public void RegainDR(BaseAttackMode attackMode);     // 回复护甲
     public void AddBuff(BaseAttackMode attackMode);      // 添加BUFF
-    public void CheckDead(Action noDead, Action dead);    // 死亡检测
-    public void SetCreatureDead();                       // 设置死亡
+    public void CheckDead(Action noDead, Action dead);    // 死亡检测（内置血条/护盾进度刷新）
+    public void SetCreatureDead();                       // 设置死亡（分发到各类型partial的死亡意图切换）
     public bool IsDead();                                // 是否死亡
-    public void DropCrystal(int state);                  // 掉落水晶
-    
-    // === 表现 ===
+    public void DropCrystal(int state);                  // 掉落水晶（0所有 1仅进攻 2仅防守）
+
+    // === 表现（主文件） ===
     public TrackEntry PlayAnim(SpineAnimationStateEnum anim, bool loop);  // 播放动画
     public void SetFaceDirection(Direction2DEnum direction);              // 设置朝向
-    public void ShowHpBar();                                              // 显示血条
-    public void HideHpBar();                                              // 隐藏血条
-    public void UpdateHpBar();                                            // 更新血条
+
+    // === 进攻生物专属（FightCreatureEntityForAttack.cs） ===
+    public void ChangeRoad(int targetRoadIndex);         // 换路（诱导）
+
+    // === 魔王专属（FightCreatureEntityForDefenseCore.cs） ===
+    public SpriteRenderer creatureMPShow;                // 魔力条
+    public TMPro.TextMeshPro creatureMPText;             // 魔力文本（当前/上限）
+    public void RefreshMPShow();                         // 刷新魔力显示
 }
 ```
 
@@ -399,7 +415,10 @@ Color rarityColor = CreatureUtil.GetRarityColor(creature.rarity);
 | 生物属性Bean | `Assets/Scripts/Bean/Game/CreatureAttributeBean.cs` |
 | 生物配置Bean | `Assets/Scripts/Bean/MVC/Game/CreatureInfoBean.cs` |
 | 生物NPC数据 | `Assets/Scripts/Bean/Game/CreatureNpcBean.cs` |
-| 战斗生物实体 | `Assets/Scripts/Game/Fight/FightCreatureEntity.cs` |
+| 战斗生物实体(通用) | `Assets/Scripts/Game/Fight/FightCreatureEntity.cs` |
+| 战斗生物实体(进攻) | `Assets/Scripts/Game/Fight/FightCreatureEntityForAttack.cs` |
+| 战斗生物实体(防守) | `Assets/Scripts/Game/Fight/FightCreatureEntityForDefense.cs` |
+| 战斗生物实体(魔王) | `Assets/Scripts/Game/Fight/FightCreatureEntityForDefenseCore.cs` |
 | 生物处理器 | `Assets/Scripts/Component/Handler/CreatureHandler.cs` |
 | 生物管理器 | `Assets/Scripts/Component/Manager/CreatureManager.cs` |
 | 生物工具 | `Assets/Scripts/Utils/CreatureUtil.cs` |

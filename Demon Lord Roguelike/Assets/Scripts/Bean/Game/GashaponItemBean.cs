@@ -134,7 +134,7 @@ public class GashaponItemBean
     /// </summary>
     public void RandomAttribute()
     {
-        int randomAttributeNum = 5;//随机属性点数
-        creatureData.creatureAttribute.AddRandomAttributeForCreate(randomAttributeNum);
+        //创建时随机属性加点(共用逻辑见 CreatureBean.RandomAttributeForCreate, 点数取自 UserLimmitBean 基础值)
+        creatureData.RandomAttributeForCreate(GameDataHandler.Instance.manager.GetUserData());
     }
 }

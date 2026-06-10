@@ -17,10 +17,20 @@ watched_files:
 ### 攻击模块数据结构
 
 ```
-AttackModeBean       - 攻击模块运行时数据（包含伤害、位置、方向、攻击者/目标ID等）
+AttackModeBean       - 攻击模块运行时数据（包含伤害、位置、方向、攻击者/目标ID、弹道速度倍率等）
 AttackModeInfoBean   - 攻击模块配置数据（来自配置表）
 BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播放、生命周期管理等）
 ```
+
+### 攻击者属性快照（StartAttack 时写入 AttackModeBean）
+
+`StartAttack(attacker, attacked, ...)` 会把攻击者当前属性快照进 `attackModeData`，弹道存活期间不再随属性变化：
+
+| 字段 | 来源属性 | 说明 |
+|------|---------|------|
+| `attackerDamage` | ATK | 攻击伤害 |
+| `attackerCRT` | CRT | 暴击概率 |
+| `attackerSpeedRate` | ASPD | 弹道飞行速度倍率：ASPD 按 0~100 线性插值映射 1~`BaseAttackMode.SpeedRateASPDMax`(当前3倍)；无攻击者时保持默认 1，`ClearData()` 重置为 1 |
 
 ### BaseAttackMode 关键状态字段
 
@@ -148,7 +158,8 @@ public class AttackModeRanged : BaseAttackMode
 
     public virtual void HandleForMove()
     {
-        gameObject.transform.Translate(attackModeData.attackDirection * Time.deltaTime * attackModeInfo.speed_move);
+        //实际飞行速度 = speed_move × 攻速ASPD加成倍率，统一走 GetMoveSpeed()
+        gameObject.transform.Translate(attackModeData.attackDirection * Time.deltaTime * GetMoveSpeed());
     }
 
     public virtual void HandleForBound()
@@ -351,7 +362,7 @@ public class AttackModeCustom : BaseAttackMode
     "collider_area_size": "2,2,2",   // 范围检测大小（半径或半extents）
     "effect_hit": "10001&10002",     // 击中特效ID列表（&分隔，index 0=初始，index 1=连锁）
     "effect_damage": "1002",         // 受伤特效ID（默认不填，0关闭）
-    "speed_move": 10,                // 移动速度（远程弹道用）
+    "speed_move": 10,                // 移动速度（远程弹道用；运行时会再乘攻击者的攻速倍率 attackerSpeedRate）
     "sound_miss": 1,                 // 未击中音效ID
     "sound_hit": 2,                  // 击中音效ID
     "remark": "远程箭矢"             // 备注
@@ -493,6 +504,7 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | `CheckHitTarget()` | 检测多个目标 |
 | `CheckHitTarget(Vector3)` | 在指定位置检测多个目标，使用缓存的 `searchCreatureType` |
 | `CheckHitTargetArea(Vector3, Action<FightCreatureEntity>)` | 范围检测并回调；内部使用 `FightManager.GetCachedFightLogic()` 避免每个 collider 反射查询 |
+| `GetMoveSpeed()` | 弹道实际飞行速度 = `speed_move × attackerSpeedRate`；远程系（Ranged/Arc/Tracking/Split）移动计算必须用它，禁止直接读 `attackModeInfo.speed_move`（天降 Fallupon 下落速度不吃攻速加成） |
 | `GetHitTargetAreaCollider(Vector3)` | 按配置 `collider_area_type` 取范围内 colliders |
 | `CheckIsMoveBound(GameObject)` | 检测是否超出边界 |
 

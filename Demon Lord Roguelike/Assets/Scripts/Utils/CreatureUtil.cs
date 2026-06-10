@@ -69,6 +69,31 @@ public static class CreatureUtil
     }
     #endregion
 
+    #region 生物加点
+    /// <summary>
+    /// 获取「单个属性加点」对应增加的属性数值。
+    /// <para>升级加点时, 每点对不同属性的增量不同: HP/护甲(DR) 每点 +10, 攻击(ATK)/攻速(ASPD) 每点 +1, 其余默认每点 +1。</para>
+    /// </summary>
+    /// <param name="attributeType">属性类型</param>
+    /// <returns>单点该属性增加的数值</returns>
+    public static float GetAttributePointAddValue(CreatureAttributeTypeEnum attributeType)
+    {
+        switch (attributeType)
+        {
+            case CreatureAttributeTypeEnum.HP:
+                return 10;
+            case CreatureAttributeTypeEnum.DR:
+                return 10;
+            case CreatureAttributeTypeEnum.ATK:
+                return 1;
+            case CreatureAttributeTypeEnum.ASPD:
+                return 1;
+            default:
+                return 1;
+        }
+    }
+    #endregion
+
     #region 生物皮肤
     /// <summary>
     /// 获取生物皮肤类型的多语言显示名称

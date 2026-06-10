@@ -27,7 +27,7 @@ watched_files:
 - **AbyssalBlessingEntityBean** - 馈赠运行时实例（含 UUID）
 
 ### 配置（Excel + JSON）
-- `excel_abyssal_blessing_info[深渊馈赠信息].xlsx` - 唯一真实源（数据写在 **Sheet1**，三行表头：字段名/中文/类型）
+- `excel_abyssal_blessing_info[深渊馈赠信息].xlsx` - 唯一真实源（数据写在 **AbyssalBlessingInfo** 工作表，三行表头：字段名/类型/中文说明）
   - 列：`id`(long) `icon_res`(string) `parent_id`(long) `level`(int) `buff_ids`(string,逗号分隔) `name`(language) `details`(language) `remark`(string)
   - **一个等级 = 一行**；同族升级链：lv1 `parent_id=0`，lv2 `parent_id=lv1.id`，lv3 `parent_id=lv2.id`……`level` 从 1 连续递增（`level=0` 为不可升级的常驻馈赠）
   - id 约定 10 位（如 `2000001005`，末 3 位=等级序号）
@@ -135,7 +135,7 @@ watched_files:
 - 馈赠 BUFF 目标固定为**防守核心**（CreatureFightTypeEnum.FightDefenseCore），施加者也是核心 UUID。
 - `ClearAbyssalBlessing` **只能在征服全通关 + 领奖结束后调用**，中途调用会丢失玩家选择。
 - `GetAbyssalBlessingOwnedLevel` 必须传**族根 id**（`GetFamilyRootId` 取得），不是任意等级的 id。
-- 配置数据写在 Excel 的 **`Sheet1`**（不是 `Sort Title 1/2`）；改完 Excel 必须用 Unity 编辑器导出 JSON。
+- 配置数据写在 Excel 的 **`AbyssalBlessingInfo`** 工作表（不存在 `Sheet1`/`Sort Title`）；改完 Excel 必须用 Unity 编辑器导出 JSON。
 - BUFF 具体实体类型 / 触发逻辑 / 属性管线请走 `game-buff` 代理 + `buff-system` SKILL。
 - 馈赠图标必须放入 `AtlasForAbyssalBlessing.spriteatlas`，加载只能走 `IconHandler.Instance.SetAbyssalBlessingIcon`；用 `SetUIIcon` 会去 UI 图集查找导致丢图。
 

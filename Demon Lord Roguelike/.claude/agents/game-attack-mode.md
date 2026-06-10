@@ -45,6 +45,8 @@ watched_files:
 - **`isValid`** - 是否激活；`Destroy()` 时置 `false`，外层遍历据此跳过
 - **`instanceId`** - `FightManager` 分配的实例 ID，`dlAttackModePrefab`（DictionaryList）按此 key 做 O(1) 移除
 - **`searchCreatureType`** - 由 `attackedLayerTarget` 推导出的搜索类型，在 `StartAttack(attacker,...)` 中缓存、`Destroy()` 中清零，子类范围检测应复用而非每帧重算
+- **`SpeedRateASPDMax`** - 攻速 ASPD=100 时弹道飞行速度的最大加成倍率常量（当前 3 倍，数值调整入口）；`StartAttack(attacker,...)` 时把攻击者 ASPD 按 0~100 线性插值成 1~该倍率，快照进 `attackModeData.attackerSpeedRate`（与 `attackerDamage`/`attackerCRT` 同一快照模式）
+- **`GetMoveSpeed()`** - 弹道实际飞行速度 = `attackModeInfo.speed_move × attackModeData.attackerSpeedRate`；远程系（Ranged/Arc/Tracking/Split 及其子类）的移动计算必须用它，**禁止**直接读 `attackModeInfo.speed_move`（天降 Fallupon 的下落速度不吃攻速加成，仍直接用配置值）
 
 ## 新增攻击模式模板
 

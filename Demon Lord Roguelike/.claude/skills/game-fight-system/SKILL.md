@@ -5,6 +5,9 @@ watched_files:
   - Assets/Scripts/Game/Logic/
   - Assets/Scripts/Bean/Game/FightBean.cs
   - Assets/Scripts/Game/Fight/FightCreatureEntity.cs
+  - Assets/Scripts/Game/Fight/FightCreatureEntityForAttack.cs
+  - Assets/Scripts/Game/Fight/FightCreatureEntityForDefense.cs
+  - Assets/Scripts/Game/Fight/FightCreatureEntityForDefenseCore.cs
   - Assets/Scripts/Game/Fight/FightPrefabEntity.cs
   - Assets/Scripts/Component/Handler/FightHandler.cs
   - Assets/Scripts/Component/Manager/FightManager.cs
@@ -22,7 +25,8 @@ watched_files:
 ```
 GameFightLogic          - 战斗逻辑基类（生命周期管理、场景加载、生物生成、游戏状态）
 FightBean               - 战斗运行时数据（进攻/防守生物、核心生物、战斗记录）
-FightCreatureEntity     - 战斗生物实体（Spine动画、受击/回复/死亡、血条）
+FightCreatureEntity     - 战斗生物实体（Spine动画、受击/回复/死亡、血条、魔王魔力条MPShow）
+                          按类型拆分partial：主文件通用 + ForAttack(进攻) + ForDefense(防守) + ForDefenseCore(魔王)
 FightPrefabEntity       - 战斗预制实体（掉落水晶/魔力等场景物品）
 FightHandler            - 战斗处理器（攻击模块创建、预制管理、倒计时）
 FightManager            - 战斗管理器（对象池：攻击模块、战斗预制、数据缓存）
@@ -48,7 +52,7 @@ public class GameFightLogic : BaseGameLogic
     // 1. 准备阶段：加载场景 -> 创建核心生物 -> 开启控制 -> 打开UI
     public override async void PreGame() { }
     
-    // 2. 游戏更新：生物生成、生物更新、BUFF更新
+    // 2. 游戏更新：生物生成、生物更新、魔王魔力恢复、BUFF更新
     public override void UpdateGame() { }
     
     // 3. 游戏结束触发
@@ -156,7 +160,8 @@ CreatureHandler.Instance.RemoveFightCreatureEntity(entity, CreatureFightTypeEnum
 ### 生物交互接口
 
 ```csharp
-public class FightCreatureEntity
+// partial 拆分：通用接口在主文件；RefreshMPShow 在 FightCreatureEntityForDefenseCore.cs；ChangeRoad 在 FightCreatureEntityForAttack.cs
+public partial class FightCreatureEntity
 {
     // 受到攻击（自动处理闪避、暴击、扣护甲、扣血、死亡检测）
     public void UnderAttack(BaseAttackMode baseAttackMode);
@@ -187,7 +192,37 @@ public class FightCreatureEntity
     
     // 播放Spine动画
     public TrackEntry PlayAnim(SpineAnimationStateEnum anim, bool loop);
+    
+    // 刷新魔力显示（魔王核心专用：MPShow进度条 + MPText文本"当前/上限"，非核心生物无MPShow节点自动跳过）
+    public void RefreshMPShow();
 }
+```
+
+## 魔王魔力(MP)系统
+
+MP/MPF 两个属性**仅在战斗中有效**，挂在魔王（防守核心）身上：
+
+```csharp
+// 属性来源（excel_creature_info）：
+// MP  = 魔力上限（魔王用来创建魔物的资源池）
+// MPF = 魔力恢复速度（每秒恢复MPF点魔力）
+// create_mp = 创建该魔物需要消耗的魔力（配在每个魔物的 CreatureInfo 上）
+
+// 运行时数据（FightCreatureBean）：
+public float MPCurrent;   // 当前魔力（战斗开始时默认满值，float用于累积每帧恢复量）
+public void ChangeMP(float changeMP, out float leftMP, out float changeMPReal); // 限制在[0, MP上限]
+
+// 注意：CreatureBean.GetAttribute（自动生成代码）缺少MP分支，
+// 取魔力上限必须走 CreatureBeanPartial.GetAttributeWithMP(CreatureAttributeTypeEnum.MP)，
+// FightCreatureBean.RefreshBaseAttribute 已统一走该方法。
+
+// 恢复链路：GameFightLogic.UpdateGameForMPRecover(updateTime)
+//   每帧给魔王核心恢复 MPF*updateTime 点魔力，然后 RefreshMPShow() 通知刷新显示
+// 消耗链路：GameFightLogic.PutCard()
+//   放置卡片时检查 MPCurrent >= create_mp，不足则 Toast 提示"魔力不足"(UIText 50006)并取消放置；
+//   足够则 ChangeMP(-create_mp) 扣除并 RefreshMPShow()
+// 显示链路：魔王预制(FightCreature_DefCore_1)下 MPShow(SpriteRenderer+MatSpriteCreatureLife进度材质)
+//   + MPShow/MPText(TextMeshPro 显示"100/100"格式)，与防守生物LifeShow同款机制
 ```
 
 ## 战斗流程控制
@@ -245,7 +280,8 @@ public class ControlForGameFight : BaseControl
 //    -> 创建预览生物跟随鼠标
 // 2. 移动鼠标 -> 预览生物跟随，显示放置预览
 // 3. 左键点击空地 -> GameFightLogic.PutCard()
-//    -> 检测位置是否已有生物 -> 创建实体 -> 触发事件
+//    -> 检测位置是否已有生物 -> 检测魔王魔力是否足够(create_mp 不足则Toast"魔力不足")
+//    -> 扣除魔力并刷新MPShow -> 创建实体 -> 触发事件
 // 4. 右键 -> GameFightLogic.UnSelectCard() -> 取消选择
 ```
 
@@ -399,7 +435,10 @@ gameLogic.fightData.gameSpeed = 1.0f;  // 正常速度
 | 终焉议会 | `Assets/Scripts/Game/Logic/GameFightLogicDoomCouncil.cs` |
 | 测试模式 | `Assets/Scripts/Game/Logic/GameFightLogicTest.cs` |
 | 战斗数据Bean | `Assets/Scripts/Bean/Game/FightBean.cs` |
-| 战斗生物实体 | `Assets/Scripts/Game/Fight/FightCreatureEntity.cs` |
+| 战斗生物实体(通用) | `Assets/Scripts/Game/Fight/FightCreatureEntity.cs` |
+| 战斗生物实体(进攻:换路诱导/死亡意图) | `Assets/Scripts/Game/Fight/FightCreatureEntityForAttack.cs` |
+| 战斗生物实体(防守:死亡意图) | `Assets/Scripts/Game/Fight/FightCreatureEntityForDefense.cs` |
+| 战斗生物实体(魔王:魔力MPShow/死亡意图) | `Assets/Scripts/Game/Fight/FightCreatureEntityForDefenseCore.cs` |
 | 战斗预制实体 | `Assets/Scripts/Game/Fight/FightPrefabEntity.cs` |
 | 战斗处理器 | `Assets/Scripts/Component/Handler/FightHandler.cs` |
 | 战斗管理器 | `Assets/Scripts/Component/Manager/FightManager.cs` |

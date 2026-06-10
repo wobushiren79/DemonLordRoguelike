@@ -22,10 +22,6 @@ public partial class UIViewCreatureCardDetails
 
     public Image ui_Class;
 
-    public Image ui_Star;
-
-    public TextMeshProUGUI ui_StarText;
-
     public Image ui_CardRate;
 
     public TextMeshProUGUI ui_AttributeItemText_Speed;

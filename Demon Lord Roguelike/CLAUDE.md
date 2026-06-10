@@ -139,6 +139,17 @@ C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 
 ## PixelLab 像素图生成规则
 
+### 调用前必须征得用户同意（最高优先级）
+
+PixelLab 是付费外部服务（消耗账号 credits），用户可能不想使用它。**任何**调用生成类工具（`create_*`、`animate_*`）之前，必须满足以下其一，否则禁止调用：
+
+- 用户在**当前请求中明确要求**生成像素图（如使用"生成像素图/画像素图/生成像素美术"等触发词），且生成对象就是用户点名的内容；
+- 已先向用户说明"计划用 PixelLab 生成 X（会消耗 credits）"并获得**明确同意**（可用 AskUserQuestion 或直接询问）。
+
+特别禁止：**在配置表/代码等其他任务中"顺带"自行生成图片**（例如新增配置时发现缺图标就直接生成）。缺图时应留空或使用占位（fallback `icon_unknow`），在任务总结中告知用户缺图，由用户决定是否生成。**委派给 Agent/Skill 执行 PixelLab 任务时**，prompt 中必须注明"用户已同意使用 PixelLab"；子代理未收到该声明时应拒绝生成并返回要求先征得同意。
+
+### Outline（描边）规则
+
 使用 PixelLab MCP 工具生成像素图时，所有生成的图片中的物体轮廓必须带有 **outline（描边）**：
 
 - 调用任何生成类工具（`create_character`、`create_object`、`create_isometric_tile`、`create_topdown_tileset`、`create_sidescroller_tileset`、`create_tiles_pro` 等）时，必须在 `description` 或相关参数中明确要求 outline，例如添加描述词：`with black outline`、`outlined`、`with clear pixel outline`。

@@ -43,7 +43,7 @@ public class AttackModeRangedArc : AttackModeRanged
     {
         if (progress < 1f)
         {
-            progress += Time.deltaTime * attackModeInfo.speed_move;
+            progress += Time.deltaTime * GetMoveSpeed();
 
             // 计算抛物线路径
             float parabola = 1.0f - 4.0f * (progress - 0.5f) * (progress - 0.5f);

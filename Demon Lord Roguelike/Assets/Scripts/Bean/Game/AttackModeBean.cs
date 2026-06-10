@@ -12,6 +12,8 @@ public class AttackModeBean
     public int attackerDamage;
     //攻击者暴击概率
     public float attackerCRT;
+    //攻击者弹道速度倍率（由攻速ASPD换算，StartAttack时快照，1为无加成）
+    public float attackerSpeedRate = 1f;
     //起始位置
     public Vector3 startPos;
     //目标位置
@@ -52,6 +54,7 @@ public class AttackModeBean
         attackModeId = 0;
         attackerDamage = 0;
         attackerCRT = 0;
+        attackerSpeedRate = 1f;
         startPos = Vector3.zero;
         targetPos = Vector3.zero;
         attackDirection = Vector3.zero;

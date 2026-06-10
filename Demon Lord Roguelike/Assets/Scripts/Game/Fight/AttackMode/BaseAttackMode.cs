@@ -21,6 +21,8 @@ public class BaseAttackMode
     public AttackModeBean attackModeData;
     //攻击搜索的生物战斗类型（由 attackedLayerTarget 推导，StartAttack 时缓存，避免每帧重算）
     protected CreatureFightTypeEnum searchCreatureType = CreatureFightTypeEnum.None;
+    //攻速ASPD=100时弹道飞行速度的最大加成倍率（数值策划调整入口）
+    public const float SpeedRateASPDMax = 3f;
 
     /// <summary>
     /// 初始化攻击样式
@@ -107,8 +109,11 @@ public class BaseAttackMode
                     attackModeData.attackerId = creatureData.creatureUUId;
                     //设置伤害
                     attackModeData.attackerDamage = (int)attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ATK);
-                    //提示设置暴击概率 
+                    //提示设置暴击概率
                     attackModeData.attackerCRT = attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.CRT);
+                    //设置弹道速度倍率（攻速ASPD 0~100 线性映射 1~SpeedRateASPDMax 倍，与攻击时间换算保持同一插值体系）
+                    float attributeASPD = attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD);
+                    attackModeData.attackerSpeedRate = MathUtil.InterpolationLerp(attributeASPD, 0, 100, 1f, SpeedRateASPDMax);
                     //设置起始位置
                     Vector3 offsetPosition = creatureData.creatureInfo.GetAttackStartPosition();
                     attackModeData.startPos = attacker.creatureObj.transform.position + offsetPosition;
@@ -168,7 +173,15 @@ public class BaseAttackMode
     /// </summary>
     public virtual void Update()
     {
-        
+
+    }
+
+    /// <summary>
+    /// 获取弹道实际飞行速度（配置speed_move × 攻击者攻速加成倍率）
+    /// </summary>
+    public float GetMoveSpeed()
+    {
+        return attackModeInfo.speed_move * attackModeData.attackerSpeedRate;
     }
 
     /// <summary>

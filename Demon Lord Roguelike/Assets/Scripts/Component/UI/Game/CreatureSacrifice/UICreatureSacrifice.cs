@@ -2,10 +2,32 @@
 
 using System.Collections.Generic;
 using DG.Tweening;
+using UnityEngine;
 using UnityEngine.UI;
 
 public partial class UICreatureSacrifice : BaseUIComponent
-{    
+{
+    /// <summary>
+    /// 成功率进度条颜色 0%~20% (红)
+    /// </summary>
+    protected static readonly Color SuccessRateColorVeryLow = ColorUtil.ParseHtmlString("#C0392B");
+    /// <summary>
+    /// 成功率进度条颜色 20%~40% (橙)
+    /// </summary>
+    protected static readonly Color SuccessRateColorLow = ColorUtil.ParseHtmlString("#E67E22");
+    /// <summary>
+    /// 成功率进度条颜色 40%~60% (黄)
+    /// </summary>
+    protected static readonly Color SuccessRateColorMedium = ColorUtil.ParseHtmlString("#F1C40F");
+    /// <summary>
+    /// 成功率进度条颜色 60%~80% (浅绿)
+    /// </summary>
+    protected static readonly Color SuccessRateColorHigh = ColorUtil.ParseHtmlString("#2ECC71");
+    /// <summary>
+    /// 成功率进度条颜色 80%~100% (蓝)
+    /// </summary>
+    protected static readonly Color SuccessRateColorVeryHigh = ColorUtil.ParseHtmlString("#3498DB");
+
     //进度文本动画
     Sequence animForSuccessRateText;
     //当前选择的生物
@@ -93,9 +115,29 @@ public partial class UICreatureSacrifice : BaseUIComponent
         int targetPercentage = (int)MathUtil.GetPercentage(successRate, 2);
         //播放进度动画
         ui_SuccessRateProgress.DOFillAmount(successRate, 0.5f);
+        //根据成功率区间渐变进度条颜色
+        ui_SuccessRateProgress.DOColor(GetSuccessRateColor(successRate), 0.5f);
         //播放文本变化动画
         animForSuccessRateText = AnimUtil.AnimForUINumberChange(animForSuccessRateText, ui_SuccessRateText, long.Parse(ui_SuccessRateText.text.Replace("%", "")), (long)targetPercentage, 0.5f, "{0}%");
         ui_SuccessRateTextTitle.text = $"{TextHandler.Instance.GetTextById(60002)}";
+    }
+
+    /// <summary>
+    /// 获取成功率对应的进度条颜色(按成功率分5段: 0-20红 20-40橙 40-60黄 60-80浅绿 80-100蓝)
+    /// </summary>
+    /// <param name="successRate">0~1 的成功率</param>
+    /// <returns>该区间对应的进度条颜色</returns>
+    public Color GetSuccessRateColor(float successRate)
+    {
+        if (successRate < 0.2f)
+            return SuccessRateColorVeryLow;
+        if (successRate < 0.4f)
+            return SuccessRateColorLow;
+        if (successRate < 0.6f)
+            return SuccessRateColorMedium;
+        if (successRate < 0.8f)
+            return SuccessRateColorHigh;
+        return SuccessRateColorVeryHigh;
     }
 
     /// <summary>

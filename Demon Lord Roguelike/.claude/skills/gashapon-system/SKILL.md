@@ -61,7 +61,8 @@ userData.AddBackpackCreature(creatureData) + SaveUserData()   // 入账并落盘
   - `GashaponMachineCreatureStruct { creatureId; randomCreatureMode }` 单个可抽生物 + 随机皮肤映射
 - **GashaponItemBean** —— 单个蛋
   - `creatureData: CreatureBean`、`isBreak: bool`
-  - 构造 `GashaponItemBean(creatureId, gashaponMachineCreature)` 内部依次：`RandomSkill()` 随机皮肤 → `RandomAttribute()` 随机属性(+5点) → `RandomRarity()` 随机稀有度
+  - 构造 `GashaponItemBean(creatureId, gashaponMachineCreature)` 内部依次：`RandomSkill()` 随机皮肤 → `RandomAttribute()` 随机属性 → `RandomRarity()` 随机稀有度
+  - **随机属性共用逻辑**：`RandomAttribute()` 委托 `CreatureBean.RandomAttributeForCreate(userData)`（位于 `CreatureBeanPartial.cs`，点数取 `UserLimmitBean.gashaponRandomAttributeNum`，基础值默认5，`<=0` 不加点）；新建存档赠送的 3 个初始魔物（`UIMainCreate.OnClickForCreate`）复用同一方法，注意该场景存档尚未 `SetUserData`，需显式传入新建的 `UserDataBean`
   - **稀有度随机**：依次判定 UR→SSR→SR→R→N，每档由 `UnlockEnum.GashaponRarity*` / `GashaponRarity*Rate` 控制是否开放与成功率；命中后通过 `BuffTypeEnum.CreatureRarity*` 给生物叠加对应稀有度 BUFF（存入 `CreatureBean.dicRarityBuff`）
 
 ### 配置数据（`StoreGashaponMachineInfoBean`，自动生成 → 扩展写 Partial）

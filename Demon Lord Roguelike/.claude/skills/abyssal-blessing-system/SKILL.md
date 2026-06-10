@@ -177,15 +177,15 @@ UIPopupAbyssalBlessingInfo : PopupShowCommonView # 馈赠详情气泡
 ### 第 0 步：理解配置表结构
 
 文件：`Assets/Data/Excel/excel_abyssal_blessing_info[深渊馈赠信息].xlsx`
-工作表：**`Sheet1`**（前两张 `Sort Title 1/2` 是排序辅助页，数据写在 `Sheet1`）。
+工作表：**`AbyssalBlessingInfo`**（整本只有这一张数据表，不存在 `Sheet1`/`Sort Title`）。
 
-`Sheet1` 是项目通用的"三行表头"格式：
+`AbyssalBlessingInfo` 是项目通用的"三行表头"格式：
 
 | 行号 | 含义 | 内容 |
 |------|------|------|
-| 第 1 行 | 字段名（导出 JSON 的 key） | `id` `icon_res` `parent_id` `level` `buff_ids` `name` `details` `remark` |
-| 第 2 行 | 中文说明（仅给策划看） | `深渊馈赠ID` `图标名字` `父级深渊馈赠ID` `等级` `buff_ids` `名字-中文` `描述中文` `备注` |
-| 第 3 行 | 字段类型（导出工具识别） | `long` `string` `long` `int` `string` `language` `language` `string` |
+| 第 1 行 | 字段名（导出 JSON 的 key） | `id` `icon_res` `parent_id` `level` `buff_ids` `name[language]` `details[language_1]` `remark` |
+| 第 2 行 | 字段类型（导出工具识别） | `long` `string` `long` `int` `string` `long` `long` `string` |
+| 第 3 行 | 中文说明（仅给策划看） | `序号` `图标名字` `父级深渊馈赠ID` `等级` `buff_ids` `名字-中文` `描述中文` `备注` |
 | 第 4 行起 | 数据行 | 一行一个馈赠（一个等级 = 一行） |
 
 各列说明：
@@ -193,7 +193,7 @@ UIPopupAbyssalBlessingInfo : PopupShowCommonView # 馈赠详情气泡
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | `id` | long | ✓ | 馈赠唯一 ID（当前真实数据为 **10 位**，如 `2000001005`，末 3 位=等级序号）。**同族不同等级用不同 id**。 |
-| `icon_res` | string |  | 图标 Sprite 名（不带后缀），须存在于 `AtlasForAbyssalBlessing.spriteatlas`。同族各级通常共用一张图标。（当前线上数据此列多为空，待补图） |
+| `icon_res` | string |  | 图标 Sprite 名（不带后缀），须存在于 `AtlasForAbyssalBlessing.spriteatlas`（该图集打包整个 `Assets/LoadResources/Textures/AbyssalBlessing/` 文件夹）。同族各级共用一张图标，命名 `abyssal_*`，当前所有族系均已配图。 |
 | `parent_id` | long | ✓ | 父级馈赠 id。**族根填 `0`；2 级填 1 级的 id；3 级填 2 级的 id**……链表式逐级指向上一级。 |
 | `level` | int | ✓ | 等级。升级族从 `1` 起连续递增（1,2,3…）；`0` 表示不参与升级链的常驻/可重复馈赠。 |
 | `buff_ids` | string | ✓ | 这一级对应的 BUFF id 列表，多个用英文逗号 `,` 分隔。数值大小由 BUFF 决定，**不同等级指向不同 BUFF**。 |
@@ -219,8 +219,10 @@ id=2000004003, parent_id=2000004002, level=3, buff_ids=3000500003, name=20000040
 import openpyxl
 path = r"Assets/Data/Excel/excel_abyssal_blessing_info[深渊馈赠信息].xlsx"
 wb = openpyxl.load_workbook(path)
-ws = wb["Sheet1"]                       # 注意：数据在 Sheet1（前两张 Sort Title 是排序辅助页）
+ws = wb["AbyssalBlessingInfo"]          # 注意：工作表名为 AbyssalBlessingInfo，不是 Sheet1
 # 列顺序：id, icon_res, parent_id, level, buff_ids, name, details, remark
+# ⚠️ 新增行必须按 id 升序插入到正确位置（参考 .claude/scripts/excel_add_row.py 的排序插入逻辑），
+#    仅当新 id 比所有现有 id 都大时才允许落到表尾（如下例）。
 ws.append([2000004001, "", 0,          1, "3000500001", 2000004001, 2000004001, "暴击率+5%（1级）"])
 ws.append([2000004002, "", 2000004001, 2, "3000500002", 2000004002, 2000004002, "暴击率+10%（2级）"])
 ws.append([2000004003, "", 2000004002, 3, "3000500003", 2000004003, 2000004003, "暴击率+15%（3级）"])
@@ -354,7 +356,7 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 | 馈赠配置 Bean（自动生成，禁改） | `Assets/Scripts/Bean/MVC/Game/AbyssalBlessingInfoBean.cs` |
 | 馈赠配置扩展（IsLevelUp / GetFamilyRootId） | `Assets/Scripts/Bean/MVC/Game/AbyssalBlessingInfoBeanPartial.cs` |
 | 馈赠运行时实例 | `Assets/Scripts/Bean/Game/AbyssalBlessingEntityBean.cs` |
-| Excel 源表（数据在 Sheet1） | `Assets/Data/Excel/excel_abyssal_blessing_info[深渊馈赠信息].xlsx` |
+| Excel 源表（数据在 AbyssalBlessingInfo 工作表） | `Assets/Data/Excel/excel_abyssal_blessing_info[深渊馈赠信息].xlsx` |
 | 导出 JSON | `Assets/Resources/JsonText/AbyssalBlessingInfo.txt` |
 | 多语言 | `Assets/Resources/JsonText/Language_AbyssalBlessingInfo_{cn,en}.txt` |
 | BUFF 添加入口 | `Assets/Scripts/Component/Handler/BuffHandler.cs`（深渊馈赠 BUFF region：AddAbyssalBlessing / RemoveAbyssalBlessingByRootId / GetAbyssalBlessingOwnedLevel / GetDefenseCoreUUID） |
@@ -372,7 +374,7 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 
 ## 约束
 
-- **Excel 是唯一真实源**：任何馈赠配置变更必须改 Excel（`Sheet1`），再用 Unity 编辑器导出 JSON。仅改 JSON 会被下次导出覆盖。
+- **Excel 是唯一真实源**：任何馈赠配置变更必须改 Excel（`AbyssalBlessingInfo` 工作表），再用 Unity 编辑器导出 JSON。仅改 JSON 会被下次导出覆盖。
 - **`AbyssalBlessingInfoBean.cs` 是自动生成的**，禁止直接修改；扩展逻辑写到 `AbyssalBlessingInfoBeanPartial.cs`。
 - **升级链由馈赠表 `parent_id`+`level` 定义，不是 BUFF 字段**。每个等级是一条独立配置行，`buff_ids` 只决定该级的效果数值。
 - **`parent_id` 链表式逐级指向上一级 id**（2 级指向 1 级、3 级指向 2 级），**不是都指向根**；`level` 从 1 起连续递增。链断裂会导致 `RollCandidates` 取不到下一级、该族卡住。
@@ -385,7 +387,7 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 ## 常见坑
 
 1. **新增馈赠游戏里查不到** → 多半只改了 JSON 未改 Excel（下次导出被覆盖），或改了 Excel 没跑导出工具。统一从 Excel 改 + 导出 JSON。
-2. **数据写错工作表** → 数据必须写 `Sheet1`，不是 `Sort Title 1/2`。
+2. **数据写错工作表** → 工作表名为 `AbyssalBlessingInfo`（`wb["AbyssalBlessingInfo"]`），不存在 `Sheet1`/`Sort Title` 页。
 3. **升级链断裂某族卡住** → 检查 `parent_id` 是否逐级指向上一级 id、`level` 是否从 1 连续递增；`RollCandidates` 找不到 `level==owned+1` 的行就不会再出该族。
 4. **升级时旧级没被移除/数值叠加** → 确认走的是 `BuffHandler.AddAbyssalBlessing`（内部 `GetFamilyRootId` + `RemoveAbyssalBlessingByRootId`），而不是直接塞容器。
 5. **误以为靠 BUFF 的 buff_parent_id 升级** → 那是旧设计已废弃；深渊馈赠升级只看馈赠表 `parent_id`/`level`。

@@ -62,7 +62,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         int hp = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.HP);
         int dr = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.DR);
         int atk =  (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK);;
-        float aspd = creatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD);
+        int aspd = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD);
         
         SetAttribute(hp, dr,atk, aspd);
         SetRarity(creatureData.rarity);
@@ -277,12 +277,12 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     /// <param name="DR">防御值</param>
     /// <param name="atk">攻击力</param>
     /// <param name="aspk">攻击速度</param>
-    public void SetAttribute(int HP, int DR, int atk, float aspk)
+    public void SetAttribute(int HP, int DR, int atk, int aspk)
     {
         ui_AttributeItemText_Life.text = $"{HP}";
         ui_AttributeItemText_Def.text = $"{DR}";
         ui_AttributeItemText_Att.text = $"{atk}";
-        ui_AttributeItemText_Speed.text = $"{aspk}s";
+        ui_AttributeItemText_Speed.text = $"{aspk}";
     }
 
     /// <summary>

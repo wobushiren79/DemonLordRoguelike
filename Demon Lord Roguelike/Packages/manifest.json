@@ -80,5 +80,8 @@
         "com.alelievr"
       ]
     }
+  ],
+  "testables": [
+    "com.besty.unity-skills"
   ]
 }

@@ -81,6 +81,7 @@ public class GameFightLogic : BaseGameLogic
         UpdateGameForSelectCreature(updateTime);
         UpdateGameForAttackCreate(updateTime);
         UpdateGameForFightCreature(updateTime);
+        UpdateGameForMPRecover(updateTime);
         //更新BUFF
         BuffHandler.Instance.UpdateData(updateTime);
     }
@@ -281,6 +282,27 @@ public class GameFightLogic : BaseGameLogic
             }
         }
     }
+
+    /// <summary>
+    /// 更新-魔王魔力恢复（MP/MPF仅战斗中有效）
+    /// <para>MPF=魔力恢复速度（每秒恢复MPF点魔力），恢复上限为魔王的魔力上限MP。</para>
+    /// <para>每帧恢复后通知魔王预制下的MPShow刷新显示（与防守生物的LifeShow一样的通知方式）。</para>
+    /// </summary>
+    public void UpdateGameForMPRecover(float updateTime)
+    {
+        var coreCreature = fightData.fightDefenseCoreCreature;
+        if (coreCreature == null || coreCreature.IsDead())
+            return;
+        var coreCreatureData = coreCreature.fightCreatureData;
+        //每秒恢复MPF点魔力
+        float attributeMPF = coreCreatureData.GetAttribute(CreatureAttributeTypeEnum.MPF);
+        if (attributeMPF > 0)
+        {
+            coreCreatureData.ChangeMP(attributeMPF * updateTime, out _, out _);
+        }
+        //通知更新魔力显示
+        coreCreature.RefreshMPShow();
+    }
     #endregion
 
     #region 选择
@@ -351,15 +373,21 @@ public class GameFightLogic : BaseGameLogic
             //已经有生物了
             return;
         }
-        // int createMagic = selectCreatureCard.cardData.creatureData.GetCreateMagic();
-        // if (fightData.currentMagic < createMagic)
-        // {
-        //     //魔力不足
-        //     EventHandler.Instance.TriggerEvent(EventsInfo.Toast_NoEnoughCreateMagic);
-        //     return;
-        // }
-        //扣除魔力
-        //fightData.ChangeMagic(-createMagic);
+        //检测魔王的魔力是否足够创建该魔物（create_mp=创建该魔物需要消耗的魔力）
+        int createMP = selectCreatureCard.cardData.creatureData.creatureInfo.create_mp;
+        var coreCreature = fightData.fightDefenseCoreCreature;
+        if (coreCreature != null && coreCreature.fightCreatureData.MPCurrent < createMP)
+        {
+            //魔力不足
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(50006));
+            return;
+        }
+        //扣除创建消耗的魔力 并通知更新魔力显示
+        if (coreCreature != null && createMP > 0)
+        {
+            coreCreature.fightCreatureData.ChangeMP(-createMP, out _, out _);
+            coreCreature.RefreshMPShow();
+        }
         //设置生物进入战斗状态
         selectCreatureCard.cardData.creatureData.creatureState = CreatureStateEnum.Fight;
         //创建战斗生物数据

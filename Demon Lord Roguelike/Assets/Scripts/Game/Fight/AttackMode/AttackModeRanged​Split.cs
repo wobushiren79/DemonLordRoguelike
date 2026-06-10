@@ -158,10 +158,10 @@ public class AttackModeRanged​Split : BaseAttackMode
             (
                 targetObj.transform.position,
                 new Vector3(targetObj.transform.position.x, targetObj.transform.position.y, targetRoad),
-                Time.deltaTime * attackModeInfo.speed_move * 2
+                Time.deltaTime * GetMoveSpeed() * 2
             );
         }
-        targetObj.transform.Translate(attackModeData.attackDirection * Time.deltaTime * attackModeInfo.speed_move);
+        targetObj.transform.Translate(attackModeData.attackDirection * Time.deltaTime * GetMoveSpeed());
         //边界判定
         bool isBound = HandleForBound(targetObj, targetRoad);
         //如果没有超出边界 则进行打击判定

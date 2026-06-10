@@ -14,4 +14,6 @@ public class UserLimmitBean
     public int creatureVatMax = 1;
     //献祭最大数量
     public int sacrificeMax = 5;
+    //孕育(扭蛋)创建生物时的随机属性总点数
+    public int gashaponRandomAttributeNum = 5;
 }

@@ -6,26 +6,63 @@ using Spine.Unity;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class FightCreatureEntity
+/// <summary>
+/// 战斗生物实体（通用部分）
+/// <para>按生物类型拆分为多个 partial 文件：</para>
+/// <para>FightCreatureEntityForAttack.cs      - 进攻生物专属逻辑（换路诱导、死亡意图）</para>
+/// <para>FightCreatureEntityForDefense.cs     - 防守生物专属逻辑（死亡意图）</para>
+/// <para>FightCreatureEntityForDefenseCore.cs - 魔王（防守核心）专属逻辑（魔力MPShow显示、死亡意图）</para>
+/// </summary>
+public partial class FightCreatureEntity
 {
+    #region 数据
+    /// <summary>
+    /// 生物游戏物体
+    /// </summary>
     public GameObject creatureObj;
+    /// <summary>
+    /// 战斗生物数据
+    /// </summary>
     public FightCreatureBean fightCreatureData;
+    /// <summary>
+    /// AI实体
+    /// </summary>
     public AIBaseEntity aiEntity;
+    /// <summary>
+    /// 生物战斗状态
+    /// </summary>
     public CreatureFightStateEnum creatureFightState = CreatureFightStateEnum.None;
-    //spine数据
+    /// <summary>
+    /// spine骨骼动画
+    /// </summary>
     public SkeletonAnimation creatureSkeletionAnimation;
-    //生命条显示
+    /// <summary>
+    /// 生命条显示
+    /// </summary>
     public SpriteRenderer creatureLifeShow;
 
-    //动画-受到攻击
+    /// <summary>
+    /// 动画-受到攻击颜色渐变
+    /// </summary>
     Tween animForUnderAttackColor;
+    /// <summary>
+    /// 动画-受到攻击抖动
+    /// </summary>
     Tween animForUnderAttackShake;
+    #endregion
 
+    #region 生命周期
+    /// <summary>
+    /// 构造函数
+    /// </summary>
     public FightCreatureEntity(GameObject creatureObj, FightCreatureBean fightCreatureData)
     {
         SetData(creatureObj, fightCreatureData);
     }
 
+    /// <summary>
+    /// 设置数据（通用初始化 + 各类型专属初始化）
+    /// </summary>
     public void SetData(GameObject creatureObj, FightCreatureBean fightCreatureData)
     {
         this.creatureFightState = CreatureFightStateEnum.Live;
@@ -37,6 +74,8 @@ public class FightCreatureEntity
         //获取生命值显示
         creatureLifeShow = creatureObj.transform.Find("LifeShow")?.GetComponent<SpriteRenderer>();
         creatureLifeShow?.ShowObj(false);
+        //魔王（防守核心）专属初始化（MPShow魔力显示挂接 非核心生物预制下无该节点自动跳过）
+        SetDataForDefenseCore();
         //设置spine
         CreatureHandler.Instance.SetCreatureData(creatureSkeletionAnimation, fightCreatureData.creatureData, isSetSkeletonDataAsset: false);
         //设置身体颜色
@@ -65,6 +104,7 @@ public class FightCreatureEntity
             }
         }
     }
+    #endregion
 
     #region  身体相关
     /// <summary>
@@ -78,6 +118,10 @@ public class FightCreatureEntity
             creatureSkeletionAnimation.skeleton.SetColor(bodyColor);
         }
     }
+
+    /// <summary>
+    /// 刷新身体颜色
+    /// </summary>
     public void RefreshBodyColor()
     {
         Color bodyColor = fightCreatureData.GetBodyColor();
@@ -104,19 +148,6 @@ public class FightCreatureEntity
     #endregion
 
     #region 状态相关
-    //改变路线
-    public void ChangeRoad(int targetRoadIndex)
-    {
-        fightCreatureData.roadIndex = targetRoadIndex;
-        var creatureFightType = fightCreatureData.creatureFightType;
-        switch (creatureFightType)
-        {
-            case CreatureFightTypeEnum.FightAttack:
-                aiEntity.ChangeIntent(AIIntentEnum.AttackCreatureLured);
-                break;
-        }
-    }
-
     /// <summary>
     /// 增加BUFF
     /// </summary>
@@ -156,7 +187,7 @@ public class FightCreatureEntity
     /// <summary>
     /// 回复HP
     /// </summary>
-    public void RegainHP(string attackerId, string attackedId, int hpChangeData, 
+    public void RegainHP(string attackerId, string attackedId, int hpChangeData,
         Action<int> actionForNoDead = null, Action<int> actionForDead = null)
     {
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
@@ -207,7 +238,7 @@ public class FightCreatureEntity
     /// <summary>
     /// 回复护甲
     /// </summary>
-    public void RegainDR(string attackerId, string attackedId, int drChangeData, 
+    public void RegainDR(string attackerId, string attackedId, int drChangeData,
         Action<int> actionForNoDead = null, Action<int> actionForDead = null)
     {
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
@@ -447,7 +478,7 @@ public class FightCreatureEntity
     /// </summary>
     public void CheckDead(Action actionForNoDead = null, Action actionForDead = null)
     {
-        //如果还有生命值 
+        //如果还有生命值
         if (fightCreatureData.HPCurrent > 0)
         {
             actionForNoDead?.Invoke();
@@ -479,7 +510,7 @@ public class FightCreatureEntity
         }
         else
         {
-            //如果被攻击对象死亡 
+            //如果被攻击对象死亡
             SetCreatureDead();
             //死亡回调触发
             actionForDead?.Invoke();
@@ -488,7 +519,7 @@ public class FightCreatureEntity
 
 
     /// <summary>
-    /// 掉落水晶
+    /// 掉落水晶（跨类型共用 按state过滤生物类型）
     /// </summary>
     /// <param name="state">0:所有生物掉落水晶 1:只有进攻生物才掉落水晶 2只有防守生物才掉落水晶</param>
     public void DropCrystal(int state)
@@ -543,30 +574,24 @@ public class FightCreatureEntity
     }
     #endregion
 
+    #region 死亡相关
     /// <summary>
-    /// 设置生物死亡
+    /// 设置生物死亡（通用处理 + 分发各类型的死亡意图切换）
     /// </summary>
     public void SetCreatureDead()
-    {            
+    {
         //死亡掉落水晶
         DropCrystal(1);
         //颜色变化动画
         AnimForUnderAttackColor();
         //隐藏血条
-        creatureLifeShow?.ShowObj(false);   
+        creatureLifeShow?.ShowObj(false);
 
         creatureFightState = CreatureFightStateEnum.Dead;
-        if (aiEntity is AIAttackCreatureEntity)
-        {
-            aiEntity.ChangeIntent(AIIntentEnum.AttackCreatureDead);
-        }
-        else if (aiEntity is AIDefenseCreatureEntity)
-        {
-            aiEntity.ChangeIntent(AIIntentEnum.DefenseCreatureDead);
-        }
-        else if (aiEntity is AIDefenseCoreCreatureEntity)
-        {
-            aiEntity.ChangeIntent(AIIntentEnum.DefenseCoreCreatureDead);
-        }
+        //各类型死亡意图切换（在各自的partial文件中处理 aiEntity只会命中其中一种类型）
+        SetCreatureDeadForAttack();
+        SetCreatureDeadForDefense();
+        SetCreatureDeadForDefenseCore();
     }
+    #endregion
 }

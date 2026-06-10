@@ -1,6 +1,6 @@
 ---
 name: sacrifice-system
-description: Demon Lord Roguelike 游戏的生物献祭升级系统开发指南。使用此SKILL当需要创建或修改生物献祭流程、献祭升级(等级提升)、献祭成功率公式(祭品数量/生物id/稀有度惩罚)、保底机制、祭坛动画、献祭祭品消耗与装备退回、等级上限、献祭UI等，包括 CreatureSacrificeLogic 献祭逻辑、CreatureSacrificeBean 献祭数据、UICreatureSacrifice 献祭界面、UICreatureManager 升级按钮、CreatureBean.UpLevelForSacrifice/CanUpLevel/IsMaxLevel/sacrificePityRate、CreatureUtil.GetSacrificeSuccessRate 成功率公式、LevelInfo(level_exp/sacrifice_num) 等级配置、CreatureSacrifice_* 事件常量、UnlockEnum.Altar 祭坛解锁等。
+description: Demon Lord Roguelike 游戏的生物献祭升级系统开发指南。使用此SKILL当需要创建或修改生物献祭流程、献祭升级(等级提升)、献祭成功率公式(祭品数量/生物id/稀有度惩罚)、保底机制、祭坛动画、献祭祭品消耗与装备退回、等级上限、献祭UI、升级手动加点UI(UICreatureAddAttribute)等，包括 CreatureSacrificeLogic 献祭逻辑、CreatureSacrificeBean 献祭数据、UICreatureSacrifice 献祭界面、UICreatureAddAttribute 升级加点界面、UICreatureManager 升级按钮、CreatureBean.UpLevelForSacrifice/CanUpLevel/IsMaxLevel/sacrificePityRate、CreatureUtil.GetSacrificeSuccessRate 成功率公式、CreatureUtil.GetAttributePointAddValue 单点增量、LevelInfo(level_exp/sacrifice_num/attribute_point) 等级配置、CreatureSacrifice_* 事件常量、UnlockEnum.Altar 祭坛解锁等。
 watched_files:
   - Assets/Scripts/Game/Logic/CreatureSacrificeLogic.cs
   - Assets/Scripts/Bean/Game/CreatureSacrificeBean.cs
@@ -9,6 +9,7 @@ watched_files:
   - Assets/Scripts/Bean/Game/CreatureAttributeBean.cs
   - Assets/Scripts/Utils/CreatureUtil.cs
   - Assets/Scripts/Component/UI/Game/CreatureSacrifice/
+  - Assets/Scripts/Component/UI/Game/CreatureAddAttribute/
   - Assets/Scripts/Component/UI/Game/CreatureManager/
   - Assets/Scripts/Bean/MVC/Game/LevelInfoBean.cs
   - Assets/Scripts/Bean/MVC/Game/LevelInfoBeanPartial.cs
@@ -58,9 +59,17 @@ CreatureSacrificeLogic (BaseGameLogic)   献祭玩法逻辑
     │                    → ③ 播放生物/粒子/摄像机动画 → ④ 动画结束回调 SettleSacrifice()
     │  SettleSacrifice(isSuccess):
     │      - 祭品: RemoveAllEquipToBackpack() 退装备 → RemoveBackpackCreature() 移除
-    │      - 成功: targetCreature.UpLevelForSacrifice() + 清空 sacrificePityRate + 触发 Success
+    │      - 成功: attributePoint = targetCreature.UpLevelForSacrifice()(返回加点数,不再自动加属性) + 清空 sacrificePityRate + 触发 Success
     │      - 失败: sacrificePityRate += GetUnlockSacrificeFailPityAddRate()(研究等级×5%,未解锁不累积) + 触发 Fail
-    │      - SaveUserData() 落盘 → EndGame() 返回 UICreatureManager
+    │      - 成功且 attributePoint>0: OpenAddAttributeUI(弹 UICreatureAddAttribute 手动加点) → 加点确认后 SaveAndEndGame()
+    │      - 失败/满级无加点: SaveAndEndGame()(SaveUserData 落盘 → EndGame 返回 UICreatureManager)
+    ▼
+UICreatureAddAttribute (BaseUIComponent)   升级加点界面(成功后弹出)
+    │  SetData(targetCreature, totalPoint, onConfirm); 4 个 UIViewCreatureAddAttributeItem(HP/DR/ATK/ASPD) 左减右加
+    │  单点增量 CreatureUtil.GetAttributePointAddValue(HP/DR +10, ATK/ASPD +1); 实时作用属性并 RefreshCard
+    │  注: Item.RefreshNum 仅显示已分配「点数」(allocatedCount, 如 +1)，与单点实际增量解耦，各属性步进器统一显示点数
+    │  ui_LimmitText 显示「剩余点数:{0}」(多语言 textId 61005, string.Format 填入 remainPoint); 剩余必须全部分配完才能确认离开(当场加完,不持久化剩余点数) → onConfirm=SaveAndEndGame
+    │  OnClickForExit 剩余>0 时 ToastHintText(textId 61004「请分配完所有属性点」)拦截
     ▼
 UICreatureSacrifice (BaseUIComponent)   献祭选择界面
     │  列表排除目标生物本身; 选择上限 = userUnlock.GetUnlockSacrificeMax()(基础5 + 研究等级)
@@ -114,12 +123,13 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 | `GetNextLevelInfo()` | `LevelInfoCfg.GetItemData(level + 1)`，满级返回 null |
 | `IsMaxLevel()` | 无下一级配置即满级 |
 | `CanUpLevel()` | 未满级 且 `levelExp >= 下一级 level_exp`（决定升级按钮显隐） |
-| `UpLevelForSacrifice()` | 扣本级所需经验(余量保留) → `level++` → `AddAttributeForLevelUp(ATK, 1)` |
+| `UpLevelForSacrifice()` | 扣本级所需经验(余量保留) → `level++` → **返回本次可分配加点数**(`LevelInfo.attribute_point`，当前全等级配置为 5，`<=0` 兜底1)；不再自动加属性 |
 
-> **升级属性成长**：当前**每升一级暂加 1 点攻击**（`CreatureAttributeTypeEnum.ATK`），写入 `creatureAttribute.dicAttributeLevelUp`。后续优化成长规则时改 `UpLevelForSacrifice()`（或改为配表 / 按基础属性百分比）。
+> **升级属性成长（手动加点）**：升级**不再自动加属性**。`UpLevelForSacrifice()` 升级后返回下一级 `LevelInfo.attribute_point`(当前全等级配置为 5) 个可分配点数，由玩家在 `UICreatureAddAttribute` 界面手动分配到 HP/护甲/攻击/攻速。单点增量见 `CreatureUtil.GetAttributePointAddValue`（HP/DR 每点 +10、ATK/ASPD 每点 +1），写入 `creatureAttribute.dicAttributeLevelUp`。要调整每级点数改 Excel `attribute_point` 列；要调单点增量改 `GetAttributePointAddValue`。
 
 ### 属性体系
 - `CreatureAttributeBean`（`Assets/Scripts/Bean/Game/CreatureAttributeBean.cs`）：`dicAttributeCreate`(创建随机) + `dicAttributeLevelUp`(升级加点)，两个字典均为 **public** 以保证 Newtonsoft 存档（私有字段默认不序列化）
+- `AddAttribute(dic, type, addNum)` 支持**正负增量**(加点/减点共用)，clamp 到 ≥0；**已修复**首次加某属性时把第一次增量误置为0导致丢失的 bug
 - `CreatureBean.GetAttribute()` 最终属性 = 基础(creatureInfo/npcInfo) + `creatureAttribute`(创建+升级) + 装备 + BUFF；**注意 `level` 本身不直接参与属性计算**，升级收益全靠 `AddAttributeForLevelUp` 写入
 
 ## 祭品处理
@@ -142,12 +152,13 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 | `id` | 等级（=要升到的目标等级，1~10） | `GetItemData(level+1)` 取下一级 |
 | `level_exp` | 升到该等级所需经验（字符串，`long.Parse`） | 累加制，升级扣除后余量保留 |
 | `sacrifice_num` | 该等级所需祭品基础数量（决定 `baseSingleRate = 1/sacrifice_num`） | 默认 5 |
+| `attribute_point` | 升级到该等级获得的可分配属性加点数（玩家在 `UICreatureAddAttribute` 手动分配） | 当前全等级配置为 5，`<=0` 时代码回退为 1 |
 
 - **Excel 源表**：`Assets/Data/Excel/excel_level_info[等级信息].xlsx`（工作表 `LevelInfo`，数据从第 4 行起，前 3 行为字段名/类型/注释）
 - **派生 JSON**：`Assets/Resources/JsonText/LevelInfo.txt`
 - **配置 Bean**：`LevelInfoBean`（`LevelInfoBean.cs` 自动生成，被钩子保护禁止直接改；扩展/临时字段写 `LevelInfoBeanPartial.cs`）；访问类 `LevelInfoCfg : BaseCfg<long, LevelInfoBean>`，`fileName = "LevelInfo"`
 
-> ⚠️ **`sacrifice_num` 字段归属**：它是 Excel 列，正确做法是在 Excel 加列后用 `ExcelEditorWindow` **重新生成 `LevelInfoBean.cs`**（生成器会写入该字段）。若因无法运行生成器而临时把字段放在 `LevelInfoBeanPartial.cs`，重新生成后必须删除 Partial 里的临时字段，避免与生成文件重复定义。
+> ⚠️ **`sacrifice_num` / `attribute_point` 字段归属**：它们是 Excel 列，正确做法是在 Excel 加列后用 `ExcelEditorWindow` **重新生成 `LevelInfoBean.cs`**（生成器会写入该字段）。若因无法运行生成器而临时把字段放在 `LevelInfoBeanPartial.cs`，重新生成后必须删除 Partial 里的临时字段，避免与生成文件重复定义。**当前 `attribute_point` 即临时放在 `LevelInfoBeanPartial.cs`，Excel/JSON 已同步，待在 Unity 重新生成 Bean 后删除临时字段。**
 
 ## 事件常量 (EventsInfo.cs · #region 生物献祭)
 
@@ -170,12 +181,19 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择
     ├── ui_UIViewCreatureCardList            // 可选祭品列表(排除目标)
     ├── ui_UIViewCreatureCardDetails         // 目标生物展示
     ├── ui_LimmitText                        // 已选/上限(sacrificeMax)
-    ├── ui_SuccessRateProgress / ui_SuccessRateText  // 实时成功率
+    ├── ui_SuccessRateProgress / ui_SuccessRateText  // 实时成功率(进度条按成功率分5段变色)
     └── ui_BtnStart / ui_ViewExit
+
+UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
+    ├── ui_UIViewCreatureCardDetails              // 目标生物详情(实时刷新属性)
+    ├── ui_UIViewCreatureAddAttributeItem_HP/_DR/_ATK/_ASPD  // 四个属性加点项
+    │     └── UIViewCreatureAddAttributeItem(BaseUIView): ui_LeftButton(-1)/ui_RightButton(+1)/ui_Num(本次增加值)/ui_Icon(属性图标,预制体内配置)
+    ├── ui_LimmitText                             // 剩余加点数量
+    └── ui_ViewExit                               // 确认/离开(剩余>0 拦截并提示)
 ```
 
 - 选择上限：`UserUnlockBean.GetUnlockSacrificeMax()` = `UserLimmitBean.sacrificeMax`（基础默认 5）+ 「增加祭品数量」研究等级（`UnlockEnum.SacrificeNum = 100100002`，研究 `level_max=10`，满级即 5+10=15）。`UICreatureSacrifice` 的 `RefreshUI`/`EventForCardClickSelect` 两处上限判定都走此方法，不要再直接读 `limmitData.sacrificeMax`
-- 成功率显示：`SetSuccessRate(GetCurrentSuccessRate())`，`GetCurrentSuccessRate` 调 `CreatureUtil.GetSacrificeSuccessRate`
+- 成功率显示：`SetSuccessRate(GetCurrentSuccessRate())`，`GetCurrentSuccessRate` 调 `CreatureUtil.GetSacrificeSuccessRate`；进度条颜色按成功率分5段（`GetSuccessRateColor`：0-20%红`#C0392B`、20-40%橙`#E67E22`、40-60%黄`#F1C40F`、60-80%浅绿`#2ECC71`、80-100%蓝`#3498DB`），随 `DOColor`/`DOFillAmount` 0.5s 同步渐变
 - 升级经验条：`UIViewCreatureCardDetails.SetLevelData(level, levelExp)`，用 `LevelInfoCfg.GetItemData(level+1).level_exp` 算百分比
 
 ## 接入 / 修改流程
@@ -183,8 +201,11 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择
 ### 调成功率公式
 改 `CreatureUtil.GetSacrificeFoddersRate` / `GetSacrificeSuccessRate`（同id基础率、不同id研究率应用方式、稀有度惩罚、保底叠加方式）。UI 与 Logic 自动同步，无需两处改。
 
-### 调升级属性成长
-改 `CreatureBean.UpLevelForSacrifice()`（当前 +1 ATK）。如需按等级配表，给 `LevelInfo` 加成长列并在此读取；如需按稀有度/星级缩放，在此乘系数。
+### 调升级加点（点数 / 单点增量 / UI）
+- **每级获得点数**：改 Excel `excel_level_info` 的 `attribute_point` 列（唯一真实源，当前全等级配置为 5），再 `ExcelEditorWindow` 导出 JSON。`UpLevelForSacrifice()` 读该列返回点数（`<=0` 回退 1）。
+- **单点增量**（每点加多少 HP/护甲/攻击/攻速）：改 `CreatureUtil.GetAttributePointAddValue(type)`。
+- **加点界面**：`UICreatureAddAttribute`（`Assets/Scripts/Component/UI/Game/CreatureAddAttribute/`）。`SetData(creature, totalPoint, onConfirm)`；`OnItemChangeForAttribute` 校验剩余点数后增减并实时 `RefreshCard`；`RefreshLimmit` 显示「剩余点数:{0}」(textId 61005)；`OnClickForExit` 要求剩余=0 才能确认，未分配完 ToastHintText(textId 61004)。
+- **可加点的属性种类**：在预制体里增删 `UIViewCreatureAddAttributeItem` 项并在 `InitItems()` 里对应 `SetData(attributeType, ...)`。
 
 ### 调祭品基础数量 / 等级经验
 改 Excel `excel_level_info` 的 `sacrifice_num` / `level_exp` 列（唯一真实源），再 `ExcelEditorWindow` 导出 JSON。新增等级行按 id 升序插入。
@@ -242,8 +263,9 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择
 | 献祭数据 | `Assets/Scripts/Bean/Game/CreatureSacrificeBean.cs` |
 | 生物数据/升级 | `Assets/Scripts/Bean/Game/CreatureBean.cs` · `CreatureBeanPartial.cs`（`UpLevelForSacrifice`/`CanUpLevel`/`IsMaxLevel`/`sacrificePityRate`） |
 | 生物属性 | `Assets/Scripts/Bean/Game/CreatureAttributeBean.cs` |
-| 成功率公式 | `Assets/Scripts/Utils/CreatureUtil.cs`（`GetSacrificeSuccessRate`/`GetSacrificeFoddersRate`） |
+| 成功率公式 / 单点增量 | `Assets/Scripts/Utils/CreatureUtil.cs`（`GetSacrificeSuccessRate`/`GetSacrificeFoddersRate`/`GetAttributePointAddValue`） |
 | 献祭 UI | `Assets/Scripts/Component/UI/Game/CreatureSacrifice/` |
+| 升级加点 UI | `Assets/Scripts/Component/UI/Game/CreatureAddAttribute/`（`UICreatureAddAttribute` + `UIViewCreatureAddAttributeItem`） |
 | 升级按钮 UI | `Assets/Scripts/Component/UI/Game/CreatureManager/UICreatureManager.cs`（`RefreshSacrificeButton`） |
 | 经验发放 | `Assets/Scripts/Game/Logic/GameFightLogicConquer.cs`（`AddLevelExpForLineupCreature`） |
 | 等级配置 Bean | `Assets/Scripts/Bean/MVC/Game/LevelInfoBean.cs` · `LevelInfoBeanPartial.cs` |
