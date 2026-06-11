@@ -12,4 +12,5 @@ public enum DialogEnum
     Rename,//重命名
     BossShow,//Boss展示
     CreatureShow,//生物展示
+    OrderFilter,//排序筛选
 }

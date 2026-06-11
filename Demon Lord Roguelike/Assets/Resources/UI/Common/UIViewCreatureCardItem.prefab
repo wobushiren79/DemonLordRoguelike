@@ -1057,7 +1057,8 @@ MonoBehaviour:
   ui_SelectBg: {fileID: 7778392516870585880}
   ui_IconContent: {fileID: 3266094002738400249}
   ui_Class: {fileID: 6060301781954075826}
-  ui_LevelText: {fileID: 0}
+  ui_LevelText: {fileID: 7790007710188705406}
+  ui_MPText: {fileID: 3615925108092421981}
 --- !u!1 &6698657121091642649
 GameObject:
   m_ObjectHideFlags: 0

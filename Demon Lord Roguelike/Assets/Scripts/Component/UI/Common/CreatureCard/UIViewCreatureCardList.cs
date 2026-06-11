@@ -1,8 +1,9 @@
-﻿
+
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.UI;
 
 public partial class UIViewCreatureCardList : BaseUIView
@@ -13,15 +14,17 @@ public partial class UIViewCreatureCardList : BaseUIView
     protected CardUseStateEnum cardUseState;
     //卡片变化回调
     protected Action<int, UIViewCreatureCardItem, CreatureBean> actionForOnCellChange;
+    //当前筛选排序的优先级列表(index0=最高优先级)
+    protected List<OrderFilterTypeEnum> currentFilterTypes = new List<OrderFilterTypeEnum> { OrderFilterTypeEnum.Rarity };
+    //当前是否正序(false=倒序;默认稀有度倒序,高稀有度在前)
+    protected bool currentAscending = false;
+
     public override void Awake()
     {
         base.Awake();
         ui_CreatureListContent.AddCellListener(OnCellChangeForCreatrue);
-        ui_OrderBtn_Rarity_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000004),PopupEnum.Text);
-        ui_OrderBtn_Level_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000005),PopupEnum.Text);
-        ui_OrderBtn_Lineup_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000006),PopupEnum.Text);
-        ui_OrderBtn_Name_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000007),PopupEnum.Text);
-        ui_OrderBtn_Class_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000011),PopupEnum.Text);
+        //排序筛选按钮的悬浮详情:筛选排序
+        ui_OrderBtn_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000014), PopupEnum.Text);
     }
 
     public override void OpenUI()
@@ -39,25 +42,9 @@ public partial class UIViewCreatureCardList : BaseUIView
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
-        if (viewButton == ui_OrderBtn_Rarity_Button)
+        if (viewButton == ui_OrderBtn_Button)
         {
-            OrderListCreature(1);
-        }
-        else if (viewButton == ui_OrderBtn_Level_Button)
-        {
-            OrderListCreature(2);
-        }
-        else if (viewButton == ui_OrderBtn_Lineup_Button)
-        {
-            OrderListCreature(3);
-        }
-        else if (viewButton == ui_OrderBtn_Name_Button)
-        {
-            OrderListCreature(4);
-        }
-        else if (viewButton == ui_OrderBtn_Class_Button)
-        {
-            OrderListCreature(5);
+            ShowOrderFilterDialog();
         }
     }
 
@@ -101,8 +88,8 @@ public partial class UIViewCreatureCardList : BaseUIView
         this.actionForOnCellChange = actionForOnCellChange;
         listCreatureData.Clear();
         listCreatureData.AddRange(listData);
-        //初始化排序
-        OrderListCreature(1, false);
+        //初始化排序(按当前筛选排序设置)
+        OrderListCreature(currentFilterTypes, currentAscending, false);
         //设置数量
         ui_CreatureListContent.SetCellCount(listCreatureData.Count);
     }
@@ -133,66 +120,100 @@ public partial class UIViewCreatureCardList : BaseUIView
         actionForOnCellChange?.Invoke(itemCell.index, itemView, itemData);
     }
 
+    #region 筛选排序
     /// <summary>
-    /// 排序背包里的生物
+    /// 打开筛选排序弹窗(在排序按钮处弹出,可多选筛选类型并按选择顺序定优先级,确认后排序)
     /// </summary>
-    /// <param name="orderType"></param>
-    public void OrderListCreature(int orderType, bool isRefreshUI = true)
+    protected void ShowOrderFilterDialog()
     {
-        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        // 统一处理阵容索引排序逻辑
-        Func<CreatureBean, int> lineupOrder = itemData =>
+        //生物列表开放的筛选类型
+        List<OrderFilterTypeEnum> listFilterType = new List<OrderFilterTypeEnum>
         {
-            int lineupIndex = userData.GetLinupIndex(itemData.creatureUUId);
-            return lineupIndex > 0 ? lineupIndex : int.MaxValue;
+            OrderFilterTypeEnum.Rarity,
+            OrderFilterTypeEnum.Level,
+            OrderFilterTypeEnum.Lineup,
+            OrderFilterTypeEnum.Name,
+            OrderFilterTypeEnum.Class,
         };
+        UIHandler.Instance.ShowDialogOrderFilter(
+            ui_OrderBtn_Button.transform as RectTransform,
+            OnConfirmOrderFilter,
+            listFilterType,
+            new List<OrderFilterTypeEnum>(currentFilterTypes));
+    }
 
-        switch (orderType)
+    /// <summary>
+    /// 筛选排序弹窗确认回调
+    /// </summary>
+    /// <param name="filterTypes">已选筛选类型(按优先级从高到低,index0最高)</param>
+    /// <param name="isAscending">是否正序</param>
+    protected void OnConfirmOrderFilter(List<OrderFilterTypeEnum> filterTypes, bool isAscending)
+    {
+        currentFilterTypes = filterTypes ?? new List<OrderFilterTypeEnum>();
+        currentAscending = isAscending;
+        OrderListCreature(currentFilterTypes, currentAscending);
+    }
+
+    /// <summary>
+    /// 按筛选类型优先级列表 + 正/倒序排序生物列表。
+    /// 按 filterTypes 顺序依次作为主/次排序键(index0=主键),isAscending 作用于全部键。
+    /// </summary>
+    /// <param name="filterTypes">筛选类型(按优先级从高到低;为空则不重排)</param>
+    /// <param name="isAscending">true正序/false倒序</param>
+    /// <param name="isRefreshUI">是否刷新UI</param>
+    public void OrderListCreature(List<OrderFilterTypeEnum> filterTypes, bool isAscending, bool isRefreshUI = true)
+    {
+        if (filterTypes != null && filterTypes.Count > 0)
         {
-            case 1://按稀有度排序
-                listCreatureData = listCreatureData
-                    .OrderByDescending((itemData) => itemData.rarity)
-                    .ThenByDescending((itemData) => itemData.level)
-                    .ThenBy((itemData) => lineupOrder)
-                    .ThenBy((itemData) => itemData.creatureName)
-                    .ToList();
-                break;
-            case 2:
-                //按等级排序
-                listCreatureData = listCreatureData
-                    .OrderByDescending((itemData) => itemData.level)
-                    .ThenByDescending((itemData) => itemData.rarity)
-                    .ThenBy((itemData) => lineupOrder)
-                    .ThenBy((itemData) => itemData.creatureName)
-                    .ToList();
-                break;
-            case 3:
-                //按阵容排序
-                listCreatureData = listCreatureData
-                    .OrderBy((itemData) => lineupOrder)
-                    .ThenByDescending((itemData) => itemData.rarity)
-                    .ThenByDescending((itemData) => itemData.level)
-                    .ThenBy((itemData) => itemData.creatureName)
-                    .ToList();
-                break;
-            case 4://名字排序
-                listCreatureData = listCreatureData
-                    .OrderBy((itemData) => itemData.creatureName)
-                    .ThenByDescending((itemData) => itemData.rarity)
-                    .ThenBy((itemData) => lineupOrder)
-                    .ThenByDescending((itemData) => itemData.level)
-                    .ToList();
-                break;
-            case 5://按同类排序（相同生物ID的排一起）
-                listCreatureData = listCreatureData
-                    .OrderByDescending((itemData) => itemData.rarity)
-                    .ThenBy((itemData) => itemData.creatureId)
-                    .ThenByDescending((itemData) => itemData.level)
-                    .ThenBy((itemData) => lineupOrder)
-                    .ToList();
-                break;
+            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+            //阵容索引:在阵容内取其序号,否则置最大值排到最后
+            Func<CreatureBean, int> lineupOrder = itemData =>
+            {
+                int lineupIndex = userData.GetLinupIndex(itemData.creatureUUId);
+                return lineupIndex > 0 ? lineupIndex : int.MaxValue;
+            };
+
+            IOrderedEnumerable<CreatureBean> ordered = null;
+            for (int i = 0; i < filterTypes.Count; i++)
+            {
+                Func<CreatureBean, IComparable> keySelector = GetOrderKeySelector(filterTypes[i], lineupOrder);
+                if (i == 0)
+                    ordered = isAscending
+                        ? listCreatureData.OrderBy(keySelector)
+                        : listCreatureData.OrderByDescending(keySelector);
+                else
+                    ordered = isAscending
+                        ? ordered.ThenBy(keySelector)
+                        : ordered.ThenByDescending(keySelector);
+            }
+            listCreatureData = ordered.ToList();
         }
         if (isRefreshUI)
             RefreshAllCard();
     }
+
+    /// <summary>
+    /// 获取指定筛选类型对应的排序键选择器
+    /// </summary>
+    /// <param name="filterType">筛选类型</param>
+    /// <param name="lineupOrder">阵容索引取值器</param>
+    /// <returns>排序键选择器</returns>
+    protected Func<CreatureBean, IComparable> GetOrderKeySelector(OrderFilterTypeEnum filterType, Func<CreatureBean, int> lineupOrder)
+    {
+        switch (filterType)
+        {
+            case OrderFilterTypeEnum.Rarity:
+                return itemData => itemData.rarity;
+            case OrderFilterTypeEnum.Level:
+                return itemData => itemData.level;
+            case OrderFilterTypeEnum.Lineup:
+                return itemData => lineupOrder(itemData);
+            case OrderFilterTypeEnum.Name:
+                return itemData => itemData.creatureName;
+            case OrderFilterTypeEnum.Class:
+                return itemData => itemData.creatureId;
+        }
+        return itemData => 0;
+    }
+    #endregion
 }

@@ -215,3 +215,20 @@ public enum ControlInteractionEnum
     AchievementInteraction,//成就石碑交互
 }
 
+/// <summary>
+/// 排序筛选类型(用于 UIDialogOrderFilter 排序弹窗)。
+/// 数值沿用生物列表历史排序约定(稀有度=1/等级=2/阵容=3/名字=4/同类=5),便于调用方映射各自的排序键。
+/// </summary>
+public enum OrderFilterTypeEnum
+{
+    Rarity = 1,//稀有度
+    Level = 2,//等级
+    Lineup = 3,//阵容
+    Name = 4,//名字
+    Class = 5,//同类(相同生物ID归并)
+    Damage = 6,//造成的伤害
+    Kill = 7,//击杀数
+    DamageReceived = 8,//受到的伤害
+    Exp = 9,//获得的经验
+}
+

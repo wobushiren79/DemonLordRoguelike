@@ -1,6 +1,6 @@
 ---
 name: game-sacrifice
-description: 生物献祭升级系统开发：CreatureSacrificeLogic 献祭逻辑、CreatureSacrificeBean 献祭数据、UICreatureSacrifice 献祭UI、献祭升级(等级提升/经验门槛/UpLevelForSacrifice)、成功率公式(同id 1/sacrifice_num + 不同id研究率 + 稀有度惩罚)、保底机制(研究驱动 sacrificePityRate)、不同id/保底研究(SacrificeDifferentIdRate/SacrificePityRate)、祭品装备退回、等级上限、UICreatureManager 升级按钮显隐。
+description: 生物献祭升级系统开发：CreatureSacrificeLogic 献祭逻辑、CreatureSacrificeBean 献祭数据、UICreatureSacrifice 献祭UI、献祭升级(等级提升/经验门槛/UpLevelForSacrifice)、成功率公式(同id 1/sacrifice_num + 不同id研究率 + 等级差修正 2^(祭品level-目标level))、保底机制(研究驱动 sacrificePityRate)、不同id/保底研究(SacrificeDifferentIdRate/SacrificePityRate)、祭品装备退回、等级上限、UICreatureManager 升级按钮显隐。
 tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Game/Logic/CreatureSacrificeLogic.cs
@@ -45,7 +45,7 @@ UICreatureManager(升级按钮) → GameHandler.StartCreatureSacrifice
 
 ### 成功率公式
 - **CreatureUtil** - `GetSacrificeSuccessRate`(保底+祭品,截顶) / `GetSacrificeFoddersRate(target, listFodder, sacrificeNum, differentIdRate)`(祭品部分)
-  - 同 id 单祭品 = `1/sacrifice_num`；**不同 id = `differentIdRate`(研究 SacrificeDifferentIdRate 等级×5%，未解锁0；已去掉旧的 ×1/10)**；稀有度每低一级 ×1/10（同id/不同id均叠加）；总和 + 保底，Clamp01
+  - 同 id 单祭品 = `1/sacrifice_num`；**不同 id = `differentIdRate`(研究 SacrificeDifferentIdRate 等级×5%，未解锁0；已去掉旧的 ×1/10)**；**等级差修正(替代稀有度判定)：×`Mathf.Pow(2, 祭品.level-目标当前level)`，即高1级×2/低1级×0.5/同级×1，同id/不同id均叠加**；总和 + 保底，Clamp01
   - `GetSacrificeSuccessRate` 内部读 `GetUnlockSacrificeDifferentIdRate()` 传入 `differentIdRate`
 
 ### 等级配置

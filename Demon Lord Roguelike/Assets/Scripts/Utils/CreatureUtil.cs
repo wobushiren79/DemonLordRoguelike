@@ -9,8 +9,8 @@ public static class CreatureUtil
     /// 计算一批祭品对目标生物的"献祭成功率(祭品部分,不含保底)"。
     /// <para>规则: 单个「相同生物id」祭品的基础成功率 = 1 / sacrificeNum;</para>
     /// <para>1. 祭品与目标生物 id 不同: 单个成功率 = differentIdRate(来自「不同生物id献祭成功率提升」研究,未解锁为0);</para>
-    /// <para>2. 祭品稀有度低于目标: 每低一级再 ×1/10(差2级即 ×1/100),同id/不同id均叠加;</para>
-    /// <para>3. 全部祭品成功率累加;相同 id 且相同稀有度时,祭品数量达到 sacrificeNum 即可累加到 100%。</para>
+    /// <para>2. 等级差修正(替代旧的稀有度惩罚,不再判定稀有度): 修正系数 = 2^(祭品等级 − 目标当前等级),即祭品每高目标 1 级 ×2(高2级 ×4…),每低 1 级 ×0.5(低2级 ×0.25…),同级不变;同id/不同id均叠加;</para>
+    /// <para>3. 全部祭品成功率累加;相同 id 且相同等级时,祭品数量达到 sacrificeNum 即可累加到 100%。</para>
     /// <para>注: 返回值不在此截顶,保底叠加后再统一 Clamp01。</para>
     /// </summary>
     /// <param name="targetCreature">接受献祭(升级)的目标生物</param>
@@ -34,10 +34,9 @@ public static class CreatureUtil
                 continue;
             //同id用基础成功率;不同id用研究加成(默认0)
             float rate = fodder.creatureId == targetCreature.creatureId ? baseSingleRate : differentIdRate;
-            //稀有度低于目标: 每低一级再降一个数量级(同id/不同id均叠加)
-            int rarityDiff = targetCreature.rarity - fodder.rarity;
-            if (rarityDiff > 0)
-                rate *= Mathf.Pow(0.1f, rarityDiff);
+            //等级差修正(替代稀有度判定): 修正系数=2^(祭品等级-目标当前等级),祭品每高1级×2、每低1级×0.5、同级不变
+            int levelDiff = fodder.level - targetCreature.level;
+            rate *= Mathf.Pow(2f, levelDiff);
             totalRate += rate;
         }
         return totalRate;

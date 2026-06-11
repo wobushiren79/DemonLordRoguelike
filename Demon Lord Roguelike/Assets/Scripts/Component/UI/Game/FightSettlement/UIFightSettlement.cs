@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.UI;
 
 public partial class UIFightSettlement : BaseUIComponent
@@ -10,18 +11,17 @@ public partial class UIFightSettlement : BaseUIComponent
 
     protected Action actionForNext;
 
-    //当前排序类型
-    protected int currentOrderType = 1;
+    //当前筛选排序的优先级列表(index0=最高优先级;默认按伤害)
+    protected List<OrderFilterTypeEnum> currentFilterTypes = new List<OrderFilterTypeEnum> { OrderFilterTypeEnum.Damage };
+    //当前是否正序(false=倒序;默认伤害倒序,高伤害在前)
+    protected bool currentAscending = false;
 
     public override void Awake()
     {
         base.Awake();
         ui_List.AddCellListener(OnCellChangeForItem);
-        //排序按钮提示
-        ui_OrderBtn_Damage_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(50001), PopupEnum.Text);
-        ui_OrderBtn_Kill_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(50002), PopupEnum.Text);
-        ui_OrderBtn_Exp_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(50003), PopupEnum.Text);
-        ui_OrderBtn_DamageReceived_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(50004), PopupEnum.Text);
+        //排序筛选按钮的悬浮详情:筛选排序
+        ui_OrderBtn_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000014), PopupEnum.Text);
     }
 
     public override void CloseUI()
@@ -39,8 +39,8 @@ public partial class UIFightSettlement : BaseUIComponent
         this.fightData = fightData;
         this.actionForNext = actionForNext;
         listRecordsCreatureData = fightData.fightRecordsData.GetRecordsForCreatureData();
-        //默认按伤害降序
-        OrderListData(currentOrderType, false);
+        //初始化排序(按当前筛选排序设置,默认伤害倒序)
+        OrderListData(currentFilterTypes, currentAscending, false);
         ui_List.SetCellCount(listRecordsCreatureData.Count);
     }
 
@@ -69,45 +69,90 @@ public partial class UIFightSettlement : BaseUIComponent
         itemView.SetData(fightData.fightRecordsData, itemData);
     }
 
-    #region 排序
+    #region 筛选排序
     /// <summary>
-    /// 排序列表
+    /// 打开筛选排序弹窗(在排序按钮处弹出;结算仅开放 伤害/击杀/承伤/经验)
     /// </summary>
-    /// <param name="orderType">1-伤害 2-击杀 3-受到伤害 4-经验</param>
-    public void OrderListData(int orderType, bool isRefreshUI = true)
+    protected void ShowOrderFilterDialog()
+    {
+        //结算列表开放的筛选类型(战斗统计相关)
+        List<OrderFilterTypeEnum> listFilterType = new List<OrderFilterTypeEnum>
+        {
+            OrderFilterTypeEnum.Damage,
+            OrderFilterTypeEnum.Kill,
+            OrderFilterTypeEnum.DamageReceived,
+            OrderFilterTypeEnum.Exp,
+        };
+        UIHandler.Instance.ShowDialogOrderFilter(
+            ui_OrderBtn_Button.transform as RectTransform,
+            OnConfirmOrderFilter,
+            listFilterType,
+            new List<OrderFilterTypeEnum>(currentFilterTypes));
+    }
+
+    /// <summary>
+    /// 筛选排序弹窗确认回调
+    /// </summary>
+    /// <param name="filterTypes">已选筛选类型(按优先级从高到低,index0最高)</param>
+    /// <param name="isAscending">是否正序</param>
+    protected void OnConfirmOrderFilter(List<OrderFilterTypeEnum> filterTypes, bool isAscending)
+    {
+        currentFilterTypes = filterTypes ?? new List<OrderFilterTypeEnum>();
+        currentAscending = isAscending;
+        OrderListData(currentFilterTypes, currentAscending);
+    }
+
+    /// <summary>
+    /// 按筛选类型优先级列表 + 正/倒序排序结算列表。
+    /// 按 filterTypes 顺序依次作为主/次排序键(index0=主键),isAscending 作用于全部键。
+    /// </summary>
+    /// <param name="filterTypes">筛选类型(按优先级从高到低;为空则不重排)</param>
+    /// <param name="isAscending">true正序/false倒序</param>
+    /// <param name="isRefreshUI">是否刷新UI</param>
+    public void OrderListData(List<OrderFilterTypeEnum> filterTypes, bool isAscending, bool isRefreshUI = true)
     {
         if (listRecordsCreatureData == null)
             return;
-        currentOrderType = orderType;
-        switch (orderType)
+        if (filterTypes != null && filterTypes.Count > 0)
         {
-            case 1://按伤害降序
-                listRecordsCreatureData = listRecordsCreatureData
-                    .OrderByDescending((itemData) => itemData.damage)
-                    .ThenByDescending((itemData) => itemData.killNum)
-                    .ToList();
-                break;
-            case 2://按击杀降序
-                listRecordsCreatureData = listRecordsCreatureData
-                    .OrderByDescending((itemData) => itemData.killNum)
-                    .ThenByDescending((itemData) => itemData.damage)
-                    .ToList();
-                break;
-            case 3://按受到伤害降序
-                listRecordsCreatureData = listRecordsCreatureData
-                    .OrderByDescending((itemData) => itemData.damageReceived)
-                    .ThenByDescending((itemData) => itemData.damage)
-                    .ToList();
-                break;
-            case 4://按经验降序
-                listRecordsCreatureData = listRecordsCreatureData
-                    .OrderByDescending((itemData) => itemData.exp)
-                    .ThenByDescending((itemData) => itemData.damage)
-                    .ToList();
-                break;
+            IOrderedEnumerable<FightRecordsCreatureBean> ordered = null;
+            for (int i = 0; i < filterTypes.Count; i++)
+            {
+                Func<FightRecordsCreatureBean, IComparable> keySelector = GetOrderKeySelector(filterTypes[i]);
+                if (i == 0)
+                    ordered = isAscending
+                        ? listRecordsCreatureData.OrderBy(keySelector)
+                        : listRecordsCreatureData.OrderByDescending(keySelector);
+                else
+                    ordered = isAscending
+                        ? ordered.ThenBy(keySelector)
+                        : ordered.ThenByDescending(keySelector);
+            }
+            listRecordsCreatureData = ordered.ToList();
         }
         if (isRefreshUI)
             ui_List.RefreshAllCells();
+    }
+
+    /// <summary>
+    /// 获取指定筛选类型对应的排序键选择器(结算:伤害/击杀/承伤/经验)
+    /// </summary>
+    /// <param name="filterType">筛选类型</param>
+    /// <returns>排序键选择器</returns>
+    protected Func<FightRecordsCreatureBean, IComparable> GetOrderKeySelector(OrderFilterTypeEnum filterType)
+    {
+        switch (filterType)
+        {
+            case OrderFilterTypeEnum.Damage:
+                return itemData => itemData.damage;
+            case OrderFilterTypeEnum.Kill:
+                return itemData => itemData.killNum;
+            case OrderFilterTypeEnum.DamageReceived:
+                return itemData => itemData.damageReceived;
+            case OrderFilterTypeEnum.Exp:
+                return itemData => itemData.exp;
+        }
+        return itemData => 0;
     }
     #endregion
 
@@ -120,21 +165,9 @@ public partial class UIFightSettlement : BaseUIComponent
             actionForNext?.Invoke();
             actionForNext = null;
         }
-        else if (viewButton == ui_OrderBtn_Damage_Button)
+        else if (viewButton == ui_OrderBtn_Button)
         {
-            OrderListData(1);
-        }
-        else if (viewButton == ui_OrderBtn_Kill_Button)
-        {
-            OrderListData(2);
-        }
-        else if (viewButton == ui_OrderBtn_DamageReceived_Button)
-        {
-            OrderListData(3);
-        }
-        else if (viewButton == ui_OrderBtn_Exp_Button)
-        {
-            OrderListData(4);
+            ShowOrderFilterDialog();
         }
     }
     #endregion

@@ -166,6 +166,7 @@ public enum UIOpenAnimEnum
 | `UIDialogBossShow` | Dialog | Boss展示弹窗 |
 | `UIDialogCreatureShow` | Dialog | 生物展示弹窗 |
 | `UIDialogPortalDetails` | Dialog | 传送门详情弹窗 |
+| `UIDialogOrderFilter` | Dialog | 排序筛选弹窗(在按钮处弹出,多选筛选类型并按选择顺序定优先级,+正/倒序确认,回调交调用方排序) |
 
 ### 3.3 气泡UI (UITypeEnum.Popup)
 

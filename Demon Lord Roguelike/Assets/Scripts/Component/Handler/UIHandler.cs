@@ -206,4 +206,42 @@ public partial class UIHandler
             dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
         return ShowDialog<UIDialogPortalDetails>(dialogData);
     }
+
+    /// <summary>
+    /// 展示排序筛选弹窗(点击背景关闭,确认后通过 actionForConfirm 回传选中的筛选类型与正/倒序)
+    /// </summary>
+    /// <param name="dialogData"></param>
+    /// <returns></returns>
+    public UIDialogOrderFilter ShowDialogOrderFilter(DialogOrderFilterBean dialogData)
+    {
+        dialogData.dialogType = DialogEnum.OrderFilter;
+        //点击背景关闭
+        dialogData.isDestroyBG = true;
+        return ShowDialog<UIDialogOrderFilter>(dialogData);
+    }
+
+    /// <summary>
+    /// 展示排序筛选弹窗(便捷重载:直接传参,无需手动构造 Bean)。
+    /// 约定:触发该弹窗的筛选/排序按钮,其 PopupButtonCommonView 悬浮详情统一用多语言 2000014(筛选排序)。
+    /// </summary>
+    /// <param name="targetButton">触发弹窗的按钮(用于把弹窗内容定位到该按钮处)</param>
+    /// <param name="actionForConfirm">确认回调:已选筛选类型(按选择顺序的优先级,index0最高) + 是否正序(true正序/false倒序)</param>
+    /// <param name="listFilterType">初始化时开放(可选)的筛选类型;为空(null)则显示全部</param>
+    /// <param name="selectFilterTypes">默认已选中的筛选类型(按优先级,index0最高);为空则默认无选中</param>
+    /// <returns></returns>
+    public UIDialogOrderFilter ShowDialogOrderFilter(
+        RectTransform targetButton,
+        Action<List<OrderFilterTypeEnum>, bool> actionForConfirm,
+        List<OrderFilterTypeEnum> listFilterType = null,
+        List<OrderFilterTypeEnum> selectFilterTypes = null)
+    {
+        DialogOrderFilterBean dialogData = new DialogOrderFilterBean
+        {
+            targetButton = targetButton,
+            actionForConfirm = actionForConfirm,
+            listFilterType = listFilterType,
+            selectFilterTypes = selectFilterTypes,
+        };
+        return ShowDialogOrderFilter(dialogData);
+    }
 }

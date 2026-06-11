@@ -152,7 +152,7 @@ InitData(fightData, testData = null)
 ### 新增结算统计维度
 1. `FightRecordsCreatureBean` 加字段 + 对应 `FightRecordsBean` 的写入方法
 2. 在战斗逻辑/AI 中调用写入方法累计
-3. `UIFightSettlement.OrderListData` 加排序分支 + UI 增加排序按钮
+3. 排序：`UIFightSettlement` 用单个 `OrderBtn` 打开 `UIDialogOrderFilter`（多选+按选择顺序定优先级+正/倒序）。新增统计维度时：在 `OrderFilterTypeEnum`（`GameStateEnum.cs`）加枚举值 → 弹窗预制体加对应筛选项 + `UIDialogOrderFilter.InitItems` 注册 → `UIViewDialogOrderFilterItem.GetFilterDetail` 加详情文本 → `UIFightSettlement.GetOrderKeySelector` 加该维度的排序键 → `ShowOrderFilterDialog` 的 `listFilterType` 放开该项。现开放：Damage(伤害50001)/Kill(击杀50002)/DamageReceived(承伤50004)/Exp(经验50003)。
 4. `UIViewFightSettlementItem` 增加进度条展示
 
 ### 接通经验奖励（当前为预留死代码）

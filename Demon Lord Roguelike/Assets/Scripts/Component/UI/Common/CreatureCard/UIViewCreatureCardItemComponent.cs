@@ -27,5 +27,7 @@ public partial class UIViewCreatureCardItem
 
     public TextMeshProUGUI ui_LevelText;
 
+    public TextMeshProUGUI ui_MPText;
+
 
 }

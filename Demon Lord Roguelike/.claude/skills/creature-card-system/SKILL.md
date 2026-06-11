@@ -103,6 +103,8 @@ UIPopupCreatureCardDetails   // 卡片详情弹窗
 // 获取卡片组件并设置数据
 UIViewCreatureCardItem cardItem = GetComponent<UIViewCreatureCardItem>();
 cardItem.SetData(creatureData, CardUseStateEnum.Show);
+// SetData 内部会自动填充卡片上的 MPText（SetCreateMP）：显示召唤该生物需要消耗的魔力 CreatureInfo.create_mp，
+// 战斗中放置卡片时从魔王当前魔力(MPCurrent)中扣除，不足则 Toast"魔力不足"
 ```
 
 ### 2. 战斗卡片使用
@@ -302,21 +304,32 @@ public void PutCard(Vector3 worldPosition)
 }
 ```
 
-### 卡片排序
+### 卡片排序（筛选排序弹窗）
+
+`UIViewCreatureCardList` 不再用一排固定排序按钮，改为单个 `OrderBtn`：点击弹出 `UIDialogOrderFilter`（在按钮处弹出，悬浮详情=「筛选排序」UIText 2000014）。弹窗可**多选**筛选类型，**按选择顺序决定排序优先级**（index0=主键），再点「正序/倒序」确认。
 
 ```csharp
-// UIViewCreatureCardList 内置排序方法
-// 按稀有度排序
-cardList.OrderListCreature(1);
-// 按等级排序
-cardList.OrderListCreature(2);
-// 按阵容排序
-cardList.OrderListCreature(3);
-// 按名字排序
-cardList.OrderListCreature(4);
-// 按同类排序（相同生物ID的排一起：稀有度→生物ID→等级）
-cardList.OrderListCreature(5);
+// 点击 OrderBtn -> 打开筛选排序弹窗（开放 稀有度/等级/阵容/名字/同类，默认带入当前选择）
+UIHandler.Instance.ShowDialogOrderFilter(
+    ui_OrderBtn_Button.transform as RectTransform,
+    OnConfirmOrderFilter,                                   // (List<OrderFilterTypeEnum> types, bool isAscending)
+    listFilterType,                                         // 开放的筛选类型（null=全部）
+    new List<OrderFilterTypeEnum>(currentFilterTypes));     // 默认选中（按优先级）
+
+// 确认回调：按所选优先级 + 正/倒序排序
+protected void OnConfirmOrderFilter(List<OrderFilterTypeEnum> filterTypes, bool isAscending)
+{
+    currentFilterTypes = filterTypes ?? new List<OrderFilterTypeEnum>();
+    currentAscending = isAscending;
+    OrderListCreature(currentFilterTypes, currentAscending);
+}
+
+// 动态多键排序：filterTypes 顺序即主/次键优先级，isAscending 作用于全部键
+public void OrderListCreature(List<OrderFilterTypeEnum> filterTypes, bool isAscending, bool isRefreshUI = true)
 ```
+
+> `OrderFilterTypeEnum`：Rarity=1 / Level=2 / Lineup=3 / Name=4 / Class=5（同类=相同生物ID归并）。
+> 排序键由 `GetOrderKeySelector` 给出：Rarity→rarity、Level→level、Lineup→阵容序号(不在阵容置 int.MaxValue)、Name→creatureName、Class→creatureId。
 
 ## 文件位置速查
 

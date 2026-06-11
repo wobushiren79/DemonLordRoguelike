@@ -1,6 +1,6 @@
 ---
 name: sacrifice-system
-description: Demon Lord Roguelike 游戏的生物献祭升级系统开发指南。使用此SKILL当需要创建或修改生物献祭流程、献祭升级(等级提升)、献祭成功率公式(祭品数量/生物id/稀有度惩罚)、保底机制、祭坛动画、献祭祭品消耗与装备退回、等级上限、献祭UI、升级手动加点UI(UICreatureAddAttribute)等，包括 CreatureSacrificeLogic 献祭逻辑、CreatureSacrificeBean 献祭数据、UICreatureSacrifice 献祭界面、UICreatureAddAttribute 升级加点界面、UICreatureManager 升级按钮、CreatureBean.UpLevelForSacrifice/CanUpLevel/IsMaxLevel/sacrificePityRate、CreatureUtil.GetSacrificeSuccessRate 成功率公式、CreatureUtil.GetAttributePointAddValue 单点增量、LevelInfo(level_exp/sacrifice_num/attribute_point) 等级配置、CreatureSacrifice_* 事件常量、UnlockEnum.Altar 祭坛解锁等。
+description: Demon Lord Roguelike 游戏的生物献祭升级系统开发指南。使用此SKILL当需要创建或修改生物献祭流程、献祭升级(等级提升)、献祭成功率公式(祭品数量/生物id/等级差修正 2^(祭品level-目标level))、保底机制、祭坛动画、献祭祭品消耗与装备退回、等级上限、献祭UI、升级手动加点UI(UICreatureAddAttribute)等，包括 CreatureSacrificeLogic 献祭逻辑、CreatureSacrificeBean 献祭数据、UICreatureSacrifice 献祭界面、UICreatureAddAttribute 升级加点界面、UICreatureManager 升级按钮、CreatureBean.UpLevelForSacrifice/CanUpLevel/IsMaxLevel/sacrificePityRate、CreatureUtil.GetSacrificeSuccessRate 成功率公式、CreatureUtil.GetAttributePointAddValue 单点增量、LevelInfo(level_exp/sacrifice_num/attribute_point) 等级配置、CreatureSacrifice_* 事件常量、UnlockEnum.Altar 祭坛解锁等。
 watched_files:
   - Assets/Scripts/Game/Logic/CreatureSacrificeLogic.cs
   - Assets/Scripts/Bean/Game/CreatureSacrificeBean.cs
@@ -84,22 +84,23 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 ### 单个祭品成功率
 - **同 id 基础**：祭品 `creatureId == 目标 creatureId` 时 `baseSingleRate = 1 / sacrifice_num`（`sacrifice_num` 来自下一级 `LevelInfo` 配置，默认 5 → 单祭品 20%）
 - **生物 id 不同**：单个成功率 = `differentIdRate`（来自研究 `UnlockEnum.SacrificeDifferentIdRate`，每级 5%，**未解锁恒为 0**）。⚠️ 旧的「不同id ×1/10」逻辑已删除
-- **稀有度低于目标**：`rarityDiff = 目标.rarity - 祭品.rarity`，每低一级再 `×1/10`（差 2 级即 `×1/100`），**同 id 基础率与不同 id 研究率都叠加**
-- 祭品稀有度 ≥ 目标时不惩罚
+- **等级差修正（替代旧的稀有度判定，已不再判定稀有度）**：修正系数 = `Mathf.Pow(2, 祭品.level - 目标.level)`，即祭品每**高**目标 1 级 `×2`（高 2 级 `×4`…），每**低** 1 级 `×0.5`（低 2 级 `×0.25`…），**同级不变**；同 id 基础率与不同 id 研究率都叠加。⚠️ 目标等级取目标生物**当前** `level`（非下一级）
 
 ### 总成功率
 - `祭品总成功率 = Σ 每个祭品成功率`
 - **最终成功率 = Clamp01(sacrificePityRate 保底 + 祭品总成功率)**，封顶 100%
-- 相同 id 同稀有度时，祭品数量达到 `sacrifice_num` 即累加到 100%
+- 相同 id 同等级时，祭品数量达到 `sacrifice_num` 即累加到 100%（高等级祭品单只即可超 100%，统一截顶）
 
-### 公式举例（以 sacrifice_num = 10 为例，同 id base = 10%；不同 id 研究 N 级 → 5%×N）
+### 公式举例（以 sacrifice_num = 5 为例，同 id base = 20%；不同 id 研究 N 级 → 5%×N）
 | 场景 | 单祭品成功率 |
 |------|------------|
-| 相同 id、相同稀有度 | 10%（数量达 10 个即 100%） |
+| 相同 id、相同等级 | 20%（数量达 5 个即 100%） |
 | 不同 id（研究未解锁） | 0% |
 | 不同 id（研究 3 级=15%） | 15% |
-| 同 id、稀有度低 1 级 | 10% × 1/10 = 1% |
-| 不同 id（研究 3 级）且 稀有度低 1 级 | 15% × 1/10 = 1.5% |
+| 同 id、祭品低目标 1 级 | 20% × 0.5 = 10% |
+| 同 id、祭品低目标 2 级 | 20% × 0.25 = 5% |
+| 同 id、祭品高目标 1 级 | 20% × 2 = 40% |
+| 同 id、祭品高目标 2 级 | 20% × 4 = 80% |
 
 ### 两个公开方法
 - `CreatureUtil.GetSacrificeFoddersRate(target, listFodder, sacrificeNum, differentIdRate)` —— 仅祭品部分，**不含保底、不截顶**；`differentIdRate` 为单个不同 id 祭品成功率(由调用方读研究等级传入)
@@ -199,7 +200,7 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
 ## 接入 / 修改流程
 
 ### 调成功率公式
-改 `CreatureUtil.GetSacrificeFoddersRate` / `GetSacrificeSuccessRate`（同id基础率、不同id研究率应用方式、稀有度惩罚、保底叠加方式）。UI 与 Logic 自动同步，无需两处改。
+改 `CreatureUtil.GetSacrificeFoddersRate` / `GetSacrificeSuccessRate`（同id基础率、不同id研究率应用方式、等级差修正 `2^(祭品level-目标level)`、保底叠加方式）。UI 与 Logic 自动同步，无需两处改。
 
 ### 调升级加点（点数 / 单点增量 / UI）
 - **每级获得点数**：改 Excel `excel_level_info` 的 `attribute_point` 列（唯一真实源，当前全等级配置为 5），再 `ExcelEditorWindow` 导出 JSON。`UpLevelForSacrifice()` 读该列返回点数（`<=0` 回退 1）。
@@ -214,7 +215,7 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
 保底增量由研究 `UnlockEnum.SacrificePityRate` 驱动：改 `UserUnlockBean.GetUnlockSacrificeFailPityAddRate()`(每级系数)或 `CreatureSacrificeLogic.SettleSacrifice`(累积/清零方式、是否退经验、祭品是否返还) + `CreatureBean.sacrificePityRate` 处理。
 
 ### 调不同 id 成功率
-不同 id 祭品成功率由研究 `UnlockEnum.SacrificeDifferentIdRate` 驱动：改 `UserUnlockBean.GetUnlockSacrificeDifferentIdRate()`(每级系数)；公式如何应用(per-fodder/稀有度叠加)改 `CreatureUtil.GetSacrificeFoddersRate`。
+不同 id 祭品成功率由研究 `UnlockEnum.SacrificeDifferentIdRate` 驱动：改 `UserUnlockBean.GetUnlockSacrificeDifferentIdRate()`(每级系数)；公式如何应用(per-fodder/等级差修正叠加)改 `CreatureUtil.GetSacrificeFoddersRate`。
 
 ### 调祭坛动画 / 摄像机
 改 `CreatureSacrificeLogic` 的 `AnimForCreatureObjSacrfice` / `AnimForSacrficeEffect` / `AnimForSacrficeCamera` / `SetAltarEffect`。祭坛对象 `scenePrefab.objBuildingAltar`，粒子 `VFX_LightFire*` / `MagicArray`。

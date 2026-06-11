@@ -26,6 +26,7 @@ watched_files:
 - **UIDialogBossShow** - Boss 展示弹窗
 - **UIDialogCreatureShow** - 生物展示弹窗
 - **UIDialogPortalDetails** - 传送门详情弹窗
+- **UIDialogOrderFilter** - 排序筛选弹窗（在按钮处弹出，多选筛选类型+按选择顺序定优先级，正/倒序确认）
 
 ### DialogBean 数据结构
 ```csharp
@@ -45,6 +46,36 @@ public class UIDialogExample : DialogView
     public override void SubmitOnClick() { base.SubmitOnClick(); }
 }
 ```
+
+## 排序筛选弹窗 UIDialogOrderFilter 使用说明
+
+通用「排序筛选」弹窗：在某个按钮处弹出，**可多选**筛选类型并**按选择顺序决定排序优先级**（index0=最高/主键），再点「正序 / 倒序」确认，结果通过回调交调用方排序；点击背景关闭。
+
+```csharp
+UIHandler.Instance.ShowDialogOrderFilter(
+    ui_OrderBtn_Button.transform as RectTransform,          // 触发按钮：弹窗内容定位到它处
+    OnConfirmOrderFilter,                                   // 确认回调
+    listFilterType,                                         // 初始化时开放哪些筛选(null=全部)
+    new List<OrderFilterTypeEnum>(currentFilterTypes));     // 默认已选(按优先级，可空)
+
+// filterTypes 按优先级从高到低(index0=主键)；isAscending 作用于全部键的全局正/倒序
+protected void OnConfirmOrderFilter(List<OrderFilterTypeEnum> filterTypes, bool isAscending) { /* 调用方据此排序 */ }
+```
+
+- 也可直接构造 `DialogOrderFilterBean` 走 `ShowDialogOrderFilter(bean)` 重载。
+- `OrderFilterTypeEnum`（定义于 `GameStateEnum.cs`）：`Rarity=1 / Level=2 / Lineup=3 / Name=4 / Class=5`。
+- `listFilterType` 即「**初始化时自定义开放哪些筛选**」；不在列表里的项隐藏，且会从默认选中里剔除。
+- 相关文件：`UIDialogOrderFilter`、`DialogOrderFilterBean`、`UIViewDialogOrderFilterItem`（弹窗内筛选项）。参考接入：`UIViewCreatureCardList` 的 `OrderBtn`。
+
+### ⚠️ 约定：筛选/排序按钮的 popup 详情统一用 UIText `2000014`
+
+**凡是「打开 UIDialogOrderFilter 的筛选/排序按钮」，其 `PopupButtonCommonView` 悬浮详情一律使用多语言 `2000014`（`筛选排序` / `Sort & Filter`），不要再为每个按钮新建文本：**
+
+```csharp
+ui_OrderBtn_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000014), PopupEnum.Text);
+```
+
+> 旧文本（稀有度=2000004 / 等级=2000005 / 阵容=2000006 / 名字=2000007 / 同类=2000011）现仅用于**弹窗内每个筛选项**的悬浮详情（见 `UIViewDialogOrderFilterItem.GetFilterDetail`），不再用于按钮本身。
 
 ## 约束
 
