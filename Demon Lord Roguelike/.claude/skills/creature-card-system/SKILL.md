@@ -331,6 +331,10 @@ public void OrderListCreature(List<OrderFilterTypeEnum> filterTypes, bool isAsce
 > `OrderFilterTypeEnum`：Rarity=1 / Level=2 / Lineup=3 / Name=4 / Class=5（同类=相同生物ID归并）。
 > 排序键由 `GetOrderKeySelector` 给出：Rarity→rarity、Level→level、Lineup→阵容序号(不在阵容置 int.MaxValue)、Name→creatureName、Class→creatureId。
 
+### 空列表提示
+
+`UIViewCreatureCardList` 含一个 `UIViewNullText`（挂 `UITextLanguageView`+`TextMeshProUGUI`）。`SetData` 末尾调用 `RefreshNullText()`：列表为空时显示「没有相关魔物」（UIText **2000016**），非空则隐藏。`textId` 在代码里设置（非 prefab 写死），故无需改 prefab。背包道具列表 `UIViewItemBackpackList` 同理，空时显示「没有相关道具」（UIText **2000015**）。
+
 ## 文件位置速查
 
 | 功能 | 文件路径 |

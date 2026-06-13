@@ -63,6 +63,17 @@ public partial class UIViewItemBackpackList : BaseUIView
         //初始化排序(按当前筛选排序设置)
         OrderListItem(currentFilterTypes, currentAscending, false);
         ui_BackpackContent.SetCellCount(listFilterItems.Count);
+        //刷新空列表提示
+        RefreshNullText();
+    }
+
+    /// <summary>
+    /// 刷新空列表提示文本：过滤后无可用道具时显示"没有相关道具"
+    /// </summary>
+    protected void RefreshNullText()
+    {
+        bool isEmpty = listFilterItems == null || listFilterItems.Count == 0;
+        ui_UIViewNullText_UITextLanguageView.gameObject.SetActive(isEmpty);
     }
 
 

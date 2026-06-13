@@ -92,6 +92,19 @@ public partial class UIViewCreatureCardList : BaseUIView
         OrderListCreature(currentFilterTypes, currentAscending, false);
         //设置数量
         ui_CreatureListContent.SetCellCount(listCreatureData.Count);
+        //刷新空列表提示
+        RefreshNullText();
+    }
+
+    /// <summary>
+    /// 刷新空列表提示文本：列表无魔物时显示"没有相关魔物"
+    /// </summary>
+    protected void RefreshNullText()
+    {
+        bool isEmpty = listCreatureData == null || listCreatureData.Count == 0;
+        ui_UIViewNullText_UITextLanguageView.textId = 2000016;
+        ui_UIViewNullText_UITextLanguageView.RefreshUI();
+        ui_UIViewNullText_UITextLanguageView.gameObject.SetActive(isEmpty);
     }
 
     /// <summary>

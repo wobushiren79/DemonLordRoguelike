@@ -105,7 +105,7 @@ public partial class UIGashaponMachine : BaseUIComponent
         }
         ui_List.SetCellCount(listStoreData.Count);
         //无数据时显示提示文本
-        ui_NullText.gameObject.SetActive(listStoreData.Count == 0);
+        ui_UIViewNullText.gameObject.SetActive(listStoreData.Count == 0);
     }
 
     /// <summary>

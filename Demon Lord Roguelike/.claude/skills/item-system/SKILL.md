@@ -198,6 +198,10 @@ List<ItemBean> rareItems = userData.GetUserBackpackItemsData().listBackpackItems
     .ToList();
 ```
 
+### 空列表提示
+
+`UIViewItemBackpackList` 含一个 `UIViewNullText`（挂 `UITextLanguageView`+`TextMeshProUGUI`）。`SetData` 末尾调用 `RefreshNullText()`：过滤后 `listFilterItems` 为空时显示「没有相关道具」（UIText **2000015**），非空则隐藏。`textId` 在代码里设置（非 prefab 写死）。生物卡片列表 `UIViewCreatureCardList` 同理，空时显示「没有相关魔物」（UIText **2000016**）。
+
 ### 装备比较
 
 ```csharp
