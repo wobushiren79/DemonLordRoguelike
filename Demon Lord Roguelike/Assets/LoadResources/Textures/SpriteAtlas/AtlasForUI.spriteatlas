@@ -58,6 +58,7 @@ SpriteAtlas:
     - aabefcc02d1565740a2a006536f49d32: 21300000
     - e085c901038582d4798906fc0f0b9fff: 21300000
     - 7f9fe721e914e234cb8d2d5583b8c955: 21300000
+    - 1bc7e241efc0d4a47ae09f9d390bf397: 21300000
     - 50ab12718dfe0424ebc8115e6f9a7571: 21300000
     - a43bb47107e97dd49a55c6f9511f754d: 21300000
     - 43cc7291668323549ba6503668c64b89: 21300000
@@ -152,6 +153,7 @@ SpriteAtlas:
     - 8c38562e31d64394dad74bff8d7d2e46: 21300000
     - 7ab6cc2e93cb3ea4b962fbc2be722d31: 21300000
     - faf90d2ef45e4fd488707dd1902c5ced: 21300000
+    - 28a90b5e28406444e82c0f9eb29da6e7: 21300000
     - d4982c7e611a2674b80a047219c577d1: 21300000
     - f8e2528e4e8297a429d7eed69d8a95ca: 21300000
     - 4e02968eeeddfe947ab8010c40e026b5: 21300000
@@ -173,6 +175,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: aabefcc02d1565740a2a006536f49d32, type: 3}
   - {fileID: 21300000, guid: e085c901038582d4798906fc0f0b9fff, type: 3}
   - {fileID: 21300000, guid: 7f9fe721e914e234cb8d2d5583b8c955, type: 3}
+  - {fileID: 21300000, guid: 1bc7e241efc0d4a47ae09f9d390bf397, type: 3}
   - {fileID: 21300000, guid: 50ab12718dfe0424ebc8115e6f9a7571, type: 3}
   - {fileID: 21300000, guid: a43bb47107e97dd49a55c6f9511f754d, type: 3}
   - {fileID: 21300000, guid: 43cc7291668323549ba6503668c64b89, type: 3}
@@ -267,6 +270,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 8c38562e31d64394dad74bff8d7d2e46, type: 3}
   - {fileID: 21300000, guid: 7ab6cc2e93cb3ea4b962fbc2be722d31, type: 3}
   - {fileID: 21300000, guid: faf90d2ef45e4fd488707dd1902c5ced, type: 3}
+  - {fileID: 21300000, guid: 28a90b5e28406444e82c0f9eb29da6e7, type: 3}
   - {fileID: 21300000, guid: d4982c7e611a2674b80a047219c577d1, type: 3}
   - {fileID: 21300000, guid: f8e2528e4e8297a429d7eed69d8a95ca, type: 3}
   - {fileID: 21300000, guid: 4e02968eeeddfe947ab8010c40e026b5, type: 3}
@@ -287,6 +291,7 @@ SpriteAtlas:
   - ui_slider_5
   - ui_creature_attribute_3
   - ui_border_24
+  - ui_creature_attribute_5
   - ui_equip_8
   - icon_unknow
   - ui_relationship_3
@@ -381,6 +386,7 @@ SpriteAtlas:
   - ui_table_1
   - ui_equip_6
   - ui_man_1
+  - ui_other_7
   - ui_border_2
   - ui_border_10
   - ui_class_5

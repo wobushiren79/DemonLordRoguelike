@@ -34,8 +34,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 700, y: 379.99997}
-  m_SizeDelta: {x: 200, y: 60}
+  m_AnchoredPosition: {x: 550, y: 379.99997}
+  m_SizeDelta: {x: 500, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &470464377572834752
 CanvasRenderer:
@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 1/3
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 53783de0a756faf45866b29062130779, type: 2}
   m_sharedMaterial: {fileID: 2984319347202215735, guid: 53783de0a756faf45866b29062130779, type: 2}
@@ -825,6 +825,7 @@ MonoBehaviour:
       creatureNpcData:
         npcId: 0
       creatureState: 1
+      sacrificePityRate: 0
     cardUseState: 0
     cardState: 0
     originalCardPos: {x: 0, y: 0}
@@ -837,10 +838,11 @@ MonoBehaviour:
   ui_CardBgBorad: {fileID: 0}
   ui_CDTime: {fileID: 0}
   ui_Mask: {fileID: 0}
-  ui_StarText: {fileID: 0}
   ui_SelectBg: {fileID: 0}
   ui_IconContent: {fileID: 0}
   ui_Class: {fileID: 0}
+  ui_LevelText: {fileID: 0}
+  ui_MPText: {fileID: 0}
 --- !u!224 &8272645482953681052 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
