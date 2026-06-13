@@ -1,5 +1,6 @@
 ﻿using UnityEngine.UI;
 using UnityEngine;
+using TMPro;
 
 
 public partial class UIGashaponMachine
@@ -12,7 +13,7 @@ public partial class UIGashaponMachine
 
     public ScrollGridVertical ui_List;
 
-    public UITextLanguageView ui_NullText;
+    public TextMeshProUGUI ui_UIViewNullText;
 
 
 }
