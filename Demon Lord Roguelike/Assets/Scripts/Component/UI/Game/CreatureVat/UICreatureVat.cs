@@ -154,7 +154,7 @@ public partial class UICreatureVat : BaseUIComponent
         listTargetCreatureShow.Clear();
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UserAscendBean userAscend = userData.GetUserAscendData();
-        userData.listBackpackCreature.ForEach((int index, CreatureBean creatureData) =>
+        userData.GetUserBackpackCreatureData().listBackpackCreature.ForEach((int index, CreatureBean creatureData) =>
         {
             if (creatureData.creatureState != CreatureStateEnum.Idle)
                 return;
@@ -170,7 +170,7 @@ public partial class UICreatureVat : BaseUIComponent
     {
         listMaterialCreatureShow.Clear();
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        userData.listBackpackCreature.ForEach((int index, CreatureBean creatureData) =>
+        userData.GetUserBackpackCreatureData().listBackpackCreature.ForEach((int index, CreatureBean creatureData) =>
         {
             if (creatureData == targetCreatureSelect)
                 return;

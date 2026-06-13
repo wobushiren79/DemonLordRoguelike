@@ -58,7 +58,7 @@ public partial class UICreatureManager : BaseUIComponent
     public void InitCreaturekData()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        ui_UIViewCreatureCardList.SetData(userData.listBackpackCreature, CardUseStateEnum.CreatureManager, OnCellChangeForBackpackCreature);
+        ui_UIViewCreatureCardList.SetData(userData.GetUserBackpackCreatureData().listBackpackCreature, CardUseStateEnum.CreatureManager, OnCellChangeForBackpackCreature);
         //初始化卡片详情
         var itemCreatureData = ui_UIViewCreatureCardList.GetItemData(selectCreatureIndex);
         ui_UIViewCreatureCardEquipDetails.SetData(itemCreatureData);
@@ -88,7 +88,7 @@ public partial class UICreatureManager : BaseUIComponent
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         // 获取当前选中的生物数据
         var creatureData = ui_UIViewCreatureCardEquipDetails.creatureData;
-        ui_UIViewItemBackpackList.SetData(userData.listBackpackItems, OnCellChangeForBackpackItem, creatureData);
+        ui_UIViewItemBackpackList.SetData(userData.GetUserBackpackItemsData().listBackpackItems, OnCellChangeForBackpackItem, creatureData);
     }
 
     /// <summary>

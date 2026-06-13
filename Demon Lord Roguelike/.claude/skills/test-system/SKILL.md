@@ -271,13 +271,13 @@ allUnlockInfo.ForEach((index, value) =>
 GameTestEditor.DrawCreatureSacrificeTest()                     // Inspector 配置
     │  存档槽位(0~2) → 「加载存档生物」→ LoadSacrificeTestCreatures()
     │      用 UserDataService.ChangeSlot(slot).Load(false) 读存档
-    │      把 listBackpackCreature 填进目标生物下拉(uuid + 显示名)
+    │      把背包生物列表(GetUserBackpackCreatureData().listBackpackCreature)填进目标生物下拉(uuid + 显示名)
     │  目标生物下拉 / 手动成功率开关 + 成功率 Slider(0~1)
     │  ▶️ 开始 → launcher.StartForCreatureSacrificeTest(slot, uuid, useManualRate, manualRate)
     ▼
 LauncherTest.StartForCreatureSacrificeTest(...)                // Assets/Scripts/Game/Launcher/LauncherTest.cs
     │  ① UserDataService 重新加载该槽位存档为 UserDataBean
-    │  ② 按 uuid 在 listBackpackCreature 中定位目标生物(必须同一引用)
+    │  ② 按 uuid 在背包生物列表中定位目标生物(必须同一引用)
     │  ③ GameDataHandler.manager.SetUserData(userData)  // 存档数据替换为运行时数据
     │  ④ 注册一次性 World_EnterGameForBaseScene 回调
     │  ⑤ WorldHandler.EnterGameForBaseScene(userData)   // 进入基地(含祭坛)
@@ -289,7 +289,7 @@ LauncherTest.StartForCreatureSacrificeTest(...)                // Assets/Scripts
 ### 关键点
 
 - **使用存档真实数据**：献祭流程内所有数据都走 `GameDataHandler.manager.GetUserData()`，因此把存档 `SetUserData` 进运行时即可让祭品列表、保底、目标生物属性全部来自该存档。
-- **目标生物同一引用**：`UICreatureSacrifice.InitCreaturekData` 用 `creatureData != targetCreature` 按引用排除目标，故 `StartForCreatureSacrificeTest` 必须从加载后的 `userData.listBackpackCreature` 中按 uuid 取出**同一引用**。
+- **目标生物同一引用**：`UICreatureSacrifice.InitCreaturekData` 用 `creatureData != targetCreature` 按引用排除目标，故 `StartForCreatureSacrificeTest` 必须从加载后的 `userData.GetUserBackpackCreatureData().listBackpackCreature` 中按 uuid 取出**同一引用**。
 - **手动 vs 真实成功率**：`CreatureSacrificeBean` 新增 `isTestMode/useManualSuccessRate/manualSuccessRate`；`CreatureSacrificeLogic.StartSacrifice` 在 `isTestMode && useManualSuccessRate` 时用手动值掷骰，否则走 `CreatureUtil.GetSacrificeSuccessRate` 公式。
 - **不落盘**：`CreatureSacrificeLogic.SettleSacrifice` 在 `isTestMode` 时跳过 `SaveUserData()`，升级/祭品消耗只在内存生效，退出测试即丢弃。
 - **场景依赖**：献祭需要基地场景的祭坛，故必须先 `EnterGameForBaseScene` 再发起；用一次性 `World_EnterGameForBaseScene` 事件等待场景就绪。

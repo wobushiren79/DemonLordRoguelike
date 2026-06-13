@@ -165,14 +165,14 @@ public class UserDataBean
     public long exp;                                 // 经验值
     
     // 生物数据
-    public List<CreatureBean> listCreature;          // 所有生物
-    public Dictionary<string, List<string>> dicLineup; // 阵容（阵容ID -> 生物UUID列表）
+    public UserBackpackCreatureBean userBackpackCreatureData; // 背包生物容器([JsonIgnore]拆分→UserBackpackCreature_{slot})；列表在 .listBackpackCreature
+    public Dictionary<int, List<string>> dicLineupCreature;   // 阵容（阵容ID -> 生物UUID列表）
     
     // 道具数据
-    public List<ItemBean> listBackpackItems;          // 背包道具
+    public UserBackpackItemsBean userBackpackItemsData;  // 背包道具容器([JsonIgnore]拆分→UserBackpackItem_{slot})；列表在 .listBackpackItems
     
     // 解锁数据
-    public UserUnlockBean userUnlockData;             // 解锁内容
+    public UserUnlockBean userUnlockData;             // 解锁内容([JsonIgnore]拆分→UserUnlock_{slot})
     public UserAscendBean userAscendData;             // 升阶数据
     public UserLimmitBean userLimmitData;              // 限制数据
     
@@ -198,6 +198,10 @@ userData.RemoveBackpackItem(item);      // 移除道具
 userData.AddBackpackCreature(creature); // 添加生物
 userData.RemoveBackpackCreature(uuid);  // 移除生物
 userData.AddLineupCreature(lineupId, uuid); // 添加到阵容
+
+// 背包列表已包裹进容器Bean，直接读取列表须经访问器(增删仍走上面的方法)
+List<ItemBean> items = userData.GetUserBackpackItemsData().listBackpackItems;
+List<CreatureBean> creatures = userData.GetUserBackpackCreatureData().listBackpackCreature;
 ```
 
 ### 存档备份机制
@@ -210,22 +214,26 @@ userData.AddLineupCreature(lineupId, uuid); // 添加到阵容
 // 3. 如果写入失败，尝试从备份恢复
 ```
 
-### 拆分存档(解锁/成就独立文件)
+### 拆分存档(解锁/成就/背包独立文件)
 
-`UserUnlockBean` / `UserAchievementBean` 数据量大，已从 `UserData_{slot}` 主存档**拆分为同槽目录下的独立文件**，避免主存档膨胀：
+`UserUnlockBean` / `UserAchievementBean` / `UserBackpackItemsBean`(包裹背包道具列表) / `UserBackpackCreatureBean`(包裹背包生物列表) 数据量大，已从 `UserData_{slot}` 主存档**拆分为同槽目录下的独立文件**，避免主存档膨胀。背包两个列表原先是 `UserDataBean` 上裸露的 `List<>` 字段，现已各自包进独立的容器 Bean(`Assets/Scripts/Bean/Game/UserBackpack*Bean.cs`)再拆分，与解锁/成就的 Bean 包裹方式一致：
 
 ```
 {persistentDataPath}/UserData_{slot}/
-├── UserData_{slot}              # 主存档(含备份 _Backups_0/1/2)
-├── UserUnlock_{slot}            # 解锁数据(独立)
-└── UserAchievement_{slot}       # 成就&统计数据(独立)
+├── UserData_{slot}                 # 主存档(含备份 _Backups_0/1/2)
+├── UserUnlock_{slot}               # 解锁数据(独立, UserUnlockBean)
+├── UserAchievement_{slot}          # 成就&统计数据(独立, UserAchievementBean)
+├── UserBackpackItem_{slot}         # 背包道具(独立, UserBackpackItemsBean{ listBackpackItems })
+└── UserBackpackCreature_{slot}     # 背包生物(独立, UserBackpackCreatureBean{ listBackpackCreature })
 ```
 
-- `UserDataBean.userUnlockData` / `userAchievementData` 标注 `[Newtonsoft.Json.JsonIgnore]`，**不随主存档序列化**；仅保留 `GetUserUnlockData()` / `GetUserAchievementData()` 取数方法。
-- **拆分读写全部封装在 `UserDataService` 内部**（不另建子类服务）：`Save` 存完主存档后用即建的 `BaseDataService<UserUnlockBean>` / `<UserAchievementBean>` 实例写独立文件；`Load` 读主存档后注入拆分数据；`Delete` 一并删除。`GameDataManager` 仍只调 `userDataService.Save/Load/Delete`，对拆分无感知。
-- 关键技巧：`BaseDataService<T>` 是可实例化的具体类，`StoragePath` public、`FileName` 由构造函数传入，故 UserDataService 用 `new BaseDataService<T>(fileName){ StoragePath = ... }` 即可复用泛型读写，无需为每个类型建子类。
-- **不迁移旧存档**：旧版主存档内嵌的 unlock/achievement 在加 `JsonIgnore` 后被忽略，独立文件不存在时注入空数据（视为新开始）。
-- 独立文件**无备份**：`UserDataService` 的"使用备份"回滚只还原主存档，不联动 unlock/achievement，存在轻微不同步（按需自行扩展）。
+- `UserDataBean.userUnlockData` / `userAchievementData` / `userBackpackItemsData` / `userBackpackCreatureData` 均为包裹型 Bean 字段并标注 `[Newtonsoft.Json.JsonIgnore]`，**不随主存档序列化**；统一用懒初始化取数器访问：`GetUserUnlockData()` / `GetUserAchievementData()` / `GetUserBackpackItemsData()` / `GetUserBackpackCreatureData()`。背包列表经容器取出：`GetUserBackpackItemsData().listBackpackItems` / `GetUserBackpackCreatureData().listBackpackCreature`。
+- **背包增删/查询方法仍在 `UserDataBean` 上**（`AddBackpackItem`/`RemoveBackpackItem`/`AddBackpackCreature`/`RemoveBackpackCreature`/`GetBackpackCreature`），内部改为操作容器 Bean 的列表——因为它们与魔晶(`AddBackpackItemForSpecial`→`AddCrystal`)、阵容(`RemoveBackpackCreature`→`RemoveLineupCreature`)、事件耦合，故由聚合根 `UserDataBean` 编排，容器 Bean 仅作纯数据存储。调用方法的外部代码无需改动，只有**直接读列表**的地方改走访问器。
+- **拆分读写全部封装在 `UserDataService` 内部**（不另建子类服务）：`Save` 存完主存档后用即建的 `BaseDataService<UserUnlockBean>` / `<UserAchievementBean>` / `<UserBackpackItemsBean>` / `<UserBackpackCreatureBean>` 实例写独立文件；`Load` 读主存档后注入拆分数据；`Delete` 一并删除。`GameDataManager` 仍只调 `userDataService.Save/Load/Delete`，对拆分无感知。
+- 关键技巧：`BaseDataService<T>` 是可实例化的具体类（约束 `where T : class, new()`），`StoragePath` public、`FileName` 由构造函数传入，故 UserDataService 用 `new BaseDataService<T>(fileName){ StoragePath = ... }` 即可复用泛型读写，无需为每个类型建子类。
+- **不迁移旧存档**：旧版主存档内嵌的 unlock/achievement/背包 在加 `JsonIgnore` 后被忽略，独立文件不存在时注入空数据（视为新开始）。
+- 独立文件**无备份**：`UserDataService` 的"使用备份"回滚只还原主存档，不联动拆分文件，存在轻微不同步（按需自行扩展）。
+- **存档编辑器联动**：`SaveDataEditorWindow` 也按拆分维度独立加载/展示/回写这些文件（解锁/成就/背包道具/背包生物各一棵 JToken 树），保存时分别反序列化回注 `data`，避免覆盖丢失。新增拆分字段时务必同步更新该编辑器。
 
 ---
 

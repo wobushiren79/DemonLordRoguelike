@@ -62,7 +62,8 @@ userData.AddBackpackCreature(creatureData) + SaveUserData()   // 入账并落盘
 - **GashaponItemBean** —— 单个蛋
   - `creatureData: CreatureBean`、`isBreak: bool`
   - 构造 `GashaponItemBean(creatureId, gashaponMachineCreature)` 内部依次：`RandomSkill()` 随机皮肤 → `RandomAttribute()` 随机属性 → `RandomRarity()` 随机稀有度
-  - **随机属性共用逻辑**：`RandomAttribute()` 委托 `CreatureBean.RandomAttributeForCreate(userData)`（位于 `CreatureBeanPartial.cs`，点数取 `UserLimmitBean.gashaponRandomAttributeNum`，基础值默认5，`<=0` 不加点）；新建存档赠送的 3 个初始魔物（`UIMainCreate.OnClickForCreate`）复用同一方法，注意该场景存档尚未 `SetUserData`，需显式传入新建的 `UserDataBean`
+  - **随机属性共用逻辑**：`RandomAttribute()` 委托 `CreatureBean.RandomAttributeForCreate(userData)`（位于 `CreatureBeanPartial.cs`，点数取 `UserLimmitBean.gashaponRandomAttributeNum`，基础值默认5，`<=0` 不加点）
+  - **初始魔物固定属性（不再随机）**：新建存档赠送的 3 个初始魔物（`UIMainCreate.OnClickForCreate`）改用 `CreatureBean.FixedAttributeForCreate(userData, attributeType)` —— 点数预算同样取 `UserLimmitBean.gashaponRandomAttributeNum`，但全部固定堆到单一属性：`NpcId1→HP`、`NpcId2→DR`、`NpcId3→ASPD`（底层 `CreatureAttributeBean.AddFixedAttributeForCreate`，单点增量复用 `CreatureUtil.GetAttributePointAddValue`：HP/DR 每点+10、ASPD 每点+1，故 5 点 = HP+50 / DR+50 / ASPD+5）；注意该场景存档尚未 `SetUserData`，需显式传入新建的 `UserDataBean`
   - **稀有度随机**：依次判定 UR→SSR→SR→R→N，每档由 `UnlockEnum.GashaponRarity*` / `GashaponRarity*Rate` 控制是否开放与成功率；命中后通过 `BuffTypeEnum.CreatureRarity*` 给生物叠加对应稀有度 BUFF（存入 `CreatureBean.dicRarityBuff`）
 
 ### 配置数据（`StoreGashaponMachineInfoBean`，自动生成 → 扩展写 Partial）
@@ -172,7 +173,7 @@ UIGashaponBreak (BaseUIComponent)     破蛋交互
 - **研究/解锁系统**：`UnlockEnum.GashaponMachine` 主入口 + `GashaponRarity*` 稀有度档位 + 每商品 `pre_unlock_ids` + 生物职业 `creatureInfo.unlock_id`
 - **BUFF 系统**：稀有度 BUFF `BuffTypeEnum.CreatureRarity*`，存 `CreatureBean.dicRarityBuff`
 - **商店 UI**：复用 `UIViewStoreItem`
-- **存档系统**：`UserDataBean.listBackpackCreature` + `GameDataManager.SaveUserData()`
+- **存档系统**：`UserDataBean.AddBackpackCreature()` / `GetUserBackpackCreatureData().listBackpackCreature` + `GameDataManager.SaveUserData()`
 
 ## 注意事项
 

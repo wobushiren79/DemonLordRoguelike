@@ -21,7 +21,7 @@ public partial class UIDialogSelectCreature : DialogView
         dialogSelectCreatureData = dialogData as DialogSelectCreatureBean;
 
         var userData = GameDataHandler.Instance.manager.GetUserData();
-        var listBackpackCreature = userData.listBackpackCreature;
+        var listBackpackCreature = userData.GetUserBackpackCreatureData().listBackpackCreature;
         ui_UIViewCreatureCardList.SetData(listBackpackCreature, CardUseStateEnum.SelectCreature,OnCellChangeForSelectCreature);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForCardClickSelect);
         RefreshUI();

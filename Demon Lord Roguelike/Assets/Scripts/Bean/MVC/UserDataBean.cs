@@ -26,12 +26,9 @@ public class UserDataBean : BaseBean
     public string userName;
     //游戏事件
     public long gameTime;
-    //背包里的所有道具
-    public List<ItemBean> listBackpackItems = new List<ItemBean>();
+
     //阵容生物
     public Dictionary<int, List<string>> dicLineupCreature = new Dictionary<int, List<string>>();
-    //背包里的所有生物
-    public List<CreatureBean> listBackpackCreature = new List<CreatureBean>();
     //魔王自己的数据
     public CreatureBean selfCreature;
     //游戏进度地图
@@ -41,12 +38,19 @@ public class UserDataBean : BaseBean
     //用户进阶数据
     public UserAscendBean userAscendData;
 
+    //背包道具数据(包裹 listBackpackItems; 已拆分为独立存档 UserBackpackItem_{slot}, 不再随 UserData 序列化; 由 UserDataService 在加载/保存时注入与落盘)
+    [Newtonsoft.Json.JsonIgnore]
+    public UserBackpackItemsBean userBackpackItemsData;
+    //背包生物数据(包裹 listBackpackCreature; 已拆分为独立存档 UserBackpackCreature_{slot}, 不再随 UserData 序列化; 由 UserDataService 在加载/保存时注入与落盘)
+    [Newtonsoft.Json.JsonIgnore]
+    public UserBackpackCreatureBean userBackpackCreatureData;
     //用户解锁数据(已拆分为独立存档 UserUnlock_{slot}, 不再随 UserData 序列化; 由 GameDataManager 在加载/保存时注入与落盘)
     [Newtonsoft.Json.JsonIgnore]
     public UserUnlockBean userUnlockData;
     //用户成就&统计数据(已拆分为独立存档 UserAchievement_{slot}, 不再随 UserData 序列化; 由 GameDataManager 在加载/保存时注入与落盘)
     [Newtonsoft.Json.JsonIgnore]
     public UserAchievementBean userAchievementData;
+    
     //临时存储数据
     public UserTempBean userTempBean;
     
@@ -90,6 +94,28 @@ public class UserDataBean : BaseBean
         if (userAchievementData == null)
             userAchievementData = new UserAchievementBean();
         return userAchievementData;
+    }
+
+    /// <summary>
+    /// 获取用户背包道具数据
+    /// 数据由 UserDataService 从独立存档 UserBackpackItem_{slot} 加载后注入; 此处仅做兜底懒初始化
+    /// </summary>
+    public UserBackpackItemsBean GetUserBackpackItemsData()
+    {
+        if (userBackpackItemsData == null)
+            userBackpackItemsData = new UserBackpackItemsBean();
+        return userBackpackItemsData;
+    }
+
+    /// <summary>
+    /// 获取用户背包生物数据
+    /// 数据由 UserDataService 从独立存档 UserBackpackCreature_{slot} 加载后注入; 此处仅做兜底懒初始化
+    /// </summary>
+    public UserBackpackCreatureBean GetUserBackpackCreatureData()
+    {
+        if (userBackpackCreatureData == null)
+            userBackpackCreatureData = new UserBackpackCreatureBean();
+        return userBackpackCreatureData;
     }
 
     /// <summary>
@@ -215,7 +241,7 @@ public class UserDataBean : BaseBean
             return;
         if (AddBackpackItemForSpecial(itemData.itemId, itemData.itemNum))
             return;
-        listBackpackItems.Add(itemData);
+        GetUserBackpackItemsData().listBackpackItems.Add(itemData);
         EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Item_Change);
     }
 
@@ -229,6 +255,7 @@ public class UserDataBean : BaseBean
             return;
         if (AddBackpackItemForSpecial(itemId, num))
             return;
+        var listBackpackItems = GetUserBackpackItemsData().listBackpackItems;
         int maxNum = itemInfo.num_max;
         //容错处理 最大数量默认最小为1
         if (maxNum == 0) maxNum = 1;
@@ -272,7 +299,7 @@ public class UserDataBean : BaseBean
     {
         if (itemData == null || itemData.itemId == 0)
             return;
-        listBackpackItems.Remove(itemData);
+        GetUserBackpackItemsData().listBackpackItems.Remove(itemData);
         EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Item_Change);
     }
     #endregion
@@ -432,11 +459,15 @@ public class UserDataBean : BaseBean
     /// </summary>
     public void AddBackpackCreature(CreatureBean creatureData)
     {
-        listBackpackCreature.Add(creatureData);
+        GetUserBackpackCreatureData().listBackpackCreature.Add(creatureData);
     }
 
+    /// <summary>
+    /// 移除背包生物(同时从所在阵容中移除)
+    /// </summary>
     public void RemoveBackpackCreature(CreatureBean creatureData)
     {
+        var listBackpackCreature = GetUserBackpackCreatureData().listBackpackCreature;
         //背包删除
         if (listBackpackCreature.Contains(creatureData))
         {
@@ -451,6 +482,7 @@ public class UserDataBean : BaseBean
     /// </summary>
     public CreatureBean GetBackpackCreature(string creatureUUId)
     {
+        var listBackpackCreature = GetUserBackpackCreatureData().listBackpackCreature;
         for (int i = 0; i < listBackpackCreature.Count; i++)
         {
             var itemCreature = listBackpackCreature[i];

@@ -30,8 +30,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 3333612875835828410}
   - {fileID: 1944416164324025894}
+  - {fileID: 3333612875835828410}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -75,6 +75,7 @@ MonoBehaviour:
       creatureNpcData:
         npcId: 0
       creatureState: 1
+      sacrificePityRate: 0
     cardUseState: 0
     cardState: 0
     originalCardPos: {x: 0, y: 0}
@@ -87,10 +88,11 @@ MonoBehaviour:
   ui_CardBgBorad: {fileID: 4474370328774708953}
   ui_CDTime: {fileID: 5322410102518139837}
   ui_Mask: {fileID: 6958964966017518341}
-  ui_StarText: {fileID: 2555452181878917810}
   ui_SelectBg: {fileID: 2638834835075457748}
   ui_IconContent: {fileID: 7079130528845682485}
   ui_Class: {fileID: 1979302185387933822}
+  ui_LevelText: {fileID: 0}
+  ui_MPText: {fileID: 0}
   animCardCreateDelayTime: 0.05
   animCardCreateTimeType1: 0.8
   animCardCreateTimeType2: 0.4
@@ -246,17 +248,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &2555452181878917810 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7790007710188705406, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
-  m_PrefabInstance: {fileID: 5723336827653971148}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &2638834835075457748 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7778392516870585880, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
@@ -369,6 +360,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 6831025462229254565}
     m_Modifications:
+    - target: {fileID: 44120760141679243, guid: 58be1efbcfb4406469b60925c5ecd654, type: 3}
+      propertyPath: m_text
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 44120760141679243, guid: 58be1efbcfb4406469b60925c5ecd654, type: 3}
+      propertyPath: m_fontSize
+      value: 36
+      objectReference: {fileID: 0}
     - target: {fileID: 8105673605290940014, guid: 58be1efbcfb4406469b60925c5ecd654, type: 3}
       propertyPath: m_Name
       value: UIViewPressCommon
@@ -447,11 +446,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8248569131042691508, guid: 58be1efbcfb4406469b60925c5ecd654, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: -5
       objectReference: {fileID: 0}
     - target: {fileID: 8248569131042691508, guid: 58be1efbcfb4406469b60925c5ecd654, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8248569131042691508, guid: 58be1efbcfb4406469b60925c5ecd654, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

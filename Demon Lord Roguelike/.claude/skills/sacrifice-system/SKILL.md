@@ -232,22 +232,22 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
 - `CreatureSacrificeLogic.StartSacrifice`：`isTestMode && useManualSuccessRate` 时用手动成功率掷骰，否则走 `CreatureUtil.GetSacrificeSuccessRate` 公式。
 - `CreatureSacrificeLogic.SettleSacrifice`：`isTestMode` 时跳过 `SaveUserData()`，升级/祭品消耗只在内存生效。
 - 入口 `LauncherTest.StartForCreatureSacrificeTest(slot, uuid, useManualRate, manualRate)`：`UserDataService` 加载存档 → `SetUserData` 替换运行时数据 → 一次性 `World_EnterGameForBaseScene` 等基地就绪 → `GameHandler.StartCreatureSacrifice`。
-- **目标生物须取自加载后的 `userData.listBackpackCreature` 同一引用**（UI 按引用排除目标）。
+- **目标生物须取自加载后的 `userData.GetUserBackpackCreatureData().listBackpackCreature` 同一引用**（UI 按引用排除目标）。
 
 ## 与其他系统的关系
 
 - **生物系统**：`CreatureBean`(level/levelExp/rarity/creatureAttribute)、`CreatureInfoCfg`(基础属性)、`CreatureHandler.SetCreatureData`+`SpineHandler.PlayAnim`(模型展示)
 - **战斗/征服系统**：`GameFightLogicConquer.AddLevelExpForLineupCreature` 发放经验（满级跳过）
-- **道具系统**：`CreatureBean.RemoveAllEquipToBackpack()` 祭品装备退回 `userData.listBackpackItems`
+- **道具系统**：`CreatureBean.RemoveAllEquipToBackpack()` 祭品装备退回 `userData.GetUserBackpackItemsData().listBackpackItems`
 - **研究/解锁系统**：`UnlockEnum.Altar` 祭坛解锁；`ScenePrefabForBase` 据此显隐祭坛；`UnlockEnum.SacrificeNum` 研究等级经 `UserUnlockBean.GetUnlockSacrificeMax()` 提升祭品选择上限；`UnlockEnum.SacrificePityRate`(100100003)/`SacrificeDifferentIdRate`(100100004) 研究经 `GetUnlockSacrificeFailPityAddRate()`/`GetUnlockSacrificeDifferentIdRate()` 决定失败保底增量与不同id祭品成功率
-- **存档系统**：`UserDataBean.listBackpackCreature` + `GameDataHandler.Instance.manager.SaveUserData()`
+- **存档系统**：`UserDataBean.GetUserBackpackCreatureData().listBackpackCreature` + `GameDataHandler.Instance.manager.SaveUserData()`
 - **属性/BUFF 系统**：升级加点写 `creatureAttribute.dicAttributeLevelUp`，与稀有度 BUFF(`dicRarityBuff`)、装备属性在 `GetAttribute` 汇总
 
 ## 注意事项
 
 - **双门槛**：经验门槛只控制能否"发起"献祭；真正升级靠祭品掷骰成功。两者不要混淆。
 - **失败只扣祭品**：经验不退，保底累积；成功才扣经验、清保底。
-- **目标生物与祭品引用一致**：UI 选中的祭品、目标生物与 `userData.listBackpackCreature` 是**同一引用**，原地升级/移除即生效。
+- **目标生物与祭品引用一致**：UI 选中的祭品、目标生物与 `userData.GetUserBackpackCreatureData().listBackpackCreature` 是**同一引用**，原地升级/移除即生效。
 - **掷骰时机**：`StartSacrifice` 动画播放**前**就定好 `isSuccess`，动画结束回调里 `SettleSacrifice` 落实，避免动画中途数据被改。
 - **属性序列化**：`CreatureAttributeBean` 两个字典必须 public（或 `[JsonProperty]`），否则升级加的属性存盘丢失。
 - **配置改 Excel**：`excel_level_info` 是唯一真实源，只改 JSON 会被导出覆盖。

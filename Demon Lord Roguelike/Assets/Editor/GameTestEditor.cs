@@ -617,7 +617,8 @@ public partial class GameTestEditor : Editor
         dataService.ChangeSlot(sacrificeTestSaveSlot);
         UserDataBean userData = dataService.Load(false);
         sacrificeTestCreatureUUIds = new List<string>();
-        if (userData == null || userData.listBackpackCreature == null || userData.listBackpackCreature.Count == 0)
+        var listBackpackCreature = userData?.GetUserBackpackCreatureData().listBackpackCreature;
+        if (userData == null || listBackpackCreature == null || listBackpackCreature.Count == 0)
         {
             sacrificeTestCreatureNames = new GUIContent[0];
             sacrificeTestSelectIndex = 0;
@@ -625,9 +626,9 @@ public partial class GameTestEditor : Editor
             return;
         }
         List<GUIContent> listNames = new List<GUIContent>();
-        for (int i = 0; i < userData.listBackpackCreature.Count; i++)
+        for (int i = 0; i < listBackpackCreature.Count; i++)
         {
-            var creatureData = userData.listBackpackCreature[i];
+            var creatureData = listBackpackCreature[i];
             sacrificeTestCreatureUUIds.Add(creatureData.creatureUUId);
             listNames.Add(new GUIContent($"[{i}] {creatureData.creatureName} (id:{creatureData.creatureId} Lv.{creatureData.level} 稀有度:{creatureData.rarity})"));
         }

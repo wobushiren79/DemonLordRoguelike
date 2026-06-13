@@ -80,7 +80,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     public void InitCreatureData()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        ui_UIViewCreatureCardList.SetData(userData.listBackpackCreature, CardUseStateEnum.LineupBackpack, OnCellChangeForBackpackCreature);
+        ui_UIViewCreatureCardList.SetData(userData.GetUserBackpackCreatureData().listBackpackCreature, CardUseStateEnum.LineupBackpack, OnCellChangeForBackpackCreature);
     }
 
     /// <summary>
@@ -142,7 +142,13 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         int creatureNumMax = userUnlock.GetUnlockLineupCreatureNum();
 
         var listCreatureIds = userData.GetLineupCreatureIds(currentLineupIndex);
-        ui_LineupHint.text = $"{listCreatureIds.Count}/{creatureNumMax}";
+        //阵容魔物数量文本：满员时数量显示为红色
+        string countStr = $"{listCreatureIds.Count}/{creatureNumMax}";
+        if (listCreatureIds.Count >= creatureNumMax)
+        {
+            countStr = $"<color=#FF4D4D>{countStr}</color>";
+        }
+        ui_LineupHint.text = string.Format(TextHandler.Instance.GetTextById(30007), countStr);
     }
 
     /// <summary>

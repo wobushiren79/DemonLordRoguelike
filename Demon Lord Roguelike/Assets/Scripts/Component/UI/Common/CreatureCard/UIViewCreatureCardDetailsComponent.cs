@@ -66,5 +66,9 @@ public partial class UIViewCreatureCardDetails
 
     public Button ui_IconBtn;
 
+    public TextMeshProUGUI ui_MPContent;
+
+    public RectTransform ui_MP;
+
 
 }

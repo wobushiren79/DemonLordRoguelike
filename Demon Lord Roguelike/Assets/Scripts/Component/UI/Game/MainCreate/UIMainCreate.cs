@@ -182,8 +182,16 @@ public partial class UIMainCreate : BaseUIComponent
                 List<long> skins = npcInfo.GetSkins();
                 creatureData.AddSkinForBase();
                 creatureData.AddSkin(skins);
-                //与孕育(扭蛋)一致: 创建时随机属性加点(此时存档尚未 SetUserData, 传入新建的 userData)
-                creatureData.RandomAttributeForCreate(userData);
+                //初始魔物固定属性(不再随机): NpcId1->HP, NpcId2->DR, NpcId3->ASPD; 总点数与孕育扭蛋一致
+                //(此时存档尚未 SetUserData, 传入新建的 userData)
+                CreatureAttributeTypeEnum fixedAttributeType = npcInfo.id switch
+                {
+                    1 => CreatureAttributeTypeEnum.HP,
+                    2 => CreatureAttributeTypeEnum.DR,
+                    3 => CreatureAttributeTypeEnum.ASPD,
+                    _ => CreatureAttributeTypeEnum.HP,
+                };
+                creatureData.FixedAttributeForCreate(userData, fixedAttributeType);
                 //添加到背包
                 userData.AddBackpackCreature(creatureData);
                 //添加到阵容1

@@ -75,6 +75,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         SetDoomCouncilData();
         SetEquipData();
         SetBuff();
+        SetMP();
 
         RefreshUILayout();
     }
@@ -106,6 +107,35 @@ public partial class UIViewCreatureCardDetails : BaseUIView
                 itemChildTF.gameObject.SetActive(false);
             }
         }
+    }
+
+    /// <summary>
+    /// 设置魔力消耗显示（召唤该生物所需消耗的魔王魔力 create_mp）
+    /// <para>若该生物本身就是魔王(与玩家存档 selfCreature 同一 UUId)，则无召唤消耗概念，隐藏父节点 ui_MP。</para>
+    /// </summary>
+    public void SetMP()
+    {
+        //如果是魔王本体则隐藏魔力消耗节点
+        if (IsDemonLord())
+        {
+            ui_MP.gameObject.SetActive(false);
+            return;
+        }
+        ui_MP.gameObject.SetActive(true);
+        //召唤该生物消耗的魔力
+        ui_MPContent.text = $"{creatureData.creatureInfo.create_mp}";
+    }
+
+    /// <summary>
+    /// 判断当前展示的生物是否为魔王本体（与玩家存档中的 selfCreature 同一 UUId）
+    /// </summary>
+    /// <returns>true=魔王本体</returns>
+    public bool IsDemonLord()
+    {
+        var selfCreature = GameDataHandler.Instance.manager.GetUserData()?.selfCreature;
+        if (selfCreature == null || creatureData == null)
+            return false;
+        return !creatureData.creatureUUId.IsNull() && creatureData.creatureUUId == selfCreature.creatureUUId;
     }
 
     /// <summary>

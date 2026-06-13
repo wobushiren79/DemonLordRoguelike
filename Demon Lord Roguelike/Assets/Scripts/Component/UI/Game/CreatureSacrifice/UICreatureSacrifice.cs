@@ -86,7 +86,7 @@ public partial class UICreatureSacrifice : BaseUIComponent
         listSelectCreature.Clear();
         listCreatureData.Clear();
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        userData.listBackpackCreature.ForEach((int index, CreatureBean creatureData) =>
+        userData.GetUserBackpackCreatureData().listBackpackCreature.ForEach((int index, CreatureBean creatureData) =>
         {
             //筛除献祭的生物
             if (creatureData != gameLogic.creatureSacrificeData.targetCreature)

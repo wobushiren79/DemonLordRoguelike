@@ -25,6 +25,10 @@ public partial class FightCreatureEntity
     /// 上一次显示的魔力上限（避免每帧重设文本产生开销）
     /// </summary>
     int lastMPShowMax = -1;
+    /// <summary>
+    /// 魔力文本的渲染排序值（设到足够高 保证魔力文本渲染在最上层 不被其它生物/特效遮挡）
+    /// </summary>
+    const int MPTextSortingOrder = 9999;
 
     /// <summary>
     /// 数据初始化-魔王（由 SetData 统一调用）
@@ -35,6 +39,13 @@ public partial class FightCreatureEntity
         //获取魔力值显示（仅魔王核心有 创建魔物消耗魔力）
         creatureMPShow = creatureObj.transform.Find("MPShow")?.GetComponent<SpriteRenderer>();
         creatureMPText = creatureObj.transform.Find("MPShow/MPText")?.GetComponent<TextMeshPro>();
+        //将魔力文本的渲染排序设到最上层（TextMeshPro 为世界空间网格 通过 MeshRenderer.sortingOrder 控制渲染顺序）
+        if (creatureMPText != null)
+        {
+            var mpTextRenderer = creatureMPText.GetComponent<MeshRenderer>();
+            if (mpTextRenderer != null)
+                mpTextRenderer.sortingOrder = MPTextSortingOrder;
+        }
         lastMPShowCurrent = -1;
         lastMPShowMax = -1;
         RefreshMPShow();

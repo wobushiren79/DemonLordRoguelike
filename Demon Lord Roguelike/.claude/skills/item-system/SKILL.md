@@ -134,8 +134,8 @@ userData.AddBackpackItem(itemBean);
 // 移除道具
 userData.RemoveBackpackItem(itemBean);
 
-// 访问背包
-List<ItemBean> backpack = userData.listBackpackItems;
+// 访问背包(列表已包裹进 UserBackpackItemsBean，经访问器取列表)
+List<ItemBean> backpack = userData.GetUserBackpackItemsData().listBackpackItems;
 ```
 
 ## 道具随机属性系统
@@ -188,12 +188,12 @@ public ItemBean CreateEquipment(long itemId, int rarity)
 
 ```csharp
 // 按类型筛选
-List<ItemBean> hats = userData.listBackpackItems
+List<ItemBean> hats = userData.GetUserBackpackItemsData().listBackpackItems
     .Where(item => item.GetItemType() == ItemTypeEnum.Hat)
     .ToList();
 
 // 按品质筛选
-List<ItemBean> rareItems = userData.listBackpackItems
+List<ItemBean> rareItems = userData.GetUserBackpackItemsData().listBackpackItems
     .Where(item => item.rarity >= (int)RarityEnum.SR)
     .ToList();
 ```

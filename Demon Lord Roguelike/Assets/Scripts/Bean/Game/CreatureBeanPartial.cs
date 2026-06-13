@@ -126,6 +126,24 @@ public partial class CreatureBean
             return;
         creatureAttribute.AddRandomAttributeForCreate(randomAttributeNum);
     }
+
+    /// <summary>
+    /// 创建生物时固定属性加点(新建存档赠送的初始魔物专用)
+    /// <para>总点数取自 UserLimmitBean.gashaponRandomAttributeNum(与孕育扭蛋一致), 但不再随机分配,</para>
+    /// <para>而是把全部点数固定堆到指定属性上(单点增量见 CreatureUtil.GetAttributePointAddValue)。</para>
+    /// <para>配置异常(小于等于0)时兜底不加点。</para>
+    /// </summary>
+    /// <param name="userData">用户数据(新建存档时 GameDataHandler 尚未 SetUserData, 需显式传入新建的 UserDataBean)</param>
+    /// <param name="attributeType">要固定堆叠的属性类型</param>
+    public void FixedAttributeForCreate(UserDataBean userData, CreatureAttributeTypeEnum attributeType)
+    {
+        if (userData == null)
+            return;
+        int attributeNum = userData.GetUserLimmitData().gashaponRandomAttributeNum;
+        if (attributeNum <= 0)
+            return;
+        creatureAttribute.AddFixedAttributeForCreate(attributeNum, attributeType);
+    }
     #endregion
 
     #region 战斗属性

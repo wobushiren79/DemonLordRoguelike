@@ -202,7 +202,7 @@ public class LauncherTest : BaseLauncher
         }
         //定位目标生物(必须是存档背包中的同一引用，献祭逻辑按引用排除目标)
         CreatureBean targetCreature = null;
-        foreach (var creatureData in userData.listBackpackCreature)
+        foreach (var creatureData in userData.GetUserBackpackCreatureData().listBackpackCreature)
         {
             if (creatureData.creatureUUId == targetCreatureUUId)
             {

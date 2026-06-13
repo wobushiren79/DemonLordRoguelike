@@ -80,6 +80,19 @@ public class CreatureAttributeBean
     }
 
     /// <summary>
+    /// 增加固定属性(创建时把指定点数全部加到同一属性上)
+    /// <para>与随机加点共用单点增量(CreatureUtil.GetAttributePointAddValue): HP/DR 每点+10, ATK/ASPD 每点+1。</para>
+    /// <para>用于新建存档赠送的初始魔物: 不再随机分配, 而是固定堆某一属性。</para>
+    /// </summary>
+    /// <param name="addNum">属性点数</param>
+    /// <param name="attributeType">要堆叠的属性类型</param>
+    public void AddFixedAttributeForCreate(int addNum, CreatureAttributeTypeEnum attributeType)
+    {
+        float pointAddValue = CreatureUtil.GetAttributePointAddValue(attributeType);
+        AddAttributeForCreate(attributeType, pointAddValue * addNum);
+    }
+
+    /// <summary>
     /// 增加属性
     /// </summary>
     public void AddAttributeForCreate(CreatureAttributeTypeEnum attributeType, float addNum)

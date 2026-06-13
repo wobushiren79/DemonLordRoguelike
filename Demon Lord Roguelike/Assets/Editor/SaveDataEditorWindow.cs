@@ -17,7 +17,7 @@ using UnityEngine;
 /// <summary>
 /// 存档编辑器窗口
 /// 通过 Newtonsoft JToken 树对存档 JSON 做通用化展开编辑，
-/// 加载/保存/删除走 UserDataService（自动处理主存档备份与 解锁/成就 拆分文件）。
+/// 加载/保存/删除走 UserDataService（自动处理主存档备份与 解锁/成就/背包道具/背包生物 拆分文件）。
 /// </summary>
 public class SaveDataEditorWindow : EditorWindow
 {
@@ -31,6 +31,10 @@ public class SaveDataEditorWindow : EditorWindow
     private const string PathUnlock = "unlock";
     /// <summary>成就数据区块在编辑树中的路径前缀</summary>
     private const string PathAchievement = "achievement";
+    /// <summary>背包道具区块在编辑树中的路径前缀</summary>
+    private const string PathBackpackItem = "backpackItem";
+    /// <summary>背包生物区块在编辑树中的路径前缀</summary>
+    private const string PathBackpackCreature = "backpackCreature";
 
     /// <summary>存档读写服务</summary>
     private UserDataService dataService;
@@ -47,6 +51,10 @@ public class SaveDataEditorWindow : EditorWindow
     private JToken unlockToken;
     /// <summary>成就数据编辑树</summary>
     private JToken achievementToken;
+    /// <summary>背包道具数据编辑树</summary>
+    private JToken backpackItemToken;
+    /// <summary>背包生物数据编辑树</summary>
+    private JToken backpackCreatureToken;
 
     /// <summary>各折叠区块的展开状态，按路径缓存</summary>
     private readonly Dictionary<string, bool> dicFoldout = new Dictionary<string, bool>();
@@ -153,7 +161,7 @@ public class SaveDataEditorWindow : EditorWindow
 
     #region 数据树绘制
     /// <summary>
-    /// 绘制存档全部数据（主存档 / 解锁 / 成就 三大区块）
+    /// 绘制存档全部数据（主存档 / 解锁 / 成就 / 背包道具 / 背包生物 五大区块）
     /// </summary>
     private void DrawDataTree()
     {
@@ -165,6 +173,10 @@ public class SaveDataEditorWindow : EditorWindow
             DrawToken(PathUnlock, "解锁数据 (UserUnlock)", unlockToken);
         if (achievementToken != null)
             DrawToken(PathAchievement, "成就/统计数据 (UserAchievement)", achievementToken);
+        if (backpackItemToken != null)
+            DrawToken(PathBackpackItem, "背包道具 (UserBackpackItem)", backpackItemToken);
+        if (backpackCreatureToken != null)
+            DrawToken(PathBackpackCreature, "背包生物 (UserBackpackCreature)", backpackCreatureToken);
 
         EditorGUILayout.EndScrollView();
     }
@@ -333,7 +345,7 @@ public class SaveDataEditorWindow : EditorWindow
         {
             isLoaded = false;
             currentSlot = -1;
-            mainToken = unlockToken = achievementToken = null;
+            mainToken = unlockToken = achievementToken = backpackItemToken = backpackCreatureToken = null;
             EditorUtility.DisplayDialog("提示", $"存档 {slot} 不存在（空存档），无可编辑数据。", "确定");
             return;
         }
@@ -344,6 +356,8 @@ public class SaveDataEditorWindow : EditorWindow
             mainToken = JToken.Parse(JsonUtil.ToJson(data, JsonTypeEnum.Net));
             unlockToken = JToken.Parse(JsonUtil.ToJson(data.GetUserUnlockData(), JsonTypeEnum.Net));
             achievementToken = JToken.Parse(JsonUtil.ToJson(data.GetUserAchievementData(), JsonTypeEnum.Net));
+            backpackItemToken = JToken.Parse(JsonUtil.ToJson(data.GetUserBackpackItemsData(), JsonTypeEnum.Net));
+            backpackCreatureToken = JToken.Parse(JsonUtil.ToJson(data.GetUserBackpackCreatureData(), JsonTypeEnum.Net));
         }
         catch (Exception e)
         {
@@ -376,6 +390,8 @@ public class SaveDataEditorWindow : EditorWindow
             UserDataBean data = JsonUtil.FromJson<UserDataBean>(mainToken.ToString(), JsonTypeEnum.Net);
             data.userUnlockData = JsonUtil.FromJson<UserUnlockBean>(unlockToken.ToString(), JsonTypeEnum.Net);
             data.userAchievementData = JsonUtil.FromJson<UserAchievementBean>(achievementToken.ToString(), JsonTypeEnum.Net);
+            data.userBackpackItemsData = JsonUtil.FromJson<UserBackpackItemsBean>(backpackItemToken.ToString(), JsonTypeEnum.Net) ?? new UserBackpackItemsBean();
+            data.userBackpackCreatureData = JsonUtil.FromJson<UserBackpackCreatureBean>(backpackCreatureToken.ToString(), JsonTypeEnum.Net) ?? new UserBackpackCreatureBean();
             data.saveIndex = currentSlot;
 
             dataService ??= new UserDataService();
@@ -400,7 +416,7 @@ public class SaveDataEditorWindow : EditorWindow
         if (!isLoaded)
             return;
 
-        if (!EditorUtility.DisplayDialog("清除存档", $"确认要清除 存档 {currentSlot} 吗？\n将删除该槽位的主存档及解锁/成就数据。", "确认清除", "取消"))
+        if (!EditorUtility.DisplayDialog("清除存档", $"确认要清除 存档 {currentSlot} 吗？\n将删除该槽位的主存档及解锁/成就/背包数据。", "确认清除", "取消"))
             return;
         if (!EditorUtility.DisplayDialog("再次确认", $"【二次确认】存档 {currentSlot} 删除后无法恢复，确定继续？", "确定删除", "取消"))
             return;
@@ -412,7 +428,7 @@ public class SaveDataEditorWindow : EditorWindow
         int cleared = currentSlot;
         isLoaded = false;
         currentSlot = -1;
-        mainToken = unlockToken = achievementToken = null;
+        mainToken = unlockToken = achievementToken = backpackItemToken = backpackCreatureToken = null;
         dicFoldout.Clear();
 
         EditorUtility.DisplayDialog("清除成功", $"存档 {cleared} 已清除。", "确定");

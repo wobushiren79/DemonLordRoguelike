@@ -22,7 +22,7 @@ public partial class UIDialogSelectItem : DialogView
     public void InitBackpackItemsData()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        ui_UIViewItemBackpackList.SetData(userData.listBackpackItems, OnCellChangeForBackpackItem);
+        ui_UIViewItemBackpackList.SetData(userData.GetUserBackpackItemsData().listBackpackItems, OnCellChangeForBackpackItem);
     }
 
     /// <summary>
