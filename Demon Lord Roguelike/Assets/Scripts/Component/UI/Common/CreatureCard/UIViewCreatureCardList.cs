@@ -102,8 +102,6 @@ public partial class UIViewCreatureCardList : BaseUIView
     protected void RefreshNullText()
     {
         bool isEmpty = listCreatureData == null || listCreatureData.Count == 0;
-        ui_UIViewNullText_UITextLanguageView.textId = 2000016;
-        ui_UIViewNullText_UITextLanguageView.RefreshUI();
         ui_UIViewNullText_UITextLanguageView.gameObject.SetActive(isEmpty);
     }
 
