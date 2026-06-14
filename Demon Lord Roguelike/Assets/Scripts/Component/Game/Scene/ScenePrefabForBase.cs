@@ -485,7 +485,12 @@ public class ScenePrefabForBase : ScenePrefabBase
     #endregion
 
     #region 回调
-    public void EventForUserAddUnlock(long unlockId)
+    /// <summary>
+    /// 事件-新增解锁
+    /// 触发对应建筑的出现动画；若当前停留在研究界面，则先切到自定义镜头并隐藏研究UI，
+    /// 待出现动画播完后再还原核心镜头并恢复研究UI显示
+    /// </summary>
+    public async void EventForUserAddUnlock(long unlockId)
     {
         float timeForShow = 1;
         UnlockEnum unlockEnum = (UnlockEnum)unlockId;
@@ -514,6 +519,37 @@ public class ScenePrefabForBase : ScenePrefabBase
                 int targetIndexVat = showVatNum - 1;
                 taskAnimShow = AnimForBuildingVatShow(timeForShow, targetIndexVat);
                 break;
+        }
+        //没有对应的出现动画 直接结束
+        if (taskAnimShow == null)
+        {
+            return;
+        }
+
+        //仅当解锁发生在研究界面时，才切到自定义镜头并隐藏研究UI观看出现动画
+        bool isResearchShow = UIHandler.Instance.GetOpenUIName() == nameof(UIBaseResearch);
+        UIBaseResearch researchUI = isResearchShow ? UIHandler.Instance.GetUI<UIBaseResearch>() : null;
+        if (researchUI != null)
+        {
+            //启用自定义镜头
+            CameraHandler.Instance.SetCustomCamera(int.MaxValue, true);
+            //关闭(隐藏)研究UI
+            researchUI.gameObject.SetActive(false);
+        }
+
+        //等待场景刷新与出现动画播放完成
+        if (taskRefresh != null)
+        {
+            await taskRefresh;
+        }
+        await taskAnimShow;
+
+        if (researchUI != null)
+        {
+            //还原核心镜头
+            CameraHandler.Instance.SetBaseCoreCamera(int.MaxValue, true);
+            //重新打开(显示)研究UI
+            researchUI.gameObject.SetActive(true);
         }
     }
 

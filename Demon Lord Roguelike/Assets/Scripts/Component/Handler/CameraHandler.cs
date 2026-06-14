@@ -188,6 +188,14 @@ public partial class CameraHandler
     }
 
     /// <summary>
+    /// 设置自定义摄像头
+    /// </summary>
+    public CinemachineCamera SetCustomCamera(int priority, bool isEnable)
+    {
+        return SetCameraForBaseScene(priority, isEnable, "CV_Custom");
+    }
+
+    /// <summary>
     /// 设置基础场景的摄像头
     /// </summary>
     protected CinemachineCamera SetCameraForBaseScene(int priority, bool isEnable, string cvName, float blendTime = 0.5f)

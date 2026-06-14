@@ -98,6 +98,7 @@ CameraHandler.Instance.SetGashaponMachineCamera(p, e);             // CV_Gashapo
 CameraHandler.Instance.SetGashaponBreakCamera(p, e);               // CV_GashaponBreak 扭蛋破碎
 CameraHandler.Instance.SetGameStartCamera(p, e);                   // CV_GameStart 游戏开始
 CameraHandler.Instance.SetPreviewCreateCamera(p, e);              // CV_PreviewCreate 创建预览
+CameraHandler.Instance.SetCustomCamera(p, e);                     // CV_Custom 自定义
 ```
 
 > 新增一个基地子镜头：在场景预制体的 `CV_List` 下放一个命名为 `CV_Xxx` 的 `CinemachineCamera`，再在游戏层 `CameraHandler` 的「基地场景摄像头相关」region 里加一个语义方法转调 `SetCameraForBaseScene(priority, isEnable, "CV_Xxx")` 即可。
