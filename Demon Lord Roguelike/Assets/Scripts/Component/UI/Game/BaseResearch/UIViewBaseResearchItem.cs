@@ -146,6 +146,8 @@ public partial class UIViewBaseResearchItem : BaseUIView
             }
             //添加解锁ID
             userUnlock.AddUnlock(researchInfo.unlock_id, level + 1);
+            //立即保存数据(扣费与解锁落盘)
+            GameDataHandler.Instance.manager.SaveUserData();
             //播放解锁动画
             AnimForUnlock();
         };

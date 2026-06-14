@@ -492,7 +492,7 @@ public class ScenePrefabForBase : ScenePrefabBase
     /// </summary>
     public async void EventForUserAddUnlock(long unlockId)
     {
-        float timeForShow = 1;
+        float timeForShow = 2;
         UnlockEnum unlockEnum = (UnlockEnum)unlockId;
         Task taskRefresh = null;
         Task taskAnimShow = null;
@@ -543,6 +543,9 @@ public class ScenePrefabForBase : ScenePrefabBase
             await taskRefresh;
         }
         await taskAnimShow;
+
+        //动画播完后多停留1秒再还原
+        await new WaitForSeconds(1);
 
         if (researchUI != null)
         {

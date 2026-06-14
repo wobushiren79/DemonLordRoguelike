@@ -32,7 +32,7 @@ UIBaseResearch (研究主界面)
     ├─► UIViewBaseResearchItem (单节点 View)
     │     ├─ SetState  → 已解锁/未解锁/已满级 三态切换图标与色调
     │     ├─ SetLevel  → 显示研究等级 (1/levelMax 时隐藏)
-    │     ├─ OnClickForPay → 弹出确认 → 扣水晶 → AddUnlock → 解锁动画
+    │     ├─ OnClickForPay → 弹出确认 → 扣水晶 → AddUnlock → SaveUserData → 解锁动画
     │     └─ ui_BG_PopupButtonCommonView → 悬停弹 UIPopupResearchInfo
     │
     └─► CreateLine (前置连线)
@@ -73,6 +73,7 @@ UIBaseResearch.InitResearchItems(type)
 CheckHasCrystal(..., isAddCrystal: true)   // 扣水晶
 UserUnlockBean.AddUnlock(unlock_id, level+1)
    │ 触发 EventsInfo.User_AddUnlock
+SaveUserData()                             // 购买当下立即落盘（扣费+解锁）
    ▼
 AnimForUnlock → InitResearchItems(researchInfoType)  // 整页刷新（重画连线）
 ```
@@ -365,7 +366,7 @@ public void SetLevel();   // level == 0 || level == max 时隐藏数字
 public void SetState();   // 三态：未解锁(mask + ui_unlock_1) / 已解锁未满(白色) / 已满(紫色)
 public void SetIcon(string iconRes);
 
-// 购买流程：检查满级 → 检查水晶 → 弹 DialogNormal → 扣水晶 → AddUnlock → AnimForUnlock
+// 购买流程：检查满级 → 检查水晶 → 弹 DialogNormal → 扣水晶 → AddUnlock → SaveUserData → AnimForUnlock
 public void OnClickForPay();
 
 // 解锁动画：放大+抖动+缩回，结束后刷新整页（重画连线）
@@ -393,6 +394,7 @@ dialogData.actionSubmit = (view, data) =>
 {
     if (!userData.CheckHasCrystal(payCrystal, isHint: true, isAddCrystal: true)) return;
     userUnlock.AddUnlock(researchInfo.unlock_id, level + 1);
+    GameDataHandler.Instance.manager.SaveUserData();   // 购买当下立即落盘
     AnimForUnlock();
 };
 UIHandler.Instance.ShowDialogNormal(dialogData);
@@ -581,7 +583,7 @@ GameDataHandler.Instance.manager.SaveUserData();
 6. **节点创建是按"已解锁前置"过滤的**：未达到前置的节点根本不会出现在界面上（"隐藏式"科技树，而非"灰色锁定"）
 7. **缩放范围固定 0.5 ~ 1.0**：通过滚轮调节 `ui_Content.localScale`，按帧 ×`Time.deltaTime`×`SpeedForChangeContentSize`
 8. **退出固定跳基地**：`OnClickForExit` → `UIBaseCore`，不要改成 GoBack/通用退出
-9. **关闭时强制存档**：`CloseUI` 中调用 `SaveUserData()`，避免玩家解锁后未存档就退出
+9. **购买即存档 + 关闭兜底存档**：`OnClickForPay` 成功购买后（`AddUnlock` 之后）立即 `SaveUserData()` 落盘扣费与解锁；`CloseUI` 中再调一次 `SaveUserData()` 作为兜底，避免遗漏
 10. **解锁动画期间锁屏**：`AnimForUnlock` 调用 `UIHandler.ShowScreenLock()`，结束后 `HideScreenLock()`，防止动画中再次点击
 11. **节点池复用**：`listResearchItemView` 不销毁仅 `SetActive(false)`，切 Tab 时复用；`ClearData(true)` 仅在 `CloseUI` 销毁
 12. **测试模式坐标回写**：`UIBaseResearchTest.SaveResearchDataForTest` 强制 cast 为 `(int)`，Excel 中只存整数坐标
