@@ -96,6 +96,10 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	///备注
 	/// </summary>
 	public string remark;
+	/// <summary>
+	///背景色(由易到难)
+	/// </summary>
+	public string bg_color;
 }
 public partial class FightTypeConquerInfoCfg : BaseCfg<long, FightTypeConquerInfoBean>
 {

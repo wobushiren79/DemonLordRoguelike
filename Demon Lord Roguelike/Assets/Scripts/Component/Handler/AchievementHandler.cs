@@ -22,7 +22,7 @@ public partial class AchievementHandler : BaseHandler<AchievementHandler, Achiev
         manager.isInited = true;
         //注册事件(仅用于累加统计数据)
         EventHandler.Instance.RegisterEvent<bool>(EventsInfo.Achievement_CreatureKill, OnEventCreatureKill);
-        EventHandler.Instance.RegisterEvent<int>(EventsInfo.Achievement_ConquerComplete, OnEventConquerComplete);
+        EventHandler.Instance.RegisterEvent<long, int>(EventsInfo.Achievement_ConquerComplete, OnEventConquerComplete);
     }
 
     #endregion
@@ -47,14 +47,15 @@ public partial class AchievementHandler : BaseHandler<AchievementHandler, Achiev
     /// <summary>
     /// 征服模式通关回调
     /// </summary>
+    /// <param name="worldId">通关的世界id</param>
     /// <param name="difficultyLevel">通关的难度等级</param>
-    private void OnEventConquerComplete(int difficultyLevel)
+    private void OnEventConquerComplete(long worldId, int difficultyLevel)
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         if (userData == null) return;
         var achievementData = userData.GetUserAchievementData();
         //运行期只累加统计数据, 不做达成判定
-        achievementData.AddConquerCompleteCount(difficultyLevel, 1);
+        achievementData.AddConquerCompleteCount(worldId, difficultyLevel, 1);
     }
 
     #endregion
@@ -96,7 +97,7 @@ public partial class AchievementHandler : BaseHandler<AchievementHandler, Achiev
             case AchievementTypeEnum.PlayTime:
                 return userData.gameTime;
             case AchievementTypeEnum.ConquerComplete:
-                return achievementData.GetConquerCompleteCount(info.target_extra);
+                return achievementData.GetConquerCompleteCount(info.GetTargetWorldId(), info.target_extra);
             default:
                 return 0;
         }

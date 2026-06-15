@@ -38,7 +38,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1300, y: 500}
+  m_SizeDelta: {x: 1600, y: 500}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &205111577780157304
 CanvasRenderer:
@@ -165,8 +165,8 @@ MonoBehaviour:
   ui_ContentPro: {fileID: 1634720593251403299}
   ui_DifficultySelectLeftBtn: {fileID: 1043906369407295686}
   ui_DifficultySelectRightBtn: {fileID: 4743679383298646648}
-  ui_DifficultyContent: {fileID: 6669578137478173335}
   ui_DialogContent: {fileID: 7113864888751565931}
+  ui_UIViewDialogPortalDetailsItem: {fileID: 0}
 --- !u!1 &2425650995533815839
 GameObject:
   m_ObjectHideFlags: 0
@@ -648,7 +648,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 500, y: -620}
+  m_AnchoredPosition: {x: 960, y: -620}
   m_SizeDelta: {x: 600, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &912893336155323586
@@ -788,7 +788,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.29803923}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.5019608}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -958,10 +958,10 @@ RectTransform:
   - {fileID: 7458742728806157145}
   m_Father: {fileID: 584769790870362682}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 1, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1000, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1943745065339700264
 CanvasRenderer:
@@ -1745,17 +1745,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5e13d7822797e234a9a33de94bad911b, type: 3}
---- !u!114 &6669578137478173335 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7061918963679218316, guid: 5e13d7822797e234a9a33de94bad911b, type: 3}
-  m_PrefabInstance: {fileID: 4508068159003613211}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &8404231784253323846 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5345267380276666973, guid: 5e13d7822797e234a9a33de94bad911b, type: 3}

@@ -143,9 +143,15 @@ public int GetRandomRoadNum();
 public int GetRandomRoadLength();
 public int GetRandomBossNum();
 public static int ParseRandomRange(string value, int defaultValue = 0);
+
+// 难度背景色：解析 bg_color(十六进制字符串如 "#2ECC71")为 Color，空/失败返回白色
+// 用于传送门详情弹窗 UIViewDialogPortalDetailsItem.IconBG。bg_color 为难度表新增列，
+// 新增列后需在 Unity 运行配置导出工具重新生成 Bean 才会有该字段
+public UnityEngine.Color GetBGColor();
 ```
 
 `FightTypeConquerInfoCfg.GetItemData(worldId, difficultyLevel)` 用 `world_id`+`level` 联合查行。
+`FightTypeConquerInfoCfg.GetMaxLevel(worldId)` 返回该世界在配置表中存在的最高难度等级（无配置返回 0），用于传送门详情弹窗判断是否展示未解锁的「下一个难度」预览 item。
 
 ---
 
@@ -222,7 +228,7 @@ GoToNextLevel()
 | `ActionForUIFightAbyssalBlessingSelect(info)` | 选了深渊馈赠 → `FightBeanForConquer.AddAbyssalBlessing` → `GoToNextLevel` |
 | `ActionForUIFightAbyssalBlessingSkip()` | 跳过馈赠 → `GoToNextLevel` |
 | `ActionForUIFightSettlementNext()` | 结算「下一步」：通关BOSS→`UIRewardSelect`；失败→`EndGameAndReturnToBase` |
-| `ActionForUIRewardSelectEnd()` | 领奖结束：触发 `Achievement_ConquerComplete`(难度) → 返回基地 |
+| `ActionForUIRewardSelectEnd()` | 领奖结束：触发 `Achievement_ConquerComplete`(worldId, 难度) → 返回基地 |
 
 ### 返回基地（EndGameAndReturnToBase）
 

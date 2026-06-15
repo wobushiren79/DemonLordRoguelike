@@ -27,7 +27,7 @@ AchievementHandler (BaseHandler)
     │  运行期只累加统计数据; 达成(Reached)在打开 UI 时实时计算; 处理手动领奖并落盘
     │
     ├── 监听 Achievement_CreatureKill (bool isAttacker)  → 仅 AddKillCount
-    ├── 监听 Achievement_ConquerComplete (int difficultyLevel) → 仅 AddConquerCompleteCount
+    ├── 监听 Achievement_ConquerComplete (long worldId, int difficultyLevel) → 仅 AddConquerCompleteCount
     │
     │  GetAchievementState(info) 实时算状态 / GetAchievementProgress(info) 取进度
     │
@@ -37,10 +37,10 @@ AchievementManager (BaseManager)
 UserAchievementBean (用户存档)
     │  achievementStates: Dictionary<long, int>  // 仅存"已领取(Unlocked=2)", 不存达成
     │  totalKillCount: long
-    │  conquerCompleteCountByLevel: Dictionary<int, long>
+    │  conquerCompleteCountByWorldLevel: Dictionary<long, Dictionary<int, long>>  // 外层worldId→内层难度→次数
     │
 AchievementInfoBean (配置)
-    │  achievement_type / target_value / target_extra
+    │  achievement_type / target_value / target_extra / target_world
     │  reward_crystal / name / description / sort
 ```
 
@@ -51,7 +51,7 @@ AchievementInfoBean (配置)
 ### AchievementTypeEnum
 - `Kill = 1` 击杀生物（累计）
 - `PlayTime = 2` 游玩时间（单位秒，UserData.gameTime）
-- `ConquerComplete = 3` 征服模式通关（按难度区分，target_extra=难度等级 1~10）
+- `ConquerComplete = 3` 征服模式通关（按**世界×难度**区分：target_world=世界id，target_extra=难度等级 1~10）
 
 ### AchievementStateEnum
 - `NotReached = 0` 未达成（显示灰色蒙版）
@@ -70,7 +70,9 @@ NotReached --[打开UI时按统计数据实时计算]--> Reached --[玩家手动
 ID 编码规则：
 - `1000xx` 击杀类（6 条：1/10/100/1000/10000/100000）
 - `2000xx` 时长类（10 条：1~10 小时，target_value=秒数）
-- `3XX00x` 征服通关（10 难度 × 3 档次=30 条；XX=难度，例：301001=难度1×1次，305002=难度5×10次）
+- `3XX00x` 征服通关（每世界 10 难度 × 3 档次；XX=难度，例：301001=难度1×1次，305002=难度5×10次）。当前仅「剑与魔法」世界(worldId=1)有征服配置，故现存 30 条均 `target_world=1`；新增世界时另起 id 段（如世界2用 `32X00x`/`33X00x` 等避免冲突）。
+
+> **target_world 列**：`excel_achievement_info` 新增列，类型3专用，0=不限定世界。该列经 Unity「生成 Entity」后写入自动生成的 `AchievementInfoBean.cs`；在此之前由 `AchievementInfoBeanPartial.cs` 的**桥接字段**临时承载（生成 Entity 后须删除桥接字段避免重复定义）。读取统一走 `info.GetTargetWorldId()`。
 
 ### 文本 ID 段
 - `4000001~4000015` 通用 UI 文本
@@ -85,7 +87,7 @@ ID 编码规则：
 | 事件 | 参数 | 触发位置 |
 |------|------|----------|
 | `Achievement_CreatureKill` | `bool isAttacker` | `AIIntentCreatureDead.IntentEntering` |
-| `Achievement_ConquerComplete` | `int difficultyLevel` | `GameFightLogicConquer.ActionForUIRewardSelectEnd` |
+| `Achievement_ConquerComplete` | `long worldId, int difficultyLevel` | `GameFightLogicConquer.ActionForUIRewardSelectEnd` |
 
 > 这两个事件**仅用于累加统计数据**（`AddKillCount` / `AddConquerCompleteCount`），不触发任何达成判定与 UI 刷新。
 >
@@ -111,7 +113,9 @@ var achievementData = userData.GetUserAchievementData();
 achievementData.IsAchievementUnlocked(id);    // 是否已领取(唯一持久化状态)
 achievementData.SetAchievementUnlocked(id);    // 仅领奖成功时调用
 achievementData.GetTotalKillCount();
-achievementData.GetConquerCompleteCount(difficultyLevel);
+achievementData.GetConquerCompleteCount(worldId, difficultyLevel);  // 按世界×难度
+achievementData.GetConquerCompleteCountByWorld(worldId);            // 某世界合计
+achievementData.GetTotalConquerCompleteCount();                     // 全世界合计
 ```
 
 ## UI 结构

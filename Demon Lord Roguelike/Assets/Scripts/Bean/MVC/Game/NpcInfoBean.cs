@@ -33,7 +33,7 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public float ATK;
 	/// <summary>
-	///攻击间隔
+	///攻击速度
 	/// </summary>
 	public float ASPD;
 	/// <summary>

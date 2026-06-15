@@ -20,18 +20,18 @@ watched_files:
 ## 职责范围
 
 ### 成就配置
-- **AchievementInfoBean** - 成就配置 Bean（achievement_type/target_value/target_extra/reward_crystal/name/description/sort/icon_res/remark）
-- **AchievementInfoBeanPartial** - Bean 扩展（GetAchievementType、GetAllListSorted 等）
+- **AchievementInfoBean** - 成就配置 Bean（achievement_type/target_value/target_extra/**target_world**/reward_crystal/name/description/sort/icon_res/remark）。`target_world`=类型3征服世界id(0=无)，源于 excel 新增列；生成 Entity 前由 Partial 桥接字段临时承载
+- **AchievementInfoBeanPartial** - Bean 扩展（GetAchievementType、GetTargetWorldId、GetAllListSorted、target_world 桥接字段 等）
 - **AchievementInfo.txt** - 成就数据（JsonText）
 
 ### 业务逻辑
 - **AchievementHandler** - 单例 Handler；运行期只累加统计数据，`GetAchievementState(info)` 实时算达成状态，`TryUnlockAchievement` 领奖后 `SaveUserData()` 落盘
 - **AchievementManager** - 配置缓存
-- **UserAchievementBean** - 用户存档（**只存已领取 Unlocked** 的字典、累计击杀、按难度通关次数）
+- **UserAchievementBean** - 用户存档（**只存已领取 Unlocked** 的字典、累计击杀、**按世界×难度**通关次数 `conquerCompleteCountByWorldLevel`）
 
 ### 事件
 - `Achievement_CreatureKill` - 生物被击杀（在 AIIntentCreatureDead，仅进攻方派发）→ 回调只 `AddKillCount`
-- `Achievement_ConquerComplete` - 征服模式完整通关（在 GameFightLogicConquer）→ 回调只 `AddConquerCompleteCount`
+- `Achievement_ConquerComplete` - 征服模式完整通关（在 GameFightLogicConquer，参数 `long worldId, int difficultyLevel`）→ 回调只 `AddConquerCompleteCount(worldId, difficultyLevel)`
 - 注：两事件仅累加统计；运行期不做达成判定、不实时刷新 UI。达成在打开界面时实时计算。已移除 `Achievement_StateChange` / `Achievement_ProgressChange`（高频空转）与 `Achievement_GameTimeChange`（曾驱动每秒判定，现无消费者）
 
 ### UI
@@ -94,5 +94,6 @@ watched_files:
 
 - 击杀仅统计进攻方（`CreatureFightTypeEnum.FightAttack`），玩家的防御方阵亡不计入
 - 征服通关挂钩在 `ActionForUIRewardSelectEnd`，避免单局结算就计数
-- 添加新成就时，征服难度 `target_extra` 必须对应实际的 `FightTypeConquerInfo.level`
+- 添加新成就时，征服成就的 `target_world`+`target_extra` 必须对应实际存在的 `FightTypeConquerInfo`(world_id+level)；判定走 `GetConquerCompleteCount(worldId, difficultyLevel)`
+- 征服成就改为按**世界×难度**统计：每个世界一套难度1~maxLevel × 1/10/100；目前仅「剑与魔法」(worldId=1) 有征服配置
 - 数据文件 (`AchievementInfo.txt`) 是 JSON 数组，追加新元素时务必保持格式正确（无尾逗号）

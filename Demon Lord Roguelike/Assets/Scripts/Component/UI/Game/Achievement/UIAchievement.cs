@@ -212,16 +212,28 @@ public partial class UIAchievement : BaseUIComponent, IRadioGroupCallBack
             value = achievementData.GetTotalConquerCompleteCount().ToString(),
         });
 
-        //按难度分别统计征服通关次数(1~10)
-        for (int lv = 1; lv <= 10; lv++)
+        //按世界×难度分别统计征服通关次数(仅展示在征服配置表中存在难度的世界)
+        var allWorld = GameWorldInfoCfg.GetAllArrayData();
+        if (allWorld != null)
         {
-            string difficultyLabel = string.Format(TextHandler.Instance.GetTextById(4000013), lv);
-            string conquerLabel = TextHandler.Instance.GetTextById(4000012) + " (" + difficultyLabel + ")";
-            list.Add(new AchievementStatisticItemBean()
+            for (int w = 0; w < allWorld.Length; w++)
             {
-                label = conquerLabel,
-                value = achievementData.GetConquerCompleteCount(lv).ToString(),
-            });
+                var worldInfo = allWorld[w];
+                int maxLevel = FightTypeConquerInfoCfg.GetMaxLevel(worldInfo.id);
+                if (maxLevel <= 0)
+                    continue;
+                string worldName = worldInfo.name_language;
+                for (int lv = 1; lv <= maxLevel; lv++)
+                {
+                    string difficultyLabel = string.Format(TextHandler.Instance.GetTextById(4000013), lv);
+                    string conquerLabel = TextHandler.Instance.GetTextById(4000012) + " (" + worldName + " " + difficultyLabel + ")";
+                    list.Add(new AchievementStatisticItemBean()
+                    {
+                        label = conquerLabel,
+                        value = achievementData.GetConquerCompleteCount(worldInfo.id, lv).ToString(),
+                    });
+                }
+            }
         }
         return list;
     }

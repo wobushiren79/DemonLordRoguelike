@@ -62,7 +62,7 @@ watched_files:
  → new RewardSelectBean().InitData(fightData) (生成装备+魔晶)
  → 打开 UIRewardSelect.SetData(rewardSelectData, ActionForUIRewardSelectEnd)
  → 玩家选宝箱 → userData.AddBackpackItem(itemData) (水晶走 AddCrystal,装备入背包)
- → ActionForUIRewardSelectEnd → 触发 Achievement_ConquerComplete 成就
+ → ActionForUIRewardSelectEnd → 触发 Achievement_ConquerComplete(worldId, difficultyLevel) 成就(按世界×难度统计)
  → EndGameAndReturnToBase()
      ├─ BuffHandler.manager.ClearAbyssalBlessing()  // 清深渊馈赠
      ├─ GameDataHandler.manager.SaveUserData()       // 落盘存档

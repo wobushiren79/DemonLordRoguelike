@@ -20,5 +20,9 @@ public partial class UITestBase
 
     public Button ui_BtnAddReputation;
 
+    public Button ui_BtnWorldDifHalf;
+
+    public Button ui_BtnWorldDif;
+
 
 }

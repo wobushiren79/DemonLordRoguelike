@@ -17,6 +17,10 @@ public partial class AchievementInfoBean : BaseBean
 	/// </summary>
 	public int target_extra;
 	/// <summary>
+	///附加参数2(类型3=征服世界id 0=无)
+	/// </summary>
+	public int target_world;
+	/// <summary>
 	///奖励-魔晶
 	/// </summary>
 	public long reward_crystal;

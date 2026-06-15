@@ -30,6 +30,14 @@ public partial class AchievementInfoBean
     {
         return (AchievementTypeEnum)achievement_type;
     }
+
+    /// <summary>
+    /// 获取目标征服世界id(仅类型3=征服模式通关有效, 0表示不限定世界)
+    /// </summary>
+    public int GetTargetWorldId()
+    {
+        return target_world;
+    }
 }
 
 public partial class AchievementInfoCfg

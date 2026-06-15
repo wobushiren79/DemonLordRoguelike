@@ -99,6 +99,17 @@ public partial class FightTypeConquerInfoBean
     }
 
     /// <summary>
+    /// 获取该难度的背景色(解析 bg_color 字段; 为空或解析失败返回白色)
+    /// 注意: bg_color 字段需在 Excel 源表新增列后, 经 Unity 配置导出工具重新生成 Bean 才会存在
+    /// </summary>
+    public UnityEngine.Color GetBGColor()
+    {
+        if (bg_color.IsNull())
+            return UnityEngine.Color.white;
+        return ColorUtil.ParseHtmlString(bg_color);
+    }
+
+    /// <summary>
     /// 获取当前关卡普通敌人的累计强度倍率(HP/护甲/攻击力)
     /// 以 attack_intensity_addrate 为每关倍率, 第 1 关为 1, 之后逐关相乘: rate^(currentFightNum-1)
     /// attack_intensity_addrate 非法(≤0)时按 1 处理
@@ -162,5 +173,25 @@ public partial class FightTypeConquerInfoCfg
             }
         }
         return null;
+    }
+
+    /// <summary>
+    /// 获取指定世界在配置表中存在的最高难度等级(无任何配置返回0)
+    /// </summary>
+    /// <param name="worldId">游戏世界ID</param>
+    /// <returns>该世界配置存在的最高难度等级</returns>
+    public static int GetMaxLevel(long worldId)
+    {
+        int maxLevel = 0;
+        var allData = GetAllData();
+        foreach (var itemData in allData)
+        {
+            FightTypeConquerInfoBean fightTypeConquerInfo = itemData.Value;
+            if (fightTypeConquerInfo.world_id == worldId && fightTypeConquerInfo.level > maxLevel)
+            {
+                maxLevel = fightTypeConquerInfo.level;
+            }
+        }
+        return maxLevel;
     }
 }

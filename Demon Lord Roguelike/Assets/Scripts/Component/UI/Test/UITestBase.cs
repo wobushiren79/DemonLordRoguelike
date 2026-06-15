@@ -54,6 +54,14 @@ public partial class UITestBase : BaseUIComponent
         {
             OnClickForAddUnlock();
         }
+        else if (viewButton == ui_BtnWorldDifHalf)
+        {
+            OnClickForUnlockWorldDifficulty(true);
+        }
+        else if (viewButton == ui_BtnWorldDif)
+        {
+            OnClickForUnlockWorldDifficulty(false);
+        }
     }
 
     /// <summary>
@@ -187,6 +195,45 @@ public partial class UITestBase : BaseUIComponent
         userData.AddBackpackCreature(creatureData);
 
         UIHandler.Instance.ToastHintText("添加成功！",1);
+        GameDataHandler.Instance.manager.SaveUserData();
+    }
+
+    /// <summary>
+    /// 点击解锁所有世界的征服难度(测试用)
+    /// </summary>
+    /// <param name="isHalf">true=解锁到一半难度(向上取整), false=解锁到该世界配置的最高难度</param>
+    public void OnClickForUnlockWorldDifficulty(bool isHalf)
+    {
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlockData = userData.GetUserUnlockData();
+        //征服难度基础值(GetUnlockGameWorldConquerDifficultyLevel = conquerDifficultyMax + 解锁研究等级)
+        int conquerDifficultyBase = userData.GetUserLimmitData().conquerDifficultyMax;
+
+        var allWorld = GameWorldInfoCfg.GetAllData();
+        foreach (var itemData in allWorld)
+        {
+            long worldId = itemData.Key;
+            GameWorldInfoBean gameWorldInfo = itemData.Value;
+            //该世界征服难度的解锁ID(为0表示无可解锁难度, 难度恒为基础值)
+            long unlockId = gameWorldInfo.unlock_id_conquer_difficulty_level;
+            if (unlockId == 0)
+                continue;
+            //该世界配置存在的最高难度(无配置则跳过)
+            int configDifficultyMax = FightTypeConquerInfoCfg.GetMaxLevel(worldId);
+            if (configDifficultyMax <= 0)
+                continue;
+            //目标难度: 一半(向上取整) 或 最高
+            int targetDifficulty = isHalf ? Mathf.Max(1, Mathf.CeilToInt(configDifficultyMax / 2f)) : configDifficultyMax;
+            //需要的解锁研究等级 = 目标难度 - 基础难度(≤0说明基础值已覆盖, 无需解锁)
+            int needUnlockLevel = targetDifficulty - conquerDifficultyBase;
+            if (needUnlockLevel <= 0)
+                continue;
+            //先确保解锁条目存在, 再覆盖解锁等级(AddUnlock 仅在条目已存在时设置等级)
+            userUnlockData.AddUnlock(unlockId);
+            userUnlockData.AddUnlock(unlockId, needUnlockLevel);
+        }
+
+        UIHandler.Instance.ToastHintText(isHalf ? "已解锁所有世界一半难度！" : "已解锁所有世界全部难度！", 1);
         GameDataHandler.Instance.manager.SaveUserData();
     }
 

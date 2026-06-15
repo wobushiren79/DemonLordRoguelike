@@ -29,11 +29,13 @@ public class UserAchievementBean
     public long totalKillCount;
 
     /// <summary>
-    /// 累计征服模式通关次数(按难度分别统计)
-    /// Key: 难度等级(1~10)
-    /// Value: 通关次数
+    /// 累计征服模式通关次数(按世界×难度分别统计)
+    /// 外层 Key: 世界id(对应 GameWorldInfoBean.id)
+    /// 内层 Key: 难度等级(1~10)
+    /// 内层 Value: 通关次数
+    /// 旧存档字段 conquerCompleteCountByLevel(仅按难度)已废弃, 读取旧档时该统计会从0重新累计
     /// </summary>
-    public Dictionary<int, long> conquerCompleteCountByLevel = new Dictionary<int, long>();
+    public Dictionary<long, Dictionary<int, long>> conquerCompleteCountByWorldLevel = new Dictionary<long, Dictionary<int, long>>();
 
     #endregion
 
@@ -84,27 +86,38 @@ public class UserAchievementBean
     #region 统计数据-征服通关
 
     /// <summary>
-    /// 增加征服模式通关次数
+    /// 增加征服模式通关次数(按世界×难度)
     /// </summary>
-    public void AddConquerCompleteCount(int difficultyLevel, long delta = 1)
+    /// <param name="worldId">世界id</param>
+    /// <param name="difficultyLevel">难度等级</param>
+    /// <param name="delta">增量</param>
+    public void AddConquerCompleteCount(long worldId, int difficultyLevel, long delta = 1)
     {
         if (delta <= 0) return;
-        if (conquerCompleteCountByLevel.TryGetValue(difficultyLevel, out long curr))
+        if (!conquerCompleteCountByWorldLevel.TryGetValue(worldId, out var byLevel))
         {
-            conquerCompleteCountByLevel[difficultyLevel] = curr + delta;
+            byLevel = new Dictionary<int, long>();
+            conquerCompleteCountByWorldLevel[worldId] = byLevel;
+        }
+        if (byLevel.TryGetValue(difficultyLevel, out long curr))
+        {
+            byLevel[difficultyLevel] = curr + delta;
         }
         else
         {
-            conquerCompleteCountByLevel[difficultyLevel] = delta;
+            byLevel[difficultyLevel] = delta;
         }
     }
 
     /// <summary>
-    /// 获取指定难度的征服通关次数
+    /// 获取指定世界指定难度的征服通关次数
     /// </summary>
-    public long GetConquerCompleteCount(int difficultyLevel)
+    /// <param name="worldId">世界id</param>
+    /// <param name="difficultyLevel">难度等级</param>
+    public long GetConquerCompleteCount(long worldId, int difficultyLevel)
     {
-        if (conquerCompleteCountByLevel.TryGetValue(difficultyLevel, out long count))
+        if (conquerCompleteCountByWorldLevel.TryGetValue(worldId, out var byLevel)
+            && byLevel.TryGetValue(difficultyLevel, out long count))
         {
             return count;
         }
@@ -112,14 +125,34 @@ public class UserAchievementBean
     }
 
     /// <summary>
-    /// 获取征服模式总通关次数(所有难度合计)
+    /// 获取指定世界的征服通关总次数(该世界所有难度合计)
+    /// </summary>
+    /// <param name="worldId">世界id</param>
+    public long GetConquerCompleteCountByWorld(long worldId)
+    {
+        long total = 0;
+        if (conquerCompleteCountByWorldLevel.TryGetValue(worldId, out var byLevel))
+        {
+            foreach (var item in byLevel)
+            {
+                total += item.Value;
+            }
+        }
+        return total;
+    }
+
+    /// <summary>
+    /// 获取征服模式总通关次数(所有世界所有难度合计)
     /// </summary>
     public long GetTotalConquerCompleteCount()
     {
         long total = 0;
-        foreach (var item in conquerCompleteCountByLevel)
+        foreach (var byLevel in conquerCompleteCountByWorldLevel.Values)
         {
-            total += item.Value;
+            foreach (var item in byLevel)
+            {
+                total += item.Value;
+            }
         }
         return total;
     }

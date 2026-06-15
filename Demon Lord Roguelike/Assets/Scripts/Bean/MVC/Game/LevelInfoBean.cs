@@ -12,6 +12,10 @@ public partial class LevelInfoBean : BaseBean
 	///升级所需祭品数量
 	/// </summary>
 	public int sacrifice_num;
+	/// <summary>
+	///升级获得加点数
+	/// </summary>
+	public int attribute_point;
 }
 public partial class LevelInfoCfg : BaseCfg<long, LevelInfoBean>
 {

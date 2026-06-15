@@ -259,6 +259,26 @@ allUnlockInfo.ForEach((index, value) =>
 });
 ```
 
+### 解锁所有世界征服难度
+
+`UITestBase` 的 `ui_BtnWorldDifHalf` / `ui_BtnWorldDif` 两个按钮分别解锁所有世界的「一半难度(向上取整)」/「全部难度」，逻辑见 `OnClickForUnlockWorldDifficulty(bool isHalf)`：
+
+```csharp
+// 难度 = conquerDifficultyMax(基础) + 解锁ID(unlock_id_conquer_difficulty_level)对应的研究等级
+int conquerDifficultyBase = userData.GetUserLimmitData().conquerDifficultyMax;
+foreach (var itemData in GameWorldInfoCfg.GetAllData())
+{
+    long unlockId = itemData.Value.unlock_id_conquer_difficulty_level;      // 为0跳过(无可解锁难度)
+    int configDifficultyMax = FightTypeConquerInfoCfg.GetMaxLevel(itemData.Key); // 该世界配置最高难度
+    int targetDifficulty = isHalf ? Mathf.CeilToInt(configDifficultyMax / 2f) : configDifficultyMax;
+    int needUnlockLevel = targetDifficulty - conquerDifficultyBase;          // ≤0跳过(基础已覆盖)
+    userUnlockData.AddUnlock(unlockId);                 // 先确保条目存在
+    userUnlockData.AddUnlock(unlockId, needUnlockLevel); // 再覆盖解锁等级
+}
+```
+
+> 注意 `UserUnlockBean.AddUnlock(id, level)` 仅在条目**已存在**时才设置等级，新建时不应用 level，故需「先建后设」两次调用。
+
 ---
 
 ## 献祭升级测试 (CreatureSacrifice)

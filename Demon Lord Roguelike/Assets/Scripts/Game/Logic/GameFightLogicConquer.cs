@@ -188,12 +188,15 @@ public class GameFightLogicConquer : GameFightLogic
     /// </summary>
     public void ActionForUIRewardSelectEnd()
     {
-        //成就统计-征服模式完整通关
+        //成就统计-征服模式完整通关(按世界×难度)
         FightBeanForConquer fightDataForConquer = fightData as FightBeanForConquer;
         if (fightDataForConquer != null && fightDataForConquer.fightTypeConquerInfo != null)
         {
+            long worldId = fightDataForConquer.gameWorldInfoRandomData != null
+                ? fightDataForConquer.gameWorldInfoRandomData.worldId
+                : fightDataForConquer.fightTypeConquerInfo.world_id;
             int difficultyLevel = fightDataForConquer.fightTypeConquerInfo.level;
-            EventHandler.Instance.TriggerEvent(EventsInfo.Achievement_ConquerComplete, difficultyLevel);
+            EventHandler.Instance.TriggerEvent(EventsInfo.Achievement_ConquerComplete, worldId, difficultyLevel);
         }
         EndGameAndReturnToBase();
     }
