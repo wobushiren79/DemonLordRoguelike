@@ -13,7 +13,7 @@ public partial class AchievementHandler : BaseHandler<AchievementHandler, Achiev
     /// 初始化
     /// 注册全局事件监听(幂等)
     /// 说明: 运行期只负责累加统计数据(击杀/通关), 不做任何达成判定;
-    /// "是否达成(Reached)"在打开成就界面时由 GetAchievementState 依据统计数据实时计算
+    /// "是否达成(Reached)"在打开成就界面时由 GetCurrentLevelState 依据统计数据实时计算
     /// </summary>
     public void InitData()
     {
@@ -60,33 +60,14 @@ public partial class AchievementHandler : BaseHandler<AchievementHandler, Achiev
 
     #endregion
 
-    #region 成就状态/进度
+    #region 成就进度/统计
 
     /// <summary>
-    /// 实时计算成就状态(不持久化"达成"标记)
-    /// 已领取 -> 读存档返回 Unlocked; 未领取 -> 按统计数据与目标值比对返回 Reached / NotReached
-    /// </summary>
-    /// <param name="info">成就配置</param>
-    public AchievementStateEnum GetAchievementState(AchievementInfoBean info)
-    {
-        if (info == null) return AchievementStateEnum.NotReached;
-        var userData = GameDataHandler.Instance.manager.GetUserData();
-        if (userData == null) return AchievementStateEnum.NotReached;
-        var achievementData = userData.GetUserAchievementData();
-        //已领取的成就直接返回已解锁(只有该状态持久化在存档)
-        if (achievementData.IsAchievementUnlocked(info.id))
-            return AchievementStateEnum.Unlocked;
-        //未领取的成就按当前统计数据实时判定是否达成
-        if (GetAchievementProgress(info) >= info.target_value)
-            return AchievementStateEnum.Reached;
-        return AchievementStateEnum.NotReached;
-    }
-
-    /// <summary>
-    /// 获取某成就当前进度
+    /// 获取某成就当前统计进度(原始累计值, 与各级目标值比对用)
     /// </summary>
     public long GetAchievementProgress(AchievementInfoBean info)
     {
+        if (info == null) return 0;
         var userData = GameDataHandler.Instance.manager.GetUserData();
         if (userData == null) return 0;
         var achievementData = userData.GetUserAchievementData();
@@ -105,26 +86,83 @@ public partial class AchievementHandler : BaseHandler<AchievementHandler, Achiev
 
     #endregion
 
-    #region 手动解锁(领奖)
+    #region 等级(单行多级)
 
     /// <summary>
-    /// 手动解锁成就(领取魔晶奖励)
+    /// 获取该成就已领取的等级数(0=尚未领取任何等级)
     /// </summary>
-    /// <returns>是否解锁成功</returns>
-    public bool TryUnlockAchievement(long achievementId)
+    public int GetClaimedLevelCount(AchievementInfoBean info)
+    {
+        if (info == null) return 0;
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        if (userData == null) return 0;
+        return userData.GetUserAchievementData().GetClaimedLevelCount(info.id);
+    }
+
+    /// <summary>
+    /// 获取该成就"当前激活等级"的0基索引(= 已领取等级数)。
+    /// 即下一个待领取的等级; 当 &gt;= 等级总数 时表示整族已完成。
+    /// </summary>
+    public int GetCurrentLevelIndex(AchievementInfoBean info)
+    {
+        return GetClaimedLevelCount(info);
+    }
+
+    /// <summary>
+    /// 该成就是否已整族完成(已领取等级数 &gt;= 等级总数)
+    /// </summary>
+    public bool IsCompleted(AchievementInfoBean info)
+    {
+        if (info == null) return false;
+        return GetClaimedLevelCount(info) >= info.GetLevelCount();
+    }
+
+    /// <summary>
+    /// 实时计算"当前激活等级"的状态(不持久化"达成"标记)。
+    /// 整族完成 -> Unlocked; 否则按 当前激活等级目标值 vs 统计数据 返回 Reached / NotReached。
+    /// 等级门控天然成立: 当前激活等级 = 已领取数, 必须逐级领取, 无法跳级。
+    /// </summary>
+    public AchievementStateEnum GetCurrentLevelState(AchievementInfoBean info)
+    {
+        if (info == null) return AchievementStateEnum.NotReached;
+        int levelCount = info.GetLevelCount();
+        int currentIndex = GetClaimedLevelCount(info);
+        //已领取数达到/超过总级数 -> 整族完成
+        if (currentIndex >= levelCount) return AchievementStateEnum.Unlocked;
+        //当前激活等级: 统计数据达到该级目标值则可领取
+        if (GetAchievementProgress(info) >= info.GetLevelTargetValue(currentIndex))
+            return AchievementStateEnum.Reached;
+        return AchievementStateEnum.NotReached;
+    }
+
+    #endregion
+
+    #region 手动领取(下一等级)
+
+    /// <summary>
+    /// 领取该成就的"当前激活等级"(发放该级魔晶奖励, 已领取等级数+1)。
+    /// 仅当前激活等级处于 Reached(达成未领取) 时成功; 整族完成或未达成时返回 false。
+    /// </summary>
+    /// <param name="achievementId">成就ID</param>
+    /// <returns>是否领取成功</returns>
+    public bool TryUnlockNextLevel(long achievementId)
     {
         var info = AchievementInfoCfg.GetItemData(achievementId);
         if (info == null) return false;
         var userData = GameDataHandler.Instance.manager.GetUserData();
         if (userData == null) return false;
         var achievementData = userData.GetUserAchievementData();
-        //只有处于"达成未领取"状态才能领奖(实时判定)
-        if (GetAchievementState(info) != AchievementStateEnum.Reached)
+        int levelCount = info.GetLevelCount();
+        int currentIndex = achievementData.GetClaimedLevelCount(achievementId);
+        //整族已完成
+        if (currentIndex >= levelCount) return false;
+        //当前激活等级是否达成
+        if (GetAchievementProgress(info) < info.GetLevelTargetValue(currentIndex))
             return false;
-        //发放奖励
-        userData.AddCrystal(info.reward_crystal);
-        //标记为已解锁(已领取) —— 只有该状态才持久化
-        achievementData.SetAchievementUnlocked(achievementId);
+        //发放当前激活等级奖励
+        userData.AddCrystal(info.GetLevelReward(currentIndex));
+        //已领取等级数 +1(持久化)
+        achievementData.SetClaimedLevelCount(achievementId, currentIndex + 1);
         //领奖与发放的魔晶立即落盘
         GameDataHandler.Instance.manager.SaveUserData();
         return true;

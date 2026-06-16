@@ -20,14 +20,21 @@ watched_files:
 ## 职责范围
 
 ### 成就配置
-- **AchievementInfoBean** - 成就配置 Bean（achievement_type/target_value/target_extra/**target_world**/reward_crystal/name/description/sort/icon_res/remark）。`target_world`=类型3征服世界id(0=无)，源于 excel 新增列；生成 Entity 前由 Partial 桥接字段临时承载
-- **AchievementInfoBeanPartial** - Bean 扩展（GetAchievementType、GetTargetWorldId、GetAllListSorted、target_world 桥接字段 等）
-- **AchievementInfo.txt** - 成就数据（JsonText）
+- **AchievementInfoBean** - 成就配置 Bean（achievement_type/target_extra/**target_world**/icon_res/sort/**name/details**/remark + **target_values/reward_crystals** 两列逗号分隔字符串）。`target_world`=类型3征服世界id(0=无)；两列承载各级目标/奖励。描述用 `name`/`details` 两列**同指一个文本id**(name→content名字, details→content_1模板含`{Name}`)。旧 target_value/reward_crystal/parent_id/level/level_descriptions **已移除**；`details` 生成 Entity 前由 Partial 桥接字段临时承载(生成后须删)
+- **AchievementInfoBeanPartial** - Bean 扩展（GetAchievementType、GetTargetWorldId、**GetLevelCount/GetTargetValues/GetRewardCrystals/GetLevelTargetValue/GetLevelReward/GetLevelDescription/FormatValueByType**；Cfg：GetAllListSorted；**details 桥接字段**）。`GetLevelDescription` 取 `details_language`(框架自动属性=content_1, 优先 `_language` 不手写 GetTextById) + `GetTextReplace` 替换占位符→该级格式化目标值；数值同时挂 `{Name}`(通用)与类型语义占位符(击杀`{KillNum}`/时长`{Time_H}`, 见 `GetValueReplaceKey`)
+
+### 单行多级 ⭐
+- 可升级成就**一行=一张卡(含多级)**，逐级领取：必先领低一级才能领高一级，全部领完显示**已完成**
+- **无 parent_id/level**。每行两列逗号分隔：`target_values`(各级目标)/`reward_crystals`(各级奖励)，两列长度一致。描述用 `name`/`details` 两列同指一文本id(content=名字, content_1=模板含 `{Name}`)，运行期 `GetTextReplace` 替换为该级格式化目标值
+- 一行一成就：击杀1行(6级)、时长1行(10级)、征服按难度各1行(每行3级)，共 **12 行=12 卡**
+- **当前激活等级=已领取等级数**(0基)，玩家只能领这一级，领后+1，天然逐级无法跳级
+- 存档：`UserAchievementBean.achievementLevelClaimed: Dict<id,已领取等级数>`；整族完成=已领取数≥等级总数
+- **AchievementInfo.txt** - 成就数据（JsonText，12 行，两列 target_values/reward_crystals）
 
 ### 业务逻辑
-- **AchievementHandler** - 单例 Handler；运行期只累加统计数据，`GetAchievementState(info)` 实时算达成状态，`TryUnlockAchievement` 领奖后 `SaveUserData()` 落盘
-- **AchievementManager** - 配置缓存
-- **UserAchievementBean** - 用户存档（**只存已领取 Unlocked** 的字典、累计击杀、**按世界×难度**通关次数 `conquerCompleteCountByWorldLevel`）
+- **AchievementHandler** - 单例 Handler；运行期只累加统计数据，`GetCurrentLevelState(info)` 实时算当前激活等级状态，`TryUnlockNextLevel(id)` 领当前级后 `SaveUserData()` 落盘；`GetClaimedLevelCount/GetCurrentLevelIndex/IsCompleted/GetAchievementProgress`
+- **AchievementManager** - 配置缓存（`GetAllAchievementsSorted` 12 行，UI 卡片直接用）
+- **UserAchievementBean** - 用户存档（**已领取等级数字典** `achievementLevelClaimed`、累计击杀、**按世界×难度**通关次数 `conquerCompleteCountByWorldLevel`）
 
 ### 事件
 - `Achievement_CreatureKill` - 生物被击杀（在 AIIntentCreatureDead，仅进攻方派发）→ 回调只 `AddKillCount`
@@ -36,7 +43,7 @@ watched_files:
 
 ### UI
 - **UIAchievement** - 主界面，双 Tab（成就 / 统计），含 UIAchievementComponent partial
-- **UIViewAchievementCard** - 成就卡片，5 列网格 cell，3 状态显示
+- **UIViewAchievementCard** - 成就卡片，5 列网格 cell；传入**成就配置**，内部用 `GetClaimedLevelCount` 解析"当前激活等级索引"展示：进行中(未达成灰/可领取绿，进度 `Lv.当前/总  当前/目标` + 当前级奖励) / **已完成**(全部领完，关蒙版显示"已完成")。点击领取**当前激活等级**，先用 DOTween 播放 `ui_Content` 弹跳动画（`AnimForUnlock`，锁屏防重复点击）再回调 `TryUnlockNextLevel(info.id)`+刷新(推进到下一级)，`SetData` 复用 cell 时 `ClearAnim` 复位
 - **UIViewAchievementStatistic** - 统计列表 cell，一行一条
 
 ### 解锁前置

@@ -43,7 +43,7 @@ public partial class UIAchievement : BaseUIComponent, IRadioGroupCallBack
         InitRadioGroup();
 
         //初始化Tab
-        //运行期不做达成判定与实时刷新; 每次打开界面时由各卡片 GetAchievementState 依据统计数据实时计算达成状态
+        //运行期不做达成判定与实时刷新; 每次打开界面时由各卡片 GetCurrentLevelState 依据统计数据实时计算达成状态
         SwitchTab(0);
     }
 
@@ -136,6 +136,7 @@ public partial class UIAchievement : BaseUIComponent, IRadioGroupCallBack
 
     /// <summary>
     /// 刷新成就列表
+    /// 每个可升级成就一张卡(单行多级), 由卡片内部解析当前激活等级。
     /// </summary>
     public void RefreshAchievementList()
     {
@@ -147,7 +148,7 @@ public partial class UIAchievement : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// 成就单元格刷新
+    /// 成就单元格刷新(卡片内部解析当前激活等级)
     /// </summary>
     private void OnAchievementCellUpdate(ScrollGridCell cell)
     {
@@ -161,16 +162,17 @@ public partial class UIAchievement : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// 点击解锁(领取奖励)
+    /// 点击解锁(领取当前激活等级奖励)。领取后刷新列表使卡片推进到下一级或显示"已完成"。
     /// </summary>
+    /// <param name="info">要领取的成就(卡片传入)</param>
     private void OnClickForUnlockAchievement(AchievementInfoBean info)
     {
         if (info == null) return;
-        bool ok = AchievementHandler.Instance.TryUnlockAchievement(info.id);
+        bool ok = AchievementHandler.Instance.TryUnlockNextLevel(info.id);
         if (ok)
         {
             UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(4000008));
-            //领取成功后本地刷新列表, 使该成就立即变为"已解锁"状态(无需重开界面)
+            //领取成功后本地刷新列表, 使该卡片推进到下一级(或全部领完后显示"已完成")
             RefreshAchievementList();
         }
     }

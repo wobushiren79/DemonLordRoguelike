@@ -21,6 +21,7 @@
 
 ### Reference
 - [reference_unityskills_shadergraph_limits.md](reference_unityskills_shadergraph_limits.md) — Unity-Skills shadergraph 工具限制：节点白名单(无噪声/Time/NormalFromHeight)、Vector2 赋值 bug、值格式约定
+- [reference_language_excel_source.md](reference_language_excel_source.md) — 多语言 Language_*.txt 的真实源是 excel_language 同名工作表（非各自配置表），改文本必须改该 Excel 否则导出被覆盖；GetTextReplace 占位符模板
 
 ### Collaboration Feedback
 - [`feedback_task_summary.md`](feedback_task_summary.md) — 任务总结必须列出参与的 Agent/Skill 名称及操作
@@ -33,3 +34,4 @@
 - [`feedback_inline_python_no_temp.md`](feedback_inline_python_no_temp.md) — 一次性 Python 优先用 run-python.ps1 -c 内联，别建临时 .py；附绝对路径/点目录致 allow 失配原因
 - [`feedback_ask_before_architecture_change.md`](feedback_ask_before_architecture_change.md) — 涉及改变原有架构/数据流向的修改（如配置来源 Excel⇄代码字段迁移）必须先询问用户确认
 - [`feedback_shader_chinese_labels.md`](feedback_shader_chinese_labels.md) — 所有 shader 的 Properties 参数显示名必须用中文标注用途；Header 分组标题只能用 ASCII
+- [`feedback_prefer_language_property.md`](feedback_prefer_language_property.md) — 取多语言文本优先用框架自动生成的 _language 属性（带缓存），不手写 GetTextById(fileName,id,idx)

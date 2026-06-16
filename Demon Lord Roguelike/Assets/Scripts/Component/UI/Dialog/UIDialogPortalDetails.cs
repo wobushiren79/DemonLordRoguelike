@@ -101,30 +101,25 @@ public partial class UIDialogPortalDetails : DialogView
         isAnimating = true;
         HideAllItems();
 
-        //覆盖切换前后所有需要参与动画的难度(两侧各扩一个), 共最多4个
-        int difficultyFrom = Mathf.Min(oldCenter, newCenter) - 1;
-        int difficultyTo = Mathf.Max(oldCenter, newCenter) + 1;
+        //关键: 动画结束时停在中心的item, 必须与随后 RefreshItemsImmediate(newCenter) 占据中心的是同一个对象池对象.
+        //否则(典型为向右切换)中心item会在动画末尾被瞬间换成另一个正在缩小的item, 表现为"缩放最后一刻一瞬间放大".
+        //因此这里按"切换后"中心的紧凑顺序(与 RefreshItemsImmediate 完全一致)把中间三档难度依次分配到 pool[0..2],
+        //再把滑出可视区的那一档放到剩余槽位, 保证前后池索引一致、每个屏幕位置的item对象在刷新瞬间无缝衔接.
         int poolIndex = 0;
-        for (int difficulty = difficultyFrom; difficulty <= difficultyTo; difficulty++)
+        for (int offset = -1; offset <= 1; offset++)
         {
+            int difficulty = newCenter + offset;
             if (!IsValidDisplayDifficulty(difficulty))
                 continue;
             if (poolIndex >= listItemPool.Count)
                 break;
-            UIViewDialogPortalDetailsItem itemView = listItemPool[poolIndex++];
-            //起点按"切换前"中心计算, 终点按"切换后"中心计算
-            float fromX = (difficulty - oldCenter) * itemSpacing;
-            float toX = (difficulty - newCenter) * itemSpacing;
-            ShowItem(itemView, difficulty, fromX);
-            //起点透明度/缩放按"切换前"中心, 终点按"切换后"中心渐变;
-            //滑出可视区的item渐变到0、滑入的item从0渐入, 避免临时第4个item突兀地出现/消失
-            itemView.SetAlpha(GetItemAlpha(difficulty, oldCenter));
-            itemView.SetScale(GetItemScale(difficulty, oldCenter));
-            itemView.KillAnim();
-            itemView.rectTransform.DOAnchorPosX(toX, animDuration).SetEase(Ease.OutBack);
-            itemView.DoFadeAlpha(GetItemAlpha(difficulty, newCenter), animDuration);
-            //切到中间的item放大到1, 滑到两侧的item缩小到0.8
-            itemView.DoScale(GetItemScale(difficulty, newCenter), animDuration);
+            AnimSwitchOneItem(listItemPool[poolIndex++], difficulty, oldCenter, newCenter);
+        }
+        //滑出可视区的临时item(切换前在可视边缘、切换后超出当前±1范围的那一档), 从外侧滑出并淡出
+        int leavingDifficulty = newCenter > oldCenter ? oldCenter - 1 : oldCenter + 1;
+        if (IsValidDisplayDifficulty(leavingDifficulty) && poolIndex < listItemPool.Count)
+        {
+            AnimSwitchOneItem(listItemPool[poolIndex++], leavingDifficulty, oldCenter, newCenter);
         }
 
         //动画结束后回到标准3item布局(顺带回收多余item)
@@ -135,6 +130,30 @@ public partial class UIDialogPortalDetails : DialogView
             isAnimating = false;
             RefreshItemsImmediate(newCenter);
         });
+    }
+
+    /// <summary>
+    /// 播放单个难度item的切换动画(起点按"切换前"中心、终点按"切换后"中心计算位移/透明度/缩放)
+    /// </summary>
+    /// <param name="itemView">目标item</param>
+    /// <param name="difficulty">该item代表的难度</param>
+    /// <param name="oldCenter">切换前的当前难度</param>
+    /// <param name="newCenter">切换后的当前难度</param>
+    protected void AnimSwitchOneItem(UIViewDialogPortalDetailsItem itemView, int difficulty, int oldCenter, int newCenter)
+    {
+        //起点按"切换前"中心计算, 终点按"切换后"中心计算
+        float fromX = (difficulty - oldCenter) * itemSpacing;
+        float toX = (difficulty - newCenter) * itemSpacing;
+        ShowItem(itemView, difficulty, fromX);
+        //起点透明度/缩放按"切换前"中心, 终点按"切换后"中心渐变;
+        //滑出可视区的item渐变到0、滑入的item从0渐入, 避免临时第4个item突兀地出现/消失
+        itemView.SetAlpha(GetItemAlpha(difficulty, oldCenter));
+        itemView.SetScale(GetItemScale(difficulty, oldCenter));
+        itemView.KillAnim();
+        itemView.rectTransform.DOAnchorPosX(toX, animDuration).SetEase(Ease.OutBack);
+        itemView.DoFadeAlpha(GetItemAlpha(difficulty, newCenter), animDuration);
+        //切到中间的item放大到1, 滑到两侧的item缩小到0.8
+        itemView.DoScale(GetItemScale(difficulty, newCenter), animDuration);
     }
 
     /// <summary>

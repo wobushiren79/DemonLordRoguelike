@@ -9,10 +9,6 @@ public partial class AchievementInfoBean : BaseBean
 	/// </summary>
 	public int achievement_type;
 	/// <summary>
-	///目标值(类型1=击杀数量;类型2=秒数;类型3=通关次数)
-	/// </summary>
-	public long target_value;
-	/// <summary>
 	///附加参数(类型3=征服难度等级)
 	/// </summary>
 	public int target_extra;
@@ -21,9 +17,13 @@ public partial class AchievementInfoBean : BaseBean
 	/// </summary>
 	public int target_world;
 	/// <summary>
-	///奖励-魔晶
+	///各级目标值(逗号分隔,顺序即等级1..N)
 	/// </summary>
-	public long reward_crystal;
+	public string target_values;
+	/// <summary>
+	///各级奖励魔晶(逗号分隔,与target_values一一对应)
+	/// </summary>
+	public string reward_crystals;
 	/// <summary>
 	///图标资源
 	/// </summary>
@@ -33,19 +33,19 @@ public partial class AchievementInfoBean : BaseBean
 	/// </summary>
 	public int sort;
 	/// <summary>
-	///名字
+	///名字(单条通用文本id)
 	/// </summary>
 	public long name;
 	[JsonIgnore]
 	public string name_language { get => _name_language.Get(() => TextHandler.Instance.GetTextById(AchievementInfoCfg.fileName, name)); set => _name_language.Set(value); }
 	private LanguageCache _name_language;
 	/// <summary>
-	///描述
+	///描述模板文本id(取content_1,含{Name}占位符;通常与name同id)
 	/// </summary>
-	public long description;
+	public long details;
 	[JsonIgnore]
-	public string description_language { get => _description_language.Get(() => TextHandler.Instance.GetTextById(AchievementInfoCfg.fileName, description, 1)); set => _description_language.Set(value); }
-	private LanguageCache _description_language;
+	public string details_language { get => _details_language.Get(() => TextHandler.Instance.GetTextById(AchievementInfoCfg.fileName, details, 1)); set => _details_language.Set(value); }
+	private LanguageCache _details_language;
 	/// <summary>
 	///备注
 	/// </summary>

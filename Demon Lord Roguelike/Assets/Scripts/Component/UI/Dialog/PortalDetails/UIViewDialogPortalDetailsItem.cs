@@ -14,7 +14,7 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
     //当前(选中)难度item的缩放
     public const float scaleCurrent = 1f;
     //非当前难度item的缩放
-    public const float scaleOther = 0.8f;
+    public const float scaleOther = 0.6f;
     //Icon 漂浮 idle 动画的 Animator(挂在item根节点, 控制器 UIViewDialogPortalDetailsItem.controller)
     protected Animator idleAnimator;
     //idle 状态在控制器中的状态名(与 manage_animation 创建的默认状态一致)
@@ -24,6 +24,20 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
     /// 当前item代表的难度等级
     /// </summary>
     public int DifficultyLevel => difficultyLevel;
+    #endregion
+
+    #region 生命周期
+    /// <summary>
+    /// 启用回调: 在item随层级真正激活的这一刻随机化漂浮相位.
+    /// 此时 Animator 已处于激活状态, Play+Update(0) 才能稳定生效;
+    /// 而 SetData 可能在弹窗尚未显示(层级未激活)时被调用, 那时 Animator 无法求值,
+    /// 随机偏移会被随后的激活 rebind 吞掉, 导致3个item漂浮完全同步.
+    /// </summary>
+    public override void OnEnable()
+    {
+        base.OnEnable();
+        RandomizeIdleAnimOffset();
+    }
     #endregion
 
     #region 数据设置
@@ -43,7 +57,8 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
         SetUnlock(isUnlock);
         SetBGColor(bgColor);
         SetPopup(gameWorldInfo, gameWorldInfoRandom);
-        RandomizeIdleAnimOffset();
+        SetComplete(gameWorldInfoRandom.worldId, difficultyLevel);
+        //漂浮相位的随机化改在 OnEnable 里做(此处弹窗可能尚未激活, Animator 无法求值)
     }
 
     /// <summary>
@@ -102,6 +117,21 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
     {
         ui_Chain_1.gameObject.SetActive(!isUnlock);
         ui_Chain_2.gameObject.SetActive(!isUnlock);
+    }
+
+    /// <summary>
+    /// 设置通关标记: 玩家曾通关过该世界对应难度的征服模式(征服通关统计次数>0)则显示 ui_Complete
+    /// </summary>
+    /// <param name="worldId">世界id</param>
+    /// <param name="difficultyLevel">难度等级</param>
+    public void SetComplete(long worldId, int difficultyLevel)
+    {
+        if (ui_Complete == null)
+            return;
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        bool isComplete = userData != null
+            && userData.GetUserAchievementData().GetConquerCompleteCount(worldId, difficultyLevel) > 0;
+        ui_Complete.gameObject.SetActive(isComplete);
     }
     #endregion
 

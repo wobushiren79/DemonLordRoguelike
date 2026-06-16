@@ -53,6 +53,7 @@ TextManager 加载 Language_UIText_*.txt
 
 ## 约束
 
+- **真实源是 Excel，不是 `.txt`**：`Language_{CfgName}_{cn,en}.txt` 由 **`excel_language[多语言_FrameWork].xlsx` 中与 `{CfgName}` 同名工作表**导出（列 `id/content_cn/content_en/content_1_cn/content_1_en/remark`；`Language_UIText_*` 来自 `excel_ui_text`）。改文本**必须改对应 Excel 工作表**再导出——只改 `.txt` 会在下次导出被覆盖丢失
 - 多语言 key 统一放在 Excel 中管理，通过 ExcelEditorWindow 导出
 - 所有文本显示必须使用 UITextLanguageView 或通过 TextHandler 获取
 - 新增文本 key 需在 Excel 配置中添加
@@ -78,3 +79,24 @@ TextManager 加载 Language_UIText_*.txt
   public string name_language    => TextHandler.Instance.GetTextById(Cfg.fileName, name);      // content
   public string details_language => TextHandler.Instance.GetTextById(Cfg.fileName, name, 1);   // content_1（同一个 id）
   ```
+
+## 占位符替换 GetTextReplace（通用动态文本）
+
+文本里用 `{枚举名}` 占位符（枚举为 `TextReplaceEnum`，如 `{Name}`/`{KillNum}`/`{Time_H}`/`{Percentage}`），运行期用 `Dictionary<TextReplaceEnum,string>` 替换。两个重载，**区别关键**：
+
+| 重载 | 取模板来源 | 用途 |
+|------|-----------|------|
+| `GetTextReplace(long id, dic)` | **只从 UIText 表**(`UITextCfg`) 按 id 取 | 通用 UI 文本 |
+| `GetTextReplace(string originText, dic)` | 直接对传入字符串替换 | 模板来自**其他配置表**自有 Language 表时用：先 `GetTextById(cfgName,id,idx)` 取模板，再调本重载 |
+
+```csharp
+// 模板存于 AchievementInfo 表(非 UIText), 必须走 string 重载
+// 取模板优先用框架自动生成的 _language 属性(带缓存), 别手写 GetTextById(fileName, id, idx)
+string template = info.details_language; // = content_1, "累计击杀 {Name} 只生物"
+var dic = new Dictionary<TextReplaceEnum, string> { { TextReplaceEnum.Name, "100" } };
+string desc = TextHandler.Instance.GetTextReplace(template, dic); // "累计击杀 100 只生物"
+```
+
+- **同一模板套不同数值**：把"一个成就多个等级目标"做成一条带 `{Name}` 的模板，按级替换即可（成就系统正是此用法）；省去逐级建文本。
+- 模板里写死的文案（数字、单位、"只生物"等）原样保留；字典给哪个键替换哪个占位符。
+- 范例：`UIViewBuffShowItem`（BUFF 描述 `content_language` + 多个占位符）、成就 `AchievementInfoBean.GetLevelDescription`。详见 [localization-system] skill。

@@ -13,7 +13,7 @@ public partial class AchievementManager : BaseManager
     public bool isInited;
 
     /// <summary>
-    /// 排序好的成就列表(缓存)
+    /// 排序好的成就列表(每个可升级成就一行, 即UI卡片数据源; 缓存)
     /// </summary>
     private List<AchievementInfoBean> _cachedSortedList;
 
@@ -22,7 +22,7 @@ public partial class AchievementManager : BaseManager
     }
 
     /// <summary>
-    /// 获取排序后的成就列表
+    /// 获取排序后的成就列表(每个可升级成就一行, UI 卡片直接用此列表)
     /// </summary>
     public List<AchievementInfoBean> GetAllAchievementsSorted()
     {

@@ -25,5 +25,7 @@ public partial class UIViewAchievementCard
 
     public Image ui_Reward;
 
+    public RectTransform ui_Content;
+
 
 }

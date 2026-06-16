@@ -41,6 +41,8 @@ Assets/Resources/JsonText/
 └── Language_{CfgName}_{lang}.txt       - 通用命名格式
 ```
 
+> ⚠️ **真实源是 Excel，不是 `.txt`**：`Language_{CfgName}_{cn,en}.txt` 都是从 **`excel_language[多语言_FrameWork].xlsx` 里与 `{CfgName}` 同名的工作表**导出的产物（每个工作表列：`id / content_cn / content_en / content_1_cn / content_1_en / remark`；`Language_UIText_*` 则来自 `excel_ui_text`）。**新增/修改文本必须改对应 Excel 工作表**，再用 ExcelEditorWindow 导出；只改 `.txt` 会在下次导出时被**覆盖丢失**。下文示例若直接写 `.txt` 仅为说明字段结构，落地务必同步 Excel 工作表。
+
 ### 支持的语言
 
 ```csharp
@@ -418,6 +420,20 @@ Dictionary<TextReplaceEnum, string> replaces = new Dictionary<TextReplaceEnum, s
 string text = TextHandler.Instance.GetTextReplace(1001, replaces);
 // 结果: "击杀10个敌人"
 ```
+
+> **两个重载（重要区别）**：
+> - `GetTextReplace(long id, dic)` —— **只从 UIText 表**(`UITextCfg`) 按 id 取模板再替换。仅适用于通用 UI 文本。
+> - `GetTextReplace(string originText, dic)` —— 直接对**传入的字符串**替换。当模板来自**其他配置表**（如 `AchievementInfo`/`BuffInfo` 等自有 Language 表）时，必须**先**用 `GetTextById(cfgName, id, contentIndex)` 取到模板字符串，**再**调本重载。例：
+>
+> ```csharp
+> // 成就描述: 模板存在 AchievementInfo 表的 details 文本 content_1, {Name} 替换为该级目标值
+> // 优先用框架自动生成的 _language 属性取模板(带缓存), 不要手写 GetTextById(fileName, id, idx)
+> string template = info.details_language; // = content_1
+> var dic = new Dictionary<TextReplaceEnum, string> { { TextReplaceEnum.Name, "100" } };
+> string desc = TextHandler.Instance.GetTextReplace(template, dic); // "累计击杀 100 只生物"
+> ```
+>
+> 占位符语法是 `{枚举名}`（如 `{Name}`/`{KillNum}`/`{Time_H}`），与 `TextReplaceEnum` 值同名；字典里给哪个键就替换哪个占位符，模板里写死的文案原样保留。
 
 ### 可用的替换类型
 

@@ -11,13 +11,14 @@ public class UserAchievementBean
     #region 成就状态数据
 
     /// <summary>
-    /// 成就解锁(已领取)字典
-    /// Key: 成就ID(对应 AchievementInfoBean.id)
-    /// Value: 固定为 (int)AchievementStateEnum.Unlocked(=2)
-    /// 仅持久化"已领取"状态; "未达成/达成未领取"为运行时根据统计数据实时计算, 不入存档(节省空间且无需运行期判定)
-    /// 兼容旧存档: 旧版本可能写入过 1(达成未领取), 读取时一律按 IsAchievementUnlocked 只认 ==2, 残留的 1 视为未领取并被重新计算
+    /// 成就"已领取等级数"字典(单行多级模型)
+    /// Key: 成就ID(对应 AchievementInfoBean.id, 每个可升级成就一条)
+    /// Value: 已领取的等级数 N(0=一级都没领, 1=已领第1级, ... 达到等级总数=整族完成)
+    /// 仅持久化"已领取到第几级"; 某级是否"达成可领"由统计数据 vs 该级目标值实时计算, 不入存档。
+    /// 等级门控: 只能领取"已领取数+1"那一级, 不能跳级。
+    /// 注: 旧版本曾用 achievementStates(按每档id存Unlocked=2), 数据模型已变, 旧档该字段被忽略、领取进度从0重算。
     /// </summary>
-    public Dictionary<long, int> achievementStates = new Dictionary<long, int>();
+    public Dictionary<long, int> achievementLevelClaimed = new Dictionary<long, int>();
 
     #endregion
 
@@ -39,25 +40,25 @@ public class UserAchievementBean
 
     #endregion
 
-    #region 成就解锁(已领取)状态
+    #region 成就已领取等级
 
     /// <summary>
-    /// 该成就是否已解锁(已领取奖励)
+    /// 获取该成就已领取的等级数(0=尚未领取任何等级)
     /// </summary>
     /// <param name="achievementId">成就ID</param>
-    public bool IsAchievementUnlocked(long achievementId)
+    public int GetClaimedLevelCount(long achievementId)
     {
-        return achievementStates.TryGetValue(achievementId, out int state)
-               && state == (int)AchievementStateEnum.Unlocked;
+        return achievementLevelClaimed.TryGetValue(achievementId, out int count) ? count : 0;
     }
 
     /// <summary>
-    /// 标记成就为已解锁(已领取奖励) —— 仅在领奖成功时调用
+    /// 设置该成就已领取的等级数 —— 仅在领奖成功时调用
     /// </summary>
     /// <param name="achievementId">成就ID</param>
-    public void SetAchievementUnlocked(long achievementId)
+    /// <param name="count">已领取等级数</param>
+    public void SetClaimedLevelCount(long achievementId, int count)
     {
-        achievementStates[achievementId] = (int)AchievementStateEnum.Unlocked;
+        achievementLevelClaimed[achievementId] = count;
     }
 
     #endregion
