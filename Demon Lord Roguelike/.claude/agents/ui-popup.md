@@ -19,7 +19,7 @@ watched_files:
 - **UIPopupItemInfo** - 道具信息气泡
 - **UIPopupCreatureCardDetails** - 生物卡片详情
 - **UIPopupAbyssalBlessingInfo** - 深渊祝福详情
-- **UIPopupDoomCouncilMainDetails** - 终焉议会详情
+- **UIPopupDoomCouncilBillDetails** - 终焉议会详情
 - **UIPopupPortalDetails** - 传送门详情
 - **UIPopupResearchInfo** - 研究详情
 - **UIPopupText** - 文本气泡

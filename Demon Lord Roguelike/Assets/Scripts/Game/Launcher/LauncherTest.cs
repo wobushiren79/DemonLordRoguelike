@@ -113,7 +113,7 @@ public class LauncherTest : BaseLauncher
     public async void StartForDoomCouncil(long billId)
     {
         //打开终焉ui
-        //var uiDoomCouncil = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilMain>();
+        //var uiDoomCouncil = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilBill>();
         //进入议会场景
         DoomCouncilBean doomCouncilData = new DoomCouncilBean(billId);
         GameHandler.Instance.StartDoomCouncil(doomCouncilData);

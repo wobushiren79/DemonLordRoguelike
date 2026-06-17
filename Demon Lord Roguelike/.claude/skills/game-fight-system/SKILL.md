@@ -223,6 +223,10 @@ public void ChangeMP(float changeMP, out float leftMP, out float changeMPReal); 
 //   足够则 ChangeMP(-create_mp) 扣除并 RefreshMPShow()
 // 显示链路：魔王预制(FightCreature_DefCore_1)下 MPShow(SpriteRenderer+MatSpriteCreatureLife进度材质)
 //   + MPShow/MPText(TextMeshPro 显示"100/100"格式)，与防守生物LifeShow同款机制
+// 渲染层级：MPText 用 Overlay 着色器材质(MatTMP_MPTextOverlay，TMP_SDF Overlay：ZTest Always + Overlay队列)，
+//   不做深度测试，保证魔力文本始终画在不透明3D地面之上。
+//   注意：标准 TMP_SDF 的 ZTest=LEqual 会被地面写入的深度缓冲遮挡，单靠 MeshRenderer.sortingOrder 压不过不透明地面（深度测试与排序无关）；
+//   SetDataForDefenseCore 里仍设 sortingOrder=9999 仅作同队列内排序补充，真正不被遮挡靠的是 Overlay 材质。
 ```
 
 ## 战斗流程控制

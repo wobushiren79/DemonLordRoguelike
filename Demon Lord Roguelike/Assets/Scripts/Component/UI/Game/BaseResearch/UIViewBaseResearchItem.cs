@@ -1,4 +1,5 @@
 ﻿
+using System;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using Unity.Burst.Intrinsics;
 using UnityEngine;
@@ -144,20 +145,33 @@ public partial class UIViewBaseResearchItem : BaseUIView
             {
                 return;
             }
-            //添加解锁ID
-            userUnlock.AddUnlock(researchInfo.unlock_id, level + 1);
-            //立即保存数据(扣费与解锁落盘)
-            GameDataHandler.Instance.manager.SaveUserData();
-            //播放解锁动画
-            AnimForUnlock();
+            //设施解锁(会触发建筑出现动画与镜头切换)才需延迟0.5秒让粒子先展示再切镜头；其他解锁立即刷新
+            float delayComplete = ScenePrefabForBase.IsBuildingShowUnlock(researchInfo.unlock_id) ? 0.5f : 0f;
+            //先播放节点解锁动画，待动画播完后再提交解锁(AddUnlock 会触发设施出现与镜头切换)，
+            //避免设施镜头切换/出现动画与节点解锁动画相互冲突
+            AnimForUnlock(() =>
+            {
+                //添加解锁ID
+                userUnlock.AddUnlock(researchInfo.unlock_id, level + 1);
+                //立即保存数据(扣费与解锁落盘)
+                GameDataHandler.Instance.manager.SaveUserData();
+                //刷新数据(整页重建，重画连线)
+                var targetUI = UIHandler.Instance.GetUI<UIBaseResearch>();
+                targetUI.InitResearchItems(targetUI.researchInfoType);
+            }, delayComplete);
         };
         UIHandler.Instance.ShowDialogNormal(dialogData);
     }
 
     /// <summary>
     /// 动画解锁
+    /// 先播放节点解锁动画(放大+抖动)，动画结束后播放粒子特效；
+    /// 若 delayComplete>0(设施解锁)则延迟该秒数让粒子先展示再解锁屏幕并回调，否则立即解锁并回调。
+    /// 由调用方在回调中提交解锁数据并刷新页面(从而在动画后再触发设施出现/镜头切换)
     /// </summary>
-    public void AnimForUnlock()
+    /// <param name="actionComplete">解锁动画播放完成后的回调(提交解锁/刷新页面)</param>
+    /// <param name="delayComplete">回调前的延迟秒数；仅设施解锁需要(让粒子展示后再切设施镜头)，其他解锁传0立即回调</param>
+    public void AnimForUnlock(Action actionComplete = null, float delayComplete = 0f)
     {
         UIHandler.Instance.ShowScreenLock();
         ClearAnim();
@@ -171,12 +185,25 @@ public partial class UIViewBaseResearchItem : BaseUIView
         animForUnlock.OnComplete(() =>
         {
             ui_UIViewBaseResearchItem_MaskUIView.HideMask();
-            UIHandler.Instance.HideScreenLock();
             //播放粒子特效
             var targetUI = UIHandler.Instance.GetUI<UIBaseResearch>();
             targetUI.AnimForShowUnlockEffect(transform.position);
-            //刷新数据
-            targetUI.InitResearchItems(targetUI.researchInfoType);
+            if (delayComplete > 0)
+            {
+                //设施解锁:延迟让粒子展示后再解锁屏幕并回调，延迟期间保持锁屏不可操作，
+                //之后再提交解锁与刷新(触发设施出现/镜头切换)
+                DOVirtual.DelayedCall(delayComplete, () =>
+                {
+                    UIHandler.Instance.HideScreenLock();
+                    actionComplete?.Invoke();
+                });
+            }
+            else
+            {
+                //非设施解锁:立即解锁屏幕并回调刷新
+                UIHandler.Instance.HideScreenLock();
+                actionComplete?.Invoke();
+            }
         });
     }
 

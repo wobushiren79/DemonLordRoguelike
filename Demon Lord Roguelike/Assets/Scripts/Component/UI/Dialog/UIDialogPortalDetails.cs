@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using DG.Tweening;
 
 public partial class UIDialogPortalDetails : DialogView
@@ -40,8 +41,9 @@ public partial class UIDialogPortalDetails : DialogView
         unlockDifficultyMax = userUnlock.GetUnlockGameWorldConquerDifficultyLevel(gameWorldInfoRandom.worldId);
         //该世界配置存在的最高难度
         configDifficultyMax = FightTypeConquerInfoCfg.GetMaxLevel(gameWorldInfoRandom.worldId);
-        //把默认难度约束在 [1, 已解锁最高] 范围内
-        gameWorldInfoRandom.difficultyLevel = Mathf.Clamp(gameWorldInfoRandom.difficultyLevel, 1, Mathf.Max(1, unlockDifficultyMax));
+        //把默认难度约束在 [1, 已解锁最高] 范围内, 并同步该难度预生成的道路/关卡随机数据
+        int defaultDifficulty = Mathf.Clamp(gameWorldInfoRandom.difficultyLevel, 1, Mathf.Max(1, unlockDifficultyMax));
+        gameWorldInfoRandom.SetDifficultyLevel(defaultDifficulty);
 
         InitItemPool();
         RefreshItemsImmediate(gameWorldInfoRandom.difficultyLevel);
@@ -261,6 +263,36 @@ public partial class UIDialogPortalDetails : DialogView
     }
     #endregion
 
+    #region 输入响应
+    /// <summary>
+    /// 输入响应: 按 ESC 退出(关闭)弹窗, 等同点击取消; 按左右方向键切换难度(等同点击左右切换按钮)
+    /// </summary>
+    /// <param name="inputType">触发的输入动作类型</param>
+    /// <param name="callback">输入回调上下文</param>
+    public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
+    {
+        base.OnInputActionForStarted(inputType, callback);
+        if (inputType == InputActionUIEnum.ESC)
+        {
+            //ESC 退出弹窗
+            CancelOnClick();
+        }
+        else if (inputType == InputActionUIEnum.Navigate)
+        {
+            //左右方向键切换难度(上一档/下一档), 上下方向不处理
+            Vector2 navigateData = callback.ReadValue<Vector2>();
+            if (navigateData.x < 0)
+            {
+                OnClickForChangeDifficultyLevel(-1);
+            }
+            else if (navigateData.x > 0)
+            {
+                OnClickForChangeDifficultyLevel(1);
+            }
+        }
+    }
+    #endregion
+
     #region 按钮点击
     public override void OnClickForButton(Button viewButton)
     {
@@ -297,7 +329,8 @@ public partial class UIDialogPortalDetails : DialogView
             }
             return;
         }
-        gameWorldInfoRandom.difficultyLevel = newDifficulty;
+        //切换难度并同步该难度预生成的道路/关卡随机数据(气泡与实际战斗均读取这些字段)
+        gameWorldInfoRandom.SetDifficultyLevel(newDifficulty);
         AnimSwitchDifficulty(oldDifficulty, newDifficulty);
     }
     #endregion

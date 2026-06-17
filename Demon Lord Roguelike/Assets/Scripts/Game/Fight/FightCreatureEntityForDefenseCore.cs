@@ -5,6 +5,9 @@ using UnityEngine;
 /// 战斗生物实体-魔王（防守核心）专属逻辑
 /// <para>魔王：被防守的核心生物（CreatureFightTypeEnum.FightDefenseCore），魔王死亡则战斗失败。</para>
 /// <para>魔力(MP)显示：魔王预制下的 MPShow 进度条（与LifeShow同款进度材质）+ MPText 文本（当前/上限格式）。</para>
+/// <para>渲染层级：MPText 在预制体里使用 Overlay 着色器材质(MatTMP_MPTextOverlay，TMP_SDF Overlay：ZTest Always + Overlay 队列)，
+/// 不做深度测试，保证文本始终渲染在不透明 3D 地面/场景几何体之上——这是文本压过地面的真正机制；
+/// 代码里的 sortingOrder 仅作透明队列内部排序的补充（单纯 sortingOrder 压不过不透明地面写入的深度缓冲）。</para>
 /// </summary>
 public partial class FightCreatureEntity
 {
@@ -26,7 +29,7 @@ public partial class FightCreatureEntity
     /// </summary>
     int lastMPShowMax = -1;
     /// <summary>
-    /// 魔力文本的渲染排序值（设到足够高 保证魔力文本渲染在最上层 不被其它生物/特效遮挡）
+    /// 魔力文本的渲染排序值（设到足够高，在同队列内排到最上层；防地面遮挡的核心靠 Overlay 着色器材质，见类注释）
     /// </summary>
     const int MPTextSortingOrder = 9999;
 
@@ -39,7 +42,7 @@ public partial class FightCreatureEntity
         //获取魔力值显示（仅魔王核心有 创建魔物消耗魔力）
         creatureMPShow = creatureObj.transform.Find("MPShow")?.GetComponent<SpriteRenderer>();
         creatureMPText = creatureObj.transform.Find("MPShow/MPText")?.GetComponent<TextMeshPro>();
-        //将魔力文本的渲染排序设到最上层（TextMeshPro 为世界空间网格 通过 MeshRenderer.sortingOrder 控制渲染顺序）
+        //补充设置魔力文本的渲染排序（透明队列内部排序用；不被地面遮挡的关键是预制体上的 Overlay 着色器材质 ZTest Always）
         if (creatureMPText != null)
         {
             var mpTextRenderer = creatureMPText.GetComponent<MeshRenderer>();

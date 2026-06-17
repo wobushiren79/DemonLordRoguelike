@@ -1,11 +1,11 @@
-﻿using UnityEngine.UI;
+﻿using TMPro;
 
 
 public partial class UIDoomCouncilMain
 {
-    public ScrollGridVertical ui_List;
+    public UIViewBaseInfoContent ui_ViewBaseInfoContent;
 
-    public Button ui_ViewExit;
+    public TextMeshProUGUI ui_SuccessText;
 
 
 }

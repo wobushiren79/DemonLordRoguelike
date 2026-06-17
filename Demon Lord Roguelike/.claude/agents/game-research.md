@@ -73,7 +73,7 @@ watched_files:
   - 单值：`100` → 仅 1 级
   - 逗号分隔：`100,200,300` → 每级独立配置
   - `基础*倍率`：`100*2` → 自动生成 `level_max` 个阶梯（基础 + 基础×倍率×index）
-- **节点解锁后必须保存数据**：购买成功后 `GameDataHandler.Instance.manager.SaveUserData()`，同时触发 `User_AddUnlock` 事件用于通知场景刷新
+- **解锁动画先于设施出现动画**：`OnClickForPay` 确认后先扣水晶(仅改内存)，再调 `AnimForUnlock(actionComplete)` 播节点解锁动画；**动画完成回调里**才 `AddUnlock` + `SaveUserData()` 落盘并刷新页面。原因：`AddUnlock` 会同步触发 `User_AddUnlock`，`ScenePrefabForBase.EventForUserAddUnlock` 立刻切设施镜头/隐藏研究 UI 播设施出现动画，若与节点解锁动画同时发生会冲突；推迟到动画后可保证「节点解锁动画 → 设施镜头切换+出现动画」顺序播放。`User_AddUnlock` 事件同时通知场景刷新
 - **同类型连线**：`CreateLine` 中若前置节点 `research_type` 与目标节点不一致，会跳过连线（跨类型的关系仅作为解锁条件，不画线）
 - **退出研究界面**：固定回到 `UIBaseCore`（基地核心界面），不要硬跳到其它界面
 - **节点坐标编辑**：仅在 `UIBaseResearchTest`（测试模式）下显示保存按钮，通过 `ExcelUtil.SetExcelData` 写回 Excel；正式运行不显示

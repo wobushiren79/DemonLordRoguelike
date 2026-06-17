@@ -20,12 +20,12 @@ public class DoomCouncilEntityRename : DoomCouncilBaseEntity
                 }
                 else
                 {
-                    BackDoomCouncilMain();
+                    BackDoomCouncilBill();
                 }
             };
             dialogSelectCreatureData.actionCancel = (view, data) =>
             {
-                BackDoomCouncilMain();
+                BackDoomCouncilBill();
             };
             UIHandler.Instance.ShowDialogSelectCreature(dialogSelectCreatureData);
         }
@@ -61,11 +61,11 @@ public class DoomCouncilEntityRename : DoomCouncilBaseEntity
             GameDataHandler.Instance.manager.SaveUserData();
             //弹出提示
             UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(3000003), 1);
-            BackDoomCouncilMain();
+            BackDoomCouncilBill();
         };
         dialogRenameData.actionCancel = (view, data) =>
         {
-            BackDoomCouncilMain();
+            BackDoomCouncilBill();
         };
         UIHandler.Instance.ShowDialogRename(dialogRenameData);
     }

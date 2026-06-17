@@ -142,7 +142,7 @@ public enum UIOpenAnimEnum
 | `UIGashaponMachine` | Game/GashaponMachine | 扭蛋机界面 |
 | `UIGashaponBreak` | Game/GashaponBreak | 扭蛋爆裂界面 |
 | `UIRewardSelect` | Game/RewardSelect | 奖励选择界面 |
-| `UIDoomCouncilMain` | Game/DoomCouncil | 终焉议会主界面 |
+| `UIDoomCouncilBill` | Game/DoomCouncil | 终焉议会主界面 |
 | `UIDoomCouncilVote` | Game/DoomCouncil | 终焉议会投票界面 |
 | `UIDoomCouncilVoteEnd` | Game/DoomCouncil | 终焉议会结算界面 |
 | `UIGameSetting` | Game/GameSetting | 游戏设置界面 |
@@ -175,7 +175,7 @@ public enum UIOpenAnimEnum
 | `UIPopupItemInfo` | Popup/ItemInfo | 道具信息气泡 |
 | `UIPopupCreatureCardDetails` | Popup | 生物卡片详情 |
 | `UIPopupAbyssalBlessingInfo` | Popup | 深渊祝福详情 |
-| `UIPopupDoomCouncilMainDetails` | Popup | 终焉议会详情 |
+| `UIPopupDoomCouncilBillDetails` | Popup | 终焉议会详情 |
 | `UIPopupPortalDetails` | Popup | 传送门详情 |
 | `UIPopupResearchInfo` | Popup | 研究详情 |
 | `UIPopupText` | Popup/Text | 文本气泡 |
@@ -333,7 +333,7 @@ Assets/Scripts/Component/UI/
 │   ├── Text/
 │   ├── UIPopupAbyssalBlessingInfo.cs
 │   ├── UIPopupCreatureCardDetails.cs
-│   ├── UIPopupDoomCouncilMainDetails.cs
+│   ├── UIPopupDoomCouncilBillDetails.cs
 │   ├── UIPopupPortalDetails.cs
 │   └── UIPopupResearchInfo.cs
 └── Common/                            # 通用组件

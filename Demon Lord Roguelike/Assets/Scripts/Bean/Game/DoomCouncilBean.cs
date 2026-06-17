@@ -24,10 +24,49 @@ public class DoomCouncilBean
     public List<CreatureBean> listCouncilor;
     //议员位置
     public Dictionary<string, Vector3> dicCouncilorPosition;
+    //议员投票态度(Key: 议员UUID, Value: 态度0~100=投赞成的概率); 只和本场议案绑定, 不随议员/存档持久化
+    public Dictionary<string, int> dicCouncilorAttitude = new Dictionary<string, int>();
 
     public DoomCouncilBean(long doomCouncilBillId)
     {
         this.doomCouncilBillId = doomCouncilBillId;
+    }
+
+    /// <summary>
+    /// 获取议员投票态度(无记录返回0)
+    /// </summary>
+    /// <param name="creatureUUId">议员UUID</param>
+    /// <returns>态度值(0~100)</returns>
+    public int GetCouncilorAttitude(string creatureUUId)
+    {
+        if (dicCouncilorAttitude.TryGetValue(creatureUUId, out int attitude))
+        {
+            return attitude;
+        }
+        return 0;
+    }
+
+    /// <summary>
+    /// 设置议员投票态度(钳制在0~100)
+    /// </summary>
+    /// <param name="creatureUUId">议员UUID</param>
+    /// <param name="attitude">态度值</param>
+    public void SetCouncilorAttitude(string creatureUUId, int attitude)
+    {
+        dicCouncilorAttitude[creatureUUId] = Mathf.Clamp(attitude, 0, 100);
+    }
+
+    /// <summary>
+    /// 增加议员投票态度(钳制在0~100)
+    /// </summary>
+    /// <param name="creatureUUId">议员UUID</param>
+    /// <param name="addData">增加的态度值</param>
+    /// <returns>增加后的态度值</returns>
+    public int AddCouncilorAttitude(string creatureUUId, int addData)
+    {
+        int attitude = Mathf.Clamp(GetCouncilorAttitude(creatureUUId) + addData, 0, 100);
+        dicCouncilorAttitude[creatureUUId] = attitude;
+        return attitude;
     }
 
     /// <summary>

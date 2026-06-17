@@ -486,9 +486,31 @@ public class ScenePrefabForBase : ScenePrefabBase
 
     #region 回调
     /// <summary>
+    /// 判断该解锁是否会触发建筑(设施)出现动画
+    /// 与 EventForUserAddUnlock 的 switch 分支保持一致，是「设施解锁」的唯一判定来源
+    /// (研究界面据此决定解锁后是否延迟切设施镜头，让粒子先展示)
+    /// </summary>
+    public static bool IsBuildingShowUnlock(long unlockId)
+    {
+        UnlockEnum unlockEnum = (UnlockEnum)unlockId;
+        switch (unlockEnum)
+        {
+            case UnlockEnum.Altar:
+            case UnlockEnum.DoomCouncil:
+            case UnlockEnum.Achievement:
+            case UnlockEnum.CreatureVat:
+            case UnlockEnum.CreatureVatAdd:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /// <summary>
     /// 事件-新增解锁
-    /// 触发对应建筑的出现动画；若当前停留在研究界面，则先切到自定义镜头并隐藏研究UI，
-    /// 待出现动画播完后再还原核心镜头并恢复研究UI显示
+    /// 触发对应建筑的出现动画；若当前停留在研究界面，则先锁屏并切到自定义镜头、隐藏研究UI，
+    /// 待出现动画播完(含停留1秒)后再还原核心镜头、恢复研究UI显示并解除锁屏，
+    /// 全程锁屏防止出现动画期间操作
     /// </summary>
     public async void EventForUserAddUnlock(long unlockId)
     {
@@ -531,6 +553,8 @@ public class ScenePrefabForBase : ScenePrefabBase
         UIBaseResearch researchUI = isResearchShow ? UIHandler.Instance.GetUI<UIBaseResearch>() : null;
         if (researchUI != null)
         {
+            //设施出现动画期间全程锁屏，防止动画播放中操作
+            UIHandler.Instance.ShowScreenLock();
             //启用自定义镜头
             CameraHandler.Instance.SetCustomCamera(int.MaxValue, true);
             //关闭(隐藏)研究UI
@@ -553,6 +577,8 @@ public class ScenePrefabForBase : ScenePrefabBase
             CameraHandler.Instance.SetBaseCoreCamera(int.MaxValue, true);
             //重新打开(显示)研究UI
             researchUI.gameObject.SetActive(true);
+            //出现动画结束，解除锁屏
+            UIHandler.Instance.HideScreenLock();
         }
     }
 

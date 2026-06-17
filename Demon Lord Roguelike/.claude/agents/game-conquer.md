@@ -43,7 +43,7 @@ watched_files:
 - 区间字段 `attack_boss_num`/`fight_num`/`road_num`/`road_length`：字符串 `x` 或 `x-y`，统一走 `ParseRandomRange`
 
 ### 随机数据与难度
-- `GameWorldInfoRandomBean.SetRandomDataForConquer`（GameWorldInfoBeanPartial）—— 难度 + roadNum/roadLength/fightNum 随机
+- `GameWorldInfoRandomBean.SetRandomDataForConquer`（GameWorldInfoBeanPartial）—— 创建时把 1~已解锁最高难度逐档随机(roadNum/roadLength/fightNum)缓存进 listDifficultyRandom；`SetDifficultyLevel(level)` 切换难度时同步当前字段(气泡与战斗都读这些字段)，`GetDifficultyRandom(level)` 取某难度数据(缺失懒生成)
 - 难度解锁：`UserUnlockBean.GetUnlockGameWorldConquerDifficultyLevel`
 
 ### 编辑器

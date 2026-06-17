@@ -50,7 +50,10 @@ public class UserDataBean : BaseBean
     //用户成就&统计数据(已拆分为独立存档 UserAchievement_{slot}, 不再随 UserData 序列化; 由 GameDataManager 在加载/保存时注入与落盘)
     [Newtonsoft.Json.JsonIgnore]
     public UserAchievementBean userAchievementData;
-    
+    //用户好感度数据(按npcId持久化议会固定NPC好感; 已拆分为独立存档 UserRelationship_{slot}, 不再随 UserData 序列化; 由 UserDataService 在加载/保存时注入与落盘)
+    [Newtonsoft.Json.JsonIgnore]
+    public UserRelationshipBean userRelationshipData;
+
     //临时存储数据
     public UserTempBean userTempBean;
     
@@ -94,6 +97,17 @@ public class UserDataBean : BaseBean
         if (userAchievementData == null)
             userAchievementData = new UserAchievementBean();
         return userAchievementData;
+    }
+
+    /// <summary>
+    /// 获取用户好感度数据
+    /// 数据由 UserDataService 从独立存档 UserRelationship_{slot} 加载后注入; 此处仅做兜底懒初始化
+    /// </summary>
+    public UserRelationshipBean GetUserRelationshipData()
+    {
+        if (userRelationshipData == null)
+            userRelationshipData = new UserRelationshipBean();
+        return userRelationshipData;
     }
 
     /// <summary>

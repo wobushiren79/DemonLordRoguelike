@@ -61,8 +61,8 @@ public partial class UIViewBasePortalItem : BaseUIView
         SetName(targetName);
         //设置图标
         SetIcon(gameWorldInfo.icon_res, gameWorldInfoRandom.iconSeed);
-        //初始化弹窗
-        popupForPortalDetails.SetData((gameWorldInfo, gameWorldInfoRandom), PopupEnum.PortalDetails);
+        //初始化弹窗(地图传送门展示当前难度的数据)
+        popupForPortalDetails.SetData((gameWorldInfo, gameWorldInfoRandom, gameWorldInfoRandom.difficultyLevel), PopupEnum.PortalDetails);
 
         // 计算初始角度和半径
         Vector2 offset = rectTransform.anchoredPosition - rotateCenter;

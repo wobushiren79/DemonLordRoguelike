@@ -96,11 +96,26 @@ public partial class UIGameConversation : BaseUIComponent
         //从背包里删除这个道具
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         userData.RemoveBackpackItem(itemData);
-        //添加好感
-        var rarityInfo = RarityInfoCfg.GetItemData(itemData.rarity);
-        if (rarityInfo != null)
+        var doomCouncilLogic = GameHandler.Instance.manager.GetGameLogic<DoomCouncilLogic>();
+        //贿赂: 提升该议员的投票态度(每次固定+10%; 态度只与本场议案绑定, 存于 DoomCouncilBean)
+        if (doomCouncilLogic != null && doomCouncilLogic.doomCouncilData != null)
         {
-            creatureData.AddRelationship(rarityInfo.item_add_relationship);
+            doomCouncilLogic.doomCouncilData.AddCouncilorAttitude(creatureData.creatureUUId, 10);
+        }
+        //议会固定NPC: 额外增加好感并持久化(按道具稀有度的好感加成)
+        if (creatureData.IsFixedCouncilor())
+        {
+            var npcData = creatureData.GetCreatureNpcData();
+            var rarityInfo = RarityInfoCfg.GetItemData(itemData.rarity);
+            int addRelationship = rarityInfo != null ? rarityInfo.item_add_relationship : 0;
+            int newRelationship = userData.GetUserRelationshipData().AddRelationship(npcData.npcId, addRelationship);
+            creatureData.relationship = newRelationship;
+            GameDataHandler.Instance.manager.SaveUserData();
+        }
+        //刷新该议员的态度颜色/好感图标显示
+        if (doomCouncilLogic != null)
+        {
+            doomCouncilLogic.RefreshCouncilorView(creatureData.creatureUUId);
         }
         //播放增加好感的粒子
         EffectBean effectData = new EffectBean();

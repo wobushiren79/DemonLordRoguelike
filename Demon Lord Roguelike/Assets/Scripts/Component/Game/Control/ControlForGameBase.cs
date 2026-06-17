@@ -235,7 +235,7 @@ public class ControlForGameBase : BaseControl
                 UIBasePortal basePortal = UIHandler.Instance.OpenUIAndCloseOther<UIBasePortal>();
                 break;
             case ControlInteractionEnum.DoomCouncilInteraction://终焉议会入口
-                UIDoomCouncilMain doomCouncilMain = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilMain>();
+                UIDoomCouncilBill doomCouncilBill = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilBill>();
                 break;
             case ControlInteractionEnum.DoomCouncilPodium://终焉议会讲台
                 DoomCouncilLogic doomCouncilLogic1 = GameHandler.Instance.manager.GetGameLogic<DoomCouncilLogic>();
@@ -300,7 +300,18 @@ public class ControlForGameBase : BaseControl
         if (targetInteraction == null)
             return ControlInteractionEnum.None;
         string targetName = targetInteraction.name;
-        return targetName.GetEnum<ControlInteractionEnum>();
+        //部分交互物体名字带有 UUID 后缀(如议员 Councilor_xxx),只取下划线前的部分作为枚举名
+        int underscoreIndex = targetName.IndexOf('_');
+        if (underscoreIndex >= 0)
+        {
+            targetName = targetName.Substring(0, underscoreIndex);
+        }
+        //名字与枚举不匹配时回退到 None,避免 Enum.Parse 抛出 ArgumentException
+        if (!System.Enum.TryParse(targetName, out ControlInteractionEnum interactionEnum))
+        {
+            return ControlInteractionEnum.None;
+        }
+        return interactionEnum;
     }
 
     /// <summary>

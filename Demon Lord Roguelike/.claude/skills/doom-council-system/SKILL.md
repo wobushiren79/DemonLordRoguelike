@@ -1,16 +1,73 @@
 ---
 name: doom-council-system
-description: Demon Lord Roguelike 游戏的终焉议会(DoomCouncil)系统开发指南。使用此SKILL当需要创建或修改终焉议会逻辑、议会实体效果、议会投票机制、议会UI等，包括DoomCouncilLogic、DoomCouncilBaseEntity、议会战斗模式(GameFightLogicDoomCouncil)、议会UI(UIDoomCouncilMain/Vote/VoteEnd)等。
+description: Demon Lord Roguelike 游戏的终焉议会(DoomCouncil)系统开发指南。使用此SKILL当需要创建或修改终焉议会逻辑、议会实体效果、议会投票机制、议会UI等，包括DoomCouncilLogic、DoomCouncilBaseEntity、议会战斗模式(GameFightLogicDoomCouncil)、议会UI(UIDoomCouncilBill/Vote/VoteEnd)等。
 watched_files:
   - Assets/Scripts/Game/DoomCouncil/
   - Assets/Scripts/Game/Logic/GameFightLogicDoomCouncil.cs
+  - Assets/Scripts/Game/Logic/DoomCouncilLogic.cs
   - Assets/Scripts/Bean/Game/DoomCouncilBean.cs
   - Assets/Scripts/Bean/Game/FightBeanForDoomCouncil.cs
+  - Assets/Scripts/Bean/Game/UserRelationshipBean.cs
+  - Assets/Scripts/Bean/Game/CreatureBeanPartial.cs
+  - Assets/Scripts/Bean/MVC/Game/NpcInfoBeanPartial.cs
+  - Assets/Scripts/Bean/MVC/Game/DoomCouncilInfoBeanPartial.cs
+  - Assets/Scripts/Enums/NpcEnum.cs
+  - Assets/Scripts/Component/Game/Scene/ScenePrefabForDoomCouncil.cs
   - Assets/Scripts/Component/UI/Game/DoomCouncil/
-  - Assets/Scripts/Component/UI/Popup/UIPopupDoomCouncilMainDetails.cs
+  - Assets/Scripts/Component/UI/Game/GameConversation/UIGameConversation.cs
+  - Assets/Scripts/Component/UI/Popup/UIPopupDoomCouncilBillDetails.cs
 ---
 
 # 终焉议会系统开发指南
+
+> ⚠️ 部分历史小节（如「生成3个随机提案」「GenerateProposals」「UIDoomCouncilMain 旧描述」）与现行代码已有出入；**议员/投票/好感机制以下方「## 议员与投票态度系统（现行机制）」为准**。
+
+## 议员与投票态度系统（现行机制）
+
+### NPC 类型（`NpcTypeEnum`，`Assets/Scripts/Enums/NpcEnum.cs`）
+- `Councilor = 2` **议会固定NPC**：固定装备/样貌；拥有按 npcId **持久化**的好感系统（默认仇恨）。
+- `CouncilorRandom = 3` **议会随机NPC**：随机外貌（`creature_random_id`）；每场议会临时随机生成。
+- 配置表 `NpcInfo` 为每种生物(CreatureInfo id 1001-7004，共30种)×评级1~5 各建一条 `npc_type=3` 行（30×5=150）；固定NPC为 `npc_type=2` 行。
+
+### 议员生成（`DoomCouncilLogic.GenerateCouncilors`）
+1. 议会人数：议案 `DoomCouncilInfo.council_num`（字符串 `"min,max"`）→ `GetRandomCouncilNum()` 区间随机。
+2. 每席：随机一种生物 + 按权重随机评级（1~5 权重 50/30/15/10/5 归一化，`NpcInfoCfg.GetRandomCouncilorNpc()`）。
+3. 整场 10% 概率出现 1 名固定NPC（`GetRandomFixedCouncilorNpc()`）。
+4. 议员显示名取评级名（`CreatureBean.SetCouncilorDisplayName`）；固定NPC从 `UserRelationshipBean` 载入持久化好感。
+
+### 投票态度（存于 `DoomCouncilBean.dicCouncilorAttitude`，Key=议员UUID，Value 0~100=投赞成概率；只与本场议案绑定，不放 CreatureBean、不入存档）
+- `GenerateCouncilorAttitudes(list, success_rate)` 按议案通过率**字面**生成：低态度组人数 = 总数×通过率 → 随机 {0,25}；其余高态度组 → 随机 {75,100}；再随机取全体 10% 覆盖为 50。
+- 固定NPC再叠加好感修正 `(关系类型-3)×50`：仇恨-100 / 冷淡-50 / 中立0 / 友好+50 / 迷恋+100。
+- ⚠️ 注意此为需求指定的字面算法：通过率越高 → 低态度议员越多（与直觉相反），如需调整需改 `GenerateCouncilorAttitudes`。
+
+### 投票（`DoomCouncilLogic.StartVote`）
+- 每名议员 `Random(0,100) < attitude ? 赞成 : 反对`；票数按评级 `DoomCouncilRatingsInfo.vote`。
+- 旧逻辑（随机值 vs success_rate + 30% 睡觉）已移除。
+
+### 贿赂（`UIGameConversation.ActionForItemSelectGift`）
+- 送礼一次：态度 +10%（所有议员）。
+- 固定NPC额外：好感 += `RarityInfo.item_add_relationship` 并持久化到 `UserRelationshipBean`，`SaveUserData()`。
+- 之后调用 `DoomCouncilLogic.RefreshCouncilorView(uuid)` 刷新显示。
+
+### 场景显示（`ScenePrefabForDoomCouncil`）
+- 议员预制下 `Success` SpriteRenderer：用颜色表态度（0红/50白/100绿，`GetAttitudeColor`）。
+- `Relationship` SpriteRenderer：仅固定NPC显示好感图标（`NpcRelationshipInfo.icon_res`，UI图集）。
+- 坐标切换：固定NPC → `Relationship.x=-0.1`、`Success.x=0.1`（并排）；随机NPC → 隐藏 Relationship、`Success.x=0`（居中）。
+
+### 好感持久化（`UserRelationshipBean`）
+- `Dictionary<long npcId, int relationship>`，默认0=仇恨；区间映射见 `NpcRelationshipInfo`（仇恨0-100/冷淡101-200/中立201-300/友好301-400/迷恋401-500）。
+- 独立存档 `UserRelationship_{slot}`，由 `UserDataService` Load/Save/Delete 注入落盘（参考 UserUnlock/UserAchievement 同款机制）。
+
+### 相关配置表（Excel 为唯一真实源，改后需在 Unity 运行 ExcelEditorWindow 导出）
+| 表 | 关键列 |
+|----|--------|
+| `excel_npc_info` NpcInfo | `npc_type`(2固定/3随机)、`creature_id`、`creature_random_id`、`councilor_ratings`、`name` |
+| `excel_doom_council_info` DoomCouncilInfo | `council_num`("min,max" 议会人数)、`success_rate` |
+| `excel_doom_council_ratings_info` | `vote`(评级票数)、`name` |
+| `excel_npc_relationship_info` | `relationship_min/max`、`relationship_type`、`icon_res` |
+| `excel_rarity_info` RarityInfo | `item_add_relationship`(贿赂好感加成) |
+
+---
 
 ## 核心概念
 
@@ -265,11 +322,20 @@ public class DoomCouncilBean : BaseBean
 
 ## 议会 UI
 
-### UIDoomCouncilMain - 议会主界面
+### UIDoomCouncilMain - 议会场景主界面
 
 **文件**: `Assets/Scripts/Component/UI/Game/DoomCouncil/UIDoomCouncilMain.cs`
 
-议会背景、标题等主界面元素。
+议会进行中的常驻主界面，由 `DoomCouncilLogic.StartGame()` 与 `ActionForCouncilorConversationEnd()` 通过 `OpenUIAndCloseOther<UIDoomCouncilMain>()` 打开，**替换基地通用的 `UIBaseMain`**。
+
+- `ui_SuccessText`：显示「当前议案通过率」，文案取 UIText id `53014`（`当前议案通过率:{0}%`），通过 `string.Format(GetTextById(53014), MathUtil.GetPercentage(doomCouncilData.doomCouncilInfo.success_rate, 2))` 填充。
+- 通过率数据来源：`GameHandler.Instance.manager.GetGameLogic<DoomCouncilLogic>().doomCouncilData.doomCouncilInfo.success_rate`。
+
+### UIDoomCouncilBill - 议会议案选择界面
+
+**文件**: `Assets/Scripts/Component/UI/Game/DoomCouncil/UIDoomCouncilBill.cs`
+
+议会议案（提案）列表、标题等界面元素。
 
 ### UIDoomCouncilVote - 议会投票界面
 
@@ -301,9 +367,9 @@ public class UIDoomCouncilVote : BaseUIView
 
 显示投票结果和应用的效果。
 
-### UIPopupDoomCouncilMainDetails - 议会详情气泡
+### UIPopupDoomCouncilBillDetails - 议会详情气泡
 
-**文件**: `Assets/Scripts/Component/UI/Popup/UIPopupDoomCouncilMainDetails.cs`
+**文件**: `Assets/Scripts/Component/UI/Popup/UIPopupDoomCouncilBillDetails.cs`
 
 悬浮显示的议会详情信息。
 
@@ -394,7 +460,7 @@ private void TriggerDoomCouncil()
 {
     doomCouncilLogic = new DoomCouncilLogic();
     doomCouncilLogic.PreGame();
-    UIHandler.Instance.OpenUI<UIDoomCouncilMain>();
+    UIHandler.Instance.OpenUI<UIDoomCouncilBill>();
 }
 ```
 
@@ -445,7 +511,7 @@ public List<DoomCouncilBean> GetRandomProposals(int count = 3)
 
 | 功能 | 文件路径 |
 |------|----------|
-| 议会逻辑 | `Assets/Scripts/Game/DoomCouncil/DoomCouncilLogic.cs` |
+| 议会逻辑 | `Assets/Scripts/Game/Logic/DoomCouncilLogic.cs` |
 | 议会效果基类 | `Assets/Scripts/Game/DoomCouncil/DoomCouncilBaseEntity.cs` |
 | 更多水晶效果 | `Assets/Scripts/Game/DoomCouncil/DoomCouncilEntityMoreCrystal.cs` |
 | 更多经验效果 | `Assets/Scripts/Game/DoomCouncil/DoomCouncilEntityMoreExp.cs` |
@@ -454,10 +520,11 @@ public List<DoomCouncilBean> GetRandomProposals(int count = 3)
 | 议会配置Bean | `Assets/Scripts/Bean/Game/DoomCouncilBean.cs` |
 | 议会战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForDoomCouncil.cs` |
 | 议会战斗模式 | `Assets/Scripts/Game/Logic/GameFightLogicDoomCouncil.cs` |
-| 议会主界面 | `Assets/Scripts/Component/UI/Game/DoomCouncil/UIDoomCouncilMain.cs` |
+| 议会场景主界面(替换UIBaseMain) | `Assets/Scripts/Component/UI/Game/DoomCouncil/UIDoomCouncilMain.cs` |
+| 议会议案选择界面 | `Assets/Scripts/Component/UI/Game/DoomCouncil/UIDoomCouncilBill.cs` |
 | 议会投票界面 | `Assets/Scripts/Component/UI/Game/DoomCouncil/UIDoomCouncilVote.cs` |
 | 议会结算界面 | `Assets/Scripts/Component/UI/Game/DoomCouncil/UIDoomCouncilVoteEnd.cs` |
-| 议会详情气泡 | `Assets/Scripts/Component/UI/Popup/UIPopupDoomCouncilMainDetails.cs` |
+| 议会详情气泡 | `Assets/Scripts/Component/UI/Popup/UIPopupDoomCouncilBillDetails.cs` |
 
 ---
 

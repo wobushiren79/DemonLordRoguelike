@@ -181,7 +181,8 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         if (npcData != null && npcData.npcId != 0)
         {
             var npcInfo = NpcInfoCfg.GetItemData(npcData.npcId);
-            if (npcInfo.GetNpcType() == NpcTypeEnum.Councilor)
+            //议会固定NPC与议会随机NPC都展示评级名称
+            if (npcInfo.GetNpcType() == NpcTypeEnum.Councilor || npcInfo.GetNpcType() == NpcTypeEnum.CouncilorRandom)
             {
                 ui_NameDoomCouncil.gameObject.SetActive(true);
                 int rating = npcInfo.GetCouncilorRatings();

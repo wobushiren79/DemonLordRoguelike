@@ -30,10 +30,10 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
         for (int i = 0; i < listCouncilor.Count; i++)
         {
             //如果席位已经没了 则不再生成议员
-            if (listTable.Count < 0)
+            if (listTable.Count <= 0)
             {
                 break;
-            }   
+            }
             //随机一个席位
             var itemTable = listTable[Random.Range(0, listTable.Count)];
             var itemPosition = itemTable.Find("Position");
@@ -106,4 +106,117 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
             }
         }
     }
+
+    #region 议员态度/好感显示
+    /// <summary>
+    /// 刷新某个议员的态度颜色(Success) + 好感图标(Relationship)显示
+    /// </summary>
+    /// <param name="creatureUUId">议员UUID</param>
+    /// <param name="councilorData">议员数据</param>
+    /// <param name="attitude">投票态度(0~100, 来自 DoomCouncilBean)</param>
+    public void RefreshCouncilorView(string creatureUUId, CreatureBean councilorData, int attitude)
+    {
+        if (!dicCouncilorObj.TryGetValue(creatureUUId, out GameObject targetObj) || targetObj == null)
+        {
+            return;
+        }
+        SetCouncilorAttitudeView(targetObj, attitude);
+        SetCouncilorRelationshipView(targetObj, councilorData);
+    }
+
+    /// <summary>
+    /// 设置议员态度进度颜色(Success SpriteRenderer): 0红 50白 100绿
+    /// </summary>
+    /// <param name="targetCouncilor">议员对象</param>
+    /// <param name="attitude">态度值(0~100)</param>
+    public void SetCouncilorAttitudeView(GameObject targetCouncilor, int attitude)
+    {
+        var successTF = targetCouncilor.transform.Find("Success");
+        if (successTF == null)
+        {
+            return;
+        }
+        var spriteRenderer = successTF.GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+        {
+            return;
+        }
+        spriteRenderer.color = GetAttitudeColor(attitude);
+    }
+
+    /// <summary>
+    /// 态度颜色插值: 0=红, 50=白, 100=绿
+    /// </summary>
+    /// <param name="attitude">态度值(0~100)</param>
+    /// <returns>过渡颜色</returns>
+    public static Color GetAttitudeColor(int attitude)
+    {
+        attitude = Mathf.Clamp(attitude, 0, 100);
+        ColorUtility.TryParseHtmlString("#D61515", out Color red);
+        ColorUtility.TryParseHtmlString("#2ECC40", out Color green);
+        Color white = Color.white;
+        if (attitude <= 50)
+        {
+            return Color.Lerp(red, white, attitude / 50f);
+        }
+        return Color.Lerp(white, green, (attitude - 50) / 50f);
+    }
+
+    /// <summary>
+    /// 设置议员好感图标显示(Relationship SpriteRenderer)
+    /// 议会固定NPC: 显示好感图标, Relationship.x=-0.1, Success.x=0.1 (同排显示)
+    /// 议会随机NPC: 隐藏Relationship, Success.x=0 (居中显示)
+    /// </summary>
+    /// <param name="targetCouncilor">议员对象</param>
+    /// <param name="councilorData">议员数据</param>
+    public void SetCouncilorRelationshipView(GameObject targetCouncilor, CreatureBean councilorData)
+    {
+        var successTF = targetCouncilor.transform.Find("Success");
+        var relationshipTF = targetCouncilor.transform.Find("Relationship");
+        bool isFixed = councilorData.IsFixedCouncilor();
+        if (isFixed)
+        {
+            //固定NPC: Success与Relationship并排
+            if (successTF != null)
+            {
+                var pos = successTF.localPosition;
+                pos.x = 0.1f;
+                successTF.localPosition = pos;
+            }
+            if (relationshipTF != null)
+            {
+                relationshipTF.gameObject.SetActive(true);
+                var pos = relationshipTF.localPosition;
+                pos.x = -0.1f;
+                relationshipTF.localPosition = pos;
+                var spriteRenderer = relationshipTF.GetComponent<SpriteRenderer>();
+                if (spriteRenderer != null)
+                {
+                    var relationshipInfo = NpcRelationshipInfoCfg.GetNpcRelationship(councilorData.relationship);
+                    IconHandler.Instance.GetIconSprite(SpriteAtlasTypeEnum.UI, relationshipInfo.icon_res, (sprite) =>
+                    {
+                        if (spriteRenderer != null)
+                        {
+                            spriteRenderer.sprite = sprite;
+                        }
+                    });
+                }
+            }
+        }
+        else
+        {
+            //随机NPC: 隐藏好感, Success居中
+            if (successTF != null)
+            {
+                var pos = successTF.localPosition;
+                pos.x = 0f;
+                successTF.localPosition = pos;
+            }
+            if (relationshipTF != null)
+            {
+                relationshipTF.gameObject.SetActive(false);
+            }
+        }
+    }
+    #endregion
 }

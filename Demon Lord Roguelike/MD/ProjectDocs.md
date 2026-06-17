@@ -860,7 +860,7 @@ UI/
 │   ├── ItemInfo/           # 道具信息
 │   ├── Text/               # 文本弹窗
 │   ├── UIPopupCreatureCardDetails     # 生物卡片详情
-│   ├── UIPopupDoomCouncilMainDetails  # 终焉议会详情
+│   ├── UIPopupDoomCouncilBillDetails  # 终焉议会详情
 │   └── ...
 └── Test/             # 测试 UI
     ├── UITestBase          # 测试基础

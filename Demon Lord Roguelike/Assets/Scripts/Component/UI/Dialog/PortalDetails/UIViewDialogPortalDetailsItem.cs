@@ -19,6 +19,10 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
     protected Animator idleAnimator;
     //idle 状态在控制器中的状态名(与 manage_animation 创建的默认状态一致)
     protected const string idleStateName = "Idle";
+    //本item漂浮动画的随机相位偏移(归一化0~1), 一次性确定后保持不变, 让各item漂浮错开; <0 表示尚未生成
+    protected float idleAnimNormalizedOffset = -1f;
+    //随机相位是否已成功应用到Animator(应用后不再重复应用, 避免难度切换时漂浮被还原重播)
+    protected bool idleOffsetApplied;
 
     /// <summary>
     /// 当前item代表的难度等级
@@ -28,15 +32,24 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
 
     #region 生命周期
     /// <summary>
-    /// 启用回调: 在item随层级真正激活的这一刻随机化漂浮相位.
-    /// 此时 Animator 已处于激活状态, Play+Update(0) 才能稳定生效;
-    /// 而 SetData 可能在弹窗尚未显示(层级未激活)时被调用, 那时 Animator 无法求值,
-    /// 随机偏移会被随后的激活 rebind 吞掉, 导致3个item漂浮完全同步.
+    /// 启用回调: 首次启用时尝试应用随机漂浮相位.
+    /// 注意只在"首次"应用一次: 难度切换会反复 SetActive 关/开本item, 若每次都重新随机/重播, 漂浮会被还原.
+    /// 配合 Animator.keepAnimatorStateOnDisable=true(见 TryApplyIdleAnimOffset), 切换时漂浮可无缝续播.
     /// </summary>
     public override void OnEnable()
     {
         base.OnEnable();
-        RandomizeIdleAnimOffset();
+        TryApplyIdleAnimOffset();
+    }
+
+    /// <summary>
+    /// 每帧轮询: 首次OnEnable时弹窗层级可能刚激活、Animator尚未初始化, 随机相位无法落定;
+    /// 这里持续重试, 直到Animator可正常求值并成功应用一次(应用后即不再进入实际逻辑).
+    /// </summary>
+    public void Update()
+    {
+        if (!idleOffsetApplied)
+            TryApplyIdleAnimOffset();
     }
     #endregion
 
@@ -56,21 +69,30 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
         SetLevel(difficultyLevel);
         SetUnlock(isUnlock);
         SetBGColor(bgColor);
-        SetPopup(gameWorldInfo, gameWorldInfoRandom);
+        SetPopup(gameWorldInfo, gameWorldInfoRandom, isUnlock);
         SetComplete(gameWorldInfoRandom.worldId, difficultyLevel);
         //漂浮相位的随机化改在 OnEnable 里做(此处弹窗可能尚未激活, Animator 无法求值)
     }
 
     /// <summary>
     /// 设置传送门详情气泡数据(与 UIViewBasePortalItem 一致, 悬停 IconBG 时展示 PopupEnum.PortalDetails)
+    /// 未解锁难度不展示气泡(targetData 置空, PopupButtonCommonView 悬停时直接跳过)
     /// </summary>
     /// <param name="gameWorldInfo">世界配置数据</param>
     /// <param name="gameWorldInfoRandom">世界随机数据(气泡展示名字/线路数/关卡数)</param>
-    public void SetPopup(GameWorldInfoBean gameWorldInfo, GameWorldInfoRandomBean gameWorldInfoRandom)
+    /// <param name="isUnlock">该难度是否已解锁(未解锁不显示气泡)</param>
+    public void SetPopup(GameWorldInfoBean gameWorldInfo, GameWorldInfoRandomBean gameWorldInfoRandom, bool isUnlock)
     {
         if (ui_IconBG_PopupButtonCommonView == null)
             return;
-        ui_IconBG_PopupButtonCommonView.SetData((gameWorldInfo, gameWorldInfoRandom), PopupEnum.PortalDetails);
+        if (!isUnlock)
+        {
+            //未解锁难度: 清空气泡数据, 悬停不弹窗
+            ui_IconBG_PopupButtonCommonView.SetData(null, PopupEnum.PortalDetails);
+            return;
+        }
+        //气泡展示本item代表的难度数据(而非共享的当前难度), 切换难度后各item气泡互不串味
+        ui_IconBG_PopupButtonCommonView.SetData((gameWorldInfo, gameWorldInfoRandom, difficultyLevel), PopupEnum.PortalDetails);
     }
 
     /// <summary>
@@ -194,20 +216,32 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
 
     #region 动画
     /// <summary>
-    /// 随机化 Icon idle 漂浮动画的起始播放点(归一化 0~1), 避免所有难度item的漂浮完全同步
+    /// 尝试给本item的 Icon idle 漂浮动画设置一个一次性随机起始相位(归一化0~1), 让各item漂浮错开.
+    /// 仅在 Animator 真正可求值(层级已激活且组件已启用)时应用, 且全程只成功应用一次:
+    /// - 解决"3个item漂浮同步": 首次OnEnable可能在弹窗层级激活前, 此时随机会被吞掉, 故用 Update 重试至落定.
+    /// - 解决"切换难度漂浮被还原重播": 应用后置 idleOffsetApplied=true 不再重置, 并开启 keepAnimatorStateOnDisable,
+    ///   使难度切换的 SetActive 关/开不重置 Animator 状态, 漂浮相位无缝续播.
     /// </summary>
-    public void RandomizeIdleAnimOffset()
+    public void TryApplyIdleAnimOffset()
     {
+        if (idleOffsetApplied)
+            return;
         if (idleAnimator == null)
             idleAnimator = GetComponent<Animator>();
         if (idleAnimator == null || idleAnimator.runtimeAnimatorController == null)
             return;
-        //以随机归一化时间从 Idle 状态开始播放, 让每个item的漂浮相位错开
-        idleAnimator.Play(idleStateName, 0, Random.Range(0f, 1f));
-        //本方法常在 item 刚 SetActive(true) 的同一帧被调用; 此时 Animator 尚未求值, 若不强制提交,
-        //Animator 启用后的首次 rebind 会把状态重置回默认 normalizedTime=0, 导致上面的随机偏移被吞掉、所有item漂浮同步.
-        //用 Update(0f) 强制当帧求值, 把随机起始相位固定下来.
+        //层级未真正激活或 Animator 未启用时无法稳定求值, 等待下一帧 Update 重试
+        if (!gameObject.activeInHierarchy || !idleAnimator.isActiveAndEnabled)
+            return;
+        //保持状态: 难度切换反复 SetActive 关/开本item时不重置漂浮动画, 避免被还原重播
+        idleAnimator.keepAnimatorStateOnDisable = true;
+        //相位一次性确定, 之后保持不变
+        if (idleAnimNormalizedOffset < 0f)
+            idleAnimNormalizedOffset = Random.Range(0f, 1f);
+        //以随机归一化时间从 Idle 状态开始播放, 并强制当帧求值把相位固定下来
+        idleAnimator.Play(idleStateName, 0, idleAnimNormalizedOffset);
         idleAnimator.Update(0f);
+        idleOffsetApplied = true;
     }
     #endregion
 }

@@ -9,7 +9,7 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public long creature_id;
 	/// <summary>
-	///NPC类型（0默认 1战斗 2议会）
+	///NPC类型（0默认 1战斗 2议会固定 3议会随机）
 	/// </summary>
 	public int npc_type;
 	/// <summary>

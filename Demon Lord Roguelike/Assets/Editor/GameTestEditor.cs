@@ -381,6 +381,9 @@ public partial class GameTestEditor : Editor
         EditorGUILayout.Space(10);
     }
 
+    /// <summary>
+    /// 绘制终焉议会测试配置(议案 ID + 加载中文名字 + 打开配置表)
+    /// </summary>
     private void DrawDoomCouncilTest()
     {
         showDoomCouncilTest = EditorGUILayout.Foldout(showDoomCouncilTest, "📜 终焉议会测试", true);
@@ -398,11 +401,62 @@ public partial class GameTestEditor : Editor
         EditorGUILayout.Space(10);
 
         EditorGUILayout.BeginVertical("box");
+
+        // 议案 ID 输入 + 右侧两个加载按钮(加载中文名字 / 打开配置表)
+        EditorGUILayout.BeginHorizontal();
         doomCouncilBillId = EditorGUILayout.LongField(new GUIContent("议会议案 ID", "终焉议会的议案 ID"), doomCouncilBillId);
+        // 加载名字：根据议案 ID 读取配置表得到中文名字并显示
+        if (GUILayout.Button("🏷️ 加载名字", GUILayout.Width(100)))
+        {
+            doomCouncilBillNameLoaded = LoadDoomCouncilBillName(doomCouncilBillId);
+        }
+        // 打开对应的配置表(excel_doom_council_info)
+        if (GUILayout.Button("📂 配置表", GUILayout.Width(90)))
+        {
+            string path = Path.Combine(Application.dataPath, "Data/Excel/excel_doom_council_info[终焉议会信息].xlsx");
+            if (File.Exists(path))
+            {
+                Application.OpenURL("file:///" + path.Replace("\\", "/"));
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("文件未找到", $"找不到终焉议会配置表:\n{path}", "确定");
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+
+        // 显示已加载的中文名字
+        if (!string.IsNullOrEmpty(doomCouncilBillNameLoaded))
+        {
+            EditorGUILayout.LabelField("议案名字", doomCouncilBillNameLoaded);
+        }
+
         EditorGUILayout.EndVertical();
 
         EditorGUI.indentLevel--;
         EditorGUILayout.Space(10);
+    }
+
+    /// <summary>
+    /// 根据议案 ID 加载终焉议会议案的中文名字(编辑器模式下直接读配置表+多语言表,不依赖运行时单例)
+    /// </summary>
+    /// <param name="billId">议会议案 ID</param>
+    /// <returns>中文名字；未找到时返回提示文本</returns>
+    private string LoadDoomCouncilBillName(long billId)
+    {
+        DoomCouncilInfoBean billInfo = DoomCouncilInfoCfg.GetItemData(billId);
+        if (billInfo == null)
+        {
+            return $"[未找到] 议案 ID {billId} 不存在于配置表";
+        }
+        // 切到中文语言后通过 LanguageCfg 直接取文本(编辑器模式不依赖 TextHandler 单例)
+        LanguageCfg.ChangeLanguageData(LanguageEnum.cn);
+        LanguageBean languageBean = LanguageCfg.GetItemData(DoomCouncilInfoCfg.fileName, billInfo.name);
+        if (languageBean == null || string.IsNullOrEmpty(languageBean.content))
+        {
+            return $"[无中文名] 议案 ID {billId} 的多语言文本(textId {billInfo.name})为空";
+        }
+        return languageBean.content;
     }
 
     private void DrawNpcCreateTest()

@@ -29,7 +29,8 @@ watched_files:
 
 ```
 GameWorldInfoRandomBean (GameWorldInfoBeanPartial)
-    │  SetRandomDataForConquer：按配置随机 roadNum / roadLength / fightNum + 难度等级
+    │  SetRandomDataForConquer：创建时把 1~已解锁最高难度逐档随机(roadNum/roadLength/fightNum)缓存到 listDifficultyRandom
+    │  SetDifficultyLevel(level)：切换难度时把 roadNum/roadLength/fightNum 同步为该难度缓存值(气泡与战斗都读这些字段)
     ▼
 FightBeanForConquer  (征服战斗运行时数据，继承 FightBean)
     │  持有 fightTypeConquerInfo、关卡进度、进攻队列、深渊馈赠
@@ -263,7 +264,9 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 
 ### 随机数据 & 难度
 
-- `GameWorldInfoRandomBean.SetRandomDataForConquer()`（`GameWorldInfoBeanPartial.cs`）：难度取 `UserUnlockBean.GetUnlockGameWorldConquerDifficultyLevel(worldId)`，再用 `GetRandomRoadNum/RoadLength/FightNum` 填随机值。
+- `GameWorldInfoRandomBean.SetRandomDataForConquer()`（`GameWorldInfoBeanPartial.cs`）：创建传送门时一次性把 `1~已解锁最高难度` 逐档用 `GetRandomRoadNum/RoadLength/FightNum` 随出，缓存进 `listDifficultyRandom`（每档一个 `GameWorldDifficultyRandomBean`），默认难度取已解锁最高。
+- `SetDifficultyLevel(level)`：切换/初始化难度时调用，把当前 `difficultyLevel` 及 `roadNum/roadLength/fightNum` 同步为该难度缓存的随机值——`FightBeanForConquer` 与传送门详情气泡 `UIPopupPortalDetails` 都直接读这些字段，故切换难度后必须同步才能反映新难度。
+- `GetDifficultyRandom(level)`：取某难度缓存数据，缺失（老存档/仅预览的未解锁难度）时懒生成并缓存，保证同一难度数值稳定。气泡按各 item 自身难度取数。
 - 难度解锁存档：`UserUnlockBean.GetUnlockGameWorldConquerDifficultyLevel`。
 
 ---

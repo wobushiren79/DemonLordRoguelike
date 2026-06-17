@@ -32,6 +32,8 @@ public partial class GameTestEditor
     public List<long> abyssalBlessingTestIds = new List<long>();
     public List<long> enemyIds = new List<long>() { 1010010001 };
     public long doomCouncilBillId = 1000000001;
+    // 终焉议会议案名字加载结果(仅用于编辑器显示,不持久化)
+    private string doomCouncilBillNameLoaded = "";
 
     // 献祭升级测试参数
     public int sacrificeTestSaveSlot = 0;

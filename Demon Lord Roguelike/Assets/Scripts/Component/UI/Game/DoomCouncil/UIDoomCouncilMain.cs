@@ -1,81 +1,50 @@
 ﻿
 
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public partial class UIDoomCouncilMain : BaseUIComponent
 {
-    public List<DoomCouncilInfoBean> listShowData;
-
-    public override void Awake()
-    {
-        base.Awake();
-        ui_List.AddCellListener(OnCellChange);
-    }
-
-    public override void CloseUI()
-    {
-        base.CloseUI();
-        ui_List.SetCellCount(0);
-        ui_List.ClearAllCell();
-    }
-
     public override void OpenUI()
     {
         base.OpenUI();
-        GameControlHandler.Instance.SetBaseControl(false);
-        InitData();
+        //开启控制
+        GameControlHandler.Instance.SetBaseControl();
+        //开启摄像头
+        CameraHandler.Instance.SetCameraForControl(CinemachineCameraEnum.Base);
+    }
+
+    public override void RefreshUI(bool isOpenInit = false)
+    {
+        base.RefreshUI(isOpenInit);
+        RefreshUIData();
     }
 
     /// <summary>
-    /// 初始化数据
+    /// 刷新UI数据
     /// </summary>
-    public void InitData()
+    public void RefreshUIData()
     {
-        var arrayData = DoomCouncilInfoCfg.GetAllArrayData();
-        if (listShowData == null)
-        {
-            listShowData = new List<DoomCouncilInfoBean>();
-        }
-        listShowData.Clear();
-        var userData = GameDataHandler.Instance.manager.GetUserData();
-        var userUnlock = userData.GetUserUnlockData();
-        for (int i = 0; i < arrayData.Length; i++)
-        {
-            var itemData = arrayData[i];
-            if (userUnlock.CheckIsUnlock(itemData.unlock_id))
-            {
-                listShowData.Add(itemData);
-            }
-        }
-        ui_List.SetCellCount(listShowData.Count);
+        //刷新当前议案通过率
+        RefreshSuccessRate();
     }
 
     /// <summary>
-    /// 设置列表数据
+    /// 刷新当前议案通过率显示
     /// </summary>
-    public void OnCellChange(ScrollGridCell itemCell)
+    public void RefreshSuccessRate()
     {
-        var itemView = itemCell.GetComponent<UIViewDoomCouncilMainItem>();
-        var itemData = listShowData[itemCell.index];
-        itemView.SetData(itemData);
-    }
-
-    public override void OnClickForButton(Button viewButton)
-    {
-        base.OnClickForButton(viewButton);
-        if (viewButton == ui_ViewExit)
+        if (ui_SuccessText == null)
         {
-            OnClickForExit();
+            return;
         }
-    }
-    
-    /// <summary>
-    /// 点击退出
-    /// </summary>
-    public void OnClickForExit()
-    {
-        UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
+        var doomCouncilLogic = GameHandler.Instance.manager.GetGameLogic<DoomCouncilLogic>();
+        if (doomCouncilLogic == null || doomCouncilLogic.doomCouncilData == null || doomCouncilLogic.doomCouncilData.doomCouncilInfo == null)
+        {
+            ui_SuccessText.text = "";
+            return;
+        }
+        //当前议案通过率(百分比,保留2位小数)
+        float percentage = MathUtil.GetPercentage(doomCouncilLogic.doomCouncilData.doomCouncilInfo.success_rate, 2);
+        ui_SuccessText.text = string.Format(TextHandler.Instance.GetTextById(53014), percentage);
     }
 }

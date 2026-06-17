@@ -70,13 +70,20 @@ UIBaseResearch.InitResearchItems(type)
 检查 CheckHasCrystal(payCrystal)
    │ 用户确认
    ▼
-CheckHasCrystal(..., isAddCrystal: true)   // 扣水晶
-UserUnlockBean.AddUnlock(unlock_id, level+1)
-   │ 触发 EventsInfo.User_AddUnlock
-SaveUserData()                             // 购买当下立即落盘（扣费+解锁）
+CheckHasCrystal(..., isAddCrystal: true)   // 扣水晶（仅改内存）
    ▼
-AnimForUnlock → InitResearchItems(researchInfoType)  // 整页刷新（重画连线）
+delayComplete = IsBuildingShowUnlock ? 0.5f : 0   // 仅设施解锁才延迟
+AnimForUnlock(actionComplete, delayComplete)      // 先播节点解锁动画（放大+抖动+粒子）
+   │ 动画播完后：设施解锁延迟 0.5s（展示粒子）再执行 actionComplete，其他解锁立即执行：
+   ▼
+UserUnlockBean.AddUnlock(unlock_id, level+1)
+   │ 触发 EventsInfo.User_AddUnlock（此时才切设施镜头/播设施出现动画）
+SaveUserData()                             // 此刻才落盘（扣费+解锁一起持久化）
+   ▼
+InitResearchItems(researchInfoType)        // 整页刷新（重画连线）
 ```
+
+> **为什么 AddUnlock/SaveUserData 推迟到动画后**：`AddUnlock` 会同步触发 `User_AddUnlock`，`ScenePrefabForBase.EventForUserAddUnlock` 会立刻切到设施镜头并隐藏研究 UI 播设施出现动画。若与节点解锁动画同时发生会互相冲突，故把 `AddUnlock`/`SaveUserData`/刷新放进 `AnimForUnlock` 的完成回调，确保「节点解锁动画 → 设施镜头切换+设施出现动画」顺序播放。扣费只改内存、落盘随回调里的 `SaveUserData` 一起完成，动画期间锁屏，中途异常退出则扣费与解锁均未持久化，数据保持一致。
 
 ---
 
@@ -366,11 +373,12 @@ public void SetLevel();   // level == 0 || level == max 时隐藏数字
 public void SetState();   // 三态：未解锁(mask + ui_unlock_1) / 已解锁未满(白色) / 已满(紫色)
 public void SetIcon(string iconRes);
 
-// 购买流程：检查满级 → 检查水晶 → 弹 DialogNormal → 扣水晶 → AddUnlock → SaveUserData → AnimForUnlock
+// 购买流程：检查满级 → 检查水晶 → 弹 DialogNormal → 扣水晶 → AnimForUnlock(回调里 AddUnlock → SaveUserData → 刷新)
 public void OnClickForPay();
 
-// 解锁动画：放大+抖动+缩回，结束后刷新整页（重画连线）
-public void AnimForUnlock();
+// 解锁动画：放大+抖动+缩回+粒子，播完后回调 actionComplete（由调用方提交解锁/刷新，从而在动画后才触发设施镜头切换+出现动画）
+// delayComplete>0(仅设施解锁)时回调前延迟该秒数让粒子先展示，期间保持锁屏；其他解锁传0立即回调
+public void AnimForUnlock(Action actionComplete = null, float delayComplete = 0f);
 ```
 
 ### AutoLink 字段
@@ -393,9 +401,14 @@ dialogData.content = string.Format(TextHandler.Instance.GetTextById(62001), payC
 dialogData.actionSubmit = (view, data) =>
 {
     if (!userData.CheckHasCrystal(payCrystal, isHint: true, isAddCrystal: true)) return;
-    userUnlock.AddUnlock(researchInfo.unlock_id, level + 1);
-    GameDataHandler.Instance.manager.SaveUserData();   // 购买当下立即落盘
-    AnimForUnlock();
+    //先播节点解锁动画，播完后才提交解锁(触发设施镜头切换/出现动画)，避免与节点动画冲突
+    AnimForUnlock(() =>
+    {
+        userUnlock.AddUnlock(researchInfo.unlock_id, level + 1);
+        GameDataHandler.Instance.manager.SaveUserData();   // 动画后才落盘(扣费+解锁一起)
+        var targetUI = UIHandler.Instance.GetUI<UIBaseResearch>();
+        targetUI.InitResearchItems(targetUI.researchInfoType);  // 整页刷新
+    });
 };
 UIHandler.Instance.ShowDialogNormal(dialogData);
 ```
@@ -583,7 +596,8 @@ GameDataHandler.Instance.manager.SaveUserData();
 6. **节点创建是按"已解锁前置"过滤的**：未达到前置的节点根本不会出现在界面上（"隐藏式"科技树，而非"灰色锁定"）
 7. **缩放范围固定 0.5 ~ 1.0**：通过滚轮调节 `ui_Content.localScale`，按帧 ×`Time.deltaTime`×`SpeedForChangeContentSize`
 8. **退出固定跳基地**：`OnClickForExit` → `UIBaseCore`，不要改成 GoBack/通用退出
-9. **购买即存档 + 关闭兜底存档**：`OnClickForPay` 成功购买后（`AddUnlock` 之后）立即 `SaveUserData()` 落盘扣费与解锁；`CloseUI` 中再调一次 `SaveUserData()` 作为兜底，避免遗漏
-10. **解锁动画期间锁屏**：`AnimForUnlock` 调用 `UIHandler.ShowScreenLock()`，结束后 `HideScreenLock()`，防止动画中再次点击
-11. **节点池复用**：`listResearchItemView` 不销毁仅 `SetActive(false)`，切 Tab 时复用；`ClearData(true)` 仅在 `CloseUI` 销毁
-12. **测试模式坐标回写**：`UIBaseResearchTest.SaveResearchDataForTest` 强制 cast 为 `(int)`，Excel 中只存整数坐标
+9. **解锁动画后才落盘 + 关闭兜底存档**：`OnClickForPay` 确认后先扣水晶(仅改内存)再播 `AnimForUnlock`，**动画完成回调里**才 `AddUnlock` + `SaveUserData()` 落盘扣费与解锁并刷新页面；`CloseUI` 中再调一次 `SaveUserData()` 作为兜底。动画期间锁屏，中途异常退出则扣费与解锁均未持久化，数据一致
+10. **解锁动画与设施出现动画串行 + 全程锁屏**：`AddUnlock` 会同步触发 `User_AddUnlock` → `ScenePrefabForBase.EventForUserAddUnlock` 切设施镜头/隐藏研究 UI/播设施出现动画；为避免与节点解锁动画冲突，把 `AddUnlock` 推迟到 `AnimForUnlock` 完成回调里，保证「节点解锁动画 → 设施镜头切换+出现动画」顺序播放。设施出现动画期间（仅当解锁发生在研究界面时）`EventForUserAddUnlock` 会 `ShowScreenLock()`，待出现动画+停留 1s 结束、还原镜头与研究 UI 后才 `HideScreenLock()`，故从节点解锁动画到设施出现动画结束全程锁屏不可操作
+11. **解锁动画期间锁屏**：`AnimForUnlock` 开始即 `UIHandler.ShowScreenLock()`，并一直锁到动画播完后的 0.5s 粒子展示窗口结束（`DOVirtual.DelayedCall(0.5f)` 里才 `HideScreenLock()` 并执行回调）；紧接着回调里 `AddUnlock` 触发的设施出现动画又由 `EventForUserAddUnlock` 续上锁屏（见第 10 条），防止动画/粒子展示/设施出现期间再次点击或重复购买
+12. **节点池复用**：`listResearchItemView` 不销毁仅 `SetActive(false)`，切 Tab 时复用；`ClearData(true)` 仅在 `CloseUI` 销毁
+13. **测试模式坐标回写**：`UIBaseResearchTest.SaveResearchDataForTest` 强制 cast 为 `(int)`，Excel 中只存整数坐标

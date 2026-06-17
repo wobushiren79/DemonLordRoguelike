@@ -9,6 +9,10 @@ public partial class DoomCouncilInfoBean : BaseBean
 	/// </summary>
 	public float success_rate;
 	/// <summary>
+	///议会人数(min,max)
+	/// </summary>
+	public string council_num;
+	/// <summary>
 	///消耗的声望
 	/// </summary>
 	public long cost_reputation;

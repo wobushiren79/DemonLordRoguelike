@@ -1,7 +1,8 @@
 public enum NpcTypeEnum
 {
     None = 0,
-    Councilor = 2,//议会成员
+    Councilor = 2,//议会固定NPC(使用固定的装备和样貌, 拥有独立持久化的好感系统)
+    CouncilorRandom = 3,//议会随机NPC(使用随机的装备和样貌, 每场议会临时随机生成)
 }
 
 public enum NpcRelationshipEnum

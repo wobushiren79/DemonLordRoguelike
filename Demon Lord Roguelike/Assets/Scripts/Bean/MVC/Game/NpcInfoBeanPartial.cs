@@ -135,4 +135,93 @@ public partial class NpcInfoCfg
         }
         return listData;
     }
+
+    //议会随机议员评级出现权重: 评级1~5 对应 50/30/15/10/5 (合计110, 抽取时按权重归一化)
+    private static readonly int[] councilorRatingWeights = { 50, 30, 15, 10, 5 };
+
+    /// <summary>
+    /// 按权重随机一个议会随机议员的评级(1~5)
+    /// 权重: 1级50 2级30 3级15 4级10 5级5 (合计110, 归一化抽取)
+    /// </summary>
+    /// <returns>评级(1~5)</returns>
+    public static int GetRandomCouncilorRating()
+    {
+        int total = 0;
+        for (int i = 0; i < councilorRatingWeights.Length; i++)
+        {
+            total += councilorRatingWeights[i];
+        }
+        int roll = UnityEngine.Random.Range(0, total);
+        int acc = 0;
+        for (int i = 0; i < councilorRatingWeights.Length; i++)
+        {
+            acc += councilorRatingWeights[i];
+            if (roll < acc)
+            {
+                return i + 1;
+            }
+        }
+        return councilorRatingWeights.Length;
+    }
+
+    /// <summary>
+    /// 随机抽取一个【议会随机NPC】: 随机一种生物 + 按权重随机评级(1~5), 取对应的随机议员配置
+    /// </summary>
+    /// <returns>随机议员的 NpcInfoBean; 没有可用数据时返回 null</returns>
+    public static NpcInfoBean GetRandomCouncilorNpc()
+    {
+        var listRandomCouncilor = GetNpcInfosByType(NpcTypeEnum.CouncilorRandom);
+        if (listRandomCouncilor.IsNull())
+        {
+            return null;
+        }
+        //收集所有出现过的生物id
+        List<long> listCreatureId = new List<long>();
+        for (int i = 0; i < listRandomCouncilor.Count; i++)
+        {
+            long creatureId = listRandomCouncilor[i].creature_id;
+            if (!listCreatureId.Contains(creatureId))
+            {
+                listCreatureId.Add(creatureId);
+            }
+        }
+        if (listCreatureId.Count == 0)
+        {
+            return null;
+        }
+        //随机一种生物
+        long targetCreatureId = listCreatureId[UnityEngine.Random.Range(0, listCreatureId.Count)];
+        //按权重随机评级
+        int targetRating = GetRandomCouncilorRating();
+        //取对应(生物+评级)的议员配置; 找不到精确评级时退化为该生物任意一条
+        NpcInfoBean fallback = null;
+        for (int i = 0; i < listRandomCouncilor.Count; i++)
+        {
+            var itemInfo = listRandomCouncilor[i];
+            if (itemInfo.creature_id != targetCreatureId)
+            {
+                continue;
+            }
+            fallback = itemInfo;
+            if (itemInfo.GetCouncilorRatings() == targetRating)
+            {
+                return itemInfo;
+            }
+        }
+        return fallback;
+    }
+
+    /// <summary>
+    /// 随机抽取一个【议会固定NPC】, 没有时返回 null
+    /// </summary>
+    /// <returns>固定议员的 NpcInfoBean; 没有可用数据时返回 null</returns>
+    public static NpcInfoBean GetRandomFixedCouncilorNpc()
+    {
+        var listFixed = GetNpcInfosByType(NpcTypeEnum.Councilor);
+        if (listFixed.IsNull() || listFixed.Count == 0)
+        {
+            return null;
+        }
+        return listFixed[UnityEngine.Random.Range(0, listFixed.Count)];
+    }
 }

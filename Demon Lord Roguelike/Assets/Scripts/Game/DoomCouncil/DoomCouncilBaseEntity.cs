@@ -63,7 +63,7 @@ public class DoomCouncilBaseEntity
     /// <summary>
     /// 返回议会主界面
     /// </summary>
-    public void BackDoomCouncilMain()
+    public void BackDoomCouncilBill()
     {        
         //刷新控制魔王的生物数据
         var userData = GameDataHandler.Instance.manager.GetUserData();
@@ -71,6 +71,6 @@ public class DoomCouncilBaseEntity
         controlForGame.SetCreatureData(userData.selfCreature);
 
         //弹出议会UI
-        UIDoomCouncilMain doomCouncilMain = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilMain>();
+        UIDoomCouncilBill doomCouncilBill = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilBill>();
     }
 }

@@ -63,6 +63,7 @@ public class UserDataService : BaseDataService<UserDataBean>
         GetSplitService<UserAchievementBean>($"UserAchievement_{slotIndex}").Save(data.GetUserAchievementData());
         GetSplitService<UserBackpackItemsBean>($"UserBackpackItem_{slotIndex}").Save(data.GetUserBackpackItemsData());
         GetSplitService<UserBackpackCreatureBean>($"UserBackpackCreature_{slotIndex}").Save(data.GetUserBackpackCreatureData());
+        GetSplitService<UserRelationshipBean>($"UserRelationship_{slotIndex}").Save(data.GetUserRelationshipData());
     }
 
     /// <summary>
@@ -78,6 +79,7 @@ public class UserDataService : BaseDataService<UserDataBean>
         data.userAchievementData = GetSplitService<UserAchievementBean>($"UserAchievement_{slotIndex}").Load(false) ?? new UserAchievementBean();
         data.userBackpackItemsData = GetSplitService<UserBackpackItemsBean>($"UserBackpackItem_{slotIndex}").Load(false) ?? new UserBackpackItemsBean();
         data.userBackpackCreatureData = GetSplitService<UserBackpackCreatureBean>($"UserBackpackCreature_{slotIndex}").Load(false) ?? new UserBackpackCreatureBean();
+        data.userRelationshipData = GetSplitService<UserRelationshipBean>($"UserRelationship_{slotIndex}").Load(false) ?? new UserRelationshipBean();
         return data;
     }
 
@@ -91,6 +93,7 @@ public class UserDataService : BaseDataService<UserDataBean>
         FileUtil.DeleteFile($"{StoragePath}/UserAchievement_{slotIndex}");
         FileUtil.DeleteFile($"{StoragePath}/UserBackpackItem_{slotIndex}");
         FileUtil.DeleteFile($"{StoragePath}/UserBackpackCreature_{slotIndex}");
+        FileUtil.DeleteFile($"{StoragePath}/UserRelationship_{slotIndex}");
     }
 
     /// <summary>

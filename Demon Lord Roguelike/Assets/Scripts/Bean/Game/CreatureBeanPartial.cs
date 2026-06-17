@@ -3,6 +3,46 @@ using System.Collections.Generic;
 
 public partial class CreatureBean
 {
+    #region 终焉议会议员
+    /// <summary>
+    /// 获取该生物作为NPC的类型(非NPC返回None)
+    /// </summary>
+    public NpcTypeEnum GetNpcType()
+    {
+        var npcData = GetCreatureNpcData();
+        if (npcData == null || npcData.npcId == 0)
+            return NpcTypeEnum.None;
+        var npcInfo = NpcInfoCfg.GetItemData(npcData.npcId);
+        if (npcInfo == null)
+            return NpcTypeEnum.None;
+        return npcInfo.GetNpcType();
+    }
+
+    /// <summary>
+    /// 是否为议会固定NPC(拥有独立持久化的好感系统)
+    /// </summary>
+    public bool IsFixedCouncilor()
+    {
+        return GetNpcType() == NpcTypeEnum.Councilor;
+    }
+
+    /// <summary>
+    /// 议会议员: 将显示名设置为其评级名称(预备/列席/初级议员等)
+    /// </summary>
+    public void SetCouncilorDisplayName()
+    {
+        var npcData = GetCreatureNpcData();
+        if (npcData == null || npcData.npcId == 0)
+            return;
+        var npcInfo = NpcInfoCfg.GetItemData(npcData.npcId);
+        if (npcInfo == null)
+            return;
+        var ratingInfo = DoomCouncilRatingsInfoCfg.GetItemData(npcInfo.GetCouncilorRatings());
+        if (ratingInfo != null)
+            creatureName = ratingInfo.name_language;
+    }
+    #endregion
+
     [Newtonsoft.Json.JsonIgnore]
     [NonSerialized]
     public int order;//排序

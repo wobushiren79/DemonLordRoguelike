@@ -8,6 +8,6 @@ public enum PopupEnum
     PortalDetails,//传送门详情
     CreatureCardDetails,//生物详情展示
     AbyssalBlessingInfo,//深渊馈赠详情展示
-    DoomCouncilMainDetails,//终焉议会提议展示
+    DoomCouncilBillDetails,//终焉议会提议展示
     ResearchInfo,//研究信息
 }

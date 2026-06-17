@@ -29,11 +29,11 @@ public class DoomCouncilEntityReincarnation : DoomCouncilBaseEntity
             GameDataHandler.Instance.manager.SaveUserData(userData);
             //弹出提示
             UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(3000005), 1);
-            BackDoomCouncilMain();
+            BackDoomCouncilBill();
         };
         Action actionForCancel = () => 
         {
-            BackDoomCouncilMain(); 
+            BackDoomCouncilBill(); 
         };
         string contentStr = TextHandler.Instance.GetTextById(63001);
         targetUI.SetData(listSelectCreature, actionForComplete, actionForCancel, contentStr: contentStr);
