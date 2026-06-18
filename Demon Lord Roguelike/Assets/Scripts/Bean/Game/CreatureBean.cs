@@ -5,53 +5,65 @@ using UnityEngine;
 [Serializable]
 public partial class CreatureBean
 {
-    //生物ID
+    #region 字段
+    /// <summary>生物配置ID（对应 CreatureInfo 配置表）</summary>
     public long creatureId;
-    //生物唯一ID
+    /// <summary>生物运行时唯一ID（每个实例独立，用于战斗/存档检索）</summary>
     public string creatureUUId;
-    //生物名字
+    /// <summary>生物名字</summary>
     public string creatureName;
-    //等级
+    /// <summary>等级</summary>
     public int level;
-    //等级经验
+    /// <summary>当前等级经验</summary>
     public long levelExp;
-    //星级
+    /// <summary>星级</summary>
     public int starLevel;
-    //稀有度
+    /// <summary>稀有度（RarityEnum）</summary>
     public int rarity;
-    //生物关系
+    /// <summary>生物关系/好感度（仅NPC有意义）</summary>
     public int relationship;
 
-    //所有的皮肤数据（只保存身体基本皮肤 装备的皮肤保存再装备数据里 如果是初始默认装备也保存在这里）
+    /// <summary>所有皮肤数据（只保存身体基础皮肤；装备的皮肤保存在装备数据里，初始默认装备也保存在这里）</summary>
     public Dictionary<CreatureSkinTypeEnum, SpineSkinBean> dicSkinData = new Dictionary<CreatureSkinTypeEnum, SpineSkinBean>();
-    //装备数据
+    /// <summary>装备数据（key=装备部位类型）</summary>
     public Dictionary<ItemTypeEnum, ItemBean> dicEquipItemData = new Dictionary<ItemTypeEnum, ItemBean>();
-    //NPC数据(只有NPC才有)
+    /// <summary>NPC数据（只有NPC才有，普通生物为 null）</summary>
     public CreatureNpcBean creatureNpcData;
-    //生物状态
+    /// <summary>生物状态</summary>
     public CreatureStateEnum creatureState = CreatureStateEnum.Idle;
-    //生物属性
+    /// <summary>生物属性（手动加点等附加属性来源）</summary>
     public CreatureAttributeBean creatureAttribute = new CreatureAttributeBean();
-    //生物稀有度BUFF
+    /// <summary>生物稀有度BUFF（key=稀有度，扭蛋抽取时按命中的稀有度随机授予对应BUFF）</summary>
     public Dictionary<RarityEnum, BuffBean> dicRarityBuff = new Dictionary<RarityEnum, BuffBean>();
+    #endregion
 
+    #region 构造与初始化
+    /// <summary>
+    /// 无参构造（供序列化/对象池复用，需后续调用 SetData 重建数据）
+    /// </summary>
     public CreatureBean()
     {
 
     }
 
+    /// <summary>
+    /// 构造：按生物配置ID创建
+    /// </summary>
     public CreatureBean(long creatureId)
     {
         SetData(creatureId);
     }
 
+    /// <summary>
+    /// 构造：按NPC配置创建
+    /// </summary>
     public CreatureBean(NpcInfoBean npcInfo)
     {
         SetData(npcInfo);
     }
 
     /// <summary>
-    /// 设置数据
+    /// 设置数据（按生物配置ID，生成唯一UUID）
     /// </summary>
     public void SetData(long creatureId)
     {
@@ -62,7 +74,7 @@ public partial class CreatureBean
     }
 
     /// <summary>
-    /// 设置数据(NPC)
+    /// 设置数据(NPC：写入NPC数据、等级，并初始化皮肤与装备)
     /// </summary>
     public void SetData(NpcInfoBean npcInfo)
     {
@@ -77,6 +89,7 @@ public partial class CreatureBean
         //添加装备
         InitEquip(npcInfo);
     }
+    #endregion
 
 
     #region 杂项
@@ -102,6 +115,9 @@ public partial class CreatureBean
         return NpcRelationshipInfoCfg.GetNpcRelationshipEnum(relationship);
     }
 
+    /// <summary>
+    /// 获取NPC数据（非NPC生物返回 null）
+    /// </summary>
     public CreatureNpcBean GetCreatureNpcData()
     {
         return creatureNpcData;
@@ -192,6 +208,9 @@ public partial class CreatureBean
         InitEquip(listEquipItems);
     }
 
+    /// <summary>
+    /// 初始化装备（先清空原装备，再按道具ID列表逐件装备）
+    /// </summary>
     public void InitEquip(List<long> listEquipItems)
     {
         ClearEquip();
@@ -223,6 +242,9 @@ public partial class CreatureBean
         }
     }
 
+    /// <summary>
+    /// 改变装备（无需关心被替换下来的旧装备时的简化重载）
+    /// </summary>
     public void ChangeEquip(ItemTypeEnum itemType, ItemBean changeItem)
     {
         ChangeEquip(itemType, changeItem, out ItemBean beforeItem);
@@ -517,7 +539,17 @@ public partial class CreatureBean
 
     #region 属性相关
 
-    public float GetAttribute(CreatureAttributeTypeEnum creatureAttributeType)
+    /// <summary>
+    /// 获取最终属性值
+    /// <para>叠加顺序：基础值(NPC优先，否则取 creatureInfo) → 角色加点(creatureAttribute) → 装备属性 → 自身/稀有度BUFF修正 → [可选]深渊馈赠全局池BUFF。</para>
+    /// <para>CRT/EVA 基础值为0（按需由加点/装备/BUFF提供）；MP/CMP/MPF 等魔力相关仅战斗中有意义。</para>
+    /// <para>深渊馈赠全局池(dicAbyssalBlessingBuffsActivie)仅当 includeAbyssalBlessing=true 时按需叠加，供非战斗缓存链路(如复活CD查询)使用；
+    /// 战斗链路(FightCreatureBean.RefreshBaseAttribute)走 ModifierPipeline 独立叠加深渊馈赠，调用时须保持默认 false 以免重复计算。</para>
+    /// </summary>
+    /// <param name="creatureAttributeType">属性类型</param>
+    /// <param name="includeAbyssalBlessing">是否叠加深渊馈赠全局池BUFF（非战斗链路按需开启，默认 false 避免与战斗缓存重复计算）</param>
+    /// <returns>经全部来源叠加后的属性值</returns>
+    public float GetAttribute(CreatureAttributeTypeEnum creatureAttributeType, bool includeAbyssalBlessing = false)
     {
         float targetData = 0;
         //如果有NPC数据 优先使用NPC数据里的属性
@@ -539,11 +571,23 @@ public partial class CreatureBean
             case CreatureAttributeTypeEnum.MSPD://获取移动速度
                 targetData = npcInfo != null ? npcInfo.MSPD : creatureInfo.MSPD;
                 break;
+            case CreatureAttributeTypeEnum.MP://魔力上限(魔王创建魔物的资源池, 仅战斗中有效)
+                targetData = npcInfo != null ? npcInfo.MP : creatureInfo.MP;
+                break;
             case CreatureAttributeTypeEnum.MPR://魔力回复%
                 targetData = creatureInfo.MPR;
                 break;
             case CreatureAttributeTypeEnum.MPF://魔力回复
                 targetData = creatureInfo.MPF;
+                break;
+            case CreatureAttributeTypeEnum.RCD://复活CD基础值(深渊馈赠全局池由 includeAbyssalBlessing 控制在下方按需叠加)
+                targetData = creatureInfo.RCD;
+                break;
+            case CreatureAttributeTypeEnum.CMP://召唤魔力消耗：基础CMP + 基础CMP×(等级增加倍率+稀有度增加倍率)，再经下方BUFF管线修正(如扭蛋稀有度CMP减益)
+                {
+                    float baseCMP = creatureInfo.CMP;
+                    targetData = baseCMP + baseCMP * GetCreateMPAddRate();
+                }
                 break;
             case CreatureAttributeTypeEnum.EVA://获取闪避概率
                 targetData = 0;
@@ -559,18 +603,26 @@ public partial class CreatureBean
         targetData += creatureAttribute.GetAttribute(creatureAttributeType);
         //获取装备属性
         targetData += GetEquipAttribute(creatureAttributeType);
-        //获取BUFF改变后的属性加成
+        //获取BUFF改变后的属性加成（自身/稀有度BUFF）
         targetData = GetBuffChangeAttribute(creatureAttributeType, targetData);
+        //深渊馈赠全局池加成：仅非战斗链路按需叠加（不走战斗缓存的 ModifierPipeline，避免重复计算）
+        if (includeAbyssalBlessing)
+        {
+            targetData = GetAbyssalBlessingChangeAttribute(creatureAttributeType, targetData);
+        }
         return targetData;
     }
 
     /// <summary>
-    /// 获取复活CD 不建议每帧获取
+    /// 叠加深渊馈赠全局池(dicAbyssalBlessingBuffsActivie)中匹配该属性的BUFF修正
+    /// <para>深渊馈赠为全局池，是非战斗缓存链路特有的按需叠加；战斗链路(FightCreatureBean.RefreshBaseAttribute)经 ModifierPipeline 独立处理，不调用此方法以免重复。</para>
+    /// <para>注：当前 RCD 类BUFF均为纯百分比(trigger_value=0)叠乘、可交换，深渊馈赠相对自身BUFF的先后不影响结果。</para>
     /// </summary>
-    public float GetRCD()
+    /// <param name="creatureAttributeType">属性类型</param>
+    /// <param name="targetData">已叠加自身来源后的属性值</param>
+    /// <returns>再叠加深渊馈赠全局池后的属性值</returns>
+    public float GetAbyssalBlessingChangeAttribute(CreatureAttributeTypeEnum creatureAttributeType, float targetData)
     {
-        float RCDTime = creatureInfo.RCD;
-        //深渊馈赠buff加成
         var abyssalBlessingBuffs = BuffHandler.Instance.manager.dicAbyssalBlessingBuffsActivie;
         if (!abyssalBlessingBuffs.List.IsNull())
         {
@@ -580,15 +632,50 @@ public partial class CreatureBean
                 for (int j = 0; j < itemAbyssalBlessingBuff.Count; j++)
                 {
                     BuffBaseEntity buffEntity = itemAbyssalBlessingBuff[j];
-                    if (buffEntity is BuffEntityAttribute buffEntityAttribute && buffEntityAttribute.attributeType == CreatureAttributeTypeEnum.RCD)
+                    if (buffEntity is BuffEntityAttribute buffEntityAttribute && buffEntityAttribute.attributeType == creatureAttributeType)
                     {
-                        RCDTime = buffEntityAttribute.ChangeData(CreatureAttributeTypeEnum.RCD, RCDTime);
+                        targetData = buffEntityAttribute.ChangeData(creatureAttributeType, targetData);
                     }
                 }
             }
         }
-        return RCDTime;
+        return targetData;
     }
+
+    /// <summary>
+    /// 获取属性值（int 版本，四舍五入），供消耗/数量等需要整数的场景调用（如召唤魔力消耗 CMP）
+    /// </summary>
+    /// <param name="creatureAttributeType">属性类型</param>
+    /// <returns>GetAttribute 结果四舍五入后的整数</returns>
+    public int GetAttributeInt(CreatureAttributeTypeEnum creatureAttributeType)
+    {
+        return UnityEngine.Mathf.RoundToInt(GetAttribute(creatureAttributeType));
+    }
+
+    /// <summary>
+    /// 获取召唤魔力增加倍率（等级增加倍率 + 稀有度增加倍率）
+    /// <para>用于召唤魔力消耗计算：最终CMP = 基础CMP + 基础CMP ×（本倍率）。</para>
+    /// <para>等级增加倍率取自 LevelInfo.CMP_rate（按当前 level 查表；level 0 或越界无配置时记 0，即不增加）。</para>
+    /// <para>稀有度增加倍率取自 RarityInfo.CMP_rate（按 rarity 查表；rarity≤0 视为 N=1，N 的增加倍率为 0）。</para>
+    /// <para>两项相加；均为 0 时表示不增加召唤消耗（保持基础CMP）。</para>
+    /// </summary>
+    /// <returns>等级增加倍率 + 稀有度增加倍率</returns>
+    public float GetCreateMPAddRate()
+    {
+        //等级增加倍率：按当前等级查 LevelInfo（level 0 或越界无配置时记 0）
+        float levelRate = 0;
+        var levelInfo = LevelInfoCfg.GetItemData(level);
+        if (levelInfo != null)
+            levelRate = levelInfo.CMP_rate;
+        //稀有度增加倍率：rarity 为 0 时视为 N(1)，与卡片显示口径一致
+        int rarityForLookup = rarity <= 0 ? 1 : rarity;
+        float rarityRate = 0;
+        var rarityInfo = RarityInfoCfg.GetItemData(rarityForLookup);
+        if (rarityInfo != null)
+            rarityRate = rarityInfo.CMP_rate;
+        return levelRate + rarityRate;
+    }
+
 
     /// <summary>
     /// 获取间隔搜索敌人时间

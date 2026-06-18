@@ -195,7 +195,7 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
                 ui_Mask.gameObject.SetActive(true);
                 break;
             case CardStateEnum.FightRest:
-                FightRestRCDTime = cardData.creatureData.GetRCD();
+                FightRestRCDTime = cardData.creatureData.GetAttribute(CreatureAttributeTypeEnum.RCD, true);
                 ui_Mask.gameObject.SetActive(true);
                 ui_CDTime.gameObject.SetActive(true);
                 break;

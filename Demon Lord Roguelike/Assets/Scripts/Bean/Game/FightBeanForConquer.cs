@@ -10,6 +10,10 @@ public class FightBeanForConquer : FightBean
     public List<FightCreatureBean> listLastDefenseFightCreatureData;
     //游戏随机数据
     public GameWorldInfoRandomBean gameWorldInfoRandomData;
+    //深渊馈赠「奖励多多」累计加成的领奖奖励物品数量(每选取一次+1，BOSS通关领奖时生效)
+    public int rewardAddItemNum = 0;
+    //深渊馈赠「再来一瓶」累计加成的领奖可选择次数(每选取一次+1，BOSS通关领奖时生效)
+    public int rewardAddSelectNum = 0;
     public FightBeanForConquer(GameWorldInfoRandomBean gameWorldInfoRandomData) : base()
     {
         this.gameWorldInfoRandomData = gameWorldInfoRandomData;

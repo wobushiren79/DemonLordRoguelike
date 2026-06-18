@@ -186,33 +186,6 @@ public partial class CreatureBean
     }
     #endregion
 
-    #region 战斗属性
-    /// <summary>
-    /// 获取基础属性（含魔力上限 MP 分支）
-    /// <para>GetAttribute 位于自动生成的 CreatureBean.cs，其属性 switch 缺少 MP 分支且不可直接修改；</para>
-    /// <para>需要取魔力上限(MP)时统一走此方法，其余属性原样透传 GetAttribute。</para>
-    /// <para>MP/MPF 仅在战斗中有效：MP=魔王魔力上限（创建魔物消耗魔力），MPF=每秒恢复的魔力值。</para>
-    /// </summary>
-    /// <param name="creatureAttributeType">属性类型</param>
-    /// <returns>属性值</returns>
-    public float GetAttributeWithMP(CreatureAttributeTypeEnum creatureAttributeType)
-    {
-        //非MP属性直接透传原有逻辑
-        if (creatureAttributeType != CreatureAttributeTypeEnum.MP)
-            return GetAttribute(creatureAttributeType);
-        //MP魔力上限：与 GetAttribute 内其他属性相同的计算管线（基础值→角色加点→装备→BUFF）
-        var npcInfo = creatureNpcData?.npcInfo;
-        float targetData = npcInfo != null ? npcInfo.MP : creatureInfo.MP;
-        //获取角色属性加成
-        targetData += creatureAttribute.GetAttribute(CreatureAttributeTypeEnum.MP);
-        //获取装备属性
-        targetData += GetEquipAttribute(CreatureAttributeTypeEnum.MP);
-        //获取BUFF改变后的属性加成
-        targetData = GetBuffChangeAttribute(CreatureAttributeTypeEnum.MP, targetData);
-        return targetData;
-    }
-    #endregion
-
     /// <summary>
     /// 清理临时数据
     /// <para>会清空皮肤/装备/等级/星级/稀有度等所有数据，仅用于"一次性 Bean 入池复用"（复用时会通过 SetData 重建）。</para>

@@ -21,6 +21,8 @@ public partial class UIGameSystem : BaseUIComponent
         //打开系统界面时暂停游戏时间，记录原始时间缩放
         timeScaleOrigin = Time.timeScale;
         Time.timeScale = 0f;
+        //打开系统界面时暂停背景音乐播放
+        AudioHandler.Instance.PauseMusic();
         //战斗模式保持战斗控制不变；基地模式禁用基础移动控制
         if (enterType != EnterTypeFight)
             GameControlHandler.Instance.SetBaseControl(false, false);
@@ -33,6 +35,8 @@ public partial class UIGameSystem : BaseUIComponent
         base.CloseUI();
         //关闭系统界面时恢复打开前的时间缩放
         Time.timeScale = timeScaleOrigin;
+        //关闭系统界面时恢复背景音乐播放
+        AudioHandler.Instance.RestoreMusic();
     }
 
     public override void OnClickForButton(Button viewButton)

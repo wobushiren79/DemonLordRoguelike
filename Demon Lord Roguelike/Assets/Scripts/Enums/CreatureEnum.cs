@@ -67,6 +67,7 @@ public enum CreatureAttributeTypeEnum
     RCD,//复活CD
     MPR,//魔法回复%
     MPF,//魔法回复
+    CMP,//召唤魔力消耗(仅作BUFF修正标签,非生物常驻战斗属性)
 }
 
 public enum CreatureSkinTypeEnum

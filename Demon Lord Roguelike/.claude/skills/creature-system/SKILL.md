@@ -114,9 +114,13 @@ float aspd = finalAttr.GetAttribute(CreatureAttributeTypeEnum.ASPD);
 float mspd = finalAttr.GetAttribute(CreatureAttributeTypeEnum.MSPD);
 
 // 魔力上限MP（仅战斗中有效 魔王创建魔物的资源池）：
-// CreatureBean.GetAttribute（自动生成代码）缺少MP分支，必须走 CreatureBeanPartial.GetAttributeWithMP
-float mp = creature.GetAttributeWithMP(CreatureAttributeTypeEnum.MP);
-// 创建魔物消耗的魔力配在 CreatureInfo.create_mp，魔力恢复速度为 MPF（每秒恢复量）
+// GetAttribute 的 switch 已含 MP/CMP 分支（CreatureBean.cs 为手写可改文件），直接走 GetAttribute 即可
+float mp = creature.GetAttribute(CreatureAttributeTypeEnum.MP);
+// 创建魔物消耗的魔力基础值配在 CreatureInfo.CMP（原 create_mp 字段已改名为 CMP），魔力恢复速度为 MPF（每秒恢复量）
+// 取实际召唤耗魔走 creature.GetAttributeInt(CreatureAttributeTypeEnum.CMP)，勿直接读 CMP 字段。
+// 该值 = 基础CMP + 基础CMP×(等级增加倍率+稀有度增加倍率)，再叠加自身/稀有度BUFF（如扭蛋 CMP 减益）。
+// 等级增加倍率取 LevelInfo.CMP_rate（按 level），稀有度增加倍率取 RarityInfo.CMP_rate（按 rarity，N=0 依次+0.5），
+// 两者求和由 CreatureBean.GetCreateMPAddRate() 提供（level 0/越界记0，rarity≤0视为N）。
 
 // 配置信息
 CreatureInfoBean info = creature.creatureInfoBean;
@@ -144,9 +148,10 @@ public enum CreatureAttributeTypeEnum
     MSPD = 5,              // 移动速度
     CRT = 6,               // 暴击率
     EVA = 7,               // 闪避率
-    RCD = 8,               // 冷却缩减
+    RCD = 8,               // 冷却缩减（实为复活CD）
     HPRegeneration = 11,   // HP 恢复
     MP = 20,               // 魔力
+    CMP,                   // 召唤魔力消耗（基础值=CreatureInfo.CMP；GetAttribute(CMP)=基础CMP×(1+等级/稀有度增加倍率)，再经BUFF管线修正）
 }
 ```
 

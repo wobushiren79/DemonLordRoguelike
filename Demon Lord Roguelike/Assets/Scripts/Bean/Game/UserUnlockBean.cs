@@ -258,6 +258,36 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 获取魔晶掉落物的额外存在时长(秒)
+    /// 未解锁(0级)返回 0；每级研究 +5 秒（UnlockEnum.DropCrystalLifeTime，level_max=6，满级 +30 秒）
+    /// </summary>
+    /// <returns>叠加到掉落水晶基础存在时长上的额外秒数</returns>
+    public float GetUnlockDropCrystalAddLifeTime()
+    {
+        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.DropCrystalLifeTime) * 5f;
+    }
+
+    /// <summary>
+    /// 获取魔王魔力上限(MP)的研究加成
+    /// 未解锁(0级)返回 0；每级研究 +10（UnlockEnum.DemonLordMPMax，level_max=5，满级 +50）
+    /// </summary>
+    /// <returns>叠加到魔王魔力上限上的额外点数</returns>
+    public float GetUnlockDemonLordMPMaxAddValue()
+    {
+        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.DemonLordMPMax) * 10f;
+    }
+
+    /// <summary>
+    /// 获取魔王魔力恢复速度(MPF)的研究加成(每秒)
+    /// 未解锁(0级)返回 0；每级研究 +1/秒（UnlockEnum.DemonLordMPF，level_max=3，满级 +3/秒）
+    /// </summary>
+    /// <returns>叠加到魔王每秒魔力恢复速度上的额外点数</returns>
+    public float GetUnlockDemonLordMPFAddValue()
+    {
+        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.DemonLordMPF) * 1f;
+    }
+
+    /// <summary>
     /// 获取游戏世界-征服模式-难度等级
     /// 基础难度取自 UserLimmitBean.conquerDifficultyMax + 对应研究等级
     /// </summary>

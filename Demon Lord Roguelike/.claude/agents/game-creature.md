@@ -39,8 +39,9 @@ CreatureAttributeTypeEnum
 ├── HP, DR, ATK
 ├── ASPD (攻击速度), MSPD (移动速度)
 ├── CRT (暴击率), EVA (闪避率)
-├── RCD (冷却缩减)
-└── HPRegeneration
+├── RCD (复活CD)
+├── HPRegeneration
+└── CMP (召唤魔力消耗, 基础值=CreatureInfo.CMP; GetAttribute(CMP)=基础CMP×(1+等级/稀有度增加倍率)再经BUFF修正; 倍率求和见 CreatureBean.GetCreateMPAddRate)
 ```
 
 ### 关键文件

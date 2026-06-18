@@ -42,7 +42,7 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 
 ### 魔王魔力(MP)系统（仅战斗中有效）
 - `UpdateGameForMPRecover(updateTime)` - 每帧给魔王核心恢复 MPF*updateTime 点魔力（MPF=每秒恢复量），并调用 `RefreshMPShow()` 通知刷新魔力显示
-- `PutCard()` - 放置卡片前检查魔王 `MPCurrent >= create_mp`，不足则 Toast"魔力不足"(UIText 50006)；足够则 `ChangeMP(-create_mp)` 扣除并刷新显示
+- `PutCard()` - 召唤耗魔取 `creatureData.GetAttributeInt(CreatureAttributeTypeEnum.CMP)`（= 基础CMP×(1+等级/稀有度增加倍率)经自身/稀有度BUFF修正，如扭蛋 CMP 减益；倍率求和见 `CreatureBean.GetCreateMPAddRate()`）；放置前检查魔王 `MPCurrent >= GetAttributeInt(CMP)`，不足则 Toast"魔力不足"(UIText 50006)；足够则 `ChangeMP(-GetAttributeInt(CMP))` 扣除并刷新显示。复活CD判定走 `GetAttribute(CreatureAttributeTypeEnum.RCD, true)`（基础值creatureInfo.RCD→角色加点→装备→自身/稀有度RCD减益→再叠加深渊馈赠全局池；第二参 includeAbyssalBlessing=true 开启深渊馈赠按需叠加，逻辑统一在 CreatureBean.GetAttribute 内，原 GetRCD 已并入）
 
 ## 约束
 

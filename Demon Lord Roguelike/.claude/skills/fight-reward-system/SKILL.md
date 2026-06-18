@@ -106,10 +106,13 @@ InitData(fightData, testData = null)
 生物死亡 → DropCrystal(state)
   → dropCrystal = conquerFightData.fightTypeConquerInfo.drop_crystal
   → FightHandler.manager.GetFightDropCrystalBean(dropCrystal, pos)  (记录 dropperCreatureUUId)
+  → lifeTime = FightDropCrystalBean.BASE_LIFE_TIME(30) + 研究加成     (魔晶掉落时长研究 DropCrystalLifeTime 每级+5秒)
   → FightHandler.CreateDropCrystal(fightDropCrystal)                (生成可拾取物)
   → 触发 EventsInfo.GameFightLogic_CreatureDeadDropCrystal          (BUFF 可监听追加掉落)
 玩家拾取 → userData.AddCrystal(...) 直接入账
 ```
+
+> 掉落水晶基础存在时长 = `FightDropCrystalBean.BASE_LIFE_TIME`(30秒)，`DropCrystal` 中显式叠加研究加成 `UserUnlockBean.GetUnlockDropCrystalAddLifeTime()`(强化研究 `UnlockEnum.DropCrystalLifeTime`=200200001，每级+5秒，满级6级+30秒)。显式赋值是为了避免对象池复用残留旧时长。
 
 ## 入账与存档链路
 
@@ -145,6 +148,10 @@ InitData(fightData, testData = null)
 ### 调整 BOSS 通关奖励（装备品质/数量/魔晶）
 - 改征服配置表 Excel 源表（`reward_equip_rarity` / `reward_equip_attribute_add` / `reward_crystal`），在 Unity 编辑器导出 JSON。**禁止只改 JSON**。
 - 改生成数量逻辑（几件装备/几个魔晶）：改 `RewardSelectBean` 的 `createItemNum` / `createEquipNum` 默认值或生成循环。
+
+### 深渊馈赠对领奖的加成（奖励多多 / 再来一瓶）
+- 注入点在 `GameFightLogicConquer.ActionForUIFightSettlementNext`：`new RewardSelectBean()` 后、`InitData(fightData)` **之前** `createItemNum += fightDataForConquer.rewardAddItemNum`（奖励多多，宝箱按 listReward 实时生成会自动多出箱子）；`InitData` **之后** `selectNumMax += rewardAddSelectNum`（再来一瓶），并裁剪 `selectNumMax = Min(selectNumMax, listReward.Count)` 避免多余次数无箱可开。
+- 计数器 `rewardAddItemNum / rewardAddSelectNum` 挂在 `FightBeanForConquer`，由两个即时BUFF（`BuffEntityInstantRewardMoreItem` / `BuffEntityInstantRewardMoreSelect`）在选取馈赠时累加。完整机制见 [`abyssal-blessing-system`](../abyssal-blessing-system/SKILL.md) Skill「影响奖励系统的特殊馈赠」一节。
 
 ### 调整敌人掉落水晶数量
 - 改征服配置 `drop_crystal`（Excel 源表）。

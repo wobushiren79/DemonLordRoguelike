@@ -5,9 +5,14 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/FrameWork/Scripts/Component/Handler/AudioHandler.cs
   - Assets/FrameWork/Scripts/Component/Manager/AudioManager.cs
-  - Assets/Scripts/Component/Handler/VolumeHandler.cs
+  - Assets/Scripts/Component/Handler/AudioHandler.cs
+  - Assets/Scripts/Component/Manager/AudioManager.cs
+  - Assets/FrameWork/Scripts/Bean/MVC/AudioInfoBean.cs
+  - Assets/FrameWork/Scripts/Bean/MVC/AudioInfoBeanPartial.cs
   - Assets/FrameWork/Scripts/Component/UI/AudioView.cs
   - Assets/FrameWork/Scripts/Component/UI/ButtonAudio.cs
+  - Assets/Scripts/Component/UI/Game/GameSetting/UIGameSettingForAudio.cs
+  - Assets/FrameWork/Scripts/Enums/BaseGameEnum.cs
 ---
 
 # 音频系统 (Audio System) 开发代理
@@ -21,7 +26,9 @@ watched_files:
 - **AudioManager** - 音频资源与播放管理 [FrameWork/Scripts/Component/Manager/AudioManager.cs](Assets/FrameWork/Scripts/Component/Manager/AudioManager.cs)
 
 ### 音量管理
-- **VolumeHandler** / **VolumeManager** - 音量设置 [Scripts/Component/Handler/VolumeHandler.cs](Assets/Scripts/Component/Handler/VolumeHandler.cs)
+- 音量持久化在 **GameConfigBean**（`musicVolume`/`soundVolume`/`environmentVolume`，默认 0.5）
+- 设置界面 **UIGameSettingForAudio** 滑条改音量，变更后调 `AudioHandler.Instance.InitAudio()` 刷新
+- 注意：项目里的 `VolumeHandler`/`VolumeManager` 是 URP 后处理（景深）控制器，**与音频音量无关**
 
 ### 音频 UI 组件
 - **AudioView** - 音频视图控制 [FrameWork/Scripts/Component/UI/AudioView.cs](Assets/FrameWork/Scripts/Component/UI/AudioView.cs)

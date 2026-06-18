@@ -79,8 +79,8 @@ public class FightCreatureBean
         for (int i = 0; i < listCreatureAttributeType.Count; i++)
         {
             var creatureAttributeType = listCreatureAttributeType[i];
-            //走含MP分支的属性获取（CreatureBean.GetAttribute 为自动生成代码缺少MP分支 由 CreatureBeanPartial.GetAttributeWithMP 补充）
-            var attributeData = creatureData.GetAttributeWithMP(creatureAttributeType);
+            //CreatureBean.GetAttribute 已含 MP/CMP 等全部分支（基础值→角色加点→装备→BUFF）
+            var attributeData = creatureData.GetAttribute(creatureAttributeType);
             dicAttribute.Add(creatureAttributeType, attributeData);
         }
         //还原基础身体颜色
@@ -113,6 +113,15 @@ public class FightCreatureBean
             dicAttribute[CreatureAttributeTypeEnum.HP] *= intensityRate;
             dicAttribute[CreatureAttributeTypeEnum.DR] *= intensityRate;
             dicAttribute[CreatureAttributeTypeEnum.ATK] *= intensityRate;
+        }
+
+        //魔王(防守核心)专属研究加成：魔力上限(MP 每级+10) / 魔力恢复速度(MPF 每级+1/秒)
+        //仅作用于魔王，普通生物不应用，避免影响非核心生物的魔力相关数值
+        if (creatureFightType == CreatureFightTypeEnum.FightDefenseCore)
+        {
+            var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+            dicAttribute[CreatureAttributeTypeEnum.MP] += userUnlock.GetUnlockDemonLordMPMaxAddValue();
+            dicAttribute[CreatureAttributeTypeEnum.MPF] += userUnlock.GetUnlockDemonLordMPFAddValue();
         }
 
         actionForComplete?.Invoke();
@@ -336,7 +345,7 @@ public class FightCreatureBean
     #region 改变魔力
     /// <summary>
     /// 改变魔力值（仅战斗中有效 魔王核心专用）
-    /// <para>正值=恢复魔力（如每秒恢复MPF点），负值=消耗魔力（如创建魔物扣除 create_mp）。</para>
+    /// <para>正值=恢复魔力（如每秒恢复MPF点），负值=消耗魔力（如创建魔物扣除 CMP）。</para>
     /// <para>结果会被限制在 [0, 魔力上限MP] 区间内。</para>
     /// </summary>
     /// <param name="changeMP">改变值</param>

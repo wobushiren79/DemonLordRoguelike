@@ -80,10 +80,18 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
     private Tween hoverTween;
 
     /// <summary>
-    /// 鼠标进入-放大强调
+    /// 是否已进入选中/隐藏流程：置位后悬停 enter/exit 不再驱动缩放。
+    /// 避免选中时 ShowScreenLock 盖上遮罩抢走 raycast、下一帧触发 OnPointerExit，
+    /// 其还原 Tween 与选中动画在同一 transform 上抢 scale 导致开头卡顿。
+    /// </summary>
+    private bool isSelecting;
+
+    /// <summary>
+    /// 鼠标进入-放大强调（已进入选中/隐藏流程时忽略）
     /// </summary>
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {
+        if (isSelecting) return;
         hoverTween?.Kill();
         hoverTween = transform
             .DOScale(Vector3.one * HOVER_SCALE, HOVER_ANIM_DURATION)
@@ -92,10 +100,11 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
     }
 
     /// <summary>
-    /// 鼠标离开-还原大小
+    /// 鼠标离开-还原大小（已进入选中/隐藏流程时忽略）
     /// </summary>
     void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
     {
+        if (isSelecting) return;
         hoverTween?.Kill();
         hoverTween = transform
             .DOScale(Vector3.one, HOVER_ANIM_DURATION)
@@ -144,6 +153,8 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
     /// <param name="delay">延迟时间，用于多卡片错位出现</param>
     public void AnimForShow(float delay = 0f)
     {
+        //复用节点：重新出现时复位选中标志，恢复悬停响应
+        isSelecting = false;
         var rt = (RectTransform)transform;
         if (!isOriginalPosCached)
         {
@@ -166,6 +177,10 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
     /// </summary>
     public void AnimForSelect(Action onComplete = null)
     {
+        //进入选中流程：屏蔽悬停 enter/exit 并清掉残留悬停 Tween，独占 transform 缩放
+        isSelecting = true;
+        hoverTween?.Kill();
+        hoverTween = null;
         transform.DOKill();
         DOTween.Sequence()
             // 柔和放大强调：OutBack 带轻微回弹，时长拉长让动作更舒展
@@ -183,6 +198,10 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
     /// </summary>
     public void AnimForHide(Action onComplete = null)
     {
+        //进入隐藏流程：屏蔽悬停 enter/exit 并清掉残留悬停 Tween，独占 transform 缩放
+        isSelecting = true;
+        hoverTween?.Kill();
+        hoverTween = null;
         transform.DOKill();
         transform
             .DOScale(Vector3.zero, 0.2f)

@@ -110,7 +110,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     }
 
     /// <summary>
-    /// 设置魔力消耗显示（召唤该生物所需消耗的魔王魔力 create_mp）
+    /// 设置魔力消耗显示（召唤该生物所需消耗的魔王魔力 CMP，基础CMP×(1+等级/稀有度增加倍率)）
     /// <para>若该生物本身就是魔王(与玩家存档 selfCreature 同一 UUId)，则无召唤消耗概念，隐藏父节点 ui_MP。</para>
     /// </summary>
     public void SetMP()
@@ -122,8 +122,8 @@ public partial class UIViewCreatureCardDetails : BaseUIView
             return;
         }
         ui_MP.gameObject.SetActive(true);
-        //召唤该生物消耗的魔力
-        ui_MPContent.text = $"{creatureData.creatureInfo.create_mp}";
+        //召唤该生物消耗的魔力（GetAttribute(CMP)=经自身/稀有度BUFF修正后的召唤耗魔）
+        ui_MPContent.text = $"{creatureData.GetAttributeInt(CreatureAttributeTypeEnum.CMP)}";
     }
 
     /// <summary>
@@ -271,7 +271,9 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         }
         else
         {
+            //经验采用跨级累加(余量保留)制,levelExp 可能超过本级所需经验,此处限制进度最大为100%避免显示110%
             float percentage = (float)levelExp / long.Parse(levelInfo.level_exp);
+            percentage = Mathf.Clamp01(percentage);
             ui_LevelProgressData.fillAmount = percentage;
             ui_LevelProgressText.text = $"{MathUtil.GetPercentage(percentage, 2)}%";
         }

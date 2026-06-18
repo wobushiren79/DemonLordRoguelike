@@ -206,21 +206,29 @@ MP/MPF 两个属性**仅在战斗中有效**，挂在魔王（防守核心）身
 // 属性来源（excel_creature_info）：
 // MP  = 魔力上限（魔王用来创建魔物的资源池）
 // MPF = 魔力恢复速度（每秒恢复MPF点魔力）
-// create_mp = 创建该魔物需要消耗的魔力（配在每个魔物的 CreatureInfo 上）
+// CMP = 创建该魔物需要消耗的魔力基础值（配在每个魔物的 CreatureInfo 上，原字段名 create_mp 已改名为 CMP）
+//   实际召唤耗魔取 creature.GetAttributeInt(CreatureAttributeTypeEnum.CMP)（= 基础CMP×(1+等级/稀有度增加倍率)再经自身/稀有度BUFF修正，如扭蛋稀有度 CMP 减益），勿直接读 CMP 字段
+//   等级/稀有度增加倍率求和见 CreatureBean.GetCreateMPAddRate()（LevelInfo.CMP_rate + RarityInfo.CMP_rate）
 
 // 运行时数据（FightCreatureBean）：
 public float MPCurrent;   // 当前魔力（战斗开始时默认满值，float用于累积每帧恢复量）
 public void ChangeMP(float changeMP, out float leftMP, out float changeMPReal); // 限制在[0, MP上限]
 
-// 注意：CreatureBean.GetAttribute（自动生成代码）缺少MP分支，
-// 取魔力上限必须走 CreatureBeanPartial.GetAttributeWithMP(CreatureAttributeTypeEnum.MP)，
-// FightCreatureBean.RefreshBaseAttribute 已统一走该方法。
+// 注意：CreatureBean.GetAttribute 的 switch 已含 MP/CMP 分支（CreatureBean.cs 是 Bean/Game 下手写可改文件），
+// 取魔力上限直接走 creature.GetAttribute(CreatureAttributeTypeEnum.MP)；
+// FightCreatureBean.RefreshBaseAttribute 遍历全枚举走 GetAttribute 统一缓存进 dicAttribute。
+
+// 研究加成（仅魔王/防守核心）：FightCreatureBean.RefreshBaseAttribute 末尾，当
+//   creatureFightType == FightDefenseCore 时给 dicAttribute[MP]/[MPF] 叠加研究值：
+//   MP  += UserUnlockBean.GetUnlockDemonLordMPMaxAddValue()  (强化研究 UnlockEnum.DemonLordMPMax=200300001，每级+10，满级5级+50)
+//   MPF += UserUnlockBean.GetUnlockDemonLordMPFAddValue()    (强化研究 UnlockEnum.DemonLordMPF=200400001，每级+1/秒，满级3级+3/s)
+//   普通生物不应用，避免影响非核心生物魔力数值。
 
 // 恢复链路：GameFightLogic.UpdateGameForMPRecover(updateTime)
 //   每帧给魔王核心恢复 MPF*updateTime 点魔力，然后 RefreshMPShow() 通知刷新显示
 // 消耗链路：GameFightLogic.PutCard()
-//   放置卡片时检查 MPCurrent >= create_mp，不足则 Toast 提示"魔力不足"(UIText 50006)并取消放置；
-//   足够则 ChangeMP(-create_mp) 扣除并 RefreshMPShow()
+//   放置卡片时检查 MPCurrent >= GetAttributeInt(CMP)，不足则 Toast 提示"魔力不足"(UIText 50006)并取消放置；
+//   足够则 ChangeMP(-GetAttributeInt(CMP)) 扣除并 RefreshMPShow()
 // 显示链路：魔王预制(FightCreature_DefCore_1)下 MPShow(SpriteRenderer+MatSpriteCreatureLife进度材质)
 //   + MPShow/MPText(TextMeshPro 显示"100/100"格式)，与防守生物LifeShow同款机制
 // 渲染层级：MPText 用 Overlay 着色器材质(MatTMP_MPTextOverlay，TMP_SDF Overlay：ZTest Always + Overlay队列)，
@@ -284,7 +292,7 @@ public class ControlForGameFight : BaseControl
 //    -> 创建预览生物跟随鼠标
 // 2. 移动鼠标 -> 预览生物跟随，显示放置预览
 // 3. 左键点击空地 -> GameFightLogic.PutCard()
-//    -> 检测位置是否已有生物 -> 检测魔王魔力是否足够(create_mp 不足则Toast"魔力不足")
+//    -> 检测位置是否已有生物 -> 检测魔王魔力是否足够(GetAttributeInt(CMP) 不足则Toast"魔力不足")
 //    -> 扣除魔力并刷新MPShow -> 创建实体 -> 触发事件
 // 4. 右键 -> GameFightLogic.UnSelectCard() -> 取消选择
 ```

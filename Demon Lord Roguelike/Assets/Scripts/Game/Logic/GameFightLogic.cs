@@ -5,15 +5,24 @@ using System.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
 
+/// <summary>
+/// 战斗游戏逻辑基类
+/// <para>承载一场战斗的完整生命周期：准备(PreGame 加载场景/魔王核心) → 每帧更新(UpdateGame 选择/进攻生成/生物CD/魔王) → 结束(EndGame) → 清理(ClearGame)。</para>
+/// <para>同时负责防守卡片的选择/放置/删除、魔晶拾取、结束返回基地等战斗内交互；各战斗模式(征服/终焉议会/无限/测试)通过子类重写差异逻辑。</para>
+/// </summary>
 public class GameFightLogic : BaseGameLogic
 {
-    //战斗数据
+    /// <summary>当前战斗的运行时数据（生物、波次、计时器、场景尺寸等）</summary>
     public FightBean fightData;
 
-    public GameObject selectCreatureDestory;    //选择删除生物
-    public GameObject selectCreature;    //选择的生物
-    public UIViewCreatureCardItem selectCreatureCard;//选中生物卡片
-    public Vector3Int selectTargetPos;    //选择的位置
+    /// <summary>删除模式下跟随鼠标的删除标记预制（非空表示处于删除生物模式）</summary>
+    public GameObject selectCreatureDestory;
+    /// <summary>当前选中、跟随鼠标待放置的防守生物预制</summary>
+    public GameObject selectCreature;
+    /// <summary>当前选中的防守生物卡片（UI）</summary>
+    public UIViewCreatureCardItem selectCreatureCard;
+    /// <summary>鼠标射线命中地面后吸附到的格子坐标（放置/删除的目标位置）</summary>
+    public Vector3Int selectTargetPos;
 
     #region  重写方法
     /// <summary>
@@ -81,11 +90,15 @@ public class GameFightLogic : BaseGameLogic
         UpdateGameForSelectCreature(updateTime);
         UpdateGameForAttackCreate(updateTime);
         UpdateGameForFightCreature(updateTime);
-        UpdateGameForMPRecover(updateTime);
+        UpdateGameForDefenseCore(updateTime);
         //更新BUFF
         BuffHandler.Instance.UpdateData(updateTime);
     }
 
+    /// <summary>
+    /// 结束游戏
+    /// <para>触发 GameFightLogic_EndGame 事件并附带当前战斗类型，供各系统(结算/UI/存档等)响应战斗结束。</para>
+    /// </summary>
     public override void EndGame()
     {
         base.EndGame();
@@ -176,7 +189,9 @@ public class GameFightLogic : BaseGameLogic
 
     #region 更新
     /// <summary>
-    /// 更新-选中物体
+    /// 更新-选中物体跟随鼠标
+    /// <para>当处于放置(selectCreature)或删除(selectCreatureDestory)模式时，向地面发射鼠标射线取命中点，</para>
+    /// <para>将坐标钳制在战场范围内([1, sceneRoadLength] × [1, sceneRoadNum])，更新待放置生物/删除标记/落点预览的位置，并记录到 selectTargetPos。</para>
     /// </summary>
     public void UpdateGameForSelectCreature(float updateTime)
     {
@@ -212,7 +227,9 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// 更新-进攻方生成
+    /// 更新-进攻方刷怪
+    /// <para>按波次计时器累加，到达目标间隔后取下一波进攻明细：无下一波则不再生成；</para>
+    /// <para>否则刷新下次生成间隔(timeNextAttack)，若该波携带 bossShowNpcIds 则弹出BOSS特写UI，最后按明细在场景道路上生成进攻生物。</para>
     /// </summary>
     public void UpdateGameForAttackCreate(float updateTime)
     {
@@ -237,7 +254,9 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// 更新-战斗的生物 buff cd时间
+    /// 更新-战斗生物的 BUFF 与复活CD
+    /// <para>按固定间隔(timeUpdateTargetForFightCreature)批量驱动：逐个调用进攻/防守生物实体的 Update 推进其 BUFF 计时；</para>
+    /// <para>并处理处于休整(Rest)状态防守生物数据的复活CD(RCD)，到达复活CD后切回待机(Idle)并触发状态改变事件。</para>
     /// </summary>
     public void UpdateGameForFightCreature(float updateTime)
     {
@@ -272,7 +291,7 @@ public class GameFightLogic : BaseGameLogic
                 if (itemCreatureData.creatureState == CreatureStateEnum.Rest)
                 {
                     itemCreatureData.RCDTimeUpdate += fightData.timeUpdateTargetForFightCreature;
-                    if (itemCreatureData.RCDTimeUpdate > itemCreatureData.GetRCD())
+                    if (itemCreatureData.RCDTimeUpdate > itemCreatureData.GetAttribute(CreatureAttributeTypeEnum.RCD, true))
                     {
                         itemCreatureData.RCDTimeUpdate = 0;
                         itemCreatureData.creatureState = CreatureStateEnum.Idle;
@@ -284,11 +303,11 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// 更新-魔王魔力恢复（MP/MPF仅战斗中有效）
-    /// <para>MPF=魔力恢复速度（每秒恢复MPF点魔力），恢复上限为魔王的魔力上限MP。</para>
-    /// <para>每帧恢复后通知魔王预制下的MPShow刷新显示（与防守生物的LifeShow一样的通知方式）。</para>
+    /// 更新-魔王（防守核心）每帧逻辑
+    /// <para>魔王的所有 Update 操作统一放在此方法内。</para>
+    /// <para>当前包含：魔力恢复（MP/MPF仅战斗中有效）——MPF=魔力恢复速度（每秒恢复MPF点魔力），恢复上限为魔王的魔力上限MP；每帧恢复后通知魔王预制下的MPShow刷新显示（与防守生物的LifeShow一样的通知方式）。</para>
     /// </summary>
-    public void UpdateGameForMPRecover(float updateTime)
+    public void UpdateGameForDefenseCore(float updateTime)
     {
         var coreCreature = fightData.fightDefenseCoreCreature;
         if (coreCreature == null || coreCreature.IsDead())
@@ -373,8 +392,8 @@ public class GameFightLogic : BaseGameLogic
             //已经有生物了
             return;
         }
-        //检测魔王的魔力是否足够创建该魔物（create_mp=创建该魔物需要消耗的魔力）
-        int createMP = selectCreatureCard.cardData.creatureData.creatureInfo.create_mp;
+        //检测魔王的魔力是否足够创建该魔物（GetAttribute(CMP)=基础CMP×(1+等级/稀有度增加倍率) 再经自身/稀有度BUFF修正后的召唤魔力消耗）
+        int createMP = selectCreatureCard.cardData.creatureData.GetAttributeInt(CreatureAttributeTypeEnum.CMP);
         var coreCreature = fightData.fightDefenseCoreCreature;
         if (coreCreature != null && coreCreature.fightCreatureData.MPCurrent < createMP)
         {
@@ -401,6 +420,8 @@ public class GameFightLogic : BaseGameLogic
     #region 检测
     /// <summary>
     /// 检测游戏是否结束
+    /// <para>胜利条件：再无下一波敌人且场上无进攻生物(gameIsWin=true)；失败条件：魔王(防守核心)死亡(gameIsWin=false)。</para>
+    /// <para>任一满足即切换到结算状态(Settlement)。已处于结算/结束状态时直接返回，避免重复触发 ChangeGameState。</para>
     /// </summary>
     public virtual void CheckGameEnd()
     {

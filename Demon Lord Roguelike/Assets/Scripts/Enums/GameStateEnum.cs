@@ -188,6 +188,9 @@ public enum UnlockEnum : long
 
     LineupCreatureAddNum = 200000001,//解锁阵容生物上限1
     LineupNum = 200100001,//解锁多阵容
+    DropCrystalLifeTime = 200200001,//魔晶掉落物存在时长提升(每级+5秒)
+    DemonLordMPMax = 200300001,//魔王魔力上限提升(每级+10)
+    DemonLordMPF = 200400001,//魔王魔力恢复速度提升(每级+1/秒)
 
     EquipRewardHuman = 300100301,//人类装备奖励
     EquipRewardSkeleton = 300200301,

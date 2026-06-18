@@ -5,6 +5,8 @@ using UnityEngine;
 /// </summary>
 public class FightDropCrystalBean
 {
+    //掉落水晶的基础存在时长(秒)；研究加成在掉落时叠加到此基础值上
+    public const float BASE_LIFE_TIME = 30;
     //掉落位置
     public Vector3 dropPos;
     //掉落数量
@@ -22,6 +24,6 @@ public class FightDropCrystalBean
     {
         this.crystalNum = crystalNum;
         this.dropPos = dropPos;
-        this.lifeTime = 30;
+        this.lifeTime = BASE_LIFE_TIME;
     }
 }

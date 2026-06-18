@@ -50,7 +50,7 @@ watched_files:
 - **GameFightLogicTest** - 测试模式，Next 重启战斗，**不发奖不存档**
 
 ### 掉落
-- **FightCreatureEntity.DropCrystal** - 生物死亡掉落水晶，生成 `FightDropCrystalBean` → `FightHandler.CreateDropCrystal` → 触发 `GameFightLogic_CreatureDeadDropCrystal` 事件（BUFF 可监听追加掉落）
+- **FightCreatureEntity.DropCrystal** - 生物死亡掉落水晶，生成 `FightDropCrystalBean` → `FightHandler.CreateDropCrystal` → 触发 `GameFightLogic_CreatureDeadDropCrystal` 事件（BUFF 可监听追加掉落）；存在时长 = `FightDropCrystalBean.BASE_LIFE_TIME`(30s) + 研究加成 `UserUnlockBean.GetUnlockDropCrystalAddLifeTime()`(强化研究 `UnlockEnum.DropCrystalLifeTime`=200200001 每级+5秒)，在 `DropCrystal` 内显式赋值避免对象池脏数据
 
 ## 关键调用链
 

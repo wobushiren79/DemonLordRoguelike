@@ -1,17 +1,30 @@
 <#
 .SYNOPSIS
   Hook helper: PreToolUse on Write/Edit. Blocks direct edits to auto-generated
-  *Bean.cs files that have a sibling *BeanPartial.cs (the canonical signal
-  that the bean is auto-generated and extensions belong in the Partial).
+  C# files, identified SOLELY by an in-file marker comment the code generator
+  emits. No path-based heuristic.
 
 .DESCRIPTION
   Reads PreToolUse stdin JSON, inspects tool_input.file_path.
-  - If the target ends in BeanPartial.cs -> allow (these are hand-written).
-  - If the target ends in Bean.cs AND a sibling <basename>Partial.cs exists in
-    the same directory -> exit 2 with reason, telling the caller to edit the
-    Partial file instead.
-  - All other files (including hand-written *Bean.cs with no Partial sibling)
-    pass through untouched.
+
+  Detection:
+  - Any '*Partial.cs'  -> allow (always hand-written, even if the bean is generated).
+  - Not a '.cs' file   -> allow.
+  - The target file on disk contains the token 'AUTO-GENERATED-DO-NOT-EDIT' near
+    its top -> block. The generator (ExcelEditorWindow.CreateEntity +
+    ScriptsTemplates/Excel_LanguageEntity.txt) stamps this into every generated
+    *Bean.cs header. Path-independent and flexible: anything the generator marks
+    is protected, regardless of location; anything without the marker (incl.
+    hand-maintained beans under Assets/Scripts/Bean/** such as CreatureBean.cs and
+    the MVCEditorWindow-scaffolded UserDataBean) is editable.
+  - Everything else -> allow.
+
+  The marker token is pure ASCII so it matches regardless of how Windows
+  PowerShell 5.1 decodes the (UTF-8, possibly Chinese) file.
+
+  NOTE: protection relies on the file actually carrying the marker. Excel-generated
+  beans gain it on the next "generate entity" run; until regenerated they are NOT
+  blocked here.
 #>
 $stdin = [Console]::In.ReadToEnd()
 if (-not $stdin) { exit 0 }
@@ -23,22 +36,29 @@ try {
 
     $normalized = $filePath -replace '\\', '/'
 
-    # Only consider .cs files ending in 'Bean.cs' (which includes 'InfoBean.cs').
-    # Files ending in 'Partial.cs' are explicitly allowed.
-    if ($normalized -notmatch 'Bean\.cs$') { exit 0 }
+    # '*Partial.cs' are always hand-written extensions -> allow.
     if ($normalized -match 'Partial\.cs$') { exit 0 }
+    # Only .cs files are candidates.
+    if ($normalized -notmatch '\.cs$') { exit 0 }
+    # Must already exist on disk to inspect its header.
+    if (-not (Test-Path -LiteralPath $filePath)) { exit 0 }
 
-    # Compute sibling Partial path: foo/BarBean.cs -> foo/BarBeanPartial.cs
-    $partialPath = $normalized -replace 'Bean\.cs$', 'BeanPartial.cs'
-    if (-not (Test-Path -LiteralPath $partialPath)) { exit 0 }
+    $hasMarker = $false
+    try {
+        $head = Get-Content -LiteralPath $filePath -TotalCount 20 -ErrorAction Stop
+        if ($head -match 'AUTO-GENERATED-DO-NOT-EDIT') { $hasMarker = $true }
+    } catch { }
 
-    $name = Split-Path $normalized -Leaf
-    $partialName = Split-Path $partialPath -Leaf
-    $reason = "BLOCKED: '$name' is auto-generated (sibling '$partialName' exists). " +
-              "Per CLAUDE.md, *Bean.cs / *InfoBean.cs auto-generated files must NOT be edited directly. " +
-              "Put extension methods, helper properties, or parsing logic in '$partialName' instead."
-    [Console]::Error.WriteLine($reason)
-    exit 2
+    if ($hasMarker) {
+        $name = Split-Path $normalized -Leaf
+        $partialPath = $normalized -replace 'Bean\.cs$', 'BeanPartial.cs'
+        $partialName = Split-Path $partialPath -Leaf
+        $reason = "BLOCKED: '$name' carries the AUTO-GENERATED-DO-NOT-EDIT marker and is auto-generated. " +
+                  "Per CLAUDE.md, generated files must NOT be edited directly. " +
+                  "Put extension methods, helper properties, or parsing logic in the sibling Partial (e.g. '$partialName') instead."
+        [Console]::Error.WriteLine($reason)
+        exit 2
+    }
 } catch {
     # Parse errors: do not block.
 }

@@ -42,7 +42,7 @@ watched_files:
   - 解锁操作：`AddUnlock(unlockId, unlockLevel = 1)`，新增时触发 `EventsInfo.User_AddUnlock`
   - 解锁检测：`CheckIsUnlock(string)` 支持 `,`（与）与 `|`（或）的复合表达式；以及 `long[] / UnlockEnum / long` 重载
   - 研究等级获取：`GetUnlockResearchLeveByUnlockEnum / ByUnlockId / ByResearchId / GetUnlockResearchLevelByResearchInfo`
-  - 解锁衍生数值：`GetUnlockPortalShowCount` / `GetUnlockLineupNum` / `GetUnlockLineupCreatureNum` / `GetUnlockGameWorldConquerDifficultyLevel` / `GetUnlockCreatureVatNum` / `GetUnlockSacrificeMax`(献祭祭品上限 = 5 + `UnlockEnum.SacrificeNum` 研究等级,满级15) / `GetUnlockSacrificeFailPityAddRate`(献祭失败保底增量 = `SacrificePityRate`(100100003) 等级×5%) / `GetUnlockSacrificeDifferentIdRate`(不同id祭品成功率 = `SacrificeDifferentIdRate`(100100004) 等级×5%)
+  - 解锁衍生数值：`GetUnlockPortalShowCount` / `GetUnlockLineupNum` / `GetUnlockLineupCreatureNum` / `GetUnlockGameWorldConquerDifficultyLevel` / `GetUnlockCreatureVatNum` / `GetUnlockSacrificeMax`(献祭祭品上限 = 5 + `UnlockEnum.SacrificeNum` 研究等级,满级15) / `GetUnlockSacrificeFailPityAddRate`(献祭失败保底增量 = `SacrificePityRate`(100100003) 等级×5%) / `GetUnlockSacrificeDifferentIdRate`(不同id祭品成功率 = `SacrificeDifferentIdRate`(100100004) 等级×5%) / `GetUnlockDropCrystalAddLifeTime`(魔晶掉落额外时长 = `DropCrystalLifeTime`(200200001) 等级×5秒,在 FightCreatureEntity.DropCrystal 生效) / `GetUnlockDemonLordMPMaxAddValue`(魔王魔力上限加成 = `DemonLordMPMax`(200300001) 等级×10) / `GetUnlockDemonLordMPFAddValue`(魔王魔力恢复加成 = `DemonLordMPF`(200400001) 等级×1/秒,后两者在 FightCreatureBean.RefreshBaseAttribute 仅对 FightDefenseCore 叠加到 MP/MPF)
   - 解锁列表：`GetUnlockGameWorldIds` / `GetUnlockCreatureModelIds`
 
 ### 关键文件

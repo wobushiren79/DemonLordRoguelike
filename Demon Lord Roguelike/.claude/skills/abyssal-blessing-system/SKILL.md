@@ -349,6 +349,23 @@ public void SetData(AbyssalBlessingInfoBean info)
 IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 ```
 
+## 影响奖励系统的特殊馈赠（即时BUFF + 计数器模式）
+
+部分特殊馈赠的效果**不是数值属性加成**，也**不在选取当下产生可见效果**，而是要在「征服 BOSS 通关领奖」时改变奖励生成参数。这类馈赠照搬「增殖」的**即时BUFF（`BuffEntityInstant`）模式**实现，关键点：
+
+- 馈赠配置为 `level=0`、`parent_id=0` 的常驻可重复馈赠，`buff_ids` 指向一个 `class_entity` 为自定义 `BuffEntityInstant` 子类的 BUFF。
+- 选取馈赠 → `BuffHandler.AddAbyssalBlessing` 解析 buff_ids → BUFF `SetData` 时立即 `TriggerBuffInstant`，在其中把加成**累加到 `FightBeanForConquer` 上的计数器字段**（不依赖 BUFF 在容器内常驻，故 `level=0` 同 id 被同族替换移除也不影响，可重复选取叠加）。
+- 领奖时 `GameFightLogicConquer.ActionForUIFightSettlementNext` 读取计数器，调整 `RewardSelectBean` 的生成参数。
+
+当前已实现的两个奖励类特殊馈赠：
+
+| 馈赠 | id | buff_ids | class_entity | 计数器字段 | 领奖时效果 |
+|------|----|----------|--------------|-----------|-----------|
+| 奖励多多 | 1000002001 | 3000900001 | `BuffEntityInstantRewardMoreItem` | `FightBeanForConquer.rewardAddItemNum` | `RewardSelectBean.createItemNum += n`（领奖宝箱按奖励数量实时实例化，自动多出对应宝箱） |
+| 再来一瓶 | 1000003001 | 3001000001 | `BuffEntityInstantRewardMoreSelect` | `FightBeanForConquer.rewardAddSelectNum` | `RewardSelectBean.selectNumMax += n`，随后裁剪到不超过 `listReward.Count`（超出的次数无对应宝箱可开，自然失效） |
+
+> 两个馈赠图标当前均用 `ui_abyssalblessing_7`。新增同类「领奖参数型」馈赠时沿用此模式：写一个 `BuffEntityInstant` 子类累加到 `FightBeanForConquer` 计数器 → 在领奖初始化处读取应用；切勿用 BUFF 容器查询累计（`level=0` 同族替换会使容器内只剩 1 个，无法叠加）。详见 `fight-reward-system` skill 的领奖生成链路。
+
 ## 关键文件速查
 
 | 功能 | 文件路径 |
@@ -361,8 +378,9 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 | 多语言 | `Assets/Resources/JsonText/Language_AbyssalBlessingInfo_{cn,en}.txt` |
 | BUFF 添加入口 | `Assets/Scripts/Component/Handler/BuffHandler.cs`（深渊馈赠 BUFF region：AddAbyssalBlessing / RemoveAbyssalBlessingByRootId / GetAbyssalBlessingOwnedLevel / GetDefenseCoreUUID） |
 | BUFF 容器 | `Assets/Scripts/Component/Manager/BuffManager.cs`（dicAbyssalBlessingBuffsActivie / AddAbyssalBlessingEntity / AddAbyssalBlessingBuff / ClearAbyssalBlessing） |
-| 征服模式流程 | `Assets/Scripts/Game/Logic/GameFightLogicConquer.cs` |
-| 数据持有 | `Assets/Scripts/Bean/Game/FightBeanForConquer.cs`（AddAbyssalBlessing） |
+| 征服模式流程 | `Assets/Scripts/Game/Logic/GameFightLogicConquer.cs`（ActionForUIFightSettlementNext 读取奖励类馈赠计数器并应用到 RewardSelectBean） |
+| 数据持有 | `Assets/Scripts/Bean/Game/FightBeanForConquer.cs`（AddAbyssalBlessing；奖励类馈赠计数器 rewardAddItemNum / rewardAddSelectNum） |
+| 奖励类即时BUFF（奖励多多/再来一瓶） | `Assets/Scripts/Game/Buff/BuffEntity/Instant/BuffEntityInstantRewardMoreItem.cs` / `BuffEntityInstantRewardMoreSelect.cs` |
 | 选择界面 | `Assets/Scripts/Component/UI/Game/FightAbyssalBlessing/UIFightAbyssalBlessing.cs`（SetData / RollCandidates） |
 | 选择项 | `Assets/Scripts/Component/UI/Game/FightAbyssalBlessing/UIViewFightAbyssalBlessingItem.cs` |
 | 常驻列表 | `Assets/Scripts/Component/UI/Common/AbyssalBlessing/UIViewAbyssalBlessingInfoContent.cs` |

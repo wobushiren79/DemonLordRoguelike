@@ -535,6 +535,9 @@ public partial class FightCreatureEntity
             }
 
             FightDropCrystalBean fightDropCrystal = FightHandler.Instance.manager.GetFightDropCrystalBean(dropCrystal, creatureObj.transform.position);
+            //存在时长 = 基础时长 + 研究加成(魔晶掉落时长 每级+5秒)；显式赋值避免对象池复用残留的旧时长
+            var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+            fightDropCrystal.lifeTime = FightDropCrystalBean.BASE_LIFE_TIME + userUnlock.GetUnlockDropCrystalAddLifeTime();
             //标记掉落者 BUFF事件回调按此过滤 区分真实生物掉落与BUFF追加掉落
             fightDropCrystal.dropperCreatureUUId = fightCreatureData?.creatureData?.creatureUUId;
             //掉落水晶

@@ -64,7 +64,8 @@ userData.AddBackpackCreature(creatureData) + SaveUserData()   // 入账并落盘
   - 构造 `GashaponItemBean(creatureId, gashaponMachineCreature)` 内部依次：`RandomSkill()` 随机皮肤 → `RandomAttribute()` 随机属性 → `RandomRarity()` 随机稀有度
   - **随机属性共用逻辑**：`RandomAttribute()` 委托 `CreatureBean.RandomAttributeForCreate(userData)`（位于 `CreatureBeanPartial.cs`，点数取 `UserLimmitBean.gashaponRandomAttributeNum`，基础值默认5，`<=0` 不加点）
   - **初始魔物固定属性（不再随机）**：新建存档赠送的 3 个初始魔物（`UIMainCreate.OnClickForCreate`）改用 `CreatureBean.FixedAttributeForCreate(userData, attributeType)` —— 点数预算同样取 `UserLimmitBean.gashaponRandomAttributeNum`，但全部固定堆到单一属性：`NpcId1→HP`、`NpcId2→DR`、`NpcId3→ASPD`（底层 `CreatureAttributeBean.AddFixedAttributeForCreate`，单点增量复用 `CreatureUtil.GetAttributePointAddValue`：HP/DR 每点+10、ASPD 每点+1，故 5 点 = HP+50 / DR+50 / ASPD+5）；注意该场景存档尚未 `SetUserData`，需显式传入新建的 `UserDataBean`
-  - **稀有度随机**：依次判定 UR→SSR→SR→R→N，每档由 `UnlockEnum.GashaponRarity*` / `GashaponRarity*Rate` 控制是否开放与成功率；命中后通过 `BuffTypeEnum.CreatureRarity*` 给生物叠加对应稀有度 BUFF（存入 `CreatureBean.dicRarityBuff`）
+  - **稀有度随机**：依次判定 UR→SSR→SR→R→N，每档由 `UnlockEnum.GashaponRarity*` / `GashaponRarity*Rate` 控制是否开放与成功率；命中后通过 `BuffTypeEnum.CreatureRarity*` 从对应 `buff_type`(11=R/12=SR/13=SSR) 的 BUFF 池随机抽 1 条叠加给生物（存入 `CreatureBean.dicRarityBuff`），高稀有度会叠加各低档各 1 条（如 SSR 给 R+SR+SSR 各 1）
+  - **R 稀有度(buff_type=11) BUFF 池**：HP/DR/ATK 增益(+10~20%)、ASPD 攻速增益(+50~100%)、RCD 召唤CD减益、CMP 召唤魔力消耗减益(均 -25~50%，负 rate)；RCD/CMP 为减益：RCD 走 `GetAttribute(RCD, true)`（含深渊馈赠按需叠加，原 GetRCD 已并入）、CMP 走 `GetAttribute(CMP)`（基础CMP×(1+等级/稀有度增加倍率)后再叠加BUFF；`GetAttributeInt(CMP)` 为 int 封装）生效（详见 buff-system skill）。新增/调整稀有度 BUFF 只需在 `excel_buff_info` + 多语言 `excel_language[BuffInfo]` 配表（class_entity=BuffEntityAttribute），属性类 BUFF 自动进入对应 buff_type 池
 
 ### 配置数据（`StoreGashaponMachineInfoBean`，自动生成 → 扩展写 Partial）
 | 字段 | 含义 | 示例 |

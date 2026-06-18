@@ -103,7 +103,8 @@ UIPopupCreatureCardDetails   // 卡片详情弹窗
 // 获取卡片组件并设置数据
 UIViewCreatureCardItem cardItem = GetComponent<UIViewCreatureCardItem>();
 cardItem.SetData(creatureData, CardUseStateEnum.Show);
-// SetData 内部会自动填充卡片上的 MPText（SetCreateMP）：显示召唤该生物需要消耗的魔力 CreatureInfo.create_mp，
+// SetData 内部会自动填充卡片上的 MPText（SetCreateMP）：显示召唤该生物需要消耗的魔力 creatureData.GetAttributeInt(CreatureAttributeTypeEnum.CMP)
+//（= 基础CMP×(1+等级/稀有度增加倍率) 再经自身/稀有度BUFF修正，如扭蛋 CMP 减益；卡片详情 UIViewCreatureCardDetails.SetMP 同此），
 // 战斗中放置卡片时从魔王当前魔力(MPCurrent)中扣除，不足则 Toast"魔力不足"
 ```
 
@@ -296,8 +297,8 @@ public void PutCard(Vector3 worldPosition)
     if (selectCreatureCard == null)
         return;
     
-    // 检测魔王魔力是否足够（create_mp=创建消耗），不足则Toast"魔力不足"(UIText 50006)并中止
-    // 足够则 ChangeMP(-create_mp) 扣除魔力并刷新魔王MPShow显示
+    // 检测魔王魔力是否足够（GetAttributeInt(CMP)=基础CMP×(1+等级/稀有度增加倍率)经BUFF修正后的召唤消耗），不足则Toast"魔力不足"(UIText 50006)并中止
+    // 足够则 ChangeMP(-GetAttributeInt(CMP)) 扣除魔力并刷新魔王MPShow显示
     // 创建生物实体...
     TriggerEvent(EventsInfo.GameFightLogic_PutCard, selectCreatureCard);
     selectCreatureCard = null;

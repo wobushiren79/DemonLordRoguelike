@@ -23,7 +23,7 @@ public partial class UIViewCreatureCardItem : BaseUIView
         SetClass(creatureData.creatureInfo.class_icon_res);
         SetRarity(creatureData.rarity);
         SetStarLevel(creatureData.starLevel);
-        SetCreateMP(creatureData.creatureInfo.create_mp);
+        SetCreateMP(creatureData.GetAttributeInt(CreatureAttributeTypeEnum.CMP));
         SetPopupShow(creatureData, cardUseState);
         RefreshCardState(this.cardData.cardState);
     }
@@ -68,7 +68,7 @@ public partial class UIViewCreatureCardItem : BaseUIView
     }
 
     /// <summary>
-    /// 设置召唤消耗魔力（create_mp=召唤该生物需要消耗的魔力 战斗中从魔王魔力中扣除）
+    /// 设置召唤消耗魔力（CMP=召唤该生物需要消耗的魔力，基础CMP×(1+等级/稀有度增加倍率)，战斗中从魔王魔力中扣除）
     /// </summary>
     public void SetCreateMP(int createMP)
     {

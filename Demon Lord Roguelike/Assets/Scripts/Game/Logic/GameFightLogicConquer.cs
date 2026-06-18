@@ -173,7 +173,14 @@ public class GameFightLogicConquer : GameFightLogic
             //通关BOSS → 打开领奖界面
             var uiRewardSelect = UIHandler.Instance.OpenUIAndCloseOther<UIRewardSelect>();
             RewardSelectBean rewardSelectData = new RewardSelectBean();
+            //深渊馈赠「奖励多多」：增加生成的奖励物品数量(领奖宝箱按奖励数量实时生成，自动多出对应宝箱)，须在InitData生成前设置
+            rewardSelectData.createItemNum += fightDataForConquer.rewardAddItemNum;
             rewardSelectData.InitData(fightData);
+            //深渊馈赠「再来一瓶」：增加可选择奖励次数
+            rewardSelectData.selectNumMax += fightDataForConquer.rewardAddSelectNum;
+            //可选次数不超过实际奖励数量，避免多余次数无对应宝箱可开
+            if (rewardSelectData.selectNumMax > rewardSelectData.listReward.Count)
+                rewardSelectData.selectNumMax = rewardSelectData.listReward.Count;
             uiRewardSelect.SetData(rewardSelectData, ActionForUIRewardSelectEnd);
         }
         else

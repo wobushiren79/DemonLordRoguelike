@@ -32,7 +32,9 @@ BuffBaseEntity                              # 抽象基类（事件回调 + Show
 ├── BuffEntityAttribute                     # 属性BUFF（实现 IAttributeModifierSource）
 │   └── BuffEntityAttributeAttackTime       # 改攻击前摇/动画时间的属性BUFF（独立通道）
 ├── BuffEntityInstant                       # 瞬时BUFF（SetData中立即触发并isValid=false）
-│   └── BuffEntityInstantCloneDefenseCreature
+│   ├── BuffEntityInstantCloneDefenseCreature   # 深渊馈赠「增殖」：随机复制一个防守生物
+│   ├── BuffEntityInstantRewardMoreItem         # 深渊馈赠「奖励多多」：累加 FightBeanForConquer.rewardAddItemNum（领奖时+1奖励物品）
+│   └── BuffEntityInstantRewardMoreSelect       # 深渊馈赠「再来一瓶」：累加 FightBeanForConquer.rewardAddSelectNum（领奖时+1可选次数）
 ├── BuffEntityConditional                   # 条件触发（UpdateBuffTime 只走总时长，不走周期）
 │   ├── BuffEntityConditionalAttack         # 攻击/受击事件触发：发起一次自定义AttackMode
 │   ├── BuffEntityConditionalAttackAgain    # 触发立即再攻击一次（复用当前AI意图）
@@ -345,10 +347,13 @@ ASPD = 4          // 攻击速度
 MSPD = 5          // 移动速度
 CRT = 6           // 暴击率（rate 走 Flat）
 EVA = 7           // 闪避率（rate 走 Flat）
-RCD = 8           // 冷却缩减
+RCD = 8           // 冷却缩减（实为复活CD；扭蛋稀有度BUFF可挂 class_entity_data=RCD 负rate 减少召唤CD）
 HPRegeneration = 11
+CMP               // 召唤魔力消耗（基础值=CreatureInfo.CMP；GetAttribute(CMP)=基础CMP×(1+等级/稀有度增加倍率)，扭蛋稀有度BUFF负rate 再减少召唤耗魔）
 ...
 ```
+
+> **扭蛋稀有度 R BUFF 池（buff_type=11）现含**：HP/DR/ATK 增益、ASPD 攻速增益(+50~100%)、RCD 召唤CD减益、CMP 召唤魔力消耗减益(均 -25~50%)。RCD/CMP 减益走负 rate：RCD 走 `GetAttribute(RCD, true)`（基础值/角色加点/装备/自身BUFF→再按需叠加深渊馈赠全局池；includeAbyssalBlessing=true 开启，原 GetRCD 已并入 GetAttribute），CMP 在 `GetAttribute(CMP)` 管线内叠加（先 基础CMP×(1+等级/稀有度增加倍率)，再叠加BUFF；`GetAttributeInt(CMP)` 为 int 封装）。
 
 ## 常用代码模板
 
