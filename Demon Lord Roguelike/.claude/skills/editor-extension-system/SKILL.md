@@ -35,7 +35,8 @@ EditorWindow (Unity)
 ├── SkinMeshEditorWindow           # 皮肤网格编辑器
 ├── ProjectAssetCollectorWindow    # 项目资源收集器
 ├── StyleBaseWindow                # 样式基础窗口
-└── GameTestEditor                 # 游戏测试编辑器 (Inspector扩展)
+├── GameTestEditor                 # 游戏测试编辑器 (Inspector扩展)
+└── PixelDaEditorWindow            # PixelDa 像素美术生成 (AI 文生图/图编辑/图生视频/抽帧/音乐)
 ```
 
 ---
@@ -257,6 +258,37 @@ Popup 类型的 Hierarchy 扩展。
 
 ---
 
+## PixelDa 像素美术生成 (PixelDaEditorWindow)
+
+**菜单**: `Custom/AI/像素图生成`
+
+**目录**: `Assets/FrameWork/Editor/Base/Window/PixelDa/`（纯 C# 实现，复刻开源工具 dada-x/pixelda 的全部功能，无 Python 依赖）
+
+| 文件 | 职责 |
+|------|------|
+| `PixelDaEditorWindow.cs` | 主窗口：文生图/图编辑/图生视频/视频抽帧/音乐/历史/设置 七个页签 |
+| `PixelDaCore.cs` | `PixelDaConfig`(EditorPrefs 持久化：双提供商 Key/端点/模型) + `PixelDaDispatcher`(后台任务回主线程) |
+| `PixelDaApi.cs` | HttpClient 直连豆包(Ark)/通义(DashScope) REST：文生图、图编辑、图生视频(异步轮询)、音乐 ABC |
+| `PixelDaImageUtil.cs` | 纯色背景剔除(洪水填充)、精灵表横向合成、PNG 读写 |
+| `PixelDaFrameUtil.cs` | 调系统 ffmpeg 按均匀时间戳抽帧、zip 打包 |
+| `PixelDaMusicUtil.cs` | ABC 记谱解析 → 方波(chiptune)合成 WAV/AudioClip |
+
+### 功能与提供商
+
+- 支持**豆包**(`doubao-seedream-4-0`/`seedance`/`seed-1-6`) 与**通义**(`wan2.5-t2i`/`wanx2.1-imageedit`/`wan2.5-i2v`/`qwen-plus`)，设置页填各自 API Key 并可切换。
+- 端点 URL 与模型名在「设置→高级」可改（防官方接口变动写死失效）。
+- 输出统一存 `Assets/Out/PixelDa/<images|videos|frames|sprites|music|zips>/`，自动 `AssetDatabase.Refresh` 导入工程。
+
+### 与原工具的纯 C# 实现差异
+
+- **去背景**为「纯色背景剔除」(采样四角主色 + 阈值 + 边缘洪水填充)，适配纯色背景像素图，非原工具的 rembg/u2net AI 抠图。
+- **抽帧**依赖系统 ffmpeg（设置页可配路径），非原工具的 OpenCV。
+- **音乐**用方波合成 ABC 记谱模拟 8-bit chiptune（实现常见 ABC 子集），非原工具的 music21+8bit 音色库渲染。
+
+> 该工具有专属开发文档：[pixelda](../pixelda/SKILL.md) skill 与 [pixelda](../../agents/pixelda.md) agent，详细功能/接口/线程模型见其中。
+
+---
+
 ## 创建新的编辑器窗口
 
 ### 继承 EditorWindow 创建编辑器工具
@@ -374,6 +406,7 @@ public class InspectorMyComponent : Editor
 | AssetBundle 工具 | `Assets/FrameWork/Editor/AssetBundles/` |
 | Steam 编辑器 | `Assets/FrameWork/Editor/Steamworks.NET/` |
 | 项目编辑器 | `Assets/Editor/` |
+| PixelDa 像素生成工具 | `Assets/FrameWork/Editor/Base/Window/PixelDa/` |
 | 游戏测试编辑器 | `Assets/Editor/GameTestEditor.cs` + `GameTestEditorPartial.cs` |
 | Excel 配置目录 | `Assets/Data/Excel/` |
 
