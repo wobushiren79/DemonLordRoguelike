@@ -1,0 +1,88 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: AtlasForAchievement
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 0
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings:
+    - serializedVersion: 4
+      m_BuildTarget: DefaultTexturePlatform
+      m_MaxTextureSize: 2048
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: -1
+      m_TextureCompression: 0
+      m_CompressionQuality: 50
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 0
+      m_IgnorePlatformSupport: 0
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 0
+      enableTightPacking: 1
+      enableAlphaDilation: 0
+    secondaryTextureSettings: {}
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: 02f8c83162829cc4cbff2059fbce4cda, type: 3}
+    bindAsDefault: 1
+    isAtlasV2: 0
+    cachedData: {fileID: 0}
+    packedSpriteRenderDataKeys:
+    - 81f43b61a2974a74e8a969f1c5e2f781: 21300000
+    - 8e2bb273b301395499b0e797538bf5de: 21300000
+    - cadd61642b664b94ab5ec78bf6c76ae9: 21300000
+    - 093f8b26635a2ad40b476798bd4b304f: 21300000
+    - 5ecb08d76e498104782fce9716ac5e3d: 21300000
+    - 0b034988aea393b408f80295eb103468: 21300000
+    - 0a3188a98cf031f459a6c916d6af8834: 21300000
+    - 8ecc1c0be0a25a144ba4be7ca3744157: 21300000
+    - 01a01b8bfc4dac9428aab07bb9dd01be: 21300000
+    - 09af21bf9d00fe74787d6d30e77ff420: 21300000
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 81f43b61a2974a74e8a969f1c5e2f781, type: 3}
+  - {fileID: 21300000, guid: 8e2bb273b301395499b0e797538bf5de, type: 3}
+  - {fileID: 21300000, guid: cadd61642b664b94ab5ec78bf6c76ae9, type: 3}
+  - {fileID: 21300000, guid: 093f8b26635a2ad40b476798bd4b304f, type: 3}
+  - {fileID: 21300000, guid: 5ecb08d76e498104782fce9716ac5e3d, type: 3}
+  - {fileID: 21300000, guid: 0b034988aea393b408f80295eb103468, type: 3}
+  - {fileID: 21300000, guid: 0a3188a98cf031f459a6c916d6af8834, type: 3}
+  - {fileID: 21300000, guid: 8ecc1c0be0a25a144ba4be7ca3744157, type: 3}
+  - {fileID: 21300000, guid: 01a01b8bfc4dac9428aab07bb9dd01be, type: 3}
+  - {fileID: 21300000, guid: 09af21bf9d00fe74787d6d30e77ff420, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - ui_abyssalblessing_7
+  - ui_abyssalblessing_1
+  - ui_abyssalblessing_3
+  - ui_abyssalblessing_5
+  - ui_abyssalblessing_8
+  - ui_abyssalblessing_0
+  - ui_abyssalblessing_9
+  - ui_abyssalblessing_4
+  - ui_abyssalblessing_6
+  - ui_abyssalblessing_2
+  m_RenderDataMap: {}
+  m_Tag: AtlasForAchievement
+  m_IsVariant: 0

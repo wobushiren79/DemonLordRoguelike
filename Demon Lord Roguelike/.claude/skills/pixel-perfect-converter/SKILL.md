@@ -10,7 +10,7 @@ watched_files:
 ## 概述
 
 [PixelPerfectConverterWindow.cs](Assets/FrameWork/Editor/Base/Window/PixelPerfectConverterWindow.cs)
-（命名空间 `PixelPerfectTool`，菜单 **Custom/工具弹窗/像素完美转换器**）是一个 `EditorWindow`，
+（命名空间 `PixelPerfectTool`，菜单 **Custom/工具弹窗/像素完美转换器**；另在 Project 窗口选中图片后右键 **Assets/像素完美转换器** 可直接用该图打开）是一个 `EditorWindow`，
 忠实移植自开源网页工具 [Void8Bit / Pixel-Perfect-AI-Art-Converter](https://github.com/Void8Bit/Pixel-Perfect-AI-Art-Converter)。
 它把 AI 生成的「看起来像像素画、实则没有像素对齐」的图，按网格重采样为真正逐像素对齐的像素图，并可编辑、导出。
 
@@ -20,9 +20,13 @@ watched_files:
 ## 三步式工作流
 
 ### 步骤① 设置（`DrawStep1`）
-- 网格宽/高下拉：档位 `kGridOptions` = `{16,32,48,64,80,96,112,128,256,512,1024}`。
+- 网格宽/高下拉：档位 `kGridOptions` = `{16,32,48,64,80,96,112,128,256,512,1024}`，默认目标大小 `_gridWidth/_gridHeight` = **32×32**。
 - 源图：拖拽区(`DrawSourceDropArea`)或 ObjectField，支持工程内 Texture / 外部图片文件。
 - `LoadSource`：读可读像素(`ReadSourcePixels`，按文件解码，回退 RenderTexture) → 按 `kMaxImageSize`=1024 等比缩小 → 生成自上而下采样数组 `_srcTopDown` 与显示纹理 `_srcDisplayTex`。
+
+### 右键快捷入口（`OpenFromSelection`）
+- `[MenuItem("Assets/像素完美转换器")]`：在 Project 窗口选中一张 `Texture2D` 图片后右键，直接打开窗口并把该图设为源图、自动 `LoadSource` + `EnterStep2`，跳过步骤①手动选图。
+- `OpenFromSelectionValidate`（`[MenuItem(..., true)]` 校验函数）：仅当 `Selection.activeObject is Texture2D` 时菜单项可用，否则置灰。
 
 ### 步骤② 定位与转换（`DrawStep2`）
 - 预览格子尺寸 `_previewCellSize`(4~16)：画布每格的「画布像素」数（= canvas.width/gridWidth）。

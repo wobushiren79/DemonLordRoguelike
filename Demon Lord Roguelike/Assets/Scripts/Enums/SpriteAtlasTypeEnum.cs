@@ -14,6 +14,7 @@ public enum SpriteAtlasTypeEnum
     Skins,//皮肤
     AbyssalBlessing,//深渊馈赠
     Research,//研究
+    Achievement,//成就
 }
 
 /// <summary>

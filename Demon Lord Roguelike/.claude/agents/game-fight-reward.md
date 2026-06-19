@@ -26,20 +26,20 @@ watched_files:
 | **A. 战斗内即时掉落** | 敌人死亡（每关都有） | 水晶 Crystal | 实时拾取直接入账 |
 | **B. 结算后领奖界面** | 仅"征服模式 BOSS 关通关" | 装备 + 魔晶 | 玩家在 UIRewardSelect 选择后入账 |
 
-**关键**：结算面板 `UIFightSettlement` 本身**不发任何奖励**，它只是一个可排序的战斗数据统计排行榜（伤害/击杀/受伤/经验）。真正的发奖逻辑在 `UIRewardSelect` + `RewardSelectBean`。
+**关键**：结算面板 `UIFightSettlement` 本身**不发任何奖励**，它只是一个可排序的战斗数据统计排行榜（伤害/击杀/受伤/治疗/受疗/经验）。真正的发奖逻辑在 `UIRewardSelect` + `RewardSelectBean`。
 
 ## 职责范围
 
 ### 数据 Bean
 - **FightRecordsBean** - 战斗统计记录容器（挂在 `FightBean.fightRecordsData`），含 `totalAddExp`、`dicRecordsCreatureData` 等
-- **FightRecordsCreatureBean** - 单个生物的战斗记录（damage/killNum/damageReceived/exp/regainHP）
+- **FightRecordsCreatureBean** - 单个生物的战斗记录（damage/killNum/damageReceived/exp/regainHP 输出治疗/regainHPReceived 接收治疗/regainDR/regainDRReceived）
 - **RewardSelectBean** - 领奖数据，负责生成奖励物品列表 `listReward`（装备 + 魔晶）
 - **RewardSelectTestData** - 测试模式下的领奖参数（品质/属性/数量/魔王专属概率）
 - **FightDropCrystalBean** - 战斗内掉落水晶实例
 - **FightTypeConquerInfoBean(Partial)** - 征服配置（`drop_crystal` / `reward_crystal` / `reward_equip_rarity` / `reward_equip_attribute_add`）
 
 ### UI
-- **UIFightSettlement** - 结算数据排行榜（4 维度排序：伤害/击杀/受伤/经验），只展示不发奖
+- **UIFightSettlement** - 结算数据排行榜（6 维度展示：伤害/击杀/受伤/治疗/受疗/经验；排序当前仅接通伤害/击杀/受伤/经验 4 维），只展示不发奖
 - **UIViewFightSettlementItem** - 单生物统计 cell（带 4 个进度条）
 - **UIViewFightSettlementItemProgress** - 单条进度条组件
 - **UIRewardSelect** - BOSS 通关领奖界面（宝箱选择 + 跳过预览），唯一发奖 UI

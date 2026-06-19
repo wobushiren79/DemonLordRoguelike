@@ -26,6 +26,16 @@ public partial class UIViewFightSettlementItem : BaseUIView
     /// </summary>
     protected static readonly Color ExpProgressColor = ColorUtil.ParseHtmlString("#1ABC9C");
 
+    /// <summary>
+    /// 输出治疗量进度条颜色（亮绿）
+    /// </summary>
+    protected static readonly Color HealingDoneProgressColor = ColorUtil.ParseHtmlString("#2ECC71");
+
+    /// <summary>
+    /// 接收治疗量进度条颜色（浅绿）
+    /// </summary>
+    protected static readonly Color HealingReceivedProgressColor = ColorUtil.ParseHtmlString("#58D68D");
+
     #endregion
 
     /// <summary>
@@ -45,6 +55,8 @@ public partial class UIViewFightSettlementItem : BaseUIView
             SetProgressForKill(fightRecordsData.totalKillNumForDef, fightRecordsCreatureData.killNum);
             SetProgressForDamage(fightRecordsData.totalDamageForDef, fightRecordsCreatureData.damage);
             SetProgressForDamageReceived(fightRecordsData.totalDamageReceivedForDef, fightRecordsCreatureData.damageReceived);
+            SetProgressForHealingDone(fightRecordsData.totalRegainHPForDef, fightRecordsCreatureData.regainHP);
+            SetProgressForHealingReceived(fightRecordsData.totalRegainHPReceivedForDef, fightRecordsCreatureData.regainHPReceived);
             SetPrgoressForExp(fightRecordsData.totalAddExp, fightRecordsCreatureData.exp);
         }
         else
@@ -58,7 +70,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
     /// </summary>
     public void SetCreatureName(string creatureName)
     {
-        ui_Name.text = creatureName;
+        ui_Name_TextMeshProUGUI.text = creatureName;
     }
 
     /// <summary>
@@ -111,6 +123,26 @@ public partial class UIViewFightSettlementItem : BaseUIView
         string title = TextHandler.Instance.GetTextById(50004);
         ui_UIViewFightSettlementItemProgress_DamageReceived.SetProgressColor(DamageReceivedProgressColor);
         ui_UIViewFightSettlementItemProgress_DamageReceived.SetData(title, maxDamageReceived, damageReceived);
+    }
+
+    /// <summary>
+    /// 设置输出治疗量（治疗别人）
+    /// </summary>
+    public void SetProgressForHealingDone(long maxHealingDone, long healingDone)
+    {
+        string title = TextHandler.Instance.GetTextById(50007);
+        ui_UIViewFightSettlementItemProgress_HealingDone.SetProgressColor(HealingDoneProgressColor);
+        ui_UIViewFightSettlementItemProgress_HealingDone.SetData(title, maxHealingDone, healingDone);
+    }
+
+    /// <summary>
+    /// 设置接收治疗量（被别人治疗）
+    /// </summary>
+    public void SetProgressForHealingReceived(long maxHealingReceived, long healingReceived)
+    {
+        string title = TextHandler.Instance.GetTextById(50008);
+        ui_UIViewFightSettlementItemProgress_HealingReceived.SetProgressColor(HealingReceivedProgressColor);
+        ui_UIViewFightSettlementItemProgress_HealingReceived.SetData(title, maxHealingReceived, healingReceived);
     }
 
     /// <summary>
