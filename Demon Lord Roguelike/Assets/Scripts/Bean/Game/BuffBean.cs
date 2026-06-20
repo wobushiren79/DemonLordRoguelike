@@ -21,6 +21,12 @@ public class BuffBean
     //触发时间 -1为无限
     public float trigger_time = -1f;
     
+    /// <summary>
+    /// 构造BUFF运行时数据。isRandom=true时(扭蛋稀有度BUFF)对触发值做整数化闭区间随机
+    /// </summary>
+    /// <param name="id">buffId</param>
+    /// <param name="isRandom">是否对触发值随机取值(扭蛋创建时为true)</param>
+    /// <param name="createRate">BUFF创建几率</param>
     public BuffBean(long id, bool isRandom = false, float createRate = 1f)
     {
         this.id = id;
@@ -28,9 +34,16 @@ public class BuffBean
         var buffInfo = BuffInfoCfg.GetItemData(id);
         if (isRandom)
         {
-            this.trigger_value = UnityEngine.Random.Range(buffInfo.trigger_value_min, buffInfo.trigger_value);
-            this.trigger_value_rate = UnityEngine.Random.Range(buffInfo.trigger_value_rate_min, buffInfo.trigger_value_rate);
-            this.trigger_chance = UnityEngine.Random.Range(buffInfo.trigger_chance_min, buffInfo.trigger_chance);
+            //触发改变的值：整数闭区间随机 [min, max]（如1~2只会得到1或2，不会出现1.1）
+            int triggerValueMin = Mathf.RoundToInt(buffInfo.trigger_value_min);
+            int triggerValueMax = Mathf.RoundToInt(buffInfo.trigger_value);
+            this.trigger_value = UnityEngine.Random.Range(triggerValueMin, triggerValueMax + 1);
+            //触发改变的值百分比：整数百分点闭区间随机 [min, max]（如10%~20%只会得到11%、12%这样的整数百分比，不会出现11.5%）
+            int triggerValueRateMin = Mathf.RoundToInt(buffInfo.trigger_value_rate_min * 100);
+            int triggerValueRateMax = Mathf.RoundToInt(buffInfo.trigger_value_rate * 100);
+            this.trigger_value_rate = UnityEngine.Random.Range(triggerValueRateMin, triggerValueRateMax + 1) / 100f;
+            //触发几率：直接取固定配置值(不再随机)
+            this.trigger_chance = buffInfo.trigger_chance;
         }
         else
         {

@@ -43,7 +43,7 @@ watched_files:
 
 ### UI
 - **UIAchievement** - 主界面，双 Tab（成就 / 统计），含 UIAchievementComponent partial
-- **UIViewAchievementCard** - 成就卡片，5 列网格 cell；传入**成就配置**，内部用 `GetClaimedLevelCount` 解析"当前激活等级索引"展示：进行中(未达成灰/可领取绿，进度 `Lv.当前/总  当前/目标` + 当前级奖励) / **已完成**(全部领完，关蒙版显示"已完成")。点击领取**当前激活等级**，先用 DOTween 播放 `ui_Content` 弹跳动画（`AnimForUnlock`，锁屏防重复点击）再回调 `TryUnlockNextLevel(info.id)`+刷新(推进到下一级)，`SetData` 复用 cell 时 `ClearAnim` 复位
+- **UIViewAchievementCard** - 成就卡片，5 列网格 cell；传入**成就配置**，内部用 `GetClaimedLevelCount` 解析"当前激活等级索引"展示：进行中(未达成灰/可领取绿，等级角标 `ui_Level`=`Lv.当前/总` 单独显示，进度 `ui_TxtProgress`=`当前/目标` + 当前级奖励) / **已完成**(全部领完，关蒙版隐藏 `ui_Level` 显示"已完成")。点击领取**当前激活等级**，先用 DOTween 播放 `ui_Content` 弹跳动画（`AnimForUnlock`，节奏放慢，锁屏防重复点击）再回调 `TryUnlockNextLevel(info.id)`+刷新(推进到下一级)，`SetData` 复用 cell 时 `ClearAnim` 复位
 - **UIViewAchievementStatistic** - 统计列表 cell，一行一条
 
 ### 解锁前置

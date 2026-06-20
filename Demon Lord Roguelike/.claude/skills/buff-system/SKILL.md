@@ -231,9 +231,9 @@ public class BuffEntityPeriodicCustom : BuffEntityPeriodic
 | `class_entity_events` | string | 监听事件名（必须在 `BuffEventDispatcher.dicBindings` 中已注册） |
 | `class_entity_data` | string | 实体数据（属性BUFF填 `CreatureAttributeTypeEnum`；Attack类填 attackModeId） |
 | `pre_info` | string | 前置条件 `preId:value\|preId2:value2` |
-| `trigger_value` / `trigger_value_min` | float | 触发值（min 用于随机化下限） |
-| `trigger_value_rate` / `trigger_value_rate_min` | float | 触发值百分比 |
-| `trigger_chance` / `trigger_chance_min` | float | 触发几率（0-1，0=必然触发） |
+| `trigger_value` / `trigger_value_min` | float | 触发值。扭蛋(isRandom)创建时在 **整数闭区间 [min,max]** 内随机（如1~2只得1/2，不出小数） |
+| `trigger_value_rate` / `trigger_value_rate_min` | float | 触发值百分比。扭蛋(isRandom)创建时按 **整数百分点闭区间 [min,max]** 随机（如10%~20%只得11%/12%等整数，不出11.5%） |
+| `trigger_chance` | float | 触发几率（0-1，0=必然触发）。**固定值不随机**（原 `trigger_chance_min` 已废弃删除） |
 | `trigger_num` | int | 触发次数，0为无限 |
 | `trigger_time` | float | 触发间隔（秒），-1为无限 |
 | `stack_mode` | int | 堆叠策略，见 `BuffStackMode` |

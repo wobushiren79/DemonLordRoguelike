@@ -39,7 +39,7 @@ watched_files:
 - **FightTypeConquerInfoBean(Partial)** - 征服配置（`drop_crystal` / `reward_crystal` / `reward_equip_rarity` / `reward_equip_attribute_add`）
 
 ### UI
-- **UIFightSettlement** - 结算数据排行榜（6 维度展示：伤害/击杀/受伤/治疗/受疗/经验；排序当前仅接通伤害/击杀/受伤/经验 4 维），只展示不发奖
+- **UIFightSettlement** - 结算数据排行榜（6 维度展示：伤害/击杀/受伤/治疗/受疗/经验；排序当前仅接通伤害/击杀/受伤/经验 4 维），只展示不发奖；`OpenUI` 重写里调用 `AudioHandler.Instance.StopMusic()` 在结算界面打开时停止战斗音乐
 - **UIViewFightSettlementItem** - 单生物统计 cell（带 4 个进度条）
 - **UIViewFightSettlementItemProgress** - 单条进度条组件
 - **UIRewardSelect** - BOSS 通关领奖界面（宝箱选择 + 跳过预览），唯一发奖 UI

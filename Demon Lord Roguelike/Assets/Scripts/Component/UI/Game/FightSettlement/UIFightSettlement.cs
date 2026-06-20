@@ -24,6 +24,13 @@ public partial class UIFightSettlement : BaseUIComponent
         ui_OrderBtn_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000014), PopupEnum.Text);
     }
 
+    public override void OpenUI()
+    {
+        base.OpenUI();
+        //结算界面打开时停止战斗音乐的播放
+        AudioHandler.Instance.StopMusic();
+    }
+
     public override void CloseUI()
     {
         base.CloseUI();

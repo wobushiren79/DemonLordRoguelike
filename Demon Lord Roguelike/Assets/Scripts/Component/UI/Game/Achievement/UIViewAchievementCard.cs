@@ -145,7 +145,22 @@ public partial class UIViewAchievementCard : BaseUIView
             ui_Progress.gameObject.SetActive(true);
         }
 
-        //进度文本与颜色
+        //等级角标(单独显示, 不再与进度文本拼在一起): 进行中显示"Lv.当前/总", 已完成隐藏
+        if (ui_Level != null)
+        {
+            if (isCompleted)
+            {
+                ui_Level.gameObject.SetActive(false);
+            }
+            else
+            {
+                ui_Level.gameObject.SetActive(true);
+                ui_Level.text = string.Format(TextHandler.Instance.GetTextById(4000016), currentLevelIndex + 1, levelCount);
+                ui_Level.color = reached ? ProgressColorReached : ProgressColorDefault;
+            }
+        }
+
+        //进度文本与颜色(只显示"当前进度/目标", 等级移至 ui_Level 单独显示)
         if (ui_TxtProgress != null)
         {
             if (isCompleted)
@@ -156,13 +171,12 @@ public partial class UIViewAchievementCard : BaseUIView
             }
             else
             {
-                //进行中: "Lv.当前/总  当前进度/目标"
+                //进行中: "当前进度/目标"
                 long target = info.GetLevelTargetValue(currentLevelIndex);
                 long progress = AchievementHandler.Instance.GetAchievementProgress(info);
                 if (progress > target) progress = target;
-                string levelText = string.Format(TextHandler.Instance.GetTextById(4000016), currentLevelIndex + 1, levelCount);
                 string countText = string.Format(TextHandler.Instance.GetTextById(4000006), info.FormatValueByType(progress), info.FormatValueByType(target));
-                ui_TxtProgress.text = levelText + "  " + countText;
+                ui_TxtProgress.text = countText;
                 ui_TxtProgress.color = reached ? ProgressColorReached : ProgressColorDefault;
             }
         }
@@ -236,10 +250,10 @@ public partial class UIViewAchievementCard : BaseUIView
         ClearAnim();
         UIHandler.Instance.ShowScreenLock();
         animForUnlock = DOTween.Sequence();
-        //弹一下放大再回弹, 表现"领取成功"
-        animForUnlock.Append(ui_Content.DOScale(Vector3.one * 1.18f, 0.12f).SetEase(Ease.OutBack));
-        animForUnlock.Join(ui_Content.DOShakeAnchorPos(0.2f, 8f, 20));
-        animForUnlock.Append(ui_Content.DOScale(Vector3.one, 0.1f).SetEase(Ease.InBack));
+        //弹一下放大再回弹, 表现"领取成功"(节奏放慢, 表现更明显)
+        animForUnlock.Append(ui_Content.DOScale(Vector3.one * 1.18f, 0.28f).SetEase(Ease.OutBack));
+        animForUnlock.Join(ui_Content.DOShakeAnchorPos(0.45f, 8f, 20));
+        animForUnlock.Append(ui_Content.DOScale(Vector3.one, 0.22f).SetEase(Ease.InBack));
         animForUnlock.OnComplete(() =>
         {
             UIHandler.Instance.HideScreenLock();

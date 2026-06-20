@@ -196,7 +196,7 @@ InitData(fightData, testData = null)
 
 ## 约束与注意事项
 
-- 结算面板 `UIFightSettlement` 只负责展示统计，**不要在此加发奖逻辑**。
+- 结算面板 `UIFightSettlement` 只负责展示统计，**不要在此加发奖逻辑**；其 `OpenUI` 重写会调用 `AudioHandler.Instance.StopMusic()`，在结算界面打开时停止战斗音乐。
 - 领奖只在征服 BOSS 通关触发（`ActionForUIFightSettlementNext` 的 `isWin && isBossFight` 分支）；失败/非 BOSS 关/其他模式都不进领奖。
 - 配置数据（奖励/掉落数量、品质）变更**必须改 Excel 源表**，再用 Unity 编辑器导出 JSON；仅改 JSON 会被下次导出覆盖。
 - `FightTypeConquerInfoBean.cs` 自动生成，**禁止直接修改**；扩展写到 `FightTypeConquerInfoBeanPartial.cs`。

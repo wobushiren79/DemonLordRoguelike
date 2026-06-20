@@ -167,10 +167,11 @@ UIAchievement (BaseUIComponent)
 
 ### UIViewAchievementCard 状态（按"当前激活等级"展示）
 卡片传入**成就配置(单行多级)**，内部用 `GetClaimedLevelCount(info)` 得到当前激活等级索引 `currentLevelIndex`：
-- **进行中-未达成** → 灰色蒙版 + 锁 + 进度文本 `Lv.当前/总  当前/目标`(白色) + 当前级奖励
-- **进行中-可领取** → 同上但进度文本绿色、按钮可点
-- **已完成**（`currentLevelIndex >= GetLevelCount()`）→ 关闭蒙版/锁/奖励，进度区显示"已完成"(text 4000017)
-- 进度文本格式：等级角标 `Lv.{0}/{1}`(text 4000016, 当前级=index+1) + 计数 `{0}/{1}`(text 4000006, 目标=`GetLevelTargetValue(index)`)；图标取 `info.icon_res`，描述气泡取 `info.GetLevelDescription(displayIndex)`，奖励取 `info.GetLevelReward(index)`
+- **进行中-未达成** → 灰色蒙版 + 锁 + 等级角标 `ui_Level`=`Lv.当前/总`(白色) + 进度文本 `ui_TxtProgress`=`当前/目标`(白色) + 当前级奖励
+- **进行中-可领取** → 同上但等级角标与进度文本均绿色、按钮可点
+- **已完成**（`currentLevelIndex >= GetLevelCount()`）→ 关闭蒙版/锁/奖励，隐藏 `ui_Level`，进度区 `ui_TxtProgress` 显示"已完成"(text 4000017)
+- **等级角标 `ui_Level` 单独显示**(独立 TextMeshProUGUI, 不再与进度文本拼接)：`Lv.{0}/{1}`(text 4000016, 当前级=index+1)，已完成时 `gameObject.SetActive(false)` 隐藏
+- 进度文本格式 `ui_TxtProgress`：仅计数 `{0}/{1}`(text 4000006, 目标=`GetLevelTargetValue(index)`)；图标取 `info.icon_res`，描述气泡取 `info.GetLevelDescription(displayIndex)`，奖励取 `info.GetLevelReward(index)`
 
 > **领取流程**：点击卡片领取的是**当前激活等级**。`OnClickForUnlock` 先用 DOTween 播放卡片弹跳+轻微抖动（`AnimForUnlock`，只动 `ui_Content` 不动 cell 自身 transform，期间 `UIHandler.ShowScreenLock` 锁屏防重复点击），动画结束后回调 `actionForUnlock(info)` → `TryUnlockNextLevel(info.id)`（发该级奖+已领取数+1） + Toast + `RefreshAchievementList`，卡片随即推进到下一级或显示"已完成"。`SetData` 复用 cell 时先 `ClearAnim` 复位 `ui_Content` 缩放/锚点并 Kill 上一次动画。
 
