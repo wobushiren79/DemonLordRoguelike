@@ -27,5 +27,7 @@ public partial class UIViewAchievementCard
 
     public RectTransform ui_Content;
 
+    public TextMeshProUGUI ui_Level;
+
 
 }

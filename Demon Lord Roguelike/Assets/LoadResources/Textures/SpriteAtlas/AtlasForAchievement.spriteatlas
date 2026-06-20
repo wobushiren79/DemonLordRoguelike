@@ -50,39 +50,18 @@ SpriteAtlas:
     isAtlasV2: 0
     cachedData: {fileID: 0}
     packedSpriteRenderDataKeys:
-    - 81f43b61a2974a74e8a969f1c5e2f781: 21300000
-    - 8e2bb273b301395499b0e797538bf5de: 21300000
-    - cadd61642b664b94ab5ec78bf6c76ae9: 21300000
-    - 093f8b26635a2ad40b476798bd4b304f: 21300000
-    - 5ecb08d76e498104782fce9716ac5e3d: 21300000
-    - 0b034988aea393b408f80295eb103468: 21300000
-    - 0a3188a98cf031f459a6c916d6af8834: 21300000
-    - 8ecc1c0be0a25a144ba4be7ca3744157: 21300000
-    - 01a01b8bfc4dac9428aab07bb9dd01be: 21300000
-    - 09af21bf9d00fe74787d6d30e77ff420: 21300000
+    - 3bac6416518b32842a09795d65bee6cf: 21300000
+    - dcdb9ff70cac4f240b1da83b56ff4949: 21300000
+    - 19f1e81af33b9bd478927f7460deb1cb: 21300000
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
-  - {fileID: 21300000, guid: 81f43b61a2974a74e8a969f1c5e2f781, type: 3}
-  - {fileID: 21300000, guid: 8e2bb273b301395499b0e797538bf5de, type: 3}
-  - {fileID: 21300000, guid: cadd61642b664b94ab5ec78bf6c76ae9, type: 3}
-  - {fileID: 21300000, guid: 093f8b26635a2ad40b476798bd4b304f, type: 3}
-  - {fileID: 21300000, guid: 5ecb08d76e498104782fce9716ac5e3d, type: 3}
-  - {fileID: 21300000, guid: 0b034988aea393b408f80295eb103468, type: 3}
-  - {fileID: 21300000, guid: 0a3188a98cf031f459a6c916d6af8834, type: 3}
-  - {fileID: 21300000, guid: 8ecc1c0be0a25a144ba4be7ca3744157, type: 3}
-  - {fileID: 21300000, guid: 01a01b8bfc4dac9428aab07bb9dd01be, type: 3}
-  - {fileID: 21300000, guid: 09af21bf9d00fe74787d6d30e77ff420, type: 3}
+  - {fileID: 21300000, guid: 3bac6416518b32842a09795d65bee6cf, type: 3}
+  - {fileID: 21300000, guid: dcdb9ff70cac4f240b1da83b56ff4949, type: 3}
+  - {fileID: 21300000, guid: 19f1e81af33b9bd478927f7460deb1cb, type: 3}
   m_PackedSpriteNamesToIndex:
-  - ui_abyssalblessing_7
-  - ui_abyssalblessing_1
-  - ui_abyssalblessing_3
-  - ui_abyssalblessing_5
-  - ui_abyssalblessing_8
-  - ui_abyssalblessing_0
-  - ui_abyssalblessing_9
-  - ui_abyssalblessing_4
-  - ui_abyssalblessing_6
-  - ui_abyssalblessing_2
+  - ui_achievement_kill
+  - ui_achievement_clear
+  - ui_achievement_time
   m_RenderDataMap: {}
   m_Tag: AtlasForAchievement
   m_IsVariant: 0
