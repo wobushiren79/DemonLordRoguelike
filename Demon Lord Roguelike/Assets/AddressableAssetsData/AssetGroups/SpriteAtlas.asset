@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6349f38856b6f2a4fb76048fa940c2f3
+    m_Address: Assets/LoadResources/Textures/SpriteAtlas/AtlasForAchievement.spriteatlas
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: cc4af8f850707a84c989156efd676af1
     m_Address: Assets/LoadResources/Textures/SpriteAtlas/AtlasForAbyssalBlessing.spriteatlas
     m_ReadOnly: 0

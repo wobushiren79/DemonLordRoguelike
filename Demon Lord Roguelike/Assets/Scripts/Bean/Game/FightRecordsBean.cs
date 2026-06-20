@@ -25,10 +25,13 @@ public class FightRecordsBean
     //进攻方杀敌总数
     public long totalKillNumForAtk = 0;
 
-    //防守方总回复血量
+    //防守方总回复血量（输出治疗量）
     public long totalRegainHPForDef = 0;
     //进攻方总回复血量
     public long totalRegainHPForAtk = 0;
+
+    //防守方总接收治疗量
+    public long totalRegainHPReceivedForDef = 0;
 
     //防守方总回复护甲
     public long totalRegainDRForDef = 0;
@@ -112,6 +115,7 @@ public class FightRecordsBean
         {
             var recordsData = GetRecordsForCreatureData(creatureId, true);
             recordsData.AddRegainHPReceived(addValue);
+            totalRegainHPReceivedForDef += addValue;
         }
     }
 
@@ -230,7 +234,7 @@ public class FightRecordsCreatureBean
     }
     public void AddRegainDR(int addValue)
     {
-        regainHP += addValue;
+        regainDR += addValue;
     }
     public void AddRegainHPReceived(int addValue)
     {

@@ -195,7 +195,7 @@ UIAchievement (BaseUIComponent)
 - 成就奖励直接调用 `userData.AddCrystal(num)`（不走背包道具）
 - `UserAchievementBean` 已从 UserData 主存档**拆分为独立存档** `UserData_{slot}/UserAchievement_{slot}`（字段标 `[JsonIgnore]`，读写封装在 `UserDataService.Save/Load/Delete` 内部）。仍通过 `userData.GetUserAchievementData()` 取数，调用方无感知
 - UI 卡片的状态/进度都通过 `GetCurrentLevelState(info)` / `GetClaimedLevelCount(info)` / `GetAchievementProgress(info)` 取，**不要**直接读存档字典判断
-- **图标**：每个成就一个 `icon_res`（当前占位 `ui_research_16,Research`），整成就所有等级共用
+- **图标**：每个成就一个 `icon_res`，整成就所有等级共用。当前三类成就各有专属图标，存于 `Assets/LoadResources/Textures/Achievement/`（由 `AtlasForAchievement.spriteatlas` 打包，图集 tag=`Achievement`，已在 `SpriteAtlasTypeEnum` 注册 `Achievement` 枚举值），`icon_res` 用 `图标名,Achievement` 后缀加载：击杀类=`ui_achievement_kill,Achievement`（骷髅染血剑）、时长类=`ui_achievement_time,Achievement`（金色沙漏）、征服通关类=`ui_achievement_clear,Achievement`（金色奖杯）。当前图标为 32px 像素图；卡片走 `IconHandler.SetUIIcon`（默认 UI 图集，靠 `,Achievement` 后缀经 `ParseIconName` 切到成就图集）
 - **新增等级**：给某成就追加更高一级时，直接在该行的 `target_values`/`reward_crystals` 两列各**追加一个逗号项**（两列长度须一致），**描述无需改**（同一模板自动套用新目标值）；无需新增行、无需加文本
 - **描述模板占位符**：当前级格式化目标值同时挂在通用 `{Name}` 与**类型语义占位符**下——击杀=`{KillNum}`、时长(小时)=`{Time_H}`、其余=`{Name}`（见 `GetValueReplaceKey`）。模板用哪个都行，推荐用语义占位符（如时长 `累计游玩 {Time_H} 小时`、击杀可 `{Name}` 或 `{KillNum}`）。模板里固定文案（难度数字、"只生物"/"小时"/"次"/`hour(s)`/`time(s)`）直接写死在该成就的 content_1
 

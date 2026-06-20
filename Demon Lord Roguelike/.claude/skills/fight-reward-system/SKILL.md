@@ -22,7 +22,7 @@ watched_files:
 | **A. 战斗内即时掉落** | 敌人死亡（每关都有） | 水晶 Crystal | 实时拾取直接入账 |
 | **B. 结算后领奖界面** | 仅"征服模式 BOSS 关通关" | 装备 + 魔晶 | 玩家在 UIRewardSelect 选择后入账 |
 
-> **最关键的一点**：结算面板 `UIFightSettlement` 本身**不发任何奖励**，它只是战斗过程统计的可排序排行榜（伤害/击杀/受伤/经验）。真正的发奖逻辑在 `UIRewardSelect` + `RewardSelectBean`。
+> **最关键的一点**：结算面板 `UIFightSettlement` 本身**不发任何奖励**，它只是战斗过程统计的可排序排行榜（伤害/击杀/受伤/治疗/受疗/经验）。真正的发奖逻辑在 `UIRewardSelect` + `RewardSelectBean`。
 
 ## 系统架构
 
@@ -40,7 +40,8 @@ watched_files:
 
 UIFightSettlement (结算排行榜，只展示)
     │  数据源: FightBean.fightRecordsData (FightRecordsBean)
-    │  4 维度排序: 伤害 / 击杀 / 受伤 / 经验
+    │  6 维度展示: 伤害 / 击杀 / 受伤 / 治疗(输出治疗量) / 受疗(接收治疗量) / 经验
+    │  （排序当前仍只接通 4 维: 伤害/击杀/受伤/经验，治疗/受疗只展示进度条未接 OrderFilter）
     │
 RewardSelectBean (奖励生成，发奖核心)
     │  InitData() → listReward: List<ItemBean> (装备 + 魔晶)
@@ -59,7 +60,9 @@ UIRewardSelect (领奖界面)
 - 写入方法：`AddCreatureExp` / `AddCreatureRegainHP` 等（均通过 `GetRecordsForCreatureData(id, true)` 取或建记录）
 
 ### FightRecordsCreatureBean（单生物记录）
-- `damage` 造成伤害 / `killNum` 杀敌 / `damageReceived` 受伤 / `exp` 经验 / `regainHP/regainDR` 恢复
+- `damage` 造成伤害 / `killNum` 杀敌 / `damageReceived` 受伤 / `exp` 经验
+- `regainHP` 输出治疗量(治疗别人) / `regainHPReceived` 接收治疗量(被别人治疗) / `regainDR/regainDRReceived` 护甲恢复
+- 总量字段：`totalRegainHPForDef`（输出治疗总量，结算"治疗"进度条 max）/ `totalRegainHPReceivedForDef`（接收治疗总量，结算"受疗"进度条 max）
 
 ### RewardSelectBean（奖励数据 + 生成逻辑）
 - `listReward: List<ItemBean>` 生成的奖励物品列表
@@ -159,7 +162,7 @@ InitData(fightData, testData = null)
 ### 新增结算统计维度
 1. `FightRecordsCreatureBean` 加字段 + 对应 `FightRecordsBean` 的写入方法
 2. 在战斗逻辑/AI 中调用写入方法累计
-3. 排序：`UIFightSettlement` 用单个 `OrderBtn` 打开 `UIDialogOrderFilter`（多选+按选择顺序定优先级+正/倒序）。新增统计维度时：在 `OrderFilterTypeEnum`（`GameStateEnum.cs`）加枚举值 → 弹窗预制体加对应筛选项 + `UIDialogOrderFilter.InitItems` 注册 → `UIViewDialogOrderFilterItem.GetFilterDetail` 加详情文本 → `UIFightSettlement.GetOrderKeySelector` 加该维度的排序键 → `ShowOrderFilterDialog` 的 `listFilterType` 放开该项。现开放：Damage(伤害50001)/Kill(击杀50002)/DamageReceived(承伤50004)/Exp(经验50003)。
+3. 排序：`UIFightSettlement` 用单个 `OrderBtn` 打开 `UIDialogOrderFilter`（多选+按选择顺序定优先级+正/倒序）。新增统计维度时：在 `OrderFilterTypeEnum`（`GameStateEnum.cs`）加枚举值 → 弹窗预制体加对应筛选项 + `UIDialogOrderFilter.InitItems` 注册 → `UIViewDialogOrderFilterItem.GetFilterDetail` 加详情文本 → `UIFightSettlement.GetOrderKeySelector` 加该维度的排序键 → `ShowOrderFilterDialog` 的 `listFilterType` 放开该项。现开放：Damage(伤害50001)/Kill(击杀50002)/DamageReceived(承伤50004)/Exp(经验50003)。治疗(50007)/受疗(50008)目前只在 `UIViewFightSettlementItem` 以进度条展示，尚未接入 `OrderFilterTypeEnum` 排序。
 4. `UIViewFightSettlementItem` 增加进度条展示
 
 ### 接通经验奖励（当前为预留死代码）

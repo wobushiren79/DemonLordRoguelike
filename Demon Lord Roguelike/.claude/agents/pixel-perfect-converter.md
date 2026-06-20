@@ -10,14 +10,16 @@ watched_files:
 # 像素完美转换器 (Pixel Perfect Converter) 开发代理
 
 你负责维护与扩展 [PixelPerfectConverterWindow.cs](Assets/FrameWork/Editor/Base/Window/PixelPerfectConverterWindow.cs)
-（命名空间 `PixelPerfectTool`，菜单 **Custom/工具弹窗/像素完美转换器**）。
+（命名空间 `PixelPerfectTool`，菜单 **Custom/工具弹窗/像素完美转换器**；另支持 Project 窗口选中图片后右键 **Assets/像素完美转换器** 直接载入）。
 
 该工具忠实移植自开源网页工具 Void8Bit / Pixel-Perfect-AI-Art-Converter（JS/HTML），
 把 AI 生成的「伪像素画」按网格重采样为真正逐像素对齐的图，并提供编辑与导出。
 
 ## 三步式工作流
 
-1. **步骤① 设置**：选网格宽/高（档位 `kGridOptions` = 16/32/48/64/80/96/112/128/256/512/1024）+ 选源图（拖拽或 ObjectField，自动按 `kMaxImageSize`=1024 等比缩小）。
+1. **步骤① 设置**：选网格宽/高（档位 `kGridOptions` = 16/32/48/64/80/96/112/128/256/512/1024，默认 `_gridWidth/_gridHeight`=**32×32**）+ 选源图（拖拽或 ObjectField，自动按 `kMaxImageSize`=1024 等比缩小）。
+
+> **右键快捷入口**：`OpenFromSelection`（`[MenuItem("Assets/像素完美转换器")]`）在 Project 选中 `Texture2D` 后右键直接打开窗口、把该图设为源图并自动 `LoadSource`+`EnterStep2`；`OpenFromSelectionValidate`（校验函数）保证仅选中图片时菜单可用。
 2. **步骤② 定位与转换**：预览格子尺寸(4~16)、源图缩放(10~300%，中心锚定)、拖拽定位源图，选 5 种取色算法，**可设相似度阈值**与**最终颜色数量上限**，生成像素图。
 3. **步骤③ 编辑与导出**：左侧工具面板 + 中间编辑画布 + 右侧最终效果图预览(`DrawResultPreview`，`_resultZoom` 1~20，无网格/无高亮)；画布缩放(1~20)、网格开关、画笔/橡皮/魔棒、笔刷色与尺寸(1~5)、魔棒阈值(0~30)、最近颜色(≤6)、调色板颜色替换、撤销/重做、PNG 导出(另存为/覆盖原图/同目录/拆分)。
 
