@@ -52,6 +52,7 @@ SpriteAtlas:
     packedSpriteRenderDataKeys:
     - 544b7a10c17e3cd43a26df9083a57c3b: 21300000
     - 643e9870906a4114e966b4163a3fd1c7: 21300000
+    - f1ea1731fa7dfa34eb843808066985cf: 21300000
     - b8f40551b1429544c8bd3fd240138483: 21300000
     - 09477e5152035614eb7400a883e8628d: 21300000
     - 56eb34c104878e745807e850987af458: 21300000
@@ -65,6 +66,7 @@ SpriteAtlas:
     - 0ef92fc5ff72e164a96b78e2ee9e1eb1: 21300000
     - 3ddc9616bc0f34c409817c34e80debf7: 21300000
     - 1ecaec86a333aaa4886c278a3af8f12c: 21300000
+    - 39065e964db62154a963414494fed5fc: 21300000
     - 62abc1c64cf9a8345bbca69064509fa2: 21300000
     - 28e309d6d3e60ce439e74fdb19b89da5: 21300000
     - 311584270171d4b4ca57ee7fb2e4d835: 21300000
@@ -113,6 +115,7 @@ SpriteAtlas:
   m_PackedSprites:
   - {fileID: 21300000, guid: 544b7a10c17e3cd43a26df9083a57c3b, type: 3}
   - {fileID: 21300000, guid: 643e9870906a4114e966b4163a3fd1c7, type: 3}
+  - {fileID: 21300000, guid: f1ea1731fa7dfa34eb843808066985cf, type: 3}
   - {fileID: 21300000, guid: b8f40551b1429544c8bd3fd240138483, type: 3}
   - {fileID: 21300000, guid: 09477e5152035614eb7400a883e8628d, type: 3}
   - {fileID: 21300000, guid: 56eb34c104878e745807e850987af458, type: 3}
@@ -126,6 +129,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 0ef92fc5ff72e164a96b78e2ee9e1eb1, type: 3}
   - {fileID: 21300000, guid: 3ddc9616bc0f34c409817c34e80debf7, type: 3}
   - {fileID: 21300000, guid: 1ecaec86a333aaa4886c278a3af8f12c, type: 3}
+  - {fileID: 21300000, guid: 39065e964db62154a963414494fed5fc, type: 3}
   - {fileID: 21300000, guid: 62abc1c64cf9a8345bbca69064509fa2, type: 3}
   - {fileID: 21300000, guid: 28e309d6d3e60ce439e74fdb19b89da5, type: 3}
   - {fileID: 21300000, guid: 311584270171d4b4ca57ee7fb2e4d835, type: 3}
@@ -173,6 +177,7 @@ SpriteAtlas:
   m_PackedSpriteNamesToIndex:
   - ui_research_21
   - ui_research_40
+  - ui_research_60
   - ui_research_37
   - ui_research_3
   - ui_research_58
@@ -186,6 +191,7 @@ SpriteAtlas:
   - ui_research_42
   - ui_research_18
   - ui_research_41
+  - ui_research_61
   - ui_research_23
   - ui_research_34
   - ui_research_30
