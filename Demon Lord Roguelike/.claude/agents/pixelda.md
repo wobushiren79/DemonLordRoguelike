@@ -21,8 +21,8 @@ watched_files:
 | [PixelDaEditorWindow.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaEditorWindow.cs) | 主窗口，7 个页签 + 全部 UI 与流程编排；样式系统 `InitStyles` + 助手 `BeginCard`/`EndCard`/`Section`/`AccentButton`/`PromptField`(品牌横幅/卡片分区/强调色按钮/动态进度条) |
 | [PixelDaCore.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaCore.cs) | `PixelDaConfig`(项目 JSON 共享配置 + EditorPrefs 机器本地) + `PixelDaDispatcher`(后台→主线程) + `PixelDaProvider` 枚举 |
 | [PixelDaApi.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaApi.cs) | REST 客户端：文生图/图编辑/图生视频(轮询)/音乐 ABC/文件下载 |
-| [PixelDaImageUtil.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaImageUtil.cs) | 纯色去背景(洪水填充)、精灵表横向合成、PNG/纹理读写 |
-| [PixelDaFrameUtil.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaFrameUtil.cs) | 调系统 ffmpeg 均匀时间戳抽帧、zip 打包 |
+| [PixelDaImageUtil.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaImageUtil.cs) | 纯色去背景(洪水填充)、精灵表合成(横向单行 + `MergeFramesToSprite(frames,columns,rows)` 列×行网格)、PNG/纹理读写 |
+| [PixelDaFrameUtil.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaFrameUtil.cs) | 调系统 ffmpeg 均匀时间戳抽帧、zip 打包；ffmpeg 路径在主线程经 `ResolveFfmpeg` 解析后传入后台任务，`RunFfmpeg` 并发读 stdout/stderr 防死锁 + 120s 超时 |
 | [PixelDaMusicUtil.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaMusicUtil.cs) | ABC 记谱解析 → 方波(chiptune) WAV/AudioClip |
 
 ## 七个页签（`PixelDaEditorWindow` 的 `tabIndex`）
@@ -30,7 +30,7 @@ watched_files:
 0. **文生图** `DrawImageTab`：提示词/负向/尺寸/种子 → `PixelDaApi.GenerateImage`。
 1. **图编辑** `DrawEditTab`：图片源(拖拽工程图片/外部文件，或填 URL)+提示词 → `PixelDaApi.EditImage`。
 2. **图生视频** `DrawVideoTab`：首帧图源(拖拽/URL)+提示词+分辨率 → `PixelDaApi.GenerateVideo`(异步轮询)。
-3. **视频抽帧** `DrawFramesTab`：ffmpeg 抽帧 + 去背景开关 + 合成精灵表/导出 zip。
+3. **视频抽帧** `DrawFramesTab`：选视频(浏览/拖拽快捷区 `HandleVideoDrop`) + ffmpeg 抽帧 + 去背景开关 + 合成精灵表(可选列×行布局，`EnsureSpriteLayout` 默认取最近正方形分解 + 因子快捷按钮)/导出 zip。
 4. **音乐生成** `DrawMusicTab`：描述/时长/风格/节奏/种子 → `PixelDaApi.GenerateMusic` → ABC → 方波合成试听/存 WAV/存 ABC。
 5. **历史** `DrawHistoryTab`：扫描输出目录，按 全部/图片/视频/音频 过滤，缩略图+定位。
 6. **设置** `DrawSettingsTab`：双 API Key、输出目录、ffmpeg 路径、(高级) 端点 URL 与模型名。

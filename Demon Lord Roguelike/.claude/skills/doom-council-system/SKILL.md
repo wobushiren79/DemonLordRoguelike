@@ -61,7 +61,7 @@ watched_files:
 ### 相关配置表（Excel 为唯一真实源，改后需在 Unity 运行 ExcelEditorWindow 导出）
 | 表 | 关键列 |
 |----|--------|
-| `excel_npc_info` NpcInfo | `npc_type`(2固定/3随机)、`creature_id`、`creature_random_id`、`councilor_ratings`、`name` |
+| `excel_npc_info` NpcInfo | `npc_type`(2固定/3随机)、`creature_id`、`creature_random_id`、`councilor_ratings`、`name`、`body_size`(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定) |
 | `excel_doom_council_info` DoomCouncilInfo | `council_num`("min,max" 议会人数)、`success_rate` |
 | `excel_doom_council_ratings_info` | `vote`(评级票数)、`name` |
 | `excel_npc_relationship_info` | `relationship_min/max`、`relationship_type`、`icon_res` |

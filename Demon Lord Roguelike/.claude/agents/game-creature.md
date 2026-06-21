@@ -23,6 +23,7 @@ watched_files:
 - **CreatureAttributeBean** - 生物属性（HP/DR/ATK/ASPD/MSPD/CRT/EVA/RCD 等）
 - **CreatureCardItemBean** - 生物卡片数据
 - **CreatureNpcBean** - NPC 生物数据
+- **NPC体型缩放** - `NpcInfo.body_size`(string) 配置体型倍率：空/"0"=1倍、"min,max"(如"0.9,1.1")=区间随机、"1.1"=固定倍数；`NpcInfoBean.GetBodySizeRandomScale()` 解析，`CreatureBean.SetData(NpcInfoBean)` 创建时随机一次并缓存到 `CreatureBean.bodySizeScale`(默认1)，`CreatureHandler.SetCreatureData` 以 `size_spine × GetBodySizeScale()` 应用到 localScale（普通生物倍率恒为1）
 
 ### 生物 UI
 - **UICreatureManager** - 生物管理界面

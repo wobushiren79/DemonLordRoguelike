@@ -52,8 +52,8 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             }
             //修改皮肤
             SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, skinData);
-            //设置模型大小
-            skeletonAnimation.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine;
+            //设置模型大小（目标大小 size_spine × NPC体型倍率 bodySizeScale，普通生物体型倍率恒为1）
+            skeletonAnimation.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine * creatureData.GetBodySizeScale();
         }
         //设置SkeletonGraphic
         if (skeletonGraphic != null)

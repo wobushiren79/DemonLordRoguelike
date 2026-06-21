@@ -20,8 +20,8 @@ watched_files:
 | [PixelDaEditorWindow.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaEditorWindow.cs) | 主窗口：7 页签 UI + 流程编排 + 编辑器内音频试听(反射 `AudioUtil`)；含样式系统(`InitStyles`)与绘制助手(`BeginCard`/`EndCard`/`Section`/`AccentButton`/`PromptField`)：品牌横幅、卡片式分区、强调色主按钮、动态进度条状态栏 |
 | [PixelDaCore.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaCore.cs) | `PixelDaConfig`(项目 JSON 共享 + EditorPrefs 本地)、`PixelDaDispatcher`(主线程队列)、`PixelDaProvider` 枚举 |
 | [PixelDaApi.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaApi.cs) | REST 客户端 + 后台任务/回调 + 错误提取 |
-| [PixelDaImageUtil.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaImageUtil.cs) | 纯色去背景、精灵表合成、纹理/PNG 读写 |
-| [PixelDaFrameUtil.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaFrameUtil.cs) | ffmpeg 抽帧、zip 打包 |
+| [PixelDaImageUtil.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaImageUtil.cs) | 纯色去背景、精灵表合成(横向单行 + 列×行网格重载)、纹理/PNG 读写 |
+| [PixelDaFrameUtil.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaFrameUtil.cs) | ffmpeg 抽帧(路径主线程解析、并发读流防死锁+超时)、zip 打包 |
 | [PixelDaMusicUtil.cs](Assets/FrameWork/Editor/Base/Window/PixelDa/PixelDaMusicUtil.cs) | ABC 解析 + 方波合成 + WAV/ABC 保存 |
 
 ## 七个页签
@@ -38,9 +38,10 @@ watched_files:
 > **本地图片源**：`DrawImageSourceField`(缩略图 + 拖拽区 + ObjectField + URL 兜底) + `HandleImageDrop`(收 Texture2D/Sprite 资源或 .png/.jpg/.webp 外部文件) + `AssetToAbsolutePath`(取资源磁盘路径)。`ResolveImageSource` 优先把本地图(`PixelDaImageUtil.FileToDataUri` 读原文件字节，兜底 `TextureToDataUri` EncodeToPNG)编码为 `data:image/*;base64,...` 直传，两家 API 均接收 base64(无需上传图床)；本地图存在时 URL 输入禁用。
 
 ### ④ 视频抽帧（`DrawFramesTab`）
-- `StartExtractFrames` → `PixelDaFrameUtil.ExtractFramesAsync`：在 [from,to] 区间均匀取 N 帧（`count==1` 取起点，否则含首尾均分，与原工具一致）。
+- 选视频：文本框 + 「浏览」面板，或拖拽快捷区 `HandleVideoDrop`（接受 mp4/mov/avi/mkv/webm/m4v/flv/wmv，`IsVideoFile` 按扩展名判定）。
+- `StartExtractFrames` → `PixelDaFrameUtil.ExtractFramesAsync`：在 [from,to] 区间均匀取 N 帧（`count==1` 取起点，否则含首尾均分，与原工具一致）。**ffmpeg 路径在主线程经 `ResolveFfmpeg` 解析后传入后台任务**（`EditorPrefs.GetString` 只能主线程调用）；`RunFfmpeg` 并发 `ReadToEndAsync` 读 stdout/stderr 防管道死锁，120s 超时强杀，退出码非 0 携 stderr 抛错。
 - `framesRemoveBg` 开关：加载帧时调 `PixelDaImageUtil.RemoveSolidBackground` 去纯色背景。
-- `MergeSprite`：`MergeFramesToSprite` 横向拼接(须等高)存 PNG；`ExportZip`：`ZipFrames` 打包(去背景时先另存处理后帧)。
+- `MergeSprite`：可选 `列×行` 布局（`spriteCols`/`spriteRows`，`EnsureSpriteLayout` 按帧数默认取最近正方形分解、UI 提供因子快捷按钮如 8 帧→1×8/2×4/4×2/8×1，格子不足以容纳全部帧时禁用合成并警告）→ `MergeFramesToSprite(frames,columns,rows)` 网格拼接(格子取最大帧宽高、帧居中、第 0 帧左上)存 PNG；`ExportZip`：`ZipFrames` 打包(去背景时先另存处理后帧)。
 
 ### ⑤ 音乐生成（`DrawMusicTab` / `StartMusicGeneration`）
 描述/时长/风格(`GenreOptions`)/节奏(`TempoOptions`)/种子 → `PixelDaApi.GenerateMusic`(聊天模型输出 ABC) → `SynthesizeMusic` 用 `PixelDaMusicUtil` 合成方波 → 试听/停止/保存 WAV/保存 ABC。ABC 文本框可手改后"重新合成"。

@@ -153,7 +153,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_npc_info[NPC信息].xlsx` | NpcInfo | 37 | id, creature_id, npc_type, level, HP/MP/DR/ATK/ASPD/MSPD, skin_data, equip_item_ids, councilor_ratings, title_data, name[language] （17列） |
+| `excel_npc_info[NPC信息].xlsx` | NpcInfo | 37 | id, creature_id, npc_type, level, HP/MP/DR/ATK/ASPD/MSPD, skin_data, equip_item_ids, councilor_ratings, title_data, name[language], body_size(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定), remark （19列） |
 | `excel_npc_relationship_info[NPC关系信息].xlsx` | NpcRelationshipInfo | 7 | id, icon_res, name[language], relationship_min/max, relationship_type |
 | `excel_doom_council_info[终焉议会信息].xlsx` | DoomCouncilInfo | 13 | id, success_rate, cost_reputation/crystal, class_entity_name/data, unlock_id, name[language] （11列） |
 | `excel_doom_council_ratings_info[终焉议会议员等级信息].xlsx` | DoomCouncilRatingsInfo | 12 | id, icon_res, vote, name[language] |
