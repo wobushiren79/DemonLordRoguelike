@@ -16,9 +16,9 @@ public class FightUnderAttackBean
     public float attackerCRT;
 
     //击中音效
-    public int soundHitId;
+    public long soundHitId;
     //未命中音效
-    public int soundMissId;
+    public long soundMissId;
 
     public FightUnderAttackBean()
     {

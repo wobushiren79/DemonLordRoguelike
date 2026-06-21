@@ -4,7 +4,7 @@
 /// 由 AudioInfo.txt 一一对应生成，新增/删除音频时必须同步维护本枚举。
 /// 调用统一用枚举：AudioHandler.Instance.PlaySound(AudioEnum.sound_btn_15)。
 /// </summary>
-public enum AudioEnum
+public enum AudioEnum : long
 {
     None = 0,//无（不播放）
     //==================== 音效 Sound ====================

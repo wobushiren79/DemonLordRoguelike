@@ -543,7 +543,7 @@ public class GameFightLogic : BaseGameLogic
         RayUtil.RayToScreenPointForMousePosition(pickupDistance, 1 << LayerInfo.Drop, out bool isCollider, out RaycastHit hit);
         if (isCollider && hit.collider != null)
         {
-            //手动点击拾取魔晶时播放点击音效
+            //手动点击拾取魔晶时播放点击音效(音量放大 1.5 倍由配置表 volume_scale 控制)
             AudioHandler.Instance.PlaySound(AudioEnum.sound_btn_15);
             PickupCrystal(hit.collider.gameObject);
         }

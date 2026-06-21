@@ -363,8 +363,9 @@ public class AttackModeCustom : BaseAttackMode
     "effect_hit": "10001&10002",     // 击中特效ID列表（&分隔，index 0=初始，index 1=连锁）
     "effect_damage": "1002",         // 受伤特效ID（默认不填，0关闭）
     "speed_move": 10,                // 移动速度（远程弹道用；运行时会再乘攻击者的攻速倍率 attackerSpeedRate）
-    "sound_miss": 1,                 // 未击中音效ID
-    "sound_hit": 2,                  // 击中音效ID
+    "sound_start": 100001,           // 起始音效ID（long，默认0不播放；攻击模块创建成功时在 FightManager.GetAttackModePrefab 播放）
+    "sound_miss": 1,                 // 未击中音效ID（long）
+    "sound_hit": 2,                  // 击中音效ID（long）
     "remark": "远程箭矢"             // 备注
 }
 ```

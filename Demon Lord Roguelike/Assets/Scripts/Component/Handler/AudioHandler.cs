@@ -73,7 +73,7 @@ public partial class AudioHandler
     /// <param name="audioSource">指定播放源，null 时使用默认音效源</param>
     public void PlaySound(AudioEnum audio, AudioSource audioSource = null)
     {
-        PlaySound((int)audio, audioSource);
+        PlaySound((long)audio, audioSource);
     }
 
     /// <summary>
@@ -84,7 +84,7 @@ public partial class AudioHandler
     /// <param name="audioSource">指定播放源</param>
     public void PlaySound(AudioEnum audio, Vector3 soundPosition, AudioSource audioSource = null)
     {
-        PlaySound((int)audio, soundPosition, audioSource);
+        PlaySound((long)audio, soundPosition, audioSource);
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ public partial class AudioHandler
     /// <param name="audioSource">指定播放源</param>
     public void PlaySound(AudioEnum audio, Vector3 soundPosition, float volumeScale, AudioSource audioSource = null)
     {
-        PlaySound((int)audio, soundPosition, volumeScale, audioSource);
+        PlaySound((long)audio, soundPosition, volumeScale, audioSource);
     }
 
     /// <summary>
@@ -113,7 +113,7 @@ public partial class AudioHandler
         GameConfigBean gameConfig = GameDataHandler.Instance.manager.GetGameConfig();
         if (Camera.main != null)
         {
-            PlaySound((int)audio, Camera.main.transform.position, gameConfig.soundVolume * volumeScale, audioSource);
+            PlaySound((long)audio, Camera.main.transform.position, gameConfig.soundVolume * volumeScale, audioSource);
         }
     }
 
@@ -123,7 +123,7 @@ public partial class AudioHandler
     /// <param name="audio">音频枚举</param>
     public void PlayMusicForLoop(AudioEnum audio)
     {
-        PlayMusicForLoop((int)audio);
+        PlayMusicForLoop((long)audio);
     }
 
     /// <summary>
@@ -133,7 +133,7 @@ public partial class AudioHandler
     /// <param name="volumeScale">音量大小</param>
     public void PlayMusicForLoop(AudioEnum audio, float volumeScale)
     {
-        PlayMusicForLoop((int)audio, volumeScale);
+        PlayMusicForLoop((long)audio, volumeScale);
     }
 
     /// <summary>
@@ -144,10 +144,10 @@ public partial class AudioHandler
     {
         if (audios == null)
             return;
-        List<int> musicIds = new List<int>(audios.Count);
+        List<long> musicIds = new List<long>(audios.Count);
         for (int i = 0; i < audios.Count; i++)
         {
-            musicIds.Add((int)audios[i]);
+            musicIds.Add((long)audios[i]);
         }
         PlayMusicListForLoop(musicIds);
     }
@@ -158,7 +158,7 @@ public partial class AudioHandler
     /// <param name="audio">音频枚举</param>
     public void PlayEnvironment(AudioEnum audio)
     {
-        PlayEnvironment((int)audio);
+        PlayEnvironment((long)audio);
     }
 
     /// <summary>
@@ -168,7 +168,7 @@ public partial class AudioHandler
     /// <param name="volumeScale">音量大小</param>
     public void PlayEnvironment(AudioEnum audio, float volumeScale)
     {
-        PlayEnvironment((int)audio, volumeScale);
+        PlayEnvironment((long)audio, volumeScale);
     }
     #endregion
 }

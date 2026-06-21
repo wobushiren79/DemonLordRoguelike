@@ -332,6 +332,11 @@ public class FightManager : BaseManager
     public void GetAttackModePrefab(long attackModeId, Action<BaseAttackMode> actionForComplete)
     {
         var attackModeInfo = AttackModeInfoCfg.GetItemData(attackModeId);
+        //播放攻击模块创建起始音效（sound_start 默认 0 表示不播放）
+        if (attackModeInfo.sound_start != 0)
+        {
+            AudioHandler.Instance.PlaySound(attackModeInfo.sound_start);
+        }
         if (dicPoolAttackModeObj.TryGetValue(attackModeInfo.id, out Queue<BaseAttackMode> pool))
         {
             if (pool.Count > 0)
