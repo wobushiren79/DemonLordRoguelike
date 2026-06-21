@@ -54,6 +54,43 @@ public partial class AbyssalBlessingInfoCfg
         return rootId;
     }
 
+    /// <summary>
+    /// 族内最高等级缓存：族根馈赠ID -&gt; 该族出现过的最大 level（level==0 的常驻馈赠不计入）。
+    /// </summary>
+    private static Dictionary<long, int> dicFamilyMaxLevel = null;
+
+    /// <summary>
+    /// 获取指定升级族的最高等级（族内所有行 level 的最大值）。
+    /// 用于区分"单级不可重复"（族内仅 1 级）与"多级升级链"（族内 &gt;1 级）。
+    /// level==0 的常驻可重复馈赠不参与等级，不计入。
+    /// </summary>
+    public static int GetFamilyMaxLevel(long familyRootId)
+    {
+        if (dicFamilyMaxLevel == null)
+        {
+            dicFamilyMaxLevel = new Dictionary<long, int>();
+            foreach (var info in GetAllData().Values)
+            {
+                if (info == null || info.level <= 0) continue;
+                long root = GetFamilyRootId(info.id);
+                if (!dicFamilyMaxLevel.TryGetValue(root, out int max) || info.level > max)
+                    dicFamilyMaxLevel[root] = info.level;
+            }
+        }
+        return dicFamilyMaxLevel.TryGetValue(familyRootId, out int v) ? v : 0;
+    }
+
+    /// <summary>
+    /// 是否为"单级不可重复"馈赠：level==1 且所属族最高等级也是 1（族内仅此一行、不可升级、选 1 次后不再出现）。
+    /// 与"单级可重复"(level==0) 和"多级升级链"(族内 &gt;1 级) 区分开。
+    /// 主要用于 UI 判断是否隐藏等级角标。
+    /// </summary>
+    public static bool IsSingleLevelOnce(AbyssalBlessingInfoBean info)
+    {
+        if (info == null || info.level != 1) return false;
+        return GetFamilyMaxLevel(GetFamilyRootId(info.id)) == 1;
+    }
+
     #endregion
 
     #region 等级颜色

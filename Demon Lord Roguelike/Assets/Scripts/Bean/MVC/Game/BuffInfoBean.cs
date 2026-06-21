@@ -76,10 +76,6 @@ public partial class BuffInfoBean : BaseBean
 	/// </summary>
 	public float trigger_chance;
 	/// <summary>
-	///触发几率(最小值)
-	/// </summary>
-	public float trigger_chance_min;
-	/// <summary>
 	///触发次数(小于等于0永久触发)
 	/// </summary>
 	public int trigger_num;

@@ -45,6 +45,10 @@ public partial class AbyssalBlessingInfoBean : BaseBean
 	///备注
 	/// </summary>
 	public string remark;
+	/// <summary>
+	///是否有效(0无效1有效)
+	/// </summary>
+	public int valid;
 }
 public partial class AbyssalBlessingInfoCfg : BaseCfg<long, AbyssalBlessingInfoBean>
 {
@@ -64,6 +68,7 @@ public partial class AbyssalBlessingInfoCfg : BaseCfg<long, AbyssalBlessingInfoB
 		if (arrayData == null)
 		{
 			arrayData = GetInitData(fileName);
+			arrayData = System.Array.FindAll(arrayData, itemData => itemData.valid != 0);
 		}
 		return arrayData;
 	}
@@ -71,8 +76,7 @@ public partial class AbyssalBlessingInfoCfg : BaseCfg<long, AbyssalBlessingInfoB
 	{
 		if (dicData == null)
 		{
-			AbyssalBlessingInfoBean[] arrayData = GetInitData(fileName);
-			InitData(arrayData);
+			InitData(GetAllArrayData());
 		}
 		return GetItemData(key, dicData);
 	}

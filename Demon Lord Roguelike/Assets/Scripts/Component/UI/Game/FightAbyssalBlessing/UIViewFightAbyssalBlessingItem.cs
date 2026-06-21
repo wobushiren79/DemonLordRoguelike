@@ -31,7 +31,8 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
 
     /// <summary>
     /// 设置等级角标与等级配色：按等级统一为内容底/图标底/详情底着色（Lv1-5 共 5 种颜色）；
-    /// level&gt;0 时额外显示角标并为角标底/角标文本着色，level&lt;=0（可重复馈赠）隐藏角标。
+    /// 仅"多级升级链"馈赠显示角标并为角标底/角标文本着色；
+    /// level&lt;=0（单级可重复）与"单级不可重复"（族内仅 1 级）均隐藏角标，避免误导玩家可升级。
     /// </summary>
     public void SetLevel(int level)
     {
@@ -45,7 +46,8 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
         if (ui_DetailsBG != null)
             ui_DetailsBG.color = levelColor;
 
-        bool show = level > 0;
+        //单级不可重复馈赠（族内仅 1 级、不可升级）隐藏角标，与单级可重复(level<=0)表现一致
+        bool show = level > 0 && !AbyssalBlessingInfoCfg.IsSingleLevelOnce(abyssalBlessingInfo);
         if (ui_LevelBG != null)
         {
             ui_LevelBG.gameObject.SetActive(show);

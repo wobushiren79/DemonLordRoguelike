@@ -165,7 +165,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_abyssal_blessing_info[深渊馈赠信息].xlsx` | AbyssalBlessingInfo | 6 | id, icon_res, buff_ids, name[language], details[language] |
+| `excel_abyssal_blessing_info[深渊馈赠信息].xlsx` | AbyssalBlessingInfo | 38 | id, icon_res, parent_id, level, buff_ids, name[language], details[language], remark, valid(0无效1有效,生成器据此过滤) |
 | `excel_effect_info[粒子信息].xlsx` | EffectInfo | 14 | id, res_name, show_type, show_time, float/int/long/vector3/vector4_data |
 | `excel_game_world_info[游戏世界信息].xlsx` | GameWorldInfo | 6 | id, icon_res, unlock_id, unlock_id_infinite/conquer_difficulty_level, map_pos, name[language] |
 | `excel_level_info[等级信息].xlsx` | LevelInfo | 12 | id, level_exp, sacrifice_num, attribute_point(升级获得加点数,当前全等级配置5), CMP_rate(魔力召唤增加倍率,按等级递增) |
@@ -195,4 +195,5 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 - 新增配置表需在编辑器工具中注册
 - 多语言文本通过 `excel_language[多语言_FrameWork].xlsx` 统一管理，各表的 `name[language]`、`content[language]` 列均引用该表
 - `*InfoBean.cs` 和 `*Bean.cs` 是自动生成的，禁止直接修改
+- **`valid` 有效性列约定（生成器内置过滤）**：任意配置表只要含名为 `valid` 的列（int，`0`=无效/`1`=有效），`ExcelEditorWindow.CreateEntity` 生成的 `Cfg` 会自动加 `valid!=0` 过滤——`GetAllArrayData` 过滤数组、`GetItemData` 改走 `GetAllArrayData`，valid==0 的行运行时彻底不存在。⚠️ 给某表新增 `valid` 列后必须把现有每行填 `1` 并重新导出，否则该表全部数据被当无效丢弃（JSON int 缺省 0）。当前已启用：`AbyssalBlessingInfo`。详见 editor-extension-system SKILL。
 - PowerShell 操作含中文/方括号的文件路径时使用 `Copy-Item -LiteralPath` / `Remove-Item -LiteralPath` 避免方括号被解析为通配符

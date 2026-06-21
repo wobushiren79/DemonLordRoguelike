@@ -66,6 +66,21 @@ EditorWindow (Unity)
 4. 点击导出，生成 JSON 到 Resources/JsonText/
 ```
 
+### `valid` 有效性列约定（生成器内置过滤）
+
+`CreateEntity` 生成 `*Bean.cs` 时会检测工作表是否存在列名为 **`valid`** 的字段（`cellName.Equals("valid")` → `hasValid`）。**只有含该列的表**才会在生成的 `Cfg` 里附带过滤逻辑，其它表生成结果完全不变（按需启用、对存量表零影响）。
+
+约定语义：`valid` 为 `int`，**0=无效（不进入运行时列表），1=有效**。`hasValid` 为真时生成器会：
+
+- `GetAllArrayData()`：`GetInitData` 后追加 `arrayData = System.Array.FindAll(arrayData, itemData => itemData.valid != 0);`，过滤后再缓存。
+- `GetItemData(key)`：改走 `InitData(GetAllArrayData())`（而非直接 `GetInitData`），使字典/单点查询都复用同一份已过滤数据 —— 即无效行 `GetItemData(无效id)` 也返回 `null`，运行时彻底不存在。
+
+注意点：
+
+- **默认值坑**：JSON 反序列化 `int` 缺省为 `0`=无效。给某表新增 `valid` 列后，必须把现有每行填 `1` 并重新导出 JSON，否则该表全部数据消失。
+- **链式 parent_id**：若某表用 `parent_id` 串等级链（如深渊馈赠），把链中间某级标 0 会令该级 `GetItemData` 返回 null、链从此断开 —— 通常标无效即意图弃用该族，符合预期。
+- 首个启用该约定的表：`AbyssalBlessingInfo`（深渊馈赠，valid==0 不进入征服关卡间候选池）。
+
 ---
 
 ## MVC 代码生成 (MVCEditorWindow)

@@ -28,8 +28,10 @@ watched_files:
 
 ### 配置（Excel + JSON）
 - `excel_abyssal_blessing_info[深渊馈赠信息].xlsx` - 唯一真实源（数据写在 **AbyssalBlessingInfo** 工作表，三行表头：字段名/类型/中文说明）
-  - 列：`id`(long) `icon_res`(string) `parent_id`(long) `level`(int) `buff_ids`(string,逗号分隔) `name`(language) `details`(language) `remark`(string)
+  - 列：`id`(long) `icon_res`(string) `parent_id`(long) `level`(int) `buff_ids`(string,逗号分隔) `name`(language) `details`(language) `remark`(string) `valid`(int)
+  - **`valid`**：`1`=有效，`0`=无效。生成器检测到 `valid` 列即自动生成 `valid!=0` 过滤（`GetAllArrayData`/`GetItemData` 均排除），valid==0 的行运行时彻底不存在、不进候选池。⚠️ 新增行必须填 `1`（JSON 缺省 0 会被当无效）。详见 editor-extension-system SKILL「valid 有效性列约定」。
   - **一个等级 = 一行**；同族升级链：lv1 `parent_id=0`，lv2 `parent_id=lv1.id`，lv3 `parent_id=lv2.id`……`level` 从 1 连续递增（`level=0` 为不可升级的常驻馈赠）
+  - **三种类型（仅由 `level`+族内行数决定，无需额外字段）**：① 单级可重复 `level=0,parent_id=0`（重复叠加、无角标）；② 单级不可重复 `level=1,parent_id=0` 且族内仅 1 行（选 1 次后消失、无角标，靠 `IsSingleLevelOnce` 隐藏角标）；③ 多级升级链 `level=1..N` 链式（逐级升级、显示 LvN）。「单级不可重复」是「多级」族内只有 1 级的退化形态，天然不可重复、零额外逻辑。
   - id 约定 10 位（如 `2000001005`，末 3 位=等级序号）
 - `AbyssalBlessingInfo.txt` - Excel 导出 JSON（不可单独改）
 - `Language_AbyssalBlessingInfo_{cn,en}.txt` - 多语言
@@ -49,6 +51,8 @@ watched_files:
 
 ### 升级链（核心机制，配置表自身负责）
 - **AbyssalBlessingInfoCfg.GetFamilyRootId(id)** - 沿 `parent_id` 回溯到族根（parent_id==0），防循环 64 层 + 缓存
+- **AbyssalBlessingInfoCfg.GetFamilyMaxLevel(rootId)** - 族内最大 level（带缓存，level==0 不计入）
+- **AbyssalBlessingInfoCfg.IsSingleLevelOnce(info)** - 单级不可重复判定（`level==1` 且 `GetFamilyMaxLevel(族根)==1`），仅用于 UI 隐藏等级角标
 - **AbyssalBlessingInfoBean.IsLevelUp()** - `level > 0`
 - 升级链**由馈赠表 `parent_id`/`level` 定义，与 BUFF 的 buff_parent_id/buff_level 无关**（旧设计已废弃）
 
