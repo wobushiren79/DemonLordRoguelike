@@ -1,6 +1,6 @@
 ---
 name: pixel-perfect-converter
-description: 像素完美转换器(Pixel Perfect Converter)编辑器工具开发：把 AI 生成的伪像素画重采样为真正像素对齐的像素图。负责 PixelPerfectConverterWindow 的功能扩展与维护，包括三步式工作流(设置/定位转换/编辑导出)、5 种取色算法、画笔/橡皮/魔棒编辑、撤销重做、调色板颜色替换、PNG 导出（x1/x4/x8 另存为、覆盖原图、同目录、按列×行拆分）。
+description: 像素完美转换器(Pixel Perfect Converter)编辑器工具开发：把 AI 生成的伪像素画重采样为真正像素对齐的像素图。负责 PixelPerfectConverterWindow 的功能扩展与维护，包括三步式工作流(设置/定位转换/编辑导出)+辅助功能步骤④(帧动画图片排版修改)、5 种取色算法、画笔/橡皮/魔棒编辑、撤销重做、调色板颜色替换、PNG 导出（x1/x4/x8 另存为、覆盖原图、同目录、按列×行拆分）。
 tools: Read, Write, Edit, Glob, Grep, Bash
 skill: pixel-perfect-converter
 watched_files:
@@ -22,6 +22,20 @@ watched_files:
 > **右键快捷入口**：`OpenFromSelection`（`[MenuItem("Assets/像素完美转换器")]`）在 Project 选中 `Texture2D` 后右键直接打开窗口、把该图设为源图并自动 `LoadSource`+`EnterStep2`；`OpenFromSelectionValidate`（校验函数）保证仅选中图片时菜单可用。
 2. **步骤② 定位与转换**：预览格子尺寸(4~16)、源图缩放(10~300%，中心锚定)、拖拽定位源图，选 5 种取色算法，**可设相似度阈值**与**最终颜色数量上限**，生成像素图。
 3. **步骤③ 编辑与导出**：左侧工具面板 + 中间编辑画布 + 右侧最终效果图预览(`DrawResultPreview`，`_resultZoom` 1~20，无网格/无高亮)；画布缩放(1~20)、网格开关、画笔/橡皮/魔棒、笔刷色与尺寸(1~5)、魔棒阈值(0~30)、最近颜色(≤6)、调色板颜色替换、撤销/重做、PNG 导出(另存为/覆盖原图/同目录/拆分)。
+4. **步骤④ 辅助功能（帧动画图片排版修改）**：独立于主流程的精灵表重排工具，详见下方专节。`DrawStepBar` 的 `CanGoToStep(4)` 恒为 true、`reachable = step<=_step || step==4`，故随时可进入；不依赖步骤①~③的任何数据。
+
+## 步骤④ 辅助功能 · 帧动画图片排版修改
+
+把按「列×行」帧排布的精灵表重排为另一种「列×行」布局（单帧像素尺寸不变，仅改变帧的行列排布）。
+例：256×32 原图填原图帧数 8×1、输出帧数 4×2 → 单帧 32×32，结果拆成 128×64。
+
+- **4 个参数**：原图帧数(`_auxSrcCols`×`_auxSrcRows`)、输出帧数(`_auxOutCols`×`_auxOutRows`)，改任一值自动 `RebuildAuxResult`。
+- **单帧尺寸** = `原图宽/_auxSrcCols` × `原图高/_auxSrcRows`（整除，不整除时取整并忽略右/下边缘，HelpBox 警告）。
+- **重排顺序**：行优先(从左到右、从上到下)，第 f 帧从源 `(f%sc, f/sc)` 搬到输出 `(f%oc, f/oc)`；空帧位填 `kTransparent`，输出帧位少于原帧数时多余帧丢弃并警告。
+- **独立源图**：`_auxSourceTexture`/`_auxSourceExternalPath`，**支持拖拽替换**(`DrawAuxDropArea`/`AcceptAuxDraggedImage`，复用 `IsDragValid`/`IsImagePath`/`LoadAsProjectAsset`)，`LoadAuxSource` 复用 `ReadSourcePixels` 读像素转自上而下数组。
+- **实时预览**：`_auxResultTex`(`BuildAuxResultTexture`)，`_auxResultZoom`(1~16) 缩放、超高内部滚动。
+- **导出**(均经 `BuildAuxResultPng` 自上而下翻自下而上编码)：`ExportAuxAs`(不覆盖，弹窗另存为)、`ExportAuxOverwrite`(覆盖原图，弹确认)、`ExportAuxToSourceDir`(同目录，名=`原图名_relayout_列x行.png`)；后两者需 `GetAuxSourceFilePath()` 有磁盘文件，否则按钮禁用。
+- 数据约定同主流程：`_auxSrcTopDown`/`_auxResultTopDown` 均为自上而下数组，纹理/PNG 输出时翻转。`OnDestroy` 释放 `_auxDisplayTex`/`_auxResultTex`。
 
 ## 5 种取色算法（`ConvMethod`）
 

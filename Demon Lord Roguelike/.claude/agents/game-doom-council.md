@@ -61,7 +61,7 @@ watched_files:
 | 议会 Bean | Assets/Scripts/Bean/Game/DoomCouncilBean.cs |
 | 议会场景预制(议员/态度色/好感图标) | Assets/Scripts/Component/Game/Scene/ScenePrefabForDoomCouncil.cs |
 | 议员态度/类型辅助 | Assets/Scripts/Bean/Game/CreatureBeanPartial.cs |
-| 随机/固定议员抽取 | Assets/Scripts/Bean/MVC/Game/NpcInfoBeanPartial.cs |
+| 随机/固定议员抽取、NPC体型解析(body_size→GetBodySizeRandomScale) | Assets/Scripts/Bean/MVC/Game/NpcInfoBeanPartial.cs |
 | 议会人数解析(council_num) | Assets/Scripts/Bean/MVC/Game/DoomCouncilInfoBeanPartial.cs |
 | 固定NPC好感存档 | Assets/Scripts/Bean/Game/UserRelationshipBean.cs |
 | 贿赂(态度/好感) | Assets/Scripts/Component/UI/Game/GameConversation/UIGameConversation.cs |

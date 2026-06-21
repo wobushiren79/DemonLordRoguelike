@@ -35,6 +35,9 @@ public partial class CreatureBean
     public CreatureAttributeBean creatureAttribute = new CreatureAttributeBean();
     /// <summary>生物稀有度BUFF（key=稀有度，扭蛋抽取时按命中的稀有度随机授予对应BUFF）</summary>
     public Dictionary<RarityEnum, BuffBean> dicRarityBuff = new Dictionary<RarityEnum, BuffBean>();
+    /// <summary>体型缩放倍率（在模型目标大小 size_spine 基础上再相乘；目前仅NPC配置 body_size，普通生物恒为1）。
+    /// 含随机区间的配置在创建时解析一次并缓存到此，保证后续重复渲染体型稳定。</summary>
+    public float bodySizeScale = 1f;
     #endregion
 
     #region 构造与初始化
@@ -84,6 +87,8 @@ public partial class CreatureBean
         this.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
         this.creatureName = npcInfo.name_language;
         this.level = npcInfo.level;
+        //解析并缓存体型缩放倍率（区间随机只在创建时定一次）
+        this.bodySizeScale = npcInfo.GetBodySizeRandomScale();
         //添加随机皮肤
         InitSkin(npcInfo);
         //添加装备
@@ -121,6 +126,15 @@ public partial class CreatureBean
     public CreatureNpcBean GetCreatureNpcData()
     {
         return creatureNpcData;
+    }
+
+    /// <summary>
+    /// 获取体型缩放倍率（带保护：旧存档或异常值≤0时回退为1，避免模型缩放为0而不可见）
+    /// </summary>
+    /// <returns>体型缩放倍率（恒大于0）</returns>
+    public float GetBodySizeScale()
+    {
+        return bodySizeScale > 0 ? bodySizeScale : 1f;
     }
     #endregion
 

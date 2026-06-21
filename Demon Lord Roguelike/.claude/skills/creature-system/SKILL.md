@@ -81,6 +81,8 @@ public class CreatureBean
 }
 ```
 
+> **NPC体型缩放**：`CreatureBean.bodySizeScale`(float, 默认1) 是模型体型倍率，仅 NPC 生效。来源为 `NpcInfo.body_size`(string) 配置：空/"0"=1倍、`"min,max"`(如"0.9,1.1")=区间随机、`"1.1"`=固定倍数；由 `NpcInfoBean.GetBodySizeRandomScale()` 解析，在 `CreatureBean.SetData(NpcInfoBean)` 创建时随机一次并缓存，渲染时 `CreatureHandler.SetCreatureData` 以 `localScale = size_spine × CreatureBean.GetBodySizeScale()`（带≤0回退1的保护）应用。普通生物倍率恒为1，行为不变。
+
 > **等级升级机制见 [`sacrifice-system`](../sacrifice-system/SKILL.md) Skill**：生物的 `level`/`levelExp` 升级走"基地祭坛献祭"——经验达标后献祭祭品掷骰，成功才升级。升级**不再自动加属性**，而是按 `LevelInfo.attribute_point`(当前全等级配置5) 发放可分配点数，由玩家在 `UICreatureAddAttribute` 界面手动加点(HP/护甲每点+10、攻击/攻速每点+1，写入 `creatureAttribute.dicAttributeLevelUp`)。升级方法 `UpLevelForSacrifice`(返回本次加点数)/`CanUpLevel`/`IsMaxLevel` 在 `CreatureBeanPartial.cs`，单点增量 `CreatureUtil.GetAttributePointAddValue`，成功率公式在 `CreatureUtil`。
 
 ### 创建生物
