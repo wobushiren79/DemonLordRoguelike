@@ -35,3 +35,4 @@
 - [`feedback_ask_before_architecture_change.md`](feedback_ask_before_architecture_change.md) — 涉及改变原有架构/数据流向的修改（如配置来源 Excel⇄代码字段迁移）必须先询问用户确认
 - [`feedback_shader_chinese_labels.md`](feedback_shader_chinese_labels.md) — 所有 shader 的 Properties 参数显示名必须用中文标注用途；Header 分组标题只能用 ASCII
 - [`feedback_prefer_language_property.md`](feedback_prefer_language_property.md) — 取多语言文本优先用框架自动生成的 _language 属性（带缓存），不手写 GetTextById(fileName,id,idx)
+- [`feedback_audio_use_enum.md`](feedback_audio_use_enum.md) — 音频播放统一用 AudioEnum 枚举调用，禁止裸 int id；游戏层 partial 提供枚举重载、框架层保留 int 接口给配置驱动 id；新增音频须同步维护枚举

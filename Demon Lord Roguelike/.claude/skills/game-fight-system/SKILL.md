@@ -337,8 +337,10 @@ FightDropCrystalBean dropData = FightManager.Instance.GetFightDropCrystalBean(cr
 FightHandler.Instance.CreateDropCrystal(dropData);
 
 // 拾取（鼠标点击或生物自动拾取）
-GameFightLogic.Instance.PickupCrystalForMouse();
+GameFightLogic.Instance.PickupCrystalForMouse();   // 手动点击拾取时播放音效 sound_btn_15(id 15)
 GameFightLogic.Instance.PickupCrystalForCreature(entity, pickupRadius);
+// 两种拾取最终都走 PickupCrystal，魔晶飞回收集点(核心)的 DOJump.OnComplete 中：
+//   播放入账音效 sound_pay_2(id 480002) → AddCrystal → 触发 GameFightLogic_DropAddCrystal
 ```
 
 ### 自定义战斗预制

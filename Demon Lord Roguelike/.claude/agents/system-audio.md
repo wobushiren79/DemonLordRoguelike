@@ -13,6 +13,7 @@ watched_files:
   - Assets/FrameWork/Scripts/Component/UI/ButtonAudio.cs
   - Assets/Scripts/Component/UI/Game/GameSetting/UIGameSettingForAudio.cs
   - Assets/FrameWork/Scripts/Enums/BaseGameEnum.cs
+  - Assets/Scripts/Enums/AudioEnum.cs
 ---
 
 # 音频系统 (Audio System) 开发代理
@@ -37,10 +38,13 @@ watched_files:
 ### 音频数据
 - **AudioBean** - 音频资源数据
 - **AudioInfoBean / AudioInfoBeanPartial** - 音频配置信息
+- **AudioEnum** - 音频枚举 [Scripts/Enums/AudioEnum.cs](Assets/Scripts/Enums/AudioEnum.cs)：枚举值 = `AudioInfo` 配置表 id，枚举名 = `name_res`（去扩展名）。业务调用音频的首选方式，替代裸 int id
 
 ## 约束
 
 - 音频播放通过 AudioHandler 统一调用
+- **调用统一用 `AudioEnum` 枚举**，禁止裸 int id（如 `PlaySound(15)`）。游戏层 `AudioHandler` partial 已为 `PlaySound`/`PlayMusicForLoop`/`PlayMusicListForLoop`/`PlayEnvironment` 提供枚举重载，内部 `(int)` 转发框架层 int 接口；框架层 int 接口保留给配置驱动的动态 id（如 `soundHitId`/`soundMissId`）
+- **新增/删除音频时必须同步维护 `AudioEnum`**（与 `AudioInfo` 配置表一一对应），否则枚举与 id 错位
 - 音量设置通过 VolumeHandler 管理
 - 按钮音效使用 ButtonAudio 组件
 - 音频资源通过 Manager 缓存避免重复加载

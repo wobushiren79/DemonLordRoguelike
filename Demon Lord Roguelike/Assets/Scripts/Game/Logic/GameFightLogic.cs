@@ -543,6 +543,8 @@ public class GameFightLogic : BaseGameLogic
         RayUtil.RayToScreenPointForMousePosition(pickupDistance, 1 << LayerInfo.Drop, out bool isCollider, out RaycastHit hit);
         if (isCollider && hit.collider != null)
         {
+            //手动点击拾取魔晶时播放点击音效
+            AudioHandler.Instance.PlaySound(AudioEnum.sound_btn_15);
             PickupCrystal(hit.collider.gameObject);
         }
     }
@@ -590,6 +592,8 @@ public class GameFightLogic : BaseGameLogic
             .SetEase(Ease.OutCubic)
             .OnComplete(() =>
             {
+                //魔晶回到收集点后播放入账音效
+                AudioHandler.Instance.PlaySound(AudioEnum.sound_pay_2);
                 UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
                 userData.AddCrystal(fightDropPrefab.valueInt);
                 //事件通知

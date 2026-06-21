@@ -12,6 +12,7 @@ watched_files:
   - Assets/FrameWork/Scripts/Component/UI/ButtonAudio.cs
   - Assets/Scripts/Component/UI/Game/GameSetting/UIGameSettingForAudio.cs
   - Assets/FrameWork/Scripts/Enums/BaseGameEnum.cs
+  - Assets/Scripts/Enums/AudioEnum.cs
 ---
 
 # 音频系统 (Audio System) 开发指南
@@ -39,7 +40,8 @@ AudioManager   - 音频资源管理器（持有 3 条 AudioSource、AudioListene
 | --- | --- | --- |
 | [Assets/FrameWork/Scripts/Component/Handler/AudioHandler.cs](Assets/FrameWork/Scripts/Component/Handler/AudioHandler.cs) | 框架 | 通用播放 API：`InitAudio`、`PlayMusicForLoop`、`PlayMusicListForLoop`、`PlaySound`、`PlayEnvironment`、暂停/停止/恢复 |
 | [Assets/FrameWork/Scripts/Component/Manager/AudioManager.cs](Assets/FrameWork/Scripts/Component/Manager/AudioManager.cs) | 框架 | 3 条 `AudioSource` 懒加载、`AudioListener`、按类型加载并缓存 `AudioClip`（`GetMusicClip`/`GetSoundClip`/`GetEnvironmentClip` → `LoadClipDataByAddressbles`） |
-| [Assets/Scripts/Component/Handler/AudioHandler.cs](Assets/Scripts/Component/Handler/AudioHandler.cs) | 游戏 | 业务封装：`PlayMusicForMain`/`PlayMusicForGaming`/`PlayMusicForFight`、`ActionForUIOnClick` 通用 UI 点击音效 |
+| [Assets/Scripts/Component/Handler/AudioHandler.cs](Assets/Scripts/Component/Handler/AudioHandler.cs) | 游戏 | 业务封装：`PlayMusicForMain`/`PlayMusicForGaming`/`PlayMusicForFight`、`ActionForUIOnClick` 通用 UI 点击音效；**`AudioEnum` 重载**（`PlaySound`/`PlayMusicForLoop`/`PlayMusicListForLoop`/`PlayEnvironment` 接受枚举，内部 `(int)` 转发到框架层 int 接口） |
+| [Assets/Scripts/Enums/AudioEnum.cs](Assets/Scripts/Enums/AudioEnum.cs) | 游戏 | **音频枚举**：枚举值 = `AudioInfo` 配置表 id，枚举名 = `name_res`（去扩展名）。由 `AudioInfo.txt` 一一对应生成，是业务代码调用音频的**首选方式**（替代裸 int id） |
 | [Assets/Scripts/Component/Manager/AudioManager.cs](Assets/Scripts/Component/Manager/AudioManager.cs) | 游戏 | `listCommonUIClick`（触发通用点击音效的 sprite 名集合） |
 | [Assets/FrameWork/Scripts/Bean/MVC/AudioInfoBean.cs](Assets/FrameWork/Scripts/Bean/MVC/AudioInfoBean.cs) | 框架 | 自动生成的配置 Bean + `AudioInfoCfg`（`GetItemData(id)`） |
 | [Assets/FrameWork/Scripts/Bean/MVC/AudioInfoBeanPartial.cs](Assets/FrameWork/Scripts/Bean/MVC/AudioInfoBeanPartial.cs) | 框架 | 配置 Bean 的扩展方法（手写代码写这里） |
@@ -79,43 +81,48 @@ AudioHandler.Instance.InitAudio();
 
 ## 关键 API
 
+> **调用统一用 `AudioEnum` 枚举，不要传裸 int id**（见 [Assets/Scripts/Enums/AudioEnum.cs](Assets/Scripts/Enums/AudioEnum.cs)）。枚举值即配置表 id，枚举名即 `name_res`，可读性更好且编译期校验。游戏层 `AudioHandler` partial 为每个 `Play*` 提供了 `AudioEnum` 重载，内部 `(int)枚举` 转发到框架层 int 接口。**例外**：从配置 Bean 动态读出的 id（如 `FightUnderAttackData.soundHitId`/`soundMissId`）本就是 int，继续用 int 接口。
+
 ### 1. 音效（瞬时，Sound）
 
 ```csharp
-// 最简：用默认音量(soundVolume)在 Camera.main 位置播放
-AudioHandler.Instance.PlaySound(soundId);
+// 推荐：用枚举播放，默认音量(soundVolume)在 Camera.main 位置
+AudioHandler.Instance.PlaySound(AudioEnum.sound_btn_15);
 
 // 指定 3D 播放位置（PlayClipAtPoint）
-AudioHandler.Instance.PlaySound(soundId, worldPosition);
+AudioHandler.Instance.PlaySound(AudioEnum.sound_hit_1, worldPosition);
 
 // 完整：自定义音量、可指定 AudioSource（传 null 用 PlayClipAtPoint 在指定点播放）
-AudioHandler.Instance.PlaySound(soundId, worldPosition, volumeScale, audioSource);
+AudioHandler.Instance.PlaySound(AudioEnum.sound_hit_1, worldPosition, volumeScale, audioSource);
+
+// 配置驱动的动态 id（来自 Bean）仍走 int 接口
+AudioHandler.Instance.PlaySound(fightUnderAttackData.soundHitId);
 ```
-- `soundId == 0` 或 `volumeScale == 0` 直接跳过。
+- `soundId == 0`（`AudioEnum.None`）或 `volumeScale == 0` 直接跳过。
 - **防抖**：同一 `soundId` 在 0.1s 内重复请求会被忽略（`timeUpdateForRepeatPlay` + `lastPlaySoundId`），避免密集命中时音效炸裂。
 
 ### 2. 音乐（循环，Music）
 
 ```csharp
 // 单曲循环（loop=true）
-AudioHandler.Instance.PlayMusicForLoop(musicId);
-AudioHandler.Instance.PlayMusicForLoop(musicId, volumeScale);
+AudioHandler.Instance.PlayMusicForLoop(AudioEnum.music_main_1);
+AudioHandler.Instance.PlayMusicForLoop(AudioEnum.music_main_1, volumeScale);
 
 // 列表随机轮播：每首播完用协程切下一首随机曲（非 loop，靠协程衔接）
-AudioHandler.Instance.PlayMusicListForLoop(listMusicIds);
+AudioHandler.Instance.PlayMusicListForLoop(new List<AudioEnum>{ AudioEnum.music_fight_1, AudioEnum.music_fight_2 });
 ```
 游戏层已封装按场景选曲（[Assets/Scripts/Component/Handler/AudioHandler.cs](Assets/Scripts/Component/Handler/AudioHandler.cs)）：
 ```csharp
-AudioHandler.Instance.PlayMusicForMain();    // 主界面（单曲 1200001）
-AudioHandler.Instance.PlayMusicForFight();   // 战斗（1000001~1000006 轮播）
+AudioHandler.Instance.PlayMusicForMain();    // 主界面（单曲 music_main_1）
+AudioHandler.Instance.PlayMusicForFight();   // 战斗（music_fight_1~6 轮播）
 AudioHandler.Instance.PlayMusicForGaming();  // 基地游戏中（当前留空）
 ```
 
 ### 3. 环境音（循环，Environment）
 
 ```csharp
-AudioHandler.Instance.PlayEnvironment(environmentId);
-AudioHandler.Instance.PlayEnvironment(environmentId, volumeScale);
+AudioHandler.Instance.PlayEnvironment(AudioEnum.sound_walk_1);
+AudioHandler.Instance.PlayEnvironment(AudioEnum.sound_walk_1, volumeScale);
 ```
 
 ### 4. 暂停 / 恢复 / 停止
@@ -135,7 +142,7 @@ AudioHandler.Instance.StopEnvironment();
 
 两种机制并存：
 
-- **通用点击音效**（自动）：`AudioHandler.Awake` 里 `UIHandler.Instance.AddOnClickAction(ActionForUIOnClick)`。点击带 `Button` 的 UI 时，若 image sprite 名在 `AudioManager.listCommonUIClick` 集合中则播 `PlaySound(3)`；image 名为 `ViewExit` 的退出按钮播 `PlaySound(4)`。新增一类通用音效：把对应 sprite 名加进游戏层 `AudioManager.listCommonUIClick`。
+- **通用点击音效**（自动）：`AudioHandler.Awake` 里 `UIHandler.Instance.AddOnClickAction(ActionForUIOnClick)`。点击带 `Button` 的 UI 时，若 image sprite 名在 `AudioManager.listCommonUIClick` 集合中则播 `PlaySound(AudioEnum.sound_btn_3)`；image 名为 `ViewExit` 的退出按钮播 `PlaySound(AudioEnum.sound_btn_4)`。新增一类通用音效：把对应 sprite 名加进游戏层 `AudioManager.listCommonUIClick`。
 - **按钮独立音效**（手动挂载）：在 Button 上挂 [ButtonAudio](Assets/FrameWork/Scripts/Component/UI/ButtonAudio.cs) 组件，填 `clickClip` 列表（随机取一个），用 `soundVolume` 在按钮位置播放。**不读配置表**，直接用本地 AudioClip。
 
 ### 6. 音量设置
@@ -148,14 +155,18 @@ AudioHandler.Instance.StopEnvironment();
 1. 把音频文件放到对应目录 `Assets/LoadResources/Audio/{Sound|Music|Environment}/`，确保被 Addressables 标记，地址与路径一致。
 2. 在 `excel_audio_info` Excel 新增一行（按 id 升序插入，见 [feedback_excel_id_sorted_insert]）：`id` / `name_res`（= 文件名）/ `remark` / `audio_type`。
 3. 在 Unity 编辑器用配置导出工具重新生成 `AudioInfo.txt`（仅改 Excel 时须提醒用户导出）。
-4. 代码里用对应 `Play*` API 按 id 播放。
+4. **在 [AudioEnum.cs](Assets/Scripts/Enums/AudioEnum.cs) 同步补一个枚举项**（枚举名 = `name_res` 去扩展名，值 = id），保持与配置表一一对应。
+5. 代码里用对应 `Play*` API + `AudioEnum` 枚举播放。
+
+> AudioEnum 是手工维护的枚举（首次由 `AudioInfo.txt` 生成），配置表增删音频时**必须**同步本枚举，否则枚举与 id 错位。
 
 ### 在战斗/业务里触发音效
-直接 `AudioHandler.Instance.PlaySound(id, worldPosition)`，例如命中/落空音效见 [FightCreatureEntity.cs](Assets/Scripts/Game/Fight/FightCreatureEntity.cs)（`soundHitId` / `soundMissId`）。
+固定音效用枚举：`AudioHandler.Instance.PlaySound(AudioEnum.sound_xxx, worldPosition)`。配置驱动的动态音效（命中/落空 id 存在 Bean 里）仍走 int 接口，见 [FightCreatureEntity.cs](Assets/Scripts/Game/Fight/FightCreatureEntity.cs)（`soundHitId` / `soundMissId`）。
 
 ## 约束与注意事项
 
 - **音频播放统一走 `AudioHandler`**，不要在业务代码里直接 new `AudioSource` 或散落调 `AudioSource.PlayClipAtPoint`（脱离配置/缓存的本地播放才用 `AudioView`/`ButtonAudio`）。
+- **调用统一用 `AudioEnum` 枚举**，禁止写裸 int id（如 `PlaySound(15)`）。游戏层 partial 已为各 `Play*` 提供枚举重载；框架层仍保留 int 接口供配置驱动的动态 id 使用。新增音频务必同步维护 `AudioEnum`。
 - **配置表是唯一真实源**：音频 id ↔ 资源名映射改在 Excel，别只改 `AudioInfo.txt`（下次导出会被覆盖）。
 - **资源缓存**：clip 按 `{路径}/{name_res}` 缓存，重复播放不重复加载；新增音频确保 Addressables 地址与三类固定路径前缀一致，否则加载失败（日志 `没有名字为:xxx 的音效资源`）。
 - **枚举拼写**：类型枚举为 `AuidoTypeEnum`（源码即写作 **Auido**，非 Audio），引用时勿"纠正"拼写。
