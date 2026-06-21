@@ -55,7 +55,7 @@ AudioManager   - 音频资源管理器（持有 3 条 AudioSource、AudioListene
 ## 音频配置表
 
 - **真实源**：`Assets/Data/Excel/excel_audio_info*.xlsx`（工作表导出为 `Assets/Resources/JsonText/AudioInfo.txt`）。改配置必须改 Excel（见 CLAUDE.md「Excel 是唯一真实源」），仅改 JSON 下次导出会被覆盖。
-- **字段**（`AudioInfoBean`）：`id`、`name_res`（资源文件名，不含扩展名）、`remark`（备注）、`audio_type`（0 音效 / 1 音乐 / 2 环境音）。
+- **字段**（`AudioInfoBean`）：`id`、`name_res`（资源文件名，不含扩展名）、`remark`（备注）、`audio_type`（0 音效 / 1 音乐 / 2 环境音）、`volume_scale`（float，音效音量缩放；**0 或空 = 1（不缩放）**，填值后框架层 `PlaySound` 自动在基础音量上 ×该系数）。
 - **读取**：`AudioInfoCfg.GetItemData(id)` 拿到 Bean，`name_res` 即资源名。
 
 ## 音频资源路径
@@ -93,11 +93,17 @@ AudioHandler.Instance.PlaySound(AudioEnum.sound_btn_15);
 AudioHandler.Instance.PlaySound(AudioEnum.sound_hit_1, worldPosition);
 
 // 完整：自定义音量、可指定 AudioSource（传 null 用 PlayClipAtPoint 在指定点播放）
+// 注意：这里的 volumeScale 是【绝对音量】，直接作为最终音量，不叠加配置音量
 AudioHandler.Instance.PlaySound(AudioEnum.sound_hit_1, worldPosition, volumeScale, audioSource);
+
+// 运行时音量缩放：最终音量 = 配置音效音量(soundVolume) × volumeScale（代码里临时放大/缩小，先保留备用）
+AudioHandler.Instance.PlaySoundForVolumeScale(AudioEnum.sound_pay_2, 1.5f);
 
 // 配置驱动的动态 id（来自 Bean）仍走 int 接口
 AudioHandler.Instance.PlaySound(fightUnderAttackData.soundHitId);
 ```
+- **首选：配置表 `volume_scale`**（固定缩放）。某个音效需要恒定放大/缩小时，直接在 Excel `AudioInfo` 该行填 `volume_scale`（如 `sound_pay_2 = 1.5`），框架层 `PlaySound` 核心方法会在 `audioInfo` 取到后自动 `volumeScale *= volume_scale`（`volume_scale <= 0` 视为 1 不缩放）。调用处保持普通 `PlaySound(AudioEnum.xxx)` 即可，**无需在代码里写缩放倍率**。
+- `PlaySound(..., float volumeScale, ...)` 的 `volumeScale` 是**绝对音量**（直接作为最终音量）；`PlaySoundForVolumeScale(audio, volumeScale)` 的 `volumeScale` 是**运行时叠加在配置音量上的倍率**，用于代码里临时缩放（会与配置 `volume_scale` 叠乘：`soundVolume × 运行时倍率 × 配置 volume_scale`）。固定缩放优先用配置列，不要写死在代码里。
 - `soundId == 0`（`AudioEnum.None`）或 `volumeScale == 0` 直接跳过。
 - **防抖**：同一 `soundId` 在 0.1s 内重复请求会被忽略（`timeUpdateForRepeatPlay` + `lastPlaySoundId`），避免密集命中时音效炸裂。
 

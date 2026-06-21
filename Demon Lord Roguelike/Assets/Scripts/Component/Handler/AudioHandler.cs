@@ -100,6 +100,24 @@ public partial class AudioHandler
     }
 
     /// <summary>
+    /// 播放音效（枚举，音量缩放）。
+    /// 最终音量 = 配置表音效音量(soundVolume) × volumeScale，用于在配置音量基础上整体放大/缩小单个音效。
+    /// </summary>
+    /// <param name="audio">音频枚举</param>
+    /// <param name="volumeScale">音量缩放倍率（叠加在配置音效音量上，1 为原始大小，1.5 为放大 1.5 倍）</param>
+    /// <param name="audioSource">指定播放源，null 时使用默认音效源</param>
+    public void PlaySoundForVolumeScale(AudioEnum audio, float volumeScale, AudioSource audioSource = null)
+    {
+        if (audioSource == null)
+            audioSource = manager.audioSourceForSound;
+        GameConfigBean gameConfig = GameDataHandler.Instance.manager.GetGameConfig();
+        if (Camera.main != null)
+        {
+            PlaySound((int)audio, Camera.main.transform.position, gameConfig.soundVolume * volumeScale, audioSource);
+        }
+    }
+
+    /// <summary>
     /// 循环播放音乐-单曲（枚举）
     /// </summary>
     /// <param name="audio">音频枚举</param>
