@@ -35,6 +35,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1e52aacd77adfdd4e8728d81b424356b
+    m_Address: Assets/LoadResources/Audio/Music/music_gaming_8.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 238a0e212ca08b5459b757a6a5021c18
+    m_Address: Assets/LoadResources/Audio/Music/music_gaming_9.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 24493c8030f79ea4a92a20bc110f0566
     m_Address: Assets/LoadResources/Audio/Music/music_gaming_1.wav
     m_ReadOnly: 0
@@ -50,8 +60,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 34e3f7e5ab24b3e4984d7787da1765a0
+    m_Address: Assets/LoadResources/Audio/Music/music_fight_7.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 34f8dafc7b11faa44a1c16f5e2e47546
     m_Address: Assets/LoadResources/Audio/Music/music_fight_5.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3e7a8438279329c4da5cdc751bbef91c
+    m_Address: Assets/LoadResources/Audio/Music/music_fight_9.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 42caa484c6fd86246bd5426ee17317bc
+    m_Address: Assets/LoadResources/Audio/Music/music_gaming_11.mp3
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -62,6 +87,31 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5775092f6c9450047a5d8ad584566a46
     m_Address: Assets/LoadResources/Audio/Music/music_gaming_2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 66e6036173ce2994994da2982604decb
+    m_Address: Assets/LoadResources/Audio/Music/music_fight_10.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7db7ed6b3d6146747bec5b30f9b6895b
+    m_Address: Assets/LoadResources/Audio/Music/music_gaming_12.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 819ccecc6fd7b88429b71c94eeee659d
+    m_Address: Assets/LoadResources/Audio/Music/music_fight_8.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bb304dc626afe854e87ce91f4c8e1e76
+    m_Address: Assets/LoadResources/Audio/Music/music_fight_11.mp3
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bf1b5001fe5f5264d84310415683004b
+    m_Address: Assets/LoadResources/Audio/Music/music_gaming_13.mp3
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -77,6 +127,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d17be7b8572c87a469bcf94b3273fb7e
     m_Address: Assets/LoadResources/Audio/Music/music_gaming_3.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e56d2d7d64707c745a30600ce300dece
+    m_Address: Assets/LoadResources/Audio/Music/music_gaming_10.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
