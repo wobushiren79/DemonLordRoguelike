@@ -1161,6 +1161,7 @@ MonoBehaviour:
   ui_Class: {fileID: 0}
   ui_LevelText: {fileID: 0}
   ui_MPText: {fileID: 0}
+  ui_SacrificeEffect: {fileID: 0}
 --- !u!224 &7208947163169238971 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}

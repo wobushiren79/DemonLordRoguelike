@@ -18,5 +18,7 @@ public partial class UICreatureAddAttribute
 
     public UIViewCreatureAddAttributeItem ui_UIViewCreatureAddAttributeItem_ASPD;
 
+    public Button ui_BtnConfirm;
+
 
 }
