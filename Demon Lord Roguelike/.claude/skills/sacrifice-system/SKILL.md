@@ -72,7 +72,7 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点界面(成功后弹出)
     │  OnClickForExit 剩余>0 时 ToastHintText(textId 61004「请分配完所有属性点」)拦截
     ▼
 UICreatureSacrifice (BaseUIComponent)   献祭选择界面
-    │  列表排除目标生物本身; 选择上限 = userUnlock.GetUnlockSacrificeMax()(基础5 + 研究等级)
+    │  列表排除目标生物本身 + 已编入阵容的生物; 选择上限 = userUnlock.GetUnlockSacrificeMax()(基础5 + 研究等级)
     │  SetSuccessRate(GetCurrentSuccessRate()) 实时显示真实成功率
     │  点击开始 → 设置 creatureSacrificeData.fodderCreatures → Logic.StartSacrifice()
 ```
@@ -139,7 +139,7 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 1. `fodder.RemoveAllEquipToBackpack()` —— 祭品身上装备**退回背包**（需求：成功/失败都退）
 2. `userData.RemoveBackpackCreature(fodder)` —— 从背包(及阵容)移除祭品
 
-目标生物**不能**作为祭品：`UICreatureSacrifice.InitCreaturekData` 用 `creatureData != targetCreature` 过滤。
+祭品列表过滤(`UICreatureSacrifice.InitCreaturekData`)：① 目标生物本身排除(`creatureData == targetCreature` 按引用跳过)；② **已编入阵容的生物排除**(`userData.GetLinupIndex(creatureUUId) > 0` 跳过)。两项均在构建 `listCreatureData` 时做数据级过滤，故**默认所有排序下阵容魔物都不出现在祭品列表**。
 
 ## 等级上限
 
@@ -176,7 +176,11 @@ UICreatureManager (BaseUIComponent)   生物管理
     ├── ui_UIViewCreatureCardList            // 背包生物列表
     ├── ui_UIViewCreatureCardEquipDetails    // 选中生物详情+装备
     ├── ui_BtnLevelUpSacrifice_Button        // 献祭升级按钮(默认隐藏)
-    └── ui_BtnLevelUpSacrifice_PopupButtonCommonView  // 按钮气泡说明(textId 60000)
+    ├── ui_BtnLevelUpSacrifice_PopupButtonCommonView  // 按钮气泡说明(textId 60000)
+    └── ui_UIViewCreatureCardList 内每张卡片的 ui_SacrificeEffect  // 卡片上的"可献祭升级"高亮特效
+                                              // 由 UIViewCreatureCardItem.SetSacrificeEffect 控制,
+                                              // 仅 CardUseStateEnum.CreatureManager && 解锁祭坛 && CanUpLevel() 时显示
+                                              // (判定与 RefreshSacrificeButton 一致, 材质 Mat_UIViewCreatureCardItem_Sacrifice.mat)
 
 UICreatureSacrifice (BaseUIComponent)   献祭选择
     ├── ui_UIViewCreatureCardList            // 可选祭品列表(排除目标)

@@ -88,11 +88,17 @@ public partial class UICreatureSacrifice : BaseUIComponent
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         userData.GetUserBackpackCreatureData().listBackpackCreature.ForEach((int index, CreatureBean creatureData) =>
         {
-            //筛除献祭的生物
-            if (creatureData != gameLogic.creatureSacrificeData.targetCreature)
+            //筛除献祭的目标生物本身
+            if (creatureData == gameLogic.creatureSacrificeData.targetCreature)
             {
-                listCreatureData.Add(creatureData);
+                return;
             }
+            //筛除已编入阵容的生物(默认所有排序下都不出现在祭品列表中)
+            if (userData.GetLinupIndex(creatureData.creatureUUId) > 0)
+            {
+                return;
+            }
+            listCreatureData.Add(creatureData);
         });
         ui_UIViewCreatureCardList.SetData(listCreatureData, CardUseStateEnum.CreatureSacrifice, OnCellChangeForBackpackCreature);
         //设置展示

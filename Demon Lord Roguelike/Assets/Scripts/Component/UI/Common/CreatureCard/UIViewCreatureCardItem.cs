@@ -25,7 +25,22 @@ public partial class UIViewCreatureCardItem : BaseUIView
         SetStarLevel(creatureData.starLevel);
         SetCreateMP(creatureData.GetAttributeInt(CreatureAttributeTypeEnum.CMP));
         SetPopupShow(creatureData, cardUseState);
+        SetSacrificeEffect(creatureData, cardUseState);
         RefreshCardState(this.cardData.cardState);
+    }
+
+    /// <summary>
+    /// 设置献祭升级特效显隐: 仅在魔物管理界面(CreatureManager) 且 已解锁祭坛 且 当前生物满足献祭升级条件(CanUpLevel)时显示。
+    /// </summary>
+    public void SetSacrificeEffect(CreatureBean creatureData, CardUseStateEnum cardUseState)
+    {
+        bool canShowSacrificeEffect = false;
+        if (cardUseState == CardUseStateEnum.CreatureManager && creatureData != null)
+        {
+            var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+            canShowSacrificeEffect = userUnlock.CheckIsUnlock(UnlockEnum.Altar) && creatureData.CanUpLevel();
+        }
+        ui_SacrificeEffect.gameObject.SetActive(canShowSacrificeEffect);
     }
 
     /// <summary>

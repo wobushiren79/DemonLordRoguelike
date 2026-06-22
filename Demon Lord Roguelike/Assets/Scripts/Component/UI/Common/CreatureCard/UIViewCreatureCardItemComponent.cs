@@ -29,5 +29,7 @@ public partial class UIViewCreatureCardItem
 
     public TextMeshProUGUI ui_MPText;
 
+    public Image ui_SacrificeEffect;
+
 
 }

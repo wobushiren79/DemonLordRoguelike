@@ -95,6 +95,8 @@ UIPopupCreatureCardDetails   // 卡片详情弹窗
 
 > **献祭卡片(`CreatureSacrifice*` 状态 / `UIViewCreatureCardItemForCreatureSacrifice`)的业务流程见 [`sacrifice-system`](../sacrifice-system/SKILL.md) Skill**：祭品选择、成功率公式、献祭升级、保底等机制都在那里；本 Skill 只负责献祭卡片的 UI 表现与状态。
 
+> **献祭升级提示特效 `ui_SacrificeEffect`**（`UIViewCreatureCardItemComponent` 的 `Image` 字段，prefab `UIViewCreatureCardItem` 上挂，材质 `Mat_UIViewCreatureCardItem_Sacrifice.mat`）：`SetData` 内部调用 `SetSacrificeEffect(creatureData, cardUseState)` 控制显隐——**仅当 `cardUseState == CreatureManager` 且 已解锁祭坛(`UnlockEnum.Altar`) 且 `creatureData.CanUpLevel()`** 时显示，其它使用状态恒隐藏。判定条件与 `UICreatureManager.RefreshSacrificeButton`（献祭升级按钮显隐）一致，用于在魔物管理列表里高亮"可献祭升级"的生物。
+
 ## 创建/使用生物卡片
 
 ### 1. 基础卡片使用
