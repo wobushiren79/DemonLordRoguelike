@@ -54,12 +54,16 @@ SpriteAtlas:
     - 8e2bb273b301395499b0e797538bf5de: 21300000
     - cadd61642b664b94ab5ec78bf6c76ae9: 21300000
     - 093f8b26635a2ad40b476798bd4b304f: 21300000
+    - 70f9ab46ebda3f243863c563a67e908c: 21300000
     - 5ecb08d76e498104782fce9716ac5e3d: 21300000
     - 0b034988aea393b408f80295eb103468: 21300000
     - 0a3188a98cf031f459a6c916d6af8834: 21300000
     - 8ecc1c0be0a25a144ba4be7ca3744157: 21300000
     - 01a01b8bfc4dac9428aab07bb9dd01be: 21300000
     - 014e2fbc89aad6842823760ff9be2b83: 21300000
+    - 2d563dec3b26bb1468104431d18e8148: 21300000
+    - 96fea33e3e3030642be1094aae10141e: 21300000
+    - 83c20c6e7c4260547acb780a3e5d9580: 21300000
     - 09af21bf9d00fe74787d6d30e77ff420: 21300000
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
@@ -67,24 +71,32 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 8e2bb273b301395499b0e797538bf5de, type: 3}
   - {fileID: 21300000, guid: cadd61642b664b94ab5ec78bf6c76ae9, type: 3}
   - {fileID: 21300000, guid: 093f8b26635a2ad40b476798bd4b304f, type: 3}
+  - {fileID: 21300000, guid: 70f9ab46ebda3f243863c563a67e908c, type: 3}
   - {fileID: 21300000, guid: 5ecb08d76e498104782fce9716ac5e3d, type: 3}
   - {fileID: 21300000, guid: 0b034988aea393b408f80295eb103468, type: 3}
   - {fileID: 21300000, guid: 0a3188a98cf031f459a6c916d6af8834, type: 3}
   - {fileID: 21300000, guid: 8ecc1c0be0a25a144ba4be7ca3744157, type: 3}
   - {fileID: 21300000, guid: 01a01b8bfc4dac9428aab07bb9dd01be, type: 3}
   - {fileID: 21300000, guid: 014e2fbc89aad6842823760ff9be2b83, type: 3}
+  - {fileID: 21300000, guid: 2d563dec3b26bb1468104431d18e8148, type: 3}
+  - {fileID: 21300000, guid: 96fea33e3e3030642be1094aae10141e, type: 3}
+  - {fileID: 21300000, guid: 83c20c6e7c4260547acb780a3e5d9580, type: 3}
   - {fileID: 21300000, guid: 09af21bf9d00fe74787d6d30e77ff420, type: 3}
   m_PackedSpriteNamesToIndex:
   - ui_abyssalblessing_7
   - ui_abyssalblessing_1
   - ui_abyssalblessing_3
   - ui_abyssalblessing_5
+  - ui_abyssalblessing_11
   - ui_abyssalblessing_8
   - ui_abyssalblessing_0
   - ui_abyssalblessing_9
   - ui_abyssalblessing_4
   - ui_abyssalblessing_6
   - ui_abyssalblessing_10
+  - ui_abyssalblessing_12
+  - ui_abyssalblessing_13
+  - ui_abyssalblessing_14
   - ui_abyssalblessing_2
   m_RenderDataMap: {}
   m_Tag: AtlasForAbyssalBlessing
