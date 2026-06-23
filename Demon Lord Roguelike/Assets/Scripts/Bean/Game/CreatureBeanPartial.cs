@@ -125,7 +125,8 @@ public partial class CreatureBean
     }
 
     /// <summary>
-    /// 通过献祭升级一级: 扣除本级所需经验(跨级累加制,余量保留)、等级+1,并返回本次升级获得的可分配属性加点数。
+    /// 通过献祭升级一级: 经验清 0、等级+1,并返回本次升级获得的可分配属性加点数。
+    /// <para>升级成功后 levelExp 直接归零(不保留溢出余量),后续经验从 0 重新累积。</para>
     /// <para>属性加点不再自动加成, 改由玩家在 UICreatureAddAttribute 界面手动分配(见献祭升级成功流程)。</para>
     /// <para>仅在献祭成功时调用;调用前应已通过 CanUpLevel() 校验。</para>
     /// </summary>
@@ -136,11 +137,8 @@ public partial class CreatureBean
         //已满级,不再升级
         if (nextLevelInfo == null || nextLevelInfo.id == 0)
             return 0;
-        //扣除升到下一级所需经验,余量保留用于后续升级
-        long needExp = long.Parse(nextLevelInfo.level_exp);
-        levelExp -= needExp;
-        if (levelExp < 0)
-            levelExp = 0;
+        //升级成功后经验清 0(不保留溢出余量)
+        levelExp = 0;
         //等级+1
         level++;
         //本次升级获得的加点数(配置驱动, 未配置默认 1)
@@ -188,7 +186,7 @@ public partial class CreatureBean
 
     /// <summary>
     /// 清理临时数据
-    /// <para>会清空皮肤/装备/等级/星级/稀有度等所有数据，仅用于"一次性 Bean 入池复用"（复用时会通过 SetData 重建）。</para>
+    /// <para>会清空皮肤/装备/等级/稀有度等所有数据，仅用于"一次性 Bean 入池复用"（复用时会通过 SetData 重建）。</para>
     /// <para>切勿对与玩家存档共享引用的阵容生物 Bean 调用此方法，否则会清空其皮肤数据导致 Spine 无法显示，请改用 <see cref="ClearFightTempData"/>。</para>
     /// </summary>
     public void ClearTempData()
@@ -199,7 +197,6 @@ public partial class CreatureBean
         level = 0;
         levelExp = 0;
         sacrificePityRate = 0;
-        starLevel = 0;
         rarity = 0;
         relationship = 0;
         creatureNpcData = null;
@@ -211,7 +208,7 @@ public partial class CreatureBean
     /// <summary>
     /// 清理战斗运行时临时状态
     /// <para>仅重置战斗期间产生的运行时状态（排序、复活计时、生物状态），</para>
-    /// <para>保留皮肤(dicSkinData)/装备/等级/星级/稀有度等持久核心数据。</para>
+    /// <para>保留皮肤(dicSkinData)/装备/等级/稀有度等持久核心数据。</para>
     /// <para>用于战斗结束后还原与玩家存档共享引用的阵容生物 Bean，使其回到可用的待机状态。</para>
     /// </summary>
     public void ClearFightTempData()

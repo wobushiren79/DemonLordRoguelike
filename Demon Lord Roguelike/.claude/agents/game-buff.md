@@ -23,9 +23,13 @@ watched_files:
 ```
 BuffBaseEntity                              # 抽象基类
 ├── BuffEntityAttribute                     # 属性BUFF（实现 IAttributeModifierSource）
-│   └── BuffEntityAttributeAttackTime       # 改攻击前摇/动画时间（独立通道，不走管线）
+│   ├── BuffEntityAttributeAttackTime       # 改攻击前摇/动画时间（独立通道，不走管线）
+│   │   └── BuffEntityAttributeAttackTimeRandomDefense  # 深渊馈赠「急性子」：随机锁定一只防守生物攻速翻倍(攻击时间×0.5)
+│   └── BuffEntityAttributeRandomDefense    # 深渊馈赠「大力出奇迹/膘肥体壮/钢铁憨憨」：随机锁定一只防守生物 ATK/HP/DR 翻倍
 ├── BuffEntityInstant                       # 瞬时触发（SetData后isValid=false）
-│   └── BuffEntityInstantCloneDefenseCreature
+│   ├── BuffEntityInstantCloneDefenseCreature      # 深渊馈赠「增殖」
+│   ├── BuffEntityInstantRewardMoreItem            # 深渊馈赠「奖励多多」
+│   └── BuffEntityInstantRewardMoreSelect          # 深渊馈赠「再来一瓶」
 ├── BuffEntityConditional                   # 条件触发（UpdateBuffTime只增总时长）
 │   ├── BuffEntityConditionalAttack         # 攻击/受击事件触发自定义 AttackMode
 │   ├── BuffEntityConditionalAttackAgain    # 触发AI立即再攻击一次
@@ -110,4 +114,5 @@ BuffEventDispatcher.dicBindings  # 事件名 → IBuffEventBinding 字典
 - 深渊馈赠等级BUFF：通过 `buff_parent_id` + `buff_level` 实现替换升级；新增时 `BuffHandler.AddAbyssalBlessing` 会自动移除旧等级
 - 死亡流程：`RemoveFightCreatureBuffs` 前应先 `TriggerEvent(GameFightLogic_CreatureDeadEnd)`，让 `BuffEntityConditionalDead` 有机会完成触发
 - 添加 BUFF 必须经过 `BuffHandler.AddFightCreatureBuff`（处理 createRate、stacking、事件通知），不要直接写 `manager.dicFightCreatureBuffsActivie`
-- 攻击时间修正走专用通道 `BuffHandler.ChangeAttackTimeDataForBuff`（只看 `BuffEntityAttributeAttackTime`），不接入属性管线
+- 攻击时间修正走专用通道 `BuffHandler.ChangeAttackTimeDataForBuff`（看 `BuffEntityAttributeAttackTime`），不接入属性管线；该方法除生物自身战斗BUFF外，还扫描深渊馈赠池中实现 `ISingleTargetAbyssalBuff` 的攻速BUFF，按锁定 UUID 单体生效
+- 单体定向深渊馈赠（随机一只防守生物 ATK/HP/DR/攻速 翻倍）：`BuffEntityAttributeRandomDefense`/`BuffEntityAttributeAttackTimeRandomDefense` 实现 `ISingleTargetAbyssalBuff`，`SetData` 随机锁定一只防守生物 UUID；属性类在 `FightCreatureBean.CollectFromBuffList` 按 UUID 过滤。**只改运行时 dicAttribute/攻击时间，绝不改 `dlDefenseCreatureData` 里 CreatureBean 的 creatureAttribute（与存档共享引用，会污染存档）**。详见 abyssal-blessing-system SKILL

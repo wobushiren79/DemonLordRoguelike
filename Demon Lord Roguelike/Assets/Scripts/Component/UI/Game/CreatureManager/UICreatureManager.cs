@@ -1,6 +1,7 @@
 ﻿
 
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public partial class UICreatureManager : BaseUIComponent
@@ -45,6 +46,18 @@ public partial class UICreatureManager : BaseUIComponent
     }
 
     /// <summary>
+    /// 输入响应: 按下 ESC 时退出生物管理界面
+    /// </summary>
+    public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
+    {
+        base.OnInputActionForStarted(inputType, callback);
+        if (inputType == InputActionUIEnum.ESC)
+        {
+            OnClickForExit();
+        }
+    }
+
+    /// <summary>
     /// 选择指定的生物卡片
     /// </summary>
     public void SelectCreatureCard(int index)
@@ -58,9 +71,14 @@ public partial class UICreatureManager : BaseUIComponent
     public void InitCreaturekData()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        ui_UIViewCreatureCardList.SetData(userData.GetUserBackpackCreatureData().listBackpackCreature, CardUseStateEnum.CreatureManager, OnCellChangeForBackpackCreature);
-        //初始化卡片详情
-        var itemCreatureData = ui_UIViewCreatureCardList.GetItemData(selectCreatureIndex);
+        var listBackpackCreature = userData.GetUserBackpackCreatureData().listBackpackCreature;
+        ui_UIViewCreatureCardList.SetData(listBackpackCreature, CardUseStateEnum.CreatureManager, OnCellChangeForBackpackCreature);
+        //钳制选中下标:献祭等操作会使生物数量减少,上次选中的下标可能越界,夹到有效范围避免取数据越界报错
+        int creatureCount = listBackpackCreature != null ? listBackpackCreature.Count : 0;
+        if (selectCreatureIndex >= creatureCount)
+            selectCreatureIndex = creatureCount > 0 ? creatureCount - 1 : 0;
+        //初始化卡片详情(无生物时不取数据,避免越界报错)
+        var itemCreatureData = creatureCount > 0 ? ui_UIViewCreatureCardList.GetItemData(selectCreatureIndex) : null;
         ui_UIViewCreatureCardEquipDetails.SetData(itemCreatureData);
         //刷新献祭升级按钮显隐(返回界面/升级后保持正确状态)
         RefreshSacrificeButton(itemCreatureData);

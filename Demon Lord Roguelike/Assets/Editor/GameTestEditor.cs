@@ -597,10 +597,10 @@ public partial class GameTestEditor : Editor
         EditorGUILayout.BeginVertical("box");
         EditorGUILayout.BeginHorizontal();
         sacrificeTestSaveSlot = EditorGUILayout.IntPopup(
-            new GUIContent("存档槽位", "要读取数据的存档槽位(0~2)"),
+            new GUIContent("存档槽位", "要读取数据的存档槽位(1~3，与游戏一致：UserData_1/2/3)"),
             sacrificeTestSaveSlot,
-            new[] { new GUIContent("存档 0"), new GUIContent("存档 1"), new GUIContent("存档 2") },
-            new[] { 0, 1, 2 });
+            new[] { new GUIContent("存档 1"), new GUIContent("存档 2"), new GUIContent("存档 3") },
+            new[] { 1, 2, 3 });
         if (GUILayout.Button("📂 加载存档生物", GUILayout.Width(120)))
         {
             LoadSacrificeTestCreatures();

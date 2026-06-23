@@ -73,7 +73,8 @@ watched_files:
   - 单值：`100` → 仅 1 级
   - 逗号分隔：`100,200,300` → 每级独立配置
   - `基础*倍率`：`100*2` → 自动生成 `level_max` 个阶梯（基础 + 基础×倍率×index）
-- **解锁动画先于设施出现动画**：`OnClickForPay` 确认后先扣水晶(仅改内存)，再调 `AnimForUnlock(actionComplete)` 播节点解锁动画；**动画完成回调里**才 `AddUnlock` + `SaveUserData()` 落盘并刷新页面。原因：`AddUnlock` 会同步触发 `User_AddUnlock`，`ScenePrefabForBase.EventForUserAddUnlock` 立刻切设施镜头/隐藏研究 UI 播设施出现动画，若与节点解锁动画同时发生会冲突；推迟到动画后可保证「节点解锁动画 → 设施镜头切换+出现动画」顺序播放。`User_AddUnlock` 事件同时通知场景刷新
+- **解锁动画先于设施出现动画**：`OnClickForPay` 确认后先扣水晶(仅改内存)，再调 `AnimForUnlock(targetLevel, actionComplete)` 播节点解锁动画；**动画完成回调里**才 `AddUnlock` + `SaveUserData()` 落盘并刷新页面。原因：`AddUnlock` 会同步触发 `User_AddUnlock`，`ScenePrefabForBase.EventForUserAddUnlock` 立刻切设施镜头/隐藏研究 UI 播设施出现动画，若与节点解锁动画同时发生会冲突；推迟到动画后可保证「节点解锁动画 → 设施镜头切换+出现动画」顺序播放。`User_AddUnlock` 事件同时通知场景刷新
+- **节点动画播完即显示已解锁**：`AnimForUnlock` 的 `OnComplete` 里会在 `AddUnlock` 之前先 `SetStateForLevel(targetLevel)` 把本节点图标/颜色刷成已解锁外观。原因：解锁数据要等回调里才 `AddUnlock`，而 `AddUnlock` 又会同步隐藏研究 UI 去播设施动画——若只靠回调里的 `InitResearchItems` 刷新，玩家会看到「节点动画播完图标仍是未解锁占位(白) → 设施动画播完才变已解锁」。`SetState` 已抽出 `SetStateForLevel(int)` 供此处按解锁后的目标等级直接刷新
 - **同类型连线**：`CreateLine` 中若前置节点 `research_type` 与目标节点不一致，会跳过连线（跨类型的关系仅作为解锁条件，不画线）
 - **退出研究界面**：固定回到 `UIBaseCore`（基地核心界面），不要硬跳到其它界面
 - **节点坐标编辑**：仅在 `UIBaseResearchTest`（测试模式）下显示保存按钮，通过 `ExcelUtil.SetExcelData` 写回 Excel；正式运行不显示

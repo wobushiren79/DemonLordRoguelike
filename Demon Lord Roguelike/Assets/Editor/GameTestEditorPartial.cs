@@ -36,7 +36,7 @@ public partial class GameTestEditor
     private string doomCouncilBillNameLoaded = "";
 
     // 献祭升级测试参数
-    public int sacrificeTestSaveSlot = 0;
+    public int sacrificeTestSaveSlot = 1;
     public bool sacrificeTestUseManualRate = false;
     public float sacrificeTestManualRate = 1f;
     public int sacrificeTestSelectIndex = 0;
@@ -133,7 +133,8 @@ public partial class GameTestEditor
         rewardSelectEquipDemonLordRate = EditorPrefs.GetFloat(PREFS_KEY_PREFIX + "rewardSelectEquipDemonLordRate", 0.1f);
 
         // 献祭升级测试参数
-        sacrificeTestSaveSlot = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "sacrificeTestSaveSlot", 0);
+        // 槽位范围已由 0~2 修正为 1~3，旧 EditorPrefs 可能残留 0/越界值，这里钳制到 1~3 防止 IntPopup 选不中
+        sacrificeTestSaveSlot = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "sacrificeTestSaveSlot", 1), 1, 3);
         sacrificeTestUseManualRate = EditorPrefs.GetBool(PREFS_KEY_PREFIX + "sacrificeTestUseManualRate", false);
         sacrificeTestManualRate = EditorPrefs.GetFloat(PREFS_KEY_PREFIX + "sacrificeTestManualRate", 1f);
         sacrificeTestSelectIndex = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "sacrificeTestSelectIndex", 0);

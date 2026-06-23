@@ -36,7 +36,7 @@
 
 ## Unity资源修改规则
 
-所有Unity资源文件的修改（创建、编辑、删除）必须通过Unity MCP（mcpforunityserver）进行，禁止直接使用Write/Edit工具操作以下类型文件：
+所有Unity资源文件的修改（创建、编辑、删除）**优先通过 Unity MCP（mcpforunityserver）进行**，以下类型文件不要直接用 Write/Edit 工具盲目操作：
 
 - `.prefab` - 预制体
 - `.unity` - 场景
@@ -46,18 +46,23 @@
 - `.meta` - 资源元数据
 - 其他Unity序列化的二进制/YAML资源文件
 
+当 Unity MCP **未连接**时，按下方「MCP连接与Unity操作规则」先询问用户是否开启 MCP；用户选择不开启时，再评估是否用其他方式（如手工提示用户在 Unity 编辑器中操作）处理，不得在未告知的情况下直接编辑上述资源文件。
+
 C#脚本（`.cs`）不受此限制，可以正常直接编辑。
 
 ## MCP连接与Unity操作规则
 
-以下MCP相关操作均为自动执行，无需征询用户确认：
+MCP 相关操作**优先执行，但不再强制自动执行**。涉及 Unity 资源/场景/GameObject 操作时，按以下流程处理：
 
-1. **MCP连接检测与建立**：运行 `.claude/scripts/check-unity-mcp.ps1` 检查HTTP服务器状态，若未运行则自动启动。
-2. **MCP会话初始化**：发送 `initialize` 请求并获取 `Mcp-Session-Id`，随后发送 `notifications/initialized` 完成握手。
-3. **Unity实例查询与设置**：读取 `mcpforunity://instances` 资源获取活跃实例，调用 `set_active_instance` 设置目标实例。
-4. **通过Unity MCP工具操作场景/GameObject/资源**：调用 `manage_scene`、`manage_gameobject`、`manage_asset` 等 MCP 工具时，直接执行无需确认。
+1. **MCP连接检测**：运行 `.claude/scripts/check-unity-mcp.ps1` 检查 HTTP 服务器状态。
+2. **未连接时先询问**：若检测到 MCP 未连接/未启动，**先询问用户是否要开启 MCP**（可用 AskUserQuestion），不要擅自启动或直接跳过。
+   - 用户同意开启：自动启动服务器并继续后续握手流程。
+   - 用户选择不开启：改用其他方式完成任务（如提示用户手工在 Unity 编辑器中操作、或退化为非 MCP 的处理路径），并在总结中说明未使用 MCP。
+3. **MCP会话初始化**（已连接或用户同意开启后执行）：发送 `initialize` 请求并获取 `Mcp-Session-Id`，随后发送 `notifications/initialized` 完成握手。
+4. **Unity实例查询与设置**：读取 `mcpforunity://instances` 资源获取活跃实例，调用 `set_active_instance` 设置目标实例。
+5. **通过Unity MCP工具操作场景/GameObject/资源**：调用 `manage_scene`、`manage_gameobject`、`manage_asset` 等 MCP 工具。
 
-以上操作的 PowerShell 命令（`Invoke-WebRequest`/`Invoke-RestMethod` 到 `http://127.0.0.1:8080/mcp`）均视为已授权。
+MCP 已连接（或用户已同意开启）后，上述操作的 PowerShell 命令（`Invoke-WebRequest`/`Invoke-RestMethod` 到 `http://127.0.0.1:8080/mcp`）均视为已授权，可直接执行无需逐步确认。
 
 ## 代码注释与分类规则
 

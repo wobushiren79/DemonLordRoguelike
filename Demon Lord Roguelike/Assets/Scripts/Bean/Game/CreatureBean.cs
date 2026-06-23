@@ -16,8 +16,6 @@ public partial class CreatureBean
     public int level;
     /// <summary>当前等级经验</summary>
     public long levelExp;
-    /// <summary>星级</summary>
-    public int starLevel;
     /// <summary>稀有度（RarityEnum）</summary>
     public int rarity;
     /// <summary>生物关系/好感度（仅NPC有意义）</summary>

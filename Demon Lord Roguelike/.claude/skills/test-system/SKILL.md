@@ -210,8 +210,7 @@ public partial class UITestMyNew
 // 创建随机品质的生物
 CreatureBean creatureData = new CreatureBean(creatureId);
 creatureData.rarity = Random.Range(1, 7);        // 品质 1-6
-creatureData.starLevel = Random.Range(0, 11);    // 星级 0-10
-creatureData.level = Random.Range(0, 101);       // 等级 0-100
+creatureData.level = Random.Range(0, 11);        // 等级 0-10（当前等级上限 10 级）
 creatureData.AddSkinForBase();
 
 // 史莱姆额外加身体皮肤
@@ -289,7 +288,7 @@ foreach (var itemData in GameWorldInfoCfg.GetAllData())
 
 ```
 GameTestEditor.DrawCreatureSacrificeTest()                     // Inspector 配置
-    │  存档槽位(0~2) → 「加载存档生物」→ LoadSacrificeTestCreatures()
+    │  存档槽位(1~3，与游戏一致：UserData_1/2/3) → 「加载存档生物」→ LoadSacrificeTestCreatures()
     │      用 UserDataService.ChangeSlot(slot).Load(false) 读存档
     │      把背包生物列表(GetUserBackpackCreatureData().listBackpackCreature)填进目标生物下拉(uuid + 显示名)
     │  目标生物下拉 / 手动成功率开关 + 成功率 Slider(0~1)

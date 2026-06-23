@@ -27,16 +27,18 @@ watched_files:
 
 ```
 UICreatureManager(升级按钮) → GameHandler.StartCreatureSacrifice
-  → CreatureSacrificeLogic.StartSacrifice(算成功率+掷骰+动画)
-  → SettleSacrifice(退装备/移除祭品 → 成功升级弹 UICreatureAddAttribute 手动加点/失败保底)
-    → 成功:加点确认后 SaveAndEndGame；失败/满级:直接 SaveAndEndGame
+  → CreatureSacrificeLogic.StartSacrifice(算成功率+掷骰)
+    → 失败:动画前立即 SettleSacrificeData(false) 结算并落盘(防中途退出规避结算) → 动画
+    → 成功:动画 → OnSacrificeAnimEnd 内 SettleSacrificeData(true) 升级(只改内存不落盘) → 弹 UICreatureAddAttribute 手动加点
+  → 成功:加点确认弹窗后 SaveAndEndGame 才落盘(加点界面强退则不写盘、祭品恢复)；失败:数据已落盘,动画后 EndGame
 ```
 
 ## 职责范围
 
 ### 献祭逻辑
-- **CreatureSacrificeLogic** (BaseGameLogic) - 献祭流程、掷骰、`SettleSacrifice` 结算、祭坛动画
-- 成功/失败事件：`CreatureSacrifice_SacrificeSuccess` / `CreatureSacrifice_SacrificeFail`
+- **CreatureSacrificeLogic** (BaseGameLogic) - 献祭流程、掷骰、`SettleSacrificeData` 结算(仅失败时立即落盘,成功只改内存)、`OnSacrificeAnimEnd` 动画后表现收尾、祭坛动画。**失败在动画前即结算落盘防退出规避；成功落盘延后到加点确认后的 `SaveAndEndGame`**
+- 成功/失败事件：`CreatureSacrifice_SacrificeSuccess`(→`EventForSacrificeSuccess`，Toast textId 61007、`state=1`) / `CreatureSacrifice_SacrificeFail`(→`EventForSacrificeFail`，Toast textId 61008、`state=0`)
+- ⚠️ **`UIHandler.ToastHintText(content, state)` 的 state 约定**：`0`=失败(红色 `ui_other_3` 图标)，`1`=成功(绿色 `ui_other_6` 图标)，默认 `0`。正向反馈传 `1`、负向反馈传 `0`，别传错图标
 
 ### 升级与数据
 - **CreatureBean / CreatureBeanPartial** - `level`/`levelExp`/`sacrificePityRate`(保底)；`UpLevelForSacrifice()`(升级,**返回本次可分配加点数**=`LevelInfo.attribute_point` 当前全等级配置5、`<=0`兜底1，不再自动加属性) / `CanUpLevel()` / `IsMaxLevel()` / `GetNextLevelInfo()`
@@ -49,12 +51,12 @@ UICreatureManager(升级按钮) → GameHandler.StartCreatureSacrifice
   - `GetSacrificeSuccessRate` 内部读 `GetUnlockSacrificeDifferentIdRate()` 传入 `differentIdRate`
 
 ### 等级配置
-- **LevelInfo**(`level_exp` 升级经验 / `sacrifice_num` 祭品基础数量 / `attribute_point` 升级获得加点数,当前全等级配置5)；Bean 自动生成，扩展写 Partial（`attribute_point` 当前临时放在 `LevelInfoBeanPartial.cs`，Excel 重新生成 Bean 后须删除临时字段）
+- **LevelInfo**(`level_exp` 升级经验 / `sacrifice_num` 祭品基础数量 / `attribute_point` 升级获得加点数,当前全等级配置5 / `CMP_rate` 魔力召唤倍率 / `level_color` 等级字体颜色,1~10级渐进色)；Bean 自动生成，扩展写 Partial。**`level_color` 当前临时放在 `LevelInfoBeanPartial.cs`(含 `LevelInfoCfg.GetLevelColor(level)` 取色,0级/无配置回退白色)，Excel 重新生成 Bean 后须删除临时字段**
 
 ### 升级加点（手动分配）
 - 献祭**升级成功后弹出 `UICreatureAddAttribute`** 让玩家手动加点(HP/护甲每点+10、攻击/攻速每点+1)，单点增量取 `CreatureUtil.GetAttributePointAddValue(type)`
-- `SettleSacrifice` 成功分支：`attributePoint = UpLevelForSacrifice()` → 有点数则 `OpenAddAttributeUI(target, point)`（存档+返回界面延迟到加点确认 `SaveAndEndGame`）；失败/满级无点数走 `SaveAndEndGame`
-- `UICreatureAddAttribute`：`SetData(creature, totalPoint, onConfirm)` → 4 个 `UIViewCreatureAddAttributeItem`(HP/DR/ATK/ASPD) 左减右加，实时作用属性并 `RefreshCard`，`RefreshLimmit` 用 `ui_LimmitText` 显示「剩余点数:{0}」(多语言 textId 61005)；**剩余必须全部分配完才能确认离开(当场加完,不持久化剩余点数)**，未分配完 `OnClickForExit` 弹 ToastHintText(textId 61004「请分配完所有属性点」)
+- `OnSacrificeAnimEnd` 成功分支：`attributePoint = SettleSacrificeData(true)`(升级,只改内存**不落盘**) → 有点数则 `OpenAddAttributeUI(target, point)`（落盘延迟到加点确认弹窗 `SaveAndEndGame`，加点界面强退则不写盘、祭品恢复）；无点数走 `SaveAndEndGame`(落盘)
+- `UICreatureAddAttribute`：`SetData(creature, totalPoint, onConfirm)` → 4 个 `UIViewCreatureAddAttributeItem`(HP/DR/ATK/ASPD) 左减右加，实时作用属性并 `RefreshCard`，`RefreshLimmit` 用 `ui_LimmitText` 显示「剩余点数:{0}」(多语言 textId 61005)；**已去掉 exit 退出按钮，改 `ui_BtnConfirm` 确认**：`OnClickForConfirm` 剩余>0 弹 ToastHintText(textId 61004)拦截，剩余=0 弹 `ShowDialogNormal` 二次确认弹窗(textId 61006)，确认后才 `onConfirm`(=SaveAndEndGame)
 - `UIViewCreatureAddAttributeItem.RefreshNum`：步进器数字仅显示已分配「点数」(`allocatedCount`，如 +1)，与单点实际增量(HP/DR +10、ATK/ASPD +1)解耦，各属性统一显示点数
 
 ### UI
@@ -64,14 +66,14 @@ UICreatureManager(升级按钮) → GameHandler.StartCreatureSacrifice
 
 ### 献祭相关研究（设施节点，前置均=开启献祭设施 Altar，level_max=10）
 - `UnlockEnum.SacrificeNum = 100100002`（水晶 1000~10000 每级+1000）提升祭品上限；衍生 `GetUnlockSacrificeMax()`。
-- `UnlockEnum.SacrificePityRate = 100100003`（水晶 100,500,1000,5000,1万…10万）失败保底每级+5%；衍生 `GetUnlockSacrificeFailPityAddRate()`(等级×0.05)；`SettleSacrifice` 失败时 `sacrificePityRate = Clamp01(+=)`，**未解锁不累积**。
+- `UnlockEnum.SacrificePityRate = 100100003`（水晶 100,500,1000,5000,1万…10万）失败保底每级+5%；衍生 `GetUnlockSacrificeFailPityAddRate()`(等级×0.05)；`SettleSacrificeData` 失败时 `sacrificePityRate = Clamp01(+=)`，**未解锁不累积**。
 - `UnlockEnum.SacrificeDifferentIdRate = 100100004`（同上水晶）不同id祭品成功率每级+5%(默认0)；衍生 `GetUnlockSacrificeDifferentIdRate()`(等级×0.05)。
 - 配置见 `excel_research_info`/`excel_unlock_info`/`excel_language` id=100100002/100100003/100100004。详见 research-system / sacrifice-system Skill。
 
 ### 测试模式（不落盘）
 - `TestSceneTypeEnum.CreatureSacrifice`：读取某个真实存档数据，对其中一只生物直接发起献祭，可手动成功率或用存档真实数据，结果不写回真实存档。
 - 入口 `LauncherTest.StartForCreatureSacrificeTest(slot, uuid, useManualRate, manualRate)`：`UserDataService` 加载存档 → `SetUserData` → 一次性 `World_EnterGameForBaseScene` 等基地就绪 → `GameHandler.StartCreatureSacrifice`。
-- `StartSacrifice` 按 `isTestMode && useManualSuccessRate` 决定手动/公式成功率；`SettleSacrifice` 在 `isTestMode` 时跳过 `SaveUserData()`。
+- `StartSacrifice` 按 `isTestMode && useManualSuccessRate` 决定手动/公式成功率；`SettleSacrificeData` 在 `isTestMode` 时跳过 `SaveUserData()`(不落盘)。
 - 编辑器配置：`GameTestEditor.DrawCreatureSacrificeTest` / `LoadSacrificeTestCreatures`。详见 `test-system` Skill。
 
 ### 关键文件

@@ -119,6 +119,15 @@ public class CreatureSacrificeLogic : BaseGameLogic
         });
         //关闭所有UI
         UIHandler.Instance.CloseAllUI();
+
+        //失败: 在播放动画前立即结算(消耗祭品+累积保底)并立即落盘,
+        //防止玩家在献祭动画期间强退,规避祭品消耗与保底累积后重新献祭
+        //(成功的结算延后到动画结束,以便在加点界面一并保存玩家手动分配的属性)
+        if (!isSuccess)
+        {
+            SettleSacrificeData(false);
+        }
+
         //播放生物动画
         AnimForCreatureObjSacrfice(listFodderCreatureObj, objTargetCreature, timeCenterDelay + timeCenterLifetime, timeReset, () =>
         {
@@ -129,18 +138,21 @@ public class CreatureSacrificeLogic : BaseGameLogic
         {
 
         });
-        //播放摄像头动画,动画结束后结算
+        //播放摄像头动画,动画结束后做表现与收尾
         AnimForSacrficeCamera(timeCenterDelay + timeCenterLifetime, timeReset, () =>
         {
-            SettleSacrifice(isSuccess);
+            OnSacrificeAnimEnd(isSuccess);
         });
     }
 
     /// <summary>
-    /// 献祭结算: 处理祭品(装备退回背包+从背包移除)、成功则升级、失败则按研究等级累积保底,最后存档并返回生物管理界面。
+    /// 献祭数据结算: 消耗祭品(装备退回背包+从背包移除)、成功则升级清保底、失败则按研究等级累积保底。
+    /// <para>落盘只在失败时立即执行(测试模式不落盘);成功时仅改内存,落盘延后到加点确认后的 <see cref="SaveAndEndGame"/>,避免玩家在加点界面强退时祭品已扣、加点未存造成亏损。</para>
+    /// <para>不负责任何界面跳转与提示,表现/收尾交由 <see cref="OnSacrificeAnimEnd"/>。失败时在动画播放前调用以即时持久化,防止中途退出规避结算。</para>
     /// </summary>
     /// <param name="isSuccess">本次献祭是否成功</param>
-    public void SettleSacrifice(bool isSuccess)
+    /// <returns>本次升级获得的可分配属性加点数(失败为 0)</returns>
+    public int SettleSacrificeData(bool isSuccess)
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var targetCreature = creatureSacrificeData.targetCreature;
@@ -168,27 +180,58 @@ public class CreatureSacrificeLogic : BaseGameLogic
             //升级一级(返回可分配加点数)并清空保底;属性加点改由玩家在加点界面手动分配
             attributePoint = targetCreature.UpLevelForSacrifice();
             targetCreature.sacrificePityRate = 0f;
-            TriggerEvent(EventsInfo.CreatureSacrifice_SacrificeSuccess);
         }
         else
         {
             //失败只扣祭品,按「献祭失败保底概率提升」研究等级累积保底(未解锁0级则不累积),下次献祭叠加,成功后清零
             float pityAddRate = userData.GetUserUnlockData().GetUnlockSacrificeFailPityAddRate();
             targetCreature.sacrificePityRate = Mathf.Clamp01(targetCreature.sacrificePityRate + pityAddRate);
-            TriggerEvent(EventsInfo.CreatureSacrifice_SacrificeFail);
         }
 
         //清空本次祭品选择
         creatureSacrificeData.fodderCreatures = null;
 
-        //升级成功且有可分配点数: 弹出属性加点界面手动加点,存档与返回界面延迟到加点确认后执行
-        if (isSuccess && attributePoint > 0)
+        //落盘策略:仅失败时立即落盘,确保失败结算(扣祭品+累积保底)即时持久化,
+        //防止玩家在动画期间强退规避结算。
+        //成功时不在此落盘:此时祭品已消耗、生物已升级,但本次升级获得的加点尚未由玩家在
+        //加点界面手动分配,若现在落盘,玩家在加点界面强退会丢失祭品却保留不了加点,造成亏损。
+        //成功的落盘统一延后到加点确认后的 SaveAndEndGame(或无加点时直接 SaveAndEndGame),
+        //加点界面强退则本次成功结算全部不写盘,祭品自然恢复。
+        if (!creatureSacrificeData.isTestMode && !isSuccess)
         {
-            OpenAddAttributeUI(targetCreature, attributePoint);
-            return;
+            GameDataHandler.Instance.manager.SaveUserData();
         }
-        //其它情况(失败 / 满级无加点): 直接存档并返回
-        SaveAndEndGame();
+        return attributePoint;
+    }
+
+    /// <summary>
+    /// 献祭动画结束后的表现与收尾。
+    /// <para>成功: 此时才结算数据(升级)、提示成功,有可分配点数则弹出加点界面(加点确认后再存档返回),否则直接返回。</para>
+    /// <para>失败: 数据已在动画播放前结算并落盘,此处仅提示失败并返回生物管理界面。</para>
+    /// </summary>
+    /// <param name="isSuccess">本次献祭是否成功</param>
+    public void OnSacrificeAnimEnd(bool isSuccess)
+    {
+        if (isSuccess)
+        {
+            //成功结算: 升级并立即落盘,返回本次可分配加点数
+            int attributePoint = SettleSacrificeData(true);
+            TriggerEvent(EventsInfo.CreatureSacrifice_SacrificeSuccess);
+            //有可分配点数: 弹出属性加点界面手动加点,加点确认后再存档并返回
+            if (attributePoint > 0)
+            {
+                OpenAddAttributeUI(creatureSacrificeData.targetCreature, attributePoint);
+                return;
+            }
+            //无可分配点数: 直接存档并返回
+            SaveAndEndGame();
+        }
+        else
+        {
+            //失败数据已在动画前结算并落盘,这里仅提示并返回
+            TriggerEvent(EventsInfo.CreatureSacrifice_SacrificeFail);
+            EndGame();
+        }
     }
 
     /// <summary>
@@ -398,8 +441,8 @@ public class CreatureSacrificeLogic : BaseGameLogic
     /// </summary>
     public void EventForSacrificeSuccess()
     {
-        //TODO 后续接入多语言 textId
-        UIHandler.Instance.ToastHintText("献祭成功，等级提升！", 1);
+        //成功提示(多语言 textId 61007),state=1 显示成功(绿色)图标
+        UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61007), 1);
     }
 
     /// <summary>
@@ -407,8 +450,10 @@ public class CreatureSacrificeLogic : BaseGameLogic
     /// </summary>
     public void EventForSacrificeFail()
     {
-        //TODO 后续接入多语言 textId
-        UIHandler.Instance.ToastHintText("献祭失败，祭品已消耗", 1);
+        //献祭失败播放失败音效
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_lose_1);
+        //失败提示(多语言 textId 61008),state=0 显示失败(红色)图标
+        UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61008), 0);
     }
 
     #endregion

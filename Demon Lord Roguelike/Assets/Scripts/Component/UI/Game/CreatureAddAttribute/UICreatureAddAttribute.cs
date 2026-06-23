@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 属性加点界面: 献祭升级成功后弹出, 玩家把本次升级获得的属性点手动分配到 HP/护甲(DR)/攻击(ATK)/攻速(ASPD)。
-/// <para>加点实时作用于生物的升级加点属性并刷新详情展示; 剩余点数必须全部分配完才能确认离开(当场加完, 不持久化剩余点数)。</para>
+/// <para>加点实时作用于生物的升级加点属性并刷新详情展示; 必须分配完所有点数后, 点击确认按钮(BtnConfirm)弹出二次确认弹窗, 确认后才保存数据(当场加完, 不持久化剩余点数)。</para>
 /// </summary>
 public partial class UICreatureAddAttribute : BaseUIComponent
 {
@@ -111,24 +111,31 @@ public partial class UICreatureAddAttribute : BaseUIComponent
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
-        if (viewButton == ui_ViewExit)
+        if (viewButton == ui_BtnConfirm)
         {
-            OnClickForExit();
+            OnClickForConfirm();
         }
     }
 
     /// <summary>
-    /// 点击确认/离开: 剩余点数未分配完时提示并拦截, 全部分配完后触发确认回调。
+    /// 点击确认: 剩余点数未分配完时提示并拦截(需加完才能确认); 全部分配完后弹出二次确认弹窗, 确认后触发保存回调。
     /// </summary>
-    public void OnClickForExit()
+    public void OnClickForConfirm()
     {
         if (remainPoint > 0)
         {
-            //剩余点数未分配完: 提示并拦截(多语言 textId 61004)
+            //还有未分配的属性点: 提示需全部分配完才能确认(多语言 textId 61004)
             UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61004), 1);
             return;
         }
-        actionForConfirm?.Invoke();
+        //点数已全部分配: 弹出二次确认弹窗, 确认后才保存(分配后无法更改, textId 61006)
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = TextHandler.Instance.GetTextById(61006);
+        dialogData.actionSubmit = (view, data) =>
+        {
+            actionForConfirm?.Invoke();
+        };
+        UIHandler.Instance.ShowDialogNormal(dialogData);
     }
     #endregion
 }

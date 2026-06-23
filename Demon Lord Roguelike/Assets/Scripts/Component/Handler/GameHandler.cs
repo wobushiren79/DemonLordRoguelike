@@ -69,7 +69,7 @@ public class GameHandler : BaseHandler<GameHandler, GameManager>
     /// </summary>
     public void StartCreatureSacrifice(CreatureSacrificeBean creatureSacrificeData)
     {
-        if (manager.gameLogic == null)
+        if (manager.gameLogic == null || manager.gameLogic is not CreatureSacrificeLogic)
             manager.gameLogic = new CreatureSacrificeLogic();
         var gameLogic = manager.gameLogic as CreatureSacrificeLogic;
         gameLogic.creatureSacrificeData = creatureSacrificeData;

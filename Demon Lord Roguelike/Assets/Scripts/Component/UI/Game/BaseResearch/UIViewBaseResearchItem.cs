@@ -72,12 +72,24 @@ public partial class UIViewBaseResearchItem : BaseUIView
 
     /// <summary>
     /// 设置状态
+    /// 读取当前存档解锁等级并刷新节点外观
     /// </summary>
     public void SetState()
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
         int unlockLevel = userUnlock.GetUnlockResearchLevelByResearchInfo(researchInfo);
+        SetStateForLevel(unlockLevel);
+    }
+
+    /// <summary>
+    /// 按指定解锁等级刷新节点外观(灰罩 + 图标 + 颜色)
+    /// 抽出以便在解锁动画播完、尚未提交解锁数据(AddUnlock 会同步触发设施出现动画并隐藏研究UI)之前，
+    /// 先把本节点显示为已解锁外观，确保「节点动画播完即变已解锁」而非等设施动画播完才更新
+    /// </summary>
+    /// <param name="unlockLevel">用于显示的解锁等级(0=未解锁)</param>
+    public void SetStateForLevel(int unlockLevel)
+    {
         //未解锁
         if (unlockLevel == 0)
         {
@@ -89,7 +101,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
         {
             ui_UIViewBaseResearchItem_MaskUIView.HideMask();
             SetIcon(researchInfo.icon_res);
-            
+
             //全解锁
             if (unlockLevel == researchInfo.level_max)
             {
@@ -145,14 +157,17 @@ public partial class UIViewBaseResearchItem : BaseUIView
             {
                 return;
             }
+            //本次解锁后的目标等级
+            int targetLevel = level + 1;
             //设施解锁(会触发建筑出现动画与镜头切换)才需延迟0.5秒让粒子先展示再切镜头；其他解锁立即刷新
             float delayComplete = ScenePrefabForBase.IsBuildingShowUnlock(researchInfo.unlock_id) ? 0.5f : 0f;
             //先播放节点解锁动画，待动画播完后再提交解锁(AddUnlock 会触发设施出现与镜头切换)，
-            //避免设施镜头切换/出现动画与节点解锁动画相互冲突
-            AnimForUnlock(() =>
+            //避免设施镜头切换/出现动画与节点解锁动画相互冲突；
+            //targetLevel 用于动画播完时立即把本节点刷新为已解锁外观(早于设施出现动画)
+            AnimForUnlock(targetLevel, () =>
             {
                 //添加解锁ID
-                userUnlock.AddUnlock(researchInfo.unlock_id, level + 1);
+                userUnlock.AddUnlock(researchInfo.unlock_id, targetLevel);
                 //立即保存数据(扣费与解锁落盘)
                 GameDataHandler.Instance.manager.SaveUserData();
                 //刷新数据(整页重建，重画连线)
@@ -165,13 +180,14 @@ public partial class UIViewBaseResearchItem : BaseUIView
 
     /// <summary>
     /// 动画解锁
-    /// 先播放节点解锁动画(放大+抖动)，动画结束后播放粒子特效；
+    /// 先播放节点解锁动画(放大+抖动)，动画结束后立即把本节点刷新为已解锁外观并播放粒子特效；
     /// 若 delayComplete>0(设施解锁)则延迟该秒数让粒子先展示再解锁屏幕并回调，否则立即解锁并回调。
     /// 由调用方在回调中提交解锁数据并刷新页面(从而在动画后再触发设施出现/镜头切换)
     /// </summary>
+    /// <param name="targetLevel">解锁后的目标等级，动画播完时据此立即刷新本节点为已解锁外观(早于设施出现动画)</param>
     /// <param name="actionComplete">解锁动画播放完成后的回调(提交解锁/刷新页面)</param>
     /// <param name="delayComplete">回调前的延迟秒数；仅设施解锁需要(让粒子展示后再切设施镜头)，其他解锁传0立即回调</param>
-    public void AnimForUnlock(Action actionComplete = null, float delayComplete = 0f)
+    public void AnimForUnlock(int targetLevel, Action actionComplete = null, float delayComplete = 0f)
     {
         UIHandler.Instance.ShowScreenLock();
         ClearAnim();
@@ -185,6 +201,9 @@ public partial class UIViewBaseResearchItem : BaseUIView
         animForUnlock.OnComplete(() =>
         {
             ui_UIViewBaseResearchItem_MaskUIView.HideMask();
+            //节点自身动画播完即把本节点刷新为已解锁外观(图标+颜色)，
+            //此时尚未 AddUnlock(不会触发设施出现动画/隐藏研究UI)，确保玩家先看到已解锁状态再播设施动画
+            SetStateForLevel(targetLevel);
             //播放粒子特效
             var targetUI = UIHandler.Instance.GetUI<UIBaseResearch>();
             targetUI.AnimForShowUnlockEffect(transform.position);

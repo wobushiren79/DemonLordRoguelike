@@ -385,6 +385,25 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 
 > 两个馈赠图标当前均用 `ui_abyssalblessing_7`。新增同类「领奖参数型」馈赠时沿用此模式：写一个 `BuffEntityInstant` 子类累加到 `FightBeanForConquer` 计数器 → 在领奖初始化处读取应用；切勿用 BUFF 容器查询累计（`level=0` 同族替换会使容器内只剩 1 个，无法叠加）。详见 `fight-reward-system` skill 的领奖生成链路。
 
+## 单体定向馈赠（随机一只防守生物属性/攻速翻倍）
+
+另一类「单级可重复(level=0)」馈赠的效果是**只作用于随机一只防守生物**（不是全体、也不是防守核心），如下 4 个：
+
+| 馈赠 | id | buff_ids | BUFF class_entity | 效果 |
+|------|----|----------|-------------------|------|
+| 大力出奇迹 | 1000004001 | 3001100001 | `BuffEntityAttributeRandomDefense`(data=ATK,rate=1) | 随机一只防守魔物攻击力翻倍 |
+| 膘肥体壮 | 1000005001 | 3001200001 | `BuffEntityAttributeRandomDefense`(data=HP,rate=1) | 随机一只防守魔物生命翻倍 |
+| 钢铁憨憨 | 1000006001 | 3001300001 | `BuffEntityAttributeRandomDefense`(data=DR,rate=1) | 随机一只防守魔物护甲翻倍 |
+| 急性子 | 1000007001 | 3001400001 | `BuffEntityAttributeAttackTimeRandomDefense`(rate=0.5) | 随机一只防守魔物攻速翻倍(攻击间隔减半) |
+
+实现要点（详见 `buff-system` skill「单体定向深渊馈赠」）：
+- 这些 BUFF 实现标记接口 `ISingleTargetAbyssalBuff`，`SetData` 时用 `AbyssalBlessingSingleTargetUtil.PickRandomDefenseCreatureUUId()` 从 `dlDefenseCreatureData` **随机锁定一只生物 UUID**。
+- 属性类由 `FightCreatureBean.CollectFromBuffList` 按 UUID 过滤（只对锁定生物 emit modifier）；攻速类由 `BuffHandler.ChangeAttackTimeDataForBuff` 扫描馈赠池按 UUID 过滤。
+- **关键安全约束**：`dlDefenseCreatureData` 的 `CreatureBean` 与玩家**存档共享引用**，故**绝不能改 `creatureAttribute`**（会污染永久存档）；本方案只改运行时计算出的 `dicAttribute`/攻击时间，征服全通关领奖后随 `ClearAbyssalBlessing` 清空。
+- 图标 `ui_abyssalblessing_11~14`（PixelLab 32px 描边图）。
+
+> 与「领奖参数型」(即时BUFF+计数器)的区别：单体定向用的是**常驻属性/攻速BUFF**(非Instant)，靠 UUID 过滤限定到单只生物、每关 `RefreshBaseAttribute` 自动重算生效，无需计数器。
+
 ## 关键文件速查
 
 | 功能 | 文件路径 |
@@ -400,6 +419,8 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 | 征服模式流程 | `Assets/Scripts/Game/Logic/GameFightLogicConquer.cs`（ActionForUIFightSettlementNext 读取奖励类馈赠计数器并应用到 RewardSelectBean） |
 | 数据持有 | `Assets/Scripts/Bean/Game/FightBeanForConquer.cs`（AddAbyssalBlessing；奖励类馈赠计数器 rewardAddItemNum / rewardAddSelectNum） |
 | 奖励类即时BUFF（奖励多多/再来一瓶） | `Assets/Scripts/Game/Buff/BuffEntity/Instant/BuffEntityInstantRewardMoreItem.cs` / `BuffEntityInstantRewardMoreSelect.cs` |
+| 单体定向馈赠BUFF（大力出奇迹/膘肥体壮/钢铁憨憨/急性子） | `Assets/Scripts/Game/Buff/BuffEntity/Attribute/BuffEntityAttributeRandomDefense.cs` / `BuffEntityAttributeAttackTimeRandomDefense.cs` / `ISingleTargetAbyssalBuff.cs` / `AbyssalBlessingSingleTargetUtil.cs` |
+| 单体过滤落点 | `Assets/Scripts/Bean/Game/FightCreatureBean.cs`(CollectFromBuffList) / `Assets/Scripts/Component/Handler/BuffHandler.cs`(ChangeAttackTimeDataForBuff) |
 | 选择界面 | `Assets/Scripts/Component/UI/Game/FightAbyssalBlessing/UIFightAbyssalBlessing.cs`（SetData / RollCandidates） |
 | 选择项 | `Assets/Scripts/Component/UI/Game/FightAbyssalBlessing/UIViewFightAbyssalBlessingItem.cs` |
 | 常驻列表 | `Assets/Scripts/Component/UI/Common/AbyssalBlessing/UIViewAbyssalBlessingInfoContent.cs` |

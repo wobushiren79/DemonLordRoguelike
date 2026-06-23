@@ -22,7 +22,7 @@ public partial class UIViewCreatureCardItem : BaseUIView
         SetName(creatureData.creatureName);
         SetClass(creatureData.creatureInfo.class_icon_res);
         SetRarity(creatureData.rarity);
-        SetStarLevel(creatureData.starLevel);
+        SetLevel(creatureData.level);
         SetCreateMP(creatureData.GetAttributeInt(CreatureAttributeTypeEnum.CMP));
         SetPopupShow(creatureData, cardUseState);
         SetSacrificeEffect(creatureData, cardUseState);
@@ -75,11 +75,12 @@ public partial class UIViewCreatureCardItem : BaseUIView
     }
 
     /// <summary>
-    /// 设置星级
+    /// 设置等级（按等级配置表的等级颜色给等级字体着色：0 级白色，1-10 级渐进色）
     /// </summary>
-    public void SetStarLevel(int starLevel)
+    public void SetLevel(int level)
     {
-        ui_LevelText.text = $"{starLevel}";
+        ui_LevelText.text = $"{level}";
+        ui_LevelText.color = LevelInfoCfg.GetLevelColor(level);
     }
 
     /// <summary>

@@ -1,6 +1,6 @@
 ---
 name: creature-system
-description: Demon Lord Roguelike 游戏的生物系统开发指南。使用此SKILL当需要创建或修改生物实体、生物属性、生物创建/删除/管理、生物数据(CreatureBean)、生物稀有度/星级/等级系统等，与 creature-card-system(卡片UI) 和 ai-system(AI行为) 互补。
+description: Demon Lord Roguelike 游戏的生物系统开发指南。使用此SKILL当需要创建或修改生物实体、生物属性、生物创建/删除/管理、生物数据(CreatureBean)、生物稀有度/等级系统等，与 creature-card-system(卡片UI) 和 ai-system(AI行为) 互补。
 watched_files:
   - Assets/Scripts/Component/Handler/CreatureHandler.cs
   - Assets/Scripts/Component/Manager/CreatureManager.cs
@@ -63,8 +63,7 @@ public class CreatureBean
     public long creatureId;                  // 配置表ID
     public string creatureName;             // 自定义名称
     public int rarity;                       // 稀有度 (1-6)
-    public int starLevel;                    // 星级 (0-10)
-    public int level;                        // 等级
+    public int level;                        // 等级 (0-10)
     public long exp;                         // 经验值
     
     public CreatureAttributeBean baseAttribute;      // 基础属性
@@ -95,7 +94,7 @@ CreatureBean creature = new CreatureBean(creatureId);
 CreatureBean creature = new CreatureBean(creatureId, rarity: 3);
 
 // 指定全部参数
-CreatureBean creature = new CreatureBean(creatureId, rarity: 5, starLevel: 3, level: 50);
+CreatureBean creature = new CreatureBean(creatureId, rarity: 5, level: 8);
 
 // 从存档加载（已有UUID）
 CreatureBean creature = new CreatureBean(creatureId, creatureUUId);
@@ -161,7 +160,7 @@ public enum CreatureAttributeTypeEnum
 
 ```
 基础属性 (baseAttribute)
-    │  来自 CreatureInfoBean 配置 + 等级/星级/稀有度加成
+    │  来自 CreatureInfoBean 配置 + 等级/稀有度加成
     │
     ├── + 装备加成 (equipAttribute)
     │   来自 listEquip 中每个 ItemBean 的属性

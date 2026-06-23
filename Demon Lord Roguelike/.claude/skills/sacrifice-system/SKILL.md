@@ -49,27 +49,33 @@ UICreatureManager (BaseUIComponent)   生物管理界面
     │      → GameHandler.Instance.StartCreatureSacrifice(bean)
     ▼
 GameHandler.StartCreatureSacrifice(CreatureSacrificeBean)   // GameHandler.cs
-    │  manager.gameLogic = new CreatureSacrificeLogic(); → PreGame()
+    │  if (manager.gameLogic == null || manager.gameLogic is not CreatureSacrificeLogic)
+    │      manager.gameLogic = new CreatureSacrificeLogic();   // 必须带类型判定: 献祭 EndGame 回基地后可能被终焉议会触发覆盖成 DoomCouncilLogic,只判 ==null 会让 as 转型得到 null 而 NRE
+    │  (manager.gameLogic as CreatureSacrificeLogic).creatureSacrificeData = bean; → PreGame()
     ▼
 CreatureSacrificeLogic (BaseGameLogic)   献祭玩法逻辑
     │  PreGame → 注册事件 / InitSceneData(祭坛粒子+摄像机+目标生物模型) / StartGame
     │  StartGame → OpenUIAndCloseOther<UICreatureSacrifice>()
     │  EventForSelectCreature(选祭品) → GetFodderPositions 整圈平均分布(360°/count)并以祭坛正前方(-90°)居中摆放祭品模型(数量变化时整圈重新居中旋转)
     │  StartSacrifice(): ① CreatureUtil.GetSacrificeSuccessRate 算成功率 → ② 掷骰 isSuccess
-    │                    → ③ 播放生物/粒子/摄像机动画 → ④ 动画结束回调 SettleSacrifice()
-    │  SettleSacrifice(isSuccess):
+    │                    → ③ 失败立即 SettleSacrificeData(false) 结算并落盘(防玩家中途退出规避祭品消耗/保底重刷)
+    │                    → ④ 播放生物/粒子/摄像机动画 → ⑤ 动画结束回调 OnSacrificeAnimEnd(isSuccess)
+    │  SettleSacrificeData(isSuccess): 仅数据结算(不做界面跳转/提示),返回加点数(失败=0)
     │      - 祭品: RemoveAllEquipToBackpack() 退装备 → RemoveBackpackCreature() 移除
-    │      - 成功: attributePoint = targetCreature.UpLevelForSacrifice()(返回加点数,不再自动加属性) + 清空 sacrificePityRate + 触发 Success
-    │      - 失败: sacrificePityRate += GetUnlockSacrificeFailPityAddRate()(研究等级×5%,未解锁不累积) + 触发 Fail
-    │      - 成功且 attributePoint>0: OpenAddAttributeUI(弹 UICreatureAddAttribute 手动加点) → 加点确认后 SaveAndEndGame()
-    │      - 失败/满级无加点: SaveAndEndGame()(SaveUserData 落盘 → EndGame 返回 UICreatureManager)
+    │      - 成功: attributePoint = targetCreature.UpLevelForSacrifice()(返回加点数,不再自动加属性) + 清空 sacrificePityRate
+    │      - 失败: sacrificePityRate += GetUnlockSacrificeFailPityAddRate()(研究等级×5%,未解锁不累积)
+    │      - 末尾落盘策略: 仅「失败」非测试模式立即 GameDataHandler.SaveUserData();「成功」此处不落盘(只改内存),延后到加点确认后的 SaveAndEndGame,防玩家在加点界面强退时祭品已扣、加点未存造成亏损
+    │  OnSacrificeAnimEnd(isSuccess): 动画结束后的表现与收尾
+    │      - 成功: SettleSacrificeData(true)(此时才升级,但不落盘) + 触发 Success; attributePoint>0→OpenAddAttributeUI(弹手动加点,确认后才落盘) / 无点数→SaveAndEndGame(落盘)
+    │      - 失败: 数据已在动画前结算落盘,仅触发 Fail + EndGame() 返回 UICreatureManager
     ▼
 UICreatureAddAttribute (BaseUIComponent)   升级加点界面(成功后弹出)
     │  SetData(targetCreature, totalPoint, onConfirm); 4 个 UIViewCreatureAddAttributeItem(HP/DR/ATK/ASPD) 左减右加
     │  单点增量 CreatureUtil.GetAttributePointAddValue(HP/DR +10, ATK/ASPD +1); 实时作用属性并 RefreshCard
     │  注: Item.RefreshNum 仅显示已分配「点数」(allocatedCount, 如 +1)，与单点实际增量解耦，各属性步进器统一显示点数
-    │  ui_LimmitText 显示「剩余点数:{0}」(多语言 textId 61005, string.Format 填入 remainPoint); 剩余必须全部分配完才能确认离开(当场加完,不持久化剩余点数) → onConfirm=SaveAndEndGame
-    │  OnClickForExit 剩余>0 时 ToastHintText(textId 61004「请分配完所有属性点」)拦截
+    │  ui_LimmitText 显示「剩余点数:{0}」(多语言 textId 61005, string.Format 填入 remainPoint); 剩余必须全部分配完(无 exit 退出按钮)
+    │  点 ui_BtnConfirm 确认 → OnClickForConfirm(): 剩余>0 则 ToastHintText(textId 61004「请分配完所有属性点」)拦截;
+    │      剩余=0 则弹 ShowDialogNormal 二次确认(content=textId 61006), 确认弹窗提交后才 onConfirm=SaveAndEndGame
     ▼
 UICreatureSacrifice (BaseUIComponent)   献祭选择界面
     │  列表排除目标生物本身 + 已编入阵容的生物; 选择上限 = userUnlock.GetUnlockSacrificeMax()(基础5 + 研究等级)
@@ -124,7 +130,7 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 | `GetNextLevelInfo()` | `LevelInfoCfg.GetItemData(level + 1)`，满级返回 null |
 | `IsMaxLevel()` | 无下一级配置即满级 |
 | `CanUpLevel()` | 未满级 且 `levelExp >= 下一级 level_exp`（决定升级按钮显隐） |
-| `UpLevelForSacrifice()` | 扣本级所需经验(余量保留) → `level++` → **返回本次可分配加点数**(`LevelInfo.attribute_point`，当前全等级配置为 5，`<=0` 兜底1)；不再自动加属性 |
+| `UpLevelForSacrifice()` | 经验清 0(不保留溢出余量) → `level++` → **返回本次可分配加点数**(`LevelInfo.attribute_point`，当前全等级配置为 5，`<=0` 兜底1)；不再自动加属性 |
 
 > **升级属性成长（手动加点）**：升级**不再自动加属性**。`UpLevelForSacrifice()` 升级后返回下一级 `LevelInfo.attribute_point`(当前全等级配置为 5) 个可分配点数，由玩家在 `UICreatureAddAttribute` 界面手动分配到 HP/护甲/攻击/攻速。单点增量见 `CreatureUtil.GetAttributePointAddValue`（HP/DR 每点 +10、ATK/ASPD 每点 +1），写入 `creatureAttribute.dicAttributeLevelUp`。要调整每级点数改 Excel `attribute_point` 列；要调单点增量改 `GetAttributePointAddValue`。
 
@@ -135,7 +141,7 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 
 ## 祭品处理
 
-无论成功失败，`SettleSacrifice` 都消耗祭品：
+无论成功失败，`SettleSacrificeData` 都消耗祭品：
 1. `fodder.RemoveAllEquipToBackpack()` —— 祭品身上装备**退回背包**（需求：成功/失败都退）
 2. `userData.RemoveBackpackCreature(fodder)` —— 从背包(及阵容)移除祭品
 
@@ -151,23 +157,28 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 | 字段 | 含义 | 备注 |
 |------|------|------|
 | `id` | 等级（=要升到的目标等级，1~10） | `GetItemData(level+1)` 取下一级 |
-| `level_exp` | 升到该等级所需经验（字符串，`long.Parse`） | 累加制，升级扣除后余量保留 |
+| `level_exp` | 升到该等级所需经验（字符串，`long.Parse`） | 单级增量；升级成功后 `levelExp` 清 0，不保留溢出余量 |
 | `sacrifice_num` | 该等级所需祭品基础数量（决定 `baseSingleRate = 1/sacrifice_num`） | 默认 5 |
 | `attribute_point` | 升级到该等级获得的可分配属性加点数（玩家在 `UICreatureAddAttribute` 手动分配） | 当前全等级配置为 5，`<=0` 时代码回退为 1 |
+| `CMP_rate` | 魔力召唤增加倍率 | 召唤消耗随等级提升 |
+| `level_color` | 等级字体颜色（十六进制，如 `#9CE07A`） | 1~10 级 10 种渐进色；0 级及无配置在代码回退白色 |
 
 - **Excel 源表**：`Assets/Data/Excel/excel_level_info[等级信息].xlsx`（工作表 `LevelInfo`，数据从第 4 行起，前 3 行为字段名/类型/注释）
 - **派生 JSON**：`Assets/Resources/JsonText/LevelInfo.txt`
 - **配置 Bean**：`LevelInfoBean`（`LevelInfoBean.cs` 自动生成，被钩子保护禁止直接改；扩展/临时字段写 `LevelInfoBeanPartial.cs`）；访问类 `LevelInfoCfg : BaseCfg<long, LevelInfoBean>`，`fileName = "LevelInfo"`
+- **等级颜色取色**：`LevelInfoCfg.GetLevelColor(level)`（`LevelInfoBeanPartial.cs`）—— 0 级及以下/无配置/解析失败回退 `Color.white`，1~10 级取 `level_color`。`UIViewCreatureCardDetails.SetLevelData` 用它给 `ui_LevelText` 着色。
 
-> ⚠️ **`sacrifice_num` / `attribute_point` 字段归属**：它们是 Excel 列，正确做法是在 Excel 加列后用 `ExcelEditorWindow` **重新生成 `LevelInfoBean.cs`**（生成器会写入该字段）。若因无法运行生成器而临时把字段放在 `LevelInfoBeanPartial.cs`，重新生成后必须删除 Partial 里的临时字段，避免与生成文件重复定义。**当前 `attribute_point` 即临时放在 `LevelInfoBeanPartial.cs`，Excel/JSON 已同步，待在 Unity 重新生成 Bean 后删除临时字段。**
+> ⚠️ **`sacrifice_num` / `attribute_point` / `CMP_rate` / `level_color` 字段归属**：它们是 Excel 列，正确做法是在 Excel 加列后用 `ExcelEditorWindow` **重新生成 `LevelInfoBean.cs`**（生成器会写入该字段）。若因无法运行生成器而临时把字段放在 `LevelInfoBeanPartial.cs`，重新生成后必须删除 Partial 里的临时字段，避免与生成文件重复定义。**`attribute_point`/`CMP_rate` 已在生成的 `LevelInfoBean.cs` 中；当前 `level_color` 临时放在 `LevelInfoBeanPartial.cs`（Excel/JSON 已同步），待在 Unity 重新生成 Bean 后删除该临时字段。**
 
 ## 事件常量 (EventsInfo.cs · #region 生物献祭)
 
 | 事件 | 触发 | 处理 |
 |------|------|------|
 | `CreatureSacrifice_SelectCreature` | UICreatureSacrifice 选择祭品变化 | Logic.EventForSelectCreature（摆放祭品模型） |
-| `CreatureSacrifice_SacrificeSuccess` | SettleSacrifice 成功 | Logic.EventForSacrificeSuccess（成功 Toast） |
-| `CreatureSacrifice_SacrificeFail` | SettleSacrifice 失败 | Logic.EventForSacrificeFail（失败 Toast） |
+| `CreatureSacrifice_SacrificeSuccess` | OnSacrificeAnimEnd 成功 | Logic.EventForSacrificeSuccess（成功 Toast，textId 61007，state=1） |
+| `CreatureSacrifice_SacrificeFail` | OnSacrificeAnimEnd 失败 | Logic.EventForSacrificeFail（失败 Toast，textId 61008，state=0） |
+
+> ⚠️ **`UIHandler.ToastHintText(content, state)` 的 state 约定**：`0` = 失败（红色 `ui_other_3` 图标），`1` = 成功（绿色 `ui_other_6` 图标），默认 `0`。表达**成功/正向**反馈必须传 `1`，表达**失败/负向**反馈必须传 `0`，别传错图标。
 
 ## UI 结构
 
@@ -194,7 +205,7 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
     ├── ui_UIViewCreatureAddAttributeItem_HP/_DR/_ATK/_ASPD  // 四个属性加点项
     │     └── UIViewCreatureAddAttributeItem(BaseUIView): ui_LeftButton(-1)/ui_RightButton(+1)/ui_Num(本次增加值)/ui_Icon(属性图标,预制体内配置)
     ├── ui_LimmitText                             // 剩余加点数量
-    └── ui_ViewExit                               // 确认/离开(剩余>0 拦截并提示)
+    └── ui_BtnConfirm                             // 确认按钮(无 exit 退出按钮);剩余>0 ToastHint 拦截,剩余=0 弹二次确认弹窗(textId 61006)确认后保存
 ```
 
 - 选择上限：`UserUnlockBean.GetUnlockSacrificeMax()` = `UserLimmitBean.sacrificeMax`（基础默认 5）+ 「增加祭品数量」研究等级（`UnlockEnum.SacrificeNum = 100100002`，研究 `level_max=10`，满级即 5+10=15）。`UICreatureSacrifice` 的 `RefreshUI`/`EventForCardClickSelect` 两处上限判定都走此方法，不要再直接读 `limmitData.sacrificeMax`
@@ -209,14 +220,19 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
 ### 调升级加点（点数 / 单点增量 / UI）
 - **每级获得点数**：改 Excel `excel_level_info` 的 `attribute_point` 列（唯一真实源，当前全等级配置为 5），再 `ExcelEditorWindow` 导出 JSON。`UpLevelForSacrifice()` 读该列返回点数（`<=0` 回退 1）。
 - **单点增量**（每点加多少 HP/护甲/攻击/攻速）：改 `CreatureUtil.GetAttributePointAddValue(type)`。
-- **加点界面**：`UICreatureAddAttribute`（`Assets/Scripts/Component/UI/Game/CreatureAddAttribute/`）。`SetData(creature, totalPoint, onConfirm)`；`OnItemChangeForAttribute` 校验剩余点数后增减并实时 `RefreshCard`；`RefreshLimmit` 显示「剩余点数:{0}」(textId 61005)；`OnClickForExit` 要求剩余=0 才能确认，未分配完 ToastHintText(textId 61004)。
+- **加点界面**：`UICreatureAddAttribute`（`Assets/Scripts/Component/UI/Game/CreatureAddAttribute/`）。`SetData(creature, totalPoint, onConfirm)`；`OnItemChangeForAttribute` 校验剩余点数后增减并实时 `RefreshCard`；`RefreshLimmit` 显示「剩余点数:{0}」(textId 61005)；**已去掉 exit 退出按钮，改由 `ui_BtnConfirm` 确认**：`OnClickForConfirm` 剩余>0 时 ToastHintText(textId 61004)拦截，剩余=0 时 `ShowDialogNormal` 弹二次确认弹窗(content=textId 61006「确认按当前方案分配属性点吗？…」)，确认弹窗提交后才触发 `onConfirm`(=`SaveAndEndGame`) 保存。
 - **可加点的属性种类**：在预制体里增删 `UIViewCreatureAddAttributeItem` 项并在 `InitItems()` 里对应 `SetData(attributeType, ...)`。
 
 ### 调祭品基础数量 / 等级经验
 改 Excel `excel_level_info` 的 `sacrifice_num` / `level_exp` 列（唯一真实源），再 `ExcelEditorWindow` 导出 JSON。新增等级行按 id 升序插入。
 
 ### 调失败惩罚 / 保底
-保底增量由研究 `UnlockEnum.SacrificePityRate` 驱动：改 `UserUnlockBean.GetUnlockSacrificeFailPityAddRate()`(每级系数)或 `CreatureSacrificeLogic.SettleSacrifice`(累积/清零方式、是否退经验、祭品是否返还) + `CreatureBean.sacrificePityRate` 处理。
+保底增量由研究 `UnlockEnum.SacrificePityRate` 驱动：改 `UserUnlockBean.GetUnlockSacrificeFailPityAddRate()`(每级系数)或 `CreatureSacrificeLogic.SettleSacrificeData`(累积/清零方式、是否退经验、祭品是否返还) + `CreatureBean.sacrificePityRate` 处理。
+
+> ⚠️ **落盘时机(成功/失败分两条分支)**：
+> - **失败**：`StartSacrifice` 掷骰判定失败后，会在动画播放前就调用 `SettleSacrificeData(false)` 结算并立即 `SaveUserData()` 落盘，防止玩家在动画期间强退、规避祭品消耗与保底累积后重新献祭。
+> - **成功**：结算 (`SettleSacrificeData(true)`) 延后到动画结束的 `OnSacrificeAnimEnd` 里执行，且**成功时 `SettleSacrificeData` 内部不落盘**(只改内存：扣祭品+升级)。真正落盘统一延后到玩家在加点界面 `UICreatureAddAttribute` 确认后回调的 `SaveAndEndGame`(无加点数时直接 `SaveAndEndGame`)。这样玩家在加点界面强退则本次成功结算全部不写盘、祭品自然恢复，**避免祭品已扣、加点未存的亏损**。
+> 改结算时机/落盘逻辑须同时顾及这两条分支：失败落盘在 `SettleSacrificeData` 内(`!isSuccess` 条件)，成功落盘在 `SaveAndEndGame`。
 
 ### 调不同 id 成功率
 不同 id 祭品成功率由研究 `UnlockEnum.SacrificeDifferentIdRate` 驱动：改 `UserUnlockBean.GetUnlockSacrificeDifferentIdRate()`(每级系数)；公式如何应用(per-fodder/等级差修正叠加)改 `CreatureUtil.GetSacrificeFoddersRate`。
@@ -234,7 +250,7 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
 
 - `CreatureSacrificeBean` 新增测试字段：`isTestMode`(不落盘)、`useManualSuccessRate`(是否覆盖)、`manualSuccessRate`(手动成功率 0~1)。
 - `CreatureSacrificeLogic.StartSacrifice`：`isTestMode && useManualSuccessRate` 时用手动成功率掷骰，否则走 `CreatureUtil.GetSacrificeSuccessRate` 公式。
-- `CreatureSacrificeLogic.SettleSacrifice`：`isTestMode` 时跳过 `SaveUserData()`，升级/祭品消耗只在内存生效。
+- `CreatureSacrificeLogic.SettleSacrificeData`：`isTestMode` 时跳过 `SaveUserData()`，升级/祭品消耗只在内存生效。
 - 入口 `LauncherTest.StartForCreatureSacrificeTest(slot, uuid, useManualRate, manualRate)`：`UserDataService` 加载存档 → `SetUserData` 替换运行时数据 → 一次性 `World_EnterGameForBaseScene` 等基地就绪 → `GameHandler.StartCreatureSacrifice`。
 - **目标生物须取自加载后的 `userData.GetUserBackpackCreatureData().listBackpackCreature` 同一引用**（UI 按引用排除目标）。
 
@@ -252,12 +268,12 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
 - **双门槛**：经验门槛只控制能否"发起"献祭；真正升级靠祭品掷骰成功。两者不要混淆。
 - **失败只扣祭品**：经验不退，保底累积；成功才扣经验、清保底。
 - **目标生物与祭品引用一致**：UI 选中的祭品、目标生物与 `userData.GetUserBackpackCreatureData().listBackpackCreature` 是**同一引用**，原地升级/移除即生效。
-- **掷骰时机**：`StartSacrifice` 动画播放**前**就定好 `isSuccess`，动画结束回调里 `SettleSacrifice` 落实，避免动画中途数据被改。
+- **掷骰时机**：`StartSacrifice` 动画播放**前**就定好 `isSuccess`。失败在动画前即 `SettleSacrificeData(false)` 落实**并落盘**；成功在动画结束回调 `OnSacrificeAnimEnd` 里 `SettleSacrificeData(true)` 落实但**不落盘**(只改内存)，落盘延后到加点界面确认后的 `SaveAndEndGame`，避免动画中途数据被改、也避免加点未完成就写盘。
 - **属性序列化**：`CreatureAttributeBean` 两个字典必须 public（或 `[JsonProperty]`），否则升级加的属性存盘丢失。
 - **配置改 Excel**：`excel_level_info` 是唯一真实源，只改 JSON 会被导出覆盖。
 - **Bean 改写规则**：`LevelInfoBean.cs` 自动生成，扩展写 Partial；`CreatureSacrificeBean`/`CreatureAttributeBean` 是手写运行时类可直接改。
 - **Toast 多语言**：成功/失败提示当前为硬编码中文（留有 `TODO`），后续接 `TextHandler.GetTextById`。
-- **返回界面索引位移**：献祭后祭品从背包移除，`UICreatureManager.selectCreatureIndex` 可能指向位移后的生物，属已知小问题。
+- **返回界面索引钳制**：献祭后祭品从背包移除导致生物数量减少，`UICreatureManager.selectCreatureIndex` 可能越界。`InitCreaturekData` 已在 `SetData` 后把它钳到 `[0, count-1]`（数量为 0 时置 0 且不再 `GetItemData`），避免重开管理界面时 `GetItemData` 越界报「超过下标」错误。注意它仍可能指向位移后的另一只生物（仅保证不越界，不保证选中同一只）。
 
 ## 参考文件
 

@@ -349,6 +349,8 @@ public class GameFightLogic : BaseGameLogic
         if (targetCreature == null || targetCreature.IsDead())
             return;
         CreatureHandler.Instance.RemoveFightCreatureEntity(targetCreature, CreatureFightTypeEnum.FightDefense);
+        //清除魔物时随机播放一个清扫音效
+        AudioHandler.Instance.PlaySoundRandom(AudioEnum.sound_clean_1, AudioEnum.sound_clean_2);
     }
 
     /// <summary>
@@ -360,6 +362,8 @@ public class GameFightLogic : BaseGameLogic
         ClearSelectData();
         selectCreatureCard = targetView;
         selectCreature = CreatureHandler.Instance.CreateDefenseCreature(targetView.cardData.creatureData);
+        //选择魔物卡牌时播放卡片音效(音量放大 1.5 倍由配置表 volume_scale 控制)
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_card_1);
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_SelectCard, selectCreatureCard);
     }
 
@@ -411,6 +415,8 @@ public class GameFightLogic : BaseGameLogic
         selectCreatureCard.cardData.creatureData.creatureState = CreatureStateEnum.Fight;
         //创建战斗生物数据
         CreatureHandler.Instance.CreateDefenseCreatureEntity(selectCreature, selectCreatureCard.cardData.creatureData, selectTargetPos);
+        //放置魔物成功时播放按钮音效
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_btn_19);
         selectCreature = null;
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_PutCard, selectCreatureCard);
         ClearSelectData();

@@ -27,6 +27,10 @@ public partial class LevelInfoBean : BaseBean
 	///魔力召唤增加倍率
 	/// </summary>
 	public float CMP_rate;
+	/// <summary>
+	///等级颜色
+	/// </summary>
+	public string level_color;
 }
 public partial class LevelInfoCfg : BaseCfg<long, LevelInfoBean>
 {

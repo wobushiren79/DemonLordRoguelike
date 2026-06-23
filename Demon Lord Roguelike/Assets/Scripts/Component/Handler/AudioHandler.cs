@@ -55,12 +55,12 @@ public partial class AudioHandler
             //如果是退出点击
             if (targetImage.name.Equals("ViewExit"))
             {
-                PlaySound(AudioEnum.sound_btn_4);
+                PlaySound(AudioEnum.sound_btn_31);
                 return;
             }
             if (manager.listCommonUIClick.Contains(targetImage.sprite.name))
             {
-                PlaySound(AudioEnum.sound_btn_3);
+                PlaySound(AudioEnum.sound_btn_1);
             }
         }
     }
@@ -74,6 +74,19 @@ public partial class AudioHandler
     public void PlaySound(AudioEnum audio, AudioSource audioSource = null)
     {
         PlaySound((long)audio, audioSource);
+    }
+
+    /// <summary>
+    /// 随机播放一个音效（从传入的音效枚举中等概率随机取一个播放）。
+    /// 用于同类音效有多个备选、希望避免重复时随机切换（如清扫音效 sound_clean_1/sound_clean_2）。
+    /// </summary>
+    /// <param name="audios">候选音效枚举，至少传入一个；为空时不播放</param>
+    public void PlaySoundRandom(params AudioEnum[] audios)
+    {
+        if (audios == null || audios.Length == 0)
+            return;
+        int randomIndex = Random.Range(0, audios.Length);
+        PlaySound(audios[randomIndex]);
     }
 
     /// <summary>

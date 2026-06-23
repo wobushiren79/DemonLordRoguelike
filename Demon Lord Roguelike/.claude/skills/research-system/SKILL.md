@@ -72,18 +72,23 @@ UIBaseResearch.InitResearchItems(type)
    ▼
 CheckHasCrystal(..., isAddCrystal: true)   // 扣水晶（仅改内存）
    ▼
+targetLevel = level + 1                           // 本次解锁后的目标等级
 delayComplete = IsBuildingShowUnlock ? 0.5f : 0   // 仅设施解锁才延迟
-AnimForUnlock(actionComplete, delayComplete)      // 先播节点解锁动画（放大+抖动+粒子）
-   │ 动画播完后：设施解锁延迟 0.5s（展示粒子）再执行 actionComplete，其他解锁立即执行：
+AnimForUnlock(targetLevel, actionComplete, delayComplete) // 先播节点解锁动画（放大+抖动）
+   │ 动画播完后立刻 SetStateForLevel(targetLevel)：把本节点刷新为已解锁外观（图标+颜色）+播粒子
+   │ ——此刻尚未 AddUnlock，研究 UI 仍可见，故「节点动画播完即显示已解锁」
+   │ 设施解锁再延迟 0.5s（展示粒子）后执行 actionComplete，其他解锁立即执行：
    ▼
-UserUnlockBean.AddUnlock(unlock_id, level+1)
-   │ 触发 EventsInfo.User_AddUnlock（此时才切设施镜头/播设施出现动画）
+UserUnlockBean.AddUnlock(unlock_id, targetLevel)
+   │ 触发 EventsInfo.User_AddUnlock（此时才切设施镜头/播设施出现动画/隐藏研究 UI）
 SaveUserData()                             // 此刻才落盘（扣费+解锁一起持久化）
    ▼
 InitResearchItems(researchInfoType)        // 整页刷新（重画连线）
 ```
 
 > **为什么 AddUnlock/SaveUserData 推迟到动画后**：`AddUnlock` 会同步触发 `User_AddUnlock`，`ScenePrefabForBase.EventForUserAddUnlock` 会立刻切到设施镜头并隐藏研究 UI 播设施出现动画。若与节点解锁动画同时发生会互相冲突，故把 `AddUnlock`/`SaveUserData`/刷新放进 `AnimForUnlock` 的完成回调，确保「节点解锁动画 → 设施镜头切换+设施出现动画」顺序播放。扣费只改内存、落盘随回调里的 `SaveUserData` 一起完成，动画期间锁屏，中途异常退出则扣费与解锁均未持久化，数据保持一致。
+
+> **为什么动画播完要先 `SetStateForLevel(targetLevel)`**：解锁数据要等到 `actionComplete` 里才 `AddUnlock`，而 `AddUnlock` 又会同步隐藏研究 UI 去播设施出现动画。若只靠回调里的 `InitResearchItems` 刷新本节点外观，玩家会看到「节点动画播完图标仍是未解锁占位（白）→ 设施动画播完才变已解锁」。因此在 `AnimForUnlock` 的 `OnComplete` 里、`AddUnlock` 之前，先用解锁后的 `targetLevel` 直接刷新本节点图标/颜色为已解锁外观，保证「节点动画一播完就显示已解锁」，再播设施动画。
 
 ---
 
@@ -376,15 +381,19 @@ public void RadioButtonSelected(RadioGroupView rg, int position, RadioButtonView
 public void SetData(ResearchInfoBean researchInfo);
 
 public void SetLevel();   // level == 0 || level == max 时隐藏数字
-public void SetState();   // 三态：未解锁(mask + ui_unlock_1) / 已解锁未满(白色) / 已满(紫色)
+public void SetState();   // 读当前存档等级 → SetStateForLevel(currentLevel)
+// 按指定等级刷新外观：三态 未解锁(mask + ui_unlock_1) / 已解锁未满(白色) / 已满(紫色)
+// 抽出以便解锁动画播完、AddUnlock 之前就用 targetLevel 把本节点刷成已解锁外观
+public void SetStateForLevel(int unlockLevel);
 public void SetIcon(string iconRes);
 
 // 购买流程：检查满级 → 检查水晶 → 弹 DialogNormal → 扣水晶 → AnimForUnlock(回调里 AddUnlock → SaveUserData → 刷新)
 public void OnClickForPay();
 
-// 解锁动画：放大+抖动+缩回+粒子，播完后回调 actionComplete（由调用方提交解锁/刷新，从而在动画后才触发设施镜头切换+出现动画）
+// 解锁动画：放大+抖动+缩回；OnComplete 里先 SetStateForLevel(targetLevel) 把本节点刷成已解锁外观+播粒子，
+// 再按 delayComplete 回调 actionComplete（由调用方提交解锁/刷新，从而在动画后才触发设施镜头切换+出现动画）
 // delayComplete>0(仅设施解锁)时回调前延迟该秒数让粒子先展示，期间保持锁屏；其他解锁传0立即回调
-public void AnimForUnlock(Action actionComplete = null, float delayComplete = 0f);
+public void AnimForUnlock(int targetLevel, Action actionComplete = null, float delayComplete = 0f);
 ```
 
 ### AutoLink 字段
@@ -407,10 +416,11 @@ dialogData.content = string.Format(TextHandler.Instance.GetTextById(62001), payC
 dialogData.actionSubmit = (view, data) =>
 {
     if (!userData.CheckHasCrystal(payCrystal, isHint: true, isAddCrystal: true)) return;
-    //先播节点解锁动画，播完后才提交解锁(触发设施镜头切换/出现动画)，避免与节点动画冲突
-    AnimForUnlock(() =>
+    int targetLevel = level + 1;
+    //先播节点解锁动画，播完即把本节点刷为已解锁外观(SetStateForLevel)，再提交解锁(触发设施镜头切换/出现动画)，避免与节点动画冲突
+    AnimForUnlock(targetLevel, () =>
     {
-        userUnlock.AddUnlock(researchInfo.unlock_id, level + 1);
+        userUnlock.AddUnlock(researchInfo.unlock_id, targetLevel);
         GameDataHandler.Instance.manager.SaveUserData();   // 动画后才落盘(扣费+解锁一起)
         var targetUI = UIHandler.Instance.GetUI<UIBaseResearch>();
         targetUI.InitResearchItems(targetUI.researchInfoType);  // 整页刷新

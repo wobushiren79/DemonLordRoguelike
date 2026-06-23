@@ -44,7 +44,7 @@ watched_files:
 ## 约束
 
 - 音频播放通过 AudioHandler 统一调用
-- **调用统一用 `AudioEnum` 枚举**，禁止裸 id（如 `PlaySound(15)`）。游戏层 `AudioHandler` partial 已为 `PlaySound`/`PlayMusicForLoop`/`PlayMusicListForLoop`/`PlayEnvironment` 提供枚举重载，内部 `(long)` 转发框架层 long 接口；框架层 long 接口保留给配置驱动的动态 id（如 `soundHitId`/`soundMissId`，均为 `long`）
+- **调用统一用 `AudioEnum` 枚举**，禁止裸 id（如 `PlaySound(15)`）。游戏层 `AudioHandler` partial 已为 `PlaySound`/`PlayMusicForLoop`/`PlayMusicListForLoop`/`PlayEnvironment` 提供枚举重载，内部 `(long)` 转发框架层 long 接口；框架层 long 接口保留给配置驱动的动态 id（如 `soundHitId`/`soundMissId`，均为 `long`）。另有 `PlaySoundRandom(params AudioEnum[])` 从多个候选音效中等概率随机取一个播放（同类多备选避免重复，如清扫 `sound_clean_1`/`sound_clean_2`）
 - **新增/删除音频时必须同步维护 `AudioEnum`**（与 `AudioInfo` 配置表一一对应），否则枚举与 id 错位
 - 音量设置通过 VolumeHandler 管理
 - 按钮音效使用 ButtonAudio 组件

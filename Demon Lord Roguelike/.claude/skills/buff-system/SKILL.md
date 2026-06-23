@@ -30,7 +30,9 @@ BuffInfoBean      - BUFF配置数据（来自BuffInfo配置表，含 class_entit
 ```
 BuffBaseEntity                              # 抽象基类（事件回调 + ShowBuffEffect + CheckIsPre）
 ├── BuffEntityAttribute                     # 属性BUFF（实现 IAttributeModifierSource）
-│   └── BuffEntityAttributeAttackTime       # 改攻击前摇/动画时间的属性BUFF（独立通道）
+│   ├── BuffEntityAttributeAttackTime       # 改攻击前摇/动画时间的属性BUFF（独立通道）
+│   │   └── BuffEntityAttributeAttackTimeRandomDefense  # 深渊馈赠「急性子」：随机锁定一只防守生物攻速翻倍(攻击时间×0.5)，实现 ISingleTargetAbyssalBuff
+│   └── BuffEntityAttributeRandomDefense    # 深渊馈赠「大力出奇迹/膘肥体壮/钢铁憨憨」：随机锁定一只防守生物 ATK/HP/DR 翻倍(rate=1)，实现 ISingleTargetAbyssalBuff
 ├── BuffEntityInstant                       # 瞬时BUFF（SetData中立即触发并isValid=false）
 │   ├── BuffEntityInstantCloneDefenseCreature   # 深渊馈赠「增殖」：随机复制一个防守生物
 │   ├── BuffEntityInstantRewardMoreItem         # 深渊馈赠「奖励多多」：累加 FightBeanForConquer.rewardAddItemNum（领奖时+1奖励物品）
@@ -323,6 +325,26 @@ BuffHandler.Instance.ChangeAttackTimeDataForBuff(creatureUUId, ref timeAttackPre
 ```
 
 只会遍历 `BuffEntityAttributeAttackTime`，不走 ModifierPipeline（因为对应的是时间常量而非属性）。
+**该方法除遍历生物自身的战斗BUFF外，还会扫描深渊馈赠池 `dicAbyssalBlessingBuffsActivie`** 中的攻速类BUFF：
+若该BUFF实现 `ISingleTargetAbyssalBuff` 且其 `SingleTargetCreatureUUId == creatureUUId` 才生效，
+以此支持「急性子」这类"随机一只防守生物攻速翻倍"的单体定向馈赠（见下「单体定向深渊馈赠」）。
+
+### 单体定向深渊馈赠（随机一只防守生物属性/攻速翻倍）
+
+普通深渊馈赠BUFF（`dicAbyssalBlessingBuffsActivie`）对**所有匹配生物**生效（每个生物 `RefreshBaseAttribute` 都会收集整个馈赠池）。
+但「大力出奇迹/膘肥体壮/钢铁憨憨/急性子」要求只作用于**随机一只防守生物**，为此引入标记接口：
+
+```csharp
+public interface ISingleTargetAbyssalBuff { string SingleTargetCreatureUUId { get; } }
+```
+
+- 实现类：`BuffEntityAttributeRandomDefense`（ATK/HP/DR，rate=1 即翻倍）、`BuffEntityAttributeAttackTimeRandomDefense`（攻速，攻击时间rate=0.5）。
+- **选取时机锁定目标**：两类的 `SetData` 调用 `AbyssalBlessingSingleTargetUtil.PickRandomDefenseCreatureUUId()` 从 `dlDefenseCreatureData` 随机取一只，存其 UUID；`ClearData` 归还对象池时清空。
+- **单体过滤落点（两处）**：
+  - 属性类：`FightCreatureBean.CollectFromBuffList` 在 `trigger_creature_type` 过滤之后追加一句——`buff is ISingleTargetAbyssalBuff st && st.SingleTargetCreatureUUId != creatureData.creatureUUId` 则 `continue`，从而该 modifier 只进入被锁定那只生物的 `dicAttribute` 计算。
+  - 攻速类：`BuffHandler.ChangeAttackTimeDataForBuff` 扫描馈赠池时按同一 UUID 比对。
+- **不污染存档**：`dlDefenseCreatureData` 内的 `CreatureBean` 与玩家存档**共享引用**，故绝不能改 `creatureAttribute`；本方案只改运行时计算出的 `dicAttribute`/攻击时间，馈赠在征服全通关领奖后随 `ClearAbyssalBlessing` 清空。
+- **可重复选取(level=0)**：每次选取新建一个BUFF实例、各自锁定一只新随机生物叠加（同族 level=0 不触发替换）。
 
 ## 事件名速查（已注册到 BuffEventDispatcher）
 

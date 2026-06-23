@@ -263,6 +263,8 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     public void SetLevelData(int level, long levelExp)
     {
         ui_LevelText.text = string.Format(TextHandler.Instance.GetTextById(1001001), level);
+        //按等级配置表的等级颜色给等级字体着色(0 级白色, 1-10 级渐进色)
+        ui_LevelText.color = LevelInfoCfg.GetLevelColor(level);
         var levelInfo = LevelInfoCfg.GetItemData(level + 1);
         //如果没有下一级的数据了
         if (levelInfo == null || levelInfo.id == 0)
@@ -271,7 +273,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         }
         else
         {
-            //经验采用跨级累加(余量保留)制,levelExp 可能超过本级所需经验,此处限制进度最大为100%避免显示110%
+            //经验由战斗持续累积、仅在献祭成功时才消耗并清0,未献祭前 levelExp 可能超过本级所需经验,此处限制进度最大为100%避免显示110%
             float percentage = (float)levelExp / long.Parse(levelInfo.level_exp);
             percentage = Mathf.Clamp01(percentage);
             ui_LevelProgressData.fillAmount = percentage;

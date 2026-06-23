@@ -99,6 +99,9 @@ AudioHandler.Instance.PlaySound(AudioEnum.sound_hit_1, worldPosition, volumeScal
 // 运行时音量缩放：最终音量 = 配置音效音量(soundVolume) × volumeScale（代码里临时放大/缩小，先保留备用）
 AudioHandler.Instance.PlaySoundForVolumeScale(AudioEnum.sound_pay_2, 1.5f);
 
+// 随机播放：从多个候选音效中等概率随机取一个播放（同类多备选、避免重复，如清扫 sound_clean_1/2）
+AudioHandler.Instance.PlaySoundRandom(AudioEnum.sound_clean_1, AudioEnum.sound_clean_2);
+
 // 配置驱动的动态 id（来自 Bean，long）走 long 接口
 AudioHandler.Instance.PlaySound(fightUnderAttackData.soundHitId);
 ```

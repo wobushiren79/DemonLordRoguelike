@@ -64,6 +64,7 @@ watched_files:
 - **BuffManager.dicAbyssalBlessingBuffsActivie** - 独立的馈赠 BUFF 容器（key=馈赠实例）
 - **BuffManager.AddAbyssalBlessingEntity / AddAbyssalBlessingBuff** - 写入容器
 - **BuffManager.ClearAbyssalBlessing** - 清空所有馈赠（只在全通关后调）
+- **单体定向馈赠（随机一只防守生物属性/攻速翻倍）**：`level=0` 单级可重复，效果只作用于随机一只防守生物（非全体/非核心）。当前 4 个：大力出奇迹(1000004001/ATK翻倍)、膘肥体壮(1000005001/HP翻倍)、钢铁憨憨(1000006001/DR翻倍)、急性子(1000007001/攻速翻倍即攻击间隔减半)。BUFF 实体 `BuffEntityAttributeRandomDefense`/`BuffEntityAttributeAttackTimeRandomDefense` 实现 `ISingleTargetAbyssalBuff`，`SetData` 时 `AbyssalBlessingSingleTargetUtil.PickRandomDefenseCreatureUUId()` 随机锁定一只 UUID；属性类在 `FightCreatureBean.CollectFromBuffList`、攻速类在 `BuffHandler.ChangeAttackTimeDataForBuff` 按 UUID 过滤。**绝不能改 `dlDefenseCreatureData` 里 CreatureBean 的 creatureAttribute（与存档共享引用，会污染永久存档）**，只改运行时 dicAttribute/攻击时间。图标 `ui_abyssalblessing_11~14`。详见 abyssal-blessing-system / buff-system SKILL。
 
 ### 事件
 - **EventsInfo.Buff_AbyssalBlessingChange** - 馈赠变化（参数 AbyssalBlessingEntityBean）

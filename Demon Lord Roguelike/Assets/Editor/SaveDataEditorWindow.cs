@@ -22,6 +22,8 @@ using UnityEngine;
 public class SaveDataEditorWindow : EditorWindow
 {
     #region 常量与字段
+    /// <summary>存档槽位起始下标（与游戏一致：游戏 UIMainLoad 加载的是 1/2/3 槽，对应 UserData_1/2/3，没有 0 槽）</summary>
+    private const int SlotStart = 1;
     /// <summary>存档槽位总数</summary>
     private const int SlotCount = 3;
 
@@ -107,7 +109,7 @@ public class SaveDataEditorWindow : EditorWindow
     {
         EditorGUILayout.LabelField("存档槽位", EditorStyles.boldLabel);
         EditorGUILayout.BeginHorizontal();
-        for (int slot = 0; slot < SlotCount; slot++)
+        for (int slot = SlotStart; slot < SlotStart + SlotCount; slot++)
         {
             bool exists = IsSlotExists(slot);
             bool isCurrent = isLoaded && currentSlot == slot;

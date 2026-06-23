@@ -1,5 +1,5 @@
-﻿using UnityEngine.UI;
-using TMPro;
+﻿using TMPro;
+using UnityEngine.UI;
 
 
 public partial class UICreatureAddAttribute
@@ -11,8 +11,6 @@ public partial class UICreatureAddAttribute
     public UIViewCreatureAddAttributeItem ui_UIViewCreatureAddAttributeItem_DR;
 
     public UIViewCreatureAddAttributeItem ui_UIViewCreatureAddAttributeItem_ATK;
-
-    public Button ui_ViewExit;
 
     public TextMeshProUGUI ui_LimmitText;
 

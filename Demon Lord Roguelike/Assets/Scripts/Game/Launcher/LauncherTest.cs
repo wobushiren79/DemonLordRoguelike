@@ -31,8 +31,7 @@ public class LauncherTest : BaseLauncher
         {
             CreatureBean creatureItem = new CreatureBean(2002);
             creatureItem.rarity = Random.Range(1, 7);
-            creatureItem.starLevel = Random.Range(0, 11);
-            creatureItem.level = Random.Range(0, 101);
+            creatureItem.level = Random.Range(0, 11);
             creatureItem.AddSkinForBase();
             //史莱姆加一个身体皮肤
             if (creatureItem.creatureId > 3000 && creatureItem.creatureId < 4000)
@@ -185,7 +184,7 @@ public class LauncherTest : BaseLauncher
     /// 开始生物献祭升级测试
     /// 加载指定存档槽位的数据作为运行时数据，进入基地场景后直接对选中生物发起献祭(测试模式，结算不落盘到真实存档)
     /// </summary>
-    /// <param name="saveSlot">存档槽位(0~2)</param>
+    /// <param name="saveSlot">存档槽位(1~3，与游戏一致：UserData_1/2/3)</param>
     /// <param name="targetCreatureUUId">目标生物 UUId(从该存档背包中选取)</param>
     /// <param name="useManualSuccessRate">是否使用手动成功率(false 则使用该存档真实数据按公式计算)</param>
     /// <param name="manualSuccessRate">手动成功率(0~1)</param>

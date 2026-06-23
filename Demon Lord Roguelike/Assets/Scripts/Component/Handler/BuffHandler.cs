@@ -408,6 +408,22 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
                 }
             }
         }
+        //深渊馈赠池中的单体定向攻速BUFF：仅对选取时被随机锁定的那一只防守生物生效(实现「随机一只防守生物攻速翻倍」)
+        var abyssalBlessingBuffs = manager.dicAbyssalBlessingBuffsActivie.List;
+        for (int i = 0; i < abyssalBlessingBuffs.Count; i++)
+        {
+            var listBuff = abyssalBlessingBuffs[i];
+            if (listBuff == null) continue;
+            for (int j = 0; j < listBuff.Count; j++)
+            {
+                if (listBuff[j] is BuffEntityAttributeAttackTime buffAttackTime
+                    && listBuff[j] is ISingleTargetAbyssalBuff singleTargetBuff
+                    && singleTargetBuff.SingleTargetCreatureUUId == creatureUUId)
+                {
+                    buffAttackTime.ChangeAttackTimeData(ref timeAttackPre, ref timeAttacking);
+                }
+            }
+        }
     }
     #endregion
 
