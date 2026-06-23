@@ -101,6 +101,9 @@ public enum AudioEnum : long
     sound_time_countdown_1 = 550001,//时间倒计时1
     sound_turntable_1 = 560001,//转盘1
     sound_walk_1 = 570001,//行走1
+    sound_win_1 = 580001,//胜利1
+    sound_win_3 = 580003,//胜利3
+    sound_win_4 = 580004,//胜利4
     //==================== 音乐 Music ====================
     music_fight_1 = 1000001,//战斗音乐1
     music_fight_2 = 1000002,//战斗音乐2

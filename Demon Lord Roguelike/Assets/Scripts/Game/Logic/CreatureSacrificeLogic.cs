@@ -275,8 +275,12 @@ public class CreatureSacrificeLogic : BaseGameLogic
             });
             listObjFodderCreatures.Clear();
         }
-        objTargetCreature.transform.DOKill();
-        GameObject.DestroyImmediate(objTargetCreature);
+        if (objTargetCreature != null)
+        {
+            objTargetCreature.transform.DOKill();
+            GameObject.DestroyImmediate(objTargetCreature);
+            objTargetCreature = null;
+        }
         await base.ClearGame();
     }
 
@@ -441,6 +445,8 @@ public class CreatureSacrificeLogic : BaseGameLogic
     /// </summary>
     public void EventForSacrificeSuccess()
     {
+        //献祭成功播放胜利音效
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_win_1);
         //成功提示(多语言 textId 61007),state=1 显示成功(绿色)图标
         UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61007), 1);
     }
