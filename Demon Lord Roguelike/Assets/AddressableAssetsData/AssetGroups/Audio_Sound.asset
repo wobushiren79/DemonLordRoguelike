@@ -90,6 +90,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 378a2c0048558564a94ce234c5d24e81
+    m_Address: Assets/LoadResources/Audio/Sound/sound_win_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3808678f7a6f26e4a82a31c50332e5d2
     m_Address: Assets/LoadResources/Audio/Sound/sound_knife_miss_1.wav
     m_ReadOnly: 0
@@ -195,6 +200,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6ec45b3d9c503ea4db38ba8a07f5784b
+    m_Address: Assets/LoadResources/Audio/Sound/sound_win_3.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 76723204a4c295b4d8df08a176653253
     m_Address: Assets/LoadResources/Audio/Sound/sound_cook_1.wav
     m_ReadOnly: 0
@@ -297,6 +307,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b00c67901e95aa54989494d006153edd
     m_Address: Assets/LoadResources/Audio/Sound/sound_set_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b442702cfeb7dd34b89f379326dbaaa7
+    m_Address: Assets/LoadResources/Audio/Sound/sound_win_4.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
