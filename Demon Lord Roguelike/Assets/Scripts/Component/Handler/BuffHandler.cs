@@ -97,7 +97,9 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
             listBuffEntity.Add(buffEntity);
         }
         manager.dicAbyssalBlessingBuffsActivie.Add(abyssalBlessingEntityData, listBuffEntity);
-        //事件通知
+        //事件通知：UI 列表刷新 + 由 GameFightLogic.EventForAbyssalBlessingChange 立即重算受影响生物属性
+        //（属性类馈赠BUFF只有在 RefreshBaseAttribute 时才会被算进 dicAttribute；征服「普通关→普通关」保留现场不重算，
+        //  若不在此事件里刷新，加成要等切BOSS关重载场景才生效——典型BUG「普通关选了不生效、切BOSS才生效」）
         EventHandler.Instance.TriggerEvent(EventsInfo.Buff_AbyssalBlessingChange, abyssalBlessingEntityData);
     }
 

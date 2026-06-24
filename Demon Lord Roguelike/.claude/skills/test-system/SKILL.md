@@ -276,7 +276,7 @@ foreach (var itemData in GameWorldInfoCfg.GetAllData())
 }
 ```
 
-> 注意 `UserUnlockBean.AddUnlock(id, level)` 仅在条目**已存在**时才设置等级，新建时不应用 level，故需「先建后设」两次调用。
+> 注意：`UserUnlockBean.AddUnlock(id, level)` 现已支持**新建时即按传入 level 创建**，故上面的「先建后设」两次调用已非必需，单次 `AddUnlock(unlockId, needUnlockLevel)` 即可（源码仍保留两次调用，结果等价无害，未一并改动）。
 
 ---
 

@@ -60,6 +60,7 @@ Assets/FrameWork/Scripts/           Assets/Scripts/
 | VectorUtil | 向量计算 |
 | CptUtil | Component 工具 |
 | DGEaseUtil | DOTween Ease 工具 |
+| AnimUtil | 通用 Animator 工具（`GetAnimClipLength` 按片段名关键字读取动画时长）。`partial class`，与游戏层 `Assets/Scripts/Utils/AnimUtil.cs` 同名共享：框架层放与业务无关的通用动画方法，游戏层放 UI 表现类动画方法 |
 | **系统工具** | |
 | FileUtil | 文件读写 |
 | LogUtil | 日志（替代 Debug.Log） |
@@ -111,7 +112,8 @@ Assets/FrameWork/Scripts/           Assets/Scripts/
 
 | 文件 | 关键 API | 依赖 |
 |------|---------|------|
-| [AnimUtil](Assets/Scripts/Utils/AnimUtil.cs) | `AnimForUINumberChange` | DOTween、TMP |
+| [AnimUtil](Assets/Scripts/Utils/AnimUtil.cs) | `AnimForUINumberChange`（UI 数字滚动） | DOTween、TMP |（`partial class`，通用 Animator 方法 `GetAnimClipLength` 在框架层 [AnimUtil](Assets/FrameWork/Scripts/Utils/AnimUtil.cs)）
+| [BuffUtil](Assets/Scripts/Utils/BuffUtil.cs) | `GetRarityBuffType` / `CreateRandomRarityBuff`（扭蛋通用稀有度 BUFF）/ `CreateAscendRarityBuff`（魔物进阶：素材 BUFF 按 id 聚合，每 id 提供 10%×数量 直接命中概率，命中继承并用 `BuffBean.CreateRandomWithFloor` 重随机数值≥素材原值，未命中回退通用随机） | BuffBean、CreatureBean、RarityEnum/BuffTypeEnum |
 | [ColorUtil](Assets/Scripts/Utils/ColorUtil.cs) | `ParseHtmlString` | UnityEngine |
 | [CreatureUtil](Assets/Scripts/Utils/CreatureUtil.cs) | `GetCreatureSkinTypeEnumName` | TextHandler |
 | [ItemsUtil](Assets/Scripts/Utils/ItemsUtil.cs) | `GetLanguageText`（`this ItemUserTypeEnum`） | TextHandler |

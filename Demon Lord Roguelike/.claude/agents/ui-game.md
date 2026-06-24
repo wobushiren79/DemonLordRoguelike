@@ -36,6 +36,19 @@ watched_files:
 - **UIGameWorldMap** - 世界地图界面
 - **UIGameConversation** - 对话界面
 - **UIRewardSelect** - 奖励选择界面
+- **UICreatureVat** - 魔物进阶界面（CreatureVat 培养槽）
+
+### 魔物进阶 (UICreatureVat / CreatureVat 培养槽) 要点
+
+- **进阶效果**：目标魔物稀有度 +1，并把开始时即确定的「预定 BUFF」写入 `creatureData.dicRarityBuff[新稀有度]`（旧实现「完成」只清空槽、对生物无任何加成）。
+- **目标列表**：仅 Idle 且未满级（`RarityInfoCfg.GetAscendTimeByRarity(rarity) > 0`，即排除 L）。
+- **素材列表**：Idle + 排除目标 + 排除上阵（`UserDataBean.CheckIsInAnyLineup`）+ 仅保留稀有度**高于**目标的魔物；最多选 5 只（`const int MaterialMax = 5`），超出弹 Toast（文本 id 80011）。
+- **预定 BUFF 生成**：开始进阶时调用 `BuffUtil.CreateAscendRarityBuff(newRarity, materials)` 得到 `ascendBuff`（素材在 newRarity 槽位的 BUFF 按 id 聚合，每 id 提供 10%×数量 命中概率，命中继承并重随机数值≥素材原值，未命中回退通用随机；UR/L 无类型则为 null）。
+- **耗时**：按**源稀有度**查表 `RarityInfoCfg.GetAscendTimeByRarity`（秒）作为 `timeMax`；魔晶加速每颗 +1 秒(progress)；被动 tick 每秒 +1 秒。
+- **临时进阶数据**：`UserAscendBean` / `UserAscendDetailsBean`（随存档序列化）—— `progress` 现为「已累积秒数」，`targetRarity`/`timeMax`/`ascendBuff` 字段，`AddProgress(+1秒)`、`IsComplete()`、`GetProgressNormalized()`；进度条/完成判定改用后两者。`AddAscendData(index, creatureData, targetRarity, timeMax, ascendBuff)`。
+- **存档时机**：开始进阶存一次、点完成存一次；培养过程（进度 tick / 魔晶加速）不主动存档。
+- **被动进度**：`GameDataHandler.HandleForAscendData` 每秒 tick 给每个进阶容器 `AddProgress()`，仅广播 `CreatureAscend_AddProgress`，不存档。
+- **配置**：进阶耗时来自 `excel_rarity_info` 新列 `ascend_time`（按源稀有度：N=100/R=500/SR=2500/SSR=12500/UR=62500/L=0），手写字段在 `RarityInfoBeanPartial.cs`，访问走静态 `GetAscendTimeByRarity(int rarity)`（rarity≤0 视为 N，缺失/满级返回 0）。
 
 ### 通用 UI
 - **UICommonLoading** - 通用加载界面

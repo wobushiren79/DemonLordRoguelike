@@ -256,7 +256,8 @@ public class ScenePrefabForBase : ScenePrefabBase
                     if (itemAscendDetails != null)
                     {
                         var creatureData = userData.GetBackpackCreature(itemAscendDetails.creatureUUId);
-                        BuildingVatSetState(itemVat, 3, creatureData, itemAscendDetails.progress);
+                        //进度已是秒数,水色按归一化(0~1)Lerp
+                        BuildingVatSetState(itemVat, 3, creatureData, itemAscendDetails.GetProgressNormalized());
                     }
                     else
                     {
@@ -269,7 +270,8 @@ public class ScenePrefabForBase : ScenePrefabBase
                     if (itemAscendDetails != null)
                     {
                         var creatureData = userData.GetBackpackCreature(itemAscendDetails.creatureUUId);
-                        BuildingVatSetState(itemVat, 3, creatureData, itemAscendDetails.progress);
+                        //进度已是秒数,水色按归一化(0~1)Lerp
+                        BuildingVatSetState(itemVat, 3, creatureData, itemAscendDetails.GetProgressNormalized());
                     }
                 }
             }
@@ -465,15 +467,15 @@ public class ScenePrefabForBase : ScenePrefabBase
             var itemVat = objBuildingVat.transform.GetChild(i);
             if (itemVat.gameObject.activeSelf)
             {
-                //如果没有指定的vat
-                if (targetVatIndex > 0)
+                //指定了具体vat(targetVatIndex>=0，含第0个)：只让该vat从地下(-1.8)升起
+                if (targetVatIndex >= 0)
                 {
                     if (targetVatIndex == i)
                     {
-                        AnimForBuildingShowItem(itemVat, 0, timeForShow);
+                        AnimForBuildingShowItem(itemVat, -1.8f, timeForShow);
                     }
                 }
-                //如果有指定vat
+                //未指定(targetVatIndex<0，整场景出现)：所有已激活vat一起从地下升起
                 else
                 {
                     AnimForBuildingShowItem(itemVat, -1.8f, timeForShow);

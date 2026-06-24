@@ -88,10 +88,6 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	/// </summary>
 	public int reward_equip_rarity;
 	/// <summary>
-	///奖励-装备属性加成
-	/// </summary>
-	public int reward_equip_attribute_add;
-	/// <summary>
 	///奖励-普通关卡经验
 	/// </summary>
 	public int reward_exp;

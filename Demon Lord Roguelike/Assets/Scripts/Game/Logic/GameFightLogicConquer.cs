@@ -181,7 +181,8 @@ public class GameFightLogicConquer : GameFightLogic
             //可选次数不超过实际奖励数量，避免多余次数无对应宝箱可开
             if (rewardSelectData.selectNumMax > rewardSelectData.listReward.Count)
                 rewardSelectData.selectNumMax = rewardSelectData.listReward.Count;
-            uiRewardSelect.SetData(rewardSelectData, ActionForUIRewardSelectEnd);
+            //isClearLastGame:true → 进入领奖场景前先卸载本场BOSS战斗场景并清理战斗实体，避免BOSS战斗场景残留叠加在领奖场景上
+            uiRewardSelect.SetData(rewardSelectData, ActionForUIRewardSelectEnd, isClearLastGame: true);
         }
         else
         {

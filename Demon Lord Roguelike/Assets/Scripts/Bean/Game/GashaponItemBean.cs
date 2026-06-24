@@ -61,34 +61,15 @@ public class GashaponItemBean
     }
 
     /// <summary>
-    /// 随机稀有度BUFF
+    /// 随机稀有度BUFF(走 BuffUtil 统一的稀有度BUFF通用生成规则,与魔物进阶共用同一口径)
     /// </summary>
     public void RandomRarityBuff(RarityEnum rarityEnum)
     {
-        BuffTypeEnum buffType = BuffTypeEnum.None;
-        switch (rarityEnum)
-        {
-            case RarityEnum.R:
-                buffType = BuffTypeEnum.CreatureRarityR;
-                break;
-            case RarityEnum.SR:
-                buffType = BuffTypeEnum.CreatureRaritySR;
-                break;
-            case RarityEnum.SSR:
-                buffType = BuffTypeEnum.CreatureRaritySSR;
-                break;
-        }
-        if (buffType == BuffTypeEnum.None)
+        BuffBean buffData = BuffUtil.CreateRandomRarityBuff(rarityEnum);
+        if (buffData == null)
         {
             return;
         }
-        //通过BUFF类型获取BUFF
-        var listBuffInfo = BuffInfoCfg.GetItemDataByBuffType(buffType);
-        //随机一个BUFF
-        int randomIndex = Random.Range(0, listBuffInfo.Count);
-        var randomBuffInfo = listBuffInfo[randomIndex];
-        //添加BUFF
-        BuffBean buffData = new BuffBean(randomBuffInfo.id, isRandom: true);
         creatureData.dicRarityBuff.Add(rarityEnum, buffData);
     }
 

@@ -58,12 +58,22 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     /// <summary>
     /// 进入奖励选择场景
     /// </summary>
+    /// <param name="isClearLastGame">
+    /// 是否清理上一场战斗：true 时卸载战斗场景并清理战斗生物/AI/BUFF/魔王核心等运行时实体。
+    /// 征服模式通关BOSS后进入领奖场景必须传 true，否则上一关BOSS的战斗场景不会被卸载，会与领奖场景叠加残留显示。
+    /// 独立测试(LauncherTest)直接打开领奖界面时无上一场战斗，保持 false。
+    /// </param>
     /// <returns></returns>
-    public async Task EnterRewardSelectScene(bool isClearWorldData = false)
+    public async Task EnterRewardSelectScene(bool isClearLastGame = false)
     {
-        if (isClearWorldData)
+        //清理上一场战斗(卸载战斗场景 + 清理战斗实体)，避免战斗场景残留在领奖场景中
+        if (isClearLastGame)
         {
-            await ClearWorldData();
+            BaseGameLogic gameLogic = GameHandler.Instance.manager.GetGameLogic<BaseGameLogic>();
+            if (gameLogic != null)
+            {
+                await gameLogic.ClearGame();
+            }
         }
         //镜头初始化
         CameraHandler.Instance.InitData();

@@ -5,6 +5,7 @@ watched_files:
   - Assets/Scripts/Game/Buff/
   - Assets/Scripts/Bean/Game/BuffBean.cs
   - Assets/Scripts/Bean/Game/BuffEntityBean.cs
+  - Assets/Scripts/Utils/BuffUtil.cs
   - Assets/Scripts/Bean/MVC/Game/BuffInfoBean.cs
   - Assets/Scripts/Bean/MVC/Game/BuffInfoBeanPartial.cs
   - Assets/Scripts/Bean/MVC/Game/BuffPreInfoBean.cs
@@ -345,6 +346,7 @@ public interface ISingleTargetAbyssalBuff { string SingleTargetCreatureUUId { ge
   - 攻速类：`BuffHandler.ChangeAttackTimeDataForBuff` 扫描馈赠池时按同一 UUID 比对。
 - **不污染存档**：`dlDefenseCreatureData` 内的 `CreatureBean` 与玩家存档**共享引用**，故绝不能改 `creatureAttribute`；本方案只改运行时计算出的 `dicAttribute`/攻击时间，馈赠在征服全通关领奖后随 `ClearAbyssalBlessing` 清空。
 - **可重复选取(level=0)**：每次选取新建一个BUFF实例、各自锁定一只新随机生物叠加（同族 level=0 不触发替换）。
+- ⚠️ **选取后立即刷新已在场生物（事件驱动）**：属性类(ATK/HP/DR)依赖 `dicAttribute` 重算，`BuffHandler.AddAbyssalBlessing` 末尾 `TriggerEvent(Buff_AbyssalBlessingChange)`，由 `GameFightLogic.EventForAbyssalBlessingChange` 监听并立即对防守核心 + 全部防守生物 `RefreshBaseAttribute`（BuffHandler 只触发事件、不直接刷新，职责更解耦）。否则征服「普通关卡→普通关卡」走 `ContinueNextLevelInSameScene` 保留现场、不重载场景也不重算属性，加成要等到下次场景重载（切BOSS关 `StartNextGameForBoss` 重建生物实体）才生效——典型BUG「普通关选了不生效、切BOSS才生效」。攻速类(急性子)每次攻击实时缩放不依赖刷新，一并刷新也无害。
 
 ## 事件名速查（已注册到 BuffEventDispatcher）
 
@@ -376,6 +378,27 @@ CMP               // 召唤魔力消耗（基础值=CreatureInfo.CMP；GetAttrib
 ```
 
 > **扭蛋稀有度 R BUFF 池（buff_type=11）现含**：HP/DR/ATK 增益、ASPD 攻速增益(+50~100%)、RCD 召唤CD减益、CMP 召唤魔力消耗减益(均 -25~50%)。RCD/CMP 减益走负 rate：RCD 走 `GetAttribute(RCD, true)`（基础值/角色加点/装备/自身BUFF→再按需叠加深渊馈赠全局池；includeAbyssalBlessing=true 开启，原 GetRCD 已并入 GetAttribute），CMP 在 `GetAttribute(CMP)` 管线内叠加（先 基础CMP×(1+等级/稀有度增加倍率)，再叠加BUFF；`GetAttributeInt(CMP)` 为 int 封装）。
+
+## 稀有度 BUFF 生成工具（`BuffUtil`）
+
+稀有度 BUFF（buff_type=11 R / 12 SR / 13 SSR）的「按稀有度随机抽一条」规则已抽到游戏层工具 `Assets/Scripts/Utils/BuffUtil.cs` 统一收口，**扭蛋（GashaponItemBean）与魔物进阶（UICreatureVat）共用同一口径**：
+
+| API | 返回 | 说明 |
+|-----|------|------|
+| `BuffUtil.GetRarityBuffType(RarityEnum)` | `BuffTypeEnum` | 稀有度 → 稀有度 BUFF 类型。仅 R/SR/SSR 有对应类型（`CreatureRarityR/SR/SSR`）；N/UR/L 返回 `None` |
+| `BuffUtil.CreateRandomRarityBuff(RarityEnum)` | `BuffBean` | **扭蛋通用规则**：按 `GetRarityBuffType` 取该类型的 BUFF 列表随机抽 1 条，`new BuffBean(id, isRandom:true)`；无对应类型返回 `null` |
+| `BuffUtil.CreateAscendRarityBuff(RarityEnum newRarity, List<CreatureBean> materials)` | `BuffBean` | **魔物进阶规则**：默认走通用随机；素材魔物在 `newRarity` 槽位的 BUFF 按 **buff id** 聚合，每个 id 提供 `10%×数量` 的直接命中概率；命中则继承该 id 并用 `BuffBean.CreateRandomWithFloor` 重随机数值（结果≥素材原值），未命中回退通用随机。UR/L 无类型返回 `null`（只升稀有度不授 BUFF） |
+
+> `GashaponItemBean.RandomRarityBuff(RarityEnum)` 内部已改为调用 `BuffUtil.CreateRandomRarityBuff`（行为不变，规则收口）。新增/调整稀有度 BUFF 仍只需在 `excel_buff_info` 配表，属性类 BUFF 自动进入对应 buff_type 池。
+
+### `BuffBean.CreateRandomWithFloor`（带下限随机工厂）
+
+```csharp
+//沿用扭蛋整数闭区间随机口径，但随机下限抬到 max(配置min, floor)，保证结果≥下限
+public static BuffBean CreateRandomWithFloor(long id, float floorValue, float floorValueRate, float createRate = 1f)
+```
+
+专供魔物进阶「继承素材 BUFF 并重随机数值」使用：`floorValue` / `floorValueRate` 传素材原 BUFF 的 `trigger_value` / `trigger_value_rate`，保证重随机结果不会低于素材原值。
 
 ## 常用代码模板
 
@@ -433,7 +456,8 @@ public class MyEquip : IAttributeModifierSource
 | 周期性BUFF（有次数） | `Assets/Scripts/Game/Buff/BuffEntity/Pecurrent/` |
 | 前置条件基类 | `Assets/Scripts/Game/Buff/BuffPre/BuffBasePreEntity.cs` |
 | 前置条件实现 | `Assets/Scripts/Game/Buff/BuffPre/` |
-| BUFF数据Bean | `Assets/Scripts/Bean/Game/BuffBean.cs` |
+| BUFF数据Bean | `Assets/Scripts/Bean/Game/BuffBean.cs`（含静态工厂 `CreateRandomWithFloor` 带下限随机） |
+| 稀有度 BUFF 生成工具 | `Assets/Scripts/Utils/BuffUtil.cs`（`CreateRandomRarityBuff` 通用 / `CreateAscendRarityBuff` 进阶 / `GetRarityBuffType`） |
 | BUFF运行时实例 | `Assets/Scripts/Bean/Game/BuffEntityBean.cs` |
 | BUFF配置Bean | `Assets/Scripts/Bean/MVC/Game/BuffInfoBean.cs` |
 | BUFF配置扩展 | `Assets/Scripts/Bean/MVC/Game/BuffInfoBeanPartial.cs`（含 `BuffStackMode` 枚举） |

@@ -465,6 +465,24 @@ public class UserDataBean : BaseBean
         }
         return 0;
     }
+
+    /// <summary>
+    /// 检测生物是否上阵(被任意阵容包含)。
+    /// 注:GetLinupIndex 用返回 0 表示「未找到」与合法 index 0 存在歧义,故单独提供布尔判定。
+    /// </summary>
+    /// <param name="creatureUUId">生物UUID</param>
+    /// <returns>只要被任一阵容包含即 true</returns>
+    public bool CheckIsInAnyLineup(string creatureUUId)
+    {
+        foreach (var item in dicLineupCreature)
+        {
+            if (item.Value != null && item.Value.Contains(creatureUUId))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
     #endregion
 
     #region  背包生物相关

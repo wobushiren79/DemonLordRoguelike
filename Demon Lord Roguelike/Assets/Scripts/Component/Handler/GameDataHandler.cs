@@ -31,7 +31,7 @@ public partial class GameDataHandler
     }
 
     /// <summary>
-    /// 处理进阶数据
+    /// 处理进阶数据(被动推进):每秒tick给每个进阶容器进度+1秒(AddProgress默认+1),仅广播刷新事件,不主动存档
     /// </summary>
     public void HandleForAscendData()
     {
@@ -42,6 +42,7 @@ public partial class GameDataHandler
             {
                 foreach (var itemData in userAscendData.dicAscendData)
                 {
+                    //每次tick(1秒)进度+1秒;培养过程不触发SaveUserData
                     itemData.Value.AddProgress();
                 }
                 EventHandler.Instance.TriggerEvent(EventsInfo.CreatureAscend_AddProgress);

@@ -170,9 +170,8 @@ public partial class UIFightMain : BaseUIComponent
             listCreatureCard.Add(itemCardView);
         }
 
-        //展示卡片创建动画
-        int animTypeRandom = Random.Range(1, 3);
-        ShowCardCreateAnim(animTypeRandom);
+        //展示卡片创建动画(统一由下方弹入带回弹，与 UILineupManager 一致)
+        ShowCardCreateAnim();
     }
 
     /// <summary>
@@ -204,9 +203,8 @@ public partial class UIFightMain : BaseUIComponent
         //数量变化后重新计算所有卡片位置
         RefreshCardListPos();
 
-        //新卡片单独播放创建动画
-        int animTypeRandom = Random.Range(1, 3);
-        itemCardView.AnimForCreateShow(animTypeRandom, 0);
+        //新卡片单独播放创建动画(由下方弹入带回弹，与首次加载一致)
+        itemCardView.AnimForCreateShow(0);
     }
 
     /// <summary>
@@ -242,14 +240,14 @@ public partial class UIFightMain : BaseUIComponent
     /// <summary>
     /// 展示卡片创建动画
     /// </summary>
-    public void ShowCardCreateAnim(int animType)
+    public void ShowCardCreateAnim()
     {
         if (listCreatureCard.IsNull())
             return;
         for (int i = 0; i < listCreatureCard.Count; i++)
         {
             var itemView = listCreatureCard[i];
-            itemView.AnimForCreateShow(animType, i);
+            itemView.AnimForCreateShow(i);
         }
     }
 

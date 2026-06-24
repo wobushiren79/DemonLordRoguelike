@@ -238,9 +238,12 @@ public class UserUnlockInfoBean
 ### 解锁操作
 
 ```csharp
-// 新增/覆盖解锁
-// - 若已存在：覆盖 unlockLevel
-// - 若不存在：创建条目，并触发 EventsInfo.User_AddUnlock(unlockId)
+// 新增/覆盖解锁（只要解锁状态或等级真正变化都触发 EventsInfo.User_AddUnlock）
+// - 若不存在：按传入 unlockLevel 创建条目，并触发 User_AddUnlock(unlockId)
+// - 若已存在且等级变化：覆盖 unlockLevel，并触发 User_AddUnlock(unlockId)
+// - 若已存在且等级未变：不做任何事（避免重复触发）
+// ⚠ 可升级解锁(如 CreatureVatAdd 容器+1)后续升级也会发事件 → 驱动 ScenePrefabForBase 刷新/出现动画；
+//   若只在「首次新增」才发事件，升级出的新容器要重进游戏才显示（历史 bug）
 public void AddUnlock(long unlockId, int unlockLevel = 1);
 ```
 
@@ -503,7 +506,7 @@ public void SaveResearchDataForTest()
 
 | 事件常量 | 触发位置 | 监听位置 | 用途 |
 |----------|----------|----------|------|
-| `EventsInfo.User_AddUnlock` | `UserUnlockBean.AddUnlock(...)` 新增解锁时 | `ScenePrefabForBase` 等 | 通知基地场景刷新对应解锁的内容（如打开新功能入口） |
+| `EventsInfo.User_AddUnlock` | `UserUnlockBean.AddUnlock(...)` 新增解锁**或等级变化**时 | `ScenePrefabForBase`（全工程唯一监听者） | 通知基地场景刷新对应解锁的内容（建筑出现动画/打开新功能入口）；非建筑解锁在 `EventForUserAddUnlock` 中直接 return，无副作用 |
 
 ---
 

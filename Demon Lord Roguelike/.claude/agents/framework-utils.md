@@ -30,7 +30,7 @@ watched_files:
 - 数据处理：JsonUtil、ExcelUtil、BeanUtil、TypeConversionUtil
 - 图形渲染：TextureUtil、MeshUtil、UGUIUtil
 - 数学/随机：MathUtil、RandomUtil、FastNoise、SimplexNoiseUtil
-- 游戏通用：GameUtil、SceneUtil、RayUtil、VectorUtil、CptUtil
+- 游戏通用：GameUtil、SceneUtil、RayUtil、VectorUtil、CptUtil、AnimUtil（通用 Animator 工具 `GetAnimClipLength`；`partial class`，与游戏层 `Assets/Scripts/Utils/AnimUtil.cs` 同名共享）
 - 系统工具：FileUtil、LogUtil、SystemUtil、TimeUtil、UnitUtil
 - 反射/类型：ReflexUtil、ClassUtil、CheckUtil
 

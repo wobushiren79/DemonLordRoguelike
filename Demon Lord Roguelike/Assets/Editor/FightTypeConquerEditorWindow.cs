@@ -555,7 +555,6 @@ public class FightTypeConquerEditorWindow : EditorWindow
         currentBean.drop_crystal = DrawIntField("掉落魔晶", currentBean.drop_crystal);
         currentBean.reward_crystal = DrawIntField("奖励-魔晶", currentBean.reward_crystal);
         currentBean.reward_equip_rarity = DrawIntField("奖励-装备稀有度", currentBean.reward_equip_rarity);
-        currentBean.reward_equip_attribute_add = DrawIntField("奖励-装备属性加成", currentBean.reward_equip_attribute_add);
 
         GUILayout.Space(5);
         lineRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(1));

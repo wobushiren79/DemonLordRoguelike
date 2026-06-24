@@ -128,6 +128,8 @@ public class CreatureSacrificeLogic : BaseGameLogic
             SettleSacrificeData(false);
         }
 
+        //开始播放献祭动画,同步播放魔法音效
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_magic_1);
         //播放生物动画
         AnimForCreatureObjSacrfice(listFodderCreatureObj, objTargetCreature, timeCenterDelay + timeCenterLifetime, timeReset, () =>
         {

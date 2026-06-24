@@ -26,19 +26,28 @@ public class UserUnlockBean
 
     /// <summary>
     /// 增加解锁
-    /// 若已解锁则覆盖等级；若未解锁则新建条目并触发 User_AddUnlock 事件
+    /// 未解锁则按传入等级新建条目；已解锁且等级发生变化则覆盖等级。
+    /// 只要「解锁状态或等级」真正发生改变都会触发 User_AddUnlock 事件——
+    /// 这样可升级解锁的后续升级(如生物进阶容器+1 CreatureVatAdd)也能驱动场景刷新/出现动画，
+    /// 而非仅在首次解锁时刷新(否则升级出的新容器要重进游戏才显示)
     /// </summary>
     /// <param name="unlockId">解锁ID</param>
-    /// <param name="unlockLevel">解锁等级，默认为 1（仅用于已存在条目时的等级覆盖）</param>
+    /// <param name="unlockLevel">解锁等级，默认为 1</param>
     public void AddUnlock(long unlockId,int unlockLevel = 1)
     {
         if (unlockInfoData.TryGetValue(unlockId, out var unlockData))
         {
-            unlockData.unlockLevel = unlockLevel;
+            //已解锁：仅当等级真正变化时才覆盖并通知，避免无意义重复触发
+            if (unlockData.unlockLevel != unlockLevel)
+            {
+                unlockData.unlockLevel = unlockLevel;
+                EventHandler.Instance.TriggerEvent(EventsInfo.User_AddUnlock, unlockId);
+            }
         }
         else
         {
-            unlockInfoData.Add(unlockId, new UserUnlockInfoBean(unlockId));
+            //未解锁：按传入等级新建条目并通知
+            unlockInfoData.Add(unlockId, new UserUnlockInfoBean(unlockId, unlockLevel));
             EventHandler.Instance.TriggerEvent(EventsInfo.User_AddUnlock, unlockId);
         }
     }
@@ -427,13 +436,14 @@ public class UserUnlockInfoBean
 
     /// <summary>
     /// 构造方法
-    /// 创建一条解锁数据，默认解锁等级为 1
+    /// 创建一条解锁数据，解锁等级默认为 1
     /// </summary>
     /// <param name="unlockId">解锁ID</param>
-    public UserUnlockInfoBean(long unlockId)
+    /// <param name="unlockLevel">解锁等级，默认为 1</param>
+    public UserUnlockInfoBean(long unlockId, int unlockLevel = 1)
     {
         this.unlockId = unlockId;
-        unlockLevel = 1;
+        this.unlockLevel = unlockLevel;
     }
 
     #endregion

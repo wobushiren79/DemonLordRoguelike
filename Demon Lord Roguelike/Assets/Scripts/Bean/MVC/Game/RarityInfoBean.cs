@@ -46,6 +46,14 @@ public partial class RarityInfoBean : BaseBean
 	///魔力召唤增加倍率
 	/// </summary>
 	public float CMP_rate;
+	/// <summary>
+	///装备属性加点数量
+	/// </summary>
+	public int equip_attribute_add;
+	/// <summary>
+	///进阶所需时间(秒,按源稀有度;0为满级不可进阶)
+	/// </summary>
+	public int ascend_time;
 }
 public partial class RarityInfoCfg : BaseCfg<long, RarityInfoBean>
 {

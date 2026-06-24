@@ -36,7 +36,8 @@ watched_files:
 - **RewardSelectBean** - 领奖数据，负责生成奖励物品列表 `listReward`（装备 + 魔晶）
 - **RewardSelectTestData** - 测试模式下的领奖参数（品质/属性/数量/魔王专属概率）
 - **FightDropCrystalBean** - 战斗内掉落水晶实例
-- **FightTypeConquerInfoBean(Partial)** - 征服配置（`drop_crystal` / `reward_crystal` / `reward_equip_rarity` / `reward_equip_attribute_add`）
+- **FightTypeConquerInfoBean(Partial)** - 征服配置（`drop_crystal` / `reward_crystal` / `reward_equip_rarity`，只决定稀有度）
+- **RarityInfoBean** - 稀有度配置，`equip_attribute_add` 决定该稀有度装备的属性加点数量（从征服表迁来）
 
 ### UI
 - **UIFightSettlement** - 结算数据排行榜（6 维度展示：伤害/击杀/受伤/治疗/受疗/经验；排序当前仅接通伤害/击杀/受伤/经验 4 维），只展示不发奖；`OpenUI` 重写里调用 `AudioHandler.Instance.StopMusic()` 在结算界面打开时停止战斗音乐
@@ -75,7 +76,7 @@ watched_files:
 
 1. 取已解锁生物，过滤掉没有对应装备道具的生物
 2. 循环 `createItemNum`（默认 3）个：前 `createEquipNum`（默认 1）个生成装备，其余生成魔晶
-3. **装备**（CreateItemEquip）：随机解锁生物的随机装备，品质 = `reward_equip_rarity`、属性加成 = `reward_equip_attribute_add`，按 `createEquipDemonLordRate`（默认 1/10）概率标记魔王专属
+3. **装备**（CreateItemEquip）：随机解锁生物的随机装备，品质 = `reward_equip_rarity`、属性加点数量 = `RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add`（由稀有度配置表决定），按 `createEquipDemonLordRate`（默认 1/10）概率标记魔王专属
 4. **魔晶**（CreateItemCrystal）：基础数量 = `reward_crystal`，在 `±基础值/2` 范围随机浮动
 5. `fightData == null` 时进入测试模式，用 `RewardSelectTestData` 的固定参数
 
@@ -110,6 +111,7 @@ watched_files:
 - 水晶掉落数量来自 `FightTypeConquerInfo.drop_crystal`，BUFF 可监听 `GameFightLogic_CreatureDeadDropCrystal` 追加掉落（具体 BUFF 逻辑归 `game-buff` 代理）。
 - 征服配置 Bean (`FightTypeConquerInfoBean.cs`) 是自动生成的，**禁止直接修改**；扩展写到 `FightTypeConquerInfoBeanPartial.cs`。配置数据变更必须改对应 Excel 源表，仅改 JSON 会被下次导出覆盖。
 - `UIRewardSelect` 依赖独立的领奖场景 `ScenePrefabForRewardSelect`（`WorldHandler.EnterRewardSelectScene`）与 3D 宝箱交互（射线点击），改动 UI 时注意场景配合。
+- 进入领奖场景前必须卸载上一场战斗场景：`SetData(..., isClearLastGame: true)` → `EnterRewardSelectScene(true)` → `gameLogic.ClearGame()`（卸载战斗场景+清理战斗实体）。征服 BOSS 领奖入口已传 true；若漏传，BOSS 战斗场景会与领奖场景叠加残留（结算阶段的 `ClearGameForSimple` 只清 AI/BUFF/弹道，不卸场景）。
 
 ## 关联 Skill 与 Agent
 

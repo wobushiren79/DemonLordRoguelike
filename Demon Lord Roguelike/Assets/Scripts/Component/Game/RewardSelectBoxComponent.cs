@@ -1,15 +1,21 @@
 using System.Threading.Tasks;
 using DG.Tweening;
+using TMPro;
 using UnityEngine;
 
 public class RewardSelectBoxComponent : BaseMonoBehaviour
 {
     protected Transform itemTF;
     protected SpriteRenderer itemRenderer = null;
+    protected TextMeshPro itemNumText = null;
 
     protected Transform boxTF;
     protected Animator boxAnim;
     protected string boxAnimState = "state";
+    //箱子从天而降(Show)动画状态名 用于运行时读取该动画实际时长
+    protected string boxAnimShowName = "Show";
+    //箱子从天而降(Show)动画时长 Awake 时从 Animator 动态读取 此处仅作读取失败时的兜底默认值
+    protected float timeBoxShowAnim = 0.5f;
 
     public RewardSelectBoxStateEnum rewardSelectBoxState;
 
@@ -20,6 +26,10 @@ public class RewardSelectBoxComponent : BaseMonoBehaviour
 
         itemTF = transform.Find("RewardSelectBoxItem");
         itemRenderer = itemTF.Find("Renderer").GetComponent<SpriteRenderer>();
+        itemNumText = itemTF.Find("RewardNum").GetComponent<TextMeshPro>();
+
+        //运行时读取从天而降(Show)动画的实际时长 避免写死(动画时长变更后自动跟随)
+        timeBoxShowAnim = AnimUtil.GetAnimClipLength(boxAnim, boxAnimShowName, timeBoxShowAnim);
     }
 
     /// <summary>
@@ -33,6 +43,16 @@ public class RewardSelectBoxComponent : BaseMonoBehaviour
         rewardSelectBoxState = RewardSelectBoxStateEnum.Idle;
         //设置道具图标
         IconHandler.Instance.SetItemIcon(itemData.itemsInfo.icon_res, itemData.itemsInfo.icon_rotate_z, itemRenderer);
+        //设置道具数量 数量大于1才显示
+        if (itemData.itemNum > 1)
+        {
+            itemNumText.gameObject.SetActive(true);
+            itemNumText.text = itemData.itemNum.ToString();
+        }
+        else
+        {
+            itemNumText.gameObject.SetActive(false);
+        }
         //先隐藏道具 点选之后再显示
         itemTF.gameObject.SetActive(false);
         //延迟出现箱子
@@ -41,6 +61,9 @@ public class RewardSelectBoxComponent : BaseMonoBehaviour
         boxTF.gameObject.SetActive(true);
         //箱子进入待机状态
         boxAnim.SetInteger(boxAnimState, 1);
+        //等待从天而降(Show)动画播放完毕 播放落地音效
+        await new WaitForSeconds(timeBoxShowAnim);
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_hit_6);
     }
 
     /// <summary>
@@ -78,6 +101,8 @@ public class RewardSelectBoxComponent : BaseMonoBehaviour
         float timeOpen = 1f;
         //箱子播放打开动画
         boxAnim.SetInteger(boxAnimState, 2);
+        //播放开箱音效(音量倍率由配置表 AudioInfo 的 volume_scale 控制)
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_set_1);
         //显示道具
         itemTF.gameObject.SetActive(true);
         //播放道具显示动画

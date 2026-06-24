@@ -104,6 +104,10 @@ public enum AudioEnum : long
     sound_win_1 = 580001,//胜利1
     sound_win_3 = 580003,//胜利3
     sound_win_4 = 580004,//胜利4
+    sound_continuous_1 = 590001,//持续1
+    sound_magic_1 = 600001,//魔法1
+    sound_magic_2 = 600002,//魔法2
+    sound_magic_3 = 600003,//魔法3
     //==================== 音乐 Music ====================
     music_fight_1 = 1000001,//战斗音乐1
     music_fight_2 = 1000002,//战斗音乐2

@@ -35,6 +35,8 @@ public class GameFightLogic : BaseGameLogic
         RegisterEvent<FightCreatureEntity>(EventsInfo.GameFightLogic_CreatureDeadEnd, EventForGameFightLogicCreatureDeadEnd);
         //发送事件通知
         RegisterEvent<string, string>(EventsInfo.Buff_FightCreatureChange, EventForBuffFightCreatureChange);
+        //深渊馈赠变化时刷新受影响生物属性（防守核心 + 全部防守生物）
+        RegisterEvent<AbyssalBlessingEntityBean>(EventsInfo.Buff_AbyssalBlessingChange, EventForAbyssalBlessingChange);
 
         //设置战斗场景视角
         await CameraHandler.Instance.InitFightSceneCamera();
@@ -484,6 +486,36 @@ public class GameFightLogic : BaseGameLogic
                 return;
             }
             fightCreatureEntity.fightCreatureData.RefreshBaseAttribute();
+        }
+    }
+
+    /// <summary>
+    /// 深渊馈赠变化（增加/升级替换）
+    /// <para>属性类馈赠BUFF（含「随机一只防守魔物属性翻倍」单体定向类）只有在 RefreshBaseAttribute 时才会被算进 dicAttribute。
+    /// 征服模式「普通关卡→普通关卡」保留现场不重载场景、不会自然重算属性，故此处收到馈赠变化事件后立即刷新已在场的
+    /// 防守核心与全部普通防守生物，使加成当场生效（否则要等切BOSS关重载场景才生效）。</para>
+    /// </summary>
+    /// <param name="abyssalBlessingEntity">发生变化的深渊馈赠实例（仅作事件参数，刷新与具体哪条馈赠无关）</param>
+    public void EventForAbyssalBlessingChange(AbyssalBlessingEntityBean abyssalBlessingEntity)
+    {
+        if (fightData == null)
+            return;
+        //防守核心
+        var defenseCore = fightData.fightDefenseCoreCreature;
+        if (defenseCore != null && defenseCore.fightCreatureData != null && !defenseCore.IsDead())
+        {
+            defenseCore.fightCreatureData.RefreshBaseAttribute();
+        }
+        //全部普通防守生物
+        var listDefenseCreatureEntity = fightData.dlDefenseCreatureEntity?.List;
+        if (listDefenseCreatureEntity == null)
+            return;
+        for (int i = 0; i < listDefenseCreatureEntity.Count; i++)
+        {
+            var creatureEntity = listDefenseCreatureEntity[i];
+            if (creatureEntity == null || creatureEntity.fightCreatureData == null || creatureEntity.IsDead())
+                continue;
+            creatureEntity.fightCreatureData.RefreshBaseAttribute();
         }
     }
     #endregion

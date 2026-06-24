@@ -145,13 +145,13 @@ public class RewardSelectBean
 
         if (fightData != null)
         {
-            //正常游戏模式：从战斗数据获取装备品质和属性加成
+            //正常游戏模式：战斗数据只决定装备稀有度
             if (fightData is FightBeanForConquer fightBeanForConquer)
             {
-                //设置装备品质
                 rarityItem = fightBeanForConquer.fightTypeConquerInfo.reward_equip_rarity;
-                addAttribute = fightBeanForConquer.fightTypeConquerInfo.reward_equip_attribute_add;
             }
+            //属性加点数量由稀有度配置表决定
+            addAttribute = RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add;
             //根据概率决定是否生成魔王专属装备
             if (Random.value < createEquipDemonLordRate)
             {
@@ -160,7 +160,7 @@ public class RewardSelectBean
         }
         else if (testData != null)
         {
-            //测试模式：使用传入的测试数据
+            //测试模式：使用传入的测试数据（addAttribute 为测试覆盖值）
             rarityItem = (int)testData.rarity;
             addAttribute = testData.addAttribute;
             //根据测试数据的概率决定是否生成魔王专属装备
@@ -171,10 +171,10 @@ public class RewardSelectBean
         }
         else
         {
-            //测试模式（无测试数据）：使用默认固定值
+            //无任何数据：默认 N 级，属性加点取稀有度配置
             rarityItem = 1;
             userType = 0;
-            addAttribute = 5;
+            addAttribute = RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add;
         }
 
         ItemBean itemData = new ItemBean(randomItemInfo.id, 1, rarityItem, userType);

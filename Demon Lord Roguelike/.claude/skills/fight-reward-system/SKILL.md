@@ -1,6 +1,6 @@
 ---
 name: fight-reward-system
-description: Demon Lord Roguelike 游戏的战斗结算奖励系统开发指南。使用此SKILL当需要创建或修改战斗结束后的奖励逻辑，包括战斗结算面板(UIFightSettlement 伤害/击杀/受伤/经验排行榜)、BOSS通关领奖界面(UIRewardSelect 宝箱选择)、奖励生成规则(RewardSelectBean 装备/魔晶)、敌人死亡水晶掉落(FightCreatureEntity.DropCrystal)、战斗统计记录(FightRecordsBean)、奖励入账与存档链路、各战斗模式(征服/终焉议会/测试)结算差异、征服奖励配置(reward_crystal/reward_equip_rarity/reward_equip_attribute_add/drop_crystal)等。
+description: Demon Lord Roguelike 游戏的战斗结算奖励系统开发指南。使用此SKILL当需要创建或修改战斗结束后的奖励逻辑，包括战斗结算面板(UIFightSettlement 伤害/击杀/受伤/经验排行榜)、BOSS通关领奖界面(UIRewardSelect 宝箱选择)、奖励生成规则(RewardSelectBean 装备/魔晶)、敌人死亡水晶掉落(FightCreatureEntity.DropCrystal)、战斗统计记录(FightRecordsBean)、奖励入账与存档链路、各战斗模式(征服/终焉议会/测试)结算差异、征服奖励配置(reward_crystal/reward_equip_rarity/drop_crystal)、装备属性加点数量由稀有度配置表(RarityInfo.equip_attribute_add)决定等。
 watched_files:
   - Assets/Scripts/Component/UI/Game/FightSettlement/
   - Assets/Scripts/Component/UI/Game/RewardSelect/
@@ -85,7 +85,7 @@ InitData(fightData, testData = null)
 
 ### 装备生成 CreateItemEquip
 - 随机挑一个解锁生物 → 取该生物的随机装备道具（无道具则容错改生成魔晶）
-- **正常模式**：品质 `rarityItem = fightTypeConquerInfo.reward_equip_rarity`，属性加成 `addAttribute = reward_equip_attribute_add`；按 `createEquipDemonLordRate` 概率设为魔王专属 `ItemUserTypeEnum.DemonLord`
+- **正常模式**：品质 `rarityItem = fightTypeConquerInfo.reward_equip_rarity`，属性加点数量 `addAttribute = RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add`（由稀有度配置表决定，征服表只控制出什么稀有度）；按 `createEquipDemonLordRate` 概率设为魔王专属 `ItemUserTypeEnum.DemonLord`
 - **测试模式**：用 `testData.rarity / addAttribute / createEquipDemonLordRate`
 - `new ItemBean(id, 1, rarityItem, userType)` → `InitRandomAttributeForCreate(addAttribute)` 随机属性
 
@@ -96,7 +96,9 @@ InitData(fightData, testData = null)
 
 ## 领奖界面交互（UIRewardSelect）
 
-- `SetData` → `WorldHandler.EnterRewardSelectScene()` 加载独立领奖场景 → `scenePrefab.InitRewardBox(listReward)` 初始化 3D 宝箱
+- `SetData(rewardSelectData, actionForEnd, isClearLastGame)` → `WorldHandler.EnterRewardSelectScene(isClearLastGame)` 加载独立领奖场景 → `scenePrefab.InitRewardBox(listReward)` 初始化 3D 宝箱
+  - `isClearLastGame=true`：进入领奖场景前先 `gameLogic.ClearGame()` 卸载上一场战斗场景并清理战斗实体。**征服模式通关 BOSS 进领奖必须传 true**（`ActionForUIFightSettlementNext` 已传），否则 BOSS 战斗场景不会卸载，会与领奖场景叠加残留；独立测试(LauncherTest)无上一场战斗，保持默认 false。
+  - 注意：结算流程里 `ClearGameForSimple()` 只清 AI/BUFF/在途弹道，**不卸载战斗场景**；战斗场景的卸载靠领奖入口的 `isClearLastGame` 或返回基地时的 `ClearWorldData`。
 - 点击宝箱 `OnClickForSelectBox`：射线检测命中宝箱 → `scenePrefab.OpenRewardBox` 返回状态：
   - `0` 没有次数 → Toast 提示
   - `1` 打开宝箱 → `userData.AddBackpackItem(itemData)` 入账 + `selectNum++` + 展示道具详情
@@ -132,8 +134,7 @@ InitData(fightData, testData = null)
 |------|------|
 | `drop_crystal` | 敌人死亡掉落水晶数量（战斗内即时掉落） |
 | `reward_crystal` | BOSS 通关领奖魔晶基础数量 |
-| `reward_equip_rarity` | 领奖装备品质（稀有度） |
-| `reward_equip_attribute_add` | 领奖装备属性加成值 |
+| `reward_equip_rarity` | 领奖装备品质（稀有度）——只决定出什么稀有度，属性加点数量见 `RarityInfo.equip_attribute_add` |
 | `reward_exp` | 普通关卡胜利时给出战阵容生物的经验 |
 | `reward_exp_boss` | BOSS 关卡胜利时给出战阵容生物的经验 |
 
@@ -149,7 +150,8 @@ InitData(fightData, testData = null)
 ## 常见开发任务
 
 ### 调整 BOSS 通关奖励（装备品质/数量/魔晶）
-- 改征服配置表 Excel 源表（`reward_equip_rarity` / `reward_equip_attribute_add` / `reward_crystal`），在 Unity 编辑器导出 JSON。**禁止只改 JSON**。
+- 改征服配置表 Excel 源表（`reward_equip_rarity` / `reward_crystal`），在 Unity 编辑器导出 JSON。**禁止只改 JSON**。
+- 调装备**属性加点数量**：改稀有度配置表 `excel_rarity_info` 的 `equip_attribute_add`（按稀有度，不在征服表里）。
 - 改生成数量逻辑（几件装备/几个魔晶）：改 `RewardSelectBean` 的 `createItemNum` / `createEquipNum` 默认值或生成循环。
 
 ### 深渊馈赠对领奖的加成（奖励多多 / 再来一瓶）

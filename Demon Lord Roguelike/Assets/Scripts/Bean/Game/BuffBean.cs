@@ -56,6 +56,31 @@ public class BuffBean
     }
 
     /// <summary>
+    /// 创建一条「带下限的随机」稀有度BUFF(用于魔物进阶继承素材BUFF的场景)。
+    /// 沿用扭蛋的整数闭区间随机口径,但把随机下限抬高到 floor(取 max(配置min, floor)),
+    /// 保证重随机出的数值≥素材原数值(decision: 命中素材BUFF时数值重随机但不低于原值)。
+    /// </summary>
+    /// <param name="id">buffId</param>
+    /// <param name="floorValue">触发值下限(素材原 trigger_value)</param>
+    /// <param name="floorValueRate">触发值百分比下限(素材原 trigger_value_rate)</param>
+    /// <param name="createRate">BUFF创建几率</param>
+    /// <returns>带下限随机后的BUFF运行时数据</returns>
+    public static BuffBean CreateRandomWithFloor(long id, float floorValue, float floorValueRate, float createRate = 1f)
+    {
+        BuffBean buffData = new BuffBean(id, isRandom: true, createRate: createRate);
+        var buffInfo = BuffInfoCfg.GetItemData(id);
+        //触发值:下限抬到 max(配置min, floor),上限取配置max,整数闭区间随机
+        int valueFloor = Mathf.RoundToInt(Mathf.Max(buffInfo.trigger_value_min, floorValue));
+        int valueMax = Mathf.Max(valueFloor, Mathf.RoundToInt(buffInfo.trigger_value));
+        buffData.trigger_value = UnityEngine.Random.Range(valueFloor, valueMax + 1);
+        //触发值百分比:同口径,按整数百分点随机
+        int rateFloor = Mathf.RoundToInt(Mathf.Max(buffInfo.trigger_value_rate_min, floorValueRate) * 100);
+        int rateMax = Mathf.Max(rateFloor, Mathf.RoundToInt(buffInfo.trigger_value_rate * 100));
+        buffData.trigger_value_rate = UnityEngine.Random.Range(rateFloor, rateMax + 1) / 100f;
+        return buffData;
+    }
+
+    /// <summary>
     /// 是否是基础属性BUFF(只添加属性没有额外条件)
     /// </summary>
     /// <returns></returns>

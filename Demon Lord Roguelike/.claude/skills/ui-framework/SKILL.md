@@ -681,12 +681,30 @@ EventsInfo.Language_Change                // 语言切换
 
 ---
 
+## 业务 UI 速记（按需补充，完整清单见 ProjectUI.md）
+
+### UICreatureVat（魔物进阶 / CreatureVat 培养槽）
+
+`Assets/Scripts/Component/UI/Game/CreatureVat/UICreatureVat.cs`，魔物进阶主界面（升稀有度 + 授予稀有度 BUFF）：
+
+- **进阶效果**：目标魔物稀有度 +1，并把开始时即确定的「预定 BUFF」写入 `creatureData.dicRarityBuff[新稀有度]`。
+- **目标列表**：仅 Idle 且未满级（`RarityInfoCfg.GetAscendTimeByRarity(rarity) > 0`，排除 L）。
+- **素材列表**：Idle + 排除目标 + 排除上阵（`UserDataBean.CheckIsInAnyLineup`）+ 仅保留稀有度高于目标的魔物；最多 5 只（`const int MaterialMax = 5`），超出弹 Toast（文本 id 80011）。
+- **预定 BUFF**：`BuffUtil.CreateAscendRarityBuff(newRarity, materials)`（素材 BUFF 按 id 聚合，每 id 10%×数量 命中概率，命中继承并重随机数值≥素材原值；UR/L 无类型为 null）。
+- **耗时**：按源稀有度查 `RarityInfoCfg.GetAscendTimeByRarity`（excel_rarity_info 新列 `ascend_time`）作 `timeMax`；魔晶加速每颗 +1 秒，被动 tick 每秒 +1 秒。
+- **临时进阶数据**：`UserAscendDetailsBean`（随存档序列化）—— `progress` 为「已累积秒数」，含 `targetRarity`/`timeMax`/`ascendBuff`，`IsComplete()` / `GetProgressNormalized()` 驱动完成判定与进度条。
+- **存档时机**：开始进阶存一次、点完成存一次；培养过程（`GameDataHandler.HandleForAscendData` 每秒 `AddProgress()` + 广播 `CreatureAscend_AddProgress`、魔晶加速）不主动存档。
+- 详细 BUFF 生成规则见 [buff-system](../buff-system/SKILL.md) / [utils-system](../utils-system/SKILL.md)。
+
+---
+
 ## 更新记录
 
 | 日期 | 更新内容 | 更新人 |
 |------|----------|--------|
 | 2026-04-10 | 创建UI框架SKILL | - |
 | 2026-05-26 | 新增"通用控件优先原则"章节，强制要求遮罩/弹窗/Toast/气泡等通用需求走 UIHandler 已有方法 | - |
+| 2026-06-24 | 新增 UICreatureVat（魔物进阶/培养槽）业务 UI 速记：升稀有度+授予稀有度 BUFF、素材过滤、最多 5 只、耗时按稀有度、临时进阶数据随存档、被动进度 tick | - |
 
 ---
 

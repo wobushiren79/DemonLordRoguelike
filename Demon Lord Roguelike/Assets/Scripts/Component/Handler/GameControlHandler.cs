@@ -48,6 +48,8 @@ public class GameControlHandler : BaseHandler<GameControlHandler,GameControlMana
                 effectData.effectName="EffectBodySlam_1";
                 effectData.isDestoryPlayEnd = true;
                 EffectHandler.Instance.ShowEffect(effectData);
+                //从天而降动画播放完毕 播放落地音效
+                AudioHandler.Instance.PlaySound(AudioEnum.sound_hit_6);
             });
     }
 }

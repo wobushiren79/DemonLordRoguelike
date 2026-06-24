@@ -98,8 +98,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → GameFightLogicConquer 跑起
 | `level_add` | float | 难度数值加成 |
 | `drop_crystal` | int | 敌人死亡掉落魔晶 |
 | `reward_crystal` | int | 通关奖励魔晶 |
-| `reward_equip_rarity` | int | 奖励装备稀有度 |
-| `reward_equip_attribute_add` | int | 奖励装备属性加成 |
+| `reward_equip_rarity` | int | 奖励装备稀有度（只决定稀有度；属性加点数量见 `RarityInfo.equip_attribute_add`） |
 | `reward_exp` | int | 普通关通关经验 |
 | `reward_exp_boss` | int | BOSS 关通关经验 |
 | `remark` | string | 备注 |
@@ -228,7 +227,7 @@ GoToNextLevel()
 |------|------------|
 | `ActionForUIFightAbyssalBlessingSelect(info)` | 选了深渊馈赠 → `FightBeanForConquer.AddAbyssalBlessing` → `GoToNextLevel` |
 | `ActionForUIFightAbyssalBlessingSkip()` | 跳过馈赠 → `GoToNextLevel` |
-| `ActionForUIFightSettlementNext()` | 结算「下一步」：通关BOSS→`UIRewardSelect`；失败→`EndGameAndReturnToBase` |
+| `ActionForUIFightSettlementNext()` | 结算「下一步」：通关BOSS→`UIRewardSelect.SetData(..., isClearLastGame: true)`（进领奖前 `ClearGame` 卸载BOSS战斗场景，否则战斗场景会叠加残留在领奖场景上）；失败→`EndGameAndReturnToBase` |
 | `ActionForUIRewardSelectEnd()` | 领奖结束：触发 `Achievement_ConquerComplete`(worldId, 难度) → 返回基地 |
 
 ### 返回基地（EndGameAndReturnToBase）

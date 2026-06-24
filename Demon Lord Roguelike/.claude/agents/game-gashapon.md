@@ -42,3 +42,4 @@ watched_files:
 - 扭蛋逻辑通过 GashaponMachineLogic 统一管理
 - 扭蛋道具和普通道具数据隔离
 - 扭蛋机 UI 使用 UIGashapon 前缀命名
+- 稀有度 BUFF 生成已收口到 `BuffUtil`：`GashaponItemBean.RandomRarityBuff(RarityEnum)` 改为调用 `BuffUtil.CreateRandomRarityBuff(rarityEnum)`（`Assets/Scripts/Utils/BuffUtil.cs`），行为不变，与**魔物进阶（UICreatureVat）共用同一口径**。改这条通用规则应改 `BuffUtil`，不要在 `GashaponItemBean` 内重新内联 switch（详见 buff-system / utils-system skill）

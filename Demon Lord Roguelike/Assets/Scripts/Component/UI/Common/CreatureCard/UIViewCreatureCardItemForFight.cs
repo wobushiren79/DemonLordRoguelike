@@ -11,8 +11,6 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     [Header("卡片创建动画延迟时间")]
     public float animCardCreateDelayTime = 0.05f;
     [Header("卡片创建动画时间")]
-    public float animCardCreateTimeType1 = 0.8f;
-    [Header("卡片创建动画时间")]
     public float animCardCreateTimeType2 = 0.4f;
     [Header("卡片创建动画缓动函数")]
     public Ease animCardCreateEase = Ease.OutBack;
@@ -367,27 +365,22 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
 
     #region 动画相关
     /// <summary>
-    /// 创建动画
+    /// 创建动画(由下方弹入：位移 OutBack + 缩放过冲回弹，与 UILineupManager 初始化动画一致)
     /// </summary>
-    public void AnimForCreateShow(int animType, int index)
+    /// <param name="index">卡片序号，用于错开延迟</param>
+    public void AnimForCreateShow(int index)
     {
         ClearAnim();
-        if (animType == 1)
-        {
-            rectTransform.anchoredPosition = new Vector2(cardData.originalCardPos.x + Screen.width, cardData.originalCardPos.y);
-            animForCreate = rectTransform
-                .DOAnchorPos(cardData.originalCardPos, animCardCreateTimeType1)
-                .SetEase(animCardCreateEase)
-                .SetDelay(index * animCardCreateDelayTime);
-        }
-        else if (animType == 2)
-        {
-            rectTransform.anchoredPosition = new Vector2(cardData.originalCardPos.x, -500);
-            animForCreate = rectTransform
-                .DOAnchorPos(cardData.originalCardPos, animCardCreateTimeType2)
-                .SetEase(animCardCreateEase)
-                .SetDelay(index * animCardCreateDelayTime);
-        }
+        rectTransform.anchoredPosition = new Vector2(cardData.originalCardPos.x, cardData.originalCardPos.y - 200);
+        rectTransform.localScale = Vector3.one;
+        float moveTime = animCardCreateTimeType2;
+        animForCreate = DOTween.Sequence()
+            .AppendInterval(index * animCardCreateDelayTime)
+            .Append(rectTransform.DOAnchorPos(cardData.originalCardPos, moveTime).SetEase(animCardCreateEase))
+            .Join(rectTransform.DOScale(1.15f, moveTime * 0.6f).SetEase(Ease.OutQuad))
+            .Append(rectTransform.DOScale(1f, moveTime * 0.4f).SetEase(Ease.InOutQuad))
+            //动画落位完成后播放卡片音效(每张卡各自播放)
+            .OnComplete(() => AudioHandler.Instance.PlaySound(AudioEnum.sound_card_1));
     }
 
     /// <summary>

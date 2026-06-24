@@ -370,6 +370,7 @@ EventsInfo.GameFightLogic_DropAddCrystal        // 掉落增加水晶
 EventsInfo.GameFightLogic_CreatureDeadDropCrystal // 生物死亡掉落水晶
 EventsInfo.GameFightLogic_CreatureChangeState   // 生物状态改变
 EventsInfo.Buff_FightCreatureChange             // 战斗生物BUFF改变
+EventsInfo.Buff_AbyssalBlessingChange           // 深渊馈赠变化(GameFightLogic.EventForAbyssalBlessingChange 监听→刷新防守核心+全部防守生物属性)
 ```
 
 ## 常用代码模板
