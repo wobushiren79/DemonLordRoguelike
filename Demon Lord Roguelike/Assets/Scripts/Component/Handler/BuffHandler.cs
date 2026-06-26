@@ -419,7 +419,7 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
             for (int j = 0; j < listBuff.Count; j++)
             {
                 if (listBuff[j] is BuffEntityAttributeAttackTime buffAttackTime
-                    && listBuff[j] is ISingleTargetAbyssalBuff singleTargetBuff
+                    && listBuff[j] is IBuffSingleTarget singleTargetBuff
                     && singleTargetBuff.SingleTargetCreatureUUId == creatureUUId)
                 {
                     buffAttackTime.ChangeAttackTimeData(ref timeAttackPre, ref timeAttacking);

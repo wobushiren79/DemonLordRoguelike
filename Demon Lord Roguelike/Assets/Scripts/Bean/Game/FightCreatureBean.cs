@@ -148,7 +148,7 @@ public class FightCreatureBean
                 continue;
             }
             //单体定向深渊馈赠：仅对选取时被随机锁定的那一只防守生物生效(实现「随机一只防守生物属性翻倍」)
-            if (buff is ISingleTargetAbyssalBuff singleTargetBuff && singleTargetBuff.SingleTargetCreatureUUId != creatureData.creatureUUId)
+            if (buff is IBuffSingleTarget singleTargetBuff && singleTargetBuff.SingleTargetCreatureUUId != creatureData.creatureUUId)
             {
                 continue;
             }

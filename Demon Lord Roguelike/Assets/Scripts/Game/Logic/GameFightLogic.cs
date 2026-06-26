@@ -630,8 +630,7 @@ public class GameFightLogic : BaseGameLogic
             .SetEase(Ease.OutCubic)
             .OnComplete(() =>
             {
-                //魔晶回到收集点后播放入账音效(音量放大 1.5 倍由配置表 volume_scale 控制)
-                AudioHandler.Instance.PlaySound(AudioEnum.sound_pay_2);
+                //魔晶回到收集点后入账,入账音效由 AddCrystal 内部统一播放
                 UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
                 userData.AddCrystal(fightDropPrefab.valueInt);
                 //事件通知

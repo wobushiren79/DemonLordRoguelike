@@ -401,8 +401,8 @@ MonoBehaviour:
   maskState: 1
   tempCell: {fileID: 6607275696344688825, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
   movementType: 1
-  cellSpaceX: 19
-  cellSpaceY: 19
+  cellSpaceX: 20
+  cellSpaceY: 20
   paddingLeft: 0
   paddingRight: 0
   paddingTop: 0
@@ -680,8 +680,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6818387826250745762}
   m_HandleRect: {fileID: 587971008091873977}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1
+  m_Size: 0.8350877
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

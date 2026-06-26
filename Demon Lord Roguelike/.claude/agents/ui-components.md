@@ -38,10 +38,10 @@ watched_files:
 ### 游戏层通用组件 (Common)
 - **UIViewItemBackpack / UIViewItemBackpackList** - 背包相关
 - **UIViewItemEquip** - 装备项
-- **UIViewCreatureCardItem / List / Details** - 生物卡片
+- **UIViewCreatureCardItem / List / Details** - 生物卡片（战斗卡片 `UIViewCreatureCardItemForFight` 含 `ui_AbyssalBlessingContent`(GridLayout)+`ui_AbyssalBlessingItem`(Image 模板)：`RefreshAbyssalBlessing` 遍历 `dicAbyssalBlessingBuffsActivie`，用 `AbyssalBlessingUtil.DoesAbyssalBuffAffectCreature(...,FightDefense)` 取「实际作用于本魔物」的馈赠——含全体防守加成与定向到本魔物的(大力出奇迹等，按锁定 UUID 匹配)，排除敌方/核心/掉落/奖励/复制类；克隆体(增殖)只显示全体馈赠不显示单体定向；按个数动态克隆 Item 图标(缓存池复用)，并监听 `Buff_AbyssalBlessingChange` 刷新）
 - **UIViewBasePortalItem** - 传送门项
 - **UIViewBaseResearchItem** - 研究项
-- **UIViewStoreItem** - 商店道具项
+- **UIViewStoreItem** - 商店道具项（孕育扩展 `UIViewStoreItemPartialGashaponMatchine`：`ui_ContentShow`(PopupButtonCommonView+PopupEnum.Text) 悬浮弹窗列出可抽生物及各稀有度实际命中概率，稀有度文本按 `RarityInfo.ui_board_color` 主色着色；概率来自 `GashaponItemBean.GetRarityProbabilityList()`；生物列表跳过职业未解锁(`creatureInfo.unlock_id`)者，与 `UIGashaponMachine.StartGashaponMachine` 抽取过滤口径一致）
 - **UIViewBuffShowItem** - Buff 展示项
 - **UIViewColorShow** - 颜色展示
 - **UIViewAbyssalBlessingInfoContent** - 深渊祝福内容

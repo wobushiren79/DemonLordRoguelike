@@ -119,7 +119,7 @@ GashaponRaritySR       = 100402000   GashaponRaritySRRate  = 100402001
 GashaponRaritySSR      = 100403000   GashaponRaritySSRRate = 100403001
 GashaponRarityUR       = 100404000   GashaponRarityURRate  = 100404001
 ```
-稀有度档位由研究系统解锁，`GashaponItemBean.RandomRarity()` 据此决定概率。
+稀有度档位由研究系统解锁，`GashaponItemBean.RandomRarity()` 据此决定概率。每档命中率 = **起始 `rarityBaseRate`(常量,当前 10%) + 对应 `*Rate` 概率研究等级(每级+1%)**；即解锁档位即有 10% 起始概率，再靠概率研究节点叠加。研究节点 `100401001`/`100402001`/`100403001`(R/SR/SSR 概率+1%) 的 `level_max` 均为 50，故每档最高 10%+50%=60%。
 
 ## 多语言
 
@@ -145,7 +145,8 @@ UIGashaponBreak (BaseUIComponent)     破蛋交互
     └── ui_AllList (RectTransform)              // End 状态总览所有蛋
 ```
 
-- **商店项复用**：`UIViewStoreItem` 是通用商店项，孕育专用逻辑写在 `UIViewStoreItemPartialGashaponMatchine.cs`（`SetData`→`SetName(name_language)`/`SetPrice(pay_crystal)`/`SetIcon(icon_res)`）。`SetIcon` 走 `IconHandler.SetUIIcon`，已支持 `图标名,图集类型` 跨图集加载
+- **商店项复用**：`UIViewStoreItem` 是通用商店项，孕育专用逻辑写在 `UIViewStoreItemPartialGashaponMatchine.cs`（`SetData`→`SetName(name_language)`/`SetPrice(pay_crystal)`/`SetIcon(icon_res)`/`SetContentShow()`）。`SetIcon` 走 `IconHandler.SetUIIcon`，已支持 `图标名,图集类型` 跨图集加载
+- **可抽生物概率弹窗**：`SetContentShow()` 给 `ui_ContentShow`（`PopupButtonCommonView`，悬浮触发 `PopupEnum.Text`）填入「每只可抽生物 + 各稀有度实际命中概率」文本，样式 `生物名:普通50% 稀有10%`，每个「稀有度名+百分比」整段用 TMP `<color>` 包裹（颜色取 `RarityInfo.ui_board_color` 的**主色**=逗号前首段，因该字段是「主色,暗色」渐变对）。概率来自 `GashaponItemBean.GetRarityProbabilityList()`：把顺序判定 UR→SSR→SR→R→N 换算成**真实命中概率**（普通 N=剩余补足，合计=1，仅已解锁档位+普通，顺序 普通→R→SR→SSR→UR）；与抽到哪只生物无关，所有生物共用同一份概率文本。**生物列表须与实际抽取一致**：跳过职业未解锁（`!userUnlock.CheckIsUnlock(creatureInfo.unlock_id)`）的生物——与 `UIGashaponMachine.StartGashaponMachine` 收集随机生物时同一过滤口径，否则会展示抽不到的生物
 - **破蛋卡片**：`UIViewGashaponBreakItemShow.SetData(CreatureBean, CardUseStateEnum)`，`OnClickForRename` 打开重命名对话框
 
 ## 接入/修改流程
@@ -159,6 +160,7 @@ UIGashaponBreak (BaseUIComponent)     破蛋交互
 
 ### 改抽奖/稀有度逻辑
 改 `GashaponItemBean`（RandomSkill/RandomAttribute/RandomRarity）与 `UnlockEnum.GashaponRarity*` 关联，**不要**改自动生成的 Bean。稀有度 BUFF 的「按稀有度抽 1 条」规则已抽到 `BuffUtil.CreateRandomRarityBuff`（`RandomRarityBuff` 调用它），与魔物进阶共用；要改这条通用规则应改 `BuffUtil`，而非在 `GashaponItemBean` 内重新内联。
+> 同一套 `GashaponRarity*`/`*Rate` 解锁门控还被**展示用**的 `GashaponItemBean.GetRarityProbabilityList()` 消费（孕育商店项概率弹窗）。改稀有度顺序/门控时，`RandomRarity`(实际抽取) 与 `GetRarityProbabilityList`(展示概率) **两处口径需同步**，否则弹窗显示与真实概率不符。
 
 ### 改破蛋流程/动画
 改 `GashaponMachineLogic`（AnimForEggBreak / AnimForShowEgg / AnimForEggPunch / ProcessForFocusEgg）。蛋子物体名：`Egg_1`(壳) / `Renderer`(Spine)；破壳粒子走 `scenePrefab.effectEggBreak`（VFX，传 Color1/Color2）。

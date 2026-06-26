@@ -2837,7 +2837,6 @@ MonoBehaviour:
       creatureName: 
       level: 0
       levelExp: 0
-      starLevel: 0
       rarity: 0
       relationship: 0
       creatureNpcData:

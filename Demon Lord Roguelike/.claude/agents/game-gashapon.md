@@ -43,3 +43,5 @@ watched_files:
 - 扭蛋道具和普通道具数据隔离
 - 扭蛋机 UI 使用 UIGashapon 前缀命名
 - 稀有度 BUFF 生成已收口到 `BuffUtil`：`GashaponItemBean.RandomRarityBuff(RarityEnum)` 改为调用 `BuffUtil.CreateRandomRarityBuff(rarityEnum)`（`Assets/Scripts/Utils/BuffUtil.cs`），行为不变，与**魔物进阶（UICreatureVat）共用同一口径**。改这条通用规则应改 `BuffUtil`，不要在 `GashaponItemBean` 内重新内联 switch（详见 buff-system / utils-system skill）
+- **稀有度命中率公式**：每档命中率 = 起始常量 `rarityBaseRate`(当前 10%) + 对应 `*Rate` 概率研究等级(每级+1%)，仅在该档已 `CheckIsUnlock` 时生效。R/SR/SSR 概率研究节点(`100401001`/`100402001`/`100403001`)`level_max` 均 50，每档上限 10%+50%=60%。改起始概率改 `rarityBaseRate` 常量即可
+- **稀有度展示概率**：`GashaponItemBean.GetRarityProbabilityList()`（静态）把顺序判定 UR→SSR→SR→R→N 换算成**真实命中概率**（普通 N=剩余补足，合计=1，列表按 普通→R→SR→SSR→UR 排序，仅含已解锁档位+普通），供孕育商店项的可抽生物概率弹窗使用。与 `RandomRarity()` 的实际抽取共用同一套 `GashaponRarity*`/`*Rate` 解锁门控 + 同一 `rarityBaseRate` 起始概率——改概率口径需同步两处

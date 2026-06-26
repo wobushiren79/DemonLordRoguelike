@@ -17,6 +17,7 @@ watched_files:
 
 | 文件 | 用途 | 关联模块 |
 |------|------|---------|
+| [AbyssalBlessingUtil.cs](Assets/Scripts/Utils/AbyssalBlessingUtil.cs) | 深渊馈赠通用查询：`DoesAbyssalBuffAffectCreature(buff, creatureData, fightType)` 判定某馈赠 BUFF 是否实际作用于某生物（trigger_creature_type + 单体定向 UUID + 仅 IAttributeModifierSource/BuffEntityAttributeAttackTime 三连），口径与属性/攻速管线一致，供战斗卡片展示「作用于本魔物的馈赠」 | BuffBaseEntity、IBuffSingleTarget、CreatureFightTypeEnum |
 | [AnimUtil.cs](Assets/Scripts/Utils/AnimUtil.cs) | DOTween 动画工具（UI 数字滚动等）。`partial class`，与框架层 [AnimUtil.cs](Assets/FrameWork/Scripts/Utils/AnimUtil.cs) 同名共享：本层只放 UI 表现类动画，与业务无关的通用 Animator 方法（如 `GetAnimClipLength`）放框架层 | DOTween |
 | [BuffUtil.cs](Assets/Scripts/Utils/BuffUtil.cs) | 稀有度 BUFF 生成（扭蛋与魔物进阶共用）：`GetRarityBuffType`（R/SR/SSR→类型，余 None）/ `CreateRandomRarityBuff`（通用随机抽 1 条）/ `CreateAscendRarityBuff`（进阶：素材 BUFF 按 id 聚合，每 id 10%×数量 命中概率，命中继承并 `BuffBean.CreateRandomWithFloor` 重随机数值≥素材原值，未命中回退通用随机；UR/L 返回 null） | BuffBean、CreatureBean、RarityEnum/BuffTypeEnum |
 | [ColorUtil.cs](Assets/Scripts/Utils/ColorUtil.cs) | HTML 颜色字符串解析 | UnityEngine.ColorUtility |

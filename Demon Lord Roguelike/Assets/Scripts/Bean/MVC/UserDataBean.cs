@@ -153,7 +153,7 @@ public class UserDataBean : BaseBean
 
     #region 魔晶相关
     /// <summary>
-    /// 增加金币
+    /// 增减魔晶(正数增加播 sound_pay_2,负数扣减播 sound_pay_1)
     /// </summary>
     public void AddCrystal(long crystalNum)
     {
@@ -161,6 +161,14 @@ public class UserDataBean : BaseBean
         if (crystal < 0)
         {
             crystal = 0;
+        }
+        if (crystalNum > 0)
+        {
+            AudioHandler.Instance.PlaySound(AudioEnum.sound_pay_2);//增加魔晶音效
+        }
+        else if (crystalNum < 0)
+        {
+            AudioHandler.Instance.PlaySound(AudioEnum.sound_pay_1);//扣减魔晶音效
         }
         EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Crystal_Change);
     }

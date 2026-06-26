@@ -149,9 +149,11 @@ AudioHandler.Instance.StopEnvironment();
 
 ### 5. UI 点击音效
 
-两种机制并存：
+三种机制并存：
 
-- **通用点击音效**（自动）：`AudioHandler.Awake` 里 `UIHandler.Instance.AddOnClickAction(ActionForUIOnClick)`。点击带 `Button` 的 UI 时，若 image sprite 名在 `AudioManager.listCommonUIClick` 集合中则播 `PlaySound(AudioEnum.sound_btn_3)`；image 名为 `ViewExit` 的退出按钮播 `PlaySound(AudioEnum.sound_btn_4)`。新增一类通用音效：把对应 sprite 名加进游戏层 `AudioManager.listCommonUIClick`。
+- **通用点击音效**（自动）：`AudioHandler.Awake` 里 `UIHandler.Instance.AddOnClickAction(ActionForUIOnClick)`。点击带 `Button` 的 UI 时，若 image sprite 名在 `AudioManager.listCommonUIClick` 集合中则播 `PlaySound(AudioEnum.sound_btn_1)`；image 名为 `ViewExit` 的退出按钮播 `PlaySound(AudioEnum.sound_btn_31)`。新增一类通用音效：把对应 sprite 名加进游戏层 `AudioManager.listCommonUIClick`。
+  - **该机制由 `UIHandler.Update()` 的 `Input.GetMouseButtonDown(0)` + `RaycastAll` 驱动，只认物理鼠标点击/触摸**，不监听 `Button.onClick`、也覆盖不到 ESC 退出。
+- **ESC 退出音效**（自动，全局补位）：`AudioHandler.Awake` 里订阅 `InputActionUIEnum.ESC` 的 `InputAction.started` → `ActionForUIEscExit`。因为 ESC 退出走 InputSystem、不产生鼠标点击，上面的点击机制覆盖不到，故在此**一处全局订阅**补播退出音 `sound_btn_31`。**不做任何条件判断，任意 ESC 按下均播放**。所有现有/新增 UI **零改动**自动覆盖，无需在各 UI 的 `OnClickForExit`/ESC 分支里手动加播放。
 - **按钮独立音效**（手动挂载）：在 Button 上挂 [ButtonAudio](Assets/FrameWork/Scripts/Component/UI/ButtonAudio.cs) 组件，填 `clickClip` 列表（随机取一个），用 `soundVolume` 在按钮位置播放。**不读配置表**，直接用本地 AudioClip。
 
 ### 6. 音量设置

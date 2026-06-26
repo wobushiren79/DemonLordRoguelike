@@ -39,49 +39,59 @@ public partial class UIBasePortal : BaseUIComponent
 
     /// <summary>
     /// 初始化地图
+    /// 已缓存的传送门世界保持不变直接显示; 当解锁研究使显示数量(showCount)增大时, 仅按缺口补足新世界,
+    /// 既不重置已有世界(避免每次打开重新洗牌), 又能让新解锁的数量立即生效(避免忽略 showCount).
     /// </summary>
     public void InitMap()
     {
         //获取用户数据
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UserUnlockBean userUnlockData = userData.GetUserUnlockData();
-        //所有已解锁的世界
-        List<long> unlockWorldIds = userUnlockData.GetUnlockGameWorldIds();
+        UserTempBean userTempData = userData.GetUserTempData();
+        //获取显示数量(基础值 portalShowMax + 传送门数量研究等级)
+        int showCount = userUnlockData.GetUnlockPortalShowCount();
 
         List<Vector2> listOldPos = new List<Vector2>();
-        UserTempBean userTempData = userData.GetUserTempData();
-        //获取显示数量
-        int showCount = userUnlockData.GetUnlockPortalShowCount();
-        if (userTempData.listPortalWorldInfoRandomData.IsNull())
+        //先显示已缓存世界, 并记录其位置避免后续补足的世界与之重叠
+        List<GameWorldInfoRandomBean> listRandomData = userTempData.listPortalWorldInfoRandomData;
+        int cachedCount = listRandomData == null ? 0 : listRandomData.Count;
+        for (int i = 0; i < cachedCount; i++)
         {
-            for (int i = 0; i < showCount; i++)
-            {
-                //随机一个世界
-                int randomWorldKey = UnityEngine.Random.Range(0, unlockWorldIds.Count);
-                long randomWorldId = unlockWorldIds[randomWorldKey];
-                //获取解锁世界数据
-                GameWorldInfoRandomBean gameWorldInfoRandomData = new GameWorldInfoRandomBean();
-                //设置游戏类型随机
-                gameWorldInfoRandomData.SetGameFightTypeRandom(randomWorldId);
-                //随机地图位置
-                Vector2 randomMapPos = GetRandomMapPos(listOldPos);
-                listOldPos.Add(randomMapPos);
-                gameWorldInfoRandomData.uiPosition = new Vector2Bean(randomMapPos);
-                //设置地图icon种子
-                int iconSeed = Random.Range(0, int.MaxValue);
-                gameWorldInfoRandomData.iconSeed = iconSeed;
+            listOldPos.Add(listRandomData[i].uiPosition.GetVector());
+            SetItemMapData(listRandomData[i]);
+        }
+        //按缺口补足世界(解锁研究提升数量后, 旧世界不变, 仅新增差额部分)
+        for (int i = cachedCount; i < showCount; i++)
+        {
+            GameWorldInfoRandomBean gameWorldInfoRandomData = CreateRandomPortalWorld(userUnlockData, listOldPos);
+            SetItemMapData(gameWorldInfoRandomData);
+            userTempData.AddPortalWorldInfoRandomData(gameWorldInfoRandomData);
+        }
+    }
 
-                SetItemMapData(gameWorldInfoRandomData);
-                userTempData.AddPortalWorldInfoRandomData(gameWorldInfoRandomData);
-            }
-        }
-        else
-        {
-            for (int i = 0; i < userTempData.listPortalWorldInfoRandomData.Count; i++)
-            {
-                SetItemMapData(userTempData.listPortalWorldInfoRandomData[i]);
-            }
-        }
+    /// <summary>
+    /// 随机创建一个传送门世界数据(随机世界id/游戏类型/地图位置/图标种子)
+    /// </summary>
+    /// <param name="userUnlockData">用户解锁数据(取已解锁世界id池)</param>
+    /// <param name="listOldPos">已占用的地图位置, 用于避免新世界与其重叠(会把新位置加入)</param>
+    /// <returns>新的传送门世界随机数据</returns>
+    protected GameWorldInfoRandomBean CreateRandomPortalWorld(UserUnlockBean userUnlockData, List<Vector2> listOldPos)
+    {
+        //所有已解锁的世界
+        List<long> unlockWorldIds = userUnlockData.GetUnlockGameWorldIds();
+        //随机一个世界
+        int randomWorldKey = UnityEngine.Random.Range(0, unlockWorldIds.Count);
+        long randomWorldId = unlockWorldIds[randomWorldKey];
+        GameWorldInfoRandomBean gameWorldInfoRandomData = new GameWorldInfoRandomBean();
+        //设置游戏类型随机
+        gameWorldInfoRandomData.SetGameFightTypeRandom(randomWorldId);
+        //随机地图位置
+        Vector2 randomMapPos = GetRandomMapPos(listOldPos);
+        listOldPos.Add(randomMapPos);
+        gameWorldInfoRandomData.uiPosition = new Vector2Bean(randomMapPos);
+        //设置地图icon种子
+        gameWorldInfoRandomData.iconSeed = UnityEngine.Random.Range(0, int.MaxValue);
+        return gameWorldInfoRandomData;
     }
 
     /// <summary>

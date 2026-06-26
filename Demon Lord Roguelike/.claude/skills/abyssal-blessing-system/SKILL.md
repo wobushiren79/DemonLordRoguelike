@@ -394,19 +394,29 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 
 | 馈赠 | id | buff_ids | BUFF class_entity | 效果 |
 |------|----|----------|-------------------|------|
-| 大力出奇迹 | 1000004001 | 3001100001 | `BuffEntityAttributeRandomDefense`(data=ATK,rate=1) | 随机一只防守魔物攻击力翻倍 |
-| 膘肥体壮 | 1000005001 | 3001200001 | `BuffEntityAttributeRandomDefense`(data=HP,rate=1) | 随机一只防守魔物生命翻倍 |
-| 钢铁憨憨 | 1000006001 | 3001300001 | `BuffEntityAttributeRandomDefense`(data=DR,rate=1) | 随机一只防守魔物护甲翻倍 |
-| 急性子 | 1000007001 | 3001400001 | `BuffEntityAttributeAttackTimeRandomDefense`(rate=0.5) | 随机一只防守魔物攻速翻倍(攻击间隔减半) |
+| 大力出奇迹 | 1000004001 | 3001100001 | `BuffEntityAttributeSingleTarget`(data=ATK,rate=1) | 随机一只防守魔物攻击力翻倍 |
+| 膘肥体壮 | 1000005001 | 3001200001 | `BuffEntityAttributeSingleTarget`(data=HP,rate=1) | 随机一只防守魔物生命翻倍 |
+| 钢铁憨憨 | 1000006001 | 3001300001 | `BuffEntityAttributeSingleTarget`(data=DR,rate=1) | 随机一只防守魔物护甲翻倍 |
+| 急性子 | 1000007001 | 3001400001 | `BuffEntityAttributeAttackTimeSingleTarget`(rate=0.5) | 随机一只防守魔物攻速翻倍(攻击间隔减半) |
 
 实现要点（详见 `buff-system` skill「单体定向深渊馈赠」）：
-- 这些 BUFF 实现标记接口 `ISingleTargetAbyssalBuff`，`SetData` 时用 `AbyssalBlessingSingleTargetUtil.PickRandomDefenseCreatureUUId()` 从 `dlDefenseCreatureData` **随机锁定一只生物 UUID**。
-- 属性类由 `FightCreatureBean.CollectFromBuffList` 按 UUID 过滤（只对锁定生物 emit modifier）；攻速类由 `BuffHandler.ChangeAttackTimeDataForBuff` 扫描馈赠池按 UUID 过滤。
+- 这些 BUFF 实现标记接口 `IBuffSingleTarget`(只暴露 `SingleTargetCreatureUUId`)，`SetData` 时用 `fightData.GetRandomDefenseCreatureUUId()`(实例方法在 `FightBean` 上) 从 `dlDefenseCreatureData` **随机锁定一只生物 UUID**；`ClearData` 归还对象池时清空。
+- 属性类由 `FightCreatureBean.CollectFromBuffList` 按 UUID 过滤（`SingleTargetCreatureUUId != 本生物` 则跳过，只对锁定生物 emit modifier）；攻速类由 `BuffHandler.ChangeAttackTimeDataForBuff` 扫描馈赠池按同一 UUID 比对。
+- **复制魔物(增殖)不继承单体定向**：`BuffEntityInstantCloneDefenseCreature` 克隆出的魔物是**新 UUID**，与单体定向馈赠锁定的原魔物 UUID 不匹配，故**不显示也不继承**针对原魔物的单体定向馈赠；克隆体只继承「作用于全体防守生物」的馈赠(靠 `trigger_creature_type` 过滤、与 UUID 无关，新魔物 `RefreshBaseAttribute` 时自动收集)。这是预期行为。
 - **关键安全约束**：`dlDefenseCreatureData` 的 `CreatureBean` 与玩家**存档共享引用**，故**绝不能改 `creatureAttribute`**（会污染永久存档）；本方案只改运行时计算出的 `dicAttribute`/攻击时间，征服全通关领奖后随 `ClearAbyssalBlessing` 清空。
 - 图标 `ui_abyssalblessing_11~14`（PixelLab 32px 描边图）。
 
 > 与「领奖参数型」(即时BUFF+计数器)的区别：单体定向用的是**常驻属性/攻速BUFF**(非Instant)，靠 UUID 过滤限定到单只生物、由 `RefreshBaseAttribute` 重算生效，无需计数器。
 > ⚠️ 属性类(ATK/HP/DR 翻倍)依赖 `dicAttribute` 重算，故选取时由 `Buff_AbyssalBlessingChange` 事件 → `GameFightLogic.EventForAbyssalBlessingChange` **立即刷新**已在场的防守核心与全部防守生物（否则普通关卡内选取不生效，须等下次场景重载/切BOSS关才重算——已修复）。攻速类(急性子)由 `ChangeAttackTimeDataForBuff` 每次攻击实时缩放，不依赖刷新；被一并刷新也无副作用。
+
+### 战斗卡片展示「作用于本魔物的馈赠」
+
+战斗卡片 `UIViewCreatureCardItemForFight` 会在卡面上展示**实际作用于该魔物**的深渊馈赠图标(`ui_AbyssalBlessingContent` + `ui_AbyssalBlessingItem` 缓存池，详见 creature-card-system skill)。判定统一走 **`AbyssalBlessingUtil.DoesAbyssalBuffAffectCreature(buff, creatureData, FightDefense)`**(在 `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`)，口径与属性/攻速管线一致：
+
+- **三连判定**：① `trigger_creature_type` 过滤(None 或 == 本生物战斗类型)；② 单体定向过滤(`SingleTargetCreatureUUId == 本魔物 UUID`)；③ 仅 `IAttributeModifierSource`/`BuffEntityAttributeAttackTime` 类(会改属性/攻速)才算作用于生物。
+- **会显示**：全体防守加成(强身健体/伤害性极强/唯快不破/坚不可摧/时光沙漏，每张防守卡各一份) + 定向到本魔物的(大力出奇迹/膘肥体壮/钢铁憨憨/急性子，按锁定 UUID 精确匹配)。
+- **不显示**：作用敌方进攻生物的(慢条斯理 `trigger=FightAttack`)、只作用防守核心的、掉落类(钱多多 `BuffEntityConditional`)、奖励类(奖励多多/再来一瓶 `BuffEntityInstant`)、复制类(增殖 `BuffEntityInstant`)——它们不改本魔物数值。
+- 卡片监听 `Buff_AbyssalBlessingChange` 刷新；克隆体卡片经 `Buff_DefenseCreatureAdd` 新建时 `SetData` 内即刷新——克隆体新 UUID 故只显示全体馈赠、不显示原魔物的单体定向馈赠。
 
 ## 关键文件速查
 
@@ -424,8 +434,12 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 | 征服模式流程 | `Assets/Scripts/Game/Logic/GameFightLogicConquer.cs`（ActionForUIFightSettlementNext 读取奖励类馈赠计数器并应用到 RewardSelectBean） |
 | 数据持有 | `Assets/Scripts/Bean/Game/FightBeanForConquer.cs`（AddAbyssalBlessing；奖励类馈赠计数器 rewardAddItemNum / rewardAddSelectNum） |
 | 奖励类即时BUFF（奖励多多/再来一瓶） | `Assets/Scripts/Game/Buff/BuffEntity/Instant/BuffEntityInstantRewardMoreItem.cs` / `BuffEntityInstantRewardMoreSelect.cs` |
-| 单体定向馈赠BUFF（大力出奇迹/膘肥体壮/钢铁憨憨/急性子） | `Assets/Scripts/Game/Buff/BuffEntity/Attribute/BuffEntityAttributeRandomDefense.cs` / `BuffEntityAttributeAttackTimeRandomDefense.cs` / `ISingleTargetAbyssalBuff.cs` / `AbyssalBlessingSingleTargetUtil.cs` |
-| 单体过滤落点 | `Assets/Scripts/Bean/Game/FightCreatureBean.cs`(CollectFromBuffList) / `Assets/Scripts/Component/Handler/BuffHandler.cs`(ChangeAttackTimeDataForBuff) |
+| 单体定向馈赠BUFF（大力出奇迹/膘肥体壮/钢铁憨憨/急性子） | `Assets/Scripts/Game/Buff/BuffEntity/Attribute/BuffEntityAttributeSingleTarget.cs` / `BuffEntityAttributeAttackTimeSingleTarget.cs` / `Assets/Scripts/Game/Buff/Interface/IBuffSingleTarget.cs`(接口，仅 SingleTargetCreatureUUId；不限深渊馈赠) |
+| 随机锁定一只防守生物 | `Assets/Scripts/Bean/Game/FightBean.cs`(`GetRandomDefenseCreatureUUId()` 实例方法，从 dlDefenseCreatureData 随机取一只 UUID；BUFF 经 fightData 调用) |
+| 馈赠作用判定工具 | `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`(`DoesAbyssalBuffAffectCreature` 三连判定，供卡片展示与属性/攻速管线统一口径) |
+| 单体过滤落点 | `Assets/Scripts/Bean/Game/FightCreatureBean.cs`(CollectFromBuffList 按 SingleTargetCreatureUUId 比对) / `Assets/Scripts/Component/Handler/BuffHandler.cs`(ChangeAttackTimeDataForBuff 按 SingleTargetCreatureUUId 比对) |
+| 复制魔物(增殖) | `Assets/Scripts/Game/Buff/BuffEntity/Instant/BuffEntityInstantCloneDefenseCreature.cs`(克隆新 UUID，仅继承全体馈赠不继承单体定向，触发 Buff_DefenseCreatureAdd) |
+| 战斗卡片馈赠展示 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForFight.cs`(RefreshAbyssalBlessing / CollectAbyssalBlessingForCreature 用 AbyssalBlessingUtil.DoesAbyssalBuffAffectCreature) |
 | 选择界面 | `Assets/Scripts/Component/UI/Game/FightAbyssalBlessing/UIFightAbyssalBlessing.cs`（SetData / RollCandidates） |
 | 选择项 | `Assets/Scripts/Component/UI/Game/FightAbyssalBlessing/UIViewFightAbyssalBlessingItem.cs` |
 | 常驻列表 | `Assets/Scripts/Component/UI/Common/AbyssalBlessing/UIViewAbyssalBlessingInfoContent.cs` |

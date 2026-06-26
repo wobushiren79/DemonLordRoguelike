@@ -284,6 +284,17 @@ FightCreatureEntity entity = CreatureHandler.Instance.GetFightCreatureEntity(cre
 // 管理生物外观资源
 ```
 
+#### 场上魔物描边高亮预览
+
+`CreatureHandler.ShowCreatureOutlinePreview(FightCreatureEntity)` / `HideCreatureOutlinePreview()` → `CreatureManager` 同名方法。悬停已上场魔物卡牌时高亮对应场上魔物。**职责拆分**：`CreatureManager` 只负责懒加载共享单例预览预制 + 取组件（`GetCreatureSpineOutlineFollow`）；**显示/材质/逐帧跟随全部逻辑在 [CreatureSpineOutlineFollow](Assets/Scripts/Game/Fight/CreatureSpineOutlineFollow.cs) 组件里**（`Show` / `Hide`）。
+
+- 预制 `FightCreature_OutlinePreview.prefab`（由 `FightCreature_SelectPreview` 复制，Spine 的 MeshRenderer 挂亮蓝 OutlineOnly 描边材质 `MatSpriteCreatureOutline.mat`，二者 Addressable 地址=路径）。`CreatureManager` 懒加载它并 `AddComponent<CreatureSpineOutlineFollow>` 到 Spine 节点。
+- `CreatureSpineOutlineFollow.Awake` 从自身渲染器 `sharedMaterial`（即预制描边材质，须在 `SetCreatureData` 替换前）克隆出运行时材质实例 `matOutline`；`OnDestroy` 释放。**描边颜色由材质资源决定，不在代码里写死**（想调色直接改 `.mat`）。
+- `Show`：`CreatureHandler.SetCreatureData` 灌目标骨骼（同一生物→同一骨架，逐帧骨骼复制才对应得上；切换生物才重建）→ `RefreshMaterial` 套描边材质 → 初始贴合位置/大小/朝向 → `SetTarget` → 激活根节点。
+- **逐帧跟随动画**：订阅自身 `SkeletonAnimation.UpdateLocal`（在"应用动画后、算世界变换前"触发），逐根把目标骨骼的本地 SRT（X/Y/Rotation/ScaleX/ScaleY/ShearX/ShearY）复制过来，使描边轮廓跟上目标正在播放的动画；`LateUpdate` 逐帧同步根位置与 Spine `localScale`（含左右翻转）。`Hide`→`ClearTarget` + 根 `SetActive(false)`（`OnDisable` 退订）。**不是定格首帧**——早期定格首帧会导致目标播动画时描边脱节。
+- 描边经 `SkeletonAnimation.CustomMaterialOverride` 把目标图集材质替换为 `matOutline`，`_MainTex` 填目标图集纹理，排序置目标后一层。
+- **为何用描边而非 Rim 边缘光**：生物材质用固定法线 `_FIXED_NORMALS_VIEWSPACE`(法线恒正对相机)，Rim 公式 `(1-dot(法线,视线))^power` 恒≈0，平面精灵上 Rim 不可见，故改用 OutlineOnly 真描边。
+
 ---
 
 ## CreatureInfoBean - 生物配置

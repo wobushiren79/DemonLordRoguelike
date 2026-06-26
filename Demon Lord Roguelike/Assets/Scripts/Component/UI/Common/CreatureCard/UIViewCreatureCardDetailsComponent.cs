@@ -70,5 +70,7 @@ public partial class UIViewCreatureCardDetails
 
     public RectTransform ui_MP;
 
+    public Image ui_CardSceneBg;
+
 
 }

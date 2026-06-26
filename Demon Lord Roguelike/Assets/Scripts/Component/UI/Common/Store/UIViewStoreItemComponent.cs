@@ -1,4 +1,4 @@
-using UnityEngine.UI;
+﻿using UnityEngine.UI;
 using TMPro;
 
 
@@ -13,6 +13,8 @@ public partial class UIViewStoreItem
     public Image ui_BTIcon;
 
     public TextMeshProUGUI ui_BTTextBuy;
+
+    public PopupButtonCommonView ui_ContentShow;
 
 
 }

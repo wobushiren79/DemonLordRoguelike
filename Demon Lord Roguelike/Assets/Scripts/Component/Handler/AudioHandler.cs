@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public partial class AudioHandler
@@ -8,6 +9,10 @@ public partial class AudioHandler
     {
         base.Awake();
         UIHandler.Instance.AddOnClickAction(ActionForUIOnClick);
+        //订阅 ESC：与点击音效对称，按 ESC 退出当前界面时也走通用退出音效
+        InputAction escAction = InputHandler.Instance.manager.GetInputUIData(InputActionUIEnum.ESC);
+        if (escAction != null)
+            escAction.started += ActionForUIEscExit;
     }
 
     public void PlayMusicForMain()
@@ -63,6 +68,16 @@ public partial class AudioHandler
                 PlaySound(AudioEnum.sound_btn_1);
             }
         }
+    }
+
+    /// <summary>
+    /// ESC 退出回调。鼠标点 ViewExit 按钮的退出音走 ActionForUIOnClick（射线命中），
+    /// 但 ESC 退出不产生点击，故在此全局补播退出音；任意 ESC 按下均播放。
+    /// </summary>
+    /// <param name="callback">输入回调上下文</param>
+    public void ActionForUIEscExit(InputAction.CallbackContext callback)
+    {
+        PlaySound(AudioEnum.sound_btn_31);
     }
 
     #region 音频枚举重载（统一用 AudioEnum 调用，内部委托给框架层 int 接口）

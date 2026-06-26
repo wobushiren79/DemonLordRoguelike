@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
@@ -37,24 +38,25 @@ public partial class UIViewAchievementCard : BaseUIView
     private bool isCompleted;
 
     /// <summary>
+    /// 动态实例化出的等级格子(按等级总数, 各对应一级)。
+    /// 用列表持有并复用, 避免单元格被网格(ScrollGrid)池化复用时反复实例化产生冗余格子。
+    /// </summary>
+    private readonly List<RectTransform> listLevelItem = new List<RectTransform>();
+
+    /// <summary>
     /// 领取回调(参数为该成就)
     /// </summary>
     private Action<AchievementInfoBean> actionForUnlock;
 
     /// <summary>
-    /// 领取奖励时的卡片动画(避免领取后直接刷新列表显得生硬)
+    /// 领取奖励时的等级图标动画(避免领取后直接刷新列表显得生硬)
     /// </summary>
     private Sequence animForUnlock;
 
     /// <summary>
-    /// ui_Content 的初始锚点位置, 用于动画结束/清理时精确复位(不假设其为零点)
+    /// 领取动画中 LevelIcon "砸下"的起始放大倍数(突然以放大态出现, 再从大到小砸向格子)
     /// </summary>
-    private Vector2 _contentOriginPos;
-
-    /// <summary>
-    /// 是否已记录过 ui_Content 的初始锚点位置
-    /// </summary>
-    private bool _contentOriginCaptured;
+    private const float IconSlamStartScale = 3f;
 
     /// <summary>
     /// 已完成未领取时进度文本颜色（柔和绿，不刺眼）
@@ -128,8 +130,8 @@ public partial class UIViewAchievementCard : BaseUIView
 
     /// <summary>
     /// 刷新状态显示。
-    /// 已完成: 关闭蒙版/锁/奖励, 进度区显示"已完成"。
-    /// 进行中: 显示蒙版/锁/当前等级奖励, 进度区显示 "Lv.当前/总  当前进度/目标"(可领取时绿色)。
+    /// 已完成: 关闭蒙版/奖励, 进度区显示"已完成"。
+    /// 进行中: 显示蒙版/当前等级奖励, 进度区显示"当前进度/目标"(可领取时绿色), 并按等级总数刷新等级格子。
     /// </summary>
     private void RefreshStateUI()
     {
@@ -145,22 +147,10 @@ public partial class UIViewAchievementCard : BaseUIView
             ui_Progress.gameObject.SetActive(true);
         }
 
-        //等级角标(单独显示, 不再与进度文本拼在一起): 进行中显示"Lv.当前/总", 已完成隐藏
-        if (ui_Level != null)
-        {
-            if (isCompleted)
-            {
-                ui_Level.gameObject.SetActive(false);
-            }
-            else
-            {
-                ui_Level.gameObject.SetActive(true);
-                ui_Level.text = string.Format(TextHandler.Instance.GetTextById(4000016), currentLevelIndex + 1, levelCount);
-                ui_Level.color = reached ? ProgressColorReached : ProgressColorDefault;
-            }
-        }
+        //等级格子: 按等级总数动态实例化 LevelItem, 已领取(完成)的等级显示其 LevelIcon
+        RefreshLevelItems();
 
-        //进度文本与颜色(只显示"当前进度/目标", 等级移至 ui_Level 单独显示)
+        //进度文本与颜色(只显示"当前进度/目标", 等级改用 LevelItem 图标格子展示)
         if (ui_TxtProgress != null)
         {
             if (isCompleted)
@@ -194,12 +184,6 @@ public partial class UIViewAchievementCard : BaseUIView
             }
         }
 
-        //锁图标: 进行中显示, 已完成隐藏
-        if (ui_Lock != null)
-        {
-            ui_Lock.gameObject.SetActive(!isCompleted);
-        }
-
         //奖励图标: 进行中显示当前等级奖励, 已完成隐藏
         if (ui_Reward != null)
         {
@@ -218,6 +202,49 @@ public partial class UIViewAchievementCard : BaseUIView
     }
 
 
+    /// <summary>
+    /// 刷新等级格子: 按等级总数(levelCount)动态实例化/复用 LevelItem(模板 ui_LevelItem, 父节点 ui_Level)。
+    /// 已领取(完成)的等级(索引 &lt; currentLevelIndex)显示其子节点 LevelIcon, 否则隐藏。
+    /// 复用 listLevelItem 持有的实例(只补足/隐藏多余), 避免单元格被网格池化复用时重复实例化。
+    /// </summary>
+    private void RefreshLevelItems()
+    {
+        if (ui_Level == null || ui_LevelItem == null) return;
+
+        //按等级总数补足/复用格子; 模板 ui_LevelItem 本身始终保持隐藏, 不计入
+        for (int i = 0; i < levelCount; i++)
+        {
+            RectTransform itemRect;
+            if (i < listLevelItem.Count)
+            {
+                itemRect = listLevelItem[i];
+            }
+            else
+            {
+                GameObject newObj = Instantiate(ui_LevelItem.gameObject, ui_Level);
+                itemRect = newObj.GetComponent<RectTransform>();
+                listLevelItem.Add(itemRect);
+            }
+            itemRect.gameObject.SetActive(true);
+            //复位格子缩放(领取动画可能中途被打断, 保证池化复用时干净)
+            itemRect.localScale = Vector3.one;
+
+            //已领取(完成)的等级显示对勾图标 LevelIcon, 未完成隐藏
+            Transform levelIcon = itemRect.Find("LevelIcon");
+            if (levelIcon != null)
+            {
+                levelIcon.localScale = Vector3.one;
+                levelIcon.gameObject.SetActive(i < currentLevelIndex);
+            }
+        }
+
+        //隐藏多余格子(本次等级数比上一次少时)
+        for (int i = levelCount; i < listLevelItem.Count; i++)
+        {
+            listLevelItem[i].gameObject.SetActive(false);
+        }
+    }
+
     public void OnClickForUnlock()
     {
         //整族已完成时不可领取
@@ -230,30 +257,36 @@ public partial class UIViewAchievementCard : BaseUIView
     }
 
     /// <summary>
-    /// 播放领取奖励动画: 卡片内容弹跳+轻微抖动, 期间锁屏防止重复点击, 结束后回调真正发奖刷新
-    /// 注意: 只动 ui_Content(卡片内容根), 不动 cell 自身 transform, 避免干扰 ScrollGrid 的布局定位
+    /// 播放领取奖励动画: 待领取等级的 LevelIcon 突然以放大态出现, 从大到小"砸"向对应 LevelItem,
+    /// 砸到位后 LevelItem 抖动一下; 期间锁屏防止重复点击, 结束后回调真正发奖刷新。
+    /// 注意: 只动目标等级格子(LevelIcon/LevelItem), 不动 cell 自身 transform, 避免干扰 ScrollGrid 的布局定位
     /// </summary>
     private void AnimForUnlock(Action onComplete)
     {
-        //没有内容根时直接发奖, 不做动画
-        if (ui_Content == null)
+        //取当前待领取等级(currentLevelIndex)对应的格子与其 LevelIcon; 缺失则直接发奖不做动画
+        RectTransform targetItem = (currentLevelIndex >= 0 && currentLevelIndex < listLevelItem.Count)
+            ? listLevelItem[currentLevelIndex]
+            : null;
+        Transform levelIcon = targetItem == null ? null : targetItem.Find("LevelIcon");
+        if (targetItem == null || levelIcon == null)
         {
             onComplete?.Invoke();
             return;
         }
-        //记录内容根初始锚点, 供动画结束/清理时精确复位
-        if (!_contentOriginCaptured)
-        {
-            _contentOriginPos = ui_Content.anchoredPosition;
-            _contentOriginCaptured = true;
-        }
+
         ClearAnim();
         UIHandler.Instance.ShowScreenLock();
+
+        //突然出现: 立即以放大态显示 LevelIcon, 同时复位格子缩放
+        targetItem.localScale = Vector3.one;
+        levelIcon.localScale = Vector3.one * IconSlamStartScale;
+        levelIcon.gameObject.SetActive(true);
+
         animForUnlock = DOTween.Sequence();
-        //弹一下放大再回弹, 表现"领取成功"(节奏放慢, 表现更明显)
-        animForUnlock.Append(ui_Content.DOScale(Vector3.one * 1.18f, 0.28f).SetEase(Ease.OutBack));
-        animForUnlock.Join(ui_Content.DOShakeAnchorPos(0.45f, 8f, 20));
-        animForUnlock.Append(ui_Content.DOScale(Vector3.one, 0.22f).SetEase(Ease.InBack));
+        //从大到小"砸"向格子(InBack 收尾带轻微过冲, 强化砸落感)
+        animForUnlock.Append(levelIcon.DOScale(Vector3.one, 0.22f).SetEase(Ease.InBack));
+        //砸到位后 LevelItem 抖动一下
+        animForUnlock.Append(targetItem.DOShakeScale(0.3f, 0.45f, 12, 90, true));
         animForUnlock.OnComplete(() =>
         {
             UIHandler.Instance.HideScreenLock();
@@ -262,7 +295,7 @@ public partial class UIViewAchievementCard : BaseUIView
     }
 
     /// <summary>
-    /// 清理领取动画并复位卡片内容的缩放/位置
+    /// 清理领取动画: Kill 正在播放的序列(格子缩放由 RefreshLevelItems 每次刷新统一复位)
     /// </summary>
     private void ClearAnim()
     {
@@ -270,14 +303,6 @@ public partial class UIViewAchievementCard : BaseUIView
         {
             animForUnlock.Kill();
             animForUnlock = null;
-        }
-        if (ui_Content != null)
-        {
-            ui_Content.localScale = Vector3.one;
-            if (_contentOriginCaptured)
-            {
-                ui_Content.anchoredPosition = _contentOriginPos;
-            }
         }
     }
 }

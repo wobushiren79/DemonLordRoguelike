@@ -92,6 +92,7 @@ await CameraHandler.Instance.InitBaseSceneControlCamera(creatureData, startPosit
 ```csharp
 CameraHandler.Instance.SetBaseCoreCamera(priority, isEnable);        // CV_Core 核心
 CameraHandler.Instance.SetBasePortalCamera(priority, isEnable);      // CV_Portal 传送门(blend=0)
+CameraHandler.Instance.SetAchievementCamera(p, e);                  // CV_Achievement 成就(UIAchievement 打开时切换)
 CameraHandler.Instance.SetCreatureSacrificeCamera(p, e);            // CV_CreatureSacrifice 献祭
 CameraHandler.Instance.SetCreatureVatCamera(p, e);                  // CV_CreatureVat 生物容器
 CameraHandler.Instance.SetGashaponMachineCamera(p, e);             // CV_GashaponMachine 扭蛋机

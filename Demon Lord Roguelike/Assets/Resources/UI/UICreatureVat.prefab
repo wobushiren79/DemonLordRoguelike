@@ -224,6 +224,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -361,6 +362,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -587,6 +589,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1039,6 +1042,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1434,6 +1438,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1631,7 +1636,6 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7208947163169238971}
   - {fileID: 1767166449996893677}
   - {fileID: 5997624951611706669}
   - {fileID: 9079560187648720178}
@@ -1685,11 +1689,13 @@ MonoBehaviour:
     creatureName: 
     level: 0
     levelExp: 0
-    starLevel: 0
     rarity: 0
     relationship: 0
     creatureNpcData:
       npcId: 0
+    creatureState: 1
+    bodySizeScale: 1
+    sacrificePityRate: 0
   listMaterialCreatureSelect: []
   ui_ViewExit: {fileID: 4245406790760456673}
   ui_BtnLeft: {fileID: 8718417084815027686}
@@ -1809,6 +1815,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -2034,6 +2041,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -2183,6 +2191,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -2320,6 +2329,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -2608,103 +2618,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!1001 &370822369312644045
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 5851314731992454110}
-    m_Modifications:
-    - target: {fileID: 6607275696344688825, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
-      propertyPath: m_Name
-      value: UIViewCreatureCardItem
-      objectReference: {fileID: 0}
-    - target: {fileID: 6607275696344688825, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 8575153422984284731, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6607275696344688825, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 75235306517675773}
-  m_SourcePrefab: {fileID: 100100000, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
---- !u!1 &6815264309062693748 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6607275696344688825, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
-  m_PrefabInstance: {fileID: 370822369312644045}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &75235306517675773
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6815264309062693748}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6c71c11ed7bf2b64493fe8145b14355a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  uiOpenAnimType: 0
-  uiOpenAnimTarget: {fileID: 0}
-  _rectTransform: {fileID: 0}
-  cardData:
-    creatureData:
-      creatureId: 0
-      creatureUUId: 
-      creatureName: 
-      level: 0
-      levelExp: 0
-      starLevel: 0
-      rarity: 0
-      relationship: 0
-      creatureNpcData:
-        npcId: 0
-    cardUseState: 0
-    cardState: 0
-    originalCardPos: {x: 0, y: 0}
-    originalSibling: 0
-    indexList: 0
-  ui_BtnSelect_Button: {fileID: 0}
-  ui_BtnSelect_PopupButtonCommonView: {fileID: 0}
-  ui_Icon: {fileID: 0}
-  ui_Name: {fileID: 0}
-  ui_CardBgBorad: {fileID: 0}
-  ui_CDTime: {fileID: 0}
-  ui_Mask: {fileID: 0}
-  ui_StarText: {fileID: 0}
-  ui_SelectBg: {fileID: 0}
-  ui_IconContent: {fileID: 0}
---- !u!224 &7208947163169238971 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
-  m_PrefabInstance: {fileID: 370822369312644045}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3108511969457193612
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2959,6 +2872,10 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 587971008091873977, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 699329859100296908, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -3110,7 +3027,7 @@ PrefabInstance:
     - target: {fileID: 9021687495376944969, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
       propertyPath: tempCell
       value: 
-      objectReference: {fileID: 6815264309062693748}
+      objectReference: {fileID: 1365976485003238805, guid: 6e3586d529011d649aa1aac9a39e41e2, type: 3}
     - target: {fileID: 9057836725689250340, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -3165,6 +3082,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 587971008091873977, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
       propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 587971008091873977, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
+      propertyPath: m_AnchorMin.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 699329859100296908, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
@@ -3318,7 +3239,7 @@ PrefabInstance:
     - target: {fileID: 9021687495376944969, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
       propertyPath: tempCell
       value: 
-      objectReference: {fileID: 6815264309062693748}
+      objectReference: {fileID: 1365976485003238805, guid: 6e3586d529011d649aa1aac9a39e41e2, type: 3}
     - target: {fileID: 9057836725689250340, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0

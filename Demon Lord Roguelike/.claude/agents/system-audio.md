@@ -31,6 +31,10 @@ watched_files:
 - 设置界面 **UIGameSettingForAudio** 滑条改音量，变更后调 `AudioHandler.Instance.InitAudio()` 刷新
 - 注意：项目里的 `VolumeHandler`/`VolumeManager` 是 URP 后处理（景深）控制器，**与音频音量无关**
 
+### 通用 UI 音效（游戏层 AudioHandler.Awake 自动订阅）
+- **点击音效**：`UIHandler.AddOnClickAction(ActionForUIOnClick)`，由 `UIHandler.Update()` 的物理鼠标点击 + 射线驱动；sprite 名在 `listCommonUIClick` 集合播 `sound_btn_1`，image 名为 `ViewExit` 播退出音 `sound_btn_31`。**只认鼠标点击，覆盖不到 ESC**。
+- **ESC 退出音效**：`AudioHandler.Awake` 订阅 `InputActionUIEnum.ESC` 的 `InputAction.started` → `ActionForUIEscExit`，一处全局补播退出音 `sound_btn_31`，**无条件判断，任意 ESC 按下均播放**。所有 UI 零改动自动覆盖，不要在各 UI 的 ESC/退出分支里手动加播放。
+
 ### 音频 UI 组件
 - **AudioView** - 音频视图控制 [FrameWork/Scripts/Component/UI/AudioView.cs](Assets/FrameWork/Scripts/Component/UI/AudioView.cs)
 - **ButtonAudio** - 按钮音效 [FrameWork/Scripts/Component/UI/ButtonAudio.cs](Assets/FrameWork/Scripts/Component/UI/ButtonAudio.cs)

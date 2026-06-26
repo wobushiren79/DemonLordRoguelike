@@ -1,38 +1,19 @@
-using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 //战斗卡片特殊设置
 public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IPointerEnterHandler, IPointerExitHandler
 {
-    [Header("卡片创建动画延迟时间")]
-    public float animCardCreateDelayTime = 0.05f;
-    [Header("卡片创建动画时间")]
-    public float animCardCreateTimeType2 = 0.4f;
-    [Header("卡片创建动画缓动函数")]
-    public Ease animCardCreateEase = Ease.OutBack;
-
-    [Header("卡片选择动画进入时间")]
-    public float animCardSelectStartTime = 0.25f;
-    [Header("卡片选择动画缓动函数-进入")]
-    public Ease animCardSelectStart = Ease.OutBack;
-    [Header("卡片选择动画放大参数")]
-    public float animCardSelectStartScale = 1.6f;
-
-    [Header("卡片选择动画退出时间")]
-    public float animCardSelectEndTime = 0.5f;
-    [Header("卡片选择动画缓动函数-退出")]
-    public Ease animCardSelectEnd = Ease.OutBack;
-
-    protected Tween animForCreate;//创建卡片动画
-    protected Tween animForSelectStart;//选择卡片动画
-    protected Tween animForSelectEnd;//选择卡片动画
-    protected Tween animForSelectKeepStart;//选择卡片避让动画
-    protected Tween animForSelectKeepEnd;//选择卡片避让动画
     protected float FightRestRCDTime = 0;//复活CD时间（需要在重置是刷新数据）
+
+    //本卡魔物当前承载的深渊馈赠Item缓存池(按作用个数动态复用，避免反复实例化)
+    protected List<Image> listAbyssalBlessingItem = new List<Image>();
+    //收集「作用在本魔物身上」的深渊馈赠的复用缓冲(避免每次刷新分配新List)
+    protected List<AbyssalBlessingEntityBean> listAbyssalBlessingForCreature = new List<AbyssalBlessingEntityBean>();
 
     //卡片快捷按键(1-9)，按阵容排序分配；-1 表示无快捷键(阵容序号超过9)
     protected int pressKeyNum = -1;
@@ -99,10 +80,14 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_UnSelectCard, EventForGameFightLogicUnSelectCard);
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
         RegisterEvent<string, CreatureStateEnum>(EventsInfo.GameFightLogic_CreatureChangeState, EventForGameFightLogicCreatureChangeState);
+        //深渊馈赠变化事件(本魔物承载的单体定向馈赠增减时刷新展示)
+        RegisterEvent<AbyssalBlessingEntityBean>(EventsInfo.Buff_AbyssalBlessingChange, EventForAbyssalBlessingChange);
 
         SetData(creatureData, cardUseState);
         //按阵容排序设置快捷按键(1-9)与按键提示
         SetPressKey(cardData.originalSibling);
+        //刷新本魔物承载的深渊馈赠展示
+        RefreshAbyssalBlessing();
     }
 
     /// <summary>
@@ -209,16 +194,16 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {
         //LogUtil.Log($"OnPointerEnter_{cardData.originalSibling}");
-        KillAnimForSelect();
-        animForSelectStart = rectTransform
-                .DOScale(new Vector3(animCardSelectStartScale, animCardSelectStartScale, animCardSelectStartScale), animCardSelectStartTime)
-                .SetEase(animCardSelectStart);
+        //播放选择放大动画(动画实现见 partial 文件 UIViewCreatureCardItemForFightAnim)
+        PlaySelectEnterAnim();
         //设置层级最上
         transform.SetAsLastSibling();
         //触发避让事件
         TriggerEvent(EventsInfo.UIViewCreatureCardItem_SelectKeep, cardData.originalSibling, cardData.originalCardPos, true);
         //进入事件
         TriggerEvent(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, this);
+        //若本卡对应魔物已在场上，高亮其描边
+        ShowFieldCreatureOutline();
     }
 
     /// <summary>
@@ -228,16 +213,32 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
     {
         //LogUtil.Log($"OnPointerExit_{cardData.originalSibling}");
-        KillAnimForSelect();
-        animForSelectEnd = rectTransform
-                .DOScale(Vector3.one, animCardSelectEndTime)
-                .SetEase(animCardSelectEnd);
+        //播放选择还原动画(动画实现见 partial 文件 UIViewCreatureCardItemForFightAnim)
+        PlaySelectExitAnim();
         //还原层级
         transform.SetSiblingIndex(cardData.originalSibling);
         //触发避让事件
         TriggerEvent(EventsInfo.UIViewCreatureCardItem_SelectKeep, cardData.originalSibling, cardData.originalCardPos, false);
         //离开事件
         TriggerEvent(EventsInfo.UIViewCreatureCardItem_OnPointerExit, this);
+        //移出卡牌，隐藏描边高亮
+        CreatureHandler.Instance.HideCreatureOutlinePreview();
+    }
+
+    /// <summary>
+    /// 若本卡对应的魔物已在场上(防守生物)，则显示其描边高亮
+    /// </summary>
+    void ShowFieldCreatureOutline()
+    {
+        if (cardData == null || cardData.creatureData == null)
+            return;
+        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        if (gameFightLogic == null || gameFightLogic.fightData == null)
+            return;
+        //场上存在该 UUID 的防守生物才高亮(待机/CD中等未上场返回 null)
+        FightCreatureEntity fieldEntity = gameFightLogic.fightData.GetCreatureById(cardData.creatureData.creatureUUId, CreatureFightTypeEnum.FightDefense);
+        if (fieldEntity != null)
+            CreatureHandler.Instance.ShowCreatureOutlinePreview(fieldEntity);
     }
     #endregion
 
@@ -271,22 +272,16 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
             }
             if (offsetPos != Vector2.zero)
             {
-                //把Keep动画关闭
-                KillAnimForKeep();
-                animForSelectKeepStart = rectTransform
-                    .DOAnchorPos(cardData.originalCardPos + offsetPos, animCardSelectStartTime)
-                    .SetEase(animCardSelectStart);
+                //播放让位避让动画(动画实现见 partial 文件 UIViewCreatureCardItemForFightAnim)
+                PlaySelectKeepAnim(offsetPos);
             }
         }
         else
         {
             if (rectTransform.anchoredPosition != cardData.originalCardPos)
             {
-                //把Keep动画关闭
-                KillAnimForKeep();
-                animForSelectKeepEnd = rectTransform
-                    .DOAnchorPos(cardData.originalCardPos, animCardSelectEndTime)
-                    .SetEase(animCardSelectEnd);
+                //播放归位避让动画(动画实现见 partial 文件 UIViewCreatureCardItemForFightAnim)
+                PlaySelectKeepReturnAnim();
             }
         }
         //LogUtil.Log($"EventForSelectKeep originalSibling_{originalSibling} targetIndex_{targetIndex} targetPos_{targetPos}  isKeep_{isKeep}");
@@ -362,74 +357,81 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     }
     #endregion
 
-
-    #region 动画相关
+    #region 深渊馈赠展示
     /// <summary>
-    /// 创建动画(由下方弹入：位移 OutBack + 缩放过冲回弹，与 UILineupManager 初始化动画一致)
+    /// 事件-深渊馈赠变化：本魔物承载的单体定向馈赠可能增减，刷新展示。
     /// </summary>
-    /// <param name="index">卡片序号，用于错开延迟</param>
-    public void AnimForCreateShow(int index)
+    public void EventForAbyssalBlessingChange(AbyssalBlessingEntityBean abyssalBlessingEntityBean)
     {
-        ClearAnim();
-        rectTransform.anchoredPosition = new Vector2(cardData.originalCardPos.x, cardData.originalCardPos.y - 200);
-        rectTransform.localScale = Vector3.one;
-        float moveTime = animCardCreateTimeType2;
-        animForCreate = DOTween.Sequence()
-            .AppendInterval(index * animCardCreateDelayTime)
-            .Append(rectTransform.DOAnchorPos(cardData.originalCardPos, moveTime).SetEase(animCardCreateEase))
-            .Join(rectTransform.DOScale(1.15f, moveTime * 0.6f).SetEase(Ease.OutQuad))
-            .Append(rectTransform.DOScale(1f, moveTime * 0.4f).SetEase(Ease.InOutQuad))
-            //动画落位完成后播放卡片音效(每张卡各自播放)
-            .OnComplete(() => AudioHandler.Instance.PlaySound(AudioEnum.sound_card_1));
+        RefreshAbyssalBlessing();
     }
 
     /// <summary>
-    /// 清除所有动画
+    /// 刷新本卡魔物承载的深渊馈赠展示：收集所有锁定到本魔物的单体定向馈赠，按作用个数动态创建/复用 Item 图标。
     /// </summary>
-    public void ClearAnim()
+    public void RefreshAbyssalBlessing()
     {
-        if (animForCreate != null && animForCreate.IsPlaying())
+        if (ui_AbyssalBlessingContent == null || ui_AbyssalBlessingItem == null)
+            return;
+        //收集作用在本魔物身上的深渊馈赠
+        CollectAbyssalBlessingForCreature(listAbyssalBlessingForCreature);
+        //先全部隐藏缓存池
+        for (int i = 0; i < listAbyssalBlessingItem.Count; i++)
+            listAbyssalBlessingItem[i].gameObject.SetActive(false);
+        //无馈赠时整个容器隐藏
+        ui_AbyssalBlessingContent.gameObject.SetActive(listAbyssalBlessingForCreature.Count > 0);
+        //按作用个数复用/补充 Item 并设置图标
+        for (int i = 0; i < listAbyssalBlessingForCreature.Count; i++)
         {
-            animForCreate.Complete();
-        }
-        if (animForSelectStart != null && animForSelectStart.IsPlaying())
-        {
-            animForSelectStart.Complete();
-        }
-        if (animForSelectEnd != null && animForSelectEnd.IsPlaying())
-        {
-            animForSelectEnd.Complete();
-        }
-        if (animForSelectKeepStart != null && animForSelectKeepStart.IsPlaying())
-        {
-            animForSelectKeepStart.Complete();
-        }
-        if (animForSelectKeepEnd != null && animForSelectKeepEnd.IsPlaying())
-        {
-            animForSelectKeepEnd.Complete();
+            Image itemView = GetOrCreateAbyssalBlessingItem(i);
+            IconHandler.Instance.SetAbyssalBlessingIcon(listAbyssalBlessingForCreature[i].abyssalBlessingInfo.icon_res, itemView);
+            itemView.gameObject.SetActive(true);
         }
     }
 
     /// <summary>
-    /// Keep动画关闭
+    /// 从缓存池获取第 index 个深渊馈赠 Item，不足则克隆模板 ui_AbyssalBlessingItem 补充。
     /// </summary>
-    public void KillAnimForKeep()
+    protected Image GetOrCreateAbyssalBlessingItem(int index)
     {
-        if (animForSelectKeepStart != null && animForSelectKeepStart.IsPlaying())
-            animForSelectKeepStart.Kill();
-        if (animForSelectKeepEnd != null && animForSelectKeepEnd.IsPlaying())
-            animForSelectKeepEnd.Kill();
+        if (index < listAbyssalBlessingItem.Count)
+            return listAbyssalBlessingItem[index];
+        GameObject newObj = Instantiate(ui_AbyssalBlessingItem.gameObject, ui_AbyssalBlessingContent);
+        Image newItem = newObj.GetComponent<Image>();
+        listAbyssalBlessingItem.Add(newItem);
+        return newItem;
     }
 
     /// <summary>
-    /// 关闭选择动画
+    /// 收集当前作用在本卡魔物身上的深渊馈赠：遍历馈赠池，取「任一 BUFF 实际作用于本魔物」的馈赠实例。
+    /// 判定口径由 AbyssalBlessingUtil.DoesAbyssalBuffAffectCreature 统一(与属性/攻速管线一致)：
+    /// 含全体防守加成(强身健体/伤害性极强等)与定向到本魔物的馈赠(大力出奇迹等)，排除作用敌方/防守核心/掉落奖励/复制等不修改本魔物数值的馈赠。
+    /// 战斗卡片上的魔物固定为 FightDefense。
     /// </summary>
-    public void KillAnimForSelect()
+    /// <param name="listResult">收集结果(复用，调用前清空)</param>
+    protected void CollectAbyssalBlessingForCreature(List<AbyssalBlessingEntityBean> listResult)
     {
-        if (animForSelectStart != null && animForSelectStart.IsPlaying())
-            animForSelectStart.Kill();
-        if (animForSelectEnd != null && animForSelectEnd.IsPlaying())
-            animForSelectEnd.Kill();
+        listResult.Clear();
+        if (cardData == null || cardData.creatureData == null)
+            return;
+        CreatureBean creatureData = cardData.creatureData;
+        var dicAbyssalBlessing = BuffHandler.Instance.manager.dicAbyssalBlessingBuffsActivie;
+        for (int i = 0; i < dicAbyssalBlessing.ListKey.Count; i++)
+        {
+            var entity = dicAbyssalBlessing.ListKey[i];
+            var listBuff = BuffHandler.Instance.manager.GetAbyssalBlessingBuffsActivie(entity);
+            if (listBuff == null)
+                continue;
+            //该馈赠的任一 BUFF 实际作用于本魔物即视为作用于本魔物
+            for (int j = 0; j < listBuff.Count; j++)
+            {
+                if (AbyssalBlessingUtil.DoesAbyssalBuffAffectCreature(listBuff[j], creatureData, CreatureFightTypeEnum.FightDefense))
+                {
+                    listResult.Add(entity);
+                    break;
+                }
+            }
+        }
     }
     #endregion
 }

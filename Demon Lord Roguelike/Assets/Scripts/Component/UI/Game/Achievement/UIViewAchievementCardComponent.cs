@@ -19,15 +19,15 @@ public partial class UIViewAchievementCard
 
     public PopupButtonCommonView ui_UIViewAchievementCard_PopupButtonCommonView;
 
-    public Image ui_Lock;
-
     public TextMeshProUGUI ui_RewardNum;
 
     public Image ui_Reward;
 
     public RectTransform ui_Content;
 
-    public TextMeshProUGUI ui_Level;
+    public RectTransform ui_LevelItem;
+
+    public RectTransform ui_Level;
 
 
 }

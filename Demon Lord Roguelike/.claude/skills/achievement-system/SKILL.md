@@ -94,7 +94,7 @@ ID 编码规则（每个可升级成就一行，取原一级 id 作行 id）：
 > 注：`level_descriptions` 列**已废弃移除**（描述改用 name/details 两列模板）。若生成的 Bean 里还残留该 string 字段，重新「生成 Entity」后会自动消失（属死字段，无引用）。
 
 ### 文本 ID 段
-- `4000001~4000017` 通用 UI 文本（在 `excel_ui_text`/`Language_UIText_*`；其中 `4000016`=`Lv.{0}/{1}` 等级角标，`4000017`=已完成/Completed）
+- `4000001~4000017` 通用 UI 文本（在 `excel_ui_text`/`Language_UIText_*`；其中 `4000016`=`Lv.{0}/{1}`(等级改用图标格子后卡片已不再用此文本)，`4000017`=已完成/Completed）
 - 每个成就**一条** AchievementInfo 文本（该行 `name`/`details` 同指此 id）：`content`=名字，`content_1`=描述模板（含 `{Name}` 占位符）。当前 12 条：击杀 `4001001`、时长 `4002001`、征服难度1~10 `4003101/4003201/.../4003901/4003001`
 
 > ⚠️ **成就文本源 = `excel_language` 工作簿的 `AchievementInfo` 工作表**（列 `id/content_cn/content_en/content_1_cn/content_1_en/remark`），导出生成 `Language_AchievementInfo_cn/en.txt`。**改文本必须改这个 Excel 工作表**——只改 `.txt` 会在下次导出时被覆盖丢失。同理各配置表的多语言都在 `excel_language` 的同名工作表里。
@@ -167,13 +167,13 @@ UIAchievement (BaseUIComponent)
 
 ### UIViewAchievementCard 状态（按"当前激活等级"展示）
 卡片传入**成就配置(单行多级)**，内部用 `GetClaimedLevelCount(info)` 得到当前激活等级索引 `currentLevelIndex`：
-- **进行中-未达成** → 灰色蒙版 + 锁 + 等级角标 `ui_Level`=`Lv.当前/总`(白色) + 进度文本 `ui_TxtProgress`=`当前/目标`(白色) + 当前级奖励
-- **进行中-可领取** → 同上但等级角标与进度文本均绿色、按钮可点
-- **已完成**（`currentLevelIndex >= GetLevelCount()`）→ 关闭蒙版/锁/奖励，隐藏 `ui_Level`，进度区 `ui_TxtProgress` 显示"已完成"(text 4000017)
-- **等级角标 `ui_Level` 单独显示**(独立 TextMeshProUGUI, 不再与进度文本拼接)：`Lv.{0}/{1}`(text 4000016, 当前级=index+1)，已完成时 `gameObject.SetActive(false)` 隐藏
+- **进行中-未达成** → 灰色蒙版 + 锁 + 等级格子(已领取级亮起 LevelIcon) + 进度文本 `ui_TxtProgress`=`当前/目标`(白色) + 当前级奖励
+- **进行中-可领取** → 同上但进度文本绿色、按钮可点
+- **已完成**（`currentLevelIndex >= GetLevelCount()`）→ 关闭蒙版/锁/奖励，进度区 `ui_TxtProgress` 显示"已完成"(text 4000017)，等级格子全部亮起
+- **等级图标格子 `ui_Level`(容器, RectTransform + GridLayoutGroup)**：等级不再用文本角标，改为**按等级总数动态实例化的图标格子**。`RefreshLevelItems()` 以 `ui_LevelItem`(模板, prefab 中 inactive) 为蓝本，复用 `List<RectTransform> listLevelItem` 实例化 `levelCount` 个格子到 `ui_Level` 下；每个格子的子节点 `LevelIcon`(对勾 Image)在该级**已领取**(索引 `< currentLevelIndex`)时 `SetActive(true)` 显示、否则隐藏。用列表复用+隐藏多余，避免单元格被 `ScrollGrid` 池化复用时**重复实例化产生冗余格子**（参考 `UIViewAbyssalBlessingInfoContent` 的复用模式）。text 4000016(`Lv.{0}/{1}`)已不再被卡片使用
 - 进度文本格式 `ui_TxtProgress`：仅计数 `{0}/{1}`(text 4000006, 目标=`GetLevelTargetValue(index)`)；图标取 `info.icon_res`，描述气泡取 `info.GetLevelDescription(displayIndex)`，奖励取 `info.GetLevelReward(index)`
 
-> **领取流程**：点击卡片领取的是**当前激活等级**。`OnClickForUnlock` 先用 DOTween 播放卡片弹跳+轻微抖动（`AnimForUnlock`，只动 `ui_Content` 不动 cell 自身 transform，期间 `UIHandler.ShowScreenLock` 锁屏防重复点击），动画结束后回调 `actionForUnlock(info)` → `TryUnlockNextLevel(info.id)`（发该级奖+已领取数+1） + Toast + `RefreshAchievementList`，卡片随即推进到下一级或显示"已完成"。`SetData` 复用 cell 时先 `ClearAnim` 复位 `ui_Content` 缩放/锚点并 Kill 上一次动画。
+> **领取流程**：点击卡片领取的是**当前激活等级**。`OnClickForUnlock` 先用 DOTween 播放**等级图标砸落动画**（`AnimForUnlock`）：取待领取等级 `currentLevelIndex` 对应的 `listLevelItem[currentLevelIndex]`，其 `LevelIcon` 立即以放大态(`IconSlamStartScale`=3x)**突然出现**，再 `DOScale→1`(Ease.InBack) **从大到小"砸"向 LevelItem**，落位后 `LevelItem.DOShakeScale` **抖动一下**；只动目标格子不动 cell 自身 transform，期间 `UIHandler.ShowScreenLock` 锁屏防重复点击。动画结束后回调 `actionForUnlock(info)` → `TryUnlockNextLevel(info.id)`（发该级奖+已领取数+1） + Toast + `RefreshAchievementList`，列表重建后该级 `LevelIcon` 常驻显示、卡片推进到下一级或显示"已完成"。`ClearAnim` 仅 Kill 上一次序列；格子缩放/图标显隐由 `RefreshLevelItems` 每次刷新统一复位，保证池化复用干净。
 
 ## 接入新成就类型的流程
 

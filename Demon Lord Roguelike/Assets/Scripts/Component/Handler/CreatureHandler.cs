@@ -113,6 +113,25 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     }
     #endregion
 
+    #region 描边高亮
+    /// <summary>
+    /// 显示场上魔物的描边高亮(鼠标悬停已上场的魔物卡牌时调用)
+    /// </summary>
+    /// <param name="targetEntity">已上场的目标战斗生物</param>
+    public void ShowCreatureOutlinePreview(FightCreatureEntity targetEntity)
+    {
+        manager.ShowCreatureOutlinePreview(targetEntity);
+    }
+
+    /// <summary>
+    /// 隐藏场上魔物的描边高亮(鼠标移出卡牌时调用)
+    /// </summary>
+    public void HideCreatureOutlinePreview()
+    {
+        manager.HideCreatureOutlinePreview();
+    }
+    #endregion
+
     #region 防御生物
     /// <summary>
     ///  创建防御生物

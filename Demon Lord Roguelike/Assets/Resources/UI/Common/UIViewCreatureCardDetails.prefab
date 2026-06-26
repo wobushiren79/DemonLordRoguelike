@@ -163,6 +163,7 @@ GameObject:
   - component: {fileID: 8312665400142584822}
   - component: {fileID: 2210316638640883414}
   - component: {fileID: 3508790655540602121}
+  - component: {fileID: 4226741833616731994}
   m_Layer: 5
   m_Name: CardRate
   m_TagString: Untagged
@@ -209,8 +210,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Material: {fileID: 2100000, guid: 35c9781d31087d64eb4eeff6712531cb, type: 2}
+  m_Color: {r: 1, g: 0.759434, b: 0.759434, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 0
@@ -227,6 +228,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4226741833616731994
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 360394514287840474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 592d42368d07795458730d32a3902de1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIGradientMeshUV
 --- !u!1 &517056901690791450
 GameObject:
   m_ObjectHideFlags: 0
@@ -1417,6 +1430,7 @@ GameObject:
   - component: {fileID: 2485628450424762034}
   - component: {fileID: 8175520546131530261}
   - component: {fileID: 128951836243634020}
+  - component: {fileID: 3547620778506918584}
   m_Layer: 5
   m_Name: CardBgBoard
   m_TagString: Untagged
@@ -1463,8 +1477,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Material: {fileID: 2100000, guid: 35c9781d31087d64eb4eeff6712531cb, type: 2}
+  m_Color: {r: 1, g: 0.3443396, b: 0.3443396, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 0
@@ -1496,6 +1510,18 @@ MonoBehaviour:
   m_EffectColor: {r: 0, g: 0, b: 0, a: 0.5}
   m_EffectDistance: {x: 10, y: -10}
   m_UseGraphicAlpha: 1
+--- !u!114 &3547620778506918584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3389707171954371590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 592d42368d07795458730d32a3902de1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIGradientMeshUV
 --- !u!1 &3835655808060440574
 GameObject:
   m_ObjectHideFlags: 0
@@ -1824,6 +1850,7 @@ GameObject:
   - component: {fileID: 8462959563112935373}
   - component: {fileID: 4786008986692385163}
   - component: {fileID: 104630580664731153}
+  - component: {fileID: 4766977815592898871}
   m_Layer: 5
   m_Name: CardSceneBg
   m_TagString: Untagged
@@ -1870,8 +1897,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Material: {fileID: 2100000, guid: 35c9781d31087d64eb4eeff6712531cb, type: 2}
+  m_Color: {r: 1, g: 0.34509805, b: 0.34509805, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1903,6 +1930,18 @@ MonoBehaviour:
   m_EffectColor: {r: 0, g: 0, b: 0, a: 0.5}
   m_EffectDistance: {x: 3, y: -3}
   m_UseGraphicAlpha: 0
+--- !u!114 &4766977815592898871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4835437243530185363}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 592d42368d07795458730d32a3902de1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIGradientMeshUV
 --- !u!1 &5173780135277136827
 GameObject:
   m_ObjectHideFlags: 0
@@ -2414,12 +2453,12 @@ MonoBehaviour:
     creatureName: 
     level: 0
     levelExp: 0
-    starLevel: 0
     rarity: 0
     relationship: 0
     creatureNpcData:
       npcId: 0
     creatureState: 1
+    bodySizeScale: 1
     sacrificePityRate: 0
   isShowEquipItem: 1
   directionInit: 2
@@ -2454,7 +2493,8 @@ MonoBehaviour:
   ui_Buff: {fileID: 3224536896704175651}
   ui_IconBtn: {fileID: 8425428204406371404}
   ui_MPContent: {fileID: 7096670860047921541}
-  ui_MP: {fileID: 0}
+  ui_MP: {fileID: 4874806969311755401}
+  ui_CardSceneBg: {fileID: 4786008986692385163}
 --- !u!1 &6694089840708241386
 GameObject:
   m_ObjectHideFlags: 0

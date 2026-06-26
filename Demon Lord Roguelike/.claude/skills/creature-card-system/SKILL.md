@@ -211,6 +211,10 @@ EventsInfo.UIViewCreatureCardItem_OnClickSelect
     // 参数: UIViewCreatureCardItem targetView
 ```
 
+> **场上魔物描边高亮**：`UIViewCreatureCardItemForFight.OnPointerEnter` 末尾调 `ShowFieldCreatureOutline()` —— 若本卡对应魔物已上场(`fightData.GetCreatureById(uuid, FightDefense) != null`)，调 `CreatureHandler.ShowCreatureOutlinePreview(entity)` 给场上魔物套一圈亮蓝描边；`OnPointerExit` 调 `CreatureHandler.HideCreatureOutlinePreview()` 收起。描边实现见 creature-system / game-creature(共享单例预览预制 `FightCreature_OutlinePreview` + OutlineOnly 材质；平面 Spine 精灵固定法线导致 Rim 边缘光不可见，故改用描边)。
+
+> **战斗卡片深渊馈赠展示**：`UIViewCreatureCardItemForFight` 上的 `ui_AbyssalBlessingContent`(GridLayout 容器) + `ui_AbyssalBlessingItem`(Image 模板，prefab 中默认隐藏) 用来展示「**实际作用在本魔物身上**」的深渊馈赠图标。`RefreshAbyssalBlessing()`(在 `SetData` 末尾及监听 `EventsInfo.Buff_AbyssalBlessingChange` 时调用) → `CollectAbyssalBlessingForCreature` 遍历 `BuffHandler.manager.dicAbyssalBlessingBuffsActivie`，对每个馈赠用 **`AbyssalBlessingUtil.DoesAbyssalBuffAffectCreature(buff, creatureData, FightDefense)`**(在 `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`) 判定其任一 BUFF 是否真作用于本魔物——口径与属性管线(`FightCreatureBean.CollectFromBuffList`)/攻速管线一致：含**全体防守加成**(强身健体/伤害性极强/唯快不破/坚不可摧/时光沙漏，每张防守卡都显示一份)与**定向到本魔物**的馈赠(大力出奇迹/膘肥体壮/钢铁憨憨/急性子，按锁定 UUID 精确匹配)；排除作用敌方(慢条斯理)/防守核心/掉落(钱多多)/奖励(奖励多多·再来一瓶)/复制(增殖)等不改本魔物数值的馈赠。按收集个数用 `GetOrCreateAbyssalBlessingItem` 缓存池(`listAbyssalBlessingItem`)复用/克隆模板，`IconHandler.SetAbyssalBlessingIcon` 设图标，无馈赠时隐藏整个容器。卡片上魔物固定为 `FightDefense`。⚠️ **复制魔物(增殖)产生的克隆体是新 UUID，只会显示「全体防守馈赠」(靠 trigger_creature_type 自动生效)，不显示/不继承针对原魔物的单体定向馈赠**。深渊馈赠机制见 abyssal-blessing-system / game-abyssal-blessing。
+
 ### 战斗卡片事件
 
 ```csharp
@@ -344,7 +348,7 @@ public void OrderListCreature(List<OrderFilterTypeEnum> filterTypes, bool isAsce
 |------|----------|
 | 卡片基类 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItem.cs` |
 | 卡片组件声明 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemComponent.cs` |
-| 战斗卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForFight.cs` |
+| 战斗卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForFight.cs`(主体：生命周期/快捷按键/状态/触摸事件/深渊馈赠展示) + `UIViewCreatureCardItemForFightAnim.cs`(partial：动画参数/Tween 句柄/创建·选择·避让动画 `AnimForCreateShow`/`PlaySelectEnterAnim`/`PlaySelectExitAnim`/`PlaySelectKeepAnim`/`PlaySelectKeepReturnAnim`/`ClearAnim`/`KillAnim*`) |
 | 阵容卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForLineup.cs` |
 | 管理卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForCreatureManager.cs` |
 | 献祭卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForCreatureSacrifice.cs` |

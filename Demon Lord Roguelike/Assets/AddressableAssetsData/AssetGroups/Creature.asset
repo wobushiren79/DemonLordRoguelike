@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Creature
+  m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
+  m_GroupName: Creature
+  m_GUID: 7be79d27ed1a5e442967a67723ad55a3
+  m_SerializeEntries:
+  - m_GUID: 4b47f564220f02746b3f069df5cfbb46
+    m_Address: Assets/LoadResources/Creatures/FightCreature_OutlinePreview.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Creature
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b134cf4081841334f8d0e9b99c3f8f89
+    m_Address: Assets/LoadResources/Creatures/CreatureOutline_Material.mat
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Creature
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}
+  m_SchemaSet:
+    m_Schemas: []

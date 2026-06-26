@@ -18,6 +18,7 @@ public class BuffEntityInstantCloneDefenseCreature : BuffEntityInstant
         gameFightLogic.fightData.dlDefenseCreatureData.Add(copyCreatureData.creatureUUId, copyCreatureData);
 
         //通知UI新增一张防御生物卡片(增量添加，不重建整个卡片列表以保留其它卡片的Rest/Fighting状态)
+        //克隆体只继承「作用于全体防守生物」的馈赠(靠 trigger_creature_type 自动生效)，单体定向馈赠按 UUID 锁定故不继承
         EventHandler.Instance.TriggerEvent(EventsInfo.Buff_DefenseCreatureAdd, copyCreatureData);
         return true;
     }

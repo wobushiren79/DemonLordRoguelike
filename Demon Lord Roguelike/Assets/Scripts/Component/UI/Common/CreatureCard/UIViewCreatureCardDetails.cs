@@ -290,10 +290,11 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         if (rarity == 0)
             rarity = 1;
         var rarityInfo = RarityInfoCfg.GetItemData(rarity);
-        ColorUtility.TryParseHtmlString(rarityInfo.ui_board_color, out Color boardColor);
-        ui_CardRate.color = boardColor;
-        ColorUtility.TryParseHtmlString(rarityInfo.ui_board_other_color, out Color boardOtherColor);
-        //ui_AttributeList_Image.color = boardOtherColor;
+        //卡片底板与场景背景使用稀有度主板颜色
+        GameUIUtil.SetGradientColor(ui_CardBgBoard, rarityInfo.ui_board_color);
+        GameUIUtil.SetGradientColor(ui_CardSceneBg, rarityInfo.ui_board_color);
+        //稀有度条使用稀有度副板颜色
+        GameUIUtil.SetGradientColor(ui_CardRate, rarityInfo.ui_board_other_color);
     }
 
     /// <summary>

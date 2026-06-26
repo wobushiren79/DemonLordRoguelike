@@ -9,6 +9,8 @@ public class GashaponItemBean
     public CreatureBean creatureData;
     //是否打开
     public bool isBreak;
+    //解锁某稀有度档位后的起始命中概率(%),在此基础上叠加"概率+1%"研究等级
+    private const float rarityBaseRate = 10f;
 
     public GashaponItemBean(long creatureId, GashaponMachineCreatureStruct gashaponMachineCreature)
     {
@@ -80,10 +82,11 @@ public class GashaponItemBean
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
-        float successRate = userUnlock.GetUnlockResearchLeveByUnlockEnum(unlockRarityRate);
         //检测是否解锁
         if (userUnlock.CheckIsUnlock(unlockRarity))
         {
+            //起始10% + 概率研究等级(每级+1%)
+            float successRate = rarityBaseRate + userUnlock.GetUnlockResearchLeveByUnlockEnum(unlockRarityRate);
             float randomData = Random.Range(0f, 100f);
             if (randomData < successRate)
             {
@@ -92,6 +95,53 @@ public class GashaponItemBean
         }
         return false;
     }
+
+    #region 稀有度概率(展示用)
+
+    /// <summary>
+    /// 计算当前解锁状态下各稀有度的实际抽中概率(把顺序判定 UR→SSR→SR→R→N 换算成真实命中概率)。
+    /// 仅返回已解锁的稀有度档位 + 普通(N);普通为剩余补足,列表按 普通→R→SR→SSR→UR 排序,所有概率合计=1。
+    /// </summary>
+    public static List<KeyValuePair<RarityEnum, float>> GetRarityProbabilityList()
+    {
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlock = userData.GetUserUnlockData();
+
+        //按抽取顺序(高→低)逐级用剩余概率乘以本档 rate,剩余概率归入普通(N)
+        float remaining = 1f;
+        var listHigh = new List<KeyValuePair<RarityEnum, float>>();
+        GetRarityProbabilityItem(userUnlock, RarityEnum.UR, UnlockEnum.GashaponRarityUR, UnlockEnum.GashaponRarityURRate, ref remaining, listHigh);
+        GetRarityProbabilityItem(userUnlock, RarityEnum.SSR, UnlockEnum.GashaponRaritySSR, UnlockEnum.GashaponRaritySSRRate, ref remaining, listHigh);
+        GetRarityProbabilityItem(userUnlock, RarityEnum.SR, UnlockEnum.GashaponRaritySR, UnlockEnum.GashaponRaritySRRate, ref remaining, listHigh);
+        GetRarityProbabilityItem(userUnlock, RarityEnum.R, UnlockEnum.GashaponRarityR, UnlockEnum.GashaponRarityRRate, ref remaining, listHigh);
+
+        //输出顺序:普通(N,始终展示)→ R → SR → SSR → UR(listHigh 为高→低,故倒序追加)
+        var listResult = new List<KeyValuePair<RarityEnum, float>>();
+        listResult.Add(new KeyValuePair<RarityEnum, float>(RarityEnum.N, remaining));
+        for (int i = listHigh.Count - 1; i >= 0; i--)
+        {
+            listResult.Add(listHigh[i]);
+        }
+        return listResult;
+    }
+
+    /// <summary>
+    /// 计算单个稀有度档位的实际抽中概率:未解锁则跳过(不入列表);已解锁则取 剩余概率×本档rate,并从剩余概率中扣除
+    /// </summary>
+    private static void GetRarityProbabilityItem(UserUnlockBean userUnlock, RarityEnum rarityEnum, UnlockEnum unlockRarity, UnlockEnum unlockRarityRate, ref float remaining, List<KeyValuePair<RarityEnum, float>> listHigh)
+    {
+        if (!userUnlock.CheckIsUnlock(unlockRarity))
+        {
+            return;
+        }
+        //起始10% + 概率研究等级(每级+1%),与 RandomRarityItem 口径一致
+        float rate = (rarityBaseRate + userUnlock.GetUnlockResearchLeveByUnlockEnum(unlockRarityRate)) / 100f;
+        float probability = remaining * rate;
+        remaining -= probability;
+        listHigh.Add(new KeyValuePair<RarityEnum, float>(rarityEnum, probability));
+    }
+
+    #endregion
 
     /// <summary>
     /// 随机皮肤

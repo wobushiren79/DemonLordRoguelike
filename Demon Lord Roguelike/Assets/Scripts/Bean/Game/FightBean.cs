@@ -315,4 +315,19 @@ public class FightBean
         }
         return null;
     }
+
+    /// <summary>
+    /// 从防守生物池(dlDefenseCreatureData)中随机取一只，返回其 creatureUUId；池为空返回 null。
+    /// 供单体定向深渊馈赠选取时随机锁定一只防守魔物使用。
+    /// 注意：dlDefenseCreatureData 与玩家存档共享引用，此处只读取 UUID、绝不修改其属性。
+    /// </summary>
+    public string GetRandomDefenseCreatureUUId()
+    {
+        if (dlDefenseCreatureData == null || dlDefenseCreatureData.List.Count == 0)
+        {
+            return null;
+        }
+        CreatureBean randomCreatureData = dlDefenseCreatureData.List.GetRandomData();
+        return randomCreatureData?.creatureUUId;
+    }
 }

@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 
 /// <summary>
-/// 单体定向属性深渊馈赠 BUFF：选取时随机锁定一只防守生物，仅对该生物按 class_entity_data 指定的属性施加加成。
-/// <para>用于「大力出奇迹 / 膘肥体壮 / 钢铁憨憨」等馈赠——随机一只防守魔物 攻击力/生命/护甲 翻倍(trigger_value_rate=1 即 +100%)。</para>
-/// <para>实现 <see cref="ISingleTargetAbyssalBuff"/>，由 FightCreatureBean.CollectFromBuffList 把 modifier 限定到锁定的那只生物；
+/// 单体定向属性 BUFF：选取时随机锁定一只防守生物，仅对该生物按 class_entity_data 指定的属性施加加成。
+/// <para>用于「大力出奇迹 / 膘肥体壮 / 钢铁憨憨」等深渊馈赠——随机一只防守魔物 攻击力/生命/护甲 翻倍(trigger_value_rate=1 即 +100%)。</para>
+/// <para>实现 <see cref="IBuffSingleTarget"/>，由 FightCreatureBean.CollectFromBuffList 把 modifier 限定到锁定的那只生物；
 /// 因只改运行时计算的 dicAttribute、不改持久 CreatureBean，故不污染存档。可重复选取(level=0)，每次锁定一只新随机生物叠加。</para>
 /// </summary>
-public class BuffEntityAttributeRandomDefense : BuffEntityAttribute, ISingleTargetAbyssalBuff
+public class BuffEntityAttributeSingleTarget : BuffEntityAttribute, IBuffSingleTarget
 {
     private string singleTargetCreatureUUId;
 
@@ -21,7 +21,7 @@ public class BuffEntityAttributeRandomDefense : BuffEntityAttribute, ISingleTarg
     public override void SetData(BuffEntityBean buffEntityData)
     {
         base.SetData(buffEntityData);
-        singleTargetCreatureUUId = AbyssalBlessingSingleTargetUtil.PickRandomDefenseCreatureUUId();
+        singleTargetCreatureUUId = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>()?.fightData?.GetRandomDefenseCreatureUUId();
     }
 
     /// <summary>

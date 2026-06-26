@@ -37,7 +37,7 @@ public partial class UIAchievement : BaseUIComponent, IRadioGroupCallBack
     {
         base.OpenUI();
         GameControlHandler.Instance.SetBaseControl(false);
-        CameraHandler.Instance.SetBaseCoreCamera(int.MaxValue, true);
+        CameraHandler.Instance.SetAchievementCamera(int.MaxValue, true);
 
         //注册页签单选按钮组回调(预制体上的 RadioGroupView 会接管按钮点击，必须由本界面作为组回调接收)
         InitRadioGroup();

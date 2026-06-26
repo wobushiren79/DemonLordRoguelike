@@ -25,6 +25,27 @@ public class CreatureManager : BaseManager
     public SkeletonAnimation skeletonAnimationSelectPreview;
     public CreatureBean creatureDataSelectPreview;
 
+    //场上魔物描边高亮预览(共享单例；显示/材质/逐帧跟随逻辑都在 CreatureSpineOutlineFollow，Manager 只负责加载预制资源)
+    public GameObject objCreatureOutlinePreview;
+    public CreatureSpineOutlineFollow outlineFollow;
+
+    #region 预制名称常量
+    /// <summary>防守生物预制名</summary>
+    const string PrefabNameFightDefense = "FightCreature_Def_1.prefab";
+    /// <summary>进攻生物预制名</summary>
+    const string PrefabNameFightAttack = "FightCreature_Att_1.prefab";
+    /// <summary>防守核心(魔王)生物预制名</summary>
+    const string PrefabNameFightDefenseCore = "FightCreature_DefCore_1.prefab";
+    /// <summary>终焉议会议员生物预制名</summary>
+    const string PrefabNameDoomCouncil = "DoomCouncilCreature_1.prefab";
+    /// <summary>选择放置预览预制名</summary>
+    const string PrefabNameSelectPreview = "FightCreature_SelectPreview.prefab";
+    /// <summary>选择删除预览预制名</summary>
+    const string PrefabNameSelectDestory = "FightCreature_Destory.prefab";
+    /// <summary>场上魔物描边高亮预览预制名</summary>
+    const string PrefabNameOutlinePreview = "FightCreature_OutlinePreview.prefab";
+    #endregion
+
     #region 数据清理
     /// <summary>
     /// 清理数据
@@ -39,6 +60,14 @@ public class CreatureManager : BaseManager
 
         skeletonAnimationSelectPreview = null;
         creatureDataSelectPreview = null;
+
+        //清除描边高亮预览obj(其材质实例由 CreatureSpineOutlineFollow.OnDestroy 释放)
+        if (objCreatureOutlinePreview != null)
+        {
+            DestroyImmediate(objCreatureOutlinePreview);
+        }
+        objCreatureOutlinePreview = null;
+        outlineFollow = null;
 
         //清除缓存生物obj
         foreach (var itemPool in dicPoolForFightCreatureObj)
@@ -72,7 +101,7 @@ public class CreatureManager : BaseManager
     {
         if (objCreatureSelectPreview == null)
         {
-            string resPath = $"{PathInfo.CreaturesPrefabPath}/FightCreature_SelectPreview.prefab";
+            string resPath = $"{PathInfo.CreaturesPrefabPath}/{PrefabNameSelectPreview}";
             var targetModel = GetModelForAddressablesSync(dicCreatureModel, resPath);
             objCreatureSelectPreview = Instantiate(gameObject, targetModel);
 
@@ -106,11 +135,55 @@ public class CreatureManager : BaseManager
     {
         if (objCreatureSelectDestory == null)
         {
-            string resPath = $"{PathInfo.CreaturesPrefabPath}/FightCreature_Destory.prefab";
+            string resPath = $"{PathInfo.CreaturesPrefabPath}/{PrefabNameSelectDestory}";
             var targetModel = GetModelForAddressablesSync(dicCreatureModel, resPath);
             objCreatureSelectDestory = Instantiate(gameObject, targetModel);
         }
         return objCreatureSelectDestory;
+    }
+
+    /// <summary>
+    /// 显示场上魔物的描边高亮(转发给 CreatureSpineOutlineFollow；显示/材质/逐帧跟随逻辑都在该组件里)
+    /// </summary>
+    /// <param name="targetEntity">已上场的目标战斗生物</param>
+    public void ShowCreatureOutlinePreview(FightCreatureEntity targetEntity)
+    {
+        var follow = GetCreatureSpineOutlineFollow();
+        if (follow != null)
+            follow.Show(targetEntity);
+    }
+
+    /// <summary>
+    /// 隐藏场上魔物的描边高亮预览
+    /// </summary>
+    public void HideCreatureOutlinePreview()
+    {
+        if (outlineFollow != null)
+            outlineFollow.Hide();
+    }
+
+    /// <summary>
+    /// 懒加载描边高亮预览预制(共享单例)并取其上的 CreatureSpineOutlineFollow 组件；加载失败返回 null
+    /// </summary>
+    CreatureSpineOutlineFollow GetCreatureSpineOutlineFollow()
+    {
+        if (outlineFollow == null)
+        {
+            string resPath = $"{PathInfo.CreaturesPrefabPath}/{PrefabNameOutlinePreview}";
+            var targetModel = GetModelForAddressablesSync(dicCreatureModel, resPath);
+            if (targetModel == null)
+            {
+                LogUtil.LogError($"创建描边预览失败：没有找到资源路径为{resPath}的预制");
+                return null;
+            }
+            objCreatureOutlinePreview = Instantiate(gameObject, targetModel);
+            Transform spineTF = objCreatureOutlinePreview.transform.Find("Spine");
+            //跟随器挂在 Spine 节点(与 SkeletonAnimation 同物体)，由其负责显示/材质/逐帧跟随
+            outlineFollow = spineTF.GetComponent<CreatureSpineOutlineFollow>();
+            if (outlineFollow == null)
+                outlineFollow = spineTF.gameObject.AddComponent<CreatureSpineOutlineFollow>();
+        }
+        return outlineFollow;
     }
 
     /// <summary>
@@ -119,7 +192,7 @@ public class CreatureManager : BaseManager
     /// <returns></returns>
     public GameObject GetDoomCouncilCreatureObj()
     {
-        string creatureModelName = "DoomCouncilCreature_1.prefab";
+        string creatureModelName = PrefabNameDoomCouncil;
         string resPath = $"{PathInfo.CreaturesPrefabPath}/{creatureModelName}";
         var targetModel = GetModelForAddressablesSync(dicCreatureModel, resPath);
         if (targetModel == null)
@@ -161,13 +234,13 @@ public class CreatureManager : BaseManager
             switch (creatureFightType)
             {
                 case CreatureFightTypeEnum.FightDefense:
-                    creatureModelName = "FightCreature_Def_1.prefab";
+                    creatureModelName = PrefabNameFightDefense;
                     break;
                 case CreatureFightTypeEnum.FightAttack:
-                    creatureModelName = "FightCreature_Att_1.prefab";
+                    creatureModelName = PrefabNameFightAttack;
                     break;
                 case CreatureFightTypeEnum.FightDefenseCore:
-                    creatureModelName = "FightCreature_DefCore_1.prefab";
+                    creatureModelName = PrefabNameFightDefenseCore;
                     break;
                 default:
                     LogUtil.LogError($"创建生物失败：没有找到creature_type为{itemCreatureInfo.creature_type}的生物");

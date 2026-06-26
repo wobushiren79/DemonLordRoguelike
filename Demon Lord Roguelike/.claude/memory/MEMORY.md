@@ -22,6 +22,10 @@
 ### Reference
 - [reference_unityskills_shadergraph_limits.md](reference_unityskills_shadergraph_limits.md) — Unity-Skills shadergraph 工具限制：节点白名单(无噪声/Time/NormalFromHeight)、Vector2 赋值 bug、值格式约定
 - [reference_language_excel_source.md](reference_language_excel_source.md) — 多语言 Language_*.txt 的真实源是 excel_language 同名工作表（非各自配置表），改文本必须改该 Excel 否则导出被覆盖；GetTextReplace 占位符模板
+- [reference_spine_outline_vs_rim.md](reference_spine_outline_vs_rim.md) — 平面 Spine 精灵(固定法线)Rim 边缘光恒为 0 不可见，高亮边框要用 OutlineOnly 真描边 + CustomMaterialOverride；场上魔物悬停高亮的共享单例预览预制方案
+- [reference_unity_mcp_tool_bug.md](reference_unity_mcp_tool_bug.md) — 本机 Unity MCP(3.4.2 HTTP)多数变更工具报 -32602、execute_code 无 Roslyn 走 CodeDom 命令行过长失败；建资源改用 [DidReloadScripts] 自动执行的临时编辑器脚本回退
+- [reference_unity_editor_self_run_delete_trick.md](reference_unity_editor_self_run_delete_trick.md) — 无人值守建/改 Unity 资源的小技巧：临时编辑器脚本 [DidReloadScripts] 搭编译便车自动执行 + 幂等守卫 + AssetDatabase.DeleteAsset 自删；MCP 不可用时优先用
+- [reference_ui_gradient_atlas_uv.md](reference_ui_gradient_atlas_uv.md) — UI 渐变不能用 sprite 贴图 UV(图集 V1 mode=4 压缩+9宫格切段致两色混成单色)；FrameWork/UI/Shader_UI_ImageGradient 读 UV1 + UIGradientMeshUV(BaseMeshEffect 写归一化 UV1 并开 Canvas TexCoord1)
 
 ### Collaboration Feedback
 - [`feedback_task_summary.md`](feedback_task_summary.md) — 任务总结必须列出参与的 Agent/Skill 名称及操作

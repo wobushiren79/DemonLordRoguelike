@@ -140,6 +140,14 @@ public partial class CameraHandler
     }
 
     /// <summary>
+    /// 设置成就摄像头
+    /// </summary>
+    public CinemachineCamera SetAchievementCamera(int priority, bool isEnable)
+    {
+        return SetCameraForBaseScene(priority, isEnable, "CV_Achievement");
+    }
+
+    /// <summary>
     /// 设置生物献祭摄像头
     /// </summary>
     public CinemachineCamera SetCreatureSacrificeCamera(int priority, bool isEnable)
