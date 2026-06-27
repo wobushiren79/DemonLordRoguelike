@@ -11,6 +11,8 @@ using UnityEngine.UI;
 
 public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
 {
+    //阵容预制体
+    public UIViewCreatureCardItem modelLineupItem;
     //阵容标签
     public List<RadioButtonView> listLineupTag = new List<RadioButtonView>();
 
@@ -174,9 +176,9 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     {
         float wView = ui_LineupContent.rect.width;
         float itemW = wView / maxLineupNum;
-        if (itemW > ui_ViewCreatureCardItem.rectTransform.rect.width)
+        if (itemW > modelLineupItem.rectTransform.rect.width)
         {
-            itemW = ui_ViewCreatureCardItem.rectTransform.rect.width;
+            itemW = modelLineupItem.rectTransform.rect.width;
         }
         return new Vector3(itemW * lineupPosIndex - wView / 2f + itemW / 2f, 0, 0);
     }
@@ -282,7 +284,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         }
         else
         {
-            GameObject ObjNewCard = Instantiate(ui_LineupContent.gameObject, ui_ViewCreatureCardItem.gameObject);
+            GameObject ObjNewCard = Instantiate(ui_LineupContent.gameObject, modelLineupItem.gameObject);
             lineupView = ObjNewCard.GetComponent<UIViewCreatureCardItem>();
         }
         lineupView.SetData(creatureData, CardUseStateEnum.Lineup);

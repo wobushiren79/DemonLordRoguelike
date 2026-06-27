@@ -11,8 +11,6 @@ public partial class UILineupManager
 
     public RectTransform ui_LineupContent;
 
-    public UIViewCreatureCardItemForLineup ui_ViewCreatureCardItem;
-
     public RadioGroupView ui_LineupIndexTitle;
 
     public UIViewCreatureCardList ui_UIViewCreatureCardList;

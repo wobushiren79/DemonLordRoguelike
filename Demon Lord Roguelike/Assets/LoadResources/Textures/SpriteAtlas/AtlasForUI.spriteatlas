@@ -81,6 +81,7 @@ SpriteAtlas:
     - 25a440e32b01c214eaf19fff4984953a: 21300000
     - 3282ea04ec9f41646a899d941a871c14: 21300000
     - 2dddcb14140f4fd4b879b0117f760d84: 21300000
+    - 5f5345242d5f37d43976440d55326793: 21300000
     - 535a6ba4a5712cd4cb552a136b74b3d9: 21300000
     - b2277d150eb2a944e8ccdf7e9f6667a9: 21300000
     - 7ef81c354003aef40878ffb3b84d2eac: 21300000
@@ -201,6 +202,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 25a440e32b01c214eaf19fff4984953a, type: 3}
   - {fileID: 21300000, guid: 3282ea04ec9f41646a899d941a871c14, type: 3}
   - {fileID: 21300000, guid: 2dddcb14140f4fd4b879b0117f760d84, type: 3}
+  - {fileID: 21300000, guid: 5f5345242d5f37d43976440d55326793, type: 3}
   - {fileID: 21300000, guid: 535a6ba4a5712cd4cb552a136b74b3d9, type: 3}
   - {fileID: 21300000, guid: b2277d150eb2a944e8ccdf7e9f6667a9, type: 3}
   - {fileID: 21300000, guid: 7ef81c354003aef40878ffb3b84d2eac, type: 3}
@@ -320,6 +322,7 @@ SpriteAtlas:
   - ui_class_3
   - ui_core_4
   - ui_border_9
+  - ui_creature_star_2
   - ui_border_19
   - ui_border_22
   - ui_border_18
