@@ -390,7 +390,9 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 
 ## 单体定向馈赠（随机一只防守生物属性/攻速翻倍）
 
-另一类「单级可重复(level=0)」馈赠的效果是**只作用于随机一只防守生物**（不是全体、也不是防守核心），如下 4 个：
+另一类「单级不可重复(level=1，族内仅 1 行)」馈赠的效果是**只作用于随机一只防守生物**（不是全体、也不是防守核心），如下 4 个：
+
+> 历史：这 4 个曾是 `level=0`(单级可重复，可反复选取、各锁定一只随机魔物叠加)，现已改为 `level=1`(单级不可重复) —— **整局最多出现/选取一次**（选后 `GetAbyssalBlessingFamilyLevel` 返回 1，候选判定 `level==owned+1` 不再成立而永不再现）。BUFF 仍是常驻单体定向型(非 Instant)，与 `level=1` 完全兼容；`IsSingleLevelOnce` 为真故 UI 不显示等级角标。改 `level` 即可，无需改任何 C# 代码。
 
 | 馈赠 | id | buff_ids | BUFF class_entity | 效果 |
 |------|----|----------|-------------------|------|

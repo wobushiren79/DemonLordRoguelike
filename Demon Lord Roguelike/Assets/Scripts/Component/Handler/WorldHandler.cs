@@ -336,7 +336,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             else
             {
                 //战斗场景没有ScenePrefabBase
-                DestroyImmediate(scenePrefabBase.gameObject);
+                DestroyImmediate(targetScene);
             }
             dicCurrentScene.Remove(gameSceneType);
         }
