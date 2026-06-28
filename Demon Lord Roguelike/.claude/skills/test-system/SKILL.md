@@ -206,19 +206,23 @@ public partial class UITestMyNew
 
 ### 创建测试生物
 
-```csharp
-// 创建随机品质的生物
-CreatureBean creatureData = new CreatureBean(creatureId);
-creatureData.rarity = Random.Range(1, 7);        // 品质 1-6
-creatureData.level = Random.Range(0, 11);        // 等级 0-10（当前等级上限 10 级）
-creatureData.AddSkinForBase();
+`UITestBase` 提供两个发生物按钮（逻辑见 `OnClickForAddAllCreature` / `OnClickForAddTestCreature`）：
 
-// 史莱姆额外加身体皮肤
-if (creatureData.creatureId > 3000 && creatureData.creatureId < 4000)
-{
-    creatureData.AddSkin(3040001);
-}
+- **添加所有生物** `ui_BtnAddAllCreature`：忽略输入框，遍历 `CreatureInfoCfg.GetAllData()` 全部生物各发 1 只，稀有度随机 1-6、等级固定 0，仅 `AddSkinForBase()`（**不授稀有度 BUFF**）。
+- **添加测试生物** `ui_BtnAddTestCreature`：输入1=生物ID(必填)；输入2=稀有度1-6(空=随机)；输入3=等级(空=随机0-10)。生成后走**孕育同款随机稀有度 BUFF 逻辑** `CreatureBean.RandomRarityBuffForCreate()`（按稀有度逐级授予，存入 `dicRarityBuff`，与扭蛋同口径）。
+
+```csharp
+// 添加测试生物核心(OnClickForAddTestCreature)
+// 稀有度: 输入2(夹紧1-6)或随机; 等级: 输入3(>=0)或随机0-10
+CreatureBean creatureData = new CreatureBean(targetId);
+creatureData.rarity = rarity;
+creatureData.level = level;
+creatureData.AddSkinForBase();
+creatureData.RandomRarityBuffForCreate();   // 走孕育同款随机稀有度BUFF
+userData.AddBackpackCreature(creatureData);
 ```
+
+> 三个输入框提示**直接写死不走多语言**，由 `UITestBase.InitInputPlaceholder()` 在 `OpenUI` 设置；输入2/3 常驻显示，仅"添加测试生物"读取（其余功能只用输入1）。
 
 ### 添加用户资源
 

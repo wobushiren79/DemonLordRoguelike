@@ -626,14 +626,17 @@ public partial class CreatureBean
     }
 
     /// <summary>
-    /// 叠加深渊馈赠全局池(dicAbyssalBlessingBuffsActivie)中匹配该属性的BUFF修正
+    /// 叠加深渊馈赠全局池(dicAbyssalBlessingBuffsActivie)中匹配该属性、且实际作用于本生物的BUFF修正
     /// <para>深渊馈赠为全局池，是非战斗缓存链路特有的按需叠加；战斗链路(FightCreatureBean.RefreshBaseAttribute)经 ModifierPipeline 独立处理，不调用此方法以免重复。</para>
+    /// <para>作用判定统一走 AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature(口径与战斗属性管线一致)：含生物类型过滤(trigger_creature_type)与
+    /// 单体定向过滤(单体定向馈赠仅对被随机锁定的那一只生物生效)。缺此过滤会导致「随机一只攻击力翻倍」类馈赠被无差别叠加到所有生物。</para>
     /// <para>注：当前 RCD 类BUFF均为纯百分比(trigger_value=0)叠乘、可交换，深渊馈赠相对自身BUFF的先后不影响结果。</para>
     /// </summary>
     /// <param name="creatureAttributeType">属性类型</param>
     /// <param name="targetData">已叠加自身来源后的属性值</param>
+    /// <param name="creatureFightType">本生物的战斗类型(用于生物类型过滤)，卡片/详情等非战斗预览的防守魔物固定为 FightDefense</param>
     /// <returns>再叠加深渊馈赠全局池后的属性值</returns>
-    public float GetAbyssalBlessingChangeAttribute(CreatureAttributeTypeEnum creatureAttributeType, float targetData)
+    public float GetAbyssalBlessingChangeAttribute(CreatureAttributeTypeEnum creatureAttributeType, float targetData, CreatureFightTypeEnum creatureFightType = CreatureFightTypeEnum.FightDefense)
     {
         var abyssalBlessingBuffs = BuffHandler.Instance.manager.dicAbyssalBlessingBuffsActivie;
         if (!abyssalBlessingBuffs.List.IsNull())
@@ -644,6 +647,9 @@ public partial class CreatureBean
                 for (int j = 0; j < itemAbyssalBlessingBuff.Count; j++)
                 {
                     BuffBaseEntity buffEntity = itemAbyssalBlessingBuff[j];
+                    //仅叠加真正作用于本生物的馈赠(生物类型+单体定向过滤，与战斗管线同口径)
+                    if (!AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature(buffEntity, this, creatureFightType))
+                        continue;
                     if (buffEntity is BuffEntityAttribute buffEntityAttribute && buffEntityAttribute.attributeType == creatureAttributeType)
                     {
                         targetData = buffEntityAttribute.ChangeData(creatureAttributeType, targetData);
@@ -680,7 +686,7 @@ public partial class CreatureBean
         if (levelInfo != null)
             levelRate = levelInfo.CMP_rate;
         //稀有度增加倍率：rarity 为 0 时视为 N(1)，与卡片显示口径一致
-        int rarityForLookup = rarity <= 0 ? 1 : rarity;
+        int rarityForLookup = GetRarityValue();
         float rarityRate = 0;
         var rarityInfo = RarityInfoCfg.GetItemData(rarityForLookup);
         if (rarityInfo != null)

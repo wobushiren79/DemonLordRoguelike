@@ -164,6 +164,8 @@ details.isShowEquipItem = false;
 details.RefreshCard();
 ```
 
+> **详情面板属性取值口径**：`UIViewCreatureCardDetails.SetData` 展示 HP/DR/ATK/ASPD 时调 **`creatureData.GetAttribute(类型, includeAbyssalBlessing: true)`**——必须传第二参数 `true`，否则只算「基础值→加点→装备→自身/稀有度BUFF」，**漏算深渊馈赠全局池**（如「随机一只攻击力翻倍」单体定向馈赠生效后，详情面板攻击力不翻倍，与场上实际值不符）。`CreatureBean.GetAttribute(true)` 内部经 `GetAbyssalBlessingChangeAttribute` 叠加，且该方法用 `AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature(buff, this, FightDefense)` 做「生物类型 + 单体定向 UUID + 仅属性/攻速BUFF」三连过滤，故只对被锁定的那只魔物翻倍、不会误加到所有卡。非战斗场景（基地/阵容/献祭等）馈赠池为空，传 `true` 无副作用。详见 abyssal-blessing-system「单体定向馈赠」。
+
 ### 5. 创建新的卡片子类
 
 继承 `UIViewCreatureCardItem` 并重写 `RefreshCardState`：
@@ -213,7 +215,7 @@ EventsInfo.UIViewCreatureCardItem_OnClickSelect
 
 > **场上魔物描边高亮**：`UIViewCreatureCardItemForFight.OnPointerEnter` 末尾调 `ShowFieldCreatureOutline()` —— 若本卡对应魔物已上场(`fightData.GetCreatureById(uuid, FightDefense) != null`)，调 `CreatureHandler.ShowCreatureOutlinePreview(entity)` 给场上魔物套一圈亮蓝描边；`OnPointerExit` 调 `CreatureHandler.HideCreatureOutlinePreview()` 收起。描边实现见 creature-system / game-creature(共享单例预览预制 `FightCreature_OutlinePreview` + OutlineOnly 材质；平面 Spine 精灵固定法线导致 Rim 边缘光不可见，故改用描边)。
 
-> **战斗卡片深渊馈赠展示**：`UIViewCreatureCardItemForFight` 上的 `ui_AbyssalBlessingContent`(GridLayout 容器) + `ui_AbyssalBlessingItem`(Image 模板，prefab 中默认隐藏) 用来展示「**实际作用在本魔物身上**」的深渊馈赠图标。`RefreshAbyssalBlessing()`(在 `SetData` 末尾及监听 `EventsInfo.Buff_AbyssalBlessingChange` 时调用) → `CollectAbyssalBlessingForCreature` 遍历 `BuffHandler.manager.dicAbyssalBlessingBuffsActivie`，对每个馈赠用 **`AbyssalBlessingUtil.DoesAbyssalBuffAffectCreature(buff, creatureData, FightDefense)`**(在 `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`) 判定其任一 BUFF 是否真作用于本魔物——口径与属性管线(`FightCreatureBean.CollectFromBuffList`)/攻速管线一致：含**全体防守加成**(强身健体/伤害性极强/唯快不破/坚不可摧/时光沙漏，每张防守卡都显示一份)与**定向到本魔物**的馈赠(大力出奇迹/膘肥体壮/钢铁憨憨/急性子，按锁定 UUID 精确匹配)；排除作用敌方(慢条斯理)/防守核心/掉落(钱多多)/奖励(奖励多多·再来一瓶)/复制(增殖)等不改本魔物数值的馈赠。按收集个数用 `GetOrCreateAbyssalBlessingItem` 缓存池(`listAbyssalBlessingItem`)复用/克隆模板，`IconHandler.SetAbyssalBlessingIcon` 设图标，无馈赠时隐藏整个容器。卡片上魔物固定为 `FightDefense`。⚠️ **复制魔物(增殖)产生的克隆体是新 UUID，只会显示「全体防守馈赠」(靠 trigger_creature_type 自动生效)，不显示/不继承针对原魔物的单体定向馈赠**。深渊馈赠机制见 abyssal-blessing-system / game-abyssal-blessing。
+> **战斗卡片深渊馈赠展示**：`UIViewCreatureCardItemForFight` 上的 `ui_AbyssalBlessingContent`(GridLayout 容器) + `ui_AbyssalBlessingItem`(Image 模板，prefab 中默认隐藏) 用来展示「**实际作用在本魔物身上**」的深渊馈赠图标。`RefreshAbyssalBlessing()`(在 `SetData` 末尾及监听 `EventsInfo.Buff_AbyssalBlessingChange` 时调用) → 调 **`AbyssalBlessingUtil.CollectAbyssalBlessingEntityBean(creatureData, FightDefense, listAbyssalBlessingForCreature)`**(在 `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`，收集逻辑已从 UI 层下沉至此)：遍历 `dicAbyssalBlessingBuffsActivie`，内部用 `IsAbyssalBlessingTargetCreature` 判定每个馈赠的任一 BUFF 是否真作用于本魔物——口径与属性管线(`FightCreatureBean.CollectFromBuffList`)/攻速管线一致：含**全体防守加成**(强身健体/伤害性极强/唯快不破/坚不可摧/时光沙漏，每张防守卡都显示一份)与**定向到本魔物**的馈赠(大力出奇迹/膘肥体壮/钢铁憨憨/急性子，按锁定 UUID 精确匹配)；排除作用敌方(慢条斯理)/防守核心/掉落(钱多多)/奖励(奖励多多·再来一瓶)/复制(增殖)等不改本魔物数值的馈赠。按收集个数用 `GetOrCreateAbyssalBlessingItem` 缓存池(`listAbyssalBlessingItem`)复用/克隆模板，`IconHandler.SetAbyssalBlessingIcon` 设图标，无馈赠时隐藏整个容器。卡片上魔物固定为 `FightDefense`。⚠️ **复制魔物(增殖)产生的克隆体是新 UUID，只会显示「全体防守馈赠」(靠 trigger_creature_type 自动生效)，不显示/不继承针对原魔物的单体定向馈赠**。深渊馈赠机制见 abyssal-blessing-system / game-abyssal-blessing。
 
 ### 战斗卡片事件
 

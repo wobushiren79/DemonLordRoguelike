@@ -1,5 +1,6 @@
 ﻿using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
 
 
 public partial class UICreatureVat
@@ -30,7 +31,21 @@ public partial class UICreatureVat
 
     public Image ui_Progress;
 
+    public RectTransform ui_ProgressContent;
+
     public UIViewBaseInfoContent ui_UIViewBaseInfoContent;
+
+    public RectTransform ui_AscendData;
+
+    public UIViewCreatureCardItem ui_UIViewCreatureCardItem_BeforeAscend;
+
+    public UIViewCreatureCardItem ui_UIViewCreatureCardItem_AfterAscend;
+
+    public UIViewCreatureVatAscendBuffItem ui_UIViewCreatureVatAscendBuffItem;
+
+    public RectTransform ui_AscendBuffs;
+
+    public Animator ui_AscendIcon;
 
 
 }

@@ -49,6 +49,12 @@ public static class BuffUtil
 
     #region 进阶BUFF生成
     /// <summary>
+    /// 进阶规则:每个素材BUFF id 的直接命中概率(百分点)= 本常量 × 该 id 在素材中出现的数量。
+    /// 生成(roll累加)与展示(概率列表)同口径,单点化避免两处魔法数 10 不一致。
+    /// </summary>
+    private const float AscendMaterialBuffRatePerCount = 10f;
+
+    /// <summary>
     /// 进阶规则:生成 newRarity 的一条BUFF。
     /// <para>默认走通用随机;素材魔物在 newRarity 槽位的BUFF会按 buff id 聚合,每个 id 提供 10%×数量 的直接命中概率(decision: 按 buff id 判定同一)。</para>
     /// <para>命中某素材BUFF时,继承其 id 并按下限重随机数值(结果≥素材原数值);未命中则回退通用随机。</para>
@@ -65,7 +71,7 @@ public static class BuffUtil
             return null;
         }
         //聚合素材在 newRarity 槽位的BUFF: buff id -> 命中统计(数量/数值下限)
-        Dictionary<long, MaterialBuffStat> dicMaterialBuff = GetMaterialBuffStats(newRarity, materials);
+        Dictionary<long, CreatureAscendMaterialBuffStruct> dicMaterialBuff = GetMaterialBuffStats(newRarity, materials);
         //先按素材加成概率 roll(每个 id 10%×数量),命中则继承该BUFF
         if (dicMaterialBuff != null && dicMaterialBuff.Count > 0)
         {
@@ -73,7 +79,7 @@ public static class BuffUtil
             float acc = 0f;
             foreach (var item in dicMaterialBuff)
             {
-                acc += 10f * item.Value.count;
+                acc += AscendMaterialBuffRatePerCount * item.Value.count;
                 if (roll < acc)
                 {
                     return BuffBean.CreateRandomWithFloor(item.Key, item.Value.floorValue, item.Value.floorValueRate);
@@ -90,13 +96,13 @@ public static class BuffUtil
     /// <param name="rarityEnum">要统计的稀有度槽位(进阶后的目标稀有度)</param>
     /// <param name="materials">素材魔物列表</param>
     /// <returns>buff id 到命中统计的字典;无任何素材BUFF返回 null</returns>
-    private static Dictionary<long, MaterialBuffStat> GetMaterialBuffStats(RarityEnum rarityEnum, List<CreatureBean> materials)
+    private static Dictionary<long, CreatureAscendMaterialBuffStruct> GetMaterialBuffStats(RarityEnum rarityEnum, List<CreatureBean> materials)
     {
         if (materials == null || materials.Count == 0)
         {
             return null;
         }
-        Dictionary<long, MaterialBuffStat> dicStat = null;
+        Dictionary<long, CreatureAscendMaterialBuffStruct> dicStat = null;
         for (int i = 0; i < materials.Count; i++)
         {
             var material = materials[i];
@@ -111,7 +117,7 @@ public static class BuffUtil
             }
             if (dicStat == null)
             {
-                dicStat = new Dictionary<long, MaterialBuffStat>();
+                dicStat = new Dictionary<long, CreatureAscendMaterialBuffStruct>();
             }
             if (dicStat.TryGetValue(matBuff.id, out var stat))
             {
@@ -122,7 +128,7 @@ public static class BuffUtil
             }
             else
             {
-                stat = new MaterialBuffStat
+                stat = new CreatureAscendMaterialBuffStruct
                 {
                     count = 1,
                     floorValue = matBuff.trigger_value,
@@ -133,15 +139,58 @@ public static class BuffUtil
         }
         return dicStat;
     }
+    #endregion
+
+    #region 进阶BUFF概率展示
+    /// <summary>
+    /// 进阶"随机增益"兜底项默认名(暂无对应多语言配置,硬编码与孵化缸item模板文案保持一致)。
+    /// </summary>
+    public const string AscendRandomBuffName = "随机增益";
 
     /// <summary>
-    /// 素材BUFF命中统计:同一 buff id 在素材里出现的数量,及其数值/百分比下限。
+    /// 按进阶BUFF生成规则,计算 newRarity 下各BUFF的命中概率(供孵化缸进阶详情实时展示)。
+    /// <para>与 <see cref="CreateAscendRarityBuff"/> 同口径:每个素材BUFF id 提供 10%×数量 的直接命中概率;</para>
+    /// <para>列表末尾追加一项"随机增益"(buffId=-1)表示剩余概率(100%-素材命中总和,走通用随机)。</para>
+    /// <para>newRarity 无对应BUFF类型(N/UR/L)时返回空列表(只升稀有度不授BUFF,不展示任何增益)。</para>
     /// </summary>
-    private struct MaterialBuffStat
+    /// <param name="newRarity">进阶后的目标稀有度</param>
+    /// <param name="materials">已选素材魔物列表(可空,空时仅返回100%随机增益)</param>
+    /// <returns>各BUFF命中概率列表(素材BUFF在前,随机增益兜底在后);无对应类型时为空列表</returns>
+    public static List<CreatureAscendBuffChanceStruct> GetCreatureAscendBuffChances(RarityEnum newRarity, List<CreatureBean> materials)
     {
-        public int count;
-        public float floorValue;
-        public float floorValueRate;
+        List<CreatureAscendBuffChanceStruct> listChance = new List<CreatureAscendBuffChanceStruct>();
+        BuffTypeEnum buffType = GetRarityBuffType(newRarity);
+        //无对应BUFF类型:不授BUFF,不展示任何增益
+        if (buffType == BuffTypeEnum.None)
+        {
+            return listChance;
+        }
+        //素材命中:每个 buff id 提供 10%×数量 的概率
+        float materialTotalRate = 0f;
+        Dictionary<long, CreatureAscendMaterialBuffStruct> dicMaterialBuff = GetMaterialBuffStats(newRarity, materials);
+        if (dicMaterialBuff != null)
+        {
+            foreach (var item in dicMaterialBuff)
+            {
+                float rate = AscendMaterialBuffRatePerCount * item.Value.count;
+                materialTotalRate += rate;
+                var buffInfo = BuffInfoCfg.GetItemData(item.Key);
+                listChance.Add(new CreatureAscendBuffChanceStruct
+                {
+                    buffId = item.Key,
+                    name = buffInfo != null ? buffInfo.name_language : "",
+                    rate = rate,
+                });
+            }
+        }
+        //兜底"随机增益":剩余概率(钳制到≥0)
+        listChance.Add(new CreatureAscendBuffChanceStruct
+        {
+            buffId = -1,
+            name = AscendRandomBuffName,
+            rate = Mathf.Max(0f, 100f - materialTotalRate),
+        });
+        return listChance;
     }
     #endregion
 }

@@ -44,6 +44,10 @@ watched_files:
 - **目标列表**：仅 Idle 且未满级（`RarityInfoCfg.GetAscendTimeByRarity(rarity) > 0`，即排除 L）。
 - **素材列表**：Idle + 排除目标 + 排除上阵（`UserDataBean.CheckIsInAnyLineup`）+ 仅保留稀有度**高于**目标的魔物；最多选 5 只（`const int MaterialMax = 5`），超出弹 Toast（文本 id 80011）。
 - **预定 BUFF 生成**：开始进阶时调用 `BuffUtil.CreateAscendRarityBuff(newRarity, materials)` 得到 `ascendBuff`（素材在 newRarity 槽位的 BUFF 按 id 聚合，每 id 提供 10%×数量 命中概率，命中继承并重随机数值≥素材原值，未命中回退通用随机；UR/L 无类型则为 null）。
+- **进阶详情 UI（AscendData，素材选择阶段展示）**：仅在「素材选择阶段（`userAscendDetails==null`）+ 已选目标」时显示 `ui_AscendData` 并隐藏 `ui_ProgressContent`（培养阶段反之）；统一在 `RefreshAscendData()` 切换，由 `RefreshVatState` 及目标选择事件触发。`ui_ProgressContent` 未在 Component 文件序列化，靠运行时 `AutoLinkUI` 按名绑定。
+  - **升阶前/后卡牌**：`ui_UIViewCreatureCardItem_BeforeAscend/_AfterAscend` 用 `CardUseStateEnum.ShowNoPopup`（关闭 popup 详情）；After 卡用 `BuildAscendPreviewCreature(target, newRarity)`（值字段复制+稀有度+1，引用字段共享只读展示）。两卡 `PlayCardDropIn` 从上掉落 + OutBack 缩放（DOTween）。
+  - **AscendIcon**：向右戳循环 Animator（`Assets/LoadResources/Anim/UI/UICreatureVatAscendIcon.controller`，动 `m_AnchoredPosition.x`）。
+  - **BUFF 增益概率面板（AscendBuffs）**：`BuffUtil.GetCreatureAscendBuffChances(newRarity, materials)` 算各 BUFF 命中概率（素材 BUFF 在前、`随机增益` 兜底在后，默认无素材时 100%）；子项 `UIViewCreatureVatAscendBuffItem`（`ui_AscendBuffItemName`/`ui_AscendBuffItemRate`/`ui_BG_Image`/`ui_BG_PopupButtonCommonView`）实时克隆/复用缓存（`listAscendBuffItem`），一排最多 5 个、超出 y 轴下移，出现/消失/移动均 DOTween。`SetData(chance, rarity)`：名字字体+BG背景按稀有度配色（`RarityInfo.buff_color`，与 `UIViewBuffShowItem` 同口径）；BG 带 `PopupButtonCommonView` 悬浮提示该 BUFF 内容（取 `content_language`，占位参数 `{..}` 因数值进阶时才随机确定故统一 Regex 替成 `???`；随机增益兜底项给通用说明）。
 - **耗时**：按**源稀有度**查表 `RarityInfoCfg.GetAscendTimeByRarity`（秒）作为 `timeMax`；魔晶加速每颗 +1 秒(progress)；被动 tick 每秒 +1 秒。
 - **临时进阶数据**：`UserAscendBean` / `UserAscendDetailsBean`（随存档序列化）—— `progress` 现为「已累积秒数」，`targetRarity`/`timeMax`/`ascendBuff` 字段，`AddProgress(+1秒)`、`IsComplete()`、`GetProgressNormalized()`；进度条/完成判定改用后两者。`AddAscendData(index, creatureData, targetRarity, timeMax, ascendBuff)`。
 - **存档时机**：开始进阶存一次、点完成存一次；培养过程（进度 tick / 魔晶加速）不主动存档。

@@ -219,8 +219,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
             itemCardView.transform.SetAsLastSibling();
             var itemLineupPosIndex = userData.GetLineupCreaturePosIndex(currentLineupIndex, itemCardView.cardData.creatureData.creatureUUId);
             Vector3 itemLineupPos = GetLineupPostion(totalCard, itemLineupPosIndex);
-            //计算错开延迟
-            float delay = i * timeForLineupCardStagger;
+            //错开延迟：初始化(animType==1)左到右级联；单卡增删(animType==0)让刚操作的卡(列表末位)零延迟先动，其余依次跟上，避免点击后等待
+            float delay = (animType == 1 ? i : (totalCard - 1 - i)) * timeForLineupCardStagger;
             //播放动画
             float timeForMove = timeForLineupCardMove;
             itemCardView.transform.DOKill();

@@ -346,7 +346,7 @@ public interface IBuffSingleTarget { string SingleTargetCreatureUUId { get; } }
   - 属性类：`FightCreatureBean.CollectFromBuffList` 在 `trigger_creature_type` 过滤之后追加一句——`buff is IBuffSingleTarget st && st.SingleTargetCreatureUUId != creatureData.creatureUUId` 则 `continue`，从而该 modifier 只进入被锁定那只生物的 `dicAttribute` 计算。
   - 攻速类：`BuffHandler.ChangeAttackTimeDataForBuff` 扫描馈赠池时按同一 UUID 比对。
 - **复制魔物(增殖)不继承单体定向**：`BuffEntityInstantCloneDefenseCreature` 克隆出的新魔物是**新 UUID**，与单体定向馈赠锁定的原魔物 UUID 不匹配，故克隆体**不继承也不显示**原魔物的单体定向馈赠；克隆体只继承「作用于全体防守生物」的馈赠(靠 `trigger_creature_type` 过滤、与 UUID 无关)。
-- **卡片展示口径统一**：`AbyssalBlessingUtil.DoesAbyssalBuffAffectCreature(buff, creatureData, fightType)`(在 `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`) 封装「trigger_creature_type 过滤 + 单体定向 UUID 过滤 + 仅 IAttributeModifierSource/BuffEntityAttributeAttackTime 算作用于生物」三连，供战斗卡片(`UIViewCreatureCardItemForFight`)展示「作用于本魔物的馈赠」复用，确保展示与实际效果同步。
+- **卡片展示口径统一**：`AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature(buff, creatureData, fightType)`(在 `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`) 封装「trigger_creature_type 过滤 + 单体定向 UUID 过滤 + 仅 IAttributeModifierSource/BuffEntityAttributeAttackTime 算作用于生物」三连，供战斗卡片(`UIViewCreatureCardItemForFight`)展示「作用于本魔物的馈赠」复用，确保展示与实际效果同步。
 - **不污染存档**：`dlDefenseCreatureData` 内的 `CreatureBean` 与玩家存档**共享引用**，故绝不能改 `creatureAttribute`；本方案只改运行时计算出的 `dicAttribute`/攻击时间，馈赠在征服全通关领奖后随 `ClearAbyssalBlessing` 清空。
 - **可重复选取(level=0)**：每次选取新建一个BUFF实例、各自锁定一只新随机生物叠加（同族 level=0 不触发替换）。
 - ⚠️ **选取后立即刷新已在场生物（事件驱动）**：属性类(ATK/HP/DR)依赖 `dicAttribute` 重算，`BuffHandler.AddAbyssalBlessing` 末尾 `TriggerEvent(Buff_AbyssalBlessingChange)`，由 `GameFightLogic.EventForAbyssalBlessingChange` 监听并立即对防守核心 + 全部防守生物 `RefreshBaseAttribute`（BuffHandler 只触发事件、不直接刷新，职责更解耦）。否则征服「普通关卡→普通关卡」走 `ContinueNextLevelInSameScene` 保留现场、不重载场景也不重算属性，加成要等到下次场景重载（切BOSS关 `StartNextGameForBoss` 重建生物实体）才生效——典型BUG「普通关选了不生效、切BOSS才生效」。攻速类(急性子)每次攻击实时缩放不依赖刷新，一并刷新也无害。
@@ -391,8 +391,9 @@ CMP               // 召唤魔力消耗（基础值=CreatureInfo.CMP；GetAttrib
 | `BuffUtil.GetRarityBuffType(RarityEnum)` | `BuffTypeEnum` | 稀有度 → 稀有度 BUFF 类型。仅 R/SR/SSR 有对应类型（`CreatureRarityR/SR/SSR`）；N/UR/L 返回 `None` |
 | `BuffUtil.CreateRandomRarityBuff(RarityEnum)` | `BuffBean` | **扭蛋通用规则**：按 `GetRarityBuffType` 取该类型的 BUFF 列表随机抽 1 条，`new BuffBean(id, isRandom:true)`；无对应类型返回 `null` |
 | `BuffUtil.CreateAscendRarityBuff(RarityEnum newRarity, List<CreatureBean> materials)` | `BuffBean` | **魔物进阶规则**：默认走通用随机；素材魔物在 `newRarity` 槽位的 BUFF 按 **buff id** 聚合，每个 id 提供 `10%×数量` 的直接命中概率；命中则继承该 id 并用 `BuffBean.CreateRandomWithFloor` 重随机数值（结果≥素材原值），未命中回退通用随机。UR/L 无类型返回 `null`（只升稀有度不授 BUFF） |
+| `BuffUtil.GetCreatureAscendBuffChances(RarityEnum newRarity, List<CreatureBean> materials)` | `List<CreatureAscendBuffChanceStruct>` | **进阶详情展示用**（与 `CreateAscendRarityBuff` 同口径算概率）：每个素材 BUFF id 一项 `rate=10×数量`，列表末尾追加一项「随机增益」(`buffId=-1`，名 `BuffUtil.AscendRandomBuffName`)表示剩余概率 `100-素材命中总和`；UR/L 无类型返回**空列表**（不授 BUFF 不展示）。供 `UICreatureVat` 孵化缸进阶详情面板实时展示。返回结构体 `CreatureAscendBuffChanceStruct` 及内部聚合结构体 `CreatureAscendMaterialBuffStruct` 同放 `Assets/Scripts/Struct/CreatureAscendStruct.cs` |
 
-> `GashaponItemBean.RandomRarityBuff(RarityEnum)` 内部已改为调用 `BuffUtil.CreateRandomRarityBuff`（行为不变，规则收口）。新增/调整稀有度 BUFF 仍只需在 `excel_buff_info` 配表，属性类 BUFF 自动进入对应 buff_type 池。
+> 「按稀有度逐级授予稀有度 BUFF」收口在 `CreatureBean.RandomRarityBuffForCreate()`（孕育 `GashaponItemBean.RandomRarity` 与测试面板 `UITestBase.OnClickForAddTestCreature` 共用），单档随机再调 `BuffUtil.CreateRandomRarityBuff`（原 `GashaponItemBean.RandomRarityBuff` 已删除）。新增/调整稀有度 BUFF 仍只需在 `excel_buff_info` 配表，属性类 BUFF 自动进入对应 buff_type 池。
 
 ### `BuffBean.CreateRandomWithFloor`（带下限随机工厂）
 
@@ -461,7 +462,7 @@ public class MyEquip : IAttributeModifierSource
 | 前置条件基类 | `Assets/Scripts/Game/Buff/BuffPre/BuffBasePreEntity.cs` |
 | 前置条件实现 | `Assets/Scripts/Game/Buff/BuffPre/` |
 | BUFF数据Bean | `Assets/Scripts/Bean/Game/BuffBean.cs`（含静态工厂 `CreateRandomWithFloor` 带下限随机） |
-| 稀有度 BUFF 生成工具 | `Assets/Scripts/Utils/BuffUtil.cs`（`CreateRandomRarityBuff` 通用 / `CreateAscendRarityBuff` 进阶 / `GetRarityBuffType`） |
+| 稀有度 BUFF 生成工具 | `Assets/Scripts/Utils/BuffUtil.cs`（`CreateRandomRarityBuff` 通用 / `CreateAscendRarityBuff` 进阶 / `GetRarityBuffType` / `GetCreatureAscendBuffChances` 进阶概率展示） |
 | BUFF运行时实例 | `Assets/Scripts/Bean/Game/BuffEntityBean.cs` |
 | BUFF配置Bean | `Assets/Scripts/Bean/MVC/Game/BuffInfoBean.cs` |
 | BUFF配置扩展 | `Assets/Scripts/Bean/MVC/Game/BuffInfoBeanPartial.cs`（含 `BuffStackMode` 枚举） |

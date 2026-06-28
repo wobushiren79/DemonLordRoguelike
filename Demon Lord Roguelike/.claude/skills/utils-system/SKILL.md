@@ -113,8 +113,8 @@ Assets/FrameWork/Scripts/           Assets/Scripts/
 | 文件 | 关键 API | 依赖 |
 |------|---------|------|
 | [AnimUtil](Assets/Scripts/Utils/AnimUtil.cs) | `AnimForUINumberChange`（UI 数字滚动） | DOTween、TMP |（`partial class`，通用 Animator 方法 `GetAnimClipLength` 在框架层 [AnimUtil](Assets/FrameWork/Scripts/Utils/AnimUtil.cs)）
-| [BuffUtil](Assets/Scripts/Utils/BuffUtil.cs) | `GetRarityBuffType` / `CreateRandomRarityBuff`（扭蛋通用稀有度 BUFF）/ `CreateAscendRarityBuff`（魔物进阶：素材 BUFF 按 id 聚合，每 id 提供 10%×数量 直接命中概率，命中继承并用 `BuffBean.CreateRandomWithFloor` 重随机数值≥素材原值，未命中回退通用随机） | BuffBean、CreatureBean、RarityEnum/BuffTypeEnum |
-| [ColorUtil](Assets/Scripts/Utils/ColorUtil.cs) | `ParseHtmlString` | UnityEngine |
+| [BuffUtil](Assets/Scripts/Utils/BuffUtil.cs) | `GetRarityBuffType` / `CreateRandomRarityBuff`（扭蛋通用稀有度 BUFF）/ `CreateAscendRarityBuff`（魔物进阶：素材 BUFF 按 id 聚合，每 id 提供 10%×数量 直接命中概率，命中继承并用 `BuffBean.CreateRandomWithFloor` 重随机数值≥素材原值，未命中回退通用随机）/ `GetCreatureAscendBuffChances`（同口径算各 BUFF 命中概率列表供进阶详情展示，末尾追加「随机增益」buffId=-1 兜底剩余概率，无对应类型空列表） | BuffBean、CreatureBean、RarityEnum/BuffTypeEnum |
+| [ColorUtil](Assets/Scripts/Utils/ColorUtil.cs) | `ParseHtmlString` / `GetProgressColor(rate01)`（0~1 进度分5段配色红/橙/黄/浅绿/蓝，献祭成功率进度条与孵化缸进阶BUFF概率统一复用） | UnityEngine |
 | [CreatureUtil](Assets/Scripts/Utils/CreatureUtil.cs) | `GetCreatureSkinTypeEnumName` | TextHandler |
 | [ItemsUtil](Assets/Scripts/Utils/ItemsUtil.cs) | `GetLanguageText`（`this ItemUserTypeEnum`） | TextHandler |
 | [GameUIUtil](Assets/Scripts/Utils/GameUIUtil.cs) | `SetGradientColor` / `SetCreatureUIForSimple` / `SetCreatureUIForDetails` | CreatureHandler、SpineHandler、IconHandler |

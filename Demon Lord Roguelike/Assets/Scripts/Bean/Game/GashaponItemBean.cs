@@ -32,47 +32,25 @@ public class GashaponItemBean
         if (RandomRarityItem(UnlockEnum.GashaponRarityUR, UnlockEnum.GashaponRarityURRate))
         {
             creatureData.rarity = (int)RarityEnum.UR;
-            RandomRarityBuff(RarityEnum.R);
-            RandomRarityBuff(RarityEnum.SR);
-            RandomRarityBuff(RarityEnum.SSR);
-            RandomRarityBuff(RarityEnum.UR);
-            return;
         }
-        if (RandomRarityItem(UnlockEnum.GashaponRaritySSR, UnlockEnum.GashaponRaritySSRRate))
+        else if (RandomRarityItem(UnlockEnum.GashaponRaritySSR, UnlockEnum.GashaponRaritySSRRate))
         {
             creatureData.rarity = (int)RarityEnum.SSR;
-            RandomRarityBuff(RarityEnum.R);
-            RandomRarityBuff(RarityEnum.SR);
-            RandomRarityBuff(RarityEnum.SSR);
-            return;
         }
-        if (RandomRarityItem(UnlockEnum.GashaponRaritySR, UnlockEnum.GashaponRaritySRRate))
+        else if (RandomRarityItem(UnlockEnum.GashaponRaritySR, UnlockEnum.GashaponRaritySRRate))
         {
             creatureData.rarity = (int)RarityEnum.SR;
-            RandomRarityBuff(RarityEnum.R);
-            RandomRarityBuff(RarityEnum.SR);
-            return;
         }
-        if (RandomRarityItem(UnlockEnum.GashaponRarityR, UnlockEnum.GashaponRarityRRate))
+        else if (RandomRarityItem(UnlockEnum.GashaponRarityR, UnlockEnum.GashaponRarityRRate))
         {
             creatureData.rarity = (int)RarityEnum.R;
-            RandomRarityBuff(RarityEnum.R);
-            return;
         }
-        creatureData.rarity = (int)RarityEnum.N;
-    }
-
-    /// <summary>
-    /// 随机稀有度BUFF(走 BuffUtil 统一的稀有度BUFF通用生成规则,与魔物进阶共用同一口径)
-    /// </summary>
-    public void RandomRarityBuff(RarityEnum rarityEnum)
-    {
-        BuffBean buffData = BuffUtil.CreateRandomRarityBuff(rarityEnum);
-        if (buffData == null)
+        else
         {
-            return;
+            creatureData.rarity = (int)RarityEnum.N;
         }
-        creatureData.dicRarityBuff.Add(rarityEnum, buffData);
+        //按命中稀有度逐级授予稀有度BUFF(收口到 CreatureBean.RandomRarityBuffForCreate,与测试添加生物共用)
+        creatureData.RandomRarityBuffForCreate();
     }
 
     /// <summary>

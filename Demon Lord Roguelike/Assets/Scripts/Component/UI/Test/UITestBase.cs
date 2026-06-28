@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework.Interfaces;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Math;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
@@ -12,6 +13,39 @@ public partial class UITestBase : BaseUIComponent
     {
         base.OpenUI();
         GameControlHandler.Instance.manager.EnableAllControl(false);
+        //初始化输入框提示(测试面板专用,直接写死不走多语言)
+        InitInputPlaceholder();
+    }
+
+    /// <summary>
+    /// 初始化输入框提示文本(测试面板专用,直接写死不走多语言)
+    /// <para>输入1为通用数值/ID(被多个功能共用);输入2/3仅"添加测试生物"读取(稀有度/等级,空=随机)。</para>
+    /// </summary>
+    public void InitInputPlaceholder()
+    {
+        SetInputPlaceholder(ui_InputData, "数值/ID（魔晶·声望=数量；道具·解锁·生物=ID；空=默认/全部）");
+        SetInputPlaceholder(ui_InputData_2, "稀有度1-6（仅添加测试生物，空=随机）");
+        SetInputPlaceholder(ui_InputData_3, "等级（仅添加测试生物，空=随机0-10）");
+    }
+
+    /// <summary>
+    /// 设置 TMP 输入框的占位提示文本(占位符非 TMP 文本时忽略)
+    /// </summary>
+    public void SetInputPlaceholder(TMP_InputField inputField, string hint)
+    {
+        if (inputField != null && inputField.placeholder is TMP_Text placeholderText)
+        {
+            placeholderText.text = hint;
+        }
+    }
+
+    /// <summary>
+    /// 解析可选整数输入: 空或非整数返回 false(调用方按"随机"处理)
+    /// </summary>
+    public bool TryParseOptionalInt(string text, out int value)
+    {
+        value = 0;
+        return !text.IsNull() && int.TryParse(text, out value);
     }
 
     public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
@@ -177,20 +211,37 @@ public partial class UITestBase : BaseUIComponent
 
     /// <summary>
     /// 添加测试生物
+    /// <para>输入1=生物ID(必填)；输入2=稀有度1-6(空=随机)；输入3=等级(空=随机0-10)。</para>
+    /// <para>生成后走孕育同款随机稀有度BUFF逻辑(CreatureBean.RandomRarityBuffForCreate)。</para>
     /// </summary>
     public void OnClickForAddTestCreature()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        string inputData = ui_InputData.text;
-        if (inputData.IsNull() || !long.TryParse(inputData, out long targetId))
+        string inputId = ui_InputData.text;
+        if (inputId.IsNull() || !long.TryParse(inputId, out long targetId))
         {
             LogUtil.LogError("添加测试生物失败，请输入生物ID");
             return;
         }
+        //稀有度: 输入则夹紧到 N(1)~L(6), 否则随机
+        int rarity;
+        if (TryParseOptionalInt(ui_InputData_2.text, out int inputRarity))
+            rarity = Mathf.Clamp(inputRarity, (int)RarityEnum.N, (int)RarityEnum.L);
+        else
+            rarity = Random.Range((int)RarityEnum.N, (int)RarityEnum.L + 1);
+        //等级: 输入则夹紧到 >=0, 否则随机 0~10
+        int level;
+        if (TryParseOptionalInt(ui_InputData_3.text, out int inputLevel))
+            level = Mathf.Max(0, inputLevel);
+        else
+            level = Random.Range(0, 11);
+
         CreatureBean creatureData = new CreatureBean(targetId);
-        creatureData.rarity = Random.Range(1, 7);
-        creatureData.level = Random.Range(0, 11);
+        creatureData.rarity = rarity;
+        creatureData.level = level;
         creatureData.AddSkinForBase();
+        //走孕育同款随机稀有度BUFF逻辑(按稀有度逐级授予)
+        creatureData.RandomRarityBuffForCreate();
         userData.AddBackpackCreature(creatureData);
 
         UIHandler.Instance.ToastHintText("添加成功！",1);

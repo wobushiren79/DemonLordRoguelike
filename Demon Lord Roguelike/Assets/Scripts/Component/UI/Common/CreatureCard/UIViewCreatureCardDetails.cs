@@ -59,10 +59,11 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         SetCardIcon(creatureData);
         SetName(creatureData.creatureName);
 
-        int hp = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.HP);
-        int dr = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.DR);
-        int atk =  (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK);;
-        int aspd = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD);
+        //详情面板按「含深渊馈赠全局池」口径取属性(includeAbyssalBlessing=true)，与场上实际数值一致(如随机一只攻击力翻倍)
+        int hp = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.HP, true);
+        int dr = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.DR, true);
+        int atk = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true);
+        int aspd = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD, true);
         
         SetAttribute(hp, dr,atk, aspd);
         SetRarity(creatureData.rarity);

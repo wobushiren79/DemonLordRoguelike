@@ -24,5 +24,9 @@ public partial class UITestBase
 
     public Button ui_BtnWorldDif;
 
+    public TMP_InputField ui_InputData_2;
+
+    public TMP_InputField ui_InputData_3;
+
 
 }

@@ -66,7 +66,7 @@ watched_files:
 - **BuffManager.ClearAbyssalBlessing** - 清空所有馈赠（只在全通关后调）
 - **单体定向馈赠（随机一只防守生物属性/攻速翻倍）**：`level=0` 单级可重复，效果只作用于随机一只防守生物（非全体/非核心）。当前 4 个：大力出奇迹(1000004001/ATK翻倍)、膘肥体壮(1000005001/HP翻倍)、钢铁憨憨(1000006001/DR翻倍)、急性子(1000007001/攻速翻倍即攻击间隔减半)。BUFF 实体 `BuffEntityAttributeSingleTarget`/`BuffEntityAttributeAttackTimeSingleTarget` 实现 `IBuffSingleTarget`(仅暴露 `SingleTargetCreatureUUId`)，`SetData` 时 `fightData.GetRandomDefenseCreatureUUId()`(实例方法在 `FightBean`) 随机锁定一只 UUID；属性类在 `FightCreatureBean.CollectFromBuffList`、攻速类在 `BuffHandler.ChangeAttackTimeDataForBuff` 按 `SingleTargetCreatureUUId` 过滤。**绝不能改 `dlDefenseCreatureData` 里 CreatureBean 的 creatureAttribute（与存档共享引用，会污染永久存档）**，只改运行时 dicAttribute/攻击时间。图标 `ui_abyssalblessing_11~14`。
   - **复制魔物(增殖)不继承单体定向**：`BuffEntityInstantCloneDefenseCreature` 克隆出的魔物是**新 UUID**，与单体定向馈赠锁定的原魔物 UUID 不匹配，故不显示也不继承；克隆体只继承「作用于全体防守生物」的馈赠(靠 `trigger_creature_type` 过滤、与 UUID 无关，新魔物 `RefreshBaseAttribute` 时自动生效)。
-  - **战斗卡片展示**：`UIViewCreatureCardItemForFight` 用 `AbyssalBlessingUtil.DoesAbyssalBuffAffectCreature(buff, creatureData, FightDefense)`(在 `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`；trigger_creature_type + 单体定向 UUID + 仅属性/攻速BUFF 三连) 取「实际作用于本魔物」的馈赠图标展示——含全体防守加成，排除敌方/核心/掉落/奖励/复制类。详见 abyssal-blessing-system / buff-system / creature-card-system SKILL。
+  - **战斗卡片展示**：`UIViewCreatureCardItemForFight` 用 `AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature(buff, creatureData, FightDefense)`(在 `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`；trigger_creature_type + 单体定向 UUID + 仅属性/攻速BUFF 三连) 取「实际作用于本魔物」的馈赠图标展示——含全体防守加成，排除敌方/核心/掉落/奖励/复制类。详见 abyssal-blessing-system / buff-system / creature-card-system SKILL。
 
 ### 事件
 - **EventsInfo.Buff_AbyssalBlessingChange** - 馈赠变化（参数 AbyssalBlessingEntityBean）

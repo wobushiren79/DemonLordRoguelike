@@ -255,9 +255,7 @@ public class ScenePrefabForBase : ScenePrefabBase
                 {
                     if (itemAscendDetails != null)
                     {
-                        var creatureData = userData.GetBackpackCreature(itemAscendDetails.creatureUUId);
-                        //进度已是秒数,水色按归一化(0~1)Lerp
-                        BuildingVatSetState(itemVat, 3, creatureData, itemAscendDetails.GetProgressNormalized());
+                        BuildingVatRefreshItemWithProgress(itemVat, userData, itemAscendDetails);
                     }
                     else
                     {
@@ -269,9 +267,7 @@ public class ScenePrefabForBase : ScenePrefabBase
                 {
                     if (itemAscendDetails != null)
                     {
-                        var creatureData = userData.GetBackpackCreature(itemAscendDetails.creatureUUId);
-                        //进度已是秒数,水色按归一化(0~1)Lerp
-                        BuildingVatSetState(itemVat, 3, creatureData, itemAscendDetails.GetProgressNormalized());
+                        BuildingVatRefreshItemWithProgress(itemVat, userData, itemAscendDetails);
                     }
                 }
             }
@@ -280,6 +276,19 @@ public class ScenePrefabForBase : ScenePrefabBase
                 itemVat.gameObject.SetActive(false);
             }
         }
+    }
+
+    /// <summary>
+    /// 刷新单个有进阶数据的容器:取目标生物,按归一化进度(水色)设为进阶中状态(state=3)。
+    /// </summary>
+    /// <param name="itemVat">容器Transform</param>
+    /// <param name="userData">用户数据</param>
+    /// <param name="itemAscendDetails">该容器的进阶详情数据</param>
+    private void BuildingVatRefreshItemWithProgress(Transform itemVat, UserDataBean userData, UserAscendDetailsBean itemAscendDetails)
+    {
+        var creatureData = userData.GetBackpackCreature(itemAscendDetails.creatureUUId);
+        //进度已是秒数,水色按归一化(0~1)Lerp
+        BuildingVatSetState(itemVat, 3, creatureData, itemAscendDetails.GetProgressNormalized());
     }
 
     /// <summary>

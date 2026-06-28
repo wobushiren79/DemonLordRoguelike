@@ -92,6 +92,18 @@ public partial class CreatureBean
     //献祭升级保底成功率: 上一次献祭失败时记录为"当次成功率的一半",下一次献祭叠加在祭品成功率之上;献祭成功后清零。
     public float sacrificePityRate;
 
+    #region 稀有度
+    /// <summary>
+    /// 获取归一化后的稀有度值:rarity≤0(旧存档/未初始化)统一视为 N。
+    /// 收口散落在升阶链路(UICreatureVat)与 CMP 计算等处的 "rarity<=0?N:rarity" 重复判断。
+    /// </summary>
+    /// <returns>归一化稀有度值(≥N)</returns>
+    public int GetRarityValue()
+    {
+        return rarity <= 0 ? (int)RarityEnum.N : rarity;
+    }
+    #endregion
+
     #region 等级升级
     /// <summary>
     /// 获取下一级所需的等级配置(达到上限返回 null)
@@ -181,6 +193,26 @@ public partial class CreatureBean
         if (attributeNum <= 0)
             return;
         creatureAttribute.AddFixedAttributeForCreate(attributeNum, attributeType);
+    }
+    #endregion
+
+    #region 创建随机稀有度BUFF
+    /// <summary>
+    /// 创建生物时按当前稀有度逐级随机授予稀有度BUFF(孕育扭蛋/测试添加生物等创建链路共用)
+    /// <para>从 R 档起逐级到当前 rarity,每档经 BuffUtil.CreateRandomRarityBuff 随机生成一条填入 dicRarityBuff;</para>
+    /// <para>仅 R/SR/SSR 配有对应BUFF类型,N/UR/L 档生成为 null 自动跳过(只升稀有度不授BUFF)。</para>
+    /// <para>需先设置好 rarity 再调用;高稀有度会累积各低档各 1 条(如 SSR 得 R+SR+SSR 各 1)。</para>
+    /// </summary>
+    public void RandomRarityBuffForCreate()
+    {
+        for (int rarityValue = (int)RarityEnum.R; rarityValue <= rarity; rarityValue++)
+        {
+            RarityEnum rarityEnum = (RarityEnum)rarityValue;
+            BuffBean buffData = BuffUtil.CreateRandomRarityBuff(rarityEnum);
+            if (buffData == null)
+                continue;
+            dicRarityBuff[rarityEnum] = buffData;
+        }
     }
     #endregion
 

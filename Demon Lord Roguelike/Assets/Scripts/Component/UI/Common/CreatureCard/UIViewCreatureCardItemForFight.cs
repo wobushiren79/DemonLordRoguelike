@@ -367,14 +367,15 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     }
 
     /// <summary>
-    /// 刷新本卡魔物承载的深渊馈赠展示：收集所有锁定到本魔物的单体定向馈赠，按作用个数动态创建/复用 Item 图标。
+    /// 刷新本卡魔物承载的深渊馈赠展示：经 AbyssalBlessingUtil.CollectAbyssalBlessingEntityBean 收集所有作用于本魔物的深渊馈赠
+    /// (含全体防守加成与定向到本魔物的单体定向馈赠)，按作用个数动态创建/复用 Item 图标。
     /// </summary>
     public void RefreshAbyssalBlessing()
     {
         if (ui_AbyssalBlessingContent == null || ui_AbyssalBlessingItem == null)
             return;
-        //收集作用在本魔物身上的深渊馈赠
-        CollectAbyssalBlessingForCreature(listAbyssalBlessingForCreature);
+        //收集作用在本魔物身上的深渊馈赠(领域查询统一下沉到 AbyssalBlessingUtil；战斗卡片魔物固定 FightDefense)
+        AbyssalBlessingUtil.CollectAbyssalBlessingEntityBean(cardData?.creatureData, CreatureFightTypeEnum.FightDefense, listAbyssalBlessingForCreature);
         //先全部隐藏缓存池
         for (int i = 0; i < listAbyssalBlessingItem.Count; i++)
             listAbyssalBlessingItem[i].gameObject.SetActive(false);
@@ -400,38 +401,6 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
         Image newItem = newObj.GetComponent<Image>();
         listAbyssalBlessingItem.Add(newItem);
         return newItem;
-    }
-
-    /// <summary>
-    /// 收集当前作用在本卡魔物身上的深渊馈赠：遍历馈赠池，取「任一 BUFF 实际作用于本魔物」的馈赠实例。
-    /// 判定口径由 AbyssalBlessingUtil.DoesAbyssalBuffAffectCreature 统一(与属性/攻速管线一致)：
-    /// 含全体防守加成(强身健体/伤害性极强等)与定向到本魔物的馈赠(大力出奇迹等)，排除作用敌方/防守核心/掉落奖励/复制等不修改本魔物数值的馈赠。
-    /// 战斗卡片上的魔物固定为 FightDefense。
-    /// </summary>
-    /// <param name="listResult">收集结果(复用，调用前清空)</param>
-    protected void CollectAbyssalBlessingForCreature(List<AbyssalBlessingEntityBean> listResult)
-    {
-        listResult.Clear();
-        if (cardData == null || cardData.creatureData == null)
-            return;
-        CreatureBean creatureData = cardData.creatureData;
-        var dicAbyssalBlessing = BuffHandler.Instance.manager.dicAbyssalBlessingBuffsActivie;
-        for (int i = 0; i < dicAbyssalBlessing.ListKey.Count; i++)
-        {
-            var entity = dicAbyssalBlessing.ListKey[i];
-            var listBuff = BuffHandler.Instance.manager.GetAbyssalBlessingBuffsActivie(entity);
-            if (listBuff == null)
-                continue;
-            //该馈赠的任一 BUFF 实际作用于本魔物即视为作用于本魔物
-            for (int j = 0; j < listBuff.Count; j++)
-            {
-                if (AbyssalBlessingUtil.DoesAbyssalBuffAffectCreature(listBuff[j], creatureData, CreatureFightTypeEnum.FightDefense))
-                {
-                    listResult.Add(entity);
-                    break;
-                }
-            }
-        }
     }
     #endregion
 }

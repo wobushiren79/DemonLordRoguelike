@@ -411,12 +411,19 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 
 ### 战斗卡片展示「作用于本魔物的馈赠」
 
-战斗卡片 `UIViewCreatureCardItemForFight` 会在卡面上展示**实际作用于该魔物**的深渊馈赠图标(`ui_AbyssalBlessingContent` + `ui_AbyssalBlessingItem` 缓存池，详见 creature-card-system skill)。判定统一走 **`AbyssalBlessingUtil.DoesAbyssalBuffAffectCreature(buff, creatureData, FightDefense)`**(在 `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`)，口径与属性/攻速管线一致：
+战斗卡片 `UIViewCreatureCardItemForFight` 会在卡面上展示**实际作用于该魔物**的深渊馈赠图标(`ui_AbyssalBlessingContent` + `ui_AbyssalBlessingItem` 缓存池，详见 creature-card-system skill)。判定统一走 **`AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature(buff, creatureData, FightDefense)`**(在 `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`)，口径与属性/攻速管线一致：
 
 - **三连判定**：① `trigger_creature_type` 过滤(None 或 == 本生物战斗类型)；② 单体定向过滤(`SingleTargetCreatureUUId == 本魔物 UUID`)；③ 仅 `IAttributeModifierSource`/`BuffEntityAttributeAttackTime` 类(会改属性/攻速)才算作用于生物。
 - **会显示**：全体防守加成(强身健体/伤害性极强/唯快不破/坚不可摧/时光沙漏，每张防守卡各一份) + 定向到本魔物的(大力出奇迹/膘肥体壮/钢铁憨憨/急性子，按锁定 UUID 精确匹配)。
 - **不显示**：作用敌方进攻生物的(慢条斯理 `trigger=FightAttack`)、只作用防守核心的、掉落类(钱多多 `BuffEntityConditional`)、奖励类(奖励多多/再来一瓶 `BuffEntityInstant`)、复制类(增殖 `BuffEntityInstant`)——它们不改本魔物数值。
 - 卡片监听 `Buff_AbyssalBlessingChange` 刷新；克隆体卡片经 `Buff_DefenseCreatureAdd` 新建时 `SetData` 内即刷新——克隆体新 UUID 故只显示全体馈赠、不显示原魔物的单体定向馈赠。
+
+### 卡片详情 popup 的属性数值同步
+
+战斗中点开魔物卡牌的详情 popup(`UIViewCreatureCardDetails`)展示 HP/DR/ATK/ASPD 时，必须用 **`CreatureBean.GetAttribute(类型, includeAbyssalBlessing: true)`** 才会反映深渊馈赠（含单体定向翻倍）；漏传 `true` 会导致详情面板数值与场上实际值不符（典型症状：「大力出奇迹」生效后场上伤害翻倍但详情攻击力没变）。
+
+- `GetAttribute(true)` 内部经 `CreatureBean.GetAbyssalBlessingChangeAttribute`，该方法对全局池每个 BUFF 先用 **`AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature(buff, this, creatureFightType=FightDefense)`** 做与战斗管线一致的三连过滤，再 `ChangeData` 叠加——故单体定向馈赠**只对被锁定 UUID 的那只魔物翻倍**，不会无差别加到所有卡（缺此过滤即为该 bug 根因）。
+- 战斗实体走的是另一条链路(`FightCreatureBean.RefreshBaseAttribute` 经 `ModifierPipeline`)，两条链路对单个翻倍馈赠结果一致；非战斗场景馈赠池已 `ClearAbyssalBlessing` 清空，详情面板传 `true` 无副作用。
 
 ## 关键文件速查
 
@@ -436,10 +443,10 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 | 奖励类即时BUFF（奖励多多/再来一瓶） | `Assets/Scripts/Game/Buff/BuffEntity/Instant/BuffEntityInstantRewardMoreItem.cs` / `BuffEntityInstantRewardMoreSelect.cs` |
 | 单体定向馈赠BUFF（大力出奇迹/膘肥体壮/钢铁憨憨/急性子） | `Assets/Scripts/Game/Buff/BuffEntity/Attribute/BuffEntityAttributeSingleTarget.cs` / `BuffEntityAttributeAttackTimeSingleTarget.cs` / `Assets/Scripts/Game/Buff/Interface/IBuffSingleTarget.cs`(接口，仅 SingleTargetCreatureUUId；不限深渊馈赠) |
 | 随机锁定一只防守生物 | `Assets/Scripts/Bean/Game/FightBean.cs`(`GetRandomDefenseCreatureUUId()` 实例方法，从 dlDefenseCreatureData 随机取一只 UUID；BUFF 经 fightData 调用) |
-| 馈赠作用判定工具 | `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`(`DoesAbyssalBuffAffectCreature` 三连判定，供卡片展示与属性/攻速管线统一口径) |
+| 馈赠作用判定工具 | `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`(`IsAbyssalBlessingTargetCreature` 三连判定 + `CollectAbyssalBlessingEntityBean` 收集作用于某生物的馈赠实体，供卡片展示与属性/攻速管线统一口径) |
 | 单体过滤落点 | `Assets/Scripts/Bean/Game/FightCreatureBean.cs`(CollectFromBuffList 按 SingleTargetCreatureUUId 比对) / `Assets/Scripts/Component/Handler/BuffHandler.cs`(ChangeAttackTimeDataForBuff 按 SingleTargetCreatureUUId 比对) |
 | 复制魔物(增殖) | `Assets/Scripts/Game/Buff/BuffEntity/Instant/BuffEntityInstantCloneDefenseCreature.cs`(克隆新 UUID，仅继承全体馈赠不继承单体定向，触发 Buff_DefenseCreatureAdd) |
-| 战斗卡片馈赠展示 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForFight.cs`(RefreshAbyssalBlessing / CollectAbyssalBlessingForCreature 用 AbyssalBlessingUtil.DoesAbyssalBuffAffectCreature) |
+| 战斗卡片馈赠展示 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForFight.cs`(RefreshAbyssalBlessing 调 `AbyssalBlessingUtil.CollectAbyssalBlessingEntityBean(creatureData, FightDefense, 复用List)` 收集作用于本魔物的馈赠实体；收集逻辑已下沉到 Util，不再在 UI 层手写循环) |
 | 选择界面 | `Assets/Scripts/Component/UI/Game/FightAbyssalBlessing/UIFightAbyssalBlessing.cs`（SetData / RollCandidates） |
 | 选择项 | `Assets/Scripts/Component/UI/Game/FightAbyssalBlessing/UIViewFightAbyssalBlessingItem.cs` |
 | 常驻列表 | `Assets/Scripts/Component/UI/Common/AbyssalBlessing/UIViewAbyssalBlessingInfoContent.cs` |

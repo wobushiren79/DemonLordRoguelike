@@ -694,6 +694,9 @@ EventsInfo.Language_Change                // 语言切换
 - **耗时**：按源稀有度查 `RarityInfoCfg.GetAscendTimeByRarity`（excel_rarity_info 新列 `ascend_time`）作 `timeMax`；魔晶加速每颗 +1 秒，被动 tick 每秒 +1 秒。
 - **临时进阶数据**：`UserAscendDetailsBean`（随存档序列化）—— `progress` 为「已累积秒数」，含 `targetRarity`/`timeMax`/`ascendBuff`，`IsComplete()` / `GetProgressNormalized()` 驱动完成判定与进度条。
 - **存档时机**：开始进阶存一次、点完成存一次；培养过程（`GameDataHandler.HandleForAscendData` 每秒 `AddProgress()` + 广播 `CreatureAscend_AddProgress`、魔晶加速）不主动存档。
+- **进阶详情 UI（AscendData）**：仅「素材选择阶段（`userAscendDetails==null`）+ 已选目标」时显示 `ui_AscendData`、隐藏 `ui_ProgressContent`（培养阶段反之），统一在 `RefreshAscendData()` 切换。`ui_ProgressContent` 未序列化进 Component，靠运行时 `AutoLinkUI` 按名绑定（同理 `ui_AscendIcon` 误绑 Image 也由 AutoLink 自愈到 Animator）。
+  - 升阶前/后卡牌 `ui_UIViewCreatureCardItem_BeforeAscend/_AfterAscend` 用 `CardUseStateEnum.ShowNoPopup` 关 popup；After 卡走 `BuildAscendPreviewCreature(target,newRarity)`（稀有度+1、引用字段共享）；两卡 `PlayCardDropIn` 从上掉落+OutBack 缩放。
+  - BUFF 增益面板 `ui_AscendBuffs`：`BuffUtil.GetCreatureAscendBuffChances(newRarity, materials)` 算概率，子项 `UIViewCreatureVatAscendBuffItem` 实时克隆/复用缓存、一排≤5 个超出 y 轴下移，出现/消失/移动均 DOTween；`SetData(chance,rarity)` 名字+BG(`ui_BG_Image`)按稀有度配色(`RarityInfo.buff_color`)，BG(`ui_BG_PopupButtonCommonView`)悬浮提示 BUFF 内容(`content_language`，占位参数 `{..}` 数值未定故 Regex 替 `???`)；AscendIcon 用向右戳循环 Animator。
 - 详细 BUFF 生成规则见 [buff-system](../buff-system/SKILL.md) / [utils-system](../utils-system/SKILL.md)。
 
 ---
@@ -705,6 +708,7 @@ EventsInfo.Language_Change                // 语言切换
 | 2026-04-10 | 创建UI框架SKILL | - |
 | 2026-05-26 | 新增"通用控件优先原则"章节，强制要求遮罩/弹窗/Toast/气泡等通用需求走 UIHandler 已有方法 | - |
 | 2026-06-24 | 新增 UICreatureVat（魔物进阶/培养槽）业务 UI 速记：升稀有度+授予稀有度 BUFF、素材过滤、最多 5 只、耗时按稀有度、临时进阶数据随存档、被动进度 tick | - |
+| 2026-06-27 | UICreatureVat 新增「进阶详情 UI」(AscendData)：素材选择阶段切 ProgressContent↔AscendData、升阶前/后卡牌掉落动画(ShowNoPopup)、AscendIcon 向右戳 Animator、BUFF 增益概率面板(子项 UIViewCreatureVatAscendBuffItem 池化+DOTween)；概率算法 BuffUtil.GetCreatureAscendBuffChances，结构体 CreatureAscendBuffChanceStruct/CreatureAscendMaterialBuffStruct 同放 Assets/Scripts/Struct/CreatureAscendStruct.cs | - |
 
 ---
 
