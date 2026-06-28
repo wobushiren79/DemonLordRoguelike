@@ -265,7 +265,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             targetScene = await LoadDoomCouncilScene();
 
             targetScene.SetActive(true);
-            targetScene.transform.position = new Vector3(-0.5f, -0.00001f, 1f);
+            targetScene.transform.position = new Vector3(-0.5f, WorldManager.FightSceneHeightY, 1f);
             targetScene.transform.eulerAngles = new Vector3(0, 90, 0);
         }
         else
@@ -289,7 +289,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             targetScene = await manager.GetFightScene(dataPath);
 
             targetScene.SetActive(true);
-            targetScene.transform.position = new Vector3(0, -0.00001f, -(fightData.sceneRoadNumMax - fightData.sceneRoadNum) / 2f);
+            targetScene.transform.position = new Vector3(0, WorldManager.FightSceneHeightY, -(fightData.sceneRoadNumMax - fightData.sceneRoadNum) / 2f);
             targetScene.transform.eulerAngles = Vector3.zero;
 
             //设置天空盒颜色
@@ -309,7 +309,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         //设置道路数据
         sceneRoad.transform.localScale = new Vector3(fightData.sceneRoadLength, fightData.sceneRoadNum, 1);
         sceneRoad.transform.eulerAngles = new Vector3(90, 0, 0);
-        sceneRoad.transform.position = new Vector3(fightData.sceneRoadLength / 2f + 0.5f, 0.00001f, fightData.sceneRoadNum / 2f + 0.5f);
+        sceneRoad.transform.position = new Vector3(fightData.sceneRoadLength / 2f + 0.5f, WorldManager.FightSceneRoadHeightY, fightData.sceneRoadNum / 2f + 0.5f);
         var roadMR = sceneRoad.GetComponent<MeshRenderer>();
         roadMR.sharedMaterial.SetVector("_GridSize", new Vector2(fightData.sceneRoadLength, fightData.sceneRoadNum));
 

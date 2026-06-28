@@ -15,20 +15,23 @@ public class WorldManager : BaseManager
     public AsyncOperationHandle<Material> currentSkyBox;
 
     #region 常量属性
-    /// <summary>预制体后缀</summary>
-    public const string SuffixPrefab = ".prefab";
-
     /// <summary>终焉议会场景名称</summary>
-    public const string SceneNameDoomCouncil = "DoomCouncilScene";
+    public const string SceneNameDoomCouncil = "DoomCouncilScene.prefab";
 
     /// <summary>奖励选择场景名称</summary>
-    public const string SceneNameRewardSelect = "RewardSelectScene";
+    public const string SceneNameRewardSelect = "RewardSelectScene.prefab";
 
     /// <summary>基地场景名称</summary>
-    public const string SceneNameBase = "BaseScene";
+    public const string SceneNameBase = "BaseScene.prefab";
 
     /// <summary>战斗场景道路预制体名称</summary>
-    public const string PrefabNameFightSceneRoad = "FightSceneRoad";
+    public const string PrefabNameFightSceneRoad = "FightSceneRoad.prefab";
+
+    /// <summary>战斗场景预制体的固定 y 轴高度</summary>
+    public const float FightSceneHeightY = 0f;
+
+    /// <summary>战斗场景道路预制体的固定 y 轴高度（垫在场景之上，避免 z-fighting）</summary>
+    public const float FightSceneRoadHeightY = 0.0001f;
     #endregion
 
     #region 场景相关
@@ -52,7 +55,7 @@ public class WorldManager : BaseManager
     /// </summary>
     public async Task<GameObject> GetGameScene(string sceneName)
     {
-        string dataPath = $"{PathInfo.CommonPrefabScenesPath}/{sceneName}{SuffixPrefab}";
+        string dataPath = $"{PathInfo.CommonPrefabScenesPath}/{sceneName}";
         var targetScene = await GetScene(dataPath);
         targetScene.gameObject.SetActive(true);
         //初始化数据
@@ -91,7 +94,7 @@ public class WorldManager : BaseManager
     /// <param name="actionForComplete"></param>
     public async Task<GameObject> GetFightSceneRoad()
     {
-        string dataPath = $"{PathInfo.CommonPrefabPath}/{PrefabNameFightSceneRoad}{SuffixPrefab}";
+        string dataPath = $"{PathInfo.CommonPrefabPath}/{PrefabNameFightSceneRoad}";
         var targetScene = await GetScene(dataPath);
         return targetScene;
     }
