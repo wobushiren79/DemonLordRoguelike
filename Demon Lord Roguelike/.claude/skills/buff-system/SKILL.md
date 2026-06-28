@@ -348,7 +348,7 @@ public interface IBuffSingleTarget { string SingleTargetCreatureUUId { get; } }
 - **复制魔物(增殖)不继承单体定向**：`BuffEntityInstantCloneDefenseCreature` 克隆出的新魔物是**新 UUID**，与单体定向馈赠锁定的原魔物 UUID 不匹配，故克隆体**不继承也不显示**原魔物的单体定向馈赠；克隆体只继承「作用于全体防守生物」的馈赠(靠 `trigger_creature_type` 过滤、与 UUID 无关)。
 - **卡片展示口径统一**：`AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature(buff, creatureData, fightType)`(在 `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`) 封装「trigger_creature_type 过滤 + 单体定向 UUID 过滤 + 仅 IAttributeModifierSource/BuffEntityAttributeAttackTime 算作用于生物」三连，供战斗卡片(`UIViewCreatureCardItemForFight`)展示「作用于本魔物的馈赠」复用，确保展示与实际效果同步。
 - **不污染存档**：`dlDefenseCreatureData` 内的 `CreatureBean` 与玩家存档**共享引用**，故绝不能改 `creatureAttribute`；本方案只改运行时计算出的 `dicAttribute`/攻击时间，馈赠在征服全通关领奖后随 `ClearAbyssalBlessing` 清空。
-- **可重复选取(level=0)**：每次选取新建一个BUFF实例、各自锁定一只新随机生物叠加（同族 level=0 不触发替换）。
+- **可重复选取(level=0)**：每次选取新建一个BUFF实例、各自锁定一只新随机生物叠加（同族 level=0 不触发替换）；一局可获次数由配置 `max_count` 控制（当前这 4 个 `max_count=1` 即整局限 1 次，候选层 `BuffHandler.GetAbyssalBlessingPickCount` 门控，与本 BUFF 叠加逻辑独立）。
 - ⚠️ **选取后立即刷新已在场生物（事件驱动）**：属性类(ATK/HP/DR)依赖 `dicAttribute` 重算，`BuffHandler.AddAbyssalBlessing` 末尾 `TriggerEvent(Buff_AbyssalBlessingChange)`，由 `GameFightLogic.EventForAbyssalBlessingChange` 监听并立即对防守核心 + 全部防守生物 `RefreshBaseAttribute`（BuffHandler 只触发事件、不直接刷新，职责更解耦）。否则征服「普通关卡→普通关卡」走 `ContinueNextLevelInSameScene` 保留现场、不重载场景也不重算属性，加成要等到下次场景重载（切BOSS关 `StartNextGameForBoss` 重建生物实体）才生效——典型BUG「普通关选了不生效、切BOSS才生效」。攻速类(急性子)每次攻击实时缩放不依赖刷新，一并刷新也无害。
 
 ## 事件名速查（已注册到 BuffEventDispatcher）

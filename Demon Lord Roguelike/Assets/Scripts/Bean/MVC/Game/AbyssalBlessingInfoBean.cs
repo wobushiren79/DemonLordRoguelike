@@ -49,6 +49,10 @@ public partial class AbyssalBlessingInfoBean : BaseBean
 	///是否有效(0无效1有效)
 	/// </summary>
 	public int valid;
+	/// <summary>
+	///一局最多可获得次数(0=不限)
+	/// </summary>
+	public int max_count;
 }
 public partial class AbyssalBlessingInfoCfg : BaseCfg<long, AbyssalBlessingInfoBean>
 {

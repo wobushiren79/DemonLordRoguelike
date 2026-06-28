@@ -63,7 +63,7 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
 
     /// <summary>
     /// 构建本次可出现的候选池：遍历全部馈赠配置，按 <see cref="IsCandidateEligible"/> 过滤。
-    /// （level==0 可重复；level&gt;0 仅保留"已拥有升级族的下一级"）
+    /// （level&lt;=0 可重复但受 max_count 一局获得次数上限约束；level&gt;0 仅保留"已拥有升级族的下一级"）
     /// </summary>
     private List<AbyssalBlessingInfoBean> BuildCandidatePool()
     {
@@ -123,14 +123,21 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
 
     /// <summary>
     /// 判断馈赠是否可作为本次候选出现：
-    /// - level == 0：可重复选择的馈赠，始终可出现，不考虑等级；
+    /// - level &lt;= 0：可重复选择的馈赠，受一局可获得次数上限 max_count 约束
+    ///   （max_count&lt;=0 不限、始终可出现；max_count&gt;0 时已获得次数达上限后不再出现）；
     /// - level &gt; 0：仅当它正好是"已拥有升级族的下一级"时出现
     ///   （未拥有该族 → 仅 lv1 可出现；已拥有 lv(N) → 仅 lv(N+1) 可出现；已满级则该族不再出现）。
     /// </summary>
     private bool IsCandidateEligible(AbyssalBlessingInfoBean info)
     {
         if (info == null) return false;
-        if (info.level <= 0) return true;
+        //可重复馈赠：max_count<=0 不限；否则已选取次数 < max_count 才可继续出现
+        if (info.level <= 0)
+        {
+            if (info.max_count <= 0) return true;
+            long rootId = AbyssalBlessingInfoCfg.GetFamilyRootId(info.id);
+            return BuffHandler.Instance.GetAbyssalBlessingPickCount(rootId) < info.max_count;
+        }
         long familyRootId = AbyssalBlessingInfoCfg.GetFamilyRootId(info.id);
         int ownedLevel = BuffHandler.Instance.GetAbyssalBlessingFamilyLevel(familyRootId);
         return info.level == ownedLevel + 1;

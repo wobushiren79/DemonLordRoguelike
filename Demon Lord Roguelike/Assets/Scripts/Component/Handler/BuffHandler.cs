@@ -121,6 +121,25 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
     }
 
     /// <summary>
+    /// 获取指定族一局内已选取（已获得）的次数。
+    /// 仅对「可重复馈赠」(level&lt;=0：选取不走同族替换、每次选取各新增一个实例)有意义——
+    /// 容器内同族根实例数 == 已选取次数；供候选 max_count 次数上限判定使用。
+    /// </summary>
+    public int GetAbyssalBlessingPickCount(long familyRootId)
+    {
+        int count = 0;
+        var keys = manager.dicAbyssalBlessingBuffsActivie.ListKey;
+        for (int i = 0; i < keys.Count; i++)
+        {
+            var info = keys[i]?.abyssalBlessingInfo;
+            if (info == null) continue;
+            if (AbyssalBlessingInfoCfg.GetFamilyRootId(info.id) == familyRootId)
+                count++;
+        }
+        return count;
+    }
+
+    /// <summary>
     /// 移除指定升级族当前已拥有的馈赠条目（含其全部BUFF），用于升级替换。
     /// </summary>
     private void RemoveAbyssalBlessingByFamilyRoot(long familyRootId)
