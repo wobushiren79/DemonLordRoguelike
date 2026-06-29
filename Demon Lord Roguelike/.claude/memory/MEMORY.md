@@ -18,6 +18,8 @@
 - [`feedback_pixellab_require_consent.md`](feedback_pixellab_require_consent.md) — 调用 PixelLab 生成前必须征得用户明确同意（付费服务），禁止其他任务中"顺带"自行生成图片
 - [`feedback_pixellab_animation_output.md`](feedback_pixellab_animation_output.md) — 帧动画只保留合成精灵表，不保留单帧文件
 - [`feedback_pixellab_auto_download.md`](feedback_pixellab_auto_download.md) — 生成完成后必须自动下载到 Assets/Out/<子目录>/，不能只给链接
+- [`reference_research_white_icons.md`](reference_research_white_icons.md) — 研究图标 ui_research_* 纯白16x16剪影风格 + PixelLab(create_1_direction_object size64批量)→亮度阈值化纯白后处理流水线；当前已到 ui_research_200，下一个从 201 起
+- [`reference_colored_icons.md`](reference_colored_icons.md) — 彩色图标(深渊馈赠ui_abyssalblessing_/成就ui_achievement_)32x32 ≤8色：create_1_direction_object size32(64个/批)→quantize8中位切分量化控色流水线；深渊已到119(下一个120)、成就已到63(下一个64)
 
 ### Reference
 - [reference_unityskills_shadergraph_limits.md](reference_unityskills_shadergraph_limits.md) — Unity-Skills shadergraph 工具限制：节点白名单(无噪声/Time/NormalFromHeight)、Vector2 赋值 bug、值格式约定
@@ -26,6 +28,7 @@
 - [reference_unity_mcp_tool_bug.md](reference_unity_mcp_tool_bug.md) — 本机 Unity MCP(3.4.2 HTTP)多数变更工具报 -32602、execute_code 无 Roslyn 走 CodeDom 命令行过长失败；建资源改用 [DidReloadScripts] 自动执行的临时编辑器脚本回退
 - [reference_unity_editor_self_run_delete_trick.md](reference_unity_editor_self_run_delete_trick.md) — 无人值守建/改 Unity 资源的小技巧：临时编辑器脚本 [DidReloadScripts] 搭编译便车自动执行 + 幂等守卫 + AssetDatabase.DeleteAsset 自删；MCP 不可用时优先用
 - [reference_ui_gradient_atlas_uv.md](reference_ui_gradient_atlas_uv.md) — UI 渐变不能用 sprite 贴图 UV(图集 V1 mode=4 压缩+9宫格切段致两色混成单色)；FrameWork/UI/Shader_UI_ImageGradient 读 UV1 + UIGradientMeshUV(BaseMeshEffect 写归一化 UV1 并开 Canvas TexCoord1)
+- [reference_boss_skill_attack_mode_ext.md](reference_boss_skill_attack_mode_ext.md) — 额外攻击(攻击模块扩展,旧称BOSS技能,通用)按间隔自动释放：NpcInfo.attack_mode_ext→AttackModeExtInfo(ext_type=1BossSkill/trigger_interval/attack_mode_id)→基类AIIntentCreatureAttack消费(融入普通攻击循环非并行:UpdateExtraAttackTimer仅计时,AttackCreatureStart判定GetReadyExtraAttack优先于普通攻击,AttackCreatureStartEnd发射复用StartCreateAttackMode customAttackModeId)；AreaBoxFront size=(前方,高,上下)即102001"1.5,1,0.25"=前方3格、101001"0.5,1,1"=前方1格+上下1格；含"BOSS=FightAttack进攻敌人,非防守核心AIDefenseCore"术语澄清
 
 ### Collaboration Feedback
 - [`feedback_task_summary.md`](feedback_task_summary.md) — 任务总结必须列出参与的 Agent/Skill 名称及操作

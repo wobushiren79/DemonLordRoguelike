@@ -2,48 +2,67 @@ using System;
 using UnityEngine.UI;
 
 /// <summary>
-/// 排序筛选弹窗 - 单个筛选项。
-/// 点击切换选中状态;选中时显示 CheckBoxSubmit;鼠标悬浮显示对应筛选的详情气泡。
+/// 排序筛选弹窗 - 单个筛选项。支持两种模式:
+/// 排序键模式(SetData):点击回传 OrderFilterTypeEnum;稀有度筛选模式(SetDataForRarity):点击回传 RarityEnum。
+/// 点击切换选中状态,选中时显示 CheckBoxSubmit;名称通过 NameItem 内联显示(无 POPUP)。
 /// </summary>
 public partial class UIViewDialogOrderFilterItem : BaseUIView
 {
     #region 数据
-    //该项代表的筛选类型
+    //该项代表的排序键(排序键模式)
     protected OrderFilterTypeEnum filterType;
-    //点击回调(把自身筛选类型回传给弹窗,由弹窗统一处理多选)
+    //该项代表的稀有度(稀有度筛选模式)
+    protected RarityEnum rarityType;
+    //true=稀有度筛选模式(回传 rarityType),false=排序键模式(回传 filterType)
+    protected bool isRarityMode;
+    //排序键点击回调
     protected Action<OrderFilterTypeEnum> actionForClick;
-    #endregion
-
-    #region 生命周期
-    /// <summary>
-    /// 初始化:该预制体的 Button 与 PopupButtonCommonView 与本组件挂在同一节点上,
-    /// 未在序列化中赋值,运行时按需补齐引用。
-    /// </summary>
-    public override void Awake()
-    {
-        base.Awake();
-        if (ui_UIViewDialogOrderFilterItem_Button == null)
-            ui_UIViewDialogOrderFilterItem_Button = GetComponent<Button>();
-        if (ui_UIViewDialogOrderFilterItem_PopupButtonCommonView == null)
-            ui_UIViewDialogOrderFilterItem_PopupButtonCommonView = GetComponent<PopupButtonCommonView>();
-    }
+    //稀有度点击回调
+    protected Action<RarityEnum> actionForClickRarity;
     #endregion
 
     #region 公有方法
     /// <summary>
-    /// 设置数据
+    /// 设置数据(排序键项):NameItem 显示该排序类型的多语言名称,点击回传 filterType。
     /// </summary>
-    /// <param name="filterType">该项代表的筛选类型</param>
+    /// <param name="filterType">该项代表的排序键</param>
     /// <param name="isSelect">是否选中</param>
     /// <param name="actionForClick">点击回调</param>
     public void SetData(OrderFilterTypeEnum filterType, bool isSelect, Action<OrderFilterTypeEnum> actionForClick)
     {
+        isRarityMode = false;
         this.filterType = filterType;
         this.actionForClick = actionForClick;
-        //悬浮详情气泡(复用排序标签多语言文本)
-        if (ui_UIViewDialogOrderFilterItem_PopupButtonCommonView != null)
-            ui_UIViewDialogOrderFilterItem_PopupButtonCommonView.SetData(GetFilterDetail(filterType), PopupEnum.Text);
+        this.actionForClickRarity = null;
+        SetNameItem(GetFilterName(filterType));
         SetSelect(isSelect);
+    }
+
+    /// <summary>
+    /// 设置数据(稀有度筛选项):NameItem 显示稀有度名称,点击回传 rarityType(多选)。
+    /// </summary>
+    /// <param name="rarity">该项代表的稀有度</param>
+    /// <param name="rarityName">稀有度多语言名称</param>
+    /// <param name="isSelect">是否选中</param>
+    /// <param name="actionForClickRarity">点击回调</param>
+    public void SetDataForRarity(RarityEnum rarity, string rarityName, bool isSelect, Action<RarityEnum> actionForClickRarity)
+    {
+        isRarityMode = true;
+        this.rarityType = rarity;
+        this.actionForClickRarity = actionForClickRarity;
+        this.actionForClick = null;
+        SetNameItem(rarityName);
+        SetSelect(isSelect);
+    }
+
+    /// <summary>
+    /// 设置名称文本
+    /// </summary>
+    /// <param name="content">名称内容</param>
+    public void SetNameItem(string content)
+    {
+        if (ui_NameItem != null)
+            ui_NameItem.text = content;
     }
 
     /// <summary>
@@ -59,11 +78,11 @@ public partial class UIViewDialogOrderFilterItem : BaseUIView
 
     #region 私有方法
     /// <summary>
-    /// 获取筛选类型对应的悬浮详情多语言文本(复用排序标签文本ID)
+    /// 获取排序键对应的多语言名称
     /// </summary>
-    /// <param name="filterType">筛选类型</param>
-    /// <returns>详情文本</returns>
-    protected string GetFilterDetail(OrderFilterTypeEnum filterType)
+    /// <param name="filterType">排序键</param>
+    /// <returns>名称文本</returns>
+    protected string GetFilterName(OrderFilterTypeEnum filterType)
     {
         switch (filterType)
         {
@@ -92,13 +111,16 @@ public partial class UIViewDialogOrderFilterItem : BaseUIView
 
     #region 按钮点击
     /// <summary>
-    /// 按钮点击:该项仅有一个按钮,点击即把自身筛选类型回传给弹窗
+    /// 按钮点击:按模式把自身排序键/稀有度回传给弹窗(回调为空则点击无响应)
     /// </summary>
     /// <param name="viewButton">被点击的按钮</param>
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
-        actionForClick?.Invoke(filterType);
+        if (isRarityMode)
+            actionForClickRarity?.Invoke(rarityType);
+        else
+            actionForClick?.Invoke(filterType);
     }
     #endregion
 }

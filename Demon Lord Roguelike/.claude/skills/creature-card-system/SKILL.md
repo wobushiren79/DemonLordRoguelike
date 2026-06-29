@@ -315,30 +315,25 @@ public void PutCard(Vector3 worldPosition)
 
 ### 卡片排序（筛选排序弹窗）
 
-`UIViewCreatureCardList` 不再用一排固定排序按钮，改为单个 `OrderBtn`：点击弹出 `UIDialogOrderFilter`（在按钮处弹出，悬浮详情=「筛选排序」UIText 2000014）。弹窗可**多选**筛选类型，**按选择顺序决定排序优先级**（index0=主键），再点「正序/倒序」确认。
+`UIViewCreatureCardList` 用单个 `OrderBtn` 弹 `UIDialogOrderFilter`（悬浮详情=「筛选排序」UIText 2000014）。弹窗**分区段**：生物开放 名字(模糊查询)+等级(区间)+稀有度(多选) 三种**命中置顶条件** + 阵容/同类 两种**排序键**(多选、按选择顺序定优先级 index0=主键)。确认回传 `OrderFilterResultBean`，调用方**命中项置顶 + 排序键次级正序排序**，**不删行、全部展示**(无正/倒序选项)。
 
 ```csharp
-// 点击 OrderBtn -> 打开筛选排序弹窗（开放 稀有度/等级/阵容/名字/同类，默认带入当前选择）
+// 点击 OrderBtn -> 打开弹窗（listFilterType={Rarity,Level,Lineup,Name,Class} 决定区段显隐，回填当前条件）
 UIHandler.Instance.ShowDialogOrderFilter(
-    ui_OrderBtn_Button.transform as RectTransform,
-    OnConfirmOrderFilter,                                   // (List<OrderFilterTypeEnum> types, bool isAscending)
-    listFilterType,                                         // 开放的筛选类型（null=全部）
-    new List<OrderFilterTypeEnum>(currentFilterTypes));     // 默认选中（按优先级）
+    ui_OrderBtn_Button.transform as RectTransform, OnConfirmOrderFilter, listFilterType,
+    new List<OrderFilterTypeEnum>(currentFilter.sortTypes),            // 默认排序键(阵容/同类)
+    currentFilter.nameFilter, currentFilter.levelMin, currentFilter.levelMax,
+    new List<RarityEnum>(currentFilter.rarities));                     // 默认命中条件(名字/等级/稀有度)
 
-// 确认回调：按所选优先级 + 正/倒序排序
-protected void OnConfirmOrderFilter(List<OrderFilterTypeEnum> filterTypes, bool isAscending)
-{
-    currentFilterTypes = filterTypes ?? new List<OrderFilterTypeEnum>();
-    currentAscending = isAscending;
-    OrderListCreature(currentFilterTypes, currentAscending);
+// 确认回调：保存结果 Bean，命中(名字/等级/稀有度)项置顶 + 排序键固定正序次级，不删行全部展示，再刷新数量/空提示/卡片
+protected void OnConfirmOrderFilter(OrderFilterResultBean result) {
+    currentFilter = result ?? new OrderFilterResultBean();
+    RefreshFilterSortList();  // listCreatureDataAll(全量) OrderByDescending(IsMatch:名字/等级/稀有度).ThenBy(排序键) -> listCreatureData(等量)
 }
-
-// 动态多键排序：filterTypes 顺序即主/次键优先级，isAscending 作用于全部键
-public void OrderListCreature(List<OrderFilterTypeEnum> filterTypes, bool isAscending, bool isRefreshUI = true)
 ```
 
 > `OrderFilterTypeEnum`：Rarity=1 / Level=2 / Lineup=3 / Name=4 / Class=5（同类=相同生物ID归并）。
-> 排序键由 `GetOrderKeySelector` 给出：Rarity→rarity、Level→level、Lineup→阵容序号(不在阵容置 int.MaxValue)、Name→creatureName、Class→creatureId。
+> 生物里 **Name/Level/Rarity 是命中置顶条件**(不进 `sortTypes`、不删行)，只有 **Lineup/Class 是排序键**(`GetOrderKeySelector`：Lineup→阵容序号(不在阵容置 int.MaxValue)、Class→creatureId)。主列表 `listCreatureDataAll` 保存全量；`listCreatureData` 是「命中项置顶 + 排序键次级」重排后的展示列表（与主列表等量，全部展示）。
 
 ### 空列表提示
 

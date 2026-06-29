@@ -1,4 +1,5 @@
 ﻿using UnityEngine.UI;
+using TMPro;
 
 
 public partial class UIViewDialogOrderFilterItem
@@ -9,9 +10,9 @@ public partial class UIViewDialogOrderFilterItem
 
     public Image ui_Icon;
 
-    public PopupButtonCommonView ui_UIViewDialogOrderFilterItem_PopupButtonCommonView;
+    public Button ui_UIViewDialogOrderFilterItem;
 
-    public Button ui_UIViewDialogOrderFilterItem_Button;
+    public TextMeshProUGUI ui_NameItem;
 
 
 }

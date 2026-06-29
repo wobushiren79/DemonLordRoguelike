@@ -8,16 +8,16 @@ using UnityEngine.UI;
 
 public partial class UIViewCreatureCardList : BaseUIView
 {
-    //生物数据
+    //生物数据(派生的"已筛选+已排序"展示列表)
     protected List<CreatureBean> listCreatureData = new List<CreatureBean>();
+    //生物数据主列表(未筛选的全量数据,作为筛选排序的数据源)
+    protected List<CreatureBean> listCreatureDataAll = new List<CreatureBean>();
     //卡片的使用地方
     protected CardUseStateEnum cardUseState;
     //卡片变化回调
     protected Action<int, UIViewCreatureCardItem, CreatureBean> actionForOnCellChange;
-    //当前筛选排序的优先级列表(index0=最高优先级)
-    protected List<OrderFilterTypeEnum> currentFilterTypes = new List<OrderFilterTypeEnum> { OrderFilterTypeEnum.Rarity };
-    //当前是否正序(false=倒序;默认稀有度倒序,高稀有度在前)
-    protected bool currentAscending = false;
+    //当前条件(默认空=无条件;名字/等级/稀有度命中项置顶,排序键 Lineup/Class 次级固定正序;不删行、全部展示)
+    protected OrderFilterResultBean currentFilter = new OrderFilterResultBean();
 
     public override void Awake()
     {
@@ -86,14 +86,11 @@ public partial class UIViewCreatureCardList : BaseUIView
         gameObject.SetActive(true);
         this.cardUseState = cardUseState;
         this.actionForOnCellChange = actionForOnCellChange;
-        listCreatureData.Clear();
-        listCreatureData.AddRange(listData);
-        //初始化排序(按当前筛选排序设置)
-        OrderListCreature(currentFilterTypes, currentAscending, false);
-        //设置数量
-        ui_CreatureListContent.SetCellCount(listCreatureData.Count);
-        //刷新空列表提示
-        RefreshNullText();
+        //存全量主列表副本(筛选排序的数据源)
+        listCreatureDataAll.Clear();
+        listCreatureDataAll.AddRange(listData);
+        //按当前筛选排序生成展示列表,并刷新数量/空提示
+        RefreshFilterSortList();
     }
 
     /// <summary>
@@ -150,57 +147,70 @@ public partial class UIViewCreatureCardList : BaseUIView
             ui_OrderBtn_Button.transform as RectTransform,
             OnConfirmOrderFilter,
             listFilterType,
-            new List<OrderFilterTypeEnum>(currentFilterTypes));
+            new List<OrderFilterTypeEnum>(currentFilter.sortTypes),
+            currentFilter.nameFilter,
+            currentFilter.levelMin,
+            currentFilter.levelMax,
+            new List<RarityEnum>(currentFilter.rarities));
     }
 
     /// <summary>
     /// 筛选排序弹窗确认回调
     /// </summary>
-    /// <param name="filterTypes">已选筛选类型(按优先级从高到低,index0最高)</param>
-    /// <param name="isAscending">是否正序</param>
-    protected void OnConfirmOrderFilter(List<OrderFilterTypeEnum> filterTypes, bool isAscending)
+    /// <param name="result">弹窗回传结果(排序键 + 名字/等级/稀有度筛选)</param>
+    protected void OnConfirmOrderFilter(OrderFilterResultBean result)
     {
-        currentFilterTypes = filterTypes ?? new List<OrderFilterTypeEnum>();
-        currentAscending = isAscending;
-        OrderListCreature(currentFilterTypes, currentAscending);
+        currentFilter = result ?? new OrderFilterResultBean();
+        RefreshFilterSortList();
     }
 
     /// <summary>
-    /// 按筛选类型优先级列表 + 正/倒序排序生物列表。
-    /// 按 filterTypes 顺序依次作为主/次排序键(index0=主键),isAscending 作用于全部键。
+    /// 按当前条件重排主列表(不删行、全部展示):命中项(名字/等级/稀有度)置顶,再按排序键固定正序次级排序,刷新UI。
     /// </summary>
-    /// <param name="filterTypes">筛选类型(按优先级从高到低;为空则不重排)</param>
-    /// <param name="isAscending">true正序/false倒序</param>
-    /// <param name="isRefreshUI">是否刷新UI</param>
-    public void OrderListCreature(List<OrderFilterTypeEnum> filterTypes, bool isAscending, bool isRefreshUI = true)
+    protected void RefreshFilterSortList()
     {
-        if (filterTypes != null && filterTypes.Count > 0)
-        {
-            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-            //阵容索引:在阵容内取其序号,否则置最大值排到最后
-            Func<CreatureBean, int> lineupOrder = itemData =>
-            {
-                int lineupIndex = userData.GetLinupIndex(itemData.creatureUUId);
-                return lineupIndex > 0 ? lineupIndex : int.MaxValue;
-            };
+        listCreatureData = OrderListCreature(listCreatureDataAll, currentFilter);
+        //数据不删行,展示数量恒等于主列表;刷新数量/空提示/卡片
+        ui_CreatureListContent.SetCellCount(listCreatureData.Count);
+        RefreshNullText();
+        RefreshAllCard();
+    }
 
-            IOrderedEnumerable<CreatureBean> ordered = null;
-            for (int i = 0; i < filterTypes.Count; i++)
-            {
-                Func<CreatureBean, IComparable> keySelector = GetOrderKeySelector(filterTypes[i], lineupOrder);
-                if (i == 0)
-                    ordered = isAscending
-                        ? listCreatureData.OrderBy(keySelector)
-                        : listCreatureData.OrderByDescending(keySelector);
-                else
-                    ordered = isAscending
-                        ? ordered.ThenBy(keySelector)
-                        : ordered.ThenByDescending(keySelector);
-            }
-            listCreatureData = ordered.ToList();
-        }
-        if (isRefreshUI)
-            RefreshAllCard();
+    /// <summary>
+    /// 生成展示列表:以「是否命中(名字/等级/稀有度)」为主键把命中项置顶,再以各排序键固定正序为次键,全部数据保留(与入参等量)。
+    /// </summary>
+    /// <param name="listData">主列表(全量)</param>
+    /// <param name="filter">当前条件</param>
+    /// <returns>重排后的新列表</returns>
+    private List<CreatureBean> OrderListCreature(List<CreatureBean> listData, OrderFilterResultBean filter)
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        //阵容索引:在阵容内取其序号,否则置最大值排到最后
+        Func<CreatureBean, int> lineupOrder = itemData =>
+        {
+            int lineupIndex = userData.GetLinupIndex(itemData.creatureUUId);
+            return lineupIndex > 0 ? lineupIndex : int.MaxValue;
+        };
+        //主键:命中项置顶(命中=true 排在前)
+        IOrderedEnumerable<CreatureBean> ordered = listData.OrderByDescending(c => IsMatch(c, filter));
+        //次键:各排序键固定正序(index0 优先级最高)
+        if (filter.sortTypes != null)
+            for (int i = 0; i < filter.sortTypes.Count; i++)
+                ordered = ordered.ThenBy(GetOrderKeySelector(filter.sortTypes[i], lineupOrder));
+        return ordered.ToList();
+    }
+
+    /// <summary>
+    /// 判断生物是否命中当前条件(名字模糊 + 等级区间 + 稀有度多选;对应条件为空即视为命中)
+    /// </summary>
+    /// <param name="itemData">生物数据</param>
+    /// <param name="filter">当前条件</param>
+    /// <returns>是否命中</returns>
+    private bool IsMatch(CreatureBean itemData, OrderFilterResultBean filter)
+    {
+        return filter.MatchName(itemData.creatureName)
+            && filter.MatchLevel(itemData.level)
+            && filter.MatchRarity(itemData.rarity);
     }
 
     /// <summary>

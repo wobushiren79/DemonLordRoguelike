@@ -371,6 +371,21 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 
 ---
 
+## 额外攻击（攻击模块扩展，按间隔自动释放）
+
+通用攻击意图 [AIIntentCreatureAttack.cs](Assets/Scripts/AI/Creature/AIIntentCreatureAttack.cs) 内置了一套"额外攻击"机制（命名通用、不限于 BOSS）：凡 **NPC 配置了 `NpcInfo.attack_mode_ext`** 的生物（典型为敌方 BOSS，如 `1010020001` 持盾战士-Boss），进入攻击状态后会在普通攻击之外，按各额外攻击自己的间隔**额外**释放攻击模块。
+
+- **数据来源**：`NpcInfo.attack_mode_ext`（逗号分隔的 `AttackModeExtInfo` id）→ `AttackModeExtInfo`（`ext_type` 为额外攻击类型，目前仅 `1`=`AttackModeExtTypeEnum.BossSkill` 按间隔释放；`trigger_interval` 释放间隔秒、`attack_mode_id` 指向 `AttackModeInfo`）。运行时经 `fightCreatureData.creatureData.creatureNpcData?.npcInfo.GetListAttackModeExtInfo()` 读取（仅 NPC 敌人有 `creatureNpcData`，玩家生物为 null 不受影响）。
+- **挂载在基类**：逻辑写在基类 `AIIntentCreatureAttack`，故进攻/防守生物（`AIIntentAttackCreatureAttack` / `AIIntentDefenseCreatureAttack`）均自动获得，**无需新增意图/枚举/工厂**。敌方 BOSS 是 `FightAttack` 型 → 走 `AIIntentAttackCreatureAttack`（继承基类、仅重写 `IntentEntering` 并 `base` 调用，故基类 `IntentUpdate/IntentLeaving` 直接生效）。
+- **计时与判定（融入普通攻击循环，非并行）**：`IntentEntering→InitExtraAttack()` 重置各额外攻击计时器；`IntentUpdate→UpdateExtraAttackTimer()` 每帧**仅累加**各额外攻击CD（不在此释放）。释放融入普通攻击循环：在 `AttackCreatureStart`（attackState 准备完毕、本次攻击开始的判定点）调 `GetReadyExtraAttack()` 选出第一个CD已到的额外攻击；在 `AttackCreatureStartEnd` 用其 `attack_mode_id` 发射并把该额外攻击CD清零。`IntentLeaving` 清空、离开/重入会重新计时。
+- **优先级与串行**：**额外攻击优先级 > 普通攻击**——某次攻击判定时若有就绪额外攻击，本次出额外攻击（占用该攻击循环、替代普通攻击）；没有则照常普通攻击。CD到了**不会立刻打断**当前攻击，要等下一次 `attackState==0` 的判定。每个攻击循环最多出一次攻击，故多个就绪的额外攻击按列表顺序逐循环释放、天然串行（无需额外标志）。
+- **类型筛选与扩展**：`InitExtraAttack` 仅收集 `ext_type==BossSkill` 的额外攻击；未来新增其他 `ext_type` 可在该筛选处加独立分支（不同类型可有不同触发逻辑）。
+- **发射入口**：复用 `FightHandler.StartCreateAttackMode(self, target, ActionForAttackEnd, customAttackModeId: ext.attack_mode_id)`（与 BUFF 触发攻击同一入口），回调即普通攻击的 `ActionForAttackEnd`（找下个目标并回到 `attackState==0`）。
+
+> 术语提醒：游戏内"BOSS"=**敌方强力 NPC**（征服 `enemy_boss_ids` 刷出、`FightAttack` 进攻型），**不是**玩家防守的"魔王核心" `AIDefenseCoreCreatureEntity`。给 BOSS（或任意 NPC）加额外攻击应改基类攻击意图，而非核心生物 AI。
+
+---
+
 ## 注意事项
 
 1. **意图命名规范**: 意图类名必须以 `AIIntent` 开头，后接枚举名称。例如 `AIIntentEnum.AttackCreatureIdle` 对应类 `AIIntentAttackCreatureIdle`。回退反射路径使用 `AIIntent + 枚举名称` 拼接类名，因此命名错位会在运行时静默失败（错误日志：`创建AI意图失败：未在工厂中注册且反射也未找到类 AIIntentXxx`）。

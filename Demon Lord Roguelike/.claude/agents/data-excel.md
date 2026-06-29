@@ -1,6 +1,6 @@
 ---
 name: data-excel
-description: Excel配置表处理：ExcelUtil、EPPlus、ExcelEditorWindow配置导出、Excel-JSON转换。直接读写xlsx文件使用openpyxl脚本。包含游戏全部31张配置表。
+description: Excel配置表处理：ExcelUtil、EPPlus、ExcelEditorWindow配置导出、Excel-JSON转换。直接读写xlsx文件使用openpyxl脚本。包含游戏全部32张配置表。
 tools: Read, Write, Edit, Glob, Grep, Bash
 skills:
   - excel-io
@@ -132,7 +132,8 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_attackmode_info[攻击方式].xlsx` | AttackModeInfo | 31 | id, class_name, prefab_name, buff, attack_search_type, collider_size/area, effect_hit/damage, speed_move, sound_miss/hit （14列） |
+| `excel_attackmode_info[攻击方式].xlsx` | AttackModeInfo | 32 | id, class_name, prefab_name, buff, attack_search_type, collider_size/area, effect_hit/damage, speed_move, sound_miss/hit （15列）。102001=BOSS技能"前方3格"(AttackModeMeleeArea, type24, size"1.5,1,0.25") |
+| `excel_attackmode_ext_info[攻击模块扩展信息].xlsx` | AttackModeExtInfo | 1 | id, attack_mode_id(对应AttackModeInfo), ext_type(额外攻击类型,1=BOSS技能), trigger_interval(释放间隔秒), remark （5列）。配 NpcInfo.attack_mode_ext 实现"额外攻击"按间隔自动释放(不限于BOSS)，运行时由 AIIntentCreatureAttack 的额外攻击机制消费 |
 | `excel_buff_info[buff信息].xlsx` | BuffInfo | 49 | id, buff_type, rarity, class_entity/events/data, trigger_value/chance/num/time/effect, name[language] （24列） |
 | `excel_buff_pre_info[buff前置条件信息].xlsx` | BuffPreInfo | 6 | id, class_entity |
 | `excel_fight_scene[战斗场景].xlsx` | FightScene | 4 | id, name_res, road_color_a/b, skybox_mat |
@@ -153,7 +154,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_npc_info[NPC信息].xlsx` | NpcInfo | 37 | id, creature_id, npc_type, level, HP/MP/DR/ATK/ASPD/MSPD, skin_data, equip_item_ids, councilor_ratings, title_data, name[language], body_size(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定), remark （19列） |
+| `excel_npc_info[NPC信息].xlsx` | NpcInfo | 37 | id, creature_id, npc_type, level, HP/MP/DR/ATK/ASPD/MSPD, skin_data, equip_item_ids, councilor_ratings, title_data, name[language], body_size(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定), attack_mode_ext(Boss额外技能:逗号分隔的AttackModeExtInfo id,非空即启用), remark （20列） |
 | `excel_npc_relationship_info[NPC关系信息].xlsx` | NpcRelationshipInfo | 7 | id, icon_res, name[language], relationship_min/max, relationship_type |
 | `excel_doom_council_info[终焉议会信息].xlsx` | DoomCouncilInfo | 13 | id, success_rate, cost_reputation/crystal, class_entity_name/data, unlock_id, name[language] （11列） |
 | `excel_doom_council_ratings_info[终焉议会议员等级信息].xlsx` | DoomCouncilRatingsInfo | 12 | id, icon_res, vote, name[language] |

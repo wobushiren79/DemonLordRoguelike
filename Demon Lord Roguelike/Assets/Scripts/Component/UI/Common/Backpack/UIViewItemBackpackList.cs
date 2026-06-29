@@ -21,10 +21,8 @@ public partial class UIViewItemBackpackList : BaseUIView
     /// </summary>
     public List<ItemBean> listFilterItems = new List<ItemBean>();
 
-    //当前筛选排序的优先级列表(index0=最高优先级)
-    protected List<OrderFilterTypeEnum> currentFilterTypes = new List<OrderFilterTypeEnum> { OrderFilterTypeEnum.Rarity };
-    //当前是否正序(false=倒序;默认稀有度倒序,高稀有度在前)
-    protected bool currentAscending = false;
+    //当前条件(名字模糊+稀有度多选命中项置顶,道具无等级、无排序键,次按稀有度倒序;不删行、全部展示)
+    protected OrderFilterResultBean currentFilter = new OrderFilterResultBean();
 
     public override void Awake()
     {
@@ -58,13 +56,8 @@ public partial class UIViewItemBackpackList : BaseUIView
         this.listBackpackItems = listBackpackItems;
         this.actionForOnCellChange = actionForOnCellChange;
         this.creatureData = creatureData;
-        // 过滤道具列表
-        FilterItems();
-        //初始化排序(按当前筛选排序设置)
-        OrderListItem(currentFilterTypes, currentAscending, false);
-        ui_BackpackContent.SetCellCount(listFilterItems.Count);
-        //刷新空列表提示
-        RefreshNullText();
+        //过滤+排序并刷新列表(装备资格过滤 -> 名字/稀有度筛选 -> 稀有度倒序)
+        RefreshFilterSortList();
     }
 
     /// <summary>
@@ -141,11 +134,11 @@ public partial class UIViewItemBackpackList : BaseUIView
 
     #region 筛选排序
     /// <summary>
-    /// 打开筛选排序弹窗(在排序按钮处弹出;道具仅开放 稀有度/名字 两种筛选)
+    /// 打开筛选弹窗(在排序按钮处弹出;道具仅开放 稀有度多选 + 名字模糊 两种筛选,无排序键、无等级)
     /// </summary>
     protected void ShowOrderFilterDialog()
     {
-        //道具列表开放的筛选类型(只有稀有度与名字适用于道具)
+        //道具列表开放的筛选类型(只有稀有度与名字适用于道具,故只展示这两项)
         List<OrderFilterTypeEnum> listFilterType = new List<OrderFilterTypeEnum>
         {
             OrderFilterTypeEnum.Rarity,
@@ -155,66 +148,43 @@ public partial class UIViewItemBackpackList : BaseUIView
             ui_OrderBtn_Button.transform as RectTransform,
             OnConfirmOrderFilter,
             listFilterType,
-            new List<OrderFilterTypeEnum>(currentFilterTypes));
+            //道具无排序键(Combat/Other 不适用),默认不选中任何排序项
+            new List<OrderFilterTypeEnum>(),
+            currentFilter.nameFilter,
+            //不传等级默认值(道具无等级),仅回传当前已选名字与稀有度
+            defaultRarities: new List<RarityEnum>(currentFilter.rarities));
     }
 
     /// <summary>
-    /// 筛选排序弹窗确认回调
+    /// 筛选弹窗确认回调:接住名字+稀有度筛选结果,重过滤并刷新列表
     /// </summary>
-    /// <param name="filterTypes">已选筛选类型(按优先级从高到低,index0最高)</param>
-    /// <param name="isAscending">是否正序</param>
-    protected void OnConfirmOrderFilter(List<OrderFilterTypeEnum> filterTypes, bool isAscending)
+    /// <param name="result">弹窗回传的筛选结果(可空)</param>
+    protected void OnConfirmOrderFilter(OrderFilterResultBean result)
     {
-        currentFilterTypes = filterTypes ?? new List<OrderFilterTypeEnum>();
-        currentAscending = isAscending;
-        OrderListItem(currentFilterTypes, currentAscending);
+        currentFilter = result ?? new OrderFilterResultBean();
+        RefreshFilterSortList();
     }
 
     /// <summary>
-    /// 按筛选类型优先级列表 + 正/倒序排序道具列表。
-    /// 按 filterTypes 顺序依次作为主/次排序键(index0=主键),isAscending 作用于全部键。
+    /// 执行装备资格过滤 + 重排 + 刷新流程(道具不按名字/稀有度删行,全部展示):
+    /// ① 装备资格硬过滤(FilterItems 从 listBackpackItems 构建,上下文相关,保留为第一阶段);
+    /// ② 名字/稀有度命中项置顶(不删行);
+    /// ③ 次按稀有度倒序(高稀有度在前);
+    /// ④ 设置 Cell 数量、刷新空列表提示与卡片。
     /// </summary>
-    /// <param name="filterTypes">筛选类型(按优先级从高到低;为空则不重排)</param>
-    /// <param name="isAscending">true正序/false倒序</param>
-    /// <param name="isRefreshUI">是否刷新UI</param>
-    public void OrderListItem(List<OrderFilterTypeEnum> filterTypes, bool isAscending, bool isRefreshUI = true)
+    public void RefreshFilterSortList()
     {
-        if (filterTypes != null && filterTypes.Count > 0)
-        {
-            IOrderedEnumerable<ItemBean> ordered = null;
-            for (int i = 0; i < filterTypes.Count; i++)
-            {
-                Func<ItemBean, IComparable> keySelector = GetOrderKeySelector(filterTypes[i]);
-                if (i == 0)
-                    ordered = isAscending
-                        ? listFilterItems.OrderBy(keySelector)
-                        : listFilterItems.OrderByDescending(keySelector);
-                else
-                    ordered = isAscending
-                        ? ordered.ThenBy(keySelector)
-                        : ordered.ThenByDescending(keySelector);
-            }
-            listFilterItems = ordered.ToList();
-        }
-        if (isRefreshUI)
-            RefreshAllItem();
-    }
-
-    /// <summary>
-    /// 获取指定筛选类型对应的排序键选择器(道具:仅 稀有度/名字)
-    /// </summary>
-    /// <param name="filterType">筛选类型</param>
-    /// <returns>排序键选择器</returns>
-    protected Func<ItemBean, IComparable> GetOrderKeySelector(OrderFilterTypeEnum filterType)
-    {
-        switch (filterType)
-        {
-            case OrderFilterTypeEnum.Rarity:
-                return itemData => itemData.rarity;
-            case OrderFilterTypeEnum.Name:
-                return itemData => itemData.itemsInfo.name_language;
-        }
-        return itemData => 0;
+        //① 装备资格硬过滤:重建 listFilterItems(上下文相关,保留为第一阶段)
+        FilterItems();
+        //② 名字/稀有度命中项置顶 ③ 次按稀有度倒序(道具无等级)
+        listFilterItems = listFilterItems
+            .OrderByDescending(i => currentFilter.MatchName(i.itemsInfo.name_language) && currentFilter.MatchRarity(i.rarity))
+            .ThenByDescending(i => i.rarity)
+            .ToList();
+        //④ 刷新 UI:Cell 数量 -> 空列表提示 -> 卡片
+        ui_BackpackContent.SetCellCount(listFilterItems.Count);
+        RefreshNullText();
+        RefreshAllItem();
     }
     #endregion
 }

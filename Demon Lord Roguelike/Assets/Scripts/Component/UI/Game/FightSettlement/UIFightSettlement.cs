@@ -13,8 +13,6 @@ public partial class UIFightSettlement : BaseUIComponent
 
     //当前筛选排序的优先级列表(index0=最高优先级;默认按伤害)
     protected List<OrderFilterTypeEnum> currentFilterTypes = new List<OrderFilterTypeEnum> { OrderFilterTypeEnum.Damage };
-    //当前是否正序(false=倒序;默认伤害倒序,高伤害在前)
-    protected bool currentAscending = false;
 
     public override void Awake()
     {
@@ -46,8 +44,8 @@ public partial class UIFightSettlement : BaseUIComponent
         this.fightData = fightData;
         this.actionForNext = actionForNext;
         listRecordsCreatureData = fightData.fightRecordsData.GetRecordsForCreatureData();
-        //初始化排序(按当前筛选排序设置,默认伤害倒序)
-        OrderListData(currentFilterTypes, currentAscending, false);
+        //初始化排序(按当前筛选排序设置,固定倒序,高数值在前)
+        OrderListData(currentFilterTypes, false, false);
         ui_List.SetCellCount(listRecordsCreatureData.Count);
     }
 
@@ -98,15 +96,13 @@ public partial class UIFightSettlement : BaseUIComponent
     }
 
     /// <summary>
-    /// 筛选排序弹窗确认回调
+    /// 筛选排序弹窗确认回调(结算列表固定倒序,高数值在前;名称/等级/稀有度筛选在此不适用)
     /// </summary>
-    /// <param name="filterTypes">已选筛选类型(按优先级从高到低,index0最高)</param>
-    /// <param name="isAscending">是否正序</param>
-    protected void OnConfirmOrderFilter(List<OrderFilterTypeEnum> filterTypes, bool isAscending)
+    /// <param name="result">筛选排序结果(仅取 sortTypes 作为排序键)</param>
+    protected void OnConfirmOrderFilter(OrderFilterResultBean result)
     {
-        currentFilterTypes = filterTypes ?? new List<OrderFilterTypeEnum>();
-        currentAscending = isAscending;
-        OrderListData(currentFilterTypes, currentAscending);
+        currentFilterTypes = result?.sortTypes ?? new List<OrderFilterTypeEnum>();
+        OrderListData(currentFilterTypes, false);
     }
 
     /// <summary>

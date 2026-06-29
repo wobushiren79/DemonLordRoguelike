@@ -1,0 +1,1 @@
+[{"attack_mode_id":102001,"ext_type":1,"trigger_interval":3.0,"remark":"向前挥砍，攻击前方一排单位","id":100001}]

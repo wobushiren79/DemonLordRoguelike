@@ -1,61 +1,68 @@
+using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 生物通用攻击意图：以"准备→出手→发起攻击→找下个目标"循环驱动普通攻击；
+/// 并内置"额外攻击(攻击模块扩展)"机制——带 NpcInfo.attack_mode_ext 的生物在每次攻击判定时可优先出额外攻击。
+/// 进攻/防守生物的攻击意图均继承自本类。
+/// </summary>
 public class AIIntentCreatureAttack : AIBaseIntent
 {
-    //攻击准备时间
+    #region 字段
+    /// <summary>攻击准备阶段已计时（秒）</summary>
     public float timeUpdateAttackPre = 0;
+    /// <summary>攻击准备阶段时长（由攻速ASPD换算，每次 RefreshData 刷新）</summary>
     public float timeUpdateAttackPreCD = 0.2f;
+    /// <summary>攻击出手阶段已计时（秒）</summary>
     public float timeUpdateAttacking = 0;
+    /// <summary>攻击出手阶段时长（由攻速ASPD换算，每次 RefreshData 刷新）</summary>
     public float timeUpdateAttackingCD = 0.2f;
-    //当前AIEntity
+    /// <summary>所属生物AI实体</summary>
     public AICreatureEntity selfAIEntity;
-    //战斗生物数据
+    /// <summary>战斗生物数据（= selfAIEntity.selfCreatureEntity.fightCreatureData）</summary>
     public FightCreatureBean fightCreatureData;
-    //攻击状态 0准备中 1攻击中
+    /// <summary>攻击状态：0准备中 1出手中(播攻击动画) 2已发起本次攻击(等待结束回调)</summary>
     public int attackState = 0;
-    //待机意图
+    /// <summary>找不到目标时回退的待机意图（由子类按生物类型指定）</summary>
     public AIIntentEnum intentForIdle;
-    //死亡意图
+    /// <summary>自身死亡时切换的死亡意图（由子类按生物类型指定）</summary>
     public AIIntentEnum intentForDead;
-
+    /// <summary>攻击准备基础时长（动画基准，用于动画速度换算）</summary>
     public float attackPreTimeBase;
+    /// <summary>攻击动画基础时长（动画基准，用于动画速度换算）</summary>
     public float attackAnimTimeBase;
+    #endregion
 
+    #region 意图生命周期
+    /// <summary>
+    /// 进入攻击意图：缓存战斗数据与动画基准时长，重置计时与状态，初始化额外攻击，并立即触发一次攻击
+    /// </summary>
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
-
         attackPreTimeBase = fightCreatureData.creatureData.GetAttackPreTime();
         attackAnimTimeBase = fightCreatureData.creatureData.GetAttackAnimTime();
-
         timeUpdateAttackPre = 0;
         timeUpdateAttacking = 0;
         attackState = 0;
         RefreshData();
-        // //设置待机动作
-        // selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true); 
         //刚进来立即开始一次攻击
         timeUpdateAttackPre = timeUpdateAttackPreCD;
+        //初始化额外攻击（攻击模块扩展），进入攻击状态后各自开始计时
+        InitExtraAttack();
     }
 
     /// <summary>
-    /// 刷新数据
+    /// 每帧更新：累计额外攻击CD，并推进"准备→出手"普通攻击循环
     /// </summary>
-    public void RefreshData()
-    {
-        fightCreatureData.GetAttackTimeData(out float timeAttackPre, out float timeAttacking);
-
-        timeUpdateAttackPreCD = timeAttackPre;
-        timeUpdateAttackingCD = timeAttacking;
-    }
-
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
+        //额外攻击各自累计CD（仅计时，释放时机融入下方普通攻击循环的判定）
+        UpdateExtraAttackTimer();
         //攻击准备中
         if (attackState == 0)
         {
             timeUpdateAttackPre += Time.deltaTime;
-
             if (timeUpdateAttackPre >= timeUpdateAttackPreCD)
             {
                 timeUpdateAttackPre = 0;
@@ -63,11 +70,10 @@ public class AIIntentCreatureAttack : AIBaseIntent
                 AttackCreatureStart();
             }
         }
-        //攻击中
+        //攻击出手中
         else if (attackState == 1)
         {
             timeUpdateAttacking += Time.deltaTime;
-
             if (timeUpdateAttacking >= timeUpdateAttackingCD)
             {
                 timeUpdateAttacking = 0;
@@ -77,14 +83,32 @@ public class AIIntentCreatureAttack : AIBaseIntent
         }
     }
 
+    /// <summary>
+    /// 离开攻击意图：重置计时并清空额外攻击运行时数据
+    /// </summary>
     public override void IntentLeaving(AIBaseEntity aiEntity)
     {
         timeUpdateAttackPre = 0;
         timeUpdateAttacking = 0;
+        //离开攻击状态时清空额外攻击运行时数据
+        listExtraAttack = null;
+        currentExtraAttack = null;
     }
 
     /// <summary>
-    /// 立即执行一次攻击
+    /// 刷新攻击时长：按攻速ASPD换算准备/出手两阶段的CD
+    /// </summary>
+    public void RefreshData()
+    {
+        fightCreatureData.GetAttackTimeData(out float timeAttackPre, out float timeAttacking);
+        timeUpdateAttackPreCD = timeAttackPre;
+        timeUpdateAttackingCD = timeAttacking;
+    }
+    #endregion
+
+    #region 攻击流程
+    /// <summary>
+    /// 立即触发一次攻击（把准备计时拉满，下一帧即进入出手）
     /// </summary>
     public virtual void AttackImm()
     {
@@ -92,37 +116,38 @@ public class AIIntentCreatureAttack : AIBaseIntent
     }
 
     /// <summary>
-    /// 攻击开始
+    /// 攻击开始（准备完毕的判定点）：校验目标/自身存活，判定本次出额外攻击还是普通攻击，并播放攻击动画
     /// </summary>
     public virtual void AttackCreatureStart()
     {
         attackState = 1;
-        //如果目标生物已经无了
+        //目标已无 → 回待机
         if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.IsDead())
         {
             ChangeIntent(intentForIdle);
             return;
         }
-        //如果自己死了
+        //自己已死 → 切死亡
         if (selfAIEntity.selfCreatureEntity == null || selfAIEntity.selfCreatureEntity.IsDead())
         {
             ChangeIntent(intentForDead);
             return;
         }
+        //本次攻击判定：额外攻击CD已到则本次出额外攻击(优先级高于普通攻击)，否则普通攻击
+        currentExtraAttack = GetReadyExtraAttack();
         var selfCreatureInfo = fightCreatureData.creatureData.creatureInfo;
-        //根据基础动画时长和实际攻击CD等比例计算动画播放速度
+        //按基础动画时长与实际出手CD等比例计算动画播放速度
         float animSpeed = 1f;
         if (attackAnimTimeBase > 0 && timeUpdateAttackingCD > 0)
         {
             animSpeed = attackAnimTimeBase / timeUpdateAttackingCD;
         }
         //播放攻击动画
-        if (selfCreatureInfo.anim_attack_loop == 1)//如果是循环 只播放攻击动画
+        if (selfCreatureInfo.anim_attack_loop == 1)//循环则只播攻击动画
         {
             selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, true, animSpeed: animSpeed);
         }
-        else
-        //如果不是循环，先播放打击再播放待机
+        else//非循环则先播打击再接待机
         {
             selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false, animSpeed: animSpeed);
             selfAIEntity.selfCreatureEntity.AddAnim(0, SpineAnimationStateEnum.Idle, true, 1, animSpeed: animSpeed);
@@ -130,52 +155,139 @@ public class AIIntentCreatureAttack : AIBaseIntent
     }
 
     /// <summary>
-    /// 攻击结束
+    /// 攻击出手（发射点）：本次有就绪额外攻击则用其攻击模块并清零其CD，否则用生物默认攻击模块
     /// </summary>
     public virtual void AttackCreatureStartEnd()
     {
         attackState = 2;
-        //开始创建攻击模块
-        FightHandler.Instance.StartCreateAttackMode(selfAIEntity.selfCreatureEntity, selfAIEntity.targetCreatureEntity, ActionForAttackEnd);
-    }
-
-    /// <summary>
-    /// 攻击结束回调
-    /// </summary>
-    public void ActionForAttackEnd(BaseAttackMode attackMode)
-    {
-        DirectionEnum findDirectrion;
-        if (attackMode.attackModeData.attackDirection.x > 0)
+        if (currentExtraAttack != null)
         {
-            findDirectrion = DirectionEnum.Right;
+            //出额外攻击：用其 attack_mode_id 发射，并重置该额外攻击CD
+            long extraAttackModeId = currentExtraAttack.extInfo.attack_mode_id;
+            currentExtraAttack.timer = 0;
+            currentExtraAttack = null;
+            FightHandler.Instance.StartCreateAttackMode(selfAIEntity.selfCreatureEntity, selfAIEntity.targetCreatureEntity, ActionForAttackEnd, customAttackModeId: extraAttackModeId);
         }
         else
         {
-            findDirectrion = DirectionEnum.Left;
+            //出普通攻击：用生物默认攻击模块
+            FightHandler.Instance.StartCreateAttackMode(selfAIEntity.selfCreatureEntity, selfAIEntity.targetCreatureEntity, ActionForAttackEnd);
         }
+    }
+
+    /// <summary>
+    /// 攻击发起后的回调：按攻击方向重新搜索目标，有目标则回到准备阶段继续攻击，无目标则回待机
+    /// </summary>
+    public void ActionForAttackEnd(BaseAttackMode attackMode)
+    {
+        //按攻击方向决定搜索朝向
+        DirectionEnum findDirectrion = attackMode.attackModeData.attackDirection.x > 0 ? DirectionEnum.Right : DirectionEnum.Left;
         var findTargetCreature = selfAIEntity.FindCreatureEntityForSinge(findDirectrion);
-        //如果没有找到最近的生物
+        //找不到最近目标 → 回待机
         if (findTargetCreature == null)
         {
             ChangeIntent(intentForIdle);
             return;
         }
-        //设置新目标
+        //更新为新目标
         if (findTargetCreature != selfAIEntity.targetCreatureEntity)
         {
             selfAIEntity.targetCreatureEntity = findTargetCreature;
         }
-
-        //如果目标生物已经无了 则重新寻找目标
+        //目标已无 → 回待机
         if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.IsDead())
         {
             ChangeIntent(intentForIdle);
             return;
         }
-        //继续攻击
-        else
+        //否则回到准备阶段继续攻击
+        attackState = 0;
+    }
+    #endregion
+
+    #region 额外攻击（攻击模块扩展）
+    /// <summary>
+    /// 额外攻击运行时数据（每个额外攻击独立计时）
+    /// </summary>
+    protected class ExtraAttackRuntime
+    {
+        /// <summary>额外攻击配置</summary>
+        public AttackModeExtInfoBean extInfo;
+        /// <summary>进入攻击状态后已累计的时间（秒）</summary>
+        public float timer;
+    }
+    /// <summary>当前生物的额外攻击列表（无则为null）</summary>
+    protected List<ExtraAttackRuntime> listExtraAttack;
+    /// <summary>本次攻击循环选中的额外攻击（AttackCreatureStart 判定、AttackCreatureStartEnd 发射；null=本次为普通攻击）</summary>
+    protected ExtraAttackRuntime currentExtraAttack;
+
+    /// <summary>
+    /// 初始化额外攻击：读取NPC的 attack_mode_ext，筛选按间隔释放的类型并重置各自计时器
+    /// </summary>
+    protected void InitExtraAttack()
+    {
+        listExtraAttack = null;
+        currentExtraAttack = null;
+        //仅NPC生物(敌人)带有 attack_mode_ext 配置
+        var npcInfo = fightCreatureData?.creatureData?.creatureNpcData?.npcInfo;
+        if (npcInfo == null)
         {
-            attackState = 0;
+            return;
+        }
+        var listExtInfo = npcInfo.GetListAttackModeExtInfo();
+        if (listExtInfo.IsNull())
+        {
+            return;
+        }
+        for (int i = 0; i < listExtInfo.Count; i++)
+        {
+            var extInfo = listExtInfo[i];
+            //目前仅 BossSkill 类型按间隔自动释放，未来新增其他类型可在此扩展分支
+            if (extInfo == null || extInfo.GetExtType() != AttackModeExtTypeEnum.BossSkill)
+            {
+                continue;
+            }
+            if (listExtraAttack == null)
+            {
+                listExtraAttack = new List<ExtraAttackRuntime>();
+            }
+            listExtraAttack.Add(new ExtraAttackRuntime { extInfo = extInfo, timer = 0 });
         }
     }
+
+    /// <summary>
+    /// 累计各额外攻击的CD（仅计时，不在此释放；释放时机融入普通攻击循环的判定）
+    /// </summary>
+    protected void UpdateExtraAttackTimer()
+    {
+        if (listExtraAttack == null)
+        {
+            return;
+        }
+        for (int i = 0; i < listExtraAttack.Count; i++)
+        {
+            listExtraAttack[i].timer += Time.deltaTime;
+        }
+    }
+
+    /// <summary>
+    /// 取第一个CD已到达的额外攻击（按列表顺序即优先级）；都未到则返回null（本次走普通攻击）
+    /// </summary>
+    protected ExtraAttackRuntime GetReadyExtraAttack()
+    {
+        if (listExtraAttack == null)
+        {
+            return null;
+        }
+        for (int i = 0; i < listExtraAttack.Count; i++)
+        {
+            var extraAttack = listExtraAttack[i];
+            if (extraAttack.timer >= extraAttack.extInfo.trigger_interval)
+            {
+                return extraAttack;
+            }
+        }
+        return null;
+    }
+    #endregion
 }

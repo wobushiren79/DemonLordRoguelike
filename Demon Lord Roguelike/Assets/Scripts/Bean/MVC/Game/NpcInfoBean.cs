@@ -83,6 +83,10 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public string body_size;
 	/// <summary>
+	///Boss额外技能(AttackModeExtInfo的id,多个用,分隔)
+	/// </summary>
+	public string attack_mode_ext;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

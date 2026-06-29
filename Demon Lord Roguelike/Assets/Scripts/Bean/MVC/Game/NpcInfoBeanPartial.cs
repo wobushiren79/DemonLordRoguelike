@@ -6,6 +6,7 @@ public partial class NpcInfoBean
     protected List<long> listSkin;
     protected List<CreatureSkinTypeEnum> listSkinType;
     protected List<long> listTitle;
+    protected List<AttackModeExtInfoBean> listAttackModeExt;
 
     /// <summary>
     /// 获取议员评级
@@ -111,6 +112,30 @@ public partial class NpcInfoBean
     public NpcTypeEnum GetNpcType()
     {
         return (NpcTypeEnum)npc_type;
+    }
+
+    /// <summary>
+    /// 获取攻击模块扩展配置列表（attack_mode_ext 为逗号分隔的 AttackModeExtInfo id，缓存解析结果）
+    /// </summary>
+    public List<AttackModeExtInfoBean> GetListAttackModeExtInfo()
+    {
+        if (listAttackModeExt == null)
+        {
+            listAttackModeExt = new List<AttackModeExtInfoBean>();
+            if (!attack_mode_ext.IsNull())
+            {
+                var listId = attack_mode_ext.SplitForListLong(',');
+                for (int i = 0; i < listId.Count; i++)
+                {
+                    var extInfo = AttackModeExtInfoCfg.GetItemData(listId[i]);
+                    if (extInfo != null)
+                    {
+                        listAttackModeExt.Add(extInfo);
+                    }
+                }
+            }
+        }
+        return listAttackModeExt;
     }
 
     /// <summary>
