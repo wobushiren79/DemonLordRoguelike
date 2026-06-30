@@ -50,6 +50,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0f9ef1520ff91754ca96a2b85a3e0f11
+    m_Address: Assets/LoadResources/Audio/Sound/sound_magic_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0ffc346924026ea47bb608bc8e462553
     m_Address: Assets/LoadResources/Audio/Sound/sound_hit_10.wav
     m_ReadOnly: 0
@@ -57,6 +62,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 12b507f7afe76884a9c3ccc128c79977
     m_Address: Assets/LoadResources/Audio/Sound/sound_hit_4.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 13c21bfd39e8be6449f6111696c0aa21
+    m_Address: Assets/LoadResources/Audio/Sound/sound_reward_4.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -70,6 +80,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 21798d12904e3ef4f9e29ee9d4327642
+    m_Address: Assets/LoadResources/Audio/Sound/sound_magic_2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 21ff1f297a1f0fa47807c3385d0062e3
     m_Address: Assets/LoadResources/Audio/Sound/sound_damage_1.wav
     m_ReadOnly: 0
@@ -77,6 +92,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 286181450616e4a47a8da6a3c0d112aa
     m_Address: Assets/LoadResources/Audio/Sound/sound_thunderstorm_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 29eb5ab59ab3fde4db3c229ea83c7765
+    m_Address: Assets/LoadResources/Audio/Sound/sound_knife_miss_3.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -115,8 +135,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3d0ad752bf02fd44c98aefc2470ab95e
+    m_Address: Assets/LoadResources/Audio/Sound/sound_magic_3.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3e91364f44e4e1842adc3983505d9358
     m_Address: Assets/LoadResources/Audio/Sound/sound_btn_29.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 42e1b3f869e4c374894f1852ddef4009
+    m_Address: Assets/LoadResources/Audio/Sound/sound_reward_5.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 47ddf8688afd1264daa733f2ade8e656
+    m_Address: Assets/LoadResources/Audio/Sound/sound_knife_miss_2.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -147,6 +182,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5b7a2e62213202a4e97a65a7a83a705a
     m_Address: Assets/LoadResources/Audio/Sound/sound_firecrackers_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5c748cdd21a83f14598c71ca33708860
+    m_Address: Assets/LoadResources/Audio/Sound/sound_knife_miss_4.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -185,8 +225,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 67e67c652a6efb04eac3014773afc018
+    m_Address: Assets/LoadResources/Audio/Sound/sound_reward_6.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 68086fc3087260b41a1be20e3393ab70
     m_Address: Assets/LoadResources/Audio/Sound/sound_fight_2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6af964d38b8d97a4cb0a2cb7a97266cc
+    m_Address: Assets/LoadResources/Audio/Sound/sound_knife_miss_5.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -287,6 +337,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a4eb72885aa83f44f925b26f36f2c701
     m_Address: Assets/LoadResources/Audio/Sound/sound_hit_3.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a975cf56db351f04d8079d7940b6271c
+    m_Address: Assets/LoadResources/Audio/Sound/sound_continuous_1.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -410,6 +465,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e94983938cb238c46befa01321de3d74
+    m_Address: Assets/LoadResources/Audio/Sound/sound_knock_2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e9902b8d836ec484ea8729e1e69fc4d3
     m_Address: Assets/LoadResources/Audio/Sound/sound_pay_6.wav
     m_ReadOnly: 0
@@ -432,6 +492,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: eefea7daa83b4294a90704f1bdb893a2
     m_Address: Assets/LoadResources/Audio/Sound/sound_lock_3.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: efb7a661570764741a66e4fe6ebbbd09
+    m_Address: Assets/LoadResources/Audio/Sound/sound_hit_12.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
