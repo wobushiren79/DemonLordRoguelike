@@ -551,7 +551,6 @@ public class FightTypeConquerEditorWindow : EditorWindow
 
         // 难度与奖励
         EditorGUILayout.LabelField("难度与奖励", EditorStyles.boldLabel);
-        currentBean.level_add = DrawFloatField("难度数值加成", currentBean.level_add);
         currentBean.drop_crystal = DrawIntField("掉落魔晶", currentBean.drop_crystal);
         currentBean.reward_crystal = DrawIntField("奖励-魔晶", currentBean.reward_crystal);
         currentBean.reward_equip_rarity = DrawIntField("奖励-装备稀有度", currentBean.reward_equip_rarity);
@@ -605,6 +604,25 @@ public class FightTypeConquerEditorWindow : EditorWindow
         if (GUILayout.Button(modeLabel, EditorStyles.miniButton, GUILayout.Width(100)))
         {
             listEditMode[fieldKey] = !listEditMode[fieldKey];
+        }
+
+        // 场景字段：在列表旁提供「打开场景配置表」按钮（打开战斗场景 Excel）
+        if (fieldKey.Contains("scene"))
+        {
+            GUILayout.Space(5);
+            if (GUILayout.Button("打开场景配置表", EditorStyles.miniButton, GUILayout.Width(110)))
+            {
+                OpenFightSceneExcel();
+            }
+        }
+        // 敌人字段：在列表旁提供「打开NpcInfo配置表」按钮（打开NpcInfo Excel）
+        else if (fieldKey.Contains("enemy"))
+        {
+            GUILayout.Space(5);
+            if (GUILayout.Button("打开NpcInfo配置表", EditorStyles.miniButton, GUILayout.Width(120)))
+            {
+                OpenNpcInfoExcel();
+            }
         }
         EditorGUILayout.EndHorizontal();
 

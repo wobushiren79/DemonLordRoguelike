@@ -11,8 +11,9 @@ GameObject:
   - component: {fileID: 2086843628042361760}
   - component: {fileID: 2938148442540788134}
   - component: {fileID: 3891799841264269806}
+  - component: {fileID: 5293777604854574080}
   m_Layer: 5
-  m_Name: UIPopupPortalDetailsItem
+  m_Name: UIViewPopupPortalDetailsItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -77,6 +78,23 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &5293777604854574080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 258632986510439303}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e463eca74309ca9478fad8cfa4b9e834, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIViewPopupPortalDetailsItem
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
+  _rectTransform: {fileID: 0}
+  ui_Title: {fileID: 4812376834513647245}
+  ui_Content: {fileID: 6369424363316779354}
 --- !u!1 &6408160351267677706
 GameObject:
   m_ObjectHideFlags: 0
@@ -180,6 +198,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -316,6 +335,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0

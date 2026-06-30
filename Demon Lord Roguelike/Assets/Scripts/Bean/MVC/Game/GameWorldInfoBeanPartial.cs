@@ -160,7 +160,40 @@ public partial class GameWorldInfoRandomBean
             roadLength = fightTypeConquerInfo.GetRandomRoadLength(),
             //随机关卡数量(fight_num)
             fightNum = fightTypeConquerInfo.GetRandomFightNum(),
+            //预生成本难度的通关奖励(与通关领奖同规则), 一次性随出并冻结, 保证 UIPopupPortalDetails 预览=通关实领
+            listReward = RewardSelectBean.CreateRewardListForConquer(fightTypeConquerInfo),
+            //记录生成时的装备奖励池解锁签名, 供解锁新魔物掉落后判定是否需重新生成
+            rewardUnlockSign = RewardSelectBean.GetConquerEquipPoolSign(),
         };
+    }
+
+    /// <summary>
+    /// 获取指定难度预生成的通关奖励(装备+魔晶); 与通关领奖同规则, 保证 UIPopupPortalDetails 预览=通关实领。
+    /// 以下情况会重新生成并缓存: 尚未生成(老存档), 或解锁了新魔物掉落致装备奖励池变化(签名变化)。
+    /// </summary>
+    /// <param name="targetDifficultyLevel">难度等级</param>
+    /// <returns>该难度的奖励列表; 无对应征服配置时返回 null</returns>
+    public List<ItemBean> GetDifficultyReward(int targetDifficultyLevel)
+    {
+        GameWorldDifficultyRandomBean difficultyRandom = GetDifficultyRandom(targetDifficultyLevel);
+        if (difficultyRandom == null)
+            return null;
+        //当前装备奖励池的解锁签名(解锁新魔物掉落后会变化)
+        int currentUnlockSign = RewardSelectBean.GetConquerEquipPoolSign();
+        //无预生成奖励(老存档), 或解锁池已变化(解锁了新魔物掉落) → 重新生成并刷新签名
+        bool needRegenerate = difficultyRandom.listReward == null
+            || difficultyRandom.listReward.Count == 0
+            || difficultyRandom.rewardUnlockSign != currentUnlockSign;
+        if (needRegenerate)
+        {
+            FightTypeConquerInfoBean fightTypeConquerInfo = FightTypeConquerInfoCfg.GetItemData(worldId, targetDifficultyLevel);
+            if (fightTypeConquerInfo != null)
+            {
+                difficultyRandom.listReward = RewardSelectBean.CreateRewardListForConquer(fightTypeConquerInfo);
+                difficultyRandom.rewardUnlockSign = currentUnlockSign;
+            }
+        }
+        return difficultyRandom.listReward;
     }
 
     /// <summary>
@@ -187,4 +220,8 @@ public class GameWorldDifficultyRandomBean
     public int roadLength;
     //关卡数量
     public int fightNum;
+    //本难度预生成的通关奖励(装备+魔晶); 创建传送门时一次性随出并冻结, 保证 UIPopupPortalDetails 预览=通关实领
+    public List<ItemBean> listReward = new List<ItemBean>();
+    //生成奖励时的"装备奖励池解锁签名"(可生成装备的已解锁生物模型数量); 解锁新魔物掉落后此值变化, GetDifficultyReward 据此重新生成奖励
+    public int rewardUnlockSign;
 }

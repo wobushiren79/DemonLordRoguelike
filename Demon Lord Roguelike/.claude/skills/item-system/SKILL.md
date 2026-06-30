@@ -9,6 +9,7 @@ watched_files:
   - Assets/Scripts/Utils/ItemsUtil.cs
   - Assets/Scripts/Bean/MVC/UserDataBean.cs
   - Assets/Scripts/Bean/Game/CreatureBean.cs
+  - Assets/Scripts/Component/UI/Common/Item/
   - Assets/Scripts/Component/UI/Common/Backpack/
 ---
 
@@ -214,14 +215,33 @@ public bool IsBetterEquipment(ItemBean newItem, ItemBean currentItem)
 }
 ```
 
+## 道具项 UI 基类（UIViewItem）
+
+道具格 UI 统一在 `Assets/Scripts/Component/UI/Common/Item/`，采用继承：
+
+```
+UIViewItem (基类 : BaseUIView)         公共 itemData + SetData/SetIcon/SetNum/SetItemPopup/OnClickForButton
+├── UIViewItemEquip   : UIViewItem     装备槽位：itemTypeEnum + SetData(ItemTypeEnum)，空槽位重写 SetIcon/SetItemPopup 显部位图标/名
+└── UIViewItemBackpack : UIViewItem    背包格：creatureData + SetData(item,creature)，行为==基类
+```
+
+关键约定（改动这块务必遵守）：
+
+- **自动绑定靠嵌套预制体**：`UIViewItem.prefab` 被嵌套进 Equip/Backpack 两个 prefab（命名 `UIViewItem`）。`AutoLinkUI` 递归按子物体名绑定，子类反射继承基类 `ui_*` 字段（`ui_ItemIcon`/`ui_ItemNum`/`ui_UIViewItem` popup），从嵌套预制体里取到引用。**嵌套物体名 `UIViewItem`/`ItemIcon`/`ItemNum` 不能改**。
+- **点击按钮判定**：基类 `OnClickForButton` 用 `viewButton.gameObject == ui_UIViewItem.gameObject` 判定（按钮与 popup 同物体）。
+- **`OnClickForSelect` 必须留在子类**：消费方用 `RegisterEvent<UIViewItemEquip>`/`<UIViewItemBackpack>` 按具体类型订阅，`TriggerEvent(..., this)` 的 `this` 必须是具体子类，不能上提到基类。
+- **数量背景**：基类 Component 无 `ui_ItemNumBg`，`SetNum` 用 `ui_ItemNum.transform.parent`（即 ItemNumBg）开关。
+- **⚠️ 不要对子类 prefab 重跑 UI 自动生成工具**：工具不感知继承，会重生成 `UIViewItemEquipComponent`/`BackpackComponent` 带回 `ui_ItemIcon` 等公共字段，与基类字段重名隐藏。子类字段一律走继承（这两个 Component 文件已删除）。
+
 ## 相关事件
 
 ```csharp
 // 背包道具变化
 EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Item_Change);
 
-// 背包道具点击
-EventsInfo.UIViewItemBackpack_OnClickSelect
+// 道具点击（按具体子类类型订阅）
+EventsInfo.UIViewItemBackpack_OnClickSelect   // RegisterEvent<UIViewItemBackpack>
+EventsInfo.UIViewItemEquip_OnClickSelect      // RegisterEvent<UIViewItemEquip>
 ```
 
 ## 文件位置速查
@@ -235,4 +255,5 @@ EventsInfo.UIViewItemBackpack_OnClickSelect
 | 道具工具类 | `Assets/Scripts/Utils/ItemsUtil.cs` |
 | 背包管理 | `Assets/Scripts/Bean/MVC/UserDataBean.cs` |
 | 生物装备 | `Assets/Scripts/Bean/Game/CreatureBean.cs` |
-| UI背包组件 | `Assets/Scripts/Component/UI/Common/Backpack/` |
+| 道具项UI(基类/装备/背包) | `Assets/Scripts/Component/UI/Common/Item/` |
+| UI背包列表组件 | `Assets/Scripts/Component/UI/Common/Backpack/` |

@@ -6,6 +6,7 @@ watched_files:
   - Assets/Scripts/Bean/Game/ItemBean.cs
   - Assets/Scripts/Enums/ItemsEnum.cs
   - Assets/Scripts/Utils/ItemsUtil.cs
+  - Assets/Scripts/Component/UI/Common/Item/
   - Assets/Scripts/Component/UI/Common/Backpack/
   - Assets/Scripts/Component/UI/Popup/ItemInfo/
 ---
@@ -25,10 +26,11 @@ watched_files:
 - **ItemsUtil** - 道具工具类
 - **GameDataHandler** / **GameDataManager** - 游戏数据处理（含道具持久化）
 
-### 道具 UI
-- **UIViewItemBackpack** - 背包道具项
-- **UIViewItemBackpackList** - 背包列表
-- **UIViewItemEquip** - 装备项
+### 道具 UI（`Common/Item/`）
+- **UIViewItem** - 道具项**基类**（公共字段 itemData + SetData/SetIcon/SetNum/SetItemPopup/OnClickForButton）
+- **UIViewItemBackpack** - 背包道具项（`: UIViewItem`，加 creatureData + SetData(item,creature)）
+- **UIViewItemEquip** - 装备项（`: UIViewItem`，加 itemTypeEnum + 空槽位占位图标/部位名）
+- **UIViewItemBackpackList** - 背包列表（在 `Common/Backpack/`）
 - **UIViewStoreItem** - 商店道具项
 - **UIPopupItemInfo** - 道具信息气泡
 
@@ -42,7 +44,8 @@ watched_files:
 | ItemBean | Assets/Scripts/Bean/Game/ItemBean.cs |
 | ItemsEnum | Assets/Scripts/Enums/ItemsEnum.cs |
 | ItemsUtil | Assets/Scripts/Utils/ItemsUtil.cs |
-| 背包道具项 | Assets/Scripts/Component/UI/Common/Backpack/ |
+| 道具项（基类+装备+背包） | Assets/Scripts/Component/UI/Common/Item/ |
+| 背包列表 | Assets/Scripts/Component/UI/Common/Backpack/ |
 | 道具信息气泡 | Assets/Scripts/Component/UI/Popup/ItemInfo/ |
 
 ## 约束

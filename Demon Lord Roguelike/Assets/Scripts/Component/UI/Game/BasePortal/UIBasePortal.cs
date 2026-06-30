@@ -67,6 +67,26 @@ public partial class UIBasePortal : BaseUIComponent
             SetItemMapData(gameWorldInfoRandomData);
             userTempData.AddPortalWorldInfoRandomData(gameWorldInfoRandomData);
         }
+        //刷新「刷新按钮」的显隐与剩余次数显示
+        RefreshBtnRefreshState();
+    }
+
+    /// <summary>
+    /// 刷新「刷新按钮」的显隐与剩余次数显示
+    /// 未解锁传送门刷新研究(UnlockEnum.PortalRefreshNum)时整个按钮隐藏(默认不开启);
+    /// 已解锁时显示按钮, 次数文本 ui_BtnRefreshNum 显示剩余刷新次数(形如 x5)
+    /// </summary>
+    public void RefreshBtnRefreshState()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        bool isUnlock = userData.GetUserUnlockData().CheckIsUnlockPortalRefresh();
+        //未解锁则整个刷新按钮隐藏
+        ui_BtnRefresh.gameObject.ShowObj(isUnlock);
+        if (!isUnlock)
+            return;
+        //已解锁: 次数文本显示剩余刷新次数(形如 x5)
+        int remainNum = userData.GetUserTempData().GetPortalRefreshRemainNum();
+        ui_BtnRefreshNum.text = $"x{remainNum}";
     }
 
     /// <summary>
@@ -169,14 +189,24 @@ public partial class UIBasePortal : BaseUIComponent
 
     /// <summary>
     /// 点击刷新
+    /// 消耗一次刷新次数重洗全部传送门世界; 剩余次数为0时提示已用完且不刷新
     /// </summary>
     public void OnClickForRefresh()
     {
-        //获取用户数据
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UserTempBean userTempData = userData.GetUserTempData();
+        //剩余刷新次数为0: 提示已用完, 不执行刷新
+        if (userTempData.GetPortalRefreshRemainNum() <= 0)
+        {
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(2007));
+            return;
+        }
+        //消耗一次刷新次数, 清空旧世界并重新随机生成(InitMap 末尾会同步刷新次数显示)
+        userTempData.ReducePortalRefreshNum();
         userTempData.ClearPortalWorldInfoRandomData();
         ClearMap();
         InitMap();
+        //持久化已用刷新次数
+        GameDataHandler.Instance.manager.SaveUserData();
     }
 }

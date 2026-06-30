@@ -172,7 +172,12 @@ public enum UnlockEnum : long
     SacrificeDifferentIdRate = 100100004,//不同生物id献祭成功率提升(每个不同id祭品单个成功率+5%,满级+50%)
     DoomCouncil = 100200001,//终焉议会模块
     PortalShowNum = 100300001, //传送门显示数量
-    
+    PortalPreviewRoadNum = 100300002, //传送门详情-线路数量预览(研究门控)
+    PortalPreviewFightNum = 100300003, //传送门详情-关卡数量预览(研究门控)
+    PortalPreviewRoadLength = 100300004, //传送门详情-路径长度预览(研究门控)
+    PortalPreviewReward = 100300005, //传送门详情-奖励预览(研究门控)
+    PortalRefreshNum = 100300006, //传送门刷新次数(研究等级=可用刷新次数上限,通关世界回满)
+
     GashaponMachine = 100400000,//解锁孕育
     GashaponShowAll = 100400001,//显示所有抽取
     GashaponRarityR = 100401000,//稀有度R

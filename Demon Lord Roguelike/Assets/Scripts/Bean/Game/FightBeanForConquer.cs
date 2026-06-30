@@ -114,7 +114,7 @@ public class FightBeanForConquer : FightBean
         //先收集所有出怪事件(绝对出现时间 + npcId)，最后统一按时间排序再转换为带相对延迟的进攻队列
         List<SpawnEvent> spawnEvents = new List<SpawnEvent>();
 
-        //本关普通敌人的累计强度倍率(HP/护甲/攻击力)，第1关为1，之后按 attack_intensity_addrate 逐关相乘
+        //本关敌人(普通敌人与BOSS均适用)的累计强度倍率(HP/护甲/攻击力)，第1关为1，之后按 attack_intensity_addrate 逐关相乘
         float intensityRate = fightTypeConquerInfo.GetCurrentIntensityRate(fightNum);
 
         //普通波次：将 [0, showTime] 区间均分为 waveNum 段，在每段内随机一个出现时刻，整体随机但不至于过度聚集
@@ -125,15 +125,15 @@ public class FightBeanForConquer : FightBean
             float spawnTime = (i + UnityEngine.Random.value) * bucket;
             long enemyId = fightTypeConquerInfo.GetRandomEmenyId(false);
             SpawnEvent normalEvent = new SpawnEvent(spawnTime, enemyId);
-            //普通敌人按关卡强度倍率提升(BOSS 不受影响)
+            //普通敌人按关卡强度倍率提升
             normalEvent.intensityRate = intensityRate;
             spawnEvents.Add(normalEvent);
         }
 
-        //BOSS关：额外生成BOSS敌人(来自 enemy_boss_ids)
+        //BOSS关：额外生成BOSS敌人(来自 enemy_boss_ids)，BOSS 同样享受本关强度倍率
         if (isBoss)
         {
-            AddBossSpawnEvents(spawnEvents, showTime);
+            AddBossSpawnEvents(spawnEvents, showTime, intensityRate);
         }
 
         //按出现时间升序排序，保证队列按时间顺序出怪
@@ -151,7 +151,7 @@ public class FightBeanForConquer : FightBean
             FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(delay, evt.npcId);
             //携带BOSS特写展示数据(仅BOSS首波非空)
             fightAttackDetails.bossShowNpcIds = evt.bossShowNpcIds;
-            //携带强度倍率(普通敌人按关卡递增, BOSS 为1)
+            //携带强度倍率(普通敌人与BOSS均按关卡递增)
             fightAttackDetails.intensityRate = evt.intensityRate;
             fightAttackData.AddAttackQueue(fightAttackDetails);
         }
@@ -160,11 +160,13 @@ public class FightBeanForConquer : FightBean
     /// <summary>
     /// 生成BOSS出怪事件
     /// BOSS数量由 attack_boss_num 决定(支持单值"x"或区间"x-y")，出现在进攻总时间的中后段[50%,90%]随机时刻，
-    /// 多个BOSS在该时刻略微错开依次入场，并由首个BOSS携带全部BOSS的npcId用于一次性BOSS特写展示
+    /// 多个BOSS在该时刻略微错开依次入场，并由首个BOSS携带全部BOSS的npcId用于一次性BOSS特写展示；
+    /// BOSS 与普通敌人一样按本关强度倍率(intensityRate)提升 HP/护甲/攻击力
     /// </summary>
     /// <param name="spawnEvents">出怪事件列表(会被追加BOSS事件)</param>
     /// <param name="showTime">本关进攻总时间</param>
-    private void AddBossSpawnEvents(List<SpawnEvent> spawnEvents, float showTime)
+    /// <param name="intensityRate">本关强度倍率(同普通敌人，作用到 HP/护甲/攻击力)</param>
+    private void AddBossSpawnEvents(List<SpawnEvent> spawnEvents, float showTime, float intensityRate)
     {
         //BOSS数量
         int bossNum = fightTypeConquerInfo.GetRandomBossNum();
@@ -184,7 +186,10 @@ public class FightBeanForConquer : FightBean
             long bossId = fightTypeConquerInfo.GetRandomEmenyId(true);
             bossNpcIds.Add(bossId);
             float bossTime = bossAppearTime + i * bossStagger;
-            bossEvents.Add(new SpawnEvent(bossTime, bossId));
+            SpawnEvent bossEvent = new SpawnEvent(bossTime, bossId);
+            //BOSS 与普通敌人一致，按本关强度倍率提升 HP/护甲/攻击力
+            bossEvent.intensityRate = intensityRate;
+            bossEvents.Add(bossEvent);
         }
         //首个BOSS出现时弹出BOSS特写UI(展示所有BOSS)
         bossEvents[0].bossShowNpcIds = bossNpcIds;
@@ -252,7 +257,7 @@ public class FightBeanForConquer : FightBean
         public long npcId;
         //BOSS特写展示的npcId列表(仅BOSS首波非空)
         public List<long> bossShowNpcIds;
-        //强度倍率(普通敌人按关卡递增; 默认1, BOSS 保持1)
+        //强度倍率(普通敌人与BOSS均按关卡递增; 默认1)
         public float intensityRate = 1f;
 
         public SpawnEvent(float time, long npcId)

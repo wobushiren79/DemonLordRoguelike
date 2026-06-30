@@ -201,6 +201,11 @@ public enum UnlockEnum : long
     SacrificeDifferentIdRate = 100100004, // 不同魔物献祭成功率提升(+5%/级, level_max=10)
     DoomCouncil = 100200001,           // 终焉议会模块
     PortalShowNum = 100300001,         // 传送门显示数量
+    PortalPreviewRoadNum = 100300002,    // 传送门详情预览-线路数
+    PortalPreviewFightNum = 100300003,   // 传送门详情预览-关卡数
+    PortalPreviewRoadLength = 100300004, // 传送门详情预览-路径长度
+    PortalPreviewReward = 100300005,     // 传送门详情预览-奖励道具
+    PortalRefreshNum = 100300006,        // 传送门刷新次数(研究等级=可用刷新次数上限,通关回满,level_max=10)
     GashaponMachine = 100400000,       // 解锁孕育
     GashaponRarityR = 100401000,       // 稀有度R
     GashaponRarityRRate = 100401001,   // 稀有度R +1%
@@ -216,6 +221,32 @@ public enum UnlockEnum : long
 ```
 
 > **何时需要新增 `UnlockEnum`？** 当 C# 代码需要直接判定/读取某个解锁等级时（例如 `GetUnlockLineupNum` 中读取 `LineupNum` 的研究等级）。纯前置依赖型节点不需要进入枚举，仅在 Excel 中维护即可。
+
+### 设施分支(1003 段) — 传送门详情预览 4 节点
+
+传送门详情弹窗 `UIPopupPortalDetails` 的四项预览各由一个**设施研究节点**(`research_type=1`)门控：未解锁则该详情项整行隐藏（奖励区不显示），名字行始终显示。无尽模式不展示关卡数/路径长度/奖励。
+
+| UnlockEnum | unlock_id | 预览项 | 详情项(View) | 备注 |
+|------------|-----------|--------|--------------|------|
+| `PortalPreviewRoadNum` | 100300002 | 线路数 | RoadNum | |
+| `PortalPreviewFightNum` | 100300003 | 关卡数 | FightNum | 无尽模式不展示 |
+| `PortalPreviewRoadLength` | 100300004 | 路径长度 | RoadLength | UI 文本 id 414；无尽模式不展示 |
+| `PortalPreviewReward` | 100300005 | 奖励道具 | 奖励缓存池(`ui_UIViewItem` 模板) | 无尽模式不展示 |
+
+> 同段 `PortalShowNum`(100300001) 为传送门显示数量、`PortalRefreshNum`(100300006) 为传送门刷新次数（研究等级=可用刷新次数上限，`level_max=10`，每通关一次世界回满；`UIBasePortal` 用 `CheckIsUnlockPortalRefresh` 门控刷新按钮显隐、`GetUnlockPortalRefreshMax` 取上限），均属同一 1003 设施段。上述节点均落在 `excel_research_info`(各一条 `research_type=1` 节点) + `excel_unlock_info`(`unlock_type=0`，`id` 同 `unlock_id`) + 多语言 `Language_ResearchInfo`(节点名 textId)。
+
+**UI 门控范例**（`UIPopupPortalDetails`）：用 `UserUnlock.CheckIsUnlock(UnlockEnum)` 决定每个详情项是否显示，未解锁整行隐藏：
+
+```csharp
+var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+// 每项调用 UIViewPopupPortalDetailsItem.SetData(title, content, isShow)
+// isShow = 是否解锁对应设施研究 (无尽模式额外把关卡数/路径长度/奖励压成 false)
+ui_RoadNum.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.PortalPreviewRoadNum));
+ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.PortalPreviewRoadLength));
+// 奖励区：仅当 CheckIsUnlock(UnlockEnum.PortalPreviewReward) 时才生成奖励道具图标，否则整区隐藏
+```
+
+> `UIPopupPortalDetails` 详细改造（AutoLink 的 4 个 `UIViewPopupPortalDetailsItem`、奖励缓存池、预生成奖励来源 `GameWorldInfoRandomBean.GetDifficultyReward`）属传送门/征服模块，本 Skill 仅覆盖"研究门控"这一面。
 
 ---
 
@@ -283,6 +314,8 @@ public int GetUnlockResearchLevelByResearchInfo(ResearchInfoBean researchInfo);
 
 ```csharp
 public int GetUnlockPortalShowCount();                 // 3 + PortalShowNum 等级
+public int GetUnlockPortalRefreshMax();                // 传送门刷新次数上限 = PortalRefreshNum 等级(未解锁0,满级10)
+public bool CheckIsUnlockPortalRefresh();              // 是否解锁传送门刷新(等级>0,门控刷新按钮显隐)
 public int GetUnlockLineupNum();                       // 1 + LineupNum 等级
 public int GetUnlockLineupCreatureNum();               // 6 + LineupCreatureAddNum 等级
 public int GetUnlockGameWorldConquerDifficultyLevel(long worldId);
@@ -523,7 +556,8 @@ public void SaveResearchDataForTest()
    - `pay_crystal` 用三种格式之一
    - `level_max` 决定可升级次数
    - `position_x / position_y` 通过 `UIBaseResearchTest` 在游戏中拖完保存
-3. **如需代码读取该研究等级**：在 `UnlockEnum` 中追加对应常量
+   - 节点名 `name` textId 在 `excel_research_info` 的多语言表 `Language_ResearchInfo` 中补齐（如四个传送门预览节点）
+3. **如需代码读取该研究等级/判定解锁**：在 `UnlockEnum` 中追加对应常量（如设施段 `PortalPreview*`，UI 用 `CheckIsUnlock(UnlockEnum)` 门控显示）
 4. **如需衍生数值**：在 `UserUnlockBean` 的"解锁数值获取"区域追加方法
 5. **配置表导出**：通过 `ExcelEditorWindow` 重新导出 JSON
 

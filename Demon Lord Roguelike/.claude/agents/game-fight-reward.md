@@ -28,12 +28,19 @@ watched_files:
 
 **关键**：结算面板 `UIFightSettlement` 本身**不发任何奖励**，它只是一个可排序的战斗数据统计排行榜（伤害/击杀/受伤/治疗/受疗/经验）。真正的发奖逻辑在 `UIRewardSelect` + `RewardSelectBean`。
 
+**预览即实领**：B 通道奖励不是通关时现生成，而是**创建传送门时按难度预生成并冻结**到 `GameWorldDifficultyRandomBean.listReward`（归 `game-conquer` 代理）。传送门详情 `UIPopupPortalDetails` 展示的就是这份预生成奖励；通关 BOSS 领奖直接消费同一份（`gameWorldInfoRandomData.GetDifficultyReward(difficulty)`），"预览所见 = 实际所领"。`RewardSelectBean` 现为奖励生成的**单一真实源**，被预生成与通关领奖共用，规则一致。
+
 ## 职责范围
 
 ### 数据 Bean
 - **FightRecordsBean** - 战斗统计记录容器（挂在 `FightBean.fightRecordsData`），含 `totalAddExp`、`dicRecordsCreatureData` 等
 - **FightRecordsCreatureBean** - 单个生物的战斗记录（damage/killNum/damageReceived/exp/regainHP 输出治疗/regainHPReceived 接收治疗/regainDR/regainDRReceived）
-- **RewardSelectBean** - 领奖数据，负责生成奖励物品列表 `listReward`（装备 + 魔晶）
+- **RewardSelectBean** - 奖励生成**单一真实源**，生成奖励物品列表 `listReward`（装备 + 魔晶）。私有 `CreateItemEquip`/`CreateItemCrystal`/`InitRewardList` 统一吃 `FightTypeConquerInfoBean`（不再吃 `FightBean`）。对外 API：
+  - `InitData(FightBean, RewardSelectTestData=null)`：原签名/行为不变（内部从 `FightBeanForConquer.fightTypeConquerInfo` 取配置；`InitData(null,testData)` 为测试模式）
+  - `InitData(FightTypeConquerInfoBean conquerInfo)`：由征服配置直接生成（传送门预生成/预览）
+  - `static List<ItemBean> CreateRewardListForConquer(conquerInfo)`：生成一份奖励列表（传送门创建预生成奖励调此）
+  - `InitDataForReward(List<ItemBean> baseReward, conquerInfo, int extraItemNum)`：**通关领奖入口**，用预生成 `baseReward` 充当 `listReward`（预览=实领，空则容错按 `conquerInfo` 即时生成），其后追加 `extraItemNum` 个魔晶（奖励多多）
+  - `static int GetConquerEquipPoolSign()` / `static List<long> GetUnlockCreatureModelIdsForEquip()`：装备奖励池"解锁签名"=可生成装备的已解锁生物模型数量；解锁新魔物掉落后变化，触发传送门预生成奖励重生成
 - **RewardSelectTestData** - 测试模式下的领奖参数（品质/属性/数量/魔王专属概率）
 - **FightDropCrystalBean** - 战斗内掉落水晶实例
 - **FightTypeConquerInfoBean(Partial)** - 征服配置（`drop_crystal` / `reward_crystal` / `reward_equip_rarity`，只决定稀有度）
@@ -60,8 +67,10 @@ watched_files:
  → GameFightLogicConquer.HandleForChangeGameStateSettlement (isWin && isBossFight 分支)
  → 打开 UIFightSettlement.SetData(fightData, ActionForUIFightSettlementNext)
  → 玩家点 Next → ActionForUIFightSettlementNext
- → new RewardSelectBean().InitData(fightData) (生成装备+魔晶)
- → 打开 UIRewardSelect.SetData(rewardSelectData, ActionForUIRewardSelectEnd)
+ → baseReward = gameWorldInfoRandomData.GetDifficultyReward(difficultyLevel) (取传送门预生成并冻结的奖励)
+ → new RewardSelectBean().InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum) (预览=实领；奖励多多额外件数在基础奖励后追加魔晶)
+ → selectNumMax += rewardAddSelectNum; 钳制 = Min(selectNumMax, listReward.Count)
+ → 打开 UIRewardSelect.SetData(rewardSelectData, ActionForUIRewardSelectEnd, isClearLastGame:true)
  → 玩家选宝箱 → userData.AddBackpackItem(itemData) (水晶走 AddCrystal,装备入背包)
  → ActionForUIRewardSelectEnd → 触发 Achievement_ConquerComplete(worldId, difficultyLevel) 成就(按世界×难度统计)
  → EndGameAndReturnToBase()
@@ -72,13 +81,18 @@ watched_files:
 
 非 BOSS 关胜利则不走结算，直接打开 `UIFightAbyssalBlessing`（深渊馈赠，归 `game-abyssal-blessing` 代理）。
 
-## 奖励生成规则（RewardSelectBean.InitData）
+## 奖励生成规则（RewardSelectBean，单一真实源）
 
-1. 取已解锁生物，过滤掉没有对应装备道具的生物
+各 `InitData*` 入口最终收口到私有 `InitRewardList(conquerInfo, testData)`：
+
+1. `GetUnlockCreatureModelIdsForEquip()` 取已解锁生物，过滤掉没有对应装备道具的生物
 2. 循环 `createItemNum`（默认 3）个：前 `createEquipNum`（默认 1）个生成装备，其余生成魔晶
-3. **装备**（CreateItemEquip）：随机解锁生物的随机装备，品质 = `reward_equip_rarity`、属性加点数量 = `RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add`（由稀有度配置表决定），按 `createEquipDemonLordRate`（默认 1/10）概率标记魔王专属
-4. **魔晶**（CreateItemCrystal）：基础数量 = `reward_crystal`，在 `±基础值/2` 范围随机浮动
-5. `fightData == null` 时进入测试模式，用 `RewardSelectTestData` 的固定参数
+3. **装备**（CreateItemEquip，吃 `conquerInfo`）：随机解锁生物的随机装备，品质 = `conquerInfo.reward_equip_rarity`、属性加点数量 = `RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add`（由稀有度配置表决定），按 `createEquipDemonLordRate`（默认 1/10）概率标记魔王专属
+4. **魔晶**（CreateItemCrystal，吃 `conquerInfo`）：基础数量 = `conquerInfo.reward_crystal`，在 `±基础值/2` 范围随机浮动
+5. 测试模式由 `InitData(null, testData)` 进入，用 `RewardSelectTestData` 的固定参数（此入口行为不变）
+
+> **魔晶/装备规则与稀有度来源未变**：仍是 `reward_crystal` / `reward_equip_rarity` / `RarityInfo.equip_attribute_add`。本次改动只是把生成入口收敛到 `FightTypeConquerInfoBean`，并新增"传送门预生成 + 通关消费"的链路。
+> **通关领奖**走 `InitDataForReward`，消费传送门预生成的 `baseReward`；奖励多多额外件数追加在基础奖励**之后**（魔晶）。
 
 ## 关键文件
 
@@ -90,7 +104,8 @@ watched_files:
 | 结算进度条 | Assets/Scripts/Component/UI/Game/FightSettlement/UIViewFightSettlementItemProgress.cs |
 | 领奖 UI | Assets/Scripts/Component/UI/Game/RewardSelect/UIRewardSelect.cs |
 | 领奖 UI 字段 | Assets/Scripts/Component/UI/Game/RewardSelect/UIRewardSelectComponent.cs |
-| 奖励数据/生成 | Assets/Scripts/Bean/Game/RewardSelectBean.cs |
+| 奖励数据/生成（单一真实源） | Assets/Scripts/Bean/Game/RewardSelectBean.cs |
+| 传送门预生成奖励/取用 | Assets/Scripts/Bean/MVC/Game/GameWorldInfoBeanPartial.cs（CreateDifficultyRandom / GetDifficultyReward / GameWorldDifficultyRandomBean.listReward+rewardUnlockSign） |
 | 战斗统计记录 | Assets/Scripts/Bean/Game/FightRecordsBean.cs |
 | 掉落水晶实例 | Assets/Scripts/Bean/Game/FightDropCrystalBean.cs |
 | 征服配置 Bean | Assets/Scripts/Bean/MVC/Game/FightTypeConquerInfoBean.cs |
@@ -107,6 +122,8 @@ watched_files:
 - 结算面板 `UIFightSettlement` 只展示统计，**不要在这里加发奖逻辑**；发奖统一走 `UIRewardSelect` + `RewardSelectBean`。
 - **经验链路目前未接通**：`FightRecordsBean.AddCreatureExp` 与事件 `GameFightLogic_AddExp` 均无调用/触发方，结算面板的"经验"维度恒为 0。若要做经验奖励，这两个挂钩点是预留接入位置（`GameFightLogic_AddExp` 现仅被 `GameHandler` 监听用于触发终焉议会 `DoomCouncilEntityMoreExp`）。
 - 领奖只在征服 BOSS 通关触发，挂钩在 `ActionForUIFightSettlementNext` 的 `isWin && isBossFight` 分支；其他模式/失败/非 BOSS 关都不会进领奖界面。
+- **领奖奖励是"消费"传送门预生成的冻结奖励，不是现生成**：领奖取 `gameWorldInfoRandomData.GetDifficultyReward(difficulty)` 作 `baseReward`，与传送门详情预览同一份（预览=实领）。预生成/冻结/重生成逻辑在 `GameWorldInfoBeanPartial`，归 `game-conquer` 代理；本代理只负责 `RewardSelectBean` 生成规则与领奖消费链。改奖励生成规则要同时考虑两处调用方（传送门预生成 + 通关领奖）。
+- **解锁新魔物掉落装备会使预生成奖励失效重生成**：装备奖励池"解锁签名"`GetConquerEquipPoolSign()`（= 可生成装备的已解锁生物模型数量）变化时，`GetDifficultyReward` 会按 `rewardUnlockSign != GetConquerEquipPoolSign()` 重新生成并刷新签名。魔物掉落装备需研究解锁（生物分支 `EquipReward*`，归 `game-research`）。
 - 存档统一收口在 `EndGameAndReturnToBase`，会先 `ClearAbyssalBlessing` 再 `SaveUserData` —— 深渊馈赠是单局临时加成，不跨局保留。
 - 水晶掉落数量来自 `FightTypeConquerInfo.drop_crystal`，BUFF 可监听 `GameFightLogic_CreatureDeadDropCrystal` 追加掉落（具体 BUFF 逻辑归 `game-buff` 代理）。
 - 征服配置 Bean (`FightTypeConquerInfoBean.cs`) 是自动生成的，**禁止直接修改**；扩展写到 `FightTypeConquerInfoBeanPartial.cs`。配置数据变更必须改对应 Excel 源表，仅改 JSON 会被下次导出覆盖。
@@ -116,6 +133,8 @@ watched_files:
 ## 关联 Skill 与 Agent
 
 - 详细开发指南: [fight-reward-system](../skills/fight-reward-system/SKILL.md)
+- 传送门奖励预生成/冻结、传送门详情预览(UIPopupPortalDetails)、难度随机数据: `game-conquer` agent + `conquer-system` skill
+- 设施研究门控(传送门预览各项 `PortalPreview*`)、魔物掉落装备解锁(`EquipReward*`): `game-research` agent + `research-system` skill
 - 战斗整体流程/状态机: `game-fight-logic` agent + `game-fight-system` skill
 - 战斗生物实体/掉落物体: `game-fight-core` agent
 - 深渊馈赠（关卡间 BUFF 选择）: `game-abyssal-blessing` agent + `abyssal-blessing-system` skill

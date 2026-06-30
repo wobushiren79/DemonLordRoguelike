@@ -24,6 +24,8 @@ watched_files:
 
 > **最关键的一点**：结算面板 `UIFightSettlement` 本身**不发任何奖励**，它只是战斗过程统计的可排序排行榜（伤害/击杀/受伤/治疗/受疗/经验）。真正的发奖逻辑在 `UIRewardSelect` + `RewardSelectBean`。
 
+> **预览即实领（传送门预生成奖励）**：B 通道的奖励**不是通关时才现生成**，而是在**创建传送门时按难度预生成并冻结**，存到 `GameWorldDifficultyRandomBean.listReward`（详见 `conquer-system`）。传送门详情 `UIPopupPortalDetails` 展示的就是这份预生成奖励，通关 BOSS 领奖时**直接消费同一份**（`gameWorldInfoRandomData.GetDifficultyReward(difficulty)`），保证"预览所见 = 实际所领"。`RewardSelectBean` 退化为奖励生成的**单一真实源**：既被传送门预生成调用，也被通关领奖复用，规则完全一致。
+
 ## 系统架构
 
 ```
@@ -43,8 +45,10 @@ UIFightSettlement (结算排行榜，只展示)
     │  6 维度展示: 伤害 / 击杀 / 受伤 / 治疗(输出治疗量) / 受疗(接收治疗量) / 经验
     │  （排序当前仍只接通 4 维: 伤害/击杀/受伤/经验，治疗/受疗只展示进度条未接 OrderFilter）
     │
-RewardSelectBean (奖励生成，发奖核心)
-    │  InitData() → listReward: List<ItemBean> (装备 + 魔晶)
+RewardSelectBean (奖励生成单一真实源)
+    │  生成规则统一吃 FightTypeConquerInfoBean(不再吃 FightBean)
+    │  通关领奖: InitDataForReward(预生成基础奖励, conquerInfo, 额外件数) → listReward
+    │  传送门预生成/预览: CreateRewardListForConquer(conquerInfo) → List<ItemBean>
     │
 UIRewardSelect (领奖界面)
     │  3D 宝箱场景 ScenePrefabForRewardSelect，射线点击选择
@@ -64,24 +68,37 @@ UIRewardSelect (领奖界面)
 - `regainHP` 输出治疗量(治疗别人) / `regainHPReceived` 接收治疗量(被别人治疗) / `regainDR/regainDRReceived` 护甲恢复
 - 总量字段：`totalRegainHPForDef`（输出治疗总量，结算"治疗"进度条 max）/ `totalRegainHPReceivedForDef`（接收治疗总量，结算"受疗"进度条 max）
 
-### RewardSelectBean（奖励数据 + 生成逻辑）
+### RewardSelectBean（奖励数据 + 生成逻辑，奖励生成单一真实源）
 - `listReward: List<ItemBean>` 生成的奖励物品列表
 - `selectNum / selectNumMax` 已选/可选次数
 - `createItemNum`（默认3）/ `createEquipNum`（默认1）/ `createEquipDemonLordRate`（默认0.1）
+- **API（全部以 `FightTypeConquerInfoBean` 为奖励配置源，私有 `CreateItemEquip`/`CreateItemCrystal`/`InitRewardList` 均吃 `conquerInfo` 不再吃 `FightBean`）**：
+  - `InitData(FightBean fightData, RewardSelectTestData testData = null)`：原签名不变。内部从 `(fightData as FightBeanForConquer)?.fightTypeConquerInfo` 取 `conquerInfo`；测试模式 `InitData(null, testData)` 行为不变。
+  - `InitData(FightTypeConquerInfoBean conquerInfo)`：由征服配置直接生成（传送门预生成/预览用，与通关领奖同规则）。
+  - `static List<ItemBean> CreateRewardListForConquer(FightTypeConquerInfoBean conquerInfo)`：生成一份奖励列表（传送门创建时预生成奖励即调此）。
+  - `InitDataForReward(List<ItemBean> baseReward, FightTypeConquerInfoBean conquerInfo, int extraItemNum)`：用预生成的 `baseReward` 充当 `listReward`（预览=实领）；`baseReward` 为空则容错按 `conquerInfo` 即时生成；其后追加 `extraItemNum` 个魔晶（深渊馈赠「奖励多多」）。**通关领奖走此入口。**
+  - `static int GetConquerEquipPoolSign()` / `static List<long> GetUnlockCreatureModelIdsForEquip()`：装备奖励池「解锁签名」= 可生成装备的已解锁生物模型数量。解锁新魔物掉落（生物分支 `EquipReward*` 研究）后签名变化，传送门预生成奖励据此判定是否需重新生成。
 
 ### RewardSelectTestData（测试模式参数）
 仅测试模式（`fightData == null`）使用：`rarity / addAttribute / crystalNum / createEquipNum / createItemNum / selectNumMax / createEquipDemonLordRate`。
 
-## 奖励生成规则（RewardSelectBean.InitData）
+## 奖励生成规则（RewardSelectBean，单一真实源）
+
+> `RewardSelectBean` 现为奖励生成的**单一真实源**：传送门创建时预生成、传送门详情预览、通关 BOSS 领奖三处共用同一套规则（私有 `CreateItemEquip`/`CreateItemCrystal`/`InitRewardList` 统一吃 `FightTypeConquerInfoBean`）。
 
 ```
-InitData(fightData, testData = null)
-  1. 取已解锁生物 unlockCreatureModelIds，过滤掉无对应装备道具的生物
-  2. 测试模式(fightData==null && testData!=null)：用 testData 覆盖数量参数
+InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口到这里
+  1. GetUnlockCreatureModelIdsForEquip()：取已解锁生物，过滤掉无对应装备道具的生物
+  2. （测试入口 InitData(null,testData) 先用 testData 覆盖数量参数）
   3. for i in createItemNum:
-       if i < createEquipNum:  CreateItemEquip(...)   // 优先生成装备
-       else:                   CreateItemCrystal(...) // 其余生成魔晶
+       if i < createEquipNum:  CreateItemEquip(conquerInfo, ...)   // 优先生成装备
+       else:                   CreateItemCrystal(conquerInfo, ...) // 其余生成魔晶
 ```
+
+**通关领奖消费链（预览即实领）**：`GameFightLogicConquer.ActionForUIFightSettlementNext`（BOSS 关）→ `baseReward = gameWorldInfoRandomData.GetDifficultyReward(difficultyLevel)`（取传送门预生成并冻结的奖励）→ `rewardSelectData.InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`。其中：
+- `baseReward` 直接成为 `listReward`，与传送门详情 `UIPopupPortalDetails` 预览的是同一份。
+- 深渊馈赠「奖励多多」额外件数 `rewardAddItemNum` 在基础奖励**之后**追加（追加内容为魔晶）。
+- 再 `selectNumMax += rewardAddSelectNum`（「再来一瓶」），并钳制 `selectNumMax = Min(selectNumMax, listReward.Count)`。
 
 ### 装备生成 CreateItemEquip
 - 随机挑一个解锁生物 → 取该生物的随机装备道具（无道具则容错改生成魔晶）
@@ -155,7 +172,9 @@ InitData(fightData, testData = null)
 - 改生成数量逻辑（几件装备/几个魔晶）：改 `RewardSelectBean` 的 `createItemNum` / `createEquipNum` 默认值或生成循环。
 
 ### 深渊馈赠对领奖的加成（奖励多多 / 再来一瓶）
-- 注入点在 `GameFightLogicConquer.ActionForUIFightSettlementNext`：`new RewardSelectBean()` 后、`InitData(fightData)` **之前** `createItemNum += fightDataForConquer.rewardAddItemNum`（奖励多多，宝箱按 listReward 实时生成会自动多出箱子）；`InitData` **之后** `selectNumMax += rewardAddSelectNum`（再来一瓶），并裁剪 `selectNumMax = Min(selectNumMax, listReward.Count)` 避免多余次数无箱可开。
+- 注入点在 `GameFightLogicConquer.ActionForUIFightSettlementNext`（BOSS 关分支）。因奖励改为传送门预生成、领奖即"消费"这份冻结奖励，注入方式与旧版不同：
+  - **奖励多多（rewardAddItemNum）**：作为额外件数传给 `InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`，在预生成基础奖励**之后**追加（追加内容为魔晶）。不再通过预生成前 `createItemNum +=` 实现。
+  - **再来一瓶（rewardAddSelectNum）**：`InitDataForReward` **之后** `selectNumMax += rewardAddSelectNum`，并钳制 `selectNumMax = Min(selectNumMax, listReward.Count)` 避免多余次数无箱可开。
 - 计数器 `rewardAddItemNum / rewardAddSelectNum` 挂在 `FightBeanForConquer`，由两个即时BUFF（`BuffEntityInstantRewardMoreItem` / `BuffEntityInstantRewardMoreSelect`）在选取馈赠时累加。完整机制见 [`abyssal-blessing-system`](../abyssal-blessing-system/SKILL.md) Skill「影响奖励系统的特殊馈赠」一节。
 
 ### 调整敌人掉落水晶数量
@@ -172,7 +191,12 @@ InitData(fightData, testData = null)
 - 接入：在生物击杀/战斗逻辑里调用 `AddCreatureExp(creatureId, exp)`，并 `TriggerEvent(GameFightLogic_AddExp, exp)`（后者现仅被 `GameHandler` 监听用于终焉议会 `DoomCouncilEntityMoreExp`）
 
 ### 测试领奖界面
-用 `RewardSelectBean.InitData(null, new RewardSelectTestData(...))` 构造测试数据，绕过战斗数据直接预览领奖界面（见 `test-system`）。
+用 `RewardSelectBean.InitData(null, new RewardSelectTestData(...))` 构造测试数据（此入口签名/行为不变），绕过战斗数据直接预览领奖界面（见 `test-system`）。
+
+### 修改传送门预生成奖励 / 预览
+- 奖励的预生成与冻结在 `GameWorldInfoBeanPartial.CreateDifficultyRandom`，存到 `GameWorldDifficultyRandomBean.listReward`（并记录 `rewardUnlockSign`）；取用走 `GameWorldInfoRandomBean.GetDifficultyReward(difficulty)`。生成调的就是本 Skill 的 `RewardSelectBean.CreateRewardListForConquer(conquerInfo)`。完整数据/流程归 [`conquer-system`](../conquer-system/SKILL.md)。
+- **重新生成时机**：`listReward` 为空（老存档）或装备奖励池签名变化（`rewardUnlockSign != GetConquerEquipPoolSign()`，即解锁了新魔物掉落）时，`GetDifficultyReward` 会按 `FightTypeConquerInfo` 重新生成并刷新签名。
+- 传送门详情 `UIPopupPortalDetails` 的"奖励道具"区直接展示这份预生成奖励（以 `ui_UIViewItem` 为模板的缓存池实时生成 cell），受"设施"研究门控 `UnlockEnum.PortalPreviewReward`(100300005)；无尽模式不展示奖励。门控与 UI 细节归 `conquer-system` / `research-system`。
 
 ## 关键文件
 
@@ -184,7 +208,8 @@ InitData(fightData, testData = null)
 | 结算进度条 | Assets/Scripts/Component/UI/Game/FightSettlement/UIViewFightSettlementItemProgress.cs |
 | 领奖 UI | Assets/Scripts/Component/UI/Game/RewardSelect/UIRewardSelect.cs |
 | 领奖 UI 字段 | Assets/Scripts/Component/UI/Game/RewardSelect/UIRewardSelectComponent.cs |
-| 奖励数据/生成 | Assets/Scripts/Bean/Game/RewardSelectBean.cs |
+| 奖励数据/生成（单一真实源） | Assets/Scripts/Bean/Game/RewardSelectBean.cs |
+| 传送门预生成奖励/取用 | Assets/Scripts/Bean/MVC/Game/GameWorldInfoBeanPartial.cs（CreateDifficultyRandom / GetDifficultyReward / GameWorldDifficultyRandomBean.listReward+rewardUnlockSign） |
 | 战斗统计记录 | Assets/Scripts/Bean/Game/FightRecordsBean.cs |
 | 掉落水晶实例 | Assets/Scripts/Bean/Game/FightDropCrystalBean.cs |
 | 征服配置 Bean | Assets/Scripts/Bean/MVC/Game/FightTypeConquerInfoBean.cs |
@@ -208,6 +233,8 @@ InitData(fightData, testData = null)
 
 ## 关联系统
 
+- 传送门奖励预生成/冻结、传送门详情预览(UIPopupPortalDetails)、难度随机数据：`conquer-system`
+- 设施研究门控（传送门预览各项解锁 `PortalPreview*`）、魔物掉落装备解锁(`EquipReward*`)：`research-system`
 - 战斗整体流程/状态机：`game-fight-system`
 - 深渊馈赠（关卡间 BUFF 选择，非物品奖励）：`abyssal-blessing-system`
 - 装备/道具/背包：`item-system`

@@ -52,7 +52,7 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	/// </summary>
 	public int attack_num_add;
 	/// <summary>
-	///普通敌人每关强度倍率(默认1,如1.1则每关HP/护甲/攻击力×1.1)
+	///每关强度倍率(默认1,如1.1则每关HP/护甲/攻击力×1.1,含BOSS)
 	/// </summary>
 	public float attack_intensity_addrate;
 	/// <summary>
@@ -71,10 +71,6 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	///难度
 	/// </summary>
 	public int level;
-	/// <summary>
-	///难度数值加成
-	/// </summary>
-	public float level_add;
 	/// <summary>
 	///掉落魔晶
 	/// </summary>

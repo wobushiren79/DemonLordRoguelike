@@ -245,6 +245,26 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 获取传送门刷新次数上限
+    /// 上限 = 传送门刷新研究(PortalRefreshNum)等级; 未解锁(0级)返回 0; 满级(10级)上限 10
+    /// </summary>
+    /// <returns>每次回满时的刷新次数上限</returns>
+    public int GetUnlockPortalRefreshMax()
+    {
+        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.PortalRefreshNum);
+    }
+
+    /// <summary>
+    /// 是否已解锁传送门刷新功能(刷新研究等级>0)
+    /// 未解锁时传送门界面整个刷新按钮隐藏(默认不开启)
+    /// </summary>
+    /// <returns>true=已解锁,显示刷新按钮</returns>
+    public bool CheckIsUnlockPortalRefresh()
+    {
+        return CheckIsUnlock(UnlockEnum.PortalRefreshNum);
+    }
+
+    /// <summary>
     /// 获取解锁阵容数量
     /// 基础数量取自 UserLimmitBean.lineupMax + 对应研究等级
     /// </summary>

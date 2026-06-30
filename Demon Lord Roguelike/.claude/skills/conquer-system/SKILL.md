@@ -90,12 +90,11 @@ WorldHandler.EnterGameForFightScene(fightData)  → GameFightLogicConquer 跑起
 | `attack_show_time` | float | 单关进攻总时间(秒) |
 | `attack_num_addrate` | float | 每关敌人数量倍率 |
 | `attack_num_add` | int | 每关额外增加敌人数量 |
-| `attack_intensity_addrate` | float | **普通敌人每关强度倍率**（默认 1；如 1.1 则每关 HP/护甲/攻击力累计 ×1.1，第 N 关 = `rate^(N-1)`；仅普通敌人，BOSS 不受影响） |
+| `attack_intensity_addrate` | float | **每关强度倍率**（默认 1；如 1.1 则每关 HP/护甲/攻击力累计 ×1.1，第 N 关 = `rate^(N-1)`；**普通敌人与 BOSS 均适用**，BOSS 关 N = `figthNumMax`） |
 | `fight_num` | string | **关卡总数**，单值或区间 `x-y`（开局随机） |
 | `road_num` | string | **道路数量**，单值或区间 `x-y` |
 | `road_length` | string | **道路长度**，单值或区间 `x-y` |
 | `level` | int | 难度等级（与 world_id 联合作键） |
-| `level_add` | float | 难度数值加成 |
 | `drop_crystal` | int | 敌人死亡掉落魔晶 |
 | `reward_crystal` | int | 通关奖励魔晶 |
 | `reward_equip_rarity` | int | 奖励装备稀有度（只决定稀有度；属性加点数量见 `RarityInfo.equip_attribute_add`） |
@@ -180,12 +179,13 @@ public bool IsNextBossFight()  => figthNumMax > 0 && fightNum + 1 >= figthNumMax
 普通波次与 BOSS 出怪先收集为**绝对时间事件**，统一排序后再转成带相对延迟的进攻队列：
 
 1. **普通波次**（BOSS 关与非 BOSS 关一致）：数量 = `CalcCurrentEnemyNum()`（递推 `num = num*addrate + add`，首关 = `attack_start_num`）；把 `[0, attack_show_time]` 均分 `waveNum` 段，每段内随机一个出现时刻；敌人 **始终取 `enemy_ids`**（`GetRandomEmenyId(false)`）。每条普通出怪事件带上**强度倍率** `GetCurrentIntensityRate(fightNum)`（= `attack_intensity_addrate^(fightNum-1)`），创建时作用到 HP/护甲/攻击力（见 `FightCreatureBean.intensityRate`）。
-2. **BOSS 关额外出怪**（`AddBossSpawnEvents`）：
+2. **BOSS 关额外出怪**（`AddBossSpawnEvents(spawnEvents, showTime, intensityRate)`）：
    - 数量 = `GetRandomBossNum()`（≤0 直接不刷）
    - 出现时刻 = `Random.Range(showTime*0.5f, showTime*0.9f)`（进攻总时间**中后段 50%~90%**）
    - 多个 BOSS 在该时刻按 `0.3f` 依次错开入场
    - **首个 BOSS 事件携带全部 BOSS 的 npcId**（`bossShowNpcIds`），用于一次性弹 BOSS 特写 UI
    - BOSS 敌人取 `enemy_boss_ids`（`GetRandomEmenyId(true)`）
+   - **BOSS 同样享受本关强度倍率** `intensityRate`（与普通敌人取同一 `GetCurrentIntensityRate(fightNum)`，BOSS 关 `fightNum = figthNumMax`），作用到 HP/护甲/攻击力
 3. 所有事件按时间排序 → 转 `FightAttackDetailsBean(delay, npcId)` 入队，首个 BOSS 那条带 `bossShowNpcIds`。
 
 ### 关卡推进时的数据刷新
@@ -213,6 +213,8 @@ public void InitNextDataForContinue();
 
 > `reward_exp` 只是给生物累加成长经验 `CreatureBean.levelExp`（满级不再加）；经验达标后的**升级走"祭坛献祭"**，见 [`sacrifice-system`](../sacrifice-system/SKILL.md) Skill。
 
+> **通关 BOSS 领奖 = 消费预生成奖励（预览即实领）**：`ActionForUIFightSettlementNext` 取 `gameWorldInfoRandomData.GetDifficultyReward(difficultyLevel)` 作基础奖励，调 `RewardSelectBean.InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`。深渊馈赠「奖励多多」的额外件数 `rewardAddItemNum`（魔晶）在预生成基础奖励**之后追加**；可选数量 `selectNumMax += rewardAddSelectNum` 并钳制到 `listReward.Count`。
+
 ### 关卡推进
 
 ```csharp
@@ -227,7 +229,7 @@ GoToNextLevel()
 |------|------------|
 | `ActionForUIFightAbyssalBlessingSelect(info)` | 选了深渊馈赠 → `FightBeanForConquer.AddAbyssalBlessing` → `GoToNextLevel` |
 | `ActionForUIFightAbyssalBlessingSkip()` | 跳过馈赠 → `GoToNextLevel` |
-| `ActionForUIFightSettlementNext()` | 结算「下一步」：通关BOSS→`UIRewardSelect.SetData(..., isClearLastGame: true)`（进领奖前 `ClearGame` 卸载BOSS战斗场景，否则战斗场景会叠加残留在领奖场景上）；失败→`EndGameAndReturnToBase` |
+| `ActionForUIFightSettlementNext()` | 结算「下一步」：通关BOSS→**消费预生成奖励**（预览即实领）：取 `gameWorldInfoRandomData.GetDifficultyReward(difficultyLevel)` 作基础奖励，调 `RewardSelectBean.InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)` → `UIRewardSelect.SetData(..., isClearLastGame: true)`（进领奖前 `ClearGame` 卸载BOSS战斗场景，否则战斗场景会叠加残留在领奖场景上）；失败→`EndGameAndReturnToBase` |
 | `ActionForUIRewardSelectEnd()` | 领奖结束：触发 `Achievement_ConquerComplete`(worldId, 难度) → 返回基地 |
 
 ### 返回基地（EndGameAndReturnToBase）
@@ -268,6 +270,23 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 - `GetDifficultyRandom(level)`：取某难度缓存数据，缺失（老存档/仅预览的未解锁难度）时懒生成并缓存，保证同一难度数值稳定。气泡按各 item 自身难度取数。
 - 难度解锁存档：`UserUnlockBean.GetUnlockGameWorldConquerDifficultyLevel`。
 
+#### 奖励预生成与冻结（预览即实领）
+
+- **创建即冻结奖励**：`CreateDifficultyRandom` 生成每档 `GameWorldDifficultyRandomBean` 时，除 roadNum/roadLength/fightNum 外，**一并按难度预生成并冻结**该档的通关奖励列表 `listReward`，同时记录 `rewardUnlockSign`（= 生成那一刻的「装备奖励池解锁签名」）。传送门详情气泡展示的奖励就是这份预生成数据，**预览即实领**（领奖时直接消费这份冻结奖励，不再二次随机）。
+- `GameWorldInfoRandomBean.GetDifficultyReward(difficulty)`：取该难度预生成奖励。**两种情况会重新生成并刷新签名**：① `listReward` 为空（老存档无此字段）；② 解锁了新魔物掉落致装备奖励池签名变化（`rewardUnlockSign != RewardSelectBean.GetConquerEquipPoolSign()`）。重新生成走 `RewardSelectBean.CreateRewardListForConquer(fightTypeConquerInfo)`。
+- **解锁重生成机制**：魔物掉落装备需研究解锁（生物分支 `EquipReward*`）。解锁新魔物掉落后，`GetConquerEquipPoolSign()`（= 可生成装备的已解锁生物模型数量，见 `RewardSelectBean.GetUnlockCreatureModelIdsForEquip()`）变化 → 传送门预生成奖励在下次 `GetDifficultyReward` 时按新池重新生成。
+- 奖励生成单一真实源是 `RewardSelectBean`（见 [`fight-reward-system`](../fight-reward-system/SKILL.md)）：`CreateRewardListForConquer(conquerInfo)` 静态产出 `List<ItemBean>`；私有 `CreateItemEquip/CreateItemCrystal` 现吃 `FightTypeConquerInfoBean`。
+
+#### 传送门详情气泡四项预览受「设施」研究门控
+
+- `UIPopupPortalDetails`（`Assets/Scripts/Component/UI/Popup/UIPopupPortalDetails.cs`）展示四项预览 + 奖励道具，每项受对应「设施」研究节点解锁门控（`UserUnlock.CheckIsUnlock(UnlockEnum)`，未解锁则该详情项整行隐藏；奖励区不显示）：
+  - **线路数(roadNum)** → `UnlockEnum.PortalPreviewRoadNum`(100300002)
+  - **关卡数(fightNum)** → `UnlockEnum.PortalPreviewFightNum`(100300003)
+  - **路径长度(roadLength)** → `UnlockEnum.PortalPreviewRoadLength`(100300004)，UI 文本 id 414
+  - **奖励道具** → `UnlockEnum.PortalPreviewReward`(100300005)，按 `GetDifficultyReward` 预生成奖励实时生成
+  - **名字行始终显示**（不门控）。**无尽模式不展示关卡数/路径长度/奖励**。
+- 这四个 `UnlockEnum` 在 `excel_research_info` 新增 4 个设施节点（`research_type=1`，`unlock_id` 同上）+ `excel_unlock_info` + 多语言；详见 [`research-system`](../research-system/SKILL.md)。
+
 ---
 
 ## FightTypeConquerEditorWindow - 配置编辑器
@@ -290,7 +309,9 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 | 进攻队列数据 | `Assets/Scripts/Bean/Game/FightAttackBean.cs`（含 bossShowNpcIds） |
 | 配置 Bean（禁改） | `Assets/Scripts/Bean/MVC/Game/FightTypeConquerInfoBean.cs` |
 | 配置 Bean 扩展 | `Assets/Scripts/Bean/MVC/Game/FightTypeConquerInfoBeanPartial.cs` |
-| 随机数据生成 | `Assets/Scripts/Bean/MVC/Game/GameWorldInfoBeanPartial.cs`（SetRandomDataForConquer） |
+| 随机数据生成 | `Assets/Scripts/Bean/MVC/Game/GameWorldInfoBeanPartial.cs`（SetRandomDataForConquer / CreateDifficultyRandom / GetDifficultyReward） |
+| 奖励生成单一真实源 | `Assets/Scripts/Bean/Game/RewardSelectBean.cs`（CreateRewardListForConquer / InitDataForReward / GetConquerEquipPoolSign） |
+| 传送门详情气泡（四项预览+奖励，研究门控） | `Assets/Scripts/Component/UI/Popup/UIPopupPortalDetails.cs` |
 | BOSS 特写 UI | `Assets/Scripts/Component/UI/Dialog/UIDialogBossShow.cs` |
 | BOSS 特写数据 | `Assets/Scripts/Bean/UI/DialogBossShowBean.cs` |
 | Excel 源表 | `Assets/Data/Excel/excel_fight_type_conquer_info[战斗-征服模式].xlsx` |
@@ -315,6 +336,7 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 
 ## 关联 Skill 与 Agent
 
+- 传送门世界选择 / 进入 / 难度选择 / 详情气泡（进入征服的上游）：`game-portal` agent + `portal-system` skill
 - 战斗逻辑基类 / 其他战斗模式：`game-fight-logic` agent + `game-fight-system` skill
 - 关卡间深渊馈赠：`game-abyssal-blessing` agent + `abyssal-blessing-system` skill
 - 战斗结算 / 通关领奖 / 掉落：`game-fight-reward` agent + `fight-reward-system` skill

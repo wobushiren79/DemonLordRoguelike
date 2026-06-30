@@ -34,7 +34,7 @@ public class RewardSelectTestData
         createEquipDemonLordRate = 0.1f;
     }
 
-    public RewardSelectTestData(RarityEnum rarity, int addAttribute, int crystalNum = 100, 
+    public RewardSelectTestData(RarityEnum rarity, int addAttribute, int crystalNum = 100,
         int createEquipNum = 1, int createItemNum = 3, int selectNumMax = 1, float createEquipDemonLordRate = 0.1f)
     {
         this.rarity = rarity;
@@ -52,6 +52,7 @@ public class RewardSelectTestData
 /// </summary>
 public class RewardSelectBean
 {
+    #region 数据
     //奖励列表
     public List<ItemBean> listReward;
 
@@ -74,15 +75,115 @@ public class RewardSelectBean
         createEquipNum = 1;
         createEquipDemonLordRate = 0.1f;
     }
+    #endregion
 
+    #region 初始化（奖励生成入口）
     /// <summary>
-    /// 初始化数据
+    /// 初始化数据（正常通关领奖 / 测试模式）
     /// </summary>
-    /// <param name="fightData">战斗数据，正常游戏时传入</param>
+    /// <param name="fightData">战斗数据，正常游戏时传入（征服战斗据其配置生成奖励）</param>
     /// <param name="testData">测试数据，测试模式下传入（当fightData为null时生效）</param>
     public void InitData(FightBean fightData, RewardSelectTestData testData = null)
     {
+        //征服战斗的奖励配置(稀有度/魔晶数)来自征服配置表; 其它情况(测试/容错)为null
+        FightTypeConquerInfoBean conquerInfo = (fightData as FightBeanForConquer)?.fightTypeConquerInfo;
+        //测试模式下使用测试数据的配置
+        if (fightData == null && testData != null)
+        {
+            createItemNum = testData.createItemNum;
+            createEquipNum = testData.createEquipNum;
+            selectNumMax = testData.selectNumMax;
+            createEquipDemonLordRate = testData.createEquipDemonLordRate;
+        }
+        InitRewardList(conquerInfo, testData);
+    }
+
+    /// <summary>
+    /// 由征服配置直接初始化奖励（传送门预生成/预览用，与通关领奖同规则）
+    /// </summary>
+    /// <param name="conquerInfo">征服配置（决定装备稀有度 reward_equip_rarity 与魔晶数 reward_crystal）</param>
+    public void InitData(FightTypeConquerInfoBean conquerInfo)
+    {
+        InitRewardList(conquerInfo, null);
+    }
+
+    /// <summary>
+    /// 用传送门预生成的基础奖励初始化领奖数据（预览=实领），并在其后按深渊馈赠「奖励多多」追加额外奖励件数（魔晶）
+    /// </summary>
+    /// <param name="baseReward">传送门预生成并冻结的基础奖励（装备+魔晶）</param>
+    /// <param name="conquerInfo">征服配置（用于生成追加的额外魔晶；及无预生成奖励时的容错生成）</param>
+    /// <param name="extraItemNum">深渊馈赠累计的额外奖励件数（rewardAddItemNum）</param>
+    public void InitDataForReward(List<ItemBean> baseReward, FightTypeConquerInfoBean conquerInfo, int extraItemNum)
+    {
+        if (baseReward != null && baseReward.Count > 0)
+        {
+            //基础奖励直接采用预生成列表，保证预览所见即实领
+            listReward = new List<ItemBean>(baseReward);
+        }
+        else
+        {
+            //容错：无预生成奖励时按配置即时生成基础奖励（等价于原通关领奖逻辑）
+            InitData(conquerInfo);
+        }
+        //深渊馈赠「奖励多多」额外件数：与基础奖励中超出装备数的部分同规则(魔晶)，追加在基础奖励之后
+        for (int i = 0; i < extraItemNum; i++)
+        {
+            CreateItemCrystal(conquerInfo);
+        }
+    }
+
+    /// <summary>
+    /// 由征服配置生成一份奖励物品列表（传送门预生成/预览用，与通关领奖同规则）
+    /// </summary>
+    /// <param name="conquerInfo">征服配置</param>
+    /// <returns>奖励物品列表（装备+魔晶）</returns>
+    public static List<ItemBean> CreateRewardListForConquer(FightTypeConquerInfoBean conquerInfo)
+    {
+        RewardSelectBean rewardSelect = new RewardSelectBean();
+        rewardSelect.InitData(conquerInfo);
+        return rewardSelect.listReward;
+    }
+    #endregion
+
+    #region 奖励生成
+    /// <summary>
+    /// 按当前 createItemNum/createEquipNum 生成奖励列表（前 createEquipNum 个生成装备，其余生成魔晶）
+    /// </summary>
+    /// <param name="conquerInfo">征服配置（决定装备稀有度与魔晶数；为null则走测试/默认规则）</param>
+    /// <param name="testData">测试数据（conquerInfo为null时生效）</param>
+    private void InitRewardList(FightTypeConquerInfoBean conquerInfo, RewardSelectTestData testData)
+    {
         listReward = new List<ItemBean>();
+        List<long> unlockCreatureModelIds = GetUnlockCreatureModelIdsForEquip();
+        for (int i = 0; i < createItemNum; i++)
+        {
+            //如果还有装备生成数量 优先生成装备
+            if (i < createEquipNum)
+            {
+                CreateItemEquip(conquerInfo, unlockCreatureModelIds, testData);
+            }
+            //其他生成魔晶
+            else
+            {
+                CreateItemCrystal(conquerInfo, testData);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 获取征服装备奖励池的"解锁签名"：可用于生成装备的已解锁生物模型数量。
+    /// 解锁新魔物掉落后该值变化，用于判定传送门预生成奖励是否需要重新生成（魔物掉落道具需研究解锁）。
+    /// </summary>
+    public static int GetConquerEquipPoolSign()
+    {
+        return GetUnlockCreatureModelIdsForEquip().Count;
+    }
+
+    /// <summary>
+    /// 获取可用于生成装备奖励的已解锁生物模型ID列表（排除没有对应道具的生物）
+    /// </summary>
+    public static List<long> GetUnlockCreatureModelIdsForEquip()
+    {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
         var unlockCreatureModelIds = userUnlock.GetUnlockCreatureModelIds();
@@ -96,45 +197,23 @@ public class RewardSelectBean
                 i--;
             }
         }
-
-        //测试模式下使用测试数据的配置
-        if (fightData == null && testData != null)
-        {
-            createItemNum = testData.createItemNum;
-            createEquipNum = testData.createEquipNum;
-            selectNumMax = testData.selectNumMax;
-            createEquipDemonLordRate = testData.createEquipDemonLordRate;
-        }
-
-        for (int i = 0; i < createItemNum; i++)
-        {               
-            //如果还有装备生成数量 优先生成装备
-            if (i < createEquipNum)
-            {
-                CreateItemEquip(fightData, unlockCreatureModelIds, testData);
-            }
-            //其他生成魔晶
-            else
-            {
-                CreateItemCrystal(fightData, testData);
-            }
-        }
+        return unlockCreatureModelIds;
     }
 
     /// <summary>
     /// 创建一个装备道具
     /// </summary>
-    /// <param name="fightData">战斗数据，如果为null则表示测试模式</param>
+    /// <param name="conquerInfo">征服配置（决定装备稀有度；为null则走测试/默认规则）</param>
     /// <param name="unlockCreatureModelIds">已解锁的生物模型ID列表</param>
     /// <param name="testData">测试数据，测试模式下使用</param>
-    private void CreateItemEquip(FightBean fightData, List<long> unlockCreatureModelIds, RewardSelectTestData testData = null)
+    private void CreateItemEquip(FightTypeConquerInfoBean conquerInfo, List<long> unlockCreatureModelIds, RewardSelectTestData testData = null)
     {
         var randomCreatureModelId = RandomUtil.GetRandomDataByList(unlockCreatureModelIds);
         List<ItemsInfoBean> listItemsInfo = ItemsInfoCfg.GetDataByCreatureModelId(randomCreatureModelId);
         //如果没有相关道具 生成魔晶（容错）
         if (listItemsInfo == null)
         {
-            CreateItemCrystal(fightData);
+            CreateItemCrystal(conquerInfo);
             return;
         }
         //正常生成装备
@@ -143,13 +222,10 @@ public class RewardSelectBean
         int addAttribute = 0;
         int userType = 0;
 
-        if (fightData != null)
+        if (conquerInfo != null)
         {
-            //正常游戏模式：战斗数据只决定装备稀有度
-            if (fightData is FightBeanForConquer fightBeanForConquer)
-            {
-                rarityItem = fightBeanForConquer.fightTypeConquerInfo.reward_equip_rarity;
-            }
+            //正常游戏模式：征服配置只决定装备稀有度
+            rarityItem = conquerInfo.reward_equip_rarity;
             //属性加点数量由稀有度配置表决定
             addAttribute = RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add;
             //根据概率决定是否生成魔王专属装备
@@ -186,19 +262,16 @@ public class RewardSelectBean
     /// <summary>
     /// 创建一个魔晶道具
     /// </summary>
-    /// <param name="fightData">战斗数据</param>
+    /// <param name="conquerInfo">征服配置（决定魔晶基础数量；为null则走测试/默认规则）</param>
     /// <param name="testData">测试数据，测试模式下使用</param>
-    private void CreateItemCrystal(FightBean fightData, RewardSelectTestData testData = null)
-    {       
+    private void CreateItemCrystal(FightTypeConquerInfoBean conquerInfo, RewardSelectTestData testData = null)
+    {
         //基础魔晶道具数量
         int itemCrystalNum = 100;
-        //战斗数据 获取基础魔晶道具数量
-        if (fightData != null)
+        //征服配置 获取基础魔晶道具数量
+        if (conquerInfo != null)
         {
-            if (fightData is FightBeanForConquer fightBeanForConquer)
-            {
-                itemCrystalNum = fightBeanForConquer.fightTypeConquerInfo.reward_crystal;
-            }
+            itemCrystalNum = conquerInfo.reward_crystal;
         }
         else if (testData != null)
         {
@@ -211,4 +284,5 @@ public class RewardSelectBean
         var itemData = new ItemBean(ItemIdEnum.Crystal, itemCrystalNum + randomNum);
         listReward.Add(itemData);
     }
+    #endregion
 }

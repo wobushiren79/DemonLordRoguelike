@@ -21,7 +21,5 @@ public partial class UIBasePortal
 
     public TextMeshProUGUI ui_BtnRefreshNum;
 
-    public Image ui_BtnRefreshIcon;
-
 
 }

@@ -173,9 +173,11 @@ public class GameFightLogicConquer : GameFightLogic
             //通关BOSS → 打开领奖界面
             var uiRewardSelect = UIHandler.Instance.OpenUIAndCloseOther<UIRewardSelect>();
             RewardSelectBean rewardSelectData = new RewardSelectBean();
-            //深渊馈赠「奖励多多」：增加生成的奖励物品数量(领奖宝箱按奖励数量实时生成，自动多出对应宝箱)，须在InitData生成前设置
-            rewardSelectData.createItemNum += fightDataForConquer.rewardAddItemNum;
-            rewardSelectData.InitData(fightData);
+            //基础奖励直接取进入传送门时预生成并冻结的这次奖励(UIPopupPortalDetails 预览=实领)
+            var gameWorldInfoRandom = fightDataForConquer.gameWorldInfoRandomData;
+            var baseReward = gameWorldInfoRandom.GetDifficultyReward(gameWorldInfoRandom.difficultyLevel);
+            //深渊馈赠「奖励多多」：在预生成基础奖励之后追加额外奖励件数(领奖宝箱按奖励数量实时生成，自动多出对应宝箱)
+            rewardSelectData.InitDataForReward(baseReward, fightDataForConquer.fightTypeConquerInfo, fightDataForConquer.rewardAddItemNum);
             //深渊馈赠「再来一瓶」：增加可选择奖励次数
             rewardSelectData.selectNumMax += fightDataForConquer.rewardAddSelectNum;
             //可选次数不超过实际奖励数量，避免多余次数无对应宝箱可开
@@ -206,6 +208,10 @@ public class GameFightLogicConquer : GameFightLogic
             int difficultyLevel = fightDataForConquer.fightTypeConquerInfo.level;
             EventHandler.Instance.TriggerEvent(EventsInfo.Achievement_ConquerComplete, worldId, difficultyLevel);
         }
+        //通关一次世界: 回满刷新次数 + 清空全部传送门世界(列表置空, 下次打开传送门UI时 InitMap 缓存为空→全量重新生成); 随 EndGameAndReturnToBase 的 SaveUserData 一并落盘
+        var userTempData = GameDataHandler.Instance.manager.GetUserData().GetUserTempData();
+        userTempData.RefillPortalRefreshNum();
+        userTempData.ClearPortalWorldInfoRandomData();
         EndGameAndReturnToBase();
     }
 

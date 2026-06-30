@@ -44,7 +44,12 @@ watched_files:
 
 ### 随机数据与难度
 - `GameWorldInfoRandomBean.SetRandomDataForConquer`（GameWorldInfoBeanPartial）—— 创建时把 1~已解锁最高难度逐档随机(roadNum/roadLength/fightNum)缓存进 listDifficultyRandom；`SetDifficultyLevel(level)` 切换难度时同步当前字段(气泡与战斗都读这些字段)，`GetDifficultyRandom(level)` 取某难度数据(缺失懒生成)
+- **奖励预生成+冻结（预览即实领）**：`CreateDifficultyRandom` 生成每档时**一并预生成并冻结**通关奖励 `listReward` + 记录 `rewardUnlockSign`(生成时的装备奖励池解锁签名)。`GetDifficultyReward(difficulty)` 取该档预生成奖励；当 `listReward` 为空(老存档) 或 解锁新魔物掉落致签名变化(`rewardUnlockSign != RewardSelectBean.GetConquerEquipPoolSign()`) 时，按 `RewardSelectBean.CreateRewardListForConquer` 重新生成并刷新签名
 - 难度解锁：`UserUnlockBean.GetUnlockGameWorldConquerDifficultyLevel`
+
+### 结算领奖与预览门控
+- **通关 BOSS 领奖消费预生成奖励**：`ActionForUIFightSettlementNext` 取 `gameWorldInfoRandomData.GetDifficultyReward(difficultyLevel)` 作基础奖励，调 `RewardSelectBean.InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`；深渊馈赠「奖励多多」额外件数(rewardAddItemNum 魔晶)在预生成基础奖励**之后追加**，`selectNumMax += rewardAddSelectNum` 钳制到 listReward.Count
+- **传送门详情气泡 `UIPopupPortalDetails` 四项预览受「设施」研究门控**（`UserUnlock.CheckIsUnlock`，未解锁该项整行隐藏；名字行始终显示；无尽模式不展示关卡数/路径长度/奖励）：线路数→`UnlockEnum.PortalPreviewRoadNum`(100300002)、关卡数→`PortalPreviewFightNum`(100300003)、路径长度→`PortalPreviewRoadLength`(100300004,文本id 414)、奖励道具→`PortalPreviewReward`(100300005)
 
 ### 编辑器
 - **FightTypeConquerEditorWindow** - 征服配置可视化编辑、保存回 Excel 并重导 JSON（反射按字段名）
@@ -59,7 +64,9 @@ watched_files:
 | 进攻队列数据 | Assets/Scripts/Bean/Game/FightAttackBean.cs |
 | 配置 Bean(禁改) | Assets/Scripts/Bean/MVC/Game/FightTypeConquerInfoBean.cs |
 | 配置 Bean 扩展 | Assets/Scripts/Bean/MVC/Game/FightTypeConquerInfoBeanPartial.cs |
-| 随机数据生成 | Assets/Scripts/Bean/MVC/Game/GameWorldInfoBeanPartial.cs |
+| 随机数据生成 | Assets/Scripts/Bean/MVC/Game/GameWorldInfoBeanPartial.cs (SetRandomDataForConquer / CreateDifficultyRandom / GetDifficultyReward) |
+| 奖励生成单一真实源 | Assets/Scripts/Bean/Game/RewardSelectBean.cs (CreateRewardListForConquer / InitDataForReward / GetConquerEquipPoolSign) |
+| 传送门详情气泡(四项预览+奖励,研究门控) | Assets/Scripts/Component/UI/Popup/UIPopupPortalDetails.cs |
 | BOSS 特写 UI | Assets/Scripts/Component/UI/Dialog/UIDialogBossShow.cs |
 | Excel 源表 | Assets/Data/Excel/excel_fight_type_conquer_info[战斗-征服模式].xlsx |
 | 导出 JSON | Assets/Resources/JsonText/FightTypeConquerInfo.txt |
@@ -79,6 +86,7 @@ watched_files:
 ## 关联 Skill 与 Agent
 
 - 详细开发指南: [conquer-system](../skills/conquer-system/SKILL.md)
+- 传送门世界选择/进入/详情气泡(进入征服的上游): `game-portal` agent + `portal-system` skill
 - 战斗逻辑基类 / 其他战斗模式: `game-fight-logic` agent + `game-fight-system` skill
 - 关卡间深渊馈赠: `game-abyssal-blessing` agent + `abyssal-blessing-system` skill
 - 结算 / 通关领奖 / 掉落: `game-fight-reward` agent + `fight-reward-system` skill

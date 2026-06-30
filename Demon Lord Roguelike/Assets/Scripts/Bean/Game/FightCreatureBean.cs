@@ -107,7 +107,7 @@ public class FightCreatureBean
             dicAttribute[attr] = ModifierPipeline.Apply(dicAttribute[attr], attr, modifierBuffer);
         }
 
-        //强度倍率：征服模式普通进攻敌人按关卡递增强度，对最终的 HP/护甲(DR)/攻击力(ATK) 整体相乘
+        //强度倍率：征服模式进攻敌人(含BOSS)按关卡递增强度，对最终的 HP/护甲(DR)/攻击力(ATK) 整体相乘
         if (intensityRate != 1f)
         {
             dicAttribute[CreatureAttributeTypeEnum.HP] *= intensityRate;
