@@ -13,5 +13,7 @@ public partial class UIDialogPortalDetails
 
     public UIViewDialogPortalDetailsItem ui_UIViewDialogPortalDetailsItem;
 
+    public RectTransform ui_ContentShow;
+
 
 }

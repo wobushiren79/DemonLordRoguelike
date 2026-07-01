@@ -367,20 +367,37 @@ public interface IBuffSingleTarget { string SingleTargetCreatureUUId { get; } }
 
 ```
 None = 0
-HP = 1            // 生命值
-DR = 2            // 防御
-ATK = 3           // 攻击
-ASPD = 4          // 攻击速度
-MSPD = 5          // 移动速度
-CRT = 6           // 暴击率（rate 走 Flat）
-EVA = 7           // 闪避率（rate 走 Flat）
-RCD = 8           // 冷却缩减（实为复活CD；扭蛋稀有度BUFF可挂 class_entity_data=RCD 负rate 减少召唤CD）
-HPRegeneration = 11
-CMP               // 召唤魔力消耗（基础值=CreatureInfo.CMP；GetAttribute(CMP)=基础CMP×(1+等级/稀有度增加倍率)，扭蛋稀有度BUFF负rate 再减少召唤耗魔）
-...
+HP                // 生命         （枚举成员按顺序自增：HP=1）
+MP                // 魔法         （MP=2，魔王/核心向，普通生物一般不消费）
+DR                // 护甲(防御)   （DR=3）
+ATK               // 攻击力       （ATK=4）
+MSPD              // 移动速度     （MSPD=5）
+ASPD              // 攻击速度     （ASPD=6）
+CRT               // 暴击率       （CRT=7，rate 走 Flat 绝对百分点）
+EVA               // 闪避         （EVA=8，rate 走 Flat 绝对百分点）
+RCD               // 复活CD       （RCD=9，扭蛋稀有度BUFF可挂 class_entity_data=RCD 负rate 减少召唤CD）
+MPR               // 魔法回复%    （MPR=10，魔法向）
+MPF               // 魔法回复     （MPF=11，魔法向）
+CMP               // 召唤魔力消耗 （CMP=12，仅作BUFF修正标签、非生物常驻战斗属性；GetAttribute(CMP)=基础CMP×(1+等级/稀有度增加倍率)，扭蛋稀有度BUFF负rate 再减少召唤耗魔）
+
+> ⚠️ **无 `HPRegeneration`/生命回复 属性**：真实枚举里没有该成员（曾误列 `HPRegeneration=11`，实际 index 11 是 MPF 魔法回复）。游戏也**没有被动每秒回血刻**，回血只走主动治疗攻击 `AttackModeRegain`。设计 R 属性BUFF时不要用 HPRegeneration，续航向请改用 HP/EVA/DR 等已存在属性。
 ```
 
 > **扭蛋稀有度 R BUFF 池（buff_type=11）现含**：HP/DR/ATK 增益、ASPD 攻速增益(+50~100%)、RCD 召唤CD减益、CMP 召唤魔力消耗减益(均 -25~50%)。RCD/CMP 减益走负 rate：RCD 走 `GetAttribute(RCD, true)`（基础值/角色加点/装备/自身BUFF→再按需叠加深渊馈赠全局池；includeAbyssalBlessing=true 开启，原 GetRCD 已并入 GetAttribute），CMP 在 `GetAttribute(CMP)` 管线内叠加（先 基础CMP×(1+等级/稀有度增加倍率)，再叠加BUFF；`GetAttributeInt(CMP)` 为 int 封装）。
+
+## 扭蛋/稀有度 BUFF 分档设计规则（buff_type 11/12/13，必读）
+
+稀有度 BUFF 池按稀有度分三档，**每档对「效果性质」有硬性约束**——新增/设计稀有度 BUFF 必须落到正确档位。生成入口 `BuffUtil.CreateRandomRarityBuff` 只按 `buff_type` 取池随机、**不校验效果性质**，归档正确性完全靠本规则人工保证：
+
+| 稀有度 | buff_type | 效果性质（硬约束） | 适用实体类 |
+|--------|-----------|-------------------|-----------|
+| **R** | 11 | **纯属性 BUFF**：只做属性数值加/减益，常驻生效、无触发条件、无特殊副作用 | `BuffEntityAttribute`（改攻击时间用 `BuffEntityAttributeAttackTime`） |
+| **SR** | 12 | **条件/周期被动触发 BUFF**：满足条件（累计造成/受到伤害、击杀数、血量阈值）或按固定周期被动触发后产生效果 | `BuffEntityConditional*`（**非死亡类**）/ `BuffEntityPeriodic*` / `BuffEntityPecurrent`；条件走 `pre_info`+`BuffPreEntityFor*`，事件走 `class_entity_events` |
+| **SSR** | 13 | **特殊类 BUFF**：质变/规则改写型，「什么情况都可能发生」——死亡重生、死亡反击、死亡区域治疗/加防、克隆增殖、生成/改变水晶掉落、改变奖励掉落等 | `BuffEntityConditionalDead*` / `BuffEntityInstant*` / 各类特殊实体 |
+
+- **R 档可用属性**：`HP / DR / ATK / ASPD / MSPD / CRT / EVA / RCD / CMP`（CRT/EVA 的 rate 走 Flat；另有 MP/MPR/MPF 魔法向，普通生物一般不消费）。**无 HPRegeneration 生命回复属性**（见下方枚举说明）。R 只能是这些属性的常驻加/减益，**不得**带触发条件、死亡/召唤等特殊行为。
+- **高稀有度累积低档**：SSR 生物 = R+SR+SSR 各 1 条、SR 生物 = R+SR 各 1 条（`CreatureBean.RandomRarityBuffForCreate` 逐级授予）。设计 SR/SSR 时应默认玩家已持有低档属性底子，SR/SSR 要体现「质」的差异而非再堆纯属性。
+- **归档自检**：设计一条稀有度 BUFF 前先问——它是「常驻纯属性」(→R)、「满足条件/到周期才触发」(→SR)、还是「改变战斗规则的特殊效果」(→SSR)？错档会让扭蛋体验错乱（例如 R 抽出死亡重生）。
 
 ## 稀有度 BUFF 生成工具（`BuffUtil`）
 

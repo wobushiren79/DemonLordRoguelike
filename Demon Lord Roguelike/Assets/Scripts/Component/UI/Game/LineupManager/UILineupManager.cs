@@ -380,6 +380,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     /// </summary>
     public void EventForOnClickSelect(UIViewCreatureCardItem targetView)
     {
+        //点击阵容卡片时播放卡片音效
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_card_1);
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         if (targetView.cardData.cardUseState == CardUseStateEnum.LineupBackpack && targetView.cardData.cardState == CardStateEnum.LineupNoSelect)
         {

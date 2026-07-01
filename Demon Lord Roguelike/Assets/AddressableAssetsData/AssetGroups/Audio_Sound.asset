@@ -45,6 +45,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0d16536f7c486c5439df72e4c8e530b1
+    m_Address: Assets/LoadResources/Audio/Sound/sound_card_4.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0dcd8d61787664640b332d267edc2c49
     m_Address: Assets/LoadResources/Audio/Sound/sound_walk_1.wav
     m_ReadOnly: 0
@@ -80,6 +85,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1862ca7141aaa554199187b2502db9c0
+    m_Address: Assets/LoadResources/Audio/Sound/sound_card_6.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 21798d12904e3ef4f9e29ee9d4327642
     m_Address: Assets/LoadResources/Audio/Sound/sound_magic_2.wav
     m_ReadOnly: 0
@@ -87,6 +97,16 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 21ff1f297a1f0fa47807c3385d0062e3
     m_Address: Assets/LoadResources/Audio/Sound/sound_damage_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 228dd3978d8bd8345848b2802afb452b
+    m_Address: Assets/LoadResources/Audio/Sound/sound_coin_11.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 278ac8cdc5fd3e24da2895e0228db76c
+    m_Address: Assets/LoadResources/Audio/Sound/sound_card_13.ogg
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -100,6 +120,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2ccd0bc1cd481714f9f62f59ec4878fd
+    m_Address: Assets/LoadResources/Audio/Sound/sound_card_3.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2d2f95b4e60d8ce4ea44a2cbd4690723
+    m_Address: Assets/LoadResources/Audio/Sound/sound_coin_9.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2e7e0cde8c639034caa593b0c4b25ab7
     m_Address: Assets/LoadResources/Audio/Sound/sound_btn_17.wav
     m_ReadOnly: 0
@@ -110,6 +140,16 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 33ba4fe0f805f2841967b2b36809b070
+    m_Address: Assets/LoadResources/Audio/Sound/sound_knock_3.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 35b5799fe3cdecf459210411ab8f9eb8
+    m_Address: Assets/LoadResources/Audio/Sound/sound_knock_5.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 378a2c0048558564a94ce234c5d24e81
     m_Address: Assets/LoadResources/Audio/Sound/sound_win_1.wav
     m_ReadOnly: 0
@@ -117,6 +157,16 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3808678f7a6f26e4a82a31c50332e5d2
     m_Address: Assets/LoadResources/Audio/Sound/sound_knife_miss_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 387b333b1bbd7cb4baf3e772f5099acb
+    m_Address: Assets/LoadResources/Audio/Sound/sound_coin_13.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 38af4f05403e3244594a38e25a7a49a7
+    m_Address: Assets/LoadResources/Audio/Sound/sound_set_2.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -155,13 +205,33 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 482310ae60b66db49adfc0ddc6b28084
+    m_Address: Assets/LoadResources/Audio/Sound/sound_card_8.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 48a3727c5489722469dcbaa6ff93f395
+    m_Address: Assets/LoadResources/Audio/Sound/sound_card_12.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4995401d3dcd8824eb54e53096dca2b9
     m_Address: Assets/LoadResources/Audio/Sound/sound_btn_11.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4a7af627bbe2eb74fa4bc40d0a19fa4c
+    m_Address: Assets/LoadResources/Audio/Sound/sound_card_11.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 4fa7a016c222fe842b0a964750a58675
     m_Address: Assets/LoadResources/Audio/Sound/sound_shot_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 54fc45cad562f2b439a02ffb57ea8f49
+    m_Address: Assets/LoadResources/Audio/Sound/sound_card_9.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -185,6 +255,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5c354a36070dbec4ab5a5ff2e1cec203
+    m_Address: Assets/LoadResources/Audio/Sound/sound_knock_6.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5c748cdd21a83f14598c71ca33708860
     m_Address: Assets/LoadResources/Audio/Sound/sound_knife_miss_4.wav
     m_ReadOnly: 0
@@ -205,6 +280,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5ec74fc7809ac6642b046754283af9b6
+    m_Address: Assets/LoadResources/Audio/Sound/sound_coin_6.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5ed1a6cccb61c994996777a1bb902125
     m_Address: Assets/LoadResources/Audio/Sound/sound_error_1.wav
     m_ReadOnly: 0
@@ -217,6 +297,16 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 61a82839470acbc4f8b6c4b6fcb002e7
     m_Address: Assets/LoadResources/Audio/Sound/sound_thunder_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6296e4a9f12457e4d89872f4afb3f7c1
+    m_Address: Assets/LoadResources/Audio/Sound/sound_hit_13.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 64fe333f99b09f046b11b7624cd2bd96
+    m_Address: Assets/LoadResources/Audio/Sound/sound_coin_4.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -237,6 +327,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6af964d38b8d97a4cb0a2cb7a97266cc
     m_Address: Assets/LoadResources/Audio/Sound/sound_knife_miss_5.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6c88258781b14b4418531cf1e070f2ec
+    m_Address: Assets/LoadResources/Audio/Sound/sound_coin_15.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -265,8 +360,33 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 78db7e57fe506f044a24541596fb9b77
+    m_Address: Assets/LoadResources/Audio/Sound/sound_coin_8.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7db75ee1a8b556a409256c24de8913b5
+    m_Address: Assets/LoadResources/Audio/Sound/sound_map_2.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7e683bac27ee91e46a1884850b464566
+    m_Address: Assets/LoadResources/Audio/Sound/sound_pay_8.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7e766aba78289e84a868aff25b38462c
+    m_Address: Assets/LoadResources/Audio/Sound/sound_set_3.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7ec8d7a3ab5ef9b4e8c7f2578cceb73c
     m_Address: Assets/LoadResources/Audio/Sound/sound_btn_25.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7fdd8d4d8956ac740801ad259695baec
+    m_Address: Assets/LoadResources/Audio/Sound/sound_map_3.ogg
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -325,6 +445,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a0a9865b663bc5d45975de9353a2ef99
+    m_Address: Assets/LoadResources/Audio/Sound/sound_card_2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a26b33b296ac13544924370c9c2da606
     m_Address: Assets/LoadResources/Audio/Sound/sound_btn_24.wav
     m_ReadOnly: 0
@@ -365,6 +490,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b306b24044acbf149b65e010b35fc183
+    m_Address: Assets/LoadResources/Audio/Sound/sound_coin_14.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b442702cfeb7dd34b89f379326dbaaa7
     m_Address: Assets/LoadResources/Audio/Sound/sound_win_4.wav
     m_ReadOnly: 0
@@ -385,6 +515,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b9b56d2bec3ab794a8d1090c7f26b879
+    m_Address: Assets/LoadResources/Audio/Sound/sound_lock_5.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bc89aa3c4c1f6fc49b9ec95afd026a64
     m_Address: Assets/LoadResources/Audio/Sound/sound_hit_9.wav
     m_ReadOnly: 0
@@ -395,6 +530,26 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bcfbffb78b1b07748846457fa0072b31
+    m_Address: Assets/LoadResources/Audio/Sound/sound_coin_10.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bf22f2db7ba91c246845699aeb19da2a
+    m_Address: Assets/LoadResources/Audio/Sound/sound_card_10.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c18ed957afafd1a40bc8e9edbd7823c6
+    m_Address: Assets/LoadResources/Audio/Sound/sound_coin_5.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c3524eab0ddbd3e449c0eea1448be23e
+    m_Address: Assets/LoadResources/Audio/Sound/sound_knock_4.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c3b68137389ba0145bb13a1e1bb76ac1
     m_Address: Assets/LoadResources/Audio/Sound/sound_btn_28.wav
     m_ReadOnly: 0
@@ -402,6 +557,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: c8566cf73f9e5244aaaeb94c8f88ba94
     m_Address: Assets/LoadResources/Audio/Sound/sound_hit_2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cc7284003286cfe4fac471a657aebbd9
+    m_Address: Assets/LoadResources/Audio/Sound/sound_coin_2.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -437,6 +597,21 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d773c319828e034439666965364694da
     m_Address: Assets/LoadResources/Audio/Sound/sound_card_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d77b0d70b5198b340a34b8f5cf588857
+    m_Address: Assets/LoadResources/Audio/Sound/sound_card_14.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: da0c958a55ce8dd45810e6eb99ac0b98
+    m_Address: Assets/LoadResources/Audio/Sound/sound_coin_12.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e0f804e488ca4494a962857b3fdc54ae
+    m_Address: Assets/LoadResources/Audio/Sound/sound_coin_3.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -495,6 +670,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ef24c64bb540b9a4ea02db7a3d5f3db3
+    m_Address: Assets/LoadResources/Audio/Sound/sound_coin_7.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: efb7a661570764741a66e4fe6ebbbd09
     m_Address: Assets/LoadResources/Audio/Sound/sound_hit_12.wav
     m_ReadOnly: 0
@@ -515,6 +695,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f4a099562d22e364c9ca69089d3478a1
+    m_Address: Assets/LoadResources/Audio/Sound/sound_card_5.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f513b8d31bcd80347a2b7f4026147c5b
     m_Address: Assets/LoadResources/Audio/Sound/sound_map_1.wav
     m_ReadOnly: 0
@@ -532,6 +717,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f5e3b0e3ed32dea4998fea9c1ccfe4a6
     m_Address: Assets/LoadResources/Audio/Sound/sound_btn_21.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f716fa65173b7134988882eb4f9b0c72
+    m_Address: Assets/LoadResources/Audio/Sound/sound_card_7.ogg
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

@@ -166,7 +166,8 @@ MonoBehaviour:
   ui_DifficultySelectLeftBtn: {fileID: 1043906369407295686}
   ui_DifficultySelectRightBtn: {fileID: 4743679383298646648}
   ui_DialogContent: {fileID: 7113864888751565931}
-  ui_UIViewDialogPortalDetailsItem: {fileID: 0}
+  ui_UIViewDialogPortalDetailsItem: {fileID: 7499854514142966964}
+  ui_ContentShow: {fileID: 3554150934239845539}
 --- !u!1 &2425650995533815839
 GameObject:
   m_ObjectHideFlags: 0
@@ -1745,6 +1746,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5e13d7822797e234a9a33de94bad911b, type: 3}
+--- !u!114 &7499854514142966964 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6240640991249902767, guid: 5e13d7822797e234a9a33de94bad911b, type: 3}
+  m_PrefabInstance: {fileID: 4508068159003613211}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52a3f6f8f433d884db93ea3b423d1389, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIViewDialogPortalDetailsItem
 --- !u!224 &8404231784253323846 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5345267380276666973, guid: 5e13d7822797e234a9a33de94bad911b, type: 3}

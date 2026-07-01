@@ -47,6 +47,9 @@ public partial class UIDialogPortalDetails : DialogView
 
         InitItemPool();
         RefreshItemsImmediate(gameWorldInfoRandom.difficultyLevel);
+        //由内到外依次强制重建布局: 文本(ContentPro)→内容容器(ContentShow)→对话框内容(DialogContent), 让嵌套 ContentSizeFitter 先算内层首选尺寸再撑开外层
+        LayoutRebuilder.ForceRebuildLayoutImmediate(ui_ContentPro.rectTransform);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(ui_ContentShow);
         LayoutRebuilder.ForceRebuildLayoutImmediate(ui_DialogContent);
     }
 

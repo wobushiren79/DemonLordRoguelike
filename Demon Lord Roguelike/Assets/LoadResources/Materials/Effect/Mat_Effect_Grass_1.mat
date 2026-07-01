@@ -16,7 +16,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 2450
   stringTagMap: {}
   disabledShaderPasses:
   - MOTIONVECTORS
@@ -85,7 +85,7 @@ Material:
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
-    - _BendStrength: 0.5
+    - _BendStrength: 0.083
     - _Blend: 0
     - _BlendDst: 10
     - _BlendModePreserveSpecular: 1
@@ -104,7 +104,7 @@ Material:
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
     - _FlutterSpeed: 5
-    - _FlutterStrength: 0.01
+    - _FlutterStrength: 0.005
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
@@ -113,6 +113,7 @@ Material:
     - _Parallax: 0.005
     - _QueueOffset: 0
     - _ReceiveShadows: 1
+    - _ShadowGIStrength: 0.3
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SoftParticleFarFade: 1
@@ -121,11 +122,11 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _Stiffness: 4
+    - _Stiffness: 1
     - _Surface: 0
-    - _SwayFrequency: 1
-    - _SwayStrength: 0.5
-    - _WindDir: 0.3
+    - _SwayFrequency: 0.5
+    - _SwayStrength: 0.1
+    - _WindDir: -0.36
     - _WindSpeed: 2
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
@@ -134,7 +135,7 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _PositionOffset: {r: 0, g: 0.5, b: 0, a: 0}
+    - _PositionOffset: {r: 0, g: 0.125, b: 0, a: 0}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

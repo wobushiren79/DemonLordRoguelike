@@ -34,13 +34,15 @@ AudioManager   - 音频资源管理器（持有 3 条 AudioSource、AudioListene
 
 > `AudioListener` 每帧跟随 `Camera.main` 位置（`AudioHandler.Update`），所以 3D 定位音效（`PlayClipAtPoint`）以摄像机为听者。
 
+> **第 4 类能力：连续音效（LoopSound）**。它**不是**新的 `AuidoTypeEnum`/资源目录，而是一种**通用循环播放能力**——给任意音频 id，按其配置的 `audio_type` 走现有加载路由取 clip，在**池化的循环 AudioSource**（`Dictionary<long,AudioSource>` 活跃字典 + `Queue` 空闲池）上循环播放，支持**多路并发 + 按 id 独立起停**（走路+下雨可同时响，各自独立停）。用于走路/下雨等"持续循环、按需起停"的音效。详见下方「连续音效 (LoopSound)」章节。
+
 ### 分层文件速查表
 
 | 文件 | 层 | 职责 |
 | --- | --- | --- |
-| [Assets/FrameWork/Scripts/Component/Handler/AudioHandler.cs](Assets/FrameWork/Scripts/Component/Handler/AudioHandler.cs) | 框架 | 通用播放 API：`InitAudio`、`PlayMusicForLoop`、`PlayMusicListForLoop`、`PlaySound`、`PlayEnvironment`、暂停/停止/恢复 |
-| [Assets/FrameWork/Scripts/Component/Manager/AudioManager.cs](Assets/FrameWork/Scripts/Component/Manager/AudioManager.cs) | 框架 | 3 条 `AudioSource` 懒加载、`AudioListener`、按类型加载并缓存 `AudioClip`（`GetMusicClip`/`GetSoundClip`/`GetEnvironmentClip` → `LoadClipDataByAddressbles`） |
-| [Assets/Scripts/Component/Handler/AudioHandler.cs](Assets/Scripts/Component/Handler/AudioHandler.cs) | 游戏 | 业务封装：`PlayMusicForMain`/`PlayMusicForGaming`/`PlayMusicForFight`、`ActionForUIOnClick` 通用 UI 点击音效；**`AudioEnum` 重载**（`PlaySound`/`PlayMusicForLoop`/`PlayMusicListForLoop`/`PlayEnvironment` 接受枚举，内部 `(long)` 转发到框架层 long 接口） |
+| [Assets/FrameWork/Scripts/Component/Handler/AudioHandler.cs](Assets/FrameWork/Scripts/Component/Handler/AudioHandler.cs) | 框架 | 通用播放 API：`InitAudio`、`PlayMusicForLoop`、`PlayMusicListForLoop`、`PlaySound`、`PlayEnvironment`、暂停/停止/恢复；**连续音效**（`PlayLoopSound`/`StopLoopSound`/`StopAllLoopSound`/`PauseAllLoopSound`/`RestoreAllLoopSound`/`IsLoopSoundPlaying`，含异步竞态令牌防护、`LoopSoundEntry` 活跃字典） |
+| [Assets/FrameWork/Scripts/Component/Manager/AudioManager.cs](Assets/FrameWork/Scripts/Component/Manager/AudioManager.cs) | 框架 | 3 条 `AudioSource` 懒加载、`AudioListener`、按类型加载并缓存 `AudioClip`（`GetMusicClip`/`GetSoundClip`/`GetEnvironmentClip` → `LoadClipDataByAddressbles`）；**连续音效音源池**（`loopSoundRoot` 容器 + `DequeueLoopSource`/`RecycleLoopSource` + `MaxLoopSource=16` 上限） |
+| [Assets/Scripts/Component/Handler/AudioHandler.cs](Assets/Scripts/Component/Handler/AudioHandler.cs) | 游戏 | 业务封装：`PlayMusicForMain`/`PlayMusicForGaming`/`PlayMusicForFight`、`ActionForUIOnClick` 通用 UI 点击音效；**`AudioEnum` 重载**（`PlaySound`/`PlayMusicForLoop`/`PlayMusicListForLoop`/`PlayEnvironment`/`PlayLoopSound`/`StopLoopSound`/`IsLoopSoundPlaying` 接受枚举，内部 `(long)` 转发到框架层 long 接口） |
 | [Assets/Scripts/Enums/AudioEnum.cs](Assets/Scripts/Enums/AudioEnum.cs) | 游戏 | **音频枚举**：枚举值 = `AudioInfo` 配置表 id，枚举名 = `name_res`（去扩展名）。由 `AudioInfo.txt` 一一对应生成，是业务代码调用音频的**首选方式**（替代裸 id），枚举底层类型为 `long` |
 | [Assets/Scripts/Component/Manager/AudioManager.cs](Assets/Scripts/Component/Manager/AudioManager.cs) | 游戏 | `listCommonUIClick`（触发通用点击音效的 sprite 名集合） |
 | [Assets/FrameWork/Scripts/Bean/MVC/AudioInfoBean.cs](Assets/FrameWork/Scripts/Bean/MVC/AudioInfoBean.cs) | 框架 | 自动生成的配置 Bean + `AudioInfoCfg`（`GetItemData(id)`） |
@@ -153,6 +155,7 @@ AudioHandler.Instance.StopEnvironment();
 
 - **通用点击音效**（自动）：`AudioHandler.Awake` 里 `UIHandler.Instance.AddOnClickAction(ActionForUIOnClick)`。点击带 `Button` 的 UI 时，若 image sprite 名在 `AudioManager.listCommonUIClick` 集合中则播 `PlaySound(AudioEnum.sound_btn_1)`；image 名为 `ViewExit` 的退出按钮播 `PlaySound(AudioEnum.sound_btn_31)`。新增一类通用音效：把对应 sprite 名加进游戏层 `AudioManager.listCommonUIClick`。
   - **该机制由 `UIHandler.Update()` 的 `Input.GetMouseButtonDown(0)` + `RaycastAll` 驱动，只认物理鼠标点击/触摸**，不监听 `Button.onClick`、也覆盖不到 ESC 退出。
+  - **弹窗背景点击关闭音效**（自动）：`ActionForUIOnClick` 里额外判断——点击对象经 `GetComponentInParent<DialogView>()` 命中、且正是该弹窗的 `ui_Background`、且 `dialogData.isDestroyBG==true`（框架"点背景可关闭"信号）时，播退出音 `PlaySound(AudioEnum.sound_btn_31)`。因背景按钮 image 常无 sprite，此判断**放在 sprite 空判之前**。所有弹窗均继承 `DialogView` 故一处覆盖全部；`isDestroyBG==false` 的弹窗（如终焉议会禁止点背景关闭）不会误播。**游戏层实现，零框架改动。**
 - **ESC 退出音效**（自动，全局补位）：`AudioHandler.Awake` 里订阅 `InputActionUIEnum.ESC` 的 `InputAction.started` → `ActionForUIEscExit`。因为 ESC 退出走 InputSystem、不产生鼠标点击，上面的点击机制覆盖不到，故在此**一处全局订阅**补播退出音 `sound_btn_31`。**不做任何条件判断，任意 ESC 按下均播放**。所有现有/新增 UI **零改动**自动覆盖，无需在各 UI 的 `OnClickForExit`/ESC 分支里手动加播放。
 - **按钮独立音效**（手动挂载）：在 Button 上挂 [ButtonAudio](Assets/FrameWork/Scripts/Component/UI/ButtonAudio.cs) 组件，填 `clickClip` 列表（随机取一个），用 `soundVolume` 在按钮位置播放。**不读配置表**，直接用本地 AudioClip。
 
@@ -173,6 +176,33 @@ AudioHandler.Instance.StopEnvironment();
 
 ### 在战斗/业务里触发音效
 固定音效用枚举：`AudioHandler.Instance.PlaySound(AudioEnum.sound_xxx, worldPosition)`。配置驱动的动态音效（命中/落空 id 存在 Bean 里）走 long 接口，见 [FightCreatureEntity.cs](Assets/Scripts/Game/Fight/FightCreatureEntity.cs)（`soundHitId` / `soundMissId`，均为 `long`）。
+
+## 连续音效 (LoopSound) — 多路并发循环（走路/下雨等）
+
+用于"需要持续循环、按需播放/停止、且可多路并发"的音效。**复用普通音频配置**——不新增 `audio_type`/资源目录/`AudioEnum` 项，传任意音频 id 即按其 `audio_type` 走现有加载路由取 clip，在**循环 AudioSource 池**上播放。
+
+```csharp
+// 起播（默认音量=soundVolume；同 id 已在播含加载中则忽略，天然去重）
+AudioHandler.Instance.PlayLoopSound(AudioEnum.sound_walk_1);
+AudioHandler.Instance.PlayLoopSound(AudioEnum.sound_walk_1, volumeScale); // 指定基础音量
+AudioHandler.Instance.StopLoopSound(AudioEnum.sound_walk_1);              // 停指定（加载中的也能取消）
+AudioHandler.Instance.StopAllLoopSound();                                // 停全部（切场景兜底）
+AudioHandler.Instance.PauseAllLoopSound();                               // 暂停（仅暂停当前在播的）
+AudioHandler.Instance.RestoreAllLoopSound();                             // 恢复被暂停的那批
+bool playing = AudioHandler.Instance.IsLoopSoundPlaying(AudioEnum.sound_walk_1);
+```
+
+**设计要点：**
+- **音量跟随 `soundVolume`**（不新增 `loopVolume`/设置滑条）；最终音量 = `soundVolume × 配置 volume_scale`。`InitAudio()` 刷新时遍历活跃 loop 源用 `soundVolume × entry.volumeScale` 重算（不能直接赋 soundVolume，否则抹掉 volume_scale）。
+- **异步竞态防护（关键）**：`GetClip` 是异步回调，`PlayLoopSound` 先登记 pending `LoopSoundEntry{source=null, token}` 占位（ContainsKey 即去重，防加载窗口内重复起源），加载回调校验 `token` 未变且 `!canceled` 才真正取源起播；`StopLoopSound` 对"加载中"的 id 置 `canceled` → 回调到达时丢弃。防"停请求先于加载回调到达 → 音源永久播放停不掉"。
+- **音源池**：`AudioManager.DequeueLoopSource/RecycleLoopSource`，`MaxLoopSource=16` 上限（超限告警并静默不播）；回收先 `Stop()` 再清 clip（`SetActive(false)` 不会停播放）；`spatialBlend=0`（第一期 2D 全局单路，不吃位置）。
+- **暂停不误启**：`PauseAllLoopSound` 只暂停当前 `isPlaying` 的源并记录到 `listLoopPaused`，`RestoreAllLoopSound` 只 UnPause 这批。
+- **不复用一次性音效防抖变量**（`lastPlaySoundId`/`timeUpdateForRepeatPlay` 不碰），去重只靠 `dicLoopActive`。
+- **生命周期挂钩**：连续音效音源常驻 `DontDestroyOnLoad`**不随场景销毁**，`WorldHandler.ClearWorldData()` 已挂 `StopAllLoopSound()` 兜底防跨场景残留。
+
+**走路声接入示例（唯一现有消费方）：** 基地自控魔王的移动挂在 [ControlForGameBase.cs](Assets/Scripts/Component/Game/Control/ControlForGameBase.cs) —— `HandleForMoveUpdate` 移动分支 `PlayLoopSound(AudioEnum.sound_walk_1)`、静止分支 `StopLoopSound(...)`、`EnabledControl(false)` 也 `StopLoopSound(...)`（覆盖"走着走着打开界面"）。单实体，靠 `PlayLoopSound`/`StopLoopSound` 幂等，每 FixedUpdate 重复调无害。走路声**复用一次性音效 `sound_walk_1`**（不新建 `loop_walk_1`）。
+
+> 未做（如需再扩展）：独立 `loopVolume` 音量条；按句柄多路 + 3D 位置跟随（每生物脚步声）；同 id 平滑换 clip（如雨强度切换，当前按 id 去重会忽略）。`dicLoopData` 同其它音频缓存一样从不 `Addressables.Release`（既有技术债，池仅解 AudioSource 组件泄漏）。
 
 ## 约束与注意事项
 

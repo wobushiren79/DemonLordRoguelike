@@ -69,6 +69,8 @@ public class ControlForGameBase : BaseControl
         base.EnabledControl(enabled);
         if (!enabled)
         {
+            //控制被禁用（如打开界面）时停止走路声，避免残留
+            AudioHandler.Instance.StopLoopSound(AudioEnum.sound_walk_1);
             if (isHideControlTarget)
             {
                 GameControlHandler.Instance.manager.controlTargetForCreature.SetActive(false);
@@ -129,6 +131,8 @@ public class ControlForGameBase : BaseControl
         {
             //播放动画
             PlayAnimForControlTarget(SpineAnimationStateEnum.Idle);
+            //停止走路声（幂等，未在播直接返回）
+            AudioHandler.Instance.StopLoopSound(AudioEnum.sound_walk_1);
         }
         else
         {
@@ -157,6 +161,8 @@ public class ControlForGameBase : BaseControl
             }
             //播放动画
             PlayAnimForControlTarget(SpineAnimationStateEnum.Walk,animSpeed: moveSpeedFinal * 0.8f);
+            //播放走路声（连续循环，幂等去重，已在播直接返回）
+            AudioHandler.Instance.PlayLoopSound(AudioEnum.sound_walk_1);
 
         }
     }
@@ -226,6 +232,11 @@ public class ControlForGameBase : BaseControl
             return;
         var firstHit = allHit[0];
         var interactionEnum = GetInteractionEnum(firstHit.gameObject);
+        //按E命中有效互动物体时播放互动音效
+        if (interactionEnum != ControlInteractionEnum.None)
+        {
+            AudioHandler.Instance.PlaySound(AudioEnum.sound_btn_1);
+        }
         switch (interactionEnum)
         {
             case ControlInteractionEnum.CoreInteraction: //核心

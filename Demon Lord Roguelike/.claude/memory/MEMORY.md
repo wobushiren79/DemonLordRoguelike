@@ -31,6 +31,10 @@
 - [reference_shader_common_layering.md](reference_shader_common_layering.md) — Shader 公共 hlsl 分层：Common=跨效果通用件(ParticleCommon.hlsl 粒子淡出/贴图/公共CBUFFER宏) / Effect/<效果>/=效果专属业务件(WindSway/GrassWind+TreeWind 风摆算法)；判定"跨效果可复用才进Common,被复用≠通用"；4个风摆粒子shader的include链与SRP Batcher宏约束
 - [reference_portal_reward_pregen_research_gate.md](reference_portal_reward_pregen_research_gate.md) — 传送门世界奖励"创建时预生成并冻结"+预览即实领(GameWorldDifficultyRandomBean.listReward/rewardUnlockSign、GetDifficultyReward、GameFightLogicConquer 消费 InitDataForReward)+解锁新魔物掉落致签名变化重生成；RewardSelectBean 奖励生成单一真实源(InitData(conquerInfo)/CreateRewardListForConquer/InitDataForReward/GetConquerEquipPoolSign)；UIPopupPortalDetails 四项预览(线路/关卡/路径长度414/奖励)受设施研究门控 UnlockEnum.PortalPreview*=100300002~5(未解锁整行隐藏)
 - [reference_boss_skill_attack_mode_ext.md](reference_boss_skill_attack_mode_ext.md) — 额外攻击(攻击模块扩展,旧称BOSS技能,通用)按间隔自动释放：NpcInfo.attack_mode_ext→AttackModeExtInfo(ext_type=1BossSkill/trigger_interval/attack_mode_id)→基类AIIntentCreatureAttack消费(融入普通攻击循环非并行:UpdateExtraAttackTimer仅计时,AttackCreatureStart判定GetReadyExtraAttack优先于普通攻击,AttackCreatureStartEnd发射复用StartCreateAttackMode customAttackModeId)；AreaBoxFront size=(前方,高,上下)即102001"1.5,1,0.25"=前方3格、101001"0.5,1,1"=前方1格+上下1格；含"BOSS=FightAttack进攻敌人,非防守核心AIDefenseCore"术语澄清
+- [reference_grass_particle_lit_shadow.md](reference_grass_particle_lit_shadow.md) — 草粒子Lit化+阴影踩坑：Mesh模式必配Render Alignment=Local否则mesh朝相机+法线偏暗；"阴影脱离草"是斜光自然长影非bug(顶光测试判定,URP bias在管线层且降它无效)；密草地关真影用sub-emitter假阴影(复用slash_circle01_AB)；草与Spine生物斜角排序翻转(草虽Transparent队列但ZWrite On+cutoff实为镂空实体)→材质renderQueue改2450(AlphaTest)回不透明阶段逐像素深度
+
+### Project Work
+- [`project_loop_sound_design.md`](project_loop_sound_design.md) — 连续音效(LoopSound)已实现：框架层通用"循环播放能力"(非新audio_type/目录/枚举,复用任意clip按audio_type加载在循环AudioSource池上播)；音量跟随soundVolume、异步竞态token防护、暂停只恢复被暂停源、MaxLoopSource16池；走路声复用sound_walk_1挂ControlForGameBase(移动/静止/禁用三处),ClearWorldData兜底StopAllLoopSound；未做loopVolume条/3D多路/同id换clip
 
 ### Collaboration Feedback
 - [`feedback_task_summary.md`](feedback_task_summary.md) — 任务总结必须列出参与的 Agent/Skill 名称及操作

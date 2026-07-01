@@ -389,6 +389,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
         //关闭所有控制
         GameControlHandler.Instance.manager.EnableAllControl(false);
+        //停止所有连续音效，防走路/环境循环音跨场景残留
+        AudioHandler.Instance.StopAllLoopSound();
         await new WaitNextFrame();
         //卸载场景
         await UnLoadAllScene();

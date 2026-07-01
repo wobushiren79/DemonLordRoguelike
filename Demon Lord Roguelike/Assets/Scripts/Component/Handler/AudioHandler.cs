@@ -50,6 +50,14 @@ public partial class AudioHandler
         Button tagetButton = targetObj.GetComponent<Button>();
         if (tagetButton != null)
         {
+            //弹窗背景点击关闭：命中 DialogView 的 ui_Background 且该弹窗允许点背景关闭(isDestroyBG)时播退出音；放在 sprite 空判之前因背景按钮常无 sprite
+            DialogView dialogView = targetObj.GetComponentInParent<DialogView>();
+            if (dialogView != null && dialogView.ui_Background == tagetButton
+                && dialogView.dialogData != null && dialogView.dialogData.isDestroyBG)
+            {
+                PlaySound(AudioEnum.sound_btn_31);
+                return;
+            }
             Image targetImage = tagetButton.image;
             if (targetImage == null || targetImage.sprite == null)
             {
@@ -197,6 +205,44 @@ public partial class AudioHandler
     public void PlayEnvironment(AudioEnum audio, float volumeScale)
     {
         PlayEnvironment((long)audio, volumeScale);
+    }
+
+    /// <summary>
+    /// 播放连续音效（枚举）
+    /// </summary>
+    /// <param name="audio">音频枚举</param>
+    public void PlayLoopSound(AudioEnum audio)
+    {
+        PlayLoopSound((long)audio);
+    }
+
+    /// <summary>
+    /// 播放连续音效（枚举，指定基础音量）
+    /// </summary>
+    /// <param name="audio">音频枚举</param>
+    /// <param name="volumeScale">基础音量</param>
+    public void PlayLoopSound(AudioEnum audio, float volumeScale)
+    {
+        PlayLoopSound((long)audio, volumeScale);
+    }
+
+    /// <summary>
+    /// 停止连续音效（枚举）
+    /// </summary>
+    /// <param name="audio">音频枚举</param>
+    public void StopLoopSound(AudioEnum audio)
+    {
+        StopLoopSound((long)audio);
+    }
+
+    /// <summary>
+    /// 指定连续音效是否正在播放（枚举）
+    /// </summary>
+    /// <param name="audio">音频枚举</param>
+    /// <returns>正在播放为 true</returns>
+    public bool IsLoopSoundPlaying(AudioEnum audio)
+    {
+        return IsLoopSoundPlaying((long)audio);
     }
     #endregion
 }

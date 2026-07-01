@@ -58,6 +58,20 @@ BuffBasePreEntity (含 BuffPreEventRole 用于事件归属过滤)
 └── BuffPreEntityForKillNum                # 击杀数量       EventRole=None
 ```
 
+### 扭蛋/稀有度 BUFF 分档规则（buff_type 11/12/13）
+稀有度 BUFF 池按稀有度分三档，每档对「效果性质」有硬约束（`BuffUtil.CreateRandomRarityBuff` 只按 buff_type 取池随机、不校验性质，归档正确性靠人工保证）：
+```
+R  (11) 纯属性 BUFF        —— 常驻数值加/减益、无触发条件；类 BuffEntityAttribute
+                              可用属性 HP/DR/ATK/ASPD/MSPD/CRT/EVA/RCD/CMP（CRT/EVA rate走Flat；另有MP/MPR/MPF魔法向）
+                              注意:无 HPRegeneration 生命回复属性(实际枚举 index11=MPF魔法回复),游戏无被动回血刻
+SR (12) 条件/周期被动触发   —— 累计伤害/受击/击杀/血量阈值或按周期触发；
+                              类 BuffEntityConditional*(非死亡)/Periodic*/Pecurrent，条件走 pre_info+BuffPreEntityFor*
+SSR(13) 特殊类             —— 死亡重生/死亡反击/死亡区域治疗/克隆增殖/生成改变水晶掉落等质变效果；
+                              类 BuffEntityConditionalDead*/BuffEntityInstant* 等
+高稀有度累积低档：SSR生物=R+SR+SSR各1、SR生物=R+SR各1（RandomRarityBuffForCreate 逐级授予）
+```
+> 详细分档表与设计自检见 buff-system SKILL「扭蛋/稀有度 BUFF 分档设计规则」，为单一真实源。
+
 ### 堆叠策略 BuffStackMode (BuffInfoBean.stack_mode)
 ```
 0 Refresh           刷新次数/计时+施加者，不叠层（默认）
