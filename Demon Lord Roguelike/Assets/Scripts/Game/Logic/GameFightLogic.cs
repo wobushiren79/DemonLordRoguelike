@@ -33,6 +33,8 @@ public class GameFightLogic : BaseGameLogic
         base.PreGame();
         //注册事件
         RegisterEvent<FightCreatureEntity>(EventsInfo.GameFightLogic_CreatureDeadEnd, EventForGameFightLogicCreatureDeadEnd);
+        //新建防守魔物实体时按需重算全体防守属性（供动态属性馈赠"随场上魔物数量缩放"生效）
+        RegisterEvent<FightCreatureEntity>(EventsInfo.GameFightLogic_DefenseCreatureCreate, EventForDefenseCreatureCreate);
         //发送事件通知
         RegisterEvent<string, string>(EventsInfo.Buff_FightCreatureChange, EventForBuffFightCreatureChange);
         //深渊馈赠变化时刷新受影响生物属性（防守核心 + 全部防守生物）
@@ -465,8 +467,26 @@ public class GameFightLogic : BaseGameLogic
     /// </summary>
     public void EventForGameFightLogicCreatureDeadEnd(FightCreatureEntity fightCreatureEntity)
     {
+        //动态属性馈赠(都是兄弟/杀红了眼)：魔物死亡→场上数量减少；敌人死亡→累计击杀增加，两者都需重算全体防守魔物属性
+        //先处理死亡带来的属性变化，再检测游戏是否结束(结算可能切状态)
+        if (BuffHandler.Instance.HasDynamicRateAbyssalBlessing())
+        {
+            RefreshAllDefenseCreatureAttribute();
+        }
         //检测一下游戏是否结束
         CheckGameEnd();
+    }
+
+    /// <summary>
+    /// 新建防守魔物实体：动态属性馈赠"随场上魔物数量缩放"(如都是兄弟)时，重算全体防守魔物属性使已在场魔物的加成随 N 增大即时生效
+    /// </summary>
+    /// <param name="fightCreatureEntity">新建的防守魔物实体(仅作事件参数)</param>
+    public void EventForDefenseCreatureCreate(FightCreatureEntity fightCreatureEntity)
+    {
+        if (BuffHandler.Instance.HasDynamicRateAbyssalBlessing())
+        {
+            RefreshAllDefenseCreatureAttribute();
+        }
     }
 
     /// <summary>
@@ -497,6 +517,15 @@ public class GameFightLogic : BaseGameLogic
     /// </summary>
     /// <param name="abyssalBlessingEntity">发生变化的深渊馈赠实例（仅作事件参数，刷新与具体哪条馈赠无关）</param>
     public void EventForAbyssalBlessingChange(AbyssalBlessingEntityBean abyssalBlessingEntity)
+    {
+        RefreshAllDefenseCreatureAttribute();
+    }
+
+    /// <summary>
+    /// 重算防守核心 + 全部在场普通防守生物的属性(RefreshBaseAttribute)。
+    /// <para>供以下场景使用：① 深渊馈赠变化(EventForAbyssalBlessingChange)；② 动态属性馈赠(都是兄弟/杀红了眼)下魔物增减、敌人击杀导致加成数值变化时即时生效。</para>
+    /// </summary>
+    public void RefreshAllDefenseCreatureAttribute()
     {
         if (fightData == null)
             return;

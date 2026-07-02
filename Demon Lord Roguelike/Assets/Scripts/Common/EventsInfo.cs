@@ -33,8 +33,9 @@ public static class EventsInfo
     public const string GameFightLogic_PutCard = "GameFightLogic_PutCard";//放置卡片选择    
     public const string GameFightLogic_CreatureChangeState = "GameFightLogic_CreatureChangeState";//生物状态修改
 
-    public const string GameFightLogic_CreatureDeadStart = "GameFightLogic_CreatureDeadStart";//生物开始死亡  
+    public const string GameFightLogic_CreatureDeadStart = "GameFightLogic_CreatureDeadStart";//生物开始死亡
     public const string GameFightLogic_CreatureDeadEnd = "GameFightLogic_CreatureDeadEnd";//生物结束死亡（注意 参数对象会在下一帧回收）
+    public const string GameFightLogic_DefenseCreatureCreate = "GameFightLogic_DefenseCreatureCreate";//新建防守魔物实体(参数 FightCreatureEntity；供动态属性馈赠等按需重算全体防守属性)
     public const string GameFightLogic_CreatureDeadDropCrystal = "GameFightLogic_CreatureDeadDropCrystal";//生物死亡掉落水晶
 
     public const string GameFightLogic_EndGame = "GameFightLogic_EndGame";//结束游戏

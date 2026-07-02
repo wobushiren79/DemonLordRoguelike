@@ -298,6 +298,12 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
 
             roadColorA = fightSceneData.road_color_a;
             roadColorB = fightSceneData.road_color_b;
+
+            //按场景配置开启内置雾（未配置 fog 则不开启，其它场景在卸载时已关闭）
+            if (fightSceneData.HasFog && fightSceneData.GetFogParams(out var fogColor, out var fogStart, out var fogEnd, out var fogMode))
+            {
+                VolumeHandler.Instance.SetFog(fogColor, fogMode, fogStart, fogEnd, isActive: true);
+            }
         }
 
         dicCurrentScene.Add(GameSceneTypeEnum.Fight, targetScene);
@@ -340,6 +346,16 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             }
             dicCurrentScene.Remove(gameSceneType);
         }
+        //卸载领奖场景时关闭体积雾
+        if (gameSceneType == GameSceneTypeEnum.RewardSelect)
+        {
+            VolumeHandler.Instance.SetVolumetricFogActive(false);
+        }
+        //卸载战斗场景时关闭内置雾，防止森林雾残留
+        if (gameSceneType == GameSceneTypeEnum.Fight)
+        {
+            VolumeHandler.Instance.SetFogActive(false);
+        }
         //移除天空盒
         if (isRemoveSkybox)
         {
@@ -369,6 +385,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             }
         }
         dicCurrentScene.Clear();
+        //关闭内置雾，防止森林雾残留到其它场景
+        VolumeHandler.Instance.SetFogActive(false);
         //移除天空盒
         if (isRemoveSkybox)
         {

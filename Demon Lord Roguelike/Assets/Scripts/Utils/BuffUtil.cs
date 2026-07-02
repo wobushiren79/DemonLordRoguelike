@@ -180,6 +180,9 @@ public static class BuffUtil
                     buffId = item.Key,
                     name = buffInfo != null ? buffInfo.name_language : "",
                     rate = rate,
+                    //素材命中该 id 时数值下限被抬高:透传给预览按抬高后下限显示 min~max(与 CreateRandomWithFloor 同口径)
+                    floorValue = item.Value.floorValue,
+                    floorValueRate = item.Value.floorValueRate,
                 });
             }
         }

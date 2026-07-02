@@ -28,6 +28,10 @@ public partial class FightSceneBean : BaseBean
 	/// </summary>
 	public string skybox_mat;
 	/// <summary>
+	///雾配置
+	/// </summary>
+	public string fog;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

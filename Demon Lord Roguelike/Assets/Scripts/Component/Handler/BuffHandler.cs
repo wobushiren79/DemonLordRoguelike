@@ -95,6 +95,9 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
             var buffEntity = manager.GetBuffEntity(buffData, defenseCoreCreatureUUID, defenseCoreCreatureUUID);
             if (buffEntity == null) continue;
             listBuffEntity.Add(buffEntity);
+            //动态率馈赠缓存单调置位：一整局只增不减(升级替换同族仍带动态BUFF)，直到 ClearAbyssalBlessing 复位；选取含动态率BUFF即置 true，无需遍历整池
+            if (buffEntity is BuffEntityAttributeDynamicRate)
+                manager.hasDynamicRateAbyssalBlessing = true;
         }
         manager.dicAbyssalBlessingBuffsActivie.Add(abyssalBlessingEntityData, listBuffEntity);
         //事件通知：UI 列表刷新 + 由 GameFightLogic.EventForAbyssalBlessingChange 立即重算受影响生物属性
@@ -137,6 +140,17 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
                 count++;
         }
         return count;
+    }
+
+    /// <summary>
+    /// 馈赠池内是否含"动态率属性馈赠"(BuffEntityAttributeDynamicRate 及子类)。O(1) 读缓存，供死亡/新建魔物等高频事件守卫使用。
+    /// <para>缓存单调置位：<see cref="AddAbyssalBlessing"/> 选取含动态率BUFF的馈赠时直接置 true(一整局只增不减，升级替换同族仍带动态BUFF)，
+    /// 仅 BuffManager.ClearAbyssalBlessing(全通关领奖后)复位为 false。热路径永不遍历池。</para>
+    /// </summary>
+    /// <returns>本局带了动态率馈赠返回 true</returns>
+    public bool HasDynamicRateAbyssalBlessing()
+    {
+        return manager.hasDynamicRateAbyssalBlessing;
     }
 
     /// <summary>

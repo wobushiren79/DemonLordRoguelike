@@ -81,7 +81,7 @@ public class BuffBean
     }
 
     /// <summary>
-    /// 是否是基础属性BUFF(只添加属性没有额外条件)
+    /// 是否是基础属性BUFF(单属性,只添加属性没有额外条件),是则返回该属性,否则返回 None
     /// </summary>
     /// <returns></returns>
     public CreatureAttributeTypeEnum IsBuffEntityAttributeBase()
@@ -92,5 +92,23 @@ public class BuffBean
             return buffInfo.class_entity_data.GetEnum<CreatureAttributeTypeEnum>();
         }
         return CreatureAttributeTypeEnum.None;
+    }
+
+    /// <summary>
+    /// 是否是多属性BUFF(BuffEntityAttributeMulti,同时改变多个属性)
+    /// </summary>
+    public bool IsBuffEntityAttributeMulti()
+    {
+        var buffInfo = BuffInfoCfg.GetItemData(id);
+        return !buffInfo.class_entity.IsNull() && buffInfo.class_entity.Equals("BuffEntityAttributeMulti");
+    }
+
+    /// <summary>
+    /// 是否是"纯属性BUFF"(单属性 BuffEntityAttribute 或多属性 BuffEntityAttributeMulti)。
+    /// 纯属性BUFF走属性烘焙路径,不作为运行时BUFF实体添加(避免与烘焙重复计算)。
+    /// </summary>
+    public bool IsBuffEntityAttributeOnly()
+    {
+        return IsBuffEntityAttributeBase() != CreatureAttributeTypeEnum.None || IsBuffEntityAttributeMulti();
     }
 }

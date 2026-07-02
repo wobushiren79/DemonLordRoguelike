@@ -124,6 +124,22 @@ public partial class BuffInfoBean
         }
     }
 
+    //缓存：多属性BUFF(BuffEntityAttributeMulti) class_entity_data 解析出的 (属性,倍率) 列表
+    private List<BuffAttributeMultiModifierStruct> cachedAttributeMultiPairs;
+
+    /// <summary>
+    /// 获取多属性BUFF的 (属性,倍率) 列表（解析 class_entity_data，如 "ATK:1|HP:-1"，结果缓存）
+    /// </summary>
+    public List<BuffAttributeMultiModifierStruct> GetAttributeMultiPairs()
+    {
+        if (cachedAttributeMultiPairs == null)
+        {
+            cachedAttributeMultiPairs = new List<BuffAttributeMultiModifierStruct>();
+            BuffEntityAttributeMulti.ParsePairs(class_entity_data, cachedAttributeMultiPairs);
+        }
+        return cachedAttributeMultiPairs;
+    }
+
     protected Dictionary<long, float> dicBuffPre;
 
     /// <summary>

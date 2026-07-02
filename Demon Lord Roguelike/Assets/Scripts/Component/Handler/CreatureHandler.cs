@@ -180,6 +180,9 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         //设置生物BUFF
         List<BuffBean> creatureBuffs = fightCreatureData.creatureData.GetListBuffData(getBuffAttributeBase : false);
         BuffHandler.Instance.AddFightCreatureBuff(creatureBuffs, fightCreatureData.creatureData.creatureUUId, fightCreatureData.creatureData.creatureUUId);
+        //推送"新建防守魔物实体"事件：CreatureHandler 只负责生成，是否/如何重算属性交由 GameFightLogic 决定
+        //(动态属性馈赠"随场上魔物数量缩放"依赖此事件在放置后重算已在场魔物的加成)
+        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_DefenseCreatureCreate, fightCreatureEntity);
         return fightCreatureEntity;
     }
     #endregion

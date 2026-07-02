@@ -194,7 +194,8 @@ public enum ResearchInfoTypeEnum
 public enum UnlockEnum : long
 {
     CreatureVat = 100000000,           // 生物进阶
-    CreatureVatAdd = 100000001,        // 生物进阶设置+1
+    CreatureVatAdd = 100000001,        // 生物进阶设置+1(可升级, 100000001~100000005 为其 Lv1~Lv5 解锁条目, 占满 1000 段前 6 个 id)
+    CreatureVatBuffPreview = 100000006,// 生物进阶-进阶增益BUFF数值范围预览(设施段, pre=CreatureVat; 因 1~5 被 +1 的 Lv 占用故取 6)
     Altar = 100100001,                 // 祭坛
     SacrificeNum = 100100002,          // 增加献祭祭品数量(+1/级, level_max=10)
     SacrificePityRate = 100100003,     // 献祭失败保底概率提升(+5%/级, level_max=10)
@@ -215,12 +216,19 @@ public enum UnlockEnum : long
     DropCrystalLifeTime = 200200001,   // 魔晶掉落物存在时长+5秒/级(level_max=6)
     DemonLordMPMax = 200300001,        // 魔王魔力上限+10/级(level_max=5)
     DemonLordMPF = 200400001,          // 魔王魔力恢复速度+1/秒/级(level_max=3)
+    AbyssalBlessingRefreshNum = 200500001, // 深渊馈赠刷新次数(研究等级=单次征服run内可用刷新次数上限,level_max=5,新run自动回满)
     EquipRewardHuman = 300100301,      // 人类装备奖励
     EquipRewardSkeleton = 300200301,
 }
 ```
 
 > **何时需要新增 `UnlockEnum`？** 当 C# 代码需要直接判定/读取某个解锁等级时（例如 `GetUnlockLineupNum` 中读取 `LineupNum` 的研究等级）。纯前置依赖型节点不需要进入枚举，仅在 Excel 中维护即可。
+
+### 设施分支(1000 段) — 生物进阶「进阶增益范围预览」节点
+
+魔物进阶(孵化缸 `UICreatureVat`)的进阶详情面板里，每条候选稀有度 BUFF 的悬浮气泡(`UIViewCreatureVatAscendBuffItem`)默认展示 BUFF 效果描述、但数值占位参数(`{Percentage}` 等)统一用 `???` 替代（数值待进阶开始时随机确定）。新增设施研究节点 `CreatureVatBuffPreview`(unlock_id **100000006**, research 节点 id 100000003, `research_type=1`, `pre_unlock_ids=100000000` 即需先解锁进阶设施, `level_max=1`, `pay_crystal=500`)门控该数值范围预览：**解锁后** `???` 换成 `min~max` 范围（唯一随机值是进阶增益属性百分比 `{Percentage}` = `trigger_value_rate_min~trigger_value_rate`，按整数百分点；素材命中该 id 时下限抬高，与 `BuffBean.CreateRandomWithFloor` 同口径；`{Time_S}`/`{KillNum}` 等固定条件显示实际值）。落表同其他节点：`excel_unlock_info`(id=100000006,unlock_type=0) + `excel_research_info`(name textId 同 unlock_id=100000006) + 多语言 `excel_language` 的 `ResearchInfo` 工作表(id=100000006, cn「进阶增益范围预览」/en「Buff Range Preview」)。
+
+> **1000 段 id 已用满前 6 个**：`100000000`=进阶设施、`100000001~100000005`=进阶设施+1 的 Lv1~Lv5 解锁条目，故本预览节点 unlock_id 从 `100000006` 起。UI 门控在 `UIViewCreatureVatAscendBuffItem.GetBuffContentForPreview` 用 `CheckIsUnlock(UnlockEnum.CreatureVatBuffPreview)`。
 
 ### 设施分支(1003 段) — 传送门详情预览 4 节点
 
@@ -316,6 +324,8 @@ public int GetUnlockResearchLevelByResearchInfo(ResearchInfoBean researchInfo);
 public int GetUnlockPortalShowCount();                 // 3 + PortalShowNum 等级
 public int GetUnlockPortalRefreshMax();                // 传送门刷新次数上限 = PortalRefreshNum 等级(未解锁0,满级10)
 public bool CheckIsUnlockPortalRefresh();              // 是否解锁传送门刷新(等级>0,门控刷新按钮显隐)
+public int GetUnlockAbyssalBlessingRefreshMax();       // 深渊馈赠刷新次数上限 = AbyssalBlessingRefreshNum 等级(未解锁0,满级5)；剩余次数池挂 FightBeanForConquer(整个征服run共享,新run自动回满)
+public bool CheckIsUnlockAbyssalBlessingRefresh();     // 是否解锁深渊馈赠刷新(等级>0,门控 UIFightAbyssalBlessing 刷新按钮显隐)
 public int GetUnlockLineupNum();                       // 1 + LineupNum 等级
 public int GetUnlockLineupCreatureNum();               // 6 + LineupCreatureAddNum 等级
 public int GetUnlockGameWorldConquerDifficultyLevel(long worldId);

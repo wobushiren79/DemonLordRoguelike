@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: FightScene
   m_GUID: 7251369fdc99b0c4cad7c85a5a185754
   m_SerializeEntries:
+  - m_GUID: 24e21a388bcd3224d9c25170735fe5a8
+    m_Address: Assets/LoadResources/FightScene/FightScene_Desert_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3e5d3c1ef2205ac44816a6e02b71c8e7
     m_Address: Assets/LoadResources/FightScene/FightScene_Forest_1.prefab
     m_ReadOnly: 0
@@ -22,6 +27,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 9cd2a322889916541905df2c9e288592
     m_Address: Assets/LoadResources/FightScene/FightScene_Test.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d7553261daf716a4cb34c9da53686820
+    m_Address: Assets/LoadResources/FightScene/FightScene_Palace_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

@@ -274,6 +274,8 @@ CreatureHandler.Instance.RemoveFightCreatureEntity(entity, creatureFightType);
 FightCreatureEntity entity = CreatureHandler.Instance.GetFightCreatureEntity(creatureUUId);
 ```
 
+> **`CreateDefenseCreatureEntity` 末尾推送新事件（事件驱动，不再直接重算）**：加完新防守魔物的 BUFF 后 `EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_DefenseCreatureCreate, fightCreatureEntity)`——CreatureHandler 只负责生成、推事件；由 `GameFightLogic.EventForDefenseCreatureCreate` 监听后按守卫 `BuffHandler.Instance.HasDynamicRateAbyssalBlessing()` 重算全体防守属性，供动态数值馈赠「都是兄弟」（加成率随场上魔物数 N 变化）在放置/增殖新魔物、N 增大时即时生效。守卫仅当馈赠池含指定类型/子类 BUFF 才广播，普通对局无开销。重算职责归 GameFightLogic。详见 abyssal-blessing-system SKILL。
+
 ### CreatureManager（生物管理器）
 
 **文件**: `Assets/Scripts/Component/Manager/CreatureManager.cs`

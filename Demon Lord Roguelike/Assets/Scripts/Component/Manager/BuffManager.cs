@@ -8,6 +8,8 @@ public class BuffManager : BaseManager
 {
     //活跃的深渊馈赠BUFF
     public DictionaryList<AbyssalBlessingEntityBean, List<BuffBaseEntity>> dicAbyssalBlessingBuffsActivie = new DictionaryList<AbyssalBlessingEntityBean, List<BuffBaseEntity>>();
+    //缓存：馈赠池内是否含"动态率属性馈赠"(BuffEntityAttributeDynamicRate)。仅在馈赠池变化时(增/替换/清空)更新，供死亡/新建魔物等高频事件守卫 O(1) 读取，避免每次遍历
+    public bool hasDynamicRateAbyssalBlessing = false;
     //活跃的战斗生物BUFF
     public DictionaryList<string, List<BuffBaseEntity>> dicFightCreatureBuffsActivie = new DictionaryList<string, List<BuffBaseEntity>>();
 
@@ -24,9 +26,11 @@ public class BuffManager : BaseManager
     /// 清理深渊馈赠数据
     /// </summary>
     public void ClearAbyssalBlessing()
-    {    
+    {
         ClearBuffCollection(dicAbyssalBlessingBuffsActivie.List);
         dicAbyssalBlessingBuffsActivie.Clear();
+        //池清空，动态率馈赠缓存复位
+        hasDynamicRateAbyssalBlessing = false;
     }
 
     /// <summary>

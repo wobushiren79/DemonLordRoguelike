@@ -9,6 +9,10 @@ public struct CreatureAscendBuffChanceStruct
     public string name;
     /// <summary>命中概率(0~100,百分比)</summary>
     public float rate;
+    /// <summary>触发值下限(素材命中该 id 时抬高的下限,取各素材最大原值;兜底项为0)。用于进阶增益范围预览按抬高后的下限显示 min~max</summary>
+    public float floorValue;
+    /// <summary>触发值百分比下限(素材命中该 id 时抬高的下限,取各素材最大原值;兜底项为0)。用于进阶增益范围预览按抬高后的下限显示 min~max</summary>
+    public float floorValueRate;
 }
 
 /// <summary>

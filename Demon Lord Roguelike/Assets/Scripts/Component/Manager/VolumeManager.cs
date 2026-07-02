@@ -1,60 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
 
-public class VolumeManager : BaseManager
+/// <summary>
+/// 后处理/环境渲染 Manager（游戏层 partial）：持有第三方 VolumeComponent(URP Volumetric Fog 体积雾)。
+/// 全局 Volume、Profile 及引擎原生组件(景深)见框架层同名 partial。
+/// </summary>
+public partial class VolumeManager
 {
-    public Dictionary<string, Material> dicSkybox = new Dictionary<string, Material>();
-
-
-    //基础设置
-    protected Volume _volume;
-    public Volume volume
+    //体积雾（第三方 URP Volumetric Fog）
+    protected VolumetricFogVolumeComponent _volumetricFog;
+    public VolumetricFogVolumeComponent volumetricFog
     {
         get
         {
-            if (_volume == null)
+            if (_volumetricFog == null)
             {
-                _volume = FindWithTag<Volume>(TagInfo.Tag_Volume);
-                if (_volume == null)
-                {
-                    GameObject objVolumeModel = LoadAddressablesUtil.LoadAssetSync<GameObject>(PathInfo.RenderVolumePath);
-                    GameObject objVolume = Instantiate(gameObject, objVolumeModel);
-                    objVolume.transform.localPosition = Vector3.zero;
-                    _volume = objVolume.GetComponent<Volume>();
-                }
+                volumeProfile.TryGet(out _volumetricFog);
             }
-            return _volume;
-        }
-    }
-
-    //设置文件
-    protected VolumeProfile _volumeProfile;
-    public VolumeProfile volumeProfile
-    {
-        get
-        {
-            if (_volumeProfile == null)
-            {
-                _volumeProfile = volume.profile;
-            }
-            return _volumeProfile;
-        }
-    }
-
-    //远近模糊
-    protected DepthOfField _depthOfField;
-    public DepthOfField depthOfField
-    {
-        get
-        {
-            if (_depthOfField == null)
-            {
-                volumeProfile.TryGet(out _depthOfField);
-            }
-            return _depthOfField;
+            return _volumetricFog;
         }
     }
 }

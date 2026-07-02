@@ -14,7 +14,7 @@ metadata:
 4. 下载 URL:`create_map_object` 用 `https://api.pixellab.ai/mcp/map-objects/<id>/download`(公开免鉴权);`create_1_direction_object` 帧用 backblaze `.../objects/be829c7e-.../<oid>/rotations/frame_<n>.png`。
 5. 联系表(contact32.py,scale 3)目测优选,落盘 `Assets/Out/AbyssalBlessing/`、`Assets/Out/Achievement/`,用户再移入正式 `Assets/LoadResources/Textures/<子目录>/`。
 
-**编号进度(截至 2026-06-29)**:
-- 深渊馈赠 `ui_abyssalblessing_0..119`(原 0–14;AI 预览 15–19 用 create_map_object;AI 批量 20–119 用 create_1_direction_object)。**下一个从 120 起**。
+**编号进度(截至 2026-07-02)**:
+- 深渊馈赠 `ui_abyssalblessing_0..125`(原 0–14;AI 预览 15–19 用 create_map_object;AI 批量 20–119 用 create_1_direction_object;120–125 用 create_map_object 单个生成:120–122「都是兄弟」攻/防/生, 123–125「杀红了眼」攻/防/生, 经 quantize8.py 控色 ≤8)。**下一个从 126 起**。
 - 成就 `ui_achievement_*`:原始为按类型命名(`_time`/`_kill`/`_clear`);AI 新增按下标 `ui_achievement_0..63`。**下一个从 64 起**。
 - 正式目录现有:AbyssalBlessing 含 0–14,Achievement 含 time/kill/clear;AI 产出仍在 `Assets/Out/`,待移入。

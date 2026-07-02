@@ -1,6 +1,6 @@
 ---
 name: pixel-perfect-converter
-description: 像素完美转换器(Pixel Perfect Converter)编辑器工具开发：把 AI 生成的伪像素画重采样为真正像素对齐的像素图。负责 PixelPerfectConverterWindow 的功能扩展与维护，包括三步式工作流(设置/定位转换/编辑导出)+辅助功能步骤④(帧动画图片排版修改)、5 种取色算法、画笔/橡皮/魔棒编辑、撤销重做、调色板颜色替换、PNG 导出（x1/x4/x8 另存为、覆盖原图、同目录、按列×行拆分）。
+description: 像素完美转换器(Pixel Perfect Converter)编辑器工具开发：把 AI 生成的伪像素画重采样为真正像素对齐的像素图。负责 PixelPerfectConverterWindow 的功能扩展与维护，包括三步式工作流(设置/定位转换/编辑导出)+辅助功能步骤④(页签切换：帧排版重排/拆分 · 多张单图合并为图集)、5 种取色算法、画笔/橡皮/魔棒编辑、撤销重做、调色板颜色替换、PNG 导出（x1/x4/x8 另存为、覆盖原图、同目录、按列×行拆分）。
 tools: Read, Write, Edit, Glob, Grep, Bash
 skill: pixel-perfect-converter
 watched_files:
@@ -22,9 +22,9 @@ watched_files:
 > **右键快捷入口**：`OpenFromSelection`（`[MenuItem("Assets/像素完美转换器")]`）在 Project 选中 `Texture2D` 后右键直接打开窗口、把该图设为源图并自动 `LoadSource`+`EnterStep2`；`OpenFromSelectionValidate`（校验函数）保证仅选中图片时菜单可用。
 2. **步骤② 定位与转换**：预览格子尺寸(4~16)、源图缩放(10~300%，中心锚定)、拖拽定位源图，选 5 种取色算法，**可设相似度阈值**与**最终颜色数量上限**，生成像素图。
 3. **步骤③ 编辑与导出**：左侧工具面板 + 中间编辑画布 + 右侧最终效果图预览(`DrawResultPreview`，`_resultZoom` 1~20，无网格/无高亮)；画布缩放(1~20)、网格开关、画笔/橡皮/魔棒、笔刷色与尺寸(1~5)、魔棒阈值(0~30)、最近颜色(≤6)、调色板颜色替换、撤销/重做、PNG 导出(另存为/覆盖原图/同目录/拆分)。
-4. **步骤④ 辅助功能（帧动画图片排版修改）**：独立于主流程的精灵表重排工具，详见下方专节。`DrawStepBar` 的 `CanGoToStep(4)` 恒为 true、`reachable = step<=_step || step==4`，故随时可进入；不依赖步骤①~③的任何数据。
+4. **步骤④ 辅助功能**：顶部 `GUILayout.Toolbar` 页签切换两个独立子工具——**帧排版（拆分/重排）** 与 **图片合并（拼图集）**，由 `_auxMode`(`AuxMode.Relayout`/`Merge`) 控制，`DrawStep4` 派发到 `DrawStep4Relayout` / `DrawStep4Merge`，详见下方专节。`DrawStepBar` 的 `CanGoToStep(4)` 恒为 true、`reachable = step<=_step || step==4`，故随时可进入；不依赖步骤①~③的任何数据。
 
-## 步骤④ 辅助功能 · 帧动画图片排版修改
+## 步骤④ 辅助功能 · 帧排版（`DrawStep4Relayout`）
 
 把按「列×行」帧排布的精灵表重排为另一种「列×行」布局（单帧像素尺寸不变，仅改变帧的行列排布）。
 例：256×32 原图填原图帧数 8×1、输出帧数 4×2 → 单帧 32×32，结果拆成 128×64。
@@ -34,8 +34,19 @@ watched_files:
 - **重排顺序**：行优先(从左到右、从上到下)，第 f 帧从源 `(f%sc, f/sc)` 搬到输出 `(f%oc, f/oc)`；空帧位填 `kTransparent`，输出帧位少于原帧数时多余帧丢弃并警告。
 - **独立源图**：`_auxSourceTexture`/`_auxSourceExternalPath`，**支持拖拽替换**(`DrawAuxDropArea`/`AcceptAuxDraggedImage`，复用 `IsDragValid`/`IsImagePath`/`LoadAsProjectAsset`)，`LoadAuxSource` 复用 `ReadSourcePixels` 读像素转自上而下数组。
 - **实时预览**：`_auxResultTex`(`BuildAuxResultTexture`)，`_auxResultZoom`(1~16) 缩放、超高内部滚动。
-- **导出**(均经 `BuildAuxResultPng` 自上而下翻自下而上编码)：`ExportAuxAs`(不覆盖，弹窗另存为)、`ExportAuxOverwrite`(覆盖原图，弹确认)、`ExportAuxToSourceDir`(同目录，名=`原图名_relayout_列x行.png`)；后两者需 `GetAuxSourceFilePath()` 有磁盘文件，否则按钮禁用。
-- 数据约定同主流程：`_auxSrcTopDown`/`_auxResultTopDown` 均为自上而下数组，纹理/PNG 输出时翻转。`OnDestroy` 释放 `_auxDisplayTex`/`_auxResultTex`。
+- **导出**(均经 `BuildAuxResultPng`→`BuildPngFromTopDown` 自上而下翻自下而上编码)：`ExportAuxAs`(不覆盖，弹窗另存为)、`ExportAuxOverwrite`(覆盖原图，弹确认)、`ExportAuxToSourceDir`(同目录，名=`原图名_relayout_列x行.png`)；后两者需 `GetAuxSourceFilePath()` 有磁盘文件，否则按钮禁用。
+- 数据约定同主流程：`_auxSrcTopDown`/`_auxResultTopDown` 均为自上而下数组，纹理/PNG 输出时翻转。`OnDestroy` 释放 `_auxDisplayTex`/`_auxResultTex`/`_mergeResultTex`。
+
+## 步骤④ 辅助功能 · 图片合并（`DrawStep4Merge`）
+
+帧排版的逆操作：把多张单图按「列×行」拼成一张图集。
+例：4 张 32×32 填 2×2 → 64×64；填 4×1 → 128×32。
+
+- **先设布局再填图**：`_mergeCols`×`_mergeRows`(各 1~32)决定槽位数，改动经 `EnsureMergeSlotCount` 把 `_mergeSlotTex`/`_mergeSlotPath` 两个平行 List 对齐长度(保留已有槽内容)后 `RebuildMergeResult`。
+- **槽位网格**：`DrawMergeSlotGrid` 按行优先每行 `cols` 个 `DrawMergeSlot`；每格 = 棋盘底 + 缩略图 + `#序号`角标 + `ObjectField`，**支持拖入**工程内 `Texture2D` 或外部图片(`IsMergeDragValid`/`AcceptMergeDraggedImage`，外部文件经 `DecodeExternalImage` 解码为临时纹理并记 `_mergeSlotPath`)。「清空所有槽位」按钮一键复位。
+- **格子尺寸** = 所有非空图的**最大宽 × 最大高**；每张图在自己格子内**居中**放置(`ox=(cellW-w)/2`)，空白填 `kTransparent`；尺寸不一时 HelpBox 提示已按最大格子居中。像素读取复用 `ReadSourcePixels`，结果 `_mergeResultTopDown`(自上而下)。
+- **实时预览**：`_mergeResultTex`(`BuildMergeResultTexture`)，`_mergeResultZoom`(1~16)。
+- **导出**(经 `BuildPngFromTopDown`)：`ExportMergeAs`(另存为，名=`merged_列x行.png`)、`ExportMergeToFirstDir`(导出到首张有磁盘文件单图的目录，`GetMergeFirstSourceDir`/`GetSlotFilePath`，无文件则禁用)。**无覆盖原图选项**(合并无单一源图)。
 
 ## 5 种取色算法（`ConvMethod`）
 

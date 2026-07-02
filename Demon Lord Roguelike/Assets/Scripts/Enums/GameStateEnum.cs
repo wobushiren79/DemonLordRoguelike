@@ -166,6 +166,7 @@ public enum UnlockEnum : long
 {
     CreatureVat = 100000000,//生物进阶
     CreatureVatAdd = 100000001,//生物进阶设置+1;
+    CreatureVatBuffPreview = 100000006,//生物进阶-进阶增益BUFF数值范围预览(解锁后???替换成随机min~max范围;100000001~5被+1的Lv1~5占用故取6)
     Altar = 100100001,//祭坛
     SacrificeNum = 100100002,//献祭祭品数量+1
     SacrificePityRate = 100100003,//献祭失败保底概率提升(每级失败累积的保底成功率+5%,满级+50%)
@@ -196,6 +197,7 @@ public enum UnlockEnum : long
     DropCrystalLifeTime = 200200001,//魔晶掉落物存在时长提升(每级+5秒)
     DemonLordMPMax = 200300001,//魔王魔力上限提升(每级+10)
     DemonLordMPF = 200400001,//魔王魔力恢复速度提升(每级+1/秒)
+    AbyssalBlessingRefreshNum = 200500001,//深渊馈赠刷新次数(研究等级=单次征服run内可用刷新次数上限,level_max=5)
 
     EquipRewardHuman = 300100301,//人类装备奖励
     EquipRewardSkeleton = 300200301,

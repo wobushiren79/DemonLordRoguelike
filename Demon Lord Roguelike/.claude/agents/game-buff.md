@@ -27,7 +27,11 @@ BuffBaseEntity                              # 抽象基类
 ├── BuffEntityAttribute                     # 属性BUFF（实现 IAttributeModifierSource）
 │   ├── BuffEntityAttributeAttackTime       # 改攻击前摇/动画时间（独立通道，不走管线）
 │   │   └── BuffEntityAttributeAttackTimeSingleTarget  # 深渊馈赠「急性子」：随机锁定一只防守生物攻速翻倍(攻击时间×0.5)
-│   └── BuffEntityAttributeSingleTarget    # 深渊馈赠「大力出奇迹/膘肥体壮/钢铁憨憨」：随机锁定一只防守生物 ATK/HP/DR 翻倍
+│   ├── BuffEntityAttributeSingleTarget    # 深渊馈赠「大力出奇迹/膘肥体壮/钢铁憨憨」：随机锁定一只防守生物 ATK/HP/DR 翻倍
+│   ├── BuffEntityAttributeDynamicRate     # 动态率属性BUFF基类：加成率运行时算(GetDynamicRate)非配置写死，仅走 PercentAdd
+│   │   ├── BuffEntityAttributeScaleByDefenseCount  # 通用功能类：属性%随"当前场上存活防守魔物数N"缩放，率=(N-1)×每只率(当前用于馈赠「都是兄弟」，可复用)
+│   │   └── BuffEntityAttributeScaleByKillCount     # 通用功能类：属性%随"本局累计击杀敌人数"缩放，率=击杀数×每只率(当前用于馈赠「杀红了眼」，可复用)
+│   └── BuffEntityAttributeMulti            # 多属性BUFF：一次随机率同时改多个属性(class_entity_data "ATK:1|HP:-1"=ATK+率/HP等量负率)，实现"一增益、对应属性等比减益"；扭蛋R级双刃(狂战士/快枪手/铜墙铁壁/大块头 A/B/C)。纯属性BUFF走烘焙路径
 ├── BuffEntityInstant                       # 瞬时触发（SetData后isValid=false）
 │   ├── BuffEntityInstantCloneDefenseCreature      # 深渊馈赠「增殖」
 │   ├── BuffEntityInstantRewardMoreItem            # 深渊馈赠「奖励多多」
@@ -61,8 +65,9 @@ BuffBasePreEntity (含 BuffPreEventRole 用于事件归属过滤)
 ### 扭蛋/稀有度 BUFF 分档规则（buff_type 11/12/13）
 稀有度 BUFF 池按稀有度分三档，每档对「效果性质」有硬约束（`BuffUtil.CreateRandomRarityBuff` 只按 buff_type 取池随机、不校验性质，归档正确性靠人工保证）：
 ```
-R  (11) 纯属性 BUFF        —— 常驻数值加/减益、无触发条件；类 BuffEntityAttribute
+R  (11) 纯属性 BUFF        —— 常驻数值加/减益、无触发条件；类 BuffEntityAttribute / 多属性双刃 BuffEntityAttributeMulti
                               可用属性 HP/DR/ATK/ASPD/MSPD/CRT/EVA/RCD/CMP（CRT/EVA rate走Flat；另有MP/MPR/MPF魔法向）
+                              多属性双刃(BuffEntityAttributeMulti): class_entity_data "属性:倍率|属性:倍率"(如 ATK:1|HP:-1),各属性率=trigger_value_rate×倍率共享同一次随机(ATK+30%⇒HP-30%);纯属性→走烘焙,IsBuffEntityAttributeOnly 判定;id 段 11 0007~0010 0000X
                               注意:无 HPRegeneration 生命回复属性(实际枚举 index11=MPF魔法回复),游戏无被动回血刻
 SR (12) 条件/周期被动触发   —— 累计伤害/受击/击杀/血量阈值或按周期触发；
                               类 BuffEntityConditional*(非死亡)/Periodic*/Pecurrent，条件走 pre_info+BuffPreEntityFor*
@@ -134,6 +139,7 @@ BuffEventDispatcher.dicBindings  # 事件名 → IBuffEventBinding 字典
 - 添加 BUFF 必须经过 `BuffHandler.AddFightCreatureBuff`（处理 createRate、stacking、事件通知），不要直接写 `manager.dicFightCreatureBuffsActivie`
 - 攻击时间修正走专用通道 `BuffHandler.ChangeAttackTimeDataForBuff`（看 `BuffEntityAttributeAttackTime`），不接入属性管线；该方法除生物自身战斗BUFF外，还扫描深渊馈赠池中实现 `IBuffSingleTarget` 的攻速BUFF，按锁定 `SingleTargetCreatureUUId` 单体生效
 - 单体定向深渊馈赠（随机一只防守生物 ATK/HP/DR/攻速 翻倍）：`BuffEntityAttributeSingleTarget`/`BuffEntityAttributeAttackTimeSingleTarget` 实现 `IBuffSingleTarget`（`SetData` 随机锁定一只防守生物 UUID）；属性类在 `FightCreatureBean.CollectFromBuffList`、攻速类在 `ChangeAttackTimeDataForBuff` 按 `SingleTargetCreatureUUId` 过滤。**复制魔物(增殖 `BuffEntityInstantCloneDefenseCreature`)不继承单体定向**：克隆体是新 UUID 不匹配锁定 UUID，只继承全体性馈赠(靠 trigger_creature_type)。随机锁定走 `FightBean.GetRandomDefenseCreatureUUId()`(fightData 实例方法)；卡片展示用 `AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature`(`Assets/Scripts/Utils/`) 统一判定口径。**只改运行时 dicAttribute/攻击时间，绝不改 `dlDefenseCreatureData` 里 CreatureBean 的 creatureAttribute（与存档共享引用，会污染存档）**。详见 abyssal-blessing-system SKILL
+- 动态率深渊馈赠（当前用于 都是兄弟/杀红了眼）：抽象基类 `BuffEntityAttributeDynamicRate : BuffEntityAttribute` 重写 `CollectModifiers`+`ChangeData` 用 `GetDynamicRate()` 替代配置固定 `trigger_value_rate`（仅走 PercentAdd，用于 ATK/DR/HP）；子类为**通用功能类**（按缩放来源命名、不绑馈赠名，可被其它同功能馈赠复用）：`BuffEntityAttributeScaleByDefenseCount`(属性随"当前场上存活防守魔物数"缩放，rate=(N-1)×rate，当前用于都是兄弟) / `BuffEntityAttributeScaleByKillCount`(属性随"本局累计击杀数"缩放，rate=`fightRecordsData.totalKillNumForDef`×rate，当前用于杀红了眼)。rate 变化需重算 `dicAttribute` 才生效（事件驱动）：魔物死亡/敌人击杀由 `GameFightLogic.EventForGameFightLogicCreatureDeadEnd` 广播 `RefreshAllDefenseCreatureAttribute()`（且重算放在 `CheckGameEnd()` 之前）；魔物放置/增殖由 `CreatureHandler.CreateDefenseCreatureEntity` 末尾**推送新事件** `EventsInfo.GameFightLogic_DefenseCreatureCreate`（参数 FightCreatureEntity）→ `GameFightLogic.EventForDefenseCreatureCreate` 监听后广播（CreatureHandler 只生成、推事件，重算职责归 GameFightLogic）。守卫用泛型 `BuffHandler.HasDynamicRateAbyssalBlessing()`（通用：馈赠池含指定类型/子类 BUFF 才广播）避免普通对局开销。详见 abyssal-blessing-system SKILL
 - `BuffHandler.AddAbyssalBlessing` 末尾 `TriggerEvent(Buff_AbyssalBlessingChange)`，由 `GameFightLogic.EventForAbyssalBlessingChange` 监听并刷新防守核心 + 全部防守生物 `RefreshBaseAttribute`（事件驱动，BuffHandler 不直接刷新）：属性类馈赠只有重算 `dicAttribute` 才生效，征服「普通关→普通关」走 `ContinueNextLevelInSameScene` 保留现场不重算，若馈赠变化时不刷新会出现「普通关选了不生效、切BOSS关重载场景才生效」的BUG。改动馈赠添加链路勿删此事件触发
 - 稀有度 BUFF 生成统一走 `BuffUtil`（`Assets/Scripts/Utils/BuffUtil.cs`），**扭蛋与魔物进阶共用**：`GetRarityBuffType(RarityEnum)`（R/SR/SSR→`CreatureRarity*`，N/UR/L→None）、`CreateRandomRarityBuff(RarityEnum)`（扭蛋通用：取对应 buff_type 池随机 1 条 `new BuffBean(id, isRandom:true)`）、`CreateAscendRarityBuff(newRarity, materials)`（魔物进阶：素材在 newRarity 槽位 BUFF 按 id 聚合，每 id 提供 10%×数量 命中概率，命中则继承并用 `BuffBean.CreateRandomWithFloor` 重随机数值≥素材原值，未命中回退通用随机；UR/L 返回 null）。`GashaponItemBean.RandomRarityBuff` 已改为调用 `CreateRandomRarityBuff`，不要再内联 switch
 - `BuffBean.CreateRandomWithFloor(id, floorValue, floorValueRate, createRate=1f)`：沿用扭蛋整数闭区间随机口径，但随机下限抬到 `max(配置min, floor)`，保证重随机结果≥下限（专供魔物进阶继承素材 BUFF 重随机）

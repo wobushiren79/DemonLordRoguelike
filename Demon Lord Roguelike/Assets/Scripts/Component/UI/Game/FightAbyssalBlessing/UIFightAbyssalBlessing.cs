@@ -23,6 +23,16 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     /// </summary>
     private const float PRIORITY_OWNED_UPGRADE_CHANCE = 0.3f;
 
+    /// <summary>
+    /// 刷新按钮文本的多语言 UIText id（"刷新x{0}"，{0}=剩余刷新次数）
+    /// </summary>
+    private const long TEXT_ID_REFRESH = 4000018;
+
+    /// <summary>
+    /// 刷新次数已用完的提示文本 UIText id（与传送门刷新共用同一提示）
+    /// </summary>
+    private const long TEXT_ID_REFRESH_EMPTY = 2007;
+
     #endregion
 
     #region 回调
@@ -180,6 +190,62 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
             targetView.SetData(itemData);
             targetView.AnimForShow(i * ITEM_SHOW_ANIM_STAGGER);
         }
+        //渲染完刷新「刷新按钮」的显隐与剩余次数显示
+        RefreshRefreshBtnState();
+    }
+
+    #endregion
+
+    #region 刷新馈赠
+
+    /// <summary>
+    /// 获取当前征服模式战斗数据（刷新次数池挂在其上）；非征服模式（如测试）返回 null
+    /// </summary>
+    private FightBeanForConquer GetConquerFightData()
+    {
+        var fightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
+        return fightLogic?.fightData as FightBeanForConquer;
+    }
+
+    /// <summary>
+    /// 刷新「刷新按钮」的显隐与剩余次数显示
+    /// 未解锁刷新研究(UnlockEnum.AbyssalBlessingRefreshNum)或非征服模式时整个按钮隐藏(默认不开启);
+    /// 已解锁时显示按钮, 次数文本 ui_RefreshBtnText 显示剩余刷新次数(形如 刷新x5)
+    /// </summary>
+    private void RefreshRefreshBtnState()
+    {
+        FightBeanForConquer conquerData = GetConquerFightData();
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        //非征服模式 或 未解锁刷新研究 → 隐藏整个刷新按钮
+        bool isUnlock = conquerData != null && userData.GetUserUnlockData().CheckIsUnlockAbyssalBlessingRefresh();
+        ui_RefreshBtn.gameObject.ShowObj(isUnlock);
+        if (!isUnlock)
+            return;
+        int remainNum = conquerData.GetAbyssalBlessingRefreshRemainNum();
+        ui_RefreshBtnText.text = string.Format(TextHandler.Instance.GetTextById(TEXT_ID_REFRESH), remainNum);
+    }
+
+    /// <summary>
+    /// 点击刷新
+    /// 消耗一次刷新次数重新抽取当前馈赠候选(保留原选择/跳过回调); 剩余次数为0时提示已用完且不刷新
+    /// </summary>
+    public void OnClickForRefresh()
+    {
+        //选择/跳过动画播放中不响应刷新
+        if (isAnimating)
+            return;
+        FightBeanForConquer conquerData = GetConquerFightData();
+        if (conquerData == null)
+            return;
+        //剩余刷新次数为0: 提示已用完, 不执行刷新
+        if (conquerData.GetAbyssalBlessingRefreshRemainNum() <= 0)
+        {
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(TEXT_ID_REFRESH_EMPTY));
+            return;
+        }
+        //消耗一次刷新次数, 重新抽取候选(SetData 内部会重建候选池并重渲染, 末尾同步次数显示)
+        conquerData.ReduceAbyssalBlessingRefreshNum();
+        SetData(actionForSelect, actionForSkip);
     }
 
     #endregion
@@ -212,6 +278,10 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
         if (viewButton == ui_SkipBtn)
         {
             OnClickForSkip();
+        }
+        else if (viewButton == ui_RefreshBtn)
+        {
+            OnClickForRefresh();
         }
     }
 

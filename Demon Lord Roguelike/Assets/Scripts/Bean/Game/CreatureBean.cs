@@ -156,8 +156,8 @@ public partial class CreatureBean
                 for (int i = 0; i < listSelfBuff.Count; i++)
                 {
                     var buffData = listSelfBuff[i];
-                    //如果不获取含属性BUFF 则判断是否是属性BUFF 如果是则跳过
-                    if (getBuffAttributeBase == false && buffData.IsBuffEntityAttributeBase() != CreatureAttributeTypeEnum.None)
+                    //如果不获取含属性BUFF 则判断是否是纯属性BUFF(单属性/多属性) 如果是则跳过
+                    if (getBuffAttributeBase == false && buffData.IsBuffEntityAttributeOnly())
                     {
                         continue;
                     }
@@ -171,8 +171,8 @@ public partial class CreatureBean
             foreach (var item in dicRarityBuff)
             {
                 var buffData = item.Value;
-                //如果不获取含属性BUFF 则判断是否是属性BUFF 如果是则跳过
-                if (getBuffAttributeBase == false && buffData.IsBuffEntityAttributeBase() != CreatureAttributeTypeEnum.None)
+                //如果不获取含属性BUFF 则判断是否是纯属性BUFF(单属性/多属性) 如果是则跳过
+                if (getBuffAttributeBase == false && buffData.IsBuffEntityAttributeOnly())
                 {
                     continue;
                 }
@@ -191,10 +191,17 @@ public partial class CreatureBean
         for (int i = 0; i < listBuff.Count; i++)
         {
             var buffData = listBuff[i];
+            //单属性BUFF:属性匹配则烘焙
             CreatureAttributeTypeEnum buffAttributeType = buffData.IsBuffEntityAttributeBase();
             if (buffAttributeType != CreatureAttributeTypeEnum.None && buffAttributeType == creatureAttributeType)
             {
                 targetData = BuffEntityAttribute.ChangeData(buffData, creatureAttributeType, targetData);
+            }
+            //多属性BUFF:逐对匹配 targetAttributeType 烘焙(同一次随机率对不同属性做加/减益)
+            else if (buffData.IsBuffEntityAttributeMulti())
+            {
+                var buffInfo = BuffInfoCfg.GetItemData(buffData.id);
+                targetData = BuffEntityAttributeMulti.ChangeDataForConfig(buffData, buffInfo, creatureAttributeType, targetData);
             }
         }
         return targetData;

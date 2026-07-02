@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using DG.Tweening;
 using UnityEngine;
@@ -50,9 +51,9 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
         if (ui_BG_Image != null)
             ui_BG_Image.color = rarityColor;
 
-        //BG悬浮提示:展示该BUFF内容(具体数值未确认,占位参数用???替代)
+        //BG悬浮提示:展示该BUFF内容。未解锁「进阶增益范围预览」研究时数值用???替代,解锁后显示 min~max 范围
         if (ui_BG_PopupButtonCommonView != null)
-            ui_BG_PopupButtonCommonView.SetData(GetBuffContentForPreview(chance.buffId), PopupEnum.Text);
+            ui_BG_PopupButtonCommonView.SetData(GetBuffContentForPreview(chance), PopupEnum.Text);
     }
 
     /// <summary>
@@ -68,20 +69,76 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
     }
 
     /// <summary>
-    /// 预览用BUFF内容文案:具体BUFF取其描述并把占位参数({Percentage}等)替成???(数值待进阶时随机确定);
-    /// 随机增益兜底项(buffId≤0,无具体BUFF)给通用说明。
+    /// 预览用BUFF内容文案:随机增益兜底项(buffId≤0,无具体BUFF)给通用说明;具体BUFF按「进阶增益范围预览」研究是否解锁分档:
+    /// <para>未解锁:仅展示效果描述,把 {Percentage}/{Time_S}/{KillNum} 等占位参数统一替成???(数值保密)。</para>
+    /// <para>已解锁:随机增益属性({Percentage})显示 min~max 范围(素材命中时下限抬高),其余固定占位参数显示实际值。</para>
     /// </summary>
-    /// <param name="buffId">BUFF配置id(-1为随机增益兜底)</param>
+    /// <param name="chance">该BUFF命中概率数据(含 buffId 与素材抬高的数值下限)</param>
     /// <returns>悬浮提示内容文案</returns>
-    protected string GetBuffContentForPreview(long buffId)
+    protected string GetBuffContentForPreview(CreatureAscendBuffChanceStruct chance)
     {
-        if (buffId <= 0)
+        if (chance.buffId <= 0)
             return "随机生成一条该品质增益";
-        var buffInfo = BuffInfoCfg.GetItemData(buffId);
+        var buffInfo = BuffInfoCfg.GetItemData(chance.buffId);
         if (buffInfo == null)
             return "???";
-        //把 {Percentage}/{Time_S}/{KillNum} 等占位参数统一替成???
-        return Regex.Replace(buffInfo.content_language, @"\{[^}]+\}", "???");
+        //未解锁「进阶增益范围预览」研究:占位参数统一替成???
+        var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+        if (!userUnlock.CheckIsUnlock(UnlockEnum.CreatureVatBuffPreview))
+            return Regex.Replace(buffInfo.content_language, @"\{[^}]+\}", "???");
+        //已解锁:数值范围+固定条件实际值
+        return BuildUnlockedRangeContent(buffInfo, chance);
+    }
+
+    /// <summary>
+    /// 已解锁「进阶增益范围预览」时的内容文案:随机增益属性({Percentage})显示 min~max 范围,
+    /// 触发时间/前置条件(击杀数/承伤/造伤/血量阈值)等固定占位参数显示实际值(与 UIViewBuffShowItem 同口径)。
+    /// </summary>
+    /// <param name="buffInfo">BUFF配置</param>
+    /// <param name="chance">命中概率数据(取素材抬高的百分比下限)</param>
+    /// <returns>带数值范围的内容文案</returns>
+    protected string BuildUnlockedRangeContent(BuffInfoBean buffInfo, CreatureAscendBuffChanceStruct chance)
+    {
+        Dictionary<TextReplaceEnum, string> dicReplace = new Dictionary<TextReplaceEnum, string>()
+        {
+            //唯一随机值:进阶增益属性百分比,按整数百分点闭区间 [min,max] 显示
+            {TextReplaceEnum.Percentage, GetPercentageRangeStr(buffInfo, chance.floorValueRate)},
+            //触发时间为固定配置值(不随机),直接显示
+            {TextReplaceEnum.Time_S, $"{Mathf.FloorToInt(buffInfo.trigger_time)}"},
+        };
+        //前置条件数值(击杀数/承伤/造伤/血量阈值)均为固定值,按前置实例类型逐项映射(与 UIViewBuffShowItem 同口径)
+        var preInfo = buffInfo.GetPreInfo();
+        if (!preInfo.IsNull())
+        {
+            foreach (var itemData in preInfo)
+            {
+                var buffPreInfo = BuffPreInfoCfg.GetItemData(itemData.Key);
+                var buffPreEntity = BuffHandler.Instance.manager.GetBuffPreEntity(buffPreInfo);
+                if (buffPreEntity is BuffPreEntityForKillNum)
+                    dicReplace[TextReplaceEnum.KillNum] = $"{Mathf.FloorToInt(itemData.Value)}";
+                else if (buffPreEntity is BuffPreEntityForUnderAttackDamage)
+                    dicReplace[TextReplaceEnum.UnderAttackDamage] = $"{Mathf.FloorToInt(itemData.Value)}";
+                else if (buffPreEntity is BuffPreEntityForAttackDamage)
+                    dicReplace[TextReplaceEnum.AttackDamage] = $"{Mathf.FloorToInt(itemData.Value)}";
+                else if (buffPreEntity is BuffPreEntityForHPRateLess)
+                    dicReplace[TextReplaceEnum.HPRateLess] = $"{MathUtil.GetPercentage(itemData.Value, 2)}";
+            }
+        }
+        return TextHandler.Instance.GetTextReplace(buffInfo.content_language, dicReplace);
+    }
+
+    /// <summary>
+    /// 计算进阶增益属性百分比的展示范围文案(与 BuffBean.CreateRandomWithFloor 同口径):
+    /// 按整数百分点随机,下限抬到 max(配置min, 素材下限);上下限相同显示单值,否则显示 min~max。
+    /// </summary>
+    /// <param name="buffInfo">BUFF配置(取 trigger_value_rate_min~trigger_value_rate)</param>
+    /// <param name="floorValueRate">素材命中抬高的百分比下限(无素材命中为0)</param>
+    /// <returns>形如 "10~20" 或 "20" 的范围文案(不含百分号,百分号在描述模板里)</returns>
+    protected string GetPercentageRangeStr(BuffInfoBean buffInfo, float floorValueRate)
+    {
+        int rateFloor = Mathf.RoundToInt(Mathf.Max(buffInfo.trigger_value_rate_min, floorValueRate) * 100);
+        int rateMax = Mathf.Max(rateFloor, Mathf.RoundToInt(buffInfo.trigger_value_rate * 100));
+        return rateFloor == rateMax ? $"{rateFloor}" : $"{rateFloor}~{rateMax}";
     }
     #endregion
 

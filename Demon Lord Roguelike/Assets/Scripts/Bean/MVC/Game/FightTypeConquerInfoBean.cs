@@ -16,6 +16,10 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	/// </summary>
 	public long world_id;
 	/// <summary>
+	///难度
+	/// </summary>
+	public int level;
+	/// <summary>
 	///战斗场景列表（用&分割）
 	/// </summary>
 	public string fight_scene_ids;
@@ -67,10 +71,6 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	///道路长度(单个数x或范围x-y)
 	/// </summary>
 	public string road_length;
-	/// <summary>
-	///难度
-	/// </summary>
-	public int level;
 	/// <summary>
 	///掉落魔晶
 	/// </summary>

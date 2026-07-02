@@ -14,6 +14,8 @@ public class FightBeanForConquer : FightBean
     public int rewardAddItemNum = 0;
     //深渊馈赠「再来一瓶」累计加成的领奖可选择次数(每选取一次+1，BOSS通关领奖时生效)
     public int rewardAddSelectNum = 0;
+    //深渊馈赠刷新已用次数(剩余 = 刷新研究上限 - 已用; 每刷新一次+1; 整个征服run共享,新run随本bean重建自动归0回满)
+    public int abyssalBlessingRefreshUsedNum = 0;
     public FightBeanForConquer(GameWorldInfoRandomBean gameWorldInfoRandomData) : base()
     {
         this.gameWorldInfoRandomData = gameWorldInfoRandomData;
@@ -30,6 +32,27 @@ public class FightBeanForConquer : FightBean
         AbyssalBlessingEntityBean abyssalBlessingEntityData = new AbyssalBlessingEntityBean(abyssalBlessingInfo);
         //添加BUFF
         BuffHandler.Instance.AddAbyssalBlessing(abyssalBlessingEntityData);
+    }
+
+    /// <summary>
+    /// 获取深渊馈赠刷新剩余次数
+    /// 剩余 = 刷新研究上限(UserUnlockBean.GetUnlockAbyssalBlessingRefreshMax) - 已用次数(abyssalBlessingRefreshUsedNum), 下限 0
+    /// 未解锁(上限0)恒为0; 整个征服run共享该池
+    /// </summary>
+    /// <returns>本次征服run内当前还能刷新的次数</returns>
+    public int GetAbyssalBlessingRefreshRemainNum()
+    {
+        int max = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData().GetUnlockAbyssalBlessingRefreshMax();
+        int remain = max - abyssalBlessingRefreshUsedNum;
+        return remain < 0 ? 0 : remain;
+    }
+
+    /// <summary>
+    /// 消耗一次深渊馈赠刷新次数(已用次数+1)
+    /// </summary>
+    public void ReduceAbyssalBlessingRefreshNum()
+    {
+        abyssalBlessingRefreshUsedNum++;
     }
 
     /// <summary>

@@ -11,7 +11,15 @@ public class BuffEntityAttribute : BuffBaseEntity, IAttributeModifierSource
     public override void SetData(BuffEntityBean buffEntityData)
     {
         base.SetData(buffEntityData);
-        var buffInfo = buffEntityData.GetBuffInfo();
+        ParseAttributeData(buffEntityData.GetBuffInfo());
+    }
+
+    /// <summary>
+    /// 解析 class_entity_data 为属性类型（单属性）
+    /// 多属性子类(BuffEntityAttributeMulti)重写此方法改走多属性解析，避免把 "ATK:1|HP:-1" 当单枚举 Parse 抛异常
+    /// </summary>
+    protected virtual void ParseAttributeData(BuffInfoBean buffInfo)
+    {
         string classEntityData = buffInfo.class_entity_data;
         if (classEntityData.IsNull())
         {
@@ -51,9 +59,16 @@ public class BuffEntityAttribute : BuffBaseEntity, IAttributeModifierSource
     public static void EmitModifiers(List<AttributeModifier> sink, BuffBean buffData, CreatureAttributeTypeEnum attributeType, int stackCount, object source)
     {
         if (stackCount < 1) stackCount = 1;
-        float val = buffData.trigger_value * stackCount;
-        float rate = buffData.trigger_value_rate * stackCount;
+        EmitModifiers(sink, attributeType, buffData.trigger_value * stackCount, buffData.trigger_value_rate * stackCount, source);
+    }
 
+    /// <summary>
+    /// 把指定属性的 val(Flat) / rate(PercentAdd) 追加为 modifier（val/rate 需已含 stack 缩放）。
+    /// CRT/EVA：rate 本身是百分比绝对值，直接 Flat 累加；其他属性：val 走 Flat，rate 走 PercentAdd。
+    /// 供单属性(EmitModifiers 上方重载)与多属性(BuffEntityAttributeMulti)按每个属性各自缩放后复用。
+    /// </summary>
+    public static void EmitModifiers(List<AttributeModifier> sink, CreatureAttributeTypeEnum attributeType, float val, float rate, object source)
+    {
         switch (attributeType)
         {
             case CreatureAttributeTypeEnum.CRT:
@@ -92,16 +107,26 @@ public class BuffEntityAttribute : BuffBaseEntity, IAttributeModifierSource
     public static float ChangeData(BuffBean buffData, CreatureAttributeTypeEnum targetAttributeType, float targetData, int stackCount = 1)
     {
         if (stackCount < 1) stackCount = 1;
+        return ChangeData(targetAttributeType, targetData, buffData.trigger_value * stackCount, buffData.trigger_value_rate * stackCount);
+    }
+
+    /// <summary>
+    /// 兼容层：把指定属性的 val / rate（需已含 stack 缩放）应用到 targetData。
+    /// CRT/EVA：rate 直接加为绝对百分点；其他属性：先 +val，再 ×(1+rate)。
+    /// 供单属性与多属性(BuffEntityAttributeMulti)按每个属性各自缩放后复用。
+    /// </summary>
+    public static float ChangeData(CreatureAttributeTypeEnum targetAttributeType, float targetData, float val, float rate)
+    {
         switch (targetAttributeType)
         {
             case CreatureAttributeTypeEnum.CRT:
             case CreatureAttributeTypeEnum.EVA:
-                targetData += buffData.trigger_value_rate * stackCount;
+                targetData += rate;
                 break;
             default:
-                targetData += buffData.trigger_value * stackCount;
+                targetData += val;
                 if (targetData < 0) targetData = 0;
-                targetData *= 1f + buffData.trigger_value_rate * stackCount;
+                targetData *= 1f + rate;
                 break;
         }
         if (targetData < 0) targetData = 0;

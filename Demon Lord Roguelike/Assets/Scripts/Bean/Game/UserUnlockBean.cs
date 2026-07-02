@@ -265,6 +265,26 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 获取深渊馈赠刷新次数上限
+    /// 上限 = 深渊馈赠刷新研究(AbyssalBlessingRefreshNum)等级; 未解锁(0级)返回 0; 满级(5级)上限 5
+    /// </summary>
+    /// <returns>单次征服run内的刷新次数上限</returns>
+    public int GetUnlockAbyssalBlessingRefreshMax()
+    {
+        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.AbyssalBlessingRefreshNum);
+    }
+
+    /// <summary>
+    /// 是否已解锁深渊馈赠刷新功能(刷新研究等级>0)
+    /// 未解锁时馈赠选择界面整个刷新按钮隐藏(默认不开启)
+    /// </summary>
+    /// <returns>true=已解锁,显示刷新按钮</returns>
+    public bool CheckIsUnlockAbyssalBlessingRefresh()
+    {
+        return CheckIsUnlock(UnlockEnum.AbyssalBlessingRefreshNum);
+    }
+
+    /// <summary>
     /// 获取解锁阵容数量
     /// 基础数量取自 UserLimmitBean.lineupMax + 对应研究等级
     /// </summary>

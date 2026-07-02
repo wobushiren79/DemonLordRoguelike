@@ -1,6 +1,6 @@
 ---
 name: pixel-perfect-converter
-description: Demon Lord Roguelike 的「像素完美转换器」编辑器工具开发指南。使用此 SKILL 当需要创建或修改 PixelPerfectConverterWindow（把 AI 伪像素画重采样为像素对齐图）的功能：三步式工作流(设置/定位转换/编辑导出)+辅助功能步骤④(帧动画图片排版修改/精灵表重排)、5 种取色算法(最常用/偏亮/偏暗/平均/邻域)、画笔/橡皮/魔棒(洪水填充)编辑、撤销重做、调色板颜色替换(全局换色)、PNG 导出(x1/x4/x8 另存为/覆盖原图/同目录/按列×行拆分)、网格与背景明暗切换等。触发关键词：像素完美、Pixel Perfect、像素图转换工具、AI像素画对齐、颜色替换、调色板替换、帧动画排版、精灵表重排、PixelPerfectConverterWindow。
+description: Demon Lord Roguelike 的「像素完美转换器」编辑器工具开发指南。使用此 SKILL 当需要创建或修改 PixelPerfectConverterWindow（把 AI 伪像素画重采样为像素对齐图）的功能：三步式工作流(设置/定位转换/编辑导出)+辅助功能步骤④(页签切换：帧动画图片排版修改/精灵表重排 · 多张单图按列×行合并为图集)、5 种取色算法(最常用/偏亮/偏暗/平均/邻域)、画笔/橡皮/魔棒(洪水填充)编辑、撤销重做、调色板颜色替换(全局换色)、PNG 导出(x1/x4/x8 另存为/覆盖原图/同目录/按列×行拆分)、网格与背景明暗切换等。触发关键词：像素完美、Pixel Perfect、像素图转换工具、AI像素画对齐、颜色替换、调色板替换、帧动画排版、精灵表重排、图片合并、单图合并图集、PixelPerfectConverterWindow。
 watched_files:
   - Assets/FrameWork/Editor/Base/Window/PixelPerfectConverterWindow.cs
 ---
@@ -40,18 +40,30 @@ watched_files:
 - 三栏布局：左侧工具面板 + 中间实时编辑画布(`DrawEditCanvas`，渲染 Point 纹理 `_artTex`，带网格/笔刷高亮) + 右侧「最终效果图」(`DrawResultPreview`，同 `_artTex` 但**无网格/无高亮**，缩放 `_resultZoom`(1~20)，宽高超限时内部滚动)。
 - 底部全宽「调色板/颜色替换」面板(`DrawPaletteSection`)。
 
-### 步骤④ 辅助功能 · 帧动画图片排版修改（`DrawStep4`）
+### 步骤④ 辅助功能（`DrawStep4` → 页签切换两个子工具）
+`DrawStep4` 顶部用 `GUILayout.Toolbar` 切换 `_auxMode`(`AuxMode.Relayout`/`Merge`)，派发到 `DrawStep4Relayout`（帧排版）/ `DrawStep4Merge`（图片合并）。
+- **入口**：`DrawStepBar` 加第 4 个按钮「④ 辅助功能」；`CanGoToStep(4)` 恒为 true、`reachable = step<=_step || step==4`，随时可进入、不依赖步骤①~③数据。
+
+#### ④-A 帧排版（`DrawStep4Relayout`）
 独立于主流程的精灵表重排工具：把按「列×行」帧排布的精灵表重排为另一种「列×行」布局，**单帧像素尺寸不变，仅改变帧的行列排布**。
 例：256×32 原图填原图帧数 8×1、输出帧数 4×2 → 单帧 32×32，结果拆成 128×64。
 
-- **入口**：`DrawStepBar` 加第 4 个按钮「④ 辅助功能」；`CanGoToStep(4)` 恒为 true、`reachable = step<=_step || step==4`，随时可进入、不依赖步骤①~③数据。
 - **4 个参数**：原图帧数 `_auxSrcCols`×`_auxSrcRows`、输出帧数 `_auxOutCols`×`_auxOutRows`（默认 8×1 → 4×2），改任一值自动 `RebuildAuxResult`。
 - **单帧尺寸** = `_auxSrcW/_auxSrcCols` × `_auxSrcH/_auxSrcRows`（整除；不整除时取整并忽略右/下边缘多余像素，HelpBox 警告）。
 - **重排核心 `RebuildAuxResult`**：行优先(从左到右、从上到下)，第 f 帧从源 `(f%sc, f/sc)` 整块搬到输出 `(f%oc, f/oc)`；输出尺寸 = `oc*frameW × or*frameH`，空帧位填 `kTransparent`；输出帧位 < 原帧数时多余帧丢弃并警告。
 - **独立源图 + 拖拽替换**：`_auxSourceTexture`/`_auxSourceExternalPath`；`DrawAuxDropArea`/`AcceptAuxDraggedImage`/`LoadAuxExternalImageRef` 复用 `IsDragValid`/`IsImagePath`/`LoadAsProjectAsset`；`LoadAuxSource` 复用 `ReadSourcePixels` 读像素并转自上而下数组 `_auxSrcTopDown`，同时建显示纹理 `_auxDisplayTex`。
 - **实时预览**：`_auxResultTex`(`BuildAuxResultTexture`)，`_auxResultZoom`(1~16) 缩放，超高内部滚动。
-- **导出**（均经 `BuildAuxResultPng` 把自上而下数组翻成 Texture 自下而上后 `EncodeToPNG`）：`ExportAuxAs`（不覆盖导出/另存为，`SaveFilePanel`）、`ExportAuxOverwrite`（覆盖原图导出，弹确认）、`ExportAuxToSourceDir`（同原图目录，名=`原图名_relayout_列x行.png`）；后两者需 `GetAuxSourceFilePath()` 有磁盘文件，否则按钮禁用。
-- 状态字段均带 `_aux` 前缀，独立于主流程；`OnDestroy` 额外释放 `_auxDisplayTex`/`_auxResultTex`。
+- **导出**（均经 `BuildAuxResultPng`→`BuildPngFromTopDown` 把自上而下数组翻成 Texture 自下而上后 `EncodeToPNG`）：`ExportAuxAs`（不覆盖导出/另存为，`SaveFilePanel`）、`ExportAuxOverwrite`（覆盖原图导出，弹确认）、`ExportAuxToSourceDir`（同原图目录，名=`原图名_relayout_列x行.png`）；后两者需 `GetAuxSourceFilePath()` 有磁盘文件，否则按钮禁用。
+
+#### ④-B 图片合并（`DrawStep4Merge`）
+帧排版的逆操作：把多张单图按「列×行」拼成一张图集。例：4 张 32×32 填 2×2 → 64×64；填 4×1 → 128×32。
+
+- **先设布局再填图**：`_mergeCols`×`_mergeRows`(各 1~32)，改动经 `EnsureMergeSlotCount` 把 `_mergeSlotTex`/`_mergeSlotPath` 两平行 List 对齐到 列×行 长度(保留已有槽内容)后 `RebuildMergeResult`。
+- **槽位网格 `DrawMergeSlotGrid`/`DrawMergeSlot`**：按行优先每行 `cols` 个格；每格 = 棋盘底 + 缩略图 + `#序号`角标 + `ObjectField`，支持拖入工程内 `Texture2D` 或外部图片(`IsMergeDragValid`/`AcceptMergeDraggedImage`，外部经 `DecodeExternalImage`→临时纹理并记 `_mergeSlotPath`)；「清空所有槽位」一键复位。
+- **合并核心 `RebuildMergeResult`**：格子尺寸 = 所有非空图的**最大宽×最大高**，每张图在格子内**居中**(`ox=(cellW-w)/2`)、空白 `kTransparent`；像素读取复用 `ReadSourcePixels`；尺寸不一时提示已按最大格子居中。结果 `_mergeResultTopDown`/`_mergeResultW/H`，预览 `_mergeResultTex`(`BuildMergeResultTexture`, `_mergeResultZoom` 1~16)。
+- **导出**（经 `BuildPngFromTopDown`）：`ExportMergeAs`（另存为，名=`merged_列x行.png`）、`ExportMergeToFirstDir`（导出到首张有磁盘文件单图目录，`GetMergeFirstSourceDir`/`GetSlotFilePath`，无文件禁用）；**无覆盖原图选项**（合并无单一源图）。
+
+- 状态字段带 `_aux`/`_merge` 前缀，独立于主流程；`OnDestroy` 额外释放 `_auxDisplayTex`/`_auxResultTex`/`_mergeResultTex`。
 
 ## 5 种取色算法（`ConvMethod` / `Convert`）
 
