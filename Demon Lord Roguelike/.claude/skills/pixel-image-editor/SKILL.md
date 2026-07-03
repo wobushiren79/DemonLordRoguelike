@@ -1,23 +1,36 @@
 ---
-name: pixel-perfect-converter
-description: Demon Lord Roguelike 的「像素完美转换器」编辑器工具开发指南。使用此 SKILL 当需要创建或修改 PixelPerfectConverterWindow（把 AI 伪像素画重采样为像素对齐图）的功能：三步式工作流(设置/定位转换/编辑导出)+辅助功能步骤④(页签切换：帧动画图片排版修改/精灵表重排 · 多张单图按列×行合并为图集)、5 种取色算法(最常用/偏亮/偏暗/平均/邻域)、画笔/橡皮/魔棒(洪水填充)编辑、撤销重做、调色板颜色替换(全局换色)、PNG 导出(x1/x4/x8 另存为/覆盖原图/同目录/按列×行拆分)、网格与背景明暗切换等。触发关键词：像素完美、Pixel Perfect、像素图转换工具、AI像素画对齐、颜色替换、调色板替换、帧动画排版、精灵表重排、图片合并、单图合并图集、PixelPerfectConverterWindow。
+name: pixel-image-editor
+description: Demon Lord Roguelike 的「像素图编辑器」(原名像素完美转换器)编辑器工具开发指南。使用此 SKILL 当需要创建或修改 PixelImageEditorWindow（把 AI 伪像素画重采样为像素对齐图）的功能：五步式工作流(设置/定位转换/编辑导出/辅助功能/颜色调节)、5 种取色算法(最常用/偏亮/偏暗/平均/邻域)、画笔/橡皮/魔棒(洪水填充)编辑、撤销重做、调色板颜色替换(全局换色)、帧动画排版/精灵表重排、多图合并图集、双图颜色调节、PNG 导出(x1/x4/x8 另存为/覆盖原图/同目录/按列×行拆分)、网格与背景明暗切换等。类拆分为多个 partial(PixelImageEditorWindow.cs + Step1~Step5.cs)。触发关键词：像素图编辑器、像素完美、Pixel Perfect、AI像素画对齐、颜色替换、调色板替换、颜色调节、帧动画排版、精灵表重排、图片合并、单图合并图集、PixelImageEditorWindow、PixelPerfectConverterWindow。
 watched_files:
-  - Assets/FrameWork/Editor/Base/Window/PixelPerfectConverterWindow.cs
+  - Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindow.cs
+  - Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindowStep1.cs
+  - Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindowStep2.cs
+  - Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindowStep3.cs
+  - Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindowStep4.cs
+  - Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindowStep5.cs
 ---
 
-# 像素完美转换器开发指南
+# 像素图编辑器开发指南
 
 ## 概述
 
-[PixelPerfectConverterWindow.cs](Assets/FrameWork/Editor/Base/Window/PixelPerfectConverterWindow.cs)
-（命名空间 `PixelPerfectTool`，菜单 **Custom/工具弹窗/像素完美转换器**；另在 Project 窗口选中图片后右键 **Assets/像素完美转换器** 可直接用该图打开）是一个 `EditorWindow`，
-忠实移植自开源网页工具 [Void8Bit / Pixel-Perfect-AI-Art-Converter](https://github.com/Void8Bit/Pixel-Perfect-AI-Art-Converter)。
-它把 AI 生成的「看起来像像素画、实则没有像素对齐」的图，按网格重采样为真正逐像素对齐的像素图，并可编辑、导出。
+> **原名「像素完美转换器」，已改名为「像素图编辑器」**：命名空间 `PixelPerfectTool`→`PixelImageEditor`、类 `PixelPerfectConverterWindow`→`PixelImageEditorWindow`、菜单文字全部改为「像素图编辑器」。类由单文件拆成多个 `partial`。
 
-> 区别于已删除的旧工具 PixelArtConverterWindow（量化+调色板一次性导出）：本工具是完整的三步式工作流，
+`PixelImageEditorWindow`（`partial class`，命名空间 `PixelImageEditor`，菜单 **Custom/工具弹窗/像素图编辑器**；另在 Project 窗口选中图片后右键 **Assets/像素图编辑器** 可直接用该图打开）是一个 `EditorWindow`，
+主流程忠实移植自开源网页工具 [Void8Bit / Pixel-Perfect-AI-Art-Converter](https://github.com/Void8Bit/Pixel-Perfect-AI-Art-Converter)。
+它把 AI 生成的「看起来像像素画、实则没有像素对齐」的图，按网格重采样为真正逐像素对齐的像素图，并可编辑、导出、排版与调色。
+
+> 区别于已删除的旧工具 PixelArtConverterWindow（量化+调色板一次性导出）：本工具是完整的多步式工作流，
 > 且已把旧工具的「调色板颜色替换」能力整合进步骤③。
 
-## 三步式工作流
+### partial 文件拆分（每步单独成文件）
+
+同一 `PixelImageEditorWindow` 拆成 6 个文件：
+- **PixelImageEditorWindow.cs**（核心）：枚举/常量/共享字段/生命周期(OnGUI 分发/OnDestroy)/菜单/快捷键/横幅步骤条(`DrawStepBar`/`CanGoToStep`)/步骤切换与源图载入(`EnterStep2/3`、`LoadSource`、`ResetAll`)/颜色工具/UI 辅助/拖拽读取。
+- **Step1.cs** 步骤①设置 · **Step2.cs** 步骤②定位转换+转换核心+智能网格检测 · **Step3.cs** 步骤③编辑导出+调色板+撤销重做+渲染导出 · **Step4.cs** 步骤④帧排版/图片合并 · **Step5.cs** 步骤⑤颜色调节。
+- 新增步骤：写 `PixelImageEditorWindowStepN.cs` partial + 核心文件三处接线（`OnGUI` switch `case N`、`DrawStepBar` names 数组与 `reachable`、`CanGoToStep(N)`）。步骤④⑤为独立工具，`CanGoToStep` 恒 true。
+
+## 工作流（五步）
 
 ### 步骤① 设置（`DrawStep1`）
 - 网格宽/高下拉：档位 `kGridOptions` = `{16,32,48,64,80,96,112,128,256,512,1024}`，默认目标大小 `_gridWidth/_gridHeight` = **32×32**。
@@ -25,7 +38,7 @@ watched_files:
 - `LoadSource`：读可读像素(`ReadSourcePixels`，按文件解码，回退 RenderTexture) → 按 `kMaxImageSize`=1024 等比缩小 → 生成自上而下采样数组 `_srcTopDown` 与显示纹理 `_srcDisplayTex`。
 
 ### 右键快捷入口（`OpenFromSelection`）
-- `[MenuItem("Assets/像素完美转换器")]`：在 Project 窗口选中一张 `Texture2D` 图片后右键，直接打开窗口并把该图设为源图、自动 `LoadSource` + `EnterStep2`，跳过步骤①手动选图。
+- `[MenuItem("Assets/像素图编辑器")]`：在 Project 窗口选中一张 `Texture2D` 图片后右键，直接打开窗口并把该图设为源图、自动 `LoadSource` + `EnterStep2`，跳过步骤①手动选图。
 - `OpenFromSelectionValidate`（`[MenuItem(..., true)]` 校验函数）：仅当 `Selection.activeObject is Texture2D` 时菜单项可用，否则置灰。
 
 ### 步骤② 定位与转换（`DrawStep2`）
@@ -54,7 +67,7 @@ watched_files:
 
 ### 步骤④ 辅助功能（`DrawStep4` → 页签切换两个子工具）
 `DrawStep4` 顶部用 `GUILayout.Toolbar` 切换 `_auxMode`(`AuxMode.Relayout`/`Merge`)，派发到 `DrawStep4Relayout`（帧排版）/ `DrawStep4Merge`（图片合并）。
-- **入口**：`DrawStepBar` 加第 4 个按钮「④ 辅助功能」；`CanGoToStep(4)` 恒为 true、`reachable = step<=_step || step==4`，随时可进入、不依赖步骤①~③数据。
+- **入口**：`DrawStepBar` 的 names 数组含「④ 辅助功能」「⑤ 颜色调节」；`CanGoToStep(4)`/`CanGoToStep(5)` 恒为 true、`reachable = step<=_step || step==4 || step==5`，随时可进入、不依赖步骤①~③数据。
 
 #### ④-A 帧排版（`DrawStep4Relayout`）
 独立于主流程的精灵表重排工具：把按「列×行」帧排布的精灵表重排为另一种「列×行」布局，**单帧像素尺寸不变，仅改变帧的行列排布**。
@@ -76,6 +89,17 @@ watched_files:
 - **导出**（经 `BuildPngFromTopDown`）：`ExportMergeAs`（另存为，名=`merged_列x行.png`）、`ExportMergeToFirstDir`（导出到首张有磁盘文件单图目录，`GetMergeFirstSourceDir`/`GetSlotFilePath`，无文件禁用）；**无覆盖原图选项**（合并无单一源图）。
 
 - 状态字段带 `_aux`/`_merge` 前缀，独立于主流程；`OnDestroy` 额外释放 `_auxDisplayTex`/`_auxResultTex`/`_mergeResultTex`。
+
+### 步骤⑤ 像素图颜色调节（`DrawStep5`，PixelImageEditorWindowStep5.cs）
+
+并排载入 **两张互相独立** 的图（`_caImageA`/`_caImageB`），各自提取该图出现的所有颜色并可编辑（编辑某色即全局替换该图所有该色像素，同步骤③调色板语义），每张图各有 2 个导出按钮。**两图各持独立调色板**，互不影响。与步骤④一样独立于主流程（`CanGoToStep(5)` 恒 true）。
+
+- **`ColorAdjustImage` 嵌套类**（每图一份）：`sourceTexture`/`externalPath`（外部图解码的临时纹理，非空表示需自行释放）、`topDown`（自上而下像素，既预览也导出的真实数据源）、`w`/`h`、`displayTex`、`palette`/`paletteCounts`/`pixelPaletteIndices`（按 RGBA 提取、忽略透明、按使用量降序）、`previewZoom`(1~16)/`previewScroll`。
+- **载入（可拖拽设置）**：`DrawColorAdjustColumn` 每列 = 拖放区(`DrawColorAdjustDropArea`/`AcceptColorAdjustDraggedImage`) + `ObjectField` + 预览 + 调色板 + 导出；复用 `IsDragValid`/`IsImagePath`/`LoadAsProjectAsset`/`DecodeExternalImage`。`LoadColorAdjustImage` 复用 `ReadSourcePixels` 转自上而下数组、建预览纹理、`ExtractColorAdjustPalette`。替换源图时 `FreeColorAdjustTempTexture` 释放上一张外部临时纹理。
+- **调色板编辑**：`DrawColorAdjustPalette`/`DrawColorAdjustPaletteCell`（ColorField 替换、A0/A1 透明开关、占比）→ `ReplaceColorAdjustByIndex(img,i)` 按索引整体替换 `img.topDown` 并 `BuildColorAdjustDisplayTex` 重建预览。**无撤销栈**（比步骤③精简）；「重新提取颜色」按钮可手动 `ExtractColorAdjustPalette`。
+- **吸管取色（快捷取色，无需打开颜色选择器）**：每个色块带「吸」按钮 → 进入取色模式（`_caPickImage`/`_caPickIndex` 记目标图与槽位，按钮变「吸取中…」并高亮）→ 在**任一图预览**上单击，`HandleColorAdjustPickSample` 按屏幕坐标换算像素采样该色 → 写入目标槽位 → `ReplaceColorAdjustByIndex` → `CancelColorAdjustPick` 退出。取色模式下预览加 `MouseCursor.Link` 光标 + accent 描边 + 顶部 HelpBox 提示；Esc 或再点「吸」取消；`LoadColorAdjustImage` 重载目标图时自动取消（避免索引指向旧调色板）。
+- **两个导出（每图独立，参考步骤③）**：`ExportColorAdjustOverwrite`（覆盖原图，弹确认，写 `BuildPngFromTopDown(img.topDown,w,h)`）、`ExportColorAdjustToSourceDir`（同原图目录，名=`原图名_recolor.png`）；均需 `GetSlotFilePath(sourceTexture,externalPath)` 有磁盘文件，否则禁用。
+- `OnDestroy` 调 `DisposeColorAdjustImage(_caImageA/_caImageB)` 释放临时源纹理与预览纹理。
 
 ## 5 种取色算法（`ConvMethod` / `Convert`）
 
@@ -138,4 +162,4 @@ watched_files:
 ## 开发规范
 
 - 编辑器脚本置于 `Editor/` 目录；所有方法/属性带 `/// <summary>` XML 注释并用 `#region` 分类。
-- 修改 `PixelPerfectConverterWindow.cs`（命中 `watched_files`）时，必须同步更新本 SKILL 与 [pixel-perfect-converter](../../agents/pixel-perfect-converter.md) agent。
+- 类为 `partial`，拆成 `PixelImageEditorWindow.cs` + `Step1~Step5.cs`；修改任一 partial（命中 `watched_files`）时，必须同步更新本 SKILL 与 [pixel-image-editor](../../agents/pixel-image-editor.md) agent。
