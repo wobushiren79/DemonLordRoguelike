@@ -36,6 +36,18 @@ watched_files:
 - 算法下方可设：相似度阈值 `_similarityThreshold`(0~100)、限制最终颜色数 `_limitColors` + `_maxColors`(1~256)。
 - 选算法后 `Convert` 生成 `_pixels`（末尾按需 `QuantizeToMaxColors`）。
 
+#### 智能网格检测（`DrawStep2AutoDetect`，移植自 theamusing/perfectPixel）
+- **来源与取舍**：移植自 [theamusing/perfectPixel](https://github.com/theamusing/perfectPixel) 的纯 numpy 后端 `perfect_pixel_noCV2.py`。原实现「FFT 频谱检测为主 + 梯度法回退」，本移植**只采用梯度法为主检测器**，未移植 2D-FFT（避免手写 FFT 的复杂度/正确性风险；FFT 主检测器留作后续增强）。`refine_grids`/`find_best_grid`/采样/`fix_square` 忠实移植；采样直接复用上述 5 种取色算法。
+- **UI 卡片**：位于步骤②手动设置卡与预览卡之间。选项 `_autoUseRefine`(边缘对齐开关，默认 true)、`_refineIntensity`(对齐强度 0~0.5，默认 0.25)、`_autoFixSquare`(近正方形强制正方，默认 true)；两个按钮 + `_autoMessage`(HelpBox 结果提示)。`ResetAll` 复位这些字段。
+- **仅检测网格尺寸**（`AutoDetectGridSizeOnly`）：`DetectGridScale` 算格子数 → 填入 `_gridWidth/_gridHeight` + `RefitImage`，供预览核对/微调，不立即转换。
+- **智能一键转换 → 步骤③**（`AutoDetectAndConvert`）：`DetectGridScale` →（`_autoUseRefine` ? `RefineGrids` : `BuildUniformGrid`）得网格线坐标 → `ConvertByCoords` 逐格采样生成 `_pixels` → `EnterStep3`，全程无需手动拖拽定位。
+- **检测链方法**（全在「智能网格检测 - perfectPixel 移植」region，均源图空间运算，不涉及画布 offset/scale）：
+  - `RgbToGray`(0.299/0.587/0.114) → `SobelAbsProjections`(3×3 Sobel，边缘 clamp，输出按列求和 `gxSum[W]` 与按行求和 `gySum[H]`)。
+  - `EstimateGridGradient`：`FindProjectionPeaks`(局部峰，`relThr`=0.2、`minInterval`=4) + `MedianInterval`(峰间距中位数)，任一轴峰 <4 判失败。
+  - `DetectGridScale`：梯度尺寸 → 像素块边长（长宽比 >1.5 取 min 否则取均值）→ 回推格子数。
+  - `RefineGrids`：从中心向两侧按格宽步进，每条网格线用 `FindBestGrid`(±`intensity`×格宽内取最强梯度峰)吸附；`Sort`+`DedupSortedCoords` 去重防零宽格；带循环 guard 防死循环。
+  - `ConvertByCoords`：逐格 `SampleSourceRect`(复用 `SampleAverage/SampleMostUsed/SampleWeighted`，邻域算法四周外扩 25%) → `FixSquare`(|nx-ny|==1 时按奇偶裁末列/行或复制首行/列) → 同步 `_gridWidth/_gridHeight`，按需 `QuantizeToMaxColors`。
+
 ### 步骤③ 编辑与导出（`DrawStep3`）
 - 三栏布局：左侧工具面板 + 中间实时编辑画布(`DrawEditCanvas`，渲染 Point 纹理 `_artTex`，带网格/笔刷高亮) + 右侧「最终效果图」(`DrawResultPreview`，同 `_artTex` 但**无网格/无高亮**，缩放 `_resultZoom`(1~20)，宽高超限时内部滚动)。
 - 底部全宽「调色板/颜色替换」面板(`DrawPaletteSection`)。

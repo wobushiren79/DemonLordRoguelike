@@ -122,6 +122,12 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
                     dicReplace[TextReplaceEnum.AttackDamage] = $"{Mathf.FloorToInt(itemData.Value)}";
                 else if (buffPreEntity is BuffPreEntityForHPRateLess)
                     dicReplace[TextReplaceEnum.HPRateLess] = $"{MathUtil.GetPercentage(itemData.Value, 2)}";
+                else if (buffPreEntity is BuffPreEntityForRegainHPReceived)
+                    dicReplace[TextReplaceEnum.RegainHPReceived] = $"{Mathf.FloorToInt(itemData.Value)}";
+                else if (buffPreEntity is BuffPreEntityForRegainHPCast)
+                    dicReplace[TextReplaceEnum.RegainHPCast] = $"{Mathf.FloorToInt(itemData.Value)}";
+                else if (buffPreEntity is BuffPreEntityForOnFieldTime)
+                    dicReplace[TextReplaceEnum.OnFieldTime] = $"{Mathf.FloorToInt(itemData.Value)}";
             }
         }
         return TextHandler.Instance.GetTextReplace(buffInfo.content_language, dicReplace);

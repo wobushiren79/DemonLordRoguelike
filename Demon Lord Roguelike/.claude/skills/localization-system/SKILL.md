@@ -447,7 +447,10 @@ TextReplaceEnum
 ├── KillNum           - 击杀数
 ├── UnderAttackDamage - 承受伤害
 ├── AttackDamage      - 造成伤害
-└── HPRateLess        - 生命值低于百分比
+├── HPRateLess        - 生命值低于百分比
+├── RegainHPReceived  - 累计被治疗HP
+├── RegainHPCast      - 累计施放治疗HP
+└── OnFieldTime       - 在场存活时间(秒)
 ```
 
 ---

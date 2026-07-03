@@ -20,7 +20,7 @@ watched_files:
 1. **步骤① 设置**：选网格宽/高（档位 `kGridOptions` = 16/32/48/64/80/96/112/128/256/512/1024，默认 `_gridWidth/_gridHeight`=**32×32**）+ 选源图（拖拽或 ObjectField，自动按 `kMaxImageSize`=1024 等比缩小）。
 
 > **右键快捷入口**：`OpenFromSelection`（`[MenuItem("Assets/像素完美转换器")]`）在 Project 选中 `Texture2D` 后右键直接打开窗口、把该图设为源图并自动 `LoadSource`+`EnterStep2`；`OpenFromSelectionValidate`（校验函数）保证仅选中图片时菜单可用。
-2. **步骤② 定位与转换**：预览格子尺寸(4~16)、源图缩放(10~300%，中心锚定)、拖拽定位源图，选 5 种取色算法，**可设相似度阈值**与**最终颜色数量上限**，生成像素图。
+2. **步骤② 定位与转换**：预览格子尺寸(4~16)、源图缩放(10~300%，中心锚定)、拖拽定位源图，选 5 种取色算法，**可设相似度阈值**与**最终颜色数量上限**，生成像素图。另含 **智能网格检测**（`DrawStep2AutoDetect`，移植自 [theamusing/perfectPixel](https://github.com/theamusing/perfectPixel) 纯 numpy 后端）：Sobel 梯度自动识别网格尺寸(`DetectGridScale`/`EstimateGridGradient`)并把网格线吸附到像素块边缘(`RefineGrids`/`FindBestGrid`)；`AutoDetectGridSizeOnly`(仅填网格数) 与 `AutoDetectAndConvert`(一键 `ConvertByCoords`→步骤③)，选项 `_autoUseRefine`/`_refineIntensity`/`_autoFixSquare`；采样复用 `SampleSourceRect`(转发 5 种算法)，`FixSquare` 近正方形补正。原 FFT 主检测器未移植（避免手写 2D-FFT），改以梯度法为主。详见「智能网格检测 - perfectPixel 移植」region。
 3. **步骤③ 编辑与导出**：左侧工具面板 + 中间编辑画布 + 右侧最终效果图预览(`DrawResultPreview`，`_resultZoom` 1~20，无网格/无高亮)；画布缩放(1~20)、网格开关、画笔/橡皮/魔棒、笔刷色与尺寸(1~5)、魔棒阈值(0~30)、最近颜色(≤6)、调色板颜色替换、撤销/重做、PNG 导出(另存为/覆盖原图/同目录/拆分)。
 4. **步骤④ 辅助功能**：顶部 `GUILayout.Toolbar` 页签切换两个独立子工具——**帧排版（拆分/重排）** 与 **图片合并（拼图集）**，由 `_auxMode`(`AuxMode.Relayout`/`Merge`) 控制，`DrawStep4` 派发到 `DrawStep4Relayout` / `DrawStep4Merge`，详见下方专节。`DrawStepBar` 的 `CanGoToStep(4)` 恒为 true、`reachable = step<=_step || step==4`，故随时可进入；不依赖步骤①~③的任何数据。
 

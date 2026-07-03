@@ -156,13 +156,24 @@ initialize (获取 Session ID)
 
 ### 常用工具速查
 
+> 版本：Unity 包 `com.coplaydev.unity-mcp` 已到 **10.0.0**（server `mcp-for-unity-server` 握手仍报 v3.4.2）。`tools/list` 47 个 / `mcpforunity://custom-tools` 34 个；工具集由 Unity 包动态注册，升包即变，**以运行时 `tools/list` 为准**。详见记忆 `reference_unity_mcp_tool_bug`。
+
 | 工具名 | 用途 | 常用 action |
 |--------|------|-------------|
 | `manage_scene` | 场景管理 | `get_active`, `get_hierarchy`, `load_scene`, `save_scene` |
 | `manage_gameobject` | GameObject操作 | `create`, `get_components`, `set_property`, `delete` |
+| `find_gameobjects` | 查找场景对象 | - |
+| `manage_components` | 组件增删改 | - |
 | `manage_asset` | 资源管理 | `search`, `create`, `modify`, `delete` |
+| `manage_prefabs` / `manage_material` / `manage_scriptable_object` | 预制体/材质/SO 资源 | - |
+| `manage_shader` | `.shader` 文本 CRUD（**非** Shader Graph 节点图） | `create`, `read`, `update`, `delete` |
 | `manage_editor` | 编辑器控制 | `play`, `pause`, `stop` |
-| `read_console` | 读取控制台 | - |
+| `manage_camera` / `manage_animation` / `manage_ui` / `manage_physics` | 相机/动画/UI/物理 | - |
+| `read_console` / `run_tests` / `get_test_job` | 控制台/测试 | - |
+| `execute_menu_item` / `refresh_unity` / `batch_execute` | 菜单/刷新/批量执行 | - |
+
+> ⚠️ **AI 生成类** `generate_image` / `generate_model`（及 `import_model`/`import_model_file`）为**付费/AI 生成**能力，调用前须比照 PixelLab 规则**先征得用户明确同意**，禁止在其他任务中"顺带"生成。
+> 脚本编辑类 `manage_script`/`create_script`/`apply_text_edits` 等可读写 `.cs`，但项目规则本就允许直接用 Write/Edit 改 `.cs`，是否走 MCP 随意。
 
 ### 注意事项
 

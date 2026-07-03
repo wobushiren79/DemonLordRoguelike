@@ -446,12 +446,12 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 
 ## 动态数值馈赠（加成率随战况实时变化：都是兄弟/杀红了眼）
 
-又一类馈赠的加成率**不是配置写死的固定值**，而是随运行时战况（场上魔物数量 / 累计击杀数）**每次重算属性时动态计算**——作用于**全体防守魔物**（`trigger_creature_type=1`，不含核心）。它们的 BUFF 继承抽象基类 `BuffEntityAttributeDynamicRate : BuffEntityAttribute`（重写 `CollectModifiers`+`ChangeData` 用 `GetDynamicRate()` 替代配置固定率，仅走 PercentAdd，用于 ATK/DR/HP；详见 `buff-system` SKILL「动态率深渊馈赠」）。
+又一类馈赠的加成率**不是配置写死的固定值**，而是随运行时战况（场上魔物数量 / 单只自身累计击杀数）**每次重算属性时动态计算**。它们的 BUFF 继承抽象基类 `BuffEntityAttributeDynamicRate : BuffEntityAttribute`（重写 `CollectModifiers`+`ChangeData` 用 `GetDynamicRate()` 替代配置固定率，仅走 PercentAdd，用于 ATK/DR/HP；详见 `buff-system` SKILL「动态率深渊馈赠」）。作用范围两类不同：**都是兄弟作用全体防守魔物**（`trigger_creature_type=1`，不含核心）；**杀红了眼作用随机锁定的单只防守魔物**（兼实现 `IBuffSingleTarget`，`trigger_creature_type=1` 仅作防守类兜底过滤）。
 
 | 族（3 属性各一族） | class_entity（通用功能类） | 公式（rate=每次重算属性时算） | 每级 trigger_value_rate |
 |------|--------------|------|------|
 | 都是兄弟·攻击/护甲/生命 | `BuffEntityAttributeScaleByDefenseCount`（data=ATK/DR/HP；通用"随场上存活防守魔物数缩放"，当前用于本馈赠，可被其它同功能馈赠复用） | `(场上存活防守魔物数 N - 1) × trigger_value_rate`；N 数 `dlDefenseCreatureEntity.List` 中 `!IsDead()`，N≤1 为 0（减 1 扣自身） | 0.01~0.05（每只 +1%~5%，5 级） |
-| 杀红了眼·攻击/护甲/生命 | `BuffEntityAttributeScaleByKillCount`（data=ATK/DR/HP；通用"随本局累计击杀数缩放"，当前用于本馈赠，可被其它同功能馈赠复用） | `fightRecordsData.totalKillNumForDef × trigger_value_rate`（仅魔物击杀，征服 run 内跨关卡累积至 BOSS 关不重置） | 0.01~0.05（每只 +1%~5%，5 级） |
+| 杀红了眼·攻击/护甲/生命 | `BuffEntityAttributeScaleByKillCount`（data=ATK/DR/HP；**单体定向**，兼 `IBuffSingleTarget`，选取时随机锁定一只防守生物，随"**该只自身**累计击杀数缩放"，当前用于本馈赠，可被其它同功能馈赠复用） | `GetRecordsForCreatureData(锁定UUID,false)?.killNum × trigger_value_rate`（仅魔物击杀；killNum 按 `creatureUUId` 持久累积，该只阵亡后下一关重上场 UUID 不变、加成保留，征服 run 内跨关卡累积至 BOSS 关不重置） | 0.01~0.05（每次击杀 +1%~5%，5 级） |
 
 **id 段（6 族，每族 5 级共 30 行）**：
 
@@ -492,7 +492,7 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 | 数据持有 | `Assets/Scripts/Bean/Game/FightBeanForConquer.cs`（AddAbyssalBlessing；奖励类馈赠计数器 rewardAddItemNum / rewardAddSelectNum） |
 | 奖励类即时BUFF（奖励多多/再来一瓶） | `Assets/Scripts/Game/Buff/BuffEntity/Instant/BuffEntityInstantRewardMoreItem.cs` / `BuffEntityInstantRewardMoreSelect.cs` |
 | 单体定向馈赠BUFF（大力出奇迹/膘肥体壮/钢铁憨憨/急性子） | `Assets/Scripts/Game/Buff/BuffEntity/Attribute/BuffEntityAttributeSingleTarget.cs` / `BuffEntityAttributeAttackTimeSingleTarget.cs` / `Assets/Scripts/Game/Buff/Interface/IBuffSingleTarget.cs`(接口，仅 SingleTargetCreatureUUId；不限深渊馈赠) |
-| 动态率馈赠BUFF（当前用于 都是兄弟/杀红了眼） | `Assets/Scripts/Game/Buff/BuffEntity/Attribute/BuffEntityAttributeDynamicRate.cs`(抽象基类，GetDynamicRate 动态率) / `BuffEntityAttributeScaleByDefenseCount.cs`(通用"随场上魔物数缩放"，当前用于都是兄弟) / `BuffEntityAttributeScaleByKillCount.cs`(通用"随累计击杀数缩放"，当前用于杀红了眼) |
+| 动态率馈赠BUFF（当前用于 都是兄弟/杀红了眼） | `Assets/Scripts/Game/Buff/BuffEntity/Attribute/BuffEntityAttributeDynamicRate.cs`(抽象基类，GetDynamicRate 动态率) / `BuffEntityAttributeScaleByDefenseCount.cs`(全体，"随场上魔物数缩放"，当前用于都是兄弟) / `BuffEntityAttributeScaleByKillCount.cs`(单体定向兼 `IBuffSingleTarget`，随机锁定一只，"随该只自身累计击杀数缩放"，当前用于杀红了眼) |
 | 动态馈赠广播重算 | `Assets/Scripts/Component/Handler/BuffHandler.cs`(O(1) 缓存守卫 `HasDynamicRateAbyssalBlessing()` 读 `BuffManager.hasDynamicRateAbyssalBlessing`；缓存在 `AddAbyssalBlessing` 选取动态率馈赠时单调置 true、`ClearAbyssalBlessing` 复位) / `Assets/Scripts/Game/Logic/GameFightLogic.cs`(`RefreshAllDefenseCreatureAttribute()` 全体重算 + 死亡事件在 CheckGameEnd 前按守卫广播 + `EventForDefenseCreatureCreate` 监听放置事件按守卫广播) / `Assets/Scripts/Component/Handler/CreatureHandler.cs`(CreateDefenseCreatureEntity 末尾只推送 `GameFightLogic_DefenseCreatureCreate` 事件，不直接重算) |
 | 随机锁定一只防守生物 | `Assets/Scripts/Bean/Game/FightBean.cs`(`GetRandomDefenseCreatureUUId()` 实例方法，从 dlDefenseCreatureData 随机取一只 UUID；BUFF 经 fightData 调用) |
 | 馈赠作用判定工具 | `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`(`IsAbyssalBlessingTargetCreature` 三连判定 + `CollectAbyssalBlessingEntityBean` 收集作用于某生物的馈赠实体，供卡片展示与属性/攻速管线统一口径) |

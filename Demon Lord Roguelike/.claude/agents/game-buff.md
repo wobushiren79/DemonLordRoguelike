@@ -1,6 +1,6 @@
 ---
 name: game-buff
-description: BUFF系统开发：属性/瞬时/条件/周期(无限)/周期(有限)5种BUFF实体类型 + 4种前置条件 + 5种堆叠策略；BuffEventDispatcher事件分发、ModifierPipeline属性修改管线、深渊馈赠等级替换。
+description: BUFF系统开发：属性/瞬时/条件/周期(无限)/周期(有限)5种BUFF实体类型 + 7种前置条件 + 5种堆叠策略；BuffEventDispatcher事件分发、ModifierPipeline属性修改管线、深渊馈赠等级替换。
 tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Game/Buff/
@@ -30,7 +30,7 @@ BuffBaseEntity                              # 抽象基类
 │   ├── BuffEntityAttributeSingleTarget    # 深渊馈赠「大力出奇迹/膘肥体壮/钢铁憨憨」：随机锁定一只防守生物 ATK/HP/DR 翻倍
 │   ├── BuffEntityAttributeDynamicRate     # 动态率属性BUFF基类：加成率运行时算(GetDynamicRate)非配置写死，仅走 PercentAdd
 │   │   ├── BuffEntityAttributeScaleByDefenseCount  # 通用功能类：属性%随"当前场上存活防守魔物数N"缩放，率=(N-1)×每只率(当前用于馈赠「都是兄弟」，可复用)
-│   │   └── BuffEntityAttributeScaleByKillCount     # 通用功能类：属性%随"本局累计击杀敌人数"缩放，率=击杀数×每只率(当前用于馈赠「杀红了眼」，可复用)
+│   │   └── BuffEntityAttributeScaleByKillCount     # 通用功能类(兼 IBuffSingleTarget)：选取时随机锁定一只防守生物，属性%随"该只自身累计击杀敌人数"缩放，率=该只killNum×每只率(当前用于馈赠「杀红了眼」，可复用)
 │   └── BuffEntityAttributeMulti            # 多属性BUFF：一次随机率同时改多个属性(class_entity_data "ATK:1|HP:-1"=ATK+率/HP等量负率)，实现"一增益、对应属性等比减益"；扭蛋R级双刃(狂战士/快枪手/铜墙铁壁/大块头 A/B/C)。纯属性BUFF走烘焙路径
 ├── BuffEntityInstant                       # 瞬时触发（SetData后isValid=false）
 │   ├── BuffEntityInstantCloneDefenseCreature      # 深渊馈赠「增殖」
@@ -59,8 +59,12 @@ BuffBasePreEntity (含 BuffPreEventRole 用于事件归属过滤)
 ├── BuffPreEntityForAttackDamage           # 累计造成伤害   EventRole=Attacker
 ├── BuffPreEntityForUnderAttackDamage      # 累计受到伤害   EventRole=Attacked
 ├── BuffPreEntityForHPRateLess             # HP 低于百分比 EventRole=Attacked
-└── BuffPreEntityForKillNum                # 击杀数量       EventRole=None
+├── BuffPreEntityForKillNum                # 击杀数量       EventRole=None
+├── BuffPreEntityForRegainHPReceived       # 累计被治疗HP   EventRole=Attacked (走 RegainHP 事件)
+├── BuffPreEntityForRegainHPCast           # 累计施放治疗HP EventRole=Attacker (走 RegainHP 事件)
+└── BuffPreEntityForOnFieldTime            # 在场存活时间秒 EventRole=None (纯时间驱动,读timeUpdateTotal,仅Gaming状态累积)
 ```
+> 时间驱动条件配套实体 `BuffEntityConditionalAttributeTime`(继承 BuffEntityConditionalAttribute)：UpdateBuffTime 未达标逐帧调 HandleForEvent 跨阈值刷属性；class_entity_events 留空。
 
 ### 扭蛋/稀有度 BUFF 分档规则（buff_type 11/12/13）
 稀有度 BUFF 池按稀有度分三档，每档对「效果性质」有硬约束（`BuffUtil.CreateRandomRarityBuff` 只按 buff_type 取池随机、不校验性质，归档正确性靠人工保证）：
@@ -69,8 +73,8 @@ R  (11) 纯属性 BUFF        —— 常驻数值加/减益、无触发条件；
                               可用属性 HP/DR/ATK/ASPD/MSPD/CRT/EVA/RCD/CMP（CRT/EVA rate走Flat；另有MP/MPR/MPF魔法向）
                               多属性双刃(BuffEntityAttributeMulti): class_entity_data "属性:倍率|属性:倍率"(如 ATK:1|HP:-1),各属性率=trigger_value_rate×倍率共享同一次随机(ATK+30%⇒HP-30%);纯属性→走烘焙,IsBuffEntityAttributeOnly 判定;id 段 11 0007~0010 0000X
                               注意:无 HPRegeneration 生命回复属性(实际枚举 index11=MPF魔法回复),游戏无被动回血刻
-SR (12) 条件/周期被动触发   —— 累计伤害/受击/击杀/血量阈值或按周期触发；
-                              类 BuffEntityConditional*(非死亡)/Periodic*/Pecurrent，条件走 pre_info+BuffPreEntityFor*
+SR (12) 条件/周期被动触发   —— 累计伤害/受击/击杀/血量阈值/累计治疗/在场时间或按周期触发；
+                              类 BuffEntityConditional*(非死亡,含时间驱动 BuffEntityConditionalAttributeTime)/Periodic*/Pecurrent，条件走 pre_info+BuffPreEntityFor*
 SSR(13) 特殊类             —— 死亡重生/死亡反击/死亡区域治疗/克隆增殖/生成改变水晶掉落等质变效果；
                               类 BuffEntityConditionalDead*/BuffEntityInstant* 等
 高稀有度累积低档：SSR生物=R+SR+SSR各1、SR生物=R+SR各1（RandomRarityBuffForCreate 逐级授予）
@@ -99,6 +103,7 @@ BuffEventDispatcher.dicBindings  # 事件名 → IBuffEventBinding 字典
 默认已注册:
   GameFightLogic_UnderAttack_Dead       → EventForUnderAttackDead
   GameFightLogic_UnderAttack            → EventForUnderAttack（含前置 EventRole 过滤）
+  GameFightLogic_RegainHP               → EventForRegainHP（回血事件,借用FightUnderAttackBean;含前置 EventRole 过滤,仅真实回血>0派发）
   GameFightLogic_CreatureDeadDropCrystal→ EventForCreatureDeadDropCrystal
   GameFightLogic_CreatureDeadStart      → EventForCreatureDeadStart
   GameFightLogic_CreatureDeadEnd        → EventForCreatureDeadEnd

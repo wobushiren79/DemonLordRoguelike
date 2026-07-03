@@ -241,8 +241,8 @@ public class GameFightLogicConquer : GameFightLogic
     #region 工具
     /// <summary>
     /// 关卡胜利后给本场出战阵容生物增加等级经验
-    /// 普通关卡发放 reward_exp，BOSS关卡发放 reward_exp_boss；
-    /// 经验直接累加到生物存档对象(CreatureBean.levelExp)，随返回基地时统一保存落盘
+    /// 普通关卡发放 reward_exp，BOSS关卡发放 reward_exp_boss；基础发放后触发
+    /// GameFightLogic_AddExp 事件供终焉议会"经验翻倍"等效果再加成
     /// </summary>
     /// <param name="fightDataForConquer">征服模式战斗数据</param>
     /// <param name="isBossFight">当前是否为BOSS关</param>
@@ -254,6 +254,23 @@ public class GameFightLogicConquer : GameFightLogic
         //按关卡类型取对应经验值
         int addExp = isBossFight ? conquerInfo.reward_exp_boss : conquerInfo.reward_exp;
         if (addExp <= 0)
+            return;
+        //基础经验入账
+        AddLevelExpForLineupCreature(fightDataForConquer, addExp);
+        //事件通知(终焉议会"经验翻倍"等效果据此再加成)
+        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_AddExp, addExp);
+    }
+
+    /// <summary>
+    /// 给本场出战阵容(防御方)生物累加指定经验
+    /// 供关卡结算基础发放与终焉议会"经验翻倍"效果复用；经验直接累加到生物存档对象
+    /// (CreatureBean.levelExp)，随返回基地时统一保存落盘，已达等级上限的生物跳过
+    /// </summary>
+    /// <param name="fightDataForConquer">征服模式战斗数据</param>
+    /// <param name="addExp">本次累加的经验值</param>
+    public void AddLevelExpForLineupCreature(FightBeanForConquer fightDataForConquer, int addExp)
+    {
+        if (fightDataForConquer == null || addExp <= 0)
             return;
         //本场出战阵容(防御方)生物，dlDefenseCreatureData 内为存档生物对象的引用
         var listDefenseCreature = fightDataForConquer.dlDefenseCreatureData?.List;

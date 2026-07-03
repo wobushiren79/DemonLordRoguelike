@@ -54,6 +54,8 @@ public static class BuffEventDispatcher
             new BuffEventBinding<FightUnderAttackBean>(e => e.EventForUnderAttackDead) },
         { EventsInfo.GameFightLogic_UnderAttack,
             new BuffEventBinding<FightUnderAttackBean>(e => e.EventForUnderAttack) },
+        { EventsInfo.GameFightLogic_RegainHP,
+            new BuffEventBinding<FightUnderAttackBean>(e => e.EventForRegainHP) },
         { EventsInfo.GameFightLogic_CreatureDeadDropCrystal,
             new BuffEventBinding<FightDropCrystalBean>(e => e.EventForCreatureDeadDropCrystal) },
         { EventsInfo.GameFightLogic_CreatureDeadStart,

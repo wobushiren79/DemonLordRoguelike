@@ -43,7 +43,8 @@ public static class EventsInfo
     public const string GameFightLogic_DropAddCrystal= "GameFightLogic_DropAddCrystal";//掉落拾取水晶
         
     public const  string GameFightLogic_UnderAttack = "GameFightLogic_UnderAttack";//生物收到攻击
-    public const string GameFightLogic_UnderAttack_Dead = "GameFightLogic_UnderAttack_Dead";//生物收到攻击死亡 
+    public const string GameFightLogic_UnderAttack_Dead = "GameFightLogic_UnderAttack_Dead";//生物收到攻击死亡
+    public const string GameFightLogic_RegainHP = "GameFightLogic_RegainHP";//生物回复HP(参数借用 FightUnderAttackBean：attackerId=治疗者/attackedId=被治疗者/attackerDamage=实际治疗量)
     #endregion
 
     #region BUFF

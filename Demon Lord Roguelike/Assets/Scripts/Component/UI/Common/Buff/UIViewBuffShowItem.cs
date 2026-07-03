@@ -53,6 +53,18 @@ public partial class UIViewBuffShowItem : BaseUIView
                 {
                     dicReplace.Add(TextReplaceEnum.HPRateLess, $"{MathUtil.GetPercentage(itemData.Value, 2)}");
                 }
+                else if (buffPreEntity is BuffPreEntityForRegainHPReceived)
+                {
+                    dicReplace.Add(TextReplaceEnum.RegainHPReceived, $"{Mathf.FloorToInt(itemData.Value)}");
+                }
+                else if (buffPreEntity is BuffPreEntityForRegainHPCast)
+                {
+                    dicReplace.Add(TextReplaceEnum.RegainHPCast, $"{Mathf.FloorToInt(itemData.Value)}");
+                }
+                else if (buffPreEntity is BuffPreEntityForOnFieldTime)
+                {
+                    dicReplace.Add(TextReplaceEnum.OnFieldTime, $"{Mathf.FloorToInt(itemData.Value)}");
+                }
             }
         }
 

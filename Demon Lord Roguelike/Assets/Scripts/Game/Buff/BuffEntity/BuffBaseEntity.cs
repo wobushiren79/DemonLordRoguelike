@@ -210,6 +210,47 @@ public class BuffBaseEntity
     }
 
     /// <summary>
+    /// 事件触发-回复HP
+    /// 复用被攻击事件的角色过滤：Attacked=BUFF目标须为被治疗者(attackedId)、Attacker=须为治疗者(attackerId)
+    /// 过滤后按实际治疗量累积 conditionalValue，供治疗类掉魔晶前置条件判定
+    /// </summary>
+    public virtual void EventForRegainHP(FightUnderAttackBean fightRegainHP)
+    {
+        if (buffEntityData == null || buffEntityData.isValid == false) return;
+        var buffInfo = buffEntityData.GetBuffInfo();
+        var preInfo = buffInfo.GetPreInfo();
+        //根据前置条件的事件角色过滤本次事件(接收端/施放端)
+        if (!preInfo.IsNull())
+        {
+            bool needAttacked = false;
+            bool needAttacker = false;
+            foreach (var itemData in preInfo)
+            {
+                var buffPreInfo = BuffPreInfoCfg.GetItemData(itemData.Key);
+                if (buffPreInfo == null) continue;
+                var buffPreEntity = BuffHandler.Instance.manager.GetBuffPreEntity(buffPreInfo);
+                if (buffPreEntity == null) continue;
+                switch (buffPreEntity.GetEventRole())
+                {
+                    case BuffPreEventRole.Attacked: needAttacked = true; break;
+                    case BuffPreEventRole.Attacker: needAttacker = true; break;
+                }
+            }
+            if (needAttacked && !fightRegainHP.attackedId.Equals(buffEntityData.targetCreatureUUId))
+            {
+                return;
+            }
+            if (needAttacker && !fightRegainHP.attackerId.Equals(buffEntityData.targetCreatureUUId))
+            {
+                return;
+            }
+        }
+        //条件触发记录：累积实际治疗量
+        buffEntityData.conditionalValue += fightRegainHP.attackerDamage;
+        HandleForEvent();
+    }
+
+    /// <summary>
     /// 事件-生物死亡掉落水晶
     /// </summary>
     /// <param name="fightDropCrystalBean"></param>

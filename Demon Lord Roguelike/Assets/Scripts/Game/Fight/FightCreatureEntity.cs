@@ -198,6 +198,16 @@ public partial class FightCreatureEntity
         fightRecordsData.AddCreatureRegainHP(attackerId, changeHPReal);
         fightRecordsData.AddCreatureRegainHPReceived(attackedId, changeHPReal);
 
+        //回复HP事件：仅真实回血(截断后>0)时派发，供治疗类前置条件BUFF累积(借用FightUnderAttackBean承载)
+        if (changeHPReal > 0)
+        {
+            FightUnderAttackBean regainData = new FightUnderAttackBean();
+            regainData.attackerId = attackerId;
+            regainData.attackedId = attackedId;
+            regainData.attackerDamage = changeHPReal;
+            EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_RegainHP, regainData);
+        }
+
         //检测一下是否死亡
         CheckDead
         (

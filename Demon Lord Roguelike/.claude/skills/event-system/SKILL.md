@@ -57,6 +57,7 @@ public static class EventsInfo
     public const string GameFightLogic_CreatureAttack = "GameFightLogic_CreatureAttack";
     public const string GameFightLogic_UnderAttack = "GameFightLogic_UnderAttack";
     public const string GameFightLogic_UnderAttack_Dead = "GameFightLogic_UnderAttack_Dead";
+    public const string GameFightLogic_RegainHP = "GameFightLogic_RegainHP"; // 生物回复HP(治疗类BUFF累积用,借用FightUnderAttackBean)
     public const string GameFightLogic_CreatureDeadStart = "GameFightLogic_CreatureDeadStart";
     public const string GameFightLogic_CreatureDeadEnd = "GameFightLogic_CreatureDeadEnd";
     public const string GameFightLogic_CreatureDeadDropCrystal = "GameFightLogic_CreatureDeadDropCrystal";
