@@ -225,6 +225,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1559310063961446584, guid: 8acf41526ac3ddf4784f997bb8e3ce5f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 180
+      objectReference: {fileID: 0}
     - target: {fileID: 4313549076856557814, guid: 8acf41526ac3ddf4784f997bb8e3ce5f, type: 3}
       propertyPath: m_Name
       value: RewardSelectBoxItem
@@ -284,6 +288,10 @@ PrefabInstance:
     - target: {fileID: 5799818453694488592, guid: 8acf41526ac3ddf4784f997bb8e3ce5f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7384907606484417272, guid: 8acf41526ac3ddf4784f997bb8e3ce5f, type: 3}
+      propertyPath: m_text
+      value: 012314
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

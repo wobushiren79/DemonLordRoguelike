@@ -26,13 +26,13 @@ Material:
     m_Ints: []
     m_Floats:
     - _Alpha: 1
-    - _DistortStrength: 0.01
+    - _DistortStrength: 0.005
     - _EdgeFade: 0.15
     - _NoiseScale: 8
     - _QueueOffset: -9
-    - _RiseSpeed: 0.3
+    - _RiseSpeed: 1
     - _VerticalFade: 0.3
-    - _WaveSpeed: 1
+    - _WaveSpeed: 5
     m_Colors:
     - _TintColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
