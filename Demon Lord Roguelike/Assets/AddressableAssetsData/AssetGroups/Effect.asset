@@ -80,6 +80,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 97bc7fb3779dff6489ab01b232f5b6d6
+    m_Address: Assets/LoadResources/Effects/EffectAscendComplete_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a07608802ac497743a7f19f6633fdd70
     m_Address: Assets/FrameWork/Prefabs/Effect/ParticleSystem/Soft/SoftBodySlam.prefab
     m_ReadOnly: 0

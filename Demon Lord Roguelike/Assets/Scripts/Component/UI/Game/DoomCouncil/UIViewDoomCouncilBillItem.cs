@@ -12,7 +12,9 @@ public partial class UIViewDoomCouncilBillItem : BaseUIView
     {
         this.doomCouncilInfo = doomCouncilInfo;
 
-        SetContent(doomCouncilInfo.name_language);
+        //议案名前拼接「议案:」标题前缀(UIText 53015，中/英前缀标点由文本自带)
+        string billTitlePrefix = TextHandler.Instance.GetTextById(53015);
+        SetContent($"{billTitlePrefix}{doomCouncilInfo.name_language}");
         SetCost(doomCouncilInfo.cost_crystal, doomCouncilInfo.cost_reputation);
         SetIcon(doomCouncilInfo.icon_res);
         ui_UIViewDoomCouncilBillItem_PopupButtonCommonView.SetData(doomCouncilInfo, PopupEnum.DoomCouncilBillDetails);

@@ -17,6 +17,7 @@ public static class AIIntentFactory
         AIBaseEntity.RegisterIntentFactory(AIIntentEnum.AttackCreatureIdle, () => new AIIntentAttackCreatureIdle());
         AIBaseEntity.RegisterIntentFactory(AIIntentEnum.AttackCreatureMove, () => new AIIntentAttackCreatureMove());
         AIBaseEntity.RegisterIntentFactory(AIIntentEnum.AttackCreatureAttack, () => new AIIntentAttackCreatureAttack());
+        AIBaseEntity.RegisterIntentFactory(AIIntentEnum.AttackCreatureAttackCore, () => new AIIntentAttackCreatureAttackCore());
         AIBaseEntity.RegisterIntentFactory(AIIntentEnum.AttackCreatureDead, () => new AIIntentAttackCreatureDead());
         AIBaseEntity.RegisterIntentFactory(AIIntentEnum.AttackCreatureLured, () => new AIIntentAttackCreatureLured());
 

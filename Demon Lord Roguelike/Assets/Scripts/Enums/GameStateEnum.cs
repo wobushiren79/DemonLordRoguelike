@@ -167,6 +167,8 @@ public enum UnlockEnum : long
     CreatureVat = 100000000,//生物进阶
     CreatureVatAdd = 100000001,//生物进阶设置+1;
     CreatureVatBuffPreview = 100000006,//生物进阶-进阶增益BUFF数值范围预览(解锁后???替换成随机min~max范围;100000001~5被+1的Lv1~5占用故取6)
+    CreatureVatAddProgress = 100000007,//生物进阶-魔晶加速研究(恒消耗1魔晶,研究等级=每次推进秒数=进度倍率;0级隐藏加速按钮,level_max=5)
+    CreatureVatMaterialNum = 100000008,//生物进阶-素材魔物可选上限+1(每级+1,基础5,level_max=5,满级10)
     Altar = 100100001,//祭坛
     SacrificeNum = 100100002,//献祭祭品数量+1
     SacrificePityRate = 100100003,//献祭失败保底概率提升(每级失败累积的保底成功率+5%,满级+50%)
@@ -198,6 +200,8 @@ public enum UnlockEnum : long
     DemonLordMPMax = 200300001,//魔王魔力上限提升(每级+10)
     DemonLordMPF = 200400001,//魔王魔力恢复速度提升(每级+1/秒)
     AbyssalBlessingRefreshNum = 200500001,//深渊馈赠刷新次数(研究等级=单次征服run内可用刷新次数上限,level_max=5)
+    SpaceDash = 200600001,//空格突进(强化,level_max=3;1/2/3级分别向朝向突进1/2/3个距离单位)
+    SpaceDashCD = 200700001,//空格突进冷却缩减(强化,level_max=4;默认3秒,每级-0.5秒,满级最低1秒;子研究,前置=SpaceDash)
 
     EquipRewardHuman = 300100301,//人类装备奖励
     EquipRewardSkeleton = 300200301,

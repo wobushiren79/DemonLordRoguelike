@@ -36,11 +36,12 @@ watched_files:
 4. 议员显示名取评级名（`CreatureBean.SetCouncilorDisplayName`）；固定NPC从 `UserRelationshipBean` 载入持久化好感。
 
 ### 投票态度（存于 `DoomCouncilBean.dicCouncilorAttitude`，Key=议员UUID，Value 0~100=投赞成概率；只与本场议案绑定，不放 CreatureBean、不入存档）
-- `GenerateCouncilorAttitudes(list, success_rate)` 按议案通过率**字面**生成：低态度组人数 = 总数×通过率 → 随机 {0,25}；其余高态度组 → 随机 {75,100}；再随机取全体 10% 覆盖为 50。
+- `GenerateCouncilorAttitudes(list, success_rate)` 按议案通过率生成：**高态度(赞成)组人数 = 总数×通过率 → 随机 {75,100}**；其余低态度组 → 随机 {0,25}；再随机取全体 10% 覆盖为 50。
 - 固定NPC再叠加好感修正 `(关系类型-3)×50`：仇恨-100 / 冷淡-50 / 中立0 / 友好+50 / 迷恋+100。
-- ⚠️ 注意此为需求指定的字面算法：通过率越高 → 低态度议员越多（与直觉相反），如需调整需改 `GenerateCouncilorAttitudes`。
+- ✅ 通过率与议员赞成意愿**正相关**：通过率越高 → 越多议员倾向赞成（如通过率 10% → 约 10% 议员高态度赞成）。此前"通过率越高低态度议员越多"的反向算法为 bug，已修正。
 
 ### 投票（`DoomCouncilLogic.StartVote`）
+- 投票开始即调用 `scenePrefab.HideAllCouncilorAttitudeView()`：正式投票阶段隐藏所有议员意愿(Success)图标，玩家不再看到赞成意愿。
 - 每名议员 `Random(0,100) < attitude ? 赞成 : 反对`；票数按评级 `DoomCouncilRatingsInfo.vote`。
 - 旧逻辑（随机值 vs success_rate + 30% 睡觉）已移除。
 
@@ -50,7 +51,7 @@ watched_files:
 - 之后调用 `DoomCouncilLogic.RefreshCouncilorView(uuid)` 刷新显示。
 
 ### 场景显示（`ScenePrefabForDoomCouncil`）
-- 议员预制下 `Success` SpriteRenderer：用颜色表态度（0红/50白/100绿，`GetAttitudeColor`）。
+- 议员预制下 `Success` SpriteRenderer：用颜色表态度/意愿（0红/50白/100绿，`GetAttitudeColor`）；自由活动阶段可见，投票开始时由 `HideAllCouncilorAttitudeView()` 统一 `SetActive(false)` 隐藏。
 - `Relationship` SpriteRenderer：仅固定NPC显示好感图标（`NpcRelationshipInfo.icon_res`，UI图集）。
 - 坐标切换：固定NPC → `Relationship.x=-0.1`、`Success.x=0.1`（并排）；随机NPC → 隐藏 Relationship、`Success.x=0`（居中）。
 

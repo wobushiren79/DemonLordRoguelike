@@ -196,6 +196,8 @@ public enum UnlockEnum : long
     CreatureVat = 100000000,           // 生物进阶
     CreatureVatAdd = 100000001,        // 生物进阶设置+1(可升级, 100000001~100000005 为其 Lv1~Lv5 解锁条目, 占满 1000 段前 6 个 id)
     CreatureVatBuffPreview = 100000006,// 生物进阶-进阶增益BUFF数值范围预览(设施段, pre=CreatureVat; 因 1~5 被 +1 的 Lv 占用故取 6)
+    CreatureVatAddProgress = 100000007,// 生物进阶-魔晶加速研究(恒消耗1魔晶,研究等级=每次进度增加秒数=进度倍率; 0级隐藏加速按钮, level_max=5)
+    CreatureVatMaterialNum = 100000008,// 生物进阶-素材魔物可选上限+1(每级+1, 基础5, level_max=5, 满级10)
     Altar = 100100001,                 // 祭坛
     SacrificeNum = 100100002,          // 增加献祭祭品数量(+1/级, level_max=10)
     SacrificePityRate = 100100003,     // 献祭失败保底概率提升(+5%/级, level_max=10)
@@ -217,6 +219,8 @@ public enum UnlockEnum : long
     DemonLordMPMax = 200300001,        // 魔王魔力上限+10/级(level_max=5)
     DemonLordMPF = 200400001,          // 魔王魔力恢复速度+1/秒/级(level_max=3)
     AbyssalBlessingRefreshNum = 200500001, // 深渊馈赠刷新次数(研究等级=单次征服run内可用刷新次数上限,level_max=5,新run自动回满)
+    SpaceDash = 200600001,             // 空格突进(基地控制,level_max=3;1/2/3级向朝向突进1/2/3距离单位)
+    SpaceDashCD = 200700001,           // 空格突进冷却缩减(子研究,前置=SpaceDash,level_max=4;默认3s每级-0.5最低1s)
     EquipRewardHuman = 300100301,      // 人类装备奖励
     EquipRewardSkeleton = 300200301,
 }
@@ -330,12 +334,16 @@ public int GetUnlockLineupNum();                       // 1 + LineupNum 等级
 public int GetUnlockLineupCreatureNum();               // 6 + LineupCreatureAddNum 等级
 public int GetUnlockGameWorldConquerDifficultyLevel(long worldId);
 public int GetUnlockCreatureVatNum();                  // 未解锁返回 0；已解锁返回 1+CreatureVatAdd
+public int GetUnlockCreatureVatAddProgressLevel();     // 生物进阶魔晶加速研究等级(0~5)；恒消耗1魔晶,等级=每次进度增加秒数=进度倍率，0级隐藏加速按钮
+public int GetUnlockCreatureVatMaterialMax();          // 进阶素材可选上限 = 5(creatureVatMaterialMax) + CreatureVatMaterialNum 等级(满级 10)
 public int GetUnlockSacrificeMax();                    // 献祭祭品选择上限 = 5(sacrificeMax) + SacrificeNum 等级(满级 15)
 public float GetUnlockSacrificeFailPityAddRate();      // 献祭失败保底增量 = SacrificePityRate 等级 × 5%(未解锁0,满级50%)
 public float GetUnlockSacrificeDifferentIdRate();      // 单个不同id祭品成功率 = SacrificeDifferentIdRate 等级 × 5%(未解锁0,满级50%)
 public float GetUnlockDropCrystalAddLifeTime();        // 魔晶掉落物额外存在时长 = DropCrystalLifeTime 等级 × 5秒(未解锁0,满级+30s)；在 FightCreatureEntity.DropCrystal 叠加到 FightDropCrystalBean.BASE_LIFE_TIME(30)
 public float GetUnlockDemonLordMPMaxAddValue();        // 魔王魔力上限加成 = DemonLordMPMax 等级 × 10(未解锁0,满级+50)；在 FightCreatureBean.RefreshBaseAttribute 仅对 FightDefenseCore 叠加到 MP
 public float GetUnlockDemonLordMPFAddValue();          // 魔王魔力恢复速度加成 = DemonLordMPF 等级 × 1/秒(未解锁0,满级+3/s)；同上叠加到 MPF
+public int GetUnlockSpaceDashLevel();                  // 空格突进研究等级 = SpaceDash 等级(0=未解锁不可突进,1/2/3级=1/2/3距离单位)；由 ControlForGameBase 读取决定突进距离
+public float GetUnlockSpaceDashCD();                   // 空格突进冷却(秒) = 3 - SpaceDashCD 等级×0.5(未解锁3s,每级-0.5,满级最低1s)；由 ControlForGameBase 读取决定突进CD
 ```
 
 ### 解锁列表

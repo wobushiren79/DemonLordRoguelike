@@ -62,4 +62,23 @@ public static class ColorUtil
         return ProgressColorVeryHigh;
     }
     #endregion
+
+    #region 通用达上限警示红
+    /// <summary>达到数量上限时的警示红色HTML串(用于 TMP 富文本 &lt;color&gt; 包裹)</summary>
+    public const string LimitFullHtml = "#FF4D4D";
+    /// <summary>达到数量上限时的警示红(用于直接给 Text/Image.color 赋值)</summary>
+    public static readonly Color LimitFull = ParseHtmlString(LimitFullHtml);
+
+    /// <summary>
+    /// 数量文本达上限着色：达到/超过上限时用通用警示红富文本包裹，否则原样返回。
+    /// 阵容满员、进阶素材选满等「当前/上限」展示统一复用。
+    /// </summary>
+    /// <param name="content">原始文本(通常为 当前/上限 格式)</param>
+    /// <param name="isFull">是否已达上限</param>
+    /// <returns>着色后的富文本(满)或原文本(未满)</returns>
+    public static string WrapLimitFull(string content, bool isFull)
+    {
+        return isFull ? $"<color={LimitFullHtml}>{content}</color>" : content;
+    }
+    #endregion
 }

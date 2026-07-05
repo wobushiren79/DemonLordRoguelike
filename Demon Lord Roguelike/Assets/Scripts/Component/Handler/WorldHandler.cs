@@ -405,7 +405,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         //打开加载UI
         if (isShowLoading)
             UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
-        //关闭所有控制
+        //关闭所有控制(内部经 EnabledControl(false) 会顺带清空冲刺残影池)
         GameControlHandler.Instance.manager.EnableAllControl(false);
         //停止所有连续音效，防走路/环境循环音跨场景残留
         AudioHandler.Instance.StopAllLoopSound();

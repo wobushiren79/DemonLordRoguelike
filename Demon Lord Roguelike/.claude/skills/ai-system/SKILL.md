@@ -45,11 +45,12 @@ AIBaseEntity (AI实体基类)
     ├── AICreatureEntity (生物AI基类)
     │       │
     │       ├── AIAttackCreatureEntity (进攻型)
-    │       │       ├── AIIntentAttackCreatureIdle    (闲置)
-    │       │       ├── AIIntentAttackCreatureMove    (移动)
-    │       │       ├── AIIntentAttackCreatureAttack  (攻击)
-    │       │       ├── AIIntentAttackCreatureDead    (死亡)
-    │       │       └── AIIntentAttackCreatureLured   (被诱惑)
+    │       │       ├── AIIntentAttackCreatureIdle       (闲置)
+    │       │       ├── AIIntentAttackCreatureMove       (移动)
+    │       │       ├── AIIntentAttackCreatureAttack     (攻击防守生物, 走 AttackMode)
+    │       │       ├── AIIntentAttackCreatureAttackCore (攻击魔王: 靠近后固定处决, 不走 AttackMode)
+    │       │       ├── AIIntentAttackCreatureDead       (死亡)
+    │       │       └── AIIntentAttackCreatureLured      (被诱惑)
     │       │
     │       ├── AIDefenseCreatureEntity (防守型)
     │       │       ├── AIIntentDefenseCreatureIdle   (闲置)
@@ -74,11 +75,12 @@ AIBaseEntity (AI实体基类)
 public enum AIIntentEnum
 {
     // 进攻生物
-    AttackCreatureIdle,      // 闲置
-    AttackCreatureMove,      // 移动
-    AttackCreatureAttack,    // 攻击
-    AttackCreatureDead,      // 死亡
-    AttackCreatureLured,     // 被诱惑
+    AttackCreatureIdle,       // 闲置
+    AttackCreatureMove,       // 移动
+    AttackCreatureAttack,     // 攻击(打防守生物, 走 AttackMode)
+    AttackCreatureAttackCore, // 攻击魔王(靠近后固定处决, 不走 AttackMode)
+    AttackCreatureDead,       // 死亡
+    AttackCreatureLured,      // 被诱惑
 
     // 防守生物
     DefenseCreatureIdle,     // 闲置
@@ -397,6 +399,8 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 4. **对象池复用**: AI实例被移除时会进入对象池，下次创建同类型AI时会复用，因此 `InitData()` 必须能正确重置状态。
 
 5. **意图切换的目标枚举要与归属生物类型一致**：例如防守生物在搜索不到目标时应切回 `DefenseCreatureIdle` 而不是 `DefenseCoreCreatureIdle`，否则会因 `dicIntentPool` 中没有该枚举而触发 `ChangeIntent` 失败的日志告警，并保持当前意图不变。
+
+6. **敌人攻击魔王（核心）不走 AttackMode**：进攻生物（近战/远程一视同仁）**不再用 AttackMode 伤害魔王**。`AIIntentAttackCreatureMove` 核心分支持续向魔王推进，与魔王距离 `< AIIntentAttackCreatureMove.CloseCoreDistance`(0.25) 时切 `AttackCreatureAttackCore`；该意图固定播一次攻击动作（`GetAttackAnimTime` 缺省用 0.5s 保底），出手时对魔王播出血特效并直接 `coreCreature.SetCreatureDead()`，随后核心走 `DefenseCoreCreatureDead`，死亡结束事件驱动 `GameFightLogic.CheckGameEnd()` 判定战斗失败。背景：远程弹道靠 layer 掩码只检测 `CreatureDef` 层、魔王核心在默认层 layer0 本就打不到，遂将近远程统一为"靠近即固定处决"。新增意图已同步 `AIAttackCreatureEntity.InitIntentEnum` 与 `AIIntentFactory`。
 
 ---
 

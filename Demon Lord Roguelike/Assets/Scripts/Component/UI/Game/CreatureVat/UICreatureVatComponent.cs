@@ -47,5 +47,7 @@ public partial class UICreatureVat
 
     public Animator ui_AscendIcon;
 
+    public TextMeshProUGUI ui_LimmitText;
+
 
 }

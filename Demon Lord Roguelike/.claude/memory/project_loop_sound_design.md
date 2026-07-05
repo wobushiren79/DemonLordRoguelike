@@ -23,7 +23,9 @@ metadata:
 
 **游戏层改动**：
 - `AudioHandler`(游戏 partial)：`AudioEnum` 重载 PlayLoopSound(×2)/StopLoopSound/IsLoopSoundPlaying。
-- `ControlForGameBase.HandleForMoveUpdate`：移动分支(:159 Walk 后)`PlayLoopSound(sound_walk_1)`、静止分支(:131 Idle 后)`StopLoopSound`、`EnabledControl(false)` 也 StopLoopSound。**只处理基地自控魔王,单实体,靠幂等去重免计数。**
+- `ControlForGameBase.HandleForMoveUpdate`：移动分支(:159 Walk 后)`PlayLoopSound(sound_walk_1, pitch:1.5f)`(加快脚步,1.5 倍速)、静止分支(:131 Idle 后)`StopLoopSound`、`EnabledControl(false)` 也 StopLoopSound。**只处理基地自控魔王,单实体,靠幂等去重免计数。**
 - `WorldHandler.ClearWorldData`：EnableAllControl(false) 后加 `StopAllLoopSound()` 兜底(音源常驻 DontDestroyOnLoad 不随场景销毁)。
 
-**未做/技术债**：独立 loopVolume 音量条；按句柄多路+3D 位置跟随(每生物脚步声)；同 id 平滑换 clip(雨强度切换,当前按 id 去重会忽略)；dicLoopData 同其它音频缓存从不 Addressables.Release(既有债,池仅解组件泄漏)。已同步 audio-system SKILL + system-audio agent 文档。
+**2026-07-05 变速**：`PlayLoopSound` 合并为 `PlayLoopSound(id, float volumeScale=-1f, float pitch=1f)`(volumeScale<0 取 soundVolume)；新增 `LoopSoundEntry.pitch`，起播 `source.pitch=pitch`，`RecycleLoopSource` 回收复位 `pitch=1` 防污染池；走路声传 `pitch:1.5f` 加快(1.5 倍速; Unity 音源变速必同时升调,无法只变速)。游戏层枚举重载同步收敛为 3 参带默认。
+
+**未做/技术债**：独立 loopVolume 音量条；按句柄多路+3D 位置跟随(每生物脚步声)；同 id 平滑换 clip(雨强度切换,当前按 id 去重会忽略)；同 id 变更 pitch 也被去重忽略(需先 Stop 再 Play)；dicLoopData 同其它音频缓存从不 Addressables.Release(既有债,池仅解组件泄漏)。已同步 audio-system SKILL + system-audio agent + control-system SKILL + game-control agent 文档。

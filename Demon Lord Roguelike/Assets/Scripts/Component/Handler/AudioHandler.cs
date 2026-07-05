@@ -208,22 +208,14 @@ public partial class AudioHandler
     }
 
     /// <summary>
-    /// 播放连续音效（枚举）
+    /// 播放连续音效（枚举）。默认音量取 soundVolume；pitch 可加速/变调（2=加快一倍）。
     /// </summary>
     /// <param name="audio">音频枚举</param>
-    public void PlayLoopSound(AudioEnum audio)
+    /// <param name="volumeScale">基础音量；&lt;0 时取音效音量 soundVolume（默认行为）</param>
+    /// <param name="pitch">播放速率/音调，1=原速，2=加快一倍（同时升调）</param>
+    public void PlayLoopSound(AudioEnum audio, float volumeScale = -1f, float pitch = 1f)
     {
-        PlayLoopSound((long)audio);
-    }
-
-    /// <summary>
-    /// 播放连续音效（枚举，指定基础音量）
-    /// </summary>
-    /// <param name="audio">音频枚举</param>
-    /// <param name="volumeScale">基础音量</param>
-    public void PlayLoopSound(AudioEnum audio, float volumeScale)
-    {
-        PlayLoopSound((long)audio, volumeScale);
+        PlayLoopSound((long)audio, volumeScale, pitch);
     }
 
     /// <summary>

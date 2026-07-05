@@ -183,8 +183,10 @@ AudioHandler.Instance.StopEnvironment();
 
 ```csharp
 // 起播（默认音量=soundVolume；同 id 已在播含加载中则忽略，天然去重）
+// 签名：PlayLoopSound(id, float volumeScale = -1f, float pitch = 1f)；volumeScale<0 时取 soundVolume
 AudioHandler.Instance.PlayLoopSound(AudioEnum.sound_walk_1);
-AudioHandler.Instance.PlayLoopSound(AudioEnum.sound_walk_1, volumeScale); // 指定基础音量
+AudioHandler.Instance.PlayLoopSound(AudioEnum.sound_walk_1, volumeScale);     // 指定基础音量
+AudioHandler.Instance.PlayLoopSound(AudioEnum.sound_walk_1, pitch: 2f);       // 默认音量+加快一倍(pitch=2,同时升调)
 AudioHandler.Instance.StopLoopSound(AudioEnum.sound_walk_1);              // 停指定（加载中的也能取消）
 AudioHandler.Instance.StopAllLoopSound();                                // 停全部（切场景兜底）
 AudioHandler.Instance.PauseAllLoopSound();                               // 暂停（仅暂停当前在播的）
@@ -194,13 +196,14 @@ bool playing = AudioHandler.Instance.IsLoopSoundPlaying(AudioEnum.sound_walk_1);
 
 **设计要点：**
 - **音量跟随 `soundVolume`**（不新增 `loopVolume`/设置滑条）；最终音量 = `soundVolume × 配置 volume_scale`。`InitAudio()` 刷新时遍历活跃 loop 源用 `soundVolume × entry.volumeScale` 重算（不能直接赋 soundVolume，否则抹掉 volume_scale）。
+- **变速 `pitch`**：`PlayLoopSound` 第三参数 `pitch`（默认 1），记入 `LoopSoundEntry.pitch`，起播时 `source.pitch = pitch`。`pitch=2` 让播放速度加快一倍（Unity 原生音源会同时升调一个八度，无法只变速不变调）；走路声即用 `pitch:2f` 加快脚步节奏。`RecycleLoopSource` 回收时**复位 `pitch=1`**，避免变速源污染下次复用。
 - **异步竞态防护（关键）**：`GetClip` 是异步回调，`PlayLoopSound` 先登记 pending `LoopSoundEntry{source=null, token}` 占位（ContainsKey 即去重，防加载窗口内重复起源），加载回调校验 `token` 未变且 `!canceled` 才真正取源起播；`StopLoopSound` 对"加载中"的 id 置 `canceled` → 回调到达时丢弃。防"停请求先于加载回调到达 → 音源永久播放停不掉"。
 - **音源池**：`AudioManager.DequeueLoopSource/RecycleLoopSource`，`MaxLoopSource=16` 上限（超限告警并静默不播）；回收先 `Stop()` 再清 clip（`SetActive(false)` 不会停播放）；`spatialBlend=0`（第一期 2D 全局单路，不吃位置）。
 - **暂停不误启**：`PauseAllLoopSound` 只暂停当前 `isPlaying` 的源并记录到 `listLoopPaused`，`RestoreAllLoopSound` 只 UnPause 这批。
 - **不复用一次性音效防抖变量**（`lastPlaySoundId`/`timeUpdateForRepeatPlay` 不碰），去重只靠 `dicLoopActive`。
 - **生命周期挂钩**：连续音效音源常驻 `DontDestroyOnLoad`**不随场景销毁**，`WorldHandler.ClearWorldData()` 已挂 `StopAllLoopSound()` 兜底防跨场景残留。
 
-**走路声接入示例（唯一现有消费方）：** 基地自控魔王的移动挂在 [ControlForGameBase.cs](Assets/Scripts/Component/Game/Control/ControlForGameBase.cs) —— `HandleForMoveUpdate` 移动分支 `PlayLoopSound(AudioEnum.sound_walk_1)`、静止分支 `StopLoopSound(...)`、`EnabledControl(false)` 也 `StopLoopSound(...)`（覆盖"走着走着打开界面"）。单实体，靠 `PlayLoopSound`/`StopLoopSound` 幂等，每 FixedUpdate 重复调无害。走路声**复用一次性音效 `sound_walk_1`**（不新建 `loop_walk_1`）。
+**走路声接入示例（唯一现有消费方）：** 基地自控魔王的移动挂在 [ControlForGameBase.cs](Assets/Scripts/Component/Game/Control/ControlForGameBase.cs) —— `HandleForMoveUpdate` 移动分支 `PlayLoopSound(AudioEnum.sound_walk_1, pitch: 1.5f)`（加快脚步节奏, 1.5 倍速）、静止分支 `StopLoopSound(...)`、`EnabledControl(false)` 也 `StopLoopSound(...)`（覆盖"走着走着打开界面"）。单实体，靠 `PlayLoopSound`/`StopLoopSound` 幂等，每 FixedUpdate 重复调无害。走路声**复用一次性音效 `sound_walk_1`**（不新建 `loop_walk_1`）。
 
 > 未做（如需再扩展）：独立 `loopVolume` 音量条；按句柄多路 + 3D 位置跟随（每生物脚步声）；同 id 平滑换 clip（如雨强度切换，当前按 id 去重会忽略）。`dicLoopData` 同其它音频缓存一样从不 `Addressables.Release`（既有技术债，池仅解 AudioSource 组件泄漏）。
 

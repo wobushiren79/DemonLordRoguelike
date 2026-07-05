@@ -9,6 +9,10 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
     public FightCreatureBean fightCreatureData;
     public float timeUpdateForFindTarget = 0;
     public float timeUpdateForFindTargetCD = 0;
+    /// <summary>攻击起始X阈值：自身x大于此值(出生线附近)时不进入攻击意图，继续前进</summary>
+    public float attackEnablePosX = 10.5f;
+    /// <summary>攻击魔王的靠近距离阈值：与魔王距离小于此值时固定触发一次攻击并让魔王死亡</summary>
+    public const float CloseCoreDistance = 0.25f;
 
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
@@ -36,8 +40,12 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
             {
                 selfAIEntity.targetCreatureEntity = findTargetCreature;
                 selfAIEntity.targetMovePos = selfAIEntity.targetCreatureEntity.creatureObj.transform.position;
-                selfAIEntity.ChangeIntent(AIIntentEnum.AttackCreatureAttack);
-                return;
+                //出生线附近(x>attackEnablePosX)不进入攻击意图, 继续前进直到越过该位置再攻击
+                if (selfAIEntity.selfCreatureEntity.creatureObj.transform.position.x <= attackEnablePosX)
+                {
+                    selfAIEntity.ChangeIntent(AIIntentEnum.AttackCreatureAttack);
+                    return;
+                }
             }
             else
             {
@@ -58,24 +66,27 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
 
         Transform selfTF = selfAIEntity.selfCreatureEntity.creatureObj.transform;
         
-        //如果目标是魔王
+        //如果目标是魔王(防守核心)
         if (selfAIEntity.targetCreatureEntity.fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightDefenseCore)
         {
-            //首先检测是否到达路径终点 魔王在位置x0 第一排在x1 这里取0.5
-            if (selfTF.position.x <= 0.5f)
+            //魔王固定不动 始终以其当前位置作为移动/靠近判定目标
+            selfAIEntity.targetMovePos = selfAIEntity.targetCreatureEntity.creatureObj.transform.position;
+            //完全靠近魔王(距离<CloseCoreDistance)时切攻击魔王意图: 固定触发一次攻击并让魔王出血死亡, 不走AttackMode
+            if (CheckIsCloseTarget(CloseCoreDistance))
             {
-                //检测是否靠近目标
-                if (CheckIsCloseTarget())
-                {
-                    selfAIEntity.ChangeIntent(AIIntentEnum.AttackCreatureAttack);
-                    return;
-                }
+                selfAIEntity.ChangeIntent(AIIntentEnum.AttackCreatureAttackCore);
+                return;
+            }
+            //未靠近: x>0.5先沿本路径推进到终点, 否则直冲魔王位置
+            if (selfTF.position.x > 0.5f)
+            {
+                selfTF.Translate(Vector3.Normalize(new Vector3(0, 0, selfAIEntity.selfCreatureEntity.fightCreatureData.roadIndex) - selfTF.transform.position) * Time.deltaTime * moveSpeedFinal);
             }
             else
             {
-                selfTF.Translate(Vector3.Normalize(new Vector3(0, 0, selfAIEntity.selfCreatureEntity.fightCreatureData.roadIndex) - selfTF.transform.position) * Time.deltaTime * moveSpeedFinal);
-                return;
+                selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeedFinal);
             }
+            return;
         }
 
         selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeedFinal);
@@ -88,15 +99,16 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
     }
 
     /// <summary>
-    /// 检测是否靠近了目标
+    /// 检测是否靠近了目标(与 targetMovePos 的距离不大于 closeDistance)
     /// </summary>
+    /// <param name="closeDistance">靠近判定的距离阈值(默认0.05)</param>
     /// <returns></returns>
-    public bool CheckIsCloseTarget()
+    public bool CheckIsCloseTarget(float closeDistance = 0.05f)
     {
         var currentPosition = selfAIEntity.selfCreatureEntity.creatureObj.transform.position;
         var targetMovePos = selfAIEntity.targetMovePos;
         float dis = Vector3.Distance(currentPosition, targetMovePos);
-        if (dis <= 0.05f)
+        if (dis <= closeDistance)
         {
             return true;
         }

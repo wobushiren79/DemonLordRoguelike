@@ -23,6 +23,8 @@ public class BaseAttackMode
     protected CreatureFightTypeEnum searchCreatureType = CreatureFightTypeEnum.None;
     //攻速ASPD=100时弹道飞行速度的最大加成倍率（数值策划调整入口）
     public const float SpeedRateASPDMax = 3f;
+    //弹道起点 Y 轴随机扰动幅度（±值，避免弹道起点完全重合，数值策划调整入口）
+    public const float StartPosRandomRangeY = 0.05f;
 
     /// <summary>
     /// 初始化攻击样式
@@ -114,8 +116,9 @@ public class BaseAttackMode
                     //设置弹道速度倍率（攻速ASPD 0~100 线性映射 1~SpeedRateASPDMax 倍，与攻击时间换算保持同一插值体系）
                     float attributeASPD = attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD);
                     attackModeData.attackerSpeedRate = MathUtil.InterpolationLerp(attributeASPD, 0, 100, 1f, SpeedRateASPDMax);
-                    //设置起始位置
+                    //设置起始位置（额外叠加 Y 轴随机扰动，幅度见 StartPosRandomRangeY，避免弹道起点完全重合）
                     Vector3 offsetPosition = creatureData.creatureInfo.GetAttackStartPosition();
+                    offsetPosition.y += UnityEngine.Random.Range(-StartPosRandomRangeY, StartPosRandomRangeY);
                     attackModeData.startPos = attacker.creatureObj.transform.position + offsetPosition;
                     //获取被攻击者的层级
                     attackModeData.attackedLayerTarget = attacker.fightCreatureData.GetCreatureLayer(true);

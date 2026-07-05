@@ -400,6 +400,64 @@ public class UserUnlockBean
         }
     }
 
+    /// <summary>
+    /// 获取生物进阶「魔晶加速」研究等级
+    /// 该等级同时决定：单次加速消耗魔晶数 = 进度增加倍率；0级(未研究)表示加速功能未解锁(加速按钮隐藏)
+    /// </summary>
+    /// <returns>魔晶加速研究等级(0~5)，0=未解锁</returns>
+    public int GetUnlockCreatureVatAddProgressLevel()
+    {
+        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.CreatureVatAddProgress);
+    }
+
+    /// <summary>
+    /// 获取生物进阶素材魔物可选上限
+    /// 基础数量取自 UserLimmitBean.creatureVatMaterialMax + 对应研究等级（UnlockEnum.CreatureVatMaterialNum，满级+5）
+    /// </summary>
+    /// <returns>进阶时可选择的最大素材魔物数量</returns>
+    public int GetUnlockCreatureVatMaterialMax()
+    {
+        var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
+        return limmitData.creatureVatMaterialMax + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.CreatureVatMaterialNum);
+    }
+
+    /// <summary>
+    /// 空格突进默认冷却时间(秒)：未研究「突进CD」(SpaceDashCD=0级)时的基础冷却。集中此处便于统一调整。
+    /// </summary>
+    public const float SPACE_DASH_CD_BASE = 3f;
+
+    /// <summary>
+    /// 空格突进每级「突进CD」研究减少的冷却(秒)：每研究 1 级在基础冷却上减少此值。集中此处便于统一调整。
+    /// </summary>
+    public const float SPACE_DASH_CD_PER_LEVEL = 0.5f;
+
+    /// <summary>
+    /// 空格突进保底最低冷却时间(秒)：「突进CD」研究满级后的冷却下限，冷却不会低于此值。集中此处便于统一调整。
+    /// </summary>
+    public const float SPACE_DASH_CD_MIN = 1f;
+
+    /// <summary>
+    /// 获取空格突进研究等级（UnlockEnum.SpaceDash，level_max=3）
+    /// 0=未解锁(不可突进)；1/2/3 级分别向朝向突进 1/2/3 个距离单位（每单位的世界距离由控制系统 dashDistancePerLevel 决定）
+    /// </summary>
+    /// <returns>空格突进研究等级(0~3)，0=未解锁</returns>
+    public int GetUnlockSpaceDashLevel()
+    {
+        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.SpaceDash);
+    }
+
+    /// <summary>
+    /// 获取空格突进冷却时间(秒)
+    /// 默认 SPACE_DASH_CD_BASE(3秒)；每级「突进CD」研究(UnlockEnum.SpaceDashCD，level_max=4)减 SPACE_DASH_CD_PER_LEVEL(0.5秒)，
+    /// 满级(4级)取保底下限 SPACE_DASH_CD_MIN(1秒)。即 3/2.5/2/1.5/1 秒。改基础/每级/保底值只需改这三个常量。
+    /// </summary>
+    /// <returns>当前突进冷却时间(秒，范围 SPACE_DASH_CD_MIN ~ SPACE_DASH_CD_BASE)</returns>
+    public float GetUnlockSpaceDashCD()
+    {
+        float cd = SPACE_DASH_CD_BASE - GetUnlockResearchLeveByUnlockEnum(UnlockEnum.SpaceDashCD) * SPACE_DASH_CD_PER_LEVEL;
+        return Mathf.Max(cd, SPACE_DASH_CD_MIN);
+    }
+
     #endregion
 
     #region 解锁列表获取

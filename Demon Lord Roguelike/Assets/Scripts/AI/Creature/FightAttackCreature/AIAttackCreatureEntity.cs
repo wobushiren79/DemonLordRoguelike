@@ -46,6 +46,7 @@ public class AIAttackCreatureEntity : AICreatureEntity
         listIntentEnum.Add(AIIntentEnum.AttackCreatureIdle);
         listIntentEnum.Add(AIIntentEnum.AttackCreatureDead);
         listIntentEnum.Add(AIIntentEnum.AttackCreatureAttack);
+        listIntentEnum.Add(AIIntentEnum.AttackCreatureAttackCore);
         listIntentEnum.Add(AIIntentEnum.AttackCreatureMove);
         listIntentEnum.Add(AIIntentEnum.AttackCreatureLured);
     }

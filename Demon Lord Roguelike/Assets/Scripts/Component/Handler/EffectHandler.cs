@@ -8,6 +8,8 @@ using UnityEngine.VFX;
 public partial class EffectHandler
 {
     protected string effectCreatureAscendAddProgressName = "EffectMove_1";
+    //进阶完成庆祝专用粒子(白色模板,运行时按新稀有度上色成"稀有度流光")
+    protected string effectCreatureAscendCompleteName = "EffectAscendComplete_1";
     protected string effectBloodName = "EffectBlood_1";
     protected string effectShieldHitName = "EffectShieldHit_1";
     //protected string effectTextNumberName = "EffectTextNumber_1";
@@ -232,6 +234,37 @@ public partial class EffectHandler
         manager.GetEffectForEnduring(effectCreatureAscendAddProgressName, (targetEffect) =>
         {
             playEffect?.Invoke(targetEffect);
+        });
+    }
+
+    /// <summary>
+    /// 展示生物进阶完成的庆祝粒子(专用粒子,进阶成功时在容器处播放,按升阶后的新稀有度上色成"稀有度流光")。
+    /// </summary>
+    /// <param name="targetPosition">容器世界坐标(粒子播放位置)</param>
+    /// <param name="rarityColor">升阶后新稀有度的主色(粒子起始颜色)</param>
+    public void ShowCreatureAscendCompleteEffect(Vector3 targetPosition, Color rarityColor)
+    {
+        //专用一次性粒子:先定位、按稀有度给所有粒子系统上色,再播放,2秒后自动销毁
+        EffectBean effectData = new EffectBean();
+        effectData.effectName = effectCreatureAscendCompleteName;
+        effectData.effectPosition = targetPosition;
+        effectData.timeForShow = 2f;
+        effectData.isDestoryPlayEnd = true;
+        effectData.isPlayInShow = false;
+        ShowEffect(effectData, (effect) =>
+        {
+            if (effect == null)
+                return;
+            //白模板粒子按新稀有度上色(逐个粒子系统改 startColor)后再播放
+            if (!effect.listPS.IsNull())
+            {
+                for (int i = 0; i < effect.listPS.Count; i++)
+                {
+                    var mainModule = effect.listPS[i].main;
+                    mainModule.startColor = rarityColor;
+                }
+            }
+            effect.PlayEffect();
         });
     }
 

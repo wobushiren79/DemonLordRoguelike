@@ -28,11 +28,12 @@ watched_files:
 
 ### 连续音效 (LoopSound) — 多路并发循环（走路/下雨）
 - 框架层通用能力，**非新 `AuidoTypeEnum`/资源目录**：传任意音频 id，按其 `audio_type` 走现有加载路由取 clip，在**循环 AudioSource 池**（`DequeueLoopSource`/`RecycleLoopSource`，`MaxLoopSource=16`）上播放；活跃 `Dictionary<long,LoopSoundEntry>` 按 id 去重、独立起停、多路并发。
-- API：`PlayLoopSound`/`StopLoopSound`/`StopAllLoopSound`/`PauseAllLoopSound`/`RestoreAllLoopSound`/`IsLoopSoundPlaying`（框架层 long + 游戏层 `AudioEnum` 重载）。
+- API：`PlayLoopSound`/`StopLoopSound`/`StopAllLoopSound`/`PauseAllLoopSound`/`RestoreAllLoopSound`/`IsLoopSoundPlaying`（框架层 long + 游戏层 `AudioEnum` 重载）。`PlayLoopSound(id, volumeScale=-1f, pitch=1f)`：`volumeScale<0` 取 soundVolume。
 - **音量跟随 `soundVolume`**（不新增 loopVolume），`InitAudio` 用 `soundVolume × entry.volumeScale` 刷新活跃源。
+- **变速 `pitch`**：第三参数记入 `LoopSoundEntry.pitch`，起播 `source.pitch=pitch`（`pitch=2` 加快一倍且升调，Unity 音源无法只变速）；`RecycleLoopSource` 回收时复位 `pitch=1` 防污染复用。
 - **异步竞态防护**：`PlayLoopSound` 先登记 pending entry(token) 占位去重，加载回调校验 token/canceled 才起播；`StopLoopSound` 可取消加载中的 id。防"停不掉的孤儿音源"。
 - **生命周期**：音源常驻 DontDestroyOnLoad，`WorldHandler.ClearWorldData` 已挂 `StopAllLoopSound()` 兜底。
-- **走路声消费方**：基地自控魔王 [ControlForGameBase.cs](Assets/Scripts/Component/Game/Control/ControlForGameBase.cs) 移动/静止/禁用三处起停，复用一次性音效 `sound_walk_1`。
+- **走路声消费方**：基地自控魔王 [ControlForGameBase.cs](Assets/Scripts/Component/Game/Control/ControlForGameBase.cs) 移动/静止/禁用三处起停，复用一次性音效 `sound_walk_1`，起播传 `pitch:1.5f` 加快(1.5 倍速)。
 
 ### 音量管理
 - 音量持久化在 **GameConfigBean**（`musicVolume`/`soundVolume`/`environmentVolume`，默认 0.5）

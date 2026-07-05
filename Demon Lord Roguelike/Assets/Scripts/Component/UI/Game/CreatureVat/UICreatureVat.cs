@@ -8,9 +8,6 @@ using UnityEngine.UI;
 
 public partial class UICreatureVat : BaseUIComponent
 {
-    //初始可选素材魔物数量上限
-    public const int MaterialMax = 5;
-
     //当前容器序号
     public int currentIndexVat;
     //场景预制
@@ -122,8 +119,11 @@ public partial class UICreatureVat : BaseUIComponent
             else
             {
                 ui_BtnEnd.gameObject.SetActive(true);
-                ui_BtnAddProgress_Button.gameObject.SetActive(true);
-                ui_BtnAddProgressText.text = string.Format(TextHandler.Instance.GetTextById(80009), 1);
+                //魔晶加速做成研究解锁:0级(未研究)隐藏加速按钮;已研究则文本按等级显示加速倍率(=每次推进秒数,恒消耗1魔晶)
+                int addProgressLevel = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData().GetUnlockCreatureVatAddProgressLevel();
+                ui_BtnAddProgress_Button.gameObject.SetActive(addProgressLevel > 0);
+                if (addProgressLevel > 0)
+                    ui_BtnAddProgressText.text = string.Format(TextHandler.Instance.GetTextById(80009), addProgressLevel);
             }
         }
         //如果没有数据
@@ -227,6 +227,8 @@ public partial class UICreatureVat : BaseUIComponent
             listMaterialCreatureShow.Add(creatureData);
         });
         ui_UIViewCreatureCardList_Material.SetData(listMaterialCreatureShow, CardUseStateEnum.CreatureAscendMaterial, OnCellChangeForBackpackCreatureMaterial);
+        //素材列表就绪:刷新可选上限文本(初始 0/上限)
+        RefreshMaterialLimitText();
     }
 
     /// <summary>
@@ -311,17 +313,22 @@ public partial class UICreatureVat : BaseUIComponent
         if (targetVat == null || userAscendDetails == null)
             return;
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        //恒消耗1魔晶;进度推进秒数=进度倍率=魔晶加速研究等级;未研究(0级)加速按钮隐藏,这里兜底拦截
+        int addProgressLevel = userData.GetUserUnlockData().GetUnlockCreatureVatAddProgressLevel();
+        if (addProgressLevel <= 0)
+            return;
         int payCrystal = 1;
+        int addProgressValue = addProgressLevel;
         //检测水晶是否足够
         if (userData.CheckHasCrystal(payCrystal, isHintEnoughCrystal, true))
         {
-            //每颗魔晶加速1秒(进度+1秒);培养过程不主动存档
-            userAscendDetails.AddProgress(1f);
+            //消耗1颗魔晶,进度增加 addProgressValue 秒(=研究等级);培养过程不主动存档
+            userAscendDetails.AddProgress(addProgressValue);
             EventHandler.Instance.TriggerEvent(EventsInfo.CreatureAscend_AddProgress);
 
             Vector3 startPosition = targetVat.transform.position + new Vector3(0, 2.5f, 0);
             Vector3 endPosition = targetVat.transform.position + new Vector3(0, 1.2f, 0);
-            EffectHandler.Instance.ShowCreatureAscendAddProgressEffect(payCrystal, startPosition, endPosition);       
+            EffectHandler.Instance.ShowCreatureAscendAddProgressEffect(addProgressValue, startPosition, endPosition);
         }
     }
 
@@ -420,6 +427,8 @@ public partial class UICreatureVat : BaseUIComponent
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UserAscendBean userAscend = userData.GetUserAscendData();
+        //升阶后的新稀有度(供完成反馈的"稀有度流光"配色),清空临时数据前先取
+        int completedRarity = userAscendDetails != null ? userAscendDetails.targetRarity : 0;
         //把临时进阶数据落地到生物正式数据:升稀有度 + 授予预定BUFF(按目标稀有度槽位覆盖)
         if (userAscendDetails != null)
         {
@@ -440,6 +449,22 @@ public partial class UICreatureVat : BaseUIComponent
         GameDataHandler.Instance.manager.SaveUserData();
         //设置状态
         scenePrefab.BuildingVatSetState(targetVat,0, null);
+        //进阶完成反馈:胜利音效 + 容器处按新稀有度上色的"稀有度流光"庆祝粒子 + 成功提示(state=1 绿色)
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_win_1);
+        if (targetVat != null)
+        {
+            //庆祝粒子按升阶后新稀有度主色(RarityInfo.ui_board_color)上色
+            Color rarityColor = Color.white;
+            var newRarityInfo = RarityInfoCfg.GetItemData(completedRarity);
+            if (newRarityInfo != null)
+                rarityColor = ColorUtil.ParseHtmlString(newRarityInfo.ui_board_color);
+            EffectHandler.Instance.ShowCreatureAscendCompleteEffect(targetVat.position + new Vector3(0, 1.2f, 0), rarityColor);
+        }
+        UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(80013), 1);
+        //复位本次选择并重建目标列表,反映升阶后的新稀有度(否则列表仍是进阶前状态)
+        targetCreatureSelect = null;
+        listMaterialCreatureSelect.Clear();
+        InitCreaturekDataForTarget();
         RefreshVatState();
         RefreshVatProgress();
     }
@@ -556,10 +581,11 @@ public partial class UICreatureVat : BaseUIComponent
             {
                 if (!listMaterialCreatureSelect.Contains(selectCreatureData))
                 {
-                    //素材数量达到上限则拒绝并提示
-                    if (listMaterialCreatureSelect.Count >= MaterialMax)
+                    //素材数量达到上限(基础5+素材上限研究等级)则拒绝并提示
+                    int materialMax = GetMaterialMax();
+                    if (listMaterialCreatureSelect.Count >= materialMax)
                     {
-                        UIHandler.Instance.ToastHintText(string.Format(TextHandler.Instance.GetTextById(80011), MaterialMax));
+                        UIHandler.Instance.ToastHintText(string.Format(TextHandler.Instance.GetTextById(80011), materialMax));
                     }
                     else
                     {
@@ -568,13 +594,35 @@ public partial class UICreatureVat : BaseUIComponent
                 }
             }
             ui_UIViewCreatureCardList_Material.RefreshAllCard();
-            //素材变化:仅刷新BUFF增益概率展示(前后卡牌不变)
+            //素材变化:刷新可选上限文本 + BUFF增益概率展示(前后卡牌不变)
+            RefreshMaterialLimitText();
             RefreshAscendBuffs();
         }
     }
     #endregion
 
     #region 进阶详情相关
+    /// <summary>
+    /// 获取当前素材魔物可选上限(基础5 + 素材上限研究等级 CreatureVatMaterialNum，满级10)。
+    /// </summary>
+    /// <returns>可选择的最大素材魔物数量</returns>
+    protected int GetMaterialMax()
+    {
+        return GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData().GetUnlockCreatureVatMaterialMax();
+    }
+
+    /// <summary>
+    /// 刷新素材可选上限文本:格式「当前已选/可选上限」,达上限时数量转通用警示红(ColorUtil.LimitFull)。
+    /// </summary>
+    public void RefreshMaterialLimitText()
+    {
+        if (ui_LimmitText == null)
+            return;
+        int materialMax = GetMaterialMax();
+        int selectCount = listMaterialCreatureSelect.Count;
+        ui_LimmitText.text = ColorUtil.WrapLimitFull($"{selectCount}/{materialMax}", selectCount >= materialMax);
+    }
+
     /// <summary>
     /// 刷新进阶详情:按阶段切换 ProgressContent/AscendData 显隐,并在素材选择阶段+已选目标时填充前后卡牌与BUFF增益。
     /// <para>素材选择阶段(userAscendDetails==null):隐藏 ProgressContent;仅当已选目标魔物时显示 AscendData。</para>

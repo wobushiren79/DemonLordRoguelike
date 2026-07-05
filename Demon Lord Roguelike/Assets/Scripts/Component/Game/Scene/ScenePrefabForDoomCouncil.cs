@@ -125,6 +125,27 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
     }
 
     /// <summary>
+    /// 隐藏所有议员的态度(意愿)图标(Success SpriteRenderer)
+    /// 投票开始时调用: 正式投票阶段不再向玩家展示议员的赞成意愿
+    /// </summary>
+    public void HideAllCouncilorAttitudeView()
+    {
+        foreach (var item in dicCouncilorObj)
+        {
+            var targetObj = item.Value;
+            if (targetObj == null)
+            {
+                continue;
+            }
+            var successTF = targetObj.transform.Find("Success");
+            if (successTF != null)
+            {
+                successTF.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    /// <summary>
     /// 设置议员态度进度颜色(Success SpriteRenderer): 0红 50白 100绿
     /// </summary>
     /// <param name="targetCouncilor">议员对象</param>

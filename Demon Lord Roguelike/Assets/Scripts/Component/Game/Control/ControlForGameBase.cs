@@ -44,6 +44,50 @@ public class ControlForGameBase : BaseControl
     protected float timeUpdateForInteraction;
     protected float timeMaxForInteraction = 0.2f;
 
+    #region 空格突进(强化研究解锁)
+    //空格突进输入(复用 Player 映射的 Jump 动作,已绑定键盘 Space)
+    public InputAction inputActionDash;
+    //角色当前朝向(水平面),突进沿此方向;默认进入基地朝上(+Z)
+    protected Vector3 dashFacing = new Vector3(0, 0, 1);
+    [Header("空格突进")]
+    //突进耗时(秒):在此时长内快速移动完成,非瞬移
+    public float dashDuration = 0.2f;
+    //每级突进的世界距离,总距离=研究等级*此值(1/2/3级=1.5/3/4.5单位)
+    public float dashDistancePerLevel = 1.5f;
+    //每级突进对应的残影数量,总数=研究等级*此值(1级3个,3级9个)
+    public int dashGhostCountPerLevel = 3;
+    //突进检测障碍/边界的球形半径
+    protected float dashCheckRadius = 0.1f;
+    protected bool isDashing = false;      //是否正在突进
+    protected float dashTimer = 0;         //突进已进行时间
+    protected float dashSpeed = 0;         //突进速度=总距离/耗时
+    protected float dashCdRemain = 0;      //突进冷却剩余(秒)
+
+    //冲刺残影生成器(懒创建,挂在受控角色物体 controlTargetForCreature 上;框架层通用网格残影)
+    protected AfterimageGhostMesh _dashGhost;
+    /// <summary>
+    /// 冲刺残影生成器(懒创建并绑定当前角色 Spine 网格，做恶魔城式半透明虚影拖尾)
+    /// </summary>
+    protected AfterimageGhostMesh dashGhost
+    {
+        get
+        {
+            if (_dashGhost == null)
+            {
+                var targetGhost = GameControlHandler.Instance.manager.controlTargetForCreature;
+                _dashGhost = targetGhost.GetComponent<AfterimageGhostMesh>();
+                if (_dashGhost == null)
+                {
+                    _dashGhost = targetGhost.AddComponent<AfterimageGhostMesh>();
+                }
+                //skeletonAnimation 所在物体同时挂 MeshRenderer+MeshFilter,直接按物体绑定(框架层不依赖 Spine 类型)
+                _dashGhost.Init(skeletonAnimation.gameObject);
+            }
+            return _dashGhost;
+        }
+    }
+    #endregion
+
     public void Awake()
     {
         inputActionMove = InputHandler.Instance.manager.GetInputPlayerData(InputActionPlayerEnum.Move);
@@ -51,26 +95,50 @@ public class ControlForGameBase : BaseControl
         inputActionUseE = InputHandler.Instance.manager.GetInputPlayerData(InputActionPlayerEnum.E);
         inputActionUseE.started += HandleForUseEDown;
         inputActionUseE.canceled += HandleForUseEUp;
+
+        //空格突进:复用 Player 映射的 Jump 动作(Space),按下发起突进
+        inputActionDash = InputHandler.Instance.manager.GetInputPlayerData(InputActionPlayerEnum.Jump);
+        inputActionDash.started += HandleForDashDown;
+    }
+
+    public void OnDestroy()
+    {
+        //反订阅输入回调,避免控制物体销毁后回调悬挂
+        inputActionUseE.started -= HandleForUseEDown;
+        inputActionUseE.canceled -= HandleForUseEUp;
+        inputActionDash.started -= HandleForDashDown;
     }
 
     public void Update()
     {
         HandleForInteraction();
         HandleForCameraBlock();
+        HandleForDashCdUpdate();
     }
 
     public void FixedUpdate()
     {
+        //突进期间接管移动:忽略常规 WASD 输入,直到突进结束
+        if (isDashing)
+        {
+            HandleForDashUpdate();
+            return;
+        }
         HandleForMoveUpdate();
     }
 
     public void EnabledControl(bool enabled, bool isHideControlTarget)
     {
         base.EnabledControl(enabled);
+        //切换控制状态时打断进行中的突进,并把朝向重置为默认朝上(进入/恢复基地控制)
+        CancelDash();
+        dashFacing = new Vector3(0, 0, 1);
         if (!enabled)
         {
             //控制被禁用（如打开界面）时停止走路声，避免残留
             AudioHandler.Instance.StopLoopSound(AudioEnum.sound_walk_1);
+            //控制被禁用(打开界面/切场景经 EnableAllControl)时清空冲刺残影池:平时突进复用,此处统一销毁
+            if (_dashGhost != null) _dashGhost.ClearAll();
             if (isHideControlTarget)
             {
                 GameControlHandler.Instance.manager.controlTargetForCreature.SetActive(false);
@@ -148,21 +216,14 @@ public class ControlForGameBase : BaseControl
             {
                 targetMove.transform.position = targetPosition;
             }
-
-            Vector3 sizeOriginal = skeletonAnimation.transform.localScale;
-            float directionXSize = Mathf.Abs(sizeOriginal.x);
-            if (moveData.x > 0)
-            {
-                skeletonAnimation.transform.localScale = new Vector3(directionXSize, sizeOriginal.y, sizeOriginal.z);
-            }
-            else if (moveData.x < 0)
-            {
-                skeletonAnimation.transform.localScale = new Vector3(-directionXSize, sizeOriginal.y, sizeOriginal.z);
-            }
+            //记录当前朝向(供空格突进沿此方向),取最近一次移动方向
+            dashFacing = new Vector3(moveData.x, 0, moveData.y).normalized;
+            //按水平输入翻转精灵朝向
+            SetSpriteFlipByX(moveData.x);
             //播放动画
             PlayAnimForControlTarget(SpineAnimationStateEnum.Walk,animSpeed: moveSpeedFinal * 0.8f);
-            //播放走路声（连续循环，幂等去重，已在播直接返回）
-            AudioHandler.Instance.PlayLoopSound(AudioEnum.sound_walk_1);
+            //播放走路声（连续循环，幂等去重，已在播直接返回）；pitch=1.5 加快脚步节奏(1.5 倍速)
+            AudioHandler.Instance.PlayLoopSound(AudioEnum.sound_walk_1, pitch: 1.5f);
 
         }
     }
@@ -179,6 +240,142 @@ public class ControlForGameBase : BaseControl
         }
         return false;
     }
+
+    /// <summary>
+    /// 按水平输入翻转精灵朝向(x>0 朝右,x<0 朝左,x=0 保持不变)
+    /// </summary>
+    /// <param name="x">水平方向分量</param>
+    protected void SetSpriteFlipByX(float x)
+    {
+        if (skeletonAnimation == null || x == 0)
+        {
+            return;
+        }
+        Vector3 sizeOriginal = skeletonAnimation.transform.localScale;
+        float directionXSize = Mathf.Abs(sizeOriginal.x);
+        skeletonAnimation.transform.localScale = new Vector3(x > 0 ? directionXSize : -directionXSize, sizeOriginal.y, sizeOriginal.z);
+    }
+
+    #region 空格突进
+
+    /// <summary>
+    /// 空格(Jump)按下:满足「已解锁 + 非冷却 + 非突进中」时,沿当前朝向发起一次突进。
+    /// 突进距离 = 空格突进研究等级 * dashDistancePerLevel(1/2/3级=1/2/3单位),在 dashDuration 内完成,非瞬移。
+    /// </summary>
+    /// <param name="callback">输入回调上下文</param>
+    public void HandleForDashDown(CallbackContext callback)
+    {
+        if (!enabledControl)
+            return;
+        //已在突进中:忽略
+        if (isDashing)
+            return;
+        var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+        int dashLevel = userUnlock.GetUnlockSpaceDashLevel();
+        //未解锁空格突进研究:不响应
+        if (dashLevel <= 0)
+            return;
+        //冷却中:不响应
+        if (dashCdRemain > 0)
+            return;
+        float dashDistance = dashLevel * dashDistancePerLevel;
+        dashSpeed = dashDistance / dashDuration;
+        dashTimer = 0;
+        isDashing = true;
+        //按研究等级刷新冷却(突进CD研究可缩短,默认3秒→最低1秒)
+        dashCdRemain = userUnlock.GetUnlockSpaceDashCD();
+        //突进时精灵按朝向翻转,并播放较快的移动动画
+        SetSpriteFlipByX(dashFacing.x);
+        PlayAnimForControlTarget(SpineAnimationStateEnum.Walk, animSpeed: 1.5f);
+        //起步冲击 + 开始留残影(数量按突进等级:等级*每级数量,1级3个/3级9个)
+        var dashTarget = GameControlHandler.Instance.manager.controlTargetForCreature;
+        ShowDashBurstEffect(dashTarget.transform.position);
+        dashGhost.StartSpawn(dashLevel * dashGhostCountPerLevel, dashDuration);
+    }
+
+    /// <summary>
+    /// 突进逐帧移动(FixedUpdate 驱动):沿朝向按 dashSpeed 增量前进;
+    /// 命中场景边界或障碍(Obstacle层)即提前结束,避免穿到建筑或范围外;时长到达 dashDuration 亦结束。
+    /// </summary>
+    public void HandleForDashUpdate()
+    {
+        dashTimer += Time.fixedDeltaTime;
+        var targetMove = GameControlHandler.Instance.manager.controlTargetForCreature;
+        Vector3 targetMoveOffset = dashFacing * dashSpeed * Time.fixedDeltaTime;
+        Vector3 targetPosition = targetMove.transform.position + targetMoveOffset;
+        //边界或障碍阻挡:停在当前位置并结束突进(不瞬移穿越)
+        if (CheckSceneBoard(targetPosition) || CheckDashObstacle(targetPosition))
+        {
+            EndDash();
+            return;
+        }
+        targetMove.transform.position = targetPosition;
+        //时长用尽:结束突进
+        if (dashTimer >= dashDuration)
+        {
+            EndDash();
+        }
+    }
+
+    /// <summary>
+    /// 突进冷却计时(Update 驱动):每帧递减冷却剩余,归零后可再次突进
+    /// </summary>
+    public void HandleForDashCdUpdate()
+    {
+        if (dashCdRemain > 0)
+        {
+            dashCdRemain -= Time.deltaTime;
+        }
+    }
+
+    /// <summary>
+    /// 检测突进候选落点是否被障碍(Obstacle层)阻挡
+    /// </summary>
+    /// <param name="targetPosition">突进候选落点</param>
+    /// <returns>true=被障碍阻挡,应停止突进</returns>
+    protected bool CheckDashObstacle(Vector3 targetPosition)
+    {
+        var allHit = RayUtil.OverlapToSphere(targetPosition, dashCheckRadius, 1 << LayerInfo.Obstacle);
+        return allHit.Length > 0;
+    }
+
+    /// <summary>
+    /// 正常结束突进:清状态、停止留残影并恢复站立动画
+    /// </summary>
+    protected void EndDash()
+    {
+        isDashing = false;
+        dashTimer = 0;
+        //停止新增残影(已生成的各自淡出);用 backing field 避免仅为停止而创建生成器
+        if (_dashGhost != null) _dashGhost.StopSpawn();
+        PlayAnimForControlTarget(SpineAnimationStateEnum.Idle);
+    }
+
+    /// <summary>
+    /// 打断突进(仅清状态,不改动画;供控制切换等外部中断调用)
+    /// </summary>
+    protected void CancelDash()
+    {
+        isDashing = false;
+        dashTimer = 0;
+        if (_dashGhost != null) _dashGhost.StopSpawn();
+    }
+
+    /// <summary>
+    /// 播放冲刺起步冲击特效(一次性,脚下)
+    /// </summary>
+    /// <param name="position">播放世界坐标</param>
+    protected void ShowDashBurstEffect(Vector3 position)
+    {
+        EffectBean effectData = new EffectBean();
+        effectData.effectName = "EffectBodySlam_1";
+        effectData.effectPosition = position;
+        effectData.timeForShow = 0.6f;
+        effectData.isDestoryPlayEnd = false;   //回对象池复用,高频冲刺省GC
+        EffectHandler.Instance.ShowEffect(effectData);
+    }
+
+    #endregion
 
     /// <summary>
     /// 处理交互

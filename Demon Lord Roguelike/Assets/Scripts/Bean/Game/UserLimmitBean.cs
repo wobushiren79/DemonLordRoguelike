@@ -12,6 +12,8 @@ public class UserLimmitBean
     public int conquerDifficultyMax = 1;
     //生物升阶容器数量基础值（已解锁容器功能时，最终数量 = 该基础值 + CreatureVatAdd 研究等级）
     public int creatureVatMax = 1;
+    //生物进阶素材魔物可选上限基础值（最终上限 = 该基础值 + CreatureVatMaterialNum 研究等级，满级+5=10）
+    public int creatureVatMaterialMax = 5;
     //献祭最大数量
     public int sacrificeMax = 5;
     //孕育(扭蛋)创建生物时的随机属性总点数

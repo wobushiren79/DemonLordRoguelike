@@ -144,12 +144,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         int creatureNumMax = userUnlock.GetUnlockLineupCreatureNum();
 
         var listCreatureIds = userData.GetLineupCreatureIds(currentLineupIndex);
-        //阵容魔物数量文本：满员时数量显示为红色
-        string countStr = $"{listCreatureIds.Count}/{creatureNumMax}";
-        if (listCreatureIds.Count >= creatureNumMax)
-        {
-            countStr = $"<color=#FF4D4D>{countStr}</color>";
-        }
+        //阵容魔物数量文本：满员时数量显示为通用警示红
+        string countStr = ColorUtil.WrapLimitFull($"{listCreatureIds.Count}/{creatureNumMax}", listCreatureIds.Count >= creatureNumMax);
         ui_LineupHint.text = string.Format(TextHandler.Instance.GetTextById(30007), countStr);
     }
 

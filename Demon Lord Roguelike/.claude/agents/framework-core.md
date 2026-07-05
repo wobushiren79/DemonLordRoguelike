@@ -24,6 +24,7 @@ watched_files:
 - **BaseUIInit / BaseUIView** - UI 初始化与视图基类
 - **BaseControl / EffectBase** - 控制与特效基类
 - **BaseObservable / IBaseObserver** - 观察者模式
+- **AfterimageGhostBase + Mesh/SkinnedMesh/Sprite 变体** - 通用残影(afterimage/虚影拖尾)效果（Component/Other/）：基类封装对象池 + 生成节奏(StartSpawn(count,duration)) + 淡出 + 清理(ClearAll)，子类按渲染类型实现快照差异（网格快照 Spine/静态/程序化 · SkinnedMeshRenderer 用 BakeMesh · SpriteRenderer 复制精灵）。框架层纯 UnityEngine 依赖，不耦合游戏/ Spine
 
 ## 关键文件
 
@@ -38,6 +39,10 @@ watched_files:
 | BaseUIInit | Assets/FrameWork/Scripts/Base/BaseUIInit.cs |
 | BaseUIView | Assets/FrameWork/Scripts/Base/BaseUIView.cs |
 | BaseUIComponent | Assets/FrameWork/Scripts/Base/BaseUIComponent.cs |
+| AfterimageGhostBase(残影基类) | Assets/FrameWork/Scripts/Component/Other/AfterimageGhostBase.cs |
+| AfterimageGhostMesh(网格快照残影) | Assets/FrameWork/Scripts/Component/Other/AfterimageGhostMesh.cs |
+| AfterimageGhostSkinnedMesh(3D骨骼 BakeMesh) | Assets/FrameWork/Scripts/Component/Other/AfterimageGhostSkinnedMesh.cs |
+| AfterimageGhostSprite(2D精灵) | Assets/FrameWork/Scripts/Component/Other/AfterimageGhostSprite.cs |
 
 ## 约束
 

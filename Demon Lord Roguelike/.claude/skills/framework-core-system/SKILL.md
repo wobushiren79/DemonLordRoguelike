@@ -6,6 +6,7 @@ watched_files:
   - Assets/FrameWork/Scripts/Component/Manager/
   - Assets/FrameWork/Scripts/Component/Handler/
   - Assets/FrameWork/Scripts/Component/UI/
+  - Assets/FrameWork/Scripts/Component/Other/
 ---
 
 # 框架核心系统开发指南
@@ -522,6 +523,62 @@ public class BaseControl : BaseMonoBehaviour
     // 子类: ControlForGameBase, ControlForGameFight
 }
 ```
+
+---
+
+## 通用残影 (Afterimage / 虚影拖尾) 效果
+
+**目录**: `Assets/FrameWork/Scripts/Component/Other/`
+
+框架层通用「残影/虚影拖尾」能力（恶魔城式冲刺残影即用此）。基类封装公共流程，子类按**不同渲染类型**实现快照差异。首个接入方是控制系统的空格突进（`ControlForGameBase` 用 `AfterimageGhostMesh`）。
+
+### 继承结构与分工
+
+```
+AfterimageGhostBase (abstract)              # 通用:对象池 + 生成节奏 + 淡出 + 清理
+    ├── AfterimageGhostMesh                 # MeshFilter+MeshRenderer(几何已烘焙进CPU Mesh):Spine/静态/程序化
+    ├── AfterimageGhostSkinnedMesh          # SkinnedMeshRenderer(3D骨骼):必须 BakeMesh 取当前姿态(非 sharedMesh 的 bind pose)
+    └── AfterimageGhostSprite               # SpriteRenderer(2D精灵):复制 sprite + 降 color 淡出
+```
+
+**基类 `AfterimageGhostBase` 负责（子类不用重写）**：
+- 对象池：`listActive`/`poolIdle`/`listAll`，残影淡出即回池复用**不销毁**（高频触发不反复 Instantiate/Destroy）。
+- 生成节奏：`StartSpawn(count, duration)` 按 `spawnInterval=duration/count` 把 count 个残影均匀铺满；`StopSpawn()` 停新增；`ClearAll()` 统一销毁（挂起/切场景调）；`OnDestroy` 兜底。
+- 淡出：每帧按 `age/ghostLifetime` 算系数 `t`(1→0) 调子类 `ApplyFade`。
+
+**子类只实现 5 个抽象方法**：`CanCapture()` / `CreateGhost()` / `CaptureInto(item)` / `ApplyFade(item,t)` / `DestroyGhost(item)`；各自 `Init(源渲染器)` 绑定。
+
+### 用法
+
+```csharp
+// 绑定(挂到目标物体上,懒创建亦可)
+var ghost = go.AddComponent<AfterimageGhostMesh>();
+ghost.Init(skeletonAnimation.gameObject);   // 或 Init(MeshRenderer, MeshFilter)
+ghost.ghostTint = new Color(0.6f,0.75f,1f,0.55f);   // 冷色半透明(可选)
+// 触发:数量与时长由业务决定(如随等级)
+ghost.StartSpawn(count: 9, duration: 0.2f);
+// 结束 / 挂起
+ghost.StopSpawn();
+ghost.ClearAll();
+```
+
+### 关键点与坑
+
+- **网格快照必须深拷贝**（`AfterimageGhostMesh.CopyMesh`）：Spine/SkeletonRenderer 每帧双缓冲，直接引用 `sharedMesh` 下一帧被覆盖。
+- **蒙皮必须 BakeMesh**：`SkinnedMeshRenderer.sharedMesh` 是 bind pose，`BakeMesh` 才是当前动作帧。
+- **材质零克隆**：网格/蒙皮变体共享源 `sharedMaterials` + 用 `MaterialPropertyBlock` 覆盖 `_Color` 淡出（PMA 整体乘 `ghostTint*t`），不改本体、无材质泄漏；精灵变体直接改 `SpriteRenderer.color`。
+- **翻转**：残影用源 `lossyScale`（含翻转的负 X）。
+- **排序**：残影 `sortingOrder = 源-1` 压身后，关阴影。
+- **适用边界**：此套只适合「当前显示几何已在 CPU 侧（Mesh 或 Sprite）」的对象。**顶点着色器/GPU 驱动形变（风摆、GPU 粒子）冻结不住**——ghost 用同材质会按当前时间重新形变；真要通用需改「渲染纹理捕获(CommandBuffer.DrawRenderer → RenderTexture → 贴图残影)」，属另一条更重的技术路线，本框架暂未实现，需要时再作为新变体扩展。
+
+### 文件
+
+| 文件 | 说明 |
+|------|------|
+| `Component/Other/AfterimageGhostBase.cs` | 残影基类(池化/节奏/淡出/清理) |
+| `Component/Other/AfterimageGhostMesh.cs` | 网格快照残影(Spine/静态/程序化) |
+| `Component/Other/AfterimageGhostSkinnedMesh.cs` | 蒙皮残影(3D骨骼 BakeMesh) |
+| `Component/Other/AfterimageGhostSprite.cs` | 精灵残影(2D SpriteRenderer) |
 
 ---
 

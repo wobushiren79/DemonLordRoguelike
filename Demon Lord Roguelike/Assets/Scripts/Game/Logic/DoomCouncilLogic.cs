@@ -66,6 +66,8 @@ public class DoomCouncilLogic : BaseGameLogic
     {
         //关闭角色控制
         GameControlHandler.Instance.SetBaseControl(false, isHideControlTarget: false);
+        //隐藏所有议员的意愿(态度)图标: 正式投票阶段不再展示赞成意愿
+        scenePrefab.HideAllCouncilorAttitudeView();
         //控制角色位移到讲台
         var controlTarget = GameControlHandler.Instance.manager.controlTargetForCreature;
         controlTarget.transform.position = scenePrefab.podium.transform.position;
@@ -281,8 +283,8 @@ public class DoomCouncilLogic : BaseGameLogic
 
     /// <summary>
     /// 按议案通过率为议员生成投票态度(0/25/50/75/100)
-    /// 算法(按需求例子): 低态度组人数 = 总数×通过率 → 分配到{0,25}; 其余高态度组 → 分配到{75,100};
-    /// 最后从全体中随机取10%覆盖为50; 议会固定NPC再叠加其好感对应的态度修正
+    /// 算法: 高态度(赞成)组人数 = 总数×通过率 → 分配到{75,100}; 其余低态度组 → 分配到{0,25};
+    /// 通过率越高 → 越多议员倾向赞成; 最后从全体中随机取10%覆盖为50; 议会固定NPC再叠加其好感对应的态度修正
     /// </summary>
     /// <param name="listCouncilor">议员列表</param>
     /// <param name="successRate">议案通过率(0~1)</param>
@@ -301,21 +303,21 @@ public class DoomCouncilLogic : BaseGameLogic
             indexList.Add(i);
         }
         ShuffleList(indexList);
-        //低态度组人数 = 总数 × 通过率
-        int lowCount = Mathf.RoundToInt(count * successRate);
+        //高态度(赞成)组人数 = 总数 × 通过率
+        int highCount = Mathf.RoundToInt(count * successRate);
         for (int k = 0; k < count; k++)
         {
             int targetIndex = indexList[k];
             int attitude;
-            if (k < lowCount)
-            {
-                //低态度组: 0 或 25
-                attitude = UnityEngine.Random.Range(0, 2) == 0 ? 0 : 25;
-            }
-            else
+            if (k < highCount)
             {
                 //高态度组: 75 或 100
                 attitude = UnityEngine.Random.Range(0, 2) == 0 ? 75 : 100;
+            }
+            else
+            {
+                //低态度组: 0 或 25
+                attitude = UnityEngine.Random.Range(0, 2) == 0 ? 0 : 25;
             }
             doomCouncilData.SetCouncilorAttitude(listCouncilor[targetIndex].creatureUUId, attitude);
         }
