@@ -35,6 +35,7 @@ watched_files:
 - **UnlockInfoBean / UnlockInfoCfg** - 解锁条目配置（区分 0 研究 / 1 扭蛋机）
 - **ResearchInfoTypeEnum** - 研究类型枚举（Building / Strengthen / Creature）
 - **UnlockEnum** - 关键模块解锁 ID 枚举（生物进阶、祭坛、终焉议会、阵容数、扭蛋稀有度等）
+  - 设施段(1002) 征服通关获得声望：`ConquerReputationReward`(100200004，`research_type=1`，`pre_unlock_ids="100200001"` 前置=终焉议会 `DoomCouncil`，`level_max=1`，`pay_crystal=1000`)——「解锁开关驱动游戏逻辑」范例：解锁后玩家每次完整通关征服模式按难度加自身声望，逻辑门控在 `GameFightLogicConquer.AddReputationForConquerComplete`(`CheckIsUnlock(UnlockEnum.ConquerReputationReward)` 才 `userData.AddReputation(conquerInfo.GetRewardReputation())`)，声望值取征服难度表新增列 `reward_reputation`。详见 `game-conquer`/`game-fight-reward`
   - 设施段(1003) 传送门详情预览 4 节点：`PortalPreviewRoadNum`(100300002 线路数) / `PortalPreviewFightNum`(100300003 关卡数) / `PortalPreviewRoadLength`(100300004 路径长度) / `PortalPreviewReward`(100300005 奖励道具)，均为 `research_type=1` 设施节点，门控传送门详情弹窗 `UIPopupPortalDetails` 各项是否显示
   - 设施段(1003) 传送门刷新：`PortalRefreshNum`(100300006，`research_type=1`，`level_max=10`)——研究等级=传送门地图刷新次数上限，未解锁则 `UIBasePortal` 刷新按钮隐藏，通关一次世界回满(`GameFightLogicConquer.ActionForUIRewardSelectEnd` 调 `RefillPortalRefreshNum`)
 

@@ -66,6 +66,23 @@ public class UserTempBean
     }
 
     /// <summary>
+    /// 获取当前已通过议案对下一场战斗敌人的累计强度倍率
+    /// 遍历所有在列议案的 GetEnemyIntensityRate() 连乘(默认1); 供征服模式敌人生成时叠加到 intensityRate
+    /// </summary>
+    /// <returns>敌人强度累计倍率(无议案时为1)</returns>
+    public float GetEnemyIntensityRate()
+    {
+        float rate = 1f;
+        if (listDoomCouncilEntity.IsNull())
+            return rate;
+        for (int i = 0; i < listDoomCouncilEntity.Count; i++)
+        {
+            rate *= listDoomCouncilEntity[i].GetEnemyIntensityRate();
+        }
+        return rate;
+    }
+
+    /// <summary>
     /// 增加传送门随机数据
     /// </summary>
     public void AddPortalWorldInfoRandomData(GameWorldInfoRandomBean addData)

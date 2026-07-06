@@ -27,6 +27,8 @@ public class ScenePrefabForBase : ScenePrefabBase
     //光线
     public Light lightSun;
     public GameObject lightRay;
+    //移动边界(空物体,用 localScale 的 x/z 表达 BOX 长/宽,角色移动不可超出;取代旧的写死圆形半径)
+    public GameObject objBoard;
 
     public Color vatColorStart = new Color(0, 0.4f, 1f, 0.4f);
     public Color vatColorEnd = new Color(0.11f, 0.06f, 0.5f, 0.7f);

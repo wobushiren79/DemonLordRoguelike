@@ -24,7 +24,8 @@ public partial class VolumeHandler
                 break;
             case GameSceneTypeEnum.BaseGaming:
                 float disFollowBase = CameraHandler.Instance.GetDistanceFollow(CameraHandler.Instance.manager.cm_Base);
-                SetDepthOfField(DepthOfFieldMode.Bokeh, disFollowBase, 200, 20);
+                //focalLength 由 200 长焦降到 50，加厚景深：水面/池底整片近景清晰，仅远景柔化(避免水下地面失焦)
+                SetDepthOfField(DepthOfFieldMode.Bokeh, disFollowBase, 50, 20);
                 break;
             case GameSceneTypeEnum.Fight:
                 float disFollowFight = CameraHandler.Instance.GetDistanceFollow(CameraHandler.Instance.manager.cm_Fight);

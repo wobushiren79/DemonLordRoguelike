@@ -96,9 +96,9 @@ public class CreatureSacrificeLogic : BaseGameLogic
         float timeReset = 0.5f;
 
         //计算本次献祭最终成功率(保底+祭品)并掷骰判定
-        //测试模式且开启手动成功率时, 直接使用手动指定的成功率, 否则按真实公式计算
+        //测试模拟模式且开启手动成功率时, 直接使用手动指定的成功率, 否则按真实公式计算
         float successRate;
-        if (creatureSacrificeData.isTestMode && creatureSacrificeData.useManualSuccessRate)
+        if (GameDataHandler.Instance.manager.isTestSimulation && creatureSacrificeData.useManualSuccessRate)
         {
             successRate = Mathf.Clamp01(creatureSacrificeData.manualSuccessRate);
         }
@@ -199,7 +199,8 @@ public class CreatureSacrificeLogic : BaseGameLogic
         //加点界面手动分配,若现在落盘,玩家在加点界面强退会丢失祭品却保留不了加点,造成亏损。
         //成功的落盘统一延后到加点确认后的 SaveAndEndGame(或无加点时直接 SaveAndEndGame),
         //加点界面强退则本次成功结算全部不写盘,祭品自然恢复。
-        if (!creatureSacrificeData.isTestMode && !isSuccess)
+        //测试模拟模式的不落盘已由 GameDataManager.SaveUserData 统一拦截,此处只保留"仅失败才存档"的正式逻辑
+        if (!isSuccess)
         {
             GameDataHandler.Instance.manager.SaveUserData();
         }
@@ -250,14 +251,11 @@ public class CreatureSacrificeLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// 存档(测试模式不落盘到真实存档,仅内存生效)并返回生物管理界面。
+    /// 存档并返回生物管理界面。测试模拟模式的不落盘由 GameDataManager.SaveUserData 统一拦截,此处无需再判断。
     /// </summary>
     public void SaveAndEndGame()
     {
-        if (!creatureSacrificeData.isTestMode)
-        {
-            GameDataHandler.Instance.manager.SaveUserData();
-        }
+        GameDataHandler.Instance.manager.SaveUserData();
         EndGame();
     }
 

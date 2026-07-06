@@ -44,6 +44,19 @@ public partial class GameTestEditor
     private List<string> sacrificeTestCreatureUUIds = new List<string>();
     private GUIContent[] sacrificeTestCreatureNames = new GUIContent[0];
 
+    // 魔物进阶测试参数
+    public int creatureVatTestSaveSlot = 1;
+    // 解锁的VAT总数量(自由选择具体解锁几个,默认满=全解锁);运行时按配置上限再钳制
+    public int creatureVatTestVatNum = CREATURE_VAT_TEST_VAT_NUM_MAX;
+    // 解锁的魔晶加速等级(自由选择具体解锁几级,0=加速锁定,默认满=全解锁);运行时按配置上限再钳制
+    public int creatureVatTestProgressLevel = CREATURE_VAT_TEST_PROGRESS_LEVEL_MAX;
+    // VAT数量滑条下限(至少1个容器才能测试)
+    private const int CREATURE_VAT_TEST_VAT_NUM_MIN = 1;
+    // VAT数量滑条上限(基础1 + CreatureVatAdd研究满级5)
+    private const int CREATURE_VAT_TEST_VAT_NUM_MAX = 6;
+    // 魔晶加速等级滑条上限(CreatureVatAddProgress研究满级)
+    private const int CREATURE_VAT_TEST_PROGRESS_LEVEL_MAX = 5;
+
     // 奖励选择测试参数
     public RarityEnum rewardSelectRarity = RarityEnum.N;
     public int rewardSelectAddAttribute = 5;
@@ -64,6 +77,7 @@ public partial class GameTestEditor
     private bool showResearchTest = true;
     private bool showAbyssalBlessingTest = true;
     private bool showCreatureSacrificeTest = true;
+    private bool showCreatureVatTest = true;
     private bool showNormalGameTest = true;
 
     // 战斗场景测试折叠
@@ -139,6 +153,11 @@ public partial class GameTestEditor
         sacrificeTestManualRate = EditorPrefs.GetFloat(PREFS_KEY_PREFIX + "sacrificeTestManualRate", 1f);
         sacrificeTestSelectIndex = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "sacrificeTestSelectIndex", 0);
 
+        // 魔物进阶测试参数
+        creatureVatTestSaveSlot = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "creatureVatTestSaveSlot", 1), 1, 3);
+        creatureVatTestVatNum = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "creatureVatTestVatNum", CREATURE_VAT_TEST_VAT_NUM_MAX), CREATURE_VAT_TEST_VAT_NUM_MIN, CREATURE_VAT_TEST_VAT_NUM_MAX);
+        creatureVatTestProgressLevel = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "creatureVatTestProgressLevel", CREATURE_VAT_TEST_PROGRESS_LEVEL_MAX), 0, CREATURE_VAT_TEST_PROGRESS_LEVEL_MAX);
+
         // 敌人 IDs
         LoadEnemyIds();
     }
@@ -193,6 +212,11 @@ public partial class GameTestEditor
         EditorPrefs.SetBool(PREFS_KEY_PREFIX + "sacrificeTestUseManualRate", sacrificeTestUseManualRate);
         EditorPrefs.SetFloat(PREFS_KEY_PREFIX + "sacrificeTestManualRate", sacrificeTestManualRate);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "sacrificeTestSelectIndex", sacrificeTestSelectIndex);
+
+        // 魔物进阶测试参数
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "creatureVatTestSaveSlot", creatureVatTestSaveSlot);
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "creatureVatTestVatNum", creatureVatTestVatNum);
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "creatureVatTestProgressLevel", creatureVatTestProgressLevel);
 
         // 敌人 IDs
         SaveEnemyIds();

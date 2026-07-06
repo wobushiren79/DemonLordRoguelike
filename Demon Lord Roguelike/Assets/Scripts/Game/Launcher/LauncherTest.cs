@@ -8,6 +8,8 @@ public class LauncherTest : BaseLauncher
 
     //献祭升级测试:基地场景加载完成后待执行的回调
     private System.Action actionForSacrificeTest;
+    //魔物进阶测试:基地场景加载完成后待执行的回调
+    private System.Action actionForCreatureVatTest;
 
     public override void Launch()
     {
@@ -214,8 +216,9 @@ public class LauncherTest : BaseLauncher
             LogUtil.LogError($"献祭升级测试失败，存档 {saveSlot} 中找不到目标生物 UUId:{targetCreatureUUId}");
             return;
         }
-        //以该存档数据替换运行时数据(测试模式不会落盘回真实存档)
+        //以该存档数据替换运行时数据，并开启测试模拟(全程不落盘回真实存档，由 GameDataManager 统一拦截)
         GameDataHandler.Instance.manager.SetUserData(userData);
+        GameDataHandler.Instance.manager.isTestSimulation = true;
 
         //清理上一次未触发的待执行回调，避免重复注册
         if (actionForSacrificeTest != null)
@@ -231,12 +234,70 @@ public class LauncherTest : BaseLauncher
             EventHandler.Instance.UnRegisterEvent(EventsInfo.World_EnterGameForBaseScene, actionForSacrificeTest);
             CreatureSacrificeBean creatureSacrificeData = new CreatureSacrificeBean();
             creatureSacrificeData.targetCreature = targetCreature;
-            creatureSacrificeData.isTestMode = true;
             creatureSacrificeData.useManualSuccessRate = useManualSuccessRate;
             creatureSacrificeData.manualSuccessRate = manualSuccessRate;
             GameHandler.Instance.StartCreatureSacrifice(creatureSacrificeData);
         };
         EventHandler.Instance.RegisterEvent(EventsInfo.World_EnterGameForBaseScene, actionForSacrificeTest);
+
+        //进入基地场景(使用该存档数据)
+        WorldHandler.Instance.EnterGameForBaseScene(userData);
+    }
+
+    /// <summary>
+    /// 开始魔物进阶(生物升阶容器)测试
+    /// 加载指定存档槽位数据作为运行时数据，覆盖解锁的VAT数量/加速等级后进入基地场景，直接打开魔物进阶UI(测试模拟，全程内存模拟不落盘)。
+    /// </summary>
+    /// <param name="saveSlot">存档槽位(1~3，与游戏一致：UserData_1/2/3)</param>
+    /// <param name="vatNum">解锁的VAT总数量(≥1，运行时按配置钳制到 基础creatureVatMax+CreatureVatAdd研究满级)</param>
+    /// <param name="addProgressLevel">解锁的魔晶加速等级(0=加速锁定/隐藏加速按钮，运行时按配置钳制到 CreatureVatAddProgress研究满级)</param>
+    public void StartForCreatureVatTest(int saveSlot, int vatNum, int addProgressLevel)
+    {
+        //加载指定槽位存档数据
+        UserDataService dataService = new UserDataService();
+        dataService.ChangeSlot(saveSlot);
+        UserDataBean userData = dataService.Load(false);
+        if (userData == null)
+        {
+            LogUtil.LogError($"魔物进阶测试失败，存档 {saveSlot} 不存在或为空");
+            return;
+        }
+        //以该存档数据替换运行时数据，并开启测试模拟(全程不落盘回真实存档，由 GameDataManager 统一拦截)
+        GameDataHandler.Instance.manager.SetUserData(userData);
+        GameDataHandler.Instance.manager.isTestSimulation = true;
+
+        //覆盖VAT相关解锁:数量=基础creatureVatMax+CreatureVatAdd研究等级；传入值按配置上限钳制(容错编辑器与配置的漂移)
+        UserUnlockBean userUnlock = userData.GetUserUnlockData();
+        int baseVatMax = userData.GetUserLimmitData().creatureVatMax;
+        int vatAddLevelMax = ResearchInfoCfg.GetItemDataByUnlockId((long)UnlockEnum.CreatureVatAdd)?.level_max ?? 0;
+        int progressLevelMax = ResearchInfoCfg.GetItemDataByUnlockId((long)UnlockEnum.CreatureVatAddProgress)?.level_max ?? 0;
+        int targetVatNum = Mathf.Clamp(vatNum, baseVatMax, baseVatMax + vatAddLevelMax);
+        int targetProgressLevel = Mathf.Clamp(addProgressLevel, 0, progressLevelMax);
+        //确保VAT功能已解锁，并把附加数量研究等级覆盖为目标值(总数=基础+附加等级)
+        userUnlock.AddUnlock((long)UnlockEnum.CreatureVat);
+        userUnlock.AddUnlock((long)UnlockEnum.CreatureVatAdd, targetVatNum - baseVatMax);
+        //覆盖魔晶加速研究等级(0=锁定，隐藏加速按钮)
+        userUnlock.AddUnlock((long)UnlockEnum.CreatureVatAddProgress, targetProgressLevel);
+
+        //清理上一次未触发的待执行回调，避免重复注册
+        if (actionForCreatureVatTest != null)
+        {
+            EventHandler.Instance.UnRegisterEvent(EventsInfo.World_EnterGameForBaseScene, actionForCreatureVatTest);
+            actionForCreatureVatTest = null;
+        }
+
+        //基地场景加载完成后，直接打开魔物进阶UI(不落盘由全局测试模拟标记统一拦截)
+        actionForCreatureVatTest = () =>
+        {
+            //一次性回调，触发后立即注销
+            EventHandler.Instance.UnRegisterEvent(EventsInfo.World_EnterGameForBaseScene, actionForCreatureVatTest);
+            //测试入口打开: 退出时返回 UIBaseCore(与核心入口一致)
+            UIHandler.Instance.OpenUIAndCloseOther<UICreatureVat>((ui) =>
+            {
+                ui.actionForExit = () => UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
+            });
+        };
+        EventHandler.Instance.RegisterEvent(EventsInfo.World_EnterGameForBaseScene, actionForCreatureVatTest);
 
         //进入基地场景(使用该存档数据)
         WorldHandler.Instance.EnterGameForBaseScene(userData);
@@ -249,6 +310,7 @@ public class LauncherTest : BaseLauncher
     /// </summary>
     public void StartForNormalGame()
     {
+        //测试模拟标记的复位统一在 WorldHandler.EnterMainForBaseScene 内(真实回主菜单收口点)完成，此处无需再复位
         WorldHandler.Instance.EnterMainForBaseScene();
     }
 

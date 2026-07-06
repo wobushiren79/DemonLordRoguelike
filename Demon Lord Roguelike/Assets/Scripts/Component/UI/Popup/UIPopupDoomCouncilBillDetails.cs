@@ -48,5 +48,7 @@ public partial class UIPopupDoomCouncilBillDetails : PopupShowCommonView
         //保留2位小数
         float percentage = MathUtil.GetPercentage(rate, 2);
         ui_SuccessRate.text = string.Format(TextHandler.Instance.GetTextById(53003), percentage);
+        //成功率文本按 rate 分段配色(复用献祭成功率同口径:ColorUtil.GetProgressColor,rate为0~1)
+        ui_SuccessRate.color = ColorUtil.GetProgressColor(rate);
     }
 }

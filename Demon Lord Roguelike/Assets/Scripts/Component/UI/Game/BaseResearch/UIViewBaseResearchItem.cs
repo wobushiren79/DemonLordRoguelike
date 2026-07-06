@@ -197,6 +197,8 @@ public partial class UIViewBaseResearchItem : BaseUIView
         animForUnlock = DOTween.Sequence();
         animForUnlock.Append(transform.DOScale(Vector3.one * 2f, 1));
         animForUnlock.Join(transform.DOShakePosition(1, 25, 50));
+        //放大结束、开始猛缩(往下压)瞬间播放上锁音效
+        animForUnlock.AppendCallback(() => AudioHandler.Instance.PlaySound(AudioEnum.sound_lock_5));
         animForUnlock.Append(transform.DOScale(Vector3.one, 0.1f));
         animForUnlock.OnComplete(() =>
         {

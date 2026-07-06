@@ -43,8 +43,9 @@ watched_files:
 
 ```
 UICreatureManager (BaseUIComponent)   生物管理界面
-    │  RefreshSacrificeButton(creatureData): 默认隐藏,仅"解锁祭坛 && CanUpLevel()"时显示升级按钮
+    │  RefreshSacrificeButton(creatureData): 解锁祭坛且未满级时显示;经验达标则正常/经验未达标则置灰但仍可点击(SetSacrificeButtonGray 染灰按钮及子图标)。未解锁祭坛/无选中生物/已满级(IsMaxLevel)则隐藏
     │  点击 ui_BtnLevelUpSacrifice_Button → OnClickForCreatureSacrifice()
+    │      → 若 !CanUpLevel(): ToastHintText(textId 61009「经验值未达到100%」, state0) 拦截返回
     │      → new CreatureSacrificeBean{ targetCreature = 选中生物 }
     │      → GameHandler.Instance.StartCreatureSacrifice(bean)
     ▼
@@ -64,7 +65,7 @@ CreatureSacrificeLogic (BaseGameLogic)   献祭玩法逻辑
     │      - 祭品: RemoveAllEquipToBackpack() 退装备 → RemoveBackpackCreature() 移除
     │      - 成功: attributePoint = targetCreature.UpLevelForSacrifice()(返回加点数,不再自动加属性) + 清空 sacrificePityRate
     │      - 失败: sacrificePityRate += GetUnlockSacrificeFailPityAddRate()(研究等级×5%,未解锁不累积)
-    │      - 末尾落盘策略: 仅「失败」非测试模式立即 GameDataHandler.SaveUserData();「成功」此处不落盘(只改内存),延后到加点确认后的 SaveAndEndGame,防玩家在加点界面强退时祭品已扣、加点未存造成亏损
+    │      - 末尾落盘策略: 仅「失败」立即 GameDataHandler.SaveUserData();「成功」此处不落盘(只改内存),延后到加点确认后的 SaveAndEndGame,防玩家在加点界面强退时祭品已扣、加点未存造成亏损(测试模拟模式的不落盘由 GameDataManager.isTestSimulation 在存档层统一拦截,此处不再判断)
     │  OnSacrificeAnimEnd(isSuccess): 动画结束后的表现与收尾
     │      - 成功: SettleSacrificeData(true)(此时才升级,但不落盘) + 触发 Success; attributePoint>0→OpenAddAttributeUI(弹手动加点,确认后才落盘) / 无点数→SaveAndEndGame(落盘)
     │      - 失败: 数据已在动画前结算落盘,仅触发 Fail + EndGame() 返回 UICreatureManager
@@ -128,8 +129,8 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 | 方法 | 作用 |
 |------|------|
 | `GetNextLevelInfo()` | `LevelInfoCfg.GetItemData(level + 1)`，满级返回 null |
-| `IsMaxLevel()` | 无下一级配置即满级 |
-| `CanUpLevel()` | 未满级 且 `levelExp >= 下一级 level_exp`（决定升级按钮显隐） |
+| `IsMaxLevel()` | 无下一级配置即满级（满级时**隐藏**升级按钮） |
+| `CanUpLevel()` | 未满级 且 `levelExp >= 下一级 level_exp`（未满级下决定升级按钮是否置灰/能否发起献祭；满级另由 `IsMaxLevel()` 隐藏按钮） |
 | `UpLevelForSacrifice()` | 经验清 0(不保留溢出余量) → `level++` → **返回本次可分配加点数**(`LevelInfo.attribute_point`，当前全等级配置为 5，`<=0` 兜底1)；不再自动加属性 |
 
 > **升级属性成长（手动加点）**：升级**不再自动加属性**。`UpLevelForSacrifice()` 升级后返回下一级 `LevelInfo.attribute_point`(当前全等级配置为 5) 个可分配点数，由玩家在 `UICreatureAddAttribute` 界面手动分配到 HP/护甲/攻击/攻速。单点增量见 `CreatureUtil.GetAttributePointAddValue`（HP/DR 每点 +10、ATK/ASPD 每点 +1），写入 `creatureAttribute.dicAttributeLevelUp`。要调整每级点数改 Excel `attribute_point` 列；要调单点增量改 `GetAttributePointAddValue`。
@@ -150,7 +151,7 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 ## 等级上限
 
 - `LevelInfo` 配置共 10 级 → 最高等级 10。满级时 `GetNextLevelInfo()` 返回 null。
-- 满级后：升级按钮恒隐藏（`CanUpLevel()` 为 false）；征服关卡不再累加经验（`GameFightLogicConquer` 中 `IsMaxLevel()` 跳过）。
+- 满级后：升级按钮**隐藏**（`IsMaxLevel()` 为 true）；征服关卡不再累加经验（`GameFightLogicConquer` 中 `IsMaxLevel()` 跳过）。
 
 ## 等级配置 (LevelInfo)
 
@@ -186,7 +187,7 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 UICreatureManager (BaseUIComponent)   生物管理
     ├── ui_UIViewCreatureCardList            // 背包生物列表
     ├── ui_UIViewCreatureCardEquipDetails    // 选中生物详情+装备
-    ├── ui_BtnLevelUpSacrifice_Button        // 献祭升级按钮(默认隐藏)
+    ├── ui_BtnLevelUpSacrifice_Button        // 献祭升级按钮(解锁祭坛且未满级时显示;经验未达标时置灰仍可点击→toast 61009;满级隐藏)
     ├── ui_BtnLevelUpSacrifice_PopupButtonCommonView  // 按钮气泡说明(textId 60000)
     └── ui_UIViewCreatureCardList 内每张卡片的 ui_SacrificeEffect  // 卡片上的"可献祭升级"高亮特效
                                               // 由 UIViewCreatureCardItem.SetSacrificeEffect 控制,
@@ -248,9 +249,10 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
 ### 测试献祭升级（不落盘）
 测试模式 `TestSceneTypeEnum.CreatureSacrifice`：读取某个真实存档的数据对其中一只生物直接发起献祭，可手动控制成功率或用存档真实数据，**结果不写回真实存档**。详见 `test-system` Skill「献祭升级测试」。
 
-- `CreatureSacrificeBean` 新增测试字段：`isTestMode`(不落盘)、`useManualSuccessRate`(是否覆盖)、`manualSuccessRate`(手动成功率 0~1)。
-- `CreatureSacrificeLogic.StartSacrifice`：`isTestMode && useManualSuccessRate` 时用手动成功率掷骰，否则走 `CreatureUtil.GetSacrificeSuccessRate` 公式。
-- `CreatureSacrificeLogic.SettleSacrificeData`：`isTestMode` 时跳过 `SaveUserData()`，升级/祭品消耗只在内存生效。
+- **不落盘统一为全局机制**：`GameDataManager.isTestSimulation` 为 `true` 时 `SaveUserData` 一律 no-op（献祭/进阶测试共用，见 `test-system` Skill「测试模拟不落盘通用机制」）。`CreatureSacrificeBean` 只保留献祭专属测试字段 `useManualSuccessRate`(是否覆盖)、`manualSuccessRate`(手动成功率 0~1)——原 `isTestMode` 已删。
+- `CreatureSacrificeLogic.StartSacrifice`：`GameDataHandler.Instance.manager.isTestSimulation && useManualSuccessRate` 时用手动成功率掷骰，否则走 `CreatureUtil.GetSacrificeSuccessRate` 公式。
+- `CreatureSacrificeLogic.SettleSacrificeData` / `SaveAndEndGame`：直接调 `SaveUserData()`（测试模拟下由存档层自动跳过），升级/祭品消耗只在内存生效。
+- 入口 `LauncherTest.StartForCreatureSacrificeTest` 在 `SetUserData` 后置 `isTestSimulation=true`。
 - 入口 `LauncherTest.StartForCreatureSacrificeTest(slot, uuid, useManualRate, manualRate)`：`UserDataService` 加载存档 → `SetUserData` 替换运行时数据 → 一次性 `World_EnterGameForBaseScene` 等基地就绪 → `GameHandler.StartCreatureSacrifice`。
 - **目标生物须取自加载后的 `userData.GetUserBackpackCreatureData().listBackpackCreature` 同一引用**（UI 按引用排除目标）。
 

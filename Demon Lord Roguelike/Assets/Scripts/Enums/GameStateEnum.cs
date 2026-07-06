@@ -108,6 +108,7 @@ public enum TestSceneTypeEnum
     ResearchUI = 8,//研究ui
     AbyssalBlessing = 9,//深渊馈赠UI
     CreatureSacrifice = 10,//生物献祭升级测试
+    CreatureVat = 11,//魔物进阶(生物升阶容器)测试
 }
 
 /// <summary>
@@ -174,6 +175,7 @@ public enum UnlockEnum : long
     SacrificePityRate = 100100003,//献祭失败保底概率提升(每级失败累积的保底成功率+5%,满级+50%)
     SacrificeDifferentIdRate = 100100004,//不同生物id献祭成功率提升(每个不同id祭品单个成功率+5%,满级+50%)
     DoomCouncil = 100200001,//终焉议会模块
+    ConquerReputationReward = 100200004,//征服通关获得声望(解锁后完整通关征服按难度reward_reputation增加玩家声望;前置=DoomCouncil)
     PortalShowNum = 100300001, //传送门显示数量
     PortalPreviewRoadNum = 100300002, //传送门详情-线路数量预览(研究门控)
     PortalPreviewFightNum = 100300003, //传送门详情-关卡数量预览(研究门控)
@@ -227,6 +229,7 @@ public enum ControlInteractionEnum
     DoomCouncilPodium,//终焉议会讲台
     Councilor,//议会成员
     AchievementInteraction,//成就石碑交互
+    VatInteraction = 8,//魔物进阶容器交互(提示文本 textId=2000+值=2008;跳过7因2007已被"刷新次数已用完"占用)
 }
 
 /// <summary>

@@ -203,6 +203,7 @@ public enum UnlockEnum : long
     SacrificePityRate = 100100003,     // 献祭失败保底概率提升(+5%/级, level_max=10)
     SacrificeDifferentIdRate = 100100004, // 不同魔物献祭成功率提升(+5%/级, level_max=10)
     DoomCouncil = 100200001,           // 终焉议会模块
+    ConquerReputationReward = 100200004, // 征服通关获得声望(解锁后完整通关征服按难度加玩家声望; 前置=DoomCouncil)
     PortalShowNum = 100300001,         // 传送门显示数量
     PortalPreviewRoadNum = 100300002,    // 传送门详情预览-线路数
     PortalPreviewFightNum = 100300003,   // 传送门详情预览-关卡数
@@ -259,6 +260,15 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 ```
 
 > `UIPopupPortalDetails` 详细改造（AutoLink 的 4 个 `UIViewPopupPortalDetailsItem`、奖励缓存池、预生成奖励来源 `GameWorldInfoRandomBean.GetDifficultyReward`）属传送门/征服模块，本 Skill 仅覆盖"研究门控"这一面。
+
+### 设施分支(1002 段) — 征服通关获得声望（解锁开关驱动游戏逻辑）
+
+「解锁开关型研究」不仅可门控 UI 显隐，也可**门控一段游戏逻辑是否执行**。`ConquerReputationReward`（unlock_id **100200004**，`research_type=1` 设施节点，`pre_unlock_ids="100200001"` 即前置=终焉议会 `DoomCouncil`，`level_max=1`，`pay_crystal=1000`，`position(-300,-500)`，`icon_res=ui_research_59`）就是一例：
+
+- **解锁后**，玩家每次**完整通关征服模式**（打完最后一关 BOSS、领奖结束）会按当前难度增加自身「声望(reputation)」。
+- 逻辑门控在 `GameFightLogicConquer.AddReputationForConquerComplete`：`userData.GetUserUnlockData().CheckIsUnlock(UnlockEnum.ConquerReputationReward)` 已解锁才 `userData.AddReputation(conquerInfo.GetRewardReputation())`（声望值取征服难度表新增列 `reward_reputation`，world_id=1 各难度依次 1~10；声望≤0 不发放）。
+- 落表同其他节点：`excel_research_info`(id=100200004, `research_type=1`, `icon_res=ui_research_59`, `level_max=1`, `unlock_id=100200004`, `pre_unlock_ids="100200001"`, `pay_crystal=1000`, `name=100200004`, 备注「征服通关获得声望」) + `excel_unlock_info`(id=100200004, `unlock_type=0`, 备注「征服通关获得声望」) + 多语言 `excel_language` 的 `ResearchInfo` 工作表(id=100200004, cn「征服通关获得声望」/en「Gain Reputation on Conquest Clear」)。
+- 声望系统（第二货币，与魔晶并列，终焉议会消耗它）本已存在；本节点只是新增一个声望获取来源。发放与配置细节见 [`conquer-system`](../conquer-system/SKILL.md) / [`fight-reward-system`](../fight-reward-system/SKILL.md)。
 
 ---
 

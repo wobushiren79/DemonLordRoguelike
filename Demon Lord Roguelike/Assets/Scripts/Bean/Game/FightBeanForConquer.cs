@@ -139,6 +139,9 @@ public class FightBeanForConquer : FightBean
 
         //本关敌人(普通敌人与BOSS均适用)的累计强度倍率(HP/护甲/攻击力)，第1关为1，之后按 attack_intensity_addrate 逐关相乘
         float intensityRate = fightTypeConquerInfo.GetCurrentIntensityRate(fightNum);
+        //叠加终焉议会「挑战更强/更弱的敌人」议案的敌人强度倍率(下一整场征服run所有关卡+BOSS均生效，run结束消耗)
+        var userTempData = GameDataHandler.Instance.manager.GetUserData().GetUserTempData();
+        intensityRate *= userTempData.GetEnemyIntensityRate();
 
         //普通波次：将 [0, showTime] 区间均分为 waveNum 段，在每段内随机一个出现时刻，整体随机但不至于过度聚集
         //BOSS关也照常出 enemy_ids 的普通敌人，逻辑与非BOSS关一致

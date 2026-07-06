@@ -61,6 +61,16 @@ public class DoomCouncilBaseEntity
     }
 
     /// <summary>
+    /// 获取该议案对下一场战斗敌人的强度倍率(整体相乘到敌人 HP/护甲/攻击力)
+    /// 默认1=不改变; 「敌人更强/更弱」议案重写此方法返回倍率(如2/0.5)
+    /// </summary>
+    /// <returns>敌人强度倍率</returns>
+    public virtual float GetEnemyIntensityRate()
+    {
+        return 1f;
+    }
+
+    /// <summary>
     /// 返回议会主界面
     /// </summary>
     public void BackDoomCouncilBill()

@@ -92,6 +92,10 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	/// </summary>
 	public int reward_exp_boss;
 	/// <summary>
+	///通关声望奖励
+	/// </summary>
+	public int reward_reputation;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

@@ -228,13 +228,46 @@ public class ControlForGameBase : BaseControl
         }
     }
 
+    //移动边界物体缓存(基地 Board 空物体,localScale 表达 BOX 长宽);懒加载,场景内固定
+    protected Transform _boardBoundary;
     /// <summary>
-    /// 检测场景边界
+    /// 移动边界物体(当前基地场景的 Board 空物体);首次访问时从当前场景预制取一次并缓存
     /// </summary>
+    protected Transform boardBoundary
+    {
+        get
+        {
+            if (_boardBoundary != null)
+            {
+                return _boardBoundary;
+            }
+            var scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForBase>();
+            if (scenePrefab != null && scenePrefab.objBoard != null)
+            {
+                _boardBoundary = scenePrefab.objBoard.transform;
+            }
+            return _boardBoundary;
+        }
+    }
+
+    /// <summary>
+    /// 检测目标落点是否超出场景移动边界(基地 Board 的 BOX 范围)。
+    /// 把 Board 视为单位立方体、localScale.x/z 即 BOX 长/宽:将落点转到 Board 本地空间后,
+    /// |x| 或 |z| 超过 0.5(半边)即越界;经 InverseTransformPoint 天然支持 Board 平移/旋转/缩放。
+    /// 无 Board 时(如尚未取到场景预制)不做限制,返回 false。
+    /// </summary>
+    /// <param name="endPosition">移动候选落点(世界坐标)</param>
+    /// <returns>true=越界应拦截,false=在范围内可移动</returns>
     public bool CheckSceneBoard(Vector3 endPosition)
     {
-        float dis = Vector3.Distance(endPosition, Vector3.zero);
-        if (dis > 8.3)
+        Transform board = boardBoundary;
+        if (board == null)
+        {
+            return false;
+        }
+        //转到 Board 本地空间:单位立方体半边为 0.5,localScale 已由变换应用,只判水平面 x/z
+        Vector3 localPos = board.InverseTransformPoint(endPosition);
+        if (Mathf.Abs(localPos.x) > 0.5f || Mathf.Abs(localPos.z) > 0.5f)
         {
             return true;
         }
@@ -282,6 +315,8 @@ public class ControlForGameBase : BaseControl
         dashSpeed = dashDistance / dashDuration;
         dashTimer = 0;
         isDashing = true;
+        //突进发起瞬间播放突进音效
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_knife_miss_1);
         //按研究等级刷新冷却(突进CD研究可缩短,默认3秒→最低1秒)
         dashCdRemain = userUnlock.GetUnlockSpaceDashCD();
         //突进时精灵按朝向翻转,并播放较快的移动动画
@@ -456,6 +491,13 @@ public class ControlForGameBase : BaseControl
             case ControlInteractionEnum.AchievementInteraction://成就石碑
                 //由场景互动打开: 退出时直接返回场景(UIBaseMain)，不再打开 UIBaseCore
                 UIHandler.Instance.OpenUIAndCloseOther<UIAchievement>((ui) =>
+                {
+                    ui.actionForExit = () => UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
+                });
+                break;
+            case ControlInteractionEnum.VatInteraction://魔物进阶容器(Vat)
+                //由场景互动打开: 退出时直接返回场景(UIBaseMain)，不再打开 UIBaseCore
+                UIHandler.Instance.OpenUIAndCloseOther<UICreatureVat>((ui) =>
                 {
                     ui.actionForExit = () => UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
                 });

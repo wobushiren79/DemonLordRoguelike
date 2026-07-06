@@ -70,6 +70,30 @@ watched_files:
 
 ---
 
+## 议案(Bill)与效果实体（现行机制，以此为准）
+
+> ⚠️ 下方「## 核心概念 / DoomCouncilLogic / GenerateProposals / DoomCouncilBaseEntity.ExecuteEffect」等历史小节多已过时，**议案展示与效果执行以本节为准**。
+
+### 议案配置 `DoomCouncilInfo`（`excel_doom_council_info` / `DoomCouncilInfo.txt`）
+字段：`success_rate`(通过率0~1, `>=1`直接通过不进议会) · `council_num`("min,max") · `cost_reputation`(消耗声望) · `cost_crystal`(消耗魔晶) · `icon_res` · `class_entity_name`(效果实体类名, 反射) · `class_entity_data`(效果参数字符串, 各实体自解析) · `unlock_id`(解锁ID) · `name`/`details`(文本id)。**无独立数值字段，效果参数全编码进 `class_entity_data`**。多语言真实源在 `excel_language` 的 `DoomCouncilInfo` 工作表(id/content_cn/content_en/content_1_cn/content_1_en)。
+
+### 议案展示：全部平铺，非随机
+`UIDoomCouncilBill.InitData` 取 `GetAllArrayData()` **全部**行，仅按 `unlock_id` 用 `userUnlock.CheckIsUnlock` 过滤后平铺（**无随机抽N/权重**）。
+- **默认议案 = `unlock_id` 留空/0**：`CheckIsUnlock(0)` 恒 true（约定0=无需解锁）→「默认就有」。当前默认议案：更多水晶/更多经验/**挑战更强的敌人**/**挑战更弱的敌人**。
+
+### 提交与效果执行
+`UIViewDoomCouncilBillItem.OnClickForSubmit`：校验并扣 `cost_crystal`/`cost_reputation`(声望=`UserDataBean.reputation`, `CheckHasReputation`/`AddReputation`) → 二次确认 → `success_rate>=1` 直接 `userTempData.AddDoomCouncil`，否则 `GameHandler.StartDoomCouncil` 进议员投票，通过后才 `AddDoomCouncil`。`UserTempBean.AddDoomCouncil` 反射 `class_entity_name` 建实体；`TriggerFirst()` 返 true=立即型(不入列)，返 false=常驻 `listDoomCouncilEntity`。
+
+### `DoomCouncilBaseEntity` 触发钩子（非 `ExecuteEffect`）
+`TriggerFirst` · `TriggerGameFightLogicDropAddCrystal` · `TriggerGameFightLogicAddExp` · `TriggerGameFightLogicEndGame`(返true=出列) · `TriggerWorldEnterGameForBaseScene` · **`GetEnemyIntensityRate()`**(默认1, 返回对下一场敌人 HP/护甲/攻击力的强度倍率)。分发在 `UserTempBean.TriggerDoomCouncil`，由 `GameHandler` 各时机 + `TriggerTypeDoomCouncilEntityEnum` 调用。
+
+### 敌人更强/更弱议案（`DoomCouncilEntityEnemyIntensity`）
+- 两条默认议案共用一个实体类，靠 `class_entity_data` 区分：`"2"`=翻倍强(通过率1/消耗声望1)、`"0.5"`=减半弱(通过率0.01/消耗声望100)。
+- `GetEnemyIntensityRate()` 解析 `class_entity_data`(不变区域性)返回倍率；`TriggerFirst` 返 false 常驻；`TriggerGameFightLogicEndGame` 在**征服模式**(`gameFightType==Conquer`)战斗结束时返 true 消耗移除。
+- 施加链路：`UserTempBean.GetEnemyIntensityRate()`(连乘所有在列议案) → `FightBeanForConquer.InitFightAttackData` 里 `intensityRate *= ...` → 敌人(含BOSS)生成时 `FightCreatureBean.RefreshBaseAttribute` 对 HP/护甲(DR)/攻击力(ATK) 整体相乘。**作用于下一整场征服 run 所有关卡+BOSS，run 结束消耗**（与「更多水晶/经验」同口径）。
+
+---
+
 ## 核心概念
 
 终焉议会是游戏的特殊战斗模式，在战斗结算后触发的议会投票环节，玩家通过选择议会提案来获得各种效果。
@@ -372,7 +396,7 @@ public class UIDoomCouncilVote : BaseUIView
 
 **文件**: `Assets/Scripts/Component/UI/Popup/UIPopupDoomCouncilBillDetails.cs`
 
-悬浮显示的议会详情信息。
+悬浮显示的议会详情信息。`SetSuccessRate(rate)` 除填充文本(id 53003)外，`ui_SuccessRate.color` 按 `ColorUtil.GetProgressColor(rate)`（rate 0~1）分段着色（0-20红/20-40橙/40-60黄/60-80浅绿/80-100蓝，与献祭成功率同口径）。
 
 ---
 

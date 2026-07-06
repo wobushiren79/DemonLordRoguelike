@@ -8,6 +8,13 @@ public partial class GameDataManager : BaseManager
     public UserDataBean userData;
     private UserDataService userDataService;
 
+    /// <summary>
+    /// 测试模拟模式(通用测试标记):为 true 时 SaveUserData 一律不落盘,全程只在内存中生效。
+    /// 由各测试入口(如献祭升级测试、魔物进阶测试)在读取真实存档并 SetUserData 后置位;
+    /// 正式游戏流程永不置位,故不影响真实存档。作为"测试不落盘"的单一真实源,任何存档路径都自动跳过写盘。
+    /// </summary>
+    public bool isTestSimulation;
+
     public void Awake()
     {
     }
@@ -47,6 +54,9 @@ public partial class GameDataManager : BaseManager
     public void SaveUserData(UserDataBean targetUserData)
     {
         if (targetUserData == null)
+            return;
+        //测试模拟模式:一律不落盘,所有存档路径在此统一跳过写盘(全程内存模拟)
+        if (isTestSimulation)
             return;
         userDataService ??= new UserDataService();
         userDataService.ChangeSlot(targetUserData.saveIndex);

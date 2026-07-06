@@ -41,7 +41,7 @@ watched_files:
 - 注意：项目里的 `VolumeHandler`/`VolumeManager` 是 URP 后处理（景深）控制器，**与音频音量无关**
 
 ### 通用 UI 音效（游戏层 AudioHandler.Awake 自动订阅）
-- **点击音效**：`UIHandler.AddOnClickAction(ActionForUIOnClick)`，由 `UIHandler.Update()` 的物理鼠标点击 + 射线驱动；sprite 名在 `listCommonUIClick` 集合播 `sound_btn_1`，image 名为 `ViewExit` 播退出音 `sound_btn_31`。**只认鼠标点击，覆盖不到 ESC**。
+- **点击音效**（**默认全响 + 排除式**）：`UIHandler.AddOnClickAction(ActionForUIOnClick)`，由 `UIHandler.Update()` 的物理鼠标点击 + 射线驱动；**可交互（interactable）且带 sprite 的 Button 默认都播** `sound_btn_1`，image 名为 `ViewExit` 播退出音 `sound_btn_31`。要静音某按钮：把 GameObject 名加进 `AudioManager.listExcludeUIClickByName`，或把 sprite 名加进 `listExcludeUIClickBySprite`（共用通用枠 `ui_border_2`/`ui_bg_1` 的按钮须按 GameObject 名排除，sprite 名排除仅适合 `ui_border_7/8` 这类页签专用枠）。**只认鼠标点击，覆盖不到 ESC**。各 UI 无需再手动补播 `sound_btn_1`（会与本机制重复）。
 - **弹窗背景点击关闭音效**：`ActionForUIOnClick` 内判断点击对象 `GetComponentInParent<DialogView>()` 命中的 `ui_Background` 且 `dialogData.isDestroyBG==true` 时播退出音 `sound_btn_31`（判断在 image sprite 空判之前，因背景常无 sprite）；所有弹窗继承 `DialogView` 故一处覆盖全部，`isDestroyBG==false` 的弹窗不误播。游戏层实现，无框架改动。
 - **ESC 退出音效**：`AudioHandler.Awake` 订阅 `InputActionUIEnum.ESC` 的 `InputAction.started` → `ActionForUIEscExit`，一处全局补播退出音 `sound_btn_31`，**无条件判断，任意 ESC 按下均播放**。所有 UI 零改动自动覆盖，不要在各 UI 的 ESC/退出分支里手动加播放。
 

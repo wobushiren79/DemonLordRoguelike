@@ -1,6 +1,7 @@
 ﻿
 
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -8,6 +9,9 @@ public partial class UICreatureManager : BaseUIComponent
 {
     //当前选择的生物卡片下标
     public int selectCreatureIndex = 0;
+
+    //献祭升级按钮置灰时的染色(不可升级时使用,按钮仍可点击)
+    private readonly Color colorSacrificeButtonGray = new Color(0.5f, 0.5f, 0.5f, 1f);
 
     public override void OpenUI()
     {
@@ -71,7 +75,7 @@ public partial class UICreatureManager : BaseUIComponent
     public void InitCreaturekData()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        var listBackpackCreature = userData.GetUserBackpackCreatureData().listBackpackCreature;
+        var listBackpackCreature = GetSortedBackpackCreature(userData);
         ui_UIViewCreatureCardList.SetData(listBackpackCreature, CardUseStateEnum.CreatureManager, OnCellChangeForBackpackCreature);
         //钳制选中下标:献祭等操作会使生物数量减少,上次选中的下标可能越界,夹到有效范围避免取数据越界报错
         int creatureCount = listBackpackCreature != null ? listBackpackCreature.Count : 0;
@@ -85,17 +89,58 @@ public partial class UICreatureManager : BaseUIComponent
     }
 
     /// <summary>
-    /// 刷新献祭升级按钮显隐: 默认隐藏,仅在已解锁祭坛 且 当前经验达到下一级所需(未满级)时显示。
+    /// 获取阵容管理列表的默认排序副本:稀有度降序(高→低) → 等级降序(高→低) → 同类聚合(creatureId 升序,同一种魔物相邻,与筛选排序 Class 键口径一致)。
+    /// <para>返回新列表,不改动底层存档的 listBackpackCreature 原始顺序;该顺序会作为筛选排序弹窗的稳定基序(次级 tiebreaker)。</para>
+    /// </summary>
+    /// <param name="userData">用户数据</param>
+    /// <returns>按默认规则排序后的生物列表副本</returns>
+    private List<CreatureBean> GetSortedBackpackCreature(UserDataBean userData)
+    {
+        var listSource = userData.GetUserBackpackCreatureData().listBackpackCreature;
+        var listSorted = new List<CreatureBean>(listSource);
+        listSorted.Sort((a, b) =>
+        {
+            //稀有度降序(高稀有度置前)
+            int rarityCompare = b.GetRarityValue().CompareTo(a.GetRarityValue());
+            if (rarityCompare != 0) return rarityCompare;
+            //等级降序(高等级置前)
+            int levelCompare = b.level.CompareTo(a.level);
+            if (levelCompare != 0) return levelCompare;
+            //同类聚合:按 creatureId 升序使同一种魔物相邻
+            return a.creatureId.CompareTo(b.creatureId);
+        });
+        return listSorted;
+    }
+
+    /// <summary>
+    /// 刷新献祭升级按钮: 解锁祭坛且未满级时显示; 经验达标则正常, 经验未达标则置灰但仍可点击(点击时提示经验未达标)。未解锁祭坛/无选中生物/已满级时隐藏。
     /// </summary>
     /// <param name="creatureData">当前选中的生物;为空则隐藏</param>
     public void RefreshSacrificeButton(CreatureBean creatureData)
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
-        bool canSacrificeLevelUp = creatureData != null
+        //解锁祭坛且有选中生物且未满级才显示按钮(满级隐藏,不再置灰)
+        bool isShow = creatureData != null
             && userUnlock.CheckIsUnlock(UnlockEnum.Altar)
-            && creatureData.CanUpLevel();
-        ui_BtnLevelUpSacrifice_Button.gameObject.SetActive(canSacrificeLevelUp);
+            && !creatureData.IsMaxLevel();
+        ui_BtnLevelUpSacrifice_Button.gameObject.SetActive(isShow);
+        if (!isShow)
+            return;
+        //未满级下:经验达标则正常,经验未达标则置灰(按钮始终可点击,点击时再提示)
+        SetSacrificeButtonGray(!creatureData.CanUpLevel());
+    }
+
+    /// <summary>
+    /// 设置献祭升级按钮的置灰表现: 置灰时把按钮及其子图标统一染成灰色(不改变可点击性)。
+    /// </summary>
+    /// <param name="isGray">true 置灰, false 恢复正常白色</param>
+    private void SetSacrificeButtonGray(bool isGray)
+    {
+        Color targetColor = isGray ? colorSacrificeButtonGray : Color.white;
+        var graphics = ui_BtnLevelUpSacrifice_Button.GetComponentsInChildren<Graphic>(true);
+        for (int i = 0; i < graphics.Length; i++)
+            graphics[i].color = targetColor;
     }
 
     /// <summary>
@@ -234,6 +279,12 @@ public partial class UICreatureManager : BaseUIComponent
         if (itemCreatureData == null)
         {
             LogUtil.LogError("没有献祭生物");
+            return;
+        }
+        //经验未达标(或已满级)不能升级: 提示并拦截,不进入献祭流程
+        if (!itemCreatureData.CanUpLevel())
+        {
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61009), 0);
             return;
         }
         CreatureSacrificeBean creatureSacrificeData = new CreatureSacrificeBean();

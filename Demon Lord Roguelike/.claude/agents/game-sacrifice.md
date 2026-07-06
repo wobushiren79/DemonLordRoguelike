@@ -43,7 +43,7 @@ UICreatureManager(升级按钮) → GameHandler.StartCreatureSacrifice
 ### 升级与数据
 - **CreatureBean / CreatureBeanPartial** - `level`/`levelExp`/`sacrificePityRate`(保底)；`UpLevelForSacrifice()`(升级,**返回本次可分配加点数**=`LevelInfo.attribute_point` 当前全等级配置5、`<=0`兜底1，不再自动加属性) / `CanUpLevel()` / `IsMaxLevel()` / `GetNextLevelInfo()`
 - **CreatureAttributeBean** - 升级加点 `dicAttributeLevelUp`(public 保证存档)；`AddAttribute` 支持正负增量(减点用)，**已修复首次加该属性丢失第一次加点的 bug**
-- **CreatureSacrificeBean** - `targetCreature` + `fodderCreatures`；测试字段 `isTestMode`(不落盘)/`useManualSuccessRate`(覆盖)/`manualSuccessRate`(手动成功率)
+- **CreatureSacrificeBean** - `targetCreature` + `fodderCreatures`；测试字段仅 `useManualSuccessRate`(覆盖)/`manualSuccessRate`(手动成功率)——原 `isTestMode` 已删，「是否测试」改读全局 `GameDataManager.isTestSimulation`
 
 ### 成功率公式
 - **CreatureUtil** - `GetSacrificeSuccessRate`(保底+祭品,截顶) / `GetSacrificeFoddersRate(target, listFodder, sacrificeNum, differentIdRate)`(祭品部分)
@@ -62,7 +62,7 @@ UICreatureManager(升级按钮) → GameHandler.StartCreatureSacrifice
 ### UI
 - **UICreatureSacrifice** - 祭品选择、实时成功率显示、开始献祭；祭品选择上限走 `userData.GetUserUnlockData().GetUnlockSacrificeMax()`（基础 5 + `UnlockEnum.SacrificeNum=100100002` 研究等级，满级 15），不要再直接读 `limmitData.sacrificeMax`；成功率进度条按区间分5段变色（`GetSuccessRateColor` 现仅转发 `ColorUtil.GetProgressColor`：0-20红/20-40橙/40-60黄/60-80浅绿/80-100蓝，DOColor 0.5s 渐变；配色为 ColorUtil 单一真实源，与孵化缸进阶BUFF概率共用）
 - **UICreatureAddAttribute** - 升级加点界面(`Assets/Scripts/Component/UI/Game/CreatureAddAttribute/`)，献祭升级成功后弹出
-- **UICreatureManager** - `RefreshSacrificeButton`：默认隐藏，"解锁祭坛 && CanUpLevel()" 才显示
+- **UICreatureManager** - `RefreshSacrificeButton`：解锁祭坛且未满级时显示；经验达标则正常，经验未达标则 `SetSacrificeButtonGray` 置灰但仍可点击（点击走 `OnClickForCreatureSacrifice`，`!CanUpLevel()` 时 ToastHintText(textId 61009「经验值未达到100%」) 拦截）。未解锁祭坛/无选中生物/已满级(`IsMaxLevel()`)则隐藏
 
 ### 献祭相关研究（设施节点，前置均=开启献祭设施 Altar，level_max=10）
 - `UnlockEnum.SacrificeNum = 100100002`（水晶 1000~10000 每级+1000）提升祭品上限；衍生 `GetUnlockSacrificeMax()`。
@@ -72,8 +72,8 @@ UICreatureManager(升级按钮) → GameHandler.StartCreatureSacrifice
 
 ### 测试模式（不落盘）
 - `TestSceneTypeEnum.CreatureSacrifice`：读取某个真实存档数据，对其中一只生物直接发起献祭，可手动成功率或用存档真实数据，结果不写回真实存档。
-- 入口 `LauncherTest.StartForCreatureSacrificeTest(slot, uuid, useManualRate, manualRate)`：`UserDataService` 加载存档 → `SetUserData` → 一次性 `World_EnterGameForBaseScene` 等基地就绪 → `GameHandler.StartCreatureSacrifice`。
-- `StartSacrifice` 按 `isTestMode && useManualSuccessRate` 决定手动/公式成功率；`SettleSacrificeData` 在 `isTestMode` 时跳过 `SaveUserData()`(不落盘)。
+- **不落盘统一为全局机制**：`GameDataManager.isTestSimulation=true` 时 `SaveUserData` 一律 no-op（与魔物进阶测试共用）。入口 `LauncherTest.StartForCreatureSacrificeTest(slot, uuid, useManualRate, manualRate)`：`UserDataService` 加载存档 → `SetUserData` + `isTestSimulation=true` → 一次性 `World_EnterGameForBaseScene` 等基地就绪 → `GameHandler.StartCreatureSacrifice`。
+- `StartSacrifice` 按 `isTestSimulation && useManualSuccessRate` 决定手动/公式成功率；`SettleSacrificeData`/`SaveAndEndGame` 直接 `SaveUserData()`（测试模拟下由存档层自动跳过）。
 - 编辑器配置：`GameTestEditor.DrawCreatureSacrificeTest` / `LoadSacrificeTestCreatures`。详见 `test-system` Skill。
 
 ### 关键文件

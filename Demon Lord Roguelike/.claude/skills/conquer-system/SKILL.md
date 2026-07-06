@@ -100,6 +100,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → GameFightLogicConquer 跑起
 | `reward_equip_rarity` | int | 奖励装备稀有度（只决定稀有度；属性加点数量见 `RarityInfo.equip_attribute_add`） |
 | `reward_exp` | int | 普通关通关经验 |
 | `reward_exp_boss` | int | BOSS 关通关经验 |
+| `reward_reputation` | int | **通关声望奖励**：完整通关（打完 BOSS、领奖结束）按难度增加玩家「声望(reputation)」，需先解锁研究 `UnlockEnum.ConquerReputationReward`；world_id=1 的 10 个难度(level 1~10)依次填 1~10 |
 | `remark` | string | 备注 |
 
 ### 区间字段约定（x 或 x-y）
@@ -147,6 +148,10 @@ public static int ParseRandomRange(string value, int defaultValue = 0);
 // 用于传送门详情弹窗 UIViewDialogPortalDetailsItem.IconBG。bg_color 为难度表新增列，
 // 新增列后需在 Unity 运行配置导出工具重新生成 Bean 才会有该字段
 public UnityEngine.Color GetBGColor();
+
+// 通关声望奖励：返回 reward_reputation 字段（完整通关后按难度发放的声望值）。
+// reward_reputation 为难度表新增列，需在 Unity 重新导出 Bean 后才存在（仿照 GetBGColor 写法）
+public int GetRewardReputation();
 ```
 
 `FightTypeConquerInfoCfg.GetItemData(worldId, difficultyLevel)` 用 `world_id`+`level` 联合查行。
@@ -187,6 +192,8 @@ public bool IsNextBossFight()  => figthNumMax > 0 && fightNum + 1 >= figthNumMax
    - BOSS 敌人取 `enemy_boss_ids`（`GetRandomEmenyId(true)`）
    - **BOSS 同样享受本关强度倍率** `intensityRate`（与普通敌人取同一 `GetCurrentIntensityRate(fightNum)`，BOSS 关 `fightNum = figthNumMax`），作用到 HP/护甲/攻击力
 3. 所有事件按时间排序 → 转 `FightAttackDetailsBean(delay, npcId)` 入队，首个 BOSS 那条带 `bossShowNpcIds`。
+
+> **强度倍率还叠加终焉议会议案**：`InitFightAttackData` 计算出 `GetCurrentIntensityRate(fightNum)` 后，再 `intensityRate *= userTempData.GetEnemyIntensityRate()`（连乘所有在列议案的 `GetEnemyIntensityRate`）。终焉议会「挑战更强/更弱的敌人」议案(`DoomCouncilEntityEnemyIntensity`, ×2/×0.5)即经此叠加，作用于**下一整场征服 run 所有关卡+BOSS**，run 结束时议案自身在 `TriggerGameFightLogicEndGame` 消耗移除。详见 doom-council-system。
 
 ### 关卡推进时的数据刷新
 
@@ -230,7 +237,25 @@ GoToNextLevel()
 | `ActionForUIFightAbyssalBlessingSelect(info)` | 选了深渊馈赠 → `FightBeanForConquer.AddAbyssalBlessing` → `GoToNextLevel` |
 | `ActionForUIFightAbyssalBlessingSkip()` | 跳过馈赠 → `GoToNextLevel` |
 | `ActionForUIFightSettlementNext()` | 结算「下一步」：通关BOSS→**消费预生成奖励**（预览即实领）：取 `gameWorldInfoRandomData.GetDifficultyReward(difficultyLevel)` 作基础奖励，调 `RewardSelectBean.InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)` → `UIRewardSelect.SetData(..., isClearLastGame: true)`（进领奖前 `ClearGame` 卸载BOSS战斗场景，否则战斗场景会叠加残留在领奖场景上）；失败→`EndGameAndReturnToBase` |
-| `ActionForUIRewardSelectEnd()` | 领奖结束：触发 `Achievement_ConquerComplete`(worldId, 难度) → 返回基地 |
+| `ActionForUIRewardSelectEnd()` | 领奖结束（=完整通关）：触发 `Achievement_ConquerComplete`(worldId, 难度) + `AddReputationForConquerComplete(fightTypeConquerInfo)` 发放通关声望 → `EndGameAndReturnToBase`（存档前发放，随存档落盘） |
+
+### 通关声望奖励（AddReputationForConquerComplete）
+
+完整通关（`ActionForUIRewardSelectEnd` 领奖结束）时给玩家发放「声望(reputation)」：
+
+```csharp
+// 研究门控：先判断是否解锁「征服通关获得声望」研究，再按难度配置发声望
+private void AddReputationForConquerComplete(FightTypeConquerInfoBean conquerInfo)
+{
+    if (!userData.GetUserUnlockData().CheckIsUnlock(UnlockEnum.ConquerReputationReward)) return;
+    userData.AddReputation(conquerInfo.GetRewardReputation());   // 声望≤0 不发放
+}
+```
+
+- 声望值 = `conquerInfo.GetRewardReputation()`（= 难度表 `reward_reputation` 列，world_id=1 各难度依次 1~10）。
+- 在 `EndGameAndReturnToBase` **存档前**调用，随 `SaveUserData` 一起落盘。
+- 声望系统（第二货币，与魔晶并列，终焉议会消耗它）本已存在于 `UserDataBean.reputation` + `AddReputation(long)`，本功能只是**新增一个获取来源**，未新建声望系统。
+- 研究节点/解锁配置见 [`research-system`](../research-system/SKILL.md) 的「征服通关获得声望」节点（unlock_id 100200004，前置=终焉议会 DoomCouncil）。
 
 ### 返回基地（EndGameAndReturnToBase）
 

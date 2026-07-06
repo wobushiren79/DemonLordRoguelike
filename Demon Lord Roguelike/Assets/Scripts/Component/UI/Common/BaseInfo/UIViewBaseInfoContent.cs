@@ -11,10 +11,10 @@ public partial class UIViewBaseInfoContent : BaseUIView
     Sequence animForReputationChange;//声望变化动画
 
     public override void Awake()
-    { 
+    {
         base.Awake();
-        this.RegisterEvent(EventsInfo.Backpack_Crystal_Change, RefreshUIData);
-        this.RegisterEvent(EventsInfo.Backpack_Reputation_Change, RefreshUIData);
+        this.RegisterEvent(EventsInfo.Backpack_Crystal_Change, RefreshCrystalData);
+        this.RegisterEvent(EventsInfo.Backpack_Reputation_Change, RefreshReputationData);
     }
 
     public override void OnEnable()
@@ -25,39 +25,51 @@ public partial class UIViewBaseInfoContent : BaseUIView
         ui_Reputation_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(2000003), PopupEnum.Text);
     }
 
-    public void RefreshUIData()
-    {
-        RefreshUIData(true);
-    }
-
+    /// <summary>
+    /// 全量刷新魔晶与声望（OnEnable 初始化用，isAnim=false 不播动画）
+    /// </summary>
     public void RefreshUIData(bool isAnim)
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UserUnlockBean userUnlockData = userData.GetUserUnlockData();
-        //判断是否解锁终焉议会
-        bool isUnlockDoomCouncil = userUnlockData.CheckIsUnlock(UnlockEnum.DoomCouncil);
-        if (isUnlockDoomCouncil)
-        {
-            ui_Reputation_Image.gameObject.SetActive(true);
-        }
-        else
-        {
-            ui_Reputation_Image.gameObject.SetActive(false);
-        }
+        //按解锁状态刷新声望显隐
+        ui_Reputation_Image.gameObject.SetActive(userUnlockData.CheckIsUnlock(UnlockEnum.DoomCouncil));
 
-        if (ui_Crystal_Image.gameObject.activeSelf)
+        if (ui_Crystal_Image.gameObject.activeSelf && userData != null)
         {
-            if (userData != null)
-            {
-                SetCrystalData(userData.crystal, isAnim);
-            }
+            SetCrystalData(userData.crystal, isAnim);
         }
+        if (ui_Reputation_Image.gameObject.activeSelf && userData != null)
+        {
+            SetReputationData(userData.reputation, isAnim);
+        }
+    }
+
+    /// <summary>
+    /// 刷新魔晶（魔晶变化事件回调，只播魔晶动画）
+    /// </summary>
+    public void RefreshCrystalData()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        if (userData != null && ui_Crystal_Image.gameObject.activeSelf)
+        {
+            SetCrystalData(userData.crystal, true);
+        }
+    }
+
+    /// <summary>
+    /// 刷新声望（声望变化事件回调，只播声望动画）
+    /// </summary>
+    public void RefreshReputationData()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        if (userData == null) return;
+        //按解锁状态刷新声望显隐
+        UserUnlockBean userUnlockData = userData.GetUserUnlockData();
+        ui_Reputation_Image.gameObject.SetActive(userUnlockData.CheckIsUnlock(UnlockEnum.DoomCouncil));
         if (ui_Reputation_Image.gameObject.activeSelf)
         {
-            if (userData != null)
-            {
-                SetReputationData(userData.reputation, isAnim);
-            }
+            SetReputationData(userData.reputation, true);
         }
     }
 
@@ -66,7 +78,7 @@ public partial class UIViewBaseInfoContent : BaseUIView
     /// </summary>
     public void SetCrystalData(long crystal, bool isAnim = true)
     {
-        ClearAnim();
+        ClearCrystalAnim();
         if (isAnim)
         {
             animForCrystalChange = AnimUtil.AnimForUINumberChange(animForCrystalChange, ui_CrystalText, long.Parse(ui_CrystalText.text), crystal, 1f);
@@ -82,6 +94,7 @@ public partial class UIViewBaseInfoContent : BaseUIView
     /// </summary>
     public void SetReputationData(long reputation, bool isAnim = true)
     {
+        ClearReputationAnim();
         if (isAnim)
         {
             animForReputationChange = AnimUtil.AnimForUINumberChange(animForReputationChange, ui_ReputationText, long.Parse(ui_ReputationText.text), reputation, 1f);
@@ -93,13 +106,29 @@ public partial class UIViewBaseInfoContent : BaseUIView
     }
 
     /// <summary>
-    /// 清理动画
+    /// 清理魔晶动画
+    /// </summary>
+    void ClearCrystalAnim()
+    {
+        animForCrystalChange?.Kill();
+        ui_CrystalText.transform.localScale = Vector3.one;
+    }
+
+    /// <summary>
+    /// 清理声望动画
+    /// </summary>
+    void ClearReputationAnim()
+    {
+        animForReputationChange?.Kill();
+        ui_ReputationText.transform.localScale = Vector3.one;
+    }
+
+    /// <summary>
+    /// 清理动画（魔晶+声望）
     /// </summary>
     public void ClearAnim()
     {
-        animForCrystalChange?.Kill();
-        animForReputationChange?.Kill();
-        ui_CrystalText.transform.localScale = Vector3.one;
-        ui_ReputationText.transform.localScale = Vector3.one;
+        ClearCrystalAnim();
+        ClearReputationAnim();
     }
 }

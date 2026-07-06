@@ -127,7 +127,11 @@ public partial class UIBaseCore : BaseUIComponent
     /// </summary>
     public void OnClickForVat()
     {
-        var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UICreatureVat>();
+        //由基地核心打开: 退出时返回 UIBaseCore
+        var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UICreatureVat>((ui) =>
+        {
+            ui.actionForExit = () => UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
+        });
     }
 
     /// <summary>

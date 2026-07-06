@@ -43,7 +43,7 @@ watched_files:
   - `static int GetConquerEquipPoolSign()` / `static List<long> GetUnlockCreatureModelIdsForEquip()`：装备奖励池"解锁签名"=可生成装备的已解锁生物模型数量；解锁新魔物掉落后变化，触发传送门预生成奖励重生成
 - **RewardSelectTestData** - 测试模式下的领奖参数（品质/属性/数量/魔王专属概率）
 - **FightDropCrystalBean** - 战斗内掉落水晶实例
-- **FightTypeConquerInfoBean(Partial)** - 征服配置（`drop_crystal` / `reward_crystal` / `reward_equip_rarity`，只决定稀有度）
+- **FightTypeConquerInfoBean(Partial)** - 征服配置（`drop_crystal` / `reward_crystal` / `reward_equip_rarity`，只决定稀有度 / `reward_reputation` 完整通关声望奖励，`GetRewardReputation()` 读取，world_id=1 各难度依次 1~10）
 - **RarityInfoBean** - 稀有度配置，`equip_attribute_add` 决定该稀有度装备的属性加点数量（从征服表迁来）
 
 ### UI
@@ -73,6 +73,7 @@ watched_files:
  → 打开 UIRewardSelect.SetData(rewardSelectData, ActionForUIRewardSelectEnd, isClearLastGame:true)
  → 玩家选宝箱 → userData.AddBackpackItem(itemData) (水晶走 AddCrystal,装备入背包)
  → ActionForUIRewardSelectEnd → 触发 Achievement_ConquerComplete(worldId, difficultyLevel) 成就(按世界×难度统计)
+ → AddReputationForConquerComplete(fightTypeConquerInfo) 发放通关声望(研究 UnlockEnum.ConquerReputationReward 解锁才 userData.AddReputation(conquerInfo.GetRewardReputation()); 存档前发放,随存档落盘)
  → EndGameAndReturnToBase()
      ├─ BuffHandler.manager.ClearAbyssalBlessing()  // 清深渊馈赠
      ├─ GameDataHandler.manager.SaveUserData()       // 落盘存档

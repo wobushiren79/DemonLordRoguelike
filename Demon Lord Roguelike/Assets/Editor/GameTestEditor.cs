@@ -51,6 +51,9 @@ public partial class GameTestEditor : Editor
             case TestSceneTypeEnum.CreatureSacrifice:
                 DrawCreatureSacrificeTest();
                 break;
+            case TestSceneTypeEnum.CreatureVat:
+                DrawCreatureVatTest();
+                break;
             case TestSceneTypeEnum.NormalGame:
                 DrawNormalGameTest();
                 break;
@@ -702,6 +705,52 @@ public partial class GameTestEditor : Editor
         }
         sacrificeTestCreatureNames = listNames.ToArray();
         sacrificeTestSelectIndex = Mathf.Clamp(sacrificeTestSelectIndex, 0, sacrificeTestCreatureNames.Length - 1);
+    }
+
+    /// <summary>
+    /// 绘制魔物进阶(生物升阶容器)测试配置(选存档→选解锁VAT数量/加速等级→进入基地直接打开进阶UI)
+    /// </summary>
+    private void DrawCreatureVatTest()
+    {
+        showCreatureVatTest = EditorGUILayout.Foldout(showCreatureVatTest, "🧪 魔物进阶测试", true);
+        if (!showCreatureVatTest) return;
+
+        EditorGUI.indentLevel++;
+        EditorGUILayout.Space(5);
+
+        // 存档槽位选择
+        EditorGUILayout.BeginVertical("box");
+        creatureVatTestSaveSlot = EditorGUILayout.IntPopup(
+            new GUIContent("存档槽位", "要读取数据的存档槽位(1~3，与游戏一致：UserData_1/2/3)"),
+            creatureVatTestSaveSlot,
+            new[] { new GUIContent("存档 1"), new GUIContent("存档 2"), new GUIContent("存档 3") },
+            new[] { 1, 2, 3 });
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.Space(5);
+
+        // 解锁项:VAT数量 / 加速等级 —— 均为自由选择具体解锁几级(滑条拉满即全解锁,默认拉满)
+        EditorGUILayout.BeginVertical("box");
+        creatureVatTestVatNum = EditorGUILayout.IntSlider(
+            new GUIContent("解锁VAT数量", $"本次测试解锁的升阶容器数量({CREATURE_VAT_TEST_VAT_NUM_MIN}~{CREATURE_VAT_TEST_VAT_NUM_MAX})；拉满={CREATURE_VAT_TEST_VAT_NUM_MAX}即全解锁"),
+            creatureVatTestVatNum, CREATURE_VAT_TEST_VAT_NUM_MIN, CREATURE_VAT_TEST_VAT_NUM_MAX);
+        creatureVatTestProgressLevel = EditorGUILayout.IntSlider(
+            new GUIContent("解锁加速等级", $"魔晶加速研究等级(0~{CREATURE_VAT_TEST_PROGRESS_LEVEL_MAX})；0=加速锁定(隐藏加速按钮)，等级=每次加速推进秒数，拉满={CREATURE_VAT_TEST_PROGRESS_LEVEL_MAX}即全解锁"),
+            creatureVatTestProgressLevel, 0, CREATURE_VAT_TEST_PROGRESS_LEVEL_MAX);
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.Space(10);
+
+        // 运行按钮
+        GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
+        if (GUILayout.Button("▶️ 开始魔物进阶测试", GUILayout.Height(30)) && Application.isPlaying)
+        {
+            launcher.StartForCreatureVatTest(creatureVatTestSaveSlot, creatureVatTestVatNum, creatureVatTestProgressLevel);
+        }
+        GUI.backgroundColor = Color.white;
+
+        EditorGUILayout.HelpBox("读取所选存档的真实数据作为运行时数据，进入基地后直接打开魔物进阶UI。全程只是模拟(测试模拟标记，不会写回真实存档)。", MessageType.Info);
+
+        EditorGUI.indentLevel--;
+        EditorGUILayout.Space(10);
     }
 
     public FightBean GetTestData()

@@ -283,6 +283,8 @@ public partial class UIViewAchievementCard : BaseUIView
         levelIcon.gameObject.SetActive(true);
 
         animForUnlock = DOTween.Sequence();
+        //砸落(往下压)起始瞬间播放上锁音效(与研究解锁下压同一音效)
+        animForUnlock.AppendCallback(() => AudioHandler.Instance.PlaySound(AudioEnum.sound_lock_5));
         //从大到小"砸"向格子(InBack 收尾带轻微过冲, 强化砸落感)
         animForUnlock.Append(levelIcon.DOScale(Vector3.one, 0.22f).SetEase(Ease.InBack));
         //砸到位后 LevelItem 抖动一下

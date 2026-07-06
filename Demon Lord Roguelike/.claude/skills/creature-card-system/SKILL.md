@@ -95,7 +95,7 @@ UIPopupCreatureCardDetails   // 卡片详情弹窗
 
 > **献祭卡片(`CreatureSacrifice*` 状态 / `UIViewCreatureCardItemForCreatureSacrifice`)的业务流程见 [`sacrifice-system`](../sacrifice-system/SKILL.md) Skill**：祭品选择、成功率公式、献祭升级、保底等机制都在那里；本 Skill 只负责献祭卡片的 UI 表现与状态。
 
-> **献祭升级提示特效 `ui_SacrificeEffect`**（`UIViewCreatureCardItemComponent` 的 `Image` 字段，prefab `UIViewCreatureCardItem` 上挂，材质 `Mat_UIViewCreatureCardItem_Sacrifice.mat`）：`SetData` 内部调用 `SetSacrificeEffect(creatureData, cardUseState)` 控制显隐——**仅当 `cardUseState == CreatureManager` 且 已解锁祭坛(`UnlockEnum.Altar`) 且 `creatureData.CanUpLevel()`** 时显示，其它使用状态恒隐藏。判定条件与 `UICreatureManager.RefreshSacrificeButton`（献祭升级按钮显隐）一致，用于在魔物管理列表里高亮"可献祭升级"的生物。
+> **献祭升级提示特效 `ui_SacrificeEffect`**（`UIViewCreatureCardItemComponent` 的 `Image` 字段，prefab `UIViewCreatureCardItem` 上挂，材质 `Mat_UIViewCreatureCardItem_Sacrifice.mat`）：`SetData` 内部调用 `SetSacrificeEffect(creatureData, cardUseState)` 控制显隐——**仅当 `cardUseState == CreatureManager` 且 已解锁祭坛(`UnlockEnum.Altar`) 且 `creatureData.CanUpLevel()`** 时显示，其它使用状态恒隐藏。此高亮亮起 ⇔ `UICreatureManager` 升级按钮"显示且未置灰"（按钮解锁祭坛且未满级才显示、`CanUpLevel()` 决定其置灰与否；满级时按钮隐藏、卡片高亮也因 `CanUpLevel()` 为 false 而隐藏），用于在魔物管理列表里高亮"可献祭升级"的生物。
 
 ## 创建/使用生物卡片
 
@@ -336,6 +336,8 @@ protected void OnConfirmOrderFilter(OrderFilterResultBean result) {
 
 > `OrderFilterTypeEnum`：Rarity=1 / Level=2 / Lineup=3 / Name=4 / Class=5（同类=相同生物ID归并）。
 > 生物里 **Name/Level/Rarity 是命中置顶条件**(不进 `sortTypes`、不删行)，只有 **Lineup/Class 是排序键**(`GetOrderKeySelector`：Lineup→阵容序号(不在阵容置 int.MaxValue)、Class→creatureId)。主列表 `listCreatureDataAll` 保存全量；`listCreatureData` 是「命中项置顶 + 排序键次级」重排后的展示列表（与主列表等量，全部展示）。
+
+> **调用方默认基序**：`UIViewCreatureCardList` 自身无内建默认排序（`currentFilter` 初始为空 → `OrderByDescending(IsMatch)` 全命中且无排序键 → 稳定保持入参顺序）。**魔物管理页 `UICreatureManager.InitCreaturekData` 传入前已用 `GetSortedBackpackCreature` 预排序**：稀有度降序 → 等级降序 → creatureId 升序(同一种魔物相邻，与 Class 键同口径)。因 LINQ `OrderBy*` 稳定，该预排序既是打开时的默认展示序，也是玩家后续筛选排序的稳定 tiebreaker；预排序作用于副本，不改动存档 `listBackpackCreature` 原始顺序。
 
 ### 空列表提示
 

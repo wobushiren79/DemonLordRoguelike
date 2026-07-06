@@ -95,6 +95,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         BuffHandler.Instance.manager.ClearAll();
         //清理掉用户数据
         GameDataHandler.Instance.ClearUserData();
+        //回到主菜单=真实开始/读档的统一收口点:复位测试模拟标记,防止上一个模拟测试(献祭/进阶)残留导致正式游戏静默不落盘(测试走EnterGameForBaseScene不经此处,不会误清)
+        GameDataHandler.Instance.manager.isTestSimulation = false;
         //打开加载UI
         UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();
         //镜头初始化

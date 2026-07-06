@@ -207,12 +207,34 @@ public class GameFightLogicConquer : GameFightLogic
                 : fightDataForConquer.fightTypeConquerInfo.world_id;
             int difficultyLevel = fightDataForConquer.fightTypeConquerInfo.level;
             EventHandler.Instance.TriggerEvent(EventsInfo.Achievement_ConquerComplete, worldId, difficultyLevel);
+            //完整通关声望奖励: 解锁「征服通关获得声望」研究后, 按当前难度配置 reward_reputation 增加玩家声望
+            AddReputationForConquerComplete(fightDataForConquer.fightTypeConquerInfo);
         }
         //通关一次世界: 回满刷新次数 + 清空全部传送门世界(列表置空, 下次打开传送门UI时 InitMap 缓存为空→全量重新生成); 随 EndGameAndReturnToBase 的 SaveUserData 一并落盘
         var userTempData = GameDataHandler.Instance.manager.GetUserData().GetUserTempData();
         userTempData.RefillPortalRefreshNum();
         userTempData.ClearPortalWorldInfoRandomData();
         EndGameAndReturnToBase();
+    }
+
+    /// <summary>
+    /// 完整通关征服后按难度发放声望奖励
+    /// 研究门控: 需解锁 UnlockEnum.ConquerReputationReward「征服通关获得声望」; 声望值取当前难度配置 reward_reputation
+    /// 在 EndGameAndReturnToBase 的 SaveUserData 之前调用, 随存档一并落盘
+    /// </summary>
+    /// <param name="conquerInfo">本次通关的征服难度配置</param>
+    private void AddReputationForConquerComplete(FightTypeConquerInfoBean conquerInfo)
+    {
+        if (conquerInfo == null)
+            return;
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        //未解锁「征服通关获得声望」研究则不发放
+        if (!userData.GetUserUnlockData().CheckIsUnlock(UnlockEnum.ConquerReputationReward))
+            return;
+        int reputationReward = conquerInfo.GetRewardReputation();
+        if (reputationReward <= 0)
+            return;
+        userData.AddReputation(reputationReward);
     }
 
     /// <summary>

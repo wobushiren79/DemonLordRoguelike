@@ -27,11 +27,17 @@ watched_files:
 - **GameFightLogicDoomCouncil** - 终焉议会战斗模式
 
 ### 议会实体
-- **DoomCouncilBaseEntity** - 议会实体基类
+- **DoomCouncilBaseEntity** - 议会实体基类。效果靠一组触发钩子驱动（非 `ExecuteEffect`）：`TriggerFirst`(首次添加/立即型) · `TriggerGameFightLogicDropAddCrystal` · `TriggerGameFightLogicAddExp` · `TriggerGameFightLogicEndGame`(返回true=效果失效出列) · `TriggerWorldEnterGameForBaseScene` · **`GetEnemyIntensityRate()`**(默认1，返回对下一场敌人 HP/护甲/攻击力的强度倍率)。
 - **DoomCouncilEntityMoreCrystal** - 更多水晶效果
 - **DoomCouncilEntityMoreExp** - 更多经验效果
 - **DoomCouncilEntityReincarnation** - 转生效果
 - **DoomCouncilEntityRename** - 改名效果
+- **DoomCouncilEntityEnemyIntensity** - 「挑战更强/更弱的敌人」：`class_entity_data` 存倍率("2"翻倍强/"0.5"减半弱)，`GetEnemyIntensityRate()` 返回该倍率；`TriggerFirst` 返回 false 常驻议案列表，`TriggerGameFightLogicEndGame` 在**征服模式**战斗结束时返回 true 消耗移除。倍率经 `UserTempBean.GetEnemyIntensityRate()`(连乘所有在列议案) 在 `FightBeanForConquer.InitFightAttackData` 叠加到 `intensityRate`，作用于下一整场征服 run 所有关卡+BOSS。
+
+### 默认议案与议案展示（现行机制）
+- **议案列表非随机**：`UIDoomCouncilBill.InitData` 取 `DoomCouncilInfoCfg.GetAllArrayData()` **全部**行，仅按 `unlock_id` 用 `CheckIsUnlock` 过滤后平铺展示（无「随机抽N个」）。
+- **默认议案 = `unlock_id` 留空/0**：`CheckIsUnlock(0)` 恒 true（约定0=无需解锁），故 `unlock_id` 空的议案「默认就有」。「更多水晶/更多经验/敌人更强/敌人更弱」均属此类。
+- 提交流程 `UIViewDoomCouncilBillItem.OnClickForSubmit`：校验并扣 `cost_crystal`/`cost_reputation`(声望存 `UserDataBean.reputation`) → 二次确认 → `success_rate>=1` 直接 `userTempData.AddDoomCouncil`(不进议会场景)，否则 `GameHandler.StartDoomCouncil` 进投票。
 
 ### 议员与投票态度系统（核心机制）
 - **NPC 类型** `NpcTypeEnum`：`Councilor=2` 议会固定NPC（固定装备/样貌 + 独立持久化好感），`CouncilorRandom=3` 议会随机NPC（随机外貌、每场临时生成）。
@@ -57,7 +63,10 @@ watched_files:
 | 文件 | 路径 |
 |------|------|
 | 议会逻辑(议员生成/态度/投票) | Assets/Scripts/Game/Logic/DoomCouncilLogic.cs |
-| 议会实体基类 | Assets/Scripts/Game/DoomCouncil/DoomCouncilBaseEntity.cs |
+| 议会实体基类(触发钩子+GetEnemyIntensityRate) | Assets/Scripts/Game/DoomCouncil/DoomCouncilBaseEntity.cs |
+| 敌人更强/更弱议案实体 | Assets/Scripts/Game/DoomCouncil/DoomCouncilEntityEnemyIntensity.cs |
+| 议案效果暂存与触发分发(含 GetEnemyIntensityRate 连乘) | Assets/Scripts/Bean/Game/UserTempBean.cs |
+| 敌人强度倍率注入点(intensityRate) | Assets/Scripts/Bean/Game/FightBeanForConquer.cs (InitFightAttackData) |
 | 议会 Bean | Assets/Scripts/Bean/Game/DoomCouncilBean.cs |
 | 议会场景预制(议员/态度色/好感图标) | Assets/Scripts/Component/Game/Scene/ScenePrefabForDoomCouncil.cs |
 | 议员态度/类型辅助 | Assets/Scripts/Bean/Game/CreatureBeanPartial.cs |

@@ -27,6 +27,9 @@ public partial class UICreatureVat : BaseUIComponent
     protected UserAscendDetailsBean userAscendDetails;
     protected Transform targetVat;
 
+    //退出回调(由各打开入口注入,决定退出时的关闭/跳转逻辑):核心入口返回UIBaseCore;场景容器交互返回UIBaseMain
+    public Action actionForExit;
+
     //进阶BUFF增益item缓存(实时生成、按需复用)
     protected List<UIViewCreatureVatAscendBuffItem> listAscendBuffItem = new List<UIViewCreatureVatAscendBuffItem>();
     //BUFF增益item一排最多显示数量
@@ -155,6 +158,10 @@ public partial class UICreatureVat : BaseUIComponent
         }
         ui_ProgressText.text = $"{MathUtil.GetPercentage(progressNormalized, 2)}%";
         ui_Progress.fillAmount = progressNormalized;
+        //进度文本+进度条按归一化进度分段配色(复用献祭成功率同口径:ColorUtil.GetProgressColor,0~1)
+        Color progressColor = ColorUtil.GetProgressColor(progressNormalized);
+        ui_ProgressText.color = progressColor;
+        ui_Progress.color = progressColor;
     }
 
     /// <summary>
@@ -199,6 +206,14 @@ public partial class UICreatureVat : BaseUIComponent
                 return;
             listTargetCreatureShow.Add(creatureData);
         });
+        //默认排序:稀有度升序(N→L),同稀有度按等级降序
+        listTargetCreatureShow.Sort((a, b) =>
+        {
+            int rarityA = a.GetRarityValue();
+            int rarityB = b.GetRarityValue();
+            if (rarityA != rarityB) return rarityA.CompareTo(rarityB);
+            return b.level.CompareTo(a.level);
+        });
         ui_UIViewCreatureCardList_Target.SetData(listTargetCreatureShow, CardUseStateEnum.CreatureAscendTarget, OnCellChangeForBackpackCreatureTarget);
     }
 
@@ -225,6 +240,18 @@ public partial class UICreatureVat : BaseUIComponent
             if (materialRarity <= targetRarity)
                 return;
             listMaterialCreatureShow.Add(creatureData);
+        });
+        //默认排序:目标下一阶段稀有度(=目标稀有度+1)置顶,其余按稀有度升序,同稀有度按等级降序
+        int nextRarity = targetRarity + 1;
+        listMaterialCreatureShow.Sort((a, b) =>
+        {
+            bool aIsNext = a.GetRarityValue() == nextRarity;
+            bool bIsNext = b.GetRarityValue() == nextRarity;
+            if (aIsNext != bIsNext) return aIsNext ? -1 : 1;
+            int rarityA = a.GetRarityValue();
+            int rarityB = b.GetRarityValue();
+            if (rarityA != rarityB) return rarityA.CompareTo(rarityB);
+            return b.level.CompareTo(a.level);
         });
         ui_UIViewCreatureCardList_Material.SetData(listMaterialCreatureShow, CardUseStateEnum.CreatureAscendMaterial, OnCellChangeForBackpackCreatureMaterial);
         //素材列表就绪:刷新可选上限文本(初始 0/上限)
@@ -383,7 +410,7 @@ public partial class UICreatureVat : BaseUIComponent
                 targetCreatureSelect.creatureState = CreatureStateEnum.Vat;
                 //写入临时进阶数据(预定BUFF/目标稀有度/耗时上限)
                 userAscendDetails = userAscend.AddAscendData(currentIndexVat, targetCreatureSelect, newRarity, timeMax, ascendBuff);
-                //开始进阶保存一次
+                //开始进阶保存一次(测试模拟模式由 GameDataManager 统一拦截不落盘)
                 GameDataHandler.Instance.manager.SaveUserData();
                 //解锁UI锁定
                 UIHandler.Instance.HideScreenLock();
@@ -445,7 +472,7 @@ public partial class UICreatureVat : BaseUIComponent
         //移除临时数据(复位生物为Idle)
         userAscend.RemoveAscendData(currentIndexVat);
         userAscendDetails = null;
-        //完成进阶保存一次(把落地后的正式数据写盘并清除临时数据)
+        //完成进阶保存一次(把落地后的正式数据写盘并清除临时数据;测试模拟模式由 GameDataManager 统一拦截不落盘)
         GameDataHandler.Instance.manager.SaveUserData();
         //设置状态
         scenePrefab.BuildingVatSetState(targetVat,0, null);
@@ -470,11 +497,11 @@ public partial class UICreatureVat : BaseUIComponent
     }
 
     /// <summary>
-    /// 点击离开
+    /// 点击离开:执行由打开入口注入的退出回调(关闭/跳转逻辑由各入口自行处理)
     /// </summary>
     public void OnClickForExit()
     {
-        UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
+        actionForExit?.Invoke();
     }
 
     /// <summary>

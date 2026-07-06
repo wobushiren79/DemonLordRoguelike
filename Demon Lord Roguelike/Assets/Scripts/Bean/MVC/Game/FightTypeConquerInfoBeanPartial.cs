@@ -110,6 +110,15 @@ public partial class FightTypeConquerInfoBean
     }
 
     /// <summary>
+    /// 获取该难度的通关声望奖励(reward_reputation, 完整通关征服时发放给玩家的声望数量)
+    /// 注意: reward_reputation 字段需在 Excel 源表新增列后, 经 Unity 配置导出工具重新生成 Bean 才会存在
+    /// </summary>
+    public int GetRewardReputation()
+    {
+        return reward_reputation;
+    }
+
+    /// <summary>
     /// 获取当前关卡普通敌人的累计强度倍率(HP/护甲/攻击力)
     /// 以 attack_intensity_addrate 为每关倍率, 第 1 关为 1, 之后逐关相乘: rate^(currentFightNum-1)
     /// attack_intensity_addrate 非法(≤0)时按 1 处理

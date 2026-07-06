@@ -43,39 +43,42 @@ public partial class AudioHandler
     }
 
     /// <summary>
-    /// UI点击回调
+    /// UI点击回调：默认所有「可交互 + 带 sprite」的按钮都播放通用点击音 sound_btn_1，
+    /// 仅命中排除名单(按 GameObject 名或 sprite 名, 见 AudioManager)的频繁/连续操作类按钮保持静音。
     /// </summary>
     public void ActionForUIOnClick(GameObject targetObj)
     {
         Button tagetButton = targetObj.GetComponent<Button>();
-        if (tagetButton != null)
+        if (tagetButton == null)
+            return;
+        //置灰/禁用的按钮不响
+        if (!tagetButton.interactable)
+            return;
+        //弹窗背景点击关闭：命中 DialogView 的 ui_Background 且该弹窗允许点背景关闭(isDestroyBG)时播退出音；放在 sprite 空判之前因背景按钮常无 sprite
+        DialogView dialogView = targetObj.GetComponentInParent<DialogView>();
+        if (dialogView != null && dialogView.ui_Background == tagetButton
+            && dialogView.dialogData != null && dialogView.dialogData.isDestroyBG)
         {
-            //弹窗背景点击关闭：命中 DialogView 的 ui_Background 且该弹窗允许点背景关闭(isDestroyBG)时播退出音；放在 sprite 空判之前因背景按钮常无 sprite
-            DialogView dialogView = targetObj.GetComponentInParent<DialogView>();
-            if (dialogView != null && dialogView.ui_Background == tagetButton
-                && dialogView.dialogData != null && dialogView.dialogData.isDestroyBG)
-            {
-                PlaySound(AudioEnum.sound_btn_31);
-                return;
-            }
-            Image targetImage = tagetButton.image;
-            if (targetImage == null || targetImage.sprite == null)
-            {
-                return;
-            }
-            LogUtil.Log($"ActionForUIOnClick {targetImage.sprite.name}");
-            //通用点击
-            //如果是退出点击
-            if (targetImage.name.Equals("ViewExit"))
-            {
-                PlaySound(AudioEnum.sound_btn_31);
-                return;
-            }
-            if (manager.listCommonUIClick.Contains(targetImage.sprite.name))
-            {
-                PlaySound(AudioEnum.sound_btn_1);
-            }
+            PlaySound(AudioEnum.sound_btn_31);
+            return;
         }
+        Image targetImage = tagetButton.image;
+        //无图/无 sprite 的按钮不响(多为透明热区/纯背景)
+        if (targetImage == null || targetImage.sprite == null)
+            return;
+        //退出类按钮(Image 名为 ViewExit)播放退出音
+        if (targetImage.name.Equals("ViewExit"))
+        {
+            PlaySound(AudioEnum.sound_btn_31);
+            return;
+        }
+        //排除名单命中(按 GameObject 名 或 sprite 名)：频繁/连续操作类按钮保持静音
+        if (manager.listExcludeUIClickByName.Contains(targetObj.name)
+            || manager.listExcludeUIClickBySprite.Contains(targetImage.sprite.name))
+            return;
+        //其余可交互按钮默认播放通用点击音(便于后续按 obj/sprite 名调整排除名单, 此处输出两者)
+        LogUtil.Log($"ActionForUIOnClick obj:{targetObj.name} sprite:{targetImage.sprite.name}");
+        PlaySound(AudioEnum.sound_btn_1);
     }
 
     /// <summary>

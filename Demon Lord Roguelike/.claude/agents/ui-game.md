@@ -40,9 +40,10 @@ watched_files:
 
 ### 魔物进阶 (UICreatureVat / CreatureVat 培养槽) 要点
 
+- **打开入口与退出去向（`actionForExit` 注入式）**：`public Action actionForExit` 由**各入口**注入，`OnClickForExit` 只 `actionForExit?.Invoke()`（不含任何默认分支，退出逻辑全在入口）。三个入口：① 基地核心 `UIBaseCore.OnClickForVat` → 注入回 `UIBaseCore`；② 测试 `LauncherTest`（`TestSceneTypeEnum.CreatureVat`）→ 注入回 `UIBaseCore`（与核心一致）；③ 场景 Vat 建筑按 E 交互（`ControlForGameBase` 的 `ControlInteractionEnum.VatInteraction`，见 control-system skill）→ 注入回 `UIBaseMain`（退出直接回场景，不经核心）。与 `UIAchievement` 同款「入口注入退出回调」模式。
 - **进阶效果**：目标魔物稀有度 +1，并把开始时即确定的「预定 BUFF」写入 `creatureData.dicRarityBuff[新稀有度]`（旧实现「完成」只清空槽、对生物无任何加成）。
-- **目标列表**：仅 Idle 且未满级（`RarityInfoCfg.GetAscendTimeByRarity(rarity) > 0`，即排除 L）。
-- **素材列表**：Idle + 排除目标 + 排除上阵（`UserDataBean.CheckIsInAnyLineup`）+ 仅保留稀有度**高于**目标的魔物；可选上限做成研究 `GetMaterialMax()`=`UserUnlock.GetUnlockCreatureVatMaterialMax()`（基础 `UserLimmitBean.creatureVatMaterialMax`=5 + `UnlockEnum.CreatureVatMaterialNum`(100000008) 研究等级,满级10），超出弹 Toast（文本 id 80011）。
+- **目标列表**：仅 Idle 且未满级（`RarityInfoCfg.GetAscendTimeByRarity(rarity) > 0`，即排除 L）。**默认排序**（`InitCreaturekDataForTarget` 内 `List.Sort`）：稀有度升序（N→L），同稀有度按等级降序。
+- **素材列表**：Idle + 排除目标 + 排除上阵（`UserDataBean.CheckIsInAnyLineup`）+ 仅保留稀有度**高于**目标的魔物；可选上限做成研究 `GetMaterialMax()`=`UserUnlock.GetUnlockCreatureVatMaterialMax()`（基础 `UserLimmitBean.creatureVatMaterialMax`=5 + `UnlockEnum.CreatureVatMaterialNum`(100000008) 研究等级,满级10），超出弹 Toast（文本 id 80011）。**默认排序**（`InitCreaturekDataForMaterial` 内 `List.Sort`）：目标**下一阶段稀有度**（=目标稀有度+1）置顶，其余按稀有度升序，同稀有度按等级降序（因素材只保留高于目标者，下一阶段即最低合格稀有度）。
 - **素材上限文本（LimmitText）**：`RefreshMaterialLimitText()` 显示「已选/上限」，达上限时数量转通用警示红（`ColorUtil.WrapLimitFull`）；在 `InitCreaturekDataForMaterial` 与素材选择变化时刷新。
 - **预定 BUFF 生成**：开始进阶时调用 `BuffUtil.CreateAscendRarityBuff(newRarity, materials)` 得到 `ascendBuff`（素材在 newRarity 槽位的 BUFF 按 id 聚合，每 id 提供 10%×数量 命中概率，命中继承并重随机数值≥素材原值，未命中回退通用随机；UR/L 无类型则为 null）。
 - **进阶详情 UI（AscendData，素材选择阶段展示）**：仅在「素材选择阶段（`userAscendDetails==null`）+ 已选目标」时显示 `ui_AscendData` 并隐藏 `ui_ProgressContent`（培养阶段反之）；统一在 `RefreshAscendData()` 切换，由 `RefreshVatState` 及目标选择事件触发。`ui_ProgressContent` 未在 Component 文件序列化，靠运行时 `AutoLinkUI` 按名绑定。
@@ -52,7 +53,9 @@ watched_files:
 - **耗时**：按**源稀有度**查表 `RarityInfoCfg.GetAscendTimeByRarity`（秒）作为 `timeMax`；被动 tick 每秒 +1 秒。
 - **魔晶加速（研究门控）**：加速按钮做成研究解锁——`UserUnlock.GetUnlockCreatureVatAddProgressLevel()`(`UnlockEnum.CreatureVatAddProgress`=100000007,level_max=5)。**0级(未研究)隐藏加速按钮**；已研究时**恒消耗 1 魔晶**，研究等级 = 单次进度增加秒数 = 进度倍率（Lv1=1魔晶+1秒 … Lv5=1魔晶+5秒），按钮文本 80009「加速进阶 +{等级}秒/晶」（{0}=等级=每次加速秒数），`OnClickForAddProgress` 消耗 `payCrystal=1` 并 `AddProgress(等级)`。
 - **临时进阶数据**：`UserAscendBean` / `UserAscendDetailsBean`（随存档序列化）—— `progress` 现为「已累积秒数」，`targetRarity`/`timeMax`/`ascendBuff` 字段，`AddProgress(+1秒)`、`IsComplete()`、`GetProgressNormalized()`；进度条/完成判定改用后两者。`AddAscendData(index, creatureData, targetRarity, timeMax, ascendBuff)`。
+- **进度条配色（`RefreshVatProgress`）**：`ui_ProgressText`（百分比文本）与 `ui_Progress`（fillAmount 进度条）的 `color` 均按归一化进度 `ColorUtil.GetProgressColor(progressNormalized)` 分段着色（0-20红/20-40橙/40-60黄/60-80浅绿/80-100蓝，与献祭成功率、孵化缸 BUFF 概率同口径）。
 - **存档时机**：开始进阶存一次、点完成存一次；培养过程（进度 tick / 魔晶加速）不主动存档。
+- **测试模式不落盘**：`OnClickForStart`/`OnClickForComplete` 直接 `SaveUserData()`，不落盘由全局 `GameDataManager.isTestSimulation` 在存档层统一拦截（魔物进阶测试 `TestSceneTypeEnum.CreatureVat` 与献祭测试共用，见 test-system skill），本 UI 不再自带测试标记。
 - **完成进阶收尾（`OnClickForComplete`）**：落地数据(升稀有度+授予 BUFF)→`RemoveAscendData`(复位 Idle)→存档→`BuildingVatSetState(0)` 清空容器→**反馈**：胜利音效 `AudioEnum.sound_win_1` + 容器处庆祝粒子 `EffectHandler.ShowCreatureAscendCompleteEffect(vat.position+(0,1.2,0), rarityColor)`——**专用粒子 `EffectAscendComplete_1`**(白模板,2 套 ParticleSystem:上升流光 streak + 径向环爆,URP additive,Addressables 组 `Effect`),运行时按升阶后**新稀有度主色** `RarityInfo.ui_board_color` 给所有 PS `startColor` 上色(即"稀有度流光";`ShowEffect(EffectBean)` 走 `isPlayInShow=false`→回调里 tint 后 `PlayEffect()`) + 成功 Toast `ToastHintText(GetTextById(80013), 1)`(绿色)→**刷新列表**：`targetCreatureSelect=null`+清素材选择+`InitCreaturekDataForTarget()` 重建目标列表（否则列表仍是进阶前旧稀有度），再 `RefreshVatState()`/`RefreshVatProgress()`。
 - **被动进度**：`GameDataHandler.HandleForAscendData` 每秒 tick 给每个进阶容器 `AddProgress()`，仅广播 `CreatureAscend_AddProgress`，不存档。
 - **配置**：进阶耗时来自 `excel_rarity_info` 新列 `ascend_time`（按源稀有度秒数：N=180/R=600/SR=1800/SSR=7200/UR=36000/L=0），手写字段在 `RarityInfoBeanPartial.cs`，访问走静态 `GetAscendTimeByRarity(int rarity)`（rarity≤0 视为 N，缺失/满级返回 0）。
