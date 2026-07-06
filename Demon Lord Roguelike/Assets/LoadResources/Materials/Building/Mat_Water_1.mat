@@ -145,10 +145,10 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _CrestColor: {r: 0.20870416, g: 0.34731945, b: 0.6603774, a: 0.5019608}
-    - _DeepColor: {r: 0.14028262, g: 0.13216448, b: 0.20754719, a: 0.8}
+    - _DeepColor: {r: 0.06480977, g: 0.05629228, b: 0.103773594, a: 0.8}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FoamColor: {r: 0.13333334, g: 0.15294118, b: 0.16862746, a: 1}
-    - _ShallowColor: {r: 0.25698647, g: 0.3222713, b: 0.7264151, a: 0.7}
+    - _ShallowColor: {r: 0, g: 0, b: 0, a: 0.7}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
     - _TroughColor: {r: 0.0252314, g: 0.0502695, b: 0.1981132, a: 0.5019608}
