@@ -107,12 +107,12 @@ Material:
     - _ColorBlend: 0.1
     - _Cull: 2
     - _Cutoff: 0.5
-    - _DepthDistance: 1
+    - _DepthDistance: 0.2
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
-    - _EdgeFade: 3
+    - _EdgeFade: 1
     - _EffectScale: 1
     - _EnvironmentReflections: 1
     - _FoamDistance: 2
@@ -148,7 +148,7 @@ Material:
     - _DeepColor: {r: 0.06480977, g: 0.05629228, b: 0.103773594, a: 0.8}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _FoamColor: {r: 0.13333334, g: 0.15294118, b: 0.16862746, a: 1}
-    - _ShallowColor: {r: 0, g: 0, b: 0, a: 0.7}
+    - _ShallowColor: {r: 1, g: 1, b: 1, a: 0.5019608}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 1}
     - _TroughColor: {r: 0.0252314, g: 0.0502695, b: 0.1981132, a: 0.5019608}
