@@ -40,9 +40,9 @@ AudioManager   - 音频资源管理器（持有 3 条 AudioSource、AudioListene
 
 | 文件 | 层 | 职责 |
 | --- | --- | --- |
-| [Assets/FrameWork/Scripts/Component/Handler/AudioHandler.cs](Assets/FrameWork/Scripts/Component/Handler/AudioHandler.cs) | 框架 | 通用播放 API：`InitAudio`、`PlayMusicForLoop`、`PlayMusicListForLoop`、`PlaySound`、`PlayEnvironment`、暂停/停止/恢复；**连续音效**（`PlayLoopSound`/`StopLoopSound`/`StopAllLoopSound`/`PauseAllLoopSound`/`RestoreAllLoopSound`/`IsLoopSoundPlaying`，含异步竞态令牌防护、`LoopSoundEntry` 活跃字典） |
+| [Assets/FrameWork/Scripts/Component/Handler/AudioHandler.cs](Assets/FrameWork/Scripts/Component/Handler/AudioHandler.cs) | 框架 | 通用播放 API：`InitAudio`、`PlayMusicForLoop`、`PlayMusicListForLoop`、`PlaySound`、`PlayEnvironment`、暂停/停止/恢复；**连续音效**（`PlayLoopSound`/`StopLoopSound`/`StopAllLoopSound`/`PauseAllLoopSound`/`RestoreAllLoopSound`/`IsLoopSoundPlaying`，含异步竞态令牌防护、`LoopSoundEntry` 活跃字典）；**定时淡出音效** `PlaySoundTimedFade`（借池化独立音源+`CoroutineForPlayTimedFade` 淡出协程，一次性播放不登记 `dicLoopActive`） |
 | [Assets/FrameWork/Scripts/Component/Manager/AudioManager.cs](Assets/FrameWork/Scripts/Component/Manager/AudioManager.cs) | 框架 | 3 条 `AudioSource` 懒加载、`AudioListener`、按类型加载并缓存 `AudioClip`（`GetMusicClip`/`GetSoundClip`/`GetEnvironmentClip` → `LoadClipDataByAddressbles`）；**连续音效音源池**（`loopSoundRoot` 容器 + `DequeueLoopSource`/`RecycleLoopSource` + `MaxLoopSource=16` 上限） |
-| [Assets/Scripts/Component/Handler/AudioHandler.cs](Assets/Scripts/Component/Handler/AudioHandler.cs) | 游戏 | 业务封装：`PlayMusicForMain`/`PlayMusicForGaming`/`PlayMusicForFight`、`ActionForUIOnClick` 通用 UI 点击音效；**`AudioEnum` 重载**（`PlaySound`/`PlayMusicForLoop`/`PlayMusicListForLoop`/`PlayEnvironment`/`PlayLoopSound`/`StopLoopSound`/`IsLoopSoundPlaying` 接受枚举，内部 `(long)` 转发到框架层 long 接口） |
+| [Assets/Scripts/Component/Handler/AudioHandler.cs](Assets/Scripts/Component/Handler/AudioHandler.cs) | 游戏 | 业务封装：`PlayMusicForMain`/`PlayMusicForGaming`/`PlayMusicForFight`、`ActionForUIOnClick` 通用 UI 点击音效；**`AudioEnum` 重载**（`PlaySound`/`PlayMusicForLoop`/`PlayMusicListForLoop`/`PlayEnvironment`/`PlayLoopSound`/`StopLoopSound`/`IsLoopSoundPlaying`/`PlaySoundTimedFade` 接受枚举，内部 `(long)` 转发到框架层 long 接口） |
 | [Assets/Scripts/Enums/AudioEnum.cs](Assets/Scripts/Enums/AudioEnum.cs) | 游戏 | **音频枚举**：枚举值 = `AudioInfo` 配置表 id，枚举名 = `name_res`（去扩展名）。由 `AudioInfo.txt` 一一对应生成，是业务代码调用音频的**首选方式**（替代裸 id），枚举底层类型为 `long` |
 | [Assets/Scripts/Component/Manager/AudioManager.cs](Assets/Scripts/Component/Manager/AudioManager.cs) | 游戏 | 通用点击音效**排除名单**：`listExcludeUIClickByName`（按 GameObject 名排除）+ `listExcludeUIClickBySprite`（按 sprite 名排除）。默认所有按钮响，命中名单者静音 |
 | [Assets/FrameWork/Scripts/Bean/MVC/AudioInfoBean.cs](Assets/FrameWork/Scripts/Bean/MVC/AudioInfoBean.cs) | 框架 | 自动生成的配置 Bean + `AudioInfoCfg`（`GetItemData(id)`） |
@@ -206,6 +206,22 @@ bool playing = AudioHandler.Instance.IsLoopSoundPlaying(AudioEnum.sound_walk_1);
 **走路声接入示例（唯一现有消费方）：** 基地自控魔王的移动挂在 [ControlForGameBase.cs](Assets/Scripts/Component/Game/Control/ControlForGameBase.cs) —— `HandleForMoveUpdate` 移动分支 `PlayLoopSound(AudioEnum.sound_walk_1, pitch: 1.5f)`（加快脚步节奏, 1.5 倍速）、静止分支 `StopLoopSound(...)`、`EnabledControl(false)` 也 `StopLoopSound(...)`（覆盖"走着走着打开界面"）。单实体，靠 `PlayLoopSound`/`StopLoopSound` 幂等，每 FixedUpdate 重复调无害。走路声**复用一次性音效 `sound_walk_1`**（不新建 `loop_walk_1`）。
 
 > 未做（如需再扩展）：独立 `loopVolume` 音量条；按句柄多路 + 3D 位置跟随（每生物脚步声）；同 id 平滑换 clip（如雨强度切换，当前按 id 去重会忽略）。`dicLoopData` 同其它音频缓存一样从不 `Addressables.Release`（既有技术债，池仅解 AudioSource 组件泄漏）。
+
+## 定时淡出音效 (PlaySoundTimedFade) — 只取长音效前一段并平滑收尾
+
+用于"一段长音效只需播前 N 秒，并在末段淡出到 0"的场景（如 10s 音效只用 5s、第 4s 起淡出）。**借用连续音效池的独立音源**（`DequeueLoopSource`，`loop=false`）+ 一个淡出协程，播完 `RecycleLoopSource` 自动回收——这是唯一能拿到"独立音源句柄"从而能中途改音量淡出的路径（`PlaySound` 走 `PlayOneShot`/`PlayClipAtPoint` 无句柄，改音量会波及整条共享源）。
+
+```csharp
+// 框架层签名：PlaySoundTimedFade(long id, float playDuration, float fadeStartTime, float volumeScale=-1f) —— 前两参强制传,仅volumeScale默认-1f取soundVolume
+// 游戏层 AudioEnum 重载无默认值，四参必须全传：PlaySoundTimedFade(AudioEnum, playDuration, fadeStartTime, volumeScale)
+AudioHandler.Instance.PlaySoundTimedFade(AudioEnum.sound_xxx, 5f, 4f, -1f);   // 播5秒,第4秒起线性淡出,音量取soundVolume
+AudioHandler.Instance.PlaySoundTimedFade(AudioEnum.sound_xxx, 6f, 5f, 0.8f);  // 播6秒,第5秒起淡出,基础音量0.8
+```
+
+**设计要点：**
+- **参数**：`playDuration` 总时长到点停止（应 ≤ clip 长度）；`fadeStartTime` 淡出起点（应 ≤ playDuration），此前保持基础音量；`volumeScale<0` 取 `soundVolume`，最终基础音量 = `volumeScale × 配置 volume_scale`。**淡出固定线性 `1-progress`，无曲线参数**。入参已纠偏（`fadeStartTime` 夹在 `[0, playDuration]`）。**框架层 `playDuration`/`fadeStartTime` 强制传，仅 `volumeScale` 默认 `-1f`（取配置音效音量 soundVolume）；游戏层枚举重载四参全无默认值，须全传**。
+- **与 LoopSound 的区别**：`loop=false` 一次性播放；**不登记到 `dicLoopActive`**，故**不参与全局 `PauseAllLoopSound`/`StopAllLoopSound`/`InitAudio` 音量刷新，也暂不支持中途打断**。切场景时若仍在播，会借 `DontDestroyOnLoad` 的音源播完剩余时长后自行回收（一次性短音效可接受）。若日后需可打断/受全局控制，需仿 LoopSound 登记字典 + token。
+- **协程 `CoroutineForPlayTimedFade`**：`WaitForSeconds(fadeStartTime)` → 逐帧 `source.volume = baseVolume × (1-progress)` → 到点 `RecycleLoopSource`（内部 `Stop()` + 复位 volume/pitch）。
 
 ## 约束与注意事项
 

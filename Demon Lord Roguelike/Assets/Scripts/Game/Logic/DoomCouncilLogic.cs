@@ -245,6 +245,11 @@ public class DoomCouncilLogic : BaseGameLogic
     /// <returns>议员列表</returns>
     private List<CreatureBean> GenerateCouncilors()
     {
+        //测试模式: 直接载入所有固定议员(不走随机人数/随机议员逻辑)
+        if (doomCouncilData.isTestAllFixedCouncilor)
+        {
+            return GenerateAllFixedCouncilors();
+        }
         List<CreatureBean> listCouncilor = new List<CreatureBean>();
         int councilNum = doomCouncilData.doomCouncilInfo.GetRandomCouncilNum();
         //10%概率出现议会固定NPC
@@ -276,6 +281,34 @@ public class DoomCouncilLogic : BaseGameLogic
             {
                 creatureData.relationship = userRelationship.GetRelationship(npcInfo.id);
             }
+            listCouncilor.Add(creatureData);
+        }
+        return listCouncilor;
+    }
+
+    /// <summary>
+    /// 测试用: 生成包含所有议会固定议员的列表(每种固定NPC各1名), 用于测试固定议员的显示/参数
+    /// 与正常生成一致: 使用评级显示名 + 载入持久化好感
+    /// </summary>
+    /// <returns>由全部固定议员构成的议员列表</returns>
+    private List<CreatureBean> GenerateAllFixedCouncilors()
+    {
+        List<CreatureBean> listCouncilor = new List<CreatureBean>();
+        var listFixed = NpcInfoCfg.GetNpcInfosByType(NpcTypeEnum.Councilor);
+        if (listFixed.IsNull())
+        {
+            return listCouncilor;
+        }
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        var userRelationship = userData.GetUserRelationshipData();
+        for (int i = 0; i < listFixed.Count; i++)
+        {
+            NpcInfoBean npcInfo = listFixed[i];
+            CreatureBean creatureData = new CreatureBean(npcInfo);
+            //议员显示名使用评级名称
+            creatureData.SetCouncilorDisplayName();
+            //固定NPC: 载入持久化好感(默认仇恨)
+            creatureData.relationship = userRelationship.GetRelationship(npcInfo.id);
             listCouncilor.Add(creatureData);
         }
         return listCouncilor;

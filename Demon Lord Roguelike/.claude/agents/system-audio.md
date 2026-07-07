@@ -35,6 +35,12 @@ watched_files:
 - **生命周期**：音源常驻 DontDestroyOnLoad，`WorldHandler.ClearWorldData` 已挂 `StopAllLoopSound()` 兜底。
 - **走路声消费方**：基地自控魔王 [ControlForGameBase.cs](Assets/Scripts/Component/Game/Control/ControlForGameBase.cs) 移动/静止/禁用三处起停，复用一次性音效 `sound_walk_1`，起播传 `pitch:1.5f` 加快(1.5 倍速)。
 
+### 定时淡出音效 (PlaySoundTimedFade) — 只取长音效前一段并平滑收尾
+- **用途**：只播一段音效的前 N 秒并在末段淡出到 0（如 10s 音效只用 5s、第 4s 起淡出）。借用连续音效池的**独立音源**（`DequeueLoopSource`，`loop=false`）+ 一个淡出协程，播完 `RecycleLoopSource` 自动回收。
+- **API**：框架层 `PlaySoundTimedFade(long soundId, playDuration, fadeStartTime, volumeScale=-1f)`（`playDuration`/`fadeStartTime` **强制传**，仅 `volumeScale` 有默认 `-1f`=取配置音效音量 soundVolume）；游戏层 `AudioEnum` 重载 `PlaySoundTimedFade(AudioEnum, playDuration, fadeStartTime, volumeScale)`——**游戏层四参全无默认值，须全传**。前 `fadeStartTime` 秒保持基础音量，`fadeStartTime→playDuration` **线性**淡到 0；`volumeScale<0` 取 `soundVolume`，最终基础音量 = `volumeScale × 配置 volume_scale`。**淡出固定线性，无曲线参数**。
+- **与 LoopSound/PlaySound 的区别**：不是循环（`loop=false`），也不用 `PlayOneShot`（那样拿不到句柄无法淡出）；**不登记到 `dicLoopActive`**，故为一次性播放、**不参与全局 Pause/Stop/音量刷新，也暂不支持中途打断**（若日后要可打断，需仿 LoopSound 登记字典+token）。
+- **协程 `CoroutineForPlayTimedFade`**：`WaitForSeconds(fadeStartTime)` → 逐帧 `source.volume = baseVolume × (1-progress)`（线性）→ 到点回收音源。
+
 ### 音量管理
 - 音量持久化在 **GameConfigBean**（`musicVolume`/`soundVolume`/`environmentVolume`，默认 0.5）
 - 设置界面 **UIGameSettingForAudio** 滑条改音量，变更后调 `AudioHandler.Instance.InitAudio()` 刷新

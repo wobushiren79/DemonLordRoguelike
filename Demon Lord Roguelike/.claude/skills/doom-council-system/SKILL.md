@@ -33,7 +33,8 @@ watched_files:
 1. 议会人数：议案 `DoomCouncilInfo.council_num`（字符串 `"min,max"`）→ `GetRandomCouncilNum()` 区间随机。
 2. 每席：随机一种生物 + 按权重随机评级（1~5 权重 50/30/15/10/5 归一化，`NpcInfoCfg.GetRandomCouncilorNpc()`）。
 3. 整场 10% 概率出现 1 名固定NPC（`GetRandomFixedCouncilorNpc()`）。
-4. 议员显示名取评级名（`CreatureBean.SetCouncilorDisplayName`）；固定NPC从 `UserRelationshipBean` 载入持久化好感。
+4. 议员显示名由 `CreatureBean.SetCouncilorDisplayName` 按 NPC 类型分流：**随机议员**取评级称谓名（预备/列席/初级议员等，`DoomCouncilRatingsInfo.name`）；**固定议员(`NpcTypeEnum.Councilor`)**取其自身 NPC 名字（`NpcInfo.name`→`name_language`）。该显示名同时驱动对话弹窗(`UIGameConversation`)与详情面板(`UIViewCreatureCardDetails`)。固定NPC从 `UserRelationshipBean` 载入持久化好感。
+5. **测试分流**：当 `DoomCouncilBean.isTestAllFixedCouncilor=true` 时，`GenerateCouncilors` 顶部直接返回 `GenerateAllFixedCouncilors()`——跳过随机人数/随机议员，把 `NpcInfoCfg.GetNpcInfosByType(NpcTypeEnum.Councilor)` 全部固定议员各生成 1 名（同样走上述显示名分流 + 载入持久化好感）。仅供测试查看所有固定议员，入口 `LauncherTest.StartForDoomCouncilAllFixed`。
 
 ### 投票态度（存于 `DoomCouncilBean.dicCouncilorAttitude`，Key=议员UUID，Value 0~100=投赞成概率；只与本场议案绑定，不放 CreatureBean、不入存档）
 - `GenerateCouncilorAttitudes(list, success_rate)` 按议案通过率生成：**高态度(赞成)组人数 = 总数×通过率 → 随机 {75,100}**；其余低态度组 → 随机 {0,25}；再随机取全体 10% 覆盖为 50。

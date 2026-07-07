@@ -211,8 +211,8 @@ LauncherTest (Inspector)
 ├── CardTest: 卡片测试参数
 ├── Base: 基地测试参数
 ├── RewardSelect: 奖励选择参数
-├── DoomCouncil: 终焉议会参数
-├── NpcCreate: NPC创建参数
+├── DoomCouncil: 终焉议会参数（两个启动按钮：开始终焉议会 StartForDoomCouncil / 查看所有固定议员 StartForDoomCouncilAllFixed）
+├── NpcCreate: NPC创建参数（两个启动按钮：预制版 StartNpcCreate / 纯GUI代码版 StartNpcCreateGUI）
 ├── ResearchUI: 研究UI参数
 ├── AbyssalBlessing: 深渊馈赠UI参数
 ├── CreatureSacrifice: 献祭升级测试参数

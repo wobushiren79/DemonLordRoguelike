@@ -121,6 +121,18 @@ public class LauncherTest : BaseLauncher
     }
 
     /// <summary>
+    /// 开始终焉议会测试(直接载入所有固定议员, 用于测试固定议员的显示/参数)
+    /// </summary>
+    /// <param name="billId">议案 ID(仍需有效, 用于议员态度生成)</param>
+    public async void StartForDoomCouncilAllFixed(long billId)
+    {
+        //进入议会场景, 标记为载入所有固定议员
+        DoomCouncilBean doomCouncilData = new DoomCouncilBean(billId);
+        doomCouncilData.isTestAllFixedCouncilor = true;
+        GameHandler.Instance.StartDoomCouncil(doomCouncilData);
+    }
+
+    /// <summary>
     /// 开始奖励选择
     /// </summary>
     /// <param name="testData">测试数据，可配置装备品质、使用者类型、属性加成</param>
@@ -161,6 +173,22 @@ public class LauncherTest : BaseLauncher
         CameraHandler.Instance.InitData();
         //关闭额外的摄像头
         var ui = UIHandler.Instance.OpenUIAndCloseOther<UITestNpcCreate>();
+    }
+
+    /// <summary>
+    /// 开始NPC创建（GUI版，纯代码UI，不依赖预制）
+    /// </summary>
+    public async void StartNpcCreateGUI()
+    {
+        await WorldHandler.Instance.ClearWorldData();
+        //设置焦距
+        VolumeHandler.Instance.SetDepthOfField(UnityEngine.Rendering.Universal.DepthOfFieldMode.Off, 0, 0, 0);
+        //镜头初始化
+        CameraHandler.Instance.InitData();
+        //关闭其它UI，避免预制版NPC创建界面叠加
+        UIHandler.Instance.CloseAllUI();
+        //挂载纯GUI代码的NPC创建组件到空物体
+        new GameObject("NpcCreateGUI").AddComponent<TestNpcCreateGUI>();
     }
 
     /// <summary>

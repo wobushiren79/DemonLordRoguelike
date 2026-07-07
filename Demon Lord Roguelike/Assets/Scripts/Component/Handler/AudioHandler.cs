@@ -157,6 +157,19 @@ public partial class AudioHandler
     }
 
     /// <summary>
+    /// 播放定时淡出音效（枚举）：前 fadeStartTime 秒原音量，之后线性淡出到 0，到 playDuration 停止。
+    /// 用于只取长音效前一段并平滑收尾（如 10s 音效只用 5s、第 4s 起淡出）。所有参数均须显式传入。
+    /// </summary>
+    /// <param name="audio">音频枚举</param>
+    /// <param name="playDuration">总播放时长（秒），到点停止；应 ≤ clip 实际长度</param>
+    /// <param name="fadeStartTime">淡出起始时刻（秒），此前保持原音量；应 ≤ playDuration</param>
+    /// <param name="volumeScale">基础音量；&lt;0 时取音效音量 soundVolume</param>
+    public void PlaySoundTimedFade(AudioEnum audio, float playDuration, float fadeStartTime, float volumeScale)
+    {
+        PlaySoundTimedFade((long)audio, playDuration, fadeStartTime, volumeScale);
+    }
+
+    /// <summary>
     /// 循环播放音乐-单曲（枚举）
     /// </summary>
     /// <param name="audio">音频枚举</param>

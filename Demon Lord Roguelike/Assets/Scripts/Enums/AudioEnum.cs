@@ -88,6 +88,7 @@ public enum AudioEnum : long
     sound_damage_1 = 350001,//受伤1
     sound_dice_1 = 360001,//骰子1
     sound_door_1 = 370001,//开门1
+    sound_door_2 = 370002,//开门2
     sound_eat_1 = 380001,//进食1
     sound_eat_2 = 380002,//进食2
     sound_error_1 = 390001,//错误1
@@ -155,6 +156,8 @@ public enum AudioEnum : long
     sound_magic_1 = 600001,//魔法1
     sound_magic_2 = 600002,//魔法2
     sound_magic_3 = 600003,//魔法3
+    sound_building_1 = 610001,//建造1
+    sound_building_2 = 610002,//建造2
     //==================== 音乐 Music ====================
     music_fight_1 = 1000001,//战斗音乐1
     music_fight_2 = 1000002,//战斗音乐2

@@ -235,6 +235,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5613f123e2e822c46955b1c91b9e6b9a
+    m_Address: Assets/LoadResources/Audio/Sound/sound_door_2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 56b10d0204b0a1d44bf3d3e19224e13c
     m_Address: Assets/LoadResources/Audio/Sound/sound_btn_26.wav
     m_ReadOnly: 0
@@ -380,6 +385,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7e9348b0f547cd0469dde4e173116afe
+    m_Address: Assets/LoadResources/Audio/Sound/sound_building_2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 7ec8d7a3ab5ef9b4e8c7f2578cceb73c
     m_Address: Assets/LoadResources/Audio/Sound/sound_btn_25.wav
     m_ReadOnly: 0
@@ -392,6 +402,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 80e59f448424d9f4ca679d9b6b01a391
     m_Address: Assets/LoadResources/Audio/Sound/sound_hit_7.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 820f05907bb88ee4899ac55b4b9dc265
+    m_Address: Assets/LoadResources/Audio/Sound/sound_building_1.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

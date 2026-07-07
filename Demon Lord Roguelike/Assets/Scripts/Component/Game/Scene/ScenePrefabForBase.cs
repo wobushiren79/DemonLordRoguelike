@@ -357,11 +357,15 @@ public class ScenePrefabForBase : ScenePrefabBase
                 tfWater.gameObject.SetActive(false);
                 tfCreature.gameObject.SetActive(false);
                 vatAnim.SetInteger("State", 0);
+                //未进阶:隐藏进度条
+                BuildingVatSetProgress(targetVat, false);
                 break;
             case 1:
                 tfWater.gameObject.SetActive(false);
                 tfCreature.gameObject.SetActive(false);
                 vatAnim.SetInteger("State", 1);
+                //未进阶:隐藏进度条
+                BuildingVatSetProgress(targetVat, false);
                 break;
             case 2:
                 tfWater.gameObject.SetActive(false);
@@ -369,6 +373,8 @@ public class ScenePrefabForBase : ScenePrefabBase
                 vatAnim.SetInteger("State", 1);
 
                 CreatureHandler.Instance.SetCreatureData(skeletonAnimation, creatureData, isNeedEquip: false, isNeedWeapon: false);
+                //已放入生物但未开始进阶:隐藏进度条
+                BuildingVatSetProgress(targetVat, false);
                 break;
             case 3:
                 tfWater.gameObject.SetActive(true);
@@ -382,8 +388,36 @@ public class ScenePrefabForBase : ScenePrefabBase
                     Color water = Color.Lerp(vatColorStart, vatColorEnd, progress);
                     renderWater.material.SetColor("_Color", water);
                 }
+                //进阶中:显示进度条并按归一化进度刷新填充量与分段配色
+                BuildingVatSetProgress(targetVat, true, progress);
                 break;
         }
+    }
+
+    /// <summary>
+    /// 设置容器进阶进度条(Progress)的显隐与数值:仅进阶中(state=3)显示,
+    /// 填充量(_Progress)=归一化进度,进度颜色(_FillColor)复用 ColorUtil.GetProgressColor
+    /// 分段配色(与孵化缸UI进度条 UICreatureVat.RefreshVatProgress 同口径)。
+    /// </summary>
+    /// <param name="targetVat">容器Transform</param>
+    /// <param name="isShow">是否显示进度条(仅进阶中显示)</param>
+    /// <param name="progress">归一化进度(0~1),-1 或越界会被 Clamp01 兜底</param>
+    private void BuildingVatSetProgress(Transform targetVat, bool isShow, float progress = 0)
+    {
+        Transform tfProgress = targetVat.Find("Progress");
+        if (tfProgress == null)
+        {
+            return;
+        }
+        tfProgress.gameObject.SetActive(isShow);
+        if (!isShow)
+        {
+            return;
+        }
+        MeshRenderer renderProgress = tfProgress.GetComponent<MeshRenderer>();
+        float progressClamp = Mathf.Clamp01(progress);
+        renderProgress.material.SetFloat("_Progress", progressClamp);
+        renderProgress.material.SetColor("_FillColor", ColorUtil.GetProgressColor(progressClamp));
     }
 
     /// <summary>
@@ -407,6 +441,8 @@ public class ScenePrefabForBase : ScenePrefabBase
         MeshRenderer renderWater = targetVat.Find("Water/Water").GetComponent<MeshRenderer>();
         renderWater.material.SetFloat("_WaterLevel", -1);
         renderWater.material.SetColor("_Color", vatColorStart);
+        //随水位一起显示进阶进度条,起始进度0(后续由被动tick刷新)
+        BuildingVatSetProgress(targetVat, true, 0);
         //水位上升动画
         renderWater.material.DOFloat(1, "_WaterLevel", animTimeWater).OnComplete(() =>
         {
@@ -560,6 +596,9 @@ public class ScenePrefabForBase : ScenePrefabBase
         {
             return;
         }
+
+        //建筑出现动画期间播放建造音效：总时长跟随出现动画(timeForShow)，末段0.5秒渐弱收尾
+        AudioHandler.Instance.PlaySoundTimedFade(AudioEnum.sound_building_2, timeForShow, Mathf.Max(0f, timeForShow - 0.5f), -1f);
 
         //仅当解锁发生在研究界面时，才切到自定义镜头并隐藏研究UI观看出现动画
         bool isResearchShow = UIHandler.Instance.GetOpenUIName() == nameof(UIBaseResearch);

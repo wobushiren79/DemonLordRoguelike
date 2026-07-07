@@ -27,7 +27,7 @@ public partial class CreatureBean
     }
 
     /// <summary>
-    /// 议会议员: 将显示名设置为其评级名称(预备/列席/初级议员等)
+    /// 议会议员: 设置显示名。固定议员用其自身NPC名字(NpcInfo.name), 随机议员用评级称谓名(预备/列席/初级议员等)
     /// </summary>
     public void SetCouncilorDisplayName()
     {
@@ -37,6 +37,13 @@ public partial class CreatureBean
         var npcInfo = NpcInfoCfg.GetItemData(npcData.npcId);
         if (npcInfo == null)
             return;
+        //固定议员: 使用NPC自身名字
+        if (npcInfo.GetNpcType() == NpcTypeEnum.Councilor)
+        {
+            creatureName = npcInfo.name_language;
+            return;
+        }
+        //随机议员: 使用评级称谓名
         var ratingInfo = DoomCouncilRatingsInfoCfg.GetItemData(npcInfo.GetCouncilorRatings());
         if (ratingInfo != null)
             creatureName = ratingInfo.name_language;

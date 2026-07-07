@@ -26,6 +26,8 @@ public class DoomCouncilBean
     public Dictionary<string, Vector3> dicCouncilorPosition;
     //议员投票态度(Key: 议员UUID, Value: 态度0~100=投赞成的概率); 只和本场议案绑定, 不随议员/存档持久化
     public Dictionary<string, int> dicCouncilorAttitude = new Dictionary<string, int>();
+    //测试标记: 为true时议员列表直接载入所有议会固定议员(每种固定NPC各1名), 用于测试固定议员的显示/参数
+    public bool isTestAllFixedCouncilor = false;
 
     public DoomCouncilBean(long doomCouncilBillId)
     {

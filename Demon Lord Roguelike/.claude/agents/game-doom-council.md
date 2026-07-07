@@ -41,7 +41,7 @@ watched_files:
 
 ### 议员与投票态度系统（核心机制）
 - **NPC 类型** `NpcTypeEnum`：`Councilor=2` 议会固定NPC（固定装备/样貌 + 独立持久化好感），`CouncilorRandom=3` 议会随机NPC（随机外貌、每场临时生成）。
-- **议员生成**（`DoomCouncilLogic.GenerateCouncilors`）：议会人数在议案 `DoomCouncilInfo.council_num`("min,max") 区间随机；每席随机一种生物(CreatureInfo id 1001-7004) + 按权重随机评级(1~5: 50/30/15/10/5 归一化, `NpcInfoCfg.GetRandomCouncilorNpc`)；整场 10% 概率出现 1 名固定NPC(`GetRandomFixedCouncilorNpc`)。每生物×评级各一条 `npc_type=3` 的 NpcInfo 行(共30×5=150)。
+- **议员生成**（`DoomCouncilLogic.GenerateCouncilors`）：议会人数在议案 `DoomCouncilInfo.council_num`("min,max") 区间随机；每席随机一种生物(CreatureInfo id 1001-7004) + 按权重随机评级(1~5: 50/30/15/10/5 归一化, `NpcInfoCfg.GetRandomCouncilorNpc`)；整场 10% 概率出现 1 名固定NPC(`GetRandomFixedCouncilorNpc`)。每生物×评级各一条 `npc_type=3` 的 NpcInfo 行(共30×5=150)。**测试分流**：`DoomCouncilBean.isTestAllFixedCouncilor=true` 时改走 `GenerateAllFixedCouncilors`——把所有 `npc_type=2` 固定议员各生成1名(跳过随机)，入口 `LauncherTest.StartForDoomCouncilAllFixed`(编辑器"查看所有固定议员"按钮)。
 - **投票态度**（存于 `DoomCouncilBean.dicCouncilorAttitude`，Key=议员UUID，Value 0~100=投赞成概率；态度只与本场议案绑定，不放 CreatureBean、不入存档）：`GenerateCouncilorAttitudes` 按议案 `success_rate` 生成——**高态度(赞成)组人数=总数×通过率→{75,100}**，其余低态度组→{0,25}，再随机取10%覆盖为50（通过率越高→越多议员倾向赞成，与通过率正相关）。固定NPC再叠加好感修正 `(关系类型-3)×50`(仇恨-100/冷淡-50/中立0/友好+50/迷恋+100)。
 - **投票**（`StartVote`）：开始即调用 `scenePrefab.HideAllCouncilorAttitudeView()` 隐藏所有议员意愿(Success)图标；随后每名议员 `Random(0,100) < attitude ? 赞成 : 反对`，票数按评级 `DoomCouncilRatingsInfo.vote`（已移除旧的「随机 vs success_rate + 30%睡觉」逻辑）。
 - **贿赂**（`UIGameConversation.ActionForItemSelectGift`）：送礼一次态度+10%；固定NPC额外加好感(按道具稀有度 `RarityInfo.item_add_relationship`)并持久化到 `UserRelationshipBean`，随即 `RefreshCouncilorView`。

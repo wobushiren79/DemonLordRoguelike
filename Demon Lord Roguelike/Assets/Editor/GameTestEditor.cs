@@ -415,6 +415,18 @@ public partial class GameTestEditor : Editor
             launcher.StartForDoomCouncil(doomCouncilBillId);
         }
         GUI.backgroundColor = Color.white;
+
+        EditorGUILayout.Space(3);
+
+        // 直接进入议会并加载所有固定议员(用于测试全部固定议员的显示/参数)
+        GUI.backgroundColor = new Color(0.4f, 0.6f, 0.9f);
+        if (GUILayout.Button("▶️ 查看所有固定议员", GUILayout.Height(30)) && Application.isPlaying)
+        {
+            launcher.StartForDoomCouncilAllFixed(doomCouncilBillId);
+        }
+        GUI.backgroundColor = Color.white;
+
+        EditorGUILayout.HelpBox("「查看所有固定议员」会跳过随机议员生成，直接把配置表中所有议会固定议员(npc_type=2)各生成 1 名放入议会，用于测试其显示与参数。议案 ID 仍需有效(用于生成投票态度)。", MessageType.Info);
         EditorGUILayout.Space(10);
 
         EditorGUILayout.BeginVertical("box");
@@ -488,6 +500,15 @@ public partial class GameTestEditor : Editor
         if (GUILayout.Button("▶️ 开始 NPC 创建", GUILayout.Height(30)) && Application.isPlaying)
         {
             launcher.StartNpcCreate();
+        }
+        GUI.backgroundColor = Color.white;
+
+        EditorGUILayout.Space(3);
+
+        GUI.backgroundColor = new Color(0.4f, 0.6f, 0.9f);
+        if (GUILayout.Button("▶️ 开始 NPC 创建（GUI）", GUILayout.Height(30)) && Application.isPlaying)
+        {
+            launcher.StartNpcCreateGUI();
         }
         GUI.backgroundColor = Color.white;
 
