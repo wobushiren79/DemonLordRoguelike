@@ -6,10 +6,11 @@ using TMPro;
 /// <summary>
 /// 排序筛选弹窗。统一承载多种条件,分区段展示:
 /// 名字区(ContentName,模糊查询输入框)、等级区(ContentLevel,左/右两个整数输入构成区间)、
-/// 稀有度区(ContentRarity,多选)、战斗区(ContentData,伤害/击杀/承伤/经验,排序键多选)、其它区(ContentOther,阵容/同类,排序键多选)。
+/// 稀有度区(ContentRarity,多选)、道具类型区(ContentItemType,选项按上下文动态传入并填充预留的 5 个项、多选)、
+/// 战斗区(ContentData,伤害/击杀/承伤/经验,排序键多选)、其它区(ContentOther,阵容/同类,排序键多选)。
 /// 各区段显隐由 listFilterType 推导;排序键按选择顺序决定优先级(index0=主键),战斗区选中项上移到容器最前以表达优先级、其它区保持原始顺序;
-/// 点击「确认」回传 OrderFilterResultBean(排序键+名字+等级区间+稀有度)。点击背景关闭。
-/// 约定:名字/等级/稀有度为「命中即置顶」条件——调用方不删行、全部展示,只把命中项排到前面,再按排序键次级排序。
+/// 点击「确认」回传 OrderFilterResultBean(排序键+名字+等级区间+稀有度+道具类型)。点击背景关闭。
+/// 约定:名字/等级/稀有度/道具类型为「命中即置顶」条件——调用方不删行、全部展示,只把命中项排到前面,再按排序键次级排序。
 /// </summary>
 public partial class UIDialogOrderFilter : DialogView
 {
@@ -23,12 +24,18 @@ public partial class UIDialogOrderFilter : DialogView
     protected List<OrderFilterTypeEnum> selectFilterTypes = new List<OrderFilterTypeEnum>();
     //当前已选中的稀有度(多选筛选)
     protected List<RarityEnum> selectRarities = new List<RarityEnum>();
+    //道具类型区的可选项(按上下文动态传入,顺序填充预留的道具类型项,多余项隐藏)
+    protected List<ItemTypeEnum> itemTypeOptions = new List<ItemTypeEnum>();
+    //当前已选中的道具类型(多选筛选)
+    protected List<ItemTypeEnum> selectItemTypes = new List<ItemTypeEnum>();
     //确认回调
     protected Action<OrderFilterResultBean> actionForConfirm;
     //排序键 -> 排序项视图(仅含战斗/其它区已显示的项)
     protected Dictionary<OrderFilterTypeEnum, UIViewDialogOrderFilterItem> dicItem = new Dictionary<OrderFilterTypeEnum, UIViewDialogOrderFilterItem>();
     //稀有度 -> 稀有度项视图
     protected Dictionary<RarityEnum, UIViewDialogOrderFilterItem> dicRarityItem = new Dictionary<RarityEnum, UIViewDialogOrderFilterItem>();
+    //道具类型 -> 道具类型项视图(仅含实际显示的项)
+    protected Dictionary<ItemTypeEnum, UIViewDialogOrderFilterItem> dicItemTypeItem = new Dictionary<ItemTypeEnum, UIViewDialogOrderFilterItem>();
     #endregion
 
     #region 数据初始化
@@ -50,6 +57,13 @@ public partial class UIDialogOrderFilter : DialogView
         selectRarities.Clear();
         if (filterData.defaultRarities != null)
             selectRarities.AddRange(filterData.defaultRarities);
+        //道具类型选项(动态)与默认选中
+        itemTypeOptions.Clear();
+        if (filterData.itemTypes != null)
+            itemTypeOptions.AddRange(filterData.itemTypes);
+        selectItemTypes.Clear();
+        if (filterData.defaultItemTypes != null)
+            selectItemTypes.AddRange(filterData.defaultItemTypes);
 
         List<OrderFilterTypeEnum> listFilterType = filterData.listFilterType;
         //各区段初始化(显隐 + 数据 + 自身布局刷新)
@@ -57,6 +71,7 @@ public partial class UIDialogOrderFilter : DialogView
         InitNameSection(listFilterType, filterData.defaultNameFilter);
         InitLevelSection(listFilterType, filterData.defaultLevelMin, filterData.defaultLevelMax);
         InitRaritySection(listFilterType);
+        InitItemTypeSection(listFilterType);
         InitSortSections(listFilterType);
         //内层排布完成后再刷新外层容器,最后按触发按钮定位
         UGUIUtil.RefreshUISize(ui_ContentShow);
@@ -67,7 +82,7 @@ public partial class UIDialogOrderFilter : DialogView
 
     #region 私有方法-区段初始化
     /// <summary>
-    /// 初始化各区段静态标题文本:确认(1000001)、名字(2000019)、等级(2000020)、稀有度(2000018)、战斗(2000021)、其它(2000022)
+    /// 初始化各区段静态标题文本:确认(1000001)、名字(2000019)、等级(2000020)、稀有度(2000018)、道具类型(2000025)、战斗(2000021)、其它(2000022)
     /// </summary>
     protected void InitStaticText()
     {
@@ -75,6 +90,7 @@ public partial class UIDialogOrderFilter : DialogView
         SetText(ui_ContentNameTitle, 2000019);
         SetText(ui_ContentLevelTitle, 2000020);
         SetText(ui_ContentRarityTitle, 2000018);
+        SetText(ui_ContentItemTypeTitle, 2000025);
         SetText(ui_ContentDataTitle, 2000021);
         SetText(ui_ContentOtherTitle, 2000022);
     }
@@ -153,6 +169,49 @@ public partial class UIDialogOrderFilter : DialogView
             itemKV.Value.SetDataForRarity(rarity, rarityInfo != null ? rarityInfo.name_language : "", selectRarities.Contains(rarity), OnClickForRarity);
         }
         UGUIUtil.RefreshUISize(ui_ContentRarity);
+    }
+
+    /// <summary>
+    /// 初始化道具类型区:显隐(仅 listFilterType 含 ItemType 时显示) + 按 itemTypeOptions 顺序填充预留的 5 个道具类型项,
+    /// 名称取道具类型配置多语言(ItemsTypeCfg.name_language),超出选项数量的预留项隐藏;多选,回填选中态。
+    /// </summary>
+    /// <param name="listFilterType">开放的维度</param>
+    protected void InitItemTypeSection(List<OrderFilterTypeEnum> listFilterType)
+    {
+        //需开放 ItemType 维度且有可选项才显示(无选项则不展示空标题区)
+        bool isShow = IsSectionShow(listFilterType, OrderFilterTypeEnum.ItemType) && itemTypeOptions.Count > 0;
+        SetSectionActive(ui_ContentItemType, isShow);
+        if (!isShow)
+            return;
+        dicItemTypeItem.Clear();
+        //预留的 5 个道具类型项(按顺序填充)
+        UIViewDialogOrderFilterItem[] reservedItems =
+        {
+            ui_UIViewDialogOrderFilterItem_Type_1,
+            ui_UIViewDialogOrderFilterItem_Type_2,
+            ui_UIViewDialogOrderFilterItem_Type_3,
+            ui_UIViewDialogOrderFilterItem_Type_4,
+            ui_UIViewDialogOrderFilterItem_Type_5,
+        };
+        for (int i = 0; i < reservedItems.Length; i++)
+        {
+            UIViewDialogOrderFilterItem itemView = reservedItems[i];
+            if (itemView == null)
+                continue;
+            //有对应选项则填充并显示,多余的预留项隐藏
+            bool hasOption = i < itemTypeOptions.Count;
+            itemView.gameObject.SetActive(hasOption);
+            if (!hasOption)
+                continue;
+            ItemTypeEnum itemType = itemTypeOptions[i];
+            ItemsTypeBean itemsTypeInfo = ItemsTypeCfg.GetItemData(itemType);
+            string typeName = itemsTypeInfo != null ? itemsTypeInfo.name_language : "";
+            itemView.SetDataForItemType(itemType, typeName, selectItemTypes.Contains(itemType), OnClickForItemType);
+            dicItemTypeItem[itemType] = itemView;
+        }
+        //剔除不在当前选项中的默认选中(切换魔物后可装备类型变化)
+        selectItemTypes.RemoveAll(t => !itemTypeOptions.Contains(t));
+        UGUIUtil.RefreshUISize(ui_ContentItemType);
     }
 
     /// <summary>
@@ -349,7 +408,7 @@ public partial class UIDialogOrderFilter : DialogView
     }
 
     /// <summary>
-    /// 确认:汇总各区段为 OrderFilterResultBean(名字/等级/稀有度仅在对应区段显示时生效),回传并关闭弹窗
+    /// 确认:汇总各区段为 OrderFilterResultBean(名字/等级/稀有度/道具类型仅在对应区段显示时生效),回传并关闭弹窗
     /// </summary>
     protected void Confirm()
     {
@@ -375,6 +434,9 @@ public partial class UIDialogOrderFilter : DialogView
         //稀有度
         if (ui_ContentRarity != null && ui_ContentRarity.gameObject.activeSelf)
             result.rarities = new List<RarityEnum>(selectRarities);
+        //道具类型
+        if (ui_ContentItemType != null && ui_ContentItemType.gameObject.activeSelf)
+            result.itemTypes = new List<ItemTypeEnum>(selectItemTypes);
         actionForConfirm?.Invoke(result);
         DestroyDialog();
     }
@@ -408,6 +470,20 @@ public partial class UIDialogOrderFilter : DialogView
             selectRarities.Add(rarity);
         foreach (var itemKV in dicRarityItem)
             itemKV.Value.SetSelect(selectRarities.Contains(itemKV.Key));
+    }
+
+    /// <summary>
+    /// 道具类型项点击:多选切换,刷新所有道具类型项选中态
+    /// </summary>
+    /// <param name="itemType">被点击项的道具类型</param>
+    protected void OnClickForItemType(ItemTypeEnum itemType)
+    {
+        if (selectItemTypes.Contains(itemType))
+            selectItemTypes.Remove(itemType);
+        else
+            selectItemTypes.Add(itemType);
+        foreach (var itemKV in dicItemTypeItem)
+            itemKV.Value.SetSelect(selectItemTypes.Contains(itemKV.Key));
     }
 
     /// <summary>

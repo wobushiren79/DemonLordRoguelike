@@ -40,6 +40,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 383f6c615875c884ba6d44c1597ac849
+    m_Address: Assets/LoadResources/Effects/Effect_CreatureShow_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 458b12f4750e6a0428995e6a4a2e4eb7
     m_Address: Assets/LoadResources/Effects/EffectExplosion_1.prefab
     m_ReadOnly: 0
@@ -62,6 +67,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 74c87d989c9a9774385d74eb4c6f477e
     m_Address: Assets/LoadResources/Effects/EffectAddRelationship_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 81bd5fca821397e45b426c9aac36bdf5
+    m_Address: Assets/LoadResources/Effects/Effect_Mana_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

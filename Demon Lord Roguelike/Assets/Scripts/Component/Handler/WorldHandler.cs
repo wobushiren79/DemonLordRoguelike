@@ -282,9 +282,11 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             var skyboxMat = await manager.GetSkybox(fightSceneData.skybox_mat);
             //设置天空盒
             RenderSettings.skybox = skyboxMat;
-            RenderSettings.skybox.SetFloat("_RotateX", -15);
-            RenderSettings.skybox.SetFloat("_RotateY", 0);
-            RenderSettings.skybox.SetFloat("_RotateZ", 0);
+            //按场景配置的旋转角度设置天空盒欧拉角（skybox_rotate 形如 "-15,0,0"）
+            Vector3 skyboxRotate = fightSceneData.GetSkyboxRotate();
+            RenderSettings.skybox.SetFloat("_RotateX", skyboxRotate.x);
+            RenderSettings.skybox.SetFloat("_RotateY", skyboxRotate.y);
+            RenderSettings.skybox.SetFloat("_RotateZ", skyboxRotate.z);
 
             //获取场景-----------------------------------------------------------
             string dataPath = $"{PathInfo.FightScenePrefabPath}/{fightSceneData.name_res}";

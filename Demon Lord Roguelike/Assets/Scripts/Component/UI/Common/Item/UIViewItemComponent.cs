@@ -12,5 +12,7 @@ public partial class UIViewItem
 
     public TextMeshProUGUI ui_ItemName;
 
+    public Image ui_ItemBG;
+
 
 }

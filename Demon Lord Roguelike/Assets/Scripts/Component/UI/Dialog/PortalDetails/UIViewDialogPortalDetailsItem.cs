@@ -142,18 +142,22 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
     }
 
     /// <summary>
-    /// 设置通关标记: 玩家曾通关过该世界对应难度的征服模式(征服通关统计次数>0)则显示 ui_Complete
+    /// 设置通关标记: 玩家曾通关过该世界对应难度的征服模式(征服通关统计次数>0)则显示 ui_Complete_1.
+    /// ui_Complete_0 为测试用备用标记, 始终隐藏(默认关闭, 仅供测试), 正式通关标记走 ui_Complete_1.
     /// </summary>
     /// <param name="worldId">世界id</param>
     /// <param name="difficultyLevel">难度等级</param>
     public void SetComplete(long worldId, int difficultyLevel)
     {
-        if (ui_Complete == null)
-            return;
         var userData = GameDataHandler.Instance.manager.GetUserData();
         bool isComplete = userData != null
             && userData.GetUserAchievementData().GetConquerCompleteCount(worldId, difficultyLevel) > 0;
-        ui_Complete.gameObject.SetActive(isComplete);
+        //Complete_0 仅测试用, 始终隐藏
+        if (ui_Complete_0 != null)
+            ui_Complete_0.gameObject.SetActive(false);
+        //Complete_1 为正式通关标记, 按是否通关显隐
+        if (ui_Complete_1 != null)
+            ui_Complete_1.gameObject.SetActive(isComplete);
     }
     #endregion
 

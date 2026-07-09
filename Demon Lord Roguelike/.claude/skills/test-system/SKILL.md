@@ -237,8 +237,13 @@ userData.AddCrystal(99999);
 // 添加声望
 userData.AddReputation(1000);
 
-// 添加道具
-userData.AddBackpackItem(new ItemBean(itemId));
+// 添加道具(OnClickForAddItem)：输入空=遍历所有道具，输入=仅该道具ID；
+// 两者都对每一种稀有度(N~L 共6级)各生成一个，走征服奖励装备生成单一真实源
+for (int rarity = (int)RarityEnum.N; rarity <= (int)RarityEnum.L; rarity++)
+{
+    ItemBean rewardItem = RewardSelectBean.CreateEquipItemForReward(itemId, rarity);
+    userData.AddBackpackItem(rewardItem);
+}
 
 // 添加生物
 userData.AddBackpackCreature(creatureData);

@@ -55,6 +55,7 @@ SpriteAtlas:
     - bf95d95046a9978458d55abd6528efb0: 21300000
     - 52f05760849e1514b9184a051b1e0ba3: 21300000
     - 06710670b8302a54aafd00efaa22f994: 21300000
+    - e05e7fa03b547bc42a44141126505b6c: 21300000
     - aabefcc02d1565740a2a006536f49d32: 21300000
     - e085c901038582d4798906fc0f0b9fff: 21300000
     - 7f9fe721e914e234cb8d2d5583b8c955: 21300000
@@ -71,6 +72,7 @@ SpriteAtlas:
     - 87415412f04cc0b409960d31c14c40e7: 21300000
     - 7b246b2253157b24196d034701eaa9eb: 21300000
     - 22533e22a699ef546bac027b28baf41c: 21300000
+    - ece8fb3254e0a8e49b140dbbee7f2aa1: 21300000
     - 92290342b31f8784480a2fb503b28eed: 21300000
     - c49e6d6296fccac478e57902fb2da82a: 21300000
     - 20f005926219e79409119120fe21ab93: 21300000
@@ -175,6 +177,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: bf95d95046a9978458d55abd6528efb0, type: 3}
   - {fileID: 21300000, guid: 52f05760849e1514b9184a051b1e0ba3, type: 3}
   - {fileID: 21300000, guid: 06710670b8302a54aafd00efaa22f994, type: 3}
+  - {fileID: 21300000, guid: e05e7fa03b547bc42a44141126505b6c, type: 3}
   - {fileID: 21300000, guid: aabefcc02d1565740a2a006536f49d32, type: 3}
   - {fileID: 21300000, guid: e085c901038582d4798906fc0f0b9fff, type: 3}
   - {fileID: 21300000, guid: 7f9fe721e914e234cb8d2d5583b8c955, type: 3}
@@ -191,6 +194,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 87415412f04cc0b409960d31c14c40e7, type: 3}
   - {fileID: 21300000, guid: 7b246b2253157b24196d034701eaa9eb, type: 3}
   - {fileID: 21300000, guid: 22533e22a699ef546bac027b28baf41c, type: 3}
+  - {fileID: 21300000, guid: ece8fb3254e0a8e49b140dbbee7f2aa1, type: 3}
   - {fileID: 21300000, guid: 92290342b31f8784480a2fb503b28eed, type: 3}
   - {fileID: 21300000, guid: c49e6d6296fccac478e57902fb2da82a, type: 3}
   - {fileID: 21300000, guid: 20f005926219e79409119120fe21ab93, type: 3}
@@ -294,6 +298,7 @@ SpriteAtlas:
   - ui_border_20
   - ui_line_2
   - ui_slider_10
+  - ui_fastforward_01
   - ui_slider_5
   - ui_creature_attribute_3
   - ui_border_24
@@ -310,6 +315,7 @@ SpriteAtlas:
   - ui_border_11
   - ui_slider_12
   - ui_slider_8
+  - ui_fastforward_02
   - ui_creature_attribute_1
   - ui_class_1
   - ui_class_2

@@ -41,6 +41,7 @@ watched_files:
   - `static List<ItemBean> CreateRewardListForConquer(conquerInfo)`：生成一份奖励列表（传送门创建预生成奖励调此）
   - `InitDataForReward(List<ItemBean> baseReward, conquerInfo, int extraItemNum)`：**通关领奖入口**，用预生成 `baseReward` 充当 `listReward`（预览=实领，空则容错按 `conquerInfo` 即时生成），其后追加 `extraItemNum` 个魔晶（奖励多多）
   - `static int GetConquerEquipPoolSign()` / `static List<long> GetUnlockCreatureModelIdsForEquip()`：装备奖励池"解锁签名"=可生成装备的已解锁生物模型数量；解锁新魔物掉落后变化，触发传送门预生成奖励重生成
+  - `static ItemBean CreateEquipItemForReward(long itemId, int rarity, int userType=0, int addAttributeOverride=-1)`：**装备奖励生成单一真实源**（从 `CreateItemEquip` 抽出，`CreateItemEquip` 现复用它，行为不变）。按指定道具id+稀有度生成装备（加点数 `<0` 时取 `RarityInfoCfg.GetItemData(rarity).equip_attribute_add`）。供 GM/测试直接发货——GM「添加道具」(`UITestBase.OnClickForAddItem`) 遍历所有道具×每种稀有度(N~L)调此
 - **RewardSelectTestData** - 测试模式下的领奖参数（品质/属性/数量/魔王专属概率）
 - **FightDropCrystalBean** - 战斗内掉落水晶实例
 - **FightTypeConquerInfoBean(Partial)** - 征服配置（`drop_crystal` / `reward_crystal` / `reward_equip_rarity`，只决定稀有度 / `reward_reputation` 完整通关声望奖励，`GetRewardReputation()` 读取，world_id=1 各难度依次 1~10）

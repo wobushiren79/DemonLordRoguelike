@@ -27,7 +27,7 @@ watched_files:
 - **GameDataHandler** / **GameDataManager** - 游戏数据处理（含道具持久化）
 
 ### 道具 UI（`Common/Item/`）
-- **UIViewItem** - 道具项**基类**（公共字段 itemData + SetData/SetIcon/SetNum/SetItemPopup/OnClickForButton）
+- **UIViewItem** - 道具项**基类**（公共字段 itemData + SetData/SetIcon/SetNum/SetItemBG/SetItemPopup/OnClickForButton；SetItemBG 按 itemData.rarity 用 RarityInfo.ui_board_color_item 给 ui_ItemBG 上色，空槽位/缺配置回退白色）
 - **UIViewItemBackpack** - 背包道具项（`: UIViewItem`，加 creatureData + SetData(item,creature)）
 - **UIViewItemEquip** - 装备项（`: UIViewItem`，加 itemTypeEnum + 空槽位占位图标/部位名）
 - **UIViewItemBackpackList** - 背包列表（在 `Common/Backpack/`）

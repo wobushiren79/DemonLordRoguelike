@@ -36,6 +36,25 @@ public partial class FightSceneBean
     }
 
     #endregion
+
+    #region 天空盒旋转
+
+    /// <summary>
+    /// 解析天空盒旋转角度（形如 "-15,0,0"，逗号分隔的 X,Y,Z 欧拉角）；未配置则回退默认 (0,0,0)
+    /// </summary>
+    /// <returns>天空盒的三轴旋转欧拉角</returns>
+    public Vector3 GetSkyboxRotate()
+    {
+        Vector3 rotate = Vector3.zero;//未配置时默认零旋转
+        if (string.IsNullOrEmpty(skybox_rotate)) return rotate;
+        var arr = skybox_rotate.Split(',');
+        if (arr.Length > 0) float.TryParse(arr[0], out rotate.x);
+        if (arr.Length > 1) float.TryParse(arr[1], out rotate.y);
+        if (arr.Length > 2) float.TryParse(arr[2], out rotate.z);
+        return rotate;
+    }
+
+    #endregion
 }
 public partial class FightSceneCfg
 {

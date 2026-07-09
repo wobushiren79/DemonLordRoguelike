@@ -253,10 +253,29 @@ public class RewardSelectBean
             addAttribute = RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add;
         }
 
-        ItemBean itemData = new ItemBean(randomItemInfo.id, 1, rarityItem, userType);
+        //走统一的奖励装备生成逻辑(属性条数=稀有度、加点数由本处已算好的 addAttribute 覆盖)
+        ItemBean itemData = CreateEquipItemForReward(randomItemInfo.id, rarityItem, userType, addAttribute);
+        listReward.Add(itemData);
+    }
+
+    /// <summary>
+    /// 生成一个装备奖励道具(征服通关奖励的装备生成单一真实源)。
+    /// 与 CreateItemEquip 同规则：品质=rarity、属性条数=品质、每条加点数=addAttributeOverride(未传则取稀有度配置 equip_attribute_add)、userType 决定普通/魔王专属属性池。
+    /// 供 GM/测试按「指定道具id+指定稀有度」直接发货(不经解锁生物模型池、不含魔王专属概率)。
+    /// </summary>
+    /// <param name="itemId">道具ID</param>
+    /// <param name="rarity">道具品质(RarityEnum: N=1 ~ L=6)</param>
+    /// <param name="userType">使用者类型(0=默认, 1=魔王专属), 默认普通</param>
+    /// <param name="addAttributeOverride">属性加点数覆盖值; &lt;0 时按稀有度配置 equip_attribute_add 取值</param>
+    /// <returns>已随机好属性的装备道具</returns>
+    public static ItemBean CreateEquipItemForReward(long itemId, int rarity, int userType = 0, int addAttributeOverride = -1)
+    {
+        //加点数: 未传覆盖值则由稀有度配置决定(与征服通关奖励一致)
+        int addAttribute = addAttributeOverride >= 0 ? addAttributeOverride : RarityInfoCfg.GetItemData(rarity).equip_attribute_add;
+        ItemBean itemData = new ItemBean(itemId, 1, rarity, userType);
         //随机添加属性
         itemData.InitRandomAttributeForCreate(addAttribute);
-        listReward.Add(itemData);
+        return itemData;
     }
 
     /// <summary>

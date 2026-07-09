@@ -172,7 +172,7 @@ MonoBehaviour:
   paddingRight: 0
   paddingTop: 0
   paddingBottom: 0
-  crossAlign: 0
+  crossAlign: 1
   editorPreviewCount: 20
   verticalScrollbar: {fileID: 6750500685564514089}
 --- !u!1 &2432413721901632544
@@ -295,8 +295,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3385989165287839107}
   m_HandleRect: {fileID: 5573088192430050113}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1
+  m_Size: 0.54285717
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -402,12 +402,12 @@ MonoBehaviour:
     creatureName: 
     level: 0
     levelExp: 0
-    starLevel: 0
     rarity: 0
     relationship: 0
     creatureNpcData:
       npcId: 0
     creatureState: 1
+    bodySizeScale: 1
     sacrificePityRate: 0
   ui_BackpackContent: {fileID: 1062958334655933486}
   ui_OrderBtn_PopupButtonCommonView: {fileID: 1942968568951757868}

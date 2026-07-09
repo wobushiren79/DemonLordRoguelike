@@ -21,6 +21,10 @@ public class DialogOrderFilterBean : DialogBean
     public int defaultLevelMax = int.MaxValue;
     //默认选中的稀有度(回填稀有度多选;为空则默认全不选=不按稀有度筛选)
     public List<RarityEnum> defaultRarities;
-    //确认回调:回传 OrderFilterResultBean(排序键 + 名字 + 等级区间 + 稀有度),由调用方据此先过滤再排序
+    //道具类型区可选项(按上下文动态提供,如当前魔物的可装备类型;按顺序填充预留的道具类型项,多余项隐藏。为空/不含 ItemType 维度则该区隐藏)
+    public List<ItemTypeEnum> itemTypes;
+    //默认选中的道具类型(回填道具类型多选;为空则默认全不选=不按道具类型筛选)
+    public List<ItemTypeEnum> defaultItemTypes;
+    //确认回调:回传 OrderFilterResultBean(排序键 + 名字 + 等级区间 + 稀有度 + 道具类型),由调用方据此先过滤再排序
     public Action<OrderFilterResultBean> actionForConfirm;
 }

@@ -37,7 +37,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 115, y: 115}
+  m_SizeDelta: {x: 120, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7222398216903936936
 CanvasRenderer:
@@ -92,6 +92,10 @@ MonoBehaviour:
   uiOpenAnimType: 0
   uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}
+  ui_ItemIcon: {fileID: 0}
+  ui_ItemNum: {fileID: 0}
+  ui_UIViewItem: {fileID: 0}
+  ui_ItemName: {fileID: 0}
   creatureData:
     creatureId: 0
     creatureUUId: 
@@ -105,11 +109,6 @@ MonoBehaviour:
     creatureState: 1
     bodySizeScale: 1
     sacrificePityRate: 0
-  ui_ItemIcon: {fileID: 0}
-  ui_ItemNum: {fileID: 0}
-  ui_ItemNumBg: {fileID: 0}
-  ui_UIViewItemBackpack_PopupButtonCommonView: {fileID: 0}
-  ui_UIViewItemBackpack_Button: {fileID: 0}
 --- !u!1001 &888213523103480021
 PrefabInstance:
   m_ObjectHideFlags: 0

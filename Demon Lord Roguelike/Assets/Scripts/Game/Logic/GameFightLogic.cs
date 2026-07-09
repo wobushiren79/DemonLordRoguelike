@@ -24,6 +24,13 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>鼠标射线命中地面后吸附到的格子坐标（放置/删除的目标位置）</summary>
     public Vector3Int selectTargetPos;
 
+    /// <summary>魔王自动拾取魔晶的计时器（累加 updateTime，达到间隔即触发一次拾取后扣减）</summary>
+    private float demonLordPickCrystalTimer;
+    /// <summary>魔王自动拾取魔晶的间隔(秒)缓存；-1 表示未解锁不拾取。战斗中研究不可变，故开战缓存一次避免每帧查表</summary>
+    private float demonLordPickCrystalInterval = -1f;
+    /// <summary>魔王每次自动拾取的魔晶数量缓存；同上开战缓存一次</summary>
+    private int demonLordPickCrystalCount;
+
     #region  重写方法
     /// <summary>
     /// 准备游戏
@@ -58,6 +65,8 @@ public class GameFightLogic : BaseGameLogic
         var defCoreCreatureEntity = await CreatureHandler.Instance.CreateDefenseCoreCreature(fightData.fightDefenseCoreData.creatureData, creaturePos);
         //设置魔王核心
         fightData.fightDefenseCoreCreature = defCoreCreatureEntity;
+        //初始化战斗常量数据(开战设定、整场不变的参数统一缓存,避免每帧查表)
+        InitFightConstData();
         //开启战斗控制
         GameControlHandler.Instance.SetFightControl();
         //关闭LoadingUI
@@ -132,6 +141,22 @@ public class GameFightLogic : BaseGameLogic
         await WorldHandler.Instance.UnLoadScene(GameSceneTypeEnum.Fight);
         //清理缓存
         System.GC.Collect();
+    }
+    #endregion
+
+    #region 战斗常量数据
+    /// <summary>
+    /// 初始化战斗常量数据（开战设定、整场战斗恒定的参数统一在此缓存）
+    /// <para>这类参数在战斗过程中不会变化（玩家战斗期间无法研究/改配置），故开战读一次缓存到字段，供每帧或热路径直接使用，避免反复查表/查字典。</para>
+    /// <para>约定：后续任何"开战设定、之后恒定"的参数一律在本方法内初始化，不要散落到各处每帧读取。做成 virtual 便于各战斗模式子类追加自己的常量（override 时先调 base.InitFightConstData()）。</para>
+    /// </summary>
+    public virtual void InitFightConstData()
+    {
+        var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+        //魔王自动拾取魔晶：拾取间隔(秒,-1=未解锁不拾取) 与 单次拾取数量，供 UpdateGameForDefenseCoreAutoPickCrystal 每帧直接用
+        demonLordPickCrystalInterval = userUnlock.GetUnlockDemonLordAutoPickCrystalInterval();
+        demonLordPickCrystalCount = userUnlock.GetUnlockDemonLordAutoPickCrystalCount();
+        demonLordPickCrystalTimer = 0;
     }
     #endregion
 
@@ -258,6 +283,48 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
+    /// 快速推进进攻进度（Quick 按钮）
+    /// <para>立即向前推进「总进攻时长 * advanceRate（默认10%）」的时间，并把这段时间内本应生成的进攻波次全部立即生成；</para>
+    /// <para>与逐帧刷怪同一套「累加达标即出下一波」步进语义逐波消费推进时间，保证跳跃后正常刷怪状态延续正确；</para>
+    /// <para>进攻已到末尾(无剩余波次)则不再推进，进度自然封顶在 100%。返回推进后的最新进攻进度(0~1)。</para>
+    /// </summary>
+    /// <param name="advanceRate">本次推进占总进攻时长的比例，默认 0.1（10%）</param>
+    /// <returns>推进后的最新进攻进度(0~1)</returns>
+    public float QuickAdvanceAttackCreate(float advanceRate = 0.1f)
+    {
+        var fightAttackData = fightData.fightAttackData;
+        if (fightAttackData.timeAttackTotal <= 0)
+            return fightAttackData.GetAttackProgress();
+        //本次要推进的时间 = 总进攻时长 * 比例
+        float advanceTime = fightAttackData.timeAttackTotal * advanceRate;
+        //逐波消费推进时间：直到消费完，或队列耗尽（进攻到末尾）
+        while (advanceTime > 0)
+        {
+            //距离下一波触发还需的时间
+            float needTime = fightData.timeUpdateTargetForAttackCreate - fightData.timeUpdateForAttackCreate;
+            //不足以触发下一波：累加剩余时间后结束
+            if (advanceTime < needTime)
+            {
+                fightData.timeUpdateForAttackCreate += advanceTime;
+                break;
+            }
+            //消费到本波触发点并出下一波
+            advanceTime -= needTime;
+            fightData.timeUpdateForAttackCreate = 0;
+            var attackDetailsData = fightAttackData.GetNextAttackDetailData();
+            //没有更多波次，进攻已到末尾
+            if (attackDetailsData == null)
+                break;
+            fightData.timeUpdateTargetForAttackCreate = attackDetailsData.timeNextAttack;
+            //BOSS出现：弹出BOSS特写UI(仅BOSS首波携带 bossShowNpcIds)
+            if (attackDetailsData.bossShowNpcIds != null && attackDetailsData.bossShowNpcIds.Count > 0)
+                ShowBossDialog(attackDetailsData.bossShowNpcIds);
+            CreatureHandler.Instance.CreateAttackCreature(attackDetailsData, fightData.sceneRoadNum);
+        }
+        return fightAttackData.GetAttackProgress();
+    }
+
+    /// <summary>
     /// 更新-战斗生物的 BUFF 与复活CD
     /// <para>按固定间隔(timeUpdateTargetForFightCreature)批量驱动：逐个调用进攻/防守生物实体的 Update 推进其 BUFF 计时；</para>
     /// <para>并处理处于休整(Rest)状态防守生物数据的复活CD(RCD)，到达复活CD后切回待机(Idle)并触发状态改变事件。</para>
@@ -309,7 +376,7 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>
     /// 更新-魔王（防守核心）每帧逻辑
     /// <para>魔王的所有 Update 操作统一放在此方法内。</para>
-    /// <para>当前包含：魔力恢复（MP/MPF仅战斗中有效）——MPF=魔力恢复速度（每秒恢复MPF点魔力），恢复上限为魔王的魔力上限MP；每帧恢复后通知魔王预制下的MPShow刷新显示（与防守生物的LifeShow一样的通知方式）。</para>
+    /// <para>当前包含：①魔力恢复（MP/MPF仅战斗中有效）——MPF=魔力恢复速度（每秒恢复MPF点魔力），恢复上限为魔王的魔力上限MP；每帧恢复后通知魔王预制下的MPShow刷新显示（与防守生物的LifeShow一样的通知方式）。②自动拾取魔晶（研究 DemonLordAutoPickCrystal 解锁后按间隔把场上魔晶吸到魔王身上）。</para>
     /// </summary>
     public void UpdateGameForDefenseCore(float updateTime)
     {
@@ -325,6 +392,25 @@ public class GameFightLogic : BaseGameLogic
         }
         //通知更新魔力显示
         coreCreature.RefreshMPShow();
+        //魔王自动拾取魔晶
+        UpdateGameForDefenseCoreAutoPickCrystal(updateTime);
+    }
+
+    /// <summary>
+    /// 更新-魔王自动拾取魔晶
+    /// <para>直接用开战缓存的间隔/数量（InitFightConstData 缓存）：未解锁(间隔<=0)直接返回；否则累加 updateTime，到达间隔即拾取一批场上魔晶并扣减一个间隔（保留超出的余量，避免高速时丢帧）。本方法每帧只做一次浮点比较+累加，无字典查询。</para>
+    /// </summary>
+    private void UpdateGameForDefenseCoreAutoPickCrystal(float updateTime)
+    {
+        //未解锁不拾取（缓存值,无每帧查表）
+        if (demonLordPickCrystalInterval <= 0)
+            return;
+        demonLordPickCrystalTimer += updateTime;
+        if (demonLordPickCrystalTimer >= demonLordPickCrystalInterval)
+        {
+            demonLordPickCrystalTimer -= demonLordPickCrystalInterval;
+            PickupCrystalForCoreAuto(demonLordPickCrystalCount);
+        }
     }
     #endregion
 
@@ -419,6 +505,11 @@ public class GameFightLogic : BaseGameLogic
         selectCreatureCard.cardData.creatureData.creatureState = CreatureStateEnum.Fight;
         //创建战斗生物数据
         CreatureHandler.Instance.CreateDefenseCreatureEntity(selectCreature, selectCreatureCard.cardData.creatureData, selectTargetPos);
+        //放置魔物特效：魔王(防守核心)处播放消耗魔力粒子
+        if (coreCreature != null && coreCreature.creatureObj != null)
+            EffectHandler.Instance.ShowManaEffect(coreCreature.creatureObj.transform.position);
+        //放置魔物特效：生成位置播放魔物登场粒子
+        EffectHandler.Instance.ShowCreatureShowEffect(selectTargetPos);
         //放置魔物成功时播放按钮音效
         AudioHandler.Instance.PlaySound(AudioEnum.sound_btn_19);
         selectCreature = null;
@@ -633,6 +724,33 @@ public class GameFightLogic : BaseGameLogic
             {
                 PickupCrystal(colliders[i].gameObject);
             }
+        }
+    }
+
+    /// <summary>
+    /// 魔王自动拾取魔晶（按场上掉落顺序 FIFO 取最先掉落的若干颗）
+    /// <para>不做就近计算：直接遍历 listFightPrefab（掉落物按加入顺序排列），筛出"魔晶(路径匹配)且处于可拾取状态(DropCheck)"的掉落物，取最先的 count 颗依次拾取（复用 PickupCrystal 飞回魔王入账）。</para>
+    /// </summary>
+    /// <param name="count">本次拾取的魔晶颗数（来自研究 DemonLordAutoPickCrystalNum，基础 1）</param>
+    public void PickupCrystalForCoreAuto(int count)
+    {
+        if (count <= 0)
+            return;
+        var listFightPrefab = FightHandler.Instance.manager.listFightPrefab;
+        int picked = 0;
+        //按加入顺序遍历，取最先掉落且可拾取的魔晶；PickupCrystal 会置 Droping 关碰撞，故本帧不会重复命中
+        for (int i = 0; i < listFightPrefab.Count && picked < count; i++)
+        {
+            var itemPrefab = listFightPrefab[i];
+            if (itemPrefab == null || itemPrefab.gameObject == null)
+                continue;
+            //仅魔晶(排除掉落魔力)且处于落地可拾取状态
+            if (itemPrefab.pathAsstes != FightManager.pathDropCrystalPrefab)
+                continue;
+            if (itemPrefab.state != GameFightPrefabStateEnum.DropCheck)
+                continue;
+            PickupCrystal(itemPrefab.gameObject);
+            picked++;
         }
     }
 

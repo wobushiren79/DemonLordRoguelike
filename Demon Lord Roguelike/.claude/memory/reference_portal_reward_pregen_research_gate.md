@@ -12,6 +12,12 @@ metadata:
 - `GameWorldInfoRandomBean.GetDifficultyReward(difficulty)` 取预生成奖励；**列表为空(老存档) 或 解锁了新魔物掉落致装备奖励池签名变化(`rewardUnlockSign != RewardSelectBean.GetConquerEquipPoolSign()`) 时重新生成并刷新签名**。这就是「解锁后重新生成奖励」的实现（无事件、访问时自愈）。
 - 通关 BOSS 领奖 `GameFightLogicConquer.ActionForUIFightSettlementNext` 消费这份预生成奖励：`InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`；深渊馈赠「奖励多多」额外件数(魔晶)追加在基础奖励**之后**，`selectNumMax` 钳制到 `listReward.Count`。组成与旧逻辑等价(1装备+(2+extra)魔晶)。
 
+**气泡展示哪个难度 = 当前 `difficultyLevel`，默认取"已解锁最高难度"**
+- `UIPopupPortalDetails.SetData((GameWorldInfoBean, GameWorldInfoRandomBean, int difficultyLevel))` 第三参决定展示难度，取该难度那份预生成数据(道路/关卡/路径/奖励)。地图悬停气泡(`UIViewBasePortalItem`)传 `gameWorldInfoRandom.difficultyLevel`；难度对话框(`UIViewDialogPortalDetailsItem`)各 item 传各自难度号。
+- **默认 = 已解锁最高难度(非难度1)**：`GameWorldInfoRandomBean` 构造器里的 `difficultyLevel=1` 只是占位，创建世界时 `SetRandomDataForConquer()` 预生成 `1~unlockDifficultyMax`(=`GetUnlockGameWorldConquerDifficultyLevel(worldId)`) 各难度后，**末尾 `SetDifficultyLevel(unlockDifficultyMax)` 把当前难度置为已解锁最高**。故新生成世界的地图气泡默认就显示已解锁最高难度。
+- **之后跟随对话框选择**：`SetDifficultyLevel` 是全局唯一改 `difficultyLevel`+同步顶层 roadNum/roadLength/fightNum 的入口；仅 `SetRandomDataForConquer`(默认=max) 与 `UIDialogPortalDetails`(打开时 `Clamp(difficultyLevel,1,unlockMax)`、左右滑动切换) 调用。玩家滑到低难度关闭后，气泡随之显示该低难度。
+- **注意边界**：clamp 只向下夹(超过当前解锁上限才降)，**不会**因事后解锁更高难度而自动升；已缓存世界的 difficultyLevel 要到世界重新生成(通关清空 `ClearPortalWorldInfoRandomData` 或手动刷新)才会重取新的已解锁最高。预生成范围是 `1~unlockDifficultyMax`(仅已解锁)，`GetDifficultyRandom` 的懒生成兜底老存档/预览未在预生成集内的难度。
+
 **RewardSelectBean = 奖励生成单一真实源**（`RewardSelectBean.cs`）
 - 私有 `CreateItemEquip/CreateItemCrystal` 改吃 `FightTypeConquerInfoBean`(不再吃 FightBean)；私有 `InitRewardList(conquerInfo,testData)` 收口。
 - 新增：`InitData(FightTypeConquerInfoBean)`、静态 `CreateRewardListForConquer(conquerInfo)`、`InitDataForReward(baseReward,conquerInfo,extraItemNum)`、静态 `GetUnlockCreatureModelIdsForEquip()`/`GetConquerEquipPoolSign()`。

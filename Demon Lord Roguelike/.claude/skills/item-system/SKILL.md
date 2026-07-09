@@ -123,6 +123,16 @@ equip_items_type = "1,2,3,4,5,10"  // 可装备：帽子、衣服、裤子、鞋
 equip_items_weapon_type = 0        // 0表示可使用所有武器类型
 ```
 
+### 能否装备的判定规则（CanEquipItem / CanEquipForCreature）
+
+统一入口 `CreatureInfoBean.CanEquipItem(itemInfo)`（对称的 `ItemsInfoBean.CanEquipForCreature(creatureInfo)` 逻辑一致），按顺序做三重校验，全部通过才可装备：
+
+1. **道具类型匹配**：道具 `ItemTypeEnum` 须在生物 `equip_items_type` 列表内。
+2. **种族模组匹配**：装备 `creature_model_id` 为 0 表示通用装备（任何种族可装）；否则须与生物 `model_id` 相等（如人类不能装备史莱姆专属装备）。
+3. **武器子类型匹配**（仅当道具为武器）：生物 `equip_items_weapon_type` 为 0 表示通配所有武器；否则须与武器 `item_weapon_type` 相等。
+
+> `UIViewItemBackpackList.FilterItems` 与 `UICreatureManager.SetCreatureEquip` 均走此统一入口，故列表展示与装备操作的资格判断一致，改判定只需改这两个 Partial。
+
 ## 背包管理
 
 ```csharp
@@ -203,6 +213,10 @@ List<ItemBean> rareItems = userData.GetUserBackpackItemsData().listBackpackItems
 
 `UIViewItemBackpackList` 含一个 `UIViewNullText`（挂 `UITextLanguageView`+`TextMeshProUGUI`）。`SetData` 末尾调用 `RefreshNullText()`：过滤后 `listFilterItems` 为空时显示「没有相关道具」（UIText **2000015**），非空则隐藏。`textId` 在代码里设置（非 prefab 写死）。生物卡片列表 `UIViewCreatureCardList` 同理，空时显示「没有相关魔物」（UIText **2000016**）。
 
+### 排序筛选弹窗（含道具类型筛选）
+
+`UIViewItemBackpackList` 的排序按钮走通用 [order-filter-system](../order-filter-system/SKILL.md)（`UIHandler.ShowDialogOrderFilter`）。道具列表开放 **名字模糊 + 稀有度多选**；**当有生物上下文**（`creatureData` 非空，如生物管理界面 `UICreatureManager`）时额外开放 **道具类型多选**（`OrderFilterTypeEnum.ItemType`），选项即该魔物的 `GetEquipItemsType()`（预制预留 5 项，可装备类型 <5 隐藏多余项）；无生物上下文（如 `UIDialogSelectItem`）不显示该维度。均为「命中即置顶」语义（`OrderFilterResultBean.MatchName/MatchRarity/MatchItemType`），**不删行**、次按稀有度倒序。
+
 ### 装备比较
 
 ```csharp
@@ -220,7 +234,7 @@ public bool IsBetterEquipment(ItemBean newItem, ItemBean currentItem)
 道具格 UI 统一在 `Assets/Scripts/Component/UI/Common/Item/`，采用继承：
 
 ```
-UIViewItem (基类 : BaseUIView)         公共 itemData + SetData/SetIcon/SetNum/SetItemPopup/OnClickForButton
+UIViewItem (基类 : BaseUIView)         公共 itemData + SetData/SetIcon/SetNum/SetItemBG/SetItemPopup/OnClickForButton
 ├── UIViewItemEquip   : UIViewItem     装备槽位：itemTypeEnum + SetData(ItemTypeEnum)，空槽位重写 SetIcon/SetItemPopup 显部位图标/名
 └── UIViewItemBackpack : UIViewItem    背包格：creatureData + SetData(item,creature)，行为==基类
 ```
@@ -231,6 +245,7 @@ UIViewItem (基类 : BaseUIView)         公共 itemData + SetData/SetIcon/SetNu
 - **点击按钮判定**：基类 `OnClickForButton` 用 `viewButton.gameObject == ui_UIViewItem.gameObject` 判定（按钮与 popup 同物体）。
 - **`OnClickForSelect` 必须留在子类**：消费方用 `RegisterEvent<UIViewItemEquip>`/`<UIViewItemBackpack>` 按具体类型订阅，`TriggerEvent(..., this)` 的 `this` 必须是具体子类，不能上提到基类。
 - **数量背景**：基类 Component 无 `ui_ItemNumBg`，`SetNum` 用 `ui_ItemNum.transform.parent`（即 ItemNumBg）开关。
+- **稀有度底框**：基类含 `ui_ItemBG`（Image），`SetData` 里调 `SetItemBG(itemData)` 按稀有度上色——取 `RarityInfoCfg.GetItemData(itemData.rarity).ui_board_color_item`（道具专用**单色**，非 `ui_board_color` 逗号渐变）经 `ColorUtil.ParseHtmlString` 解析；`itemData==null`（空槽位）或缺配置回退 `Color.white`。`ui_ItemBG` 为 `null`（旧 prefab 未接）时直接跳过，向后兼容。
 - **⚠️ 不要对子类 prefab 重跑 UI 自动生成工具**：工具不感知继承，会重生成 `UIViewItemEquipComponent`/`BackpackComponent` 带回 `ui_ItemIcon` 等公共字段，与基类字段重名隐藏。子类字段一律走继承（这两个 Component 文件已删除）。
 
 ## 相关事件

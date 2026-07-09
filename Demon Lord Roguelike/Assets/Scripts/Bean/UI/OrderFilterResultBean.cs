@@ -20,6 +20,8 @@ public class OrderFilterResultBean
     public int levelMax = int.MaxValue;
     //选中的稀有度(为空则不按稀有度筛选,显示全部)
     public List<RarityEnum> rarities = new List<RarityEnum>();
+    //选中的道具类型(为空则不按道具类型筛选;命中置顶,选项由调用方按上下文动态提供)
+    public List<ItemTypeEnum> itemTypes = new List<ItemTypeEnum>();
     #endregion
 
     #region 筛选判定
@@ -54,6 +56,17 @@ public class OrderFilterResultBean
         if (rarities == null || rarities.Count == 0)
             return true;
         return rarities.Contains((RarityEnum)rarity);
+    }
+
+    /// <summary>
+    /// 道具类型是否匹配(itemTypes 为空则不限,恒为 true)
+    /// </summary>
+    /// <param name="itemType">待匹配的道具类型(int,对应 ItemTypeEnum 值)</param>
+    public bool MatchItemType(int itemType)
+    {
+        if (itemTypes == null || itemTypes.Count == 0)
+            return true;
+        return itemTypes.Contains((ItemTypeEnum)itemType);
     }
     #endregion
 }

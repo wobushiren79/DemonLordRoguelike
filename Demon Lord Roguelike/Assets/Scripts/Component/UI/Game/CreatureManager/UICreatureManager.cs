@@ -151,7 +151,29 @@ public partial class UICreatureManager : BaseUIComponent
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         // 获取当前选中的生物数据
         var creatureData = ui_UIViewCreatureCardEquipDetails.creatureData;
-        ui_UIViewItemBackpackList.SetData(userData.GetUserBackpackItemsData().listBackpackItems, OnCellChangeForBackpackItem, creatureData);
+        var listBackpackItem = GetSortedBackpackItem(userData);
+        ui_UIViewItemBackpackList.SetData(listBackpackItem, OnCellChangeForBackpackItem, creatureData);
+    }
+
+    /// <summary>
+    /// 获取背包道具列表的默认排序副本:稀有度降序(高→低) → 同类聚合(道具类型 ItemTypeEnum 升序,同一类道具相邻)。
+    /// <para>返回新列表,不改动底层存档的 listBackpackItems 原始顺序。</para>
+    /// </summary>
+    /// <param name="userData">用户数据</param>
+    /// <returns>按默认规则排序后的道具列表副本</returns>
+    private List<ItemBean> GetSortedBackpackItem(UserDataBean userData)
+    {
+        var listSource = userData.GetUserBackpackItemsData().listBackpackItems;
+        var listSorted = new List<ItemBean>(listSource);
+        listSorted.Sort((a, b) =>
+        {
+            //稀有度降序(高稀有度置前)
+            int rarityCompare = b.rarity.CompareTo(a.rarity);
+            if (rarityCompare != 0) return rarityCompare;
+            //同类聚合:按道具类型升序使同一类道具相邻
+            return ((int)a.GetItemType()).CompareTo((int)b.GetItemType());
+        });
+        return listSorted;
     }
 
     /// <summary>

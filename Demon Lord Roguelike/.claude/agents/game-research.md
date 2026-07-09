@@ -1,6 +1,6 @@
 ---
 name: game-research
-description: 研究模块开发：基地研究界面（设施/强化/魔物三大分支）、研究节点解锁、研究等级、连线绘制、解锁条件判定、ResearchInfo 配置、UserUnlock 存档。
+description: 研究模块开发：基地研究界面（设施/强化/魔物/世界四大分支）、研究节点解锁、研究等级、连线绘制、解锁条件判定、ResearchInfo 配置、UserUnlock 存档。
 tools: Read, Write, Edit, Glob, Grep, Bash
 skill: research-system
 watched_files:
@@ -23,7 +23,7 @@ watched_files:
 
 ### 研究 UI
 
-- **UIBaseResearch** - 基地研究主界面，承载三大研究分支（设施 / 强化 / 魔物）的切换、Tab 选择、缩放交互
+- **UIBaseResearch** - 基地研究主界面，承载四大研究分支（设施 / 强化 / 魔物 / 世界）的切换、Tab 选择、缩放交互
 - **UIBaseResearchTest** - 研究界面的编辑器调试模式，用于在游戏内调整节点坐标并回写 Excel 配置
 - **UIViewBaseResearchItem** - 单个研究节点的展示（图标、等级、解锁状态、解锁动画、点击购买）
 - **UIPopupResearchInfo** - 研究节点悬浮气泡，展示名称、图标、当前/最大等级、需要支付的水晶、前置解锁条件
@@ -33,7 +33,7 @@ watched_files:
 - **ResearchInfoBean / ResearchInfoCfg** - 研究节点配置（自动生成），不可直接修改
 - **ResearchInfoBeanPartial** - 扩展方法：前置解锁解析（`GetPreUnlockIdsForLine`）、类型枚举映射（`GetResearchType`）、阶梯水晶价格计算（`GetPayCrystal`）
 - **UnlockInfoBean / UnlockInfoCfg** - 解锁条目配置（区分 0 研究 / 1 扭蛋机）
-- **ResearchInfoTypeEnum** - 研究类型枚举（Building / Strengthen / Creature）
+- **ResearchInfoTypeEnum** - 研究类型枚举（Building / Strengthen / Creature / World）
 - **UnlockEnum** - 关键模块解锁 ID 枚举（生物进阶、祭坛、终焉议会、阵容数、扭蛋稀有度等）
   - 设施段(1002) 征服通关获得声望：`ConquerReputationReward`(100200004，`research_type=1`，`pre_unlock_ids="100200001"` 前置=终焉议会 `DoomCouncil`，`level_max=1`，`pay_crystal=1000`)——「解锁开关驱动游戏逻辑」范例：解锁后玩家每次完整通关征服模式按难度加自身声望，逻辑门控在 `GameFightLogicConquer.AddReputationForConquerComplete`(`CheckIsUnlock(UnlockEnum.ConquerReputationReward)` 才 `userData.AddReputation(conquerInfo.GetRewardReputation())`)，声望值取征服难度表新增列 `reward_reputation`。详见 `game-conquer`/`game-fight-reward`
   - 设施段(1003) 传送门详情预览 4 节点：`PortalPreviewRoadNum`(100300002 线路数) / `PortalPreviewFightNum`(100300003 关卡数) / `PortalPreviewRoadLength`(100300004 路径长度) / `PortalPreviewReward`(100300005 奖励道具)，均为 `research_type=1` 设施节点，门控传送门详情弹窗 `UIPopupPortalDetails` 各项是否显示
@@ -45,7 +45,8 @@ watched_files:
   - 解锁操作：`AddUnlock(unlockId, unlockLevel = 1)`，**新增或等级发生变化时**都触发 `EventsInfo.User_AddUnlock`（可升级解锁如 `CreatureVatAdd` 后续升级也会驱动场景刷新/出现动画）；新建条目按传入 level，已存在仅等级变化才覆盖并通知
   - 解锁检测：`CheckIsUnlock(string)` 支持 `,`（与）与 `|`（或）的复合表达式；以及 `long[] / UnlockEnum / long` 重载
   - 研究等级获取：`GetUnlockResearchLeveByUnlockEnum / ByUnlockId / ByResearchId / GetUnlockResearchLevelByResearchInfo`
-  - 解锁衍生数值：`GetUnlockPortalShowCount` / `GetUnlockPortalRefreshMax`(传送门刷新次数上限=`PortalRefreshNum`等级,满级10) / `CheckIsUnlockPortalRefresh`(是否解锁传送门刷新) / `GetUnlockLineupNum` / `GetUnlockLineupCreatureNum` / `GetUnlockGameWorldConquerDifficultyLevel` / `GetUnlockCreatureVatNum` / `GetUnlockCreatureVatAddProgressLevel`(生物进阶魔晶加速研究等级0~5,恒消耗1魔晶,等级=每次进度增加秒数=进度倍率,0级隐藏加速按钮,`UnlockEnum.CreatureVatAddProgress`=100000007) / `GetUnlockCreatureVatMaterialMax`(进阶素材可选上限 = 5 + `UnlockEnum.CreatureVatMaterialNum`(100000008) 研究等级,满级10) / `GetUnlockSacrificeMax`(献祭祭品上限 = 5 + `UnlockEnum.SacrificeNum` 研究等级,满级15) / `GetUnlockSacrificeFailPityAddRate`(献祭失败保底增量 = `SacrificePityRate`(100100003) 等级×5%) / `GetUnlockSacrificeDifferentIdRate`(不同id祭品成功率 = `SacrificeDifferentIdRate`(100100004) 等级×5%) / `GetUnlockDropCrystalAddLifeTime`(魔晶掉落额外时长 = `DropCrystalLifeTime`(200200001) 等级×5秒,在 FightCreatureEntity.DropCrystal 生效) / `GetUnlockDemonLordMPMaxAddValue`(魔王魔力上限加成 = `DemonLordMPMax`(200300001) 等级×10) / `GetUnlockDemonLordMPFAddValue`(魔王魔力恢复加成 = `DemonLordMPF`(200400001) 等级×1/秒,后两者在 FightCreatureBean.RefreshBaseAttribute 仅对 FightDefenseCore 叠加到 MP/MPF) / `GetUnlockSpaceDashLevel`(空格突进研究等级 = `SpaceDash`(200600001) 等级,0=未解锁,1/2/3级=1/2/3距离单位) / `GetUnlockSpaceDashCD`(空格突进冷却秒 = 3 - `SpaceDashCD`(200700001) 等级×0.5,未解锁3s每级-0.5最低1s;两者由基地控制 ControlForGameBase 读取驱动突进,详见 control-system)
+  - 解锁衍生数值：`GetUnlockPortalShowCount` / `GetUnlockPortalRefreshMax`(传送门刷新次数上限=`PortalRefreshNum`等级,满级10) / `CheckIsUnlockPortalRefresh`(是否解锁传送门刷新) / `GetUnlockLineupNum` / `GetUnlockLineupCreatureNum` / `GetUnlockGameWorldConquerDifficultyLevel` / `GetUnlockCreatureVatNum` / `GetUnlockCreatureVatAddProgressLevel`(生物进阶魔晶加速研究等级0~5,恒消耗1魔晶,等级=每次进度增加秒数=进度倍率,0级隐藏加速按钮,`UnlockEnum.CreatureVatAddProgress`=100000007) / `GetUnlockCreatureVatMaterialMax`(进阶素材可选上限 = 5 + `UnlockEnum.CreatureVatMaterialNum`(100000008) 研究等级,满级10) / `GetUnlockSacrificeMax`(献祭祭品上限 = 5 + `UnlockEnum.SacrificeNum` 研究等级,满级15) / `GetUnlockSacrificeFailPityAddRate`(献祭失败保底增量 = `SacrificePityRate`(100100003) 等级×5%) / `GetUnlockSacrificeDifferentIdRate`(不同id祭品成功率 = `SacrificeDifferentIdRate`(100100004) 等级×5%) / `GetUnlockDropCrystalAddLifeTime`(魔晶掉落额外时长 = `DropCrystalLifeTime`(200200001) 等级×5秒,在 FightCreatureEntity.DropCrystal 生效) / `GetUnlockDemonLordMPMaxAddValue`(魔王魔力上限加成 = `DemonLordMPMax`(200300001) 等级×10) / `GetUnlockDemonLordMPFAddValue`(魔王魔力恢复加成 = `DemonLordMPF`(200400001) 等级×1/秒,后两者在 FightCreatureBean.RefreshBaseAttribute 仅对 FightDefenseCore 叠加到 MP/MPF) / `GetUnlockSpaceDashLevel`(空格突进研究等级 = `SpaceDash`(200600001) 等级,0=未解锁,1/2/3级=1/2/3距离单位) / `GetUnlockSpaceDashCD`(空格突进冷却秒 = 3 - `SpaceDashCD`(200700001) 等级×0.5,未解锁3s每级-0.5最低1s;两者由基地控制 ControlForGameBase 读取驱动突进,详见 control-system) / `GetUnlockDemonLordAutoPickCrystalInterval`(魔王自动拾取魔晶间隔秒 = 11 - `DemonLordAutoPickCrystal`(200800001) 等级,未解锁返回-1禁用,10级10s→满级1s) / `GetUnlockDemonLordAutoPickCrystalCount`(魔王每次拾取魔晶数量 = 1 + `DemonLordAutoPickCrystalNum`(200900001) 等级,基础1满级6;两者由 GameFightLogic.UpdateGameForDefenseCore 按间隔驱动 PickupCrystalForCoreAuto 从场上FIFO拾魔晶,详见 game-fight-system)
+  - 世界 Quick(加快进攻节奏)：`GetWorldQuickAttackUnlockId(worldId)` = `WORLD_UNLOCK_BLOCK_BASE(100310000) + worldId*100 + WORLD_QUICK_ATTACK_UNLOCK_OFFSET(30)`(world1→100310130,避开征服难度 12~20 段)；`CheckIsUnlockWorldQuickAttack(worldId)` 战斗中按当前世界判定是否显示战斗界面 Quick 按钮。研究节点是**世界分类(research_type=4)**、每世界一个、按 id 块约定无需世界表加列，详见 research-system SKILL「世界分支」
   - 解锁列表：`GetUnlockGameWorldIds` / `GetUnlockCreatureModelIds`
 
 ### 关键文件

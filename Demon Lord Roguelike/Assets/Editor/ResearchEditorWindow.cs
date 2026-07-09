@@ -351,6 +351,7 @@ public class ResearchEditorWindow : EditorWindow
         DrawTabButton("设施", ResearchInfoTypeEnum.Building);
         DrawTabButton("强化", ResearchInfoTypeEnum.Strengthen);
         DrawTabButton("魔物", ResearchInfoTypeEnum.Creature);
+        DrawTabButton("世界", ResearchInfoTypeEnum.World);
         GUILayout.FlexibleSpace();
 
         EditorGUILayout.LabelField($"缩放: {zoom:0.00}", GUILayout.Width(90));

@@ -39,6 +39,7 @@ public partial class UIViewItem : BaseUIView
         int itemNum = itemData == null ? 0 : itemData.itemNum;
         SetIcon(itemId);
         SetNum(itemId, itemNum);
+        SetItemBG(itemData);
         SetItemPopup(itemData);
     }
 
@@ -69,6 +70,25 @@ public partial class UIViewItem : BaseUIView
             ui_ItemNum.transform.parent.gameObject.SetActive(isShow);
         if (isShow)
             ui_ItemNum.text = $"{num}";
+    }
+
+    /// <summary>
+    /// 设置背景颜色（按稀有度取道具专用单色 ui_board_color_item，空槽位/缺配置回退白色）
+    /// </summary>
+    public virtual void SetItemBG(ItemBean itemData)
+    {
+        if (ui_ItemBG == null)
+            return;
+        if (itemData == null)
+        {
+            ui_ItemBG.color = Color.white;
+            return;
+        }
+        var rarityInfo = RarityInfoCfg.GetItemData(itemData.rarity);
+        if (rarityInfo != null && !string.IsNullOrEmpty(rarityInfo.ui_board_color_item))
+            ui_ItemBG.color = ColorUtil.ParseHtmlString(rarityInfo.ui_board_color_item);
+        else
+            ui_ItemBG.color = Color.white;
     }
 
     /// <summary>

@@ -11,7 +11,7 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
 
     #region 数据设置
     /// <summary>
-    /// 设置数据(气泡展示传送门名字, 以及受研究门控的线路数/关卡数/路径长度/奖励; 未解锁的项整行隐藏)
+    /// 设置数据(气泡展示传送门名字/难度(仅征服模式), 以及受研究门控的线路数/关卡数/路径长度/奖励; 未解锁的项整行隐藏)
     /// </summary>
     /// <param name="data">(世界配置, 世界随机数据, 要展示的难度)三元组</param>
     public override void SetData(object data)
@@ -44,6 +44,8 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
 
         //名字: 始终显示(不受研究门控)
         SetDetailsItem(ui_UIViewPopupProtalDetailsItem_Name, TextHandler.Instance.GetTextById(411), $"{gameWorldInfo.name_language}", true);
+        //难度: 始终显示(不受研究门控), 仅征服模式有难度概念(无尽模式整行隐藏)
+        SetDetailsItem(ui_UIViewPopupProtalDetailsItem_Level, TextHandler.Instance.GetTextById(415), $"{difficultyLevel}", isShowFightNum);
         //线路数量: 需解锁「线路数预览」研究, 未解锁整行隐藏
         SetDetailsItem(ui_UIViewPopupProtalDetailsItem_RoadNum, TextHandler.Instance.GetTextById(412), $"{roadNum}",
             userUnlock.CheckIsUnlock(UnlockEnum.PortalPreviewRoadNum));

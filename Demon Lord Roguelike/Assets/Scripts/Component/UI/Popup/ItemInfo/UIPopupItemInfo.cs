@@ -121,8 +121,7 @@ public partial class UIPopupItemInfo : PopupShowCommonView
     /// </summary>
     public void SetName(string name)
     {
-        string itemName = TextHandler.Instance.GetTextById(2000010);
-        ui_NameText.text = string.Format(itemName, name);
+        ui_NameText.text = name;
     }
 
     /// <summary>
@@ -134,10 +133,10 @@ public partial class UIPopupItemInfo : PopupShowCommonView
         string rarityName = rarityInfo != null ? rarityInfo.name_language : "";
         string rarityText = TextHandler.Instance.GetTextById(2000008);
         ui_RarityText.text = string.Format(rarityText, rarityName);
-        // 设置稀有度文本颜色
-        if (rarityInfo != null && !string.IsNullOrEmpty(rarityInfo.ui_board_color))
+        // 设置稀有度文本颜色（用道具专用单色 ui_board_color_item，非渐变对 ui_board_color——后者含逗号无法直接解析）
+        if (rarityInfo != null && !string.IsNullOrEmpty(rarityInfo.ui_board_color_item))
         {
-            Color textColor = ColorUtil.ParseHtmlString(rarityInfo.ui_board_color);
+            Color textColor = ColorUtil.ParseHtmlString(rarityInfo.ui_board_color_item);
             ui_RarityText.color = textColor;
             ui_IconBG.color = textColor;
         }

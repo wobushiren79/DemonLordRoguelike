@@ -13,7 +13,7 @@ public partial class UIViewItemBackpack : UIViewItem
     public void SetData(ItemBean itemData, CreatureBean creatureData = null)
     {
         this.creatureData = creatureData;
-        SetData(itemData);
+        base.SetData(itemData);
     }
     #endregion
 

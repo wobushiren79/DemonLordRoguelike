@@ -30,7 +30,7 @@ watched_files:
 
 ### 传送门item（UIViewBasePortalItem）
 - 行星贴图(`CreatePlanetTexture(iconSeed)`，`icon_res` 为空时)/绕中心旋转/出现动画。
-- 悬停 `ui_BG`(PopupButtonCommonView) → `PopupEnum.PortalDetails`(展示**当前难度**)，悬停停转。
+- 悬停 `ui_BG`(PopupButtonCommonView) → `PopupEnum.PortalDetails`(SetData 第三参传 `gameWorldInfoRandom.difficultyLevel`=**当前难度**)，悬停停转。**当前难度默认=已解锁最高**(创建时 `SetRandomDataForConquer` 末尾 `SetDifficultyLevel(unlockDifficultyMax)` 置；构造器 =1 仅占位)，故地图气泡默认显已解锁最高难度、之后跟随对话框选择。对话框各item传各自难度号。
 - 点击 `ui_BG` → `OnClickForEnterWorld`。
 
 ### 进入流程
@@ -41,8 +41,8 @@ watched_files:
 - `UIViewDialogPortalDetailsItem`：单难度卡(图标 iconSeed、难度文本403、灰罩、bg_color、完成度、悬停 PortalDetails 展示**该item难度**)。
 
 ### 详情气泡（UIPopupPortalDetails）
-- 4 个 `UIViewPopupPortalDetailsItem`(名字/线路数/关卡数/路径长度) + `ui_UIViewItem` 模板缓存池(奖励)。
-- **四项受设施研究门控**(`CheckIsUnlock(UnlockEnum.PortalPreview*)`，未解锁整行隐藏；名字始终显示；无尽模式不展示关卡数/路径长度/奖励)：线路数→`PortalPreviewRoadNum`(100300002)、关卡数→`PortalPreviewFightNum`(100300003)、路径长度→`PortalPreviewRoadLength`(100300004,文本414)、奖励→`PortalPreviewReward`(100300005)。
+- 5 个 `UIViewPopupPortalDetailsItem`(名字/难度/线路数/关卡数/路径长度) + `ui_UIViewItem` 模板缓存池(奖励)。
+- **名字/难度始终显示(不门控)，线路数/关卡数/路径长度/奖励受设施研究门控**(`CheckIsUnlock(UnlockEnum.PortalPreview*)`，未解锁整行隐藏；无尽模式不展示难度/关卡数/路径长度/奖励——难度是征服模式专属)：难度→无门控(文本415,内容=difficultyLevel)、线路数→`PortalPreviewRoadNum`(100300002)、关卡数→`PortalPreviewFightNum`(100300003)、路径长度→`PortalPreviewRoadLength`(100300004,文本414)、奖励→`PortalPreviewReward`(100300005)。
 
 ### 传送门随机数据（GameWorldInfoRandomBean / GameWorldInfoBeanPartial）
 - `SetGameFightTypeRandom`(随机 Conquer/已解锁 Infinite) → `SetRandomData`；`SetRandomDataForConquer`/`SetRandomDataForInfinite`。
@@ -61,7 +61,7 @@ watched_files:
 | 单个传送门item | Assets/Scripts/Component/UI/Game/BasePortal/UIViewBasePortalItem.cs |
 | 难度选择对话框 | Assets/Scripts/Component/UI/Dialog/UIDialogPortalDetails.cs |
 | 难度item | Assets/Scripts/Component/UI/Dialog/PortalDetails/UIViewDialogPortalDetailsItem.cs |
-| 详情气泡(4预览+奖励,门控) | Assets/Scripts/Component/UI/Popup/UIPopupPortalDetails.cs |
+| 详情气泡(名字/难度+4预览+奖励,门控) | Assets/Scripts/Component/UI/Popup/UIPopupPortalDetails.cs |
 | 详情项 | Assets/Scripts/Component/UI/Popup/PortalDetails/UIViewPopupPortalDetailsItem.cs |
 | 世界配置 Bean(禁改) | Assets/Scripts/Bean/MVC/Game/GameWorldInfoBean.cs |
 | 传送门随机数据 | Assets/Scripts/Bean/MVC/Game/GameWorldInfoBeanPartial.cs |
@@ -75,7 +75,7 @@ watched_files:
 - `GameWorldInfoBean.cs` 自动生成**禁改**；扩展写 `GameWorldInfoBeanPartial.cs`(手写 Bean，可直接改字段)。
 - 地图位置用 `Vector2Bean` 包装序列化(规避 Newtonsoft Vector2 normalized 递归栈溢出)。
 - `InitMap` 是"补足不洗牌"语义，别改成每次重随；重洗走 `OnClickForRefresh`。
-- 气泡四项预览**未解锁整行隐藏**(非占位)；无尽模式不展示关卡数/路径长度/奖励。
+- 气泡名字/难度始终显示(不门控)，线路数/关卡数/路径长度/奖励四项**未解锁整行隐藏**(非占位)；无尽模式不展示难度/关卡数/路径长度/奖励(难度为征服模式专属)。
 - 输入走 `InputActionUIEnum`(ESC/Navigate)，禁用旧版 `Input` API。
 
 ## 关联 Skill 与 Agent

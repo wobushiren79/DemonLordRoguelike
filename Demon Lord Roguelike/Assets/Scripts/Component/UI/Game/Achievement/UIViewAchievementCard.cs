@@ -283,6 +283,8 @@ public partial class UIViewAchievementCard : BaseUIView
         levelIcon.gameObject.SetActive(true);
 
         animForUnlock = DOTween.Sequence();
+        //放大态出现(向上抬起)瞬间播放清扫音效(与研究解锁抬起同一音效)
+        animForUnlock.AppendCallback(() => AudioHandler.Instance.PlaySound(AudioEnum.sound_clean_2));
         //砸落(往下压)起始瞬间播放上锁音效(与研究解锁下压同一音效)
         animForUnlock.AppendCallback(() => AudioHandler.Instance.PlaySound(AudioEnum.sound_lock_5));
         //从大到小"砸"向格子(InBack 收尾带轻微过冲, 强化砸落感)

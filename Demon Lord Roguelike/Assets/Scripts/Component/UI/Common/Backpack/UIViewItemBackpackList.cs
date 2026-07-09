@@ -21,7 +21,7 @@ public partial class UIViewItemBackpackList : BaseUIView
     /// </summary>
     public List<ItemBean> listFilterItems = new List<ItemBean>();
 
-    //当前条件(名字模糊+稀有度多选命中项置顶,道具无等级、无排序键,次按稀有度倒序;不删行、全部展示)
+    //当前条件(名字模糊+稀有度多选+道具类型多选命中项置顶,道具无等级、无排序键,次按稀有度倒序;不删行、全部展示)
     protected OrderFilterResultBean currentFilter = new OrderFilterResultBean();
 
     public override void Awake()
@@ -134,16 +134,26 @@ public partial class UIViewItemBackpackList : BaseUIView
 
     #region 筛选排序
     /// <summary>
-    /// 打开筛选弹窗(在排序按钮处弹出;道具仅开放 稀有度多选 + 名字模糊 两种筛选,无排序键、无等级)
+    /// 打开筛选弹窗(在排序按钮处弹出;道具开放 稀有度多选 + 名字模糊,无排序键、无等级;
+    /// 有生物上下文时额外开放「道具类型」多选筛选,选项为当前魔物的可装备类型,无生物时不显示该区)
     /// </summary>
     protected void ShowOrderFilterDialog()
     {
-        //道具列表开放的筛选类型(只有稀有度与名字适用于道具,故只展示这两项)
+        //道具列表开放的筛选类型(稀有度 + 名字始终可用)
         List<OrderFilterTypeEnum> listFilterType = new List<OrderFilterTypeEnum>
         {
             OrderFilterTypeEnum.Rarity,
             OrderFilterTypeEnum.Name,
         };
+        //有生物上下文(如生物管理界面)才开放道具类型筛选,选项取该魔物的可装备类型
+        List<ItemTypeEnum> itemTypeOptions = null;
+        CreatureInfoBean creatureInfo = creatureData != null ? creatureData.creatureInfo : null;
+        if (creatureInfo != null)
+        {
+            itemTypeOptions = new List<ItemTypeEnum>(creatureInfo.GetEquipItemsType());
+            if (itemTypeOptions.Count > 0)
+                listFilterType.Add(OrderFilterTypeEnum.ItemType);
+        }
         UIHandler.Instance.ShowDialogOrderFilter(
             ui_OrderBtn_Button.transform as RectTransform,
             OnConfirmOrderFilter,
@@ -151,8 +161,10 @@ public partial class UIViewItemBackpackList : BaseUIView
             //道具无排序键(Combat/Other 不适用),默认不选中任何排序项
             new List<OrderFilterTypeEnum>(),
             currentFilter.nameFilter,
-            //不传等级默认值(道具无等级),仅回传当前已选名字与稀有度
-            defaultRarities: new List<RarityEnum>(currentFilter.rarities));
+            //不传等级默认值(道具无等级),仅回传当前已选名字/稀有度/道具类型
+            defaultRarities: new List<RarityEnum>(currentFilter.rarities),
+            itemTypes: itemTypeOptions,
+            defaultItemTypes: new List<ItemTypeEnum>(currentFilter.itemTypes));
     }
 
     /// <summary>
@@ -166,9 +178,9 @@ public partial class UIViewItemBackpackList : BaseUIView
     }
 
     /// <summary>
-    /// 执行装备资格过滤 + 重排 + 刷新流程(道具不按名字/稀有度删行,全部展示):
+    /// 执行装备资格过滤 + 重排 + 刷新流程(道具不按名字/稀有度/道具类型删行,全部展示):
     /// ① 装备资格硬过滤(FilterItems 从 listBackpackItems 构建,上下文相关,保留为第一阶段);
-    /// ② 名字/稀有度命中项置顶(不删行);
+    /// ② 名字/稀有度/道具类型命中项置顶(不删行);
     /// ③ 次按稀有度倒序(高稀有度在前);
     /// ④ 设置 Cell 数量、刷新空列表提示与卡片。
     /// </summary>
@@ -176,9 +188,11 @@ public partial class UIViewItemBackpackList : BaseUIView
     {
         //① 装备资格硬过滤:重建 listFilterItems(上下文相关,保留为第一阶段)
         FilterItems();
-        //② 名字/稀有度命中项置顶 ③ 次按稀有度倒序(道具无等级)
+        //② 名字/稀有度/道具类型命中项置顶 ③ 次按稀有度倒序(道具无等级)
         listFilterItems = listFilterItems
-            .OrderByDescending(i => currentFilter.MatchName(i.itemsInfo.name_language) && currentFilter.MatchRarity(i.rarity))
+            .OrderByDescending(i => currentFilter.MatchName(i.itemsInfo.name_language)
+                && currentFilter.MatchRarity(i.rarity)
+                && currentFilter.MatchItemType((int)i.GetItemType()))
             .ThenByDescending(i => i.rarity)
             .ToList();
         //④ 刷新 UI:Cell 数量 -> 空列表提示 -> 卡片

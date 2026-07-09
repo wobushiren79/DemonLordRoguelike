@@ -146,6 +146,7 @@ public enum ResearchInfoTypeEnum
     Building = 1,//设施相关
     Strengthen = 2,//强化相关
     Creature = 3,//生物相关
+    World = 4,//世界相关
 }
 
 
@@ -204,6 +205,8 @@ public enum UnlockEnum : long
     AbyssalBlessingRefreshNum = 200500001,//深渊馈赠刷新次数(研究等级=单次征服run内可用刷新次数上限,level_max=5)
     SpaceDash = 200600001,//空格突进(强化,level_max=3;1/2/3级分别向朝向突进1/2/3个距离单位)
     SpaceDashCD = 200700001,//空格突进冷却缩减(强化,level_max=4;默认3秒,每级-0.5秒,满级最低1秒;子研究,前置=SpaceDash)
+    DemonLordAutoPickCrystal = 200800001,//魔王自动拾取魔晶(强化,level_max=10;拾取间隔=11-等级秒,10级10秒→满级1秒;每次拾取按FIFO取场上最先掉落的魔晶,基础1颗)
+    DemonLordAutoPickCrystalNum = 200900001,//魔王每次拾取魔晶数量+1(强化,level_max=5;每次拾取数量=1+本研究等级;前置=DemonLordAutoPickCrystal)
 
     EquipRewardHuman = 300100301,//人类装备奖励
     EquipRewardSkeleton = 300200301,
@@ -247,5 +250,6 @@ public enum OrderFilterTypeEnum
     Kill = 7,//击杀数
     DamageReceived = 8,//受到的伤害
     Exp = 9,//获得的经验
+    ItemType = 10,//道具类型(命中置顶,多选;选项由调用方按上下文动态传入,如当前魔物的可装备类型)
 }
 

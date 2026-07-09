@@ -61,5 +61,19 @@ public partial class UIDialogOrderFilter
 
     public TextMeshProUGUI ui_ContentOtherTitle;
 
+    public RectTransform ui_ContentItemType;
+
+    public TextMeshProUGUI ui_ContentItemTypeTitle;
+
+    public UIViewDialogOrderFilterItem ui_UIViewDialogOrderFilterItem_Type_1;
+
+    public UIViewDialogOrderFilterItem ui_UIViewDialogOrderFilterItem_Type_2;
+
+    public UIViewDialogOrderFilterItem ui_UIViewDialogOrderFilterItem_Type_3;
+
+    public UIViewDialogOrderFilterItem ui_UIViewDialogOrderFilterItem_Type_4;
+
+    public UIViewDialogOrderFilterItem ui_UIViewDialogOrderFilterItem_Type_5;
+
 
 }

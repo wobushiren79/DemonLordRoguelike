@@ -337,6 +337,29 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 获取魔王自动拾取魔晶的间隔(秒)
+    /// 未解锁(0级)返回 -1 表示禁用；等级 L(1~10) → 间隔 = 11-L（1级10秒…满级1秒）（UnlockEnum.DemonLordAutoPickCrystal，level_max=10）
+    /// </summary>
+    /// <returns>两次自动拾取之间的秒数；-1 表示未解锁不拾取</returns>
+    public float GetUnlockDemonLordAutoPickCrystalInterval()
+    {
+        int level = GetUnlockResearchLeveByUnlockEnum(UnlockEnum.DemonLordAutoPickCrystal);
+        if (level <= 0)
+            return -1f;
+        return 11f - level;
+    }
+
+    /// <summary>
+    /// 获取魔王每次自动拾取的魔晶数量
+    /// 基础 1 颗 + DemonLordAutoPickCrystalNum 研究等级（level_max=5，满级每次 6 颗）；仅在自动拾取本身已解锁时才有意义
+    /// </summary>
+    /// <returns>单次自动拾取的魔晶颗数</returns>
+    public int GetUnlockDemonLordAutoPickCrystalCount()
+    {
+        return 1 + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.DemonLordAutoPickCrystalNum);
+    }
+
+    /// <summary>
     /// 获取游戏世界-征服模式-难度等级
     /// 基础难度取自 UserLimmitBean.conquerDifficultyMax + 对应研究等级
     /// </summary>
@@ -347,6 +370,40 @@ public class UserUnlockBean
         var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
         var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
         return limmitData.conquerDifficultyMax + GetUnlockResearchLeveByUnlockId(gameWorldInfo.unlock_id_conquer_difficulty_level);
+    }
+
+    /// <summary>
+    /// 世界解锁 id 块基址：每个世界的专属解锁 id 都落在 1003_10_W_nn 块内（W=世界id, nn=块内偏移）。
+    /// 现有块内偏移：01=世界解锁, 02=无尽解锁, 12~20=征服难度(等级2~10, level_max=9 占满该段), 30=加快进攻节奏(Quick)。集中此处便于统一维护。
+    /// </summary>
+    public const long WORLD_UNLOCK_BLOCK_BASE = 100310000;
+
+    /// <summary>
+    /// 世界「加快进攻节奏(Quick)」研究在世界解锁 id 块内的偏移(nn=30，避开征服难度占用的 12~20 段)。
+    /// </summary>
+    public const int WORLD_QUICK_ATTACK_UNLOCK_OFFSET = 30;
+
+    /// <summary>
+    /// 获取指定世界「加快进攻节奏(Quick)」研究的解锁ID
+    /// 按世界解锁 id 块约定推导：WORLD_UNLOCK_BLOCK_BASE + worldId*100 + WORLD_QUICK_ATTACK_UNLOCK_OFFSET
+    /// （如 world1 → 100310130）。每新增一个世界，其 Quick 研究 unlock_id 依此规则推导，无需世界配置表新增列。
+    /// </summary>
+    /// <param name="worldId">游戏世界ID</param>
+    /// <returns>该世界 Quick 研究对应的解锁ID</returns>
+    public long GetWorldQuickAttackUnlockId(long worldId)
+    {
+        return WORLD_UNLOCK_BLOCK_BASE + worldId * 100 + WORLD_QUICK_ATTACK_UNLOCK_OFFSET;
+    }
+
+    /// <summary>
+    /// 是否已解锁指定世界的「加快进攻节奏(Quick)」研究
+    /// Quick 按钮与世界绑定：仅当玩该世界且已解锁该世界的 Quick 研究时，战斗界面才显示 Quick 按钮。
+    /// </summary>
+    /// <param name="worldId">游戏世界ID</param>
+    /// <returns>true=已解锁该世界的加速进攻研究</returns>
+    public bool CheckIsUnlockWorldQuickAttack(long worldId)
+    {
+        return CheckIsUnlock(GetWorldQuickAttackUnlockId(worldId));
     }
 
     /// <summary>

@@ -7,38 +7,26 @@ using UnityEngine.VFX;
 
 public partial class EffectHandler
 {
-    protected string effectCreatureAscendAddProgressName = "EffectMove_1";
-    //进阶完成庆祝专用粒子(白色模板,运行时按新稀有度上色成"稀有度流光")
-    protected string effectCreatureAscendCompleteName = "EffectAscendComplete_1";
-    protected string effectBloodName = "EffectBlood_1";
-    protected string effectShieldHitName = "EffectShieldHit_1";
-    //protected string effectTextNumberName = "EffectTextNumber_1";
-    protected string effectTextNumberName = "Assets/LoadResources/Effects/EffectTextNumber_2.prefab";
+    #region 内部工具
+    /// <summary>
+    /// 按 id 从 EffectInfo 配置解析粒子资源名(res_name)并缓存到 manager 字段：首次查表，之后直接读缓存字段，供高频粒子避免重复查配置表
+    /// </summary>
+    /// <param name="effectId">EffectInfo 配置表 id</param>
+    /// <param name="cache">manager 上对应的 res_name 缓存字段(ref)</param>
+    private string GetEffectResName(long effectId, ref string cache)
+    {
+        if (cache == null)
+            cache = EffectInfoCfg.GetItemData(effectId).res_name;
+        return cache;
+    }
+    #endregion
 
-    // 飘字模型缓存
-    protected Dictionary<string, GameObject> dicTextNumModel = new Dictionary<string, GameObject>();
-    // 飘字对象缓存池
-    protected Queue<GameObject> queueTextNumPool = new Queue<GameObject>();
-    // 飘字对象总表（含使用中与缓存池），用于战斗结束时统一清理
-    protected List<GameObject> listTextNumAll = new List<GameObject>();
-
-    
-    //普通伤害颜色
-    protected Color colorDamage = new Color(1f,0.647f,0);
-    //闪避伤害颜色
-    protected Color colorDamageEVA= new Color(1f,1f,1f);
-    //暴击伤害颜色
-    protected Color colorDamageCRT= new Color(0.698f,0.133f,0.133f);
-    //HP颜色
-    protected Color colorHPAdd= new Color(0.196f,0.804f,0.196f);
-    //DR颜色
-    protected Color colorDRAdd= new Color(0.255f,0.412f,1f);
-
+    #region 打击 / 溅血粒子
     /// <summary>
     /// 播放护盾打击粒子
     /// </summary>
-    /// <param name="targetPos"></param>
-    /// <param name="direction">护盾朝向 0左 1右</param>
+    /// <param name="targetPos">粒子播放的世界坐标</param>
+    /// <param name="attDirection">攻击来向(x<0从左、否则从右)，决定护盾朝向</param>
     public void ShowShieldHitEffect(Vector3 targetPos, Vector3 attDirection)
     {
         //播放粒子
@@ -53,7 +41,7 @@ public partial class EffectHandler
         };
 
         //获取粒子实例
-        manager.GetEffectForEnduring(effectShieldHitName, (targetEffect) =>
+        manager.GetEffectForEnduring(GetEffectResName(manager.effectShieldHitId, ref manager.resNameShieldHit), (targetEffect) =>
         {
             playEffect?.Invoke(targetEffect);
         });
@@ -62,7 +50,8 @@ public partial class EffectHandler
     /// <summary>
     /// 播放血粒子
     /// </summary>
-    /// <param name="targetPos"></param>
+    /// <param name="targetPos">粒子播放的世界坐标</param>
+    /// <param name="attDirection">攻击来向(x>0血向右溅、否则向左溅)</param>
     public void ShowBloodEffect(Vector3 targetPos, Vector3 attDirection)
     {
         //播放粒子
@@ -86,41 +75,47 @@ public partial class EffectHandler
         };
 
         //获取粒子实例
-        manager.GetEffectForEnduring(effectBloodName, (targetEffect) =>
+        manager.GetEffectForEnduring(GetEffectResName(manager.effectBloodId, ref manager.resNameBlood), (targetEffect) =>
         {
             playEffect?.Invoke(targetEffect);
         });
     }
+    #endregion
 
+    #region 飘字(伤害数字)粒子
     /// <summary>
-    /// 播放数字粒子
+    /// 播放数字粒子(伤害/闪避/HP/护甲飘字)：从缓存池取或实例化→上色→DOTween 上飘淡出→归还缓存池
     /// </summary>
+    /// <param name="targetPos">飘字起始的世界坐标</param>
+    /// <param name="number">显示的数值(闪避类型忽略)</param>
+    /// <param name="type">类型 0普通伤害 1闪避 2暴击伤害 3HP增加 4护甲增加</param>
+    /// <param name="randomPosOffset">起始位置随机偏移范围</param>
     public void ShowTextNumEffect(Vector3 targetPos, int number, int type, float randomPosOffset = 0.2f)
     {
         // 从缓存池获取或实例化
         GameObject textObj = null;
-        if (queueTextNumPool.Count > 0)
+        if (manager.queueTextNumPool.Count > 0)
         {
-            textObj = queueTextNumPool.Dequeue();
+            textObj = manager.queueTextNumPool.Dequeue();
             textObj.ShowObj(true);
         }
         else
         {
             GameObject objModel = null;
-            if (!dicTextNumModel.TryGetValue(effectTextNumberName, out objModel))
+            if (!manager.dicTextNumModel.TryGetValue(manager.effectTextNumberName, out objModel))
             {
-                objModel = LoadAddressablesUtil.LoadAssetSync<GameObject>(effectTextNumberName);
+                objModel = LoadAddressablesUtil.LoadAssetSync<GameObject>(manager.effectTextNumberName);
                 if (objModel != null)
-                    dicTextNumModel.Add(effectTextNumberName, objModel);
+                    manager.dicTextNumModel.Add(manager.effectTextNumberName, objModel);
             }
             if (objModel == null)
             {
-                LogUtil.LogError($"飘字预制体加载失败：{effectTextNumberName}");
+                LogUtil.LogError($"飘字预制体加载失败：{manager.effectTextNumberName}");
                 return;
             }
             textObj = Instantiate(objModel);
             //记录到总表，便于战斗结束时统一清理
-            listTextNumAll.Add(textObj);
+            manager.listTextNumAll.Add(textObj);
         }
 
         // 清除可能残留的Tween
@@ -130,7 +125,7 @@ public partial class EffectHandler
         TextMeshPro textMesh = textObj.GetComponent<TextMeshPro>();
         if (textMesh == null)
         {
-            LogUtil.LogError($"飘字预制体缺少TextMeshPro组件：{effectTextNumberName}");
+            LogUtil.LogError($"飘字预制体缺少TextMeshPro组件：{manager.effectTextNumberName}");
             Destroy(textObj);
             return;
         }
@@ -143,21 +138,21 @@ public partial class EffectHandler
         switch (type)
         {
             case 0: // 普通伤害
-                targetColor = colorDamage;
+                targetColor = manager.colorDamage;
                 break;
             case 1: // 闪避
-                targetColor = colorDamageEVA;
+                targetColor = manager.colorDamageEVA;
                 textContent = "闪避";
                 break;
             case 2: // 暴击伤害
-                targetColor = colorDamageCRT;
+                targetColor = manager.colorDamageCRT;
                 targetTextSize = 3f;
                 break;
             case 3: // HP增加
-                targetColor = colorHPAdd;
+                targetColor = manager.colorHPAdd;
                 break;
             case 4: // 护甲增加
-                targetColor = colorDRAdd;
+                targetColor = manager.colorDRAdd;
                 break;
         }
 
@@ -184,7 +179,7 @@ public partial class EffectHandler
             textMesh.alpha = 1f;
             textObj.transform.localScale = Vector3.one;
             textObj.ShowObj(false);
-            queueTextNumPool.Enqueue(textObj);
+            manager.queueTextNumPool.Enqueue(textObj);
         });
     }
 
@@ -193,9 +188,9 @@ public partial class EffectHandler
     /// </summary>
     public void ClearTextNumEffect()
     {
-        for (int i = 0; i < listTextNumAll.Count; i++)
+        for (int i = 0; i < manager.listTextNumAll.Count; i++)
         {
-            var textObj = listTextNumAll[i];
+            var textObj = manager.listTextNumAll[i];
             if (textObj == null)
                 continue;
             //停止可能残留的Tween
@@ -205,13 +200,18 @@ public partial class EffectHandler
                 textMesh.DOKill();
             Destroy(textObj);
         }
-        listTextNumAll.Clear();
-        queueTextNumPool.Clear();
+        manager.listTextNumAll.Clear();
+        manager.queueTextNumPool.Clear();
     }
+    #endregion
 
+    #region 生物进阶粒子
     /// <summary>
-    /// 展示生物进阶增加进度粒子
+    /// 展示生物进阶增加进度粒子(从起点飞向终点容器的流动光点)
     /// </summary>
+    /// <param name="addNum">发射的光点数量</param>
+    /// <param name="startPosition">光点起始世界坐标(带随机散布)</param>
+    /// <param name="endPosition">光点汇聚的终点世界坐标</param>
     public void ShowCreatureAscendAddProgressEffect(int addNum, Vector3 startPosition, Vector3 endPosition)
     {
         //播放粒子
@@ -231,7 +231,7 @@ public partial class EffectHandler
         };
 
         //获取粒子实例
-        manager.GetEffectForEnduring(effectCreatureAscendAddProgressName, (targetEffect) =>
+        manager.GetEffectForEnduring(GetEffectResName(manager.effectCreatureAscendAddProgressId, ref manager.resNameAscendAddProgress), (targetEffect) =>
         {
             playEffect?.Invoke(targetEffect);
         });
@@ -246,7 +246,7 @@ public partial class EffectHandler
     {
         //专用一次性粒子:先定位、按稀有度给所有粒子系统上色,再播放,2秒后自动销毁
         EffectBean effectData = new EffectBean();
-        effectData.effectName = effectCreatureAscendCompleteName;
+        effectData.effectName = GetEffectResName(manager.effectCreatureAscendCompleteId, ref manager.resNameAscendComplete);
         effectData.effectPosition = targetPosition;
         effectData.timeForShow = 2f;
         effectData.isDestoryPlayEnd = true;
@@ -267,10 +267,36 @@ public partial class EffectHandler
             effect.PlayEffect();
         });
     }
+    #endregion
+
+    #region 放置魔物粒子
+    /// <summary>
+    /// 放置魔物时在魔王(防守核心)位置播放消耗魔力粒子
+    /// </summary>
+    /// <param name="targetPos">魔王世界坐标</param>
+    public void ShowManaEffect(Vector3 targetPos)
+    {
+        ShowEffect(manager.effectManaId, targetPos);
+    }
 
     /// <summary>
-    /// 展示粒子
+    /// 放置魔物时在生成的魔物位置播放登场粒子
     /// </summary>
+    /// <param name="targetPos">魔物生成的世界坐标</param>
+    public void ShowCreatureShowEffect(Vector3 targetPos)
+    {
+        ShowEffect(manager.effectCreatureShowId, targetPos);
+    }
+    #endregion
+
+    #region 配置驱动通用粒子
+    /// <summary>
+    /// 展示粒子(配置驱动)：按 EffectInfo 配置解析 float/int/vector3/vector4 数据并写入 VFX/PS，按展示类型(持久/一次性)取实例播放
+    /// </summary>
+    /// <param name="effectId">EffectInfo 配置表 id</param>
+    /// <param name="targetPos">粒子播放的世界坐标</param>
+    /// <param name="direction">方向(供含 {Direction} 占位的 int 数据使用)</param>
+    /// <param name="size">尺寸倍率(供含 {Size} 占位的 float 数据及 PS 起始大小使用)</param>
     public void ShowEffect(long effectId, Vector3 targetPos, Direction2DEnum direction = Direction2DEnum.None, float size = 1)
     {
         targetPos += new Vector3(0, 0.002f, -0.001f);
@@ -345,18 +371,23 @@ public partial class EffectHandler
             });
         }
     }
+    #endregion
 
-    public Tween animForShowSacrficeEffect;
-    public Tween animForShowSacrficeEffectComplete;
+    #region 献祭粒子
     /// <summary>
-    /// 展示献祭粒子
+    /// 展示献祭粒子：各祭品发射光流飞向中心点，中心汇聚粒子按延时/存活时长播放，半程停祭品光流，结束触发完成回调
     /// </summary>
+    /// <param name="listSacrficeTarget">祭品对象列表(各自带 VisualEffect 光流)</param>
+    /// <param name="endPostion">汇聚中心世界坐标</param>
+    /// <param name="timeCenterDelay">中心粒子起始延时</param>
+    /// <param name="timeCenterLifetime">中心粒子存活时长</param>
+    /// <param name="actionForComplete">全部播放结束的回调</param>
     public void ShowSacrficeEffect(List<GameObject> listSacrficeTarget, Vector3 endPostion, float timeCenterDelay, float timeCenterLifetime, Action actionForComplete)
     {
-        if (animForShowSacrficeEffect != null)
-            animForShowSacrficeEffect.Kill();
-        if (animForShowSacrficeEffectComplete != null)
-            animForShowSacrficeEffectComplete.Kill();
+        if (manager.animForShowSacrficeEffect != null)
+            manager.animForShowSacrficeEffect.Kill();
+        if (manager.animForShowSacrficeEffectComplete != null)
+            manager.animForShowSacrficeEffectComplete.Kill();
         //播放粒子
         Action<EffectBase> playEffect = (targetEffect) =>
         {
@@ -385,7 +416,7 @@ public partial class EffectHandler
             playEffect?.Invoke(targetEffect);
         });
 
-        animForShowSacrficeEffect = DOVirtual.DelayedCall(timeCenterDelay + (timeCenterLifetime / 2f), () =>
+        manager.animForShowSacrficeEffect = DOVirtual.DelayedCall(timeCenterDelay + (timeCenterLifetime / 2f), () =>
         {
             listSacrficeTarget.ForEach((int index, GameObject itemObj) =>
             {
@@ -394,9 +425,10 @@ public partial class EffectHandler
             });
         });
 
-        animForShowSacrficeEffectComplete = DOVirtual.DelayedCall(timeCenterDelay + timeCenterLifetime, () =>
+        manager.animForShowSacrficeEffectComplete = DOVirtual.DelayedCall(timeCenterDelay + timeCenterLifetime, () =>
         {
             actionForComplete?.Invoke();
         });
     }
+    #endregion
 }

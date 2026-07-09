@@ -1219,7 +1219,7 @@ MonoBehaviour:
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
+  m_Maskable: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -4139,6 +4139,30 @@ PrefabInstance:
       propertyPath: m_Name
       value: UIViewItemEquip_3
       objectReference: {fileID: 0}
+    - target: {fileID: 6401868036675555997, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 38
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -19
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4707,6 +4731,30 @@ PrefabInstance:
     - target: {fileID: 3473223220127272987, guid: c09a32112d1821641aa1445f160e0498, type: 3}
       propertyPath: m_Name
       value: UIViewItemEquip_1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6401868036675555997, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 38
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -19
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5595,6 +5643,30 @@ PrefabInstance:
       propertyPath: m_Name
       value: UIViewItemEquip_2
       objectReference: {fileID: 0}
+    - target: {fileID: 6401868036675555997, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 38
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -19
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5700,6 +5772,30 @@ PrefabInstance:
     - target: {fileID: 3473223220127272987, guid: c09a32112d1821641aa1445f160e0498, type: 3}
       propertyPath: m_Name
       value: UIViewItemEquip_4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6401868036675555997, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 38
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8072011832560512038, guid: c09a32112d1821641aa1445f160e0498, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -19
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -229,6 +229,7 @@ public void ChangeMP(float changeMP, out float leftMP, out float changeMPReal); 
 // 消耗链路：GameFightLogic.PutCard()
 //   放置卡片时检查 MPCurrent >= GetAttributeInt(CMP)，不足则 Toast 提示"魔力不足"(UIText 50006)并取消放置；
 //   足够则 ChangeMP(-GetAttributeInt(CMP)) 扣除并 RefreshMPShow()
+//   放置成功后播粒子：魔王处 EffectHandler.ShowManaEffect(消耗魔力 EffectInfo id=1000001) + 生成位置 ShowCreatureShowEffect(魔物登场 id=1100001)，再播 sound_btn_19
 // 显示链路：魔王预制(FightCreature_DefCore_1)下 MPShow(SpriteRenderer+MatSpriteCreatureLife进度材质)
 //   + MPShow/MPText(TextMeshPro 显示"100/100"格式)，与防守生物LifeShow同款机制
 // 渲染层级：MPText 用 Overlay 着色器材质(MatTMP_MPTextOverlay，TMP_SDF Overlay：ZTest Always + Overlay队列)，
@@ -324,8 +325,19 @@ public partial class UIFightMain : BaseUIComponent
     // GameFightLogic_SelectCard      - 选中卡片
     // GameFightLogic_UnSelectCard    - 取消选择
     // GameFightLogic_PutCard         - 放置卡片
+
+    // Quick(加快进攻节奏)按钮显隐：仅征服模式且已解锁当前世界的 Quick 研究才显示
+    public void RefreshQuickButtonShow(bool isConquer, GameFightLogic gameFightLogic);
 }
 ```
+
+### 进攻进度条 Quick(加快进攻节奏) 按钮
+
+进攻进度条子视图 `UIViewFightMainAttCreateProgress`（仅征服模式显示，含 `ui_CreateProgress`/`ui_CreateEnd`/`ui_Quick`）上的 **Quick 按钮**用于**加速进攻节奏**：
+
+- **与世界绑定的显隐**：`UIFightMain.RefreshUIData` → `RefreshQuickButtonShow`：仅征服模式、且 `UserUnlockBean.CheckIsUnlockWorldQuickAttack(worldId)`（当前世界的「加快进攻节奏」研究已解锁）时才显示 Quick 按钮。worldId 取 `FightBeanForConquer.gameWorldInfoRandomData.worldId`。研究节点/id 块约定见 [`research-system`](../research-system/SKILL.md) 世界分支。
+- **点击逻辑**：`UIViewFightMainAttCreateProgress.OnClickForQuick` → 若 `GetAttackProgress()>=1` 直接 return（已到 100% 点击无效）；否则 `GameFightLogic.QuickAdvanceAttackCreate(0.1f)` 推进后 `SetProgress(newProgress, animTime:0.3f)` 平滑过渡（不瞬跳）。
+- **`GameFightLogic.QuickAdvanceAttackCreate(advanceRate=0.1f)`**：立即向前推进「`fightAttackData.timeAttackTotal * advanceRate`（默认总进攻时长10%）」的时间，用与逐帧刷怪 `UpdateGameForAttackCreate` **同一套「累加达标即出下一波」步进语义**逐波消费推进时间，把这段时间本应生成的进攻波次全部立即 `CreateAttackCreature`（含 BOSS 特写 `ShowBossDialog`）；队列耗尽(进攻到末尾)则停止，进度自然封顶 100%。返回推进后的最新进度(0~1)。无消耗、无冷却，仅上限封顶。
 
 ## 战斗预制管理
 
@@ -338,8 +350,9 @@ FightHandler.Instance.CreateDropCrystal(dropData);
 
 // 拾取（鼠标点击或生物自动拾取）
 GameFightLogic.Instance.PickupCrystalForMouse();   // 手动点击拾取时播放音效 sound_btn_15(id 15)
-GameFightLogic.Instance.PickupCrystalForCreature(entity, pickupRadius);
-// 两种拾取最终都走 PickupCrystal，魔晶飞回收集点(核心)的 DOJump.OnComplete 中：
+GameFightLogic.Instance.PickupCrystalForCreature(entity, pickupRadius);  // 生物半径内全吸(如周期BUFF BuffEntityPeriodicPickupCrystal)
+GameFightLogic.Instance.PickupCrystalForCoreAuto(count);   // 魔王自动拾取：按 listFightPrefab FIFO 取最先掉落且DropCheck的魔晶 count 颗(排除掉落魔力),由 UpdateGameForDefenseCore 按研究间隔驱动(强化 DemonLordAutoPickCrystal 间隔=11-等级秒 / DemonLordAutoPickCrystalNum 数量=1+等级)
+// 三种拾取最终都走 PickupCrystal，魔晶飞回收集点(核心)的 DOJump.OnComplete 中：
 //   播放入账音效 sound_pay_2(id 480002) → AddCrystal → 触发 GameFightLogic_DropAddCrystal
 ```
 

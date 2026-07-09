@@ -310,6 +310,7 @@ public void PutCard(Vector3 worldPosition)
     // 检测魔王魔力是否足够（GetAttributeInt(CMP)=基础CMP×(1+等级/稀有度增加倍率)经BUFF修正后的召唤消耗），不足则Toast"魔力不足"(UIText 50006)并中止
     // 足够则 ChangeMP(-GetAttributeInt(CMP)) 扣除魔力并刷新魔王MPShow显示
     // 创建生物实体...
+    // 放置成功后播两个配置粒子：魔王处 ShowManaEffect(消耗魔力,id=1000001) + 生成位置 ShowCreatureShowEffect(魔物登场,id=1100001)，再播 sound_btn_19
     TriggerEvent(EventsInfo.GameFightLogic_PutCard, selectCreatureCard);
     selectCreatureCard = null;
 }
@@ -338,6 +339,8 @@ protected void OnConfirmOrderFilter(OrderFilterResultBean result) {
 > 生物里 **Name/Level/Rarity 是命中置顶条件**(不进 `sortTypes`、不删行)，只有 **Lineup/Class 是排序键**(`GetOrderKeySelector`：Lineup→阵容序号(不在阵容置 int.MaxValue)、Class→creatureId)。主列表 `listCreatureDataAll` 保存全量；`listCreatureData` 是「命中项置顶 + 排序键次级」重排后的展示列表（与主列表等量，全部展示）。
 
 > **调用方默认基序**：`UIViewCreatureCardList` 自身无内建默认排序（`currentFilter` 初始为空 → `OrderByDescending(IsMatch)` 全命中且无排序键 → 稳定保持入参顺序）。**魔物管理页 `UICreatureManager.InitCreaturekData` 传入前已用 `GetSortedBackpackCreature` 预排序**：稀有度降序 → 等级降序 → creatureId 升序(同一种魔物相邻，与 Class 键同口径)。因 LINQ `OrderBy*` 稳定，该预排序既是打开时的默认展示序，也是玩家后续筛选排序的稳定 tiebreaker；预排序作用于副本，不改动存档 `listBackpackCreature` 原始顺序。
+
+> **道具列表默认基序**：同界面的背包道具列表 `UIViewItemBackpackList` 也由 `UICreatureManager.InitBackpackItemsData` 传入前用 `GetSortedBackpackItem` 预排序：**稀有度降序（`ItemBean.rarity` 高→低）→ 道具类型升序（`GetItemType()` 强转 int，同类道具相邻）**。同样作用于副本，不改动存档 `listBackpackItems` 原始顺序。
 
 ### 空列表提示
 

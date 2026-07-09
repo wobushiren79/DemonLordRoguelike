@@ -299,6 +299,10 @@ public partial class UIBaseResearch : BaseUIComponent, IRadioGroupCallBack
         {
             InitResearchItems(ResearchInfoTypeEnum.Creature, true);
         }
+        else if (rbview == ui_UIViewCommonLabel_World)
+        {
+            InitResearchItems(ResearchInfoTypeEnum.World, true);
+        }
     }
 
     public void RadioButtonUnSelected(RadioGroupView rgView, int position, RadioButtonView rbview)

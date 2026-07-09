@@ -19,7 +19,9 @@ public partial class UIViewDialogPortalDetailsItem
 
     public PopupButtonCommonView ui_IconBG_PopupButtonCommonView;
 
-    public Image ui_Complete;
+    public Image ui_Complete_0;
+
+    public Image ui_Complete_1;
 
 
 }

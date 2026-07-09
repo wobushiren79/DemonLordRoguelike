@@ -341,6 +341,8 @@ public class GashaponMachineLogic : BaseGameLogic
         Color eggColor1 = eggRenderer.material.GetColor("_Color_1");
         Color eggColor2 = eggRenderer.material.GetColor("_Color_2");
 
+        //播放蛋壳破碎音效
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_break_1);
         //播放蛋壳破碎粒子
         scenePrefab.effectEggBreak.SetVector3("MeshSize", eggTF.transform.localScale);
         scenePrefab.effectEggBreak.SetVector3("StartPosition", eggTF.transform.position);

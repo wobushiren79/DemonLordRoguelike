@@ -96,6 +96,8 @@ public partial class UIFightMain : BaseUIComponent
         {
             SetFightLevel(gameFightLogic.fightData.fightNum, gameFightLogic.fightData.figthNumMax);
         }
+        //Quick 按钮显隐：仅征服模式且已解锁当前世界的「加快进攻节奏」研究才显示
+        RefreshQuickButtonShow(isConquer, gameFightLogic);
 
         float progressAttack = gameFightLogic.fightData.fightAttackData.GetAttackProgress();
         float progressAttackTime = 0;
@@ -128,6 +130,27 @@ public partial class UIFightMain : BaseUIComponent
             ui_FightLevel.gameObject.SetActive(isShow);
         if (ui_UIViewFightMainAttCreateProgress != null)
             ui_UIViewFightMainAttCreateProgress.gameObject.SetActive(isShow);
+    }
+
+    /// <summary>
+    /// 刷新 Quick(加快进攻节奏) 按钮显隐
+    /// 仅征服模式、且已解锁当前世界的「加快进攻节奏」研究时显示；其余情况隐藏
+    /// </summary>
+    /// <param name="isConquer">当前是否征服模式</param>
+    /// <param name="gameFightLogic">当前战斗逻辑</param>
+    public void RefreshQuickButtonShow(bool isConquer, GameFightLogic gameFightLogic)
+    {
+        bool isShowQuick = false;
+        //仅征服模式才有世界概念，非征服模式一律隐藏 Quick
+        if (isConquer
+            && gameFightLogic.fightData is FightBeanForConquer fightDataForConquer
+            && fightDataForConquer.gameWorldInfoRandomData != null)
+        {
+            long worldId = fightDataForConquer.gameWorldInfoRandomData.worldId;
+            var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+            isShowQuick = userUnlock.CheckIsUnlockWorldQuickAttack(worldId);
+        }
+        ui_UIViewFightMainAttCreateProgress.SetQuickButtonShow(isShowQuick);
     }
 
     /// <summary>

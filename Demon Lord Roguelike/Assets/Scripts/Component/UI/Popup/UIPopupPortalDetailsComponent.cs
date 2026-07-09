@@ -15,5 +15,7 @@ public partial class UIPopupPortalDetails
 
     public UIViewPopupPortalDetailsItem ui_UIViewPopupProtalDetailsItem_RoadLength;
 
+    public UIViewPopupPortalDetailsItem ui_UIViewPopupProtalDetailsItem_Level;
+
 
 }

@@ -223,17 +223,19 @@ public partial class UIHandler
     /// <summary>
     /// 展示排序筛选弹窗(便捷重载:直接传参,无需手动构造 Bean)。
     /// 约定:触发该弹窗的筛选/排序按钮,其 PopupButtonCommonView 悬浮详情统一用多语言 2000014(筛选排序)。
-    /// 各区段显隐由 listFilterType 推导:含 Name→名字区、Level→等级区、Rarity→稀有度区、
+    /// 各区段显隐由 listFilterType 推导:含 Name→名字区、Level→等级区、Rarity→稀有度区、含 ItemType→道具类型区、
     /// 含战斗维度(Damage/Kill/DamageReceived/Exp)→战斗区、含 Lineup/Class→其它区;为空则全部显示。
     /// </summary>
     /// <param name="targetButton">触发弹窗的按钮(用于把弹窗内容定位到该按钮处)</param>
-    /// <param name="actionForConfirm">确认回调:回传 OrderFilterResultBean(排序键按优先级 index0最高 + 名字模糊 + 等级区间 + 稀有度)</param>
+    /// <param name="actionForConfirm">确认回调:回传 OrderFilterResultBean(排序键按优先级 index0最高 + 名字模糊 + 等级区间 + 稀有度 + 道具类型)</param>
     /// <param name="listFilterType">开放哪些维度(决定各区段显隐);为空(null)则全部显示</param>
     /// <param name="selectFilterTypes">默认已选中的排序键(按优先级,index0最高);为空则默认无选中</param>
     /// <param name="defaultNameFilter">默认名字筛选(回填名字输入框)</param>
     /// <param name="defaultLevelMin">默认等级下限(0=不限,回填后输入框留空)</param>
     /// <param name="defaultLevelMax">默认等级上限(int.MaxValue=不限,回填后输入框留空)</param>
     /// <param name="defaultRarities">默认选中的稀有度(回填稀有度多选)</param>
+    /// <param name="itemTypes">道具类型区可选项(按上下文动态提供,如当前魔物可装备类型;按顺序填充预留项,多余隐藏)。需配合 listFilterType 含 ItemType 才显示</param>
+    /// <param name="defaultItemTypes">默认选中的道具类型(回填道具类型多选)</param>
     /// <returns></returns>
     public UIDialogOrderFilter ShowDialogOrderFilter(
         RectTransform targetButton,
@@ -243,7 +245,9 @@ public partial class UIHandler
         string defaultNameFilter = null,
         int defaultLevelMin = 0,
         int defaultLevelMax = int.MaxValue,
-        List<RarityEnum> defaultRarities = null)
+        List<RarityEnum> defaultRarities = null,
+        List<ItemTypeEnum> itemTypes = null,
+        List<ItemTypeEnum> defaultItemTypes = null)
     {
         DialogOrderFilterBean dialogData = new DialogOrderFilterBean
         {
@@ -255,6 +259,8 @@ public partial class UIHandler
             defaultLevelMin = defaultLevelMin,
             defaultLevelMax = defaultLevelMax,
             defaultRarities = defaultRarities,
+            itemTypes = itemTypes,
+            defaultItemTypes = defaultItemTypes,
         };
         return ShowDialogOrderFilter(dialogData);
     }

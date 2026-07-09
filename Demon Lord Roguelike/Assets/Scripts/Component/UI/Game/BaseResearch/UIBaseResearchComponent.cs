@@ -28,5 +28,7 @@ public partial class UIBaseResearch
 
     public Button ui_TestSaveBtn;
 
+    public RadioButtonView ui_UIViewCommonLabel_World;
+
 
 }

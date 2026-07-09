@@ -85,7 +85,8 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 
 ## 传送门item（UIViewBasePortalItem）
 
-- 悬停气泡：`ui_BG` 上的 `PopupButtonCommonView` 注册 Enter/Exit，`SetData((gameWorldInfo, gameWorldInfoRandom, difficultyLevel), PopupEnum.PortalDetails)`（地图item展示**当前难度**）。悬停时停止旋转(`isRotate=false`)。
+- 悬停气泡：`ui_BG` 上的 `PopupButtonCommonView` 注册 Enter/Exit，`SetData((gameWorldInfo, gameWorldInfoRandom, difficultyLevel), PopupEnum.PortalDetails)`（地图item展示**当前难度** `gameWorldInfoRandom.difficultyLevel`）。悬停时停止旋转(`isRotate=false`)。
+  - **气泡展示哪个难度**：SetData 第三参 `difficultyLevel` 即展示难度。地图item传的是**当前难度**——它在世界创建时由 `SetRandomDataForConquer` 末尾 `SetDifficultyLevel(unlockDifficultyMax)` 置为**已解锁最高难度**(非难度1；构造器 `difficultyLevel=1` 只是占位，创建时被覆盖)，之后跟随难度对话框选择。故解锁多难度时，地图气泡默认显示**已解锁最高难度**。对话框各item则传各自难度号(展示该item自身难度)。事后解锁更高难度不会自动抬高已缓存世界(clamp 只向下夹)，需世界重新生成(通关清空/刷新)才重取。
 - 缓慢绕 `rotateCenter` 旋转(随机 speed)；出现 `DOScale` OutBack。
 - 点击 `ui_BG` → `OnClickForEnterWorld`。
 
@@ -105,13 +106,14 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 
 ## 详情气泡（UIPopupPortalDetails）
 
-继承 `PopupShowCommonView`，`SetData((GameWorldInfoBean, GameWorldInfoRandomBean, int difficultyLevel))`。AutoLinkUI 按名绑定的 4 个 `UIViewPopupPortalDetailsItem`(名字/线路数/关卡数/路径长度) + `ui_UIViewItem` 模板缓存池(奖励道具)。
+继承 `PopupShowCommonView`，`SetData((GameWorldInfoBean, GameWorldInfoRandomBean, int difficultyLevel))`。AutoLinkUI 按名绑定的 5 个 `UIViewPopupPortalDetailsItem`(名字/难度/线路数/关卡数/路径长度) + `ui_UIViewItem` 模板缓存池(奖励道具)。
 
-- **4 项受「设施」研究门控**（`UserUnlock.CheckIsUnlock(UnlockEnum.PortalPreview*)`，**未解锁该项整行隐藏**；名字行始终显示；无尽模式不展示关卡数/路径长度/奖励）：
+- **名字/难度始终显示（不受研究门控），其余 4 项受「设施」研究门控**（`UserUnlock.CheckIsUnlock(UnlockEnum.PortalPreview*)`，**未解锁该项整行隐藏**；无尽模式不展示难度/关卡数/路径长度/奖励，即只有征服模式才有难度概念）：
 
   | 详情项 | 文本id | UnlockEnum | 值 |
   |--------|--------|-----------|----|
-  | 名字 | 411 | (无门控) | — |
+  | 名字 | 411 | (无门控,始终显示) | — |
+  | 难度 | 415 | (无门控,仅征服模式显示,内容=difficultyLevel) | — |
   | 线路数量 | 412 | `PortalPreviewRoadNum` | 100300002 |
   | 关卡数量 | 413 | `PortalPreviewFightNum` | 100300003 |
   | 路径长度 | 414 | `PortalPreviewRoadLength` | 100300004 |
@@ -146,7 +148,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 | 单个传送门item | Assets/Scripts/Component/UI/Game/BasePortal/UIViewBasePortalItem.cs |
 | 难度选择对话框 | Assets/Scripts/Component/UI/Dialog/UIDialogPortalDetails.cs |
 | 难度item | Assets/Scripts/Component/UI/Dialog/PortalDetails/UIViewDialogPortalDetailsItem.cs |
-| 详情气泡(4预览+奖励,门控) | Assets/Scripts/Component/UI/Popup/UIPopupPortalDetails.cs |
+| 详情气泡(名字/难度+4预览+奖励,门控) | Assets/Scripts/Component/UI/Popup/UIPopupPortalDetails.cs |
 | 详情项 | Assets/Scripts/Component/UI/Popup/PortalDetails/UIViewPopupPortalDetailsItem.cs |
 | 世界配置 Bean(禁改) | Assets/Scripts/Bean/MVC/Game/GameWorldInfoBean.cs |
 | 传送门随机数据 | Assets/Scripts/Bean/MVC/Game/GameWorldInfoBeanPartial.cs |
@@ -160,7 +162,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 - `GameWorldInfoBean.cs` 自动生成**禁改**；扩展写 `GameWorldInfoBeanPartial.cs`。`GameWorldInfoRandomBean`/`GameWorldDifficultyRandomBean` 是手写 Bean，可直接改。
 - 地图位置用 `Vector2Bean` 包装序列化(规避 Newtonsoft 序列化 Vector2 的 normalized 递归栈溢出)。
 - `InitMap` 是"补足不洗牌"语义：别改成每次重随(会让已解锁数量/缓存失效、每次打开都变)；要重洗走 `OnClickForRefresh`。
-- 气泡四项预览**未解锁整行隐藏**(不是占位)；无尽模式不展示关卡数/路径长度/奖励。
+- 气泡名字/难度始终显示(不门控)，线路数/关卡数/路径长度/奖励四项**未解锁整行隐藏**(不是占位)；无尽模式不展示难度/关卡数/路径长度/奖励(难度是征服模式专属概念)。
 - 输入走 `InputActionUIEnum`(ESC/Navigate)，禁用旧版 `Input` API。
 
 ## 关联 Skill 与 Agent

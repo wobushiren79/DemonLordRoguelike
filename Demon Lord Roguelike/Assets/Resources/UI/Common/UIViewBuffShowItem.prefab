@@ -103,12 +103,13 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 0
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -213,8 +214,11 @@ MonoBehaviour:
     icon_res: 
     buff_type: 0
     rarity: 0
+    buff_parent_id: 0
+    buff_level: 0
     trigger_creature_type: 0
     class_entity: 
+    class_entity_events: 
     class_entity_data: 
     color_body: 
     pre_info: 
@@ -223,9 +227,10 @@ MonoBehaviour:
     trigger_value_rate: 0
     trigger_value_rate_min: 0
     trigger_chance: 0
-    trigger_chance_min: 0
     trigger_num: 0
     trigger_time: 0
+    stack_mode: 0
+    stack_max: 0
     trigger_effect: 0
     name: 0
     content: 0

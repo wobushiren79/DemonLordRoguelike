@@ -17,24 +17,27 @@ watched_files:
 
 两类语义(贯穿全系统,务必区分):
 
-- **命中即置顶条件**(名字 / 等级 / 稀有度):**不删行、全部展示**,命中项浮到列表最前,未命中项排其后。判定用 `OrderFilterResultBean.Match*`。
+- **命中即置顶条件**(名字 / 等级 / 稀有度 / 道具类型):**不删行、全部展示**,命中项浮到列表最前,未命中项排其后。判定用 `OrderFilterResultBean.Match*`。
 - **排序键**(战斗数据 / 其它):**多选**,按**选择顺序定优先级**(index0=主键),作为命中分组后的**次级排序**。
+
+> **稀有度 vs 道具类型的区别**:稀有度区是 **6 个固定档**(枚举写死);道具类型区是 **动态选项**——选项(`itemTypes`)由调用方按上下文传入(如当前魔物的可装备类型),按顺序填充预制里**预留的 5 个**道具类型项,超出选项数的预留项隐藏。项名取 `ItemsTypeCfg.GetItemData(itemType).name_language`(道具类型配置自带多语言,无需在弹窗内写死)。
 
 ```
 列表 View(生物卡/背包/战斗结算)
-  │ 点排序按钮 → 组装 listFilterType + 回填当前条件
+  │ 点排序按钮 → 组装 listFilterType + 回填当前条件(+可选 itemTypes 动态选项)
   ▼
-UIHandler.ShowDialogOrderFilter(targetButton, onConfirm, listFilterType, selectFilterTypes, name, levelMin, levelMax, rarities)
+UIHandler.ShowDialogOrderFilter(targetButton, onConfirm, listFilterType, selectFilterTypes, name, levelMin, levelMax, rarities, itemTypes, defaultItemTypes)
   ▼
 UIDialogOrderFilter (DialogView, 点背景关闭)
-  ├─ 名字区  ContentName   (Name)        模糊输入
-  ├─ 等级区  ContentLevel  (Level)       左/右整数→区间[min,max]
-  ├─ 稀有度区 ContentRarity (Rarity)      6 档多选
-  ├─ 战斗区  ContentData   (Damage/Kill/DamageReceived/Exp)  排序键多选→选中上移到最前
-  └─ 其它区  ContentOther  (Lineup/Class)                    排序键多选→保持原始顺序(不上移)
-  │ 各项 = UIViewDialogOrderFilterItem(SetData 排序键模式 / SetDataForRarity 稀有度模式)
+  ├─ 名字区   ContentName     (Name)        模糊输入
+  ├─ 等级区   ContentLevel    (Level)       左/右整数→区间[min,max]
+  ├─ 稀有度区 ContentRarity   (Rarity)      6 档固定多选
+  ├─ 道具类型区 ContentItemType (ItemType)  动态多选:itemTypes 填充预留 5 项,多余隐藏;有选项才显示
+  ├─ 战斗区   ContentData     (Damage/Kill/DamageReceived/Exp)  排序键多选→选中上移到最前
+  └─ 其它区   ContentOther    (Lineup/Class)                    排序键多选→保持原始顺序(不上移)
+  │ 各项 = UIViewDialogOrderFilterItem(SetData 排序键 / SetDataForRarity 稀有度 / SetDataForItemType 道具类型 三模式)
   ▼ 点确认 Confirm()
-OrderFilterResultBean { sortTypes(优先级), nameFilter, levelMin, levelMax, rarities }
+OrderFilterResultBean { sortTypes(优先级), nameFilter, levelMin, levelMax, rarities, itemTypes }
   ▼ actionForConfirm 回传
 调用方 RefreshFilterSortList():OrderByDescending(IsMatch).ThenBy(每个 sortType 的键选择器)
 ```
@@ -52,8 +55,10 @@ OrderFilterResultBean { sortTypes(优先级), nameFilter, levelMin, levelMax, ra
 | Kill | 7 | 战斗区 | 排序键 | 50002 |
 | DamageReceived | 8 | 战斗区 | 排序键 | 50004 |
 | Exp | 9 | 战斗区 | 排序键 | 50003 |
+| ItemType | 10 | 道具类型区 | 命中置顶(动态多选) | 项名取 ItemsTypeCfg.name_language;区标题 2000025 |
 
 > 区段显隐由 `listFilterType` 推导:含某维度才显示其所属区段;传 `null`/空则全部显示。区段归属硬编码在 [UIDialogOrderFilter.dataTypes/otherTypes](Assets/Scripts/Component/UI/Dialog/UIDialogOrderFilter.cs#L17-L20) 与各 `InitXxxSection`。
+> **道具类型区额外条件**:除 `listFilterType` 含 `ItemType` 外,还需 `itemTypes` 选项非空才显示(无选项不展示空标题区)。选项按上下文动态传入(如魔物可装备类型),预制预留 **5** 个道具类型项——魔物可装备类型 ≤5 时多余项隐藏;>5 时仅展示前 5(设计上假设不超过 5)。
 
 ## 给一个列表接入筛选排序
 
@@ -84,16 +89,17 @@ OrderFilterResultBean { sortTypes(优先级), nameFilter, levelMin, levelMax, ra
 - **选中上移**:`RefreshSortItemOrder` → `ReorderSelectedFirst` 把已选排序键上移到容器最前表达优先级。**仅战斗区**这样做;**其它区保持原始(预制体)顺序**(只刷新布局,不上移)。这只影响视觉,`sortTypes` 的优先级语义不变。
 - **弹窗定位**:`RefreshDialogContentPosition` 按鼠标所在屏幕象限设 `pivot`、对齐到触发按钮;`isDestroyBG=true` 点背景即关。
 - **等级输入**:左不大于右、负数夹 0,输入完成与确认时各兜底一次(`OnLevelLeftEndEdit`/`OnLevelRightEndEdit`/`Confirm`)。
-- **现有调用方**:生物卡列表 [UIViewCreatureCardList](Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardList.cs)、背包列表 [UIViewItemBackpackList](Assets/Scripts/Component/UI/Common/Backpack/UIViewItemBackpackList.cs)、战斗结算 [UIFightSettlement](Assets/Scripts/Component/UI/Game/FightSettlement/UIFightSettlement.cs)。
+- **道具类型区(动态选项)**:选项由调用方经 `itemTypes` 传入,`InitItemTypeSection` 按顺序填充预留 5 项、多余隐藏;`selectItemTypes` 会剔除不在当前选项内的默认选中(切换魔物后可装备类型变化时防脏)。仅 **道具列表** 才接入此维度(生物卡/战斗结算不加 `ItemType`);且背包列表 [UIViewItemBackpackList](Assets/Scripts/Component/UI/Common/Backpack/UIViewItemBackpackList.cs) 仅在有生物上下文(`creatureData` 非空,如生物管理界面)时才把 `ItemType` 加进 `listFilterType` 并传该魔物 `GetEquipItemsType()` 作选项;无生物上下文(如 [UIDialogSelectItem](Assets/Scripts/Component/UI/Dialog/UIDialogSelectItem.cs))不显示。
+- **现有调用方**:生物卡列表 [UIViewCreatureCardList](Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardList.cs)、背包列表 [UIViewItemBackpackList](Assets/Scripts/Component/UI/Common/Backpack/UIViewItemBackpackList.cs)(名字/稀有度 + 有魔物时道具类型)、战斗结算 [UIFightSettlement](Assets/Scripts/Component/UI/Game/FightSettlement/UIFightSettlement.cs)。
 
 ## 文件速查
 
 | 文件 | 职责 |
 |---|---|
 | [UIDialogOrderFilter.cs](Assets/Scripts/Component/UI/Dialog/UIDialogOrderFilter.cs) | 弹窗逻辑:区段初始化/显隐、选中切换、上移、确认汇总、定位 |
-| [UIDialogOrderFilterComponent.cs](Assets/Scripts/Component/UI/Dialog/UIDialogOrderFilterComponent.cs) | AutoLinkUI 字段(ui_ContentName/Level/Rarity/Data/Other 及各项/输入框) |
-| [OrderFilter/UIViewDialogOrderFilterItem.cs](Assets/Scripts/Component/UI/Dialog/OrderFilter/UIViewDialogOrderFilterItem.cs) | 单项:排序键/稀有度双模式、选中勾、点击回传、项名多语言 |
-| [DialogOrderFilterBean.cs](Assets/Scripts/Bean/UI/DialogOrderFilterBean.cs) | 入参:listFilterType/默认值/actionForConfirm |
-| [OrderFilterResultBean.cs](Assets/Scripts/Bean/UI/OrderFilterResultBean.cs) | 回传结果 + Match* 便捷判定 |
+| [UIDialogOrderFilterComponent.cs](Assets/Scripts/Component/UI/Dialog/UIDialogOrderFilterComponent.cs) | AutoLinkUI 字段(ui_ContentName/Level/Rarity/ItemType(含 Type_1~5)/Data/Other 及各项/输入框) |
+| [OrderFilter/UIViewDialogOrderFilterItem.cs](Assets/Scripts/Component/UI/Dialog/OrderFilter/UIViewDialogOrderFilterItem.cs) | 单项:排序键/稀有度/道具类型 三模式(FilterItemMode)、选中勾、点击回传、项名多语言 |
+| [DialogOrderFilterBean.cs](Assets/Scripts/Bean/UI/DialogOrderFilterBean.cs) | 入参:listFilterType/默认值/itemTypes(道具类型动态选项)/defaultItemTypes/actionForConfirm |
+| [OrderFilterResultBean.cs](Assets/Scripts/Bean/UI/OrderFilterResultBean.cs) | 回传结果 + Match* 便捷判定(MatchName/MatchLevel/MatchRarity/MatchItemType) |
 | [UIHandler.ShowDialogOrderFilter](Assets/Scripts/Component/Handler/UIHandler.cs) | 弹窗入口(Bean 版 + 便捷参数版重载) |
 | UIDialogOrderFilter.prefab / OrderFilter/UIViewDialogOrderFilterItem.prefab | 弹窗与单项预制体 |

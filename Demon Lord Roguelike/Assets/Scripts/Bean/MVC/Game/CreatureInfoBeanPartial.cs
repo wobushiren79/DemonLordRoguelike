@@ -151,6 +151,12 @@ public partial class CreatureInfoBean
             return false;
         }
 
+        // 检查种族模组是否匹配（装备 creature_model_id 为 0 表示通用装备，任何种族可装；否则须与生物 model_id 一致）
+        if (itemInfo.creature_model_id != 0 && itemInfo.creature_model_id != model_id)
+        {
+            return false;
+        }
+
         // 如果是武器类型，需要检查武器类型是否匹配
         if (itemType == ItemTypeEnum.Weapon)
         {
