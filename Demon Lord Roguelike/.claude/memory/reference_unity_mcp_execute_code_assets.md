@@ -12,6 +12,7 @@ metadata:
 - **编译器是 CodeDom（C# 6）**，本机没装 Roslyn(Microsoft.CodeAnalysis)——`compiler:"auto"` 回退 codedom。⇒ **不能用 C#7+ 语法**(元组/模式匹配/`out var`/本地函数等)；**包的编辑器程序集(如 Unity.Addressables.Editor)不被引用**，直接写其类型会 `does not exist / missing assembly reference` 编译失败。
 - 绕过办法：**反射**。`foreach (asm in System.AppDomain.CurrentDomain.GetAssemblies()) asm.GetType("全名")` 按字符串取类型(运行时程序集都在)，再 `GetProperty/GetMethod/Invoke`。运行时类型(如 Assembly-CSharp 里的 `EffectBase`)也这样反射拿，避免编译期依赖。
 - `safety_checks`(默认 true)**拦 `AssetDatabase.DeleteAsset`/`File.Delete`/`Process.Start`/死循环**等。**关掉 safety_checks 会被 Claude Code auto 分类器拒绝**(用户没点名授权)。⇒ 别用 DeleteAsset；幂等改用 **load-or-create**(`LoadAssetAtPath` 有则改+`EditorUtility.SetDirty`,无则 `CreateAsset`)；`SaveAsPrefabAsset` 本身会覆盖同路径预制。
+- **⚠️ 无人值守(Unity 窗口非前台)时 execute_code 做任何 `AssetDatabase` 写操作会死锁 Unity 主线程**(2026-07 建成就卡脉冲动画/流光材质实测)：纯逻辑(`return 2+2`)秒回，但 `CreateAsset`/`SaveAssets` 会挂起——execute_code 占着主线程、资产导入管线又要主线程泵消息 → 死锁，并把后续所有 MCP 主线程命令(连 `editor/state` 读取)全堵死。解法：把 Unity 窗口真正切到前台(ALT 解锁 + `SetForegroundWindow`，**别用 `AttachThreadInput`(也死锁)**)，前台化后卡住的导入立即完成、队列排空。**结论：无人值守场景建资产别用 execute_code，优先「临时自跑编辑器脚本」套路(见 [[reference_unity_editor_self_run_delete_trick]])——编辑器脚本用真 Roslyn 编译，无 CodeDom/C#6 限制、`UnityEngine.UI` 等程序集都可用，还搭 Auto Refresh 便车自动跑。**
 
 ## Addressables 陷阱(反射时的正确命名空间)
 - `AddressableAssetSettingsDefaultObject` 在 **`UnityEditor.AddressableAssets`**(不是 `.Settings`!)；`AddressableAssetSettings`/`AddressableAssetGroup` 在 `UnityEditor.AddressableAssets.Settings`。取错命名空间→反射找不到类型静默失败。

@@ -168,7 +168,7 @@ UIAchievement (BaseUIComponent)
 ### UIViewAchievementCard 状态（按"当前激活等级"展示）
 卡片传入**成就配置(单行多级)**，内部用 `GetClaimedLevelCount(info)` 得到当前激活等级索引 `currentLevelIndex`：
 - **进行中-未达成** → 灰色蒙版 + 锁 + 等级格子(已领取级亮起 LevelIcon) + 进度文本 `ui_TxtProgress`=`当前/目标`(白色) + 当前级奖励
-- **进行中-可领取** → 同上但进度文本绿色、按钮可点
+- **进行中-可领取** → 同上但进度文本改显**"点击领取"**(text 4000019, 绿色) + 按钮可点，并叠加两个生动提示（`RefreshClaimableFx(reached)` 统一驱动）：① **奖励图标呼吸脉冲**——`ui_Reward` 上的 `Animator`(controller `Assets/LoadResources/Anim/UI/UIViewAchievementRewardPulse.controller` + clip 同名，循环缩放 1↔1.12)，可领取时 `enabled=true`，否则 `enabled=false` 并复位 `ui_Reward` 缩放；② **卡片流光扫光**——卡片根节点下常驻的 `Shine` 覆盖层(全铺 Image，`color.a=0` 只显扫光不遮内容，材质 `Assets/LoadResources/Materials/UI/Mat_UIViewAchievementCardShine.mat` = `FrameWork/UI/Shader_UI_ImageEffect` 开 `_SHINE_ON`、`_ShineMaskByAlpha=0`)，可领取时 `SetActive(true)`。两引用由 `EnsureClaimableFxRefs()` 惰性缓存(`ui_Reward.GetComponent<Animator>()` / `transform.Find("Shine")`)
 - **已完成**（`currentLevelIndex >= GetLevelCount()`）→ 关闭蒙版/锁/奖励，进度区 `ui_TxtProgress` 显示"已完成"(text 4000017)，等级格子全部亮起
 - **等级图标格子 `ui_Level`(容器, RectTransform + GridLayoutGroup)**：等级不再用文本角标，改为**按等级总数动态实例化的图标格子**。`RefreshLevelItems()` 以 `ui_LevelItem`(模板, prefab 中 inactive) 为蓝本，复用 `List<RectTransform> listLevelItem` 实例化 `levelCount` 个格子到 `ui_Level` 下；每个格子的子节点 `LevelIcon`(对勾 Image)在该级**已领取**(索引 `< currentLevelIndex`)时 `SetActive(true)` 显示、否则隐藏。用列表复用+隐藏多余，避免单元格被 `ScrollGrid` 池化复用时**重复实例化产生冗余格子**（参考 `UIViewAbyssalBlessingInfoContent` 的复用模式）。text 4000016(`Lv.{0}/{1}`)已不再被卡片使用
 - 进度文本格式 `ui_TxtProgress`：仅计数 `{0}/{1}`(text 4000006, 目标=`GetLevelTargetValue(index)`)；图标取 `info.icon_res`，描述气泡取 `info.GetLevelDescription(displayIndex)`，奖励取 `info.GetLevelReward(index)`

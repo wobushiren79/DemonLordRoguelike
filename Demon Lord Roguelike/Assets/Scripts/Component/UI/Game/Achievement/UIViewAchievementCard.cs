@@ -54,6 +54,21 @@ public partial class UIViewAchievementCard : BaseUIView
     private Sequence animForUnlock;
 
     /// <summary>
+    /// 奖励图标呼吸脉冲动画(可领取时启用); 缓存自 ui_Reward 上的 Animator
+    /// </summary>
+    private Animator rewardPulseAnimator;
+
+    /// <summary>
+    /// 流光扫光覆盖层(可领取时显示); 缓存自卡片根节点下的 "Shine" 子物体
+    /// </summary>
+    private GameObject shineOverlay;
+
+    /// <summary>
+    /// 是否已解析过"可领取生动提示"引用(脉冲Animator/流光层), 避免重复查找
+    /// </summary>
+    private bool claimableFxResolved;
+
+    /// <summary>
     /// 领取动画中 LevelIcon "砸下"的起始放大倍数(突然以放大态出现, 再从大到小砸向格子)
     /// </summary>
     private const float IconSlamStartScale = 3f;
@@ -159,6 +174,12 @@ public partial class UIViewAchievementCard : BaseUIView
                 ui_TxtProgress.text = TextHandler.Instance.GetTextById(4000017);
                 ui_TxtProgress.color = ProgressColorReached;
             }
+            else if (reached)
+            {
+                //达成未领取: 直接提示"点击领取"(比进度数字更醒目, 引导玩家点击)
+                ui_TxtProgress.text = TextHandler.Instance.GetTextById(4000019);
+                ui_TxtProgress.color = ProgressColorReached;
+            }
             else
             {
                 //进行中: "当前进度/目标"
@@ -167,7 +188,7 @@ public partial class UIViewAchievementCard : BaseUIView
                 if (progress > target) progress = target;
                 string countText = string.Format(TextHandler.Instance.GetTextById(4000006), info.FormatValueByType(progress), info.FormatValueByType(target));
                 ui_TxtProgress.text = countText;
-                ui_TxtProgress.color = reached ? ProgressColorReached : ProgressColorDefault;
+                ui_TxtProgress.color = ProgressColorDefault;
             }
         }
 
@@ -199,6 +220,42 @@ public partial class UIViewAchievementCard : BaseUIView
                 ui_RewardNum.text = info.GetLevelReward(currentLevelIndex).ToString();
             }
         }
+
+        //可领取生动提示(奖励脉冲 + 流光扫光): 仅当前激活等级达成未领取时启用(reached 已含未完成语义)
+        RefreshClaimableFx(reached);
+    }
+
+    /// <summary>
+    /// 解析"可领取生动提示"所需引用(奖励脉冲Animator/流光覆盖层)。
+    /// GameObject 随卡片常驻, 池化复用不变, 故只解析一次并缓存。
+    /// </summary>
+    private void EnsureClaimableFxRefs()
+    {
+        if (claimableFxResolved) return;
+        claimableFxResolved = true;
+        if (ui_Reward != null) rewardPulseAnimator = ui_Reward.GetComponent<Animator>();
+        Transform shineTf = transform.Find("Shine");
+        if (shineTf != null) shineOverlay = shineTf.gameObject;
+    }
+
+    /// <summary>
+    /// 刷新"可领取"生动提示: 奖励图标呼吸脉冲 + 卡片流光扫光。
+    /// 可领取时启用脉冲Animator并显示流光层; 否则停用Animator(复位奖励缩放)并隐藏流光层。
+    /// </summary>
+    /// <param name="claimable">当前激活等级是否达成未领取</param>
+    private void RefreshClaimableFx(bool claimable)
+    {
+        EnsureClaimableFxRefs();
+
+        //奖励脉冲: 可领取启用循环缩放, 否则停用并复位缩放(防停在放大态)
+        if (rewardPulseAnimator != null)
+        {
+            rewardPulseAnimator.enabled = claimable;
+            if (!claimable && ui_Reward != null) ui_Reward.transform.localScale = Vector3.one;
+        }
+
+        //流光覆盖层: 可领取显示扫光, 否则隐藏
+        if (shineOverlay != null) shineOverlay.SetActive(claimable);
     }
 
 
