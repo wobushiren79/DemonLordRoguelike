@@ -21,13 +21,17 @@ public partial class UIViewAchievementCard
 
     public TextMeshProUGUI ui_RewardNum;
 
-    public Image ui_Reward;
+    public Image ui_Reward_Image;
+
+    public Animator ui_Reward_Animator;
 
     public RectTransform ui_Content;
 
     public RectTransform ui_LevelItem;
 
     public RectTransform ui_Level;
+
+    public Image ui_Shine;
 
 
 }

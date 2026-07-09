@@ -54,16 +54,6 @@ public partial class UIViewAchievementCard : BaseUIView
     private Sequence animForUnlock;
 
     /// <summary>
-    /// 奖励图标呼吸脉冲动画(可领取时启用); 缓存自 ui_Reward 上的 Animator
-    /// </summary>
-    private Animator rewardPulseAnimator;
-
-    /// <summary>
-    /// 流光扫光覆盖层(可领取时显示); 缓存自卡片根节点下的 "Shine" 子物体
-    /// </summary>
-    private GameObject shineOverlay;
-
-    /// <summary>
     /// 是否已解析过"可领取生动提示"引用(脉冲Animator/流光层), 避免重复查找
     /// </summary>
     private bool claimableFxResolved;
@@ -206,9 +196,9 @@ public partial class UIViewAchievementCard : BaseUIView
         }
 
         //奖励图标: 进行中显示当前等级奖励, 已完成隐藏
-        if (ui_Reward != null)
+        if (ui_Reward_Image != null)
         {
-            ui_Reward.gameObject.SetActive(!isCompleted);
+            ui_Reward_Image.gameObject.SetActive(!isCompleted);
         }
 
         //奖励数量: 进行中显示当前等级魔晶奖励, 已完成隐藏
@@ -233,9 +223,6 @@ public partial class UIViewAchievementCard : BaseUIView
     {
         if (claimableFxResolved) return;
         claimableFxResolved = true;
-        if (ui_Reward != null) rewardPulseAnimator = ui_Reward.GetComponent<Animator>();
-        Transform shineTf = transform.Find("Shine");
-        if (shineTf != null) shineOverlay = shineTf.gameObject;
     }
 
     /// <summary>
@@ -248,14 +235,11 @@ public partial class UIViewAchievementCard : BaseUIView
         EnsureClaimableFxRefs();
 
         //奖励脉冲: 可领取启用循环缩放, 否则停用并复位缩放(防停在放大态)
-        if (rewardPulseAnimator != null)
-        {
-            rewardPulseAnimator.enabled = claimable;
-            if (!claimable && ui_Reward != null) ui_Reward.transform.localScale = Vector3.one;
-        }
+        ui_Reward_Animator.enabled = claimable;
+        if (!claimable && ui_Reward_Image != null) ui_Reward_Image.transform.localScale = Vector3.one;
 
         //流光覆盖层: 可领取显示扫光, 否则隐藏
-        if (shineOverlay != null) shineOverlay.SetActive(claimable);
+        ui_Shine.gameObject.SetActive(claimable);
     }
 
 

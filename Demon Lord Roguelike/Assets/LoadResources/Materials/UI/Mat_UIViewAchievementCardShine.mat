@@ -67,11 +67,11 @@ Material:
     - _GradientOn: 0
     - _GradientScale: 1
     - _GradientScrollSpeed: 0
-    - _HueAngle: 0
+    - _HueAngle: 22
     - _HueOn: 0
-    - _HueRangeScale: 0
+    - _HueRangeScale: 0.41
     - _HueSaturation: 1
-    - _HueShiftOffset: 0
+    - _HueShiftOffset: 0.115
     - _HueShiftSpeed: 0.2
     - _InternalTime: 1
     - _MainAlpha: 1
@@ -92,13 +92,13 @@ Material:
     - _ScrollSpeedX: 0
     - _ScrollSpeedY: 0
     - _ShineAngle: 45
-    - _ShineIntensity: 1.6
-    - _ShineInterval: 2
+    - _ShineIntensity: 1
+    - _ShineInterval: 4.18
     - _ShineMaskByAlpha: 0
     - _ShineOn: 1
-    - _ShineSoftness: 0.5
+    - _ShineSoftness: 1
     - _ShineSpeed: 0.6
-    - _ShineWidth: 0.12
+    - _ShineWidth: 0.5
     - _SrcBlend: 5
     - _Stencil: 0
     - _StencilComp: 8
@@ -114,6 +114,6 @@ Material:
     - _GradientColorB: {r: 0.5, g: 0.5, b: 1, a: 1}
     - _PolarOffset: {r: 0, g: 0, b: 0, a: 0}
     - _PolarScale: {r: 1, g: 1, b: 0, a: 0}
-    - _ShineColor: {r: 1, g: 0.92, b: 0.55, a: 1}
+    - _ShineColor: {r: 1.1587472, g: 1.1587472, b: 1.1587472, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

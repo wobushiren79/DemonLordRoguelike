@@ -769,12 +769,12 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6751813342070985945}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 8943939432210046600}
+  m_Father: {fileID: 1571948533105753027}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -802,14 +802,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 2100000, guid: c6f8758487a14df40a4b29b44a580847, type: 2}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.011764706}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: f699069e74883ac4482b88540eac2113, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -840,7 +840,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &8943939432210046600
 RectTransform:
   m_ObjectHideFlags: 0
@@ -854,7 +854,6 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1571948533105753027}
-  - {fileID: 7738483736979795299}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -979,10 +978,12 @@ MonoBehaviour:
   ui_UIViewAchievementCard_MaskUIView: {fileID: 4982506105287170347}
   ui_UIViewAchievementCard_PopupButtonCommonView: {fileID: 8000134994195569235}
   ui_RewardNum: {fileID: 2545630556736886902}
-  ui_Reward: {fileID: 8797285510999774972}
+  ui_Reward_Image: {fileID: 0}
+  ui_Reward_Animator: {fileID: 0}
   ui_Content: {fileID: 1571948533105753027}
   ui_LevelItem: {fileID: 4396989967488038164}
   ui_Level: {fileID: 5248369807807626927}
+  ui_Shine: {fileID: 0}
 --- !u!114 &4982506105287170347
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1053,6 +1054,7 @@ RectTransform:
   - {fileID: 4396989967488038164}
   - {fileID: 5248369807807626927}
   - {fileID: 3957513234881538627}
+  - {fileID: 7738483736979795299}
   m_Father: {fileID: 8943939432210046600}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
