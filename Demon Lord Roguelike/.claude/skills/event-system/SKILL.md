@@ -77,6 +77,8 @@ public static class EventsInfo
     public const string UIViewCreatureCardItem_OnPointerEnter = "UIViewCreatureCardItem_OnPointerEnter";
     public const string UIViewCreatureCardItem_OnPointerExit = "UIViewCreatureCardItem_OnPointerExit";
     public const string UIViewCreatureCardItem_OnClickSelect = "UIViewCreatureCardItem_OnClickSelect";
+    public const string UIViewCreatureCardItem_OnBeginDrag = "UIViewCreatureCardItem_OnBeginDrag";// 阵容卡拖拽开始
+    public const string UIViewCreatureCardItem_OnEndDrag = "UIViewCreatureCardItem_OnEndDrag";// 阵容卡拖拽结束(换位)
     public const string Backpack_Item_Change = "Backpack_Item_Change";
     public const string UIViewItemBackpack_OnClickSelect = "UIViewItemBackpack_OnClickSelect";
     

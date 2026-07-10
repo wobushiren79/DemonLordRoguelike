@@ -45,6 +45,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, EventForCardPointerEnter);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerExit, EventForCardPointerExit);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForOnClickSelect);
+        this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnBeginDrag, EventForCardBeginDrag);
+        this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnEndDrag, EventForCardEndDrag);
         InitLineupTag();
         InitCreatureData();
         InitLineupData();
@@ -177,6 +179,21 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
             itemW = modelLineupItem.rectTransform.rect.width;
         }
         return new Vector3(itemW * lineupPosIndex - wView / 2f + itemW / 2f, 0, 0);
+    }
+
+    /// <summary>
+    /// 由拖拽落点的横坐标反解目标槽位序号(GetLineupPostion 的逆运算)，夹回 [0, 总数-1]
+    /// </summary>
+    public int GetLineupDropPosIndex(float localX, int maxLineupNum)
+    {
+        float wView = ui_LineupContent.rect.width;
+        float itemW = wView / maxLineupNum;
+        if (itemW > modelLineupItem.rectTransform.rect.width)
+        {
+            itemW = modelLineupItem.rectTransform.rect.width;
+        }
+        int posIndex = Mathf.RoundToInt((localX + wView / 2f - itemW / 2f) / itemW);
+        return Mathf.Clamp(posIndex, 0, maxLineupNum - 1);
     }
 
         /// <summary>
@@ -410,6 +427,30 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
             //刷新UI数据
             RefreshUIData();
         }
+    }
+
+    /// <summary>
+    /// 事件-开始拖拽阵容卡片(卡片自身已置顶跟手，此处无需额外处理)
+    /// </summary>
+    public void EventForCardBeginDrag(UIViewCreatureCardItem targetView)
+    {
+
+    }
+
+    /// <summary>
+    /// 事件-结束拖拽阵容卡片：按落点横坐标反解目标槽位换位，随后全部卡片吸附归位(夹回)
+    /// </summary>
+    public void EventForCardEndDrag(UIViewCreatureCardItem targetView)
+    {
+        int totalCard = listShowCardLineup.Count;
+        if (totalCard > 1)
+        {
+            int targetPosIndex = GetLineupDropPosIndex(targetView.transform.localPosition.x, totalCard);
+            var userData = GameDataHandler.Instance.manager.GetUserData();
+            userData.MoveLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureUUId, targetPosIndex);
+        }
+        //所有卡吸附到新槽位(含夹回)
+        AnimForAllLineupCardPosReset(0, null);
     }
 
     public void RadioButtonSelected(RadioGroupView rgView, int position, RadioButtonView rbview)

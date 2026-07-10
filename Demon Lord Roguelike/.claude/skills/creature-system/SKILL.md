@@ -215,7 +215,7 @@ public partial class FightCreatureEntity
     public void ChangeRoad(int targetRoadIndex);         // 换路（诱导）
 
     // === 魔王专属（FightCreatureEntityForDefenseCore.cs） ===
-    public SpriteRenderer creatureMPShow;                // 魔力条
+    public MeshRenderer creatureMPShow;                  // 魔力条（MeshRenderer+Quad 新版圆形 MeshProgressBar 材质）
     public TMPro.TextMeshPro creatureMPText;             // 魔力文本（当前/上限）
     public void RefreshMPShow();                         // 刷新魔力显示
 }

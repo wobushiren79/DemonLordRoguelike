@@ -38,6 +38,7 @@ public partial class UIDialogBossShow : DialogView
         SetRandomTitle();
         InitListBoss();
         AnimForShow();
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_show_2);  // BOSS 登场弹窗提示音
         timeScaleOrigin = Time.timeScale;
         Time.timeScale = timeScaleSlow;
     }

@@ -230,8 +230,8 @@ public void ChangeMP(float changeMP, out float leftMP, out float changeMPReal); 
 //   放置卡片时检查 MPCurrent >= GetAttributeInt(CMP)，不足则 Toast 提示"魔力不足"(UIText 50006)并取消放置；
 //   足够则 ChangeMP(-GetAttributeInt(CMP)) 扣除并 RefreshMPShow()
 //   放置成功后播粒子：魔王处 EffectHandler.ShowManaEffect(消耗魔力 EffectInfo id=1000001) + 生成位置 ShowCreatureShowEffect(魔物登场 id=1100001)，再播 sound_btn_19
-// 显示链路：魔王预制(FightCreature_DefCore_1)下 MPShow(SpriteRenderer+MatSpriteCreatureLife进度材质)
-//   + MPShow/MPText(TextMeshPro 显示"100/100"格式)，与防守生物LifeShow同款机制
+// 显示链路：魔王预制(FightCreature_DefCore_1)下 MPShow(MeshRenderer+Quad+Mat_Creature_Mana_1，新版 FrameWork/URP/MeshProgressBar 圆形进度材质，RefreshMPShow 里 SetFloat("_Progress",MP/MPMax) 单一进度、无护盾层)
+//   + MPShow/MPText(TextMeshPro 显示"100/100"格式)；注意 MPShow 已不再与防守生物 LifeShow 同款材质
 // 渲染层级：MPText 用 Overlay 着色器材质(MatTMP_MPTextOverlay，TMP_SDF Overlay：ZTest Always + Overlay队列)，
 //   不做深度测试，保证魔力文本始终画在不透明3D地面之上。
 //   注意：标准 TMP_SDF 的 ZTest=LEqual 会被地面写入的深度缓冲遮挡，单靠 MeshRenderer.sortingOrder 压不过不透明地面（深度测试与排序无关）；

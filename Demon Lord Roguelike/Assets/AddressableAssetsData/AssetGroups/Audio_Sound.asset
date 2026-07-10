@@ -355,6 +355,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 703a1af5963c43b49a82bc0cf407898d
+    m_Address: Assets/LoadResources/Audio/Sound/sound_show_3.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 76723204a4c295b4d8df08a176653253
     m_Address: Assets/LoadResources/Audio/Sound/sound_cook_1.wav
     m_ReadOnly: 0
@@ -552,6 +557,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bf22f2db7ba91c246845699aeb19da2a
     m_Address: Assets/LoadResources/Audio/Sound/sound_card_10.ogg
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c124aecca8cead041a8dc48c61396dfc
+    m_Address: Assets/LoadResources/Audio/Sound/sound_show_2.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

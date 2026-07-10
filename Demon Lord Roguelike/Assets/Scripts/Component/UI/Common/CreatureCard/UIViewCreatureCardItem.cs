@@ -165,7 +165,7 @@ public partial class UIViewCreatureCardItem : BaseUIView
     /// <summary>
     /// 点击选择
     /// </summary>
-    public void OnClickSelect()
+    public virtual void OnClickSelect()
     {
         TriggerEvent(EventsInfo.UIViewCreatureCardItem_OnClickSelect, this);
     }

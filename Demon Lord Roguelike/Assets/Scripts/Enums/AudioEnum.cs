@@ -144,6 +144,8 @@ public enum AudioEnum : long
     sound_set_3 = 500003,//设置3
     sound_shot_1 = 510001,//射击1
     sound_show_1 = 520001,//展示1
+    sound_show_2 = 520002,//展示2
+    sound_show_3 = 520003,//展示3
     sound_thunder_1 = 530001,//雷电1
     sound_thunderstorm_1 = 540001,//雷暴1
     sound_time_countdown_1 = 550001,//时间倒计时1

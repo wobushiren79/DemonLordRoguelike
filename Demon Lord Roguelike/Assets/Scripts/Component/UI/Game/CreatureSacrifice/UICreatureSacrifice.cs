@@ -1,6 +1,7 @@
 ﻿
 
 using System.Collections.Generic;
+using System.Linq;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
@@ -79,6 +80,9 @@ public partial class UICreatureSacrifice : BaseUIComponent
             }
             listCreatureData.Add(creatureData);
         });
+        //按目标生物 creatureId 优先排序: 同 id 祭品成功率高(1/sacrifice_num),置顶方便选取(OrderBy 稳定,组内保留背包顺序)
+        long targetCreatureId = gameLogic.creatureSacrificeData.targetCreature.creatureId;
+        listCreatureData = listCreatureData.OrderBy(itemData => itemData.creatureId == targetCreatureId ? 0 : 1).ToList();
         ui_UIViewCreatureCardList.SetData(listCreatureData, CardUseStateEnum.CreatureSacrifice, OnCellChangeForBackpackCreature);
         //设置展示
         ui_UIViewCreatureCardDetails.SetData(gameLogic.creatureSacrificeData.targetCreature);

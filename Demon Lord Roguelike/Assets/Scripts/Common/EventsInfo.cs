@@ -21,6 +21,8 @@ public static class EventsInfo
     public const string UIViewCreatureCardItem_OnPointerEnter = "UIViewCreatureCardItem_OnPointerEnter";//卡片进入
     public const string UIViewCreatureCardItem_OnPointerExit = "UIViewCreatureCardItem_OnPointerExit";//卡片离开
     public const string UIViewCreatureCardItem_OnClickSelect = "UIViewCreatureCardItem_OnClickSelect";//点击选择
+    public const string UIViewCreatureCardItem_OnBeginDrag = "UIViewCreatureCardItem_OnBeginDrag";//开始拖拽
+    public const string UIViewCreatureCardItem_OnEndDrag = "UIViewCreatureCardItem_OnEndDrag";//结束拖拽
 
     public const string UIViewItemBackpack_OnClickSelect = "UIViewItemBackpack_OnClickSelect";//背包道具点击
     public const string UIViewItemEquip_OnClickSelect = "UIViewItemEquip_OnClickSelect";//装备道具点击

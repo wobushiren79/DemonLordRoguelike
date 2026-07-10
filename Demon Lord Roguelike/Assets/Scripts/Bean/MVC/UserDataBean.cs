@@ -428,6 +428,24 @@ public class UserDataBean : BaseBean
     }
 
     /// <summary>
+    /// 移动阵容生物到指定槽位(拖拽换位)：从阵容顺序表里取出后重新插入到 newPosIndex
+    /// </summary>
+    public bool MoveLineupCreature(int lineupIndex, string creatureUUId, int newPosIndex)
+    {
+        if (!dicLineupCreature.TryGetValue(lineupIndex, out List<string> listCreatureUUId))
+            return false;
+        int oldIndex = listCreatureUUId.IndexOf(creatureUUId);
+        if (oldIndex < 0)
+            return false;
+        newPosIndex = Mathf.Clamp(newPosIndex, 0, listCreatureUUId.Count - 1);
+        if (oldIndex == newPosIndex)
+            return false;
+        listCreatureUUId.RemoveAt(oldIndex);
+        listCreatureUUId.Insert(newPosIndex, creatureUUId);
+        return true;
+    }
+
+    /// <summary>
     /// 移除阵容生物
     /// </summary>
     public bool RemoveLineupCreature(string creatureUUId)
