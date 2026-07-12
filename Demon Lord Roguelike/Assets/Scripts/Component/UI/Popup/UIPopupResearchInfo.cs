@@ -45,14 +45,8 @@ public partial class UIPopupResearchInfo : PopupShowCommonView
         else
         {
             ui_Level.gameObject.SetActive(true);
-            if (level == maxLevel)
-            {
-                ui_LevelText.text = TextHandler.Instance.GetTextById(1003002);
-            }
-            else
-            {
-                ui_LevelText.text = string.Format(TextHandler.Instance.GetTextById(1003001), level);
-            }
+            //统一显示 当前等级/最高等级（如 1/3）
+            ui_LevelText.text = string.Format(TextHandler.Instance.GetTextById(1003001), level, maxLevel);
         }
     }
 

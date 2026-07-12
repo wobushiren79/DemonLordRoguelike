@@ -102,21 +102,15 @@ public partial class UIViewBaseResearchItem : BaseUIView
             ui_UIViewBaseResearchItem_MaskUIView.HideMask();
             SetIcon(researchInfo.icon_res);
 
-            //全解锁
-            if (unlockLevel == researchInfo.level_max)
-            {
-                ColorUtility.TryParseHtmlString("#5D19D4", out Color targetColor);
-                //ColorUtility.TryParseHtmlString("#DDC420", out Color targetColor);
-                ui_Board.color = targetColor;
-                ui_Icon.color = targetColor;
-            }
-            //还有未解锁
-            else
-            {
-                ColorUtility.TryParseHtmlString("#FFFFFF", out Color targetColor);
-                ui_Board.color = targetColor;
-                ui_Icon.color = targetColor;
-            }
+            //起始色(白)→满级色(紫)按 当前等级/最高等级 线性过渡；满级即纯满级色，中间等级为过渡色
+            ColorUtility.TryParseHtmlString("#FFFFFF", out Color startColor);
+            ColorUtility.TryParseHtmlString("#5D19D4", out Color fullColor);
+            int maxLevel = researchInfo.level_max;
+            //level_max<=1(纯解锁型)防除零直接取满级色；否则按进度 lerp(如满级3、当前1 → 1/3)
+            float progress = maxLevel <= 1 ? 1f : Mathf.Clamp01((float)unlockLevel / maxLevel);
+            Color targetColor = Color.Lerp(startColor, fullColor, progress);
+            ui_Board.color = targetColor;
+            ui_Icon.color = targetColor;
         }
     }
 

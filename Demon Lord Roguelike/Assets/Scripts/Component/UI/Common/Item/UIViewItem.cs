@@ -55,6 +55,12 @@ public partial class UIViewItem : BaseUIView
         }
         IconHandler.Instance.SetItemIcon(itemId, ui_ItemIcon);
         ui_ItemIcon.color = Color.white;
+        // 图标回退成未知图标(缺图/加载失败)时输出日志,方便定位有问题的道具(GetSprite从图集取回名字可能带"(Clone)"后缀,故用Contains判定)
+        if (ui_ItemIcon.sprite != null && ui_ItemIcon.sprite.name.Contains("icon_unknow"))
+        {
+            var itemInfo = ItemsInfoCfg.GetItemData(itemId);
+            LogUtil.LogError($"道具图标加载失败,回退未知图标：itemId={itemId}，icon_res={(itemInfo == null ? "null" : itemInfo.icon_res)}");
+        }
     }
 
     /// <summary>

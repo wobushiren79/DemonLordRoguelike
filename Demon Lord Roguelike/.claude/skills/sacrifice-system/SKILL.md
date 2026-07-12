@@ -43,7 +43,7 @@ watched_files:
 
 ```
 UICreatureManager (BaseUIComponent)   生物管理界面
-    │  RefreshSacrificeButton(creatureData): 解锁祭坛且未满级时显示;经验达标则正常/经验未达标则置灰但仍可点击(SetSacrificeButtonGray 染灰按钮及子图标)。未解锁祭坛/无选中生物/已满级(IsMaxLevel)则隐藏
+    │  RefreshSacrificeButton(creatureData): 解锁祭坛且未满级时显示;经验达标则正常/经验未达标则置灰但仍可点击(SetSacrificeButtonGray: Image 换灰度材质 matSacrificeGray=UIImageGray.mat 真去色/非 Image 或材质缺失回退染色 colorSacrificeButtonGray)。未解锁祭坛/无选中生物/已满级(IsMaxLevel)则隐藏
     │  点击 ui_BtnLevelUpSacrifice_Button → OnClickForCreatureSacrifice()
     │      → 若 !CanUpLevel(): ToastHintText(textId 61009「经验值未达到100%」, state0) 拦截返回
     │      → new CreatureSacrificeBean{ targetCreature = 选中生物 }
