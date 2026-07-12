@@ -15,6 +15,7 @@ Material:
   - _SURFACE_TYPE_TRANSPARENT
   m_InvalidKeywords:
   - _BGROTATEENABLE_ON
+  - _BGTIMEGRADIENTENABLE_ON
   - _FILLROTATEENABLE_ON
   - _FILLSHOWTHROUGH_ON
   - _FLIPBOOKBLENDING_OFF
@@ -54,10 +55,14 @@ Material:
     m_Floats:
     - _AlphaClip: 0
     - _AlphaToMask: 0
+    - _BgGradientDirection: 2
+    - _BgGradientEnable: 0
     - _BgHighlight: 2
     - _BgRotateDirection: 0
     - _BgRotateEnable: 1
     - _BgRotateSpeed: 10
+    - _BgTimeGradientEnable: 1
+    - _BgTimeGradientSpeed: 0.5
     - _Blend: 2
     - _BlendOp: 0
     - _CameraFadingEnabled: 0
@@ -99,11 +104,12 @@ Material:
     m_Colors:
     - _BaseColor: {r: 0.8584906, g: 0.7027792, b: 0.3280082, a: 1}
     - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
-    - _BgColor: {r: 0.09376113, g: 0.11427887, b: 0.46226418, a: 1}
+    - _BgColor: {r: 0.4956207, g: 0, b: 2, a: 1}
+    - _BgColor2: {r: 0.06974742, g: 0, b: 2.490566, a: 1}
     - _CameraFadeParams: {r: 0, g: Infinity, b: 0, a: 0}
     - _Color: {r: 0.8584906, g: 0.7027792, b: 0.3280082, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _FillColor: {r: 0.1527585, g: 0.69346184, b: 1.2953922, a: 1}
+    - _FillColor: {r: 0.1559896, g: 0.8360327, b: 1.2953922, a: 1}
     - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
