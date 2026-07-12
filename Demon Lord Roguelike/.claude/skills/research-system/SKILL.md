@@ -483,7 +483,9 @@ public void SetData(ResearchInfoBean researchInfo);
 
 public void SetLevel();   // level == 0 || level == max 时隐藏数字
 public void SetState();   // 读当前存档等级 → SetStateForLevel(currentLevel)
-// 按指定等级刷新外观：三态 未解锁(mask + ui_unlock_1) / 已解锁未满(白色) / 已满(紫色)
+// 按指定等级刷新外观：未解锁(mask + ui_unlock_1) / 已解锁则图标+边框颜色按 当前等级/最高等级
+//   从白色(#FFFFFF)线性 lerp 到满级色(#5D19D4)——满级3当前1即取 1/3 过渡色，满级即纯满级色；
+//   level_max<=1 纯解锁型防除零直接取满级色
 // 抽出以便解锁动画播完、AddUnlock 之前就用 targetLevel 把本节点刷成已解锁外观
 public void SetStateForLevel(int unlockLevel);
 public void SetIcon(string iconRes);
@@ -557,12 +559,14 @@ public override void SetData(object data)
 }
 ```
 
+> **SetLevel 显示格式**：`level_max==1`（纯解锁型）隐藏等级文本；`level_max>1` 统一显示「当前等级/最高等级」（如 `研究等级.1/3`，满级为 `3/3`），用 `string.Format(1003001, level, maxLevel)` 双参数格式化。不再走 `1003002` 满级专用文本（保留该条目但此路径已不引用）。
+
 ### 文本 ID 约定
 
 | 文本 ID | 含义 |
 |---------|------|
-| `1003001` | `"等级 {0}"` 格式 |
-| `1003002` | `"已满级"` |
+| `1003001` | `"研究等级.{0}/{1}"` 格式（{0}=当前等级, {1}=最高等级） |
+| `1003002` | `"研究等级.最大"`（现已不被 SetLevel 引用） |
 | `62001` | `"消耗 {0} 水晶确认购买?"` |
 
 ---

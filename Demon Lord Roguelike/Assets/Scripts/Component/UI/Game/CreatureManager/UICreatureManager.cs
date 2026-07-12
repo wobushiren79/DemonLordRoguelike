@@ -10,7 +10,11 @@ public partial class UICreatureManager : BaseUIComponent
     //当前选择的生物卡片下标
     public int selectCreatureIndex = 0;
 
-    //献祭升级按钮置灰时的染色(不可升级时使用,按钮仍可点击)
+    //献祭升级按钮不可升级时的灰度材质(去色,比单纯染色更明显);预制体上挂 UIImageGray 材质,未挂则回退为染色
+    [SerializeField]
+    private Material matSacrificeGray;
+
+    //灰度材质缺失时的兜底染色(不可升级时使用,按钮仍可点击)
     private readonly Color colorSacrificeButtonGray = new Color(0.5f, 0.5f, 0.5f, 1f);
 
     public override void OpenUI()
@@ -132,15 +136,29 @@ public partial class UICreatureManager : BaseUIComponent
     }
 
     /// <summary>
-    /// 设置献祭升级按钮的置灰表现: 置灰时把按钮及其子图标统一染成灰色(不改变可点击性)。
+    /// 设置献祭升级按钮的置灰表现: 优先给 Image 换灰度材质(去色,禁用感更强),Text 等非 Image 仍用染色;无灰度材质时整体回退染色。不改变可点击性。
     /// </summary>
-    /// <param name="isGray">true 置灰, false 恢复正常白色</param>
+    /// <param name="isGray">true 置灰, false 恢复正常</param>
     private void SetSacrificeButtonGray(bool isGray)
     {
-        Color targetColor = isGray ? colorSacrificeButtonGray : Color.white;
         var graphics = ui_BtnLevelUpSacrifice_Button.GetComponentsInChildren<Graphic>(true);
         for (int i = 0; i < graphics.Length; i++)
-            graphics[i].color = targetColor;
+        {
+            var graphic = graphics[i];
+            if (graphic == null)
+                continue;
+            //有灰度材质且是 Image:置灰换灰度材质(白色不叠染),恢复还原默认材质
+            if (matSacrificeGray != null && graphic is Image image)
+            {
+                image.material = isGray ? matSacrificeGray : null;
+                image.color = Color.white;
+            }
+            else
+            {
+                //无灰度材质或非 Image:回退为染色
+                graphic.color = isGray ? colorSacrificeButtonGray : Color.white;
+            }
+        }
     }
 
     /// <summary>
