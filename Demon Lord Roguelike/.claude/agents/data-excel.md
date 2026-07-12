@@ -120,7 +120,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_creature_info[生物信息].xlsx` | CreatureInfo | 110 | id, creature_type, creature_layer, creature_buff, spine_base, attack_mode, HP/MP/DR/ATK/ASPD/MSPD/MPR/MPF, model_id, unlock_id, name[language] （40列） |
+| `excel_creature_info[生物信息].xlsx` | CreatureInfo | 110 | id, creature_type, creature_layer, creature_buff, spine_base, attack_mode, HP/MP/DR/ATK/ASPD/MSPD/MPR/MPF, model_id, unlock_id, name[language], body_size(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定；扭蛋/建号按creatureId创建时随机一次), remark （41列） |
 | `excel_creature_attribute_type_info[生物属性信息].xlsx` | CreatureAttributeTypeInfo | 12 | id, mark_name, res_name, color_text, name[language] |
 | `excel_creature_model[生物模型信息].xlsx` | CreatureModel | 66 | id, res_name, unlock_id, size_spine, ui_show_spine, name[language] |
 | `excel_creature_model_info[生物模型详情信息] .xlsx` | CreatureModelInfo | 438 | id, model_id, show_type, part_type, res_name, color_state |

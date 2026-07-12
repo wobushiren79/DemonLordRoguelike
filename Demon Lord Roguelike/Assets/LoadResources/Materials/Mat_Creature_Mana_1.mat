@@ -12,6 +12,7 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _ALPHATEST_ON
   - _SURFACE_TYPE_TRANSPARENT
   m_InvalidKeywords:
   - _BGROTATEENABLE_ON
@@ -22,8 +23,9 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
+  m_CustomRenderQueue: 2450
+  stringTagMap:
+    RenderType: TransparentCutout
   disabledShaderPasses:
   - DepthOnly
   - SHADOWCASTER
@@ -53,7 +55,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AlphaClip: 0
+    - _AlphaClip: 1
     - _AlphaToMask: 0
     - _BgGradientDirection: 2
     - _BgGradientEnable: 0
@@ -64,6 +66,7 @@ Material:
     - _BgTimeGradientEnable: 1
     - _BgTimeGradientSpeed: 0.5
     - _Blend: 2
+    - _BlendMode: 0
     - _BlendOp: 0
     - _CameraFadingEnabled: 0
     - _CameraFarFadeDistance: 2
@@ -75,7 +78,7 @@ Material:
     - _DistortionEnabled: 0
     - _DistortionStrength: 1
     - _DistortionStrengthScaled: 0.1
-    - _DstBlend: 1
+    - _DstBlend: 0
     - _DstBlendAlpha: 1
     - _EdgeSoftness: 0.005
     - _FillDirection: 0
@@ -97,10 +100,10 @@ Material:
     - _SoftParticlesEnabled: 0
     - _SoftParticlesFarFadeDistance: 1
     - _SoftParticlesNearFadeDistance: 0
-    - _SrcBlend: 5
+    - _SrcBlend: 1
     - _SrcBlendAlpha: 1
-    - _Surface: 1
-    - _ZWrite: 0
+    - _Surface: 0
+    - _ZWrite: 1
     m_Colors:
     - _BaseColor: {r: 0.8584906, g: 0.7027792, b: 0.3280082, a: 1}
     - _BaseColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}

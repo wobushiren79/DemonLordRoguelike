@@ -24,7 +24,7 @@ watched_files:
 - **CreatureAttributeBean** - 生物属性（HP/DR/ATK/ASPD/MSPD/CRT/EVA/RCD 等）
 - **CreatureCardItemBean** - 生物卡片数据
 - **CreatureNpcBean** - NPC 生物数据
-- **NPC体型缩放** - `NpcInfo.body_size`(string) 配置体型倍率：空/"0"=1倍、"min,max"(如"0.9,1.1")=区间随机、"1.1"=固定倍数；`NpcInfoBean.GetBodySizeRandomScale()` 解析，`CreatureBean.SetData(NpcInfoBean)` 创建时随机一次并缓存到 `CreatureBean.bodySizeScale`(默认1)，`CreatureHandler.SetCreatureData` 以 `size_spine × GetBodySizeScale()` 应用到 localScale（普通生物倍率恒为1）
+- **体型缩放** - 两条来源同一套解析规则(空/"0"=1倍、"min,max"如"0.9,1.1"=区间随机、"1.1"=固定倍数)：NPC 读 `NpcInfo.body_size` + `NpcInfoBean.GetBodySizeRandomScale()`(见 `SetData(NpcInfoBean)`)；按 creatureId 创建的生物(扭蛋/建号等)读 `CreatureInfo.body_size` + `CreatureInfoBean.GetBodySizeRandomScale()`(见 `SetData(long creatureId)`)。均在创建时随机一次并缓存到 `CreatureBean.bodySizeScale`(默认1)，`CreatureHandler.SetCreatureData` 以 `size_spine × GetBodySizeScale()` 应用到 localScale（未配置 body_size 的生物倍率恒为1）
 - **场上魔物描边高亮** - `CreatureHandler.ShowCreatureOutlinePreview(FightCreatureEntity)` / `HideCreatureOutlinePreview()` → `CreatureManager`(只负责懒加载预览预制+取组件)。**显示/材质/逐帧跟随逻辑都在 `CreatureSpineOutlineFollow` 组件**(`Assets/Scripts/Game/Fight/`，`Show`/`Hide`)。共享单例描边预览预制 `FightCreature_OutlinePreview.prefab`(由 `FightCreature_SelectPreview` 复制，Spine MeshRenderer 挂亮蓝 OutlineOnly 描边材质 `MatSpriteCreatureOutline.mat`；颜色由材质决定不写死)，悬停已上场魔物卡牌时移动到目标生物处。描边经 `SkeletonAnimation.CustomMaterialOverride` 把目标图集材质替换为描边材质(`_MainTex` 填目标图集纹理)，平面 Spine 精灵的 Rim 边缘光因固定法线不可见故改用 OutlineOnly。**逐帧跟随动画**：组件订阅自身 `SkeletonAnimation.UpdateLocal` 逐根复制目标骨骼本地 SRT，`LateUpdate` 同步位置/`localScale`(含翻转)，使描边跟上目标正在播放的动画(非定格首帧)。由战斗卡牌 `UIViewCreatureCardItemForFight.OnPointerEnter/OnPointerExit` 触发。
 
 ### 生物 UI

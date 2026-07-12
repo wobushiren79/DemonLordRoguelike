@@ -33,7 +33,8 @@ public partial class CreatureBean
     public CreatureAttributeBean creatureAttribute = new CreatureAttributeBean();
     /// <summary>生物稀有度BUFF（key=稀有度，扭蛋抽取时按命中的稀有度随机授予对应BUFF）</summary>
     public Dictionary<RarityEnum, BuffBean> dicRarityBuff = new Dictionary<RarityEnum, BuffBean>();
-    /// <summary>体型缩放倍率（在模型目标大小 size_spine 基础上再相乘；目前仅NPC配置 body_size，普通生物恒为1）。
+    /// <summary>体型缩放倍率（在模型目标大小 size_spine 基础上再相乘）。NPC 读 NpcInfo.body_size，
+    /// 按 creatureId 创建的生物（扭蛋/建号等）读 CreatureInfo.body_size；未配置则恒为1。
     /// 含随机区间的配置在创建时解析一次并缓存到此，保证后续重复渲染体型稳定。</summary>
     public float bodySizeScale = 1f;
     #endregion
@@ -72,6 +73,8 @@ public partial class CreatureBean
         this.creatureId = creatureId;
         this.creatureName = creatureInfo.name_language;
         this.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
+        //解析并缓存体型缩放倍率（区间随机只在创建时定一次；扭蛋抽取/创建账号等按creatureId创建的生物均走此入口）
+        this.bodySizeScale = creatureInfo.GetBodySizeRandomScale();
     }
 
     /// <summary>

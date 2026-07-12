@@ -167,6 +167,10 @@ public partial class CreatureInfoBean : BaseBean
 	public string name_language { get => _name_language.Get(() => TextHandler.Instance.GetTextById(CreatureInfoCfg.fileName, name)); set => _name_language.Set(value); }
 	private LanguageCache _name_language;
 	/// <summary>
+	///体型大小（空或0=默认1倍；"0.9,1.1"=区间随机；"1.1"=固定倍数；最终在目标大小基础上相乘）
+	/// </summary>
+	public string body_size;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;
