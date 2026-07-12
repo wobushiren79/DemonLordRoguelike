@@ -18,8 +18,8 @@
 - [`feedback_pixellab_require_consent.md`](feedback_pixellab_require_consent.md) — 调用 PixelLab 生成前必须征得用户明确同意（付费服务），禁止其他任务中"顺带"自行生成图片
 - [`feedback_pixellab_animation_output.md`](feedback_pixellab_animation_output.md) — 帧动画只保留合成精灵表，不保留单帧文件
 - [`feedback_pixellab_auto_download.md`](feedback_pixellab_auto_download.md) — 生成完成后必须自动下载到 Assets/Out/<子目录>/，不能只给链接
-- [`reference_research_white_icons.md`](reference_research_white_icons.md) — 研究图标 ui_research_* 纯白16x16剪影风格 + PixelLab(create_1_direction_object size64批量)→亮度阈值化纯白后处理流水线；当前已到 ui_research_200，下一个从 201 起
-- [`reference_colored_icons.md`](reference_colored_icons.md) — 彩色图标(深渊馈赠ui_abyssalblessing_/成就ui_achievement_)32x32 ≤8色：create_1_direction_object size32(64个/批)→quantize8中位切分量化控色流水线；深渊已到119(下一个120)、成就已到63(下一个64)
+- [`reference_research_white_icons.md`](reference_research_white_icons.md) — 研究图标 ui_research_* 纯白16x16剪影风格 + PixelLab(create_1_direction_object size64批量)→实心剪影挖近黑(dark_cut=35,非旧的亮度阈值≥115)后处理流水线；暂存已到 ui_research_577，下一个从 578 起
+- [`reference_colored_icons.md`](reference_colored_icons.md) — 彩色图标(深渊馈赠ui_abyssalblessing_/成就ui_achievement_)32x32 每张≤N色(用户可调,2026-07为≤6)：create_1_direction_object size32(64个/批)→quantize6(合成黑底再中位切分)控色流水线；深渊暂存已到2621(下一个2622)、成就已到63(下一个64)
 
 ### Reference
 - [reference_unityskills_shadergraph_limits.md](reference_unityskills_shadergraph_limits.md) — Unity-Skills shadergraph 工具限制：节点白名单(无噪声/Time/NormalFromHeight)、Vector2 赋值 bug、值格式约定
