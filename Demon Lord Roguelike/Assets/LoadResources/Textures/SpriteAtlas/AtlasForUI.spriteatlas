@@ -155,6 +155,7 @@ SpriteAtlas:
     - a429b9dd4c20b29489b26497a34e604c: 21300000
     - 7e99b2ed115a5954296d6eae7fa14bc1: 21300000
     - 8c38562e31d64394dad74bff8d7d2e46: 21300000
+    - 90d3672e56a45194ca03679b9a01e4c1: 21300000
     - 7ab6cc2e93cb3ea4b962fbc2be722d31: 21300000
     - faf90d2ef45e4fd488707dd1902c5ced: 21300000
     - 3108595eacfa3a64980aacabc94316d0: 21300000
@@ -277,6 +278,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: a429b9dd4c20b29489b26497a34e604c, type: 3}
   - {fileID: 21300000, guid: 7e99b2ed115a5954296d6eae7fa14bc1, type: 3}
   - {fileID: 21300000, guid: 8c38562e31d64394dad74bff8d7d2e46, type: 3}
+  - {fileID: 21300000, guid: 90d3672e56a45194ca03679b9a01e4c1, type: 3}
   - {fileID: 21300000, guid: 7ab6cc2e93cb3ea4b962fbc2be722d31, type: 3}
   - {fileID: 21300000, guid: faf90d2ef45e4fd488707dd1902c5ced, type: 3}
   - {fileID: 21300000, guid: 3108595eacfa3a64980aacabc94316d0, type: 3}
@@ -398,6 +400,7 @@ SpriteAtlas:
   - ui_core_1
   - ui_dead_2
   - ui_table_1
+  - ui_class_8
   - ui_equip_6
   - ui_man_1
   - ui_demon_eye

@@ -110,6 +110,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 280bab9a1ed5cfc48a5d87b742fe8ebd
+    m_Address: Assets/LoadResources/Audio/Sound/sound_break_2.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 286181450616e4a47a8da6a3c0d112aa
     m_Address: Assets/LoadResources/Audio/Sound/sound_thunderstorm_1.wav
     m_ReadOnly: 0
@@ -372,6 +377,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 78db7e57fe506f044a24541596fb9b77
     m_Address: Assets/LoadResources/Audio/Sound/sound_coin_8.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7dae52c8fc2fcf441ab0b53cf447ca67
+    m_Address: Assets/LoadResources/Audio/Sound/sound_break_1.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
