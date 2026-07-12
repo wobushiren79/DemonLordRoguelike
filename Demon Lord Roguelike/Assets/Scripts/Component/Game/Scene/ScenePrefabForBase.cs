@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Spine.Unity;
 using UnityEngine;
 using UnityEngine.VFX;
@@ -34,6 +35,11 @@ public class ScenePrefabForBase : ScenePrefabBase
     public Color vatColorEnd = new Color(0.11f, 0.06f, 0.5f, 0.7f);
 
     /// <summary>
+    /// 所有走"出现动画"的建筑对象登记表(不含常驻的核心建筑);新增建筑只需在此登记一处,音效/整场景出现判断据此,无需再改散落条件
+    /// </summary>
+    private GameObject[] AllBuildingShowObjs => new[] { objBuildingAltar, objBuildingVat, objBuildingjDoomCouncil, objBuildingAchievement };
+
+    /// <summary>
     /// 初始化场景
     /// </summary>
     public override async Task InitSceneData()
@@ -63,6 +69,12 @@ public class ScenePrefabForBase : ScenePrefabBase
     /// </summary>
     public async Task AnimForBuildingShow(float timeForShow)
     {
+        //有任意建筑会出现时才播放建造音效(全新无建筑存档则不播),与 EventForUserAddUnlock 同口径:总时长跟随出现动画,末段0.5秒渐弱收尾
+        bool hasBuildingShow = AllBuildingShowObjs.Any(obj => obj != null && obj.activeSelf);
+        if (hasBuildingShow)
+        {
+            AudioHandler.Instance.PlaySoundTimedFade(AudioEnum.sound_building_2, timeForShow, Mathf.Max(0f, timeForShow - 0.5f), -1f);
+        }
         var taskAltar = AnimForBuildingAltarShow(timeForShow);
         var taskVat = AnimForBuildingVatShow(timeForShow);
         var taskDoomCouncil = AnimForBuildingDoomCouncilShow(timeForShow);

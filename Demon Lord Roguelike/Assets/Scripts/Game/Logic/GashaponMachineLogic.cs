@@ -278,7 +278,6 @@ public class GashaponMachineLogic : BaseGameLogic
     /// </summary>
     public async void EventForShowAll()
     {
-        ProcessForShowAllEgg();
         for (int i = 0; i < listGashaponData.Count; i++)
         {
             var targetEggData = listGashaponData[i];
@@ -288,8 +287,12 @@ public class GashaponMachineLogic : BaseGameLogic
             }
             var targetEggObj = listEggObj[i];
             AnimForEggBreak(targetEggObj, targetEggData, null);
-            await new WaitNextFrame();
+            //每个蛋壳破碎依次间隔0.05秒，避免同一时间全部打开
+            await new WaitForSeconds(0.05f);
         }
+        //等最后一个蛋的破壳动画播完，全部破碎后再打开展示全部UI
+        await new WaitForSeconds(0.2f);
+        ProcessForShowAllEgg();
     }
     #endregion
 

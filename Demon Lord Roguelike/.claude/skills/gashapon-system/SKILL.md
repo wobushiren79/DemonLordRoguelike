@@ -109,7 +109,7 @@ userData.AddBackpackCreature(creatureData) + SaveUserData()   // 入账并落盘
 | `GashaponMachine_ClickNext` | 下一个 | Logic.EventForNextEgg |
 | `GashaponMachine_ClickReset` | 重置（再扣魔晶） | Logic.EventForReset |
 | `GashaponMachine_ClickEnd` | 结束返回基地 | Logic.EventForEnd |
-| `GashaponMachine_ClickShowAll` | 跳过逐个破壳（需解锁 `GashaponShowAll`） | Logic 一次性显示全部 |
+| `GashaponMachine_ClickShowAll` | 跳过逐个破壳（需解锁 `GashaponShowAll`） | Logic.EventForShowAll 一次性显示全部（点击时先显式播一次破壳音效） |
 
 > UIGashaponBreak 还监听 `Creature_Rename`：当前展示生物被改名时刷新卡牌。
 
@@ -167,7 +167,7 @@ UIGashaponBreak (BaseUIComponent)     破蛋交互
 > 同一套 `GashaponRarity*`/`*Rate` 解锁门控还被**展示用**的 `GashaponItemBean.GetRarityProbabilityList()` 消费（孕育商店项概率弹窗）。改稀有度顺序/门控时，`RandomRarity`(实际抽取) 与 `GetRarityProbabilityList`(展示概率) **两处口径需同步**，否则弹窗显示与真实概率不符。
 
 ### 改破蛋流程/动画
-改 `GashaponMachineLogic`（AnimForEggBreak / AnimForShowEgg / AnimForEggPunch / ProcessForFocusEgg）。蛋子物体名：`Egg_1`(壳) / `Renderer`(Spine)；破壳粒子走 `scenePrefab.effectEggBreak`（VFX，传 Color1/Color2）；破壳音效在 `AnimForEggBreak` 播 `AudioHandler.Instance.PlaySound(AudioEnum.sound_break_1)`。
+改 `GashaponMachineLogic`（AnimForEggBreak / AnimForShowEgg / AnimForEggPunch / ProcessForFocusEgg）。蛋子物体名：`Egg_1`(壳) / `Renderer`(Spine)；破壳粒子走 `scenePrefab.effectEggBreak`（VFX，传 Color1/Color2）；破壳音效在 `AnimForEggBreak` 播 `AudioHandler.Instance.PlaySound(AudioEnum.sound_break_1)`；点击「跳过所有」(`EventForShowAll`) 会先显式再播一次 `sound_break_1`，因为随后逐帧连续破蛋会被 `AudioHandler` 的 0.1s 同音重复保护抑制（否则跳过时听不到破壳声）。
 
 ## 数据流与存档
 

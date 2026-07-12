@@ -171,7 +171,7 @@ public partial class UIAchievement : BaseUIComponent, IRadioGroupCallBack
         bool ok = AchievementHandler.Instance.TryUnlockNextLevel(info.id);
         if (ok)
         {
-            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(4000008));
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(4000008), 1);
             //领取成功后本地刷新列表, 使该卡片推进到下一级(或全部领完后显示"已完成")
             RefreshAchievementList();
         }
