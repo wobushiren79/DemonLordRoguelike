@@ -22,7 +22,7 @@ public partial class UIHandler
     /// <param name="state">0失败 1成功</param>
     public void ToastHintText(string hintContent, int state = 0)
     {
-        string iconRes = "icon_unknow";
+        string iconRes = IconHandler.IconNameUnKnow;
         Color iconColor = Color.white;
         switch (state)
         {

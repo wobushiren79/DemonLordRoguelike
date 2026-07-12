@@ -17,6 +17,9 @@ public partial class UICreatureManager : BaseUIComponent
     //灰度材质缺失时的兜底染色(不可升级时使用,按钮仍可点击)
     private readonly Color colorSacrificeButtonGray = new Color(0.5f, 0.5f, 0.5f, 1f);
 
+    //记录按钮各 Image 置灰前的原始材质(可能是特效材质),恢复时还原回去而非滞空
+    private readonly Dictionary<Image, Material> dicSacrificeOriginMat = new Dictionary<Image, Material>();
+
     public override void OpenUI()
     {
         base.OpenUI();
@@ -136,7 +139,7 @@ public partial class UICreatureManager : BaseUIComponent
     }
 
     /// <summary>
-    /// 设置献祭升级按钮的置灰表现: 优先给 Image 换灰度材质(去色,禁用感更强),Text 等非 Image 仍用染色;无灰度材质时整体回退染色。不改变可点击性。
+    /// 设置献祭升级按钮的置灰表现: 优先给 Image 换灰度材质(去色,禁用感更强),恢复时还原其原始材质(可能是特效材质)而非滞空;Text 等非 Image 仍用染色;无灰度材质时整体回退染色。不改变可点击性。
     /// </summary>
     /// <param name="isGray">true 置灰, false 恢复正常</param>
     private void SetSacrificeButtonGray(bool isGray)
@@ -147,10 +150,21 @@ public partial class UICreatureManager : BaseUIComponent
             var graphic = graphics[i];
             if (graphic == null)
                 continue;
-            //有灰度材质且是 Image:置灰换灰度材质(白色不叠染),恢复还原默认材质
+            //有灰度材质且是 Image:置灰换灰度材质,恢复还原原始材质
             if (matSacrificeGray != null && graphic is Image image)
             {
-                image.material = isGray ? matSacrificeGray : null;
+                if (isGray)
+                {
+                    //首次置灰前记录原始材质(排除灰度材质本身,避免误记)
+                    if (!dicSacrificeOriginMat.ContainsKey(image) && image.material != matSacrificeGray)
+                        dicSacrificeOriginMat[image] = image.material;
+                    image.material = matSacrificeGray;
+                }
+                else if (dicSacrificeOriginMat.TryGetValue(image, out var originMat))
+                {
+                    //还原为记录的原始材质(特效材质),未记录过说明从未置灰则保持不动
+                    image.material = originMat;
+                }
                 image.color = Color.white;
             }
             else
