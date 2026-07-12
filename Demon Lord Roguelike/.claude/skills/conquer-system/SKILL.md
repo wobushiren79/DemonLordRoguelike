@@ -175,7 +175,7 @@ public bool IsNextBossFight()  => figthNumMax > 0 && fightNum + 1 >= figthNumMax
 - 取 `fightTypeConquerInfo`（按 worldId+difficultyLevel）
 - `sceneRoadNum/Length` 来自 `gameWorldInfoRandomData`
 - `figthNumMax = gameWorldInfoRandomData.fightNum`，`fightNum = 1`
-- 设魔王核心 `fightDefenseCoreData`、收集 Idle 状态阵容生物到 `dlDefenseCreatureData`
+- 设魔王核心 `fightDefenseCoreData`、收集**全部**阵容生物到 `dlDefenseCreatureData`（不再按 `== Idle` 过滤：进阶中的魔物在开始进阶时已被移出阵容，其余 Idle/Fight/Rest 残留状态都应参战；旧 Idle 过滤会误伤上一场残留状态的阵容生物、也会缩小深渊馈赠「复制魔物」的随机池）
 - `fightSceneId = GetRandomFightScene(IsBossFight())`
 - `InitFightAttackData()` 生成首关进攻数据
 

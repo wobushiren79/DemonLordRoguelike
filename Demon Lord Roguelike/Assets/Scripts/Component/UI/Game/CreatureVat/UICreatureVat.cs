@@ -408,6 +408,8 @@ public partial class UICreatureVat : BaseUIComponent
                 }
                 //设置生物状态
                 targetCreatureSelect.creatureState = CreatureStateEnum.Vat;
+                //进阶魔物移出阵容(进阶期间不可出战;完成后由玩家自行重新编入阵容)
+                userData.RemoveLineupCreature(targetCreatureSelect.creatureUUId);
                 //写入临时进阶数据(预定BUFF/目标稀有度/耗时上限)
                 userAscendDetails = userAscend.AddAscendData(currentIndexVat, targetCreatureSelect, newRarity, timeMax, ascendBuff);
                 //开始进阶保存一次(测试模拟模式由 GameDataManager 统一拦截不落盘)

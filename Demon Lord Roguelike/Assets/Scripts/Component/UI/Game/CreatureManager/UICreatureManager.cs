@@ -10,14 +10,10 @@ public partial class UICreatureManager : BaseUIComponent
     //当前选择的生物卡片下标
     public int selectCreatureIndex = 0;
 
-    //献祭升级按钮不可升级时的灰度材质(去色,比单纯染色更明显);预制体上挂 UIImageGray 材质,未挂则回退为染色
-    [SerializeField]
-    private Material matSacrificeGray;
+    //献祭升级按钮不可升级时的压暗染色:图标是纯白剪影(颜色来自特效材质渐变),灰度化对纯白无效,只能靠压暗;白图标×深灰=平整深灰,明显
+    private readonly Color colorSacrificeButtonGray = new Color(0.35f, 0.35f, 0.35f, 1f);
 
-    //灰度材质缺失时的兜底染色(不可升级时使用,按钮仍可点击)
-    private readonly Color colorSacrificeButtonGray = new Color(0.5f, 0.5f, 0.5f, 1f);
-
-    //记录按钮各 Image 置灰前的原始材质(可能是特效材质),恢复时还原回去而非滞空
+    //记录按钮各 Image 置灰前的原始材质(特效材质),恢复时还原回去而非滞空
     private readonly Dictionary<Image, Material> dicSacrificeOriginMat = new Dictionary<Image, Material>();
 
     public override void OpenUI()
@@ -139,7 +135,7 @@ public partial class UICreatureManager : BaseUIComponent
     }
 
     /// <summary>
-    /// 设置献祭升级按钮的置灰表现: 优先给 Image 换灰度材质(去色,禁用感更强),恢复时还原其原始材质(可能是特效材质)而非滞空;Text 等非 Image 仍用染色;无灰度材质时整体回退染色。不改变可点击性。
+    /// 设置献祭升级按钮的置灰表现: 图标是纯白剪影且颜色来自特效材质,故置灰时给 Image 移除特效材质(走默认UI着色,去掉渐变/流光)并压暗染深灰;恢复时还原原始特效材质并转白。非 Image 仅染色。不改变可点击性。
     /// </summary>
     /// <param name="isGray">true 置灰, false 恢复正常</param>
     private void SetSacrificeButtonGray(bool isGray)
@@ -150,28 +146,24 @@ public partial class UICreatureManager : BaseUIComponent
             var graphic = graphics[i];
             if (graphic == null)
                 continue;
-            //有灰度材质且是 Image:置灰换灰度材质,恢复还原原始材质
-            if (matSacrificeGray != null && graphic is Image image)
+            //Image:置灰移除特效材质(纯白剪影去掉渐变才能被压暗成灰),恢复还原原始特效材质
+            if (graphic is Image image)
             {
                 if (isGray)
                 {
-                    //首次置灰前记录原始材质(排除灰度材质本身,避免误记)
-                    if (!dicSacrificeOriginMat.ContainsKey(image) && image.material != matSacrificeGray)
+                    //首次置灰前记录原始材质(特效材质)
+                    if (!dicSacrificeOriginMat.ContainsKey(image))
                         dicSacrificeOriginMat[image] = image.material;
-                    image.material = matSacrificeGray;
+                    image.material = null;
                 }
                 else if (dicSacrificeOriginMat.TryGetValue(image, out var originMat))
                 {
-                    //还原为记录的原始材质(特效材质),未记录过说明从未置灰则保持不动
+                    //还原原始特效材质,未记录过说明从未置灰则保持不动
                     image.material = originMat;
                 }
-                image.color = Color.white;
             }
-            else
-            {
-                //无灰度材质或非 Image:回退为染色
-                graphic.color = isGray ? colorSacrificeButtonGray : Color.white;
-            }
+            //统一压暗染色:置灰深灰(白图标×深灰=平整深灰)/恢复白色
+            graphic.color = isGray ? colorSacrificeButtonGray : Color.white;
         }
     }
 

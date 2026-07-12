@@ -102,10 +102,8 @@ public class FightBeanForConquer : FightBean
         for (int i = 0; i < lineupCreature.Count; i++)
         {
             var itemLineupCreature = lineupCreature[i];
-            if (itemLineupCreature.creatureState == CreatureStateEnum.Idle)
-            {
-                dlDefenseCreatureData.Add(itemLineupCreature.creatureUUId, itemLineupCreature);
-            }
+            //收全部阵容生物：进阶中的魔物开始进阶时已移出阵容，此处无需再按状态过滤(旧的 == Idle 会误伤上一场残留 Fight/Rest 状态的阵容生物)
+            dlDefenseCreatureData.Add(itemLineupCreature.creatureUUId, itemLineupCreature);
         }
 
         //设置战斗场景ID(根据是否为BOSS关选择不同场景)
