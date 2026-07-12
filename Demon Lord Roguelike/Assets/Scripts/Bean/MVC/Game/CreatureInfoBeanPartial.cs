@@ -169,6 +169,53 @@ public partial class CreatureInfoBean
 
         return true;
     }
+
+    #region 体型
+    /// <summary>
+    /// 获取体型缩放倍率（在目标大小 size_spine 的基础上再相乘）
+    /// <para>配置 body_size 规则：空 / "0" / 解析失败 => 1（默认大小）；</para>
+    /// <para>含逗号 "min,max"（如 "0.9,1.1"） => 在 [min,max] 区间内随机一个倍率；</para>
+    /// <para>单个数值（如 "1.1"） => 固定该倍率。</para>
+    /// <para>注意：含随机区间时本方法每次调用都会重新随机，应在生物创建时调用一次并缓存（见 CreatureBean.bodySizeScale）。</para>
+    /// </summary>
+    /// <returns>体型缩放倍率（恒大于0，异常时回退为1）</returns>
+    public float GetBodySizeRandomScale()
+    {
+        //空配置 => 默认1倍
+        if (body_size.IsNull())
+            return 1f;
+        string sizeStr = body_size.Trim();
+        if (sizeStr.Length == 0)
+            return 1f;
+        //区间随机 "min,max"
+        if (sizeStr.Contains(","))
+        {
+            string[] rangeStr = sizeStr.Split(',');
+            if (rangeStr.Length >= 2
+                && float.TryParse(rangeStr[0].Trim(), out float min)
+                && float.TryParse(rangeStr[1].Trim(), out float max))
+            {
+                //容错：min>max 时交换
+                if (min > max)
+                {
+                    float temp = min;
+                    min = max;
+                    max = temp;
+                }
+                float randomScale = UnityEngine.Random.Range(min, max);
+                return randomScale > 0 ? randomScale : 1f;
+            }
+            return 1f;
+        }
+        //固定倍率
+        if (float.TryParse(sizeStr, out float fixedScale))
+        {
+            //0 或负数 => 默认1倍
+            return fixedScale > 0 ? fixedScale : 1f;
+        }
+        return 1f;
+    }
+    #endregion
 }
 public partial class CreatureInfoCfg
 {
