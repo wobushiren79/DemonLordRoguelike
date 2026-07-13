@@ -209,7 +209,7 @@ public partial class FightCreatureEntity
 
     // === 表现（主文件） ===
     public TrackEntry PlayAnim(SpineAnimationStateEnum anim, bool loop);  // 播放动画
-    public void SetFaceDirection(Direction2DEnum direction);              // 设置朝向
+    public void SetFaceDirection(Direction2DEnum direction);              // 设置朝向（内置去重：目标 localScale.x 符号与当前相等则直接 return，不重复写 transform.localScale；翻转对 Spine creatureSkeletionAnimation.transform.localScale.x 取正负。惠及所有调用方，尤其防守生物每攻击循环转身校准）
 
     // === 进攻生物专属（FightCreatureEntityForAttack.cs） ===
     public void ChangeRoad(int targetRoadIndex);         // 换路（诱导）
@@ -328,6 +328,8 @@ public class CreatureInfoBean : BaseBean
     public string name_language { get; }  // 本地化名称
 }
 ```
+
+> **`attack_search_back`(int 0/1) — 防守生物转身攻击身后开关**：配置列在 `excel_creature_info`（插在 `attack_search_time` 之后），JSON 导出到 `CreatureInfo.txt`。手写辅助方法 `CreatureInfoBeanPartial.IsAttackSearchBack()`（返回 `attack_search_back == 1`，紧邻 `GetCreatureSearchType()`）。开启后防守生物正面无目标时转身攻击身后（范围同正面），身后清空/超范围转回正面。首用者骷髅战士 `id=2001`。搜索/转身逻辑详见 [ai-system](../ai-system/SKILL.md)「防守生物转身攻击身后」。
 
 ---
 

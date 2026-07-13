@@ -23,7 +23,7 @@ watched_files:
 玩家在基地**祭坛 (Altar)** 上，把若干「祭品生物」献祭给一只「目标生物」，按**成功率掷骰**：成功则目标生物**升一级**并获得属性成长；失败则只消耗祭品并累积**保底成功率**。整个过程是「攒经验 → 满足升级门槛 → 献祭祭品掷骰 → 升级/保底」的链路。
 
 - **升级双门槛**：① 目标生物当前经验 `levelExp` ≥ 下一级所需经验（决定能否**发起**献祭）；② 献祭祭品掷骰成功（决定本次是否**真的升级**）。
-- **经验来源**：仅征服战斗胜利发放（普通关 `reward_exp` / BOSS 关 `reward_exp_boss`），见 `GameFightLogicConquer.AddLevelExpForLineupCreature`。满级生物不再累加经验。
+- **经验来源**：仅征服战斗胜利发放（普通关 `reward_exp` / BOSS 关 `reward_exp_boss`），见 `GameFightLogicConquer.AddLevelExpForLineupCreature`。满级生物不再累加经验；**魔王(`IsDemonLord()`)隐藏等级不吃经验**，循环内 `continue` 跳过（防御性兜底：魔王本是防御核心 `fightDefenseCoreData`，不在 `dlDefenseCreatureData` 加经验列表内）。
 - **失败不退经验**：升级失败只扣祭品，经验保留；只有升级成功才扣除本级所需经验。
 
 ### 解锁前置
@@ -43,8 +43,9 @@ watched_files:
 
 ```
 UICreatureManager (BaseUIComponent)   生物管理界面
-    │  RefreshSacrificeButton(creatureData): 解锁祭坛且未满级时显示;经验达标则正常/经验未达标则置灰但仍可点击(SetSacrificeButtonGray: 图标 IconLevelUpSacrifice 是纯白剪影(sprite=ui_research_3,颜色来自特效材质 Mat_UICreatureManager_Sacrifice 的渐变/色相),灰度化对纯白无效→改为置灰时移除特效材质(image.material=null,去掉渐变)并压深灰 colorSacrificeButtonGray(0.35);恢复时还原 dicSacrificeOriginMat 缓存的原始特效材质并转白)。未解锁祭坛/无选中生物/已满级(IsMaxLevel)则隐藏
+    │  RefreshSacrificeButton(creatureData): 解锁祭坛且未满级时显示;经验达标则正常/经验未达标则置灰但仍可点击(SetSacrificeButtonGray: 图标 IconLevelUpSacrifice 是纯白剪影(sprite=ui_research_3,颜色来自特效材质 Mat_UICreatureManager_Sacrifice 的渐变/色相),灰度化对纯白无效→改为置灰时移除特效材质(image.material=null,去掉渐变)并压深灰 colorSacrificeButtonGray(0.35);恢复时还原 dicSacrificeOriginMat 缓存的原始特效材质并转白)。未解锁祭坛/无选中生物/已满级(IsMaxLevel)/魔王(IsDemonLord,隐藏等级不吃经验故不可献祭)则隐藏
     │  点击 ui_BtnLevelUpSacrifice_Button → OnClickForCreatureSacrifice()
+    │      → 若 IsDemonLord(): 直接 return 兜底拦截(魔王不可献祭,按钮本已隐藏)
     │      → 若 !CanUpLevel(): ToastHintText(textId 61009「经验值未达到100%」, state0) 拦截返回
     │      → new CreatureSacrificeBean{ targetCreature = 选中生物 }
     │      → GameHandler.Instance.StartCreatureSacrifice(bean)
@@ -187,7 +188,7 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 UICreatureManager (BaseUIComponent)   生物管理
     ├── ui_UIViewCreatureCardList            // 背包生物列表
     ├── ui_UIViewCreatureCardEquipDetails    // 选中生物详情+装备
-    ├── ui_BtnLevelUpSacrifice_Button        // 献祭升级按钮(解锁祭坛且未满级时显示;经验未达标时置灰仍可点击→toast 61009;满级隐藏)
+    ├── ui_BtnLevelUpSacrifice_Button        // 献祭升级按钮(解锁祭坛且未满级时显示;经验未达标时置灰仍可点击→toast 61009;满级/魔王(IsDemonLord)隐藏)
     ├── ui_BtnLevelUpSacrifice_PopupButtonCommonView  // 按钮气泡说明(textId 60000)
     └── ui_UIViewCreatureCardList 内每张卡片的 ui_SacrificeEffect  // 卡片上的"可献祭升级"高亮特效
                                               // 由 UIViewCreatureCardItem.SetSacrificeEffect 控制,

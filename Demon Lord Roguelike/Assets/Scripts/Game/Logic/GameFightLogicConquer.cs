@@ -286,7 +286,7 @@ public class GameFightLogicConquer : GameFightLogic
     /// <summary>
     /// 给本场出战阵容(防御方)生物累加指定经验
     /// 供关卡结算基础发放与终焉议会"经验翻倍"效果复用；经验直接累加到生物存档对象
-    /// (CreatureBean.levelExp)，随返回基地时统一保存落盘，已达等级上限的生物跳过
+    /// (CreatureBean.levelExp)，随返回基地时统一保存落盘，魔王(不吃经验)与已达等级上限的生物跳过
     /// </summary>
     /// <param name="fightDataForConquer">征服模式战斗数据</param>
     /// <param name="addExp">本次累加的经验值</param>
@@ -302,6 +302,9 @@ public class GameFightLogicConquer : GameFightLogic
         {
             var creatureData = listDefenseCreature[i];
             if (creatureData == null)
+                continue;
+            //魔王隐藏等级且不吃经验:防御核心,即便意外混入出战阵容也跳过不加经验
+            if (creatureData.IsDemonLord())
                 continue;
             //已达等级上限的生物不再累加经验
             if (creatureData.IsMaxLevel())

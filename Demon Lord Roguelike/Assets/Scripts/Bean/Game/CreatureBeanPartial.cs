@@ -99,6 +99,21 @@ public partial class CreatureBean
     //献祭升级保底成功率: 上一次献祭失败时记录为"当次成功率的一半",下一次献祭叠加在祭品成功率之上;献祭成功后清零。
     public float sacrificePityRate;
 
+    #region 魔王
+    /// <summary>
+    /// 是否为魔王本体(与玩家存档中的 selfCreature 同一 UUId)。
+    /// 魔王独立存储于 UserDataBean.selfCreature,不在背包/阵容列表内;判定用于:管理列表置顶、稀有度按L显示、隐藏等级、战斗不加经验等特殊处理。
+    /// </summary>
+    /// <returns>true=魔王本体</returns>
+    public bool IsDemonLord()
+    {
+        var selfCreature = GameDataHandler.Instance.manager.GetUserData()?.selfCreature;
+        if (selfCreature == null)
+            return false;
+        return !creatureUUId.IsNull() && creatureUUId == selfCreature.creatureUUId;
+    }
+    #endregion
+
     #region 稀有度
     /// <summary>
     /// 获取归一化后的稀有度值:rarity≤0(旧存档/未初始化)统一视为 N。

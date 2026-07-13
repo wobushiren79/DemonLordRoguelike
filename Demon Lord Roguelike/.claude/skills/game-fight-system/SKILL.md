@@ -187,7 +187,7 @@ public partial class FightCreatureEntity
     // 是否死亡
     public bool IsDead();
     
-    // 设置朝向
+    // 设置朝向（内置去重：目标 localScale.x 符号与当前相等则直接 return，不重复写 transform.localScale；翻转对 Spine localScale.x 取正负。惠及所有调用方，尤其防守生物每攻击循环转身校准）
     public void SetFaceDirection(Direction2DEnum direction);
     
     // 播放Spine动画

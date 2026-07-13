@@ -65,8 +65,13 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         int atk = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true);
         int aspd = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD, true);
         
+        //魔王:使用稀有度L配置显示、隐藏等级容器(ui_Level)与详情基础容器(ui_DetailsBase)
+        bool isDemonLord = creatureData.IsDemonLord();
+        ui_Level.gameObject.SetActive(!isDemonLord);
+        ui_DetailsBase.gameObject.SetActive(!isDemonLord);
+
         SetAttribute(hp, dr,atk, aspd);
-        SetRarity(creatureData.rarity);
+        SetRarity(isDemonLord ? (int)RarityEnum.L : creatureData.rarity);
         SetLevelData(creatureData.level, creatureData.levelExp);
 
         SetRelationship(creatureData.relationship);
@@ -128,15 +133,12 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     }
 
     /// <summary>
-    /// 判断当前展示的生物是否为魔王本体（与玩家存档中的 selfCreature 同一 UUId）
+    /// 判断当前展示的生物是否为魔王本体（与玩家存档中的 selfCreature 同一 UUId）。收口到 CreatureBean.IsDemonLord 单一真实源。
     /// </summary>
     /// <returns>true=魔王本体</returns>
     public bool IsDemonLord()
     {
-        var selfCreature = GameDataHandler.Instance.manager.GetUserData()?.selfCreature;
-        if (selfCreature == null || creatureData == null)
-            return false;
-        return !creatureData.creatureUUId.IsNull() && creatureData.creatureUUId == selfCreature.creatureUUId;
+        return creatureData != null && creatureData.IsDemonLord();
     }
 
     /// <summary>
@@ -263,6 +265,9 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     /// <param name="levelExp">当前等级经验</param>
     public void SetLevelData(int level, long levelExp)
     {
+        //魔王隐藏等级:等级容器 ui_Level 已在 SetData 关闭,此处直接跳过赋值
+        if (IsDemonLord())
+            return;
         ui_LevelText.text = string.Format(TextHandler.Instance.GetTextById(1001001), level);
         //按等级配置表的等级颜色给等级字体着色(0 级白色, 1-10 级渐进色)
         ui_LevelText.color = LevelInfoCfg.GetLevelColor(level);

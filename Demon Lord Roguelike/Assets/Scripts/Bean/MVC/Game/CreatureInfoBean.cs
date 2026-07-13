@@ -92,6 +92,10 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public float attack_search_time;
 	/// <summary>
+	///攻击搜索身后敌人0否1是（正面无目标时转身攻击身后,范围同正面）
+	/// </summary>
+	public int attack_search_back;
+	/// <summary>
 	///攻击准备时间
 	/// </summary>
 	public float attack_pre_time;
@@ -170,6 +174,10 @@ public partial class CreatureInfoBean : BaseBean
 	///体型大小（空或0=默认1倍；"0.9,1.1"=区间随机；"1.1"=固定倍数；最终在目标大小基础上相乘）
 	/// </summary>
 	public string body_size;
+	/// <summary>
+	///护盾受击特效位置偏移(相对生物坐标,空=0,0.5,0)
+	/// </summary>
+	public string shield_effect_position;
 	/// <summary>
 	///备注
 	/// </summary>

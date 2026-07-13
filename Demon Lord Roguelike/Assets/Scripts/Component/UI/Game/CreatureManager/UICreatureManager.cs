@@ -92,11 +92,11 @@ public partial class UICreatureManager : BaseUIComponent
     }
 
     /// <summary>
-    /// 获取阵容管理列表的默认排序副本:稀有度降序(高→低) → 等级降序(高→低) → 同类聚合(creatureId 升序,同一种魔物相邻,与筛选排序 Class 键口径一致)。
-    /// <para>返回新列表,不改动底层存档的 listBackpackCreature 原始顺序;该顺序会作为筛选排序弹窗的稳定基序(次级 tiebreaker)。</para>
+    /// 获取阵容管理列表的默认排序副本:魔王(selfCreature)恒置顶第一位 → 其余按稀有度降序(高→低) → 等级降序(高→低) → 同类聚合(creatureId 升序,同一种魔物相邻,与筛选排序 Class 键口径一致)。
+    /// <para>魔王独立于背包存储,排序后插入到列表首部;返回新列表,不改动底层存档的 listBackpackCreature 原始顺序;该顺序会作为筛选排序弹窗的稳定基序(次级 tiebreaker)。</para>
     /// </summary>
     /// <param name="userData">用户数据</param>
-    /// <returns>按默认规则排序后的生物列表副本</returns>
+    /// <returns>按默认规则排序后的生物列表副本(魔王在首位)</returns>
     private List<CreatureBean> GetSortedBackpackCreature(UserDataBean userData)
     {
         var listSource = userData.GetUserBackpackCreatureData().listBackpackCreature;
@@ -112,6 +112,9 @@ public partial class UICreatureManager : BaseUIComponent
             //同类聚合:按 creatureId 升序使同一种魔物相邻
             return a.creatureId.CompareTo(b.creatureId);
         });
+        //魔王恒置顶显示在第一位(始终第一,不受筛选排序影响见 UIViewCreatureCardList.OrderListCreature)
+        if (userData.selfCreature != null)
+            listSorted.Insert(0, userData.selfCreature);
         return listSorted;
     }
 
@@ -123,8 +126,9 @@ public partial class UICreatureManager : BaseUIComponent
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
-        //解锁祭坛且有选中生物且未满级才显示按钮(满级隐藏,不再置灰)
+        //解锁祭坛且有选中生物且未满级才显示按钮(满级隐藏,不再置灰);魔王隐藏等级且不吃经验,不可献祭升级故隐藏按钮
         bool isShow = creatureData != null
+            && !creatureData.IsDemonLord()
             && userUnlock.CheckIsUnlock(UnlockEnum.Altar)
             && !creatureData.IsMaxLevel();
         ui_BtnLevelUpSacrifice_Button.gameObject.SetActive(isShow);
@@ -327,6 +331,9 @@ public partial class UICreatureManager : BaseUIComponent
             LogUtil.LogError("没有献祭生物");
             return;
         }
+        //魔王不可献祭升级(隐藏等级且不吃经验),按钮已隐藏,此处再兜底拦截
+        if (itemCreatureData.IsDemonLord())
+            return;
         //经验未达标(或已满级)不能升级: 提示并拦截,不进入献祭流程
         if (!itemCreatureData.CanUpLevel())
         {

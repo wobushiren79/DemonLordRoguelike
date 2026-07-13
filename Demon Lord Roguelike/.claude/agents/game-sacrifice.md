@@ -62,7 +62,7 @@ UICreatureManager(升级按钮) → GameHandler.StartCreatureSacrifice
 ### UI
 - **UICreatureSacrifice** - 祭品选择、实时成功率显示、开始献祭；祭品选择上限走 `userData.GetUserUnlockData().GetUnlockSacrificeMax()`（基础 5 + `UnlockEnum.SacrificeNum=100100002` 研究等级，满级 15），不要再直接读 `limmitData.sacrificeMax`；成功率进度条按区间分5段变色（`GetSuccessRateColor` 现仅转发 `ColorUtil.GetProgressColor`：0-20红/20-40橙/40-60黄/60-80浅绿/80-100蓝，DOColor 0.5s 渐变；配色为 ColorUtil 单一真实源，与孵化缸进阶BUFF概率共用）
 - **UICreatureAddAttribute** - 升级加点界面(`Assets/Scripts/Component/UI/Game/CreatureAddAttribute/`)，献祭升级成功后弹出
-- **UICreatureManager** - `RefreshSacrificeButton`：解锁祭坛且未满级时显示；经验达标则正常，经验未达标则 `SetSacrificeButtonGray` 置灰但仍可点击（点击走 `OnClickForCreatureSacrifice`，`!CanUpLevel()` 时 ToastHintText(textId 61009「经验值未达到100%」) 拦截）。未解锁祭坛/无选中生物/已满级(`IsMaxLevel()`)则隐藏
+- **UICreatureManager** - `RefreshSacrificeButton`：解锁祭坛且未满级时显示；经验达标则正常，经验未达标则 `SetSacrificeButtonGray` 置灰但仍可点击（点击走 `OnClickForCreatureSacrifice`，`!CanUpLevel()` 时 ToastHintText(textId 61009「经验值未达到100%」) 拦截）。未解锁祭坛/无选中生物/已满级(`IsMaxLevel()`)/魔王(`IsDemonLord()`,隐藏等级不吃经验故不可献祭)则隐藏；`OnClickForCreatureSacrifice` 开头对魔王 `return` 兜底拦截
 
 ### 献祭相关研究（设施节点，前置均=开启献祭设施 Altar，level_max=10）
 - `UnlockEnum.SacrificeNum = 100100002`（水晶 1000~10000 每级+1000）提升祭品上限；衍生 `GetUnlockSacrificeMax()`。

@@ -11,6 +11,9 @@ public partial class CreatureInfoBean
     //攻击起始位置
     protected bool isInitAttackStartPosition = false;
     protected Vector3 attackStartPosition;
+    //护盾受击特效位置偏移
+    protected bool isInitShieldEffectPosition = false;
+    protected Vector3 shieldEffectPosition;
     //生物buff
     protected List<BuffBean> listCreatureBuff;
 
@@ -32,6 +35,20 @@ public partial class CreatureInfoBean
             isInitAttackStartPosition = true;
         }
         return attackStartPosition;
+    }
+
+    /// <summary>
+    /// 获取护盾受击特效位置偏移(相对生物坐标)。配置 shield_effect_position 为空时回退默认偏移 (0, 0.5, 0)。
+    /// </summary>
+    public Vector3 GetShieldEffectPosition()
+    {
+        if (!isInitShieldEffectPosition)
+        {
+            //空配置回退默认偏移，否则按 "x,y,z" 解析
+            shieldEffectPosition = shield_effect_position.IsNull() ? new Vector3(0, 0.5f, 0) : shield_effect_position.SplitForVector3(',');
+            isInitShieldEffectPosition = true;
+        }
+        return shieldEffectPosition;
     }
 
     /// <summary>
@@ -81,6 +98,15 @@ public partial class CreatureInfoBean
     public CreatureSearchType GetCreatureSearchType()
     {
         return (CreatureSearchType)attack_search_type;
+    }
+
+    /// <summary>
+    /// 是否可搜索并转身攻击身后敌人（正面无目标时才向身后补搜，范围与正面一致）
+    /// </summary>
+    public bool IsAttackSearchBack()
+    {
+        //TODO(临时打桩)：excel_creature_info 已加 attack_search_back 列，待 Unity 重新生成 CreatureInfoBean 后改回 return attack_search_back == 1;
+        return false;
     }
 
     /// <summary>

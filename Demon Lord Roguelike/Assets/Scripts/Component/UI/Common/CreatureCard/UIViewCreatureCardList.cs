@@ -177,7 +177,8 @@ public partial class UIViewCreatureCardList : BaseUIView
     }
 
     /// <summary>
-    /// 生成展示列表:以「是否命中(名字/等级/稀有度)」为主键把命中项置顶,再以各排序键固定正序为次键,全部数据保留(与入参等量)。
+    /// 生成展示列表:魔王恒为最高主键置顶第一位 → 再以「是否命中(名字/等级/稀有度)」为次主键把命中项置顶 → 再以各排序键固定正序为次键,全部数据保留(与入参等量)。
+    /// <para>魔王置顶键仅对含魔王的列表(魔物管理界面)生效,其它列表无魔王该键恒 false 不影响原有排序。</para>
     /// </summary>
     /// <param name="listData">主列表(全量)</param>
     /// <param name="filter">当前条件</param>
@@ -191,8 +192,10 @@ public partial class UIViewCreatureCardList : BaseUIView
             int lineupIndex = userData.GetLinupIndex(itemData.creatureUUId);
             return lineupIndex > 0 ? lineupIndex : int.MaxValue;
         };
-        //主键:命中项置顶(命中=true 排在前)
-        IOrderedEnumerable<CreatureBean> ordered = listData.OrderByDescending(c => IsMatch(c, filter));
+        //主键:魔王恒置顶第一位(不受筛选排序影响);次主键:命中项置顶(命中=true 排在前)
+        IOrderedEnumerable<CreatureBean> ordered = listData
+            .OrderByDescending(c => c.IsDemonLord())
+            .ThenByDescending(c => IsMatch(c, filter));
         //次键:各排序键固定正序(index0 优先级最高)
         if (filter.sortTypes != null)
             for (int i = 0; i < filter.sortTypes.Count; i++)

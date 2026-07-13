@@ -24,6 +24,7 @@ watched_files:
 - **UIBaseCore** - 核心建筑界面
 - **UIBasePortal** - 传送门界面
 - **UIBaseResearch** - 研究界面
+- **UICreatureManager** - 魔物管理界面（背包生物/装备管理、献祭升级入口）。**魔王(`CreatureBean.IsDemonLord()`)特殊处理**：`GetSortedBackpackCreature` 把 `userData.selfCreature` 插入列表首位并恒置顶（卡片列表 `OrderListCreature` 最高主键保证筛选/排序后仍第一位）；魔王卡片按稀有度 L 显示、隐藏等级；`RefreshSacrificeButton` 对魔王隐藏献祭升级按钮、`OnClickForCreatureSacrifice` 加魔王兜底拦截（魔王隐藏等级、不吃经验、不可献祭）。献祭机制详见 sacrifice-system skill
 
 ### 战斗 UI
 - **UIFightMain** - 战斗主界面

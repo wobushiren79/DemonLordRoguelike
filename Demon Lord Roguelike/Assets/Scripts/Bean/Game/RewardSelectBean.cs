@@ -216,8 +216,8 @@ public class RewardSelectBean
             CreateItemCrystal(conquerInfo);
             return;
         }
-        //正常生成装备
-        var randomItemInfo = RandomUtil.GetRandomDataByList(listItemsInfo);
+
+        //先确定本次装备的目标稀有度/加点数/使用者类型（稀有度过滤依赖目标稀有度，故需先算）
         int rarityItem = 1;
         int addAttribute = 0;
         int userType = 0;
@@ -252,6 +252,22 @@ public class RewardSelectBean
             userType = 0;
             addAttribute = RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add;
         }
+
+        //按道具 reward_rarity 白名单过滤：只保留可在本次目标稀有度产出的道具(空白名单=全稀有度适配)
+        List<ItemsInfoBean> listMatchItemsInfo = new List<ItemsInfoBean>();
+        for (int i = 0; i < listItemsInfo.Count; i++)
+        {
+            if (listItemsInfo[i].IsMatchRewardRarity(rarityItem))
+                listMatchItemsInfo.Add(listItemsInfo[i]);
+        }
+        //过滤后无匹配道具 生成魔晶（容错，与"无相关道具"一致）
+        if (listMatchItemsInfo.Count == 0)
+        {
+            CreateItemCrystal(conquerInfo, testData);
+            return;
+        }
+        //从匹配白名单的道具中随机取一件
+        var randomItemInfo = RandomUtil.GetRandomDataByList(listMatchItemsInfo);
 
         //走统一的奖励装备生成逻辑(属性条数=稀有度、加点数由本处已算好的 addAttribute 覆盖)
         ItemBean itemData = CreateEquipItemForReward(randomItemInfo.id, rarityItem, userType, addAttribute);

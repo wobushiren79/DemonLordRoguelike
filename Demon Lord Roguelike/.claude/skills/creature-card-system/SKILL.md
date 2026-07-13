@@ -338,7 +338,13 @@ protected void OnConfirmOrderFilter(OrderFilterResultBean result) {
 > `OrderFilterTypeEnum`：Rarity=1 / Level=2 / Lineup=3 / Name=4 / Class=5（同类=相同生物ID归并）。
 > 生物里 **Name/Level/Rarity 是命中置顶条件**(不进 `sortTypes`、不删行)，只有 **Lineup/Class 是排序键**(`GetOrderKeySelector`：Lineup→阵容序号(不在阵容置 int.MaxValue)、Class→creatureId)。主列表 `listCreatureDataAll` 保存全量；`listCreatureData` 是「命中项置顶 + 排序键次级」重排后的展示列表（与主列表等量，全部展示）。
 
-> **调用方默认基序**：`UIViewCreatureCardList` 自身无内建默认排序（`currentFilter` 初始为空 → `OrderByDescending(IsMatch)` 全命中且无排序键 → 稳定保持入参顺序）。**魔物管理页 `UICreatureManager.InitCreaturekData` 传入前已用 `GetSortedBackpackCreature` 预排序**：稀有度降序 → 等级降序 → creatureId 升序(同一种魔物相邻，与 Class 键同口径)。因 LINQ `OrderBy*` 稳定，该预排序既是打开时的默认展示序，也是玩家后续筛选排序的稳定 tiebreaker；预排序作用于副本，不改动存档 `listBackpackCreature` 原始顺序。
+> **调用方默认基序**：`UIViewCreatureCardList` 自身无内建默认排序（`currentFilter` 初始为空 → `OrderByDescending(IsMatch)` 全命中且无排序键 → 稳定保持入参顺序）。**魔物管理页 `UICreatureManager.InitCreaturekData` 传入前已用 `GetSortedBackpackCreature` 预排序**：**魔王(`userData.selfCreature`)恒置顶插到列表首位** → 其余按 稀有度降序 → 等级降序 → creatureId 升序(同一种魔物相邻，与 Class 键同口径)。因 LINQ `OrderBy*` 稳定，该预排序既是打开时的默认展示序，也是玩家后续筛选排序的稳定 tiebreaker；预排序作用于副本，不改动存档 `listBackpackCreature` 原始顺序。
+
+> **魔王恒置顶第一位（`OrderListCreature` 最高主键）**：`UIViewCreatureCardList.OrderListCreature` 在「命中置顶(名字/等级/稀有度)」之上再叠一层**最高主键 `OrderByDescending(c => c.IsDemonLord())`**，使玩家任意筛选/排序后魔王仍恒为第一位。该键仅对**含魔王的列表(魔物管理界面)**生效——其它列表无魔王，`IsDemonLord()` 恒 false，不影响原有排序。魔王独立存储于 `UserDataBean.selfCreature`，不在背包/阵容列表内，故由 `GetSortedBackpackCreature` 插入到副本首位后再进入列表。
+
+> **魔王卡片的特殊渲染（卡片项 `UIViewCreatureCardItem` 与详情 `UIViewCreatureCardDetails`）**：以 `CreatureBean.IsDemonLord()`(单一真实源) 判定后差异化展示——① **稀有度统一按 `RarityEnum.L`(=6) 配置显示**(`SetRarity((int)RarityEnum.L)`，仅显示不改存档 `rarity`)；② **隐藏等级**：卡片项 `SetLevel(level, isHide)` 新增 `isHide` 参数隐藏 `ui_LevelText`；详情面板在 `SetData` 里对魔王隐藏**等级容器 `ui_Level`** 与**详情基础容器 `ui_DetailsBase`**(`SetLevelData` 对魔王直接 return 不赋值)；③ 详情 `SetMP` 对魔王隐藏 `ui_MP`(魔王无召唤耗魔概念)。`UIViewCreatureCardDetails.IsDemonLord()` 已收口为委托 `creatureData.IsDemonLord()`。
+
+> **魔王装备槽 = 同 model_id 扭蛋魔物非武器槽并集(除武器)**：魔王(create 生物 `creature_type=0`，id 1-7)的可装备槽位**通过 Excel 配置 `equip_items_type` 落地**(非运行时计算)——按 `model_id`(种族)对应，取同 `model_id` 扭蛋魔物(`creature_type=1`)所有非武器槽的**并集**；**武器槽保持原样不加**(create 生物原为空)；**人类(model_id=1)** 扭蛋版 1001 槽位为空，手动指定为 `1,2,3`(帽/衣/裤)。当前值：id1=`1,2,3`、id2=`1,2,3`、id3=`1,6`、id4=`1,2,3,6`、id5=`1,2,3,5`、id6=`1,2,3`、id7=`1,2,3,5,6`。装备槽展示与"能否装备"判定共用 `creatureInfo.GetEquipItemsType()`，故改配置即同时生效两端；后续扭蛋槽位若变动需手动同步魔王配置。
 
 > **道具列表默认基序**：同界面的背包道具列表 `UIViewItemBackpackList` 也由 `UICreatureManager.InitBackpackItemsData` 传入前用 `GetSortedBackpackItem` 预排序：**稀有度降序（`ItemBean.rarity` 高→低）→ 道具类型升序（`GetItemType()` 强转 int，同类道具相邻）**。同样作用于副本，不改动存档 `listBackpackItems` 原始顺序。
 

@@ -6,12 +6,51 @@ public partial class ItemsInfoBean
 {
     public Dictionary<ItemInfoAttackModeDataEnum, string> dicAttackModeData;
 
+    // 奖励可出的稀有度白名单缓存（解析自 reward_rarity 逗号串；null 表示尚未解析）
+    private List<int> listRewardRarityCache;
+
     /// <summary>
     /// 获取道具类型
     /// </summary>
     public ItemTypeEnum GetItemType()
     {
         return (ItemTypeEnum)item_type;
+    }
+
+    /// <summary>
+    /// 获取「奖励可出稀有度白名单」列表（解析 reward_rarity 逗号串，结果缓存）。
+    /// 空/未配置返回空列表，表示全稀有度适配。
+    /// </summary>
+    public List<int> GetRewardRarityList()
+    {
+        if (listRewardRarityCache != null)
+            return listRewardRarityCache;
+        listRewardRarityCache = new List<int>();
+        if (string.IsNullOrEmpty(reward_rarity))
+            return listRewardRarityCache;
+        string[] parts = reward_rarity.Split(',');
+        foreach (var part in parts)
+        {
+            string trimmed = part.Trim();
+            if (string.IsNullOrEmpty(trimmed))
+                continue;
+            if (int.TryParse(trimmed, out int rarity) && !listRewardRarityCache.Contains(rarity))
+                listRewardRarityCache.Add(rarity);
+        }
+        return listRewardRarityCache;
+    }
+
+    /// <summary>
+    /// 该道具是否可作为指定稀有度的奖励产出。
+    /// reward_rarity 未配置(空)=全稀有度适配返回 true；配置了则仅白名单内的稀有度返回 true。
+    /// </summary>
+    /// <param name="rarity">目标稀有度ID(RarityEnum: N=1~L=6)</param>
+    public bool IsMatchRewardRarity(int rarity)
+    {
+        var listRarity = GetRewardRarityList();
+        if (listRarity.Count == 0)
+            return true;
+        return listRarity.Contains(rarity);
     }
 
     /// <summary>

@@ -326,15 +326,16 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         if (rendererTF != null)
         {
             CameraHandler.Instance.ChangeAngleForCamera(rendererTF);
-            //如果没有加载过spine 则加载一次 
-            if (rendererTF.GetComponent<SkeletonAnimation>() == null)
+            //如果没有加载过spine 则加载一次
+            var existSkeletonAnimation = rendererTF.GetComponent<SkeletonAnimation>();
+            if (existSkeletonAnimation == null)
             {
                 SpineHandler.Instance.AddSkeletonAnimation(rendererTF.gameObject, creatureModel.res_name);
-                //var render = rendererTF.GetComponent<MeshRenderer>();
-                //if (render != null)
-                //{
-                //    render.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                //}
+            }
+            else
+            {
+                //复用池对象:池按战斗类型共享(非按id),须把骨骼重置为当前生物,避免残留上一个魔物骨骼致套皮失败(内部同资源会跳过,复用同魔物零开销)
+                SpineHandler.Instance.SetSkeletonDataAsset(existSkeletonAnimation, creatureModel.res_name);
             }
 
             rendererTF.localPosition = Vector3.zero;

@@ -18,11 +18,14 @@ public partial class UIViewCreatureCardItem : BaseUIView
         this.cardData.cardUseState = cardUseState;
         this.cardData.creatureData = creatureData;
 
+        //魔王:使用稀有度L配置显示、隐藏等级
+        bool isDemonLord = creatureData.IsDemonLord();
+
         SetCardIcon(creatureData);
         SetName(creatureData.creatureName);
         SetClass(creatureData.creatureInfo.class_icon_res);
-        SetRarity(creatureData.rarity);
-        SetLevel(creatureData.level);
+        SetRarity(isDemonLord ? (int)RarityEnum.L : creatureData.rarity);
+        SetLevel(creatureData.level, isDemonLord);
         SetCreateMP(creatureData.GetAttributeInt(CreatureAttributeTypeEnum.CMP));
         SetPopupShow(creatureData, cardUseState);
         SetSacrificeEffect(creatureData, cardUseState);
@@ -75,10 +78,17 @@ public partial class UIViewCreatureCardItem : BaseUIView
     }
 
     /// <summary>
-    /// 设置等级（按等级配置表的等级颜色给等级字体着色：0 级白色，1-10 级渐进色）
+    /// 设置等级（按等级配置表的等级颜色给等级字体着色：0 级白色，1-10 级渐进色）。
+    /// <para>isHide=true(魔王)时隐藏等级文本节点,不显示等级。</para>
     /// </summary>
-    public void SetLevel(int level)
+    /// <param name="level">等级</param>
+    /// <param name="isHide">是否隐藏等级显示(魔王隐藏等级)</param>
+    public void SetLevel(int level, bool isHide = false)
     {
+        //魔王隐藏等级显示
+        ui_LevelText.gameObject.SetActive(!isHide);
+        if (isHide)
+            return;
         ui_LevelText.text = $"{level}";
         ui_LevelText.color = LevelInfoCfg.GetLevelColor(level);
     }

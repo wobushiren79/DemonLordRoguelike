@@ -84,16 +84,38 @@ public enum ItemTypeEnum
 
 道具配置表字段（ItemsInfo）:
 - `id` - 道具唯一ID
-- `item_type` - 道具类型(1帽子 2衣服 3裤子 4鞋子 5鼻环 10武器 1000魔晶)
+- `item_type` - 道具类型(1帽子 2衣服 3裤子 4鞋子 5鼻环 6戒指 10武器 1000魔晶)
 - `item_weapon_type` - 武器类型（仅武器有效）
 - `num_max` - 道具堆叠上限
 - `creature_model_id` - 生物模型ID（装备外观）
 - `creature_model_info_id` - 生物模型详细信息ID
-- `icon_res` - 图标资源路径
+- `icon_res` - 图标资源路径（格式 `名字` 或 `名字,图集Tag`，默认图集 Items）
 - `icon_rotate_z` - 图标旋转角度
 - `attack_mode_data` - 攻击模式数据
+- `other_data` - 其他数据
 - `name` - 文本表ID
 - `remark` - 备注
+- `reward_rarity` - **奖励可出稀有度白名单**（string，逗号分隔稀有度ID，空=全稀有度适配）
+
+### reward_rarity 奖励稀有度白名单
+
+`reward_rarity` 声明「本道具可作为哪些稀有度的奖励产出」：**空/未配置 = 全稀有度适配**（任意稀有度奖励都可能出）；配了(如 `5,6`)则**只在** UR/L 稀有度的奖励里出现。稀有度ID：N=1 R=2 SR=3 SSR=4 UR=5 L=6。
+
+- 辅助方法在 [ItemsInfoBeanPartial.cs](Assets/Scripts/Bean/MVC/Game/ItemsInfoBeanPartial.cs)：
+  - `GetRewardRarityList()` — 解析逗号串为 `List<int>`（结果缓存 `listRewardRarityCache`）。
+  - `IsMatchRewardRarity(int rarity)` — 白名单为空→`true`（全适配）；否则须包含该稀有度。
+- **消费点（唯一）**：[RewardSelectBean.cs](Assets/Scripts/Bean/Game/RewardSelectBean.cs) 的 `CreateItemEquip`。流程改为：**先**确定目标稀有度(`conquerInfo.reward_equip_rarity`/测试数据/默认)→按 `IsMatchRewardRarity(rarityItem)` 过滤道具池→从匹配道具中随机取一件；过滤后为空则回退发魔晶(与"无相关道具"一致)。**仅**作用于征服/传送门装备奖励池，扭蛋(生物)/其它路径不受影响。
+- ⚠️ `ItemsInfoBean.cs` 自动生成且被 Hook 拦截；`reward_rarity` 列已加进 Excel，需在 Unity 对 ItemsInfo「生成 Entity」使 Bean 字段落地后代码才编译通过。
+
+### 道具稀有度配置编辑器（游戏/道具稀有度配置）
+
+菜单「游戏/道具稀有度配置」→ [ItemRarityConfigEditorWindow.cs](Assets/Editor/ItemRarityConfigEditorWindow.cs)，用于可视化配置 `reward_rarity`：
+
+- 左侧**虚拟化列表**(仅渲染可视范围行 + 上下 `GUILayout.Space` 占位，`RowHeight=42`)列出全部道具，**图标懒加载**(`iconCache`，优先 `Assets/LoadResources/Textures/Items/{名}.png`，回退 `AssetDatabase.FindAssets`)，**同名道具相邻**(按名字→id 排序，同名分组交替底色)。
+- 顶部支持按名字搜索、按 `item_type` 类型筛选、按**物种(生物模组)筛选**（`creature_model_id` → `CreatureModel.txt` 的 remark，0=通用；每行副标题显示 `id + 物种名 + 类型名(id)`）。
+- **稀有度统计/筛选条**：每个稀有度显示「可产出该稀有度的道具数」，其中**全适配(空白名单)道具计入每个稀有度 +1**（与 `IsMatchRewardRarity` 语义一致）；点击某稀有度即一键筛选出所有「含该稀有度或全适配」的道具，再点或点「全部」取消。统计基于 `baseRows`（类型/物种/名字前置过滤内），数字不随稀有度筛选变化；稀有度筛选叠加在前置过滤之上。
+- 右侧每行 6 个稀有度**枚举勾选**(N/R/SR/SSR/UR/L)，"清空"按钮=恢复全稀有度适配。
+- 保存：`ExcelUtil.SetExcelData` 写回 Excel(唯一真实源) + 定向补丁 `ItemsInfo.txt` 的 `reward_rarity`(只改该字段，避开 `name[language]` 特殊处理)。名字取多语言 `Language_ItemsInfo_cn.txt`(id→content)回退 remark。
 
 ## 装备系统
 

@@ -9,6 +9,8 @@ public class AIIntentDefenseCreatureIdle : AIBaseIntent
     public float timeUpdateForFindTarget = 0;
     public float timeUpdateForFindTargetCD = 0.2f;
     FightCreatureBean fightCreatureData;
+    /// <summary>是否允许搜索身后敌人（配置门控，IntentEntering 缓存，避免每次搜索重复读配置）</summary>
+    private bool isAttackSearchBack = false;
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         selfAIEntity = aiEntity as AIDefenseCreatureEntity;
@@ -16,6 +18,13 @@ public class AIIntentDefenseCreatureIdle : AIBaseIntent
         timeUpdateForFindTarget = 0;
         //初始化相关数据
         timeUpdateForFindTargetCD = fightCreatureData.creatureData.GetAttackSearchTime();
+        //缓存身后搜索开关
+        isAttackSearchBack = fightCreatureData.creatureData.creatureInfo.IsAttackSearchBack();
+        //回到待机即恢复朝正面(右)：上一轮若曾转身打身后，此处转回来（SetFaceDirection 已对朝向未变去重）
+        if (isAttackSearchBack)
+        {
+            selfAIEntity.selfCreatureEntity.SetFaceDirection(Direction2DEnum.Right);
+        }
         //播放起始动作
         selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true);
     }
@@ -27,8 +36,8 @@ public class AIIntentDefenseCreatureIdle : AIBaseIntent
         {
             timeUpdateForFindTarget = 0;
             timeUpdateForFindTargetCD = fightCreatureData.creatureData.GetAttackSearchTime();
-            //搜索目标
-            selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntityForSinge(DirectionEnum.Right);
+            //搜索目标（正面优先，正面无目标且开启身后搜索时才向背后补搜）
+            selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntityForSingeFrontThenBack(DirectionEnum.Right, isAttackSearchBack);
             if (selfAIEntity.targetCreatureEntity != null)
             {
                 //如果攻击模式是防守则进入防守状态

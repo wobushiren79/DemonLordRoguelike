@@ -17,7 +17,7 @@ watched_files:
 ## 职责范围
 
 ### 战斗实体
-- **FightCreatureEntity** - 战斗生物实体，管理生物在战斗中的完整生命周期；按生物类型拆分为 partial 文件：主文件（通用：SetData/受击/回复/动画/检测/死亡分发）、`FightCreatureEntityForAttack.cs`（进攻：ChangeRoad 换路诱导、死亡意图）、`FightCreatureEntityForDefense.cs`（防守：死亡意图）、`FightCreatureEntityForDefenseCore.cs`（魔王：魔力显示 `RefreshMPShow()`——MPShow 进度条(Mat_Creature_Mana_1，新版 FrameWork/URP/MeshProgressBar 圆形进度，SetFloat "_Progress" 单一进度无护盾层，已不再与 LifeShow 同款) + MPText"当前/上限"文本，非核心生物无该节点自动跳过；死亡意图）。新增类型专属逻辑时写入对应 partial 文件
+- **FightCreatureEntity** - 战斗生物实体，管理生物在战斗中的完整生命周期；按生物类型拆分为 partial 文件：主文件（通用：SetData/受击/回复/动画/检测/死亡分发/朝向 `SetFaceDirection`——内置去重：目标 localScale.x 符号与当前相等则直接 return 不重复写 transform.localScale，惠及所有调用方尤其防守生物每攻击循环转身校准）、`FightCreatureEntityForAttack.cs`（进攻：ChangeRoad 换路诱导、死亡意图）、`FightCreatureEntityForDefense.cs`（防守：死亡意图）、`FightCreatureEntityForDefenseCore.cs`（魔王：魔力显示 `RefreshMPShow()`——MPShow 进度条(Mat_Creature_Mana_1，新版 FrameWork/URP/MeshProgressBar 圆形进度，SetFloat "_Progress" 单一进度无护盾层，已不再与 LifeShow 同款) + MPText"当前/上限"文本，非核心生物无该节点自动跳过；死亡意图）。新增类型专属逻辑时写入对应 partial 文件
 - **FightPrefabEntity** - 战斗预制体实体
 
 ### 战斗场景

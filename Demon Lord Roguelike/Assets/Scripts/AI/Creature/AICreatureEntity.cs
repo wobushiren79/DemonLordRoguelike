@@ -40,6 +40,24 @@ public abstract class AICreatureEntity : AIBaseEntity
     }
 
     /// <summary>
+    /// 搜索目标（正面优先，正面无目标且允许背后搜索时反向补搜一次）
+    /// </summary>
+    /// <param name="frontDirection">正面朝向（防守生物为 Right）</param>
+    /// <param name="searchBack">是否允许搜索身后（由配置 IsAttackSearchBack 门控，false 时行为与单向搜索完全一致）</param>
+    public FightCreatureEntity FindCreatureEntityForSingeFrontThenBack(DirectionEnum frontDirection, bool searchBack)
+    {
+        //正面优先：命中即返回，短路掉背后搜索，正面有敌人时不产生额外开销
+        var targetCreature = FindCreatureEntityForSinge(frontDirection);
+        if (targetCreature == null && searchBack)
+        {
+            //仅正面无目标时才向身后补搜一次（复用同一 searchType/searchRange，背后范围与正面一致）
+            DirectionEnum backDirection = frontDirection == DirectionEnum.Right ? DirectionEnum.Left : DirectionEnum.Right;
+            targetCreature = FindCreatureEntityForSinge(backDirection);
+        }
+        return targetCreature;
+    }
+
+    /// <summary>
     /// 搜索目标
     /// </summary>
     public FightCreatureEntity FindCreatureEntityForSinge(Vector3 direction)

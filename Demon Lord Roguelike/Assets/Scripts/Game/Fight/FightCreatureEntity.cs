@@ -135,15 +135,14 @@ public partial class FightCreatureEntity
     {
         if (creatureSkeletionAnimation == null)
             return;
-        float size = Mathf.Abs(creatureSkeletionAnimation.transform.localScale.x);
-        if (direction2DEnum == Direction2DEnum.Left)
-        {
-            creatureSkeletionAnimation.transform.localScale = new Vector3(-size, size, size);
-        }
-        else
-        {
-            creatureSkeletionAnimation.transform.localScale = new Vector3(size, size, size);
-        }
+        Vector3 curScale = creatureSkeletionAnimation.transform.localScale;
+        float size = Mathf.Abs(curScale.x);
+        float targetX = direction2DEnum == Direction2DEnum.Left ? -size : size;
+        //朝向未变则跳过：避免每次攻击循环重复写 localScale（防守生物可能每次出手都调用）
+        if (curScale.x == targetX)
+            return;
+        curScale.x = targetX;
+        creatureSkeletionAnimation.transform.localScale = curScale;
     }
     #endregion
 
@@ -295,8 +294,8 @@ public partial class FightCreatureEntity
                     //如果是打到肉
                     if (changeHPReal == 0)
                     {
-                        //护甲
-                        EffectHandler.Instance.ShowShieldHitEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), baseAttackMode.attackModeData.attackDirection);
+                        //护甲：特效位置偏移读 CreatureInfo.shield_effect_position(空则默认 0,0.5,0)
+                        EffectHandler.Instance.ShowShieldHitEffect(creatureObj.transform.position + fightCreatureData.creatureData.creatureInfo.GetShieldEffectPosition(), baseAttackMode.attackModeData.attackDirection);
 
                     }
                     //如果是打击到护甲

@@ -38,6 +38,8 @@ Bean/
 └── UI/    - DialogSelect, DialogRename, DialogBossShow 等
 ```
 
+> **`CreatureBean.IsDemonLord()`（`CreatureBeanPartial.cs` #region 魔王）是「是否魔王本体」判定的单一真实源**：比对 `creatureUUId == userData.selfCreature.creatureUUId`（魔王独立存储于 `UserDataBean.selfCreature`，不在背包/阵容列表内）。管理列表置顶、稀有度按 L 显示、隐藏等级、不可献祭、战斗不加经验等特殊处理统一调它，UI 层(如 `UIViewCreatureCardDetails.IsDemonLord`)已收口为委托调用。
+
 ### Bean 命名规范
 - 基础 Bean 后缀：`Bean`
 - 部分数据 Bean：`BeanPartial`

@@ -58,6 +58,10 @@ public partial class ItemsInfoBean : BaseBean
 	///备注
 	/// </summary>
 	public string remark;
+	/// <summary>
+	///奖励可出的稀有度白名单(逗号分隔,空=全稀有度) 1N 2R 3SR 4SSR 5UR 6L
+	/// </summary>
+	public string reward_rarity;
 }
 public partial class ItemsInfoCfg : BaseCfg<long, ItemsInfoBean>
 {

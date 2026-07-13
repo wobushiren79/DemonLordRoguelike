@@ -133,6 +133,8 @@ public class AIIntentCreatureAttack : AIBaseIntent
             ChangeIntent(intentForDead);
             return;
         }
+        //出手前按目标位置刷新朝向（默认空实现，仅需转身的生物如防守生物覆盖）
+        RefreshFaceForTarget();
         //本次攻击判定：额外攻击CD已到则本次出额外攻击(优先级高于普通攻击)，否则普通攻击
         currentExtraAttack = GetReadyExtraAttack();
         var selfCreatureInfo = fightCreatureData.creatureData.creatureInfo;
@@ -180,9 +182,8 @@ public class AIIntentCreatureAttack : AIBaseIntent
     /// </summary>
     public void ActionForAttackEnd(BaseAttackMode attackMode)
     {
-        //按攻击方向决定搜索朝向
-        DirectionEnum findDirectrion = attackMode.attackModeData.attackDirection.x > 0 ? DirectionEnum.Right : DirectionEnum.Left;
-        var findTargetCreature = selfAIEntity.FindCreatureEntityForSinge(findDirectrion);
+        //按方向策略重新搜索目标（默认沿本发攻击方向单向搜；子类可覆盖为正面优先+背后补搜）
+        var findTargetCreature = FindNextTarget(attackMode);
         //找不到最近目标 → 回待机
         if (findTargetCreature == null)
         {
@@ -200,8 +201,28 @@ public class AIIntentCreatureAttack : AIBaseIntent
             ChangeIntent(intentForIdle);
             return;
         }
+        //目标可能切到另一侧（如从正面切到背后），同步刷新朝向
+        RefreshFaceForTarget();
         //否则回到准备阶段继续攻击
         attackState = 0;
+    }
+
+    /// <summary>
+    /// 攻击后重新搜索下一个目标的方向策略；默认沿本发攻击方向单向搜索。
+    /// 子类可覆盖（如防守生物：正面优先，正面无目标时向身后补搜）。
+    /// </summary>
+    protected virtual FightCreatureEntity FindNextTarget(BaseAttackMode attackMode)
+    {
+        DirectionEnum findDirectrion = attackMode.attackModeData.attackDirection.x > 0 ? DirectionEnum.Right : DirectionEnum.Left;
+        return selfAIEntity.FindCreatureEntityForSinge(findDirectrion);
+    }
+
+    /// <summary>
+    /// 按当前目标位置刷新自身朝向；默认空实现（进攻/核心生物朝向固定，无需转身）。
+    /// 需要转身的生物（如可攻击身后的防守生物）覆盖此方法。
+    /// </summary>
+    protected virtual void RefreshFaceForTarget()
+    {
     }
     #endregion
 

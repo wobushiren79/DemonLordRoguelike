@@ -288,6 +288,7 @@ private static void RegisterAll()
 | 方法 | 说明 |
 |------|------|
 | `FindCreatureEntityForSinge(DirectionEnum)` | 朝指定方向搜索单个目标 |
+| `FindCreatureEntityForSingeFrontThenBack(DirectionEnum frontDirection, bool searchBack)` | 正面优先搜 frontDirection，命中即短路返回；正面无目标且 searchBack==true 时才向反方向补搜一次（复用同一 searchType/searchRange，背后范围=正面范围）。防守生物「转身攻击身后」用 |
 | `FindCreatureEntity(DirectionEnum)` | 朝指定方向搜索多个目标 |
 | `FindCreatureEntityForSinge(Vector3)` | 朝指定向量方向搜索单个目标 |
 | `FindCreatureEntity(Vector3)` | 朝指定向量方向搜索多个目标 |
@@ -385,6 +386,20 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 - **发射入口**：复用 `FightHandler.StartCreateAttackMode(self, target, ActionForAttackEnd, customAttackModeId: ext.attack_mode_id)`（与 BUFF 触发攻击同一入口），回调即普通攻击的 `ActionForAttackEnd`（找下个目标并回到 `attackState==0`）。
 
 > 术语提醒：游戏内"BOSS"=**敌方强力 NPC**（征服 `enemy_boss_ids` 刷出、`FightAttack` 进攻型），**不是**玩家防守的"魔王核心" `AIDefenseCoreCreatureEntity`。给 BOSS（或任意 NPC）加额外攻击应改基类攻击意图，而非核心生物 AI。
+
+---
+
+## 防守生物转身攻击身后（正面优先 + 背后补搜）
+
+防守生物默认朝右（正面 = 进攻生物来袭方向）。开启 `CreatureInfo.attack_search_back`(0/1) 的防守生物在**正面无目标时会转身攻击身后**，身后清空/超范围则转回正面待机。首个使用者：骷髅战士 `CreatureInfo id=2001`。
+
+- **双向搜索**：搜索改走 `AICreatureEntity.FindCreatureEntityForSingeFrontThenBack(DirectionEnum.Right, isAttackSearchBack)`（防守生物正面=Right）。正面优先，命中即短路；正面无目标且门控开启时才向反方向补搜一次，背后范围 = 正面范围。`AIIntentDefenseCreatureIdle`（待机搜目标）与 `AIIntentDefenseCreatureAttack`（攻击结束找下个目标）均改用它。
+- **门控缓存**：两个防守意图在 `IntentEntering` 缓存 `bool isAttackSearchBack = creatureInfo.IsAttackSearchBack()`（避免每次攻击循环重复读配置）。未开启的生物短路掉背后搜索，行为与原来完全一致、零额外开销。
+- **基类两个 virtual 钩子**（挂在 `AIIntentCreatureAttack`，默认不改变进攻/核心生物行为）：
+  - `protected virtual FightCreatureEntity FindNextTarget(BaseAttackMode attackMode)`：默认沿本发攻击方向单向搜（原 `ActionForAttackEnd` 内联逻辑抽出），`ActionForAttackEnd` 改为调用它。防守攻击意图覆盖为 `FindCreatureEntityForSingeFrontThenBack`。
+  - `protected virtual void RefreshFaceForTarget()`：默认空实现；基类在 `AttackCreatureStart()`（出手前、目标存活校验后、播攻击动画前）与 `ActionForAttackEnd`（切到新目标后）各调一次。
+- **转身**（`AIIntentDefenseCreatureAttack.RefreshFaceForTarget` 覆盖）：按 目标.x 相对 自身.x —— `目标.x>=自身.x`→`SetFaceDirection(Direction2DEnum.Right)`，否则 `Left`；`isAttackSearchBack==false` 时直接 return 不转身。待机意图开启门控时 `IntentEntering` 内 `SetFaceDirection(Right)` 转回正面。
+- **弹道自动朝背后**：`BaseAttackMode` 有目标时弹道方向自动 = 归一化(目标-自身)，设为身后目标后攻击/AreaBoxFront 自动朝背后，**攻击模块层无需改**。
 
 ---
 

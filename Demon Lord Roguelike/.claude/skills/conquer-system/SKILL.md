@@ -213,7 +213,7 @@ public void InitNextDataForContinue();
 ### 结算分流（HandleForChangeGameStateSettlement）
 
 ```
-胜利 → AddLevelExpForLineupCreature（普通关给 reward_exp，BOSS 关给 reward_exp_boss）
+胜利 → AddLevelExpForLineupCreature（普通关给 reward_exp，BOSS 关给 reward_exp_boss；满级/魔王 IsDemonLord 跳过不加经验）
 失败 或 通关BOSS → ClearGameForSimple() + 打开 UIFightSettlement
 非BOSS关胜利     → OpenAbyssalBlessingUI()（不清场，保留防御生物 / BUFF）
 ```

@@ -50,6 +50,12 @@ AICreatureEntity                    # 生物 AI 基类
 - **运行机制（融入普通攻击循环，非并行）**：各额外攻击独立累计CD（`UpdateExtraAttackTimer` 仅计时）；在每次攻击循环开始的判定点 `AttackCreatureStart→GetReadyExtraAttack()` 选第一个CD已到的额外攻击，`AttackCreatureStartEnd` 发射并清零其CD。**额外攻击优先级>普通攻击**：本次有就绪额外攻击则替代普通攻击（占用该循环）；CD到了不立刻打断，需等下次 `attackState==0` 判定。每循环最多一次攻击 → 多个就绪按序逐循环出、天然串行。`InitExtraAttack` 仅收集 `ext_type==BossSkill`，未来新类型在此加分支。发射复用 `FightHandler.StartCreateAttackMode(self, target, ActionForAttackEnd, customAttackModeId)`。
 - **术语**：敌方"BOSS"= `FightAttack` 进攻型 NPC（走 `AIIntentAttackCreatureAttack`），**不是**玩家防守的核心 `AIDefenseCoreCreatureEntity`。
 
+### 防守生物转身攻击身后（正面优先 + 背后补搜，门控 `CreatureInfo.attack_search_back`）
+- **门控**：`attack_search_back`(0/1) 开启的防守生物正面无目标时转身攻击身后，身后清空/超范围转回正面。首用者骷髅战士 `CreatureInfo id=2001`。缓存 `bool isAttackSearchBack = creatureInfo.IsAttackSearchBack()`（`IntentEntering` 缓存，避免每循环重读）。未开启行为不变、零开销。
+- **双向搜索**：`AICreatureEntity.FindCreatureEntityForSingeFrontThenBack(DirectionEnum frontDirection, bool searchBack)`——正面优先命中即短路，正面无目标且 searchBack 才反向补搜一次（背后范围=正面范围）。防守正面=Right。`AIIntentDefenseCreatureIdle`/`AIIntentDefenseCreatureAttack` 均改用它。
+- **基类两个 virtual 钩子**（`AIIntentCreatureAttack`，默认不改进攻/核心行为）：`FindNextTarget(BaseAttackMode)` 默认单向搜(原 `ActionForAttackEnd` 内联逻辑抽出，防守覆盖为双向搜)；`RefreshFaceForTarget()` 默认空，基类在 `AttackCreatureStart()`(出手前) 与 `ActionForAttackEnd`(切目标后) 各调一次。
+- **转身**：防守 `RefreshFaceForTarget` 按 目标.x 相对 自身.x → `>=` 设 Right 否则 Left；`isAttackSearchBack==false` 直接 return。弹道方向 `BaseAttackMode` 有目标时自动=归一化(目标-自身)，攻击模块层无需改。
+
 ### 状态流转
 ```
 Idle → Move → Attack → Dead
