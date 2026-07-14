@@ -143,7 +143,6 @@ MonoBehaviour:
   uiManager: {fileID: 0}
   remarkData: 
   selectCreatureIndex: 0
-  matSacrificeGray: {fileID: 2100000, guid: a52da24929b68ef498163248583a4efe, type: 2}
   ui_UIViewItemBackpackList: {fileID: 6573751938873387226}
   ui_ViewExit: {fileID: 4245406790760456673}
   ui_ViewBaseInfoContent: {fileID: 1692143287008850840}

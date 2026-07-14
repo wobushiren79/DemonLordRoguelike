@@ -405,8 +405,8 @@ MonoBehaviour:
   cellSpaceY: 20
   paddingLeft: 0
   paddingRight: 0
-  paddingTop: 0
-  paddingBottom: 0
+  paddingTop: 10
+  paddingBottom: 10
   crossAlign: 0
   editorPreviewCount: 20
   verticalScrollbar: {fileID: 6364237860105447300}

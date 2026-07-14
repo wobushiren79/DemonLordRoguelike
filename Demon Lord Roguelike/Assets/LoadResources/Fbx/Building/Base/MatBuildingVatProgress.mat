@@ -13,6 +13,7 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
   m_InvalidKeywords:
+  - _FILLSHOWTHROUGH_ON
   - _HIGHLIGHTENABLE_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
@@ -104,8 +105,16 @@ Material:
     - _AlphaClipThreshold: 0
     - _AlphaToMask: 0
     - _AmbientOcclusion: 1
+    - _BgGradientDirection: 2
+    - _BgGradientEnable: 0
     - _BgHighlight: 2
+    - _BgRotateDirection: 0
+    - _BgRotateEnable: 0
+    - _BgRotateSpeed: 60
+    - _BgTimeGradientEnable: 0
+    - _BgTimeGradientSpeed: 0.5
     - _Blend: 0
+    - _BlendMode: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
     - _ClearCoatMask: 0
@@ -123,6 +132,10 @@ Material:
     - _EnvironmentReflections: 1
     - _FillDirection: 0
     - _FillHighlight: 2
+    - _FillRotateDirection: 0
+    - _FillRotateEnable: 0
+    - _FillRotateSpeed: 60
+    - _FillShowThrough: 1
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
@@ -137,12 +150,15 @@ Material:
     - _Progress_2: 0
     - _QueueControl: 0
     - _QueueOffset: 0
+    - _RadialDirection: 0
+    - _RadialStartAngle: 0
     - _ReceiveShadows: 1
+    - _ShapeType: 0
     - _Smoothness: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _Speed: 1
-    - _SrcBlend: 1
+    - _SrcBlend: 5
     - _SrcBlendAlpha: 1
     - _Start: 0
     - _Surface: 1
@@ -154,6 +170,7 @@ Material:
     m_Colors:
     - _BaseColor: {r: 0, g: 0.4082811, b: 1, a: 0.69411767}
     - _BgColor: {r: 0.057805434, g: 0.06124607, b: 0.06301003, a: 1}
+    - _BgColor2: {r: 0.05, g: 0.05, b: 0.05, a: 1}
     - _Color: {r: 0.11028203, g: 0.06710574, b: 0.49056602, a: 0.70980394}
     - _Color_1: {r: 2.9960785, g: 0, b: 0, a: 1}
     - _Color_2: {r: 0.12855843, g: 0, b: 1.7240036, a: 1}
