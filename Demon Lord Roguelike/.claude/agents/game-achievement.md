@@ -26,15 +26,15 @@ watched_files:
 ### 单行多级 ⭐
 - 可升级成就**一行=一张卡(含多级)**，逐级领取：必先领低一级才能领高一级，全部领完显示**已完成**
 - **无 parent_id/level**。每行两列逗号分隔：`target_values`(各级目标)/`reward_crystals`(各级奖励)，两列长度一致。描述用 `name`/`details` 两列同指一文本id(content=名字, content_1=模板含 `{Name}`)，运行期 `GetTextReplace` 替换为该级格式化目标值
-- 一行一成就：击杀1行(6级)、时长1行(10级)、征服按难度各1行(每行3级)，共 **12 行=12 卡**
+- 一行一成就：击杀1行(6级)、时长1行(10级)、征服按难度各1行(每行3级,10行)、征服某世界按已通不同难度数1行(10级)，共 **13 行=13 卡**
 - **当前激活等级=已领取等级数**(0基)，玩家只能领这一级，领后+1，天然逐级无法跳级
 - 存档：`UserAchievementBean.achievementLevelClaimed: Dict<id,已领取等级数>`；整族完成=已领取数≥等级总数
-- **AchievementInfo.txt** - 成就数据（JsonText，12 行，两列 target_values/reward_crystals）
+- **AchievementInfo.txt** - 成就数据（JsonText，13 行，两列 target_values/reward_crystals）
 
 ### 业务逻辑
 - **AchievementHandler** - 单例 Handler；运行期只累加统计数据，`GetCurrentLevelState(info)` 实时算当前激活等级状态，`TryUnlockNextLevel(id)` 领当前级后 `SaveUserData()` 落盘；`GetClaimedLevelCount/GetCurrentLevelIndex/IsCompleted/GetAchievementProgress`
-- **AchievementManager** - 配置缓存（`GetAllAchievementsSorted` 12 行，UI 卡片直接用）
-- **UserAchievementBean** - 用户存档（**已领取等级数字典** `achievementLevelClaimed`、累计击杀、**按世界×难度**通关次数 `conquerCompleteCountByWorldLevel`）
+- **AchievementManager** - 配置缓存（`GetAllAchievementsSorted` 13 行，UI 卡片直接用）
+- **UserAchievementBean** - 用户存档（**已领取等级数字典** `achievementLevelClaimed`、累计击杀、**按世界×难度**通关次数 `conquerCompleteCountByWorldLevel`；`GetClearedDifficultyCountByWorld(worldId)`=该世界已通不同难度数，供类型4成就用）
 
 ### 事件
 - `Achievement_CreatureKill` - 生物被击杀（在 AIIntentCreatureDead，仅进攻方派发）→ 回调只 `AddKillCount`
@@ -103,4 +103,5 @@ watched_files:
 - 征服通关挂钩在 `ActionForUIRewardSelectEnd`，避免单局结算就计数
 - 添加新成就时，征服成就的 `target_world`+`target_extra` 必须对应实际存在的 `FightTypeConquerInfo`(world_id+level)；判定走 `GetConquerCompleteCount(worldId, difficultyLevel)`
 - 征服成就改为按**世界×难度**统计：每个世界一套难度1~maxLevel × 1/10/100；目前仅「剑与魔法」(worldId=1) 有征服配置
+- **类型4 ConquerWorldClear（征服某世界·按已通不同难度数）**：单卡10档，进度=`GetClearedDifficultyCountByWorld(target_world)`（该世界通关次数≥1的难度种类数，与难度顺序无关，每通一个新难度进度+1）；`target_values="1,2,…,10"`、`target_extra` 不用。当前配置：id=400001「剑与魔法征服者」(target_world=1, 文本 4004001)，与那10条按难度分档的类型3成就**并存**（难度靠研究解锁、可乱序，故用"已通不同难度数"而非连续/最高难度）
 - 数据文件 (`AchievementInfo.txt`) 是 JSON 数组，追加新元素时务必保持格式正确（无尾逗号）

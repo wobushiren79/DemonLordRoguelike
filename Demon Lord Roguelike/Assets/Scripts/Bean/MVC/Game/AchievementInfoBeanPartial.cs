@@ -8,7 +8,8 @@ public enum AchievementTypeEnum
     None = 0,
     Kill = 1,           //击杀生物
     PlayTime = 2,       //游玩时间(单位:秒)
-    ConquerComplete = 3,//征服模式通关(按难度)
+    ConquerComplete = 3,//征服模式通关(按世界×难度: target_world=世界id, target_extra=难度)
+    ConquerWorldClear = 4,//征服某世界-按【已通不同难度数】(target_world=世界id, 进度=该世界通关次数≥1的难度种类数)
 }
 
 /// <summary>

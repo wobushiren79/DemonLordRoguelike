@@ -319,6 +319,8 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 **文件**：`Assets/Editor/FightTypeConquerEditorWindow.cs`（菜单：自定义编辑窗口）
 
 - 提供按 world/难度浏览编辑各行字段；区间字段（`attack_boss_num`/`fight_num`/`road_num`/`road_length`）用字符串输入框。
+- **左右难度对比**：编辑区每个数值字段一行三列——左=上一难度(`level-1`)只读值 / 中=当前难度可编辑 / 右=下一难度(`level+1`)只读值，与当前值不同的对比单元格会**高亮**，方便跨难度调数值；ID 列表字段在标签下方追加一行上一/下一难度的原始 ID 串对比。`LoadData` 中在同一 world 内一次遍历同时取出 `prevBean`(level-1)/`currentBean`/`nextBean`(level+1)；对比值一律用 `GetFieldValueStr` 反射按字段名读取（只读展示，不参与保存）。
+- **参数可复制**：三种粒度——① 点击任意左右对比单元格（`DrawCompareCell` 返回 bool）把该字段上一/下一难度的值复制到当前；② ID 列表对比行的「复制」按钮覆盖整串 ID（`DrawIdListCompareLine` 返回复制值，`DrawIdListField` 内 `ParseIdList` 重解析）；③ 编辑区顶部「复制上一/下一难度全部数值」按钮（`CopyAllFrom` 反射整表覆盖，**跳过 id/world_id/level**）。复制只改内存 `currentBean`，仍需点「保存到Excel并生成Json」才写回。
 - 「保存到Excel并生成Json」：用**反射按字段名**对比变更写回 Excel，并 `RegenerateJson` 重新导出 JSON（同样按字段名 + `Convert.ChangeType` 反射赋值）。
 - 改字段结构（增删列）后需保证 Excel 表头与 Bean 字段名一致，否则反射赋值会跳过该列。
 

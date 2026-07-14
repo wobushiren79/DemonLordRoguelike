@@ -143,6 +143,24 @@ public class UserAchievementBean
     }
 
     /// <summary>
+    /// 获取指定世界【已通关的不同难度个数】(该世界下通关次数≥1 的难度种类数, 0~难度总数)。
+    /// 用于"征服某世界-按已通不同难度数"成就(ConquerWorldClear): 每通关一个新难度进度+1, 与难度顺序无关。
+    /// </summary>
+    /// <param name="worldId">世界id</param>
+    public long GetClearedDifficultyCountByWorld(long worldId)
+    {
+        long count = 0;
+        if (conquerCompleteCountByWorldLevel.TryGetValue(worldId, out var byLevel))
+        {
+            foreach (var item in byLevel)
+            {
+                if (item.Value > 0) count++;
+            }
+        }
+        return count;
+    }
+
+    /// <summary>
     /// 获取征服模式总通关次数(所有世界所有难度合计)
     /// </summary>
     public long GetTotalConquerCompleteCount()

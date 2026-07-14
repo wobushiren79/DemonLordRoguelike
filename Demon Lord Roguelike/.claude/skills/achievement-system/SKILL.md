@@ -23,7 +23,7 @@ watched_files:
   - `target_values`：各级目标值，如击杀 `"10,100,1000,10000,100000,1000000"`（顺序即等级 1..N）
   - `reward_crystals`：各级奖励魔晶，与 target_values 一一对应，如 `"10,50,200,500,1000,5000"`
 - **描述用 name+details 两列（标准模式）+ 占位符模板**（不再每级一条）：`name[language]`/`details[language_1]` 两列**指向同一文本id**（同一条多语言数据），`name`→`content`(名字，如"生物猎手")、`details`→`content_1`(模板，含 `{Name}` 占位符)。`GetLevelDescription(级)` 取 `details_language`（框架自动生成的 `content_1` 属性，**优先用 `_language` 不手写 GetTextById**），用 `TextHandler.GetTextReplace` 把占位符替换为该级**格式化后的目标值**（时长类换算小时）。例：模板 `"累计击杀 {Name} 只生物"` + 目标100 → `"累计击杀 100 只生物"`。详见 [localization-system] 的 GetTextReplace 与"一个ID承载 content/content_1"。
-- **一行一个成就**：类型1(击杀)1行(6级)；类型2(时长)1行(10级)；类型3(征服)按 `难度` 各 1 行(每行 1/10/100 次 = 3级)，共 10 行。总计 **12 行 = 12 张卡**。
+- **一行一个成就**：类型1(击杀)1行(6级)；类型2(时长)1行(10级)；类型3(征服)按 `难度` 各 1 行(每行 1/10/100 次 = 3级)，共 10 行；类型4(征服某世界·按已通不同难度数)1行(10级)。总计 **13 行 = 13 张卡**。
 - **当前激活等级** = "已领取等级数"（0基索引）：玩家只能领取这一级，领取后 +1，天然逐级、无法跳级。
 - **UI 卡片数据源** = `AchievementManager.GetAllAchievementsSorted`（12 行直接展示）；卡片内部用 `GetClaimedLevelCount` 解析当前激活等级展示目标/进度/奖励。
 - **存档**：`UserAchievementBean.achievementLevelClaimed: Dictionary<long,int>` = 成就id → 已领取等级数。整族完成 = 已领取数 ≥ 等级总数。
@@ -65,6 +65,7 @@ AchievementInfoBean (配置, 单行多级)
 - `Kill = 1` 击杀生物（累计）
 - `PlayTime = 2` 游玩时间（单位秒，UserData.gameTime）
 - `ConquerComplete = 3` 征服模式通关（按**世界×难度**区分：target_world=世界id，target_extra=难度等级 1~10）
+- `ConquerWorldClear = 4` 征服某世界·按【已通不同难度数】（target_world=世界id；进度=该世界通关次数≥1 的难度种类数，每通一个**新**难度进度+1，与难度顺序无关；target_extra 不用）。判定走 `GetClearedDifficultyCountByWorld(worldId)`
 
 ### AchievementStateEnum（针对"当前激活等级"）
 - `NotReached = 0` 当前激活等级未达成（显示灰色蒙版）
@@ -84,6 +85,7 @@ ID 编码规则（每个可升级成就一行，取原一级 id 作行 id）：
 - `100001` 击杀类（1 行 6 级：target_values=10/100/1000/10000/100000/1000000）
 - `200001` 时长类（1 行 10 级：target_values=3600..36000 秒）
 - `30X001` 征服通关（每难度 1 行 3 级：target_values=1/10/100 次；X=难度 1~10，世界id=1）。新增世界时另起 id 段（如世界2用 `32X001` 等避免冲突）。
+- `400001` 征服某世界·按已通不同难度数（类型4，1 行 10 级：target_values=1,2,…,10；target_world=1 剑与魔法，文本 id=4004001）。与那 10 条类型3 难度成就**并存**。
 
 > **target_world 列**：类型3专用，0=不限定世界。读取走 `info.GetTargetWorldId()`。
 
@@ -95,7 +97,7 @@ ID 编码规则（每个可升级成就一行，取原一级 id 作行 id）：
 
 ### 文本 ID 段
 - `4000001~4000017` 通用 UI 文本（在 `excel_ui_text`/`Language_UIText_*`；其中 `4000016`=`Lv.{0}/{1}`(等级改用图标格子后卡片已不再用此文本)，`4000017`=已完成/Completed）
-- 每个成就**一条** AchievementInfo 文本（该行 `name`/`details` 同指此 id）：`content`=名字，`content_1`=描述模板（含 `{Name}` 占位符）。当前 12 条：击杀 `4001001`、时长 `4002001`、征服难度1~10 `4003101/4003201/.../4003901/4003001`
+- 每个成就**一条** AchievementInfo 文本（该行 `name`/`details` 同指此 id）：`content`=名字，`content_1`=描述模板（含 `{Name}` 占位符）。当前 13 条：击杀 `4001001`、时长 `4002001`、征服难度1~10 `4003101/4003201/.../4003901/4003001`、征服某世界按已通难度数 `4004001`(剑与魔法征服者，模板 `在剑与魔法通关 {Name} 种不同难度`)
 
 > ⚠️ **成就文本源 = `excel_language` 工作簿的 `AchievementInfo` 工作表**（列 `id/content_cn/content_en/content_1_cn/content_1_en/remark`），导出生成 `Language_AchievementInfo_cn/en.txt`。**改文本必须改这个 Excel 工作表**——只改 `.txt` 会在下次导出时被覆盖丢失。同理各配置表的多语言都在 `excel_language` 的同名工作表里。
 
@@ -143,6 +145,7 @@ achievementData.SetClaimedLevelCount(id, n);   // 仅领奖成功时调用
 achievementData.GetTotalKillCount();
 achievementData.GetConquerCompleteCount(worldId, difficultyLevel);  // 按世界×难度
 achievementData.GetConquerCompleteCountByWorld(worldId);            // 某世界合计
+achievementData.GetClearedDifficultyCountByWorld(worldId);          // 某世界已通不同难度数(类型4 ConquerWorldClear 进度)
 achievementData.GetTotalConquerCompleteCount();                     // 全世界合计
 ```
 

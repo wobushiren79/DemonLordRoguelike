@@ -79,6 +79,9 @@ public partial class AchievementHandler : BaseHandler<AchievementHandler, Achiev
                 return userData.gameTime;
             case AchievementTypeEnum.ConquerComplete:
                 return achievementData.GetConquerCompleteCount(info.GetTargetWorldId(), info.target_extra);
+            case AchievementTypeEnum.ConquerWorldClear:
+                //进度 = 该世界【已通关的不同难度个数】(通关次数≥1的难度种类数); 各级目标值为 1..N 种
+                return achievementData.GetClearedDifficultyCountByWorld(info.GetTargetWorldId());
             default:
                 return 0;
         }

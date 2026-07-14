@@ -23,7 +23,7 @@ public class FightTypeConquerEditorWindow : EditorWindow
     {
         var window = EditorWindow.GetWindow<FightTypeConquerEditorWindow>();
         window.titleContent = new GUIContent("战斗模式难度编辑");
-        window.minSize = new Vector2(600, 700);
+        window.minSize = new Vector2(780, 700);
         window.Show();
     }
 
@@ -66,6 +66,24 @@ public class FightTypeConquerEditorWindow : EditorWindow
 
     /// <summary>原始Bean用于对比变更</summary>
     private FightTypeConquerInfoBean originalBean;
+
+    /// <summary>上一个难度(level-1)的数据，只读用于对比</summary>
+    private FightTypeConquerInfoBean prevBean;
+
+    /// <summary>下一个难度(level+1)的数据，只读用于对比</summary>
+    private FightTypeConquerInfoBean nextBean;
+
+    /// <summary>对比列(上一/下一难度)固定宽度</summary>
+    private const float CompareColumnWidth = 95f;
+
+    /// <summary>字段标签固定宽度</summary>
+    private const float FieldLabelWidth = 150f;
+
+    /// <summary>对比单元格样式(只读灰字)</summary>
+    private GUIStyle compareCellStyle;
+
+    /// <summary>对比单元格样式(差异高亮)</summary>
+    private GUIStyle compareCellDiffStyle;
 
     /// <summary>滚动位置</summary>
     private Vector2 scrollPos = Vector2.zero;
@@ -191,6 +209,20 @@ public class FightTypeConquerEditorWindow : EditorWindow
         {
             padding = new RectOffset(15, 15, 15, 15),
             margin = new RectOffset(5, 5, 10, 10)
+        };
+
+        compareCellStyle = new GUIStyle(EditorStyles.textField)
+        {
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = new Color(0.55f, 0.55f, 0.55f) }
+        };
+
+        compareCellDiffStyle = new GUIStyle(EditorStyles.textField)
+        {
+            alignment = TextAnchor.MiddleCenter,
+            fontStyle = FontStyle.Bold,
+            normal = { textColor = EditorGUIUtility.isProSkin ?
+                new Color(1f, 0.78f, 0.35f) : new Color(0.80f, 0.45f, 0.0f) }
         };
 
         stylesInitialized = true;
@@ -398,13 +430,14 @@ public class FightTypeConquerEditorWindow : EditorWindow
         long worldId = GetSelectedWorldId();
 
         currentBean = null;
+        prevBean = null;
+        nextBean = null;
         foreach (var bean in allConfigList)
         {
-            if (bean.world_id == worldId && bean.level == selectedDifficulty)
-            {
-                currentBean = bean;
-                break;
-            }
+            if (bean.world_id != worldId) continue;
+            if (bean.level == selectedDifficulty) currentBean = bean;
+            else if (bean.level == selectedDifficulty - 1) prevBean = bean;
+            else if (bean.level == selectedDifficulty + 1) nextBean = bean;
         }
 
         if (currentBean != null)
@@ -483,6 +516,16 @@ public class FightTypeConquerEditorWindow : EditorWindow
         EditorGUILayout.LabelField("数据编辑", sectionHeaderStyle);
         GUILayout.Space(10);
 
+        // 对比列头(上一难度 | 当前 | 下一难度)
+        DrawCompareHeader();
+
+        GUILayout.Space(4);
+
+        // 整难度一键复制
+        DrawCopyAllButtons();
+
+        GUILayout.Space(6);
+
         // 基础信息
         EditorGUILayout.LabelField("基础信息", EditorStyles.boldLabel);
         EditorGUI.BeginDisabledGroup(true);
@@ -526,12 +569,12 @@ public class FightTypeConquerEditorWindow : EditorWindow
         EditorGUILayout.LabelField("敌人配置", EditorStyles.boldLabel);
         currentBean.enemy_ids = DrawIdListField("敌人列表", currentBean.enemy_ids, "enemy_ids");
         currentBean.enemy_boss_ids = DrawIdListField("Boss列表", currentBean.enemy_boss_ids, "enemy_boss_ids");
-        currentBean.attack_boss_num = DrawStringField("Boss数量(x或x-y)", currentBean.attack_boss_num);
-        currentBean.attack_start_num = DrawIntField("第一关敌人数量", currentBean.attack_start_num);
-        currentBean.attack_show_time = DrawFloatField("进攻时间(秒)", currentBean.attack_show_time);
-        currentBean.attack_num_addrate = DrawFloatField("每关敌人倍数", currentBean.attack_num_addrate);
-        currentBean.attack_num_add = DrawIntField("每关增加敌人数量", currentBean.attack_num_add);
-        currentBean.attack_intensity_addrate = DrawFloatField("每关强度倍率(HP/护甲/攻击)", currentBean.attack_intensity_addrate);
+        currentBean.attack_boss_num = DrawStringField("Boss数量(x或x-y)", currentBean.attack_boss_num, "attack_boss_num");
+        currentBean.attack_start_num = DrawIntField("第一关敌人数量", currentBean.attack_start_num, "attack_start_num");
+        currentBean.attack_show_time = DrawFloatField("进攻时间(秒)", currentBean.attack_show_time, "attack_show_time");
+        currentBean.attack_num_addrate = DrawFloatField("每关敌人倍数", currentBean.attack_num_addrate, "attack_num_addrate");
+        currentBean.attack_num_add = DrawIntField("每关增加敌人数量", currentBean.attack_num_add, "attack_num_add");
+        currentBean.attack_intensity_addrate = DrawFloatField("每关强度倍率(HP/护甲/攻击)", currentBean.attack_intensity_addrate, "attack_intensity_addrate");
 
         GUILayout.Space(5);
         lineRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(1));
@@ -540,9 +583,9 @@ public class FightTypeConquerEditorWindow : EditorWindow
 
         // 关卡配置(单值"x"或区间"x-y")
         EditorGUILayout.LabelField("关卡配置", EditorStyles.boldLabel);
-        currentBean.fight_num = DrawStringField("关卡次数(x或x-y)", currentBean.fight_num);
-        currentBean.road_num = DrawStringField("道路数量(x或x-y)", currentBean.road_num);
-        currentBean.road_length = DrawStringField("道路长度(x或x-y)", currentBean.road_length);
+        currentBean.fight_num = DrawStringField("关卡次数(x或x-y)", currentBean.fight_num, "fight_num");
+        currentBean.road_num = DrawStringField("道路数量(x或x-y)", currentBean.road_num, "road_num");
+        currentBean.road_length = DrawStringField("道路长度(x或x-y)", currentBean.road_length, "road_length");
 
         GUILayout.Space(5);
         lineRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(1));
@@ -551,9 +594,9 @@ public class FightTypeConquerEditorWindow : EditorWindow
 
         // 难度与奖励
         EditorGUILayout.LabelField("难度与奖励", EditorStyles.boldLabel);
-        currentBean.drop_crystal = DrawIntField("掉落魔晶", currentBean.drop_crystal);
-        currentBean.reward_crystal = DrawIntField("奖励-魔晶", currentBean.reward_crystal);
-        currentBean.reward_equip_rarity = DrawIntField("奖励-装备稀有度", currentBean.reward_equip_rarity);
+        currentBean.drop_crystal = DrawIntField("掉落魔晶", currentBean.drop_crystal, "drop_crystal");
+        currentBean.reward_crystal = DrawIntField("奖励-魔晶", currentBean.reward_crystal, "reward_crystal");
+        currentBean.reward_equip_rarity = DrawIntField("奖励-装备稀有度", currentBean.reward_equip_rarity, "reward_equip_rarity");
 
         GUILayout.Space(5);
         lineRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(1));
@@ -561,19 +604,133 @@ public class FightTypeConquerEditorWindow : EditorWindow
         GUILayout.Space(5);
 
         // 备注
-        currentBean.remark = DrawStringField("备注", currentBean.remark);
+        currentBean.remark = DrawStringField("备注", currentBean.remark, "remark");
 
         EditorGUILayout.EndVertical();
     }
 
     /// <summary>
-    /// 绘制字符串字段
+    /// 绘制对比列头：上一难度 | 当前难度 | 下一难度
     /// </summary>
-    private string DrawStringField(string label, string value)
+    private void DrawCompareHeader()
+    {
+        GUIStyle headerStyle = new GUIStyle(EditorStyles.miniBoldLabel) { alignment = TextAnchor.MiddleCenter };
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Space(FieldLabelWidth + 4);
+        EditorGUILayout.LabelField($"难度 {selectedDifficulty - 1}", headerStyle, GUILayout.Width(CompareColumnWidth));
+        EditorGUILayout.LabelField($"◀ 当前 难度 {selectedDifficulty} ▶", headerStyle);
+        EditorGUILayout.LabelField($"难度 {selectedDifficulty + 1}", headerStyle, GUILayout.Width(CompareColumnWidth));
+        EditorGUILayout.EndHorizontal();
+
+        // 缺失提示行
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Space(FieldLabelWidth + 4);
+        EditorGUILayout.LabelField(prevBean == null ? "(无)" : "", compareCellStyle, GUILayout.Width(CompareColumnWidth));
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.LabelField(nextBean == null ? "(无)" : "", compareCellStyle, GUILayout.Width(CompareColumnWidth));
+        EditorGUILayout.EndHorizontal();
+    }
+
+    /// <summary>
+    /// 绘制整难度一键复制按钮（把上一/下一难度的全部参数复制到当前，id/world_id/level 保持不变）
+    /// </summary>
+    private void DrawCopyAllButtons()
     {
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField(label + ":", GUILayout.Width(120));
-        string result = EditorGUILayout.TextField(value);
+        GUILayout.Space(FieldLabelWidth + 4);
+
+        EditorGUI.BeginDisabledGroup(prevBean == null);
+        if (GUILayout.Button($"← 复制上一难度({selectedDifficulty - 1})全部数值", EditorStyles.miniButton, GUILayout.Height(20)))
+        {
+            CopyAllFrom(prevBean);
+        }
+        EditorGUI.EndDisabledGroup();
+
+        EditorGUI.BeginDisabledGroup(nextBean == null);
+        if (GUILayout.Button($"复制下一难度({selectedDifficulty + 1})全部数值 →", EditorStyles.miniButton, GUILayout.Height(20)))
+        {
+            CopyAllFrom(nextBean);
+        }
+        EditorGUI.EndDisabledGroup();
+
+        EditorGUILayout.EndHorizontal();
+    }
+
+    /// <summary>
+    /// 用源难度的全部参数覆盖当前难度（跳过 id/world_id/level，需保存后写回Excel）
+    /// </summary>
+    private void CopyAllFrom(FightTypeConquerInfoBean src)
+    {
+        if (src == null || currentBean == null) return;
+
+        if (!EditorUtility.DisplayDialog("确认复制",
+            $"确定用难度 {src.level} 的全部参数覆盖当前难度 {currentBean.level} 吗？\n(ID/世界ID/难度 保持不变，复制后仍需点击保存才写回Excel)",
+            "复制", "取消"))
+        {
+            return;
+        }
+
+        FieldInfo[] fields = typeof(FightTypeConquerInfoBean).GetFields();
+        foreach (FieldInfo f in fields)
+        {
+            if (f.Name == "id" || f.Name == "world_id" || f.Name == "level") continue;
+            f.SetValue(currentBean, f.GetValue(src));
+        }
+        GUI.FocusControl(null);
+    }
+
+    /// <summary>
+    /// 通过反射读取指定Bean字段的字符串值（用于对比只读展示）
+    /// </summary>
+    private string GetFieldValueStr(FightTypeConquerInfoBean bean, string fieldName)
+    {
+        if (bean == null) return "-";
+        FieldInfo f = typeof(FightTypeConquerInfoBean).GetField(fieldName);
+        if (f == null) return "-";
+        object v = f.GetValue(bean);
+        return v?.ToString() ?? "";
+    }
+
+    /// <summary>
+    /// 通过反射读取指定Bean字段的原始装箱值（用于复制时按原类型赋值）
+    /// </summary>
+    private object GetFieldValueObject(FightTypeConquerInfoBean bean, string fieldName)
+    {
+        if (bean == null) return null;
+        FieldInfo f = typeof(FightTypeConquerInfoBean).GetField(fieldName);
+        return f?.GetValue(bean);
+    }
+
+    /// <summary>
+    /// 绘制单个对比单元格：只读展示上一/下一难度值，与当前值不同则高亮，点击可复制到当前
+    /// </summary>
+    /// <returns>被点击(需复制)返回 true</returns>
+    private bool DrawCompareCell(FightTypeConquerInfoBean bean, string fieldName, string currentValueStr)
+    {
+        if (bean == null)
+        {
+            EditorGUILayout.LabelField("", compareCellStyle, GUILayout.Width(CompareColumnWidth), GUILayout.Height(18));
+            return false;
+        }
+        string text = GetFieldValueStr(bean, fieldName);
+        bool differs = text != currentValueStr;
+        GUIStyle style = differs ? compareCellDiffStyle : compareCellStyle;
+        GUIContent content = new GUIContent(text, "点击复制到当前难度");
+        return GUILayout.Button(content, style, GUILayout.Width(CompareColumnWidth), GUILayout.Height(18));
+    }
+
+    /// <summary>
+    /// 绘制字符串字段（左=上一难度 / 中=当前可编辑 / 右=下一难度）
+    /// </summary>
+    private string DrawStringField(string label, string value, string fieldName)
+    {
+        string result = value;
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField(label + ":", GUILayout.Width(FieldLabelWidth));
+        if (DrawCompareCell(prevBean, fieldName, value)) result = (string)GetFieldValueObject(prevBean, fieldName) ?? "";
+        result = EditorGUILayout.TextField(result);
+        if (DrawCompareCell(nextBean, fieldName, value)) { result = (string)GetFieldValueObject(nextBean, fieldName) ?? ""; GUI.FocusControl(null); }
         EditorGUILayout.EndHorizontal();
         return result;
     }
@@ -625,6 +782,15 @@ public class FightTypeConquerEditorWindow : EditorWindow
             }
         }
         EditorGUILayout.EndHorizontal();
+
+        // 上一/下一难度对比行(只读+复制按钮)
+        string copiedValue = DrawIdListCompareLine(fieldKey, value);
+        if (copiedValue != value)
+        {
+            value = copiedValue;
+            idList = ParseIdList(value);
+            GUI.FocusControl(null);
+        }
 
         GUILayout.Space(2);
 
@@ -721,6 +887,38 @@ public class FightTypeConquerEditorWindow : EditorWindow
     }
 
     /// <summary>
+    /// 绘制ID列表字段的上一/下一难度对比行（只读展示原始ID串+差异高亮，「复制」按钮可覆盖当前）
+    /// </summary>
+    /// <returns>点击复制则返回被复制的ID串，否则返回原值</returns>
+    private string DrawIdListCompareLine(string fieldKey, string currentValue)
+    {
+        string result = currentValue;
+        string prevStr = prevBean != null ? GetFieldValueStr(prevBean, fieldKey) : null;
+        string nextStr = nextBean != null ? GetFieldValueStr(nextBean, fieldKey) : null;
+        if (prevStr == null && nextStr == null) return result;
+
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Space(FieldLabelWidth);
+
+        // 上一难度
+        if (prevStr != null)
+        {
+            GUIStyle s = prevStr != (currentValue ?? "") ? compareCellDiffStyle : compareCellStyle;
+            EditorGUILayout.LabelField($"◀难度{selectedDifficulty - 1}: {(string.IsNullOrEmpty(prevStr) ? "(空)" : prevStr)}", s);
+            if (GUILayout.Button("复制", EditorStyles.miniButton, GUILayout.Width(40))) result = prevStr;
+        }
+        // 下一难度
+        if (nextStr != null)
+        {
+            if (GUILayout.Button("复制", EditorStyles.miniButton, GUILayout.Width(40))) result = nextStr;
+            GUIStyle s = nextStr != (currentValue ?? "") ? compareCellDiffStyle : compareCellStyle;
+            EditorGUILayout.LabelField($"难度{selectedDifficulty + 1}: {(string.IsNullOrEmpty(nextStr) ? "(空)" : nextStr)}▶", s);
+        }
+        EditorGUILayout.EndHorizontal();
+        return result;
+    }
+
+    /// <summary>
     /// 根据字段类型获取显示名字
     /// </summary>
     private string GetDisplayName(long id, string fieldKey)
@@ -780,25 +978,33 @@ public class FightTypeConquerEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 绘制整数字段
+    /// 绘制整数字段（左=上一难度 / 中=当前可编辑 / 右=下一难度）
     /// </summary>
-    private int DrawIntField(string label, int value)
+    private int DrawIntField(string label, int value, string fieldName)
     {
+        int result = value;
+        string valueStr = value.ToString();
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField(label + ":", GUILayout.Width(120));
-        int result = EditorGUILayout.IntField(value);
+        EditorGUILayout.LabelField(label + ":", GUILayout.Width(FieldLabelWidth));
+        if (DrawCompareCell(prevBean, fieldName, valueStr)) result = (int)GetFieldValueObject(prevBean, fieldName);
+        result = EditorGUILayout.IntField(result);
+        if (DrawCompareCell(nextBean, fieldName, valueStr)) { result = (int)GetFieldValueObject(nextBean, fieldName); GUI.FocusControl(null); }
         EditorGUILayout.EndHorizontal();
         return result;
     }
 
     /// <summary>
-    /// 绘制浮点数字段
+    /// 绘制浮点数字段（左=上一难度 / 中=当前可编辑 / 右=下一难度）
     /// </summary>
-    private float DrawFloatField(string label, float value)
+    private float DrawFloatField(string label, float value, string fieldName)
     {
+        float result = value;
+        string valueStr = value.ToString();
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField(label + ":", GUILayout.Width(120));
-        float result = EditorGUILayout.FloatField(value);
+        EditorGUILayout.LabelField(label + ":", GUILayout.Width(FieldLabelWidth));
+        if (DrawCompareCell(prevBean, fieldName, valueStr)) result = (float)GetFieldValueObject(prevBean, fieldName);
+        result = EditorGUILayout.FloatField(result);
+        if (DrawCompareCell(nextBean, fieldName, valueStr)) { result = (float)GetFieldValueObject(nextBean, fieldName); GUI.FocusControl(null); }
         EditorGUILayout.EndHorizontal();
         return result;
     }
