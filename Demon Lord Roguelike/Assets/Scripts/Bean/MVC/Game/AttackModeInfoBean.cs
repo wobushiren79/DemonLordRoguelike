@@ -20,6 +20,10 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public string prefab_name;
 	/// <summary>
+	///视觉名字(DSP Instancing 批量渲染分桶key,空=不走批量渲染,与prefab_name独立)
+	/// </summary>
+	public string visual_name;
+	/// <summary>
 	///攻击buff（id:创建概率&id:创建概率）
 	/// </summary>
 	public string buff;
@@ -63,6 +67,10 @@ public partial class AttackModeInfoBean : BaseBean
 	///音效-击中
 	/// </summary>
 	public long sound_hit;
+	/// <summary>
+	///攻击起始位置偏移(x,y,z,空=0,叠加在生物攻击起始位置之上)
+	/// </summary>
+	public string start_pos_offset;
 	/// <summary>
 	///备注
 	/// </summary>

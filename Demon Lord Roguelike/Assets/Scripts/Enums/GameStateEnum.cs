@@ -118,6 +118,7 @@ public enum FightTestModeEnum
 {
     Normal = 0,//普通模式(自定义场景/敌人/BUFF的战斗测试)
     ConquerBoss = 1,//征服模式BOSS关(指定世界与难度，直接进入征服BOSS关)
+    SingleUnit = 2,//单体测试模式(道路长度/道路数量/进攻生物数量/进攻间隔均为固定值不显示，其余同普通模式)
 }
 
 public enum CinemachineCameraEnum
@@ -218,6 +219,8 @@ public enum UnlockEnum : long
 
     Achievement = 100500001,//成就系统
 
+    Juicer = 100600001,//魔汁机(魔物回收:选目标魔物榨汁,流程/奖励后续接入)
+
 }
 
 /// <summary>
@@ -233,6 +236,7 @@ public enum ControlInteractionEnum
     Councilor,//议会成员
     AchievementInteraction,//成就石碑交互
     VatInteraction = 8,//魔物进阶容器交互(提示文本 textId=2000+值=2008;跳过7因2007已被"刷新次数已用完"占用)
+    JuicerInteraction = 9,//魔汁机交互(提示文本 textId=2000+值=2009;交互碰撞体命名须为 JuicerInteraction 以便 Enum.TryParse)
 }
 
 /// <summary>

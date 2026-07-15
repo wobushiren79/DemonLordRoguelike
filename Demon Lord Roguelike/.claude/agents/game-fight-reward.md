@@ -69,7 +69,7 @@ watched_files:
  → 打开 UIFightSettlement.SetData(fightData, ActionForUIFightSettlementNext)
  → 玩家点 Next → ActionForUIFightSettlementNext
  → baseReward = gameWorldInfoRandomData.GetDifficultyReward(difficultyLevel) (取传送门预生成并冻结的奖励)
- → new RewardSelectBean().InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum) (预览=实领；奖励多多额外件数在基础奖励后追加魔晶)
+ → new RewardSelectBean().InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum) (预览=实领；奖励多多额外件数在基础奖励后追加装备道具，生成不出装备兜底魔晶)
  → selectNumMax += rewardAddSelectNum; 钳制 = Min(selectNumMax, listReward.Count)
  → 打开 UIRewardSelect.SetData(rewardSelectData, ActionForUIRewardSelectEnd, isClearLastGame:true)
  → 玩家选宝箱 → userData.AddBackpackItem(itemData) (水晶走 AddCrystal,装备入背包)
@@ -94,7 +94,7 @@ watched_files:
 5. 测试模式由 `InitData(null, testData)` 进入，用 `RewardSelectTestData` 的固定参数（此入口行为不变）
 
 > **魔晶/装备规则与稀有度来源未变**：仍是 `reward_crystal` / `reward_equip_rarity` / `RarityInfo.equip_attribute_add`。本次改动只是把生成入口收敛到 `FightTypeConquerInfoBean`，并新增"传送门预生成 + 通关消费"的链路。
-> **通关领奖**走 `InitDataForReward`，消费传送门预生成的 `baseReward`；奖励多多额外件数追加在基础奖励**之后**（魔晶）。
+> **通关领奖**走 `InitDataForReward`，消费传送门预生成的 `baseReward`；奖励多多额外件数追加在基础奖励**之后**（装备道具，生成不出装备兜底魔晶）。
 
 ## 关键文件
 

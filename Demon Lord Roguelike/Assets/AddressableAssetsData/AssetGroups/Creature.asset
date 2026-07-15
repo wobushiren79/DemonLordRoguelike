@@ -15,12 +15,6 @@ MonoBehaviour:
   m_GroupName: Creature
   m_GUID: 7be79d27ed1a5e442967a67723ad55a3
   m_SerializeEntries:
-  - m_GUID: 4b47f564220f02746b3f069df5cfbb46
-    m_Address: Assets/LoadResources/Creatures/FightCreature_OutlinePreview.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - Creature
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b134cf4081841334f8d0e9b99c3f8f89
     m_Address: Assets/LoadResources/Creatures/CreatureOutline_Material.mat
     m_ReadOnly: 0

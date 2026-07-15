@@ -75,15 +75,16 @@ public static class FightCreatureSearchUtil
     /// <returns></returns>
     public static List<FightCreatureEntity> FindCreatureEntityByRay(Vector3 startPosition, Vector3 direction, float maxDistance, CreatureFightTypeEnum searchCreatureFightType, int layoutInfo)
     {
-        var hits = RayUtil.RayToCastAll(startPosition, direction, maxDistance, layoutInfo);
-        if (hits.IsNull())
+        //NonAlloc 射线检测：写入共享缓冲、返回命中数，避免每次 RaycastAll 分配数组造成 GC
+        int hitCount = RayUtil.RayToCastAllNonAlloc(startPosition, direction, maxDistance, layoutInfo, out RaycastHit[] hits);
+        if (hitCount == 0)
         {
             return null;
         }
         //循环外缓存 GameFightLogic，避免热路径下每次命中都做一次 GetGameLogic 查询
         GameFightLogic gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
         List<FightCreatureEntity> listData = null;
-        for (int i = 0; i < hits.Length; i++)
+        for (int i = 0; i < hitCount; i++)
         {
             var hit = hits[i];
             string creatureId = hit.collider.gameObject.name;
@@ -92,7 +93,7 @@ public static class FightCreatureSearchUtil
             {
                 if (listData == null)
                 {
-                    listData = new List<FightCreatureEntity>(hits.Length);
+                    listData = new List<FightCreatureEntity>(hitCount);
                 }
                 listData.Add(targetCreature);
             }

@@ -14,6 +14,15 @@ public class AttackModeRanged : BaseAttackMode
     }
 
     /// <summary>
+    /// 收集本帧射线检测请求：直线弹道在当前位置沿攻击方向入队一条射线
+    /// </summary>
+    public override void PrepareRaycast(FightRaycastBatch batch)
+    {
+        batchRayStart = -1;
+        EnqueueSingleRay(batch);
+    }
+
+    /// <summary>
     /// 更新处理
     /// </summary>
     public override void Update()
@@ -47,7 +56,7 @@ public class AttackModeRanged : BaseAttackMode
     /// </summary>
     public virtual void HandleForMove()
     {
-        gameObject.transform.Translate(attackModeData.attackDirection * Time.deltaTime * GetMoveSpeed());
+        TranslatePosition(attackModeData.attackDirection * Time.deltaTime * GetMoveSpeed());
     }
 
     /// <summary>
@@ -55,7 +64,7 @@ public class AttackModeRanged : BaseAttackMode
     /// </summary>
     public virtual void HandleForBound()
     {
-        if (CheckIsMoveBound(gameObject))
+        if (CheckIsMoveBound())
         {
             Destroy();
         }

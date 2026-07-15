@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 public partial class AchievementInfoBean : BaseBean
 {
 	/// <summary>
-	///成就类型 1击杀生物 2游玩时间 3征服模式通关
+	///成就类型 1击杀生物 2游玩时间 3征服模式通关 4征服某世界(按已通不同难度数)
 	/// </summary>
 	public int achievement_type;
 	/// <summary>

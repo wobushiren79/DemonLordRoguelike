@@ -4,8 +4,13 @@ using UnityEngine;
 
 public partial class GameTestEditor
 {
-    // 战斗测试模式(普通模式/征服模式BOSS关)
+    // 战斗测试模式(普通模式/征服模式BOSS关/单体测试模式)
     public FightTestModeEnum fightTestMode = FightTestModeEnum.Normal;
+    // 单体测试模式固定参数(不在面板显示，进入时强制使用这些值)
+    private const int SINGLE_UNIT_ROAD_NUM = 1;
+    private const int SINGLE_UNIT_ROAD_LENGTH = 10;
+    private const int SINGLE_UNIT_ATTACK_NUM = 1;
+    private const float SINGLE_UNIT_ATTACK_DELAY = 1f;
     // 征服模式BOSS关测试参数
     public long conquerTestWorldId = 1;
     public int conquerTestDifficultyLevel = 1;

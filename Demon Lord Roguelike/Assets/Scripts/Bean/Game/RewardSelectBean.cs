@@ -108,10 +108,10 @@ public class RewardSelectBean
     }
 
     /// <summary>
-    /// 用传送门预生成的基础奖励初始化领奖数据（预览=实领），并在其后按深渊馈赠「奖励多多」追加额外奖励件数（魔晶）
+    /// 用传送门预生成的基础奖励初始化领奖数据（预览=实领），并在其后按深渊馈赠「奖励多多」追加额外装备道具（生成不出装备时兜底魔晶）
     /// </summary>
     /// <param name="baseReward">传送门预生成并冻结的基础奖励（装备+魔晶）</param>
-    /// <param name="conquerInfo">征服配置（用于生成追加的额外魔晶；及无预生成奖励时的容错生成）</param>
+    /// <param name="conquerInfo">征服配置（决定追加装备的稀有度；及无预生成奖励时的容错生成）</param>
     /// <param name="extraItemNum">深渊馈赠累计的额外奖励件数（rewardAddItemNum）</param>
     public void InitDataForReward(List<ItemBean> baseReward, FightTypeConquerInfoBean conquerInfo, int extraItemNum)
     {
@@ -125,10 +125,11 @@ public class RewardSelectBean
             //容错：无预生成奖励时按配置即时生成基础奖励（等价于原通关领奖逻辑）
             InitData(conquerInfo);
         }
-        //深渊馈赠「奖励多多」额外件数：与基础奖励中超出装备数的部分同规则(魔晶)，追加在基础奖励之后
+        //深渊馈赠「奖励多多」额外件数：与基础奖励的装备同规则生成装备道具(生成不出装备时兜底魔晶)，追加在基础奖励之后
+        List<long> unlockCreatureModelIds = GetUnlockCreatureModelIdsForEquip();
         for (int i = 0; i < extraItemNum; i++)
         {
-            CreateItemCrystal(conquerInfo);
+            CreateItemEquip(conquerInfo, unlockCreatureModelIds);
         }
     }
 

@@ -10,7 +10,7 @@ metadata:
 **奖励预生成与冻结（预览即实领）**
 - `GameWorldDifficultyRandomBean.listReward`(+`rewardUnlockSign`) 在 `CreateDifficultyRandom` 创建传送门时按难度一次性随出并冻结（`GameWorldInfoBeanPartial.cs`）。
 - `GameWorldInfoRandomBean.GetDifficultyReward(difficulty)` 取预生成奖励；**列表为空(老存档) 或 解锁了新魔物掉落致装备奖励池签名变化(`rewardUnlockSign != RewardSelectBean.GetConquerEquipPoolSign()`) 时重新生成并刷新签名**。这就是「解锁后重新生成奖励」的实现（无事件、访问时自愈）。
-- 通关 BOSS 领奖 `GameFightLogicConquer.ActionForUIFightSettlementNext` 消费这份预生成奖励：`InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`；深渊馈赠「奖励多多」额外件数(魔晶)追加在基础奖励**之后**，`selectNumMax` 钳制到 `listReward.Count`。组成与旧逻辑等价(1装备+(2+extra)魔晶)。
+- 通关 BOSS 领奖 `GameFightLogicConquer.ActionForUIFightSettlementNext` 消费这份预生成奖励：`InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`；深渊馈赠「奖励多多」额外件数(装备道具，与首件同规则、生成不出装备兜底魔晶)追加在基础奖励**之后**，`selectNumMax` 钳制到 `listReward.Count`。组成为(1装备+2魔晶+extra装备)。
 
 **气泡展示哪个难度 = 当前 `difficultyLevel`，默认取"已解锁最高难度"**
 - `UIPopupPortalDetails.SetData((GameWorldInfoBean, GameWorldInfoRandomBean, int difficultyLevel))` 第三参决定展示难度，取该难度那份预生成数据(道路/关卡/路径/奖励)。地图悬停气泡(`UIViewBasePortalItem`)传 `gameWorldInfoRandom.difficultyLevel`；难度对话框(`UIViewDialogPortalDetailsItem`)各 item 传各自难度号。

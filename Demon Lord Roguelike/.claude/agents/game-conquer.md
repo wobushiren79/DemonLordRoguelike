@@ -50,7 +50,7 @@ watched_files:
 - 难度解锁：`UserUnlockBean.GetUnlockGameWorldConquerDifficultyLevel`
 
 ### 结算领奖与预览门控
-- **通关 BOSS 领奖消费预生成奖励**：`ActionForUIFightSettlementNext` 取 `gameWorldInfoRandomData.GetDifficultyReward(difficultyLevel)` 作基础奖励，调 `RewardSelectBean.InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`；深渊馈赠「奖励多多」额外件数(rewardAddItemNum 魔晶)在预生成基础奖励**之后追加**，`selectNumMax += rewardAddSelectNum` 钳制到 listReward.Count
+- **通关 BOSS 领奖消费预生成奖励**：`ActionForUIFightSettlementNext` 取 `gameWorldInfoRandomData.GetDifficultyReward(difficultyLevel)` 作基础奖励，调 `RewardSelectBean.InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`；深渊馈赠「奖励多多」额外件数(rewardAddItemNum)在预生成基础奖励**之后追加装备道具**(CreateItemEquip，与首件同规则、生成不出装备兜底魔晶)，`selectNumMax += rewardAddSelectNum` 钳制到 listReward.Count
 - **通关发放声望**：`ActionForUIRewardSelectEnd`（领奖结束=完整通关）除触发 `Achievement_ConquerComplete` 外，调 `AddReputationForConquerComplete(fightTypeConquerInfo)`——研究门控 `userData.GetUserUnlockData().CheckIsUnlock(UnlockEnum.ConquerReputationReward)` 已解锁才 `userData.AddReputation(conquerInfo.GetRewardReputation())`（声望≤0 不发放）。在 `EndGameAndReturnToBase` 存档前发放，随存档落盘。声望系统本已存在(第二货币，终焉议会消耗)，此处仅新增获取来源；研究节点见 `game-research`(unlock_id 100200004，前置=终焉议会 DoomCouncil)
 - **传送门详情气泡 `UIPopupPortalDetails` 四项预览受「设施」研究门控**（`UserUnlock.CheckIsUnlock`，未解锁该项整行隐藏；名字行始终显示；无尽模式不展示关卡数/路径长度/奖励）：线路数→`UnlockEnum.PortalPreviewRoadNum`(100300002)、关卡数→`PortalPreviewFightNum`(100300003)、路径长度→`PortalPreviewRoadLength`(100300004,文本id 414)、奖励道具→`PortalPreviewReward`(100300005)
 

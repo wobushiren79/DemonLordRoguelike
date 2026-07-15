@@ -167,7 +167,7 @@ UIGashaponBreak (BaseUIComponent)     破蛋交互
 > 同一套 `GashaponRarity*`/`*Rate` 解锁门控还被**展示用**的 `GashaponItemBean.GetRarityProbabilityList()` 消费（孕育商店项概率弹窗）。改稀有度顺序/门控时，`RandomRarity`(实际抽取) 与 `GetRarityProbabilityList`(展示概率) **两处口径需同步**，否则弹窗显示与真实概率不符。
 
 ### 改破蛋流程/动画
-改 `GashaponMachineLogic`（AnimForEggBreak / AnimForShowEgg / AnimForEggPunch / ProcessForFocusEgg）。蛋子物体名：`Egg_1`(壳) / `Renderer`(Spine)；破壳粒子走 `scenePrefab.effectEggBreak`（VFX，传 Color1/Color2）；破壳音效在 `AnimForEggBreak` 播 `AudioHandler.Instance.PlaySound(AudioEnum.sound_break_1)`；点击「跳过所有」(`EventForShowAll`) 会先显式再播一次 `sound_break_1`，因为随后逐帧连续破蛋会被 `AudioHandler` 的 0.1s 同音重复保护抑制（否则跳过时听不到破壳声）。
+改 `GashaponMachineLogic`（AnimForEggBreak / AnimForShowEgg / AnimForEggPunch / ProcessForFocusEgg）。蛋子物体名：`Egg_1`(壳) / `Renderer`(Spine)；破壳粒子走 `scenePrefab.effectEggBreak`（VFX，传 Color1/Color2）；破壳音效在 `AnimForEggBreak` 播 `AudioHandler.Instance.PlaySound(AudioEnum.sound_break_1)`；点击「跳过所有」(`EventForShowAll`) 会先显式再播一次 `sound_break_1`，因为随后逐帧连续破蛋会被 `AudioHandler` 的 0.1s 同音重复保护抑制（否则跳过时听不到破壳声）。**蛋出现（吐蛋）音效**：`AnimForShowEgg` 在蛋跳出（DOJump）时播 `AudioHandler.Instance.PlaySound(AudioEnum.sound_btn_31)`，每个蛋出现各播一次。
 
 ## 数据流与存档
 

@@ -23,6 +23,17 @@ public class AttackModeRangedArc : AttackModeRanged
     }
 
     /// <summary>
+    /// 收集本帧射线检测请求：抛物线前半程(progress<0.5)不检测，故不入队
+    /// </summary>
+    public override void PrepareRaycast(FightRaycastBatch batch)
+    {
+        batchRayStart = -1;
+        if (progress < 0.5f)
+            return;
+        EnqueueSingleRay(batch);
+    }
+
+    /// <summary>
     /// 检测碰撞
     /// </summary>
     /// <returns></returns>
@@ -50,12 +61,12 @@ public class AttackModeRangedArc : AttackModeRanged
             Vector3 nextPos = Vector3.Lerp(attackModeData.startPos, attackModeData.targetPos, progress);
             nextPos.y += parabola * arcHeight;
 
-            gameObject.transform.position = nextPos;
+            SetPosition(nextPos);
         }
         else
         {
             // 到达终点
-            gameObject.transform.position = attackModeData.targetPos;
+            SetPosition(attackModeData.targetPos);
             //攻击完了就回收这个攻击
             Destroy();
         }

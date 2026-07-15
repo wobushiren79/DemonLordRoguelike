@@ -47,12 +47,10 @@ public class AttackModeFalluponArea : BaseAttackMode
     /// </summary>
     private void StartFalling()
     {
-        if (gameObject != null)
-        {
-            float randomOffsetX = UnityEngine.Random.Range(-0.1f, 0.1f);
-            float randomOffsetZ = UnityEngine.Random.Range(-0.1f, 0.1f);
-            gameObject.transform.position = new Vector3(attackModeData.targetPos.x + randomOffsetX, attackModeData.startPos.y, attackModeData.targetPos.z + randomOffsetZ);
-        }
+        //定位到目标正上方 + XZ 随机偏移，走 position 权威源(自动同步 transform)
+        float randomOffsetX = UnityEngine.Random.Range(-0.1f, 0.1f);
+        float randomOffsetZ = UnityEngine.Random.Range(-0.1f, 0.1f);
+        SetPosition(new Vector3(attackModeData.targetPos.x + randomOffsetX, attackModeData.startPos.y, attackModeData.targetPos.z + randomOffsetZ));
         currentFallSpeed = attackModeInfo.speed_move;
         isFalling = true;
     }
@@ -71,12 +69,12 @@ public class AttackModeFalluponArea : BaseAttackMode
             return;
         }
 
-        gameObject.transform.Translate(Vector3.down * (Time.deltaTime * currentFallSpeed));
+        TranslatePosition(Vector3.down * (Time.deltaTime * currentFallSpeed));
         currentFallSpeed += GravityAcceleration * Time.deltaTime;
 
-        if (attackModeData.targetPos.y >= gameObject.transform.position.y)
+        if (attackModeData.targetPos.y >= position.y)
         {
-            gameObject.transform.position = attackModeData.targetPos;
+            SetPosition(attackModeData.targetPos);
             isFalling = false;
             AttackHandle();
         }

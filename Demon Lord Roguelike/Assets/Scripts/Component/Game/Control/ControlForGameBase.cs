@@ -502,6 +502,13 @@ public class ControlForGameBase : BaseControl
                     ui.actionForExit = () => UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
                 });
                 break;
+            case ControlInteractionEnum.JuicerInteraction://魔汁机(魔物回收)
+                //由场景互动打开: 退出时直接返回场景(UIBaseMain)，不再打开 UIBaseCore
+                UIHandler.Instance.OpenUIAndCloseOther<UICreatureJuicer>((ui) =>
+                {
+                    ui.actionForExit = () => UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
+                });
+                break;
         }
     }
 

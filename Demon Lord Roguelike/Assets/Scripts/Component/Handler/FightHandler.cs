@@ -25,6 +25,23 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
         var listAttackMode = manager.dlAttackModePrefab.List;
         //缓存 count，避免本帧内 Update 中新创建的攻击模块在本帧立即被 Update 执行
         int count = listAttackMode.Count;
+        if (count == 0)
+            return;
+
+        var raycastBatch = manager.raycastBatch;
+        raycastBatch.BeginFrame();
+        //阶段1：收集本帧所有走射线检测的弹道的射线请求(各自申报，非射线模块 no-op)
+        for (int i = 0; i < count; i++)
+        {
+            var itemAttackMode = listAttackMode[i];
+            if (itemAttackMode.isValid)
+            {
+                itemAttackMode.PrepareRaycast(raycastBatch);
+            }
+        }
+        //阶段2：批量并行调度并同帧等待完成(命中零延迟)
+        raycastBatch.Schedule();
+        //阶段3：消费射线结果并推进各弹道逻辑
         for (int i = 0; i < count; i++)
         {
             var itemAttackMode = listAttackMode[i];
@@ -33,6 +50,8 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
                 itemAttackMode.Update();
             }
         }
+        //阶段4：DSP 式批量绘制在途弹道(按 visual_name 分桶、用 position 构建矩阵 DrawMeshInstanced；常开但 visual_name 空/未注册桶零副作用)
+        manager.attackModeInstanceRenderer.RenderAll(listAttackMode);
     }
 
     /// <summary>

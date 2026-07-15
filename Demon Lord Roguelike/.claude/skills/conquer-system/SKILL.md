@@ -220,7 +220,7 @@ public void InitNextDataForContinue();
 
 > `reward_exp` 只是给生物累加成长经验 `CreatureBean.levelExp`（满级不再加）；经验达标后的**升级走"祭坛献祭"**，见 [`sacrifice-system`](../sacrifice-system/SKILL.md) Skill。
 
-> **通关 BOSS 领奖 = 消费预生成奖励（预览即实领）**：`ActionForUIFightSettlementNext` 取 `gameWorldInfoRandomData.GetDifficultyReward(difficultyLevel)` 作基础奖励，调 `RewardSelectBean.InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`。深渊馈赠「奖励多多」的额外件数 `rewardAddItemNum`（魔晶）在预生成基础奖励**之后追加**；可选数量 `selectNumMax += rewardAddSelectNum` 并钳制到 `listReward.Count`。
+> **通关 BOSS 领奖 = 消费预生成奖励（预览即实领）**：`ActionForUIFightSettlementNext` 取 `gameWorldInfoRandomData.GetDifficultyReward(difficultyLevel)` 作基础奖励，调 `RewardSelectBean.InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`。深渊馈赠「奖励多多」的额外件数 `rewardAddItemNum`（装备道具，生成不出装备兜底魔晶）在预生成基础奖励**之后追加**；可选数量 `selectNumMax += rewardAddSelectNum` 并钳制到 `listReward.Count`。
 
 ### 关卡推进
 

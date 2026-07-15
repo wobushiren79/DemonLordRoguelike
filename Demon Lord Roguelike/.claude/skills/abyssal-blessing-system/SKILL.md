@@ -400,7 +400,7 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 
 | 馈赠 | id | buff_ids | class_entity | 计数器字段 | 领奖时效果 |
 |------|----|----------|--------------|-----------|-----------|
-| 奖励多多 | 1000002001 | 3000900001 | `BuffEntityInstantRewardMoreItem` | `FightBeanForConquer.rewardAddItemNum` | `RewardSelectBean.createItemNum += n`（领奖宝箱按奖励数量实时实例化，自动多出对应宝箱） |
+| 奖励多多 | 1000002001 | 3000900001 | `BuffEntityInstantRewardMoreItem` | `FightBeanForConquer.rewardAddItemNum` | `InitDataForReward` 在基础奖励之后按 `rewardAddItemNum` 追加**装备道具**（`CreateItemEquip`，与首件同规则、生成不出装备时兜底魔晶）；领奖宝箱按奖励数量实时实例化，自动多出对应宝箱 |
 | 再来一瓶 | 1000003001 | 3001000001 | `BuffEntityInstantRewardMoreSelect` | `FightBeanForConquer.rewardAddSelectNum` | `RewardSelectBean.selectNumMax += n`，随后裁剪到不超过 `listReward.Count`（超出的次数无对应宝箱可开，自然失效） |
 
 > 两个馈赠图标当前均用 `ui_abyssalblessing_7`。新增同类「领奖参数型」馈赠时沿用此模式：写一个 `BuffEntityInstant` 子类累加到 `FightBeanForConquer` 计数器 → 在领奖初始化处读取应用；切勿用 BUFF 容器查询累计（即时 BUFF 触发即弃、容器内实例不承载累计数值，无法据此叠加）。详见 `fight-reward-system` skill 的领奖生成链路。

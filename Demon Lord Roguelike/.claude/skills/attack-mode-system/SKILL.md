@@ -39,7 +39,8 @@ BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播
 | `isValid` | `bool` | 是否处于激活状态；`Destroy()` 时置 `false`，`UpdateHandleForAttackModePrefab` 据此跳过已回收对象 |
 | `instanceId` | `long` | 由 `FightManager` 分配的实例ID，`dlAttackModePrefab`（DictionaryList）按此 key 进行 O(1) 移除 |
 | `searchCreatureType` | `CreatureFightTypeEnum` | 由 `attackedLayerTarget` 推导出的搜索类型，`StartAttack` 时缓存，`Destroy` 时清零，避免每帧重算 |
-| `gameObject` / `spriteRenderer` | Unity 组件 | 攻击模块可视化对象（可选） |
+| `position` | `Vector3` | **弹道当前世界坐标（DSP 方案B 位置真实源）**。移动/定位走 `SetPosition`/`TranslatePosition`（同步回 transform），起点/射线/命中/边界均读它；**禁止**直接写弹体 `transform.position`/`Translate`。读别的生物位置仍用 `creatureObj.transform.position`。供 `AttackModeInstanceRenderer` 批量绘制读取 |
+| `gameObject` / `spriteRenderer` | Unity 组件 | 攻击模块可视化对象（预制字段保留：DSP 过渡期作渲染/兼容载体，位置真实源已改 `position`） |
 | `attackModeInfo` / `attackModeData` | Bean | 配置数据 / 运行时数据 |
 
 ### 攻击模式类型体系
@@ -498,7 +499,9 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | `StartAttackBase()` | 基础攻击开始（设置GO位置和激活） |
 | `StartAttack()` | 无目标攻击 |
 | `StartAttack(FightCreatureEntity, FightCreatureEntity, Action)` | 生物对战攻击；缓存 `searchCreatureType`，避免每帧重算 |
-| `Update()` | 每帧更新 |
+| `Update()` | 每帧更新（在射线批处理调度**之后**的消费阶段调用） |
+| `PrepareRaycast(FightRaycastBatch)` | 收集阶段调用：走射线的子类重写此方法入队本帧射线；默认仅重置 `batchRayStart=-1`（非射线弹道 no-op） |
+| `EnqueueSingleRay(FightRaycastBatch)` | 按当前配置入队 1 条单射线的复用辅助（起点/方向/距离/层级与 `FindCreatureEntityByRay/BySelf` 对齐） |
 | `Destroy(bool isPermanently = false)` | 回收或永久销毁；同时将 `isValid=false` 并重置 `searchCreatureType` |
 | `PlayEffectForHit(Vector3, int effectIndex = 0)` | 播放击中特效，`effectIndex` 对应 `effect_hit` 中以 `&` 分隔的第几个粒子ID |
 | `CheckHitTargetForSingle()` | 检测单个目标 |
@@ -517,12 +520,57 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 2. **避免每帧 new List/HashSet**：连锁/穿透等类型需要复用候选缓冲（参考 `AttackModeFalluponChain.listCandidate` / `AttackModeRangedPiercing.listPierceCreature`），并在 `Destroy` 中 `Clear()` 防止对象池复用残留。
 3. **缓存搜索类型**：`StartAttack(attacker,...)` 已根据 `attackedLayerTarget` 缓存 `searchCreatureType`，子类的范围/射线检测应复用该字段，不要在 `Update()` 里重新推导。
 4. **遍历 `dlAttackModePrefab` 时缓存 `count`**：`UpdateHandleForAttackModePrefab` 在循环开始处一次性缓存 `List.Count`，确保本帧内 `Update` 新生成的攻击模块在下一帧才参与遍历（避免一帧多次 Update / 死循环）。
+5. **射线检测走批处理，勿在 `Update()` 里 live Physics 射线**：走 `Ray/RaySelf` 的弹道命中检测统一由 `FightRaycastBatch`（`RaycastCommand` 批量并行）完成，见下方「射线检测批处理」。新增射线类弹道时重写 `PrepareRaycast(batch)` 入队射线，`Update()` 里照常调用 `CheckHitTargetForSingle/CheckHitTarget` 即会读批处理结果，**不要**自己调 `Physics.Raycast*`。
+
+## 射线检测批处理（RaycastCommand 两段式）
+
+> 背景：旧实现是「每个弹道在自己 `Update()` 里各自 `Physics.RaycastAll`」——主线程串行 + 每帧每球一个 `RaycastHit[]` 分配（GC）。100+ 火球时是主要 CPU/GC 瓶颈。现改为 `RaycastCommand` 批量并行、同帧 Schedule+Complete（**命中零延迟**），`NativeArray` 常驻复用（`Allocator.Persistent`）。
+
+`UpdateHandleForAttackModePrefab` 改为**同帧两段式**（不是每球即时射线）：
+
+1. **收集阶段**：遍历所有 `isValid` 弹道，调用 `PrepareRaycast(batch)`——走射线的子类把本帧射线（起点/方向/距离/层掩码）入队 `manager.raycastBatch`，记录命令索引 `batchRayStart`（Split 记 `listBatchRayIndex` 逐子弹）。非射线弹道 no-op。
+2. **调度阶段**：`raycastBatch.Schedule()` → `RaycastCommand.ScheduleBatch(...).Complete()` 同帧跑完全部射线。
+3. **消费阶段**：再遍历调用各自 `Update()`；`CheckHitTargetForSingle/CheckHitTarget` 检测到 `batchRayStart>=0` 时**直接读批处理结果**（`ResolveFirstAliveFromBatch`/`ResolveAllAliveFromBatch`，命中窗口内跳过已死目标），否则回落 live `FindCreatureEntity`（非射线类型 Area/Dis，或未入队的兜底）。
+
+各子类 `PrepareRaycast` 约定：
+
+| 类 | 入队策略 |
+|----|---------|
+| `AttackModeRanged`（Piercing/Area 继承） | 当前位置沿 `attackDirection` 入队 1 条（Piercing 靠 `CheckHitTarget` 读多命中窗口） |
+| `AttackModeRangedTracking` | 先按当前位置实时算朝向目标的方向，再入队 1 条 |
+| `AttackModeRangedArc` | `progress<0.5` 前半程不检测→不入队 |
+| `AttackModeFallupon` | 下落中在当前位置入队 1 条 |
+| `AttackModeRangedSplit` | 每个活跃子弹各入队 1 条，命中改为「先判定后移动」 |
+
+约束：
+- **检测时机统一为「移动前位置」**：两段式在移动前一次性收集，Split 由原「移动后检测」改为「移动前检测」（0.1 射程下位移差可忽略）。
+- **命中窗口上限** `FightRaycastBatch.MaxHitsPerRay`（当前 4）：单条射线最多记录的命中数；弹道射线极短（`collider_size~0.1`），穿透 `numPierceMax` 亦够用。若将来需要单射线穿透 >4，需上调此常量。
+- **层掩码** 由 `GetSearchLayerMask()` 从 `StartAttack` 缓存的 `searchCreatureType` 推导；无攻击者的 `StartAttack()` 数据路径 `searchCreatureType=None`→不入队→与 live 路径同样不命中（无回归）。
+- **生命周期**：`raycastBatch` 挂在 `FightManager`，`Clear()` 时 `Dispose()` 释放 `NativeArray`，下场战斗首次入队按需重新分配。
+
+## 弹道批量渲染（DSP 式 GPU Instancing）
+
+> 背景：旧实现每发弹道 = 一个 GameObject 挂 VisualEffect(GPU 粒子)/SpriteRenderer，同屏 N 发 = N 份「每实例 CPU graph 求值 + GPU dispatch」固定开销。借鉴戴森球计划「只记录位置，一起绘制」——弹道位置抽为纯数据(`BaseAttackMode.position`)，渲染由一个渲染器每帧统一批量 `DrawMeshInstanced`。
+
+`UpdateHandleForAttackModePrefab` 逻辑三阶段之后追加 **阶段4**：`manager.attackModeInstanceRenderer.RenderAll(listAttackMode)`。
+
+- **[AttackModeInstanceRenderer](Assets/Scripts/Game/Fight/AttackMode/AttackModeInstanceRenderer.cs)**（纯 C# 类，非 MonoBehaviour，不持 GameObject）：`FightManager.attackModeInstanceRenderer` 持有。
+- **分桶 key = `attackModeInfo.visual_name`（新配置字段）**：`RegisterVisual(visualName, mesh, material)` 登记视觉桶（mesh=朝相机 Quad，material 须开 GPU Instancing）；每桶固定 `Matrix4x4[1023]` 复用缓冲，满批即绘 + 收尾绘剩余，**无热路径分配**；用 `position` 构建 `TRS`（旋转暂用单位、缩放 `uniformScale`，billboard 交 shader）。
+- **`visual_name`(DSP 批量) 与 `prefab_name`(原预制) 是独立两套渲染通道**：`prefab_name` 仍由 `FightManager.GetAttackModePrefab` Instantiate 原 prefab(SpriteRenderer/VisualEffect)渲染，逻辑不变；配置侧二选一，勿同行都填。
+- **常开(已去除 `enableRender` 总开关)但天然零副作用**：`visual_name` 为空、或未登记该桶的弹道被跳过(不画)——现有弹道 visual_name 均空，行为不变。
+- **`visual_name` 配置落地**：加在 `excel_attackmode_info[攻击方式].xlsx` 的 `AttackModeInfo` 表(prefab_name 之后)，**必须在 Unity 跑 ExcelEditorWindow「生成 Entity + 导出」重新生成 `AttackModeInfoBean.cs` + `AttackModeInfo.json`** 后 `attackModeInfo.visual_name` 才编译可用。
+- **视觉资源与懒注册**：视觉源是一个预制 `Assets/LoadResources/AttackModeVisual/<visual_name>.prefab`(`PathInfo.AttackModeVisualPath`)，挂 `MeshFilter`(Quad)+`MeshRenderer`(material 开 GPU Instancing)，注册进 Addressables(address=全路径)。`FightManager.EnsureAttackModeVisual(attackModeInfo)` 在 `GetAttackModePrefab` 里懒加载：未 `HasVisual` 时 `GetModelForAddressablesSync(dicAttackModeVisualObj,...)` 取 **sharedMesh/sharedMaterial** 注册，只加载一次。
+- **缓存跨关卡保留、整场结束才释放**：关卡间(`ClearGameForSimple`/`ClearAttackModePrefab`)不释放 `dicAttackModeVisualObj`/`dicAttackModeObj`(留给下关复用)；打完所有关卡(`ClearGame`→`FightManager.Clear`)调 `ClearAttackModeAssetCache()`：`LoadAddressablesUtil.Release` 释放弹道+视觉预制的 Addressables 句柄、清空两个 dict、`ClearVisuals()` 清桶。`UnregisterVisual` 仅热替换用。
+- **前置约束（方案B）**：弹道位置真实源已从 `transform` 迁到 `BaseAttackMode.position`；移动型子类用 `SetPosition`/`TranslatePosition`（同步回 transform）。**新增移动弹道必须遵守，否则渲染器读到的 `position` 不准**。
+- **已知局限/待办**：拖尾(Trail)未做；朝相机 billboard 待 shader(Editor 里看到的是未朝相机的静态 Quad)；`AttackModeRangedSplit` 自管多 GameObject 未迁移、不纳入；示例 visual 预制与 instanced 火焰 shader 资源尚未建（C# 骨架就位，建好并登记 Addressables 后即生效）。
 
 ## 文件位置速查
 
 | 功能 | 文件路径 |
 |------|----------|
 | 攻击模式基类 | `Assets/Scripts/Game/Fight/AttackMode/BaseAttackMode.cs` |
+| 射线批处理调度器 | `Assets/Scripts/Game/Fight/AttackMode/FightRaycastBatch.cs` |
+| 弹道批量渲染器(DSP) | `Assets/Scripts/Game/Fight/AttackMode/AttackModeInstanceRenderer.cs` |
 | 攻击模式数据Bean | `Assets/Scripts/Bean/Game/AttackModeBean.cs` |
 | 攻击模式配置Bean | `Assets/Scripts/Bean/MVC/Game/AttackModeInfoBean.cs` |
 | 攻击模式配置扩展 | `Assets/Scripts/Bean/MVC/Game/AttackModeInfoBeanPartial.cs` |
@@ -546,3 +594,4 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | 回复生命 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRegainHP.cs` |
 | 回复护甲 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRegainDR.cs` |
 | 攻击预制体路径 | `Assets/LoadResources/AttackMode/` |
+| 攻击模块视觉预制(DSP mesh+material) | `Assets/LoadResources/AttackModeVisual/` |

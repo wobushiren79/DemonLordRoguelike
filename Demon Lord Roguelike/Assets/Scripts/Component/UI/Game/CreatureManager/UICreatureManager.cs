@@ -92,7 +92,7 @@ public partial class UICreatureManager : BaseUIComponent
     }
 
     /// <summary>
-    /// 获取阵容管理列表的默认排序副本:魔王(selfCreature)恒置顶第一位 → 其余按稀有度降序(高→低) → 等级降序(高→低) → 同类聚合(creatureId 升序,同一种魔物相邻,与筛选排序 Class 键口径一致)。
+    /// 获取阵容管理列表的默认排序副本:魔王(selfCreature)恒置顶第一位 → 阵容内优先(按阵容槽序号升序,阵容外排后) → 稀有度降序(高→低) → 等级降序(高→低)。
     /// <para>魔王独立于背包存储,排序后插入到列表首部;返回新列表,不改动底层存档的 listBackpackCreature 原始顺序;该顺序会作为筛选排序弹窗的稳定基序(次级 tiebreaker)。</para>
     /// </summary>
     /// <param name="userData">用户数据</param>
@@ -101,16 +101,22 @@ public partial class UICreatureManager : BaseUIComponent
     {
         var listSource = userData.GetUserBackpackCreatureData().listBackpackCreature;
         var listSorted = new List<CreatureBean>(listSource);
+        //阵容槽序号:在阵容内取其槽序号(>0),否则置最大值排到阵容外
+        int LineupOrder(CreatureBean itemData)
+        {
+            int lineupIndex = userData.GetLinupIndex(itemData.creatureUUId);
+            return lineupIndex > 0 ? lineupIndex : int.MaxValue;
+        }
         listSorted.Sort((a, b) =>
         {
+            //阵容内优先:按阵容槽序号升序(阵容外统一为最大值排后)
+            int lineupCompare = LineupOrder(a).CompareTo(LineupOrder(b));
+            if (lineupCompare != 0) return lineupCompare;
             //稀有度降序(高稀有度置前)
             int rarityCompare = b.GetRarityValue().CompareTo(a.GetRarityValue());
             if (rarityCompare != 0) return rarityCompare;
             //等级降序(高等级置前)
-            int levelCompare = b.level.CompareTo(a.level);
-            if (levelCompare != 0) return levelCompare;
-            //同类聚合:按 creatureId 升序使同一种魔物相邻
-            return a.creatureId.CompareTo(b.creatureId);
+            return b.level.CompareTo(a.level);
         });
         //魔王恒置顶显示在第一位(始终第一,不受筛选排序影响见 UIViewCreatureCardList.OrderListCreature)
         if (userData.selfCreature != null)

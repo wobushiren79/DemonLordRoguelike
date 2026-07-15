@@ -11,8 +11,10 @@ public class BaseAttackMode
     public bool isValid = true;
     //实例ID（由 FightManager 分配，用于 DictionaryList 快速移除）
     public long instanceId;
-    //当前obj
+    //当前obj（预制字段保留：DSP 迁移过渡期仍作渲染/兼容载体，位置真实源已改为 position）
     public GameObject gameObject;
+    //弹道当前世界坐标（DSP 方案B 位置权威源，脱离 transform；gameObject 非空时同步写回其 transform，供 AttackModeInstanceRenderer 批量绘制读取）
+    public Vector3 position;
     //sprite渲染（不一定有）
     public SpriteRenderer spriteRenderer;
     //攻击模块信息
@@ -21,6 +23,8 @@ public class BaseAttackMode
     public AttackModeBean attackModeData;
     //攻击搜索的生物战斗类型（由 attackedLayerTarget 推导，StartAttack 时缓存，避免每帧重算）
     protected CreatureFightTypeEnum searchCreatureType = CreatureFightTypeEnum.None;
+    //本帧射线批处理命令索引（>=0 表示本帧已入队射线，检测时读批处理结果；-1 表示未入队，走 live 路径）
+    protected int batchRayStart = -1;
     //攻速ASPD=100时弹道飞行速度的最大加成倍率（数值策划调整入口）
     public const float SpeedRateASPDMax = 3f;
     //弹道起点 Y 轴随机扰动幅度（±值，避免弹道起点完全重合，数值策划调整入口）
@@ -76,9 +80,11 @@ public class BaseAttackMode
     /// </summary>
     public virtual void StartAttackBase()
     {
+        //位置真实源置为起点（即使无 gameObject 也生效），再同步到 transform
+        position = attackModeData.startPos;
         if (gameObject != null)
         {
-            gameObject.transform.position = attackModeData.startPos;
+            gameObject.transform.position = position;
             gameObject.SetActive(true);
         }
     }
@@ -116,8 +122,8 @@ public class BaseAttackMode
                     //设置弹道速度倍率（攻速ASPD 0~100 线性映射 1~SpeedRateASPDMax 倍，与攻击时间换算保持同一插值体系）
                     float attributeASPD = attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD);
                     attackModeData.attackerSpeedRate = MathUtil.InterpolationLerp(attributeASPD, 0, 100, 1f, SpeedRateASPDMax);
-                    //设置起始位置（额外叠加 Y 轴随机扰动，幅度见 StartPosRandomRangeY，避免弹道起点完全重合）
-                    Vector3 offsetPosition = creatureData.creatureInfo.GetAttackStartPosition();
+                    //设置起始位置（生物攻击起始位置 + 攻击模块自身偏移，再叠加 Y 轴随机扰动避免弹道起点完全重合）
+                    Vector3 offsetPosition = creatureData.creatureInfo.GetAttackStartPosition() + attackModeInfo.GetStartPosOffset();
                     offsetPosition.y += UnityEngine.Random.Range(-StartPosRandomRangeY, StartPosRandomRangeY);
                     attackModeData.startPos = attacker.creatureObj.transform.position + offsetPosition;
                     //获取被攻击者的层级
@@ -179,6 +185,32 @@ public class BaseAttackMode
 
     }
 
+    #region  位置(DSP 方案B 权威源)
+    /// <summary>
+    /// 设置弹道位置（位置真实源），并同步写回 gameObject.transform（若存在）
+    /// </summary>
+    public void SetPosition(Vector3 targetPosition)
+    {
+        position = targetPosition;
+        if (gameObject != null)
+        {
+            gameObject.transform.position = position;
+        }
+    }
+
+    /// <summary>
+    /// 按世界向量平移弹道位置（等价于弹体无旋转下的 transform.Translate），并同步写回 transform
+    /// </summary>
+    public void TranslatePosition(Vector3 delta)
+    {
+        position += delta;
+        if (gameObject != null)
+        {
+            gameObject.transform.position = position;
+        }
+    }
+    #endregion
+
     /// <summary>
     /// 获取弹道实际飞行速度（配置speed_move × 攻击者攻速加成倍率）
     /// </summary>
@@ -225,15 +257,125 @@ public class BaseAttackMode
     }
     #endregion
 
+    #region  射线批处理
+    /// <summary>
+    /// 收集本帧射线检测请求（在批处理调度前调用）
+    /// <para>默认仅重置状态、不入队（非射线弹道）；走射线检测的子类重写此方法把射线加入批处理。</para>
+    /// </summary>
+    public virtual void PrepareRaycast(FightRaycastBatch batch)
+    {
+        batchRayStart = -1;
+    }
+
+    /// <summary>
+    /// 按当前配置把一条单射线入队到批处理（供 Ray/RaySelf 类型的单体弹道复用）
+    /// <para>与 FightCreatureSearchUtil.FindCreatureEntityByRay/BySelf 的起点/方向/距离/层级保持一致。</para>
+    /// </summary>
+    protected void EnqueueSingleRay(FightRaycastBatch batch)
+    {
+        if (gameObject == null)
+            return;
+        int layerMask = GetSearchLayerMask();
+        if (layerMask == 0)
+            return;
+        CreatureSearchType searchType = attackModeInfo.GetCreatureSerachType();
+        Vector3 pos = position;
+        Vector3 dir = attackModeData.attackDirection;
+        float dist = attackModeInfo.collider_size;
+        if (searchType == CreatureSearchType.RaySelf)
+        {
+            //远处射向自己：起点前移一个射程、方向取反
+            pos += dir.x > 0 ? new Vector3(dist, 0, 0) : new Vector3(-dist, 0, 0);
+            dir = -dir;
+        }
+        else if (searchType != CreatureSearchType.Ray)
+        {
+            return;
+        }
+        if (dir == Vector3.zero)
+            return;
+        batchRayStart = batch.Enqueue(pos, dir.normalized, dist, layerMask);
+    }
+
+    /// <summary>
+    /// 获取射线检测的层级掩码（由 StartAttack 缓存的 searchCreatureType 推导）
+    /// </summary>
+    protected int GetSearchLayerMask()
+    {
+        if (searchCreatureType == CreatureFightTypeEnum.FightDefense)
+            return 1 << LayerInfo.CreatureDef;
+        if (searchCreatureType == CreatureFightTypeEnum.FightAttack)
+            return 1 << LayerInfo.CreatureAtt;
+        return 0;
+    }
+
+    /// <summary>
+    /// 从批处理结果中解析某条命令的首个存活目标（命中窗口内跳过已死目标，取第一个存活）
+    /// </summary>
+    protected FightCreatureEntity ResolveFirstAliveFromBatch(int cmdIndex)
+    {
+        if (cmdIndex < 0)
+            return null;
+        FightRaycastBatch batch = FightHandler.Instance.manager.raycastBatch;
+        GameFightLogic gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
+        for (int h = 0; h < FightRaycastBatch.MaxHitsPerRay; h++)
+        {
+            var collider = batch.GetHit(cmdIndex, h).collider;
+            //命中窗口内遇到空 collider 表示后续无更多命中
+            if (collider == null)
+                break;
+            var targetCreature = gameFightLogic.fightData.GetCreatureById(collider.gameObject.name, searchCreatureType);
+            if (targetCreature != null && !targetCreature.IsDead())
+                return targetCreature;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 从批处理结果中解析某条命令的全部存活目标（穿透用），结果写入传入 buffer 以复用内存
+    /// </summary>
+    protected void ResolveAllAliveFromBatch(int cmdIndex, List<FightCreatureEntity> buffer)
+    {
+        if (cmdIndex < 0)
+            return;
+        FightRaycastBatch batch = FightHandler.Instance.manager.raycastBatch;
+        GameFightLogic gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
+        for (int h = 0; h < FightRaycastBatch.MaxHitsPerRay; h++)
+        {
+            var collider = batch.GetHit(cmdIndex, h).collider;
+            if (collider == null)
+                break;
+            var targetCreature = gameFightLogic.fightData.GetCreatureById(collider.gameObject.name, searchCreatureType);
+            if (targetCreature != null && !targetCreature.IsDead())
+                buffer.Add(targetCreature);
+        }
+    }
+    #endregion
+
     #region  检测相关
     /// <summary>
-    /// 检测是否到达边界
+    /// 检测弹道当前位置(position)是否到达边界（DSP 方案B 首选，脱离 gameObject）
     /// </summary>
-    /// <returns></returns>
+    public virtual bool CheckIsMoveBound()
+    {
+        return CheckIsMoveBoundByPosition(position);
+    }
+
+    /// <summary>
+    /// 检测是否到达边界（兼容重载：读传入 gameObject 的 transform 位置）
+    /// </summary>
     public virtual bool CheckIsMoveBound(GameObject targetObj)
     {
-        if (targetObj.transform.position.x > 15 || targetObj.transform.position.x < -5 ||
-               targetObj.transform.position.y < -5 || targetObj.transform.position.y > 15)
+        return CheckIsMoveBoundByPosition(targetObj.transform.position);
+    }
+
+    /// <summary>
+    /// 按世界坐标判定是否越出地图范围（x∈[-5,15]、y∈[-5,15] 之外即越界）
+    /// </summary>
+    private bool CheckIsMoveBoundByPosition(Vector3 checkPosition)
+    {
+        if (checkPosition.x > 15 || checkPosition.x < -5 ||
+               checkPosition.y < -5 || checkPosition.y > 15)
         {
             return true;
         }
@@ -245,7 +387,7 @@ public class BaseAttackMode
     /// </summary>
     public virtual FightCreatureEntity CheckHitTargetForSingle()
     {
-        return CheckHitTargetForSingle(gameObject.transform.position);
+        return CheckHitTargetForSingle(position);
     }
 
     /// <summary>
@@ -253,7 +395,7 @@ public class BaseAttackMode
     /// </summary>
     public virtual List<FightCreatureEntity> CheckHitTarget()
     {
-        return CheckHitTarget(gameObject.transform.position);
+        return CheckHitTarget(position);
     }
 
     /// <summary>
@@ -261,6 +403,11 @@ public class BaseAttackMode
     /// </summary>
     public virtual FightCreatureEntity CheckHitTargetForSingle(Vector3 checkPosition)
     {
+        //本帧已入队射线：直接读批处理结果，避免 live Physics 查询
+        if (batchRayStart >= 0)
+        {
+            return ResolveFirstAliveFromBatch(batchRayStart);
+        }
         List<FightCreatureEntity> listData = CheckHitTarget(checkPosition);
         if (listData.IsNull())
         {
@@ -274,6 +421,13 @@ public class BaseAttackMode
     /// </summary>
     public virtual List<FightCreatureEntity> CheckHitTarget(Vector3 checkPosition)
     {
+        //本帧已入队射线：从批处理结果解析全部存活目标(穿透用)
+        if (batchRayStart >= 0)
+        {
+            List<FightCreatureEntity> listBatch = new List<FightCreatureEntity>(FightRaycastBatch.MaxHitsPerRay);
+            ResolveAllAliveFromBatch(batchRayStart, listBatch);
+            return listBatch.Count > 0 ? listBatch : null;
+        }
         CreatureSearchType searchType = attackModeInfo.GetCreatureSerachType();
         //使用 StartAttack 时缓存的 searchCreatureType，避免每帧重算
         return FightCreatureSearchUtil.FindCreatureEntity(searchType, searchCreatureType, checkPosition, attackModeData.attackDirection, Vector3.zero, attackModeInfo.collider_size);

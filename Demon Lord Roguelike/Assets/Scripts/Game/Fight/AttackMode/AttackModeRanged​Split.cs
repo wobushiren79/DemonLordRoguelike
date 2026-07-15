@@ -8,6 +8,8 @@ public class AttackModeRanged​Split : BaseAttackMode
     public List<GameObject> listSplitAttackObj;
     public List<int> listSplitRoad;
     public int splitNum = 2;
+    //各子弹本帧的射线批处理命令索引（与 listSplitAttackObj 下标对齐，-1 表示该子弹本帧未入队）
+    private List<int> listBatchRayIndex;
 
     public override void StartAttack()
     {
@@ -22,6 +24,45 @@ public class AttackModeRanged​Split : BaseAttackMode
         //分裂子攻击
         CreatureSplitAttack();
         actionForAttackEnd?.Invoke(this);
+    }
+
+    /// <summary>
+    /// 收集本帧射线检测请求：为每个活跃子弹在其当前位置各入队一条射线（下标与 listSplitAttackObj 对齐）
+    /// </summary>
+    public override void PrepareRaycast(FightRaycastBatch batch)
+    {
+        batchRayStart = -1;
+        if (listBatchRayIndex == null)
+            listBatchRayIndex = new List<int>();
+        listBatchRayIndex.Clear();
+        if (listSplitAttackObj == null)
+            return;
+        int layerMask = GetSearchLayerMask();
+        CreatureSearchType searchType = attackModeInfo.GetCreatureSerachType();
+        bool isRay = searchType == CreatureSearchType.Ray || searchType == CreatureSearchType.RaySelf;
+        float dist = attackModeInfo.collider_size;
+        for (int i = 0; i < listSplitAttackObj.Count; i++)
+        {
+            var itemObj = listSplitAttackObj[i];
+            if (!isRay || layerMask == 0 || itemObj == null || !itemObj.activeSelf)
+            {
+                listBatchRayIndex.Add(-1);
+                continue;
+            }
+            Vector3 pos = itemObj.transform.position;
+            Vector3 dir = attackModeData.attackDirection;
+            if (searchType == CreatureSearchType.RaySelf)
+            {
+                pos += dir.x > 0 ? new Vector3(dist, 0, 0) : new Vector3(-dist, 0, 0);
+                dir = -dir;
+            }
+            if (dir == Vector3.zero)
+            {
+                listBatchRayIndex.Add(-1);
+                continue;
+            }
+            listBatchRayIndex.Add(batch.Enqueue(pos, dir.normalized, dist, layerMask));
+        }
     }
 
     public override void Update()
@@ -131,7 +172,7 @@ public class AttackModeRanged​Split : BaseAttackMode
                 if (itemObj.gameObject.activeSelf)
                 {
                     int roadIndex =  listSplitRoad[i];
-                    HandleForItemMove(itemObj, roadIndex);
+                    HandleForItemMove(itemObj, roadIndex, i);
                     isAllDestory = false;
                 }
             }
@@ -143,11 +184,17 @@ public class AttackModeRanged​Split : BaseAttackMode
     }
 
     /// <summary>
-    /// 处理移动item
+    /// 处理移动item（先做命中判定，再移动、判边界）
     /// </summary>
-    public virtual void HandleForItemMove(GameObject targetObj, int targetRoad)
+    /// <param name="subIndex">子弹在 listSplitAttackObj 中的下标，用于取该子弹本帧的射线批处理结果</param>
+    public virtual void HandleForItemMove(GameObject targetObj, int targetRoad, int subIndex)
     {
         if (targetObj == null || !targetObj.gameObject.activeSelf)
+        {
+            return;
+        }
+        //先做命中判定（读批处理结果，检测在移动前位置），命中即回收该子弹
+        if (HandleForHitTarget(targetObj, subIndex))
         {
             return;
         }
@@ -163,27 +210,25 @@ public class AttackModeRanged​Split : BaseAttackMode
         }
         targetObj.transform.Translate(attackModeData.attackDirection * Time.deltaTime * GetMoveSpeed());
         //边界判定
-        bool isBound = HandleForBound(targetObj, targetRoad);
-        //如果没有超出边界 则进行打击判定
-        if (!isBound)
-        {
-            HandleForHitTarget(targetObj, targetRoad);
-        }
+        HandleForBound(targetObj, targetRoad);
     }
 
     /// <summary>
-    /// 打击判定处理
+    /// 打击判定处理：读该子弹本帧的射线批处理结果，命中则扣血并回收该子弹
     /// </summary>
-    public virtual void HandleForHitTarget(GameObject targetObj, int targetRoad)
+    /// <returns>是否命中并回收了该子弹</returns>
+    public virtual bool HandleForHitTarget(GameObject targetObj, int subIndex)
     {
-        //检测是否碰撞
-        FightCreatureEntity FightCreatureEntity = CheckHitTargetForSingle(targetObj.transform.position);
-        if (FightCreatureEntity != null)
+        int slot = (listBatchRayIndex != null && subIndex < listBatchRayIndex.Count) ? listBatchRayIndex[subIndex] : -1;
+        FightCreatureEntity fightCreatureEntity = ResolveFirstAliveFromBatch(slot);
+        if (fightCreatureEntity != null)
         {
             //扣血
-            FightCreatureEntity.UnderAttack(this);
+            fightCreatureEntity.UnderAttack(this);
             targetObj.SetActive(false);
+            return true;
         }
+        return false;
     }
 
     /// <summary>

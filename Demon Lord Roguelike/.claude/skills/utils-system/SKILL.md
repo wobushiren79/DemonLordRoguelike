@@ -56,7 +56,7 @@ Assets/FrameWork/Scripts/           Assets/Scripts/
 | **游戏通用** | |
 | GameUtil | 游戏通用工具 |
 | SceneUtil | 场景工具 |
-| RayUtil | 射线/范围检测（`OverlapToSphere/Box`、`RayToCastAll` 等） |
+| RayUtil | 射线/范围检测（`OverlapToSphere/Box`、`RayToCastAllNonAlloc`（共享缓冲零 GC）等） |
 | VectorUtil | 向量计算 |
 | CptUtil | Component 工具 |
 | DGEaseUtil | DOTween Ease 工具 |

@@ -100,7 +100,7 @@ public partial class GameTestEditor : Editor
 
         // 战斗测试模式选择
         EditorGUILayout.BeginVertical("box");
-        fightTestMode = (FightTestModeEnum)EditorGUILayout.EnumPopup(new GUIContent("战斗测试模式", "普通模式=自定义场景/敌人/BUFF的战斗；征服模式BOSS关=指定世界与难度直接进入征服BOSS关"), fightTestMode);
+        fightTestMode = (FightTestModeEnum)EditorGUILayout.EnumPopup(new GUIContent("战斗测试模式", "普通模式=自定义场景/敌人/BUFF的战斗；征服模式BOSS关=指定世界与难度直接进入征服BOSS关；单体测试模式=道路长度10/道路数量1/进攻生物数量1/进攻间隔1固定不显示，其余同普通模式"), fightTestMode);
         EditorGUILayout.EndVertical();
         EditorGUILayout.Space(5);
 
@@ -113,9 +113,10 @@ public partial class GameTestEditor : Editor
             return;
         }
 
-        // 运行按钮
+        // 运行按钮(单体测试模式与普通模式共用同一进入逻辑，仅按钮文案区分)
         GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
-        if (GUILayout.Button("▶️ 开始战斗测试", GUILayout.Height(30)) && Application.isPlaying)
+        string startFightBtnText = fightTestMode == FightTestModeEnum.SingleUnit ? "▶️ 开始单体测试" : "▶️ 开始战斗测试";
+        if (GUILayout.Button(startFightBtnText, GUILayout.Height(30)) && Application.isPlaying)
         {
             FightBean fightData = GetTestData();
             launcher.StartForFightSceneTest(fightData);
@@ -160,8 +161,12 @@ public partial class GameTestEditor : Editor
                 }
             }
             EditorGUILayout.EndHorizontal();
-            fightSceneRoadNum = EditorGUILayout.IntField(new GUIContent("道路数量", "战斗场景的道路数量"), fightSceneRoadNum);
-            fightSceneRoadLength = EditorGUILayout.IntField(new GUIContent("道路长度", "每条道路的长度"), fightSceneRoadLength);
+            // 单体测试模式下道路数量/道路长度为固定值，不显示
+            if (fightTestMode != FightTestModeEnum.SingleUnit)
+            {
+                fightSceneRoadNum = EditorGUILayout.IntField(new GUIContent("道路数量", "战斗场景的道路数量"), fightSceneRoadNum);
+                fightSceneRoadLength = EditorGUILayout.IntField(new GUIContent("道路长度", "每条道路的长度"), fightSceneRoadLength);
+            }
             EditorGUILayout.EndVertical();
             EditorGUI.indentLevel--;
         }
@@ -174,8 +179,12 @@ public partial class GameTestEditor : Editor
         {
             EditorGUI.indentLevel++;
             EditorGUILayout.BeginVertical("box");
-            fightSceneAttackNum = EditorGUILayout.IntField(new GUIContent("进攻生物数量", "每波进攻的生物数量"), fightSceneAttackNum);
-            fightSceneAttackDelay = EditorGUILayout.FloatField(new GUIContent("进攻间隔", "进攻波次之间的延迟时间"), fightSceneAttackDelay);
+            // 单体测试模式下进攻生物数量/进攻间隔为固定值，不显示
+            if (fightTestMode != FightTestModeEnum.SingleUnit)
+            {
+                fightSceneAttackNum = EditorGUILayout.IntField(new GUIContent("进攻生物数量", "每波进攻的生物数量"), fightSceneAttackNum);
+                fightSceneAttackDelay = EditorGUILayout.FloatField(new GUIContent("进攻间隔", "进攻波次之间的延迟时间"), fightSceneAttackDelay);
+            }
 
             EditorGUILayout.Space(5);
             EditorGUILayout.LabelField("进攻生物 IDs （NPCID）", EditorStyles.boldLabel);
@@ -776,16 +785,23 @@ public partial class GameTestEditor : Editor
 
     public FightBean GetTestData()
     {
+        // 单体测试模式：道路长度/道路数量/进攻生物数量/进攻间隔强制使用固定值
+        bool isSingleUnit = fightTestMode == FightTestModeEnum.SingleUnit;
+        int roadNum = isSingleUnit ? SINGLE_UNIT_ROAD_NUM : fightSceneRoadNum;
+        int roadLength = isSingleUnit ? SINGLE_UNIT_ROAD_LENGTH : fightSceneRoadLength;
+        int attackNum = isSingleUnit ? SINGLE_UNIT_ATTACK_NUM : fightSceneAttackNum;
+        float attackDelay = isSingleUnit ? SINGLE_UNIT_ATTACK_DELAY : fightSceneAttackDelay;
+
         FightBeanForTest fightData = new FightBeanForTest();
-        fightData.sceneRoadNum = fightSceneRoadNum;
-        fightData.sceneRoadLength = fightSceneRoadLength;
+        fightData.sceneRoadNum = roadNum;
+        fightData.sceneRoadLength = roadLength;
         fightData.gameFightType = GameFightTypeEnum.Test;
 
         // 生成进攻数据
         fightData.fightAttackData = new FightAttackBean();
-        for (int i = 0; i < fightSceneAttackNum; i++)
+        for (int i = 0; i < attackNum; i++)
         {
-            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(fightSceneAttackDelay, enemyIds);
+            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(attackDelay, enemyIds);
             fightData.fightAttackData.AddAttackQueue(fightAttackDetails);
         }
         fightData.fightAttackDataRemark = ClassUtil.DeepCopy(fightData.fightAttackData);

@@ -403,6 +403,8 @@ public class GashaponMachineLogic : BaseGameLogic
 
         float startPos = VectorUtil.GetCenterToTwoSide(0, 1, gashaponMachineData.gashaponNum, index);
         float animTimeForEggJump = 0.5f;
+        //播放蛋出现音效
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_btn_31);
         objEgg.transform.DOScale(Vector3.one, animTimeForEggJump / 2f);
         objEgg.transform
             .DOJump(scenePrefab.objBuildingCore.transform.position + new Vector3(startPos, 0, -2), 0.5f, 3, animTimeForEggJump)

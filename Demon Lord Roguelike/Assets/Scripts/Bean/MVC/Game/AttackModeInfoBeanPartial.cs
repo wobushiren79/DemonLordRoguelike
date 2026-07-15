@@ -1,7 +1,26 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 public partial class AttackModeInfoBean
 {
+    #region 攻击起始位置偏移
+    protected bool isInitStartPosOffset = false;
+    protected Vector3 startPosOffset;
+
+    /// <summary>
+    /// 获取攻击起始位置偏移（叠加在生物攻击起始位置之上，空=Vector3.zero，缓存解析结果）
+    /// </summary>
+    public Vector3 GetStartPosOffset()
+    {
+        if (!isInitStartPosOffset)
+        {
+            startPosOffset = start_pos_offset.SplitForVector3(',');
+            isInitStartPosOffset = true;
+        }
+        return startPosOffset;
+    }
+    #endregion
+
     #region Buff
     protected List<BuffBean> listBuffData;
     /// <summary>

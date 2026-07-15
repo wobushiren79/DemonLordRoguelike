@@ -341,6 +341,8 @@ public partial class UIFightMain : BaseUIComponent
 
 ## 战斗预制管理
 
+> 弹道(攻击模块)渲染：`FightManager.attackModeInstanceRenderer`（DSP 式 GPU Instancing 批量渲染器）在 `FightHandler.UpdateHandleForAttackModePrefab` 阶段4 `RenderAll` 批量绘制在途弹道，按 `visual_name` 分桶(与 `prefab_name` 原预制渲染独立)，常开但 visual_name 空/未注册桶零副作用。弹道位置真实源为 `BaseAttackMode.position`。**细节见 attack-mode-system skill**。
+
 ### 掉落水晶
 
 ```csharp

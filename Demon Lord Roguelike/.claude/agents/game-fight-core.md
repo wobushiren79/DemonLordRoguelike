@@ -56,6 +56,10 @@ watched_files:
 | FightManager | Assets/Scripts/Component/Manager/FightManager.cs |
 | FightHandler | Assets/Scripts/Component/Handler/FightHandler.cs |
 
+## 弹道渲染接线（DSP GPU Instancing）
+
+`FightManager` 持有 `attackModeInstanceRenderer`（`AttackModeInstanceRenderer`，DSP 式弹道批量渲染器）；`FightHandler.UpdateHandleForAttackModePrefab` 在射线批处理/逻辑推进之后追加**阶段4** `RenderAll(listAttackMode)` 批量绘制在途弹道。按 `attackModeInfo.visual_name` 分桶(与 `prefab_name` 原预制渲染独立)，常开但 visual_name 空/未注册桶零副作用。**细节与约束以 attack-mode-system skill / game-attack-mode agent 为准**，本代理只需知道这条接线存在。
+
 ## 约束
 
 - 战斗实体之间通过事件通信，不要直接耦合

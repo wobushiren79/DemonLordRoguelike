@@ -25,6 +25,8 @@ public class ScenePrefabForBase : ScenePrefabBase
     public GameObject objBuildingjDoomCouncil;
     //成就石碑
     public GameObject objBuildingAchievement;
+    //魔汁机
+    public GameObject objBuildingJuicer;
     //光线
     public Light lightSun;
     public GameObject lightRay;
@@ -37,7 +39,7 @@ public class ScenePrefabForBase : ScenePrefabBase
     /// <summary>
     /// 所有走"出现动画"的建筑对象登记表(不含常驻的核心建筑);新增建筑只需在此登记一处,音效/整场景出现判断据此,无需再改散落条件
     /// </summary>
-    private GameObject[] AllBuildingShowObjs => new[] { objBuildingAltar, objBuildingVat, objBuildingjDoomCouncil, objBuildingAchievement };
+    private GameObject[] AllBuildingShowObjs => new[] { objBuildingAltar, objBuildingVat, objBuildingjDoomCouncil, objBuildingAchievement, objBuildingJuicer };
 
     /// <summary>
     /// 初始化场景
@@ -62,6 +64,7 @@ public class ScenePrefabForBase : ScenePrefabBase
         BuildingAltarRefresh();
         BuildingDoomCouncilRefresh();
         BuildingAchievementRefresh();
+        BuildingJuicerRefresh();
     }
 
     /// <summary>
@@ -79,6 +82,7 @@ public class ScenePrefabForBase : ScenePrefabBase
         var taskVat = AnimForBuildingVatShow(timeForShow);
         var taskDoomCouncil = AnimForBuildingDoomCouncilShow(timeForShow);
         var taskAchievement = AnimForBuildingAchievementShow(timeForShow);
+        var taskJuicer = AnimForBuildingJuicerShow(timeForShow);
         await new WaitForSeconds(timeForShow);
     }
 
@@ -195,6 +199,40 @@ public class ScenePrefabForBase : ScenePrefabBase
             return;
         }
         AnimForBuildingShowItem(objBuildingAchievement.transform, -1f, timeForShow);
+        await new WaitForSeconds(timeForShow);
+    }
+    #endregion
+
+    #region 魔汁机
+    /// <summary>
+    /// 刷新魔汁机:按魔汁机研究解锁(UnlockEnum.Juicer)显隐建筑;建筑上的交互碰撞体(命名 JuicerInteraction)随之启用/关闭
+    /// </summary>
+    public void BuildingJuicerRefresh()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        UserUnlockBean userUnlock = userData.GetUserUnlockData();
+        bool isUnlockJuicer = userUnlock.CheckIsUnlock(UnlockEnum.Juicer);
+        //是否解锁魔汁机
+        if (isUnlockJuicer)
+        {
+            objBuildingJuicer.gameObject.SetActive(true);
+        }
+        else
+        {
+            objBuildingJuicer.gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// 动画-魔汁机出现
+    /// </summary>
+    public async Task AnimForBuildingJuicerShow(float timeForShow)
+    {
+        if (!objBuildingJuicer.activeSelf)
+        {
+            return;
+        }
+        AnimForBuildingShowItem(objBuildingJuicer.transform, -1f, timeForShow);
         await new WaitForSeconds(timeForShow);
     }
     #endregion
@@ -559,6 +597,7 @@ public class ScenePrefabForBase : ScenePrefabBase
             case UnlockEnum.Altar:
             case UnlockEnum.DoomCouncil:
             case UnlockEnum.Achievement:
+            case UnlockEnum.Juicer:
             case UnlockEnum.CreatureVat:
             case UnlockEnum.CreatureVatAdd:
                 return true;
@@ -592,6 +631,10 @@ public class ScenePrefabForBase : ScenePrefabBase
             case UnlockEnum.Achievement:
                 taskRefresh = RefreshScene();
                 taskAnimShow = AnimForBuildingAchievementShow(timeForShow);
+                break;
+            case UnlockEnum.Juicer:
+                taskRefresh = RefreshScene();
+                taskAnimShow = AnimForBuildingJuicerShow(timeForShow);
                 break;
             case UnlockEnum.CreatureVat:
             case UnlockEnum.CreatureVatAdd:

@@ -87,6 +87,7 @@ GameControlHandler.Instance.manager.controlForGameBase.EnabledControl(false);
 | Councilor | `DoomCouncilLogic.InteractCouncilor(go)`（议员） |
 | AchievementInteraction | 打开 `UIAchievement`（退出直接回 `UIBaseMain`） |
 | VatInteraction | 打开 `UICreatureVat`（魔物进阶容器，退出直接回 `UIBaseMain`；枚举值=8跳过7，因提示文本 textId=2000+值=2008，避开2007已占用） |
+| JuicerInteraction | 打开 `UICreatureJuicer`（魔汁机/魔物回收，退出直接回 `UIBaseMain`；枚举值=9，提示文本 textId=2009；交互碰撞体命名 `JuicerInteraction`。详见 juicer-system Skill） |
 
 > 交互物体 GameObject 名字即枚举名；带 `_UUID` 后缀的（如 `Councilor_xxx`）只取下划线前段；`Enum.TryParse` 失败回退 `None`。
 > 由场景交互打开的 UI（成就/魔物进阶）用注入式退出回调 `actionForExit` 决定退出去向，`OnClickForExit` 只 `actionForExit?.Invoke()`：**各入口自行注入**——场景交互入口注入回 `UIBaseMain`，基地核心/测试入口注入回 `UIBaseCore`（不再有 UI 内的默认分支）。

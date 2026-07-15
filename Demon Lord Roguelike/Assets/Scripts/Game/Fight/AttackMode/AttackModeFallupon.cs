@@ -47,14 +47,23 @@ public class AttackModeFallupon : BaseAttackMode
     /// </summary>
     private void StartFalling()
     {
-        if (gameObject != null)
-        {
-            float randomOffsetX = UnityEngine.Random.Range(-0.1f, 0.1f);
-            float randomOffsetZ = UnityEngine.Random.Range(-0.1f, 0.1f);
-            gameObject.transform.position = new Vector3(attackModeData.targetPos.x + randomOffsetX, attackModeData.startPos.y, attackModeData.targetPos.z + randomOffsetZ);
-        }
+        //定位到目标正上方 + XZ 随机偏移，走 position 权威源(自动同步 transform)
+        float randomOffsetX = UnityEngine.Random.Range(-0.1f, 0.1f);
+        float randomOffsetZ = UnityEngine.Random.Range(-0.1f, 0.1f);
+        SetPosition(new Vector3(attackModeData.targetPos.x + randomOffsetX, attackModeData.startPos.y, attackModeData.targetPos.z + randomOffsetZ));
         currentFallSpeed = attackModeInfo.speed_move;
         isFalling = true;
+    }
+
+    /// <summary>
+    /// 收集本帧射线检测请求：下落途中在当前位置入队一条单体射线
+    /// </summary>
+    public override void PrepareRaycast(FightRaycastBatch batch)
+    {
+        batchRayStart = -1;
+        if (!isFalling)
+            return;
+        EnqueueSingleRay(batch);
     }
 
     /// <summary>
@@ -102,7 +111,7 @@ public class AttackModeFallupon : BaseAttackMode
     /// </summary>
     public virtual void HandleForMove()
     {
-        gameObject.transform.Translate(Vector3.down * (Time.deltaTime * currentFallSpeed));
+        TranslatePosition(Vector3.down * (Time.deltaTime * currentFallSpeed));
         currentFallSpeed += GravityAcceleration * Time.deltaTime;
     }
 
@@ -111,7 +120,7 @@ public class AttackModeFallupon : BaseAttackMode
     /// </summary>
     public virtual void HandleForBound()
     {
-        if (CheckIsMoveBound(gameObject))
+        if (CheckIsMoveBound())
         {
             EndAttack();
         }

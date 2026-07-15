@@ -19,5 +19,7 @@ public class PathInfo
     public static string CreaturesPrefabPath = "Assets/LoadResources/Creatures";
     //攻击预制
     public static string AttackModePrefabPath = "Assets/LoadResources/AttackMode";
+    //攻击模块视觉预制(DSP 批量渲染的 mesh+material 载体，内含 MeshFilter+MeshRenderer)
+    public static string AttackModeVisualPath = "Assets/LoadResources/AttackModeVisual";
 
 }

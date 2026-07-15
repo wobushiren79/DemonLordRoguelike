@@ -29,6 +29,20 @@ public class AttackModeRangedTracking :  AttackModeRanged
     }
 
     /// <summary>
+    /// 收集本帧射线检测请求：先按当前位置实时更新朝向目标的方向，再入队射线（与 Update 内的方向计算保持一致）
+    /// </summary>
+    public override void PrepareRaycast(FightRaycastBatch batch)
+    {
+        batchRayStart = -1;
+        //仅当目标仍存活时才检测（与 Update 一致）
+        if (attacked != null && !attacked.IsDead())
+        {
+            attackModeData.attackDirection = Vector3.Normalize(attacked.creatureObj.transform.position - position).SetY(0);
+            EnqueueSingleRay(batch);
+        }
+    }
+
+    /// <summary>
     /// 更新处理
     /// </summary>
     public override void Update()
@@ -37,7 +51,7 @@ public class AttackModeRangedTracking :  AttackModeRanged
         if (attacked != null && !attacked.IsDead())
         {
             //实时改变方向
-            attackModeData.attackDirection = Vector3.Normalize(attacked.creatureObj.transform.position - gameObject.transform.position);
+            attackModeData.attackDirection = Vector3.Normalize(attacked.creatureObj.transform.position - position);
             //高度不变
             attackModeData.attackDirection = attackModeData.attackDirection.SetY(0);
             //检测是否击中目标
@@ -59,7 +73,7 @@ public class AttackModeRangedTracking :  AttackModeRanged
     /// </summary>
     public override void HandleForMove()
     {
-        gameObject.transform.Translate(attackModeData.attackDirection * Time.deltaTime * GetMoveSpeed());
+        TranslatePosition(attackModeData.attackDirection * Time.deltaTime * GetMoveSpeed());
     }
 
 }

@@ -6,12 +6,18 @@ public class FightManager : BaseManager
 {
     //攻击预制obj
     public Dictionary<string, GameObject> dicAttackModeObj = new Dictionary<string, GameObject>();
+    //攻击模块视觉预制obj(DSP 批量渲染的 mesh+material 载体)，与 dicAttackModeObj 同为持久资源缓存(跨战斗不释放)
+    public Dictionary<string, GameObject> dicAttackModeVisualObj = new Dictionary<string, GameObject>();
     //攻击预制的缓存池
     public Dictionary<long, Queue<BaseAttackMode>> dicPoolAttackModeObj = new Dictionary<long, Queue<BaseAttackMode>>();
     //攻击预制列表（用 DictionaryList 便于按 instanceId 快速 Remove 同时保留可遍历 List）
     public DictionaryList<long, BaseAttackMode> dlAttackModePrefab = new DictionaryList<long, BaseAttackMode>();
     //攻击模块实例ID自增计数器
     private long attackModeInstanceCounter = 0;
+    //攻击模块射线检测的批量调度器(RaycastCommand)，替代每个弹道各自 Physics.RaycastAll
+    public FightRaycastBatch raycastBatch = new FightRaycastBatch();
+    //攻击模块(弹道)GPU Instancing 批量渲染器(DSP 式"记录位置一起绘制")，按 visual_name 分桶；常开但 visual_name 空/未注册桶零副作用
+    public AttackModeInstanceRenderer attackModeInstanceRenderer = new AttackModeInstanceRenderer();
 
     //战斗逻辑缓存（避免热路径每次 GetGameLogic 反射查找）
     private GameFightLogic cachedGameFightLogic;
@@ -77,6 +83,8 @@ public class FightManager : BaseManager
             }
         }
         dicPoolAttackModeObj.Clear();
+        //释放攻击模块 Addressables 资源缓存(弹道预制 + DSP 视觉预制)并清空视觉桶(实例已在上面销毁，此处释放源资源句柄)
+        ClearAttackModeAssetCache();
 
         //清理战斗逻辑缓存
         cachedGameFightLogic = null;
@@ -107,8 +115,36 @@ public class FightManager : BaseManager
         poolAttackModeData.Clear();
         poolFightUnderAttackData.Clear();
 
+        //释放射线批处理的 NativeArray(下一场战斗首次入队时按需重新分配)
+        raycastBatch.Dispose();
+
         //丢弃所有待回收项 (对应的对象池已被清空，再回收会污染状态)
         ClearPendingRecycles();
+    }
+
+    /// <summary>
+    /// 释放攻击模块相关的 Addressables 资源缓存(弹道预制 dicAttackModeObj + DSP 视觉预制 dicAttackModeVisualObj)并清空视觉桶。
+    /// <para>仅在整场战斗结束(ClearGame→Clear，已打完所有关卡)时随 Clear 调用；关卡间的 ClearGameForSimple/ClearAttackModePrefab 不释放，保留缓存供下关复用。</para>
+    /// <para>调用前须先销毁由这些预制实例化出的对象(dlAttackModePrefab/dicPoolAttackModeObj)，再释放源资源句柄，避免释放后仍有实例引用。</para>
+    /// </summary>
+    private void ClearAttackModeAssetCache()
+    {
+        //释放弹道预制资源句柄
+        foreach (var itemData in dicAttackModeObj)
+        {
+            if (itemData.Value != null)
+                LoadAddressablesUtil.Release(itemData.Value);
+        }
+        dicAttackModeObj.Clear();
+        //释放 DSP 视觉预制资源句柄
+        foreach (var itemData in dicAttackModeVisualObj)
+        {
+            if (itemData.Value != null)
+                LoadAddressablesUtil.Release(itemData.Value);
+        }
+        dicAttackModeVisualObj.Clear();
+        //清空视觉桶(其持有的 sharedMesh/sharedMaterial 引用来自上面已释放的预制)
+        attackModeInstanceRenderer.ClearVisuals();
     }
 
     #region 掉落水晶
@@ -327,6 +363,32 @@ public class FightManager : BaseManager
     }
 
     /// <summary>
+    /// 确保某攻击模块的 DSP 视觉桶已注册：visual_name 非空且未注册时，按 AttackModeVisualPath 懒加载视觉预制
+    /// (内含 MeshFilter+MeshRenderer)，提取 sharedMesh/sharedMaterial 登记到 attackModeInstanceRenderer。
+    /// <para>视觉预制与弹道 prefab 同为持久资源缓存(dicAttackModeVisualObj，跨战斗不释放)，故只加载一次、后续复用。</para>
+    /// </summary>
+    public void EnsureAttackModeVisual(AttackModeInfoBean attackModeInfo)
+    {
+        if (attackModeInfo == null || attackModeInfo.visual_name.IsNull())
+            return;
+        //已注册则跳过，避免重复加载(懒注册去重)
+        if (attackModeInstanceRenderer.HasVisual(attackModeInfo.visual_name))
+            return;
+        GameObject visualPrefab = GetModelForAddressablesSync(dicAttackModeVisualObj, $"{PathInfo.AttackModeVisualPath}/{attackModeInfo.visual_name}.prefab");
+        if (visualPrefab == null)
+            return;
+        var meshFilter = visualPrefab.GetComponentInChildren<MeshFilter>();
+        var meshRenderer = visualPrefab.GetComponentInChildren<MeshRenderer>();
+        if (meshFilter == null || meshRenderer == null)
+        {
+            LogUtil.LogError($"AttackModeVisual 预制缺少 MeshFilter/MeshRenderer: {attackModeInfo.visual_name}");
+            return;
+        }
+        //取 sharedMesh/sharedMaterial(勿用 .mesh/.material，否则复制副本破坏 instancing 合批)
+        attackModeInstanceRenderer.RegisterVisual(attackModeInfo.visual_name, meshFilter.sharedMesh, meshRenderer.sharedMaterial);
+    }
+
+    /// <summary>
     /// 获取攻击模组
     /// </summary>
     public void GetAttackModePrefab(long attackModeId, Action<BaseAttackMode> actionForComplete)
@@ -337,6 +399,8 @@ public class FightManager : BaseManager
         {
             AudioHandler.Instance.PlaySound(attackModeInfo.sound_start);
         }
+        //懒注册 DSP 视觉桶(visual_name 非空且未注册时加载视觉预制并登记，一次加载后续复用)
+        EnsureAttackModeVisual(attackModeInfo);
         if (dicPoolAttackModeObj.TryGetValue(attackModeInfo.id, out Queue<BaseAttackMode> pool))
         {
             if (pool.Count > 0)
