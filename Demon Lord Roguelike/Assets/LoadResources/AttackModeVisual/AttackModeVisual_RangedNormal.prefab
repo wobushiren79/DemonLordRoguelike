@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7127078073351741257}
   - component: {fileID: 7079580168408895296}
+  - component: {fileID: 6439105308279152568}
   m_Layer: 0
   m_Name: AttackModeVisual_RangedNormal
   m_TagString: Untagged
@@ -57,7 +58,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 8c1b2647689d4ea47a4d8b53f818acd8, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -81,3 +82,11 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &6439105308279152568
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6643250474118533725}
+  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}

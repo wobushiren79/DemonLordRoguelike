@@ -172,6 +172,14 @@ public partial class CameraHandler
     }
 
     /// <summary>
+    /// 设置魔汁机摄像头(CV_Juicer,固定机位:打开 UICreatureJuicer 时对准魔汁机建筑)
+    /// </summary>
+    public CinemachineCamera SetJuicerCamera(int priority, bool isEnable)
+    {
+        return SetCameraForBaseScene(priority, isEnable, "CV_Juicer");
+    }
+
+    /// <summary>
     /// 设置扭蛋破碎摄像头
     /// </summary>
     public CinemachineCamera SetGashaponBreakCamera(int priority, bool isEnable)

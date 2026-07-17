@@ -16,6 +16,7 @@ _SwayStrength ("摆动幅度 (左右摇摆大小)", Range(0, 1)) = 0.08
 **How to apply:**
 - 参数显示名 `("...")` 是字符串字面量，写中文完全合法，Inspector 正常显示——所有参数都要写中文。
 - **但 `[Header(...)]` 分组标题括号内是标识符，不是字符串，只能用 ASCII（英文/无空格），写中文会导致 ShaderLab 解析报错** `syntax error, unexpected $undefined, expecting TVAL_ID`。所以分组标题保持英文，靠各参数的中文显示名表达含义。
+- **同理 `[Enum(名, 值, …)]` 里未加引号的枚举选项标签也是标识符，只能 ASCII**，写中文（如 `[Enum(正向,1,反向,-1)]`）会报同样的 `unexpected $undefined, expecting TVAL_ID`。枚举选项用英文（`[Enum(Forward,0,Reverse,1)]`），把中文解释放到该属性的引号显示名里（如 `("旋转方向 (0=正向 / 1=反向)")`）。另外 Enum 的值尽量用非负整数，个别解析器对负值（`-1`）不友好——需要 ±1 语义时用 0/1 枚举、在着色器里 `1-2*x` 换算。
 - 委派给 Agent/Skill 写 shader 时，须在 prompt 中转达这条规则。
 
 ## Inspector 分板块可折叠（尽量对齐 PaletteFX_Project）

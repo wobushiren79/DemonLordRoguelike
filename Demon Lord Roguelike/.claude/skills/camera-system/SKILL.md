@@ -96,6 +96,7 @@ CameraHandler.Instance.SetAchievementCamera(p, e);                  // CV_Achiev
 CameraHandler.Instance.SetCreatureSacrificeCamera(p, e);            // CV_CreatureSacrifice 献祭
 CameraHandler.Instance.SetCreatureVatCamera(p, e);                  // CV_CreatureVat 生物容器
 CameraHandler.Instance.SetGashaponMachineCamera(p, e);             // CV_GashaponMachine 扭蛋机
+CameraHandler.Instance.SetJuicerCamera(p, e);                       // CV_Juicer 魔汁机(固定机位,UICreatureJuicer 打开时切换)
 CameraHandler.Instance.SetGashaponBreakCamera(p, e);               // CV_GashaponBreak 扭蛋破碎
 CameraHandler.Instance.SetGameStartCamera(p, e);                   // CV_GameStart 游戏开始
 CameraHandler.Instance.SetPreviewCreateCamera(p, e);              // CV_PreviewCreate 创建预览

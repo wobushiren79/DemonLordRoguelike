@@ -220,6 +220,7 @@ public enum UnlockEnum : long
     Achievement = 100500001,//成就系统
 
     Juicer = 100600001,//魔汁机(魔物回收:选目标魔物榨汁,流程/奖励后续接入)
+    JuicerNum = 100600002,//魔汁机投入魔物可选上限+1(每级+1,基础5,level_max=10,满级15;前置=Juicer)
 
 }
 

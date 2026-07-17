@@ -14,6 +14,8 @@ public class UserLimmitBean
     public int creatureVatMax = 1;
     //生物进阶素材魔物可选上限基础值（最终上限 = 该基础值 + CreatureVatMaterialNum 研究等级，满级+5=10）
     public int creatureVatMaterialMax = 5;
+    //魔汁机投入魔物可选上限基础值（最终上限 = 该基础值 + JuicerNum 研究等级，满级+10=15）
+    public int juicerCreatureMax = 5;
     //献祭最大数量
     public int sacrificeMax = 5;
     //孕育(扭蛋)创建生物时的随机属性总点数

@@ -132,7 +132,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_attackmode_info[攻击方式].xlsx` | AttackModeInfo | 32 | id, class_name, prefab_name, buff, attack_search_type, collider_size/area, effect_hit/damage, speed_move, sound_miss/hit （15列）。102001=BOSS技能"前方3格"(AttackModeMeleeArea, type24, size"1.5,1,0.25") |
+| `excel_attackmode_info[攻击方式].xlsx` | AttackModeInfo | 32 | id, class_name, prefab_name, visual_name(DSP批量渲染分桶key,空=不走DSP), buff, attack_search_type, collider_size/area, effect_hit/damage, speed_move, sound_start/miss/hit, start_pos_offset, trail_data(拖尾/残影:count残影数&interval采样间隔秒&startAlpha最新档透明度&endAlpha最老档透明度&color染色rgb,需配visual_name,空=无拖尾), remark （18列）。102001=BOSS技能"前方3格"(AttackModeMeleeArea, type24, size"1.5,1,0.25") |
 | `excel_attackmode_ext_info[攻击模块扩展信息].xlsx` | AttackModeExtInfo | 1 | id, attack_mode_id(对应AttackModeInfo), ext_type(额外攻击类型,1=BOSS技能), trigger_interval(释放间隔秒), remark （5列）。配 NpcInfo.attack_mode_ext 实现"额外攻击"按间隔自动释放(不限于BOSS)，运行时由 AIIntentCreatureAttack 的额外攻击机制消费 |
 | `excel_buff_info[buff信息].xlsx` | BuffInfo | 49 | id, buff_type, rarity, class_entity/events/data, trigger_value/chance/num/time/effect, name[language] （24列） |
 | `excel_buff_pre_info[buff前置条件信息].xlsx` | BuffPreInfo | 6 | id, class_entity |

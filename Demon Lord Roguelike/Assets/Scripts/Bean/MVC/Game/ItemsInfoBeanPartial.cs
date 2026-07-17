@@ -137,26 +137,25 @@ public partial class ItemsInfoBean
             switch (item.Key)
             {
                 case ItemInfoAttackModeDataEnum.VertexRotateAxis:
+                    var itemVertexRotateAxis = item.Value.SplitForVector3(',');
+                    attackMode.spinAxis = itemVertexRotateAxis;   //DSP per-instance 自旋轴
                     if (attackMode.spriteRenderer != null)
-                    {
-                        var itemVertexRotateAxis = item.Value.SplitForVector3(',');
                         attackMode.spriteRenderer.material.SetVector("_VertexRotateAxis", itemVertexRotateAxis);
-                    }
                     break;
                 case ItemInfoAttackModeDataEnum.VertexRotateSpeed:
+                    var itemVertexRotateSpeed = float.Parse(item.Value);
+                    attackMode.spinSpeed = itemVertexRotateSpeed;   //DSP per-instance 自旋速度
                     if (attackMode.spriteRenderer != null)
-                    {
-                        var itemVertexRotateSpeed = float.Parse(item.Value);
                         attackMode.spriteRenderer.material.SetFloat("_VertexRotateSpeed", itemVertexRotateSpeed);
-                    }
                     break;
                 case ItemInfoAttackModeDataEnum.ShowSprite:
+                    var itemShowSprite = item.Value;
+                    //记录换图名供 DSP 子桶分桶(FightManager.EnsureAttackModeVisual(attackMode) 用它从图集取 sprite 改子桶材质贴图)
+                    attackMode.visualSpriteName = itemShowSprite;
+                    isShowSprite = true;
+                    //保留原 spriteRenderer 换图(prefab 渲染通道并行生效；DSP 通道不看 spriteRenderer)
                     if (attackMode.spriteRenderer != null)
-                    {
-                        var itemShowSprite = item.Value;
                         IconHandler.Instance.SetItemIconForAttackMode(itemShowSprite, attackMode.spriteRenderer);
-                        isShowSprite = true;
-                    }
                     break;
                 case ItemInfoAttackModeDataEnum.StartPosition:
                     if (attackMode.gameObject != null)
@@ -166,18 +165,16 @@ public partial class ItemsInfoBean
                     }
                     break;
                 case ItemInfoAttackModeDataEnum.StartSize:
-                    if (attackMode.gameObject != null)
-                    {
-                        var itemStartSize = float.Parse(item.Value);
+                    var itemStartSize = float.Parse(item.Value);
+                    attackMode.visualScale = itemStartSize;   //DSP per-instance 缩放
+                    if (attackMode.spriteRenderer != null)
                         attackMode.spriteRenderer.transform.localScale = Vector3.one * itemStartSize;
-                    }
                     break;
                 case ItemInfoAttackModeDataEnum.StartRotate:
+                    var itemStartAngle = float.Parse(item.Value);
+                    attackMode.visualStartAngle = itemStartAngle;   //DSP per-instance 起始角
                     if (attackMode.spriteRenderer != null)
-                    {
-                        var itemStartAngle = float.Parse(item.Value);
                         attackMode.spriteRenderer.material.SetFloat("_StartAngle", itemStartAngle);
-                    }
                     break;
             }
         }

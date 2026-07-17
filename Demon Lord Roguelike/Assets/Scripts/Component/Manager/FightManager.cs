@@ -8,6 +8,8 @@ public class FightManager : BaseManager
     public Dictionary<string, GameObject> dicAttackModeObj = new Dictionary<string, GameObject>();
     //攻击模块视觉预制obj(DSP 批量渲染的 mesh+material 载体)，与 dicAttackModeObj 同为持久资源缓存(跨战斗不释放)
     public Dictionary<string, GameObject> dicAttackModeVisualObj = new Dictionary<string, GameObject>();
+    //DSP 换图/自旋子桶的克隆材质缓存(key=桶签名)：基材质来自预制不可改，故按签名克隆一份改 _BaseMap/UV/自旋；整场结束随预制一起销毁
+    public Dictionary<string, Material> dicAttackModeVisualMat = new Dictionary<string, Material>();
     //攻击预制的缓存池
     public Dictionary<long, Queue<BaseAttackMode>> dicPoolAttackModeObj = new Dictionary<long, Queue<BaseAttackMode>>();
     //攻击预制列表（用 DictionaryList 便于按 instanceId 快速 Remove 同时保留可遍历 List）
@@ -143,7 +145,14 @@ public class FightManager : BaseManager
                 LoadAddressablesUtil.Release(itemData.Value);
         }
         dicAttackModeVisualObj.Clear();
-        //清空视觉桶(其持有的 sharedMesh/sharedMaterial 引用来自上面已释放的预制)
+        //销毁 DSP 换图/自旋子桶克隆出的材质(基材质来自预制、不在此列、勿销毁)
+        foreach (var itemMat in dicAttackModeVisualMat.Values)
+        {
+            if (itemMat != null)
+                GameObject.Destroy(itemMat);
+        }
+        dicAttackModeVisualMat.Clear();
+        //清空视觉桶(其持有的 sharedMesh/sharedMaterial 引用来自上面已释放的预制)；方案2 拖尾 VFX 实例/缓冲由 ClearVisuals 内部转交 EffectHandler 一并销毁
         attackModeInstanceRenderer.ClearVisuals();
     }
 
@@ -363,29 +372,121 @@ public class FightManager : BaseManager
     }
 
     /// <summary>
-    /// 确保某攻击模块的 DSP 视觉桶已注册：visual_name 非空且未注册时，按 AttackModeVisualPath 懒加载视觉预制
+    /// 确保某攻击模块的 DSP 弹体基础桶已注册：visual_name 非空且未注册时，按 AttackModeVisualPath 懒加载视觉预制
     /// (内含 MeshFilter+MeshRenderer)，提取 sharedMesh/sharedMaterial 登记到 attackModeInstanceRenderer。
     /// <para>视觉预制与弹道 prefab 同为持久资源缓存(dicAttackModeVisualObj，跨战斗不释放)，故只加载一次、后续复用。</para>
+    /// <para>⚠️只管弹体桶、**不派生拖尾桶**：本方法在发射前预热调用，此时换图/自旋参数尚未解析(要到 InitAttackModeShow 才有)，
+    /// 在这里注册拖尾等于按基础 visual_name 建一个桶——而换图弹道实际用的是子桶签名，基础桶永远收不到采样点，
+    /// 方案2 下会白白多出一个常驻空跑的 VFX 实例(场景里两个 AttackModeTrailVfx_*)。故拖尾统一交给下面按实际签名注册的重载。</para>
     /// </summary>
     public void EnsureAttackModeVisual(AttackModeInfoBean attackModeInfo)
     {
         if (attackModeInfo == null || attackModeInfo.visual_name.IsNull())
             return;
-        //已注册则跳过，避免重复加载(懒注册去重)
+        //已注册则跳过重复加载
         if (attackModeInstanceRenderer.HasVisual(attackModeInfo.visual_name))
             return;
+        if (!TryGetAttackModeVisualSource(attackModeInfo, out Mesh mesh, out Material material))
+            return;
+        //默认桶(无换图无自旋)直接用基础 sharedMesh/sharedMaterial(勿用 .mesh/.material，否则复制副本破坏 instancing 合批)
+        attackModeInstanceRenderer.RegisterVisual(attackModeInfo.visual_name, mesh, material);
+    }
+
+    /// <summary>
+    /// 懒加载某 visual_name 的视觉预制并取出其 sharedMesh/sharedMaterial（供默认桶注册与子桶克隆共用的取源）。
+    /// <para>预制持久缓存于 dicAttackModeVisualObj(跨战斗不释放)，只加载一次；缺 MeshFilter/MeshRenderer 报错返 false。</para>
+    /// </summary>
+    private bool TryGetAttackModeVisualSource(AttackModeInfoBean attackModeInfo, out Mesh mesh, out Material material)
+    {
+        mesh = null;
+        material = null;
         GameObject visualPrefab = GetModelForAddressablesSync(dicAttackModeVisualObj, $"{PathInfo.AttackModeVisualPath}/{attackModeInfo.visual_name}.prefab");
         if (visualPrefab == null)
-            return;
+            return false;
         var meshFilter = visualPrefab.GetComponentInChildren<MeshFilter>();
         var meshRenderer = visualPrefab.GetComponentInChildren<MeshRenderer>();
         if (meshFilter == null || meshRenderer == null)
         {
             LogUtil.LogError($"AttackModeVisual 预制缺少 MeshFilter/MeshRenderer: {attackModeInfo.visual_name}");
+            return false;
+        }
+        mesh = meshFilter.sharedMesh;
+        material = meshRenderer.sharedMaterial;
+        return true;
+    }
+
+    /// <summary>
+    /// 按某个攻击模式实例的实际视觉参数(换图 ShowSprite + 自旋)算出视觉桶签名并确保对应子桶已注册。
+    /// <para>在 BaseAttackMode.InitAttackModeShow 末尾调用(武器 attack_mode_data 已解析)。默认签名(无换图无自旋)复用基础桶；
+    /// 有覆盖项时克隆一份基材质做子桶专属材质：换图子桶异步取图集 sprite 写 _BaseMap+UV 后再登记(首帧即正确)，仅自旋子桶直接登记(自旋由 RenderAll 写)。</para>
+    /// <para>克隆材质缓存于 dicAttackModeVisualMat 兼作去重(已建则跳过，避免重复克隆/重复异步加载)，整场结束统一销毁。</para>
+    /// <para>⚠️**拖尾桶只在此注册**(按实际签名，与弹道真正使用的桶一一对应)：预热用的 EnsureAttackModeVisual(config) 重载不派生拖尾，
+    /// 否则换图弹道会多出一个基础 visual_name 的拖尾桶、永远收不到采样点(方案2 即常驻空跑的 VFX 实例)。</para>
+    /// </summary>
+    public void EnsureAttackModeVisual(BaseAttackMode attackMode)
+    {
+        if (attackMode == null || attackMode.attackModeInfo == null || attackMode.attackModeInfo.visual_name.IsNull())
+        {
+            //无 visual_name=不走 DSP，清空签名让 RenderAll 跳过
+            if (attackMode != null)
+                attackMode.visualBucketKey = null;
             return;
         }
-        //取 sharedMesh/sharedMaterial(勿用 .mesh/.material，否则复制副本破坏 instancing 合批)
-        attackModeInstanceRenderer.RegisterVisual(attackModeInfo.visual_name, meshFilter.sharedMesh, meshRenderer.sharedMaterial);
+        AttackModeInfoBean attackModeInfo = attackMode.attackModeInfo;
+        string key = AttackModeInstanceRenderer.BuildVisualBucketKey(attackModeInfo.visual_name, attackMode.visualSpriteName, attackMode.spinAxis, attackMode.spinSpeed);
+        attackMode.visualBucketKey = key;
+        //本发弹道按配置开启/关闭拖尾(count/interval≤0 时 EnableTrail 内部关闭；对象池复用每发都重设)
+        AttackModeTrailConfig trailConfig = attackModeInfo.GetTrailConfig();
+        attackMode.EnableTrail(trailConfig);
+        //默认签名(与 visual_name 同 key)：基础桶由 EnsureAttackModeVisual(config) 保证，直接登记复用，再按配置派生该桶拖尾
+        if (key == attackModeInfo.visual_name)
+        {
+            EnsureAttackModeVisual(attackModeInfo);
+            attackModeInstanceRenderer.RegisterTrailFromVisual(key, trailConfig);
+            return;
+        }
+        //该子桶已建过(克隆材质已在)：去重，避免重复克隆/重复异步加载
+        if (dicAttackModeVisualMat.ContainsKey(key))
+            return;
+        //取基础预制的 sharedMesh + 基材质，克隆基材质做子桶专属材质(不同贴图/自旋互不覆盖)
+        if (!TryGetAttackModeVisualSource(attackModeInfo, out Mesh mesh, out Material baseMat))
+            return;
+        Material subMat = new Material(baseMat);
+        dicAttackModeVisualMat[key] = subMat;
+        if (!attackMode.visualSpriteName.IsNull())
+        {
+            //换图子桶：异步取图集 Items 的 sprite → 写子材质 _BaseMap 及其在图集内的 UV 子区域 → 贴图就绪后再登记桶(未就绪的攻击模式本帧被 RenderAll 跳过)
+            IconHandler.Instance.GetIconSprite(SpriteAtlasTypeEnum.Items, attackMode.visualSpriteName, (sprite) =>
+            {
+                //克隆材质可能在异步期间随整场结束被销毁(== null 对已销毁 UnityObject 成立)，此时直接放弃登记
+                if (subMat == null)
+                    return;
+                if (sprite != null)
+                {
+                    //GetOuterUV 返回该 sprite 在图集纹理内的归一化 UV(xMin,yMin,xMax,yMax)：tiling=尺寸、offset=起点，喂给 _BaseMap_ST(shader 用 TRANSFORM_TEX 采样)
+                    Vector4 outerUV = UnityEngine.Sprites.DataUtility.GetOuterUV(sprite);
+                    subMat.SetTexture("_BaseMap", sprite.texture);
+                    subMat.SetTextureScale("_BaseMap", new Vector2(outerUV.z - outerUV.x, outerUV.w - outerUV.y));
+                    subMat.SetTextureOffset("_BaseMap", new Vector2(outerUV.x, outerUV.y));
+                    //宽高比修正：按 sprite 像素宽高 contain 归一化(长边=1)写进材质 _VertexScaleXY，由 shader 在对象空间(自旋之前最内层)缩放，非方形 sprite 不再拉伸、且自旋不抖动
+                    float spriteW = sprite.rect.width;
+                    float spriteH = sprite.rect.height;
+                    float spriteMax = Mathf.Max(spriteW, spriteH);
+                    if (spriteMax > 0f)
+                        subMat.SetVector("_VertexScaleXY", new Vector4(spriteW / spriteMax, spriteH / spriteMax, 1f, 1f));
+                }
+                attackModeInstanceRenderer.RegisterVisual(key, mesh, subMat);
+                //换图子桶贴图就绪后派生拖尾桶(拖尾复用该子桶贴图；tile 平铺越界风险见 RegisterTrailFromVisual 注释)
+                attackModeInstanceRenderer.RegisterTrailFromVisual(key, attackModeInfo.GetTrailConfig());
+            });
+        }
+        else
+        {
+            //仅自旋不同的子桶：贴图沿用基材质，自旋由 RenderAll 的 ApplyBucketSpin 写入子材质，直接登记
+            attackModeInstanceRenderer.RegisterVisual(key, mesh, subMat);
+            //自旋子桶就绪后派生拖尾桶(贴图沿用基材质)
+            attackModeInstanceRenderer.RegisterTrailFromVisual(key, attackModeInfo.GetTrailConfig());
+        }
     }
 
     /// <summary>

@@ -479,6 +479,17 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 获取魔汁机投入魔物可选上限
+    /// 基础数量取自 UserLimmitBean.juicerCreatureMax + 对应研究等级（UnlockEnum.JuicerNum，满级+10=15）
+    /// </summary>
+    /// <returns>榨汁时可投入选择的最大魔物数量</returns>
+    public int GetUnlockJuicerCreatureMax()
+    {
+        var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
+        return limmitData.juicerCreatureMax + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.JuicerNum);
+    }
+
+    /// <summary>
     /// 空格突进默认冷却时间(秒)：未研究「突进CD」(SpaceDashCD=0级)时的基础冷却。集中此处便于统一调整。
     /// </summary>
     public const float SPACE_DASH_CD_BASE = 3f;

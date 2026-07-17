@@ -72,6 +72,10 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public string start_pos_offset;
 	/// <summary>
+	///拖尾/残影参数(count:残影数&interval:采样间隔秒&startAlpha:最新档透明度&endAlpha:最老档透明度&color:染色rgb逗号分隔; 空=无拖尾; 残影=弹体贴图画在历史位置越老越透明; 需配合visual_name走DSP)
+	/// </summary>
+	public string trail_data;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

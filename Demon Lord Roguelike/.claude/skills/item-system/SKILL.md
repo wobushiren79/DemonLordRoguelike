@@ -204,6 +204,8 @@ ShowSprite=icon_name,VertexRotateAxis=0,0,-1,VertexRotateSpeed=10,UVRotateSpeed=
 - `StartPosition` - 初始位置偏移
 - `StartSize` - 初始大小
 
+> `HandleItemsInfoAttackModeData`([ItemsInfoBeanPartial.cs](Assets/Scripts/Bean/MVC/Game/ItemsInfoBeanPartial.cs)) 处理上表：`StartSize`/`StartRotate`/`VertexRotateSpeed`/`VertexRotateAxis` 现为**双写**——除写 `spriteRenderer`/material(现有渲染)外，还写 `BaseAttackMode` 的 per-instance 字段(`visualScale`/`visualStartAngle`/`spinSpeed`/`spinAxis`)供 DSP 批量渲染(AttackModeInstanceRenderer)。`ShowSprite`(换贴图)尚未迁 DSP。详见 attack-mode-system skill「弹道批量渲染」。
+
 ## 常用代码模板
 
 ### 创建带品质的装备

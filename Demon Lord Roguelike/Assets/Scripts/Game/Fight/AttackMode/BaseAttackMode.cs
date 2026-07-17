@@ -8,33 +8,64 @@ using UnityEngine;
 
 public class BaseAttackMode
 {
+    #region 核心状态与标识
+    /// <summary>是否有效（对象池复用/销毁时的存活标记）</summary>
     public bool isValid = true;
-    //实例ID（由 FightManager 分配，用于 DictionaryList 快速移除）
+    /// <summary>实例ID（由 FightManager 分配，用于 DictionaryList 快速移除）</summary>
     public long instanceId;
-    //当前obj（预制字段保留：DSP 迁移过渡期仍作渲染/兼容载体，位置真实源已改为 position）
+    /// <summary>当前 obj（预制字段保留：DSP 迁移过渡期仍作渲染/兼容载体，位置真实源已改为 position）</summary>
     public GameObject gameObject;
-    //弹道当前世界坐标（DSP 方案B 位置权威源，脱离 transform；gameObject 非空时同步写回其 transform，供 AttackModeInstanceRenderer 批量绘制读取）
+    /// <summary>
+    /// 弹道当前世界坐标（DSP 方案B 位置权威源，脱离 transform）
+    /// <para>gameObject 非空时同步写回其 transform，供 AttackModeInstanceRenderer 批量绘制读取。</para>
+    /// </summary>
     public Vector3 position;
-    //sprite渲染（不一定有）
+    #endregion
+
+    #region DSP 视觉参数（由武器 attack_mode_data 写入，供 AttackModeInstanceRenderer 构建实例矩阵/写桶材质；spriteRenderer 渲染并行生效）
+    /// <summary>缩放（武器 StartSize）；-1=未配置，DSP 渲染时矩阵取1、大小改由桶材质自身 _VertexScale 决定</summary>
+    public float visualScale = -1f;
+    /// <summary>起始旋转角（武器 StartRotate，度，绕视图前向）</summary>
+    public float visualStartAngle = 0f;
+    /// <summary>自旋速度（武器 VertexRotateSpeed，度/秒；DSP 侧写入桶材质 _RotateSpeed 由 shader 按 _Time 自转）</summary>
+    public float spinSpeed = 0f;
+    /// <summary>自旋轴（武器 VertexRotateAxis；与 spinSpeed 相乘得每轴度/秒写入材质）</summary>
+    public Vector3 spinAxis = Vector3.one;
+    /// <summary>per-instance 随机相位（度，发射时随机）：材质自转全桶同相，靠此静态角让每发起始角度错开</summary>
+    public float spinPhase = 0f;
+    /// <summary>换图名（武器 ShowSprite，解析自 attack_mode_data）；非空表示该弹道用图集内指定 sprite 换皮，参与 DSP 子桶分桶</summary>
+    public string visualSpriteName;
+    /// <summary>DSP 视觉桶签名（visual_name + 换图 + 自旋 组合，InitAttackModeShow 末尾算出并缓存）；RenderAll 按它取桶，空=不走 DSP</summary>
+    public string visualBucketKey;
+    #endregion
+
+    #region 渲染与配置数据
+    /// <summary>sprite 渲染器（不一定有）</summary>
     public SpriteRenderer spriteRenderer;
-    //攻击模块信息
+    /// <summary>攻击模块信息（配置表 AttackModeInfoBean）</summary>
     public AttackModeInfoBean attackModeInfo;
-    //攻击模块数据
+    /// <summary>攻击模块数据（运行时 AttackModeBean）</summary>
     public AttackModeBean attackModeData;
-    //攻击搜索的生物战斗类型（由 attackedLayerTarget 推导，StartAttack 时缓存，避免每帧重算）
+    /// <summary>攻击搜索的生物战斗类型（由 attackedLayerTarget 推导，StartAttack 时缓存，避免每帧重算）</summary>
     protected CreatureFightTypeEnum searchCreatureType = CreatureFightTypeEnum.None;
-    //本帧射线批处理命令索引（>=0 表示本帧已入队射线，检测时读批处理结果；-1 表示未入队，走 live 路径）
+    /// <summary>本帧射线批处理命令索引（>=0 表示本帧已入队射线，检测时读批处理结果；-1 表示未入队，走 live 路径）</summary>
     protected int batchRayStart = -1;
-    //攻速ASPD=100时弹道飞行速度的最大加成倍率（数值策划调整入口）
+    #endregion
+
+    #region 数值常量（策划调整入口）
+    /// <summary>攻速 ASPD=100 时弹道飞行速度的最大加成倍率</summary>
     public const float SpeedRateASPDMax = 3f;
-    //弹道起点 Y 轴随机扰动幅度（±值，避免弹道起点完全重合，数值策划调整入口）
+    /// <summary>弹道起点 Y 轴随机扰动幅度（±值，避免弹道起点完全重合）</summary>
     public const float StartPosRandomRangeY = 0.05f;
+    #endregion
 
     /// <summary>
     /// 初始化攻击样式
     /// </summary>
     public virtual void InitAttackModeShow()
     {
+        //先把 DSP per-instance 视觉参数还原为默认(对象池复用不残留上一发武器视觉；武器分支随后按需覆盖)
+        ResetVisualParams();
         //如果没有找到对应武器 则使用?图标
         if (attackModeData.attackerWeaponItemId == 0)
         {
@@ -57,6 +88,8 @@ public class BaseAttackMode
                 weaponItemInfo.HandleItemsInfoAttackModeData(this);
             }
         }
+        //登记 DSP 视觉桶(按 visual_name + 换图 + 自旋 分桶；异步换图就绪后才登记桶，未就绪本帧先不画)
+        FightHandler.Instance.manager.EnsureAttackModeVisual(this);
     }
 
     /// <summary>
@@ -80,6 +113,8 @@ public class BaseAttackMode
     /// </summary>
     public virtual void StartAttackBase()
     {
+        //每发随机一个自旋相位，避免同桶所有实例(材质统一自转)角度完全同步
+        spinPhase = UnityEngine.Random.Range(0f, 360f);
         //位置真实源置为起点（即使无 gameObject 也生效），再同步到 transform
         position = attackModeData.startPos;
         if (gameObject != null)
@@ -208,6 +243,129 @@ public class BaseAttackMode
         {
             gameObject.transform.position = position;
         }
+    }
+
+    /// <summary>
+    /// 还原 DSP per-instance 视觉参数为默认值(缩放-1即未配置/起始角0/无自旋)，供对象池复用时不残留上一发武器视觉。
+    /// <para>默认值与 HandleItemsInfoAttackModeData 里"还原预制"一致(自旋轴默认 Vector3.one)；visualScale=-1 表示未配置，大小由桶材质自身 _VertexScale 决定。</para>
+    /// </summary>
+    public void ResetVisualParams()
+    {
+        visualScale = -1f;
+        visualStartAngle = 0f;
+        spinSpeed = 0f;
+        spinAxis = Vector3.one;
+        visualSpriteName = null;
+        //拖尾默认关闭：对象池复用不残留上一发拖尾，由 EnableTrail 按配置重新开启
+        trailMode = AttackModeTrailType.None;
+        //拖尾染色复位为白(不改贴图原色)，避免对象池复用残留上一发颜色
+        trailColor = Vector3.one;
+    }
+    #endregion
+
+    #region 拖尾历史(轨迹：环形缓冲按 interval 间隔记录最近位置+自旋角，供 AttackModeInstanceRenderer 逐年龄档批量绘制轨迹)
+    /// <summary>拖尾历史环形缓冲最大点数（轨迹段数上限；轨迹 count 会被 clamp 到此值）</summary>
+    public const int TrailMaxPoints = 32;
+    /// <summary>本发拖尾模式（由 EnableTrail 按配置 type 设；对象池复用默认 None）。None=不启用；Instanced=方案1(CPU 环形缓冲+DrawMeshInstanced 年龄档)；Vfx=方案2(不采样，每帧位置由渲染器读 position 喂 VFX 特效)。三态互斥，取代旧的 trailEnabled/trailVfxEnabled 双 bool</summary>
+    public AttackModeTrailType trailMode = AttackModeTrailType.None;
+    /// <summary>本发拖尾染色 rgb（=自身 trail_data 的 color；方案2 逐弹上传 ColorBuffer 实现"同一 VFX 内每发子弹各自颜色"，故必须逐弹持有而非取桶级配置）。默认白=不改贴图原色</summary>
+    public Vector3 trailColor = Vector3.one;
+    /// <summary>环形位置缓冲（懒分配 TrailMaxPoints，仅启用拖尾的弹道分配一次、跨复用保留）</summary>
+    public Vector3[] trailPoints;
+    /// <summary>环形自旋角缓冲（与 trailPoints 一一对应，记录采样时刻弹体的时间自转角，供轨迹复现旋转姿态；无自旋时恒 0）</summary>
+    public float[] trailSpinAngles;
+    /// <summary>已填充点数（≤TrailMaxPoints）</summary>
+    public int trailCount;
+    /// <summary>环形写指针（下一个写入下标）</summary>
+    public int trailHead;
+    /// <summary>上次采样时刻（秒），控制按 trailSampleInterval 间隔采样</summary>
+    public float trailLastSampleTime;
+    /// <summary>采样间隔（=config.interval，相邻轨迹的时间间距）</summary>
+    public float trailSampleInterval;
+
+    /// <summary>
+    /// 启用拖尾并按配置初始化：懒分配环形缓冲(位置+自旋角)、取采样间隔、清空历史；count/interval≤0 的配置视为不启用。
+    /// <para>在 InitAttackModeShow 末尾（EnsureAttackModeVisual 时）按 attackModeInfo.GetTrailConfig() 调用；无 visual_name 不走 DSP 时不应调用。</para>
+    /// </summary>
+    public void EnableTrail(AttackModeTrailConfig config)
+    {
+        if (!config.enable)
+        {
+            trailMode = AttackModeTrailType.None;
+            return;
+        }
+        //逐弹记下自身配置的拖尾染色：方案2 靠它实现同一 VFX 内每发子弹各自颜色(方案1 用桶级 baseColor，此值不参与)
+        trailColor = new Vector3(config.color.r, config.color.g, config.color.b);
+        //方案2(VFX)：无需 CPU 环形历史缓冲，仅标记参与 VFX 轨迹；每帧位置由渲染器直接读 position 喂 VFX 特效
+        if (config.type == AttackModeTrailType.Vfx)
+        {
+            trailMode = AttackModeTrailType.Vfx;
+            return;
+        }
+        //方案1(Instanced)：CPU 环形缓冲按 interval 采样历史位置，供渲染器逐年龄档批量绘制
+        trailMode = AttackModeTrailType.Instanced;
+        if (trailPoints == null)
+            trailPoints = new Vector3[TrailMaxPoints];
+        if (trailSpinAngles == null)
+            trailSpinAngles = new float[TrailMaxPoints];
+        //采样间隔 = 配置 interval（相邻轨迹时间间距；下限避免除零/过密）
+        trailSampleInterval = Mathf.Max(config.interval, 0.001f);
+        ResetTrail();
+    }
+
+    /// <summary>
+    /// 清空拖尾历史（对象池复用/重新发射时调，避免上一段轨迹残留）。
+    /// </summary>
+    public void ResetTrail()
+    {
+        trailCount = 0;
+        trailHead = 0;
+        //置为极小值保证下一次 SampleTrail 必采首点
+        trailLastSampleTime = float.NegativeInfinity;
+    }
+
+    /// <summary>
+    /// 按采样间隔把当前 position 与当前时间自转角(spinSpeed×now，绕 spinAxis)记入环形缓冲（渲染器每帧对启用拖尾的弹道调用；未到间隔则跳过）。
+    /// </summary>
+    /// <param name="now">当前时刻（秒，须与 shader 时间自转同基准，即 Time.timeSinceLevelLoad≈_Time.y，使轨迹旋转与弹体连续）</param>
+    public void SampleTrail(float now)
+    {
+        if (trailMode != AttackModeTrailType.Instanced || trailPoints == null)
+            return;
+        if (now - trailLastSampleTime < trailSampleInterval)
+            return;
+        trailLastSampleTime = now;
+        trailPoints[trailHead] = position;
+        //记录采样时刻的时间自转角(与桶材质 shader 同式：绕 spinAxis 转 spinSpeed×now 度)；无自旋恒 0
+        trailSpinAngles[trailHead] = spinSpeed * now;
+        trailHead = (trailHead + 1) % TrailMaxPoints;
+        if (trailCount < TrailMaxPoints)
+            trailCount++;
+    }
+
+    /// <summary>
+    /// 按时间顺序取第 orderIndex 个历史点（0=最老，trailCount-1=最新）。
+    /// </summary>
+    public Vector3 GetTrailPoint(int orderIndex)
+    {
+        return trailPoints[GetTrailRingIndex(orderIndex)];
+    }
+
+    /// <summary>
+    /// 按时间顺序取第 orderIndex 个历史点采样时的时间自转角（度，绕 spinAxis）；供轨迹复现当时旋转姿态。
+    /// </summary>
+    public float GetTrailSpinAngle(int orderIndex)
+    {
+        return trailSpinAngles[GetTrailRingIndex(orderIndex)];
+    }
+
+    /// <summary>
+    /// 把时间顺序下标(0=最老)换算成环形缓冲物理下标（最老点 = 写指针回退 trailCount）。
+    /// </summary>
+    private int GetTrailRingIndex(int orderIndex)
+    {
+        int start = (trailHead - trailCount + TrailMaxPoints) % TrailMaxPoints;
+        return (start + orderIndex) % TrailMaxPoints;
     }
     #endregion
 

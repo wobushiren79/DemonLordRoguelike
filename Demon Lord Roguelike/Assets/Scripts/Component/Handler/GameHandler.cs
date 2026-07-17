@@ -80,13 +80,13 @@ public class GameHandler : BaseHandler<GameHandler, GameManager>
     /// 开始榨汁(魔汁机):由 UICreatureJuicer 的 Start 按钮调用。
     /// UI 驱动,不走 PreGame/StartGame 全流程,直接 StartJuice(榨汁流程/奖励后续接入)。
     /// </summary>
-    /// <param name="targetCreature">被榨汁的目标魔物</param>
-    public void StartCreatureJuicer(CreatureBean targetCreature)
+    /// <param name="targetCreatures">被投入榨汁的魔物列表(多选,上限由研究门控)</param>
+    public void StartCreatureJuicer(List<CreatureBean> targetCreatures)
     {
         if (manager.gameLogic == null || manager.gameLogic is not CreatureJuicerLogic)
             manager.gameLogic = new CreatureJuicerLogic();
         var gameLogic = manager.gameLogic as CreatureJuicerLogic;
-        gameLogic.StartJuice(targetCreature);
+        gameLogic.StartJuice(targetCreatures);
     }
     #endregion
 

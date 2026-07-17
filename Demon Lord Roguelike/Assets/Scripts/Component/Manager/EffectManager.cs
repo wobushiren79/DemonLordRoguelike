@@ -18,6 +18,8 @@ public partial class EffectManager
     public long effectManaId = 1000001;
     //放置魔物-生成位置魔物登场粒子ID
     public long effectCreatureShowId = 1100001;
+    //攻击弹道拖尾粒子ID(方案2 VFX,Effect_Trail_1;非播放式——EffectHandler 按视觉桶各建一个常驻实例+每帧喂 GraphicsBuffer,不入池不 PlayEffect)
+    public long effectAttackModeTrailId = 1600001;
     //飘字(伤害数字)预制体地址
     public string effectTextNumberName = "Assets/LoadResources/Effects/EffectTextNumber_2.prefab";
 
@@ -26,6 +28,17 @@ public partial class EffectManager
     public string resNameShieldHit;
     public string resNameAscendAddProgress;
     public string resNameAscendComplete;
+    public string resNameAttackModeTrail;
+    #endregion
+
+    #region 攻击弹道拖尾粒子(方案2 VFX)状态
+    //拖尾 VFX 实例注册表：key=弹道视觉桶签名(visualKey)，value=该桶专属的 VFX 实例+上传缓冲+染色基准
+    //由 EffectHandler 的「攻击弹道拖尾粒子」区独占读写；AttackModeInstanceRenderer 只经 Handler 接口报位置+染色，不直接访问
+    public Dictionary<string, AttackModeTrailVfxBean> dicAttackModeTrailVfx = new Dictionary<string, AttackModeTrailVfxBean>();
+    //拖尾 VFX 模板预制(本场解析一次后缓存)：与 tried 门控配合——tried=true 且此值为 null 即表示资源缺失，本场不再重试
+    public GameObject objAttackModeTrailModel;
+    //本场是否已尝试加载拖尾 VFX 模板：缺资源时 Addressables 会抛异常，用它保证每场至多试一次、避免逐桶注册刷屏；整场结束由 ClearAllAttackModeTrailVfx 复位
+    public bool triedLoadAttackModeTrailModel = false;
     #endregion
 
     #region 飘字(伤害数字)缓存与颜色
