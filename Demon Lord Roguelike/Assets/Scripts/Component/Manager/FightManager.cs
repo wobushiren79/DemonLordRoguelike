@@ -433,7 +433,12 @@ public class FightManager : BaseManager
             return;
         }
         AttackModeInfoBean attackModeInfo = attackMode.attackModeInfo;
-        string key = AttackModeInstanceRenderer.BuildVisualBucketKey(attackModeInfo.visual_name, attackMode.visualSpriteName, attackMode.spinAxis, attackMode.spinSpeed);
+        //⚠️自旋必须在此**快照成局部量**再用：attackMode 来自对象池，换图子桶的注册在图集异步回调里(数帧后)才发生，
+        //那时这个实例很可能已被回收重发(ResetVisualParams 把 spinSpeed 清 0)，回调里再读 attackMode.spinXxx 拿到的是别人的值——
+        //而桶签名编码的是**当下**这份自旋，二者对不上就会把错误自旋写进该桶材质(整桶弹体+拖尾转错/不转)
+        Vector3 spinAxis = attackMode.spinAxis;
+        float spinSpeed = attackMode.spinSpeed;
+        string key = AttackModeInstanceRenderer.BuildVisualBucketKey(attackModeInfo.visual_name, attackMode.visualSpriteName, spinAxis, spinSpeed);
         attackMode.visualBucketKey = key;
         //本发弹道按配置开启/关闭拖尾(count/interval≤0 时 EnableTrail 内部关闭；对象池复用每发都重设)
         AttackModeTrailConfig trailConfig = attackModeInfo.GetTrailConfig();
@@ -475,15 +480,16 @@ public class FightManager : BaseManager
                     if (spriteMax > 0f)
                         subMat.SetVector("_VertexScaleXY", new Vector4(spriteW / spriteMax, spriteH / spriteMax, 1f, 1f));
                 }
-                attackModeInstanceRenderer.RegisterVisual(key, mesh, subMat);
+                //自旋用上面快照的局部量，勿改回读 attackMode(本回调时它可能已被对象池回收重发，见 spinAxis 快照处注释)
+                attackModeInstanceRenderer.RegisterVisual(key, mesh, subMat, spinAxis, spinSpeed);
                 //换图子桶贴图就绪后派生拖尾桶(拖尾复用该子桶贴图；tile 平铺越界风险见 RegisterTrailFromVisual 注释)
                 attackModeInstanceRenderer.RegisterTrailFromVisual(key, attackModeInfo.GetTrailConfig());
             });
         }
         else
         {
-            //仅自旋不同的子桶：贴图沿用基材质，自旋由 RenderAll 的 ApplyBucketSpin 写入子材质，直接登记
-            attackModeInstanceRenderer.RegisterVisual(key, mesh, subMat);
+            //仅自旋不同的子桶：贴图沿用基材质，自旋在 RegisterVisual 内一次性写入子材质(整桶自旋恒定)，直接登记
+            attackModeInstanceRenderer.RegisterVisual(key, mesh, subMat, spinAxis, spinSpeed);
             //自旋子桶就绪后派生拖尾桶(贴图沿用基材质)
             attackModeInstanceRenderer.RegisterTrailFromVisual(key, attackModeInfo.GetTrailConfig());
         }

@@ -20,6 +20,11 @@ public class BaseAttackMode
     /// <para>gameObject 非空时同步写回其 transform，供 AttackModeInstanceRenderer 批量绘制读取。</para>
     /// </summary>
     public Vector3 position;
+    /// <summary>
+    /// 上一帧渲染时的位置：供 AttackModeInstanceRenderer 帧差分算世界速度矢量(灌 shader 逐实例 _VelocityWS)，使火星等特效脱离弹体留在世界空间。
+    /// <para>纯运行时字段(非配置参数)，仅"桶材质带 _VelocityWS"的弹道会被读写；Init 里与 position 同步初始化，防对象池复用时残留上一发位置算出跨屏速度。</para>
+    /// </summary>
+    public Vector3 lastRenderPosition;
     #endregion
 
     #region DSP 视觉参数（由武器 attack_mode_data 写入，供 AttackModeInstanceRenderer 构建实例矩阵/写桶材质；spriteRenderer 渲染并行生效）
@@ -113,10 +118,14 @@ public class BaseAttackMode
     /// </summary>
     public virtual void StartAttackBase()
     {
+        //按目标层级推导并缓存搜索类型（两条发射路径都要，故放在这里而非 StartAttack(attacker,...) 里）
+        RefreshSearchCreatureType();
         //每发随机一个自旋相位，避免同桶所有实例(材质统一自转)角度完全同步
         spinPhase = UnityEngine.Random.Range(0f, 360f);
         //位置真实源置为起点（即使无 gameObject 也生效），再同步到 transform
         position = attackModeData.startPos;
+        //渲染差分基准同步归位：不重置则对象池复用时会拿上一发的终点作基准，首帧算出跨屏速度把火星甩到天边
+        lastRenderPosition = position;
         if (gameObject != null)
         {
             gameObject.transform.position = position;
@@ -161,21 +170,8 @@ public class BaseAttackMode
                     Vector3 offsetPosition = creatureData.creatureInfo.GetAttackStartPosition() + attackModeInfo.GetStartPosOffset();
                     offsetPosition.y += UnityEngine.Random.Range(-StartPosRandomRangeY, StartPosRandomRangeY);
                     attackModeData.startPos = attacker.creatureObj.transform.position + offsetPosition;
-                    //获取被攻击者的层级
+                    //获取被攻击者的层级（搜索类型由末尾 StartAttackBase → RefreshSearchCreatureType 据此推导）
                     attackModeData.attackedLayerTarget = attacker.fightCreatureData.GetCreatureLayer(true);
-                    //缓存被攻击者战斗类型（用于范围检测时筛选 layer），避免每帧重算
-                    if (attackModeData.attackedLayerTarget == LayerInfo.CreatureAtt)
-                    {
-                        searchCreatureType = CreatureFightTypeEnum.FightAttack;
-                    }
-                    else if (attackModeData.attackedLayerTarget == LayerInfo.CreatureDef)
-                    {
-                        searchCreatureType = CreatureFightTypeEnum.FightDefense;
-                    }
-                    else
-                    {
-                        searchCreatureType = CreatureFightTypeEnum.None;
-                    }
                 }
             }
         }
@@ -360,6 +356,16 @@ public class BaseAttackMode
     }
 
     /// <summary>
+    /// 一次取回第 orderIndex 个历史点的位置与采样时自转角：两者同下标，合并取用只算一次环形下标换算(热路径每帧×档数×弹道数调用，故避免 GetTrailPoint+GetTrailSpinAngle 各算一遍取模)。
+    /// </summary>
+    public void GetTrailSample(int orderIndex, out Vector3 point, out float spinAngle)
+    {
+        int ringIndex = GetTrailRingIndex(orderIndex);
+        point = trailPoints[ringIndex];
+        spinAngle = trailSpinAngles[ringIndex];
+    }
+
+    /// <summary>
     /// 把时间顺序下标(0=最老)换算成环形缓冲物理下标（最老点 = 写指针回退 trailCount）。
     /// </summary>
     private int GetTrailRingIndex(int orderIndex)
@@ -456,7 +462,28 @@ public class BaseAttackMode
     }
 
     /// <summary>
-    /// 获取射线检测的层级掩码（由 StartAttack 缓存的 searchCreatureType 推导）
+    /// 按 attackModeData.attackedLayerTarget 推导并缓存被攻击者战斗类型（用于射线/范围检测筛选 layer），避免每帧重算
+    /// <para>⚠️必须在 StartAttackBase 里调，使「生物对战」(StartAttack(attacker,...)) 与「纯数据发射」(StartAttack()) 两条路径都能拿到：
+    /// 后者是分裂弹子弹道等由发射器创建的弹道走的路径，漏了它会导致 GetSearchLayerMask 返回 0、射线不入队、永远打不到人。</para>
+    /// </summary>
+    protected void RefreshSearchCreatureType()
+    {
+        if (attackModeData.attackedLayerTarget == LayerInfo.CreatureAtt)
+        {
+            searchCreatureType = CreatureFightTypeEnum.FightAttack;
+        }
+        else if (attackModeData.attackedLayerTarget == LayerInfo.CreatureDef)
+        {
+            searchCreatureType = CreatureFightTypeEnum.FightDefense;
+        }
+        else
+        {
+            searchCreatureType = CreatureFightTypeEnum.None;
+        }
+    }
+
+    /// <summary>
+    /// 获取射线检测的层级掩码（由 StartAttackBase 缓存的 searchCreatureType 推导）
     /// </summary>
     protected int GetSearchLayerMask()
     {

@@ -54,20 +54,21 @@ public partial class EffectHandler
     /// <para>模板资源缺失时仍登记(每帧照常收集位置)但不建实例——拖尾静默不显示，弹体本体与方案1 均不受影响。</para>
     /// </summary>
     /// <param name="visualKey">弹道视觉桶签名(AttackModeInstanceRenderer.BuildVisualBucketKey 生成)</param>
-    public void RegisterAttackModeTrailVfx(string visualKey)
+    /// <returns>该桶的 VFX 数据(调用方缓存住它，之后每帧走 <see cref="AddAttackModeTrailVfxPoint(AttackModeTrailVfxBean, Vector3, Vector3)"/> 直接喂，热路径免去逐发字符串查字典)；visualKey 非法时返回 null</returns>
+    public AttackModeTrailVfxBean RegisterAttackModeTrailVfx(string visualKey)
     {
         if (string.IsNullOrEmpty(visualKey))
-            return;
-        //去重：该桶已建则跳过，避免重复实例化 VFX
-        if (manager.dicAttackModeTrailVfx.ContainsKey(visualKey))
-            return;
+            return null;
+        //去重：该桶已建则复用(返回已有数据供调用方重新缓存引用)，避免重复实例化 VFX
+        if (manager.dicAttackModeTrailVfx.TryGetValue(visualKey, out AttackModeTrailVfxBean existData))
+            return existData;
         AttackModeTrailVfxBean trailVfxData = new AttackModeTrailVfxBean();
         manager.dicAttackModeTrailVfx[visualKey] = trailVfxData;
 
         //模板缺失(资源未制作/加载失败)：桶已登记但无实例，静默降级不喷射
         GameObject objModel = GetAttackModeTrailModel();
         if (objModel == null)
-            return;
+            return trailVfxData;
         //克隆模板实例化(世界空间模拟，位置由 buffer 提供，故实例本身置零点)
         GameObject objVfx = Instantiate(objModel);
         objVfx.name = $"AttackModeTrailVfx_{visualKey}";
@@ -77,7 +78,7 @@ public partial class EffectHandler
         {
             LogUtil.LogError($"拖尾 VFX 模板缺少 VisualEffect 组件：{objModel.name}");
             Destroy(objVfx);
-            return;
+            return trailVfxData;
         }
         trailVfxData.vfx = targetVisualEffect;
 
@@ -92,6 +93,7 @@ public partial class EffectHandler
             targetVisualEffect.SetFloat(PropTrailSpawnInterval, TrailVfxSpawnInterval);
         if (targetVisualEffect.HasFloat(PropTrailParticleSize))
             targetVisualEffect.SetFloat(PropTrailParticleSize, TrailVfxParticleSize);
+        return trailVfxData;
     }
 
     /// <summary>
@@ -118,6 +120,20 @@ public partial class EffectHandler
     {
         if (string.IsNullOrEmpty(visualKey) || !manager.dicAttackModeTrailVfx.TryGetValue(visualKey, out AttackModeTrailVfxBean trailVfxData))
             return;
+        AddAttackModeTrailVfxPoint(trailVfxData, position, trailColor);
+    }
+
+    /// <summary>
+    /// 收集一发子弹本帧的拖尾采样点(桶句柄版)：语义同上，但直接吃 <see cref="RegisterAttackModeTrailVfx"/> 返回的桶数据，省掉逐发的字符串哈希+字典查找。
+    /// <para>热路径专用——AttackModeInstanceRenderer 每帧对每发 VFX 拖尾弹道调用一次，桶签名字符串长(含换图/自旋后缀)、哈希按长度计费，故由调用方把句柄缓存在视觉桶上。</para>
+    /// </summary>
+    /// <param name="trailVfxData">该发弹道所属视觉桶的 VFX 数据(注册时拿到并缓存；为空安全跳过)</param>
+    /// <param name="position">该发弹道当前世界坐标</param>
+    /// <param name="trailColor">该发弹道自身的拖尾染色 rgb(BaseAttackMode.trailColor，来自其 trail_data 的 color)</param>
+    public void AddAttackModeTrailVfxPoint(AttackModeTrailVfxBean trailVfxData, Vector3 position, Vector3 trailColor)
+    {
+        if (trailVfxData == null)
+            return;
         //⚠️位置与染色必须成对 Add 保持同序同长：图内用同一索引采样两条 buffer，错位即张冠李戴
         trailVfxData.listPosition.Add(position);
         trailVfxData.listColor.Add(trailColor);
@@ -141,15 +157,19 @@ public partial class EffectHandler
             //本帧有子弹才需传位置/染色；无子弹时只把喷发数置 0 即可(已有粒子按寿命自然消散)
             if (posCount > 0)
             {
-                EnsureAttackModeTrailVfxBuffer(itemData, posCount);
+                //缓冲扩容时(含首帧新建)才需要重新绑定：VFX 持有的是 buffer 引用，容量没变就一直有效，无谓重绑是每帧白付的开销
+                bool bufferRecreated = EnsureAttackModeTrailVfxBuffer(itemData, posCount);
                 //只上传本帧前 posCount 个位置/染色(List→StructuredBuffer)；两者同序同长，保证图内同索引采样即同一发子弹
                 itemData.positionBuffer.SetData(itemData.listPosition, 0, 0, posCount);
                 itemData.colorBuffer.SetData(itemData.listColor, 0, 0, posCount);
-                if (targetVisualEffect.HasGraphicsBuffer(PropTrailPositionBuffer))
-                    targetVisualEffect.SetGraphicsBuffer(PropTrailPositionBuffer, itemData.positionBuffer);
-                //图未建 ColorBuffer 时静默跳过(不报错)：粒子拿不到染色，退化为贴图原色
-                if (targetVisualEffect.HasGraphicsBuffer(PropTrailColorBuffer))
-                    targetVisualEffect.SetGraphicsBuffer(PropTrailColorBuffer, itemData.colorBuffer);
+                if (bufferRecreated)
+                {
+                    if (targetVisualEffect.HasGraphicsBuffer(PropTrailPositionBuffer))
+                        targetVisualEffect.SetGraphicsBuffer(PropTrailPositionBuffer, itemData.positionBuffer);
+                    //图未建 ColorBuffer 时静默跳过(不报错)：粒子拿不到染色，退化为贴图原色
+                    if (targetVisualEffect.HasGraphicsBuffer(PropTrailColorBuffer))
+                        targetVisualEffect.SetGraphicsBuffer(PropTrailColorBuffer, itemData.colorBuffer);
+                }
             }
             //喷发数：兼容图内 PositionCount 建成 uint 或 int 两种类型(Has 判断后再 Set，避免类型不符静默丢失)
             if (targetVisualEffect.HasUInt(PropTrailPositionCount))
@@ -185,18 +205,20 @@ public partial class EffectHandler
 
     /// <summary>
     /// 确保某桶的位置/染色缓冲容量 &gt;= count；不足时 Release 旧的、按 2 的幂(下限16)重建 StructuredBuffer&lt;float3&gt;。
-    /// <para>两条 buffer 同容量、同步扩容(索引一一对应，容量不同即错位)；扩容后须重新 SetGraphicsBuffer 绑定——由 FlushAttackModeTrailVfxFrame 每帧无条件绑定覆盖。</para>
+    /// <para>两条 buffer 同容量、同步扩容(索引一一对应，容量不同即错位)；容量够用时原样复用，返回 false 让调用方跳过重绑。</para>
     /// </summary>
-    private static void EnsureAttackModeTrailVfxBuffer(AttackModeTrailVfxBean trailVfxData, int count)
+    /// <returns>是否重建了缓冲——true 时调用方**必须**重新 SetGraphicsBuffer，否则 VFX 仍指着已 Release 的旧 buffer</returns>
+    private static bool EnsureAttackModeTrailVfxBuffer(AttackModeTrailVfxBean trailVfxData, int count)
     {
         if (trailVfxData.positionBuffer != null && trailVfxData.colorBuffer != null && trailVfxData.bufferCapacity >= count)
-            return;
+            return false;
         trailVfxData.positionBuffer?.Release();
         trailVfxData.colorBuffer?.Release();
         int cap = Mathf.NextPowerOfTwo(Mathf.Max(count, 16));
         trailVfxData.positionBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, cap, TrailVfxStride);
         trailVfxData.colorBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, cap, TrailVfxStride);
         trailVfxData.bufferCapacity = cap;
+        return true;
     }
 
     /// <summary>

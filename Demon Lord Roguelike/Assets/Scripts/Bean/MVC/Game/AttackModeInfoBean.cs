@@ -72,9 +72,13 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public string start_pos_offset;
 	/// <summary>
-	///拖尾/残影参数(count:残影数&interval:采样间隔秒&startAlpha:最新档透明度&endAlpha:最老档透明度&color:染色rgb逗号分隔; 空=无拖尾; 残影=弹体贴图画在历史位置越老越透明; 需配合visual_name走DSP)
+	///拖尾/残影参数(&分隔项,:分键值)。type:1=残影(默认,可省略)/2=VFX粒子; color:染色rgb逗号分隔(默认1,1,1白=贴图原色)。 【type:1 残影】用 count:残影数&interval:采样间隔秒&startAlpha:最新档透明度&endAlpha:最老档透明度; 空=无拖尾; color为桶级(同visual_name只有首行生效)。 【type:2 VFX】只需配 type+color; 段数/间隔/透明度已写死在EffectHandler(桶级参数,逐行配也无效),填了会被忽略; color逐弹生效(同visual_name各行可各配各色,同一VFX内并存)。 两者均需配合visual_name走DSP。
 	/// </summary>
 	public string trail_data;
+	/// <summary>
+	///子弹道攻击模块id(仅分裂弹AttackModeRangedSplit使用:本行退化为发射器,由它按分裂道路逐条发射该id的子弹道;0/空=不使用)
+	/// </summary>
+	public long child_attack_mode_id;
 	/// <summary>
 	///备注
 	/// </summary>

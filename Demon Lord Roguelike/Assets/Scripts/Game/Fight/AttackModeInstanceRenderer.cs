@@ -14,7 +14,9 @@ using UnityEngine.Rendering;
 /// ②Vfx(type=2)：单个 GPU VFX 特效在各子弹位置喷射各自颜色的粒子，全部粒子合一 draw call。**本类不实现**——
 /// VFX 实例/参数/缓冲全归 <see cref="EffectHandler"/> 的「攻击弹道拖尾粒子」区(与血液/护盾粒子同一分工：调用方只给语义数据)，
 /// 本类仅每帧把「位置 + 本发染色」报给它。</para>
-/// <para>【局限】分裂弹(AttackModeRangedSplit)自管多个 GameObject，不纳入本渲染器(无视觉桶、无轨迹)。</para>
+/// <para>【多发弹道】一发弹道=一个位置，故"一次攻击打出多发"的类型(如分裂弹)须拆成多个独立 BaseAttackMode 才能纳入本渲染器：
+/// AttackModeRangedSplit 已改为纯发射器、逐条道路发射独立的 AttackModeRangedSplitChild，各子弹与普通弹道一样有视觉桶与轨迹。
+/// 新增同类弹道请照此办理，勿在单个 AttackMode 里自管多个 GameObject。</para>
 /// <para>【拆分】本类为 partial：弹体桶 / 每帧入口 RenderAll / 环境光补偿在本文件，方案1 轨迹在 AttackModeInstanceRendererTrail.cs。</para>
 /// </summary>
 public partial class AttackModeInstanceRenderer
@@ -22,6 +24,13 @@ public partial class AttackModeInstanceRenderer
     #region 常量
     //Graphics.DrawMeshInstanced 单批矩阵上限(Unity 硬限制 1023)
     private const int MaxInstancesPerBatch = 1023;
+    //弹体是否投阴影：满屏子弹的阴影几乎看不出，却让每个弹体桶多走一遍 ShadowCaster Pass(draw call 翻倍)，故默认关；想恢复原表现改回 On 即可
+    private const ShadowCastingMode BodyShadowCasting = ShadowCastingMode.Off;
+    //弹体是否接收阴影(与 BodyShadowCasting 配套：关阴影时一并关掉受影，省 Forward Pass 的阴影采样)
+    private const bool BodyReceiveShadows = false;
+    //世界速度矢量的瞬移钳制倍率：帧差分速度超过「弹道理论速度 GetMoveSpeed × 本倍率」即判定为瞬移(SetPosition 跳位)，本帧速度取 0
+    //(留 1.5 倍余量是给抛物线弹的重力分量：其实际速度本就大于配置的水平速度，严格按 1 倍卡会把正常弹道误判成瞬移)
+    private const float VelocityClampRate = 1.5f;
     #endregion
 
     #region 内部结构：渲染桶
@@ -38,8 +47,18 @@ public partial class AttackModeInstanceRenderer
         public readonly Matrix4x4[] matrixBuffer = new Matrix4x4[MaxInstancesPerBatch];
         //缓冲当前已填充数量
         public int count;
-        //上次写入材质的自旋(每轴 度/秒)，仅在变化时 SetVector；初始 NaN 保证首次必写
-        public Vector3 appliedRotateSpeed = new Vector3(float.NaN, float.NaN, float.NaN);
+        //——逐实例属性(仅"桶材质声明了 _VelocityWS"的桶启用，如火球/冰球；其余桶两个缓冲恒为 null，不占内存也不进热路径)——
+        //本桶是否需要逐实例世界速度+种子：注册期按材质有无 _VelocityWS 判定一次(见 RegisterVisual)
+        public bool hasVelocity;
+        //本帧待上传的逐实例世界速度矢量(与 matrixBuffer 同下标；定长 1023 复用，热路径零分配)
+        public Vector4[] velocityBuffer;
+        //本帧待上传的逐实例种子偏移(同上)：不灌则同屏所有火球的火星同一帧同时爆同时灭(_Time.y 是全局的)
+        public float[] seedBuffer;
+        //——热路径直连：同 key 的拖尾桶引用挂在本桶上，RenderAll 逐发只查一次 dicBucket，不再按字符串键二次查拖尾表——
+        //方案1(Instanced)轨迹桶(未派生轨迹为空)；由 RegisterTrailFromVisual 建桶时回填
+        public TrailBucket trail;
+        //方案2(Vfx)轨迹的 VFX 数据(未派生为空)；桶实例归 EffectHandler 持有/销毁，本类只借引用喂数据
+        public AttackModeTrailVfxBean trailVfx;
     }
     #endregion
 
@@ -53,6 +72,15 @@ public partial class AttackModeInstanceRenderer
     private MaterialPropertyBlock sharedMPB;
     //_InstancedFlatGI 属性 ID(避免每帧字符串查找)
     private static readonly int PropInstancedFlatGI = Shader.PropertyToID("_InstancedFlatGI");
+    //自旋写入用的 shader 参数：_RotateSpeed 属性 ID + 时间自转关键字(与本文件其它属性一致走 ID，不用字符串字面量)
+    private static readonly int PropRotateSpeed = Shader.PropertyToID("_RotateSpeed");
+    private const string KeywordRotateTimeOn = "_ROTATE_TIME_ON";
+    //——逐实例属性 ID(火球/冰球等自带世界化特效的桶专用，见 VisualBucket.hasVelocity)——
+    //_VelocityWS：本发的世界速度矢量(方向×速率，单位/秒)。通用属性非火星专用：shader 拿它反推"特效出生时弹体在哪"，
+    //使火星脱离弹体留在世界空间(不灌=火星刚性挂在弹体上跟着平移)。详见 Shader_Mesh_FireBallInstanced_1 的火星世界化⚠️
+    private static readonly int PropVelocityWS = Shader.PropertyToID("_VelocityWS");
+    //_SeedOffset：本发的随机相位(复用 spinPhase)，让各发火星生灭错峰
+    private static readonly int PropSeedOffset = Shader.PropertyToID("_SeedOffset");
     //环境探针求值用的固定采样方向(6 轴)与结果缓冲(预分配复用，避免热路径分配)
     private static readonly Vector3[] ambientEvalDirs = { Vector3.up, Vector3.down, Vector3.left, Vector3.right, Vector3.forward, Vector3.back };
     private readonly Color[] ambientEvalResults = new Color[6];
@@ -64,8 +92,12 @@ public partial class AttackModeInstanceRenderer
     /// <summary>
     /// 注册/替换某签名(visualKey)的弹体桶；mesh 或 material 为空视为取消该桶的 instancing 渲染。
     /// <para>换图 sprite 的宽高比修正由桶材质 shader 的 _VertexScaleXY(对象空间 XY 缩放)在注册前写好，此处不涉及。</para>
+    /// <para>自旋在此一次性写进桶材质：桶签名已按 spinAxis×spinSpeed 细分(见 <see cref="BuildVisualBucketKey"/>)，
+    /// 故整桶自旋恒定、注册期写死即可，无需每帧逐发重写。基础桶(key=visual_name)按签名规则必然无自旋，用默认值 0 即对。</para>
     /// </summary>
-    public void RegisterVisual(string visualKey, Mesh mesh, Material material)
+    /// <param name="spinAxis">该桶弹道的自旋轴(与 visualKey 里编码的一致)</param>
+    /// <param name="spinSpeed">该桶弹道的自旋速度(度/秒)；0=不自旋</param>
+    public void RegisterVisual(string visualKey, Mesh mesh, Material material, Vector3 spinAxis = default, float spinSpeed = 0f)
     {
         if (string.IsNullOrEmpty(visualKey))
             return;
@@ -81,6 +113,14 @@ public partial class AttackModeInstanceRenderer
         }
         bucket.mesh = mesh;
         bucket.material = material;
+        ApplyBucketSpin(material, spinAxis, spinSpeed);
+        //逐实例世界速度：只有声明了 _VelocityWS 的材质(火球/冰球)才启用并分配缓冲，其余桶零内存零热路径开销
+        bucket.hasVelocity = material.HasProperty(PropVelocityWS);
+        if (bucket.hasVelocity && bucket.velocityBuffer == null)
+        {
+            bucket.velocityBuffer = new Vector4[MaxInstancesPerBatch];
+            bucket.seedBuffer = new float[MaxInstancesPerBatch];
+        }
     }
 
     /// <summary>
@@ -90,6 +130,12 @@ public partial class AttackModeInstanceRenderer
     {
         if (string.IsNullOrEmpty(visualKey))
             return;
+        //先断开弹体桶对两条轨迹的直连引用，再移除桶(桶对象可能仍被本帧局部变量持有，留着引用即悬垂)
+        if (dicBucket.TryGetValue(visualKey, out VisualBucket vb))
+        {
+            vb.trail = null;
+            vb.trailVfx = null;
+        }
         dicBucket.Remove(visualKey);
         if (dicTrailBucket.TryGetValue(visualKey, out TrailBucket tb))
         {
@@ -185,6 +231,8 @@ public partial class AttackModeInstanceRenderer
         }
 
         //4) 收集：把每发弹道的位置矩阵填入对应桶缓冲，满批即刻绘制并清零；启用轨迹的弹道顺带采样+收集
+        //逐实例世界速度用的帧时长(只取一次)：暂停帧(deltaTime=0)时 CalculateVelocityWS 内部按 0 处理，不除零
+        float deltaTime = Time.deltaTime;
         int count = listAttackMode == null ? 0 : listAttackMode.Count;
         for (int i = 0; i < count; i++)
         {
@@ -192,24 +240,31 @@ public partial class AttackModeInstanceRenderer
             if (itemAttackMode == null || !itemAttackMode.isValid || itemAttackMode.attackModeInfo == null)
                 continue;
             //取预算好的视觉桶签名(visual_name + 换图 + 自旋)，支持逐弹换图/自旋分桶
+            //⚠️本帧对本发唯一的一次字符串键查找：桶签名长、哈希按长度计费，故拖尾两条路都改走桶上的直连引用(bucket.trail / bucket.trailVfx)而非再查表
             string visualKey = itemAttackMode.visualBucketKey;
             if (string.IsNullOrEmpty(visualKey) || !dicBucket.TryGetValue(visualKey, out VisualBucket bucket))
                 continue;
 
             //轨迹：按间隔采样当前位置，并把本发收进对应轨迹桶(绘制延到收尾按年龄档批量画)
-            if (hasTrail && itemAttackMode.trailMode == AttackModeTrailType.Instanced)
+            if (hasTrail && itemAttackMode.trailMode == AttackModeTrailType.Instanced && bucket.trail != null)
             {
                 itemAttackMode.SampleTrail(trailNow);
-                if (itemAttackMode.trailCount >= 1 && dicTrailBucket.TryGetValue(visualKey, out TrailBucket trailBucket))
-                    trailBucket.frameAttackModes.Add(itemAttackMode);
+                if (itemAttackMode.trailCount >= 1)
+                    bucket.trail.frameAttackModes.Add(itemAttackMode);
             }
 
             //VFX 轨迹(方案2)：只把"本发的位置+自身染色"报给 EffectHandler，粒子实例/缓冲/上传全由它自管(本渲染器不碰 VFX)
             if (itemAttackMode.trailMode == AttackModeTrailType.Vfx)
-                effectHandler.AddAttackModeTrailVfxPoint(visualKey, itemAttackMode.position, itemAttackMode.trailColor);
+                effectHandler.AddAttackModeTrailVfxPoint(bucket.trailVfx, itemAttackMode.position, itemAttackMode.trailColor);
 
-            //自旋(每轴 度/秒)写进桶共享材质(仅变化时 SetVector)；再填本发弹体矩阵
-            ApplyBucketSpin(bucket, itemAttackMode.spinAxis, itemAttackMode.spinSpeed);
+            //逐实例世界速度+种子(仅火球/冰球这类桶)：须在 count++ 前填，与本发矩阵同下标
+            if (bucket.hasVelocity)
+            {
+                bucket.velocityBuffer[bucket.count] = CalculateVelocityWS(itemAttackMode, deltaTime);
+                //种子直接复用每发随机自旋相位(0~360)：shader 侧 frac 只取小数部分，随机性原样保留，无需再加字段
+                bucket.seedBuffer[bucket.count] = itemAttackMode.spinPhase;
+            }
+            //填本发弹体矩阵(自旋已在注册期写进桶材质，此处不再逐发重写)
             bucket.matrixBuffer[bucket.count] = BuildInstanceMatrix(itemAttackMode, itemAttackMode.position);
             bucket.count++;
             if (bucket.count >= MaxInstancesPerBatch)
@@ -247,53 +302,93 @@ public partial class AttackModeInstanceRenderer
     /// </summary>
     private static Matrix4x4 BuildInstanceMatrix(BaseAttackMode attackMode, Vector3 position, float extraSpinAngle = 0f)
     {
-        Quaternion rot = Quaternion.identity;
-        if (attackMode.visualStartAngle != 0f)
-            rot = Quaternion.AngleAxis(attackMode.visualStartAngle, Vector3.forward);
-        //有自旋时叠加(每发随机相位 + 传入的时间自转角)，绕自旋轴：弹体本体 extra=0(只相位、时间自转交 shader)，轨迹 extra=采样时自转角
-        if (attackMode.spinSpeed != 0f)
-        {
-            float spinAngle = attackMode.spinPhase + extraSpinAngle;
-            if (spinAngle != 0f)
-                rot *= Quaternion.AngleAxis(spinAngle, attackMode.spinAxis);
-        }
         float scale = attackMode.visualScale >= 0f ? attackMode.visualScale : 1f;
+        bool hasStartAngle = attackMode.visualStartAngle != 0f;
+        //有自旋时叠加(每发随机相位 + 传入的时间自转角)，绕自旋轴：弹体本体 extra=0(只相位、时间自转交 shader)，轨迹 extra=采样时自转角
+        float spinAngle = attackMode.spinSpeed != 0f ? attackMode.spinPhase + extraSpinAngle : 0f;
+        //无旋转的快速路径(不配起始角且不自旋，最常见)：直接拼对角矩阵，跳过 Quaternion.AngleAxis + Matrix4x4.TRS 两个原生调用
+        //(二者均为 extern，托管↔原生穿越按每发每帧计费)；结果与 TRS(position, identity, one*scale) 逐位等价
+        if (!hasStartAngle && spinAngle == 0f)
+        {
+            Matrix4x4 fastMatrix = default;   //Matrix4x4 是 16 个 float 的结构体，default 即全 0
+            fastMatrix.m00 = scale;
+            fastMatrix.m11 = scale;
+            fastMatrix.m22 = scale;
+            fastMatrix.m33 = 1f;
+            fastMatrix.m03 = position.x;
+            fastMatrix.m13 = position.y;
+            fastMatrix.m23 = position.z;
+            return fastMatrix;
+        }
+        Quaternion rot = hasStartAngle ? Quaternion.AngleAxis(attackMode.visualStartAngle, Vector3.forward) : Quaternion.identity;
+        if (spinAngle != 0f)
+            rot *= Quaternion.AngleAxis(spinAngle, attackMode.spinAxis);
         return Matrix4x4.TRS(position, rot, Vector3.one * scale);
     }
 
     /// <summary>
-    /// 把弹道自旋(spinAxis×spinSpeed，每轴 度/秒)写入桶材质的 shader 自转参数(_RotateSpeed + _ROTATE_TIME_ON)。
-    /// <para>材质整桶共享，故按桶缓存上次写入值、仅在变化时 SetVector/切关键字，避免每帧材质写入；spinSpeed=0 时关闭自转。</para>
+    /// 算单发弹道当前的世界速度矢量(方向×速率，单位/秒)，供 shader 的 _VelocityWS 反推特效出生点(火星世界化)；顺带推进本发的差分基准。
+    /// <para>【为什么帧差分而不问弹道要】差的是"本帧位移 ÷ 帧时长" = 本帧平均速度，直线弹/追踪弹/抛物线弹全部自动正确，
+    /// 无需每种 AttackMode 各自暴露飞行方向再各自算对一遍(拐弯与下坠的分量差分天然含进去了)。</para>
+    /// <para>【瞬移钳制】<see cref="BaseAttackMode.SetPosition"/> 可瞬间改位置，差分会算出荒谬速度把火星甩到天边；
+    /// 故超过「理论速度 × <see cref="VelocityClampRate"/>」即判为瞬移、本帧速度取 0(退化成"火星挂在弹体上"仅一帧，不可察)。
+    /// 速度为 0 的原地弹道(speed_move=0)同样返回 0——它本就不该有拖拽。</para>
     /// </summary>
-    private void ApplyBucketSpin(VisualBucket bucket, Vector3 spinAxis, float spinSpeed)
+    private static Vector4 CalculateVelocityWS(BaseAttackMode attackMode, float deltaTime)
     {
-        //每轴度/秒：方向由 spinAxis 符号承载(如 (0,0,-1)×360 = 绕 -Z)，材质 _RotateDirection 保持正向
-        Vector3 rotateSpeed = spinAxis * spinSpeed;
-        if (bucket.appliedRotateSpeed == rotateSpeed)
-            return;
-        bucket.appliedRotateSpeed = rotateSpeed;
-        if (bucket.material == null)
+        Vector3 delta = attackMode.position - attackMode.lastRenderPosition;
+        //基准无条件推进：即便本帧速度被判瞬移丢弃，也不能让基准停在旧位置(否则下一帧会把这段位移二次计入)
+        attackMode.lastRenderPosition = attackMode.position;
+        //暂停帧不除零；理论速度<=0 的原地弹道直接退化为旧行为
+        float moveSpeed = attackMode.GetMoveSpeed();
+        if (deltaTime <= 0f || moveSpeed <= 0f)
+            return Vector4.zero;
+        Vector3 velocity = delta / deltaTime;
+        float maxSpeed = moveSpeed * VelocityClampRate;
+        //超速判瞬移(比较平方值，省一次开方)
+        if (velocity.sqrMagnitude > maxSpeed * maxSpeed)
+            return Vector4.zero;
+        return new Vector4(velocity.x, velocity.y, velocity.z, 0f);
+    }
+
+    /// <summary>
+    /// 把弹道自旋(spinAxis×spinSpeed，每轴 度/秒)写入桶材质的 shader 自转参数(_RotateSpeed + _ROTATE_TIME_ON)；spinSpeed=0 时关闭自转。
+    /// <para>仅在 <see cref="RegisterVisual"/> 注册期调用一次(整桶自旋恒定，见其注释)，故无需缓存"上次写入值"做变化检测。</para>
+    /// </summary>
+    private static void ApplyBucketSpin(Material material, Vector3 spinAxis, float spinSpeed)
+    {
+        if (material == null)
             return;
         if (spinSpeed != 0f)
         {
-            bucket.material.EnableKeyword("_ROTATE_TIME_ON");
-            bucket.material.SetVector("_RotateSpeed", rotateSpeed);
+            material.EnableKeyword(KeywordRotateTimeOn);
+            //每轴度/秒：方向由 spinAxis 符号承载(如 (0,0,-1)×360 = 绕 -Z)，材质 _RotateDirection 保持正向
+            material.SetVector(PropRotateSpeed, spinAxis * spinSpeed);
         }
         else
         {
-            bucket.material.DisableKeyword("_ROTATE_TIME_ON");
+            material.DisableKeyword(KeywordRotateTimeOn);
         }
     }
 
     /// <summary>
     /// 用携带平坦环境光的共享 MPB 批量绘制单个弹体桶当前缓冲的实例。
     /// <para>MPB 的 _InstancedFlatGI 补齐 Lit 材质在实例化绘制下缺失的环境光，使亮度与预制 MeshRenderer 一致；
-    /// 不走光照探针(LightProbeUsage.Off，自定义 shader 未启用逐实例 SH)；castShadows/receiveShadows 沿用预制的 On/true。</para>
+    /// 不走光照探针(LightProbeUsage.Off，自定义 shader 未启用逐实例 SH)；阴影投射/接收见 <see cref="BodyShadowCasting"/>(默认关，省一遍 ShadowCaster Pass)。</para>
+    /// <para>【逐实例数组现灌现画】火球/冰球桶的 _VelocityWS/_SeedOffset 在此刻才灌进 <b>共享</b> MPB：Set*Array 是即时拷贝、
+    /// 紧接着就提交绘制，故各桶轮流借用同一个 MPB 不会串数据，无需每桶再建 MPB(那样反而要为每个新 MPB 同步补灌 _InstancedFlatGI，
+    /// 漏灌即偏暗)。必须每桶一份的只有缓冲数组本身——各桶的填充是交错进行的。
+    /// 数组按定长 1023 整份上传(超出 count 的部分被忽略)，与轨迹桶的 _TrailAlpha 同理；未声明这两个属性的桶提交时 Unity 直接忽略残留数组。</para>
     /// </summary>
     private void DrawBucket(VisualBucket bucket)
     {
+        if (bucket.hasVelocity)
+        {
+            sharedMPB.SetVectorArray(PropVelocityWS, bucket.velocityBuffer);
+            sharedMPB.SetFloatArray(PropSeedOffset, bucket.seedBuffer);
+        }
         Graphics.DrawMeshInstanced(bucket.mesh, 0, bucket.material, bucket.matrixBuffer, bucket.count,
-            sharedMPB, ShadowCastingMode.On, true, 0, null, LightProbeUsage.Off, null);
+            sharedMPB, BodyShadowCasting, BodyReceiveShadows, 0, null, LightProbeUsage.Off, null);
     }
     #endregion
 

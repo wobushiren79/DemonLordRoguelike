@@ -47,6 +47,30 @@ public class AttackModeBean
     }
 
     /// <summary>
+    /// 复制攻击者快照数据（不含 attackModeId：各弹道持有自己的配置ID）
+    /// <para>供「一次攻击发射多发子弹道」的发射器（如分裂弹 AttackModeRangedSplit）把父弹道快照好的攻击者数据原样传给每一发子弹，
+    /// 使子弹的伤害/暴击/速度倍率/起点/朝向/目标层级与父弹道完全一致。</para>
+    /// </summary>
+    public void CopyAttackerDataFrom(AttackModeBean targetData)
+    {
+        if (targetData == null)
+        {
+            return;
+        }
+        attackerDamage = targetData.attackerDamage;
+        attackerCRT = targetData.attackerCRT;
+        attackerSpeedRate = targetData.attackerSpeedRate;
+        startPos = targetData.startPos;
+        targetPos = targetData.targetPos;
+        attackDirection = targetData.attackDirection;
+        attackerId = targetData.attackerId;
+        attackedId = targetData.attackedId;
+        attackedLayerTarget = targetData.attackedLayerTarget;
+        attackerCreatureId = targetData.attackerCreatureId;
+        attackerWeaponItemId = targetData.attackerWeaponItemId;
+    }
+
+    /// <summary>
     /// 清理数据
     /// </summary>
     public void ClearData()
