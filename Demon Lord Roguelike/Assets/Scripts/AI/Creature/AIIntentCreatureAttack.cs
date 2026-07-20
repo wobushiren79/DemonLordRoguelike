@@ -62,7 +62,7 @@ public class AIIntentCreatureAttack : AIBaseIntent
         //攻击准备中
         if (attackState == 0)
         {
-            timeUpdateAttackPre += Time.deltaTime;
+            timeUpdateAttackPre += GameFightLogic.GetFightDeltaTime();
             if (timeUpdateAttackPre >= timeUpdateAttackPreCD)
             {
                 timeUpdateAttackPre = 0;
@@ -73,7 +73,7 @@ public class AIIntentCreatureAttack : AIBaseIntent
         //攻击出手中
         else if (attackState == 1)
         {
-            timeUpdateAttacking += Time.deltaTime;
+            timeUpdateAttacking += GameFightLogic.GetFightDeltaTime();
             if (timeUpdateAttacking >= timeUpdateAttackingCD)
             {
                 timeUpdateAttacking = 0;
@@ -287,7 +287,7 @@ public class AIIntentCreatureAttack : AIBaseIntent
         }
         for (int i = 0; i < listExtraAttack.Count; i++)
         {
-            listExtraAttack[i].timer += Time.deltaTime;
+            listExtraAttack[i].timer += GameFightLogic.GetFightDeltaTime();
         }
     }
 

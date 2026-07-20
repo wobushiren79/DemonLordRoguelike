@@ -83,6 +83,10 @@ public class AIIntentCustomIdle : AIBaseIntent
 AIBaseEntity.RegisterIntentFactory(AIIntentEnum.CustomIdle, () => new AIIntentCustomIdle());
 ```
 
+## 意图计时的游戏速度（2倍速）约定
+
+意图内一切按时间推进的逻辑（移动 `Translate`、攻击/索敌/死亡计时等）**必须用 `GameFightLogic.GetFightDeltaTime()`**（= `Time.deltaTime × 当前游戏速度`，非战斗场景恒 1 倍），**禁止直接 `Time.deltaTime`**——否则 2倍速下该行为仍是 1 倍节奏。已由 AIHandler.Update 逐帧驱动的意图全部遵守此约定；动画播放速度不在此列，由 `FightCreatureEntity.SetAnimTimeScale`（`SkeletonAnimation.timeScale`）随 `SetGameSpeed` 全场同步。
+
 ## 约束
 
 - 意图类名必须以 `AIIntent` 开头，后接枚举名称

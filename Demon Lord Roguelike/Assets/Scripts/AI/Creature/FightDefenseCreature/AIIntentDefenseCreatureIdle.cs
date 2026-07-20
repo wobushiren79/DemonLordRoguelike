@@ -31,7 +31,7 @@ public class AIIntentDefenseCreatureIdle : AIBaseIntent
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
-        timeUpdateForFindTarget += Time.deltaTime;
+        timeUpdateForFindTarget += GameFightLogic.GetFightDeltaTime();
         if (timeUpdateForFindTarget > timeUpdateForFindTargetCD)
         {
             timeUpdateForFindTarget = 0;

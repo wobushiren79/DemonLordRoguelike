@@ -103,6 +103,8 @@ BaseAttackMode                      - 攻击模式基类
 
 ### 3. 创建攻击模式类
 
+> **时间推进约定（2倍速）**：弹道/攻击模式内一切按时间推进的逻辑（飞行、重力、进度累加）必须用 `GameFightLogic.GetFightDeltaTime()`（= `Time.deltaTime × 当前游戏速度`，非战斗场景恒 1 倍）**替代 `Time.deltaTime`**，否则 2倍速下该弹道仍是 1 倍节奏。现有 `AttackModeRanged/Tracking/Arc/Fallupon(Area)/SplitChild` 已全部遵守。
+
 #### 近战单体示例
 
 ```csharp
@@ -163,8 +165,8 @@ public class AttackModeRanged : BaseAttackMode
 
     public virtual void HandleForMove()
     {
-        //实际飞行速度 = speed_move × 攻速ASPD加成倍率，统一走 GetMoveSpeed()
-        gameObject.transform.Translate(attackModeData.attackDirection * Time.deltaTime * GetMoveSpeed());
+        //实际飞行速度 = speed_move × 攻速ASPD加成倍率，统一走 GetMoveSpeed()；帧时间走 GetFightDeltaTime() 跟随游戏速度(2倍速)
+        TranslatePosition(attackModeData.attackDirection * GameFightLogic.GetFightDeltaTime() * GetMoveSpeed());
     }
 
     public virtual void HandleForBound()
@@ -302,7 +304,7 @@ public class AttackModeRangedSplitChild : AttackModeRanged
         if (Mathf.Abs(position.z - targetRoad) > RoadCloseThreshold)
         {
             Vector3 roadPosition = new Vector3(position.x, position.y, targetRoad);
-            SetPosition(Vector3.MoveTowards(position, roadPosition, Time.deltaTime * GetMoveSpeed() * RoadCloseSpeedRate));
+            SetPosition(Vector3.MoveTowards(position, roadPosition, GameFightLogic.GetFightDeltaTime() * GetMoveSpeed() * RoadCloseSpeedRate));
         }
         base.HandleForMove();   //复用父类直线飞行，故 Update 的「命中→移动→边界」顺序原样保留
     }

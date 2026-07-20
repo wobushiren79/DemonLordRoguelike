@@ -34,7 +34,7 @@ public class AIIntentAttackCreatureLured : AIBaseIntent
         float moveSpeedFinal = MathUtil.InterpolationLerp(moveSpeed, 0, 100, 0, 10f);
 
         Transform selfTF = selfFightCreatureEntity.creatureObj.transform;
-        selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeedFinal);
+        selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * GameFightLogic.GetFightDeltaTime() * moveSpeedFinal);
     }
 
     public override void IntentLeaving(AIBaseEntity aiEntity)

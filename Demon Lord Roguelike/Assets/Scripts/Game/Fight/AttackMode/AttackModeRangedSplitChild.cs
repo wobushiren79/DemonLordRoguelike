@@ -31,7 +31,7 @@ public class AttackModeRangedSplitChild : AttackModeRanged
         if (Mathf.Abs(position.z - targetRoad) > RoadCloseThreshold)
         {
             Vector3 roadPosition = new Vector3(position.x, position.y, targetRoad);
-            SetPosition(Vector3.MoveTowards(position, roadPosition, Time.deltaTime * GetMoveSpeed() * RoadCloseSpeedRate));
+            SetPosition(Vector3.MoveTowards(position, roadPosition, GameFightLogic.GetFightDeltaTime() * GetMoveSpeed() * RoadCloseSpeedRate));
         }
         base.HandleForMove();
     }

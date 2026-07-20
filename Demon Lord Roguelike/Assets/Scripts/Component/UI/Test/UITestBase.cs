@@ -272,7 +272,7 @@ public partial class UITestBase : BaseUIComponent
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlockData = userData.GetUserUnlockData();
-        //征服难度基础值(GetUnlockGameWorldConquerDifficultyLevel = conquerDifficultyMax + 解锁研究等级)
+        //征服难度基础值(GetUnlockGameWorldConquerDifficultyLevel = conquerDifficultyMax + 已解锁难度研究个数)
         int conquerDifficultyBase = userData.GetUserLimmitData().conquerDifficultyMax;
 
         var allWorld = GameWorldInfoCfg.GetAllData();
@@ -280,7 +280,7 @@ public partial class UITestBase : BaseUIComponent
         {
             long worldId = itemData.Key;
             GameWorldInfoBean gameWorldInfo = itemData.Value;
-            //该世界征服难度的解锁ID(为0表示无可解锁难度, 难度恒为基础值)
+            //该世界征服难度的起始解锁ID(为0表示无可解锁难度, 难度恒为基础值)
             long unlockId = gameWorldInfo.unlock_id_conquer_difficulty_level;
             if (unlockId == 0)
                 continue;
@@ -290,13 +290,15 @@ public partial class UITestBase : BaseUIComponent
                 continue;
             //目标难度: 一半(向上取整) 或 最高
             int targetDifficulty = isHalf ? Mathf.Max(1, Mathf.CeilToInt(configDifficultyMax / 2f)) : configDifficultyMax;
-            //需要的解锁研究等级 = 目标难度 - 基础难度(≤0说明基础值已覆盖, 无需解锁)
+            //需要解锁的难度研究个数 = 目标难度 - 基础难度(≤0说明基础值已覆盖, 无需解锁)
             int needUnlockLevel = targetDifficulty - conquerDifficultyBase;
             if (needUnlockLevel <= 0)
                 continue;
-            //先确保解锁条目存在, 再覆盖解锁等级(AddUnlock 仅在条目已存在时设置等级)
-            userUnlockData.AddUnlock(unlockId);
-            userUnlockData.AddUnlock(unlockId, needUnlockLevel);
+            //难度研究已拆分为每难度独立节点(起始id起连续), 逐个解锁
+            for (int i = 0; i < needUnlockLevel; i++)
+            {
+                userUnlockData.AddUnlock(unlockId + i);
+            }
         }
 
         UIHandler.Instance.ToastHintText(isHalf ? "已解锁所有世界一半难度！" : "已解锁所有世界全部难度！", 1);

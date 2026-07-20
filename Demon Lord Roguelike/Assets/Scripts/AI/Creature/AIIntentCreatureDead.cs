@@ -32,7 +32,7 @@ public class AIIntentCreatureDead : AIBaseIntent
         //AI实例可能已被清场回收，selfCreatureEntity 置空时跳过，避免空引用
         if (selfAIEntity == null || selfAIEntity.selfCreatureEntity == null)
             return;
-        timeUpdateForDead += Time.deltaTime;
+        timeUpdateForDead += GameFightLogic.GetFightDeltaTime();
         if (timeUpdateForDead >= timeUpdateForDeadCD)
         {
             timeUpdateForDead = 0;

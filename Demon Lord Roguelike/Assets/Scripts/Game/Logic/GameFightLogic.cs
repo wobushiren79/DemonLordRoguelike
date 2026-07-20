@@ -160,6 +160,70 @@ public class GameFightLogic : BaseGameLogic
     }
     #endregion
 
+    #region 游戏速度
+    /// <summary>2倍速按钮开启时的游戏速度倍率</summary>
+    public const float GAME_SPEED_2X = 2f;
+
+    /// <summary>
+    /// 获取当前战斗的游戏速度（非战斗逻辑或无战斗数据时恒为1）
+    /// 供 AI意图/弹道/掉落物 等不经 GameFightLogic.UpdateGame 驱动、但需要跟随游戏速度的战斗系统读取。
+    /// </summary>
+    /// <returns>当前游戏速度倍率（1=原速, 2=2倍速）</returns>
+    public static float GetCurrentGameSpeed()
+    {
+        var gameLogic = GameHandler.Instance.manager.gameLogic;
+        if (gameLogic is GameFightLogic fightLogic && fightLogic.fightData != null)
+            return fightLogic.fightData.gameSpeed;
+        return 1f;
+    }
+
+    /// <summary>
+    /// 获取按游戏速度缩放后的战斗帧时间（= Time.deltaTime × 当前游戏速度）
+    /// 战斗内一切按「游戏时间流速」推进的系统统一用它替代 Time.deltaTime，使2倍速下全场节奏一致；
+    /// 与 UpdateGame 的 updateTime 同源（Time.timeScale=0 暂停/BOSS特写减速时同样归零或减慢，互不冲突）。
+    /// </summary>
+    /// <returns>缩放后的帧时间（秒）</returns>
+    public static float GetFightDeltaTime()
+    {
+        return Time.deltaTime * GetCurrentGameSpeed();
+    }
+
+    /// <summary>
+    /// 设置游戏速度（2倍速按钮开关）
+    /// 只改游戏时间流速（fightData.gameSpeed），不改 Time.timeScale；速度随 fightData 仅存于本场战斗，战斗结束自然还原。
+    /// </summary>
+    /// <param name="gameSpeed">目标游戏速度倍率（1=原速, GAME_SPEED_2X=2倍速）</param>
+    public void SetGameSpeed(float gameSpeed)
+    {
+        fightData.gameSpeed = gameSpeed;
+        //同步全部在场生物的动画播放速度，使动画节奏跟随游戏速度
+        RefreshAllCreatureAnimTimeScale();
+    }
+
+    /// <summary>
+    /// 按当前游戏速度刷新全部在场生物（防守核心 + 进攻/防守生物）的动画播放速度
+    /// </summary>
+    protected void RefreshAllCreatureAnimTimeScale()
+    {
+        float gameSpeed = fightData.gameSpeed;
+        var defenseCore = fightData.fightDefenseCoreCreature;
+        if (defenseCore != null)
+            defenseCore.SetAnimTimeScale(gameSpeed);
+        var listAttack = fightData.dlAttackCreatureEntity?.List;
+        if (listAttack != null)
+        {
+            for (int i = 0; i < listAttack.Count; i++)
+                listAttack[i]?.SetAnimTimeScale(gameSpeed);
+        }
+        var listDefense = fightData.dlDefenseCreatureEntity?.List;
+        if (listDefense != null)
+        {
+            for (int i = 0; i < listDefense.Count; i++)
+                listDefense[i]?.SetAnimTimeScale(gameSpeed);
+        }
+    }
+    #endregion
+
     #region 清理数据
     /// <summary>
     /// 先简单清理数据（AI和选择 防止执行）

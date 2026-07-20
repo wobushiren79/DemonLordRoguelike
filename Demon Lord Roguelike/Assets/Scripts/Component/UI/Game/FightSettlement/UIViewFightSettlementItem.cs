@@ -50,8 +50,7 @@ public partial class UIViewFightSettlementItem : BaseUIView
         if (creatureData != null)
         {
             SetCreatureName(creatureData.creatureName);
-            SetCreatureIcon(creatureData);
-            SetClass(creatureData.creatureInfo.class_icon_res);
+            SetCardData(creatureData);
             SetProgressForKill(fightRecordsData.totalKillNumForDef, fightRecordsCreatureData.killNum);
             SetProgressForDamage(fightRecordsData.totalDamageForDef, fightRecordsCreatureData.damage);
             SetProgressForDamageReceived(fightRecordsData.totalDamageReceivedForDef, fightRecordsCreatureData.damageReceived);
@@ -74,25 +73,11 @@ public partial class UIViewFightSettlementItem : BaseUIView
     }
 
     /// <summary>
-    /// 设置生物图标
+    /// 设置卡片数据(与其他场景卡片一致,由卡片自管 图标/稀有度/等级/MP/职业图标/悬浮详情)
     /// </summary>
-    public void SetCreatureIcon(CreatureBean creatureData)
+    public void SetCardData(CreatureBean creatureData)
     {
-        GameUIUtil.SetCreatureUIForSimple(ui_Icon, creatureData);
-    }
-
-    /// <summary>
-    /// 设置职业图标
-    /// </summary>
-    public void SetClass(string iconRes)
-    {
-        if (string.IsNullOrEmpty(iconRes))
-        {
-            ui_Class.gameObject.SetActive(false);
-            return;
-        }
-        ui_Class.gameObject.SetActive(true);
-        IconHandler.Instance.SetUIIcon(iconRes, ui_Class);
+        ui_UIViewCreatureCardItem.SetData(creatureData, CardUseStateEnum.Show);
     }
 
     /// <summary>

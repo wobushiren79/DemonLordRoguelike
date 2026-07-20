@@ -56,6 +56,8 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 | `unlock_id` | 世界本身解锁id |
 | `unlock_id_infinite` | 无尽模式解锁id(解锁后该世界随机类型池才含 Infinite) |
 | `unlock_id_conquer_difficulty_level` | 征服难度起始解锁id |
+| `unlock_id_quick_attack` | 加快进攻节奏(Quick)研究起始解锁id(0=该世界无此类研究, 实际id=起始id+难度-1) |
+| `unlock_id_speed2` | 2倍速游戏研究起始解锁id(0=该世界无此类研究, 实际id=起始id+难度-1) |
 | `map_pos` | 地图坐标(配置) |
 | `name` | 名字多语言id(`name_language` 带缓存) |
 

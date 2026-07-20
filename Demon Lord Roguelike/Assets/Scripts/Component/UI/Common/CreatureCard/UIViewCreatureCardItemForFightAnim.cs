@@ -31,22 +31,15 @@ public partial class UIViewCreatureCardItemForFight
 
     #region 动画相关
     /// <summary>
-    /// 创建动画(由下方弹入：位移 OutBack + 缩放过冲回弹，与 UILineupManager 初始化动画一致)
+    /// 创建动画(出现弹入统一走 UIViewCreatureCardItem.AnimForCardShow,此处仅做清理与参数透传)
     /// </summary>
     /// <param name="index">卡片序号，用于错开延迟</param>
     public void AnimForCreateShow(int index)
     {
         ClearAnim();
-        rectTransform.anchoredPosition = new Vector2(cardData.originalCardPos.x, cardData.originalCardPos.y - 200);
-        rectTransform.localScale = Vector3.one;
-        float moveTime = animCardCreateTimeType2;
-        animForCreate = DOTween.Sequence()
-            .AppendInterval(index * animCardCreateDelayTime)
-            .Append(rectTransform.DOAnchorPos(cardData.originalCardPos, moveTime).SetEase(animCardCreateEase))
-            .Join(rectTransform.DOScale(1.15f, moveTime * 0.6f).SetEase(Ease.OutQuad))
-            .Append(rectTransform.DOScale(1f, moveTime * 0.4f).SetEase(Ease.InOutQuad))
-            //动画落位完成后播放卡片音效(每张卡各自播放)
-            .OnComplete(() => AudioHandler.Instance.PlaySound(AudioEnum.sound_card_1));
+        //先归位到 originalCardPos(SetData 只记坐标不动位置,InitCreatureCardList 流程此时 transform 还在模板原位),再以当前本地坐标为落位目标
+        rectTransform.anchoredPosition = cardData.originalCardPos;
+        animForCreate = AnimForCardShow(rectTransform.localPosition, index, animCardCreateDelayTime, animCardCreateTimeType2, animCardCreateEase);
     }
 
     /// <summary>

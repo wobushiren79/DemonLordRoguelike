@@ -28,6 +28,14 @@ public partial class GameWorldInfoBean : BaseBean
 	/// </summary>
 	public long unlock_id_conquer_difficulty_level;
 	/// <summary>
+	///解锁ID-征服模式-加快进攻节奏起始ID
+	/// </summary>
+	public long unlock_id_quick_attack;
+	/// <summary>
+	///解锁ID-征服模式-2倍速游戏起始ID
+	/// </summary>
+	public long unlock_id_speed2;
+	/// <summary>
 	///地图坐标
 	/// </summary>
 	public string map_pos;

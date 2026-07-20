@@ -29,7 +29,7 @@ public partial class UIViewGameSettingCheckBox : BaseUIView,IRadioButtonCallBack
     }
 
     /// <summary>
-    /// ÉèÖÃÊÇ·ñÑ¡ÖĞ
+    /// è®¾ç½®æ˜¯å¦é€‰ä¸­
     /// </summary>
     public void SetSelect(bool isSelect)
     {
@@ -37,7 +37,7 @@ public partial class UIViewGameSettingCheckBox : BaseUIView,IRadioButtonCallBack
     }
 
     /// <summary>
-    /// ÉèÖÃ»Øµ÷
+    /// è®¾ç½®å›è°ƒ
     /// </summary>
     public void SetCallBack(Action<UIViewGameSettingCheckBox, bool> actionForCallBack)
     {
@@ -45,7 +45,7 @@ public partial class UIViewGameSettingCheckBox : BaseUIView,IRadioButtonCallBack
     }
 
     /// <summary>
-    /// ÉèÖÃ±êÌâ
+    /// è®¾ç½®æ ‡é¢˜
     /// </summary>
     public void SetTitle(string title)
     {
@@ -53,7 +53,7 @@ public partial class UIViewGameSettingCheckBox : BaseUIView,IRadioButtonCallBack
     }
 
     /// <summary>
-    /// ÉèÖÃ¿ª¹ØÎÄ±¾
+    /// è®¾ç½®å¼€å…³æ–‡æœ¬
     /// </summary>
     public void SetCheckStr(string selectStr, string unselectStr)
     {

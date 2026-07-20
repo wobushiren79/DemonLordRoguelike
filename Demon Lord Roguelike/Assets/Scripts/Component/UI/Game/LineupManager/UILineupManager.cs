@@ -84,7 +84,38 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     public void InitCreatureData()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        ui_UIViewCreatureCardList.SetData(userData.GetUserBackpackCreatureData().listBackpackCreature, CardUseStateEnum.LineupBackpack, OnCellChangeForBackpackCreature);
+        var listBackpackCreature = GetSortedBackpackCreature(userData);
+        ui_UIViewCreatureCardList.SetData(listBackpackCreature, CardUseStateEnum.LineupBackpack, OnCellChangeForBackpackCreature);
+    }
+
+    /// <summary>
+    /// 获取阵容管理背包列表的默认排序副本:当前阵容内优先(按当前阵容槽位序号升序,阵容外排后) → 稀有度降序(高→低) → 等级降序(高→低)。
+    /// <para>返回新列表,不改动底层存档的 listBackpackCreature 原始顺序;该顺序会作为筛选排序弹窗的稳定基序(次级 tiebreaker)。</para>
+    /// </summary>
+    /// <param name="userData">用户数据</param>
+    /// <returns>按默认规则排序后的生物列表副本</returns>
+    private List<CreatureBean> GetSortedBackpackCreature(UserDataBean userData)
+    {
+        var listSource = userData.GetUserBackpackCreatureData().listBackpackCreature;
+        var listSorted = new List<CreatureBean>(listSource);
+        //当前阵容槽位序号:在当前阵容内取其槽位序号(>=0),否则置最大值排到阵容外
+        int LineupOrder(CreatureBean itemData)
+        {
+            int posIndex = userData.GetLineupCreaturePosIndex(currentLineupIndex, itemData.creatureUUId);
+            return posIndex >= 0 ? posIndex : int.MaxValue;
+        }
+        listSorted.Sort((a, b) =>
+        {
+            //当前阵容内优先:按槽位序号升序(阵容外统一为最大值排后)
+            int lineupCompare = LineupOrder(a).CompareTo(LineupOrder(b));
+            if (lineupCompare != 0) return lineupCompare;
+            //稀有度降序(高稀有度置前)
+            int rarityCompare = b.GetRarityValue().CompareTo(a.GetRarityValue());
+            if (rarityCompare != 0) return rarityCompare;
+            //等级降序(高等级置前)
+            return b.level.CompareTo(a.level);
+        });
+        return listSorted;
     }
 
     /// <summary>
@@ -161,8 +192,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         RemoveLineupCardShow();
         //初始化阵容卡片
         InitLineupData();
-        //刷新背包卡片
-        ui_UIViewCreatureCardList.RefreshAllCard();
+        //重排并刷新背包卡片(默认排序以当前阵容为准,切换阵容后需重排)
+        InitCreatureData();
         //刷新UI数据
         RefreshUIData();
     }
@@ -235,32 +266,24 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
             //错开延迟：初始化(animType==1)左到右级联；单卡增删(animType==0)让刚操作的卡(列表末位)零延迟先动，其余依次跟上，避免点击后等待
             float delay = (animType == 1 ? i : (totalCard - 1 - i)) * timeForLineupCardStagger;
             //播放动画
-            float timeForMove = timeForLineupCardMove;
             itemCardView.transform.DOKill();
-            Sequence cardSequence = DOTween.Sequence();
             if (animType == 1)
             {
-                //初始化动画：从下方弹入，带缩放
-                timeForMove = timeForLineupCardMoveInit;
-                Vector3 startPos = itemLineupPos + new Vector3(0, -200f, 0);
-                itemCardView.transform.localPosition = startPos;
-                cardSequence
-                    .AppendInterval(delay)
-                    .Append(itemCardView.transform.DOLocalMove(itemLineupPos, timeForMove).SetEase(Ease.OutBack))
-                    .Join(itemCardView.transform.DOScale(1.15f, timeForMove * 0.6f).SetEase(Ease.OutQuad))
-                    .Append(itemCardView.transform.DOScale(1f, timeForMove * 0.4f).SetEase(Ease.InOutQuad))
-                    .OnComplete(() =>
+                //初始化动画：从下方弹入带回弹(与战斗发牌统一走 AnimForCardShow,落位时播放卡片音效)
+                itemCardView.AnimForCardShow(itemLineupPos, i, timeForLineupCardStagger, timeForLineupCardMoveInit, Ease.OutBack, () =>
+                {
+                    completeNum++;
+                    if (completeNum == totalCard)
                     {
-                        completeNum++;
-                        if (completeNum == totalCard)
-                        {
-                            actionForComplete?.Invoke();
-                        }
-                    });
+                        actionForComplete?.Invoke();
+                    }
+                });
             }
             else
             {
                 //默认动画：带轻微缩放弹跳和错开效果
+                float timeForMove = timeForLineupCardMove;
+                Sequence cardSequence = DOTween.Sequence();
                 cardSequence
                     .AppendInterval(delay)
                     .Append(itemCardView.transform.DOLocalMove(itemLineupPos, timeForMove).SetEase(Ease.OutBack))

@@ -9,5 +9,9 @@ public partial class UIViewFightMainAttCreateProgress
 
     public Button ui_Quick;
 
+    public RadioButtonView ui_Speed2_RadioButtonView;
+
+    public Button ui_Speed2_Button;
+
 
 }

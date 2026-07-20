@@ -101,17 +101,26 @@ public partial class UIBaseResearch : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// 检测前置是否解锁
+    /// 检测前置是否解锁(节点创建过滤：不满足的节点不显示)
+    /// pre_unlock_ids(解锁前置) 与 pre_data(特殊条件前置, 如通关次数) 一起判定, 全部满足才显示
     /// </summary>
     public bool CheckPreIsUnlock(ResearchInfoBean researchInfo)
     {
-        if(researchInfo.pre_unlock_ids.IsNull())
+        if (!researchInfo.pre_unlock_ids.IsNull())
         {
-            return true;
+            var userData = GameDataHandler.Instance.manager.GetUserData();
+            var userUnlockData = userData.GetUserUnlockData();
+            if (!userUnlockData.CheckIsUnlock(researchInfo.pre_unlock_ids))
+            {
+                return false;
+            }
         }
-        var userData = GameDataHandler.Instance.manager.GetUserData();
-        var userUnlockData = userData.GetUserUnlockData();
-        return userUnlockData.CheckIsUnlock(researchInfo.pre_unlock_ids);
+        //pre_data 特殊前置条件(枚举:数值, &组合; 如 World1ConquerCompleteCount2:1 = 世界1难度2通关次数>=1)
+        if (!researchInfo.CheckPreDataIsMeet())
+        {
+            return false;
+        }
+        return true;
     }
 
     /// <summary>

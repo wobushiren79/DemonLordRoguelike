@@ -19,7 +19,8 @@ public class FightPrefabEntity
     {
         if (state == GameFightPrefabStateEnum.DropCheck && lifeTime > 0)
         {
-            lifeTime -= Time.deltaTime;
+            //掉落物存在时长跟随游戏速度（2倍速下按游戏时间流速消耗寿命）
+            lifeTime -= GameFightLogic.GetFightDeltaTime();
             if (lifeTime <= 0)
             {
                 Destroy();

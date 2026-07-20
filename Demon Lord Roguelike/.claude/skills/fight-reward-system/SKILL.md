@@ -24,6 +24,8 @@ watched_files:
 
 > **最关键的一点**：结算面板 `UIFightSettlement` 本身**不发任何奖励**，它只是战斗过程统计的可排序排行榜（伤害/击杀/受伤/治疗/受疗/经验）。真正的发奖逻辑在 `UIRewardSelect` + `RewardSelectBean`。
 
+> **结算行的生物卡片**：`UIViewFightSettlementItem` 预制体内嵌完整 `UIViewCreatureCardItem`（x=-508, scale 1.2），由 `SetCardData(creatureData)` → 卡片自身 `SetData(creatureData, CardUseStateEnum.Show)` 驱动，表现与其他场景卡片完全一致（图标/稀有度/等级/MP/职业图标 + 悬浮弹 `UIPopupCreatureCardDetails`）。名字仍用结算行自己的 `ui_Name_TextMeshProUGUI`（Details/Name 节点）——**字段名不能改成 `ui_Name`**，否则与卡片内部 "Name" 节点撞名，AutoLinkUI 会优先绑到卡片里那个（且在默认隐藏的 NameBg 下），行内名字就不显示了。
+
 > **预览即实领（传送门预生成奖励）**：B 通道的奖励**不是通关时才现生成**，而是在**创建传送门时按难度预生成并冻结**，存到 `GameWorldDifficultyRandomBean.listReward`（详见 `conquer-system`）。传送门详情 `UIPopupPortalDetails` 展示的就是这份预生成奖励，通关 BOSS 领奖时**直接消费同一份**（`gameWorldInfoRandomData.GetDifficultyReward(difficulty)`），保证"预览所见 = 实际所领"。`RewardSelectBean` 退化为奖励生成的**单一真实源**：既被传送门预生成调用，也被通关领奖复用，规则完全一致。
 
 ## 系统架构

@@ -78,8 +78,22 @@ public partial class FightCreatureEntity
         SetDataForDefenseCore();
         //设置spine
         CreatureHandler.Instance.SetCreatureData(creatureSkeletionAnimation, fightCreatureData.creatureData, isSetSkeletonDataAsset: false);
+        //动画播放速度跟随当前游戏速度（2倍速开启期间新建的生物也要以2倍播放）
+        SetAnimTimeScale(GameFightLogic.GetCurrentGameSpeed());
         //设置身体颜色
         RefreshBodyColor();
+    }
+
+    /// <summary>
+    /// 设置动画播放速度（跟随游戏速度，2倍速时全动画2倍播放；与各 PlayAnim 的 animSpeed 相乘叠加）
+    /// </summary>
+    /// <param name="timeScale">动画时间倍率（1=原速, 2=2倍速）</param>
+    public void SetAnimTimeScale(float timeScale)
+    {
+        if (creatureSkeletionAnimation != null)
+        {
+            creatureSkeletionAnimation.timeScale = timeScale;
+        }
     }
 
     /// <summary>

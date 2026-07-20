@@ -49,7 +49,7 @@ watched_files:
 
 ### UI
 - **UIFightSettlement** - 结算数据排行榜（6 维度展示：伤害/击杀/受伤/治疗/受疗/经验；排序当前仅接通伤害/击杀/受伤/经验 4 维），只展示不发奖；`OpenUI` 重写里调用 `AudioHandler.Instance.StopMusic()` 在结算界面打开时停止战斗音乐
-- **UIViewFightSettlementItem** - 单生物统计 cell（带 4 个进度条）
+- **UIViewFightSettlementItem** - 单生物统计 cell（6 条进度条 + 内嵌 `UIViewCreatureCardItem`：`SetCardData` 走卡片自身 `SetData(creatureData, CardUseStateEnum.Show)`，与其他场景卡片表现一致含悬浮详情；名字用行内 `ui_Name_TextMeshProUGUI`，字段名勿改成 `ui_Name` 会与卡片内部 Name 节点撞名）
 - **UIViewFightSettlementItemProgress** - 单条进度条组件
 - **UIRewardSelect** - BOSS 通关领奖界面（宝箱选择 + 跳过预览），唯一发奖 UI
 

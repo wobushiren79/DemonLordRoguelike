@@ -111,8 +111,9 @@ public class AttackModeFallupon : BaseAttackMode
     /// </summary>
     public virtual void HandleForMove()
     {
-        TranslatePosition(Vector3.down * (Time.deltaTime * currentFallSpeed));
-        currentFallSpeed += GravityAcceleration * Time.deltaTime;
+        float deltaTime = GameFightLogic.GetFightDeltaTime();
+        TranslatePosition(Vector3.down * (deltaTime * currentFallSpeed));
+        currentFallSpeed += GravityAcceleration * deltaTime;
     }
 
     /// <summary>

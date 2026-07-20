@@ -417,6 +417,8 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 
 6. **敌人攻击魔王（核心）不走 AttackMode**：进攻生物（近战/远程一视同仁）**不再用 AttackMode 伤害魔王**。`AIIntentAttackCreatureMove` 核心分支持续向魔王推进，与魔王距离 `< AIIntentAttackCreatureMove.CloseCoreDistance`(0.25) 时切 `AttackCreatureAttackCore`；该意图固定播一次攻击动作（`GetAttackAnimTime` 缺省用 0.5s 保底），出手时对魔王播出血特效并直接 `coreCreature.SetCreatureDead()`，随后核心走 `DefenseCoreCreatureDead`，死亡结束事件驱动 `GameFightLogic.CheckGameEnd()` 判定战斗失败。背景：远程弹道靠 layer 掩码只检测 `CreatureDef` 层、魔王核心在默认层 layer0 本就打不到，遂将近远程统一为"靠近即固定处决"。新增意图已同步 `AIAttackCreatureEntity.InitIntentEnum` 与 `AIIntentFactory`。
 
+7. **意图计时必须走 `GameFightLogic.GetFightDeltaTime()`**：意图内一切按时间推进的逻辑（移动 `Translate`、攻击准备/出手计时、索敌间隔、死亡计时等）统一用 `GameFightLogic.GetFightDeltaTime()`（= `Time.deltaTime × 当前游戏速度`，非战斗场景恒 1 倍）**替代 `Time.deltaTime`**——否则 2倍速（Speed2 按钮，`fightData.gameSpeed=2`）下该行为仍是 1 倍节奏。动画播放速度不在此列：由 `FightCreatureEntity.SetAnimTimeScale`（`SkeletonAnimation.timeScale`）随 `GameFightLogic.SetGameSpeed` 全场同步。
+
 ---
 
 ## 文件位置速查

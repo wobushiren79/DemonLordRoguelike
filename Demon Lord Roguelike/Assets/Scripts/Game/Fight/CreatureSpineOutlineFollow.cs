@@ -131,11 +131,11 @@ public class CreatureSpineOutlineFollow : MonoBehaviour
             matOutline.SetTexture("_MainTex", srcMat.mainTexture);
             customOverride[srcMat] = matOutline;
         }
-        //排序贴合目标并置于其后一层，使描边像光环般环绕本体
+        //排序贴合目标并置于其前一层：OutlineOnly 只画轮廓(内部全透明)，压过本体观感不变；若放在后一层会被场景全屏透明效果(如沙漠热浪 order0)盖掉
         if (selfRenderer != null)
         {
             selfRenderer.sortingLayerID = targetRenderer.sortingLayerID;
-            selfRenderer.sortingOrder = targetRenderer.sortingOrder - 1;
+            selfRenderer.sortingOrder = targetRenderer.sortingOrder + 1;
         }
     }
     #endregion

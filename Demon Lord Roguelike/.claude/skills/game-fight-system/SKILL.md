@@ -328,6 +328,8 @@ public partial class UIFightMain : BaseUIComponent
 
     // Quick(加快进攻节奏)按钮显隐：仅征服模式且已解锁当前世界的 Quick 研究才显示
     public void RefreshQuickButtonShow(bool isConquer, GameFightLogic gameFightLogic);
+    // 2倍速(Speed2)按钮显隐+选中态同步：仅征服模式且已解锁当前世界的 2倍速游戏 研究才显示
+    public void RefreshSpeed2ButtonShow(bool isConquer, GameFightLogic gameFightLogic);
 }
 ```
 
@@ -335,9 +337,19 @@ public partial class UIFightMain : BaseUIComponent
 
 进攻进度条子视图 `UIViewFightMainAttCreateProgress`（仅征服模式显示，含 `ui_CreateProgress`/`ui_CreateEnd`/`ui_Quick`）上的 **Quick 按钮**用于**加速进攻节奏**：
 
-- **与世界绑定的显隐**：`UIFightMain.RefreshUIData` → `RefreshQuickButtonShow`：仅征服模式、且 `UserUnlockBean.CheckIsUnlockWorldQuickAttack(worldId)`（当前世界的「加快进攻节奏」研究已解锁）时才显示 Quick 按钮。worldId 取 `FightBeanForConquer.gameWorldInfoRandomData.worldId`。研究节点/id 块约定见 [`research-system`](../research-system/SKILL.md) 世界分支。
+- **与世界+难度绑定的显隐**：`UIFightMain.RefreshUIData` → `RefreshQuickButtonShow`：仅征服模式、且 `UserUnlockBean.CheckIsUnlockWorldQuickAttack(worldId, difficultyLevel)`（当前世界「当前难度」的「加快进攻节奏」研究已解锁）时才显示 Quick 按钮。worldId 与 difficultyLevel 取 `FightBeanForConquer.gameWorldInfoRandomData` 同名字段。Quick 研究已按难度拆分(难度2~10各一个)，研究节点/id 块约定见 [`research-system`](../research-system/SKILL.md) 世界分支。
 - **点击逻辑**：`UIViewFightMainAttCreateProgress.OnClickForQuick` → 若 `GetAttackProgress()>=1` 直接 return（已到 100% 点击无效）；否则 `GameFightLogic.QuickAdvanceAttackCreate(0.1f)` 推进后 `SetProgress(newProgress, animTime:0.3f)` 平滑过渡（不瞬跳）。
 - **`GameFightLogic.QuickAdvanceAttackCreate(advanceRate=0.1f)`**：立即向前推进「`fightAttackData.timeAttackTotal * advanceRate`（默认总进攻时长10%）」的时间，用与逐帧刷怪 `UpdateGameForAttackCreate` **同一套「累加达标即出下一波」步进语义**逐波消费推进时间，把这段时间本应生成的进攻波次全部立即 `CreateAttackCreature`（含 BOSS 特写 `ShowBossDialog`）；队列耗尽(进攻到末尾)则停止，进度自然封顶 100%。返回推进后的最新进度(0~1)。无消耗、无冷却，仅上限封顶。
+
+### 进攻进度条 2倍速(Speed2) 按钮
+
+`UIViewFightMainAttCreateProgress` 上的 **Speed2 RadioButton**（`ui_Speed2_RadioButtonView`/`ui_Speed2_Button`）用于切换**整场战斗 2 倍速**：
+
+- **与世界+难度绑定的显隐**：`UIFightMain.RefreshUIData` → `RefreshSpeed2ButtonShow`：仅征服模式、且 `UserUnlockBean.CheckIsUnlockWorldSpeed2(worldId, difficultyLevel)`（当前世界「当前难度」的「2倍速游戏」研究已解锁）时才显示；显示时同步 `RefreshSpeed2State()` 把按钮选中态对齐 `fightData.gameSpeed`（BOSS关重载场景后选中态不丢失）。研究节点/id 块约定（nn=40~49 段）见 [`research-system`](../research-system/SKILL.md) 世界分支。
+- **开关语义**：默认不开启（每场新战斗 `fightData.gameSpeed=1`）；点击 RadioButton 切换 2倍/原速，速度挂在 `fightData` 上**仅本场战斗有效**（征服 run 内跨关卡保留，战斗结束随 fightData 销毁自然还原）。
+- **点击链路**：`RadioButtonView` 自身回调（`UIViewFightMainAttCreateProgress : IRadioButtonCallBack`，Awake 里 `SetCallBack(this)`）→ `RadioButtonSelected` → `OnSpeed2Changed(isOpen)` → `GameFightLogic.SetGameSpeed(isOpen ? GAME_SPEED_2X(2) : 1)`。
+- **加速原理（不是 TimeScale）**：`SetGameSpeed` 只改 `fightData.gameSpeed`（游戏时间流速），不改 `Time.timeScale`（TimeScale 保留给暂停/BOSS特写减速）。全场节奏一致靠两条路径：① `UpdateGame` 的 `updateTime = Time.deltaTime * fightData.gameSpeed`（刷怪/BUFF/魔王/RCD）；② 不经 UpdateGame 驱动的战斗系统（AI意图移动/攻击计时、弹道飞行、掉落物寿命）统一用 `GameFightLogic.GetFightDeltaTime()`（= `Time.deltaTime × GetCurrentGameSpeed()`，非战斗场景恒 1 倍）替代 `Time.deltaTime`。**新增战斗内按时间推进的逻辑时，必须用 `GetFightDeltaTime()` 而不是 `Time.deltaTime`**。
+- **动画同步**：`SetGameSpeed` 同时 `RefreshAllCreatureAnimTimeScale()` 给全部在场生物 `SetAnimTimeScale(gameSpeed)`（`SkeletonAnimation.timeScale`，与各 PlayAnim 的 animSpeed 相乘叠加）；新建生物在 `FightCreatureEntity.SetData` 里自动按当前游戏速度初始化，2倍速中途生成的生物动画也是 2 倍。
 
 ## 战斗预制管理
 
@@ -453,10 +465,11 @@ var coreCreature = gameLogic.fightData.fightDefenseCoreCreature;
 
 ```csharp
 var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-gameLogic.fightData.gameSpeed = 2.0f;  // 2倍速
-gameLogic.fightData.gameSpeed = 0.5f;  // 0.5倍速
-gameLogic.fightData.gameSpeed = 1.0f;  // 正常速度
+gameLogic.SetGameSpeed(GameFightLogic.GAME_SPEED_2X);  // 2倍速（同步刷新全部在场生物动画速度）
+gameLogic.SetGameSpeed(1.0f);                          // 正常速度
 ```
+
+> **不要直接写 `fightData.gameSpeed`**：那只会缩放 `UpdateGame` 的 updateTime（刷怪/BUFF/魔王/RCD），不会同步生物 Spine 动画速度；`SetGameSpeed` 额外 `RefreshAllCreatureAnimTimeScale()`。AI意图/弹道/掉落物等不经 UpdateGame 驱动的系统统一读 `GameFightLogic.GetFightDeltaTime()`（非战斗场景恒返回 1 倍帧时间），新增战斗内计时逻辑一律用它替代 `Time.deltaTime`。速度挂在 fightData 上仅本场战斗有效。
 
 ## 文件位置速查
 

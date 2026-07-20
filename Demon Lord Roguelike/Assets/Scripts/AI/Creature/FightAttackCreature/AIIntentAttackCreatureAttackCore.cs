@@ -66,7 +66,7 @@ public class AIIntentAttackCreatureAttackCore : AIBaseIntent
             return;
         }
         //攻击动作到点: 结算魔王出血死亡(每单位仅一次)
-        timeForAttack += Time.deltaTime;
+        timeForAttack += GameFightLogic.GetFightDeltaTime();
         if (timeForAttack >= timeForAttackCD)
         {
             hasFinished = true;

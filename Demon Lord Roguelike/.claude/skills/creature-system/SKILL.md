@@ -209,6 +209,7 @@ public partial class FightCreatureEntity
 
     // === 表现（主文件） ===
     public TrackEntry PlayAnim(SpineAnimationStateEnum anim, bool loop);  // 播放动画
+    public void SetAnimTimeScale(float timeScale);                        // 设置动画播放速度(=SkeletonAnimation.timeScale, 与 PlayAnim 的 animSpeed 相乘叠加; SetData 里按 GameFightLogic.GetCurrentGameSpeed() 自动初始化, 全场切换由 GameFightLogic.SetGameSpeed→RefreshAllCreatureAnimTimeScale 驱动)
     public void SetFaceDirection(Direction2DEnum direction);              // 设置朝向（内置去重：目标 localScale.x 符号与当前相等则直接 return，不重复写 transform.localScale；翻转对 Spine creatureSkeletionAnimation.transform.localScale.x 取正负。惠及所有调用方，尤其防守生物每攻击循环转身校准）
 
     // === 进攻生物专属（FightCreatureEntityForAttack.cs） ===

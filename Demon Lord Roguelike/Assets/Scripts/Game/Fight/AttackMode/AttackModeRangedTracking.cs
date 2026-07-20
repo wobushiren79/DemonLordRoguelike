@@ -73,7 +73,7 @@ public class AttackModeRangedTracking :  AttackModeRanged
     /// </summary>
     public override void HandleForMove()
     {
-        TranslatePosition(attackModeData.attackDirection * Time.deltaTime * GetMoveSpeed());
+        TranslatePosition(attackModeData.attackDirection * GameFightLogic.GetFightDeltaTime() * GetMoveSpeed());
     }
 
 }

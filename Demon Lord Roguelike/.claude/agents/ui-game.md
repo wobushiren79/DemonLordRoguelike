@@ -27,7 +27,7 @@ watched_files:
 - **UICreatureManager** - 魔物管理界面（背包生物/装备管理、献祭升级入口）。**魔王(`CreatureBean.IsDemonLord()`)特殊处理**：`GetSortedBackpackCreature` 把 `userData.selfCreature` 插入列表首位并恒置顶（卡片列表 `OrderListCreature` 最高主键保证筛选/排序后仍第一位）；魔王卡片按稀有度 L 显示、隐藏等级；`RefreshSacrificeButton` 对魔王隐藏献祭升级按钮、`OnClickForCreatureSacrifice` 加魔王兜底拦截（魔王隐藏等级、不吃经验、不可献祭）。献祭机制详见 sacrifice-system skill
 
 ### 战斗 UI
-- **UIFightMain** - 战斗主界面
+- **UIFightMain** - 战斗主界面。进攻进度条子视图 `UIViewFightMainAttCreateProgress`（仅征服模式显示）上有两个世界绑定的按钮：**Quick**（`OnClickForButton` 派发 `ui_Quick`，推进 10% 进攻进度）与 **Speed2 2倍速**（`ui_Speed2_RadioButtonView` RadioButton，View 实现 `IRadioButtonCallBack` 在 Awake `SetCallBack(this)`，`RadioButtonSelected` → `GameFightLogic.SetGameSpeed(2/1)`，默认关、仅本场有效）；显隐分别由 `RefreshQuickButtonShow`/`RefreshSpeed2ButtonShow` 按当前世界+难度研究解锁门控（详见 game-fight-system / research-system SKILL）
 - **UIFightSettlement** - 战斗结算界面
 - **UIFightAbyssalBlessing** - 深渊祝福选择
 

@@ -56,7 +56,7 @@ public class AttackModeRanged : BaseAttackMode
     /// </summary>
     public virtual void HandleForMove()
     {
-        TranslatePosition(attackModeData.attackDirection * Time.deltaTime * GetMoveSpeed());
+        TranslatePosition(attackModeData.attackDirection * GameFightLogic.GetFightDeltaTime() * GetMoveSpeed());
     }
 
     /// <summary>

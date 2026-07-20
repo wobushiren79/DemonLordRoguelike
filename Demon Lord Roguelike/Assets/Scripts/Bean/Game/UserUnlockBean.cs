@@ -361,7 +361,9 @@ public class UserUnlockBean
 
     /// <summary>
     /// 获取游戏世界-征服模式-难度等级
-    /// 基础难度取自 UserLimmitBean.conquerDifficultyMax + 对应研究等级
+    /// 基础难度取自 UserLimmitBean.conquerDifficultyMax + 已解锁的难度研究个数。
+    /// 难度研究已拆分为每难度独立节点(难度2~10各占一个unlock id, 起始id=unlock_id_conquer_difficulty_level)，
+    /// 从起始id连续向后统计已解锁个数(遇断档即止, 与研究的前置链式解锁语义一致)
     /// </summary>
     /// <param name="worldId">游戏世界ID</param>
     /// <returns>征服模式当前可挑战的最高难度等级</returns>
@@ -369,41 +371,82 @@ public class UserUnlockBean
     {
         var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
         var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
-        return limmitData.conquerDifficultyMax + GetUnlockResearchLeveByUnlockId(gameWorldInfo.unlock_id_conquer_difficulty_level);
+        long startUnlockId = gameWorldInfo.unlock_id_conquer_difficulty_level;
+        //起始id为0表示该世界无可解锁难度, 难度恒为基础值(也避免 CheckIsUnlock(0) 恒真导致死循环)
+        if (startUnlockId == 0)
+            return limmitData.conquerDifficultyMax;
+        int unlockNum = 0;
+        while (CheckIsUnlock(startUnlockId + unlockNum))
+        {
+            unlockNum++;
+        }
+        return limmitData.conquerDifficultyMax + unlockNum;
     }
 
     /// <summary>
-    /// 世界解锁 id 块基址：每个世界的专属解锁 id 都落在 1003_10_W_nn 块内（W=世界id, nn=块内偏移）。
-    /// 现有块内偏移：01=世界解锁, 02=无尽解锁, 12~20=征服难度(等级2~10, level_max=9 占满该段), 30=加快进攻节奏(Quick)。集中此处便于统一维护。
-    /// </summary>
-    public const long WORLD_UNLOCK_BLOCK_BASE = 100310000;
-
-    /// <summary>
-    /// 世界「加快进攻节奏(Quick)」研究在世界解锁 id 块内的偏移(nn=30，避开征服难度占用的 12~20 段)。
-    /// </summary>
-    public const int WORLD_QUICK_ATTACK_UNLOCK_OFFSET = 30;
-
-    /// <summary>
-    /// 获取指定世界「加快进攻节奏(Quick)」研究的解锁ID
-    /// 按世界解锁 id 块约定推导：WORLD_UNLOCK_BLOCK_BASE + worldId*100 + WORLD_QUICK_ATTACK_UNLOCK_OFFSET
-    /// （如 world1 → 100310130）。每新增一个世界，其 Quick 研究 unlock_id 依此规则推导，无需世界配置表新增列。
+    /// 获取指定世界指定征服难度的「加快进攻节奏(Quick)」研究的解锁ID
+    /// 起始ID取自世界配置表 GameWorldInfo.unlock_id_quick_attack，各难度按起始ID连续向后推导（起始ID+难度-1）。
+    /// 起始ID为0表示该世界未配置此类研究，返回-1（不能用0：CheckIsUnlock(0)按约定恒真）。
     /// </summary>
     /// <param name="worldId">游戏世界ID</param>
-    /// <returns>该世界 Quick 研究对应的解锁ID</returns>
-    public long GetWorldQuickAttackUnlockId(long worldId)
+    /// <param name="difficultyLevel">征服难度等级(1~10)</param>
+    /// <returns>该世界该难度 Quick 研究对应的解锁ID；-1 表示该世界未配置</returns>
+    public long GetWorldQuickAttackUnlockId(long worldId, int difficultyLevel)
     {
-        return WORLD_UNLOCK_BLOCK_BASE + worldId * 100 + WORLD_QUICK_ATTACK_UNLOCK_OFFSET;
+        var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
+        return GetWorldResearchUnlockIdByDifficulty(gameWorldInfo.unlock_id_quick_attack, difficultyLevel);
     }
 
     /// <summary>
-    /// 是否已解锁指定世界的「加快进攻节奏(Quick)」研究
-    /// Quick 按钮与世界绑定：仅当玩该世界且已解锁该世界的 Quick 研究时，战斗界面才显示 Quick 按钮。
+    /// 是否已解锁指定世界指定征服难度的「加快进攻节奏(Quick)」研究
+    /// Quick 按钮与世界+难度绑定：仅当玩该世界该难度、且已解锁对应难度的 Quick 研究时，战斗界面才显示 Quick 按钮。
     /// </summary>
     /// <param name="worldId">游戏世界ID</param>
-    /// <returns>true=已解锁该世界的加速进攻研究</returns>
-    public bool CheckIsUnlockWorldQuickAttack(long worldId)
+    /// <param name="difficultyLevel">当前征服难度等级</param>
+    /// <returns>true=已解锁该世界该难度的加速进攻研究</returns>
+    public bool CheckIsUnlockWorldQuickAttack(long worldId, int difficultyLevel)
     {
-        return CheckIsUnlock(GetWorldQuickAttackUnlockId(worldId));
+        return CheckIsUnlock(GetWorldQuickAttackUnlockId(worldId, difficultyLevel));
+    }
+
+    /// <summary>
+    /// 获取指定世界指定征服难度的「2倍速游戏」研究的解锁ID
+    /// 起始ID取自世界配置表 GameWorldInfo.unlock_id_speed2，各难度按起始ID连续向后推导（起始ID+难度-1）。
+    /// 起始ID为0表示该世界未配置此类研究，返回-1（不能用0：CheckIsUnlock(0)按约定恒真）。
+    /// </summary>
+    /// <param name="worldId">游戏世界ID</param>
+    /// <param name="difficultyLevel">征服难度等级(1~10)</param>
+    /// <returns>该世界该难度2倍速研究对应的解锁ID；-1 表示该世界未配置</returns>
+    public long GetWorldSpeed2UnlockId(long worldId, int difficultyLevel)
+    {
+        var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
+        return GetWorldResearchUnlockIdByDifficulty(gameWorldInfo.unlock_id_speed2, difficultyLevel);
+    }
+
+    /// <summary>
+    /// 按难度推导世界专属研究的解锁ID：起始ID + (难度-1)
+    /// 与 GetUnlockGameWorldConquerDifficultyLevel 的「起始ID连续块」约定一致，起始ID统一由世界配置表提供
+    /// </summary>
+    /// <param name="startUnlockId">世界配置表中的该类研究起始ID，0 表示未配置</param>
+    /// <param name="difficultyLevel">征服难度等级(1~10)</param>
+    /// <returns>推导出的解锁ID；起始ID为0时返回-1（避开 CheckIsUnlock(0) 恒真的约定）</returns>
+    private long GetWorldResearchUnlockIdByDifficulty(long startUnlockId, int difficultyLevel)
+    {
+        if (startUnlockId == 0)
+            return -1;
+        return startUnlockId + (difficultyLevel - 1);
+    }
+
+    /// <summary>
+    /// 是否已解锁指定世界指定征服难度的「2倍速游戏」研究
+    /// 2倍速按钮与世界+难度绑定：仅当玩该世界该难度、且已解锁对应难度的2倍速研究时，战斗界面才显示2倍速按钮。
+    /// </summary>
+    /// <param name="worldId">游戏世界ID</param>
+    /// <param name="difficultyLevel">当前征服难度等级</param>
+    /// <returns>true=已解锁该世界该难度的2倍速游戏研究</returns>
+    public bool CheckIsUnlockWorldSpeed2(long worldId, int difficultyLevel)
+    {
+        return CheckIsUnlock(GetWorldSpeed2UnlockId(worldId, difficultyLevel));
     }
 
     /// <summary>

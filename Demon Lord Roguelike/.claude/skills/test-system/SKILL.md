@@ -274,20 +274,19 @@ allUnlockInfo.ForEach((index, value) =>
 `UITestBase` 的 `ui_BtnWorldDifHalf` / `ui_BtnWorldDif` 两个按钮分别解锁所有世界的「一半难度(向上取整)」/「全部难度」，逻辑见 `OnClickForUnlockWorldDifficulty(bool isHalf)`：
 
 ```csharp
-// 难度 = conquerDifficultyMax(基础) + 解锁ID(unlock_id_conquer_difficulty_level)对应的研究等级
+// 难度 = conquerDifficultyMax(基础) + 已解锁难度研究个数(难度已拆为每难度独立节点, 起始id=unlock_id_conquer_difficulty_level)
 int conquerDifficultyBase = userData.GetUserLimmitData().conquerDifficultyMax;
 foreach (var itemData in GameWorldInfoCfg.GetAllData())
 {
-    long unlockId = itemData.Value.unlock_id_conquer_difficulty_level;      // 为0跳过(无可解锁难度)
+    long unlockId = itemData.Value.unlock_id_conquer_difficulty_level;      // 难度起始解锁ID, 为0跳过(无可解锁难度)
     int configDifficultyMax = FightTypeConquerInfoCfg.GetMaxLevel(itemData.Key); // 该世界配置最高难度
     int targetDifficulty = isHalf ? Mathf.CeilToInt(configDifficultyMax / 2f) : configDifficultyMax;
     int needUnlockLevel = targetDifficulty - conquerDifficultyBase;          // ≤0跳过(基础已覆盖)
-    userUnlockData.AddUnlock(unlockId);                 // 先确保条目存在
-    userUnlockData.AddUnlock(unlockId, needUnlockLevel); // 再覆盖解锁等级
+    //难度研究已拆分为每难度独立节点(起始id起连续), 逐个解锁
+    for (int i = 0; i < needUnlockLevel; i++)
+        userUnlockData.AddUnlock(unlockId + i);
 }
 ```
-
-> 注意：`UserUnlockBean.AddUnlock(id, level)` 现已支持**新建时即按传入 level 创建**，故上面的「先建后设」两次调用已非必需，单次 `AddUnlock(unlockId, needUnlockLevel)` 即可（源码仍保留两次调用，结果等价无害，未一并改动）。
 
 ---
 

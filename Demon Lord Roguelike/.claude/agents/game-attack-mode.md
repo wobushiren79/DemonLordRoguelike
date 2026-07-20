@@ -128,6 +128,7 @@ public class AttackModeCustom : BaseAttackMode
 
 - 攻击模式必须继承 BaseAttackMode
 - **位置读写走 `position`（`SetPosition`/`TranslatePosition`），禁止直接操作弹体 `transform` 位置**（见上「关键字段 position」）；新增移动型弹道沿用此约定，才能被 AttackModeInstanceRenderer 正确批量绘制
+- **弹道的移动/计时必须用 `GameFightLogic.GetFightDeltaTime()`**（= `Time.deltaTime × 当前游戏速度`，非战斗场景恒 1 倍）替代 `Time.deltaTime`——否则 2倍速（`fightData.gameSpeed=2`）下弹道飞行仍是 1 倍节奏；现有 `HandleForMove`/重力加速度/归位移动已全部遵守
 - 每种攻击模式独立一个文件
 - 文件名与类名一致：AttackMode + 类型名
 - **禁止在热路径调用 `GameHandler.Instance.manager.GetGameLogic<GameFightLogic>()`**，需要战斗逻辑统一通过 `FightHandler.Instance.manager.GetCachedFightLogic()`（懒加载，`FightManager.Clear()` 会自动失效）

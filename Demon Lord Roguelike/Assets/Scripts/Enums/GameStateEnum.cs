@@ -150,6 +150,40 @@ public enum ResearchInfoTypeEnum
     World = 4,//世界相关
 }
 
+/// <summary>
+/// 研究前置条件类型(ResearchInfo.pre_data 使用的条件枚举)
+/// pre_data 单条格式：枚举名:数值，多条用 & 组合(与关系)，数值缺省为1
+/// 如 World1ConquerCompleteCount2:1 表示「剑与魔法(世界1)征服模式难度2通关次数 >= 1」
+/// 判定逻辑集中在 ResearchInfoBeanPartial.CheckPreDataConditionIsMeet，新增条件类型时同步扩展
+/// </summary>
+public enum ResearchPreConditionEnum
+{
+    None = 0,
+
+    #region 世界1(剑与魔法)-征服模式难度通关次数(难度1~10各一个, 数值=要求的通关次数下限)
+    /// <summary>剑与魔法征服模式难度1通关次数</summary>
+    World1ConquerCompleteCount1 = 1,
+    /// <summary>剑与魔法征服模式难度2通关次数</summary>
+    World1ConquerCompleteCount2 = 2,
+    /// <summary>剑与魔法征服模式难度3通关次数</summary>
+    World1ConquerCompleteCount3 = 3,
+    /// <summary>剑与魔法征服模式难度4通关次数</summary>
+    World1ConquerCompleteCount4 = 4,
+    /// <summary>剑与魔法征服模式难度5通关次数</summary>
+    World1ConquerCompleteCount5 = 5,
+    /// <summary>剑与魔法征服模式难度6通关次数</summary>
+    World1ConquerCompleteCount6 = 6,
+    /// <summary>剑与魔法征服模式难度7通关次数</summary>
+    World1ConquerCompleteCount7 = 7,
+    /// <summary>剑与魔法征服模式难度8通关次数</summary>
+    World1ConquerCompleteCount8 = 8,
+    /// <summary>剑与魔法征服模式难度9通关次数</summary>
+    World1ConquerCompleteCount9 = 9,
+    /// <summary>剑与魔法征服模式难度10通关次数</summary>
+    World1ConquerCompleteCount10 = 10,
+    #endregion
+}
+
 
 /// <summary>
 /// 终焉议会议案触发时机

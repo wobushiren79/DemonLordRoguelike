@@ -69,8 +69,9 @@ public class AttackModeFalluponArea : BaseAttackMode
             return;
         }
 
-        TranslatePosition(Vector3.down * (Time.deltaTime * currentFallSpeed));
-        currentFallSpeed += GravityAcceleration * Time.deltaTime;
+        float deltaTime = GameFightLogic.GetFightDeltaTime();
+        TranslatePosition(Vector3.down * (deltaTime * currentFallSpeed));
+        currentFallSpeed += GravityAcceleration * deltaTime;
 
         if (attackModeData.targetPos.y >= position.y)
         {

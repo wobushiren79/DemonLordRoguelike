@@ -93,6 +93,8 @@ UIViewCreatureCardDetails    // 卡片详情面板
 UIPopupCreatureCardDetails   // 卡片详情弹窗
 ```
 
+> **卡片出现动画统一收口于基类 `AnimForCardShow`**（`UIViewCreatureCardItemAnim.cs` partial）：从目标位下方 -200px 弹入（位移 OutBack + 缩放 1→1.15→1 过冲回弹，逐卡 `index*delayTime` 错开），**落位时每卡各自播放 `AudioEnum.sound_card_1`**。两处使用：① 战斗发牌 `UIViewCreatureCardItemForFightAnim.AnimForCreateShow`（`ClearAnim` → 先 `anchoredPosition = originalCardPos` 归位（`SetData` 只记坐标不动位置）→ 以当前 `localPosition` 为落位目标，透传序列化参数 `animCardCreateDelayTime`/`animCardCreateTimeType2`/`animCardCreateEase`）；② 阵容管理初始化 `UILineupManager.AnimForAllLineupCardPosReset(animType==1)`（传 `timeForLineupCardStagger`/`timeForLineupCardMoveInit`/`Ease.OutBack`，完成回调仍由原计数逻辑汇总）。新增"卡片出现"场景一律调 `AnimForCardShow`，不要另写弹入动画，保证动画与音效一致。
+
 > **献祭卡片(`CreatureSacrifice*` 状态 / `UIViewCreatureCardItemForCreatureSacrifice`)的业务流程见 [`sacrifice-system`](../sacrifice-system/SKILL.md) Skill**：祭品选择、成功率公式、献祭升级、保底等机制都在那里；本 Skill 只负责献祭卡片的 UI 表现与状态。
 
 > **献祭升级提示特效 `ui_SacrificeEffect`**（`UIViewCreatureCardItemComponent` 的 `Image` 字段，prefab `UIViewCreatureCardItem` 上挂，材质 `Mat_UIViewCreatureCardItem_Sacrifice.mat`）：`SetData` 内部调用 `SetSacrificeEffect(creatureData, cardUseState)` 控制显隐——**仅当 `cardUseState == CreatureManager` 且 已解锁祭坛(`UnlockEnum.Altar`) 且 `creatureData.CanUpLevel()`** 时显示，其它使用状态恒隐藏。此高亮亮起 ⇔ `UICreatureManager` 升级按钮"显示且未置灰"（按钮解锁祭坛且未满级才显示、`CanUpLevel()` 决定其置灰与否；满级时按钮隐藏、卡片高亮也因 `CanUpLevel()` 为 false 而隐藏），用于在魔物管理列表里高亮"可献祭升级"的生物。
@@ -338,7 +340,9 @@ protected void OnConfirmOrderFilter(OrderFilterResultBean result) {
 > `OrderFilterTypeEnum`：Rarity=1 / Level=2 / Lineup=3 / Name=4 / Class=5（同类=相同生物ID归并）。
 > 生物里 **Name/Level/Rarity 是命中置顶条件**(不进 `sortTypes`、不删行)，只有 **Lineup/Class 是排序键**(`GetOrderKeySelector`：Lineup→阵容序号(不在阵容置 int.MaxValue)、Class→creatureId)。主列表 `listCreatureDataAll` 保存全量；`listCreatureData` 是「命中项置顶 + 排序键次级」重排后的展示列表（与主列表等量，全部展示）。
 
-> **调用方默认基序**：`UIViewCreatureCardList` 自身无内建默认排序（`currentFilter` 初始为空 → `OrderByDescending(IsMatch)` 全命中且无排序键 → 稳定保持入参顺序）。**魔物管理页 `UICreatureManager.InitCreaturekData` 传入前已用 `GetSortedBackpackCreature` 预排序**：**魔王(`userData.selfCreature`)恒置顶插到列表首位** → 其余按 稀有度降序 → 等级降序 → creatureId 升序(同一种魔物相邻，与 Class 键同口径)。因 LINQ `OrderBy*` 稳定，该预排序既是打开时的默认展示序，也是玩家后续筛选排序的稳定 tiebreaker；预排序作用于副本，不改动存档 `listBackpackCreature` 原始顺序。
+> **调用方默认基序**：`UIViewCreatureCardList` 自身无内建默认排序（`currentFilter` 初始为空 → `OrderByDescending(IsMatch)` 全命中且无排序键 → 稳定保持入参顺序）。**魔物管理页 `UICreatureManager.InitCreaturekData` 传入前已用 `GetSortedBackpackCreature` 预排序**：**魔王(`userData.selfCreature`)恒置顶插到列表首位** → 阵容内优先(按阵容序号 `GetLinupIndex` 升序，阵容外置 `int.MaxValue` 排后) → 稀有度降序(`GetRarityValue()` 高→低) → 等级降序(高→低)。因 LINQ `OrderBy*` 稳定，该预排序既是打开时的默认展示序，也是玩家后续筛选排序的稳定 tiebreaker；预排序作用于副本，不改动存档 `listBackpackCreature` 原始顺序。
+
+> **阵容管理页默认基序**：`UILineupManager.InitCreatureData` 传入前用其私有 `GetSortedBackpackCreature` 预排序：**当前阵容内优先**(按当前阵容槽位序号 `GetLineupCreaturePosIndex(currentLineupIndex,…)` 升序，阵容外置 `int.MaxValue` 排后) → 稀有度降序 → 等级降序(背包列表不含魔王，无置顶逻辑)。切换阵容标签 `ChangeLineupIndex` 会重跑 `InitCreatureData` 按新当前阵容重排(不再只 `RefreshAllCard`)；上阵/下阵操作不重排仅刷新对应卡片，避免点击时列表跳动。
 
 > **魔王恒置顶第一位（`OrderListCreature` 最高主键）**：`UIViewCreatureCardList.OrderListCreature` 在「命中置顶(名字/等级/稀有度)」之上再叠一层**最高主键 `OrderByDescending(c => c.IsDemonLord())`**，使玩家任意筛选/排序后魔王仍恒为第一位。该键仅对**含魔王的列表(魔物管理界面)**生效——其它列表无魔王，`IsDemonLord()` 恒 false，不影响原有排序。魔王独立存储于 `UserDataBean.selfCreature`，不在背包/阵容列表内，故由 `GetSortedBackpackCreature` 插入到副本首位后再进入列表。
 
@@ -356,9 +360,9 @@ protected void OnConfirmOrderFilter(OrderFilterResultBean result) {
 
 | 功能 | 文件路径 |
 |------|----------|
-| 卡片基类 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItem.cs` |
+| 卡片基类 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItem.cs` + `UIViewCreatureCardItemAnim.cs`(partial：通用出现动画 `AnimForCardShow`，下方弹入回弹+落位播放 `sound_card_1`) |
 | 卡片组件声明 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemComponent.cs` |
-| 战斗卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForFight.cs`(主体：生命周期/快捷按键/状态/触摸事件/深渊馈赠展示) + `UIViewCreatureCardItemForFightAnim.cs`(partial：动画参数/Tween 句柄/创建·选择·避让动画 `AnimForCreateShow`/`PlaySelectEnterAnim`/`PlaySelectExitAnim`/`PlaySelectKeepAnim`/`PlaySelectKeepReturnAnim`/`ClearAnim`/`KillAnim*`) |
+| 战斗卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForFight.cs`(主体：生命周期/快捷按键/状态/触摸事件/深渊馈赠展示) + `UIViewCreatureCardItemForFightAnim.cs`(partial：动画参数/Tween 句柄/创建·选择·避让动画 `AnimForCreateShow`(委托基类 `AnimForCardShow`)/`PlaySelectEnterAnim`/`PlaySelectExitAnim`/`PlaySelectKeepAnim`/`PlaySelectKeepReturnAnim`/`ClearAnim`/`KillAnim*`) |
 | 阵容卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForLineup.cs` |
 | 管理卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForCreatureManager.cs` |
 | 献祭卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForCreatureSacrifice.cs` |

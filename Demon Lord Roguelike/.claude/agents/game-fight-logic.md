@@ -48,6 +48,11 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 - `UpdateGameForAttackCreate(updateTime)` - 逐帧累加，达标即出下一波：`fightAttackData.GetNextAttackDetailData()` 取波次 → 刷新间隔 `timeUpdateTargetForAttackCreate=timeNextAttack` → BOSS 首波 `ShowBossDialog` → `CreatureHandler.CreateAttackCreature`。
 - `QuickAdvanceAttackCreate(advanceRate=0.1f)`（public）- Quick 按钮调用：立即推进「`timeAttackTotal*advanceRate`(默认10%)」的时间，用与逐帧刷怪同一套步进语义**逐波消费**推进时间、把这段时间本应生成的波次全部立即生成；队列耗尽则停止、进度封顶 100%；返回推进后的最新进度(0~1)。无消耗无冷却。Quick 按钮与世界绑定的显隐见 game-fight-system / research-system SKILL。
 
+### 游戏速度（2倍速 Speed2）
+- `UpdateGame` 的 `updateTime = Time.deltaTime * fightData.gameSpeed`——游戏时间流速倍率挂在 fightData 上（默认1，仅本场战斗有效，不改 Time.timeScale）。
+- `SetGameSpeed(float)`（public）- 2倍速按钮入口：写 `fightData.gameSpeed` 并 `RefreshAllCreatureAnimTimeScale()` 给全部在场生物（防守核心+进攻/防守）`SetAnimTimeScale(gameSpeed)`（=`SkeletonAnimation.timeScale`）；新建生物在 `FightCreatureEntity.SetData` 里按当前速度自动初始化。
+- `GetCurrentGameSpeed()`（static）- 当前战斗速度（非战斗逻辑/无 fightData 恒1）；`GetFightDeltaTime()`（static）= `Time.deltaTime × GetCurrentGameSpeed()`——**不经 UpdateGame 驱动的战斗系统（AI意图、弹道、掉落物寿命）统一用它替代 `Time.deltaTime`**，新增战斗内计时逻辑同此约定。常量 `GAME_SPEED_2X = 2`。2倍速按钮显隐/研究门控见 game-fight-system / research-system SKILL。
+
 ### 防守属性重算（深渊馈赠联动）
 - `RefreshAllDefenseCreatureAttribute()`（public）- 刷新防守核心 + 全部防守魔物 `RefreshBaseAttribute`（由原 `EventForAbyssalBlessingChange` 的循环抽出，后者改为调它）。供动态数值馈赠（当前用于 都是兄弟/杀红了眼，加成率随场上魔物数/累计击杀数变化）在战况变化时重算属性。
 - `EventForGameFightLogicCreatureDeadEnd` 中按守卫广播：`if (BuffHandler.Instance.HasDynamicRateAbyssalBlessing()) RefreshAllDefenseCreatureAttribute();`——魔物死亡（都是兄弟 N 减少）/敌人死亡（杀红了眼击杀数增加）都重算全体防守，且**该重算放在 `CheckGameEnd()` 之前**（先处理死亡带来的属性变化，再检测游戏结束）。守卫用 O(1) 缓存 `HasDynamicRateAbyssalBlessing()`（读 BuffManager 缓存布尔，在 AddAbyssalBlessing 选取动态率馈赠时单调置 true、ClearAbyssalBlessing 复位）避免普通对局开销，热路径不遍历池。

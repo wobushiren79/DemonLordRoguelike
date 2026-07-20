@@ -29,8 +29,10 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
 
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
+        //战斗帧时间（跟随游戏速度，2倍速时移动与索敌节奏同步翻倍）
+        float deltaTime = GameFightLogic.GetFightDeltaTime();
         //查询敌人
-        timeUpdateForFindTarget += Time.deltaTime;
+        timeUpdateForFindTarget += deltaTime;
         if (timeUpdateForFindTarget >= timeUpdateForFindTargetCD)
         {
             timeUpdateForFindTarget = 0;
@@ -80,16 +82,16 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
             //未靠近: x>0.5先沿本路径推进到终点, 否则直冲魔王位置
             if (selfTF.position.x > 0.5f)
             {
-                selfTF.Translate(Vector3.Normalize(new Vector3(0, 0, selfAIEntity.selfCreatureEntity.fightCreatureData.roadIndex) - selfTF.transform.position) * Time.deltaTime * moveSpeedFinal);
+                selfTF.Translate(Vector3.Normalize(new Vector3(0, 0, selfAIEntity.selfCreatureEntity.fightCreatureData.roadIndex) - selfTF.transform.position) * deltaTime * moveSpeedFinal);
             }
             else
             {
-                selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeedFinal);
+                selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * deltaTime * moveSpeedFinal);
             }
             return;
         }
 
-        selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * Time.deltaTime * moveSpeedFinal);
+        selfTF.Translate(Vector3.Normalize(selfAIEntity.targetMovePos - selfTF.transform.position) * deltaTime * moveSpeedFinal);
     }
 
     public override void IntentLeaving(AIBaseEntity aiEntity)

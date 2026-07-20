@@ -98,6 +98,8 @@ public partial class UIFightMain : BaseUIComponent
         }
         //Quick 按钮显隐：仅征服模式且已解锁当前世界的「加快进攻节奏」研究才显示
         RefreshQuickButtonShow(isConquer, gameFightLogic);
+        //2倍速按钮显隐：仅征服模式且已解锁当前世界的「2倍速游戏」研究才显示
+        RefreshSpeed2ButtonShow(isConquer, gameFightLogic);
 
         float progressAttack = gameFightLogic.fightData.fightAttackData.GetAttackProgress();
         float progressAttackTime = 0;
@@ -134,7 +136,7 @@ public partial class UIFightMain : BaseUIComponent
 
     /// <summary>
     /// 刷新 Quick(加快进攻节奏) 按钮显隐
-    /// 仅征服模式、且已解锁当前世界的「加快进攻节奏」研究时显示；其余情况隐藏
+    /// 仅征服模式、且已解锁当前世界「当前难度」的「加快进攻节奏」研究时显示；其余情况隐藏
     /// </summary>
     /// <param name="isConquer">当前是否征服模式</param>
     /// <param name="gameFightLogic">当前战斗逻辑</param>
@@ -147,10 +149,36 @@ public partial class UIFightMain : BaseUIComponent
             && fightDataForConquer.gameWorldInfoRandomData != null)
         {
             long worldId = fightDataForConquer.gameWorldInfoRandomData.worldId;
+            int difficultyLevel = fightDataForConquer.gameWorldInfoRandomData.difficultyLevel;
             var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
-            isShowQuick = userUnlock.CheckIsUnlockWorldQuickAttack(worldId);
+            isShowQuick = userUnlock.CheckIsUnlockWorldQuickAttack(worldId, difficultyLevel);
         }
         ui_UIViewFightMainAttCreateProgress.SetQuickButtonShow(isShowQuick);
+    }
+
+    /// <summary>
+    /// 刷新 2倍速 按钮显隐与选中态
+    /// 仅征服模式、且已解锁当前世界「当前难度」的「2倍速游戏」研究时显示；选中态跟随 fightData.gameSpeed（BOSS关重载场景后不丢失）
+    /// </summary>
+    /// <param name="isConquer">当前是否征服模式</param>
+    /// <param name="gameFightLogic">当前战斗逻辑</param>
+    public void RefreshSpeed2ButtonShow(bool isConquer, GameFightLogic gameFightLogic)
+    {
+        bool isShowSpeed2 = false;
+        //仅征服模式才有世界概念，非征服模式一律隐藏 2倍速
+        if (isConquer
+            && gameFightLogic.fightData is FightBeanForConquer fightDataForConquer
+            && fightDataForConquer.gameWorldInfoRandomData != null)
+        {
+            long worldId = fightDataForConquer.gameWorldInfoRandomData.worldId;
+            int difficultyLevel = fightDataForConquer.gameWorldInfoRandomData.difficultyLevel;
+            var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+            isShowSpeed2 = userUnlock.CheckIsUnlockWorldSpeed2(worldId, difficultyLevel);
+        }
+        ui_UIViewFightMainAttCreateProgress.SetSpeed2ButtonShow(isShowSpeed2);
+        //显示时同步一次选中态，保证与当局游戏速度一致
+        if (isShowSpeed2)
+            ui_UIViewFightMainAttCreateProgress.RefreshSpeed2State();
     }
 
     /// <summary>
