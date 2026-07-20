@@ -17,7 +17,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &4100333713665764629
 RectTransform:
   m_ObjectHideFlags: 0
@@ -65,7 +65,6 @@ MonoBehaviour:
   uiOpenAnimType: 0
   uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}
-  ui_Icon: {fileID: 2708613561423433945}
   ui_Name_TextMeshProUGUI: {fileID: 7340188706848827730}
   ui_UIViewFightSettlementItemProgress_Exp: {fileID: 8227859120392139268}
   ui_UIViewFightSettlementItemProgress_Damage: {fileID: 2411271368467554867}
@@ -786,17 +785,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
---- !u!114 &2708613561423433945 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2992929411199304094, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
-  m_PrefabInstance: {fileID: 873672900734456135}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d85b887af7e6c3f45a2e2d2920d641bc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!224 &7868306853569799473 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
