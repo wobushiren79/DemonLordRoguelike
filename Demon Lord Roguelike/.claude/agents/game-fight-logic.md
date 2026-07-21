@@ -54,9 +54,9 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 - `GetCurrentGameSpeed()`（static）- 当前战斗速度（非战斗逻辑/无 fightData 恒1）；`GetFightDeltaTime()`（static）= `Time.deltaTime × GetCurrentGameSpeed()`——**不经 UpdateGame 驱动的战斗系统（AI意图、弹道、掉落物寿命）统一用它替代 `Time.deltaTime`**，新增战斗内计时逻辑同此约定。常量 `GAME_SPEED_2X = 2`。2倍速按钮显隐/研究门控见 game-fight-system / research-system SKILL。
 
 ### 防守属性重算（深渊馈赠联动）
-- `RefreshAllDefenseCreatureAttribute()`（public）- 刷新防守核心 + 全部防守魔物 `RefreshBaseAttribute`（由原 `EventForAbyssalBlessingChange` 的循环抽出，后者改为调它）。供动态数值馈赠（当前用于 都是兄弟/杀红了眼，加成率随场上魔物数/累计击杀数变化）在战况变化时重算属性。
-- `EventForGameFightLogicCreatureDeadEnd` 中按守卫广播：`if (BuffHandler.Instance.HasDynamicRateAbyssalBlessing()) RefreshAllDefenseCreatureAttribute();`——魔物死亡（都是兄弟 N 减少）/敌人死亡（杀红了眼击杀数增加）都重算全体防守，且**该重算放在 `CheckGameEnd()` 之前**（先处理死亡带来的属性变化，再检测游戏结束）。守卫用 O(1) 缓存 `HasDynamicRateAbyssalBlessing()`（读 BuffManager 缓存布尔，在 AddAbyssalBlessing 选取动态率馈赠时单调置 true、ClearAbyssalBlessing 复位）避免普通对局开销，热路径不遍历池。
-- `EventForDefenseCreatureCreate(FightCreatureEntity)` - 监听 `EventsInfo.GameFightLogic_DefenseCreatureCreate`（由 `CreatureHandler.CreateDefenseCreatureEntity` 生成新防守魔物后推送），按同一守卫广播 `RefreshAllDefenseCreatureAttribute()`，使「都是兄弟」随放置/增殖魔物 N 增大即时生效。即 CreatureHandler 只负责生成、推事件，重算职责归 GameFightLogic。详见 abyssal-blessing-system / buff-system SKILL。
+- `RefreshAllDefenseCreatureAttribute()`（public）- 刷新防守核心 + 全部防守魔物 `RefreshBaseAttribute`（由原 `EventForAbyssalBlessingChange` 的循环抽出，后者改为调它）。供动态数值馈赠（加成率随场上魔物数/累计击杀数变化；曾用于都是兄弟/杀红了眼，现役无配置、机制留存）在战况变化时重算属性。
+- `EventForGameFightLogicCreatureDeadEnd` 中按守卫广播：`if (BuffHandler.Instance.HasDynamicRateAbyssalBlessing()) RefreshAllDefenseCreatureAttribute();`——魔物死亡（随魔物数缩放类 N 减少）/敌人死亡（随击杀数缩放类计数增加）都重算全体防守，且**该重算放在 `CheckGameEnd()` 之前**（先处理死亡带来的属性变化，再检测游戏结束）。守卫用 O(1) 缓存 `HasDynamicRateAbyssalBlessing()`（读 BuffManager 缓存布尔，在 AddAbyssalBlessing 选取动态率馈赠时单调置 true、ClearAbyssalBlessing 复位）避免普通对局开销，热路径不遍历池。
+- `EventForDefenseCreatureCreate(FightCreatureEntity)` - 监听 `EventsInfo.GameFightLogic_DefenseCreatureCreate`（由 `CreatureHandler.CreateDefenseCreatureEntity` 生成新防守魔物后推送），按同一守卫广播 `RefreshAllDefenseCreatureAttribute()`，使随魔物数缩放类馈赠随放置/增殖魔物 N 增大即时生效。即 CreatureHandler 只负责生成、推事件，重算职责归 GameFightLogic。详见 abyssal-blessing-system / buff-system SKILL。
 
 ## 约束
 

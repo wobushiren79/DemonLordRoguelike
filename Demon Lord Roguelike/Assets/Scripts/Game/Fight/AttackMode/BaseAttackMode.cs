@@ -159,8 +159,8 @@ public class BaseAttackMode
                 {
                     //设置攻击者ID
                     attackModeData.attackerId = creatureData.creatureUUId;
-                    //设置伤害
-                    attackModeData.attackerDamage = (int)attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ATK);
+                    //设置伤害（ATK × 攻击模式伤害加成倍率，配置0=无加成按1倍）
+                    attackModeData.attackerDamage = (int)(attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ATK) * attackModeInfo.GetDamageAddRate());
                     //提示设置暴击概率
                     attackModeData.attackerCRT = attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.CRT);
                     //设置弹道速度倍率（攻速ASPD 0~100 线性映射 1~SpeedRateASPDMax 倍，与攻击时间换算保持同一插值体系）

@@ -40,6 +40,7 @@ watched_files:
 - **API**：框架层 `PlaySoundTimedFade(long soundId, playDuration, fadeStartTime, volumeScale=-1f)`（`playDuration`/`fadeStartTime` **强制传**，仅 `volumeScale` 有默认 `-1f`=取配置音效音量 soundVolume）；游戏层 `AudioEnum` 重载 `PlaySoundTimedFade(AudioEnum, playDuration, fadeStartTime, volumeScale)`——**游戏层四参全无默认值，须全传**。前 `fadeStartTime` 秒保持基础音量，`fadeStartTime→playDuration` **线性**淡到 0；`volumeScale<0` 取 `soundVolume`，最终基础音量 = `volumeScale × 配置 volume_scale`。**淡出固定线性，无曲线参数**。
 - **与 LoopSound/PlaySound 的区别**：不是循环（`loop=false`），也不用 `PlayOneShot`（那样拿不到句柄无法淡出）；**不登记到 `dicLoopActive`**，故为一次性播放、**不参与全局 Pause/Stop/音量刷新，也暂不支持中途打断**（若日后要可打断，需仿 LoopSound 登记字典+token）。
 - **协程 `CoroutineForPlayTimedFade`**：`WaitForSeconds(fadeStartTime)` → 逐帧 `source.volume = baseVolume × (1-progress)`（线性）→ 到点回收音源。
+- **消费方**：魔物进阶开始动画 `ScenePrefabForBase.BuildingVatAnimForStart`——水位上升 3s 播 `sound_water_1`（`playDuration=animTimeWater, fadeStartTime=animTimeWater-0.5f`，把长音效截断成水位动画时长并末段淡出）。
 
 ### 音量管理
 - 音量持久化在 **GameConfigBean**（`musicVolume`/`soundVolume`/`environmentVolume`，默认 0.5）

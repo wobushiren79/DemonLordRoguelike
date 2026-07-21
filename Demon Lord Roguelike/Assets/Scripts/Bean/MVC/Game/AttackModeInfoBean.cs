@@ -80,6 +80,10 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public long child_attack_mode_id;
 	/// <summary>
+	///伤害加成比例(最终伤害=攻击者ATK×该比例;0或空=无加成按1倍)
+	/// </summary>
+	public float damage_add_rate;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

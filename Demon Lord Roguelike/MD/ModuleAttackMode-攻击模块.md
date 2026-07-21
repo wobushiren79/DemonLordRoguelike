@@ -28,7 +28,7 @@
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `attackModeId` | `long` | 攻击模式配置ID，对应 AttackModeInfoBean.id |
-| `attackerDamage` | `int` | 攻击者攻击力（由生物属性 ATK 决定） |
+| `attackerDamage` | `int` | 攻击者攻击力（= 生物属性 ATK × 攻击模式配置 `damage_add_rate` 伤害加成倍率，0/空按 1 倍） |
 | `attackerCRT` | `float` | 攻击者暴击概率（由生物属性 CRT 决定） |
 | `startPos` | `Vector3` | 攻击起始位置 |
 | `targetPos` | `Vector3` | 目标位置（被攻击者位置） |
@@ -57,6 +57,7 @@ JSON配置表数据，继承 `BaseBean`，由 `AttackModeInfoCfg` 管理。
 | `prefab_name` | `string` | 预制体名称（空表示无预制体） |
 | `buff` | `string` | 攻击附带的BUFF（格式：`ID:概率|ID:概率`） |
 | `attack_search_type` | `int` | 攻击搜索类型（0射线 11球形范围 21盒形范围等） |
+| `damage_add_rate` | `float` | 伤害加成比例（最终伤害=攻击者ATK×该值；0/空=无加成按 1 倍。典型：自爆史莱姆爆炸 300001 配 50，ATK 10×50=500，升级加攻收益随之放大 50 倍） |
 | `collider_size` | `float` | 碰撞检测大小（点到点检测用） |
 | `collider_area_type` | `int` | 范围检测类型（11球形 21盒形） |
 | `collider_area_size` | `string` | 范围检测大小（半径或半extents，逗号分隔） |
@@ -72,6 +73,7 @@ JSON配置表数据，继承 `BaseBean`，由 `AttackModeInfoCfg` 管理。
 - `GetColliderAreaSize()` — 解析 `collider_area_size` 字符串，返回 `float[]`
 - `GetColliderAreaSerachType()` — 返回范围检测枚举 `CreatureSearchType`
 - `GetCreatureSerachType()` — 返回攻击搜索枚举 `CreatureSearchType`
+- `GetDamageAddRate()` — 返回伤害加成倍率（`damage_add_rate`>0 取该值，否则按 1 倍）
 
 **配置管理器** `AttackModeInfoCfg`:
 - 继承 `BaseCfg<long, AttackModeInfoBean>`，从 `"AttackModeInfo"` JSON 文件加载
@@ -225,7 +227,7 @@ public override void StartAttack(FightCreatureEntity attacker, FightCreatureEnti
 
 **文件**: `Assets/Scripts/Game/Fight/AttackMode/AttackModeExplosion.cs`
 
-以自身为中心范围伤害，攻击者死亡（自爆）。
+以自身为中心范围伤害，攻击者死亡（自爆）。典型用法：自爆史莱姆（生物 3002，攻击模块 300001）——基础 ATK 压到个位数（10），靠攻击模块 `damage_add_rate`=50 放大到 500，使升级加攻的收益按倍率同步放大。
 
 #### AttackModeFallupon（天降单体）
 

@@ -33,11 +33,11 @@ BuffInfoBean      - BUFF配置数据（来自BuffInfo配置表，含 class_entit
 BuffBaseEntity                              # 抽象基类（事件回调 + ShowBuffEffect + CheckIsPre）
 ├── BuffEntityAttribute                     # 属性BUFF（实现 IAttributeModifierSource）
 │   ├── BuffEntityAttributeAttackTime       # 改攻击前摇/动画时间的属性BUFF（独立通道）
-│   │   └── BuffEntityAttributeAttackTimeSingleTarget  # 深渊馈赠「急性子」：随机锁定一只防守生物攻速翻倍(攻击时间×0.5)，实现 IBuffSingleTarget
-│   ├── BuffEntityAttributeSingleTarget    # 深渊馈赠「大力出奇迹/膘肥体壮/钢铁憨憨」：随机锁定一只防守生物 ATK/HP/DR 翻倍(rate=1)，实现 IBuffSingleTarget
+│   │   └── BuffEntityAttributeAttackTimeSingleTarget  # 单体定向攻速BUFF：随机锁定一只防守生物攻速翻倍(攻击时间×0.5)，实现 IBuffSingleTarget（曾用于馈赠「急性子」，现役无配置、机制留存）
+│   ├── BuffEntityAttributeSingleTarget    # 单体定向属性BUFF：随机锁定一只防守生物 ATK/HP/DR 翻倍(rate=1)，实现 IBuffSingleTarget（曾用于馈赠「大力出奇迹/膘肥体壮/钢铁憨憨」，现役无配置、机制留存）
 │   ├── BuffEntityAttributeDynamicRate     # 动态率属性BUFF基类：加成率运行时算而非配置写死(重写 CollectModifiers+ChangeData 取 GetDynamicRate，仅走 PercentAdd)
-│   │   ├── BuffEntityAttributeScaleByDefenseCount  # 通用功能类：属性%随"当前场上存活防守魔物数N"缩放，率=(N-1)×每只率(当前用于馈赠「都是兄弟」，可被其它同功能馈赠复用)
-│   │   └── BuffEntityAttributeScaleByKillCount     # 通用功能类(兼 IBuffSingleTarget)：选取时随机锁定一只防守生物，属性%随"该只自身累计击杀敌人数"缩放，率=该只killNum×每只率(当前用于馈赠「杀红了眼」，可被其它同功能馈赠复用)
+│   │   ├── BuffEntityAttributeScaleByDefenseCount  # 通用功能类：属性%随"当前场上存活防守魔物数N"缩放，率=(N-1)×每只率(曾用于馈赠「都是兄弟」，现役无配置、可被其它同功能馈赠复用)
+│   │   └── BuffEntityAttributeScaleByKillCount     # 通用功能类(兼 IBuffSingleTarget)：选取时随机锁定一只防守生物，属性%随"该只自身累计击杀敌人数"缩放，率=该只killNum×每只率(曾用于馈赠「杀红了眼」，现役无配置、可被其它同功能馈赠复用)
 │   └── BuffEntityAttributeMulti            # 多属性BUFF：一次随机率(trigger_value_rate)同时改多个属性；class_entity_data="属性:倍率|属性:倍率"(如 "ATK:1|HP:-1"=ATK+率、HP等量负率)，实现"一属性增益、对应属性等比减益"。扭蛋R级双刃BUFF(狂战士/快枪手/铜墙铁壁/大块头 各A/B/C)。与单属性同为"纯属性BUFF"(IsBuffEntityAttributeOnly)，走属性烘焙路径
 ├── BuffEntityInstant                       # 瞬时BUFF（SetData中立即触发并isValid=false）
 │   ├── BuffEntityInstantCloneDefenseCreature   # 深渊馈赠「增殖」：随机复制一个防守生物
@@ -340,12 +340,14 @@ BuffHandler.Instance.ChangeAttackTimeDataForBuff(creatureUUId, ref timeAttackPre
 只会遍历 `BuffEntityAttributeAttackTime`，不走 ModifierPipeline（因为对应的是时间常量而非属性）。
 **该方法除遍历生物自身的战斗BUFF外，还会扫描深渊馈赠池 `dicAbyssalBlessingBuffsActivie`** 中的攻速类BUFF：
 若该BUFF实现 `IBuffSingleTarget` 且其 `SingleTargetCreatureUUId == creatureUUId` 才生效，
-以此支持「急性子」这类"随机一只防守生物攻速翻倍"的单体定向馈赠（见下「单体定向深渊馈赠」）。
+以此支持"随机一只防守生物攻速翻倍"这类单体定向馈赠（见下「单体定向深渊馈赠」；曾用于「急性子」）。
 
 ### 单体定向深渊馈赠（随机一只防守生物属性/攻速翻倍）
 
+> ⚠️ **现役无配置**：原 4 个单体定向馈赠（大力出奇迹/膘肥体壮/钢铁憨憨/急性子）已于 2026-07 从配置表删除，本节机制（接口/实体类/过滤落点）完整保留，新增同类馈赠可直接复用。
+
 普通深渊馈赠BUFF（`dicAbyssalBlessingBuffsActivie`）对**所有匹配生物**生效（每个生物 `RefreshBaseAttribute` 都会收集整个馈赠池）。
-但「大力出奇迹/膘肥体壮/钢铁憨憨/急性子」要求只作用于**随机一只防守生物**，为此引入标记接口：
+单体定向馈赠要求只作用于**随机一只防守生物**，为此引入标记接口：
 
 ```csharp
 public interface IBuffSingleTarget { string SingleTargetCreatureUUId { get; } }
@@ -359,10 +361,12 @@ public interface IBuffSingleTarget { string SingleTargetCreatureUUId { get; } }
 - **复制魔物(增殖)不继承单体定向**：`BuffEntityInstantCloneDefenseCreature` 克隆出的新魔物是**新 UUID**，与单体定向馈赠锁定的原魔物 UUID 不匹配，故克隆体**不继承也不显示**原魔物的单体定向馈赠；克隆体只继承「作用于全体防守生物」的馈赠(靠 `trigger_creature_type` 过滤、与 UUID 无关)。
 - **卡片展示口径统一**：`AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature(buff, creatureData, fightType)`(在 `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`) 封装「trigger_creature_type 过滤 + 单体定向 UUID 过滤 + 仅 IAttributeModifierSource/BuffEntityAttributeAttackTime 算作用于生物」三连，供战斗卡片(`UIViewCreatureCardItemForFight`)展示「作用于本魔物的馈赠」复用，确保展示与实际效果同步。
 - **不污染存档**：`dlDefenseCreatureData` 内的 `CreatureBean` 与玩家存档**共享引用**，故绝不能改 `creatureAttribute`；本方案只改运行时计算出的 `dicAttribute`/攻击时间，馈赠在征服全通关领奖后随 `ClearAbyssalBlessing` 清空。
-- **可重复选取(level=0)**：每次选取新建一个BUFF实例、各自锁定一只新随机生物叠加（同族 level=0 不触发替换）；一局可获次数由配置 `max_count` 控制（当前这 4 个 `max_count=1` 即整局限 1 次，候选层 `BuffHandler.GetAbyssalBlessingPickCount` 门控，与本 BUFF 叠加逻辑独立）。
-- ⚠️ **选取后立即刷新已在场生物（事件驱动）**：属性类(ATK/HP/DR)依赖 `dicAttribute` 重算，`BuffHandler.AddAbyssalBlessing` 末尾 `TriggerEvent(Buff_AbyssalBlessingChange)`，由 `GameFightLogic.EventForAbyssalBlessingChange` 监听并立即对防守核心 + 全部防守生物 `RefreshBaseAttribute`（BuffHandler 只触发事件、不直接刷新，职责更解耦）。否则征服「普通关卡→普通关卡」走 `ContinueNextLevelInSameScene` 保留现场、不重载场景也不重算属性，加成要等到下次场景重载（切BOSS关 `StartNextGameForBoss` 重建生物实体）才生效——典型BUG「普通关选了不生效、切BOSS才生效」。攻速类(急性子)每次攻击实时缩放不依赖刷新，一并刷新也无害。
+- **可重复选取(level=0)**：每次选取新建一个BUFF实例、各自锁定一只新随机生物叠加（同族 level=0 不触发替换）；一局可获次数由配置 `max_count` 控制（历史配置 `max_count=1` 即整局限 1 次，候选层 `BuffHandler.GetAbyssalBlessingPickCount` 门控，与本 BUFF 叠加逻辑独立）。
+- ⚠️ **选取后立即刷新已在场生物（事件驱动）**：属性类(ATK/HP/DR)依赖 `dicAttribute` 重算，`BuffHandler.AddAbyssalBlessing` 末尾 `TriggerEvent(Buff_AbyssalBlessingChange)`，由 `GameFightLogic.EventForAbyssalBlessingChange` 监听并立即对防守核心 + 全部防守生物 `RefreshBaseAttribute`（BuffHandler 只触发事件、不直接刷新，职责更解耦）。否则征服「普通关卡→普通关卡」走 `ContinueNextLevelInSameScene` 保留现场、不重载场景也不重算属性，加成要等到下次场景重载（切BOSS关 `StartNextGameForBoss` 重建生物实体）才生效——典型BUG「普通关选了不生效、切BOSS才生效」。攻速类每次攻击实时缩放不依赖刷新，一并刷新也无害。
 
-### 动态率深渊馈赠（加成率随战况实时计算：当前用于 都是兄弟/杀红了眼）
+### 动态率深渊馈赠（加成率随战况实时计算）
+
+> ⚠️ **现役无配置**：原 6 族动态率馈赠（都是兄弟/杀红了眼，各 3 属性 5 级链）已于 2026-07 从配置表删除，`HasDynamicRateAbyssalBlessing()` 当前恒 false、广播不触发；本节机制（基类/子类/广播链路）完整保留，新增同类馈赠可直接复用。
 
 普通属性 BUFF 的 rate 由配置 `trigger_value_rate` 写死、恒定；「随场上魔物数缩放 / 随击杀数缩放」要求 rate 随运行时战况（场上魔物数量 / 累计击杀数）**每次重算属性时实时变化**，为此引入抽象基类 `BuffEntityAttributeDynamicRate : BuffEntityAttribute`（`Assets/Scripts/Game/Buff/BuffEntity/Attribute/`）：
 
@@ -371,8 +375,8 @@ public interface IBuffSingleTarget { string SingleTargetCreatureUUId { get; } }
   - `ChangeData(CreatureAttributeTypeEnum, float)`（卡片详情预览路径，供 `CreatureBean.GetAbyssalBlessingChangeAttribute` 调用）：`targetData *= 1 + GetDynamicRate()`。
   - 便捷方法 `protected FightBean GetFightData()` = `GameHandler...GetGameLogic<GameFightLogic>()?.fightData`。
 - **抽象基类不在配置 `class_entity` 中直接引用**；子类是**通用功能类**（按缩放来源命名、不绑馈赠名，可被其它同功能馈赠复用），实现具体公式：
-  - `BuffEntityAttributeScaleByDefenseCount`（属性随"当前场上存活防守魔物数"缩放，当前用于「都是兄弟」）：`rate = (场上存活防守魔物数 N - 1) * trigger_value_rate`。N = `fightData.dlDefenseCreatureEntity.List` 中 `!IsDead()` 的数量；`N<=1` 时为 0（减 1 扣除自身，只有 1 只不享加成）。
-  - `BuffEntityAttributeScaleByKillCount`（**单体定向**，兼实现 `IBuffSingleTarget`；选取时 `SetData` 用 `GetRandomDefenseCreatureUUId()` 随机锁定一只防守生物，属性随"**该只生物自身**累计击杀敌人数"缩放，当前用于「杀红了眼」）：`rate = fightData.fightRecordsData.GetRecordsForCreatureData(锁定UUID,false)?.killNum * trigger_value_rate`（仅魔物击杀；killNum 按 `creatureUUId` 持久累积，该只阵亡后下一关重新上场 UUID 不变、之前加成保留，征服 run 内跨关卡累积不重置）。「只作用锁定那只」的过滤由 `FightCreatureBean.CollectFromBuffList` 的 `IBuffSingleTarget` 落点自动完成，配置 `trigger_creature_type=1` 作防守类兜底过滤。
+  - `BuffEntityAttributeScaleByDefenseCount`（属性随"当前场上存活防守魔物数"缩放，曾用于「都是兄弟」）：`rate = (场上存活防守魔物数 N - 1) * trigger_value_rate`。N = `fightData.dlDefenseCreatureEntity.List` 中 `!IsDead()` 的数量；`N<=1` 时为 0（减 1 扣除自身，只有 1 只不享加成）。
+  - `BuffEntityAttributeScaleByKillCount`（**单体定向**，兼实现 `IBuffSingleTarget`；选取时 `SetData` 用 `GetRandomDefenseCreatureUUId()` 随机锁定一只防守生物，属性随"**该只生物自身**累计击杀敌人数"缩放，曾用于「杀红了眼」）：`rate = fightData.fightRecordsData.GetRecordsForCreatureData(锁定UUID,false)?.killNum * trigger_value_rate`（仅魔物击杀；killNum 按 `creatureUUId` 持久累积，该只阵亡后下一关重新上场 UUID 不变、之前加成保留，征服 run 内跨关卡累积不重置）。「只作用锁定那只」的过滤由 `FightCreatureBean.CollectFromBuffList` 的 `IBuffSingleTarget` 落点自动完成，配置 `trigger_creature_type=1` 作防守类兜底过滤。
 - **依赖 GameFightLogic 广播重算（事件驱动）**：rate 变化后必须重算 `dicAttribute` 才生效。高频事件（魔物放置/增殖、魔物死亡、敌人击杀）由 `GameFightLogic` 按守卫广播 `RefreshAllDefenseCreatureAttribute()` 对全体防守魔物重算——守卫泛型方法 `BuffHandler.HasDynamicRateAbyssalBlessing()`（谓词式通用：深渊馈赠池内是否含满足条件的 BUFF(可组合多种类型)）避免普通对局无谓开销。落点：`GameFightLogic.EventForGameFightLogicCreatureDeadEnd`（死亡，在 `CheckGameEnd()` 之前）；`CreatureHandler.CreateDefenseCreatureEntity` 末尾**推送新事件** `EventsInfo.GameFightLogic_DefenseCreatureCreate`（参数 FightCreatureEntity），由 `GameFightLogic.EventForDefenseCreatureCreate` 监听后按守卫重算（CreatureHandler 只负责生成、推事件，重算职责归 GameFightLogic）。详见 `abyssal-blessing-system` SKILL「动态数值馈赠」。
 
 ## 事件名速查（已注册到 BuffEventDispatcher）

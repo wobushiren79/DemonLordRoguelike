@@ -31,7 +31,7 @@ BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播
 
 | 字段 | 来源属性 | 说明 |
 |------|---------|------|
-| `attackerDamage` | ATK | 攻击伤害 |
+| `attackerDamage` | ATK × `damage_add_rate` | 攻击伤害；`damage_add_rate` 为攻击模式配置的伤害加成倍率（>0 生效，0/空=按 1 倍，见 `AttackModeInfoBeanPartial.GetDamageAddRate()`） |
 | `attackerCRT` | CRT | 暴击概率 |
 | `attackerSpeedRate` | ASPD | 弹道飞行速度倍率：ASPD 按 0~100 线性插值映射 1~`BaseAttackMode.SpeedRateASPDMax`(当前3倍)；无攻击者时保持默认 1，`ClearData()` 重置为 1 |
 
@@ -434,6 +434,7 @@ public class AttackModeCustom : BaseAttackMode
     "prefab_name": "ArrowPrefab",    // 预制体名称（空表示无预制体）
     "buff": "1001:0.5|1002:1.0",     // 攻击附带的BUFF（ID:创建概率）
     "attack_search_type": 0,         // 攻击搜索类型（0射线 11球形范围 21盒形范围）
+    "damage_add_rate": 0,            // 伤害加成比例（float；最终伤害=攻击者ATK×该值，0/空=无加成按1倍。如自爆史莱姆爆炸300001配50：ATK 10×50=500）
     "collider_size": 0.5,            // 碰撞检测大小（点到点）
     "collider_area_type": 11,        // 范围检测类型（11球形 21盒形）
     "collider_area_size": "2,2,2",   // 范围检测大小（半径或半extents）

@@ -105,8 +105,7 @@ public partial class CreatureInfoBean
     /// </summary>
     public bool IsAttackSearchBack()
     {
-        //TODO(临时打桩)：excel_creature_info 已加 attack_search_back 列，待 Unity 重新生成 CreatureInfoBean 后改回 return attack_search_back == 1;
-        return false;
+        return attack_search_back == 1;
     }
 
     /// <summary>

@@ -307,7 +307,7 @@ public class ScenePrefabForBase : ScenePrefabBase
                 {
                     if (itemAscendDetails != null)
                     {
-                        BuildingVatRefreshItemWithProgress(itemVat, userData, itemAscendDetails);
+                        BuildingVatRefreshItemWithProgress(itemVat, itemAscendDetails);
                     }
                     else
                     {
@@ -319,7 +319,7 @@ public class ScenePrefabForBase : ScenePrefabBase
                 {
                     if (itemAscendDetails != null)
                     {
-                        BuildingVatRefreshItemWithProgress(itemVat, userData, itemAscendDetails);
+                        BuildingVatRefreshItemWithProgress(itemVat, itemAscendDetails);
                     }
                 }
             }
@@ -331,14 +331,19 @@ public class ScenePrefabForBase : ScenePrefabBase
     }
 
     /// <summary>
-    /// 刷新单个有进阶数据的容器:取目标生物,按归一化进度(水色)设为进阶中状态(state=3)。
+    /// 刷新单个有进阶数据的容器:取托管在进阶数据里的目标生物本体,按归一化进度(水色)设为进阶中状态(state=3)。
     /// </summary>
     /// <param name="itemVat">容器Transform</param>
-    /// <param name="userData">用户数据</param>
     /// <param name="itemAscendDetails">该容器的进阶详情数据</param>
-    private void BuildingVatRefreshItemWithProgress(Transform itemVat, UserDataBean userData, UserAscendDetailsBean itemAscendDetails)
+    private void BuildingVatRefreshItemWithProgress(Transform itemVat, UserAscendDetailsBean itemAscendDetails)
     {
-        var creatureData = userData.GetBackpackCreature(itemAscendDetails.creatureUUId);
+        //目标生物本体托管在进阶数据里(无托管数据=托管前的旧存档,按空态展示兜底防NRE)
+        var creatureData = itemAscendDetails.creatureData;
+        if (creatureData == null)
+        {
+            BuildingVatSetState(itemVat, 0, null);
+            return;
+        }
         //进度已是秒数,水色按归一化(0~1)Lerp
         BuildingVatSetState(itemVat, 3, creatureData, itemAscendDetails.GetProgressNormalized());
     }
@@ -498,10 +503,13 @@ public class ScenePrefabForBase : ScenePrefabBase
         {
             actionForComplete?.Invoke();
         });
+        //水位上升音效:长音效按水位动画时长截断播放,末段0.5s线性淡出收尾
+        AudioHandler.Instance.PlaySoundTimedFade(AudioEnum.sound_water_1, animTimeWater, animTimeWater - 0.5f, -1f);
         //生物添加完毕之后关闭盖子
         DOVirtual.DelayedCall(animTimeAddCreature, () =>
         {
             vatAnim.SetInteger("State", 0);
+            AudioHandler.Instance.PlaySound(AudioEnum.sound_door_2);
         });
         //材料生物生成
         if (!listMaterialCreatureData.IsNull())
@@ -511,7 +519,8 @@ public class ScenePrefabForBase : ScenePrefabBase
                 var itemCreatureData = listMaterialCreatureData[i];
                 var targetCreatureObj = Instantiate(gameObject, objVatMaterialCreature);
                 targetCreatureObj.SetActive(false);
-                float delayShowTime = UnityEngine.Random.Range(0f, animTimeAddCreature * 0.1f);
+                //按序号0.13s级联错开+微抖动:保证各素材落水间隔>0.1s(避开同音效防抖,每只落水声都能播),且最多10只时最后一只也在盖盖(2s)前落水
+                float delayShowTime = i * 0.13f + UnityEngine.Random.Range(0f, 0.02f);
                 DOVirtual.DelayedCall(delayShowTime, () =>
                 {
                     //设置生物样子      
@@ -542,6 +551,8 @@ public class ScenePrefabForBase : ScenePrefabBase
                     itemJumAnim.Join(targetCreatureObj.transform.DORotate(new Vector3(0, 0, 360), timeAnimJump, RotateMode.WorldAxisAdd));
                     itemJumAnim.OnComplete(() =>
                     {
+                        //落水瞬间播水声(每只素材各播一次)
+                        AudioHandler.Instance.PlaySound(AudioEnum.sound_water_3);
                         targetCreatureObj.gameObject.SetActive(false);
                         Destroy(targetCreatureObj);
                     });

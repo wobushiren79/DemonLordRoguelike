@@ -406,11 +406,7 @@ public partial class UICreatureVat : BaseUIComponent
                     //删除素材生物
                     userData.RemoveBackpackCreature(itemCreatureData);
                 }
-                //设置生物状态
-                targetCreatureSelect.creatureState = CreatureStateEnum.Vat;
-                //进阶魔物移出阵容(进阶期间不可出战;完成后由玩家自行重新编入阵容)
-                userData.RemoveLineupCreature(targetCreatureSelect.creatureUUId);
-                //写入临时进阶数据(预定BUFF/目标稀有度/耗时上限)
+                //写入进阶数据并托管目标生物(AddAscendData 内部:置Vat状态/移出所有阵容/从背包物理移除,完成或取消时归还背包)
                 userAscendDetails = userAscend.AddAscendData(currentIndexVat, targetCreatureSelect, newRarity, timeMax, ascendBuff);
                 //开始进阶保存一次(测试模拟模式由 GameDataManager 统一拦截不落盘)
                 GameDataHandler.Instance.manager.SaveUserData();
@@ -442,6 +438,10 @@ public partial class UICreatureVat : BaseUIComponent
             userAscendDetails = null;
             //设置状态
             scenePrefab.BuildingVatSetState(targetVat, 1, targetCreatureSelect);
+            //取消进阶后目标生物已归还背包:复位选择并重建目标列表(与完成进阶收口一致),立即可再次选择
+            targetCreatureSelect = null;
+            listMaterialCreatureSelect.Clear();
+            InitCreaturekDataForTarget();
             //刷新状态
             RefreshVatState();
             RefreshVatProgress();
@@ -461,7 +461,8 @@ public partial class UICreatureVat : BaseUIComponent
         //把临时进阶数据落地到生物正式数据:升稀有度 + 授予预定BUFF(按目标稀有度槽位覆盖)
         if (userAscendDetails != null)
         {
-            var targetCreature = userData.GetBackpackCreature(userAscendDetails.creatureUUId);
+            //目标生物本体托管在进阶数据里(托管前的旧存档兜底回查背包)
+            var targetCreature = userAscendDetails.creatureData != null ? userAscendDetails.creatureData : userData.GetBackpackCreature(userAscendDetails.creatureUUId);
             if (targetCreature != null)
             {
                 targetCreature.rarity = userAscendDetails.targetRarity;
@@ -471,7 +472,7 @@ public partial class UICreatureVat : BaseUIComponent
                 }
             }
         }
-        //移除临时数据(复位生物为Idle)
+        //移除临时数据(托管生物复位Idle并归还背包)
         userAscend.RemoveAscendData(currentIndexVat);
         userAscendDetails = null;
         //完成进阶保存一次(把落地后的正式数据写盘并清除临时数据;测试模拟模式由 GameDataManager 统一拦截不落盘)

@@ -54,10 +54,10 @@ public class AIAttackCreatureEntity : AICreatureEntity
     #region 事件回调
     public void EventForGameFightLogicPutCard(UIViewCreatureCardItem targetView)
     {
-        //如果是同一路线
+        //如果是同一路线（用当前道路 roadIndex 判定：被诱导换路后 positionCreate.z 仍是出生线路，会误判）
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var defenseCreature =  gameFightLogic.fightData.GetCreatureById(targetView.cardData.creatureData.creatureUUId, CreatureFightTypeEnum.FightDefense);
-        if (defenseCreature.fightCreatureData.positionCreate.z == selfCreatureEntity.fightCreatureData.positionCreate.z)
+        if (defenseCreature.fightCreatureData.positionCreate.z == selfCreatureEntity.fightCreatureData.roadIndex)
         {
             //如果正在前往目标 则重新寻找目标
             if (currentIntentEnum == AIIntentEnum.AttackCreatureMove || currentIntentEnum == AIIntentEnum.AttackCreatureAttack)

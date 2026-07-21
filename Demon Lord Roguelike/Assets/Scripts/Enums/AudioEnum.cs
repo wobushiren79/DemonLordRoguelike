@@ -161,6 +161,10 @@ public enum AudioEnum : long
     sound_building_1 = 610001,//建造1
     sound_building_2 = 610002,//建造2
     sound_break_1 = 620001,//破碎1
+    sound_water_1 = 630001,//水1
+    sound_water_2 = 630002,//水2
+    sound_water_3 = 630003,//水3
+    sound_water_4 = 630004,//水4
     //==================== 音乐 Music ====================
     music_fight_1 = 1000001,//战斗音乐1
     music_fight_2 = 1000002,//战斗音乐2

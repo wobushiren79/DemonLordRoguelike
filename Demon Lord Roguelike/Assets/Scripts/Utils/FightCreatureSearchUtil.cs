@@ -232,7 +232,7 @@ public static class FightCreatureSearchUtil
         {
             if (creatureSearchType == CreatureSearchType.DisMinByRoadAdjacentUpDown)
             {
-                listTargetCreature = gameFightLogic.fightData.GetAttackCreatureByRoad(new List<int> { roadIndex - 1, roadIndex + 1 });
+                listTargetCreature = gameFightLogic.fightData.GetDefenseCreatureByRoad(new List<int> { roadIndex - 1, roadIndex + 1 });
             }
             else
             {

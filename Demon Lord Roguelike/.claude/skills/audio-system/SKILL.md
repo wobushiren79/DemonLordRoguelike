@@ -222,6 +222,7 @@ AudioHandler.Instance.PlaySoundTimedFade(AudioEnum.sound_xxx, 6f, 5f, 0.8f);  //
 - **参数**：`playDuration` 总时长到点停止（应 ≤ clip 长度）；`fadeStartTime` 淡出起点（应 ≤ playDuration），此前保持基础音量；`volumeScale<0` 取 `soundVolume`，最终基础音量 = `volumeScale × 配置 volume_scale`。**淡出固定线性 `1-progress`，无曲线参数**。入参已纠偏（`fadeStartTime` 夹在 `[0, playDuration]`）。**框架层 `playDuration`/`fadeStartTime` 强制传，仅 `volumeScale` 默认 `-1f`（取配置音效音量 soundVolume）；游戏层枚举重载四参全无默认值，须全传**。
 - **与 LoopSound 的区别**：`loop=false` 一次性播放；**不登记到 `dicLoopActive`**，故**不参与全局 `PauseAllLoopSound`/`StopAllLoopSound`/`InitAudio` 音量刷新，也暂不支持中途打断**。切场景时若仍在播，会借 `DontDestroyOnLoad` 的音源播完剩余时长后自行回收（一次性短音效可接受）。若日后需可打断/受全局控制，需仿 LoopSound 登记字典 + token。
 - **协程 `CoroutineForPlayTimedFade`**：`WaitForSeconds(fadeStartTime)` → 逐帧 `source.volume = baseVolume × (1-progress)` → 到点 `RecycleLoopSource`（内部 `Stop()` + 复位 volume/pitch）。
+- **消费方（魔物进阶）**：`ScenePrefabForBase.BuildingVatAnimForStart` 水位上升 3s 播 `sound_water_1`（`playDuration=animTimeWater, fadeStartTime=animTimeWater-0.5f`），把较长的水声截断成水位动画时长并末段淡出；同流程素材落水逐只播 `sound_water_3`（投掷按 0.13s 级联错开以避开 0.1s 同 id 防抖）、盖盖播 `sound_door_2`。
 
 ## 约束与注意事项
 

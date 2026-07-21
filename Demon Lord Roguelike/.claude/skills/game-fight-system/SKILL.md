@@ -401,7 +401,7 @@ EventsInfo.Buff_FightCreatureChange             // 战斗生物BUFF改变
 EventsInfo.Buff_AbyssalBlessingChange           // 深渊馈赠变化(GameFightLogic.EventForAbyssalBlessingChange 监听→刷新防守核心+全部防守生物属性)
 ```
 
-> **防守属性重算入口 `GameFightLogic.RefreshAllDefenseCreatureAttribute()`**（public，刷新防守核心 + 全部防守魔物 `RefreshBaseAttribute`，由 `EventForAbyssalBlessingChange` 循环抽出）：供动态数值馈赠（当前用于 都是兄弟/杀红了眼，加成率随场上魔物数/累计击杀数变化）在战况变化时重算。两处事件驱动广播：① `EventForGameFightLogicCreatureDeadEnd` 中（魔物/敌人死亡都触发，重算放在 `CheckGameEnd()` **之前**）；② `EventForDefenseCreatureCreate` 监听 `GameFightLogic_DefenseCreatureCreate`（放置/增殖新防守魔物后触发）。均按泛型守卫 `BuffHandler.HasDynamicRateAbyssalBlessing()`（馈赠池含指定类型/子类 BUFF 才广播）避免普通对局无谓开销。详见 abyssal-blessing-system / buff-system SKILL。
+> **防守属性重算入口 `GameFightLogic.RefreshAllDefenseCreatureAttribute()`**（public，刷新防守核心 + 全部防守魔物 `RefreshBaseAttribute`，由 `EventForAbyssalBlessingChange` 循环抽出）：供动态数值馈赠（加成率随场上魔物数/累计击杀数变化；曾用于都是兄弟/杀红了眼，现役无配置、机制留存）在战况变化时重算。两处事件驱动广播：① `EventForGameFightLogicCreatureDeadEnd` 中（魔物/敌人死亡都触发，重算放在 `CheckGameEnd()` **之前**）；② `EventForDefenseCreatureCreate` 监听 `GameFightLogic_DefenseCreatureCreate`（放置/增殖新防守魔物后触发）。均按泛型守卫 `BuffHandler.HasDynamicRateAbyssalBlessing()`（馈赠池含指定类型/子类 BUFF 才广播）避免普通对局无谓开销。详见 abyssal-blessing-system / buff-system SKILL。
 
 ## 常用代码模板
 

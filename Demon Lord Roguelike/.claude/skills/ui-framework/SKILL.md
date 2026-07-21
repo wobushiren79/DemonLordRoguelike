@@ -688,15 +688,16 @@ EventsInfo.Language_Change                // 语言切换
 `Assets/Scripts/Component/UI/Game/CreatureVat/UICreatureVat.cs`，魔物进阶主界面（升稀有度 + 授予稀有度 BUFF）：
 
 - **进阶效果**：目标魔物稀有度 +1，并把开始时即确定的「预定 BUFF」写入 `creatureData.dicRarityBuff[新稀有度]`。
-- **开始进阶即移出阵容**：`OnClickForStart` 确认后除设 `creatureState=Vat` 外，还调 `userData.RemoveLineupCreature(uuid)` 移出阵容（进阶期间不可出战）；完成时 `UserAscendBean.RemoveAscendData` 复位 `Idle`（仍在背包、不自动回阵容）。确认弹窗文案 80010 含「进阶中的魔物将移出阵容」提示。
+- **开始进阶即托管目标魔物**：`OnClickForStart` 确认后由 `UserAscendBean.AddAscendData` 内部收口——置 `creatureState=Vat`、`RemoveBackpackCreature`（连带移出所有阵容）把目标魔物**从背包物理移除**，本体（含装备）嵌入 `UserAscendDetailsBean.creatureData` 托管——进阶期间阵容/魔物管理/献祭/榨汁等背包列表天然不可见不可操作（替代旧方案「仅置 Vat 状态、各 UI 自行筛选」）。完成/取消时 `RemoveAscendData` 复位 `Idle` 并 `AddBackpackCreature` 归还背包（列表末尾、不自动回阵容；无托管生物=旧存档时按 `creatureUUId` 兜底回查复位）。确认弹窗文案 80010 含「进阶中的魔物将移出阵容」提示。
 - **目标列表**：仅 Idle 且未满级（`RarityInfoCfg.GetAscendTimeByRarity(rarity) > 0`，排除 L）。**默认排序**（`InitCreaturekDataForTarget` 内 `List.Sort`）：稀有度升序 N→L，同稀有度按等级降序。
 - **素材列表**：Idle + 排除目标 + 排除上阵（`UserDataBean.CheckIsInAnyLineup`）+ 仅保留稀有度高于目标的魔物；可选上限做成研究 `GetUnlockCreatureVatMaterialMax()`=基础5(`UserLimmitBean.creatureVatMaterialMax`)+`UnlockEnum.CreatureVatMaterialNum`(100000008)等级(满级10)，超出弹 Toast（文本 id 80011）。`LimmitText` 经 `RefreshMaterialLimitText()` 显示「已选/上限」，满时数量转通用警示红 `ColorUtil.WrapLimitFull`。**默认排序**（`InitCreaturekDataForMaterial` 内 `List.Sort`）：目标下一阶段稀有度(=目标稀有度+1)置顶，其余稀有度升序，同稀有度等级降序。
 - **预定 BUFF**：`BuffUtil.CreateAscendRarityBuff(newRarity, materials)`（素材 BUFF 按 id 聚合，每 id 10%×数量 命中概率，命中继承并重随机数值≥素材原值；UR/L 无类型为 null）。
 - **耗时**：按源稀有度查 `RarityInfoCfg.GetAscendTimeByRarity`（excel_rarity_info 新列 `ascend_time`）作 `timeMax`；被动 tick 每秒 +1 秒。**魔晶加速研究门控**：`GetUnlockCreatureVatAddProgressLevel()`(`UnlockEnum.CreatureVatAddProgress`=100000007,level_max=5) 0级隐藏加速按钮；已研究时**恒消耗1魔晶**，等级=进度增加秒数=进度倍率(Lv N=1魔晶+N秒)，按钮文本 80009「加速进阶 +{等级}秒/晶」。
-- **临时进阶数据**：`UserAscendDetailsBean`（随存档序列化）—— `progress` 为「已累积秒数」，含 `targetRarity`/`timeMax`/`ascendBuff`，`IsComplete()` / `GetProgressNormalized()` 驱动完成判定与进度条。
+- **临时进阶数据**：`UserAscendDetailsBean`（随存档序列化）—— `progress` 为「已累积秒数」，含 `creatureUUId`（冗余索引/兜底回查）、`creatureData`（托管的目标生物本体，含装备）、`targetRarity`/`timeMax`/`ascendBuff`，`IsComplete()` / `GetProgressNormalized()` 驱动完成判定与进度条；缸内展示与完成落地均直读 `creatureData`，不回查背包。
 - **进度条配色（`RefreshVatProgress`）**：`ui_ProgressText` 与 `ui_Progress`(fillAmount) 的 `color` 按归一化进度 `ColorUtil.GetProgressColor(progressNormalized)` 分段着色（与献祭成功率同口径）。
 - **存档时机**：开始进阶存一次、点完成存一次；培养过程（`GameDataHandler.HandleForAscendData` 每秒 `AddProgress()` + 广播 `CreatureAscend_AddProgress`、魔晶加速）不主动存档。
 - **测试模式不落盘**：上述两处直接 `SaveUserData()`，不落盘由全局 `GameDataManager.isTestSimulation`（存档层统一拦截）负责——魔物进阶测试（`TestSceneTypeEnum.CreatureVat`）与献祭测试共用该机制，见 test-system skill；本 UI 不再自带测试标记。
+- **开始进阶动画音效（`ScenePrefabForBase.BuildingVatAnimForStart`）**：素材魔物按序号 0.13s 级联错开投入（避开 0.1s 同音效防抖，每只落水各播一次 `AudioEnum.sound_water_3`，最多 10 只时最后一只也在 2s 盖盖前落水）；盖盖播 `AudioEnum.sound_door_2`；水位上升 3s 用 `PlaySoundTimedFade(AudioEnum.sound_water_1, animTimeWater, animTimeWater-0.5f, -1f)` 截断长音效并末段淡出。
 - **完成进阶收尾（`OnClickForComplete`）**：落地数据→`RemoveAscendData`→存档→清空容器后做**反馈**（胜利音效 `AudioEnum.sound_win_1` + 容器处庆祝粒子 `EffectHandler.ShowCreatureAscendCompleteEffect(pos, rarityColor)`——专用粒子 `EffectAscendComplete_1`(白模板 ParticleSystem,运行时按新稀有度 `ui_board_color` 给 startColor 上色 = 稀有度流光) + 成功 Toast `GetTextById(80013)` state=1 绿色，口径同献祭 61007），并**重建目标列表**（`targetCreatureSelect=null`+清素材+`InitCreaturekDataForTarget()`）以反映升阶后的新稀有度，否则列表停留在进阶前状态。
 - **进阶详情 UI（AscendData）**：仅「素材选择阶段（`userAscendDetails==null`）+ 已选目标」时显示 `ui_AscendData`、隐藏 `ui_ProgressContent`（培养阶段反之），统一在 `RefreshAscendData()` 切换。`ui_ProgressContent` 未序列化进 Component，靠运行时 `AutoLinkUI` 按名绑定（同理 `ui_AscendIcon` 误绑 Image 也由 AutoLink 自愈到 Animator）。
   - 升阶前/后卡牌 `ui_UIViewCreatureCardItem_BeforeAscend/_AfterAscend` 用 `CardUseStateEnum.ShowNoPopup` 关 popup；After 卡走 `BuildAscendPreviewCreature(target,newRarity)`（稀有度+1、引用字段共享）；两卡 `PlayCardDropIn` 从上掉落+OutBack 缩放。
@@ -714,6 +715,7 @@ EventsInfo.Language_Change                // 语言切换
 | 2026-06-24 | 新增 UICreatureVat（魔物进阶/培养槽）业务 UI 速记：升稀有度+授予稀有度 BUFF、素材过滤、最多 5 只、耗时按稀有度、临时进阶数据随存档、被动进度 tick | - |
 | 2026-06-27 | UICreatureVat 新增「进阶详情 UI」(AscendData)：素材选择阶段切 ProgressContent↔AscendData、升阶前/后卡牌掉落动画(ShowNoPopup)、AscendIcon 向右戳 Animator、BUFF 增益概率面板(子项 UIViewCreatureVatAscendBuffItem 池化+DOTween)；概率算法 BuffUtil.GetCreatureAscendBuffChances，结构体 CreatureAscendBuffChanceStruct/CreatureAscendMaterialBuffStruct 同放 Assets/Scripts/Struct/CreatureAscendStruct.cs | - |
 | 2026-07-04 | UICreatureVat 完成进阶收尾补齐：① 修复完成后目标列表不刷新(重建 InitCreaturekDataForTarget 反映新稀有度)；② 新增进阶成功反馈——胜利音效 sound_win_1 + 容器庆祝粒子 EffectHandler.ShowCreatureAscendCompleteEffect(pos,rarityColor)——经 Unity MCP execute_code 新建专用 EffectAscendComplete_1(ParticleSystem+软发光贴图+additive材质)并注册 Addressables(组 Effect),运行时按新稀有度 ui_board_color 上色(稀有度流光) + 成功 Toast(新增文本 id 80013) | - |
+| 2026-07-21 | 进阶改为「生物数据托管」：AddAscendData 内置 Vat+RemoveBackpackCreature 把目标魔物从背包物理移除、本体(含装备)嵌入 UserAscendDetailsBean.creatureData，进阶期间各背包列表 UI 天然不可操作（修复旧「仅置状态+各 UI 自筛」漏筛导致的可被献祭/重新上阵）；RemoveAscendData 复位 Idle 并归还背包(旧存档按 creatureUUId 兜底)；ScenePrefabForBase.BuildingVatRefreshItemWithProgress 缸内展示与完成落地改直读 creatureData；OnClickForEnd 取消进阶后补齐重建目标列表(与完成收口一致,归还生物立即可再选) | - |
 
 ---
 

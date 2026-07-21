@@ -3,6 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 public partial class AttackModeInfoBean
 {
+    #region 伤害加成
+    /// <summary>
+    /// 获取伤害加成倍率（配置 damage_add_rate：>0 时最终伤害=攻击者ATK×该值；0/空=无加成按1倍）
+    /// </summary>
+    public float GetDamageAddRate()
+    {
+        return damage_add_rate > 0 ? damage_add_rate : 1f;
+    }
+    #endregion
+
     #region 攻击起始位置偏移
     protected bool isInitStartPosOffset = false;
     protected Vector3 startPosOffset;

@@ -19,7 +19,7 @@ watched_files:
 
 ### 生物管理
 - **CreatureHandler** / **CreatureManager** - 生物逻辑处理与资源管理
-- **CreateDefenseCreatureEntity 末尾推送新事件（事件驱动，不再直接重算）** - 加完新防守魔物 BUFF 后 `EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_DefenseCreatureCreate, fightCreatureEntity)`；由 `GameFightLogic.EventForDefenseCreatureCreate` 监听后按守卫 `BuffHandler.Instance.HasDynamicRateAbyssalBlessing()` 重算全体防守属性，供动态数值馈赠「都是兄弟」（加成率随场上魔物数 N 变化）在放置/增殖新魔物时即时生效。CreatureHandler 只负责生成、推事件，重算职责归 GameFightLogic；守卫仅当馈赠池含指定类型/子类 BUFF 才广播，普通对局无开销。详见 abyssal-blessing-system / buff-system SKILL
+- **CreateDefenseCreatureEntity 末尾推送新事件（事件驱动，不再直接重算）** - 加完新防守魔物 BUFF 后 `EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_DefenseCreatureCreate, fightCreatureEntity)`；由 `GameFightLogic.EventForDefenseCreatureCreate` 监听后按守卫 `BuffHandler.Instance.HasDynamicRateAbyssalBlessing()` 重算全体防守属性，供随魔物数缩放类动态率馈赠（加成率随场上魔物数 N 变化；曾用于「都是兄弟」，现役无配置、机制留存）在放置/增殖新魔物时即时生效。CreatureHandler 只负责生成、推事件，重算职责归 GameFightLogic；守卫仅当馈赠池含指定类型/子类 BUFF 才广播，普通对局无开销。详见 abyssal-blessing-system / buff-system SKILL
 - **CreatureBean** / **CreatureBeanPartial** - 生物数据模型
 - **CreatureAttributeBean** - 生物属性（HP/DR/ATK/ASPD/MSPD/CRT/EVA/RCD 等）
 - **CreatureCardItemBean** - 生物卡片数据

@@ -53,6 +53,7 @@ watched_files:
 - **`batchRayStart`** - 本帧射线批处理命令索引（`>=0` 表示已入队射线，`CheckHitTarget*` 直接读批处理结果；`-1` 走 live 路径）；由 `PrepareRaycast` 每帧重置/赋值
 - **`SpeedRateASPDMax`** - 攻速 ASPD=100 时弹道飞行速度的最大加成倍率常量（当前 3 倍，数值调整入口）；`StartAttack(attacker,...)` 时把攻击者 ASPD 按 0~100 线性插值成 1~该倍率，快照进 `attackModeData.attackerSpeedRate`（与 `attackerDamage`/`attackerCRT` 同一快照模式）
 - **`GetMoveSpeed()`** - 弹道实际飞行速度 = `attackModeInfo.speed_move × attackModeData.attackerSpeedRate`；远程系（Ranged/Arc/Tracking/Split 及其子类）的移动计算必须用它，**禁止**直接读 `attackModeInfo.speed_move`（天降 Fallupon 的下落速度不吃攻速加成，仍直接用配置值）
+- **伤害快照 `attackerDamage`** - `StartAttack(attacker,...)` 时 = 攻击者当前 ATK × 攻击模式配置 `damage_add_rate` 伤害加成倍率（`AttackModeInfoBeanPartial.GetDamageAddRate()`：>0 取该值，0/空按 1 倍）；典型用法是自爆史莱姆（3002/300001）把基础 ATK 压到 10、配 `damage_add_rate`=50 得到 500 伤害，升级加攻收益按倍率放大
 
 ### 拖尾（轨迹）
 
