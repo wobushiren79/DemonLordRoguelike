@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
 using Spine.Unity;
 using Unity.VisualScripting;
 using UnityEditor;
@@ -243,13 +244,143 @@ public partial class GameTestEditor : Editor
             buffSelfAttackTestId = EditorGUILayout.TextField(new GUIContent("进攻方 BUFF", "进攻方携带的 BUFF 测试 ID"), buffSelfAttackTestId);
             buffSelfDefenseTestId = EditorGUILayout.TextField(new GUIContent("防守方 BUFF", "防守方携带的 BUFF 测试 ID"), buffSelfDefenseTestId);
             buffTestId = EditorGUILayout.TextField(new GUIContent("全局攻击 BUFF", "攻击时触发的 BUFF 测试 ID"), buffTestId);
-            abyssalBlessingIds = EditorGUILayout.TextField(new GUIContent("深渊馈赠 IDs", "深渊馈赠 ID 列表，多个用逗号分隔"), abyssalBlessingIds);
+            DrawFightAbyssalBlessingSettings();
             EditorGUILayout.EndVertical();
             EditorGUI.indentLevel--;
         }
 
         EditorGUI.indentLevel--;
         EditorGUILayout.Space(10);
+    }
+
+    /// <summary>
+    /// 绘制战斗测试-深渊馈赠设置(下拉选择馈赠族[显示中文名与效果] + 目标等级)
+    /// </summary>
+    private void DrawFightAbyssalBlessingSettings()
+    {
+        EditorGUILayout.Space(5);
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("深渊馈赠", EditorStyles.boldLabel);
+        if (GUILayout.Button("🔄 刷新列表", GUILayout.Width(90)))
+        {
+            //配置重导后清空选项缓存，下次绘制时重建
+            abyssalBlessingFamilyOptions = null;
+        }
+        if (GUILayout.Button("📂 配置表", GUILayout.Width(80)))
+        {
+            string path = Path.Combine(Application.dataPath, "Data/Excel/excel_abyssal_blessing_info[深渊馈赠信息].xlsx");
+            if (File.Exists(path))
+            {
+                Application.OpenURL("file:///" + path.Replace("\\", "/"));
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("文件未找到", $"找不到深渊馈赠配置表:\n{path}", "确定");
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+
+        //下拉选项懒加载(族根=parent_id==0 的行)
+        EnsureAbyssalBlessingOptions();
+        if (abyssalBlessingFamilyOptions == null || abyssalBlessingFamilyOptions.Length == 0)
+        {
+            EditorGUILayout.HelpBox("未读取到深渊馈赠配置，请检查配置表导出。", MessageType.Warning);
+            return;
+        }
+
+        for (int i = 0; i < abyssalBlessingFightTestList.Count; i++)
+        {
+            var item = abyssalBlessingFightTestList[i];
+            EditorGUILayout.BeginHorizontal();
+            //馈赠族下拉(选项含中文名字与效果)
+            int selectIndex = System.Array.IndexOf(abyssalBlessingFamilyRootIds, item.familyRootId);
+            if (selectIndex < 0) selectIndex = 0;
+            selectIndex = EditorGUILayout.Popup(selectIndex, abyssalBlessingFamilyOptions);
+            item.familyRootId = abyssalBlessingFamilyRootIds[selectIndex];
+            //目标等级(仅升级链族显示；level=0 的可重复馈赠无等级概念)
+            int maxLevel = AbyssalBlessingInfoCfg.GetFamilyMaxLevel(item.familyRootId);
+            if (maxLevel > 0)
+            {
+                EditorGUILayout.LabelField("Lv", GUILayout.Width(20));
+                item.level = EditorGUILayout.IntField(item.level, GUILayout.Width(40));
+                item.level = Mathf.Clamp(item.level, 1, maxLevel);
+            }
+            else
+            {
+                item.level = 0;
+                EditorGUILayout.LabelField("(可重复)", GUILayout.Width(60));
+            }
+            if (GUILayout.Button("🗑️", GUILayout.Width(30)))
+            {
+                abyssalBlessingFightTestList.RemoveAt(i);
+                break;
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("➕ 添加馈赠"))
+        {
+            abyssalBlessingFightTestList.Add(new AbyssalBlessingFightTestItem { familyRootId = abyssalBlessingFamilyRootIds[0], level = 1 });
+        }
+        if (abyssalBlessingFightTestList.Count > 0 && GUILayout.Button("🗑️ 移除最后一个"))
+        {
+            abyssalBlessingFightTestList.RemoveAt(abyssalBlessingFightTestList.Count - 1);
+        }
+        EditorGUILayout.EndHorizontal();
+        if (abyssalBlessingFightTestList.Count > 0)
+        {
+            EditorGUILayout.HelpBox("同一馈赠族添加多行时，后添加的会替换先添加的（同族升级替换机制）。", MessageType.None);
+        }
+    }
+
+    /// <summary>
+    /// 懒加载深渊馈赠下拉选项(族根列表，选项文本含中文名字与效果描述)。
+    /// 中文文本直读 Language_AbyssalBlessingInfo_cn.txt，不切 LanguageCfg 语言——避免 Inspector 绘制时篡改正在运行游戏的语言。
+    /// </summary>
+    private void EnsureAbyssalBlessingOptions()
+    {
+        if (abyssalBlessingFamilyOptions != null) return;
+        var allData = AbyssalBlessingInfoCfg.GetAllData();
+        //加载中文多语言(名字=content，效果=content_1)
+        Dictionary<long, LanguageBean> dicLanguage = LoadAbyssalBlessingLanguageForCn();
+        //按 id 排序保证下拉顺序稳定；族根 = parent_id==0 的行(含 level=0 可重复馈赠 与 level=1 升级链族根)
+        var listInfo = new List<AbyssalBlessingInfoBean>(allData.Values);
+        listInfo.Sort((a, b) => a.id.CompareTo(b.id));
+        var listOptions = new List<GUIContent>();
+        var listRootIds = new List<long>();
+        for (int i = 0; i < listInfo.Count; i++)
+        {
+            var info = listInfo[i];
+            if (info == null || info.parent_id != 0) continue;
+            dicLanguage.TryGetValue(info.name, out LanguageBean nameBean);
+            dicLanguage.TryGetValue(info.details, out LanguageBean detailsBean);
+            //多级族标注可选等级范围，可重复馈赠(level=0)标注[可重复]
+            int maxLevel = AbyssalBlessingInfoCfg.GetFamilyMaxLevel(info.id);
+            string levelHint = maxLevel > 1 ? $"[1~{maxLevel}级] " : (maxLevel == 0 ? "[可重复] " : "");
+            listOptions.Add(new GUIContent($"[{info.id}] {levelHint}{nameBean?.content} - {detailsBean?.content_1}"));
+            listRootIds.Add(info.id);
+        }
+        abyssalBlessingFamilyOptions = listOptions.ToArray();
+        abyssalBlessingFamilyRootIds = listRootIds.ToArray();
+    }
+
+    /// <summary>
+    /// 直读深渊馈赠中文语言表(Language_AbyssalBlessingInfo_cn.txt)，返回 id→语言行 字典；读取失败返回空字典(选项文本退化为 null 占位)
+    /// </summary>
+    private Dictionary<long, LanguageBean> LoadAbyssalBlessingLanguageForCn()
+    {
+        var dicLanguage = new Dictionary<long, LanguageBean>();
+        string path = Path.Combine(Application.dataPath, "Resources/JsonText/Language_AbyssalBlessingInfo_cn.txt");
+        if (!File.Exists(path)) return dicLanguage;
+        var arrayData = JsonConvert.DeserializeObject<LanguageBean[]>(File.ReadAllText(path));
+        if (arrayData == null) return dicLanguage;
+        for (int i = 0; i < arrayData.Length; i++)
+        {
+            if (arrayData[i] != null)
+                dicLanguage[arrayData[i].id] = arrayData[i];
+        }
+        return dicLanguage;
     }
 
     /// <summary>
@@ -847,17 +978,26 @@ public partial class GameTestEditor : Editor
         {
             AttackModeInfoCfg.InitTestData(buffTestId);
         }
-        // 设置深渊馈赠
-        if (!abyssalBlessingIds.IsNull())
+        // 设置深渊馈赠：解析"族根+等级"→具体馈赠行id存入战斗数据，由 GameFightLogicTest 在防守核心创建后统一添加
+        // （不可在此直接调 BuffHandler.AddAbyssalBlessing——战斗场景尚未启动，防守核心未创建，必空引用）
+        fightData.testAbyssalBlessingIds.Clear();
+        for (int i = 0; i < abyssalBlessingFightTestList.Count; i++)
         {
-            long[] arrayAbyssalBlessingIds = abyssalBlessingIds.SplitForArrayLong(',');
-            for (int i = 0; i < arrayAbyssalBlessingIds.Length; i++)
+            var item = abyssalBlessingFightTestList[i];
+            if (item == null) continue;
+            long targetId = item.familyRootId;
+            //升级链族按目标等级取对应行；可重复馈赠(level=0)直接用族根行
+            if (item.level > 0)
             {
-                var itemID = arrayAbyssalBlessingIds[i];
-                AbyssalBlessingInfoBean abyssalBlessingInfo = AbyssalBlessingInfoCfg.GetItemData(itemID);
-                AbyssalBlessingEntityBean abyssalBlessingEntityData = new AbyssalBlessingEntityBean(abyssalBlessingInfo);
-                BuffHandler.Instance.AddAbyssalBlessing(abyssalBlessingEntityData);
+                var levelInfo = AbyssalBlessingInfoCfg.GetItemDataByFamilyLevel(item.familyRootId, item.level);
+                if (levelInfo == null)
+                {
+                    LogUtil.LogWarning($"深渊馈赠测试：族根 {item.familyRootId} 不存在等级 {item.level} 的配置，已跳过");
+                    continue;
+                }
+                targetId = levelInfo.id;
             }
+            fightData.testAbyssalBlessingIds.Add(targetId);
         }
         return fightData;
     }

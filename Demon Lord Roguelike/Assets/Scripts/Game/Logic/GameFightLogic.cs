@@ -67,6 +67,8 @@ public class GameFightLogic : BaseGameLogic
         fightData.fightDefenseCoreCreature = defCoreCreatureEntity;
         //初始化战斗常量数据(开战设定、整场不变的参数统一缓存,避免每帧查表)
         InitFightConstData();
+        //准备游戏-防守核心创建之后(此时可安全操作以防守核心为目标的系统,如深渊馈赠)
+        await PreGameForAfterCreateDefenseCore();
         //开启战斗控制
         GameControlHandler.Instance.SetFightControl();
         //关闭LoadingUI
@@ -88,6 +90,14 @@ public class GameFightLogic : BaseGameLogic
     /// 准备游戏-加载战斗场景之后
     /// </summary>
     public virtual async Task PreGameForAfterLoadFightScene()
+    {
+
+    }
+
+    /// <summary>
+    /// 准备游戏-防守核心创建之后(此时可安全操作以防守核心为目标的系统,如深渊馈赠)
+    /// </summary>
+    public virtual async Task PreGameForAfterCreateDefenseCore()
     {
 
     }
@@ -674,6 +684,8 @@ public class GameFightLogic : BaseGameLogic
     public void EventForAbyssalBlessingChange(AbyssalBlessingEntityBean abyssalBlessingEntity)
     {
         RefreshAllDefenseCreatureAttribute();
+        //刷新魔王身边环绕的深渊馈赠图标（全量对账增删；馈赠变化同帧内先移除旧级再新增新级，此处拿到的是最终状态）
+        fightData?.fightDefenseCoreCreature?.RefreshAbyssalBlessingOrbit();
     }
 
     /// <summary>

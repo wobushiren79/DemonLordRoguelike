@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Mat_Creature_Mana_1
-  m_Shader: {fileID: 4800000, guid: 7fee7f3c65234a14b9da8cb5f6ad77ca, type: 3}
+  m_Name: Mat_Creature_Orbit_1
+  m_Shader: {fileID: 4800000, guid: 0bbbb3854662db74daca2c6ff4b29d2f, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
@@ -26,9 +26,8 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2450
-  stringTagMap:
-    RenderType: TransparentCutout
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
   disabledShaderPasses:
   - DepthOnly
   - SHADOWCASTER
@@ -56,10 +55,15 @@ Material:
         m_Texture: {fileID: 2800000, guid: 20bc93092114cff49b0c99edf7b63930, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 0a3188a98cf031f459a6c916d6af8834, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _AlphaClip: 1
     - _AlphaToMask: 0
+    - _BaseHeight: 0.6
     - _BgFlowLightAngle: 45
     - _BgFlowLightEnable: 1
     - _BgFlowLightSoftness: 0.08
@@ -106,9 +110,16 @@ Material:
     - _FillTimeGradientSpeed: 0.5
     - _FlipbookBlending: 0
     - _FlipbookMode: 0
+    - _FloatAmplitude: 0.06
+    - _FloatFreq: 2
     - _HighlightEnable: 0
+    - _IconSize: 0.22
     - _LitEnable: 0
     - _Mode: 0
+    - _OrbitCount: 0
+    - _OrbitRadius: 0.5
+    - _OrbitSpeed: 40
+    - _OrbitTime: 0
     - _Progress: 0.864
     - _QueueOffset: 0
     - _RadialDirection: 0
@@ -117,6 +128,7 @@ Material:
     - _SoftParticlesEnabled: 0
     - _SoftParticlesFarFadeDistance: 1
     - _SoftParticlesNearFadeDistance: 0
+    - _SpawnDuration: 0.4
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0

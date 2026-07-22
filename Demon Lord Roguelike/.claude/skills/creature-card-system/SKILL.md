@@ -93,7 +93,7 @@ UIViewCreatureCardDetails    // 卡片详情面板
 UIPopupCreatureCardDetails   // 卡片详情弹窗
 ```
 
-> **卡片出现动画统一收口于基类 `AnimForCardShow`**（`UIViewCreatureCardItemAnim.cs` partial）：从目标位下方 -200px 弹入（位移 OutBack + 缩放 1→1.15→1 过冲回弹，逐卡 `index*delayTime` 错开），**落位时每卡各自播放 `AudioEnum.sound_card_1`**。两处使用：① 战斗发牌 `UIViewCreatureCardItemForFightAnim.AnimForCreateShow`（`ClearAnim` → 先 `anchoredPosition = originalCardPos` 归位（`SetData` 只记坐标不动位置）→ 以当前 `localPosition` 为落位目标，透传序列化参数 `animCardCreateDelayTime`/`animCardCreateTimeType2`/`animCardCreateEase`）；② 阵容管理初始化 `UILineupManager.AnimForAllLineupCardPosReset(animType==1)`（传 `timeForLineupCardStagger`/`timeForLineupCardMoveInit`/`Ease.OutBack`，完成回调仍由原计数逻辑汇总）。新增"卡片出现"场景一律调 `AnimForCardShow`，不要另写弹入动画，保证动画与音效一致。
+> **卡片出现动画统一收口于基类 `AnimForCardShow`**（`UIViewCreatureCardItemAnim.cs` partial）：从目标位下方 -200px 弹入（位移 OutBack + 缩放 1→1.15→1 过冲回弹，逐卡 `index*delayTime` 错开），**启动时（错开延迟结束）每卡各自播放 `AudioEnum.sound_card_7`、落位时再各播放 `AudioEnum.sound_card_1`**。两处使用：① 战斗发牌 `UIViewCreatureCardItemForFightAnim.AnimForCreateShow`（`ClearAnim` → 先 `anchoredPosition = originalCardPos` 归位（`SetData` 只记坐标不动位置）→ 以当前 `localPosition` 为落位目标，透传序列化参数 `animCardCreateDelayTime`/`animCardCreateTimeType2`/`animCardCreateEase`）；② 阵容管理初始化 `UILineupManager.AnimForAllLineupCardPosReset(animType==1)`（传 `timeForLineupCardStagger`/`timeForLineupCardMoveInit`/`Ease.OutBack`，完成回调仍由原计数逻辑汇总）。新增"卡片出现"场景一律调 `AnimForCardShow`，不要另写弹入动画，保证动画与音效一致。
 
 > **献祭卡片(`CreatureSacrifice*` 状态 / `UIViewCreatureCardItemForCreatureSacrifice`)的业务流程见 [`sacrifice-system`](../sacrifice-system/SKILL.md) Skill**：祭品选择、成功率公式、献祭升级、保底等机制都在那里；本 Skill 只负责献祭卡片的 UI 表现与状态。
 
@@ -360,7 +360,7 @@ protected void OnConfirmOrderFilter(OrderFilterResultBean result) {
 
 | 功能 | 文件路径 |
 |------|----------|
-| 卡片基类 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItem.cs` + `UIViewCreatureCardItemAnim.cs`(partial：通用出现动画 `AnimForCardShow`，下方弹入回弹+落位播放 `sound_card_1`) |
+| 卡片基类 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItem.cs` + `UIViewCreatureCardItemAnim.cs`(partial：通用出现动画 `AnimForCardShow`，下方弹入回弹+启动播放 `sound_card_7`+落位播放 `sound_card_1`) |
 | 卡片组件声明 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemComponent.cs` |
 | 战斗卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForFight.cs`(主体：生命周期/快捷按键/状态/触摸事件/深渊馈赠展示) + `UIViewCreatureCardItemForFightAnim.cs`(partial：动画参数/Tween 句柄/创建·选择·避让动画 `AnimForCreateShow`(委托基类 `AnimForCardShow`)/`PlaySelectEnterAnim`/`PlaySelectExitAnim`/`PlaySelectKeepAnim`/`PlaySelectKeepReturnAnim`/`ClearAnim`/`KillAnim*`) |
 | 阵容卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForLineup.cs` |

@@ -164,7 +164,7 @@ python .claude/scripts/excel_delete_row.py \
 | 生物随机 | excel_creature_random_info | CreatureRandomInfo | 16 |
 | 终焉议会 | excel_doom_council_info | DoomCouncilInfo | 13 |
 | 议会议员等级 | excel_doom_council_ratings_info | DoomCouncilRatingsInfo | 12 |
-| 粒子效果 | excel_effect_info | EffectInfo | 14 |
+| 粒子效果 | excel_effect_info | EffectInfo | 21 |
 | 战斗场景 | excel_fight_scene | FightScene | 4 |
 | 战斗-征服 | excel_fight_type_conquer_info | FightTypeConquerInfo | 12 |
 | 游戏世界 | excel_game_world_info | GameWorldInfo | 6 |

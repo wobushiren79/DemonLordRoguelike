@@ -75,7 +75,13 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
     public void AddAbyssalBlessing(AbyssalBlessingEntityBean abyssalBlessingEntityData)
     {
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        var defenseCoreCreature = gameLogic.fightData.GetCreatureById("", CreatureFightTypeEnum.FightDefenseCore);
+        //防守核心未创建时(如战斗场景尚未启动)无法挂接馈赠BUFF，跳过并告警，避免空引用
+        var defenseCoreCreature = gameLogic?.fightData?.GetCreatureById("", CreatureFightTypeEnum.FightDefenseCore);
+        if (defenseCoreCreature == null || defenseCoreCreature.fightCreatureData == null)
+        {
+            LogUtil.LogWarning($"AddAbyssalBlessing 失败：防守核心尚未创建，深渊馈赠(id:{abyssalBlessingEntityData?.abyssalBlessingInfo?.id})未添加");
+            return;
+        }
         var defenseCoreCreatureUUID = defenseCoreCreature.fightCreatureData.creatureData.creatureUUId;
         AbyssalBlessingInfoBean abyssalBlessingInfo = abyssalBlessingEntityData.abyssalBlessingInfo;
 

@@ -9735,7 +9735,7 @@ GameObject:
   - component: {fileID: 6951813898554102114}
   - component: {fileID: -8466598712784286570}
   m_Layer: 0
-  m_Name: EffectThunder_1
+  m_Name: Effect_Thunder_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

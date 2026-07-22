@@ -40,6 +40,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1c526a8b7634cee48b9629c8148f72f2
+    m_Address: Assets/LoadResources/Effects/Effect_Thunder_3.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 383f6c615875c884ba6d44c1597ac849
     m_Address: Assets/LoadResources/Effects/Effect_CreatureShow_1.prefab
     m_ReadOnly: 0
@@ -126,12 +131,12 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e4f7abecc4c57254d8e48045035c2812
-    m_Address: Assets/LoadResources/Effects/EffectThunder_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_Thunder_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: f88dd8a06443b614283aab67ead86044
-    m_Address: Assets/LoadResources/Effects/EffectThunder_2.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_Thunder_2.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

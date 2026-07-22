@@ -18,6 +18,8 @@ public partial class EffectManager
     public long effectManaId = 1000001;
     //放置魔物-生成位置魔物登场粒子ID
     public long effectCreatureShowId = 1100001;
+    //落雷粒子ID(Effect_Thunder_3,全局单例高频调用)
+    public long effectThunderId = 900003;
     //攻击弹道拖尾粒子ID(方案2 VFX,Effect_Trail_1;非播放式——EffectHandler 按视觉桶各建一个常驻实例+每帧喂 GraphicsBuffer,不入池不 PlayEffect)
     public long effectAttackModeTrailId = 1600001;
     //飘字(伤害数字)预制体地址
@@ -29,6 +31,7 @@ public partial class EffectManager
     public string resNameAscendAddProgress;
     public string resNameAscendComplete;
     public string resNameAttackModeTrail;
+    public string resNameThunder;
     #endregion
 
     #region 攻击弹道拖尾粒子(方案2 VFX)状态

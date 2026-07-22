@@ -7,7 +7,7 @@ public partial class UIViewCreatureCardItem
 {
     #region 动画相关
     /// <summary>
-    /// 卡片出现动画(由下方弹入:位移 OutBack + 缩放过冲回弹,落位后播放卡片音效,每张卡各自播放)
+    /// 卡片出现动画(由下方弹入:位移 OutBack + 缩放过冲回弹,启动时与落位后各播放一次卡片音效,每张卡各自播放)
     /// </summary>
     /// <param name="targetLocalPos">落位目标本地坐标</param>
     /// <param name="index">卡片序号,用于错开延迟</param>
@@ -22,6 +22,8 @@ public partial class UIViewCreatureCardItem
         rectTransform.localScale = Vector3.one;
         return DOTween.Sequence()
             .AppendInterval(index * delayTime)
+            //错开延迟结束、动画从下方启动时播放卡片音效(每张卡各自播放)
+            .AppendCallback(() => AudioHandler.Instance.PlaySound(AudioEnum.sound_card_7))
             .Append(rectTransform.DOLocalMove(targetLocalPos, moveTime).SetEase(ease))
             .Join(rectTransform.DOScale(1.15f, moveTime * 0.6f).SetEase(Ease.OutQuad))
             .Append(rectTransform.DOScale(1f, moveTime * 0.4f).SetEase(Ease.InOutQuad))

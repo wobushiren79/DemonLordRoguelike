@@ -56,6 +56,7 @@ BuffBaseEntity                              # 抽象基类（事件回调 + Show
 │   └── BuffEntityConditionalCreateCrystal                        # 生成水晶（事件类）
 ├── BuffEntityPeriodic                      # 周期性触发（无次数限制）
 │   ├── BuffEntityPeriodicAttackAgain       # 周期性强制再攻击
+│   ├── BuffEntityPeriodicMultiInstantAttack # 周期性多次瞬时攻击（闪电落雷：触发瞬间快照全场敌人→有放回抽N个目标→第1道立即+后续0.1秒间隔连发，落点AOE伤害=魔王攻击力×trigger_value；class_entity_data="次数,半径"；深渊馈赠「闪电」3000300001~005）
 │   └── BuffEntityPeriodicPickupCrystal     # 周期性自动拾取水晶
 └── BuffEntityPecurrent                     # 周期性触发（有次数限制 = trigger_num）
 ```
@@ -312,6 +313,7 @@ BuffHandler.Instance.AddAbyssalBlessing(blessing);
 
 `AddAbyssalBlessing` 内部按**馈赠表自身的 `parent_id`/`level`**（不是 BUFF 的 `buff_parent_id`/`buff_level`，那是已废弃的旧设计）做同族升级替换：
 - `AbyssalBlessingInfoCfg.GetFamilyRootId(id)` 回溯族根 → `RemoveAbyssalBlessingByRootId` 移除同族旧级 → 解析新级 `buff_ids`(逗号分隔)逐个加到防守核心 → 触发 `Buff_AbyssalBlessingChange`。详见 `abyssal-blessing-system` SKILL「等级链替换机制」。
+- ⚠️ **时序**：必须在防守核心创建后调用（战斗进行中或 `GameFightLogic.PreGameForAfterCreateDefenseCore` 钩子）；此前调用会 `LogWarning` 跳过不添加（核心未创建时曾直接 NRE，已加防御）。
 
 ### 移除 BUFF
 

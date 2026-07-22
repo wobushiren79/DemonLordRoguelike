@@ -300,6 +300,31 @@ foreach (var itemData in GameWorldInfoCfg.GetAllData())
 - **献祭手动成功率**：`CreatureSacrificeLogic.StartSacrifice` 读全局 `isTestSimulation && useManualSuccessRate` 决定是否用手动值掷骰（原 `CreatureSacrificeBean.isTestMode` 已删除，仅保留献祭专属的 `useManualSuccessRate`/`manualSuccessRate`）。
 - **好处**：既是"通用测试数据"，又比逐处 `if(!isTestMode)` 更稳——多一条存档路径也不会漏，还顺带堵住了模拟测试期间基地附带存档误写真实档的隐患。
 
+## 战斗场景测试 (FightSceneTest)
+
+`TestSceneTypeEnum.FightSceneTest` —— 自定义场景/敌人/BUFF/深渊馈赠的战斗测试（含普通模式、单体测试模式、征服模式BOSS关三个子模式）。
+
+### 深渊馈赠测试设置（下拉选择族 + 目标等级）
+
+BUFF 设置区的「深渊馈赠」**不再是手填 ID 文本框**，而是逐行配置：馈赠族下拉（选项显示 `[id] [等级范围] 中文名 - 效果`，中文直读 `Language_AbyssalBlessingInfo_cn.txt`，不切 LanguageCfg 语言避免篡改运行中游戏语言）+ 目标等级（仅升级链族显示，Lv 夹紧 1~`GetFamilyMaxLevel`；`level=0` 可重复馈赠显示"(可重复)"无等级）。配置重导后点「🔄 刷新列表」重建下拉缓存。
+
+```
+GameTestEditor.DrawFightAbyssalBlessingSettings()            // 下拉+等级列表绘制
+    │  EnsureAbyssalBlessingOptions()：族根(parent_id==0)按 id 排序建选项
+    ▼ ▶️ 开始战斗测试
+GameTestEditor.GetTestData()
+    │  逐项解析"族根+等级"→目标行id（升级链走 AbyssalBlessingInfoCfg.GetItemDataByFamilyLevel）
+    │  存入 FightBeanForTest.testAbyssalBlessingIds          // ⚠️ 不在此直接 Add（战斗未启动必空引用）
+    ▼
+GameFightLogicTest.PreGameForAfterCreateDefenseCore()        // 防守核心创建后的钩子
+    │  ① BuffHandler.manager.ClearAbyssalBlessing()           // 清上一场遗留，防可重复馈赠跨场叠加
+    │  ② 逐个 AddAbyssalBlessing(new AbyssalBlessingEntityBean(info))
+```
+
+- **时序铁律**：`BuffHandler.AddAbyssalBlessing` 以防守核心为 BUFF 目标，**必须在防守核心创建后调用**；此前调用会 `LogWarning` 跳过（曾在 `GetTestData()` 直接调导致 NullReferenceException）。测试模式统一走 `GameFightLogicTest.PreGameForAfterCreateDefenseCore`（基类 `GameFightLogic.PreGame` 在 `InitFightConstData()` 后调用的 virtual 钩子）。
+- **重开语义**：测试战斗结算后「下一步」重进战斗仍走同一钩子（清理+重加），故每场战斗馈赠状态一致；同一族配多行时后添加替换先添加（同族升级替换机制，面板有提示）。
+- **持久化**：`abyssalBlessingFightTestList`（族根 id 用 EditorPrefs **字符串**存储，避免 10 位 id 强转 int 溢出）+ `AbyssalBlessingFightTestItem{familyRootId, level}`。
+
 ## 献祭升级测试 (CreatureSacrifice)
 
 `TestSceneTypeEnum.CreatureSacrifice` —— 读取某个**真实存档**的数据，对其中一只生物直接发起献祭升级，便于验证成功率公式/升级成长/保底等，且**不会把结果写回真实存档**（依赖上面的[测试模拟不落盘通用机制](#测试模拟不落盘通用机制)）。
@@ -429,7 +454,7 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 测试启动器 | `Assets/Scripts/Game/Launcher/LauncherTest.cs` |
 | 测试编辑器 | `Assets/Editor/GameTestEditor.cs` + `GameTestEditorPartial.cs` |
 | 测试战斗逻辑 | `Assets/Scripts/Game/Logic/GameFightLogicTest.cs` |
-| 测试战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForTest.cs` |
+| 测试战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForTest.cs`（fightAttackDataRemark 进攻数据备份；testAbyssalBlessingIds 测试馈赠目标行id列表，由 GameFightLogicTest 在防守核心创建后统一添加） |
 | 测试控制台 | `Assets/FrameWork/Scripts/Component/UI/UITestConsole.cs` |
 | 测试基础 UI | `Assets/Scripts/Component/UI/Test/UITestBase.cs` + `UITestBaseComponent.cs` |
 | 卡片测试 UI | `Assets/Scripts/Component/UI/Test/UITestCard.cs` + `UITestCardComponent.cs` |

@@ -49,7 +49,7 @@ GameFightTypeEnum
 ```csharp
 public class GameFightLogic : BaseGameLogic
 {
-    // 1. 准备阶段：加载场景 -> 创建核心生物 -> 开启控制 -> 打开UI
+    // 1. 准备阶段：加载场景 -> 创建核心生物 -> (钩子:核心创建后) -> 开启控制 -> 打开UI
     public override async void PreGame() { }
     
     // 2. 游戏更新：生物生成、生物更新、魔王魔力恢复、BUFF更新
@@ -398,7 +398,7 @@ EventsInfo.GameFightLogic_CreatureDeadDropCrystal // 生物死亡掉落水晶
 EventsInfo.GameFightLogic_CreatureChangeState   // 生物状态改变
 EventsInfo.GameFightLogic_DefenseCreatureCreate // 新建防守魔物实体(参数 FightCreatureEntity；CreatureHandler.CreateDefenseCreatureEntity 生成后推送→GameFightLogic.EventForDefenseCreatureCreate 监听按需重算全体防守属性)
 EventsInfo.Buff_FightCreatureChange             // 战斗生物BUFF改变
-EventsInfo.Buff_AbyssalBlessingChange           // 深渊馈赠变化(GameFightLogic.EventForAbyssalBlessingChange 监听→刷新防守核心+全部防守生物属性)
+EventsInfo.Buff_AbyssalBlessingChange           // 深渊馈赠变化(GameFightLogic.EventForAbyssalBlessingChange 监听→刷新防守核心+全部防守生物属性 + 刷新魔王身边环绕图标 RefreshAbyssalBlessingOrbit)
 ```
 
 > **防守属性重算入口 `GameFightLogic.RefreshAllDefenseCreatureAttribute()`**（public，刷新防守核心 + 全部防守魔物 `RefreshBaseAttribute`，由 `EventForAbyssalBlessingChange` 循环抽出）：供动态数值馈赠（加成率随场上魔物数/累计击杀数变化；曾用于都是兄弟/杀红了眼，现役无配置、机制留存）在战况变化时重算。两处事件驱动广播：① `EventForGameFightLogicCreatureDeadEnd` 中（魔物/敌人死亡都触发，重算放在 `CheckGameEnd()` **之前**）；② `EventForDefenseCreatureCreate` 监听 `GameFightLogic_DefenseCreatureCreate`（放置/增殖新防守魔物后触发）。均按泛型守卫 `BuffHandler.HasDynamicRateAbyssalBlessing()`（馈赠池含指定类型/子类 BUFF 才广播）避免普通对局无谓开销。详见 abyssal-blessing-system / buff-system SKILL。
@@ -416,6 +416,12 @@ public class GameFightLogicCustom : GameFightLogic
     {
         await base.PreGameForAfterLoadFightScene();
         // 自定义初始化...
+    }
+
+    // 2b. 准备阶段-防守核心创建之后(此时可安全操作以核心为目标的系统,如深渊馈赠)
+    public override async Task PreGameForAfterCreateDefenseCore()
+    {
+        // 例：GameFightLogicTest 在此清理并添加测试深渊馈赠
     }
     
     // 3. 重写状态切换
@@ -437,6 +443,8 @@ public class GameFightLogicCustom : GameFightLogic
     }
 }
 ```
+
+> **PreGame 扩展钩子（按时序）**：`PreGameForAfterInitFightSceneCamera`（镜头初始化后）→ `PreGameForAfterLoadFightScene`（战斗场景加载后）→ `PreGameForAfterCreateDefenseCore`（防守核心创建/`InitFightConstData` 后、开启控制前）。需要以防守核心为操作目标（如 `BuffHandler.AddAbyssalBlessing`）时只能用最后一个钩子，更早调用会空引用/被跳过。
 
 ### 遍历场上所有生物
 
@@ -484,7 +492,7 @@ gameLogic.SetGameSpeed(1.0f);                          // 正常速度
 | 战斗生物实体(通用) | `Assets/Scripts/Game/Fight/FightCreatureEntity.cs` |
 | 战斗生物实体(进攻:换路诱导/死亡意图) | `Assets/Scripts/Game/Fight/FightCreatureEntityForAttack.cs` |
 | 战斗生物实体(防守:死亡意图) | `Assets/Scripts/Game/Fight/FightCreatureEntityForDefense.cs` |
-| 战斗生物实体(魔王:魔力MPShow/死亡意图) | `Assets/Scripts/Game/Fight/FightCreatureEntityForDefenseCore.cs` |
+| 战斗生物实体(魔王:魔力MPShow/死亡意图/深渊馈赠环绕图标GPU单Mesh) | `Assets/Scripts/Game/Fight/FightCreatureEntityForDefenseCore.cs` |
 | 战斗预制实体 | `Assets/Scripts/Game/Fight/FightPrefabEntity.cs` |
 | 战斗处理器 | `Assets/Scripts/Component/Handler/FightHandler.cs` |
 | 战斗管理器 | `Assets/Scripts/Component/Manager/FightManager.cs` |

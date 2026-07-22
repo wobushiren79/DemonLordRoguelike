@@ -219,8 +219,14 @@ public partial class FightCreatureEntity
     public MeshRenderer creatureMPShow;                  // 魔力条（MeshRenderer+Quad 新版圆形 MeshProgressBar 材质）
     public TMPro.TextMeshPro creatureMPText;             // 魔力文本（当前/上限）
     public void RefreshMPShow();                         // 刷新魔力显示
+
+    // === 魔王专属-深渊馈赠环绕图标(GPU单Mesh)（FightCreatureEntityForDefenseCore.cs） ===
+    public void InitAbyssalBlessingOrbit();              // 初始化（SetDataForDefenseCore 调用，仅魔王执行；Find 预制下已配好的 AbyssalBlessingOrbit 节点）
+    public void RefreshAbyssalBlessingOrbit();           // 对账刷新（Buff_AbyssalBlessingChange 事件经 GameFightLogic 调用；新馈赠补建/消失移除）
 }
 ```
+
+> 环绕图标实现形态：魔王预制 `FightCreature_DefCore_1` 下的 `AbyssalBlessingOrbit` 节点（MeshRenderer/MeshFilter/材质球编辑器配好）+ 单 Mesh 装 N 个图标 quad，shader 为框架层 `FrameWork/URP/MeshOrbit`（`Assets/FrameWork/Shader/URP/Shader_Mesh_Orbit.shader`）；公转/浮动/入场缩放全在 vertex shader 按 `_Time.y` 匀速计算（不随游戏倍速），1 drawcall、每帧 CPU 零开销；代码只按馈赠列表重建 mesh 顶点（UV 指向图集 `sprite.textureRect`）并经 MaterialPropertyBlock 写 `_MainTex`/`_OrbitCount`（不污染共享材质资产）；mesh 静态共享跨局复用。ZWrite+AlphaClip 保证环绕到魔王身后被身体正确遮挡。
 
 ### 受击流程
 
@@ -440,7 +446,7 @@ Color rarityColor = CreatureUtil.GetRarityColor(creature.rarity);
 | 战斗生物实体(通用) | `Assets/Scripts/Game/Fight/FightCreatureEntity.cs` |
 | 战斗生物实体(进攻) | `Assets/Scripts/Game/Fight/FightCreatureEntityForAttack.cs` |
 | 战斗生物实体(防守) | `Assets/Scripts/Game/Fight/FightCreatureEntityForDefense.cs` |
-| 战斗生物实体(魔王) | `Assets/Scripts/Game/Fight/FightCreatureEntityForDefenseCore.cs` |
+| 战斗生物实体(魔王:MPShow/死亡意图/深渊馈赠环绕图标) | `Assets/Scripts/Game/Fight/FightCreatureEntityForDefenseCore.cs` |
 | 生物处理器 | `Assets/Scripts/Component/Handler/CreatureHandler.cs` |
 | 生物管理器 | `Assets/Scripts/Component/Manager/CreatureManager.cs` |
 | 生物工具 | `Assets/Scripts/Utils/CreatureUtil.cs` |

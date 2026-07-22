@@ -49,6 +49,7 @@ BuffBaseEntity                              # 抽象基类
 │   └── BuffEntityConditionalCreateCrystal                        # 生成水晶
 ├── BuffEntityPeriodic                      # 周期性触发（无次数）
 │   ├── BuffEntityPeriodicAttackAgain       # 周期性再攻击
+│   ├── BuffEntityPeriodicMultiInstantAttack # 周期性多次瞬时攻击（闪电落雷：触发瞬间快照全场敌人→有放回抽N目标→第1道立即+后续0.1秒间隔连发(UpdateBuffTime驱动)，落点AOE=魔王攻击力×trigger_value，仅快照名单受伤；class_entity_data="次数,半径"；馈赠「闪电」3000300001~005）
 │   └── BuffEntityPeriodicPickupCrystal     # 周期性拾取水晶
 └── BuffEntityPecurrent                     # 周期性触发（有次数 = trigger_num）
 ```
@@ -139,7 +140,7 @@ BuffEventDispatcher.dicBindings  # 事件名 → IBuffEventBinding 字典
 - 修改 BUFF 配置字段时改 `BuffInfoBean.cs` 是禁止的（自动生成），所有扩展逻辑写在 `BuffInfoBeanPartial.cs`
 - BUFF 池化复用：`ClearData` 内会注销事件并置空 `buffEntityData`；事件回调需用 `isValid` + null 守卫
 - Instant 类型识别走 `BuffInfoBean.IsInstantBuffEntity()`（基于 Type 继承检查，按实例缓存），**不要用类名前缀判断**
-- 深渊馈赠等级BUFF：通过 `buff_parent_id` + `buff_level` 实现替换升级；新增时 `BuffHandler.AddAbyssalBlessing` 会自动移除旧等级
+- 深渊馈赠等级BUFF：通过 `buff_parent_id` + `buff_level` 实现替换升级；新增时 `BuffHandler.AddAbyssalBlessing` 会自动移除旧等级；**必须在防守核心创建后调用**（战斗中或 `GameFightLogic.PreGameForAfterCreateDefenseCore` 钩子），此前调用 `LogWarning` 跳过不添加
 - 死亡流程：`RemoveFightCreatureBuffs` 前应先 `TriggerEvent(GameFightLogic_CreatureDeadEnd)`，让 `BuffEntityConditionalDead` 有机会完成触发
 - 添加 BUFF 必须经过 `BuffHandler.AddFightCreatureBuff`（处理 createRate、stacking、事件通知），不要直接写 `manager.dicFightCreatureBuffsActivie`
 - 攻击时间修正走专用通道 `BuffHandler.ChangeAttackTimeDataForBuff`（看 `BuffEntityAttributeAttackTime`），不接入属性管线；该方法除生物自身战斗BUFF外，还扫描深渊馈赠池中实现 `IBuffSingleTarget` 的攻速BUFF，按锁定 `SingleTargetCreatureUUId` 单体生效

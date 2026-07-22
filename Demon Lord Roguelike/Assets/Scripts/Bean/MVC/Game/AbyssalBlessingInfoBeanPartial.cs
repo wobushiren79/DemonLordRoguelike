@@ -81,6 +81,23 @@ public partial class AbyssalBlessingInfoCfg
     }
 
     /// <summary>
+    /// 按"族根ID + 等级"获取该升级族指定等级的馈赠配置行；找不到（族不存在/无该等级）返回 null。
+    /// 遍历全表(带 GetFamilyRootId 缓存)，仅供测试工具等低频场景使用。
+    /// </summary>
+    /// <param name="familyRootId">族根馈赠ID（parent_id==0 的那一行）</param>
+    /// <param name="level">目标等级（level==0 的可重复馈赠请直接用族根行）</param>
+    public static AbyssalBlessingInfoBean GetItemDataByFamilyLevel(long familyRootId, int level)
+    {
+        foreach (var info in GetAllData().Values)
+        {
+            if (info == null || info.level != level) continue;
+            if (GetFamilyRootId(info.id) == familyRootId)
+                return info;
+        }
+        return null;
+    }
+
+    /// <summary>
     /// 是否为"单级不可重复"馈赠：level==1 且所属族最高等级也是 1（族内仅此一行、不可升级、选 1 次后不再出现）。
     /// 与"单级可重复"(level==0) 和"多级升级链"(族内 &gt;1 级) 区分开。
     /// 主要用于 UI 判断是否隐藏等级角标。

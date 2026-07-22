@@ -34,7 +34,7 @@ watched_files:
   - **一个等级 = 一行**；同族升级链：lv1 `parent_id=0`，lv2 `parent_id=lv1.id`，lv3 `parent_id=lv2.id`……`level` 从 1 连续递增（`level=0` 为不参与升级链的可重复馈赠）
   - **两个正交维度**：`level`/`parent_id` 管"强度升级链"，`max_count` 管"一局可获得次数"。类型：① 可重复·不限 `level=0,max_count=0`（重复叠加、无角标，如增殖）；② 可重复·限N次 `level=0,max_count=N`（一局最多N次；`N=1` 即"一次性"，现役无实例）；③ 多级升级链 `level=1..N` 链式（逐级升级、显示 LvN，`max_count` 留 0）。**「一次性」用 `level=0+max_count=1`，不再用废弃的 `level=1` 单行族**。次数门控落点 `UIFightAbyssalBlessing.IsCandidateEligible` + `BuffHandler.GetAbyssalBlessingPickCount`。
   - id 约定 10 位（如 `2000001005`，末 3 位=等级序号）
-  - **现役配置（2026-07 精简后）**：仅 8 行 4 族——增殖(1000001001)、奖励多多(1000002001)、再来一瓶(1000003001)、钱多多 5 级链(2000001001~005)。单体定向 4 个（大力出奇迹等 1000004~7xxx）、固定数值 6 族（强身健体等 2000002~7xxx）、动态率 6 族（都是兄弟/杀红了眼 2000008~13xxx）已删除，**C# 基础设施保留**；单行族号 4~7、多级族号 2~13、BUFF 族号 3~8 与 11~20 已释放可复用。
+  - **现役配置**：共 13 行 5 族——增殖(1000001001)、奖励多多(1000002001)、再来一瓶(1000003001)、钱多多 5 级链(2000001001~005)、闪电 5 级链(2000002001~005，首个**周期型**馈赠：BUFF `3000300001~005`=`BuffEntityPeriodicMultiInstantAttack`，`class_entity_data`="次数,半径"，每 3 秒 1~5 道落雷 0.1 秒间隔连发、可重复命中同一目标，落点 0.2~1 半径 AOE，伤害=魔王攻击力×`trigger_value`；落雷粒子全局单例 `Effect_Thunder_3`(900003)→`EffectHandler.ShowThunderEffect`)。单体定向 4 个（大力出奇迹等 1000004~7xxx）、固定数值 6 族（强身健体等 2000002~7xxx）、动态率 6 族（都是兄弟/杀红了眼 2000008~13xxx）已删除，**C# 基础设施保留**；单行族号 4~7、多级族号 3~13、BUFF 族号 4~8 与 11~20 已释放可复用。
 - `AbyssalBlessingInfo.txt` - Excel 导出 JSON（不可单独改）
 - `Language_AbyssalBlessingInfo_{cn,en}.txt` - 多语言
 
@@ -54,12 +54,13 @@ watched_files:
 ### 升级链（核心机制，配置表自身负责）
 - **AbyssalBlessingInfoCfg.GetFamilyRootId(id)** - 沿 `parent_id` 回溯到族根（parent_id==0），防循环 64 层 + 缓存
 - **AbyssalBlessingInfoCfg.GetFamilyMaxLevel(rootId)** - 族内最大 level（带缓存，level==0 不计入）
+- **AbyssalBlessingInfoCfg.GetItemDataByFamilyLevel(rootId, level)** - 按族根+等级取目标行配置（遍历全表带缓存，仅供测试等低频场景；战斗测试的馈赠等级选择即走它）
 - **AbyssalBlessingInfoCfg.IsSingleLevelOnce(info)** - 单级不可重复判定（`level==1` 且 `GetFamilyMaxLevel(族根)==1`），仅用于 UI 隐藏等级角标
 - **AbyssalBlessingInfoBean.IsLevelUp()** - `level > 0`
 - 升级链**由馈赠表 `parent_id`/`level` 定义，与 BUFF 的 buff_parent_id/buff_level 无关**（旧设计已废弃）
 
 ### BUFF 联动
-- **BuffHandler.AddAbyssalBlessing** - 添加馈赠：`GetFamilyRootId` → `RemoveAbyssalBlessingByRootId`(移除同族旧级) → 解析 `buff_ids` 加到防守核心 → 触发事件
+- **BuffHandler.AddAbyssalBlessing** - 添加馈赠：`GetFamilyRootId` → `RemoveAbyssalBlessingByRootId`(移除同族旧级) → 解析 `buff_ids` 加到防守核心 → 触发事件。⚠️ **必须在防守核心创建后调用**（战斗中或 `GameFightLogic.PreGameForAfterCreateDefenseCore` 钩子），此前调用 `LogWarning` 跳过（核心未创建时曾 NRE，已加防御）
 - **BuffHandler.GetAbyssalBlessingOwnedLevel(rootId)** - 查询某族当前拥有等级（传**族根 id**，0=未拥有）
 - **BuffHandler.GetAbyssalBlessingPickCount(rootId)** - 查询某族一局已选取次数（数容器内同族实例数；用于可重复馈赠 `max_count` 候选门控）
 - **BuffHandler.RemoveAbyssalBlessingByRootId(rootId)** - 移除某族的所有馈赠及其 BUFF（升级时用）
@@ -73,7 +74,7 @@ watched_files:
 - **动态数值馈赠（加成率随战况实时算）**：加成率随战况**每次重算属性时动态算**（非配置写死）。BUFF 继承抽象基类 `BuffEntityAttributeDynamicRate : BuffEntityAttribute`（重写 `CollectModifiers`+`ChangeData` 用 `GetDynamicRate()` 替代固定率、仅走 PercentAdd，用于 ATK/DR/HP；`trigger_creature_type=1` 不含核心）；子类为**通用功能类**（按缩放来源命名、不绑馈赠名，可被其它同功能馈赠复用）。⚠️ **现役无配置**：原 6 族（都是兄弟/杀红了眼，各 3 属性，每族 5 级共 30 行）已于 2026-07 删除，`HasDynamicRateAbyssalBlessing()` 当前恒 false、广播不触发；基础设施保留可复用：
   - 随场上魔物数缩放（全体）：`BuffEntityAttributeScaleByDefenseCount`(data=ATK/DR/HP)，`rate=(场上存活防守魔物数N-1)×trigger_value_rate`（N 数 `dlDefenseCreatureEntity.List` 中 `!IsDead()`，N≤1 为 0）。曾用于都是兄弟（馈赠 id 2000008~10xxx，BUFF 30015~17xxx，图标 120~122，均已删/段已释放）。
   - 随击杀数缩放（**单体定向**，兼 `IBuffSingleTarget`）：`BuffEntityAttributeScaleByKillCount`(data=ATK/DR/HP)，选取时 `SetData` 用 `GetRandomDefenseCreatureUUId()` 随机锁定一只，`rate=fightRecordsData.GetRecordsForCreatureData(锁定UUID,false)?.killNum×trigger_value_rate`（仅魔物击杀；killNum 按 `creatureUUId` 持久累积，跨关卡保留）。过滤由 `FightCreatureBean.CollectFromBuffList` 的 `IBuffSingleTarget` 落点自动完成。曾用于杀红了眼（馈赠 id 2000011~13xxx，BUFF 30018~20xxx，图标 123~125，均已删/段已释放）。
-  - 每级 `trigger_value_rate=0.01~0.05`（每只/每杀 +1%~5%）；语言 BUFF 用 `{Percentage}` 占位、馈赠逐级写死。**当前 id 进度**（2026-07 精简后）：现役深渊馈赠 BUFF 段（`buff_type=3`）→ `3000100001`、`3000200001~005`、`3000900001`、`3001000001`；BUFF 族号 3~8、11~20 与馈赠族号 2~13 已释放。
+  - 每级 `trigger_value_rate=0.01~0.05`（每只/每杀 +1%~5%）；语言 BUFF 用 `{Percentage}` 占位、馈赠逐级写死。**当前 id 进度**：现役深渊馈赠 BUFF 段（`buff_type=3`）→ `3000100001`、`3000200001~005`、`3000300001~005`（闪电）、`3000900001`、`3001000001`；BUFF 族号 4~8、11~20 与馈赠族号 3~13 已释放。
   - **广播重算（rate 变化才生效，事件驱动）**：泛型守卫 `BuffHandler.HasDynamicRateAbyssalBlessing()`（通用：馈赠池含指定类型/子类 BUFF 才广播，避免普通对局开销）+ 入口 `GameFightLogic.RefreshAllDefenseCreatureAttribute()`（public，刷新防守核心+全体防守魔物 `RefreshBaseAttribute`，由原 `EventForAbyssalBlessingChange` 循环抽出）。两处广播：① `GameFightLogic.EventForGameFightLogicCreatureDeadEnd`（死亡→N变/击杀数变，重算放在 `CheckGameEnd()` 之前）；② `CreatureHandler.CreateDefenseCreatureEntity` 末尾**推送新事件** `EventsInfo.GameFightLogic_DefenseCreatureCreate`（参数 FightCreatureEntity）→ `GameFightLogic.EventForDefenseCreatureCreate` 监听后按守卫广播（放置/增殖；CreatureHandler 只生成、推事件，重算职责归 GameFightLogic）。继承 `BuffEntityAttribute`，天然被卡片展示/`GetAttribute(true)` 判定通过，无需改判定（全体类全显示；单体定向类因兼 `IBuffSingleTarget`，仅在锁定那只魔物卡上显示图标）。
 
 ### 事件

@@ -33,7 +33,16 @@ public partial class GameTestEditor
     public string buffSelfAttackTestId = "";
     public string buffSelfDefenseTestId = "";
     public string buffTestId = "";
-    public string abyssalBlessingIds = "";
+    // 战斗测试-深渊馈赠测试项(馈赠族根id + 目标等级)
+    public class AbyssalBlessingFightTestItem
+    {
+        public long familyRootId;
+        public int level = 1;
+    }
+    public List<AbyssalBlessingFightTestItem> abyssalBlessingFightTestList = new List<AbyssalBlessingFightTestItem>();
+    // 深渊馈赠下拉选项缓存(不持久化，懒加载；配置重导后可点「刷新列表」重建)
+    private GUIContent[] abyssalBlessingFamilyOptions;
+    private long[] abyssalBlessingFamilyRootIds;
     public List<long> abyssalBlessingTestIds = new List<long>();
     public List<long> enemyIds = new List<long>() { 1010010001 };
     public long doomCouncilBillId = 1000000001;
@@ -95,6 +104,8 @@ public partial class GameTestEditor
     private const string ENEMY_IDS_COUNT_KEY = PREFS_KEY_PREFIX + "enemyIdsCount";
     private const string ABYSSAL_BLESSING_TEST_IDS_KEY = PREFS_KEY_PREFIX + "abyssalBlessingTestIds";
     private const string ABYSSAL_BLESSING_TEST_IDS_COUNT_KEY = PREFS_KEY_PREFIX + "abyssalBlessingTestIdsCount";
+    private const string ABYSSAL_BLESSING_FIGHT_TEST_KEY = PREFS_KEY_PREFIX + "abyssalBlessingFightTest";
+    private const string ABYSSAL_BLESSING_FIGHT_TEST_COUNT_KEY = PREFS_KEY_PREFIX + "abyssalBlessingFightTestCount";
 
     private void OnEnable()
     {
@@ -136,7 +147,7 @@ public partial class GameTestEditor
         buffTestId = EditorPrefs.GetString(PREFS_KEY_PREFIX + "buffTestId", "");
 
         // 深渊馈赠
-        abyssalBlessingIds = EditorPrefs.GetString(PREFS_KEY_PREFIX + "abyssalBlessingIds", "");
+        LoadAbyssalBlessingFightTestList();
         LoadAbyssalBlessingTestIds();
 
         // 终焉议会
@@ -197,7 +208,7 @@ public partial class GameTestEditor
         EditorPrefs.SetString(PREFS_KEY_PREFIX + "buffTestId", buffTestId);
 
         // 深渊馈赠
-        EditorPrefs.SetString(PREFS_KEY_PREFIX + "abyssalBlessingIds", abyssalBlessingIds);
+        SaveAbyssalBlessingFightTestList();
         SaveAbyssalBlessingTestIds();
 
         // 终焉议会
@@ -264,6 +275,32 @@ public partial class GameTestEditor
         {
             long id = EditorPrefs.GetInt(ABYSSAL_BLESSING_TEST_IDS_KEY + "_" + i, 0);
             abyssalBlessingTestIds.Add(id);
+        }
+    }
+
+    /// <summary>
+    /// 持久化战斗测试的深渊馈赠列表(族根id用字符串存储，避免10位id强转int溢出)
+    /// </summary>
+    private void SaveAbyssalBlessingFightTestList()
+    {
+        EditorPrefs.SetInt(ABYSSAL_BLESSING_FIGHT_TEST_COUNT_KEY, abyssalBlessingFightTestList.Count);
+        for (int i = 0; i < abyssalBlessingFightTestList.Count; i++)
+        {
+            EditorPrefs.SetString(ABYSSAL_BLESSING_FIGHT_TEST_KEY + "_id_" + i, abyssalBlessingFightTestList[i].familyRootId.ToString());
+            EditorPrefs.SetInt(ABYSSAL_BLESSING_FIGHT_TEST_KEY + "_lv_" + i, abyssalBlessingFightTestList[i].level);
+        }
+    }
+
+    private void LoadAbyssalBlessingFightTestList()
+    {
+        int count = EditorPrefs.GetInt(ABYSSAL_BLESSING_FIGHT_TEST_COUNT_KEY, 0);
+        abyssalBlessingFightTestList.Clear();
+        for (int i = 0; i < count; i++)
+        {
+            string idStr = EditorPrefs.GetString(ABYSSAL_BLESSING_FIGHT_TEST_KEY + "_id_" + i, "0");
+            long.TryParse(idStr, out long familyRootId);
+            int level = EditorPrefs.GetInt(ABYSSAL_BLESSING_FIGHT_TEST_KEY + "_lv_" + i, 1);
+            abyssalBlessingFightTestList.Add(new AbyssalBlessingFightTestItem { familyRootId = familyRootId, level = level });
         }
     }
 }

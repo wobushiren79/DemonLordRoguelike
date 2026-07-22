@@ -332,6 +332,37 @@ public partial class EffectHandler
     }
     #endregion
 
+    #region 落雷粒子(全局单例PS)
+    /// <summary>
+    /// 播放落雷粒子：移动全局唯一实例到落雷点并重播。
+    /// <para>重播用 Stop(StopEmitting)+Play：保活前几道雷的存活粒子只停发射，Play 重置系统时间重新触发爆发，
+    /// 支持 0.1 秒间隔连发多道雷交叠；要求粒子为世界空间模拟(Effect_Thunder_3 已配 moveWithTransform=1)。</para>
+    /// </summary>
+    /// <param name="targetPos">落雷点世界坐标</param>
+    public void ShowThunderEffect(Vector3 targetPos)
+    {
+        //播放粒子
+        Action<EffectBase> playEffect = (targetEffect) =>
+        {
+            if (targetEffect == null)
+                return;
+            targetEffect.transform.position = targetPos;
+            //停发射保活已有粒子，再重播触发新一轮爆发(playing状态直接Play不会重新触发)
+            if (targetEffect.mainPS != null)
+            {
+                targetEffect.mainPS.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            }
+            targetEffect.PlayEffect();
+        };
+
+        //获取粒子实例
+        manager.GetEffectForEnduring(GetEffectResName(manager.effectThunderId, ref manager.resNameThunder), (targetEffect) =>
+        {
+            playEffect?.Invoke(targetEffect);
+        });
+    }
+    #endregion
+
     #region 飘字(伤害数字)粒子
     /// <summary>
     /// 播放数字粒子(伤害/闪避/HP/护甲飘字)：从缓存池取或实例化→上色→DOTween 上飘淡出→归还缓存池

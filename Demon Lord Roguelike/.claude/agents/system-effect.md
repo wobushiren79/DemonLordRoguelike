@@ -20,6 +20,7 @@ watched_files:
 - **EffectManager** - 特效资源管理 [FrameWork/Scripts/Component/Manager/EffectManager.cs](Assets/FrameWork/Scripts/Component/Manager/EffectManager.cs)
   - **加载/播放**：`GetEffect`(一次性)、`GetEffectForEnduring`(持久,按 res_name 取单例实例)——均实例化+入池+需预制挂 `EffectBase`。
   - **仅取模型**：`GetEffectModelSync(res_name)` 返回 Effects 目录下的模型预制(缓存 `dicEffectModel`)，**不实例化/不入池/不需要 EffectBase**——供需要自管常驻 `VisualEffect` 实例的粒子用(目前仅攻击弹道拖尾方案2)。游戏层特效仍走 id→res_name(`EffectInfoCfg`)配置，如血液 `effectBloodId`、拖尾 `effectAttackModeTrailId`(=1600001,Effect_Trail_1)。
+  - **游戏层全局单例粒子**（[EffectHandler.cs](Assets/Scripts/Component/Handler/EffectHandler.cs)/[EffectManager.cs](Assets/Scripts/Component/Manager/EffectManager.cs) 游戏层 partial）：血液 `ShowBloodEffect`(VFX,1200001)、护盾打击 `ShowShieldHitEffect`(VFX,1300001)、落雷 `ShowThunderEffect`(PS,`effectThunderId`=900003,`Effect_Thunder_3`)。均走 `GetEffectForEnduring` 单例 + 定位 + `PlayEffect` 重播。⚠️ PS 单例重播要点(落雷)：playing 状态直接 `Play()` 不会重新触发爆发，须先 `mainPS.Stop(true, StopEmitting)`(保活已发射粒子) 再 `Play()`，支持 0.1 秒间隔连发交叠；粒子必须**世界空间模拟**(prefab `moveWithTransform=1`)，否则移动实例会拖走上一发的残留粒子。
 
 ### 攻击弹道拖尾粒子(方案2 VFX)——非播放式常驻粒子
 与血液/护盾**同样的分工**(调用方只给语义数据，粒子的实例/参数/缓冲全归 Effect 系统)，但形态特殊：**不入池、不 `PlayEffect`**，而是每个弹道视觉桶(visualKey)常驻一个 VFX 实例，由**每帧喂 `GraphicsBuffer`** 驱动喷射。

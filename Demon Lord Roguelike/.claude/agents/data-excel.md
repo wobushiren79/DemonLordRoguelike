@@ -167,7 +167,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
 | `excel_abyssal_blessing_info[深渊馈赠信息].xlsx` | AbyssalBlessingInfo | 8 | id, icon_res, parent_id, level, buff_ids, name[language], details[language], remark, valid(0无效1有效,生成器据此过滤), max_count(一局最多获得次数,0=不限,仅 level<=0 生效) |
-| `excel_effect_info[粒子信息].xlsx` | EffectInfo | 18 | id, res_name, show_type, show_time, float/int/long/vector3/vector4_data |
+| `excel_effect_info[粒子信息].xlsx` | EffectInfo | 21 | id, res_name, show_type, show_time, float/int/long/vector3/vector4_data |
 | `excel_game_world_info[游戏世界信息].xlsx` | GameWorldInfo | 4 | id, icon_res, unlock_id, unlock_id_infinite/conquer_difficulty_level/quick_attack/speed2, map_pos, name[language] |
 | `excel_level_info[等级信息].xlsx` | LevelInfo | 12 | id, level_exp, sacrifice_num, attribute_point(升级获得加点数,当前全等级配置5), CMP_rate(魔力召唤增加倍率,按等级递增) |
 | `excel_rarity_info[稀有度].xlsx` | RarityInfo | 8 | id, ui_board_color, buff_color, item_add_relationship, name[language], CMP_rate(魔力召唤增加倍率,N=0依次+0.5) |

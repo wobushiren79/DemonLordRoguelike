@@ -27,6 +27,11 @@ watched_files:
 PreGame → StartGame → UpdateGame → EndGame → ClearGame
 ```
 
+### PreGame 扩展钩子（按时序，virtual 空实现供子类重写）
+1. `PreGameForAfterInitFightSceneCamera` - 战斗镜头初始化后
+2. `PreGameForAfterLoadFightScene` - 战斗场景加载后
+3. `PreGameForAfterCreateDefenseCore` - 防守核心创建/`InitFightConstData` 后、开启控制前；**需要以防守核心为操作目标时（如 BuffHandler.AddAbyssalBlessing）只能用此钩子**（更早调用核心未创建会失败/被跳过）。例：`GameFightLogicTest` 在此清理并添加测试深渊馈赠
+
 ### 关键文件
 
 | 文件 | 路径 |
@@ -55,6 +60,7 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 
 ### 防守属性重算（深渊馈赠联动）
 - `RefreshAllDefenseCreatureAttribute()`（public）- 刷新防守核心 + 全部防守魔物 `RefreshBaseAttribute`（由原 `EventForAbyssalBlessingChange` 的循环抽出，后者改为调它）。供动态数值馈赠（加成率随场上魔物数/累计击杀数变化；曾用于都是兄弟/杀红了眼，现役无配置、机制留存）在战况变化时重算属性。
+- `EventForAbyssalBlessingChange(AbyssalBlessingEntityBean)` - 监听 `EventsInfo.Buff_AbyssalBlessingChange`：① 调 `RefreshAllDefenseCreatureAttribute()` 重算属性；② 调 `fightDefenseCoreCreature.RefreshAbyssalBlessingOrbit()` 刷新魔王身边环绕的馈赠图标（全量对账增删，升级替换先删后加天然兼容）。环绕机制详见 FightCreatureEntityForDefenseCore.cs「魔王-深渊馈赠环绕图标(GPU单Mesh)」region。
 - `EventForGameFightLogicCreatureDeadEnd` 中按守卫广播：`if (BuffHandler.Instance.HasDynamicRateAbyssalBlessing()) RefreshAllDefenseCreatureAttribute();`——魔物死亡（随魔物数缩放类 N 减少）/敌人死亡（随击杀数缩放类计数增加）都重算全体防守，且**该重算放在 `CheckGameEnd()` 之前**（先处理死亡带来的属性变化，再检测游戏结束）。守卫用 O(1) 缓存 `HasDynamicRateAbyssalBlessing()`（读 BuffManager 缓存布尔，在 AddAbyssalBlessing 选取动态率馈赠时单调置 true、ClearAbyssalBlessing 复位）避免普通对局开销，热路径不遍历池。
 - `EventForDefenseCreatureCreate(FightCreatureEntity)` - 监听 `EventsInfo.GameFightLogic_DefenseCreatureCreate`（由 `CreatureHandler.CreateDefenseCreatureEntity` 生成新防守魔物后推送），按同一守卫广播 `RefreshAllDefenseCreatureAttribute()`，使随魔物数缩放类馈赠随放置/增殖魔物 N 增大即时生效。即 CreatureHandler 只负责生成、推事件，重算职责归 GameFightLogic。详见 abyssal-blessing-system / buff-system SKILL。
 
