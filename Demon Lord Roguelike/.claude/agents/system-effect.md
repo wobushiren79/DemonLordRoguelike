@@ -7,6 +7,8 @@ watched_files:
   - Assets/FrameWork/Scripts/Component/Manager/EffectManager.cs
   - Assets/FrameWork/Scripts/Component/Effect/EffectBase.cs
   - Assets/FrameWork/Scripts/Component/UI/BaseEffectView.cs
+  - Assets/Scripts/Component/Handler/EffectHandler.cs
+  - Assets/Scripts/Component/Manager/EffectManager.cs
 ---
 
 # 特效系统 (Effect System) 开发代理
@@ -33,6 +35,10 @@ watched_files:
 - **⚠️Begin→Flush 每帧必须走完**，即使本帧一发子弹都没有——Flush 会把 `PositionCount` 归零，否则子弹死光后 VFX 会在残留位置持续喷粒子。
 - **⚠️参数作用域**：配置表侧只有 `color` 逐弹生效(经 `ColorBuffer`)；`count`/`interval`/`startAlpha`/`endAlpha` **已不再从配置表读**(见上条，写死在本类常量)。
 - **降级**：模板资源缺失时桶仍登记、每帧照常收集但不建实例(拖尾静默不显示，弹体本体与方案1 不受影响)；`triedLoadAttackModeTrailModel` 保证每场至多试加载一次，避免 Addressables 缺 key 逐桶抛异常刷屏。
+
+### 飘字(伤害数字)——GPU Instancing 批量渲染
+落点：[EffectHandler.cs](Assets/Scripts/Component/Handler/EffectHandler.cs) `ShowTextNumEffect`(类型 0普通/1闪避/2暴击/3HP/4护甲，颜色字段在 [EffectManager.cs](Assets/Scripts/Component/Manager/EffectManager.cs) `colorDamage` 等；闪避显示 0)，转发 `FightTextInstanceRenderer`(`FightManager.fightTextInstanceRenderer`，纯 C# 类，`FightHandler.Update` 每帧 `RenderAll()`)。原理与弹道渲染器同思路(DSP 式)：每条飘字按**字符**拆实例槽(诞生时一次算好 锚点矩阵+格序索引+颜色+出生时刻)，每帧一次 `DrawMeshInstanced` 画完(≤512 字符槽，槽满丢新保旧)；上浮/淡出/弹跳全在 shader 用 `_Time.y-_TextTime` 时间驱动——无 TMP、无 DOTween、热路径零 GC(旧 TMP GameObject 对象池方案已删除)。shader = [Shader_Mesh_TextInstanced_1.shader](Assets/FrameWork/Shader/URP/Shader_Mesh_TextInstanced_1.shader)(`FrameWork/URP/MeshTextInstanced1`)；**图集约定**：等分格(行列数=材质面板 `_AtlasCols`/`_AtlasRows`，默认 4×4)、第 0 格左上、格序=`atlasChars`("0123456789" 纯数字)，表外字符跳过；C# 逐实例只灌格序索引，UV 由 shader 按材质行列数解算(改材质即生效)；**格子宽高比修正**：单格非正方形时按格子像素比(格宽/格高)横向补偿(C# `cellAspect` 每秒刷新)，字形不被拉伸。当前预制=[FightText_1.prefab](Assets/LoadResources/Common/FightText_1.prefab)(Quad+Mat_FightText_1，图集 10×1)；排版居中、锚点沿相机右轴排开，暴击字号 ×1.5。战斗结束 `ClearTextNumEffect` 清在屏字符槽(渲染器/材质跨场复用)。
+- **装配门控**：`TrySetupTextNumInstanced` 整场至多试一次(`EffectManager.triedSetupTextNumInstanced`，与拖尾 `triedLoadAttackModeTrailModel` 同门控)；预制缺失/仍是 TMP 结构/缺 MeshFilter/MeshRenderer 时报错不装配。
 
 ### 特效基础类
 - **EffectBase** - 特效基类 [FrameWork/Scripts/Component/Effect/EffectBase.cs](Assets/FrameWork/Scripts/Component/Effect/EffectBase.cs)

@@ -14,6 +14,8 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
         UpdateHandleForAttackModePrefab();
         UpdateHandleForFightPrefab();
         UpdateHandleTimeCountDown();
+        //DSP 式批量绘制在屏飘字(伤害数字)：字符级实例一次 DrawMeshInstanced；未 Setup 网格/材质时零副作用
+        manager.fightTextInstanceRenderer.RenderAll();
     }
 
     #region  Update更新

@@ -355,6 +355,8 @@ public partial class UIFightMain : BaseUIComponent
 
 > 弹道(攻击模块)渲染：`FightManager.attackModeInstanceRenderer`（DSP 式 GPU Instancing 批量渲染器）在 `FightHandler.UpdateHandleForAttackModePrefab` 阶段4 `RenderAll` 批量绘制在途弹道，按 `visual_name` 分桶(与 `prefab_name` 原预制渲染独立)，常开但 visual_name 空/未注册桶零副作用。弹道位置真实源为 `BaseAttackMode.position`。**细节见 attack-mode-system skill**。
 
+> 飘字(伤害数字)渲染：`FightManager.fightTextInstanceRenderer`（同思路的 DSP 式批量渲染器，实例粒度=字符）在 `FightHandler.Update` 顶层每帧 `RenderAll` 一次 `DrawMeshInstanced` 画完在屏飘字，动画全在 shader 时间驱动；由 `EffectHandler.ShowTextNumEffect` 装配转发。**细节见 system-effect agent**。
+
 ### 掉落水晶
 
 ```csharp

@@ -52,6 +52,7 @@ watched_files:
 | 战斗生物实体(防守专属) | Assets/Scripts/Game/Fight/FightCreatureEntityForDefense.cs |
 | 战斗生物实体(魔王专属:魔力MPShow/死亡意图/深渊馈赠环绕图标GPU单Mesh) | Assets/Scripts/Game/Fight/FightCreatureEntityForDefenseCore.cs |
 | 预制体实体 | Assets/Scripts/Game/Fight/FightPrefabEntity.cs |
+| 飘字批量渲染器(伤害数字 instanced) | Assets/Scripts/Game/Fight/FightTextInstanceRenderer.cs |
 | 魔物描边高亮跟随 | Assets/Scripts/Game/Fight/CreatureSpineOutlineFollow.cs |
 | 场景基类 | Assets/Scripts/Component/Game/Scene/ScenePrefabBase.cs |
 | 战斗控制 | Assets/Scripts/Component/Game/Control/ControlForGameFight.cs |
@@ -61,6 +62,10 @@ watched_files:
 ## 弹道渲染接线（DSP GPU Instancing）
 
 `FightManager` 持有 `attackModeInstanceRenderer`（`AttackModeInstanceRenderer`，DSP 式弹道批量渲染器）；`FightHandler.UpdateHandleForAttackModePrefab` 在射线批处理/逻辑推进之后追加**阶段4** `RenderAll(listAttackMode)` 批量绘制在途弹道。按视觉桶签名(`visual_name` + ShowSprite 换图 + 自旋细分子桶)分桶(与 `prefab_name` 原预制渲染独立)，常开但 visual_name 空/未注册桶零副作用。**细节与约束以 attack-mode-system skill / game-attack-mode agent 为准**，本代理只需知道这条接线存在。
+
+## 飘字渲染接线（DSP GPU Instancing）
+
+`FightManager` 另持有 `fightTextInstanceRenderer`（`FightTextInstanceRenderer`，飘字/伤害数字批量渲染器，与弹道渲染器同思路）：`FightHandler.Update` 顶层每帧 `RenderAll()` 一次 `DrawMeshInstanced` 画完在屏字符（实例粒度=字符，≤512 槽），动画全在 shader 时间驱动。由 `EffectHandler.ShowTextNumEffect` 装配转发（预制缺 MeshFilter+MeshRenderer 或仍挂 TextMeshPro 时报错不显示；旧 TMP 对象池方案已删除）；shader = `FrameWork/URP/MeshTextInstanced1`，图集行列数由材质 `_AtlasCols`/`_AtlasRows` 决定(默认 4×4)、格序=`atlasChars`("0123456789" 纯数字)；闪避显示 0。**细节以 system-effect agent 为准**，本代理只需知道这条接线存在。
 
 ## 游戏速度（2倍速）对实体的要求
 

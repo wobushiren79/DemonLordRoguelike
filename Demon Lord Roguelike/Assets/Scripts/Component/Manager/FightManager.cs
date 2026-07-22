@@ -20,6 +20,8 @@ public class FightManager : BaseManager
     public FightRaycastBatch raycastBatch = new FightRaycastBatch();
     //攻击模块(弹道)GPU Instancing 批量渲染器(DSP 式"记录位置一起绘制")，按 visual_name 分桶；常开但 visual_name 空/未注册桶零副作用
     public AttackModeInstanceRenderer attackModeInstanceRenderer = new AttackModeInstanceRenderer();
+    //飘字(伤害数字)GPU Instancing 批量渲染器(字符级实例一次 DrawMeshInstanced，动画全在 shader 时间驱动)；未 Setup 网格/材质时零副作用
+    public FightTextInstanceRenderer fightTextInstanceRenderer = new FightTextInstanceRenderer();
 
     //战斗逻辑缓存（避免热路径每次 GetGameLogic 反射查找）
     private GameFightLogic cachedGameFightLogic;

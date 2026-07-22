@@ -365,69 +365,37 @@ public partial class EffectHandler
 
     #region 飘字(伤害数字)粒子
     /// <summary>
-    /// 播放数字粒子(伤害/闪避/HP/护甲飘字)：从缓存池取或实例化→上色→DOTween 上飘淡出→归还缓存池
+    /// 播放数字粒子(伤害/闪避/HP/护甲飘字)：转发给 GPU Instancing 批量渲染器(FightTextInstanceRenderer，字符级实例一次
+    /// DrawMeshInstanced、动画全在 shader 时间驱动)；首次调用时按 effectTextNumberName 预制装配(整场至多试一次)。
     /// </summary>
     /// <param name="targetPos">飘字起始的世界坐标</param>
-    /// <param name="number">显示的数值(闪避类型忽略)</param>
+    /// <param name="number">显示的数值(闪避类型传 0，显示 0)</param>
     /// <param name="type">类型 0普通伤害 1闪避 2暴击伤害 3HP增加 4护甲增加</param>
     /// <param name="randomPosOffset">起始位置随机偏移范围</param>
     public void ShowTextNumEffect(Vector3 targetPos, int number, int type, float randomPosOffset = 0.2f)
     {
-        // 从缓存池获取或实例化
-        GameObject textObj = null;
-        if (manager.queueTextNumPool.Count > 0)
+        FightTextInstanceRenderer textRenderer = FightHandler.Instance.manager.fightTextInstanceRenderer;
+        if (!textRenderer.IsReady)
         {
-            textObj = manager.queueTextNumPool.Dequeue();
-            textObj.ShowObj(true);
-        }
-        else
-        {
-            GameObject objModel = null;
-            if (!manager.dicTextNumModel.TryGetValue(manager.effectTextNumberName, out objModel))
-            {
-                objModel = LoadAddressablesUtil.LoadAssetSync<GameObject>(manager.effectTextNumberName);
-                if (objModel != null)
-                    manager.dicTextNumModel.Add(manager.effectTextNumberName, objModel);
-            }
-            if (objModel == null)
-            {
-                LogUtil.LogError($"飘字预制体加载失败：{manager.effectTextNumberName}");
+            if (manager.triedSetupTextNumInstanced)
+                return; //已装配失败过(预制缺失/结构不符)，不再重试
+            manager.triedSetupTextNumInstanced = true;
+            TrySetupTextNumInstanced(textRenderer);
+            if (!textRenderer.IsReady)
                 return;
-            }
-            textObj = Instantiate(objModel);
-            //记录到总表，便于战斗结束时统一清理
-            manager.listTextNumAll.Add(textObj);
         }
 
-        // 清除可能残留的Tween
-        textObj.transform.DOKill();
-        textObj.transform.localScale = Vector3.one;
-
-        TextMeshPro textMesh = textObj.GetComponent<TextMeshPro>();
-        if (textMesh == null)
-        {
-            LogUtil.LogError($"飘字预制体缺少TextMeshPro组件：{manager.effectTextNumberName}");
-            Destroy(textObj);
-            return;
-        }
-        textMesh.DOKill();
-
-        // 确定颜色、大小、文本
-        Color targetColor = Color.white;
-        float targetTextSize = 2f;
+        Color targetColor = manager.colorDamage;
+        float targetScale = textRenderer.textScaleNormal;
         string textContent = number.ToString();
         switch (type)
         {
-            case 0: // 普通伤害
-                targetColor = manager.colorDamage;
-                break;
-            case 1: // 闪避
+            case 1: // 闪避(显示0，调用方传 number=0)
                 targetColor = manager.colorDamageEVA;
-                textContent = "闪避";
                 break;
             case 2: // 暴击伤害
                 targetColor = manager.colorDamageCRT;
-                targetTextSize = 3f;
+                targetScale = textRenderer.textScaleCrit;
                 break;
             case 3: // HP增加
                 targetColor = manager.colorHPAdd;
@@ -436,53 +404,49 @@ public partial class EffectHandler
                 targetColor = manager.colorDRAdd;
                 break;
         }
-
-        // 设置随机起始位置
-        Vector3 startPos = RandomUtil.GetRandomVector3(targetPos, randomPosOffset);
-        textObj.transform.position = startPos;
-
-        // 设置文本和样式
-        textMesh.text = textContent;
-        textMesh.color = targetColor;
-        textMesh.fontSize = targetTextSize;
-        textMesh.alpha = 1f;
-
-        // DG.Tweening动画：向上飘动 + 淡出 + 缩放弹出
-        Sequence sequence = DOTween.Sequence();
-        sequence.Append(textObj.transform.DOMoveY(startPos.y + 0.5f, 1f).SetEase(Ease.OutQuad));
-        sequence.Join(textMesh.DOFade(0f, 0.8f).SetEase(Ease.InQuad));
-        sequence.Join(textObj.transform.DOScale(1.2f, 0.15f).SetLoops(2, LoopType.Yoyo));
-
-        sequence.OnComplete(() =>
-        {
-            textMesh.DOKill();
-            textObj.transform.DOKill();
-            textMesh.alpha = 1f;
-            textObj.transform.localScale = Vector3.one;
-            textObj.ShowObj(false);
-            manager.queueTextNumPool.Enqueue(textObj);
-        });
+        textRenderer.ShowText(targetPos, textContent, targetColor, targetScale, randomPosOffset);
     }
 
     /// <summary>
-    /// 清理所有飘字粒子（战斗结束时调用）
+    /// 把飘字预制装配进 GPU Instancing 渲染器：加载预制(缓存 dicTextNumModel)，取其 MeshFilter 的 mesh 与
+    /// MeshRenderer 的 material 调用 <see cref="FightTextInstanceRenderer.Setup"/>。
+    /// 预制必须是「MeshFilter(Quad)+MeshRenderer(instanced材质)」结构；仍是 TMP 结构或缺组件时报错不装配
+    /// (整场至多试一次，triedSetupTextNumInstanced 门控，与拖尾 VFX 的 triedLoadAttackModeTrailModel 同理)。
+    /// </summary>
+    protected void TrySetupTextNumInstanced(FightTextInstanceRenderer textRenderer)
+    {
+        if (!manager.dicTextNumModel.TryGetValue(manager.effectTextNumberName, out GameObject objModel) || objModel == null)
+        {
+            objModel = LoadAddressablesUtil.LoadAssetSync<GameObject>(manager.effectTextNumberName);
+            if (objModel != null)
+                manager.dicTextNumModel[manager.effectTextNumberName] = objModel;
+        }
+        if (objModel == null)
+        {
+            LogUtil.LogError($"飘字预制体加载失败：{manager.effectTextNumberName}");
+            return;
+        }
+        if (objModel.GetComponentInChildren<TextMeshPro>() != null)
+        {
+            LogUtil.LogError($"飘字预制体仍是 TMP 结构(已废弃)，请改用 Quad+instanced 材质：{manager.effectTextNumberName}");
+            return;
+        }
+        MeshFilter meshFilter = objModel.GetComponentInChildren<MeshFilter>();
+        MeshRenderer meshRenderer = objModel.GetComponentInChildren<MeshRenderer>();
+        if (meshFilter == null || meshFilter.sharedMesh == null || meshRenderer == null || meshRenderer.sharedMaterial == null)
+        {
+            LogUtil.LogError($"飘字预制体缺少 MeshFilter/MeshRenderer：{manager.effectTextNumberName}");
+            return;
+        }
+        textRenderer.Setup(meshFilter.sharedMesh, meshRenderer.sharedMaterial);
+    }
+
+    /// <summary>
+    /// 清理所有飘字(战斗结束时调用)：清 instanced 飘字在屏字符槽(渲染器本体与材质引用保留，跨场复用)
     /// </summary>
     public void ClearTextNumEffect()
     {
-        for (int i = 0; i < manager.listTextNumAll.Count; i++)
-        {
-            var textObj = manager.listTextNumAll[i];
-            if (textObj == null)
-                continue;
-            //停止可能残留的Tween
-            textObj.transform.DOKill();
-            TextMeshPro textMesh = textObj.GetComponent<TextMeshPro>();
-            if (textMesh != null)
-                textMesh.DOKill();
-            Destroy(textObj);
-        }
-        manager.listTextNumAll.Clear();
-        manager.queueTextNumPool.Clear();
+        FightHandler.Instance.manager.fightTextInstanceRenderer.Clear();
     }
     #endregion
 

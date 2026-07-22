@@ -22,8 +22,8 @@ public partial class EffectManager
     public long effectThunderId = 900003;
     //攻击弹道拖尾粒子ID(方案2 VFX,Effect_Trail_1;非播放式——EffectHandler 按视觉桶各建一个常驻实例+每帧喂 GraphicsBuffer,不入池不 PlayEffect)
     public long effectAttackModeTrailId = 1600001;
-    //飘字(伤害数字)预制体地址
-    public string effectTextNumberName = "Assets/LoadResources/Effects/EffectTextNumber_2.prefab";
+    //飘字(伤害数字)预制体地址(FightText_1：Quad+instanced材质 → GPU Instancing 新路径；换为 TMP 结构预制则自动回退旧对象池路径)
+    public string effectTextNumberName = "Assets/LoadResources/Common/FightText_1.prefab";
 
     //res_name 缓存：高频/常用粒子首次按 id 查表解析后缓存到字段，后续直接读字段避免重复查配置表
     public string resNameBlood;
@@ -45,12 +45,10 @@ public partial class EffectManager
     #endregion
 
     #region 飘字(伤害数字)缓存与颜色
-    // 飘字模型缓存
+    // 飘字预制缓存(instanced 装配时加载一次)
     public Dictionary<string, GameObject> dicTextNumModel = new Dictionary<string, GameObject>();
-    // 飘字对象缓存池
-    public Queue<GameObject> queueTextNumPool = new Queue<GameObject>();
-    // 飘字对象总表（含使用中与缓存池），用于战斗结束时统一清理
-    public List<GameObject> listTextNumAll = new List<GameObject>();
+    //是否已尝试把飘字预制装配进 instanced 渲染器：与 triedLoadAttackModeTrailModel 同门控——预制缺失/结构不符即不再重试
+    public bool triedSetupTextNumInstanced = false;
 
     //普通伤害颜色
     public Color colorDamage = new Color(1f, 0.647f, 0);

@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4e4873fa3b09740478c31219d0d8ebe0
+    m_Address: Assets/LoadResources/Common/FightText_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 5aafe8a0c98d1e741a8c73e1268aea5b
     m_Address: Assets/LoadResources/Common/ControlData.prefab
     m_ReadOnly: 0
