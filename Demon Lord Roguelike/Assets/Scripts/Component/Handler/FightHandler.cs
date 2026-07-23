@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using DG.Tweening;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 using Spine.Unity;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Logical;
@@ -16,6 +15,9 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
         UpdateHandleTimeCountDown();
         //DSP 式批量绘制在屏飘字(伤害数字)：字符级实例一次 DrawMeshInstanced；未 Setup 网格/材质时零副作用
         manager.fightTextInstanceRenderer.RenderAll();
+        //DSP 式批量更新+绘制在屏魔晶：掉落/飞回抛物线 CPU 参数化推进，多批 DrawMeshInstanced；未 Setup 时零副作用
+        manager.fightDropCrystalInstanceRenderer.Update();
+        manager.fightDropCrystalInstanceRenderer.RenderAll();
     }
 
     #region  Update更新
@@ -222,59 +224,14 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
 
     #region  战斗场景物品
     /// <summary>
-    /// 创建掉落魔晶
+    /// 创建掉落魔晶(DSP 批量渲染,零 GameObject/零碰撞体/零 DOTween;渲染器未就绪时零副作用并已在装配阶段报错)
     /// </summary>
     public void CreateDropCrystal(FightDropCrystalBean fightDropCrystal)
     {
-        manager.GetDropCrystalPrefab((targetPrefab) =>
-        {
-            targetPrefab.valueInt = fightDropCrystal.crystalNum;
-            targetPrefab.lifeTime = fightDropCrystal.lifeTime;
-            if (targetPrefab.spriteRenderer == null)
-            {
-                Transform rendererTF = targetPrefab.gameObject.transform.Find("Renderer");
-                if (rendererTF != null)
-                {
-                    targetPrefab.spriteRenderer = rendererTF.GetComponent<SpriteRenderer>();
-                }
-            }
-            if (targetPrefab.collider == null)
-            {
-                targetPrefab.collider = targetPrefab.gameObject.GetComponent<BoxCollider>();
-            }
-
-            if (targetPrefab.spriteRenderer != null)
-            {
-                //设置于摄像头角度持平
-                var mainCamera = CameraHandler.Instance.manager.mainCamera;
-                targetPrefab.spriteRenderer.transform.eulerAngles = mainCamera.transform.eulerAngles;
-            }
-            if (targetPrefab.collider != null)
-            {
-                targetPrefab.collider.enabled = false;
-            }
-
-            //播放一个掉落动画
-            float randomX = UnityEngine.Random.Range(-0.5f, 0.5f);
-            float randomZ = UnityEngine.Random.Range(-0.5f, 0.5f);
-            Vector3 endPos = new Vector3(fightDropCrystal.dropPos.x + randomX, fightDropCrystal.dropPos.y + 0.1f, fightDropCrystal.dropPos.z + randomZ);
-            Vector3 startPos = fightDropCrystal.dropPos + new Vector3(0, 0.5f, 0);
-            // 使用DOPath创建抛物线移动动画
-            targetPrefab.gameObject.transform.position = startPos;
-            targetPrefab.gameObject.transform
-                .DOJump(endPos, 0.3f, 2, 0.8f)
-                .SetEase(Ease.Linear)// 设置动画的缓动效果
-                .OnComplete(() =>
-                {
-                    targetPrefab.SetState(GameFightPrefabStateEnum.DropCheck);
-                    if (targetPrefab.collider != null)
-                    {
-                        targetPrefab.collider.enabled = true;
-                    }
-                });
-            //移除掉落数据到缓存
-            manager.RemoveFightDropCrystalBean(fightDropCrystal);
-        });
+        manager.EnsureDropCrystalVisual();
+        manager.fightDropCrystalInstanceRenderer.AddCrystal(fightDropCrystal.dropPos, fightDropCrystal.crystalNum, fightDropCrystal.lifeTime);
+        //掉落数据回收入池
+        manager.RemoveFightDropCrystalBean(fightDropCrystal);
     }
 
     /// <summary>

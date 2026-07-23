@@ -9,8 +9,8 @@ using UnityEngine.Rendering;
 /// 此后每帧整批一次 Graphics.DrawMeshInstanced 画完，上浮/淡出/弹跳动画全部由 shader 用 _Time.y - _TextTime 时间驱动
 /// (与弹体自旋 _RotateSpeed 同思路)，CPU 零每帧更新、零 TMP、零 DOTween、热路径零 GC。</para>
 /// <para>【实例粒度 = 字符】一个实例 = 一个字符 quad，"12345" = 5 个实例。同屏上限 <see cref="MaxInstances"/> 个字符槽
-/// (注意是字符粒度不是条数)，一次 draw call 画完(512 远低于 DrawMeshInstanced 单批 1023 硬限制)。槽满时丢弃新字符(保旧)：
-/// 旧槽寿命将尽很快自然让位；若反向丢旧，在屏数字会半途凭空消失、比新数字出不来更刺眼。</para>
+/// (注意是字符粒度不是条数)，一次 draw call 画完(512 远低于 DrawMeshInstanced 单批 1023 硬限制)。槽满时【整条】丢弃新飘字(保旧)：
+/// 半截数字比整条不显示更误导(玩家会把 "12" 当完整伤害)；旧槽寿命将尽很快自然让位；若反向丢旧，在屏数字会半途凭空消失、比新数字出不来更刺眼。</para>
 /// <para>【剔除】实例矩阵含真实世界位置，逐实例视锥剔除按矩阵×mesh.bounds 正常工作
 /// (shader 内上浮仅 ~0.5 世界单位且锚点贴近被击者，剔除误差方向安全，可忽略)。</para>
 /// <para>【图集制作约定(美术按此画 _BaseMap)】等分格子(行列数 = 材质面板 _AtlasCols/_AtlasRows，默认 4×4)，
@@ -67,11 +67,16 @@ public class FightTextInstanceRenderer
     private float lifeTime = 1f;
     //活跃字符槽(无序，过期 swap-back 移除)
     private readonly List<TextCharSlot> listSlot = new List<TextCharSlot>(MaxInstances);
-    //本帧绘制缓冲(定长复用，热路径零分配)
+    //本帧绘制缓冲(定容复用，热路径零分配)；逐实例标量缓冲用 List——MPB 的 List 重载只上传 Count 个元素，
+    //避免定长 512 数组每帧整份托管→native 拷贝(矩阵缓冲保持数组：DrawMeshInstanced 本身就只读前 count 个)
     private readonly Matrix4x4[] matrixBuffer = new Matrix4x4[MaxInstances];
-    private readonly float[] indexBuffer = new float[MaxInstances];
-    private readonly Vector4[] colorBuffer = new Vector4[MaxInstances];
-    private readonly float[] timeBuffer = new float[MaxInstances];
+    private readonly List<float> indexBuffer = new List<float>(MaxInstances);
+    private readonly List<Vector4> colorBuffer = new List<Vector4>(MaxInstances);
+    private readonly List<float> timeBuffer = new List<float>(MaxInstances);
+    //ShowNumber 拆位复用缓冲(int 取绝对值最长 10 位，热路径零分配)
+    private readonly char[] digitBuffer = new char[10];
+    //槽集脏标记:填槽/剔除过期槽时置位;无变化帧复用 MPB 旧内容直接绘制,跳过整轮填充+上传(槽数据全静态,动画全在 shader)
+    private bool dirty;
     //共享 MPB(承载逐实例数组；⚠️必须运行时懒建，禁止字段初始化器 new——同 AttackModeInstanceRenderer.sharedMPB 的 CreateImpl 教训)
     private MaterialPropertyBlock sharedMPB;
     //逐实例属性 ID(避免每帧字符串查找)
@@ -83,7 +88,7 @@ public class FightTextInstanceRenderer
     private static readonly int PropBaseMap = Shader.PropertyToID("_BaseMap");
     private static readonly int PropAtlasCols = Shader.PropertyToID("_AtlasCols");
     private static readonly int PropAtlasRows = Shader.PropertyToID("_AtlasRows");
-    //格子像素宽高比缓存(格宽/格高)：图集单格非正方形时的横向修正，ShowText 低频刷新(1 秒)，编辑器调材质即时可见
+    //格子像素宽高比缓存(格宽/格高)：图集单格非正方形时的横向修正，PrepareLayout 低频刷新(1 秒)，编辑器调材质即时可见
     private float cellAspect = 1f;
     private float cellAspectRefreshTime = -1f;
     //主相机缓存(排版右轴用；相机销毁后 Unity 假空自动触发重查)
@@ -92,7 +97,7 @@ public class FightTextInstanceRenderer
 
     #region 注册与清理
     /// <summary>
-    /// 是否已注册网格与材质(未注册时 ShowText/RenderAll 零副作用)。
+    /// 是否已注册网格与材质(未注册时 ShowText/ShowNumber/RenderAll 零副作用)。
     /// </summary>
     public bool IsReady => mesh != null && material != null;
 
@@ -119,6 +124,7 @@ public class FightTextInstanceRenderer
     #region 飘字生成
     /// <summary>
     /// 生成一条飘字：按字符拆成实例槽(整条居中排版，字符锚点沿相机右轴排开)，动画由 shader 时间驱动，调用后即不管。
+    /// <para>槽位不足时【整条丢弃】(保旧)——半截数字比整条不显示更误导(玩家会把 "12" 当完整伤害)。</para>
     /// </summary>
     /// <param name="basePos">飘字基准世界坐标(整条居中点)</param>
     /// <param name="text">显示文本(字符须收录于 atlasChars，未收录字符跳过)</param>
@@ -129,13 +135,105 @@ public class FightTextInstanceRenderer
     {
         if (!IsReady || string.IsNullOrEmpty(text))
             return;
+        //预检容量:收录字符数超出剩余槽位则整条丢弃(保旧),不放"半截数字"上屏
+        int needCount = 0;
+        for (int i = 0; i < text.Length; i++)
+        {
+            if (atlasChars.IndexOf(text[i]) >= 0)
+                needCount++;
+        }
+        if (listSlot.Count + needCount > MaxInstances)
+            return;
+        LayoutContext ctx = PrepareLayout(basePos, text.Length, color, charScale, randomPosOffset);
+        int placed = 0;
+        for (int i = 0; i < text.Length; i++)
+        {
+            //字符未收录 → 跳过该字符(后续字符补位，排版略缩进，可接受)
+            if (TryPlaceChar(ctx, text[i], placed))
+                placed++;
+        }
+        if (placed > 0)
+            dirty = true;
+    }
+
+    /// <summary>
+    /// 生成一条数字飘字(零分配热路径)：int 反复除 10 拆位进复用缓冲，全程不经 string——伤害/治疗数字专用。
+    /// <para>负数只显示数字部分(负号本就不在默认字符表内，与旧 string 路径表现一致)；槽位不足时同样整条丢弃。</para>
+    /// </summary>
+    /// <param name="basePos">飘字基准世界坐标(整条居中点)</param>
+    /// <param name="number">显示的数值(每位数字须收录于 atlasChars)</param>
+    /// <param name="color">染色(5 类颜色由调用方按类型给)</param>
+    /// <param name="charScale">字符缩放(quad 边长世界单位)</param>
+    /// <param name="randomPosOffset">基准位置随机偏移范围</param>
+    public void ShowNumber(Vector3 basePos, int number, Color color, float charScale, float randomPosOffset = 0.2f)
+    {
+        if (!IsReady)
+            return;
+        //拆位到缓冲尾部(long 中转防 -int.MinValue 溢出；do-while 保证 0 也出一位 '0')
+        long n = number;
+        if (n < 0)
+            n = -n;
+        int pos = digitBuffer.Length;
+        do
+        {
+            digitBuffer[--pos] = (char)('0' + n % 10);
+            n /= 10;
+        } while (n > 0);
+        int digitCount = digitBuffer.Length - pos;
+        //预检容量(同 ShowText：整条要么全显示要么不显示)
+        int needCount = 0;
+        for (int i = pos; i < digitBuffer.Length; i++)
+        {
+            if (atlasChars.IndexOf(digitBuffer[i]) >= 0)
+                needCount++;
+        }
+        if (listSlot.Count + needCount > MaxInstances)
+            return;
+        LayoutContext ctx = PrepareLayout(basePos, digitCount, color, charScale, randomPosOffset);
+        int placed = 0;
+        for (int i = pos; i < digitBuffer.Length; i++)
+        {
+            if (TryPlaceChar(ctx, digitBuffer[i], placed))
+                placed++;
+        }
+        if (placed > 0)
+            dirty = true;
+    }
+
+    /// <summary>
+    /// 一次飘字的排版上下文：<see cref="PrepareLayout"/> 一次算好，逐字符填槽复用。
+    /// </summary>
+    private struct LayoutContext
+    {
+        //排版右轴(相机世界右轴)
+        public Vector3 rightWS;
+        //随机偏移后的基准锚点(整条居中点)
+        public Vector3 anchorBase;
+        //字符宽(含格子宽高比修正)/字符高
+        public float charWidth;
+        public float charScale;
+        //相邻字符锚点间距
+        public float advance;
+        //首字符相对基准的居中偏移
+        public float startOffset;
+        //染色(a 恒 1，留扩展)
+        public Vector4 colorV;
+        //出生时刻(Time.timeSinceLevelLoad 基准，与 shader _Time.y 同源)
+        public float spawnTime;
+    }
+
+    /// <summary>
+    /// 排版预备：相机右轴/随机锚点/格子宽高比修正(1 秒节流)/字距/居中偏移/染色/出生时刻一次算好，供逐字符填槽。
+    /// </summary>
+    private LayoutContext PrepareLayout(Vector3 basePos, int textLength, Color color, float charScale, float randomPosOffset)
+    {
+        LayoutContext ctx;
         //排版右轴取相机世界右轴(roll=0 时恒水平)，使字符排列方向与 billboard 展开右轴严格平行
         if (cachedMainCam == null)
             cachedMainCam = Camera.main;
-        Vector3 rightWS = cachedMainCam != null ? cachedMainCam.transform.right : Vector3.right;
-
-        Vector3 anchorBase = RandomUtil.GetRandomVector3(basePos, randomPosOffset);
-        float spawnTime = Time.timeSinceLevelLoad;
+        ctx.rightWS = cachedMainCam != null ? cachedMainCam.transform.right : Vector3.right;
+        ctx.anchorBase = RandomUtil.GetRandomVector3(basePos, randomPosOffset);
+        ctx.spawnTime = Time.timeSinceLevelLoad;
         //格子宽高比修正(1 秒刷新一次)：图集单格非正方形(如 8×12 像素)时，正方形 quad 会把字形横向拉伸，
         //故字符宽 = 字符高 × 格宽/格高，字距同步按修正后字宽排——缺贴图/参数时 cellAspect=1 不修正
         if (Time.timeSinceLevelLoad - cellAspectRefreshTime >= 1f)
@@ -143,27 +241,30 @@ public class FightTextInstanceRenderer
             cellAspectRefreshTime = Time.timeSinceLevelLoad;
             cellAspect = CalculateCellAspect();
         }
-        float charWidth = charScale * cellAspect;
-        float advance = charWidth * charSpacingRatio;
+        ctx.charScale = charScale;
+        ctx.charWidth = charScale * cellAspect;
+        ctx.advance = ctx.charWidth * charSpacingRatio;
         //整条水平居中：首字符相对基准的偏移
-        float startOffset = -(text.Length - 1) * advance * 0.5f;
-        Vector4 colorV = new Vector4(color.r, color.g, color.b, color.a);
+        ctx.startOffset = -(textLength - 1) * ctx.advance * 0.5f;
+        ctx.colorV = new Vector4(color.r, color.g, color.b, color.a);
+        return ctx;
+    }
 
-        int placed = 0;
-        for (int i = 0; i < text.Length; i++)
-        {
-            if (!TryGetCharIndex(text[i], out int charIndex))
-                continue; //字符未收录 → 跳过该字符(后续字符补位，排版略缩进，可接受)
-            if (listSlot.Count >= MaxInstances)
-                return; //槽满丢弃剩余字符(保旧，见类头注)
-            TextCharSlot slot;
-            slot.matrix = BuildCharMatrix(anchorBase + rightWS * (startOffset + placed * advance), charWidth, charScale);
-            slot.charIndex = charIndex;
-            slot.color = colorV;
-            slot.spawnTime = spawnTime;
-            listSlot.Add(slot);
-            placed++;
-        }
+    /// <summary>
+    /// 尝试填入一个字符槽：字符未收录于 atlasChars 时返回 false(跳过不显示，调用方不占排版位)。
+    /// <para>调用前已按"整条所需字符数"预检容量(ShowText/ShowNumber)，故此处不再查槽满。</para>
+    /// </summary>
+    private bool TryPlaceChar(LayoutContext ctx, char c, int placed)
+    {
+        if (!TryGetCharIndex(c, out int charIndex))
+            return false;
+        TextCharSlot slot;
+        slot.matrix = BuildCharMatrix(ctx.anchorBase + ctx.rightWS * (ctx.startOffset + placed * ctx.advance), ctx.charWidth, ctx.charScale);
+        slot.charIndex = charIndex;
+        slot.color = ctx.colorV;
+        slot.spawnTime = ctx.spawnTime;
+        listSlot.Add(slot);
+        return true;
     }
 
     /// <summary>
@@ -213,8 +314,9 @@ public class FightTextInstanceRenderer
 
     #region 每帧渲染入口
     /// <summary>
-    /// 每帧调用(FightHandler.Update)：剔除寿终槽 → 整批填充绘制缓冲 → 一次 DrawMeshInstanced 画完所有在屏字符。
-    /// <para>未 Setup 网格/材质时零副作用直接返回；无活跃槽时只剔除不绘制。</para>
+    /// 每帧调用(FightHandler.Update)：剔除寿终槽 → 槽集有变化才填充绘制缓冲并上传 MPB → 一次 DrawMeshInstanced 画完所有在屏字符。
+    /// <para>槽数据全静态(动画全在 shader 时间驱动)，无变化帧复用 MPB 旧内容直接绘制，填充/上传全跳过；
+    /// 未 Setup 网格/材质时零副作用直接返回；无活跃槽时只剔除不绘制。</para>
     /// </summary>
     public void RenderAll()
     {
@@ -229,27 +331,39 @@ public class FightTextInstanceRenderer
                 int last = listSlot.Count - 1;
                 listSlot[i] = listSlot[last];
                 listSlot.RemoveAt(last);
+                dirty = true;
             }
         }
         int count = listSlot.Count;
         if (count == 0)
             return;
-        //填充本帧绘制缓冲(槽数据全静态，纯拷贝)
-        for (int i = 0; i < count; i++)
-        {
-            TextCharSlot slot = listSlot[i];
-            matrixBuffer[i] = slot.matrix;
-            indexBuffer[i] = slot.charIndex;
-            colorBuffer[i] = slot.color;
-            timeBuffer[i] = slot.spawnTime;
-        }
         //懒建 MPB(禁止字段初始化器 new，见字段注释)
         if (sharedMPB == null)
+        {
             sharedMPB = new MaterialPropertyBlock();
-        //数组按定长 512 整份上传(超出 count 的部分被忽略)，与弹体桶 _VelocityWS 同理
-        sharedMPB.SetFloatArray(PropTextIndex, indexBuffer);
-        sharedMPB.SetVectorArray(PropTextColor, colorBuffer);
-        sharedMPB.SetFloatArray(PropTextTime, timeBuffer);
+            dirty = true;
+        }
+        //槽集无变化帧:填充+上传全跳过,MPB 旧内容仍与槽一一对应(槽只增删于 ShowText/ShowNumber/上方剔除,均会置脏)
+        if (dirty)
+        {
+            dirty = false;
+            //填充本帧绘制缓冲(槽数据全静态，纯拷贝；List 预分配容量 512，Clear+Add 零分配)
+            indexBuffer.Clear();
+            colorBuffer.Clear();
+            timeBuffer.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                TextCharSlot slot = listSlot[i];
+                matrixBuffer[i] = slot.matrix;
+                indexBuffer.Add(slot.charIndex);
+                colorBuffer.Add(slot.color);
+                timeBuffer.Add(slot.spawnTime);
+            }
+            //按实际 count 上传(List 重载只拷贝 Count 个元素，非定长 512 整份)
+            sharedMPB.SetFloatArray(PropTextIndex, indexBuffer);
+            sharedMPB.SetVectorArray(PropTextColor, colorBuffer);
+            sharedMPB.SetFloatArray(PropTextTime, timeBuffer);
+        }
         //单批一次 draw；不投阴影不受影(同弹体桶——满屏飘字的阴影无意义还多走一遍 ShadowCaster Pass)
         Graphics.DrawMeshInstanced(mesh, 0, material, matrixBuffer, count,
             sharedMPB, ShadowCastingMode.Off, false, 0, null, LightProbeUsage.Off, null);

@@ -53,6 +53,7 @@ watched_files:
 | 战斗生物实体(魔王专属:魔力MPShow/死亡意图/深渊馈赠环绕图标GPU单Mesh) | Assets/Scripts/Game/Fight/FightCreatureEntityForDefenseCore.cs |
 | 预制体实体 | Assets/Scripts/Game/Fight/FightPrefabEntity.cs |
 | 飘字批量渲染器(伤害数字 instanced) | Assets/Scripts/Game/Fight/FightTextInstanceRenderer.cs |
+| 魔晶批量渲染器(掉落魔晶 instanced) | Assets/Scripts/Game/Fight/FightDropCrystalInstanceRenderer.cs |
 | 魔物描边高亮跟随 | Assets/Scripts/Game/Fight/CreatureSpineOutlineFollow.cs |
 | 场景基类 | Assets/Scripts/Component/Game/Scene/ScenePrefabBase.cs |
 | 战斗控制 | Assets/Scripts/Component/Game/Control/ControlForGameFight.cs |
@@ -65,7 +66,11 @@ watched_files:
 
 ## 飘字渲染接线（DSP GPU Instancing）
 
-`FightManager` 另持有 `fightTextInstanceRenderer`（`FightTextInstanceRenderer`，飘字/伤害数字批量渲染器，与弹道渲染器同思路）：`FightHandler.Update` 顶层每帧 `RenderAll()` 一次 `DrawMeshInstanced` 画完在屏字符（实例粒度=字符，≤512 槽），动画全在 shader 时间驱动。由 `EffectHandler.ShowTextNumEffect` 装配转发（预制缺 MeshFilter+MeshRenderer 或仍挂 TextMeshPro 时报错不显示；旧 TMP 对象池方案已删除）；shader = `FrameWork/URP/MeshTextInstanced1`，图集行列数由材质 `_AtlasCols`/`_AtlasRows` 决定(默认 4×4)、格序=`atlasChars`("0123456789" 纯数字)；闪避显示 0。**细节以 system-effect agent 为准**，本代理只需知道这条接线存在。
+`FightManager` 另持有 `fightTextInstanceRenderer`（`FightTextInstanceRenderer`，飘字/伤害数字批量渲染器，与弹道渲染器同思路）：`FightHandler.Update` 顶层每帧 `RenderAll()` 一次 `DrawMeshInstanced` 画完在屏字符（实例粒度=字符，≤512 槽，槽满整条丢弃新飘字保旧），动画全在 shader 时间驱动，无变化帧 dirty 标志跳过填充+上传。由 `EffectHandler.ShowTextNumEffect` 装配并转发 `ShowNumber`(int 拆位零分配，不经 string)（预制缺 MeshFilter+MeshRenderer 或仍挂 TextMeshPro 时报错不显示；旧 TMP 对象池方案已删除）；shader = `FrameWork/URP/MeshTextInstanced1`，图集行列数由材质 `_AtlasCols`/`_AtlasRows` 决定(默认 4×4)、格序=`atlasChars`("0123456789" 纯数字)；闪避显示 0。**细节以 system-effect agent 为准**，本代理只需知道这条接线存在。
+
+## 魔晶渲染接线（DSP GPU Instancing）
+
+`FightManager` 另持有 `fightDropCrystalInstanceRenderer`（`FightDropCrystalInstanceRenderer`，掉落魔晶批量渲染器，与弹道/飘字同思路"只记槽位一起绘制"）：每颗魔晶 = 一个纯数据槽（零 GameObject/零碰撞体/零 DOTween，旧 GameObject 模式已删除）。掉落抛物线（跳高0.3×2跳/0.8s/Linear）与拾取飞回（跳力随机0~0.5/1跳/时长=距离÷5/OutCubic）由 CPU 参数化求值精确复刻旧 DOJump；待机上下浮动与 billboard 朝向都在 shader（`Game/Fight/DropCrystalInstanced1`，手写游戏层 shader，用相机右/上轴展开 quad **永远面向摄像头**，CPU 矩阵只含平移+缩放，浮动参数对齐旧 ShaderGraph 材质：`_IdleAnimSpeed`/`_IdleAnimPosition`/`_AlphaClipThreshold`）。`FightHandler.Update` 顶层每帧 `Update()`+`RenderAll()`，满 1023 即绘一批、收尾补绘（不设数量上限）；魔晶落地后矩阵恒定，槽集无变化帧 dirty 标志跳过填充直接复用旧缓冲绘制。装配：`FightManager.EnsureDropCrystalVisual()` 懒加载 `FightDropCrystalVisual.prefab`（MeshFilter(Quad)+MeshRenderer(instanced材质，`Assets/Shaders/Shader_Mesh_DropCrystalInstanced_1.shader` + Crystal_1 独立贴图不经图集），整场至多试一次，失败则渲染器未就绪、生成/拾取接口全部零副作用（报错提示，FightDropCrystal.prefab 旧预制文件保留但代码已不再使用）。拾取零物理化：鼠标 `TryPickByScreenPoint`（屏幕空间距离）、生物 `PickBySphere`（世界距离）、魔王 `PickFIFO`（槽生成序）；飞回到账经 `actionForCrystalArrived` 回调（`GameFightLogic.InitFightConstData` 注入 `OnDropCrystalArrived`：AddCrystal+事件+RefreshUI）。**拾取调用侧细节以 game-fight-logic agent / game-fight-system skill 为准**，本代理只需知道这条接线存在。
 
 ## 游戏速度（2倍速）对实体的要求
 

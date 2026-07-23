@@ -35,6 +35,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8324f2a419897cf408ca8b2828f3285e
+    m_Address: Assets/LoadResources/Common/FightDropCrystalVisual.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8acf41526ac3ddf4784f997bb8e3ce5f
     m_Address: Assets/LoadResources/Common/RewardSelectBoxItem.prefab
     m_ReadOnly: 0

@@ -366,7 +366,7 @@ public partial class EffectHandler
     #region 飘字(伤害数字)粒子
     /// <summary>
     /// 播放数字粒子(伤害/闪避/HP/护甲飘字)：转发给 GPU Instancing 批量渲染器(FightTextInstanceRenderer，字符级实例一次
-    /// DrawMeshInstanced、动画全在 shader 时间驱动)；首次调用时按 effectTextNumberName 预制装配(整场至多试一次)。
+    /// DrawMeshInstanced、动画全在 shader 时间驱动、ShowNumber 拆位零分配)；首次调用时按 effectTextNumberName 预制装配(整场至多试一次)。
     /// </summary>
     /// <param name="targetPos">飘字起始的世界坐标</param>
     /// <param name="number">显示的数值(闪避类型传 0，显示 0)</param>
@@ -387,7 +387,6 @@ public partial class EffectHandler
 
         Color targetColor = manager.colorDamage;
         float targetScale = textRenderer.textScaleNormal;
-        string textContent = number.ToString();
         switch (type)
         {
             case 1: // 闪避(显示0，调用方传 number=0)
@@ -404,7 +403,8 @@ public partial class EffectHandler
                 targetColor = manager.colorDRAdd;
                 break;
         }
-        textRenderer.ShowText(targetPos, textContent, targetColor, targetScale, randomPosOffset);
+        //ShowNumber 直传 int(内部拆位,零分配),不再 number.ToString()——热路径每事件一次 string 分配已消除
+        textRenderer.ShowNumber(targetPos, number, targetColor, targetScale, randomPosOffset);
     }
 
     /// <summary>

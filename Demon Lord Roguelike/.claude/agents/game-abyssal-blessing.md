@@ -34,7 +34,7 @@ watched_files:
   - **一个等级 = 一行**；同族升级链：lv1 `parent_id=0`，lv2 `parent_id=lv1.id`，lv3 `parent_id=lv2.id`……`level` 从 1 连续递增（`level=0` 为不参与升级链的可重复馈赠）
   - **两个正交维度**：`level`/`parent_id` 管"强度升级链"，`max_count` 管"一局可获得次数"。类型：① 可重复·不限 `level=0,max_count=0`（重复叠加、无角标，如增殖）；② 可重复·限N次 `level=0,max_count=N`（一局最多N次；`N=1` 即"一次性"，现役无实例）；③ 多级升级链 `level=1..N` 链式（逐级升级、显示 LvN，`max_count` 留 0）。**「一次性」用 `level=0+max_count=1`，不再用废弃的 `level=1` 单行族**。次数门控落点 `UIFightAbyssalBlessing.IsCandidateEligible` + `BuffHandler.GetAbyssalBlessingPickCount`。
   - id 约定 10 位（如 `2000001005`，末 3 位=等级序号）
-  - **现役配置**：共 13 行 5 族——增殖(1000001001)、奖励多多(1000002001)、再来一瓶(1000003001)、钱多多 5 级链(2000001001~005)、闪电 5 级链(2000002001~005，首个**周期型**馈赠：BUFF `3000300001~005`=`BuffEntityPeriodicMultiInstantAttack`，`class_entity_data`="次数,半径"，每 3 秒 1~5 道落雷 0.1 秒间隔连发、可重复命中同一目标，落点 0.2~1 半径 AOE，伤害=魔王攻击力×`trigger_value`；落雷粒子全局单例 `Effect_Thunder_3`(900003)→`EffectHandler.ShowThunderEffect`)。单体定向 4 个（大力出奇迹等 1000004~7xxx）、固定数值 6 族（强身健体等 2000002~7xxx）、动态率 6 族（都是兄弟/杀红了眼 2000008~13xxx）已删除，**C# 基础设施保留**；单行族号 4~7、多级族号 3~13、BUFF 族号 4~8 与 11~20 已释放可复用。
+  - **现役配置**：共 13 行 5 族——增殖(1000001001)、奖励多多(1000002001)、再来一瓶(1000003001)、钱多多 5 级链(2000001001~005)、闪电 5 级链(2000002001~005，首个**周期型**馈赠：BUFF `3000300001~005`=`BuffEntityPeriodicMultiInstantAttack`，`class_entity_data`="次数,半径,单雷命中上限"，每 3 秒 1~5 道落雷 0.1 秒间隔连发、可重复命中同一目标，落点 0.2~1 半径 AOE，单雷命中上限=等级(1~5 个，超上限按距落点近者优先)，伤害=魔王攻击力×`trigger_value`；落雷粒子全局单例 `Effect_Thunder_3`(900003)→`EffectHandler.ShowThunderEffect`)。单体定向 4 个（大力出奇迹等 1000004~7xxx）、固定数值 6 族（强身健体等 2000002~7xxx）、动态率 6 族（都是兄弟/杀红了眼 2000008~13xxx）已删除，**C# 基础设施保留**；单行族号 4~7、多级族号 3~13、BUFF 族号 4~8 与 11~20 已释放可复用。
 - `AbyssalBlessingInfo.txt` - Excel 导出 JSON（不可单独改）
 - `Language_AbyssalBlessingInfo_{cn,en}.txt` - 多语言
 

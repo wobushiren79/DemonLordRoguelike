@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DG.Tweening;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// 战斗游戏逻辑基类
@@ -167,6 +167,8 @@ public class GameFightLogic : BaseGameLogic
         demonLordPickCrystalInterval = userUnlock.GetUnlockDemonLordAutoPickCrystalInterval();
         demonLordPickCrystalCount = userUnlock.GetUnlockDemonLordAutoPickCrystalCount();
         demonLordPickCrystalTimer = 0;
+        //注入 DSP 魔晶渲染器的飞回到账回调(入账+事件+UI刷新)
+        FightHandler.Instance.manager.fightDropCrystalInstanceRenderer.actionForCrystalArrived = OnDropCrystalArrived;
     }
     #endregion
 
@@ -770,21 +772,23 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// 通过鼠标拾取水晶
+    /// 通过鼠标拾取魔晶(屏幕空间距离判定,零物理碰撞)
     /// </summary>
-    public void PickupCrystalForMouse(float pickupDistance = 100)
+    public void PickupCrystalForMouse()
     {
-        RayUtil.RayToScreenPointForMousePosition(pickupDistance, 1 << LayerInfo.Drop, out bool isCollider, out RaycastHit hit);
-        if (isCollider && hit.collider != null)
+        var crystalRenderer = FightHandler.Instance.manager.fightDropCrystalInstanceRenderer;
+        if (!crystalRenderer.IsReady || Mouse.current == null)
+            return;
+        if (crystalRenderer.TryPickByScreenPoint(Mouse.current.position.ReadValue(), out int crystalIndex))
         {
             //手动点击拾取魔晶时播放点击音效(音量放大 1.5 倍由配置表 volume_scale 控制)
             AudioHandler.Instance.PlaySound(AudioEnum.sound_btn_15);
-            PickupCrystal(hit.collider.gameObject);
+            PickupCrystalByRenderer(crystalIndex);
         }
     }
 
     /// <summary>
-    /// 通过生物拾取水晶
+    /// 通过生物拾取魔晶(生物半径内全部吸起,世界距离判定)
     /// </summary>
     public void PickupCrystalForCreature(FightCreatureEntity fightCreatureEntity, float pickupRadius)
     {
@@ -793,76 +797,59 @@ public class GameFightLogic : BaseGameLogic
         {
             return;
         }
-        Collider[] colliders = RayUtil.OverlapToSphere(fightCreatureEntity.creatureObj.transform.position, pickupRadius, 1 << LayerInfo.Drop);
-        if (!colliders.IsNull())
+        var crystalRenderer = FightHandler.Instance.manager.fightDropCrystalInstanceRenderer;
+        if (!crystalRenderer.IsReady)
+            return;
+        var pickedList = crystalRenderer.PickBySphere(fightCreatureEntity.creatureObj.transform.position, pickupRadius);
+        for (int i = 0; i < pickedList.Count; i++)
         {
-            for (int i = 0; i < colliders.Length; i++)
-            {
-                PickupCrystal(colliders[i].gameObject);
-            }
+            PickupCrystalByRenderer(pickedList[i]);
         }
     }
 
     /// <summary>
-    /// 魔王自动拾取魔晶（按场上掉落顺序 FIFO 取最先掉落的若干颗）
-    /// <para>不做就近计算：直接遍历 listFightPrefab（掉落物按加入顺序排列），筛出"魔晶(路径匹配)且处于可拾取状态(DropCheck)"的掉落物，取最先的 count 颗依次拾取（复用 PickupCrystal 飞回魔王入账）。</para>
+    /// 魔王自动拾取魔晶（按场上掉落顺序 FIFO 取最先掉落的若干颗，由 UpdateGameForDefenseCore 按研究间隔驱动）
     /// </summary>
     /// <param name="count">本次拾取的魔晶颗数（来自研究 DemonLordAutoPickCrystalNum，基础 1）</param>
     public void PickupCrystalForCoreAuto(int count)
     {
         if (count <= 0)
             return;
-        var listFightPrefab = FightHandler.Instance.manager.listFightPrefab;
-        int picked = 0;
-        //按加入顺序遍历，取最先掉落且可拾取的魔晶；PickupCrystal 会置 Droping 关碰撞，故本帧不会重复命中
-        for (int i = 0; i < listFightPrefab.Count && picked < count; i++)
+        var crystalRenderer = FightHandler.Instance.manager.fightDropCrystalInstanceRenderer;
+        if (!crystalRenderer.IsReady)
+            return;
+        var pickedList = crystalRenderer.PickFIFO(count);
+        for (int i = 0; i < pickedList.Count; i++)
         {
-            var itemPrefab = listFightPrefab[i];
-            if (itemPrefab == null || itemPrefab.gameObject == null)
-                continue;
-            //仅魔晶(排除掉落魔力)且处于落地可拾取状态
-            if (itemPrefab.pathAsstes != FightManager.pathDropCrystalPrefab)
-                continue;
-            if (itemPrefab.state != GameFightPrefabStateEnum.DropCheck)
-                continue;
-            PickupCrystal(itemPrefab.gameObject);
-            picked++;
+            PickupCrystalByRenderer(pickedList[i]);
         }
     }
 
     /// <summary>
-    /// 拾取水晶
+    /// 拾取一颗魔晶：置 FlyBack 态飞回魔王核心，到账后由渲染器回调 <see cref="OnDropCrystalArrived"/> 入账。
     /// </summary>
-    public void PickupCrystal(GameObject targetCrystal)
+    /// <param name="crystalIndex">拾取查询返回的槽下标(仅当帧有效)</param>
+    public void PickupCrystalByRenderer(int crystalIndex)
     {
         //如果是正在游戏中
         if (gameState != GameStateEnum.Gaming)
             return;
+        Vector3 corePos = fightData.fightDefenseCoreCreature.creatureObj.transform.position;
+        FightHandler.Instance.manager.fightDropCrystalInstanceRenderer.StartFlyBack(crystalIndex, corePos);
+    }
 
-        var fightDropPrefab = FightHandler.Instance.manager.GetFightPrefab(targetCrystal.name);
-        if (fightDropPrefab == null)
-            return;
-        //设置
-        fightDropPrefab.SetState(GameFightPrefabStateEnum.Droping);
-        Vector3 targetPos = fightData.fightDefenseCoreCreature.creatureObj.transform.position;
-        float moveSpeed = 5;
-        float moveTime = Vector3.Distance(targetPos, fightDropPrefab.gameObject.transform.position) / moveSpeed;
-        //播放动画
-        fightDropPrefab.gameObject.transform
-            .DOJump(targetPos + new Vector3(0f, 0.5f, 0.5f), UnityEngine.Random.Range(0, 0.5f), 1, moveTime)
-            .SetEase(Ease.OutCubic)
-            .OnComplete(() =>
-            {
-                //魔晶回到收集点后入账,入账音效由 AddCrystal 内部统一播放
-                UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-                userData.AddCrystal(fightDropPrefab.valueInt);
-                //事件通知
-                EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_DropAddCrystal, fightDropPrefab.valueInt);
-                //掉落删除
-                fightDropPrefab.Destroy();
-                //刷新所有打开的UI
-                UIHandler.Instance.RefreshUI();
-            });
+    /// <summary>
+    /// 魔晶飞回到账：入账 + 事件通知 + 刷新 UI(由 InitFightConstData 注入渲染器 actionForCrystalArrived)
+    /// </summary>
+    private void OnDropCrystalArrived(int crystalNum)
+    {
+        //魔晶回到收集点后入账,入账音效由 AddCrystal 内部统一播放
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        userData.AddCrystal(crystalNum);
+        //事件通知
+        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_DropAddCrystal, crystalNum);
+        //刷新所有打开的UI
+        UIHandler.Instance.RefreshUI();
     }
     #endregion
 }

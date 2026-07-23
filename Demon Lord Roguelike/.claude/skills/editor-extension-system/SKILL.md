@@ -34,6 +34,7 @@ EditorWindow (Unity)
 ├── FBXEditorWindow                # FBX 编辑器
 ├── SkinMeshEditorWindow           # 皮肤网格编辑器
 ├── ProjectAssetCollectorWindow    # 项目资源收集器
+├── PixelArtPreviewWindow          # 像素图预览工具（多文件夹拖拽→Grid预览→点击Ping定位；虚拟滚动+AssetPreview异步缩略图）
 ├── StyleBaseWindow                # 样式基础窗口
 ├── GameTestEditor                 # 游戏测试编辑器 (Inspector扩展)
 └── PixelDaEditorWindow            # PixelDa 像素美术生成 (AI 文生图/图编辑/图生视频/抽帧/音乐)

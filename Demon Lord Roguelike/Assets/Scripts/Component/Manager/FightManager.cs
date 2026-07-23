@@ -22,6 +22,8 @@ public class FightManager : BaseManager
     public AttackModeInstanceRenderer attackModeInstanceRenderer = new AttackModeInstanceRenderer();
     //飘字(伤害数字)GPU Instancing 批量渲染器(字符级实例一次 DrawMeshInstanced，动画全在 shader 时间驱动)；未 Setup 网格/材质时零副作用
     public FightTextInstanceRenderer fightTextInstanceRenderer = new FightTextInstanceRenderer();
+    //掉落魔晶 GPU Instancing 批量渲染器(DSP 式槽位+多批 DrawMeshInstanced，抛物线 CPU 参数化、待机浮动与 billboard 在 shader)；未 Setup 时零副作用
+    public FightDropCrystalInstanceRenderer fightDropCrystalInstanceRenderer = new FightDropCrystalInstanceRenderer();
 
     //战斗逻辑缓存（避免热路径每次 GetGameLogic 反射查找）
     private GameFightLogic cachedGameFightLogic;
@@ -31,7 +33,10 @@ public class FightManager : BaseManager
     public Queue<FightUnderAttackBean> poolFightUnderAttackData = new Queue<FightUnderAttackBean>();
 
     public static string pathDropMagicPrefab = "Assets/LoadResources/Common/FightDropMagic.prefab";
-    public static string pathDropCrystalPrefab = "Assets/LoadResources/Common/FightDropCrystal.prefab";
+    //魔晶视觉预制路径(MeshFilter(Quad)+MeshRenderer(instanced材质) 结构，仅借其 sharedMesh/sharedMaterial 注册渲染器)
+    public static string pathDropCrystalVisualPrefab = "Assets/LoadResources/Common/FightDropCrystalVisual.prefab";
+    //魔晶渲染器装配门控：整场至多试一次(预制缺失/结构不符时报错并不再重试，与飘字 triedSetupTextNumInstanced 同理)
+    public bool triedSetupDropCrystalVisual;
     //一些战斗杂项预制
     public Dictionary<string, GameObject> dicFightModeObj = new Dictionary<string, GameObject>();
     //战斗杂项缓存池
@@ -124,6 +129,9 @@ public class FightManager : BaseManager
 
         //丢弃所有待回收项 (对应的对象池已被清空，再回收会污染状态)
         ClearPendingRecycles();
+
+        //清空 DSP 魔晶渲染器的在屏槽位(渲染资源保留,跨场复用)
+        fightDropCrystalInstanceRenderer.Clear();
     }
 
     /// <summary>
@@ -193,16 +201,30 @@ public class FightManager : BaseManager
     }
 
     /// <summary>
-    /// 获取掉落水晶预制
+    /// 确保魔晶渲染器已装配：懒加载视觉预制(MeshFilter(Quad)+MeshRenderer(instanced材质))，
+    /// 取其 sharedMesh/sharedMaterial 调用 <see cref="FightDropCrystalInstanceRenderer.Setup"/>。
+    /// <para>预制持久缓存于 dicFightModeObj(与魔力掉落预制同一缓存，跨战斗不释放)；整场至多试一次(triedSetupDropCrystalVisual 门控，
+    /// 预制缺失/结构不符时报错——此时渲染器保持未就绪，生成/拾取接口全部零副作用，魔晶不会出现)。</para>
     /// </summary>
-    public void GetDropCrystalPrefab(Action<FightPrefabEntity> actionForComplete)
+    public void EnsureDropCrystalVisual()
     {
-        GetFightPrefabCommon(pathDropCrystalPrefab, (targetPrefab) =>
+        if (fightDropCrystalInstanceRenderer.IsReady || triedSetupDropCrystalVisual)
+            return;
+        triedSetupDropCrystalVisual = true;
+        GameObject visualPrefab = GetModelForAddressablesSync(dicFightModeObj, pathDropCrystalVisualPrefab);
+        if (visualPrefab == null)
         {
-            targetPrefab.pathAsstes = pathDropCrystalPrefab;
-            targetPrefab.SetState(GameFightPrefabStateEnum.None);
-            actionForComplete?.Invoke(targetPrefab);
-        });
+            LogUtil.LogError($"魔晶视觉预制加载失败：{pathDropCrystalVisualPrefab}");
+            return;
+        }
+        MeshFilter meshFilter = visualPrefab.GetComponentInChildren<MeshFilter>();
+        MeshRenderer meshRenderer = visualPrefab.GetComponentInChildren<MeshRenderer>();
+        if (meshFilter == null || meshFilter.sharedMesh == null || meshRenderer == null || meshRenderer.sharedMaterial == null)
+        {
+            LogUtil.LogError($"魔晶视觉预制缺少 MeshFilter/MeshRenderer：{pathDropCrystalVisualPrefab}");
+            return;
+        }
+        fightDropCrystalInstanceRenderer.Setup(meshFilter.sharedMesh, meshRenderer.sharedMaterial);
     }
 
     /// <summary>

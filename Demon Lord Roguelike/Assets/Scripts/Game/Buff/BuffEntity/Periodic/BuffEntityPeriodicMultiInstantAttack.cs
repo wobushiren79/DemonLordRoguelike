@@ -8,8 +8,9 @@ using UnityEngine;
 /// <para>第 1 次瞬时攻击立即执行，后续每次间隔 multiAttackInterval 秒由 UpdateBuffTime 驱动执行（不在同帧连发）；
 /// 场上无敌人时本轮不触发。</para>
 /// <para>每次瞬时攻击：在目标位置播放全局单例雷电粒子，并对落点 class_entity_data[1] 半径内的快照敌人造成
-/// 「BUFF目标(魔王)实时攻击力 × trigger_value 倍率」的伤害（走标准 UnderAttack 流程：闪避/护甲/飘字/死亡）。</para>
-/// <para>class_entity_data 格式："攻击次数,AOE半径"（如 "3,0.6"）。</para>
+/// 「BUFF目标(魔王)实时攻击力 × trigger_value 倍率」的伤害（走标准 UnderAttack 流程：闪避/护甲/飘字/死亡）；
+/// 单次落雷命中目标数受 class_entity_data[2] 上限限制（0或缺省=不限），超上限时按距落点近者优先（保证落点主目标必中）。</para>
+/// <para>class_entity_data 格式："攻击次数,AOE半径,单雷命中目标上限(可选,0=不限)"（如 "3,0.6,3"）。</para>
 /// </summary>
 public class BuffEntityPeriodicMultiInstantAttack : BuffEntityPeriodic
 {
@@ -23,6 +24,8 @@ public class BuffEntityPeriodicMultiInstantAttack : BuffEntityPeriodic
     protected float timeIntervalCurrent = 0;
     //本轮瞬时攻击的AOE半径(触发时从 class_entity_data 解析缓存)
     protected float attackAreaRadius = 0;
+    //单次落雷命中目标数上限(触发时从 class_entity_data 解析缓存, 0=不限)
+    protected int attackHitMax = 0;
 
     #region 数据相关
     /// <summary>
@@ -35,6 +38,7 @@ public class BuffEntityPeriodicMultiInstantAttack : BuffEntityPeriodic
         setSnapshotCreatureId.Clear();
         timeIntervalCurrent = 0;
         attackAreaRadius = 0;
+        attackHitMax = 0;
     }
     #endregion
 
@@ -80,11 +84,12 @@ public class BuffEntityPeriodicMultiInstantAttack : BuffEntityPeriodic
         //场上无敌人则本轮不触发
         if (listAliveEnemy.Count == 0) return false;
 
-        //解析参数 "攻击次数,AOE半径"
+        //解析参数 "攻击次数,AOE半径,单雷命中目标上限(可选,0=不限)"
         var buffInfo = buffEntityData.GetBuffInfo();
         string[] arrEntityData = buffInfo.class_entity_data.Split(',');
         int attackCount = int.Parse(arrEntityData[0]);
         attackAreaRadius = float.Parse(arrEntityData[1]);
+        attackHitMax = arrEntityData.Length >= 3 ? int.Parse(arrEntityData[2]) : 0;
 
         //快照本轮敌人名单(供AOE过滤间隔期新刷敌人)
         setSnapshotCreatureId.Clear();
@@ -135,13 +140,19 @@ public class BuffEntityPeriodicMultiInstantAttack : BuffEntityPeriodic
         if (attackDamage <= 0)
             return;
 
-        //落点AOE搜索敌方生物
+        //落点AOE搜索敌方生物，按距落点近远升序（命中上限截断时保证落点主目标必中）
         var targetColliders = RayUtil.OverlapToSphere(strikePosition, attackAreaRadius, 1 << LayerInfo.CreatureAtt);
         if (targetColliders.IsNull())
             return;
+        System.Array.Sort(targetColliders, (a, b) =>
+            (a.transform.position - strikePosition).sqrMagnitude.CompareTo((b.transform.position - strikePosition).sqrMagnitude));
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        int hitNum = 0;
         for (int i = 0; i < targetColliders.Length; i++)
         {
+            //单次落雷命中目标数达上限则停止
+            if (attackHitMax > 0 && hitNum >= attackHitMax)
+                break;
             string creatureId = targetColliders[i].gameObject.name;
             //仅快照名单内敌人受伤(间隔期新刷敌人不受波及)
             if (!setSnapshotCreatureId.Contains(creatureId))
@@ -151,6 +162,7 @@ public class BuffEntityPeriodicMultiInstantAttack : BuffEntityPeriodic
                 continue;
             FightUnderAttackBean fightUnderAttackData = FightHandler.Instance.GetFightUnderAttackData(buffEntityData, attackDamage);
             hitCreature.UnderAttack(fightUnderAttackData);
+            hitNum++;
         }
     }
     #endregion

@@ -1,6 +1,6 @@
 ---
 name: pixel-image-editor
-description: Demon Lord Roguelike 的「像素图编辑器」(原名像素完美转换器)编辑器工具开发指南。使用此 SKILL 当需要创建或修改 PixelImageEditorWindow（把 AI 伪像素画重采样为像素对齐图）的功能：五步式工作流(设置/定位转换/编辑导出/辅助功能/颜色调节)、5 种取色算法(最常用/偏亮/偏暗/平均/邻域)、画笔/橡皮/魔棒(洪水填充)编辑、撤销重做、调色板颜色替换(全局换色)、帧动画排版/精灵表重排、多图合并图集、双图颜色调节、PNG 导出(x1/x4/x8 另存为/覆盖原图/同目录/按列×行拆分)、网格与背景明暗切换等。类拆分为多个 partial(PixelImageEditorWindow.cs + Step1~Step5.cs)。触发关键词：像素图编辑器、像素完美、Pixel Perfect、AI像素画对齐、颜色替换、调色板替换、颜色调节、帧动画排版、精灵表重排、图片合并、单图合并图集、PixelImageEditorWindow、PixelPerfectConverterWindow。
+description: Demon Lord Roguelike 的「像素图编辑器」(原名像素完美转换器)编辑器工具开发指南。使用此 SKILL 当需要创建或修改 PixelImageEditorWindow（把 AI 伪像素画重采样为像素对齐图）的功能：五步式工作流(设置/定位转换/编辑导出/辅助功能/颜色调节)、6 种取色算法(最常用/偏亮/偏暗/平均/邻域/最近邻)、画笔/橡皮/魔棒(洪水填充)编辑、撤销重做、调色板颜色替换(全局换色)、帧动画排版/精灵表重排、多图合并图集、双图颜色调节、PNG 导出(x1/x4/x8 另存为/覆盖原图/同目录/按列×行拆分)、网格与背景明暗切换等。类拆分为多个 partial(PixelImageEditorWindow.cs + Step1~Step5.cs)。触发关键词：像素图编辑器、像素完美、Pixel Perfect、AI像素画对齐、颜色替换、调色板替换、颜色调节、帧动画排版、精灵表重排、图片合并、单图合并图集、PixelImageEditorWindow、PixelPerfectConverterWindow。
 watched_files:
   - Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindow.cs
   - Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindowStep1.cs
@@ -50,7 +50,7 @@ watched_files:
 - 选算法后 `Convert` 生成 `_pixels`（末尾按需 `QuantizeToMaxColors`）。
 
 #### 智能网格检测（`DrawStep2AutoDetect`，移植自 theamusing/perfectPixel）
-- **来源与取舍**：移植自 [theamusing/perfectPixel](https://github.com/theamusing/perfectPixel) 的纯 numpy 后端 `perfect_pixel_noCV2.py`。原实现「FFT 频谱检测为主 + 梯度法回退」，本移植**只采用梯度法为主检测器**，未移植 2D-FFT（避免手写 FFT 的复杂度/正确性风险；FFT 主检测器留作后续增强）。`refine_grids`/`find_best_grid`/采样/`fix_square` 忠实移植；采样直接复用上述 5 种取色算法。
+- **来源与取舍**：移植自 [theamusing/perfectPixel](https://github.com/theamusing/perfectPixel) 的纯 numpy 后端 `perfect_pixel_noCV2.py`。原实现「FFT 频谱检测为主 + 梯度法回退」，本移植**只采用梯度法为主检测器**，未移植 2D-FFT（避免手写 FFT 的复杂度/正确性风险；FFT 主检测器留作后续增强）。`refine_grids`/`find_best_grid`/采样/`fix_square` 忠实移植；采样直接复用上述 6 种取色算法。
 - **UI 卡片**：位于步骤②手动设置卡与预览卡之间。选项 `_autoUseRefine`(边缘对齐开关，默认 true)、`_refineIntensity`(对齐强度 0~0.5，默认 0.25)、`_autoFixSquare`(近正方形强制正方，默认 true)；两个按钮 + `_autoMessage`(HelpBox 结果提示)。`ResetAll` 复位这些字段。
 - **仅检测网格尺寸**（`AutoDetectGridSizeOnly`）：`DetectGridScale` 算格子数 → 填入 `_gridWidth/_gridHeight` + `RefitImage`，供预览核对/微调，不立即转换。
 - **智能一键转换 → 步骤③**（`AutoDetectAndConvert`）：`DetectGridScale` →（`_autoUseRefine` ? `RefineGrids` : `BuildUniformGrid`）得网格线坐标 → `ConvertByCoords` 逐格采样生成 `_pixels` → `EnterStep3`，全程无需手动拖拽定位。
@@ -59,7 +59,7 @@ watched_files:
   - `EstimateGridGradient`：`FindProjectionPeaks`(局部峰，`relThr`=0.2、`minInterval`=4) + `MedianInterval`(峰间距中位数)，任一轴峰 <4 判失败。
   - `DetectGridScale`：梯度尺寸 → 像素块边长（长宽比 >1.5 取 min 否则取均值）→ 回推格子数。
   - `RefineGrids`：从中心向两侧按格宽步进，每条网格线用 `FindBestGrid`(±`intensity`×格宽内取最强梯度峰)吸附；`Sort`+`DedupSortedCoords` 去重防零宽格；带循环 guard 防死循环。
-  - `ConvertByCoords`：逐格 `SampleSourceRect`(复用 `SampleAverage/SampleMostUsed/SampleWeighted`，邻域算法四周外扩 25%) → `FixSquare`(|nx-ny|==1 时按奇偶裁末列/行或复制首行/列) → 同步 `_gridWidth/_gridHeight`，按需 `QuantizeToMaxColors`。
+  - `ConvertByCoords`：逐格 `SampleSourceRect`(复用 `SampleAverage/SampleMostUsed/SampleWeighted/SampleNearestNeighbor`，邻域算法四周外扩 25%、最近邻取矩形中心像素) → `FixSquare`(|nx-ny|==1 时按奇偶裁末列/行或复制首行/列) → 同步 `_gridWidth/_gridHeight`，按需 `QuantizeToMaxColors`。
 
 ### 步骤③ 编辑与导出（`DrawStep3`）
 - 三栏布局：左侧工具面板 + 中间实时编辑画布(`DrawEditCanvas`，渲染 Point 纹理 `_artTex`，带网格/笔刷高亮) + 右侧「最终效果图」(`DrawResultPreview`，同 `_artTex` 但**无网格/无高亮**，缩放 `_resultZoom`(1~20)，宽高超限时内部滚动)。
@@ -101,7 +101,7 @@ watched_files:
 - **两个导出（每图独立，参考步骤③）**：`ExportColorAdjustOverwrite`（覆盖原图，弹确认，写 `BuildPngFromTopDown(img.topDown,w,h)`）、`ExportColorAdjustToSourceDir`（同原图目录，名=`原图名_recolor.png`）；均需 `GetSlotFilePath(sourceTexture,externalPath)` 有磁盘文件，否则禁用。
 - `OnDestroy` 调 `DisposeColorAdjustImage(_caImageA/_caImageB)` 释放临时源纹理与预览纹理。
 
-## 5 种取色算法（`ConvMethod` / `Convert`）
+## 6 种取色算法（`ConvMethod` / `Convert`）
 
 | 枚举 | 含义 | 实现 |
 | --- | --- | --- |
@@ -110,6 +110,7 @@ watched_files:
 | `MostDark` | 最常用(偏暗) | `SampleWeighted`：权重 `0.25+0.50*((255-亮度)/255)`，用 `_similarityThreshold` |
 | `Average` | 平均色 | `SampleAverage`：格内非透明像素 RGB 均值（不用阈值） |
 | `Neighbor` | 邻域色 | 在格子四周各外扩 25% 后做平均（不用阈值） |
+| `NearestNeighbor` | 最近邻色 | `SampleNearestNeighbor`：取格中心映射到源图后最近的一个像素原色，不混合、保留原 alpha（不用阈值） |
 
 - 亮度公式：`0.299*r + 0.587*g + 0.114*b`。
 - 画布→源图坐标：`o = (canvasCoord - offset) / imageScale`，floor/ceil 后夹紧到源图范围；空区域置透明。
@@ -117,7 +118,7 @@ watched_files:
 ### 相似度阈值（可设置）
 
 - `_similarityThreshold`（默认 `kDefaultSimilarityThreshold`=30）：相近色归并阈值（RGB 欧氏距离），在步骤②算法下方滑杆设置 0~100；越大越容易合并相近色。
-- 仅 `Most`/`MostLight`/`MostDark` 聚类算法使用；`Average`/`Neighbor` 选中时该滑杆禁用。
+- 仅 `Most`/`MostLight`/`MostDark` 聚类算法使用；`Average`/`Neighbor`/`NearestNeighbor` 选中时该滑杆禁用。
 
 ### 最终颜色数量限制（可设置）
 

@@ -64,6 +64,11 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 - `EventForGameFightLogicCreatureDeadEnd` 中按守卫广播：`if (BuffHandler.Instance.HasDynamicRateAbyssalBlessing()) RefreshAllDefenseCreatureAttribute();`——魔物死亡（随魔物数缩放类 N 减少）/敌人死亡（随击杀数缩放类计数增加）都重算全体防守，且**该重算放在 `CheckGameEnd()` 之前**（先处理死亡带来的属性变化，再检测游戏结束）。守卫用 O(1) 缓存 `HasDynamicRateAbyssalBlessing()`（读 BuffManager 缓存布尔，在 AddAbyssalBlessing 选取动态率馈赠时单调置 true、ClearAbyssalBlessing 复位）避免普通对局开销，热路径不遍历池。
 - `EventForDefenseCreatureCreate(FightCreatureEntity)` - 监听 `EventsInfo.GameFightLogic_DefenseCreatureCreate`（由 `CreatureHandler.CreateDefenseCreatureEntity` 生成新防守魔物后推送），按同一守卫广播 `RefreshAllDefenseCreatureAttribute()`，使随魔物数缩放类馈赠随放置/增殖魔物 N 增大即时生效。即 CreatureHandler 只负责生成、推事件，重算职责归 GameFightLogic。详见 abyssal-blessing-system / buff-system SKILL。
 
+### 魔晶拾取链路（DSP 渲染器单一路径）
+- 魔晶全程 DSP 批量渲染（`FightManager.fightDropCrystalInstanceRenderer`，每颗魔晶=纯数据槽，零 GameObject/零碰撞体/零 DOTween，旧 GameObject 模式已删除；渲染器机制见 game-fight-core agent）；渲染器未就绪（视觉预制缺失）时生成/拾取接口全部零副作用。
+- 三个拾取入口：`PickupCrystalForMouse`（`TryPickByScreenPoint` 屏幕空间判定→命中播音效 sound_btn_15）、`PickupCrystalForCreature`（`PickBySphere` 世界距离判定，生物半径内全吸）、`PickupCrystalForCoreAuto(count)`（`PickFIFO` 按槽生成序取最早 count 颗，`UpdateGameForDefenseCore` 按研究间隔驱动）。
+- 拾取统一走 `PickupCrystalByRenderer(index)`（gameState 校验后 `StartFlyBack` 飞回核心，抛物线 CPU 参数化复刻旧 DOJump）；飞回到账由渲染器回调 `OnDropCrystalArrived`（`InitFightConstData` 注入 `actionForCrystalArrived`，`FightManager.Clear` 时清空）：`AddCrystal`(内含音效) → `GameFightLogic_DropAddCrystal` 事件 → `RefreshUI`。
+
 ## 约束
 
 - 新增战斗模式需继承 GameFightLogic，实现 Pre/Start/Update/End/Clear

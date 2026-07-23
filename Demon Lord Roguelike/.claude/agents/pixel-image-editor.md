@@ -1,6 +1,6 @@
 ---
 name: pixel-image-editor
-description: 像素图编辑器(Pixel Image Editor，原名像素完美转换器)编辑器工具开发：把 AI 生成的伪像素画重采样为真正像素对齐的像素图。负责 PixelImageEditorWindow 的功能扩展与维护，包括五步式工作流(设置/定位转换/编辑导出/辅助功能/颜色调节)、5 种取色算法、画笔/橡皮/魔棒编辑、撤销重做、调色板颜色替换、帧排版/图片合并、双图颜色调节、PNG 导出（x1/x4/x8 另存为、覆盖原图、同目录、按列×行拆分）。类拆分为多个 partial(PixelImageEditorWindow.cs + Step1~Step5.cs)。
+description: 像素图编辑器(Pixel Image Editor，原名像素完美转换器)编辑器工具开发：把 AI 生成的伪像素画重采样为真正像素对齐的像素图。负责 PixelImageEditorWindow 的功能扩展与维护，包括五步式工作流(设置/定位转换/编辑导出/辅助功能/颜色调节)、6 种取色算法、画笔/橡皮/魔棒编辑、撤销重做、调色板颜色替换、帧排版/图片合并、双图颜色调节、PNG 导出（x1/x4/x8 另存为、覆盖原图、同目录、按列×行拆分）。类拆分为多个 partial(PixelImageEditorWindow.cs + Step1~Step5.cs)。
 tools: Read, Write, Edit, Glob, Grep, Bash
 skill: pixel-image-editor
 watched_files:
@@ -41,7 +41,7 @@ watched_files:
 1. **步骤① 设置**：选网格宽/高（档位 `kGridOptions` = 16/32/48/64/80/96/112/128/256/512/1024，默认 `_gridWidth/_gridHeight`=**32×32**）+ 选源图（拖拽或 ObjectField，自动按 `kMaxImageSize`=1024 等比缩小）。
 
 > **右键快捷入口**：`OpenFromSelection`（`[MenuItem("Assets/像素图编辑器")]`）在 Project 选中 `Texture2D` 后右键直接打开窗口、把该图设为源图并自动 `LoadSource`+`EnterStep2`；`OpenFromSelectionValidate`（校验函数）保证仅选中图片时菜单可用。
-2. **步骤② 定位与转换**：预览格子尺寸(4~16)、源图缩放(10~300%，中心锚定)、拖拽定位源图，选 5 种取色算法，**可设相似度阈值**与**最终颜色数量上限**，生成像素图。另含 **智能网格检测**（`DrawStep2AutoDetect`，移植自 [theamusing/perfectPixel](https://github.com/theamusing/perfectPixel) 纯 numpy 后端）：Sobel 梯度自动识别网格尺寸(`DetectGridScale`/`EstimateGridGradient`)并把网格线吸附到像素块边缘(`RefineGrids`/`FindBestGrid`)；`AutoDetectGridSizeOnly`(仅填网格数) 与 `AutoDetectAndConvert`(一键 `ConvertByCoords`→步骤③)，选项 `_autoUseRefine`/`_refineIntensity`/`_autoFixSquare`；采样复用 `SampleSourceRect`(转发 5 种算法)，`FixSquare` 近正方形补正。原 FFT 主检测器未移植（避免手写 2D-FFT），改以梯度法为主。详见「智能网格检测 - perfectPixel 移植」region。
+2. **步骤② 定位与转换**：预览格子尺寸(4~16)、源图缩放(10~300%，中心锚定)、拖拽定位源图，选 6 种取色算法，**可设相似度阈值**与**最终颜色数量上限**，生成像素图。另含 **智能网格检测**（`DrawStep2AutoDetect`，移植自 [theamusing/perfectPixel](https://github.com/theamusing/perfectPixel) 纯 numpy 后端）：Sobel 梯度自动识别网格尺寸(`DetectGridScale`/`EstimateGridGradient`)并把网格线吸附到像素块边缘(`RefineGrids`/`FindBestGrid`)；`AutoDetectGridSizeOnly`(仅填网格数) 与 `AutoDetectAndConvert`(一键 `ConvertByCoords`→步骤③)，选项 `_autoUseRefine`/`_refineIntensity`/`_autoFixSquare`；采样复用 `SampleSourceRect`(转发 6 种算法)，`FixSquare` 近正方形补正。原 FFT 主检测器未移植（避免手写 2D-FFT），改以梯度法为主。详见「智能网格检测 - perfectPixel 移植」region。
 3. **步骤③ 编辑与导出**：左侧工具面板 + 中间编辑画布 + 右侧最终效果图预览(`DrawResultPreview`，`_resultZoom` 1~20，无网格/无高亮)；画布缩放(1~20)、网格开关、画笔/橡皮/魔棒、笔刷色与尺寸(1~5)、魔棒阈值(0~30)、最近颜色(≤6)、调色板颜色替换、撤销/重做、PNG 导出(另存为/覆盖原图/同目录/拆分)。
 4. **步骤④ 辅助功能**：顶部 `GUILayout.Toolbar` 页签切换两个独立子工具——**帧排版（拆分/重排）** 与 **图片合并（拼图集）**，由 `_auxMode`(`AuxMode.Relayout`/`Merge`) 控制，`DrawStep4` 派发到 `DrawStep4Relayout` / `DrawStep4Merge`，详见下方专节。`DrawStepBar` 的 `CanGoToStep(4)` 恒为 true、`reachable = step<=_step || step==4 || step==5`，故随时可进入；不依赖步骤①~③的任何数据。
 5. **步骤⑤ 像素图颜色调节**（`DrawStep5`，见专节）：并排载入两张互相独立的图，各自提取调色板全局换色、分别导出。`CanGoToStep(5)` 恒为 true，独立于主流程。
@@ -81,12 +81,13 @@ watched_files:
 - **两个导出（各图独立，参考步骤③）**：`ExportColorAdjustOverwrite`（覆盖原图，弹确认，写 `BuildPngFromTopDown`）、`ExportColorAdjustToSourceDir`（同原图目录，名=`原图名_recolor.png`）；均需 `GetSlotFilePath(sourceTexture, externalPath)` 有磁盘文件，否则按钮禁用。
 - `OnDestroy` 调 `DisposeColorAdjustImage(_caImageA/_caImageB)` 释放临时源纹理与预览纹理。
 
-## 5 种取色算法（`ConvMethod`）
+## 6 种取色算法（`ConvMethod`）
 
 - `Most` 最常用色：精确直方图 → 欧氏距离聚类(阈值 `_similarityThreshold`，默认 `kDefaultSimilarityThreshold`=30，可在步骤②滑杆设置 0~100) → 主簇内最高频色（`SampleMostUsed`）
 - `MostLight`/`MostDark` 亮度加权：权重 `0.25 + 0.50*亮度因子`，偏亮/偏暗，同样使用 `_similarityThreshold`（`SampleWeighted`）
 - `Average` 平均：格内非透明像素 RGB 均值（`SampleAverage`），不使用阈值
 - `Neighbor` 邻域：四周外扩 25% 再平均，不使用阈值
+- `NearestNeighbor` 最近邻：取格中心映射到源图后最近的一个像素原色，不混合、保留原 alpha（`SampleNearestNeighbor`），不使用阈值
 
 坐标映射：画布坐标 →源图坐标用 `(c - offset) / imageScale`，与原 JS 完全一致（见 `Convert`）。
 

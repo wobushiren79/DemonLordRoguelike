@@ -27,7 +27,7 @@ GameFightLogic          - 战斗逻辑基类（生命周期管理、场景加载
 FightBean               - 战斗运行时数据（进攻/防守生物、核心生物、战斗记录）
 FightCreatureEntity     - 战斗生物实体（Spine动画、受击/回复/死亡、血条、魔王魔力条MPShow）
                           按类型拆分partial：主文件通用 + ForAttack(进攻) + ForDefense(防守) + ForDefenseCore(魔王)
-FightPrefabEntity       - 战斗预制实体（掉落水晶/魔力等场景物品）
+FightPrefabEntity       - 战斗预制实体（掉落魔力等场景物品；魔晶已改走 DSP 批量渲染，见「掉落水晶」节）
 FightHandler            - 战斗处理器（攻击模块创建、预制管理、倒计时）
 FightManager            - 战斗管理器（对象池：攻击模块、战斗预制、数据缓存）
 ControlForGameFight     - 战斗场景输入控制
@@ -359,17 +359,19 @@ public partial class UIFightMain : BaseUIComponent
 
 ### 掉落水晶
 
+> 魔晶渲染：`FightManager.fightDropCrystalInstanceRenderer`（DSP 式 GPU Instancing 批量渲染器，与弹道/飘字同思路）每颗魔晶=纯数据槽（零 GameObject/零碰撞体/零 DOTween，旧 GameObject 模式已删除），掉落/拾取抛物线 CPU 参数化复刻旧 DOJump，待机浮动与 billboard 朝向在 shader（`Game/Fight/DropCrystalInstanced1`，永远面向摄像头）；`FightHandler.Update` 每帧 `Update()`+`RenderAll()` 多批绘制（满 1023 即绘不设上限）。**机制细节见 game-fight-core agent**。
+
 ```csharp
 // 创建掉落
 FightDropCrystalBean dropData = FightManager.Instance.GetFightDropCrystalBean(crystalNum, dropPos);
 FightHandler.Instance.CreateDropCrystal(dropData);
 
 // 拾取（鼠标点击或生物自动拾取）
-GameFightLogic.Instance.PickupCrystalForMouse();   // 手动点击拾取时播放音效 sound_btn_15(id 15)
-GameFightLogic.Instance.PickupCrystalForCreature(entity, pickupRadius);  // 生物半径内全吸(如周期BUFF BuffEntityPeriodicPickupCrystal)
-GameFightLogic.Instance.PickupCrystalForCoreAuto(count);   // 魔王自动拾取：按 listFightPrefab FIFO 取最先掉落且DropCheck的魔晶 count 颗(排除掉落魔力),由 UpdateGameForDefenseCore 按研究间隔驱动(强化 DemonLordAutoPickCrystal 间隔=11-等级秒 / DemonLordAutoPickCrystalNum 数量=1+等级)
-// 三种拾取最终都走 PickupCrystal，魔晶飞回收集点(核心)的 DOJump.OnComplete 中：
-//   播放入账音效 sound_pay_2(id 480002) → AddCrystal → 触发 GameFightLogic_DropAddCrystal
+GameFightLogic.Instance.PickupCrystalForMouse();   // 屏幕空间距离判定(命中播音效 sound_btn_15 id 15)
+GameFightLogic.Instance.PickupCrystalForCreature(entity, pickupRadius);  // 世界距离判定,生物半径内全吸(如周期BUFF BuffEntityPeriodicPickupCrystal)
+GameFightLogic.Instance.PickupCrystalForCoreAuto(count);   // 魔王自动拾取：按槽生成序 FIFO 取最先掉落 count 颗，由 UpdateGameForDefenseCore 按研究间隔驱动(强化 DemonLordAutoPickCrystal 间隔=11-等级秒 / DemonLordAutoPickCrystalNum 数量=1+等级)
+// 拾取统一走 PickupCrystalByRenderer(index) 置 FlyBack 飞回收集点(核心)，到账由渲染器回调 OnDropCrystalArrived(InitFightConstData 注入)：
+//   播放入账音效 sound_pay_2(id 480002) → AddCrystal → 触发 GameFightLogic_DropAddCrystal → RefreshUI
 ```
 
 ### 自定义战斗预制
