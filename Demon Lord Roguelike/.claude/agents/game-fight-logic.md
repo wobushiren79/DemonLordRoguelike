@@ -66,8 +66,8 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 
 ### 魔晶拾取链路（DSP 渲染器单一路径）
 - 魔晶全程 DSP 批量渲染（`FightManager.fightDropCrystalInstanceRenderer`，每颗魔晶=纯数据槽，零 GameObject/零碰撞体/零 DOTween，旧 GameObject 模式已删除；渲染器机制见 game-fight-core agent）；渲染器未就绪（视觉预制缺失）时生成/拾取接口全部零副作用。
-- 三个拾取入口：`PickupCrystalForMouse`（`TryPickByScreenPoint` 屏幕空间判定→命中播音效 sound_btn_15）、`PickupCrystalForCreature`（`PickBySphere` 世界距离判定，生物半径内全吸）、`PickupCrystalForCoreAuto(count)`（`PickFIFO` 按槽生成序取最早 count 颗，`UpdateGameForDefenseCore` 按研究间隔驱动）。
-- 拾取统一走 `PickupCrystalByRenderer(index)`（gameState 校验后 `StartFlyBack` 飞回核心，抛物线 CPU 参数化复刻旧 DOJump）；飞回到账由渲染器回调 `OnDropCrystalArrived`（`InitFightConstData` 注入 `actionForCrystalArrived`，`FightManager.Clear` 时清空）：`AddCrystal`(内含音效) → `GameFightLogic_DropAddCrystal` 事件 → `RefreshUI`。
+- 三个拾取入口：`PickupCrystalForMouse`（`TryPickByScreenPoint` 鼠标射线世界距离判定→命中播音效 sound_btn_15）、`PickupCrystalForCreature`（`PickBySphere` 世界距离判定，生物半径内全吸）、`PickupCrystalForCoreAuto(count)`（`PickFIFO` 按槽生成序取最早 count 颗，`UpdateGameForDefenseCore` 按研究间隔驱动）。
+- 拾取统一走 `PickupCrystalByRenderer(index)`（gameState 校验后 `StartFlyBack` 飞回核心，抛物线 CPU 参数化复刻旧 DOJump）；飞回到账由渲染器回调 `OnDropCrystalArrived`（`InitFightConstData` 注入 `actionForCrystalArrived`，`FightManager.Clear` 时清空；渲染器内到账先记账、帧末压缩后统一派发，遍历中途不 Invoke）：`AddCrystal`(内含音效) → `GameFightLogic_DropAddCrystal` 事件 → `RefreshUI`(同帧多颗到账合并为一次)。
 
 ## 约束
 

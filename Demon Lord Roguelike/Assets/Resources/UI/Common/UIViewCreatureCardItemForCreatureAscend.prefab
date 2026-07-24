@@ -125,6 +125,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -15
       objectReference: {fileID: 0}
+    - target: {fileID: 5818098894967276057, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
+      propertyPath: wasDeprecatedTransferred
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6607275696344688825, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
       propertyPath: m_Name
       value: CreatureCardItem

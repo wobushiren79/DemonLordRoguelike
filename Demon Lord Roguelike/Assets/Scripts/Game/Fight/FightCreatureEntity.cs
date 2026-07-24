@@ -71,6 +71,15 @@ public partial class FightCreatureEntity
         this.creatureObj.name = fightCreatureData.creatureData.creatureUUId;
         //获取骨骼数据
         creatureSkeletionAnimation = creatureObj.transform.Find("Spine")?.GetComponent<SkeletonAnimation>();
+        //性能优化（4.3: 渲染相关属性需通过 Renderer 访问，SkeletonAnimation 与 SkeletonRenderer 已分离）
+        creatureSkeletionAnimation.Renderer.UpdateWhenInvisible = UpdateMode.Nothing;
+        creatureSkeletionAnimation.Renderer.MeshSettings.addNormals = false;
+        creatureSkeletionAnimation.Renderer.MeshSettings.calculateTangents = false;
+        creatureSkeletionAnimation.Renderer.MeshSettings.tintBlack = false;
+        creatureSkeletionAnimation.Renderer.MeshSettings.immutableTriangles = true;
+        ((SkeletonRenderer)creatureSkeletionAnimation.Renderer).singleSubmesh = true;
+        creatureSkeletionAnimation.Renderer.MeshSettings.useClipping = false;
+        
         //获取生命值显示
         creatureLifeShow = creatureObj.transform.Find("LifeShow")?.GetComponent<SpriteRenderer>();
         creatureLifeShow?.ShowObj(false);

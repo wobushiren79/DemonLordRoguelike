@@ -692,6 +692,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 4100333713665764629}
     m_Modifications:
+    - target: {fileID: 2992929411199304094, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
+      propertyPath: wasDeprecatedTransferred
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6607275696344688825, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
       propertyPath: m_Name
       value: UIViewCreatureCardItem
@@ -783,8 +787,53 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3051823435351629189, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8704124388611378834}
   m_SourcePrefab: {fileID: 100100000, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
+--- !u!1 &2757797131060317378 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3051823435351629189, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
+  m_PrefabInstance: {fileID: 873672900734456135}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8704124388611378834
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2757797131060317378}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d247ba06193faa74d9335f5481b2b56c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: spine-unity::Spine.Unity.SkeletonAnimation
+  updateTiming: 1
+  threadedAnimation: 2
+  animationName: 
+  loop: 0
+  timeScale: 1
+  unscaledTime: 0
+  wasDeprecatedTransferred: 0
+  skeletonDataAssetDeprecated: {fileID: 0}
+  initialSkinNameDeprecated: 
+  editorSkipSkinSyncDeprecated: 0
+  initialFlipXDeprecated: 0
+  initialFlipYDeprecated: 0
+  updateModeDeprecated: 3
+  updateWhenInvisibleDeprecated: 3
+  separatorSlotNamesDeprecated: []
+  zSpacingDeprecated: 0
+  useClippingDeprecated: 1
+  immutableTrianglesDeprecated: 0
+  pmaVertexColorsDeprecated: 1
+  clearStateOnDisableDeprecated: 0
+  tintBlackDeprecated: 0
+  singleSubmeshDeprecated: 0
+  addNormalsDeprecated: 0
+  calculateTangentsDeprecated: 0
+  maskInteractionDeprecated: 0
 --- !u!224 &7868306853569799473 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 7002604542947046518, guid: 526d61e2b6ed398458da24877d412b68, type: 3}

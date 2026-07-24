@@ -66,6 +66,8 @@ BaseAttackMode                      - 攻击模式基类
 ├── AttackModeFalluponChain         - 天降连锁（连锁弹射多个目标，伤害递减）
 ├── AttackModeOverlap               - 重叠检测（范围伤害，无击中特效）
 ├── AttackModeLure                  - 引诱（改变被攻击者线路）
+├── AttackModeInstantArea           - 瞬时落点范围（无弹道飞行，当帧对目标点范围攻击；支持 hit_max 命中上限+快照名单过滤）
+│   └── AttackModeInstantAreaThunder - 落雷（瞬时AOE + 全局单例雷电粒子；深渊馈赠「闪电」300031~300035）
 └── AttackModeRegain                - 回复基类（不造成伤害，提供增益）
     ├── AttackModeRegainHP          - 回复生命
     └── AttackModeRegainDR          - 回复护甲
@@ -98,6 +100,7 @@ BaseAttackMode                      - 攻击模式基类
 | `AttackModeFallupon` | 直接对目标造成伤害 | 天降打击、瞬移攻击 |
 | `AttackModeFalluponArea` | 对目标位置范围伤害 | 陨石、天降AOE |
 | `AttackModeFalluponChain` | 连锁弹射递减伤害 | 闪电链、弹射攻击 |
+| `AttackModeInstantArea` | 当帧瞬时落点AOE（无飞行过程；可配 hit_max 上限+注入快照名单） | 落雷、瞬发地面AOE |
 | `AttackModeRegain` | 回复而非伤害 | 治疗术、护盾恢复 |
 | `BaseAttackMode` | 完全自定义 | 特殊机制攻击 |
 
@@ -403,6 +406,36 @@ public class AttackModeFalluponChain : BaseAttackMode
 > - `PlayEffectForHit` 第 2 参数表示 `effect_hit` 中的索引：`0=初始击中特效`，`1=连锁击中特效`；
 > - `CheckGameState()` 在每次 `await` 后校验 `gameLogic.gameState == Gaming`，防止战斗结束/暂停期间继续推进连锁。
 
+#### 瞬时落点AOE（落雷）示例
+
+> **模式要点**：`AttackModeInstantArea` 无弹道飞行——`StartAttack` 当帧立即以 `attackModeData.targetPos` 为圆心做一次范围攻击并自毁。天然无 `Update`/射线/拖尾开销；无 prefab/visual_name 时 `gameObject=null`，DSP 渲染自动跳过。两个扩展点：**配置 `hit_max`**（单次命中上限，>0 时按距落点近者优先截断，保证落点主目标必中）与**发射方注入 `filterCreatureIds`** 快照名单（非空时只命中名单内生物——「触发瞬间快照全场、间隔期新刷敌人不受波及」类攻击用，写法照 `AttackModeRangedSplitChild.targetRoad` 先例：StartAttack 前写入、`Destroy` 置空防对象池残留）。子类 `AttackModeInstantAreaThunder`（落雷）仅重写 `PlayHitEffect` 改走 `EffectHandler.ShowThunderEffect`。
+
+```csharp
+// 基类核心（AttackHandle 当帧执行一次即销毁）
+public virtual void AttackHandle()
+{
+    Vector3 centerPos = attackModeData.targetPos;
+    int hitMax = attackModeInfo.hit_max;
+    Collider[] targetColliders = GetHitTargetAreaCollider(centerPos);   //框架原生：collider_area_type/collider_area_size
+    if (!targetColliders.IsNull())
+    {
+        if (hitMax > 0) Array.Sort(targetColliders, 按距落点sqrMagnitude升序); //近者优先
+        for (...)
+        {
+            if (hitMax > 0 && hitNum >= hitMax) break;
+            if (filterCreatureIds != null && !filterCreatureIds.Contains(creatureId)) continue; //快照过滤
+            targetCreature.UnderAttack(this); hitNum++;
+        }
+    }
+    PlayHitEffect(centerPos);   //默认 PlayEffectForHit；雷电子类重写为 ShowThunderEffect
+    Destroy();
+}
+```
+
+**发射方示例（BUFF 纯数据发射路径，照分裂弹发射器先例内联发射）**：深渊馈赠「闪电」BUFF（`BuffEntityPeriodicMultiInstantAttack`）负责周期触发→快照全场敌人→有放回抽 N 个目标→第 1 道立即+后续 0.1 秒间隔逐个发射，每道雷注入伤害快照（魔王实时ATK×trigger_value、CRT=0 不暴击）、落点（startPos=targetPos）、`attackedLayerTarget=LayerInfo.CreatureAtt`、`filterCreatureIds` 快照名单。配置：buff 表 `class_entity_data="次数,攻击模块ID"`；攻击模块表 300031~300035（Lv1~5 各一行，半径/命中上限随级配在 `collider_area_size`/`hit_max`）。
+
+> **⚠️雷电粒子为何不走 effect_hit 配置**：`Effect_Thunder_3` 是全局单例持久型 PS，`EffectHandler.ShowThunderEffect` 用 Stop(StopEmitting)+Play 重播才支持 0.1 秒连发交叠；标准 `effect_hit`/`ShowEffect` 通道对持久型粒子不会重触发爆发（且不会移动单例位置），直接配置会让第 2~N 道雷不闪。走 EffectHandler 专用方法与血液/护盾（`ShowBloodEffect`/`ShowShieldHitEffect`）是同一先例。
+
 #### 完全自定义示例
 
 ```csharp
@@ -435,6 +468,7 @@ public class AttackModeCustom : BaseAttackMode
     "buff": "1001:0.5|1002:1.0",     // 攻击附带的BUFF（ID:创建概率）
     "attack_search_type": 0,         // 攻击搜索类型（0射线 11球形范围 21盒形范围）
     "damage_add_rate": 0,            // 伤害加成比例（float；最终伤害=攻击者ATK×该值，0/空=无加成按1倍。如自爆史莱姆爆炸300001配50：ATK 10×50=500）
+    "hit_max": 1,                    // 单次命中目标数上限（int；>0 时按距落点近者优先截断，0/空=不限制；目前仅 AttackModeInstantArea 系使用）
     "collider_size": 0.5,            // 碰撞检测大小（点到点）
     "collider_area_type": 11,        // 范围检测类型（11球形 21盒形）
     "collider_area_size": "2,2,2",   // 范围检测大小（半径或半extents）
@@ -709,6 +743,8 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | 天降范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponArea.cs` |
 | 天降连锁 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponChain.cs` |
 | 重叠检测 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlap.cs` |
+| 瞬时落点范围（通用基类） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeInstantArea.cs` |
+| 落雷（瞬时AOE+单例雷电粒子） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeInstantAreaThunder.cs` |
 | 回复基类 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRegain.cs` |
 | 回复生命 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRegainHP.cs` |
 | 回复护甲 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRegainDR.cs` |

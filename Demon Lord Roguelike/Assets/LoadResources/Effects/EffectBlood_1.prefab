@@ -151,6 +151,7 @@ VFXRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
 --- !u!114 &2525283845599630242
 MonoBehaviour:
   m_ObjectHideFlags: 0

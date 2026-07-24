@@ -9,6 +9,10 @@ Shader "Game/Fight/DropCrystalInstanced1"
     // 沿相机右/上/前轴位移(与旧方案对象空间位移等价——旧 quad 本地轴经"生成时对齐相机旋转"后即相机轴)、
     // 全局时间驱动(与旧 SpriteRenderer 同材质表现一致：全场魔晶同相位)。原图无顶点自转(VertexRotateSpeed=0)故不实现。
     //
+    // 【位置偏移】_PositionOffset：世界空间整体偏移(默认 (0,0.1,0))，仅视觉抬升渲染锚点——魔晶落地锚点在 +0.1y，
+    // quad 半高≈0.112 再叠加待机下浮 0.05，最低点会下穿地面；抬高后最低点仍保持在地面之上。
+    // 只影响渲染(逻辑位置/拾取判定仍按槽内 currentPos，不受本参数影响)。
+    //
     // 【网格约定】单位 Quad(顶点 ±0.5、UV 满幅 0..1，Unity 内置 Quad 即满足)；billboard 展开用 (uv-0.5) 作角点，
     // 对网格顶点位置不敏感(任何满幅 UV 的 quad 都正确)。实例矩阵：平移=魔晶世界坐标，X/Y 列模长=世界宽/高，无旋转——
     // 朝向由本 shader 用相机右/上轴 billboard 展开，永远面向摄像头(相机拖拽/旋转/缩放均逐帧对齐)。
@@ -28,6 +32,9 @@ Shader "Game/Fight/DropCrystalInstanced1"
         [Header(Idle Anim)]
         _IdleAnimPosition ("待机浮动幅度 (对象空间, 原材质 (0,0.05,0))", Vector) = (0, 0.05, 0, 0)
         _IdleAnimSpeed ("待机浮动速度 (弧度/秒, 原材质 5)", Float) = 5
+
+        [Header(Position Offset)]
+        _PositionOffset ("世界位置偏移 (仅视觉抬升防穿地面, 默认 +0.1y)", Vector) = (0, 0.1, 0, 0)
     }
 
     SubShader
@@ -52,6 +59,7 @@ Shader "Game/Fight/DropCrystalInstanced1"
             float  _AlphaClipThreshold;
             float4 _IdleAnimPosition;
             float  _IdleAnimSpeed;
+            float4 _PositionOffset;
         CBUFFER_END
         ENDHLSL
 
@@ -102,6 +110,9 @@ Shader "Game/Fight/DropCrystalInstanced1"
                 float3 camRightWS   = UNITY_MATRIX_I_V._m00_m10_m20;
                 float3 camUpWS      = UNITY_MATRIX_I_V._m01_m11_m21;
                 float3 camForwardWS = UNITY_MATRIX_I_V._m02_m12_m22;
+
+                // 世界位置偏移(仅视觉抬升防浮动下穿地面;逻辑位置/拾取判定不受影响)
+                anchorWS += _PositionOffset.xyz;
 
                 // 待机浮动：沿相机三轴位移(与旧方案对象空间位移等价——旧 quad 本地轴经"对齐相机旋转"后即相机轴)
                 float3 idleOffset = _IdleAnimPosition.xyz * sin(_Time.y * _IdleAnimSpeed);

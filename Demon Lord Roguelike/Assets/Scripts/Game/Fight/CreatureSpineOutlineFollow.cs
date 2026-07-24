@@ -120,7 +120,7 @@ public class CreatureSpineOutlineFollow : MonoBehaviour
         if (targetRenderer == null)
             return;
         //逐图集材质建立替换映射(单图集生物仅一项)
-        var customOverride = selfSkeletonAnimation.CustomMaterialOverride;
+        var customOverride = ((SkeletonRenderer)selfSkeletonAnimation.Renderer).CustomMaterialOverride;
         customOverride.Clear();
         Material[] srcMats = targetRenderer.sharedMaterials;
         for (int i = 0; i < srcMats.Length; i++)
@@ -183,8 +183,9 @@ public class CreatureSpineOutlineFollow : MonoBehaviour
     /// <summary>
     /// 在自身骨骼"应用动画后、计算世界变换前"逐帧把目标骨骼的本地姿态(SRT)复制过来，使描边轮廓与目标当前动画帧一致。
     /// <para>同一生物同一骨架，骨骼数量/顺序一致才逐根复制。</para>
+    /// <para>4.3: 委托签名从 UpdateBonesDelegate(ISkeletonAnimation) 改为 SkeletonRendererDelegate(ISkeletonRenderer)。</para>
     /// </summary>
-    void HandleUpdateLocal(ISkeletonAnimation animation)
+    void HandleUpdateLocal(ISkeletonRenderer renderer)
     {
         if (targetSkeletonAnimation == null || targetSkeletonAnimation.skeleton == null || selfSkeletonAnimation.skeleton == null)
             return;
@@ -196,13 +197,13 @@ public class CreatureSpineOutlineFollow : MonoBehaviour
         {
             Bone tb = targetBones.Items[i];
             Bone sb = selfBones.Items[i];
-            sb.X = tb.X;
-            sb.Y = tb.Y;
-            sb.Rotation = tb.Rotation;
-            sb.ScaleX = tb.ScaleX;
-            sb.ScaleY = tb.ScaleY;
-            sb.ShearX = tb.ShearX;
-            sb.ShearY = tb.ShearY;
+            sb.Pose.X = tb.Pose.X;
+            sb.Pose.Y = tb.Pose.Y;
+            sb.Pose.Rotation = tb.Pose.Rotation;
+            sb.Pose.ScaleX = tb.Pose.ScaleX;
+            sb.Pose.ScaleY = tb.Pose.ScaleY;
+            sb.Pose.ShearX = tb.Pose.ShearX;
+            sb.Pose.ShearY = tb.Pose.ShearY;
         }
     }
     #endregion

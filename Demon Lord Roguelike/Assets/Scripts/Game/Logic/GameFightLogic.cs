@@ -31,6 +31,9 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>魔王每次自动拾取的魔晶数量缓存；同上开战缓存一次</summary>
     private int demonLordPickCrystalCount;
 
+    /// <summary>魔晶飞回到账触发全UI刷新的帧号缓存（同帧多颗集中到账时合并为一次刷新；-1=本帧未刷新）</summary>
+    private int lastCrystalArriveRefreshFrame = -1;
+
     #region  重写方法
     /// <summary>
     /// 准备游戏
@@ -840,6 +843,7 @@ public class GameFightLogic : BaseGameLogic
 
     /// <summary>
     /// 魔晶飞回到账：入账 + 事件通知 + 刷新 UI(由 InitFightConstData 注入渲染器 actionForCrystalArrived)
+    /// <para>同帧多颗集中到账(范围拾取批量飞回)时全 UI 刷新按帧合并为一次,避免逐颗重复 RefreshUI。</para>
     /// </summary>
     private void OnDropCrystalArrived(int crystalNum)
     {
@@ -848,8 +852,12 @@ public class GameFightLogic : BaseGameLogic
         userData.AddCrystal(crystalNum);
         //事件通知
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_DropAddCrystal, crystalNum);
-        //刷新所有打开的UI
-        UIHandler.Instance.RefreshUI();
+        //刷新所有打开的UI(同帧多颗到账合并为一次)
+        if (lastCrystalArriveRefreshFrame != Time.frameCount)
+        {
+            lastCrystalArriveRefreshFrame = Time.frameCount;
+            UIHandler.Instance.RefreshUI();
+        }
     }
     #endregion
 }

@@ -58,6 +58,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d4f40c2d66a9424e864b0e2834888a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}
   ui_Line: {fileID: 5776644508056405731}
 --- !u!1 &8749013384125645329

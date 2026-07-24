@@ -84,6 +84,10 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public float damage_add_rate;
 	/// <summary>
+	///单次命中目标数上限(>0时按距落点近者优先截断,0/空=不限制;目前仅AttackModeInstantArea系使用)
+	/// </summary>
+	public int hit_max;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

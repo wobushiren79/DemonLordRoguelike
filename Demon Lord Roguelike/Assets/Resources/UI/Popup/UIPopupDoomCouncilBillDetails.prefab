@@ -653,6 +653,8 @@ MonoBehaviour:
   offsetY: 0
   offsetPivot: {x: 0, y: 0}
   isUpdatePosition: 1
+  positionFollowSpeed: 14
+  positionOvershoot: 0.45
   ui_DetailsText: {fileID: 7552840554487154432}
   ui_SuccessRate: {fileID: 6638296215712959078}
   ui_NameText: {fileID: 9093614194259671896}

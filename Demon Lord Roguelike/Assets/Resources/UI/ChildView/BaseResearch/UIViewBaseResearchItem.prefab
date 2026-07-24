@@ -178,6 +178,7 @@ MonoBehaviour:
   m_VerticalAlignment: 4096
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -284,11 +285,13 @@ MonoBehaviour:
     position_y: 0
     unlock_id: 0
     pre_unlock_ids: 
+    pre_data: 
     pay_crystal: 0
     name: 0
     remark: 
     preUnlockIds: 
     arrayPayCrystal: 
+    isPreDataParseError: 0
   ui_Icon: {fileID: 4828232006872769703}
   ui_BG_Button: {fileID: 3642393640608232637}
   ui_BG_PopupButtonCommonView: {fileID: 608725517868466673}

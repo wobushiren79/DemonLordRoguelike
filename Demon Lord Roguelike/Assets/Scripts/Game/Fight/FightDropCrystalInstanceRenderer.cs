@@ -1,14 +1,19 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 /// <summary>
 /// 战斗掉落魔晶 GPU Instancing 批量渲染器（DSP 式：与 <see cref="FightTextInstanceRenderer"/>/<see cref="AttackModeInstanceRenderer"/> 同思路——"只记槽位，一起绘制"）。
 /// <para>【核心】不再每颗魔晶一个 GameObject+BoxCollider+SpriteRenderer+DOTween，而是每颗魔晶一个纯数据槽：
-/// 掉落抛物线/拾取飞回由 CPU 参数化求值（精确复刻旧 DOJump 曲线）写进槽内缓存矩阵，待机上下浮动由 shader 时间驱动，
-/// 每帧全屏魔晶一次或多次 Graphics.DrawMeshInstanced 画完（满 1023 即绘一批、收尾补绘，不设数量上限）。</para>
-/// <para>【零 GameObject】拾取检测不走物理：鼠标点选走屏幕空间距离判定，生物范围拾取走世界距离判定，魔王自动拾取直接按槽序 FIFO。</para>
-/// <para>【静态矩阵优化】魔晶落地(Landed)后矩阵恒定(浮动在 shader 里)，槽集无变化帧跳过填充与上传，直接复用上次缓冲绘制(同 FightTextInstanceRenderer 的 dirty 思路)。</para>
+/// 掉落抛物线/拾取飞回由 CPU 参数化求值（精确复刻旧 DOJump 曲线），待机上下浮动由 shader 时间驱动，
+/// 每帧全屏魔晶一次或多次 Graphics.DrawMeshInstanced 画完（≤1023 单批、超出满批即绘收尾补绘，不设数量上限）。</para>
+/// <para>【零 GameObject】拾取检测不走物理：鼠标点选走「魔晶到鼠标射线的世界距离」判定，生物范围拾取走世界距离判定，魔王自动拾取直接按槽序 FIFO。</para>
+/// <para>【静态矩阵优化】魔晶落地(Landed)后位置恒定(浮动在 shader 里)，槽集无变化帧跳过填充与上传，直接复用上次缓冲绘制(同 FightTextInstanceRenderer 的 dirty 思路)；
+/// 槽内不缓存矩阵——填充时由 currentPos 现算(只含平移+缩放,直写 8 个 float,比每槽缓存 64B 矩阵更省内存与复制带宽)。</para>
+/// <para>【寿命与移除】落地时把寿命换算成「渲染器时钟(游戏速度时间累计)」上的到期时间戳，Landed 态每帧只读比较、到期/到账打删除标记，帧末一次性稳定压缩移除
+/// (替代逐颗 RemoveAt 的 O(N²) 反复搬运；压缩保序以维持 FIFO 拾取语义)。飞回到账不即时回调——先记账到 arrivedNumBuffer，帧末压缩后统一派发，
+    /// 避免回调在槽遍历中途重入 Clear/Add 破坏迭代(派发时重入亦安全：Clear 清空缓冲后派发循环按动态 Count 自然终止)。</para>
 /// <para>【渲染资源】Setup 注册 Quad mesh + DropCrystalInstanced1 材质；材质 _BaseMap 引用 Crystal_1 独立贴图(不经图集，规避 atlas 子 UV 问题)，
 /// 世界尺寸按贴图像素/100PPU×0.7 换算(对齐旧预制 SpriteRenderer 表现)。未 Setup 时一切接口零副作用(装配失败会在 EnsureDropCrystalVisual 报错)。</para>
 /// </summary>
@@ -34,7 +39,7 @@ public class FightDropCrystalInstanceRenderer
 
     #region 内部结构：魔晶槽
     /// <summary>
-    /// 魔晶槽状态机：Dropping(掉落抛物线,不可拾取) → Landed(落地,可拾取,寿命倒计时) → FlyBack(飞回核心,不可拾取) → 到账移除。
+    /// 魔晶槽状态机：Dropping(掉落抛物线,不可拾取) → Landed(落地,可拾取,到期时间戳判定) → FlyBack(飞回核心,不可拾取) → 到账移除。
     /// </summary>
     public enum SlotStateEnum
     {
@@ -44,7 +49,8 @@ public class FightDropCrystalInstanceRenderer
     }
 
     /// <summary>
-    /// 魔晶槽：一颗在屏魔晶的全部数据，诞生时一次算好静态部分，动画仅推进时钟并重算矩阵。
+    /// 魔晶槽：一颗在屏魔晶的全部数据，诞生时一次算好静态部分，动画仅推进时钟并重算位置。
+    /// <para>不缓存实例矩阵：填充绘制缓冲时由 currentPos 现算(直写 8 个 float)，省去每槽 64B 缓存与整份结构体复制带宽。</para>
     /// </summary>
     private struct CrystalSlot
     {
@@ -53,7 +59,7 @@ public class FightDropCrystalInstanceRenderer
         public Vector3 startPos;
         //当前段动画的终点(Dropping=落地点/FlyBack=核心偏移点)；Landed 态即常驻位置
         public Vector3 endPos;
-        //当前位置(每帧由状态机推进；Landed 恒等于 endPos)
+        //当前位置(每帧由状态机推进；Landed 恒等于 endPos；billboard 在 shader 展开,填充时现算平移+缩放矩阵)
         public Vector3 currentPos;
         //状态内已进行时长(游戏速度时间,GameFightLogic.GetFightDeltaTime 驱动)
         public float animClock;
@@ -63,10 +69,12 @@ public class FightDropCrystalInstanceRenderer
         public float jumpHeight;
         //价值(飞回到账时入账)
         public int crystalNum;
-        //剩余寿命(仅 Landed 倒计时,耗尽移除；对齐旧 FightPrefabEntity 只在 DropCheck 计寿命)
+        //配置的落地后存在时长(秒,>0 才会到期;仅落地瞬间换算 expireAt 用,之后不再读取)
         public float lifeTime;
-        //缓存的实例矩阵(位置变化时重算；Landed 态恒定；billboard 在 shader 展开,矩阵只含平移+缩放)
-        public Matrix4x4 matrix;
+        //到期时间戳(渲染器时钟;仅 Landed 有意义,落地时=rendererClock+lifeTime;lifeTime<=0 恒 float.MaxValue 永不到期)
+        public float expireAt;
+        //删除标记(Update 内到期/到账时置位,帧末统一压缩;替代逐颗 RemoveAt)
+        public bool dead;
     }
     #endregion
 
@@ -76,18 +84,22 @@ public class FightDropCrystalInstanceRenderer
     private Material material;
     //魔晶世界尺寸(Setup 时按材质 _BaseMap 贴图像素/PPU×0.7 换算)
     private Vector2 baseScale = new Vector2(0.224f, 0.224f);
-    //活跃魔晶槽(保持生成序——魔王自动拾取按 FIFO 取最先掉落；移除用 RemoveAt 保序不用 swap-back)
+    //活跃魔晶槽(保持生成序——魔王自动拾取按 FIFO 取最先掉落；删除走帧末稳定压缩保序,不用 swap-back)
     private readonly List<CrystalSlot> listSlot = new List<CrystalSlot>(256);
     //本帧绘制缓冲(定容 1023 复用,热路径零分配)
     private readonly Matrix4x4[] matrixBuffer = new Matrix4x4[MaxInstancesPerBatch];
     //上次填充缓冲时的实例数(dirty=false 帧按此数直接复用旧缓冲绘制)
     private int lastFillCount;
-    //槽集脏标记:填槽/移除/任何槽动画推进时置位;无变化帧复用旧缓冲直接绘制(槽矩阵全静态,浮动全在 shader)
+    //槽集脏标记:填槽/压缩/任何槽动画推进时置位;无变化帧复用旧缓冲直接绘制(Landed 位置恒定,浮动全在 shader,矩阵填充时由 currentPos 现算)
     private bool dirty = true;
-    //飞回到账回调(crystalNum 入账逻辑由 GameFightLogic 注入,渲染器不碰用户数据)
+    //渲染器时钟(Update 内按游戏速度帧时间累计,供 expireAt 到期比较;暂停/倍速与全场时钟同源)
+    private float rendererClock;
+    //飞回到账回调(crystalNum 入账逻辑由 GameFightLogic 注入,渲染器不碰用户数据;Update 内到账先记账,帧末压缩后统一派发)
     public Action<int> actionForCrystalArrived;
     //拾取查询的复用结果缓冲(避免每次查询分配)
     private readonly List<int> pickResultBuffer = new List<int>(64);
+    //本帧到账的价值记账缓冲(Update 遍历中途不 Invoke——回调若重入 Clear/Add 会破坏槽迭代;帧末压缩后统一派发,派发时回调重入亦安全)
+    private readonly List<int> arrivedNumBuffer = new List<int>(64);
     #endregion
 
     #region 注册与清理
@@ -129,7 +141,9 @@ public class FightDropCrystalInstanceRenderer
         listSlot.Clear();
         lastFillCount = 0;
         dirty = true;
+        rendererClock = 0f;
         actionForCrystalArrived = null;
+        arrivedNumBuffer.Clear();
     }
     #endregion
 
@@ -158,14 +172,16 @@ public class FightDropCrystalInstanceRenderer
         slot.jumpHeight = DropJumpHeight;
         slot.crystalNum = crystalNum;
         slot.lifeTime = lifeTime;
-        slot.matrix = BuildSlotMatrix(slot.currentPos);
+        //到期时间戳落地瞬间才换算(届时=rendererClock+lifeTime),Dropping 态给永不到期哨兵即可
+        slot.expireAt = float.MaxValue;
+        slot.dead = false;
         listSlot.Add(slot);
         dirty = true;
     }
 
     /// <summary>
-    /// 鼠标点选：遍历 Landed 槽投影到屏幕空间,取「鼠标到魔晶屏幕距离 ≤ 该魔晶拾取半径像素值」中最近的一颗。
-    /// <para>拾取半径按世界 0.25 逐颗投影换算成像素(随相机缩放逐颗自适应,对齐旧 BoxCollider 命中手感)。</para>
+    /// 鼠标点选：把鼠标屏幕点一次转成世界射线，取「魔晶到射线的垂直距离 ≤ 拾取半径 0.25」中最近的一颗 Landed 魔晶。
+    /// <para>世界空间判定与旧「逐颗投影屏幕距离」等价(像素拾取半径随深度自适应、对齐旧 BoxCollider 命中手感)，但每颗只剩向量点积/减法的纯标量运算，无逐颗矩阵投影。</para>
     /// </summary>
     /// <returns>命中返回 true 且 index 为槽下标(仅当帧有效,须立即配合 StartFlyBack 使用)</returns>
     public bool TryPickByScreenPoint(Vector2 mouseScreenPos, out int index)
@@ -174,24 +190,24 @@ public class FightDropCrystalInstanceRenderer
         Camera mainCamera = CameraHandler.Instance.manager.mainCamera;
         if (mainCamera == null)
             return false;
-        Vector3 camRight = mainCamera.transform.right;
-        float bestDist = float.MaxValue;
+        //鼠标点一次转世界射线(方向已归一化)
+        Ray pickRay = mainCamera.ScreenPointToRay(mouseScreenPos);
+        float bestDistSqr = PickRadiusWorld * PickRadiusWorld;
         for (int i = 0; i < listSlot.Count; i++)
         {
             CrystalSlot slot = listSlot[i];
             if (slot.state != SlotStateEnum.Landed)
                 continue;
-            Vector3 sp = mainCamera.WorldToScreenPoint(slot.currentPos);
-            //相机身后的点屏幕坐标会镜像翻转,直接跳过
-            if (sp.z <= 0f)
+            Vector3 toCrystal = slot.currentPos - pickRay.origin;
+            float alongRay = Vector3.Dot(toCrystal, pickRay.direction);
+            //相机身后(射线反方向)的点直接跳过
+            if (alongRay <= 0f)
                 continue;
-            //世界拾取半径换算像素半径(沿相机右轴投影,透视下逐颗自适应)
-            Vector3 spEdge = mainCamera.WorldToScreenPoint(slot.currentPos + camRight * PickRadiusWorld);
-            float radiusPx = Mathf.Abs(spEdge.x - sp.x);
-            float dist = Vector2.Distance(new Vector2(sp.x, sp.y), mouseScreenPos);
-            if (dist <= radiusPx && dist < bestDist)
+            //垂直距离平方 = |toCrystal|² - alongRay²(勾股定理,免去开方)
+            float distSqr = toCrystal.sqrMagnitude - alongRay * alongRay;
+            if (distSqr <= bestDistSqr)
             {
-                bestDist = dist;
+                bestDistSqr = distSqr;
                 index = i;
             }
         }
@@ -262,7 +278,8 @@ public class FightDropCrystalInstanceRenderer
 
     #region 每帧更新与渲染入口
     /// <summary>
-    /// 每帧更新(FightHandler.Update)：推进掉落/飞回抛物线(游戏速度时钟),Landed 寿命倒计时,飞回到账回调并移除,到期移除。
+    /// 每帧更新(FightHandler.Update)：推进渲染器时钟与掉落/飞回抛物线(游戏速度时钟),Landed 到期判定(只读比较时间戳),飞回到账记账；
+    /// 到期/到账统一打删除标记,帧末一次性稳定压缩(保序,FIFO 依赖生成序),压缩后统一派发到账回调(遍历中途不 Invoke,避免回调重入 Clear/Add 破坏槽迭代)。
     /// <para>抛物线公式精确复刻 DOTween DOJump:每跳 y += jumpHeight×4×phase×(1-phase),phase 为单跳相位;掉落 Linear、飞回 OutCubic。</para>
     /// </summary>
     public void Update()
@@ -272,8 +289,9 @@ public class FightDropCrystalInstanceRenderer
             return;
         //与旧 FightPrefabEntity 同一时钟源(跟随游戏速度/暂停)
         float deltaTime = GameFightLogic.GetFightDeltaTime();
-        //倒序遍历:移除用 RemoveAt 保序(FIFO 依赖生成序)
-        for (int i = count - 1; i >= 0; i--)
+        rendererClock += deltaTime;
+        bool anyDead = false;
+        for (int i = 0; i < count; i++)
         {
             CrystalSlot slot = listSlot[i];
             switch (slot.state)
@@ -283,10 +301,10 @@ public class FightDropCrystalInstanceRenderer
                     slot.animClock += deltaTime;
                     if (slot.animClock >= slot.animDuration)
                     {
-                        //落地:转入可拾取态,位置钉在落地点(对齐旧 DOJump OnComplete 置 DropCheck)
+                        //落地:转入可拾取态,位置钉在落地点,寿命换算成到期时间戳(lifeTime<=0 永不到期)
                         slot.state = SlotStateEnum.Landed;
                         slot.currentPos = slot.endPos;
-                        slot.matrix = BuildSlotMatrix(slot.currentPos);
+                        slot.expireAt = slot.lifeTime > 0 ? rendererClock + slot.lifeTime : float.MaxValue;
                         listSlot[i] = slot;
                         dirty = true;
                         continue;
@@ -294,22 +312,18 @@ public class FightDropCrystalInstanceRenderer
                     //Linear 缓动:相位线性推进
                     float t = slot.animClock / slot.animDuration;
                     slot.currentPos = EvalJumpPosition(slot.startPos, slot.endPos, t, slot.jumpHeight, DropJumpCount);
-                    slot.matrix = BuildSlotMatrix(slot.currentPos);
                     listSlot[i] = slot;
                     dirty = true;
                     break;
                 }
                 case SlotStateEnum.Landed:
                 {
-                    //寿命只计落地后(对齐旧 FightPrefabEntity 只在 DropCheck 扣 lifeTime)
-                    if (slot.lifeTime > 0)
+                    //到期只读比较(时间戳落地时算好,无需每帧写回;对齐旧 FightPrefabEntity 只在 DropCheck 计寿命)
+                    if (rendererClock >= slot.expireAt)
                     {
-                        slot.lifeTime -= deltaTime;
-                        if (slot.lifeTime <= 0)
-                        {
-                            listSlot.RemoveAt(i);
-                            dirty = true;
-                        }
+                        slot.dead = true;
+                        listSlot[i] = slot;
+                        anyDead = true;
                     }
                     break;
                 }
@@ -318,29 +332,38 @@ public class FightDropCrystalInstanceRenderer
                     slot.animClock += deltaTime;
                     if (slot.animClock >= slot.animDuration)
                     {
-                        //到账:回调入账后移除(对齐旧 DOJump OnComplete 的 AddCrystal+事件+销毁)
-                        int arrivedNum = slot.crystalNum;
-                        listSlot.RemoveAt(i);
-                        dirty = true;
-                        actionForCrystalArrived?.Invoke(arrivedNum);
+                        //到账:打删除标记并记账,回调延后到帧末压缩后统一派发(对齐旧 DOJump OnComplete 的 AddCrystal+事件+销毁)
+                        arrivedNumBuffer.Add(slot.crystalNum);
+                        slot.dead = true;
+                        listSlot[i] = slot;
+                        anyDead = true;
                         continue;
                     }
                     //OutCubic 缓动:1-(1-t)^3(对齐旧 SetEase(Ease.OutCubic))
                     float t = slot.animClock / slot.animDuration;
                     float easeT = 1f - (1f - t) * (1f - t) * (1f - t);
                     slot.currentPos = EvalJumpPosition(slot.startPos, slot.endPos, easeT, slot.jumpHeight, 1);
-                    slot.matrix = BuildSlotMatrix(slot.currentPos);
                     listSlot[i] = slot;
                     dirty = true;
                     break;
                 }
             }
         }
+        //帧末统一压缩删除标记槽(单次 O(N) 遍历,替代逐颗 RemoveAt 的 O(N²) 反复搬运)
+        if (anyDead)
+        {
+            CompactSlots();
+            dirty = true;
+        }
+        //帧末统一派发到账回调(槽集已压缩稳定,回调内重入 Clear/Add 均安全;重入 Clear 会清空本缓冲,循环按动态 Count 自然终止)
+        for (int i = 0; i < arrivedNumBuffer.Count; i++)
+            actionForCrystalArrived?.Invoke(arrivedNumBuffer[i]);
+        arrivedNumBuffer.Clear();
     }
 
     /// <summary>
-    /// 每帧渲染(FightHandler.Update)：槽集有变化(或总数超单批上限须逐帧重灌)时填充矩阵缓冲,满批即绘、收尾补绘。
-    /// <para>无变化帧(全部 Landed 静止)复用上次缓冲直接一次绘制;无活跃槽不绘制。</para>
+    /// 每帧渲染(FightHandler.Update)：≤1023 时仅槽集变化帧重灌缓冲、无变化帧(全 Landed 静止)复用旧缓冲一次绘制；超单批上限逐帧重灌分批绘制(极端情况)。
+    /// <para>矩阵由槽内 currentPos 现算填充(只含平移+缩放)；显式不投影不受影(shader 也无 ShadowCaster pass)；无活跃槽不绘制。</para>
     /// </summary>
     public void RenderAll()
     {
@@ -352,33 +375,59 @@ public class FightDropCrystalInstanceRenderer
             lastFillCount = 0;
             return;
         }
-        //超单批上限时缓冲装不下全量,须每帧重灌分批绘制(极端情况;常态远达不到)
-        if (dirty || total > MaxInstancesPerBatch)
+        if (total <= MaxInstancesPerBatch)
         {
-            dirty = false;
+            //单批可容:仅 dirty 帧重灌(恰好装满 1023 也走此处一次绘完,不留尾巴)
+            if (dirty)
+            {
+                dirty = false;
+                for (int i = 0; i < total; i++)
+                    matrixBuffer[i] = BuildSlotMatrix(listSlot[i].currentPos);
+                lastFillCount = total;
+            }
+            if (lastFillCount > 0)
+                Graphics.DrawMeshInstanced(mesh, 0, material, matrixBuffer, lastFillCount, null, ShadowCastingMode.Off, false);
+        }
+        else
+        {
+            //超单批上限:缓冲装不下全量,满批即绘、收尾补绘(每帧重灌;极端情况,常态远达不到)
             int fillCount = 0;
             for (int i = 0; i < total; i++)
             {
-                matrixBuffer[fillCount++] = listSlot[i].matrix;
+                matrixBuffer[fillCount++] = BuildSlotMatrix(listSlot[i].currentPos);
                 if (fillCount >= MaxInstancesPerBatch)
                 {
-                    Graphics.DrawMeshInstanced(mesh, 0, material, matrixBuffer, fillCount);
+                    Graphics.DrawMeshInstanced(mesh, 0, material, matrixBuffer, fillCount, null, ShadowCastingMode.Off, false);
                     fillCount = 0;
                 }
             }
             if (fillCount > 0)
-                Graphics.DrawMeshInstanced(mesh, 0, material, matrixBuffer, fillCount);
-            lastFillCount = fillCount;
-        }
-        else if (lastFillCount > 0)
-        {
-            //槽集无变化:旧缓冲内容仍与槽一一对应,直接复用绘制
-            Graphics.DrawMeshInstanced(mesh, 0, material, matrixBuffer, lastFillCount);
+                Graphics.DrawMeshInstanced(mesh, 0, material, matrixBuffer, fillCount, null, ShadowCastingMode.Off, false);
         }
     }
     #endregion
 
     #region 内部工具
+    /// <summary>
+    /// 帧末统一压缩：移除全部 dead 标记槽(稳定保序,FIFO 拾取依赖生成序;单次 O(N) 遍历,替代逐颗 RemoveAt 的 O(N²) 反复搬运)。
+    /// </summary>
+    private void CompactSlots()
+    {
+        int count = listSlot.Count;
+        int writeIndex = 0;
+        for (int readIndex = 0; readIndex < count; readIndex++)
+        {
+            CrystalSlot slot = listSlot[readIndex];
+            if (slot.dead)
+                continue;
+            if (writeIndex != readIndex)
+                listSlot[writeIndex] = slot;
+            writeIndex++;
+        }
+        if (writeIndex < count)
+            listSlot.RemoveRange(writeIndex, count - writeIndex);
+    }
+
     /// <summary>
     /// 求抛物线跳跃的当前位置：水平线性插值,垂直方向按单跳相位叠加 jumpHeight×4×phase×(1-phase) 的抛物线弧(复刻 DOTween DOJump)。
     /// </summary>
@@ -393,7 +442,7 @@ public class FightDropCrystalInstanceRenderer
 
     /// <summary>
     /// 构建单颗魔晶的实例矩阵(只含平移+缩放,无旋转——billboard 在 shader 里用相机右/上轴展开,永远面向摄像头)。
-    /// <para>与 FightTextInstanceRenderer.BuildCharMatrix 同写法：直接填对角矩阵,跳过 Matrix4x4.TRS 原生调用。</para>
+    /// <para>与 FightTextInstanceRenderer.BuildCharMatrix 同写法：直接填对角矩阵,跳过 Matrix4x4.TRS 原生调用;填充绘制缓冲时由 currentPos 现算,槽内不缓存。</para>
     /// </summary>
     private Matrix4x4 BuildSlotMatrix(Vector3 position)
     {

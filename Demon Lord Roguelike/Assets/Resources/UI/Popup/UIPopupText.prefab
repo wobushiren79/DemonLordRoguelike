@@ -138,6 +138,8 @@ MonoBehaviour:
   offsetY: 0
   offsetPivot: {x: 0, y: 0}
   isUpdatePosition: 1
+  positionFollowSpeed: 14
+  positionOvershoot: 0.45
   ui_ContentText: {fileID: 9093614194259671896}
 --- !u!1 &8224677177620045739
 GameObject:
@@ -243,6 +245,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0

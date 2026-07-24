@@ -92,12 +92,12 @@ MonoBehaviour:
   uiOpenAnimType: 0
   uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}
-  itemTypeEnum: 0
   ui_ItemIcon: {fileID: 0}
-  ui_ItemNameBg: {fileID: 0}
+  ui_ItemNum: {fileID: 0}
+  ui_UIViewItem: {fileID: 0}
   ui_ItemName: {fileID: 0}
-  ui_UIViewItemEquip_PopupButtonCommonView: {fileID: 0}
-  ui_UIViewItemEquip_Button: {fileID: 0}
+  ui_ItemBG: {fileID: 0}
+  itemTypeEnum: 0
 --- !u!1001 &1978654654833556039
 PrefabInstance:
   m_ObjectHideFlags: 0

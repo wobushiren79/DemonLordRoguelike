@@ -2857,6 +2857,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2159228348085850728}
     m_Modifications:
+    - target: {fileID: 5818098894967276057, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
+      propertyPath: wasDeprecatedTransferred
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6607275696344688825, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
       propertyPath: m_Name
       value: UIViewCreatureCardItem_BeforeAscend
@@ -3123,6 +3127,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2159228348085850728}
     m_Modifications:
+    - target: {fileID: 5818098894967276057, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
+      propertyPath: wasDeprecatedTransferred
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6607275696344688825, guid: 526d61e2b6ed398458da24877d412b68, type: 3}
       propertyPath: m_Name
       value: UIViewCreatureCardItem_AfterAscend

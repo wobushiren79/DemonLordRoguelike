@@ -419,7 +419,6 @@ MonoBehaviour:
     creatureName: 
     level: 0
     levelExp: 0
-    starLevel: 0
     rarity: 0
     relationship: 0
     creatureNpcData:
@@ -955,6 +954,10 @@ PrefabInstance:
     - target: {fileID: 342774737561783175, guid: a811363d7a409dc49a8adb17c74a628e, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 538924892547744235, guid: a811363d7a409dc49a8adb17c74a628e, type: 3}
+      propertyPath: wasDeprecatedTransferred
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 676393437237361167, guid: a811363d7a409dc49a8adb17c74a628e, type: 3}
       propertyPath: m_SizeDelta.x

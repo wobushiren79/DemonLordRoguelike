@@ -18,7 +18,9 @@ using UnityEngine.Rendering;
 /// 字形格内居中、建议占格 ~80%；排版按等宽处理，字距由 <see cref="charSpacingRatio"/> 控制；
 /// 字符表外的字符跳过不显示。⚠️格子总数(列×行)须 ≥ <see cref="atlasChars"/> 长度，否则表尾字符采错格子(CPU 不预检)。</para>
 /// <para>【材质约定】shader 用 FrameWork/URP/MeshTextInstanced1；材质面板可调：图集贴图与行列数(_AtlasCols/_AtlasRows)、生命/上浮/淡出/弹跳参数、
-/// ZTest(默认 LEqual 被场景遮挡，改 Always 则恒在最前)。本类逐实例只灌「格序索引+颜色+出生时刻」，UV 由 shader 按材质行列数解算，
+/// ZTest(只对写深度的不透明/裁剪物体生效，配 Always 即不被其遮挡)。「恒在最前」靠 shader 写死的 Queue=Transparent+500 保证：
+/// Spine 生物/粒子等默认 Transparent=3000 且 ZWrite Off，透明组内互不看深度，遮挡纯按队列+距离排序，+500 使飘字在它们之后绘制。
+/// 本类逐实例只灌「格序索引+颜色+出生时刻」，UV 由 shader 按材质行列数解算，
 /// 故行列数改动即时生效、无需重新 Setup。逐实例属性(_TextIndex/_TextColor/_TextTime)面板值无效。</para>
 /// <para>【生命周期一致性】剔除过期槽用的 <see cref="lifeTime"/> 在 <see cref="Setup"/> 时从材质 _Lifetime 读一次缓存；
 /// 运行期改材质的 _Lifetime 需重新 Setup 才同步。</para>
@@ -67,16 +69,14 @@ public class FightTextInstanceRenderer
     private float lifeTime = 1f;
     //活跃字符槽(无序，过期 swap-back 移除)
     private readonly List<TextCharSlot> listSlot = new List<TextCharSlot>(MaxInstances);
-    //本帧绘制缓冲(定容复用，热路径零分配)；逐实例标量缓冲用 List——MPB 的 List 重载只上传 Count 个元素，
-    //避免定长 512 数组每帧整份托管→native 拷贝(矩阵缓冲保持数组：DrawMeshInstanced 本身就只读前 count 个)
+    //本帧绘制缓冲(定长复用，热路径零分配)；逐实例标量数组按定长 512 整份上传(超出 count 的部分被忽略)，
+    //与弹体桶 _VelocityWS/_SeedOffset、轨迹 _TrailAlpha 同一写法——DrawMeshInstanced 本身就只读前 count 个
     private readonly Matrix4x4[] matrixBuffer = new Matrix4x4[MaxInstances];
-    private readonly List<float> indexBuffer = new List<float>(MaxInstances);
-    private readonly List<Vector4> colorBuffer = new List<Vector4>(MaxInstances);
-    private readonly List<float> timeBuffer = new List<float>(MaxInstances);
+    private readonly float[] indexBuffer = new float[MaxInstances];
+    private readonly Vector4[] colorBuffer = new Vector4[MaxInstances];
+    private readonly float[] timeBuffer = new float[MaxInstances];
     //ShowNumber 拆位复用缓冲(int 取绝对值最长 10 位，热路径零分配)
     private readonly char[] digitBuffer = new char[10];
-    //槽集脏标记:填槽/剔除过期槽时置位;无变化帧复用 MPB 旧内容直接绘制,跳过整轮填充+上传(槽数据全静态,动画全在 shader)
-    private bool dirty;
     //共享 MPB(承载逐实例数组；⚠️必须运行时懒建，禁止字段初始化器 new——同 AttackModeInstanceRenderer.sharedMPB 的 CreateImpl 教训)
     private MaterialPropertyBlock sharedMPB;
     //逐实例属性 ID(避免每帧字符串查找)
@@ -152,8 +152,6 @@ public class FightTextInstanceRenderer
             if (TryPlaceChar(ctx, text[i], placed))
                 placed++;
         }
-        if (placed > 0)
-            dirty = true;
     }
 
     /// <summary>
@@ -196,8 +194,6 @@ public class FightTextInstanceRenderer
             if (TryPlaceChar(ctx, digitBuffer[i], placed))
                 placed++;
         }
-        if (placed > 0)
-            dirty = true;
     }
 
     /// <summary>
@@ -314,8 +310,8 @@ public class FightTextInstanceRenderer
 
     #region 每帧渲染入口
     /// <summary>
-    /// 每帧调用(FightHandler.Update)：剔除寿终槽 → 槽集有变化才填充绘制缓冲并上传 MPB → 一次 DrawMeshInstanced 画完所有在屏字符。
-    /// <para>槽数据全静态(动画全在 shader 时间驱动)，无变化帧复用 MPB 旧内容直接绘制，填充/上传全跳过；
+    /// 每帧调用(FightHandler.Update)：剔除寿终槽 → 整批填充绘制缓冲并上传 MPB → 一次 DrawMeshInstanced 画完所有在屏字符。
+    /// <para>逐实例数组按定长 512 整份上传(超出 count 的部分被忽略)，与弹体桶 _VelocityWS、轨迹 _TrailAlpha 同一写法；
     /// 未 Setup 网格/材质时零副作用直接返回；无活跃槽时只剔除不绘制。</para>
     /// </summary>
     public void RenderAll()
@@ -331,7 +327,6 @@ public class FightTextInstanceRenderer
                 int last = listSlot.Count - 1;
                 listSlot[i] = listSlot[last];
                 listSlot.RemoveAt(last);
-                dirty = true;
             }
         }
         int count = listSlot.Count;
@@ -339,31 +334,20 @@ public class FightTextInstanceRenderer
             return;
         //懒建 MPB(禁止字段初始化器 new，见字段注释)
         if (sharedMPB == null)
-        {
             sharedMPB = new MaterialPropertyBlock();
-            dirty = true;
-        }
-        //槽集无变化帧:填充+上传全跳过,MPB 旧内容仍与槽一一对应(槽只增删于 ShowText/ShowNumber/上方剔除,均会置脏)
-        if (dirty)
+        //填充本帧绘制缓冲(槽数据全静态，纯拷贝)
+        for (int i = 0; i < count; i++)
         {
-            dirty = false;
-            //填充本帧绘制缓冲(槽数据全静态，纯拷贝；List 预分配容量 512，Clear+Add 零分配)
-            indexBuffer.Clear();
-            colorBuffer.Clear();
-            timeBuffer.Clear();
-            for (int i = 0; i < count; i++)
-            {
-                TextCharSlot slot = listSlot[i];
-                matrixBuffer[i] = slot.matrix;
-                indexBuffer.Add(slot.charIndex);
-                colorBuffer.Add(slot.color);
-                timeBuffer.Add(slot.spawnTime);
-            }
-            //按实际 count 上传(List 重载只拷贝 Count 个元素，非定长 512 整份)
-            sharedMPB.SetFloatArray(PropTextIndex, indexBuffer);
-            sharedMPB.SetVectorArray(PropTextColor, colorBuffer);
-            sharedMPB.SetFloatArray(PropTextTime, timeBuffer);
+            TextCharSlot slot = listSlot[i];
+            matrixBuffer[i] = slot.matrix;
+            indexBuffer[i] = slot.charIndex;
+            colorBuffer[i] = slot.color;
+            timeBuffer[i] = slot.spawnTime;
         }
+        //数组按定长 512 整份上传(超出 count 的部分被忽略)，与弹体桶 _VelocityWS、轨迹 _TrailAlpha 同一写法
+        sharedMPB.SetFloatArray(PropTextIndex, indexBuffer);
+        sharedMPB.SetVectorArray(PropTextColor, colorBuffer);
+        sharedMPB.SetFloatArray(PropTextTime, timeBuffer);
         //单批一次 draw；不投阴影不受影(同弹体桶——满屏飘字的阴影无意义还多走一遍 ShadowCaster Pass)
         Graphics.DrawMeshInstanced(mesh, 0, material, matrixBuffer, count,
             sharedMPB, ShadowCastingMode.Off, false, 0, null, LightProbeUsage.Off, null);

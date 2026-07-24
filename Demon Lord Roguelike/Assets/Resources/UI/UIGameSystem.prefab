@@ -682,6 +682,7 @@ MonoBehaviour:
   uiOpenAnimTarget: {fileID: 0}
   uiManager: {fileID: 0}
   remarkData: 
+  enterType: 0
   ui_ViewExit: {fileID: 8096945526354119724}
   ui_BtnSetting: {fileID: 980270165287905703}
   ui_BtnBack: {fileID: 6355048364970319027}

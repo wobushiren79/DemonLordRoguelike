@@ -490,6 +490,9 @@ MonoBehaviour:
   uiOpenAnimType: 0
   uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}
+  attributeType: 0
+  addValuePerPoint: 0
+  allocatedCount: 0
   ui_LeftButton: {fileID: 4625371162541116925}
   ui_RightButton: {fileID: 4709333253195924713}
   ui_Icon: {fileID: 7239188521464601293}

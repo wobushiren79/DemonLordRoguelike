@@ -157,6 +157,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 380aa86e5a75d9847a076e04d79f0051, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  uiOpenAnimType: 0
+  uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}
   ui_Icon: {fileID: 3226714132760823642}
   ui_UIViewGameWorldMapPoint: {fileID: 304333608816432867}

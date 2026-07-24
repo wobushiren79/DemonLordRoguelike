@@ -118,8 +118,10 @@ public class CreatureManager : BaseManager
                 CreatureHandler.Instance.SetCreatureData(skeletonAnimationSelectPreview, creatureData);
 
                 creatureDataSelectPreview = creatureData;
-                //修改材质球颜色
-                skeletonAnimationSelectPreview.skeleton.A = 0.65f;
+                //修改材质球颜色（4.3: Skeleton.R/G/B/A 改为 GetColor/SetColor）
+                var color = skeletonAnimationSelectPreview.skeleton.GetColor();
+                color.a = 0.65f;
+                skeletonAnimationSelectPreview.skeleton.SetColor(color);
                 //设置待机动画到第一帧
                 SpineHandler.Instance.SetAnimFirstFrame(skeletonAnimationSelectPreview, SpineAnimationStateEnum.Idle, creatureData);
             }

@@ -96,6 +96,7 @@ MonoBehaviour:
   ui_ItemNum: {fileID: 0}
   ui_UIViewItem: {fileID: 0}
   ui_ItemName: {fileID: 0}
+  ui_ItemBG: {fileID: 0}
   creatureData:
     creatureId: 0
     creatureUUId: 

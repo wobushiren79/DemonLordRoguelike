@@ -142,8 +142,7 @@ MonoBehaviour:
   ui_CheckBox: {fileID: 1555740874364408631}
   ui_CheckBoxSubmit: {fileID: 7248708240687949195}
   ui_Icon: {fileID: 7511373778034450295}
-  ui_UIViewDialogOrderFilterItem_PopupButtonCommonView: {fileID: 0}
-  ui_UIViewDialogOrderFilterItem_Button: {fileID: 3656265539139343396}
+  ui_UIViewDialogOrderFilterItem: {fileID: 0}
   ui_NameItem: {fileID: 6322510442015614207}
 --- !u!1 &3117399674283103795
 GameObject:

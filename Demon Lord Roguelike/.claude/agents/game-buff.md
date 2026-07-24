@@ -49,7 +49,7 @@ BuffBaseEntity                              # 抽象基类
 │   └── BuffEntityConditionalCreateCrystal                        # 生成水晶
 ├── BuffEntityPeriodic                      # 周期性触发（无次数）
 │   ├── BuffEntityPeriodicAttackAgain       # 周期性再攻击
-│   ├── BuffEntityPeriodicMultiInstantAttack # 周期性多次瞬时攻击（闪电落雷：触发瞬间快照全场敌人→有放回抽N目标→第1道立即+后续0.1秒间隔连发(UpdateBuffTime驱动)，落点AOE=魔王攻击力×trigger_value，仅快照名单受伤，单雷命中上限截断(超上限按距落点近者优先)；class_entity_data="次数,半径,单雷命中上限(可选,0=不限)"；馈赠「闪电」3000300001~005，Lv1~5上限=1~5）
+│   ├── BuffEntityPeriodicMultiInstantAttack # 周期性多次瞬时攻击（闪电落雷：BUFF只管触发→快照全场敌人→有放回抽N目标→第1道立即+后续0.1秒间隔连发(UpdateBuffTime驱动)；每道雷=发射 AttackModeInstantAreaThunder 攻击模块，粒子/AOE/伤害走 AttackMode 框架(半径/单雷命中上限配在攻击模块表 collider_area_size/hit_max，伤害=魔王实时ATK×trigger_value 发射时注入,CRT=0)；class_entity_data="次数,攻击模块ID"；馈赠「闪电」3000300001~005 → 攻击模块300031~300035）
 │   └── BuffEntityPeriodicPickupCrystal     # 周期性拾取水晶
 └── BuffEntityPecurrent                     # 周期性触发（有次数 = trigger_num）
 ```

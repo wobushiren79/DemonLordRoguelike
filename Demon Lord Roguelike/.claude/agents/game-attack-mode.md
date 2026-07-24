@@ -1,6 +1,6 @@
 ---
 name: game-attack-mode
-description: 攻击模式系统开发：17种攻击模式（近战/远程/特殊/恢复），BaseAttackMode 策略模式。
+description: 攻击模式系统开发：21种攻击模式（近战/远程/特殊/恢复），BaseAttackMode 策略模式。
 tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Game/Fight/AttackMode/
@@ -38,6 +38,8 @@ watched_files:
 - **AttackModeFalluponChain** - 连锁降临
 - **AttackModeLure** - 引诱
 - **AttackModeOverlap** - 重叠
+- **AttackModeInstantArea** - 瞬时落点范围（无弹道飞行，StartAttack 当帧对 targetPos 范围攻击并自毁；支持配置 `hit_max` 命中上限(近者优先截断) + 发射方注入 `filterCreatureIds` 快照名单(StartAttack 前写入、Destroy 置空)）
+- **AttackModeInstantAreaThunder** - 落雷（继承上者，`PlayHitEffect` 改走 `EffectHandler.ShowThunderEffect` 全局单例粒子——持久型 PS 需 Stop/Play 重播，不能走 effect_hit；深渊馈赠「闪电」300031~300035，由 BuffEntityPeriodicMultiInstantAttack 发射）
 
 ### 恢复 (Regain)
 - **AttackModeRegain** - 恢复基类
