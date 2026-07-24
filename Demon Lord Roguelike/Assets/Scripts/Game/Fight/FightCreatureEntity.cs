@@ -79,7 +79,9 @@ public partial class FightCreatureEntity
         creatureSkeletionAnimation.Renderer.MeshSettings.immutableTriangles = true;
         ((SkeletonRenderer)creatureSkeletionAnimation.Renderer).singleSubmesh = true;
         creatureSkeletionAnimation.Renderer.MeshSettings.useClipping = false;
-        
+        creatureSkeletionAnimation.ThreadedAnimation = SettingsTriState.Enable;
+        ((SkeletonRenderer)creatureSkeletionAnimation.Renderer).ThreadedMeshGeneration = SettingsTriState.Enable;
+
         //获取生命值显示
         creatureLifeShow = creatureObj.transform.Find("LifeShow")?.GetComponent<SpriteRenderer>();
         creatureLifeShow?.ShowObj(false);
