@@ -58,6 +58,7 @@ BaseAttackMode                      - 攻击模式基类
 │   │   └── AttackModeRangedArcArea - 抛物线范围（继承抛物线轨迹）
 │   ├── AttackModeRangedTracking    - 远程追踪弹道（实时改变方向追击目标）
 │   ├── AttackModeRangedPiercing    - 远程穿透弹道（可穿透多个目标）
+│   │   └── AttackModeRangedPiercingRoad - 沿路碾压穿透（穿透数无上限、伤害逐目标减半保底1、驶到路尽头销毁；深渊馈赠「失控的矿车」300041）
 │   └── AttackModeRangedSplitChild  - 分裂弹-子弹道（直线飞行 + 向自己的目标道路归位；由下方发射器发射）
 ├── AttackModeRangedSplit           - 分裂弹-发射器（不飞不画不命中，按道路发射多发子弹道后自毁）
 ├── AttackModeExplosion             - 爆炸（以自身为中心范围伤害，攻击者死亡）
@@ -95,6 +96,7 @@ BaseAttackMode                      - 攻击模式基类
 | `AttackModeRangedArc` | 抛物线飞行 | 投石、抛物线炸弹 |
 | `AttackModeRangedTracking` | 追踪目标飞行 | 追踪弹、导弹 |
 | `AttackModeRangedPiercing` | 可穿透多个目标 | 穿透箭、激光 |
+| `AttackModeRangedPiercingRoad` | 沿路穿透碾压 + 伤害逐目标递减 + 到路尽头销毁 | 矿车冲撞、碾压类 |
 | `AttackModeRangedSplit` | 发射器：按道路发射多发独立子弹道后自毁 | 散射弹、分叉箭（子弹道行另配 `AttackModeRangedSplitChild`） |
 | `AttackModeExplosion` | 自爆范围伤害 | 自杀式爆炸、亡语 |
 | `AttackModeFallupon` | 直接对目标造成伤害 | 天降打击、瞬移攻击 |
@@ -736,6 +738,7 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | 抛物线范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedArcArea.cs` |
 | 追踪弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedTracking.cs` |
 | 穿透弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedPiercing.cs` |
+| 沿路碾压穿透（矿车） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedPiercingRoad.cs` |
 | 分裂弹-发射器 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedSplit.cs` |
 | 分裂弹-子弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedSplitChild.cs` |
 | 爆炸 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeExplosion.cs` |

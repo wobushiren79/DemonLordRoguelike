@@ -27,6 +27,7 @@ watched_files:
 - **AttackModeRangedArcArea** - 弧形范围远程
 - **AttackModeRangedArea** - 范围远程
 - **AttackModeRangedPiercing** - 穿透远程
+- **AttackModeRangedPiercingRoad** - 沿路碾压穿透远程（继承上者：穿透数无上限、伤害逐目标减半保底1、驶到路尽头销毁；深渊馈赠「失控的矿车」300041，由 BuffEntityPeriodicRoadAttack 发射）
 - **AttackModeRangedSplit** - 分裂远程-**发射器**（不飞不画不命中，按道路发射多发子弹道后自毁；配置 `child_attack_mode_id` 指向子弹道行）
 - **AttackModeRangedSplitChild** - 分裂远程-**子弹道**（继承 AttackModeRanged，仅多一个「向目标道路 z 轴归位」）
 - **AttackModeRangedTracking** - 追踪远程

@@ -132,9 +132,9 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_attackmode_info[攻击方式].xlsx` | AttackModeInfo | 39 | id, class_name, prefab_name, visual_name(DSP批量渲染分桶key,空=不走DSP), buff, attack_search_type, collider_size/area, effect_hit/damage, speed_move, sound_start/miss/hit, start_pos_offset, trail_data(拖尾/残影:count残影数&interval采样间隔秒&startAlpha最新档透明度&endAlpha最老档透明度&color染色rgb,需配visual_name,空=无拖尾), child_attack_mode_id, damage_add_rate(伤害加成比例,float,最终伤害=攻击者ATK×该值,0/空=按1倍;自爆史莱姆爆炸300001配50), hit_max(单次命中目标数上限,int,>0按距落点近者优先截断,0/空=不限;仅AttackModeInstantArea系), remark （21列）。102001=BOSS技能"前方3格"(AttackModeMeleeArea, type24, size"1.5,1,0.25")；300031~300035=落雷(AttackModeInstantAreaThunder,深渊馈赠闪电Lv1~5,半径0.2~1.0/hit_max1~5) |
+| `excel_attackmode_info[攻击方式].xlsx` | AttackModeInfo | 40 | id, class_name, prefab_name, visual_name(DSP批量渲染分桶key,空=不走DSP), buff, attack_search_type, collider_size/area, effect_hit/damage, speed_move, sound_start/miss/hit, start_pos_offset, trail_data(拖尾/残影:count残影数&interval采样间隔秒&startAlpha最新档透明度&endAlpha最老档透明度&color染色rgb,需配visual_name,空=无拖尾), child_attack_mode_id, damage_add_rate(伤害加成比例,float,最终伤害=攻击者ATK×该值,0/空=按1倍;自爆史莱姆爆炸300001配50), hit_max(单次命中目标数上限,int,>0按距落点近者优先截断,0/空=不限;仅AttackModeInstantArea系), remark （21列）。102001=BOSS技能"前方3格"(AttackModeMeleeArea, type24, size"1.5,1,0.25")；300031~300035=落雷(AttackModeInstantAreaThunder,深渊馈赠闪电Lv1~5,半径0.2~1.0/hit_max1~5,sound_start=420003打击3每道雷发射播1次)；300041=矿车(AttackModeRangedPiercingRoad,深渊馈赠失控的矿车5级共用,沿路穿透碾压+伤害逐目标减半+到路尽头销毁,速度10,sound_hit=420001) |
 | `excel_attackmode_ext_info[攻击模块扩展信息].xlsx` | AttackModeExtInfo | 1 | id, attack_mode_id(对应AttackModeInfo), ext_type(额外攻击类型,1=BOSS技能), trigger_interval(释放间隔秒), remark （5列）。配 NpcInfo.attack_mode_ext 实现"额外攻击"按间隔自动释放(不限于BOSS)，运行时由 AIIntentCreatureAttack 的额外攻击机制消费 |
-| `excel_buff_info[buff信息].xlsx` | BuffInfo | 70 | id, buff_type, rarity, class_entity/events/data, trigger_value/chance/num/time/effect, name[language] （24列） |
+| `excel_buff_info[buff信息].xlsx` | BuffInfo | 80 | id, buff_type, rarity, class_entity/events/data, trigger_value/chance/num/time/effect, name[language] （24列） |
 | `excel_buff_pre_info[buff前置条件信息].xlsx` | BuffPreInfo | 6 | id, class_entity |
 | `excel_fight_scene[战斗场景].xlsx` | FightScene | 4 | id, name_res, road_color_a/b, skybox_mat |
 | `excel_fight_type_conquer_info[战斗-征服模式].xlsx` | FightTypeConquerInfo | 12 | id, world_id, fight_scene_ids, enemy_ids, enemy_num, attack_wave, fight/road/level 参数, drop/reward_crystal, reward_reputation(通关声望奖励) （24列） |
@@ -166,7 +166,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_abyssal_blessing_info[深渊馈赠信息].xlsx` | AbyssalBlessingInfo | 8 | id, icon_res, parent_id, level, buff_ids, name[language], details[language], remark, valid(0无效1有效,生成器据此过滤), max_count(一局最多获得次数,0=不限,仅 level<=0 生效) |
+| `excel_abyssal_blessing_info[深渊馈赠信息].xlsx` | AbyssalBlessingInfo | 18 | id, icon_res, parent_id, level, buff_ids, name[language], details[language], remark, valid(0无效1有效,生成器据此过滤), max_count(一局最多获得次数,0=不限,仅 level<=0 生效) |
 | `excel_effect_info[粒子信息].xlsx` | EffectInfo | 21 | id, res_name, show_type, show_time, float/int/long/vector3/vector4_data |
 | `excel_game_world_info[游戏世界信息].xlsx` | GameWorldInfo | 4 | id, icon_res, unlock_id, unlock_id_infinite/conquer_difficulty_level/quick_attack/speed2, map_pos, name[language] |
 | `excel_level_info[等级信息].xlsx` | LevelInfo | 12 | id, level_exp, sacrifice_num, attribute_point(升级获得加点数,当前全等级配置5), CMP_rate(魔力召唤增加倍率,按等级递增) |

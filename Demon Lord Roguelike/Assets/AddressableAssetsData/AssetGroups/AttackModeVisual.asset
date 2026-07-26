@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 966c942b0b91ffa429e06d489c83b770
+    m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_Minecart_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b5e57000d96bea84592444164bc467d8
     m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_RangedNormal.prefab
     m_ReadOnly: 0

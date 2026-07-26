@@ -57,6 +57,7 @@ BuffBaseEntity                              # 抽象基类（事件回调 + Show
 ├── BuffEntityPeriodic                      # 周期性触发（无次数限制）
 │   ├── BuffEntityPeriodicAttackAgain       # 周期性强制再攻击
 │   ├── BuffEntityPeriodicMultiInstantAttack # 周期性多次瞬时攻击（深渊馈赠「闪电」落雷：BUFF 只管周期触发→触发瞬间快照全场敌人→有放回抽N个目标→第1道立即+后续0.1秒间隔连发；每道雷=发射一个 AttackModeInstantAreaThunder 攻击模块，粒子/AOE/伤害全走 AttackMode 框架（AOE半径/单雷命中上限配在攻击模块表 collider_area_size/hit_max，伤害=魔王实时攻击力×trigger_value 由BUFF发射时注入，CRT=0 不暴击）；class_entity_data="次数,攻击模块ID"；深渊馈赠「闪电」3000300001~005 → 攻击模块 300031~300035，Lv1~5 半径0.2~1.0、单雷命中上限1~5）
+│   ├── BuffEntityPeriodicRoadAttack       # 周期性随机道路冲撞（深渊馈赠「失控的矿车」：随机选 N 条道路各从最左端驶出 1 辆矿车沿路向右碾压；车数>路数时每路先各 1 辆、多出的随机重复分配，同路第 2 辆起按 0.5 秒间隔错开出车(UpdateBuffTime 驱动批次队列)；伤害=魔王实时攻击力×trigger_value 发车时注入、CRT=0，逐目标减半由攻击模块处理；场上无敌人本轮不触发；class_entity_data="车数,攻击模块ID"；馈赠 2000003001~005 → BUFF 3000400001~005 → 5 级共用攻击模块 300041=AttackModeRangedPiercingRoad）
 │   └── BuffEntityPeriodicPickupCrystal     # 周期性自动拾取水晶
 └── BuffEntityPecurrent                     # 周期性触发（有次数限制 = trigger_num）
 ```
