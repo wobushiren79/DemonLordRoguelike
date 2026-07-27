@@ -298,11 +298,12 @@ public partial class AttackModeInstanceRenderer
     /// 构建单发弹道的 per-instance 变换矩阵(位置 + 起始角 + 自旋角 + 缩放)。弹体与轨迹共用，保证轨迹与弹体同姿态。
     /// <para>弹体本体传 extraSpinAngle=0：时间自转由桶材质 shader 驱动(_RotateSpeed)，矩阵只含起始角 + per-instance 相位。
     /// 轨迹(轨迹材质冻结自旋)传该采样点的时间自转角，把当时的旋转姿态烤进矩阵，使旋转弹道(如骷髅骨头)的轨迹复现旋转。
-    /// 缩放：visualScale&gt;=0 用武器配置，&lt;0(未配置)取1、实际大小交桶材质 _VertexScale；换图宽高比修正由材质 _VertexScaleXY(对象空间)处理。</para>
+    /// 缩放：visualScale&gt;=0 用武器配置，&lt;0(未配置)取1、实际大小交桶材质 _VertexScale；换图宽高比修正由材质 _VertexScaleXY(对象空间)处理。
+    /// scaleMul 为额外的整体缩放系数(仅轨迹按年龄档衰减时传，弹体恒 1)，直接乘在最终 scale 上。</para>
     /// </summary>
-    private static Matrix4x4 BuildInstanceMatrix(BaseAttackMode attackMode, Vector3 position, float extraSpinAngle = 0f)
+    private static Matrix4x4 BuildInstanceMatrix(BaseAttackMode attackMode, Vector3 position, float extraSpinAngle = 0f, float scaleMul = 1f)
     {
-        float scale = attackMode.visualScale >= 0f ? attackMode.visualScale : 1f;
+        float scale = (attackMode.visualScale >= 0f ? attackMode.visualScale : 1f) * scaleMul;
         bool hasStartAngle = attackMode.visualStartAngle != 0f;
         //有自旋时叠加(每发随机相位 + 传入的时间自转角)，绕自旋轴：弹体本体 extra=0(只相位、时间自转交 shader)，轨迹 extra=采样时自转角
         float spinAngle = attackMode.spinSpeed != 0f ? attackMode.spinPhase + extraSpinAngle : 0f;

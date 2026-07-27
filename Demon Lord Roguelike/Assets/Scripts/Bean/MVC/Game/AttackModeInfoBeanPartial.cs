@@ -115,7 +115,7 @@ public partial class AttackModeInfoBean
     protected AttackModeTrailConfig trailConfig;
 
     /// <summary>
-    /// 获取拖尾配置（trail_data 为 & 分隔的 key:value 项：count/interval/startAlpha/endAlpha/color；缓存解析结果）。
+    /// 获取拖尾配置（trail_data 为 & 分隔的 key:value 项：count/interval/startAlpha/endAlpha/shrink/color；缓存解析结果）。
     /// <para>需配合 visual_name 走 DSP 批量渲染方可生效（残影材质克隆弹体桶材质）；trail_data 空或 count/interval≤0 即不启用。</para>
     /// </summary>
     public AttackModeTrailConfig GetTrailConfig()
@@ -146,12 +146,12 @@ public enum AttackModeTrailType
 }
 
 /// <summary>
-/// 攻击弹道拖尾(残影 Ghost)配置：由配置表 trail_data 列解析而来（type:方式&count:残影数&interval:采样间隔秒&startAlpha:最新档透明度&endAlpha:最老档透明度&color:染色rgb）。
+/// 攻击弹道拖尾(残影 Ghost)配置：由配置表 trail_data 列解析而来（type:方式&count:残影数&interval:采样间隔秒&startAlpha:最新档透明度&endAlpha:最老档透明度&shrink:每档缩放递减步长&color:染色rgb）。
 /// <para>残影 = 弹体贴图本身画在若干历史位置上、越老越透明(类似冲刺残影)。enable=count>0 且 interval>0 时成立；
 /// startAlpha 是最靠近弹体一档的透明度、endAlpha 是最远一档的透明度(线性插值)；color 默认白(不改弹体贴图原色)。</para>
 /// <para>type 选择渲染方式：1=Instanced(默认)，2=Vfx(单个 GPU VFX 特效)。</para>
 /// <para>⚠️**两方式吃的参数不同**：
-/// ①Instanced 用全套 `count/interval/startAlpha/endAlpha/color`；
+/// ①Instanced 用全套 `count/interval/startAlpha/endAlpha/shrink/color`；
 /// ②**Vfx 只用 `type` + `color`**——段数/间隔/透明度是桶级的(注册时灌进 VFX 实例、同 visual_name 首个注册者赢，逐行配了也没用)，
 /// 故已统一写死在 `EffectHandler` 的「攻击弹道拖尾粒子」区常量里，配置侧不再提供；写了会被忽略。要调这些表现请改那几个常量。</para>
 /// <para>⚠️color 的作用域随 type 而异：Vfx 逐弹生效(同 visual_name 下各行可各配各色，同一 VFX 内并存)；
@@ -171,6 +171,8 @@ public struct AttackModeTrailConfig
     public float startAlpha;
     /// <summary>【仅方案1】最远(最老)一档的透明度。方案2 忽略——写死在 EffectHandler</summary>
     public float endAlpha;
+    /// <summary>【仅方案1】每往老一档的缩放递减步长：档k缩放=max(0, 1-shrink*(k+1))——最新档(k=0)为 1-shrink，越老越小、减到 0 为止；0(默认)=不缩放(残影与弹体同大)。方案2 忽略</summary>
+    public float shrink;
     /// <summary>残影叠加染色（默认白，即用弹体贴图原色；alpha 不用此值、由 start/endAlpha 逐档决定）</summary>
     public Color color;
 
@@ -216,6 +218,9 @@ public struct AttackModeTrailConfig
                     break;
                 case "endAlpha":
                     float.TryParse(val, out cfg.endAlpha);
+                    break;
+                case "shrink":
+                    float.TryParse(val, out cfg.shrink);
                     break;
                 case "color":
                     cfg.color = ParseColor(val, cfg.color);

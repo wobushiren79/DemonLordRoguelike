@@ -4,7 +4,7 @@ using UnityEngine.Rendering;
 
 /// <summary>
 /// <see cref="AttackModeInstanceRenderer"/> 的轨迹(拖尾)分部：只放**方案1(Instanced)**——本渲染器自绘的那种拖尾。
-/// <para>【效果】克隆弹体桶材质、换成轨迹专用 shader，把弹体贴图画在若干历史位置上、越老越透明。颜色是桶级(整桶一色)。</para>
+/// <para>【效果】克隆弹体桶材质、换成轨迹专用 shader，把弹体贴图画在若干历史位置上、越老越透明(可配 shrink 越老越小)。颜色是桶级(整桶一色)。</para>
 /// <para>【每桶每帧 1 次 draw】「年龄档透明度」是 shader 的**逐实例**属性(_TrailAlpha)，故"所有年龄档 × 所有弹道"
 /// 填进同一个矩阵缓冲、一次 DrawMeshInstanced 画完(旧实现每档一次 draw，因为档 alpha 是 MPB 上的整批 uniform)。
 /// 仅当单桶实例数(弹道数 × 档数)超过 1023 时才分批。⚠️叠加顺序靠"填充顺序 = 实例 ID 顺序 = 光栅化顺序"保证：
@@ -32,6 +32,8 @@ public partial class AttackModeInstanceRenderer
         public float startAlpha;
         //最远(最老)一档的 alpha
         public float endAlpha;
+        //每往老一档的缩放递减步长(档k缩放=max(0,1-shrink*(k+1))；0=不缩放，残影与弹体同大)
+        public float shrink;
         //本批绘制矩阵缓冲(固定 1023 复用；一批可含多个年龄档的实例)
         public readonly Matrix4x4[] matrixBuffer = new Matrix4x4[MaxInstancesPerBatch];
         //缓冲当前已填充数量
@@ -118,6 +120,7 @@ public partial class AttackModeInstanceRenderer
             trailNum = Mathf.Clamp(config.count, 1, BaseAttackMode.TrailMaxPoints),
             startAlpha = config.startAlpha,
             endAlpha = config.endAlpha,
+            shrink = config.shrink,
         };
         dicTrailBucket[visualKey] = trailBucket;
         vb.trail = trailBucket;
@@ -193,7 +196,8 @@ public partial class AttackModeInstanceRenderer
     /// <summary>
     /// 把本帧各轨迹桶收集到的弹道绘制出来：**整桶所有年龄档 × 所有弹道合到一次 DrawMeshInstanced**，
     /// 每个实例的档 alpha 由逐实例属性 _TrailAlpha 承载(见轨迹 shader)。仅实例数超 1023 时才分批。
-    /// <para>档 0 = 最靠近弹体(最新、最不透明 startAlpha)，档 trailNum-1 = 最远(最老、最透明 endAlpha)。</para>
+    /// <para>档 0 = 最靠近弹体(最新、最不透明 startAlpha)，档 trailNum-1 = 最远(最老、最透明 endAlpha)。
+    /// 档缩放：档 k 乘 max(0, 1-shrink*(k+1))，越老越小、减到 0 缩没为止；shrink=0 时恒 1(与弹体同大)。</para>
     /// <para>⚠️**填充顺序即叠加顺序**：图形 API 保证单次实例化绘制内按实例 ID 顺序光栅化，故必须保持"由老到新"填充，
     /// 近处不透明档才会叠在远处透明档之上(轨迹不写深度、靠绘制先后定叠加)。这也是旧的逐档绘制顺序，表现逐位一致。</para>
     /// </summary>
@@ -227,6 +231,8 @@ public partial class AttackModeInstanceRenderer
                 //本档 alpha：档 0=startAlpha，档 trailNum-1=endAlpha，线性插值；整档共用一个值，但逐实例写入
                 float t = tb.trailNum > 1 ? (float)k / (tb.trailNum - 1) : 0f;
                 float alpha = Mathf.Lerp(tb.startAlpha, tb.endAlpha, t);
+                //本档缩放系数：档 k 乘 max(0, 1-shrink*(k+1))；shrink=0 恒 1(不缩放)，乘 1 走原路径零额外开销
+                float scaleMul = tb.shrink > 0f ? Mathf.Max(0f, 1f - tb.shrink * (k + 1)) : 1f;
 
                 //填本档所有弹道的第 k 个最新历史点(order = trailCount-1-k)
                 for (int a = 0; a < amCount; a++)
@@ -239,12 +245,19 @@ public partial class AttackModeInstanceRenderer
                     {
                         //有自旋：烤入该采样点的时间自转角，使旋转弹道的轨迹复现当时姿态(轨迹 shader 无时间自转)
                         attackMode.GetTrailSample(order, out Vector3 spinPoint, out float spinAngle);
-                        tb.matrixBuffer[tb.count] = BuildInstanceMatrix(attackMode, spinPoint, spinAngle);
+                        tb.matrixBuffer[tb.count] = BuildInstanceMatrix(attackMode, spinPoint, spinAngle, scaleMul);
                     }
                     else
                     {
                         //无自旋：复用本发基准矩阵，只改写平移列(m03/m13/m23)，等价于同旋转同缩放下换个位置
                         Matrix4x4 matrix = trailBaseMatrix[a];
+                        //按档缩放：基准矩阵 3x3(旋转×缩放)整体乘 scaleMul(均匀缩放与旋转可交换)，平移列不受影响
+                        if (scaleMul != 1f)
+                        {
+                            matrix.m00 *= scaleMul; matrix.m01 *= scaleMul; matrix.m02 *= scaleMul;
+                            matrix.m10 *= scaleMul; matrix.m11 *= scaleMul; matrix.m12 *= scaleMul;
+                            matrix.m20 *= scaleMul; matrix.m21 *= scaleMul; matrix.m22 *= scaleMul;
+                        }
                         Vector3 point = attackMode.GetTrailPoint(order);
                         matrix.m03 = point.x;
                         matrix.m13 = point.y;

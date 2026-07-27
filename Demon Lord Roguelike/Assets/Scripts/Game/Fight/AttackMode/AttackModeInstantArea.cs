@@ -5,6 +5,9 @@ using UnityEngine;
 /// <summary>
 /// 攻击模式-瞬时落点范围：无弹道飞行，StartAttack 当帧立即对目标点(targetPos)做一次范围攻击。
 /// <para>支持配置 hit_max 单次命中目标数上限（&gt;0 时按距落点近者优先截断，保证落点主目标必中；0=不限）。</para>
+/// <para>伤害按命中次序依次减半：第1个目标满额、之后每多命中一个伤害减半（向下取整、保底1点），照 <see cref="AttackModeRangedPiercingRoad"/> 先例。</para>
+/// <para>同一道攻击内同一生物只命中一次（局部去重，防同一生物多碰撞体重复命中）；道与道之间不共享该记录——
+/// 溅射可重复作用于同一目标、被溅射过的生物仍可作后续攻击的主目标（如深渊馈赠-闪电的多道落雷）。</para>
 /// <para>支持发射方注入 <see cref="filterCreatureIds"/> 快照名单（非空时只命中名单内生物）——
 /// 供「触发瞬间快照全场、间隔期新刷敌人不受波及」类攻击（如深渊馈赠-闪电）使用，
 /// 写法照 <see cref="AttackModeRangedSplitChild.targetRoad"/> 先例：StartAttack 前写入、Destroy 时置空防对象池残留。</para>
@@ -44,7 +47,7 @@ public class AttackModeInstantArea : BaseAttackMode
 
     #region 攻击处理
     /// <summary>
-    /// 立即对落点做范围攻击：快照过滤 + 命中上限截断 + 逐个 UnderAttack，最后播放命中特效并回收
+    /// 立即对落点做范围攻击：快照过滤 + 本次攻击内去重 + 命中上限截断 + 逐个 UnderAttack（伤害依次减半），最后播放命中特效并回收
     /// </summary>
     public virtual void AttackHandle()
     {
@@ -62,6 +65,8 @@ public class AttackModeInstantArea : BaseAttackMode
             //循环外缓存 GameFightLogic，避免每个 collider 命中都做一次查询
             GameFightLogic gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
             int hitNum = 0;
+            //本次攻击内同一生物只命中一次（防同一生物多碰撞体重复命中；局部记录，道与道之间不共享）
+            HashSet<string> setHitCreatureId = new HashSet<string>();
             for (int i = 0; i < targetColliders.Length; i++)
             {
                 //单次命中目标数达上限则停止
@@ -71,11 +76,16 @@ public class AttackModeInstantArea : BaseAttackMode
                 //快照名单非空时只命中名单内生物（快照期之后新刷的目标不受波及）
                 if (filterCreatureIds != null && filterCreatureIds.Count > 0 && !filterCreatureIds.Contains(creatureId))
                     continue;
+                //本次攻击内已命中过则跳过（同一生物多个碰撞体只算一次）
+                if (!setHitCreatureId.Add(creatureId))
+                    continue;
                 var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, searchCreatureType);
                 if (targetCreature == null || targetCreature.IsDead())
                     continue;
                 targetCreature.UnderAttack(this);
                 hitNum++;
+                //伤害按命中次序依次减半，保底1点（照 AttackModeRangedPiercingRoad 先例）
+                attackModeData.attackerDamage = Math.Max(1, attackModeData.attackerDamage / 2);
             }
         }
         //命中特效（无论是否命中目标都播，落点表现）

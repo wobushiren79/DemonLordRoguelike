@@ -4,12 +4,15 @@ using UnityEngine;
 /// <summary>
 /// 周期型BUFF-多次瞬时攻击（深渊馈赠「闪电」落雷）
 /// <para>每 trigger_time 秒触发一轮：触发瞬间一次性检测全场存活敌人（此后不再检测，间隔期新刷敌人不补入也不受波及），
-/// 有放回随机抽取 class_entity_data[0] 个目标（可重复，如场上仅1个敌人则多道雷全落它身上）；</para>
+/// 不放回随机抽取 class_entity_data[0] 个主目标（一轮内多道雷的主目标互不重复；场上敌人少于雷数时只发同等数量的雷）；</para>
+/// <para>限制只落在主目标层面：溅射不受限——同一目标可被多道雷重复溅射、被溅射过的目标仍可作后续雷的主目标、
+/// 当过主目标的目标也可被后续雷溅射（同一道雷内同一生物只命中一次由攻击模块局部去重保证）。</para>
 /// <para>第 1 次瞬时攻击立即执行，后续每次间隔 multiAttackInterval 秒由 UpdateBuffTime 驱动执行（不在同帧连发）；
 /// 场上无敌人时本轮不触发。</para>
 /// <para>每次瞬时攻击 = 发射一个 class_entity_data[1] 指定的攻击模块（AttackModeInstantAreaThunder 落雷），
 /// 粒子/AOE/伤害由攻击模式框架处理：AOE半径与单雷命中上限配在攻击模块表（collider_area_size/hit_max），
-/// 本类注入「BUFF目标(魔王)实时攻击力 × trigger_value 倍率」的伤害快照与触发瞬间的敌人快照名单。</para>
+/// AOE 内多目标伤害按命中次序依次减半（保底1点），本类注入「BUFF目标(魔王)实时攻击力 × trigger_value 倍率」的伤害快照
+/// 与触发瞬间的敌人快照名单。</para>
 /// <para>class_entity_data 格式："攻击次数,攻击模块ID"（如 "3,300033"；次数是本BUFF的调度参数，攻击模块本身只是单道雷）。</para>
 /// </summary>
 public class BuffEntityPeriodicMultiInstantAttack : BuffEntityPeriodic
@@ -99,12 +102,16 @@ public class BuffEntityPeriodicMultiInstantAttack : BuffEntityPeriodic
             setSnapshotCreatureId.Add(listAliveEnemy[i].fightCreatureData.creatureData.creatureUUId);
         }
 
-        //有放回随机抽取目标：第1个立即执行，其余入队按间隔执行
+        //不放回随机抽取主目标(一轮内多道雷主目标互不重复；敌人少于雷数时只发同等数量的雷)：第1个立即执行，其余入队按间隔执行
         queuePendingAttack.Clear();
         timeIntervalCurrent = 0;
-        for (int i = 0; i < attackCount; i++)
+        List<FightCreatureEntity> listCandidate = new List<FightCreatureEntity>(listAliveEnemy);
+        int strikeNum = Mathf.Min(attackCount, listCandidate.Count);
+        for (int i = 0; i < strikeNum; i++)
         {
-            var targetEnemy = listAliveEnemy[UnityEngine.Random.Range(0, listAliveEnemy.Count)];
+            int randomIndex = UnityEngine.Random.Range(0, listCandidate.Count);
+            var targetEnemy = listCandidate[randomIndex];
+            listCandidate.RemoveAt(randomIndex);
             if (i == 0)
             {
                 LaunchStrike(targetEnemy);
