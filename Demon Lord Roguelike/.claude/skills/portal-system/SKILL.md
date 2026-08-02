@@ -1,6 +1,6 @@
 ---
 name: portal-system
-description: Demon Lord Roguelike 游戏的传送门(Portal)系统开发指南。使用此SKILL当需要创建或修改基地地图的传送门世界选择/生成、传送门随机数据(世界类型随机 Conquer/Infinite、难度、道路数/道路长度/关卡数预生成、奖励预生成)、传送门数量(研究 PortalShowNum)、地图刷新/位置避重叠/行星贴图、悬停详情气泡(UIPopupPortalDetails 四项预览+奖励, 受设施研究门控)、进入确认与难度选择对话框(UIDialogPortalDetails 左右滑动)、点击进入世界→生成 FightBean→进战斗场景等，包括 UIBasePortal、UIViewBasePortalItem、UIDialogPortalDetails、UIPopupPortalDetails、GameWorldInfoBean、GameWorldInfoRandomBean/GameWorldDifficultyRandomBean、excel_game_world_info。注意：进入后的征服战斗逻辑见 conquer-system，奖励生成规则见 fight-reward-system，研究节点/解锁机制见 research-system。
+description: Demon Lord Roguelike 游戏的传送门(Portal)系统开发指南。使用此SKILL当需要创建或修改基地地图的传送门世界选择/生成、传送门随机数据(世界类型随机 Conquer/Infinite、难度、道路数/道路长度/关卡数预生成、奖励预生成)、传送门数量(研究 PortalShowNum)、地图刷新/位置避重叠/行星贴图、悬停详情气泡(UIPopupPortalDetails 四项预览+奖励, 受设施研究门控)、进入确认与难度选择对话框(UIDialogPortalDetails 7+1池左右滑动/点击item直切)、点击进入世界→生成 FightBean→进战斗场景等，包括 UIBasePortal、UIViewBasePortalItem、UIDialogPortalDetails、UIPopupPortalDetails、GameWorldInfoBean、GameWorldInfoRandomBean/GameWorldDifficultyRandomBean、excel_game_world_info。注意：进入后的征服战斗逻辑见 conquer-system，奖励生成规则见 fight-reward-system，研究节点/解锁机制见 research-system。
 watched_files:
   - Assets/Scripts/Component/UI/Game/BasePortal/UIBasePortal.cs
   - Assets/Scripts/Component/UI/Game/BasePortal/UIViewBasePortalItem.cs
@@ -100,8 +100,10 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 
 ## 难度选择对话框（UIDialogPortalDetails）
 
-- **3+1 item 对象池**：常驻显示"上一个/当前/下一个"三档，切换时第 4 个临时进出(`InitItemPool` 克隆共 4 个)。
-- 左右滑动切换(`AnimSwitchDifficulty`，`itemSpacing=500`，`Ease.OutBack`)，到边界回弹(`AnimSwitchBlocked`)；超 `unlockDifficultyMax` 不可选，更高且 `configDifficultyMax>unlockDifficultyMax` 时 Toast「难度未解锁」(文本404)。
+- **7+1 item 对象池**：常驻显示中心±3 共**最多 7 档**，切换时第 8 个临时滑出(`InitItemPool` 克隆共 8 个)。透明度/缩放按距中心距离取梯度(`alphaByDistance`/`scaleByDistance`，0=中心 1/0.75… → 3=最外 0.4/0.6)。
+- 左右滑动切换(`AnimSwitchDifficulty`，`itemSpacing=230`，`Ease.OutBack`)，到边界回弹(`AnimSwitchBlocked`)；超 `unlockDifficultyMax` 不可选，更高且 `configDifficultyMax>unlockDifficultyMax` 时 Toast「难度未解锁」(文本404)。
+- **点击item直切**：`OnClickForDifficultyLevel(itemView)`——点击任一 item 直接 `SetDifficultyLevel` 到该难度(未解锁 item 回弹+提示)；左右切换按钮/方向键仍走 `OnClickForChangeDifficultyLevel(±1)`。
+- **克隆item按钮注册**：运行时 `InitItemPool` 克隆的 item 不在 Awake 的 `RegisterButtons` 收集范围，须用 `RegisterButton` 手动注册(模板 item 的按钮已在 Awake 注册)。
 - 切换调 `gameWorldInfoRandom.SetDifficultyLevel`(同步该难度道路/关卡数据)。
 - 输入：ESC 取消、左右方向键切换。
 - **UIViewDialogPortalDetailsItem**：单难度卡，行星图标(iconSeed)、难度文本(403「难度 等级{0}」)、解锁/未解锁灰罩、`bg_color`(征服难度表)、完成度、透明度/缩放动画、悬停 `PopupEnum.PortalDetails`(展示**该item自身难度**)。

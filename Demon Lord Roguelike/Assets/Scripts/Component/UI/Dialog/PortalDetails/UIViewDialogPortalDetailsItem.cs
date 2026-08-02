@@ -7,14 +7,10 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
     #region 数据
     //当前item代表的难度等级
     protected int difficultyLevel;
-    //当前(选中)难度item的透明度
-    public const float alphaCurrent = 1f;
-    //非当前难度item的透明度
-    public const float alphaOther = 0.5f;
-    //当前(选中)难度item的缩放
-    public const float scaleCurrent = 1f;
-    //非当前难度item的缩放
-    public const float scaleOther = 0.6f;
+    //各距离(0=中心/1=两侧/2/3=最外)难度item的透明度梯度, 下标的距离上限与一排最多展示数相关(中心±3)
+    public static readonly float[] alphaByDistance = { 1f, 0.75f, 0.55f, 0.4f };
+    //各距离(0=中心/1=两侧/2/3=最外)难度item的缩放梯度
+    public static readonly float[] scaleByDistance = { 1f, 0.85f, 0.72f, 0.6f };
     //Icon 漂浮 idle 动画的 Animator(挂在item根节点, 控制器 UIViewDialogPortalDetailsItem.controller)
     protected Animator idleAnimator;
     //idle 状态在控制器中的状态名(与 manage_animation 创建的默认状态一致)
@@ -163,7 +159,7 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
 
     #region 透明度
     /// <summary>
-    /// 立即设置透明度(当前难度1 / 两侧0.5 / 滑出可视区0)
+    /// 立即设置透明度(按距中心距离取梯度, 由 GetItemAlpha 传入; 滑出可视区为0)
     /// </summary>
     /// <param name="alpha">目标透明度</param>
     public void SetAlpha(float alpha)
@@ -199,7 +195,7 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
 
     #region 缩放
     /// <summary>
-    /// 立即设置缩放(当前难度1 / 两侧0.8)
+    /// 立即设置缩放(按距中心距离取梯度, 由 GetItemScale 传入)
     /// </summary>
     /// <param name="scale">目标统一缩放</param>
     public void SetScale(float scale)

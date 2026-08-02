@@ -1,6 +1,6 @@
 ---
 name: game-portal
-description: 传送门系统开发：基地地图传送门世界选择/生成(UIBasePortal 补足不洗牌 + GetUnlockPortalShowCount 数量 + 位置避重叠 + 行星贴图 iconSeed)、传送门随机数据(GameWorldInfoRandomBean 世界类型随机 Conquer/Infinite、难度、道路/关卡/路径预生成、奖励预生成 listReward/rewardUnlockSign)、悬停详情气泡(UIPopupPortalDetails 四项预览+奖励缓存池, 受设施研究门控 PortalPreview*)、进入确认+难度选择对话框(UIDialogPortalDetails 3+1 池左右滑动)、点击进入→FightBeanForConquer/Infinite→EnterGameForFightScene。包含 UIBasePortal、UIViewBasePortalItem、UIDialogPortalDetails、UIPopupPortalDetails、GameWorldInfoBean、GameWorldInfoRandomBean/GameWorldDifficultyRandomBean、excel_game_world_info。注意：进入后战斗逻辑见 game-conquer/game-fight-logic，奖励规则见 game-fight-reward，研究节点配置见 game-research。
+description: 传送门系统开发：基地地图传送门世界选择/生成(UIBasePortal 补足不洗牌 + GetUnlockPortalShowCount 数量 + 位置避重叠 + 行星贴图 iconSeed)、传送门随机数据(GameWorldInfoRandomBean 世界类型随机 Conquer/Infinite、难度、道路/关卡/路径预生成、奖励预生成 listReward/rewardUnlockSign)、悬停详情气泡(UIPopupPortalDetails 四项预览+奖励缓存池, 受设施研究门控 PortalPreview*)、进入确认+难度选择对话框(UIDialogPortalDetails 7+1 池左右滑动/点击item直切)、点击进入→FightBeanForConquer/Infinite→EnterGameForFightScene。包含 UIBasePortal、UIViewBasePortalItem、UIDialogPortalDetails、UIPopupPortalDetails、GameWorldInfoBean、GameWorldInfoRandomBean/GameWorldDifficultyRandomBean、excel_game_world_info。注意：进入后战斗逻辑见 game-conquer/game-fight-logic，奖励规则见 game-fight-reward，研究节点配置见 game-research。
 tools: Read, Write, Edit, Glob, Grep, Bash
 skill: portal-system
 watched_files:
@@ -37,7 +37,8 @@ watched_files:
 - `OnClickForEnterWorld`：确认对话框(文本401) + `ShowDialogPortalDetails` 难度选择；确认 → `ShowMask` → 按 `gameFightType` 造 `FightBeanForConquer`/`FightBeanForInfinite` → `WorldHandler.EnterGameForFightScene`。
 
 ### 难度选择对话框（UIDialogPortalDetails）
-- 3+1 item 对象池、左右滑动切换(`itemSpacing=500`，OutBack)、边界回弹、超 `unlockDifficultyMax` Toast「难度未解锁」；切换调 `SetDifficultyLevel`。ESC/方向键输入。
+- **7+1 item 对象池**(7 常驻显示 + 1 临时滑出)、一排最多展示 7 个(中心±3, `itemSpacing=230`)、左右滑动切换(OutBack)、边界回弹、超 `unlockDifficultyMax` Toast「难度未解锁」；切换调 `SetDifficultyLevel`。ESC/方向键输入。
+- **点击难度item直切**：`OnClickForDifficultyLevel(itemView)`——点击任一 item 直接切到该难度(未解锁 item 提示回弹)；运行时克隆的 item 按钮需在 `InitItemPool` 手动 `RegisterButton`(模板 item 的按钮已在 Awake 注册)。透明度/缩放按距中心距离梯度(`alphaByDistance`/`scaleByDistance`)。
 - `UIViewDialogPortalDetailsItem`：单难度卡(图标 iconSeed、难度文本403、灰罩、bg_color、完成度、悬停 PortalDetails 展示**该item难度**)。
 
 ### 详情气泡（UIPopupPortalDetails）

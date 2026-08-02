@@ -128,6 +128,25 @@ public partial class AttackModeInfoBean
         return trailConfig;
     }
     #endregion
+
+    #region 视觉参数(Visual 配置)
+    protected bool isInitVisualConfig = false;
+    protected AttackModeVisualConfig visualConfig;
+
+    /// <summary>
+    /// 获取视觉渲染配置（visual_data 为 & 分隔的 key:value 项：ambient/cast/receive；缓存解析结果）。
+    /// <para>需配合 visual_name 走 DSP 批量渲染方可生效；visual_data 空=全部默认（均匀环境光+不投/不收阴影）。</para>
+    /// </summary>
+    public AttackModeVisualConfig GetVisualConfig()
+    {
+        if (!isInitVisualConfig)
+        {
+            visualConfig = AttackModeVisualConfig.Parse(visual_data);
+            isInitVisualConfig = true;
+        }
+        return visualConfig;
+    }
+    #endregion
 }
 
 /// <summary>
@@ -249,6 +268,71 @@ public struct AttackModeTrailConfig
         if (parts.Length >= 4)
             float.TryParse(parts[3], out c.a);
         return c;
+    }
+}
+
+/// <summary>
+/// 攻击弹道视觉环境光补偿方式：
+/// <para>Flat=6 轴平均均匀环境光（默认，面片弹道视觉与历史一致）。</para>
+/// <para>SH=方向性球谐环境光（3D 立体模型用，如矿车；还原各面法线方向的环境光立体感）。</para>
+/// </summary>
+public enum AttackModeAmbientType
+{
+    /// <summary>6 轴平均均匀环境光（默认）</summary>
+    Flat = 0,
+    /// <summary>方向性球谐环境光（DrawMeshInstanced 下经 MPB 灌 L2 系数手动 SampleSH9）</summary>
+    SH = 1,
+}
+
+/// <summary>
+/// 攻击弹道视觉渲染配置：由配置表 visual_data 列解析而来（ambient:flat|sh&cast:0|1&receive:0|1）。
+/// <para>ambient 控制环境光补偿方式：flat=6轴平均均匀光(默认)；sh=方向性球谐环境光(3D立体模型用)。</para>
+/// <para>cast/receive 控制弹体桶的投阴影/接收阴影（Graphics.DrawMeshInstanced 参数），默认关。</para>
+/// </summary>
+public struct AttackModeVisualConfig
+{
+    /// <summary>环境光补偿方式（默认 Flat=6轴平均均匀光，与历史一致）</summary>
+    public AttackModeAmbientType ambient;
+    /// <summary>是否投阴影（BodyShadowCasting；默认 false=Off）</summary>
+    public bool castShadow;
+    /// <summary>是否接收阴影（BodyReceiveShadows；默认 false）</summary>
+    public bool receiveShadow;
+
+    /// <summary>
+    /// 解析 visual_data 字符串为视觉配置；空串/无效返回默认配置（Flat + 不投/不收阴影）。
+    /// </summary>
+    public static AttackModeVisualConfig Parse(string visualData)
+    {
+        AttackModeVisualConfig cfg = default;   //Flat + cast:0 + receive:0
+        if (string.IsNullOrEmpty(visualData))
+            return cfg;
+        //按 & 拆项，每项以第一个 : 拆 key/value（与 trail_data 一致）
+        string[] items = visualData.Split('&');
+        for (int i = 0; i < items.Length; i++)
+        {
+            string item = items[i];
+            if (string.IsNullOrEmpty(item))
+                continue;
+            int sep = item.IndexOf(':');
+            if (sep <= 0)
+                continue;
+            string key = item.Substring(0, sep).Trim();
+            string val = item.Substring(sep + 1).Trim();
+            switch (key)
+            {
+                case "ambient":
+                    //仅显式配 sh 才走方向性球谐环境光，其余(含非法值)一律回退现有均匀补偿
+                    cfg.ambient = val == "sh" ? AttackModeAmbientType.SH : AttackModeAmbientType.Flat;
+                    break;
+                case "cast":
+                    cfg.castShadow = val == "1";
+                    break;
+                case "receive":
+                    cfg.receiveShadow = val == "1";
+                    break;
+            }
+        }
+        return cfg;
     }
 }
 public partial class AttackModeInfoCfg

@@ -24,10 +24,6 @@ public partial class AttackModeInstanceRenderer
     #region 常量
     //Graphics.DrawMeshInstanced 单批矩阵上限(Unity 硬限制 1023)
     private const int MaxInstancesPerBatch = 1023;
-    //弹体是否投阴影：满屏子弹的阴影几乎看不出，却让每个弹体桶多走一遍 ShadowCaster Pass(draw call 翻倍)，故默认关；想恢复原表现改回 On 即可
-    private const ShadowCastingMode BodyShadowCasting = ShadowCastingMode.Off;
-    //弹体是否接收阴影(与 BodyShadowCasting 配套：关阴影时一并关掉受影，省 Forward Pass 的阴影采样)
-    private const bool BodyReceiveShadows = false;
     //世界速度矢量的瞬移钳制倍率：帧差分速度超过「弹道理论速度 GetMoveSpeed × 本倍率」即判定为瞬移(SetPosition 跳位)，本帧速度取 0
     //(留 1.5 倍余量是给抛物线弹的重力分量：其实际速度本就大于配置的水平速度，严格按 1 倍卡会把正常弹道误判成瞬移)
     private const float VelocityClampRate = 1.5f;
@@ -47,6 +43,13 @@ public partial class AttackModeInstanceRenderer
         public readonly Matrix4x4[] matrixBuffer = new Matrix4x4[MaxInstancesPerBatch];
         //缓冲当前已填充数量
         public int count;
+        //——per-bucket 渲染参数(由配置表 visual_data 解析而来，见 AttackModeVisualConfig)——
+        //本桶环境光补偿方式(Flat=6轴平均均匀光(默认)/SH=方向性球谐环境光，3D立体模型用)
+        public AttackModeAmbientType ambient = AttackModeAmbientType.Flat;
+        //本桶是否投阴影(默认 Off；visual_data cast:1 开启，3D 模型投影用)
+        public ShadowCastingMode castShadow = ShadowCastingMode.Off;
+        //本桶是否接收阴影(默认 false；visual_data receive:1 开启)
+        public bool receiveShadow = false;
         //——逐实例属性(仅"桶材质声明了 _VelocityWS"的桶启用，如火球/冰球；其余桶两个缓冲恒为 null，不占内存也不进热路径)——
         //本桶是否需要逐实例世界速度+种子：注册期按材质有无 _VelocityWS 判定一次(见 RegisterVisual)
         public bool hasVelocity;
@@ -67,11 +70,25 @@ public partial class AttackModeInstanceRenderer
     private readonly Dictionary<string, VisualBucket> dicBucket = new Dictionary<string, VisualBucket>();
     //方案1 轨迹桶 TrailBucket / dicTrailBucket / PropBaseColor 在分部文件 AttackModeInstanceRendererTrail.cs
 
-    //——环境光(GI)补偿：DrawMeshInstanced 的 SampleSH 读不到全局环境探针，开 Lit 的桶材质会偏暗；把探针求平坦 GI 经 MPB 灌进 shader 补齐(详见 RefreshAmbientSH)——
-    //共享 MPB(承载 _InstancedFlatGI；⚠️必须运行时懒建，禁止字段初始化器 new——本类由 MonoBehaviour 构造期创建会触发 CreateImpl 异常)
-    private MaterialPropertyBlock sharedMPB;
+    //——环境光(GI)补偿：DrawMeshInstanced 的 SampleSH 读不到全局环境探针，开 Lit 的桶材质会偏暗；按桶 ambient 方式经 MPB 灌入补齐(详见 RefreshAmbientSH)——
+    //按桶环境光方式分两个共享 MPB(⚠️必须运行时懒建，禁止字段初始化器 new——本类由 MonoBehaviour 构造期创建会触发 CreateImpl 异常)：
+    //mpbFlat 承载 _InstancedGI=1 + _InstancedFlatGI(6轴平均均匀光，面片桶/默认)；mpbSH 承载 _InstancedGI=2 + _InstancedSH0..6(L2方向性球谐，3D立体模型桶)
+    private MaterialPropertyBlock mpbFlat;
+    private MaterialPropertyBlock mpbSH;
+    //_InstancedGI：环境光补偿模式开关(0=普通渲染走全局 SampleSH/1=instancing 均匀补偿/2=instancing 方向性 SH；材质默认 0，MPB 按桶覆盖)
+    private static readonly int PropInstancedGI = Shader.PropertyToID("_InstancedGI");
     //_InstancedFlatGI 属性 ID(避免每帧字符串查找)
     private static readonly int PropInstancedFlatGI = Shader.PropertyToID("_InstancedFlatGI");
+    //方向性 SH 的 L2 系数(7 个 float4，URP SampleSH9 的 PackSH 布局；仅 SH 桶灌入)
+    private static readonly int[] PropInstancedSH = new int[7] {
+        Shader.PropertyToID("_InstancedSH0"), Shader.PropertyToID("_InstancedSH1"),
+        Shader.PropertyToID("_InstancedSH2"), Shader.PropertyToID("_InstancedSH3"),
+        Shader.PropertyToID("_InstancedSH4"), Shader.PropertyToID("_InstancedSH5"),
+        Shader.PropertyToID("_InstancedSH6"),
+    };
+    //模拟主光方向/颜色属性 ID(仅 SH 桶灌入)：DrawMeshInstanced 下 URP 主光 uniform 缺失→方向光=0，3D 立体模型桶靠这份 NdotL 恢复明暗立体感
+    private static readonly int PropInstancedLightDir = Shader.PropertyToID("_InstancedLightDir");
+    private static readonly int PropInstancedLightColor = Shader.PropertyToID("_InstancedLightColor");
     //自旋写入用的 shader 参数：_RotateSpeed 属性 ID + 时间自转关键字(与本文件其它属性一致走 ID，不用字符串字面量)
     private static readonly int PropRotateSpeed = Shader.PropertyToID("_RotateSpeed");
     private const string KeywordRotateTimeOn = "_ROTATE_TIME_ON";
@@ -97,7 +114,7 @@ public partial class AttackModeInstanceRenderer
     /// </summary>
     /// <param name="spinAxis">该桶弹道的自旋轴(与 visualKey 里编码的一致)</param>
     /// <param name="spinSpeed">该桶弹道的自旋速度(度/秒)；0=不自旋</param>
-    public void RegisterVisual(string visualKey, Mesh mesh, Material material, Vector3 spinAxis = default, float spinSpeed = 0f)
+    public void RegisterVisual(string visualKey, Mesh mesh, Material material, AttackModeVisualConfig visualConfig = default, Vector3 spinAxis = default, float spinSpeed = 0f)
     {
         if (string.IsNullOrEmpty(visualKey))
             return;
@@ -113,6 +130,10 @@ public partial class AttackModeInstanceRenderer
         }
         bucket.mesh = mesh;
         bucket.material = material;
+        //per-bucket 渲染参数：环境光补偿方式 + 投/收阴影(未配 visual_data 的桶默认 Flat + 不投/不收，与历史一致)
+        bucket.ambient = visualConfig.ambient;
+        bucket.castShadow = visualConfig.castShadow ? ShadowCastingMode.On : ShadowCastingMode.Off;
+        bucket.receiveShadow = visualConfig.receiveShadow;
         ApplyBucketSpin(material, spinAxis, spinSpeed);
         //逐实例世界速度：只有声明了 _VelocityWS 的材质(火球/冰球)才启用并分配缓冲，其余桶零内存零热路径开销
         bucket.hasVelocity = material.HasProperty(PropVelocityWS);
@@ -373,48 +394,99 @@ public partial class AttackModeInstanceRenderer
     }
 
     /// <summary>
-    /// 用携带平坦环境光的共享 MPB 批量绘制单个弹体桶当前缓冲的实例。
-    /// <para>MPB 的 _InstancedFlatGI 补齐 Lit 材质在实例化绘制下缺失的环境光，使亮度与预制 MeshRenderer 一致；
-    /// 不走光照探针(LightProbeUsage.Off，自定义 shader 未启用逐实例 SH)；阴影投射/接收见 <see cref="BodyShadowCasting"/>(默认关，省一遍 ShadowCaster Pass)。</para>
-    /// <para>【逐实例数组现灌现画】火球/冰球桶的 _VelocityWS/_SeedOffset 在此刻才灌进 <b>共享</b> MPB：Set*Array 是即时拷贝、
-    /// 紧接着就提交绘制，故各桶轮流借用同一个 MPB 不会串数据，无需每桶再建 MPB(那样反而要为每个新 MPB 同步补灌 _InstancedFlatGI，
-    /// 漏灌即偏暗)。必须每桶一份的只有缓冲数组本身——各桶的填充是交错进行的。
+    /// 用携带环境光补偿的共享 MPB(按桶 ambient 方式二选一)批量绘制单个弹体桶当前缓冲的实例。
+    /// <para>Flat 桶的 _InstancedFlatGI / SH 桶的 _InstancedSH0..6 补齐 Lit 材质在实例化绘制下缺失的环境光，使亮度与预制 MeshRenderer 一致；
+    /// 不走光照探针(LightProbeUsage.Off，自定义 shader 未启用逐实例 SH)；投/收阴影按桶的 visual_data 配置(cast/receive，默认关省一遍 ShadowCaster Pass)。</para>
+    /// <para>【逐实例数组现灌现画】火球/冰球桶的 _VelocityWS/_SeedOffset 在此刻才灌进 MPB：Set*Array 是即时拷贝、
+    /// 紧接着就提交绘制，故同方式各桶轮流借用同一个 MPB 不会串数据，无需每桶再建 MPB。必须每桶一份的只有缓冲数组本身——各桶的填充是交错进行的。
     /// 数组按定长 1023 整份上传(超出 count 的部分被忽略)，与轨迹桶的 _TrailAlpha 同理；未声明这两个属性的桶提交时 Unity 直接忽略残留数组。</para>
     /// </summary>
     private void DrawBucket(VisualBucket bucket)
     {
+        //按桶环境光方式选共享 MPB：Flat 走 6 轴平均均匀光、SH 走方向性球谐(两者已由 RefreshAmbientSH 各自灌好，含 _InstancedGI 模式开关)
+        MaterialPropertyBlock mpb = bucket.ambient == AttackModeAmbientType.SH ? mpbSH : mpbFlat;
         if (bucket.hasVelocity)
         {
-            sharedMPB.SetVectorArray(PropVelocityWS, bucket.velocityBuffer);
-            sharedMPB.SetFloatArray(PropSeedOffset, bucket.seedBuffer);
+            mpb.SetVectorArray(PropVelocityWS, bucket.velocityBuffer);
+            mpb.SetFloatArray(PropSeedOffset, bucket.seedBuffer);
         }
         Graphics.DrawMeshInstanced(bucket.mesh, 0, bucket.material, bucket.matrixBuffer, bucket.count,
-            sharedMPB, BodyShadowCasting, BodyReceiveShadows, 0, null, LightProbeUsage.Off, null);
+            mpb, bucket.castShadow, bucket.receiveShadow, 0, null, LightProbeUsage.Off, null);
     }
     #endregion
 
     #region 环境光补偿（Lit 亮度对齐）
     /// <summary>
-    /// 把全局环境探针(RenderSettings.ambientProbe)求成一份平坦 GI 颜色，灌进共享 MPB 的 _InstancedFlatGI。
+    /// 把全局环境探针(RenderSettings.ambientProbe)按桶的两种环境光补偿方式分别灌进两个共享 MPB：
+    /// Flat 桶取 6 轴平均均匀光写 _InstancedFlatGI；SH 桶把 L2 球谐系数按 URP PackSH 布局打包 7 个 float4 写 _InstancedSH0..6。
     /// <para>背景：DrawMeshInstanced 的 SampleSH 读不到环境探针 → 开 Lit 的桶材质比预制 MeshRenderer 偏暗一份环境光；
-    /// 探针在 6 轴求值取平均得平坦近似(billboard 法线近恒定)，Lit 分支把它加回反照率上。仅探针变化时重求值+SetVector，静态场景每帧只做一次结构体比较。</para>
+    /// Flat 补偿(billboard 法线近恒定)取 6 轴平均；SH 补偿(3D 立体模型)灌完整 L2 系数让 shader 按各面法线还原方向性环境光。
+    /// 仅探针变化时重求值，静态场景每帧只做一次结构体比较。</para>
     /// </summary>
     private void RefreshAmbientSH()
     {
-        //懒建 MPB：只在运行时(RenderAll 首帧)创建，规避 MonoBehaviour 构造期 CreateImpl 限制；在早退检查前，保证 DrawBucket 拿到非空 MPB
-        if (sharedMPB == null)
-            sharedMPB = new MaterialPropertyBlock();
+        //懒建双 MPB：只在运行时(RenderAll 首帧)创建，规避 MonoBehaviour 构造期 CreateImpl 限制；在早退检查前，保证 DrawBucket 拿到非空 MPB
+        if (mpbFlat == null)
+        {
+            mpbFlat = new MaterialPropertyBlock();
+            mpbSH = new MaterialPropertyBlock();
+            //_InstancedGI 模式开关写死：1=均匀补偿(Flat 桶)、2=方向性 SH(SH 桶)；材质默认 0=普通渲染走全局 SampleSH
+            mpbFlat.SetFloat(PropInstancedGI, 1f);
+            mpbSH.SetFloat(PropInstancedGI, 2f);
+        }
         SphericalHarmonicsL2 ambient = RenderSettings.ambientProbe;
         if (ambient == appliedAmbient)
             return;
         appliedAmbient = ambient;
-        //6 轴求值取平均 → 平坦环境光，写进 MPB 的 _InstancedFlatGI
+        //Flat 桶：6 轴求值取平均 → 平坦环境光，写进 mpbFlat 的 _InstancedFlatGI
         ambient.Evaluate(ambientEvalDirs, ambientEvalResults);
         Color avg = default;
         for (int i = 0; i < ambientEvalResults.Length; i++)
             avg += ambientEvalResults[i];
         avg /= ambientEvalResults.Length;
-        sharedMPB.SetVector(PropInstancedFlatGI, new Vector4(avg.r, avg.g, avg.b, 0f));
+        mpbFlat.SetVector(PropInstancedFlatGI, new Vector4(avg.r, avg.g, avg.b, 0f));
+        //SH 桶：L2 球谐系数按 URP SampleSH9 的 PackSH 布局打包 7 个 float4，写进 mpbSH
+        PackAmbientSH(ambient);
+        //SH 桶：模拟主光方向/颜色(补 DrawMeshInstanced 缺失的方向光漫反射，3D 立体模型恢复明暗)
+        PackInstancedLight();
+    }
+
+    /// <summary>
+    /// 把 SphericalHarmonicsL2 的 9 个系数按 URP SampleSH9 的 PackSH 布局打包成 7 个 float4(与 core SphericalHarmonics.hlsl 的 PackSH 一致)。
+    /// <para>布局：SHCoefficients[0..2]=各通道 L0L1(c3,c1,c2,c0-c6)；SHCoefficients[3..5]=各通道 L2 前 4 项(c4,c5,c6*3,c7)；SHCoefficients[6]=L2 第 5 项(c8.xyz,1)。</para>
+    /// </summary>
+    private void PackAmbientSH(SphericalHarmonicsL2 ambient)
+    {
+        //ambient[rgb, i]：rgb=通道(0=r,1=g,2=b)，i=系数索引 0..8
+        mpbSH.SetVector(PropInstancedSH[0], new Vector4(ambient[0, 3], ambient[0, 1], ambient[0, 2], ambient[0, 0] - ambient[0, 6]));
+        mpbSH.SetVector(PropInstancedSH[1], new Vector4(ambient[1, 3], ambient[1, 1], ambient[1, 2], ambient[1, 0] - ambient[1, 6]));
+        mpbSH.SetVector(PropInstancedSH[2], new Vector4(ambient[2, 3], ambient[2, 1], ambient[2, 2], ambient[2, 0] - ambient[2, 6]));
+        mpbSH.SetVector(PropInstancedSH[3], new Vector4(ambient[0, 4], ambient[0, 5], ambient[0, 6] * 3f, ambient[0, 7]));
+        mpbSH.SetVector(PropInstancedSH[4], new Vector4(ambient[1, 4], ambient[1, 5], ambient[1, 6] * 3f, ambient[1, 7]));
+        mpbSH.SetVector(PropInstancedSH[5], new Vector4(ambient[2, 4], ambient[2, 5], ambient[2, 6] * 3f, ambient[2, 7]));
+        mpbSH.SetVector(PropInstancedSH[6], new Vector4(ambient[0, 8], ambient[1, 8], ambient[2, 8], 1f));
+    }
+
+    /// <summary>
+    /// 取场景主方向光(RenderSettings.sun)的方向与颜色灌进 mpbSH 的模拟主光属性。
+    /// <para>背景：DrawMeshInstanced 下 URP 主光 uniform 缺失→方向光漫反射=0，3D 立体模型桶(如矿车)只有环境光、无明暗立体感；
+    /// SH 桶 shader 侧按这份方向做 NdotL 补一份漫反射恢复明暗。面片桶(flat)/普通渲染不受影响。</para>
+    /// </summary>
+    private void PackInstancedLight()
+    {
+        Vector4 dir = new Vector4(0f, 1f, 0f, 0f);
+        Vector4 color = Vector4.zero;
+        Light sun = RenderSettings.sun;
+        if (sun != null && sun.type == LightType.Directional)
+        {
+            //光照方向=从物体指向光源(法线点积正=受光)，故取 -forward
+            Vector3 d = -sun.transform.forward;
+            dir = new Vector4(d.x, d.y, d.z, 0f);
+            Color c = sun.color * sun.intensity;
+            color = new Vector4(c.r, c.g, c.b, 0f);
+        }
+        mpbSH.SetVector(PropInstancedLightDir, dir);
+        mpbSH.SetVector(PropInstancedLightColor, color);
     }
     #endregion
 }

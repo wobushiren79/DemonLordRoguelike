@@ -412,8 +412,8 @@ public class FightManager : BaseManager
             return;
         if (!TryGetAttackModeVisualSource(attackModeInfo, out Mesh mesh, out Material material))
             return;
-        //默认桶(无换图无自旋)直接用基础 sharedMesh/sharedMaterial(勿用 .mesh/.material，否则复制副本破坏 instancing 合批)
-        attackModeInstanceRenderer.RegisterVisual(attackModeInfo.visual_name, mesh, material);
+        //默认桶(无换图无自旋)直接用基础 sharedMesh/sharedMaterial(勿用 .mesh/.material，否则复制副本破坏 instancing 合批)；visual_data 决定该桶的环境光补偿方式与投/收阴影
+        attackModeInstanceRenderer.RegisterVisual(attackModeInfo.visual_name, mesh, material, attackModeInfo.GetVisualConfig());
     }
 
     /// <summary>
@@ -505,7 +505,7 @@ public class FightManager : BaseManager
                         subMat.SetVector("_VertexScaleXY", new Vector4(spriteW / spriteMax, spriteH / spriteMax, 1f, 1f));
                 }
                 //自旋用上面快照的局部量，勿改回读 attackMode(本回调时它可能已被对象池回收重发，见 spinAxis 快照处注释)
-                attackModeInstanceRenderer.RegisterVisual(key, mesh, subMat, spinAxis, spinSpeed);
+                attackModeInstanceRenderer.RegisterVisual(key, mesh, subMat, attackModeInfo.GetVisualConfig(), spinAxis, spinSpeed);
                 //换图子桶贴图就绪后派生拖尾桶(拖尾复用该子桶贴图；tile 平铺越界风险见 RegisterTrailFromVisual 注释)
                 attackModeInstanceRenderer.RegisterTrailFromVisual(key, attackModeInfo.GetTrailConfig());
             });
@@ -513,7 +513,7 @@ public class FightManager : BaseManager
         else
         {
             //仅自旋不同的子桶：贴图沿用基材质，自旋在 RegisterVisual 内一次性写入子材质(整桶自旋恒定)，直接登记
-            attackModeInstanceRenderer.RegisterVisual(key, mesh, subMat, spinAxis, spinSpeed);
+            attackModeInstanceRenderer.RegisterVisual(key, mesh, subMat, attackModeInfo.GetVisualConfig(), spinAxis, spinSpeed);
             //自旋子桶就绪后派生拖尾桶(贴图沿用基材质)
             attackModeInstanceRenderer.RegisterTrailFromVisual(key, attackModeInfo.GetTrailConfig());
         }

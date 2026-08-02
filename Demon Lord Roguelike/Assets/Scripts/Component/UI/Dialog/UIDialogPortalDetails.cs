@@ -12,12 +12,16 @@ public partial class UIDialogPortalDetails : DialogView
     protected GameWorldInfoBean gameWorldInfo;
     protected GameWorldInfoRandomBean gameWorldInfoRandom;
 
-    //难度item的水平间距(上一个/当前/下一个 分别位于 -itemSpacing/0/+itemSpacing)
-    protected const float itemSpacing = 500f;
+    //难度item的水平间距(中心±3 共7个, 间距按容器宽度收缩以保证不压到左右切换按钮)
+    protected const float itemSpacing = 230f;
     //难度切换左右滑动动画时长
     protected const float animDuration = 0.6f;
-    //难度item对象池(3个常驻显示 + 切换滑动时第4个临时进出)
+    //难度item对象池(7个常驻显示 + 切换滑动时第8个临时滑出)
     protected List<UIViewDialogPortalDetailsItem> listItemPool;
+    //一排最多展示的难度item数量(中心 + 左右各3)
+    protected const int maxShowCount = 7;
+    //中心难度一侧展示的item数(左右各 maxShowCount/2)
+    protected const int visibleHalfCount = maxShowCount / 2;
     //用户可挑战(已解锁)的最高难度
     protected int unlockDifficultyMax;
     //该世界配置表中存在的最高难度(用于决定是否展示未解锁的"下一个"预览item)
@@ -54,7 +58,7 @@ public partial class UIDialogPortalDetails : DialogView
     }
 
     /// <summary>
-    /// 初始化难度item对象池(以模板item为第一个, 再克隆出共4个)
+    /// 初始化难度item对象池(以模板item为第一个, 再克隆出共8个: 7个常驻显示 + 1个切换时临时滑出)
     /// </summary>
     protected void InitItemPool()
     {
@@ -64,34 +68,36 @@ public partial class UIDialogPortalDetails : DialogView
         //模板item作为对象池第一个
         listItemPool.Add(ui_UIViewDialogPortalDetailsItem);
         Transform itemParent = ui_UIViewDialogPortalDetailsItem.transform.parent;
-        //再克隆3个(滑动时最多同时存在4个item)
-        for (int i = 1; i < 4; i++)
+        //再克隆7个(共8个)
+        for (int i = 1; i < 8; i++)
         {
             GameObject objItem = Instantiate(ui_UIViewDialogPortalDetailsItem.gameObject, itemParent);
             objItem.transform.localScale = Vector3.one;
             UIViewDialogPortalDetailsItem itemView = objItem.GetComponent<UIViewDialogPortalDetailsItem>();
             listItemPool.Add(itemView);
+            //运行时克隆的item不在 Awake 的 RegisterButtons 收集范围内, 需手动注册按钮点击(模板item的按钮已在 Awake 注册)
+            Button[] itemButtons = objItem.GetComponentsInChildren<Button>(true);
+            for (int j = 0; j < itemButtons.Length; j++)
+                RegisterButton(itemButtons[j]);
         }
     }
 
     /// <summary>
-    /// 立即按标准布局刷新3个item(上一个 -itemSpacing / 当前 0 / 下一个 +itemSpacing), 越界的难度不显示
+    /// 立即按标准布局刷新一排最多7个item(中心±3, 越界的难度不显示)
     /// </summary>
     /// <param name="centerDifficulty">中间(当前选中)的难度</param>
     protected void RefreshItemsImmediate(int centerDifficulty)
     {
         HideAllItems();
         int poolIndex = 0;
-        for (int offset = -1; offset <= 1; offset++)
+        for (int offset = -visibleHalfCount; offset <= visibleHalfCount; offset++)
         {
             int difficulty = centerDifficulty + offset;
             if (!IsValidDisplayDifficulty(difficulty))
                 continue;
             UIViewDialogPortalDetailsItem itemView = listItemPool[poolIndex++];
             ShowItem(itemView, difficulty, offset * itemSpacing);
-            //当前难度透明度为1, 其余(上一个/下一个)为0.5
             itemView.SetAlpha(GetItemAlpha(difficulty, centerDifficulty));
-            //当前难度缩放为1, 其余(上一个/下一个)为0.8
             itemView.SetScale(GetItemScale(difficulty, centerDifficulty));
         }
     }
@@ -108,10 +114,10 @@ public partial class UIDialogPortalDetails : DialogView
 
         //关键: 动画结束时停在中心的item, 必须与随后 RefreshItemsImmediate(newCenter) 占据中心的是同一个对象池对象.
         //否则(典型为向右切换)中心item会在动画末尾被瞬间换成另一个正在缩小的item, 表现为"缩放最后一刻一瞬间放大".
-        //因此这里按"切换后"中心的紧凑顺序(与 RefreshItemsImmediate 完全一致)把中间三档难度依次分配到 pool[0..2],
+        //因此这里按"切换后"中心的紧凑顺序(与 RefreshItemsImmediate 完全一致)把中间7档难度依次分配到 pool[0..6],
         //再把滑出可视区的那一档放到剩余槽位, 保证前后池索引一致、每个屏幕位置的item对象在刷新瞬间无缝衔接.
         int poolIndex = 0;
-        for (int offset = -1; offset <= 1; offset++)
+        for (int offset = -visibleHalfCount; offset <= visibleHalfCount; offset++)
         {
             int difficulty = newCenter + offset;
             if (!IsValidDisplayDifficulty(difficulty))
@@ -120,14 +126,14 @@ public partial class UIDialogPortalDetails : DialogView
                 break;
             AnimSwitchOneItem(listItemPool[poolIndex++], difficulty, oldCenter, newCenter);
         }
-        //滑出可视区的临时item(切换前在可视边缘、切换后超出当前±1范围的那一档), 从外侧滑出并淡出
-        int leavingDifficulty = newCenter > oldCenter ? oldCenter - 1 : oldCenter + 1;
+        //滑出可视区的临时item(切换前在可视边缘、切换后超出当前±3范围的那一档), 从外侧滑出并淡出; 大幅跳转时其余出界item直接隐藏
+        int leavingDifficulty = newCenter > oldCenter ? oldCenter - visibleHalfCount : oldCenter + visibleHalfCount;
         if (IsValidDisplayDifficulty(leavingDifficulty) && poolIndex < listItemPool.Count)
         {
             AnimSwitchOneItem(listItemPool[poolIndex++], leavingDifficulty, oldCenter, newCenter);
         }
 
-        //动画结束后回到标准3item布局(顺带回收多余item)
+        //动画结束后回到标准7item布局(顺带回收多余item)
         DOVirtual.DelayedCall(animDuration, () =>
         {
             if (this == null || listItemPool == null)
@@ -157,7 +163,7 @@ public partial class UIDialogPortalDetails : DialogView
         itemView.KillAnim();
         itemView.rectTransform.DOAnchorPosX(toX, animDuration).SetEase(Ease.OutBack);
         itemView.DoFadeAlpha(GetItemAlpha(difficulty, newCenter), animDuration);
-        //切到中间的item放大到1, 滑到两侧的item缩小到0.8
+        //切到中间的item放大到1, 滑到两侧的item按梯度缩小(缩放跟随透明度渐变)
         itemView.DoScale(GetItemScale(difficulty, newCenter), animDuration);
     }
 
@@ -213,26 +219,27 @@ public partial class UIDialogPortalDetails : DialogView
     }
 
     /// <summary>
-    /// 计算某难度在以 center 为中心布局时应有的透明度
-    /// 仅展示3个(上一个/当前/下一个); 超出可视区(|offset|>1)的临时进出item透明度为0, 当前为1, 两侧为0.5
+    /// 计算某难度在以 center 为中心布局时应有的透明度(按距中心距离取梯度; 超出可视区|offset|>3 的临时进出item透明度为0)
     /// </summary>
     /// <param name="difficulty">item代表的难度</param>
     /// <param name="center">布局中心难度</param>
     protected float GetItemAlpha(int difficulty, int center)
     {
-        if (Mathf.Abs(difficulty - center) > 1)
+        int distance = Mathf.Abs(difficulty - center);
+        if (distance > visibleHalfCount)
             return 0f;
-        return difficulty == center ? UIViewDialogPortalDetailsItem.alphaCurrent : UIViewDialogPortalDetailsItem.alphaOther;
+        return UIViewDialogPortalDetailsItem.alphaByDistance[distance];
     }
 
     /// <summary>
-    /// 计算某难度在以 center 为中心布局时应有的缩放(当前难度1, 其余两侧/进出item为0.8)
+    /// 计算某难度在以 center 为中心布局时应有的缩放(按距中心距离取梯度; 超出可视区的进出item取最外档缩放)
     /// </summary>
     /// <param name="difficulty">item代表的难度</param>
     /// <param name="center">布局中心难度</param>
     protected float GetItemScale(int difficulty, int center)
     {
-        return difficulty == center ? UIViewDialogPortalDetailsItem.scaleCurrent : UIViewDialogPortalDetailsItem.scaleOther;
+        int distance = Mathf.Abs(difficulty - center);
+        return UIViewDialogPortalDetailsItem.scaleByDistance[Mathf.Min(distance, visibleHalfCount)];
     }
 
     /// <summary>
@@ -308,6 +315,38 @@ public partial class UIDialogPortalDetails : DialogView
         {
             OnClickForChangeDifficultyLevel(1);
         }
+        else if (viewButton != null)
+        {
+            //点击难度item直接切换到该item代表的难度
+            UIViewDialogPortalDetailsItem itemView = viewButton.GetComponentInParent<UIViewDialogPortalDetailsItem>();
+            if (itemView != null)
+                OnClickForDifficultyLevel(itemView);
+        }
+    }
+
+    /// <summary>
+    /// 点击难度item直接切换到该难度(未解锁难度提示并回弹, 点击当前难度不响应)
+    /// </summary>
+    /// <param name="itemView">被点击的难度item</param>
+    public void OnClickForDifficultyLevel(UIViewDialogPortalDetailsItem itemView)
+    {
+        if (isAnimating || itemView == null)
+            return;
+        int oldDifficulty = gameWorldInfoRandom.difficultyLevel;
+        int targetDifficulty = itemView.DifficultyLevel;
+        if (targetDifficulty == oldDifficulty)
+            return;
+        //未解锁难度不可切换: 朝目标方向回弹 + 提示
+        if (targetDifficulty > unlockDifficultyMax)
+        {
+            int changeLevel = targetDifficulty > oldDifficulty ? 1 : -1;
+            AnimSwitchBlocked(changeLevel);
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(404), 0);
+            return;
+        }
+        //切换难度并同步该难度预生成的道路/关卡随机数据(气泡与实际战斗均读取这些字段)
+        gameWorldInfoRandom.SetDifficultyLevel(targetDifficulty);
+        AnimSwitchDifficulty(oldDifficulty, targetDifficulty);
     }
 
     /// <summary>

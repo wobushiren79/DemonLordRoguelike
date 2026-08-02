@@ -91,6 +91,10 @@ public partial class AttackModeInfoBean : BaseBean
 	///备注
 	/// </summary>
 	public string remark;
+	/// <summary>
+	///视觉渲染参数(&分隔项,:分键值)。ambient:环境光补偿方式 flat=6轴平均均匀光(默认)/sh=方向性球谐环境光(3D立体模型用); cast:投阴影 0=关(默认)/1=开; receive:接收阴影 0=关(默认)/1=开。空=全部默认。需配合visual_name走DSP。
+	/// </summary>
+	public string visual_data;
 }
 public partial class AttackModeInfoCfg : BaseCfg<long, AttackModeInfoBean>
 {
