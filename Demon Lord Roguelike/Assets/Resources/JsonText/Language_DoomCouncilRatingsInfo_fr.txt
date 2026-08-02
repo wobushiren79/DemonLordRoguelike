@@ -1,0 +1,1 @@
+[{"id":1,"content":"Membre stagiaire"},{"id":2,"content":"Membre assistant"},{"id":3,"content":"Membre junior"},{"id":4,"content":"Membre directeur"},{"id":5,"content":"Membre senior"},{"id":6,"content":"Membre exécutif"},{"id":7,"content":"Membre vétéran"},{"id":8,"content":"Membre orateur"},{"id":9,"content":"Conseiller en chef"},{"id":10,"content":"Orateur éternel"}]

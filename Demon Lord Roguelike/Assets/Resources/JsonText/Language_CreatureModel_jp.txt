@@ -1,0 +1,1 @@
+[{"id":1,"content":"人間"},{"id":2,"content":"スケルトン"},{"id":3,"content":"スライム"},{"id":4,"content":"サキュバス"},{"id":5,"content":"ミノタウロス"},{"id":6,"content":"ゴブリン"},{"id":7,"content":"オーク"}]

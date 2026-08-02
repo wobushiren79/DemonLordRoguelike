@@ -162,6 +162,7 @@ public partial class GameTestEditor : Editor
                 }
             }
             EditorGUILayout.EndHorizontal();
+            fightDefenseCoreId = EditorGUILayout.IntField(new GUIContent("魔王生物 ID", "防守核心(魔王)的生物 ID，默认 2001 骷髅战士"), fightDefenseCoreId);
             // 单体测试模式下道路数量/道路长度为固定值，不显示
             if (fightTestMode != FightTestModeEnum.SingleUnit)
             {
@@ -265,6 +266,8 @@ public partial class GameTestEditor : Editor
         {
             //配置重导后清空选项缓存，下次绘制时重建
             abyssalBlessingFamilyOptions = null;
+            //Cfg 的 static 缓存只加载一次（不随 JSON 重导失效），需一并清掉才能读到新行
+            ClearAbyssalBlessingInfoCfgCache();
         }
         if (GUILayout.Button("📂 配置表", GUILayout.Width(80)))
         {
@@ -332,6 +335,23 @@ public partial class GameTestEditor : Editor
         {
             EditorGUILayout.HelpBox("同一馈赠族添加多行时，后添加的会替换先添加的（同族升级替换机制）。", MessageType.None);
         }
+    }
+
+    /// <summary>
+    /// 清空 AbyssalBlessingInfoCfg 的全部 static 缓存（反射访问 private/protected static）：
+    /// dicData/arrayData(数据本体，只加载一次) + dicFamilyRoot/dicFamilyMaxLevel(族根/最大等级)；
+    /// JSON 重导后若不清理且不触发 domain reload，下拉列表读到的仍是旧数据。
+    /// </summary>
+    private void ClearAbyssalBlessingInfoCfgCache()
+    {
+        const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.NonPublic
+            | System.Reflection.BindingFlags.Static
+            | System.Reflection.BindingFlags.FlattenHierarchy;
+        var cfgType = typeof(AbyssalBlessingInfoCfg);
+        cfgType.GetField("dicData", flags)?.SetValue(null, null);
+        cfgType.GetField("arrayData", flags)?.SetValue(null, null);
+        cfgType.GetField("dicFamilyRoot", flags)?.SetValue(null, null);
+        cfgType.GetField("dicFamilyMaxLevel", flags)?.SetValue(null, null);
     }
 
     /// <summary>
@@ -967,7 +987,7 @@ public partial class GameTestEditor : Editor
             }
         }
 
-        FightCreatureBean fightDefCoreData = CreatureHandler.Instance.GetFightCreatureData(2001, CreatureFightTypeEnum.FightDefenseCore);
+        FightCreatureBean fightDefCoreData = CreatureHandler.Instance.GetFightCreatureData(fightDefenseCoreId, CreatureFightTypeEnum.FightDefenseCore);
         fightDefCoreData.creatureData.AddSkinForBase();
         fightData.fightDefenseCoreData = fightDefCoreData;
         fightData.InitData();

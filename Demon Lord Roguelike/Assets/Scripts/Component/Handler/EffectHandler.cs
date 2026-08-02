@@ -363,6 +363,84 @@ public partial class EffectHandler
     }
     #endregion
 
+    #region 地面火焰粒子(深渊馈赠瓶装炼狱火,全局单例PS)
+    /// <summary>
+    /// 播放地形火焰粒子：**全局单例**（1 个实例）——移动唯一实例到落点 + Stop(StopEmitting 保活) + Play 重播。
+    /// <para>粒子已 burst 化（Effect_FloorFire_1 包装 prefab 覆盖实现）：落地双 burst(t=0/0.1) 爆发，主火/GroundFire/GlowFlat 寿命随机 3.5~5 秒
+    /// （相位去同步+渐进熄灭防整团同闪同灭），Sparks 火星为落地一次性溅射（保持原短寿命弹道，不随火焰持续）；World 空间驻留 →
+    /// 旧落点已发射粒子不跟随 transform、不被清除，继续燃烧 → 多片火焰 = 多团粒子同时燃烧，共用一个实例省资源。</para>
+    /// <para>⚠️单例重播成立的粒子前提：burst 爆发 + 寿命≈燃烧时长 + World 空间 + 不跟随。若改回 rateOverTime 持续发射，
+    /// Stop 会让旧落点断供（短寿命粒子转瞬死光），表现为"只剩最后一片火、前一片被顶掉"。</para>
+    /// <para>Stop 用 StopEmitting（保活旧粒子），不能用 StopEmittingAndClear（会清掉旧落点火焰）。</para>
+    /// </summary>
+    /// <param name="targetPos">火焰落点世界坐标</param>
+    /// <param name="duration">燃烧持续时长（秒），同步设置主粒子 duration</param>
+    public void ShowFloorFireEffect(Vector3 targetPos, float duration)
+    {
+        //播放粒子
+        Action<EffectBase> playEffect = (targetEffect) =>
+        {
+            if (targetEffect == null)
+                return;
+            targetEffect.transform.position = targetPos;
+            if (targetEffect.mainPS != null)
+            {
+                //按燃烧持续时间重设主粒子时长（burst 爆发粒子，燃烧 duration 秒）
+                var mainModule = targetEffect.mainPS.main;
+                mainModule.duration = Mathf.Max(duration, 0.1f);
+                //停发射保活已发射粒子（旧落点火焰 World 驻留继续燃烧），再重播触发新落点爆发
+                targetEffect.mainPS.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            }
+            targetEffect.PlayEffect();
+        };
+
+        //获取全局唯一粒子实例（Effect_FloorFire_1）
+        manager.GetEffectForEnduring(GetEffectResName(manager.effectFloorFireId, ref manager.resNameFloorFire), (targetEffect) =>
+        {
+            playEffect?.Invoke(targetEffect);
+        });
+    }
+    #endregion
+
+    #region 冲击波粒子(深渊馈赠第六次冲击)
+    /// <summary>冲击波视觉基准半径（世界单位）：Effect_Shockwave_1 主粒子在 startSizeMultiplier=1 时的视觉半径，
+    /// 代码按 判定半径/基准半径 换算 multiplier；若视觉波前与判定环带不重合，校准此常量（或改 prefab 主粒子 startSize）</summary>
+    protected const float ShockwaveVisualBaseRadius = 3f;
+    /// <summary>冲击波视觉基准时长（秒）：prefab 主粒子 startLifetime，代码按 判定扩张时长/基准时长 换算 multiplier
+    /// （Size over Lifetime 曲线按寿命归一化，拉长寿命即等比放慢扩张动画）</summary>
+    protected const float ShockwaveVisualBaseDuration = 0.5f;
+
+    /// <summary>
+    /// 播放冲击波粒子（深渊馈赠「第六次冲击」）：一次性实例，播放前按判定参数同步视觉半径与扩张时长，
+    /// 保证视觉波前与 AttackModeShockwaveRing 的判定环带严格重合。
+    /// <para>半径同步：主粒子 startSizeMultiplier = 判定最大半径 / ShockwaveVisualBaseRadius（prefab 主粒子为 Mesh 模式圆环 + Size over Lifetime 归一化扩张）；</para>
+    /// <para>时长同步：主粒子 startLifetimeMultiplier = 判定扩张时长 / ShockwaveVisualBaseDuration（Sparks 子粒子为装饰不同步）；</para>
+    /// <para>multiplier 每次播放前重设：本特效为冲击波专用，对象池复用的同一实例下次播放会重设新值，无残留问题。</para>
+    /// </summary>
+    /// <param name="targetPos">冲击波圆心世界坐标</param>
+    /// <param name="maxRadius">判定最大半径（世界单位）</param>
+    /// <param name="waveDuration">判定扩张时长（秒）</param>
+    public void ShowShockwaveEffect(Vector3 targetPos, float maxRadius, float waveDuration)
+    {
+        var effectInfo = EffectInfoCfg.GetItemData(manager.effectShockwaveId);
+        if (effectInfo == null)
+            return;
+        EffectBean effectData = effectInfo.GetEffectData();
+        effectData.effectPosition = targetPos;
+        ShowEffect(effectData, (targetEffect) =>
+        {
+            if (targetEffect == null || targetEffect.mainPS == null)
+                return;
+            var mainModule = targetEffect.mainPS.main;
+            mainModule.startSizeMultiplier = maxRadius / ShockwaveVisualBaseRadius;
+            mainModule.startLifetimeMultiplier = Mathf.Max(waveDuration, 0.1f) / ShockwaveVisualBaseDuration;
+            //停旧播新（对象池复用的实例可能残留上次播放状态），再重播触发新一轮爆发
+            targetEffect.mainPS.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            targetEffect.PlayEffect();
+        });
+    }
+    #endregion
+
     #region 飘字(伤害数字)粒子
     /// <summary>
     /// 播放数字粒子(伤害/闪避/HP/护甲飘字)：转发给 GPU Instancing 批量渲染器(FightTextInstanceRenderer，字符级实例一次

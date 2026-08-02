@@ -1,0 +1,1 @@
+[{"id":1,"content":"憎悪"},{"id":2,"content":"冷淡"},{"id":3,"content":"中立"},{"id":4,"content":"友好"},{"id":5,"content":"夢中"}]

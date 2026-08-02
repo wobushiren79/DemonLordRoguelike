@@ -1,0 +1,1 @@
+[{"id":1,"content":"Humain"},{"id":2,"content":"Squelette"},{"id":3,"content":"Slime"},{"id":4,"content":"Succube"},{"id":5,"content":"Minotaure"},{"id":6,"content":"Gobelin"},{"id":7,"content":"Orc"}]

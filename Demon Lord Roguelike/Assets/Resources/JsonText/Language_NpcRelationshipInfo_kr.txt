@@ -1,0 +1,1 @@
+[{"id":1,"content":"증오"},{"id":2,"content":"냉담"},{"id":3,"content":"중립"},{"id":4,"content":"우호"},{"id":5,"content":"매혹"}]

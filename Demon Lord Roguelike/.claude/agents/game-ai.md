@@ -29,6 +29,7 @@ AICreatureEntity                    # 生物 AI 基类
 │   ├── AIIntentAttackCreatureAttack     # 攻击(打防守生物, 走 AttackMode)
 │   ├── AIIntentAttackCreatureAttackCore # 攻击魔王(靠近后固定触发一次攻击并让魔王死亡, 不走 AttackMode)
 │   ├── AIIntentAttackCreatureLured      # 被引诱
+│   ├── AIIntentAttackCreatureKnockback  # 被击退(冲击波等位移效果：StartKnockback 强制切换，固定 0.2s 匀速推完，结束回 Idle 重新索敌)
 │   └── AIIntentAttackCreatureDead       # 死亡
 ├── AIDefenseCreatureEntity         # 防守生物
 │   ├── AIIntentDefenseCreatureAttack
@@ -41,8 +42,19 @@ AICreatureEntity                    # 生物 AI 基类
 ```
 
 ### 通用意图
-- **AIIntentCreatureAttack** - 通用攻击意图（可继承复用）；内置 **额外攻击** 机制（见下）
+- **AIIntentCreatureAttack** - 通用攻击意图（可继承复用）；内置 **额外攻击** 机制（见下）；内置 **目标距离复查**（见下）
 - **AIIntentCreatureDead** - 通用死亡意图
+
+### 击退意图（AIIntentAttackCreatureKnockback，位移效果统一机制）
+- **发起入口**：`AIAttackCreatureEntity.StartKnockback(direction, distance)`——击退参数经 `GetIntent` 直接写入击退意图实例（`SetupKnockback`）后 `ChangeIntent`；**击退中再次被击退只刷新参数**（原地续推，不重进意图）。调用先例：`AttackModeShockwaveRing`（深渊馈赠「第六次冲击」，方向固定 `Vector3.right` 沿道路向后推，不带 z 分量防敌人被推离路径）。
+- **推移**：固定 `KnockbackDuration=0.2s` 匀速推完全程（任何击退距离时长一致、推速=距离/时长，计时走 `GetFightDeltaTime` 跟随 2 倍速）；落点 x 钳制：右缘硬钳 `[0.5+路长]`、左缘只防「从道路内被推出左缘」——已在左缘内(x<0.5，直冲魔王阶段)的敌人不往前拉（防击退变"前吸"），自然向右推回道路；播 Idle 动画（被控状态）。
+- **结束**：剩余距离走完回 `AttackCreatureIdle`，重新走「闲置→移动→攻击」索敌流程——与防守目标的距离重新判定，不会隔空续打；强制切换本身即打断攻击循环（挥刀被打飞中断）。
+- **死亡**：击退中死亡由 `FightCreatureEntityForAttack` 死亡流程 `ChangeIntent(Dead)` 覆盖，意图无需自处理。
+
+### 攻击意图目标距离复查（AIIntentCreatureAttack 基类，攻防通用）
+- **机制**：`IntentUpdate` 开头（仅 `attackState` 0准备/1出手 阶段）调 `CheckTargetInAttackRange()`——**与索敌完全同口径**：向目标所在方向做一次同款 `FindCreatureEntityForSinge` 搜索，搜到任何目标即仍在射程内（可能搜到更近的新目标，攻击循环会自然切换），搜不到才 `ChangeIntent(intentForIdle)` 中断回待机重新索敌，防"目标被击退/诱导拉远后隔老远还在攻击"；`attackState==2`（已发射等回调）不打断，交 `ActionForAttackEnd` 重索敌自然处理。
+- **⚠️不能用「中心距 ≤ searchRange」判定**（2026-08 击退后卡死 BUG 根因）：索敌射线命中的是目标 collider **表面**，命中时两中心距离 = searchRange + collider半径——中心距口径比索敌严格一个 collider 半径，会把「索敌认为能打」的位置判成脱靶，造成 Idle→Move→Attack 死循环原地卡住（每帧切换、Move 的索敌 CD 拉满即切走导致位移代码永远执行不到）。
+- **无副作用场景**：敌人 Attack 中站定+目标（防守生物）不动 → 复查恒真；远程大 searchRange 恒真；近战目标被击退 0.5 出射线范围 → 搜不到 → 中断重索敌（设计目的）。
 
 ### 额外攻击（攻击模块扩展，命名通用、不限于 BOSS）
 - **配置**：`NpcInfo.attack_mode_ext`（逗号分隔的 `AttackModeExtInfo` id）→ `AttackModeExtInfo`（`ext_type` 类型，目前仅 `1`=`AttackModeExtTypeEnum.BossSkill` 按间隔释放、`trigger_interval` 间隔秒、`attack_mode_id` 指向 `AttackModeInfo`）。

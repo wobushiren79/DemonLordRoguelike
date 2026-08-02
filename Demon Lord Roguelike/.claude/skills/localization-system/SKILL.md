@@ -38,17 +38,23 @@ Assets/Resources/JsonText/
 ├── Language_BuffInfo_en.txt            - BUFF名称描述（英文）
 ├── Language_ItemsInfo_cn.txt           - 道具名称（中文）
 ├── Language_ItemsInfo_en.txt           - 道具名称（英文）
-└── Language_{CfgName}_{lang}.txt       - 通用命名格式
+└── Language_{CfgName}_{lang}.txt       - 通用命名格式（lang ∈ cn/en/jp/kr/tw/de/fr/ru）
 ```
 
-> ⚠️ **真实源是 Excel，不是 `.txt`**：`Language_{CfgName}_{cn,en}.txt` 都是从 **`excel_language[多语言_FrameWork].xlsx` 里与 `{CfgName}` 同名的工作表**导出的产物（每个工作表列：`id / content_cn / content_en / content_1_cn / content_1_en / remark`；`Language_UIText_*` 则来自 `excel_ui_text`）。**新增/修改文本必须改对应 Excel 工作表**，再用 ExcelEditorWindow 导出；只改 `.txt` 会在下次导出时被**覆盖丢失**。下文示例若直接写 `.txt` 仅为说明字段结构，落地务必同步 Excel 工作表。
+> ⚠️ **真实源是 Excel，不是 `.txt`**：`Language_{CfgName}_{lang}.txt` 都是从 **`excel_language[多语言_FrameWork].xlsx` 里与 `{CfgName}` 同名的工作表**导出的产物（每个工作表列：`id / content_{lang} / content_1_{lang} / remark`，lang 含 cn/en/jp/kr/tw/de/fr/ru 八种；`Language_UIText_*` 则来自 `excel_ui_text`）。**新增/修改文本必须改对应 Excel 工作表**，再用 ExcelEditorWindow 导出；只改 `.txt` 会在下次导出时被**覆盖丢失**。下文示例若直接写 `.txt` 仅为说明字段结构，落地务必同步 Excel 工作表。
 
 ### 支持的语言
 
 ```csharp
 LanguageEnum
 ├── cn = 0    - 简体中文
-└── en = 1    - 英文
+├── en = 1    - 英文
+├── jp = 2    - 日语
+├── kr = 3    - 韩语
+├── tw = 4    - 繁体中文
+├── de = 5    - 德语
+├── fr = 6    - 法语
+└── ru = 7    - 俄语
 ```
 
 ---
@@ -62,9 +68,11 @@ LanguageEnum
 ```
 1. Steam 已连上（SteamManager.Initialized == true）
    └─ SteamApps.GetCurrentGameLanguage() 返回值
-      ├─ 含 "chinese"（schinese / tchinese）→ cn
-      └─ 其他（english / german / ...）   → en
-2. 未连上 Steam 或异常 → cn
+      ├─ schinese → cn   tchinese → tw   其他含 chinese → cn
+      ├─ japanese → jp   koreana → kr
+      ├─ german → de     french → fr     russian → ru
+      └─ 其他（english / ...）→ en
+2. 未连上 Steam 或异常 → en
 ```
 
 ### 关键代码
@@ -89,17 +97,31 @@ public partial class LanguageCfg
                 string steamLanguage = SteamApps.GetCurrentGameLanguage();
                 if (!string.IsNullOrEmpty(steamLanguage))
                 {
+                    if (steamLanguage.Equals("schinese", StringComparison.OrdinalIgnoreCase))
+                        return LanguageEnum.cn.GetEnumName();
+                    if (steamLanguage.Equals("tchinese", StringComparison.OrdinalIgnoreCase))
+                        return LanguageEnum.tw.GetEnumName();
                     if (steamLanguage.IndexOf("chinese", StringComparison.OrdinalIgnoreCase) >= 0)
                         return LanguageEnum.cn.GetEnumName();
+                    if (steamLanguage.Equals("japanese", StringComparison.OrdinalIgnoreCase))
+                        return LanguageEnum.jp.GetEnumName();
+                    if (steamLanguage.Equals("koreana", StringComparison.OrdinalIgnoreCase))
+                        return LanguageEnum.kr.GetEnumName();
+                    if (steamLanguage.Equals("german", StringComparison.OrdinalIgnoreCase))
+                        return LanguageEnum.de.GetEnumName();
+                    if (steamLanguage.Equals("french", StringComparison.OrdinalIgnoreCase))
+                        return LanguageEnum.fr.GetEnumName();
+                    if (steamLanguage.Equals("russian", StringComparison.OrdinalIgnoreCase))
+                        return LanguageEnum.ru.GetEnumName();
                     return LanguageEnum.en.GetEnumName();
                 }
             }
         }
         catch (Exception ex)
         {
-            LogUtil.LogError($"读取 Steam 语言失败，回退到默认语言 cn：{ex.Message}");
+            LogUtil.LogError($"读取 Steam 语言失败，回退到默认语言 en：{ex.Message}");
         }
-        return LanguageEnum.cn.GetEnumName();
+        return LanguageEnum.en.GetEnumName();
     }
 }
 ```

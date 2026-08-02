@@ -1,0 +1,1 @@
+[{"id":1,"content":"生命"},{"id":2,"content":"魔力"},{"id":3,"content":"護甲"},{"id":4,"content":"攻擊力"},{"id":5,"content":"移動速度"},{"id":6,"content":"攻擊速度"},{"id":7,"content":"暴擊率"},{"id":8,"content":"閃避"},{"id":9,"content":"復活CD"},{"id":10,"content":"魔力回復%"},{"id":11,"content":"魔力回復"}]

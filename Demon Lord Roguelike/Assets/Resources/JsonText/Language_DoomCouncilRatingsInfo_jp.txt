@@ -1,0 +1,1 @@
+[{"id":1,"content":"見習い議員"},{"id":2,"content":"陪席議員"},{"id":3,"content":"初級議員"},{"id":4,"content":"理事議員"},{"id":5,"content":"上級議員"},{"id":6,"content":"常務議員"},{"id":7,"content":"古参議員"},{"id":8,"content":"議長級議員"},{"id":9,"content":"首席議員"},{"id":10,"content":"永遠の議長"}]

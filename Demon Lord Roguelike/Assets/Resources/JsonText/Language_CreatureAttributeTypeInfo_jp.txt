@@ -1,0 +1,1 @@
+[{"id":1,"content":"体力"},{"id":2,"content":"魔力"},{"id":3,"content":"防御力"},{"id":4,"content":"攻撃力"},{"id":5,"content":"移動速度"},{"id":6,"content":"攻撃速度"},{"id":7,"content":"クリティカル率"},{"id":8,"content":"回避"},{"id":9,"content":"復活クールタイム"},{"id":10,"content":"魔力回復%"},{"id":11,"content":"魔力回復"}]

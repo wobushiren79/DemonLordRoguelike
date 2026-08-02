@@ -56,11 +56,17 @@ BaseAttackMode                      - 攻击模式基类
 │   ├── AttackModeRangedArea        - 远程范围弹道（击中时范围AOE）
 │   ├── AttackModeRangedArc         - 远程抛物线弹道
 │   │   └── AttackModeRangedArcArea - 抛物线范围（继承抛物线轨迹）
+│   │   └── AttackModeRangedArcBounce - 弹跳抛物线（分段抛物线+追踪锁定+命中弹跳；深渊馈赠「跳跳斧」300061）
+│   │   └── AttackModeRangedArcGround - 抛物线火瓶-地形火焰（双状态 Flying→Burning：飞行段抛物线飞向固定落点不追踪、纯投掷物禁用命中、弹体自旋-720°/s绕-Z轴，到达切燃烧段驻留每1秒对半径范围跳伤、满5秒自毁；深渊馈赠「瓶装炼狱火」300101）
 │   ├── AttackModeRangedTracking    - 远程追踪弹道（实时改变方向追击目标）
 │   ├── AttackModeRangedPiercing    - 远程穿透弹道（可穿透多个目标）
-│   │   └── AttackModeRangedPiercingRoad - 沿路碾压穿透（穿透数无上限、伤害逐目标减半保底1、驶到路尽头销毁；深渊馈赠「失控的矿车」300041）
+│   │   ├── AttackModeRangedPiercingRoad - 沿路碾压穿透（穿透数无上限、伤害逐目标减半保底1、驶到路尽头销毁；深渊馈赠「失控的矿车」300041）
+│   │   └── AttackModeRangedRebound - 四壁反弹穿透（道路矩形内永久反弹+±5°随机偏转、同目标1秒冷却、永不自毁由BUFF维持N颗；深渊馈赠「回弹菱块」300081~300085）
 │   └── AttackModeRangedSplitChild  - 分裂弹-子弹道（直线飞行 + 向自己的目标道路归位；由下方发射器发射）
 ├── AttackModeRangedSplit           - 分裂弹-发射器（不飞不画不命中，按道路发射多发子弹道后自毁）
+├── AttackModeRangedBoomerang       - 回旋镖弹道（继承 BaseAttackMode：起点→锁定点→超出一格折返→返回魔王，时间参数化速度曲线，伤害逐目标减半保底1；深渊馈赠「死亡回旋」300051）
+├── AttackModeOrbit                 - 环绕弹道（常驻不自毁：绕宿主生物 XZ 水平面圆周运动，半径0.75(OrbitRadius 常量)，高度取魔王位置+攻击起始偏移(注入 orbitHeight)，宿主/角速度/伤害倍率由外部 BUFF 注入并同步；触碰命中走 live 球形检测、每只书对同一敌人 0.5 秒冷却，伤害=魔王实时攻击力×倍率命中瞬间取、不暴击；深渊馈赠「知识的力量」300071）
+├── AttackModeShockwaveRing         - 圆环冲击波（以魔王为圆心扩张：XZ 环带命中自遍历不走射线批处理、每敌每波只中一次、命中瞬时击退、最大半径=道路全长+余量达到即销毁；视觉走 EffectHandler.ShowShockwaveEffect 同步半径/时长；深渊馈赠「第六次冲击」300091）
 ├── AttackModeExplosion             - 爆炸（以自身为中心范围伤害，攻击者死亡）
 ├── AttackModeFallupon              - 天降单体（直接对锁定目标造成伤害）
 ├── AttackModeFalluponArea          - 天降范围（对目标位置范围伤害）
@@ -94,9 +100,15 @@ BaseAttackMode                      - 攻击模式基类
 | `AttackModeRanged` | 直线飞行弹道 | 箭矢、法术弹 |
 | `AttackModeRangedArea` | 飞行弹道+击中AOE | 爆炸箭、火球术 |
 | `AttackModeRangedArc` | 抛物线飞行 | 投石、抛物线炸弹 |
+| `AttackModeRangedArcBounce` | 分段抛物线 + 追踪锁定目标 + 命中后弹跳到附近目标（次数由发射方注入，全程命中去重，伤害逐目标减半保底1；弧高首段=arcHeight、弹跳段减半；每段仅下落阶段 progress≥0.5 检测命中；分段时长=max(距离/速度, MinSegmentTime=1.0s) 防短段过快） | 弹跳斧、弹射类 |
+| `AttackModeRangedArcGround` | 抛物线投掷 + 落地驻留周期范围伤害（双状态：飞行段纯移动不命中+弹体自旋-720°/s绕-Z轴、到达切燃烧段每 TickInterval 对半径范围跳伤、满 Duration 自毁；燃烧段隐藏 DSP 弹体、粒子视觉走 EffectHandler.ShowFloorFireEffect） | 投掷物落地成持续灼烧地形（瓶装炼狱火） |
 | `AttackModeRangedTracking` | 追踪目标飞行 | 追踪弹、导弹 |
 | `AttackModeRangedPiercing` | 可穿透多个目标 | 穿透箭、激光 |
 | `AttackModeRangedPiercingRoad` | 沿路穿透碾压 + 伤害逐目标递减 + 到路尽头销毁 | 矿车冲撞、碾压类 |
+| `AttackModeRangedRebound` | 继承 Piercing（复用多目标命中遍历）：直线飞行 + 道路矩形四壁反弹（x∈[0.5,0.5+路长]、z∈[0.5,路数+0.5]，StartAttackBase 缓存），越墙钳位+方向分量取反+绕 Y 轴 ±5° 随机偏转（防 90° 死角死循环）；左墙在子弹进入场地后才生效（hasEnteredField 防出生即弹回魔王侧）；命中不销毁、伤害不递减，同一目标 1 秒冷却（Dictionary 记录各目标最近命中时刻，lifeTime 按 GetFightDeltaTime 累积，名单超 100 清理过期条目）；`CheckIsMoveBound` 恒 false 永不自毁，由发射方 BUFF 追踪维持 N 颗、关卡切换被清后补弹 | 回弹菱块、弹球类 |
+| `AttackModeRangedBoomerang` | 回旋镖三段式飞行（起点→锁定点→超出一格折返→返回魔王，时间参数化：去程后半程减速到0、返程匀加速），伤害逐目标减半保底1，去程去重/返程可再命中 | 回旋镖、往返弹 |
+| `AttackModeOrbit` | 常驻环绕宿主圆周运动（不自毁、不越界销毁）+ 触碰命中（每只书对同一敌人 0.5 秒冷却） | 环绕书本、卫星弹 |
+| `AttackModeShockwaveRing` | 以魔王为圆心的扩张圆环：半径每帧按 speed_move 扩张，XZ 距离落在「上帧半径~当前半径」环带内的敌人命中（每敌每波一次），命中交 AIAttackCreatureEntity.StartKnockback 击退意图（方向固定 +x 沿道路向后推不带 z 分量，collider_area_size[1]=击退距离，落点 x 钳制道路范围，攻击循环打断、结束回闲置重索敌）；最大半径=道路右缘+余量(collider_area_size[0])−圆心x，达到即销毁；无 prefab/visual_name，视觉=StartAttackBase 时调 EffectHandler.ShowShockwaveEffect（multiplier 同步半径与扩张时长） | 冲击波、震荡波 |
 | `AttackModeRangedSplit` | 发射器：按道路发射多发独立子弹道后自毁 | 散射弹、分叉箭（子弹道行另配 `AttackModeRangedSplitChild`） |
 | `AttackModeExplosion` | 自爆范围伤害 | 自杀式爆炸、亡语 |
 | `AttackModeFallupon` | 直接对目标造成伤害 | 天降打击、瞬移攻击 |
@@ -437,7 +449,7 @@ public virtual void AttackHandle()
 }
 ```
 
-**发射方示例（BUFF 纯数据发射路径，照分裂弹发射器先例内联发射）**：深渊馈赠「闪电」BUFF（`BuffEntityPeriodicMultiInstantAttack`）负责周期触发→快照全场敌人→**不放回**抽 N 个主目标（一轮内多道雷主目标互不重复；敌人少于雷数时只发同等数量的雷；限制只在主目标层面——溅射不受限：同一目标可被多道雷重复溅射、被溅射过的目标仍可作后续雷主目标）→第 1 道立即+后续 0.1 秒间隔逐个发射，每道雷注入伤害快照（魔王实时ATK×trigger_value、CRT=0 不暴击）、落点（startPos=targetPos）、`attackedLayerTarget=LayerInfo.CreatureAtt`、`filterCreatureIds` 快照名单。配置：buff 表 `class_entity_data="次数,攻击模块ID"`；攻击模块表 300031~300035（Lv1~5 各一行，半径/命中上限随级配在 `collider_area_size`/`hit_max`）。
+**发射方示例（BUFF 纯数据发射路径，照分裂弹发射器先例内联发射）**：深渊馈赠「闪电」BUFF（`BuffEntityPeriodicAttackMultiInstant`）负责周期触发→快照全场敌人→**不放回**抽 N 个主目标（一轮内多道雷主目标互不重复；敌人少于雷数时只发同等数量的雷；限制只在主目标层面——溅射不受限：同一目标可被多道雷重复溅射、被溅射过的目标仍可作后续雷主目标）→第 1 道立即+后续 0.1 秒间隔逐个发射，每道雷注入伤害快照（魔王实时ATK×trigger_value、CRT=0 不暴击）、落点（startPos=targetPos）、`attackedLayerTarget=LayerInfo.CreatureAtt`、`filterCreatureIds` 快照名单。配置：buff 表 `class_entity_data="次数,攻击模块ID"`；攻击模块表 300031~300035（Lv1~5 各一行，半径/命中上限随级配在 `collider_area_size`/`hit_max`）。
 
 > **⚠️雷电粒子为何不走 effect_hit 配置**：`Effect_Thunder_3` 是全局单例持久型 PS，`EffectHandler.ShowThunderEffect` 用 Stop(StopEmitting)+Play 重播才支持 0.1 秒连发交叠；标准 `effect_hit`/`ShowEffect` 通道对持久型粒子不会重触发爆发（且不会移动单例位置），直接配置会让第 2~N 道雷不闪。走 EffectHandler 专用方法与血液/护盾（`ShowBloodEffect`/`ShowShieldHitEffect`）是同一先例。
 
@@ -737,11 +749,17 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | 近战范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeMeleeArea.cs` |
 | 远程弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRanged.cs` |
 | 远程范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedArea.cs` |
-| 抛物线弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedArc.cs` |
+| 抛物线弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedArc.cs`（`progress` 为 protected，供弹跳子类重置分段） |
 | 抛物线范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedArcArea.cs` |
+| 弹跳抛物线（跳跳斧） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedArcBounce.cs` |
+| 抛物线火瓶-地形火焰（瓶装炼狱火） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedArcGround.cs` |
 | 追踪弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedTracking.cs` |
 | 穿透弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedPiercing.cs` |
 | 沿路碾压穿透（矿车） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedPiercingRoad.cs` |
+| 四壁反弹穿透（回弹菱块） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedRebound.cs` |
+| 回旋镖弹道（死亡回旋） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedBoomerang.cs` |
+| 环绕弹道（知识的力量） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOrbit.cs` |
+| 圆环冲击波（第六次冲击） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeShockwaveRing.cs` |
 | 分裂弹-发射器 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedSplit.cs` |
 | 分裂弹-子弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedSplitChild.cs` |
 | 爆炸 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeExplosion.cs` |

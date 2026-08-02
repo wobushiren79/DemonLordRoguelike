@@ -1,0 +1,1 @@
+[{"id":1,"content":"Hass"},{"id":2,"content":"Gleichgültig"},{"id":3,"content":"Neutral"},{"id":4,"content":"Freundlich"},{"id":5,"content":"Schwärmerei"}]

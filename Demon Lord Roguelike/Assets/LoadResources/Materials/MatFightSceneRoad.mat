@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: MatFightSceneRoad
-  m_Shader: {fileID: -6465566751694194690, guid: 00b8c1c81a5f4ff48bff1675fd636499, type: 3}
+  m_Shader: {fileID: 4800000, guid: 9552b720483a67a4fb979436b4966efa, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -31,8 +31,7 @@ Material:
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: 2999
   stringTagMap: {}
-  disabledShaderPasses:
-  - MOTIONVECTORS
+  disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -114,6 +113,7 @@ Material:
     - _DstBlend: 0
     - _DstBlendAlpha: 0
     - _EnvironmentReflections: 1
+    - _FogInfluence: 0.5
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
@@ -139,7 +139,7 @@ Material:
     - _ColorA: {r: 0.29803923, g: 0.40784314, b: 0.1254902, a: 1}
     - _ColorB: {r: 0.4509804, g: 0.5647059, b: 0.14509805, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _GridSize: {r: 9, g: 3, b: 0, a: 0}
+    - _GridSize: {r: 10, g: 6, b: 0, a: 0}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

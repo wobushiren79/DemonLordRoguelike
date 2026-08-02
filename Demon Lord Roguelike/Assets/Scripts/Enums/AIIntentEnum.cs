@@ -9,6 +9,7 @@ public enum AIIntentEnum
     AttackCreatureAttackCore,//攻击魔王(核心)：靠近魔王后固定触发一次攻击并让魔王死亡, 不走AttackMode
     AttackCreatureDead,//死亡
     AttackCreatureLured,//被诱惑中
+    AttackCreatureKnockback,//被击退中（冲击波等位移效果强制切换，推移过程结束后回闲置重新索敌）
 
     DefenseCreatureIdle,//闲置
     DefenseCreatureAttack,//攻击

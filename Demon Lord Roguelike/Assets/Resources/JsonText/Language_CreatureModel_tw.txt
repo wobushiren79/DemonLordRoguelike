@@ -1,0 +1,1 @@
+[{"id":1,"content":"人類"},{"id":2,"content":"骷髏"},{"id":3,"content":"史萊姆"},{"id":4,"content":"魅魔"},{"id":5,"content":"牛頭人"},{"id":6,"content":"哥布林"},{"id":7,"content":"獸人"}]

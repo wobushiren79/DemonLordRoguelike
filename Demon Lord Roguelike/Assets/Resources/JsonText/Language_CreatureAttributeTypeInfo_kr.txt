@@ -1,0 +1,1 @@
+[{"id":1,"content":"생명력"},{"id":2,"content":"마력"},{"id":3,"content":"방어력"},{"id":4,"content":"공격력"},{"id":5,"content":"이동 속도"},{"id":6,"content":"공격 속도"},{"id":7,"content":"치명타율"},{"id":8,"content":"회피"},{"id":9,"content":"부활 쿨타임"},{"id":10,"content":"마력 회복%"},{"id":11,"content":"마력 회복"}]

@@ -1,0 +1,1 @@
+[{"id":1,"content":"랍스터 슬레이어"},{"id":2,"content":"코드 브레이커"},{"id":3,"content":"질 파괴자"},{"id":4,"content":"심연의 메아리"},{"id":5,"content":"어전의 마군"},{"id":6,"content":"영원한 감시자"},{"id":7,"content":"영혼 중재관"},{"id":8,"content":"재앙의 군주"},{"id":9,"content":"심연의 제사장"},{"id":10,"content":"그림자 군사"},{"id":11,"content":"고통의 장인"},{"id":12,"content":"혈맹 집행자"},{"id":13,"content":"속삭이는 자"}]

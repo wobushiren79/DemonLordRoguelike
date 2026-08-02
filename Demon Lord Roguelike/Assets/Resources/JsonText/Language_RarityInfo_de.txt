@@ -1,0 +1,1 @@
+[{"id":1,"content":"Gewöhnlich"},{"id":2,"content":"Selten"},{"id":3,"content":"Superselten"},{"id":4,"content":"Ultraselten"},{"id":5,"content":"Extrem selten"},{"id":6,"content":"Legendär"}]

@@ -8,7 +8,8 @@ public class AttackModeRangedArc : AttackModeRanged
     //抛物线高度
     public float arcHeight = 3f;
 
-    private float progress = 0f;
+    //当前抛物线分段进度(0~1；protected 供弹跳类子类重置分段)
+    protected float progress = 0f;
 
     public override void StartAttack()
     {

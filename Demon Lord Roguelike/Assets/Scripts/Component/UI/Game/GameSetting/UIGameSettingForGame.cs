@@ -14,7 +14,13 @@ public class UIGameSettingForGame : UIGameSettingBase
     public List<string> listLanguageSelect = new List<string>()
     {
          "中文",
-         "English"
+         "English",
+         "日本語",
+         "한국어",
+         "繁體中文",
+         "Deutsch",
+         "Français",
+         "Русский"
     };
 
     public UIGameSettingForGame(GameObject objListContainer) : base(objListContainer)

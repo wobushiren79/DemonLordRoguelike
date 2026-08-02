@@ -1,0 +1,1 @@
+[{"id":1,"content":"Mensch"},{"id":2,"content":"Skelett"},{"id":3,"content":"Schleim"},{"id":4,"content":"Sukkubus"},{"id":5,"content":"Minotaurus"},{"id":6,"content":"Goblin"},{"id":7,"content":"Ork"}]

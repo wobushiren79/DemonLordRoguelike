@@ -1,6 +1,6 @@
 ---
 name: game-attack-mode
-description: 攻击模式系统开发：21种攻击模式（近战/远程/特殊/恢复），BaseAttackMode 策略模式。
+description: 攻击模式系统开发：26种攻击模式（近战/远程/特殊/恢复），BaseAttackMode 策略模式。
 tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Game/Fight/AttackMode/
@@ -23,11 +23,15 @@ watched_files:
 
 ### 远程 (Ranged)
 - **AttackModeRanged** - 普通远程
-- **AttackModeRangedArc** - 弧形远程
+- **AttackModeRangedArc** - 弧形远程（`progress` 为 protected，供弹跳子类重置分段）
 - **AttackModeRangedArcArea** - 弧形范围远程
+- **AttackModeRangedArcBounce** - 弹跳抛物线远程（继承 Arc：分段抛物线+追踪锁定目标+命中后弹跳至附近目标，弹跳次数由发射方注入 `bounceMax`，全程命中去重、伤害逐目标减半保底1；弧高首段=arcHeight、弹跳段减半(BounceArcHeightRate=0.5)；每段仅下落阶段 progress≥0.5 检测命中，上升段不命中；分段时长=max(距离/速度, MinSegmentTime=1.0s)——竖直速度∝弧高/距离，短段不设下限会比首段还快；深渊馈赠「跳跳斧」300061，由 BuffEntityPeriodicAttackBounceAxe 发射）
+- **AttackModeRangedArcGround** - 抛物线火瓶-地形火焰（继承 Arc 双状态 Flying→Burning：飞行段抛物线飞向**固定落点不追踪**、纯投掷物禁用命中(PrepareRaycast 恒不入队/CheckHitTargetForSingle 恒 null)、弹体自旋-720°/s绕-Z轴，到达切燃烧段驻留每1秒对半径(collider_area_size[0])范围跳伤、满5秒自毁；伤害=投掷时注入快照、不递减——多片叠加各自跳伤；燃烧段 visualBucketKey 置空隐藏 DSP 弹体、火焰视觉走 EffectHandler.ShowFloorFireEffect 全局单例 burst 重播粒子（落地 burst 爆发+旧落点粒子 World 驻留）；深渊馈赠「瓶装炼狱火」300101，由 BuffEntityPeriodicAttackFireBottle 发射）
 - **AttackModeRangedArea** - 范围远程
 - **AttackModeRangedPiercing** - 穿透远程
-- **AttackModeRangedPiercingRoad** - 沿路碾压穿透远程（继承上者：穿透数无上限、伤害逐目标减半保底1、驶到路尽头销毁；深渊馈赠「失控的矿车」300041，由 BuffEntityPeriodicRoadAttack 发射）
+- **AttackModeRangedPiercingRoad** - 沿路碾压穿透远程（继承上者：穿透数无上限、伤害逐目标减半保底1、驶到路尽头销毁；深渊馈赠「失控的矿车」300041，由 BuffEntityPeriodicAttackRoad 发射）
+- **AttackModeRangedRebound** - 四壁反弹穿透远程（继承 Piercing 复用多目标命中遍历：直线飞行在道路矩形 x∈[0.5,0.5+路长]、z∈[0.5,路数+0.5] 内永久反弹，越墙钳位+方向分量取反+绕 Y 轴 ±5° 随机偏转(防 90° 死角死循环)；左墙在 hasEnteredField 后才生效防出生即弹回魔王侧；命中不销毁、伤害不递减，同一目标 1 秒冷却(HitCooldown 常量，Dictionary 记各目标最近命中时刻，lifeTime 按 GetFightDeltaTime 累积，名单超 100 清过期条目)；CheckIsMoveBound 恒 false 永不自毁，由发射方 BUFF 追踪维持 N 颗、关卡切换被清后补弹；弹体不自旋；深渊馈赠「回弹菱块」300081~300085，由 BuffEntityPeriodicAttackRebound 发射/维持/销毁）
+- **AttackModeRangedBoomerang** - 回旋镖弹道（继承 BaseAttackMode：起点→锁定点→超出一格折返→返回魔王，时间参数化速度曲线，伤害逐目标减半保底1；深渊馈赠「死亡回旋」300051，由 BuffEntityPeriodicAttackBoomerang 发射）
 - **AttackModeRangedSplit** - 分裂远程-**发射器**（不飞不画不命中，按道路发射多发子弹道后自毁；配置 `child_attack_mode_id` 指向子弹道行）
 - **AttackModeRangedSplitChild** - 分裂远程-**子弹道**（继承 AttackModeRanged，仅多一个「向目标道路 z 轴归位」）
 - **AttackModeRangedTracking** - 追踪远程
@@ -40,7 +44,9 @@ watched_files:
 - **AttackModeLure** - 引诱
 - **AttackModeOverlap** - 重叠
 - **AttackModeInstantArea** - 瞬时落点范围（无弹道飞行，StartAttack 当帧对 targetPos 范围攻击并自毁；支持配置 `hit_max` 命中上限(近者优先截断) + 发射方注入 `filterCreatureIds` 快照名单(StartAttack 前写入、Destroy 置空)；AOE 多目标伤害按命中次序依次减半保底1；单次攻击内局部去重——同一生物多碰撞体只命中一次，道与道之间不共享）
-- **AttackModeInstantAreaThunder** - 落雷（继承上者，`PlayHitEffect` 改走 `EffectHandler.ShowThunderEffect` 全局单例粒子——持久型 PS 需 Stop/Play 重播，不能走 effect_hit；深渊馈赠「闪电」300031~300035，由 BuffEntityPeriodicMultiInstantAttack 发射）
+- **AttackModeInstantAreaThunder** - 落雷（继承上者，`PlayHitEffect` 改走 `EffectHandler.ShowThunderEffect` 全局单例粒子——持久型 PS 需 Stop/Play 重播，不能走 effect_hit；深渊馈赠「闪电」300031~300035，由 BuffEntityPeriodicAttackMultiInstant 发射）
+- **AttackModeOrbit** - 环绕弹道（常驻不自毁：绕宿主生物 XZ 水平面圆周运动(半径0.75=OrbitRadius 常量、角速度外部注入，高度取注入的 orbitHeight=魔王位置+攻击起始偏移)，触碰命中走 live 球形检测(attack_search_type=11)、每只书对同一敌人 0.5 秒冷却(HitCooldown 常量)，伤害=魔王实时ATK×damageRate 命中瞬间取、CRT=0；宿主 orbitCenterEntity/转速 rotateSpeed/伤害倍率 damageRate/高度 orbitHeight 由发射方在 StartAttack 前写入(照 targetRoad 先例)、宿主变更由外部每帧同步；不做越界销毁；深渊馈赠「知识的力量」300071，由 BuffEntityPeriodicAttackOrbit 生成/销毁/同步宿主）
+- **AttackModeShockwaveRing** - 圆环冲击波（继承 BaseAttackMode：以魔王为圆心半径从 0 按 speed_move 扩张，XZ 距离落在「上帧半径~当前半径」环带内的存活敌人命中（自遍历 dlAttackCreatureEntity，不走射线批处理），每只敌人每波只中一次(HashSet 去重)，伤害=BUFF 注入(魔王实时ATK×倍率、CRT=0)；命中交 AIAttackCreatureEntity.StartKnockback 击退意图处理（方向固定 +x 沿道路向后推不带 z 分量防推离路径，固定 0.2s 匀速推完，落点 x 钳制道路范围，攻击循环被打断、结束回闲置重新索敌；击退距离=collider_area_size 第 2 项=0.5）；最大半径=道路右缘(0.5+路长)+余量(collider_area_size 第 1 项)−圆心x，达到即销毁；无 prefab/visual_name，视觉走 EffectHandler.ShowShockwaveEffect(StartAttackBase 时播放一次，startSize/startLifetime multiplier 同步半径与扩张时长)；深渊馈赠「第六次冲击」300091，由 BuffEntityPeriodicAttackShockwave 发射）
 
 ### 恢复 (Regain)
 - **AttackModeRegain** - 恢复基类

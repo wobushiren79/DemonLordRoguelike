@@ -23,6 +23,8 @@ public partial class GameTestEditor
     public int fightSceneRoadLength = 10;
     public int fightSceneAttackNum = 2;
     public float fightSceneAttackDelay = 1;
+    // 魔王(防守核心)生物ID，默认2001骷髅战士
+    public int fightDefenseCoreId = 2001;
 
     public int creatureId = 1;
     public int npcInfoId = 1010010001;
@@ -132,6 +134,7 @@ public partial class GameTestEditor
         fightSceneRoadLength = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneRoadLength", 10);
         fightSceneAttackNum = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneAttackNum", 2);
         fightSceneAttackDelay = EditorPrefs.GetFloat(PREFS_KEY_PREFIX + "fightSceneAttackDelay", 1);
+        fightDefenseCoreId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightDefenseCoreId", 2001);
 
         // 生物相关
         creatureId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "creatureId", 1);
@@ -193,6 +196,7 @@ public partial class GameTestEditor
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightSceneRoadLength", fightSceneRoadLength);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightSceneAttackNum", fightSceneAttackNum);
         EditorPrefs.SetFloat(PREFS_KEY_PREFIX + "fightSceneAttackDelay", fightSceneAttackDelay);
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightDefenseCoreId", fightDefenseCoreId);
 
         // 生物相关
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "creatureId", creatureId);

@@ -1,0 +1,1 @@
+[{"id":1,"content":"ロブスター殺し"},{"id":2,"content":"コードブレイカー"},{"id":3,"content":"ジルを滅ぼす者"},{"id":4,"content":"深淵の残響"},{"id":5,"content":"御前の魔君"},{"id":6,"content":"永遠の番人"},{"id":7,"content":"魂の仲裁官"},{"id":8,"content":"災厄の領主"},{"id":9,"content":"深淵の祭司"},{"id":10,"content":"影の軍師"},{"id":11,"content":"苦痛の職人"},{"id":12,"content":"血の契約の執行者"},{"id":13,"content":"囁く者"}]

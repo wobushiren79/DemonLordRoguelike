@@ -1,0 +1,1 @@
+[{"id":1,"content":"預備議員"},{"id":2,"content":"列席議員"},{"id":3,"content":"初級議員"},{"id":4,"content":"理事議員"},{"id":5,"content":"高級議員"},{"id":6,"content":"常務議員"},{"id":7,"content":"資深議員"},{"id":8,"content":"議長議員"},{"id":9,"content":"首席議員"},{"id":10,"content":"永恆議長"}]

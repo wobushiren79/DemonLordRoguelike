@@ -15,6 +15,22 @@ MonoBehaviour:
   m_GroupName: AttackModeVisual
   m_GUID: a8ab8d0e9eccdd84296c3d6e31a67f97
   m_SerializeEntries:
+  - m_GUID: 0291124461ea5b54dbc185fec70ca413
+    m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_FireBottle_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - AttackModeVisual
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 03a69bf3222b8d94583b49365a1c5e77
+    m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_Book_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1823556c20227a34a9b3421b348eae65
+    m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_Axe_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 29d9a75a1a49ac64a8b8b7189f326c11
     m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_RangedFireBall.prefab
     m_ReadOnly: 0
@@ -22,6 +38,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6accb53957210ab438e7b452bebf4d3e
     m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_RangedIceBall.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8f39973b0a3949a4e9b7593bfd7031bc
+    m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_Boomerang_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -34,6 +55,12 @@ MonoBehaviour:
     m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_RangedNormal.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ec6fd19af4d2f6f488d37da0bcf74776
+    m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_Pingpang_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - AttackModeVisual
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}

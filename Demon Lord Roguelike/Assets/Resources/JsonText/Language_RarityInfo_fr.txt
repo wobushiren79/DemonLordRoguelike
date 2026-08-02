@@ -1,0 +1,1 @@
+[{"id":1,"content":"Commun"},{"id":2,"content":"Rare"},{"id":3,"content":"Super rare"},{"id":4,"content":"Hyper rare"},{"id":5,"content":"Ultra rare"},{"id":6,"content":"Légendaire"}]

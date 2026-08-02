@@ -1,0 +1,1 @@
+[{"id":1,"content":"Haine"},{"id":2,"content":"Indifférent"},{"id":3,"content":"Neutre"},{"id":4,"content":"Amical"},{"id":5,"content":"Engouement"}]

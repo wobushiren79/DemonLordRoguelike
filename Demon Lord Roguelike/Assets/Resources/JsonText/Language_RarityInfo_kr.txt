@@ -1,0 +1,1 @@
+[{"id":1,"content":"일반"},{"id":2,"content":"레어"},{"id":3,"content":"슈퍼 레어"},{"id":4,"content":"더블 슈퍼 레어"},{"id":5,"content":"울트라 레어"},{"id":6,"content":"레전더리"}]

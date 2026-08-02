@@ -53,10 +53,17 @@ public class AIIntentCreatureAttack : AIBaseIntent
     }
 
     /// <summary>
-    /// 每帧更新：累计额外攻击CD，并推进"准备→出手"普通攻击循环
+    /// 每帧更新：先复查目标距离（脱靶即中断回待机），再累计额外攻击CD，并推进"准备→出手"普通攻击循环
     /// </summary>
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
+        //目标距离复查（仅准备/出手阶段）：目标被击退等位移拉出攻击范围时中断攻击回待机重新索敌，防"隔老远还在攻击"；
+        //attackState==2 已发射等回调，交 ActionForAttackEnd 重索敌自然处理，不打断
+        if (attackState != 2 && !CheckTargetInAttackRange())
+        {
+            ChangeIntent(intentForIdle);
+            return;
+        }
         //额外攻击各自累计CD（仅计时，释放时机融入下方普通攻击循环的判定）
         UpdateExtraAttackTimer();
         //攻击准备中
@@ -223,6 +230,25 @@ public class AIIntentCreatureAttack : AIBaseIntent
     /// </summary>
     protected virtual void RefreshFaceForTarget()
     {
+    }
+
+    /// <summary>
+    /// 目标距离复查：与索敌**完全同口径**——向目标所在方向做一次同款搜索（FindCreatureEntityForSinge），
+    /// 搜到任何目标即仍在射程内（可能搜到更近的新目标，攻击循环的 ActionForAttackEnd 会自然切换），搜不到才判定脱靶。
+    /// <para>⚠️不能用「中心距 ≤ searchRange」判定：索敌射线命中的是目标 collider **表面**，命中时两中心距离 = searchRange + collider半径，
+    /// 中心距口径比索敌严格一个 collider 半径，会把「索敌认为能打」的位置判成脱靶 → Idle→Move→Attack 死循环原地卡住（2026-08 击退后卡死 BUG 根因）。</para>
+    /// 目标/自身缺失时返回 true（交原流程的目标存活校验处理，不在此打断）。
+    /// </summary>
+    protected virtual bool CheckTargetInAttackRange()
+    {
+        var target = selfAIEntity.targetCreatureEntity;
+        if (target == null || target.creatureObj == null)
+            return true;
+        if (selfAIEntity.selfCreatureEntity == null || selfAIEntity.selfCreatureEntity.creatureObj == null)
+            return true;
+        Vector3 dirToTarget = target.creatureObj.transform.position - selfAIEntity.selfCreatureEntity.creatureObj.transform.position;
+        DirectionEnum searchDirection = dirToTarget.x >= 0 ? DirectionEnum.Right : DirectionEnum.Left;
+        return selfAIEntity.FindCreatureEntityForSinge(searchDirection) != null;
     }
     #endregion
 

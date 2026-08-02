@@ -31,8 +31,10 @@ watched_files:
 
 ### 默认语言初始化（Steam 优先）
 首次启动且无 GameConfig 存档时按以下规则决定语言：
-1. `SteamManager.Initialized == true` → `SteamApps.GetCurrentGameLanguage()`：含 `chinese` → `cn`，否则 → `en`
-2. 未连上 Steam / 抛异常 → `cn`
+1. `SteamManager.Initialized == true` → `SteamApps.GetCurrentGameLanguage()`：`schinese`→`cn`、`tchinese`→`tw`、其他含 `chinese`→`cn`、`japanese`→`jp`、`koreana`→`kr`、`german`→`de`、`french`→`fr`、`russian`→`ru`，其余 → `en`
+2. 未连上 Steam / 抛异常 → `en`
+
+语言枚举 `LanguageEnum`：`cn=0 / en=1 / jp=2 / kr=3 / tw=4 / de=5 / fr=6 / ru=7`（追加不改旧值，存档兼容）。设置界面语言下拉见 `UIGameSettingForGame.listLanguageSelect`（各语言本地自称）。
 
 实现位置：[LanguageBeanPartial.cs](Assets/FrameWork/Scripts/Bean/MVC/LanguageBeanPartial.cs)（静态构造 + `GetInitialLanguage()`），[GameConfigBean.cs](Assets/FrameWork/Scripts/Bean/GameConfigBean.cs)（`GetLanguage()` 空串回退）。
 
@@ -53,7 +55,7 @@ TextManager 加载 Language_UIText_*.txt
 
 ## 约束
 
-- **真实源是 Excel，不是 `.txt`**：`Language_{CfgName}_{cn,en}.txt` 由 **`excel_language[多语言_FrameWork].xlsx` 中与 `{CfgName}` 同名工作表**导出（列 `id/content_cn/content_en/content_1_cn/content_1_en/remark`；`Language_UIText_*` 来自 `excel_ui_text`）。改文本**必须改对应 Excel 工作表**再导出——只改 `.txt` 会在下次导出被覆盖丢失
+- **真实源是 Excel，不是 `.txt`**：`Language_{CfgName}_{lang}.txt`（lang ∈ cn/en/jp/kr/tw/de/fr/ru）由 **`excel_language[多语言_FrameWork].xlsx` 中与 `{CfgName}` 同名工作表**导出（列 `id/content_{lang}/content_1_{lang}/remark`；`Language_UIText_*` 来自 `excel_ui_text`）。改文本**必须改对应 Excel 工作表**再导出——只改 `.txt` 会在下次导出被覆盖丢失
 - 多语言 key 统一放在 Excel 中管理，通过 ExcelEditorWindow 导出
 - 所有文本显示必须使用 UITextLanguageView 或通过 TextHandler 获取
 - 新增文本 key 需在 Excel 配置中添加

@@ -304,6 +304,8 @@ foreach (var itemData in GameWorldInfoCfg.GetAllData())
 
 `TestSceneTypeEnum.FightSceneTest` —— 自定义场景/敌人/BUFF/深渊馈赠的战斗测试（含普通模式、单体测试模式、征服模式BOSS关三个子模式）。
 
+- **魔王(防守核心)生物**：由基础设置区的「魔王生物 ID」(`fightDefenseCoreId`，EditorPrefs 持久化，默认 `2001` 骷髅战士)决定，`GetTestData()` 用它构建 `fightData.fightDefenseCoreData`（原硬编码 2001 已改为该字段）。
+
 ### 深渊馈赠测试设置（下拉选择族 + 目标等级）
 
 BUFF 设置区的「深渊馈赠」**不再是手填 ID 文本框**，而是逐行配置：馈赠族下拉（选项显示 `[id] [等级范围] 中文名 - 效果`，中文直读 `Language_AbyssalBlessingInfo_cn.txt`，不切 LanguageCfg 语言避免篡改运行中游戏语言）+ 目标等级（仅升级链族显示，Lv 夹紧 1~`GetFamilyMaxLevel`；`level=0` 可重复馈赠显示"(可重复)"无等级）。配置重导后点「🔄 刷新列表」重建下拉缓存。
