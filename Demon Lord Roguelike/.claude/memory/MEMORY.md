@@ -43,6 +43,7 @@
 
 ### Project Work
 - [`project_loop_sound_design.md`](project_loop_sound_design.md) — 连续音效(LoopSound)已实现：框架层通用"循环播放能力"(非新audio_type/目录/枚举,复用任意clip按audio_type加载在循环AudioSource池上播)；音量跟随soundVolume、异步竞态token防护、暂停只恢复被暂停源、MaxLoopSource16池；走路声复用sound_walk_1挂ControlForGameBase(移动/静止/禁用三处),ClearWorldData兜底StopAllLoopSound；未做loopVolume条/3D多路/同id换clip
+- [`project_attack_dead_pos_pool_aba_bug.md`](project_attack_dead_pos_pool_aba_bug.md) — 进攻生物"攻击死亡位置/原地抽搐"偶发BUG排查中(2026-08-03起未结案)：主嫌疑=FightCreatureEntity对象池ABA复用(SetData重置state=Live使持尸引用IsDead()=false)；含已排除路径清单与下次复现的三处插桩方案
 
 ### Collaboration Feedback
 - [`feedback_task_summary.md`](feedback_task_summary.md) — 任务总结必须列出参与的 Agent/Skill 名称及操作

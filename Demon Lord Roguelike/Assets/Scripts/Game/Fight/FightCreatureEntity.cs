@@ -449,6 +449,13 @@ public partial class FightCreatureEntity
         //再清除动画
         //creatureSkeletionAnimation.AnimationState.ClearTracks();;
         var trackEntry = PlayAnim(SpineAnimationStateEnum.Idle, true, 0);
+        //入池前同步应用姿态并重建网格：UpdateWhenInvisible=Nothing 下入池后不再更新，
+        //且 ThreadedMeshGeneration 会跳过 OnBecameVisible 的兜底重建，不复位则复用首帧渲染残留的死亡姿势网格
+        creatureSkeletionAnimation.Update(0);
+        if (creatureSkeletionAnimation.Renderer is SkeletonRenderer skeletonRenderer)
+        {
+            skeletonRenderer.LateUpdateImplementation(true);
+        }
         //清理数据
         if (animForUnderAttackColor != null && animForUnderAttackColor.IsPlaying())
         {
