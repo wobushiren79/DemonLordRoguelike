@@ -109,6 +109,7 @@ public enum TestSceneTypeEnum
     AbyssalBlessing = 9,//深渊馈赠UI
     CreatureSacrifice = 10,//生物献祭升级测试
     CreatureVat = 11,//魔物进阶(生物升阶容器)测试
+    CreatureJuicer = 12,//魔汁机(魔物回收)测试
 }
 
 /// <summary>

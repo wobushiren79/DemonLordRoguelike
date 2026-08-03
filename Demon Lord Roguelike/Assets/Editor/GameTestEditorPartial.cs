@@ -73,6 +73,15 @@ public partial class GameTestEditor
     // 魔晶加速等级滑条上限(CreatureVatAddProgress研究满级)
     private const int CREATURE_VAT_TEST_PROGRESS_LEVEL_MAX = 5;
 
+    // 魔汁机测试参数
+    public int juicerTestSaveSlot = 1;
+    // 投入魔物可选上限(自由选择具体上限,默认满=全解锁);运行时按配置上限再钳制
+    public int juicerTestCreatureMax = JUICER_TEST_CREATURE_NUM_MAX;
+    // 投入上限滑条下限(基础5)
+    private const int JUICER_TEST_CREATURE_NUM_MIN = 5;
+    // 投入上限滑条上限(基础5 + JuicerNum研究满级10)
+    private const int JUICER_TEST_CREATURE_NUM_MAX = 15;
+
     // 奖励选择测试参数
     public RarityEnum rewardSelectRarity = RarityEnum.N;
     public int rewardSelectAddAttribute = 5;
@@ -94,6 +103,7 @@ public partial class GameTestEditor
     private bool showAbyssalBlessingTest = true;
     private bool showCreatureSacrificeTest = true;
     private bool showCreatureVatTest = true;
+    private bool showCreatureJuicerTest = true;
     private bool showNormalGameTest = true;
 
     // 战斗场景测试折叠
@@ -177,6 +187,10 @@ public partial class GameTestEditor
         creatureVatTestVatNum = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "creatureVatTestVatNum", CREATURE_VAT_TEST_VAT_NUM_MAX), CREATURE_VAT_TEST_VAT_NUM_MIN, CREATURE_VAT_TEST_VAT_NUM_MAX);
         creatureVatTestProgressLevel = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "creatureVatTestProgressLevel", CREATURE_VAT_TEST_PROGRESS_LEVEL_MAX), 0, CREATURE_VAT_TEST_PROGRESS_LEVEL_MAX);
 
+        // 魔汁机测试参数
+        juicerTestSaveSlot = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "juicerTestSaveSlot", 1), 1, 3);
+        juicerTestCreatureMax = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "juicerTestCreatureMax", JUICER_TEST_CREATURE_NUM_MAX), JUICER_TEST_CREATURE_NUM_MIN, JUICER_TEST_CREATURE_NUM_MAX);
+
         // 敌人 IDs
         LoadEnemyIds();
     }
@@ -237,6 +251,10 @@ public partial class GameTestEditor
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "creatureVatTestSaveSlot", creatureVatTestSaveSlot);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "creatureVatTestVatNum", creatureVatTestVatNum);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "creatureVatTestProgressLevel", creatureVatTestProgressLevel);
+
+        // 魔汁机测试参数
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "juicerTestSaveSlot", juicerTestSaveSlot);
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "juicerTestCreatureMax", juicerTestCreatureMax);
 
         // 敌人 IDs
         SaveEnemyIds();

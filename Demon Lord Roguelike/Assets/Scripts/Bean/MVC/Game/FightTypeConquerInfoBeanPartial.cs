@@ -120,18 +120,22 @@ public partial class FightTypeConquerInfoBean
 
     /// <summary>
     /// 获取当前关卡普通敌人的累计强度倍率(HP/护甲/攻击力)
-    /// 以 attack_intensity_addrate 为每关倍率, 第 1 关为 1, 之后逐关相乘: rate^(currentFightNum-1)
-    /// attack_intensity_addrate 非法(≤0)时按 1 处理
+    /// 公式: attack_intensity_baserate × attack_intensity_addrate^(currentFightNum-1)
+    /// 基础倍率 attack_intensity_baserate 为该难度每关恒定乘区(第1关也生效), 每关倍率 attack_intensity_addrate 第1关为1之后逐关相乘;
+    /// 两者非法(≤0)时均按 1 处理
     /// </summary>
     /// <param name="currentFightNum">当前关卡数(从 1 开始)</param>
     public float GetCurrentIntensityRate(int currentFightNum)
     {
+        float baseRate = attack_intensity_baserate;
+        if (baseRate <= 0f)
+            baseRate = 1f;
         float rate = attack_intensity_addrate;
         if (rate <= 0f)
             rate = 1f;
         if (currentFightNum <= 1 || rate == 1f)
-            return 1f;
-        return UnityEngine.Mathf.Pow(rate, currentFightNum - 1);
+            return baseRate;
+        return baseRate * UnityEngine.Mathf.Pow(rate, currentFightNum - 1);
     }
 
     /// <summary>

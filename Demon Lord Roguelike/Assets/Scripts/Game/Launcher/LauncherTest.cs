@@ -10,6 +10,8 @@ public class LauncherTest : BaseLauncher
     private System.Action actionForSacrificeTest;
     //魔物进阶测试:基地场景加载完成后待执行的回调
     private System.Action actionForCreatureVatTest;
+    //魔汁机测试:基地场景加载完成后待执行的回调
+    private System.Action actionForJuicerTest;
 
     public override void Launch()
     {
@@ -332,7 +334,58 @@ public class LauncherTest : BaseLauncher
     }
 
     /// <summary>
-    /// 正常游戏启动测试
+    /// 开始魔汁机(魔物回收)测试
+    /// 加载指定存档槽位数据作为运行时数据，覆盖魔汁机解锁/投入数量上限后进入基地场景，直接打开魔汁机UI(测试模拟，全程内存模拟不落盘)。
+    /// </summary>
+    /// <param name="saveSlot">存档槽位(1~3，与游戏一致：UserData_1/2/3)</param>
+    /// <param name="juicerCreatureMax">投入魔物可选上限(运行时按配置钳制到 基础juicerCreatureMax+JuicerNum研究满级)</param>
+    public void StartForCreatureJuicerTest(int saveSlot, int juicerCreatureMax)
+    {
+        //加载指定槽位存档数据
+        UserDataService dataService = new UserDataService();
+        dataService.ChangeSlot(saveSlot);
+        UserDataBean userData = dataService.Load(false);
+        if (userData == null)
+        {
+            LogUtil.LogError($"魔汁机测试失败，存档 {saveSlot} 不存在或为空");
+            return;
+        }
+        //以该存档数据替换运行时数据，并开启测试模拟(全程不落盘回真实存档，由 GameDataManager 统一拦截)
+        GameDataHandler.Instance.manager.SetUserData(userData);
+        GameDataHandler.Instance.manager.isTestSimulation = true;
+
+        //覆盖魔汁机相关解锁:投入上限=基础juicerCreatureMax+JuicerNum研究等级；传入值按配置上限钳制(容错编辑器与配置的漂移)
+        UserUnlockBean userUnlock = userData.GetUserUnlockData();
+        int baseJuicerMax = userData.GetUserLimmitData().juicerCreatureMax;
+        int juicerNumLevelMax = ResearchInfoCfg.GetItemDataByUnlockId((long)UnlockEnum.JuicerNum)?.level_max ?? 0;
+        int targetJuicerMax = Mathf.Clamp(juicerCreatureMax, baseJuicerMax, baseJuicerMax + juicerNumLevelMax);
+        //确保魔汁机功能已解锁，并把投入上限研究等级覆盖为目标值(上限=基础+研究等级)
+        userUnlock.AddUnlock((long)UnlockEnum.Juicer);
+        userUnlock.AddUnlock((long)UnlockEnum.JuicerNum, targetJuicerMax - baseJuicerMax);
+
+        //清理上一次未触发的待执行回调，避免重复注册
+        if (actionForJuicerTest != null)
+        {
+            EventHandler.Instance.UnRegisterEvent(EventsInfo.World_EnterGameForBaseScene, actionForJuicerTest);
+            actionForJuicerTest = null;
+        }
+
+        //基地场景加载完成后，直接打开魔汁机UI(不落盘由全局测试模拟标记统一拦截)
+        actionForJuicerTest = () =>
+        {
+            //一次性回调，触发后立即注销
+            EventHandler.Instance.UnRegisterEvent(EventsInfo.World_EnterGameForBaseScene, actionForJuicerTest);
+            //测试入口打开: 退出时返回 UIBaseMain(与场景E键交互入口一致)
+            UIHandler.Instance.OpenUIAndCloseOther<UICreatureJuicer>((ui) =>
+            {
+                ui.actionForExit = () => UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
+            });
+        };
+        EventHandler.Instance.RegisterEvent(EventsInfo.World_EnterGameForBaseScene, actionForJuicerTest);
+
+        //进入基地场景(使用该存档数据)
+        WorldHandler.Instance.EnterGameForBaseScene(userData);
+    }
     /// 走与 LauncherGame 一致的真实开始流程(清理运行时数据→加载基地场景→打开主菜单 UIMainStart)，
     /// 免去每次手动切换到 GameScene 再运行。
     /// </summary>

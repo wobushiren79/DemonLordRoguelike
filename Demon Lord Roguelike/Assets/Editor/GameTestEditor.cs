@@ -55,6 +55,9 @@ public partial class GameTestEditor : Editor
             case TestSceneTypeEnum.CreatureVat:
                 DrawCreatureVatTest();
                 break;
+            case TestSceneTypeEnum.CreatureJuicer:
+                DrawCreatureJuicerTest();
+                break;
             case TestSceneTypeEnum.NormalGame:
                 DrawNormalGameTest();
                 break;
@@ -929,6 +932,49 @@ public partial class GameTestEditor : Editor
         GUI.backgroundColor = Color.white;
 
         EditorGUILayout.HelpBox("读取所选存档的真实数据作为运行时数据，进入基地后直接打开魔物进阶UI。全程只是模拟(测试模拟标记，不会写回真实存档)。", MessageType.Info);
+
+        EditorGUI.indentLevel--;
+        EditorGUILayout.Space(10);
+    }
+
+    /// <summary>
+    /// 绘制魔汁机(魔物回收)测试配置(选存档→选投入数量上限→进入基地直接打开魔汁机UI)
+    /// </summary>
+    private void DrawCreatureJuicerTest()
+    {
+        showCreatureJuicerTest = EditorGUILayout.Foldout(showCreatureJuicerTest, "🧃 魔汁机测试", true);
+        if (!showCreatureJuicerTest) return;
+
+        EditorGUI.indentLevel++;
+        EditorGUILayout.Space(5);
+
+        // 存档槽位选择
+        EditorGUILayout.BeginVertical("box");
+        juicerTestSaveSlot = EditorGUILayout.IntPopup(
+            new GUIContent("存档槽位", "要读取数据的存档槽位(1~3，与游戏一致：UserData_1/2/3)"),
+            juicerTestSaveSlot,
+            new[] { new GUIContent("存档 1"), new GUIContent("存档 2"), new GUIContent("存档 3") },
+            new[] { 1, 2, 3 });
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.Space(5);
+
+        // 解锁项:投入魔物可选上限 —— 自由选择具体上限(基础5+JuicerNum研究等级,拉满即全解锁,默认拉满)
+        EditorGUILayout.BeginVertical("box");
+        juicerTestCreatureMax = EditorGUILayout.IntSlider(
+            new GUIContent("投入魔物上限", $"本次测试的投入魔物可选上限({JUICER_TEST_CREATURE_NUM_MIN}~{JUICER_TEST_CREATURE_NUM_MAX})；基础{JUICER_TEST_CREATURE_NUM_MIN}+JuicerNum研究等级，拉满={JUICER_TEST_CREATURE_NUM_MAX}即全解锁"),
+            juicerTestCreatureMax, JUICER_TEST_CREATURE_NUM_MIN, JUICER_TEST_CREATURE_NUM_MAX);
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.Space(10);
+
+        // 运行按钮
+        GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
+        if (GUILayout.Button("▶️ 开始魔汁机测试", GUILayout.Height(30)) && Application.isPlaying)
+        {
+            launcher.StartForCreatureJuicerTest(juicerTestSaveSlot, juicerTestCreatureMax);
+        }
+        GUI.backgroundColor = Color.white;
+
+        EditorGUILayout.HelpBox("读取所选存档的真实数据作为运行时数据，进入基地后直接打开魔汁机UI。全程只是模拟(测试模拟标记，不会写回真实存档)。", MessageType.Info);
 
         EditorGUI.indentLevel--;
         EditorGUILayout.Space(10);

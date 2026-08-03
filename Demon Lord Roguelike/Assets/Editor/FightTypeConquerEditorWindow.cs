@@ -574,6 +574,7 @@ public class FightTypeConquerEditorWindow : EditorWindow
         currentBean.attack_show_time = DrawFloatField("进攻时间(秒)", currentBean.attack_show_time, "attack_show_time");
         currentBean.attack_num_addrate = DrawFloatField("每关敌人倍数", currentBean.attack_num_addrate, "attack_num_addrate");
         currentBean.attack_num_add = DrawIntField("每关增加敌人数量", currentBean.attack_num_add, "attack_num_add");
+        currentBean.attack_intensity_baserate = DrawFloatField("基础强度倍率(默认1,每关都生效)", currentBean.attack_intensity_baserate, "attack_intensity_baserate");
         currentBean.attack_intensity_addrate = DrawFloatField("每关强度倍率(HP/护甲/攻击)", currentBean.attack_intensity_addrate, "attack_intensity_addrate");
 
         GUILayout.Space(5);

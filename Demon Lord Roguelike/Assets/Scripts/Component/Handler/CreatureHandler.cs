@@ -344,7 +344,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             {
                 rendererTF.position = rendererTF.position.AddZ(-0.1f);
             }
-            else if (targetObj.layer == LayerInfo.CreatureDef_Front || targetObj.layer == LayerInfo.CreatureAtt_Front)
+            else if (targetObj.layer == LayerInfo.CreatureDef_Back || targetObj.layer == LayerInfo.CreatureDef_Back)
             {
                 rendererTF.position = rendererTF.position.AddZ(0.1f);
             }

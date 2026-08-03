@@ -32,7 +32,7 @@ CV_List         - 各场景预制体下的虚拟相机组（按用途命名的�
 | [Assets/FrameWork/Scripts/Component/Handler/CameraHandler.cs](Assets/FrameWork/Scripts/Component/Handler/CameraHandler.cs) | 框架 | 通用逻辑：`ChangeAngleForCamera`、`GetDistanceFollow` |
 | [Assets/FrameWork/Scripts/Component/Manager/CameraManager.cs](Assets/FrameWork/Scripts/Component/Manager/CameraManager.cs) | 框架 | `mainCamera` / `uiCamera` 懒加载属性 |
 | [Assets/Scripts/Component/Handler/CameraHandler.cs](Assets/Scripts/Component/Handler/CameraHandler.cs) | 游戏 | 各场景镜头切换 API（战斗/基地/议会/奖励/卡片测试/控制） |
-| [Assets/Scripts/Component/Manager/CameraManager.cs](Assets/Scripts/Component/Manager/CameraManager.cs) | 游戏 | `cm_Fight`/`cm_Base`/`cinemachineBrain` 引用与加载、`HideAllCM`、`SetMainCameraDefaultBlend` |
+| [Assets/Scripts/Component/Manager/CameraManager.cs](Assets/Scripts/Component/Manager/CameraManager.cs) | 游戏 | `cm_Fight`/`cm_Base`/`cinemachineBrain` 引用与加载、`HideAllCM`、`SetMainCameraDefaultBlend`、透明排序(`SetTransparencySortForFight`/`ResetTransparencySort`) |
 | [Assets/Scripts/Enums/GameStateEnum.cs](Assets/Scripts/Enums/GameStateEnum.cs) | 游戏 | `CinemachineCameraEnum` 枚举 |
 
 > 提示：`CameraHandler` / `CameraManager` 都是 `partial` 类，框架层与游戏层共同组成同一个类。修改时按职责选对应层的文件。
@@ -60,6 +60,14 @@ CameraHandler.Instance.InitData();   // -> manager.LoadMainCamera()
 - `MainCamera` 节点 → `mainCamera`（同时取其上的 `CinemachineBrain`）
 - `CMFollow` 节点 → `cm_Fight`
 - `CMBase` 节点 → `cm_Base`
+
+## 透明排序（战斗场景自定义 Z 轴）
+
+战斗场景把主相机透明排序改为按世界 Z 轴（与镜头角度无关），**仅战斗场景生效**：
+
+- `CameraManager.SetTransparencySortForFight()`：`transparencySortMode = CustomAxis`、`transparencySortAxis = Vector3.forward`，在 `CameraHandler.SetCameraForControlFight()`（启用 cm_Fight 的唯一入口）中调用。
+- `CameraManager.ResetTransparencySort()`：还原 `TransparencySortMode.Default`，在 `CameraManager.HideAllCM()` 中调用——所有镜头切换路径都先经 `HideAllCM`，因此切出战斗即自动还原。
+- 目的：`creature_layer` 配 `CreatureDef_Front`/`CreatureAtt_Front` 的生物（烂泥史莱姆 3003/毒液史莱姆 3004）靠 Spine 节点 Z 前移 0.1 显示在前；默认按视距排序时斜视角下该余量会被同路敌人的横向位移投影抵消（敌人反而盖在它上面），改按 Z 轴排序后与视角无关。
 
 ## 关键 API
 

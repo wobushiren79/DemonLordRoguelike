@@ -135,7 +135,7 @@ public class FightBeanForConquer : FightBean
         //先收集所有出怪事件(绝对出现时间 + npcId)，最后统一按时间排序再转换为带相对延迟的进攻队列
         List<SpawnEvent> spawnEvents = new List<SpawnEvent>();
 
-        //本关敌人(普通敌人与BOSS均适用)的累计强度倍率(HP/护甲/攻击力)，第1关为1，之后按 attack_intensity_addrate 逐关相乘
+        //本关敌人(普通敌人与BOSS均适用)的累计强度倍率(HP/护甲/攻击力)= 基础倍率attack_intensity_baserate(每关恒定) × attack_intensity_addrate逐关相乘
         float intensityRate = fightTypeConquerInfo.GetCurrentIntensityRate(fightNum);
         //叠加终焉议会「挑战更强/更弱的敌人」议案的敌人强度倍率(下一整场征服run所有关卡+BOSS均生效，run结束消耗)
         var userTempData = GameDataHandler.Instance.manager.GetUserData().GetUserTempData();

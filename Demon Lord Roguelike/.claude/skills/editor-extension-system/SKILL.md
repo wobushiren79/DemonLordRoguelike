@@ -217,7 +217,8 @@ LauncherTest (Inspector)
 ├── ResearchUI: 研究UI参数
 ├── AbyssalBlessing: 深渊馈赠UI参数
 ├── CreatureSacrifice: 献祭升级测试参数
-└── CreatureVat: 魔物进阶测试参数（选存档 + 解锁VAT数量/加速等级）
+├── CreatureVat: 魔物进阶测试参数（选存档 + 解锁VAT数量/加速等级）
+└── CreatureJuicer: 魔汁机测试参数（选存档 + 投入魔物上限滑条 5~15）
 └── ▶️ 开始测试 按钮（仅运行时可用）
 ```
 

@@ -60,6 +60,10 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	/// </summary>
 	public float attack_intensity_addrate;
 	/// <summary>
+	///基础强度倍率(默认1,该难度所有关卡敌人HP/护甲/攻击力×该值;0或不配按1处理)
+	/// </summary>
+	public float attack_intensity_baserate;
+	/// <summary>
 	///关卡次数(单个数x或范围x-y)
 	/// </summary>
 	public string fight_num;

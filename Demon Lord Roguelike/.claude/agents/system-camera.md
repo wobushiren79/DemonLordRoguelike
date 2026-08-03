@@ -28,3 +28,4 @@ watched_files:
 - 摄像机操作通过 CameraHandler 调用
 - 支持多摄像机场景管理
 - 屏幕适配考虑不同分辨率
+- 透明排序：启用 cm_Fight 时 `SetTransparencySortForFight()` 设 CustomAxis(世界Z轴)，`HideAllCM()` 内 `ResetTransparencySort()` 还原 Default——仅战斗场景生效，Front 层生物 Spine Z 前移 0.1 的"显示在前"依赖此机制与镜头角度无关

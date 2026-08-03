@@ -49,6 +49,7 @@ public enum TestSceneTypeEnum
     AbyssalBlessing = 9,    // 深渊馈赠UI
     CreatureSacrifice = 10, // 生物献祭升级测试
     CreatureVat = 11,       // 魔物进阶(生物升阶容器)测试
+    CreatureJuicer = 12,    // 魔汁机(魔物回收)测试
 }
 ```
 
@@ -292,10 +293,10 @@ foreach (var itemData in GameWorldInfoCfg.GetAllData())
 
 ## 测试模拟不落盘（通用机制）
 
-**"读真实存档 → 内存模拟 → 不写回"是献祭升级测试、魔物进阶测试共用的统一机制**，单一真实源是 `GameDataManager.isTestSimulation`：
+**"读真实存档 → 内存模拟 → 不写回"是献祭升级测试、魔物进阶测试、魔汁机测试共用的统一机制**，单一真实源是 `GameDataManager.isTestSimulation`：
 
 - **单一开关**：`GameDataManager.isTestSimulation`（游戏层 partial）。为 `true` 时 `SaveUserData` **一律不落盘**（在 `SaveUserData(UserDataBean)` 入口统一 `return`），任何存档路径（含 UI 直接存档、结算存档、乃至进入基地时的附带存档）都自动跳过。
-- **谁置位/复位**：`LauncherTest.StartForCreatureSacrificeTest` / `StartForCreatureVatTest` 在 `SetUserData(真实存档)` 之后立即 `isTestSimulation = true`。复位统一在 **`WorldHandler.EnterMainForBaseScene`**（`ClearUserData` 旁）`= false`——它是"回到真实主菜单"的唯一收口点（`LauncherGame.Launch` 启动、游戏内 `UIGameSystem` 返回主菜单、`StartForNormalGame` 都经它），随后读档/新建再 `EnterGameForBaseScene` 进正式游玩即恢复落盘。**测试入口走 `EnterGameForBaseScene` 直接进场、不经 `EnterMainForBaseScene`**，故测试标记不会被误清；正式游戏则总会先过一次主菜单而复位。正式游戏流程永不置 true。
+- **谁置位/复位**：`LauncherTest.StartForCreatureSacrificeTest` / `StartForCreatureVatTest` / `StartForCreatureJuicerTest` 在 `SetUserData(真实存档)` 之后立即 `isTestSimulation = true`。复位统一在 **`WorldHandler.EnterMainForBaseScene`**（`ClearUserData` 旁）`= false`——它是"回到真实主菜单"的唯一收口点（`LauncherGame.Launch` 启动、游戏内 `UIGameSystem` 返回主菜单、`StartForNormalGame` 都经它），随后读档/新建再 `EnterGameForBaseScene` 进正式游玩即恢复落盘。**测试入口走 `EnterGameForBaseScene` 直接进场、不经 `EnterMainForBaseScene`**，故测试标记不会被误清；正式游戏则总会先过一次主菜单而复位。正式游戏流程永不置 true。
 - **各功能不再各自判断**：`UICreatureVat` 的开始/完成存档、`CreatureSacrificeLogic` 的失败落盘与 `SaveAndEndGame` 都**直接调 `SaveUserData()`**（不再写 `if (!isTestMode)`），测试拦截统一在存档层完成。
 - **献祭手动成功率**：`CreatureSacrificeLogic.StartSacrifice` 读全局 `isTestSimulation && useManualSuccessRate` 决定是否用手动值掷骰（原 `CreatureSacrificeBean.isTestMode` 已删除，仅保留献祭专属的 `useManualSuccessRate`/`manualSuccessRate`）。
 - **好处**：既是"通用测试数据"，又比逐处 `if(!isTestMode)` 更稳——多一条存档路径也不会漏，还顺带堵住了模拟测试期间基地附带存档误写真实档的隐患。
@@ -391,6 +392,37 @@ LauncherTest.StartForCreatureVatTest(...)                      // Assets/Scripts
 - **不落盘(全程模拟)**：由[测试模拟不落盘通用机制](#测试模拟不落盘通用机制)统一保证——`UICreatureVat` 的开始/完成进阶直接 `SaveUserData()`（测试模拟下自动 no-op），无需自身测试标记；被动 tick 与魔晶加速本就不存档。
 - **无需选目标生物**：进阶目标/素材魔物都在 `UICreatureVat` 内选择，故编辑器只需选存档，不像献祭测试那样预加载生物下拉。
 
+## 魔汁机测试 (CreatureJuicer)
+
+`TestSceneTypeEnum.CreatureJuicer` —— 读取某个**真实存档**的数据，覆盖「魔汁机解锁 + 投入魔物可选上限」后进入基地，直接打开魔汁机 UI(`UICreatureJuicer`)，便于验证多选投入/上限门控/榨汁流程等，且**全程内存模拟，不会写回真实存档**（依赖[测试模拟不落盘通用机制](#测试模拟不落盘通用机制)）。
+
+### 流程
+
+```
+GameTestEditor.DrawCreatureJuicerTest()                        // Inspector 配置
+    │  存档槽位(1~3) / 投入魔物上限 IntSlider(5~15)  // 自由选择,拉满=全解锁(默认拉满)
+    │  ▶️ 开始 → launcher.StartForCreatureJuicerTest(slot, juicerCreatureMax)  // 直接传具体值
+    ▼
+LauncherTest.StartForCreatureJuicerTest(...)                   // Assets/Scripts/Game/Launcher/LauncherTest.cs
+    │  ① UserDataService 加载该槽位存档为 UserDataBean
+    │  ② GameDataHandler.manager.SetUserData(userData) + isTestSimulation=true  // 存档替换为运行时数据并开测试模拟
+    │  ③ 覆盖解锁(传入值按配置 level_max 钳制):AddUnlock(Juicer)
+    │             + AddUnlock(JuicerNum, 目标上限-基础juicerCreatureMax)  // 按目标值覆盖,含降级/置0
+    │  ④ 注册一次性 World_EnterGameForBaseScene 回调
+    │  ⑤ WorldHandler.EnterGameForBaseScene(userData)
+    ▼
+回调触发(基地场景就绪) → 注销自身 → UIHandler.OpenUIAndCloseOther<UICreatureJuicer>()
+    │  actionForExit = 返回 UIBaseMain(与场景E键交互入口一致)  // 不落盘由全局标记统一拦截
+```
+
+### 关键点
+
+- **投入上限 = 基础 `juicerCreatureMax`(默认5) + `JuicerNum` 研究等级**，运行时经 `UserUnlockBean.GetUnlockJuicerCreatureMax()` 读取。故测试须先 `AddUnlock(Juicer)`，再把 `JuicerNum` 等级覆盖为 `目标上限 - juicerCreatureMax`。滑条拉满=全解锁，上限 = 5 + `JuicerNum.level_max`(当前=5+10=15)。
+- **自由选择而非勾选**：编辑器用 `EditorGUILayout.IntSlider`(5~15，默认取上限=全解锁）直接把**具体数值**传给 `LauncherTest`；`LauncherTest` 再用 `ResearchInfoCfg.GetItemDataByUnlockId(...).level_max` `Mathf.Clamp` 钳制，容错编辑器常量与配置的漂移（与魔物进阶测试同套路）。
+- **退出落点**：测试入口注入 `actionForExit → UIBaseMain`，与场景 E 键交互(`ControlInteractionEnum.JuicerInteraction`)打开时的行为一致（进阶测试注入的是 UIBaseCore，两者入口语义不同）。
+- **无需选目标生物**：投入魔物在 `UICreatureJuicer` 内多选（仅空闲且未上阵），故编辑器只需选存档，不像献祭测试那样预加载生物下拉。
+- **不落盘(全程模拟)**：由[测试模拟不落盘通用机制](#测试模拟不落盘通用机制)统一保证。
+
 ## 正常游戏启动 (NormalGame)
 
 `TestSceneTypeEnum.NormalGame` —— 在测试场景(TestScene)里直接走与正式 `LauncherGame` 完全一致的真实开始流程，免去每次手动切到 `GameScene` 再运行。
@@ -473,6 +505,8 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 测试模拟标记复位点 | `Assets/Scripts/Component/Handler/WorldHandler.cs`（`EnterMainForBaseScene` 内 `isTestSimulation=false`） |
 | 魔物进阶测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForCreatureVatTest`） |
 | 魔物进阶测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawCreatureVatTest`） |
+| 魔汁机测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForCreatureJuicerTest`） |
+| 魔汁机测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawCreatureJuicerTest`） |
 | 正常游戏启动入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForNormalGame`） |
 | 正常游戏启动 UI | `Assets/Editor/GameTestEditor.cs`（`DrawNormalGameTest`） |
 | 测试场景 | `Assets/Scenes/TestScene.unity` |

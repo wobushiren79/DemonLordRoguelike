@@ -90,6 +90,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → GameFightLogicConquer 跑起
 | `attack_show_time` | float | 单关进攻总时间(秒) |
 | `attack_num_addrate` | float | 每关敌人数量倍率 |
 | `attack_num_add` | int | 每关额外增加敌人数量 |
+| `attack_intensity_baserate` | float | **基础强度倍率**（默认 1，0/不配按 1 处理；该难度**每关恒定生效**，第 1 关也乘；普通敌人与 BOSS 均适用） |
 | `attack_intensity_addrate` | float | **每关强度倍率**（默认 1；如 1.1 则每关 HP/护甲/攻击力累计 ×1.1，第 N 关 = `rate^(N-1)`；**普通敌人与 BOSS 均适用**，BOSS 关 N = `figthNumMax`） |
 | `fight_num` | string | **关卡总数**，单值或区间 `x-y`（开局随机） |
 | `road_num` | string | **道路数量**，单值或区间 `x-y` |
@@ -183,7 +184,7 @@ public bool IsNextBossFight()  => figthNumMax > 0 && fightNum + 1 >= figthNumMax
 
 普通波次与 BOSS 出怪先收集为**绝对时间事件**，统一排序后再转成带相对延迟的进攻队列：
 
-1. **普通波次**（BOSS 关与非 BOSS 关一致）：数量 = `CalcCurrentEnemyNum()`（递推 `num = num*addrate + add`，首关 = `attack_start_num`）；把 `[0, attack_show_time]` 均分 `waveNum` 段，每段内随机一个出现时刻；敌人 **始终取 `enemy_ids`**（`GetRandomEmenyId(false)`）。每条普通出怪事件带上**强度倍率** `GetCurrentIntensityRate(fightNum)`（= `attack_intensity_addrate^(fightNum-1)`），创建时作用到 HP/护甲/攻击力（见 `FightCreatureBean.intensityRate`）。
+1. **普通波次**（BOSS 关与非 BOSS 关一致）：数量 = `CalcCurrentEnemyNum()`（递推 `num = num*addrate + add`，首关 = `attack_start_num`）；把 `[0, attack_show_time]` 均分 `waveNum` 段，每段内随机一个出现时刻；敌人 **始终取 `enemy_ids`**（`GetRandomEmenyId(false)`）。每条普通出怪事件带上**强度倍率** `GetCurrentIntensityRate(fightNum)`（= `attack_intensity_baserate × attack_intensity_addrate^(fightNum-1)`，基础倍率每关恒定、第 1 关也生效），创建时作用到 HP/护甲/攻击力（见 `FightCreatureBean.intensityRate`）。
 2. **BOSS 关额外出怪**（`AddBossSpawnEvents(spawnEvents, showTime, intensityRate)`）：
    - 数量 = `GetRandomBossNum()`（≤0 直接不刷）
    - 出现时刻 = `Random.Range(showTime*0.5f, showTime*0.9f)`（进攻总时间**中后段 50%~90%**）

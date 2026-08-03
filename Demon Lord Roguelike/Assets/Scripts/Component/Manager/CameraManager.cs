@@ -40,7 +40,32 @@ public partial class CameraManager
     {
         cm_Fight?.gameObject.SetActive(false);
         cm_Base?.gameObject.SetActive(false);
+        //切走镜头时还原默认透明排序(战斗镜头启用时会重新设置, 保证自定义Z轴排序只在战斗场景生效)
+        ResetTransparencySort();
     }
+
+    #region 透明排序
+    /// <summary>
+    /// 设置战斗场景的透明排序: 固定按世界Z轴而非视距, 让Front层生物Spine Z前移0.1的"显示在前"与镜头角度无关(斜视角下依然生效)
+    /// </summary>
+    public void SetTransparencySortForFight()
+    {
+        if (mainCamera == null)
+            return;
+        mainCamera.transparencySortMode = TransparencySortMode.CustomAxis;
+        mainCamera.transparencySortAxis = Vector3.forward;
+    }
+
+    /// <summary>
+    /// 还原默认透明排序(按视距): 非战斗场景使用
+    /// </summary>
+    public void ResetTransparencySort()
+    {
+        if (mainCamera == null)
+            return;
+        mainCamera.transparencySortMode = TransparencySortMode.Default;
+    }
+    #endregion
 
     /// <summary>
     /// 设置主摄像头的默认切换动画

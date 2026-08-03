@@ -338,6 +338,11 @@ public class CreatureInfoBean : BaseBean
 
 > **`attack_search_back`(int 0/1) — 防守生物转身攻击身后开关**：配置列在 `excel_creature_info`（插在 `attack_search_time` 之后），JSON 导出到 `CreatureInfo.txt`。手写辅助方法 `CreatureInfoBeanPartial.IsAttackSearchBack()`（返回 `attack_search_back == 1`，紧邻 `GetCreatureSearchType()`）。开启后防守生物正面无目标时转身攻击身后（范围同正面），身后清空/超范围转回正面。首用者骷髅战士 `id=2001`。搜索/转身逻辑详见 [ai-system](../ai-system/SKILL.md)「防守生物转身攻击身后」。
 
+> **`creature_layer`(string) — 生物分层（搜索隐身 + 显示前置，双重语义）**：配置列在 `excel_creature_info`，值为 Unity Layer 名（`CreatureDef_Front`/`CreatureAtt_Front`/`CreatureDef_Back`/`CreatureAtt_Back`，见 [LayerInfo.cs](Assets/Scripts/Common/LayerInfo.cs)），空 = 默认层（CreatureDef/CreatureAtt）。生效代码在 `CreatureHandler.GetFightCreatureObj`：把生物根 GameObject.layer 改为配置层（**BoxCollider 挂在预制根节点，随根一并改层**），Front 层还会把 Spine 节点 Z 前移 0.1（渲染显示在其他魔物前面）。
+> - **Front 层 = 故意让敌对方物理搜索搜不到（设计而非 bug）**：索敌/攻击命中的物理搜索 mask 写死 `1 << CreatureDef` / `1 << CreatureAtt`（[FightCreatureSearchUtil.cs](Assets/Scripts/Utils/FightCreatureSearchUtil.cs) `FindCreatureEntity`、[BaseAttackMode.cs](Assets/Scripts/Game/Fight/AttackMode/BaseAttackMode.cs) 攻击层 mask），Front 层不在 mask 内 → 敌人不会发现/攻击它。典型使用者**烂泥史莱姆(id=3003, attack_mode=400001)**：敌人从它身上走过会被减速，但敌人不把它当攻击目标——"地面附着型"魔物靠移出敌方搜索层实现"只影响敌人、不被敌人当目标"。**禁止以"修复索敌失效/打不到"为由扩大搜索 mask 或改回 layer**（会破坏该设计）。
+> - 只要"重叠时显示在前"而不想影响索敌的需求，**不要复用 Front 层**（会连带搜索隐身），应走渲染侧方案（如 Spine MeshRenderer.sortingOrder）。
+> - `creature_layer_find`（"生物优先级搜寻"）字段在配置里存在但**代码未接线**，勿假设它生效。
+
 ---
 
 ## CreatureUtil - 生物工具

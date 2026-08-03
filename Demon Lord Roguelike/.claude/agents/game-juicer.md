@@ -76,6 +76,11 @@ watched_files:
 - `SetJuicerCamera(int priority, bool isEnable)` → `SetCameraForBaseScene(..., "CV_Juicer")`（固定机位，无 Follow，同扭蛋机 `SetGashaponMachineCamera`）
 - CV_Juicer 的 GameObject 由用户在基地场景 `CV_List` 手建；返回 UIBaseMain 时 `SetCameraForControl(Base)` 自动还原
 
+### 测试入口（魔汁机测试）
+- `TestSceneTypeEnum.CreatureJuicer = 12`：选存档槽位(1~3) + 投入上限滑条(5~15,默认拉满) → 进基地直接开 `UICreatureJuicer`，全程 `isTestSimulation` 内存模拟不落盘
+- `LauncherTest.StartForCreatureJuicerTest(saveSlot, juicerCreatureMax)`：加载存档 → `SetUserData`+`isTestSimulation=true` → 覆盖 `AddUnlock(Juicer)` + `AddUnlock(JuicerNum, 目标上限-基础juicerCreatureMax)`(按 `ResearchInfoCfg.level_max` 钳制) → 一次性 `World_EnterGameForBaseScene` 回调开 UI，`actionForExit → UIBaseMain`(与场景E键入口一致)
+- Editor 面板 `GameTestEditor.DrawCreatureJuicerTest()`；详见 `test-system` / `juicer-system` Skill
+
 ### 投入数量上限（研究门控）
 - `UserLimmitBean.juicerCreatureMax = 5`（基础值）
 - `UserUnlockBean.GetUnlockJuicerCreatureMax()` = `juicerCreatureMax` + `GetUnlockResearchLeveByUnlockEnum(UnlockEnum.JuicerNum)`（每级+1，level_max=10，满级15；同献祭/进阶素材口径）
@@ -103,6 +108,7 @@ watched_files:
 | 投入上限 | Assets/Scripts/Bean/Game/UserUnlockBean.cs (`GetUnlockJuicerCreatureMax`) · UserLimmitBean.cs (`juicerCreatureMax`) |
 | 研究/解锁 | excel_research_info(100600001/100600002) · excel_unlock_info · ResearchInfo.txt · UnlockInfo.txt |
 | 多语言 | excel_language · Language_ResearchInfo_cn/en · Language_UIText_cn/en |
+| 测试入口 | Assets/Scripts/Game/Launcher/LauncherTest.cs (`StartForCreatureJuicerTest`) · Assets/Editor/GameTestEditor.cs (`DrawCreatureJuicerTest`) |
 
 ## 约束
 

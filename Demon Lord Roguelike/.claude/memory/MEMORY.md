@@ -58,3 +58,4 @@
 - [`feedback_prefer_language_property.md`](feedback_prefer_language_property.md) — 取多语言文本优先用框架自动生成的 _language 属性（带缓存），不手写 GetTextById(fileName,id,idx)
 - [`feedback_audio_use_enum.md`](feedback_audio_use_enum.md) — 音频播放统一用 AudioEnum 枚举调用，禁止裸 id；音频 id 全面 long 化（AudioEnum 底层 long、框架层接口 long）；游戏层 partial 提供枚举重载转发；新增音频须同步维护枚举
 - [`feedback_toasthint_state.md`](feedback_toasthint_state.md) — UIHandler.ToastHintText(content, state) 第二参数 state：0=失败(红)、1=成功(绿)，默认0；正向反馈必传1，别传错图标
+- [`feedback_creature_layer_front_design.md`](feedback_creature_layer_front_design.md) — creature_layer 配 CreatureDef_Front/Att_Front 让敌人物理搜索搜不到是故意设计（烂泥史莱姆3003：走过减速但不被当目标），禁止当索敌bug扩搜索mask；"显示在前"已用战斗场景相机透明排序自定义Z轴根治（勿用全局sortingOrder，会压过前排生物）

@@ -127,6 +127,15 @@ watched_files:
 | 投入上限 | Assets/Scripts/Bean/Game/UserUnlockBean.cs (`GetUnlockJuicerCreatureMax`) · UserLimmitBean.cs (`juicerCreatureMax`) |
 | 研究/解锁 | excel_research_info(100600001/100600002) · excel_unlock_info · ResearchInfo.txt · UnlockInfo.txt |
 | 多语言 | excel_language · Language_ResearchInfo_cn/en · Language_UIText_cn/en |
+| 测试入口 | Assets/Scripts/Game/Launcher/LauncherTest.cs (`StartForCreatureJuicerTest`) · Assets/Editor/GameTestEditor.cs (`DrawCreatureJuicerTest`) |
+
+## 测试入口（魔汁机测试）
+
+测试模式 `TestSceneTypeEnum.CreatureJuicer`（=12）：与献祭/进阶测试同套路——**选存档槽位(1~3) → 滑条选投入魔物上限(5~15，默认拉满) → 进基地直接打开 `UICreatureJuicer`**，全程内存模拟不落盘（`isTestSimulation`）。
+
+- **Editor**：`GameTestEditor.DrawCreatureJuicerTest()`（存档槽位 IntPopup + 投入上限 IntSlider）
+- **入口**：`LauncherTest.StartForCreatureJuicerTest(saveSlot, juicerCreatureMax)`：加载存档 → `SetUserData` + `isTestSimulation=true` → 覆盖解锁 `AddUnlock(Juicer)` + `AddUnlock(JuicerNum, 目标上限-基础juicerCreatureMax)`（按 `ResearchInfoCfg.level_max` 钳制）→ 一次性 `World_EnterGameForBaseScene` 回调里开 UI，`actionForExit → UIBaseMain`（与场景E键交互入口一致）
+- 详见 `test-system` Skill「魔汁机测试 (CreatureJuicer)」
 
 ## 约束与注意
 

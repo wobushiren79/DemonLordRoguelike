@@ -35,7 +35,7 @@ watched_files:
 - 普通波次：`CalcCurrentEnemyNum()` 递推数量，`[0,attack_show_time]` 内分段随机排程，敌人**始终取 `enemy_ids`**
 - BOSS 关额外刷怪：`AddBossSpawnEvents` —— 数量 `GetRandomBossNum()`、出现时刻 `Random.Range(showTime*0.5f, showTime*0.9f)`（中后段）、多 BOSS 按 0.3s 错开、首个携带 `bossShowNpcIds`、BOSS 取 `enemy_boss_ids`
 - BOSS 特写：出怪钩子 `GameFightLogic.UpdateGameForAttackCreate` 检测 `bossShowNpcIds` → `ShowBossDialog` → `UIDialogBossShow`
-- 敌人强度倍率 `intensityRate`：`InitFightAttackData` 先取 `GetCurrentIntensityRate(fightNum)`(每关递增)，再 `*= userTempData.GetEnemyIntensityRate()` 叠加终焉议会「挑战更强/更弱的敌人」议案(×2/×0.5)，作用于普通敌人+BOSS 的 HP/护甲/攻击力；议案作用整场 run，结束时消耗（详见 game-doom-council）
+- 敌人强度倍率 `intensityRate`：`InitFightAttackData` 先取 `GetCurrentIntensityRate(fightNum)`(= `attack_intensity_baserate`基础倍率[每关恒定,第1关也生效,≤0按1] × `attack_intensity_addrate`^(fightNum-1))，再 `*= userTempData.GetEnemyIntensityRate()` 叠加终焉议会「挑战更强/更弱的敌人」议案(×2/×0.5)，作用于普通敌人+BOSS 的 HP/护甲/攻击力；议案作用整场 run，结束时消耗（详见 game-doom-council）
 
 ### 配置（Excel + JSON + Bean）
 - `excel_fight_type_conquer_info[战斗-征服模式].xlsx`（工作表 `FightTypeConquerInfo`，三行表头，数据第 4 行起）—— 唯一真实源
@@ -43,6 +43,7 @@ watched_files:
 - `FightTypeConquerInfoBean.cs`（自动生成，禁改）/ `FightTypeConquerInfoBeanPartial.cs`（解析、随机逻辑写这里）
 - 区间字段 `attack_boss_num`/`fight_num`/`road_num`/`road_length`：字符串 `x` 或 `x-y`，统一走 `ParseRandomRange`
 - `reward_reputation`（int，通关声望奖励，插在 `reward_exp_boss` 与 `remark` 之间）：完整通关按难度给玩家声望；`FightTypeConquerInfoBeanPartial.GetRewardReputation()` 读取（仿 `GetBGColor`，需 Unity 重导 Bean 后才有该字段）。world_id=1 各难度(level 1~10)依次 1~10
+- `attack_intensity_baserate`（float，基础强度倍率，插在 `attack_intensity_addrate` 之后）：该难度每关恒定乘区(第1关也生效)，0/不配按 1；与 `attack_intensity_addrate`(每关递增) 共同组成 `GetCurrentIntensityRate(fightNum)`
 
 ### 随机数据与难度
 - `GameWorldInfoRandomBean.SetRandomDataForConquer`（GameWorldInfoBeanPartial）—— 创建时把 1~已解锁最高难度逐档随机(roadNum/roadLength/fightNum)缓存进 listDifficultyRandom；`SetDifficultyLevel(level)` 切换难度时同步当前字段(气泡与战斗都读这些字段)，`GetDifficultyRandom(level)` 取某难度数据(缺失懒生成)
