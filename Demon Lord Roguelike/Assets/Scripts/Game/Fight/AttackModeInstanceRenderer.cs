@@ -70,9 +70,11 @@ public partial class AttackModeInstanceRenderer
     private readonly Dictionary<string, VisualBucket> dicBucket = new Dictionary<string, VisualBucket>();
     //方案1 轨迹桶 TrailBucket / dicTrailBucket / PropBaseColor 在分部文件 AttackModeInstanceRendererTrail.cs
 
-    //——环境光(GI)补偿：DrawMeshInstanced 的 SampleSH 读不到全局环境探针，开 Lit 的桶材质会偏暗；按桶 ambient 方式经 MPB 灌入补齐(详见 RefreshAmbientSH)——
+    //——环境光(GI)+主光补偿：DrawMeshInstanced 的 SampleSH 读不到全局环境探针、URP 主光 uniform 亦缺失(实测主光强度归零弹体毫无变化)，
+    //开 Lit 的桶材质会偏暗；按桶 ambient 方式经 MPB 灌入环境光、并统一灌入模拟主光补齐(详见 RefreshAmbientSH/RefreshInstancedLight)——
     //按桶环境光方式分两个共享 MPB(⚠️必须运行时懒建，禁止字段初始化器 new——本类由 MonoBehaviour 构造期创建会触发 CreateImpl 异常)：
-    //mpbFlat 承载 _InstancedGI=1 + _InstancedFlatGI(6轴平均均匀光，面片桶/默认)；mpbSH 承载 _InstancedGI=2 + _InstancedSH0..6(L2方向性球谐，3D立体模型桶)
+    //mpbFlat 承载 _InstancedGI=1 + _InstancedFlatGI(6轴平均均匀光，面片桶/默认)；mpbSH 承载 _InstancedGI=2 + _InstancedSH0..6(L2方向性球谐，3D立体模型桶)；
+    //_InstancedLightDir/_InstancedLightColor(模拟主光)对两个 MPB 都灌
     private MaterialPropertyBlock mpbFlat;
     private MaterialPropertyBlock mpbSH;
     //_InstancedGI：环境光补偿模式开关(0=普通渲染走全局 SampleSH/1=instancing 均匀补偿/2=instancing 方向性 SH；材质默认 0，MPB 按桶覆盖)
@@ -86,7 +88,8 @@ public partial class AttackModeInstanceRenderer
         Shader.PropertyToID("_InstancedSH4"), Shader.PropertyToID("_InstancedSH5"),
         Shader.PropertyToID("_InstancedSH6"),
     };
-    //模拟主光方向/颜色属性 ID(仅 SH 桶灌入)：DrawMeshInstanced 下 URP 主光 uniform 缺失→方向光=0，3D 立体模型桶靠这份 NdotL 恢复明暗立体感
+    //模拟主光方向/颜色属性 ID(Flat/SH 桶都灌)：DrawMeshInstanced 下 URP 主光 uniform 缺失(实测)→方向光=0；
+    //Flat 面片桶补后是恒定提亮(对齐预制 MeshRenderer 受光，骷髅骨头 200001 偏暗即此因)，3D 立体模型桶(如矿车)靠这份 NdotL 恢复明暗立体感
     private static readonly int PropInstancedLightDir = Shader.PropertyToID("_InstancedLightDir");
     private static readonly int PropInstancedLightColor = Shader.PropertyToID("_InstancedLightColor");
     //自旋写入用的 shader 参数：_RotateSpeed 属性 ID + 时间自转关键字(与本文件其它属性一致走 ID，不用字符串字面量)
@@ -103,6 +106,9 @@ public partial class AttackModeInstanceRenderer
     private readonly Color[] ambientEvalResults = new Color[6];
     //上次灌入 MPB 的环境探针，仅在变化时重求值+SetVector；默认(全 0)保证首帧必写
     private SphericalHarmonicsL2 appliedAmbient = default;
+    //上次灌入 MPB 的模拟主光方向/颜色，仅在变化时重写；颜色恒>=0，初值 -1 保证首帧必写(主光检测独立于环境探针：换战斗场景只换灯不换环境光时也要更新)
+    private Vector4 appliedLightDir = new Vector4(0f, 1f, 0f, 0f);
+    private Vector4 appliedLightColor = new Vector4(-1f, -1f, -1f, -1f);
     #endregion
 
     #region 弹体桶注册
@@ -321,6 +327,7 @@ public partial class AttackModeInstanceRenderer
     /// 轨迹(轨迹材质冻结自旋)传该采样点的时间自转角，把当时的旋转姿态烤进矩阵，使旋转弹道(如骷髅骨头)的轨迹复现旋转。
     /// 缩放：visualScale&gt;=0 用武器配置，&lt;0(未配置)取1、实际大小交桶材质 _VertexScale；换图宽高比修正由材质 _VertexScaleXY(对象空间)处理。
     /// scaleMul 为额外的整体缩放系数(仅轨迹按年龄档衰减时传，弹体恒 1)，直接乘在最终 scale 上。</para>
+    /// <para>三条构建路径按成本递增：无旋转直接拼对角矩阵 → Z 轴旋转内联拼二维旋转矩阵(起始角恒绕前向+自旋轴 (0,0,±1)，本项目常态) → 一般轴自旋回退 Quaternion.AngleAxis + TRS(extern)。</para>
     /// </summary>
     private static Matrix4x4 BuildInstanceMatrix(BaseAttackMode attackMode, Vector3 position, float extraSpinAngle = 0f, float scaleMul = 1f)
     {
@@ -341,6 +348,27 @@ public partial class AttackModeInstanceRenderer
             fastMatrix.m13 = position.y;
             fastMatrix.m23 = position.z;
             return fastMatrix;
+        }
+        //Z 轴旋转快速路径(起始角恒绕视图前向、自旋轴为 (0,0,±1)，覆盖本项目全部在役旋转弹道)：起始角与自旋角代数相加为一个 Z 角，
+        //矩阵直接拼二维旋转 [c,-s;s,c]×scale——一次 sincos + 写字段，跳过两个 extern 调用与四元数乘法；与四元数路径数值等价(浮点舍入内)。
+        //自旋轴由 AngleAxis 内部归一化、只看 z 符号定转向(绕 -Z 转 θ = 绕 +Z 转 -θ)；非 Z 轴自旋(spinAxis.x/y≠0)才回退四元数路径
+        if (spinAngle == 0f || (attackMode.spinAxis.x == 0f && attackMode.spinAxis.y == 0f && attackMode.spinAxis.z != 0f))
+        {
+            float zAngle = attackMode.visualStartAngle + (attackMode.spinAxis.z < 0f ? -spinAngle : spinAngle);
+            float rad = zAngle * Mathf.Deg2Rad;
+            float cosScale = Mathf.Cos(rad) * scale;
+            float sinScale = Mathf.Sin(rad) * scale;
+            Matrix4x4 zMatrix = default;
+            zMatrix.m00 = cosScale;
+            zMatrix.m01 = -sinScale;
+            zMatrix.m10 = sinScale;
+            zMatrix.m11 = cosScale;
+            zMatrix.m22 = scale;
+            zMatrix.m33 = 1f;
+            zMatrix.m03 = position.x;
+            zMatrix.m13 = position.y;
+            zMatrix.m23 = position.z;
+            return zMatrix;
         }
         Quaternion rot = hasStartAngle ? Quaternion.AngleAxis(attackMode.visualStartAngle, Vector3.forward) : Quaternion.identity;
         if (spinAngle != 0f)
@@ -394,8 +422,8 @@ public partial class AttackModeInstanceRenderer
     }
 
     /// <summary>
-    /// 用携带环境光补偿的共享 MPB(按桶 ambient 方式二选一)批量绘制单个弹体桶当前缓冲的实例。
-    /// <para>Flat 桶的 _InstancedFlatGI / SH 桶的 _InstancedSH0..6 补齐 Lit 材质在实例化绘制下缺失的环境光，使亮度与预制 MeshRenderer 一致；
+    /// 用携带环境光+模拟主光补偿的共享 MPB(按桶 ambient 方式二选一)批量绘制单个弹体桶当前缓冲的实例。
+    /// <para>Flat 桶的 _InstancedFlatGI / SH 桶的 _InstancedSH0..6 补齐 Lit 材质在实例化绘制下缺失的环境光，两桶共用的 _InstancedLightDir/_InstancedLightColor 补齐缺失的主光，使亮度与预制 MeshRenderer 一致；
     /// 不走光照探针(LightProbeUsage.Off，自定义 shader 未启用逐实例 SH)；投/收阴影按桶的 visual_data 配置(cast/receive，默认关省一遍 ShadowCaster Pass)。</para>
     /// <para>【逐实例数组现灌现画】火球/冰球桶的 _VelocityWS/_SeedOffset 在此刻才灌进 MPB：Set*Array 是即时拷贝、
     /// 紧接着就提交绘制，故同方式各桶轮流借用同一个 MPB 不会串数据，无需每桶再建 MPB。必须每桶一份的只有缓冲数组本身——各桶的填充是交错进行的。
@@ -415,13 +443,12 @@ public partial class AttackModeInstanceRenderer
     }
     #endregion
 
-    #region 环境光补偿（Lit 亮度对齐）
+    #region 环境光+主光补偿（Lit 亮度对齐）
     /// <summary>
-    /// 把全局环境探针(RenderSettings.ambientProbe)按桶的两种环境光补偿方式分别灌进两个共享 MPB：
-    /// Flat 桶取 6 轴平均均匀光写 _InstancedFlatGI；SH 桶把 L2 球谐系数按 URP PackSH 布局打包 7 个 float4 写 _InstancedSH0..6。
-    /// <para>背景：DrawMeshInstanced 的 SampleSH 读不到环境探针 → 开 Lit 的桶材质比预制 MeshRenderer 偏暗一份环境光；
-    /// Flat 补偿(billboard 法线近恒定)取 6 轴平均；SH 补偿(3D 立体模型)灌完整 L2 系数让 shader 按各面法线还原方向性环境光。
-    /// 仅探针变化时重求值，静态场景每帧只做一次结构体比较。</para>
+    /// 每帧同步环境光与模拟主光到共享 MPB：环境探针(RenderSettings.ambientProbe)按桶的两种补偿方式分别灌两个 MPB(Flat 桶 6 轴平均均匀光、SH 桶 L2 球谐)，
+    /// 模拟主光(RenderSettings.sun 方向+颜色)两个 MPB 都灌——两者各自带变化检测，静态场景每帧只做结构体比较。
+    /// <para>背景：DrawMeshInstanced 的 SampleSH 读不到环境探针、URP 主光 uniform 亦缺失(实测主光归零弹体无变化) → 开 Lit 的桶材质缺一份环境光+整份主光而偏暗；
+    /// Flat 补偿(billboard 法线近恒定)取 6 轴平均 + 主光恒定提亮；SH 补偿(3D 立体模型)灌完整 L2 系数让 shader 按各面法线还原方向性环境光 + 主光 NdotL 恢复明暗。</para>
     /// </summary>
     private void RefreshAmbientSH()
     {
@@ -435,20 +462,21 @@ public partial class AttackModeInstanceRenderer
             mpbSH.SetFloat(PropInstancedGI, 2f);
         }
         SphericalHarmonicsL2 ambient = RenderSettings.ambientProbe;
-        if (ambient == appliedAmbient)
-            return;
-        appliedAmbient = ambient;
-        //Flat 桶：6 轴求值取平均 → 平坦环境光，写进 mpbFlat 的 _InstancedFlatGI
-        ambient.Evaluate(ambientEvalDirs, ambientEvalResults);
-        Color avg = default;
-        for (int i = 0; i < ambientEvalResults.Length; i++)
-            avg += ambientEvalResults[i];
-        avg /= ambientEvalResults.Length;
-        mpbFlat.SetVector(PropInstancedFlatGI, new Vector4(avg.r, avg.g, avg.b, 0f));
-        //SH 桶：L2 球谐系数按 URP SampleSH9 的 PackSH 布局打包 7 个 float4，写进 mpbSH
-        PackAmbientSH(ambient);
-        //SH 桶：模拟主光方向/颜色(补 DrawMeshInstanced 缺失的方向光漫反射，3D 立体模型恢复明暗)
-        PackInstancedLight();
+        if (ambient != appliedAmbient)
+        {
+            appliedAmbient = ambient;
+            //Flat 桶：6 轴求值取平均 → 平坦环境光，写进 mpbFlat 的 _InstancedFlatGI
+            ambient.Evaluate(ambientEvalDirs, ambientEvalResults);
+            Color avg = default;
+            for (int i = 0; i < ambientEvalResults.Length; i++)
+                avg += ambientEvalResults[i];
+            avg /= ambientEvalResults.Length;
+            mpbFlat.SetVector(PropInstancedFlatGI, new Vector4(avg.r, avg.g, avg.b, 0f));
+            //SH 桶：L2 球谐系数按 URP SampleSH9 的 PackSH 布局打包 7 个 float4，写进 mpbSH
+            PackAmbientSH(ambient);
+        }
+        //模拟主光检测独立于环境探针(换战斗场景只换方向光、环境探针不变时也要重灌)
+        RefreshInstancedLight();
     }
 
     /// <summary>
@@ -468,11 +496,12 @@ public partial class AttackModeInstanceRenderer
     }
 
     /// <summary>
-    /// 取场景主方向光(RenderSettings.sun)的方向与颜色灌进 mpbSH 的模拟主光属性。
-    /// <para>背景：DrawMeshInstanced 下 URP 主光 uniform 缺失→方向光漫反射=0，3D 立体模型桶(如矿车)只有环境光、无明暗立体感；
-    /// SH 桶 shader 侧按这份方向做 NdotL 补一份漫反射恢复明暗。面片桶(flat)/普通渲染不受影响。</para>
+    /// 取场景主方向光(RenderSettings.sun)的方向与颜色，灌进两个共享 MPB 的模拟主光属性(Flat/SH 桶都灌)。
+    /// <para>背景：DrawMeshInstanced 下 URP 主光 uniform 缺失(实测主光强度归零弹体毫无变化)→方向光漫反射=0；
+    /// Flat 面片桶 shader 侧补 NdotL 是恒定提亮(对齐预制 MeshRenderer 受光，骷髅骨头 200001 偏暗即缺这份)，3D 立体模型桶(如矿车)恢复明暗立体感。
+    /// 仅方向/颜色变化时重写，静态场景每帧只做两次 Vector4 比较。</para>
     /// </summary>
-    private void PackInstancedLight()
+    private void RefreshInstancedLight()
     {
         Vector4 dir = new Vector4(0f, 1f, 0f, 0f);
         Vector4 color = Vector4.zero;
@@ -485,6 +514,12 @@ public partial class AttackModeInstanceRenderer
             Color c = sun.color * sun.intensity;
             color = new Vector4(c.r, c.g, c.b, 0f);
         }
+        if (dir == appliedLightDir && color == appliedLightColor)
+            return;
+        appliedLightDir = dir;
+        appliedLightColor = color;
+        mpbFlat.SetVector(PropInstancedLightDir, dir);
+        mpbFlat.SetVector(PropInstancedLightColor, color);
         mpbSH.SetVector(PropInstancedLightDir, dir);
         mpbSH.SetVector(PropInstancedLightColor, color);
     }

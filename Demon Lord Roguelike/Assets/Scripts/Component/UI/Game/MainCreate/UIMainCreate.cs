@@ -20,10 +20,10 @@ public partial class UIMainCreate : BaseUIComponent
     //选中控件
     protected List<UIViewMainCreateSelectItem> listSelectView = new List<UIViewMainCreateSelectItem>();
     protected Dictionary<CreatureSkinTypeEnum,UIViewColorShow> dicSelectColorShow = new Dictionary<CreatureSkinTypeEnum, UIViewColorShow>();
-    //物种数据
+    //可选的初始物种(只允许创建骷髅; 1=人类已移除, 2=骷髅)
     protected List<int> listSelectForCreature = new List<int>()
     {
-        1,2
+        2
     };
 
     //物种数据
