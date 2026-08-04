@@ -8,6 +8,8 @@ using UnityEngine;
 /// <para>左墙特例：子弹从魔王（x=0）出生、尚未进入场地（x≥0.5）前不做左墙反弹（hasEnteredField 标记），防止出生即被弹回魔王侧。</para>
 /// <para>命中规则：命中敌人不销毁、穿透继续飞；同一目标 1 秒冷却后可再次命中（按目标记录最近命中时刻）；
 /// 伤害恒定为发射时注入值（魔王攻击力×0.5），不逐目标递减；冷却名单超阈值时清理已过期条目防无限增长。</para>
+/// <para>音效：发射音 sound_start（配置 sound_fight_3）由 GetAttackModePrefab 每颗发射时播放；回弹音 sound_hit_6 在四壁反弹成功时播放；
+/// 命中敌人音走通用 sound_hit 配置（记入受击数据播放）。发射/回弹音均受 PlaySound 0.1s 同音去重，同帧多颗只播一声。</para>
 /// <para>生命周期：永不自动销毁（CheckIsMoveBound 恒 false）；由发射方 BuffEntityPeriodicAttackRebound 追踪存活，
 /// 关卡切换被 ClearAttackModePrefab 清掉后由 BUFF 补弹，馈赠升级/清空时由 BUFF 主动销毁。无 prefab（走 DSP visual_name 批量渲染）。</para>
 /// </summary>
@@ -143,6 +145,8 @@ public class AttackModeRangedRebound : AttackModeRangedPiercing
             hasEnteredField = true;
         if (!isBounced)
             return;
+        //回弹音效（框架 PlaySound 有 0.1s 同音去重，同帧多颗/极速连弹只播一声，无需自行节流）
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_hit_6);
         //归一化后叠加 ±5° 随机偏转，避免恰好 90°/0° 等特殊角陷入左右/上下死循环
         dir.Normalize();
         float jitterAngle = UnityEngine.Random.Range(-BounceJitterAngle, BounceJitterAngle);

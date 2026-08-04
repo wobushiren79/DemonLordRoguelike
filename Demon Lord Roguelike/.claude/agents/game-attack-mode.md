@@ -30,7 +30,7 @@ watched_files:
 - **AttackModeRangedArea** - 范围远程
 - **AttackModeRangedPiercing** - 穿透远程
 - **AttackModeRangedPiercingRoad** - 沿路碾压穿透远程（继承上者：穿透数无上限、伤害逐目标减半保底1、驶到路尽头销毁；深渊馈赠「失控的矿车」300041，由 BuffEntityPeriodicAttackRoad 发射）
-- **AttackModeRangedRebound** - 四壁反弹穿透远程（继承 Piercing 复用多目标命中遍历：直线飞行在道路矩形 x∈[0.5,0.5+路长]、z∈[0.5,路数+0.5] 内永久反弹，越墙钳位+方向分量取反+绕 Y 轴 ±5° 随机偏转(防 90° 死角死循环)；左墙在 hasEnteredField 后才生效防出生即弹回魔王侧；命中不销毁、伤害不递减，同一目标 1 秒冷却(HitCooldown 常量，Dictionary 记各目标最近命中时刻，lifeTime 按 GetFightDeltaTime 累积，名单超 100 清过期条目)；CheckIsMoveBound 恒 false 永不自毁，由发射方 BUFF 追踪维持 N 颗、关卡切换被清后补弹；弹体不自旋；深渊馈赠「回弹菱块」300081~300085，由 BuffEntityPeriodicAttackRebound 发射/维持/销毁）
+- **AttackModeRangedRebound** - 四壁反弹穿透远程（继承 Piercing 复用多目标命中遍历：直线飞行在道路矩形 x∈[0.5,0.5+路长]、z∈[0.5,路数+0.5] 内永久反弹，越墙钳位+方向分量取反+绕 Y 轴 ±5° 随机偏转(防 90° 死角死循环)；左墙在 hasEnteredField 后才生效防出生即弹回魔王侧；命中不销毁、伤害不递减，同一目标 1 秒冷却(HitCooldown 常量，Dictionary 记各目标最近命中时刻，lifeTime 按 GetFightDeltaTime 累积，名单超 100 清过期条目)；CheckIsMoveBound 恒 false 永不自毁，由发射方 BUFF 追踪维持 N 颗、关卡切换被清后补弹；弹体不自旋；音效：发射音 sound_start=sound_fight_3(400003) 由 GetAttackModePrefab 每颗发射时播放，回弹音 sound_hit_6 在四壁反弹成功时播放(HandleWallBounce)，两者均受 PlaySound 0.1s 同音去重(同帧多颗只播一声)；深渊馈赠「回弹菱块」300081~300085，由 BuffEntityPeriodicAttackRebound 发射/维持/销毁）
 - **AttackModeRangedBoomerang** - 回旋镖弹道（继承 BaseAttackMode：起点→锁定点→超出一格折返→返回魔王，时间参数化速度曲线，伤害逐目标减半保底1；深渊馈赠「死亡回旋」300051，由 BuffEntityPeriodicAttackBoomerang 发射）
 - **AttackModeRangedSplit** - 分裂远程-**发射器**（不飞不画不命中，按道路发射多发子弹道后自毁；配置 `child_attack_mode_id` 指向子弹道行）
 - **AttackModeRangedSplitChild** - 分裂远程-**子弹道**（继承 AttackModeRanged，仅多一个「向目标道路 z 轴归位」）

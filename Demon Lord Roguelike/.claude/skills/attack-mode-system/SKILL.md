@@ -61,7 +61,7 @@ BaseAttackMode                      - 攻击模式基类
 │   ├── AttackModeRangedTracking    - 远程追踪弹道（实时改变方向追击目标）
 │   ├── AttackModeRangedPiercing    - 远程穿透弹道（可穿透多个目标）
 │   │   ├── AttackModeRangedPiercingRoad - 沿路碾压穿透（穿透数无上限、伤害逐目标减半保底1、驶到路尽头销毁；深渊馈赠「失控的矿车」300041）
-│   │   └── AttackModeRangedRebound - 四壁反弹穿透（道路矩形内永久反弹+±5°随机偏转、同目标1秒冷却、永不自毁由BUFF维持N颗；深渊馈赠「回弹菱块」300081~300085）
+│   │   └── AttackModeRangedRebound - 四壁反弹穿透（道路矩形内永久反弹+±5°随机偏转、同目标1秒冷却、永不自毁由BUFF维持N颗；发射音sound_start=sound_fight_3、回弹音sound_hit_6；深渊馈赠「回弹菱块」300081~300085）
 │   └── AttackModeRangedSplitChild  - 分裂弹-子弹道（直线飞行 + 向自己的目标道路归位；由下方发射器发射）
 ├── AttackModeRangedSplit           - 分裂弹-发射器（不飞不画不命中，按道路发射多发子弹道后自毁）
 ├── AttackModeRangedBoomerang       - 回旋镖弹道（继承 BaseAttackMode：起点→锁定点→超出一格折返→返回魔王，时间参数化速度曲线，伤害逐目标减半保底1；深渊馈赠「死亡回旋」300051）
@@ -105,7 +105,7 @@ BaseAttackMode                      - 攻击模式基类
 | `AttackModeRangedTracking` | 追踪目标飞行 | 追踪弹、导弹 |
 | `AttackModeRangedPiercing` | 可穿透多个目标 | 穿透箭、激光 |
 | `AttackModeRangedPiercingRoad` | 沿路穿透碾压 + 伤害逐目标递减 + 到路尽头销毁 | 矿车冲撞、碾压类 |
-| `AttackModeRangedRebound` | 继承 Piercing（复用多目标命中遍历）：直线飞行 + 道路矩形四壁反弹（x∈[0.5,0.5+路长]、z∈[0.5,路数+0.5]，StartAttackBase 缓存），越墙钳位+方向分量取反+绕 Y 轴 ±5° 随机偏转（防 90° 死角死循环）；左墙在子弹进入场地后才生效（hasEnteredField 防出生即弹回魔王侧）；命中不销毁、伤害不递减，同一目标 1 秒冷却（Dictionary 记录各目标最近命中时刻，lifeTime 按 GetFightDeltaTime 累积，名单超 100 清理过期条目）；`CheckIsMoveBound` 恒 false 永不自毁，由发射方 BUFF 追踪维持 N 颗、关卡切换被清后补弹 | 回弹菱块、弹球类 |
+| `AttackModeRangedRebound` | 继承 Piercing（复用多目标命中遍历）：直线飞行 + 道路矩形四壁反弹（x∈[0.5,0.5+路长]、z∈[0.5,路数+0.5]，StartAttackBase 缓存），越墙钳位+方向分量取反+绕 Y 轴 ±5° 随机偏转（防 90° 死角死循环）；左墙在子弹进入场地后才生效（hasEnteredField 防出生即弹回魔王侧）；命中不销毁、伤害不递减，同一目标 1 秒冷却（Dictionary 记录各目标最近命中时刻，lifeTime 按 GetFightDeltaTime 累积，名单超 100 清理过期条目）；`CheckIsMoveBound` 恒 false 永不自毁，由发射方 BUFF 追踪维持 N 颗、关卡切换被清后补弹；音效：发射音配置 `sound_start`=sound_fight_3(400003)（GetAttackModePrefab 每颗发射时播放），回弹音 sound_hit_6 在四壁反弹成功时播放（HandleWallBounce），均受 PlaySound 0.1s 同音去重（同帧多颗只播一声） | 回弹菱块、弹球类 |
 | `AttackModeRangedBoomerang` | 回旋镖三段式飞行（起点→锁定点→超出一格折返→返回魔王，时间参数化：去程后半程减速到0、返程匀加速），伤害逐目标减半保底1，去程去重/返程可再命中 | 回旋镖、往返弹 |
 | `AttackModeOrbit` | 常驻环绕宿主圆周运动（不自毁、不越界销毁）+ 触碰命中（每只书对同一敌人 0.5 秒冷却） | 环绕书本、卫星弹 |
 | `AttackModeShockwaveRing` | 以魔王为圆心的扩张圆环：半径每帧按 speed_move 扩张，XZ 距离落在「上帧半径~当前半径」环带内的敌人命中（每敌每波一次），命中交 AIAttackCreatureEntity.StartKnockback 击退意图（方向固定 +x 沿道路向后推不带 z 分量，collider_area_size[1]=击退距离，落点 x 钳制道路范围，攻击循环打断、结束回闲置重索敌）；最大半径=道路右缘+余量(collider_area_size[0])−圆心x，达到即销毁；无 prefab/visual_name，视觉=StartAttackBase 时调 EffectHandler.ShowShockwaveEffect（multiplier 同步半径与扩张时长） | 冲击波、震荡波 |
