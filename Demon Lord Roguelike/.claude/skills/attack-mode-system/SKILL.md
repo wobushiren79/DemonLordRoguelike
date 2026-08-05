@@ -57,7 +57,7 @@ BaseAttackMode                      - 攻击模式基类
 │   ├── AttackModeRangedArc         - 远程抛物线弹道
 │   │   └── AttackModeRangedArcArea - 抛物线范围（继承抛物线轨迹）
 │   │   └── AttackModeRangedArcBounce - 弹跳抛物线（分段抛物线+追踪锁定+命中弹跳；深渊馈赠「跳跳斧」300061）
-│   │   └── AttackModeRangedArcGround - 抛物线火瓶-地形火焰（双状态 Flying→Burning：飞行段抛物线飞向固定落点不追踪、纯投掷物禁用命中、弹体自旋-720°/s绕-Z轴，到达切燃烧段驻留每1秒对半径范围跳伤、满5秒自毁；深渊馈赠「瓶装炼狱火」300101）
+│   │   └── AttackModeRangedArcGround - 抛物线火瓶-地形火焰（双状态 Flying→Burning：飞行段抛物线飞向固定落点不追踪、纯投掷物禁用命中、弹体自旋-720°/s绕-Z轴，到达切燃烧段驻留每1秒对半径范围跳伤、满5秒自毁；落地切燃烧时播放 sound_water_4；深渊馈赠「瓶装炼狱火」300101）
 │   ├── AttackModeRangedTracking    - 远程追踪弹道（实时改变方向追击目标）
 │   ├── AttackModeRangedPiercing    - 远程穿透弹道（可穿透多个目标）
 │   │   ├── AttackModeRangedPiercingRoad - 沿路碾压穿透（穿透数无上限、伤害逐目标减半保底1、驶到路尽头销毁；深渊馈赠「失控的矿车」300041）
@@ -101,7 +101,7 @@ BaseAttackMode                      - 攻击模式基类
 | `AttackModeRangedArea` | 飞行弹道+击中AOE | 爆炸箭、火球术 |
 | `AttackModeRangedArc` | 抛物线飞行 | 投石、抛物线炸弹 |
 | `AttackModeRangedArcBounce` | 分段抛物线 + 追踪锁定目标 + 命中后弹跳到附近目标（次数由发射方注入，全程命中去重，伤害逐目标减半保底1；弧高首段=arcHeight、弹跳段减半；每段仅下落阶段 progress≥0.5 检测命中；分段时长=max(距离/速度, MinSegmentTime=1.0s) 防短段过快） | 弹跳斧、弹射类 |
-| `AttackModeRangedArcGround` | 抛物线投掷 + 落地驻留周期范围伤害（双状态：飞行段纯移动不命中+弹体自旋-720°/s绕-Z轴、到达切燃烧段每 TickInterval 对半径范围跳伤、满 Duration 自毁；燃烧段隐藏 DSP 弹体、粒子视觉走 EffectHandler.ShowFloorFireEffect） | 投掷物落地成持续灼烧地形（瓶装炼狱火） |
+| `AttackModeRangedArcGround` | 抛物线投掷 + 落地驻留周期范围伤害（双状态：飞行段纯移动不命中+弹体自旋-720°/s绕-Z轴、到达切燃烧段每 TickInterval 对半径范围跳伤、满 Duration 自毁；燃烧段隐藏 DSP 弹体、粒子视觉走 EffectHandler.ShowFloorFireEffect；落地切燃烧时播放 sound_water_4） | 投掷物落地成持续灼烧地形（瓶装炼狱火） |
 | `AttackModeRangedTracking` | 追踪目标飞行 | 追踪弹、导弹 |
 | `AttackModeRangedPiercing` | 可穿透多个目标 | 穿透箭、激光 |
 | `AttackModeRangedPiercingRoad` | 沿路穿透碾压 + 伤害逐目标递减 + 到路尽头销毁 | 矿车冲撞、碾压类 |

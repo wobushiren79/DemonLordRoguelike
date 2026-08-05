@@ -26,7 +26,7 @@ watched_files:
 - **AttackModeRangedArc** - 弧形远程（`progress` 为 protected，供弹跳子类重置分段）
 - **AttackModeRangedArcArea** - 弧形范围远程
 - **AttackModeRangedArcBounce** - 弹跳抛物线远程（继承 Arc：分段抛物线+追踪锁定目标+命中后弹跳至附近目标，弹跳次数由发射方注入 `bounceMax`，全程命中去重、伤害逐目标减半保底1；弧高首段=arcHeight、弹跳段减半(BounceArcHeightRate=0.5)；每段仅下落阶段 progress≥0.5 检测命中，上升段不命中；分段时长=max(距离/速度, MinSegmentTime=1.0s)——竖直速度∝弧高/距离，短段不设下限会比首段还快；深渊馈赠「跳跳斧」300061，由 BuffEntityPeriodicAttackBounceAxe 发射）
-- **AttackModeRangedArcGround** - 抛物线火瓶-地形火焰（继承 Arc 双状态 Flying→Burning：飞行段抛物线飞向**固定落点不追踪**、纯投掷物禁用命中(PrepareRaycast 恒不入队/CheckHitTargetForSingle 恒 null)、弹体自旋-720°/s绕-Z轴，到达切燃烧段驻留每1秒对半径(collider_area_size[0])范围跳伤、满5秒自毁；伤害=投掷时注入快照、不递减——多片叠加各自跳伤；燃烧段 visualBucketKey 置空隐藏 DSP 弹体、火焰视觉走 EffectHandler.ShowFloorFireEffect 全局单例 burst 重播粒子（落地 burst 爆发+旧落点粒子 World 驻留）；深渊馈赠「瓶装炼狱火」300101，由 BuffEntityPeriodicAttackFireBottle 发射）
+- **AttackModeRangedArcGround** - 抛物线火瓶-地形火焰（继承 Arc 双状态 Flying→Burning：飞行段抛物线飞向**固定落点不追踪**、纯投掷物禁用命中(PrepareRaycast 恒不入队/CheckHitTargetForSingle 恒 null)、弹体自旋-720°/s绕-Z轴，到达切燃烧段驻留每1秒对半径(collider_area_size[0])范围跳伤、满5秒自毁；伤害=投掷时注入快照、不递减——多片叠加各自跳伤；燃烧段 visualBucketKey 置空隐藏 DSP 弹体、火焰视觉走 EffectHandler.ShowFloorFireEffect 全局单例 burst 重播粒子（落地 burst 爆发+旧落点粒子 World 驻留）；音效：发射音走配置 sound_start，落地切燃烧瞬间(SwitchToBurning)播放 sound_water_4（受 PlaySound 0.1s 同音去重，同帧多瓶只播一声）；深渊馈赠「瓶装炼狱火」300101，由 BuffEntityPeriodicAttackFireBottle 发射）
 - **AttackModeRangedArea** - 范围远程
 - **AttackModeRangedPiercing** - 穿透远程
 - **AttackModeRangedPiercingRoad** - 沿路碾压穿透远程（继承上者：穿透数无上限、伤害逐目标减半保底1、驶到路尽头销毁；深渊馈赠「失控的矿车」300041，由 BuffEntityPeriodicAttackRoad 发射）

@@ -42,7 +42,7 @@ watched_files:
 - **UIViewBasePortalItem** - 传送门项
 - **UIViewBaseResearchItem** - 研究项
 - **UIViewStoreItem** - 商店道具项（孕育扩展 `UIViewStoreItemPartialGashaponMatchine`：`ui_ContentShow`(PopupButtonCommonView+PopupEnum.Text) 悬浮弹窗列出可抽生物及各稀有度实际命中概率，稀有度文本按 `RarityInfo.ui_board_color` 主色着色；概率来自 `GashaponItemBean.GetRarityProbabilityList()`；生物列表跳过职业未解锁(`creatureInfo.unlock_id`)者，与 `UIGashaponMachine.StartGashaponMachine` 抽取过滤口径一致）
-- **UIViewBuffShowItem** - Buff 展示项
+- **UIViewBuffShowItem** - Buff 展示项（悬浮提示按 `TextReplaceEnum` 替换占位：`{Percentage}`=roll后率、`{Time_S}`=trigger_time、`{Value}`=roll后trigger_value + 前置条件参数）
 - **UIViewColorShow** - 颜色展示
 - **UIViewAbyssalBlessingInfoContent** - 深渊祝福内容
 - **UIViewBaseInfoContent** - 基础信息内容

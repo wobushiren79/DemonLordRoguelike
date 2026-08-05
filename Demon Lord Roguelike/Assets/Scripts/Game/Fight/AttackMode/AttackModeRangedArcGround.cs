@@ -9,6 +9,7 @@ using UnityEngine;
 /// （伤害=投掷瞬间魔王ATK×BUFF trigger_value 快照，不暴击、不递减——多片火焰叠加对同一目标多次跳伤），满5秒自毁。</para>
 /// <para>视觉：飞行段 DSP 批量渲染火瓶贴图（visual_name）并自旋（弹体自旋 -720°/s，绕 -Z 轴）；到达燃烧后 visualBucketKey 置空隐藏 DSP 弹体，
 /// 改由 EffectHandler.ShowFloorFireEffect 播放全局单例地面火焰粒子（粒子时长与燃烧时长同步）。</para>
+/// <para>音效：发射音走配置 sound_start；落地切燃烧瞬间播放 sound_water_4（PlaySound 0.1s 同音去重，同帧多瓶只播一声）。</para>
 /// <para>纯数据发射路径：由 BuffEntityPeriodicAttackFireBottle 创建，伤害/起终点由 BUFF 侧注入；无 prefab/武器视觉。</para>
 /// </summary>
 public class AttackModeRangedArcGround : AttackModeRangedArc
@@ -138,7 +139,7 @@ public class AttackModeRangedArcGround : AttackModeRangedArc
     }
 
     /// <summary>
-    /// 切换到燃烧阶段：停在落点、隐藏 DSP 弹体（火焰视觉交给粒子）、播放全局单例地面火焰粒子
+    /// 切换到燃烧阶段：停在落点、隐藏 DSP 弹体（火焰视觉交给粒子）、播放全局单例地面火焰粒子、播放落地音效
     /// </summary>
     private void SwitchToBurning()
     {
@@ -149,6 +150,8 @@ public class AttackModeRangedArcGround : AttackModeRangedArc
         visualBucketKey = null;
         //播放全局单例地面火焰粒子（粒子时长与燃烧持续时间同步）
         EffectHandler.Instance.ShowFloorFireEffect(centerPos, BurningDuration);
+        //播放落地音效（PlaySound 0.1s 同音去重，同帧多瓶落地只播一声）
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_water_4);
     }
 
     /// <summary>

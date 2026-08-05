@@ -117,14 +117,17 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 
 ## 领奖界面交互（UIRewardSelect）
 
-- `SetData(rewardSelectData, actionForEnd, isClearLastGame)` → `WorldHandler.EnterRewardSelectScene(isClearLastGame)` 加载独立领奖场景 → `scenePrefab.InitRewardBox(listReward)` 初始化 3D 宝箱
+- `SetData(rewardSelectData, actionForEnd, isClearLastGame)` → **先 `UICommonMask` 淡入遮罩（`TimeMaskFadeIn`=0.3s）盖住屏幕**，遮罩完成后在回调里做全部重活：`WorldHandler.EnterRewardSelectScene(isClearLastGame)` 加载独立领奖场景 → `scenePrefab.InitRewardBox(listReward)` 实例化宝箱并**预热渲染 2 帧**（宝箱/道具/粒子激活但 Animator `speed=0` 停在 Show 第 0 帧，把 shader 编译/实时灯/粒子首次激活开销消化在遮罩下）→ UI 显活刷新（Canvas 重建尖峰也在遮罩下）→ `EndMask`（`TimeMaskFadeOut`=0.4s）揭开 + 播音效 `sound_reward_6` + `PlayAllBoxShowAnim()` 统一播落地动画（各箱随机 0~0.2s 错峰，`Task.WhenAll` 等全部落地）。这套遮罩+预热流程是为了解决"进入领奖场景卡顿吃掉宝箱落地动画只剩尾帧"的问题，改进入口流程时不要拆掉遮罩或预热，否则卡顿会回归。
   - `isClearLastGame=true`：进入领奖场景前先 `gameLogic.ClearGame()` 卸载上一场战斗场景并清理战斗实体。**征服模式通关 BOSS 进领奖必须传 true**（`ActionForUIFightSettlementNext` 已传），否则 BOSS 战斗场景不会卸载，会与领奖场景叠加残留；独立测试(LauncherTest)无上一场战斗，保持默认 false。
   - 注意：结算流程里 `ClearGameForSimple()` 只清 AI/BUFF/在途弹道，**不卸载战斗场景**；战斗场景的卸载靠领奖入口的 `isClearLastGame` 或返回基地时的 `ClearWorldData`。
+  - 宝箱落地动画链路：`RewardSelectBoxComponent.InitData` 只做数据初始化（图标/数量/藏道具藏箱子）→ `SetPrewarmActive(true)` 预热显隐 → `PlayShowAnim(delay)` 恢复 `speed=1` 播 Show（时长运行时从 Animator 读 `timeBoxShowAnim`）→ 播完放落地音 `sound_hit_6`。
 - 点击宝箱 `OnClickForSelectBox`：射线检测命中宝箱 → `scenePrefab.OpenRewardBox` 返回状态：
   - `0` 没有次数 → Toast 提示
   - `1` 打开宝箱 → `userData.AddBackpackItem(itemData)` 入账 + `selectNum++` + 展示道具详情
   - `2` 已打开 → 仅展示道具详情
 - 点击跳过 `OnClickForSkip`：若还有未选次数先弹确认框 → `OpenAllRewardBoxPreview()` 展示全部宝箱后回调 `actionForEnd`
+- 结束开箱节奏（`ScenePrefabForRewardSelect.OpenAllRewardBoxPreview`）：未开的箱子第一个立即打开、之后每个间隔 0.5 秒连续打开（开火即忘，不等单个开箱动画播完，已开的箱子跳过不占间隔），全部触发后固定再等 1 秒才回调 `actionForEnd` 切换场景。间隔在 `OpenAllRewardBoxPreview` 内 `timeOpenInterval` 局部变量调整。
+- 开箱粒子上色：宝箱道具下挂有 `Effect_Sparkle_1` 闪耀粒子（`RewardSelectBoxComponent` Awake 时缓存含其所有子粒子），开箱显示道具时（`OpenBoxBase` → `SetSparkleColorByRarity`）按道具稀有度设置粒子 `startColor`（取 `RarityInfo.ui_board_color_item`，与 `UIViewItem` 道具背景同口径，缺配置回退白色）。
 
 ## 战斗内水晶掉落（FightCreatureEntity.DropCrystal）
 

@@ -105,6 +105,8 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
             {TextReplaceEnum.Percentage, GetPercentageRangeStr(buffInfo, chance.floorValueRate)},
             //触发时间为固定配置值(不随机),直接显示
             {TextReplaceEnum.Time_S, $"{Mathf.FloorToInt(buffInfo.trigger_time)}"},
+            //随机触发值(trigger_value,如无敌秒数),按整数闭区间 [min,max] 显示
+            {TextReplaceEnum.Value, GetValueRangeStr(buffInfo, chance.floorValue)},
         };
         //前置条件数值(击杀数/承伤/造伤/血量阈值)均为固定值,按前置实例类型逐项映射(与 UIViewBuffShowItem 同口径)
         var preInfo = buffInfo.GetPreInfo();
@@ -145,6 +147,20 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
         int rateFloor = Mathf.RoundToInt(Mathf.Max(buffInfo.trigger_value_rate_min, floorValueRate) * 100);
         int rateMax = Mathf.Max(rateFloor, Mathf.RoundToInt(buffInfo.trigger_value_rate * 100));
         return rateFloor == rateMax ? $"{rateFloor}" : $"{rateFloor}~{rateMax}";
+    }
+
+    /// <summary>
+    /// 计算随机触发值(trigger_value)的展示范围文案(与 BuffBean.CreateRandomWithFloor 同口径):
+    /// 按整数闭区间随机,下限抬到 max(配置min, 素材下限);上下限相同显示单值,否则显示 min~max。
+    /// </summary>
+    /// <param name="buffInfo">BUFF配置(取 trigger_value_min~trigger_value)</param>
+    /// <param name="floorValue">素材命中抬高的数值下限(无素材命中为0)</param>
+    /// <returns>形如 "5~10" 或 "10" 的范围文案</returns>
+    protected string GetValueRangeStr(BuffInfoBean buffInfo, float floorValue)
+    {
+        int valueFloor = Mathf.FloorToInt(Mathf.Max(buffInfo.trigger_value_min, floorValue));
+        int valueMax = Mathf.Max(valueFloor, Mathf.FloorToInt(buffInfo.trigger_value));
+        return valueFloor == valueMax ? $"{valueFloor}" : $"{valueFloor}~{valueMax}";
     }
     #endregion
 

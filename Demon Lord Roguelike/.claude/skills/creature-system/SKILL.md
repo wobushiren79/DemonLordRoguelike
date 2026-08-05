@@ -233,6 +233,9 @@ public partial class FightCreatureEntity
 ```
 UnderAttack(BaseAttackMode)
     │
+    ├── 0. 无敌判定（FightCreatureBean.isInvincible,由SSR稀有度BUFF「真男人」BuffEntityConditionalInvincible驱动）
+    │   └── 无敌中 → 跳0伤害字+播miss音效(复用闪避表现) → 结束（不掉血/不上受击BUFF/不播受击特效）
+    │
     ├── 1. 闪避判定（EVA属性）
     │   └── 闪避成功 → 显示 MISS → 结束
     │

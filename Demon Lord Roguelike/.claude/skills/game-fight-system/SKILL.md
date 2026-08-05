@@ -163,7 +163,7 @@ CreatureHandler.Instance.RemoveFightCreatureEntity(entity, CreatureFightTypeEnum
 // partial 拆分：通用接口在主文件；RefreshMPShow 在 FightCreatureEntityForDefenseCore.cs；ChangeRoad 在 FightCreatureEntityForAttack.cs
 public partial class FightCreatureEntity
 {
-    // 受到攻击（自动处理闪避、暴击、扣护甲、扣血、死亡检测）
+    // 受到攻击（自动处理无敌拦截(isInvincible,先于一切)、闪避、暴击、扣护甲、扣血、死亡检测）
     public void UnderAttack(BaseAttackMode baseAttackMode);
     
     // 回复HP

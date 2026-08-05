@@ -29,6 +29,7 @@ public partial class UIViewBuffShowItem : BaseUIView
         {
             {TextReplaceEnum.Percentage, $"{MathUtil.GetPercentage(buffData.trigger_value_rate, 2)}"},
             {TextReplaceEnum.Time_S, $"{Mathf.FloorToInt(buffData.trigger_time)}"},
+            {TextReplaceEnum.Value, $"{Mathf.FloorToInt(buffData.trigger_value)}"},
         };
         var preInfo = buffInfo.GetPreInfo();
         if (!preInfo.IsNull())

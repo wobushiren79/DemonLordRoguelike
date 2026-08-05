@@ -39,6 +39,9 @@ BuffBaseEntity                              # 抽象基类
 ├── BuffEntityConditional                   # 条件触发（UpdateBuffTime只增总时长）
 │   ├── BuffEntityConditionalAttack         # 攻击/受击事件触发自定义 AttackMode
 │   ├── BuffEntityConditionalAttackAgain    # 触发AI立即再攻击一次
+│   ├── BuffEntityConditionalThorns         # 荆棘反伤(SSR稀有度「荆棘之躯」:受击时名义承伤×rate反弹给攻击者,上限自身当前HP;反伤走UnderAttack管线,重写EventForUnderAttack自做归属过滤)
+│   ├── BuffEntityConditionalLifeSteal      # 伤害吸血(SSR稀有度「吸一吸」:自身造伤×rate转自身HP,走RegainHP正式治疗路径;BUFF来源伤害(反伤/再攻击)同样触发,AOE每目标各触发)
+│   ├── BuffEntityConditionalInvincible     # 上场无敌(SSR稀有度「真男人」:挂上即无敌trigger_value秒(5~10)、color_body染金,到期清旗标移除;驱动FightCreatureBean.isInvincible,SetData/ClearData/UpdateBuffTime三处自理旗标与刷新颜色)
 │   ├── BuffEntityConditionalAttribute      # 属性变化时触发
 │   ├── BuffEntityConditionalDead           # 自身死亡结束时触发
 │   ├── BuffEntityConditionalDeadAttack     # 死亡时发起一次攻击
@@ -53,7 +56,7 @@ BuffBaseEntity                              # 抽象基类
 │   ├── BuffEntityPeriodicAttackRoad       # 周期性随机道路冲撞（深渊馈赠「失控的矿车」：随机选 N 条道路各从最左端驶出 1 辆矿车沿路向右碾压；车数>路数时每路先各 1 辆、多出随机重复分配，同路第 2 辆起 0.5 秒间隔错开(UpdateBuffTime 驱动批次队列)；伤害=魔王实时ATK×trigger_value 发车时注入、CRT=0，逐目标减半由攻击模块处理；class_entity_data="车数,攻击模块ID"；馈赠 2000003001~005 → BUFF 3000400001~005 → 5 级共用攻击模块 300041=AttackModeRangedPiercingRoad）
 │   ├── BuffEntityPeriodicAttackBoomerang  # 周期性回旋镖（深渊馈赠「死亡回旋」：从魔王位置+CreatureInfo.attack_start_position偏移发射回旋镖，锁定点=目标位置(高度取魔王发射点高度)；不放回抽目标，一轮内多镖目标互不重复、敌人少于镖数只发同等数量；第1镖立即发射，后续0.2秒间隔队列发射(照闪电UpdateBuffTime间隔模式)；去程命中后伤害逐目标减半，越过目标一格后返回魔王身边；速度曲线=时间参数化：去程前半程全速后半程线性减速至0(折返点静止)、返程从0匀加速至ReturnMaxSpeedRate(1.5)倍；弹体自旋=-720度/秒绕Z轴(InitAttackModeShow写spinSpeed/spinAxis走DSP自旋子桶，每发随机相位)；class_entity_data="镖数,攻击模块ID"；馈赠 2000004001~005 → BUFF 3000500001~005 → 5 级共用攻击模块 300051=AttackModeRangedBoomerang）
 │   ├── BuffEntityPeriodicAttackBounceAxe  # 周期性弹跳斧头（深渊馈赠「跳跳斧」：目标=随机一排的最远敌人(按 roadIndex 分组、同路 x 降序)，不放回抽取(随机路取最远,首目标互不重复,敌人少于斧数只扔同等数量)；第1斧立即+后续0.2秒间隔队列发射；伤害=魔王实时ATK×trigger_value 注入、CRT=0；弹跳/追踪/伤害减半由 AttackModeRangedArcBounce 处理，弹跳次数经 StartAttack 前写 bounceMax 注入；class_entity_data="斧数,攻击模块ID,弹跳次数"；馈赠 2000005001~005 → BUFF 3000600001~005 → 5 级共用攻击模块 300061=AttackModeRangedArcBounce，弹跳半径配在其 collider_area_size 第1项）
-│   ├── BuffEntityPeriodicAttackOrbit      # 常驻环绕书本（深渊馈赠「知识的力量」：随机选 1 只最前排(x 最大)存活魔物为宿主，环绕 N 本书(半径0.75、高度取魔王位置+攻击起始偏移、转速Lv1~5=0.6/1.2/1.8/2.4/3弧度/秒、均分角)；宿主死亡/有更前排魔物→改选(并列随机1只、并列不换防抖动)，无己方魔物→全销毁、有再生成；书本=常驻攻击模块 AttackModeOrbit 不自毁、触碰命中每只书对同一敌人0.5秒冷却、伤害=魔王实时ATK×trigger_value(0.5)命中瞬间取、CRT=0；关卡切换被回收→整套重建；trigger_time=9999 周期触发永不发生；class_entity_data="书本数,攻击模块ID,转速"；馈赠 2000006001~005 → BUFF 3000700001~005 → 5 级共用攻击模块 300071=AttackModeOrbit）
+│   ├── BuffEntityPeriodicAttackOrbit      # 常驻环绕书本（深渊馈赠「知识的力量」：随机选 1 只最前排(x 最大)存活魔物为宿主，环绕 N 本书(半径0.75、高度取魔王位置+攻击起始偏移、转速Lv1~5=0.6/1.2/1.8/2.4/3弧度/秒、均分角)；宿主死亡/有更前排魔物→改选(并列随机1只、并列不换防抖动)，无己方魔物→全销毁、有再生成；书本=常驻攻击模块 AttackModeOrbit 不自毁、触碰命中每只书对同一敌人0.5秒冷却、伤害=魔王实时ATK×trigger_value(0.4)命中瞬间取、CRT=0；关卡切换被回收→整套重建；trigger_time=9999 周期触发永不发生；class_entity_data="书本数,攻击模块ID,转速"；馈赠 2000006001~005 → BUFF 3000700001~005 → 5 级共用攻击模块 300071=AttackModeOrbit）
 │   ├── BuffEntityPeriodicAttackRebound    # 常驻回弹菱块维持（深渊馈赠「回弹菱块」：每 trigger_time(1秒) 自检——本BUFF发射且仍存活(isValid)的菱块不足 class_entity_data[0] 颗即补足，满编无事；菱块=永久弹(不销毁、不累积、总数恒定=弹数)，关卡切换被 ClearAttackModePrefab 清掉后自动补回，升级替换/清空时 ClearData 销毁全部存量弹；发射=魔王位置+攻击起始偏移，前向锥 ±75° 随机角，无敌人也照常发射；伤害=魔王实时ATK×trigger_value(0.5)注入(保底1)、CRT=0；反弹(±5°偏转)/同目标1秒冷却由 AttackModeRangedRebound 处理，弹速按级配在攻击模块行 speed_move=2~4；class_entity_data="弹数,攻击模块ID"；馈赠 2000007001~005 → BUFF 3000800001~005 → 攻击模块 300081~300085=AttackModeRangedRebound，视觉 AttackModeVisual_Pingpang_1，图标 ui_abyssalblessing_pingpang）
 │   ├── BuffEntityPeriodicAttackShockwave  # 周期性冲击波（深渊馈赠「第六次冲击」：每 trigger_time(10秒) 从魔王位置+CreatureInfo攻击起始偏移(+攻击模块start_pos_offset)处发出一道圆环冲击波 AttackModeShockwaveRing，半径扩张至覆盖整条道路(最大半径=道路右缘+余量−圆心x，攻击模块按当场路长计算)，扫到的敌人受伤害并被击退0.5(交 AI 击退意图 StartKnockback：方向固定 +x 沿道路向后推、固定0.2s推完、攻击循环打断、结束回闲置重索敌)；伤害=魔王实时ATK×trigger_value(0.1~0.3)发射时注入(保底1)、CRT=0，场上无敌人本轮不触发；class_entity_data="攻击模块ID"；馈赠 2000008001~005 → BUFF 3001100001~005 → 5 级共用攻击模块 300091=AttackModeShockwaveRing，视觉 Effect_Shockwave_1 走 EffectHandler.ShowShockwaveEffect(半径/时长同步)，图标 ui_abyssalblessing_boom）
 │   ├── BuffEntityPeriodicAttackFireBottle  # 周期地形火焰瓶（深渊馈赠「瓶装炼狱火」：每 trigger_time(10秒) 快照存活敌人不放回抽 N 个主目标(同轮不重复、敌人少于瓶数只丢同等数量)、第1瓶立即+0.2秒间隔连发；每瓶=发射 AttackModeRangedArcGround 抛物线飞向固定落点不追踪(飞行段弹体自旋-720°/s绕-Z轴)，落地燃放半径1.2地形火焰持续5秒每1秒跳伤；伤害=魔王实时ATK×trigger_value(0.1)、CRT=0、不递减(多片叠加多次跳伤)，无敌人不触发；class_entity_data="瓶数,攻击模块ID"；馈赠 2000009001~005 → BUFF 3001200001~005 → 共用攻击模块 300101=AttackModeRangedArcGround，视觉 AttackModeVisual_FireBottle_1+燃烧段 ShowFloorFireEffect(Effect_FloorFire_1)，图标 ui_abyssalblessing_fire）
@@ -83,8 +86,8 @@ R  (11) 纯属性 BUFF        —— 常驻数值加/减益、无触发条件；
                               注意:无 HPRegeneration 生命回复属性(实际枚举 index11=MPF魔法回复),游戏无被动回血刻
 SR (12) 条件/周期被动触发   —— 累计伤害/受击/击杀/血量阈值/累计治疗/在场时间或按周期触发；
                               类 BuffEntityConditional*(非死亡,含时间驱动 BuffEntityConditionalAttributeTime)/Periodic*/Pecurrent，条件走 pre_info+BuffPreEntityFor*
-SSR(13) 特殊类             —— 死亡重生/死亡反击/死亡区域治疗/克隆增殖/生成改变水晶掉落等质变效果；
-                              类 BuffEntityConditionalDead*/BuffEntityInstant* 等
+SSR(13) 特殊类             —— 死亡重生/死亡反击/死亡区域治疗/克隆增殖/生成改变水晶掉落/荆棘反伤/伤害吸血/上场无敌等质变效果；
+                              类 BuffEntityConditionalDead*/BuffEntityInstant*/BuffEntityConditionalThorns/LifeSteal/Invincible 等
 高稀有度累积低档：SSR生物=R+SR+SSR各1、SR生物=R+SR各1（RandomRarityBuffForCreate 逐级授予）
 ```
 > 详细分档表与设计自检见 buff-system SKILL「扭蛋/稀有度 BUFF 分档设计规则」，为单一真实源。

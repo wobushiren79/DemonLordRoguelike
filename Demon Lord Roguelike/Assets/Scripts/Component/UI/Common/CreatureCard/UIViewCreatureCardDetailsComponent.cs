@@ -14,8 +14,6 @@ public partial class UIViewCreatureCardDetails
 
     public TextMeshProUGUI ui_AttributeItemText_Life;
 
-    public TextMeshProUGUI ui_AttributeItemText_Att;
-
     public TextMeshProUGUI ui_AttributeItemText_Def;
 
     public Image ui_CardBgBoard;
@@ -75,6 +73,24 @@ public partial class UIViewCreatureCardDetails
     public RectTransform ui_Level;
 
     public RectTransform ui_DetailsBase;
+
+    public RectTransform ui_ViewCreatureCardItemAttribute_Life;
+
+    public RectTransform ui_ViewCreatureCardItemAttribute_Def;
+
+    public RectTransform ui_ViewCreatureCardItemAttribute_Speed;
+
+    public RectTransform ui_ViewCreatureCardItemAttribute_MP;
+
+    public RectTransform ui_ViewCreatureCardItemAttribute_MPR;
+
+    public TextMeshProUGUI ui_AttributeItemText_MP;
+
+    public TextMeshProUGUI ui_AttributeItemText_MPR;
+
+    public RectTransform ui_ViewCreatureCardItemAttribute_Atk;
+
+    public TextMeshProUGUI ui_AttributeItemText_Atk;
 
 
 }

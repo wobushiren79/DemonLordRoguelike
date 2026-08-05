@@ -59,18 +59,12 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         SetCardIcon(creatureData);
         SetName(creatureData.creatureName);
 
-        //详情面板按「含深渊馈赠全局池」口径取属性(includeAbyssalBlessing=true)，与场上实际数值一致(如随机一只攻击力翻倍)
-        int hp = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.HP, true);
-        int dr = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.DR, true);
-        int atk = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true);
-        int aspd = (int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD, true);
-        
         //魔王:使用稀有度L配置显示、隐藏等级容器(ui_Level)与详情基础容器(ui_DetailsBase)
         bool isDemonLord = creatureData.IsDemonLord();
         ui_Level.gameObject.SetActive(!isDemonLord);
         ui_DetailsBase.gameObject.SetActive(!isDemonLord);
 
-        SetAttribute(hp, dr,atk, aspd);
+        SetAttribute(isDemonLord);
         SetRarity(isDemonLord ? (int)RarityEnum.L : creatureData.rarity);
         SetLevelData(creatureData.level, creatureData.levelExp);
 
@@ -314,17 +308,33 @@ public partial class UIViewCreatureCardDetails : BaseUIView
 
     /// <summary>
     /// 设置属性显示
+    /// <para>非魔王：生命/防御/攻击/攻速；魔王：攻击/移速/魔力/魔力回复（生命、防御项隐藏，魔力、魔力回复项显示）。</para>
+    /// <para>详情面板按「含深渊馈赠全局池」口径取属性(includeAbyssalBlessing=true)，与场上实际数值一致(如随机一只攻击力翻倍)。</para>
     /// </summary>
-    /// <param name="HP">生命值</param>
-    /// <param name="DR">防御值</param>
-    /// <param name="atk">攻击力</param>
-    /// <param name="aspk">攻击速度</param>
-    public void SetAttribute(int HP, int DR, int atk, int aspk)
+    /// <param name="isDemonLord">是否为魔王本体</param>
+    public void SetAttribute(bool isDemonLord)
     {
-        ui_AttributeItemText_Life.text = $"{HP}";
-        ui_AttributeItemText_Def.text = $"{DR}";
-        ui_AttributeItemText_Att.text = $"{atk}";
-        ui_AttributeItemText_Speed.text = $"{aspk}";
+        //生命/防御仅非魔王显示，魔力/魔力回复仅魔王显示；攻击与Speed项两者共用
+        ui_ViewCreatureCardItemAttribute_Life.gameObject.SetActive(!isDemonLord);
+        ui_ViewCreatureCardItemAttribute_Def.gameObject.SetActive(!isDemonLord);
+        ui_ViewCreatureCardItemAttribute_MP.gameObject.SetActive(isDemonLord);
+        ui_ViewCreatureCardItemAttribute_MPR.gameObject.SetActive(isDemonLord);
+        if (isDemonLord)
+        {
+            //Speed项在魔王处复用显示移速MSPD（MSPD与ASPD共用一套Speed UI），MPR项显示魔力回复MPF
+            ui_AttributeItemText_Atk.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true)}";
+            ui_AttributeItemText_Speed.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MSPD, true)}";
+            ui_AttributeItemText_MP.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MP, true)}";
+            ui_AttributeItemText_MPR.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MPF, true)}";
+        }
+        else
+        {
+            //Speed项在非魔王处显示攻速ASPD
+            ui_AttributeItemText_Life.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.HP, true)}";
+            ui_AttributeItemText_Def.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.DR, true)}";
+            ui_AttributeItemText_Atk.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true)}";
+            ui_AttributeItemText_Speed.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD, true)}";
+        }
     }
 
     /// <summary>

@@ -20,6 +20,10 @@ public partial class UIRewardSelect : BaseUIComponent
         }
     }
 
+    //遮罩淡入/淡出时长(秒) 用于遮盖领奖场景加载与宝箱预热渲染的卡顿帧
+    public const float TimeMaskFadeIn = 0.3f;
+    public const float TimeMaskFadeOut = 0.4f;
+
     /// <summary>
     /// 设置数据
     /// </summary>
@@ -32,15 +36,28 @@ public partial class UIRewardSelect : BaseUIComponent
         gameObject.SetActive(false);
         this.actionForEnd = actionForEnd;
 
-        await WorldHandler.Instance.EnterRewardSelectScene(isClearLastGame);
-        //场景实例
-        scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForRewardSelect>(GameSceneTypeEnum.RewardSelect);
-        //初始化宝箱
-        await scenePrefab.InitRewardBox(rewardSelectData.listReward);
-
-        gameObject.SetActive(true);
-        //刷新UI显示
-        RefreshUI();
+        //先淡入遮罩盖住屏幕 把清场/场景加载/预热渲染等重活藏在遮罩后执行 避免卡顿帧直接暴露给玩家
+        UICommonMask maskUI = UIHandler.Instance.OpenUI<UICommonMask>(layer: 99);
+        maskUI.StartMask(TimeMaskFadeIn, null, async () =>
+        {
+            //遮罩完全盖住后开始重活
+            await WorldHandler.Instance.EnterRewardSelectScene(isClearLastGame);
+            //场景实例
+            scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForRewardSelect>(GameSceneTypeEnum.RewardSelect);
+            //初始化宝箱(实例化后先预热渲染2帧 完成shader编译/灯光/粒子预热 此时尚有遮罩 玩家不可见)
+            await scenePrefab.InitRewardBox(rewardSelectData.listReward);
+            //UI显活并刷新(Canvas重建尖峰同样藏在遮罩后)
+            gameObject.SetActive(true);
+            RefreshUI();
+            //再等1帧 确保UI与场景在遮罩下都完成了首帧渲染
+            await new WaitForEndOfFrame();
+            //揭开遮罩
+            maskUI.EndMask(TimeMaskFadeOut, null, null);
+            //进入奖励选择场景时播放奖励音效
+            AudioHandler.Instance.PlaySound(AudioEnum.sound_reward_6);
+            //宝箱落地动画随遮罩淡出同步开始
+            await scenePrefab.PlayAllBoxShowAnim();
+        });
     }
 
     /// <summary>

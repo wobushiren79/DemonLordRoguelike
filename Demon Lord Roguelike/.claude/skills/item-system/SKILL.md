@@ -185,7 +185,7 @@ float hpBonus = item.GetAttribute(CreatureAttributeTypeEnum.HP);
 
 属性加成规则:
 - `userType=0` (默认): 随机 HP/DR/ATK/ASPD
-- `userType=1` (魔王专属): 固定 MSPD/MP
+- `userType=1` (魔王专属): 随机 MSPD/MP/MPF/ATK（MPR 暂未开放）
 - 属性条数 = 品质等级 (rarity)
 
 ## 武器攻击模式配置

@@ -354,6 +354,13 @@ public partial class FightCreatureEntity
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var fightData = gameLogic.fightData;
         var fightRecordsData = fightData.fightRecordsData;
+        //无敌判定：免疫一切 UnderAttack 伤害（不掉血/不上受击BUFF/不播受击特效），跳0伤害字+miss音效（复用闪避表现）
+        if (fightCreatureData.isInvincible)
+        {
+            EffectHandler.Instance.ShowTextNumEffect(creatureObj.transform.position + new Vector3(0, 0.5f, 0), 0, 1);
+            AudioHandler.Instance.PlaySound(fightUnderAttackData.soundMissId);
+            return;
+        }
         //判断是否闪避
         float evaRate = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.EVA);
         float randomEVA = UnityEngine.Random.Range(0f, 1f);

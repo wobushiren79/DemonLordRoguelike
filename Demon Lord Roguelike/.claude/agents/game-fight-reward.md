@@ -72,6 +72,7 @@ watched_files:
  → new RewardSelectBean().InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum) (预览=实领；奖励多多额外件数在基础奖励后追加装备道具，生成不出装备兜底魔晶)
  → selectNumMax += rewardAddSelectNum; 钳制 = Min(selectNumMax, listReward.Count)
  → 打开 UIRewardSelect.SetData(rewardSelectData, ActionForUIRewardSelectEnd, isClearLastGame:true)
+    (领奖场景加载完成、UI 显示时播放进入领奖音效 AudioEnum.sound_reward_6)
  → 玩家选宝箱 → userData.AddBackpackItem(itemData) (水晶走 AddCrystal,装备入背包)
  → ActionForUIRewardSelectEnd → 触发 Achievement_ConquerComplete(worldId, difficultyLevel) 成就(按世界×难度统计)
  → AddReputationForConquerComplete(fightTypeConquerInfo) 发放通关声望(研究 UnlockEnum.ConquerReputationReward 解锁才 userData.AddReputation(conquerInfo.GetRewardReputation()); 存档前发放,随存档落盘)
@@ -129,7 +130,7 @@ watched_files:
 - 存档统一收口在 `EndGameAndReturnToBase`，会先 `ClearAbyssalBlessing` 再 `SaveUserData` —— 深渊馈赠是单局临时加成，不跨局保留。
 - 水晶掉落数量来自 `FightTypeConquerInfo.drop_crystal`，BUFF 可监听 `GameFightLogic_CreatureDeadDropCrystal` 追加掉落（具体 BUFF 逻辑归 `game-buff` 代理）。
 - 征服配置 Bean (`FightTypeConquerInfoBean.cs`) 是自动生成的，**禁止直接修改**；扩展写到 `FightTypeConquerInfoBeanPartial.cs`。配置数据变更必须改对应 Excel 源表，仅改 JSON 会被下次导出覆盖。
-- `UIRewardSelect` 依赖独立的领奖场景 `ScenePrefabForRewardSelect`（`WorldHandler.EnterRewardSelectScene`）与 3D 宝箱交互（射线点击），改动 UI 时注意场景配合。
+- `UIRewardSelect` 依赖独立的领奖场景 `ScenePrefabForRewardSelect`（`WorldHandler.EnterRewardSelectScene`）与 3D 宝箱交互（射线点击），改动 UI 时注意场景配合。进入流程为「遮罩+预热」：`SetData` 先 `UICommonMask` 淡入盖住屏幕（0.3s），在遮罩下完成清场/场景加载/宝箱实例化与预热渲染（`InitRewardBox` 激活宝箱道具渲染 2 帧消化 shader 编译与灯光/粒子首次激活开销，Animator `speed=0` 暂停在 Show 第 0 帧），再 `EndMask` 揭开（0.4s）同时 `PlayAllBoxShowAnim` 播宝箱落地动画——不要拆掉遮罩或预热，否则"进入卡顿吃掉落地动画"的问题会回归。领奖结束 `OpenAllRewardBoxPreview()` 的节奏：未开箱子第一个立即开、之后每个间隔 0.5 秒连续开（不等单个动画播完），最后固定等 1 秒回调 `actionForEnd`。开箱显示道具时道具下的 `Effect_Sparkle_1` 粒子会按道具稀有度上色（`RewardSelectBoxComponent.SetSparkleColorByRarity`，取 `RarityInfo.ui_board_color_item`）。
 - 进入领奖场景前必须卸载上一场战斗场景：`SetData(..., isClearLastGame: true)` → `EnterRewardSelectScene(true)` → `gameLogic.ClearGame()`（卸载战斗场景+清理战斗实体）。征服 BOSS 领奖入口已传 true；若漏传，BOSS 战斗场景会与领奖场景叠加残留（结算阶段的 `ClearGameForSimple` 只清 AI/BUFF/弹道，不卸场景）。
 
 ## 关联 Skill 与 Agent

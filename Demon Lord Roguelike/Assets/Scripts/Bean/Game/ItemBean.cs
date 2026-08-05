@@ -42,7 +42,7 @@ public partial class ItemBean
     /// 创建道具时初始化随机属性
     /// 根据道具品质 (rarity) 决定随机属性的条数，品质越高属性条数越多
     /// 同一属性可被多次选中，数值会累加
-    /// userType=1 时固定加成 MSPD 和 MP 属性，否则随机加成 HP/DR/ATK/ASPD
+    /// userType=1 时随机加成 MSPD/MP/MPF/ATK 属性，否则随机加成 HP/DR/ATK/ASPD
     /// </summary>
     /// <param name="addNum">属性加成的倍率系数</param>
     public void InitRandomAttributeForCreate(int addNum)
@@ -51,10 +51,10 @@ public partial class ItemBean
         int rarityNum = rarity;
         for (int i = 0; i < rarityNum; i++)
         {
-            // userType=1 时固定加成 MSPD 和 MP，否则随机选择一种属性类型 (1~4)
+            // userType=1 时随机加成 MSPD/MP/MPF/ATK，否则随机选择一种属性类型 (1~4)
             if (userType == 1)
             {
-                int randomIndex = Random.Range(1, 4);
+                int randomIndex = Random.Range(1, 5);
                 switch (randomIndex)
                 {
                     case 1:
@@ -66,8 +66,11 @@ public partial class ItemBean
                     case 3:
                         AddAttribute(CreatureAttributeTypeEnum.MPF, addNum);
                         break;
+                    case 4:
+                        AddAttribute(CreatureAttributeTypeEnum.ATK, 1 * addNum);
+                        break;
                     //暂时不开放速率回复
-                    // case 4:
+                    // case 5:
                     //     AddAttribute(CreatureAttributeTypeEnum.MPR, addNum);
                     //     break;
                 }

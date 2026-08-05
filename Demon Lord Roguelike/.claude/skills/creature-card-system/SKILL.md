@@ -166,7 +166,7 @@ details.isShowEquipItem = false;
 details.RefreshCard();
 ```
 
-> **详情面板属性取值口径**：`UIViewCreatureCardDetails.SetData` 展示 HP/DR/ATK/ASPD 时调 **`creatureData.GetAttribute(类型, includeAbyssalBlessing: true)`**——必须传第二参数 `true`，否则只算「基础值→加点→装备→自身/稀有度BUFF」，**漏算深渊馈赠全局池**（如「随机一只攻击力翻倍」单体定向馈赠生效后，详情面板攻击力不翻倍，与场上实际值不符）。`CreatureBean.GetAttribute(true)` 内部经 `GetAbyssalBlessingChangeAttribute` 叠加，且该方法用 `AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature(buff, this, FightDefense)` 做「生物类型 + 单体定向 UUID + 仅属性/攻速BUFF」三连过滤，故只对被锁定的那只魔物翻倍、不会误加到所有卡。非战斗场景（基地/阵容/献祭等）馈赠池为空，传 `true` 无副作用。详见 abyssal-blessing-system「单体定向馈赠」。
+> **详情面板属性取值口径**：`UIViewCreatureCardDetails.SetData` 调 `SetAttribute(isDemonLord)` 分两套展示——**非魔王：HP/DR/ATK/ASPD**；**魔王：ATK/MSPD/MP/MPF**（隐藏 Life/Def 项、显示 MP/MPR 项，**MSPD 与 ASPD 共用 Speed 槽位**，预制体中命名 MPR 的项实际显示魔力回复 MPF）。取值统一调 **`creatureData.GetAttribute(类型, includeAbyssalBlessing: true)`**——必须传第二参数 `true`，否则只算「基础值→加点→装备→自身/稀有度BUFF」，**漏算深渊馈赠全局池**（如「随机一只攻击力翻倍」单体定向馈赠生效后，详情面板攻击力不翻倍，与场上实际值不符）。`CreatureBean.GetAttribute(true)` 内部经 `GetAbyssalBlessingChangeAttribute` 叠加，且该方法用 `AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature(buff, this, FightDefense)` 做「生物类型 + 单体定向 UUID + 仅属性/攻速BUFF」三连过滤，故只对被锁定的那只魔物翻倍、不会误加到所有卡。非战斗场景（基地/阵容/献祭等）馈赠池为空，传 `true` 无副作用。详见 abyssal-blessing-system「单体定向馈赠」。
 
 ### 5. 创建新的卡片子类
 
@@ -346,7 +346,7 @@ protected void OnConfirmOrderFilter(OrderFilterResultBean result) {
 
 > **魔王恒置顶第一位（`OrderListCreature` 最高主键）**：`UIViewCreatureCardList.OrderListCreature` 在「命中置顶(名字/等级/稀有度)」之上再叠一层**最高主键 `OrderByDescending(c => c.IsDemonLord())`**，使玩家任意筛选/排序后魔王仍恒为第一位。该键仅对**含魔王的列表(魔物管理界面)**生效——其它列表无魔王，`IsDemonLord()` 恒 false，不影响原有排序。魔王独立存储于 `UserDataBean.selfCreature`，不在背包/阵容列表内，故由 `GetSortedBackpackCreature` 插入到副本首位后再进入列表。
 
-> **魔王卡片的特殊渲染（卡片项 `UIViewCreatureCardItem` 与详情 `UIViewCreatureCardDetails`）**：以 `CreatureBean.IsDemonLord()`(单一真实源) 判定后差异化展示——① **稀有度统一按 `RarityEnum.L`(=6) 配置显示**(`SetRarity((int)RarityEnum.L)`，仅显示不改存档 `rarity`)；② **隐藏等级**：卡片项 `SetLevel(level, isHide)` 新增 `isHide` 参数隐藏 `ui_LevelText`；详情面板在 `SetData` 里对魔王隐藏**等级容器 `ui_Level`** 与**详情基础容器 `ui_DetailsBase`**(`SetLevelData` 对魔王直接 return 不赋值)；③ 详情 `SetMP` 对魔王隐藏 `ui_MP`(魔王无召唤耗魔概念)。`UIViewCreatureCardDetails.IsDemonLord()` 已收口为委托 `creatureData.IsDemonLord()`。
+> **魔王卡片的特殊渲染（卡片项 `UIViewCreatureCardItem` 与详情 `UIViewCreatureCardDetails`）**：以 `CreatureBean.IsDemonLord()`(单一真实源) 判定后差异化展示——① **稀有度统一按 `RarityEnum.L`(=6) 配置显示**(`SetRarity((int)RarityEnum.L)`，仅显示不改存档 `rarity`)；② **隐藏等级**：卡片项 `SetLevel(level, isHide)` 新增 `isHide` 参数隐藏 `ui_LevelText`；详情面板在 `SetData` 里对魔王隐藏**等级容器 `ui_Level`** 与**详情基础容器 `ui_DetailsBase`**(`SetLevelData` 对魔王直接 return 不赋值)；③ 详情 `SetMP` 对魔王隐藏 `ui_MP`(魔王无召唤耗魔概念)；④ **属性列表分流**(`SetAttribute(isDemonLord)`)：魔王显示 ATK/MSPD/MP/MPF（MSPD 复用 Speed 槽位、MPF 显示在预制体命名 MPR 的项上，隐藏 Life/Def 项），非魔王维持 HP/DR/ATK/ASPD（隐藏 MP/MPR 项）。`UIViewCreatureCardDetails.IsDemonLord()` 已收口为委托 `creatureData.IsDemonLord()`。
 
 > **魔王装备槽 = 同 model_id 扭蛋魔物非武器槽并集(除武器)**：魔王(create 生物 `creature_type=0`，id 1-7)的可装备槽位**通过 Excel 配置 `equip_items_type` 落地**(非运行时计算)——按 `model_id`(种族)对应，取同 `model_id` 扭蛋魔物(`creature_type=1`)所有非武器槽的**并集**；**武器槽保持原样不加**(create 生物原为空)；**人类(model_id=1)** 扭蛋版 1001 槽位为空，手动指定为 `1,2,3`(帽/衣/裤)。当前值：id1=`1,2,3`、id2=`1,2,3`、id3=`1,6`、id4=`1,2,3,6`、id5=`1,2,3,5`、id6=`1,2,3`、id7=`1,2,3,5,6`。装备槽展示与"能否装备"判定共用 `creatureInfo.GetEquipItemsType()`，故改配置即同时生效两端；后续扭蛋槽位若变动需手动同步魔王配置。
 
