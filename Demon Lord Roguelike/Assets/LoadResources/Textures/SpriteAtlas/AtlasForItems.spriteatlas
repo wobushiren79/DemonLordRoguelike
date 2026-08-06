@@ -156,6 +156,7 @@ SpriteAtlas:
     - a1f4536734ca05142855bc04bb7991e4: 21300000
     - d09b0f67e1d1d46448a7ca9047e8c849: 21300000
     - baaa89872c04a874ea11183be050779d: 21300000
+    - 9aaa6e972fa90084db9c69a228f66f64: 21300000
     - 192880a7c33c4ba468e3080911edb5c9: 21300000
     - 949f3ea7134609e4499acfcf279c8443: 21300000
     - a98ad5b714ff47b42b8a8db5113970ff: 21300000
@@ -265,6 +266,7 @@ SpriteAtlas:
     - 939c616fb37eaaf4982e54ef3040fef1: 21300000
     - 18567b6fa92c9de4f98f4ee2925e87b4: 21300000
     - 8df9bc6f8a692b8479502dcd40d0cf8f: 21300000
+    - 8bdf5d6f76c46fd47880d77a09a1b5b8: 21300000
     - 6dc83d7ff94708c488145e120ad5e493: 21300000
     - dc13cd7fbe22275428e00577adbc5a17: 21300000
     - 93eb3f7fa501867439b9fce73e09123e: 21300000
@@ -383,6 +385,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: a1f4536734ca05142855bc04bb7991e4, type: 3}
   - {fileID: 21300000, guid: d09b0f67e1d1d46448a7ca9047e8c849, type: 3}
   - {fileID: 21300000, guid: baaa89872c04a874ea11183be050779d, type: 3}
+  - {fileID: 21300000, guid: 9aaa6e972fa90084db9c69a228f66f64, type: 3}
   - {fileID: 21300000, guid: 192880a7c33c4ba468e3080911edb5c9, type: 3}
   - {fileID: 21300000, guid: 949f3ea7134609e4499acfcf279c8443, type: 3}
   - {fileID: 21300000, guid: a98ad5b714ff47b42b8a8db5113970ff, type: 3}
@@ -492,6 +495,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 939c616fb37eaaf4982e54ef3040fef1, type: 3}
   - {fileID: 21300000, guid: 18567b6fa92c9de4f98f4ee2925e87b4, type: 3}
   - {fileID: 21300000, guid: 8df9bc6f8a692b8479502dcd40d0cf8f, type: 3}
+  - {fileID: 21300000, guid: 8bdf5d6f76c46fd47880d77a09a1b5b8, type: 3}
   - {fileID: 21300000, guid: 6dc83d7ff94708c488145e120ad5e493, type: 3}
   - {fileID: 21300000, guid: dc13cd7fbe22275428e00577adbc5a17, type: 3}
   - {fileID: 21300000, guid: 93eb3f7fa501867439b9fce73e09123e, type: 3}
@@ -609,6 +613,7 @@ SpriteAtlas:
   - Skeleton_Atlas_Weapon_Weapon_R_10
   - Goblin_Atlas_Weapon_Weapon_R_4
   - Skeleton_Atlas_Weapon_Weapon_R_5
+  - Human_Atlas_Other_Arrow_3
   - Goblin_Atlas_Weapon_Weapon_R_5
   - Human_Atlas_Weapon_Weapon_L_12
   - Human_Atlas_Pants_Pants_6
@@ -718,6 +723,7 @@ SpriteAtlas:
   - Human_Atlas_Weapon_Weapon_L_11
   - Human_Atlas_Clothes_Clothes_4
   - Goblin_Atlas_Weapon_Weapon_R_19
+  - Human_Atlas_Other_Arrow_2
   - Goblin_Atlas_Hat_Hat_8
   - Skeleton_Atlas_Weapon_Weapon_R_16
   - Succubus_Atlas_Pants_Pants_1

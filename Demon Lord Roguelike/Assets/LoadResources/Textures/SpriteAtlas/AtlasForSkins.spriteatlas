@@ -88,6 +88,7 @@ SpriteAtlas:
     - 5a8414c2bd533cf4fa2db7ded1b811c5: 21300000
     - 0810a4c2cb422014699097c7a7646994: 21300000
     - b8dfced2ef070f746bc75e029212a13c: 21300000
+    - eabee5e28bf610b4bad49a4757128ad0: 21300000
     - 8bcb28f2c1a1d7e49b513fc76b2cc3bf: 21300000
     - d9fd9b03eee42cc4e8ccb3dd89333dc3: 21300000
     - 5857c2338dbd0914291ab98390369e4f: 21300000
@@ -204,6 +205,7 @@ SpriteAtlas:
     - 85bc799f0a6887145b291294a1846730: 21300000
     - 80dc7fbfdb7c1914baf330b24cde1aca: 21300000
     - 62f9b7df152cf51499c5bec1e13d5398: 21300000
+    - ca1aa9ff6e327b84e8c059d965ebe36d: 21300000
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: e7b8fd20627fa4e46b683bd85d2a7c59, type: 3}
@@ -244,6 +246,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 5a8414c2bd533cf4fa2db7ded1b811c5, type: 3}
   - {fileID: 21300000, guid: 0810a4c2cb422014699097c7a7646994, type: 3}
   - {fileID: 21300000, guid: b8dfced2ef070f746bc75e029212a13c, type: 3}
+  - {fileID: 21300000, guid: eabee5e28bf610b4bad49a4757128ad0, type: 3}
   - {fileID: 21300000, guid: 8bcb28f2c1a1d7e49b513fc76b2cc3bf, type: 3}
   - {fileID: 21300000, guid: d9fd9b03eee42cc4e8ccb3dd89333dc3, type: 3}
   - {fileID: 21300000, guid: 5857c2338dbd0914291ab98390369e4f, type: 3}
@@ -360,6 +363,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 85bc799f0a6887145b291294a1846730, type: 3}
   - {fileID: 21300000, guid: 80dc7fbfdb7c1914baf330b24cde1aca, type: 3}
   - {fileID: 21300000, guid: 62f9b7df152cf51499c5bec1e13d5398, type: 3}
+  - {fileID: 21300000, guid: ca1aa9ff6e327b84e8c059d965ebe36d, type: 3}
   m_PackedSpriteNamesToIndex:
   - Human_Atlas_Body_Body_2
   - Skeleton_Atlas_Head_Head_4
@@ -399,6 +403,7 @@ SpriteAtlas:
   - Succubus_Atlas_Eye_Eye_2
   - Succubus_Atlas_Eye_Eye_9
   - Skeleton_Atlas_Base_Base_1
+  - Human_Atlas_Hair_Hair_12
   - Succubus_Atlas_Hair_Hair_6
   - Minotaur_Atlas_Eye_Eye_7
   - Goblin_Atlas_Mouth_Mouth_6
@@ -515,6 +520,7 @@ SpriteAtlas:
   - Skeleton_Atlas_Head_Head_10
   - Goblin_Atlas_Eye_Eye_9
   - Minotaur_Atlas_Eye_Eye_4
+  - Human_Atlas_Hair_Hair_9
   m_RenderDataMap: {}
   m_Tag: AtlasForSkins
   m_IsVariant: 0
