@@ -68,6 +68,7 @@ public partial class UIViewMainLoadItem : BaseUIView
                 SetCreatureUI(userData.selfCreature);
                 SetUserName(userData.userName);
                 SetCrystal(userData.crystal);
+                SetGameTime(userData.gameTime);
             }
         }
     }
@@ -100,6 +101,16 @@ public partial class UIViewMainLoadItem : BaseUIView
     public void SetCrystal(long crystal)
     {
         ui_CoinText.text = $"{crystal}";
+    }
+
+    /// <summary>
+    /// 设置总游戏时间(格式 00:00 小时:分钟, gameTime单位为秒)
+    /// </summary>
+    public void SetGameTime(long gameTime)
+    {
+        long h = gameTime / 3600;
+        long m = (gameTime % 3600) / 60;
+        ui_GameTime.text = $"{h:D2}:{m:D2}";
     }
 
     /// <summary>

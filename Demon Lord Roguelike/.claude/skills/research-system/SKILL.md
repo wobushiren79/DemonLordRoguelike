@@ -418,8 +418,8 @@ public int GetUnlockJuicerCreatureMax();               // 魔汁机投入魔物�
 public float GetUnlockSacrificeFailPityAddRate();      // 献祭失败保底增量 = SacrificePityRate 等级 × 5%(未解锁0,满级50%)
 public float GetUnlockSacrificeDifferentIdRate();      // 单个不同id祭品成功率 = SacrificeDifferentIdRate 等级 × 5%(未解锁0,满级50%)
 public float GetUnlockDropCrystalAddLifeTime();        // 魔晶掉落物额外存在时长 = DropCrystalLifeTime 等级 × 5秒(未解锁0,满级+30s)；在 FightCreatureEntity.DropCrystal 叠加到 FightDropCrystalBean.BASE_LIFE_TIME(30)
-public float GetUnlockDemonLordMPMaxAddValue();        // 魔王魔力上限加成 = DemonLordMPMax 等级 × 10(未解锁0,满级+50)；在 FightCreatureBean.RefreshBaseAttribute 仅对 FightDefenseCore 叠加到 MP
-public float GetUnlockDemonLordMPFAddValue();          // 魔王魔力恢复速度加成 = DemonLordMPF 等级 × 1/秒(未解锁0,满级+3/s)；同上叠加到 MPF
+public float GetUnlockDemonLordMPMaxAddValue();        // 魔王魔力上限加成 = DemonLordMPMax 等级 × 10(未解锁0,满级+50)；在 CreatureBean.GetAttribute 的 MP 分支对 IsDemonLord() 叠加(战斗/基地同一口径)
+public float GetUnlockDemonLordMPFAddValue();          // 魔王魔力恢复速度加成 = DemonLordMPF 等级 × 1/秒(未解锁0,满级+3/s)；同上在 GetAttribute 的 MPF 分支叠加
 public int GetUnlockSpaceDashLevel();                  // 空格突进研究等级 = SpaceDash 等级(0=未解锁不可突进,1/2/3级=1/2/3距离单位)；由 ControlForGameBase 读取决定突进距离
 public float GetUnlockSpaceDashCD();                   // 空格突进冷却(秒) = 3 - SpaceDashCD 等级×0.5(未解锁3s,每级-0.5,满级最低1s)；由 ControlForGameBase 读取决定突进CD
 public float GetUnlockDemonLordAutoPickCrystalInterval(); // 魔王自动拾取魔晶间隔(秒) = 11 - DemonLordAutoPickCrystal 等级(未解锁返回-1禁用,10级10s→满级1s)；由 GameFightLogic.UpdateGameForDefenseCore 读取驱动 PickupCrystalForCoreAuto

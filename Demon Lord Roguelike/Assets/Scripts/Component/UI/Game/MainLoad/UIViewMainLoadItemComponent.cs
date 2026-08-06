@@ -28,5 +28,7 @@ public partial class UIViewMainLoadItem
 
     public Button ui_UseBackups;
 
+    public TextMeshProUGUI ui_GameTime;
+
 
 }

@@ -218,11 +218,11 @@ public void ChangeMP(float changeMP, out float leftMP, out float changeMPReal); 
 // 取魔力上限直接走 creature.GetAttribute(CreatureAttributeTypeEnum.MP)；
 // FightCreatureBean.RefreshBaseAttribute 遍历全枚举走 GetAttribute 统一缓存进 dicAttribute。
 
-// 研究加成（仅魔王/防守核心）：FightCreatureBean.RefreshBaseAttribute 末尾，当
-//   creatureFightType == FightDefenseCore 时给 dicAttribute[MP]/[MPF] 叠加研究值：
+// 研究加成（仅魔王）：已下沉到 CreatureBean.GetAttribute 的 MP/MPF 分支，
+//   当 IsDemonLord() 时叠加研究值（战斗/基地魔物管理页面同一口径，FightCreatureBean 不再额外叠加）：
 //   MP  += UserUnlockBean.GetUnlockDemonLordMPMaxAddValue()  (强化研究 UnlockEnum.DemonLordMPMax=200300001，每级+10，满级5级+50)
 //   MPF += UserUnlockBean.GetUnlockDemonLordMPFAddValue()    (强化研究 UnlockEnum.DemonLordMPF=200400001，每级+1/秒，满级3级+3/s)
-//   普通生物不应用，避免影响非核心生物魔力数值。
+//   普通生物 IsDemonLord()=false 不应用，避免影响非核心生物魔力数值。
 
 // 恢复链路：GameFightLogic.UpdateGameForMPRecover(updateTime)
 //   每帧给魔王核心恢复 MPF*updateTime 点魔力，然后 RefreshMPShow() 通知刷新显示

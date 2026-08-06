@@ -14,7 +14,7 @@ watched_files:
 ## 职责范围
 
 ### 主菜单 UI
-- **UIMainStart** - 游戏开始界面
+- **UIMainStart** - 游戏开始界面。含多语言选择列表：`InitLanguageList` 按 LanguageEnum 数量以 ui_ItemLanguage 为模板实时生成 UIViewLanguageItem（文本格式 `cn/中文`，见 `LanguageCfg.GetLanguageShowName`），点击直接切换语言并 SaveGameConfig + RefreshAllUI
 - **UIMainCreate** - 创建角色界面
 - **UIMainLoad** - 加载存档界面
 - **UIMainMaker** - 制作人员界面

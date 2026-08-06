@@ -115,7 +115,8 @@ float aspd = finalAttr.GetAttribute(CreatureAttributeTypeEnum.ASPD);
 float mspd = finalAttr.GetAttribute(CreatureAttributeTypeEnum.MSPD);
 
 // 魔力上限MP（仅战斗中有效 魔王创建魔物的资源池）：
-// GetAttribute 的 switch 已含 MP/CMP 分支（CreatureBean.cs 为手写可改文件），直接走 GetAttribute 即可
+// GetAttribute 的 switch 已含 MP/CMP 分支（CreatureBean.cs 为手写可改文件），直接走 GetAttribute 即可；
+// 魔王(IsDemonLord)的 MP/MPF 还会在 GetAttribute 内叠加强化研究加成(DemonLordMPMax 每级+10 / DemonLordMPF 每级+1/秒)，战斗与基地显示同一口径
 float mp = creature.GetAttribute(CreatureAttributeTypeEnum.MP);
 // 创建魔物消耗的魔力基础值配在 CreatureInfo.CMP（原 create_mp 字段已改名为 CMP），魔力恢复速度为 MPF（每秒恢复量）
 // 取实际召唤耗魔走 creature.GetAttributeInt(CreatureAttributeTypeEnum.CMP)，勿直接读 CMP 字段。

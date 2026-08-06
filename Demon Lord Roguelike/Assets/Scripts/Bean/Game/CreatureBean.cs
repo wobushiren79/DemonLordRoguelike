@@ -564,7 +564,7 @@ public partial class CreatureBean
     /// <summary>
     /// 获取最终属性值
     /// <para>叠加顺序：基础值(NPC优先，否则取 creatureInfo) → 角色加点(creatureAttribute) → 装备属性 → 自身/稀有度BUFF修正 → [可选]深渊馈赠全局池BUFF。</para>
-    /// <para>CRT/EVA 基础值为0（按需由加点/装备/BUFF提供）；MP/CMP/MPF 等魔力相关仅战斗中有意义。</para>
+    /// <para>CRT/EVA 基础值为0（按需由加点/装备/BUFF提供）；MP/CMP/MPF 等魔力相关仅战斗中有意义；魔王的 MP/MPF 额外叠加研究加成(UnlockEnum.DemonLordMPMax/DemonLordMPF)，战斗链路(FightCreatureBean)复用本方法不再重复叠加。</para>
     /// <para>深渊馈赠全局池(dicAbyssalBlessingBuffsActivie)仅当 includeAbyssalBlessing=true 时按需叠加，供非战斗缓存链路(如复活CD查询)使用；
     /// 战斗链路(FightCreatureBean.RefreshBaseAttribute)走 ModifierPipeline 独立叠加深渊馈赠，调用时须保持默认 false 以免重复计算。</para>
     /// </summary>
@@ -593,14 +593,18 @@ public partial class CreatureBean
             case CreatureAttributeTypeEnum.MSPD://获取移动速度
                 targetData = npcInfo != null ? npcInfo.MSPD : creatureInfo.MSPD;
                 break;
-            case CreatureAttributeTypeEnum.MP://魔力上限(魔王创建魔物的资源池, 仅战斗中有效)
+            case CreatureAttributeTypeEnum.MP://魔力上限(魔王创建魔物的资源池, 仅战斗中有效)；魔王额外叠加研究加成(每级+10)
                 targetData = npcInfo != null ? npcInfo.MP : creatureInfo.MP;
+                if (IsDemonLord())
+                    targetData += GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData().GetUnlockDemonLordMPMaxAddValue();
                 break;
             case CreatureAttributeTypeEnum.MPR://魔力回复%
                 targetData = creatureInfo.MPR;
                 break;
-            case CreatureAttributeTypeEnum.MPF://魔力回复
+            case CreatureAttributeTypeEnum.MPF://魔力回复(每秒)；魔王额外叠加研究加成(每级+1/秒)
                 targetData = creatureInfo.MPF;
+                if (IsDemonLord())
+                    targetData += GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData().GetUnlockDemonLordMPFAddValue();
                 break;
             case CreatureAttributeTypeEnum.RCD://复活CD基础值(深渊馈赠全局池由 includeAbyssalBlessing 控制在下方按需叠加)
                 targetData = creatureInfo.RCD;

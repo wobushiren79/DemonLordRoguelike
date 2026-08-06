@@ -56,7 +56,8 @@ BuffBaseEntity                              # 抽象基类（事件回调 + Show
 │   ├── BuffEntityConditionalDeadAreaHPChange / DeadAreaDRChange  # 死亡时区域改HP/DR
 │   ├── BuffEntityConditionalDeadCreateCrystal                    # 死亡时生成水晶
 │   ├── BuffEntityConditionalAddDropCrystal                       # 死亡掉落水晶时叠加
-│   └── BuffEntityConditionalCreateCrystal                        # 生成水晶（事件类）
+│   ├── BuffEntityConditionalCreateCrystal                        # 生成水晶（事件类）
+│   └── BuffEntityConditionalDemonLordMPRegain                    # 给魔王(防守核心)回复魔力（SR稀有度「左膀右臂」击杀1个生物/「舍己为王」累计承伤100，回复 trigger_value 点(10~20)；经 ChangeMP 钳制[0,MP上限]+RefreshMPShow 刷新显示）
 ├── BuffEntityPeriodic                      # 周期性触发（无次数限制）
 │   ├── BuffEntityPeriodicAttackAgain       # 周期性强制再攻击
 │   ├── BuffEntityPeriodicAttackMultiInstant # 周期性多次瞬时攻击（深渊馈赠「闪电」落雷：BUFF 只管周期触发→触发瞬间快照全场敌人→不放回抽 N 个主目标(一轮内多道雷主目标互不重复；敌人少于雷数时只发同等数量的雷；溅射不受限——同一目标可被多道雷重复溅射、被溅射过的目标仍可作主目标)→第1道立即+后续0.1秒间隔连发；每道雷=发射一个 AttackModeInstantAreaThunder 攻击模块，粒子/AOE/伤害全走 AttackMode 框架（AOE半径/单雷命中上限配在攻击模块表 collider_area_size/hit_max，AOE 多目标伤害按命中次序依次减半保底1，单次攻击内局部去重，伤害=魔王实时攻击力×trigger_value 由BUFF发射时注入，CRT=0 不暴击）；class_entity_data="次数,攻击模块ID"；深渊馈赠「闪电」3000300001~005 → 攻击模块 300031~300035，Lv1~5 半径0.2~1.0、单雷命中上限1~5）

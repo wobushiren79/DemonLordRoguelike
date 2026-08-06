@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,6 +12,7 @@ public partial class UIMainStart : BaseUIComponent
         base.OpenUI();
         //设置基地场景视角
         CameraHandler.Instance.SetGameStartCamera(int.MaxValue, true);
+        InitLanguageList();
     }
 
     public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
@@ -53,6 +55,23 @@ public partial class UIMainStart : BaseUIComponent
     public void RefreshUIData()
     {
 
+    }
+
+    /// <summary>
+    /// 初始化多语言选择列表，按 LanguageEnum 的数量实时生成 ItemLanguage
+    /// </summary>
+    public void InitLanguageList()
+    {
+        //先隐藏模板（RemoveChildsByActive 只清理 active 的实例，保留模板）
+        ui_ItemLanguage.gameObject.SetActive(false);
+        CptUtil.RemoveChildsByActive(ui_ListLanguage.gameObject);
+        var languageArray = Enum.GetValues(typeof(LanguageEnum));
+        foreach (LanguageEnum itemLanguage in languageArray)
+        {
+            GameObject objItem = Instantiate(ui_ListLanguage.gameObject, ui_ItemLanguage.gameObject);
+            var itemView = objItem.GetComponent<UIViewLanguageItem>();
+            itemView.SetData(itemLanguage);
+        }
     }
 
     /// <summary>

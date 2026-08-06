@@ -24,7 +24,7 @@ public class UserDataBean : BaseBean
     public long reputation;
     //用户名字
     public string userName;
-    //游戏事件
+    //游戏时间(秒)
     public long gameTime;
 
     //阵容生物

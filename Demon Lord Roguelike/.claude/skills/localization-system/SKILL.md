@@ -479,6 +479,17 @@ TextReplaceEnum
 
 ## 切换语言
 
+### 主界面语言选择列表（玩家入口）
+
+主界面 UIMainStart 底部有多语言选择列表，玩家点击 ItemLanguage 直接切换语言：
+
+- **UIMainStart.InitLanguageList()**：OpenUI 时隐藏模板 ui_ItemLanguage → `CptUtil.RemoveChildsByActive` 清理旧实例 → 按 LanguageEnum 数量 `Instantiate` 实时生成（ListLanguage 有 VerticalLayoutGroup + ContentSizeFitter 自动排版）
+- **UIViewLanguageItem**（Assets/Scripts/Component/UI/Game/MainStart/）：挂在 ItemLanguage 模板上（含 Button 组件），Awake 时 AutoLink 绑定 `ui_ItemText`（ItemText 子物体）与 `ui_ItemLanguage`（自身 Button）
+- **文本格式**：`LanguageCfg.GetLanguageShowName(language)` → "英文简称/该语言自称"（如 `cn/中文`、`en/English`、`jp/日本語`），展示名数组在 LanguageBeanPartial.cs（顺序与 LanguageEnum 一致）
+- **点击切换**：`SetLanguage` → `TextHandler.ChangeLanguageEnum` → `SaveGameConfig` 立即持久化 → `RefreshAllUI` + 当前 UI SetActive 重启刷新
+
+> 设置界面 UIGameSettingForGame 里的多语言下拉选择代码已注释（迁移到主界面列表），恢复时取消注释即可。
+
 ### 运行时切换语言
 
 ```csharp

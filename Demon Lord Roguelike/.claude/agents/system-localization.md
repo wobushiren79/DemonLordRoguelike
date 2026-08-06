@@ -34,7 +34,7 @@ watched_files:
 1. `SteamManager.Initialized == true` → `SteamApps.GetCurrentGameLanguage()`：`schinese`→`cn`、`tchinese`→`tw`、其他含 `chinese`→`cn`、`japanese`→`jp`、`koreana`→`kr`、`german`→`de`、`french`→`fr`、`russian`→`ru`，其余 → `en`
 2. 未连上 Steam / 抛异常 → `en`
 
-语言枚举 `LanguageEnum`：`cn=0 / en=1 / jp=2 / kr=3 / tw=4 / de=5 / fr=6 / ru=7`（追加不改旧值，存档兼容）。设置界面语言下拉见 `UIGameSettingForGame.listLanguageSelect`（各语言本地自称）。
+语言枚举 `LanguageEnum`：`cn=0 / en=1 / jp=2 / kr=3 / tw=4 / de=5 / fr=6 / ru=7`（追加不改旧值，存档兼容）。玩家切换入口在主界面 UIMainStart 的语言选择列表（`UIViewLanguageItem`，文本格式 `cn/中文`，展示名见 `LanguageCfg.GetLanguageShowName`，顺序与 LanguageEnum 一致）；设置界面 UIGameSettingForGame 的语言下拉代码已注释。
 
 实现位置：[LanguageBeanPartial.cs](Assets/FrameWork/Scripts/Bean/MVC/LanguageBeanPartial.cs)（静态构造 + `GetInitialLanguage()`），[GameConfigBean.cs](Assets/FrameWork/Scripts/Bean/GameConfigBean.cs)（`GetLanguage()` 空串回退）。
 

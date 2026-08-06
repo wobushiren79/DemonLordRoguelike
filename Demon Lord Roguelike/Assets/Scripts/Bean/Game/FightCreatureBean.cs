@@ -118,15 +118,6 @@ public class FightCreatureBean
             dicAttribute[CreatureAttributeTypeEnum.ATK] *= intensityRate;
         }
 
-        //魔王(防守核心)专属研究加成：魔力上限(MP 每级+10) / 魔力恢复速度(MPF 每级+1/秒)
-        //仅作用于魔王，普通生物不应用，避免影响非核心生物的魔力相关数值
-        if (creatureFightType == CreatureFightTypeEnum.FightDefenseCore)
-        {
-            var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
-            dicAttribute[CreatureAttributeTypeEnum.MP] += userUnlock.GetUnlockDemonLordMPMaxAddValue();
-            dicAttribute[CreatureAttributeTypeEnum.MPF] += userUnlock.GetUnlockDemonLordMPFAddValue();
-        }
-
         actionForComplete?.Invoke();
     }
 
