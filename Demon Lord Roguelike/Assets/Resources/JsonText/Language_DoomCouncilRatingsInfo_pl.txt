@@ -1,0 +1,1 @@
+[{"id":1,"content":"Radny próbny"},{"id":2,"content":"Radny zasiadający"},{"id":3,"content":"Młodszy radny"},{"id":4,"content":"Radny zarządu"},{"id":5,"content":"Starszy radny"},{"id":6,"content":"Radny wykonawczy"},{"id":7,"content":"Radny-weteran"},{"id":8,"content":"Marszałek rady"},{"id":9,"content":"Naczelny radny"},{"id":10,"content":"Najwyższy Marszałek"}]

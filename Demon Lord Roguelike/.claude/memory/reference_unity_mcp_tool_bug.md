@@ -17,6 +17,13 @@ metadata:
   - **仍在**：`manage_asset`/`manage_material`/`manage_prefabs`/`manage_scene`/`manage_gameobject`/`manage_shader`/`manage_graphics`/`manage_vfx`/`manage_texture`/`manage_scriptable_object`/`execute_menu_item`/`refresh_unity`/`read_console`/`run_tests`/`manage_editor`/`set_active_instance`。
 - 握手/`tools/list`/`resources/read`(`mcpforunity://instances`、`mcpforunity://custom-tools`) 正常。服务端提示：先读 `mcpforunity://custom-tools` 看动态工具；多实例须 `set_active_instance`。**踩坑**：`Mcp-Session-Id` 响应头必须原样回传每个后续请求，否则报 `-32600 Session not found`（分多条 PowerShell 命令时 session 变量易丢，建议单条脚本内一气呵成握手+调用）。
 
+## manage_material / manage_asset 改材质颜色的坑（2026-08-09 实测）
+
+- **`manage_material(action=set_material_color)` 会把"任一分量>1"的颜色当 Color32 字节处理，整体除以 255（连 alpha 也除）**：给 HDR 颜色（如冰球核心 (2.5,4.5,6)）落盘变成 (0.0098,0.0176,0.0235, 0.0039)≈透明黑。HDR 材质颜色**不要用它**。
+- **`manage_asset(action=modify)` 对 .mat 的 shader 属性无效**：返回 "No applicable or modifiable properties found"。
+- **可靠做法 = `execute_code` 跑 C#**：`AssetDatabase.LoadAssetAtPath<Material>(路径)` → `mat.SetColor("_Xxx", new Color(...))` → `EditorUtility.SetDirty(mat)` → `AssetDatabase.SaveAssets()`（不 Save 则只改在编辑器内存，.mat 不落盘）。
+- 改完务必 Grep 磁盘 `.mat` 文件核对落盘值（如本次冰球材质 Mat_AttackModeVisual_RangedIceBall 火色→冰蓝）。
+
 ## Shader Graph 说明（重要）
 
 - **Unity MCP 无 Shader Graph 节点编辑工具**。`manage_shader` 仅是**手写 `.shader`(ShaderLab/HLSL) 文本 CRUD**(create/read/update/delete)，不碰 `.shadergraph` 节点图。`manage_material`/`manage_graphics`/`manage_vfx` 也非节点图编辑。

@@ -22,6 +22,11 @@ public partial class UIDialogSelectCreature : DialogView
 
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var listBackpackCreature = userData.GetUserBackpackCreatureData().listBackpackCreature;
+        //按过滤条件筛选可选魔物(FindAll生成新列表，不动背包原列表)
+        if (dialogSelectCreatureData.filterCreature != null)
+        {
+            listBackpackCreature = listBackpackCreature.FindAll(creature => dialogSelectCreatureData.filterCreature(creature));
+        }
         ui_UIViewCreatureCardList.SetData(listBackpackCreature, CardUseStateEnum.SelectCreature,OnCellChangeForSelectCreature);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForCardClickSelect);
         RefreshUI();

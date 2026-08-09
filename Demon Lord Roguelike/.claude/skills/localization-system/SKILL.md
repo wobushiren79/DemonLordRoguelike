@@ -38,10 +38,10 @@ Assets/Resources/JsonText/
 ├── Language_BuffInfo_en.txt            - BUFF名称描述（英文）
 ├── Language_ItemsInfo_cn.txt           - 道具名称（中文）
 ├── Language_ItemsInfo_en.txt           - 道具名称（英文）
-└── Language_{CfgName}_{lang}.txt       - 通用命名格式（lang ∈ cn/en/jp/kr/tw/de/fr/ru）
+└── Language_{CfgName}_{lang}.txt       - 通用命名格式（lang ∈ cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr）
 ```
 
-> ⚠️ **真实源是 Excel，不是 `.txt`**：`Language_{CfgName}_{lang}.txt` 都是从 **`excel_language[多语言_FrameWork].xlsx` 里与 `{CfgName}` 同名的工作表**导出的产物（每个工作表列：`id / content_{lang} / content_1_{lang} / remark`，lang 含 cn/en/jp/kr/tw/de/fr/ru 八种；`Language_UIText_*` 则来自 `excel_ui_text`）。**新增/修改文本必须改对应 Excel 工作表**，再用 ExcelEditorWindow 导出；只改 `.txt` 会在下次导出时被**覆盖丢失**。下文示例若直接写 `.txt` 仅为说明字段结构，落地务必同步 Excel 工作表。
+> ⚠️ **真实源是 Excel，不是 `.txt`**：`Language_{CfgName}_{lang}.txt` 都是从 **`excel_language[多语言_FrameWork].xlsx` 里与 `{CfgName}` 同名的工作表**导出的产物（每个工作表列：`id / content_{lang} / content_1_{lang} / remark`，lang 含 cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr 十二种）。**`Language_UIText_*` 也不例外**——它来自 excel_language 的 `UIText` 工作表（导出器只对文件名含 `excel_language` 的工作簿生成 `Language_{sheet}_{lang}.txt`）；`excel_ui_text[UI文本_FrameWork].xlsx` 只是 UIText 的 id 登记表（导出 `UIText.txt` + UITextBean，`content[language]` 列存的值=多语言 id），**新增 UI 文本两处都要加行**（excel_language 的 UIText 表加 8 语言内容 + excel_ui_text 加登记行），二者可能不同步（历史上 excel_ui_text 漏登记过 id）。注意 excel_language 的 UIText 工作表有历史遗留的**重复列**（`content_jp`~`content_ru` 出现两次），新增行两组列要填相同值。**新增/修改文本必须改对应 Excel 工作表**，再用 ExcelEditorWindow 导出；只改 `.txt` 会在下次导出时被**覆盖丢失**。下文示例若直接写 `.txt` 仅为说明字段结构，落地务必同步 Excel 工作表。
 
 ### 支持的语言
 
@@ -54,8 +54,21 @@ LanguageEnum
 ├── tw = 4    - 繁体中文
 ├── de = 5    - 德语
 ├── fr = 6    - 法语
-└── ru = 7    - 俄语
+├── ru = 7    - 俄语
+├── es = 8    - 西班牙语
+├── br = 9    - 巴西葡萄牙语
+├── pl = 10   - 波兰语
+└── tr = 11   - 土耳其语
 ```
+
+### 新增一种语言的完整流程（以 2026-08 新增 es/br/pl/tr 为例）
+
+1. **枚举**：`LanguageEnum` 末尾追加新值（**只能追加，禁止改已有值**，展示名数组 `languageShowNames` 顺序与之绑定）。
+2. **展示名**：`LanguageBeanPartial.cs` 的 `languageShowNames` 末尾追加 `简称/该语言自称`（如 `es/Español`、`br/Português (Brasil)`）。
+3. **Steam 映射**：`LanguageCfg.GetInitialLanguage()` 补充 Steam 语言串→新枚举的映射（见上文）。
+4. **Excel**：给 `excel_language` **全部工作表**加列——16 列结构的表加 `content_{lang}`，30 列结构的表加 `content_{lang}` 与 `content_1_{lang}`；元数据行（第 2 行类型 `string`、第 3 行中文描述）一并补齐。
+5. **导出**：ExcelEditorWindow 导出后自动生成 `Language_{sheet}_{lang}.txt`（导出器 `ExcelToJsonItemForLanguage` 按 `EnumExtension.GetEnumNames<LanguageEnum>()` 驱动，加完枚举即自动识别新列，无需改导出代码）。
+6. **字体**：主 UI 字体 `fusion-pixel-10px-monospaced-zh_hans SDF` 的回退链为 zh_hant→ko→ja→**latin**；`fusion-pixel-10px-monospaced-latin SDF` 已烘焙 Latin-1 + Latin Extended-A（西/葡/波/土特殊字符全覆盖），新增其他文字体系的语言时需先核对 SDF 字符表。
 
 ---
 
@@ -71,13 +84,15 @@ LanguageEnum
       ├─ schinese → cn   tchinese → tw   其他含 chinese → cn
       ├─ japanese → jp   koreana → kr
       ├─ german → de     french → fr     russian → ru
+      ├─ spanish/latam → es   brazilian/portuguese → br
+      ├─ polish → pl     turkish → tr
       └─ 其他（english / ...）→ en
 2. 未连上 Steam 或异常 → en
 ```
 
 ### 关键代码
 
-**[LanguageBeanPartial.cs](Assets/FrameWork/Scripts/Bean/MVC/LanguageBeanPartial.cs)** — 在 `LanguageCfg` 中提供 `GetInitialLanguage()` 和静态构造：
+**[LanguageBeanPartial.cs](Assets/FrameWork/Scripts/Bean/MVC/LanguageBeanPartial.cs)** — 在 `LanguageCfg` 中提供 `GetInitialLanguage()` 和静态构造（映射全表：schinese→cn、tchinese→tw、含 chinese→cn、japanese→jp、koreana→kr、german→de、french→fr、russian→ru、spanish/latam→es、brazilian/portuguese→br、polish→pl、turkish→tr，其余→en）：
 
 ```csharp
 public partial class LanguageCfg
@@ -113,6 +128,18 @@ public partial class LanguageCfg
                         return LanguageEnum.fr.GetEnumName();
                     if (steamLanguage.Equals("russian", StringComparison.OrdinalIgnoreCase))
                         return LanguageEnum.ru.GetEnumName();
+                    if (steamLanguage.Equals("spanish", StringComparison.OrdinalIgnoreCase))
+                        return LanguageEnum.es.GetEnumName();
+                    if (steamLanguage.Equals("latam", StringComparison.OrdinalIgnoreCase))
+                        return LanguageEnum.es.GetEnumName();
+                    if (steamLanguage.Equals("brazilian", StringComparison.OrdinalIgnoreCase))
+                        return LanguageEnum.br.GetEnumName();
+                    if (steamLanguage.Equals("portuguese", StringComparison.OrdinalIgnoreCase))
+                        return LanguageEnum.br.GetEnumName();
+                    if (steamLanguage.Equals("polish", StringComparison.OrdinalIgnoreCase))
+                        return LanguageEnum.pl.GetEnumName();
+                    if (steamLanguage.Equals("turkish", StringComparison.OrdinalIgnoreCase))
+                        return LanguageEnum.tr.GetEnumName();
                     return LanguageEnum.en.GetEnumName();
                 }
             }
@@ -417,7 +444,9 @@ string desc = data.description_language;
 
 ## 文本替换（动态参数）
 
-当文本中包含变量时使用文本替换功能：
+当文本中包含变量时使用文本替换功能。
+
+> ⭐ **强约定**：凡是「多语言文本里嵌入运行时数值」的场景，**一律优先使用本机制**（`TextReplaceEnum` 占位符 + `GetTextReplace`），**禁止** `string.Format("{0}")` 特判拼接、也**禁止**把数值写死进静态文本（调数值后 8 语言文本全部过期）。数值源须单一真实源（代码常量），UI 显示与实际逻辑引用同一常量。记忆：`feedback_text_replace_enum`。
 
 ### 定义带占位符的文本
 
@@ -472,8 +501,17 @@ TextReplaceEnum
 ├── HPRateLess        - 生命值低于百分比
 ├── RegainHPReceived  - 累计被治疗HP
 ├── RegainHPCast      - 累计施放治疗HP
-└── OnFieldTime       - 在场存活时间(秒)
+├── OnFieldTime       - 在场存活时间(秒)
+└── Value             - 通用数值占位（无专属语义枚举时的默认选择，如研究节点距离/冷却秒数）
 ```
+
+> **选键原则**：有语义占位的优先用语义占位（击杀→`KillNum`、秒→`Time_S`、百分比→`Percentage`），无合适语义时用通用 `Value`；都不合适再在 `TextReplaceEnum`（BaseGameEnum.cs）**追加**新枚举值（不改旧值）。同一数值可同时挂多个键（成就即把目标值同时挂 `{Name}` 与语义键，模板用哪个都能替换）。
+
+### 更多范例
+
+- **BUFF 描述**：`UIViewBuffShowItem` —— `content_language` 模板 + `{Percentage}`/`{Time_S}`/`{Value}` + 按前置条件追加 `{KillNum}` 等键。
+- **成就逐级描述**：`AchievementInfoBeanPartial.GetLevelDescription` —— 一条 `{Name}` 模板按等级替换目标值，省去逐级建文本。
+- **研究节点名称带待解锁数值**：`ResearchInfoBeanPartial.GetNameLanguageWithLevelDetail` —— 模板 `空格突进（距离{Value}）`/`突进冷却（{Value}秒）`，按「待解锁等级=min(当前+1,满级)」算数值替换，每级只显示要解锁那一级；数值源 `UserUnlockBean.SPACE_DASH_*` 常量（控制层同引用，单一真实源）。
 
 ---
 

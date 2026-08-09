@@ -16,7 +16,6 @@ Material:
   - _CORE_ON
   m_InvalidKeywords:
   - _LIT_ON
-  - _ROTATE_TIME_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
@@ -152,16 +151,17 @@ Material:
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _CoreColorCold: {r: 1.5, g: 0.2, b: 0.02, a: 1}
-    - _CoreColorHot: {r: 5, g: 3, b: 1, a: 1}
+    - _CoreColorCold: {r: 0.15, g: 0.7, b: 2.2, a: 1}
+    - _CoreColorHot: {r: 2.5, g: 4.5, b: 6, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _InstancedFlatGI: {r: 0, g: 0, b: 0, a: 0}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _RotateSpeed: {r: 0, g: 0, b: -360, a: 0}
-    - _SparkColorEnd: {r: 1.2, g: 0.15, b: 0.02, a: 1}
-    - _SparkColorStart: {r: 4, g: 2.2, b: 0.6, a: 1}
+    - _SparkColorEnd: {r: 0.2, g: 0.6, b: 1.8, a: 1}
+    - _SparkColorStart: {r: 2.2, g: 3.8, b: 5, a: 1}
     - _SparkVelocity: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+    - _VelocityWS: {r: 0, g: 0, b: 0, a: 0}
     - _VertexOffset: {r: 0, g: 0, b: 0, a: 0}
     - _VertexRotation: {r: 0, g: 0, b: 0, a: 0}
     - _VertexScaleXY: {r: 1, g: 1, b: 1, a: 1}

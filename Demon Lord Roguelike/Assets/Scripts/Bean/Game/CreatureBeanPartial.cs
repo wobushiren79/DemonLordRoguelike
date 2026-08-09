@@ -62,12 +62,16 @@ public partial class CreatureBean
     [NonSerialized]
     protected CreatureInfoBean _creatureInfo;
 
+    /// <summary>
+    /// 生物配置(按 creatureId 懒加载缓存)
+    /// <para>自校验: creatureId 会被中途改写(终焉议会转生直接赋值/对象池复用 SetData), 缓存 id 与当前 creatureId 不一致时重新解析, 避免沿用旧种类配置</para>
+    /// </summary>
     [Newtonsoft.Json.JsonIgnore]
     public CreatureInfoBean creatureInfo
     {
         get
         {
-            if(_creatureInfo == null)
+            if (_creatureInfo == null || _creatureInfo.id != creatureId)
             {
                 _creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
                 if(_creatureInfo == null)
@@ -83,14 +87,21 @@ public partial class CreatureBean
     [NonSerialized]
     protected CreatureModelBean _creatureModel;
 
+    /// <summary>
+    /// 生物模型配置(按 creatureInfo.model_id 懒加载缓存)
+    /// <para>自校验: 随 <see cref="creatureInfo"/> 联动失效, 模型 id 与当前种类配置不一致时重新解析, 避免沿用旧种类的 Spine 资源</para>
+    /// </summary>
     [Newtonsoft.Json.JsonIgnore]
     public CreatureModelBean creatureModel
     {
         get
         {
-            if (_creatureModel == null)
+            var info = creatureInfo;
+            if (info == null)
+                return null;
+            if (_creatureModel == null || _creatureModel.id != info.model_id)
             {
-                _creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
+                _creatureModel = CreatureModelCfg.GetItemData(info.model_id);
             }
             return _creatureModel;
         }

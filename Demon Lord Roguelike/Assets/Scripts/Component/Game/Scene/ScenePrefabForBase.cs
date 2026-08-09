@@ -204,6 +204,9 @@ public class ScenePrefabForBase : ScenePrefabBase
     #endregion
 
     #region 魔汁机
+    //魔汁机投料点(场景prefab中 Juicer/DropPoint 节点,首次使用时查找缓存)
+    protected Transform tfJuicerDropPoint;
+
     /// <summary>
     /// 刷新魔汁机:按魔汁机研究解锁(UnlockEnum.Juicer)显隐建筑;建筑上的交互碰撞体(命名 JuicerInteraction)随之启用/关闭
     /// </summary>
@@ -234,6 +237,120 @@ public class ScenePrefabForBase : ScenePrefabBase
         }
         AnimForBuildingShowItem(objBuildingJuicer.transform, -1f, timeForShow);
         await new WaitForSeconds(timeForShow);
+    }
+
+    /// <summary>
+    /// 获取魔汁机投料点世界坐标(Juicer/DropPoint 节点;节点缺失时兜底为建筑上方1米)
+    /// </summary>
+    protected Vector3 GetBuildingJuicerDropPosition()
+    {
+        if (tfJuicerDropPoint == null)
+        {
+            tfJuicerDropPoint = objBuildingJuicer.transform.Find("DropPoint");
+        }
+        if (tfJuicerDropPoint != null)
+        {
+            return tfJuicerDropPoint.position;
+        }
+        return objBuildingJuicer.transform.position + new Vector3(0, 1f, 0);
+    }
+
+    /// <summary>
+    /// 魔汁机抖动(魔物入机的吞入反馈):复用核心建筑吐出同款 PunchScale
+    /// </summary>
+    protected void BuildingJuicerPunch()
+    {
+        objBuildingJuicer.transform.localScale = Vector3.one;
+        objBuildingJuicer.transform.DOPunchScale(new Vector3(0.15f, -0.15f, 0.15f), 0.3f, 2, 0.5f);
+    }
+
+    /// <summary>
+    /// 动画-魔物投入魔汁机:临时Spine模型从机旁生成,DOJump跳入投料点(缩小+旋转+后半程淡出),入机瞬间机器抖动+入汁音效,播完销毁
+    /// </summary>
+    /// <param name="creatureData">投入的魔物数据</param>
+    /// <param name="actionForComplete">动画完成回调(可空)</param>
+    public void BuildingJuicerAnimForCreatureJumpIn(CreatureBean creatureData, Action actionForComplete = null)
+    {
+        Vector3 dropPosition = GetBuildingJuicerDropPosition();
+        float timeAnimJump = 0.75f;
+        //生成临时生物模型(复用容器素材生物模板)
+        var targetCreatureObj = Instantiate(gameObject, objVatMaterialCreature);
+        targetCreatureObj.SetActive(false);
+        SkeletonAnimation skeletonAnimation = targetCreatureObj.GetComponentInChildren<SkeletonAnimation>();
+        CreatureHandler.Instance.SetCreatureData(skeletonAnimation, creatureData, isNeedEquip: false, isNeedWeapon: false);
+        targetCreatureObj.SetActive(true);
+        //生成点:投料点旁随机一侧、上方0.3~0.5米
+        float randomX = UnityEngine.Random.Range(0, 2) == 0 ? -1f : 1f;
+        float randomY = UnityEngine.Random.Range(0.3f, 0.5f);
+        targetCreatureObj.transform.position = dropPosition + new Vector3(randomX, randomY, 0);
+        targetCreatureObj.transform.localScale = Vector3.one * 0.8f;
+        targetCreatureObj.transform.eulerAngles = new Vector3(0, 0, UnityEngine.Random.Range(0, 360));
+        //跳入投料点:跳跃+缩小+旋转+后半程淡出
+        Color startColor = Color.white;
+        Color endColor = new Color(1, 1, 1, 0);
+        var colorAnim = DOTween
+            .To(() => startColor, x => startColor = x, endColor, timeAnimJump / 2f)
+            .SetDelay(timeAnimJump / 2f)
+            .OnUpdate(() =>
+            {
+                skeletonAnimation.skeleton.SetColor(startColor);
+            });
+        Sequence itemJumpAnim = DOTween.Sequence();
+        itemJumpAnim.Append(targetCreatureObj.transform.DOJump(dropPosition, 0.8f, 1, timeAnimJump));
+        itemJumpAnim.Join(targetCreatureObj.transform.DOScale(Vector3.one * 0.2f, timeAnimJump));
+        itemJumpAnim.Join(targetCreatureObj.transform.DORotate(new Vector3(0, 0, 360), timeAnimJump, RotateMode.WorldAxisAdd));
+        itemJumpAnim.OnComplete(() =>
+        {
+            //入机瞬间:随机敲击音效(sound_knock_3/5)+机器抖动(吞入反馈)
+            AudioHandler.Instance.PlaySoundRandom(AudioEnum.sound_knock_3, AudioEnum.sound_knock_5);
+            BuildingJuicerPunch();
+            targetCreatureObj.gameObject.SetActive(false);
+            Destroy(targetCreatureObj);
+            actionForComplete?.Invoke();
+        });
+    }
+
+    /// <summary>
+    /// 动画-魔物跳出魔汁机:临时Spine模型从投料点向外弹出(放大+反转),弹出过程直接淡出,播完销毁
+    /// </summary>
+    /// <param name="creatureData">跳出的魔物数据</param>
+    /// <param name="actionForComplete">动画完成回调(可空)</param>
+    public void BuildingJuicerAnimForCreatureJumpOut(CreatureBean creatureData, Action actionForComplete = null)
+    {
+        Vector3 dropPosition = GetBuildingJuicerDropPosition();
+        float timeAnimJump = 0.75f;
+        //生成临时生物模型(复用容器素材生物模板)
+        var targetCreatureObj = Instantiate(gameObject, objVatMaterialCreature);
+        targetCreatureObj.SetActive(false);
+        SkeletonAnimation skeletonAnimation = targetCreatureObj.GetComponentInChildren<SkeletonAnimation>();
+        CreatureHandler.Instance.SetCreatureData(skeletonAnimation, creatureData, isNeedEquip: false, isNeedWeapon: false);
+        targetCreatureObj.SetActive(true);
+        //从投料点生成:初始缩小+随机朝向
+        targetCreatureObj.transform.position = dropPosition;
+        targetCreatureObj.transform.localScale = Vector3.one * 0.2f;
+        targetCreatureObj.transform.eulerAngles = new Vector3(0, 0, UnityEngine.Random.Range(0, 360));
+        //落点:投料点旁随机一侧(建筑根部上方0.2米)
+        float randomX = UnityEngine.Random.Range(0, 2) == 0 ? -1.2f : 1.2f;
+        Vector3 endPosition = new Vector3(dropPosition.x + randomX, objBuildingJuicer.transform.position.y + 0.2f, dropPosition.z);
+        //向外弹出:放大+反转,弹出过程直接淡出
+        Color startColor = Color.white;
+        Color endColor = new Color(1, 1, 1, 0);
+        var colorAnim = DOTween
+            .To(() => startColor, x => startColor = x, endColor, timeAnimJump)
+            .OnUpdate(() =>
+            {
+                skeletonAnimation.skeleton.SetColor(startColor);
+            });
+        Sequence itemJumpAnim = DOTween.Sequence();
+        itemJumpAnim.Append(targetCreatureObj.transform.DOJump(endPosition, 1.2f, 1, timeAnimJump));
+        itemJumpAnim.Join(targetCreatureObj.transform.DOScale(Vector3.one * 0.8f, timeAnimJump));
+        itemJumpAnim.Join(targetCreatureObj.transform.DORotate(new Vector3(0, 0, -360), timeAnimJump, RotateMode.WorldAxisAdd));
+        itemJumpAnim.OnComplete(() =>
+        {
+            targetCreatureObj.gameObject.SetActive(false);
+            Destroy(targetCreatureObj);
+            actionForComplete?.Invoke();
+        });
     }
     #endregion
 

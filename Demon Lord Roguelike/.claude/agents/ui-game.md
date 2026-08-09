@@ -47,7 +47,7 @@ watched_files:
 - **目标列表**：仅 Idle 且未满级（`RarityInfoCfg.GetAscendTimeByRarity(rarity) > 0`，即排除 L）。**默认排序**（`InitCreaturekDataForTarget` 内 `List.Sort`）：稀有度升序（N→L），同稀有度按等级降序。
 - **素材列表**：Idle + 排除目标 + 排除上阵（`UserDataBean.CheckIsInAnyLineup`）+ 仅保留稀有度**高于**目标的魔物；可选上限做成研究 `GetMaterialMax()`=`UserUnlock.GetUnlockCreatureVatMaterialMax()`（基础 `UserLimmitBean.creatureVatMaterialMax`=5 + `UnlockEnum.CreatureVatMaterialNum`(100000008) 研究等级,满级10），超出弹 Toast（文本 id 80011）。**默认排序**（`InitCreaturekDataForMaterial` 内 `List.Sort`）：目标**下一阶段稀有度**（=目标稀有度+1）置顶，其余按稀有度升序，同稀有度按等级降序（因素材只保留高于目标者，下一阶段即最低合格稀有度）。
 - **素材上限文本（LimmitText）**：`RefreshMaterialLimitText()` 显示「已选/上限」，达上限时数量转通用警示红（`ColorUtil.WrapLimitFull`）；在 `InitCreaturekDataForMaterial` 与素材选择变化时刷新。
-- **预定 BUFF 生成**：开始进阶时调用 `BuffUtil.CreateAscendRarityBuff(newRarity, materials)` 得到 `ascendBuff`（素材在 newRarity 槽位的 BUFF 按 id 聚合，每 id 提供 10%×数量 命中概率，命中继承并重随机数值≥素材原值，未命中回退通用随机；UR/L 无类型则为 null）。
+- **预定 BUFF 生成**：开始进阶时调用 `BuffUtil.CreateAscendRarityBuff(newRarity, materials)` 得到 `ascendBuff`（素材在 newRarity 槽位的 BUFF 按 id 聚合，每 id 提供 25%×数量 命中概率，命中继承并重随机数值≥素材原值，未命中回退通用随机；UR/L 无类型则为 null）。
 - **进阶详情 UI（AscendData，素材选择阶段展示）**：仅在「素材选择阶段（`userAscendDetails==null`）+ 已选目标」时显示 `ui_AscendData` 并隐藏 `ui_ProgressContent`（培养阶段反之）；统一在 `RefreshAscendData()` 切换，由 `RefreshVatState` 及目标选择事件触发。`ui_ProgressContent` 未在 Component 文件序列化，靠运行时 `AutoLinkUI` 按名绑定。
   - **升阶前/后卡牌**：`ui_UIViewCreatureCardItem_BeforeAscend/_AfterAscend` 用 `CardUseStateEnum.ShowNoPopup`（关闭 popup 详情）；After 卡用 `BuildAscendPreviewCreature(target, newRarity)`（值字段复制+稀有度+1，引用字段共享只读展示）。两卡 `PlayCardDropIn` 从上掉落 + OutBack 缩放（DOTween）。
   - **AscendIcon**：向右戳循环 Animator（`Assets/LoadResources/Anim/UI/UICreatureVatAscendIcon.controller`，动 `m_AnchoredPosition.x`）。

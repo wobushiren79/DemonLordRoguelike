@@ -1,6 +1,6 @@
 ---
 name: game-juicer
-description: 魔物回收(魔汁机/Juicer)系统开发：基地魔汁机建筑(ScenePrefabForBase.objBuildingJuicer 出现/解锁显隐)、E键场景交互(ControlInteractionEnum.JuicerInteraction 打开 UICreatureJuicer)、多选投入魔物榨汁UI(UICreatureJuicer 多选 listSelectCreature+Start，含 CV_Juicer 镜头/等级降序排序/投入数量门控/ui_LimmitText 计数)、榨汁逻辑(CreatureJuicerLogic 经 GameHandler.StartCreatureJuicer(List) 驱动，UI驱动+轻量Logic)、魔汁机镜头(CameraHandler.SetJuicerCamera→CV_Juicer)、投入数量上限(UserUnlockBean.GetUnlockJuicerCreatureMax=UserLimmitBean.juicerCreatureMax 基础5+UnlockEnum.JuicerNum 每级+1 满级15)、魔汁机研究解锁(UnlockEnum.Juicer=100600001 开启/JuicerNum=100600002 投入数量+1，excel_research_info/excel_unlock_info)。注意：榨汁流程(建筑动画/消耗魔物)与奖励结算目前为留桩，后续接入 CreatureJuicerLogic.StartJuice。
+description: 魔物回收(魔汁机/Juicer)系统开发：基地魔汁机建筑(ScenePrefabForBase.objBuildingJuicer 出现/解锁显隐)、E键场景交互(ControlInteractionEnum.JuicerInteraction 打开 UICreatureJuicer)、多选投入魔物榨汁UI(UICreatureJuicer 多选 listSelectCreature+Start，含 CV_Juicer 镜头/等级降序排序/投入数量门控/ui_LimmitText 计数)、选择/取消选择的魔物投入·跳出动画(ScenePrefabForBase.BuildingJuicerAnimForCreatureJumpIn/JumpOut，复用 objVatMaterialCreature 模板 DOJump 出入 Juicer/DropPoint 投料点，入机机器抖动+入汁音效)、榨汁逻辑(CreatureJuicerLogic 经 GameHandler.StartCreatureJuicer(List) 驱动，UI驱动+轻量Logic)、魔汁机镜头(CameraHandler.SetJuicerCamera→CV_Juicer)、投入数量上限(UserUnlockBean.GetUnlockJuicerCreatureMax=UserLimmitBean.juicerCreatureMax 基础5+UnlockEnum.JuicerNum 每级+1 满级15)、魔汁机研究解锁(UnlockEnum.Juicer=100600001 开启/JuicerNum=100600002 投入数量+1，excel_research_info/excel_unlock_info)。注意：榨汁流程(建筑动画/消耗魔物)与奖励结算目前为留桩，后续接入 CreatureJuicerLogic.StartJuice。
 tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Game/Logic/CreatureJuicerLogic.cs
@@ -50,6 +50,13 @@ watched_files:
 - 解锁即时出现：`IsBuildingShowUnlock` 与 `EventForUserAddUnlock` 的 switch 均已加 `case UnlockEnum.Juicer`（研究购买后触发出现动画）
 - 与祭坛/成就/终焉议会等设施同构，新增建筑相关表现照此区块（`#region 魔汁机`）补
 
+### 魔物投入/跳出动画（ScenePrefabForBase，`#region 魔汁机`）
+- **投料点**：场景 prefab 中 `Juicer/DropPoint` 空节点（本地 (0,1,0)，可在编辑器微调）；`GetBuildingJuicerDropPosition()` 查找缓存（`tfJuicerDropPoint`），节点缺失兜底建筑上方 1 米
+- `BuildingJuicerAnimForCreatureJumpIn(creatureData, actionForComplete=null)`：**投入动画**——复用 `objVatMaterialCreature` 模板实例化临时 Spine 模型（`CreatureHandler.SetCreatureData` 刷外观，无装备/武器），投料点旁随机一侧偏上生成（缩放0.8、随机Z角）→ `DOJump` 跳入投料点(0.75s) + 缩到0.2 + 转360° + 后半程淡出；入机瞬间 `PlaySoundRandom(sound_knock_3, sound_knock_5)` 随机敲击音效 + `BuildingJuicerPunch()` 机器抖动(吞入反馈) → 销毁。与升阶 `BuildingVatAnimForStart` 素材跳 vat 同套路
+- `BuildingJuicerAnimForCreatureJumpOut(creatureData, actionForComplete=null)`：**跳出动画（反向）**——投料点生成(缩放0.2) → `DOJump` 弹到机旁随机一侧(落点=建筑根部上方0.2米) + 放大回0.8 + 反转-360° + **弹出过程直接淡出** → 销毁（无音效）
+- `BuildingJuicerPunch()`：机器 PunchScale 抖动（仿核心建筑 `AnimForBuildingCoreSpit`，先重置 localScale=one）
+- 均为一次性临时实例、播完即毁，不跟踪持久实例；多选连点（上限15只）各自独立互不干扰，CloseUI 无需清理
+
 ### 场景交互（ControlForGameBase）
 - `ControlInteractionEnum.JuicerInteraction = 9`（提示文本 textId = 2000+9 = 2009 = "魔汁机"）
 - 交互物体命名必须为 `JuicerInteraction`（`GetInteractionEnum` 用 `Enum.TryParse` 取下划线前段匹配）
@@ -61,6 +68,7 @@ watched_files:
 - **镜头**：`OpenUI` 切 `CameraHandler.Instance.SetJuicerCamera(int.MaxValue,true)`(CV_Juicer,固定机位无 Follow) + `VolumeHandler.SetDepthOfFieldActive(false)`；`CloseUI` 还原 DoF=true(基地镜头由返回 UIBaseMain 统一还原)
 - 可投入魔物列表：背包内**空闲态(CreatureStateEnum.Idle)且未上阵(CheckIsInAnyLineup)** 的魔物；**默认按等级降序排序**(`listCreatureData.Sort((a,b)=>b.level.CompareTo(a.level))`)
 - **多选**（`listSelectCreature` List，再次点已选则移出；加入前判 `GetJuicerMax()` 上限，达上限弹 Toast 61012 拦截）；`OnCellChangeForTarget` 按 `Contains` 回填高亮
+- **选择/取消选择动画**：`EventForCardClickSelect` 里 Add 分支调 `scenePrefab.BuildingJuicerAnimForCreatureJumpIn(魔物)`（跳入投料点+机器抖动+随机敲击音效 sound_knock_3/5）、Remove 分支调 `BuildingJuicerAnimForCreatureJumpOut(魔物)`（弹出过程直接淡出）；`scenePrefab` 字段在 `OpenUI` 抓 `WorldHandler.GetCurrentScenePrefab<ScenePrefabForBase>(BaseGaming)`（与 UICreatureVat 同口径）
 - **投入上限**：`GetJuicerMax()`=`GetUnlockJuicerCreatureMax()`(基础5+JuicerNum 研究等级,满级15)；`RefreshLimitText()` 显示「已选/上限」,`ColorUtil.WrapLimitFull` 达上限转红
 - **卡片使用态复用 `CardUseStateEnum.CreatureAscendTarget` + `CardStateEnum.CreatureAscendSelect/NoSelect`**——预制体 `ui_UIViewCreatureCardList_Target` 挂的卡片变体是 `UIViewCreatureCardItemForCreatureAscend`
 - 选择走 `EventsInfo.UIViewCreatureCardItem_OnClickSelect` 事件（`this.RegisterEvent`）
@@ -101,7 +109,8 @@ watched_files:
 | 榨汁逻辑 | Assets/Scripts/Game/Logic/CreatureJuicerLogic.cs |
 | 榨汁 UI | Assets/Scripts/Component/UI/Game/CreatureJuicer/ (UICreatureJuicer + Component) |
 | 逻辑入口 | Assets/Scripts/Component/Handler/GameHandler.cs (`StartCreatureJuicer`) |
-| 建筑出现 | Assets/Scripts/Component/Game/Scene/ScenePrefabForBase.cs (`#region 魔汁机`) |
+| 建筑出现+投入/跳出动画 | Assets/Scripts/Component/Game/Scene/ScenePrefabForBase.cs (`#region 魔汁机`，含 BuildingJuicerAnimForCreatureJumpIn/JumpOut/BuildingJuicerPunch) |
+| 投料点节点 | BaseScene.prefab 中 `Juicer/DropPoint`(本地(0,1,0),编辑器可微调) |
 | E键交互 | Assets/Scripts/Component/Game/Control/ControlForGameBase.cs (`HandleForUseEUp`) |
 | 枚举 | Assets/Scripts/Enums/GameStateEnum.cs (`UnlockEnum.Juicer/JuicerNum` / `ControlInteractionEnum.JuicerInteraction`) |
 | 镜头 | Assets/Scripts/Component/Handler/CameraHandler.cs (`SetJuicerCamera`→CV_Juicer) |

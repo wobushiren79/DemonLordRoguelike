@@ -1,0 +1,1 @@
+[{"id":1,"content":"Sombrero"},{"id":2,"content":"Ropa"},{"id":3,"content":"Pantalones"},{"id":4,"content":"Zapatos"},{"id":5,"content":"Anillo de Nariz"},{"id":6,"content":"Anillo"},{"id":10,"content":"Arma"},{"id":101,"content":"Retrato"}]

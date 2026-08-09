@@ -1,0 +1,1 @@
+[{"id":1,"content":"HP"},{"id":2,"content":"MP"},{"id":3,"content":"DR"},{"id":4,"content":"ATK"},{"id":5,"content":"Vel. Movimiento"},{"id":6,"content":"Vel. Ataque"},{"id":7,"content":"Crítico"},{"id":8,"content":"Evasión"},{"id":9,"content":"CD Resurrección"},{"id":10,"content":"MPR"},{"id":11,"content":"MPF"}]

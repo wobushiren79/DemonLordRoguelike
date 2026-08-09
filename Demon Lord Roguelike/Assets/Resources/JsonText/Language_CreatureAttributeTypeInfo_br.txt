@@ -1,0 +1,1 @@
+[{"id":1,"content":"HP"},{"id":2,"content":"MP"},{"id":3,"content":"DR"},{"id":4,"content":"ATK"},{"id":5,"content":"Vel. de Movimento"},{"id":6,"content":"Vel. de Ataque"},{"id":7,"content":"Chance de Crítico"},{"id":8,"content":"Esquiva"},{"id":9,"content":"CD de Reviver"},{"id":10,"content":"MPR"},{"id":11,"content":"MPF"}]

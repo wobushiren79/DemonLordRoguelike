@@ -13,6 +13,8 @@ public partial class UICreatureJuicer : BaseUIComponent
     public List<CreatureBean> listSelectCreature = new List<CreatureBean>();
     //魔汁机摄像头(CV_Juicer,打开时切换)
     public CinemachineCamera juicerCamera;
+    //当前基地场景预制(投入/跳出动画作用于 scenePrefab.objBuildingJuicer)
+    public ScenePrefabForBase scenePrefab;
 
     #region 生命周期
     public override void OpenUI()
@@ -23,6 +25,8 @@ public partial class UICreatureJuicer : BaseUIComponent
         //切换魔汁机摄像头 + 关闭远景虚化(对准魔汁机建筑)
         juicerCamera = CameraHandler.Instance.SetJuicerCamera(int.MaxValue, true);
         VolumeHandler.Instance.SetDepthOfFieldActive(false);
+        //抓取当前基地场景预制(魔物投入/跳出动画作用在 objBuildingJuicer 上)
+        scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForBase>(GameSceneTypeEnum.BaseGaming);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForCardClickSelect);
         InitCreatureData();
         RefreshUI();
@@ -149,14 +153,16 @@ public partial class UICreatureJuicer : BaseUIComponent
     #region 事件
     /// <summary>
     /// 目标魔物选择(多选:再次点击已选魔物则移出;新增时超过投入上限则提示并拦截)
+    /// <para>选中:播魔物跳入魔汁机动画;取消:播魔物跳出魔汁机动画(作用于场景 objBuildingJuicer)</para>
     /// </summary>
     public void EventForCardClickSelect(UIViewCreatureCardItem selectItemView)
     {
         var selectCreatureData = selectItemView.cardData.creatureData;
         if (listSelectCreature.Contains(selectCreatureData))
         {
-            //再次点击已选魔物:移出投入列表
+            //再次点击已选魔物:移出投入列表 + 播跳出动画
             listSelectCreature.Remove(selectCreatureData);
+            scenePrefab.BuildingJuicerAnimForCreatureJumpOut(selectCreatureData);
         }
         else
         {
@@ -169,6 +175,8 @@ public partial class UICreatureJuicer : BaseUIComponent
             else
             {
                 listSelectCreature.Add(selectCreatureData);
+                //播投入动画(入机瞬间机器抖动+入汁音效)
+                scenePrefab.BuildingJuicerAnimForCreatureJumpIn(selectCreatureData);
             }
         }
         ui_UIViewCreatureCardList_Target.RefreshAllCard();

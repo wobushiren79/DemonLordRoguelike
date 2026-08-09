@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 public partial class ResearchInfoBean
 {
     public List<long> preUnlockIds;
@@ -106,6 +107,41 @@ public partial class ResearchInfoBean
     public ResearchInfoTypeEnum GetResearchType()
     {
         return (ResearchInfoTypeEnum)research_type;
+    }
+
+    /// <summary>
+    /// 获取带「待解锁等级数值详情」的研究名称(如 空格突进（距离1.5）/突进冷却（2.5秒）)
+    /// 仅对多语言模板含 {Value} 占位的节点生效(当前为空格突进 SpaceDash/突进冷却 SpaceDashCD),其余节点原样返回 name_language;
+    /// 数值取 待解锁等级=min(当前等级+1,满级) 对应的效果值——每级只显示当前要解锁那一级的距离/冷却。
+    /// 替换走多语言通用机制 TextHandler.GetTextReplace + TextReplaceEnum.Value(与成就 GetLevelDescription 同口径)。
+    /// </summary>
+    /// <param name="currentLevel">当前已解锁的研究等级</param>
+    /// <returns>填充数值后的研究名称</returns>
+    public string GetNameLanguageWithLevelDetail(int currentLevel)
+    {
+        string nameLanguage = name_language;
+        if (nameLanguage.IsNull() || !nameLanguage.Contains("{Value}"))
+            return nameLanguage;
+        //待解锁等级:未满级取下一级,满级停留在满级数值
+        int targetLevel = Mathf.Min(currentLevel + 1, level_max);
+        float detailValue;
+        if (unlock_id == (long)UnlockEnum.SpaceDash)
+        {
+            detailValue = UserUnlockBean.GetSpaceDashDistanceForLevel(targetLevel);
+        }
+        else if (unlock_id == (long)UnlockEnum.SpaceDashCD)
+        {
+            detailValue = UserUnlockBean.GetSpaceDashCDForLevel(targetLevel);
+        }
+        else
+        {
+            return nameLanguage;
+        }
+        var dicReplace = new Dictionary<TextReplaceEnum, string>
+        {
+            { TextReplaceEnum.Value, $"{detailValue}" },
+        };
+        return TextHandler.Instance.GetTextReplace(nameLanguage, dicReplace);
     }
 
     /// <summary>

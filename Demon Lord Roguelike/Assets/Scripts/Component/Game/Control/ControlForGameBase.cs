@@ -52,8 +52,8 @@ public class ControlForGameBase : BaseControl
     [Header("空格突进")]
     //突进耗时(秒):在此时长内快速移动完成,非瞬移
     public float dashDuration = 0.2f;
-    //每级突进的世界距离,总距离=研究等级*此值(1/2/3级=1.5/3/4.5单位)
-    public float dashDistancePerLevel = 1.5f;
+    //每级突进的世界距离,总距离=研究等级*此值(1/2/3级=1.5/3/4.5单位);默认引用 UserUnlockBean.SPACE_DASH_DISTANCE_PER_LEVEL(研究气泡文本亦引用该常量,保持单一真实源)
+    public float dashDistancePerLevel = UserUnlockBean.SPACE_DASH_DISTANCE_PER_LEVEL;
     //每级突进对应的残影数量,总数=研究等级*此值(1级3个,3级9个)
     public int dashGhostCountPerLevel = 3;
     //突进检测障碍/边界的球形半径

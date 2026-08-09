@@ -1,0 +1,1 @@
+[{"id":1,"content":"Chapéu"},{"id":2,"content":"Roupas"},{"id":3,"content":"Calças"},{"id":4,"content":"Sapatos"},{"id":5,"content":"Anel de Nariz"},{"id":6,"content":"Anel"},{"id":10,"content":"Arma"},{"id":101,"content":"Retrato"}]

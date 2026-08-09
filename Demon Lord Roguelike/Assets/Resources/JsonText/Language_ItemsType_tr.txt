@@ -1,0 +1,1 @@
+[{"id":1,"content":"Şapka"},{"id":2,"content":"Giysi"},{"id":3,"content":"Pantolon"},{"id":4,"content":"Ayakkabı"},{"id":5,"content":"Burun Halkası"},{"id":6,"content":"Yüzük"},{"id":10,"content":"Silah"},{"id":101,"content":"Portre"}]

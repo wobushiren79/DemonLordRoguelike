@@ -78,7 +78,8 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
     protected string GetBuffContentForPreview(CreatureAscendBuffChanceStruct chance)
     {
         if (chance.buffId <= 0)
-            return "随机生成一条该品质增益";
+            //随机增益兜底文案走多语言(UIText 4000020),统一术语「稀有度」
+            return TextHandler.Instance.GetTextById(4000020);
         var buffInfo = BuffInfoCfg.GetItemData(chance.buffId);
         if (buffInfo == null)
             return "???";

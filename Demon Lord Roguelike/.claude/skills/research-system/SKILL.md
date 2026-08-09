@@ -147,6 +147,12 @@ public ResearchInfoTypeEnum GetResearchType();
 // 获取指定等级的水晶价格
 // researchLevel 越界会被钳制到 [1, arrayPayCrystal.Length]
 public long GetPayCrystal(int researchLevel);
+
+// 获取带「待解锁等级数值详情」的研究名称(如 空格突进（距离1.5）/突进冷却（2.5秒）)
+// 仅对多语言模板含 {Value} 占位的节点生效(当前为 SpaceDash/SpaceDashCD),其余原样返回 name_language;
+// 数值取 待解锁等级=min(当前等级+1,level_max) 的效果值(每级只显示当前要解锁那一级),满级停留在满级数值;
+// 替换走通用机制 TextHandler.GetTextReplace + TextReplaceEnum.Value(与成就 GetLevelDescription 同口径)
+public string GetNameLanguageWithLevelDetail(int currentLevel);
 ```
 
 ### Cfg 扩展方法
@@ -251,8 +257,8 @@ public enum UnlockEnum : long
     DemonLordMPMax = 200300001,        // 魔王魔力上限+10/级(level_max=5)
     DemonLordMPF = 200400001,          // 魔王魔力恢复速度+1/秒/级(level_max=3)
     AbyssalBlessingRefreshNum = 200500001, // 深渊馈赠刷新次数(研究等级=单次征服run内可用刷新次数上限,level_max=5,新run自动回满)
-    SpaceDash = 200600001,             // 空格突进(基地控制,level_max=3;1/2/3级向朝向突进1/2/3距离单位)
-    SpaceDashCD = 200700001,           // 空格突进冷却缩减(子研究,前置=SpaceDash,level_max=4;默认3s每级-0.5最低1s)
+    SpaceDash = 200600001,             // 空格突进(基地控制,level_max=3;1/2/3级向朝向突进1/2/3距离单位;多语言文本含{Value}占位,气泡由 GetNameLanguageWithLevelDetail 动态填待解锁级距离)
+    SpaceDashCD = 200700001,           // 空格突进冷却缩减(子研究,前置=SpaceDash,level_max=4;默认3s每级-0.5最低1s;多语言文本含{Value}占位,气泡动态填待解锁级冷却)
     DemonLordAutoPickCrystal = 200800001,    // 魔王自动拾取魔晶(level_max=10;间隔=11-等级秒,10级10s→满级1s;每次按FIFO取场上最先掉落的魔晶,基础1颗;无前置,强化分支新根)
     DemonLordAutoPickCrystalNum = 200900001, // 魔王每次拾取魔晶数量+1(level_max=5;每次拾取数=1+等级;前置=DemonLordAutoPickCrystal)
     EquipRewardHuman = 300100301,      // 人类装备奖励
@@ -421,7 +427,9 @@ public float GetUnlockDropCrystalAddLifeTime();        // 魔晶掉落物额外�
 public float GetUnlockDemonLordMPMaxAddValue();        // 魔王魔力上限加成 = DemonLordMPMax 等级 × 10(未解锁0,满级+50)；在 CreatureBean.GetAttribute 的 MP 分支对 IsDemonLord() 叠加(战斗/基地同一口径)
 public float GetUnlockDemonLordMPFAddValue();          // 魔王魔力恢复速度加成 = DemonLordMPF 等级 × 1/秒(未解锁0,满级+3/s)；同上在 GetAttribute 的 MPF 分支叠加
 public int GetUnlockSpaceDashLevel();                  // 空格突进研究等级 = SpaceDash 等级(0=未解锁不可突进,1/2/3级=1/2/3距离单位)；由 ControlForGameBase 读取决定突进距离
-public float GetUnlockSpaceDashCD();                   // 空格突进冷却(秒) = 3 - SpaceDashCD 等级×0.5(未解锁3s,每级-0.5,满级最低1s)；由 ControlForGameBase 读取决定突进CD
+public float GetUnlockSpaceDashCD();                   // 空格突进冷却(秒) = GetSpaceDashCDForLevel(SpaceDashCD 等级)(未解锁3s,每级-0.5,满级最低1s)；由 ControlForGameBase 读取决定突进CD
+public static float GetSpaceDashDistanceForLevel(int level); // 指定空格突进等级的突进距离(世界单位) = 等级×SPACE_DASH_DISTANCE_PER_LEVEL(1.5,每级距离唯一真实源,ControlForGameBase.dashDistancePerLevel 默认值亦引用之)；供研究气泡文本填充
+public static float GetSpaceDashCDForLevel(int level);       // 指定突进CD等级的冷却(秒) = max(SPACE_DASH_CD_BASE(3) - 等级×SPACE_DASH_CD_PER_LEVEL(0.5), SPACE_DASH_CD_MIN(1))；供研究气泡文本填充
 public float GetUnlockDemonLordAutoPickCrystalInterval(); // 魔王自动拾取魔晶间隔(秒) = 11 - DemonLordAutoPickCrystal 等级(未解锁返回-1禁用,10级10s→满级1s)；由 GameFightLogic.UpdateGameForDefenseCore 读取驱动 PickupCrystalForCoreAuto
 public int GetUnlockDemonLordAutoPickCrystalCount();     // 魔王每次自动拾取魔晶数量 = 1 + DemonLordAutoPickCrystalNum 等级(基础1,满级6)；决定单次 PickupCrystalForCoreAuto 拾取颗数
 ```
@@ -586,7 +594,7 @@ public override void SetData(object data)
     int currentLevel = userUnlock.GetUnlockResearchLevelByResearchInfo(researchInfo);
     long payCrystal = researchInfo.GetPayCrystal(currentLevel + 1);
 
-    SetName(researchInfo.name_language);
+    SetName(researchInfo.GetNameLanguageWithLevelDetail(currentLevel)); // 名称含 {Value} 占位的节点(空格突进/突进冷却)动态填待解锁等级数值
     SetIcon(researchInfo.icon_res);
     SetPayCrystal(payCrystal);
     SetLevel(researchInfo.level_max, currentLevel);

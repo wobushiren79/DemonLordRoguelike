@@ -1,0 +1,1 @@
+[{"id":1,"content":"Deneme Üyesi"},{"id":2,"content":"Koltuklu Üye"},{"id":3,"content":"Genç Üye"},{"id":4,"content":"Yönetim Üyesi"},{"id":5,"content":"Kıdemli Üye"},{"id":6,"content":"İcra Üyesi"},{"id":7,"content":"Aksakallı Üye"},{"id":8,"content":"Sözcü Üye"},{"id":9,"content":"Baş Üye"},{"id":10,"content":"Yüce Sözcü"}]

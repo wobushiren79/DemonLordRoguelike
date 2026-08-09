@@ -2,7 +2,7 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-//阵容卡片特殊设置
+//阵容行卡片特殊设置(仅阵容行内使用,支持拖拽换位;阵容管理的生物列表请用 UIViewCreatureCardItemForLineupList)
 public partial class UIViewCreatureCardItemForLineup : UIViewCreatureCardItem, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     //是否正在拖拽(用于屏蔽拖拽结束瞬间误触发的点击移除)
@@ -11,22 +11,6 @@ public partial class UIViewCreatureCardItemForLineup : UIViewCreatureCardItem, I
     protected float dragOffsetX = 0f;
 
     #region 重写
-    /// <summary>
-    /// 刷新状态
-    /// </summary>
-    public override void RefreshCardState(CardStateEnum cardState)
-    {
-        base.RefreshCardState(cardState);
-        switch (cardState)
-        {
-            case CardStateEnum.LineupSelect:
-                ui_Mask.gameObject.SetActive(true);
-                break;
-            case CardStateEnum.LineupNoSelect:
-                break;
-        }
-    }
-
     /// <summary>
     /// 点击选择：拖拽结束瞬间不触发点击(否则会被当成点击移除)
     /// </summary>

@@ -600,7 +600,7 @@ PrefabInstance:
     - target: {fileID: 9021687495376944969, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
       propertyPath: tempCell
       value: 
-      objectReference: {fileID: 1365976485003238805, guid: a46ba17316a98fc4289e135a3e511a74, type: 3}
+      objectReference: {fileID: 1365976485003238805, guid: f07d9e912e5959247b28ea27f7bf203a, type: 3}
     - target: {fileID: 9021687495376944969, guid: 587ebc74d11881d48b211f9ec9e8c671, type: 3}
       propertyPath: cellSpaceX
       value: 10

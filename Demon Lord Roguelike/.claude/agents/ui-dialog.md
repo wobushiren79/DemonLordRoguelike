@@ -21,7 +21,7 @@ watched_files:
 - **UIDialogSelect** - 选择弹窗
 - **UIDialogSelectColor** - 颜色选择弹窗
 - **UIDialogSelectItem** - 道具选择弹窗
-- **UIDialogSelectCreature** - 生物选择弹窗
+- **UIDialogSelectCreature** - 生物选择弹窗（`DialogSelectCreatureBean`：`selectNumMax` 最大选择数量；`filterCreature`(Func<CreatureBean,bool>) 魔物过滤条件，返回 true 才进列表、为空不过滤——`SetData` 内用 `FindAll` 生成新列表，不动背包原列表。例：终焉议会降级/降稀有度议案分别过滤 `level<=0` / `rarity<=N` 的魔物）
 - **UIDialogRename** - 重命名弹窗
 - **UIDialogBossShow** - Boss 展示弹窗
 - **UIDialogCreatureShow** - 生物展示弹窗

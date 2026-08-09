@@ -50,13 +50,13 @@ public static class BuffUtil
     #region 进阶BUFF生成
     /// <summary>
     /// 进阶规则:每个素材BUFF id 的直接命中概率(百分点)= 本常量 × 该 id 在素材中出现的数量。
-    /// 生成(roll累加)与展示(概率列表)同口径,单点化避免两处魔法数 10 不一致。
+    /// 生成(roll累加)与展示(概率列表)同口径,单点化避免两处魔法数 25 不一致。
     /// </summary>
-    private const float AscendMaterialBuffRatePerCount = 10f;
+    private const float AscendMaterialBuffRatePerCount = 25f;
 
     /// <summary>
     /// 进阶规则:生成 newRarity 的一条BUFF。
-    /// <para>默认走通用随机;素材魔物在 newRarity 槽位的BUFF会按 buff id 聚合,每个 id 提供 10%×数量 的直接命中概率(decision: 按 buff id 判定同一)。</para>
+    /// <para>默认走通用随机;素材魔物在 newRarity 槽位的BUFF会按 buff id 聚合,每个 id 提供 25%×数量 的直接命中概率(decision: 按 buff id 判定同一)。</para>
     /// <para>命中某素材BUFF时,继承其 id 并按下限重随机数值(结果≥素材原数值);未命中则回退通用随机。</para>
     /// <para>newRarity 为 UR/L 等无对应BUFF类型时返回 null(只升稀有度不授BUFF)。</para>
     /// </summary>
@@ -72,7 +72,7 @@ public static class BuffUtil
         }
         //聚合素材在 newRarity 槽位的BUFF: buff id -> 命中统计(数量/数值下限)
         Dictionary<long, CreatureAscendMaterialBuffStruct> dicMaterialBuff = GetMaterialBuffStats(newRarity, materials);
-        //先按素材加成概率 roll(每个 id 10%×数量),命中则继承该BUFF
+        //先按素材加成概率 roll(每个 id 25%×数量),命中则继承该BUFF
         if (dicMaterialBuff != null && dicMaterialBuff.Count > 0)
         {
             float roll = Random.Range(0f, 100f);
@@ -149,7 +149,7 @@ public static class BuffUtil
 
     /// <summary>
     /// 按进阶BUFF生成规则,计算 newRarity 下各BUFF的命中概率(供孵化缸进阶详情实时展示)。
-    /// <para>与 <see cref="CreateAscendRarityBuff"/> 同口径:每个素材BUFF id 提供 10%×数量 的直接命中概率;</para>
+    /// <para>与 <see cref="CreateAscendRarityBuff"/> 同口径:每个素材BUFF id 提供 25%×数量 的直接命中概率;</para>
     /// <para>列表末尾追加一项"随机增益"(buffId=-1)表示剩余概率(100%-素材命中总和,走通用随机)。</para>
     /// <para>newRarity 无对应BUFF类型(N/UR/L)时返回空列表(只升稀有度不授BUFF,不展示任何增益)。</para>
     /// </summary>
@@ -165,7 +165,7 @@ public static class BuffUtil
         {
             return listChance;
         }
-        //素材命中:每个 buff id 提供 10%×数量 的概率
+        //素材命中:每个 buff id 提供 25%×数量 的概率
         float materialTotalRate = 0f;
         Dictionary<long, CreatureAscendMaterialBuffStruct> dicMaterialBuff = GetMaterialBuffStats(newRarity, materials);
         if (dicMaterialBuff != null)

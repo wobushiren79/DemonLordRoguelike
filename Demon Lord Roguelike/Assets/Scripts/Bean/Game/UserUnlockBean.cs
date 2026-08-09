@@ -548,13 +548,28 @@ public class UserUnlockBean
     public const float SPACE_DASH_CD_MIN = 1f;
 
     /// <summary>
+    /// 空格突进每级研究对应的世界距离：总突进距离=研究等级×此值(1/2/3级=1.5/3/4.5单位)。集中此处便于统一调整(控制系统与研究气泡文本均引用此值)。
+    /// </summary>
+    public const float SPACE_DASH_DISTANCE_PER_LEVEL = 1.5f;
+
+    /// <summary>
     /// 获取空格突进研究等级（UnlockEnum.SpaceDash，level_max=3）
-    /// 0=未解锁(不可突进)；1/2/3 级分别向朝向突进 1/2/3 个距离单位（每单位的世界距离由控制系统 dashDistancePerLevel 决定）
+    /// 0=未解锁(不可突进)；1/2/3 级分别向朝向突进 1/2/3 个距离单位（每单位的世界距离由 SPACE_DASH_DISTANCE_PER_LEVEL 决定）
     /// </summary>
     /// <returns>空格突进研究等级(0~3)，0=未解锁</returns>
     public int GetUnlockSpaceDashLevel()
     {
         return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.SpaceDash);
+    }
+
+    /// <summary>
+    /// 获取指定空格突进研究等级对应的突进距离(世界单位)：等级×SPACE_DASH_DISTANCE_PER_LEVEL
+    /// </summary>
+    /// <param name="level">空格突进研究等级</param>
+    /// <returns>该等级的突进距离(世界单位)</returns>
+    public static float GetSpaceDashDistanceForLevel(int level)
+    {
+        return level * SPACE_DASH_DISTANCE_PER_LEVEL;
     }
 
     /// <summary>
@@ -565,7 +580,17 @@ public class UserUnlockBean
     /// <returns>当前突进冷却时间(秒，范围 SPACE_DASH_CD_MIN ~ SPACE_DASH_CD_BASE)</returns>
     public float GetUnlockSpaceDashCD()
     {
-        float cd = SPACE_DASH_CD_BASE - GetUnlockResearchLeveByUnlockEnum(UnlockEnum.SpaceDashCD) * SPACE_DASH_CD_PER_LEVEL;
+        return GetSpaceDashCDForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.SpaceDashCD));
+    }
+
+    /// <summary>
+    /// 获取指定「突进CD」研究等级对应的突进冷却(秒)：SPACE_DASH_CD_BASE - 等级×SPACE_DASH_CD_PER_LEVEL，保底 SPACE_DASH_CD_MIN
+    /// </summary>
+    /// <param name="level">突进CD研究等级</param>
+    /// <returns>该等级的突进冷却(秒)</returns>
+    public static float GetSpaceDashCDForLevel(int level)
+    {
+        float cd = SPACE_DASH_CD_BASE - level * SPACE_DASH_CD_PER_LEVEL;
         return Mathf.Max(cd, SPACE_DASH_CD_MIN);
     }
 

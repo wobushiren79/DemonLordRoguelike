@@ -1,0 +1,1 @@
+[{"id":1,"content":"Nienawiść"},{"id":2,"content":"Neutralność"},{"id":3,"content":"Znajomość"},{"id":4,"content":"Przyjaźń"},{"id":5,"content":"Zauroczenie"}]

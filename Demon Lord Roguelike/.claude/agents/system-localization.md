@@ -31,10 +31,10 @@ watched_files:
 
 ### 默认语言初始化（Steam 优先）
 首次启动且无 GameConfig 存档时按以下规则决定语言：
-1. `SteamManager.Initialized == true` → `SteamApps.GetCurrentGameLanguage()`：`schinese`→`cn`、`tchinese`→`tw`、其他含 `chinese`→`cn`、`japanese`→`jp`、`koreana`→`kr`、`german`→`de`、`french`→`fr`、`russian`→`ru`，其余 → `en`
+1. `SteamManager.Initialized == true` → `SteamApps.GetCurrentGameLanguage()`：`schinese`→`cn`、`tchinese`→`tw`、其他含 `chinese`→`cn`、`japanese`→`jp`、`koreana`→`kr`、`german`→`de`、`french`→`fr`、`russian`→`ru`、`spanish`/`latam`→`es`、`brazilian`/`portuguese`→`br`、`polish`→`pl`、`turkish`→`tr`，其余 → `en`
 2. 未连上 Steam / 抛异常 → `en`
 
-语言枚举 `LanguageEnum`：`cn=0 / en=1 / jp=2 / kr=3 / tw=4 / de=5 / fr=6 / ru=7`（追加不改旧值，存档兼容）。玩家切换入口在主界面 UIMainStart 的语言选择列表（`UIViewLanguageItem`，文本格式 `cn/中文`，展示名见 `LanguageCfg.GetLanguageShowName`，顺序与 LanguageEnum 一致）；设置界面 UIGameSettingForGame 的语言下拉代码已注释。
+语言枚举 `LanguageEnum`：`cn=0 / en=1 / jp=2 / kr=3 / tw=4 / de=5 / fr=6 / ru=7 / es=8 / br=9(巴西葡萄牙语) / pl=10 / tr=11`（追加不改旧值，存档兼容）。玩家切换入口在主界面 UIMainStart 的语言选择列表（`UIViewLanguageItem`，文本格式 `cn/中文`，展示名见 `LanguageCfg.GetLanguageShowName`，顺序与 LanguageEnum 一致）；设置界面 UIGameSettingForGame 的语言下拉代码已注释。
 
 实现位置：[LanguageBeanPartial.cs](Assets/FrameWork/Scripts/Bean/MVC/LanguageBeanPartial.cs)（静态构造 + `GetInitialLanguage()`），[GameConfigBean.cs](Assets/FrameWork/Scripts/Bean/GameConfigBean.cs)（`GetLanguage()` 空串回退）。
 
@@ -55,7 +55,7 @@ TextManager 加载 Language_UIText_*.txt
 
 ## 约束
 
-- **真实源是 Excel，不是 `.txt`**：`Language_{CfgName}_{lang}.txt`（lang ∈ cn/en/jp/kr/tw/de/fr/ru）由 **`excel_language[多语言_FrameWork].xlsx` 中与 `{CfgName}` 同名工作表**导出（列 `id/content_{lang}/content_1_{lang}/remark`；`Language_UIText_*` 来自 `excel_ui_text`）。改文本**必须改对应 Excel 工作表**再导出——只改 `.txt` 会在下次导出被覆盖丢失
+- **真实源是 Excel，不是 `.txt`**：`Language_{CfgName}_{lang}.txt`（lang ∈ cn/en/jp/kr/tw/de/fr/ru）由 **`excel_language[多语言_FrameWork].xlsx` 中与 `{CfgName}` 同名工作表**导出（列 `id/content_{lang}/content_1_{lang}/remark`）。`Language_UIText_*` 同样来自 excel_language 的 `UIText` 工作表（导出器只对文件名含 `excel_language` 的工作簿生成 `Language_{sheet}_{lang}.txt`）；`excel_ui_text` 只是 UIText id 登记表（导出 `UIText.txt`+UITextBean），新增 UI 文本两处都要加行；UIText 工作表有重复的 `content_jp`~`content_ru` 列（历史遗留），新行两组填相同值。改文本**必须改对应 Excel 工作表**再导出——只改 `.txt` 会在下次导出被覆盖丢失
 - 多语言 key 统一放在 Excel 中管理，通过 ExcelEditorWindow 导出
 - 所有文本显示必须使用 UITextLanguageView 或通过 TextHandler 获取
 - 新增文本 key 需在 Excel 配置中添加
@@ -84,7 +84,9 @@ TextManager 加载 Language_UIText_*.txt
 
 ## 占位符替换 GetTextReplace（通用动态文本）
 
-文本里用 `{枚举名}` 占位符（枚举为 `TextReplaceEnum`，如 `{Name}`/`{KillNum}`/`{Time_H}`/`{Percentage}`），运行期用 `Dictionary<TextReplaceEnum,string>` 替换。两个重载，**区别关键**：
+> ⭐ **强约定**：多语言文本里嵌入运行时数值的场景**一律走本机制**，禁止 `string.Format("{0}")` 特判拼接、禁止把数值写死进静态文本；数值源须单一真实源（代码常量），UI 显示与实际逻辑引用同一常量（记忆：`feedback_text_replace_enum`）。
+
+文本里用 `{枚举名}` 占位符（枚举为 `TextReplaceEnum`，如 `{Name}`/`{KillNum}`/`{Time_H}`/`{Percentage}`/`{Value}`），运行期用 `Dictionary<TextReplaceEnum,string>` 替换。两个重载，**区别关键**：
 
 | 重载 | 取模板来源 | 用途 |
 |------|-----------|------|
@@ -101,4 +103,5 @@ string desc = TextHandler.Instance.GetTextReplace(template, dic); // "累计击�
 
 - **同一模板套不同数值**：把"一个成就多个等级目标"做成一条带 `{Name}` 的模板，按级替换即可（成就系统正是此用法）；省去逐级建文本。
 - 模板里写死的文案（数字、单位、"只生物"等）原样保留；字典给哪个键替换哪个占位符。
-- 范例：`UIViewBuffShowItem`（BUFF 描述 `content_language` + 多个占位符）、成就 `AchievementInfoBean.GetLevelDescription`。详见 [localization-system] skill。
+- **选键原则**：有语义占位优先语义占位（击杀 `{KillNum}`、秒 `{Time_S}`、百分比 `{Percentage}`），无合适语义用通用 `{Value}`，都不合适再在 `TextReplaceEnum` 追加新枚举（不改旧值）。
+- 范例：`UIViewBuffShowItem`（BUFF 描述 `content_language` + 多个占位符）、成就 `AchievementInfoBean.GetLevelDescription`、研究节点 `ResearchInfoBeanPartial.GetNameLanguageWithLevelDetail`（名称模板 `空格突进（距离{Value}）` 按待解锁等级动态填距离/冷却，数值源 `UserUnlockBean.SPACE_DASH_*` 常量）。详见 [localization-system] skill。

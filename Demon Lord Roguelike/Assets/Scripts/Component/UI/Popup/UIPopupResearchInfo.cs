@@ -17,7 +17,7 @@ public partial class UIPopupResearchInfo : PopupShowCommonView
         //获取支付金额
         long payCrystal = researchInfo.GetPayCrystal(currentLevel + 1);
 
-        SetName(researchInfo.name_language);
+        SetName(researchInfo.GetNameLanguageWithLevelDetail(currentLevel));
         SetIcon(researchInfo.icon_res);
         SetPayCrystal(payCrystal);
         SetLevel(researchInfo.level_max, currentLevel);

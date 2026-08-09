@@ -37,6 +37,7 @@ EditorWindow (Unity)
 ├── PixelArtPreviewWindow          # 像素图预览工具（多文件夹拖拽→Grid预览→点击Ping定位；虚拟滚动+AssetPreview异步缩略图）
 ├── StyleBaseWindow                # 样式基础窗口
 ├── GameTestEditor                 # 游戏测试编辑器 (Inspector扩展)
+├── GameBuildEditorWindow          # 打包游戏工具 (打包前 Spine 资源生成 + BuildPlayer)
 └── PixelDaEditorWindow            # PixelDa 像素美术生成 (AI 文生图/图编辑/图生视频/抽帧/音乐)
 ```
 
@@ -225,6 +226,19 @@ LauncherTest (Inspector)
 ### 添加新测试类型
 
 参见 [test-system skill](test-system/SKILL.md) 中的详细步骤。
+
+---
+
+## 打包游戏工具 (GameBuildEditorWindow)
+
+**文件**: `Assets/Editor/GameBuildEditorWindow.cs`，**菜单**: `游戏/打包游戏`
+
+### 功能
+
+- 打包前 3 个可勾选步骤（默认全勾选）：生成所有 Spine 道具图标 / 生成所有 Spine 皮肤图标 / 刷新所有图集 —— 均直接复用 `GameDataEditor` 的 public static 方法（`SpineAllItemInit`/`SpineAllSkinInit`/`RefreshAllAtlases`）。
+- 打包选项（均经 EditorPrefs 持久化）：开发包(Development)、允许脚本调试(AllowDebugging)、自动连接 Profiler(ConnectWithProfiler)、深度分析(EnableDeepProfilingSupport)、完成后自动运行(AutoRunPlayer)、完成后打开输出目录(ShowBuiltPlayer)。调试/Profiler/深度分析三个子选项依赖开发包，取消开发包时联动关闭并置灰。
+- 打包路径选择：默认为 git 仓库根的上级目录下 `DLR/`（从 `Application.dataPath` 向上找 `.git` 动态推导，找不到则退化为项目根上级目录），支持浏览修改与「重置为默认路径」，选择经 EditorPrefs 持久化。
+- 「开始打包」：先 `EnsureURPCompatibilityModeDefine` 确保当前平台带 `URP_COMPATIBILITY_MODE` 编译宏（Unity 6.3 起 URP 兼容模式被打包校验拦截，缺宏直接 BuildFailedException；缺宏时自动补宏并弹窗提示——补宏触发脚本重编译会中断本次打包，重编译完成后需重新点击「开始打包」）→ 自动切换到 `Assets/Scenes/GameScene.unity`（未保存修改弹保存提示、取消则中止；打包完成后自动切回原场景）→ 执行勾选步骤 → **固定只用 GameScene 打包**（不读 Build Settings 场景列表，避免日常挂的 TestScene 混进正式包）→ 按勾选项组装 `BuildOptions` → `BuildPipeline.BuildPlayer` 打到 `activeBuildTarget`（Windows 平台自动追加 `PlayerSettings.productName + ".exe"`），成功后打开产物目录（勾选 ShowBuiltPlayer 时由 Unity 打开，否则手动 `RevealInFinder`）。
 
 ---
 
@@ -426,6 +440,7 @@ public class InspectorMyComponent : Editor
 | 项目编辑器 | `Assets/Editor/` |
 | PixelDa 像素生成工具 | `Assets/FrameWork/Editor/Base/Window/PixelDa/` |
 | 游戏测试编辑器 | `Assets/Editor/GameTestEditor.cs` + `GameTestEditorPartial.cs` |
+| 打包游戏工具 | `Assets/Editor/GameBuildEditorWindow.cs` |
 | Excel 配置目录 | `Assets/Data/Excel/` |
 
 ---

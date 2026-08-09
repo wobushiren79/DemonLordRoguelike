@@ -81,6 +81,7 @@ watched_files:
 ### 议案展示：全部平铺，非随机
 `UIDoomCouncilBill.InitData` 取 `GetAllArrayData()` **全部**行，仅按 `unlock_id` 用 `userUnlock.CheckIsUnlock` 过滤后平铺（**无随机抽N/权重**）。
 - **默认议案 = `unlock_id` 留空/0**：`CheckIsUnlock(0)` 恒 true（约定0=无需解锁）→「默认就有」。当前默认议案：更多水晶/更多经验/**挑战更强的敌人**/**挑战更弱的敌人**。
+- **需研究解锁的议案**：重命名魔物/魔王(unlock 100200002/3) · 转生×7(unlock 300x00201) · **魔物等级下降/归0(unlock 100200005/6)** · **魔物稀有度下降/归0(unlock 100200007/8)**——后4条对应研究挂终焉议会设施分支(research_type=1) 100200001 下，"归0"研究前置为同族"下降1级"研究(100200006←100200005、100200008←100200007)。
 
 ### 提交与效果执行
 `UIViewDoomCouncilBillItem.OnClickForSubmit`：校验并扣 `cost_crystal`/`cost_reputation`(声望=`UserDataBean.reputation`, `CheckHasReputation`/`AddReputation`) → 二次确认 → `success_rate>=1` 直接 `userTempData.AddDoomCouncil`，否则 `GameHandler.StartDoomCouncil` 进议员投票，通过后才 `AddDoomCouncil`。`UserTempBean.AddDoomCouncil` 反射 `class_entity_name` 建实体；`TriggerFirst()` 返 true=立即型(不入列)，返 false=常驻 `listDoomCouncilEntity`。
@@ -92,6 +93,15 @@ watched_files:
 - 两条默认议案共用一个实体类，靠 `class_entity_data` 区分：`"2"`=翻倍强(通过率1/消耗声望1)、`"0.5"`=减半弱(通过率0.01/消耗声望100)。
 - `GetEnemyIntensityRate()` 解析 `class_entity_data`(不变区域性)返回倍率；`TriggerFirst` 返 false 常驻；`TriggerGameFightLogicEndGame` 在**征服模式**(`gameFightType==Conquer`)战斗结束时返 true 消耗移除。
 - 施加链路：`UserTempBean.GetEnemyIntensityRate()`(连乘所有在列议案) → `FightBeanForConquer.InitFightAttackData` 里 `intensityRate *= ...` → 敌人(含BOSS)生成时 `FightCreatureBean.RefreshBaseAttribute` 对 HP/护甲(DR)/攻击力(ATK) 整体相乘。**作用于下一整场征服 run 所有关卡+BOSS，run 结束消耗**（与「更多水晶/经验」同口径）。
+
+### 魔物等级/稀有度下降议案（`DoomCouncilEntityCreatureLevelDown` / `DoomCouncilEntityCreatureRarityDown`）
+- 两类各两条议案，靠 `class_entity_data` 区分：`"1"`=下降1级、`"0"`=归0（等级→0级；稀有度→N级即 `RarityEnum.N=1`）。四条均为 `success_rate=1`（直接通过不投票）、消耗声望1，且需对应研究解锁（unlock 100200005~100200008）。
+- 流程（立即型，`TriggerFirst` 返 true）：`CloseAllUI` → `ShowDialogSelectCreature` 选 1 只背包魔物（`listBackpackCreature`，不含魔王）→ 执行降级 → `SaveUserData()` + Toast → `BackDoomCouncilBill`；取消/空选直接 `BackDoomCouncilBill`。
+- **选择列表过滤**：经 `DialogSelectCreatureBean.filterCreature` 在弹窗 `SetData` 时筛掉已最低的魔物——等级议案 `creature.level > 0` 才进列表、稀有度议案 `creature.rarity > (int)RarityEnum.N` 才进列表（`UIDialogSelectCreature.SetData` 用 `FindAll` 生成新列表，不动背包原列表）。
+- **降级**（LevelDown）：`levelExp` 清零 + `creatureAttribute.dicAttributeLevelUp` 清空（已分配升级属性点供重新分配；`dicAttributeCreate` 创建时加成不动）。
+- **降稀有度**（RarityDown）：同步移除 `dicRarityBuff` 中 key 高于新稀有度档位的稀有度BUFF（与 `RandomRarityBuffForCreate` 逐级授予逻辑对称）。
+- 边界（兜底）：已最低的魔物正常已被 `filterCreature` 过滤不出现在列表；若目标仍已 0 级 / 已 N 级（如数据异常）则不生效，Toast(3000008/3000009) 提示后返回（声望不退，与重命名取消同口径）。
+- Toast 文本（UIText 表）：`3000006` 等级下降成功 · `3000007` 稀有度下降成功 · `3000008` 已是0级 · `3000009` 已是N级。
 
 ---
 
@@ -543,6 +553,8 @@ public List<DoomCouncilBean> GetRandomProposals(int count = 3)
 | 更多经验效果 | `Assets/Scripts/Game/DoomCouncil/DoomCouncilEntityMoreExp.cs` |
 | 转生效果 | `Assets/Scripts/Game/DoomCouncil/DoomCouncilEntityReincarnation.cs` |
 | 改名效果 | `Assets/Scripts/Game/DoomCouncil/DoomCouncilEntityRename.cs` |
+| 魔物等级下降/归0效果 | `Assets/Scripts/Game/DoomCouncil/DoomCouncilEntityCreatureLevelDown.cs` |
+| 魔物稀有度下降/归0效果 | `Assets/Scripts/Game/DoomCouncil/DoomCouncilEntityCreatureRarityDown.cs` |
 | 议会配置Bean | `Assets/Scripts/Bean/Game/DoomCouncilBean.cs` |
 | 议会战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForDoomCouncil.cs` |
 | 议会战斗模式 | `Assets/Scripts/Game/Logic/GameFightLogicDoomCouncil.cs` |
