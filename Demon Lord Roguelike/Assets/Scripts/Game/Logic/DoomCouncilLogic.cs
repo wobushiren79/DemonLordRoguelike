@@ -127,6 +127,12 @@ public class DoomCouncilLogic : BaseGameLogic
         await new WaitForSeconds(0.5f);
         //计算是否通过
         bool isPass = ayeVoteNum >= nayVoteNum ? true : false;
+        //投票通过: 议案效果入列生效(原流程漏接, 需投票的议案通过后从未实际入列)
+        if (isPass)
+        {
+            var userTempData = GameDataHandler.Instance.manager.GetUserData().GetUserTempData();
+            userTempData.AddDoomCouncil(doomCouncilData);
+        }
         //展示投票结果
         var voteEndUI = UIHandler.Instance.OpenUI<UIDoomCouncilVoteEnd>();
         voteEndUI.VoteEndShow(isPass);

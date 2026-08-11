@@ -54,6 +54,13 @@ public class UIPopupExample : PopupShowView
 }
 ```
 
+## UIPopupItemInfo 结构（道具信息气泡）
+
+[UIPopupItemInfo.cs](Assets/Scripts/Component/UI/Popup/ItemInfo/UIPopupItemInfo.cs) 的 `SetData` 依次调用 `SetNum` → `SetType` → `SetAttributes` → `SetJuiceExp`：
+
+- **魔汁经验行（JuiceExpText）**：prefab [UIPopupItemInfo.prefab](Assets/Resources/UI/Popup/UIPopupItemInfo.prefab) Details 节点下新增 `JuiceExpText`（复制 RarityText 而来，sibling index 1 即 RarityText 之后，默认 SetActive(false)）；Component 新增字段 `public TextMeshProUGUI ui_JuiceExpText;`（AutoLinkUI 按名绑定：字段名 ui_JuiceExpText → 子物体 JuiceExpText）。
+- **`SetJuiceExp(itemData, itemInfo)`**（SetData 末尾调用）：仅 `ItemTypeEnum.Juice`（魔汁）显示并填 textId **61017**「经验+{0}」格式化 `itemData.juicerExp`，其余道具隐藏；`ui_JuiceExpText` 为 null 时容错跳过（prefab 未配置该元素不报错）；魔汁 dicAttribute 为空故属性区自动隐藏，两者互斥不冲突。
+
 ## UIPopupPortalDetails 结构（传送门详情气泡）
 
 [UIPopupPortalDetails.cs](Assets/Scripts/Component/UI/Popup/UIPopupPortalDetails.cs) 继承 `PopupShowCommonView`，`SetData(object data)` 接收 `(GameWorldInfoBean, GameWorldInfoRandomBean, int difficultyLevel)` 三元组，展示某难度下传送门的预生成信息。已从早期「`transform.GetChild(index)` + `Find("Title"/"Content")` 手动拼装」重构为 **AutoLinkUI 按名绑定的详情项 + 道具缓存池**：

@@ -176,6 +176,18 @@ public class GameFightLogicConquer : GameFightLogic
             //基础奖励直接取进入传送门时预生成并冻结的这次奖励(UIPopupPortalDetails 预览=实领)
             var gameWorldInfoRandom = fightDataForConquer.gameWorldInfoRandomData;
             var baseReward = gameWorldInfoRandom.GetDifficultyReward(gameWorldInfoRandom.difficultyLevel);
+            //终焉议会「想要更多魔王装备/想要更多装备」议案在列: 通关基础奖励重生成全装备(仅影响实领, 传送门预览不同步); 魔王装备为严格上位, 同时在列时优先
+            var userTempData = GameDataHandler.Instance.manager.GetUserData().GetUserTempData();
+            if (userTempData.HasDoomCouncilMoreDemonLordEquip())
+            {
+                baseReward = RewardSelectBean.CreateRewardListForConquerAllEquip(fightDataForConquer.fightTypeConquerInfo, isAllDemonLord: true);
+                //追加件(奖励多多)也全部魔王化, 保证"全部都是魔王装备"
+                rewardSelectData.createEquipDemonLordRate = 1f;
+            }
+            else if (userTempData.HasDoomCouncilMoreEquip())
+            {
+                baseReward = RewardSelectBean.CreateRewardListForConquerAllEquip(fightDataForConquer.fightTypeConquerInfo);
+            }
             //深渊馈赠「奖励多多」：在预生成基础奖励之后追加额外奖励件数(领奖宝箱按奖励数量实时生成，自动多出对应宝箱)
             rewardSelectData.InitDataForReward(baseReward, fightDataForConquer.fightTypeConquerInfo, fightDataForConquer.rewardAddItemNum);
             //深渊馈赠「再来一瓶」：增加可选择奖励次数
@@ -321,6 +333,8 @@ public class GameFightLogicConquer : GameFightLogic
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UIHandler.Instance.ShowMask(1, null, () =>
         {
+            //征服run结束(输赢皆经此处): 显式分发议案EndGame消耗钩子(更多水晶/经验/敌人强度/更多装备等)——GameFightLogic.EndGame事件在征服流程不触发, 不能依赖它
+            userData.GetUserTempData().TriggerDoomCouncil(TriggerTypeDoomCouncilEntityEnum.GameFightLogicEndGame);
             //清理深渊馈赠数据
             BuffHandler.Instance.manager.ClearAbyssalBlessing();
             //存盘前还原阵容生物战斗状态(Fight/Rest → Idle)，避免中间状态写入存档导致阵容只剩1个

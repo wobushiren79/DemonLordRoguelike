@@ -78,6 +78,7 @@ UIRewardSelect (领奖界面)
   - `InitData(FightBean fightData, RewardSelectTestData testData = null)`：原签名不变。内部从 `(fightData as FightBeanForConquer)?.fightTypeConquerInfo` 取 `conquerInfo`；测试模式 `InitData(null, testData)` 行为不变。
   - `InitData(FightTypeConquerInfoBean conquerInfo)`：由征服配置直接生成（传送门预生成/预览用，与通关领奖同规则）。
   - `static List<ItemBean> CreateRewardListForConquer(FightTypeConquerInfoBean conquerInfo)`：生成一份奖励列表（传送门创建时预生成奖励即调此）。
+  - `static List<ItemBean> CreateRewardListForConquerAllEquip(FightTypeConquerInfoBean conquerInfo, bool isAllDemonLord = false)`：生成一份**全装备**奖励列表（`createEquipNum = createItemNum`，稀有度/解锁池/兜底魔晶等同规则；`isAllDemonLord=true` 时 `createEquipDemonLordRate` 拉满=**全魔王专属**）——终焉议会「想要更多装备/魔王装备」议案生效时通关领奖调此（见 [`doom-council-system`](../doom-council-system/SKILL.md)）。
   - `InitDataForReward(List<ItemBean> baseReward, FightTypeConquerInfoBean conquerInfo, int extraItemNum)`：用预生成的 `baseReward` 充当 `listReward`（预览=实领）；`baseReward` 为空则容错按 `conquerInfo` 即时生成；其后按 `extraItemNum` 追加装备道具（深渊馈赠「奖励多多」，`CreateItemEquip` 与首件同规则、生成不出装备时兜底魔晶）。**通关领奖走此入口。**
   - `static int GetConquerEquipPoolSign()` / `static List<long> GetUnlockCreatureModelIdsForEquip()`：装备奖励池「解锁签名」= 可生成装备的已解锁生物模型数量。解锁新魔物掉落（生物分支 `EquipReward*` 研究）后签名变化，传送门预生成奖励据此判定是否需重新生成。
   - `static ItemBean CreateEquipItemForReward(long itemId, int rarity, int userType = 0, int addAttributeOverride = -1)`：**装备奖励生成的单一真实源**（从 `CreateItemEquip` 抽出的核心两行）。按指定 `itemId`+`rarity` 生成一个装备道具，属性条数=品质、每条加点数取 `addAttributeOverride`（`<0` 时按 `RarityInfoCfg.GetItemData(rarity).equip_attribute_add`）。私有 `CreateItemEquip` 现复用它（传入已算好的 `addAttribute`/`userType`，行为不变）。供 GM/测试按「指定道具id+稀有度」直接发货（不走解锁生物模型池、不含魔王专属概率）——GM「添加道具」即遍历所有道具×每种稀有度调此。
@@ -99,6 +100,7 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 ```
 
 **通关领奖消费链（预览即实领）**：`GameFightLogicConquer.ActionForUIFightSettlementNext`（BOSS 关）→ `baseReward = gameWorldInfoRandomData.GetDifficultyReward(difficultyLevel)`（取传送门预生成并冻结的奖励）→ `rewardSelectData.InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`。其中：
+- 终焉议会「想要更多装备/魔王装备」议案在列时，`baseReward` 先被替换为 `CreateRewardListForConquerAllEquip(...)` 重生成的全装备列表——**仅影响实领，传送门预览不同步**。判定顺序：先 `HasDoomCouncilMoreDemonLordEquip()`（全魔王，`isAllDemonLord: true` 且该次领奖 `createEquipDemonLordRate=1` 让「奖励多多」追加件也全魔王），否则 `HasDoomCouncilMoreEquip()`（全装备）。
 - `baseReward` 直接成为 `listReward`，与传送门详情 `UIPopupPortalDetails` 预览的是同一份。
 - 深渊馈赠「奖励多多」额外件数 `rewardAddItemNum` 在基础奖励**之后**追加（追加内容为装备道具，与首件同规则、生成不出装备时兜底魔晶）。
 - 再 `selectNumMax += rewardAddSelectNum`（「再来一瓶」），并钳制 `selectNumMax = Min(selectNumMax, listReward.Count)`。

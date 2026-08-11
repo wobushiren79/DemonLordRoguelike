@@ -366,7 +366,12 @@ public partial class UICreatureManager : BaseUIComponent
     /// </summary>
     public void EventForItemBackpackClickSelect(UIViewItemBackpack targetView)
     {
-        SetCreatureEquip(targetView.itemData);
+        var itemData = targetView.itemData;
+        //魔汁走使用流程(确认弹窗→加经验),其余道具照旧走装备
+        if (itemData != null && itemData.GetItemType() == ItemTypeEnum.Juice)
+            UseJuiceItem(itemData);
+        else
+            SetCreatureEquip(itemData);
     }
 
     /// <summary>
@@ -375,6 +380,40 @@ public partial class UICreatureManager : BaseUIComponent
     public void EventForItemEquipClickSelect(UIViewItemEquip targetView)
     {
         UnloadCreatureEquip(targetView.itemTypeEnum);
+    }
+    #endregion
+
+    #region 魔汁使用
+    /// <summary>
+    /// 使用魔汁:对当前选中生物弹出确认框,确定后增加 levelExp 并消耗道具。
+    /// <para>经验只累计不自动升级(沿用战斗经验语义,升级仍走献祭);魔王/无选中生物兜底拦截(列表已隐藏魔汁),满级生物 Toast 拦截防浪费。</para>
+    /// </summary>
+    /// <param name="itemData">被点击的魔汁道具(经验值存 juicerExp 实例字段)</param>
+    public void UseJuiceItem(ItemBean itemData)
+    {
+        CreatureBean creatureData = ui_UIViewCreatureCardEquipDetails.creatureData;
+        if (creatureData == null || creatureData.IsDemonLord())
+            return;
+        if (creatureData.IsMaxLevel())
+        {
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61015), 0);
+            return;
+        }
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(61014), creatureData.creatureName, itemData.juicerExp);
+        dialogData.actionSubmit = (view, data) =>
+        {
+            var userData = GameDataHandler.Instance.manager.GetUserData();
+            //加经验 → 消耗魔汁 → 落盘
+            creatureData.levelExp += itemData.juicerExp;
+            userData.RemoveBackpackItem(itemData);
+            GameDataHandler.Instance.manager.SaveUserData();
+            //三连刷新:卡片详情(经验显示) + 献祭按钮(经验达标点亮) + 背包列表(魔汁移除)
+            ui_UIViewCreatureCardEquipDetails.SetCardDetails(creatureData);
+            RefreshSacrificeButton(creatureData);
+            InitBackpackItemsData();
+        };
+        UIHandler.Instance.ShowDialogNormal(dialogData);
     }
     #endregion
 }

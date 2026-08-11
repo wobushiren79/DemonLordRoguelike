@@ -144,6 +144,24 @@ public class RewardSelectBean
         rewardSelect.InitData(conquerInfo);
         return rewardSelect.listReward;
     }
+
+    /// <summary>
+    /// 由征服配置生成一份全装备奖励物品列表（终焉议会「想要更多装备/魔王装备」议案生效时用：装备件数=总件数，稀有度/解锁池等同规则，生成不出装备的位置兜底魔晶）
+    /// </summary>
+    /// <param name="conquerInfo">征服配置</param>
+    /// <param name="isAllDemonLord">是否全部转为魔王专属装备(「想要更多魔王装备」议案传true)</param>
+    /// <returns>奖励物品列表（全装备）</returns>
+    public static List<ItemBean> CreateRewardListForConquerAllEquip(FightTypeConquerInfoBean conquerInfo, bool isAllDemonLord = false)
+    {
+        RewardSelectBean rewardSelect = new RewardSelectBean();
+        //全装备化: 装备生成件数=道具总件数
+        rewardSelect.createEquipNum = rewardSelect.createItemNum;
+        //全魔王化: 魔王专属概率拉满
+        if (isAllDemonLord)
+            rewardSelect.createEquipDemonLordRate = 1f;
+        rewardSelect.InitData(conquerInfo);
+        return rewardSelect.listReward;
+    }
     #endregion
 
     #region 奖励生成

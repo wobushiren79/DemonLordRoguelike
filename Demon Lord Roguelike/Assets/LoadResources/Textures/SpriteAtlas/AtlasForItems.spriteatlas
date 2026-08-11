@@ -271,6 +271,7 @@ SpriteAtlas:
     - dc13cd7fbe22275428e00577adbc5a17: 21300000
     - 93eb3f7fa501867439b9fce73e09123e: 21300000
     - 7a1da08fb9b4240459c8841a47efd436: 21300000
+    - f90e0b8f3ac03a6428cd0152c96207b6: 21300000
     - ef471d9f1fe5d014c84454033635460f: 21300000
     - cf0b07afdb866b74caa47f0c0084c27f: 21300000
     - ceda86bf4af218a4db347dc2cd74235e: 21300000
@@ -500,6 +501,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: dc13cd7fbe22275428e00577adbc5a17, type: 3}
   - {fileID: 21300000, guid: 93eb3f7fa501867439b9fce73e09123e, type: 3}
   - {fileID: 21300000, guid: 7a1da08fb9b4240459c8841a47efd436, type: 3}
+  - {fileID: 21300000, guid: f90e0b8f3ac03a6428cd0152c96207b6, type: 3}
   - {fileID: 21300000, guid: ef471d9f1fe5d014c84454033635460f, type: 3}
   - {fileID: 21300000, guid: cf0b07afdb866b74caa47f0c0084c27f, type: 3}
   - {fileID: 21300000, guid: ceda86bf4af218a4db347dc2cd74235e, type: 3}
@@ -728,6 +730,7 @@ SpriteAtlas:
   - Skeleton_Atlas_Weapon_Weapon_R_16
   - Succubus_Atlas_Pants_Pants_1
   - Goblin_Atlas_Clothes_Clothes_1
+  - Item_Juicer_1
   - Succubus_Atlas_Weapon_Weapon_L_5
   - Slime_Atlas_Hat_Hat_3
   - Skeleton_Atlas_Pants_Pants_11

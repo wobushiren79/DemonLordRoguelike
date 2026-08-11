@@ -20,7 +20,7 @@ watched_files:
 ### 道具数据结构
 
 ```
-ItemBean          - 运行时道具实例数据（包含数量、品质、随机属性）
+ItemBean          - 运行时道具实例数据（包含数量、品质、随机属性、juicerExp 魔汁经验）
 ItemsInfoBean     - 道具配置数据（来自配置表）
 ItemsTypeBean     - 道具类型配置
 ```
@@ -28,7 +28,7 @@ ItemsTypeBean     - 道具类型配置
 ### 道具类型枚举
 
 ```csharp
-// 装备部位类型
+// 道具类型（1~10 为装备部位，11 起为消耗品等非装备类型）
 ItemTypeEnum
 ├── Hat = 1          // 帽子
 ├── Clothes = 2      // 衣服
@@ -36,7 +36,8 @@ ItemTypeEnum
 ├── Shoe = 4         // 鞋子
 ├── NoseRing = 5     // 鼻环
 ├── FingerRing = 6   // 指环
-└── Weapon = 10      // 武器
+├── Weapon = 10      // 武器
+└── Juice = 11       // 魔汁（消耗品，非装备，除魔王外所有生物可用）
 
 // 武器子类型
 ItemTypeWeaponEnum
@@ -64,6 +65,7 @@ ItemUserTypeEnum
 public enum ItemIdEnum
 {
     Crystal = 1,           // 魔晶
+    Juice = 200001,        // 魔汁（实例经验值存 ItemBean.juicerExp）
     // 新增道具ID
     NewItem = 100001,
 }
@@ -84,7 +86,7 @@ public enum ItemTypeEnum
 
 道具配置表字段（ItemsInfo）:
 - `id` - 道具唯一ID
-- `item_type` - 道具类型(1帽子 2衣服 3裤子 4鞋子 5鼻环 6戒指 10武器 1000魔晶)
+- `item_type` - 道具类型(1帽子 2衣服 3裤子 4鞋子 5鼻环 6戒指 10武器 11魔汁 1000魔晶)
 - `item_weapon_type` - 武器类型（仅武器有效）
 - `num_max` - 道具堆叠上限
 - `creature_model_id` - 生物模型ID（装备外观）
@@ -153,7 +155,19 @@ equip_items_weapon_type = 0        // 0表示可使用所有武器类型
 2. **种族模组匹配**：装备 `creature_model_id` 为 0 表示通用装备（任何种族可装）；否则须与生物 `model_id` 相等（如人类不能装备史莱姆专属装备）。
 3. **武器子类型匹配**（仅当道具为武器）：生物 `equip_items_weapon_type` 为 0 表示通配所有武器；否则须与武器 `item_weapon_type` 相等。
 
-> `UIViewItemBackpackList.FilterItems` 与 `UICreatureManager.SetCreatureEquip` 均走此统一入口，故列表展示与装备操作的资格判断一致，改判定只需改这两个 Partial。
+> `UIViewItemBackpackList.FilterItems` 与 `UICreatureManager.SetCreatureEquip` 均走此统一入口，故装备类道具的列表展示与装备操作资格判断一致，改判定只需改这两个 Partial。**例外**：FilterItems 额外放行魔汁（见下节），非装备类的展示规则不走 CanEquipItem。
+
+## 魔汁（Juice，首个消耗品类道具）
+
+道具类型不再只有装备部位：**魔汁是首个消耗品**（`ItemTypeEnum.Juice = 11`，紧随 Weapon=10；`ItemIdEnum.Juice = 200001`），由榨汁产出、对魔物使用加经验。
+
+- **实例字段 `ItemBean.juicerExp`**（long）：仅 Juice 类型有效，榨汁时按投入魔物等级汇总写入（产出端 `CreatureJuicerLogic.SettleJuiceReward`，详见 juicer-system）；旧存档无此字段 JSON 反序列化默认 0 兼容。
+- **配置行**：excel_items_info id=200001（item_type=11、`num_max=1` **不堆叠**——每个魔汁实例经验不同故不入堆、creature_model_id=0、icon_res=`Item_Juicer_1`——**无图集后缀走默认 Items 图集 AtlasForItems**（该图集按 Textures/Items 文件夹整包，图标 Item_Juicer_1.png 放该目录即自动入内，导入设置 textureType=8 Sprite）、name textId=200001、remark=魔汁(榨汁产物,对魔物使用后增加经验)）。入账走 `userData.AddBackpackItem(itemBean)` 不堆叠重载（每个魔汁是独立 ItemBean）。
+- **使用流程**（魔物管理页 `UICreatureManager`）：`EventForItemBackpackClickSelect` 点击分流——Juice 类型 → `UseJuiceItem(itemData)`（`#region 魔汁使用`），其余道具照旧 `SetCreatureEquip`。`UseJuiceItem`：无选中生物/魔王兜底返回（列表已隐藏魔汁）→ `IsMaxLevel()` 满级 Toast 61015「目标已满级，无法使用魔汁」拦截 → `UIHandler.ShowDialogNormal(DialogBean)` 确认框（content = textId 61014「是否对{0}使用魔汁？经验+{1}」格式化生物名+juicerExp）→ 确定回调：`creatureData.levelExp += juicerExp` → `RemoveBackpackItem` → `SaveUserData()` → 三连刷新（`ui_UIViewCreatureCardEquipDetails.SetCardDetails` 经验显示 + `RefreshSacrificeButton` 经验达标点亮献祭按钮 + `InitBackpackItemsData` 列表移除魔汁）。
+- **经验语义**：只累计 levelExp 不自动升级（沿用战斗结算加经验语义，升级仍走献祭 `CanUpLevel`/`UpLevelForSacrifice`）。
+- **列表过滤例外**：`UIViewItemBackpackList.FilterItems` 保留条件 = `creatureInfo.CanEquipItem` 或（`GetItemType()==Juice` 且 `!creatureData.IsDemonLord()`）——选中魔王时魔汁在管理页列表隐藏（魔王隐藏等级不吃经验），选普通魔物时可见；`UIDialogSelectItem` 传 creatureData=null 显示全部不受影响。
+- **气泡显示**：`UIPopupItemInfo.SetJuiceExp(itemData, itemInfo)`（SetData 末尾调用）——Juice 类型显示 `ui_JuiceExpText` 并填 textId 61017「经验+{0}」格式化 juicerExp，其余道具隐藏；字段经 AutoLinkUI 按名绑定（prefab Details 节点下 `JuiceExpText`，复制 RarityText 而来、sibling index 1、默认 SetActive(false)），为 null 时容错跳过；魔汁 dicAttribute 为空故属性区自动隐藏，两者互斥不冲突。
+- **相关配置**：LevelInfo 新增 `juicer_exp` 列（long，1~10 级 = 同级升级经验 100%：100/1000/5000/…/10000000；另有 id=0 行 juicer_exp=20=1 级的 20%）；excel_language UIText sheet 新增 61014/61015/61016/61017 四条文本（12 语种），ItemsInfo sheet 新增 id=200001「魔汁/Demon Juice…」。
 
 ## 背包管理
 

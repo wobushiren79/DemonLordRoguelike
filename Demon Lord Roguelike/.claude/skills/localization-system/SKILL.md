@@ -273,6 +273,7 @@ tmpText.text = TextHandler.Instance.GetTextById(1001);
 ```csharp
 public string GetTextById(string cfgName, long id, int contentIndex = 0)
 {
+    // 约定: textId=0 表示无文本, 静默返回空串(不报错)
     // contentIndex: 0 → content, 1 → content_1, 2 → content_2
 }
 ```
@@ -623,8 +624,9 @@ string text = TextHandler.Instance.GetTextByIdNoBreakingSpace("BuffInfo", 10001)
 ## 注意事项
 
 1. **文本ID唯一性**：同一配置表内的文本ID必须唯一，不同配置表可以重复
-2. **一个ID承载多条文本**：名称与详情应共用同一个ID（`content` / `content_1` / `content_2`，最多3条），通过 `GetTextById(..., contentIndex)` 区分，禁止默认就拆成两个独立ID（详见上方 ⚠️ 专章）
-3. **JSON格式**：多语言JSON文件必须使用UTF-8编码，确保中文正常显示
-4. **字段命名**：配置表中的文本字段名建议与多语言属性名对应（如`name`对应`name_language`）
-5. **延迟加载**：多语言文本是按需加载的，首次访问时会从JSON文件读取
-6. **编辑器预览**：在Editor中可以直接使用`UITextLanguageView`预览多语言效果
+2. **textId=0 保留为「无文本」约定**：`GetTextById` 对 id=0 静默返回空串，不报「没有找到文本」错误。不需要名字的字段（如议会随机议员的 `name`）应配 0，而不是指向不存在的行
+3. **一个ID承载多条文本**：名称与详情应共用同一个ID（`content` / `content_1` / `content_2`，最多3条），通过 `GetTextById(..., contentIndex)` 区分，禁止默认就拆成两个独立ID（详见上方 ⚠️ 专章）
+4. **JSON格式**：多语言JSON文件必须使用UTF-8编码，确保中文正常显示
+5. **字段命名**：配置表中的文本字段名建议与多语言属性名对应（如`name`对应`name_language`）
+6. **延迟加载**：多语言文本是按需加载的，首次访问时会从JSON文件读取
+7. **编辑器预览**：在Editor中可以直接使用`UITextLanguageView`预览多语言效果

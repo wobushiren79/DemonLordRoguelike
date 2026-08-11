@@ -21,6 +21,21 @@ public partial class UIPopupItemInfo : PopupShowCommonView
         SetNum(itemData, itemInfo);
         SetType(itemData, itemInfo);
         SetAttributes(itemData);
+        SetJuiceExp(itemData, itemInfo);
+    }
+
+    /// <summary>
+    /// 设置魔汁经验行:仅魔汁(ItemTypeEnum.Juice)显示「经验+X」,其余道具隐藏(魔汁无属性,属性区自动隐藏互斥)
+    /// </summary>
+    public void SetJuiceExp(ItemBean itemData, ItemsInfoBean itemInfo)
+    {
+        //prefab 未配置该元素时容错跳过(字段经 AutoLink 绑定)
+        if (ui_JuiceExpText == null)
+            return;
+        bool isJuice = itemInfo != null && itemInfo.GetItemType() == ItemTypeEnum.Juice;
+        ui_JuiceExpText.gameObject.SetActive(isJuice);
+        if (isJuice)
+            ui_JuiceExpText.text = string.Format(TextHandler.Instance.GetTextById(61017), itemData.juicerExp);
     }
 
     /// <summary>

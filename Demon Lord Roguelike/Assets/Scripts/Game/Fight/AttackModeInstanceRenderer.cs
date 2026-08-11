@@ -24,8 +24,8 @@ public partial class AttackModeInstanceRenderer
     #region 常量
     //Graphics.DrawMeshInstanced 单批矩阵上限(Unity 硬限制 1023)
     private const int MaxInstancesPerBatch = 1023;
-    //世界速度矢量的瞬移钳制倍率：帧差分速度超过「弹道理论速度 GetMoveSpeed × 本倍率」即判定为瞬移(SetPosition 跳位)，本帧速度取 0
-    //(留 1.5 倍余量是给抛物线弹的重力分量：其实际速度本就大于配置的水平速度，严格按 1 倍卡会把正常弹道误判成瞬移)
+    //世界速度矢量的瞬移钳制倍率：帧差分速度超过「弹道理论速度 GetMoveSpeed × 游戏速度 × 本倍率」即判定为瞬移(SetPosition 跳位)，本帧速度取 0
+    //(留 1.5 倍余量是给抛物线弹的重力分量：其实际速度本就大于配置的水平速度，严格按 1 倍卡会把正常弹道误判成瞬移；游戏速度因子另乘——2倍速不改 timeScale，真实速度本就翻倍)
     private const float VelocityClampRate = 1.5f;
     #endregion
 
@@ -258,8 +258,9 @@ public partial class AttackModeInstanceRenderer
         }
 
         //4) 收集：把每发弹道的位置矩阵填入对应桶缓冲，满批即刻绘制并清零；启用轨迹的弹道顺带采样+收集
-        //逐实例世界速度用的帧时长(只取一次)：暂停帧(deltaTime=0)时 CalculateVelocityWS 内部按 0 处理，不除零
+        //逐实例世界速度用的帧时长与游戏速度(各取一次)：暂停帧(deltaTime=0)时 CalculateVelocityWS 内部按 0 处理，不除零
         float deltaTime = Time.deltaTime;
+        float gameSpeed = GameFightLogic.GetCurrentGameSpeed();
         int count = listAttackMode == null ? 0 : listAttackMode.Count;
         for (int i = 0; i < count; i++)
         {
@@ -287,7 +288,7 @@ public partial class AttackModeInstanceRenderer
             //逐实例世界速度+种子(仅火球/冰球这类桶)：须在 count++ 前填，与本发矩阵同下标
             if (bucket.hasVelocity)
             {
-                bucket.velocityBuffer[bucket.count] = CalculateVelocityWS(itemAttackMode, deltaTime);
+                bucket.velocityBuffer[bucket.count] = CalculateVelocityWS(itemAttackMode, deltaTime, gameSpeed);
                 //种子直接复用每发随机自旋相位(0~360)：shader 侧 frac 只取小数部分，随机性原样保留，无需再加字段
                 bucket.seedBuffer[bucket.count] = itemAttackMode.spinPhase;
             }
@@ -384,7 +385,7 @@ public partial class AttackModeInstanceRenderer
     /// 故超过「理论速度 × <see cref="VelocityClampRate"/>」即判为瞬移、本帧速度取 0(退化成"火星挂在弹体上"仅一帧，不可察)。
     /// 速度为 0 的原地弹道(speed_move=0)同样返回 0——它本就不该有拖拽。</para>
     /// </summary>
-    private static Vector4 CalculateVelocityWS(BaseAttackMode attackMode, float deltaTime)
+    private static Vector4 CalculateVelocityWS(BaseAttackMode attackMode, float deltaTime, float gameSpeed)
     {
         Vector3 delta = attackMode.position - attackMode.lastRenderPosition;
         //基准无条件推进：即便本帧速度被判瞬移丢弃，也不能让基准停在旧位置(否则下一帧会把这段位移二次计入)
@@ -394,7 +395,8 @@ public partial class AttackModeInstanceRenderer
         if (deltaTime <= 0f || moveSpeed <= 0f)
             return Vector4.zero;
         Vector3 velocity = delta / deltaTime;
-        float maxSpeed = moveSpeed * VelocityClampRate;
+        //阈值须乘游戏速度：2倍速不改 timeScale、位移走 GetFightDeltaTime，真实速度即 GetMoveSpeed×gameSpeed，不乘会每帧误判瞬移、火星永远挂在弹体上
+        float maxSpeed = moveSpeed * VelocityClampRate * gameSpeed;
         //超速判瞬移(比较平方值，省一次开方)
         if (velocity.sqrMagnitude > maxSpeed * maxSpeed)
             return Vector4.zero;

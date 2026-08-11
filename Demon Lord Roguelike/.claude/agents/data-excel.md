@@ -79,9 +79,9 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 ### Excel 处理工具
 - **openpyxl**（Python）- 直接读写 xlsx 文件（唯一允许的库）
-- **ExcelUtil** - Unity 内 Excel 读取与转换工具（C#，Editor 环境）
+- **ExcelUtil** - Unity 内 Excel 读取与转换工具（C# 静态类，运行时程序集可直接调）：`GetExcelPackage`(EPPlus 读取)、`SetExcelData`(按 id+列名写单元格)、`ExcelToJsonItem`(单文件 Excel→Json 导出静态实现；`string` 重载用默认 JsonText 目录并刷新 AssetDatabase，供 TestNpcCreateGUI 等编辑器内工具保存后同步生成 JSON)
 - **EPPlus** - Unity Excel 处理库（Assets/FrameWork/Plugins/EPPlus/）
-- **ExcelEditorWindow** - Excel 编辑器窗口（导出 JSON）
+- **ExcelEditorWindow** - Excel 编辑器窗口（导出 JSON，单文件导出 `ExcelToJsonItem(FileInfo)` 转调 ExcelUtil 静态实现）
 
 ### 配置表位置
 - **原始 Excel**: `Assets/Data/Excel/`
@@ -145,7 +145,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_items_info[道具信息].xlsx` | ItemsInfo | 228 | id, item_type, item_weapon_type, num_max, creature_model_id, icon_res, attack_mode_data, name[language] （12列） |
+| `excel_items_info[道具信息].xlsx` | ItemsInfo | 229 | id, item_type, item_weapon_type, num_max, creature_model_id, icon_res, attack_mode_data, name[language] （12列）。200001=魔汁(item_type=11 新类型 Juice 消耗品[仅枚举,ItemsType 表无对应行],num_max=1 不堆叠每瓶经验独立,creature_model_id=0,icon_res=`Item_Juicer_1`[无图集后缀,走默认 Items 图集 AtlasForItems——该图集按 Textures/Items 文件夹整包,Item_Juicer_1.png 自动入内],榨汁产物:对魔物使用增加经验,经验值存 ItemBean.juicerExp 实例字段) |
 | `excel_items_type[道具类型].xlsx` | ItemsType | 10 | id, icon_res, name[language] |
 
 ---
@@ -169,7 +169,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 | `excel_abyssal_blessing_info[深渊馈赠信息].xlsx` | AbyssalBlessingInfo | 18 | id, icon_res, parent_id, level, buff_ids, name[language], details[language], remark, valid(0无效1有效,生成器据此过滤), max_count(一局最多获得次数,0=不限,仅 level<=0 生效) |
 | `excel_effect_info[粒子信息].xlsx` | EffectInfo | 21 | id, res_name, show_type, show_time, float/int/long/vector3/vector4_data |
 | `excel_game_world_info[游戏世界信息].xlsx` | GameWorldInfo | 4 | id, icon_res, unlock_id, unlock_id_infinite/conquer_difficulty_level/quick_attack/speed2, map_pos, name[language] |
-| `excel_level_info[等级信息].xlsx` | LevelInfo | 12 | id, level_exp, sacrifice_num, attribute_point(升级获得加点数,当前全等级配置5), CMP_rate(魔力召唤增加倍率,按等级递增) |
+| `excel_level_info[等级信息].xlsx` | LevelInfo | 11(0~10级) | id, level_exp(历史遗留 string 类型,用的地方 long.Parse), sacrifice_num, attribute_point(升级获得加点数,当前全等级配置5), CMP_rate(魔力召唤增加倍率,按等级递增), level_color(等级字体颜色,1~10级渐进色), juicer_exp(榨汁经验:被榨汁时按等级贡献的经验值,long,各行=本行 level_exp×100%;榨汁结算按投入魔物等级汇总产出魔汁道具) （7列）。⚠️ 含 id=0 兜底行:level_exp/sacrifice_num/attribute_point=0(实际不会被读到,升级读的是 level+1 行),CMP_rate=0/level_color=#FFFFFF(与原有 null 兜底行为一致),juicer_exp=20(=1级 level_exp 的20%) |
 | `excel_rarity_info[稀有度].xlsx` | RarityInfo | 8 | id, ui_board_color, buff_color, item_add_relationship, name[language], CMP_rate(魔力召唤增加倍率,N=0依次+0.5) |
 | `excel_research_info[研究信息].xlsx` | ResearchInfo | 83 | id, research_type, icon_res, level_max, position_x/y, unlock_id, pre_unlock_ids, pay_crystal, name[language] |
 | `excel_title_info[称号信息].xlsx` | TitleInfo | 15 | id, name[language] |

@@ -51,7 +51,7 @@ UICreatureManager(升级按钮) → GameHandler.StartCreatureSacrifice
   - `GetSacrificeSuccessRate` 内部读 `GetUnlockSacrificeDifferentIdRate()` 传入 `differentIdRate`
 
 ### 等级配置
-- **LevelInfo**(`level_exp` 升级经验 / `sacrifice_num` 祭品基础数量 / `attribute_point` 升级获得加点数,当前全等级配置5 / `CMP_rate` 魔力召唤倍率 / `level_color` 等级字体颜色,1~10级渐进色)；Bean 自动生成，扩展写 Partial。**`level_color` 当前临时放在 `LevelInfoBeanPartial.cs`(含 `LevelInfoCfg.GetLevelColor(level)` 取色,0级/无配置回退白色)，Excel 重新生成 Bean 后须删除临时字段**
+- **LevelInfo**(`level_exp` 升级经验,历史遗留 string 用的地方 long.Parse / `sacrifice_num` 祭品基础数量 / `attribute_point` 升级获得加点数,当前全等级配置5 / `CMP_rate` 魔力召唤倍率 / `level_color` 等级字体颜色,1~10级渐进色 / `juicer_exp` 榨汁经验:被榨汁时按等级贡献,各行=本行 level_exp×100%,榨汁结算用)；Bean 自动生成，扩展写 Partial。**`level_color`/`juicer_exp` 已随重新生成并入 `LevelInfoBean.cs`**，`LevelInfoBeanPartial.cs` 仅保留 `LevelInfoCfg.GetLevelColor(level)` 取色方法(0级/无配置回退白色)。**表内含 id=0 兜底行**：level_exp/sacrifice_num/attribute_point=0 实际不会被读到(升级读的是 level+1 行,献祭用法不受影响)，CMP_rate=0/level_color=#FFFFFF 与原有 null 兜底一致，juicer_exp=20(=1级 level_exp 的20%,0级生物被榨汁时的经验兜底)
 
 ### 升级加点（手动分配）
 - 献祭**升级成功后弹出 `UICreatureAddAttribute`** 让玩家手动加点(HP/护甲每点+10、攻击/攻速每点+1)，单点增量取 `CreatureUtil.GetAttributePointAddValue(type)`
@@ -62,7 +62,7 @@ UICreatureManager(升级按钮) → GameHandler.StartCreatureSacrifice
 ### UI
 - **UICreatureSacrifice** - 祭品选择、实时成功率显示、开始献祭；祭品选择上限走 `userData.GetUserUnlockData().GetUnlockSacrificeMax()`（基础 5 + `UnlockEnum.SacrificeNum=100100002` 研究等级，满级 15），不要再直接读 `limmitData.sacrificeMax`；成功率进度条按区间分5段变色（`GetSuccessRateColor` 现仅转发 `ColorUtil.GetProgressColor`：0-20红/20-40橙/40-60黄/60-80浅绿/80-100蓝，DOColor 0.5s 渐变；配色为 ColorUtil 单一真实源，与孵化缸进阶BUFF概率共用）
 - **UICreatureAddAttribute** - 升级加点界面(`Assets/Scripts/Component/UI/Game/CreatureAddAttribute/`)，献祭升级成功后弹出
-- **UICreatureManager** - `RefreshSacrificeButton`：解锁祭坛且未满级时显示；经验达标则正常，经验未达标则 `SetSacrificeButtonGray` 置灰但仍可点击（点击走 `OnClickForCreatureSacrifice`，`!CanUpLevel()` 时 ToastHintText(textId 61009「经验值未达到100%」) 拦截）。未解锁祭坛/无选中生物/已满级(`IsMaxLevel()`)/魔王(`IsDemonLord()`,隐藏等级不吃经验故不可献祭)则隐藏；`OnClickForCreatureSacrifice` 开头对魔王 `return` 兜底拦截
+- **UICreatureManager** - `RefreshSacrificeButton`：解锁祭坛且未满级时显示；经验达标则正常，经验未达标则 `SetSacrificeButtonGray` 置灰但仍可点击（点击走 `OnClickForCreatureSacrifice`，`!CanUpLevel()` 时 ToastHintText(textId 61009「经验值未达到100%」) 拦截）。未解锁祭坛/无选中生物/已满级(`IsMaxLevel()`)/魔王(`IsDemonLord()`,隐藏等级不吃经验故不可献祭)则隐藏；`OnClickForCreatureSacrifice` 开头对魔王 `return` 兜底拦截。背包道具点击 `EventForItemBackpackClickSelect` 对 `ItemTypeEnum.Juice`(=11) 类型分流到 `UseJuiceItem`（#region 魔汁使用：确认弹窗 textId 61014 → 选中生物 `levelExp+=juicerExp`+消耗道具+落盘；满级 Toast 61015 拦截；魔王/无选中兜底），其余道具照旧走装备 `SetCreatureEquip`
 
 ### 献祭相关研究（设施节点，前置均=开启献祭设施 Altar，level_max=10）
 - `UnlockEnum.SacrificeNum = 100100002`（水晶 1000~10000 每级+1000）提升祭品上限；衍生 `GetUnlockSacrificeMax()`。

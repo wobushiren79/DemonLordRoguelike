@@ -31,6 +31,10 @@ public partial class LevelInfoBean : BaseBean
 	///等级颜色
 	/// </summary>
 	public string level_color;
+	/// <summary>
+	///榨汁经验(被榨汁时按等级贡献的经验值)
+	/// </summary>
+	public long juicer_exp;
 }
 public partial class LevelInfoCfg : BaseCfg<long, LevelInfoBean>
 {

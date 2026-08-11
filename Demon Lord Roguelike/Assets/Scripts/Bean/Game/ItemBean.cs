@@ -13,6 +13,8 @@ public partial class ItemBean
     public int userType;
     //装备属性加成
     public Dictionary<CreatureAttributeTypeEnum, float> dicAttribute = new Dictionary<CreatureAttributeTypeEnum, float>();
+    //魔汁经验值(仅 ItemTypeEnum.Juice 类型有效,榨汁时按投入魔物等级汇总;旧存档无此字段默认0)
+    public long juicerExp;
 
     public ItemBean()
     {

@@ -19,6 +19,8 @@ public partial class UIPopupItemInfo
 
     public TextMeshProUGUI ui_ItemNum;
 
+    public TextMeshProUGUI ui_JuiceExpText;
+
     public RectTransform ui_AttributeContent;
 
 

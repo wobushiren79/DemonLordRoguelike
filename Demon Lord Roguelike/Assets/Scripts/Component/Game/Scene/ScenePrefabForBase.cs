@@ -219,6 +219,10 @@ public class ScenePrefabForBase : ScenePrefabBase
         if (isUnlockJuicer)
         {
             objBuildingJuicer.gameObject.SetActive(true);
+            //精华水滴保持隐藏(滴落演出时才显示)
+            InitBuildingJuicerProcessNodes();
+            if (objJuicerEssenceDrop != null)
+                objJuicerEssenceDrop.SetActive(false);
         }
         else
         {
@@ -351,6 +355,230 @@ public class ScenePrefabForBase : ScenePrefabBase
             Destroy(targetCreatureObj);
             actionForComplete?.Invoke();
         });
+    }
+
+    //——榨汁流程(锤子砸击/血液/瓶子/精华滴落)——
+    //流程节点是否已初始化(节点查找+原始缩放缓存只做一次)
+    protected bool isInitJuicerProcessNodes = false;
+    //锤子(榨汁时3秒内落下3次再升起)
+    protected Transform tfJuicerHammer;
+    //血液(首锤落下后显示,整个榨汁流程结束隐藏)
+    protected GameObject objJuicerBlood;
+    //血液粒子(JuicerHammer/JuicerBlood/JuicerBloodPS,循环常开,随血液显示自动播放)
+    protected ParticleSystem psJuicerBlood;
+    //血液喷溅粒子(场景预制 Juicer/JuicerBloodPS 节点,锤子每次锤中时播放)
+    protected ParticleSystem psJuicerBloodSplash;
+    //接精华的瓶子(开始榨汁后显示)
+    protected GameObject objJuicerBottle;
+    //瓶内液体 JuicerBottle/Juicer(精华落入瓶子前隐藏)
+    protected GameObject objJuicerLiquid;
+    //滴嘴(锤子升起后镜头聚焦点,精华滴落起点)
+    protected Transform tfJuicerHole;
+    //瓶子/液体原始缩放(弹出动画播完还原用)
+    protected Vector3 scaleJuicerBottleOriginal = Vector3.one;
+    protected Vector3 scaleJuicerLiquidOriginal = Vector3.one;
+    //精华水滴(场景预制 Juicer/JuicerEssenceDrop 节点,大小/贴图在编辑器调好;默认隐藏,滴落演出时复用)
+    protected GameObject objJuicerEssenceDrop;
+    //精华水滴原始缩放(预制上调好的" full 大小",动画 0→此值)
+    protected Vector3 scaleJuicerEssenceDropOriginal = Vector3.one;
+
+    /// <summary>
+    /// 初始化榨汁流程节点:懒查找 锤子/血液/瓶子/液体/滴嘴 并缓存瓶子与液体的原始缩放(只做一次)
+    /// </summary>
+    protected void InitBuildingJuicerProcessNodes()
+    {
+        if (isInitJuicerProcessNodes)
+            return;
+        isInitJuicerProcessNodes = true;
+        tfJuicerHammer = objBuildingJuicer.transform.Find("JuicerHammer");
+        if (tfJuicerHammer != null)
+            objJuicerBlood = tfJuicerHammer.Find("JuicerBlood")?.gameObject;
+        if (objJuicerBlood != null)
+            psJuicerBlood = objJuicerBlood.GetComponentInChildren<ParticleSystem>(true);
+        var tfJuicerBloodSplash = objBuildingJuicer.transform.Find("JuicerBloodPS");
+        if (tfJuicerBloodSplash != null)
+        {
+            psJuicerBloodSplash = tfJuicerBloodSplash.GetComponent<ParticleSystem>();
+            //防止 playOnAwake 在建筑出现时就喷一次(喷溅只允许锤击触发)
+            if (psJuicerBloodSplash != null)
+                psJuicerBloodSplash.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+        var tfJuicerBottle = objBuildingJuicer.transform.Find("JuicerBottle");
+        if (tfJuicerBottle != null)
+        {
+            objJuicerBottle = tfJuicerBottle.gameObject;
+            scaleJuicerBottleOriginal = tfJuicerBottle.localScale;
+            var tfJuicerLiquid = tfJuicerBottle.Find("Juicer");
+            if (tfJuicerLiquid != null)
+            {
+                objJuicerLiquid = tfJuicerLiquid.gameObject;
+                scaleJuicerLiquidOriginal = tfJuicerLiquid.localScale;
+            }
+        }
+        tfJuicerHole = objBuildingJuicer.transform.Find("JuicerHole");
+        var tfJuicerEssenceDrop = objBuildingJuicer.transform.Find("JuicerEssenceDrop");
+        if (tfJuicerEssenceDrop != null)
+        {
+            objJuicerEssenceDrop = tfJuicerEssenceDrop.gameObject;
+            scaleJuicerEssenceDropOriginal = tfJuicerEssenceDrop.localScale;
+        }
+        //关键节点缺失时打点(流程会自动降级跳过对应演出)
+        if (tfJuicerHammer == null || objJuicerBottle == null || tfJuicerHole == null || objJuicerEssenceDrop == null)
+            LogUtil.LogError($"[魔汁机] 榨汁流程节点缺失:锤子={tfJuicerHammer != null} 瓶子={objJuicerBottle != null} 滴嘴={tfJuicerHole != null} 水滴={objJuicerEssenceDrop != null}");
+    }
+
+    /// <summary>
+    /// 获取魔汁机滴嘴节点(榨汁后段镜头聚焦用)
+    /// </summary>
+    public Transform GetBuildingJuicerHole()
+    {
+        InitBuildingJuicerProcessNodes();
+        return tfJuicerHole;
+    }
+
+    /// <summary>
+    /// 榨汁流程开始:锤子归位+血液隐藏(首锤落下后才显示)+瓶子弹出显示(液体保持隐藏,待精华落入)
+    /// </summary>
+    public void BuildingJuicerProcessBegin()
+    {
+        InitBuildingJuicerProcessNodes();
+        //锤子归位(待机在上,localY=0)
+        if (tfJuicerHammer != null)
+        {
+            tfJuicerHammer.DOKill();
+            tfJuicerHammer.localPosition = Vector3.zero;
+        }
+        //血液隐藏(首锤落下后显示)
+        objJuicerBlood?.SetActive(false);
+        //瓶子弹出显示,液体隐藏(精华未落入瓶子前不显示)
+        if (objJuicerBottle != null)
+        {
+            objJuicerBottle.SetActive(true);
+            objJuicerBottle.transform.DOKill();
+            objJuicerBottle.transform.localScale = Vector3.zero;
+            objJuicerBottle.transform.DOScale(scaleJuicerBottleOriginal, 0.3f).SetEase(Ease.OutBack);
+        }
+        if (objJuicerLiquid != null)
+        {
+            objJuicerLiquid.transform.DOKill();
+            objJuicerLiquid.transform.localScale = scaleJuicerLiquidOriginal;
+            objJuicerLiquid.SetActive(false);
+        }
+        //精华水滴隐藏(滴落演出时才显示)
+        if (objJuicerEssenceDrop != null)
+        {
+            objJuicerEssenceDrop.transform.DOKill();
+            objJuicerEssenceDrop.transform.localScale = scaleJuicerEssenceDropOriginal;
+            objJuicerEssenceDrop.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// 动画-榨汁锤子:3秒内落下3次再升起(每次:加速砸落0→-1.5→触底停顿→缓慢抬起,重物砸落感);
+    /// 首锤落下后显示血液,每锤播放血液喷溅粒子+机器抖动+砸击音效+镜头震动
+    /// </summary>
+    public async Task BuildingJuicerAnimForHammer()
+    {
+        InitBuildingJuicerProcessNodes();
+        if (tfJuicerHammer == null)
+            return;
+        //单次节奏合计1秒(×3次=3秒):砸落0.2(加速,重物坠地)+触底停0.25+抬起0.45(缓慢,重物感)+顶点停0.1
+        float timeSlam = 0.2f;
+        float timeHoldDown = 0.25f;
+        float timeLift = 0.45f;
+        float timeHoldUp = 0.1f;
+        for (int i = 0; i < 3; i++)
+        {
+            //砸落:0→-1.5,加速曲线模拟重物落下
+            await tfJuicerHammer.DOLocalMoveY(-1.5f, timeSlam).SetEase(Ease.InQuad).AsyncWaitForCompletion();
+            //首锤落下后显示血液(循环喷血常开),每锤播放血液喷溅粒子(喷溅与砸击同步)
+            if (i == 0)
+                objJuicerBlood?.SetActive(true);
+            if (psJuicerBloodSplash != null)
+            {
+                psJuicerBloodSplash.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                psJuicerBloodSplash.Play(true);
+            }
+            //砸击反馈:机器抖动+随机打击音+镜头震动
+            BuildingJuicerPunch();
+            AudioHandler.Instance.PlaySoundRandom(AudioEnum.sound_hit_1, AudioEnum.sound_hit_3);
+            CameraHandler.Instance.ShakeJuicerCamera();
+            await new WaitForSeconds(timeHoldDown);
+            //抬起:-1.5→0,缓慢上抬(重物被拉起)
+            await tfJuicerHammer.DOLocalMoveY(0f, timeLift).SetEase(Ease.OutQuad).AsyncWaitForCompletion();
+            await new WaitForSeconds(timeHoldUp);
+        }
+    }
+
+    /// <summary>
+    /// 动画-精华滴落:复用预制水滴节点(JuicerEssenceDrop,大小/贴图编辑器调好)在滴嘴处由小变大孕育成滴(荒野之息式吸水滴)→
+    /// 脱离滴嘴加速坠入瓶(轻微拉长)→溅落瞬间水滴压扁隐藏+瓶内液体弹出显示+滴水音+瓶子抖动
+    /// </summary>
+    public async Task BuildingJuicerAnimForEssenceDrop()
+    {
+        InitBuildingJuicerProcessNodes();
+        if (tfJuicerHole == null || objJuicerBottle == null || objJuicerLiquid == null)
+            return;
+        //水滴节点缺失兜底:直接显示液体
+        if (objJuicerEssenceDrop == null)
+        {
+            objJuicerLiquid.SetActive(true);
+            return;
+        }
+        //落点:瓶内液体位置(瓶口中心)
+        Vector3 positionLand = objJuicerLiquid.transform.position;
+        //水滴就位:移到滴嘴处从零缩放开始(大小/贴图沿用预制配置)
+        Transform tfDrop = objJuicerEssenceDrop.transform;
+        tfDrop.DOKill();
+        tfDrop.position = tfJuicerHole.position;
+        tfDrop.localScale = Vector3.zero;
+        objJuicerEssenceDrop.SetActive(true);
+        //孕育:由小变大(表面张力膨胀感)
+        await tfDrop.DOScale(scaleJuicerEssenceDropOriginal, 0.4f).SetEase(Ease.OutBack).AsyncWaitForCompletion();
+        //坠落:轻微纵向拉长+加速落向瓶口
+        tfDrop.DOScale(new Vector3(scaleJuicerEssenceDropOriginal.x * 0.75f, scaleJuicerEssenceDropOriginal.y * 1.3f, scaleJuicerEssenceDropOriginal.z), 0.1f);
+        await tfDrop.DOMove(positionLand, 0.3f).SetEase(Ease.InQuad).AsyncWaitForCompletion();
+        //溅落:水滴压扁后隐藏(节点复用不销毁)
+        await tfDrop.DOScale(new Vector3(scaleJuicerEssenceDropOriginal.x * 1.5f, scaleJuicerEssenceDropOriginal.y * 0.3f, scaleJuicerEssenceDropOriginal.z), 0.08f).AsyncWaitForCompletion();
+        tfDrop.localScale = scaleJuicerEssenceDropOriginal;
+        objJuicerEssenceDrop.SetActive(false);
+        //液体弹出显示+滴水音+瓶子抖动
+        objJuicerLiquid.SetActive(true);
+        objJuicerLiquid.transform.DOKill();
+        objJuicerLiquid.transform.localScale = Vector3.zero;
+        objJuicerLiquid.transform.DOScale(scaleJuicerLiquidOriginal, 0.35f).SetEase(Ease.OutBack);
+        objJuicerBottle.transform.DOKill();
+        objJuicerBottle.transform.DOPunchScale(new Vector3(0.1f, -0.1f, 0.1f), 0.3f, 2, 0.5f).OnComplete(() =>
+        {
+            objJuicerBottle.transform.localScale = scaleJuicerBottleOriginal;
+        });
+        AudioHandler.Instance.PlaySoundRandom(AudioEnum.sound_water_1, AudioEnum.sound_water_3);
+        await new WaitForSeconds(0.35f);
+    }
+
+    /// <summary>
+    /// 榨汁流程结束:血液隐藏+瓶子隐藏(整个流程收尾),锤子归位,精华水滴归位隐藏(流程被打断的兜底)
+    /// </summary>
+    public void BuildingJuicerProcessEnd()
+    {
+        InitBuildingJuicerProcessNodes();
+        //血液隐藏(整个榨汁流程结束)
+        objJuicerBlood?.SetActive(false);
+        //瓶子隐藏(液体随父级一并隐藏;下次榨汁 ProcessBegin 会重新弹出)
+        objJuicerBottle?.SetActive(false);
+        //锤子归位
+        if (tfJuicerHammer != null)
+        {
+            tfJuicerHammer.DOKill();
+            tfJuicerHammer.localPosition = Vector3.zero;
+        }
+        //精华水滴归位隐藏(流程被打断的兜底)
+        if (objJuicerEssenceDrop != null)
+        {
+            objJuicerEssenceDrop.transform.DOKill();
+            objJuicerEssenceDrop.transform.localScale = scaleJuicerEssenceDropOriginal;
+            objJuicerEssenceDrop.SetActive(false);
+        }
     }
     #endregion
 

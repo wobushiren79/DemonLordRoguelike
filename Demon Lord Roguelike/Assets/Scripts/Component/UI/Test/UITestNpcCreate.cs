@@ -44,11 +44,14 @@ public partial class UITestNpcCreate : BaseUIComponent
 
         var dicAllSkins = CreatureModelInfoCfg.GetData(creatureData.creatureInfo.model_id);
         var creatureModelData = CreatureModelCfg.GetItemData(creatureData.creatureInfo.model_id);
+        var dicSkinItemIconRes = BuildSkinItemIconResMap();
 
-        //获取该生物所有的皮肤类型
+        //获取该生物所有的皮肤类型(排除装备驱动部位: 帽子/衣服/裤子/鼻环/武器等由装备换皮，见 InitCreatureEquipData)
+        var setEquipDrivenPart = ItemsInfoCfg.GetEquipDrivenSkinPartTypes(creatureData.creatureInfo.model_id);
         List<CreatureSkinTypeEnum> listSkinType = new List<CreatureSkinTypeEnum>();
         foreach (var item in dicAllSkins)
         {
+            if (setEquipDrivenPart.Contains(item.Key)) continue;
             listSkinType.Add(item.Key);
         }
 
@@ -75,13 +78,20 @@ public partial class UITestNpcCreate : BaseUIComponent
                 }
                 string iconRes = null;
                 long targetItemId = 0;
+                bool isItemIcon = false;
                 if (targetItemData != null)
                 {
-                    iconRes = $"{creatureModelData.mark_name}_Atlas_{targetItemData.res_name.Replace("/", "_")}";
                     targetItemId = targetItemData.id;
+                    //装备驱动皮肤(帽子/衣服/裤子等)的贴图不在 Skins 图集，改用装备的 icon_res 走 Items 图集
+                    isItemIcon = dicSkinItemIconRes.TryGetValue(targetItemData.id, out iconRes);
+                    if (!isItemIcon)
+                        iconRes = $"{creatureModelData.mark_name}_Atlas_{targetItemData.res_name.Replace("/", "_")}";
                 }
                 itemView.gameObject.SetActive(true);
-                itemView.SetDataForSkin((int)skinType,targetItemId, iconRes, skinType.GetEnumName());
+                if (isItemIcon)
+                    itemView.SetDataForItem((int)skinType, targetItemId, iconRes, skinType.GetEnumName());
+                else
+                    itemView.SetDataForSkin((int)skinType, targetItemId, iconRes, skinType.GetEnumName());
                 itemView.actionForOnClick = ActionForCreatureBodyOnClick;
             }
             else
@@ -347,6 +357,7 @@ public partial class UITestNpcCreate : BaseUIComponent
 
         //加载改角色所有的皮肤类型
         var dicAllSkins = CreatureModelInfoCfg.GetData(creatureData.creatureInfo.model_id);
+        var dicSkinItemIconRes = BuildSkinItemIconResMap();
         if (dicAllSkins.TryGetValue(creatureSkinType, out var listSkinData))
         {
             for (int i = 0; i < listSkinData.Count; i++)
@@ -356,15 +367,41 @@ public partial class UITestNpcCreate : BaseUIComponent
                 itemShowObj.gameObject.SetActive(true);
                 var itemShowView = itemShowObj.GetComponent<UIViewTestIconShow>();
                 string iconRes = null;
+                bool isItemIcon = false;
                 if (creatureModelInfo != null)
                 {
-                    iconRes = $"{creatureModelData.mark_name}_Atlas_{creatureModelInfo.res_name.Replace("/", "_")}";
+                    //装备驱动皮肤(帽子/衣服/裤子等)的贴图不在 Skins 图集，改用装备的 icon_res 走 Items 图集
+                    isItemIcon = dicSkinItemIconRes.TryGetValue(creatureModelInfo.id, out iconRes);
+                    if (!isItemIcon)
+                        iconRes = $"{creatureModelData.mark_name}_Atlas_{creatureModelInfo.res_name.Replace("/", "_")}";
                 }
-                itemShowView.SetDataForSkin(1, creatureModelInfo.id, iconRes, creatureSkinType.GetEnumName());
+                if (isItemIcon)
+                    itemShowView.SetDataForItem(1, creatureModelInfo.id, iconRes, creatureSkinType.GetEnumName());
+                else
+                    itemShowView.SetDataForSkin(1, creatureModelInfo.id, iconRes, creatureSkinType.GetEnumName());
                 itemShowView.actionForOnClick = ActionForSelectItemForCreatureBody;
             }
         }
-        
+
+    }
+
+    /// <summary>
+    /// 构建 皮肤id→装备icon_res 映射：穿戴类皮肤(帽子/衣服/裤子等)的贴图不在 Skins 图集，
+    /// 而是作为装备图标打在 Items 图集，按 ItemsInfo.creature_model_info_id 反查装备取得(与 IconHandler.SetItemIcon 同逻辑)
+    /// </summary>
+    private Dictionary<long, string> BuildSkinItemIconResMap()
+    {
+        var dicSkinItemIconRes = new Dictionary<long, string>();
+        var listItemInfo = ItemsInfoCfg.GetDataByCreatureModelId(creatureData.creatureInfo.model_id);
+        if (listItemInfo != null)
+        {
+            foreach (var itemInfo in listItemInfo)
+            {
+                if (itemInfo.creature_model_info_id != 0 && !itemInfo.icon_res.IsNull())
+                    dicSkinItemIconRes[itemInfo.creature_model_info_id] = itemInfo.icon_res;
+            }
+        }
+        return dicSkinItemIconRes;
     }
 
     /// <summary>

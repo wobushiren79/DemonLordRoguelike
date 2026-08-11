@@ -118,7 +118,7 @@ UIHandler.ShowMask(1, null, () =>
 | `CreatureBean(long creatureId)` → `SetData` | CreatureBean.cs:54/70 | 读 CreatureInfo 名字 + `GetBodySizeRandomScale()` 体型倍率（创建时定一次，扭蛋/创建账号共用入口） |
 | `FixedAttributeForCreate(userData, type)` | CreatureBeanPartial.cs:210 | 初始魔物固定加点（点数=gashaponRandomAttributeNum） |
 | `IsDemonLord()` | CreatureBeanPartial.cs:108 | `creatureUUId == selfCreature.creatureUUId` |
-| `GetAllRandomData()` | CreatureRandomInfoBeanPartial.cs:7 | `skin_random_data` 按 `,`/`-` 拆分、按 `CreatureModelInfo.GetPartType()` 分组成部位→皮肤列表 |
+| `GetAllRandomData()` | CreatureRandomInfoBeanPartial.cs:10 | `skin_random_data` 按 `,`/`-` 拆分、按 `CreatureModelInfo.GetPartType()` 分组成部位→皮肤列表（带缓存，首次解析后复用） |
 | `GetSkins(hasRandomData=true)` | NpcInfoBeanPartial.cs:46 | NPC 固有皮肤 `skin_data` 按 `&` 拆分（+随机皮肤），经 CreatureModelInfo 得部位 |
 | `SetPreviewCreateCamera(p, enable)` | CameraHandler.cs:201 | → `SetCameraForBaseScene(..., "CV_PreviewCreate")` |
 

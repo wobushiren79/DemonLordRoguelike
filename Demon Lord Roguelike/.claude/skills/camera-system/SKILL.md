@@ -104,7 +104,7 @@ CameraHandler.Instance.SetAchievementCamera(p, e);                  // CV_Achiev
 CameraHandler.Instance.SetCreatureSacrificeCamera(p, e);            // CV_CreatureSacrifice 献祭
 CameraHandler.Instance.SetCreatureVatCamera(p, e);                  // CV_CreatureVat 生物容器
 CameraHandler.Instance.SetGashaponMachineCamera(p, e);             // CV_GashaponMachine 扭蛋机
-CameraHandler.Instance.SetJuicerCamera(p, e);                       // CV_Juicer 魔汁机(固定机位,UICreatureJuicer 打开时切换)
+CameraHandler.Instance.SetJuicerCamera(p, e);                       // CV_Juicer 魔汁机(UICreatureJuicer 打开时切换;TrackingTarget=Juicer建筑根)
 CameraHandler.Instance.SetGashaponBreakCamera(p, e);               // CV_GashaponBreak 扭蛋破碎
 CameraHandler.Instance.SetGameStartCamera(p, e);                   // CV_GameStart 游戏开始
 CameraHandler.Instance.SetPreviewCreateCamera(p, e);              // CV_PreviewCreate 创建预览
@@ -112,6 +112,22 @@ CameraHandler.Instance.SetCustomCamera(p, e);                     // CV_Custom �
 ```
 
 > 新增一个基地子镜头：在场景预制体的 `CV_List` 下放一个命名为 `CV_Xxx` 的 `CinemachineCamera`，再在游戏层 `CameraHandler` 的「基地场景摄像头相关」region 里加一个语义方法转调 `SetCameraForBaseScene(priority, isEnable, "CV_Xxx")` 即可。
+
+### 3.5 运行期聚焦/震动（魔汁机滴嘴特写范式）
+
+同一个已激活 CV 可以在**运行期改字段**做局部特写而不新建镜头（`#region 魔汁机镜头聚焦/震动`，魔汁机榨汁流程在用）：
+
+```csharp
+// 仅查找 CV_List 下镜头,不改激活态/优先级(通用)
+var cv = CameraHandler.Instance.GetBaseSceneCamera("CV_Juicer");
+// 聚焦滴嘴:Follow/LookAt 切到目标 + RotationComposer.TargetOffset 清零 + DOTween 推近 CinemachineFollow.FollowOffset
+// (原状态缓存,isJuicerCameraFocused 门控)
+CameraHandler.Instance.FocusJuicerCameraOnHole(holeTransform);
+// 还原聚焦前状态(未聚焦过则空操作)
+CameraHandler.Instance.RestoreJuicerCameraFocus();
+// 镜头震动:瞬时抬升 CV 自带 CinemachineBasicMultiChannelPerlin.AmplitudeGain 后 DOTween 回落(首次震动缓存原振幅)
+CameraHandler.Instance.ShakeJuicerCamera(0.8f, 0.35f);
+```
 
 ### 4. 其它场景镜头
 

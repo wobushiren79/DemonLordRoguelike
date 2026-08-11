@@ -309,6 +309,8 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 - 落表同其他节点：`excel_research_info`(id=100200004, `research_type=1`, `icon_res=ui_research_59`, `level_max=1`, `unlock_id=100200004`, `pre_unlock_ids="100200001"`, `pay_crystal=1000`, `name=100200004`, 备注「征服通关获得声望」) + `excel_unlock_info`(id=100200004, `unlock_type=0`, 备注「征服通关获得声望」) + 多语言 `excel_language` 的 `ResearchInfo` 工作表(id=100200004, cn「征服通关获得声望」/en「Gain Reputation on Conquest Clear」)。
 - 声望系统（第二货币，与魔晶并列，终焉议会消耗它）本已存在；本节点只是新增一个声望获取来源。发放与配置细节见 [`conquer-system`](../conquer-system/SKILL.md) / [`fight-reward-system`](../fight-reward-system/SKILL.md)。
 
+同分支（1002 段、`research_type=1`、`level_max=1`、`icon_res=ui_research_59`）还有终焉议会议案解锁节点组：100200005/6（魔物等级下降/归0）、100200007/8（魔物稀有度下降/归0）、**100200009（议案「想要更多装备！」，pre=100200001、pay_crystal=100、position(-500,-900)）**、**100200010（议案「想要更多魔王装备！」，pre=100200009 子研究、pay_crystal=200、position(-700,-900)）**——这类节点解锁的只是议案在议会列表的可见性（`DoomCouncilInfo.unlock_id` 配置驱动过滤，`UnlockEnum` 无需新增枚举）；议案效果本身见 [`doom-council-system`](../doom-council-system/SKILL.md)。
+
 ### 世界分支(1003_10_W_nn 段) — 征服难度研究 + 各难度「加快进攻节奏(Quick)」研究 + 各难度「2倍速游戏」研究
 
 世界分类(research_type=4)里有三种按难度拆分的研究：

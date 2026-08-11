@@ -23,6 +23,21 @@ public partial class NpcInfoBean
     }
 
     /// <summary>
+    /// 获取随机议员显示名(随机议员通用命名入口)：评级称谓名(预备/列席/初级/理事/高级议员等, DoomCouncilRatingsInfo)
+    /// 仅随机议员(NpcTypeEnum.CouncilorRandom)使用；评级配置缺失或称谓为空时兜底返回多语言文本53016"随机议员"
+    /// </summary>
+    public string GetCouncilorRandomDisplayName()
+    {
+        var ratingInfo = DoomCouncilRatingsInfoCfg.GetItemData(GetCouncilorRatings());
+        if (ratingInfo != null)
+        {
+            string ratingName = ratingInfo.name_language;
+            if (!ratingName.IsNull()) return ratingName;
+        }
+        return TextHandler.Instance.GetTextById(53016);
+    }
+
+    /// <summary>
     /// 获取称号
     /// </summary>
     public List<long> GetTitles()

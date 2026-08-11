@@ -82,7 +82,7 @@ public enum CreatureSkinTypeEnum
     Mouth = 6,//嘴巴
     Horn = 7,//角
     Wing = 8,//翅膀
-    NoseRing = 9,//鼻环
+    NoseRing = 9,//鼻环(装备道具驱动换皮,不参与皮肤随机池)
     //---------------------穿戴
     Hat = 50,//帽子
     Clothes = 51,//衣服

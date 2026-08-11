@@ -158,19 +158,22 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 
 | 字段 | 含义 | 备注 |
 |------|------|------|
-| `id` | 等级（=要升到的目标等级，1~10） | `GetItemData(level+1)` 取下一级 |
+| `id` | 等级（=要升到的目标等级，0~10；0 级为兜底行） | `GetItemData(level+1)` 取下一级 |
 | `level_exp` | 升到该等级所需经验（字符串，`long.Parse`） | 单级增量；升级成功后 `levelExp` 清 0，不保留溢出余量 |
 | `sacrifice_num` | 该等级所需祭品基础数量（决定 `baseSingleRate = 1/sacrifice_num`） | 默认 5 |
 | `attribute_point` | 升级到该等级获得的可分配属性加点数（玩家在 `UICreatureAddAttribute` 手动分配） | 当前全等级配置为 5，`<=0` 时代码回退为 1 |
 | `CMP_rate` | 魔力召唤增加倍率 | 召唤消耗随等级提升 |
 | `level_color` | 等级字体颜色（十六进制，如 `#9CE07A`） | 1~10 级 10 种渐进色；0 级及无配置在代码回退白色 |
+| `juicer_exp` | 榨汁经验（被榨汁时按等级贡献的经验值，long） | 各行=本行 `level_exp`×100%；榨汁结算按投入魔物等级汇总产出魔汁道具（经验存 `ItemBean.juicerExp`），详见 juicer-system Skill |
+
+- **id=0 兜底行（2026-08 新增）**：`level_exp`/`sacrifice_num`/`attribute_point`=0——实际不会被读到（升级读的是 level+1 行，献祭用法不受影响）；`CMP_rate`=0/`level_color`=#FFFFFF 与原有 null 兜底行为一致；`juicer_exp`=20（=1 级 `level_exp` 的 20%，0 级生物被榨汁时的经验兜底）。
 
 - **Excel 源表**：`Assets/Data/Excel/excel_level_info[等级信息].xlsx`（工作表 `LevelInfo`，数据从第 4 行起，前 3 行为字段名/类型/注释）
 - **派生 JSON**：`Assets/Resources/JsonText/LevelInfo.txt`
 - **配置 Bean**：`LevelInfoBean`（`LevelInfoBean.cs` 自动生成，被钩子保护禁止直接改；扩展/临时字段写 `LevelInfoBeanPartial.cs`）；访问类 `LevelInfoCfg : BaseCfg<long, LevelInfoBean>`，`fileName = "LevelInfo"`
 - **等级颜色取色**：`LevelInfoCfg.GetLevelColor(level)`（`LevelInfoBeanPartial.cs`）—— 0 级及以下/无配置/解析失败回退 `Color.white`，1~10 级取 `level_color`。`UIViewCreatureCardDetails.SetLevelData` 用它给 `ui_LevelText` 着色。
 
-> ⚠️ **`sacrifice_num` / `attribute_point` / `CMP_rate` / `level_color` 字段归属**：它们是 Excel 列，正确做法是在 Excel 加列后用 `ExcelEditorWindow` **重新生成 `LevelInfoBean.cs`**（生成器会写入该字段）。若因无法运行生成器而临时把字段放在 `LevelInfoBeanPartial.cs`，重新生成后必须删除 Partial 里的临时字段，避免与生成文件重复定义。**`attribute_point`/`CMP_rate` 已在生成的 `LevelInfoBean.cs` 中；当前 `level_color` 临时放在 `LevelInfoBeanPartial.cs`（Excel/JSON 已同步），待在 Unity 重新生成 Bean 后删除该临时字段。**
+> ⚠️ **`sacrifice_num` / `attribute_point` / `CMP_rate` / `level_color` / `juicer_exp` 字段归属**：它们是 Excel 列，正确做法是在 Excel 加列后用 `ExcelEditorWindow` **重新生成 `LevelInfoBean.cs`**（生成器会写入该字段）。若因无法运行生成器而临时把字段放在 `LevelInfoBeanPartial.cs`，重新生成后必须删除 Partial 里的临时字段，避免与生成文件重复定义。**当前 `attribute_point`/`CMP_rate`/`level_color`/`juicer_exp` 均已在生成的 `LevelInfoBean.cs` 中（2026-08 重新生成，含 0 级行），`LevelInfoBeanPartial.cs` 仅保留 `LevelInfoCfg.GetLevelColor(level)` 取色方法。**
 
 ## 事件常量 (EventsInfo.cs · #region 生物献祭)
 
@@ -213,6 +216,7 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
 - 选择上限：`UserUnlockBean.GetUnlockSacrificeMax()` = `UserLimmitBean.sacrificeMax`（基础默认 5）+ 「增加祭品数量」研究等级（`UnlockEnum.SacrificeNum = 100100002`，研究 `level_max=10`，满级即 5+10=15）。`UICreatureSacrifice` 的 `RefreshUI`/`EventForCardClickSelect` 两处上限判定都走此方法，不要再直接读 `limmitData.sacrificeMax`
 - 成功率显示：`SetSuccessRate(GetCurrentSuccessRate())`，`GetCurrentSuccessRate` 调 `CreatureUtil.GetSacrificeSuccessRate`；进度条颜色按成功率分5段（`GetSuccessRateColor` 现仅转发 `ColorUtil.GetProgressColor`：0-20%红`#C0392B`、20-40%橙`#E67E22`、40-60%黄`#F1C40F`、60-80%浅绿`#2ECC71`、80-100%蓝`#3498DB`，配色单一真实源在 ColorUtil，与孵化缸进阶BUFF概率共用），随 `DOColor`/`DOFillAmount` 0.5s 同步渐变
 - 升级经验条：`UIViewCreatureCardDetails.SetLevelData(level, levelExp)`，用 `LevelInfoCfg.GetItemData(level+1).level_exp` 算百分比
+- 魔汁使用：背包道具点击 `EventForItemBackpackClickSelect` 对 `ItemTypeEnum.Juice`(=11) 类型分流到 `UseJuiceItem`（`#region 魔汁使用`）——确认弹窗（textId 61014「是否对{0}使用魔汁？经验+{1}」）→ 选中生物 `levelExp += itemData.juicerExp` + 消耗道具 + 落盘；满级 Toast（61015）拦截防浪费；魔王/无选中兜底拦截。其余道具照旧走装备 `SetCreatureEquip`。详见 juicer-system Skill
 
 ## 接入 / 修改流程
 

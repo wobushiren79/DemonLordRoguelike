@@ -196,6 +196,26 @@ public partial class ItemsInfoCfg
     public static Dictionary<long, List<ItemsInfoBean>> dicDataForCreatureModel;
 
     /// <summary>
+    /// 获取指定生物模型下「装备驱动的皮肤部位」集合：这些部位的皮肤被装备 creature_model_info_id 引用
+    /// (帽子/衣服/裤子/鼻环/武器等，含史莱姆 Hat 用旧 part_type=2 的情况)，换皮由装备驱动，不应出现在手动皮肤选择里
+    /// </summary>
+    public static HashSet<CreatureSkinTypeEnum> GetEquipDrivenSkinPartTypes(long creatureModelId)
+    {
+        var setPartType = new HashSet<CreatureSkinTypeEnum>();
+        var listItemInfo = GetDataByCreatureModelId(creatureModelId);
+        if (listItemInfo != null)
+        {
+            foreach (var itemInfo in listItemInfo)
+            {
+                var skinModelInfo = CreatureModelInfoCfg.GetItemData(itemInfo.creature_model_info_id);
+                if (skinModelInfo != null)
+                    setPartType.Add(skinModelInfo.GetPartType());
+            }
+        }
+        return setPartType;
+    }
+
+    /// <summary>
     /// 是否包含生物模型
     /// </summary>
     public static bool ContainsKeyForCreatureModelId(long creatureModelId)

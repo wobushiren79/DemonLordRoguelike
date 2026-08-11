@@ -33,7 +33,7 @@ watched_files:
 1. 议会人数：议案 `DoomCouncilInfo.council_num`（字符串 `"min,max"`）→ `GetRandomCouncilNum()` 区间随机。
 2. 每席：随机一种生物 + 按权重随机评级（1~5 权重 50/30/15/10/5 归一化，`NpcInfoCfg.GetRandomCouncilorNpc()`）。
 3. 整场 10% 概率出现 1 名固定NPC（`GetRandomFixedCouncilorNpc()`）。
-4. 议员显示名由 `CreatureBean.SetCouncilorDisplayName` 按 NPC 类型分流：**随机议员**取评级称谓名（预备/列席/初级议员等，`DoomCouncilRatingsInfo.name`）；**固定议员(`NpcTypeEnum.Councilor`)**取其自身 NPC 名字（`NpcInfo.name`→`name_language`）。该显示名同时驱动对话弹窗(`UIGameConversation`)与详情面板(`UIViewCreatureCardDetails`)。固定NPC从 `UserRelationshipBean` 载入持久化好感。
+4. 议员显示名由 `CreatureBean.SetCouncilorDisplayName` 按 NPC 类型分流：**随机议员**走通用命名 `NpcInfoBean.GetCouncilorRandomDisplayName()`（评级称谓名：预备/列席/初级议员等，`DoomCouncilRatingsInfo.name`；评级配置缺失兜底多语言文本 UIText id=53016"随机议员"。**随机议员命名唯一入口**，测试工具等所有场景统一调它）；**固定议员(`NpcTypeEnum.Councilor`)**取其自身 NPC 名字（`NpcInfo.name`→`name_language`）。该显示名同时驱动对话弹窗(`UIGameConversation`)与详情面板(`UIViewCreatureCardDetails`)。固定NPC从 `UserRelationshipBean` 载入持久化好感。
 5. **测试分流**：当 `DoomCouncilBean.isTestAllFixedCouncilor=true` 时，`GenerateCouncilors` 顶部直接返回 `GenerateAllFixedCouncilors()`——跳过随机人数/随机议员，把 `NpcInfoCfg.GetNpcInfosByType(NpcTypeEnum.Councilor)` 全部固定议员各生成 1 名（同样走上述显示名分流 + 载入持久化好感）。仅供测试查看所有固定议员，入口 `LauncherTest.StartForDoomCouncilAllFixed`。
 
 ### 投票态度（存于 `DoomCouncilBean.dicCouncilorAttitude`，Key=议员UUID，Value 0~100=投赞成概率；只与本场议案绑定，不放 CreatureBean、不入存档）
@@ -81,13 +81,15 @@ watched_files:
 ### 议案展示：全部平铺，非随机
 `UIDoomCouncilBill.InitData` 取 `GetAllArrayData()` **全部**行，仅按 `unlock_id` 用 `userUnlock.CheckIsUnlock` 过滤后平铺（**无随机抽N/权重**）。
 - **默认议案 = `unlock_id` 留空/0**：`CheckIsUnlock(0)` 恒 true（约定0=无需解锁）→「默认就有」。当前默认议案：更多水晶/更多经验/**挑战更强的敌人**/**挑战更弱的敌人**。
-- **需研究解锁的议案**：重命名魔物/魔王(unlock 100200002/3) · 转生×7(unlock 300x00201) · **魔物等级下降/归0(unlock 100200005/6)** · **魔物稀有度下降/归0(unlock 100200007/8)**——后4条对应研究挂终焉议会设施分支(research_type=1) 100200001 下，"归0"研究前置为同族"下降1级"研究(100200006←100200005、100200008←100200007)。
+- **需研究解锁的议案**：重命名魔物/魔王(unlock 100200002/3) · 转生×7(unlock 300x00201) · **魔物等级下降/归0(unlock 100200005/6)** · **魔物稀有度下降/归0(unlock 100200007/8)**——后4条对应研究挂终焉议会设施分支(research_type=1) 100200001 下，"归0"研究前置为同族"下降1级"研究(100200006←100200005、100200008←100200007)。**想要更多装备！(unlock 100200009)** · **想要更多魔王装备！(unlock 100200010)**——研究同挂 100200001 下(100200009: pre=100200001、pay_crystal=100、position(-500,-900)；100200010 为其子研究: pre=100200009、pay_crystal=200、position(-700,-900))。
 
 ### 提交与效果执行
-`UIViewDoomCouncilBillItem.OnClickForSubmit`：校验并扣 `cost_crystal`/`cost_reputation`(声望=`UserDataBean.reputation`, `CheckHasReputation`/`AddReputation`) → 二次确认 → `success_rate>=1` 直接 `userTempData.AddDoomCouncil`，否则 `GameHandler.StartDoomCouncil` 进议员投票，通过后才 `AddDoomCouncil`。`UserTempBean.AddDoomCouncil` 反射 `class_entity_name` 建实体；`TriggerFirst()` 返 true=立即型(不入列)，返 false=常驻 `listDoomCouncilEntity`。
+`UIViewDoomCouncilBillItem.OnClickForSubmit`：校验并扣 `cost_crystal`/`cost_reputation`(声望=`UserDataBean.reputation`, `CheckHasReputation`/`AddReputation`) → 二次确认 → `success_rate>=1` 直接 `userTempData.AddDoomCouncil`，否则 `GameHandler.StartDoomCouncil` 进议员投票。**投票议案的入列路径（原漏接已修复）**：投票计票通过(`DoomCouncilLogic.StartVote` isPass 分支)或未通过后「暴力说服」战斗胜利(`GameFightLogicDoomCouncil.ActionForUIFightSettlementNext`，两路径互斥)均会补调 `AddDoomCouncil`——此前两条路径均未调用，导致需投票的议案通过后从不生效。`UserTempBean.AddDoomCouncil` 反射 `class_entity_name` 建实体；`TriggerFirst()` 返 true=立即型(不入列)，返 false=常驻 `listDoomCouncilEntity`。
 
 ### `DoomCouncilBaseEntity` 触发钩子（非 `ExecuteEffect`）
-`TriggerFirst` · `TriggerGameFightLogicDropAddCrystal` · `TriggerGameFightLogicAddExp` · `TriggerGameFightLogicEndGame`(返true=出列) · `TriggerWorldEnterGameForBaseScene` · **`GetEnemyIntensityRate()`**(默认1, 返回对下一场敌人 HP/护甲/攻击力的强度倍率)。分发在 `UserTempBean.TriggerDoomCouncil`，由 `GameHandler` 各时机 + `TriggerTypeDoomCouncilEntityEnum` 调用。
+`TriggerFirst` · `TriggerGameFightLogicDropAddCrystal` · `TriggerGameFightLogicAddExp` · `TriggerGameFightLogicEndGame`(返true=出列) · `TriggerWorldEnterGameForBaseScene` · **`GetEnemyIntensityRate()`**(默认1, 返回对下一场敌人 HP/护甲/攻击力的强度倍率)。分发在 `UserTempBean.TriggerDoomCouncil`，由 `GameHandler` 各时机 + `TriggerTypeDoomCouncilEntityEnum` 调用。**查询式消费**（不走事件分发）：`UserTempBean.GetEnemyIntensityRate()` 连乘 · `UserTempBean.HasDoomCouncilMoreEquip()` / `HasDoomCouncilMoreDemonLordEquip()` 检测「想要更多装备/魔王装备」议案在列（内部收口私有泛型 `HasDoomCouncilEntity<T>()`）。
+
+> ⚠️ **`GameFightLogic_EndGame` 事件在征服模式流程中不会触发**（征服通关/失败统一收口于 `GameFightLogicConquer.EndGameAndReturnToBase`，全程不调 `EndGame()`/`ChangeGameState(End)`）。征服模式的 `GameFightLogicEndGame` 消耗钩子由 `EndGameAndReturnToBase`（回基地存档前）**显式调用** `TriggerDoomCouncil(...)` 分发——此刻 `GetGameLogic<GameFightLogic>()` 仍是本场 Conquer 逻辑，各实体判定成立。依赖该时机消耗的实体（更多水晶/经验/敌人强度/更多装备/更多魔王装备）实际都靠这一显式分发生效。
 
 ### 敌人更强/更弱议案（`DoomCouncilEntityEnemyIntensity`）
 - 两条默认议案共用一个实体类，靠 `class_entity_data` 区分：`"2"`=翻倍强(通过率1/消耗声望1)、`"0.5"`=减半弱(通过率0.01/消耗声望100)。
@@ -102,6 +104,17 @@ watched_files:
 - **降稀有度**（RarityDown）：同步移除 `dicRarityBuff` 中 key 高于新稀有度档位的稀有度BUFF（与 `RandomRarityBuffForCreate` 逐级授予逻辑对称）。
 - 边界（兜底）：已最低的魔物正常已被 `filterCreature` 过滤不出现在列表；若目标仍已 0 级 / 已 N 级（如数据异常）则不生效，Toast(3000008/3000009) 提示后返回（声望不退，与重命名取消同口径）。
 - Toast 文本（UIText 表）：`3000006` 等级下降成功 · `3000007` 稀有度下降成功 · `3000008` 已是0级 · `3000009` 已是N级。
+
+### 想要更多装备议案（`DoomCouncilEntityMoreEquip`）
+- 议案 id `1000500001`：success_rate=0.5(走投票)、cost_reputation=1、unlock_id=100200009（研究「终焉议会议案：想要更多装备！」解锁）、icon_res=ui_icon_1、class_entity_data 空（无参数）。
+- 效果：**下一次征服模式通关领奖时，宝箱基础奖励由「1装备+2魔晶」重生成变为「3件全装备」**（稀有度按 `reward_equip_rarity`、魔王专属10%、解锁池、生成不出装备兜底魔晶等规则不变）。
+- 常驻型（`TriggerFirst` 返 false）；`TriggerGameFightLogicEndGame` 判 `gameFightType==Conquer` 返 true 消耗——**run 结束即消耗，输赢皆然**（与 EnemyIntensity 同口径）。
+- 消费为**查询式**（仿 `GetEnemyIntensityRate`，不加事件枚举）：`GameFightLogicConquer.ActionForUIFightSettlementNext` 取预生成 `baseReward` 后，若 `UserTempBean.HasDoomCouncilMoreEquip()` 则用 `RewardSelectBean.CreateRewardListForConquerAllEquip(fightTypeConquerInfo)`(装备件数=总件数)重生成。**仅影响实领，传送门气泡预览不同步**（预生成冻结奖励不动）。
+
+### 想要更多魔王装备议案（`DoomCouncilEntityMoreDemonLordEquip`）
+- 议案 id `1000500002`：success_rate=0.5、cost_reputation=2、unlock_id=100200010（研究为 100200009 的子研究）、其余配置同上。
+- 效果：**通关领奖宝箱基础奖励重生成变为「3件全魔王专属装备」**（`CreateRewardListForConquerAllEquip(conquerInfo, isAllDemonLord: true)`，`createEquipDemonLordRate` 拉满）；同时把该次领奖 `rewardSelectData.createEquipDemonLordRate=1`，**深渊馈赠「奖励多多」追加件也全魔王**，保证"全部"。
+- **与「想要更多装备」同时在列时本议案优先**（严格上位：全装备且全魔王）；两议案各自独立在征服 EndGame 消耗（输赢皆然）。实体与 MoreEquip 平行独立（不继承，避免 `is T` 子类污染检测）。
 
 ---
 
@@ -555,6 +568,8 @@ public List<DoomCouncilBean> GetRandomProposals(int count = 3)
 | 改名效果 | `Assets/Scripts/Game/DoomCouncil/DoomCouncilEntityRename.cs` |
 | 魔物等级下降/归0效果 | `Assets/Scripts/Game/DoomCouncil/DoomCouncilEntityCreatureLevelDown.cs` |
 | 魔物稀有度下降/归0效果 | `Assets/Scripts/Game/DoomCouncil/DoomCouncilEntityCreatureRarityDown.cs` |
+| 想要更多装备效果 | `Assets/Scripts/Game/DoomCouncil/DoomCouncilEntityMoreEquip.cs` |
+| 想要更多魔王装备效果 | `Assets/Scripts/Game/DoomCouncil/DoomCouncilEntityMoreDemonLordEquip.cs` |
 | 议会配置Bean | `Assets/Scripts/Bean/Game/DoomCouncilBean.cs` |
 | 议会战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForDoomCouncil.cs` |
 | 议会战斗模式 | `Assets/Scripts/Game/Logic/GameFightLogicDoomCouncil.cs` |

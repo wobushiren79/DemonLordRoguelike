@@ -38,6 +38,7 @@ EditorWindow (Unity)
 ├── StyleBaseWindow                # 样式基础窗口
 ├── GameTestEditor                 # 游戏测试编辑器 (Inspector扩展)
 ├── GameBuildEditorWindow          # 打包游戏工具 (打包前 Spine 资源生成 + BuildPlayer)
+├── SkinRandomEditorWindow         # 皮肤随机池配置 (CreatureRandomInfo.skin_random_data 双列表点选增删, 写回Excel+同步JSON)
 └── PixelDaEditorWindow            # PixelDa 像素美术生成 (AI 文生图/图编辑/图生视频/抽帧/音乐)
 ```
 
@@ -242,6 +243,23 @@ LauncherTest (Inspector)
 
 ---
 
+## 皮肤随机池配置 (SkinRandomEditorWindow)
+
+**文件**: `Assets/Editor/SkinRandomEditorWindow.cs`，**菜单**: `游戏/皮肤随机池配置`
+
+### 功能
+
+可视化编辑 `excel_creature_random_info[生物随机信息] .xlsx`（注意文件名含空格）的 `skin_random_data` 列（随机皮肤池，工作表 `CreatureRandomInfo`）。
+
+- **随机池下拉**（`id | remark`）+ 当前池具体内容展示（压缩串只读 TextArea + 部件总数/覆盖部位/无效ID 统计）。
+- **左列表 = 已加入随机的皮肤**：按部位(`CreatureSkinTypeEnum`)分组排序，逐行「移除」；池中悬空 ID（模型表不存在）红色标记排在最后。**右列表 = 未加入随机的皮肤**：**按池内已有部件的物种自动限定**（选了人类池只列人类皮肤，空池不限定，无物种下拉），支持部位/搜索(id/res_name/remark) 筛选，逐行「加入」；另有「全部移除」「加入全部(筛选结果)」批量按钮。
+- **装备/武器类部位（统一维护在 `ExcludePartTypes` 列表：鼻环9/帽子50/衣服51/裤子52/鞋53/腰带54/手套55/武器线80/武器左右手90-91/双手武器92）双列表均不展示**——此类皮肤由装备道具驱动换皮（鼻环虽在枚举身体段，但道具表 item_type=5 经 `creature_model_info_id` 对接）；池内已有的装备部件数据保留不删，仅隐藏并在左列表头提示数量。新增装备类部位直接往 `ExcludePartTypes` 加，`IsEquipPart` 统一判定。
+- **每行带皮肤图标**：命名约定 `{CreatureModel.mark_name}_Atlas_{CreatureModelInfo.res_name 的 / 换成 _}`（与 UITestNpcCreate 取图同约定），图标是 `GameDataEditor.SpineAllSkinInit` 抽取到 `Assets/LoadResources/Textures/Skins/` 的产物，懒加载+缓存，缺失时灰块占位（缺图标可跑「生成所有 Spine 皮肤图标」补齐）。
+- 多池切换编辑不丢变更（每池独立 `skinSet` + `originalData` 对比出 dirty），刷新前有未保存变更确认。
+- **保存**：把 ID 集合升序压缩为区间串（连续段 `a-b`，逗号连接，与表内原有书写格式一致）→ `ExcelUtil.SetExcelData` 写回 Excel → `ExcelUtil.ExcelToJsonItem` 整体再生 `CreatureRandomInfo.txt`（该 Excel 仅单表，再生安全）→ `AssetDatabase.Refresh`。解析与运行时 `SplitForListLong(',', '-')` 同规则。部件全集直读 `excel_creature_model_info[生物模型详情信息] .xlsx`（不经 JSON 保证最新），物种名/mark_name 取自 `excel_creature_model[生物模型信息].xlsx`。
+
+---
+
 ## Inspector 扩展
 
 ### InspectorBaseUIComponent
@@ -441,6 +459,7 @@ public class InspectorMyComponent : Editor
 | PixelDa 像素生成工具 | `Assets/FrameWork/Editor/Base/Window/PixelDa/` |
 | 游戏测试编辑器 | `Assets/Editor/GameTestEditor.cs` + `GameTestEditorPartial.cs` |
 | 打包游戏工具 | `Assets/Editor/GameBuildEditorWindow.cs` |
+| 皮肤随机池配置 | `Assets/Editor/SkinRandomEditorWindow.cs` |
 | Excel 配置目录 | `Assets/Data/Excel/` |
 
 ---

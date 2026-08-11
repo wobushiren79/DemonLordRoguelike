@@ -83,6 +83,40 @@ public class UserTempBean
     }
 
     /// <summary>
+    /// 是否有在列的「想要更多装备」议案(征服通关领奖时基础奖励全装备化)
+    /// </summary>
+    /// <returns>在列=true</returns>
+    public bool HasDoomCouncilMoreEquip()
+    {
+        return HasDoomCouncilEntity<DoomCouncilEntityMoreEquip>();
+    }
+
+    /// <summary>
+    /// 是否有在列的「想要更多魔王装备」议案(征服通关领奖时基础奖励全魔王装备化)
+    /// </summary>
+    /// <returns>在列=true</returns>
+    public bool HasDoomCouncilMoreDemonLordEquip()
+    {
+        return HasDoomCouncilEntity<DoomCouncilEntityMoreDemonLordEquip>();
+    }
+
+    /// <summary>
+    /// 是否有在列的指定类型议案实体
+    /// </summary>
+    /// <returns>在列=true</returns>
+    private bool HasDoomCouncilEntity<T>() where T : DoomCouncilBaseEntity
+    {
+        if (listDoomCouncilEntity.IsNull())
+            return false;
+        for (int i = 0; i < listDoomCouncilEntity.Count; i++)
+        {
+            if (listDoomCouncilEntity[i] is T)
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>
     /// 增加传送门随机数据
     /// </summary>
     public void AddPortalWorldInfoRandomData(GameWorldInfoRandomBean addData)

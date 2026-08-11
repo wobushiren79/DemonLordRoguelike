@@ -71,7 +71,7 @@ public partial class UIViewItemBackpackList : BaseUIView
 
 
     /// <summary>
-    /// 过滤道具列表，只展示可装备的道具
+    /// 过滤道具列表:展示当前生物可装备的道具 + 魔汁(选中生物非魔王时可见)
     /// </summary>
     public void FilterItems()
     {
@@ -91,12 +91,16 @@ public partial class UIViewItemBackpackList : BaseUIView
             return;
         }
 
-        // 过滤出可装备的道具
+        // 过滤出可装备的道具(魔汁例外:选中生物非魔王即可用,见 ItemTypeEnum.Juice)
         for (int i = 0; i < listBackpackItems.Count; i++)
         {
             var itemData = listBackpackItems[i];
             var itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
-            if (itemInfo != null && creatureInfo.CanEquipItem(itemInfo))
+            if (itemInfo == null)
+                continue;
+            //装备类按装备资格过滤;魔汁类仅要求选中生物不是魔王(魔王隐藏等级不吃经验)
+            if (creatureInfo.CanEquipItem(itemInfo)
+                || (itemInfo.GetItemType() == ItemTypeEnum.Juice && !creatureData.IsDemonLord()))
             {
                 listFilterItems.Add(itemData);
             }

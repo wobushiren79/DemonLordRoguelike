@@ -36,7 +36,7 @@ watched_files:
 - **SecretCode** - 秘钥输入
 
 ### 游戏层通用组件 (Common)
-- **UIViewItemBackpack / UIViewItemBackpackList** - 背包相关
+- **UIViewItemBackpack / UIViewItemBackpackList** - 背包相关（`FilterItems` 过滤规则：`creatureInfo.CanEquipItem` 或（`GetItemType()==Juice` 且 `!creatureData.IsDemonLord()`）——魔汁例外：选中魔王时魔汁在管理页列表隐藏、普通魔物可见；`creatureData==null` 如 UIDialogSelectItem 显示全部不受影响）
 - **UIViewItemEquip** - 装备项
 - **UIViewCreatureCardItem / List / Details** - 生物卡片（战斗卡片 `UIViewCreatureCardItemForFight` 含 `ui_AbyssalBlessingContent`(GridLayout)+`ui_AbyssalBlessingItem`(Image 模板)：`RefreshAbyssalBlessing` 遍历 `dicAbyssalBlessingBuffsActivie`，用 `AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature(...,FightDefense)` 取「实际作用于本魔物」的馈赠——含全体防守加成与定向到本魔物的(单体定向类，按锁定 UUID 匹配)，排除敌方/核心/掉落/奖励/复制类；克隆体(增殖)只显示全体馈赠不显示单体定向；按个数动态克隆 Item 图标(缓存池复用)，并监听 `Buff_AbyssalBlessingChange` 刷新。⚠️ 现役 4 族馈赠均不改生物数值，当前卡面不会出现馈赠图标）。**魔王(`CreatureBean.IsDemonLord()`)特殊渲染**：卡片项/详情稀有度统一按 `RarityEnum.L` 显示、隐藏等级(`SetLevel(level,isHide)` / `SetLevelData` 隐藏等级与经验条)、详情隐藏召唤耗魔 `ui_MP`；魔王在魔物管理列表恒置顶第一位（`UIViewCreatureCardList.OrderListCreature` 加最高主键 `OrderByDescending(IsDemonLord)`）。**阵容卡片拆分**：阵容行卡片 `UIViewCreatureCardItemForLineup`（带 IBeginDrag/IDrag/IEndDrag 拖拽换位，仅用于阵容行）与阵容管理列表卡片 `UIViewCreatureCardItemForLineupList`（无拖拽接口，接管 LineupSelect 遮罩，作列表 tempCell）——ScrollGrid 列表 cell 若带拖拽接口会截获 uGUI 拖拽事件（不再冒泡给父级 ScrollRect）导致列表无法拖拽滚动，故列表/阵容行分两类
 - **UIViewBasePortalItem** - 传送门项

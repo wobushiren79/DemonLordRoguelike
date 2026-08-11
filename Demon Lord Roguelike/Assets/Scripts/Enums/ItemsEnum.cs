@@ -3,7 +3,8 @@
 /// </summary>
 public enum ItemIdEnum
 {
-    Crystal = 1//魔晶
+    Crystal = 1,//魔晶
+    Juice = 200001,//魔汁(榨汁产物,使用后给魔物加经验,实例经验值存 ItemBean.juicerExp)
 }
 
 
@@ -19,6 +20,7 @@ public enum ItemTypeEnum
     NoseRing = 5,
     FingerRing = 6,
     Weapon = 10,
+    Juice = 11,//魔汁(消耗品,非装备,除魔王外所有生物可用)
     Portrait = 101,
 }
 

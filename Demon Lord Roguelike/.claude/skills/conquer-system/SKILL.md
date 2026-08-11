@@ -302,6 +302,7 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 - `GameWorldInfoRandomBean.GetDifficultyReward(difficulty)`：取该难度预生成奖励。**两种情况会重新生成并刷新签名**：① `listReward` 为空（老存档无此字段）；② 解锁了新魔物掉落致装备奖励池签名变化（`rewardUnlockSign != RewardSelectBean.GetConquerEquipPoolSign()`）。重新生成走 `RewardSelectBean.CreateRewardListForConquer(fightTypeConquerInfo)`。
 - **解锁重生成机制**：魔物掉落装备需研究解锁（生物分支 `EquipReward*`）。解锁新魔物掉落后，`GetConquerEquipPoolSign()`（= 可生成装备的已解锁生物模型数量，见 `RewardSelectBean.GetUnlockCreatureModelIdsForEquip()`）变化 → 传送门预生成奖励在下次 `GetDifficultyReward` 时按新池重新生成。
 - 奖励生成单一真实源是 `RewardSelectBean`（见 [`fight-reward-system`](../fight-reward-system/SKILL.md)）：`CreateRewardListForConquer(conquerInfo)` 静态产出 `List<ItemBean>`；私有 `CreateItemEquip/CreateItemCrystal` 现吃 `FightTypeConquerInfoBean`。
+- **领奖时的议案干预**：`ActionForUIFightSettlementNext` 取 `baseReward` 后，若终焉议会「想要更多装备/魔王装备」议案在列（`UserTempBean.HasDoomCouncilMoreEquip()` / `HasDoomCouncilMoreDemonLordEquip()`，魔王优先），用 `RewardSelectBean.CreateRewardListForConquerAllEquip` 将基础奖励重生成全装备（仅实领替换、预览不同步；详见 [`doom-council-system`](../doom-council-system/SKILL.md)）。
 
 #### 传送门详情气泡四项预览受「设施」研究门控
 

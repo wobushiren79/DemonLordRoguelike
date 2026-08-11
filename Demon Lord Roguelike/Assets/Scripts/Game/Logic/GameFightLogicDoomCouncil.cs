@@ -40,7 +40,14 @@ public class GameFightLogicDoomCouncil : GameFightLogic
     /// 回调-结算界面关闭
     /// </summary> 
     public async void ActionForUIFightSettlementNext()
-    {                    
+    {
+        //暴力说服战斗胜利: 议案效果入列生效(与投票通过同口径; 原流程漏接)
+        var doomCouncilFightData = fightData as FightBeanForDoomCouncil;
+        if (fightData.gameIsWin && doomCouncilFightData != null && doomCouncilFightData.doomCouncilData != null)
+        {
+            var userTempData = GameDataHandler.Instance.manager.GetUserData().GetUserTempData();
+            userTempData.AddDoomCouncil(doomCouncilFightData.doomCouncilData);
+        }
         //展示投票结果
         var voteEndUI = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilVoteEnd>();    
         voteEndUI.VoteEndShow(fightData.gameIsWin);

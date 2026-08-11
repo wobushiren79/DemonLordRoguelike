@@ -59,7 +59,7 @@ UIMainLoad(加载存档界面) 空槽位 item
 - `CreatureBean(long creatureId)` 构造 → `SetData`：读 CreatureInfo 名字 + 体型随机倍率 `GetBodySizeRandomScale()`（创建时定一次）
 - `CreatureBeanPartial.FixedAttributeForCreate`（:210）：固定加点入口，底层 `CreatureAttributeBean.AddFixedAttributeForCreate`，单点增量复用 `CreatureUtil.GetAttributePointAddValue`（HP/DR 每点+10、ASPD 每点+1）
 - `CreatureBeanPartial.IsDemonLord`（:108）：`creatureUUId == userData.selfCreature.creatureUUId`
-- `CreatureRandomInfoBeanPartial.GetAllRandomData`（:7）：`skin_random_data` 按 `,`/`-` 拆分，按 `CreatureModelInfo.GetPartType()` 分组
+- `CreatureRandomInfoBeanPartial.GetAllRandomData`（:10）：`skin_random_data` 按 `,`/`-` 拆分，按 `CreatureModelInfo.GetPartType()` 分组（带缓存，首次解析后复用）
 - `NpcInfoBeanPartial.GetSkins`（:46）：固有皮肤 `skin_data` 按 `&` 拆分 + 随机皮肤
 
 ### 配置表（Excel 唯一真实源 → JSON 导出）
