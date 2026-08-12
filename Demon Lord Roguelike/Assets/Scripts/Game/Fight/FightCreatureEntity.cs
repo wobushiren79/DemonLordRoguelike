@@ -300,6 +300,21 @@ public partial class FightCreatureEntity
     }
 
     /// <summary>
+    /// 受到无伤害触碰（纯DEBUFF类重叠攻击，如烂泥史莱姆的粘液）：只附加攻击模式携带的BUFF并播放命中音效，
+    /// 不扣血/不跳伤害数字/不播受击特效/不进伤害统计；无敌目标免疫（与 UnderAttack 的无敌语义一致）
+    /// </summary>
+    public void UnderAttackNoDamage(BaseAttackMode baseAttackMode)
+    {
+        //无敌免疫一切触碰效果
+        if (fightCreatureData.isInvincible)
+            return;
+        //附加攻击模式携带的BUFF（如粘液减速），成功时会刷新身体染色
+        AddBuff(baseAttackMode);
+        //播放命中音效
+        AudioHandler.Instance.PlaySound(baseAttackMode.attackModeInfo.sound_hit);
+    }
+
+    /// <summary>
     /// 受到攻击
     /// </summary>
     public void UnderAttack(BaseAttackMode baseAttackMode)

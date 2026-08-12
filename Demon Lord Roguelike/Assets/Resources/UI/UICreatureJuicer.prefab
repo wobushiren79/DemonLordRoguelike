@@ -697,6 +697,8 @@ MonoBehaviour:
   ui_UIViewCreatureCardList_Target: {fileID: 3166293989487481738}
   ui_LimmitText: {fileID: 8306000120903107409}
   ui_ViewExit: {fileID: 4245406790760456673}
+  ui_JuicerWater: {fileID: 4079590375469755334}
+  ui_JuicerText: {fileID: 4920936902222384696}
 --- !u!1 &7831444292860678859
 GameObject:
   m_ObjectHideFlags: 0

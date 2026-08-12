@@ -94,6 +94,8 @@ public partial class CreatureBean
         InitSkin(npcInfo);
         //添加装备
         InitEquip(npcInfo);
+        //添加随机装备(NPC配置了equip_random时, 从装备随机池抽装备填充空槽位)
+        InitRandomEquip(npcInfo);
     }
     #endregion
 
@@ -242,6 +244,46 @@ public partial class CreatureBean
             ItemsInfoBean itemsInfo = ItemsInfoCfg.GetItemData(itemId);
             ItemBean itemData = new ItemBean(itemsInfo.id);
             ChangeEquip(itemsInfo.GetItemType(), itemData, out ItemBean beforeItem);
+        }
+    }
+
+    /// <summary>
+    /// 初始化随机装备（NPC配置 equip_random 时生效：从装备随机池按槽位抽装备，只填充未被固定装备占用的空槽位）
+    /// <para>每槽位在「空 + 池内可装备道具」中等概率抽1个(允许裸体)；稀有度从NPC配置的稀有度列表等概率抽取(重复项加权)；
+    /// 装备实体走 EquipUtil.CreateEquipItemForNpc(NPC随机装备场景: userType固定0=普通, 加点按稀有度配置默认取值)</para>
+    /// </summary>
+    /// <param name="npcInfo">NPC配置</param>
+    public void InitRandomEquip(NpcInfoBean npcInfo)
+    {
+        long poolId = npcInfo.GetEquipRandomPoolId();
+        if (poolId == 0)
+        {
+            return;
+        }
+        var poolInfo = CreatureRandomInfoCfg.GetItemData(poolId);
+        if (poolInfo == null)
+        {
+            LogUtil.LogError($"初始化随机装备失败 没有找到装备随机池:{poolId}");
+            return;
+        }
+        var listEquipInfo = poolInfo.GetRandomEquipItemInfos(creatureInfo);
+        if (listEquipInfo.IsNull())
+        {
+            return;
+        }
+        var listRarity = npcInfo.GetEquipRandomRarities();
+        for (int i = 0; i < listEquipInfo.Count; i++)
+        {
+            var itemInfo = listEquipInfo[i];
+            var itemType = itemInfo.GetItemType();
+            //固定装备优先, 随机装备只填充空槽位
+            if (dicEquipItemData.ContainsKey(itemType))
+            {
+                continue;
+            }
+            var rarity = listRarity[UnityEngine.Random.Range(0, listRarity.Count)];
+            var itemData = EquipUtil.CreateEquipItemForNpc(itemInfo.id, rarity);
+            ChangeEquip(itemType, itemData);
         }
     }
 

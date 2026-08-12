@@ -28,7 +28,7 @@ public class BuffEntityConditionalThorns : BuffEntityConditional
         if (reflectDamage <= 0) return;
         //触发判定（几率+粒子）
         if (!TriggerBuffConditional(buffEntityData)) return;
-        //造反伤数据：攻击者=自己（bean默认attackerId=targetCreatureUUId即自己），被攻击者改写为原攻击者
+        //造反伤数据：稀有度自BUFF applier==target==自己，bean默认attackerId=自己，被攻击者改写为原攻击者
         FightUnderAttackBean reflectData = FightHandler.Instance.GetFightUnderAttackData(buffEntityData, reflectDamage);
         reflectData.attackedId = fightUnderAttack.attackerId;
         attackerCreature.UnderAttack(reflectData);

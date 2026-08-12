@@ -157,6 +157,14 @@ equip_items_weapon_type = 0        // 0表示可使用所有武器类型
 
 > `UIViewItemBackpackList.FilterItems` 与 `UICreatureManager.SetCreatureEquip` 均走此统一入口，故装备类道具的列表展示与装备操作资格判断一致，改判定只需改这两个 Partial。**例外**：FilterItems 额外放行魔汁（见下节），非装备类的展示规则不走 CanEquipItem。
 
+### NPC 随机装备（装备随机池）
+
+NPC 可按配置在创建时随机穿装备（首用于终焉议会随机议员）：
+
+- **配置**：`NpcInfo.equip_random` 列，格式 `装备池ID,稀有度1,稀有度2...`（如 `10000001,N,R`；稀有度按 `RarityEnum` 枚举名、多个等概率抽、重复写加权、空=不随机）。装备池是 `CreatureRandomInfo` 里 `random_type=1` 的行，池内容存 `equip_random_data`（ItemsInfo 道具ID区间压缩串，与皮肤池 `skin_random_data` 同格式）；现有 7 个物种装备池 id `10000001~70000001`（=model_id×10^7+1）。
+- **运行时**：`CreatureBean.SetData(NpcInfoBean)` → `InitRandomEquip(npcInfo)`：`CreatureRandomInfoBean.GetRandomEquipItemInfos(creatureInfo)` 按 ItemType 分组、每槽经 `CanEquipItem` 过滤后**在「空+可装备道具」中等概率抽 1 个**（裸体率=1/(可装备数+1)，允许缺槽）；固定装备 `equip_item_ids` 优先，随机只填空槽；每件装备走 `EquipUtil.CreateEquipItemForNpc(itemId, rarity)`（NPC场景封装：普通使用者、加点按稀有度配置默认取值；底层收口 `CreateEquipItem` 核心方法）。
+- **编辑**：编辑器「游戏/皮肤随机池配置」(`SkinRandomEditorWindow`) 装备池模式维护池内容（详见 editor-extension-system）。
+
 ## 魔汁（Juice，首个消耗品类道具）
 
 道具类型不再只有装备部位：**魔汁是首个消耗品**（`ItemTypeEnum.Juice = 11`，紧随 Weapon=10；`ItemIdEnum.Juice = 200001`），由榨汁产出、对魔物使用加经验。

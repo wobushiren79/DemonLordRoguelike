@@ -100,7 +100,8 @@ BaseAttackMode                      - 攻击模式基类
 ├── AttackModeFallupon              - 天降单体（直接对锁定目标造成伤害）
 ├── AttackModeFalluponArea          - 天降范围（对目标位置范围伤害）
 ├── AttackModeFalluponChain         - 天降连锁（连锁弹射多个目标，伤害递减）
-├── AttackModeOverlap               - 重叠检测（范围伤害，无击中特效）
+├── AttackModeOverlap               - 重叠检测（范围触碰，命中走正常 UnderAttack 伤害管线）
+│   └── AttackModeOverlapNoDamage   - 无伤害重叠（纯DEBUFF触碰：只上BUFF+命中音，不掉血/不跳伤害数字/不播受击特效）
 ├── AttackModeLure                  - 引诱（改变被攻击者线路）
 └── AttackModeRegain                - 回复基类（不造成伤害，提供增益）
     ├── AttackModeRegainHP          - 回复生命
@@ -255,7 +256,13 @@ public override void StartAttack(FightCreatureEntity attacker, FightCreatureEnti
 
 **文件**: `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlap.cs`
 
-范围伤害，无击中特效（与MeleeArea的区别）。
+以自身为中心范围触碰检测，命中目标走正常 `UnderAttack` 伤害管线（扣血/伤害数字/受击特效/伤害统计）。命中处理拆为 `protected virtual HitTarget` 钩子供子类改写。
+
+#### AttackModeOverlapNoDamage（无伤害重叠）
+
+**文件**: `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlapNoDamage.cs`
+
+继承 AttackModeOverlap 的纯DEBUFF触碰变体（2026-08-12 起）：重写 `HitTarget` 改走 `FightCreatureEntity.UnderAttackNoDamage`——只附加 buff 字段配置的BUFF并播放命中音效，不掉血/不跳伤害数字/不播受击特效/不进伤害统计，无敌目标免疫。使用者：烂泥史莱姆(3003, 400001 粘液减速 buff=1000200001:1 MSPD-40%×1s)、毒液史莱姆(3004, 400002 中毒 buff=1000400001:1 每跳=史莱姆实时ATK×20%[ATK=10→2/跳]，每秒1跳共10次，毒伤跳伤数字是BUFF周期伤害走UnderAttack管线，属正常)。
 
 #### AttackModeRegain（回复基类）
 
@@ -396,7 +403,8 @@ public enum CreatureSearchType
 | 天降单体 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFallupon.cs` |
 | 天降范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponArea.cs` |
 | 天降连锁 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponChain.cs` |
-| 重叠检测 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlap.cs` |
+| 重叠检测（范围触碰，正常伤害管线） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlap.cs` |
+| 无伤害重叠（纯DEBUFF触碰） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlapNoDamage.cs` |
 | 回复基类 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRegain.cs` |
 | 回复生命 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRegainHP.cs` |
 | 回复护甲 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRegainDR.cs` |

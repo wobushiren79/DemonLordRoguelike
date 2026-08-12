@@ -147,6 +147,9 @@ bool hasCreature = fightData.CheckDefenseCreatureByPos(pos);
 // 创建进攻生物（由GameFightLogic定时生成）
 CreatureHandler.Instance.CreateAttackCreature(attackDetailData, roadNum);
 
+// 波次带生物快照时(FightAttackDetailsBean.creatureSnapshots 与 npcIds 按下标对应, 如终焉议会暴力说服的议员),
+// 内部逐个走 CreateAttackCreature(npcId..., creatureSnapshot) 直接用快照 CreatureBean 创建(同皮肤/同装备/同属性), 否则按 npcId 重建
+
 // 创建防守生物（先创建预览obj）
 GameObject previewObj = CreatureHandler.Instance.CreateDefenseCreature(creatureData);
 
@@ -165,7 +168,10 @@ public partial class FightCreatureEntity
 {
     // 受到攻击（自动处理无敌拦截(isInvincible,先于一切)、闪避、暴击、扣护甲、扣血、死亡检测）
     public void UnderAttack(BaseAttackMode baseAttackMode);
-    
+
+    // 无伤害受击（纯DEBUFF触碰：只附加攻击模式携带的BUFF+播命中音，不掉血/不跳伤害数字/不播受击特效/不进伤害统计，无敌免疫；AttackModeOverlapNoDamage 专用，如烂泥史莱姆粘液减速）
+    public void UnderAttackNoDamage(BaseAttackMode baseAttackMode);
+
     // 回复HP
     public void RegainHP(BaseAttackMode baseAttackMode);
     

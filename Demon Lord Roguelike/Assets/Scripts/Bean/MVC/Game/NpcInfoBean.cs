@@ -64,6 +64,10 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public string equip_item_ids;
 	/// <summary>
+	///随机装备（格式:装备池ID,稀有度1,稀有度2... 如 10000001,N,R；稀有度按RarityEnum枚举名，多个等概率抽、重复写加权；空=不随机）
+	/// </summary>
+	public string equip_random;
+	/// <summary>
 	///名字
 	/// </summary>
 	public long name;

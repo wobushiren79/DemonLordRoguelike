@@ -42,7 +42,7 @@ watched_files:
   - `static List<ItemBean> CreateRewardListForConquerAllEquip(conquerInfo, bool isAllDemonLord = false)`：生成一份**全装备**奖励列表（createEquipNum=createItemNum，其余规则同；isAllDemonLord=true 时全为魔王专属）——终焉议会「想要更多装备/魔王装备」议案生效时通关领奖调此
   - `InitDataForReward(List<ItemBean> baseReward, conquerInfo, int extraItemNum)`：**通关领奖入口**，用预生成 `baseReward` 充当 `listReward`（预览=实领，空则容错按 `conquerInfo` 即时生成），其后追加 `extraItemNum` 个魔晶（奖励多多）
   - `static int GetConquerEquipPoolSign()` / `static List<long> GetUnlockCreatureModelIdsForEquip()`：装备奖励池"解锁签名"=可生成装备的已解锁生物模型数量；解锁新魔物掉落后变化，触发传送门预生成奖励重生成
-  - `static ItemBean CreateEquipItemForReward(long itemId, int rarity, int userType=0, int addAttributeOverride=-1)`：**装备奖励生成单一真实源**（从 `CreateItemEquip` 抽出，`CreateItemEquip` 现复用它，行为不变）。按指定道具id+稀有度生成装备（加点数 `<0` 时取 `RarityInfoCfg.GetItemData(rarity).equip_attribute_add`）。供 GM/测试直接发货——GM「添加道具」(`UITestBase.OnClickForAddItem`) 遍历所有道具×每种稀有度(N~L)调此
+  - `static ItemBean EquipUtil.CreateEquipItemForReward(long itemId, int rarity, int userType=0, int addAttributeOverride=-1)`：**征服奖励场景的装备生成封装**（已迁至 `Assets/Scripts/Utils/EquipUtil.cs`，底层收口核心 `CreateEquipItem`；NPC随机装备/GM测试另有 `CreateEquipItemForNpc`/`CreateEquipItemForTest` 场景封装）。按指定道具id+稀有度生成装备（加点数 `<0` 时取 `RarityInfoCfg.GetItemData(rarity).equip_attribute_add`）。供 GM/测试直接发货——GM「添加道具」(`UITestBase.OnClickForAddItem`) 遍历所有道具×每种稀有度(N~L)调 `CreateEquipItemForTest`
 - **RewardSelectTestData** - 测试模式下的领奖参数（品质/属性/数量/魔王专属概率）
 - **FightDropCrystalBean** - 战斗内掉落水晶实例
 - **FightTypeConquerInfoBean(Partial)** - 征服配置（`drop_crystal` / `reward_crystal` / `reward_equip_rarity`，只决定稀有度 / `reward_reputation` 完整通关声望奖励，`GetRewardReputation()` 读取，world_id=1 各难度依次 1~10）

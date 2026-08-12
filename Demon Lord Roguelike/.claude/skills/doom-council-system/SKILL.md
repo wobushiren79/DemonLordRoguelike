@@ -36,6 +36,14 @@ watched_files:
 4. 议员显示名由 `CreatureBean.SetCouncilorDisplayName` 按 NPC 类型分流：**随机议员**走通用命名 `NpcInfoBean.GetCouncilorRandomDisplayName()`（评级称谓名：预备/列席/初级议员等，`DoomCouncilRatingsInfo.name`；评级配置缺失兜底多语言文本 UIText id=53016"随机议员"。**随机议员命名唯一入口**，测试工具等所有场景统一调它）；**固定议员(`NpcTypeEnum.Councilor`)**取其自身 NPC 名字（`NpcInfo.name`→`name_language`）。该显示名同时驱动对话弹窗(`UIGameConversation`)与详情面板(`UIViewCreatureCardDetails`)。固定NPC从 `UserRelationshipBean` 载入持久化好感。
 5. **测试分流**：当 `DoomCouncilBean.isTestAllFixedCouncilor=true` 时，`GenerateCouncilors` 顶部直接返回 `GenerateAllFixedCouncilors()`——跳过随机人数/随机议员，把 `NpcInfoCfg.GetNpcInfosByType(NpcTypeEnum.Councilor)` 全部固定议员各生成 1 名（同样走上述显示名分流 + 载入持久化好感）。仅供测试查看所有固定议员，入口 `LauncherTest.StartForDoomCouncilAllFixed`。
 
+### 随机议员装备（NpcInfo.equip_random + 装备随机池）
+- **配置链路（Excel 唯一真实源）**：`NpcInfo.equip_random` 列（格式 `装备池ID,稀有度1,稀有度2...`，如 `10000001,N,R`；稀有度按 `RarityEnum` 枚举名、多个等概率抽、**重复写可加权**；空=不随机）→ 引用 `CreatureRandomInfo` 的**装备随机池**行（`random_type=1`，池内容存 `equip_random_data` 列，为 ItemsInfo 道具ID区间压缩串；`random_type=0` 是原有皮肤池存 `skin_random_data`）。现有 7 个物种装备池 id `10000001~70000001`（=model_id×10^7+1），已按物种预填全部装备道具。
+- **随机议员按评级配稀有度**（150 条 npc_type=3 行已批量填充）：评级1→`N`、2→`N,R`、3→`R`、4→`R,SR`、5→`SR,SSR`；池按生物 model_id 对应物种池。
+- **运行时**：`CreatureBean.SetData(NpcInfoBean)` 在 `InitEquip` 后追加 `InitRandomEquip(npcInfo)`——池按 ItemType 分组（`CreatureRandomInfoBean.GetAllRandomEquipData`），每槽位经 `CreatureInfoBean.CanEquipItem`（部位/种族模组/武器类型）过滤后**在「空+可装备道具」中等概率抽1个**（裸体率=1/(可装备数+1)）；**固定装备 `equip_item_ids` 优先，随机只填空槽**；每件走 `EquipUtil.CreateEquipItemForNpc`（NPC随机装备场景：userType=0 不出魔王专属、加点按稀有度配置默认取值，底层收口 `CreateEquipItem`）。解析入口 `NpcInfoBean.GetEquipRandomPoolId()/GetEquipRandomRarities()`（带缓存）。该机制对所有 NPC 类型通用（任何 NPC 配了 equip_random 都会随机穿装）。
+- **外观即装备皮肤**：`GetSkinData(isNeedEquip:true)` 自动挂装备 `creature_model_info_id` 皮肤（帽隐发/武器替换基础武器皮），议会场景/对话/详情面板零改动生效。注意随机议员 npc_type=3 行基础属性全 0，**装备属性是其暴力说服战的主要属性来源**。
+- **暴力说服快照传递**：`FightBeanForDoomCouncil` 把 `doomCouncilData.listCouncilor` 放进 `FightAttackDetailsBean.creatureSnapshots`（与 npcIds 按下标对应）；`CreatureHandler.CreateAttackCreature(npcId..., creatureSnapshot)` 快照非空时直接用该 CreatureBean 创建（`GetFightCreatureData(creatureData,...)`）——**战斗中的议员与议会场景同一只（同皮肤/同装备/同属性）**，不再按 npcId 重建重抽。征服/其它战斗不传快照，行为不变。
+- **装备池编辑**：编辑器「游戏/皮肤随机池配置」(`SkinRandomEditorWindow`) 支持双模式——装备池([装备]前缀)右侧候选取自 ItemsInfo 装备类型道具、按池物种(creature_model_id)过滤、图标取 AtlasForItems 图集；保存按池类型写回对应列并同步导出 JSON。
+
 ### 投票态度（存于 `DoomCouncilBean.dicCouncilorAttitude`，Key=议员UUID，Value 0~100=投赞成概率；只与本场议案绑定，不放 CreatureBean、不入存档）
 - `GenerateCouncilorAttitudes(list, success_rate)` 按议案通过率生成：**高态度(赞成)组人数 = 总数×通过率 → 随机 {75,100}**；其余低态度组 → 随机 {0,25}；再随机取全体 10% 覆盖为 50。
 - 固定NPC再叠加好感修正 `(关系类型-3)×50`：仇恨-100 / 冷淡-50 / 中立0 / 友好+50 / 迷恋+100。
@@ -63,7 +71,8 @@ watched_files:
 ### 相关配置表（Excel 为唯一真实源，改后需在 Unity 运行 ExcelEditorWindow 导出）
 | 表 | 关键列 |
 |----|--------|
-| `excel_npc_info` NpcInfo | `npc_type`(2固定/3随机)、`creature_id`、`creature_random_id`、`councilor_ratings`、`name`、`body_size`(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定) |
+| `excel_npc_info` NpcInfo | `npc_type`(2固定/3随机)、`creature_id`、`creature_random_id`、`councilor_ratings`、`name`、`body_size`(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定)、`equip_random`(随机装备: `装备池ID,稀有度...` 如 `10000001,N,R`，空=不随机) |
+| `excel_creature_random_info` CreatureRandomInfo | `random_type`(0皮肤池/1装备池)、`skin_random_data`(皮肤池: CreatureModelInfo id区间串)、`equip_random_data`(装备池: ItemsInfo id区间串)、装备池id段 `10000001~70000001` |
 | `excel_doom_council_info` DoomCouncilInfo | `council_num`("min,max" 议会人数)、`success_rate` |
 | `excel_doom_council_ratings_info` | `vote`(评级票数)、`name` |
 | `excel_npc_relationship_info` | `relationship_min/max`、`relationship_type`、`icon_res` |
@@ -572,6 +581,7 @@ public List<DoomCouncilBean> GetRandomProposals(int count = 3)
 | 想要更多魔王装备效果 | `Assets/Scripts/Game/DoomCouncil/DoomCouncilEntityMoreDemonLordEquip.cs` |
 | 议会配置Bean | `Assets/Scripts/Bean/Game/DoomCouncilBean.cs` |
 | 议会战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForDoomCouncil.cs` |
+| 装备随机池解析(皮肤/装备池) | `Assets/Scripts/Bean/MVC/Game/CreatureRandomInfoBeanPartial.cs` |
 | 议会战斗模式 | `Assets/Scripts/Game/Logic/GameFightLogicDoomCouncil.cs` |
 | 议会场景主界面(替换UIBaseMain) | `Assets/Scripts/Component/UI/Game/DoomCouncil/UIDoomCouncilMain.cs` |
 | 议会议案选择界面 | `Assets/Scripts/Component/UI/Game/DoomCouncil/UIDoomCouncilBill.cs` |

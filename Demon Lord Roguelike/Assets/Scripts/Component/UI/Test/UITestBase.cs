@@ -160,8 +160,8 @@ public partial class UITestBase : BaseUIComponent
 
     /// <summary>
     /// 点击添加道具
-    /// <para>输入为空: 遍历所有道具，每种道具的每一种稀有度(N~L)各生成一个，均走征服奖励道具生成逻辑(RewardSelectBean.CreateEquipItemForReward，按稀有度随机加属性)。</para>
-    /// <para>输入为道具ID: 仅该道具走同款奖励生成逻辑，每种稀有度(N~L)各生成一个。</para>
+    /// <para>输入为空: 遍历所有道具，每种道具的每一种稀有度(N~L)各生成一个，均走统一装备生成逻辑(EquipUtil.CreateEquipItemForTest，按稀有度随机加属性)。</para>
+    /// <para>输入为道具ID: 仅该道具走同款生成逻辑，每种稀有度(N~L)各生成一个。</para>
     /// </summary>
     public void OnClickForAddItem()
     {
@@ -191,7 +191,7 @@ public partial class UITestBase : BaseUIComponent
     }
 
     /// <summary>
-    /// 按每一种稀有度(N~L)各生成一个指定道具并入背包，均走征服奖励道具生成逻辑(RewardSelectBean.CreateEquipItemForReward)
+    /// 按每一种稀有度(N~L)各生成一个指定道具并入背包，均走统一装备生成逻辑(EquipUtil.CreateEquipItemForTest)
     /// </summary>
     /// <param name="userData">用户数据</param>
     /// <param name="itemId">道具ID</param>
@@ -199,7 +199,7 @@ public partial class UITestBase : BaseUIComponent
     {
         for (int rarity = (int)RarityEnum.N; rarity <= (int)RarityEnum.L; rarity++)
         {
-            ItemBean rewardItem = RewardSelectBean.CreateEquipItemForReward(itemId, rarity);
+            ItemBean rewardItem = EquipUtil.CreateEquipItemForTest(itemId, rarity);
             userData.AddBackpackItem(rewardItem);
         }
     }

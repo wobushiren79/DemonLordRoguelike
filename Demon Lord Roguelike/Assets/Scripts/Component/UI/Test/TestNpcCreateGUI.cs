@@ -63,6 +63,9 @@ public class TestNpcCreateGUI : MonoBehaviour
     private bool isRandomSkinDropdownOpen;         //随机皮肤下拉列表是否展开
     private Vector2 scrollRandomSkinDropdown;      //随机皮肤下拉列表滚动
     private List<SelectItem> listRandomSkinOptions;//随机皮肤候选列表(懒加载)
+    private bool isRandomEquipDropdownOpen;        //随机装备下拉列表是否展开
+    private Vector2 scrollRandomEquipDropdown;     //随机装备下拉列表滚动
+    private List<SelectItem> listRandomEquipOptions;//随机装备候选列表(懒加载)
     private string inputHP, inputDR, inputMP, inputATK, inputASPD, inputMSPD, inputSearchRange;//属性输入框
     private Vector2 scrollMain;                     //主面板滚动
     private Vector2 scrollSelect;                   //选择面板滚动
@@ -236,6 +239,10 @@ public class TestNpcCreateGUI : MonoBehaviour
             creatureData.InitSkin(listCreatureSkinData);
         }
         creatureData.InitEquip(listCreatureEquipItemIds);
+        //随机装备: NPC配置了equip_random时, 从装备随机池抽装备填充空槽位(每次刷新重新随机, 便于查看随机池各种组合)
+        var npcInfoForRandomEquip = creatureData.creatureNpcData?.npcInfo;
+        if (npcInfoForRandomEquip != null && npcInfoForRandomEquip.GetEquipRandomPoolId() != 0)
+            creatureData.InitRandomEquip(npcInfoForRandomEquip);
         //应用所有可调色皮肤(color_state!=0)的手动颜色；随机皮肤模式下颜色由随机逻辑决定，不应用手动颜色
         if (randomInfo == null)
             ApplySkinColors();
@@ -350,7 +357,7 @@ public class TestNpcCreateGUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 懒加载随机皮肤(CreatureRandomInfo)候选下拉列表(id + 备注，含"不使用"项，按id排序)
+    /// 懒加载随机皮肤(CreatureRandomInfo)候选下拉列表(id + 备注，含"不使用"项，按id排序；只列皮肤池 random_type=0)
     /// </summary>
     private void EnsureRandomSkinOptions()
     {
@@ -360,11 +367,32 @@ public class TestNpcCreateGUI : MonoBehaviour
         var allRandomData = CreatureRandomInfoCfg.GetAllArrayData();
         foreach (var randomInfo in allRandomData)
         {
+            //只列皮肤池(装备池走随机装备下拉)
+            if (randomInfo.GetRandomType() != CreatureRandomTypeEnum.Skin) continue;
             //无备注时回退显示随机池原始数据
             string label = randomInfo.remark.IsNull() ? randomInfo.skin_random_data : randomInfo.remark;
             listRandomSkinOptions.Add(new SelectItem(randomInfo.id, $"{randomInfo.id}  {label}"));
         }
         listRandomSkinOptions.Sort((a, b) => a.id.CompareTo(b.id));
+    }
+
+    /// <summary>
+    /// 懒加载随机装备(CreatureRandomInfo)候选下拉列表(id + 备注，含"不使用"项，按id排序；只列装备池 random_type=1)
+    /// </summary>
+    private void EnsureRandomEquipOptions()
+    {
+        if (listRandomEquipOptions != null) return;
+        listRandomEquipOptions = new List<SelectItem>();
+        listRandomEquipOptions.Add(new SelectItem(0, "0  (不使用随机装备)"));
+        var allRandomData = CreatureRandomInfoCfg.GetAllArrayData();
+        foreach (var randomInfo in allRandomData)
+        {
+            //只列装备池
+            if (randomInfo.GetRandomType() != CreatureRandomTypeEnum.Equip) continue;
+            string label = randomInfo.remark.IsNull() ? randomInfo.equip_random_data : randomInfo.remark;
+            listRandomEquipOptions.Add(new SelectItem(randomInfo.id, $"{randomInfo.id}  {label}"));
+        }
+        listRandomEquipOptions.Sort((a, b) => a.id.CompareTo(b.id));
     }
 
     /// <summary>
@@ -385,6 +413,52 @@ public class TestNpcCreateGUI : MonoBehaviour
         npcInfo.creature_random_id = randomId;
         //皮肤选择面板基于固定皮肤编辑，随机模式下无意义，直接关闭
         CloseSelect();
+        RefreshCreature();
+    }
+
+    /// <summary>
+    /// 切换随机装备池：改写 npcInfo.equip_random 的池ID段(保留稀有度段)并刷新模型
+    /// </summary>
+    private void OnChangeRandomEquipPool(long poolId)
+    {
+        var npcInfo = creatureData?.creatureNpcData?.npcInfo;
+        if (npcInfo == null || npcInfo.GetEquipRandomPoolId() == poolId) return;
+        if (poolId == 0)
+        {
+            npcInfo.SetEquipRandom("");
+        }
+        else
+        {
+            //保留已选稀有度段, 未选稀有度时默认N
+            var rarities = npcInfo.GetEquipRandomRarities();
+            string rarityStr = rarities.Count > 0 ? string.Join(",", rarities) : "N";
+            npcInfo.SetEquipRandom($"{poolId},{rarityStr}");
+        }
+        RefreshCreature();
+    }
+
+    /// <summary>
+    /// 切换随机装备的稀有度(加入/移出稀有度列表; 至少保留1个)并刷新模型
+    /// </summary>
+    private void OnToggleEquipRarity(RarityEnum rarity)
+    {
+        var npcInfo = creatureData?.creatureNpcData?.npcInfo;
+        if (npcInfo == null) return;
+        long poolId = npcInfo.GetEquipRandomPoolId();
+        if (poolId == 0) return;
+        var rarities = new List<RarityEnum>(npcInfo.GetEquipRandomRarities());
+        if (rarities.Contains(rarity))
+        {
+            //至少保留1个稀有度
+            if (rarities.Count <= 1) return;
+            rarities.Remove(rarity);
+        }
+        else
+        {
+            rarities.Add(rarity);
+            rarities.Sort();
+        }
+        npcInfo.SetEquipRandom($"{poolId},{string.Join(",", rarities)}");
         RefreshCreature();
     }
 
@@ -413,6 +487,7 @@ public class TestNpcCreateGUI : MonoBehaviour
         editingColorSkinType = CreatureSkinTypeEnum.None;
         isCreatureDropdownOpen = false;
         isRandomSkinDropdownOpen = false;
+        isRandomEquipDropdownOpen = false;
         InitCreatureAttributeUI();
         RefreshCreature();
     }
@@ -456,8 +531,13 @@ public class TestNpcCreateGUI : MonoBehaviour
             editingColorSkinType = CreatureSkinTypeEnum.None;
             //随机皮肤池与旧物种模型绑定，切换生物后一并重置(与清空皮肤/装备同语义)
             if (creatureData.creatureNpcData?.npcInfo != null)
+            {
                 creatureData.creatureNpcData.npcInfo.creature_random_id = 0;
+                //随机装备池同样与物种绑定，一并清空
+                creatureData.creatureNpcData.npcInfo.SetEquipRandom("");
+            }
             isRandomSkinDropdownOpen = false;
+            isRandomEquipDropdownOpen = false;
             //皮肤/装备选择面板的候选项基于旧模型已失效，直接关闭
             CloseSelect();
         }
@@ -526,6 +606,7 @@ public class TestNpcCreateGUI : MonoBehaviour
                 new ExcelChangeData(npciD,"creature_random_id",$"{creatureNpcData.npcInfo.creature_random_id}"),
                 new ExcelChangeData(npciD,"skin_data",creatureSkinData),
                 new ExcelChangeData(npciD,"equip_item_ids",creatureEquipItemIds),
+                new ExcelChangeData(npciD,"equip_random",$"{creatureNpcData.npcInfo.equip_random}"),
                 new ExcelChangeData(npciD,"HP",$"{creatureNpcData.npcInfo.HP}"),
                 new ExcelChangeData(npciD,"DR",$"{creatureNpcData.npcInfo.DR}"),
                 new ExcelChangeData(npciD,"MP",$"{creatureNpcData.npcInfo.MP}"),
@@ -917,12 +998,14 @@ public class TestNpcCreateGUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 装备槽区
+    /// 装备槽区(顶部为随机装备下拉+稀有度开关；配置随机装备后每次刷新从池中重抽填充空槽)
     /// </summary>
     private void DrawEquipSection()
     {
         GUILayout.Space(6);
         GUILayout.Label("── 装备 ──", sectionStyle);
+        DrawRandomEquipDropdown();
+        DrawEquipRarityToggles();
         List<ItemTypeEnum> listEquipType = creatureData.creatureInfo.GetEquipItemsType();
         foreach (var equipType in listEquipType)
         {
@@ -933,6 +1016,71 @@ public class TestNpcCreateGUI : MonoBehaviour
                 OpenEquipSelect(equipType);
             GUILayout.EndHorizontal();
         }
+    }
+
+    /// <summary>
+    /// 随机装备下拉区：选择 CreatureRandomInfo 装备池(id+备注)，0=不使用
+    /// </summary>
+    private void DrawRandomEquipDropdown()
+    {
+        EnsureRandomEquipOptions();
+        long currentPoolId = creatureData.creatureNpcData?.npcInfo?.GetEquipRandomPoolId() ?? 0;
+        //当前选中项label从候选列表实时取，随equip_random变化自动更新
+        var currentOption = listRandomEquipOptions.Find(item => item.id == currentPoolId);
+        string randomEquipLabel = currentOption.label ?? $"{currentPoolId}  (未知装备池)";
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("随机装备", labelStyle, GUILayout.Width(70));
+        if (GUILayout.Button(randomEquipLabel, GUILayout.Height(26)))
+            isRandomEquipDropdownOpen = !isRandomEquipDropdownOpen;
+        GUILayout.EndHorizontal();
+
+        //下拉展开时的候选列表(列出 id + 备注，当前选中项高亮)
+        if (isRandomEquipDropdownOpen)
+        {
+            scrollRandomEquipDropdown = GUILayout.BeginScrollView(scrollRandomEquipDropdown, GUI.skin.box, GUILayout.Height(160));
+            foreach (var option in listRandomEquipOptions)
+            {
+                bool isCurrent = option.id == currentPoolId;
+                Color oldColor = GUI.color;
+                if (isCurrent) GUI.color = Color.green;
+                string optionLabel = isCurrent ? $"✔ {option.label}" : option.label;
+                if (GUILayout.Button(optionLabel, GUILayout.Height(24)))
+                {
+                    GUI.color = oldColor;
+                    isRandomEquipDropdownOpen = false;
+                    OnChangeRandomEquipPool(option.id);
+                    break;
+                }
+                GUI.color = oldColor;
+            }
+            GUILayout.EndScrollView();
+        }
+    }
+
+    /// <summary>
+    /// 随机装备稀有度开关行：点选加入/移出稀有度列表(至少保留1个)，选中项绿色高亮
+    /// </summary>
+    private void DrawEquipRarityToggles()
+    {
+        var npcInfo = creatureData.creatureNpcData?.npcInfo;
+        if (npcInfo == null || npcInfo.GetEquipRandomPoolId() == 0) return;
+        var rarities = npcInfo.GetEquipRandomRarities();
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("稀有度", labelStyle, GUILayout.Width(70));
+        foreach (RarityEnum rarity in System.Enum.GetValues(typeof(RarityEnum)))
+        {
+            bool isSelected = rarities.Contains(rarity);
+            Color oldColor = GUI.color;
+            if (isSelected) GUI.color = Color.green;
+            if (GUILayout.Button(rarity.ToString(), GUILayout.Width(48), GUILayout.Height(22)))
+            {
+                GUI.color = oldColor;
+                OnToggleEquipRarity(rarity);
+                break;
+            }
+            GUI.color = oldColor;
+        }
+        GUILayout.EndHorizontal();
     }
 
     /// <summary>
@@ -952,6 +1100,7 @@ public class TestNpcCreateGUI : MonoBehaviour
                         $"MSPD:{creatureData.GetAttributeInt(CreatureAttributeTypeEnum.MSPD)}", labelStyle);
         GUILayout.Label($"皮肤: {string.Join(",", listCreatureSkinData)}", labelStyle);
         GUILayout.Label($"装备: {string.Join(",", listCreatureEquipItemIds)}", labelStyle);
+        GUILayout.Label($"随机装备: {creatureData.creatureNpcData?.npcInfo?.equip_random}", labelStyle);
     }
 
     /// <summary>

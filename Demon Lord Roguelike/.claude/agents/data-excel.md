@@ -124,7 +124,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 | `excel_creature_attribute_type_info[生物属性信息].xlsx` | CreatureAttributeTypeInfo | 12 | id, mark_name, res_name, color_text, name[language] |
 | `excel_creature_model[生物模型信息].xlsx` | CreatureModel | 66 | id, res_name, unlock_id, size_spine, ui_show_spine, name[language] |
 | `excel_creature_model_info[生物模型详情信息] .xlsx` | CreatureModelInfo | 438 | id, model_id, show_type, part_type, res_name, color_state |
-| `excel_creature_random_info[生物随机信息] .xlsx` | CreatureRandomInfo | 16 | id, skin_random_data |
+| `excel_creature_random_info[生物随机信息] .xlsx` | CreatureRandomInfo | 21 | id, random_type(0皮肤池/1装备池), skin_random_data(皮肤池: CreatureModelInfo id区间串), equip_random_data(装备池: ItemsInfo id区间串; 7个物种装备池id 10000001~70000001=model_id×10^7+1), remark |
 
 ---
 
@@ -136,7 +136,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 | `excel_attackmode_ext_info[攻击模块扩展信息].xlsx` | AttackModeExtInfo | 1 | id, attack_mode_id(对应AttackModeInfo), ext_type(额外攻击类型,1=BOSS技能), trigger_interval(释放间隔秒), remark （5列）。配 NpcInfo.attack_mode_ext 实现"额外攻击"按间隔自动释放(不限于BOSS)，运行时由 AIIntentCreatureAttack 的额外攻击机制消费 |
 | `excel_buff_info[buff信息].xlsx` | BuffInfo | 131 | id, buff_type, rarity, class_entity/events/data, trigger_value/chance/num/time/effect, name[language] （25列） |
 | `excel_buff_pre_info[buff前置条件信息].xlsx` | BuffPreInfo | 6 | id, class_entity |
-| `excel_fight_scene[战斗场景].xlsx` | FightScene | 4 | id, name_res, road_color_a/b, skybox_mat |
+| `excel_fight_scene[战斗场景].xlsx` | FightScene | 4 | id, name_res, road_color_a/b, skybox_mat。id 编号约定：每个主场景占一个万位段（10001=树林/20001=沙漠/30001=皇宫BOSS，新增主场景按 40001、50001… 递进），个十百千位留给该场景的子场景变体（如 10002=树林子场景）；99999=测试场景特殊区，不参与主场景序列 |
 | `excel_fight_type_conquer_info[战斗-征服模式].xlsx` | FightTypeConquerInfo | 12 | id, world_id, fight_scene_ids, enemy_ids, enemy_num, attack_wave, fight/road/level 参数, drop/reward_crystal, reward_reputation(通关声望奖励) （24列） |
 
 ---
@@ -154,7 +154,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_npc_info[NPC信息].xlsx` | NpcInfo | 37 | id, creature_id, npc_type, level, HP/MP/DR/ATK/ASPD/MSPD, skin_data, equip_item_ids, councilor_ratings, title_data, name[language], body_size(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定), attack_mode_ext(Boss额外技能:逗号分隔的AttackModeExtInfo id,非空即启用), remark （20列） |
+| `excel_npc_info[NPC信息].xlsx` | NpcInfo | 169 | id, creature_id, npc_type, level, HP/MP/DR/ATK/ASPD/MSPD, skin_data, equip_item_ids, equip_random(随机装备: `装备池ID,稀有度1,稀有度2...` 如 `10000001,N,R`，稀有度按RarityEnum枚举名、多个等概率抽、重复写加权、空=不随机；150条npc_type=3议员行已按评级配N~SSR), councilor_ratings, title_data, name[language], body_size(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定), attack_mode_ext(Boss额外技能:逗号分隔的AttackModeExtInfo id,非空即启用), remark （21列） |
 | `excel_npc_relationship_info[NPC关系信息].xlsx` | NpcRelationshipInfo | 7 | id, icon_res, name[language], relationship_min/max, relationship_type |
 | `excel_doom_council_info[终焉议会信息].xlsx` | DoomCouncilInfo | 13 | id, success_rate, cost_reputation/crystal, class_entity_name/data, unlock_id, name[language] （11列） |
 | `excel_doom_council_ratings_info[终焉议会议员等级信息].xlsx` | DoomCouncilRatingsInfo | 12 | id, icon_res, vote, name[language] |

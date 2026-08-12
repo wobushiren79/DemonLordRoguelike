@@ -203,7 +203,13 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             {
                 npcCreatePosX = fightAttackDetails.npcCreatePosX[i];
             }
-            CreateAttackCreature(npcId, roadNum, createPosX : npcCreatePosX, intensityRate : fightAttackDetails.intensityRate);
+            //生物快照(终焉议会暴力说服: 与议会场景同一只, 同皮肤同装备)
+            CreatureBean creatureSnapshot = null;
+            if (fightAttackDetails.creatureSnapshots != null && i < fightAttackDetails.creatureSnapshots.Count)
+            {
+                creatureSnapshot = fightAttackDetails.creatureSnapshots[i];
+            }
+            CreateAttackCreature(npcId, roadNum, createPosX : npcCreatePosX, intensityRate : fightAttackDetails.intensityRate, creatureSnapshot : creatureSnapshot);
         }
         UIHandler.Instance.RefreshUI();
     }
@@ -213,7 +219,8 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// </summary>
     /// <param name="targetRoad">目标进攻路线 0为随机</param>
     /// <param name="intensityRate">强度倍率(默认1; 征服模式敌人含BOSS按关卡递增, 作用到 HP/护甲/攻击力)</param>
-    public GameObject CreateAttackCreature(long npcId, int roadNum, int targetRoad = 0 , float createPosX = 11.5f, float intensityRate = 1f)
+    /// <param name="creatureSnapshot">生物快照(不为null时直接用该数据创建, 不再按npcId重建; 终焉议会暴力说服用)</param>
+    public GameObject CreateAttackCreature(long npcId, int roadNum, int targetRoad = 0 , float createPosX = 11.5f, float intensityRate = 1f, CreatureBean creatureSnapshot = null)
     {
         var npcInfo = NpcInfoCfg.GetItemData(npcId);
         if (npcInfo == null)
@@ -232,8 +239,10 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         float randomZ = targetRoad + UnityEngine.Random.Range(-0.01f, 0.01f);
         targetObj.transform.position = new Vector3(randomX, 0, randomZ);
 
-        //创建战斗生物
-        FightCreatureBean fightCreatureData = GetFightCreatureData(npcInfo, CreatureFightTypeEnum.FightAttack);
+        //创建战斗生物(优先使用快照数据)
+        FightCreatureBean fightCreatureData = creatureSnapshot != null
+            ? GetFightCreatureData(creatureSnapshot, CreatureFightTypeEnum.FightAttack)
+            : GetFightCreatureData(npcInfo, CreatureFightTypeEnum.FightAttack);
         fightCreatureData.positionCreate = new Vector3Int(0, 0, targetRoad);
         //应用强度倍率(征服模式敌人含BOSS按关卡递增强度; 改变 HP/护甲/攻击力 并刷新当前血量护甲)
         if (intensityRate != 1f)

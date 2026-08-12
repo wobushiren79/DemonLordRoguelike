@@ -95,7 +95,8 @@ public class CreatureJuicerLogic : BaseGameLogic
         juiceData.juicerExp = totalJuiceExp;
         userData.AddBackpackItem(juiceData);
         GameDataHandler.Instance.manager.SaveUserData();
-        UIHandler.Instance.ToastHintText(string.Format(TextHandler.Instance.GetTextById(61016), totalJuiceExp), 0);
+        //榨汁成功提示(state=1 成功图标,绿色对勾)
+        UIHandler.Instance.ToastHintText(string.Format(TextHandler.Instance.GetTextById(61016), totalJuiceExp), 1);
         LogUtil.Log($"[魔汁机] 榨汁结算完成:消耗魔物={targetCreatures.Count},获得魔汁经验={totalJuiceExp}");
     }
     #endregion

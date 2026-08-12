@@ -45,8 +45,9 @@ public class FightUnderAttackBean
     /// </summary>
     public void SetData(BuffEntityBean buffEntityData, int attackerDamage)
     {
-        this.attackedId = buffEntityData.applierCreatureUUId;
-        this.attackerId = buffEntityData.targetCreatureUUId;
+        //归属：攻击者=BUFF施加者（毒/烧伤等跳伤正确记到施加者头上），被攻击者=BUFF持有者
+        this.attackedId = buffEntityData.targetCreatureUUId;
+        this.attackerId = buffEntityData.applierCreatureUUId;
         this.attackerDamage = attackerDamage;
         this.attackerCRT = 0;
         this.soundHitId = 0;

@@ -128,7 +128,7 @@ UIHandler.ShowMask(1, null, () =>
 |------|--------|------|-----------|-------------------|
 | 物种/基础属性 | CreatureInfoCfg | CreatureInfo.txt | excel_creature_info | `name_language`、`creature_random_id`、体型区间 |
 | 初始魔物 NPC | NpcInfoCfg | NpcInfo.txt | excel_npc_info | `creature_id`、`name_language`、`skin_data` |
-| 皮肤随机池 | CreatureRandomInfoCfg | CreatureRandomInfo.txt | excel_creature_random_info | `skin_random_data` |
+| 皮肤随机池 | CreatureRandomInfoCfg | CreatureRandomInfo.txt | excel_creature_random_info | `skin_random_data`（注：该表另有 `random_type`/`equip_random_data` 列承载装备随机池，仅 NPC 随机装备用，创建界面只读皮肤池行） |
 | 皮肤模型/颜色 | CreatureModelInfoCfg | CreatureModelInfo.txt | excel_creature_model_info | `color_state`、部位类型 |
 
 多语言 textId：304=创建确认对话框内容（含 {0} 名字占位）、305=名字为空提示（真实源 excel_language 对应工作表）。

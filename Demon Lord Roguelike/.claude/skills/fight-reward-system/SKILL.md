@@ -81,7 +81,7 @@ UIRewardSelect (领奖界面)
   - `static List<ItemBean> CreateRewardListForConquerAllEquip(FightTypeConquerInfoBean conquerInfo, bool isAllDemonLord = false)`：生成一份**全装备**奖励列表（`createEquipNum = createItemNum`，稀有度/解锁池/兜底魔晶等同规则；`isAllDemonLord=true` 时 `createEquipDemonLordRate` 拉满=**全魔王专属**）——终焉议会「想要更多装备/魔王装备」议案生效时通关领奖调此（见 [`doom-council-system`](../doom-council-system/SKILL.md)）。
   - `InitDataForReward(List<ItemBean> baseReward, FightTypeConquerInfoBean conquerInfo, int extraItemNum)`：用预生成的 `baseReward` 充当 `listReward`（预览=实领）；`baseReward` 为空则容错按 `conquerInfo` 即时生成；其后按 `extraItemNum` 追加装备道具（深渊馈赠「奖励多多」，`CreateItemEquip` 与首件同规则、生成不出装备时兜底魔晶）。**通关领奖走此入口。**
   - `static int GetConquerEquipPoolSign()` / `static List<long> GetUnlockCreatureModelIdsForEquip()`：装备奖励池「解锁签名」= 可生成装备的已解锁生物模型数量。解锁新魔物掉落（生物分支 `EquipReward*` 研究）后签名变化，传送门预生成奖励据此判定是否需重新生成。
-  - `static ItemBean CreateEquipItemForReward(long itemId, int rarity, int userType = 0, int addAttributeOverride = -1)`：**装备奖励生成的单一真实源**（从 `CreateItemEquip` 抽出的核心两行）。按指定 `itemId`+`rarity` 生成一个装备道具，属性条数=品质、每条加点数取 `addAttributeOverride`（`<0` 时按 `RarityInfoCfg.GetItemData(rarity).equip_attribute_add`）。私有 `CreateItemEquip` 现复用它（传入已算好的 `addAttribute`/`userType`，行为不变）。供 GM/测试按「指定道具id+稀有度」直接发货（不走解锁生物模型池、不含魔王专属概率）——GM「添加道具」即遍历所有道具×每种稀有度调此。
+  - `static ItemBean EquipUtil.CreateEquipItemForReward(long itemId, int rarity, int userType = 0, int addAttributeOverride = -1)`：**征服奖励场景的装备生成封装**（在 `Assets/Scripts/Utils/EquipUtil.cs`，底层收口核心 `CreateEquipItem`；NPC随机装备/GM测试另有 `CreateEquipItemForNpc`/`CreateEquipItemForTest` 场景封装）。按指定 `itemId`+`rarity` 生成一个装备道具，属性条数=品质、每条加点数取 `addAttributeOverride`（`<0` 时按 `RarityInfoCfg.GetItemData(rarity).equip_attribute_add`）。私有 `CreateItemEquip` 复用它（传入已算好的 `addAttribute`/`userType`，行为不变）。
 
 ### RewardSelectTestData（测试模式参数）
 仅测试模式（`fightData == null`）使用：`rarity / addAttribute / crystalNum / createEquipNum / createItemNum / selectNumMax / createEquipDemonLordRate`。
@@ -110,7 +110,7 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 - **正常模式**：品质 `rarityItem = fightTypeConquerInfo.reward_equip_rarity`，属性加点数量 `addAttribute = RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add`（由稀有度配置表决定，征服表只控制出什么稀有度）；按 `createEquipDemonLordRate` 概率设为魔王专属 `ItemUserTypeEnum.DemonLord`
 - **测试模式**：用 `testData.rarity / addAttribute / createEquipDemonLordRate`
 - ⚠️ **道具稀有度白名单过滤（reward_rarity）**：现流程**先**算好目标 `rarityItem`，**再**按道具的 `ItemsInfoBean.IsMatchRewardRarity(rarityItem)` 过滤生物装备池——道具 `reward_rarity` 配了(如 `5,6`)就只在对应稀有度奖励里出现，空=全稀有度适配。过滤后池为空则回退发魔晶（与"无相关道具"一致）。字段/编辑器详见 [item-system](../item-system/SKILL.md)。这也是取随机道具的时机**从"先取件再定稀有度"调整为"先定稀有度再过滤取件"**的原因。
-- 末尾算好 `rarityItem/userType/addAttribute` 后收口到 `CreateEquipItemForReward(id, rarityItem, userType, addAttribute)`（内部 `new ItemBean(id, 1, rarityItem, userType)` → `InitRandomAttributeForCreate(addAttribute)`）——该静态方法即装备生成单一真实源，GM/测试也复用。
+- 末尾算好 `rarityItem/userType/addAttribute` 后收口到 `EquipUtil.CreateEquipItemForReward(id, rarityItem, userType, addAttribute)`（奖励场景封装，底层 `CreateEquipItem`：`new ItemBean(id, 1, rarityItem, userType)` → `InitRandomAttributeForCreate(addAttribute)`）——装备生成统一入口在 EquipUtil，NPC随机装备/GM测试走各自的场景封装。
 
 ### 魔晶生成 CreateItemCrystal
 - 基础数量 `itemCrystalNum = fightTypeConquerInfo.reward_crystal`（测试模式用 `testData.crystalNum`）

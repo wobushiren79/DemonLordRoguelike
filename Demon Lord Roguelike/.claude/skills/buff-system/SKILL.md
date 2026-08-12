@@ -39,8 +39,8 @@ BuffBaseEntity                              # 抽象基类（事件回调 + Show
 │   │   ├── BuffEntityAttributeScaleByDefenseCount  # 通用功能类：属性%随"当前场上存活防守魔物数N"缩放，率=(N-1)×每只率(曾用于馈赠「都是兄弟」，现役无配置、可被其它同功能馈赠复用)
 │   │   └── BuffEntityAttributeScaleByKillCount     # 通用功能类(兼 IBuffSingleTarget)：选取时随机锁定一只防守生物，属性%随"该只自身累计击杀敌人数"缩放，率=该只killNum×每只率(曾用于馈赠「杀红了眼」，现役无配置、可被其它同功能馈赠复用)
 │   └── BuffEntityAttributeMulti            # 多属性BUFF：一次随机率(trigger_value_rate)同时改多个属性；class_entity_data="属性:倍率|属性:倍率"(如 "ATK:1|HP:-1"=ATK+率、HP等量负率)，实现"一属性增益、对应属性等比减益"。扭蛋R级双刃BUFF(狂战士/快枪手/铜墙铁壁/大块头 各A/B/C)。与单属性同为"纯属性BUFF"(IsBuffEntityAttributeOnly)，走属性烘焙路径
-├── BuffEntityBaseHPChange                  # 周期改血BUFF（按目标最大生命结算）：每 trigger_time 触发、共 trigger_num 次，HP变化=value+目标最大HP×rate（正回血/负扣血，扣血走UnderAttack管线）；子类 BuffEntityBaseHPChangeArea=范围版；中毒1000400001/持续回血12000100001
-├── BuffEntityBaseHPChangeByApplierATK      # 周期掉血BUFF（按施加者实时攻击力结算）：每次触发伤害=施加者当前ATK×|rate|+value，施加者不在场/已死亡跳过本次，走UnderAttack管线；骷髅魔法师(火)「烧伤」1000500001（攻击模式201003命中50%概率挂，3秒×3次，rate=-0.5）
+├── BuffEntityBaseHPChange                  # 周期改血BUFF（按目标最大生命结算）：每 trigger_time 触发、共 trigger_num 次，HP变化=value+目标最大HP×rate（正回血/负扣血，扣血走UnderAttack管线）；子类 BuffEntityBaseHPChangeArea=范围版；持续回血12000100001
+├── BuffEntityBaseHPChangeByApplierATK      # 周期掉血BUFF（按施加者实时攻击力结算）：每次触发伤害=施加者当前ATK×|rate|+value，施加者不在场/已死亡跳过本次，走UnderAttack管线；骷髅魔法师(火)「烧伤」1000500001（攻击模式201003命中50%概率挂，3秒×3次，rate=-0.5）、毒液史莱姆3004「中毒」1000400001（攻击模式400002触碰100%挂，1秒×10次，rate=-0.2=史莱姆实时ATK的20%/跳）
 ├── BuffEntityInstant                       # 瞬时BUFF（SetData中立即触发并isValid=false）
 │   ├── BuffEntityInstantCloneDefenseCreature   # 深渊馈赠「增殖」：随机复制一个防守生物
 │   ├── BuffEntityInstantRewardMoreItem         # 深渊馈赠「奖励多多」：累加 FightBeanForConquer.rewardAddItemNum（领奖时+1奖励物品）
@@ -406,6 +406,8 @@ public interface IBuffSingleTarget { string SingleTargetCreatureUUId { get; } }
 | `GameFightLogic_CreatureDeadEnd` | `FightCreatureEntity` | `EventForCreatureDeadEnd` |
 
 新增事件参考前文「添加新事件类型」。
+
+> **BUFF伤害 bean 归属口径**（2026-08-12 修正）：`FightUnderAttackBean.SetData(BuffEntityBean)` → **attackerId=BUFF施加者(applier)、attackedId=BUFF持有者(target)**；此前两者反向，导致毒/烧伤跳伤在结算统计里记为"持有者自己打自己、施加者承伤"、击杀算自杀。修正后跳伤正确计入施加者的造伤/击杀/吸血统计，且会触发持有者的荆棘反伤（反弹给施加者）——属预期语义。
 
 ## 属性类型枚举（`CreatureAttributeTypeEnum`）
 

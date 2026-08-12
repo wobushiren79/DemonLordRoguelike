@@ -5,16 +5,21 @@ using System.Text;
 using OfficeOpenXml;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.U2D;
 
 /// <summary>
-/// 皮肤随机池配置窗口
-/// 用于可视化编辑 excel_creature_random_info[生物随机信息] 表的 skin_random_data 列（随机皮肤池）。
-/// 顶部下拉选择随机池（并展示其具体内容），左侧列出已加入随机的皮肤部件，右侧列出未加入的部件，
-/// 点选即可加入/移除；保存时把 ID 集合压缩为区间串（如 1030001-1030003,...) 写回 Excel 并同步导出 JSON。
+/// 皮肤/装备随机池配置窗口
+/// 用于可视化编辑 excel_creature_random_info[生物随机信息] 表的随机池：
+/// 皮肤池(random_type=0)：编辑 skin_random_data 列（随机皮肤池）。顶部下拉选择随机池（并展示其具体内容），
+///   左侧列出已加入随机的皮肤部件，右侧列出未加入的部件，点选即可加入/移除；
+/// 装备池(random_type=1)：编辑 equip_random_data 列（随机装备池，池内为 ItemsInfo 的道具ID），
+///   右侧候选取自 excel_items_info[道具信息]，按池内已有装备的物种(creature_model_id)自动过滤。
+/// 保存时把 ID 集合压缩为区间串（如 1030001-1030003,...) 写回 Excel 并同步导出 JSON。
 /// 部件全集取自 excel_creature_model_info[生物模型详情信息]，物种名取自 excel_creature_model[生物模型信息]。
 /// 规则：右侧未加入列表按池内已有部件的物种自动过滤（如选了人类池只列人类皮肤）；
 /// 装备/武器类部位（part_type>=50，及装备驱动的身体部位如鼻环 NoseRing=9）不展示（皮肤由装备道具驱动）；每行按
-/// {mark_name}_Atlas_{res_name(/→_)} 约定加载 Textures/Skins 下的皮肤图标（与游戏内 UITestNpcCreate 同约定）。
+/// {mark_name}_Atlas_{res_name(/→_)} 约定加载 Textures/Skins 下的皮肤图标（与游戏内 UITestNpcCreate 同约定）；
+/// 装备图标按 icon_res 从 AtlasForItems 图集取 sprite。
 /// </summary>
 public class SkinRandomEditorWindow : EditorWindow
 {
@@ -27,7 +32,7 @@ public class SkinRandomEditorWindow : EditorWindow
     private static void CreateWindow()
     {
         var window = GetWindow<SkinRandomEditorWindow>();
-        window.titleContent = new GUIContent("皮肤随机池配置");
+        window.titleContent = new GUIContent("皮肤/装备随机池配置");
         window.minSize = new Vector2(960, 560);
         window.Show();
     }
@@ -40,9 +45,15 @@ public class SkinRandomEditorWindow : EditorWindow
     private class PoolRow
     {
         public long id;
+        public int randomType;          //随机类型(0=皮肤池 1=装备池, CreatureRandomTypeEnum)
         public string remark;
-        public HashSet<long> skinSet = new HashSet<long>(); //当前编辑中的部件ID集合
+        public HashSet<long> skinSet = new HashSet<long>();  //当前编辑中的皮肤部件ID集合(皮肤池)
+        public HashSet<long> equipSet = new HashSet<long>(); //当前编辑中的装备道具ID集合(装备池)
         public string originalData;                          //原始 skin_random_data 的规范化串(用于对比变更)
+        public string originalEquipData;                     //原始 equip_random_data 的规范化串(用于对比变更)
+
+        /// <summary>是否装备池</summary>
+        public bool IsEquipPool => randomType == (int)CreatureRandomTypeEnum.Equip;
     }
 
     /// <summary>单个皮肤部件(生物模型详情)数据</summary>
@@ -52,6 +63,17 @@ public class SkinRandomEditorWindow : EditorWindow
         public int modelId;      //所属物种(模组)ID
         public int partType;     //部位类型(CreatureSkinTypeEnum)
         public string resName;
+        public string remark;
+    }
+
+    /// <summary>单个装备道具(ItemsInfo)数据</summary>
+    private class ItemInfoItem
+    {
+        public long id;
+        public int itemType;     //道具类型(ItemTypeEnum)
+        public int weaponType;   //武器类型(ItemTypeWeaponEnum, 仅武器有效)
+        public int modelId;      //种族模组ID(creature_model_id, 0=通用)
+        public string iconRes;
         public string remark;
     }
 
@@ -68,11 +90,29 @@ public class SkinRandomEditorWindow : EditorWindow
     /// <summary>生物模型(物种)工作表名</summary>
     private const string SheetModel = "CreatureModel";
 
+    /// <summary>道具信息工作表名</summary>
+    private const string SheetItems = "ItemsInfo";
+
+    /// <summary>装备图标图集路径(Items图集)</summary>
+    private const string ItemsAtlasPath = "Assets/LoadResources/Textures/SpriteAtlas/AtlasForItems.spriteatlas";
+
     /// <summary>列表行高(带图标)</summary>
     private const float RowHeight = 40f;
 
     /// <summary>皮肤图标所在目录(GameDataEditor.SpineAllSkinInit 抽取产物)</summary>
     private const string SkinIconFolder = "Assets/LoadResources/Textures/Skins";
+
+    /// <summary>可进入装备池的道具类型(帽/衣/裤/鞋/鼻环/戒指/武器)</summary>
+    private static readonly HashSet<int> EquipItemTypes = new HashSet<int>
+    {
+        (int)ItemTypeEnum.Hat,       //1 帽子
+        (int)ItemTypeEnum.Clothes,   //2 衣服
+        (int)ItemTypeEnum.Pants,     //3 裤子
+        (int)ItemTypeEnum.Shoe,      //4 鞋子
+        (int)ItemTypeEnum.NoseRing,  //5 鼻环
+        (int)ItemTypeEnum.FingerRing,//6 戒指
+        (int)ItemTypeEnum.Weapon,    //10 武器
+    };
 
     /// <summary>
     /// 排除展示的部位统一列表(装备/武器类：皮肤由装备道具驱动,不进入随机池编辑展示)。
@@ -107,6 +147,9 @@ public class SkinRandomEditorWindow : EditorWindow
     /// <summary>生物模型(物种) Excel 路径</summary>
     private string excelPathModel;
 
+    /// <summary>道具信息 Excel 路径</summary>
+    private string excelPathItems;
+
     /// <summary>全部随机池</summary>
     private readonly List<PoolRow> allPools = new List<PoolRow>();
 
@@ -121,6 +164,18 @@ public class SkinRandomEditorWindow : EditorWindow
 
     /// <summary>部件ID -> 部件数据</summary>
     private readonly Dictionary<long, ModelInfoItem> modelInfoMap = new Dictionary<long, ModelInfoItem>();
+
+    /// <summary>全部装备道具(ItemsInfo中装备类型道具)</summary>
+    private readonly List<ItemInfoItem> allItemInfos = new List<ItemInfoItem>();
+
+    /// <summary>道具ID -> 装备道具数据</summary>
+    private readonly Dictionary<long, ItemInfoItem> itemInfoMap = new Dictionary<long, ItemInfoItem>();
+
+    /// <summary>装备图标图集(懒加载)</summary>
+    private SpriteAtlas itemsAtlas;
+
+    /// <summary>装备图标sprite缓存(key=icon_res)</summary>
+    private readonly Dictionary<string, Sprite> itemSpriteCache = new Dictionary<string, Sprite>();
 
     /// <summary>物种(模组)ID -> 物种名</summary>
     private readonly Dictionary<long, string> modelNameMap = new Dictionary<long, string>();
@@ -137,6 +192,12 @@ public class SkinRandomEditorWindow : EditorWindow
     /// <summary>未加入池的展示列表(套用筛选后)</summary>
     private readonly List<ModelInfoItem> notInPoolShowList = new List<ModelInfoItem>();
 
+    /// <summary>装备池: 已加入池的展示列表(按道具类型、ID排序；含无效ID的悬空项)</summary>
+    private readonly List<long> inPoolEquipShowList = new List<long>();
+
+    /// <summary>装备池: 未加入池的展示列表(套用筛选后)</summary>
+    private readonly List<ItemInfoItem> notInPoolEquipShowList = new List<ItemInfoItem>();
+
     /// <summary>部位下拉当前选中索引</summary>
     private int filterPartIndex = 0;
 
@@ -145,6 +206,15 @@ public class SkinRandomEditorWindow : EditorWindow
 
     /// <summary>部位下拉对应的 part_type 值(与 partLabels 对齐；0=全部)</summary>
     private readonly List<int> partValues = new List<int>();
+
+    /// <summary>装备池: 道具类型下拉当前选中索引</summary>
+    private int filterItemTypeIndex = 0;
+
+    /// <summary>装备池: 道具类型下拉标签</summary>
+    private string[] itemTypeLabels;
+
+    /// <summary>装备池: 道具类型下拉对应的 item_type 值(与 itemTypeLabels 对齐；0=全部)</summary>
+    private readonly List<int> itemTypeValues = new List<int>();
 
     /// <summary>搜索关键字(匹配 id/res_name/remark)</summary>
     private string searchKey = "";
@@ -179,6 +249,7 @@ public class SkinRandomEditorWindow : EditorWindow
         excelPathRandom = Application.dataPath + "/Data/Excel/excel_creature_random_info[生物随机信息] .xlsx";
         excelPathModelInfo = Application.dataPath + "/Data/Excel/excel_creature_model_info[生物模型详情信息] .xlsx";
         excelPathModel = Application.dataPath + "/Data/Excel/excel_creature_model[生物模型信息].xlsx";
+        excelPathItems = Application.dataPath + "/Data/Excel/excel_items_info[道具信息].xlsx";
         LoadAllData();
     }
 
@@ -234,8 +305,10 @@ public class SkinRandomEditorWindow : EditorWindow
         dataLoaded = false;
         LoadModelNames();
         LoadModelInfos();
+        LoadItemInfos();
         LoadPools();
         BuildPartFilter();
+        BuildItemTypeFilter();
         RebuildShowLists();
         dataLoaded = allPools.Count > 0 && allModelInfos.Count > 0;
     }
@@ -369,25 +442,108 @@ public class SkinRandomEditorWindow : EditorWindow
                 if (string.IsNullOrEmpty(idText) || !long.TryParse(idText, out long id))
                     continue;
                 string skinData = GetCell(sheet, colMap, "skin_random_data", row);
+                string equipData = GetCell(sheet, colMap, "equip_random_data", row);
+                int.TryParse(GetCell(sheet, colMap, "random_type", row), out int randomType);
                 var pool = new PoolRow
                 {
                     id = id,
+                    randomType = randomType,
                     remark = GetCell(sheet, colMap, "remark", row),
-                    skinSet = ParseSkinSet(skinData)
+                    skinSet = ParseSkinSet(skinData),
+                    equipSet = ParseSkinSet(equipData)
                 };
                 pool.originalData = CompressSkinSet(pool.skinSet);
+                pool.originalEquipData = CompressSkinSet(pool.equipSet);
                 allPools.Add(pool);
             }
         });
         allPools.Sort((a, b) => a.id.CompareTo(b.id));
 
-        // 重建下拉标签
+        // 重建下拉标签(带池类型前缀)
         List<string> labels = new List<string>();
         foreach (var pool in allPools)
-            labels.Add(string.IsNullOrEmpty(pool.remark) ? $"{pool.id}" : $"{pool.id} | {pool.remark}");
+        {
+            string typeTag = pool.IsEquipPool ? "[装备]" : "[皮肤]";
+            labels.Add(string.IsNullOrEmpty(pool.remark) ? $"{typeTag}{pool.id}" : $"{typeTag}{pool.id} | {pool.remark}");
+        }
         poolLabels = labels.ToArray();
         if (selectPoolIndex >= allPools.Count)
             selectPoolIndex = 0;
+    }
+
+    /// <summary>
+    /// 加载装备道具全集(ItemsInfo中装备类型的道具)
+    /// </summary>
+    private void LoadItemInfos()
+    {
+        allItemInfos.Clear();
+        itemInfoMap.Clear();
+        if (!File.Exists(excelPathItems))
+        {
+            LogUtil.LogError($"道具信息 Excel 不存在: {excelPathItems}");
+            return;
+        }
+        ExcelUtil.GetExcelPackage(new FileInfo(excelPathItems), (ep) =>
+        {
+            ExcelWorksheet sheet = ep.Workbook.Worksheets[SheetItems];
+            if (sheet == null)
+            {
+                LogUtil.LogError($"未找到工作表: {SheetItems}");
+                return;
+            }
+            var colMap = BuildColMap(sheet);
+            for (int row = 4; row <= sheet.Dimension.End.Row; row++)
+            {
+                string idText = GetCell(sheet, colMap, "id", row);
+                if (string.IsNullOrEmpty(idText) || !long.TryParse(idText, out long id))
+                    continue;
+                int.TryParse(GetCell(sheet, colMap, "item_type", row), out int itemType);
+                //只收录装备类型道具(帽/衣/裤/鞋/鼻环/戒指/武器)
+                if (!EquipItemTypes.Contains(itemType))
+                    continue;
+                int.TryParse(GetCell(sheet, colMap, "item_weapon_type", row), out int weaponType);
+                string modelIdText = GetCell(sheet, colMap, "creature_model_id", row);
+                int.TryParse(modelIdText, out int modelId);
+                var item = new ItemInfoItem
+                {
+                    id = id,
+                    itemType = itemType,
+                    weaponType = weaponType,
+                    modelId = modelId,
+                    iconRes = GetCell(sheet, colMap, "icon_res", row),
+                    remark = GetCell(sheet, colMap, "remark", row)
+                };
+                allItemInfos.Add(item);
+                itemInfoMap[id] = item;
+            }
+        });
+        allItemInfos.Sort((a, b) => a.id.CompareTo(b.id));
+    }
+
+    /// <summary>
+    /// 构建装备池的道具类型筛选下拉项(取装备全集中出现过的道具类型)
+    /// </summary>
+    private void BuildItemTypeFilter()
+    {
+        itemTypeValues.Clear();
+        List<string> labels = new List<string> { "全部类型" };
+        itemTypeValues.Add(0);
+
+        HashSet<int> typeSet = new HashSet<int>();
+        foreach (var item in allItemInfos)
+        {
+            typeSet.Add(item.itemType);
+        }
+        List<int> sorted = new List<int>(typeSet);
+        sorted.Sort();
+        foreach (var t in sorted)
+        {
+            labels.Add($"{GetItemTypeName(t)}({t})");
+            itemTypeValues.Add(t);
+        }
+        itemTypeLabels = labels.ToArray();
+        if (filterItemTypeIndex >= itemTypeLabels.Length)
+            filterItemTypeIndex = 0;
     }
 
     /// <summary>
@@ -526,11 +682,28 @@ public class SkinRandomEditorWindow : EditorWindow
     }
 
     /// <summary>
+    /// 装备池内已有装备推导出的物种集合(creature_model_id, 跳过0=通用装备；空池返回空集合=不限定)
+    /// </summary>
+    private HashSet<int> GetPoolEquipSpecies(PoolRow pool)
+    {
+        HashSet<int> species = new HashSet<int>();
+        if (pool == null)
+            return species;
+        foreach (var id in pool.equipSet)
+        {
+            if (itemInfoMap.TryGetValue(id, out var info) && info.modelId != 0)
+                species.Add(info.modelId);
+        }
+        return species;
+    }
+
+    /// <summary>
     /// 池物种的展示文本(如 "骷髅(2)"；多物种拼接；空池为 "空池-不限定")
     /// </summary>
     private string GetPoolSpeciesLabel(PoolRow pool)
     {
-        var species = GetPoolSpecies(pool);
+        //装备池按装备道具的种族模组推导物种
+        var species = pool != null && pool.IsEquipPool ? GetPoolEquipSpecies(pool) : GetPoolSpecies(pool);
         if (species.Count == 0)
             return "空池-不限定";
         List<int> sorted = new List<int>(species);
@@ -545,6 +718,24 @@ public class SkinRandomEditorWindow : EditorWindow
     }
 
     /// <summary>
+    /// 道具类型中文名
+    /// </summary>
+    private string GetItemTypeName(int itemType)
+    {
+        switch ((ItemTypeEnum)itemType)
+        {
+            case ItemTypeEnum.Hat: return "帽子";
+            case ItemTypeEnum.Clothes: return "衣服";
+            case ItemTypeEnum.Pants: return "裤子";
+            case ItemTypeEnum.Shoe: return "鞋子";
+            case ItemTypeEnum.NoseRing: return "鼻环";
+            case ItemTypeEnum.FingerRing: return "戒指";
+            case ItemTypeEnum.Weapon: return "武器";
+            default: return $"类型{itemType}";
+        }
+    }
+
+    /// <summary>
     /// 物种名(按 model_id 取，未知回退id)
     /// </summary>
     private string GetModelName(int modelId)
@@ -555,11 +746,15 @@ public class SkinRandomEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 池是否有未保存变更
+    /// 池是否有未保存变更(皮肤池比对皮肤集, 装备池比对装备集)
     /// </summary>
     private bool IsPoolDirty(PoolRow pool)
     {
-        return pool != null && CompressSkinSet(pool.skinSet) != pool.originalData;
+        if (pool == null)
+            return false;
+        if (pool.IsEquipPool)
+            return CompressSkinSet(pool.equipSet) != pool.originalEquipData;
+        return CompressSkinSet(pool.skinSet) != pool.originalData;
     }
 
     /// <summary>
@@ -626,6 +821,42 @@ public class SkinRandomEditorWindow : EditorWindow
             EditorGUI.DrawRect(iconRect, new Color(0.3f, 0.3f, 0.3f, 0.3f));
     }
 
+    /// <summary>
+    /// 获取装备图标sprite(懒加载AtlasForItems图集并缓存)
+    /// </summary>
+    private Sprite GetItemSprite(string iconRes)
+    {
+        if (string.IsNullOrEmpty(iconRes))
+            return null;
+        if (itemSpriteCache.TryGetValue(iconRes, out Sprite cached))
+            return cached;
+        if (itemsAtlas == null)
+            itemsAtlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(ItemsAtlasPath);
+        Sprite sprite = itemsAtlas != null ? itemsAtlas.GetSprite(iconRes) : null;
+        itemSpriteCache[iconRes] = sprite;
+        return sprite;
+    }
+
+    /// <summary>
+    /// 绘制装备图标(按图集sprite的贴图区域绘制; 无图标时画灰色占位块)
+    /// </summary>
+    private void DrawItemIcon(ItemInfoItem item)
+    {
+        Rect iconRect = GUILayoutUtility.GetRect(32, 32, GUILayout.Width(32), GUILayout.Height(32));
+        Sprite sprite = item != null ? GetItemSprite(item.iconRes) : null;
+        if (sprite != null && sprite.texture != null)
+        {
+            var tex = sprite.texture;
+            var tr = sprite.textureRect;
+            Rect uv = new Rect(tr.x / tex.width, tr.y / tex.height, tr.width / tex.width, tr.height / tex.height);
+            GUI.DrawTextureWithTexCoords(iconRect, tex, uv, true);
+        }
+        else
+        {
+            EditorGUI.DrawRect(iconRect, new Color(0.3f, 0.3f, 0.3f, 0.3f));
+        }
+    }
+
     #endregion
 
     #region 列表重建
@@ -637,9 +868,17 @@ public class SkinRandomEditorWindow : EditorWindow
     {
         inPoolShowList.Clear();
         notInPoolShowList.Clear();
+        inPoolEquipShowList.Clear();
+        notInPoolEquipShowList.Clear();
         PoolRow pool = CurrentPool;
         if (pool == null)
             return;
+        //装备池走装备展示列表
+        if (pool.IsEquipPool)
+        {
+            RebuildEquipShowLists(pool);
+            return;
+        }
 
         // 左列表：池内ID，隐藏装备/武器类部件(仅不展示，数据仍保留在池内)，按(部位, ID)排序；无效ID(模型表不存在)排最后
         foreach (var id in pool.skinSet)
@@ -687,6 +926,53 @@ public class SkinRandomEditorWindow : EditorWindow
         }
     }
 
+    /// <summary>
+    /// 重建装备池的左右展示列表(左=已加入的装备, 右=未加入的装备; 按池物种自动过滤)
+    /// </summary>
+    private void RebuildEquipShowLists(PoolRow pool)
+    {
+        // 左列表：池内装备ID，按(道具类型, ID)排序；无效ID(道具表不存在)排最后
+        foreach (var id in pool.equipSet)
+        {
+            inPoolEquipShowList.Add(id);
+        }
+        inPoolEquipShowList.Sort((a, b) =>
+        {
+            bool hasA = itemInfoMap.TryGetValue(a, out var infoA);
+            bool hasB = itemInfoMap.TryGetValue(b, out var infoB);
+            if (hasA && hasB)
+            {
+                int c = infoA.itemType.CompareTo(infoB.itemType);
+                if (c != 0) return c;
+                return a.CompareTo(b);
+            }
+            if (hasA != hasB)
+                return hasA ? -1 : 1;
+            return a.CompareTo(b);
+        });
+
+        // 右列表：未加入池的装备——仅池同物种(creature_model_id, 通用装备0总是可见)，再套用道具类型/搜索筛选
+        int typeFilter = (filterItemTypeIndex >= 0 && filterItemTypeIndex < itemTypeValues.Count) ? itemTypeValues[filterItemTypeIndex] : 0;
+        HashSet<int> poolSpecies = GetPoolEquipSpecies(pool);
+        string key = string.IsNullOrEmpty(searchKey) ? null : searchKey.Trim();
+
+        foreach (var item in allItemInfos)
+        {
+            if (pool.equipSet.Contains(item.id))
+                continue;
+            if (item.modelId != 0 && poolSpecies.Count > 0 && !poolSpecies.Contains(item.modelId))
+                continue;
+            if (typeFilter != 0 && item.itemType != typeFilter)
+                continue;
+            if (key != null
+                && !item.id.ToString().Contains(key)
+                && (string.IsNullOrEmpty(item.iconRes) || item.iconRes.IndexOf(key, StringComparison.OrdinalIgnoreCase) < 0)
+                && (string.IsNullOrEmpty(item.remark) || item.remark.IndexOf(key, StringComparison.OrdinalIgnoreCase) < 0))
+                continue;
+            notInPoolEquipShowList.Add(item);
+        }
+    }
+
     #endregion
 
     #region UI 绘制 - 工具栏与池内容
@@ -698,7 +984,7 @@ public class SkinRandomEditorWindow : EditorWindow
     {
         EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
-        EditorGUILayout.LabelField($"皮肤随机池配置   共 {allPools.Count} 个随机池 | 部件全集 {allModelInfos.Count} 个", sectionHeaderStyle);
+        EditorGUILayout.LabelField($"皮肤/装备随机池配置   共 {allPools.Count} 个随机池 | 部件全集 {allModelInfos.Count} 个 | 装备全集 {allItemInfos.Count} 件", sectionHeaderStyle);
         GUILayout.Space(4);
 
         EditorGUILayout.BeginHorizontal();
@@ -741,7 +1027,7 @@ public class SkinRandomEditorWindow : EditorWindow
 
         EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.HelpBox("左=已加入随机的皮肤(点「移除」移出池)；右=未加入的皮肤(点「加入」进池)，按池内物种自动过滤。装备/武器类部件(部位≥50，及装备驱动的鼻环)不展示，由装备道具驱动换皮。保存时自动压缩为区间串(如 1030001-1030003)写回 Excel。", MessageType.None);
+        EditorGUILayout.HelpBox("左=已加入随机(点「移除」移出池)；右=未加入(点「加入」进池)，按池内物种自动过滤。皮肤池([皮肤])编辑皮肤部件；装备池([装备])编辑装备道具(取自道具表)。保存时自动压缩为区间串(如 1030001-1030003)写回 Excel 并同步导出 JSON。", MessageType.None);
 
         EditorGUILayout.EndVertical();
     }
@@ -756,25 +1042,49 @@ public class SkinRandomEditorWindow : EditorWindow
             return;
 
         EditorGUILayout.BeginVertical("box");
-        EditorGUILayout.LabelField($"当前池: {pool.id} | {pool.remark}", EditorStyles.boldLabel);
+        string typeTag = pool.IsEquipPool ? "装备池" : "皮肤池";
+        EditorGUILayout.LabelField($"当前池: [{typeTag}] {pool.id} | {pool.remark}", EditorStyles.boldLabel);
 
-        // 统计：部位覆盖数 / 无效ID数
-        HashSet<int> partSet = new HashSet<int>();
-        int invalidCount = 0;
-        foreach (var id in pool.skinSet)
+        if (pool.IsEquipPool)
         {
-            if (modelInfoMap.TryGetValue(id, out var info))
-                partSet.Add(info.partType);
-            else
-                invalidCount++;
-        }
-        EditorGUILayout.LabelField($"部件总数: {pool.skinSet.Count}    覆盖部位: {partSet.Count}    {(invalidCount > 0 ? $"无效ID: {invalidCount}(模型表不存在)" : "")}",
-            invalidCount > 0 ? warnLabelStyle : idLabelStyle);
+            // 装备池统计：道具类型覆盖数 / 无效ID数
+            HashSet<int> typeSet = new HashSet<int>();
+            int invalidCount = 0;
+            foreach (var id in pool.equipSet)
+            {
+                if (itemInfoMap.TryGetValue(id, out var info))
+                    typeSet.Add(info.itemType);
+                else
+                    invalidCount++;
+            }
+            EditorGUILayout.LabelField($"装备总数: {pool.equipSet.Count}    覆盖道具类型: {typeSet.Count}    {(invalidCount > 0 ? $"无效ID: {invalidCount}(道具表不存在)" : "")}",
+                invalidCount > 0 ? warnLabelStyle : idLabelStyle);
 
-        // 当前编辑中的 skin_random_data 内容(只读展示)
-        GUI.enabled = false;
-        EditorGUILayout.TextArea(CompressSkinSet(pool.skinSet), GUILayout.MinHeight(34));
-        GUI.enabled = true;
+            // 当前编辑中的 equip_random_data 内容(只读展示)
+            GUI.enabled = false;
+            EditorGUILayout.TextArea(CompressSkinSet(pool.equipSet), GUILayout.MinHeight(34));
+            GUI.enabled = true;
+        }
+        else
+        {
+            // 统计：部位覆盖数 / 无效ID数
+            HashSet<int> partSet = new HashSet<int>();
+            int invalidCount = 0;
+            foreach (var id in pool.skinSet)
+            {
+                if (modelInfoMap.TryGetValue(id, out var info))
+                    partSet.Add(info.partType);
+                else
+                    invalidCount++;
+            }
+            EditorGUILayout.LabelField($"部件总数: {pool.skinSet.Count}    覆盖部位: {partSet.Count}    {(invalidCount > 0 ? $"无效ID: {invalidCount}(模型表不存在)" : "")}",
+                invalidCount > 0 ? warnLabelStyle : idLabelStyle);
+
+            // 当前编辑中的 skin_random_data 内容(只读展示)
+            GUI.enabled = false;
+            EditorGUILayout.TextArea(CompressSkinSet(pool.skinSet), GUILayout.MinHeight(34));
+            GUI.enabled = true;
+        }
 
         EditorGUILayout.EndVertical();
     }
@@ -791,6 +1101,12 @@ public class SkinRandomEditorWindow : EditorWindow
         PoolRow pool = CurrentPool;
         if (pool == null)
             return;
+        //装备池走装备双列表
+        if (pool.IsEquipPool)
+        {
+            DrawTwoColumnsForEquip(pool);
+            return;
+        }
 
         EditorGUILayout.BeginHorizontal();
 
@@ -932,6 +1248,147 @@ public class SkinRandomEditorWindow : EditorWindow
         EditorGUILayout.EndHorizontal();
     }
 
+    /// <summary>
+    /// 绘制装备池的左右双列表(已加入 / 未加入装备)
+    /// </summary>
+    private void DrawTwoColumnsForEquip(PoolRow pool)
+    {
+        EditorGUILayout.BeginHorizontal();
+
+        // ---------------- 左：已加入随机 ----------------
+        EditorGUILayout.BeginVertical("box", GUILayout.Width(position.width / 2f - 8));
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField($"已加入随机 ({inPoolEquipShowList.Count})", EditorStyles.boldLabel, GUILayout.Width(150));
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("全部移除", EditorStyles.miniButton, GUILayout.Width(64), GUILayout.Height(18)))
+        {
+            if (EditorUtility.DisplayDialog("确认", $"确定清空池 {pool.id} 的全部 {pool.equipSet.Count} 件装备吗？", "清空", "取消"))
+            {
+                pool.equipSet.Clear();
+                RebuildShowLists();
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+
+        scrollPosIn = EditorGUILayout.BeginScrollView(scrollPosIn);
+        int lastType = int.MinValue;
+        int typeCount = 0;
+        foreach (var id in inPoolEquipShowList)
+        {
+            bool valid = itemInfoMap.TryGetValue(id, out var info);
+            int itemType = valid ? info.itemType : int.MaxValue;
+            if (itemType != lastType)
+            {
+                // 道具类型分组头(统计该组数量)
+                typeCount = 0;
+                foreach (var other in inPoolEquipShowList)
+                {
+                    int otherType = itemInfoMap.TryGetValue(other, out var o) ? o.itemType : int.MaxValue;
+                    if (otherType == itemType)
+                        typeCount++;
+                }
+                string typeName = itemType == int.MaxValue ? "无效ID" : $"{GetItemTypeName(itemType)}({itemType})";
+                EditorGUILayout.LabelField($"── {typeName} ×{typeCount}", partHeaderStyle);
+                lastType = itemType;
+            }
+            DrawInPoolEquipRow(pool, id, info, valid);
+        }
+        EditorGUILayout.EndScrollView();
+        EditorGUILayout.EndVertical();
+
+        // ---------------- 右：未加入随机 ----------------
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField($"未加入随机 ({notInPoolEquipShowList.Count})", EditorStyles.boldLabel);
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("加入全部(筛选结果)", EditorStyles.miniButton, GUILayout.Width(120), GUILayout.Height(18)))
+        {
+            foreach (var item in notInPoolEquipShowList)
+                pool.equipSet.Add(item.id);
+            RebuildShowLists();
+        }
+        EditorGUILayout.EndHorizontal();
+
+        // 筛选行(物种由池自动限定，不提供下拉)
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField($"物种: {GetPoolSpeciesLabel(pool)}", rowLabelStyle, GUILayout.Width(130));
+        EditorGUILayout.LabelField("类型:", GUILayout.Width(32));
+        int newTypeIndex = EditorGUILayout.Popup(filterItemTypeIndex, itemTypeLabels ?? new[] { "全部类型" }, GUILayout.Width(110));
+        if (newTypeIndex != filterItemTypeIndex)
+        {
+            filterItemTypeIndex = newTypeIndex;
+            RebuildShowLists();
+        }
+        EditorGUILayout.LabelField("搜索:", GUILayout.Width(32));
+        string newSearch = EditorGUILayout.TextField(searchKey, GUILayout.Width(120));
+        if (newSearch != searchKey)
+        {
+            searchKey = newSearch;
+            RebuildShowLists();
+        }
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.EndHorizontal();
+
+        scrollPosOut = EditorGUILayout.BeginScrollView(scrollPosOut);
+        foreach (var item in notInPoolEquipShowList)
+            DrawNotInPoolEquipRow(pool, item);
+        EditorGUILayout.EndScrollView();
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.EndHorizontal();
+    }
+
+    /// <summary>
+    /// 绘制装备池左列表行(已加入：装备信息 + 移除按钮)
+    /// </summary>
+    private void DrawInPoolEquipRow(PoolRow pool, long id, ItemInfoItem info, bool valid)
+    {
+        EditorGUILayout.BeginHorizontal(GUILayout.Height(RowHeight));
+
+        if (valid)
+        {
+            DrawItemIcon(info);
+            EditorGUILayout.LabelField($"{id}", idLabelStyle, GUILayout.Width(80));
+            EditorGUILayout.LabelField(info.iconRes ?? "", rowLabelStyle, GUILayout.MinWidth(100));
+            EditorGUILayout.LabelField(info.remark ?? "", idLabelStyle, GUILayout.MinWidth(50));
+        }
+        else
+        {
+            EditorGUILayout.LabelField($"{id}", warnLabelStyle, GUILayout.Width(80));
+            EditorGUILayout.LabelField("道具表不存在(悬空ID)", warnLabelStyle);
+        }
+
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("移除", EditorStyles.miniButton, GUILayout.Width(44), GUILayout.Height(18)))
+        {
+            pool.equipSet.Remove(id);
+            RebuildShowLists();
+        }
+        EditorGUILayout.EndHorizontal();
+    }
+
+    /// <summary>
+    /// 绘制装备池右列表行(未加入：装备信息 + 加入按钮)
+    /// </summary>
+    private void DrawNotInPoolEquipRow(PoolRow pool, ItemInfoItem item)
+    {
+        EditorGUILayout.BeginHorizontal(GUILayout.Height(RowHeight));
+
+        DrawItemIcon(item);
+        EditorGUILayout.LabelField($"{item.id}", idLabelStyle, GUILayout.Width(80));
+        EditorGUILayout.LabelField($"{GetItemTypeName(item.itemType)}", rowLabelStyle, GUILayout.Width(50));
+        EditorGUILayout.LabelField(item.iconRes ?? "", rowLabelStyle, GUILayout.MinWidth(100));
+        EditorGUILayout.LabelField(item.remark ?? "", idLabelStyle, GUILayout.MinWidth(50));
+
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("加入", EditorStyles.miniButton, GUILayout.Width(44), GUILayout.Height(18)))
+        {
+            pool.equipSet.Add(item.id);
+            RebuildShowLists();
+        }
+        EditorGUILayout.EndHorizontal();
+    }
+
     #endregion
 
     #region 保存逻辑
@@ -944,7 +1401,12 @@ public class SkinRandomEditorWindow : EditorWindow
         List<ExcelUtil.ExcelChangeData> changeList = new List<ExcelUtil.ExcelChangeData>();
         foreach (var pool in allPools)
         {
-            if (IsPoolDirty(pool))
+            if (!IsPoolDirty(pool))
+                continue;
+            //按池类型写回对应列(皮肤池写skin_random_data, 装备池写equip_random_data)
+            if (pool.IsEquipPool)
+                changeList.Add(new ExcelUtil.ExcelChangeData(pool.id, "equip_random_data", CompressSkinSet(pool.equipSet)));
+            else
                 changeList.Add(new ExcelUtil.ExcelChangeData(pool.id, "skin_random_data", CompressSkinSet(pool.skinSet)));
         }
 
@@ -970,7 +1432,10 @@ public class SkinRandomEditorWindow : EditorWindow
 
             // 3) 刷新原始值，标记为已保存
             foreach (var pool in allPools)
+            {
                 pool.originalData = CompressSkinSet(pool.skinSet);
+                pool.originalEquipData = CompressSkinSet(pool.equipSet);
+            }
 
             EditorUtility.DisplayDialog("完成", $"已保存 {changeList.Count} 个随机池到 Excel，并重新导出了 CreatureRandomInfo.txt。", "确定");
         }

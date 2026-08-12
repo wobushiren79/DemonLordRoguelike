@@ -61,6 +61,7 @@ SpriteAtlas:
     - 27dfdae3222e48caaf466ac7cc784d56: 21300000
     - 39b079848d987ff4f9f2c6dc551eb8ec: 21300000
     - e7c83ae4ce2ff6d4a960e4f7e7dd16cb: 21300000
+    - 7dac000650a76df48b25b32b6f02a3ff: 21300000
     - 845317a68ca9e264cae76a6f3b5073dd: 21300000
     - cbc4f1f67e09a524fb85b47573785e41: 21300000
     - 5653cc57bf2346d4e94271fbf1bcd6f3: 21300000
@@ -90,6 +91,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 27dfdae3222e48caaf466ac7cc784d56, type: 3}
   - {fileID: 21300000, guid: 39b079848d987ff4f9f2c6dc551eb8ec, type: 3}
   - {fileID: 21300000, guid: e7c83ae4ce2ff6d4a960e4f7e7dd16cb, type: 3}
+  - {fileID: 21300000, guid: 7dac000650a76df48b25b32b6f02a3ff, type: 3}
   - {fileID: 21300000, guid: 845317a68ca9e264cae76a6f3b5073dd, type: 3}
   - {fileID: 21300000, guid: cbc4f1f67e09a524fb85b47573785e41, type: 3}
   - {fileID: 21300000, guid: 5653cc57bf2346d4e94271fbf1bcd6f3, type: 3}
@@ -118,6 +120,7 @@ SpriteAtlas:
   - Pingpang_1
   - Iceball_3
   - Boomerang_1
+  - MeasuringCup_1
   - Iceball_4
   - Iceball_8
   - hexagram_1

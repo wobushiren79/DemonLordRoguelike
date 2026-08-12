@@ -71,7 +71,8 @@ BaseAttackMode                      - 攻击模式基类
 ├── AttackModeFallupon              - 天降单体（直接对锁定目标造成伤害）
 ├── AttackModeFalluponArea          - 天降范围（对目标位置范围伤害）
 ├── AttackModeFalluponChain         - 天降连锁（连锁弹射多个目标，伤害递减）
-├── AttackModeOverlap               - 重叠检测（范围伤害，无击中特效）
+├── AttackModeOverlap               - 重叠检测（以自身为中心范围触碰，命中走正常 UnderAttack 伤害管线）
+│   └── AttackModeOverlapNoDamage   - 无伤害重叠（纯DEBUFF触碰变体：只附加 buff 字段配置的BUFF+播命中音，不掉血/不跳伤害数字/不播受击特效/不进伤害统计，走 FightCreatureEntity.UnderAttackNoDamage；烂泥史莱姆3003粘液减速400001(buff=1000200001:1,MSPD-40%×1s)、毒液史莱姆3004中毒400002(buff=1000400001:1,每跳=史莱姆实时ATK×20%[ATK=10→2/跳],每秒1跳共10次,毒伤跳伤走UnderAttack管线属正常)）
 ├── AttackModeLure                  - 引诱（改变被攻击者线路）
 ├── AttackModeInstantArea           - 瞬时落点范围（无弹道飞行，当帧对目标点范围攻击；支持 hit_max 命中上限+快照名单过滤，AOE 多目标伤害依次减半保底1，单次攻击内局部去重）
 │   └── AttackModeInstantAreaThunder - 落雷（瞬时AOE + 全局单例雷电粒子；深渊馈赠「闪电」300031~300035）
@@ -767,7 +768,8 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | 天降单体 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFallupon.cs` |
 | 天降范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponArea.cs` |
 | 天降连锁 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponChain.cs` |
-| 重叠检测 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlap.cs` |
+| 重叠检测（范围触碰，正常伤害管线） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlap.cs` |
+| 无伤害重叠（纯DEBUFF触碰，走 UnderAttackNoDamage） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlapNoDamage.cs` |
 | 瞬时落点范围（通用基类） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeInstantArea.cs` |
 | 落雷（瞬时AOE+单例雷电粒子） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeInstantAreaThunder.cs` |
 | 回复基类 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRegain.cs` |

@@ -67,6 +67,8 @@ public class FightAttackDetailsBean
     public List<long> bossShowNpcIds;
     //强度倍率(征服模式普通敌人按关卡递增强度; 默认1=不变, 创建生物时作用到 HP/护甲/攻击力)
     public float intensityRate = 1f;
+    //进攻生物快照(与 npcIds 按下标一一对应; 元素不为null时直接用该CreatureBean创建生物, 不再按npcId重建 —— 终焉议会暴力说服用, 保证战斗中的议员与议会场景同皮肤同装备)
+    public List<CreatureBean> creatureSnapshots;
 
     public FightAttackDetailsBean()
     {

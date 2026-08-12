@@ -202,6 +202,7 @@ public partial class FightCreatureEntity
 
     // === 战斗交互（主文件） ===
     public void UnderAttack(BaseAttackMode attackMode);  // 受击
+    public void UnderAttackNoDamage(BaseAttackMode attackMode); // 无伤害受击(纯DEBUFF触碰：只上BUFF+命中音，不掉血/不跳数字/不播受击特效/不进统计，无敌免疫；AttackModeOverlapNoDamage 专用)
     public void RegainHP(BaseAttackMode attackMode);     // 回复HP
     public void RegainDR(BaseAttackMode attackMode);     // 回复护甲
     public void AddBuff(BaseAttackMode attackMode);      // 添加BUFF
@@ -387,6 +388,10 @@ public void SpawnAttackCreature(AttackDetailData detailData)
     CreatureHandler.Instance.CreateAttackCreature(detailData, roadNum);
 }
 ```
+
+> **生物快照创建**：`FightAttackDetailsBean.creatureSnapshots`（与 `npcIds` 按下标对应，元素可为空）非空时，`CreateAttackCreature(npcId..., creatureSnapshot)` 直接用该 CreatureBean 创建（同皮肤/同装备/同属性），不再按 npcId 重建——首用于终焉议会暴力说服战斗（议员与议会场景同一只）。
+
+> **NPC 随机装备**：NPC 创建（`CreatureBean.SetData(NpcInfoBean)`）在 `InitEquip` 后追加 `InitRandomEquip(npcInfo)`——NPC 配置了 `NpcInfo.equip_random`（`装备池ID,稀有度...`）时，从 `CreatureRandomInfo` 装备随机池（`random_type=1`，`equip_random_data` 按 ItemType 分组）每槽经 `CanEquipItem` 过滤后「空+可装备道具」等概率抽 1 件（裸体率=1/(可装备数+1)），只填空槽、走 `EquipUtil.CreateEquipItemForNpc` 生成器(NPC随机装备场景)。首用于终焉议会随机议员（详见 doom-council-system）。
 
 ### 创建防守生物（玩家操作）
 

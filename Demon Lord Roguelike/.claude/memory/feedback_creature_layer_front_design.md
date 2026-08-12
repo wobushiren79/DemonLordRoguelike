@@ -11,6 +11,8 @@ metadata:
 
 **Why:** 典型使用者烂泥史莱姆(id=3003, attack_mode=400001)：敌人从它身上走过会被减速，但敌人不会发现/攻击它——"地面附着型"魔物就是靠移出敌方搜索层来实现"只影响敌人、不被敌人当目标"。2026-08-03 我（AI）曾把"配 Front 层后敌人搜不到"误判为致命 bug 并建议扩搜索 mask 修复，被用户纠正。
 
+> 减速链路史：400001 的 buff 字段在 2025-05-28 buff 系统重构(commit ff021c6)时被清空，减速长期断线；2026-08-12 重新接线 buff=`1000200001:1`（粘液减速 MSPD -40%×1s），重叠攻击拆出无伤害子类 AttackModeOverlapNoDamage（走 FightCreatureEntity.UnderAttackNoDamage，不掉血/不跳0伤害数字/不播受击特效；基类 AttackModeOverlap 保持正常伤害管线），400001/400002 的 class_name 均已切到子类。同提交顺手修复同断线的毒液史莱姆(3004, 400002 buff=`1000400001:1` 中毒)；随后中毒口径从"目标最大HP×1%/跳"改为"史莱姆实时ATK×20%/跳"(1000400001 改 BuffEntityBaseHPChangeByApplierATK, 3004 ATK 0→10)，并修正 FightUnderAttackBean.SetData(BuffEntityBean) 的归属（attacker=施加者/attacked=持有者，此前反向导致跳伤统计记成"自己打自己"）。
+
 **How to apply:**
 - 禁止以"修复索敌失效/打不到"为由扩大搜索 mask（把 Front 层加进 mask）或把生物 layer 改回默认层——那会直接破坏烂泥史莱姆的设计。
 - 涉及 creature_layer / 生物前后显示（渲染排序）的需求时，先认清这套机制的**双重语义**：①移出敌人物理搜索（不被攻击）②Spine Z 前移（显示在前）；只想要"显示在前"而不想影响索敌时，不能复用 Front 层，应走渲染侧方案（sortingOrder 等）。

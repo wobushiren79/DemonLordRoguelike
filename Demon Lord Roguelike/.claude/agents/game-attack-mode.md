@@ -42,7 +42,8 @@ watched_files:
 - **AttackModeFalluponArea** - 范围降临
 - **AttackModeFalluponChain** - 连锁降临
 - **AttackModeLure** - 引诱
-- **AttackModeOverlap** - 重叠
+- **AttackModeOverlap** - 重叠（范围触碰，命中走正常 UnderAttack 伤害管线）
+- **AttackModeOverlapNoDamage** - 无伤害重叠（继承上者的纯DEBUFF触碰变体：只对范围内敌人附加 buff 字段配置的BUFF+播命中音，不掉血/不跳伤害数字/不播受击特效/不进伤害统计，走 FightCreatureEntity.UnderAttackNoDamage；使用者：烂泥史莱姆3003粘液减速400001(buff=1000200001:1,MSPD-40%×1s)、毒液史莱姆3004中毒400002(buff=1000400001:1,每跳=史莱姆实时ATK×20%[ATK=10→2/跳],每秒1跳共10次,毒伤跳伤走UnderAttack管线属正常)）
 - **AttackModeInstantArea** - 瞬时落点范围（无弹道飞行，StartAttack 当帧对 targetPos 范围攻击并自毁；支持配置 `hit_max` 命中上限(近者优先截断) + 发射方注入 `filterCreatureIds` 快照名单(StartAttack 前写入、Destroy 置空)；AOE 多目标伤害按命中次序依次减半保底1；单次攻击内局部去重——同一生物多碰撞体只命中一次，道与道之间不共享）
 - **AttackModeInstantAreaThunder** - 落雷（继承上者，`PlayHitEffect` 改走 `EffectHandler.ShowThunderEffect` 全局单例粒子——持久型 PS 需 Stop/Play 重播，不能走 effect_hit；深渊馈赠「闪电」300031~300035，由 BuffEntityPeriodicAttackMultiInstant 发射）
 - **AttackModeOrbit** - 环绕弹道（常驻不自毁：绕宿主生物 XZ 水平面圆周运动(半径0.75=OrbitRadius 常量、角速度外部注入，高度取注入的 orbitHeight=魔王位置+攻击起始偏移)，触碰命中走 live 球形检测(attack_search_type=11)、每只书对同一敌人 0.5 秒冷却(HitCooldown 常量)，伤害=魔王实时ATK×damageRate 命中瞬间取、CRT=0；宿主 orbitCenterEntity/转速 rotateSpeed/伤害倍率 damageRate/高度 orbitHeight 由发射方在 StartAttack 前写入(照 targetRoad 先例)、宿主变更由外部每帧同步；不做越界销毁；深渊馈赠「知识的力量」300071，由 BuffEntityPeriodicAttackOrbit 生成/销毁/同步宿主）

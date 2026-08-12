@@ -16,5 +16,9 @@ public partial class UICreatureJuicer
 
     public Button ui_ViewExit;
 
+    public Image ui_JuicerWater;
+
+    public TextMeshProUGUI ui_JuicerText;
+
 
 }

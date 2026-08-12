@@ -7,6 +7,10 @@ public partial class NpcInfoBean
     protected List<CreatureSkinTypeEnum> listSkinType;
     protected List<long> listTitle;
     protected List<AttackModeExtInfoBean> listAttackModeExt;
+    //随机装备配置是否已解析
+    protected bool equipRandomParsed = false;
+    protected long equipRandomPoolId;
+    protected List<RarityEnum> equipRandomRarities;
 
     /// <summary>
     /// 获取议员评级
@@ -118,6 +122,79 @@ public partial class NpcInfoBean
             listData.Add(itemData);
         }
         return listData;
+    }
+
+    /// <summary>
+    /// 解析随机装备配置(equip_random，格式: 装备池ID,稀有度1,稀有度2... 如 "10000001,N,R")，只解析一次并缓存
+    /// </summary>
+    protected void ParseEquipRandom()
+    {
+        if (equipRandomParsed)
+        {
+            return;
+        }
+        equipRandomParsed = true;
+        equipRandomPoolId = 0;
+        equipRandomRarities = new List<RarityEnum>();
+        if (equip_random.IsNull())
+        {
+            return;
+        }
+        string[] segments = equip_random.Split(',');
+        for (int i = 0; i < segments.Length; i++)
+        {
+            string segment = segments[i].Trim();
+            if (segment.Length == 0)
+            {
+                continue;
+            }
+            //第1段为装备池ID
+            if (i == 0)
+            {
+                long.TryParse(segment, out equipRandomPoolId);
+                continue;
+            }
+            //其余段为稀有度枚举名(忽略大小写, 非法段跳过)
+            if (System.Enum.TryParse<RarityEnum>(segment, true, out var rarity))
+            {
+                equipRandomRarities.Add(rarity);
+            }
+        }
+        //稀有度全非法/未配置时兜底N
+        if (equipRandomRarities.Count == 0)
+        {
+            equipRandomRarities.Add(RarityEnum.N);
+        }
+    }
+
+    /// <summary>
+    /// 获取随机装备池ID(CreatureRandomInfo的id, 未配置返回0)
+    /// </summary>
+    public long GetEquipRandomPoolId()
+    {
+        ParseEquipRandom();
+        return equipRandomPoolId;
+    }
+
+    /// <summary>
+    /// 获取随机装备稀有度列表(等概率抽取, 重复项加权; 未配置兜底为N)
+    /// </summary>
+    public List<RarityEnum> GetEquipRandomRarities()
+    {
+        ParseEquipRandom();
+        return equipRandomRarities;
+    }
+
+    /// <summary>
+    /// 设置随机装备配置(同时重置解析缓存; 供测试工具/编辑器改写后即时生效, 落盘走 Excel 写回)
+    /// </summary>
+    /// <param name="newData">新配置串(装备池ID,稀有度1,稀有度2...; 空串=不随机)</param>
+    public void SetEquipRandom(string newData)
+    {
+        equip_random = newData;
+        equipRandomParsed = false;
+        equipRandomPoolId = 0;
+        equipRandomRarities = null;
     }
 
     /// <summary>

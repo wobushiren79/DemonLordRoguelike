@@ -17,7 +17,7 @@ public partial class GameTestEditor
 
     // 基础测试参数
     public int testDataCardNum = 20;
-    public int fightSceneId = 1;
+    public int fightSceneId = 10001;
     public string fightCardId = "2002";
     public int fightSceneRoadNum = 1;
     public int fightSceneRoadLength = 10;
@@ -138,7 +138,7 @@ public partial class GameTestEditor
 
         // 基础测试
         testDataCardNum = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "testDataCardNum", 20);
-        fightSceneId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneId", 1);
+        fightSceneId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneId", 10001);
         fightCardId = EditorPrefs.GetString(PREFS_KEY_PREFIX + "fightCardId", "900002");
         fightSceneRoadNum = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneRoadNum", 1);
         fightSceneRoadLength = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneRoadLength", 10);

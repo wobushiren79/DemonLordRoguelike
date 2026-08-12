@@ -47,6 +47,8 @@ public class FightBeanForDoomCouncil : FightBean
         var councilorPositionX = doomCouncilData.GetCouncilorAllPositionX();
 
         FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(0, councilorAllNpcId, councilorPositionX);
+        //携带议员快照(与npcIds按下标对应): 暴力说服战斗直接使用议会同一只生物数据, 保证同皮肤同装备(不再按npcId重新随机)
+        fightAttackDetails.creatureSnapshots = doomCouncilData.listCouncilor;
         fightAttackData.AddAttackQueue(fightAttackDetails);
     }
 }
