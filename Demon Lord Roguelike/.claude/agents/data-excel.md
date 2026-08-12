@@ -106,7 +106,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_audio_info[音频信息_FrameWork].xlsx` | AudioInfo | 182 | id, name_res, remark, audio_type, volume_scale |
+| `excel_audio_info[音频信息_FrameWork].xlsx` | AudioInfo | 183 | id, name_res, remark, audio_type, volume_scale |
 | `excel_base_info[基础信息_FrameWork].xlsx` | BaseInfo | 3 | id, content |
 | `excel_language[多语言_FrameWork].xlsx` | UIText + 18个子表 | 20(UIText) | id, content_{12种语言: cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr}（30列结构的表另有 content_1_* 列） |
 | `excel_spine_animation_state[骨骼动画枚举_FrameWork].xlsx` | SpineAnimationState | 33 | id, res |

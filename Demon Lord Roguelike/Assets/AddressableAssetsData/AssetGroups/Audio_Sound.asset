@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0686d8b286282e749907be224734162f
+    m_Address: Assets/LoadResources/Audio/Sound/sound_slime_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 084231ff107fe9740abaab64ef70e917
     m_Address: Assets/LoadResources/Audio/Sound/sound_btn_7.wav
     m_ReadOnly: 0
