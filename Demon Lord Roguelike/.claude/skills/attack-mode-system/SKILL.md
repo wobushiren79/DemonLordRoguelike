@@ -465,6 +465,8 @@ public virtual void AttackHandle()
 
 > **⚠️雷电粒子为何不走 effect_hit 配置**：`Effect_Thunder_3` 是全局单例持久型 PS，`EffectHandler.ShowThunderEffect` 用 Stop(StopEmitting)+Play 重播才支持 0.1 秒连发交叠；标准 `effect_hit`/`ShowEffect` 通道对持久型粒子不会重触发爆发（且不会移动单例位置），直接配置会让第 2~N 道雷不闪。走 EffectHandler 专用方法与血液/护盾（`ShowBloodEffect`/`ShowShieldHitEffect`）是同一先例。
 
+> **近战斩击命中粒子(400003)先例——effect_hit + 代码分流**：`Effect_Slash_2`(4001战之魅魔 attack_mode 101001 的 effect_hit) 配置表仍走 `effect_hit` 通道，但 `BaseAttackMode.PlayEffectForHit` 按 id 分流到 `EffectHandler.ShowSlashHitEffect`(全局单例重播，与雷电同构：移动实例+Stop(StopEmitting)保活+Play)——普通攻击的命中特效，多生物同时出刀=多刀交叠、上一刀粒子不消失。⚠️新增「全局单例型」命中特效的标准做法：`EffectManager` 加 `effectXxxId` 常量 + `EffectHandler` 加专用方法 + `PlayEffectForHit` 加 id 分流；其预制须 World 空间模拟+burst 一次性爆发(与 Effect_Thunder_3/Effect_CombatSlash_2 同构)，仅配 `effect_hit` 期待通用 `ShowEffect` 处理不成立(单例位置不移动、重播不触发爆发)。
+
 #### 完全自定义示例
 
 ```csharp

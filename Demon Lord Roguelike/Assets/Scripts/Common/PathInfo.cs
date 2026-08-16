@@ -1,4 +1,4 @@
-public class PathInfo
+public partial class PathInfo
 {
     //天空盒 框架
     public static string SkyboxMatFrameWorkPath = "Assets/FrameWork/Materials/Skybox";

@@ -149,4 +149,5 @@ public class AttackModeCustom : BaseAttackMode
 - 维护跨帧状态（如连锁记录、穿透命中名单、候选缓冲）的子类必须重写 `Destroy(bool)` 清空它们，否则下一次出对象池时会带上一次的数据
 - 复用候选缓冲使用 `readonly List<>` 字段配合 `Clear()`，禁止在 Update 里 `new List<>` 造成 GC
 - `effect_hit` 配置允许 `&` 分隔多组特效，调用 `PlayEffectForHit(pos, index)` 时通过 `index` 选择（如 `AttackModeFalluponChain` 用 0/1 区分初始击中与连锁击中）
+- **`PlayEffectForHit` 单例分流**：`effect_hit=400003`(Effect_Slash_2,近战斩击) 由 `BaseAttackMode.PlayEffectForHit` 按 id 改走 `EffectHandler.ShowSlashHitEffect` 全局单例重播（与落雷同构：移动实例+Stop(StopEmitting)保活+Play，多刀交叠旧刀光不消失）；其余 id 仍走通用 `ShowEffect`（带 direction/size 参数）。该特效在 EffectInfo 表仍配 show_type=0/show_time=0.5 但被单例路径接管、不参与一次性池化
 - **射线命中检测走批处理，禁止在 `Update()` 里 live `Physics.Raycast*`**：`FightHandler.UpdateHandleForAttackModePrefab` 为两段式（收集 `PrepareRaycast` → `FightRaycastBatch.Schedule` 批量并行 `RaycastCommand` → 消费 `Update`）。射线类弹道重写 `PrepareRaycast` 入队即可，`CheckHitTargetForSingle/CheckHitTarget` 自动读结果；单条命中窗口上限 `FightRaycastBatch.MaxHitsPerRay`(当前4)。逻辑三阶段之后有**阶段4 `attackModeInstanceRenderer.RenderAll`** 批量绘制（见上「弹道渲染」）。详见 attack-mode-system skill「射线检测批处理」

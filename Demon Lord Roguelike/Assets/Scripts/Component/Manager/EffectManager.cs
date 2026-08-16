@@ -20,6 +20,8 @@ public partial class EffectManager
     public long effectCreatureShowId = 1100001;
     //落雷粒子ID(Effect_Thunder_3,全局单例高频调用)
     public long effectThunderId = 900003;
+    //近战斩击命中粒子ID(Effect_Slash_2,4001战之魅魔的effect_hit;全局单例重播,多刀交叠旧刀光不消失)
+    public long effectSlashId = 400003;
     //攻击弹道拖尾粒子ID(方案2 VFX,Effect_Trail_1;非播放式——EffectHandler 按视觉桶各建一个常驻实例+每帧喂 GraphicsBuffer,不入池不 PlayEffect)
     public long effectAttackModeTrailId = 1600001;
     //冲击波粒子ID(Effect_Shockwave_1,深渊馈赠「第六次冲击」;一次性实例,播放时按判定参数同步视觉半径/扩张时长)
@@ -37,6 +39,7 @@ public partial class EffectManager
     public string resNameAttackModeTrail;
     public string resNameThunder;
     public string resNameFloorFire;
+    public string resNameSlash;
     #endregion
 
     #region 攻击弹道拖尾粒子(方案2 VFX)状态

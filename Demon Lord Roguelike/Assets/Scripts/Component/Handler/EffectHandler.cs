@@ -363,6 +363,39 @@ public partial class EffectHandler
     }
     #endregion
 
+    #region 近战斩击命中粒子(全局单例PS)
+    /// <summary>
+    /// 播放近战斩击命中粒子(全局单例)：移动唯一实例到命中点并重播。
+    /// <para>重播用 Stop(StopEmitting)+Play：保活上一刀已发射的刀光粒子只停发射，Play 重置系统时间重新触发爆发，
+    /// 支持极短间隔连发多刀交叠；要求粒子为世界空间模拟(Effect_Slash_2 已配 World+burst,与落雷同构)。</para>
+    /// </summary>
+    /// <param name="targetPos">命中点世界坐标</param>
+    public void ShowSlashHitEffect(Vector3 targetPos)
+    {
+        //抬高播放高度：刀光面片大(半高≈2.25)，材质软粒子(0~0.2深度带)把贴地部分实时淡出→透明度时高时低甚至为0；4001 已配 attack_start_position=0,0.5,0(出手点)，再 +0.4 抬到 y≈0.9 让刀光主体脱离地面深度带
+        targetPos.y += 0.4f;
+        //播放粒子
+        Action<EffectBase> playEffect = (targetEffect) =>
+        {
+            if (targetEffect == null)
+                return;
+            targetEffect.transform.position = targetPos;
+            //停发射保活已有粒子，再重播触发新一轮爆发(playing状态直接Play不会重新触发)
+            if (targetEffect.mainPS != null)
+            {
+                targetEffect.mainPS.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            }
+            targetEffect.PlayEffect();
+        };
+
+        //获取粒子实例
+        manager.GetEffectForEnduring(GetEffectResName(manager.effectSlashId, ref manager.resNameSlash), (targetEffect) =>
+        {
+            playEffect?.Invoke(targetEffect);
+        });
+    }
+    #endregion
+
     #region 地面火焰粒子(深渊馈赠瓶装炼狱火,全局单例PS)
     /// <summary>
     /// 播放地形火焰粒子：**全局单例**（1 个实例）——移动唯一实例到落点 + Stop(StopEmitting 保活) + Play 重播。

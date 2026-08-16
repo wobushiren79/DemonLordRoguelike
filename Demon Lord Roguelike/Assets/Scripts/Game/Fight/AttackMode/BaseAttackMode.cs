@@ -420,6 +420,12 @@ public class BaseAttackMode
         {
             float[] colliderAreaSize = attackModeInfo.GetColliderAreaSize();
             Direction2DEnum effectDirection = attackModeData.attackDirection.x > 0 ? Direction2DEnum.Right : Direction2DEnum.Left;
+            //近战斩击命中粒子(400003)走全局单例重播：多刀交叠、上一刀粒子不消失(与落雷/地面火焰同构)
+            if (effectId == EffectHandler.Instance.manager.effectSlashId)
+            {
+                EffectHandler.Instance.ShowSlashHitEffect(startPosition);
+                return;
+            }
             EffectHandler.Instance.ShowEffect(effectId, startPosition, direction: effectDirection, size: colliderAreaSize[0]);
         }
     }
