@@ -29,6 +29,10 @@ public class UserDataBean : BaseBean
 
     //阵容生物
     public Dictionary<int, List<string>> dicLineupCreature = new Dictionary<int, List<string>>();
+    //阵容自定义名字(key=阵容序号;无记录=未改名,显示默认"阵容 {序号}"文本)
+    public Dictionary<int, string> dicLineupName = new Dictionary<int, string>();
+    //当前出战阵容序号(进入战斗时读取的阵容;在传送门详情弹窗 UIDialogPortalDetails 中切换,阵容数>=2才可选)
+    public int lineupFightIndex = 1;
     //魔王自己的数据
     public CreatureBean selfCreature;
     //游戏进度地图
@@ -508,6 +512,64 @@ public class UserDataBean : BaseBean
             }
         }
         return false;
+    }
+
+    /// <summary>
+    /// 获取阵容自定义名字(未改名返回 null)
+    /// </summary>
+    public string GetLineupName(int lineupIndex)
+    {
+        if (dicLineupName.TryGetValue(lineupIndex, out string lineupName) && !lineupName.IsNull())
+        {
+            return lineupName;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 设置阵容自定义名字(传空则清除改名记录,恢复默认"阵容 {序号}"显示)
+    /// </summary>
+    public void SetLineupName(int lineupIndex, string lineupName)
+    {
+        if (lineupName.IsNull())
+        {
+            dicLineupName.Remove(lineupIndex);
+        }
+        else
+        {
+            dicLineupName[lineupIndex] = lineupName;
+        }
+    }
+
+    /// <summary>
+    /// 获取阵容显示名字:已改名用自定义名,未改名用默认「阵容 {序号}」多语言文本(30005)
+    /// </summary>
+    public string GetLineupShowName(int lineupIndex)
+    {
+        string customName = GetLineupName(lineupIndex);
+        if (!customName.IsNull())
+        {
+            return customName;
+        }
+        return string.Format(TextHandler.Instance.GetTextById(30005), lineupIndex);
+    }
+
+    /// <summary>
+    /// 获取当前出战阵容序号(夹取到 [1, 已解锁阵容数],兜底存档异常/解锁数变化)
+    /// </summary>
+    public int GetLineupFightIndex()
+    {
+        int lineupNum = GetUserUnlockData().GetUnlockLineupNum();
+        return Mathf.Clamp(lineupFightIndex, 1, Mathf.Max(1, lineupNum));
+    }
+
+    /// <summary>
+    /// 设置当前出战阵容序号(夹取到 [1, 已解锁阵容数])
+    /// </summary>
+    public void SetLineupFightIndex(int lineupIndex)
+    {
+        int lineupNum = GetUserUnlockData().GetUnlockLineupNum();
+        lineupFightIndex = Mathf.Clamp(lineupIndex, 1, Mathf.Max(1, lineupNum));
     }
     #endregion
 

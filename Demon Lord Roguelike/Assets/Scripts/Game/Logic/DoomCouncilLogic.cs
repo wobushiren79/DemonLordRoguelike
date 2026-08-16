@@ -246,7 +246,8 @@ public class DoomCouncilLogic : BaseGameLogic
     /// <summary>
     /// 生成本场议会的议员列表
     /// 人数在议案 council_num 区间内随机; 每个席位随机一种生物 + 按权重随机评级的议会随机NPC;
-    /// 整场有10%概率出现1名议会固定NPC(拥有持久化好感系统)
+    /// 整场有10%概率出现1名议会固定NPC(拥有持久化好感系统);
+    /// 议员NPC受 region 地区限制过滤(仅当前语言匹配的配置才会出现)
     /// </summary>
     /// <returns>议员列表</returns>
     private List<CreatureBean> GenerateCouncilors()
@@ -300,7 +301,8 @@ public class DoomCouncilLogic : BaseGameLogic
     private List<CreatureBean> GenerateAllFixedCouncilors()
     {
         List<CreatureBean> listCouncilor = new List<CreatureBean>();
-        var listFixed = NpcInfoCfg.GetNpcInfosByType(NpcTypeEnum.Councilor);
+        //地区限制过滤: 仅保留当前语言允许出现的议员(与正常生成的过滤规则一致)
+        var listFixed = NpcInfoCfg.FilterByCurrentRegion(NpcInfoCfg.GetNpcInfosByType(NpcTypeEnum.Councilor));
         if (listFixed.IsNull())
         {
             return listCouncilor;

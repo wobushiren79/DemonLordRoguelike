@@ -154,14 +154,15 @@ python .claude/scripts/excel_delete_row.py \
 | 攻击方式 | excel_attackmode_info | AttackModeInfo | 31 |
 | 音频信息 | excel_audio_info | AudioInfo | 39 |
 | 基础信息 | excel_base_info | BaseInfo | 3 |
-| Buff信息 | excel_buff_info | BuffInfo | 49 |
+| Buff信息 | excel_buff_info | BuffInfo | 135 |
 | Buff前置 | excel_buff_pre_info | BuffPreInfo | 6 |
 | 议员对话 | excel_conversation_councilor_info | ConversationCouncilorInfo | 33 |
 | 生物属性类型 | excel_creature_attribute_type_info | CreatureAttributeTypeInfo | 12 |
 | 生物信息 | excel_creature_info | CreatureInfo | 110 |
 | 生物模型 | excel_creature_model | CreatureModel | 66 |
 | 生物模型详情 | excel_creature_model_info | CreatureModelInfo | 438 |
-| 生物随机 | excel_creature_random_info | CreatureRandomInfo | 16 |
+| 生物随机 | excel_creature_random_info | CreatureRandomInfo | 28 |
+| 装备套装 | excel_equip_suit_info | EquipSuitInfo | 8 |
 | 终焉议会 | excel_doom_council_info | DoomCouncilInfo | 13 |
 | 议会议员等级 | excel_doom_council_ratings_info | DoomCouncilRatingsInfo | 12 |
 | 粒子效果 | excel_effect_info | EffectInfo | 21 |

@@ -129,6 +129,60 @@ public partial class AttackModeInfoBean
     }
     #endregion
 
+    #region 插地参数(Stuck 配置，存于 other_data)
+    protected bool isInitStuckConfig = false;
+    protected AttackModeStuckConfig stuckConfig;
+
+    /// <summary>
+    /// 获取插地配置（从通用扩展列 other_data 中解析 stuck_time/stuck_sink 键；缓存解析结果）。
+    /// <para>stuck_time:射空后弹体插地停留秒数(>0 启用)；stuck_sink:插地下沉深度(默认0)。目前仅 AttackModeRangedArcTracking 系使用；未配 stuck_time=不插地落地即销毁。</para>
+    /// </summary>
+    public AttackModeStuckConfig GetStuckConfig()
+    {
+        if (!isInitStuckConfig)
+        {
+            stuckConfig = AttackModeStuckConfig.Parse(other_data);
+            isInitStuckConfig = true;
+        }
+        return stuckConfig;
+    }
+    #endregion
+
+    #region 瞄准点偏移(Aim 配置，存于 other_data)
+    protected bool isInitAimUpHeight = false;
+    protected float aimUpHeight;
+
+    /// <summary>
+    /// 获取瞄准点相对目标脚底的上抬高度（从通用扩展列 other_data 中解析 aim_up 键；缓存解析结果）。
+    /// <para>空/未配=0（瞄准目标脚底）。目前仅 AttackModeRangedObliqueTracking（直线斜射跟踪）使用：斜射瞄准目标身体上段而非脚底。</para>
+    /// </summary>
+    public float GetAimUpHeight()
+    {
+        if (!isInitAimUpHeight)
+        {
+            aimUpHeight = 0f;
+            if (!other_data.IsNull())
+            {
+                //按 & 拆项，每项以第一个 : 拆 key/value（与 stuck/trail 等配置同规约）
+                string[] items = other_data.Split('&');
+                for (int i = 0; i < items.Length; i++)
+                {
+                    string item = items[i];
+                    if (string.IsNullOrEmpty(item))
+                        continue;
+                    int sep = item.IndexOf(':');
+                    if (sep <= 0)
+                        continue;
+                    if (item.Substring(0, sep).Trim() == "aim_up")
+                        float.TryParse(item.Substring(sep + 1).Trim(), out aimUpHeight);
+                }
+            }
+            isInitAimUpHeight = true;
+        }
+        return aimUpHeight;
+    }
+    #endregion
+
     #region 视觉参数(Visual 配置)
     protected bool isInitVisualConfig = false;
     protected AttackModeVisualConfig visualConfig;
@@ -335,6 +389,54 @@ public struct AttackModeVisualConfig
         return cfg;
     }
 }
+/// <summary>
+/// 攻击弹道插地配置：由通用扩展列 other_data 解析而来（stuck_time:插地停留秒数&stuck_sink:下沉深度）。
+/// <para>射空(落点无存活敌人)时弹体插入地面停留 stuck_time 秒后回收；stuck_sink>0 时落点位置向下沉，营造插入地面的视觉。enable=stuck_time>0。</para>
+/// </summary>
+public struct AttackModeStuckConfig
+{
+    /// <summary>是否启用插地（stuck_time>0 即启用）</summary>
+    public bool enable;
+    /// <summary>插地停留时长（秒）</summary>
+    public float time;
+    /// <summary>插地下沉深度（默认0=不调整落点位置）</summary>
+    public float sink;
+
+    /// <summary>
+    /// 从 other_data 字符串中解析插地配置；空串/stuck_time≤0 返回未启用配置。
+    /// </summary>
+    public static AttackModeStuckConfig Parse(string otherData)
+    {
+        AttackModeStuckConfig cfg = default;
+        if (string.IsNullOrEmpty(otherData))
+            return cfg;
+        //按 & 拆项，每项以第一个 : 拆 key/value（与 trail_data 一致）
+        string[] items = otherData.Split('&');
+        for (int i = 0; i < items.Length; i++)
+        {
+            string item = items[i];
+            if (string.IsNullOrEmpty(item))
+                continue;
+            int sep = item.IndexOf(':');
+            if (sep <= 0)
+                continue;
+            string key = item.Substring(0, sep).Trim();
+            string val = item.Substring(sep + 1).Trim();
+            switch (key)
+            {
+                case "stuck_time":
+                    float.TryParse(val, out cfg.time);
+                    break;
+                case "stuck_sink":
+                    float.TryParse(val, out cfg.sink);
+                    break;
+            }
+        }
+        cfg.enable = cfg.time > 0f;
+        return cfg;
+    }
+}
+
 public partial class AttackModeInfoCfg
 {
 

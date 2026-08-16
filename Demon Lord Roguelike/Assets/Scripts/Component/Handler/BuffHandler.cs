@@ -48,16 +48,26 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
     {
         if (!listBuff.IsNull())
         {
+            //本列表有BUFF到期被移除时，记录施加/目标生物（RemoveBuffEntity→ClearData会清空引用，须先取），用于移除后通知刷新
+            string applierCreatureIdExpired = null;
+            string targetCreatureIdExpired = null;
             for (int f = listBuff.Count - 1; f >= 0; f--)
             {
                 BuffBaseEntity itemBuffEntity = listBuff[f];
                 //如果BUFF已经无效 则删除
                 if (itemBuffEntity.buffEntityData.isValid == false)
                 {
+                    applierCreatureIdExpired = itemBuffEntity.buffEntityData.applierCreatureUUId;
+                    targetCreatureIdExpired = itemBuffEntity.buffEntityData.targetCreatureUUId;
                     manager.RemoveBuffEntity(listBuff, itemBuffEntity);
                     continue;
                 }
                 itemBuffEntity.UpdateBuffTime(updateTime);
+            }
+            //有BUFF到期移除：通知目标生物重算属性并刷新身体颜色，否则减速/变色等副作用会永久残留
+            if (!targetCreatureIdExpired.IsNull())
+            {
+                EventHandler.Instance.TriggerEvent(EventsInfo.Buff_FightCreatureChange, applierCreatureIdExpired, targetCreatureIdExpired);
             }
             if (listBuff.Count == 0)
                 return true;
@@ -353,13 +363,10 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
         switch (buffInfo.GetStackMode())
         {
             case BuffStackMode.Refresh:
-                //默认：刷新次数+施加者；非次数触发型刷新计时
+                //默认：刷新剩余次数+施加者+距下次触发计时（次数型BUFF必须连timeUpdate一起重置，否则trigger_num=1时次数刷成原值等于没刷，持续触碰不会续期）
                 existingData.triggerNumLeft = incoming.triggerNumLeft;
                 existingData.applierCreatureUUId = incoming.applierCreatureUUId;
-                if (existingData.GetTriggerNum() <= 0)
-                {
-                    existingData.timeUpdate = incoming.timeUpdate;
-                }
+                existingData.timeUpdate = 0;
                 return true;
 
             case BuffStackMode.Stack:
@@ -369,13 +376,10 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
                 if (max > 0 && newStack > max) newStack = max;
                 bool stackChanged = (newStack != existingData.stackCount);
                 existingData.stackCount = newStack;
-                //叠层惯例：上叠一层 = 刷新计时与剩余次数
+                //叠层惯例：上叠一层 = 刷新距下次触发计时与剩余次数
                 existingData.triggerNumLeft = incoming.triggerNumLeft;
                 existingData.applierCreatureUUId = incoming.applierCreatureUUId;
-                if (existingData.GetTriggerNum() <= 0)
-                {
-                    existingData.timeUpdate = 0;
-                }
+                existingData.timeUpdate = 0;
                 //层数变了 通知目标生物刷新属性
                 if (stackChanged)
                 {

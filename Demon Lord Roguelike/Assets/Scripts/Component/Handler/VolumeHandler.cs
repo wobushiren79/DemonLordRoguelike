@@ -61,7 +61,9 @@ public partial class VolumeHandler
     /// <param name="baseHeight">雾达到设定浓度的世界高度</param>
     /// <param name="maximumHeight">雾浓度衰减为 0 的世界高度（此高度以上无雾）</param>
     /// <param name="isActive">是否开启体积雾</param>
-    public void SetVolumetricFog(float distance, float density, Color tint, float scattering = 0.15f, float anisotropy = 0.4f, float attenuationDistance = 128f, float baseHeight = 0f, float maximumHeight = 50f, bool isActive = true)
+    /// <param name="mainLightContribution">主光散射贡献开关（null=不处理保持 profile 原值；体积光柱需显式 true 防 profile 被改）</param>
+    /// <param name="additionalLightContribution">额外灯散射贡献开关（null=不处理；月光柱等 VolumetricAdditionalLight 聚光灯必须 true 才参与散射）</param>
+    public void SetVolumetricFog(float distance, float density, Color tint, float scattering = 0.15f, float anisotropy = 0.4f, float attenuationDistance = 128f, float baseHeight = 0f, float maximumHeight = 50f, bool isActive = true, bool? mainLightContribution = null, bool? additionalLightContribution = null)
     {
         var volumetricFog = manager.volumetricFog;
         if (volumetricFog == null) return;
@@ -81,6 +83,17 @@ public partial class VolumeHandler
         volumetricFog.baseHeight.value = baseHeight;
         volumetricFog.maximumHeight.overrideState = true;
         volumetricFog.maximumHeight.value = maximumHeight;
+        //灯光贡献为可空参数：null 不处理，非 null 显式 override（防御 profile 资产被改后失效）
+        if (mainLightContribution.HasValue)
+        {
+            volumetricFog.enableMainLightContribution.overrideState = true;
+            volumetricFog.enableMainLightContribution.value = mainLightContribution.Value;
+        }
+        if (additionalLightContribution.HasValue)
+        {
+            volumetricFog.enableAdditionalLightsContribution.overrideState = true;
+            volumetricFog.enableAdditionalLightsContribution.value = additionalLightContribution.Value;
+        }
         SetVolumetricFogActive(isActive);
     }
 

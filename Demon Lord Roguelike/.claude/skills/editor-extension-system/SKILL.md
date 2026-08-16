@@ -38,7 +38,9 @@ EditorWindow (Unity)
 ├── StyleBaseWindow                # 样式基础窗口
 ├── GameTestEditor                 # 游戏测试编辑器 (Inspector扩展)
 ├── GameBuildEditorWindow          # 打包游戏工具 (打包前 Spine 资源生成 + BuildPlayer)
-├── SkinRandomEditorWindow         # 皮肤/装备随机池配置 (CreatureRandomInfo 双模式: 皮肤池编辑skin_random_data/装备池编辑equip_random_data, 双列表点选增删, 写回Excel+同步JSON)
+├── SkinRandomEditorWindow         # 皮肤/装备/套装随机池配置 (CreatureRandomInfo 三模式: 皮肤池编辑skin_random_data/装备池·套装池编辑equip_random_data, 双列表点选增删, 写回Excel+同步JSON)
+├── EquipSuitEditorWindow          # 装备套装配置 (EquipSuitInfo 套装表: 物种下拉+7槽位点选填入+新建/删除套装, 单EPPlus会话写回+同步JSON)
+├── FightSceneEditorWindow         # 战斗场景配置 (excel_fight_scene: 预制/道路色/天空盒/雾/环境光/细节预制直观编辑, 保存写回Excel+再生JSON, Play时实时应用到当前战斗场景)
 └── PixelDaEditorWindow            # PixelDa 像素美术生成 (AI 文生图/图编辑/图生视频/抽帧/音乐)
 ```
 
@@ -243,16 +245,17 @@ LauncherTest (Inspector)
 
 ---
 
-## 皮肤/装备随机池配置 (SkinRandomEditorWindow)
+## 皮肤/装备/套装随机池配置 (SkinRandomEditorWindow)
 
 **文件**: `Assets/Editor/SkinRandomEditorWindow.cs`，**菜单**: `游戏/皮肤随机池配置`
 
 ### 功能
 
-可视化编辑 `excel_creature_random_info[生物随机信息] .xlsx`（注意文件名含空格）的随机池（工作表 `CreatureRandomInfo`），按 `random_type` 列分两种模式（池下拉标签带 [皮肤]/[装备] 前缀）：
+可视化编辑 `excel_creature_random_info[生物随机信息] .xlsx`（注意文件名含空格）的随机池（工作表 `CreatureRandomInfo`），按 `random_type` 列分三种模式（池下拉标签带 [皮肤]/[装备]/[套装] 前缀）：
 
 - **皮肤池(random_type=0)**：编辑 `skin_random_data` 列（随机皮肤池，池内为 CreatureModelInfo id）。
 - **装备池(random_type=1)**：编辑 `equip_random_data` 列（随机装备池，池内为 ItemsInfo 道具id）；右侧候选直读 `excel_items_info[道具信息].xlsx` 的装备类型道具（帽/衣/裤/鞋/鼻环/戒指/武器，`EquipItemTypes` 集合），按道具 `creature_model_id` 推导池物种（0=通用装备不参与推导、始终可见），筛选下拉为道具类型；装备图标按 `icon_res` 从 `AtlasForItems.spriteatlas` 取 sprite（`GUI.DrawTextureWithTexCoords` 按 textureRect 绘制）。
+- **套装池(random_type=2)**：编辑 `equip_random_data` 列（套装池，池内为 EquipSuitInfo 套装id，多套等概率整套随机）；右侧候选直读 `excel_equip_suit_info[装备套装].xlsx`（`SuitInfoItem`：id/物种/件数/备注），按套装 `creature_model_id` 推导池物种（0=通用套装始终可见），左列表按物种分组；套装内容本身由 `EquipSuitEditorWindow` 编辑（本窗口只管池组合）。
 
 ### 皮肤池模式要点
 
@@ -261,7 +264,40 @@ LauncherTest (Inspector)
 - **装备/武器类部位（统一维护在 `ExcludePartTypes` 列表：鼻环9/帽子50/衣服51/裤子52/鞋53/腰带54/手套55/武器线80/武器左右手90-91/双手武器92）双列表均不展示**——此类皮肤由装备道具驱动换皮（鼻环虽在枚举身体段，但道具表 item_type=5 经 `creature_model_info_id` 对接）；池内已有的装备部件数据保留不删，仅隐藏并在左列表头提示数量。新增装备类部位直接往 `ExcludePartTypes` 加，`IsEquipPart` 统一判定。
 - **每行带皮肤图标**：命名约定 `{CreatureModel.mark_name}_Atlas_{CreatureModelInfo.res_name 的 / 换成 _}`（与 UITestNpcCreate 取图同约定），图标是 `GameDataEditor.SpineAllSkinInit` 抽取到 `Assets/LoadResources/Textures/Skins/` 的产物，懒加载+缓存，缺失时灰块占位（缺图标可跑「生成所有 Spine 皮肤图标」补齐）。
 - 多池切换编辑不丢变更（每池独立 `skinSet`/`equipSet` + `originalData`/`originalEquipData` 对比出 dirty，`IsPoolDirty` 按池类型比对对应集合），刷新前有未保存变更确认。
-- **保存**：把 ID 集合升序压缩为区间串（连续段 `a-b`，逗号连接，与表内原有书写格式一致）→ 按池类型写回 `skin_random_data`/`equip_random_data` 列（`ExcelUtil.SetExcelData`）→ `ExcelUtil.ExcelToJsonItem` 整体再生 `CreatureRandomInfo.txt`（该 Excel 仅单表，再生安全）→ `AssetDatabase.Refresh`。解析与运行时 `SplitForListLong(',', '-')` 同规则。部件全集直读 `excel_creature_model_info[生物模型详情信息] .xlsx`（不经 JSON 保证最新），物种名/mark_name 取自 `excel_creature_model[生物模型信息].xlsx`。
+- **保存**：把 ID 集合升序压缩为区间串（连续段 `a-b`，逗号连接，与表内原有书写格式一致）→ 按池类型写回 `skin_random_data`/`equip_random_data` 列（`ExcelUtil.SetExcelData`；套装池与装备池同写 `equip_random_data`）→ `ExcelUtil.ExcelToJsonItem` 整体再生 `CreatureRandomInfo.txt`（该 Excel 仅单表，再生安全）→ `AssetDatabase.Refresh`。解析与运行时 `SplitForListLong(',', '-')` 同规则。部件全集直读 `excel_creature_model_info[生物模型详情信息] .xlsx`（不经 JSON 保证最新），物种名/mark_name 取自 `excel_creature_model[生物模型信息].xlsx`。
+
+---
+
+## 装备套装配置 (EquipSuitEditorWindow)
+
+**文件**: `Assets/Editor/EquipSuitEditorWindow.cs`，**菜单**: `游戏/装备套装配置`
+
+### 功能
+
+可视化编辑 `excel_equip_suit_info[装备套装].xlsx`（工作表 `EquipSuitInfo`）：一行=一套手动搭配的装备套装，供 `CreatureRandomInfo` 套装池（random_type=2）引用参与 NPC 整套随机（解决散件池衣裤不搭问题）。
+
+- **表结构**：`id`、`creature_model_id`（种族模组，0=通用）、7 槽位列 `hat/clothes/pants/shoe/nose_ring/finger_ring/weapon`（道具ID，0=空槽）、`remark`（套装名）。
+- **左侧套装编辑区**：套装下拉（`id | 物种 | 备注`）+ 物种下拉（`modelIdValues`：0=通用 + 官方物种，只列 remark 非空且 id<100000 的，Mod 物种不进下拉）+ 备注输入 + 7 槽位行（槽位名/图标/id/备注 + 「选择」「清空」）；当前挑选槽位 `currentPickSlot` 高亮（▶ 前缀）；**物种不匹配的件红色警告**（道具与套装物种均非 0 且不一致时——运行时 `EquipSuitInfoBean.CanEquipFor` 会把整套剔除候选）；悬空 ID（道具表不存在）红色标记。
+- **右侧候选装备列表**：按当前槽位 `item_type` + 套装物种过滤（通用装备 0 始终可见、套装为通用 0 时不限物种）+ 搜索（id/icon_res/remark），点「填入」写入当前槽位；装备图标按 `icon_res` 从 `AtlasForItems.spriteatlas` 取 sprite（与 SkinRandomEditorWindow 同绘制法）。
+- **新建/删除**：新建经工具栏「新id」输入框指定 id（默认建议当前 max+1、起始段 200001，可手改；校验正整数且未占用，默认通用物种，标 `[新]` 前缀）；删除即时从列表移除并记录 `deletedIds`（新建未保存的直接丢弃），保存时才物理删行。
+- **保存**：删除（按 id 定位行、行号降序 `DeleteRow` 防漂移）+ 修改（按 id 定位行逐列覆写）+ 新增（末尾追加）统一在**一个 EPPlus 会话**完成（数字列写数值类型，**不走 `ExcelUtil.SetExcelData`**——它把值当 string 写入会把 long 列变文本）→ `ExcelUtil.ExcelToJsonItem` 再生 `EquipSuitInfo.txt`（**依赖 `EquipSuitInfoBean` 已由 ExcelEditorWindow 生成**，否则反射找不到实体类报错）→ 刷新各套装快照（`CommitSnapshot`）。
+- **脏检查**：每套装 `Snapshot()`（物种|备注|各槽位道具拼串）对比 `originalSnapshot`，`isNew` 恒脏；刷新/关闭前有未保存变更确认。
+
+---
+
+## 战斗场景配置 (FightSceneEditorWindow)
+
+**文件**: `Assets/Editor/FightSceneEditorWindow.cs`，**菜单**: `游戏/战斗场景配置`
+
+### 功能
+
+可视化编辑 `excel_fight_scene[战斗场景].xlsx`（工作表 `FightScene`）的每行场景参数，并支持 **Play 模式下实时应用到当前战斗场景**看效果：
+
+- **场景下拉**（`id | remark`）+ 直读 Excel（`ExcelUtil.GetExcelPackage` EPPlus，不经 JSON 保证最新；前 3 行元数据、第 4 行起数据，按第 1 行字段名建列索引）。
+- **直观编辑**：场景预制体（ObjectField↔`name_res` 纯文件名，目录 `PathInfo.FightScenePrefabPath`）、道路颜色 A/B（ColorField↔hex）、天空盒（Material ObjectField↔路径 + `skybox_rotate` Vector3）、雾（Toggle+颜色+Start/End，模式固定 Linear）、环境光（Toggle+颜色↔`ambient_light` hex）、细节预制（`details` 文本+Day/Night/清空快捷钮）、备注。
+- **fog 字符串互转**：读取复用运行时 `FightSceneBean.GetFogParams` 解析（单一逻辑源），保存拼装 `Color:#xxx&Start:x&End:x&Mode:Linear`（浮点用 InvariantCulture 防文化差异）。
+- **保存**：`ExcelUtil.SetExcelData`（按 id 定位行、字段名定位列，本表编辑列全为 string 正好适用）→ `ExcelUtil.ExcelToJsonItem` 再生 `FightScene.txt` → `AssetDatabase.Refresh`；每行 `Snapshot()` 快照做 dirty 检测，切换/刷新前有未保存确认。
+- **运行时应用**（`ApplyToRuntimeScene`，仅 Play 且 `WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.Fight)` 非空时可用）：雾走 `VolumeHandler.SetFog/SetFogActive`；环境光直设 `RenderSettings.ambientLight`（未配置则不动）；天空盒设 `RenderSettings.skybox` + `_RotateX/Y/Z`；道路颜色找场景子物体里材质带 `_ColorA/_ColorB` 的 MeshRenderer 写 sharedMaterial；细节预制按 `details` 同名切换 Details 子物体（与 `WorldHandler.HandleFightSceneDetails` 同逻辑）。「实时应用」Toggle 开启时字段改动（EditorGUI change check）即自动应用；退出 Play 后 RenderSettings 随场景快照还原，无污染。
 
 ---
 
@@ -464,7 +500,9 @@ public class InspectorMyComponent : Editor
 | PixelDa 像素生成工具 | `Assets/FrameWork/Editor/Base/Window/PixelDa/` |
 | 游戏测试编辑器 | `Assets/Editor/GameTestEditor.cs` + `GameTestEditorPartial.cs` |
 | 打包游戏工具 | `Assets/Editor/GameBuildEditorWindow.cs` |
-| 皮肤/装备随机池配置 | `Assets/Editor/SkinRandomEditorWindow.cs` |
+| 皮肤/装备/套装随机池配置 | `Assets/Editor/SkinRandomEditorWindow.cs` |
+| 装备套装配置 | `Assets/Editor/EquipSuitEditorWindow.cs` |
+| 战斗场景配置 | `Assets/Editor/FightSceneEditorWindow.cs` |
 | Excel 配置目录 | `Assets/Data/Excel/` |
 
 ---

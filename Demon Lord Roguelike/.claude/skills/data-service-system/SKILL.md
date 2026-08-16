@@ -167,6 +167,8 @@ public class UserDataBean
     // 生物数据
     public UserBackpackCreatureBean userBackpackCreatureData; // 背包生物容器([JsonIgnore]拆分→UserBackpackCreature_{slot})；列表在 .listBackpackCreature
     public Dictionary<int, List<string>> dicLineupCreature;   // 阵容（阵容ID -> 生物UUID列表）
+    public Dictionary<int, string> dicLineupName;             // 阵容自定义名字（阵容序号 -> 名字; 无记录=未改名, 显示默认"阵容 {序号}"; GetLineupName/SetLineupName 读写, 研究 LineupRename(201000001) 解锁后在 UILineupManager 改名）
+    public int lineupFightIndex = 1;                          // 当前出战阵容序号（Get/SetLineupFightIndex 夹取 [1,已解锁数]; 在 UIDialogPortalDetails 出战阵容选择区切换并即存, FightBeanForConquer/DoomCouncil 按此读阵容）
     
     // 道具数据
     public UserBackpackItemsBean userBackpackItemsData;  // 背包道具容器([JsonIgnore]拆分→UserBackpackItem_{slot})；列表在 .listBackpackItems

@@ -45,6 +45,7 @@ public enum CreatureRandomTypeEnum
 {
     Skin = 0,//皮肤随机池(skin_random_data, 池内为CreatureModelInfo的id)
     Equip = 1,//装备随机池(equip_random_data, 池内为ItemsInfo的id)
+    Suit = 2,//套装随机池(equip_random_data, 池内为EquipSuitInfo的id, 多套等概率整套抽取)
 }
 
 public enum CreatureFightTypeEnum

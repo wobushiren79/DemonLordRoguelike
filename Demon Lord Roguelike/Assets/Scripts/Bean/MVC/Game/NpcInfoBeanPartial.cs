@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 public partial class NpcInfoBean
 {
     protected List<long> equipItems;
@@ -11,6 +12,8 @@ public partial class NpcInfoBean
     protected bool equipRandomParsed = false;
     protected long equipRandomPoolId;
     protected List<RarityEnum> equipRandomRarities;
+    //皮肤颜色配置缓存(key=皮肤部位类型)
+    protected Dictionary<CreatureSkinTypeEnum, Color> dicSkinColor;
 
     /// <summary>
     /// 获取议员评级
@@ -197,6 +200,60 @@ public partial class NpcInfoBean
         equipRandomRarities = null;
     }
 
+    #region 皮肤颜色配置
+    /// <summary>
+    /// 获取皮肤颜色配置(skin_color_data，格式:部位类型int,r,g,b,a&... rgba取0~255; 空=不固定颜色按创建时随机)，只解析一次并缓存
+    /// </summary>
+    /// <returns>key=皮肤部位类型 value=固定颜色</returns>
+    public Dictionary<CreatureSkinTypeEnum, Color> GetSkinColorData()
+    {
+        if (dicSkinColor == null)
+        {
+            dicSkinColor = new Dictionary<CreatureSkinTypeEnum, Color>();
+            if (!skin_color_data.IsNull())
+            {
+                string[] listEntry = skin_color_data.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
+                for (int i = 0; i < listEntry.Length; i++)
+                {
+                    //单条格式: 部位类型int,r,g,b,a (a可缺省=255)
+                    string[] listSegment = listEntry[i].Split(',');
+                    if (listSegment.Length < 4) continue;
+                    if (!int.TryParse(listSegment[0], out int skinTypeInt)) continue;
+                    if (!int.TryParse(listSegment[1], out int r)) continue;
+                    if (!int.TryParse(listSegment[2], out int g)) continue;
+                    if (!int.TryParse(listSegment[3], out int b)) continue;
+                    int a = 255;
+                    if (listSegment.Length >= 5) int.TryParse(listSegment[4], out a);
+                    dicSkinColor[(CreatureSkinTypeEnum)skinTypeInt] = new Color(r / 255f, g / 255f, b / 255f, a / 255f);
+                }
+            }
+        }
+        return dicSkinColor;
+    }
+
+    /// <summary>
+    /// 设置皮肤颜色配置(序列化回 skin_color_data 字段并重置解析缓存; 供测试工具/编辑器改写后即时生效, 落盘走 Excel 写回)
+    /// </summary>
+    /// <param name="newData">key=皮肤部位类型 value=固定颜色; null或空=不固定颜色</param>
+    public void SetSkinColorData(Dictionary<CreatureSkinTypeEnum, Color> newData)
+    {
+        skin_color_data = "";
+        if (!newData.IsNull())
+        {
+            foreach (var itemData in newData)
+            {
+                Color itemColor = itemData.Value;
+                int r = Mathf.RoundToInt(itemColor.r * 255);
+                int g = Mathf.RoundToInt(itemColor.g * 255);
+                int b = Mathf.RoundToInt(itemColor.b * 255);
+                int a = Mathf.RoundToInt(itemColor.a * 255);
+                skin_color_data += $"{(int)itemData.Key},{r},{g},{b},{a}&";
+            }
+        }
+        dicSkinColor = null;
+    }
+    #endregion
+
     /// <summary>
     /// 获取NPC类型
     /// </summary>
@@ -205,6 +262,37 @@ public partial class NpcInfoBean
     {
         return (NpcTypeEnum)npc_type;
     }
+
+    #region 地区限制
+    /// <summary>
+    /// 是否匹配当前语言的地区限制(region)：空=不限语言；配置语言代码(如 cn 或 cn,en，见LanguageEnum)时仅当前语言在列表内才允许出现
+    /// 目前仅终焉议会议员生成使用
+    /// </summary>
+    /// <returns>true=当前语言下允许出现</returns>
+    public bool IsMatchCurrentRegion()
+    {
+        //空配置=不限语言
+        if (region.IsNull())
+        {
+            return true;
+        }
+        string currentLanguage = LanguageCfg.currentLanguage;
+        //语言未初始化的异常情况不拦截
+        if (currentLanguage.IsNull())
+        {
+            return true;
+        }
+        string[] listRegion = region.Split(',', StringSplitOptions.RemoveEmptyEntries);
+        for (int i = 0; i < listRegion.Length; i++)
+        {
+            if (string.Equals(listRegion[i].Trim(), currentLanguage, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    #endregion
 
     /// <summary>
     /// 获取攻击模块扩展配置列表（attack_mode_ext 为逗号分隔的 AttackModeExtInfo id，缓存解析结果）
@@ -298,6 +386,21 @@ public partial class NpcInfoCfg
         return listData;
     }
 
+    /// <summary>
+    /// 按当前语言的地区限制(region)过滤NPC列表：region为空=保留；配置语言代码时仅当前语言匹配才保留
+    /// 目前仅终焉议会议员生成使用
+    /// </summary>
+    /// <param name="listData">待过滤列表</param>
+    /// <returns>过滤后的列表</returns>
+    public static List<NpcInfoBean> FilterByCurrentRegion(List<NpcInfoBean> listData)
+    {
+        if (listData.IsNull())
+        {
+            return listData;
+        }
+        return listData.FindAll(itemData => itemData.IsMatchCurrentRegion());
+    }
+
     //议会随机议员评级出现权重: 评级1~5 对应 50/30/15/10/5 (合计110, 抽取时按权重归一化)
     private static readonly int[] councilorRatingWeights = { 50, 30, 15, 10, 5 };
 
@@ -332,7 +435,8 @@ public partial class NpcInfoCfg
     /// <returns>随机议员的 NpcInfoBean; 没有可用数据时返回 null</returns>
     public static NpcInfoBean GetRandomCouncilorNpc()
     {
-        var listRandomCouncilor = GetNpcInfosByType(NpcTypeEnum.CouncilorRandom);
+        //地区限制过滤: 仅保留当前语言允许出现的NPC
+        var listRandomCouncilor = FilterByCurrentRegion(GetNpcInfosByType(NpcTypeEnum.CouncilorRandom));
         if (listRandomCouncilor.IsNull())
         {
             return null;
@@ -379,7 +483,8 @@ public partial class NpcInfoCfg
     /// <returns>固定议员的 NpcInfoBean; 没有可用数据时返回 null</returns>
     public static NpcInfoBean GetRandomFixedCouncilorNpc()
     {
-        var listFixed = GetNpcInfosByType(NpcTypeEnum.Councilor);
+        //地区限制过滤: 仅保留当前语言允许出现的NPC
+        var listFixed = FilterByCurrentRegion(GetNpcInfosByType(NpcTypeEnum.Councilor));
         if (listFixed.IsNull() || listFixed.Count == 0)
         {
             return null;

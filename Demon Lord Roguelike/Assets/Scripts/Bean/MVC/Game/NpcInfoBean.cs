@@ -91,6 +91,18 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public string attack_mode_ext;
 	/// <summary>
+	///皮肤颜色数据（格式:部位类型int,r,g,b,a&... 如 3,255,255,255,255 表示Hair白色; rgba取0~255; 部位类型见CreatureSkinTypeEnum; 空=不固定颜色按创建时随机）
+	/// </summary>
+	public string skin_color_data;
+	/// <summary>
+	///地区限制（空=不限语言；填语言代码如 cn 或 cn,en 表示仅这些语言下出现，多个用英文逗号分隔；语言代码见LanguageEnum；目前仅终焉议会议员生成生效）
+	/// </summary>
+	public string region;
+	/// <summary>
+	///稀有度（空或0=N；按RarityEnum枚举值：1=N 2=R 3=SR 4=SSR 5=UR 6=L；配置后创建NPC生物时使用该稀有度）
+	/// </summary>
+	public int rarity;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

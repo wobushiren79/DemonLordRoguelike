@@ -7,5 +7,7 @@ public partial class UIDoomCouncilMain
 
     public TextMeshProUGUI ui_SuccessText;
 
+    public UIViewPressControlForGameBase ui_UIViewPressControlForGameBase;
+
 
 }

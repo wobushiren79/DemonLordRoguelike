@@ -40,6 +40,19 @@ public class ControlForGameBase : BaseControl
     public ControlInteractionEnum currentInteractionEnum = ControlInteractionEnum.None;
     public TextMeshPro interactionText;
 
+    /// <summary>
+    /// 当前是否处于可交互状态(交互提示是否展示中)(只读)：供 UIViewPressControlForGameBase 按键提示轮询 E 键显隐
+    /// </summary>
+    public bool IsInteractionShowing
+    {
+        get
+        {
+            if (controlTargetForInteraction == null)
+                return false;
+            return controlTargetForInteraction.activeSelf;
+        }
+    }
+
     //交互刷新时间
     protected float timeUpdateForInteraction;
     protected float timeMaxForInteraction = 0.2f;
@@ -61,7 +74,12 @@ public class ControlForGameBase : BaseControl
     protected bool isDashing = false;      //是否正在突进
     protected float dashTimer = 0;         //突进已进行时间
     protected float dashSpeed = 0;         //突进速度=总距离/耗时
-    protected float dashCdRemain = 0;      //突进冷却剩余(秒)
+    protected float _dashCdRemain = 0;     //突进冷却剩余(秒)
+
+    /// <summary>
+    /// 突进冷却剩余(秒)(只读)：供 UIViewPressControlForGameBase 按键提示轮询刷新 CD 遮罩
+    /// </summary>
+    public float DashCdRemain => _dashCdRemain;
 
     //冲刺残影生成器(懒创建,挂在受控角色物体 controlTargetForCreature 上;框架层通用网格残影)
     protected AfterimageGhostMesh _dashGhost;
@@ -309,7 +327,7 @@ public class ControlForGameBase : BaseControl
         if (dashLevel <= 0)
             return;
         //冷却中:不响应
-        if (dashCdRemain > 0)
+        if (_dashCdRemain > 0)
             return;
         float dashDistance = dashLevel * dashDistancePerLevel;
         dashSpeed = dashDistance / dashDuration;
@@ -318,7 +336,7 @@ public class ControlForGameBase : BaseControl
         //突进发起瞬间播放突进音效
         AudioHandler.Instance.PlaySound(AudioEnum.sound_knife_miss_1);
         //按研究等级刷新冷却(突进CD研究可缩短,默认3秒→最低1秒)
-        dashCdRemain = userUnlock.GetUnlockSpaceDashCD();
+        _dashCdRemain = userUnlock.GetUnlockSpaceDashCD();
         //突进时精灵按朝向翻转,并播放较快的移动动画
         SetSpriteFlipByX(dashFacing.x);
         PlayAnimForControlTarget(SpineAnimationStateEnum.Walk, animSpeed: 1.5f);
@@ -357,9 +375,9 @@ public class ControlForGameBase : BaseControl
     /// </summary>
     public void HandleForDashCdUpdate()
     {
-        if (dashCdRemain > 0)
+        if (_dashCdRemain > 0)
         {
-            dashCdRemain -= Time.deltaTime;
+            _dashCdRemain -= Time.deltaTime;
         }
     }
 

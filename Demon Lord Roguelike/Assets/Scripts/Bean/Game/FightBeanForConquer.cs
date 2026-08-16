@@ -96,9 +96,9 @@ public class FightBeanForConquer : FightBean
         //初始化防御核心
         FightCreatureBean fightCreatureDefenseCore = CreatureHandler.Instance.GetFightCreatureData(userData.selfCreature, CreatureFightTypeEnum.FightDefenseCore);
         fightDefenseCoreData = fightCreatureDefenseCore;
-        //设置防御生物
+        //设置防御生物(读取当前出战阵容, 在传送门详情弹窗中选择)
         dlDefenseCreatureData.Clear();
-        var lineupCreature = userData.GetLineupCreature(1);
+        var lineupCreature = userData.GetLineupCreature(userData.GetLineupFightIndex());
         for (int i = 0; i < lineupCreature.Count; i++)
         {
             var itemLineupCreature = lineupCreature[i];

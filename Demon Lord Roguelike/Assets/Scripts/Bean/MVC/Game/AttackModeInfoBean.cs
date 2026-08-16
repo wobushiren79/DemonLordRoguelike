@@ -88,9 +88,13 @@ public partial class AttackModeInfoBean : BaseBean
 	/// </summary>
 	public float damage_add_rate;
 	/// <summary>
-	///单次命中目标数上限(>0时按距落点近者优先截断,0/空=不限制;目前仅AttackModeInstantArea系使用)
+	///单次命中目标数上限(>0时按距检测点近者优先截断+同生物去重,0/空=不限制;走CheckHitTargetArea的范围攻击与AttackModeInstantArea系通用)
 	/// </summary>
 	public int hit_max;
+	/// <summary>
+	///其它扩展参数(&分隔项,:分键值,按key解析)。stuck_time:射空后弹体插地停留秒数(>0启用,空/0=不插地落地即销毁); stuck_sink:插地下沉深度(默认0,正值向下沉)。插地目前仅AttackModeRangedArcTracking系(抛物线落点跟踪)使用; aim_up:瞄准点相对目标脚底上抬高度(默认0=瞄脚底),目前仅AttackModeRangedObliqueTracking(直线斜射跟踪)使用
+	/// </summary>
+	public string other_data;
 	/// <summary>
 	///备注
 	/// </summary>

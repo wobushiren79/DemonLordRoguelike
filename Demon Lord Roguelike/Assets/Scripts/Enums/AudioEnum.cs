@@ -192,4 +192,6 @@ public enum AudioEnum : long
     music_gaming_12 = 1100012,//游戏中音乐12
     music_gaming_13 = 1100013,//游戏中音乐13
     music_main_1 = 1200001,//主界面音乐1
+    //==================== 环境音 Environment ====================
+    sound_night_1 = 2000001,//夜晚虫鸣1
 }

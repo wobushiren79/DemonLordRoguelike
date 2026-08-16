@@ -88,6 +88,8 @@ public partial class CreatureBean
         this.creatureUUId = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);
         this.creatureName = npcInfo.name_language;
         this.level = npcInfo.level;
+        //稀有度：NPC配置了rarity则使用，未配置(≤0)统一视为N
+        this.rarity = npcInfo.rarity;
         //解析并缓存体型缩放倍率（区间随机只在创建时定一次）
         this.bodySizeScale = npcInfo.GetBodySizeRandomScale();
         //添加随机皮肤
@@ -248,9 +250,10 @@ public partial class CreatureBean
     }
 
     /// <summary>
-    /// 初始化随机装备（NPC配置 equip_random 时生效：从装备随机池按槽位抽装备，只填充未被固定装备占用的空槽位）
-    /// <para>每槽位在「空 + 池内可装备道具」中等概率抽1个(允许裸体)；稀有度从NPC配置的稀有度列表等概率抽取(重复项加权)；
-    /// 装备实体走 EquipUtil.CreateEquipItemForNpc(NPC随机装备场景: userType固定0=普通, 加点按稀有度配置默认取值)</para>
+    /// 初始化随机装备（NPC配置 equip_random 时生效：按池类型分套装池/散件池两套逻辑，只填充未被固定装备占用的空槽位）
+    /// <para>散件池(random_type=1)：每槽位在「空 + 池内可装备道具」中等概率抽1个(允许裸体)，稀有度每件独立从NPC稀有度列表抽取；</para>
+    /// <para>套装池(random_type=2)：池内多套手动搭配的套装(EquipSuitInfo)过滤后等概率整套抽1套，稀有度整套统一roll一次(同一套品质统一)。</para>
+    /// <para>装备实体走 EquipUtil.CreateEquipItemForNpc(NPC随机装备场景: userType固定0=普通, 加点按稀有度配置默认取值)</para>
     /// </summary>
     /// <param name="npcInfo">NPC配置</param>
     public void InitRandomEquip(NpcInfoBean npcInfo)
@@ -266,12 +269,19 @@ public partial class CreatureBean
             LogUtil.LogError($"初始化随机装备失败 没有找到装备随机池:{poolId}");
             return;
         }
+        var listRarity = npcInfo.GetEquipRandomRarities();
+        //套装池: 整套抽取
+        if (poolInfo.GetRandomType() == CreatureRandomTypeEnum.Suit)
+        {
+            InitRandomEquipForSuit(poolInfo, listRarity);
+            return;
+        }
+        //散件池: 按槽位抽取
         var listEquipInfo = poolInfo.GetRandomEquipItemInfos(creatureInfo);
         if (listEquipInfo.IsNull())
         {
             return;
         }
-        var listRarity = npcInfo.GetEquipRandomRarities();
         for (int i = 0; i < listEquipInfo.Count; i++)
         {
             var itemInfo = listEquipInfo[i];
@@ -284,6 +294,32 @@ public partial class CreatureBean
             var rarity = listRarity[UnityEngine.Random.Range(0, listRarity.Count)];
             var itemData = EquipUtil.CreateEquipItemForNpc(itemInfo.id, rarity);
             ChangeEquip(itemType, itemData);
+        }
+    }
+
+    /// <summary>
+    /// 初始化随机装备-套装池分支：从池内多套手动搭配的套装中等概率整套抽1套(稀有度整套统一roll一次)，逐件填入未被固定装备占用的空槽位
+    /// </summary>
+    /// <param name="poolInfo">套装池配置(random_type=2)</param>
+    /// <param name="listRarity">NPC配置的稀有度列表(等概率抽取, 重复项加权)</param>
+    protected void InitRandomEquipForSuit(CreatureRandomInfoBean poolInfo, List<RarityEnum> listRarity)
+    {
+        var suitInfo = poolInfo.GetRandomEquipSuit(creatureInfo);
+        if (suitInfo == null)
+        {
+            return;
+        }
+        //整套统一roll一次稀有度(同一套品质统一)
+        var rarity = listRarity[UnityEngine.Random.Range(0, listRarity.Count)];
+        foreach (var suitItem in suitInfo.GetSuitItems())
+        {
+            //固定装备优先, 随机装备只填充空槽位
+            if (dicEquipItemData.ContainsKey(suitItem.Key))
+            {
+                continue;
+            }
+            var itemData = EquipUtil.CreateEquipItemForNpc(suitItem.Value, rarity);
+            ChangeEquip(suitItem.Key, itemData);
         }
     }
 
@@ -415,7 +451,21 @@ public partial class CreatureBean
         //获取皮肤
         List<long> listSkin = npcInfo.GetSkins();
         InitSkin(listSkin);
-    } 
+        //应用配置的固定颜色覆盖创建时的随机染色(部位不存在或不支持调色时静默跳过, 随机池皮肤的部位颜色无意义)
+        var dicSkinColor = npcInfo.GetSkinColorData();
+        foreach (var itemColor in dicSkinColor)
+        {
+            if (dicSkinData.TryGetValue(itemColor.Key, out var skinData) && skinData != null)
+            {
+                var modelInfo = CreatureModelInfoCfg.GetItemData(skinData.skinId);
+                if (modelInfo != null && modelInfo.color_state != 0)
+                {
+                    skinData.hasColor = true;
+                    skinData.skinColor.SetColor(itemColor.Value);
+                }
+            }
+        }
+    }
 
     /// <summary>
     /// 初始化皮肤-自定义

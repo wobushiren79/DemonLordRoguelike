@@ -75,6 +75,40 @@ public partial class UIViewPressCommon : BaseUIView
 
     #endregion
 
+    #region CD遮罩
+
+    /// <summary>
+    /// CD遮罩当前是否展示中(避免每帧重复 SetActive)
+    /// </summary>
+    protected bool isMaskCDShowing;
+
+    /// <summary>
+    /// 设置CD遮罩：remainingCD>0 时显示 MaskCD 并按 剩余/总时长 更新径向填充(剩余越少遮罩越少)，其余时候隐藏 MaskCD
+    /// </summary>
+    /// <param name="remainingCD">剩余冷却时间(秒)</param>
+    /// <param name="totalCD">总冷却时间(秒)</param>
+    public void SetMaskCD(float remainingCD, float totalCD)
+    {
+        if (ui_MaskCD == null)
+            return;
+        if (remainingCD > 0 && totalCD > 0)
+        {
+            if (!isMaskCDShowing)
+            {
+                isMaskCDShowing = true;
+                ui_MaskCD.gameObject.SetActive(true);
+            }
+            ui_MaskCD.fillAmount = Mathf.Clamp01(remainingCD / totalCD);
+        }
+        else if (isMaskCDShowing)
+        {
+            isMaskCDShowing = false;
+            ui_MaskCD.gameObject.SetActive(false);
+        }
+    }
+
+    #endregion
+
     #region 按键名补全
 
     /// <summary>

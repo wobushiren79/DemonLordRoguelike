@@ -30,7 +30,7 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 ### PreGame 扩展钩子（按时序，virtual 空实现供子类重写）
 1. `PreGameForAfterInitFightSceneCamera` - 战斗镜头初始化后
 2. `PreGameForAfterLoadFightScene` - 战斗场景加载后
-3. `PreGameForAfterCreateDefenseCore` - 防守核心创建/`InitFightConstData` 后、开启控制前；**需要以防守核心为操作目标时（如 BuffHandler.AddAbyssalBlessing）只能用此钩子**（更早调用核心未创建会失败/被跳过）。例：`GameFightLogicTest` 在此清理并添加测试深渊馈赠
+3. `PreGameForAfterCreateDefenseCore` - 防守核心创建/`InitFightConstData` 后、开启控制前；**需要以防守核心为操作目标时（如 BuffHandler.AddAbyssalBlessing）只能用此钩子**（更早调用核心未创建会失败/被跳过）。例：`GameFightLogicTest` 在此清理并添加测试深渊馈赠、应用测试魔王蓝量
 
 ### 关键文件
 

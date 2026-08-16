@@ -338,6 +338,8 @@ BuffHandler.Instance.RemoveFightCreatureBuffs<BuffEntityAttribute>(id);   // 指
 **死亡流程注意**：调用 `RemoveFightCreatureBuffs` 之前，应先 TriggerEvent
 `GameFightLogic_CreatureDeadEnd`，让 `BuffEntityConditionalDead` 能完成触发。
 
+**到期自动移除**：`BuffHandler.UpdateForActivieBuffs` 每帧把 `isValid=false` 的 BUFF 移除回收，并触发 `Buff_FightCreatureChange`（参数为移除前取出的 applier/target UUID）→ `GameFightLogic.EventForBuffFightCreatureChange` 自动 `RefreshBaseAttribute() + RefreshBodyColor()`，生物 BUFF 与馈赠 BUFF 两条更新链路均生效（2026-08 修复：此前到期静默移除，导致减速/中毒变色永久残留）。
+
 ### 查询生物BUFF
 
 ```csharp
@@ -545,4 +547,4 @@ public class MyEquip : IAttributeModifierSource
 5. **Stack 模式忘配 `stack_max`** → 0 表示无上限；属性BUFF用 stack 时确保 `EmitModifiers` 已用 `stackCount`。
 6. **新增事件类型只改 `BuffBaseEntity` 不改 `BuffEventDispatcher`** → 事件订阅不会生效。
 7. **无 pre_info 的条件 BUFF 直接整体重写 `EventForUnderAttack`/`EventForRegainHP` 做归属过滤（不调 base）** → base 在 pre_info 为空时不做任何过滤，会对全场每次攻击/治疗事件都累积 `conditionalValue` 并调 `HandleForEvent`（参考 `BuffEntityConditionalThorns`/`BuffEntityConditionalLifeSteal` 的写法）。
-8. **时间型 BUFF 到期仅靠 `isValid=false` 不会自动刷新生物视图**（移除链路不触发 `Buff_FightCreatureChange`）→ 到期/移除前需自行 `RefreshBaseAttribute() + RefreshBodyColor()`（参考 `BuffEntityConditionalInvincible`）。
+8. **时间型 BUFF 到期刷新已自动化**：自然到期（`isValid=false`）由 `UpdateForActivieBuffs` 移除时会触发 `Buff_FightCreatureChange`，事件处理自动 `RefreshBaseAttribute() + RefreshBodyColor()`，BUFF 无需再自理视图刷新（2026-08 修复；此前移除链路不触发事件，减速/变色会永久残留）。但需清理自身运行时旗标的（如 `BuffEntityConditionalInvincible` 的 `isInvincible`）仍要在 `SetData/ClearData/UpdateBuffTime` 三处自理旗标。

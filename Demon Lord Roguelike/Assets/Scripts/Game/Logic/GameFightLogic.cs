@@ -676,6 +676,8 @@ public class GameFightLogic : BaseGameLogic
                 return;
             }
             fightCreatureEntity.fightCreatureData.RefreshBaseAttribute();
+            //属性重算会重置colorBodyCurrent，需同步刷新到Spine（BUFF到期移除后中毒/减速变色才能还原）
+            fightCreatureEntity.RefreshBodyColor();
         }
     }
 

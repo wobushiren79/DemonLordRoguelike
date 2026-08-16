@@ -9,6 +9,10 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     protected Dictionary<GameSceneTypeEnum, GameObject> dicCurrentScene = new Dictionary<GameSceneTypeEnum, GameObject>();
     //当前场景
     protected GameObject currentScene;
+    //进入战斗场景前的全局环境光缓存（供卸载时还原）
+    protected Color cacheAmbientLight;
+    //是否已缓存环境光（仅配置过 ambient_light 的战斗场景会缓存）
+    protected bool hasCacheAmbientLight;
 
     public T GetCurrentScenePrefab<T>(GameSceneTypeEnum gameSceneType) where T : ScenePrefabBase
     {
@@ -308,6 +312,32 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             {
                 VolumeHandler.Instance.SetFog(fogColor, fogMode, fogStart, fogEnd, isActive: true);
             }
+
+            //按场景配置设置全局环境光（未配置 ambient_light 则不修改；进场缓存原值，卸载时还原）
+            if (fightSceneData.HasAmbientLight)
+            {
+                if (!hasCacheAmbientLight)
+                {
+                    cacheAmbientLight = RenderSettings.ambientLight;
+                    hasCacheAmbientLight = true;
+                }
+                RenderSettings.ambientLight = fightSceneData.GetAmbientLightColor();
+            }
+
+            //按场景配置处理细节预制（Details 下同名子预制显示、其它隐藏；未配置则整个 Details 隐藏）
+            HandleFightSceneDetails(targetScene, fightSceneData);
+
+            //按场景配置开启体积雾（未配置 volumetric_fog 则不开启；离场由下次 InitData 统一关闭兜底）
+            if (fightSceneData.HasVolumetricFog && fightSceneData.GetVolumetricFogParams(out var volumetricFogParams))
+            {
+                VolumeHandler.Instance.SetVolumetricFog(volumetricFogParams.distance, volumetricFogParams.density, volumetricFogParams.tint, volumetricFogParams.scattering, volumetricFogParams.anisotropy, volumetricFogParams.attenuationDistance, volumetricFogParams.baseHeight, volumetricFogParams.maximumHeight, true, volumetricFogParams.mainLightContribution, volumetricFogParams.additionalLightContribution);
+            }
+
+            //按场景配置播放环境音（AudioInfo 表 id，空/0=不播；离场在 UnLoadScene(Fight) 停止）
+            if (fightSceneData.HasEnvironmentSound)
+            {
+                AudioHandler.Instance.PlayEnvironment(fightSceneData.environment_sound);
+            }
         }
 
         dicCurrentScene.Add(GameSceneTypeEnum.Fight, targetScene);
@@ -327,6 +357,52 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         ColorUtility.TryParseHtmlString($"{roadColorB}", out var colorB);
         roadMR.sharedMaterial.SetColor("_ColorA", colorA);
         roadMR.sharedMaterial.SetColor("_ColorB", colorB);
+    }
+
+    /// <summary>
+    /// 还原进入战斗场景前的全局环境光（仅当某次加载配置过 ambient_light 才有缓存，还原后清除标记）
+    /// </summary>
+    protected void RestoreFightSceneAmbientLight()
+    {
+        if (!hasCacheAmbientLight)
+            return;
+        RenderSettings.ambientLight = cacheAmbientLight;
+        hasCacheAmbientLight = false;
+    }
+
+    /// <summary>
+    /// 处理战斗场景的细节预制（场景根下名为 Details 的直接子物体）：
+    /// 配置了 details 时只显示 Details 下同名的子预制、隐藏其它子预制；
+    /// 未配置 details 时整个 Details 节点隐藏；场景里没有 Details 节点则不处理
+    /// </summary>
+    /// <param name="targetScene">战斗场景根物体</param>
+    /// <param name="fightSceneData">战斗场景配置数据</param>
+    protected void HandleFightSceneDetails(GameObject targetScene, FightSceneBean fightSceneData)
+    {
+        Transform tfDetails = targetScene.transform.Find("Details");
+        if (tfDetails == null)
+            return;
+        //未配置 details：该场景没有细节预制，整个 Details 节点隐藏
+        if (!fightSceneData.HasDetails)
+        {
+            tfDetails.gameObject.SetActive(false);
+            return;
+        }
+        //配置了 details：只显示同名子预制，隐藏其它子预制
+        tfDetails.gameObject.SetActive(true);
+        string detailsName = fightSceneData.details.Trim();
+        bool isFind = false;
+        for (int i = 0; i < tfDetails.childCount; i++)
+        {
+            GameObject objChild = tfDetails.GetChild(i).gameObject;
+            bool isTarget = objChild.name == detailsName;
+            if (isTarget) isFind = true;
+            objChild.SetActive(isTarget);
+        }
+        if (!isFind)
+        {
+            LogUtil.LogWarning($"战斗场景 {fightSceneData.name_res} 配置了细节预制 {detailsName}，但 Details 节点下没有找到同名子物体");
+        }
     }
     #endregion
 
@@ -359,6 +435,10 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         if (gameSceneType == GameSceneTypeEnum.Fight)
         {
             VolumeHandler.Instance.SetFogActive(false);
+            //还原进入战斗前的全局环境光（仅配置过 ambient_light 的场景有缓存）
+            RestoreFightSceneAmbientLight();
+            //停止战斗场景配置的环境音（仅配置了 environment_sound 的场景播放过，停止本身幂等）
+            AudioHandler.Instance.StopEnvironment();
         }
         //移除天空盒
         if (isRemoveSkybox)
@@ -391,6 +471,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         dicCurrentScene.Clear();
         //关闭内置雾，防止森林雾残留到其它场景
         VolumeHandler.Instance.SetFogActive(false);
+        //还原进入战斗前的全局环境光
+        RestoreFightSceneAmbientLight();
         //移除天空盒
         if (isRemoveSkybox)
         {

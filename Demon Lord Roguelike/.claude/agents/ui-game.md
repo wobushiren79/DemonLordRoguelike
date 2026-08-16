@@ -20,7 +20,7 @@ watched_files:
 - **UIMainMaker** - 制作人员界面
 
 ### 基地 UI
-- **UIBaseMain** - 基地主界面
+- **UIBaseMain** - 基地主界面。左下角挂基础操作按键提示组 `ui_UIViewPressControlForGameBase`（W/A/S/D 移动常驻、E 互动可交互时才显示、Space 突进按研究解锁显隐+CD 遮罩，逻辑见 ui-components 的 UIViewPressControlForGameBase / UIViewPressCommon）
 - **UIBaseCore** - 核心建筑界面
 - **UIBasePortal** - 传送门界面
 - **UIBaseResearch** - 研究界面

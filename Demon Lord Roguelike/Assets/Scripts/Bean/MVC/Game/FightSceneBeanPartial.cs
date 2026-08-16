@@ -37,6 +37,79 @@ public partial class FightSceneBean
 
     #endregion
 
+    #region 体积雾配置
+
+    /// <summary>
+    /// 是否配置了体积雾（volumetric_fog 字段为空表示不开启体积雾）
+    /// </summary>
+    public bool HasVolumetricFog => !string.IsNullOrEmpty(volumetric_fog);
+
+    /// <summary>
+    /// 解析体积雾配置字符串（形如 Distance:48&Density:0.06&Tint:#B8CCFF&Scattering:0.05&Anisotropy:0.5&Attenuation:96&BaseHeight:0&MaxHeight:12&MainLight:1&AdditionalLight:1，缺省键回退默认值）
+    /// </summary>
+    /// <param name="fogParams">解析出的体积雾参数</param>
+    /// <returns>是否解析成功（配置为空返回 false）</returns>
+    public bool GetVolumetricFogParams(out VolumetricFogParamsBean fogParams)
+    {
+        fogParams = new VolumetricFogParamsBean();
+        if (string.IsNullOrEmpty(volumetric_fog)) return false;
+        //复用框架通用拆解：按 ':' 与 '&' 拆成 Dictionary<string,string>
+        var dic = volumetric_fog.SplitForDictionary();
+        if (dic.TryGetValue("Distance", out var strDistance)) float.TryParse(strDistance, out fogParams.distance);
+        if (dic.TryGetValue("Density", out var strDensity)) float.TryParse(strDensity, out fogParams.density);
+        if (dic.TryGetValue("Tint", out var strTint)) ColorUtility.TryParseHtmlString(strTint, out fogParams.tint);
+        if (dic.TryGetValue("Scattering", out var strScattering)) float.TryParse(strScattering, out fogParams.scattering);
+        if (dic.TryGetValue("Anisotropy", out var strAnisotropy)) float.TryParse(strAnisotropy, out fogParams.anisotropy);
+        if (dic.TryGetValue("Attenuation", out var strAttenuation)) float.TryParse(strAttenuation, out fogParams.attenuationDistance);
+        if (dic.TryGetValue("BaseHeight", out var strBaseHeight)) float.TryParse(strBaseHeight, out fogParams.baseHeight);
+        if (dic.TryGetValue("MaxHeight", out var strMaxHeight)) float.TryParse(strMaxHeight, out fogParams.maximumHeight);
+        //灯光贡献配 1=强制开 0=强制关，缺省=不处理（保持 profile 原值）
+        if (dic.TryGetValue("MainLight", out var strMainLight)) fogParams.mainLightContribution = strMainLight == "1";
+        if (dic.TryGetValue("AdditionalLight", out var strAdditionalLight)) fogParams.additionalLightContribution = strAdditionalLight == "1";
+        return true;
+    }
+
+    #endregion
+
+    #region 环境光配置
+
+    /// <summary>
+    /// 是否配置了环境光颜色（ambient_light 字段为空表示不修改全局环境光）
+    /// </summary>
+    public bool HasAmbientLight => !string.IsNullOrEmpty(ambient_light);
+
+    /// <summary>
+    /// 解析环境光颜色（形如 #364863）；未配置或解析失败时回退白色
+    /// </summary>
+    /// <returns>环境光颜色</returns>
+    public Color GetAmbientLightColor()
+    {
+        Color color = Color.white;
+        if (string.IsNullOrEmpty(ambient_light)) return color;
+        ColorUtility.TryParseHtmlString(ambient_light, out color);
+        return color;
+    }
+
+    #endregion
+
+    #region 场景细节预制
+
+    /// <summary>
+    /// 是否配置了场景细节预制（details 字段为空表示该场景没有细节预制，加载时整个 Details 节点隐藏）
+    /// </summary>
+    public bool HasDetails => !string.IsNullOrEmpty(details);
+
+    #endregion
+
+    #region 环境音配置
+
+    /// <summary>
+    /// 是否配置了环境音（environment_sound 为 AudioInfo 表 id，0=不播放；播放走 AudioHandler.PlayEnvironment 循环通道）
+    /// </summary>
+    public bool HasEnvironmentSound => environment_sound > 0;
+
+    #endregion
+
     #region 天空盒旋转
 
     /// <summary>
@@ -58,4 +131,31 @@ public partial class FightSceneBean
 }
 public partial class FightSceneCfg
 {
+}
+
+/// <summary>
+/// 体积雾参数（由 FightSceneBean.volumetric_fog 配置串解析而来；数值默认值与 VolumeHandler.SetVolumetricFog 参数默认值一致，配置缺省键即回退这些值）
+/// </summary>
+public class VolumetricFogParamsBean
+{
+    /// <summary>雾渲染的最大距离，值越大远处越浑浊看不清</summary>
+    public float distance = 64f;
+    /// <summary>雾浓度（0~1），越大越浓越看不清远处</summary>
+    public float density = 0.2f;
+    /// <summary>雾染色（主光散射部分的颜色，森林可偏冷青绿/灰白）</summary>
+    public Color tint = Color.white;
+    /// <summary>主光散射强度（0~1），越大朦胧辉光越亮</summary>
+    public float scattering = 0.15f;
+    /// <summary>散射各向异性（-1~1），正值朝光源方向更亮（穿林光柱/丁达尔感）</summary>
+    public float anisotropy = 0.4f;
+    /// <summary>光随距离衰减的距离，值越小画面越暗</summary>
+    public float attenuationDistance = 128f;
+    /// <summary>雾达到设定浓度的世界高度</summary>
+    public float baseHeight = 0f;
+    /// <summary>雾浓度衰减为 0 的世界高度（此高度以上无雾）</summary>
+    public float maximumHeight = 50f;
+    /// <summary>主光散射贡献开关（null=不处理保持 profile 原值；体积光柱需显式 true 防 profile 被改）</summary>
+    public bool? mainLightContribution = null;
+    /// <summary>额外灯散射贡献开关（null=不处理；月光柱等 VolumetricAdditionalLight 聚光灯必须 true 才参与散射）</summary>
+    public bool? additionalLightContribution = null;
 }

@@ -40,6 +40,15 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         base.OpenUI();
         ui_LineupIndexBtn.gameObject.SetActive(false);
 
+        //重命名按钮仅在已解锁「阵容重命名」研究后显示,并挂悬停气泡
+        var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+        bool isUnlockRename = userUnlock.CheckIsUnlock(UnlockEnum.LineupRename);
+        ui_RenameBtn_Button.gameObject.SetActive(isUnlockRename);
+        if (isUnlockRename)
+        {
+            ui_RenameBtn_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(30008), PopupEnum.Text);
+        }
+
         //默认打开第一套阵容
         currentLineupIndex = 1;
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, EventForCardPointerEnter);
@@ -162,7 +171,16 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     public void SetLineupTagText(RadioButtonView radioButtonView, int index)
     {
         var titleTex = radioButtonView.GetComponentInChildren<TextMeshProUGUI>();
-        titleTex.text = string.Format(TextHandler.Instance.GetTextById(30005), index);
+        titleTex.text = GetLineupShowName(index);
+    }
+
+    /// <summary>
+    /// 获取阵容显示名字:已改名用自定义名,未改名用默认「阵容 {序号}」多语言文本(委托 UserDataBean 同名单一真实源)
+    /// </summary>
+    public string GetLineupShowName(int index)
+    {
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        return userData.GetLineupShowName(index);
     }
     #endregion
 
@@ -374,6 +392,10 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         {
             OnClickForExit();
         }
+        else if (viewButton == ui_RenameBtn_Button)
+        {
+            OnClickForRename();
+        }
     }
 
     public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
@@ -391,6 +413,29 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     public void OnClickForExit()
     {
         UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
+    }
+
+    /// <summary>
+    /// 点击重命名:打开重命名弹窗,改名当前选中阵容(提交空名=清除自定义名,恢复默认显示)
+    /// </summary>
+    public void OnClickForRename()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        DialogRenameBean dialogRenameData = new DialogRenameBean();
+        //输入框默认填入当前阵容显示名(自定义名优先,否则默认「阵容 {序号}」)
+        dialogRenameData.inputContent = GetLineupShowName(currentLineupIndex);
+        dialogRenameData.characterLimit = 10;
+        dialogRenameData.actionSubmit = (view, data) =>
+        {
+            string newName = dialogRenameData.inputContent.IsNull() ? "" : dialogRenameData.inputContent.Trim();
+            userData.SetLineupName(currentLineupIndex, newName);
+            //刷新当前页签文本
+            SetLineupTagText(listLineupTag[currentLineupIndex - 1], currentLineupIndex);
+            GameDataHandler.Instance.manager.SaveUserData();
+            //弹出提示
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(3000003), 1);
+        };
+        UIHandler.Instance.ShowDialogRename(dialogRenameData);
     }
     #endregion
 

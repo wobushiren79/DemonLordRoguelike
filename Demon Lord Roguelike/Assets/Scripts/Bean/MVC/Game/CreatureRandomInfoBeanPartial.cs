@@ -4,6 +4,8 @@ public partial class CreatureRandomInfoBean
 {
     protected Dictionary<CreatureSkinTypeEnum, List<long>> dicRandomData;
     protected Dictionary<ItemTypeEnum, List<long>> dicRandomEquipData;
+    //套装id列表缓存(仅套装池 random_type=2 有效, 解析 equip_random_data)
+    protected List<long> listRandomSuitIds;
 
     /// <summary>
     /// 获取随机池类型(0=皮肤池 1=装备池)
@@ -131,6 +133,47 @@ public partial class CreatureRandomInfoBean
             }
         }
         return listData;
+    }
+
+    /// <summary>
+    /// 获取套装池全部套装id(带缓存；解析 equip_random_data，仅套装池 random_type=2 有效)
+    /// </summary>
+    public List<long> GetAllRandomSuitIds()
+    {
+        if (listRandomSuitIds == null)
+        {
+            listRandomSuitIds = equip_random_data.SplitForListLong(',', '-');
+        }
+        return listRandomSuitIds;
+    }
+
+    /// <summary>
+    /// 从套装池为指定生物抽一套套装：候选=池内该生物可整套装备的套装(EquipSuitInfoBean.CanEquipFor)，多套等概率抽1套
+    /// </summary>
+    /// <param name="creatureInfo">生物配置</param>
+    /// <returns>抽中的套装配置；池空/全被过滤时返回 null</returns>
+    public EquipSuitInfoBean GetRandomEquipSuit(CreatureInfoBean creatureInfo)
+    {
+        if (creatureInfo == null)
+        {
+            return null;
+        }
+        //过滤出该生物可整套装备的套装
+        List<EquipSuitInfoBean> listCanEquip = new List<EquipSuitInfoBean>();
+        var suitIds = GetAllRandomSuitIds();
+        for (int i = 0; i < suitIds.Count; i++)
+        {
+            var suitInfo = EquipSuitInfoCfg.GetItemData(suitIds[i]);
+            if (suitInfo != null && suitInfo.CanEquipFor(creatureInfo))
+            {
+                listCanEquip.Add(suitInfo);
+            }
+        }
+        if (listCanEquip.Count == 0)
+        {
+            return null;
+        }
+        return listCanEquip[UnityEngine.Random.Range(0, listCanEquip.Count)];
     }
 }
 public partial class CreatureRandomInfoCfg

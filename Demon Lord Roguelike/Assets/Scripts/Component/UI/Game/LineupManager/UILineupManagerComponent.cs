@@ -19,5 +19,9 @@ public partial class UILineupManager
 
     public TextMeshProUGUI ui_LineupHint;
 
+    public PopupButtonCommonView ui_RenameBtn_PopupButtonCommonView;
+
+    public Button ui_RenameBtn_Button;
+
 
 }

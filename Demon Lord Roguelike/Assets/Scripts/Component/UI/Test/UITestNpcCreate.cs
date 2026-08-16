@@ -237,9 +237,27 @@ public partial class UITestNpcCreate : BaseUIComponent
             UpdateCreatureAttributeFromUI();
             var creatureNpcData = creatureData.GetCreatureNpcData();
             long npciD = creatureNpcData.npcId;
+            //序列化皮肤颜色: 保留其他部位已配置的颜色, 头发皮肤支持调色时覆盖其颜色, 不支持时移除该部位配置
+            var dicSaveSkinColor = new Dictionary<CreatureSkinTypeEnum, Color>(creatureNpcData.npcInfo.GetSkinColorData());
+            bool isHairColorable = false;
+            foreach (var itemSkinId in listCreatureSkinData)
+            {
+                var skinModelInfo = CreatureModelInfoCfg.GetItemData(itemSkinId);
+                if (skinModelInfo != null && skinModelInfo.GetPartType() == CreatureSkinTypeEnum.Hair && skinModelInfo.color_state != 0)
+                {
+                    isHairColorable = true;
+                    break;
+                }
+            }
+            if (isHairColorable)
+                dicSaveSkinColor[CreatureSkinTypeEnum.Hair] = colorHair;
+            else
+                dicSaveSkinColor.Remove(CreatureSkinTypeEnum.Hair);
+            creatureNpcData.npcInfo.SetSkinColorData(dicSaveSkinColor);
             List<ExcelChangeData> listData = new List<ExcelChangeData>()
             {
                 new ExcelChangeData(npciD,"skin_data",creatureSkinData),
+                new ExcelChangeData(npciD,"skin_color_data",$"{creatureNpcData.npcInfo.skin_color_data}"),
                 new ExcelChangeData(npciD,"equip_item_ids",creatureEquipItemIds),
                 new ExcelChangeData(npciD,"HP",$"{creatureNpcData.npcInfo.HP}"),
                 new ExcelChangeData(npciD,"DR",$"{creatureNpcData.npcInfo.DR}"),
@@ -250,6 +268,8 @@ public partial class UITestNpcCreate : BaseUIComponent
                 new ExcelChangeData(npciD,"attack_search_range",$"{creatureNpcData.npcInfo.attack_search_range}"),
             };
             ExcelUtil.SetExcelData("Assets/Data/Excel/excel_npc_info[NPC信息].xlsx", "NpcInfo", listData);
+            //同步重新生成运行时JSON(NpcInfo.txt)，避免下次启动读到旧数据
+            ExcelUtil.ExcelToJsonItem("Assets/Data/Excel/excel_npc_info[NPC信息].xlsx");
 #endif
         });
         dialogData.actionCancel = ((view, data) =>  
@@ -271,6 +291,10 @@ public partial class UITestNpcCreate : BaseUIComponent
         var creatureNpcData = creatureData.GetCreatureNpcData();
         listCreatureSkinData = creatureNpcData.npcInfo.skin_data.SplitForListLong('&');
         listCreatureEquipItemIds = creatureNpcData.npcInfo.equip_item_ids.SplitForListLong('&');
+        //读取已保存的头发颜色配置(无配置时回退默认白)并回显到颜色选择控件
+        var dicSkinColor = creatureNpcData.npcInfo.GetSkinColorData();
+        colorHair = dicSkinColor.TryGetValue(CreatureSkinTypeEnum.Hair, out var savedHairColor) ? savedHairColor : Color.white;
+        ui_UIViewColorSelect_Hair.SetData("头发颜色", colorHair, ActionForHairColorChange);
         //初始化属性UI
         InitCreatureAttributeUI();
         RefreshCreature();

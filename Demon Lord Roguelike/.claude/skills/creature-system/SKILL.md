@@ -82,6 +82,8 @@ public class CreatureBean
 
 > **体型缩放**：`CreatureBean.bodySizeScale`(float, 默认1) 是模型体型倍率，两条来源共用同一套解析规则（空/"0"=1倍、`"min,max"`如"0.9,1.1"=区间随机、`"1.1"`=固定倍数）：NPC 读 `NpcInfo.body_size` + `NpcInfoBean.GetBodySizeRandomScale()`（`SetData(NpcInfoBean)`）；按 creatureId 创建的生物（扭蛋/建号等）读 `CreatureInfo.body_size` + `CreatureInfoBean.GetBodySizeRandomScale()`（`SetData(long creatureId)`）。均在创建时随机一次并缓存，渲染时 `CreatureHandler.SetCreatureData` 以 `localScale = size_spine × CreatureBean.GetBodySizeScale()`（带≤0回退1的保护）应用。未配置 body_size 的生物倍率恒为1，行为不变。
 
+> **NPC 稀有度**：NPC 创建（`SetData(NpcInfoBean)`）稀有度取自 `NpcInfo.rarity` 列（int，空/0=N，按 RarityEnum 值 1=N~6=L），未配置时维持旧行为全 N。仅写入 `CreatureBean.rarity`（详情显示/CMP 倍率等读 `GetRarityValue()` 的链路自动生效），**不授予稀有度 BUFF**——稀有度 BUFF 仍仅孕育扭蛋（`GashaponItemBean`）与测试添加（`UITestBase`）经 `RandomRarityBuffForCreate` 发放。
+
 > **creatureInfo/creatureModel 为自校验懒加载缓存**（`CreatureBeanPartial.cs`）：getter 发现缓存 id 与当前 `creatureId`（或 `creatureInfo.model_id`）不一致时自动重新解析。`creatureId` 允许中途直接改写（终焉议会转生 `DoomCouncilEntityReincarnation` 直接赋值、`CreatureManager.GetCreatureData` 对象池复用后 `SetData`），**无需手动清缓存**；改动种类相关字段时禁止另设平行的配置缓存字段绕过自校验。
 
 > **等级升级机制见 [`sacrifice-system`](../sacrifice-system/SKILL.md) Skill**：生物的 `level`/`levelExp` 升级走"基地祭坛献祭"——经验达标后献祭祭品掷骰，成功才升级。升级**不再自动加属性**，而是按 `LevelInfo.attribute_point`(当前全等级配置5) 发放可分配点数，由玩家在 `UICreatureAddAttribute` 界面手动加点(HP/护甲每点+10、攻击/攻速每点+1，写入 `creatureAttribute.dicAttributeLevelUp`)。升级方法 `UpLevelForSacrifice`(返回本次加点数)/`CanUpLevel`/`IsMaxLevel` 在 `CreatureBeanPartial.cs`，单点增量 `CreatureUtil.GetAttributePointAddValue`，成功率公式在 `CreatureUtil`。
@@ -391,7 +393,7 @@ public void SpawnAttackCreature(AttackDetailData detailData)
 
 > **生物快照创建**：`FightAttackDetailsBean.creatureSnapshots`（与 `npcIds` 按下标对应，元素可为空）非空时，`CreateAttackCreature(npcId..., creatureSnapshot)` 直接用该 CreatureBean 创建（同皮肤/同装备/同属性），不再按 npcId 重建——首用于终焉议会暴力说服战斗（议员与议会场景同一只）。
 
-> **NPC 随机装备**：NPC 创建（`CreatureBean.SetData(NpcInfoBean)`）在 `InitEquip` 后追加 `InitRandomEquip(npcInfo)`——NPC 配置了 `NpcInfo.equip_random`（`装备池ID,稀有度...`）时，从 `CreatureRandomInfo` 装备随机池（`random_type=1`，`equip_random_data` 按 ItemType 分组）每槽经 `CanEquipItem` 过滤后「空+可装备道具」等概率抽 1 件（裸体率=1/(可装备数+1)），只填空槽、走 `EquipUtil.CreateEquipItemForNpc` 生成器(NPC随机装备场景)。首用于终焉议会随机议员（详见 doom-council-system）。
+> **NPC 随机装备**：NPC 创建（`CreatureBean.SetData(NpcInfoBean)`）在 `InitEquip` 后追加 `InitRandomEquip(npcInfo)`——NPC 配置了 `NpcInfo.equip_random`（`池ID,稀有度...`）时按池类型分支：散件池（`random_type=1`，`equip_random_data` 按 ItemType 分组）每槽经 `CanEquipItem` 过滤后「空+可装备道具」等概率抽 1 件（裸体率=1/(可装备数+1)）、稀有度每件独立抽；套装池（`random_type=2`，池内为 EquipSuitInfo 套装id）走 `InitRandomEquipForSuit`——`GetRandomEquipSuit` 筛整套可装备（`EquipSuitInfoBean.CanEquipFor`）的套装等概率整套抽 1 套、**稀有度整套统一 roll 一次**。两者均只填空槽（固定装备优先）、走 `EquipUtil.CreateEquipItemForNpc` 生成器(NPC随机装备场景)。首用于终焉议会随机议员（详见 doom-council-system / item-system）。
 
 ### 创建防守生物（玩家操作）
 

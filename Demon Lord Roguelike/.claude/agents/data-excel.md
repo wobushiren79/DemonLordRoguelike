@@ -106,7 +106,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_audio_info[音频信息_FrameWork].xlsx` | AudioInfo | 183 | id, name_res, remark, audio_type, volume_scale |
+| `excel_audio_info[音频信息_FrameWork].xlsx` | AudioInfo | 184 | id, name_res, remark, audio_type(0音效/1音乐/2环境音), volume_scale。id 段位：音效 1~630005、音乐 1000001~1200001、环境音 2000001 起（2000001=sound_night_1 夜晚虫鸣，被 FightScene 10002 引用） |
 | `excel_base_info[基础信息_FrameWork].xlsx` | BaseInfo | 3 | id, content |
 | `excel_language[多语言_FrameWork].xlsx` | UIText + 18个子表 | 20(UIText) | id, content_{12种语言: cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr}（30列结构的表另有 content_1_* 列） |
 | `excel_spine_animation_state[骨骼动画枚举_FrameWork].xlsx` | SpineAnimationState | 33 | id, res |
@@ -124,7 +124,8 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 | `excel_creature_attribute_type_info[生物属性信息].xlsx` | CreatureAttributeTypeInfo | 12 | id, mark_name, res_name, color_text, name[language] |
 | `excel_creature_model[生物模型信息].xlsx` | CreatureModel | 66 | id, res_name, unlock_id, size_spine, ui_show_spine, name[language] |
 | `excel_creature_model_info[生物模型详情信息] .xlsx` | CreatureModelInfo | 438 | id, model_id, show_type, part_type, res_name, color_state |
-| `excel_creature_random_info[生物随机信息] .xlsx` | CreatureRandomInfo | 21 | id, random_type(0皮肤池/1装备池), skin_random_data(皮肤池: CreatureModelInfo id区间串), equip_random_data(装备池: ItemsInfo id区间串; 7个物种装备池id 10000001~70000001=model_id×10^7+1), remark |
+| `excel_creature_random_info[生物随机信息] .xlsx` | CreatureRandomInfo | 28 | id, random_type(0皮肤池/1装备散件池/2套装池), skin_random_data(皮肤池: CreatureModelInfo id区间串), equip_random_data(散件池: ItemsInfo id区间串, 7个物种装备池id 10000001~70000001=model_id×10^7+1; 套装池: EquipSuitInfo套装id区间串, 7个物种套装池id 10000002~70000002=model_id×10^7+2[已配给150条npc_type=3议员行]), remark |
+| `excel_equip_suit_info[装备套装].xlsx` | EquipSuitInfo | 8 | id(套装id段200001起, 6位, 与装备池8位段错开), creature_model_id(种族模组0=通用), hat/clothes/pants/shoe/nose_ring/finger_ring/weapon(7槽位道具id, 0=空槽), remark(套装名)。一行=一套手动精配组合, 被 CreatureRandomInfo 套装池(random_type=2)引用, NPC equip_random 指向套装池后创建时整套随机(稀有度整套统一roll一次); 现有 200001~200008=骷髅8套(蔚蓝骑士/琥珀战士/魔法/异域/破烂1/破烂2/铁制/深红) |
 
 ---
 
@@ -136,7 +137,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 | `excel_attackmode_ext_info[攻击模块扩展信息].xlsx` | AttackModeExtInfo | 1 | id, attack_mode_id(对应AttackModeInfo), ext_type(额外攻击类型,1=BOSS技能), trigger_interval(释放间隔秒), remark （5列）。配 NpcInfo.attack_mode_ext 实现"额外攻击"按间隔自动释放(不限于BOSS)，运行时由 AIIntentCreatureAttack 的额外攻击机制消费 |
 | `excel_buff_info[buff信息].xlsx` | BuffInfo | 131 | id, buff_type, rarity, class_entity/events/data, trigger_value/chance/num/time/effect, name[language] （25列） |
 | `excel_buff_pre_info[buff前置条件信息].xlsx` | BuffPreInfo | 6 | id, class_entity |
-| `excel_fight_scene[战斗场景].xlsx` | FightScene | 4 | id, name_res, road_color_a/b, skybox_mat。id 编号约定：每个主场景占一个万位段（10001=树林/20001=沙漠/30001=皇宫BOSS，新增主场景按 40001、50001… 递进），个十百千位留给该场景的子场景变体（如 10002=树林子场景）；99999=测试场景特殊区，不参与主场景序列 |
+| `excel_fight_scene[战斗场景].xlsx` | FightScene | 5 | id, name_res, road_color_a/b, skybox_mat, skybox_rotate, fog, volumetric_fog(体积雾配置: `Distance:48&Density:0.06&Tint:#B8CCFF&Scattering:0.05&Anisotropy:0.5&Attenuation:96&BaseHeight:0&MaxHeight:12&MainLight:1&AdditionalLight:1`,空=不开启,缺省键回退默认值(与SetVolumetricFog参数默认一致),MainLight/AdditionalLight配1=强制开0=强制关缺省=不动profile;解析 FightSceneBeanPartial.HasVolumetricFog/GetVolumetricFogParams→VolumetricFogParamsBean,由 WorldHandler.LoadFightScene 进场开启、下次任意场景 InitData 统一关闭兜底;夜晚树林10002已配贴地薄雾0~12高+压低主光散射0.05防夜晚穿帮+双灯贡献开做月光柱), ambient_light(全局环境光颜色hex,如#364863;空=不修改,夜晚场景配暗蓝色,解决受光粒子(草等)夜晚不吃方向光变暗的问题;由 WorldHandler.LoadFightScene 进场设置、卸载时还原缓存原值), details(场景细节预制：配值则场景根 Details 节点下同名子预制显示、其它子预制隐藏；空则整个 Details 节点隐藏；由 WorldHandler.LoadFightScene 处理), environment_sound(环境音 AudioInfo 表 id,空/0=不播放;WorldHandler.LoadFightScene 进场 PlayEnvironment 循环播、UnLoadScene(Fight) StopEnvironment), remark。id 编号约定：每个主场景占一个万位段（10001=树林/20001=沙漠/30001=皇宫BOSS，新增主场景按 40001、50001… 递进），个十百千位留给该场景的子场景变体（如 10002=树林子场景）；99999=测试场景特殊区，不参与主场景序列 |
 | `excel_fight_type_conquer_info[战斗-征服模式].xlsx` | FightTypeConquerInfo | 12 | id, world_id, fight_scene_ids, enemy_ids, enemy_num, attack_wave, fight/road/level 参数, drop/reward_crystal, reward_reputation(通关声望奖励) （24列） |
 
 ---
@@ -154,7 +155,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_npc_info[NPC信息].xlsx` | NpcInfo | 169 | id, creature_id, npc_type, level, HP/MP/DR/ATK/ASPD/MSPD, skin_data, equip_item_ids, equip_random(随机装备: `装备池ID,稀有度1,稀有度2...` 如 `10000001,N,R`，稀有度按RarityEnum枚举名、多个等概率抽、重复写加权、空=不随机；150条npc_type=3议员行已按评级配N~SSR), councilor_ratings, title_data, name[language], body_size(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定), attack_mode_ext(Boss额外技能:逗号分隔的AttackModeExtInfo id,非空即启用), remark （21列） |
+| `excel_npc_info[NPC信息].xlsx` | NpcInfo | 170 | id, creature_id, npc_type, level, HP/MP/DR/ATK/ASPD/MSPD, skin_data, skin_color_data(皮肤固定颜色: `部位类型int,r,g,b,a&...` 如 `3,255,255,255,255`=Hair白色，rgba取0~255、部位类型见CreatureSkinTypeEnum、空=创建时随机染色), equip_item_ids, equip_random(随机装备: `池ID,稀有度1,稀有度2...` 如 `10000001,N,R`，池=CreatureRandomInfo的散件池type1/套装池type2，稀有度按RarityEnum枚举名、多个等概率抽、重复写加权、空=不随机；150条npc_type=3议员行已按评级配N~SSR), councilor_ratings, title_data, name[language], body_size(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定), attack_mode_ext(Boss额外技能:逗号分隔的AttackModeExtInfo id,非空即启用), remark, region(地区限制: 空=不限语言、语言代码如 `cn` 或 `cn,en`=仅这些语言下出现，多个英文逗号分隔，代码见LanguageEnum；目前仅终焉议会议员生成过滤生效), rarity(生物稀有度: 空/0=N、按RarityEnum枚举值1=N~6=L；配置后创建NPC生物时写入 CreatureBean.rarity，仅设置稀有度不授稀有度BUFF；150条npc_type=3随机议员行已按评级填充：评级1-2→N、3-4→R、5→SR，4条npc_type=2固定议员行配SSR) （24列） |
 | `excel_npc_relationship_info[NPC关系信息].xlsx` | NpcRelationshipInfo | 7 | id, icon_res, name[language], relationship_min/max, relationship_type |
 | `excel_doom_council_info[终焉议会信息].xlsx` | DoomCouncilInfo | 13 | id, success_rate, cost_reputation/crystal, class_entity_name/data, unlock_id, name[language] （11列） |
 | `excel_doom_council_ratings_info[终焉议会议员等级信息].xlsx` | DoomCouncilRatingsInfo | 12 | id, icon_res, vote, name[language] |
@@ -167,7 +168,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
 | `excel_abyssal_blessing_info[深渊馈赠信息].xlsx` | AbyssalBlessingInfo | 18 | id, icon_res, parent_id, level, buff_ids, name[language], details[language], remark, valid(0无效1有效,生成器据此过滤), max_count(一局最多获得次数,0=不限,仅 level<=0 生效) |
-| `excel_effect_info[粒子信息].xlsx` | EffectInfo | 21 | id, res_name, show_type, show_time, float/int/long/vector3/vector4_data |
+| `excel_effect_info[粒子信息].xlsx` | EffectInfo | 24 | id, res_name, show_type, show_time, float/int/long/vector3/vector4_data, remark |
 | `excel_game_world_info[游戏世界信息].xlsx` | GameWorldInfo | 4 | id, icon_res, unlock_id, unlock_id_infinite/conquer_difficulty_level/quick_attack/speed2, map_pos, name[language] |
 | `excel_level_info[等级信息].xlsx` | LevelInfo | 11(0~10级) | id, level_exp(历史遗留 string 类型,用的地方 long.Parse), sacrifice_num, attribute_point(升级获得加点数,当前全等级配置5), CMP_rate(魔力召唤增加倍率,按等级递增), level_color(等级字体颜色,1~10级渐进色), juicer_exp(榨汁经验:被榨汁时按等级贡献的经验值,long,各行=本行 level_exp×100%;榨汁结算按投入魔物等级汇总产出魔汁道具) （7列）。⚠️ 含 id=0 兜底行:level_exp/sacrifice_num/attribute_point=0(实际不会被读到,升级读的是 level+1 行),CMP_rate=0/level_color=#FFFFFF(与原有 null 兜底行为一致),juicer_exp=20(=1级 level_exp 的20%) |
 | `excel_rarity_info[稀有度].xlsx` | RarityInfo | 8 | id, ui_board_color, buff_color, item_add_relationship, name[language], CMP_rate(魔力召唤增加倍率,N=0依次+0.5) |

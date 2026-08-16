@@ -86,6 +86,20 @@ python -m mcp_for_unity_server --transport http --http-url http://127.0.0.1:8080
 
 连接建立后，所有与Unity的交互通过 JSON-RPC over HTTP 协议完成。以下是以"在TestScene中创建GameObject"为例的完整调用链：
 
+### 快捷方式：invoke-unity-mcp.ps1 助手（推荐）
+
+[.claude/scripts/invoke-unity-mcp.ps1](.claude/scripts/invoke-unity-mcp.ps1) 已封装「握手 + Session 缓存复用 + SSE 解析 + 失效自动重握手」，优先用它代替手写下方原始流程：
+
+```powershell
+# JSON body 必须 base64 编码后传 -BodyBase64（PowerShell 5.1 的 -File 参数解析会吃掉内嵌双引号）
+$json = '{"jsonrpc":"2.0","id":1,"method":"resources/read","params":{"uri":"mcpforunity://instances"}}'
+$b64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json))
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".claude/scripts/invoke-unity-mcp.ps1" -BodyBase64 $b64
+# -Reinit 强制重新握手；-Port 指定端口（默认 8080）
+```
+
+以下为原始手动流程（理解协议细节或助手失效时参考）：
+
 ### 请求基础
 
 - **URL**: `http://127.0.0.1:8080/mcp`

@@ -377,7 +377,7 @@ public class TestNpcCreateGUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 懒加载随机装备(CreatureRandomInfo)候选下拉列表(id + 备注，含"不使用"项，按id排序；只列装备池 random_type=1)
+    /// 懒加载随机装备(CreatureRandomInfo)候选下拉列表(id + 类型前缀 + 备注，含"不使用"项，按id排序；列装备池 random_type=1 与套装池 random_type=2)
     /// </summary>
     private void EnsureRandomEquipOptions()
     {
@@ -387,10 +387,12 @@ public class TestNpcCreateGUI : MonoBehaviour
         var allRandomData = CreatureRandomInfoCfg.GetAllArrayData();
         foreach (var randomInfo in allRandomData)
         {
-            //只列装备池
-            if (randomInfo.GetRandomType() != CreatureRandomTypeEnum.Equip) continue;
+            //只列装备池与套装池(同一随机装备下拉, 前缀区分)
+            var randomType = randomInfo.GetRandomType();
+            if (randomType != CreatureRandomTypeEnum.Equip && randomType != CreatureRandomTypeEnum.Suit) continue;
+            string typeTag = randomType == CreatureRandomTypeEnum.Suit ? "[套装]" : "[散件]";
             string label = randomInfo.remark.IsNull() ? randomInfo.equip_random_data : randomInfo.remark;
-            listRandomEquipOptions.Add(new SelectItem(randomInfo.id, $"{randomInfo.id}  {label}"));
+            listRandomEquipOptions.Add(new SelectItem(randomInfo.id, $"{randomInfo.id}  {typeTag}{label}"));
         }
         listRandomEquipOptions.Sort((a, b) => a.id.CompareTo(b.id));
     }
@@ -484,6 +486,9 @@ public class TestNpcCreateGUI : MonoBehaviour
         listCreatureSkinData = creatureNpcData.npcInfo.skin_data.SplitForListLong('&');
         listCreatureEquipItemIds = creatureNpcData.npcInfo.equip_item_ids.SplitForListLong('&');
         dicSkinColorEdit.Clear();
+        //读取已保存的皮肤颜色配置(无配置的部位后续由ApplySkinColors把随机色固化进来)
+        foreach (var itemColor in creatureNpcData.npcInfo.GetSkinColorData())
+            dicSkinColorEdit[itemColor.Key] = itemColor.Value;
         editingColorSkinType = CreatureSkinTypeEnum.None;
         isCreatureDropdownOpen = false;
         isRandomSkinDropdownOpen = false;
@@ -600,11 +605,27 @@ public class TestNpcCreateGUI : MonoBehaviour
             UpdateCreatureAttributeFromUI();
             var creatureNpcData = creatureData.GetCreatureNpcData();
             long npciD = creatureNpcData.npcId;
+            //序列化皮肤颜色(只保留当前固定皮肤中存在的部位, 随机池接管的部位颜色无意义不保存)
+            var dicSaveSkinColor = new Dictionary<CreatureSkinTypeEnum, Color>();
+            foreach (var itemColor in dicSkinColorEdit)
+            {
+                for (int i = 0; i < listCreatureSkinData.Count; i++)
+                {
+                    var skinModelInfo = CreatureModelInfoCfg.GetItemData(listCreatureSkinData[i]);
+                    if (skinModelInfo != null && skinModelInfo.GetPartType() == itemColor.Key)
+                    {
+                        dicSaveSkinColor[itemColor.Key] = itemColor.Value;
+                        break;
+                    }
+                }
+            }
+            creatureNpcData.npcInfo.SetSkinColorData(dicSaveSkinColor);
             List<ExcelChangeData> listData = new List<ExcelChangeData>()
             {
                 new ExcelChangeData(npciD,"creature_id",$"{creatureNpcData.npcInfo.creature_id}"),
                 new ExcelChangeData(npciD,"creature_random_id",$"{creatureNpcData.npcInfo.creature_random_id}"),
                 new ExcelChangeData(npciD,"skin_data",creatureSkinData),
+                new ExcelChangeData(npciD,"skin_color_data",$"{creatureNpcData.npcInfo.skin_color_data}"),
                 new ExcelChangeData(npciD,"equip_item_ids",creatureEquipItemIds),
                 new ExcelChangeData(npciD,"equip_random",$"{creatureNpcData.npcInfo.equip_random}"),
                 new ExcelChangeData(npciD,"HP",$"{creatureNpcData.npcInfo.HP}"),

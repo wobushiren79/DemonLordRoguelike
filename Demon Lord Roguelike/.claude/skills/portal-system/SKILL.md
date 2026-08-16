@@ -106,6 +106,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 - **克隆item按钮注册**：运行时 `InitItemPool` 克隆的 item 不在 Awake 的 `RegisterButtons` 收集范围，须用 `RegisterButton` 手动注册(模板 item 的按钮已在 Awake 注册)。
 - 切换调 `gameWorldInfoRandom.SetDifficultyLevel`(同步该难度道路/关卡数据)。
 - 输入：ESC 取消、左右方向键切换。
+- **出战阵容选择区（ui_Lineup）**：已解锁阵容数 `GetUnlockLineupNum()` >= 2 才显示（否则整区隐藏）。`ui_LineupTitle` 标题=UIText 30009「出战阵容」；`ui_LineupName` 显示当前出战阵容名（`userData.GetLineupShowName(lineupFightIndex)`：自定义名优先，未改名回退默认「阵容 {序号}」30005）；`ui_LineupLeftBtn/RightBtn` 循环切换（`OnClickForChangeLineup(±1)`，0基偏移取模绕回）。选择存 `UserDataBean.lineupFightIndex`（`GetLineupFightIndex` 夹取 [1,已解锁数]），**切换即 SaveUserData**，下次打开弹窗默认选中上次阵容；进入战斗时 `FightBeanForConquer`/`FightBeanForDoomCouncil` 按该序号读阵容（替代旧写死第 1 套）。
 - **UIViewDialogPortalDetailsItem**：单难度卡，行星图标(iconSeed)、难度文本(403「难度 等级{0}」)、解锁/未解锁灰罩、`bg_color`(征服难度表)、完成度、透明度/缩放动画、悬停 `PopupEnum.PortalDetails`(展示**该item自身难度**)。
 
 ## 详情气泡（UIPopupPortalDetails）

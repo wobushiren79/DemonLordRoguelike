@@ -36,6 +36,22 @@ public partial class FightSceneBean : BaseBean
 	/// </summary>
 	public string fog;
 	/// <summary>
+	///体积雾配置(形如Distance:48&Density:0.06&Tint:#B8CCFF&Scattering:0.05&Anisotropy:0.5&Attenuation:96&BaseHeight:0&MaxHeight:12&MainLight:1&AdditionalLight:1,空=不开启)
+	/// </summary>
+	public string volumetric_fog;
+	/// <summary>
+	///环境光颜色(如#364863,空=不修改)
+	/// </summary>
+	public string ambient_light;
+	/// <summary>
+	///场景细节预制(Details下同名子预制)
+	/// </summary>
+	public string details;
+	/// <summary>
+	///环境音(AudioInfo表id, 空或0=不播放)
+	/// </summary>
+	public long environment_sound;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

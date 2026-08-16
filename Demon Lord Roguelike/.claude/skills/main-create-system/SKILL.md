@@ -116,10 +116,12 @@ UIHandler.ShowMask(1, null, () =>
 | 方法 | 位置 | 说明 |
 |------|------|------|
 | `CreatureBean(long creatureId)` → `SetData` | CreatureBean.cs:54/70 | 读 CreatureInfo 名字 + `GetBodySizeRandomScale()` 体型倍率（创建时定一次，扭蛋/创建账号共用入口） |
+| `CreatureBean(NpcInfoBean)` → `SetData` | CreatureBean.cs:62/83 | 读 npcInfo 名字/等级/稀有度(`rarity` 列，空/0=N，仅设置稀有度不授稀有度BUFF)/体型倍率 + InitSkin/InitEquip/InitRandomEquip |
 | `FixedAttributeForCreate(userData, type)` | CreatureBeanPartial.cs:210 | 初始魔物固定加点（点数=gashaponRandomAttributeNum） |
 | `IsDemonLord()` | CreatureBeanPartial.cs:108 | `creatureUUId == selfCreature.creatureUUId` |
 | `GetAllRandomData()` | CreatureRandomInfoBeanPartial.cs:10 | `skin_random_data` 按 `,`/`-` 拆分、按 `CreatureModelInfo.GetPartType()` 分组成部位→皮肤列表（带缓存，首次解析后复用） |
 | `GetSkins(hasRandomData=true)` | NpcInfoBeanPartial.cs:46 | NPC 固有皮肤 `skin_data` 按 `&` 拆分（+随机皮肤），经 CreatureModelInfo 得部位 |
+| `GetSkinColorData()/SetSkinColorData(dict)` | NpcInfoBeanPartial.cs | NPC 皮肤固定颜色 `skin_color_data` 解析/改写（格式 `部位类型int,r,g,b,a&`，rgba 0~255）；`CreatureBean.InitSkin(NpcInfoBean)` 在随机染色后用配置色覆盖（部位不存在/不可调色静默跳过），空=按创建时随机 |
 | `SetPreviewCreateCamera(p, enable)` | CameraHandler.cs:201 | → `SetCameraForBaseScene(..., "CV_PreviewCreate")` |
 
 ### 7. 配置表（Excel 唯一真实源 → JSON 导出产物）
@@ -128,7 +130,7 @@ UIHandler.ShowMask(1, null, () =>
 |------|--------|------|-----------|-------------------|
 | 物种/基础属性 | CreatureInfoCfg | CreatureInfo.txt | excel_creature_info | `name_language`、`creature_random_id`、体型区间 |
 | 初始魔物 NPC | NpcInfoCfg | NpcInfo.txt | excel_npc_info | `creature_id`、`name_language`、`skin_data` |
-| 皮肤随机池 | CreatureRandomInfoCfg | CreatureRandomInfo.txt | excel_creature_random_info | `skin_random_data`（注：该表另有 `random_type`/`equip_random_data` 列承载装备随机池，仅 NPC 随机装备用，创建界面只读皮肤池行） |
+| 皮肤随机池 | CreatureRandomInfoCfg | CreatureRandomInfo.txt | excel_creature_random_info | `skin_random_data`（注：该表另有 `random_type`/`equip_random_data` 列承载装备散件池(type1)/套装池(type2)，仅 NPC 随机装备用，创建界面只读皮肤池行） |
 | 皮肤模型/颜色 | CreatureModelInfoCfg | CreatureModelInfo.txt | excel_creature_model_info | `color_state`、部位类型 |
 
 多语言 textId：304=创建确认对话框内容（含 {0} 名字占位）、305=名字为空提示（真实源 excel_language 对应工作表）。

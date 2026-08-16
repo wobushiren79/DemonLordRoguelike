@@ -15,5 +15,15 @@ public partial class UIDialogPortalDetails
 
     public RectTransform ui_ContentShow;
 
+    public TextMeshProUGUI ui_LineupTitle;
+
+    public TextMeshProUGUI ui_LineupName;
+
+    public Button ui_LineupLeftBtn;
+
+    public Button ui_LineupRightBtn;
+
+    public RectTransform ui_Lineup;
+
 
 }

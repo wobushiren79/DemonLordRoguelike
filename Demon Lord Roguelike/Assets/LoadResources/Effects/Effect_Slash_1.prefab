@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5910077528822486891}
   - component: {fileID: 6786425853562496072}
   m_Layer: 0
-  m_Name: EffectSlash_1
+  m_Name: Effect_Slash_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

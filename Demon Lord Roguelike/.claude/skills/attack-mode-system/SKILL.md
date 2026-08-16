@@ -51,14 +51,16 @@ BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播
 ```
 BaseAttackMode                      - 攻击模式基类
 ├── AttackModeMelee                 - 近战单体（瞬间命中目标）
-├── AttackModeMeleeArea             - 近战范围（起点范围伤害）
-├── AttackModeRanged                - 远程直线弹道（逐帧移动+碰撞检测）
+├── AttackModeMeleeArea             - 近战范围（起点范围伤害；可配 hit_max 限制命中数，如人类战士1001的101005配3=前方2单位最多命中3个敌人）
+├── AttackModeRanged                - 远程直线弹道（逐帧移动+碰撞检测；InitAttackModeShow 开启 visualVelocityOrient——火球/冰球 billboard 视觉按 _VelocityWS.w 速度朝向：贴图头（默认朝右）对准飞行方向、拖尾朝飞行反方向，仅桶材质声明 _VelocityWS 才生效，RangedNormal 等材质零副作用）
 │   ├── AttackModeRangedArea        - 远程范围弹道（击中时范围AOE）
-│   ├── AttackModeRangedArc         - 远程抛物线弹道
+│   ├── AttackModeRangedArc         - 远程抛物线弹道（到达终点走 `HandleForReachEnd` 虚方法，默认回收，子类覆盖为落点AOE等收尾）
 │   │   └── AttackModeRangedArcArea - 抛物线范围（继承抛物线轨迹）
 │   │   └── AttackModeRangedArcBounce - 弹跳抛物线（分段抛物线+追踪锁定+命中弹跳；深渊馈赠「跳跳斧」300061）
 │   │   └── AttackModeRangedArcGround - 抛物线火瓶-地形火焰（双状态 Flying→Burning：飞行段抛物线飞向固定落点不追踪、纯投掷物禁用命中、弹体自旋-720°/s绕-Z轴，到达切燃烧段驻留每1秒对半径范围跳伤、满5秒自毁；落地切燃烧时播放 sound_water_4；深渊馈赠「瓶装炼狱火」300101）
-│   ├── AttackModeRangedTracking    - 远程追踪弹道（实时改变方向追击目标）
+│   │   └── AttackModeRangedArcTracking - 抛物线落点跟踪（落点实时跟踪目标、目标死亡落死亡点、到达落点范围检测取最近单体命中、途中不命中；弹体朝向每帧跟随抛物线切线：visualStartAngle=武器StartRotate基准角+atan2(8h(0.5-progress),Δx)；弧高2；射空收尾按 other_data 的 stuck_time/stuck_sink 键插地停留或落地即毁，插地期弹体冻结仍挂 dlAttackModePrefab、场景清场自动回收；人类弓箭手1002用 206001[配 other_data=stuck_time:3&stuck_sink:0.1]，配 attack_search_type=41 DisMaxByRoad 索当前排最后一个敌人）
+│   ├── AttackModeRangedTracking    - 远程追踪弹道（实时改变方向追击目标，方向 SetY(0) 拍平水平飞；目标死亡即关命中检测）
+│   │   └── AttackModeRangedObliqueTracking - 直线斜射跟踪-范围伤害版（①跟踪含Y不拍平+首发方向按出手点→瞄准点重算：从头顶高空出手（attack_start_position y=2.5）直直斜射目标，瞄准点=目标脚底+other_data 键 aim_up 上抬（默认0=瞄脚底，201001/201002 配 aim_up:0.5）；②命中检测/射线全程有效，目标死亡方向冻结朝死亡点直飞直至命中或出界；③HandleForHitTarget 走 CheckHitTargetArea 命中点AOE（hit_max 近者优先截断，201001/201002 配 hit_max=3=离爆炸点最近3个敌人）；④贴身保底命中：与瞄准点距离≤HitTouchDistance(0.2)直接判中——短射线0.1在迎面相撞穿进碰撞体后永久失效（射线不打背面），无此层会挂身空转；⑤触地即毁：下落中（attackDirection.y<0）y≤GroundHitY(0.05)播 effect_hit 回收（无伤害结算），目标死亡直飞不穿地；弹体朝向：面片 quad 视觉走 visualStartAngle=StartRotate基准角+atan2(dir.y,dir.x)；火球/冰球 billboard shader 走 visualVelocityOrient→_VelocityWS.w 速度朝向（矩阵旋转对其核心无效）；人类法师1003/1004用 201001/201002）
 │   ├── AttackModeRangedPiercing    - 远程穿透弹道（可穿透多个目标）
 │   │   ├── AttackModeRangedPiercingRoad - 沿路碾压穿透（穿透数无上限、伤害逐目标减半保底1、驶到路尽头销毁；深渊馈赠「失控的矿车」300041）
 │   │   └── AttackModeRangedRebound - 四壁反弹穿透（道路矩形内永久反弹+±5°随机偏转、同目标1秒冷却、永不自毁由BUFF维持N颗；发射音sound_start=sound_fight_3、回弹音sound_hit_6；深渊馈赠「回弹菱块」300081~300085）
@@ -97,13 +99,15 @@ BaseAttackMode                      - 攻击模式基类
 | 基类 | 行为特征 | 适用场景 |
 |------|---------|---------|
 | `AttackModeMelee` | 瞬间命中单个目标 | 近战普攻、直接打击 |
-| `AttackModeMeleeArea` | 瞬间范围伤害 | 近战AOE、旋风斩 |
-| `AttackModeRanged` | 直线飞行弹道 | 箭矢、法术弹 |
+| `AttackModeMeleeArea` | 瞬间范围伤害（可配 hit_max 上限，近者优先截断+同生物去重） | 近战AOE、旋风斩 |
+| `AttackModeRanged` | 直线飞行弹道（InitAttackModeShow 开启 `visualVelocityOrient`：火球/冰球 billboard 视觉按 `_VelocityWS.w` 速度朝向——贴图头（默认朝右）对准飞行方向、拖尾朝飞行反方向，无 `_VelocityWS` 属性材质零副作用） | 箭矢、法术弹 |
 | `AttackModeRangedArea` | 飞行弹道+击中AOE | 爆炸箭、火球术 |
 | `AttackModeRangedArc` | 抛物线飞行 | 投石、抛物线炸弹 |
 | `AttackModeRangedArcBounce` | 分段抛物线 + 追踪锁定目标 + 命中后弹跳到附近目标（次数由发射方注入，全程命中去重，伤害逐目标减半保底1；弧高首段=arcHeight、弹跳段减半；每段仅下落阶段 progress≥0.5 检测命中；分段时长=max(距离/速度, MinSegmentTime=1.0s) 防短段过快） | 弹跳斧、弹射类 |
 | `AttackModeRangedArcGround` | 抛物线投掷 + 落地驻留周期范围伤害（双状态：飞行段纯移动不命中+弹体自旋-720°/s绕-Z轴、到达切燃烧段每 TickInterval 对半径范围跳伤、满 Duration 自毁；燃烧段隐藏 DSP 弹体、粒子视觉走 EffectHandler.ShowFloorFireEffect；落地切燃烧时播放 sound_water_4） | 投掷物落地成持续灼烧地形（瓶装炼狱火） |
+| `AttackModeRangedArcTracking` | 抛物线 + 落点实时跟踪目标（落点=目标脚底+本发起始点相对攻击者的偏移，与发射口同高；目标死亡则落点锁定死亡点）+ 到达落点范围检测取**距落点最近的一个敌人**结算单体伤害（范围仅作检测窗口、非AOE，`collider_area_size[0]`=检测半径），弹道途中不命中任何目标；弹体朝向每帧跟随抛物线切线（`visualStartAngle`=武器StartRotate基准+`atan2(8h(0.5-progress), Δx)`，DSP 每帧读它建矩阵故每帧更新即生效）；弧高 2（构造函数覆盖基类默认 3）；收尾靠覆盖 Arc 的 `HandleForReachEnd`：命中即回收，**射空（落点无存活敌人）按 `other_data` 的插地键配置插地停留（stuck_time>0 启用，stuck_sink 下沉深度，倒计时走 GetFightDeltaTime、插地期冻结移动/跟踪/边界检测并关拖尾）或落地即回收——插地弹体仍挂 `dlAttackModePrefab`，ClearAttackModePrefab/Clear 清场自动覆盖**；配置解析走 `AttackModeInfoBeanPartial.GetStuckConfig()`（`AttackModeStuckConfig`，从通用扩展列 other_data 取 stuck_time/stuck_sink 键） | 抛射狙击、迫击炮式打击（人类弓箭手 206001，配 `other_data=stuck_time:3&stuck_sink:0.1`） |
 | `AttackModeRangedTracking` | 追踪目标飞行 | 追踪弹、导弹 |
+| `AttackModeRangedObliqueTracking` | 继承 RangedTracking：直线斜射跟踪（方向含 Y 不拍平，首发方向按「出手点→瞄准点」重算，用于高空出手斜射；瞄准点=目标脚底+`other_data` 键 `aim_up` 上抬高度，默认0=瞄脚底，解析走 `AttackModeInfoBeanPartial.GetAimUpHeight()`）+ 命中检测/射线全程有效（目标死亡方向冻结朝死亡点直飞，直至命中或出界）+ `HandleForHitTarget` 改走 `CheckHitTargetArea` 命中点范围 AOE（hit_max 近者优先截断、同生物去重，201001/201002 配 hit_max=3=离爆炸点最近3个）+ 贴身保底命中（与瞄准点距离 ≤ `HitTouchDistance`=0.2 直接判中——0.1 短射线在目标迎面相撞穿进碰撞体后永久失效（射线不打背面），无此层跟踪弹会在体内绕瞄准点空转）+ 触地即毁（下落中 `attackDirection.y`<0 且 y ≤ `GroundHitY`=0.05 时播 effect_hit 回收，无伤害结算，目标死亡直飞不穿地）；弹体朝向：面片 quad 走 visualStartAngle=武器StartRotate基准角+`atan2(dir.y, dir.x)`，火球/冰球 billboard shader 走 `visualVelocityOrient`（InitAttackModeShow 开启）→`_VelocityWS.w` 速度朝向 | 高空出手的斜射法师范围弹（人类法师 201001/201002，配 `other_data=aim_up:0.5`） |
 | `AttackModeRangedPiercing` | 可穿透多个目标 | 穿透箭、激光 |
 | `AttackModeRangedPiercingRoad` | 沿路穿透碾压 + 伤害逐目标递减 + 到路尽头销毁 | 矿车冲撞、碾压类 |
 | `AttackModeRangedRebound` | 继承 Piercing（复用多目标命中遍历）：直线飞行 + 道路矩形四壁反弹（x∈[0.5,0.5+路长]、z∈[0.5,路数+0.5]，StartAttackBase 缓存），越墙钳位+方向分量取反+绕 Y 轴 ±5° 随机偏转（防 90° 死角死循环）；左墙在子弹进入场地后才生效（hasEnteredField 防出生即弹回魔王侧）；命中不销毁、伤害不递减，同一目标 1 秒冷却（Dictionary 记录各目标最近命中时刻，lifeTime 按 GetFightDeltaTime 累积，名单超 100 清理过期条目）；`CheckIsMoveBound` 恒 false 永不自毁，由发射方 BUFF 追踪维持 N 颗、关卡切换被清后补弹；音效：发射音配置 `sound_start`=sound_fight_3(400003)（GetAttackModePrefab 每颗发射时播放），回弹音 sound_hit_6 在四壁反弹成功时播放（HandleWallBounce），均受 PlaySound 0.1s 同音去重（同帧多颗只播一声） | 回弹菱块、弹球类 |
@@ -153,6 +157,13 @@ public class AttackModeMelee : BaseAttackMode
 // Assets/Scripts/Game/Fight/AttackMode/AttackModeRanged.cs
 public class AttackModeRanged : BaseAttackMode
 {
+    public override void InitAttackModeShow()
+    {
+        base.InitAttackModeShow();
+        //速度朝向开关：仅声明 _VelocityWS 的火球/冰球 billboard 桶生效(贴图头默认朝右对准飞行方向；材质门自动过滤，RangedNormal 等零副作用)
+        visualVelocityOrient = true;
+    }
+
     public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
@@ -486,7 +497,8 @@ public class AttackModeCustom : BaseAttackMode
     "buff": "1001:0.5|1002:1.0",     // 攻击附带的BUFF（ID:创建概率）
     "attack_search_type": 0,         // 攻击搜索类型（0射线 11球形范围 21盒形范围）
     "damage_add_rate": 0,            // 伤害加成比例（float；最终伤害=攻击者ATK×该值，0/空=无加成按1倍。如自爆史莱姆爆炸300001配50：ATK 10×50=500）
-    "hit_max": 1,                    // 单次命中目标数上限（int；>0 时按距落点近者优先截断，0/空=不限制；目前仅 AttackModeInstantArea 系使用）
+    "hit_max": 1,                    // 单次命中目标数上限（int；>0 时按距检测点近者优先截断+同生物去重，0/空=不限制；走 CheckHitTargetArea 的范围攻击[MeleeArea/RangedArea/Explosion/Overlap等]与 AttackModeInstantArea 系通用，InstantArea 另带伤害依次减半）
+    "other_data": "stuck_time:3&stuck_sink:0.1", // 其它扩展参数（&分隔项,:分键值，按 key 解析的通用扩展列）。当前键：stuck_time=射空后插地停留秒数(>0启用插地)、stuck_sink=插地下沉深度(默认0)，插地目前仅 AttackModeRangedArcTracking 系使用，解析见 GetStuckConfig()；aim_up=瞄准点相对目标脚底上抬高度(默认0=瞄脚底)，目前仅 AttackModeRangedObliqueTracking 使用，解析见 GetAimUpHeight()
     "collider_size": 0.5,            // 碰撞检测大小（点到点）
     "collider_area_type": 11,        // 范围检测类型（11球形 21盒形）
     "collider_area_size": "2,2,2",   // 范围检测大小（半径或半extents）
@@ -637,7 +649,7 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | `CheckHitTargetForSingle()` | 检测单个目标 |
 | `CheckHitTarget()` | 检测多个目标 |
 | `CheckHitTarget(Vector3)` | 在指定位置检测多个目标，使用缓存的 `searchCreatureType` |
-| `CheckHitTargetArea(Vector3, Action<FightCreatureEntity>)` | 范围检测并回调；内部使用 `FightManager.GetCachedFightLogic()` 避免每个 collider 反射查询 |
+| `CheckHitTargetArea(Vector3, Action<FightCreatureEntity>)` | 范围检测并回调；`hit_max>0` 时按距检测点近者优先截断+同生物去重（0=不限制、原行为）；内部使用 `FightManager.GetCachedFightLogic()` 避免每个 collider 反射查询 |
 | `GetMoveSpeed()` | 弹道实际飞行速度 = `speed_move × attackerSpeedRate`；远程系（Ranged/Arc/Tracking/Split）移动计算必须用它，禁止直接读 `attackModeInfo.speed_move`（天降 Fallupon 下落速度不吃攻速加成） |
 | `GetHitTargetAreaCollider(Vector3)` | 按配置 `collider_area_type` 取范围内 colliders |
 | `CheckIsMoveBound(GameObject)` | 检测是否超出边界 |
@@ -669,6 +681,8 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | `AttackModeRanged`（Piercing/Area 继承） | 当前位置沿 `attackDirection` 入队 1 条（Piercing 靠 `CheckHitTarget` 读多命中窗口） |
 | `AttackModeRangedTracking` | 先按当前位置实时算朝向目标的方向，再入队 1 条 |
 | `AttackModeRangedArc` | `progress<0.5` 前半程不检测→不入队 |
+| `AttackModeRangedArcTracking` | 全程不入队（命中只在落点范围检测，PrepareRaycast 重写为 no-op） |
+| `AttackModeRangedObliqueTracking` | 全程入队 1 条（含目标死亡后；入队前先刷新跟踪方向，与 Update 一致） |
 | `AttackModeFallupon` | 下落中在当前位置入队 1 条 |
 | `AttackModeRangedSplitChild` | 继承 `AttackModeRanged` 的单射线策略，无需重写（发射器 `AttackModeRangedSplit` 本身不飞不检测，走基类 no-op） |
 
@@ -696,7 +710,7 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 - **缓存跨关卡保留、整场结束才释放**：关卡间(`ClearGameForSimple`/`ClearAttackModePrefab`)不释放 `dicAttackModeVisualObj`/`dicAttackModeObj`(留给下关复用)；打完所有关卡(`ClearGame`→`FightManager.Clear`)调 `ClearAttackModeAssetCache()`：`LoadAddressablesUtil.Release` 释放弹道+视觉预制的 Addressables 句柄、清空两个 dict、`ClearVisuals()` 清桶。`UnregisterVisual` 仅热替换用。
 - **前置约束（方案B）**：弹道位置真实源已从 `transform` 迁到 `BaseAttackMode.position`；移动型子类用 `SetPosition`/`TranslatePosition`（同步回 transform）。**新增移动弹道必须遵守，否则渲染器读到的 `position` 不准**。
 - **Lit 材质亮度对齐（环境光+主光补偿，按桶两种方式）**：`DrawMeshInstanced` 的 `SampleSH` **读不到全局环境探针**（本自定义 shader 只有 `#pragma multi_compile_instancing`、未启用逐实例 SH，故 `LightProbeUsage.CustomProvided` + `CopySHCoefficientArraysFrom` 那套 SH 注入**无效**、试过没用），且 **URP 主光 uniform 同样缺失**（2026-08-04 实测：主光强度归零，弹体毫无变化而场景地面/树明显变暗——骷髅投手骨头 200001 偏暗的根因即缺整份主光，GI 补偿只够回到贴图原色，在 1.5 强度主光照亮 ~1.75 倍的场景里仍显暗）。导致开 `_LIT_ON` 的桶材质比"拖预制到场景"的 `MeshRenderer`(BlendProbes→环境探针+正常主光) **偏暗一份环境光+整份主光**。⚠️`DrawMeshInstanced` 同样拿不到逐物体附加光(点光/聚光)列表——但本项目战斗场景只有平行光+天光/环境色，差异纯是环境光+主光，故可补齐。**修法(双 MPB 按桶选 + 主光两桶共灌，不依赖实例化 SH 内部机制)**：`RenderAll` 开头 `RefreshAmbientSH()` 把 `RenderSettings.ambientProbe` 求成两套——①6 轴平均平坦 GI 灌 `mpbFlat._InstancedFlatGI`(面片桶/默认)；②L2 球谐系数按 URP `SampleSH9` 的 `PackSH` 布局打包 7 个 float4 灌 `mpbSH._InstancedSH0..6`(3D 立体模型桶)；并由 `RefreshInstancedLight()` 把 `RenderSettings.sun` 方向+颜色灌**两个 MPB 的 `_InstancedLightDir`/`_InstancedLightColor`**（主光检测独立于环境探针：换战斗场景只换灯不换环境光时也要重灌；方向/颜色各自带变化检测）。两个 MPB 各带 `_InstancedGI` 模式开关(1=均匀/2=方向性SH；材质默认 0=普通渲染走全局 `SampleSH`)，仅探针变化时重求值。shader 侧 `CommonLit.hlsl` 的 `bakedGI` 改走可覆盖宏 `COMMON_LIT_SAMPLE_GI(normalWS)`，仅 `Shader_Mesh_Common_1` 在 include 前覆盖为 `InstancedGI(normalWS)`(按 `_InstancedGI` 分流：>1.5 用 `_InstancedSH0..6` 手动 `SampleSH9`、>0.5 用 `_InstancedFlatGI`、否则全局 `SampleSH`；**Flat/SH 两个分支都再加 `_InstancedLightColor × NdotL(_InstancedLightDir)` 模拟主光漫反射**——法线恒定的面片桶=恒定提亮对齐预制受光，3D 立体模型桶=恢复明暗立体感)，其余 7 个用 CommonLit 的 shader 走默认宏=原 `SampleSH` **零影响**。**桶选哪种由配置表 `visual_data` 的 `ambient` 决定**：`flat`(默认，面片视觉与历史一致)/`sh`(方向性球谐，3D 立体模型如矿车用)。绘制走 `DrawBucket`→按 `bucket.ambient` 选 MPB + `LightProbeUsage.Off`。普通渲染(预制/材质直用)不设这些属性=0，**完全不受影响**；桶材质不开 Lit 时也无副作用。**⚠️`MaterialPropertyBlock` 必须运行时懒建（`RefreshAmbientSH` 里 `if(null)new`），禁止写成字段初始化器**——本类由 MonoBehaviour `FightManager` 构造期 new 出来，字段初始化器里 `new MaterialPropertyBlock()` 会触发 Unity `CreateImpl is not allowed ... from a MonoBehaviour constructor` 异常并连带 `FightManager` 组件创建失败。**⚠️关键字声明(修复 DrawMeshInstanced 变体失效)**：`_LIT_ON`/`_OUTLINE_ON`/`_ALPHATEST_ON`/`_ROTATE_TIME_ON` 四个开关在 Shader_Mesh_Common_1 **全部用 `shader_feature`(非 local)** 声明——实测 `shader_feature_local` 在 `Graphics.DrawMeshInstanced` 下变体选择不生效(shader 走 Unlit/开关失效)，弹道视觉因此"像没受光"(矿车踩过:Unlit 纯贴图色，环境光补偿在 Unlit 分支下也无效)；改非 local 后按材质 keyword 数组选变体正常生效，不影响未开关键字的材质(Building 等 MeshRenderer 读材质 keyword 行为不变)。
-- **逐实例世界速度 `_VelocityWS` + 种子 `_SeedOffset`（火球/冰球这类"shader 内自带粒子"的桶专用）**：`Shader_Mesh_FireBallInstanced_1`（`FrameWork/URP/MeshFireBallInstanced1`）把 ParticleSystem 的模拟搬进 vertex shader——火星数量=网格 quad 数，核心与火星靠顶点色 alpha 区分、同一次 draw 画完。但 **shader 只知道弹体现在在哪、没有"每颗火星出生时弹体在哪"的记忆**，故火星默认**刚性绑在实例矩阵上**跟着火球平移（像挂在车上的装饰，而非被甩在身后）。修法=喂**逐实例世界速度矢量**（方向×速率，单位/秒），shader 按 `出生点 = 当前位置 − 速度 × 已存活秒数` 把每颗火星退回出生地。⚠️注意灌的是**完整速度矢量而非归一化方向**：`posWS -= velocityWS * age` 里 `age` 是秒，只填方向等于宣称速度 1 单位/秒，火球飞得越快脱节越明显。`_SeedOffset` 同理必须灌（复用每发的 `spinPhase`，0~360，shader 侧 `frac` 只取小数部分故随机性原样保留，无需新字段）：`_Time.y` 是全局的，不灌则同屏所有火球的火星**同一帧同时爆同时灭**。
+- **逐实例世界速度 `_VelocityWS` + 种子 `_SeedOffset`（火球/冰球这类"shader 内自带粒子"的桶专用）**：`Shader_Mesh_FireBallInstanced_1`（`FrameWork/URP/MeshFireBallInstanced1`）把 ParticleSystem 的模拟搬进 vertex shader——火星数量=网格 quad 数，核心与火星靠顶点色 alpha 区分、同一次 draw 画完。但 **shader 只知道弹体现在在哪、没有"每颗火星出生时弹体在哪"的记忆**，故火星默认**刚性绑在实例矩阵上**跟着火球平移（像挂在车上的装饰，而非被甩在身后）。修法=喂**逐实例世界速度矢量**（方向×速率，单位/秒），shader 按 `出生点 = 当前位置 − 速度 × 已存活秒数` 把每颗火星退回出生地。⚠️注意灌的是**完整速度矢量而非归一化方向**：`posWS -= velocityWS * age` 里 `age` 是秒，只填方向等于宣称速度 1 单位/秒，火球飞得越快脱节越明显。`_SeedOffset` 同理必须灌（复用每发的 `spinPhase`，0~360，shader 侧 `frac` 只取小数部分故随机性原样保留，无需新字段）：`_Time.y` 是全局的，不灌则同屏所有火球的火星**同一帧同时爆同时灭**。**`_VelocityWS.w` = 速度朝向开关**（>0.5 启用，由 `BaseAttackMode.visualVelocityOrient` 写入）：shader 把 billboard 角点绕视轴按速度屏幕角旋转，使**贴图头（默认朝右，+X）对准飞行方向**、拖尾画在贴图左侧故自动朝飞行反方向（旋转量=`atan2(velScreen.y, velScreen.x)`；2026-08 曾误用「贴图上方对准飞行反方向」公式，因项目子弹贴图约定默认朝右而整体顺时针差 90°，冰球 201004 踩坑后已修正）；⚠️该类视觉的核心 quad posOS 恒原点+世界空间 billboard 展开，**实例矩阵的 visualStartAngle 旋转对它完全无效**——要"按飞行方向倾斜"只能走这个 w 通道（2026-08 斜射法师弹视觉不低头根因）；**`AttackModeRanged.InitAttackModeShow` 已统一开启**（2026-08 骷髅魔法师冰球 2004/201004 弹体不朝向飞行方向根因；子类 Tracking/SplitChild/Piercing/Arc 继承生效，无 `_VelocityWS` 的桶由材质门自动过滤零副作用，如骷髅投手 200001 仍走自旋不受影响）；默认 0=贴图保持默认朝右（历史行为），速度≈0 帧也回退不旋转。
   - **速度来源=渲染器帧差分**：`CalculateVelocityWS(attackMode, deltaTime, gameSpeed)` 取 `(position − lastRenderPosition) / deltaTime`，基准 `BaseAttackMode.lastRenderPosition`（新字段，`StartAttackBase` 里与 `position` 同步初始化，防对象池复用时拿上一发终点作基准算出跨屏速度）。**差的是本帧平均速度**，故直线弹/追踪弹/抛物线弹全部自动正确，无需每种 AttackMode 各自暴露飞行方向再各自算对一遍（拐弯与下坠的分量天然含进去）。⚠️**瞬移钳制**：`SetPosition` 可瞬间改位置，差分会算出荒谬速度把火星甩到天边→超过 `GetMoveSpeed() × VelocityClampRate(1.5) × 当前游戏速度` 即判瞬移、本帧取 0（退化成"火星挂在弹体上"仅一帧，不可察）；1.5 余量是给抛物线弹的重力分量（其实际速度本就大于配置的水平速度，按 1 倍卡会把正常弹道误判成瞬移）。⚠️**阈值必须乘游戏速度**：2倍速不改 `Time.timeScale`、位移走 `GetFightDeltaTime()`，真实速度即 `GetMoveSpeed()×2`——不乘会每帧都被误判瞬移、速度恒 0，火星不再甩尾而是**全部包围在子弹周边**（骷髅魔法师火/冰子弹 2 倍速踩过此坑，已修；`speed_move=0` 的原地弹道同样取 0，本就不该有拖拽）。⚠️**基准无条件推进**——即便本帧速度被判瞬移丢弃，也不能让 `lastRenderPosition` 停在旧位置，否则下一帧会把这段位移二次计入。
   - **零成本降级**：桶是否启用由 `RegisterVisual` 里 `material.HasProperty(_VelocityWS)` 判定一次并存 `VisualBucket.hasVelocity`。未声明该属性的桶**两个缓冲恒为 null**（不占内存）、热路径一条指令不多走；shader 侧属性默认 0 → 该项归零 → 行为与"绑在火球上"完全一致，**不灌不会坏**。挂 `MeshRenderer` 单发预览即走此降级（逐实例属性无 MPB 数组时回退读材质值），故两属性均 `[HideInInspector]` 并归在 shader 的 `[Header(Instanced)]` 下——**材质面板填的值对 DSP 路径无效**（会被 MPB 数组覆盖），留个改了不生效的框是误导；预览想看甩尾/错峰才临时填。
   - **⚠️数组现灌现画、按桶环境光方式选共享 MPB(`mpbFlat`/`mpbSH`，与轨迹桶的每桶 MPB 不同)**：`DrawBucket` 里先按 `bucket.ambient` 选 MPB，再 `SetVectorArray`/`SetFloatArray`（即时拷贝、紧接着提交绘制），同方式各桶轮流借用同一个 MPB 不会串数据 → **无需每桶再建 MPB**。必须每桶一份的只有 `velocityBuffer`(`Vector4[1023]`)/`seedBuffer`(`float[1023]`) **数组本身**——各桶的填充在 `RenderAll` 里是交错进行的。定长 1023 整份上传（超出 `count` 的部分被忽略），与轨迹桶 `_TrailAlpha` 同理；未声明这两个属性的桶提交时 Unity 直接忽略 MPB 里的残留数组，无害。
@@ -756,6 +770,7 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | 弹跳抛物线（跳跳斧） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedArcBounce.cs` |
 | 抛物线火瓶-地形火焰（瓶装炼狱火） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedArcGround.cs` |
 | 追踪弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedTracking.cs` |
+| 直线斜射跟踪-范围（人类法师） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedObliqueTracking.cs` |
 | 穿透弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedPiercing.cs` |
 | 沿路碾压穿透（矿车） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedPiercingRoad.cs` |
 | 四壁反弹穿透（回弹菱块） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedRebound.cs` |

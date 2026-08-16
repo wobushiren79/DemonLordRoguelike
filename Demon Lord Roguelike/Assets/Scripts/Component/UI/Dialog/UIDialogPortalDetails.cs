@@ -51,10 +51,27 @@ public partial class UIDialogPortalDetails : DialogView
 
         InitItemPool();
         RefreshItemsImmediate(gameWorldInfoRandom.difficultyLevel);
+        //出战阵容选择区: 已解锁阵容数量>=2才显示, 默认选中上次保存的出战阵容
+        int lineupNum = userUnlock.GetUnlockLineupNum();
+        ui_Lineup.gameObject.SetActive(lineupNum >= 2);
+        if (lineupNum >= 2)
+        {
+            ui_LineupTitle.text = TextHandler.Instance.GetTextById(30009);
+            RefreshLineupShow();
+        }
         //由内到外依次强制重建布局: 文本(ContentPro)→内容容器(ContentShow)→对话框内容(DialogContent), 让嵌套 ContentSizeFitter 先算内层首选尺寸再撑开外层
         LayoutRebuilder.ForceRebuildLayoutImmediate(ui_ContentPro.rectTransform);
         LayoutRebuilder.ForceRebuildLayoutImmediate(ui_ContentShow);
         LayoutRebuilder.ForceRebuildLayoutImmediate(ui_DialogContent);
+    }
+
+    /// <summary>
+    /// 刷新出战阵容显示(阵容名: 自定义名优先, 未改名显示默认「阵容 {序号}」)
+    /// </summary>
+    protected void RefreshLineupShow()
+    {
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        ui_LineupName.text = userData.GetLineupShowName(userData.GetLineupFightIndex());
     }
 
     /// <summary>
@@ -315,6 +332,14 @@ public partial class UIDialogPortalDetails : DialogView
         {
             OnClickForChangeDifficultyLevel(1);
         }
+        else if (viewButton == ui_LineupLeftBtn)
+        {
+            OnClickForChangeLineup(-1);
+        }
+        else if (viewButton == ui_LineupRightBtn)
+        {
+            OnClickForChangeLineup(1);
+        }
         else if (viewButton != null)
         {
             //点击难度item直接切换到该item代表的难度
@@ -322,6 +347,30 @@ public partial class UIDialogPortalDetails : DialogView
             if (itemView != null)
                 OnClickForDifficultyLevel(itemView);
         }
+    }
+
+    /// <summary>
+    /// 点击切换出战阵容(循环切换: 第1套往左到第N套, 第N套往右回第1套), 切换后保存到用户数据
+    /// </summary>
+    /// <param name="change">切换方向(-1 上一套 / +1 下一套)</param>
+    public void OnClickForChangeLineup(int change)
+    {
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        int lineupNum = userData.GetUserUnlockData().GetUnlockLineupNum();
+        if (lineupNum < 2)
+            return;
+        int oldIndex = userData.GetLineupFightIndex();
+        //循环切换: 先转0基序号偏移再绕回, 最后转回1基
+        int newIndex = (oldIndex - 1 + change) % lineupNum;
+        if (newIndex < 0)
+            newIndex += lineupNum;
+        newIndex += 1;
+        if (newIndex == oldIndex)
+            return;
+        userData.SetLineupFightIndex(newIndex);
+        //选择即落盘, 下次打开本弹窗默认选中该阵容
+        GameDataHandler.Instance.manager.SaveUserData();
+        RefreshLineupShow();
     }
 
     /// <summary>

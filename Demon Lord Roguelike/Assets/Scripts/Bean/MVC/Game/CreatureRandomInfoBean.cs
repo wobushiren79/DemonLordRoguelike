@@ -12,7 +12,7 @@ using Newtonsoft.Json;
 public partial class CreatureRandomInfoBean : BaseBean
 {
 	/// <summary>
-	///随机类型（0=皮肤池 1=装备池）
+	///随机类型（0=皮肤池 1=装备池 2=套装池）
 	/// </summary>
 	public int random_type;
 	/// <summary>
@@ -20,7 +20,7 @@ public partial class CreatureRandomInfoBean : BaseBean
 	/// </summary>
 	public string skin_random_data;
 	/// <summary>
-	///装备随机数据-ItemsInfo（装备道具ID池，区间压缩串，同skin_random_data格式）
+	///装备/套装随机数据（type=1时为ItemsInfo道具ID池，type=2时为EquipSuitInfo套装ID池；区间压缩串，同skin_random_data格式）
 	/// </summary>
 	public string equip_random_data;
 	/// <summary>

@@ -116,7 +116,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ac5939a3c99bf6543ab24381bd5b9f23
-    m_Address: Assets/LoadResources/Effects/EffectSlash_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_Slash_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -127,6 +127,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bcb06139528cc7d46ac53acce7e2d30a
     m_Address: Assets/LoadResources/Effects/EffectMove_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c1c18a571e3b84542a4cc17134d9ce24
+    m_Address: Assets/LoadResources/Effects/Effect_Slash_2.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

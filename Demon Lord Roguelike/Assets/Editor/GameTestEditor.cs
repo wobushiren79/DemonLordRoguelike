@@ -166,6 +166,7 @@ public partial class GameTestEditor : Editor
             }
             EditorGUILayout.EndHorizontal();
             fightDefenseCoreId = EditorGUILayout.IntField(new GUIContent("魔王生物 ID", "防守核心(魔王)的生物 ID，默认 2001 骷髅战士"), fightDefenseCoreId);
+            fightDemonLordMP = EditorGUILayout.FloatField(new GUIContent("魔王蓝量", "战斗开始时魔王的当前魔力值(同时会把魔力上限提升到不低于该值)，默认 9999"), fightDemonLordMP);
             // 单体测试模式下道路数量/道路长度为固定值，不显示
             if (fightTestMode != FightTestModeEnum.SingleUnit)
             {
@@ -1036,6 +1037,8 @@ public partial class GameTestEditor : Editor
         FightCreatureBean fightDefCoreData = CreatureHandler.Instance.GetFightCreatureData(fightDefenseCoreId, CreatureFightTypeEnum.FightDefenseCore);
         fightDefCoreData.creatureData.AddSkinForBase();
         fightData.fightDefenseCoreData = fightDefCoreData;
+        //传递测试魔王蓝量(由 GameFightLogicTest 在防守核心创建后统一应用)
+        fightData.testDemonLordMP = fightDemonLordMP;
         fightData.InitData();
         fightData.fightSceneId = fightSceneId;
 

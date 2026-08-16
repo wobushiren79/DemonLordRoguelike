@@ -68,9 +68,17 @@ public class AttackModeRangedArc : AttackModeRanged
         {
             // 到达终点
             SetPosition(attackModeData.targetPos);
-            //攻击完了就回收这个攻击
-            Destroy();
+            HandleForReachEnd();
         }
+    }
+
+    /// <summary>
+    /// 到达抛物线终点处理：默认直接回收；子类可覆盖为落点范围命中等收尾逻辑
+    /// </summary>
+    protected virtual void HandleForReachEnd()
+    {
+        //攻击完了就回收这个攻击
+        Destroy();
     }
 
 }

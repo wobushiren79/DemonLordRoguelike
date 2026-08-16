@@ -40,6 +40,7 @@ watched_files:
 - **7+1 item 对象池**(7 常驻显示 + 1 临时滑出)、一排最多展示 7 个(中心±3, `itemSpacing=230`)、左右滑动切换(OutBack)、边界回弹、超 `unlockDifficultyMax` Toast「难度未解锁」；切换调 `SetDifficultyLevel`。ESC/方向键输入。
 - **点击难度item直切**：`OnClickForDifficultyLevel(itemView)`——点击任一 item 直接切到该难度(未解锁 item 提示回弹)；运行时克隆的 item 按钮需在 `InitItemPool` 手动 `RegisterButton`(模板 item 的按钮已在 Awake 注册)。透明度/缩放按距中心距离梯度(`alphaByDistance`/`scaleByDistance`)。
 - `UIViewDialogPortalDetailsItem`：单难度卡(图标 iconSeed、难度文本403、灰罩、bg_color、完成度、悬停 PortalDetails 展示**该item难度**)。
+- **出战阵容选择区(ui_Lineup)**：`GetUnlockLineupNum()`>=2 才显示。标题 UIText 30009「出战阵容」；`ui_LineupName` 显示当前出战阵容名(`userData.GetLineupShowName(lineupFightIndex)`，自定义名优先、未改名回退默认 30005)；`ui_LineupLeftBtn/RightBtn` 循环切换(`OnClickForChangeLineup(±1)`)。选择存 `UserDataBean.lineupFightIndex`(`Get/SetLineupFightIndex` 夹取 [1,已解锁数])，切换即 SaveUserData，下次打开默认选中；进战斗 `FightBeanForConquer`/`FightBeanForDoomCouncil` 按该序号读阵容(替代旧写死第1套)。
 
 ### 详情气泡（UIPopupPortalDetails）
 - 5 个 `UIViewPopupPortalDetailsItem`(名字/难度/线路数/关卡数/路径长度) + `ui_UIViewItem` 模板缓存池(奖励)。

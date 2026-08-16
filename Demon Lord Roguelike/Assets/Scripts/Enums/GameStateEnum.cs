@@ -243,6 +243,7 @@ public enum UnlockEnum : long
     SpaceDashCD = 200700001,//空格突进冷却缩减(强化,level_max=4;默认3秒,每级-0.5秒,满级最低1秒;子研究,前置=SpaceDash)
     DemonLordAutoPickCrystal = 200800001,//魔王自动拾取魔晶(强化,level_max=10;拾取间隔=11-等级秒,10级10秒→满级1秒;每次拾取按FIFO取场上最先掉落的魔晶,基础1颗)
     DemonLordAutoPickCrystalNum = 200900001,//魔王每次拾取魔晶数量+1(强化,level_max=5;每次拾取数量=1+本研究等级;前置=DemonLordAutoPickCrystal)
+    LineupRename = 201000001,//阵容重命名(强化,level_max=1;前置=LineupNum;解锁后阵容管理界面显示重命名按钮,可给当前选中阵容自定义名字)
 
     EquipRewardHuman = 300100301,//人类装备奖励
     EquipRewardSkeleton = 300200301,

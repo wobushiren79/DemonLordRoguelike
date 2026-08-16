@@ -42,6 +42,9 @@ public class BaseAttackMode
     public string visualSpriteName;
     /// <summary>DSP 视觉桶签名（visual_name + 换图 + 自旋 组合，InitAttackModeShow 末尾算出并缓存）；RenderAll 按它取桶，空=不走 DSP</summary>
     public string visualBucketKey;
+    /// <summary>弹体视觉是否按飞行速度朝向（仅火球/冰球这类 billboard shader 生效：quad 绕视轴旋转、使贴图头（默认朝右）对准飞行方向，拖尾画在贴图左侧故自动朝飞行反方向；
+    /// 由 AttackModeInstanceRenderer 写入逐实例 _VelocityWS.w 传给 shader；面片 quad 类视觉的朝向仍走 visualStartAngle，两者互不干扰）</summary>
+    public bool visualVelocityOrient = false;
     #endregion
 
     #region 渲染与配置数据
@@ -252,6 +255,7 @@ public class BaseAttackMode
         spinSpeed = 0f;
         spinAxis = Vector3.one;
         visualSpriteName = null;
+        visualVelocityOrient = false;
         //拖尾默认关闭：对象池复用不残留上一发拖尾，由 EnableTrail 按配置重新开启
         trailMode = AttackModeTrailType.None;
         //拖尾染色复位为白(不改贴图原色)，避免对象池复用残留上一发颜色
@@ -619,7 +623,7 @@ public class BaseAttackMode
     }
 
     /// <summary>
-    /// 检测范围内敌人
+    /// 检测范围内敌人（hit_max>0 时按距检测点近者优先截断并做同生物去重；0=不限制、维持原行为）
     /// </summary>
     public bool CheckHitTargetArea(Vector3 checkPosition, Action<FightCreatureEntity> actionForHitItem)
     {
@@ -627,17 +631,34 @@ public class BaseAttackMode
         Collider[] targetColliders = GetHitTargetAreaCollider(checkPosition);
         if (targetColliders != null)
         {
+            int hitMax = attackModeInfo.hit_max;
+            //命中数受限时按距检测点近远升序（截断时近者优先），并做同生物去重（防同一生物多碰撞体重复命中）
+            HashSet<string> setHitCreatureId = null;
+            if (hitMax > 0)
+            {
+                Array.Sort(targetColliders, (a, b) =>
+                    (a.transform.position - checkPosition).sqrMagnitude.CompareTo((b.transform.position - checkPosition).sqrMagnitude));
+                setHitCreatureId = new HashSet<string>();
+            }
             //循环外缓存 GameFightLogic，避免每个 collider 命中都做 GetGameLogic 反射查询
             GameFightLogic gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
+            int hitNum = 0;
             for (int i = 0; i < targetColliders.Length; i++)
             {
+                //单次命中目标数达上限则停止
+                if (hitMax > 0 && hitNum >= hitMax)
+                    break;
                 var itemHitterCollder = targetColliders[i];
                 string creatureId = itemHitterCollder.gameObject.name;
+                //命中数受限时同一生物只命中一次（同一生物多个碰撞体只算一次）
+                if (setHitCreatureId != null && !setHitCreatureId.Add(creatureId))
+                    continue;
                 var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, CreatureFightTypeEnum.None);
                 if (targetCreature != null && !targetCreature.IsDead())
                 {
                     hasHitter = true;
                     actionForHitItem?.Invoke(targetCreature);
+                    hitNum++;
                 }
             }
         }

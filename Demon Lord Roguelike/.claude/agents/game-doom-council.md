@@ -46,8 +46,8 @@ watched_files:
 
 ### 议员与投票态度系统（核心机制）
 - **NPC 类型** `NpcTypeEnum`：`Councilor=2` 议会固定NPC（固定装备/样貌 + 独立持久化好感），`CouncilorRandom=3` 议会随机NPC（随机外貌、每场临时生成）。
-- **议员生成**（`DoomCouncilLogic.GenerateCouncilors`）：议会人数在议案 `DoomCouncilInfo.council_num`("min,max") 区间随机；每席随机一种生物(CreatureInfo id 1001-7004) + 按权重随机评级(1~5: 50/30/15/10/5 归一化, `NpcInfoCfg.GetRandomCouncilorNpc`)；整场 10% 概率出现 1 名固定NPC(`GetRandomFixedCouncilorNpc`)。每生物×评级各一条 `npc_type=3` 的 NpcInfo 行(共30×5=150)。**测试分流**：`DoomCouncilBean.isTestAllFixedCouncilor=true` 时改走 `GenerateAllFixedCouncilors`——把所有 `npc_type=2` 固定议员各生成1名(跳过随机)，入口 `LauncherTest.StartForDoomCouncilAllFixed`(编辑器"查看所有固定议员"按钮)。
-- **随机议员装备**（NpcInfo.equip_random 列 + CreatureRandomInfo 装备随机池）：150 条随机议员行已按"物种定池(model_id×10^7+1=10000001~70000001 装备池)、评级定稀有度(1:N 2:N,R 3:R 4:R,SR 5:SR,SSR)"填充 `equip_random`(格式 `池ID,稀有度...` 重复写加权)。`CreatureBean.SetData(npcInfo)` → `InitRandomEquip`：池按 ItemType 分组、每槽经 `CanEquipItem` 过滤后「空+可装备道具」等概率抽1(裸体率=1/(可装备数+1))、只填空槽(固定 equip_item_ids 优先)、走 `EquipUtil.CreateEquipItemForNpc`(普通使用者,加点按稀有度配置)。随机议员基础属性全0，装备属性是暴力说服战主要属性来源。
+- **议员生成**（`DoomCouncilLogic.GenerateCouncilors`）：议会人数在议案 `DoomCouncilInfo.council_num`("min,max") 区间随机；每席随机一种生物(CreatureInfo id 1001-7004) + 按权重随机评级(1~5: 50/30/15/10/5 归一化, `NpcInfoCfg.GetRandomCouncilorNpc`)；整场 10% 概率出现 1 名固定NPC(`GetRandomFixedCouncilorNpc`)。每生物×评级各一条 `npc_type=3` 的 NpcInfo 行(共30×5=150)。**地区限制**：随机/固定抽取及测试分流均先经 `NpcInfoCfg.FilterByCurrentRegion` 过滤（`NpcInfo.region` 列，空=不限语言；`cn` 或 `cn,en` 等语言代码=仅这些语言下出现，判定 `NpcInfoBean.IsMatchCurrentRegion()`；目前仅议员生成使用）。**测试分流**：`DoomCouncilBean.isTestAllFixedCouncilor=true` 时改走 `GenerateAllFixedCouncilors`——把地区过滤后的所有 `npc_type=2` 固定议员各生成1名(跳过随机)，入口 `LauncherTest.StartForDoomCouncilAllFixed`(编辑器"查看所有固定议员"按钮)。**随机议员稀有度**：150 条 `npc_type=3` 行的 `rarity` 列已按评级填充——评级1-2→N、3-4→R、5→SR（创建时写入 `CreatureBean.rarity`，仅设置稀有度不授稀有度BUFF）。
+- **随机议员装备**（NpcInfo.equip_random 列 + CreatureRandomInfo 随机池）：150 条随机议员行已按"物种定**套装池**(model_id×10^7+2=10000002~70000002，已全线从散件池 x0000001 段切换)、评级定稀有度(1:N 2:N,R 3:R 4:R,SR 5:SR,SSR)"填充 `equip_random`(格式 `池ID,稀有度...` 重复写加权)。池按 `random_type` 分两种：散件池(type1, `equip_random_data`=ItemsInfo id区间串)、套装池(type2, =EquipSuitInfo 套装id区间串; 套装表 excel_equip_suit_info 一行=一套手动精配7槽位, id段200001起)。`CreatureBean.SetData(npcInfo)` → `InitRandomEquip` 按池类型分支：散件池按 ItemType 分组、每槽经 `CanEquipItem` 过滤后「空+可装备道具」等概率抽1(裸体率=1/(可装备数+1))、稀有度每件独立抽；套装池走 `InitRandomEquipForSuit`——筛整套可装备套装(`EquipSuitInfoBean.CanEquipFor`)等概率整套抽1、稀有度整套统一roll一次。两者均只填空槽(固定 equip_item_ids 优先)、走 `EquipUtil.CreateEquipItemForNpc`(普通使用者,加点按稀有度配置)。随机议员基础属性全0，装备属性是暴力说服战主要属性来源。
 - **暴力说服快照传递**：`FightBeanForDoomCouncil` 将 `listCouncilor` 放入 `FightAttackDetailsBean.creatureSnapshots`(与 npcIds 按下标对应)，`CreatureHandler.CreateAttackCreature(..., creatureSnapshot)` 快照非空时直接用该 CreatureBean 创建——战斗中议员与议会场景**同一只**(同皮肤/同装备/同属性)，不再按 npcId 重建重抽。
 - **投票态度**（存于 `DoomCouncilBean.dicCouncilorAttitude`，Key=议员UUID，Value 0~100=投赞成概率；态度只与本场议案绑定，不放 CreatureBean、不入存档）：`GenerateCouncilorAttitudes` 按议案 `success_rate` 生成——**高态度(赞成)组人数=总数×通过率→{75,100}**，其余低态度组→{0,25}，再随机取10%覆盖为50（通过率越高→越多议员倾向赞成，与通过率正相关）。固定NPC再叠加好感修正 `(关系类型-3)×50`(仇恨-100/冷淡-50/中立0/友好+50/迷恋+100)。
 - **投票**（`StartVote`）：开始即调用 `scenePrefab.HideAllCouncilorAttitudeView()` 隐藏所有议员意愿(Success)图标；随后每名议员 `Random(0,100) < attitude ? 赞成 : 反对`，票数按评级 `DoomCouncilRatingsInfo.vote`（已移除旧的「随机 vs success_rate + 30%睡觉」逻辑）。
@@ -59,7 +59,7 @@ watched_files:
 - **DoomCouncilBean** - 终焉议会配置数据
 
 ### 议会 UI
-- **UIDoomCouncilMain** - 议会场景主界面（议会进行中替换 UIBaseMain；通过 `ui_SuccessText` 显示「当前议案通过率」，文案 UIText id `53014`，`MathUtil.GetPercentage(success_rate,2)` + `string.Format`）
+- **UIDoomCouncilMain** - 议会场景主界面（议会进行中替换 UIBaseMain；通过 `ui_SuccessText` 显示「当前议案通过率」，文案 UIText id `53014`，`MathUtil.GetPercentage(success_rate,2)` + `string.Format`；并挂与 UIBaseMain 同款按键提示组 `ui_UIViewPressControlForGameBase`，议会场景走同一 `ControlForGameBase`，E/Space 显隐逻辑自动生效）
 - **UIDoomCouncilBill** - 终焉议会议案选择界面
 - **UIDoomCouncilVote** - 终焉议会投票界面
 - **UIDoomCouncilVoteEnd** - 终焉议会结算界面
@@ -81,7 +81,7 @@ watched_files:
 | 议会 Bean | Assets/Scripts/Bean/Game/DoomCouncilBean.cs |
 | 议会场景预制(议员/态度色/好感图标) | Assets/Scripts/Component/Game/Scene/ScenePrefabForDoomCouncil.cs |
 | 议员态度/类型辅助 | Assets/Scripts/Bean/Game/CreatureBeanPartial.cs |
-| 随机/固定议员抽取、NPC体型解析(body_size→GetBodySizeRandomScale) | Assets/Scripts/Bean/MVC/Game/NpcInfoBeanPartial.cs |
+| 随机/固定议员抽取、地区过滤(region→FilterByCurrentRegion/IsMatchCurrentRegion)、NPC体型解析(body_size→GetBodySizeRandomScale) | Assets/Scripts/Bean/MVC/Game/NpcInfoBeanPartial.cs |
 | 议会人数解析(council_num) | Assets/Scripts/Bean/MVC/Game/DoomCouncilInfoBeanPartial.cs |
 | 固定NPC好感存档 | Assets/Scripts/Bean/Game/UserRelationshipBean.cs |
 | 贿赂(态度/好感) | Assets/Scripts/Component/UI/Game/GameConversation/UIGameConversation.cs |

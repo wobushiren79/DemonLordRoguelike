@@ -46,6 +46,8 @@ watched_files:
 - **UIViewColorShow** - 颜色展示
 - **UIViewAbyssalBlessingInfoContent** - 深渊祝福内容
 - **UIViewBaseInfoContent** - 基础信息内容
+- **UIViewPressCommon** - 通用按键提示（单键）：`SetData(KeyCode/string)` 设键名（`GetKeyDisplayName` 数字键去 Alpha/Keypad 前缀、功能键给短别名）、`HideForNoKey()` 标记无有效键恒隐藏；显隐统一受游戏设置「按键提示显示」(`GameConfigBean.pressKeyTipShow`) 门控（Awake 注册 `GameSetting_PressKeyTipShowChange`，`RefreshShow` 无有效键或开关关闭时隐藏）；`SetMaskCD(remainingCD,totalCD)` 控制子节点 `MaskCD`(Image，Filled/Radial360、黑 60% 遮罩、预制默认隐藏) 冷却中按 剩余/总时长 径向填充、结束隐藏（`isMaskCDShowing` 缓存避免每帧 SetActive）
+- **UIViewPressControlForGameBase** - 基地/终焉议会基础操作按键提示组（`UIBaseMain`/`UIDoomCouncilMain` 子视图，子项 W/A/S/D/E/Space 均为 UIViewPressCommon）：W/A/S/D 移动常驻；E 互动键仅 `ControlForGameBase.IsInteractionShowing` 为真时显示（Update 轮询、变更才切换）；Space 突进键按研究 `UnlockEnum.SpaceDash` 解锁显隐（注册 `User_AddUnlock` 实时刷新），冷却中经 `SetMaskCD` 展示 CD 遮罩（剩余读 `ControlForGameBase.DashCdRemain`，总时长实时读 `UserUnlockBean.GetUnlockSpaceDashCD()`）；整体显隐随各子项受「按键提示显示」设置门控
 
 ## 约束
 

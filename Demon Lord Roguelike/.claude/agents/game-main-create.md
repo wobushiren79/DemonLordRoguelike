@@ -61,6 +61,7 @@ UIMainLoad(加载存档界面) 空槽位 item
 - `CreatureBeanPartial.IsDemonLord`（:108）：`creatureUUId == userData.selfCreature.creatureUUId`
 - `CreatureRandomInfoBeanPartial.GetAllRandomData`（:10）：`skin_random_data` 按 `,`/`-` 拆分，按 `CreatureModelInfo.GetPartType()` 分组（带缓存，首次解析后复用）
 - `NpcInfoBeanPartial.GetSkins`（:46）：固有皮肤 `skin_data` 按 `&` 拆分 + 随机皮肤
+- `NpcInfoBeanPartial.GetSkinColorData/SetSkinColorData`：NPC 皮肤固定颜色 `skin_color_data`（格式 `部位类型int,r,g,b,a&`，rgba 0~255）解析/改写；`CreatureBean.InitSkin(NpcInfoBean)` 随机染色后用配置色覆盖（部位不存在/不可调色静默跳过），空=按创建时随机
 
 ### 配置表（Excel 唯一真实源 → JSON 导出）
 

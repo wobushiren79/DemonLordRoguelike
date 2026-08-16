@@ -132,9 +132,14 @@ AudioHandler.Instance.PlayMusicForGaming();  // 基地游戏中（当前留空�
 ### 3. 环境音（循环，Environment）
 
 ```csharp
-AudioHandler.Instance.PlayEnvironment(AudioEnum.sound_walk_1);
-AudioHandler.Instance.PlayEnvironment(AudioEnum.sound_walk_1, volumeScale);
+AudioHandler.Instance.PlayEnvironment(AudioEnum.sound_night_1);        // 夜晚虫鸣
+AudioHandler.Instance.PlayEnvironment(AudioEnum.sound_night_1, volumeScale);
+AudioHandler.Instance.PlayEnvironment(fightSceneData.environment_sound); // 配置驱动的动态 id 走 long 接口
 ```
+
+- **战斗场景配置驱动**：`FightScene` 表 `environment_sound` 列（AudioInfo id，空/0=不播）→ `WorldHandler.LoadFightScene` 进场自动播、`UnLoadScene(Fight)` 自动停（判定 `FightSceneBeanPartial.HasEnvironmentSound`）。首例：10002 树林夜晚 = 2000001（sound_night_1 夜晚虫鸣）。
+- **资源要求**：audio_type=2 的文件必须在 `Assets/LoadResources/Audio/Environment/` 目录，且注册进 Addressables **`Audio_Environment`** 组（逐文件 entry、address=完整路径）才能被寻址。
+- 枚举段位：环境音 `2000001` 起（音效 1~630005 / 音乐 1000001~1200001 之后的新段）。
 
 ### 4. 暂停 / 恢复 / 停止
 
@@ -166,8 +171,8 @@ AudioHandler.Instance.StopEnvironment();
 ## 常见任务流程
 
 ### 新增一个音效/音乐/环境音
-1. 把音频文件放到对应目录 `Assets/LoadResources/Audio/{Sound|Music|Environment}/`，确保被 Addressables 标记，地址与路径一致。
-2. 在 `excel_audio_info` Excel 新增一行（按 id 升序插入，见 [feedback_excel_id_sorted_insert]）：`id` / `name_res`（= 文件名）/ `remark` / `audio_type`。
+1. 把音频文件放到对应目录 `Assets/LoadResources/Audio/{Sound|Music|Environment}/`（**类型与目录强绑定**，环境音必须放 Environment），确保被 Addressables 标记（环境音组 = `Audio_Environment`，音效 = `Audio_Sound`，音乐 = `Audio_Music`；新目录/新类型需先建组再逐文件 entry，address = 完整路径）。
+2. 在 `excel_audio_info` Excel 新增一行（按 id 升序插入，见 [feedback_excel_id_sorted_insert]）：`id` / `name_res`（= 文件名）/ `remark` / `audio_type`。id 段位：音效 1~630005、音乐 1000001~1200001、**环境音 2000001 起**。
 3. 在 Unity 编辑器用配置导出工具重新生成 `AudioInfo.txt`（仅改 Excel 时须提醒用户导出）。
 4. **在 [AudioEnum.cs](Assets/Scripts/Enums/AudioEnum.cs) 同步补一个枚举项**（枚举名 = `name_res` 去扩展名，值 = id），保持与配置表一一对应。
 5. 代码里用对应 `Play*` API + `AudioEnum` 枚举播放。

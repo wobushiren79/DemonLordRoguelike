@@ -261,6 +261,7 @@ public enum UnlockEnum : long
     SpaceDashCD = 200700001,           // 空格突进冷却缩减(子研究,前置=SpaceDash,level_max=4;默认3s每级-0.5最低1s;多语言文本含{Value}占位,气泡动态填待解锁级冷却)
     DemonLordAutoPickCrystal = 200800001,    // 魔王自动拾取魔晶(level_max=10;间隔=11-等级秒,10级10s→满级1s;每次按FIFO取场上最先掉落的魔晶,基础1颗;无前置,强化分支新根)
     DemonLordAutoPickCrystalNum = 200900001, // 魔王每次拾取魔晶数量+1(level_max=5;每次拾取数=1+等级;前置=DemonLordAutoPickCrystal)
+    LineupRename = 201000001,          // 阵容重命名(level_max=1 纯解锁;前置=LineupNum(200100001);解锁后阵容管理界面 UILineupManager 显示重命名按钮,可给当前选中阵容自定义名字,页签文本优先显示自定义名;自定义名存 UserDataBean.dicLineupName)
     EquipRewardHuman = 300100301,      // 人类装备奖励
     EquipRewardSkeleton = 300200301,
 }
@@ -310,6 +311,14 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 - 声望系统（第二货币，与魔晶并列，终焉议会消耗它）本已存在；本节点只是新增一个声望获取来源。发放与配置细节见 [`conquer-system`](../conquer-system/SKILL.md) / [`fight-reward-system`](../fight-reward-system/SKILL.md)。
 
 同分支（1002 段、`research_type=1`、`level_max=1`、`icon_res=ui_research_59`）还有终焉议会议案解锁节点组：100200005/6（魔物等级下降/归0）、100200007/8（魔物稀有度下降/归0）、**100200009（议案「想要更多装备！」，pre=100200001、pay_crystal=100、position(-500,-900)）**、**100200010（议案「想要更多魔王装备！」，pre=100200009 子研究、pay_crystal=200、position(-700,-900)）**——这类节点解锁的只是议案在议会列表的可见性（`DoomCouncilInfo.unlock_id` 配置驱动过滤，`UnlockEnum` 无需新增枚举）；议案效果本身见 [`doom-council-system`](../doom-council-system/SKILL.md)。
+
+### 强化分支(2010 段) — 阵容重命名（解锁开关门控 UI 按钮）
+
+「阵容重命名」节点（`LineupRename`，unlock_id **201000001**，`research_type=2` 强化节点，`pre_unlock_ids="200100001"` 即前置=解锁多阵容 `LineupNum`，`level_max=1`，`pay_crystal=200`，`position(-400,0)` 挂在多阵容节点(-200,0)左侧，icon 暂用占位 `ui_research_6`）门控阵容管理界面的重命名功能：
+
+- **解锁后** `UILineupManager` 显示 RenameBtn（`OpenUI` 里 `CheckIsUnlock(UnlockEnum.LineupRename)` 控显隐，悬停气泡 UIText 30008），点击开 `UIDialogRename` 给当前选中阵容改名；自定义名存 `UserDataBean.dicLineupName`(阵容序号→名字)，显示名走 `UserDataBean.GetLineupShowName`(自定义名优先、未改名回退默认「阵容 {序号}」UIText 30005；UILineupManager 页签与 UIDialogPortalDetails 出战阵容选择区共用)；提交空名=清除改名恢复默认。
+- 落表同其他节点：`excel_research_info`(id=201000001, `name`=同id) + `excel_unlock_info`(id=201000001, `unlock_type=0`) + 多语言 `ResearchInfo`(id=201000001, cn「阵容重命名」) 与 `UIText`(id=30008, cn「重命名当前阵容」按钮气泡)。
+- 无衍生数值方法（纯开关），UI 直接用 `CheckIsUnlock(UnlockEnum.LineupRename)` 门控。
 
 ### 世界分支(1003_10_W_nn 段) — 征服难度研究 + 各难度「加快进攻节奏(Quick)」研究 + 各难度「2倍速游戏」研究
 

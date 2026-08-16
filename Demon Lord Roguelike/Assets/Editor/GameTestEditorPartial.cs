@@ -25,6 +25,8 @@ public partial class GameTestEditor
     public float fightSceneAttackDelay = 1;
     // 魔王(防守核心)生物ID，默认2001骷髅战士
     public int fightDefenseCoreId = 2001;
+    // 魔王蓝量(战斗开始时魔王当前魔力值,同时会把魔力上限提升到不低于该值)，默认9999
+    public float fightDemonLordMP = 9999;
 
     public int creatureId = 1;
     public int npcInfoId = 1010010001;
@@ -145,6 +147,7 @@ public partial class GameTestEditor
         fightSceneAttackNum = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneAttackNum", 2);
         fightSceneAttackDelay = EditorPrefs.GetFloat(PREFS_KEY_PREFIX + "fightSceneAttackDelay", 1);
         fightDefenseCoreId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightDefenseCoreId", 2001);
+        fightDemonLordMP = EditorPrefs.GetFloat(PREFS_KEY_PREFIX + "fightDemonLordMP", 9999);
 
         // 生物相关
         creatureId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "creatureId", 1);
@@ -211,6 +214,7 @@ public partial class GameTestEditor
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightSceneAttackNum", fightSceneAttackNum);
         EditorPrefs.SetFloat(PREFS_KEY_PREFIX + "fightSceneAttackDelay", fightSceneAttackDelay);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightDefenseCoreId", fightDefenseCoreId);
+        EditorPrefs.SetFloat(PREFS_KEY_PREFIX + "fightDemonLordMP", fightDemonLordMP);
 
         // 生物相关
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "creatureId", creatureId);

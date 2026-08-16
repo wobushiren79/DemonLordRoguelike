@@ -384,6 +384,8 @@ public partial class AttackModeInstanceRenderer
     /// <para>【瞬移钳制】<see cref="BaseAttackMode.SetPosition"/> 可瞬间改位置，差分会算出荒谬速度把火星甩到天边；
     /// 故超过「理论速度 × <see cref="VelocityClampRate"/>」即判为瞬移、本帧速度取 0(退化成"火星挂在弹体上"仅一帧，不可察)。
     /// 速度为 0 的原地弹道(speed_move=0)同样返回 0——它本就不该有拖拽。</para>
+    /// <para>【w 分量 = 速度朝向开关】携带该发弹道的 <see cref="BaseAttackMode.visualVelocityOrient"/>（>0.5 时 shader 把 billboard 角点绕视轴按速度方向旋转，
+    /// 使贴图头（默认朝右）对准飞行方向）；xyz 被瞬移钳制清零的帧 w 一并清零，该帧退回默认朝右姿态。</para>
     /// </summary>
     private static Vector4 CalculateVelocityWS(BaseAttackMode attackMode, float deltaTime, float gameSpeed)
     {
@@ -400,7 +402,7 @@ public partial class AttackModeInstanceRenderer
         //超速判瞬移(比较平方值，省一次开方)
         if (velocity.sqrMagnitude > maxSpeed * maxSpeed)
             return Vector4.zero;
-        return new Vector4(velocity.x, velocity.y, velocity.z, 0f);
+        return new Vector4(velocity.x, velocity.y, velocity.z, attackMode.visualVelocityOrient ? 1f : 0f);
     }
 
     /// <summary>

@@ -38,6 +38,7 @@ watched_files:
   - 设施段(1002) 征服通关获得声望：`ConquerReputationReward`(100200004，`research_type=1`，`pre_unlock_ids="100200001"` 前置=终焉议会 `DoomCouncil`，`level_max=1`，`pay_crystal=1000`)——「解锁开关驱动游戏逻辑」范例：解锁后玩家每次完整通关征服模式按难度加自身声望，逻辑门控在 `GameFightLogicConquer.AddReputationForConquerComplete`(`CheckIsUnlock(UnlockEnum.ConquerReputationReward)` 才 `userData.AddReputation(conquerInfo.GetRewardReputation())`)，声望值取征服难度表新增列 `reward_reputation`。详见 `game-conquer`/`game-fight-reward`
   - 设施段(1003) 传送门详情预览 4 节点：`PortalPreviewRoadNum`(100300002 线路数) / `PortalPreviewFightNum`(100300003 关卡数) / `PortalPreviewRoadLength`(100300004 路径长度) / `PortalPreviewReward`(100300005 奖励道具)，均为 `research_type=1` 设施节点，门控传送门详情弹窗 `UIPopupPortalDetails` 各项是否显示
   - 设施段(1003) 传送门刷新：`PortalRefreshNum`(100300006，`research_type=1`，`level_max=10`)——研究等级=传送门地图刷新次数上限，未解锁则 `UIBasePortal` 刷新按钮隐藏，通关一次世界回满(`GameFightLogicConquer.ActionForUIRewardSelectEnd` 调 `RefillPortalRefreshNum`)
+  - 强化段(2010) 阵容重命名：`LineupRename`(201000001，`research_type=2`，`pre_unlock_ids="200100001"` 前置=解锁多阵容 `LineupNum`，`level_max=1`，`pay_crystal=200`，position(-400,0) 挂在多阵容节点左侧)——纯解锁开关无衍生数值：解锁后 `UILineupManager` 显示 RenameBtn 可给当前选中阵容改名（自定义名存 `UserDataBean.dicLineupName`，显示名走 `UserDataBean.GetLineupShowName` 优先自定义名、未改名回退默认 UIText 30005，UILineupManager 页签与 UIDialogPortalDetails 出战阵容选择区共用；按钮悬停气泡 UIText 30008；icon 暂为占位 `ui_research_6`）
 
 ### 玩家解锁存档
 
