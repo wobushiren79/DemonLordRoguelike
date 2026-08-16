@@ -43,7 +43,7 @@ watched_files:
 - **AttackModeFallupon** - 降临
 - **AttackModeFalluponArea** - 范围降临
 - **AttackModeFalluponChain** - 连锁降临
-- **AttackModeLure** - 引诱
+- **AttackModeLure** - 引诱（改变被攻击者线路；魅惑成功播配置命中音效 sound_hit + 全局单例命中粒子 effect_hit，粒子位置=敌人位置+攻击者 attack_start_position 偏移，600001 配 sound_medicine_1=470001 / Effect_Buff_1=500002，4003 配攻击偏移 0,0.5,0）
 - **AttackModeOverlap** - 重叠（范围触碰，命中走正常 UnderAttack 伤害管线）
 - **AttackModeOverlapNoDamage** - 无伤害重叠（继承上者的纯DEBUFF触碰变体：只对范围内敌人附加 buff 字段配置的BUFF+播命中音，不掉血/不跳伤害数字/不播受击特效/不进伤害统计，走 FightCreatureEntity.UnderAttackNoDamage；使用者：烂泥史莱姆3003粘液减速400001(buff=1000200001:1,MSPD-40%×1s)、毒液史莱姆3004中毒400002(buff=1000400001:1,每跳=史莱姆实时ATK×20%[ATK=10→2/跳],每秒1跳共10次,毒伤跳伤走UnderAttack管线属正常)）
 - **AttackModeInstantArea** - 瞬时落点范围（无弹道飞行，StartAttack 当帧对 targetPos 范围攻击并自毁；支持配置 `hit_max` 命中上限(近者优先截断) + 发射方注入 `filterCreatureIds` 快照名单(StartAttack 前写入、Destroy 置空)；AOE 多目标伤害按命中次序依次减半保底1；单次攻击内局部去重——同一生物多碰撞体只命中一次，道与道之间不共享）

@@ -90,6 +90,7 @@ SpriteAtlas:
     - 535a6ba4a5712cd4cb552a136b74b3d9: 21300000
     - b2277d150eb2a944e8ccdf7e9f6667a9: 21300000
     - 7ef81c354003aef40878ffb3b84d2eac: 21300000
+    - 96e24455c9bff9149a60622d0d64eb2a: 21300000
     - 6d7a0f5501447ff4ea6fab7a2c3ce1ad: 21300000
     - 4c64b5757dc65344983b3fffb0a4f177: 21300000
     - f1078185512acc24fa1a4e35971df14e: 21300000
@@ -141,6 +142,7 @@ SpriteAtlas:
     - 1aa90c3b1a3c4f546be4973d2d0fa994: 21300000
     - 53a7634b306d38846a92cb39c689610b: 21300000
     - 086adb4b13d56f84da29790c51f905ce: 21300000
+    - 0390be4b5dba12e418008c44cb99415f: 21300000
     - b370885b9fea15040bb617479cab9bc9: 21300000
     - e094426b07eca1447884a939c13fd58f: 21300000
     - 2c4e156b00379cb429691bd82c820416: 21300000
@@ -149,6 +151,7 @@ SpriteAtlas:
     - dc70749b57179be4fac7f5d01f995642: 21300000
     - 8bf22fbb241cc0449a5ac4c5033dabdf: 21300000
     - e721f9cb18e697b438ff0cb311513634: 21300000
+    - 6a52c6db5bfb7b44f9e123ec6fe43447: 21300000
     - ad1143ac3ef533a47bdbecc123f56f00: 21300000
     - ce55b5acc71a55642b1aded44a10cb48: 21300000
     - 003526dc8e477e042b74e6f63c3fba4b: 21300000
@@ -164,6 +167,7 @@ SpriteAtlas:
     - 90d3672e56a45194ca03679b9a01e4c1: 21300000
     - 7ab6cc2e93cb3ea4b962fbc2be722d31: 21300000
     - faf90d2ef45e4fd488707dd1902c5ced: 21300000
+    - 43e2a35e4d84f4940ae2bc979c747ce5: 21300000
     - 3108595eacfa3a64980aacabc94316d0: 21300000
     - 28a90b5e28406444e82c0f9eb29da6e7: 21300000
     - d4982c7e611a2674b80a047219c577d1: 21300000
@@ -219,6 +223,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 535a6ba4a5712cd4cb552a136b74b3d9, type: 3}
   - {fileID: 21300000, guid: b2277d150eb2a944e8ccdf7e9f6667a9, type: 3}
   - {fileID: 21300000, guid: 7ef81c354003aef40878ffb3b84d2eac, type: 3}
+  - {fileID: 21300000, guid: 96e24455c9bff9149a60622d0d64eb2a, type: 3}
   - {fileID: 21300000, guid: 6d7a0f5501447ff4ea6fab7a2c3ce1ad, type: 3}
   - {fileID: 21300000, guid: 4c64b5757dc65344983b3fffb0a4f177, type: 3}
   - {fileID: 21300000, guid: f1078185512acc24fa1a4e35971df14e, type: 3}
@@ -270,6 +275,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 1aa90c3b1a3c4f546be4973d2d0fa994, type: 3}
   - {fileID: 21300000, guid: 53a7634b306d38846a92cb39c689610b, type: 3}
   - {fileID: 21300000, guid: 086adb4b13d56f84da29790c51f905ce, type: 3}
+  - {fileID: 21300000, guid: 0390be4b5dba12e418008c44cb99415f, type: 3}
   - {fileID: 21300000, guid: b370885b9fea15040bb617479cab9bc9, type: 3}
   - {fileID: 21300000, guid: e094426b07eca1447884a939c13fd58f, type: 3}
   - {fileID: 21300000, guid: 2c4e156b00379cb429691bd82c820416, type: 3}
@@ -278,6 +284,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: dc70749b57179be4fac7f5d01f995642, type: 3}
   - {fileID: 21300000, guid: 8bf22fbb241cc0449a5ac4c5033dabdf, type: 3}
   - {fileID: 21300000, guid: e721f9cb18e697b438ff0cb311513634, type: 3}
+  - {fileID: 21300000, guid: 6a52c6db5bfb7b44f9e123ec6fe43447, type: 3}
   - {fileID: 21300000, guid: ad1143ac3ef533a47bdbecc123f56f00, type: 3}
   - {fileID: 21300000, guid: ce55b5acc71a55642b1aded44a10cb48, type: 3}
   - {fileID: 21300000, guid: 003526dc8e477e042b74e6f63c3fba4b, type: 3}
@@ -293,6 +300,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 90d3672e56a45194ca03679b9a01e4c1, type: 3}
   - {fileID: 21300000, guid: 7ab6cc2e93cb3ea4b962fbc2be722d31, type: 3}
   - {fileID: 21300000, guid: faf90d2ef45e4fd488707dd1902c5ced, type: 3}
+  - {fileID: 21300000, guid: 43e2a35e4d84f4940ae2bc979c747ce5, type: 3}
   - {fileID: 21300000, guid: 3108595eacfa3a64980aacabc94316d0, type: 3}
   - {fileID: 21300000, guid: 28a90b5e28406444e82c0f9eb29da6e7, type: 3}
   - {fileID: 21300000, guid: d4982c7e611a2674b80a047219c577d1, type: 3}
@@ -347,6 +355,7 @@ SpriteAtlas:
   - ui_border_19
   - ui_border_22
   - ui_border_18
+  - ui_class_14
   - ui_equip_10
   - ui_core_5
   - ui_creature_attribute_4
@@ -398,6 +407,7 @@ SpriteAtlas:
   - ui_icon_1
   - ui_book_1
   - ui_slider_11
+  - ui_class_15
   - ui_sign_24
   - ui_border_25
   - ui_creature_class_4
@@ -406,6 +416,7 @@ SpriteAtlas:
   - ui_equip_11
   - ui_relationship_1
   - ui_relationship_2
+  - ui_creature_attribute_7
   - ui_class_12
   - ui_equip_3
   - ui_border_17
@@ -421,6 +432,7 @@ SpriteAtlas:
   - ui_class_8
   - ui_equip_6
   - ui_man_1
+  - ui_class_13
   - ui_demon_eye
   - ui_other_7
   - ui_border_2

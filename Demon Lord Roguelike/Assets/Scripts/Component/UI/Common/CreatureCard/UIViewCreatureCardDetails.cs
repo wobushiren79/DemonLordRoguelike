@@ -309,6 +309,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     /// <summary>
     /// 设置属性显示
     /// <para>非魔王：生命/防御/攻击/攻速；魔王：攻击/移速/魔力/魔力回复（生命、防御项隐藏，魔力、魔力回复项显示）。</para>
+    /// <para>治疗型生物(攻击方式为恢复类)：隐藏攻击力条目，改显示治疗量条目(AddLife)，值=当前ATK×攻击模式伤害加成倍率。</para>
     /// <para>详情面板按「含深渊馈赠全局池」口径取属性(includeAbyssalBlessing=true)，与场上实际数值一致(如随机一只攻击力翻倍)。</para>
     /// </summary>
     /// <param name="isDemonLord">是否为魔王本体</param>
@@ -329,10 +330,24 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         }
         else
         {
+            //治疗型：隐藏攻击力条目，改显示治疗量条目；非治疗型反之
+            bool isRegain = creatureData.creatureInfo.IsRegainAttackMode();
+            ui_ViewCreatureCardItemAttribute_Atk.gameObject.SetActive(!isRegain);
+            ui_ViewCreatureCardItemAttribute_AddLife.gameObject.SetActive(isRegain);
             //Speed项在非魔王处显示攻速ASPD
             ui_AttributeItemText_Life.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.HP, true)}";
             ui_AttributeItemText_Def.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.DR, true)}";
-            ui_AttributeItemText_Atk.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true)}";
+            if (isRegain)
+            {
+                //治疗量=当前ATK×攻击模式伤害加成倍率(配置0=按1倍)，与战斗实际恢复量口径一致
+                var attackModeInfo = AttackModeInfoCfg.GetItemData(creatureData.creatureInfo.attack_mode);
+                float damageAddRate = attackModeInfo != null ? attackModeInfo.GetDamageAddRate() : 1f;
+                ui_AttributeItemText_AddLife.text = $"{(int)(creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true) * damageAddRate)}";
+            }
+            else
+            {
+                ui_AttributeItemText_Atk.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true)}";
+            }
             ui_AttributeItemText_Speed.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD, true)}";
         }
     }

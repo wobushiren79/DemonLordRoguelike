@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7715930129301025563}
   - component: {fileID: 8685475076625614796}
   m_Layer: 0
-  m_Name: EffectAscendComplete_1
+  m_Name: Effect_AscendComplete_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

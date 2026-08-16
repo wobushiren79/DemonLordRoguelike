@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6080706770896032313}
   - component: {fileID: 931735502811601778}
   m_Layer: 0
-  m_Name: EffectAddRelationship_1
+  m_Name: Effect_AddRelationship_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

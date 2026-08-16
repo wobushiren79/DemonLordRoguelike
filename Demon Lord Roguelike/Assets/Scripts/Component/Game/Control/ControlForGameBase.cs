@@ -421,7 +421,7 @@ public class ControlForGameBase : BaseControl
     protected void ShowDashBurstEffect(Vector3 position)
     {
         EffectBean effectData = new EffectBean();
-        effectData.effectName = "EffectBodySlam_1";
+        effectData.effectName = "Effect_BodySlam_1";
         effectData.effectPosition = position;
         effectData.timeForShow = 0.6f;
         effectData.isDestoryPlayEnd = false;   //回对象池复用,高频冲刺省GC

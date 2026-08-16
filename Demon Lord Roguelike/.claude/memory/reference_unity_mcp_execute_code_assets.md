@@ -5,7 +5,7 @@ metadata:
   type: reference
 ---
 
-用 **Unity MCP（mcpforunity, HTTP 8080）的 `execute_code` 工具**在编辑器里跑 C# 直接建资源（预制/材质/贴图/粒子）时的关键约束，2026-07 建"魔物进阶完成专用特效 EffectAscendComplete_1"实测：
+用 **Unity MCP（mcpforunity, HTTP 8080）的 `execute_code` 工具**在编辑器里跑 C# 直接建资源（预制/材质/贴图/粒子）时的关键约束，2026-07 建"魔物进阶完成专用特效 Effect_AscendComplete_1"实测：
 
 ## execute_code 本身
 - 以「方法体」运行，`return <obj>` 回传；导入 `UnityEngine`/`UnityEditor`；`Debug.Log` 可被 `read_console` 读到。
@@ -22,7 +22,7 @@ metadata:
 
 ## 本项目特效加载约定(见 [[reference_unity_mcp_tool_bug]])
 - `EffectManager` 用 `LoadAddressablesUtil.LoadAssetSync(key)`=`Addressables.LoadAssetAsync(key).WaitForCompletion()`,**key = 全资源路径**(`"Assets/LoadResources/Effects/{effectName}.prefab"`,pathEffect=`Assets/LoadResources/Effects`)。
-- ⇒ **新特效预制必须注册成 Addressable,且 address=该全路径**,否则 `LoadAssetSync` 返回 null 加载不出。现有特效(如 EffectBuff_1)都在 **组 `Effect`**、address=各自全路径——新特效放同组、同址约定即可(可反射 `FindAssetEntry(existingGuid).parentGroup` 拿到该组)。
+- ⇒ **新特效预制必须注册成 Addressable,且 address=该全路径**,否则 `LoadAssetSync` 返回 null 加载不出。现有特效(如 Effect_Buff_Health_1,原 Effect_Buff_1 已删)都在 **组 `Effect`**、address=各自全路径——新特效放同组、同址约定即可(可反射 `FindAssetEntry(existingGuid).parentGroup` 拿到该组)。
 - 特效预制结构:根挂 `EffectBase`(`mainPS`+`listPS`),`PlayEffect()` 调 `mainPS.Play()`(默认 withChildren=true,连带子 PS 播);`EffectBean{effectName,effectPosition,timeForShow,isDestoryPlayEnd,isPlayInShow}` 走 `ShowEffect(EffectBean, cbShow)`——`isPlayInShow=false` 时回调里改完 `listPS[i].main.startColor` 再 `PlayEffect()`,可做「运行时按稀有度上色」。
 
 ## PowerShell 调 MCP streamable-http 的坑

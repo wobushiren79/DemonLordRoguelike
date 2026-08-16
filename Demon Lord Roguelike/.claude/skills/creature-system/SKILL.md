@@ -205,7 +205,7 @@ public partial class FightCreatureEntity
     // === 战斗交互（主文件） ===
     public void UnderAttack(BaseAttackMode attackMode);  // 受击
     public void UnderAttackNoDamage(BaseAttackMode attackMode); // 无伤害受击(纯DEBUFF触碰：只上BUFF+命中音，不掉血/不跳数字/不播受击特效/不进统计，无敌免疫；AttackModeOverlapNoDamage 专用)
-    public void RegainHP(BaseAttackMode attackMode);     // 回复HP
+    public void RegainHP(BaseAttackMode attackMode);     // 回复HP（治疗成功且真实回血>0 时播攻击模式配置的命中音效 sound_hit，治疗型 500001 配 sound_medicine_1=470001）
     public void RegainDR(BaseAttackMode attackMode);     // 回复护甲
     public void AddBuff(BaseAttackMode attackMode);      // 添加BUFF
     public void CheckDead(Action noDead, Action dead);    // 死亡检测（内置血条/护盾进度刷新）

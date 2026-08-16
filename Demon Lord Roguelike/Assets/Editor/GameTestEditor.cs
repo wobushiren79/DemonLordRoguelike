@@ -58,6 +58,9 @@ public partial class GameTestEditor : Editor
             case TestSceneTypeEnum.CreatureJuicer:
                 DrawCreatureJuicerTest();
                 break;
+            case TestSceneTypeEnum.EffectTest:
+                DrawEffectTest();
+                break;
             case TestSceneTypeEnum.NormalGame:
                 DrawNormalGameTest();
                 break;
@@ -779,6 +782,30 @@ public partial class GameTestEditor : Editor
         GUI.backgroundColor = Color.white;
 
         EditorGUILayout.HelpBox("走与正式游戏一致的开始流程：清理运行时数据 → 加载基地场景 → 打开主菜单(UIMainStart)。无需切换到 GameScene。", MessageType.Info);
+
+        EditorGUI.indentLevel--;
+        EditorGUILayout.Space(10);
+    }
+
+    /// <summary>
+    /// 绘制粒子特效测试(打开纯代码特效测试面板，下拉选特效id后在10x10平面随机位置播放)
+    /// </summary>
+    private void DrawEffectTest()
+    {
+        showEffectTest = EditorGUILayout.Foldout(showEffectTest, "✨ 粒子特效测试", true);
+        if (!showEffectTest) return;
+
+        EditorGUI.indentLevel++;
+        EditorGUILayout.Space(5);
+
+        GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
+        if (GUILayout.Button("▶️ 开始粒子特效测试", GUILayout.Height(30)) && Application.isPlaying)
+        {
+            launcher.StartForEffectTest();
+        }
+        GUI.backgroundColor = Color.white;
+
+        EditorGUILayout.HelpBox("打开纯代码特效测试面板(不依赖预制)：下拉选择特效id，点播放后在10x10平面(顶面高度0)上方1格随机位置播放。注意：持久型特效为全局单例，同一特效重复播放会复用/移动原实例。", MessageType.Info);
 
         EditorGUI.indentLevel--;
         EditorGUILayout.Space(10);

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5892633602284681906}
   - component: {fileID: 4332897127835590375}
   m_Layer: 0
-  m_Name: EffectBodySlam_1
+  m_Name: Effect_BodySlam_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

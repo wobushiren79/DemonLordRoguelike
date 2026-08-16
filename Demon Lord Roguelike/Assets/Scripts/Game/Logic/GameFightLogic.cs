@@ -586,9 +586,9 @@ public class GameFightLogic : BaseGameLogic
         CreatureHandler.Instance.CreateDefenseCreatureEntity(selectCreature, selectCreatureCard.cardData.creatureData, selectTargetPos);
         //放置魔物特效：魔王(防守核心)处播放消耗魔力粒子
         if (coreCreature != null && coreCreature.creatureObj != null)
-            EffectHandler.Instance.ShowManaEffect(coreCreature.creatureObj.transform.position);
+            EffectHandler.Instance.ShowCreaturePlaceEffect(EffectHandler.Instance.manager.effectManaId, coreCreature.creatureObj.transform.position);
         //放置魔物特效：生成位置播放魔物登场粒子
-        EffectHandler.Instance.ShowCreatureShowEffect(selectTargetPos);
+        EffectHandler.Instance.ShowCreaturePlaceEffect(EffectHandler.Instance.manager.effectCreatureShowId, selectTargetPos);
         //放置魔物成功时播放按钮音效
         AudioHandler.Instance.PlaySound(AudioEnum.sound_btn_19);
         selectCreature = null;

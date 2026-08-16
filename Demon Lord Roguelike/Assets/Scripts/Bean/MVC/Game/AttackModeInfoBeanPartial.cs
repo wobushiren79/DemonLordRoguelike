@@ -11,6 +11,14 @@ public partial class AttackModeInfoBean
     {
         return damage_add_rate > 0 ? damage_add_rate : 1f;
     }
+
+    /// <summary>
+    /// 是否为恢复/治疗型攻击方式（class_name 以 AttackModeRegain 开头：加血/护甲回复等；未来新增恢复系子类自动命中）
+    /// </summary>
+    public bool IsRegainType()
+    {
+        return !class_name.IsNull() && class_name.StartsWith(nameof(AttackModeRegain));
+    }
     #endregion
 
     #region 攻击起始位置偏移

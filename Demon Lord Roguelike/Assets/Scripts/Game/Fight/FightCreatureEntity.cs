@@ -199,6 +199,9 @@ public partial class FightCreatureEntity
             {
                 //增加BUFF
                 AddBuff(baseAttackMode);
+                //治疗成功音效：真实回血>0 才播，走攻击模式配置的命中音效 sound_hit（治疗型攻击模式 500001 配 sound_medicine_1=470001）
+                if (changeHPReal > 0)
+                    AudioHandler.Instance.PlaySound(baseAttackMode.attackModeInfo.sound_hit);
             },
             actionForDead: (changeHPReal) =>
             {

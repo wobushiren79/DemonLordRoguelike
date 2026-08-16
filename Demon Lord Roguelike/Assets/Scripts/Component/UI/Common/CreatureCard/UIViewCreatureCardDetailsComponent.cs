@@ -92,5 +92,9 @@ public partial class UIViewCreatureCardDetails
 
     public TextMeshProUGUI ui_AttributeItemText_Atk;
 
+    public RectTransform ui_ViewCreatureCardItemAttribute_AddLife;
+
+    public TextMeshProUGUI ui_AttributeItemText_AddLife;
+
 
 }

@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5461704190936179256}
   m_Layer: 0
-  m_Name: EffectStateSleep_1
+  m_Name: Effect_StateSleep_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

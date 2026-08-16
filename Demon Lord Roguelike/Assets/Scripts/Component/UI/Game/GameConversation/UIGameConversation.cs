@@ -119,7 +119,7 @@ public partial class UIGameConversation : BaseUIComponent
         }
         //播放增加好感的粒子
         EffectBean effectData = new EffectBean();
-        effectData.effectName = "EffectAddRelationship_1";
+        effectData.effectName = "Effect_AddRelationship_1";
         effectData.timeForShow = 1f;
         effectData.effectPosition = creatureObj.transform.position;
         EffectHandler.Instance.ShowEffect(effectData);

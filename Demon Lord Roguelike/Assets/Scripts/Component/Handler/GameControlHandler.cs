@@ -45,7 +45,7 @@ public class GameControlHandler : BaseHandler<GameControlHandler,GameControlMana
                 EffectBean effectData = new EffectBean();
                 effectData.timeForShow = 1;
                 effectData.effectPosition = endPos;
-                effectData.effectName="EffectBodySlam_1";
+                effectData.effectName="Effect_BodySlam_1";
                 effectData.isDestoryPlayEnd = true;
                 EffectHandler.Instance.ShowEffect(effectData);
                 //从天而降动画播放完毕 播放落地音效

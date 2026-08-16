@@ -56,6 +56,7 @@ SpriteAtlas:
     - a4111111e602cac4b9789108a4f58cf5: 21300000
     - 61352331213f8794ebd42dcd3b417ae0: 21300000
     - bcd1c2514a10f954cbce8557ae97dded: 21300000
+    - c2b87071271bfd0409181cb8123ecfa4: 21300000
     - 36147a521470b75478d09246661a526e: 21300000
     - 5894e903716327c4881e613956589a99: 21300000
     - 27dfdae3222e48caaf466ac7cc784d56: 21300000
@@ -86,6 +87,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: a4111111e602cac4b9789108a4f58cf5, type: 3}
   - {fileID: 21300000, guid: 61352331213f8794ebd42dcd3b417ae0, type: 3}
   - {fileID: 21300000, guid: bcd1c2514a10f954cbce8557ae97dded, type: 3}
+  - {fileID: 21300000, guid: c2b87071271bfd0409181cb8123ecfa4, type: 3}
   - {fileID: 21300000, guid: 36147a521470b75478d09246661a526e, type: 3}
   - {fileID: 21300000, guid: 5894e903716327c4881e613956589a99, type: 3}
   - {fileID: 21300000, guid: 27dfdae3222e48caaf466ac7cc784d56, type: 3}
@@ -115,6 +117,7 @@ SpriteAtlas:
   - hexagram_3
   - Iceball_1
   - Iceball_5
+  - Love_1
   - FireBottle_1
   - Crystal_1
   - Pingpang_1

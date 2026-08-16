@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 9202322129336648842}
   - component: {fileID: 2525283845599630242}
   m_Layer: 0
-  m_Name: EffectBoom_Ice_1
+  m_Name: Effect_Blood_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -42,7 +42,7 @@ VisualEffect:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8104884778387397714}
   m_Enabled: 1
-  m_Asset: {fileID: 8926484042661614526, guid: 0f939a48bf8720149ae527abbccc3bb7, type: 3}
+  m_Asset: {fileID: 8926484042661614526, guid: 52bbf4a8a5217804a833b2b8c005df73, type: 3}
   m_InitialEventName: OnPlay
   m_InitialEventNameOverriden: 0
   m_StartSeed: 0
@@ -70,21 +70,6 @@ VisualEffect:
       - m_Value: 3
         m_Name: LifeTimeGroundRandomEnd
         m_Overridden: 0
-      - m_Value: 0.5
-        m_Name: LifeTime
-        m_Overridden: 1
-      - m_Value: 1
-        m_Name: BoomSize
-        m_Overridden: 1
-      - m_Value: 2
-        m_Name: SmokeSize
-        m_Overridden: 1
-      - m_Value: 0.02
-        m_Name: FlaresSize
-        m_Overridden: 1
-      - m_Value: 4
-        m_Name: WaveSize
-        m_Overridden: 1
     m_Vector2f:
       m_Array: []
     m_Vector3f:
@@ -95,22 +80,10 @@ VisualEffect:
       - m_Value: {x: 3, y: -1, z: -1}
         m_Name: BloodVelocityRandomEnd
         m_Overridden: 1
-      - m_Value: {x: 0, y: 0, z: 0}
-        m_Name: StartPosition
-        m_Overridden: 1
     m_Vector4f:
       m_Array:
       - m_Value: {x: 0.5754717, y: 0, z: 0, w: 1}
         m_Name: BloodColor
-        m_Overridden: 1
-      - m_Value: {x: 0.10720008, y: 0.47010964, z: 0.6886792, w: 1}
-        m_Name: SmokeColor
-        m_Overridden: 1
-      - m_Value: {x: 0.07450978, y: 0.5808341, z: 0.74509805, w: 0}
-        m_Name: WaveColor
-        m_Overridden: 1
-      - m_Value: {x: 0.086274505, y: 0.5225223, z: 0.8666667, w: 0}
-        m_Name: FlareColor
         m_Overridden: 1
     m_Uint:
       m_Array: []
@@ -126,12 +99,6 @@ VisualEffect:
       m_Array:
       - m_Value: {fileID: 2800000, guid: 0486fa77d2e501e46a879f097988ee17, type: 3}
         m_Name: BloodTexture
-        m_Overridden: 1
-      - m_Value: {fileID: 2800000, guid: 8b9d7f1977bd26c4cb8c2a57d82a414c, type: 3}
-        m_Name: SmokeTex
-        m_Overridden: 0
-      - m_Value: {fileID: 2800000, guid: 0486fa77d2e501e46a879f097988ee17, type: 3}
-        m_Name: FlaresTex
         m_Overridden: 1
     m_Bool:
       m_Array:

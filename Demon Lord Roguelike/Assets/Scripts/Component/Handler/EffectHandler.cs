@@ -511,21 +511,13 @@ public partial class EffectHandler
 
     #region 放置魔物粒子
     /// <summary>
-    /// 放置魔物时在魔王(防守核心)位置播放消耗魔力粒子
+    /// 放置魔物时播放全局单例粒子（魔王处消耗魔力 / 生成位置魔物登场，共用全局单例通道重播，免一次性实例化开销）
     /// </summary>
-    /// <param name="targetPos">魔王世界坐标</param>
-    public void ShowManaEffect(Vector3 targetPos)
+    /// <param name="effectId">EffectInfo 配置表 id（effectManaId=魔王耗蓝 / effectCreatureShowId=魔物登场）</param>
+    /// <param name="targetPos">粒子播放的世界坐标</param>
+    public void ShowCreaturePlaceEffect(long effectId, Vector3 targetPos)
     {
-        ShowEffect(manager.effectManaId, targetPos);
-    }
-
-    /// <summary>
-    /// 放置魔物时在生成的魔物位置播放登场粒子
-    /// </summary>
-    /// <param name="targetPos">魔物生成的世界坐标</param>
-    public void ShowCreatureShowEffect(Vector3 targetPos)
-    {
-        ShowEffect(manager.effectCreatureShowId, targetPos);
+        ShowEnduringSingletonEffect(effectId, new SingletonEffectParam() { targetPos = targetPos });
     }
     #endregion
 
@@ -651,7 +643,7 @@ public partial class EffectHandler
         };
 
         //获取粒子实例
-        manager.GetEffectForEnduring("EffectSacrfice_1", (targetEffect) =>
+        manager.GetEffectForEnduring("Effect_Sacrfice_1", (targetEffect) =>
         {
             playEffect?.Invoke(targetEffect);
         });

@@ -115,6 +115,8 @@ cardItem.SetData(creatureData, CardUseStateEnum.Show);
 // 战斗中放置卡片时从魔王当前魔力(MPCurrent)中扣除，不足则 Toast"魔力不足"
 ```
 
+> **卡片详情治疗型显示**（`UIViewCreatureCardDetails.SetAttribute`）：治疗型生物（`creatureInfo.IsRegainAttackMode()`，即攻击方式 class_name 为 `AttackModeRegain` 系，见 attack-mode-system）隐藏攻击力条目 `ui_ViewCreatureCardItemAttribute_Atk`、改显示治疗量条目 `ui_ViewCreatureCardItemAttribute_AddLife`（值 = 当前ATK×攻击模式 `GetDamageAddRate()`，与战斗实际恢复量口径一致）；非治疗型则隐藏 AddLife 条目、正常显示攻击力。
+
 ### 2. 战斗卡片使用
 
 ```csharp
@@ -315,7 +317,7 @@ public void PutCard(Vector3 worldPosition)
     // 检测魔王魔力是否足够（GetAttributeInt(CMP)=基础CMP×(1+等级/稀有度增加倍率)经BUFF修正后的召唤消耗），不足则Toast"魔力不足"(UIText 50006)并中止
     // 足够则 ChangeMP(-GetAttributeInt(CMP)) 扣除魔力并刷新魔王MPShow显示
     // 创建生物实体...
-    // 放置成功后播两个配置粒子：魔王处 ShowManaEffect(消耗魔力,id=1000001) + 生成位置 ShowCreatureShowEffect(魔物登场,id=1100001)，再播 sound_btn_19
+    // 放置成功后播两个全局单例粒子：魔王处 ShowCreaturePlaceEffect(effectManaId,pos)(消耗魔力,id=1000001) + 生成位置 ShowCreaturePlaceEffect(effectCreatureShowId,pos)(魔物登场,id=1100001)，再播 sound_btn_19
     TriggerEvent(EventsInfo.GameFightLogic_PutCard, selectCreatureCard);
     selectCreatureCard = null;
 }

@@ -1060,7 +1060,7 @@ public class ScenePrefabForBase : ScenePrefabBase
         //播放粒子
         EffectBean effectData = new EffectBean();
         effectData.timeForShow = 3f;
-        effectData.effectName = "EffectSmoke_1";
+        effectData.effectName = "Effect_Smoke_1";
         effectData.effectPosition = targetTF.position + new Vector3(0, 0.2f, 0);
         effectData.isDestoryPlayEnd = true;
         //播放移动动画

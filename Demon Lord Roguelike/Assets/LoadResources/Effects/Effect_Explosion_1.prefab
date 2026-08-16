@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &5483126183398734864
+--- !u!1 &4191041914066554629
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,24 +8,24 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4851274368631633110}
-  - component: {fileID: 4110486756557579680}
-  - component: {fileID: 1730688735053446062}
-  - component: {fileID: 163517789717755501}
+  - component: {fileID: 5565565733062332737}
+  - component: {fileID: 1983893091169668562}
+  - component: {fileID: 8103764281787925435}
+  - component: {fileID: 3536154325260369240}
   m_Layer: 0
-  m_Name: EffectBuff_1
+  m_Name: Effect_Explosion_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4851274368631633110
+--- !u!4 &5565565733062332737
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5483126183398734864}
+  m_GameObject: {fileID: 4191041914066554629}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -34,15 +34,15 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!2083052967 &4110486756557579680
+--- !u!2083052967 &1983893091169668562
 VisualEffect:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5483126183398734864}
+  m_GameObject: {fileID: 4191041914066554629}
   m_Enabled: 1
-  m_Asset: {fileID: 8926484042661614526, guid: 7e4e97f551e14034e96457e6dec1aa27, type: 3}
+  m_Asset: {fileID: 8926484042661614526, guid: c540c8f36078e0e47a4481ea81d0e307, type: 3}
   m_InitialEventName: OnPlay
   m_InitialEventNameOverriden: 0
   m_StartSeed: 0
@@ -51,37 +51,19 @@ VisualEffect:
   m_ResourceVersion: 1
   m_PropertySheet:
     m_Float:
-      m_Array:
-      - m_Value: 1
-        m_Name: Size
-        m_Overridden: 1
-      - m_Value: 0.5
-        m_Name: LifeTime
-        m_Overridden: 1
+      m_Array: []
     m_Vector2f:
       m_Array: []
     m_Vector3f:
       m_Array:
       - m_Value: {x: 0, y: 0, z: 0}
+        m_Name: Position
+        m_Overridden: 1
+      - m_Value: {x: 0, y: 0, z: 0}
         m_Name: StartPosition
         m_Overridden: 1
     m_Vector4f:
-      m_Array:
-      - m_Value: {x: 0.54040223, y: 0.9716981, z: 0.40792987, w: 0}
-        m_Name: ColorFloor
-        m_Overridden: 1
-      - m_Value: {x: 0.18937908, y: 0.735849, z: 0.15619439, w: 0}
-        m_Name: ColorGlowV
-        m_Overridden: 1
-      - m_Value: {x: 0.3764706, y: 1.4745098, z: 0.3137255, w: 0}
-        m_Name: ColorLine
-        m_Overridden: 1
-      - m_Value: {x: 1, y: 1, z: 1, w: 0}
-        m_Name: ColorPoints
-        m_Overridden: 1
-      - m_Value: {x: 1, y: 0.9490196, z: 0.5803922, w: 0}
-        m_Name: ColorBoke
-        m_Overridden: 1
+      m_Array: []
     m_Uint:
       m_Array: []
     m_Int:
@@ -96,14 +78,14 @@ VisualEffect:
       m_Array: []
     m_Bool:
       m_Array: []
---- !u!73398921 &1730688735053446062
+--- !u!73398921 &8103764281787925435
 VFXRenderer:
   serializedVersion: 1
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5483126183398734864}
+  m_GameObject: {fileID: 4191041914066554629}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -143,13 +125,13 @@ VFXRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
---- !u!114 &163517789717755501
+--- !u!114 &3536154325260369240
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5483126183398734864}
+  m_GameObject: {fileID: 4191041914066554629}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0b53e84579814b2409a1cc2e4d03ca38, type: 3}
@@ -158,4 +140,4 @@ MonoBehaviour:
   mainPS: {fileID: 0}
   listPS: []
   listVE:
-  - {fileID: 4110486756557579680}
+  - {fileID: 1983893091169668562}

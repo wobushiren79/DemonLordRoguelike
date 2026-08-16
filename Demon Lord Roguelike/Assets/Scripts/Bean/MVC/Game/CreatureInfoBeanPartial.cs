@@ -101,6 +101,15 @@ public partial class CreatureInfoBean
     }
 
     /// <summary>
+    /// 该生物是否为治疗型（攻击方式 attack_mode 为恢复/治疗类：加血/护甲回复等）
+    /// </summary>
+    public bool IsRegainAttackMode()
+    {
+        var attackModeInfo = AttackModeInfoCfg.GetItemData(attack_mode);
+        return attackModeInfo != null && attackModeInfo.IsRegainType();
+    }
+
+    /// <summary>
     /// 是否可搜索并转身攻击身后敌人（正面无目标时才向身后补搜，范围与正面一致）
     /// </summary>
     public bool IsAttackSearchBack()

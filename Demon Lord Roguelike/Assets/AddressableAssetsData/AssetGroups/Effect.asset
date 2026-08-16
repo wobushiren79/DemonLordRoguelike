@@ -16,27 +16,37 @@ MonoBehaviour:
   m_GUID: d91bf32a1b0997040bd70f62c55964e7
   m_SerializeEntries:
   - m_GUID: 0374bcc315e70ca4aa18d7420b2c68d2
-    m_Address: Assets/LoadResources/Effects/EffectPillarBlast_Ice_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_PillarBlast_Ice_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0b19f3f153e917d47ad275f27a3d7424
+    m_Address: Assets/LoadResources/Effects/Effect_Sacrfice_2.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 0d96510eddaf1764cb5b6208a63be7ba
-    m_Address: Assets/LoadResources/Effects/EffectShieldHit_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_ShieldHit_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 14285a0188b93484595e8d5114f934cc
+    m_Address: Assets/LoadResources/Effects/Effect_Buff_Health_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1831820620876c244b90d12425b3b886
-    m_Address: Assets/LoadResources/Effects/EffectBuff_2.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_Buff_2.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 18844ea410562644d994b790f51760bd
-    m_Address: Assets/LoadResources/Effects/EffectTextNumber_2.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_TextNumber_2.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1be9f894eda04154197a2f0d4bc84597
-    m_Address: Assets/LoadResources/Effects/EffectBoom_Ice_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_Boom_Ice_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -51,7 +61,7 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 458b12f4750e6a0428995e6a4a2e4eb7
-    m_Address: Assets/LoadResources/Effects/EffectExplosion_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_Explosion_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -60,23 +70,28 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5b6821384cae1bd49b6b0f115b0edbcd
+    m_Address: Assets/LoadResources/Effects/Effect_Grass_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 601135c5466da40468a50ae306ddec51
-    m_Address: Assets/LoadResources/Effects/EffectPillarBlast_Fire_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_PillarBlast_Fire_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 61201823851cf114083dbe189ce0d380
-    m_Address: Assets/LoadResources/Effects/EffectBuff_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_Buff_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6e30d327e4eff0043b4830b3c04f44d6
-    m_Address: Assets/LoadResources/Effects/EffectBlood_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_Blood_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 74c87d989c9a9774385d74eb4c6f477e
-    m_Address: Assets/LoadResources/Effects/EffectAddRelationship_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_AddRelationship_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -85,18 +100,23 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 85de4d102525b36458cf96ff1262663a
+    m_Address: Assets/LoadResources/Effects/Effect_Flower_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 8a0e657a2d2a0e74d9046c889202acef
-    m_Address: Assets/LoadResources/Effects/EffectBodySlam_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_BodySlam_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 945d56bedeb6f38459a14be6aab46326
-    m_Address: Assets/LoadResources/Effects/EffectBoom_Fire_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_Boom_Fire_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 96cc022574babe1489ef077f9d026990
-    m_Address: Assets/LoadResources/Effects/EffectSacrfice_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_Sacrfice_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -106,12 +126,22 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 97bc7fb3779dff6489ab01b232f5b6d6
-    m_Address: Assets/LoadResources/Effects/EffectAscendComplete_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_AscendComplete_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a07608802ac497743a7f19f6633fdd70
     m_Address: Assets/FrameWork/Prefabs/Effect/ParticleSystem/Soft/SoftBodySlam.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a2ec90771a9f8de49a2af9b675a41427
+    m_Address: Assets/LoadResources/Effects/Effect_SandDust_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a9a76b8fd3aba3d4ca88f5250952700f
+    m_Address: Assets/LoadResources/Effects/Effect_StateSleep_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -121,12 +151,12 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: b5190257842049945adada67cd6f18bd
-    m_Address: Assets/LoadResources/Effects/EffectTextNumber_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_TextNumber_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: bcb06139528cc7d46ac53acce7e2d30a
-    m_Address: Assets/LoadResources/Effects/EffectMove_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_Move_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -141,12 +171,17 @@ MonoBehaviour:
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d17d3d4aa0ef42b4d9fb794d046aaf02
-    m_Address: Assets/LoadResources/Effects/EffectSmoke_1.prefab
+    m_Address: Assets/LoadResources/Effects/Effect_Smoke_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e4f7abecc4c57254d8e48045035c2812
     m_Address: Assets/LoadResources/Effects/Effect_Thunder_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ebed27849fa22b34b9eb3715afa536a7
+    m_Address: Assets/LoadResources/Effects/Effect_Leaves_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

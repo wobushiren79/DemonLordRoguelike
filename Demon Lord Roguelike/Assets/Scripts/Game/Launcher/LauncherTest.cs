@@ -194,6 +194,24 @@ public class LauncherTest : BaseLauncher
     }
 
     /// <summary>
+    /// 开始粒子特效测试（GUI版，纯代码UI，不依赖预制）
+    /// </summary>
+    public async void StartForEffectTest()
+    {
+        await WorldHandler.Instance.ClearWorldData();
+        //设置焦距
+        VolumeHandler.Instance.SetDepthOfField(UnityEngine.Rendering.Universal.DepthOfFieldMode.Off, 0, 0, 0);
+        //镜头初始化
+        CameraHandler.Instance.InitData();
+        //关闭其它UI
+        UIHandler.Instance.CloseAllUI();
+        //清理上一次可能残留的特效测试面板，避免重复开始导致面板叠加
+        if (TestEffectGUI.Instance != null) Destroy(TestEffectGUI.Instance.gameObject);
+        //挂载纯GUI代码的特效测试组件到空物体
+        new GameObject("EffectTestGUI").AddComponent<TestEffectGUI>();
+    }
+
+    /// <summary>
     /// 基地测试
     /// </summary>
     public void StartForBaseTest(CreatureBean creatureData)

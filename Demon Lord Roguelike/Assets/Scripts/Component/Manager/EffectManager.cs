@@ -6,13 +6,13 @@ using UnityEngine;
 public partial class EffectManager
 {
     #region 粒子资源名 / ID 常量
-    //受击溅血粒子ID(EffectBlood_1,高频调用)
+    //受击溅血粒子ID(Effect_Blood_1,高频调用)
     public long effectBloodId = 1200001;
-    //护盾打击粒子ID(EffectShieldHit_1,高频调用)
+    //护盾打击粒子ID(Effect_ShieldHit_1,高频调用)
     public long effectShieldHitId = 1300001;
-    //进阶增加进度粒子ID(EffectMove_1,飞向容器的流动光点)
+    //进阶增加进度粒子ID(Effect_Move_1,飞向容器的流动光点)
     public long effectCreatureAscendAddProgressId = 1400001;
-    //进阶完成庆祝粒子ID(EffectAscendComplete_1,白模板运行时按新稀有度上色成"稀有度流光")
+    //进阶完成庆祝粒子ID(Effect_AscendComplete_1,白模板运行时按新稀有度上色成"稀有度流光")
     public long effectCreatureAscendCompleteId = 1500001;
     //放置魔物-魔王(防守核心)处消耗魔力粒子ID
     public long effectManaId = 1000001;

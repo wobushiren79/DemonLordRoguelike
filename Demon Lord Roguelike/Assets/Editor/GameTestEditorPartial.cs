@@ -106,6 +106,7 @@ public partial class GameTestEditor
     private bool showCreatureSacrificeTest = true;
     private bool showCreatureVatTest = true;
     private bool showCreatureJuicerTest = true;
+    private bool showEffectTest = true;
     private bool showNormalGameTest = true;
 
     // 战斗场景测试折叠

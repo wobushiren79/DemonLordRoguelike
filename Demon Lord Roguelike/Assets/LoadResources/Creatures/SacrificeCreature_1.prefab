@@ -260,7 +260,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8104884778387397714, guid: 0b19f3f153e917d47ad275f27a3d7424, type: 3}
       propertyPath: m_Name
-      value: EffectSacrfice_2
+      value: Effect_Sacrfice_2
       objectReference: {fileID: 0}
     - target: {fileID: 8104884778387397714, guid: 0b19f3f153e917d47ad275f27a3d7424, type: 3}
       propertyPath: m_IsActive

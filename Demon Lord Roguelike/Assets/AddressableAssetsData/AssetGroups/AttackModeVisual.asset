@@ -56,6 +56,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e857e4b48d595324a8688dc8dab82f81
+    m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_RangedLove.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ec6fd19af4d2f6f488d37da0bcf74776
     m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_Pingpang_1.prefab
     m_ReadOnly: 0

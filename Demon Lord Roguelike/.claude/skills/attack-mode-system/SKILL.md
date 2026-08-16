@@ -35,6 +35,8 @@ BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播
 | `attackerCRT` | CRT | 暴击概率 |
 | `attackerSpeedRate` | ASPD | 弹道飞行速度倍率：ASPD 按 0~100 线性插值映射 1~`BaseAttackMode.SpeedRateASPDMax`(当前3倍)；无攻击者时保持默认 1，`ClearData()` 重置为 1 |
 
+> **恢复/治疗型判断**：`AttackModeInfoBeanPartial.IsRegainType()` 按 `class_name` 是否以 `AttackModeRegain` 开头判断该攻击方式是否为回复类（覆盖 `AttackModeRegainHP`/`AttackModeRegainDR` 及未来恢复系子类，自动命中）；`CreatureInfoBeanPartial.IsRegainAttackMode()` 按生物的 `attack_mode` 查表判断某生物是否为治疗型。卡片详情等 UI 据此对治疗型隐藏攻击力、改显示治疗量（= 当前ATK×`GetDamageAddRate()`，与战斗实际恢复量口径一致）。
+
 ### BaseAttackMode 关键状态字段
 
 | 字段 | 类型 | 用途 |
@@ -75,7 +77,7 @@ BaseAttackMode                      - 攻击模式基类
 ├── AttackModeFalluponChain         - 天降连锁（连锁弹射多个目标，伤害递减）
 ├── AttackModeOverlap               - 重叠检测（以自身为中心范围触碰，命中走正常 UnderAttack 伤害管线）
 │   └── AttackModeOverlapNoDamage   - 无伤害重叠（纯DEBUFF触碰变体：只附加 buff 字段配置的BUFF+播命中音，不掉血/不跳伤害数字/不播受击特效/不进伤害统计，走 FightCreatureEntity.UnderAttackNoDamage；烂泥史莱姆3003粘液减速400001(buff=1000200001:1,MSPD-40%×1s)、毒液史莱姆3004中毒400002(buff=1000400001:1,每跳=史莱姆实时ATK×20%[ATK=10→2/跳],每秒1跳共10次,毒伤跳伤走UnderAttack管线属正常)）
-├── AttackModeLure                  - 引诱（改变被攻击者线路）
+├── AttackModeLure                  - 引诱（改变被攻击者线路；魅惑成功播配置命中音效 sound_hit + 全局单例粒子 effect_hit，粒子位置=敌人位置+攻击者 attack_start_position 偏移，600001 配 sound_medicine_1=470001 / Effect_Buff_1=500002，4003 配攻击偏移 0,0.5,0）
 ├── AttackModeInstantArea           - 瞬时落点范围（无弹道飞行，当帧对目标点范围攻击；支持 hit_max 命中上限+快照名单过滤，AOE 多目标伤害依次减半保底1，单次攻击内局部去重）
 │   └── AttackModeInstantAreaThunder - 落雷（瞬时AOE + 全局单例雷电粒子；深渊馈赠「闪电」300031~300035）
 └── AttackModeRegain                - 回复基类（不造成伤害，提供增益）
