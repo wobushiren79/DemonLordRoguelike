@@ -10,10 +10,20 @@ using UnityEngine;
 /// <para>最大半径 = 道路右缘(0.5+路长) + 余量(collider_area_size 第 1 项) − 圆心 x：保证波扫到路尽头、覆盖整条道路，达到即销毁；
 /// 扩张时长 = 最大半径 / 扩张速度（GetMoveSpeed，纯数据发射 attackerSpeedRate=1 即配置速度）。</para>
 /// <para>纯数据发射路径：由 BuffEntityPeriodicAttackShockwave 创建，伤害/圆心由 BUFF 侧注入；无 prefab/visual_name，
-/// 冲击波视觉走 EffectHandler.ShowShockwaveEffect（StartAttackBase 时播放一次，半径/时长与本类判定严格同步）。</para>
+/// 冲击波视觉走 EffectHandler.ShowEnduringSingletonEffect（全局单例通道，StartAttackBase 时播放一次，
+/// 用 startSizeMultiplier/startLifetimeMultiplier 按本类判定参数换算，视觉波前与判定环带严格同步）。</para>
 /// </summary>
 public class AttackModeShockwaveRing : BaseAttackMode
 {
+    #region 视觉基准常量
+    /// <summary>冲击波视觉基准半径（世界单位）：Effect_Shockwave_1 主粒子在 startSizeMultiplier=1 时的视觉半径，
+    /// 代码按 判定半径/基准半径 换算 multiplier；若视觉波前与判定环带不重合，校准此常量（或改 prefab 主粒子 startSize）</summary>
+    private const float ShockwaveVisualBaseRadius = 3f;
+    /// <summary>冲击波视觉基准时长（秒）：prefab 主粒子 startLifetime，代码按 判定扩张时长/基准时长 换算 multiplier
+    /// （Size over Lifetime 曲线按寿命归一化，拉长寿命即等比放慢扩张动画）</summary>
+    private const float ShockwaveVisualBaseDuration = 0.5f;
+    #endregion
+
     #region 字段
     /// <summary>当前半径（每帧按 speed_move 扩张）</summary>
     private float radiusCurrent;
@@ -54,9 +64,14 @@ public class AttackModeShockwaveRing : BaseAttackMode
         }
         // 最大半径 = 道路右缘 + 余量 − 圆心x（保证覆盖整条道路；下限 1 防圆心在路右缘之外时算出负值）
         radiusMax = Mathf.Max(roadMaxX + radiusMargin - centerPos.x, 1f);
-        // 播放冲击波视觉：半径/时长与判定严格同步
+        // 播放冲击波视觉（全局单例通道）：按判定参数换算 multiplier，视觉波前与判定环带严格同步
         float waveDuration = radiusMax / GetMoveSpeed();
-        EffectHandler.Instance.ShowShockwaveEffect(centerPos, radiusMax, waveDuration);
+        EffectHandler.Instance.ShowEnduringSingletonEffect(EffectHandler.Instance.manager.effectShockwaveId, new SingletonEffectParam()
+        {
+            targetPos = centerPos,
+            startSizeMultiplier = radiusMax / ShockwaveVisualBaseRadius,
+            startLifetimeMultiplier = Mathf.Max(waveDuration, 0.1f) / ShockwaveVisualBaseDuration,
+        });
     }
     #endregion
 

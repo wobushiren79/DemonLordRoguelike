@@ -68,7 +68,7 @@ BaseAttackMode                      - 攻击模式基类
 ├── AttackModeRangedSplit           - 分裂弹-发射器（不飞不画不命中，按道路发射多发子弹道后自毁）
 ├── AttackModeRangedBoomerang       - 回旋镖弹道（继承 BaseAttackMode：起点→锁定点→超出一格折返→返回魔王，时间参数化速度曲线，伤害逐目标减半保底1；深渊馈赠「死亡回旋」300051）
 ├── AttackModeOrbit                 - 环绕弹道（常驻不自毁：绕宿主生物 XZ 水平面圆周运动，半径0.75(OrbitRadius 常量)，高度取魔王位置+攻击起始偏移(注入 orbitHeight)，宿主/角速度/伤害倍率由外部 BUFF 注入并同步；触碰命中走 live 球形检测、每只书对同一敌人 0.5 秒冷却，伤害=魔王实时攻击力×倍率命中瞬间取、不暴击；深渊馈赠「知识的力量」300071）
-├── AttackModeShockwaveRing         - 圆环冲击波（以魔王为圆心扩张：XZ 环带命中自遍历不走射线批处理、每敌每波只中一次、命中瞬时击退、最大半径=道路全长+余量达到即销毁；视觉走 EffectHandler.ShowShockwaveEffect 同步半径/时长；深渊馈赠「第六次冲击」300091）
+├── AttackModeShockwaveRing         - 圆环冲击波（以魔王为圆心扩张：XZ 环带命中自遍历不走射线批处理、每敌每波只中一次、命中瞬时击退、最大半径=道路全长+余量达到即销毁；视觉走 EffectHandler.ShowEnduringSingletonEffect 全局单例通道，用 SingletonEffectParam 的 multiplier 字段同步半径/时长；深渊馈赠「第六次冲击」300091）
 ├── AttackModeExplosion             - 爆炸（以自身为中心范围伤害，攻击者死亡）
 ├── AttackModeFallupon              - 天降单体（直接对锁定目标造成伤害）
 ├── AttackModeFalluponArea          - 天降范围（对目标位置范围伤害）
@@ -104,7 +104,7 @@ BaseAttackMode                      - 攻击模式基类
 | `AttackModeRangedArea` | 飞行弹道+击中AOE | 爆炸箭、火球术 |
 | `AttackModeRangedArc` | 抛物线飞行 | 投石、抛物线炸弹 |
 | `AttackModeRangedArcBounce` | 分段抛物线 + 追踪锁定目标 + 命中后弹跳到附近目标（次数由发射方注入，全程命中去重，伤害逐目标减半保底1；弧高首段=arcHeight、弹跳段减半；每段仅下落阶段 progress≥0.5 检测命中；分段时长=max(距离/速度, MinSegmentTime=1.0s) 防短段过快） | 弹跳斧、弹射类 |
-| `AttackModeRangedArcGround` | 抛物线投掷 + 落地驻留周期范围伤害（双状态：飞行段纯移动不命中+弹体自旋-720°/s绕-Z轴、到达切燃烧段每 TickInterval 对半径范围跳伤、满 Duration 自毁；燃烧段隐藏 DSP 弹体、粒子视觉走 EffectHandler.ShowFloorFireEffect；落地切燃烧时播放 sound_water_4） | 投掷物落地成持续灼烧地形（瓶装炼狱火） |
+| `AttackModeRangedArcGround` | 抛物线投掷 + 落地驻留周期范围伤害（双状态：飞行段纯移动不命中+弹体自旋-720°/s绕-Z轴、到达切燃烧段每 TickInterval 对半径范围跳伤、满 Duration 自毁；燃烧段隐藏 DSP 弹体、粒子视觉走 EffectHandler.ShowEnduringSingletonEffect(effect_hit=1800001)；落地切燃烧时播放 sound_water_4） | 投掷物落地成持续灼烧地形（瓶装炼狱火） |
 | `AttackModeRangedArcTracking` | 抛物线 + 落点实时跟踪目标（落点=目标脚底+本发起始点相对攻击者的偏移，与发射口同高；目标死亡则落点锁定死亡点）+ 到达落点范围检测取**距落点最近的一个敌人**结算单体伤害（范围仅作检测窗口、非AOE，`collider_area_size[0]`=检测半径），弹道途中不命中任何目标；弹体朝向每帧跟随抛物线切线（`visualStartAngle`=武器StartRotate基准+`atan2(8h(0.5-progress), Δx)`，DSP 每帧读它建矩阵故每帧更新即生效）；弧高 2（构造函数覆盖基类默认 3）；收尾靠覆盖 Arc 的 `HandleForReachEnd`：命中即回收，**射空（落点无存活敌人）按 `other_data` 的插地键配置插地停留（stuck_time>0 启用，stuck_sink 下沉深度，倒计时走 GetFightDeltaTime、插地期冻结移动/跟踪/边界检测并关拖尾）或落地即回收——插地弹体仍挂 `dlAttackModePrefab`，ClearAttackModePrefab/Clear 清场自动覆盖**；配置解析走 `AttackModeInfoBeanPartial.GetStuckConfig()`（`AttackModeStuckConfig`，从通用扩展列 other_data 取 stuck_time/stuck_sink 键） | 抛射狙击、迫击炮式打击（人类弓箭手 206001，配 `other_data=stuck_time:3&stuck_sink:0.1`） |
 | `AttackModeRangedTracking` | 追踪目标飞行 | 追踪弹、导弹 |
 | `AttackModeRangedObliqueTracking` | 继承 RangedTracking：直线斜射跟踪（方向含 Y 不拍平，首发方向按「出手点→瞄准点」重算，用于高空出手斜射；瞄准点=目标脚底+`other_data` 键 `aim_up` 上抬高度，默认0=瞄脚底，解析走 `AttackModeInfoBeanPartial.GetAimUpHeight()`）+ 命中检测/射线全程有效（目标死亡方向冻结朝死亡点直飞，直至命中或出界）+ `HandleForHitTarget` 改走 `CheckHitTargetArea` 命中点范围 AOE（hit_max 近者优先截断、同生物去重，201001/201002 配 hit_max=3=离爆炸点最近3个）+ 贴身保底命中（与瞄准点距离 ≤ `HitTouchDistance`=0.2 直接判中——0.1 短射线在目标迎面相撞穿进碰撞体后永久失效（射线不打背面），无此层跟踪弹会在体内绕瞄准点空转）+ 触地即毁（下落中 `attackDirection.y`<0 且 y ≤ `GroundHitY`=0.05 时播 effect_hit 回收，无伤害结算，目标死亡直飞不穿地）；弹体朝向：面片 quad 走 visualStartAngle=武器StartRotate基准角+`atan2(dir.y, dir.x)`，火球/冰球 billboard shader 走 `visualVelocityOrient`（InitAttackModeShow 开启）→`_VelocityWS.w` 速度朝向 | 高空出手的斜射法师范围弹（人类法师 201001/201002，配 `other_data=aim_up:0.5`） |
@@ -113,7 +113,7 @@ BaseAttackMode                      - 攻击模式基类
 | `AttackModeRangedRebound` | 继承 Piercing（复用多目标命中遍历）：直线飞行 + 道路矩形四壁反弹（x∈[0.5,0.5+路长]、z∈[0.5,路数+0.5]，StartAttackBase 缓存），越墙钳位+方向分量取反+绕 Y 轴 ±5° 随机偏转（防 90° 死角死循环）；左墙在子弹进入场地后才生效（hasEnteredField 防出生即弹回魔王侧）；命中不销毁、伤害不递减，同一目标 1 秒冷却（Dictionary 记录各目标最近命中时刻，lifeTime 按 GetFightDeltaTime 累积，名单超 100 清理过期条目）；`CheckIsMoveBound` 恒 false 永不自毁，由发射方 BUFF 追踪维持 N 颗、关卡切换被清后补弹；音效：发射音配置 `sound_start`=sound_fight_3(400003)（GetAttackModePrefab 每颗发射时播放），回弹音 sound_hit_6 在四壁反弹成功时播放（HandleWallBounce），均受 PlaySound 0.1s 同音去重（同帧多颗只播一声） | 回弹菱块、弹球类 |
 | `AttackModeRangedBoomerang` | 回旋镖三段式飞行（起点→锁定点→超出一格折返→返回魔王，时间参数化：去程后半程减速到0、返程匀加速），伤害逐目标减半保底1，去程去重/返程可再命中 | 回旋镖、往返弹 |
 | `AttackModeOrbit` | 常驻环绕宿主圆周运动（不自毁、不越界销毁）+ 触碰命中（每只书对同一敌人 0.5 秒冷却） | 环绕书本、卫星弹 |
-| `AttackModeShockwaveRing` | 以魔王为圆心的扩张圆环：半径每帧按 speed_move 扩张，XZ 距离落在「上帧半径~当前半径」环带内的敌人命中（每敌每波一次），命中交 AIAttackCreatureEntity.StartKnockback 击退意图（方向固定 +x 沿道路向后推不带 z 分量，collider_area_size[1]=击退距离，落点 x 钳制道路范围，攻击循环打断、结束回闲置重索敌）；最大半径=道路右缘+余量(collider_area_size[0])−圆心x，达到即销毁；无 prefab/visual_name，视觉=StartAttackBase 时调 EffectHandler.ShowShockwaveEffect（multiplier 同步半径与扩张时长） | 冲击波、震荡波 |
+| `AttackModeShockwaveRing` | 以魔王为圆心的扩张圆环：半径每帧按 speed_move 扩张，XZ 距离落在「上帧半径~当前半径」环带内的敌人命中（每敌每波一次），命中交 AIAttackCreatureEntity.StartKnockback 击退意图（方向固定 +x 沿道路向后推不带 z 分量，collider_area_size[1]=击退距离，落点 x 钳制道路范围，攻击循环打断、结束回闲置重索敌）；最大半径=道路右缘+余量(collider_area_size[0])−圆心x，达到即销毁；无 prefab/visual_name，视觉=StartAttackBase 时调 EffectHandler.ShowEnduringSingletonEffect（全局单例通道，SingletonEffectParam 设 startSize/startLifetime multiplier 同步半径与扩张时长，视觉基准常量在本类） | 冲击波、震荡波 |
 | `AttackModeRangedSplit` | 发射器：按道路发射多发独立子弹道后自毁 | 散射弹、分叉箭（子弹道行另配 `AttackModeRangedSplitChild`） |
 | `AttackModeExplosion` | 自爆范围伤害 | 自杀式爆炸、亡语 |
 | `AttackModeFallupon` | 直接对目标造成伤害 | 天降打击、瞬移攻击 |
@@ -434,7 +434,7 @@ public class AttackModeFalluponChain : BaseAttackMode
 
 #### 瞬时落点AOE（落雷）示例
 
-> **模式要点**：`AttackModeInstantArea` 无弹道飞行——`StartAttack` 当帧立即以 `attackModeData.targetPos` 为圆心做一次范围攻击并自毁。天然无 `Update`/射线/拖尾开销；无 prefab/visual_name 时 `gameObject=null`，DSP 渲染自动跳过。两个扩展点：**配置 `hit_max`**（单次命中上限，>0 时按距落点近者优先截断，保证落点主目标必中）与**发射方注入 `filterCreatureIds`** 快照名单（非空时只命中名单内生物——「触发瞬间快照全场、间隔期新刷敌人不受波及」类攻击用，写法照 `AttackModeRangedSplitChild.targetRoad` 先例：StartAttack 前写入、`Destroy` 置空防对象池残留）。**AOE 多目标伤害按命中次序依次减半**（第 1 个满额、之后每个减半，向下取整保底 1 点，照 `AttackModeRangedPiercingRoad` 先例）；**单次攻击内局部去重**（同一生物多碰撞体只命中一次，局部 `setHitCreatureId` 记录，道与道之间不共享——溅射可重复作用于同一目标）。子类 `AttackModeInstantAreaThunder`（落雷）仅重写 `PlayHitEffect` 改走 `EffectHandler.ShowThunderEffect`。
+> **模式要点**：`AttackModeInstantArea` 无弹道飞行——`StartAttack` 当帧立即以 `attackModeData.targetPos` 为圆心做一次范围攻击并自毁。天然无 `Update`/射线/拖尾开销；无 prefab/visual_name 时 `gameObject=null`，DSP 渲染自动跳过。两个扩展点：**配置 `hit_max`**（单次命中上限，>0 时按距落点近者优先截断，保证落点主目标必中）与**发射方注入 `filterCreatureIds`** 快照名单（非空时只命中名单内生物——「触发瞬间快照全场、间隔期新刷敌人不受波及」类攻击用，写法照 `AttackModeRangedSplitChild.targetRoad` 先例：StartAttack 前写入、`Destroy` 置空防对象池残留）。**AOE 多目标伤害按命中次序依次减半**（第 1 个满额、之后每个减半，向下取整保底 1 点，照 `AttackModeRangedPiercingRoad` 先例）；**单次攻击内局部去重**（同一生物多碰撞体只命中一次，局部 `setHitCreatureId` 记录，道与道之间不共享——溅射可重复作用于同一目标）。子类 `AttackModeInstantAreaThunder`（落雷）为纯标记类（**无 override**）：走基类 `PlayHitEffect`→`PlayEffectForHit`，其 `effect_hit=900003`(Effect_Thunder_3) 由配置表提供、统一走全局单例通道。
 
 ```csharp
 // 基类核心（AttackHandle 当帧执行一次即销毁）
@@ -456,16 +456,16 @@ public virtual void AttackHandle()
             attackModeData.attackerDamage = Math.Max(1, attackModeData.attackerDamage / 2); //伤害依次减半保底1
         }
     }
-    PlayHitEffect(centerPos);   //默认 PlayEffectForHit；雷电子类重写为 ShowThunderEffect
+    PlayHitEffect(centerPos);   //默认 PlayEffectForHit(全部 effect_hit 统一走全局单例通道，无 id 分流)
     Destroy();
 }
 ```
 
 **发射方示例（BUFF 纯数据发射路径，照分裂弹发射器先例内联发射）**：深渊馈赠「闪电」BUFF（`BuffEntityPeriodicAttackMultiInstant`）负责周期触发→快照全场敌人→**不放回**抽 N 个主目标（一轮内多道雷主目标互不重复；敌人少于雷数时只发同等数量的雷；限制只在主目标层面——溅射不受限：同一目标可被多道雷重复溅射、被溅射过的目标仍可作后续雷主目标）→第 1 道立即+后续 0.1 秒间隔逐个发射，每道雷注入伤害快照（魔王实时ATK×trigger_value、CRT=0 不暴击）、落点（startPos=targetPos）、`attackedLayerTarget=LayerInfo.CreatureAtt`、`filterCreatureIds` 快照名单。配置：buff 表 `class_entity_data="次数,攻击模块ID"`；攻击模块表 300031~300035（Lv1~5 各一行，半径/命中上限随级配在 `collider_area_size`/`hit_max`）。
 
-> **⚠️雷电粒子为何不走 effect_hit 配置**：`Effect_Thunder_3` 是全局单例持久型 PS，`EffectHandler.ShowThunderEffect` 用 Stop(StopEmitting)+Play 重播才支持 0.1 秒连发交叠；标准 `effect_hit`/`ShowEffect` 通道对持久型粒子不会重触发爆发（且不会移动单例位置），直接配置会让第 2~N 道雷不闪。走 EffectHandler 专用方法与血液/护盾（`ShowBloodEffect`/`ShowShieldHitEffect`）是同一先例。
+> **⚠️雷电粒子(Effect_Thunder_3,900003)走 effect_hit 配置即可**：2026-08-16 起**所有**攻击模式的击中粒子统一由 `PlayEffectForHit` 走 `EffectHandler.ShowEnduringSingletonEffect` 全局单例通道（Stop(StopEmitting)+Play 重播才支持 0.1 秒连发交叠）——落雷攻击模块 300031~300035 已配 `effect_hit=900003`，无需任何代码 override。标准 `ShowEffect` 通道对持久型粒子不会重触发爆发（且不会移动单例位置），切勿改回。走 EffectHandler 专用方法与血液/护盾（`ShowBloodEffect`/`ShowShieldHitEffect`）是同一先例。
 
-> **近战斩击命中粒子(400003)先例——effect_hit + 代码分流**：`Effect_Slash_2`(4001战之魅魔 attack_mode 101001 的 effect_hit) 配置表仍走 `effect_hit` 通道，但 `BaseAttackMode.PlayEffectForHit` 按 id 分流到 `EffectHandler.ShowSlashHitEffect`(全局单例重播，与雷电同构：移动实例+Stop(StopEmitting)保活+Play)——普通攻击的命中特效，多生物同时出刀=多刀交叠、上一刀粒子不消失。⚠️新增「全局单例型」命中特效的标准做法：`EffectManager` 加 `effectXxxId` 常量 + `EffectHandler` 加专用方法 + `PlayEffectForHit` 加 id 分流；其预制须 World 空间模拟+burst 一次性爆发(与 Effect_Thunder_3/Effect_CombatSlash_2 同构)，仅配 `effect_hit` 期待通用 `ShowEffect` 处理不成立(单例位置不移动、重播不触发爆发)。
+> **近战斩击命中粒子(400003)先例——effect_hit 全量单例化**：`Effect_Slash_2`(4001战之魅魔 attack_mode 101001 的 effect_hit) 配置表走 `effect_hit` 通道，`BaseAttackMode.PlayEffectForHit` 拿到 id 后**直接**调 `EffectHandler.ShowEnduringSingletonEffect(effectId, startPosition)`(全局单例重播：移动实例+Stop(StopEmitting)保活+Play)——普通攻击的命中特效，多生物同时出刀=多刀交叠、上一刀粒子不消失。2026-08-16 起**所有** effect_hit 都走这一条单例通道、**无 id 分流**（manager 的 `effectThunderId`/`effectSlashId`/`effectFloorFireId` 字段已删除，击中粒子 ID 一律配在攻击模块表 `effect_hit` 列：斩击 101001=400003、落雷 300031~035=900003、火瓶 300101=1800001）；故任意 effect_hit 粒子须 World 空间模拟+burst 一次性爆发(与 Effect_Thunder_3/Effect_Slash_2/Effect_FloorFire_1 同构)，否则单例移动会拖走旧粒子/重播不触发爆发。⚠️新增「全局单例型」命中特效的标准做法：配好 EffectInfo 行 + 攻击模块行 `effect_hit` 指向该 id，**代码零改动**。
 
 #### 完全自定义示例
 

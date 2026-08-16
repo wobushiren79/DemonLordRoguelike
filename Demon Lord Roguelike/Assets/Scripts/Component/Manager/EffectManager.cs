@@ -18,28 +18,15 @@ public partial class EffectManager
     public long effectManaId = 1000001;
     //放置魔物-生成位置魔物登场粒子ID
     public long effectCreatureShowId = 1100001;
-    //落雷粒子ID(Effect_Thunder_3,全局单例高频调用)
-    public long effectThunderId = 900003;
-    //近战斩击命中粒子ID(Effect_Slash_2,4001战之魅魔的effect_hit;全局单例重播,多刀交叠旧刀光不消失)
-    public long effectSlashId = 400003;
     //攻击弹道拖尾粒子ID(方案2 VFX,Effect_Trail_1;非播放式——EffectHandler 按视觉桶各建一个常驻实例+每帧喂 GraphicsBuffer,不入池不 PlayEffect)
     public long effectAttackModeTrailId = 1600001;
     //冲击波粒子ID(Effect_Shockwave_1,深渊馈赠「第六次冲击」;一次性实例,播放时按判定参数同步视觉半径/扩张时长)
     public long effectShockwaveId = 1700001;
-    //地面火焰粒子ID(Effect_FloorFire_1,深渊馈赠「瓶装炼狱火」;全局单例,落地burst重播+旧落点粒子World驻留,播放时按燃烧持续时间重设主粒子时长)
-    public long effectFloorFireId = 1800001;
     //飘字(伤害数字)预制体地址(FightText_1：Quad+instanced材质 → GPU Instancing 新路径；换为 TMP 结构预制则自动回退旧对象池路径)
     public string effectTextNumberName = "Assets/LoadResources/Common/FightText_1.prefab";
 
-    //res_name 缓存：高频/常用粒子首次按 id 查表解析后缓存到字段，后续直接读字段避免重复查配置表
-    public string resNameBlood;
-    public string resNameShieldHit;
-    public string resNameAscendAddProgress;
-    public string resNameAscendComplete;
-    public string resNameAttackModeTrail;
-    public string resNameThunder;
-    public string resNameFloorFire;
-    public string resNameSlash;
+    //res_name 缓存字典：高频/常用粒子首次按 id 查表解析后缓存到字典，后续直接读缓存避免重复查配置表(key=EffectInfo 配置表 id)
+    public Dictionary<long, string> dicEffectResName = new Dictionary<long, string>();
     #endregion
 
     #region 攻击弹道拖尾粒子(方案2 VFX)状态

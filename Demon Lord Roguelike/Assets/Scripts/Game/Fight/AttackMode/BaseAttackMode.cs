@@ -410,23 +410,19 @@ public class BaseAttackMode
 
     #region  特效
     /// <summary>
-    /// 播放攻击特效
+    /// 播放攻击命中特效：按配置的击中粒子ID(effect_hit)直接走全局单例通道，无需按 id 分流。
+    /// <para>全局单例通道=移动唯一实例到命中点+Stop(StopEmitting)保活+Play 重播，多攻击交叠旧粒子不消失；
+    /// 故所有 effect_hit 粒子须为 World 空间模拟+burst 一次性爆发。</para>
     /// </summary>
-    /// <param name="startPosition"></param>
+    /// <param name="startPosition">命中点世界坐标</param>
+    /// <param name="effectIndex">effect_hit 索引(0=初始击中特效,1=连锁击中特效)</param>
     public void PlayEffectForHit(Vector3 startPosition, int effectIndex = 0)
     {
         long effectId = attackModeInfo.GetEffectHitId(effectIndex);
         if (effectId != 0)
         {
-            float[] colliderAreaSize = attackModeInfo.GetColliderAreaSize();
-            Direction2DEnum effectDirection = attackModeData.attackDirection.x > 0 ? Direction2DEnum.Right : Direction2DEnum.Left;
-            //近战斩击命中粒子(400003)走全局单例重播：多刀交叠、上一刀粒子不消失(与落雷/地面火焰同构)
-            if (effectId == EffectHandler.Instance.manager.effectSlashId)
-            {
-                EffectHandler.Instance.ShowSlashHitEffect(startPosition);
-                return;
-            }
-            EffectHandler.Instance.ShowEffect(effectId, startPosition, direction: effectDirection, size: colliderAreaSize[0]);
+            //命中触发粒子统一走全局单例通道，直接使用击中粒子ID
+            EffectHandler.Instance.ShowEnduringSingletonEffect(effectId, new SingletonEffectParam() { targetPos = startPosition });
         }
     }
     #endregion
