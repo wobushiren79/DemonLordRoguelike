@@ -42,6 +42,12 @@ Bean/
 
 > **`ItemBean.juicerExp`（手写 `Assets/Scripts/Bean/Game/ItemBean.cs`，long）**：魔汁经验值实例字段，仅 `ItemTypeEnum.Juice=11`（消耗品）类型、`ItemIdEnum.Juice=200001` 有效；榨汁结算（`CreatureJuicerLogic.SettleJuiceReward`）按投入魔物等级的 `LevelInfo.juicer_exp` 汇总写入，`num_max=1` 不堆叠保证每瓶经验独立；旧存档无此字段默认 0 兼容。
 
+> **`FightCreatureBean.isPositionReleased`（手写 `Assets/Scripts/Bean/Game/FightCreatureBean.cs`，bool，占位已释放）**：冲锋自爆型生物（如 6003 哥布林敢死队）冲锋开始时置位（`AIIntentDefenseCreatureCharge`），此后占位/删除扫描（`FightBean.CheckDefenseCreatureByPos`/`GetDefenseCreatureByPos`）跳过它，原格可立即放第二只魔物；`ResetData()` 里清零防对象池残留。
+
+> **`FightBean` 防御生物按占位操作（手写 `Assets/Scripts/Bean/Game/FightBean.cs`）**：`CheckDefenseCreatureByPos`/`GetDefenseCreatureByPos` 均跳过 `isPositionReleased` 实体；**`RemoveDefenseCreatureByPos` 已删除**，替换为 **`RemoveDefenseCreature(FightCreatureEntity)`**——`DictionaryList.RemoveByValue` 按实例精确移除（按 positionCreate 首匹配会误删同格新生物、按 UUID 会误删重生替换的新实体）。
+
+> **`CreatureInfoBean.charge_attack`（Excel 自动生成列，int）**：冲锋自爆开关（0=默认站桩，1=放卡后立即向前冲锋并释放原占位格，遇敌/到路尽头/被打死时原地自爆）；配套手写解析 `CreatureInfoBeanPartial.IsChargeAttack()`。
+
 ### Bean 命名规范
 - 基础 Bean 后缀：`Bean`
 - 部分数据 Bean：`BeanPartial`

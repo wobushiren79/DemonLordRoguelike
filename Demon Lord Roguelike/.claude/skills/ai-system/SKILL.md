@@ -13,6 +13,7 @@ watched_files:
   - Assets/Scripts/AI/Creature/AIIntentFactory.cs
   - Assets/Scripts/AI/Creature/FightAttackCreature/AIAttackCreatureEntity.cs
   - Assets/Scripts/AI/Creature/FightDefenseCreature/AIDefenseCreatureEntity.cs
+  - Assets/Scripts/AI/Creature/FightDefenseCreature/AIIntentDefenseCreatureCharge.cs
   - Assets/Scripts/AI/Creature/FightDefenseCoreCreature/AIDefenseCoreCreatureEntity.cs
 ---
 
@@ -57,7 +58,8 @@ AIBaseEntity (AI实体基类)
     │       │       ├── AIIntentDefenseCreatureIdle   (闲置)
     │       │       ├── AIIntentDefenseCreatureAttack (攻击)
     │       │       ├── AIIntentDefenseCreatureDefend (防守)
-    │       │       └── AIIntentDefenseCreatureDead   (死亡)
+    │       │       ├── AIIntentDefenseCreatureDead   (死亡)
+    │       │       └── AIIntentDefenseCreatureCharge (冲锋: 冲锋自爆型放卡即向+X冲锋, 遇敌/到路尽头引爆)
     │       │
     │       └── AIDefenseCoreCreatureEntity (核心)
     │               ├── AIIntentDefenseCoreCreatureIdle (闲置)
@@ -89,6 +91,7 @@ public enum AIIntentEnum
     DefenseCreatureAttack,   // 攻击
     DefenseCreatureDead,     // 死亡
     DefenseCreatureDefend,   // 防守
+    DefenseCreatureCharge,   // 冲锋（冲锋自爆型：放卡即向+X冲锋，遇敌/到路尽头自爆）
 
     // 核心生物
     DefenseCoreCreatureIdle, // 闲置
@@ -400,6 +403,17 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 
 ---
 
+## 冲锋意图（AIIntentDefenseCreatureCharge，冲锋自爆型防守生物）
+
+冲锋自爆型防守生物（`CreatureInfo.charge_attack=1`，如 6003 哥布林敢死队）放卡后**不站桩**，立即向 +X（敌人来向）冲锋，遇敌或冲到路尽头即自爆。
+
+- **入口分流**：`AIDefenseCreatureEntity.StartAIEntity`——`creatureInfo.IsChargeAttack()` 为真直接 `ChangeIntent(DefenseCreatureCharge)`，跳过 Idle 站桩；`InitIntentEnum` 已加入该枚举，工厂注册在 `AIIntentFactory.RegisterAll`。
+- **IntentEntering**：置 `fightCreatureData.isPositionReleased = true`——**冲锋开始即释放原占位格**（占位/删除扫描跳过它，原格可立刻放第二只魔物）；`SetFaceDirection(Right)` 朝右；播 Walk 动画（`animSpeed: ChargeSpeedRate`，动画速度=冲锋倍率5与移速同步）；缓存道路尽头 `roadEndPosX = 0.5f + fightData.sceneRoadLength`；立即安排首次索敌（贴脸放卡即爆）。
+- **IntentUpdate**：按 `attack_search_time` 节奏（6003 已改配 0.1 秒）调 `FindCreatureEntityForSinge(DirectionEnum.Right)` 做前方索敌（该生物 `attack_search_range=0.5` 即触发距离）→ 命中直接 `SetCreatureDead()`（爆炸走「死亡即引爆」统一自爆路径，详见 attack-mode-system skill）；`x >= roadEndPosX` 到路尽头同样 `SetCreatureDead()`；否则 `Translate(+X)` 前进，速度 = `MathUtil.InterpolationLerp(MSPD, 0, 100, 0, 2f) × ChargeSpeedRate(常量5)` × `GameFightLogic.GetFightDeltaTime()`（2倍速兼容，10 点 MSPD ≈ 1 格/秒）。
+- **影响**：防守生物自此拥有移动意图（旧"防守生物无移动意图"认知不再成立），`AIDefenseCreatureEntity` 现为 5 意图（Idle/Attack/Defend/Dead/Charge）。
+
+---
+
 ## 攻击意图目标距离复查（AIIntentCreatureAttack 基类，攻防通用）
 
 - **机制**：`IntentUpdate` 开头（仅 `attackState` 0准备/1出手 阶段）调 `CheckTargetInAttackRange()`——**与索敌完全同口径**：向目标所在方向做一次同款 `FindCreatureEntityForSinge` 搜索，搜到任何目标即仍在射程内（可能搜到更近的新目标，攻击循环的 `ActionForAttackEnd` 会自然切换），搜不到才 `ChangeIntent(intentForIdle)` 中断回待机重新索敌，防"目标被击退/诱导拉远后隔老远还在攻击"；`attackState==2`（已发射等回调）不打断，交 `ActionForAttackEnd` 重索敌自然处理。
@@ -438,6 +452,8 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 
 7. **意图计时必须走 `GameFightLogic.GetFightDeltaTime()`**：意图内一切按时间推进的逻辑（移动 `Translate`、攻击准备/出手计时、索敌间隔、死亡计时等）统一用 `GameFightLogic.GetFightDeltaTime()`（= `Time.deltaTime × 当前游戏速度`，非战斗场景恒 1 倍）**替代 `Time.deltaTime`**——否则 2倍速（Speed2 按钮，`fightData.gameSpeed=2`）下该行为仍是 1 倍节奏。动画播放速度不在此列：由 `FightCreatureEntity.SetAnimTimeScale`（`SkeletonAnimation.timeScale`）随 `GameFightLogic.SetGameSpeed` 全场同步。
 
+8. **死亡结束事件顺序（契约：事件先行）**：`AIIntentCreatureDead.IntentUpdate` 必须**先 `TriggerEvent(GameFightLogic_CreatureDeadEnd)` 再 `RemoveFightCreatureEntity`**——移除会同步清掉生物全部 BUFF（`BuffHandler.RemoveFightCreatureBuffs`），先移除会让 BuffEntityConditionalDead 系（重生/死亡爆发/死亡掉水晶/死亡范围伤害等）永远收不到事件（曾误翻转于 2026-05-24，已恢复；动态数量 BUFF 如都是兄弟/独行者的计数本已按 `IsDead()` 过滤，不受事件先行影响）。
+
 ---
 
 ## 文件位置速查
@@ -455,5 +471,6 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 | 意图工厂注册器 | `Assets/Scripts/AI/Creature/AIIntentFactory.cs` |
 | 进攻生物AI | `Assets/Scripts/AI/Creature/FightAttackCreature/AIAttackCreatureEntity.cs`（含 `StartKnockback` 击退统一入口） |
 | 击退意图 | `Assets/Scripts/AI/Creature/FightAttackCreature/AIIntentAttackCreatureKnockback.cs` |
+| 冲锋意图（冲锋自爆） | `Assets/Scripts/AI/Creature/FightDefenseCreature/AIIntentDefenseCreatureCharge.cs` |
 | 防守生物AI | `Assets/Scripts/AI/Creature/FightDefenseCreature/AIDefenseCreatureEntity.cs` |
 | 核心生物AI | `Assets/Scripts/AI/Creature/FightDefenseCoreCreature/AIDefenseCoreCreatureEntity.cs` |

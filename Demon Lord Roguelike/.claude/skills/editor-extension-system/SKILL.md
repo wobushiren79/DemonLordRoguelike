@@ -25,7 +25,7 @@ EditorWindow (Unity)
 ├── UIEditorWindow                 # UI 代码生成
 ├── BaseUICreateWindow             # UI 脚本创建向导
 ├── AddressableWindow              # Addressable 管理
-├── SpineWindow                    # Spine 工具
+├── SpineWindow(+SpineWindowPreview partial)  # Spine 工具（皮肤提取 + 动画预览页签，预览可绕过官方版本兼容检查并自由搭配皮肤）
 ├── NodeBaseEditorWindow           # 节点编辑器
 ├── SearchEditorWindow             # 搜索编辑器
 ├── AnimSearchWindow               # 动画搜索

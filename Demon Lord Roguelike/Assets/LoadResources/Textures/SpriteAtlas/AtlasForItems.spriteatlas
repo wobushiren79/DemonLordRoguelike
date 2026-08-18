@@ -262,6 +262,7 @@ SpriteAtlas:
     - ffa0ef1f447ab8e4582207d641af41e4: 21300000
     - aa9af12ff1659c041bbb89c5e2d329dd: 21300000
     - ddf7903f613b34d4da4a2008874031ed: 21300000
+    - 6a40f23f2f4c1da4a9a4ac96923a9032: 21300000
     - 40cb644f9dfe78a40aecb258f4ef62cb: 21300000
     - 939c616fb37eaaf4982e54ef3040fef1: 21300000
     - 18567b6fa92c9de4f98f4ee2925e87b4: 21300000
@@ -492,6 +493,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: ffa0ef1f447ab8e4582207d641af41e4, type: 3}
   - {fileID: 21300000, guid: aa9af12ff1659c041bbb89c5e2d329dd, type: 3}
   - {fileID: 21300000, guid: ddf7903f613b34d4da4a2008874031ed, type: 3}
+  - {fileID: 21300000, guid: 6a40f23f2f4c1da4a9a4ac96923a9032, type: 3}
   - {fileID: 21300000, guid: 40cb644f9dfe78a40aecb258f4ef62cb, type: 3}
   - {fileID: 21300000, guid: 939c616fb37eaaf4982e54ef3040fef1, type: 3}
   - {fileID: 21300000, guid: 18567b6fa92c9de4f98f4ee2925e87b4, type: 3}
@@ -721,6 +723,7 @@ SpriteAtlas:
   - Skeleton_Atlas_Weapon_Weapon_L_10
   - Goblin_Atlas_Hat_Hat_7
   - Human_Atlas_Weapon_Weapon_L_6
+  - Goblin_Atlas_Other_Arrow_1
   - Minotaur_Atlas_NoseRing_NoseRing_3
   - Human_Atlas_Weapon_Weapon_L_11
   - Human_Atlas_Clothes_Clothes_4

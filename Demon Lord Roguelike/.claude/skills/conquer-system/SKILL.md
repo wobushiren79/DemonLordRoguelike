@@ -205,6 +205,8 @@ public void InitNextData();
 public void InitNextDataForContinue();
 ```
 
+> **`InitNextData` 跳过冲锋自爆生物（isPositionReleased）**：遍历 `dlDefenseCreatureEntity` 保留场上生物时，`fightCreatureData.isPositionReleased == true` 的冲锋自爆型生物（如 6003 哥布林敢死队）**不带入场景重载**——其原占位格可能已被第二只魔物占用，重建会叠格。跳过的同时把 `creatureData.creatureState = CreatureStateEnum.Idle` + `RCDTimeUpdate = 0`（卡片直接回手、无复活 CD，场景重载后卡片按数据状态重建为可放）。同场景续关 `InitNextDataForContinue` 不做此过滤（冲锋者继续冲）。
+
 ---
 
 ## GameFightLogicConquer - 征服战斗逻辑
@@ -357,7 +359,7 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 3. **区间字段是字符串**：`attack_boss_num`/`fight_num`/`road_num`/`road_length` 用 `x` 或 `x-y`；统一走 `ParseRandomRange`，别再当 int 读。
 4. **BOSS 关仍出普通敌人**：普通波次始终取 `enemy_ids`（`GetRandomEmenyId(false)`），BOSS 是 `enemy_boss_ids` 的**额外**敌人，不要把普通波次换成 boss 池。
 5. **BOSS 特写只弹一次**：仅「首个 BOSS 出怪事件」带 `bossShowNpcIds`；多 BOSS 不要每只都弹。
-6. **关卡推进两条路**：下一关是 BOSS → 重载场景（`StartNextGameForBoss`/`InitNextData`）；否则同场景继续（`ContinueNextLevelInSameScene`/`InitNextDataForContinue`），后者**不要**重建卡片以免丢卡片状态。
+6. **关卡推进两条路**：下一关是 BOSS → 重载场景（`StartNextGameForBoss`/`InitNextData`）；否则同场景继续（`ContinueNextLevelInSameScene`/`InitNextDataForContinue`），后者**不要**重建卡片以免丢卡片状态。重载场景时 `isPositionReleased` 的冲锋自爆生物会被跳过不带入（防叠格），其卡片直接回手可再放。
 7. **结算分流**：非 BOSS 关胜利只弹深渊馈赠、不清场；失败/通关 BOSS 才走 `UIFightSettlement` 完整结算。
 8. **存盘前还原状态**：返回基地前必须 `RestoreDefenseCreatureFightState`，否则阵容生物中间状态写进存档会导致回基地「只剩 1 个」。
 

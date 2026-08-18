@@ -50,13 +50,15 @@ public partial class AttackModeInstanceRenderer
         public ShadowCastingMode castShadow = ShadowCastingMode.Off;
         //本桶是否接收阴影(默认 false；visual_data receive:1 开启)
         public bool receiveShadow = false;
-        //——逐实例属性(仅"桶材质声明了 _VelocityWS"的桶启用，如火球/冰球；其余桶两个缓冲恒为 null，不占内存也不进热路径)——
-        //本桶是否需要逐实例世界速度+种子：注册期按材质有无 _VelocityWS 判定一次(见 RegisterVisual)
+        //——逐实例属性(仅"桶材质声明了 _VelocityWS"的桶启用，如火球/冰球；其余桶三个缓冲恒为 null，不占内存也不进热路径)——
+        //本桶是否需要逐实例世界速度+种子+缩放：注册期按材质有无 _VelocityWS 判定一次(见 RegisterVisual)
         public bool hasVelocity;
         //本帧待上传的逐实例世界速度矢量(与 matrixBuffer 同下标；定长 1023 复用，热路径零分配)
         public Vector4[] velocityBuffer;
         //本帧待上传的逐实例种子偏移(同上)：不灌则同屏所有火球的火星同一帧同时爆同时灭(_Time.y 是全局的)
         public float[] seedBuffer;
+        //本帧待上传的逐实例缩放(同上)：武器 StartSize；billboard 角点在世界空间展开、矩阵缩放碰不到，火球/冰球大小靠它乘进 shader
+        public float[] scaleBuffer;
         //——热路径直连：同 key 的拖尾桶引用挂在本桶上，RenderAll 逐发只查一次 dicBucket，不再按字符串键二次查拖尾表——
         //方案1(Instanced)轨迹桶(未派生轨迹为空)；由 RegisterTrailFromVisual 建桶时回填
         public TrailBucket trail;
@@ -97,10 +99,12 @@ public partial class AttackModeInstanceRenderer
     private const string KeywordRotateTimeOn = "_ROTATE_TIME_ON";
     //——逐实例属性 ID(火球/冰球等自带世界化特效的桶专用，见 VisualBucket.hasVelocity)——
     //_VelocityWS：本发的世界速度矢量(方向×速率，单位/秒)。通用属性非火星专用：shader 拿它反推"特效出生时弹体在哪"，
-    //使火星脱离弹体留在世界空间(不灌=火星刚性挂在弹体上跟着平移)。详见 Shader_Mesh_FireBallInstanced_1 的火星世界化⚠️
+    //使火星脱离弹体留在世界空间(不灌=火星刚性挂在弹体上跟着平移)。详见 Shader_Mesh_MagicBallInstanced_1 的火星世界化⚠️
     private static readonly int PropVelocityWS = Shader.PropertyToID("_VelocityWS");
     //_SeedOffset：本发的随机相位(复用 spinPhase)，让各发火星生灭错峰
     private static readonly int PropSeedOffset = Shader.PropertyToID("_SeedOffset");
+    //_InstanceScale：本发的逐实例缩放(武器 StartSize，未配置=-1 取 1)。billboard 世界空间展开绕过矩阵缩放，火球/冰球尺寸须靠它逐实例灌入
+    private static readonly int PropInstanceScale = Shader.PropertyToID("_InstanceScale");
     //环境探针求值用的固定采样方向(6 轴)与结果缓冲(预分配复用，避免热路径分配)
     private static readonly Vector3[] ambientEvalDirs = { Vector3.up, Vector3.down, Vector3.left, Vector3.right, Vector3.forward, Vector3.back };
     private readonly Color[] ambientEvalResults = new Color[6];
@@ -147,6 +151,7 @@ public partial class AttackModeInstanceRenderer
         {
             bucket.velocityBuffer = new Vector4[MaxInstancesPerBatch];
             bucket.seedBuffer = new float[MaxInstancesPerBatch];
+            bucket.scaleBuffer = new float[MaxInstancesPerBatch];
         }
     }
 
@@ -285,12 +290,14 @@ public partial class AttackModeInstanceRenderer
             if (itemAttackMode.trailMode == AttackModeTrailType.Vfx)
                 effectHandler.AddAttackModeTrailVfxPoint(bucket.trailVfx, itemAttackMode.position, itemAttackMode.trailColor);
 
-            //逐实例世界速度+种子(仅火球/冰球这类桶)：须在 count++ 前填，与本发矩阵同下标
+            //逐实例世界速度+种子+缩放(仅火球/冰球这类桶)：须在 count++ 前填，与本发矩阵同下标
             if (bucket.hasVelocity)
             {
                 bucket.velocityBuffer[bucket.count] = CalculateVelocityWS(itemAttackMode, deltaTime, gameSpeed);
-                //种子直接复用每发随机自旋相位(0~360)：shader 侧 frac 只取小数部分，随机性原样保留，无需再加字段
+                //种子直接复用每发随机自旋相位(0~360)：shader 只取小数部分，随机性原样保留，无需再加字段
                 bucket.seedBuffer[bucket.count] = itemAttackMode.spinPhase;
+                //缩放与 BuildInstanceMatrix 同规则(未配置=-1 取 1)：矩阵管散布/轨迹，本值管 billboard 尺寸/下坠
+                bucket.scaleBuffer[bucket.count] = itemAttackMode.visualScale >= 0f ? itemAttackMode.visualScale : 1f;
             }
             //填本发弹体矩阵(自旋已在注册期写进桶材质，此处不再逐发重写)
             bucket.matrixBuffer[bucket.count] = BuildInstanceMatrix(itemAttackMode, itemAttackMode.position);
@@ -429,9 +436,9 @@ public partial class AttackModeInstanceRenderer
     /// 用携带环境光+模拟主光补偿的共享 MPB(按桶 ambient 方式二选一)批量绘制单个弹体桶当前缓冲的实例。
     /// <para>Flat 桶的 _InstancedFlatGI / SH 桶的 _InstancedSH0..6 补齐 Lit 材质在实例化绘制下缺失的环境光，两桶共用的 _InstancedLightDir/_InstancedLightColor 补齐缺失的主光，使亮度与预制 MeshRenderer 一致；
     /// 不走光照探针(LightProbeUsage.Off，自定义 shader 未启用逐实例 SH)；投/收阴影按桶的 visual_data 配置(cast/receive，默认关省一遍 ShadowCaster Pass)。</para>
-    /// <para>【逐实例数组现灌现画】火球/冰球桶的 _VelocityWS/_SeedOffset 在此刻才灌进 MPB：Set*Array 是即时拷贝、
+    /// <para>【逐实例数组现灌现画】火球/冰球桶的 _VelocityWS/_SeedOffset/_InstanceScale 在此刻才灌进 MPB：Set*Array 是即时拷贝、
     /// 紧接着就提交绘制，故同方式各桶轮流借用同一个 MPB 不会串数据，无需每桶再建 MPB。必须每桶一份的只有缓冲数组本身——各桶的填充是交错进行的。
-    /// 数组按定长 1023 整份上传(超出 count 的部分被忽略)，与轨迹桶的 _TrailAlpha 同理；未声明这两个属性的桶提交时 Unity 直接忽略残留数组。</para>
+    /// 数组按定长 1023 整份上传(超出 count 的部分被忽略)，与轨迹桶的 _TrailAlpha 同理；未声明这些属性的桶提交时 Unity 直接忽略残留数组。</para>
     /// </summary>
     private void DrawBucket(VisualBucket bucket)
     {
@@ -441,6 +448,7 @@ public partial class AttackModeInstanceRenderer
         {
             mpb.SetVectorArray(PropVelocityWS, bucket.velocityBuffer);
             mpb.SetFloatArray(PropSeedOffset, bucket.seedBuffer);
+            mpb.SetFloatArray(PropInstanceScale, bucket.scaleBuffer);
         }
         Graphics.DrawMeshInstanced(bucket.mesh, 0, bucket.material, bucket.matrixBuffer, bucket.count,
             mpb, bucket.castShadow, bucket.receiveShadow, 0, null, LightProbeUsage.Off, null);

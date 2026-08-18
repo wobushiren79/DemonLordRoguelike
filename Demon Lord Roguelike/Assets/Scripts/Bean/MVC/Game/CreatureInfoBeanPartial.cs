@@ -118,6 +118,15 @@ public partial class CreatureInfoBean
     }
 
     /// <summary>
+    /// 是否为冲锋自爆型生物（charge_attack=1：放卡后立即向前冲锋并释放原占位格，
+    /// 遇敌/冲到路尽头/被打死时在死亡位置原地自爆，爆炸统一走死亡即引爆路径）
+    /// </summary>
+    public bool IsChargeAttack()
+    {
+        return charge_attack == 1;
+    }
+
+    /// <summary>
     /// 获取生物自带buff
     /// </summary>
     public List<BuffBean> GetCreatureBuffs()

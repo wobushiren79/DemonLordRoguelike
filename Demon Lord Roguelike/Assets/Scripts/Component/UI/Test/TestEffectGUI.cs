@@ -228,9 +228,9 @@ public class TestEffectGUI : MonoBehaviour
             EffectHandler.Instance.FlushAttackModeTrailVfxFrame();
             return;
         }
-        //冲击波：生产为 ShowEnduringSingletonEffect(效果id, 按判定参数换算的尺寸/时长乘数, AttackModeShockwaveRing);
+        //冲击波：生产为 ShowEnduringSingletonEffect(攻击模式300091的effect_hit=1700001, 按判定参数换算的尺寸/时长乘数, AttackModeShockwaveRing);
         //测试半径取平面半边长5、波速取10, 与生产同公式换算
-        if (effectId == effectManager.effectShockwaveId)
+        if (effectId == 1700001)
         {
             float waveDuration = ShockwaveTestRadius / ShockwaveTestSpeed;
             EffectHandler.Instance.ShowEnduringSingletonEffect(effectId, new SingletonEffectParam()
@@ -273,7 +273,7 @@ public class TestEffectGUI : MonoBehaviour
     /// <summary>攻击命中粒子集合(excel_attackmode_info 的 effect_hit 引用, 生产统一走全局单例通道)</summary>
     private static readonly HashSet<long> setHitEffectIds = new HashSet<long>()
     {
-        100001, 200001, 300001, 400001, 400002, 400003, 500001, 500002,
+        100001, 200001, 300001, 300002, 400001, 400002, 400003, 500001, 500002,
         600001, 700001, 800001, 800002, 900001, 900002, 900003,
     };
 
@@ -291,7 +291,7 @@ public class TestEffectGUI : MonoBehaviour
         if (effectId == effectManager.effectManaId) return "ShowCreaturePlaceEffect 放置魔物耗蓝(全局单例)";
         if (effectId == effectManager.effectCreatureShowId) return "ShowCreaturePlaceEffect 魔物登场(全局单例)";
         if (effectId == effectManager.effectAttackModeTrailId) return "拖尾系统 Register/Flush 弹道拖尾";
-        if (effectId == effectManager.effectShockwaveId) return "ShowEnduringSingletonEffect 冲击波(半径/时长换算)";
+        if (effectId == 1700001) return "ShowEnduringSingletonEffect 冲击波(半径/时长换算)";
         if (effectId == 1800001) return "ShowEnduringSingletonEffect 地面火焰(燃烧时长)";
         if (setHitEffectIds.Contains(effectId)) return "ShowEnduringSingletonEffect 攻击命中(PlayEffectForHit)";
         return "ShowEffect 通用配置驱动";

@@ -30,6 +30,7 @@ watched_files:
 - `IsBossFight()` / `IsNextBossFight()` - 是否当前/下一关为最后一关(BOSS)
 - `GoToNextLevel` → `StartNextGameForBoss`(重载BOSS场景) / `ContinueNextLevelInSameScene`(同场景继续)
 - `InitNextData` / `InitNextDataForContinue` - 两种关卡数据刷新
+- **`InitNextData`（场景重载保留场上生物）跳过冲锋自爆生物**：遍历 `dlDefenseCreatureEntity` 时，`fightCreatureData.isPositionReleased == true` 的冲锋生物（如 6003 哥布林敢死队）**不带入场景重载**——其原占位格可能已被第二只魔物占用，重建会叠格；跳过同时置 `creatureData.creatureState = CreatureStateEnum.Idle` + `RCDTimeUpdate = 0`（卡片直接回手、无复活CD，重载后卡片按数据状态重建为可放）。同场景续关 `InitNextDataForContinue` 不受影响（冲锋者继续冲）
 
 ### 进攻波次与 BOSS（核心机制）
 - 普通波次：`CalcCurrentEnemyNum()` 递推数量，`[0,attack_show_time]` 内分段随机排程，敌人**始终取 `enemy_ids`**

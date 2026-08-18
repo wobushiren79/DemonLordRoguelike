@@ -126,6 +126,9 @@ public class FightBean
         for (int i = 0; i < dlDefenseCreatureEntity.List.Count; i++)
         {
             var itemCreature = dlDefenseCreatureEntity.List[i];
+            //占位已释放（冲锋生物冲锋开始后释放原格）的生物不占格子
+            if (itemCreature.fightCreatureData.isPositionReleased)
+                continue;
             if (itemCreature.fightCreatureData.positionCreate == targetPos)
             {
                 return true;
@@ -142,6 +145,9 @@ public class FightBean
         for (int i = 0; i < dlDefenseCreatureEntity.List.Count; i++)
         {
             var itemCreature = dlDefenseCreatureEntity.List[i];
+            //占位已释放（冲锋生物冲锋开始后释放原格）的生物不占格子
+            if (itemCreature.fightCreatureData.isPositionReleased)
+                continue;
             if (itemCreature.fightCreatureData.positionCreate == targetPos)
             {
                 return itemCreature;
@@ -183,14 +189,12 @@ public class FightBean
         return listData;
     }
     /// <summary>
-    /// 移除位置上的防守生物
+    /// 按实体实例移除防守生物（死亡/删除的统一移除入口：同格多生物按 positionCreate 首匹配会误删、
+    /// 重生替换场景同 UUID 按 key 会误删新实体，只有按实例移除永远精确）
     /// </summary>
-    public void RemoveDefenseCreatureByPos(Vector3Int targetPos)
+    public bool RemoveDefenseCreature(FightCreatureEntity targetEntity)
     {
-        var targetCreature = GetDefenseCreatureByPos(targetPos);
-        if (targetCreature == null)
-            return;
-        dlDefenseCreatureEntity.RemoveByKey(targetCreature.fightCreatureData.creatureData.creatureUUId);
+        return dlDefenseCreatureEntity.RemoveByValue(targetEntity);
     }
 
     /// <summary>

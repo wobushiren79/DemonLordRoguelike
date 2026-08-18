@@ -216,10 +216,10 @@ float hpBonus = item.GetAttribute(CreatureAttributeTypeEnum.HP);
 
 ## 武器攻击模式配置
 
-武器攻击模式通过 `attack_mode_data` 字段配置:
+武器攻击模式通过 `attack_mode_data` 字段配置（`&` 分隔键值对、`:` 分键值）:
 
 ```
-ShowSprite=icon_name,VertexRotateAxis=0,0,-1,VertexRotateSpeed=10,UVRotateSpeed=0,StartPosition=0,0,0,StartSize=1
+ShowSprite:icon_name&VertexRotateAxis:0,0,-1&VertexRotateSpeed:10&StartPosition:0,0,0&StartSize:1&StartRotate:0,0,180
 ```
 
 字段说明:
@@ -228,7 +228,8 @@ ShowSprite=icon_name,VertexRotateAxis=0,0,-1,VertexRotateSpeed=10,UVRotateSpeed=
 - `VertexRotateSpeed` - 模型旋转速度
 - `UVRotateSpeed` - UV旋转速度
 - `StartPosition` - 初始位置偏移
-- `StartSize` - 初始大小
+- `StartSize` - 初始大小（DSP 逐实例缩放：sprite 面片类走实例矩阵；火球/冰球 billboard shader 的世界空间展开碰不到矩阵，由渲染器灌逐实例 `_InstanceScale` 乘进 shader）
+- `StartRotate` - 初始角度
 
 > `HandleItemsInfoAttackModeData`([ItemsInfoBeanPartial.cs](Assets/Scripts/Bean/MVC/Game/ItemsInfoBeanPartial.cs)) 处理上表：`StartSize`/`StartRotate`/`VertexRotateSpeed`/`VertexRotateAxis` 现为**双写**——除写 `spriteRenderer`/material(现有渲染)外，还写 `BaseAttackMode` 的 per-instance 字段(`visualScale`/`visualStartAngle`/`spinSpeed`/`spinAxis`)供 DSP 批量渲染(AttackModeInstanceRenderer)。`ShowSprite`(换贴图)尚未迁 DSP。详见 attack-mode-system skill「弹道批量渲染」。
 

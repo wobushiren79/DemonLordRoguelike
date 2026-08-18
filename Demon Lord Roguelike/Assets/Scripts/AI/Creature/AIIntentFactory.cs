@@ -27,6 +27,7 @@ public static class AIIntentFactory
         AIBaseEntity.RegisterIntentFactory(AIIntentEnum.DefenseCreatureAttack, () => new AIIntentDefenseCreatureAttack());
         AIBaseEntity.RegisterIntentFactory(AIIntentEnum.DefenseCreatureDefend, () => new AIIntentDefenseCreatureDefend());
         AIBaseEntity.RegisterIntentFactory(AIIntentEnum.DefenseCreatureDead, () => new AIIntentDefenseCreatureDead());
+        AIBaseEntity.RegisterIntentFactory(AIIntentEnum.DefenseCreatureCharge, () => new AIIntentDefenseCreatureCharge());
 
         //核心生物
         AIBaseEntity.RegisterIntentFactory(AIIntentEnum.DefenseCoreCreatureIdle, () => new AIIntentDefenseCoreCreatureIdle());

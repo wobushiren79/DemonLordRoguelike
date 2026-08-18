@@ -456,7 +456,7 @@ TestEffectGUI.Start()                                  // Assets/Scripts/Compone
 - **特效 id 是 long**：面板解析/存储一律 long，不用 int（同 NPC 创建 GUI 版议会 id 教训）。
 - **播放次数与手动ID**：播放次数输入 N(上限999)，点击后由 `Update` 每帧播一次共 N 帧（单例粒子一帧只能 Play 一次）；手动ID输入非空且存在于配置表时优先于下拉选择，非法/不存在回退下拉并在面板提示。
 - **按正式调用方法分发**（面板信息行会显示所选特效的正式调用方法名）：
-  - 攻击命中粒子(effect_hit 引用：100001/200001/300001/400001~3/500001/500002/600001/700001/800001/800002/900001~3) → `ShowEnduringSingletonEffect(id, {targetPos})`（同 `BaseAttackMode.PlayEffectForHit`）
+  - 攻击命中粒子(effect_hit 引用：100001/200001/300001/300002/400001~3/500001/500002/600001/700001/800001/800002/900001~3) → `ShowEnduringSingletonEffect(id, {targetPos})`（同 `BaseAttackMode.PlayEffectForHit`）
   - 1200001 血 / 1300001 护盾 → `ShowBloodEffect` / `ShowShieldHitEffect`(位置+(0,0.5,0)，方向随机左右)
   - 1400001 / 1500001 → `ShowCreatureAscendAddProgressEffect`(向上飞2格) / `ShowCreatureAscendCompleteEffect`(随机稀有度主色，位置+(0,1.2,0))
   - 1000001 / 1100001 → `ShowCreaturePlaceEffect(effectId, pos)`(全局单例通道，同生产)

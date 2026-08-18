@@ -29,6 +29,12 @@ public class AIDefenseCreatureEntity : AICreatureEntity
     /// </summary>
     public override void StartAIEntity()
     {
+        //冲锋自爆型生物（charge_attack=1）放卡后立即冲锋，跳过站桩闲置
+        if (selfCreatureEntity != null && selfCreatureEntity.fightCreatureData.creatureData.creatureInfo.IsChargeAttack())
+        {
+            ChangeIntent(AIIntentEnum.DefenseCreatureCharge);
+            return;
+        }
         //默认闲置
         ChangeIntent(AIIntentEnum.DefenseCreatureIdle);
     }
@@ -51,6 +57,7 @@ public class AIDefenseCreatureEntity : AICreatureEntity
         listIntentEnum.Add(AIIntentEnum.DefenseCreatureAttack);
         listIntentEnum.Add(AIIntentEnum.DefenseCreatureDefend);
         listIntentEnum.Add(AIIntentEnum.DefenseCreatureDead);
+        listIntentEnum.Add(AIIntentEnum.DefenseCreatureCharge);
     }
 
     #region 事件回调

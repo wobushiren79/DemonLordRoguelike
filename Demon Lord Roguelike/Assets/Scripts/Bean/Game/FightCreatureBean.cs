@@ -17,6 +17,7 @@ public class FightCreatureBean
     public int DRCurrent;//当前护甲值
     public float MPCurrent;//当前魔力值（仅战斗中有效 魔王核心创建魔物消耗的魔力 float用于累积每帧的MPF恢复量）
     public bool isInvincible;//是否无敌（免疫一切 UnderAttack 伤害；当前由SSR稀有度BUFF「真男人」驱动）
+    public bool isPositionReleased;//占位已释放（冲锋生物冲锋开始后置位：占位/删除扫描跳过本生物，原格可立即放第二只；重生落点改取死亡位置）
     public Dictionary<CreatureAttributeTypeEnum, float> dicAttribute = new Dictionary<CreatureAttributeTypeEnum, float>(); //属性
 
     //强度倍率(用于征服模式普通进攻敌人按关卡递增强度; 默认1=不变, 对 HP/护甲(DR)/攻击力(ATK) 最终值整体相乘)
@@ -64,6 +65,8 @@ public class FightCreatureBean
         MPCurrent = GetAttribute(CreatureAttributeTypeEnum.MP);
         //重置无敌状态（BUFF会在生成挂接时按需重新开启）
         isInvincible = false;
+        //重置占位释放标记（对象池复用防残留；冲锋意图进入时才会重新置位）
+        isPositionReleased = false;
     }
 
     //modifier 收集缓冲区（复用以避免每次 Refresh 都重新分配）

@@ -48,7 +48,7 @@ BuffBaseEntity                              # 抽象基类
 │   ├── BuffEntityConditionalAttribute      # 属性变化时触发
 │   ├── BuffEntityConditionalDead           # 自身死亡结束时触发
 │   ├── BuffEntityConditionalDeadAttack     # 死亡时发起一次攻击
-│   ├── BuffEntityConditionalDeadRebirth    # 死亡时重生
+│   ├── BuffEntityConditionalDeadRebirth    # 死亡时重生（一次性，触发后自删、最多二连爆；落点=isPositionReleased?死亡地点:原格——冲锋自爆型死亡地点重生并立即再次冲锋；落点被占且非自身时放弃重生但BUFF照耗）
 │   ├── BuffEntityConditionalDeadAreaHPChange / DeadAreaDRChange  # 死亡时范围改HP/DR
 │   ├── BuffEntityConditionalDeadCreateCrystal                    # 死亡时生成水晶
 │   ├── BuffEntityConditionalAddDropCrystal                       # 死亡掉落水晶时叠加
@@ -62,7 +62,7 @@ BuffBaseEntity                              # 抽象基类
 │   ├── BuffEntityPeriodicAttackBounceAxe  # 周期性弹跳斧头（深渊馈赠「跳跳斧」：目标=随机一排的最远敌人(按 roadIndex 分组、同路 x 降序)，不放回抽取(随机路取最远,首目标互不重复,敌人少于斧数只扔同等数量)；第1斧立即+后续0.2秒间隔队列发射；伤害=魔王实时ATK×trigger_value 注入、CRT=0；弹跳/追踪/伤害减半由 AttackModeRangedArcBounce 处理，弹跳次数经 StartAttack 前写 bounceMax 注入；class_entity_data="斧数,攻击模块ID,弹跳次数"；馈赠 2000005001~005 → BUFF 3000600001~005 → 5 级共用攻击模块 300061=AttackModeRangedArcBounce，弹跳半径配在其 collider_area_size 第1项）
 │   ├── BuffEntityPeriodicAttackOrbit      # 常驻环绕书本（深渊馈赠「知识的力量」：随机选 1 只最前排(x 最大)存活魔物为宿主，环绕 N 本书(半径0.75、高度取魔王位置+攻击起始偏移、转速Lv1~5=0.6/1.2/1.8/2.4/3弧度/秒、均分角)；宿主死亡/有更前排魔物→改选(并列随机1只、并列不换防抖动)，无己方魔物→全销毁、有再生成；书本=常驻攻击模块 AttackModeOrbit 不自毁、触碰命中每只书对同一敌人0.5秒冷却、伤害=魔王实时ATK×trigger_value(0.4)命中瞬间取、CRT=0；关卡切换被回收→整套重建；trigger_time=9999 周期触发永不发生；class_entity_data="书本数,攻击模块ID,转速"；馈赠 2000006001~005 → BUFF 3000700001~005 → 5 级共用攻击模块 300071=AttackModeOrbit）
 │   ├── BuffEntityPeriodicAttackRebound    # 常驻回弹菱块维持（深渊馈赠「回弹菱块」：每 trigger_time(1秒) 自检——本BUFF发射且仍存活(isValid)的菱块不足 class_entity_data[0] 颗即补足，满编无事；菱块=永久弹(不销毁、不累积、总数恒定=弹数)，关卡切换被 ClearAttackModePrefab 清掉后自动补回，升级替换/清空时 ClearData 销毁全部存量弹；发射=魔王位置+攻击起始偏移，前向锥 ±75° 随机角，无敌人也照常发射；伤害=魔王实时ATK×trigger_value(1)注入(保底1)、CRT=0；反弹(±5°偏转)/同目标1秒冷却由 AttackModeRangedRebound 处理，弹速按级配在攻击模块行 speed_move=2~4；class_entity_data="弹数,攻击模块ID"；馈赠 2000007001~005 → BUFF 3000800001~005 → 攻击模块 300081~300085=AttackModeRangedRebound，视觉 AttackModeVisual_Pingpang_1，图标 ui_abyssalblessing_pingpang）
-│   ├── BuffEntityPeriodicAttackShockwave  # 周期性冲击波（深渊馈赠「第六次冲击」：每 trigger_time(10秒) 从魔王位置+CreatureInfo攻击起始偏移(+攻击模块start_pos_offset)处发出一道圆环冲击波 AttackModeShockwaveRing，半径扩张至覆盖整条道路(最大半径=道路右缘+余量−圆心x，攻击模块按当场路长计算)，扫到的敌人受伤害并被击退0.5(交 AI 击退意图 StartKnockback：方向固定 +x 沿道路向后推、固定0.2s推完、攻击循环打断、结束回闲置重索敌)；伤害=魔王实时ATK×trigger_value(0.1~0.3)发射时注入(保底1)、CRT=0，场上无敌人本轮不触发；class_entity_data="攻击模块ID"；馈赠 2000008001~005 → BUFF 3001100001~005 → 5 级共用攻击模块 300091=AttackModeShockwaveRing，视觉 Effect_Shockwave_1 走 EffectHandler.ShowEnduringSingletonEffect(全局单例通道,SingletonEffectParam multiplier 同步半径/时长)，图标 ui_abyssalblessing_boom）
+│   ├── BuffEntityPeriodicAttackShockwave  # 周期性冲击波（深渊馈赠「第六次冲击」：每 trigger_time(10秒) 从魔王位置+CreatureInfo攻击起始偏移(+攻击模块start_pos_offset)处发出一道圆环冲击波 AttackModeShockwaveRing，半径扩张至覆盖整条道路(最大半径=道路右缘+余量−圆心x，攻击模块按当场路长计算)，扫到的敌人受伤害并被击退0.5(交 AI 击退意图 StartKnockback：方向固定 +x 沿道路向后推、固定0.2s推完、攻击循环打断、结束回闲置重索敌)；伤害=魔王实时ATK×trigger_value(0.1~0.3)发射时注入(保底1)、CRT=0，场上无敌人本轮不触发；class_entity_data="攻击模块ID"；馈赠 2000008001~005 → BUFF 3001100001~005 → 5 级共用攻击模块 300091=AttackModeShockwaveRing，视觉 Effect_Shockwave_1(1700001,配在攻击模块表300091 effect_hit列) 走 EffectHandler.ShowEnduringSingletonEffect(全局单例通道,SingletonEffectParam multiplier 同步半径/时长)，图标 ui_abyssalblessing_boom）
 │   ├── BuffEntityPeriodicAttackFireBottle  # 周期地形火焰瓶（深渊馈赠「瓶装炼狱火」：每 trigger_time(10秒) 快照存活敌人不放回抽 N 个主目标(同轮不重复、敌人少于瓶数只丢同等数量)、第1瓶立即+0.2秒间隔连发；每瓶=发射 AttackModeRangedArcGround 抛物线飞向固定落点不追踪(飞行段弹体自旋-720°/s绕-Z轴)，落地燃放半径1.2地形火焰持续5秒每1秒跳伤；伤害=魔王实时ATK×trigger_value(0.1)、CRT=0、不递减(多片叠加多次跳伤)，无敌人不触发；class_entity_data="瓶数,攻击模块ID"；馈赠 2000009001~005 → BUFF 3001200001~005 → 共用攻击模块 300101=AttackModeRangedArcGround，视觉 AttackModeVisual_FireBottle_1+燃烧段 ShowEnduringSingletonEffect(effect_hit=1800001)(Effect_FloorFire_1)，图标 ui_abyssalblessing_fire）
 │   └── BuffEntityPeriodicPickupCrystal     # 周期性拾取水晶
 └── BuffEntityPecurrent                     # 周期性触发（有次数 = trigger_num）
@@ -85,7 +85,7 @@ BuffBasePreEntity (含 BuffPreEventRole 用于事件归属过滤)
 稀有度 BUFF 池按稀有度分三档，每档对「效果性质」有硬约束（`BuffUtil.CreateRandomRarityBuff` 只按 buff_type 取池随机、不校验性质，归档正确性靠人工保证）：
 ```
 R  (11) 纯属性 BUFF        —— 常驻数值加/减益、无触发条件；类 BuffEntityAttribute / 多属性双刃 BuffEntityAttributeMulti
-                              可用属性 HP/DR/ATK/ASPD/MSPD/CRT/EVA/RCD/CMP（CRT/EVA rate走Flat；另有MP/MPR/MPF魔法向）
+                              可用属性 HP/DR/ATK/ASPD/MSPD/CRT/CDMG/EVA/RCD/CMP（CRT/EVA/CDMG rate走Flat；CDMG为暴击伤害倍率加成,基础1.5,如6001哥布林刺客经BUFF 2000500001 rate0.5→2.0=暴击伤害+100%；另有MP/MPR/MPF魔法向）
                               多属性双刃(BuffEntityAttributeMulti): class_entity_data "属性:倍率|属性:倍率"(如 ATK:1|HP:-1),各属性率=trigger_value_rate×倍率共享同一次随机(ATK+30%⇒HP-30%);纯属性→走烘焙,IsBuffEntityAttributeOnly 判定;id 段 11 0007~0010 0000X
                               注意:无 HPRegeneration 生命回复属性(实际枚举 index11=MPF魔法回复),游戏无被动回血刻
 SR (12) 条件/周期被动触发   —— 累计伤害/受击/击杀/血量阈值/累计治疗/在场时间或按周期触发；
@@ -147,7 +147,7 @@ BuffEventDispatcher.dicBindings  # 事件名 → IBuffEventBinding 字典
 
 - 新增 BUFF 类型选择正确的基类（Attribute/Instant/Conditional/Periodic/Pecurrent）
 - 属性 BUFF 必须实现 `CollectModifiers`，由 `ModifierPipeline.Apply` 统一计算；不再直接累乘
-- 属性类型使用 `CreatureAttributeTypeEnum` 枚举；`CRT`/`EVA` 的 rate 走 Flat（其值本身是百分比）
+- 属性类型使用 `CreatureAttributeTypeEnum` 枚举；`CRT`/`EVA`/`CDMG` 的 rate 走 Flat（其值本身是百分比/倍率加成）
 - 前置条件以 `BuffPreEntityFor` 开头命名，**必须重写 `GetEventRole()`**，否则会被 UnderAttack 事件错误过滤
 - 条件 BUFF 通过 `BuffInfoBean.class_entity_events` 声明事件名（必须在 `BuffEventDispatcher.dicBindings` 已注册）
 - 事件订阅/注销由基类 `SetData`/`ClearData` 自动调用 `BuffEventDispatcher.Register/Unregister` 完成，子类不要手动订阅
@@ -155,7 +155,9 @@ BuffEventDispatcher.dicBindings  # 事件名 → IBuffEventBinding 字典
 - BUFF 池化复用：`ClearData` 内会注销事件并置空 `buffEntityData`；事件回调需用 `isValid` + null 守卫
 - Instant 类型识别走 `BuffInfoBean.IsInstantBuffEntity()`（基于 Type 继承检查，按实例缓存），**不要用类名前缀判断**
 - 深渊馈赠等级BUFF：通过 `buff_parent_id` + `buff_level` 实现替换升级；新增时 `BuffHandler.AddAbyssalBlessing` 会自动移除旧等级；**必须在防守核心创建后调用**（战斗中或 `GameFightLogic.PreGameForAfterCreateDefenseCore` 钩子），此前调用 `LogWarning` 跳过不添加
-- 死亡流程：`RemoveFightCreatureBuffs` 前应先 `TriggerEvent(GameFightLogic_CreatureDeadEnd)`，让 `BuffEntityConditionalDead` 有机会完成触发
+- 死亡流程：`RemoveFightCreatureBuffs` 前应先 `TriggerEvent(GameFightLogic_CreatureDeadEnd)`，让 `BuffEntityConditionalDead` 有机会完成触发。**事件顺序契约（2026-08 恢复的重要回归修复）**：`AIIntentCreatureDead.IntentUpdate` 现为**先 `TriggerEvent(GameFightLogic_CreatureDeadEnd)` 再 `RemoveFightCreatureEntity`**——2026-05-24 曾被误翻转为先移除，BUFF 先被 `RemoveFightCreatureBuffs` 清掉收不到事件，导致 BuffEntityConditionalDead 全系（DeadRebirth 重生/死亡爆发/死亡掉水晶/死亡范围伤害等）失效，本次已恢复事件先行；动态数量 BUFF（都是兄弟/独行者等按 IsDead() 过滤计数）不受影响
+- DeadRebirth 重生（`BuffEntityConditionalDeadRebirth.cs`）：① 重生落点=`isPositionReleased ? Vector3Int.RoundToInt(positionDead) : positionCreate`——冲锋自爆型生物（占位已释放）在**死亡地点**重生并立即再次冲锋，普通生物维持原格重生；② 落点占位护栏：`GetDefenseCreatureByPos(落点)` 命中且**不是自身**时放弃重生（BUFF 照常消耗；此时旧实体仍在主列表所以必须排除自身），放弃重生不动卡片状态、卡片正常走休整CD；③ 触发时序：DeadEnd 事件在旧实体清理**之前**派发（契约恢复后），重生创建与旧实体清理同帧完成，重生体首次索敌在下一帧——冲锋型"重生即再爆"两次爆炸间隔≥1.1秒（死亡动画时长），不会同帧双爆；④ 重生BUFF触发后自删（一次性），最多二连爆
+- 重生卡片 CD 同步修复（既有 BUG 修复，改动在 `CreatureHandler`）：旧实体的 `RemoveFightCreatureEntity` 现在只在「场上已无该 UUID 存活实体」时才把卡片置 Rest 进 CD——重生替换场景新实体在场，卡片保持 Fighting 不进 CD，根治"重生后卡片照进CD、CD结束可再放同UUID生物导致 DictionaryList.Add 静默失败生成幽灵实体（不可命中/清场泄漏）"的缺陷
 - BUFF 自然到期（`isValid=false`）由 `BuffHandler.UpdateForActivieBuffs` 移除时会触发 `Buff_FightCreatureChange`（参数为移除前取出的 applier/target UUID）→ `EventForBuffFightCreatureChange` 自动 `RefreshBaseAttribute()+RefreshBodyColor()`，无需 BUFF 自理视图刷新（2026-08 修复；此前到期静默移除导致减速/中毒变色永久残留）
 - 添加 BUFF 必须经过 `BuffHandler.AddFightCreatureBuff`（处理 createRate、stacking、事件通知），不要直接写 `manager.dicFightCreatureBuffsActivie`
 - 攻击时间修正走专用通道 `BuffHandler.ChangeAttackTimeDataForBuff`（看 `BuffEntityAttributeAttackTime`），不接入属性管线；该方法除生物自身战斗BUFF外，还扫描深渊馈赠池中实现 `IBuffSingleTarget` 的攻速BUFF，按锁定 `SingleTargetCreatureUUId` 单体生效

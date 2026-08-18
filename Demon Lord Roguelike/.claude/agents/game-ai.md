@@ -31,11 +31,12 @@ AICreatureEntity                    # 生物 AI 基类
 │   ├── AIIntentAttackCreatureLured      # 被引诱
 │   ├── AIIntentAttackCreatureKnockback  # 被击退(冲击波等位移效果：StartKnockback 强制切换，固定 0.2s 匀速推完，结束回 Idle 重新索敌)
 │   └── AIIntentAttackCreatureDead       # 死亡
-├── AIDefenseCreatureEntity         # 防守生物
+├── AIDefenseCreatureEntity         # 防守生物（5 个意图：Idle/Attack/Defend/Dead/Charge）
 │   ├── AIIntentDefenseCreatureAttack
 │   ├── AIIntentDefenseCreatureDefend
 │   ├── AIIntentDefenseCreatureIdle
-│   └── AIIntentDefenseCreatureDead
+│   ├── AIIntentDefenseCreatureDead
+│   └── AIIntentDefenseCreatureCharge    # 冲锋（冲锋自爆型：放卡即向+X冲锋，遇敌/到路尽头引爆）
 └── AIDefenseCoreCreatureEntity     # 核心生物
     ├── AIIntentDefenseCoreCreatureIdle
     └── AIIntentDefenseCoreCreatureDead
@@ -50,6 +51,16 @@ AICreatureEntity                    # 生物 AI 基类
 - **推移**：固定 `KnockbackDuration=0.2s` 匀速推完全程（任何击退距离时长一致、推速=距离/时长，计时走 `GetFightDeltaTime` 跟随 2 倍速）；落点 x 钳制：右缘硬钳 `[0.5+路长]`、左缘只防「从道路内被推出左缘」——已在左缘内(x<0.5，直冲魔王阶段)的敌人不往前拉（防击退变"前吸"），自然向右推回道路；播 Idle 动画（被控状态）。
 - **结束**：剩余距离走完回 `AttackCreatureIdle`，重新走「闲置→移动→攻击」索敌流程——与防守目标的距离重新判定，不会隔空续打；强制切换本身即打断攻击循环（挥刀被打飞中断）。
 - **死亡**：击退中死亡由 `FightCreatureEntityForAttack` 死亡流程 `ChangeIntent(Dead)` 覆盖，意图无需自处理。
+
+### 冲锋意图（AIIntentDefenseCreatureCharge，冲锋自爆型防守生物）
+- **适用**：`CreatureInfo.charge_attack=1` 的冲锋自爆型防守生物（如 6003 哥布林敢死队），放卡后**不站桩**、立即向 +X（敌人来向）冲锋。入口分流在 `AIDefenseCreatureEntity.StartAIEntity`——`creatureInfo.IsChargeAttack()` 为真直接进冲锋意图，跳过 Idle。
+- **IntentEntering**：置 `fightCreatureData.isPositionReleased = true`（**冲锋开始即释放原占位格**，占位/删除扫描跳过它，原格可立刻放第二只魔物）；朝右 `SetFaceDirection(Right)`；播 Walk 动画（`animSpeed: ChargeSpeedRate`，动画速度=冲锋倍率5与移速同步）；缓存道路尽头 `roadEndPosX = 0.5f + fightData.sceneRoadLength`；立即安排首次索敌（贴脸放卡即爆）。
+- **IntentUpdate**：按 `attack_search_time` 节奏（6003 已改配 0.1 秒）`FindCreatureEntityForSinge(DirectionEnum.Right)` 前方索敌（该生物 `attack_search_range=0.5` 即触发距离）→ 命中直接 `SetCreatureDead()`（爆炸走「死亡即引爆」统一自爆路径，见 attack-mode-system）；`x >= roadEndPosX` 到路尽头同样 `SetCreatureDead()`；否则 `Translate(+X)` 前进，速度 = `MathUtil.InterpolationLerp(MSPD,0,100,0,2f) × ChargeSpeedRate(常量5)` × `GameFightLogic.GetFightDeltaTime()`（2倍速兼容，10点MSPD≈1格/秒）。
+- **注册三处**：`AIIntentFactory.RegisterAll` 工厂注册；`AIDefenseCreatureEntity.InitIntentEnum` 加枚举；入口分流见上。防守生物自此拥有移动意图（旧"防守生物无移动意图"认知不再成立）。
+
+### 死亡结束事件顺序（AIIntentCreatureDead，契约：事件先行）
+- `IntentUpdate` 现为**先 `TriggerEvent(GameFightLogic_CreatureDeadEnd)` 再 `RemoveFightCreatureEntity`**。原因：移除会同步清掉生物全部 BUFF（`BuffHandler.RemoveFightCreatureBuffs`），先移除会导致 BuffEntityConditionalDead 系（重生/死亡爆发/死亡掉水晶/死亡范围伤害等）永远收不到事件——这是 BuffHandler 注释约定的契约（事件先行）。曾误翻转（2026-05-24），现已恢复。
+- 动态数量 BUFF（都是兄弟/独行者等）计数本已按 `IsDead()` 过滤，不受事件先行影响。
 
 ### 攻击意图目标距离复查（AIIntentCreatureAttack 基类，攻防通用）
 - **机制**：`IntentUpdate` 开头（仅 `attackState` 0准备/1出手 阶段）调 `CheckTargetInAttackRange()`——**与索敌完全同口径**：向目标所在方向做一次同款 `FindCreatureEntityForSinge` 搜索，搜到任何目标即仍在射程内（可能搜到更近的新目标，攻击循环会自然切换），搜不到才 `ChangeIntent(intentForIdle)` 中断回待机重新索敌，防"目标被击退/诱导拉远后隔老远还在攻击"；`attackState==2`（已发射等回调）不打断，交 `ActionForAttackEnd` 重索敌自然处理。

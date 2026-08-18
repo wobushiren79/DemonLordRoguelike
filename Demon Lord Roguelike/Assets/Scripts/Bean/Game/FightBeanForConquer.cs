@@ -245,6 +245,14 @@ public class FightBeanForConquer : FightBean
         for (int i = 0; i < dlDefenseCreatureEntity.List.Count; i++)
         {
             var creatureEntity = dlDefenseCreatureEntity.List[i];
+            //冲锋生物（占位已释放）不带入场景重载：其原格可能已被第二只占用，重建会叠格——卡片直接回手（无CD，场景重载后卡片按数据状态重建）
+            if (creatureEntity.fightCreatureData.isPositionReleased)
+            {
+                var chargeCreatureData = creatureEntity.fightCreatureData.creatureData;
+                chargeCreatureData.creatureState = CreatureStateEnum.Idle;
+                chargeCreatureData.RCDTimeUpdate = 0;
+                continue;
+            }
             listLastDefenseFightCreatureData.Add(creatureEntity.fightCreatureData);
         }
         fightNum++;

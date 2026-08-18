@@ -301,7 +301,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.cqf.urpvolumetricfog.runtime::VolumetricAdditionalLight
   anisotropy: 0.3
-  scattering: 2
+  scattering: 5
   radius: 0.2
 --- !u!1 &1639122574204023615
 GameObject:
@@ -1895,6 +1895,30 @@ PrefabInstance:
     - target: {fileID: 198743469195280986, guid: 19fd840aaeb499443aab21af063858d8, type: 3}
       propertyPath: ShapeModule.radius.value
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 198743469195280986, guid: 19fd840aaeb499443aab21af063858d8, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.b
+      value: 0.380429
+      objectReference: {fileID: 0}
+    - target: {fileID: 198743469195280986, guid: 19fd840aaeb499443aab21af063858d8, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.g
+      value: 0.6582958
+      objectReference: {fileID: 0}
+    - target: {fileID: 198743469195280986, guid: 19fd840aaeb499443aab21af063858d8, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.r
+      value: 0.7830189
+      objectReference: {fileID: 0}
+    - target: {fileID: 198805145302481042, guid: 19fd840aaeb499443aab21af063858d8, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.b
+      value: 0.4523407
+      objectReference: {fileID: 0}
+    - target: {fileID: 198805145302481042, guid: 19fd840aaeb499443aab21af063858d8, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.g
+      value: 0.70271194
+      objectReference: {fileID: 0}
+    - target: {fileID: 198805145302481042, guid: 19fd840aaeb499443aab21af063858d8, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.r
+      value: 0.8962264
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

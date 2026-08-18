@@ -139,6 +139,8 @@ bool hasEnemy = fightData.CheckHasAttackCreature();
 bool hasCreature = fightData.CheckDefenseCreatureByPos(pos);
 ```
 
+> **占位释放语义（`FightCreatureBean.isPositionReleased`，2026-08 新增运行时字段）**：冲锋自爆型生物（`CreatureInfoBeanPartial.IsChargeAttack()`，当前唯一配置=6003 哥布林敢死队）冲锋开始置位，`ResetData` 清零防池化残留。`CheckDefenseCreatureByPos` / `GetDefenseCreatureByPos` 扫描时**跳过 isPositionReleased 实体**——冲锋离开原格后，原格可立即放第二只、删除模式点原格命中新生物。
+
 ## 战斗生物实体
 
 ### 创建与销毁
@@ -159,6 +161,8 @@ CreatureHandler.Instance.CreateDefenseCreatureEntity(previewObj, creatureData, p
 // 移除生物
 CreatureHandler.Instance.RemoveFightCreatureEntity(entity, CreatureFightTypeEnum.FightDefense);
 ```
+
+> **防守生物移除：按实例 + 卡片CD条件（2026-08 改动）**：`RemoveFightCreatureEntity` 防守分支移除改为**按实例**——新 `FightBean.RemoveDefenseCreature(FightCreatureEntity)`（`DictionaryList.RemoveByValue`）；`FightBean.RemoveDefenseCreatureByPos` **已删除**（按 positionCreate 首匹配会误删同格生物）。卡片进 Rest(CD) 的条件改为「场上已无该 UUID 存活实体」——DeadRebirth 重生替换场景新实体在场，卡片保持 Fighting 不进 CD；且 `CreateDefenseCreatureEntity` Add 前会预清理同 UUID 已死旧实体，防 `DictionaryList.Add` 静默失败生成幽灵实体（详见 creature-system SKILL / buff-system SKILL「死亡重生」）。
 
 ### 生物交互接口
 

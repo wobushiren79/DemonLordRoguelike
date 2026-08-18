@@ -14,6 +14,8 @@ public class FightUnderAttackBean
     public int attackerDamage;
     //攻击者暴击概率
     public float attackerCRT;
+    //攻击者暴击伤害倍率（默认1.5=暴击伤害+50%）
+    public float attackerCDMG = 1.5f;
 
     //击中音效
     public long soundHitId;
@@ -36,6 +38,7 @@ public class FightUnderAttackBean
         this.attackerId = baseAttackMode.attackModeData.attackerId;
         this.attackerDamage = baseAttackMode.attackModeData.attackerDamage;
         this.attackerCRT = baseAttackMode.attackModeData.attackerCRT;
+        this.attackerCDMG = baseAttackMode.attackModeData.attackerCDMG;
         this.soundHitId = baseAttackMode.attackModeInfo.sound_hit;
         this.soundMissId = baseAttackMode.attackModeInfo.sound_miss;
     }
@@ -50,6 +53,7 @@ public class FightUnderAttackBean
         this.attackerId = buffEntityData.applierCreatureUUId;
         this.attackerDamage = attackerDamage;
         this.attackerCRT = 0;
+        this.attackerCDMG = 1.5f;
         this.soundHitId = 0;
         this.soundMissId = 0;
     }
@@ -60,6 +64,7 @@ public class FightUnderAttackBean
         attackedId = null;
         attackerDamage = 0;
         attackerCRT = 0;
+        attackerCDMG = 1.5f;
         soundHitId = 0;
         soundMissId = 0;
     }

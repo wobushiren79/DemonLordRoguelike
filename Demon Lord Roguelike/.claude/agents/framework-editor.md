@@ -19,7 +19,7 @@ watched_files:
 - **ExcelEditorWindow** - Excel 配置导出（`CreateEntity` 生成 `*Bean.cs`+`Cfg`；含 `valid` 列的表自动生成 `valid!=0` 过滤，详见关联 Skill）
 - **UIEditorWindow** - UI 代码生成
 - **AddressableWindow** - Addressable 管理
-- **SpineWindow** - Spine 工具
+- **SpineWindow** - Spine 工具（皮肤提取 + 动画预览双页签，预览页签见 SpineWindowPreview.cs partial）
 - **NodeBaseEditorWindow** - 节点编辑器
 - **AnimSearchWindow** - 动画搜索
 - **ImageResWindow** - 图片资源管理

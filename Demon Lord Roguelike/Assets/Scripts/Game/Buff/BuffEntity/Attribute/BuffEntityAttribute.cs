@@ -73,7 +73,8 @@ public class BuffEntityAttribute : BuffBaseEntity, IAttributeModifierSource
         {
             case CreatureAttributeTypeEnum.CRT:
             case CreatureAttributeTypeEnum.EVA:
-                //CRT/EVA：rate 本身是百分比绝对值（如 +15%），直接累加
+            case CreatureAttributeTypeEnum.CDMG:
+                //CRT/EVA/CDMG：rate 本身是百分比绝对值（如 +15%），直接累加（CDMG为暴击伤害倍率加成，基础1.5）
                 if (rate != 0f)
                     sink.Add(new AttributeModifier { attributeType = attributeType, channel = ModifierChannel.Flat, value = rate, source = source });
                 break;
@@ -121,6 +122,7 @@ public class BuffEntityAttribute : BuffBaseEntity, IAttributeModifierSource
         {
             case CreatureAttributeTypeEnum.CRT:
             case CreatureAttributeTypeEnum.EVA:
+            case CreatureAttributeTypeEnum.CDMG:
                 targetData += rate;
                 break;
             default:

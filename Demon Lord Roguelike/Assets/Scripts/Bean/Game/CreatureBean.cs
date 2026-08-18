@@ -713,6 +713,9 @@ public partial class CreatureBean
             case CreatureAttributeTypeEnum.CRT://获取暴击率
                 targetData = 0;
                 break;
+            case CreatureAttributeTypeEnum.CDMG://获取暴击伤害倍率(默认1.5=暴击伤害+50%，BUFF可Flat累加调整)
+                targetData = 1.5f;
+                break;
             default:
                 targetData = 0;
                 break;

@@ -20,8 +20,6 @@ public partial class EffectManager
     public long effectCreatureShowId = 1100001;
     //攻击弹道拖尾粒子ID(方案2 VFX,Effect_Trail_1;非播放式——EffectHandler 按视觉桶各建一个常驻实例+每帧喂 GraphicsBuffer,不入池不 PlayEffect)
     public long effectAttackModeTrailId = 1600001;
-    //冲击波粒子ID(Effect_Shockwave_1,深渊馈赠「第六次冲击」;一次性实例,播放时按判定参数同步视觉半径/扩张时长)
-    public long effectShockwaveId = 1700001;
     //飘字(伤害数字)预制体地址(FightText_1：Quad+instanced材质 → GPU Instancing 新路径；换为 TMP 结构预制则自动回退旧对象池路径)
     public string effectTextNumberName = "Assets/LoadResources/Common/FightText_1.prefab";
 

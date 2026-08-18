@@ -78,6 +78,7 @@ public enum CreatureAttributeTypeEnum
     MPR,//魔法回复%
     MPF,//魔法回复
     CMP,//召唤魔力消耗(仅作BUFF修正标签,非生物常驻战斗属性)
+    CDMG,//暴击伤害倍率(基础1.5=暴击伤害+50%，BUFF rate Flat累加可调)
 }
 
 public enum CreatureSkinTypeEnum

@@ -394,7 +394,8 @@ public partial class FightCreatureEntity
         float randomCRT = UnityEngine.Random.Range(0f, 1f);
         if (randomCRT <= fightUnderAttackData.attackerCRT)
         {
-            fightUnderAttackData.attackerDamage = (int)(1.5f * fightUnderAttackData.attackerDamage);
+            //暴击伤害 = 原伤害 × 攻击者暴击伤害倍率（CDMG属性，默认1.5=+50%，可经BUFF调整）
+            fightUnderAttackData.attackerDamage = (int)(fightUnderAttackData.attackerCDMG * fightUnderAttackData.attackerDamage);
         }
         //先扣除护甲 再扣除生命
         fightCreatureData.ChangeDRAndHP(-fightUnderAttackData.attackerDamage,
@@ -645,9 +646,13 @@ public partial class FightCreatureEntity
     #region 死亡相关
     /// <summary>
     /// 设置生物死亡（通用处理 + 分发各类型的死亡意图切换）
+    /// <para>IsDead 幂等守卫：同帧多段致死只执行一次（防重复掉水晶/重复死亡事件/冲锋型重复引爆）。</para>
     /// </summary>
     public void SetCreatureDead()
     {
+        //已死亡直接返回（幂等）
+        if (IsDead())
+            return;
         //死亡掉落水晶
         DropCrystal(1);
         //颜色变化动画

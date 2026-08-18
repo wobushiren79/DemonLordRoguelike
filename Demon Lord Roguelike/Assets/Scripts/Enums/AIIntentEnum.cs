@@ -15,6 +15,7 @@ public enum AIIntentEnum
     DefenseCreatureAttack,//攻击
     DefenseCreatureDead,//死亡
     DefenseCreatureDefend,//防守
+    DefenseCreatureCharge,//冲锋（charge_attack=1 冲锋自爆型：放卡后立即向前冲锋并释放原占位格，遇敌/到路尽头即死亡引爆）
 
     DefenseCoreCreatureIdle,//闲置
     DefenseCoreCreatureDead,//死亡

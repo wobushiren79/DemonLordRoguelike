@@ -16,10 +16,6 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public string remark;
 	/// <summary>
-	///创建需要的魔力
-	/// </summary>
-	public int CMP;
-	/// <summary>
 	///生物类型0创建 1抽卡 2敌人 9测试
 	/// </summary>
 	public int creature_type;
@@ -112,6 +108,10 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public float anim_attack_time;
 	/// <summary>
+	///创建需要的魔力
+	/// </summary>
+	public int CMP;
+	/// <summary>
 	///创建cd(秒)
 	/// </summary>
 	public float RCD;
@@ -182,6 +182,10 @@ public partial class CreatureInfoBean : BaseBean
 	///护盾受击特效位置偏移(相对生物坐标,空=0,0.5,0)
 	/// </summary>
 	public string shield_effect_position;
+	/// <summary>
+	///冲锋攻击(0=默认站桩;1=冲锋自爆:放卡后立即向前冲锋,遇敌/冲到路尽头/被打死时原地自爆,冲锋开始后原占位格立即释放)
+	/// </summary>
+	public int charge_attack;
 }
 public partial class CreatureInfoCfg : BaseCfg<long, CreatureInfoBean>
 {

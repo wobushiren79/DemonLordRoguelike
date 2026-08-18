@@ -1,6 +1,6 @@
 ---
 name: spine-system
-description: Demon Lord Roguelike 游戏的Spine动画系统开发指南。使用此SKILL当需要创建或修改Spine骨骼动画相关的代码，包括动画播放、皮肤切换、动画事件处理、Spine资源管理等。
+description: Demon Lord Roguelike 游戏的Spine动画系统开发指南。使用此SKILL当需要创建或修改Spine骨骼动画相关的代码，包括动画播放、皮肤切换、动画事件处理、Spine资源管理、SpineWindow工具窗口（皮肤提取 + 动画预览页签）等。
 watched_files:
   - Assets/FrameWork/Scripts/Component/Manager/SpineManager.cs
   - Assets/FrameWork/Scripts/Component/Handler/SpineHandler.cs
@@ -10,6 +10,7 @@ watched_files:
   - Assets/FrameWork/Scripts/Enums/BaseGameEnum.cs
   - Assets/FrameWork/Editor/Base/SpineEditor.cs
   - Assets/FrameWork/Editor/Base/Window/SpineWindow.cs
+  - Assets/FrameWork/Editor/Base/Window/SpineWindowPreview.cs
 ---
 
 # Spine动画系统开发指南
@@ -430,6 +431,29 @@ public SkeletonGraphic CreateUICharacter(GameObject parent, string assetName)
 }
 ```
 
+## SpineWindow 工具窗口（皮肤提取 + 动画预览）
+
+菜单 `Custom/工具弹窗/Spine工具` 打开，窗口含两个页签：**皮肤提取**（原有，批量导出皮肤贴图）与**动画预览**。
+
+### 动画预览页签解决什么问题
+
+骨架数据版本与 spine-unity 运行时 minor 版本不一致（如数据 4.2 / 运行时 4.3）时，官方 SkeletonDataAsset Inspector 的兼容性检查（`SkeletonDataCompatibility.GetCompatibilityProblemInfo` 要求 major.minor 完全一致）会拦截 `preview.Initialize`，导致 Inspector 底部 Preview 面板空白。而运行时 `GetSkeletonData` 读取成功即直接返回（兼容检查仅在读取失败时才执行），所以游戏能跑但编辑器预览不可用。该页签绕过官方 Inspector 自行实现预览。
+
+### 实现原理（SpineWindowPreview.cs）
+
+- 用 `EditorInstantiation.InstantiateSkeletonAnimation` 实例化隐藏的 `SkeletonAnimation`（`HideAndDontSave` + Layer 30），并 **`previewUtility.AddSingleGO(go)` 移入预览场景**——本项目 URP 环境下 PreviewRenderUtility 相机只渲染预览场景内的物体，留在活动场景会渲染为空（已用像素回读实验证实）；`PreviewRenderUtility` 正交相机只渲染该层，`BeginPreview → camera.Render() → EndPreview` 输出纹理绘制到窗口。
+- **预览物体的 MeshRenderer 必须保持 `enabled = true`**——4.3 中 `SkeletonRenderer.NeedsToGenerateMesh = meshRenderer.enabled`，renderer 禁用时 `LateUpdate()` 直接跳过网格重建，画面冻结在第一帧（症状：能显示初始姿势但动画/换皮肤都不动）。官方 Inspector 预览是"渲染前临时 enable、渲染后 disable + 在 enable 状态下 Update/LateUpdate"，不要照搬到常开渲染的自定义窗口里。
+- `EditorApplication.update` 中手动 `skeletonAnimation.Update(dt)` + `Renderer.LateUpdate()` 驱动播放（编辑模式下组件自身不会走 Update）。
+- 皮肤搭配：按 `/` 前缀分组（Clothes/Pants/Weapon/...），每组下拉单选（含"不显示"），`new Skin` + `AddSkin` 合成后 `SetSkin` + `SetupPose` + `Update(0)` 重摆姿势。
+- 支持：动画列表播放/暂停/停止、循环开关、速度滑条、进度条拖拽定位、滚轮缩放、拖拽平移、数据版本显示、重新加载（`SkeletonDataAsset.Clear()` 强制重读）。
+
+### 4.3 API 注意事项（写编辑器预览代码时）
+
+- `AnimationState.GetTrack(0)` 取当前轨道（4.3 已无 `GetCurrent`）。
+- `skeletonAnimation.Update(float)` 与 `ISkeletonRenderer.LateUpdate()` 是公开方法，用于手动推进。
+- `Skeleton.SetupPose()` / `skeleton.UpdateWorldTransform(Spine.Physics.Update)`（旧名 `SetToSetupPose`/`Skeleton.Physics` 已废弃）。
+- 编辑器脚本同时 `using Spine;` 和 `using UnityEngine;` 时，`Animation`/`Event`/`EventType` 与 UnityEngine 同名类型冲突，需写全名（`Spine.Animation`、`UnityEngine.Event`、`UnityEngine.EventType`）。
+
 ## 文件位置速查
 
 | 功能 | 文件路径 |
@@ -442,6 +466,7 @@ public SkeletonGraphic CreateUICharacter(GameObject parent, string assetName)
 | 动画状态枚举 | `Assets/FrameWork/Scripts/Enums/BaseGameEnum.cs` |
 | Spine编辑器工具 | `Assets/FrameWork/Editor/Base/SpineEditor.cs` |
 | Spine窗口 | `Assets/FrameWork/Editor/Base/Window/SpineWindow.cs` |
+| Spine窗口-动画预览页签 | `Assets/FrameWork/Editor/Base/Window/SpineWindowPreview.cs` |
 
 ## 注意事项
 

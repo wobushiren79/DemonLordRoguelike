@@ -64,9 +64,9 @@ public class AttackModeShockwaveRing : BaseAttackMode
         }
         // 最大半径 = 道路右缘 + 余量 − 圆心x（保证覆盖整条道路；下限 1 防圆心在路右缘之外时算出负值）
         radiusMax = Mathf.Max(roadMaxX + radiusMargin - centerPos.x, 1f);
-        // 播放冲击波视觉（全局单例通道）：按判定参数换算 multiplier，视觉波前与判定环带严格同步
+        // 播放冲击波视觉（全局单例通道，特效id取攻击模式配置的 effect_hit）：按判定参数换算 multiplier，视觉波前与判定环带严格同步
         float waveDuration = radiusMax / GetMoveSpeed();
-        EffectHandler.Instance.ShowEnduringSingletonEffect(EffectHandler.Instance.manager.effectShockwaveId, new SingletonEffectParam()
+        EffectHandler.Instance.ShowEnduringSingletonEffect(attackModeInfo.GetEffectHitId(), new SingletonEffectParam()
         {
             targetPos = centerPos,
             startSizeMultiplier = radiusMax / ShockwaveVisualBaseRadius,

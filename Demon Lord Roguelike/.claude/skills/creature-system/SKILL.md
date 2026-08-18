@@ -8,6 +8,7 @@ watched_files:
   - Assets/Scripts/Bean/Game/CreatureAttributeBean.cs
   - Assets/Scripts/Bean/Game/CreatureNpcBean.cs
   - Assets/Scripts/Bean/MVC/Game/CreatureInfoBean.cs
+  - Assets/Scripts/Bean/MVC/Game/CreatureInfoBeanPartial.cs
   - Assets/Scripts/Utils/CreatureUtil.cs
   - Assets/Scripts/Game/Fight/FightCreatureEntity.cs
   - Assets/Scripts/Game/Fight/FightCreatureEntityForAttack.cs
@@ -148,16 +149,19 @@ public enum CreatureAttributeTypeEnum
 {
     None = 0,
     HP = 1,                // 生命值
-    DR = 2,                // 防御
-    ATK = 3,               // 攻击力
-    ASPD = 4,              // 攻击速度
+    MP = 2,                // 魔力
+    DR = 3,                // 防御
+    ATK = 4,               // 攻击力
     MSPD = 5,              // 移动速度
-    CRT = 6,               // 暴击率
-    EVA = 7,               // 闪避率
-    RCD = 8,               // 冷却缩减（实为复活CD）
-    HPRegeneration = 11,   // HP 恢复
-    MP = 20,               // 魔力
-    CMP,                   // 召唤魔力消耗（基础值=CreatureInfo.CMP；GetAttribute(CMP)=基础CMP×(1+等级/稀有度增加倍率)，再经BUFF管线修正）
+    ASPD = 6,              // 攻击速度
+    CRT = 7,               // 暴击率
+    EVA = 8,               // 闪避率
+    RCD = 9,               // 复活CD
+    MPR = 10,              // 魔法回复%
+    MPF = 11,              // 魔法回复
+    CMP = 12,              // 召唤魔力消耗（仅作BUFF修正标签,非生物常驻战斗属性）
+    CDMG = 13,             // 暴击伤害倍率（基础1.5=暴击伤害+50%；BUFF rate Flat累加调整，如6001哥布林刺客经BUFF 2000500001+0.5→2.0）
+    // ⚠️枚举值即 excel_creature_attribute_type_info 表 id（属性中文名/颜色映射），新增属性只能追加到末尾，禁止中间插入
 }
 ```
 
@@ -245,8 +249,8 @@ UnderAttack(BaseAttackMode)
     ├── 1. 闪避判定（EVA属性）
     │   └── 闪避成功 → 显示 MISS → 结束
     │
-    ├── 2. 暴击判定（CRT属性）
-    │   └── 暴击 → 伤害 *= 暴击倍率
+    ├── 2. 暴击判定（攻击者CRT属性快照）
+    │   └── 暴击 → 伤害 ×= 攻击者暴击伤害倍率（CDMG属性快照attackerCDMG，默认1.5=+50%，可由BUFF调整）
     │
     ├── 3. 扣护甲（DR属性）
     │   └── 护甲 > 0 → 扣护甲，减伤
@@ -291,6 +295,10 @@ FightCreatureEntity entity = CreatureHandler.Instance.GetFightCreatureEntity(cre
 ```
 
 > **`CreateDefenseCreatureEntity` 末尾推送新事件（事件驱动，不再直接重算）**：加完新防守魔物的 BUFF 后 `EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_DefenseCreatureCreate, fightCreatureEntity)`——CreatureHandler 只负责生成、推事件；由 `GameFightLogic.EventForDefenseCreatureCreate` 监听后按守卫 `BuffHandler.Instance.HasDynamicRateAbyssalBlessing()` 重算全体防守属性，供随魔物数缩放类动态率馈赠（加成率随场上魔物数 N 变化；曾用于「都是兄弟」，现役无配置、机制留存）在放置/增殖新魔物、N 增大时即时生效。守卫仅当馈赠池含指定类型/子类 BUFF 才广播，普通对局无开销。重算职责归 GameFightLogic。详见 abyssal-blessing-system SKILL。
+
+> **`CreateDefenseCreatureEntity` 同UUID已死实体预清理**：Add 进主列表前，若存在同 UUID 且 `IsDead()` 的旧实体（DeadRebirth 重生替换场景），先按实例移出——防 `DictionaryList.Add` 同 key 静默失败导致新实体成幽灵（不可命中/清场泄漏）。
+
+> **`RemoveFightCreatureEntity` 防守分支两大改动**：①移除改为**按实例**——新 `FightBean.RemoveDefenseCreature(FightCreatureEntity)`（`DictionaryList.RemoveByValue`）；`FightBean.RemoveDefenseCreatureByPos` **已删除**（按 positionCreate 首匹配会误删同格生物）。②卡片进 Rest(CD) 的条件改为「场上已无该 UUID 存活实体」——DeadRebirth 重生替换场景新实体在场，卡片保持 Fighting 不进 CD；根治"重生后卡片照进CD、CD结束可再放同UUID生物导致 Add 静默失败生成幽灵实体"的缺陷（重生机制详见 buff-system SKILL「死亡重生」）。
 
 ### CreatureManager（生物管理器）
 
@@ -346,6 +354,8 @@ public class CreatureInfoBean : BaseBean
 ```
 
 > **`attack_search_back`(int 0/1) — 防守生物转身攻击身后开关**：配置列在 `excel_creature_info`（插在 `attack_search_time` 之后），JSON 导出到 `CreatureInfo.txt`。手写辅助方法 `CreatureInfoBeanPartial.IsAttackSearchBack()`（返回 `attack_search_back == 1`，紧邻 `GetCreatureSearchType()`）。开启后防守生物正面无目标时转身攻击身后（范围同正面），身后清空/超范围转回正面。首用者骷髅战士 `id=2001`。搜索/转身逻辑详见 [ai-system](../ai-system/SKILL.md)「防守生物转身攻击身后」。
+
+> **`charge_attack`(int 0/1) — 冲锋自爆型生物开关**：配置列在 `excel_creature_info`，自动生成到 `CreatureInfoBean.charge_attack`；手写辅助方法 `CreatureInfoBeanPartial.IsChargeAttack()`（返回 `charge_attack == 1`）。冲锋自爆语义：放卡后立即向 +X 冲锋并释放原占位格（`FightCreatureBean.isPositionReleased` 置位，占位查询跳过已释放实体见 game-fight-system SKILL），前方 0.5 遇敌/冲到路尽头/被打死时在死亡位置原地自爆（AoE），死亡后卡片走 RCD 回手。当前唯一配置生物：**6003 哥布林敢死队**（attack_mode=300002 爆炸、attack_search_range=0.5 触发距离、attack_search_time=0.1、RCD=60）。死亡引爆实现见 game-fight-core agent（`FightCreatureEntityForDefense.CreateAttackModeForDeadExplosion`），重生联动（死亡地点重生再冲锋）见 buff-system SKILL「死亡重生」。
 
 > **`creature_layer`(string) — 生物分层（搜索隐身 + 显示前置，双重语义）**：配置列在 `excel_creature_info`，值为 Unity Layer 名（`CreatureDef_Front`/`CreatureAtt_Front`/`CreatureDef_Back`/`CreatureAtt_Back`，见 [LayerInfo.cs](Assets/Scripts/Common/LayerInfo.cs)），空 = 默认层（CreatureDef/CreatureAtt）。生效代码在 `CreatureHandler.GetFightCreatureObj`：把生物根 GameObject.layer 改为配置层（**BoxCollider 挂在预制根节点，随根一并改层**），Front 层还会把 Spine 节点 Z 前移 0.1（渲染显示在其他魔物前面）。
 > - **Front 层 = 故意让敌对方物理搜索搜不到（设计而非 bug）**：索敌/攻击命中的物理搜索 mask 写死 `1 << CreatureDef` / `1 << CreatureAtt`（[FightCreatureSearchUtil.cs](Assets/Scripts/Utils/FightCreatureSearchUtil.cs) `FindCreatureEntity`、[BaseAttackMode.cs](Assets/Scripts/Game/Fight/AttackMode/BaseAttackMode.cs) 攻击层 mask），Front 层不在 mask 内 → 敌人不会发现/攻击它。典型使用者**烂泥史莱姆(id=3003, attack_mode=400001)**：敌人从它身上走过会被减速，但敌人不把它当攻击目标——"地面附着型"魔物靠移出敌方搜索层实现"只影响敌人、不被敌人当目标"。**禁止以"修复索敌失效/打不到"为由扩大搜索 mask 或改回 layer**（会破坏该设计）。

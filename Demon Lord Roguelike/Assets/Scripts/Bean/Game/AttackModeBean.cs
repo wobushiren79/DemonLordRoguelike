@@ -12,6 +12,8 @@ public class AttackModeBean
     public int attackerDamage;
     //攻击者暴击概率
     public float attackerCRT;
+    //攻击者暴击伤害倍率（StartAttack时快照CDMG属性，1.5=暴击伤害+50%）
+    public float attackerCDMG = 1.5f; 
     //攻击者弹道速度倍率（由攻速ASPD换算，StartAttack时快照，1为无加成）
     public float attackerSpeedRate = 1f;
     //起始位置
@@ -59,6 +61,7 @@ public class AttackModeBean
         }
         attackerDamage = targetData.attackerDamage;
         attackerCRT = targetData.attackerCRT;
+        attackerCDMG = targetData.attackerCDMG;
         attackerSpeedRate = targetData.attackerSpeedRate;
         startPos = targetData.startPos;
         targetPos = targetData.targetPos;
@@ -78,6 +81,7 @@ public class AttackModeBean
         attackModeId = 0;
         attackerDamage = 0;
         attackerCRT = 0;
+        attackerCDMG = 1.5f;
         attackerSpeedRate = 1f;
         startPos = Vector3.zero;
         targetPos = Vector3.zero;

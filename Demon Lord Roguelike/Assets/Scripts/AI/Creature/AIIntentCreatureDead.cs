@@ -37,8 +37,10 @@ public class AIIntentCreatureDead : AIBaseIntent
         {
             timeUpdateForDead = 0;
             var selfFightCreatureEntity = selfAIEntity.selfCreatureEntity;
-            CreatureHandler.Instance.RemoveFightCreatureEntity(selfAIEntity.selfCreatureEntity, creatureFightType);          
+            //先派发死亡结束事件（此时实体/BUFF仍在场），让 BuffEntityConditionalDead 系（重生/死亡爆发/死亡掉水晶/死亡范围伤害等）完成触发；
+            //再清理生物。顺序不可颠倒：RemoveFightCreatureEntity 会先清BUFF导致上述BUFF全部失效（BuffHandler.RemoveFightCreatureBuffs 注释约定的契约）
             EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureDeadEnd, selfFightCreatureEntity);
+            CreatureHandler.Instance.RemoveFightCreatureEntity(selfAIEntity.selfCreatureEntity, creatureFightType);
         }
     }
 

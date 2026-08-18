@@ -166,6 +166,8 @@ public class BaseAttackMode
                     attackModeData.attackerDamage = (int)(attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ATK) * attackModeInfo.GetDamageAddRate());
                     //提示设置暴击概率
                     attackModeData.attackerCRT = attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.CRT);
+                    //快照攻击者暴击伤害倍率（暴击时按此倍率结算，默认1.5）
+                    attackModeData.attackerCDMG = attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.CDMG);
                     //设置弹道速度倍率（攻速ASPD 0~100 线性映射 1~SpeedRateASPDMax 倍，与攻击时间换算保持同一插值体系）
                     float attributeASPD = attacker.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD);
                     attackModeData.attackerSpeedRate = MathUtil.InterpolationLerp(attributeASPD, 0, 100, 1f, SpeedRateASPDMax);

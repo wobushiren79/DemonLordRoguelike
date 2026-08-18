@@ -167,8 +167,14 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         fightCreatureData.positionCreate = creaturePos;
         //创建战斗生物
         FightCreatureEntity fightCreatureEntity = GetFightCreatureEntity(targetObj, fightCreatureData);
-        //先添加数据
+        //再添加数据
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        //重生替换场景：同UUID的已死旧实体仍占用主列表key时先按实例移出（否则 Add 同key静默失败 → 新实体不在主列表成幽灵）
+        var existSameIdEntity = gameFightLogic.fightData.GetCreatureById(creatureData.creatureUUId, CreatureFightTypeEnum.FightDefense);
+        if (existSameIdEntity != null && existSameIdEntity.IsDead())
+        {
+            gameFightLogic.fightData.RemoveDefenseCreature(existSameIdEntity);
+        }
         gameFightLogic.fightData.AddDefenseCreatureByPos(creaturePos, fightCreatureEntity);
         //再创建AI
         fightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefenseCreatureEntity>(actionBeforeStart: (targetEntity) =>
@@ -425,9 +431,16 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         //如果是防守生物 还需要移除位置信息 和还原卡片
         if (creatureType == CreatureFightTypeEnum.FightDefense)
         {
-            gameFightLogic.fightData.RemoveDefenseCreatureByPos(targetEntity.fightCreatureData.positionCreate);
-            targetEntity.fightCreatureData.creatureData.creatureState = CreatureStateEnum.Rest;
-            EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureChangeState, targetEntity.fightCreatureData.creatureData.creatureUUId, CreatureStateEnum.Rest);
+            //按实例精确移除（同格多生物按positionCreate首匹配会误删、重生替换场景同UUID会误删新实体）
+            gameFightLogic.fightData.RemoveDefenseCreature(targetEntity);
+            //卡片进复活CD仅当场上已无该生物的存活实体（DeadRebirth重生替换场景：新实体在场，卡片保持Fighting不进CD）
+            string creatureUUId = targetEntity.fightCreatureData.creatureData.creatureUUId;
+            var existEntity = gameFightLogic.fightData.GetCreatureById(creatureUUId, CreatureFightTypeEnum.FightDefense);
+            if (existEntity == null || existEntity.IsDead())
+            {
+                targetEntity.fightCreatureData.creatureData.creatureState = CreatureStateEnum.Rest;
+                EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureChangeState, creatureUUId, CreatureStateEnum.Rest);
+            }
         }
         //如果是进攻生物 还需要移除生物数据放入缓存
         else if (creatureType == CreatureFightTypeEnum.FightAttack)

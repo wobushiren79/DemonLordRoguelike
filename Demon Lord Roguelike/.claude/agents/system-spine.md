@@ -5,7 +5,8 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/FrameWork/Scripts/Component/Handler/SpineHandler.cs
   - Assets/FrameWork/Scripts/Component/Manager/SpineManager.cs
-  - Assets/FrameWork/Editor/SpineWindow.cs
+  - Assets/FrameWork/Editor/Base/Window/SpineWindow.cs
+  - Assets/FrameWork/Editor/Base/Window/SpineWindowPreview.cs
   - Assets/FrameWork/Addons/Spine/
 ---
 
@@ -24,7 +25,8 @@ watched_files:
 - **SpineAnimationStateBean / SpineAnimationStateBeanPartial** - 动画状态数据
 
 ### Spine 编辑器
-- **SpineWindow** - Spine 工具窗口 [FrameWork/Editor/SpineWindow.cs](Assets/FrameWork/Editor/SpineWindow.cs)
+- **SpineWindow** - Spine 工具窗口（皮肤提取页签）[FrameWork/Editor/Base/Window/SpineWindow.cs](Assets/FrameWork/Editor/Base/Window/SpineWindow.cs)
+- **SpineWindowPreview** - 动画预览页签（partial）：绕过官方版本兼容检查的动画预览 + 皮肤分组自由搭配 [FrameWork/Editor/Base/Window/SpineWindowPreview.cs](Assets/FrameWork/Editor/Base/Window/SpineWindowPreview.cs)
 
 ### 动画播放
 ```csharp
