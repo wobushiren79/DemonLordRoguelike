@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c078f2b7cc3169048b8c468a55bb7cdf
+    m_Address: Assets/LoadResources/Audio/Environment/sound_rain_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}
   m_SchemaSet:

@@ -29,7 +29,18 @@ public partial class VolumeHandler
                 break;
             case GameSceneTypeEnum.Fight:
                 float disFollowFight = CameraHandler.Instance.GetDistanceFollow(CameraHandler.Instance.manager.cm_Fight);
-                SetDepthOfField(DepthOfFieldMode.Bokeh, disFollowFight, 180, 12);
+                //景深参数读战斗场景表 depth_of_field 配置（未配置回退默认 Bokeh/180/12）
+                DepthOfFieldMode fightDofMode = DepthOfFieldMode.Bokeh;
+                float fightFocalLength = 180f;
+                float fightAperture = 12f;
+                var fightData = (GameHandler.Instance.manager.gameLogic as GameFightLogic)?.fightData;
+                if (fightData != null)
+                {
+                    var fightSceneData = FightSceneCfg.GetItemData(fightData.fightSceneId);
+                    if (fightSceneData != null && fightSceneData.HasDepthOfField)
+                        fightSceneData.GetDepthOfFieldParams(out fightDofMode, out fightFocalLength, out fightAperture);
+                }
+                SetDepthOfField(fightDofMode, disFollowFight, fightFocalLength, fightAperture);
                 break;
             case GameSceneTypeEnum.RewardSelect:
                 SetDepthOfField(DepthOfFieldMode.Bokeh, 15, 150, 10);

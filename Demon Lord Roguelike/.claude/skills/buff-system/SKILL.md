@@ -37,7 +37,8 @@ BuffBaseEntity                              # 抽象基类（事件回调 + Show
 │   ├── BuffEntityAttributeSingleTarget    # 单体定向属性BUFF：随机锁定一只防守生物 ATK/HP/DR 翻倍(rate=1)，实现 IBuffSingleTarget（曾用于馈赠「大力出奇迹/膘肥体壮/钢铁憨憨」，现役无配置、机制留存）
 │   ├── BuffEntityAttributeDynamicRate     # 动态率属性BUFF基类：加成率运行时算而非配置写死(重写 CollectModifiers+ChangeData 取 GetDynamicRate，仅走 PercentAdd)
 │   │   ├── BuffEntityAttributeScaleByDefenseCount  # 通用功能类：属性%随"当前场上存活防守魔物数N"缩放，率=(N-1)×每只率(曾用于馈赠「都是兄弟」，现役无配置、可被其它同功能馈赠复用)
-│   │   └── BuffEntityAttributeScaleByKillCount     # 通用功能类(兼 IBuffSingleTarget)：选取时随机锁定一只防守生物，属性%随"该只自身累计击杀敌人数"缩放，率=该只killNum×每只率(曾用于馈赠「杀红了眼」，现役无配置、可被其它同功能馈赠复用)
+│   │   ├── BuffEntityAttributeScaleByKillCount     # 通用功能类(兼 IBuffSingleTarget)：选取时随机锁定一只防守生物，属性%随"该只自身累计击杀敌人数"缩放，率=该只killNum×每只率(曾用于馈赠「杀红了眼」，现役无配置、可被其它同功能馈赠复用)
+│   │   └── BuffEntityAttributeDecayByAllyCount     # 通用功能类：属性%随"当前场上存活防守魔物数N"反向衰减，率=基础率-每友方衰减率×(N-1)、下限0(trigger_value复用为衰减百分点:50=每友方-50%,因扭蛋isRandom整数化0.5会归零)；现役用于R稀有度BUFF「独行者A-D」(11001300001~04,各+ATK/ASPD/DR/HP 300%)
 │   └── BuffEntityAttributeMulti            # 多属性BUFF：一次随机率(trigger_value_rate)同时改多个属性；class_entity_data="属性:倍率|属性:倍率"(如 "ATK:1|HP:-1"=ATK+率、HP等量负率)，实现"一属性增益、对应属性等比减益"。扭蛋R级双刃BUFF(狂战士/快枪手/铜墙铁壁/大块头 各A/B/C)。与单属性同为"纯属性BUFF"(IsBuffEntityAttributeOnly)，走属性烘焙路径
 ├── BuffEntityBaseHPChange                  # 周期改血BUFF（按目标最大生命结算）：每 trigger_time 触发、共 trigger_num 次，HP变化=value+目标最大HP×rate（正回血/负扣血，扣血走UnderAttack管线）；子类 BuffEntityBaseHPChangeArea=范围版；持续回血12000100001
 ├── BuffEntityBaseHPChangeByApplierATK      # 周期掉血BUFF（按施加者实时攻击力结算）：每次触发伤害=施加者当前ATK×|rate|+value，施加者不在场/已死亡跳过本次，走UnderAttack管线；骷髅魔法师(火)「烧伤」1000500001（攻击模式201003命中50%概率挂，3秒×3次，rate=-0.5）、毒液史莱姆3004「中毒」1000400001（攻击模式400002触碰100%挂，1秒×10次，rate=-0.2=史莱姆实时ATK的20%/跳）
@@ -381,9 +382,9 @@ public interface IBuffSingleTarget { string SingleTargetCreatureUUId { get; } }
 - **可重复选取(level=0)**：每次选取新建一个BUFF实例、各自锁定一只新随机生物叠加（同族 level=0 不触发替换）；一局可获次数由配置 `max_count` 控制（历史配置 `max_count=1` 即整局限 1 次，候选层 `BuffHandler.GetAbyssalBlessingPickCount` 门控，与本 BUFF 叠加逻辑独立）。
 - ⚠️ **选取后立即刷新已在场生物（事件驱动）**：属性类(ATK/HP/DR)依赖 `dicAttribute` 重算，`BuffHandler.AddAbyssalBlessing` 末尾 `TriggerEvent(Buff_AbyssalBlessingChange)`，由 `GameFightLogic.EventForAbyssalBlessingChange` 监听并立即对防守核心 + 全部防守生物 `RefreshBaseAttribute`（BuffHandler 只触发事件、不直接刷新，职责更解耦）。否则征服「普通关卡→普通关卡」走 `ContinueNextLevelInSameScene` 保留现场、不重载场景也不重算属性，加成要等到下次场景重载（切BOSS关 `StartNextGameForBoss` 重建生物实体）才生效——典型BUG「普通关选了不生效、切BOSS才生效」。攻速类每次攻击实时缩放不依赖刷新，一并刷新也无害。
 
-### 动态率深渊馈赠（加成率随战况实时计算）
+### 动态率属性BUFF（加成率随战况实时计算）
 
-> ⚠️ **现役无配置**：原 6 族动态率馈赠（都是兄弟/杀红了眼，各 3 属性 5 级链）已于 2026-07 从配置表删除，`HasDynamicRateAbyssalBlessing()` 当前恒 false、广播不触发；本节机制（基类/子类/广播链路）完整保留，新增同类馈赠可直接复用。
+> ⚠️ **馈赠侧现役无配置、稀有度BUFF侧现役「独行者」**：原 6 族动态率馈赠（都是兄弟/杀红了眼，各 3 属性 5 级链）已于 2026-07 从配置表删除，`HasDynamicRateAbyssalBlessing()`（馈赠侧）当前恒 false；但 2026-08 新增 R 稀有度BUFF「独行者A-D」走生物侧缓存 `HasDynamicRateCreatureBuff()`，广播链路现役生效。本节机制（基类/子类/广播链路）完整保留，新增同类馈赠/稀有度BUFF可直接复用。
 
 普通属性 BUFF 的 rate 由配置 `trigger_value_rate` 写死、恒定；「随场上魔物数缩放 / 随击杀数缩放」要求 rate 随运行时战况（场上魔物数量 / 累计击杀数）**每次重算属性时实时变化**，为此引入抽象基类 `BuffEntityAttributeDynamicRate : BuffEntityAttribute`（`Assets/Scripts/Game/Buff/BuffEntity/Attribute/`）：
 
@@ -394,7 +395,8 @@ public interface IBuffSingleTarget { string SingleTargetCreatureUUId { get; } }
 - **抽象基类不在配置 `class_entity` 中直接引用**；子类是**通用功能类**（按缩放来源命名、不绑馈赠名，可被其它同功能馈赠复用），实现具体公式：
   - `BuffEntityAttributeScaleByDefenseCount`（属性随"当前场上存活防守魔物数"缩放，曾用于「都是兄弟」）：`rate = (场上存活防守魔物数 N - 1) * trigger_value_rate`。N = `fightData.dlDefenseCreatureEntity.List` 中 `!IsDead()` 的数量；`N<=1` 时为 0（减 1 扣除自身，只有 1 只不享加成）。
   - `BuffEntityAttributeScaleByKillCount`（**单体定向**，兼实现 `IBuffSingleTarget`；选取时 `SetData` 用 `GetRandomDefenseCreatureUUId()` 随机锁定一只防守生物，属性随"**该只生物自身**累计击杀敌人数"缩放，曾用于「杀红了眼」）：`rate = fightData.fightRecordsData.GetRecordsForCreatureData(锁定UUID,false)?.killNum * trigger_value_rate`（仅魔物击杀；killNum 按 `creatureUUId` 持久累积，该只阵亡后下一关重新上场 UUID 不变、之前加成保留，征服 run 内跨关卡累积不重置）。「只作用锁定那只」的过滤由 `FightCreatureBean.CollectFromBuffList` 的 `IBuffSingleTarget` 落点自动完成，配置 `trigger_creature_type=1` 作防守类兜底过滤。
-- **依赖 GameFightLogic 广播重算（事件驱动）**：rate 变化后必须重算 `dicAttribute` 才生效。高频事件（魔物放置/增殖、魔物死亡、敌人击杀）由 `GameFightLogic` 按守卫广播 `RefreshAllDefenseCreatureAttribute()` 对全体防守魔物重算——守卫泛型方法 `BuffHandler.HasDynamicRateAbyssalBlessing()`（谓词式通用：深渊馈赠池内是否含满足条件的 BUFF(可组合多种类型)）避免普通对局无谓开销。落点：`GameFightLogic.EventForGameFightLogicCreatureDeadEnd`（死亡，在 `CheckGameEnd()` 之前）；`CreatureHandler.CreateDefenseCreatureEntity` 末尾**推送新事件** `EventsInfo.GameFightLogic_DefenseCreatureCreate`（参数 FightCreatureEntity），由 `GameFightLogic.EventForDefenseCreatureCreate` 监听后按守卫重算（CreatureHandler 只负责生成、推事件，重算职责归 GameFightLogic）。详见 `abyssal-blessing-system` SKILL「动态数值馈赠」。
+  - `BuffEntityAttributeDecayByAllyCount`（属性随"当前场上存活防守魔物数"**反向衰减**，现役用于 R 稀有度BUFF「独行者A-D」11001300001~04）：`rate = trigger_value_rate - (trigger_value/100) × (N - 1)`，下限 0（衰减至 0 即不加成）。N 口径同 ScaleByDefenseCount（`dlDefenseCreatureEntity.List` 中 `!IsDead()` 数，减 1 扣自身，多持有者各算各的）。**`trigger_value` 复用为每友方衰减百分点**（配 50=每友方-50%）——因 `BuffBean(isRandom:true)` 对 `trigger_value` 做整数化闭区间随机（`RoundToInt(0.5)=0` 会丢衰减系数），衰减率必须按百分点整数配置、类内 /100 还原；`trigger_value_rate(_min)` 配 3.0=+300% 恒定不随机。描述模板用 `{Percentage}`(基础值300) 与 `{Value}`(衰减率50) 双占位符。配置 `trigger_creature_type=1`（仅防守）。
+- **依赖 GameFightLogic 广播重算（事件驱动）**：rate 变化后必须重算 `dicAttribute` 才生效。高频事件（魔物放置/增殖、魔物死亡、敌人击杀）由 `GameFightLogic` 按守卫广播 `RefreshAllDefenseCreatureAttribute()` 对全体防守魔物重算——守卫为**双路 O(1) 缓存 Or**：`BuffHandler.HasDynamicRateAbyssalBlessing()`（馈赠池含动态率BUFF，`AddAbyssalBlessing` 置位、`ClearAbyssalBlessing` 复位）`||` `BuffHandler.HasDynamicRateCreatureBuff()`（场上生物带动态率BUFF：`AddFightCreatureBuff` 内经收口方法 `CreateFightCreatureBuffEntity` 创建实例时 `is BuffEntityAttributeDynamicRate` 即单调置位、`ClearFightCreatureBuff` 复位；独行者等稀有度动态率BUFF走此路），任一为 true 即广播，避免普通对局无谓开销。落点：`GameFightLogic.EventForGameFightLogicCreatureDeadEnd`（死亡，在 `CheckGameEnd()` 之前）；`CreatureHandler.CreateDefenseCreatureEntity` 末尾**推送新事件** `EventsInfo.GameFightLogic_DefenseCreatureCreate`（参数 FightCreatureEntity），由 `GameFightLogic.EventForDefenseCreatureCreate` 监听后按守卫重算（CreatureHandler 只负责生成、推事件，重算职责归 GameFightLogic）。详见 `abyssal-blessing-system` SKILL「动态数值馈赠」。
 
 ## 事件名速查（已注册到 BuffEventDispatcher）
 
@@ -439,12 +441,13 @@ CMP               // 召唤魔力消耗 （CMP=12，仅作BUFF修正标签、非
 
 | 稀有度 | buff_type | 效果性质（硬约束） | 适用实体类 |
 |--------|-----------|-------------------|-----------|
-| **R** | 11 | **纯属性 BUFF**：只做属性数值加/减益，常驻生效、无触发条件、无特殊副作用 | `BuffEntityAttribute`（改攻击时间用 `BuffEntityAttributeAttackTime`）；**多属性/双刃**用 `BuffEntityAttributeMulti`（一次随机率同时加一属性、等比减另一属性） |
+| **R** | 11 | **纯属性 BUFF**：只做属性数值加/减益，常驻生效、无触发条件、无特殊副作用（**允许"纯属性动态率"**：数值随战况实时算但仍只改属性，如独行者随友方数衰减） | `BuffEntityAttribute`（改攻击时间用 `BuffEntityAttributeAttackTime`）；**多属性/双刃**用 `BuffEntityAttributeMulti`（一次随机率同时加一属性、等比减另一属性）；**动态率**用 `BuffEntityAttributeDynamicRate` 子类（如 `BuffEntityAttributeDecayByAllyCount` 独行者） |
 | **SR** | 12 | **条件/周期被动触发 BUFF**：满足条件（累计造成/受到伤害、击杀数、血量阈值、累计治疗、在场时间）或按固定周期被动触发后产生效果 | `BuffEntityConditional*`（**非死亡类**，含时间驱动 `BuffEntityConditionalAttributeTime`）/ `BuffEntityPeriodic*` / `BuffEntityPecurrent`；条件走 `pre_info`+`BuffPreEntityFor*`，事件走 `class_entity_events`（时间驱动类留空） |
 | **SSR** | 13 | **特殊类 BUFF**：质变/规则改写型，「什么情况都可能发生」——死亡重生、死亡反击、死亡区域治疗/加防、克隆增殖、生成/改变水晶掉落、改变奖励掉落、荆棘反伤、伤害吸血、上场无敌等 | `BuffEntityConditionalDead*` / `BuffEntityInstant*` / `BuffEntityConditionalThorns`/`LifeSteal`/`Invincible` / 各类特殊实体 |
 
-- **R 档可用属性**：`HP / DR / ATK / ASPD / MSPD / CRT / EVA / RCD / CMP`（CRT/EVA 的 rate 走 Flat；另有 MP/MPR/MPF 魔法向，普通生物一般不消费）。**无 HPRegeneration 生命回复属性**（见下方枚举说明）。R 只能是这些属性的常驻加/减益，**不得**带触发条件、死亡/召唤等特殊行为。
-- **多属性双刃 R（`BuffEntityAttributeMulti`）**：`class_entity_data` 用 `属性:倍率|属性:倍率`（如 `ATK:1|HP:-1`），各属性的实际率 = `trigger_value_rate × 倍率`，**共享同一次随机ロール**（如 ATK+30% ⇒ HP-30%，减益随机量恒等于增益随机量）。`trigger_value`/`min` 留空(=0)只用百分比率；描述模板两句都用同一个 `{Percentage}`（正值），如「攻击力增加{Percentage}%，生命减少{Percentage}%」。当前 12 条：狂战士(ATK+/HP-DR-ASPD-)、快枪手(ASPD+/DR-HP-ATK-)、铜墙铁壁(DR+/HP-ATK-ASPD-)、大块头(HP+/ASPD-DR-ATK-)，id 段 `11 0007~0010 0000X`。
+- **R 档可用属性**：`HP / DR / ATK / ASPD / MSPD / CRT / EVA / RCD / CMP`（CRT/EVA 的 rate 走 Flat；另有 MP/MPR/MPF 魔法向，普通生物一般不消费）。**无 HPRegeneration 生命回复属性**（见下方枚举说明）。R 只能是这些属性的常驻加/减益，**不得**带触发条件、死亡/召唤等特殊行为（动态率类的"随战况变数值"不算触发条件——效果常驻生效，只是数值实时算）。
+- **多属性双刃 R（`BuffEntityAttributeMulti`）**：`class_entity_data` 用 `属性:倍率|属性:倍率`（如 `ATK:1|HP:-1`），各属性的实际率 = `trigger_value_rate × 倍率`，**共享同一次随机ロール**（如 ATK+30% ⇒ HP-30%，减益随机量恒等于增益随机量）。`trigger_value`/`min` 留空(=0)只用百分比率；描述模板两句都用同一个 `{Percentage}`（正值），如「攻击力增加{Percentage}%，生命减少{Percentage}%」。当前 30 条（6 族 × A~E 5 变体）：狂战士(ATK+)、快枪手(ASPD+)、铜墙铁壁(DR+)、大块头(HP+)——副属性 HP/DR/ATK/ASPD 等比减（A~C）或 RCD/CMP 反向（D/E，率 0.2~0.5）；魂牵梦绕(RCD-)、折上折(CMP-)——副属性减半代价（率 0.5~0.75），id 段 `11 0007~0012 0000X`。
+- **动态率 R（`BuffEntityAttributeDynamicRate` 子类）**：`BuffEntityAttributeDecayByAllyCount`「独行者A-D」`11001300001~04`（各 +ATK/ASPD/DR/HP 基础 300%，每多 1 友方衰减 50%，下限 0；`trigger_value`=50 复用为衰减百分点——isRandom 整数化会归零 0.5，详见「动态率属性BUFF」节）。**注意**：动态率类类名不匹配 `IsBuffEntityAttributeOnly()`（字符串相等判定），故**不走烘焙路径、作为运行时 BUFF 实体正常挂接**，动态率经 `CollectModifiers` 生效，无双算。
   - **两条属性路径**：运行时 `CollectModifiers` 逐属性 emit（PercentAdd 负率=等比减益）；预览/烘焙 `ChangeDataForConfig`(无实例) 与 `ChangeData`(实例) 逐对匹配 `targetAttributeType` 应用。解析结果按 `BuffInfoBean.GetAttributeMultiPairs()` 缓存。
   - **判定收口**：`BuffBean.IsBuffEntityAttributeOnly()`（单属性 or 多属性）决定「纯属性BUFF」→ 走属性烘焙(`CreatureBean.GetBuffChangeAttribute`)、不作为运行时BUFF实体添加（`GetListBuffData(getBuffAttributeBase:false)` 排除，避免与烘焙重复计算）。
 - **高稀有度累积低档**：SSR 生物 = R+SR+SSR 各 1 条、SR 生物 = R+SR 各 1 条（`CreatureBean.RandomRarityBuffForCreate` 逐级授予）。设计 SR/SSR 时应默认玩家已持有低档属性底子，SR/SSR 要体现「质」的差异而非再堆纯属性。

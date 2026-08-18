@@ -52,6 +52,10 @@ public partial class FightSceneBean : BaseBean
 	/// </summary>
 	public long environment_sound;
 	/// <summary>
+	///景深配置(形如mode:Bokeh&length:130&aperture:12,空=默认Bokeh/180/12)
+	/// </summary>
+	public string depth_of_field;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

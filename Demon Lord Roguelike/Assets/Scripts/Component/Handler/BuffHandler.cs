@@ -170,6 +170,28 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
     }
 
     /// <summary>
+    /// 场上生物是否带"动态率属性BUFF"(BuffEntityAttributeDynamicRate 及子类，如R稀有度独行者)。O(1) 读缓存。
+    /// <para>缓存单调置位：AddFightCreatureBuff 挂接含动态率BUFF即置 true(一局只增不减)，仅 BuffManager.ClearFightCreatureBuff(战斗清理)复位。</para>
+    /// </summary>
+    /// <returns>本局有生物带过动态率BUFF返回 true</returns>
+    public bool HasDynamicRateCreatureBuff()
+    {
+        return manager.hasDynamicRateCreatureBuff;
+    }
+
+    /// <summary>
+    /// 创建战斗生物BUFF实例并按需置位动态率缓存(收口 AddFightCreatureBuff 内三分支的创建点，避免置位逻辑分散)
+    /// </summary>
+    private BuffBaseEntity CreateFightCreatureBuffEntity(BuffEntityBean itemAddBuffEntityBean)
+    {
+        var buffEntity = manager.GetBuffEntity(itemAddBuffEntityBean);
+        //动态率生物BUFF缓存单调置位：含动态率BUFF(如独行者)即置true，死亡/新建魔物时的全体重算门控才会放行
+        if (buffEntity is BuffEntityAttributeDynamicRate)
+            manager.hasDynamicRateCreatureBuff = true;
+        return buffEntity;
+    }
+
+    /// <summary>
     /// 移除指定升级族当前已拥有的馈赠条目（含其全部BUFF），用于升级替换。
     /// </summary>
     private void RemoveAbyssalBlessingByFamilyRoot(long familyRootId)
@@ -296,7 +318,7 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
             //如果当前生物没有BUFF 则直接添加----------------------------------
             if (listBuffEntityActivie == null)
             {
-                var buffEntity = manager.GetBuffEntity(itemAddBuffEntityBean);
+                var buffEntity = CreateFightCreatureBuffEntity(itemAddBuffEntityBean);
                 if (buffEntity == null) continue;
                 List<BuffBaseEntity> listBuffEntityNew = new List<BuffBaseEntity>() { buffEntity };
                 manager.dicFightCreatureBuffsActivie.Add(targetCreatureId, listBuffEntityNew);
@@ -305,7 +327,7 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
             //如果当前生物有BUFF列表 但是是空----------------------------------
             else if (listBuffEntityActivie.Count == 0)
             {
-                var buffEntity = manager.GetBuffEntity(itemAddBuffEntityBean);
+                var buffEntity = CreateFightCreatureBuffEntity(itemAddBuffEntityBean);
                 if (buffEntity == null) continue;
                 listBuffEntityActivie.Add(buffEntity);
             }
@@ -336,7 +358,7 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
                 if (!absorbed)
                 {
                     //新增分支
-                    var buffEntity = manager.GetBuffEntity(itemAddBuffEntityBean);
+                    var buffEntity = CreateFightCreatureBuffEntity(itemAddBuffEntityBean);
                     if (buffEntity == null) continue;
                     listBuffEntityActivie.Add(buffEntity);
                 }

@@ -57,7 +57,7 @@ BaseAttackMode                      - 攻击模式基类
 ├── AttackModeRanged                - 远程直线弹道（逐帧移动+碰撞检测；InitAttackModeShow 开启 visualVelocityOrient——火球/冰球 billboard 视觉按 _VelocityWS.w 速度朝向：贴图头（默认朝右）对准飞行方向、拖尾朝飞行反方向，仅桶材质声明 _VelocityWS 才生效，RangedNormal 等材质零副作用）
 │   ├── AttackModeRangedArea        - 远程范围弹道（击中时范围AOE）
 │   ├── AttackModeRangedArc         - 远程抛物线弹道（到达终点走 `HandleForReachEnd` 虚方法，默认回收，子类覆盖为落点AOE等收尾）
-│   │   └── AttackModeRangedArcArea - 抛物线范围（继承抛物线轨迹）
+│   │   └── AttackModeRangedArcArea - 抛物线落点范围（继承 Arc：抛射物飞向起飞时锁定目标脚底的固定落点、不追踪（目标中途死亡/移动照飞原落点），途中不命中任何目标（PrepareRaycast 全程不入队/CheckHitTargetForSingle 恒 null），到达落点覆盖 HandleForReachEnd 走 CheckHitTargetArea 范围结算——范围内所有存活敌人全部命中（hit_max>0 近者优先截断+同生物去重，0=不限），射空落点无敌人落地即回收；牛头人投手5002用 203001[配 collider_area_type=11&collider_area_size=1.5&hit_max=5 + visual_name=AttackModeVisual_RangedNormal（DSP石头，与老 prefab 同贴图 Weapon_1.png，共用者 200001/206001/210001，prefab_name 置空不再走预制体）+ trail_data=count:6&interval:0.05&startAlpha:0.5&endAlpha:0.05 方案1残影拖尾 + effect_hit=1900001(Effect_Hit_1 落点爆发，走 ShowEnduringSingletonEffect) + sound_start=100002(sound_knife_miss_2)&sound_hit=420011(sound_hit_11)]，配 attack_search_type=41 DisMaxByRoad 索当前排最后一个敌人，ATK=3 以数量换单体伤害）
 │   │   └── AttackModeRangedArcBounce - 弹跳抛物线（分段抛物线+追踪锁定+命中弹跳；深渊馈赠「跳跳斧」300061）
 │   │   └── AttackModeRangedArcGround - 抛物线火瓶-地形火焰（双状态 Flying→Burning：飞行段抛物线飞向固定落点不追踪、纯投掷物禁用命中、弹体自旋-720°/s绕-Z轴，到达切燃烧段驻留每1秒对半径范围跳伤、满5秒自毁；落地切燃烧时播放 sound_water_4；深渊馈赠「瓶装炼狱火」300101）
 │   │   └── AttackModeRangedArcTracking - 抛物线落点跟踪（落点实时跟踪目标、目标死亡落死亡点、到达落点范围检测取最近单体命中、途中不命中；弹体朝向每帧跟随抛物线切线：visualStartAngle=武器StartRotate基准角+atan2(8h(0.5-progress),Δx)；弧高2；射空收尾按 other_data 的 stuck_time/stuck_sink 键插地停留或落地即毁，插地期弹体冻结仍挂 dlAttackModePrefab、场景清场自动回收；人类弓箭手1002用 206001[配 other_data=stuck_time:3&stuck_sink:0.1]，配 attack_search_type=41 DisMaxByRoad 索当前排最后一个敌人）
@@ -105,6 +105,7 @@ BaseAttackMode                      - 攻击模式基类
 | `AttackModeRanged` | 直线飞行弹道（InitAttackModeShow 开启 `visualVelocityOrient`：火球/冰球 billboard 视觉按 `_VelocityWS.w` 速度朝向——贴图头（默认朝右）对准飞行方向、拖尾朝飞行反方向，无 `_VelocityWS` 属性材质零副作用） | 箭矢、法术弹 |
 | `AttackModeRangedArea` | 飞行弹道+击中AOE | 爆炸箭、火球术 |
 | `AttackModeRangedArc` | 抛物线飞行 | 投石、抛物线炸弹 |
+| `AttackModeRangedArcArea` | 抛物线投掷 + 落点范围伤害（飞行段纯移动不命中；到达落点 `HandleForReachEnd` 走 `CheckHitTargetArea` 范围结算全部存活敌人，hit_max 近者优先截断+同生物去重，0=不限；落点=起飞时目标脚底快照不追踪，射空落地即回收） | 投石范围轰炸、抛物线AOE（牛头人投手 203001，配 `collider_area_size=1.5`&`hit_max=5`；DSP 石头视觉+残影拖尾+落点爆发特效 1900001） |
 | `AttackModeRangedArcBounce` | 分段抛物线 + 追踪锁定目标 + 命中后弹跳到附近目标（次数由发射方注入，全程命中去重，伤害逐目标减半保底1；弧高首段=arcHeight、弹跳段减半；每段仅下落阶段 progress≥0.5 检测命中；分段时长=max(距离/速度, MinSegmentTime=1.0s) 防短段过快） | 弹跳斧、弹射类 |
 | `AttackModeRangedArcGround` | 抛物线投掷 + 落地驻留周期范围伤害（双状态：飞行段纯移动不命中+弹体自旋-720°/s绕-Z轴、到达切燃烧段每 TickInterval 对半径范围跳伤、满 Duration 自毁；燃烧段隐藏 DSP 弹体、粒子视觉走 EffectHandler.ShowEnduringSingletonEffect(effect_hit=1800001)；落地切燃烧时播放 sound_water_4） | 投掷物落地成持续灼烧地形（瓶装炼狱火） |
 | `AttackModeRangedArcTracking` | 抛物线 + 落点实时跟踪目标（落点=目标脚底+本发起始点相对攻击者的偏移，与发射口同高；目标死亡则落点锁定死亡点）+ 到达落点范围检测取**距落点最近的一个敌人**结算单体伤害（范围仅作检测窗口、非AOE，`collider_area_size[0]`=检测半径），弹道途中不命中任何目标；弹体朝向每帧跟随抛物线切线（`visualStartAngle`=武器StartRotate基准+`atan2(8h(0.5-progress), Δx)`，DSP 每帧读它建矩阵故每帧更新即生效）；弧高 2（构造函数覆盖基类默认 3）；收尾靠覆盖 Arc 的 `HandleForReachEnd`：命中即回收，**射空（落点无存活敌人）按 `other_data` 的插地键配置插地停留（stuck_time>0 启用，stuck_sink 下沉深度，倒计时走 GetFightDeltaTime、插地期冻结移动/跟踪/边界检测并关拖尾）或落地即回收——插地弹体仍挂 `dlAttackModePrefab`，ClearAttackModePrefab/Clear 清场自动覆盖**；配置解析走 `AttackModeInfoBeanPartial.GetStuckConfig()`（`AttackModeStuckConfig`，从通用扩展列 other_data 取 stuck_time/stuck_sink 键） | 抛射狙击、迫击炮式打击（人类弓箭手 206001，配 `other_data=stuck_time:3&stuck_sink:0.1`） |
@@ -686,6 +687,7 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | `AttackModeRangedTracking` | 先按当前位置实时算朝向目标的方向，再入队 1 条 |
 | `AttackModeRangedArc` | `progress<0.5` 前半程不检测→不入队 |
 | `AttackModeRangedArcTracking` | 全程不入队（命中只在落点范围检测，PrepareRaycast 重写为 no-op） |
+| `AttackModeRangedArcArea` | 全程不入队（命中只在落点范围检测，与 ArcTracking 同） |
 | `AttackModeRangedObliqueTracking` | 全程入队 1 条（含目标死亡后；入队前先刷新跟踪方向，与 Update 一致） |
 | `AttackModeFallupon` | 下落中在当前位置入队 1 条 |
 | `AttackModeRangedSplitChild` | 继承 `AttackModeRanged` 的单射线策略，无需重写（发射器 `AttackModeRangedSplit` 本身不飞不检测，走基类 no-op） |

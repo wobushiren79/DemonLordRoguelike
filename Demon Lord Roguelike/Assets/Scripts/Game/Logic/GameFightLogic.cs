@@ -637,9 +637,9 @@ public class GameFightLogic : BaseGameLogic
     /// </summary>
     public void EventForGameFightLogicCreatureDeadEnd(FightCreatureEntity fightCreatureEntity)
     {
-        //动态属性馈赠(都是兄弟/杀红了眼)：魔物死亡→场上数量减少；敌人死亡→累计击杀增加，两者都需重算全体防守魔物属性
+        //动态属性BUFF(都是兄弟/杀红了眼/独行者)：魔物死亡→场上数量减少；敌人死亡→累计击杀增加，两者都需重算全体防守魔物属性
         //先处理死亡带来的属性变化，再检测游戏是否结束(结算可能切状态)
-        if (BuffHandler.Instance.HasDynamicRateAbyssalBlessing())
+        if (BuffHandler.Instance.HasDynamicRateAbyssalBlessing() || BuffHandler.Instance.HasDynamicRateCreatureBuff())
         {
             RefreshAllDefenseCreatureAttribute();
         }
@@ -648,12 +648,12 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// 新建防守魔物实体：动态属性馈赠"随场上魔物数量缩放"(如都是兄弟)时，重算全体防守魔物属性使已在场魔物的加成随 N 增大即时生效
+    /// 新建防守魔物实体：动态属性BUFF"随场上魔物数量缩放"(如都是兄弟/独行者)时，重算全体防守魔物属性使已在场魔物的加成随 N 变化即时生效
     /// </summary>
     /// <param name="fightCreatureEntity">新建的防守魔物实体(仅作事件参数)</param>
     public void EventForDefenseCreatureCreate(FightCreatureEntity fightCreatureEntity)
     {
-        if (BuffHandler.Instance.HasDynamicRateAbyssalBlessing())
+        if (BuffHandler.Instance.HasDynamicRateAbyssalBlessing() || BuffHandler.Instance.HasDynamicRateCreatureBuff())
         {
             RefreshAllDefenseCreatureAttribute();
         }
@@ -697,7 +697,7 @@ public class GameFightLogic : BaseGameLogic
 
     /// <summary>
     /// 重算防守核心 + 全部在场普通防守生物的属性(RefreshBaseAttribute)。
-    /// <para>供以下场景使用：① 深渊馈赠变化(EventForAbyssalBlessingChange)；② 动态属性馈赠(都是兄弟/杀红了眼)下魔物增减、敌人击杀导致加成数值变化时即时生效。</para>
+    /// <para>供以下场景使用：① 深渊馈赠变化(EventForAbyssalBlessingChange)；② 动态属性BUFF(都是兄弟/杀红了眼/独行者)下魔物增减、敌人击杀导致加成数值变化时即时生效。</para>
     /// </summary>
     public void RefreshAllDefenseCreatureAttribute()
     {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public partial class FightSceneBean
 {
@@ -107,6 +108,36 @@ public partial class FightSceneBean
     /// 是否配置了环境音（environment_sound 为 AudioInfo 表 id，0=不播放；播放走 AudioHandler.PlayEnvironment 循环通道）
     /// </summary>
     public bool HasEnvironmentSound => environment_sound > 0;
+
+    #endregion
+
+    #region 景深配置
+
+    /// <summary>
+    /// 是否配置了景深（depth_of_field 字段为空表示使用默认景深参数）
+    /// </summary>
+    public bool HasDepthOfField => !string.IsNullOrEmpty(depth_of_field);
+
+    /// <summary>
+    /// 解析景深配置字符串（形如 mode:Bokeh&length:130&aperture:12，缺省键回退默认值 Bokeh/180/12）
+    /// </summary>
+    /// <param name="mode">景深模式（Bokeh/Gaussian）</param>
+    /// <param name="focalLength">焦距（毫米），值越大景深越浅</param>
+    /// <param name="aperture">光圈（f 值），值越小景深越浅</param>
+    /// <returns>是否解析成功（配置为空返回 false）</returns>
+    public bool GetDepthOfFieldParams(out DepthOfFieldMode mode, out float focalLength, out float aperture)
+    {
+        mode = DepthOfFieldMode.Bokeh;
+        focalLength = 180f;
+        aperture = 12f;
+        if (string.IsNullOrEmpty(depth_of_field)) return false;
+        //复用框架通用拆解：按 ':' 与 '&' 拆成 Dictionary<string,string>
+        var dic = depth_of_field.SplitForDictionary();
+        if (dic.TryGetValue("mode", out var strMode) && !Enum.TryParse(strMode, true, out mode)) mode = DepthOfFieldMode.Bokeh;
+        if (dic.TryGetValue("length", out var strLength)) float.TryParse(strLength, out focalLength);
+        if (dic.TryGetValue("aperture", out var strAperture)) float.TryParse(strAperture, out aperture);
+        return true;
+    }
 
     #endregion
 

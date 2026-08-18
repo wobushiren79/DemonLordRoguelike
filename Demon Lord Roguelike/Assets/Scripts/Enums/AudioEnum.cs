@@ -194,4 +194,5 @@ public enum AudioEnum : long
     music_main_1 = 1200001,//主界面音乐1
     //==================== 环境音 Environment ====================
     sound_night_1 = 2000001,//夜晚虫鸣1
+    sound_rain_1 = 2000002,//下雨1
 }

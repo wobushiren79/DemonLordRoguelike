@@ -10,6 +10,8 @@ public class BuffManager : BaseManager
     public DictionaryList<AbyssalBlessingEntityBean, List<BuffBaseEntity>> dicAbyssalBlessingBuffsActivie = new DictionaryList<AbyssalBlessingEntityBean, List<BuffBaseEntity>>();
     //缓存：馈赠池内是否含"动态率属性馈赠"(BuffEntityAttributeDynamicRate)。仅在馈赠池变化时(增/替换/清空)更新，供死亡/新建魔物等高频事件守卫 O(1) 读取，避免每次遍历
     public bool hasDynamicRateAbyssalBlessing = false;
+    //缓存：场上生物是否带"动态率属性BUFF"(BuffEntityAttributeDynamicRate，如R稀有度独行者)。挂接时单调置位(一局只增不减)，ClearFightCreatureBuff 复位，与馈赠缓存同策略
+    public bool hasDynamicRateCreatureBuff = false;
     //活跃的战斗生物BUFF
     public DictionaryList<string, List<BuffBaseEntity>> dicFightCreatureBuffsActivie = new DictionaryList<string, List<BuffBaseEntity>>();
 
@@ -40,6 +42,8 @@ public class BuffManager : BaseManager
     {
         ClearBuffCollection(dicFightCreatureBuffsActivie.List);
         dicFightCreatureBuffsActivie.Clear();
+        //池清空，动态率生物BUFF缓存复位
+        hasDynamicRateCreatureBuff = false;
     }
     
     /// <summary>

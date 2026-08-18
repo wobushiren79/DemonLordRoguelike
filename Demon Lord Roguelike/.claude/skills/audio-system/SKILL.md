@@ -137,7 +137,7 @@ AudioHandler.Instance.PlayEnvironment(AudioEnum.sound_night_1, volumeScale);
 AudioHandler.Instance.PlayEnvironment(fightSceneData.environment_sound); // 配置驱动的动态 id 走 long 接口
 ```
 
-- **战斗场景配置驱动**：`FightScene` 表 `environment_sound` 列（AudioInfo id，空/0=不播）→ `WorldHandler.LoadFightScene` 进场自动播、`UnLoadScene(Fight)` 自动停（判定 `FightSceneBeanPartial.HasEnvironmentSound`）。首例：10002 树林夜晚 = 2000001（sound_night_1 夜晚虫鸣）。
+- **战斗场景配置驱动**：`FightScene` 表 `environment_sound` 列（AudioInfo id，空/0=不播）→ `WorldHandler.LoadFightScene` 进场自动播、`UnLoadScene(Fight)` 自动停（判定 `FightSceneBeanPartial.HasEnvironmentSound`）。已有配置：10002 树林夜晚 = 2000001（sound_night_1 夜晚虫鸣）；10003/10004 树林下雨（白天/夜晚）= 2000002（sound_rain_1 下雨）。单通道一路环境音，同场景只能配一个 id。
 - **资源要求**：audio_type=2 的文件必须在 `Assets/LoadResources/Audio/Environment/` 目录，且注册进 Addressables **`Audio_Environment`** 组（逐文件 entry、address=完整路径）才能被寻址。
 - 枚举段位：环境音 `2000001` 起（音效 1~630005 / 音乐 1000001~1200001 之后的新段）。
 

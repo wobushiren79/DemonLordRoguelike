@@ -12,6 +12,10 @@ using Newtonsoft.Json;
 public partial class CreatureInfoBean : BaseBean
 {
 	/// <summary>
+	///备注
+	/// </summary>
+	public string remark;
+	/// <summary>
 	///创建需要的魔力
 	/// </summary>
 	public int CMP;
@@ -178,10 +182,6 @@ public partial class CreatureInfoBean : BaseBean
 	///护盾受击特效位置偏移(相对生物坐标,空=0,0.5,0)
 	/// </summary>
 	public string shield_effect_position;
-	/// <summary>
-	///备注
-	/// </summary>
-	public string remark;
 }
 public partial class CreatureInfoCfg : BaseCfg<long, CreatureInfoBean>
 {
