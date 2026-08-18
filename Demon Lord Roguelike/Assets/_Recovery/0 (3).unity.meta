@@ -1,6 +1,11 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Demon Lord Roguelike/Assets/_Recovery/0 (3).unity.meta
 guid: 7f1fe918823a0d54f9d3fef8c83aef74
 DefaultImporter:
+========
+guid: b087c569a7277be4e946f9b904527ea3
+PrefabImporter:
+>>>>>>>> d43aa3458131dce1406b4e1284974818c490953c:Demon Lord Roguelike/Assets/LoadResources/FightScene/FightScene_Plain_1.prefab.meta
   externalObjects: {}
   userData: 
   assetBundleName: 
