@@ -582,6 +582,49 @@ ghost.ClearAll();
 
 ---
 
+## 花海 GPU Instancing(Indirect) 渲染器
+
+**文件**: `Assets/FrameWork/Scripts/Component/Other/FlowerSeaInstanceRenderer.cs` + `Assets/FrameWork/Shader/URP/Shader_Mesh_FlowerSeaInstancedIndirect_1.shader`（Shader 名 `FrameWork/URP/FlowerSeaInstancedIndirect1`）+ 预设材质模板 `Assets/Resources/Materials/Mat_FlowerSeaInstancedIndirect_1.mat` + 自定义 Inspector `Assets/FrameWork/Editor/Base/Inspector/InspectorFlowerSeaInstanceRenderer.cs`（贴图字段按 textureMode 条件显示 + 手动刷新按钮）
+
+框架层通用「花海/草地」批量装饰渲染器（项目首个 `Graphics.DrawMeshInstancedIndirect` + `ComputeBuffer` 用例）：整片花海为纯数据（每朵 32B 实例数据），全场 **1 个 draw call**，支持「踩踏消散」（`TrampleAt` 写消散开始时间，shader 噪声抖动 clip）。不走 Handler/Manager，挂场景即用。
+
+### 数据流
+
+```
+Generate()：贴图归一(图集均分/手动Rect/单图PackTextures打包→atlas+Rect[]) → 抖动网格布点(洗牌分格+种子随机，flowerCount 超额时多轮复用格子不截断)
+    → 地形高度三模式(固定/射线/高度图，高度图模式自动识别 MeshTerrain 材质) → 静态实例 buffer(位置/缩放/变体/相位/yaw, 32B×N) + 变体Rect buffer + args buffer
+TrampleAt(pos, radius)：XZ 空间哈希网格查花 → dissolveBuffer 写当前时钟（哨兵 -1=未消散，仅踩踏帧整份重传 4B×N），DissolvedCount 计数
+shader：每渲染帧由组件推送统一时钟 _FlowerSeaTime（编辑模式=EditorApplication.timeSinceStartup，Play=Time.time）→ progress=saturate((_FlowerSeaTime-start)/duration) → clip(noise-progress*1.001) 像素 dither 消散
+Update()：dirty 帧上传 dissolveBuffer → DrawMeshInstancedIndirect(quad, mat, cachedBounds, argsBuffer)
+```
+
+### 用法
+
+```csharp
+// 挂空物体 → Inspector 配贴图/范围 → Play 自动 Generate（generateOnEnable）
+// 生物走过时调用方触发：
+flowerSea.TrampleAt(creature.position, 0.5f);
+flowerSea.ResetSea();   // 全部复原（不重新布点）
+// 或开 pollTargetsEnable 挂 Transform 列表自动轮询踩踏
+```
+
+### 关键点与坑
+
+- **双形态共用同一 quad**（底部中心 pivot）：竖直 yaw 广告牌 / 贴地平铺（`_FLATMODE` 顶点内把 y∈[0,1] 重映射到 z∈[-0.5,0.5]）。
+- **keyword 用 `multi_compile` 不用 `shader_feature`/`_local`**：材质运行时 `new`、无资产携带 keyword，`_local` 在 Instanced 绘制下变体选择失效（项目教训），`shader_feature` 有构建裁剪风险；3 个 keyword 仅 8 变体，全量内置零风险。
+- **不用 Unity instancing 宏**：顶点 `SV_InstanceID` 直接索引 `StructuredBuffer`（需 `#pragma target 4.5`）；材质须 `enableInstancing=true`。
+- **消散不删实例**：args 的 instanceCount 恒定，消失靠 shader clip，零回读零 CPU 压缩；`clip(noise - progress*1.001)` 的 ×1.001 保证 progress=1 整朵消失（noise=1 像素残留坑）。
+- **战斗场景适配**：AlphaTest 队列 + ZWrite On 绕开 `transparencySortMode=CustomAxis(Z)` 排序问题；贴地 `yOffset≈0.001`（道路面在 0.0001）。
+- **消散噪声必须非常量图**：不赋值时组件用内置 8×8 Bayer 抖动矩阵兜底（`GetDefaultDissolveNoise`，静态共享 Point/Repeat）——引擎默认灰图是常量 0.5，所有像素同一时刻过阈值，会表现为"整朵到点齐消失"而非颗粒渐变。
+- **单图模式**要求贴图开 Read/Write（PackTextures），打包产物强制 Point 过滤；shader 内另有 `samplerPointRepeat` 兜底。
+- **编辑模式可预览**（`[ExecuteAlways]`）：绘制提交走 `RenderPipelineManager.beginContextRendering` 回调（非 Update），编辑/Play 双模式同源；编辑模式销毁对象必须 `DestroyImmediate`（DestroySmart 封装）。
+- **预制体编辑模式(Prefab Stage)不支持预览**（2026-08 实测，两条路径均失败后回滚）：SRP `beginContextRendering` 回调对预制阶段视图不生效；`SceneView.duringSceneGui` 提交 `DrawMeshInstancedIndirect` 也画不出来（疑 DrawMesh* 需在相机渲染建立阶段提交，预制阶段渲染不走该路径）。替代工作流：把预制实例拖到场景中调参（场景视图实时预览正常）。注意排查方向：预制里的组件若未赋贴图，Generate 会在 Console 报"图集模式未赋 atlasTexture"导致 isReady=false。
+- **地形高度三模式**（`heightMode`）：`FixedY` 平地 / `Raycast` 射线（用 `gameObject.scene.GetPhysicsScene().Raycast` 命中组件所在 scene，预制阶段也能打自身场景）/ `HeightmapTerrain` 高度图地形——**GPU 顶点位移地形（如 `Shader_Mesh_Terrain.shader` 的 MeshTerrain）射线只能打到位移前的平面，必须用它**：CPU 侧复现 `TerrainHeight.hlsl` 公式（`local.y += h*heightScale`），世界XZ→地形物体空间→网格 UV(按 `mesh.bounds` 归一)→双线性采高度图；高度图/起伏/反转可自动从地形材质读（`_HeightMap/_HeightScale/_HeightInvert` 约定属性名），**贴图无需开 Read/Write**（Blit→线性临时RT→ReadPixels 回读）。
+- **时钟不用 shader 内置 `_Time.y`**：消散/风摆统一用组件每渲染帧推送的 `_FlowerSeaTime`（编辑模式=EditorApplication.timeSinceStartup，Play=Time.time）——与 TrampleAt 盖章严格同源，规避编辑模式下内置时钟不保证同步导致消散永不推进的坑（CBUFFER 里必须声明为 `float` 不能 `half`，编辑器长时间运行下大数值 half 精度不足）；`editModeLivePreview` 强制 SceneView 重绘驱动动画（**按 `editModePreviewFps` 节流，默认 30FPS**——满帧率强制重绘会让显卡空转）。
+- **参数自动实时刷新**：`OnValidate` 按「结构参数签名」分派——结构参数（范围/数量/种子/贴图列表/地形/randomYaw）全量重建，表现参数（消散/风摆/形态 keyword）仅 `PushMaterialProperties` 刷材质；编辑模式经 `EditorApplication.delayCall` 消费（OnValidate 内禁止建 GPU 资源），Play 模式 Update 消费；编辑模式拖动组件 transform 也会节流重建（0.15s）。
+
+---
+
 ## 常用代码模板
 
 ### 创建新的 Handler-Manager 配对

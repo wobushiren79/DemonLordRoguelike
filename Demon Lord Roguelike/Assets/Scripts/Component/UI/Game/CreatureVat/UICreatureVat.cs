@@ -488,7 +488,7 @@ public partial class UICreatureVat : BaseUIComponent
             var newRarityInfo = RarityInfoCfg.GetItemData(completedRarity);
             if (newRarityInfo != null)
                 rarityColor = ColorUtil.ParseHtmlString(newRarityInfo.ui_board_color);
-            EffectHandler.Instance.ShowCreatureAscendCompleteEffect(targetVat.position + new Vector3(0, 1.2f, 0), rarityColor);
+            EffectHandler.Instance.ShowCreatureAscendCompleteEffect(targetVat.position + new Vector3(0, 0.1f, 0), rarityColor);
         }
         UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(80013), 1);
         //复位本次选择并重建目标列表,反映升阶后的新稀有度(否则列表仍是进阶前状态)

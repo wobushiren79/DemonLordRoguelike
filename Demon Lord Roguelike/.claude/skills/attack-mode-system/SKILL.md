@@ -66,6 +66,7 @@ BaseAttackMode                      - 攻击模式基类
 │   │   └── AttackModeRangedObliqueTracking - 直线斜射跟踪-范围伤害版（①跟踪含Y不拍平+首发方向按出手点→瞄准点重算：从头顶高空出手（attack_start_position y=2.5）直直斜射目标，瞄准点=目标脚底+other_data 键 aim_up 上抬（默认0=瞄脚底，201001/201002 配 aim_up:0.5）；②命中检测/射线全程有效，目标死亡方向冻结朝死亡点直飞直至命中或出界；③HandleForHitTarget 走 CheckHitTargetArea 命中点AOE（hit_max 近者优先截断，201001/201002 配 hit_max=3=离爆炸点最近3个敌人）；④贴身保底命中：与瞄准点距离≤HitTouchDistance(0.2)直接判中——短射线0.1在迎面相撞穿进碰撞体后永久失效（射线不打背面），无此层会挂身空转；⑤触地即毁：下落中（attackDirection.y<0）y≤GroundHitY(0.05)播 effect_hit 回收（无伤害结算），目标死亡直飞不穿地；弹体朝向：面片 quad 视觉走 visualStartAngle=StartRotate基准角+atan2(dir.y,dir.x)；火球/冰球 billboard shader 走 visualVelocityOrient→_VelocityWS.w 速度朝向（矩阵旋转对其核心无效）；人类法师1003/1004用 201001/201002）
 │   ├── AttackModeRangedPiercing    - 远程穿透弹道（可穿透多个目标）
 │   │   ├── AttackModeRangedPiercingRoad - 沿路碾压穿透（穿透数无上限、伤害逐目标减半保底1、驶到路尽头销毁；深渊馈赠「失控的矿车」300041）
+│   │   ├── AttackModeRangedPiercingShrink - 逐击衰减收缩穿透（初始2倍大小、每穿透1个敌人伤害减半保底1+大小缩小当前的1/3(变为2/3)、伤害降至1的当次命中后销毁，命中数天然有界⌊log2(ATK)⌋+1不看numPierceMax；同帧多命中按距弹近远升序结算；兽人魔法师7003火/7004冰用 205002/205003，配 buff=1000500002:0.1 烧伤/1000100002:0.1 冰减速，ATK=10→伤害10/5/2/1、大小2→1.33→0.89→0.59倍共命中4个）
 │   │   └── AttackModeRangedRebound - 四壁反弹穿透（道路矩形内永久反弹+±5°随机偏转、同目标1秒冷却、永不自毁由BUFF维持N颗；发射音sound_start=sound_fight_3、回弹音sound_hit_6；深渊馈赠「回弹菱块」300081~300085）
 │   ├── AttackModeRangedChain       - 直线连锁弹道（直线追踪锁定目标+命中后连锁至传递半径内下一目标：只认锁定目标挡路者穿过、锁定目标死亡即直飞落点销毁不再命中、伤害不递减；hit_max=连锁次数(2=共3目标)、collider_area_size[0]=传递半径(代码缺省1)、buff=命中概率附加异常；哥布林法师6004火/6005冰用 204002/204003，配传递半径1.5——半径1=道路间距临界值只能弹同路，1.5可弹相邻路x错位≤1.12的敌人）
 │   └── AttackModeRangedSplitChild  - 分裂弹-子弹道（直线飞行 + 向自己的目标道路归位；由下方发射器发射）
@@ -80,7 +81,7 @@ BaseAttackMode                      - 攻击模式基类
 ├── AttackModeOverlap               - 重叠检测（以自身为中心范围触碰，命中走正常 UnderAttack 伤害管线）
 │   └── AttackModeOverlapNoDamage   - 无伤害重叠（纯DEBUFF触碰变体：只附加 buff 字段配置的BUFF+播命中音，不掉血/不跳伤害数字/不播受击特效/不进伤害统计，走 FightCreatureEntity.UnderAttackNoDamage；烂泥史莱姆3003粘液减速400001(buff=1000200001:1,MSPD-40%×1s)、毒液史莱姆3004中毒400002(buff=1000400001:1,每跳=史莱姆实时ATK×20%[ATK=10→2/跳],每秒1跳共10次,毒伤跳伤走UnderAttack管线属正常)）
 ├── AttackModeLure                  - 引诱（改变被攻击者线路；魅惑成功播配置命中音效 sound_hit + 全局单例粒子 effect_hit，粒子位置=敌人位置+攻击者 attack_start_position 偏移，600001 配 sound_medicine_1=470001 / Effect_Buff_1=500002，4003 配攻击偏移 0,0.5,0）
-├── AttackModeInstantArea           - 瞬时落点范围（无弹道飞行，当帧对目标点范围攻击；支持 hit_max 命中上限+快照名单过滤，AOE 多目标伤害依次减半保底1，单次攻击内局部去重）
+├── AttackModeInstantArea           - 瞬时落点范围（无弹道飞行，当帧对目标点范围攻击；支持 hit_max 命中上限+快照名单过滤，AOE 多目标伤害按命中次序乘 other_data 键 hit_decay 递减率（默认0.5=依次减半，配1=全额）保底1，单次攻击内局部去重；牛头人法师5003火/5004冰用 101003/101004——远程瞬时捶地地刺，配 hit_decay:1 全额 + dr_damage_rate:2&hp_damage_rate:0.5 串联破甲 + buff=1000500002:0.1 烧伤/1000100002:0.1 冰缓，生物索敌 attack_search_type=0&range=10 同人类法师）
 │   └── AttackModeInstantAreaThunder - 落雷（瞬时AOE + 全局单例雷电粒子；深渊馈赠「闪电」300031~300035）
 └── AttackModeRegain                - 回复基类（不造成伤害，提供增益）
     ├── AttackModeRegainHP          - 回复生命
@@ -116,6 +117,7 @@ BaseAttackMode                      - 攻击模式基类
 | `AttackModeRangedChain` | 直线追踪 + 命中后连锁（每帧朝锁定目标当前位置刷新水平朝向；只认锁定目标、挡路者直接穿过；锁定目标中途死亡则不再命中任何人、直飞最后已知位置销毁——与跳跳斧"死后仍可撞人"刻意区分；**伤害不递减**；配置：`hit_max`=连锁次数(2=共击中3目标)、`collider_area_size[0]`=传递半径(代码缺省1；注意道路间距=1，半径1是"只弹同路"临界值，跨路需≥1.5)、`buff`=命中概率附加异常由 UnderAttack→AddBuff 自动附加） | 连锁法术弹（哥布林法师6004火/6005冰用 204002/204003，配传递半径1.5 + buff=1000500002:0.1 烧伤 / 1000100002:0.1 冰减速） |
 | `AttackModeRangedPiercing` | 可穿透多个目标 | 穿透箭、激光 |
 | `AttackModeRangedPiercingRoad` | 沿路穿透碾压 + 伤害逐目标递减 + 到路尽头销毁 | 矿车冲撞、碾压类 |
+| `AttackModeRangedPiercingShrink` | 继承 Piercing：初始 2 倍大小（StartAttackBase 里 visualScale 未配置按 1 × InitialScaleRate，DSP 火球/冰球 billboard 桶经逐实例 `_InstanceScale` 当帧生效），每穿透 1 个敌人伤害减半保底1+大小缩小当前的 1/3（变为 2/3），伤害降至 1 的当次命中后销毁；同帧多命中按距弹 position 近远升序结算（方向无关）；闪避/无敌目标仍消耗一次穿透与衰减 | 衰减收缩穿透弹（兽人魔法师 7003火/7004冰 用 205002/205003） |
 | `AttackModeRangedRebound` | 继承 Piercing（复用多目标命中遍历）：直线飞行 + 道路矩形四壁反弹（x∈[0.5,0.5+路长]、z∈[0.5,路数+0.5]，StartAttackBase 缓存），越墙钳位+方向分量取反+绕 Y 轴 ±5° 随机偏转（防 90° 死角死循环）；左墙在子弹进入场地后才生效（hasEnteredField 防出生即弹回魔王侧）；命中不销毁、伤害不递减，同一目标 1 秒冷却（Dictionary 记录各目标最近命中时刻，lifeTime 按 GetFightDeltaTime 累积，名单超 100 清理过期条目）；`CheckIsMoveBound` 恒 false 永不自毁，由发射方 BUFF 追踪维持 N 颗、关卡切换被清后补弹；音效：发射音配置 `sound_start`=sound_fight_3(400003)（GetAttackModePrefab 每颗发射时播放），回弹音 sound_hit_6 在四壁反弹成功时播放（HandleWallBounce），均受 PlaySound 0.1s 同音去重（同帧多颗只播一声） | 回弹菱块、弹球类 |
 | `AttackModeRangedBoomerang` | 回旋镖三段式飞行（起点→锁定点→超出一格折返→返回魔王，时间参数化：去程后半程减速到0、返程匀加速），伤害逐目标减半保底1，去程去重/返程可再命中 | 回旋镖、往返弹 |
 | `AttackModeOrbit` | 常驻环绕宿主圆周运动（不自毁、不越界销毁）+ 触碰命中（每只书对同一敌人 0.5 秒冷却） | 环绕书本、卫星弹 |
@@ -125,7 +127,7 @@ BaseAttackMode                      - 攻击模式基类
 | `AttackModeFallupon` | 直接对目标造成伤害 | 天降打击、瞬移攻击 |
 | `AttackModeFalluponArea` | 对目标位置范围伤害 | 陨石、天降AOE |
 | `AttackModeFalluponChain` | 连锁弹射递减伤害 | 闪电链、弹射攻击 |
-| `AttackModeInstantArea` | 当帧瞬时落点AOE（无飞行过程；可配 hit_max 上限+注入快照名单，伤害依次减半保底1，单次攻击内局部去重） | 落雷、瞬发地面AOE |
+| `AttackModeInstantArea` | 当帧瞬时落点AOE（无飞行过程；可配 hit_max 上限+注入快照名单，伤害按命中次序乘 hit_decay 递减率[默认0.5=依次减半，配1=全额]保底1，单次攻击内局部去重） | 落雷、瞬发地面AOE（牛头人法师 101003/101004 目标脚下瞬发地刺） |
 | `AttackModeRegain` | 回复而非伤害 | 治疗术、护盾恢复 |
 | `BaseAttackMode` | 完全自定义 | 特殊机制攻击 |
 
@@ -440,7 +442,7 @@ public class AttackModeFalluponChain : BaseAttackMode
 
 #### 瞬时落点AOE（落雷）示例
 
-> **模式要点**：`AttackModeInstantArea` 无弹道飞行——`StartAttack` 当帧立即以 `attackModeData.targetPos` 为圆心做一次范围攻击并自毁。天然无 `Update`/射线/拖尾开销；无 prefab/visual_name 时 `gameObject=null`，DSP 渲染自动跳过。两个扩展点：**配置 `hit_max`**（单次命中上限，>0 时按距落点近者优先截断，保证落点主目标必中）与**发射方注入 `filterCreatureIds`** 快照名单（非空时只命中名单内生物——「触发瞬间快照全场、间隔期新刷敌人不受波及」类攻击用，写法照 `AttackModeRangedSplitChild.targetRoad` 先例：StartAttack 前写入、`Destroy` 置空防对象池残留）。**AOE 多目标伤害按命中次序依次减半**（第 1 个满额、之后每个减半，向下取整保底 1 点，照 `AttackModeRangedPiercingRoad` 先例）；**单次攻击内局部去重**（同一生物多碰撞体只命中一次，局部 `setHitCreatureId` 记录，道与道之间不共享——溅射可重复作用于同一目标）。子类 `AttackModeInstantAreaThunder`（落雷）为纯标记类（**无 override**）：走基类 `PlayHitEffect`→`PlayEffectForHit`，其 `effect_hit=900003`(Effect_Thunder_3) 由配置表提供、统一走全局单例通道。
+> **模式要点**：`AttackModeInstantArea` 无弹道飞行——`StartAttack` 当帧立即以 `attackModeData.targetPos` 为圆心做一次范围攻击并自毁。天然无 `Update`/射线/拖尾开销；无 prefab/visual_name 时 `gameObject=null`，DSP 渲染自动跳过。两个扩展点：**配置 `hit_max`**（单次命中上限，>0 时按距落点近者优先截断，保证落点主目标必中）与**发射方注入 `filterCreatureIds`** 快照名单（非空时只命中名单内生物——「触发瞬间快照全场、间隔期新刷敌人不受波及」类攻击用，写法照 `AttackModeRangedSplitChild.targetRoad` 先例：StartAttack 前写入、`Destroy` 置空防对象池残留）。**AOE 多目标伤害按命中次序乘递减率**（other_data 键 `hit_decay`，默认 0.5=第 1 个满额、之后每个减半，向下取整保底 1 点，照 `AttackModeRangedPiercingRoad` 先例；配 1=全额不递减，如牛头人法师 101003/101004）；**单次攻击内局部去重**（同一生物多碰撞体只命中一次，局部 `setHitCreatureId` 记录，道与道之间不共享——溅射可重复作用于同一目标）。子类 `AttackModeInstantAreaThunder`（落雷）为纯标记类（**无 override**）：走基类 `PlayHitEffect`→`PlayEffectForHit`，其 `effect_hit=900003`(Effect_Thunder_3) 由配置表提供、统一走全局单例通道。
 
 ```csharp
 // 基类核心（AttackHandle 当帧执行一次即销毁）
@@ -453,13 +455,14 @@ public virtual void AttackHandle()
     {
         if (hitMax > 0) Array.Sort(targetColliders, 按距落点sqrMagnitude升序); //近者优先
         HashSet<string> setHitCreatureId = new HashSet<string>();      //本次攻击内局部去重(道与道不共享)
+        float hitDecayRate = attackModeInfo.GetHitDecayRate(); //other_data 键 hit_decay（默认0.5，循环外缓存）
         for (...)
         {
             if (hitMax > 0 && hitNum >= hitMax) break;
             if (filterCreatureIds != null && !filterCreatureIds.Contains(creatureId)) continue; //快照过滤
             if (!setHitCreatureId.Add(creatureId)) continue;           //同一生物多碰撞体只命中一次
             targetCreature.UnderAttack(this); hitNum++;
-            attackModeData.attackerDamage = Math.Max(1, attackModeData.attackerDamage / 2); //伤害依次减半保底1
+            attackModeData.attackerDamage = Math.Max(1, (int)(attackModeData.attackerDamage * hitDecayRate)); //伤害乘递减率保底1（默认0.5=减半，配1=全额）
         }
     }
     PlayHitEffect(centerPos);   //默认 PlayEffectForHit(全部 effect_hit 统一走全局单例通道，无 id 分流)
@@ -514,8 +517,8 @@ public class AttackModeCustom : BaseAttackMode
     "buff": "1001:0.5|1002:1.0",     // 攻击附带的BUFF（ID:创建概率）
     "attack_search_type": 0,         // 攻击搜索类型（0射线 11球形范围 21盒形范围）
     "damage_add_rate": 0,            // 伤害加成比例（float；最终伤害=攻击者ATK×该值，0/空=无加成按1倍。如自爆史莱姆爆炸300001配50：ATK 10×50=500；敢死队爆炸300002配1：ATK 500×1=500）
-    "hit_max": 1,                    // 单次命中目标数上限（int；>0 时按距检测点近者优先截断+同生物去重，0/空=不限制；走 CheckHitTargetArea 的范围攻击[MeleeArea/RangedArea/Explosion/Overlap等]与 AttackModeInstantArea 系通用，InstantArea 另带伤害依次减半）
-    "other_data": "stuck_time:3&stuck_sink:0.1", // 其它扩展参数（&分隔项,:分键值，按 key 解析的通用扩展列）。当前键：stuck_time=射空后插地停留秒数(>0启用插地)、stuck_sink=插地下沉深度(默认0)，插地目前仅 AttackModeRangedArcTracking 系使用，解析见 GetStuckConfig()；aim_up=瞄准点相对目标脚底上抬高度(默认0=瞄脚底)，目前仅 AttackModeRangedObliqueTracking 使用，解析见 GetAimUpHeight()
+    "hit_max": 1,                    // 单次命中目标数上限（int；>0 时按距检测点近者优先截断+同生物去重，0/空=不限制；走 CheckHitTargetArea 的范围攻击[MeleeArea/RangedArea/Explosion/Overlap等]与 AttackModeInstantArea 系通用，InstantArea 另带 hit_decay 递减[默认0.5=减半]）
+    "other_data": "stuck_time:3&stuck_sink:0.1", // 其它扩展参数（&分隔项,:分键值，按 key 解析的通用扩展列）。当前键：stuck_time=射空后插地停留秒数(>0启用插地)、stuck_sink=插地下沉深度(默认0)，插地目前仅 AttackModeRangedArcTracking 系使用，解析见 GetStuckConfig()；aim_up=瞄准点相对目标脚底上抬高度(默认0=瞄脚底)，目前仅 AttackModeRangedObliqueTracking 使用，解析见 GetAimUpHeight()；dr_damage_rate/hp_damage_rate=护甲/血量分段伤害倍率(默认1/1=不启用；非默认走串联破甲结算：护甲>0只以dr倍率打甲不掉血、破甲后只以hp倍率打血、破甲击溢出不结转，结算在 FightCreatureEntity.UnderAttack，经 FightUnderAttackBean 注入)，目前仅牛头人法师 101003/101004(dr2/hp0.5) 使用，解析见 GetDamageSplitConfig()；hit_decay=瞬时AOE多目标伤害递减率(默认0.5=依次减半，配1=全额)，目前仅 AttackModeInstantArea 使用，解析见 GetHitDecayRate()
     "collider_size": 0.5,            // 碰撞检测大小（点到点）
     "collider_area_type": 11,        // 范围检测类型（11球形 21盒形）
     "collider_area_size": "2,2,2",   // 范围检测大小（半径或半extents）
@@ -706,7 +709,7 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 
 约束：
 - **检测时机统一为「移动前位置」**：两段式在移动前一次性收集。
-- **命中窗口上限** `FightRaycastBatch.MaxHitsPerRay`（当前 4）：单条射线最多记录的命中数；弹道射线极短（`collider_size~0.1`），穿透 `numPierceMax` 亦够用。若将来需要单射线穿透 >4，需上调此常量。
+- **命中窗口上限** `FightRaycastBatch.MaxHitsPerRay`（当前 4）：单条射线最多记录的命中数；弹道射线极短（`collider_size~0.1`），穿透 `numPierceMax` 亦够用。若将来需要单射线穿透 >4，需上调此常量。⚠️仅对已入队批处理的射线生效——`prefab_name` 为空的纯 DSP 弹道（`gameObject==null`）`EnqueueSingleRay` 首行即返回不入队，`CheckHitTarget` 回落 `RayUtil` NonAlloc live 射线（共享缓冲上限 32），同帧多命中不受 4 限制；此类弹道若伤害逐目标递减，命中顺序不保证近远，须自行按距弹位置排序（先例：`AttackModeRangedPiercingShrink`）。
 - **层掩码** 由 `GetSearchLayerMask()` 从 `searchCreatureType` 推导，后者由 **`StartAttackBase()` → `RefreshSearchCreatureType()`** 按 `attackModeData.attackedLayerTarget` 推导缓存。⚠️**必须放在 `StartAttackBase` 而非 `StartAttack(attacker,...)`**：「纯数据发射」路径 `StartAttack()`（分裂弹子弹道等由发射器创建的弹道走的正是它）没有 attacker，若只在生物对战路径里推导，这些弹道会 `searchCreatureType=None` → 层掩码 0 → 射线不入队 → **永远打不到人**。发射器负责经 `AttackModeBean.CopyAttackerDataFrom` 把 `attackedLayerTarget` 传给子弹道。
 - **生命周期**：`raycastBatch` 挂在 `FightManager`，`Clear()` 时 `Dispose()` 释放 `NativeArray`，下场战斗首次入队按需重新分配。
 
@@ -790,6 +793,7 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | 追踪弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedTracking.cs` |
 | 直线斜射跟踪-范围（人类法师） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedObliqueTracking.cs` |
 | 穿透弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedPiercing.cs` |
+| 逐击衰减收缩穿透（兽人魔法师火锥/冰锥 205002/205003） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedPiercingShrink.cs` |
 | 沿路碾压穿透（矿车） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedPiercingRoad.cs` |
 | 四壁反弹穿透（回弹菱块） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedRebound.cs` |
 | 回旋镖弹道（死亡回旋） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedBoomerang.cs` |

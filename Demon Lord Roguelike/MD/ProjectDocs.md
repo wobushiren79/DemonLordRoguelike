@@ -629,7 +629,7 @@ Fight/
 | 类型 | 类名 |
 |------|------|
 | 近战 | `AttackModeMelee`、`AttackModeMeleeArea` |
-| 远程 | `AttackModeRanged`、`AttackModeRangedArc`、`AttackModeRangedArcArea`、`AttackModeRangedArea`、`AttackModeRangedPiercing`、`AttackModeRangedSplit`、`AttackModeRangedTracking` |
+| 远程 | `AttackModeRanged`、`AttackModeRangedArc`、`AttackModeRangedArcArea`、`AttackModeRangedArea`、`AttackModeRangedPiercing`、`AttackModeRangedPiercingShrink`、`AttackModeRangedSplit`、`AttackModeRangedTracking` |
 | 特殊 | `AttackModeExplosion`、`AttackModeFallupon`、`AttackModeFalluponArea`、`AttackModeFalluponChain`、`AttackModeLure`、`AttackModeOverlap` |
 | 恢复 | `AttackModeRegain`、`AttackModeRegainHP`、`AttackModeRegainDR` |
 

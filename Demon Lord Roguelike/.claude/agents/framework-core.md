@@ -25,6 +25,7 @@ watched_files:
 - **BaseControl / EffectBase** - 控制与特效基类
 - **BaseObservable / IBaseObserver** - 观察者模式
 - **AfterimageGhostBase + Mesh/SkinnedMesh/Sprite 变体** - 通用残影(afterimage/虚影拖尾)效果（Component/Other/）：基类封装对象池 + 生成节奏(StartSpawn(count,duration)) + 淡出 + 清理(ClearAll)，子类按渲染类型实现快照差异（网格快照 Spine/静态/程序化 · SkinnedMeshRenderer 用 BakeMesh · SpriteRenderer 复制精灵）。框架层纯 UnityEngine 依赖，不耦合游戏/ Spine
+- **FlowerSeaInstanceRenderer** - 花海/草地批量装饰渲染器（Component/Other/）：项目首个 Graphics.DrawMeshInstancedIndirect + ComputeBuffer 用例，全场 1 个 draw call；图集/单图两贴图模式、范围/种子可配、地形高度三模式(固定/射线/高度图·自动识别 MeshTerrain 材质 _HeightMap 约定)、竖直立牌(yaw广告牌)/贴地平铺双形态、TrampleAt 踩踏噪声抖动消散（shader 为 FrameWork/URP/FlowerSeaInstancedIndirect1，keyword 用 multi_compile 不用 shader_feature）；[ExecuteAlways] 编辑模式可预览（beginContextRendering 提交绘制），Inspector 改动按结构签名自动实时刷新（配套 InspectorFlowerSeaInstanceRenderer 条件显示贴图字段）
 
 ## 关键文件
 
@@ -43,6 +44,8 @@ watched_files:
 | AfterimageGhostMesh(网格快照残影) | Assets/FrameWork/Scripts/Component/Other/AfterimageGhostMesh.cs |
 | AfterimageGhostSkinnedMesh(3D骨骼 BakeMesh) | Assets/FrameWork/Scripts/Component/Other/AfterimageGhostSkinnedMesh.cs |
 | AfterimageGhostSprite(2D精灵) | Assets/FrameWork/Scripts/Component/Other/AfterimageGhostSprite.cs |
+| FlowerSeaInstanceRenderer(花海Indirect渲染器) | Assets/FrameWork/Scripts/Component/Other/FlowerSeaInstanceRenderer.cs |
+| 花海Shader(FlowerSeaInstancedIndirect1) | Assets/FrameWork/Shader/URP/Shader_Mesh_FlowerSeaInstancedIndirect_1.shader |
 
 ## 约束
 

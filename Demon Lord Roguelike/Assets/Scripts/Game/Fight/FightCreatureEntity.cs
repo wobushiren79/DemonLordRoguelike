@@ -398,9 +398,30 @@ public partial class FightCreatureEntity
             fightUnderAttackData.attackerDamage = (int)(fightUnderAttackData.attackerCDMG * fightUnderAttackData.attackerDamage);
         }
         //先扣除护甲 再扣除生命
-        fightCreatureData.ChangeDRAndHP(-fightUnderAttackData.attackerDamage,
-        out int curDR, out int curHP,
-        out int changeDRReal, out int changeHPReal);
+        int curDR, curHP, changeDRReal, changeHPReal;
+        if (fightUnderAttackData.drDamageRate == 1f && fightUnderAttackData.hpDamageRate == 1f)
+        {
+            //默认路径：护甲吃满后溢出到血
+            fightCreatureData.ChangeDRAndHP(-fightUnderAttackData.attackerDamage,
+            out curDR, out curHP,
+            out changeDRReal, out changeHPReal);
+        }
+        else if (fightCreatureData.DRCurrent > 0)
+        {
+            //串联破甲-护甲段：只以 drDamageRate 倍率打护甲不掉血（破甲击的溢出部分不结转血量，如牛头人法师 dr_damage_rate:2）
+            fightCreatureData.ChangeDR(-(int)(fightUnderAttackData.attackerDamage * fightUnderAttackData.drDamageRate),
+            out curDR, out changeDRReal);
+            curHP = fightCreatureData.HPCurrent;
+            changeHPReal = 0;
+        }
+        else
+        {
+            //串联破甲-血量段：护甲已破，只以 hpDamageRate 倍率打血（如牛头人法师 hp_damage_rate:0.5）
+            fightCreatureData.ChangeHP(-(int)(fightUnderAttackData.attackerDamage * fightUnderAttackData.hpDamageRate),
+            out curHP, out changeHPReal);
+            curDR = fightCreatureData.DRCurrent;
+            changeDRReal = 0;
+        }
         //真实造成的伤害
         int damageReal = Mathf.Abs(changeDRReal + changeHPReal);
         //记录数据

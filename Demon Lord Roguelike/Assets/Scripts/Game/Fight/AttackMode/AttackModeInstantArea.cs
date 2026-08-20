@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary>
 /// 攻击模式-瞬时落点范围：无弹道飞行，StartAttack 当帧立即对目标点(targetPos)做一次范围攻击。
 /// <para>支持配置 hit_max 单次命中目标数上限（&gt;0 时按距落点近者优先截断，保证落点主目标必中；0=不限）。</para>
-/// <para>伤害按命中次序依次减半：第1个目标满额、之后每多命中一个伤害减半（向下取整、保底1点），照 <see cref="AttackModeRangedPiercingRoad"/> 先例。</para>
+/// <para>伤害按命中次序乘递减率（other_data 键 hit_decay，默认0.5=每多命中一个伤害减半、向下取整、保底1点；配1=全额不递减），照 <see cref="AttackModeRangedPiercingRoad"/> 先例。</para>
 /// <para>同一道攻击内同一生物只命中一次（局部去重，防同一生物多碰撞体重复命中）；道与道之间不共享该记录——
 /// 溅射可重复作用于同一目标、被溅射过的生物仍可作后续攻击的主目标（如深渊馈赠-闪电的多道落雷）。</para>
 /// <para>支持发射方注入 <see cref="filterCreatureIds"/> 快照名单（非空时只命中名单内生物）——
@@ -64,6 +64,8 @@ public class AttackModeInstantArea : BaseAttackMode
             }
             //循环外缓存 GameFightLogic，避免每个 collider 命中都做一次查询
             GameFightLogic gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
+            //多目标伤害递减率（other_data 键 hit_decay，默认0.5=依次减半；1=全额不递减）
+            float hitDecayRate = attackModeInfo.GetHitDecayRate();
             int hitNum = 0;
             //本次攻击内同一生物只命中一次（防同一生物多碰撞体重复命中；局部记录，道与道之间不共享）
             HashSet<string> setHitCreatureId = new HashSet<string>();
@@ -84,8 +86,8 @@ public class AttackModeInstantArea : BaseAttackMode
                     continue;
                 targetCreature.UnderAttack(this);
                 hitNum++;
-                //伤害按命中次序依次减半，保底1点（照 AttackModeRangedPiercingRoad 先例）
-                attackModeData.attackerDamage = Math.Max(1, attackModeData.attackerDamage / 2);
+                //伤害按命中次序乘递减率（默认0.5=依次减半；配1则全额），保底1点（照 AttackModeRangedPiercingRoad 先例）
+                attackModeData.attackerDamage = Math.Max(1, (int)(attackModeData.attackerDamage * hitDecayRate));
             }
         }
         //命中特效（无论是否命中目标都播，落点表现）

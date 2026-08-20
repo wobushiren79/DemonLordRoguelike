@@ -253,7 +253,9 @@ UnderAttack(BaseAttackMode)
     │   └── 暴击 → 伤害 ×= 攻击者暴击伤害倍率（CDMG属性快照attackerCDMG，默认1.5=+50%，可由BUFF调整）
     │
     ├── 3. 扣护甲（DR属性）
-    │   └── 护甲 > 0 → 扣护甲，减伤
+    │   └── 护甲 > 0 → 扣护甲，减伤（默认 ChangeDRAndHP 护甲吃满后溢出到血；
+    │       若受击数据带 drDamageRate/hpDamageRate 分段倍率[≠1/1，来自攻击模式 other_data 键 dr_damage_rate/hp_damage_rate]则走串联破甲：
+    │       护甲>0 只以 dr 倍率打甲不掉血、破甲击溢出不结转，破甲后只以 hp 倍率打血——如牛头人法师 101003/101004 配 dr2/hp0.5）
     │
     ├── 4. 扣血量（HP属性）
     │   └── HP -= 最终伤害

@@ -34,6 +34,7 @@ public enum ItemTypeWeaponEnum
     GreatShield = 6,     // 大盾
     Bow = 7,             // 弓
     Thrown = 8,          // 投掷物
+    Explosive = 9,       // 爆炸物
 }
 
 

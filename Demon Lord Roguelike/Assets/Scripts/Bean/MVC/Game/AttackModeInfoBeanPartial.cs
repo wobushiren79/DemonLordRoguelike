@@ -191,6 +191,71 @@ public partial class AttackModeInfoBean
     }
     #endregion
 
+    #region 护甲/血量分段伤害倍率(DamageSplit 配置，存于 other_data)
+    protected bool isInitDamageSplitConfig = false;
+    protected float drDamageRate = 1f;
+    protected float hpDamageRate = 1f;
+
+    /// <summary>
+    /// 获取护甲/血量分段伤害倍率（从通用扩展列 other_data 中解析 dr_damage_rate/hp_damage_rate 键；缓存解析结果）。
+    /// <para>默认 1/1=不启用分段，走原 ChangeDRAndHP 护甲溢出逻辑；非默认时（如牛头人法师 dr_damage_rate:2&amp;hp_damage_rate:0.5）
+    /// 走串联结算：护甲&gt;0 只以 drDamageRate 倍率打护甲不掉血、护甲破后只以 hpDamageRate 倍率打血（破甲击溢出部分不结转血量）。</para>
+    /// </summary>
+    public void GetDamageSplitConfig(out float drDamageRate, out float hpDamageRate)
+    {
+        if (!isInitDamageSplitConfig)
+        {
+            ParseOtherDataFloat("dr_damage_rate", ref this.drDamageRate);
+            ParseOtherDataFloat("hp_damage_rate", ref this.hpDamageRate);
+            isInitDamageSplitConfig = true;
+        }
+        drDamageRate = this.drDamageRate;
+        hpDamageRate = this.hpDamageRate;
+    }
+    #endregion
+
+    #region 多目标伤害递减(HitDecay 配置，存于 other_data)
+    protected bool isInitHitDecayRate = false;
+    protected float hitDecayRate = 0.5f;
+
+    /// <summary>
+    /// 获取多目标伤害递减率（从通用扩展列 other_data 中解析 hit_decay 键；缓存解析结果）。
+    /// <para>默认 0.5=每多命中一个目标伤害减半（深渊落雷现行为）；配 1=不递减全额伤害（如牛头人法师捶地地刺）。</para>
+    /// </summary>
+    public float GetHitDecayRate()
+    {
+        if (!isInitHitDecayRate)
+        {
+            ParseOtherDataFloat("hit_decay", ref hitDecayRate);
+            isInitHitDecayRate = true;
+        }
+        return hitDecayRate;
+    }
+    #endregion
+
+    #region other_data 通用解析
+    /// <summary>
+    /// 从 other_data 解析 float 键值（按 &amp; 拆项、每项以第一个 : 拆 key/value，与 aim_up/stuck 同规约）；未配/解析失败保持传入的原值
+    /// </summary>
+    protected void ParseOtherDataFloat(string key, ref float value)
+    {
+        if (other_data.IsNull())
+            return;
+        string[] items = other_data.Split('&');
+        for (int i = 0; i < items.Length; i++)
+        {
+            string item = items[i];
+            if (string.IsNullOrEmpty(item))
+                continue;
+            int sep = item.IndexOf(':');
+            if (sep <= 0)
+                continue;
+            if (item.Substring(0, sep).Trim() == key)
+                float.TryParse(item.Substring(sep + 1).Trim(), out value);
+        }
+    }
+    #endregion
+
     #region 视觉参数(Visual 配置)
     protected bool isInitVisualConfig = false;
     protected AttackModeVisualConfig visualConfig;

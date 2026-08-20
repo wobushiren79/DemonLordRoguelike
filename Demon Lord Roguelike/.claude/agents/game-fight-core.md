@@ -43,7 +43,7 @@ watched_files:
 - **FightAttackBean** - 战斗攻击数据
 - **FightDropCrystalBean** - 战斗掉落水晶
 - **FightRecordsBean** - 战斗记录
-- **FightUnderAttackBean** - 受击数据
+- **FightUnderAttackBean** - 受击数据（含 drDamageRate/hpDamageRate 护甲/血量分段伤害倍率[默认1/1=走 ChangeDRAndHP 溢出逻辑；非默认=串联破甲：护甲>0只以dr倍率打甲不掉血、破甲后只以hp倍率打血、破甲击溢出不结转]，仅 SetData(BaseAttackMode) 路径从攻击模式 other_data 键 dr_damage_rate/hp_damage_rate 注入，BUFF 跳伤路径保持默认；目前仅牛头人法师 101003/101004 配 dr2/hp0.5）
 
 ## 关键文件
 

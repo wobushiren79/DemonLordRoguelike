@@ -67,6 +67,10 @@ PrefabInstance:
       value: MagicPillarBlastBlue
       objectReference: {fileID: 0}
     - target: {fileID: 451792, guid: b88127d3a00e8e04dae679cb3a9625e7, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.002
+      objectReference: {fileID: 0}
+    - target: {fileID: 451792, guid: b88127d3a00e8e04dae679cb3a9625e7, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}

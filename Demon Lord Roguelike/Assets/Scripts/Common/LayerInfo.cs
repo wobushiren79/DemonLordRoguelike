@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class LayerInfo
 {
+    public static int Road = LayerMask.NameToLayer("Road");
     public static int Ground = LayerMask.NameToLayer("Ground");
     public static int Obstacle = LayerMask.NameToLayer("Obstacle");
 

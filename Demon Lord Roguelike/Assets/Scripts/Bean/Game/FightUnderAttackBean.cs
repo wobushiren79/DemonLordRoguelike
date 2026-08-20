@@ -17,6 +17,11 @@ public class FightUnderAttackBean
     //攻击者暴击伤害倍率（默认1.5=暴击伤害+50%）
     public float attackerCDMG = 1.5f;
 
+    /// <summary>护甲分段伤害倍率（默认1=不启用分段；非1时走串联破甲结算，仅攻击模块路径注入）</summary>
+    public float drDamageRate = 1f;
+    /// <summary>血量分段伤害倍率（默认1=不启用分段；非1时走串联破甲结算，仅攻击模块路径注入）</summary>
+    public float hpDamageRate = 1f;
+
     //击中音效
     public long soundHitId;
     //未命中音效
@@ -41,6 +46,8 @@ public class FightUnderAttackBean
         this.attackerCDMG = baseAttackMode.attackModeData.attackerCDMG;
         this.soundHitId = baseAttackMode.attackModeInfo.sound_hit;
         this.soundMissId = baseAttackMode.attackModeInfo.sound_miss;
+        //护甲/血量分段倍率：仅攻击模块路径注入（BUFF跳伤路径保持默认1/1=原溢出逻辑）
+        baseAttackMode.attackModeInfo.GetDamageSplitConfig(out this.drDamageRate, out this.hpDamageRate);
     }
 
     /// <summary>
@@ -65,6 +72,8 @@ public class FightUnderAttackBean
         attackerDamage = 0;
         attackerCRT = 0;
         attackerCDMG = 1.5f;
+        drDamageRate = 1f;
+        hpDamageRate = 1f;
         soundHitId = 0;
         soundMissId = 0;
     }

@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: FightScene
   m_GUID: 7251369fdc99b0c4cad7c85a5a185754
   m_SerializeEntries:
+  - m_GUID: 18aa4759c7f2b164d8074267bb3858e8
+    m_Address: Assets/LoadResources/FightScene/FightScene_Plain_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 24e21a388bcd3224d9c25170735fe5a8
     m_Address: Assets/LoadResources/FightScene/FightScene_Desert_1.prefab
     m_ReadOnly: 0

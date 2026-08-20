@@ -302,6 +302,22 @@ LauncherTest (Inspector)
 
 ---
 
+## 研究模块编辑 (ResearchEditorWindow)
+
+**文件**: `Assets/Editor/ResearchEditorWindow.cs`，**菜单**: `游戏/研究模块编辑`
+
+### 功能
+
+可视化编辑研究节点树：顶部类型 Tab（设施/强化/魔物/世界）→ 中间可拖动画布（节点+前置连线+网格）→ 下方选中研究全字段编辑区（ResearchInfo 字段 + 多语言 cn/en + 对应 UnlockInfo）。数据源为 JSON（`ResearchInfo.txt`/`UnlockInfo.txt`/`Language_ResearchInfo_cn|en.txt`），保存时 diff 快照写回 Excel（`excel_research_info`/`excel_unlock_info`/`excel_language` 的 ResearchInfo 工作表）并再生 JSON。
+
+- **画布坐标**：世界坐标 Y 向上、屏幕 Y 向下，`WorldToScreen`/`ScreenToWorld` 负责翻转；连线用 Cohen–Sutherland 裁剪到画布内（`GUI.BeginClip` 裁不住 Handles/GL）。
+- **普通模式交互**：左键点节点=选中+拖动改 `position_x/y`（松手取整）；左键空白/右键/中键=平移；滚轮=以鼠标为中心缩放。
+- **框选模式**（工具栏「框选」开关，开启时多一条框选工具条）：左键拖空白画框选矩形（节点中心落入即选中，按住 Shift 追加；<4px 视为单击单选）；点在已选中节点上=整组拖拽（`dragStartPositions` 记录各节点起始坐标，松手统一取整）；工具条支持清空选择、输入整体偏移 X/Y 点「应用偏移」批量移动（取整）。多选节点绿色高亮（单选橙色），切 Tab/关框选时清空选择。注意：工具条里窄宽度（<150px）的带 label 字段（`EditorGUILayout.FloatField("X", ...)`）必须临时收窄 `EditorGUIUtility.labelWidth`（如 12px，用后还原），否则 label 按默认 ~150px 吃掉全部输入区导致无法输入。
+- **编辑区**：research_type/icon_res(带图集子 Sprite 预览)/level_max/position/unlock_id/pre_unlock_ids/pay_crystal/name/remark + 多语言 + UnlockInfo；「还原选中研究」按快照回滚单条。
+- **保存**：`ChangeSet` 按 id 分组逐字段写 Excel（已有行更新、未命中末尾新建），多语言写 `excel_language` 的 ResearchInfo 工作表（id/content_cn/content_en 列），JSON 全量重写后 `AssetDatabase.Refresh` 并重建快照。
+
+---
+
 ## Inspector 扩展
 
 ### InspectorBaseUIComponent
@@ -322,6 +338,15 @@ BaseUIView 的 Inspector 扩展，显示 UI 层级和动画信息。
 ### InspectorEffectBase / InspectorMaskUIView
 
 特效和遮罩的 Inspector 扩展。
+
+### InspectorFlowerSeaInstanceRenderer
+
+**文件**: `Assets/FrameWork/Editor/Base/Inspector/InspectorFlowerSeaInstanceRenderer.cs`
+
+花海渲染器（`FlowerSeaInstanceRenderer`，见 framework-core-system）的 Inspector 扩展：
+- **全参数中文化标注**：`fieldContents` 字典（字段名→`GUIContent(中文标签, 中文悬停提示)`），未登记字段回退原名；枚举弹窗（textureMode/shape）用 `EditorGUILayout.Popup` 中文化，注意 **Popup 不画 [Header] 装饰**，需 `DrawHeaderFor` 反射补画
+- 贴图区按 `textureMode` 条件显示（图集模式只画图集字段 / 单图模式只画单图字段）：主循环 `GetIterator` 跳过贴图字段，绘制到 `textureMode` 时插入条件块；地形区同理按 `heightMode` 条件显示（射线模式 / 高度图模式字段组）
+- 底部「重新生成花海 / 重置全部消散 / 测试踩踏(r=2)」按钮 + 状态行（花朵总数/已消散数）
 
 ---
 
@@ -504,6 +529,7 @@ public class InspectorMyComponent : Editor
 | 皮肤/装备/套装随机池配置 | `Assets/Editor/SkinRandomEditorWindow.cs` |
 | 装备套装配置 | `Assets/Editor/EquipSuitEditorWindow.cs` |
 | 战斗场景配置 | `Assets/Editor/FightSceneEditorWindow.cs` |
+| 研究模块编辑 | `Assets/Editor/ResearchEditorWindow.cs` |
 | Excel 配置目录 | `Assets/Data/Excel/` |
 
 ---

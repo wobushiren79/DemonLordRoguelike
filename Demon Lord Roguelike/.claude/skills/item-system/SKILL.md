@@ -48,7 +48,8 @@ ItemTypeWeaponEnum
 ├── GreatSword = 5   // 大剑
 ├── GreatShield = 6  // 大盾
 ├── Bow = 7          // 弓
-└── Thrown = 8       // 投掷物
+├── Thrown = 8       // 投掷物
+└── Explosive = 9    // 爆炸物（哥布林敢死队专用，5 个哥布林投掷武器 61010008/61010017~20 已归入此类）
 
 // 道具使用者类型
 ItemUserTypeEnum

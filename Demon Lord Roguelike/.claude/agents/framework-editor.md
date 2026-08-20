@@ -30,6 +30,7 @@ watched_files:
 - **InspectorBaseUIView** - UI View Inspector
 - **InspectorEffectBase** - 特效 Inspector
 - **InspectorMaskUIView** - 遮罩 Inspector
+- **InspectorFlowerSeaInstanceRenderer** - 花海渲染器 Inspector（全参数中文化标注+悬停提示、按 textureMode 条件显示贴图字段、重新生成/重置消散/测试踩踏按钮、总数/已消散状态行）
 
 ### Hierarchy 扩展
 - **HierarchySelect** / **HierarchySelectPopupSelect**

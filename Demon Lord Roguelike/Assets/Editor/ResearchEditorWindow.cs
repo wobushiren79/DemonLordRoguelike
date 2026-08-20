@@ -105,7 +105,7 @@ public class ResearchEditorWindow : EditorWindow
     private float zoom = 0.5f;
 
     /// <summary>当前交互状态</summary>
-    private enum InteractionMode { None, DraggingNode, Panning }
+    private enum InteractionMode { None, DraggingNode, DraggingSelection, Panning, BoxSelecting }
     private InteractionMode interactionMode = InteractionMode.None;
     /// <summary>正在拖动的节点</summary>
     private ResearchInfoBean draggingNode;
@@ -115,6 +115,21 @@ public class ResearchEditorWindow : EditorWindow
     private Vector2 dragStartNodeWorldPos;
     /// <summary>平移开始时的平移偏移</summary>
     private Vector2 dragStartPanOffset;
+
+    /// <summary>是否开启框选模式</summary>
+    private bool boxSelectMode = false;
+    /// <summary>框选选中的节点 id 集合</summary>
+    private readonly HashSet<long> selectedNodeIds = new HashSet<long>();
+    /// <summary>框选矩形起点（窗口坐标）</summary>
+    private Vector2 boxSelectStart;
+    /// <summary>框选矩形当前终点（窗口坐标）</summary>
+    private Vector2 boxSelectEnd;
+    /// <summary>群体拖动开始时各节点的世界坐标（id → 坐标）</summary>
+    private Dictionary<long, Vector2> dragStartPositions;
+    /// <summary>整体偏移输入 X</summary>
+    private float offsetInputX;
+    /// <summary>整体偏移输入 Y</summary>
+    private float offsetInputY;
 
     /// <summary>底部编辑区滚动位置</summary>
     private Vector2 bottomScroll = Vector2.zero;
@@ -178,6 +193,12 @@ public class ResearchEditorWindow : EditorWindow
 
         // 顶部：研究类型 Tab
         DrawTabBar();
+
+        // 框选模式下显示框选工具条
+        if (boxSelectMode)
+        {
+            DrawBoxSelectBar();
+        }
 
         GUILayout.Space(4);
 
@@ -354,6 +375,22 @@ public class ResearchEditorWindow : EditorWindow
         DrawTabButton("世界", ResearchInfoTypeEnum.World);
         GUILayout.FlexibleSpace();
 
+        // 框选模式开关
+        Color prevBox = GUI.backgroundColor;
+        if (boxSelectMode)
+        {
+            GUI.backgroundColor = new Color(0.4f, 0.9f, 0.5f);
+        }
+        if (GUILayout.Button("框选", EditorStyles.toolbarButton, GUILayout.Width(50)))
+        {
+            boxSelectMode = !boxSelectMode;
+            if (!boxSelectMode)
+            {
+                selectedNodeIds.Clear();
+            }
+        }
+        GUI.backgroundColor = prevBox;
+
         EditorGUILayout.LabelField($"缩放: {zoom:0.00}", GUILayout.Width(90));
         if (GUILayout.Button("重置视图", EditorStyles.toolbarButton, GUILayout.Width(80)))
         {
@@ -387,6 +424,7 @@ public class ResearchEditorWindow : EditorWindow
             {
                 selectedType = type;
                 selectedResearch = null;
+                selectedNodeIds.Clear();
                 CenterViewOnCurrentType();
             }
         }
@@ -410,6 +448,57 @@ public class ResearchEditorWindow : EditorWindow
             maxY = Mathf.Max(maxY, r.position_y);
         }
         panOffset = new Vector2((minX + maxX) * 0.5f, (minY + maxY) * 0.5f);
+    }
+
+    #endregion
+
+    #region UI 绘制 - 框选工具条
+
+    /// <summary>
+    /// 绘制框选工具条（仅框选模式开启时显示）：已选数量、清空选择、整体偏移输入
+    /// </summary>
+    private void DrawBoxSelectBar()
+    {
+        EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+
+        EditorGUILayout.LabelField($"已选中 {selectedNodeIds.Count} 个节点", GUILayout.Width(120));
+        if (GUILayout.Button("清空选择", EditorStyles.toolbarButton, GUILayout.Width(70)))
+        {
+            selectedNodeIds.Clear();
+        }
+
+        GUILayout.Space(15);
+        EditorGUI.BeginDisabledGroup(selectedNodeIds.Count == 0);
+        EditorGUILayout.LabelField("整体偏移", GUILayout.Width(56));
+        // 窄宽度下 FloatField 自带 label 会按默认 labelWidth(~150px) 吃掉整个输入区，需临时收窄 labelWidth
+        float prevLabelWidth = EditorGUIUtility.labelWidth;
+        EditorGUIUtility.labelWidth = 12f;
+        offsetInputX = EditorGUILayout.FloatField("X", offsetInputX, GUILayout.Width(80));
+        offsetInputY = EditorGUILayout.FloatField("Y", offsetInputY, GUILayout.Width(80));
+        EditorGUIUtility.labelWidth = prevLabelWidth;
+        if (GUILayout.Button("应用偏移", EditorStyles.toolbarButton, GUILayout.Width(70)))
+        {
+            ApplyOffsetToSelection();
+        }
+        EditorGUI.EndDisabledGroup();
+
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.EndHorizontal();
+    }
+
+    /// <summary>
+    /// 将输入的整体偏移应用到所有选中节点（取整，与拖动落点规则一致）
+    /// </summary>
+    private void ApplyOffsetToSelection()
+    {
+        if (selectedNodeIds.Count == 0) return;
+        foreach (var r in allResearch)
+        {
+            if (!selectedNodeIds.Contains(r.id)) continue;
+            r.position_x = Mathf.Round(r.position_x + offsetInputX);
+            r.position_y = Mathf.Round(r.position_y + offsetInputY);
+        }
+        Repaint();
     }
 
     #endregion
@@ -452,6 +541,22 @@ public class ResearchEditorWindow : EditorWindow
         foreach (var r in currentList)
         {
             DrawConnections(r, canvasCenter, canvasRect);
+        }
+
+        // 框选矩形（拖拽中绘制，限制在画布范围内显示）
+        if (interactionMode == InteractionMode.BoxSelecting)
+        {
+            Rect box = GetBoxSelectRect();
+            float bxMin = Mathf.Max(box.xMin, canvasRect.xMin);
+            float bxMax = Mathf.Min(box.xMax, canvasRect.xMax);
+            float byMin = Mathf.Max(box.yMin, canvasRect.yMin);
+            float byMax = Mathf.Min(box.yMax, canvasRect.yMax);
+            if (bxMax > bxMin && byMax > byMin)
+            {
+                Rect clipped = Rect.MinMaxRect(bxMin, byMin, bxMax, byMax);
+                EditorGUI.DrawRect(clipped, new Color(0.3f, 0.8f, 0.4f, 0.15f));
+                DrawRectBorder(clipped, new Color(0.3f, 0.9f, 0.5f, 0.9f), 1f);
+            }
         }
 
         // 视图信息（左下角）：在剪裁之外用全局坐标绘制
@@ -639,9 +744,12 @@ public class ResearchEditorWindow : EditorWindow
         if (!nodeRect.Overlaps(canvasRect))
             return;
 
-        // 颜色：选中=橙色 / 普通=深蓝
+        // 颜色：单选=橙色 / 框选多选=绿色 / 普通=深蓝
         bool isSelected = selectedResearch != null && selectedResearch.id == info.id;
-        Color bg = isSelected ? new Color(1f, 0.6f, 0.2f, 0.9f) : new Color(0.25f, 0.4f, 0.7f, 0.9f);
+        bool isMultiSelected = selectedNodeIds.Contains(info.id);
+        Color bg = isSelected ? new Color(1f, 0.6f, 0.2f, 0.9f)
+            : isMultiSelected ? new Color(0.25f, 0.7f, 0.4f, 0.9f)
+            : new Color(0.25f, 0.4f, 0.7f, 0.9f);
         EditorGUI.DrawRect(nodeRect, bg);
 
         // 图标叠加（如果 icon_res 存在）
@@ -665,7 +773,9 @@ public class ResearchEditorWindow : EditorWindow
             EditorGUI.LabelField(nodeRect, "?", qStyle);
         }
 
-        DrawRectBorder(nodeRect, isSelected ? Color.yellow : new Color(0.1f, 0.1f, 0.1f, 0.8f), isSelected ? 2f : 1f);
+        DrawRectBorder(nodeRect,
+            isSelected ? Color.yellow : isMultiSelected ? new Color(0.5f, 1f, 0.6f) : new Color(0.1f, 0.1f, 0.1f, 0.8f),
+            (isSelected || isMultiSelected) ? 2f : 1f);
 
         // 名字标签：放到节点下方，避免遮挡图标
         string label;
@@ -774,7 +884,35 @@ public class ResearchEditorWindow : EditorWindow
                 if (canvasRect.Contains(mousePos) && e.button == 0)
                 {
                     var hitNode = FindNodeAtScreen(mousePos, canvasCenter, currentList);
-                    if (hitNode != null)
+                    if (boxSelectMode)
+                    {
+                        if (hitNode != null && selectedNodeIds.Contains(hitNode.id))
+                        {
+                            // 点在已选中的节点上 → 整组拖动
+                            interactionMode = InteractionMode.DraggingSelection;
+                            dragStartMousePos = mousePos;
+                            dragStartPositions = new Dictionary<long, Vector2>();
+                            foreach (var r in currentList)
+                            {
+                                if (selectedNodeIds.Contains(r.id))
+                                {
+                                    dragStartPositions[r.id] = new Vector2(r.position_x, r.position_y);
+                                }
+                            }
+                            GUI.FocusControl(null);
+                            e.Use();
+                        }
+                        else
+                        {
+                            // 其他位置 → 开始框选
+                            interactionMode = InteractionMode.BoxSelecting;
+                            boxSelectStart = mousePos;
+                            boxSelectEnd = mousePos;
+                            GUI.FocusControl(null);
+                            e.Use();
+                        }
+                    }
+                    else if (hitNode != null)
                     {
                         selectedResearch = hitNode;
                         draggingNode = hitNode;
@@ -816,6 +954,29 @@ public class ResearchEditorWindow : EditorWindow
                     e.Use();
                     Repaint();
                 }
+                else if (interactionMode == InteractionMode.DraggingSelection && dragStartPositions != null)
+                {
+                    Vector2 delta = mousePos - dragStartMousePos;
+                    // 屏幕 delta → 世界 delta（Y 翻转），整组同步移动
+                    float worldDx = delta.x / zoom;
+                    float worldDy = -delta.y / zoom;
+                    foreach (var r in currentList)
+                    {
+                        if (dragStartPositions.TryGetValue(r.id, out var start))
+                        {
+                            r.position_x = start.x + worldDx;
+                            r.position_y = start.y + worldDy;
+                        }
+                    }
+                    e.Use();
+                    Repaint();
+                }
+                else if (interactionMode == InteractionMode.BoxSelecting)
+                {
+                    boxSelectEnd = mousePos;
+                    e.Use();
+                    Repaint();
+                }
                 else if (interactionMode == InteractionMode.Panning)
                 {
                     Vector2 delta = mousePos - dragStartMousePos;
@@ -838,6 +999,27 @@ public class ResearchEditorWindow : EditorWindow
                         draggingNode.position_x = Mathf.Round(draggingNode.position_x);
                         draggingNode.position_y = Mathf.Round(draggingNode.position_y);
                     }
+                }
+                else if (interactionMode == InteractionMode.DraggingSelection)
+                {
+                    // 整组落点取整
+                    if (dragStartPositions != null)
+                    {
+                        foreach (var r in currentList)
+                        {
+                            if (dragStartPositions.ContainsKey(r.id))
+                            {
+                                r.position_x = Mathf.Round(r.position_x);
+                                r.position_y = Mathf.Round(r.position_y);
+                            }
+                        }
+                    }
+                    dragStartPositions = null;
+                }
+                else if (interactionMode == InteractionMode.BoxSelecting)
+                {
+                    // 结束框选：Shift 追加选择，否则替换
+                    FinishBoxSelect(canvasCenter, currentList, e.shift);
                 }
                 interactionMode = InteractionMode.None;
                 draggingNode = null;
@@ -882,6 +1064,49 @@ public class ResearchEditorWindow : EditorWindow
                 return info;
         }
         return null;
+    }
+
+    /// <summary>
+    /// 获取当前框选矩形（规范化，宽高非负）
+    /// </summary>
+    private Rect GetBoxSelectRect()
+    {
+        return Rect.MinMaxRect(
+            Mathf.Min(boxSelectStart.x, boxSelectEnd.x),
+            Mathf.Min(boxSelectStart.y, boxSelectEnd.y),
+            Mathf.Max(boxSelectStart.x, boxSelectEnd.x),
+            Mathf.Max(boxSelectStart.y, boxSelectEnd.y));
+    }
+
+    /// <summary>
+    /// 结束框选：把矩形内（节点中心落入）的节点加入多选集合；极小矩形视为单击单选
+    /// </summary>
+    private void FinishBoxSelect(Vector2 canvasCenter, List<ResearchInfoBean> currentList, bool additive)
+    {
+        if (!additive)
+        {
+            selectedNodeIds.Clear();
+        }
+        Rect box = GetBoxSelectRect();
+        // 极小矩形视为单击：选中命中的单个节点
+        if (box.width < 4f && box.height < 4f)
+        {
+            var hit = FindNodeAtScreen(boxSelectStart, canvasCenter, currentList);
+            if (hit != null)
+            {
+                selectedNodeIds.Add(hit.id);
+                selectedResearch = hit;
+            }
+            return;
+        }
+        foreach (var r in currentList)
+        {
+            Vector2 nodeScreen = WorldToScreen(new Vector2(r.position_x, r.position_y), canvasCenter);
+            if (box.Contains(nodeScreen))
+            {
+                selectedNodeIds.Add(r.id);
+            }
+        }
     }
 
     #endregion

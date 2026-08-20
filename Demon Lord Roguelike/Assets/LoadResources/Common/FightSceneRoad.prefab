@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2634904593708271575}
   - component: {fileID: 6406463599288340514}
   - component: {fileID: 9162662841602431938}
-  m_Layer: 6
+  m_Layer: 15
   m_Name: FightSceneRoad
   m_TagString: Untagged
   m_Icon: {fileID: 0}
