@@ -107,7 +107,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_audio_info[音频信息_FrameWork].xlsx` | AudioInfo | 184 | id, name_res, remark, audio_type(0音效/1音乐/2环境音), volume_scale。id 段位：音效 1~630005、音乐 1000001~1200001、环境音 2000001 起（2000001=sound_night_1 夜晚虫鸣，被 FightScene 10002 引用） |
+| `excel_audio_info[音频信息_FrameWork].xlsx` | AudioInfo | 185 | id, name_res, remark, audio_type(0音效/1音乐/2环境音), volume_scale。id 段位：音效 1~640001、音乐 1000001~1200001、环境音 2000001 起（2000001=sound_night_1 夜晚虫鸣，被 FightScene 10002 引用） |
 | `excel_base_info[基础信息_FrameWork].xlsx` | BaseInfo | 3 | id, content |
 | `excel_language[多语言_FrameWork].xlsx` | UIText + 18个子表 | 20(UIText) | id, content_{12种语言: cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr}（30列结构的表另有 content_1_* 列） |
 | `excel_spine_animation_state[骨骼动画枚举_FrameWork].xlsx` | SpineAnimationState | 33 | id, res |

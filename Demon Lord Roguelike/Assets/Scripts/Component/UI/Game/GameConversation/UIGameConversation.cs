@@ -1,6 +1,7 @@
 ﻿
 
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +10,11 @@ public partial class UIGameConversation : BaseUIComponent
     public GameObject creatureObj;
     public CreatureBean creatureData;
     public Action acionForEnd;
+
+    [Header("文本动画")]
+    public float timeForTextAnim = 0.05f;//每个字符的显示间隔
+    protected Coroutine coroutineForTextAnim;
+    protected bool isTextAnimPlaying;
 
     public override void OpenUI()
     {
@@ -40,11 +46,11 @@ public partial class UIGameConversation : BaseUIComponent
     }
 
     /// <summary>
-    /// 设置内容
+    /// 设置内容（开始逐字显示动画）
     /// </summary>
     public void SetContent(string content)
     {
-        ui_TalkText.text = $"{content}";
+        StartTextAnim(content);
     }
 
     /// <summary>
@@ -55,6 +61,53 @@ public partial class UIGameConversation : BaseUIComponent
         //比原始大小放大2倍
         GameUIUtil.SetCreatureUIForSimple(ui_Icon, creatureData, scale: 2);
     }
+
+    #region 文本动画
+    /// <summary>
+    /// 开始文本逐字显示动画
+    /// </summary>
+    public void StartTextAnim(string content)
+    {
+        StopTextAnim();
+        ui_TalkText.text = content;
+        coroutineForTextAnim = StartCoroutine(CoroutineForTextAnim(content));
+    }
+
+    /// <summary>
+    /// 停止文本动画（isShowAll=true 时直接显示全部文本）
+    /// </summary>
+    public void StopTextAnim(bool isShowAll = false)
+    {
+        if (coroutineForTextAnim != null)
+        {
+            StopCoroutine(coroutineForTextAnim);
+            coroutineForTextAnim = null;
+        }
+        if (isShowAll)
+            ui_TalkText.maxVisibleCharacters = int.MaxValue;
+        isTextAnimPlaying = false;
+    }
+
+    /// <summary>
+    /// 协程-逐字显示文本并播放说话音效
+    /// </summary>
+    protected IEnumerator CoroutineForTextAnim(string content)
+    {
+        isTextAnimPlaying = true;
+        ui_TalkText.maxVisibleCharacters = 0;
+        for (int i = 1; i <= content.Length; i++)
+        {
+            ui_TalkText.maxVisibleCharacters = i;
+            //非空白字符显示时播放说话音效（PlaySound 内置0.1s重复抑制，自动限流）
+            if (!char.IsWhiteSpace(content[i - 1]))
+            {
+                AudioHandler.Instance.PlaySound(AudioEnum.sound_talk_1);
+            }
+            yield return new WaitForSeconds(timeForTextAnim);
+        }
+        StopTextAnim(true);
+    }
+    #endregion
 
     #region 点击事件
     public override void OnClickForButton(Button viewButton)
@@ -71,10 +124,15 @@ public partial class UIGameConversation : BaseUIComponent
     }
 
     /// <summary>
-    /// 点击结束
+    /// 点击结束（文本动画播放中则跳过动画显示全文，不结束对话）
     /// </summary>
     public void OnClickForEnd()
     {
+        if (isTextAnimPlaying)
+        {
+            StopTextAnim(true);
+            return;
+        }
         acionForEnd?.Invoke();
     }
 

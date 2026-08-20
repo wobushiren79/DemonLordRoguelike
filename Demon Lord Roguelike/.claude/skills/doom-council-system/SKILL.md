@@ -14,7 +14,6 @@ watched_files:
   - Assets/Scripts/Enums/NpcEnum.cs
   - Assets/Scripts/Component/Game/Scene/ScenePrefabForDoomCouncil.cs
   - Assets/Scripts/Component/UI/Game/DoomCouncil/
-  - Assets/Scripts/Component/UI/Game/GameConversation/UIGameConversation.cs
   - Assets/Scripts/Component/UI/Popup/UIPopupDoomCouncilBillDetails.cs
 ---
 
@@ -59,6 +58,7 @@ watched_files:
 - 送礼一次：态度 +10%（所有议员）。
 - 固定NPC额外：好感 += `RarityInfo.item_add_relationship` 并持久化到 `UserRelationshipBean`，`SaveUserData()`。
 - 之后调用 `DoomCouncilLogic.RefreshCouncilorView(uuid)` 刷新显示。
+- 对话界面本身（台词配置/文本逐字动画/说话音效/点击跳过）归 **conversation-system** skill。
 
 ### 场景显示（`ScenePrefabForDoomCouncil`）
 - 议员预制下 `Success` SpriteRenderer：用颜色表态度/意愿（0红/50白/100绿，`GetAttitudeColor`）；自由活动阶段可见，投票开始时由 `HideAllCouncilorAttitudeView()` 统一 `SetActive(false)` 隐藏。

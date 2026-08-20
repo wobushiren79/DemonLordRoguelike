@@ -166,6 +166,7 @@ public enum AudioEnum : long
     sound_water_3 = 630003,//水3
     sound_water_4 = 630004,//水4
     sound_slime_1 = 630005,//史莱姆1
+    sound_talk_1 = 640001,//对话说话1
     //==================== 音乐 Music ====================
     music_fight_1 = 1000001,//战斗音乐1
     music_fight_2 = 1000002,//战斗音乐2

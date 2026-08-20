@@ -30,7 +30,7 @@ watched_files:
 - 框架层 `PlayEnvironment(long id, volumeScale)` / `PlayEnvironment(long id)`（取 `environmentVolume`）：按 `AudioInfo` 表 id 取 `name_res`，走 `GetEnvironmentClip` 从 `Assets/LoadResources/Audio/Environment/` 目录经 Addressables 加载（组 `Audio_Environment`，逐文件 entry、address=完整路径），在**环境音专用 AudioSource**（`audioSourceForEnvironment`，挂在 AudioListener 物体上）循环播放；`StopEnvironment()` 停止。
 - **audio_type=2 的文件必须放 `Audio/Environment/` 目录**（Sound/Music 目录的文件配成环境音会加载不到），且新文件要注册进 `Audio_Environment` 组才能被 Addressables 寻址。
 - **战斗场景配置驱动**：`FightScene` 表 `environment_sound` 列（AudioInfo id，空/0=不播）→ [WorldHandler.cs](Assets/Scripts/Component/Handler/WorldHandler.cs) `LoadFightScene` 进场播、`UnLoadScene(Fight)` 停；判定 `FightSceneBeanPartial.HasEnvironmentSound`。已有配置：10002 树林夜晚 = 2000001（sound_night_1 夜晚虫鸣）；10003/10004 树林下雨（白天/夜晚）= 2000002（sound_rain_1 下雨）。单通道一路环境音，同场景只能配一个 id。
-- 枚举段位：环境音 `2000001` 起（音效 1~630005 / 音乐 1000001~1200001 之后的新段），AudioEnum 同步维护。
+- 枚举段位：环境音 `2000001` 起（音效 1~640001 / 音乐 1000001~1200001 之后的新段），AudioEnum 同步维护。
 
 ### 连续音效 (LoopSound) — 多路并发循环（走路/下雨）
 - 框架层通用能力，**非新 `AuidoTypeEnum`/资源目录**：传任意音频 id，按其 `audio_type` 走现有加载路由取 clip，在**循环 AudioSource 池**（`DequeueLoopSource`/`RecycleLoopSource`，`MaxLoopSource=16`）上播放；活跃 `Dictionary<long,LoopSoundEntry>` 按 id 去重、独立起停、多路并发。

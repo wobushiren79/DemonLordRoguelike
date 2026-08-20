@@ -35,7 +35,7 @@ watched_files:
 - **UIGameSetting** - 游戏设置界面
 - **UIGameSystem** - 游戏系统界面
 - **UIGameWorldMap** - 世界地图界面
-- **UIGameConversation** - 对话界面
+- **UIGameConversation** - 对话界面（议员交谈：台词逐字动画+sound_talk_1音效+点击跳过，详见 game-conversation agent）
 - **UIRewardSelect** - 奖励选择界面
 - **UICreatureVat** - 魔物进阶界面（CreatureVat 培养槽）
 
