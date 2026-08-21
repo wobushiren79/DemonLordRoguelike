@@ -48,6 +48,8 @@ Bean/
 
 > **`CreatureInfoBean.charge_attack`（Excel 自动生成列，int）**：冲锋自爆开关（0=默认站桩，1=放卡后立即向前冲锋并释放原占位格，遇敌/到路尽头/被打死时原地自爆）；配套手写解析 `CreatureInfoBeanPartial.IsChargeAttack()`。
 
+> **`CreatureInfoBean.details`（Excel 自动生成列 `details[language_1]`，long）**：生物详情描述（攻击方式说明）文本 id，值=生物自身 id；配套自动属性 `details_language`（`GetTextById(CreatureInfoCfg.fileName, details, 1)` 取语言表 content_1 语种列，带 LanguageCache）。仅 id 1001~7004 的 30 个生物已配 12 语种；0/空=详情面板隐藏说明区块。消费方：`UIViewCreatureCardDetails.SetRenmark`。
+
 ### Bean 命名规范
 - 基础 Bean 后缀：`Bean`
 - 部分数据 Bean：`BeanPartial`

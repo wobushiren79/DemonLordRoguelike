@@ -186,6 +186,13 @@ public partial class CreatureInfoBean : BaseBean
 	///冲锋攻击(0=默认站桩;1=冲锋自爆:放卡后立即向前冲锋,遇敌/冲到路尽头/被打死时原地自爆,冲锋开始后原占位格立即释放)
 	/// </summary>
 	public int charge_attack;
+	/// <summary>
+	///详情描述文本id(取content_1，值=生物自身id，0或空=不显示)
+	/// </summary>
+	public long details;
+	[JsonIgnore]
+	public string details_language { get => _details_language.Get(() => TextHandler.Instance.GetTextById(CreatureInfoCfg.fileName, details, 1)); set => _details_language.Set(value); }
+	private LanguageCache _details_language;
 }
 public partial class CreatureInfoCfg : BaseCfg<long, CreatureInfoBean>
 {

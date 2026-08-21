@@ -94,7 +94,7 @@ UIViewCreatureCardDetails    // 卡片详情面板
 UIPopupCreatureCardDetails   // 卡片详情弹窗
 ```
 
-> **卡片出现动画统一收口于基类 `AnimForCardShow`**（`UIViewCreatureCardItemAnim.cs` partial）：从目标位下方 -200px 弹入（位移 OutBack + 缩放 1→1.15→1 过冲回弹，逐卡 `index*delayTime` 错开），**启动时（错开延迟结束）每卡各自播放 `AudioEnum.sound_card_7`、落位时再各播放 `AudioEnum.sound_card_1`**。两处使用：① 战斗发牌 `UIViewCreatureCardItemForFightAnim.AnimForCreateShow`（`ClearAnim` → 先 `anchoredPosition = originalCardPos` 归位（`SetData` 只记坐标不动位置）→ 以当前 `localPosition` 为落位目标，透传序列化参数 `animCardCreateDelayTime`/`animCardCreateTimeType2`/`animCardCreateEase`）；② 阵容管理初始化 `UILineupManager.AnimForAllLineupCardPosReset(animType==1)`（传 `timeForLineupCardStagger`/`timeForLineupCardMoveInit`/`Ease.OutBack`，完成回调仍由原计数逻辑汇总）。新增"卡片出现"场景一律调 `AnimForCardShow`，不要另写弹入动画，保证动画与音效一致。
+> **卡片出现动画统一收口于基类 `AnimForCardShow`**（`UIViewCreatureCardItemAnim.cs` partial）：从目标位下方 -200px 弹入（位移 OutBack + 缩放 1→1.15→1 过冲回弹，逐卡 `index*delayTime` 错开），**启动时（错开延迟结束）每卡各自播放 `AudioEnum.sound_card_7`、落位时再各播放 `AudioEnum.sound_card_1`**。两处使用：① 战斗发牌 `UIViewCreatureCardItemForFightAnim.AnimForCreateShow`（`ClearAnim` → 先 `anchoredPosition = originalCardPos` 归位（`SetData` 只记坐标不动位置）→ 以当前 `localPosition` 为落位目标，透传序列化参数 `animCardCreateDelayTime`/`animCardCreateTimeType2`/`animCardCreateEase`）；② 阵容管理初始化 `UILineupManager.AnimForAllLineupCardPosReset(animType==1)`（传 `timeForLineupCardStagger`/`timeForLineupCardMoveInit`/`Ease.OutBack`，完成回调仍由原计数逻辑汇总）。新增"卡片出现"场景一律调 `AnimForCardShow`，不要另写弹入动画，保证动画与音效一致。**该序列已 `SetTarget(rectTransform)`，可被 `transform.DOKill()` 整体杀掉（含延迟中的音效回调）；阵容卡片回收入池（`RemoveLineupCard`/`RemoveLineupCardShow`）时会先 DOKill 清残留，快速切换阵容页签不会遗留旧动画/音效（2026-08 修复：无 SetTarget 的 Sequence 杀不掉导致切页签动画错乱、音效残留）。**
 
 > **阵容行卡片 vs 阵容管理列表卡片（务必区分）**：阵容管理界面有两处卡片——上方**阵容行**用 `UIViewCreatureCardItemForLineup`（实现 `IBeginDrag/IDrag/IEndDrag`，横向拖拽换位，`UILineupManager.modelLineupItem`）；下方**生物列表**用 `UIViewCreatureCardItemForLineupList`（无拖拽接口，负责 `LineupSelect` 遮罩，`UILineupManager` 内列表的 `tempCell`）。**ScrollGrid 列表的 cell 绝不能带拖拽接口**：uGUI 拖拽事件只派发给射线命中链上第一个 `IDragHandler` 且不再向上冒泡，cell 若实现拖拽接口会截获事件，父级 ScrollRect 收不到 → 列表无法拖拽滚动（阵容管理列表曾因此坏过，2026-08 拆分修复）。
 
@@ -172,6 +172,8 @@ details.RefreshCard();
 ```
 
 > **详情面板属性取值口径**：`UIViewCreatureCardDetails.SetData` 调 `SetAttribute(isDemonLord)` 分两套展示——**非魔王：HP/DR/ATK/ASPD**；**魔王：ATK/MSPD/MP/MPF**（隐藏 Life/Def 项、显示 MP/MPR 项，**MSPD 与 ASPD 共用 Speed 槽位**，预制体中命名 MPR 的项实际显示魔力回复 MPF）。取值统一调 **`creatureData.GetAttribute(类型, includeAbyssalBlessing: true)`**——必须传第二参数 `true`，否则只算「基础值→加点→装备→自身/稀有度BUFF」，**漏算深渊馈赠全局池**（如「随机一只攻击力翻倍」单体定向馈赠生效后，详情面板攻击力不翻倍，与场上实际值不符）。`CreatureBean.GetAttribute(true)` 内部经 `GetAbyssalBlessingChangeAttribute` 叠加，且该方法用 `AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature(buff, this, FightDefense)` 做「生物类型 + 单体定向 UUID + 仅属性/攻速BUFF」三连过滤，故只对被锁定的那只魔物翻倍、不会误加到所有卡。非战斗场景（基地/阵容/献祭等）馈赠池为空，传 `true` 无副作用。详见 abyssal-blessing-system「单体定向馈赠」。
+
+> **详情面板「生物详情说明」区块（`ui_RenmarkText`/`ui_RenmarkTextContent`，2026-08 新增）**：`SetData` 在 `SetMP()` 之后调 `SetRenmark()`——文本取 `creatureInfo.details_language`（生物表 `details[language_1]` 列，textId=生物自身id，取语言表 `content_1` 语种列；仅 id 1001~7004 的 30 个可招募生物已配 12 语种攻击方式描述）。`details=0` 或当前语种文本为空时整个 `ui_RenmarkText` 容器 `SetActive(false)` 隐藏，由末位 `RefreshUILayout()` 统一重算面板高度；魔王等未配置生物自然隐藏，无需特判。
 
 ### 5. 创建新的卡片子类
 
@@ -365,7 +367,7 @@ protected void OnConfirmOrderFilter(OrderFilterResultBean result) {
 
 | 功能 | 文件路径 |
 |------|----------|
-| 卡片基类 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItem.cs` + `UIViewCreatureCardItemAnim.cs`(partial：通用出现动画 `AnimForCardShow`，下方弹入回弹+启动播放 `sound_card_7`+落位播放 `sound_card_1`) |
+| 卡片基类 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItem.cs` + `UIViewCreatureCardItemAnim.cs`(partial：通用出现动画 `AnimForCardShow`，下方弹入回弹+启动播放 `sound_card_7`+落位播放 `sound_card_1`；序列 `SetTarget(rectTransform)` 可被 `transform.DOKill()` 整体杀掉) |
 | 卡片组件声明 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemComponent.cs` |
 | 战斗卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForFight.cs`(主体：生命周期/快捷按键/状态/触摸事件/深渊馈赠展示) + `UIViewCreatureCardItemForFightAnim.cs`(partial：动画参数/Tween 句柄/创建·选择·避让动画 `AnimForCreateShow`(委托基类 `AnimForCardShow`)/`PlaySelectEnterAnim`/`PlaySelectExitAnim`/`PlaySelectKeepAnim`/`PlaySelectKeepReturnAnim`/`ClearAnim`/`KillAnim*`) |
 | 阵容行卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForLineup.cs` |

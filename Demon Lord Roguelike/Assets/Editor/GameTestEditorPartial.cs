@@ -84,6 +84,17 @@ public partial class GameTestEditor
     // 投入上限滑条上限(基础5 + JuicerNum研究满级10)
     private const int JUICER_TEST_CREATURE_NUM_MAX = 15;
 
+    // 对话系统测试参数
+    // 手动输入的NPC ID(0=使用下拉选择；NPC ID为long，议会随机议员等大id超int上限)
+    public long conversationTestNpcId = 0;
+    // NPC下拉选择索引
+    public int conversationTestNpcSelectIndex = 0;
+    // 要展示的对话文本(自由输入，不走多语言)
+    public string conversationTestContent = "魔王大人，欢迎回来！";
+    // NPC下拉选项缓存(不持久化，懒加载；配置重导后可点「刷新列表」重建)
+    private GUIContent[] conversationTestNpcOptions;
+    private long[] conversationTestNpcIds;
+
     // 奖励选择测试参数
     public RarityEnum rewardSelectRarity = RarityEnum.N;
     public int rewardSelectAddAttribute = 5;
@@ -108,6 +119,7 @@ public partial class GameTestEditor
     private bool showCreatureJuicerTest = true;
     private bool showEffectTest = true;
     private bool showNormalGameTest = true;
+    private bool showConversationTest = true;
 
     // 战斗场景测试折叠
     private bool showFightBasicSettings = true;
@@ -195,6 +207,11 @@ public partial class GameTestEditor
         juicerTestSaveSlot = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "juicerTestSaveSlot", 1), 1, 3);
         juicerTestCreatureMax = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "juicerTestCreatureMax", JUICER_TEST_CREATURE_NUM_MAX), JUICER_TEST_CREATURE_NUM_MIN, JUICER_TEST_CREATURE_NUM_MAX);
 
+        // 对话系统测试参数(NPC ID为long，10位id超int上限，用字符串持久化)
+        long.TryParse(EditorPrefs.GetString(PREFS_KEY_PREFIX + "conversationTestNpcId", "0"), out conversationTestNpcId);
+        conversationTestNpcSelectIndex = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "conversationTestNpcSelectIndex", 0);
+        conversationTestContent = EditorPrefs.GetString(PREFS_KEY_PREFIX + "conversationTestContent", "魔王大人，欢迎回来！");
+
         // 敌人 IDs
         LoadEnemyIds();
     }
@@ -260,6 +277,11 @@ public partial class GameTestEditor
         // 魔汁机测试参数
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "juicerTestSaveSlot", juicerTestSaveSlot);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "juicerTestCreatureMax", juicerTestCreatureMax);
+
+        // 对话系统测试参数
+        EditorPrefs.SetString(PREFS_KEY_PREFIX + "conversationTestNpcId", conversationTestNpcId.ToString());
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "conversationTestNpcSelectIndex", conversationTestNpcSelectIndex);
+        EditorPrefs.SetString(PREFS_KEY_PREFIX + "conversationTestContent", conversationTestContent);
 
         // 敌人 IDs
         SaveEnemyIds();

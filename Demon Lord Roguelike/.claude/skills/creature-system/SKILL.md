@@ -81,7 +81,7 @@ public class CreatureBean
 }
 ```
 
-> **体型缩放**：`CreatureBean.bodySizeScale`(float, 默认1) 是模型体型倍率，两条来源共用同一套解析规则（空/"0"=1倍、`"min,max"`如"0.9,1.1"=区间随机、`"1.1"`=固定倍数）：NPC 读 `NpcInfo.body_size` + `NpcInfoBean.GetBodySizeRandomScale()`（`SetData(NpcInfoBean)`）；按 creatureId 创建的生物（扭蛋/建号等）读 `CreatureInfo.body_size` + `CreatureInfoBean.GetBodySizeRandomScale()`（`SetData(long creatureId)`）。均在创建时随机一次并缓存，渲染时 `CreatureHandler.SetCreatureData` 以 `localScale = size_spine × CreatureBean.GetBodySizeScale()`（带≤0回退1的保护）应用。未配置 body_size 的生物倍率恒为1，行为不变。
+> **体型缩放**：`CreatureBean.bodySizeScale`(float, 默认1) 是模型体型倍率，两条来源共用同一套解析规则（空/"0"=1倍、`"min,max"`如"0.9,1.1"=区间随机、`"1.1"`=固定倍数）：NPC 读 `NpcInfo.body_size` + `NpcInfoBean.GetBodySizeRandomScale()`（`SetData(NpcInfoBean)`）；按 creatureId 创建的生物（扭蛋/建号等）读 `CreatureInfo.body_size` + `CreatureInfoBean.GetBodySizeRandomScale()`（`SetData(long creatureId)`）。均在创建时随机一次并缓存，渲染时 `CreatureHandler.SetCreatureData` 以 `localScale = size_spine × CreatureBean.GetBodySizeScale()`（带≤0回退1的保护）应用。未配置 body_size 的生物倍率恒为1，行为不变。CreatureInfo 侧另有区间解析 `CreatureInfoBean.GetBodySizeRange(out min, out max)`（供创建界面身高滑条取上下限，`GetBodySizeRandomScale` 已改为基于它随机）。
 
 > **NPC 稀有度**：NPC 创建（`SetData(NpcInfoBean)`）稀有度取自 `NpcInfo.rarity` 列（int，空/0=N，按 RarityEnum 值 1=N~6=L），未配置时维持旧行为全 N。仅写入 `CreatureBean.rarity`（详情显示/CMP 倍率等读 `GetRarityValue()` 的链路自动生效），**不授予稀有度 BUFF**——稀有度 BUFF 仍仅孕育扭蛋（`GashaponItemBean`）与测试添加（`UITestBase`）经 `RandomRarityBuffForCreate` 发放。
 
@@ -359,6 +359,8 @@ public class CreatureInfoBean : BaseBean
 
 > **`charge_attack`(int 0/1) — 冲锋自爆型生物开关**：配置列在 `excel_creature_info`，自动生成到 `CreatureInfoBean.charge_attack`；手写辅助方法 `CreatureInfoBeanPartial.IsChargeAttack()`（返回 `charge_attack == 1`）。冲锋自爆语义：放卡后立即向 +X 冲锋并释放原占位格（`FightCreatureBean.isPositionReleased` 置位，占位查询跳过已释放实体见 game-fight-system SKILL），前方 0.5 遇敌/冲到路尽头/被打死时在死亡位置原地自爆（AoE），死亡后卡片走 RCD 回手。当前唯一配置生物：**6003 哥布林敢死队**（attack_mode=300002 爆炸、attack_search_range=0.5 触发距离、attack_search_time=0.1、RCD=60）。死亡引爆实现见 game-fight-core agent（`FightCreatureEntityForDefense.CreateAttackModeForDeadExplosion`），重生联动（死亡地点重生再冲锋）见 buff-system SKILL「死亡重生」。
 
+> **`details[language_1]`(long) — 生物详情描述（攻击方式说明）**：配置列在 `excel_creature_info` 末尾（col45），textId=生物自身 id；文本本体在 `excel_language` 的 CreatureInfo 工作表 `content_1_*` 12 语种列。自动生成 `CreatureInfoBean.details` + `details_language`（contentIndex=1，带 LanguageCache）。仅 id 1001~7004 的 30 个可招募生物已配；`details=0`/文本为空时详情面板隐藏整个说明区块（消费方 `UIViewCreatureCardDetails.SetRenmark`，见 creature-card-system）。与 AchievementInfoBean 的 `details[language_1]` 同构。
+
 > **`creature_layer`(string) — 生物分层（搜索隐身 + 显示前置，双重语义）**：配置列在 `excel_creature_info`，值为 Unity Layer 名（`CreatureDef_Front`/`CreatureAtt_Front`/`CreatureDef_Back`/`CreatureAtt_Back`，见 [LayerInfo.cs](Assets/Scripts/Common/LayerInfo.cs)），空 = 默认层（CreatureDef/CreatureAtt）。生效代码在 `CreatureHandler.GetFightCreatureObj`：把生物根 GameObject.layer 改为配置层（**BoxCollider 挂在预制根节点，随根一并改层**），Front 层还会把 Spine 节点 Z 前移 0.1（渲染显示在其他魔物前面）。
 > - **Front 层 = 故意让敌对方物理搜索搜不到（设计而非 bug）**：索敌/攻击命中的物理搜索 mask 写死 `1 << CreatureDef` / `1 << CreatureAtt`（[FightCreatureSearchUtil.cs](Assets/Scripts/Utils/FightCreatureSearchUtil.cs) `FindCreatureEntity`、[BaseAttackMode.cs](Assets/Scripts/Game/Fight/AttackMode/BaseAttackMode.cs) 攻击层 mask），Front 层不在 mask 内 → 敌人不会发现/攻击它。典型使用者**烂泥史莱姆(id=3003, attack_mode=400001)**：敌人从它身上走过会被减速，但敌人不把它当攻击目标——"地面附着型"魔物靠移出敌方搜索层实现"只影响敌人、不被敌人当目标"。**禁止以"修复索敌失效/打不到"为由扩大搜索 mask 或改回 layer**（会破坏该设计）。
 > - 只要"重叠时显示在前"而不想影响索敌的需求，**不要复用 Front 层**（会连带搜索隐身），应走渲染侧方案（如 Spine MeshRenderer.sortingOrder）。
@@ -493,5 +495,6 @@ Color rarityColor = CreatureUtil.GetRarityColor(creature.rarity);
 2. **属性计算顺序**: 基础属性 → 装备加成 → BUFF 加成，计算最终属性时按此顺序。
 3. **死体回收**: 死亡生物的资源需要回收，FightCreatureEntity 使用对象池管理。
 4. **Spine资源**: 不同生物可能使用同一个 Spine 资源（如所有史莱姆共用模型），仅皮肤不同。
-5. **与 creature-card-system 的边界**: 本 skill 负责生物实体/属性/数据，creature-card-system 负责卡片 UI 展示/交互。
-6. **与 ai-system 的边界**: 本 skill 负责生物实体管理，ai-system 负责生物的行为决策（状态机）。
+5. **皮肤来源与默认武器兜底**: 皮肤在创建时由 `AddSkinForBase()` 写入 `dicSkinData` 并随存档持久化（改配置不回填旧生物）。例外是默认武器：`GetSkinData` 装配时发现皮肤数据与装备栏都无武器、且当前配置 `equip_item_base_weapon≠0`，会按当前配置兜底补入默认武器皮肤（仅 showType=0 且 isNeedWeapon=true），旧存档生物因此自动拿上当前默认武器；装备栏有武器时装备皮肤仍顶替基础武器。
+6. **与 creature-card-system 的边界**: 本 skill 负责生物实体/属性/数据，creature-card-system 负责卡片 UI 展示/交互。
+7. **与 ai-system 的边界**: 本 skill 负责生物实体管理，ai-system 负责生物的行为决策（状态机）。

@@ -47,6 +47,9 @@ UIHandler.Instance.GetUI<T>()
 UIHandler.Instance.ShowDialog<T>(dialogBean)
 UIHandler.Instance.ToastHint<T>(content)
 UIHandler.Instance.ShowPopup<T>(popupBean)
+UIHandler.Instance.HidePopup(popupEnum)
+// 注意：ShowPopup/HidePopup 已收口走 PopupShowView.ShowWithAnim()/HideWithAnim()，
+// 气泡默认带出现/消失动画（DOScale 弹出/缩回+可选淡出），子类可在 Awake 关开关或 override 定制
 
 // 屏幕锁定
 UIHandler.Instance.ShowScreenLock()

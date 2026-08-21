@@ -18,8 +18,7 @@ MonoBehaviour:
   - m_GUID: 0291124461ea5b54dbc185fec70ca413
     m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_FireBottle_1.prefab
     m_ReadOnly: 0
-    m_SerializedLabels:
-    - AttackModeVisual
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 03a69bf3222b8d94583b49365a1c5e77
     m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_Book_1.prefab
@@ -33,6 +32,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 29d9a75a1a49ac64a8b8b7189f326c11
     m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_RangedFireBall.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3708ea8dedbf06e43b7f44a2292d30b6
+    m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_RangedWaterBall.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -64,8 +68,7 @@ MonoBehaviour:
   - m_GUID: ec6fd19af4d2f6f488d37da0bcf74776
     m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_Pingpang_1.prefab
     m_ReadOnly: 0
-    m_SerializedLabels:
-    - AttackModeVisual
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: cd8265063357f05429534136a009386f, type: 2}

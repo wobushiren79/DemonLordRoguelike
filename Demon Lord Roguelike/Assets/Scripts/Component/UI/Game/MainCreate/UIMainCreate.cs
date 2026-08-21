@@ -20,6 +20,8 @@ public partial class UIMainCreate : BaseUIComponent
     //选中控件
     protected List<UIViewMainCreateSelectItem> listSelectView = new List<UIViewMainCreateSelectItem>();
     protected Dictionary<CreatureSkinTypeEnum,UIViewColorShow> dicSelectColorShow = new Dictionary<CreatureSkinTypeEnum, UIViewColorShow>();
+    //身高设置控件
+    protected UIViewMainCreateProgressItem heightProgressItem;
     //可选的初始物种(只允许创建骷髅; 1=人类已移除, 2=骷髅)
     protected List<int> listSelectForCreature = new List<int>()
     {
@@ -360,6 +362,34 @@ public partial class UIMainCreate : BaseUIComponent
             targetView.SetData(listSkinName, ActionForSelect, startRandomIndex);
             index++;
         }
+        //刷新身高设置项
+        RefreshHeightProgress();
+        SetPreviewCreate(createCreatureData);
+    }
+
+    /// <summary>
+    /// 刷新身高设置项（没有则创建并置于选择栏最上方，有则同步当前体型的随机倍率与配置区间）
+    /// </summary>
+    public void RefreshHeightProgress()
+    {
+        var creatureInfo = CreatureInfoCfg.GetItemData(createCreatureData.creatureId);
+        creatureInfo.GetBodySizeRange(out float minSize, out float maxSize);
+        if (heightProgressItem == null)
+        {
+            GameObject targetObj = Instantiate(ui_SelectContent.gameObject, ui_UIViewMainCreateProgressItem.gameObject);
+            heightProgressItem = targetObj.GetComponent<UIViewMainCreateProgressItem>();
+            //放在选择栏最上方（皮肤部位项之前）
+            heightProgressItem.transform.SetSiblingIndex(0);
+        }
+        heightProgressItem.SetData(TextHandler.Instance.GetTextById(1007), minSize, maxSize, createCreatureData.bodySizeScale, ActionForHeightChange);
+    }
+
+    /// <summary>
+    /// 身高变化回调（改体型倍率并刷新预览）
+    /// </summary>
+    public void ActionForHeightChange(UIViewMainCreateProgressItem targetView, float value)
+    {
+        createCreatureData.bodySizeScale = value;
         SetPreviewCreate(createCreatureData);
     }
     #endregion

@@ -61,6 +61,9 @@ public partial class GameTestEditor : Editor
             case TestSceneTypeEnum.EffectTest:
                 DrawEffectTest();
                 break;
+            case TestSceneTypeEnum.ConversationTest:
+                DrawConversationTest();
+                break;
             case TestSceneTypeEnum.NormalGame:
                 DrawNormalGameTest();
                 break;
@@ -345,18 +348,30 @@ public partial class GameTestEditor : Editor
     }
 
     /// <summary>
-    /// 清空 AbyssalBlessingInfoCfg 的全部 static 缓存（反射访问 private/protected static）：
-    /// dicData/arrayData(数据本体，只加载一次) + dicFamilyRoot/dicFamilyMaxLevel(族根/最大等级)；
-    /// JSON 重导后若不清理且不触发 domain reload，下拉列表读到的仍是旧数据。
+    /// 清空 Cfg 基类的 static 数据缓存（反射访问 NonPublic static 的 dicData/arrayData）：
+    /// Cfg 的 static 缓存只加载一次（不随 JSON 重导失效），JSON 重导后若不清理且不触发 domain reload，编辑器读取的仍是旧数据。
     /// </summary>
-    private void ClearAbyssalBlessingInfoCfgCache()
+    private void ClearCfgBaseStaticCache(System.Type cfgType)
     {
         const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.NonPublic
             | System.Reflection.BindingFlags.Static
             | System.Reflection.BindingFlags.FlattenHierarchy;
-        var cfgType = typeof(AbyssalBlessingInfoCfg);
         cfgType.GetField("dicData", flags)?.SetValue(null, null);
         cfgType.GetField("arrayData", flags)?.SetValue(null, null);
+    }
+
+    /// <summary>
+    /// 清空 AbyssalBlessingInfoCfg 的全部 static 缓存（基类数据本体 dicData/arrayData + 族根/最大等级 dicFamilyRoot/dicFamilyMaxLevel）
+    /// </summary>
+    private void ClearAbyssalBlessingInfoCfgCache()
+    {
+        var cfgType = typeof(AbyssalBlessingInfoCfg);
+        //基类数据本体缓存
+        ClearCfgBaseStaticCache(cfgType);
+        //族根/最大等级缓存
+        const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.NonPublic
+            | System.Reflection.BindingFlags.Static
+            | System.Reflection.BindingFlags.FlattenHierarchy;
         cfgType.GetField("dicFamilyRoot", flags)?.SetValue(null, null);
         cfgType.GetField("dicFamilyMaxLevel", flags)?.SetValue(null, null);
     }
@@ -393,12 +408,12 @@ public partial class GameTestEditor : Editor
     }
 
     /// <summary>
-    /// 直读深渊馈赠中文语言表(Language_AbyssalBlessingInfo_cn.txt)，返回 id→语言行 字典；读取失败返回空字典(选项文本退化为 null 占位)
+    /// 直读指定中文语言表(Resources/JsonText/<languageFileName>)，返回 id→语言行 字典；读取失败返回空字典(调用方需做兜底显示)
     /// </summary>
-    private Dictionary<long, LanguageBean> LoadAbyssalBlessingLanguageForCn()
+    private Dictionary<long, LanguageBean> LoadLanguageForCn(string languageFileName)
     {
         var dicLanguage = new Dictionary<long, LanguageBean>();
-        string path = Path.Combine(Application.dataPath, "Resources/JsonText/Language_AbyssalBlessingInfo_cn.txt");
+        string path = Path.Combine(Application.dataPath, "Resources/JsonText/" + languageFileName);
         if (!File.Exists(path)) return dicLanguage;
         var arrayData = JsonConvert.DeserializeObject<LanguageBean[]>(File.ReadAllText(path));
         if (arrayData == null) return dicLanguage;
@@ -408,6 +423,14 @@ public partial class GameTestEditor : Editor
                 dicLanguage[arrayData[i].id] = arrayData[i];
         }
         return dicLanguage;
+    }
+
+    /// <summary>
+    /// 直读深渊馈赠中文语言表(Language_AbyssalBlessingInfo_cn.txt)，返回 id→语言行 字典；读取失败返回空字典(选项文本退化为 null 占位)
+    /// </summary>
+    private Dictionary<long, LanguageBean> LoadAbyssalBlessingLanguageForCn()
+    {
+        return LoadLanguageForCn("Language_AbyssalBlessingInfo_cn.txt");
     }
 
     /// <summary>
@@ -809,6 +832,145 @@ public partial class GameTestEditor : Editor
 
         EditorGUI.indentLevel--;
         EditorGUILayout.Space(10);
+    }
+
+    /// <summary>
+    /// 绘制对话系统测试(说话NPC下拉/手动输入 + 自由文本 + 开始展示对话)
+    /// </summary>
+    private void DrawConversationTest()
+    {
+        showConversationTest = EditorGUILayout.Foldout(showConversationTest, "💬 对话系统测试", true);
+        if (!showConversationTest) return;
+
+        EditorGUI.indentLevel++;
+        EditorGUILayout.Space(5);
+
+        // 说话NPC选择(下拉 + 手动输入)
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("说话 NPC", EditorStyles.boldLabel);
+        if (GUILayout.Button("🔄 刷新列表", GUILayout.Width(90)))
+        {
+            //配置重导后清空选项缓存，下次绘制时重建
+            conversationTestNpcOptions = null;
+            //Cfg 的 static 缓存只加载一次(不随 JSON 重导失效)，需一并清掉才能读到新行
+            ClearCfgBaseStaticCache(typeof(NpcInfoCfg));
+        }
+        if (GUILayout.Button("📂 NPC配置表", GUILayout.Width(100)))
+        {
+            string path = Path.Combine(Application.dataPath, "Data/Excel/excel_npc_info[NPC信息].xlsx");
+            if (File.Exists(path))
+            {
+                Application.OpenURL("file:///" + path.Replace("\\", "/"));
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("文件未找到", $"找不到 NPC 配置表:\n{path}", "确定");
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+
+        //NPC下拉选项懒加载(id + 中文名)
+        EnsureConversationTestNpcOptions();
+        if (conversationTestNpcOptions == null || conversationTestNpcOptions.Length == 0)
+        {
+            EditorGUILayout.HelpBox("未读取到 NPC 配置，请检查配置表导出或点「刷新列表」。", MessageType.Warning);
+        }
+        else
+        {
+            conversationTestNpcSelectIndex = EditorGUILayout.Popup(
+                new GUIContent("NPC 下拉选择", "从 NpcInfo 配置表选择说话NPC(id + 中文名)；「手动 NPC ID」非 0 时优先于下拉"),
+                Mathf.Clamp(conversationTestNpcSelectIndex, 0, conversationTestNpcOptions.Length - 1),
+                conversationTestNpcOptions);
+        }
+        conversationTestNpcId = EditorGUILayout.LongField(new GUIContent("手动 NPC ID", "非 0 时优先于下拉选择；NPC ID 为 long(议会随机议员等大 id 超 int 上限)"), conversationTestNpcId);
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.Space(5);
+
+        // 对话文本(自由输入)
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.LabelField(new GUIContent("对话文本", "要展示的对话内容(自由输入，不走多语言)，点击开始后由对话系统逐字展示"));
+        conversationTestContent = EditorGUILayout.TextArea(conversationTestContent, GUILayout.MinHeight(60));
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.Space(10);
+
+        // 运行按钮
+        GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
+        if (GUILayout.Button("▶️ 开始对话展示", GUILayout.Height(30)) && Application.isPlaying)
+        {
+            //解析目标NPC：手动ID非0优先，否则取下拉选择
+            long targetNpcId = conversationTestNpcId;
+            if (targetNpcId == 0)
+            {
+                if (conversationTestNpcIds == null || conversationTestNpcIds.Length == 0)
+                {
+                    EditorUtility.DisplayDialog("提示", "NPC 列表为空，请点「刷新列表」或改用手动 NPC ID。", "确定");
+                    return;
+                }
+                int index = Mathf.Clamp(conversationTestNpcSelectIndex, 0, conversationTestNpcIds.Length - 1);
+                targetNpcId = conversationTestNpcIds[index];
+            }
+            if (NpcInfoCfg.GetItemData(targetNpcId) == null)
+            {
+                EditorUtility.DisplayDialog("提示", $"找不到 NPC 配置: {targetNpcId}", "确定");
+                return;
+            }
+            if (conversationTestContent.IsNull())
+            {
+                EditorUtility.DisplayDialog("提示", "对话文本为空，请输入要展示的文本。", "确定");
+                return;
+            }
+            launcher.StartForConversationTest(targetNpcId, conversationTestContent);
+        }
+        GUI.backgroundColor = Color.white;
+
+        EditorGUILayout.HelpBox("在测试场景直接打开对话界面(UIGameConversation)：显示所选NPC的名字/头像，逐字展示输入文本(带说话音效)，文本动画播完后再点背景关闭。贿赂入口为真实逻辑，已开启测试模拟不会写回真实存档。", MessageType.Info);
+
+        EditorGUI.indentLevel--;
+        EditorGUILayout.Space(10);
+    }
+
+    /// <summary>
+    /// 懒加载对话测试NPC下拉选项(id + 中文名，按id排序)。
+    /// 中文名直读 Language_NpcInfo_cn.txt，不切 LanguageCfg 语言——避免 Inspector 绘制时篡改正在运行游戏的语言。
+    /// </summary>
+    private void EnsureConversationTestNpcOptions()
+    {
+        if (conversationTestNpcOptions != null) return;
+        var allData = NpcInfoCfg.GetAllArrayData();
+        //加载中文多语言(NpcInfo.name → Language_NpcInfo_cn.txt)
+        Dictionary<long, LanguageBean> dicLanguage = LoadLanguageForCn("Language_NpcInfo_cn.txt");
+        var listEntries = new List<KeyValuePair<long, GUIContent>>();
+        for (int i = 0; i < allData.Length; i++)
+        {
+            var npcInfo = allData[i];
+            if (npcInfo == null) continue;
+            //先检查多语言行是否存在，避免 name_language 对缺失行刷 LogError
+            string npcName;
+            if (npcInfo.name == 0)
+            {
+                //随机议员没有配置名字，用通用称谓展示
+                npcName = npcInfo.GetNpcType() == NpcTypeEnum.CouncilorRandom ? "(随机议员)" : "(无名字)";
+            }
+            else if (dicLanguage.TryGetValue(npcInfo.name, out LanguageBean languageBean) && !languageBean.content.IsNull())
+            {
+                npcName = languageBean.content;
+            }
+            else
+            {
+                npcName = "(未配置名字)";
+            }
+            listEntries.Add(new KeyValuePair<long, GUIContent>(npcInfo.id, new GUIContent($"{npcInfo.id}  {npcName}")));
+        }
+        //按 id 排序保证下拉顺序稳定
+        listEntries.Sort((a, b) => a.Key.CompareTo(b.Key));
+        conversationTestNpcOptions = new GUIContent[listEntries.Count];
+        conversationTestNpcIds = new long[listEntries.Count];
+        for (int i = 0; i < listEntries.Count; i++)
+        {
+            conversationTestNpcIds[i] = listEntries[i].Key;
+            conversationTestNpcOptions[i] = listEntries[i].Value;
+        }
     }
 
     /// <summary>

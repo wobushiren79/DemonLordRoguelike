@@ -212,6 +212,42 @@ public class LauncherTest : BaseLauncher
     }
 
     /// <summary>
+    /// 开始对话系统测试（自由输入文本 + 指定NPC，在测试场景直接打开对话UI）
+    /// 清理世界数据后打开 UIGameConversation：显示所选NPC的名字/头像，逐字展示输入文本（带说话音效）。
+    /// </summary>
+    /// <param name="npcId">说话NPC的ID（NpcInfo.id，为 long）</param>
+    /// <param name="content">要展示的对话文本（自由输入，不走多语言）</param>
+    public async void StartForConversationTest(long npcId, string content)
+    {
+        //校验NPC配置与对话文本
+        NpcInfoBean npcInfo = NpcInfoCfg.GetItemData(npcId);
+        if (npcInfo == null)
+        {
+            LogUtil.LogError($"对话系统测试失败，找不到NPC配置 id:{npcId}");
+            return;
+        }
+        if (content.IsNull())
+        {
+            LogUtil.LogError("对话系统测试失败，对话文本为空");
+            return;
+        }
+        await WorldHandler.Instance.ClearWorldData();
+        //设置焦距
+        VolumeHandler.Instance.SetDepthOfField(UnityEngine.Rendering.Universal.DepthOfFieldMode.Off, 0, 0, 0);
+        //镜头初始化
+        CameraHandler.Instance.InitData();
+        //开启测试模拟：对话UI带贿赂入口（贿赂固定议员会 SaveUserData），防止误写真实存档
+        GameDataHandler.Instance.manager.isTestSimulation = true;
+        //构建说话生物数据（NPC构造入口初始化皮肤/装备/名字，与议会交谈同一数据口径）
+        CreatureBean creatureData = new CreatureBean(npcInfo);
+        //creatureObj 在对话UI中仅用于贿赂特效定位，测试场景无实体，用空物体兜底防空引用
+        GameObject creatureObj = new GameObject($"ConversationTest_{npcId}");
+        var uiConversation = UIHandler.Instance.OpenUIAndCloseOther<UIGameConversation>();
+        //结束回调：测试无后续界面，对话结束后直接关闭对话UI
+        uiConversation.SetData(creatureObj, creatureData, content, () => uiConversation.CloseUI());
+    }
+
+    /// <summary>
     /// 基地测试
     /// </summary>
     public void StartForBaseTest(CreatureBean creatureData)

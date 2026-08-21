@@ -25,12 +25,13 @@ watched_files:
 - **LineView** - 连线组件
 - **UITextLanguageView** - 多语言文本组件
 - **DialogView** - 弹窗基类
-- **PopupShowView / PopupShowCommonView** - 气泡基类
+- **PopupShowView / PopupShowCommonView** - 气泡基类（已内建出现/消失动画：开关字段 `isAnimForShow`/`isAnimForHide`/`isAnimWithFade` + virtual 方法 `AnimForShow()`/`AnimForHide(onComplete)`/`ShowWithAnim()`/`HideWithAnim()`，DOScale 弹出/缩回+可选淡出，全部 unscaled；子类可在 Awake 置开关=false 或 override 定制；UIHandler.ShowPopup/HidePopup 已收口走 ShowWithAnim/HideWithAnim）
 - **PopupButtonView / PopupButtonCommonView** - 气泡按钮
 - **ToastView** - 提示基类
 - **MsgView** - 消息视图
 - **AudioView / ButtonAudio** - 音频控制组件
 - **CursorView** - 光标组件
+- **UIHoverCardView** - 小丑牌(Balatro)风格通用悬停组件（继承 BaseUIView，实现 IPointerEnter/Exit/MoveHandler）：鼠标进入弹起放大(OutBack 回弹)+上抬，光标在卡面内移动时卡牌朝光标方向 3D 倾斜(视差跟随)，倾斜由欠阻尼弹簧驱动(与 PopupShowView 位置弹簧同款半隐式积分写法，unscaledDeltaTime)故快速划过会甩动、松手回摆，悬停静止期间叠加双轴错相持续摆动(悬空摇晃感, 渐入渐出)，移出还原(OutQuad)。参数：`targetTransform`(空=自身)、`hoverScale`、`scaleDuration`、`hoverLiftOffset`(zero=不上抬)、`maxTiltAngle`(0=纯缩放)、`tiltFollowSpeed`、`tiltOvershoot`、`idleSwayAngle`(悬停持续摆动幅度,0=无)、`idleSwayFrequency`(摆动频率)、`isListenPointer`(关闭后仅外部驱动)。API：`PlayEnterAnim()`/`PlayExitAnim()`/`KillHoverAnim()`(OnDisable/OnDestroy 自动调)/`SetHoverSuppressed(bool)`(其他动画独占目标变换时抑制)/`RefreshOriginalTransform()`(外部永久改变换后重缓存；`Awake`+`Start` 自动各缓存一次，Start 重缓存保证拿到布局/SetData 后的真实静止态)。事件沿射线接收层向上冒泡，可挂 item 根节点；若目标物体的位置/缩放由外部布局管理（如研究树 SetPosition），应新建子节点挂本组件驱动子节点，与布局隔离
 - **MaskUIView** - UI 遮罩
 - **BaseEffectView** - 特效视图基类
 - **SecretCode** - 秘钥输入

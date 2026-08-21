@@ -78,6 +78,8 @@ Assets/FrameWork/Scripts/           Assets/Scripts/
 | LoadAssetBundleUtil | AssetBundle 加载 |
 | LoadWWWUtil | WWW 加载 |
 | UnityNewtonsoftJsonSerializer | Unity 适配的 Newtonsoft 序列化 |
+| **异步任务** | |
+| GTask | UniTask 门面（异步等待/发射/取消统一入口）：`Wait`/`WaitReal`（受/不受 timeScale 的秒级等待，负数按0）、`WaitFrame`/`WaitFrames(n)`、`WaitUntil`/`WaitWhile`、`WaitTween`（等 DOTween 播完，Kill/销毁也算结束；均收 `GTaskCancel`，可空=不可取消）、`Run`（Forget 发射，仅用于「方法返回 `UniTask` 供他处 await、个别调用点又要发射即忘」的复用场景；发射即忘专用方法声明 `async UniTaskVoid`、调用点 `_ = Method()` 显式丢弃即可（消除未观察调用警告），OCE 静默、真异常由 UniTaskScheduler 记录，无需 try/catch；禁止 `async void`）、`NewCancel(gameObject)` 建取消源（链接销毁令牌自动收口，懒创建一次复用）+ `GTaskCancel.Reset()` 重建令牌/`Cancel()` 幂等取消（Cancel 后再用返回预取消令牌=立即取消，不 NRE）。`CancellationToken` 为 internal 不外露。详见 CLAUDE.md「异步与定时逻辑规则」 |
 
 ### Extension（`Assets/FrameWork/Scripts/Extension/`）
 

@@ -15,7 +15,7 @@ watched_files:
 
 ### 主菜单 UI
 - **UIMainStart** - 游戏开始界面。含多语言选择列表：`InitLanguageList` 按 LanguageEnum 数量以 ui_ItemLanguage 为模板实时生成 UIViewLanguageItem（文本格式 `cn/中文`，见 `LanguageCfg.GetLanguageShowName`），点击直接切换语言并 SaveGameConfig + RefreshAllUI
-- **UIMainCreate** - 创建角色界面
+- **UIMainCreate** - 创建角色界面（物种/皮肤/颜色 + 身高滑条调 bodySizeScale，详见 game-main-create）
 - **UIMainLoad** - 加载存档界面
 - **UIMainMaker** - 制作人员界面
 
@@ -23,7 +23,7 @@ watched_files:
 - **UIBaseMain** - 基地主界面。左下角挂基础操作按键提示组 `ui_UIViewPressControlForGameBase`（W/A/S/D 移动常驻、E 互动可交互时才显示、Space 突进按研究解锁显隐+CD 遮罩，逻辑见 ui-components 的 UIViewPressControlForGameBase / UIViewPressCommon）
 - **UIBaseCore** - 核心建筑界面
 - **UIBasePortal** - 传送门界面
-- **UIBaseResearch** - 研究界面
+- **UIBaseResearch** - 研究界面。研究节点 item（`UIViewBaseResearchItem`）已接入框架层 `UIHoverCardView` 实现小丑牌风格悬停（prefab 挂载于 CardContent 子节点，弹起放大+上抬+倾斜跟随+弹簧回摆+悬停静止持续摆动），悬停变换与根节点布局/解锁动画 `AnimForUnlock` 分属不同 transform 天然隔离（详见 game-research / research-system）
 - **UICreatureManager** - 魔物管理界面（背包生物/装备管理、献祭升级入口）。**魔王(`CreatureBean.IsDemonLord()`)特殊处理**：`GetSortedBackpackCreature` 把 `userData.selfCreature` 插入列表首位并恒置顶（卡片列表 `OrderListCreature` 最高主键保证筛选/排序后仍第一位）；魔王卡片按稀有度 L 显示、隐藏等级；`RefreshSacrificeButton` 对魔王隐藏献祭升级按钮、`OnClickForCreatureSacrifice` 加魔王兜底拦截（魔王隐藏等级、不吃经验、不可献祭）。献祭机制详见 sacrifice-system skill。**魔汁使用流程**（`#region 魔汁使用`，详见 item-system skill）：`EventForItemBackpackClickSelect` 点击分流——`ItemTypeEnum.Juice` → `UseJuiceItem(itemData)`，其余道具照旧 `SetCreatureEquip`；`UseJuiceItem` 无选中生物/魔王兜底返回（列表已隐藏魔汁）→ `IsMaxLevel()` 满级 Toast 61015 拦截 → `UIHandler.ShowDialogNormal(DialogBean)` 确认框（textId 61014「是否对{0}使用魔汁？经验+{1}」格式化生物名+`juicerExp`）→ 确定回调：`creatureData.levelExp += juicerExp` → `RemoveBackpackItem` → `SaveUserData()` → 三连刷新（`ui_UIViewCreatureCardEquipDetails.SetCardDetails` 经验显示 + `RefreshSacrificeButton` 经验达标点亮献祭按钮 + `InitBackpackItemsData` 列表移除魔汁）；经验只累计 levelExp 不自动升级，升级仍走献祭
 
 ### 战斗 UI

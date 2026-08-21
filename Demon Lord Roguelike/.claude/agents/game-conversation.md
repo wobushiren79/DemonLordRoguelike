@@ -20,8 +20,10 @@ watched_files:
 - **UIGameConversationComponent** - AutoLinkUI 字段绑定（ui_TalkText/ui_Icon/ui_BG/ui_Gift/ui_Name/ui_IconContent），由编辑器工具生成。
 
 ### 文本动画（打字机）
-- 协程 `CoroutineForTextAnim` 逐字递增 TMP `maxVisibleCharacters` 显示文本（先设完整 text 再控可见字数，避免 substring 分配），节奏 `timeForTextAnim`（默认 0.05s/字，Inspector 可调）。
-- 每个**非空白**字符显示时播放 `AudioEnum.sound_talk_1` 说话音效（PlaySound 内置 0.1s 重复抑制自动限流，不会逐字爆音）。
+- **UniTask 异步推进**（非协程/非 Update，统一走框架层 GTask 封装）：`TextAnimForContent` 内 `await GTask.Wait(timeForTextAnim, token)` 逐字递增 TMP `maxVisibleCharacters`（先设完整 text 再控可见字数，避免 substring 分配；受 timeScale 影响），节奏 `timeForTextAnim`（默认 0.05s/字，Inspector 可调）。
+- **取消用 `cancelForTextAnim`（GTaskCancel，懒创建复用）**：开始 `Reset()` 重建令牌（首次 `GTask.NewCancel(gameObject)` 链接销毁令牌自动收口）、停止 `Cancel()`；推进方法为 `async UniTaskVoid`、调用点 `_ = TextAnimForContent()` 显式丢弃（消除未观察调用警告；UniTaskVoid 静默 OCE、真异常由 UniTaskScheduler 记录，无需 try/catch）；`CloseUI` 重写调 `StopTextAnim()` 收口，`OnDestroy` 重写 `cancelForTextAnim?.Dispose()` 释放。
+- **收尾拆分**：`StopTextAnim` = `Cancel()` + `FinishTextAnim()`；自然播完只调 `FinishTextAnim(true)`（显示全文/复位标记/截断音效），**不动取消源**——取消源留给下次 Start 的 `Reset()` 复用。
+- 说话音效 `AudioEnum.sound_talk_1`（全长 1.42s）：动画开始 `PlaySoundOnce` **整条只播一次**（独立音源，非逐字触发）；收尾（`FinishTextAnim`：自然播完/点击跳过/关闭）即 `StopSoundOnce` 立即截断——动画比音效短时在动画结束点直接停掉无残留，动画更长时音效自然播完、截断空操作。
 - **点击跳过**：动画播放中点背景(ui_BG) → `StopTextAnim(true)` 直接显示全文，**不结束对话**；动画结束后再点才走 `acionForEnd` 结束回调。
 
 ### 台词配置（ConversationCouncilorInfo）

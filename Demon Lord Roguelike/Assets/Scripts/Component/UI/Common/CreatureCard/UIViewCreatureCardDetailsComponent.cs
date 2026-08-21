@@ -96,5 +96,9 @@ public partial class UIViewCreatureCardDetails
 
     public TextMeshProUGUI ui_AttributeItemText_AddLife;
 
+    public RectTransform ui_RenmarkText;
+
+    public TextMeshProUGUI ui_RenmarkTextContent;
+
 
 }

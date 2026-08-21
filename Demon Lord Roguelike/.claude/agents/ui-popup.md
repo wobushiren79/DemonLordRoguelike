@@ -28,16 +28,16 @@ watched_files:
 - **UIToastNormal** - 普通提示
 
 ### 基类
-- **PopupShowView** - 气泡基类
+- **PopupShowView** - 气泡基类（已内建出现/消失动画：开关字段 `isAnimForShow`/`isAnimForHide`/`isAnimWithFade`，virtual 方法 `AnimForShow()`/`AnimForHide(onComplete)`/`ShowWithAnim()`/`HideWithAnim()`——DOScale 0→1 OutBack 弹出 / →0 InBack 缩回+可选淡出(代码 GetOrAdd CanvasGroup)，全部 unscaled，只做 scale+fade 无位移与每帧位置弹簧共存；隐藏中再次 Show 会 Kill 隐藏 Tween 重播出现动画(中断恢复)，Hide 有 `isHidingForAnim` 防重入、播完才真正隐藏。子类可在 Awake 置开关=false 回到瞬显瞬隐，或 override 定制动画）
 - **ToastView** - 提示基类
 
 ### 使用方式
 ```csharp
-// 显示气泡
+// 显示气泡（默认带出现动画，经 PopupShowView.ShowWithAnim 收口）
 PopupBean popupData = new PopupBean(PopupEnum.ItemInfo, targetTransform);
 UIHandler.Instance.ShowPopup<UIPopupItemInfo>(popupData);
 
-// 隐藏气泡
+// 隐藏气泡（默认带消失动画，经 PopupShowView.HideWithAnim 收口）
 UIHandler.Instance.HidePopup(PopupEnum.ItemInfo);
 
 // Toast 提示

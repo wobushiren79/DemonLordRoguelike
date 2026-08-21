@@ -224,6 +224,7 @@ LauncherTest (Inspector)
 ├── CreatureVat: 魔物进阶测试参数（选存档 + 解锁VAT数量/加速等级）
 ├── CreatureJuicer: 魔汁机测试参数（选存档 + 投入魔物上限滑条 5~15）
 ├── EffectTest: 粒子特效测试（▶️ 开始粒子特效测试按钮，打开纯代码 IMGUI 面板 TestEffectGUI）
+├── ConversationTest: 对话系统测试（说话NPC下拉/手动ID + 自由文本 TextArea + ▶️ 开始对话展示）
 └── ▶️ 开始测试 按钮（仅运行时可用）
 ```
 

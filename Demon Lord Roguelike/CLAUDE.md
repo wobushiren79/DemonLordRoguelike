@@ -94,6 +94,17 @@ MCP 已连接（或用户已同意开启）后，上述操作的 PowerShell 命�
 - 新增按键需求时，应在 `GameInputActions.inputactions` 中配置绑定、在 `InputActionUIEnum` 中补充枚举，再通过 `OnInputActionForStarted` 派发，**不要**在 `Update()` 里轮询 `Input`。
 - 数字键已封装为 `InputActionUIEnum.N1~N9`（同时绑定主键盘与小键盘），可直接复用。
 
+## 异步与定时逻辑规则
+
+游戏内延迟/定时/顺序流程等异步逻辑（动画编排、等待执行、分步流程等），**一律优先使用框架层 [GTask](Assets/FrameWork/Scripts/Utils/GTask.cs) 门面处理**：
+
+- **等待**：`GTask.Wait`/`WaitReal`（受/不受 timeScale 的秒级等待）、`GTask.WaitFrame`/`WaitFrames(n)`、`GTask.WaitUntil`/`WaitWhile`、`GTask.WaitTween`（等 DOTween 播完，均收 `GTaskCancel`，可空=不可取消）。
+- **发射**：发射即忘的异步方法声明为 **`async UniTaskVoid`**，调用点用 **`_ = Method()`** 显式丢弃（消除「未观察异步调用」警告；取消的 OCE 静默、真异常由 UniTaskScheduler 记录，无需 try/catch，参考 `UIGameConversation.TextAnimForContent`）；**禁止 `async void`**——其取消抛出的 `OperationCanceledException` 会作为未处理异常进 Console。`GTask.Run` 仅用于「方法返回 `UniTask` 供他处 await，个别调用点又要发射即忘」的复用场景。
+- **取消**：取消源 `GTask.NewCancel(gameObject)` 懒创建一次复用（链接销毁令牌自动收口），每次开始任务调 `Reset()` 重建令牌，停止调 `Cancel()`（幂等）。参考实现：`UIGameConversation.cancelForTextAnim`。
+- **业务层不要直接** new `CancellationTokenSource`、传 `CancellationToken`、调 UniTask 原生 API（`UniTask.Delay`/`.Forget()` 等）——统一由 GTask 封装。UniTask 已通过 OpenUPM 源引入（`com.cysharp.unitask`，见 `Packages/manifest.json`）。
+- **避免使用协程**（`StartCoroutine`/`IEnumerator`）——停止/取消依赖 `StopCoroutine`/`StopAllCoroutines`，关闭管理不便且易残留；**Update 逐帧轮询仅在万不得已时使用**（必须逐帧且无法异步表达的持续逻辑）。
+- **存量写法豁免**：框架 async 桥接（`IEnumeratorAwaitExension.cs` 的 `await new WaitForSeconds(x)`/`Awaiters.Until(...)` 等）与存量协程（资源加载/Web 请求/AudioHandler 等）暂不强制重构；**新增与改动的代码按本规则执行**。
+
 ## Bean 修改规则
 
 文件是否可改**只看"文件头是否带自动生成标记"**（不看路径、不看文件名是否以 `Bean.cs` 结尾、也不看是否存在同名 Partial）：

@@ -44,9 +44,17 @@ watched_files:
 ### 定时淡出音效 (PlaySoundTimedFade) — 只取长音效前一段并平滑收尾
 - **用途**：只播一段音效的前 N 秒并在末段淡出到 0（如 10s 音效只用 5s、第 4s 起淡出）。借用连续音效池的**独立音源**（`DequeueLoopSource`，`loop=false`）+ 一个淡出协程，播完 `RecycleLoopSource` 自动回收。
 - **API**：框架层 `PlaySoundTimedFade(long soundId, playDuration, fadeStartTime, volumeScale=-1f)`（`playDuration`/`fadeStartTime` **强制传**，仅 `volumeScale` 有默认 `-1f`=取配置音效音量 soundVolume）；游戏层 `AudioEnum` 重载 `PlaySoundTimedFade(AudioEnum, playDuration, fadeStartTime, volumeScale)`——**游戏层四参全无默认值，须全传**。前 `fadeStartTime` 秒保持基础音量，`fadeStartTime→playDuration` **线性**淡到 0；`volumeScale<0` 取 `soundVolume`，最终基础音量 = `volumeScale × 配置 volume_scale`。**淡出固定线性，无曲线参数**。
-- **与 LoopSound/PlaySound 的区别**：不是循环（`loop=false`），也不用 `PlayOneShot`（那样拿不到句柄无法淡出）；**不登记到 `dicLoopActive`**，故为一次性播放、**不参与全局 Pause/Stop/音量刷新，也暂不支持中途打断**（若日后要可打断，需仿 LoopSound 登记字典+token）。
+- **与 LoopSound/PlaySound 的区别**：不是循环（`loop=false`），也不用 `PlayOneShot`（那样拿不到句柄无法淡出）；**不登记到 `dicLoopActive`**，故为一次性播放、**不参与全局 Pause/Stop/音量刷新，也不支持中途打断**（需任意时刻截断改用单次音效 `PlaySoundOnce`/`StopSoundOnce`，见下节）。
 - **协程 `CoroutineForPlayTimedFade`**：`WaitForSeconds(fadeStartTime)` → 逐帧 `source.volume = baseVolume × (1-progress)`（线性）→ 到点回收音源。
 - **消费方**：魔物进阶开始动画 `ScenePrefabForBase.BuildingVatAnimForStart`——水位上升 3s 播 `sound_water_1`（`playDuration=animTimeWater, fadeStartTime=animTimeWater-0.5f`，把长音效截断成水位动画时长并末段淡出）。
+
+### 单次音效 (PlaySoundOnce / StopSoundOnce) — 播一次、任意时刻可截断
+- **用途**：音效只播一次（不循环），但**停止时机播放时无法预知**（如对话说话声随文本动画结束而截断）。同借连续音效池独立音源（`loop=false`），播完整段 clip 自动回收；期间任何时刻可 `StopSoundOnce` 立即截断。登记 `dicOnceActive`（`OnceSoundEntry` + token 竞态防护，与 LoopSound 同构），故支持中途打断。
+- **API**：框架层 `PlaySoundOnce(long id, volumeScale=-1f)` / `StopSoundOnce(long id)`；游戏层 `AudioEnum` 同名重载。`volumeScale<0` 取 `soundVolume`，最终音量 = `volumeScale × 配置 volume_scale`。
+- **自然结束自动回收**：起播登记 `CoroutineForOnceSoundRecycle`（`WaitForSeconds(clip.length)` 后回收+移登记）；截断/重播先终止它。截断即硬停（`RecycleLoopSource` 内部 `Stop()`+复位 volume/pitch），无淡出——要平滑收尾才用 `PlaySoundTimedFade`。
+- **重播语义**：同 id 已在播（含加载中）先 `StopSoundOnce` 截断回收旧的再起播。
+- **不参与全局 Pause/Stop/音量刷新**（同 TimedFade，不登记 `dicLoopActive`）。
+- **消费方**：对话系统 `UIGameConversation`——文本动画开始 `PlaySoundOnce(sound_talk_1)` 整条只播一次（替代旧的逐字 `PlayOneShot` 叠加：1.42s 长 clip 叠加浑浊、动画结束残留最长 1.42s）；收尾 `FinishTextAnim`（自然播完/跳过，`StopTextAnim`/`CloseUI` 亦经此）`StopSoundOnce(sound_talk_1)` 立即截断，详见 game-conversation。
 
 ### 音量管理
 - 音量持久化在 **GameConfigBean**（`musicVolume`/`soundVolume`/`environmentVolume`，默认 0.5）

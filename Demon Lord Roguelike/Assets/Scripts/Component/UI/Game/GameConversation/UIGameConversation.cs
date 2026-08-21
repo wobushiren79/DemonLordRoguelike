@@ -1,7 +1,7 @@
 ﻿
 
 using System;
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,13 +13,29 @@ public partial class UIGameConversation : BaseUIComponent
 
     [Header("文本动画")]
     public float timeForTextAnim = 0.05f;//每个字符的显示间隔
-    protected Coroutine coroutineForTextAnim;
     protected bool isTextAnimPlaying;
+    protected string contentForTextAnim = "";//当前动画的完整文本
+    //文本动画取消源：懒创建一次复用，开始 Reset 重建令牌、停止 Cancel（跳过/重开/关闭统一收口；链接 gameObject 销毁自动取消）
+    protected GTaskCancel cancelForTextAnim;
 
     public override void OpenUI()
     {
         base.OpenUI();
 
+    }
+
+    public override void CloseUI()
+    {
+        base.CloseUI();
+        //终止动画推进令牌（防在途异步访问已销毁控件）+ 截断说话音效
+        StopTextAnim();
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        //销毁取消源（链接令牌本也会自动取消，这里显式收口释放 CTS）
+        cancelForTextAnim?.Dispose();
     }
 
     /// <summary>
@@ -64,13 +80,22 @@ public partial class UIGameConversation : BaseUIComponent
 
     #region 文本动画
     /// <summary>
-    /// 开始文本逐字显示动画
+    /// 开始文本逐字显示动画（UniTask 驱动，等待/取消统一走框架层 GTask 封装）
     /// </summary>
     public void StartTextAnim(string content)
     {
         StopTextAnim();
+        contentForTextAnim = content;
         ui_TalkText.text = content;
-        coroutineForTextAnim = StartCoroutine(CoroutineForTextAnim(content));
+        ui_TalkText.maxVisibleCharacters = 0;
+        //空文本直接结束（不播音效不进动画）
+        if (content.IsNull())
+            return;
+        //说话音效整条只播一次（独立音源），动画结束/跳过时由收尾逻辑截断
+        AudioHandler.Instance.PlaySoundOnce(AudioEnum.sound_talk_1);
+        isTextAnimPlaying = true;
+        //显式丢弃：UniTaskVoid 发射即忘（消除「未观察异步调用」警告），取消/异常由 UniTaskScheduler 兜底
+        _ = TextAnimForContent();
     }
 
     /// <summary>
@@ -78,34 +103,40 @@ public partial class UIGameConversation : BaseUIComponent
     /// </summary>
     public void StopTextAnim(bool isShowAll = false)
     {
-        if (coroutineForTextAnim != null)
-        {
-            StopCoroutine(coroutineForTextAnim);
-            coroutineForTextAnim = null;
-        }
-        if (isShowAll)
-            ui_TalkText.maxVisibleCharacters = int.MaxValue;
-        isTextAnimPlaying = false;
+        //取消在途动画推进（Cancel 后 await 点抛 OperationCanceledException，UniTask 静默退出）
+        cancelForTextAnim?.Cancel();
+        FinishTextAnim(isShowAll);
     }
 
     /// <summary>
-    /// 协程-逐字显示文本并播放说话音效
+    /// 动画收尾（显示全文/复位播放标记/截断音效），不触碰取消源；自然播完与主动停止共用
     /// </summary>
-    protected IEnumerator CoroutineForTextAnim(string content)
+    protected void FinishTextAnim(bool isShowAll)
     {
-        isTextAnimPlaying = true;
-        ui_TalkText.maxVisibleCharacters = 0;
-        for (int i = 1; i <= content.Length; i++)
+        if (isShowAll)
+            ui_TalkText.maxVisibleCharacters = int.MaxValue;
+        isTextAnimPlaying = false;
+        //动画比音效短时，动画一停就把还在播的说话音效直接截断（已自然播完则为空操作）
+        AudioHandler.Instance.StopSoundOnce(AudioEnum.sound_talk_1);
+    }
+
+    /// <summary>
+    /// 异步推进逐字显示（async UniTaskVoid 发射即忘直接调用；GTask.Wait 受 timeScale 影响；逐字递增 TMP maxVisibleCharacters）
+    /// <para>取消时 await 点抛 OperationCanceledException，UniTaskVoid 默认静默（真异常由 UniTaskScheduler 记录），无需 try/catch</para>
+    /// </summary>
+    protected async UniTaskVoid TextAnimForContent()
+    {
+        //取消源懒创建一次（链接 gameObject 销毁自动取消），每次开始 Reset 重建令牌复用
+        if (cancelForTextAnim == null)
+            cancelForTextAnim = GTask.NewCancel(gameObject);
+        cancelForTextAnim.Reset();
+        for (int i = 1; i <= contentForTextAnim.Length; i++)
         {
             ui_TalkText.maxVisibleCharacters = i;
-            //非空白字符显示时播放说话音效（PlaySound 内置0.1s重复抑制，自动限流）
-            if (!char.IsWhiteSpace(content[i - 1]))
-            {
-                AudioHandler.Instance.PlaySound(AudioEnum.sound_talk_1);
-            }
-            yield return new WaitForSeconds(timeForTextAnim);
+            await GTask.Wait(timeForTextAnim, cancelForTextAnim);
         }
-        StopTextAnim(true);
+        //自然播完只收尾不 Cancel（取消源留给下次 Start 的 Reset 复用）
+        FinishTextAnim(true);
     }
     #endregion
 

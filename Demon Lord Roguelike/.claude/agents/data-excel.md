@@ -109,7 +109,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 |--------|-------|--------|--------|
 | `excel_audio_info[音频信息_FrameWork].xlsx` | AudioInfo | 185 | id, name_res, remark, audio_type(0音效/1音乐/2环境音), volume_scale。id 段位：音效 1~640001、音乐 1000001~1200001、环境音 2000001 起（2000001=sound_night_1 夜晚虫鸣，被 FightScene 10002 引用） |
 | `excel_base_info[基础信息_FrameWork].xlsx` | BaseInfo | 3 | id, content |
-| `excel_language[多语言_FrameWork].xlsx` | UIText + 18个子表 | 20(UIText) | id, content_{12种语言: cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr}（30列结构的表另有 content_1_* 列） |
+| `excel_language[多语言_FrameWork].xlsx` | UIText + 18个子表 | 20(UIText) | id, content_{12种语言: cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr}（含 content_1_* 详情列的表：BuffInfo、AchievementInfo、CreatureInfo[2026-08新增,生物详情描述/攻击方式说明] 等） |
 | `excel_spine_animation_state[骨骼动画枚举_FrameWork].xlsx` | SpineAnimationState | 33 | id, res |
 | `excel_ui_text[UI文本_FrameWork].xlsx` | UIText | 152 | id, content[language] |
 
@@ -121,7 +121,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_creature_info[生物信息].xlsx` | CreatureInfo | 110 | id, creature_type, creature_layer(生物分层: 空=默认CreatureDef/Att层; 配CreatureDef_Front/CreatureAtt_Front=故意移出敌方物理搜索mask不被攻击[典型:烂泥史莱姆3003走过减速]+Spine Z前移0.1显示在前; 勿当索敌bug扩mask; 只要显示前置勿用此列,走渲染侧sortingOrder), creature_buff, spine_base, attack_mode, attack_search_time, attack_search_back(防守生物转身攻击身后 0否1是: 正面无目标时转身攻击身后,范围同正面; 首用者骷髅战士id=2001; 手写辅助 CreatureInfoBeanPartial.IsAttackSearchBack), charge_attack(冲锋自爆 int: 0=默认站桩, 1=放卡后立即向前冲锋并释放原占位格[isPositionReleased], 遇敌/到路尽头/被打死时原地自爆; 手写辅助 CreatureInfoBeanPartial.IsChargeAttack; 首用者哥布林敢死队id=6003,配套 attack_mode 200001→300002爆炸/attack_search_range 6→0.5[Ray前方触发距离,非伤害范围]/attack_search_time 1→0.1[冲锋索敌节奏]/RCD 300→60), HP/MP/DR/ATK/ASPD/MSPD/MPR/MPF, model_id, unlock_id, name[language], body_size(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定；扭蛋/建号按creatureId创建时随机一次), remark （44列） |
+| `excel_creature_info[生物信息].xlsx` | CreatureInfo | 110 | id, creature_type, creature_layer(生物分层: 空=默认CreatureDef/Att层; 配CreatureDef_Front/CreatureAtt_Front=故意移出敌方物理搜索mask不被攻击[典型:烂泥史莱姆3003走过减速]+Spine Z前移0.1显示在前; 勿当索敌bug扩mask; 只要显示前置勿用此列,走渲染侧sortingOrder), creature_buff, spine_base, attack_mode, attack_search_time, attack_search_back(防守生物转身攻击身后 0否1是: 正面无目标时转身攻击身后,范围同正面; 首用者骷髅战士id=2001; 手写辅助 CreatureInfoBeanPartial.IsAttackSearchBack), charge_attack(冲锋自爆 int: 0=默认站桩, 1=放卡后立即向前冲锋并释放原占位格[isPositionReleased], 遇敌/到路尽头/被打死时原地自爆; 手写辅助 CreatureInfoBeanPartial.IsChargeAttack; 首用者哥布林敢死队id=6003,配套 attack_mode 200001→300002爆炸/attack_search_range 6→0.5[Ray前方触发距离,非伤害范围]/attack_search_time 1→0.1[冲锋索敌节奏]/RCD 300→60), HP/MP/DR/ATK/ASPD/MSPD/MPR/MPF, model_id, unlock_id, name[language], body_size(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定；扭蛋/建号按creatureId创建时随机一次), details[language_1](生物详情描述-攻击方式说明: textId=生物自身id, 文本在 excel_language CreatureInfo 工作表 content_1_* 12语种列; 仅 1001~7004 共30个生物已配, 0/空=详情面板隐藏说明区块, 消费方 UIViewCreatureCardDetails.SetRenmark), remark （45列） |
 | `excel_creature_attribute_type_info[生物属性信息].xlsx` | CreatureAttributeTypeInfo | 12 | id, mark_name, res_name, color_text, name[language] |
 | `excel_creature_model[生物模型信息].xlsx` | CreatureModel | 66 | id, res_name, unlock_id, size_spine, ui_show_spine, name[language] |
 | `excel_creature_model_info[生物模型详情信息] .xlsx` | CreatureModelInfo | 438 | id, model_id, show_type, part_type, res_name, color_state |

@@ -20,7 +20,9 @@ public partial class UIViewCreatureCardItem
     {
         rectTransform.localPosition = targetLocalPos + new Vector3(0, -200f, 0);
         rectTransform.localScale = Vector3.one;
+        //SetTarget(rectTransform)：让本序列可被 transform.DOKill() 整体杀掉(含延迟中的音效回调)，避免切页签/复用卡片时旧序列残留
         return DOTween.Sequence()
+            .SetTarget(rectTransform)
             .AppendInterval(index * delayTime)
             //错开延迟结束、动画从下方启动时播放卡片音效(每张卡各自播放)
             .AppendCallback(() => AudioHandler.Instance.PlaySound(AudioEnum.sound_card_7))

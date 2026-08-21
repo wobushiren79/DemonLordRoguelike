@@ -216,21 +216,35 @@ public partial class CreatureInfoBean
     #region 体型
     /// <summary>
     /// 获取体型缩放倍率（在目标大小 size_spine 的基础上再相乘）
-    /// <para>配置 body_size 规则：空 / "0" / 解析失败 => 1（默认大小）；</para>
-    /// <para>含逗号 "min,max"（如 "0.9,1.1"） => 在 [min,max] 区间内随机一个倍率；</para>
-    /// <para>单个数值（如 "1.1"） => 固定该倍率。</para>
     /// <para>注意：含随机区间时本方法每次调用都会重新随机，应在生物创建时调用一次并缓存（见 CreatureBean.bodySizeScale）。</para>
     /// </summary>
     /// <returns>体型缩放倍率（恒大于0，异常时回退为1）</returns>
     public float GetBodySizeRandomScale()
     {
+        GetBodySizeRange(out float minSize, out float maxSize);
+        float randomScale = UnityEngine.Random.Range(minSize, maxSize);
+        return randomScale > 0 ? randomScale : 1f;
+    }
+
+    /// <summary>
+    /// 获取体型缩放区间（供滑条等UI取上下限）
+    /// <para>配置 body_size 规则：空 / "0" / 解析失败 => (1,1)（默认大小）；</para>
+    /// <para>含逗号 "min,max"（如 "0.9,1.1"） => 该区间（min&gt;max 时自动交换）；</para>
+    /// <para>单个数值（如 "1.1"） => (v,v) 固定倍率。</para>
+    /// </summary>
+    /// <param name="minSize">区间下限（恒大于0）</param>
+    /// <param name="maxSize">区间上限（恒大于0，且不小于下限）</param>
+    public void GetBodySizeRange(out float minSize, out float maxSize)
+    {
         //空配置 => 默认1倍
+        minSize = 1f;
+        maxSize = 1f;
         if (body_size.IsNull())
-            return 1f;
+            return;
         string sizeStr = body_size.Trim();
         if (sizeStr.Length == 0)
-            return 1f;
-        //区间随机 "min,max"
+            return;
+        //区间 "min,max"
         if (sizeStr.Contains(","))
         {
             string[] rangeStr = sizeStr.Split(',');
@@ -245,18 +259,22 @@ public partial class CreatureInfoBean
                     min = max;
                     max = temp;
                 }
-                float randomScale = UnityEngine.Random.Range(min, max);
-                return randomScale > 0 ? randomScale : 1f;
+                //0 或负数 => 回退为1
+                minSize = min > 0 ? min : 1f;
+                maxSize = max > 0 ? max : 1f;
             }
-            return 1f;
+            return;
         }
         //固定倍率
         if (float.TryParse(sizeStr, out float fixedScale))
         {
             //0 或负数 => 默认1倍
-            return fixedScale > 0 ? fixedScale : 1f;
+            if (fixedScale > 0)
+            {
+                minSize = fixedScale;
+                maxSize = fixedScale;
+            }
         }
-        return 1f;
     }
     #endregion
 }

@@ -76,6 +76,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         SetEquipData();
         SetBuff();
         SetMP();
+        SetRenmark();
 
         RefreshUILayout();
     }
@@ -124,6 +125,22 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         ui_MP.gameObject.SetActive(true);
         //召唤该生物消耗的魔力（GetAttribute(CMP)=经自身/稀有度BUFF修正后的召唤耗魔）
         ui_MPContent.text = $"{creatureData.GetAttributeInt(CreatureAttributeTypeEnum.CMP)}";
+    }
+
+    /// <summary>
+    /// 设置生物详情说明（攻击方式描述）。文本取自生物表 details[language_1] 列（textId=生物自身id，取语言表 content_1 语种列）；
+    /// details=0（未配置）或当前语种文本为空时隐藏 ui_RenmarkText 容器。魔王等未配置 details 的生物自然走隐藏分支，无需特判。
+    /// </summary>
+    public void SetRenmark()
+    {
+        string detailsText = creatureData.creatureInfo.details_language;
+        if (detailsText.IsNull())
+        {
+            ui_RenmarkText.gameObject.SetActive(false);
+            return;
+        }
+        ui_RenmarkText.gameObject.SetActive(true);
+        ui_RenmarkTextContent.text = detailsText;
     }
 
     /// <summary>

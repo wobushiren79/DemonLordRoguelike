@@ -45,13 +45,25 @@ public partial class UIViewMainCreateSelectItem : BaseUIView
         }
     }
 
+    /// <summary>
+    /// 点击左切换
+    /// </summary>
     public void OnClickForLeft()
     {
+        //只有1个选项时无需切换
+        if (listSelect.Count <= 1)
+            return;
         ChangeSelect(indexSelect - 1, false);
     }
 
+    /// <summary>
+    /// 点击右切换
+    /// </summary>
     public void OnClickForRight()
     {
+        //只有1个选项时无需切换
+        if (listSelect.Count <= 1)
+            return;
         ChangeSelect(indexSelect + 1, false);
     }
 

@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine;
 
 /// <summary>
 /// 抛物线落点跟踪弹道：抛射飞向目标，飞行中落点实时跟踪目标（目标脚底 + 本发弹道起始点相对攻击者的偏移，即与发射口同高）；

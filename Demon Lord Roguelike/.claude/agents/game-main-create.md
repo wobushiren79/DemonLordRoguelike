@@ -1,6 +1,6 @@
 ---
 name: game-main-create
-description: 初始创建角色(创建魔王)系统开发：新开存档时的创建角色界面(UIMainCreate)、物种选择(当前仅骷髅 creature_id=2，人类 id=1 已移除，listSelectForCreature 硬编码)、皮肤/颜色选择(CreatureInfo.creature_random_id→CreatureRandomInfoCfg.GetAllRandomData 按部位分组、CreatureModelInfoCfg.color_state 判颜色)、Spine 预览(基地场景 PreviewCreate 物体 + CV_PreviewCreate 镜头)、创建逻辑(魔王 selfCreature 固定 level=0/rarity=0 + 初始3魔物 NpcInfoCfg 1/2/3 不高兴/没头脑/忠心 固定属性 NpcId1→HP/2→DR/3→ASPD)、存档初始化(UserDataBean/SaveUserData/SetUserData)与进入基地场景(EnterGameForBaseScene)。包含 UIViewMainCreateSelectItem 左右环形切换控件、UIViewColorShow 颜色选择、UIViewMainLoadItem.OnClickForCreateGame 入口、CameraHandler.SetPreviewCreateCamera、CreatureBean.FixedAttributeForCreate/IsDemonLord、NpcInfoBean.GetSkins、excel_creature_info/excel_npc_info/excel_creature_random_info/excel_creature_model_info 配置等。
+description: 初始创建角色(创建魔王)系统开发：新开存档时的创建角色界面(UIMainCreate)、物种选择(当前仅骷髅 creature_id=2，人类 id=1 已移除，listSelectForCreature 硬编码)、皮肤/颜色选择(CreatureInfo.creature_random_id→CreatureRandomInfoCfg.GetAllRandomData 按部位分组、CreatureModelInfoCfg.color_state 判颜色)、身高设置(UIViewMainCreateProgressItem 滑条调 bodySizeScale、CreatureInfo.GetBodySizeRange 取 body_size 区间)、Spine 预览(基地场景 PreviewCreate 物体 + CV_PreviewCreate 镜头)、创建逻辑(魔王 selfCreature 固定 level=0/rarity=0 + 初始3魔物 NpcInfoCfg 1/2/3 不高兴/没头脑/忠心 固定属性 NpcId1→HP/2→DR/3→ASPD)、存档初始化(UserDataBean/SaveUserData/SetUserData)与进入基地场景(EnterGameForBaseScene)。包含 UIViewMainCreateSelectItem 左右环形切换控件、UIViewColorShow 颜色选择、UIViewMainLoadItem.OnClickForCreateGame 入口、CameraHandler.SetPreviewCreateCamera、CreatureBean.FixedAttributeForCreate/IsDemonLord、NpcInfoBean.GetSkins、excel_creature_info/excel_npc_info/excel_creature_random_info/excel_creature_model_info 配置等。
 tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Component/UI/Game/MainCreate/
@@ -39,11 +39,12 @@ UIMainLoad(加载存档界面) 空槽位 item
 
 ### 创建界面（UIMainCreate : BaseUIComponent）
 
-- 组件字段（`UIMainCreateComponent`，AutoLinkUI 按名绑定）：`ui_ViewExit`/`ui_BtnCreate`/`ui_NameET`(TMP_InputField 名字输入)/`ui_BtnRandom`/`ui_UIViewMainCreateSelectItem_Species`(物种选择项)/`ui_UIViewMainCreateSelectItem`(皮肤选项容器)/`ui_SelectContent`(颜色选择项模板)/`ui_UIViewColorShow`(颜色容器)
+- 组件字段（`UIMainCreateComponent`，AutoLinkUI 按名绑定）：`ui_ViewExit`/`ui_BtnCreate`/`ui_NameET`(TMP_InputField 名字输入)/`ui_BtnRandom`/`ui_UIViewMainCreateSelectItem_Species`(物种选择项)/`ui_UIViewMainCreateSelectItem`(皮肤选项容器)/`ui_SelectContent`(颜色选择项模板)/`ui_UIViewColorShow`(颜色容器)/`ui_UIViewMainCreateProgressItem`(身高滑条项模板)
 - **物种选择**：`listSelectForCreature` 硬编码（UIMainCreate.cs:24-28）——**当前仅 `{2}` 骷髅**；`1`=人类已移除（2026-08 改动，恢复多物种就往此列表加 CreatureInfo id）。物种名显示 `CreatureInfo.name_language`
 - **InitData**（UIMainCreate.cs:51）：遍历物种 → `CreatureInfoCfg.GetItemData` → `creature_random_id` → `CreatureRandomInfoCfg.GetItemData(...).GetAllRandomData()` 得各部位皮肤列表 → 填物种选择项
-- **皮肤选择**（HandleForSelectCreature/HandleForSelectSkin）：按 `CreatureSkinTypeEnum` 部位逐个生成 `UIViewMainCreateSelectItem`（左右按钮**环形**切换，`ChangeSelect` 回绕；`isInit` 区分初始化调用避免反复刷预览）；选中皮肤 `CreatureModelInfoCfg.GetItemData(selectSkin)`，其 `color_state != 0` 时额外实例化 `UIViewColorShow` 颜色选择（`ChangeSkinColor` 实时变色，离开该皮肤时销毁）
-- **随机按钮**（OnClickForRandom）：随机选物种 + 每个皮肤项随机 `startRandomIndex`
+- **皮肤选择**（HandleForSelectCreature/HandleForSelectSkin）：按 `CreatureSkinTypeEnum` 部位逐个生成 `UIViewMainCreateSelectItem`（左右按钮**环形**切换，`ChangeSelect` 回绕，**选项 ≤1 个时左右点击直接拦截不处理**；`isInit` 区分初始化调用避免反复刷预览）；选中皮肤 `CreatureModelInfoCfg.GetItemData(selectSkin)`，其 `color_state != 0` 时额外实例化 `UIViewColorShow` 颜色选择（`ChangeSkinColor` 实时变色，离开该皮肤时销毁）
+- **身高设置**（RefreshHeightProgress/ActionForHeightChange）：`UIViewMainCreateProgressItem` 滑条控件（`ui_Title`+`ui_ItemSlider`，标题实时显示百分比如「身高 105%」），实例化到 `ui_SelectContent` 并 `SetSiblingIndex(0)` 置顶于皮肤部位项之前；区间取 `CreatureInfo.GetBodySizeRange()`（body_size 配置，骷髅 0.9~1.1），拖动回调改 `createCreatureData.bodySizeScale` 并刷预览；物种切换/随机时滑条经 `SetValueWithoutNotify` 同步新建生物的随机体型倍率；标题多语言 textId=1007
+- **随机按钮**（OnClickForRandom）：随机选物种 + 每个皮肤项随机 `startRandomIndex`（身高随生物重建重新随机，滑条自动同步）
 - **Spine 预览**：`ShowPreviewCreate` 取 BaseGaming 场景 `PreviewCreate/Renderer`(SkeletonAnimation) + `CameraHandler.SetPreviewCreateCamera`(CV_PreviewCreate，固定机位)；`SetPreviewCreate` → `CreatureHandler.SetCreatureData` + `SpineHandler.PlayAnim(Idle)`
 
 ### 创建逻辑（OnClickForCreate，UIMainCreate.cs:148）
@@ -56,7 +57,7 @@ UIMainLoad(加载存档界面) 空槽位 item
 
 ### 相关 Bean / 工具
 
-- `CreatureBean(long creatureId)` 构造 → `SetData`：读 CreatureInfo 名字 + 体型随机倍率 `GetBodySizeRandomScale()`（创建时定一次）
+- `CreatureBean(long creatureId)` 构造 → `SetData`：读 CreatureInfo 名字 + 体型随机倍率 `GetBodySizeRandomScale()`（创建时定一次）；体型区间解析 `CreatureInfo.GetBodySizeRange(out min, out max)`（供身高滑条取上下限，空/异常=(1,1)、单值=(v,v)）
 - `CreatureBeanPartial.FixedAttributeForCreate`（:210）：固定加点入口，底层 `CreatureAttributeBean.AddFixedAttributeForCreate`，单点增量复用 `CreatureUtil.GetAttributePointAddValue`（HP/DR 每点+10、ASPD 每点+1）
 - `CreatureBeanPartial.IsDemonLord`（:108）：`creatureUUId == userData.selfCreature.creatureUUId`
 - `CreatureRandomInfoBeanPartial.GetAllRandomData`（:10）：`skin_random_data` 按 `,`/`-` 拆分，按 `CreatureModelInfo.GetPartType()` 分组（带缓存，首次解析后复用）
@@ -78,6 +79,7 @@ UIMainLoad(加载存档界面) 空槽位 item
 |------|------|
 | 创建界面 | Assets/Scripts/Component/UI/Game/MainCreate/UIMainCreate.cs (+Component) |
 | 选择项控件 | Assets/Scripts/Component/UI/Game/MainCreate/UIViewMainCreateSelectItem.cs (+Component) |
+| 身高滑条控件 | Assets/Scripts/Component/UI/Game/MainCreate/UIViewMainCreateProgressItem.cs (+Component) |
 | 入口 | Assets/Scripts/Component/UI/Game/MainLoad/UIViewMainLoadItem.cs (`OnClickForCreateGame`) |
 | 预览镜头 | Assets/Scripts/Component/Handler/CameraHandler.cs (`SetPreviewCreateCamera`→CV_PreviewCreate) |
 | 魔王/属性 | Assets/Scripts/Bean/Game/CreatureBean.cs · CreatureBeanPartial.cs (`FixedAttributeForCreate`/`IsDemonLord`) |

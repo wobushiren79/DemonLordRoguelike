@@ -554,6 +554,16 @@ public void OnClickForPay();
 public void AnimForUnlock(int targetLevel, Action actionComplete = null, float delayComplete = 0f);
 ```
 
+### 小丑牌风格悬停（UIHoverCardView）
+
+prefab（`UIViewBaseResearchItem.prefab`）结构：根节点下新建 `CardContent` 子节点（全拉伸 RectTransform），`BG`/`Board`/`Icon`/`Level` 全部移入其下；框架层通用悬停组件 `UIHoverCardView` **直接挂在 prefab 的 CardContent 上**（非代码挂载，target 默认=自身）。实现小丑牌(Balatro)风格悬停：鼠标进入弹起放大(OutBack)+上抬，光标在卡面内移动时朝光标方向 3D 倾斜（欠阻尼弹簧驱动，快速划过甩动、松手回摆），悬停静止期间叠加双轴错相持续摆动（悬空摇晃感，渐入渐出），移出还原。组件详见 ui-components agent。
+
+设计要点（该结构解决的问题）：
+
+1. 悬停上抬/倾斜/缩放只动 `CardContent`，根节点的研究树布局坐标（`SetPosition` 由配置表驱动）完全不受影响——曾有的"悬停时节点飞到 (0,0)"BUG 即因动画与布局同抢根节点 anchoredPosition 所致；
+2. 解锁动画 `AnimForUnlock` 操作根 transform（DOScale+DOShakePosition），与悬停动画操作 CardContent 分属不同 transform，两套动画天然隔离，**无需任何抑制协调代码**（item 脚本零改动）；
+3. 组件在 `Awake`+`Start` 两次缓存初始变换，`Start` 重缓存保证拿到 SetData/布局之后的真实静止态。
+
 ### AutoLink 字段
 
 ```csharp

@@ -299,9 +299,9 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
             }
             else
             {
-                //默认动画：带轻微缩放弹跳和错开效果
+                //默认动画：带轻微缩放弹跳和错开效果(SetTarget后可被 DOKill 整体杀掉,防止切页签时残留)
                 float timeForMove = timeForLineupCardMove;
-                Sequence cardSequence = DOTween.Sequence();
+                Sequence cardSequence = DOTween.Sequence().SetTarget(itemCardView.transform);
                 cardSequence
                     .AppendInterval(delay)
                     .Append(itemCardView.transform.DOLocalMove(itemLineupPos, timeForMove).SetEase(Ease.OutBack))
@@ -359,6 +359,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     public void RemoveLineupCard(UIViewCreatureCardItem targetView, int animType = 0)
     {
         //UIHandler.Instance.ShowScreenLock();
+        //入池前杀掉残留动画序列(含未触发的音效回调),避免隐藏卡片继续播放动画/音效
+        targetView.transform.DOKill();
         targetView.gameObject.SetActive(false);
         queuePoolCardLineup.Enqueue(targetView);
         listShowCardLineup.Remove(targetView);
@@ -377,6 +379,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         for (int i = 0; i < listShowCardLineup.Count; i++)
         {
             var targetView = listShowCardLineup[i];
+            //入池前杀掉残留动画序列(含未触发的音效回调),避免快速切换页签时旧阵容动画/音效继续播放
+            targetView.transform.DOKill();
             targetView.gameObject.SetActive(false);
             queuePoolCardLineup.Enqueue(targetView);
         }

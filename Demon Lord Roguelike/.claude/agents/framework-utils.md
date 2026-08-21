@@ -32,6 +32,7 @@ watched_files:
 - 数学/随机：MathUtil、RandomUtil、FastNoise、SimplexNoiseUtil
 - 游戏通用：GameUtil、SceneUtil、RayUtil、VectorUtil、CptUtil、AnimUtil（通用 Animator 工具 `GetAnimClipLength`；`partial class`，与游戏层 `Assets/Scripts/Utils/AnimUtil.cs` 同名共享）
 - 系统工具：FileUtil、LogUtil、SystemUtil、TimeUtil、UnitUtil
+- 异步任务：**GTask** - UniTask 门面（`Wait`/`WaitReal`/`WaitFrame`/`WaitFrames`/`WaitUntil`/`WaitWhile`/`WaitTween` + `Run` 发射 + `GTaskCancel` 取消源；发射即忘方法声明 `async UniTaskVoid`、调用点 `_ = Method()` 显式丢弃，禁止 `async void`；详见 CLAUDE.md「异步与定时逻辑规则」与 utils-system skill）
 - 反射/类型：ReflexUtil、ClassUtil、CheckUtil
 
 ### 工具类 (Tools)

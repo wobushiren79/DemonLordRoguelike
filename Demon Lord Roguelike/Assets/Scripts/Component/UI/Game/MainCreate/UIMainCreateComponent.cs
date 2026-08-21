@@ -21,5 +21,7 @@ public partial class UIMainCreate
 
     public RectTransform ui_UIViewColorShow;
 
+    public RectTransform ui_UIViewMainCreateProgressItem;
+
 
 }

@@ -111,6 +111,7 @@ public enum TestSceneTypeEnum
     CreatureVat = 11,//魔物进阶(生物升阶容器)测试
     CreatureJuicer = 12,//魔汁机(魔物回收)测试
     EffectTest = 13,//粒子特效测试
+    ConversationTest = 14,//对话系统测试
 }
 
 /// <summary>

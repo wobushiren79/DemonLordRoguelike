@@ -74,7 +74,7 @@ TextManager 加载 Language_UIText_*.txt
 | 2 | `content_2` | 额外文本 |
 
 - **名称与详情默认共用同一个ID**：配置表里 `name` 与 `details` 字段指向**同一个 ID**，名称读 `content`（index 0）、详情读 `content_1`（index 1）。多语言JSON一行即写全：`{"id":1000001001,"content":"增殖","content_1":"随机复制一个已有的魔物"}`。
-- **标准范例**：深渊馈赠 `AbyssalBlessingInfo`（`Language_AbyssalBlessingInfo_*.txt`）。
+- **标准范例**：深渊馈赠 `AbyssalBlessingInfo`（`Language_AbyssalBlessingInfo_*.txt`）；生物表 `CreatureInfo` 的 `details[language_1]` 列（2026-08 新增，textId=生物自身 id，文本在 excel_language CreatureInfo 工作表 `content_1_*` 12 语种列，仅 1001~7004 的 30 个生物配有攻击方式描述，`UIViewCreatureCardDetails.SetRenmark` 消费，空则隐藏说明区块）。
 - **禁止**默认就把名称和详情拆成两个独立ID（如成就表早期写法 `4001001`=名称、`4001002`=详情）——浪费ID、割裂同一条目文本。仅当名称/详情需独立复用时才拆分。
 - Bean 两个 `_language` 属性须传入**同一个 id 字段**，仅 `contentIndex` 不同：
   ```csharp

@@ -569,6 +569,7 @@ public partial class CreatureBean
 
     /// <summary>
     /// 获取皮肤列表
+    /// <para>基础武器兜底：皮肤数据与装备栏都没有武器时，按当前配置 equip_item_base_weapon 补入默认武器皮肤（仅 showType=0 且 isNeedWeapon），兼容配置生效前创建的旧存档生物</para>
     /// </summary>
     /// <param name="showType">0普通皮肤 1立绘皮肤（表情）</param>
     /// <returns></returns>
@@ -616,6 +617,23 @@ public partial class CreatureBean
                         }
                     }
                     dicSkin.Add(itemSkinInfo.res_name, itemSkinData);
+                }
+            }
+        }
+        //基础武器兜底：皮肤数据与装备栏都没有武器时，按当前配置补入默认武器皮肤（兼容默认武器配置生效前创建、皮肤里没有武器部位的旧存档生物）
+        if (showType == 0 && isNeedWeapon
+            && !dicSkinData.ContainsKey(CreatureSkinTypeEnum.Weapon_L)
+            && !dicSkinData.ContainsKey(CreatureSkinTypeEnum.Weapon_R)
+            && !dicEquipItemData.ContainsKey(ItemTypeEnum.Weapon))
+        {
+            long baseWeaponId = creatureInfo.GetEquipBaseWeaponId();
+            if (baseWeaponId != 0)
+            {
+                var baseWeaponInfo = ItemsInfoCfg.GetItemData(baseWeaponId);
+                var baseWeaponModelInfo = baseWeaponInfo == null ? null : CreatureModelInfoCfg.GetItemData(baseWeaponInfo.creature_model_info_id);
+                if (baseWeaponModelInfo != null && !baseWeaponModelInfo.res_name.IsNull() && !dicSkin.ContainsKey(baseWeaponModelInfo.res_name))
+                {
+                    dicSkin.Add(baseWeaponModelInfo.res_name, new SpineSkinBean(baseWeaponModelInfo.id));
                 }
             }
         }

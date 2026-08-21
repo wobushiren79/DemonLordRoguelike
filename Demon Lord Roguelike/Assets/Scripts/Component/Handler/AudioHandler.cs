@@ -170,6 +170,26 @@ public partial class AudioHandler
     }
 
     /// <summary>
+    /// 播放单次音效（枚举）：独立音源播放一次（不循环，播完自动回收），可随时 StopSoundOnce 中途截断。
+    /// 用于"只播一次、但结束时机由业务决定"的音效（如对话说话声随文本动画结束截断）。
+    /// </summary>
+    /// <param name="audio">音频枚举</param>
+    /// <param name="volumeScale">基础音量；&lt;0 时取音效音量 soundVolume（默认行为）</param>
+    public void PlaySoundOnce(AudioEnum audio, float volumeScale = -1f)
+    {
+        PlaySoundOnce((long)audio, volumeScale);
+    }
+
+    /// <summary>
+    /// 停止指定单次音效（枚举）：立即截断并回收音源；未在播（含已自然结束）时为空操作。
+    /// </summary>
+    /// <param name="audio">音频枚举</param>
+    public void StopSoundOnce(AudioEnum audio)
+    {
+        StopSoundOnce((long)audio);
+    }
+
+    /// <summary>
     /// 循环播放音乐-单曲（枚举）
     /// </summary>
     /// <param name="audio">音频枚举</param>

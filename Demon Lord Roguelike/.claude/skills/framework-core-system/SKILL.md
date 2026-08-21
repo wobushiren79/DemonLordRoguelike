@@ -435,6 +435,13 @@ public class BaseUIComponent : BaseUIInit
 }
 ```
 
+### 框架层通用 UI 组件（`Assets/FrameWork/Scripts/Component/UI/`）
+
+框架层另有一批开箱即用的通用 UI 组件（ScrollGrid、SelectView、ProgressView、DialogView、PopupShowView、ToastView 等，完整清单见 ui-components agent）。近期新增：
+
+- **UIHoverCardView** - 小丑牌(Balatro)风格通用悬停组件：鼠标进入弹起放大(OutBack)+上抬，卡面内移动时朝光标方向 3D 倾斜(欠阻尼弹簧驱动，快速划过甩动、松手回摆)，悬停静止期间叠加双轴错相持续摆动(`idleSwayAngle`/`idleSwayFrequency`，0=关闭)，移出还原；支持 `SetHoverSuppressed(bool)` 被其他动画独占变换时抑制、`RefreshOriginalTransform()` 外部永久改变换后重缓存(Awake+Start 自动各缓存一次)；事件沿射线接收层冒泡，可挂 item 根节点或独立子节点
+- **PopupShowView 已内建出现/消失动画**：`isAnimForShow/isAnimForHide/isAnimWithFade` 开关 + `AnimForShow/AnimForHide/ShowWithAnim/HideWithAnim` virtual 方法，UIHandler.ShowPopup/HidePopup 已收口走带动画路径
+
 ---
 
 ## AutoLinkUI 机制

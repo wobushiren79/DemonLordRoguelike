@@ -25,7 +25,7 @@ watched_files:
 
 - **UIBaseResearch** - 基地研究主界面，承载四大研究分支（设施 / 强化 / 魔物 / 世界）的切换、Tab 选择、缩放交互
 - **UIBaseResearchTest** - 研究界面的编辑器调试模式，用于在游戏内调整节点坐标并回写 Excel 配置
-- **UIViewBaseResearchItem** - 单个研究节点的展示（图标、等级、解锁状态、解锁动画、点击购买）
+- **UIViewBaseResearchItem** - 单个研究节点的展示（图标、等级、解锁状态、解锁动画、点击购买）。悬停效果：prefab 根下新建 `CardContent` 子节点（全拉伸 RectTransform，BG/Board/Icon/Level 全部移入）并直接挂载框架层通用组件 `UIHoverCardView`（非代码挂载），实现小丑牌风格悬停（弹起放大+上抬+朝光标 3D 倾斜+弹簧甩动回摆+悬停静止持续摆动）；上抬/倾斜只动 CardContent 与根节点的研究树布局坐标(SetPosition)天然隔离，解锁动画 `AnimForUnlock` 操作根 transform 亦不冲突，无需抑制协调
 - **UIPopupResearchInfo** - 研究节点悬浮气泡，展示名称（`GetNameLanguageWithLevelDetail` 填充 `{Value}` 占位数值）、图标、当前/最大等级、需要支付的水晶、前置解锁条件
 
 ### 研究数据

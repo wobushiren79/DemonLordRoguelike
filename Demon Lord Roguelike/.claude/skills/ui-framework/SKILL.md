@@ -216,6 +216,13 @@ public class UIPopupExample : PopupShowView
 }
 ```
 
+> **气泡默认带出现/消失动画**：`PopupShowView` 已内建 DOScale 弹出(0→1, OutBack)/缩回(→0, InBack)+可选淡出（代码 GetOrAdd CanvasGroup），`UIHandler.ShowPopup/HidePopup` 已收口走 `ShowWithAnim()`/`HideWithAnim()`，无需子类做任何事即获得动画。
+>
+> - **开关字段**：`isAnimForShow`/`isAnimForHide`/`isAnimWithFade`（默认均 true）、`animForShowDuration`=0.18、`animForHideDuration`=0.12；子类在 Awake 置 false 即回到旧瞬显瞬隐行为。
+> - **virtual 方法**：`AnimForShow()`/`AnimForHide(Action onComplete)`/`ShowWithAnim()`/`HideWithAnim()`/`KillPopupAnim()`/`ResetPopupAnimState()`，可 override 定制动画。
+> - **中断恢复**：隐藏动画播放中再次 `ShowWithAnim()` 会 Kill 隐藏 Tween 重播出现动画；`HideWithAnim()` 有 `isHidingForAnim` 防重入，播完才真正 `ShowObj(false)`。
+> - 动画全部 `SetUpdate(Normal, true)` unscaled；只做 scale+fade 无位移（与 PopupShowView 每帧位置弹簧共存）；绕 pivot 角弹出=pivot 恒在靠鼠标一角即从指针处弹出。
+
 #### 4. 创建View组件
 
 ```csharp
@@ -337,11 +344,11 @@ UIHandler.Instance.ToastHint<UIToastNormal>("提示内容", 3f);
 
 // ==================== 气泡Popup ====================
 
-// 显示气泡
+// 显示气泡（默认带出现动画：DOScale 弹出+淡出，经 PopupShowView.ShowWithAnim 收口）
 PopupBean popupData = new PopupBean(PopupEnum.ItemInfo, targetTransform);
 UIHandler.Instance.ShowPopup<UIPopupItemInfo>(popupData);
 
-// 隐藏气泡
+// 隐藏气泡（默认带消失动画，经 PopupShowView.HideWithAnim 收口）
 UIHandler.Instance.HidePopup(PopupEnum.ItemInfo);
 
 // ==================== 屏幕锁定 ====================
@@ -716,6 +723,7 @@ EventsInfo.Language_Change                // 语言切换
 | 2026-06-27 | UICreatureVat 新增「进阶详情 UI」(AscendData)：素材选择阶段切 ProgressContent↔AscendData、升阶前/后卡牌掉落动画(ShowNoPopup)、AscendIcon 向右戳 Animator、BUFF 增益概率面板(子项 UIViewCreatureVatAscendBuffItem 池化+DOTween)；概率算法 BuffUtil.GetCreatureAscendBuffChances，结构体 CreatureAscendBuffChanceStruct/CreatureAscendMaterialBuffStruct 同放 Assets/Scripts/Struct/CreatureAscendStruct.cs | - |
 | 2026-07-04 | UICreatureVat 完成进阶收尾补齐：① 修复完成后目标列表不刷新(重建 InitCreaturekDataForTarget 反映新稀有度)；② 新增进阶成功反馈——胜利音效 sound_win_1 + 容器庆祝粒子 EffectHandler.ShowCreatureAscendCompleteEffect(pos,rarityColor)——经 Unity MCP execute_code 新建专用 Effect_AscendComplete_1(ParticleSystem+软发光贴图+additive材质)并注册 Addressables(组 Effect),运行时按新稀有度 ui_board_color 上色(稀有度流光) + 成功 Toast(新增文本 id 80013) | - |
 | 2026-07-21 | 进阶改为「生物数据托管」：AddAscendData 内置 Vat+RemoveBackpackCreature 把目标魔物从背包物理移除、本体(含装备)嵌入 UserAscendDetailsBean.creatureData，进阶期间各背包列表 UI 天然不可操作（修复旧「仅置状态+各 UI 自筛」漏筛导致的可被献祭/重新上阵）；RemoveAscendData 复位 Idle 并归还背包(旧存档按 creatureUUId 兜底)；ScenePrefabForBase.BuildingVatRefreshItemWithProgress 缸内展示与完成落地改直读 creatureData；OnClickForEnd 取消进阶后补齐重建目标列表(与完成收口一致,归还生物立即可再选) | - |
+| 2026-08-21 | PopupShowView 内建出现/消失动画：开关字段 isAnimForShow/isAnimForHide/isAnimWithFade + virtual 方法 AnimForShow/AnimForHide/ShowWithAnim/HideWithAnim（DOScale 弹出/缩回+可选淡出，unscaled，中断恢复）；UIHandler.ShowPopup/HidePopup 收口走 ShowWithAnim/HideWithAnim，全部 7 个 UIPopup* 默认获得动画、调用方零改动 | - |
 
 ---
 

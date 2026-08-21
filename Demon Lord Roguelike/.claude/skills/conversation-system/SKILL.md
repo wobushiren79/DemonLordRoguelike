@@ -52,11 +52,13 @@ watched_files:
 
 实现在 `UIGameConversation`（无需 DOTween，项目 DOTweenModuleUI 仅支持 Unity UI Text，不支持 TMP）：
 
-- **机制**：`StartTextAnim(content)` 先 `ui_TalkText.text = content` 设全文，协程 `CoroutineForTextAnim` 逐字递增 TMP `maxVisibleCharacters`（0 → 全文长度），利用 TMP 原生可见字符控制，无 substring 分配。
+- **机制**：`StartTextAnim(content)` 先 `ui_TalkText.text = content` 设全文，**UniTask 异步推进**（`await GTask.Wait(timeForTextAnim, token)` 逐字递增 TMP `maxVisibleCharacters`，受 timeScale 影响），利用 TMP 原生可见字符控制，无 substring 分配。**不用协程、不用 Update 轮询**（见 CLAUDE.md「异步与定时逻辑规则」）。
 - **节奏**：`timeForTextAnim`（public，默认 0.05s/字，Inspector 可调）。
-- **说话音效**：每显示一个**非空白**字符播放一次 `AudioHandler.Instance.PlaySound(AudioEnum.sound_talk_1)`；`PlaySound` 内置 0.1s 同音效重复抑制，自动限流（约每 2 字一音），不会爆音。
+- **取消（框架层 GTask 封装）**：`cancelForTextAnim`（`GTaskCancel`，懒创建一次复用）——`StartTextAnim` 里 `Reset()` 重建令牌（首次 `GTask.NewCancel(gameObject)` 创建并链接销毁令牌，UI 直接销毁也自动取消）、`StopTextAnim` 里 `Cancel()` 收口（跳过/重开/关闭统一），在途推进在 await 点抛 `OperationCanceledException`；推进方法为 `async UniTaskVoid`、调用点 `_ = TextAnimForContent()` 显式丢弃（消除未观察调用警告）——UniTaskVoid 静默 OCE、真异常由 UniTaskScheduler 记录，**无需 try/catch，禁止 async void**（其未捕获 OCE 会进 Console）。`OnDestroy` 重写里 `cancelForTextAnim?.Dispose()` 显式释放。
+- **收尾拆分**：`StopTextAnim` = `Cancel()` + `FinishTextAnim(isShowAll)`（显示全文/复位 `isTextAnimPlaying`/截断音效）；自然播完只调 `FinishTextAnim(true)`、**不 Cancel**——取消源留给下次 Start 的 `Reset()` 复用。
+- **说话音效**：动画开始时 `AudioHandler.Instance.PlaySoundOnce(AudioEnum.sound_talk_1)` **整条只播一次**（独立音源，非逐字触发）；收尾 `FinishTextAnim`（自然播完/点击跳过，`StopTextAnim` 与 `CloseUI` 亦经此）内 `StopSoundOnce(sound_talk_1)` 立即截断——动画比音效（全长 1.42s）短时在动画结束点直接停掉、无残留长尾巴；动画更长时音效已自然播完、截断为空操作。（旧实现为逐字 `PlayOneShot` 叠加：1.42s 长 clip 每 0.1s 重发叠加浑浊，且动画结束后残留最长 1.42s 无法中断——`PlaySound` 无句柄；单次音效 API 见 audio-system skill「单次音效」）
 - **点击跳过**：`OnClickForEnd` 判 `isTextAnimPlaying`——播放中点背景仅 `StopTextAnim(true)`（`maxVisibleCharacters = int.MaxValue` 显示全文）**不结束对话**；动画结束后再点才走 `acionForEnd`。
-- **生命周期**：`BaseUIComponent.CloseUI()` 会 `StopAllCoroutines()`，协程随 UI 关闭自动停止；`StartTextAnim` 开头先 `StopTextAnim()` 防复用时协程叠加。
+- **生命周期**：`CloseUI` 重写里调 `StopTextAnim()`——Cancel 取消源终止在途异步推进，并截断说话音效；`StartTextAnim` 开头先 `StopTextAnim()` 重置状态防复用时叠加。
 - 音效配置：`sound_talk_1 = 640001`（AudioInfo id），资源 `Assets/LoadResources/Audio/Sound/sound_talk_1.wav`，`audio_type=0` 音效。新增音频流程见 audio-system skill。
 
 ## 贿赂（送礼）
@@ -83,4 +85,4 @@ watched_files:
 - `UIGameConversation` 同时被本 skill 与议会流程使用：贿赂的态度/好感语义归 doom-council-system，本 skill 管界面与台词动画。
 - Bean 修改规则：`ConversationCouncilorInfoBean.cs` 带 `AUTO-GENERATED-DO-NOT-EDIT` 标记，扩展只能写 `*BeanPartial.cs`。
 - `ui_TalkText` 为 TextMeshProUGUI：动画依赖 TMP `maxVisibleCharacters`，勿改回 Unity UI Text。
-- 对话打开时 `SetBaseControl(false)` 停移动但**不停 timeScale**，协程用 `WaitForSeconds` 正常计时。
+- 对话打开时 `SetBaseControl(false)` 停移动但**不停 timeScale**，`UniTask.Delay` 默认 DeltaTime 受 timeScale 影响、正常计时。

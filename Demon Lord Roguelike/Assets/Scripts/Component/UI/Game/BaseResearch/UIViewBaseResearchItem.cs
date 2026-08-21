@@ -12,6 +12,7 @@ public partial class UIViewBaseResearchItem : BaseUIView
     public ResearchInfoBean researchInfo;
     protected Vector2 itemPosition;
     protected Sequence animForUnlock;//解锁动画
+
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);

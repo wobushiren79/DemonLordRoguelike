@@ -51,6 +51,7 @@ public enum TestSceneTypeEnum
     CreatureVat = 11,       // 魔物进阶(生物升阶容器)测试
     CreatureJuicer = 12,    // 魔汁机(魔物回收)测试
     EffectTest = 13,        // 粒子特效测试
+    ConversationTest = 14,  // 对话系统测试
 }
 ```
 
@@ -468,6 +469,34 @@ TestEffectGUI.Start()                                  // Assets/Scripts/Compone
 - **播放高度**：播放位置 y 取 1（`PlayHeight` 常量）——平面顶面在 y=0，播放点抬高 1 格后粒子正好落在平面上；`ShowEffect` 内部还会对 targetPos 做 +0.002 微抬防 z-fighting。
 - **清理**：`OnDestroy` 销毁平面并注销拖尾测试桶；重复点「开始」由 `StartForEffectTest` 先清理旧面板防叠加。
 
+## 对话系统测试 (ConversationTest)
+
+`TestSceneTypeEnum.ConversationTest` —— 自由输入对话文本 + 指定说话 NPC，在测试场景直接打开对话界面(`UIGameConversation`)，验证逐字动画/说话音效/名字/头像显示，无需进入议会场景。
+
+### 流程
+
+```
+GameTestEditor.DrawConversationTest()                        // Inspector 配置
+    │  说话NPC: 下拉(懒加载 NpcInfoCfg.GetAllArrayData，选项"id+中文名"直读 Language_NpcInfo_cn.txt，
+    │           不切 LanguageCfg 语言；name=0 随机议员显示"(随机议员)") + 手动 NPC ID(long，非0优先于下拉)
+    │  对话文本: TextArea 自由输入(不走多语言)
+    │  ▶️ 开始对话展示 → 校验NPC配置存在/文本非空 → launcher.StartForConversationTest(npcId, content)
+    ▼
+LauncherTest.StartForConversationTest(npcId, content)        // Assets/Scripts/Game/Launcher/LauncherTest.cs
+    │  ① NpcInfoCfg.GetItemData(npcId) 校验 + 空文本拦截
+    │  ② ClearWorldData() + SetDepthOfField(Off) + CameraHandler.InitData()  // 与卡片/NPC/特效测试同套路
+    │  ③ isTestSimulation = true   // 对话UI带贿赂入口(贿赂固定议员会SaveUserData)，防误写真实存档
+    │  ④ new CreatureBean(npcInfo) 构建说话生物(NPC构造入口初始化皮肤/装备/名字，与议会交谈同一数据口径)
+    │  ⑤ new GameObject 兜底 creatureObj(UI中仅贿赂特效定位用，测试场景无实体，防空引用)
+    │  ⑥ OpenUIAndCloseOther<UIGameConversation>() → SetData(obj, creature, content, 结束回调=CloseUI)
+```
+
+### 关键点
+
+- **结束回调=关闭自身**：测试无后续界面，文本动画播完再点背景 → `CloseUI()` 关闭对话；动画播放中点背景仍按原逻辑仅跳过动画显示全文。
+- **下拉中文名直读语言表**：选项名字直读 `Language_NpcInfo_cn.txt`（走通用 helper `LoadLanguageForCn(fileName)`，深渊馈赠的 `LoadAbyssalBlessingLanguageForCn` 已改为调它），不切 LanguageCfg 避免篡改运行中游戏语言；配置重导后点「🔄 刷新列表」清选项缓存 + `ClearCfgBaseStaticCache(typeof(NpcInfoCfg))` 反射清 Cfg 的 dicData/arrayData 静态缓存（通用 helper，从深渊馈赠的 `ClearAbyssalBlessingInfoCfgCache` 提炼，后者改为调它再补清族根/等级缓存）。
+- **参数持久化**：手动 NPC ID 用 EditorPrefs **字符串**存储（10 位 id 超 int 上限，同深渊馈赠列表教训）；对话文本/下拉索引常规持久化。
+
 ## 正常游戏启动 (NormalGame)
 
 `TestSceneTypeEnum.NormalGame` —— 在测试场景(TestScene)里直接走与正式 `LauncherGame` 完全一致的真实开始流程，免去每次手动切到 `GameScene` 再运行。
@@ -557,6 +586,8 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 粒子特效测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForEffectTest`） |
 | 粒子特效测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawEffectTest`） |
 | 粒子特效测试面板 | `Assets/Scripts/Component/UI/Test/TestEffectGUI.cs`（纯代码 IMGUI，无预制；手动ID输入+下拉 `EffectInfoCfg.GetAllArrayData` 懒加载 + 按 id 分发到正式游戏对应执行方法播放 + 播放次数经 Update 每帧1次分帧播放） |
+| 对话系统测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForConversationTest`） |
+| 对话系统测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawConversationTest`/`EnsureConversationTestNpcOptions`；通用 helper `LoadLanguageForCn`/`ClearCfgBaseStaticCache`） |
 | 测试场景 | `Assets/Scenes/TestScene.unity` |
 
 ---
