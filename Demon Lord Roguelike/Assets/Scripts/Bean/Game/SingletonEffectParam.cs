@@ -16,5 +16,9 @@ public struct SingletonEffectParam
     public float startSizeMultiplier;
     /// <summary>主粒子寿命倍率（如冲击波扩张时长换算）；0=不设置</summary>
     public float startLifetimeMultiplier;
+    /// <summary>攻击方向（供 EffectInfo 含 {Direction} 占位的 VFX int 数据使用，如刀光朝向）；None=不设置</summary>
+    public Direction2DEnum direction;
+    /// <summary>尺寸倍率（供 EffectInfo 含 {Size} 占位的 VFX float 数据使用，攻击方传 colliderAreaSize[0]）；0=不设置</summary>
+    public float size;
     #endregion
 }

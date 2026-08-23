@@ -36,7 +36,7 @@ BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播
 | `attackerCDMG` | CDMG | 暴击伤害倍率（基础1.5=+50%，经BUFF可调；`ClearData()` 重置为 1.5） |
 | `attackerSpeedRate` | ASPD | 弹道飞行速度倍率：ASPD 按 0~100 线性插值映射 1~`BaseAttackMode.SpeedRateASPDMax`(当前3倍)；无攻击者时保持默认 1，`ClearData()` 重置为 1 |
 
-> **恢复/治疗型判断**：`AttackModeInfoBeanPartial.IsRegainType()` 按 `class_name` 是否以 `AttackModeRegain` 开头判断该攻击方式是否为回复类（覆盖 `AttackModeRegainHP`/`AttackModeRegainDR` 及未来恢复系子类，自动命中）；`CreatureInfoBeanPartial.IsRegainAttackMode()` 按生物的 `attack_mode` 查表判断某生物是否为治疗型。卡片详情等 UI 据此对治疗型隐藏攻击力、改显示治疗量（= 当前ATK×`GetDamageAddRate()`，与战斗实际恢复量口径一致）。
+> **恢复/治疗型判断**：`AttackModeInfoBeanPartial.IsRegainType()` 按 `class_name` 是否以 `AttackModeRegain` 开头判断该攻击方式是否为回复类（覆盖 `AttackModeRegainHP`/`AttackModeRegainDR` 及未来恢复系子类，自动命中）；子类细分 `IsRegainHPType()`（加血系，配置 id=500001）/`IsRegainDRType()`（加护甲系，id=500002）。`CreatureInfoBeanPartial.IsRegainAttackMode()`/`IsRegainHPAttackMode()`/`IsRegainDRAttackMode()` 按生物的 `attack_mode` 查表判断某生物是否为回复型/加血型/加护甲型。卡片详情等 UI 据此对回复型隐藏攻击力、按子类改显示治疗量(AddLife)或回甲量(AddDef)条目（值 = 当前ATK×`GetDamageAddRate()`，与战斗实际恢复量口径一致），魔王两项均不显示。
 
 ### BaseAttackMode 关键状态字段
 
@@ -54,13 +54,13 @@ BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播
 ```
 BaseAttackMode                      - 攻击模式基类
 ├── AttackModeMelee                 - 近战单体（瞬间命中目标）
-├── AttackModeMeleeArea             - 近战范围（起点范围伤害；可配 hit_max 限制命中数，如人类战士1001的101005配3=前方2单位最多命中3个敌人）
+├── AttackModeMeleeArea             - 近战范围（起点范围伤害；可配 hit_max 限制命中数，如人类战士1001的101005配3=前方1单位只打本路最多命中3个敌人）
 ├── AttackModeRanged                - 远程直线弹道（逐帧移动+碰撞检测；InitAttackModeShow 开启 visualVelocityOrient——火球/冰球 billboard 视觉按 _VelocityWS.w 速度朝向：贴图头（默认朝右）对准飞行方向、拖尾朝飞行反方向，仅桶材质声明 _VelocityWS 才生效，RangedNormal 等材质零副作用）
 │   ├── AttackModeRangedArea        - 远程范围弹道（击中时范围AOE）
 │   ├── AttackModeRangedArc         - 远程抛物线弹道（到达终点走 `HandleForReachEnd` 虚方法，默认回收，子类覆盖为落点AOE等收尾）
 │   │   └── AttackModeRangedArcArea - 抛物线落点范围（继承 Arc：抛射物飞向起飞时锁定目标脚底的固定落点、不追踪（目标中途死亡/移动照飞原落点），途中不命中任何目标（PrepareRaycast 全程不入队/CheckHitTargetForSingle 恒 null），到达落点覆盖 HandleForReachEnd 走 CheckHitTargetArea 范围结算——范围内所有存活敌人全部命中（hit_max>0 近者优先截断+同生物去重，0=不限），射空落点无敌人落地即回收；牛头人投手5002用 203001[配 collider_area_type=11&collider_area_size=1.5&hit_max=5 + visual_name=AttackModeVisual_RangedNormal（DSP石头，与老 prefab 同贴图 Weapon_1.png，共用者 200001/206001/210001，prefab_name 置空不再走预制体）+ trail_data=count:6&interval:0.05&startAlpha:0.5&endAlpha:0.05 方案1残影拖尾 + effect_hit=1900001(Effect_Hit_1 落点爆发，走 ShowEnduringSingletonEffect) + sound_start=100002(sound_knife_miss_2)&sound_hit=420011(sound_hit_11)]，配 attack_search_type=41 DisMaxByRoad 索当前排最后一个敌人，ATK=3 以数量换单体伤害）
 │   │   └── AttackModeRangedArcBounce - 弹跳抛物线（分段抛物线+追踪锁定+命中弹跳；深渊馈赠「跳跳斧」300061）
-│   │   └── AttackModeRangedArcGround - 抛物线火瓶-地形火焰（双状态 Flying→Burning：飞行段抛物线飞向固定落点不追踪、纯投掷物禁用命中、弹体自旋-720°/s绕-Z轴，到达切燃烧段驻留每1秒对半径范围跳伤、满5秒自毁；落地切燃烧时播放 sound_water_4；深渊馈赠「瓶装炼狱火」300101）
+│   │   └── AttackModeRangedArcGround - 抛物线火瓶-地形火焰（双状态 Flying→Burning：飞行段抛物线飞向固定落点不追踪、速度=恒定世界速度[时长=距离/speed_move 托底 MinSegmentTime=0.5s]+弧高随时长等比缩放[ArcHeightPerSecond=1.5 竖直速度全程恒定]、纯投掷物禁用命中、弹体自旋-720°/s绕-Z轴，到达切燃烧段驻留每1秒对半径范围跳伤、满5秒自毁；落地切燃烧时播放 sound_water_4；深渊馈赠「瓶装炼狱火」300101）
 │   │   └── AttackModeRangedArcTracking - 抛物线落点跟踪（落点实时跟踪目标、目标死亡落死亡点、到达落点范围检测取最近单体命中、途中不命中；弹体朝向每帧跟随抛物线切线：visualStartAngle=武器StartRotate基准角+atan2(8h(0.5-progress),Δx)；弧高2；射空收尾按 other_data 的 stuck_time/stuck_sink 键插地停留或落地即毁，插地期弹体冻结仍挂 dlAttackModePrefab、场景清场自动回收；人类弓箭手1002用 206001[配 other_data=stuck_time:3&stuck_sink:0.1]，配 attack_search_type=41 DisMaxByRoad 索当前排最后一个敌人）
 │   ├── AttackModeRangedTracking    - 远程追踪弹道（实时改变方向追击目标，方向 SetY(0) 拍平水平飞；目标死亡即关命中检测）
 │   │   └── AttackModeRangedObliqueTracking - 直线斜射跟踪-范围伤害版（①跟踪含Y不拍平+首发方向按出手点→瞄准点重算：从头顶高空出手（attack_start_position y=2.5）直直斜射目标，瞄准点=目标脚底+other_data 键 aim_up 上抬（默认0=瞄脚底，201001/201002 配 aim_up:0.5）；②命中检测/射线全程有效，目标死亡方向冻结朝死亡点直飞直至命中或出界；③HandleForHitTarget 走 CheckHitTargetArea 命中点AOE（hit_max 近者优先截断，201001/201002 配 hit_max=3=离爆炸点最近3个敌人）；④贴身保底命中：与瞄准点距离≤HitTouchDistance(0.2)直接判中——短射线0.1在迎面相撞穿进碰撞体后永久失效（射线不打背面），无此层会挂身空转；⑤触地即毁：下落中（attackDirection.y<0）y≤GroundHitY(0.05)播 effect_hit 回收（无伤害结算），目标死亡直飞不穿地；弹体朝向：面片 quad 视觉走 visualStartAngle=StartRotate基准角+atan2(dir.y,dir.x)；火球/冰球 billboard shader 走 visualVelocityOrient→_VelocityWS.w 速度朝向（矩阵旋转对其核心无效）；人类法师1003/1004用 201001/201002）
@@ -84,8 +84,8 @@ BaseAttackMode                      - 攻击模式基类
 ├── AttackModeInstantArea           - 瞬时落点范围（无弹道飞行，当帧对目标点范围攻击；支持 hit_max 命中上限+快照名单过滤，AOE 多目标伤害按命中次序乘 other_data 键 hit_decay 递减率（默认0.5=依次减半，配1=全额）保底1，单次攻击内局部去重；牛头人法师5003火/5004冰用 101003/101004——远程瞬时捶地地刺，配 hit_decay:1 全额 + dr_damage_rate:2&hp_damage_rate:0.5 串联破甲 + buff=1000500002:0.1 烧伤/1000100002:0.1 冰缓，生物索敌 attack_search_type=0&range=10 同人类法师）
 │   └── AttackModeInstantAreaThunder - 落雷（瞬时AOE + 全局单例雷电粒子；深渊馈赠「闪电」300031~300035）
 └── AttackModeRegain                - 回复基类（不造成伤害，提供增益）
-    ├── AttackModeRegainHP          - 回复生命
-    └── AttackModeRegainDR          - 回复护甲
+    ├── AttackModeRegainHP          - 回复生命（4002 用 500001：effect_hit=500001(Effect_Buff_Health_1)，sound_hit=470001 由 FightCreatureEntity.RegainHP 真实回血>0 时播）
+    └── AttackModeRegainDR          - 回复护甲（4005 用 500002：effect_hit=500003(Effect_Buff_Def_1 全局单例)，sound_hit=470001 由 FightCreatureEntity.RegainDR 真实加甲>0 时播）
 ```
 
 ## 创建新攻击模式
@@ -110,7 +110,7 @@ BaseAttackMode                      - 攻击模式基类
 | `AttackModeRangedArc` | 抛物线飞行 | 投石、抛物线炸弹 |
 | `AttackModeRangedArcArea` | 抛物线投掷 + 落点范围伤害（飞行段纯移动不命中；到达落点 `HandleForReachEnd` 走 `CheckHitTargetArea` 范围结算全部存活敌人，hit_max 近者优先截断+同生物去重，0=不限；落点=起飞时目标脚底快照不追踪，射空落地即回收） | 投石范围轰炸、抛物线AOE（牛头人投手 203001，配 `collider_area_size=1.5`&`hit_max=5`；DSP 石头视觉+残影拖尾+落点爆发特效 1900001） |
 | `AttackModeRangedArcBounce` | 分段抛物线 + 追踪锁定目标 + 命中后弹跳到附近目标（次数由发射方注入，全程命中去重，伤害逐目标减半保底1；弧高首段=arcHeight、弹跳段减半；每段仅下落阶段 progress≥0.5 检测命中；分段时长=max(距离/速度, MinSegmentTime=1.0s) 防短段过快） | 弹跳斧、弹射类 |
-| `AttackModeRangedArcGround` | 抛物线投掷 + 落地驻留周期范围伤害（双状态：飞行段纯移动不命中+弹体自旋-720°/s绕-Z轴、到达切燃烧段每 TickInterval 对半径范围跳伤、满 Duration 自毁；燃烧段隐藏 DSP 弹体、粒子视觉走 EffectHandler.ShowEnduringSingletonEffect(effect_hit=1800001)；落地切燃烧时播放 sound_water_4） | 投掷物落地成持续灼烧地形（瓶装炼狱火） |
+| `AttackModeRangedArcGround` | 抛物线投掷 + 落地驻留周期范围伤害（双状态：飞行段纯移动不命中、速度=恒定世界速度[时长=max(距离/speed_move, MinSegmentTime=0.5s)]+弧高随时长等比缩放[ArcHeightPerSecond=1.5 竖直峰值速度全程恒定]+弹体自旋-720°/s绕-Z轴、到达切燃烧段每 TickInterval 对半径范围跳伤、满 Duration 自毁；燃烧段隐藏 DSP 弹体、粒子视觉走 EffectHandler.ShowEnduringSingletonEffect(effect_hit=1800001)；落地切燃烧时播放 sound_water_4） | 投掷物落地成持续灼烧地形（瓶装炼狱火） |
 | `AttackModeRangedArcTracking` | 抛物线 + 落点实时跟踪目标（落点=目标脚底+本发起始点相对攻击者的偏移，与发射口同高；目标死亡则落点锁定死亡点）+ 到达落点范围检测取**距落点最近的一个敌人**结算单体伤害（范围仅作检测窗口、非AOE，`collider_area_size[0]`=检测半径），弹道途中不命中任何目标；弹体朝向每帧跟随抛物线切线（`visualStartAngle`=武器StartRotate基准+`atan2(8h(0.5-progress), Δx)`，DSP 每帧读它建矩阵故每帧更新即生效）；弧高 2（构造函数覆盖基类默认 3）；收尾靠覆盖 Arc 的 `HandleForReachEnd`：命中即回收，**射空（落点无存活敌人）按 `other_data` 的插地键配置插地停留（stuck_time>0 启用，stuck_sink 下沉深度，倒计时走 GetFightDeltaTime、插地期冻结移动/跟踪/边界检测并关拖尾）或落地即回收——插地弹体仍挂 `dlAttackModePrefab`，ClearAttackModePrefab/Clear 清场自动覆盖**；配置解析走 `AttackModeInfoBeanPartial.GetStuckConfig()`（`AttackModeStuckConfig`，从通用扩展列 other_data 取 stuck_time/stuck_sink 键） | 抛射狙击、迫击炮式打击（人类弓箭手 206001，配 `other_data=stuck_time:3&stuck_sink:0.1`） |
 | `AttackModeRangedTracking` | 追踪目标飞行 | 追踪弹、导弹 |
 | `AttackModeRangedObliqueTracking` | 继承 RangedTracking：直线斜射跟踪（方向含 Y 不拍平，首发方向按「出手点→瞄准点」重算，用于高空出手斜射；瞄准点=目标脚底+`other_data` 键 `aim_up` 上抬高度，默认0=瞄脚底，解析走 `AttackModeInfoBeanPartial.GetAimUpHeight()`）+ 命中检测/射线全程有效（目标死亡方向冻结朝死亡点直飞，直至命中或出界）+ `HandleForHitTarget` 改走 `CheckHitTargetArea` 命中点范围 AOE（hit_max 近者优先截断、同生物去重，201001/201002 配 hit_max=3=离爆炸点最近3个）+ 贴身保底命中（与瞄准点距离 ≤ `HitTouchDistance`=0.2 直接判中——0.1 短射线在目标迎面相撞穿进碰撞体后永久失效（射线不打背面），无此层跟踪弹会在体内绕瞄准点空转）+ 触地即毁（下落中 `attackDirection.y`<0 且 y ≤ `GroundHitY`=0.05 时播 effect_hit 回收，无伤害结算，目标死亡直飞不穿地）；弹体朝向：面片 quad 走 visualStartAngle=武器StartRotate基准角+`atan2(dir.y, dir.x)`，火球/冰球 billboard shader 走 `visualVelocityOrient`（InitAttackModeShow 开启）→`_VelocityWS.w` 速度朝向 | 高空出手的斜射法师范围弹（人类法师 201001/201002，配 `other_data=aim_up:0.5`） |
@@ -483,7 +483,7 @@ public virtual void AttackHandle()
 3. 该方法是**纯数据无参路径**（照冲击波/矿车 BUFF 发射先例）：`manager.GetAttackModeData(attack_mode)` 取池化 `AttackModeBean`，手填 `attackerCreatureId`/`attackerWeaponItemId`/`attackerId`/`attackerDamage`=ATK×`attackModeInfo.GetDamageAddRate()`/`attackerCRT`/`attackerCDMG`(暴击伤害倍率快照)/`startPos`=死亡位置+`GetAttackStartPosition()`+`GetStartPosOffset()`/`attackedLayerTarget`=`GetCreatureLayer(true)`/`attackDirection`=right，然后 `FightHandler.StartCreateAttackMode(attackModeData)`——无参 `StartAttack`→`AttackHandle` 播 effect_hit 特效 + 按 `collider_area_type`/`collider_area_size` 做范围结算。
 4. **配置 300002**：`class_name=AttackModeExplosion`、`collider_area_type=11`(AreaSphere)、`collider_area_size=1.5`（爆炸伤害半径）、`damage_add_rate=1`（伤害=攻击者ATK×1，哥布林 500→爆 500）、`effect_hit=300002`（Effect_Explosion_2；2026-08-18 起 300001/300002 两个爆炸模块均改用它，原 Effect_Explosion_1=300001 特效已无引用）、`sound_hit=420008`、`sound_miss=100001`，remark=爆炸范围攻击-火焰(敢死队)。与史莱姆 300001（`damage_add_rate`=50，10×50=500）同公式不同倍率；史莱姆（charge_attack=0）仍走原 attacker 路径，行为不变。
 
-> **近战斩击命中粒子(400003)先例——effect_hit 全量单例化**：`Effect_Slash_2`(4001战之魅魔 attack_mode 101001 的 effect_hit) 配置表走 `effect_hit` 通道，`BaseAttackMode.PlayEffectForHit` 拿到 id 后**直接**调 `EffectHandler.ShowEnduringSingletonEffect(effectId, startPosition)`(全局单例重播：移动实例+Stop(StopEmitting)保活+Play)——普通攻击的命中特效，多生物同时出刀=多刀交叠、上一刀粒子不消失。2026-08-16 起**所有** effect_hit 都走这一条单例通道、**无 id 分流**（manager 的 `effectThunderId`/`effectSlashId`/`effectFloorFireId`/`effectShockwaveId` 字段已删除，击中粒子 ID 一律配在攻击模块表 `effect_hit` 列：斩击 101001=400003、落雷 300031~035=900003、火瓶 300101=1800001、冲击波 300091=1700001、爆炸 300001/300002=300002）；故任意 effect_hit 粒子须 World 空间模拟+burst 一次性爆发(与 Effect_Thunder_3/Effect_Slash_2/Effect_FloorFire_1 同构)，否则单例移动会拖走旧粒子/重播不触发爆发。⚠️新增「全局单例型」命中特效的标准做法：配好 EffectInfo 行 + 攻击模块行 `effect_hit` 指向该 id，**代码零改动**。
+> **近战斩击命中粒子(400003)先例——effect_hit 全量单例化**：`Effect_Slash_2`(4001战之魅魔 attack_mode 101001 的 effect_hit) 配置表走 `effect_hit` 通道，`BaseAttackMode.PlayEffectForHit` 拿到 id 后**直接**调 `EffectHandler.ShowEnduringSingletonEffect(effectId, SingletonEffectParam{targetPos, direction, size})`(全局单例重播：移动实例+Stop(StopEmitting)保活+Play)——普通攻击的命中特效，多生物同时出刀=多刀交叠、上一刀粒子不消失。2026-08-16 起**所有** effect_hit 都走这一条单例通道、**无 id 分流**（manager 的 `effectThunderId`/`effectSlashId`/`effectFloorFireId`/`effectShockwaveId` 字段已删除，击中粒子 ID 一律配在攻击模块表 `effect_hit` 列：斩击 101001=400003、落雷 300031~035=900003、火瓶 300101=1800001、冲击波 300091=1700001、爆炸 300001/300002=300002）；故任意 effect_hit 的 **PS** 粒子须 World 空间模拟+burst 一次性爆发(与 Effect_Thunder_3/Effect_Slash_2/Effect_FloorFire_1 同构)，否则单例移动会拖走旧粒子/重播不触发爆发；**VFX 型特效不受此约束**（SendEvent 重触发，如 BOSS 刀光 Effect_Slash_1），但其暴露属性须经 `InjectVfxConfigData` 按 EffectInfo 配置注入（direction/size 由 PlayEffectForHit 传入，2026-08-22 修复的回归即此注入丢失致 VFX 按预制默认值播放不可见）。⚠️新增「全局单例型」命中特效的标准做法：配好 EffectInfo 行 + 攻击模块行 `effect_hit` 指向该 id，**代码零改动**。
 
 #### 完全自定义示例
 

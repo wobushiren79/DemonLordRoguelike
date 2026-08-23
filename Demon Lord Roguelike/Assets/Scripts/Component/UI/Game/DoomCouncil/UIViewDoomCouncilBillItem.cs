@@ -107,7 +107,7 @@ public partial class UIViewDoomCouncilBillItem : BaseUIView
             //小于100%则进入议会
             else
             {
-                UIHandler.Instance.ShowMask(0.2f, null, async () =>
+                UIHandler.Instance.ShowMask(0.2f, null, () =>
                 {
                     GameHandler.Instance.StartDoomCouncil(doomCouncilData);
                 }, false);

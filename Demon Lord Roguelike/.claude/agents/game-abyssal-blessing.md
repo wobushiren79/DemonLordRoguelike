@@ -40,7 +40,7 @@ watched_files:
 
 ### UI 组件
 - **UIFightAbyssalBlessing** - 征服模式关卡间馈赠选择界面（随机 3 选 1）
-- **UIViewFightAbyssalBlessingItem** - 候选项（带等级 BUFF 预览）
+- **UIViewFightAbyssalBlessingItem** - 候选项（带等级 BUFF 预览；音效：出现 sound_card_8 / 悬停 sound_card_7 / 选中 sound_card_5）
 - **UIViewAbyssalBlessingInfoContent** - 战斗界面常驻已选馈赠列表
 - **UIViewAbyssalBlessingInfoContentItem** - 已选馈赠列表项
 - **UIPopupAbyssalBlessingInfo** - 馈赠详情气泡

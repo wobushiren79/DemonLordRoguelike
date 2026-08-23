@@ -439,7 +439,7 @@ public class BaseUIComponent : BaseUIInit
 
 框架层另有一批开箱即用的通用 UI 组件（ScrollGrid、SelectView、ProgressView、DialogView、PopupShowView、ToastView 等，完整清单见 ui-components agent）。近期新增：
 
-- **UIHoverCardView** - 小丑牌(Balatro)风格通用悬停组件：鼠标进入弹起放大(OutBack)+上抬，卡面内移动时朝光标方向 3D 倾斜(欠阻尼弹簧驱动，快速划过甩动、松手回摆)，悬停静止期间叠加双轴错相持续摆动(`idleSwayAngle`/`idleSwayFrequency`，0=关闭)，移出还原；支持 `SetHoverSuppressed(bool)` 被其他动画独占变换时抑制、`RefreshOriginalTransform()` 外部永久改变换后重缓存(Awake+Start 自动各缓存一次)；事件沿射线接收层冒泡，可挂 item 根节点或独立子节点
+- **UIHoverCardView** - 小丑牌(Balatro)风格通用悬停组件：鼠标进入弹起放大(OutBack)+上抬，卡面内移动时朝光标方向 3D 倾斜(欠阻尼弹簧驱动，快速划过甩动、松手回摆)，悬停静止期间叠加双轴错相持续摆动(`idleSwayAngle`/`idleSwayFrequency`，0=关闭)，移出还原；大列表性能设计：不调基类Awake(不反射链接/不注册按钮)、输入注册重写为空、父Canvas缓存；支持 `SetHoverSuppressed(bool)` 被其他动画独占变换时抑制、`RefreshOriginalTransform()` 外部永久改变换后重缓存(Awake+Start 自动各缓存一次)；事件沿射线接收层冒泡，可挂 item 根节点或独立子节点
 - **PopupShowView 已内建出现/消失动画**：`isAnimForShow/isAnimForHide/isAnimWithFade` 开关 + `AnimForShow/AnimForHide/ShowWithAnim/HideWithAnim` virtual 方法，UIHandler.ShowPopup/HidePopup 已收口走带动画路径
 
 ---
@@ -598,7 +598,7 @@ ghost.ClearAll();
 ### 数据流
 
 ```
-Generate()：贴图归一(图集均分/手动Rect/单图PackTextures打包→atlas+Rect[]) → 抖动网格布点(洗牌分格+种子随机，flowerCount 超额时多轮复用格子不截断)
+Generate()：贴图归一(图集均分全用/行列子集atlasSelectedCells/手动Rect/单图PackTextures打包→atlas+Rect[]) → 抖动网格布点(洗牌分格+种子随机，flowerCount 超额时多轮复用格子不截断)
     → 地形高度三模式(固定/射线/高度图，高度图模式自动识别 MeshTerrain 材质) → 静态实例 buffer(位置/缩放/变体/相位/yaw, 32B×N) + 变体Rect buffer + args buffer
 TrampleAt(pos, radius)：XZ 空间哈希网格查花 → dissolveBuffer 写当前时钟（哨兵 -1=未消散，仅踩踏帧整份重传 4B×N），DissolvedCount 计数
 shader：每渲染帧由组件推送统一时钟 _FlowerSeaTime（编辑模式=EditorApplication.timeSinceStartup，Play=Time.time）→ progress=saturate((_FlowerSeaTime-start)/duration) → clip(noise-progress*1.001) 像素 dither 消散
@@ -624,6 +624,7 @@ flowerSea.ResetSea();   // 全部复原（不重新布点）
 - **战斗场景适配**：AlphaTest 队列 + ZWrite On 绕开 `transparencySortMode=CustomAxis(Z)` 排序问题；贴地 `yOffset≈0.001`（道路面在 0.0001）。
 - **消散噪声必须非常量图**：不赋值时组件用内置 8×8 Bayer 抖动矩阵兜底（`GetDefaultDissolveNoise`，静态共享 Point/Repeat）——引擎默认灰图是常量 0.5，所有像素同一时刻过阈值，会表现为"整朵到点齐消失"而非颗粒渐变。
 - **单图模式**要求贴图开 Read/Write（PackTextures），打包产物强制 Point 过滤；shader 内另有 `samplerPointRepeat` 兜底。
+- **图集行列子集**（`atlasUseAllCells=false` + `atlasSelectedCells`，x=列 y=行、行 0=贴图最下行）：切片优先级 manualRects > 行列子集 > 全量均分；子集模式一个格子都没选会直接报错误（故意不回退全量，避免误以为筛选生效）；`OnValidate` 把越界格子夹取回均分网格内；Inspector 提供 cols×rows toggle 网格点选（顶行=贴图最上行，>256 格退化为列表）。
 - **编辑模式可预览**（`[ExecuteAlways]`）：绘制提交走 `RenderPipelineManager.beginContextRendering` 回调（非 Update），编辑/Play 双模式同源；编辑模式销毁对象必须 `DestroyImmediate`（DestroySmart 封装）。
 - **预制体编辑模式(Prefab Stage)不支持预览**（2026-08 实测，两条路径均失败后回滚）：SRP `beginContextRendering` 回调对预制阶段视图不生效；`SceneView.duringSceneGui` 提交 `DrawMeshInstancedIndirect` 也画不出来（疑 DrawMesh* 需在相机渲染建立阶段提交，预制阶段渲染不走该路径）。替代工作流：把预制实例拖到场景中调参（场景视图实时预览正常）。注意排查方向：预制里的组件若未赋贴图，Generate 会在 Console 报"图集模式未赋 atlasTexture"导致 isReady=false。
 - **地形高度三模式**（`heightMode`）：`FixedY` 平地 / `Raycast` 射线（用 `gameObject.scene.GetPhysicsScene().Raycast` 命中组件所在 scene，预制阶段也能打自身场景）/ `HeightmapTerrain` 高度图地形——**GPU 顶点位移地形（如 `Shader_Mesh_Terrain.shader` 的 MeshTerrain）射线只能打到位移前的平面，必须用它**：CPU 侧复现 `TerrainHeight.hlsl` 公式（`local.y += h*heightScale`），世界XZ→地形物体空间→网格 UV(按 `mesh.bounds` 归一)→双线性采高度图；高度图/起伏/反转可自动从地形材质读（`_HeightMap/_HeightScale/_HeightInvert` 约定属性名），**贴图无需开 Read/Write**（Blit→线性临时RT→ReadPixels 回读）。

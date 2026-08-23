@@ -168,13 +168,6 @@ public partial class CreatureInfoBean : BaseBean
 	/// </summary>
 	public long unlock_id;
 	/// <summary>
-	///名字-中文
-	/// </summary>
-	public long name;
-	[JsonIgnore]
-	public string name_language { get => _name_language.Get(() => TextHandler.Instance.GetTextById(CreatureInfoCfg.fileName, name)); set => _name_language.Set(value); }
-	private LanguageCache _name_language;
-	/// <summary>
 	///体型大小（空或0=默认1倍；"0.9,1.1"=区间随机；"1.1"=固定倍数；最终在目标大小基础上相乘）
 	/// </summary>
 	public string body_size;
@@ -186,6 +179,13 @@ public partial class CreatureInfoBean : BaseBean
 	///冲锋攻击(0=默认站桩;1=冲锋自爆:放卡后立即向前冲锋,遇敌/冲到路尽头/被打死时原地自爆,冲锋开始后原占位格立即释放)
 	/// </summary>
 	public int charge_attack;
+	/// <summary>
+	///名字-中文
+	/// </summary>
+	public long name;
+	[JsonIgnore]
+	public string name_language { get => _name_language.Get(() => TextHandler.Instance.GetTextById(CreatureInfoCfg.fileName, name)); set => _name_language.Set(value); }
+	private LanguageCache _name_language;
 	/// <summary>
 	///详情描述文本id(取content_1，值=生物自身id，0或空=不显示)
 	/// </summary>

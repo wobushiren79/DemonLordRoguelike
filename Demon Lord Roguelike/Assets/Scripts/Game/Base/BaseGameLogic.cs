@@ -45,11 +45,12 @@ public abstract class BaseGameLogic : BaseEvent
     /// <summary>
     /// 清理数据
     /// </summary>
-    public virtual async Task ClearGame()
+    public virtual Task ClearGame()
     {
         ChangeGameState(GameStateEnum.End);
         UnRegisterAllEvent();
         System.GC.Collect();
+        return Task.CompletedTask;
     }
 
     /// <summary>

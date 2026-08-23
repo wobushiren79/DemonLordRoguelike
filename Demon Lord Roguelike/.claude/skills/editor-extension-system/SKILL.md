@@ -347,6 +347,7 @@ BaseUIView 的 Inspector 扩展，显示 UI 层级和动画信息。
 花海渲染器（`FlowerSeaInstanceRenderer`，见 framework-core-system）的 Inspector 扩展：
 - **全参数中文化标注**：`fieldContents` 字典（字段名→`GUIContent(中文标签, 中文悬停提示)`），未登记字段回退原名；枚举弹窗（textureMode/shape）用 `EditorGUILayout.Popup` 中文化，注意 **Popup 不画 [Header] 装饰**，需 `DrawHeaderFor` 反射补画
 - 贴图区按 `textureMode` 条件显示（图集模式只画图集字段 / 单图模式只画单图字段）：主循环 `GetIterator` 跳过贴图字段，绘制到 `textureMode` 时插入条件块；地形区同理按 `heightMode` 条件显示（射线模式 / 高度图模式字段组）
+- 图集模式关闭「使用图集全部格子」时展开 **行列 toggle 网格**（`DrawAtlasCellGrid`）：按均分列×行画 miniButton 阵列点选格子（顶行=贴图最上行，与看图习惯一致；>256 格退化为直接画列表防卡），含全选/清空按钮与空选警告；选中集合排序写回 `atlasSelectedCells` 保证序列化稳定
 - 底部「重新生成花海 / 重置全部消散 / 测试踩踏(r=2)」按钮 + 状态行（花朵总数/已消散数）
 
 ---

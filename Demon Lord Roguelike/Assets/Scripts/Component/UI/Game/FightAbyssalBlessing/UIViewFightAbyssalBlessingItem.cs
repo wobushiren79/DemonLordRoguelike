@@ -89,11 +89,12 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
     private bool isSelecting;
 
     /// <summary>
-    /// 鼠标进入-放大强调（已进入选中/隐藏流程时忽略）
+    /// 鼠标进入-放大强调并播放悬停音效（已进入选中/隐藏流程时忽略）
     /// </summary>
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {
         if (isSelecting) return;
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_card_7);
         hoverTween?.Kill();
         hoverTween = transform
             .DOScale(Vector3.one * HOVER_SCALE, HOVER_ANIM_DURATION)
@@ -150,7 +151,8 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
     private bool isOriginalPosCached;
 
     /// <summary>
-    /// 出现动画-从下方弹出（位置上滑 OutCubic + 缩放 0→1 OutBack 回弹），快速灵动
+    /// 出现动画-从下方弹出（位置上滑 OutCubic + 缩放 0→1 OutBack 回弹），快速灵动；
+    /// 错位延迟结束、动画启动时播放 sound_card_8（每张卡各自播放，同生物卡片出现音效模式）
     /// </summary>
     /// <param name="delay">延迟时间，用于多卡片错位出现</param>
     public void AnimForShow(float delay = 0f)
@@ -167,9 +169,13 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
         rt.localScale = Vector3.zero;
         rt.anchoredPosition = new Vector2(originalAnchoredPos.x, originalAnchoredPos.y - SHOW_ANIM_RISE_DISTANCE);
 
+        //SetTarget(rt)：让本序列可被 transform.DOKill() 整体杀掉(含延迟中的音效回调)，避免刷新/选中后旧序列残留发声
         DOTween.Sequence()
+            .SetTarget(rt)
             .Join(rt.DOScale(Vector3.one, SHOW_ANIM_DURATION).SetEase(Ease.OutBack, 2.2f))
             .Join(rt.DOAnchorPos(originalAnchoredPos, SHOW_ANIM_DURATION).SetEase(Ease.OutCubic))
+            //延迟结束、动画启动时播放卡片出现音效(每张卡各自播放)
+            .InsertCallback(0f, () => AudioHandler.Instance.PlaySound(AudioEnum.sound_card_8))
             .SetDelay(delay)
             .SetUpdate(UpdateType.Normal, isIndependentUpdate: true);
     }

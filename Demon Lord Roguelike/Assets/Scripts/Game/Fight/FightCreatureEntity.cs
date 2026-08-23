@@ -259,12 +259,15 @@ public partial class FightCreatureEntity
     public void RegainDR(BaseAttackMode baseAttackMode)
     {
         RegainDR(baseAttackMode.attackModeData.attackerId, fightCreatureData.creatureData.creatureUUId, baseAttackMode.attackModeData.attackerDamage,
-            actionForNoDead: (changeHPReal) =>
+            actionForNoDead: (changeDRReal) =>
             {
                 //增加BUFF
                 AddBuff(baseAttackMode);
+                //加甲成功音效：真实加甲>0 才播，走攻击模式配置的命中音效 sound_hit（加甲型攻击模式 500002 配 sound_medicine_1=470001，与4002治疗一致）
+                if (changeDRReal > 0)
+                    AudioHandler.Instance.PlaySound(baseAttackMode.attackModeInfo.sound_hit);
             },
-            actionForDead: (changeHPReal) =>
+            actionForDead: (changeDRReal) =>
             {
 
             }

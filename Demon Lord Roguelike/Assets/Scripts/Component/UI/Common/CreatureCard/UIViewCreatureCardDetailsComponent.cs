@@ -100,5 +100,9 @@ public partial class UIViewCreatureCardDetails
 
     public TextMeshProUGUI ui_RenmarkTextContent;
 
+    public RectTransform ui_ViewCreatureCardItemAttribute_AddDef;
+
+    public TextMeshProUGUI ui_AttributeItemText_AddDef;
+
 
 }

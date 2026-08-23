@@ -71,7 +71,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// <summary>
     /// 生成议会议员
     /// </summary>
-    public async Task<GameObject> CreateDoomCouncilCreature(CreatureBean creatureData, Vector3 creaturePos)
+    public Task<GameObject> CreateDoomCouncilCreature(CreatureBean creatureData, Vector3 creaturePos)
     {
         var targetObj = manager.GetDoomCouncilCreatureObj();
         Transform rendererTF = targetObj.transform.Find("Spine");
@@ -83,7 +83,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         //议员播放待机动画
         float animStartTime = UnityEngine.Random.Range(0f, 1f);
         var animData = SpineHandler.Instance.PlayAnim(skeletonAnimation, SpineAnimationStateEnum.Idle, creatureData, true, animStartTime: animStartTime);
-        return targetObj;
+        return Task.FromResult(targetObj);
     }
     #endregion
 
@@ -91,7 +91,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// <summary>
     /// 生成防御核心生物
     /// </summary>
-    public async Task<FightCreatureEntity> CreateDefenseCoreCreature(CreatureBean creatureData, Vector3 creaturePos)
+    public Task<FightCreatureEntity> CreateDefenseCoreCreature(CreatureBean creatureData, Vector3 creaturePos)
     {
         var targetObj = GetFightCreatureObj(creatureData.creatureId, CreatureFightTypeEnum.FightDefenseCore);
 
@@ -109,7 +109,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         //设置生物BUFF
         List<BuffBean> creatureBuffs = fightCreatureData.creatureData.GetListBuffData(getBuffAttributeBase : false);
         BuffHandler.Instance.AddFightCreatureBuff(creatureBuffs, fightCreatureData.creatureData.creatureUUId, fightCreatureData.creatureData.creatureUUId);
-        return fightCreatureEntity;
+        return Task.FromResult(fightCreatureEntity);
     }
     #endregion
 

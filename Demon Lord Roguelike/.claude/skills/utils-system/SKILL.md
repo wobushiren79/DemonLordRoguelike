@@ -79,7 +79,7 @@ Assets/FrameWork/Scripts/           Assets/Scripts/
 | LoadWWWUtil | WWW 加载 |
 | UnityNewtonsoftJsonSerializer | Unity 适配的 Newtonsoft 序列化 |
 | **异步任务** | |
-| GTask | UniTask 门面（异步等待/发射/取消统一入口）：`Wait`/`WaitReal`（受/不受 timeScale 的秒级等待，负数按0）、`WaitFrame`/`WaitFrames(n)`、`WaitUntil`/`WaitWhile`、`WaitTween`（等 DOTween 播完，Kill/销毁也算结束；均收 `GTaskCancel`，可空=不可取消）、`Run`（Forget 发射，仅用于「方法返回 `UniTask` 供他处 await、个别调用点又要发射即忘」的复用场景；发射即忘专用方法声明 `async UniTaskVoid`、调用点 `_ = Method()` 显式丢弃即可（消除未观察调用警告），OCE 静默、真异常由 UniTaskScheduler 记录，无需 try/catch；禁止 `async void`）、`NewCancel(gameObject)` 建取消源（链接销毁令牌自动收口，懒创建一次复用）+ `GTaskCancel.Reset()` 重建令牌/`Cancel()` 幂等取消（Cancel 后再用返回预取消令牌=立即取消，不 NRE）。`CancellationToken` 为 internal 不外露。详见 CLAUDE.md「异步与定时逻辑规则」 |
+| GTask | UniTask 门面（异步等待/发射/取消统一入口）：`Wait`/`WaitReal`（受/不受 timeScale 的秒级等待，负数按0、≤0仍跨一帧完成非同步返回）、`WaitFrame`/`WaitFrames(n)`/`WaitFrameEnd`（等到本帧 LateUpdate 之后，适合等 UI 布局重建完再读尺寸）、`WaitUntil`/`WaitWhile`、`WaitUntilTimeout`（带超时看门狗的条件等待，返回 bool：true=条件达成/false=超时，防永久挂起；可选 `ignoreTimeScale` 实时计时，timeScale=0 暂停场景必开否则看门狗冻结）、`WaitTween`（等 DOTween 播完，Kill/销毁也算结束；注意 DOTween 池复用：Kill 后勿再持有同一引用；均收 `GTaskCancel`，可空=不可取消）、`Run`（Forget 发射，仅用于「方法返回 `UniTask` 供他处 await、个别调用点又要发射即忘」的复用场景；发射即忘专用方法声明 `async UniTaskVoid`、调用点 `_ = Method()` 显式丢弃即可（消除未观察调用警告），OCE 静默、真异常由 UniTaskScheduler 记录，无需 try/catch；禁止 `async void`）、`WhenAll`/`WhenAny` 组合等待（直通 UniTask，组合本身不接管取消、各任务须自带取消源）、`NewCancel(gameObject)`/`NewCancelFor(Component)` 建取消源（独立命名防 null 字面量重载歧义 CS0121；链接销毁令牌自动收口，懒创建一次复用）+ `GTaskCancel.Reset()` 重建令牌/`Cancel()` 幂等取消（Cancel 后再用返回预取消令牌=立即取消，不 NRE；Cancel 内部先置空字段防回调重入、try/finally 保证 Dispose）。`CancellationToken` 为 internal 不外露。详见 CLAUDE.md「异步与定时逻辑规则」 |
 
 ### Extension（`Assets/FrameWork/Scripts/Extension/`）
 

@@ -50,7 +50,7 @@ public partial class EffectHandler
     /// 支持极短间隔连发多刀/多道雷/多片火交叠(旧落点粒子不消失)；要求粒子为 World 空间模拟 + burst 爆发(Thunder_3/Slash_2/FloorFire_1/Shockwave_1 均已配)。</para>
     /// </summary>
     /// <param name="effectId">EffectInfo 配置表 id</param>
-    /// <param name="param">播放参数(必填 targetPos；duration/startSizeMultiplier/startLifetimeMultiplier 为哨兵默认值 0 时不设置)</param>
+    /// <param name="param">播放参数(必填 targetPos；duration/startSizeMultiplier/startLifetimeMultiplier/direction/size 为哨兵默认值 0 时不设置)</param>
     public void ShowEnduringSingletonEffect(long effectId, SingletonEffectParam param)
     {
         //获取全局唯一粒子实例
@@ -59,6 +59,8 @@ public partial class EffectHandler
             if (targetEffect == null)
                 return;
             targetEffect.transform.position = param.targetPos;
+            //VFX 暴露属性按 EffectInfo 配置注入(刀光等 VFX 老特效的 Speed/LifeTime/Direction/StartPosition 全靠它,不注入则按预制默认值播放→原地不动/方向错/不可见); PS 新粒子配置数据为空自然跳过
+            InjectVfxConfigData(effectId, targetEffect, param);
             if (targetEffect.mainPS != null)
             {
                 //main 为 struct，先拷局部再改；有参数才设置——哨兵默认值(0)的字段保持粒子配置原值
@@ -73,6 +75,50 @@ public partial class EffectHandler
                 targetEffect.mainPS.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             }
             targetEffect.PlayEffect();
+        });
+    }
+
+    /// <summary>
+    /// 把 EffectInfo 的 float/int/vector3/vector4 配置数据写入 VFX 暴露属性(移植自 ShowEffect 的参数逻辑)。
+    /// <para>仅作用 VFX：实例无 VFX 组件或该特效无配置数据时直接返回；{Direction}/{Size}/{StartPosition} 占位项按 param 解析，哨兵值不覆盖。</para>
+    /// </summary>
+    /// <param name="effectId">EffectInfo 配置表 id</param>
+    /// <param name="targetEffect">目标粒子实例</param>
+    /// <param name="param">播放参数(direction 供 {Direction} 占位、size 供 {Size} 占位、targetPos 供 {StartPosition} 基点)</param>
+    private void InjectVfxConfigData(long effectId, EffectBase targetEffect, SingletonEffectParam param)
+    {
+        var targetVisualEffect = targetEffect.GetVisualEffect();
+        if (targetVisualEffect == null)
+            return;
+        var dicEffectData = EffectInfoCfg.GetItemData(effectId).GetEffectItemData();
+        if (dicEffectData.IsNull())
+            return;
+        dicEffectData.ForEach((index, value) =>
+        {
+            switch (value.dataType)
+            {
+                case 1://float
+                    float targetFloatData = value.dataFloat;
+                    if (value.isSize && param.size != 0)
+                        targetFloatData = param.size * targetFloatData;
+                    targetVisualEffect.SetFloat(value.dataName, targetFloatData);
+                    break;
+                case 2://int
+                    int targetIntData = value.dataInt;
+                    if (value.isDirection && param.direction != Direction2DEnum.None)
+                        targetIntData = (int)param.direction;
+                    targetVisualEffect.SetInt(value.dataName, targetIntData);
+                    break;
+                case 5://vector3
+                    Vector3 targetVector3Data = value.dataVector3;
+                    if (value.isStartPosition)
+                        targetVector3Data = param.targetPos + targetVector3Data;
+                    targetVisualEffect.SetVector3(value.dataName, targetVector3Data);
+                    break;
+                case 6://vector4
+                    targetVisualEffect.SetVector4(value.dataName, value.dataVector4);
+                    break;
+            }
         });
     }
     #endregion

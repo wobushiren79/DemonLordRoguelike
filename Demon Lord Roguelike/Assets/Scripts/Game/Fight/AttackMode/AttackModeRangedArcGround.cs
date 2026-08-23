@@ -5,6 +5,7 @@ using UnityEngine;
 /// 抛物线火瓶-地形火焰弹道（深渊馈赠「瓶装炼狱火」）
 /// <para>双状态：飞行(Flying)→到达固定落点→燃烧(Burning)。
 /// 飞行段：抛物线飞向 BUFF 注入的固定落点（不追踪目标，目标中途死亡/移动照飞原落点），纯投掷物不命中任何敌人；
+/// 速度=恒定世界速度（时长=距离/speed_move，托底 MinSegmentTime），弧高随时长等比缩放（ArcHeightPerSecond）保证全程观感速度一致；
 /// 燃烧段：驻留落点，每1秒对半径（配置 collider_area_size[0]，默认1.2）内存活敌人跳一次伤害
 /// （伤害=投掷瞬间魔王ATK×BUFF trigger_value 快照，不暴击、不递减——多片火焰叠加对同一目标多次跳伤），满5秒自毁。</para>
 /// <para>视觉：飞行段 DSP 批量渲染火瓶贴图（visual_name）并自旋（弹体自旋 -720°/s，绕 -Z 轴）；到达燃烧后 visualBucketKey 置空隐藏 DSP 弹体，
@@ -21,6 +22,10 @@ public class AttackModeRangedArcGround : AttackModeRangedArc
     private const float TickInterval = 1f;
     /// <summary>飞行段最短时长（秒）：短距离按距离折算的时长过短，抛物线竖直速度∝弧高/距离会被放大，设时长下限托底保证投掷动画观感</summary>
     private const float MinSegmentTime = 0.5f;
+    /// <summary>弧高随飞行时长缩放比率（弧高 = 时长 × 本值）：竖直峰值速度 = 4×弧高/时长 = 4×本值 全程恒定，
+    /// 配合水平恒定世界速度，任何距离的合成观感速度一致（消除固定弧高下"距离越近蹿得越快"的错觉）；
+    /// 1.5 的取值使远距离(时长2s)弧高=3，与旧版固定弧高的远距观感一致</summary>
+    private const float ArcHeightPerSecond = 1.5f;
     /// <summary>弹体自旋速度（度/秒；负值绕 -Z 轴，飞行段火瓶旋转）</summary>
     private const float SpinSpeed = -720f;
     #endregion
@@ -45,6 +50,10 @@ public class AttackModeRangedArcGround : AttackModeRangedArc
     private float tickTimer;
     /// <summary>当前分段距离（progress 归一化用，保证恒定世界速度）</summary>
     private float segmentDistance;
+    /// <summary>飞行段时长（StartAttackBase 按距离/速度+托底算好缓存，供弧高缩放与 progress 推进共用）</summary>
+    private float segmentTime;
+    /// <summary>本次飞行弧高（= segmentTime × ArcHeightPerSecond，随时长等比缩放保证竖直速度恒定）</summary>
+    private float currentArcHeight;
     /// <summary>燃烧落点（=BUFF 注入的固定 targetPos）</summary>
     private Vector3 centerPos;
     /// <summary>燃烧判定半径（配置 collider_area_size[0]，默认 1.2）</summary>
@@ -68,7 +77,7 @@ public class AttackModeRangedArcGround : AttackModeRangedArc
 
     #region 开始攻击
     /// <summary>
-    /// 开始攻击基础：缓存固定落点/分段距离/燃烧半径，状态归位飞行
+    /// 开始攻击基础：缓存固定落点/分段距离/飞行时长/弧高（随时长缩放）/燃烧半径，状态归位飞行
     /// </summary>
     public override void StartAttackBase()
     {
@@ -78,6 +87,9 @@ public class AttackModeRangedArcGround : AttackModeRangedArc
         tickTimer = 0;
         centerPos = attackModeData.targetPos;
         segmentDistance = Vector3.Distance(attackModeData.startPos, attackModeData.targetPos);
+        //飞行时长=距离/速度（托底最短时长），弧高随时长等比缩放（竖直速度恒定，全程观感速度一致）
+        segmentTime = Mathf.Max(segmentDistance / GetMoveSpeed(), MinSegmentTime);
+        currentArcHeight = segmentTime * ArcHeightPerSecond;
         float[] arrAreaSize = attackModeInfo.GetColliderAreaSize();
         if (arrAreaSize != null && arrAreaSize.Length > 0 && arrAreaSize[0] > 0)
             fireRadius = arrAreaSize[0];
@@ -117,18 +129,17 @@ public class AttackModeRangedArcGround : AttackModeRangedArc
     }
 
     /// <summary>
-    /// 抛物线移动：分段时长 = max(距离/速度, MinSegmentTime) 保证恒定世界速度与投掷动画下限；到达终点切燃烧
+    /// 抛物线移动：progress 按缓存的 segmentTime 推进（恒定世界速度+托底下限），弧高随时长缩放保证全程观感速度一致；到达终点切燃烧
     /// </summary>
     private void HandleForMoveFlying()
     {
         if (progress < 1f)
         {
-            float segmentTime = Mathf.Max(segmentDistance / GetMoveSpeed(), MinSegmentTime);
             progress += GameFightLogic.GetFightDeltaTime() / segmentTime;
             float p = Mathf.Min(progress, 1f);
             float parabola = 1f - 4f * (p - 0.5f) * (p - 0.5f);
             Vector3 nextPos = Vector3.Lerp(attackModeData.startPos, attackModeData.targetPos, p);
-            nextPos.y += parabola * arcHeight;
+            nextPos.y += parabola * currentArcHeight;
             SetPosition(nextPos);
         }
         else

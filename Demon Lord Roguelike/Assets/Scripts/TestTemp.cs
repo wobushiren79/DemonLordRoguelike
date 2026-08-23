@@ -1,11 +1,10 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Spine.Unity;
 using UnityEngine;
 public class TestTemp : MonoBehaviour
 {
     public SkeletonAnimation skeletonAnimation;
-    public async Task OnGUI()
+    public void OnGUI()
     {
         if (GUILayout.Button("Test"))
         {

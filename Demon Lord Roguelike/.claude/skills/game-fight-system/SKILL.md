@@ -181,7 +181,7 @@ public partial class FightCreatureEntity
     // 回复HP
     public void RegainHP(BaseAttackMode baseAttackMode);
     
-    // 回复护甲
+    // 回复护甲（真实加甲>0 时播攻击模式配置的命中音效 sound_hit，加甲型 500002 配 sound_medicine_1=470001，与治疗一致）
     public void RegainDR(BaseAttackMode baseAttackMode);
     
     // 添加BUFF
@@ -285,6 +285,8 @@ public virtual void CheckGameEnd()
     }
 }
 ```
+
+> **调用时机注意**：`CheckGameEnd()` 由死亡结束事件（`GameFightLogic_CreatureDeadEnd`）**延迟一帧**触发（`CheckGameEndNextFrame()`，GTask.WaitFrame）。因为 BUFF 契约要求死亡事件先于 `RemoveFightCreatureEntity` 派发（见 `AIIntentCreatureDead`），同步检测会把"已死未移除"的怪误判为场上仍有敌人，导致胜利永不结算。
 
 ## 战斗场景控制
 

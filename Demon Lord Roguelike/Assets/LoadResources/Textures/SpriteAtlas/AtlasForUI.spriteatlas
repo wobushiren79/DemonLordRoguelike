@@ -138,6 +138,7 @@ SpriteAtlas:
     - e929f1fad1fa61645accc15f3b16aa61: 21300000
     - 4e414f0b94e653e44aa290822c5afec2: 21300000
     - 6b0e791b0741f8646b29c04dc63552ce: 21300000
+    - c307082bff71dde4eb14363b935242b0: 21300000
     - 648b3d2b9d9278f48bace4aaee0fad8f: 21300000
     - 1aa90c3b1a3c4f546be4973d2d0fa994: 21300000
     - 53a7634b306d38846a92cb39c689610b: 21300000
@@ -148,6 +149,7 @@ SpriteAtlas:
     - 2c4e156b00379cb429691bd82c820416: 21300000
     - 4ab1ca6b1ba228d41bbb5cdfc5793b51: 21300000
     - d045627b94fd56c40bf3dcc561ce60a8: 21300000
+    - 6111f47b06d8a8441b99940e351ce15e: 21300000
     - dc70749b57179be4fac7f5d01f995642: 21300000
     - 8bf22fbb241cc0449a5ac4c5033dabdf: 21300000
     - e721f9cb18e697b438ff0cb311513634: 21300000
@@ -271,6 +273,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: e929f1fad1fa61645accc15f3b16aa61, type: 3}
   - {fileID: 21300000, guid: 4e414f0b94e653e44aa290822c5afec2, type: 3}
   - {fileID: 21300000, guid: 6b0e791b0741f8646b29c04dc63552ce, type: 3}
+  - {fileID: 21300000, guid: c307082bff71dde4eb14363b935242b0, type: 3}
   - {fileID: 21300000, guid: 648b3d2b9d9278f48bace4aaee0fad8f, type: 3}
   - {fileID: 21300000, guid: 1aa90c3b1a3c4f546be4973d2d0fa994, type: 3}
   - {fileID: 21300000, guid: 53a7634b306d38846a92cb39c689610b, type: 3}
@@ -281,6 +284,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 2c4e156b00379cb429691bd82c820416, type: 3}
   - {fileID: 21300000, guid: 4ab1ca6b1ba228d41bbb5cdfc5793b51, type: 3}
   - {fileID: 21300000, guid: d045627b94fd56c40bf3dcc561ce60a8, type: 3}
+  - {fileID: 21300000, guid: 6111f47b06d8a8441b99940e351ce15e, type: 3}
   - {fileID: 21300000, guid: dc70749b57179be4fac7f5d01f995642, type: 3}
   - {fileID: 21300000, guid: 8bf22fbb241cc0449a5ac4c5033dabdf, type: 3}
   - {fileID: 21300000, guid: e721f9cb18e697b438ff0cb311513634, type: 3}
@@ -403,6 +407,7 @@ SpriteAtlas:
   - ui_creature_star_1
   - ui_next_1
   - ui_other_4
+  - ui_creature_attribute_8
   - ui_icon_2
   - ui_icon_1
   - ui_book_1
@@ -413,6 +418,7 @@ SpriteAtlas:
   - ui_creature_class_4
   - ui_creature_class_1
   - ui_slider_6
+  - ui_class_16
   - ui_equip_11
   - ui_relationship_1
   - ui_relationship_2

@@ -51,8 +51,8 @@ public partial class EffectManager
     public Color colorDamageCRT = new Color(0.698f, 0.133f, 0.133f);
     //HP颜色
     public Color colorHPAdd = new Color(0.196f, 0.804f, 0.196f);
-    //DR颜色
-    public Color colorDRAdd = new Color(0.255f, 0.412f, 1f);
+    //DR颜色(偏灰,呼应加甲粒子 Effect_Buff_Def_1 的灰色调)
+    public Color colorDRAdd = new Color(0.75f, 0.75f, 0.75f);
     #endregion
 
     #region 献祭动画句柄

@@ -569,6 +569,8 @@ MonoBehaviour:
   textureMode: 0
   atlasTexture: {fileID: 2800000, guid: 0b12c4e950869c040b25b5d56e848442, type: 3}
   atlasGrid: {x: 3, y: 1}
+  atlasUseAllCells: 1
+  atlasSelectedCells: []
   manualRects: []
   textureList: []
   packAtlasSize: 1024
@@ -1032,7 +1034,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6c83e777a76cad42b0d285288d8456e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlowerSeaInstanceRenderer
-  rangeSize: {x: 100, y: 100}
+  rangeSize: {x: 50, y: 50}
   flowerCount: 6123
   randomSeed: 12345
   gridCells: {x: 10, y: 1}
@@ -1040,8 +1042,18 @@ MonoBehaviour:
   yOffset: 0.001
   generateOnEnable: 1
   textureMode: 0
-  atlasTexture: {fileID: 2800000, guid: 0b12c4e950869c040b25b5d56e848442, type: 3}
-  atlasGrid: {x: 3, y: 1}
+  atlasTexture: {fileID: 2800000, guid: 217ef2b0c3c5a7e4bbc8ca38a1b5ea60, type: 3}
+  atlasGrid: {x: 8, y: 4}
+  atlasUseAllCells: 0
+  atlasSelectedCells:
+  - {x: 0, y: 0}
+  - {x: 1, y: 0}
+  - {x: 2, y: 0}
+  - {x: 3, y: 0}
+  - {x: 4, y: 0}
+  - {x: 5, y: 0}
+  - {x: 6, y: 0}
+  - {x: 7, y: 0}
   manualRects: []
   textureList: []
   packAtlasSize: 1024

@@ -87,7 +87,7 @@ Idle → Move → Attack → Dead
  └───────────────┘
 ```
 - **进攻生物出生线守卫**：`AIIntentAttackCreatureMove` 在"找到目标→切 `AttackCreatureAttack`"处加了位置判定——自身 `x > 10.5`（出生线 x≈11.5 附近）时**不进入攻击意图**，保留目标并继续向左推进，直到 `x <= 10.5` 才允许切攻击。
-- **进攻生物打魔王（核心）专用路径**：敌人（近战/远程一视同仁）**不会用 AttackMode 攻击魔王**。`AIIntentAttackCreatureMove` 的核心分支持续向魔王推进，当与魔王距离 `< AIIntentAttackCreatureMove.CloseCoreDistance`(0.25) 时切到 `AttackCreatureAttackCore`；该意图固定播放一次攻击动作（`GetAttackAnimTime` 缺省用 0.5s 保底），出手时对魔王播出血特效并直接 `coreCreature.SetCreatureDead()` 让魔王死亡（不经任何 AttackMode），随后核心走 `DefenseCoreCreatureDead` 死亡意图，死亡结束事件驱动 `GameFightLogic.CheckGameEnd()` 判定战斗失败、游戏结束。原因：远程弹道靠 layer 掩码只检测 `CreatureDef` 层，而魔王核心在默认层 layer0，弹道本就打不到；近战原本直接结算能打死核心——现统一改为"靠近即固定处决"，让近远程行为一致。
+- **进攻生物打魔王（核心）专用路径**：敌人（近战/远程一视同仁）**不会用 AttackMode 攻击魔王**。`AIIntentAttackCreatureMove` 的核心分支持续向魔王推进，当与魔王距离 `< AIIntentAttackCreatureMove.CloseCoreDistance`(0.25) 时切到 `AttackCreatureAttackCore`；该意图固定播放一次攻击动作（`GetAttackAnimTime` 缺省用 0.5s 保底），进意图时播出手挥击音（`sound_knife_miss_3`，与近战攻击模式主流 sound_start=100003 一致），出手时对魔王播出血特效+击中音效（`sound_hit_1`/`sound_hit_3` 随机，PlaySound 0.1s 同音去重防多单位叠音）并直接 `coreCreature.SetCreatureDead()` 让魔王死亡（不经任何 AttackMode，故音效不走配置表的 sound_start/sound_hit、由本链路硬编码播放），随后核心走 `DefenseCoreCreatureDead` 死亡意图，死亡结束事件驱动 `GameFightLogic.CheckGameEnd()` 判定战斗失败、游戏结束。原因：远程弹道靠 layer 掩码只检测 `CreatureDef` 层，而魔王核心在默认层 layer0，弹道本就打不到；近战原本直接结算能打死核心——现统一改为"靠近即固定处决"，让近远程行为一致。
   - **多单位并发**：允许多个进攻生物同时靠近并各自播攻击动作，但"魔王出血死亡"全局只结算一次——`KillDefenseCore` 内 `IsDead()` 守卫拦截同帧/后续单位的重复致死；魔王已被他人处决时本单位直接回 `AttackCreatureIdle`，不空转、不重复播出血/结束游戏。
 
 ## 新增意图模板

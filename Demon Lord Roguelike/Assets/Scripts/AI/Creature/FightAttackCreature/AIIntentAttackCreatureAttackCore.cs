@@ -42,6 +42,8 @@ public class AIIntentAttackCreatureAttackCore : AIBaseIntent
         //固定播放一次攻击动作(非循环), 结束后回到待机避免定格在最后一帧
         selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Attack, false);
         selfCreatureEntity.AddAnim(0, SpineAnimationStateEnum.Idle, true, 1);
+        //出手音效(本链路不走AttackMode 无配置sound_start可播, 统一用近战通用的挥击音 与攻击模式主流sound_start=100003一致)
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_knife_miss_3);
         //攻击出手时长: 到点结算魔王死亡(配置缺省时用保底值)
         float animTime = selfCreatureEntity.fightCreatureData.creatureData.GetAttackAnimTime();
         timeForAttackCD = animTime > 0 ? animTime : AttackTimeFallback;
@@ -106,6 +108,8 @@ public class AIIntentAttackCreatureAttackCore : AIBaseIntent
             return;
         //魔王出血特效(方向指向魔王 即左)
         EffectHandler.Instance.ShowBloodEffect(coreCreature.creatureObj.transform.position + new Vector3(0, 0.5f, 0), Vector3.left);
+        //击中音效(本链路不走AttackMode/UnderAttack 无配置sound_hit可播 需自行播放; PlaySound带0.1s同音去重, 多单位同帧到点不叠音)
+        AudioHandler.Instance.PlaySoundRandom(AudioEnum.sound_hit_1, AudioEnum.sound_hit_3);
         //直接判定魔王死亡→切换核心死亡意图, 由死亡结束事件驱动游戏结束检测
         coreCreature.SetCreatureDead();
     }

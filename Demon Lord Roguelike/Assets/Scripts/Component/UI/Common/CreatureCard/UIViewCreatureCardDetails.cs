@@ -325,8 +325,8 @@ public partial class UIViewCreatureCardDetails : BaseUIView
 
     /// <summary>
     /// 设置属性显示
-    /// <para>非魔王：生命/防御/攻击/攻速；魔王：攻击/移速/魔力/魔力回复（生命、防御项隐藏，魔力、魔力回复项显示）。</para>
-    /// <para>治疗型生物(攻击方式为恢复类)：隐藏攻击力条目，改显示治疗量条目(AddLife)，值=当前ATK×攻击模式伤害加成倍率。</para>
+    /// <para>非魔王：生命/防御/攻击/攻速；魔王：攻击/移速/魔力/魔力回复（生命、防御项隐藏，魔力、魔力回复项显示；加血/加护甲回复项固定不显示）。</para>
+    /// <para>回复型生物(攻击方式为恢复类)：隐藏攻击力条目，按回复子类改显示治疗量条目(AddLife，RegainHP系)或回甲量条目(AddDef，RegainDR系)，值=当前ATK×攻击模式伤害加成倍率。</para>
     /// <para>详情面板按「含深渊馈赠全局池」口径取属性(includeAbyssalBlessing=true)，与场上实际数值一致(如随机一只攻击力翻倍)。</para>
     /// </summary>
     /// <param name="isDemonLord">是否为魔王本体</param>
@@ -337,9 +337,13 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         ui_ViewCreatureCardItemAttribute_Def.gameObject.SetActive(!isDemonLord);
         ui_ViewCreatureCardItemAttribute_MP.gameObject.SetActive(isDemonLord);
         ui_ViewCreatureCardItemAttribute_MPR.gameObject.SetActive(isDemonLord);
+        //加血/加护甲条目先统一隐藏：魔王固定不显示，非魔王由下方按回复子类再开（防详情面板池化复用残留）
+        ui_ViewCreatureCardItemAttribute_AddLife.gameObject.SetActive(false);
+        ui_ViewCreatureCardItemAttribute_AddDef.gameObject.SetActive(false);
         if (isDemonLord)
         {
-            //Speed项在魔王处复用显示移速MSPD（MSPD与ASPD共用一套Speed UI），MPR项显示魔力回复MPF
+            //Speed项在魔王处复用显示移速MSPD（MSPD与ASPD共用一套Speed UI），MPR项显示魔力回复MPF；Atk槽显式置开防池化复用后空白
+            ui_ViewCreatureCardItemAttribute_Atk.gameObject.SetActive(true);
             ui_AttributeItemText_Atk.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true)}";
             ui_AttributeItemText_Speed.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MSPD, true)}";
             ui_AttributeItemText_MP.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MP, true)}";
@@ -347,19 +351,29 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         }
         else
         {
-            //治疗型：隐藏攻击力条目，改显示治疗量条目；非治疗型反之
-            bool isRegain = creatureData.creatureInfo.IsRegainAttackMode();
-            ui_ViewCreatureCardItemAttribute_Atk.gameObject.SetActive(!isRegain);
-            ui_ViewCreatureCardItemAttribute_AddLife.gameObject.SetActive(isRegain);
+            //回复型：隐藏攻击力条目，按回复子类改显示治疗量(AddLife)或回甲量(AddDef)条目；非回复型正常显示攻击力
+            bool isRegainHP = creatureData.creatureInfo.IsRegainHPAttackMode();
+            bool isRegainDR = creatureData.creatureInfo.IsRegainDRAttackMode();
+            ui_ViewCreatureCardItemAttribute_Atk.gameObject.SetActive(!isRegainHP && !isRegainDR);
+            ui_ViewCreatureCardItemAttribute_AddLife.gameObject.SetActive(isRegainHP);
+            ui_ViewCreatureCardItemAttribute_AddDef.gameObject.SetActive(isRegainDR);
             //Speed项在非魔王处显示攻速ASPD
             ui_AttributeItemText_Life.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.HP, true)}";
             ui_AttributeItemText_Def.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.DR, true)}";
-            if (isRegain)
+            if (isRegainHP || isRegainDR)
             {
-                //治疗量=当前ATK×攻击模式伤害加成倍率(配置0=按1倍)，与战斗实际恢复量口径一致
+                //回复量=当前ATK×攻击模式伤害加成倍率(配置0=按1倍)，与战斗实际恢复量口径一致
                 var attackModeInfo = AttackModeInfoCfg.GetItemData(creatureData.creatureInfo.attack_mode);
                 float damageAddRate = attackModeInfo != null ? attackModeInfo.GetDamageAddRate() : 1f;
-                ui_AttributeItemText_AddLife.text = $"{(int)(creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true) * damageAddRate)}";
+                int regainValue = (int)(creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true) * damageAddRate);
+                if (isRegainDR)
+                {
+                    ui_AttributeItemText_AddDef.text = $"{regainValue}";
+                }
+                else
+                {
+                    ui_AttributeItemText_AddLife.text = $"{regainValue}";
+                }
             }
             else
             {
@@ -403,6 +417,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
 
     /// <summary>
     /// 刷新UI布局
+    /// <para>Details 下的内容容器(DetailsBase/NameDoomCouncil/RenmarkText/Details_Child_1/Level/Equip/Buff)全部隐藏时,Details 面板自身也一起隐藏(如魔王:等级/详情基础/称号关系等均不显示,装备与BUFF也为空时整个面板无内容,防残留空面板)。</para>
     /// </summary>
     public void RefreshUILayout()
     {
@@ -415,6 +430,17 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         {
             ui_Details_Child_1.gameObject.SetActive(true);
         }
+        //Details 下直接子容器全部隐藏时,Details 面板一起隐藏;有任一内容显示则保持/恢复显示
+        bool isAllDetailsContentHide = true;
+        for (int i = 0; i < ui_Details.childCount; i++)
+        {
+            if (ui_Details.GetChild(i).gameObject.activeSelf)
+            {
+                isAllDetailsContentHide = false;
+                break;
+            }
+        }
+        ui_Details.gameObject.SetActive(!isAllDetailsContentHide);
         //刷新UI
         UGUIUtil.RefreshUISize(ui_Details);
     }

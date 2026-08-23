@@ -286,13 +286,14 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     }
 
     /// <summary>
-    /// 点击选择-播放选中动画（被选卡放大强调→收缩，其余卡缩小消失），动画结束后再触发回调
+    /// 点击选择-播放选中音效与选中动画（被选卡放大强调→收缩，其余卡缩小消失），动画结束后再触发回调
     /// </summary>
     public void OnClickForSelect(UIViewFightAbyssalBlessingItem selectedView, AbyssalBlessingInfoBean abyssalBlessingInfo)
     {
         if (isAnimating) return;
         isAnimating = true;
         UIHandler.Instance.ShowScreenLock();
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_card_5);
 
         int childCount = ui_AbyssalBlessingList.childCount;
         for (int i = 0; i < childCount; i++)

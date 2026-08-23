@@ -204,9 +204,16 @@ public class GashaponMachineLogic : BaseGameLogic
         AnimForEggPunch(targetEggObj);
     }
 
+    /// <summary>
+    /// 清理游戏
+    /// </summary>
     public override async Task ClearGame()
     {
-        CameraHandler.Instance.SetGashaponMachineCamera(0, false);
+        //ClearWorldData 先卸载场景再清逻辑，此时摄像头已随场景销毁，仅场景仍在时才需还原（否则报"没有找到对应场景"）
+        if (WorldHandler.Instance.GetCurrentScene() != null)
+        {
+            CameraHandler.Instance.SetGashaponMachineCamera(0, false);
+        }
         if (!listEggObjPool.IsNull())
         {
             for (int i = 0; i < listEggObjPool.Count; i++)

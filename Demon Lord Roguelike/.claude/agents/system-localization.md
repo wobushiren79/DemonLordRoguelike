@@ -104,4 +104,4 @@ string desc = TextHandler.Instance.GetTextReplace(template, dic); // "累计击�
 - **同一模板套不同数值**：把"一个成就多个等级目标"做成一条带 `{Name}` 的模板，按级替换即可（成就系统正是此用法）；省去逐级建文本。
 - 模板里写死的文案（数字、单位、"只生物"等）原样保留；字典给哪个键替换哪个占位符。
 - **选键原则**：有语义占位优先语义占位（击杀 `{KillNum}`、秒 `{Time_S}`、百分比 `{Percentage}`），无合适语义用通用 `{Value}`，都不合适再在 `TextReplaceEnum` 追加新枚举（不改旧值）。
-- 范例：`UIViewBuffShowItem`（BUFF 描述 `content_language` + 多个占位符）、成就 `AchievementInfoBean.GetLevelDescription`、研究节点 `ResearchInfoBeanPartial.GetNameLanguageWithLevelDetail`（名称模板 `空格突进（距离{Value}）` 按待解锁等级动态填距离/冷却，数值源 `UserUnlockBean.SPACE_DASH_*` 常量）。详见 [localization-system] skill。
+- 范例：`UIViewBuffShowItem`（BUFF 描述 `content_language` + 多个占位符）、成就 `AchievementInfoBean.GetLevelDescription`、研究节点 `ResearchInfoBeanPartial.GetNameLanguageWithLevelDetail`（名称模板 `控制魔王时可进行突进（距离{Value}）` 按待解锁等级动态填距离/冷却，数值源 `UserUnlockBean.SPACE_DASH_*` 常量）。详见 [localization-system] skill。

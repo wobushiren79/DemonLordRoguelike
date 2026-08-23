@@ -28,13 +28,13 @@ public class GameFightLogicTest : GameFightLogic
     /// <para>测试馈赠必须在防守核心创建后才能添加(BuffHandler.AddAbyssalBlessing 以核心为BUFF目标)；
     /// 测试模式馈赠随每场战斗重建，先 ClearAbyssalBlessing 避免可重复馈赠跨场叠加。</para>
     /// </summary>
-    public override async Task PreGameForAfterCreateDefenseCore()
+    public override Task PreGameForAfterCreateDefenseCore()
     {
         //清理深渊馈赠数据(测试馈赠不跨场保留)
         BuffHandler.Instance.manager.ClearAbyssalBlessing();
         FightBeanForTest fightBeanForTest = fightData as FightBeanForTest;
         if (fightBeanForTest == null)
-            return;
+            return Task.CompletedTask;
         //添加测试深渊馈赠
         if (!fightBeanForTest.testAbyssalBlessingIds.IsNull())
         {
@@ -58,6 +58,7 @@ public class GameFightLogicTest : GameFightLogic
         {
             defCoreData.dicAttribute[CreatureAttributeTypeEnum.MP] = fightBeanForTest.testDemonLordMP;
         }
+        return Task.CompletedTask;
     }
 
     /// <summary>

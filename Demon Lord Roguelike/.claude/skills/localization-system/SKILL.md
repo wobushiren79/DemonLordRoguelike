@@ -512,7 +512,7 @@ TextReplaceEnum
 
 - **BUFF 描述**：`UIViewBuffShowItem` —— `content_language` 模板 + `{Percentage}`/`{Time_S}`/`{Value}` + 按前置条件追加 `{KillNum}` 等键。
 - **成就逐级描述**：`AchievementInfoBeanPartial.GetLevelDescription` —— 一条 `{Name}` 模板按等级替换目标值，省去逐级建文本。
-- **研究节点名称带待解锁数值**：`ResearchInfoBeanPartial.GetNameLanguageWithLevelDetail` —— 模板 `空格突进（距离{Value}）`/`突进冷却（{Value}秒）`，按「待解锁等级=min(当前+1,满级)」算数值替换，每级只显示要解锁那一级；数值源 `UserUnlockBean.SPACE_DASH_*` 常量（控制层同引用，单一真实源）。
+- **研究节点名称带待解锁数值**：`ResearchInfoBeanPartial.GetNameLanguageWithLevelDetail` —— 模板 `控制魔王时可进行突进（距离{Value}）`/`突进冷却（{Value}秒）`，按「待解锁等级=min(当前+1,满级)」算数值替换，每级只显示要解锁那一级；数值源 `UserUnlockBean.SPACE_DASH_*` 常量（控制层同引用，单一真实源）。
 
 ---
 
@@ -552,7 +552,7 @@ LanguageEnum langEnum = GameDataHandler.Instance.manager.GetGameConfig().GetLang
 
 ```csharp
 // 方案1：遍历所有UITextLanguageView组件
-UITextLanguageView[] textViews = FindObjectsOfType<UITextLanguageView>();
+UITextLanguageView[] textViews = FindObjectsByType<UITextLanguageView>(FindObjectsSortMode.None);
 foreach (var view in textViews)
 {
     view.RefreshUI();

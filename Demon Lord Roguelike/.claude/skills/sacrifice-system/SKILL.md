@@ -30,7 +30,7 @@ watched_files:
 献祭升级需要解锁祭坛：`UnlockEnum.Altar = 100100001`（`Assets/Scripts/Enums/GameStateEnum.cs`）。未解锁时 `UICreatureManager` 的献祭升级按钮恒隐藏；祭坛场景对象显隐见 `ScenePrefabForBase`（`isUnlockAltar`）。
 
 ### 祭品数量研究（增加献祭祭品上限）
-献祭可选祭品上限可通过研究模块「设施」类节点提升：研究 `UnlockEnum.SacrificeNum = 100100002`（前置 = 开启献祭设施 `Altar`），`level_max=10`，每级 +1 祭品上限，水晶消耗 1000~10000（每级递增 1000）。上限计算统一走 `UserUnlockBean.GetUnlockSacrificeMax()` = `sacrificeMax`(基础 5) + 该研究等级，满级 5+10=15。配置见 `excel_research_info`/`excel_unlock_info`/`excel_language` 的 id=100100002 行。详见 research-system skill。
+献祭可选祭品上限可通过研究模块「设施」类节点提升：研究 `UnlockEnum.SacrificeNum = 100100002`（前置 = 开启献祭设施 `Altar`），`level_max=12`，每级 +1 祭品上限，水晶消耗 1000~12000（每级递增 1000）。上限计算统一走 `UserUnlockBean.GetUnlockSacrificeMax()` = `sacrificeMax`(基础 3) + 该研究等级，满级 3+12=15。配置见 `excel_research_info`/`excel_unlock_info`/`excel_language` 的 id=100100002 行。详见 research-system skill。
 
 ### 保底/不同id 成功率研究（影响成功率公式）
 两个「设施」类研究节点(前置均 = 开启献祭设施 `Altar`，`level_max=10`，水晶消耗 `100,500,1000,5000,10000,20000,30000,40000,50000,100000`)直接决定成功率与保底：
@@ -213,7 +213,7 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
     └── ui_BtnConfirm                             // 确认按钮(无 exit 退出按钮);剩余>0 ToastHint 拦截,剩余=0 弹二次确认弹窗(textId 61006)确认后保存
 ```
 
-- 选择上限：`UserUnlockBean.GetUnlockSacrificeMax()` = `UserLimmitBean.sacrificeMax`（基础默认 5）+ 「增加祭品数量」研究等级（`UnlockEnum.SacrificeNum = 100100002`，研究 `level_max=10`，满级即 5+10=15）。`UICreatureSacrifice` 的 `RefreshUI`/`EventForCardClickSelect` 两处上限判定都走此方法，不要再直接读 `limmitData.sacrificeMax`
+- 选择上限：`UserUnlockBean.GetUnlockSacrificeMax()` = `UserLimmitBean.sacrificeMax`（基础默认 3）+ 「增加祭品数量」研究等级（`UnlockEnum.SacrificeNum = 100100002`，研究 `level_max=12`，满级即 3+12=15）。`UICreatureSacrifice` 的 `RefreshUI`/`EventForCardClickSelect` 两处上限判定都走此方法，不要再直接读 `limmitData.sacrificeMax`
 - 成功率显示：`SetSuccessRate(GetCurrentSuccessRate())`，`GetCurrentSuccessRate` 调 `CreatureUtil.GetSacrificeSuccessRate`；进度条颜色按成功率分5段（`GetSuccessRateColor` 现仅转发 `ColorUtil.GetProgressColor`：0-20%红`#C0392B`、20-40%橙`#E67E22`、40-60%黄`#F1C40F`、60-80%浅绿`#2ECC71`、80-100%蓝`#3498DB`，配色单一真实源在 ColorUtil，与孵化缸进阶BUFF概率共用），随 `DOColor`/`DOFillAmount` 0.5s 同步渐变
 - 升级经验条：`UIViewCreatureCardDetails.SetLevelData(level, levelExp)`，用 `LevelInfoCfg.GetItemData(level+1).level_exp` 算百分比
 - 魔汁使用：背包道具点击 `EventForItemBackpackClickSelect` 对 `ItemTypeEnum.Juice`(=11) 类型分流到 `UseJuiceItem`（`#region 魔汁使用`）——确认弹窗（textId 61014「是否对{0}使用魔汁？经验+{1}」）→ 选中生物 `levelExp += itemData.juicerExp` + 消耗道具 + 落盘；满级 Toast（61015）拦截防浪费；魔王/无选中兜底拦截。其余道具照旧走装备 `SetCreatureEquip`。详见 juicer-system Skill

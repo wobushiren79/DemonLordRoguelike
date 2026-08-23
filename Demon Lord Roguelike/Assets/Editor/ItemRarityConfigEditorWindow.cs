@@ -105,9 +105,6 @@ public class ItemRarityConfigEditorWindow : EditorWindow
     /// <summary>搜索关键字(按名字模糊)</summary>
     private string searchKey = "";
 
-    /// <summary>道具类型筛选(0=全部)</summary>
-    private int filterItemType = 0;
-
     /// <summary>类型下拉项标签</summary>
     private string[] itemTypeLabels;
 

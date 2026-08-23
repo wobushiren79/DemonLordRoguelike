@@ -110,6 +110,24 @@ public partial class CreatureInfoBean
     }
 
     /// <summary>
+    /// 该生物是否为加血型回复（攻击方式 attack_mode 为 AttackModeRegainHP 系）
+    /// </summary>
+    public bool IsRegainHPAttackMode()
+    {
+        var attackModeInfo = AttackModeInfoCfg.GetItemData(attack_mode);
+        return attackModeInfo != null && attackModeInfo.IsRegainHPType();
+    }
+
+    /// <summary>
+    /// 该生物是否为加护甲型回复（攻击方式 attack_mode 为 AttackModeRegainDR 系）
+    /// </summary>
+    public bool IsRegainDRAttackMode()
+    {
+        var attackModeInfo = AttackModeInfoCfg.GetItemData(attack_mode);
+        return attackModeInfo != null && attackModeInfo.IsRegainDRType();
+    }
+
+    /// <summary>
     /// 是否可搜索并转身攻击身后敌人（正面无目标时才向身后补搜，范围与正面一致）
     /// </summary>
     public bool IsAttackSearchBack()

@@ -148,7 +148,7 @@ public ResearchInfoTypeEnum GetResearchType();
 // researchLevel 越界会被钳制到 [1, arrayPayCrystal.Length]
 public long GetPayCrystal(int researchLevel);
 
-// 获取带「待解锁等级数值详情」的研究名称(如 空格突进（距离1.5）/突进冷却（2.5秒）)
+// 获取带「待解锁等级数值详情」的研究名称(如 控制魔王时可进行突进（距离1.5）/突进冷却（2.5秒）)
 // 仅对多语言模板含 {Value} 占位的节点生效(当前为 SpaceDash/SpaceDashCD),其余原样返回 name_language;
 // 数值取 待解锁等级=min(当前等级+1,level_max) 的效果值(每级只显示当前要解锁那一级),满级停留在满级数值;
 // 替换走通用机制 TextHandler.GetTextReplace + TextReplaceEnum.Value(与成就 GetLevelDescription 同口径)
@@ -236,7 +236,7 @@ public enum UnlockEnum : long
     CreatureVatAddProgress = 100000007,// 生物进阶-魔晶加速研究(恒消耗1魔晶,研究等级=每次进度增加秒数=进度倍率; 0级隐藏加速按钮, level_max=5)
     CreatureVatMaterialNum = 100000008,// 生物进阶-素材魔物可选上限+1(每级+1, 基础5, level_max=5, 满级10)
     Altar = 100100001,                 // 祭坛
-    SacrificeNum = 100100002,          // 增加献祭祭品数量(+1/级, level_max=10)
+    SacrificeNum = 100100002,          // 增加献祭祭品数量(+1/级, level_max=12, 基础3满级15)
     SacrificePityRate = 100100003,     // 献祭失败保底概率提升(+5%/级, level_max=10)
     SacrificeDifferentIdRate = 100100004, // 不同魔物献祭成功率提升(+5%/级, level_max=10)
     DoomCouncil = 100200001,           // 终焉议会模块
@@ -430,7 +430,7 @@ public int GetUnlockGameWorldConquerDifficultyLevel(long worldId); // 最高可�
 public int GetUnlockCreatureVatNum();                  // 未解锁返回 0；已解锁返回 1+CreatureVatAdd
 public int GetUnlockCreatureVatAddProgressLevel();     // 生物进阶魔晶加速研究等级(0~5)；恒消耗1魔晶,等级=每次进度增加秒数=进度倍率，0级隐藏加速按钮
 public int GetUnlockCreatureVatMaterialMax();          // 进阶素材可选上限 = 5(creatureVatMaterialMax) + CreatureVatMaterialNum 等级(满级 10)
-public int GetUnlockSacrificeMax();                    // 献祭祭品选择上限 = 5(sacrificeMax) + SacrificeNum 等级(满级 15)
+public int GetUnlockSacrificeMax();                    // 献祭祭品选择上限 = 3(sacrificeMax) + SacrificeNum 等级(满级 15)
 public int GetUnlockJuicerCreatureMax();               // 魔汁机投入魔物上限 = 5(juicerCreatureMax) + JuicerNum(100600002) 等级(level_max=10,满级 15)
 public float GetUnlockSacrificeFailPityAddRate();      // 献祭失败保底增量 = SacrificePityRate 等级 × 5%(未解锁0,满级50%)
 public float GetUnlockSacrificeDifferentIdRate();      // 单个不同id祭品成功率 = SacrificeDifferentIdRate 等级 × 5%(未解锁0,满级50%)

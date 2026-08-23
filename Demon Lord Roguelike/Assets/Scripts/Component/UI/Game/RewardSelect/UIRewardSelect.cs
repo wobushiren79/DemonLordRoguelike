@@ -30,7 +30,7 @@ public partial class UIRewardSelect : BaseUIComponent
     /// <param name="rewardSelectData">领奖数据</param>
     /// <param name="actionForEnd">领奖结束回调</param>
     /// <param name="isClearLastGame">是否先清理上一场战斗(卸载战斗场景+清理战斗实体)。征服模式通关BOSS后进入领奖需传 true，避免BOSS战斗场景残留叠加</param>
-    public async void SetData(RewardSelectBean rewardSelectData, Action actionForEnd = null, bool isClearLastGame = false)
+    public void SetData(RewardSelectBean rewardSelectData, Action actionForEnd = null, bool isClearLastGame = false)
     {
         this.rewardSelectData = rewardSelectData;
         gameObject.SetActive(false);

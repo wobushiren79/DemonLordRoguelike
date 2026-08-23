@@ -113,7 +113,7 @@ public class LauncherTest : BaseLauncher
     /// <summary>
     /// 开始终焉议会测试
     /// </summary>
-    public async void StartForDoomCouncil(long billId)
+    public void StartForDoomCouncil(long billId)
     {
         //打开终焉ui
         //var uiDoomCouncil = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilBill>();
@@ -126,7 +126,7 @@ public class LauncherTest : BaseLauncher
     /// 开始终焉议会测试(直接载入所有固定议员, 用于测试固定议员的显示/参数)
     /// </summary>
     /// <param name="billId">议案 ID(仍需有效, 用于议员态度生成)</param>
-    public async void StartForDoomCouncilAllFixed(long billId)
+    public void StartForDoomCouncilAllFixed(long billId)
     {
         //进入议会场景, 标记为载入所有固定议员
         DoomCouncilBean doomCouncilData = new DoomCouncilBean(billId);
@@ -138,7 +138,7 @@ public class LauncherTest : BaseLauncher
     /// 开始奖励选择
     /// </summary>
     /// <param name="testData">测试数据，可配置装备品质、使用者类型、属性加成</param>
-    public async void StartForRewardSelect(RewardSelectTestData testData = null)
+    public void StartForRewardSelect(RewardSelectTestData testData = null)
     {
         //打开领奖界面
         var uiRewardSelect = UIHandler.Instance.OpenUIAndCloseOther<UIRewardSelect>();

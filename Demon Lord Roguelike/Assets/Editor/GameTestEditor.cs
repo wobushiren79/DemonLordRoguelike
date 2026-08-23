@@ -21,7 +21,7 @@ public partial class GameTestEditor : Editor
 
         EditorGUI.BeginChangeCheck();
 
-        DrawHeader();
+        DrawTitleHeader();
 
         switch (launcher.testSceneType)
         {
@@ -93,7 +93,7 @@ public partial class GameTestEditor : Editor
         EditorGUILayout.Space(10);
     }
 
-    private void DrawHeader()
+    private void DrawTitleHeader()
     {
         EditorGUILayout.Space(10);
         EditorGUILayout.LabelField("🎮 游戏测试工具", EditorStyles.boldLabel);

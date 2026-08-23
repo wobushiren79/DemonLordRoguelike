@@ -19,6 +19,22 @@ public partial class AttackModeInfoBean
     {
         return !class_name.IsNull() && class_name.StartsWith(nameof(AttackModeRegain));
     }
+
+    /// <summary>
+    /// 是否为加血型恢复攻击方式（class_name 以 AttackModeRegainHP 开头；当前配置 id=500001）
+    /// </summary>
+    public bool IsRegainHPType()
+    {
+        return !class_name.IsNull() && class_name.StartsWith(nameof(AttackModeRegainHP));
+    }
+
+    /// <summary>
+    /// 是否为加护甲型恢复攻击方式（class_name 以 AttackModeRegainDR 开头；当前配置 id=500002）
+    /// </summary>
+    public bool IsRegainDRType()
+    {
+        return !class_name.IsNull() && class_name.StartsWith(nameof(AttackModeRegainDR));
+    }
     #endregion
 
     #region 攻击起始位置偏移

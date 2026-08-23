@@ -8,7 +8,7 @@ using UnityEngine;
 /// 敌人少于瓶数时只丢同等数量的瓶，如仅1敌、Lv3也只丢1瓶），第1瓶立即投掷，后续每瓶间隔 launchInterval(0.2) 秒由 UpdateBuffTime 驱动。</para>
 /// <para>每瓶 = 发射一个 AttackModeRangedArcGround：抛物线飞向该目标当前位置（固定落点、不追踪），
 /// 落地燃放地形火焰每1秒对半径内存活敌人跳伤（伤害/半径/时长由攻击模块自身处理）。</para>
-/// <para>伤害 = BUFF目标(魔王)实时攻击力 × trigger_value(0.1) 倍率（每瓶投掷时实时取，保底1），不暴击；场上无存活敌人本轮不触发。</para>
+/// <para>伤害 = BUFF目标(魔王)实时攻击力 × trigger_value(0.2) 倍率（每瓶投掷时实时取，保底1），不暴击；场上无存活敌人本轮不触发。</para>
 /// <para>class_entity_data 格式："瓶数,攻击模块ID"（如 "3,300101"）。</para>
 /// </summary>
 public class BuffEntityPeriodicAttackFireBottle : BuffEntityPeriodic

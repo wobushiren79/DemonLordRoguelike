@@ -105,7 +105,6 @@ public partial class GameTestEditor
     public float rewardSelectEquipDemonLordRate = 0.1f;
 
     // 折叠状态
-    private bool showBaseTest = true;
     private bool showFightSceneTest = true;
     private bool showCardTest = true;
     private bool showBaseSceneTest = true;

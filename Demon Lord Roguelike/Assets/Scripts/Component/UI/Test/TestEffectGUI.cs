@@ -273,7 +273,7 @@ public class TestEffectGUI : MonoBehaviour
     /// <summary>攻击命中粒子集合(excel_attackmode_info 的 effect_hit 引用, 生产统一走全局单例通道)</summary>
     private static readonly HashSet<long> setHitEffectIds = new HashSet<long>()
     {
-        100001, 200001, 300001, 300002, 400001, 400002, 400003, 500001, 500002,
+        100001, 200001, 300001, 300002, 400001, 400002, 400003, 500001, 500002, 500003,
         600001, 700001, 800001, 800002, 900001, 900002, 900003,
     };
 

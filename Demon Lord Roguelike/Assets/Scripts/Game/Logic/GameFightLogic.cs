@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -84,25 +85,25 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>
     /// 准备游戏-设置战斗场景视角之后
     /// </summary>
-    public virtual async Task PreGameForAfterInitFightSceneCamera()
+    public virtual Task PreGameForAfterInitFightSceneCamera()
     {
-
+        return Task.CompletedTask;
     }
 
     /// <summary>
     /// 准备游戏-加载战斗场景之后
     /// </summary>
-    public virtual async Task PreGameForAfterLoadFightScene()
+    public virtual Task PreGameForAfterLoadFightScene()
     {
-
+        return Task.CompletedTask;
     }
 
     /// <summary>
     /// 准备游戏-防守核心创建之后(此时可安全操作以防守核心为目标的系统,如深渊馈赠)
     /// </summary>
-    public virtual async Task PreGameForAfterCreateDefenseCore()
+    public virtual Task PreGameForAfterCreateDefenseCore()
     {
-
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -643,7 +644,17 @@ public class GameFightLogic : BaseGameLogic
         {
             RefreshAllDefenseCreatureAttribute();
         }
-        //检测一下游戏是否结束
+        //延迟一帧再检测结束：死亡结束事件先于实体移除触发(BUFF契约,见AIIntentCreatureDead),同步检测时刚死实体尚未移出进攻列表,
+        //会被误判为"场上仍有敌人",导致最后一只怪死亡时胜利永不结算(结算UI/深渊馈赠UI均不弹出)
+        _ = CheckGameEndNextFrame();
+    }
+
+    /// <summary>
+    /// 下一帧检测游戏是否结束（等死亡实体完成列表移除；发射即忘,多只怪同帧死亡的重复调用由 CheckGameEnd 的结算/结束状态守卫兜底）
+    /// </summary>
+    private async UniTaskVoid CheckGameEndNextFrame()
+    {
+        await GTask.WaitFrame();
         CheckGameEnd();
     }
 
