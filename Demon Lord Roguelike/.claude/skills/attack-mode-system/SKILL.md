@@ -77,6 +77,7 @@ BaseAttackMode                      - 攻击模式基类
 ├── AttackModeExplosion             - 爆炸（以自身为中心范围伤害，攻击者死亡；冲锋型 charge_attack=1 走「死亡即引爆」纯数据路径 CreateAttackModeForDeadExplosion，不走 StartAttack(attacker,…)；敢死队 300002：collider_area_type=11&collider_area_size=1.5&damage_add_rate=1，effect_hit=300002(Effect_Explosion_2,2026-08-18 起爆炸两个攻击模块 300001/300002 均改用此粒子,原 Effect_Explosion_1=300001 特效已无引用)/sound_hit=420008/sound_miss=100001）
 ├── AttackModeFallupon              - 天降单体（直接对锁定目标造成伤害）
 ├── AttackModeFalluponArea          - 天降范围（对目标位置范围伤害）
+│   └── AttackModeFalluponAreaRandom - 天降范围-随机落点（发射时从全场存活防守生物随机取落点替换 attacked 实参[最多重试3次,落空沿用原目标],父类下落/AOE/叠buff全复用;随机源 fightData.dlDefenseCreatureEntity 不含魔王核心;火/水大魔法师BOSS技能 700001 陨石[buff=1000500001:0.5烧伤]/700002 水滴[buff=1000600001:0.5潮湿],经 AttackModeExtInfo 100002/100003 以 trigger_interval=5 BossSkill 挂载, start_pos_offset=0,6,0 六格高天降, effect_hit=800001, sound_hit=420008）
 ├── AttackModeFalluponChain         - 天降连锁（连锁弹射多个目标，伤害递减）
 ├── AttackModeOverlap               - 重叠检测（以自身为中心范围触碰，命中走正常 UnderAttack 伤害管线）
 │   └── AttackModeOverlapNoDamage   - 无伤害重叠（纯DEBUFF触碰变体：只附加 buff 字段配置的BUFF+播命中音，不掉血/不跳伤害数字/不播受击特效/不进伤害统计，走 FightCreatureEntity.UnderAttackNoDamage；烂泥史莱姆3003粘液减速400001(buff=1000200001:1,MSPD-40%×1s)、毒液史莱姆3004中毒400002(buff=1000400001:1,每跳=史莱姆实时ATK×20%[ATK=10→2/跳],每秒1跳共10次,毒伤跳伤走UnderAttack管线属正常)）
@@ -804,6 +805,7 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | 爆炸 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeExplosion.cs` |
 | 天降单体 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFallupon.cs` |
 | 天降范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponArea.cs` |
+| 天降范围-随机落点（火/水大魔法师BOSS技能 700001/700002） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponAreaRandom.cs` |
 | 天降连锁 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponChain.cs` |
 | 重叠检测（范围触碰，正常伤害管线） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlap.cs` |
 | 无伤害重叠（纯DEBUFF触碰，走 UnderAttackNoDamage） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlapNoDamage.cs` |

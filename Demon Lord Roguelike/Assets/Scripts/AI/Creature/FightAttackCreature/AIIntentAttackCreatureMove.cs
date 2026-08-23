@@ -9,8 +9,8 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
     public FightCreatureBean fightCreatureData;
     public float timeUpdateForFindTarget = 0;
     public float timeUpdateForFindTargetCD = 0;
-    /// <summary>攻击起始X阈值：自身x大于此值(出生线附近)时不进入攻击意图，继续前进</summary>
-    public float attackEnablePosX = 10.5f;
+    /// <summary>道路右缘X(=0.5+路长，与击退意图 roadMaxX 同口径)：自身x大于此值说明还没走进道路，不索敌、沿本道路直行</summary>
+    public float roadMaxX = 10.5f;
     /// <summary>攻击魔王的靠近距离阈值：与魔王距离小于此值时固定触发一次攻击并让魔王死亡</summary>
     public const float CloseCoreDistance = 0.25f;
 
@@ -19,6 +19,12 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
         timeUpdateForFindTarget = 0;
         selfAIEntity = aiEntity as AIAttackCreatureEntity;
         fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
+        //按当场路长缓存道路右缘（征服模式路长随机，不能写死）
+        var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        if (gameFightLogic?.fightData != null)
+        {
+            roadMaxX = 0.5f + gameFightLogic.fightData.sceneRoadLength;
+        }
         //这里的攻击检测时间可能过长 后续考虑可以减少
         timeUpdateForFindTargetCD = fightCreatureData.creatureData.GetAttackSearchTime();
         //第一次进来检测一次攻击
@@ -31,28 +37,39 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
     {
         //战斗帧时间（跟随游戏速度，2倍速时移动与索敌节奏同步翻倍）
         float deltaTime = GameFightLogic.GetFightDeltaTime();
-        //查询敌人
-        timeUpdateForFindTarget += deltaTime;
-        if (timeUpdateForFindTarget >= timeUpdateForFindTargetCD)
+        Transform selfTF = selfAIEntity.selfCreatureEntity.creatureObj.transform;
+        //走进道路范围内才开始索敌：未进道路(x>道路右缘)时目标锁定魔王核心，沿本道路直行
+        if (selfTF.position.x > roadMaxX)
         {
-            timeUpdateForFindTarget = 0;
-            timeUpdateForFindTargetCD = fightCreatureData.creatureData.GetAttackSearchTime();
-            var findTargetCreature = selfAIEntity.FindCreatureEntityForSinge(DirectionEnum.Left);
-            if (findTargetCreature != null)
-            {
-                selfAIEntity.targetCreatureEntity = findTargetCreature;
-                selfAIEntity.targetMovePos = selfAIEntity.targetCreatureEntity.creatureObj.transform.position;
-                //出生线附近(x>attackEnablePosX)不进入攻击意图, 继续前进直到越过该位置再攻击
-                if (selfAIEntity.selfCreatureEntity.creatureObj.transform.position.x <= attackEnablePosX)
-                {
-                    selfAIEntity.ChangeIntent(AIIntentEnum.AttackCreatureAttack);
-                    return;
-                }
-            }
-            else
+            //目标已是魔王核心则跳过，避免每帧重复查询赋值
+            if (selfAIEntity.targetCreatureEntity == null || selfAIEntity.targetCreatureEntity.fightCreatureData.creatureFightType != CreatureFightTypeEnum.FightDefenseCore)
             {
                 var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
                 selfAIEntity.targetCreatureEntity = gameFightLogic.fightData.fightDefenseCoreCreature;
+            }
+        }
+        else
+        {
+            //查询敌人
+            timeUpdateForFindTarget += deltaTime;
+            if (timeUpdateForFindTarget >= timeUpdateForFindTargetCD)
+            {
+                timeUpdateForFindTarget = 0;
+                timeUpdateForFindTargetCD = fightCreatureData.creatureData.GetAttackSearchTime();
+                var findTargetCreature = selfAIEntity.FindCreatureEntityForSinge(DirectionEnum.Left);
+                if (findTargetCreature != null)
+                {
+                    selfAIEntity.targetCreatureEntity = findTargetCreature;
+                    selfAIEntity.targetMovePos = selfAIEntity.targetCreatureEntity.creatureObj.transform.position;
+                    //走进道路后索到目标即进入攻击意图
+                    selfAIEntity.ChangeIntent(AIIntentEnum.AttackCreatureAttack);
+                    return;
+                }
+                else
+                {
+                    var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+                    selfAIEntity.targetCreatureEntity = gameFightLogic.fightData.fightDefenseCoreCreature;
+                }
             }
         }
 
@@ -63,11 +80,9 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
             return;
         }
 
-        float moveSpeed = selfAIEntity.selfCreatureEntity.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.MSPD);   
+        float moveSpeed = selfAIEntity.selfCreatureEntity.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.MSPD);
         float moveSpeedFinal = MathUtil.InterpolationLerp(moveSpeed, 0, 100, 0, 2f);
 
-        Transform selfTF = selfAIEntity.selfCreatureEntity.creatureObj.transform;
-        
         //如果目标是魔王(防守核心)
         if (selfAIEntity.targetCreatureEntity.fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightDefenseCore)
         {

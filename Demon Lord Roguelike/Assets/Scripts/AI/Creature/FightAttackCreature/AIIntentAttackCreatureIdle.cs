@@ -11,9 +11,13 @@ public class AIIntentAttackCreatureIdle : AIBaseIntent
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         selfAIEntity = aiEntity as AIAttackCreatureEntity;
-        //寻找路线上的敌人
-        var fightCreatureData = selfAIEntity.selfCreatureEntity.fightCreatureData;
-        selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntityForSinge(DirectionEnum.Left);
+        //寻找路线上的敌人（走进道路范围内才索敌：未进道路时跳过，目标直接锁定魔王核心沿本道路直行）
+        var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        float roadMaxX = 0.5f + gameFightLogic.fightData.sceneRoadLength;
+        if (selfAIEntity.selfCreatureEntity.creatureObj.transform.position.x <= roadMaxX)
+        {
+            selfAIEntity.targetCreatureEntity = selfAIEntity.FindCreatureEntityForSinge(DirectionEnum.Left);
+        }
 
         //触发待机动作
         selfAIEntity.selfCreatureEntity.SetFaceDirection(Direction2DEnum.Left);
@@ -23,7 +27,6 @@ public class AIIntentAttackCreatureIdle : AIBaseIntent
         //如果没有数据 说明这条路上没有防守生物，则目标设置为魔王
         if (selfAIEntity.targetCreatureEntity == null)
         {
-            var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
             var fightDefenseCoreCreature = gameFightLogic.fightData.fightDefenseCoreCreature;
             if (fightDefenseCoreCreature != null && fightDefenseCoreCreature.IsDead())
             {

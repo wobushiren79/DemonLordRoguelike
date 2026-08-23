@@ -598,6 +598,8 @@ MonoBehaviour:
   swayStrength: 0.08
   swayFrequency: 2
   stiffness: 2
+  castShadows: 0
+  shadowRadius: 0
   pollTargetsEnable: 0
   pollTargets: []
   pollInterval: 0.2
@@ -1081,6 +1083,8 @@ MonoBehaviour:
   swayStrength: 0.08
   swayFrequency: 2
   stiffness: 2
+  castShadows: 0
+  shadowRadius: 0
   pollTargetsEnable: 0
   pollTargets: []
   pollInterval: 0.2
@@ -1331,7 +1335,7 @@ Transform:
   m_GameObject: {fileID: 7191565448423559150}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5, y: 25, z: 92.9}
+  m_LocalPosition: {x: 5, y: 20, z: 92.9}
   m_LocalScale: {x: 100, y: 50, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
