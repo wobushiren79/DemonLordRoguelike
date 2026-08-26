@@ -20,7 +20,7 @@ watched_files:
 - **UIDialogNormal** - 普通确认弹窗
 - **UIDialogSelect** - 选择弹窗
 - **UIDialogSelectColor** - 颜色选择弹窗
-- **UIDialogSelectItem** - 道具选择弹窗
+- **UIDialogSelectItem** - 道具选择弹窗（内嵌通用控件 `UIViewItemSelect` 处理选项：点击背包道具 `EventForItemBackpackClickSelect` → `ui_UIViewItemSelect.ShowSelect(itemData, itemView.transform)` 定位弹出；`InitItemSelect` 按 `DialogSelectItemBean` 传入的回调判空包装后下发——**回调为空的选项不显示**（议会送礼只传 `actionForSelectGift` 故只显示赠送按钮），点选项后控件先 `CloseSelect` 再回调 `actionForSelectX(this, itemData)` 处理业务；旧的内联 SelectList/SelectChild 字段已移除，组件字段仅 `ui_UIViewExit`/`ui_UIViewItemBackpackList`/`ui_UIViewItemSelect`）
 - **UIDialogSelectCreature** - 生物选择弹窗（`DialogSelectCreatureBean`：`selectNumMax` 最大选择数量；`filterCreature`(Func<CreatureBean,bool>) 魔物过滤条件，返回 true 才进列表、为空不过滤——`SetData` 内用 `FindAll` 生成新列表，不动背包原列表。例：终焉议会降级/降稀有度议案分别过滤 `level<=0` / `rarity<=N` 的魔物）
 - **UIDialogRename** - 重命名弹窗
 - **UIDialogBossShow** - Boss 展示弹窗

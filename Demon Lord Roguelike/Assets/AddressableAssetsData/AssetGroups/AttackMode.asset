@@ -15,36 +15,6 @@ MonoBehaviour:
   m_GroupName: AttackMode
   m_GUID: 03a5a40d7ff95bf47b8e343184f4accd
   m_SerializeEntries:
-  - m_GUID: 0f154e140ca5e794091990ac290953c3
-    m_Address: Assets/LoadResources/AttackMode/AttackMode_RangedFireBall.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 322a23e182aaa824f8710e7dcf0b938d
-    m_Address: Assets/LoadResources/AttackMode/AttackMode_RangedLove.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 43eff844c772694499b69282d2e0bf09
-    m_Address: Assets/LoadResources/AttackMode/AttackMode_Fallupon_Ice_1.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 4ecb3e4946659304fb0c026481d5b5c7
-    m_Address: Assets/LoadResources/AttackMode/AttackMode_Fallupon_Water_1.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 5cab35740f03a26428d60ce8918b841b
-    m_Address: Assets/LoadResources/AttackMode/AttackMode_RangedIceBall.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: c109a3dd26ee6dc4c918e50e643548b4
-    m_Address: Assets/LoadResources/AttackMode/AttackMode_Fallupon_Meteorite_1.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d465129e233225546a7c22b06aa2c20b
     m_Address: Assets/LoadResources/AttackMode/AttackMode_RangedWaterBall.prefab
     m_ReadOnly: 0

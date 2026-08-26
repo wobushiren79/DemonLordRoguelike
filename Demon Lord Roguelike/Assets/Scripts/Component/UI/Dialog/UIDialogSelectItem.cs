@@ -1,19 +1,15 @@
-﻿
 
-using UnityEngine;
+
+using System;
 using UnityEngine.UI;
 
 public partial class UIDialogSelectItem : DialogView
 {
-    /// <summary>
-    /// 选中的道具
-    /// </summary>
-    public ItemBean selectItem = null;
-
     public override void InitData()
     {
         base.InitData();
         RegisterEvent<UIViewItemBackpack>(EventsInfo.UIViewItemBackpack_OnClickSelect, EventForItemBackpackClickSelect);
+        InitItemSelect();
     }
 
     /// <summary>
@@ -23,6 +19,22 @@ public partial class UIDialogSelectItem : DialogView
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         ui_UIViewItemBackpackList.SetData(userData.GetUserBackpackItemsData().listBackpackItems, OnCellChangeForBackpackItem);
+    }
+
+    /// <summary>
+    /// 初始化道具选项控件：选项显隐由 DialogSelectItemBean 传入的回调决定（未传回调的选项不显示），点击后的业务逻辑由各回调自行处理
+    /// </summary>
+    public void InitItemSelect()
+    {
+        var dialogItemSelect = dialogData as DialogSelectItemBean;
+        //回调为空则对应选项不显示（包装后的回调固定非空，故需按原回调判空再包装）
+        Action<ItemBean> actionForGift = null;
+        if (dialogItemSelect.actionForSelectGift != null)
+            actionForGift = itemData => dialogItemSelect.actionForSelectGift.Invoke(this, itemData);
+        Action<ItemBean> actionForDelete = null;
+        if (dialogItemSelect.actionForSelectDelete != null)
+            actionForDelete = itemData => dialogItemSelect.actionForSelectDelete.Invoke(this, itemData);
+        ui_UIViewItemSelect.SetData(actionForGift, actionForDelete);
     }
 
     /// <summary>
@@ -37,74 +49,20 @@ public partial class UIDialogSelectItem : DialogView
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);
-        if (viewButton == ui_UIViewExit || viewButton == ui_Background)
+        if (viewButton == ui_UIViewExit)
         {
-            OnClickForExit();
+            DestroyDialog();
         }
-        else if(viewButton== ui_SelectContent_Button)
-        {
-            OnClickForCloseSelect();
-        }
-        else if (viewButton == ui_UIViewDialogItemSelectChild_Delete)
-        {
-            OnClickForDeleteItem();
-        }
-        else if (viewButton == ui_UIViewDialogItemSelectChild_Gift)
-        {
-            OnClickForGiftItem();
-        }
-    }
-
-    /// <summary>
-    /// 点击关闭选项
-    /// </summary>
-    public void OnClickForCloseSelect()
-    {
-        selectItem = null;
-        ui_SelectContent_RectTransform.gameObject.SetActive(false);
-    }
-
-    /// <summary>
-    /// 点击丢弃道具
-    /// </summary>
-    public void OnClickForDeleteItem()
-    {
-        var dialogItemSelect = dialogData as DialogSelectItemBean;
-        dialogItemSelect.actionForSelectDelete?.Invoke(this, selectItem);
-
-        OnClickForCloseSelect();
-    }
-
-    /// <summary>
-    /// 点击送礼
-    /// </summary>
-    public void OnClickForGiftItem()
-    {        
-        var dialogItemSelect = dialogData as DialogSelectItemBean;
-        dialogItemSelect.actionForSelectGift?.Invoke(this, selectItem);
-
-        OnClickForCloseSelect();
-    }
-
-    /// <summary>
-    /// 点击离开
-    /// </summary>
-    public void OnClickForExit()
-    {
-        DestroyDialog();
     }
     #endregion
 
     #region 回调事件
-
+    /// <summary>
+    /// 背包道具点击：打开道具选项并定位到目标道具
+    /// </summary>
     public void EventForItemBackpackClickSelect(UIViewItemBackpack itemView)
     {
-        //选中的道具
-        selectItem = itemView.itemData;
-        //打开选项
-        ui_SelectContent_RectTransform.gameObject.SetActive(true);
-        Vector3 targetPos = UGUIUtil.GetRootPos(ui_SelectContent_RectTransform, itemView.transform);
-        ui_SelectList.transform.localPosition = targetPos;
+        ui_UIViewItemSelect.ShowSelect(itemView.itemData, itemView.transform);
     }
     #endregion
 

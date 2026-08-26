@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary>
 /// 天降范围-随机落点：发射时从全场存活防守生物中随机选取落点目标（替换 attacked 实参），
 /// 其余下落/范围结算/叠BUFF 逻辑全部复用父类 AttackModeFalluponArea。
-/// 用于火/水大魔法师BOSS技能（攻击模块 700001 陨石 / 700002 水滴，经 AttackModeExtInfo 100002/100003 以 5 秒 BossSkill 挂载）。
+/// 用于火/水大魔法师BOSS技能（攻击模块 700001 火球 / 700002 水球，经 AttackModeExtInfo 100002/100003 以 5 秒 BossSkill 挂载）。
 /// </summary>
 public class AttackModeFalluponAreaRandom : AttackModeFalluponArea
 {

@@ -1,5 +1,4 @@
-﻿using UnityEngine.UI;
-using UnityEngine;
+using UnityEngine.UI;
 
 
 public partial class UIDialogSelectItem
@@ -8,15 +7,7 @@ public partial class UIDialogSelectItem
 
     public UIViewItemBackpackList ui_UIViewItemBackpackList;
 
-    public RectTransform ui_SelectContent_RectTransform;
-
-    public Button ui_SelectContent_Button;
-
-    public RectTransform ui_SelectList;
-
-    public Button ui_UIViewDialogItemSelectChild_Gift;
-
-    public Button ui_UIViewDialogItemSelectChild_Delete;
+    public UIViewItemSelect ui_UIViewItemSelect;
 
 
 }

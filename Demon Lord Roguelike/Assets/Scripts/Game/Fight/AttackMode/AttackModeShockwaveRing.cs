@@ -12,6 +12,8 @@ using UnityEngine;
 /// <para>纯数据发射路径：由 BuffEntityPeriodicAttackShockwave 创建，伤害/圆心由 BUFF 侧注入；无 prefab/visual_name，
 /// 冲击波视觉走 EffectHandler.ShowEnduringSingletonEffect（全局单例通道，StartAttackBase 时播放一次，
 /// 用 startSizeMultiplier/startLifetimeMultiplier 按本类判定参数换算，视觉波前与判定环带严格同步）。</para>
+/// <para>游戏速度同步：判定环带用 GetFightDeltaTime（含 gameSpeed 倍率），粒子按真实时间模拟不吃该倍率，
+/// 故 Update 逐帧把视觉粒子 simulationSpeed 对齐 GetCurrentGameSpeed，2 倍速/中途变速下视觉扩张与判定始终一致。</para>
 /// </summary>
 public class AttackModeShockwaveRing : BaseAttackMode
 {
@@ -35,6 +37,9 @@ public class AttackModeShockwaveRing : BaseAttackMode
     private Vector3 centerPos;
     /// <summary>本波已命中名单（每只敌人只命中一次，对象池复用前清空）</summary>
     private readonly HashSet<string> hitCreatureIds = new HashSet<string>();
+    /// <summary>本波冲击波视觉的粒子实例（播放时经回调缓存；Update 逐帧同步其 simulationSpeed 跟随游戏速度，
+    /// 使视觉扩张与判定环带在 2 倍速/中途变速下始终一致——粒子按真实时间模拟，不吃 fightData.gameSpeed 数据倍率）</summary>
+    private EffectBase shockwaveEffect;
     #endregion
 
     #region 开始攻击
@@ -71,18 +76,23 @@ public class AttackModeShockwaveRing : BaseAttackMode
             targetPos = centerPos,
             startSizeMultiplier = radiusMax / ShockwaveVisualBaseRadius,
             startLifetimeMultiplier = Mathf.Max(waveDuration, 0.1f) / ShockwaveVisualBaseDuration,
+        }, (effect) =>
+        {
+            shockwaveEffect = effect;
+            SyncVisualGameSpeed();
         });
     }
     #endregion
 
     #region Update
     /// <summary>
-    /// 每帧：扩张半径 → 环带命中检测（上一帧半径~当前半径）→ 达到最大半径销毁
+    /// 每帧：扩张半径 → 环带命中检测（上一帧半径~当前半径）→ 达到最大半径销毁；同步视觉粒子模拟速度跟随游戏速度
     /// </summary>
     public override void Update()
     {
         if (!isValid)
             return;
+        SyncVisualGameSpeed();
         float radiusPrev = radiusCurrent;
         radiusCurrent += GameFightLogic.GetFightDeltaTime() * GetMoveSpeed();
         if (radiusCurrent >= radiusMax)
@@ -131,6 +141,21 @@ public class AttackModeShockwaveRing : BaseAttackMode
     }
 
     /// <summary>
+    /// 同步冲击波视觉的粒子模拟速度为当前游戏速度：粒子按真实时间模拟（不吃 fightData.gameSpeed 数据倍率），
+    /// 逐帧对齐使 2 倍速/中途变速下视觉波前与判定环带始终一致；
+    /// BOSS 特写等 Time.timeScale 变化时判定(deltaTime)与粒子模拟天然同缩，无需在此处理
+    /// </summary>
+    private void SyncVisualGameSpeed()
+    {
+        if (shockwaveEffect == null || shockwaveEffect.mainPS == null)
+            return;
+        float gameSpeed = GameFightLogic.GetCurrentGameSpeed();
+        var mainModule = shockwaveEffect.mainPS.main;
+        if (!Mathf.Approximately(mainModule.simulationSpeed, gameSpeed))
+            mainModule.simulationSpeed = gameSpeed;
+    }
+
+    /// <summary>
     /// 击退：交给敌人 AI 的击退意图处理（AIAttackCreatureEntity.StartKnockback）——
     /// 方向固定 +x（沿道路向后推，不带 z 分量，敌人不会被推离自己的路径），按固定时长推移一个击退距离，
     /// 推移中攻击循环被打断、结束回闲置重新索敌；打死了就不击退（尸体留在原地，由调用方在命中时先行判断）。
@@ -146,11 +171,12 @@ public class AttackModeShockwaveRing : BaseAttackMode
 
     #region 回收
     /// <summary>
-    /// 回收：清空命中名单（防对象池复用残留）
+    /// 回收：清空命中名单与视觉实例引用（防对象池复用残留）
     /// </summary>
     public override void Destroy(bool isPermanently = false)
     {
         hitCreatureIds.Clear();
+        shockwaveEffect = null;
         base.Destroy(isPermanently);
     }
     #endregion

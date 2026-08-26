@@ -1,0 +1,1 @@
+[{"name":1,"trigger_type":1,"scene_type":1,"trigger_condition":1,"priority":0,"is_once":1,"valid":1,"remark":"新手引导-基地","id":1},{"name":2,"trigger_type":1,"scene_type":2,"trigger_condition":2,"priority":0,"is_once":1,"valid":1,"remark":"新手引导-战斗","id":2},{"name":3,"trigger_type":1,"scene_type":2,"trigger_condition":3,"priority":0,"is_once":1,"valid":1,"remark":"新手引导-首次掉魔晶","id":3}]

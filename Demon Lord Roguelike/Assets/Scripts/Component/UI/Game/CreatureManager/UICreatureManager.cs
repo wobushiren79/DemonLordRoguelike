@@ -26,7 +26,11 @@ public partial class UICreatureManager : BaseUIComponent
         InitBackpackItemsData();
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForCardClickSelect);
         this.RegisterEvent<UIViewItemBackpack>(EventsInfo.UIViewItemBackpack_OnClickSelect, EventForItemBackpackClickSelect);
+        this.RegisterEvent<UIViewItemBackpack>(EventsInfo.UIViewItemBackpack_OnRightClickSelect, EventForItemBackpackRightClickSelect);
         this.RegisterEvent<UIViewItemEquip>(EventsInfo.UIViewItemEquip_OnClickSelect, EventForItemEquipClickSelect);
+
+        //道具选项控件：只显示装备与丢弃选项，点击后的业务在各自回调里处理
+        ui_UIViewItemSelect.SetData(actionForEquip: EventForItemSelectEquip, actionForDelete: EventForItemSelectDelete);
 
         ui_BtnLevelUpSacrifice_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(60000), PopupEnum.Text);
     }
@@ -37,6 +41,8 @@ public partial class UICreatureManager : BaseUIComponent
         ui_UIViewCreatureCardList.CloseUI();
         ui_UIViewItemBackpackList.CloseUI();
         ui_UIViewCreatureCardEquipDetails.CloseUI();
+        //收口道具选项（父物体关闭再打开时子物体激活状态会残留，需显式关闭）
+        ui_UIViewItemSelect.CloseSelect();
     }
 
     public override void OnClickForButton(Button viewButton)
@@ -53,13 +59,19 @@ public partial class UICreatureManager : BaseUIComponent
     }
 
     /// <summary>
-    /// 输入响应: 按下 ESC 时退出生物管理界面
+    /// 输入响应: 按下 ESC 时优先关闭道具选项，未打开选项则退出生物管理界面
     /// </summary>
     public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
     {
         base.OnInputActionForStarted(inputType, callback);
         if (inputType == InputActionUIEnum.ESC)
         {
+            //道具选项展示中则优先关闭选项，不退出界面
+            if (ui_UIViewItemSelect.IsShowing())
+            {
+                ui_UIViewItemSelect.CloseSelect();
+                return;
+            }
             OnClickForExit();
         }
     }
@@ -366,12 +378,54 @@ public partial class UICreatureManager : BaseUIComponent
     /// </summary>
     public void EventForItemBackpackClickSelect(UIViewItemBackpack targetView)
     {
-        var itemData = targetView.itemData;
-        //魔汁走使用流程(确认弹窗→加经验),其余道具照旧走装备
+        UseOrEquipItem(targetView.itemData);
+    }
+
+    /// <summary>
+    /// 背包道具右键点击：弹出道具选项（装备/丢弃）并定位到目标道具
+    /// </summary>
+    public void EventForItemBackpackRightClickSelect(UIViewItemBackpack targetView)
+    {
+        ui_UIViewItemSelect.ShowSelect(targetView.itemData, targetView.transform);
+    }
+
+    /// <summary>
+    /// 使用或装备道具：魔汁走使用流程(确认弹窗→加经验)，其余道具走装备
+    /// </summary>
+    public void UseOrEquipItem(ItemBean itemData)
+    {
         if (itemData != null && itemData.GetItemType() == ItemTypeEnum.Juice)
             UseJuiceItem(itemData);
         else
             SetCreatureEquip(itemData);
+    }
+
+    /// <summary>
+    /// 道具选项-装备：与左键点击一致（魔汁走使用流程，其余装备）
+    /// </summary>
+    public void EventForItemSelectEquip(ItemBean itemData)
+    {
+        UseOrEquipItem(itemData);
+    }
+
+    /// <summary>
+    /// 道具选项-丢弃：弹确认框，确认后从背包删除该道具并落盘
+    /// </summary>
+    public void EventForItemSelectDelete(ItemBean itemData)
+    {
+        if (itemData == null)
+            return;
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = TextHandler.Instance.GetTextById(1002004);
+        dialogData.actionSubmit = (view, data) =>
+        {
+            var userData = GameDataHandler.Instance.manager.GetUserData();
+            userData.RemoveBackpackItem(itemData);
+            GameDataHandler.Instance.manager.SaveUserData();
+            //刷新背包列表（移除已删除道具）
+            InitBackpackItemsData();
+        };
+        UIHandler.Instance.ShowDialogNormal(dialogData);
     }
 
     /// <summary>

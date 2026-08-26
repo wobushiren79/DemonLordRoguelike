@@ -38,6 +38,10 @@ Assets/Resources/JsonText/
 ├── Language_BuffInfo_en.txt            - BUFF名称描述（英文）
 ├── Language_ItemsInfo_cn.txt           - 道具名称（中文）
 ├── Language_ItemsInfo_en.txt           - 道具名称（英文）
+├── Language_StoryInfo_cn.txt           - 故事名（中文，故事演出系统）
+├── Language_StoryInfo_en.txt           - 故事名（英文）
+├── Language_StoryTalkInfo_cn.txt       - 故事对话内容（中文，故事演出系统）
+├── Language_StoryTalkInfo_en.txt       - 故事对话内容（英文）
 └── Language_{CfgName}_{lang}.txt       - 通用命名格式（lang ∈ cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr）
 ```
 

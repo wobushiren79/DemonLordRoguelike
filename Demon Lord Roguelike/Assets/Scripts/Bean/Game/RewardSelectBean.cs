@@ -273,11 +273,19 @@ public class RewardSelectBean
         }
 
         //按道具 reward_rarity 白名单过滤：只保留可在本次目标稀有度产出的道具(空白名单=全稀有度适配)
+        //魔王专属额外按魔王当前形态可装备类型过滤(含武器类型)，避免掉落魔王穿不上的装备(如骷髅魔王不可装备武器)
+        CreatureInfoBean demonLordInfo = null;
+        if (userType == (int)ItemUserTypeEnum.DemonLord)
+            demonLordInfo = GameDataHandler.Instance.manager.GetUserData()?.selfCreature?.creatureInfo;
         List<ItemsInfoBean> listMatchItemsInfo = new List<ItemsInfoBean>();
         for (int i = 0; i < listItemsInfo.Count; i++)
         {
-            if (listItemsInfo[i].IsMatchRewardRarity(rarityItem))
-                listMatchItemsInfo.Add(listItemsInfo[i]);
+            var itemInfo = listItemsInfo[i];
+            if (!itemInfo.IsMatchRewardRarity(rarityItem))
+                continue;
+            if (demonLordInfo != null && !IsEquipTypeMatchForDemonLord(demonLordInfo, itemInfo))
+                continue;
+            listMatchItemsInfo.Add(itemInfo);
         }
         //过滤后无匹配道具 生成魔晶（容错，与"无相关道具"一致）
         if (listMatchItemsInfo.Count == 0)
@@ -291,6 +299,24 @@ public class RewardSelectBean
         //走统一的装备生成逻辑(属性条数=稀有度、加点数由本处已算好的 addAttribute 覆盖)
         ItemBean itemData = EquipUtil.CreateEquipItemForReward(randomItemInfo.id, rarityItem, userType, addAttribute);
         listReward.Add(itemData);
+    }
+
+    /// <summary>
+    /// 校验道具类型是否为魔王当前形态可装备（装备类型 + 武器类型匹配）。
+    /// 不校验种族模组：魔王专属设计为「种族装备+魔王属性池」可跨模组掉落，且各模型掉落需研究解锁，强制模组匹配会让魔王自身模型未解锁时专属掉落归零。
+    /// </summary>
+    /// <param name="demonLordInfo">魔王当前形态的生物配置</param>
+    /// <param name="itemInfo">候选道具配置</param>
+    /// <returns>魔王可装备该类型道具</returns>
+    private static bool IsEquipTypeMatchForDemonLord(CreatureInfoBean demonLordInfo, ItemsInfoBean itemInfo)
+    {
+        ItemTypeEnum itemType = itemInfo.GetItemType();
+        if (!demonLordInfo.CanEquipItemType(itemType))
+            return false;
+        //武器需再匹配武器类型(equip_items_weapon_type=0 表示可装备全部武器类型)
+        if (itemType == ItemTypeEnum.Weapon && !demonLordInfo.CanEquipWeaponType(itemInfo.GetWeaponType()))
+            return false;
+        return true;
     }
 
     /// <summary>

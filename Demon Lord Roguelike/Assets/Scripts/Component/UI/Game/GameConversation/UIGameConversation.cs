@@ -46,10 +46,57 @@ public partial class UIGameConversation : BaseUIComponent
         this.creatureObj = creatureObj;
         this.creatureData = creatureData;
         this.acionForEnd = acionForEnd;
-        SetCardIcon(creatureData);
+        //NPC配置了头像图片（无spine资源）时走静态头像模式，否则走spine形象模式
+        string npcIconRes = GetNpcIconRes(creatureData);
+        bool isIconMode = !npcIconRes.IsNull();
+        SetCardIcon(creatureData, npcIconRes);
         SetName(creatureData.creatureName);
         SetContent(content);
-        ui_IconContent.SetData(creatureData, PopupEnum.CreatureCardDetails);
+        if (isIconMode)
+        {
+            //静态头像无生物模型数据：清空详情气泡（防UI复用残留上一个生物的数据），并隐藏贿赂入口（无议会逻辑会白扣道具）
+            ui_IconContent.SetData(null, PopupEnum.CreatureCardDetails);
+            ui_Gift.gameObject.SetActive(false);
+        }
+        else
+        {
+            ui_IconContent.SetData(creatureData, PopupEnum.CreatureCardDetails);
+            ui_Gift.gameObject.SetActive(true);
+        }
+    }
+
+    /// <summary>
+    /// 设置故事演出对话数据（故事演出系统专用入口；支持旁白：npc_id=0 时无立绘/无名字/无贿赂按钮）
+    /// </summary>
+    /// <param name="creatureObj">说话生物的场景物体（无实体传 null）</param>
+    /// <param name="talkData">故事对话配置</param>
+    /// <param name="actionForEnd">点击结束回调</param>
+    public void SetDataForStory(GameObject creatureObj, StoryTalkInfoBean talkData, Action actionForEnd)
+    {
+        if (talkData.IsNarration())
+        {
+            //旁白：双立绘入口与贿赂全隐藏，名字置空，直接以配置文本起打字机
+            this.creatureObj = creatureObj;
+            this.creatureData = null;
+            this.acionForEnd = actionForEnd;
+            ui_Icon.ShowObj(false);
+            ui_IconImg.ShowObj(false);
+            ui_Gift.gameObject.SetActive(false);
+            ui_IconContent.SetData(null, PopupEnum.CreatureCardDetails);
+            SetName("");
+            SetContent(talkData.content_language);
+            return;
+        }
+        //NPC模式：复用现有立绘/静态头像/名字/打字机管线，仅强制隐藏贿赂入口
+        var npcInfo = NpcInfoCfg.GetItemData(talkData.npc_id);
+        if (npcInfo == null)
+        {
+            LogUtil.LogError($"故事演出对话失败，找不到NPC配置 id:{talkData.npc_id}");
+            actionForEnd?.Invoke();
+            return;
+        }
+        SetData(creatureObj, new CreatureBean(npcInfo), talkData.content_language, actionForEnd);
+        ui_Gift.gameObject.SetActive(false);
     }
 
     /// <summary>
@@ -72,10 +119,32 @@ public partial class UIGameConversation : BaseUIComponent
     /// <summary>
     /// 设置卡片图像
     /// </summary>
-    public void SetCardIcon(CreatureBean creatureData)
+    /// <param name="creatureData">生物数据</param>
+    /// <param name="iconRes">NPC头像图片配置（NpcInfo.icon_res）；非空时用静态图片展示（无spine资源的NPC），为空时用spine形象</param>
+    public void SetCardIcon(CreatureBean creatureData, string iconRes)
     {
-        //比原始大小放大2倍
+        if (!iconRes.IsNull())
+        {
+            //静态头像模式：隐藏spine，从UI图集加载头像图片
+            ui_Icon.ShowObj(false);
+            ui_IconImg.ShowObj(true);
+            IconHandler.Instance.SetUIIcon(iconRes, ui_IconImg);
+            return;
+        }
+        //spine形象模式：隐藏静态头像，比原始大小放大2倍
+        ui_IconImg.ShowObj(false);
         GameUIUtil.SetCreatureUIForSimple(ui_Icon, creatureData, scale: 2);
+    }
+
+    /// <summary>
+    /// 获取NPC头像图片配置（NpcInfo.icon_res，无spine资源NPC的静态头像）；非NPC或未配置返回 null
+    /// </summary>
+    protected string GetNpcIconRes(CreatureBean creatureData)
+    {
+        var npcInfo = creatureData?.GetCreatureNpcData()?.npcInfo;
+        if (npcInfo == null || npcInfo.icon_res.IsNull())
+            return null;
+        return npcInfo.icon_res;
     }
 
     #region 文本动画
@@ -121,7 +190,7 @@ public partial class UIGameConversation : BaseUIComponent
     }
 
     /// <summary>
-    /// 异步推进逐字显示（async UniTaskVoid 发射即忘直接调用；GTask.Wait 受 timeScale 影响；逐字递增 TMP maxVisibleCharacters）
+    /// 异步推进逐字显示（async UniTaskVoid 发射即忘直接调用；GTask.WaitReal 实时等待不受 timeScale 影响，故事演出暂停战斗时打字机照常；逐字递增 TMP maxVisibleCharacters）
     /// <para>取消时 await 点抛 OperationCanceledException，UniTaskVoid 默认静默（真异常由 UniTaskScheduler 记录），无需 try/catch</para>
     /// </summary>
     protected async UniTaskVoid TextAnimForContent()
@@ -133,7 +202,7 @@ public partial class UIGameConversation : BaseUIComponent
         for (int i = 1; i <= contentForTextAnim.Length; i++)
         {
             ui_TalkText.maxVisibleCharacters = i;
-            await GTask.Wait(timeForTextAnim, cancelForTextAnim);
+            await GTask.WaitReal(timeForTextAnim, cancelForTextAnim);
         }
         //自然播完只收尾不 Cancel（取消源留给下次 Start 的 Reset 复用）
         FinishTextAnim(true);

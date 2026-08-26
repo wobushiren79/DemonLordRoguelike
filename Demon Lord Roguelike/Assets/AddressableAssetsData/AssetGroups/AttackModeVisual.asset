@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0f75726d9cba1654ba6d3db7bf1f1673
+    m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_RangedWaterBall_2.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 1823556c20227a34a9b3421b348eae65
     m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_Axe_1.prefab
     m_ReadOnly: 0
@@ -32,6 +37,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 29d9a75a1a49ac64a8b8b7189f326c11
     m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_RangedFireBall.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 31c2a659484391146803409081efafaa
+    m_Address: Assets/LoadResources/AttackModeVisual/AttackModeVisual_RangedFireBall_2.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

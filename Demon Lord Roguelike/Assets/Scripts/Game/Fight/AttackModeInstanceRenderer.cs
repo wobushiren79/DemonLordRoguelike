@@ -400,7 +400,8 @@ public partial class AttackModeInstanceRenderer
         //基准无条件推进：即便本帧速度被判瞬移丢弃，也不能让基准停在旧位置(否则下一帧会把这段位移二次计入)
         attackMode.lastRenderPosition = attackMode.position;
         //暂停帧不除零；理论速度<=0 的原地弹道直接退化为旧行为
-        float moveSpeed = attackMode.GetMoveSpeed();
+        //钳制基准走 GetVelocityClampSpeed：加速弹道(天降重力加速)由子类重写为当前真实速度，避免后半程每帧被误判瞬移
+        float moveSpeed = attackMode.GetVelocityClampSpeed();
         if (deltaTime <= 0f || moveSpeed <= 0f)
             return Vector4.zero;
         Vector3 velocity = delta / deltaTime;

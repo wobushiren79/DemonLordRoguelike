@@ -1,6 +1,6 @@
 ---
 name: conversation-system
-description: Demon Lord Roguelike 游戏的对话系统开发指南。使用此SKILL当需要创建或修改对话界面、议员交谈、对话台词配置、文本逐字动画(打字机)、说话音效、贿赂送礼交互等，包括 UIGameConversation、ConversationCouncilorInfo 配置表(按好感关系分档随机台词)、DoomCouncilLogic.InteractCouncilor 触发入口、文本动画(点击跳过显示全文)、sound_talk_1 音效等。
+description: Demon Lord Roguelike 游戏的对话系统开发指南。使用此SKILL当需要创建或修改对话界面、议员交谈、对话台词配置、文本逐字动画(打字机)、说话音效、贿赂送礼交互、无spine NPC静态头像(NpcInfo.icon_res + ui_IconImg)等，包括 UIGameConversation、ConversationCouncilorInfo 配置表(按好感关系分档随机台词)、DoomCouncilLogic.InteractCouncilor 触发入口、文本动画(点击跳过显示全文)、sound_talk_1 音效等。
 watched_files:
   - Assets/Scripts/Component/UI/Game/GameConversation/
   - Assets/Scripts/Bean/MVC/Game/ConversationCouncilorInfoBean.cs
@@ -13,14 +13,14 @@ watched_files:
 
 当前对话系统是**轻量单轮对话**：点一下角色 → 弹一句台词（带逐字动画+说话音效）→ 可贿赂或点空白结束。**没有**分支树、多轮选项、剧情节点——如需这些属于新功能扩展（见文末「扩展指引」）。
 
-唯一使用场景：**终焉议会（DoomCouncil）场景的议员交谈**。
+使用场景有两个：① **终焉议会（DoomCouncil）场景的议员交谈**；② **故事演出系统（story-system）** 的对话步骤（经 `SetDataForStory` 专用入口，见下）。
 
 ## 核心文件
 
 | 文件 | 说明 |
 |---|---|
 | [UIGameConversation.cs](Assets/Scripts/Component/UI/Game/GameConversation/UIGameConversation.cs) | 对话界面逻辑（BaseUIComponent） |
-| [UIGameConversationComponent.cs](Assets/Scripts/Component/UI/Game/GameConversation/UIGameConversationComponent.cs) | AutoLinkUI 字段绑定（ui_TalkText/ui_Icon/ui_BG/ui_Gift/ui_Name/ui_IconContent） |
+| [UIGameConversationComponent.cs](Assets/Scripts/Component/UI/Game/GameConversation/UIGameConversationComponent.cs) | AutoLinkUI 字段绑定（ui_TalkText/ui_Icon/ui_IconImg/ui_BG/ui_Gift/ui_Name/ui_IconContent） |
 | [ConversationCouncilorInfoBeanPartial.cs](Assets/Scripts/Bean/MVC/Game/ConversationCouncilorInfoBeanPartial.cs) | 台词按关系筛选 `GetDataByRelationship` |
 | [DoomCouncilLogic.cs](Assets/Scripts/Game/Logic/DoomCouncilLogic.cs) | 对话触发入口 `InteractCouncilor` |
 
@@ -39,6 +39,28 @@ watched_files:
     → OpenUIAndCloseOther<UIDoomCouncilMain>() 回议会主界面
 ```
 
+## 故事演出入口（SetDataForStory）
+
+故事演出系统（story-system）的对话步骤走专用入口 `SetDataForStory(GameObject creatureObj, StoryTalkInfoBean talkData, Action actionForEnd)`，按 `talkData.npc_id` 分两种形态；现有调用方（DoomCouncilLogic.InteractCouncilor / LauncherTest.StartForConversationTest）不受影响：
+
+- **npc_id=0（旁白）**：隐藏 ui_Icon/ui_IconImg/ui_Gift、ui_IconContent 置空、名字置空，直接 `SetContent` 起打字机（无头像无名字纯文字）。
+- **npc_id≠0**：`new CreatureBean(NpcInfoCfg.GetItemData(npc_id))` 走现有 `SetData` 管线（spine/静态头像/名字复用），再强制隐藏 ui_Gift（故事无贿赂）。
+
+## 头像图片模式（无 spine NPC）
+
+对话头像为双模式，`UIGameConversation.SetCardIcon(creatureData, iconRes)` 按 `GetNpcIconRes()` 判定分支：
+
+- **spine 形象模式（默认）**：`GameUIUtil.SetCreatureUIForSimple(ui_Icon, creatureData, scale:2)` 放大 2 倍；点头像弹生物卡详情气泡（`ui_IconContent.SetData(creatureData, PopupEnum.CreatureCardDetails)`）；显示贿赂按钮 `ui_Gift`。
+- **静态头像模式（NpcInfo 配置 `icon_res` 非空）**：`IconHandler.Instance.SetUIIcon(icon_res, ui_IconImg)` 从 UI 图集加载静态图（支持「名,图集」后缀强制指定图集），隐藏 spine 节点 `ui_Icon`；`ui_IconContent.SetData(null,…)` 不弹详情（无生物模型可渲染，且防 UI 复用残留上一个生物的气泡数据）；隐藏 `ui_Gift`（无议会态度/好感逻辑，点了会白扣道具）。
+
+预制体结构：`Icon`（SkeletonGraphic）与 `IconImg`（Image）同为 `IconContent` 子节点、默认均隐藏，运行时按模式互斥 `ShowObj`。
+
+### 无实体 NPC（creature_id=0）
+
+- **创建支撑**：`CreatureBean.AddSkinForBase` 开头守卫——`CreatureInfoCfg.GetItemData(creatureId)==null` 时直接跳过（直查 Cfg 无日志，绕开 `creatureInfo` getter 的 LogError），空 `skin_data`/`equip_*` 列本已安全（SplitForListLong("")→空表、InitRandomEquip poolId=0 早退），故 `new CreatureBean(npcInfo)` 全程不碰 spine。
+- **已知脆弱点（禁止踩）**：此类生物 `creatureInfo`/`creatureModel` 为 null，`GetAttribute` **任意属性**都会经 `GetListBuffData`→`creatureInfo.GetCreatureBuffs()` NRE（不止 MPR/MPF/RCD/CMP）——仅供对话展示，禁止进战斗/生物详情/榨汁等一切属性链路。
+- **当前唯一实例**：监视之塔 id=10001（新手引导 NPC，excel_npc_info 行：creature_id 空、level/HP/MP/DR/ATK/ASPD/MSPD/attack_search_range=9999、rarity=6(L)、icon_res=`ui_book_1`；名字多语言 id 同 10001）。新增同类 NPC：excel_npc_info 加行（icon_res 填图集 sprite 名）+ excel_language 的 NpcInfo 子表配同名 id 的多语言行（注意该子表 14-19 列是 4-9 列的重复列，需双份同值）→ 编辑器「生成 Entity」+「导出 JSON」。
+
 ## 台词配置（ConversationCouncilorInfo）
 
 - **Excel 真实源**：`Assets/Data/Excel/excel_conversation_councilor_info[对话-议员].xlsx`，sheet `ConversationCouncilorInfo`。
@@ -52,7 +74,7 @@ watched_files:
 
 实现在 `UIGameConversation`（无需 DOTween，项目 DOTweenModuleUI 仅支持 Unity UI Text，不支持 TMP）：
 
-- **机制**：`StartTextAnim(content)` 先 `ui_TalkText.text = content` 设全文，**UniTask 异步推进**（`await GTask.Wait(timeForTextAnim, token)` 逐字递增 TMP `maxVisibleCharacters`，受 timeScale 影响），利用 TMP 原生可见字符控制，无 substring 分配。**不用协程、不用 Update 轮询**（见 CLAUDE.md「异步与定时逻辑规则」）。
+- **机制**：`StartTextAnim(content)` 先 `ui_TalkText.text = content` 设全文，**UniTask 异步推进**（`await GTask.WaitReal(timeForTextAnim, token)` 逐字递增 TMP `maxVisibleCharacters`，**实时逐字、不受 timeScale 影响**——故事演出在战斗场景 timeScale=0 暂停时打字机照常；议会场景 timeScale 恒 1 行为无差异），利用 TMP 原生可见字符控制，无 substring 分配。**不用协程、不用 Update 轮询**（见 CLAUDE.md「异步与定时逻辑规则」）。
 - **节奏**：`timeForTextAnim`（public，默认 0.05s/字，Inspector 可调）。
 - **取消（框架层 GTask 封装）**：`cancelForTextAnim`（`GTaskCancel`，懒创建一次复用）——`StartTextAnim` 里 `Reset()` 重建令牌（首次 `GTask.NewCancel(gameObject)` 创建并链接销毁令牌，UI 直接销毁也自动取消）、`StopTextAnim` 里 `Cancel()` 收口（跳过/重开/关闭统一），在途推进在 await 点抛 `OperationCanceledException`；推进方法为 `async UniTaskVoid`、调用点 `_ = TextAnimForContent()` 显式丢弃（消除未观察调用警告）——UniTaskVoid 静默 OCE、真异常由 UniTaskScheduler 记录，**无需 try/catch，禁止 async void**（其未捕获 OCE 会进 Console）。`OnDestroy` 重写里 `cancelForTextAnim?.Dispose()` 显式释放。
 - **收尾拆分**：`StopTextAnim` = `Cancel()` + `FinishTextAnim(isShowAll)`（显示全文/复位 `isTextAnimPlaying`/截断音效）；自然播完只调 `FinishTextAnim(true)`、**不 Cancel**——取消源留给下次 Start 的 `Reset()` 复用。
@@ -63,7 +85,7 @@ watched_files:
 
 ## 贿赂（送礼）
 
-- 入口 `ui_Gift` 按钮 → `UIHandler.ShowDialogItemSelect` 选道具 → `ActionForItemSelectGift`：
+- 入口 `ui_Gift` 按钮 → `UIHandler.ShowDialogItemSelect` 选道具（弹窗内嵌 `UIViewItemSelect` 通用选项控件，只传 `actionForSelectGift` 回调故选项只显示「赠送」按钮）→ `ActionForItemSelectGift`：
   1. 背包扣除该道具；
   2. **所有议员**：本场议案投票态度 +10%（`DoomCouncilBean.AddCouncilorAttitude(uuid, 10)`，态度仅存本场）；
   3. **议会固定NPC**（`IsFixedCouncilor()`）：额外按道具稀有度 `RarityInfo.item_add_relationship` 增加**持久化好感**（`UserRelationshipBean.AddRelationship` + `SaveUserData()` 落盘）；
@@ -85,4 +107,4 @@ watched_files:
 - `UIGameConversation` 同时被本 skill 与议会流程使用：贿赂的态度/好感语义归 doom-council-system，本 skill 管界面与台词动画。
 - Bean 修改规则：`ConversationCouncilorInfoBean.cs` 带 `AUTO-GENERATED-DO-NOT-EDIT` 标记，扩展只能写 `*BeanPartial.cs`。
 - `ui_TalkText` 为 TextMeshProUGUI：动画依赖 TMP `maxVisibleCharacters`，勿改回 Unity UI Text。
-- 对话打开时 `SetBaseControl(false)` 停移动但**不停 timeScale**，`UniTask.Delay` 默认 DeltaTime 受 timeScale 影响、正常计时。
+- 对话打开时 `SetBaseControl(false)` 停移动但**不停 timeScale**；打字机走 `GTask.WaitReal` 实时推进，即便外部把 timeScale 调 0（如故事演出在战斗场景暂停）也照常逐字。

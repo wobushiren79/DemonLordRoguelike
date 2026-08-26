@@ -24,6 +24,8 @@ public class BaseLauncher : BaseMonoBehaviour
         GameConfigBean gameConfig = GameDataHandler.Instance.manager.GetGameConfig();
         //设置全屏
         Screen.fullScreen = gameConfig.window == 1 ? true : false;
+        //初始化屏幕分辨率Handler（窗口自由拖动等比缩放）
+        ScreenResolutionHandler.Instance.InitData();
         //设置FPS
         FPSHandler.Instance.SetData(gameConfig.stateForFrames, gameConfig.frames);
         //修改抗锯齿

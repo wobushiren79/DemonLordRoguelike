@@ -406,6 +406,9 @@ public partial class CreatureBean
     /// </summary>
     public void AddSkinForBase(bool hasWeapon = true)
     {
+        //无有效生物配置时（如仅对话使用的无实体NPC，creature_id=0）跳过基础皮肤，避免 creatureInfo 空引用
+        if (CreatureInfoCfg.GetItemData(creatureId) == null)
+            return;
         //添加基础皮肤
         List<long> listSpineBaseIds = creatureInfo.GetSpineBaseIds();
         if (!listSpineBaseIds.IsNull())

@@ -49,7 +49,8 @@ GameFightTypeEnum
 ```csharp
 public class GameFightLogic : BaseGameLogic
 {
-    // 1. 准备阶段：加载场景 -> 创建核心生物 -> (钩子:核心创建后) -> 开启控制 -> 打开UI
+    // 1. 准备阶段：加载场景 -> 创建核心生物 -> (钩子:核心创建后) -> 开启控制 -> 打开UI -> StartGame
+    //    -> 触发 EventsInfo.GameFightLogic_StartGame 事件(基类单点触发覆盖全部模式,无参数,供故事演出/新手引导挂钩)
     public override async void PreGame() { }
     
     // 2. 游戏更新：生物生成、生物更新、魔王魔力恢复、BUFF更新
@@ -406,6 +407,7 @@ FightHandler.Instance.RemoveFightPrefab(prefabEntity);
 
 ```csharp
 EventsInfo.GameFightLogic_CreatureDeadEnd       // 生物死亡结束
+EventsInfo.GameFightLogic_StartGame             // 战斗开始(PreGame末尾StartGame后由基类单点触发,覆盖征服/终焉议会/无限/测试全部模式;无参数,供故事演出StoryHandler/新手引导挂钩)
 EventsInfo.GameFightLogic_EndGame               // 战斗结束
 EventsInfo.GameFightLogic_SelectCard            // 选中卡片
 EventsInfo.GameFightLogic_UnSelectCard          // 取消选择卡片

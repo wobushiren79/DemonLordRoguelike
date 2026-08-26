@@ -11,6 +11,7 @@ metadata:
 - 路面材质 `MatFightSceneRoad.mat` 指向 [Shader_FightSceneRoad_1.shader](../../../Assets/Shaders/Shader_FightSceneRoad_1.shader)（内部名 **`Game/Fight/FightSceneRoad_1`**，与项目手写游戏层 shader 命名约定一致；从 `Shader_FightSceneRoad_1.shadergraph` 一次性导出+补丁，文件同名不同扩展名可共存），材质面板有 **Fog Influence** 滑杆（**0=完全不受雾影响，1=与原生一致**，当前为 0）。
 - 生成用的编辑器导出器（FightSceneRoadShaderExporter）**用户要求一次性用完即删**；该 .shader 现为**手工维护**——改 .shadergraph 不会同步，文件头注释已写明。
 - 路面 shadergraph 本身是纯漫反射棋盘格（ColorA/ColorB 双色，Smoothness=0、Metallic=0）。
+- 路面表面 Alpha **仅取材质 `_Alpha` 浮点**，ColorA/ColorB 的 alpha 通道不参与渲染；透明度按场景 `road_alpha` 列驱动（excel_fight_scene，FightSceneBeanPartial.GetRoadAlpha，空/0 默认 0.5；王宫 30001=0.1、其余=0.5）。WorldHandler.LoadFightScene 设置 `_GridSize`/`_ColorA`/`_ColorB`/`_Alpha` **一律走 MaterialPropertyBlock**——禁止 sharedMaterial 直接改共享材质（编辑器下会持久化污染 .mat，2026-08 曾致王宫 0.1 透明度串到所有场景）。
 
 ## ⚠️ 最大教训：URP 雾因子语义是"保色度"
 `MixFog(fragColor, fogFactor)` 内部是 `fragColor * fogIntensity + fogColor * (1 - fogIntensity)`（见 URP ShaderVariablesFunctions.hlsl MixFogColor）——**fogFactor=1 表示完全无雾、0 表示全雾色**，与内置管线"雾量"语义相反！

@@ -92,7 +92,7 @@ watched_files:
 
 1. `GetUnlockCreatureModelIdsForEquip()` 取已解锁生物，过滤掉没有对应装备道具的生物
 2. 循环 `createItemNum`（默认 3）个：前 `createEquipNum`（默认 1）个生成装备，其余生成魔晶
-3. **装备**（CreateItemEquip，吃 `conquerInfo`）：随机解锁生物的随机装备，品质 = `conquerInfo.reward_equip_rarity`、属性加点数量 = `RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add`（由稀有度配置表决定），按 `createEquipDemonLordRate`（默认 1/10）概率标记魔王专属。**先定 rarityItem 再按道具 `reward_rarity` 白名单过滤生物装备池**（`ItemsInfoBean.IsMatchRewardRarity(rarityItem)`，空=全稀有度适配），过滤后为空回退发魔晶；字段/编辑器见 game-item
+3. **装备**（CreateItemEquip，吃 `conquerInfo`）：随机解锁生物的随机装备，品质 = `conquerInfo.reward_equip_rarity`、属性加点数量 = `RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add`（由稀有度配置表决定），按 `createEquipDemonLordRate`（默认 1/10）概率标记魔王专属。**先定 rarityItem 再按道具 `reward_rarity` 白名单过滤生物装备池**（`ItemsInfoBean.IsMatchRewardRarity(rarityItem)`，空=全稀有度适配），过滤后为空回退发魔晶；字段/编辑器见 game-item。**魔王专属额外过滤**：`userType == DemonLord` 时同循环再过 `IsEquipTypeMatchForDemonLord`——按魔王当前形态（`selfCreature.creatureInfo`，转生会换故按当前）的 `CanEquipItemType`+`CanEquipWeaponType` 判定，魔王穿不上的类型（如骷髅魔王的武器）不掉落，空则回退魔晶；刻意不校验种族模组（跨模组掉落是既有呈现，且模型掉落需研究解锁，强制匹配会让专属归零）
 4. **魔晶**（CreateItemCrystal，吃 `conquerInfo`）：基础数量 = `conquerInfo.reward_crystal`，在 `±基础值/2` 范围随机浮动
 5. 测试模式由 `InitData(null, testData)` 进入，用 `RewardSelectTestData` 的固定参数（此入口行为不变）
 

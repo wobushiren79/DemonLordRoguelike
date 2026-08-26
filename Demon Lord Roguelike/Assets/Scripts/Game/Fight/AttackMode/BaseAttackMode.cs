@@ -390,6 +390,15 @@ public class BaseAttackMode
     }
 
     /// <summary>
+    /// 获取瞬移钳制用的基准速度（渲染器帧差分速度超过本值×VelocityClampRate×gameSpeed 即判瞬移清零）；
+    /// 默认=GetMoveSpeed（恒速弹正确），加速弹道（如天降 Fallupon 重力加速）须重写返回当前真实速度，否则后半程每帧被误钳、火星甩尾消失
+    /// </summary>
+    public virtual float GetVelocityClampSpeed()
+    {
+        return GetMoveSpeed();
+    }
+
+    /// <summary>
     /// 清理自己
     /// </summary>
     public virtual void Destroy(bool isPermanently = false)

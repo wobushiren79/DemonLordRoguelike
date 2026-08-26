@@ -7,6 +7,7 @@ watched_files:
   - Assets/Scripts/Enums/ItemsEnum.cs
   - Assets/Scripts/Utils/ItemsUtil.cs
   - Assets/Scripts/Component/UI/Common/Item/
+  - Assets/Scripts/Component/UI/Common/ItemSelect/
   - Assets/Scripts/Component/UI/Common/Backpack/
   - Assets/Scripts/Component/UI/Popup/ItemInfo/
 ---
@@ -31,14 +32,17 @@ watched_files:
 
 ### 道具 UI（`Common/Item/`）
 - **UIViewItem** - 道具项**基类**（公共字段 itemData + SetData/SetIcon/SetNum/SetItemBG/SetItemPopup/OnClickForButton；SetItemBG 按 itemData.rarity 用 RarityInfo.ui_board_color_item 给 ui_ItemBG 上色，空槽位/缺配置回退白色）
-- **UIViewItemBackpack** - 背包道具项（`: UIViewItem`，加 creatureData + SetData(item,creature)）
+- **UIViewItemBackpack** - 背包道具项（`: UIViewItem`，加 creatureData + SetData(item,creature)；右键经 `ui_UIViewItem` 同物体 Button 旁的 PopupButtonCommonView 转发（Awake `AddListenerForRightClick` → `EventForRightClick`，itemData 非空时触发 `EventsInfo.UIViewItemBackpack_OnRightClickSelect` 并 `ClearData` 隐藏悬浮详情；左键仍走 Button.onClick → `OnClickForSelect` → `UIViewItemBackpack_OnClickSelect`）
 - **UIViewItemEquip** - 装备项（`: UIViewItem`，加 itemTypeEnum + 空槽位占位图标/部位名）
 - **UIViewItemBackpackList** - 背包列表（在 `Common/Backpack/`）
 - **UIViewStoreItem** - 商店道具项
 - **UIPopupItemInfo** - 道具信息气泡
 
+### 道具选项控件（`Common/ItemSelect/`）
+- **UIViewItemSelect** - 道具选项通用控件（prefab `Resources/UI/Common/UIViewItemSelect.prefab`，内嵌送礼/丢弃/装备三个 `UIViewItemSelectChild` 按钮）：`SetData(actionForGift/Delete/Equip)` **传入回调即显示对应按钮、为空隐藏**，业务全由使用方回调处理；`ShowSelect(itemData, targetTF)` 记录选中道具并用 `UGUIUtil.GetRootPos` 把选项列表定位到目标处；点全屏透明背景或任意选项均 `CloseSelect`，点选项先关闭再以 `Action<ItemBean>` 回调。使用方：`UIDialogSelectItem`（按 Bean 回调显隐）、`UICreatureManager`（右键弹出，只显示装备+丢弃）
+
 ### 道具相关 UI
-- **UIDialogSelectItem** - 道具选择弹窗
+- **UIDialogSelectItem** - 道具选择弹窗（内嵌 `UIViewItemSelect`，选项显隐由 `DialogSelectItemBean` 回调是否传入决定）
 
 ### 魔汁（Juice，首个消耗品类道具）
 

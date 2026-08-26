@@ -10,6 +10,7 @@ watched_files:
   - Assets/Scripts/Bean/MVC/UserDataBean.cs
   - Assets/Scripts/Bean/Game/CreatureBean.cs
   - Assets/Scripts/Component/UI/Common/Item/
+  - Assets/Scripts/Component/UI/Common/ItemSelect/
   - Assets/Scripts/Component/UI/Common/Backpack/
 ---
 
@@ -288,7 +289,7 @@ public bool IsBetterEquipment(ItemBean newItem, ItemBean currentItem)
 ```
 UIViewItem (基类 : BaseUIView)         公共 itemData + SetData/SetIcon/SetNum/SetItemBG/SetItemPopup/OnClickForButton
 ├── UIViewItemEquip   : UIViewItem     装备槽位：itemTypeEnum + SetData(ItemTypeEnum)，空槽位重写 SetIcon/SetItemPopup 显部位图标/名
-└── UIViewItemBackpack : UIViewItem    背包格：creatureData + SetData(item,creature)，行为==基类
+└── UIViewItemBackpack : UIViewItem    背包格：creatureData + SetData(item,creature)；右键经 ui_UIViewItem 的 PopupButtonCommonView 转发（Awake AddListenerForRightClick → EventForRightClick 触发 UIViewItemBackpack_OnRightClickSelect）
 ```
 
 关键约定（改动这块务必遵守）：
@@ -300,6 +301,16 @@ UIViewItem (基类 : BaseUIView)         公共 itemData + SetData/SetIcon/SetNu
 - **稀有度底框**：基类含 `ui_ItemBG`（Image），`SetData` 里调 `SetItemBG(itemData)` 按稀有度上色——取 `RarityInfoCfg.GetItemData(itemData.rarity).ui_board_color_item`（道具专用**单色**，非 `ui_board_color` 逗号渐变）经 `ColorUtil.ParseHtmlString` 解析；`itemData==null`（空槽位）或缺配置回退 `Color.white`。`ui_ItemBG` 为 `null`（旧 prefab 未接）时直接跳过，向后兼容。
 - **⚠️ 不要对子类 prefab 重跑 UI 自动生成工具**：工具不感知继承，会重生成 `UIViewItemEquipComponent`/`BackpackComponent` 带回 `ui_ItemIcon` 等公共字段，与基类字段重名隐藏。子类字段一律走继承（这两个 Component 文件已删除）。
 
+### 道具选项通用控件（UIViewItemSelect）
+
+`Assets/Scripts/Component/UI/Common/ItemSelect/`（prefab `Assets/Resources/UI/Common/UIViewItemSelect.prefab`）：右键/点击道具时弹出的操作选项，含送礼(Gift)/丢弃(Delete)/装备(Equip)三个按钮（按钮 prefab `UIViewItemSelectChild.prefab`，文本多语言：赠送 1002001 / 丢弃 1002002 / 装备 1002003）。
+
+- **显隐由回调决定**：`SetData(Action<ItemBean> actionForGift = null, actionForDelete = null, actionForEquip = null)`——传入回调的按钮显示、为空隐藏，业务逻辑全由使用方在各自回调里处理。
+- **弹出/关闭**：`ShowSelect(itemData, targetTF)` 记录选中道具（`selectItem`）并把选项列表（`ui_SelectList`）用 `UGUIUtil.GetRootPos` 定位到目标道具处；根节点是全屏透明背景按钮，点击任意处 `CloseSelect()`；点选项按钮先关闭再回调（回传点击时的 selectItem）。
+- **使用方**：`UIDialogSelectItem`（`InitItemSelect` 按 `DialogSelectItemBean` 回调判空包装下发，议会送礼只传 gift → 只显示「赠送」）；`UICreatureManager`（`OpenUI` 里 `SetData(actionForEquip, actionForDelete)` 只显示装备+丢弃；右键背包道具弹出；装备与左键共用 `UseOrEquipItem`，丢弃弹确认框 textId 1002004「是否要丢弃该道具？」确定后 `RemoveBackpackItem`+`SaveUserData`+`InitBackpackItemsData`）。
+- **嵌入注意**：父 UI 的 Awake `RegisterButtons` 会把控件内按钮一并注册到父 `OnClickForButton`（父不处理这些按钮即空操作无害），控件自身 Awake 也注册到自身 `OnClickForButton`，两个监听并存互不干扰；父 UI 关闭再打开时子物体激活状态会残留，`CloseUI` 需显式 `CloseSelect()` 收口。
+- **右键来源**：`UIViewItemBackpack` 在 Awake 里对 `ui_UIViewItem` 的 `PopupButtonCommonView` `AddListenerForRightClick(EventForRightClick)` 触发右键事件。⚠️ 右键**不能**在背包格根节点实现 `IPointerClickHandler`——点击事件冒泡到 Button 所在物体（`UIViewItem` 子物体）即被吞掉（Button 只响应左键），必须与 Button 同物体接收，`PopupButtonCommonView.OnPointerClick` 正是为此挂在 Button 旁。
+
 ## 相关事件
 
 ```csharp
@@ -308,6 +319,7 @@ EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Item_Change);
 
 // 道具点击（按具体子类类型订阅）
 EventsInfo.UIViewItemBackpack_OnClickSelect   // RegisterEvent<UIViewItemBackpack>
+EventsInfo.UIViewItemBackpack_OnRightClickSelect   // 背包道具右键点击（RegisterEvent<UIViewItemBackpack>，如 UICreatureManager 右键弹 UIViewItemSelect）
 EventsInfo.UIViewItemEquip_OnClickSelect      // RegisterEvent<UIViewItemEquip>
 ```
 

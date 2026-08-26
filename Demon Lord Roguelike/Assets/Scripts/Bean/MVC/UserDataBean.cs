@@ -57,9 +57,23 @@ public class UserDataBean : BaseBean
     //用户好感度数据(按npcId持久化议会固定NPC好感; 已拆分为独立存档 UserRelationship_{slot}, 不再随 UserData 序列化; 由 UserDataService 在加载/保存时注入与落盘)
     [Newtonsoft.Json.JsonIgnore]
     public UserRelationshipBean userRelationshipData;
+    //用户故事演出数据(已播放故事记录; 已拆分为独立存档 UserStory_{slot}, 不再随 UserData 序列化; 由 UserDataService 在加载/保存时注入与落盘)
+    [Newtonsoft.Json.JsonIgnore]
+    public UserStoryBean userStoryData;
 
     //临时存储数据
     public UserTempBean userTempBean;
+
+    /// <summary>
+    /// 获取用户故事演出数据
+    /// 数据由 UserDataService 从独立存档 UserStory_{slot} 加载后注入; 此处仅做兜底懒初始化
+    /// </summary>
+    public UserStoryBean GetUserStoryData()
+    {
+        if (userStoryData == null)
+            userStoryData = new UserStoryBean();
+        return userStoryData;
+    }
     
     /// <summary>
     /// 获取用户进阶数据

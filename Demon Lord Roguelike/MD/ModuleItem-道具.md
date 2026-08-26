@@ -209,8 +209,9 @@ StartSize         // 起始大小缩放
 
 | 组件 | 文件路径 | 职责 |
 |------|----------|------|
-| `UIDialogSelectItem` | `UI/Dialog/UIDialogSelectItem.cs` | 道具选择对话框：列出背包道具，支持丢弃/送礼操作 |
-| `DialogSelectItemBean` | `Bean/UI/DialogSelectItemBean.cs` | 选择对话框参数：丢弃/送礼回调 |
+| `UIDialogSelectItem` | `UI/Dialog/UIDialogSelectItem.cs` | 道具选择对话框：列出背包道具，内嵌 UIViewItemSelect 选项控件，按 DialogSelectItemBean 传入回调显示丢弃/送礼等选项 |
+| `DialogSelectItemBean` | `Bean/UI/DialogSelectItemBean.cs` | 选择对话框参数：丢弃/送礼回调（回调为空则对应选项不显示） |
+| `UIViewItemSelect` | `UI/Common/ItemSelect/UIViewItemSelect.cs` | 道具选项通用控件：送礼/丢弃/装备按钮按回调显隐，ShowSelect 定位弹出，点选项先关闭再回调 |
 
 ### 6.5 商店道具
 
@@ -223,7 +224,7 @@ StartSize         // 起始大小缩放
 
 | 组件 | 文件路径 | 职责 |
 |------|----------|------|
-| `UICreatureManager` | `UI/Game/CreatureManager/UICreatureManager.cs` | 生物管理主界面：整合背包列表、装备详情、穿戴/卸载流程 |
+| `UICreatureManager` | `UI/Game/CreatureManager/UICreatureManager.cs` | 生物管理主界面：整合背包列表、装备详情、穿戴/卸载流程、道具右键选项（装备/丢弃，丢弃带确认框） |
 
 ---
 

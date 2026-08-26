@@ -51,7 +51,8 @@ public partial class EffectHandler
     /// </summary>
     /// <param name="effectId">EffectInfo 配置表 id</param>
     /// <param name="param">播放参数(必填 targetPos；duration/startSizeMultiplier/startLifetimeMultiplier/direction/size 为哨兵默认值 0 时不设置)</param>
-    public void ShowEnduringSingletonEffect(long effectId, SingletonEffectParam param)
+    /// <param name="actionForGet">取到实例后的回传回调(播放后调用)：发射方需持有实例做播放后逐帧控制时传入(如冲击波 simulationSpeed 逐帧跟随游戏速度)</param>
+    public void ShowEnduringSingletonEffect(long effectId, SingletonEffectParam param, Action<EffectBase> actionForGet = null)
     {
         //获取全局唯一粒子实例
         manager.GetEffectForEnduring(GetEffectResName(effectId), (targetEffect) =>
@@ -75,6 +76,7 @@ public partial class EffectHandler
                 targetEffect.mainPS.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             }
             targetEffect.PlayEffect();
+            actionForGet?.Invoke(targetEffect);
         });
     }
 

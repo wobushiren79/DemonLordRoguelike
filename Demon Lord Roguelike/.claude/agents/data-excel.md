@@ -1,6 +1,6 @@
 ---
 name: data-excel
-description: Excel配置表处理：ExcelUtil、EPPlus、ExcelEditorWindow配置导出、Excel-JSON转换。直接读写xlsx文件使用openpyxl脚本。包含游戏全部32张配置表。
+description: Excel配置表处理：ExcelUtil、EPPlus、ExcelEditorWindow配置导出、Excel-JSON转换。直接读写xlsx文件使用openpyxl脚本。包含游戏全部35张配置表。
 tools: Read, Write, Edit, Glob, Grep, Bash
 skills:
   - excel-io
@@ -113,7 +113,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 | `excel_spine_animation_state[骨骼动画枚举_FrameWork].xlsx` | SpineAnimationState | 33 | id, res |
 | `excel_ui_text[UI文本_FrameWork].xlsx` | UIText | 152 | id, content[language] |
 
-> `excel_language` 包含多 Sheet：UIText / AbyssalBlessingInfo / ItemsType / ItemsInfo / BuffInfo / DoomCouncilInfo / StoreGashaponmachineInfo / GameWorldInfo / CreatureInfo / NpcInfo / CreatureModel / CreatureAttributeTypeInfo / ConversationCouncilorInfo / TitleInfo / NpcRelationshipInfo / DoomCouncilRatingsInfo / RarityInfo / ResearchInfo
+> `excel_language` 包含多 Sheet：UIText / AbyssalBlessingInfo / ItemsType / ItemsInfo / BuffInfo / DoomCouncilInfo / StoreGashaponmachineInfo / GameWorldInfo / CreatureInfo / NpcInfo / CreatureModel / CreatureAttributeTypeInfo / ConversationCouncilorInfo / TitleInfo / NpcRelationshipInfo / DoomCouncilRatingsInfo / RarityInfo / ResearchInfo / StoryInfo(故事名) / StoryTalkInfo(故事对话内容)
 
 ---
 
@@ -138,7 +138,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 | `excel_attackmode_ext_info[攻击模块扩展信息].xlsx` | AttackModeExtInfo | 1 | id, attack_mode_id(对应AttackModeInfo), ext_type(额外攻击类型,1=BOSS技能), trigger_interval(释放间隔秒), remark （5列）。配 NpcInfo.attack_mode_ext 实现"额外攻击"按间隔自动释放(不限于BOSS)，运行时由 AIIntentCreatureAttack 的额外攻击机制消费 |
 | `excel_buff_info[buff信息].xlsx` | BuffInfo | 135 | id, buff_type, rarity, class_entity/events/data, trigger_value/chance/num/time/effect, name[language] （25列） |
 | `excel_buff_pre_info[buff前置条件信息].xlsx` | BuffPreInfo | 6 | id, class_entity |
-| `excel_fight_scene[战斗场景].xlsx` | FightScene | 12 | id, name_res, road_color_a/b, skybox_mat, skybox_rotate, fog, volumetric_fog(体积雾配置: `Distance:48&Density:0.06&Tint:#B8CCFF&Scattering:0.05&Anisotropy:0.5&Attenuation:96&BaseHeight:0&MaxHeight:12&MainLight:1&AdditionalLight:1`,空=不开启,缺省键回退默认值(与SetVolumetricFog参数默认一致),MainLight/AdditionalLight配1=强制开0=强制关缺省=不动profile;解析 FightSceneBeanPartial.HasVolumetricFog/GetVolumetricFogParams→VolumetricFogParamsBean,由 WorldHandler.LoadFightScene 进场开启、下次任意场景 InitData 统一关闭兜底;夜晚树林10002已配贴地薄雾0~12高+压低主光散射0.05防夜晚穿帮+双灯贡献开做月光柱), ambient_light(全局环境光颜色hex,如#364863;空=不修改,夜晚场景配暗蓝色,解决受光粒子(草等)夜晚不吃方向光变暗的问题;由 WorldHandler.LoadFightScene 进场设置、卸载时还原缓存原值), details(场景细节预制：配值则场景根 Details 节点下同名子预制显示、其它子预制隐藏；空则整个 Details 节点隐藏；由 WorldHandler.LoadFightScene 处理), environment_sound(环境音 AudioInfo 表 id,空/0=不播放;WorldHandler.LoadFightScene 进场 PlayEnvironment 循环播、UnLoadScene(Fight) StopEnvironment), depth_of_field(景深配置: 形如mode:Bokeh&length:130&aperture:12,空=默认Bokeh/180/12,缺省键回退默认;解析 FightSceneBeanPartial.HasDepthOfField/GetDepthOfFieldParams,仅 VolumeHandler.InitData(Fight) 分支读取应用,focusDistance 仍用相机跟随距离;沙漠20001/20002、平原40001~40004显式配length:180(=默认焦距，显式写出仅表明确意图)), remark。id 编号约定：每个主场景占一个万位段（10001=树林/20001=沙漠/30001=皇宫BOSS，新增主场景按 40001、50001… 递进），个十百千位留给该场景的子场景变体（如 10002=树林夜晚、10003=树林白天下雨(DayRain)、10004=树林黑夜下雨(NightLight)、20002=沙漠夜晚(沙漠预制 Details/Day 含白天平行光+热浪、Details/Night 含冷色月光+MoonShaft 月光柱)，雨天变体天空盒用 Skybox_4 阴天/Skybox_6 夜，雾更近更闷，环境光压暗）；40001~40004=平原（预制 Details 子场景 Day/Night/DayFlowerSea/NightFlowerSea 四变体，白天用 Skybox_3、花海白天雾偏淡紫 #F2E8FB，夜晚两个变体同树林夜晚配置：Skybox_6+体积雾月光柱+环境光 #AABFE0+虫鸣 2000001；白天花海子场景的方向光是后补的，与 Day 一致白光 1.5）；99999=测试场景特殊区，不参与主场景序列 |
+| `excel_fight_scene[战斗场景].xlsx` | FightScene | 12 | id, name_res, road_color_a/b, road_alpha(道路透明度0~1,空/0默认0.5;注意道路shader的表面Alpha仅取材质 _Alpha 浮点、与 road_color 的 alpha 通道无关;解析 FightSceneBeanPartial.GetRoadAlpha,由 WorldHandler.LoadFightScene 经 MaterialPropertyBlock 按场景设置;王宫30001=0.1,其余场景=0.5), skybox_mat, skybox_rotate, fog, volumetric_fog(体积雾配置: `Distance:48&Density:0.06&Tint:#B8CCFF&Scattering:0.05&Anisotropy:0.5&Attenuation:96&BaseHeight:0&MaxHeight:12&MainLight:1&AdditionalLight:1`,空=不开启,缺省键回退默认值(与SetVolumetricFog参数默认一致),MainLight/AdditionalLight配1=强制开0=强制关缺省=不动profile;解析 FightSceneBeanPartial.HasVolumetricFog/GetVolumetricFogParams→VolumetricFogParamsBean,由 WorldHandler.LoadFightScene 进场开启、下次任意场景 InitData 统一关闭兜底;夜晚树林10002已配贴地薄雾0~12高+压低主光散射0.05防夜晚穿帮+双灯贡献开做月光柱), ambient_light(全局环境光颜色hex,如#364863;空=不修改,夜晚场景配暗蓝色,解决受光粒子(草等)夜晚不吃方向光变暗的问题;由 WorldHandler.LoadFightScene 进场设置、卸载时还原缓存原值), details(场景细节预制：配值则场景根 Details 节点下同名子预制显示、其它子预制隐藏；空则整个 Details 节点隐藏；由 WorldHandler.LoadFightScene 处理), environment_sound(环境音 AudioInfo 表 id,空/0=不播放;WorldHandler.LoadFightScene 进场 PlayEnvironment 循环播、UnLoadScene(Fight) StopEnvironment), depth_of_field(景深配置: 形如mode:Bokeh&length:130&aperture:12,空=默认Bokeh/180/12,缺省键回退默认;解析 FightSceneBeanPartial.HasDepthOfField/GetDepthOfFieldParams,仅 VolumeHandler.InitData(Fight) 分支读取应用,focusDistance 仍用相机跟随距离;沙漠20001/20002、平原40001~40004显式配length:180(=默认焦距，显式写出仅表明确意图)), remark。id 编号约定：每个主场景占一个万位段（10001=树林/20001=沙漠/30001=皇宫BOSS(室内光照方案：Skybox_6 夜 + 环境光 #3F3630 + 近暗雾 #241F22 Start10/End30 + 暖色体积雾 Tint#9A8570/Density0.04/双灯贡献开 + details=Indoor；prefab Details/Indoor 下含 4 盏柱间点光(x±1.5/12.5,z-2/9,y3,#FF9A50/range7/int0.9/无影)与 2 盏火盆点光(x0/11,z17.5,y1.5,#FF8840/range9/int1.3/无影)，方向光压至 0.4 强度/0.35 阴影消方向性，2026-08 由室外光照改室内)，新增主场景按 40001、50001… 递进），个十百千位留给该场景的子场景变体（如 10002=树林夜晚、10003=树林白天下雨(DayRain)、10004=树林黑夜下雨(NightLight)、20002=沙漠夜晚(沙漠预制 Details/Day 含白天平行光+热浪、Details/Night 含冷色月光+MoonShaft 月光柱)，雨天变体天空盒用 Skybox_4 阴天/Skybox_6 夜，雾更近更闷，环境光压暗）；40001~40004=平原（预制 Details 子场景 Day/Night/DayFlowerSea/NightFlowerSea 四变体，白天用 Skybox_3、花海白天雾偏淡紫 #F2E8FB，夜晚两个变体同树林夜晚配置：Skybox_6+体积雾月光柱+环境光 #AABFE0+虫鸣 2000001；白天花海子场景的方向光是后补的，与 Day 一致白光 1.5）；99999=测试场景特殊区，不参与主场景序列 |
 | `excel_fight_type_conquer_info[战斗-征服模式].xlsx` | FightTypeConquerInfo | 12 | id, world_id, fight_scene_ids, enemy_ids, enemy_num, attack_wave, fight/road/level 参数, drop/reward_crystal, reward_reputation(通关声望奖励) （24列） |
 
 ---
@@ -156,7 +156,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_npc_info[NPC信息].xlsx` | NpcInfo | 170 | id, creature_id, npc_type, level, HP/MP/DR/ATK/ASPD/MSPD, skin_data, skin_color_data(皮肤固定颜色: `部位类型int,r,g,b,a&...` 如 `3,255,255,255,255`=Hair白色，rgba取0~255、部位类型见CreatureSkinTypeEnum、空=创建时随机染色), equip_item_ids, equip_random(随机装备: `池ID,稀有度1,稀有度2...` 如 `10000001,N,R`，池=CreatureRandomInfo的散件池type1/套装池type2，稀有度按RarityEnum枚举名、多个等概率抽、重复写加权、空=不随机；150条npc_type=3议员行已按评级配N~SSR), councilor_ratings, title_data, name[language], body_size(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定), attack_mode_ext(Boss额外技能:逗号分隔的AttackModeExtInfo id,非空即启用), remark, region(地区限制: 空=不限语言、语言代码如 `cn` 或 `cn,en`=仅这些语言下出现，多个英文逗号分隔，代码见LanguageEnum；目前仅终焉议会议员生成过滤生效), rarity(生物稀有度: 空/0=N、按RarityEnum枚举值1=N~6=L；配置后创建NPC生物时写入 CreatureBean.rarity，仅设置稀有度不授稀有度BUFF；150条npc_type=3随机议员行已按评级填充：评级1-2→N、3-4→R、5→SR，4条npc_type=2固定议员行配SSR) （24列） |
+| `excel_npc_info[NPC信息].xlsx` | NpcInfo | 171 | id, creature_id, npc_type, level, HP/MP/DR/ATK/ASPD/MSPD, skin_data, skin_color_data(皮肤固定颜色: `部位类型int,r,g,b,a&...` 如 `3,255,255,255,255`=Hair白色，rgba取0~255、部位类型见CreatureSkinTypeEnum、空=创建时随机染色), equip_item_ids, equip_random(随机装备: `池ID,稀有度1,稀有度2...` 如 `10000001,N,R`，池=CreatureRandomInfo的散件池type1/套装池type2，稀有度按RarityEnum枚举名、多个等概率抽、重复写加权、空=不随机；150条npc_type=3议员行已按评级配N~SSR), councilor_ratings, title_data, name[language], body_size(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定), attack_mode_ext(Boss额外技能:逗号分隔的AttackModeExtInfo id,非空即启用), remark, region(地区限制: 空=不限语言、语言代码如 `cn` 或 `cn,en`=仅这些语言下出现，多个英文逗号分隔，代码见LanguageEnum；目前仅终焉议会议员生成过滤生效), rarity(生物稀有度: 空/0=N、按RarityEnum枚举值1=N~6=L；配置后创建NPC生物时写入 CreatureBean.rarity，仅设置稀有度不授稀有度BUFF；150条npc_type=3随机议员行已按评级填充：评级1-2→N、3-4→R、5→SR，4条npc_type=2固定议员行配SSR), icon_res(头像图片: UI图集sprite名、支持「名,图集」后缀强制指定图集、空=用spine形象展示；无spine资源的NPC配置此字段，对话界面 UIGameConversation 据此走静态头像模式；当前仅监视之塔 id=10001 新手引导NPC 配 ui_book_1，该NPC creature_id=0无生物资源仅对话使用) （25列） |
 | `excel_npc_relationship_info[NPC关系信息].xlsx` | NpcRelationshipInfo | 7 | id, icon_res, name[language], relationship_min/max, relationship_type |
 | `excel_doom_council_info[终焉议会信息].xlsx` | DoomCouncilInfo | 13 | id, success_rate, cost_reputation/crystal, class_entity_name/data, unlock_id, name[language] （11列） |
 | `excel_doom_council_ratings_info[终焉议会议员等级信息].xlsx` | DoomCouncilRatingsInfo | 12 | id, icon_res, vote, name[language] |
@@ -169,7 +169,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
 | `excel_abyssal_blessing_info[深渊馈赠信息].xlsx` | AbyssalBlessingInfo | 18 | id, icon_res, parent_id, level, buff_ids, name[language], details[language], remark, valid(0无效1有效,生成器据此过滤), max_count(一局最多获得次数,0=不限,仅 level<=0 生效) |
-| `excel_effect_info[粒子信息].xlsx` | EffectInfo | 27 | id, res_name, show_type, show_time, float/int/long/vector3/vector4_data, remark |
+| `excel_effect_info[粒子信息].xlsx` | EffectInfo | 29 | id, res_name, show_type, show_time, float/int/long/vector3/vector4_data, remark。2000001/2000002=火/水爆发(Effect_Boom_Fire_2/Water_2,原名 Effect_Burst_Fire_1/Water_1 于 2026-08-24 改名,火/水大魔法师BOSS技能 700001/700002 的 effect_hit 由 800001 火锥迁入;PS Burst 新粒子走全局单例通道,float/vector3 留空,位置由 ShowEnduringSingletonEffect 直接落点) |
 | `excel_game_world_info[游戏世界信息].xlsx` | GameWorldInfo | 4 | id, icon_res, unlock_id, unlock_id_infinite/conquer_difficulty_level/quick_attack/speed2, map_pos, name[language] |
 | `excel_level_info[等级信息].xlsx` | LevelInfo | 11(0~10级) | id, level_exp(历史遗留 string 类型,用的地方 long.Parse), sacrifice_num, attribute_point(升级获得加点数,当前全等级配置5), CMP_rate(魔力召唤增加倍率,按等级递增), level_color(等级字体颜色,1~10级渐进色), juicer_exp(榨汁经验:被榨汁时按等级贡献的经验值,long,各行=本行 level_exp×100%;榨汁结算按投入魔物等级汇总产出魔汁道具) （7列）。⚠️ 含 id=0 兜底行:level_exp/sacrifice_num/attribute_point=0(实际不会被读到,升级读的是 level+1 行),CMP_rate=0/level_color=#FFFFFF(与原有 null 兜底行为一致),juicer_exp=20(=1级 level_exp 的20%) |
 | `excel_rarity_info[稀有度].xlsx` | RarityInfo | 8 | id, ui_board_color, buff_color, item_add_relationship, name[language], CMP_rate(魔力召唤增加倍率,N=0依次+0.5) |
@@ -184,6 +184,16 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
 | `excel_store_gashaponmachine_info[商店-扭蛋机].xlsx` | StoreGashaponMachineInfo | 23 | id, creature_ids, buy_num, pay_crystal, icon_res, pre_unlock_ids, name[language] |
+
+---
+
+### 故事演出系统（Story）
+
+| 文件名 | Sheet | 数据行 | 主要列 |
+|--------|-------|--------|--------|
+| `excel_story_info[故事信息].xlsx` | StoryInfo | - | id, name[language], trigger_type(1引导 2剧情预留), scene_type(1基地 2战斗 3议会), trigger_condition(1首次进基地 2首次进战斗 3首次掉魔晶), priority, is_once, valid, remark。故事演出主表 |
+| `excel_story_details_info[故事详情信息].xlsx` | StoryDetailsInfo | - | id(约定=story_id*1000+step_order), story_id, step_order, step_type(1对话 2镜头移动 3等待 4特效 5音效 6淡入淡出), is_async, param_1~4, remark。演出步骤表 |
+| `excel_story_talk_info[故事对话信息].xlsx` | StoryTalkInfo | - | id, story_id(所属故事,0=通用,编辑器按此过滤对话下拉), npc_id(0=旁白), content[language], remark。故事对话表，textId 约定=业务行 id |
 
 ---
 

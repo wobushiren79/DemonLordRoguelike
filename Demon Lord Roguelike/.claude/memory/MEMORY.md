@@ -23,7 +23,7 @@
 
 ### Reference
 - [reference_fog_stripping_pc_build.md](reference_fog_stripping_pc_build.md) — PC 打包后战斗场景雾消失根因：雾由代码运行时开启但 GraphicsSettings 雾剥离=Automatic 只扫 Build Settings 场景（仅 TestScene 且雾关）→ FOG_LINEAR 变体被剥离；已修 m_FogStripping=1(Custom) 三雾型全保留，须重新打包生效；「编辑器有包体没有」先查变体剥离
-- [reference_shadergraph_fog_bypass.md](reference_shadergraph_fog_bypass.md) — ShaderGraph 材质控雾破解与教训：**URP 雾因子语义是"保色度"(1=无雾)非雾量**，缩放须换算 1-(1-因子)*权重（直接乘会让 0=全雾色）；路面已导出为手工维护的 Shader_FightSceneRoad_1.shader（内部名 Game/Fight/FightSceneRoad_1，Fog Influence 滑杆 0=无雾）；导出器一次性用完已删；URP ShaderGraph 无 fog 开关、6.3 起 Generator 全 internal、生成代码不内联模板须宏拦截 include
+- [reference_shadergraph_fog_bypass.md](reference_shadergraph_fog_bypass.md) — ShaderGraph 材质控雾破解与教训：**URP 雾因子语义是"保色度"(1=无雾)非雾量**，缩放须换算 1-(1-因子)*权重（直接乘会让 0=全雾色）；路面已导出为手工维护的 Shader_FightSceneRoad_1.shader（内部名 Game/Fight/FightSceneRoad_1，Fog Influence 滑杆 0=无雾）；导出器一次性用完已删；URP ShaderGraph 无 fog 开关、6.3 起 Generator 全 internal、生成代码不内联模板须宏拦截 include；**路面 Alpha 仅取材质 _Alpha 浮点（road_color 的 alpha 通道无效）**，按场景 road_alpha 列驱动（空默认0.5，王宫0.1/其余0.5），道路参数一律走 MaterialPropertyBlock——禁止 sharedMaterial 改共享路面材质（会持久化污染 .mat 串场景）
 - [reference_unityskills_shadergraph_limits.md](reference_unityskills_shadergraph_limits.md) — Unity-Skills shadergraph 工具限制：节点白名单(无噪声/Time/NormalFromHeight)、Vector2 赋值 bug、值格式约定
 - [reference_language_excel_source.md](reference_language_excel_source.md) — 多语言 Language_*.txt 的真实源是 excel_language 同名工作表（非各自配置表），改文本必须改该 Excel 否则导出被覆盖；GetTextReplace 占位符模板
 - [reference_rarity_terminology.md](reference_rarity_terminology.md) — 稀有度术语约定：统一叫「稀有度」(rarity),N/R/SR/SSR/UR/L 六档(普通/稀有/特稀/极稀/绝稀/传奇),禁用品质/阶级/品阶;魔王 rarity=0 按 N 处理

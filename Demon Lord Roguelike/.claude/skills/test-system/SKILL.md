@@ -52,6 +52,7 @@ public enum TestSceneTypeEnum
     CreatureJuicer = 12,    // 魔汁机(魔物回收)测试
     EffectTest = 13,        // 粒子特效测试
     ConversationTest = 14,  // 对话系统测试
+    StoryTest = 15,         // 故事演出测试
 }
 ```
 
@@ -310,6 +311,13 @@ foreach (var itemData in GameWorldInfoCfg.GetAllData())
 - **魔王(防守核心)生物**：由基础设置区的「魔王生物 ID」(`fightDefenseCoreId`，EditorPrefs 持久化，默认 `2001` 骷髅战士)决定，`GetTestData()` 用它构建 `fightData.fightDefenseCoreData`（原硬编码 2001 已改为该字段）。
 - **魔王蓝量**：基础设置区的「魔王蓝量」(`fightDemonLordMP`，EditorPrefs 持久化 float，默认 `9999`)，`GetTestData()` 存入 `FightBeanForTest.testDemonLordMP`，由 `GameFightLogicTest.PreGameForAfterCreateDefenseCore()` 在防守核心创建后统一应用：设 `MPCurrent = testDemonLordMP`，并在配置 MP 上限不足时同步把 `dicAttribute[MP]` 提升到该值（否则 `ChangeMP` 消耗时会把超上限蓝量一次夹回配置上限）。应用在馈赠添加**之后**（AddAbyssalBlessing 触发的 RefreshBaseAttribute 会重算 dicAttribute，顺序颠倒会把上限提升冲掉；重开战斗走同一钩子故每场一致）。
 
+### ID 列表编辑（手动输入 + 下拉选择已有配置）
+
+卡片生物 ID 与进攻生物 NPC ID 均为 **逐行列表编辑**：每行 = 序号 + 手动 ID 输入框(LongField) + 下拉选择(选中覆盖该行 ID) + 删除；底部「➕ 添加」(默认复制最后一行值)/「🗑️ 移除最后一个」。统一由 `DrawIdListWithDropdown(idList, 标签前缀, options, optionIds)` 绘制；下拉选项**首项固定为"(手动输入)"占位**——当前 ID 不在选项中时显示它且选中不改动 ID，避免手动值被误覆盖。
+
+- **卡片生物 IDs**（基础设置区，`fightCardIds: List<long>`，旧版逗号分隔 string `fightCardId` 已废弃，EditorPrefs 旧 key 首次加载时一次性迁移后删除）：下拉选项 `[id] 中文名`，数据源 `CreatureInfoCfg.GetAllArrayData()` + 直读 `Language_CreatureInfo_cn.txt`（`EnsureFightCardCreatureOptions` 懒加载，「🔄 刷新列表」清缓存 + `ClearCfgBaseStaticCache(typeof(CreatureInfoCfg))`）。`GetTestData()` 按卡片数量循环取列表 id（空列表兜底 2002 防取模除零）；基地测试(Base)的「手下生物 IDs」与卡片测试的「生物 ID」均复用同一份 `fightCardIds` 与同一绘制方法 `DrawFightCardIdList(title)`。
+- **进攻生物 IDs（NPCID）**（敌人设置区，`enemyIds: List<long>`）：下拉选项 `id  中文名`，数据源 `NpcInfoCfg.GetAllArrayData()` + 直读 `Language_NpcInfo_cn.txt`（`EnsureFightEnemyNpcOptions` → 与对话测试共用构建方法 `BuildNpcOptions(withManualPlaceholder, out options, out ids)`，对话测试传 false 无占位项）。
+
 ### 深渊馈赠测试设置（下拉选择族 + 目标等级）
 
 BUFF 设置区的「深渊馈赠」**不再是手填 ID 文本框**，而是逐行配置：馈赠族下拉（选项显示 `[id] [等级范围] 中文名 - 效果`，中文直读 `Language_AbyssalBlessingInfo_cn.txt`，不切 LanguageCfg 语言避免篡改运行中游戏语言）+ 目标等级（仅升级链族显示，Lv 夹紧 1~`GetFamilyMaxLevel`；`level=0` 可重复馈赠显示"(可重复)"无等级）。配置重导后点「🔄 刷新列表」重建下拉缓存。
@@ -497,6 +505,38 @@ LauncherTest.StartForConversationTest(npcId, content)        // Assets/Scripts/G
 - **下拉中文名直读语言表**：选项名字直读 `Language_NpcInfo_cn.txt`（走通用 helper `LoadLanguageForCn(fileName)`，深渊馈赠的 `LoadAbyssalBlessingLanguageForCn` 已改为调它），不切 LanguageCfg 避免篡改运行中游戏语言；配置重导后点「🔄 刷新列表」清选项缓存 + `ClearCfgBaseStaticCache(typeof(NpcInfoCfg))` 反射清 Cfg 的 dicData/arrayData 静态缓存（通用 helper，从深渊馈赠的 `ClearAbyssalBlessingInfoCfgCache` 提炼，后者改为调它再补清族根/等级缓存）。
 - **参数持久化**：手动 NPC ID 用 EditorPrefs **字符串**存储（10 位 id 超 int 上限，同深渊馈赠列表教训）；对话文本/下拉索引常规持久化。
 
+## 故事演出测试 (StoryTest)
+
+`TestSceneTypeEnum.StoryTest` —— 下拉选择故事配置后直接播放指定故事演出(`StoryHandler.PlayStory`)，按故事 scene_type 自动进入对应场景（基地/战斗/终焉议会），验证演出步骤编排与触发效果，无需依赖真实触发条件。
+
+### 流程
+
+```
+GameTestEditor.DrawStoryTest()                           // Inspector 配置
+    │  foldout「📖 故事演出测试」+ 🔄刷新列表(清选项缓存+ClearCfgBaseStaticCache(typeof(StoryInfoCfg))) + 📂故事配置表
+    │  故事下拉(EnsureStoryTestOptions 懒加载，选项 `[id] 名字 [触发类型/场景/条件]`，名字直读 Language_StoryInfo_cn.txt)
+    │  + 手动故事ID(long，非0优先于下拉)
+    │  + 存档槽位 IntPopup(0=当前测试数据 InitTestData 伪造数据,1~3=读取 UserData_1/2/3 作为运行时数据,测试模拟不写回)
+    │  ▶️ 播放故事演出(Application.isPlaying) → launcher.StartForStoryTest(targetStoryId, storyTestSaveSlot)
+    ▼
+LauncherTest.StartForStoryTest(storyId, saveSlot = 0)     // Assets/Scripts/Game/Launcher/LauncherTest.cs
+    │  ⓪ saveSlot>0 时先读档:UserDataService.ChangeSlot(saveSlot).Load(false) → SetUserData(献祭测试同范式,全程内存模拟)
+    │  ① isTestSimulation = true
+    │  ② 按故事 scene_type 进场景：
+    │     Base        → EnterGameForBaseScene + 一次性 World_EnterGameForBaseScene 回调
+    │     Fight       → 内置默认测试战斗数据 BuildStoryTestFightData()(1路x10/2波1010010001/5张2002/核心2001/MP9999)
+    │                 进战斗 + 一次性 GameFightLogic_StartGame 回调
+    │     DoomCouncil → StartDoomCouncil(议案1000000001) + _ = WaitForDoomCouncilThenPlayStory 轮询场景就绪+1s缓冲
+    ▼
+场景就绪 → StoryHandler.Instance.PlayStory(storyId)
+```
+
+### 关键点
+
+- **一次性回调统一走 `RegisterStoryTestPlayCallback(eventName, storyId)`**：重复调用先清旧回调再注册，防多次触发。
+- **测试场景 StoryHandler 不注册自动触发**：`StoryHandler.InitData` 仅 `LauncherGame.Launch` 调用，测试入口故直接 `PlayStory` 手动播放。
+- **参数持久化**：`storyTestId` 用 EditorPrefs **字符串**存储（10 位 id 超 int 上限，同对话测试 NPC ID 教训）；`storyTestSelectIndex`/`storyTestSaveSlot`(0~3) 常规持久化；选项缓存字段 `storyTestOptions`/`storyTestIds` + 折叠 `showStoryTest` 均在 `GameTestEditorPartial`。
+
 ## 正常游戏启动 (NormalGame)
 
 `TestSceneTypeEnum.NormalGame` —— 在测试场景(TestScene)里直接走与正式 `LauncherGame` 完全一致的真实开始流程，免去每次手动切到 `GameScene` 再运行。
@@ -588,6 +628,8 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 粒子特效测试面板 | `Assets/Scripts/Component/UI/Test/TestEffectGUI.cs`（纯代码 IMGUI，无预制；手动ID输入+下拉 `EffectInfoCfg.GetAllArrayData` 懒加载 + 按 id 分发到正式游戏对应执行方法播放 + 播放次数经 Update 每帧1次分帧播放） |
 | 对话系统测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForConversationTest`） |
 | 对话系统测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawConversationTest`/`EnsureConversationTestNpcOptions`；通用 helper `LoadLanguageForCn`/`ClearCfgBaseStaticCache`） |
+| 故事演出测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForStoryTest`/`RegisterStoryTestPlayCallback`/`BuildStoryTestFightData`） |
+| 故事演出测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawStoryTest`/`EnsureStoryTestOptions`） + `GameTestEditorPartial.cs`（storyTestId 字符串持久化/storyTestSelectIndex/storyTestOptions/storyTestIds/showStoryTest） |
 | 测试场景 | `Assets/Scenes/TestScene.unity` |
 
 ---

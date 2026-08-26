@@ -103,6 +103,10 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public int rarity;
 	/// <summary>
+	///头像图片-UI图集sprite名(支持「名,图集」后缀;空=用spine形象展示;无spine资源的NPC(如仅对话使用)配置此字段)
+	/// </summary>
+	public string icon_res;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

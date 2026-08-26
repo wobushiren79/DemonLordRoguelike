@@ -80,6 +80,8 @@ public class GameFightLogic : BaseGameLogic
         uiFightMain.InitData();
         //开始游戏
         StartGame();
+        //发送战斗开始事件（所有模式共用基类 PreGame，单点覆盖；故事演出/新手引导在此挂钩）
+        EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_StartGame);
     }
 
     /// <summary>

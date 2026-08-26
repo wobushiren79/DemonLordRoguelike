@@ -110,6 +110,7 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 - **正常模式**：品质 `rarityItem = fightTypeConquerInfo.reward_equip_rarity`，属性加点数量 `addAttribute = RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add`（由稀有度配置表决定，征服表只控制出什么稀有度）；按 `createEquipDemonLordRate` 概率设为魔王专属 `ItemUserTypeEnum.DemonLord`
 - **测试模式**：用 `testData.rarity / addAttribute / createEquipDemonLordRate`
 - ⚠️ **道具稀有度白名单过滤（reward_rarity）**：现流程**先**算好目标 `rarityItem`，**再**按道具的 `ItemsInfoBean.IsMatchRewardRarity(rarityItem)` 过滤生物装备池——道具 `reward_rarity` 配了(如 `5,6`)就只在对应稀有度奖励里出现，空=全稀有度适配。过滤后池为空则回退发魔晶（与"无相关道具"一致）。字段/编辑器详见 [item-system](../item-system/SKILL.md)。这也是取随机道具的时机**从"先取件再定稀有度"调整为"先定稀有度再过滤取件"**的原因。
+- ⚠️ **魔王专属可装备类型过滤**：掷出 `userType == DemonLord` 时，候选池在同一过滤循环里再经 `IsEquipTypeMatchForDemonLord` 过滤——用**魔王当前形态**（`userData.selfCreature.creatureInfo`，转生会换 creatureId 故按当前形态）的 `CanEquipItemType`(装备类型) + `CanEquipWeaponType`(武器类型, `equip_items_weapon_type=0`=全武器) 判定，魔王穿不上的类型(如骷髅魔王的武器)不会掉落；过滤后为空同样回退魔晶。**刻意不校验种族模组(creature_model_id)**：魔王专属呈现为「种族装备+魔王属性池」可跨模组掉落，且各模型掉落需研究解锁，强制模组匹配会让魔王自身模型未解锁时专属掉落静默归零。
 - 末尾算好 `rarityItem/userType/addAttribute` 后收口到 `EquipUtil.CreateEquipItemForReward(id, rarityItem, userType, addAttribute)`（奖励场景封装，底层 `CreateEquipItem`：`new ItemBean(id, 1, rarityItem, userType)` → `InitRandomAttributeForCreate(addAttribute)`）——装备生成统一入口在 EquipUtil，NPC随机装备/GM测试走各自的场景封装。
 
 ### 魔晶生成 CreateItemCrystal

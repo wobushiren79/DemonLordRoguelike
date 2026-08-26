@@ -41,6 +41,7 @@ EditorWindow (Unity)
 ├── SkinRandomEditorWindow         # 皮肤/装备/套装随机池配置 (CreatureRandomInfo 三模式: 皮肤池编辑skin_random_data/装备池·套装池编辑equip_random_data, 双列表点选增删, 写回Excel+同步JSON)
 ├── EquipSuitEditorWindow          # 装备套装配置 (EquipSuitInfo 套装表: 物种下拉+7槽位点选填入+新建/删除套装, 单EPPlus会话写回+同步JSON)
 ├── FightSceneEditorWindow         # 战斗场景配置 (excel_fight_scene: 预制/道路色/天空盒/雾/环境光/细节预制直观编辑, 保存写回Excel+再生JSON, Play时实时应用到当前战斗场景)
+├── StoryEditorWindow              # 故事演出编辑 (StoryInfo/StoryDetailsInfo/StoryTalkInfo 三表+excel_language 对应 sheet: 三栏布局故事列表/字段/步骤编排+对话内联编辑, 4个xlsx各单EPPlus会话写回+重导JSON)
 └── PixelDaEditorWindow            # PixelDa 像素美术生成 (AI 文生图/图编辑/图生视频/抽帧/音乐)
 ```
 
@@ -303,6 +304,20 @@ LauncherTest (Inspector)
 
 ---
 
+## 故事演出编辑 (StoryEditorWindow)
+
+**文件**: `Assets/Editor/StoryEditorWindow.cs`，**菜单**: `游戏/故事演出编辑`
+
+### 功能
+
+可视化编辑故事演出配置三表（StoryInfo/StoryDetailsInfo/StoryTalkInfo）+ `excel_language` 对应 sheet。骨架照抄 `FightTypeConquerEditorWindow`，增删行照 `EquipSuitEditorWindow`。
+
+- **四栏布局**：故事列表（搜索/新增/删除——删除级联删步骤并提示孤儿对话）｜故事字段（名字中文直接编辑写回语言表 content_cn）｜步骤编排（foldout 列表/step_type EnumPopup/is_async/**➕行前插入**/↑↓移/末尾添加，按类型动态参数标签；Talk 步骤只做引用选择+只读预览）｜对话列表（本故事+通用对话统一 CRUD：npc 下拉/中文/备注/删除(被引用时提示并自动移除引用)/新增自动绑定当前故事）。
+- **步骤与对话分离**：对话 CRUD 全在对话列表面板，步骤编排只负责下拉引用；对话下拉按 StoryTalkInfo.story_id 过滤只显示当前故事（+story_id=0 通用），可手输 ID 跨故事引用。
+- **保存**：Validate（场景-条件一致性/参数合法性/对话存在性，错误阻断、警告可过）→ 4 个 xlsx 各自单 EPPlus 会话写回（删除降序 DeleteRow/修改/新增）→ `ExcelUtil.ExcelToJsonItem`×4 重导 JSON → `AssetDatabase.Refresh` → 提交快照。
+
+---
+
 ## 研究模块编辑 (ResearchEditorWindow)
 
 **文件**: `Assets/Editor/ResearchEditorWindow.cs`，**菜单**: `游戏/研究模块编辑`
@@ -531,6 +546,7 @@ public class InspectorMyComponent : Editor
 | 皮肤/装备/套装随机池配置 | `Assets/Editor/SkinRandomEditorWindow.cs` |
 | 装备套装配置 | `Assets/Editor/EquipSuitEditorWindow.cs` |
 | 战斗场景配置 | `Assets/Editor/FightSceneEditorWindow.cs` |
+| 故事演出编辑 | `Assets/Editor/StoryEditorWindow.cs` |
 | 研究模块编辑 | `Assets/Editor/ResearchEditorWindow.cs` |
 | Excel 配置目录 | `Assets/Data/Excel/` |
 

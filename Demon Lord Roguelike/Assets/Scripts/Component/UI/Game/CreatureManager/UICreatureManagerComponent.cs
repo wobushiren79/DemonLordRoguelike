@@ -17,5 +17,7 @@ public partial class UICreatureManager
 
     public PopupButtonCommonView ui_BtnLevelUpSacrifice_PopupButtonCommonView;
 
+    public UIViewItemSelect ui_UIViewItemSelect;
+
 
 }

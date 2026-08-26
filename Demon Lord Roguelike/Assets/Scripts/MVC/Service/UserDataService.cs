@@ -28,7 +28,7 @@ public class UserDataService : BaseDataService<UserDataBean>
     }
 
     /// <summary>
-    /// 保存用户数据（主存档带自动备份最多3份；解锁/成就/背包道具/背包生物拆分为同槽目录下的独立文件一并保存）
+    /// 保存用户数据（主存档带自动备份最多3份；解锁/成就/背包道具/背包生物/好感/故事拆分为同槽目录下的独立文件一并保存）
     /// </summary>
     public override void Save(UserDataBean data)
     {
@@ -58,16 +58,17 @@ public class UserDataService : BaseDataService<UserDataBean>
         // 写入主存档
         base.Save(data);
 
-        // 拆分存档：解锁/成就/背包道具/背包生物独立文件（同槽目录，复用 BaseDataService 泛型读写，不做备份）
+        // 拆分存档：解锁/成就/背包道具/背包生物/好感/故事独立文件（同槽目录，复用 BaseDataService 泛型读写，不做备份）
         GetSplitService<UserUnlockBean>($"UserUnlock_{slotIndex}").Save(data.GetUserUnlockData());
         GetSplitService<UserAchievementBean>($"UserAchievement_{slotIndex}").Save(data.GetUserAchievementData());
         GetSplitService<UserBackpackItemsBean>($"UserBackpackItem_{slotIndex}").Save(data.GetUserBackpackItemsData());
         GetSplitService<UserBackpackCreatureBean>($"UserBackpackCreature_{slotIndex}").Save(data.GetUserBackpackCreatureData());
         GetSplitService<UserRelationshipBean>($"UserRelationship_{slotIndex}").Save(data.GetUserRelationshipData());
+        GetSplitService<UserStoryBean>($"UserStory_{slotIndex}").Save(data.GetUserStoryData());
     }
 
     /// <summary>
-    /// 读取用户数据（主存档 + 注入拆分的解锁/成就/背包道具/背包生物数据）
+    /// 读取用户数据（主存档 + 注入拆分的解锁/成就/背包道具/背包生物/好感/故事数据）
     /// 拆分文件不存在时（全新槽位或旧存档）注入空数据，不读取旧版内嵌字段
     /// </summary>
     public override UserDataBean Load(bool isShowLog = true)
@@ -80,11 +81,12 @@ public class UserDataService : BaseDataService<UserDataBean>
         data.userBackpackItemsData = GetSplitService<UserBackpackItemsBean>($"UserBackpackItem_{slotIndex}").Load(false) ?? new UserBackpackItemsBean();
         data.userBackpackCreatureData = GetSplitService<UserBackpackCreatureBean>($"UserBackpackCreature_{slotIndex}").Load(false) ?? new UserBackpackCreatureBean();
         data.userRelationshipData = GetSplitService<UserRelationshipBean>($"UserRelationship_{slotIndex}").Load(false) ?? new UserRelationshipBean();
+        data.userStoryData = GetSplitService<UserStoryBean>($"UserStory_{slotIndex}").Load(false) ?? new UserStoryBean();
         return data;
     }
 
     /// <summary>
-    /// 删除用户数据（主存档 + 拆分的解锁/成就/背包道具/背包生物文件）
+    /// 删除用户数据（主存档 + 拆分的解锁/成就/背包道具/背包生物/好感/故事文件）
     /// </summary>
     public override void Delete()
     {
@@ -94,6 +96,7 @@ public class UserDataService : BaseDataService<UserDataBean>
         FileUtil.DeleteFile($"{StoragePath}/UserBackpackItem_{slotIndex}");
         FileUtil.DeleteFile($"{StoragePath}/UserBackpackCreature_{slotIndex}");
         FileUtil.DeleteFile($"{StoragePath}/UserRelationship_{slotIndex}");
+        FileUtil.DeleteFile($"{StoragePath}/UserStory_{slotIndex}");
     }
 
     /// <summary>

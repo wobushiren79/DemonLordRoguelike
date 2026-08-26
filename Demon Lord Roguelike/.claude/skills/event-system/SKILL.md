@@ -64,6 +64,7 @@ public static class EventsInfo
     public const string GameFightLogic_DropAddCrystal = "GameFightLogic_DropAddCrystal";
     public const string GameFightLogic_CreatureChangeState = "GameFightLogic_CreatureChangeState";
     public const string GameFightLogic_EndGame = "GameFightLogic_EndGame";
+    public const string GameFightLogic_StartGame = "GameFightLogic_StartGame";//战斗开始(所有模式PreGame完成进入Gaming,供故事演出/新手引导挂钩;GameFightLogic.PreGame末尾StartGame后基类单点触发,无参数,已知监听方StoryHandler)
     public const string GameFightLogic_SelectCard = "GameFightLogic_SelectCard";
     public const string GameFightLogic_UnSelectCard = "GameFightLogic_UnSelectCard";
     public const string GameFightLogic_PutCard = "GameFightLogic_PutCard";
@@ -81,6 +82,7 @@ public static class EventsInfo
     public const string UIViewCreatureCardItem_OnEndDrag = "UIViewCreatureCardItem_OnEndDrag";// 阵容卡拖拽结束(换位)
     public const string Backpack_Item_Change = "Backpack_Item_Change";
     public const string UIViewItemBackpack_OnClickSelect = "UIViewItemBackpack_OnClickSelect";
+    public const string UIViewItemBackpack_OnRightClickSelect = "UIViewItemBackpack_OnRightClickSelect";// 背包道具右键点击（UIViewItemBackpack 经 IPointerClickHandler 触发，如 UICreatureManager 右键弹 UIViewItemSelect）
     
     // ========== 语言相关 ==========
     public const string Language_Change = "Language_Change";

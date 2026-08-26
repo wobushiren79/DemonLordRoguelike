@@ -68,12 +68,12 @@ public enum TestSceneTypeEnum
 |------|------|--------|------|
 | `testDataCardNum` | `int` | 20 | 初始生成的卡片数量 |
 | `fightSceneId` | `int` | 1 | 战斗场景 ID |
-| `fightCardId` | `string` | "2002" | 防守方卡片生物 ID，多个用逗号分隔 |
+| `fightCardIds` | `List<long>` | [2002] | 防守方卡片生物 ID 列表（每行手动输入或下拉选择已有生物[带中文名]，数量超列表时循环） |
 | `fightSceneRoadNum` | `int` | 1 | 道路数量 |
 | `fightSceneRoadLength` | `int` | 10 | 道路长度 |
 | `fightSceneAttackNum` | `int` | 2 | 进攻生物数量（波次） |
 | `fightSceneAttackDelay` | `float` | 1 | 进攻间隔（秒） |
-| `enemyIds` | `List<long>` | [1010010001] | 敌人 NPC ID 列表 |
+| `enemyIds` | `List<long>` | [1010010001] | 敌人 NPC ID 列表（每行手动输入或下拉选择已有 NPC[带中文名]） |
 
 **战斗 BUFF 测试参数**:
 

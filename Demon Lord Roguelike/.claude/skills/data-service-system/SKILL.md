@@ -180,6 +180,9 @@ public class UserDataBean
     
     // 临时数据
     public UserTempBean userTempData;                 // 临时数据（当前战斗等）
+    
+    // 故事演出
+    public UserStoryBean userStoryData; // 用户故事演出数据（[JsonIgnore] 拆分为独立存档 UserStory_{slot}，由 UserDataService 加载/保存时注入与落盘；内含 dicPlayedStory 字典：key=StoryInfo.id、value=播放完成时间戳 Ticks——字典而非列表，事件多了查询仍 O(1)；IsStoryPlayed/MarkStoryPlayed 操作；故事演出系统 story-system 使用；GetUserStoryData() 兜底懒初始化）
 }
 ```
 

@@ -677,6 +677,7 @@ EventsInfo.Dialog_Close                   // 关闭弹窗
 // 背包相关
 EventsInfo.Backpack_Item_Change           // 背包道具变化
 EventsInfo.UIViewItemBackpack_OnClickSelect // 背包道具点击
+EventsInfo.UIViewItemBackpack_OnRightClickSelect // 背包道具右键点击（弹 UIViewItemSelect 选项）
 
 // 生物相关
 EventsInfo.Creature_Select                // 选择生物

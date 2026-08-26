@@ -25,11 +25,13 @@ public static class EventsInfo
     public const string UIViewCreatureCardItem_OnEndDrag = "UIViewCreatureCardItem_OnEndDrag";//结束拖拽
 
     public const string UIViewItemBackpack_OnClickSelect = "UIViewItemBackpack_OnClickSelect";//背包道具点击
+    public const string UIViewItemBackpack_OnRightClickSelect = "UIViewItemBackpack_OnRightClickSelect";//背包道具右键点击
     public const string UIViewItemEquip_OnClickSelect = "UIViewItemEquip_OnClickSelect";//装备道具点击
     #endregion
 
 
     #region 战斗中
+    public const string GameFightLogic_StartGame = "GameFightLogic_StartGame";//战斗开始(所有模式PreGame完成进入Gaming,供故事演出/新手引导挂钩)
     public const string GameFightLogic_SelectCard = "GameFightLogic_SelectCard";//卡片选择
     public const string GameFightLogic_UnSelectCard = "GameFightLogic_UnSelectCard";//取消卡片选择
     public const string GameFightLogic_PutCard = "GameFightLogic_PutCard";//放置卡片选择    

@@ -18,7 +18,8 @@ public partial class GameTestEditor
     // 基础测试参数
     public int testDataCardNum = 20;
     public int fightSceneId = 10001;
-    public string fightCardId = "2002";
+    // 卡片生物ID列表(战斗测试防守方卡片/基地测试手下生物共用；每行可手动输入或下拉选择已有生物)
+    public List<long> fightCardIds = new List<long>() { 2002 };
     public int fightSceneRoadNum = 1;
     public int fightSceneRoadLength = 10;
     public int fightSceneAttackNum = 2;
@@ -47,6 +48,12 @@ public partial class GameTestEditor
     // 深渊馈赠下拉选项缓存(不持久化，懒加载；配置重导后可点「刷新列表」重建)
     private GUIContent[] abyssalBlessingFamilyOptions;
     private long[] abyssalBlessingFamilyRootIds;
+    // 战斗测试-卡片生物下拉选项缓存(首项为"(手动输入)"占位；不持久化，懒加载，配置重导后点「刷新列表」重建)
+    private GUIContent[] fightCardCreatureOptions;
+    private long[] fightCardCreatureIds;
+    // 战斗测试-进攻生物NPC下拉选项缓存(首项为"(手动输入)"占位；不持久化，懒加载，配置重导后点「刷新列表」重建)
+    private GUIContent[] fightEnemyNpcOptions;
+    private long[] fightEnemyNpcIds;
     public List<long> abyssalBlessingTestIds = new List<long>();
     public List<long> enemyIds = new List<long>() { 1010010001 };
     public long doomCouncilBillId = 1000000001;
@@ -95,6 +102,17 @@ public partial class GameTestEditor
     private GUIContent[] conversationTestNpcOptions;
     private long[] conversationTestNpcIds;
 
+    // 故事演出测试参数
+    // 手动输入的故事ID(0=使用下拉选择；StoryInfo.id)
+    public long storyTestId = 0;
+    // 故事下拉选择索引
+    public int storyTestSelectIndex = 0;
+    // 故事演出测试存档槽位(0=使用当前测试数据 InitTestData 伪造数据;1~3=读取对应存档槽位 UserData_1/2/3 作为运行时数据)
+    public int storyTestSaveSlot = 0;
+    // 故事下拉选项缓存(不持久化，懒加载；配置重导后可点「刷新列表」重建)
+    private GUIContent[] storyTestOptions;
+    private long[] storyTestIds;
+
     // 奖励选择测试参数
     public RarityEnum rewardSelectRarity = RarityEnum.N;
     public int rewardSelectAddAttribute = 5;
@@ -119,6 +137,7 @@ public partial class GameTestEditor
     private bool showEffectTest = true;
     private bool showNormalGameTest = true;
     private bool showConversationTest = true;
+    private bool showStoryTest = true;
 
     // 战斗场景测试折叠
     private bool showFightBasicSettings = true;
@@ -128,6 +147,10 @@ public partial class GameTestEditor
     private const string PREFS_KEY_PREFIX = "GameTestEditor_";
     private const string ENEMY_IDS_KEY = PREFS_KEY_PREFIX + "enemyIds";
     private const string ENEMY_IDS_COUNT_KEY = PREFS_KEY_PREFIX + "enemyIdsCount";
+    private const string FIGHT_CARD_IDS_KEY = PREFS_KEY_PREFIX + "fightCardIds";
+    private const string FIGHT_CARD_IDS_COUNT_KEY = PREFS_KEY_PREFIX + "fightCardIdsCount";
+    // 旧版卡片生物ID为逗号分隔字符串的持久化key(仅用于一次性迁移到 fightCardIds 列表，迁移后删除)
+    private const string LEGACY_FIGHT_CARD_ID_KEY = PREFS_KEY_PREFIX + "fightCardId";
     private const string ABYSSAL_BLESSING_TEST_IDS_KEY = PREFS_KEY_PREFIX + "abyssalBlessingTestIds";
     private const string ABYSSAL_BLESSING_TEST_IDS_COUNT_KEY = PREFS_KEY_PREFIX + "abyssalBlessingTestIdsCount";
     private const string ABYSSAL_BLESSING_FIGHT_TEST_KEY = PREFS_KEY_PREFIX + "abyssalBlessingFightTest";
@@ -153,7 +176,7 @@ public partial class GameTestEditor
         // 基础测试
         testDataCardNum = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "testDataCardNum", 20);
         fightSceneId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneId", 10001);
-        fightCardId = EditorPrefs.GetString(PREFS_KEY_PREFIX + "fightCardId", "900002");
+        LoadFightCardIds();
         fightSceneRoadNum = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneRoadNum", 1);
         fightSceneRoadLength = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneRoadLength", 10);
         fightSceneAttackNum = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneAttackNum", 2);
@@ -211,6 +234,11 @@ public partial class GameTestEditor
         conversationTestNpcSelectIndex = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "conversationTestNpcSelectIndex", 0);
         conversationTestContent = EditorPrefs.GetString(PREFS_KEY_PREFIX + "conversationTestContent", "魔王大人，欢迎回来！");
 
+        // 故事演出测试参数(故事ID为long,用字符串持久化)
+        long.TryParse(EditorPrefs.GetString(PREFS_KEY_PREFIX + "storyTestId", "0"), out storyTestId);
+        storyTestSelectIndex = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "storyTestSelectIndex", 0);
+        storyTestSaveSlot = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "storyTestSaveSlot", 0), 0, 3);
+
         // 敌人 IDs
         LoadEnemyIds();
     }
@@ -225,7 +253,7 @@ public partial class GameTestEditor
         // 基础测试
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "testDataCardNum", testDataCardNum);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightSceneId", fightSceneId);
-        EditorPrefs.SetString(PREFS_KEY_PREFIX + "fightCardId", fightCardId);
+        SaveFightCardIds();
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightSceneRoadNum", fightSceneRoadNum);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightSceneRoadLength", fightSceneRoadLength);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightSceneAttackNum", fightSceneAttackNum);
@@ -282,6 +310,11 @@ public partial class GameTestEditor
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "conversationTestNpcSelectIndex", conversationTestNpcSelectIndex);
         EditorPrefs.SetString(PREFS_KEY_PREFIX + "conversationTestContent", conversationTestContent);
 
+        // 故事演出测试参数
+        EditorPrefs.SetString(PREFS_KEY_PREFIX + "storyTestId", storyTestId.ToString());
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "storyTestSelectIndex", storyTestSelectIndex);
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "storyTestSaveSlot", storyTestSaveSlot);
+
         // 敌人 IDs
         SaveEnemyIds();
     }
@@ -303,6 +336,38 @@ public partial class GameTestEditor
         {
             long id = EditorPrefs.GetInt(ENEMY_IDS_KEY + "_" + i, 1010010001);
             enemyIds.Add(id);
+        }
+    }
+
+    private void SaveFightCardIds()
+    {
+        EditorPrefs.SetInt(FIGHT_CARD_IDS_COUNT_KEY, fightCardIds.Count);
+        for (int i = 0; i < fightCardIds.Count; i++)
+        {
+            EditorPrefs.SetInt(FIGHT_CARD_IDS_KEY + "_" + i, (int)fightCardIds[i]);
+        }
+    }
+
+    /// <summary>
+    /// 加载卡片生物ID列表；旧版逗号分隔字符串(fightCardId)存在时一次性迁移到列表并删除旧key
+    /// </summary>
+    private void LoadFightCardIds()
+    {
+        if (EditorPrefs.HasKey(LEGACY_FIGHT_CARD_ID_KEY))
+        {
+            var legacyIds = EditorPrefs.GetString(LEGACY_FIGHT_CARD_ID_KEY, "").SplitForArrayLong(',');
+            fightCardIds.Clear();
+            fightCardIds.AddRange(legacyIds);
+            if (fightCardIds.Count == 0) fightCardIds.Add(2002);
+            EditorPrefs.DeleteKey(LEGACY_FIGHT_CARD_ID_KEY);
+            return;
+        }
+        int count = EditorPrefs.GetInt(FIGHT_CARD_IDS_COUNT_KEY, 1);
+        fightCardIds.Clear();
+        for (int i = 0; i < count; i++)
+        {
+            long id = EditorPrefs.GetInt(FIGHT_CARD_IDS_KEY + "_" + i, 2002);
+            fightCardIds.Add(id);
         }
     }
 

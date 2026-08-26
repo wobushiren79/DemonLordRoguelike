@@ -64,6 +64,9 @@ public partial class GameTestEditor : Editor
             case TestSceneTypeEnum.ConversationTest:
                 DrawConversationTest();
                 break;
+            case TestSceneTypeEnum.StoryTest:
+                DrawStoryTest();
+                break;
             case TestSceneTypeEnum.NormalGame:
                 DrawNormalGameTest();
                 break;
@@ -156,21 +159,8 @@ public partial class GameTestEditor : Editor
                 }
             }
             EditorGUILayout.EndHorizontal();
-            EditorGUILayout.BeginHorizontal();
-            fightCardId = EditorGUILayout.TextField(new GUIContent("卡片生物 ID", "防守方卡片的生物 ID，多个用逗号分隔"), fightCardId);
-            if (GUILayout.Button("📂 生物表", GUILayout.Width(80)))
-            {
-                string path = Path.Combine(Application.dataPath, "Data/Excel/excel_creature_info[生物信息].xlsx");
-                if (File.Exists(path))
-                {
-                    Application.OpenURL("file:///" + path.Replace("\\", "/"));
-                }
-                else
-                {
-                    EditorUtility.DisplayDialog("文件未找到", $"找不到生物配置表:\n{path}", "确定");
-                }
-            }
-            EditorGUILayout.EndHorizontal();
+            // 卡片生物ID列表(手动输入 + 下拉选择已有生物)
+            DrawFightCardIdList("卡片生物 IDs");
             fightDefenseCoreId = EditorGUILayout.IntField(new GUIContent("魔王生物 ID", "防守核心(魔王)的生物 ID，默认 2001 骷髅战士"), fightDefenseCoreId);
             fightDemonLordMP = EditorGUILayout.FloatField(new GUIContent("魔王蓝量", "战斗开始时魔王的当前魔力值(同时会把魔力上限提升到不低于该值)，默认 9999"), fightDemonLordMP);
             // 单体测试模式下道路数量/道路长度为固定值，不显示
@@ -199,30 +189,30 @@ public partial class GameTestEditor : Editor
             }
 
             EditorGUILayout.Space(5);
+            EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("进攻生物 IDs （NPCID）", EditorStyles.boldLabel);
-            for (int i = 0; i < enemyIds.Count; i++)
+            if (GUILayout.Button("🔄 刷新列表", GUILayout.Width(90)))
             {
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField($"敌人 {i + 1}", GUILayout.Width(60));
-                enemyIds[i] = EditorGUILayout.LongField(enemyIds[i]);
-                if (GUILayout.Button("🗑️", GUILayout.Width(30)))
-                {
-                    enemyIds.RemoveAt(i);
-                    break;
-                }
-                EditorGUILayout.EndHorizontal();
+                //配置重导后清空选项缓存，下次绘制时重建
+                fightEnemyNpcOptions = null;
+                //Cfg 的 static 缓存只加载一次(不随 JSON 重导失效)，需一并清掉才能读到新行
+                ClearCfgBaseStaticCache(typeof(NpcInfoCfg));
+            }
+            EditorGUILayout.EndHorizontal();
+
+            //进攻生物NPC下拉选项懒加载(id + 中文名，首项"(手动输入)"占位)
+            EnsureFightEnemyNpcOptions();
+            if (fightEnemyNpcOptions == null || fightEnemyNpcOptions.Length == 0)
+            {
+                EditorGUILayout.HelpBox("未读取到 NPC 配置，请检查配置表导出或点「刷新列表」。", MessageType.Warning);
+            }
+            else
+            {
+                DrawIdListWithDropdown(enemyIds, "敌人", fightEnemyNpcOptions, fightEnemyNpcIds);
             }
 
             EditorGUILayout.Space(5);
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("➕ 添加敌人"))
-            {
-                enemyIds.Add(0);
-            }
-            if (enemyIds.Count > 0 && GUILayout.Button("🗑️ 移除最后一个"))
-            {
-                enemyIds.RemoveAt(enemyIds.Count - 1);
-            }
             if (GUILayout.Button("📂 NPC配置表", GUILayout.Width(100)))
             {
                 string path = Path.Combine(Application.dataPath, "Data/Excel/excel_npc_info[NPC信息].xlsx");
@@ -262,6 +252,142 @@ public partial class GameTestEditor : Editor
 
         EditorGUI.indentLevel--;
         EditorGUILayout.Space(10);
+    }
+
+    /// <summary>
+    /// 绘制卡片生物ID列表(标题行含「刷新列表/生物表」按钮；每行: 手动ID输入 + 生物下拉[选中覆盖该行ID] + 删除)。
+    /// 战斗测试的「卡片生物 IDs」与基地测试的「手下生物 IDs」共用同一份 fightCardIds 数据。
+    /// </summary>
+    /// <param name="title">列表标题</param>
+    private void DrawFightCardIdList(string title)
+    {
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField(new GUIContent(title, "可手动输入生物 ID，或从下拉选择已有生物(选中后覆盖该行 ID)；卡片数量超过列表数量时循环使用列表"), EditorStyles.boldLabel);
+        if (GUILayout.Button("🔄 刷新列表", GUILayout.Width(90)))
+        {
+            //配置重导后清空选项缓存，下次绘制时重建
+            fightCardCreatureOptions = null;
+            //Cfg 的 static 缓存只加载一次(不随 JSON 重导失效)，需一并清掉才能读到新行
+            ClearCfgBaseStaticCache(typeof(CreatureInfoCfg));
+        }
+        if (GUILayout.Button("📂 生物表", GUILayout.Width(80)))
+        {
+            string path = Path.Combine(Application.dataPath, "Data/Excel/excel_creature_info[生物信息].xlsx");
+            if (File.Exists(path))
+            {
+                Application.OpenURL("file:///" + path.Replace("\\", "/"));
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("文件未找到", $"找不到生物配置表:\n{path}", "确定");
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+
+        //生物下拉选项懒加载([id] 中文名，首项"(手动输入)"占位)
+        EnsureFightCardCreatureOptions();
+        if (fightCardCreatureOptions == null || fightCardCreatureOptions.Length == 0)
+        {
+            EditorGUILayout.HelpBox("未读取到生物配置，请检查配置表导出或点「刷新列表」。", MessageType.Warning);
+            return;
+        }
+        DrawIdListWithDropdown(fightCardIds, "生物", fightCardCreatureOptions, fightCardCreatureIds);
+    }
+
+    /// <summary>
+    /// 绘制「手动ID输入 + 下拉选择」的 ID 列表(每行: 序号 + 手动ID输入框 + 下拉[选中覆盖该行ID] + 删除；底部: 添加/移除最后一个)。
+    /// options/optionIds 首项约定为"(手动输入)"占位(当前ID不在选项中时显示，选中它不改动ID)。
+    /// </summary>
+    /// <param name="idList">要编辑的 ID 列表</param>
+    /// <param name="itemLabelPrefix">每行序号标签前缀(如"生物"/"敌人")</param>
+    /// <param name="options">下拉选项(首项为手动占位)</param>
+    /// <param name="optionIds">下拉选项对应的 ID(首项为占位哨兵)</param>
+    private void DrawIdListWithDropdown(List<long> idList, string itemLabelPrefix, GUIContent[] options, long[] optionIds)
+    {
+        for (int i = 0; i < idList.Count; i++)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField($"{itemLabelPrefix} {i + 1}", GUILayout.Width(60));
+            idList[i] = EditorGUILayout.LongField(idList[i], GUILayout.Width(100));
+            //下拉选择：当前ID不在选项中时回落到首项"(手动输入)"占位(不覆盖手动值)，选中有效项后覆盖该行ID
+            int selectIndex = Array.IndexOf(optionIds, idList[i]);
+            if (selectIndex < 0) selectIndex = 0;
+            int newIndex = EditorGUILayout.Popup(selectIndex, options);
+            if (newIndex > 0) idList[i] = optionIds[newIndex];
+            if (GUILayout.Button("🗑️", GUILayout.Width(30)))
+            {
+                idList.RemoveAt(i);
+                break;
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        EditorGUILayout.Space(3);
+        EditorGUILayout.BeginHorizontal();
+        //新增行默认复制最后一行的值，便于批量添加同类生物；空列表时补 0(显示为手动占位)
+        if (GUILayout.Button($"➕ 添加{itemLabelPrefix}"))
+        {
+            idList.Add(idList.Count > 0 ? idList[idList.Count - 1] : 0);
+        }
+        if (idList.Count > 0 && GUILayout.Button("🗑️ 移除最后一个"))
+        {
+            idList.RemoveAt(idList.Count - 1);
+        }
+        EditorGUILayout.EndHorizontal();
+    }
+
+    /// <summary>
+    /// 懒加载战斗测试-卡片生物下拉选项(首项"(手动输入)"占位，其余为 [id] 中文名，按id排序)。
+    /// 中文名直读 Language_CreatureInfo_cn.txt，不切 LanguageCfg 语言——避免 Inspector 绘制时篡改正在运行游戏的语言。
+    /// </summary>
+    private void EnsureFightCardCreatureOptions()
+    {
+        if (fightCardCreatureOptions != null) return;
+        var allData = CreatureInfoCfg.GetAllArrayData();
+        //加载中文多语言(CreatureInfo.name → Language_CreatureInfo_cn.txt)
+        Dictionary<long, LanguageBean> dicLanguage = LoadLanguageForCn("Language_CreatureInfo_cn.txt");
+        var listEntries = new List<KeyValuePair<long, GUIContent>>();
+        for (int i = 0; i < allData.Length; i++)
+        {
+            var creatureInfo = allData[i];
+            if (creatureInfo == null) continue;
+            //先检查多语言行是否存在，避免对缺失行刷 LogError
+            string creatureName;
+            if (creatureInfo.name == 0)
+            {
+                creatureName = "(无名字)";
+            }
+            else if (dicLanguage.TryGetValue(creatureInfo.name, out LanguageBean languageBean) && !languageBean.content.IsNull())
+            {
+                creatureName = languageBean.content;
+            }
+            else
+            {
+                creatureName = "(未配置名字)";
+            }
+            listEntries.Add(new KeyValuePair<long, GUIContent>(creatureInfo.id, new GUIContent($"[{creatureInfo.id}] {creatureName}")));
+        }
+        //按 id 排序保证下拉顺序稳定
+        listEntries.Sort((a, b) => a.Key.CompareTo(b.Key));
+        //首项插入"(手动输入)"占位(当前ID不在选项中时显示，选中不改动ID)
+        fightCardCreatureOptions = new GUIContent[listEntries.Count + 1];
+        fightCardCreatureIds = new long[listEntries.Count + 1];
+        fightCardCreatureOptions[0] = new GUIContent("(手动输入)");
+        fightCardCreatureIds[0] = 0;
+        for (int i = 0; i < listEntries.Count; i++)
+        {
+            fightCardCreatureIds[i + 1] = listEntries[i].Key;
+            fightCardCreatureOptions[i + 1] = listEntries[i].Value;
+        }
+    }
+
+    /// <summary>
+    /// 懒加载战斗测试-进攻生物NPC下拉选项(首项"(手动输入)"占位，其余为 id + 中文名，按id排序)
+    /// </summary>
+    private void EnsureFightEnemyNpcOptions()
+    {
+        if (fightEnemyNpcOptions != null) return;
+        BuildNpcOptions(true, out fightEnemyNpcOptions, out fightEnemyNpcIds);
     }
 
     /// <summary>
@@ -530,8 +656,7 @@ public partial class GameTestEditor : Editor
         GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
         if (GUILayout.Button("▶️ 开始基地测试", GUILayout.Height(30)) && Application.isPlaying)
         {
-            var ids = fightCardId.SplitForArrayLong(',');
-            if (ids.Length > 0)
+            if (fightCardIds.Count > 0)
             {
                 CreatureBean creatureData = new CreatureBean(creatureId);
                 creatureData.AddSkinForBase();
@@ -543,7 +668,8 @@ public partial class GameTestEditor : Editor
 
         EditorGUILayout.BeginVertical("box");
         creatureId = EditorGUILayout.IntField(new GUIContent("魔王生物 ID", "魔王角色的生物 ID"), creatureId);
-        fightCardId = EditorGUILayout.TextField(new GUIContent("手下生物 ID", "手下角色的生物 ID，多个用逗号分隔"), fightCardId);
+        // 手下生物ID列表(与战斗测试共用同一份 fightCardIds，手动输入 + 下拉选择已有生物)
+        DrawFightCardIdList("手下生物 IDs");
         EditorGUILayout.EndVertical();
 
         EditorGUI.indentLevel--;
@@ -931,12 +1057,150 @@ public partial class GameTestEditor : Editor
     }
 
     /// <summary>
-    /// 懒加载对话测试NPC下拉选项(id + 中文名，按id排序)。
-    /// 中文名直读 Language_NpcInfo_cn.txt，不切 LanguageCfg 语言——避免 Inspector 绘制时篡改正在运行游戏的语言。
+    /// 懒加载对话测试NPC下拉选项(id + 中文名，按id排序)
     /// </summary>
     private void EnsureConversationTestNpcOptions()
     {
         if (conversationTestNpcOptions != null) return;
+        BuildNpcOptions(false, out conversationTestNpcOptions, out conversationTestNpcIds);
+    }
+
+    /// <summary>
+    /// 绘制故事演出测试(故事下拉/手动输入 + 播放演出)
+    /// </summary>
+    private void DrawStoryTest()
+    {
+        showStoryTest = EditorGUILayout.Foldout(showStoryTest, "📖 故事演出测试", true);
+        if (!showStoryTest) return;
+
+        EditorGUI.indentLevel++;
+        EditorGUILayout.Space(5);
+
+        // 测试故事选择(下拉 + 手动输入)
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("测试故事", EditorStyles.boldLabel);
+        if (GUILayout.Button("🔄 刷新列表", GUILayout.Width(90)))
+        {
+            //配置重导后清空选项缓存，下次绘制时重建
+            storyTestOptions = null;
+            //Cfg 的 static 缓存只加载一次(不随 JSON 重导失效)，需一并清掉才能读到新行
+            ClearCfgBaseStaticCache(typeof(StoryInfoCfg));
+        }
+        if (GUILayout.Button("📂 故事配置表", GUILayout.Width(100)))
+        {
+            string path = Path.Combine(Application.dataPath, "Data/Excel/excel_story_info[故事信息].xlsx");
+            if (File.Exists(path))
+            {
+                Application.OpenURL("file:///" + path.Replace("\\", "/"));
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("文件未找到", $"找不到故事配置表:\n{path}", "确定");
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+
+        //故事下拉选项懒加载(id + 中文名 + 触发类型/场景/条件)
+        EnsureStoryTestOptions();
+        if (storyTestOptions == null || storyTestOptions.Length == 0)
+        {
+            EditorGUILayout.HelpBox("未读取到故事配置，请检查配置表导出或点「刷新列表」。", MessageType.Warning);
+        }
+        else
+        {
+            storyTestSelectIndex = EditorGUILayout.Popup(
+                new GUIContent("故事下拉选择", "从 StoryInfo 配置表选择要测试的故事；「手动故事ID」非 0 时优先于下拉"),
+                Mathf.Clamp(storyTestSelectIndex, 0, storyTestOptions.Length - 1),
+                storyTestOptions);
+        }
+        storyTestId = EditorGUILayout.LongField(new GUIContent("手动故事ID", "非 0 时优先于下拉选择；StoryInfo.id"), storyTestId);
+        //存档槽位选择(0=当前测试数据,1~3=读取对应存档作为运行时数据;全程测试模拟不写回真实存档)
+        storyTestSaveSlot = EditorGUILayout.IntPopup(
+            new GUIContent("存档槽位", "0=使用当前测试数据(InitTestData 伪造数据)；1~3=读取对应存档槽位(UserData_1/2/3)作为运行时数据进行故事测试(测试模拟,不写回真实存档)"),
+            storyTestSaveSlot,
+            new[] { new GUIContent("当前测试数据"), new GUIContent("存档 1"), new GUIContent("存档 2"), new GUIContent("存档 3") },
+            new[] { 0, 1, 2, 3 });
+        EditorGUILayout.EndVertical();
+        EditorGUILayout.Space(10);
+
+        // 运行按钮
+        GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
+        if (GUILayout.Button("▶️ 播放故事演出", GUILayout.Height(30)) && Application.isPlaying)
+        {
+            //解析目标故事：手动ID非0优先，否则取下拉选择
+            long targetStoryId = storyTestId;
+            if (targetStoryId == 0)
+            {
+                if (storyTestIds == null || storyTestIds.Length == 0)
+                {
+                    EditorUtility.DisplayDialog("提示", "故事列表为空，请点「刷新列表」或改用手动故事ID。", "确定");
+                    return;
+                }
+                int index = Mathf.Clamp(storyTestSelectIndex, 0, storyTestIds.Length - 1);
+                targetStoryId = storyTestIds[index];
+            }
+            if (StoryInfoCfg.GetItemData(targetStoryId) == null)
+            {
+                EditorUtility.DisplayDialog("提示", $"找不到故事配置: {targetStoryId}", "确定");
+                return;
+            }
+            launcher.StartForStoryTest(targetStoryId, storyTestSaveSlot);
+        }
+        GUI.backgroundColor = Color.white;
+
+        EditorGUILayout.HelpBox("按故事配置的演出场景自动进入对应场景(基地/战斗/终焉议会)后强制播放演出；战斗场景用内置默认测试战斗数据。存档槽位选 1~3 时先读取该存档作为运行时数据(基地场景故事可看到真实基地状态),全程测试模拟不写回真实存档；测试场景不注册自动触发,这里直接调 StoryHandler.PlayStory。", MessageType.Info);
+
+        EditorGUI.indentLevel--;
+        EditorGUILayout.Space(10);
+    }
+
+    /// <summary>
+    /// 懒加载故事测试下拉选项(id + 中文名 + [触发类型/场景/条件]，按id排序)
+    /// 中文名直读 Language_StoryInfo_cn.txt，不切 LanguageCfg 语言——避免 Inspector 绘制时篡改正在运行游戏的语言。
+    /// </summary>
+    private void EnsureStoryTestOptions()
+    {
+        if (storyTestOptions != null) return;
+        var allData = StoryInfoCfg.GetAllArrayData();
+        Dictionary<long, LanguageBean> dicLanguage = LoadLanguageForCn("Language_StoryInfo_cn.txt");
+        var listEntries = new List<KeyValuePair<long, GUIContent>>();
+        for (int i = 0; i < allData.Length; i++)
+        {
+            var storyInfo = allData[i];
+            if (storyInfo == null) continue;
+            //先检查多语言行是否存在，避免 name_language 对缺失行刷 LogError
+            string storyName;
+            if (storyInfo.name != 0 && dicLanguage.TryGetValue(storyInfo.name, out LanguageBean languageBean) && !languageBean.content.IsNull())
+            {
+                storyName = languageBean.content;
+            }
+            else
+            {
+                storyName = "(未配置名字)";
+            }
+            listEntries.Add(new KeyValuePair<long, GUIContent>(storyInfo.id, new GUIContent($"{storyInfo.id}  {storyName}  [{storyInfo.GetTriggerType()}/{storyInfo.GetSceneType()}/{storyInfo.GetTriggerCondition()}]")));
+        }
+        //按 id 排序保证下拉顺序稳定
+        listEntries.Sort((a, b) => a.Key.CompareTo(b.Key));
+        storyTestOptions = new GUIContent[listEntries.Count];
+        storyTestIds = new long[listEntries.Count];
+        for (int i = 0; i < listEntries.Count; i++)
+        {
+            storyTestIds[i] = listEntries[i].Key;
+            storyTestOptions[i] = listEntries[i].Value;
+        }
+    }
+
+    /// <summary>
+    /// 构建 NPC 下拉选项(id + 中文名，按id排序；withManualPlaceholder 时首项插入"(手动输入)"占位，选中不改动ID)。
+    /// 中文名直读 Language_NpcInfo_cn.txt，不切 LanguageCfg 语言——避免 Inspector 绘制时篡改正在运行游戏的语言。
+    /// </summary>
+    /// <param name="withManualPlaceholder">首项是否插入"(手动输入)"占位(战斗测试的逐行下拉需要，对话测试不需要)</param>
+    /// <param name="options">输出下拉选项</param>
+    /// <param name="ids">输出选项对应的 NPC ID</param>
+    private void BuildNpcOptions(bool withManualPlaceholder, out GUIContent[] options, out long[] ids)
+    {
         var allData = NpcInfoCfg.GetAllArrayData();
         //加载中文多语言(NpcInfo.name → Language_NpcInfo_cn.txt)
         Dictionary<long, LanguageBean> dicLanguage = LoadLanguageForCn("Language_NpcInfo_cn.txt");
@@ -964,12 +1228,18 @@ public partial class GameTestEditor : Editor
         }
         //按 id 排序保证下拉顺序稳定
         listEntries.Sort((a, b) => a.Key.CompareTo(b.Key));
-        conversationTestNpcOptions = new GUIContent[listEntries.Count];
-        conversationTestNpcIds = new long[listEntries.Count];
+        int offset = withManualPlaceholder ? 1 : 0;
+        options = new GUIContent[listEntries.Count + offset];
+        ids = new long[listEntries.Count + offset];
+        if (withManualPlaceholder)
+        {
+            options[0] = new GUIContent("(手动输入)");
+            ids[0] = 0;
+        }
         for (int i = 0; i < listEntries.Count; i++)
         {
-            conversationTestNpcIds[i] = listEntries[i].Key;
-            conversationTestNpcOptions[i] = listEntries[i].Value;
+            ids[i + offset] = listEntries[i].Key;
+            options[i + offset] = listEntries[i].Value;
         }
     }
 
@@ -1193,9 +1463,9 @@ public partial class GameTestEditor : Editor
         }
         fightData.fightAttackDataRemark = ClassUtil.DeepCopy(fightData.fightAttackData);
 
-        // 所有的卡片数据
+        // 所有的卡片数据(卡片生物ID列表为空时兜底2002，避免取模除零)
         fightData.dlDefenseCreatureData.Clear();
-        var ids = fightCardId.SplitForArrayLong(',');
+        long[] ids = fightCardIds.Count > 0 ? fightCardIds.ToArray() : new long[] { 2002 };
         for (int i = 0; i < testDataCardNum; i++)
         {
             int index = i % ids.Length;

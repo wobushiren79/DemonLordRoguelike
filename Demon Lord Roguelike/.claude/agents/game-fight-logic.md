@@ -26,6 +26,7 @@ watched_files:
 ```
 PreGame → StartGame → UpdateGame → EndGame → ClearGame
 ```
+> **战斗开始事件**：`PreGame()` 末尾 `StartGame()` 之后触发 `EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_StartGame)`——基类单点触发覆盖征服/终焉议会/无限/测试全部模式（子类只重写 PreGameForAfterXxx 钩子不重写 PreGame），无参数；已知监听方：故事演出 StoryHandler（故事触发条件=首次进战斗）。
 
 ### PreGame 扩展钩子（按时序，virtual 空实现供子类重写）
 1. `PreGameForAfterInitFightSceneCamera` - 战斗镜头初始化后

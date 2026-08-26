@@ -24,6 +24,10 @@ public partial class FightSceneBean : BaseBean
 	/// </summary>
 	public string road_color_b;
 	/// <summary>
+	///道路透明度(0~1, 空默认0.5)
+	/// </summary>
+	public float road_alpha;
+	/// <summary>
 	///天空盒子
 	/// </summary>
 	public string skybox_mat;

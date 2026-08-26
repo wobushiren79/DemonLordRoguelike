@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class LauncherTest : BaseLauncher
@@ -12,6 +13,8 @@ public class LauncherTest : BaseLauncher
     private System.Action actionForCreatureVatTest;
     //魔汁机测试:基地场景加载完成后待执行的回调
     private System.Action actionForJuicerTest;
+    //故事演出测试:场景就绪后待执行的回调(基地/战斗共用,一次性)
+    private System.Action actionForStoryTest;
 
     public override void Launch()
     {
@@ -447,6 +450,127 @@ public class LauncherTest : BaseLauncher
     {
         //测试模拟标记的复位统一在 WorldHandler.EnterMainForBaseScene 内(真实回主菜单收口点)完成，此处无需再复位
         WorldHandler.Instance.EnterMainForBaseScene();
+    }
+
+    /// <summary>
+    /// 开始故事演出测试
+    /// 按故事配置的演出场景先进对应场景(基地/战斗/终焉议会),就绪后强制播放演出。
+    /// 测试场景不注册故事自动触发(InitData 仅 LauncherGame 调用),这里直接调 StoryHandler.PlayStory;
+    /// 全程测试模拟(isTestSimulation),播放记录不落盘到真实存档。
+    /// </summary>
+    /// <param name="storyId">故事ID(StoryInfo.id)</param>
+    /// <param name="saveSlot">存档槽位(0=使用当前测试数据 InitTestData 伪造数据;1~3=读取对应存档槽位 UserData_1/2/3 作为运行时数据,与献祭测试同范式)</param>
+    public void StartForStoryTest(long storyId, int saveSlot = 0)
+    {
+        var storyInfo = StoryInfoCfg.GetItemData(storyId);
+        if (storyInfo == null)
+        {
+            LogUtil.LogError($"故事演出测试失败,找不到故事配置 id:{storyId}");
+            return;
+        }
+        //选择存档槽位(1~3)时,读取该存档数据替换为运行时数据(全程内存模拟,不写回真实存档)
+        if (saveSlot > 0)
+        {
+            UserDataService dataService = new UserDataService();
+            dataService.ChangeSlot(saveSlot);
+            UserDataBean userData = dataService.Load(false);
+            if (userData == null)
+            {
+                LogUtil.LogError($"故事演出测试失败,存档 {saveSlot} 不存在或为空");
+                return;
+            }
+            GameDataHandler.Instance.manager.SetUserData(userData);
+        }
+        //开启测试模拟:播完记录已播故事(UserStoryBean)时 SaveUserData 被 GameDataManager 统一拦截
+        GameDataHandler.Instance.manager.isTestSimulation = true;
+        switch (storyInfo.GetSceneType())
+        {
+            case StorySceneTypeEnum.Base:
+                //基地场景加载完成后强制播放(一次性回调,范式同献祭测试)
+                RegisterStoryTestPlayCallback(EventsInfo.World_EnterGameForBaseScene, storyId);
+                WorldHandler.Instance.EnterGameForBaseScene(GameDataHandler.Instance.manager.GetUserData());
+                break;
+            case StorySceneTypeEnum.Fight:
+                //战斗开始(StartGame)后强制播放;用内置默认测试战斗数据进入
+                RegisterStoryTestPlayCallback(EventsInfo.GameFightLogic_StartGame, storyId);
+                WorldHandler.Instance.EnterGameForFightScene(BuildStoryTestFightData());
+                break;
+            case StorySceneTypeEnum.DoomCouncil:
+                //议会场景无就绪事件(自动触发钩子为第二期预留),进场景后轮询就绪再强制播放
+                GameHandler.Instance.StartDoomCouncil(new DoomCouncilBean(1000000001));
+                _ = WaitForDoomCouncilThenPlayStory(storyId);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 注册故事演出测试的一次性场景就绪回调(就绪后强制播放;重复调用先清旧回调防重复注册)
+    /// </summary>
+    /// <param name="eventName">就绪事件名(World_EnterGameForBaseScene / GameFightLogic_StartGame)</param>
+    /// <param name="storyId">待播放的故事ID</param>
+    private void RegisterStoryTestPlayCallback(string eventName, long storyId)
+    {
+        if (actionForStoryTest != null)
+        {
+            EventHandler.Instance.UnRegisterEvent(EventsInfo.World_EnterGameForBaseScene, actionForStoryTest);
+            EventHandler.Instance.UnRegisterEvent(EventsInfo.GameFightLogic_StartGame, actionForStoryTest);
+            actionForStoryTest = null;
+        }
+        actionForStoryTest = () =>
+        {
+            //一次性回调,触发后立即注销
+            EventHandler.Instance.UnRegisterEvent(EventsInfo.World_EnterGameForBaseScene, actionForStoryTest);
+            EventHandler.Instance.UnRegisterEvent(EventsInfo.GameFightLogic_StartGame, actionForStoryTest);
+            actionForStoryTest = null;
+            StoryHandler.Instance.PlayStory(storyId);
+        };
+        EventHandler.Instance.RegisterEvent(eventName, actionForStoryTest);
+    }
+
+    /// <summary>
+    /// 等终焉议会场景就绪后强制播放故事(async UniTaskVoid 发射即忘;议会无就绪事件,场景出现后再给固定缓冲等实体初始化)
+    /// </summary>
+    private async UniTaskVoid WaitForDoomCouncilThenPlayStory(long storyId)
+    {
+        await GTask.WaitUntil(() => WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.DoomCouncil) != null, null);
+        await GTask.WaitReal(1f, null);
+        StoryHandler.Instance.PlayStory(storyId);
+    }
+
+    /// <summary>
+    /// 构建故事演出测试用的默认测试战斗数据(1路x10长/2波进攻/5张2002防守卡/核心2001,保持测试入口自包含)
+    /// </summary>
+    private FightBean BuildStoryTestFightData()
+    {
+        FightBeanForTest fightData = new FightBeanForTest();
+        fightData.sceneRoadNum = 1;
+        fightData.sceneRoadLength = 10;
+        fightData.gameFightType = GameFightTypeEnum.Test;
+        //进攻数据:2波,默认敌人
+        fightData.fightAttackData = new FightAttackBean();
+        var enemyIds = new List<long> { 1010010001 };
+        for (int i = 0; i < 2; i++)
+        {
+            fightData.fightAttackData.AddAttackQueue(new FightAttackDetailsBean(1, enemyIds));
+        }
+        fightData.fightAttackDataRemark = ClassUtil.DeepCopy(fightData.fightAttackData);
+        //防守卡片:5张默认魔物
+        fightData.dlDefenseCreatureData.Clear();
+        for (int i = 0; i < 5; i++)
+        {
+            CreatureBean itemData = new CreatureBean(2002);
+            itemData.AddSkinForBase();
+            itemData.order = i;
+            fightData.dlDefenseCreatureData.Add(itemData.creatureUUId, itemData);
+        }
+        //防守核心(魔王)
+        FightCreatureBean fightDefCoreData = CreatureHandler.Instance.GetFightCreatureData(2001, CreatureFightTypeEnum.FightDefenseCore);
+        fightDefCoreData.creatureData.AddSkinForBase();
+        fightData.fightDefenseCoreData = fightDefCoreData;
+        fightData.testDemonLordMP = 9999;
+        fightData.InitData();
+        fightData.fightSceneId = 10001;
+        return fightData;
     }
 
     /// <summary>

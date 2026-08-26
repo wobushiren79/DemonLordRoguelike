@@ -3,15 +3,10 @@ using UnityEngine;
 
 public class AttackModeFallupon : BaseAttackMode
 {
-    /// <summary>
-    /// 重力加速度（m/s²），用于模拟下落时的加速效果
-    /// </summary>
-    private const float GravityAcceleration = 9.81f;
-
     private bool isFalling = false;
     private Action<BaseAttackMode> actionForAttackEnd;
     /// <summary>
-    /// 当前下落速度，每帧由重力加速度累加，使下落轨迹呈非线性
+    /// 当前下落速度，每帧由重力加速度(attackModeInfo.GetGravity(),other_data 键 gravity,默认 9.81)累加，使下落轨迹呈非线性
     /// </summary>
     private float currentFallSpeed;
 
@@ -95,6 +90,17 @@ public class AttackModeFallupon : BaseAttackMode
     }
     #endregion
 
+    #region 速度钳制基准
+    /// <summary>
+    /// 瞬移钳制基准=当前下落速度：本类为重力加速弹道，末速远超 speed_move 初值，
+    /// 沿用基类(配置速度×攻速)会把后半程每帧差分速度误判为瞬移清零，DSP 火星甩尾消失
+    /// </summary>
+    public override float GetVelocityClampSpeed()
+    {
+        return currentFallSpeed;
+    }
+    #endregion
+
     #region 攻击处理
     /// <summary>
     /// 处理击中单个目标的逻辑：扣血、播放命中特效、结束攻击
@@ -107,13 +113,13 @@ public class AttackModeFallupon : BaseAttackMode
     }
 
     /// <summary>
-    /// 移动处理：向下平移并叠加重力加速度
+    /// 移动处理：向下平移并按配置重力加速度叠速
     /// </summary>
     public virtual void HandleForMove()
     {
         float deltaTime = GameFightLogic.GetFightDeltaTime();
         TranslatePosition(Vector3.down * (deltaTime * currentFallSpeed));
-        currentFallSpeed += GravityAcceleration * deltaTime;
+        currentFallSpeed += attackModeInfo.GetGravity() * deltaTime;
     }
 
     /// <summary>

@@ -159,6 +159,21 @@ public partial class FightSceneBean
     }
 
     #endregion
+
+    #region 道路透明度配置
+
+    /// <summary>
+    /// 获取道路透明度（road_alpha 取值 0~1；未配置或非法值时回退默认 0.5）
+    /// </summary>
+    /// <returns>道路透明度</returns>
+    public float GetRoadAlpha()
+    {
+        //空配置/旧数据读出为 0 时回退默认 0.5，避免道路全透明不可见
+        if (road_alpha <= 0) return 0.5f;
+        return road_alpha;
+    }
+
+    #endregion
 }
 public partial class FightSceneCfg
 {

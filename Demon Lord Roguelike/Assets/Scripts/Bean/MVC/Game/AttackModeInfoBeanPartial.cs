@@ -249,6 +249,25 @@ public partial class AttackModeInfoBean
     }
     #endregion
 
+    #region 重力加速度(Gravity 配置，存于 other_data)
+    protected bool isInitGravity = false;
+    protected float gravity = 9.81f;
+
+    /// <summary>
+    /// 获取重力加速度（从通用扩展列 other_data 中解析 gravity 键；缓存解析结果）。
+    /// <para>默认 9.81（历史常量值）；天降 Fallupon 系弹道每帧按它累加下落速度，配小则下落更慢更飘（如火/水大魔法师BOSS技能 700001/700002 配 gravity:4.905=减半）。</para>
+    /// </summary>
+    public float GetGravity()
+    {
+        if (!isInitGravity)
+        {
+            ParseOtherDataFloat("gravity", ref gravity);
+            isInitGravity = true;
+        }
+        return gravity;
+    }
+    #endregion
+
     #region other_data 通用解析
     /// <summary>
     /// 从 other_data 解析 float 键值（按 &amp; 拆项、每项以第一个 : 拆 key/value，与 aim_up/stuck 同规约）；未配/解析失败保持传入的原值

@@ -50,6 +50,8 @@ Bean/
 
 > **`CreatureInfoBean.details`（Excel 自动生成列 `details[language_1]`，long）**：生物详情描述（攻击方式说明）文本 id，值=生物自身 id；配套自动属性 `details_language`（`GetTextById(CreatureInfoCfg.fileName, details, 1)` 取语言表 content_1 语种列，带 LanguageCache）。仅 id 1001~7004 的 30 个生物已配 12 语种；0/空=详情面板隐藏说明区块。消费方：`UIViewCreatureCardDetails.SetRenmark`。
 
+> **`UserStoryBean`（手写 `Assets/Scripts/Bean/Game/UserStoryBean.cs`，仿 UserUnlockBean 拆档模式）**：用户故事演出数据存档——`dicPlayedStory`（`Dictionary<long,long>`，key=StoryInfo.id、value=播放完成时间戳 Ticks；字典而非列表，事件多了查询仍 O(1)）+ `IsStoryPlayed/MarkStoryPlayed/GetDicPlayedStory` 懒加载；已拆分为独立存档 `UserStory_{slot}`（`UserDataService` 加载/保存/删除时与 UserUnlock 等同管线注入落盘），经 `UserDataBean.userStoryData`（[JsonIgnore]）+ `GetUserStoryData()` 访问（故事演出系统 story-system 使用）。
+
 ### Bean 命名规范
 - 基础 Bean 后缀：`Bean`
 - 部分数据 Bean：`BeanPartial`

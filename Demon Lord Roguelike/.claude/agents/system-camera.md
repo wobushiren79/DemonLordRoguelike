@@ -24,6 +24,7 @@ watched_files:
 - [Scripts/Component/Handler/CameraHandler.cs](Assets/Scripts/Component/Handler/CameraHandler.cs)
 - 基地 CV_List 语义镜头：`SetXxxCamera(priority, isEnable)` 系列转调 `SetCameraForBaseScene`（详见 `camera-system` Skill）
 - 运行期聚焦/震动（`#region 魔汁机镜头聚焦/震动`）：`GetBaseSceneCamera(cvName)` 仅查找不改态；`FocusJuicerCameraOnHole/RestoreJuicerCameraFocus` 运行期改 CV_Juicer 的 Follow/LookAt/FollowOffset/TargetOffset 做滴嘴特写（缓存还原，`isJuicerCameraFocused` 门控）；`ShakeJuicerCamera` 抬升 Perlin 振幅做冲击震动——同一 CV 运行期改字段的范式，不动预制
+- 故事演出镜头（`#region 故事演出镜头`，使用方为故事演出系统 StoryHandler）：`BeginStoryCameraControl(isFightScene)` 接管镜头并返回可自由补间的移动目标（战斗=controlTargetForEmpty；基地把 cm_Base.Follow/LookAt 从魔王本体临时切到 controlTargetForEmpty，位置先同步不跳变、缓存原绑定）；`MoveStoryCameraTarget(targetPos, duration, easeIndex)` DOMove 补间（`.SetUpdate(true)` timeScale=0 照常，先 `DOKill()` 防并发叠加，easeIndex=0 用默认缓动、其余按 Ease 强转）；`EndStoryCameraControl(originPos, duration)` 补间回起始位后基地恢复原 Follow/LookAt。注意锁输入后需保持 controlTargetForEmpty 激活（`EnableAllControl(false)` 会隐藏它，StoryHandler 已处理）
 
 ## 约束
 

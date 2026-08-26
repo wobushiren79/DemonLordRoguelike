@@ -265,6 +265,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         GameObject targetScene;//目标场景
         string roadColorA = "#ffffff00";//道路颜色A
         string roadColorB= "#ffffff00";//道路颜色B
+        float roadAlpha = 0.5f;//道路透明度（场景未配置时默认0.5）
         //如果议会 特殊加载议会场景
         if (fightData.gameFightType == GameFightTypeEnum.DoomCouncil)
         {
@@ -306,6 +307,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
 
             roadColorA = fightSceneData.road_color_a;
             roadColorB = fightSceneData.road_color_b;
+            roadAlpha = fightSceneData.GetRoadAlpha();
 
             //按场景配置开启内置雾（未配置 fog 则不开启，其它场景在卸载时已关闭）
             if (fightSceneData.HasFog && fightSceneData.GetFogParams(out var fogColor, out var fogStart, out var fogEnd, out var fogMode))
@@ -351,12 +353,18 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         sceneRoad.transform.eulerAngles = new Vector3(90, 0, 0);
         sceneRoad.transform.position = new Vector3(fightData.sceneRoadLength / 2f + 0.5f, WorldManager.FightSceneRoadHeightY, fightData.sceneRoadNum / 2f + 0.5f);
         var roadMR = sceneRoad.GetComponent<MeshRenderer>();
-        roadMR.sharedMaterial.SetVector("_GridSize", new Vector2(fightData.sceneRoadLength, fightData.sceneRoadNum));
+        //道路参数走 MaterialPropertyBlock 写入，避免 sharedMaterial 直接改共享材质资源（编辑器下会持久化污染 .mat，曾导致道路透明度串场景）
+        var roadMPB = new MaterialPropertyBlock();
+        roadMR.GetPropertyBlock(roadMPB);
+        roadMPB.SetVector("_GridSize", new Vector2(fightData.sceneRoadLength, fightData.sceneRoadNum));
 
         ColorUtility.TryParseHtmlString($"{roadColorA}", out var colorA);
         ColorUtility.TryParseHtmlString($"{roadColorB}", out var colorB);
-        roadMR.sharedMaterial.SetColor("_ColorA", colorA);
-        roadMR.sharedMaterial.SetColor("_ColorB", colorB);
+        roadMPB.SetColor("_ColorA", colorA);
+        roadMPB.SetColor("_ColorB", colorB);
+        //道路透明度：shader 的 Alpha 仅取 _Alpha 浮点（与颜色 alpha 无关），按场景配置设置
+        roadMPB.SetFloat("_Alpha", roadAlpha);
+        roadMR.SetPropertyBlock(roadMPB);
     }
 
     /// <summary>

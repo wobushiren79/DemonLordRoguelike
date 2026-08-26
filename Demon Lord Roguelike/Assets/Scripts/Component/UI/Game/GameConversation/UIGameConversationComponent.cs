@@ -17,5 +17,7 @@ public partial class UIGameConversation
 
     public TextMeshProUGUI ui_Name;
 
+    public Image ui_IconImg;
+
 
 }

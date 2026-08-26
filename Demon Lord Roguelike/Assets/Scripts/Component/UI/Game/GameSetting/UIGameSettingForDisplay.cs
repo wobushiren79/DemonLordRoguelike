@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class UIGameSettingForDisplay : UIGameSettingBase
@@ -6,6 +7,8 @@ public class UIGameSettingForDisplay : UIGameSettingBase
     protected UIViewGameSettingSelect selectForScreen;
     protected UIViewGameSettingCheckBox checkboxForFrameLock;
     protected UIViewGameSettingRange rangeForFrame;
+    //分辨率选项列表（预设列表 + 拖动窗口产生的自定义分辨率）
+    protected List<string> listResolutionData;
 
     public UIGameSettingForDisplay(GameObject objListContainer) : base(objListContainer)
     {
@@ -17,10 +20,17 @@ public class UIGameSettingForDisplay : UIGameSettingBase
     {
         base.Open();
 
-        //屏幕分辨率
+        //屏幕分辨率（拖动窗口产生的自定义分辨率不在预设列表时，插入首位展示）
         string textScreenTitle = TextHandler.Instance.GetTextById(42001);
-        selectForScreen = CreatureItemForSelect(textScreenTitle, GameSystemInfo.ListScreenResolutionData);
-        selectForScreen.SetSelcet(GameSystemInfo.ListScreenResolutionData.IndexOf(gameConfig.screenResolution));
+        listResolutionData = new List<string>(GameSystemInfo.ListScreenResolutionData);
+        int indexResolution = listResolutionData.IndexOf(gameConfig.screenResolution);
+        if (indexResolution < 0 && !gameConfig.screenResolution.IsNull())
+        {
+            listResolutionData.Insert(0, gameConfig.screenResolution);
+            indexResolution = 0;
+        }
+        selectForScreen = CreatureItemForSelect(textScreenTitle, listResolutionData);
+        selectForScreen.SetSelcet(indexResolution);
 
         //帧数锁定
         string textFrameLockTitle = TextHandler.Instance.GetTextById(42002);
@@ -50,10 +60,10 @@ public class UIGameSettingForDisplay : UIGameSettingBase
         base.ActionForSelectValueChange(targetView, index);
         if (targetView == selectForScreen)
         {
-            gameConfig.screenResolution = GameSystemInfo.ListScreenResolutionData[index];
+            gameConfig.screenResolution = listResolutionData[index];
             gameConfig.GetScreenResolution(out int w, out int h);
-            //只有全屏模式才使用固定分辨率，窗口模式时使用自己的分辨率
-            Screen.SetResolution(w, h, false);
+            //通过分辨率Handler设置（更新锚定比例并标记来源，避免被等比缩放逻辑二次修正）
+            ScreenResolutionHandler.Instance.SetResolutionByCode(w, h);
         }
     }
 

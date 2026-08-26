@@ -3,15 +3,10 @@ using UnityEngine;
 
 public class AttackModeFalluponArea : BaseAttackMode
 {
-    /// <summary>
-    /// 重力加速度（m/s²），用于模拟下落时的加速效果
-    /// </summary>
-    private const float GravityAcceleration = 9.81f;
-
     private bool isFalling = false;
     private Action<BaseAttackMode> actionForAttackEnd;
     /// <summary>
-    /// 当前下落速度，每帧由重力加速度累加，使下落轨迹呈非线性
+    /// 当前下落速度，每帧由重力加速度(attackModeInfo.GetGravity(),other_data 键 gravity,默认 9.81)累加，使下落轨迹呈非线性
     /// </summary>
     private float currentFallSpeed;
 
@@ -63,7 +58,8 @@ public class AttackModeFalluponArea : BaseAttackMode
         base.Update();
         if (!isFalling) return;
 
-        if (gameObject == null)
+        //gameObject 消失的销毁兜底仅限老 prefab 模式；DSP 视觉模式(visual_name 非空)本就无实体，继续走 position 权威源下落
+        if (attackModeInfo.visual_name.IsNull() && gameObject == null)
         {
             AttackHandle();
             return;
@@ -71,7 +67,7 @@ public class AttackModeFalluponArea : BaseAttackMode
 
         float deltaTime = GameFightLogic.GetFightDeltaTime();
         TranslatePosition(Vector3.down * (deltaTime * currentFallSpeed));
-        currentFallSpeed += GravityAcceleration * deltaTime;
+        currentFallSpeed += attackModeInfo.GetGravity() * deltaTime;
 
         if (attackModeData.targetPos.y >= position.y)
         {
@@ -79,6 +75,17 @@ public class AttackModeFalluponArea : BaseAttackMode
             isFalling = false;
             AttackHandle();
         }
+    }
+    #endregion
+
+    #region 速度钳制基准
+    /// <summary>
+    /// 瞬移钳制基准=当前下落速度：本类为重力加速弹道，末速远超 speed_move 初值，
+    /// 沿用基类(配置速度×攻速)会把后半程每帧差分速度误判为瞬移清零，DSP 火星甩尾消失
+    /// </summary>
+    public override float GetVelocityClampSpeed()
+    {
+        return currentFallSpeed;
     }
     #endregion
 
