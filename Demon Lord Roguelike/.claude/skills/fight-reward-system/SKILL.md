@@ -114,9 +114,9 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 - 末尾算好 `rarityItem/userType/addAttribute` 后收口到 `EquipUtil.CreateEquipItemForReward(id, rarityItem, userType, addAttribute)`（奖励场景封装，底层 `CreateEquipItem`：`new ItemBean(id, 1, rarityItem, userType)` → `InitRandomAttributeForCreate(addAttribute)`）——装备生成统一入口在 EquipUtil，NPC随机装备/GM测试走各自的场景封装。
 
 ### 魔晶生成 CreateItemCrystal
-- 基础数量 `itemCrystalNum = fightTypeConquerInfo.reward_crystal`（测试模式用 `testData.crystalNum`）
-- 在 `±itemCrystalNum/2` 范围随机浮动
-- `new ItemBean(ItemIdEnum.Crystal, itemCrystalNum + randomNum)`
+- 数量 `itemCrystalNum = fightTypeConquerInfo.GetRandomRewardCrystal()`（测试模式用 `testData.crystalNum` 固定值）
+- `reward_crystal` 为 **string**：单值 `"200"` 按 200 固定发放；区间 `"100-200"` 在 [100,200] 闭区间随机（**无随机浮动**，200 就是 200；要浮动在 Excel 里自己配区间 `100-200`）。解析走 `FightTypeConquerInfoBeanPartial.ParseRandomRange`（与 `fight_num` 等区间字段同格式）
+- `new ItemBean(ItemIdEnum.Crystal, itemCrystalNum)`
 
 ## 领奖界面交互（UIRewardSelect）
 
@@ -161,7 +161,7 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 | 字段 | 含义 |
 |------|------|
 | `drop_crystal` | 敌人死亡掉落水晶数量（战斗内即时掉落） |
-| `reward_crystal` | BOSS 通关领奖魔晶基础数量 |
+| `reward_crystal` | **string** BOSS 通关领奖魔晶：单值 `"200"` 固定 或 区间 `"100-200"` 随机（Excel 第2行类型行为 string） |
 | `reward_equip_rarity` | 领奖装备品质（稀有度）——只决定出什么稀有度，属性加点数量见 `RarityInfo.equip_attribute_add` |
 | `reward_exp` | 普通关卡胜利时给出战阵容生物的经验 |
 | `reward_exp_boss` | BOSS 关卡胜利时给出战阵容生物的经验 |
@@ -179,7 +179,7 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 ## 常见开发任务
 
 ### 调整 BOSS 通关奖励（装备品质/数量/魔晶）
-- 改征服配置表 Excel 源表（`reward_equip_rarity` / `reward_crystal`），在 Unity 编辑器导出 JSON。**禁止只改 JSON**。
+- 改征服配置表 Excel 源表（`reward_equip_rarity` / `reward_crystal`），在 Unity 编辑器导出 JSON。**禁止只改 JSON**。`reward_crystal` 填文本：单值 `200`（固定）或 `100-200`（区间随机）。
 - 调装备**属性加点数量**：改稀有度配置表 `excel_rarity_info` 的 `equip_attribute_add`（按稀有度，不在征服表里）。
 - 改生成数量逻辑（几件装备/几个魔晶）：改 `RewardSelectBean` 的 `createItemNum` / `createEquipNum` 默认值或生成循环。
 

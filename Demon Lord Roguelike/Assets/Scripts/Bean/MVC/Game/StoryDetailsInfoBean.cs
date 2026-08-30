@@ -36,15 +36,15 @@ public partial class StoryDetailsInfoBean : BaseBean
 	/// </summary>
 	public string param_2;
 	/// <summary>
-	///参数3(镜头=缓动DOTween序号默认0;特效=尺寸倍率默认1)
+	///参数2(对话=对话框对齐bottom/bottom_left/bottom_right/middle/middle_left/middle_right/top/top_left/top_right,空=bottom下对齐,可接|高亮目标demon魔王核心/crystal掉落魔晶/ui_fight_card手卡/ui_fight_remove删除按钮/ui_fight_att_progress进攻进度,可再接|形状rect方形默认/circle圆形|尺寸倍率默认1;镜头=时长秒默认1;特效=目标标记空=核心/魔王位;淡入淡出=时长秒默认0.5)
 	/// </summary>
 	public string param_3;
 	/// <summary>
-	///参数4(预留)
+	///参数3(对话=偏移X默认0;镜头=缓动DOTween序号默认0;特效=尺寸倍率默认1)
 	/// </summary>
 	public string param_4;
 	/// <summary>
-	///备注
+	///参数4(对话=偏移Y默认0)
 	/// </summary>
 	public string remark;
 }

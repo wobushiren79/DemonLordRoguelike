@@ -139,6 +139,24 @@ public partial class FightTypeConquerInfoBean
     }
 
     /// <summary>
+    /// 获取随机魔晶奖励数量(解析 reward_crystal 字段, 与其它区间字段同格式: 单值"x"或区间"x-y"; 解析失败返回0)
+    /// 单值"200"按 200 固定发放; 区间"100-200"在 [100,200] 闭区间内随机
+    /// 注: reward_crystal 字段需在 Excel 源表第2行类型行改为 string 后, 经 Unity 配置导出工具重新生成 Bean 才会生效
+    /// </summary>
+    public int GetRandomRewardCrystal()
+    {
+        return ParseRandomRange(reward_crystal, 0);
+    }
+
+    /// <summary>
+    /// int 单值(兼容旧 int 字段未重新生成前的过渡态, 重生成后此重载不再被调用)
+    /// </summary>
+    private static int ParseRandomRange(int value, int defaultValue)
+    {
+        return value;
+    }
+
+    /// <summary>
     /// 解析 "x" 或 "x-y" 格式的字符串为一个随机整数
     /// 单值"x"直接返回 x; 区间"x-y"返回 [x,y] 闭区间内的随机整数; 解析失败返回 defaultValue
     /// </summary>

@@ -100,6 +100,41 @@ public class UserDataService : BaseDataService<UserDataBean>
     }
 
     /// <summary>
+    /// 仅读取当前槽位的故事演出拆分存档（UserStory_{slot}，文件不存在返回 null，不读主档与其它拆分档）
+    /// 供测试工具查询故事已播记录等轻量场景使用
+    /// </summary>
+    public UserStoryBean LoadStoryData()
+    {
+        return GetSplitService<UserStoryBean>($"UserStory_{slotIndex}").Load(false);
+    }
+
+    /// <summary>
+    /// 仅删除当前槽位的故事演出拆分存档（UserStory_{slot}），主档与其它拆分档不动
+    /// 供测试工具（故事演出测试-清除存档故事数据）使用
+    /// </summary>
+    public void DeleteStoryData()
+    {
+        FileUtil.DeleteFile($"{StoragePath}/UserStory_{slotIndex}");
+    }
+
+    /// <summary>
+    /// 仅移除当前槽位的单个故事已播记录（读拆分存档→移除→写回；文件不存在或未播该故事时不动）
+    /// 供测试工具（故事演出测试-删除指定故事数据）使用
+    /// </summary>
+    /// <param name="storyId">故事ID（StoryInfo.id）</param>
+    public void RemoveStoryData(long storyId)
+    {
+        var storyData = LoadStoryData();
+        if (storyData == null)
+            return;
+        if (!storyData.GetDicPlayedStory().Remove(storyId))
+            return;
+        //拆分存档目录可能不存在(空槽),先建目录再写回
+        FileUtil.CreateDirectory(StoragePath);
+        GetSplitService<UserStoryBean>($"UserStory_{slotIndex}").Save(storyData);
+    }
+
+    /// <summary>
     /// 构造一个指向当前槽目录的拆分存档服务（按类型与文件名即用即建，复用泛型 Load/Save）
     /// </summary>
     /// <typeparam name="T">拆分数据类型</typeparam>

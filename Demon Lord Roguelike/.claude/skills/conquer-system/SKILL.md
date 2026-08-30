@@ -97,7 +97,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → GameFightLogicConquer 跑起
 | `road_length` | string | **道路长度**，单值或区间 `x-y` |
 | `level` | int | 难度等级（与 world_id 联合作键） |
 | `drop_crystal` | int | 敌人死亡掉落魔晶 |
-| `reward_crystal` | int | 通关奖励魔晶 |
+| `reward_crystal` | string | **通关领奖魔晶**：单值 `200` 固定 或 区间 `100-200` 随机（与其它区间字段同 `x-y` 格式） |
 | `reward_equip_rarity` | int | 奖励装备稀有度（只决定稀有度；属性加点数量见 `RarityInfo.equip_attribute_add`） |
 | `reward_exp` | int | 普通关通关经验 |
 | `reward_exp_boss` | int | BOSS 关通关经验 |
@@ -106,7 +106,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → GameFightLogicConquer 跑起
 
 ### 区间字段约定（x 或 x-y）
 
-`attack_boss_num` / `fight_num` / `road_num` / `road_length` 四个字段均为**字符串区间**：
+`attack_boss_num` / `fight_num` / `road_num` / `road_length` / `reward_crystal` 五个字段均为**字符串区间**：
 - 填单个数 `3` → 固定取 3
 - 填区间 `2-5` → 闭区间 `[2,5]` 内随机一个整数
 

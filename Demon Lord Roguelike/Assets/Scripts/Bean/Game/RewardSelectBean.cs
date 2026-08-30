@@ -322,26 +322,23 @@ public class RewardSelectBean
     /// <summary>
     /// 创建一个魔晶道具
     /// </summary>
-    /// <param name="conquerInfo">征服配置（决定魔晶基础数量；为null则走测试/默认规则）</param>
+    /// <param name="conquerInfo">征服配置（决定魔晶奖励：单值"200"固定 或 区间"100-200"随机；为null则走测试/默认规则）</param>
     /// <param name="testData">测试数据，测试模式下使用</param>
     private void CreateItemCrystal(FightTypeConquerInfoBean conquerInfo, RewardSelectTestData testData = null)
     {
         //基础魔晶道具数量
         int itemCrystalNum = 100;
-        //征服配置 获取基础魔晶道具数量
+        //征服配置 获取魔晶奖励数量(支持单值"x"固定或区间"x-y"随机)
         if (conquerInfo != null)
         {
-            itemCrystalNum = conquerInfo.reward_crystal;
+            itemCrystalNum = conquerInfo.GetRandomRewardCrystal();
         }
         else if (testData != null)
         {
             //测试模式：使用传入的测试数据
             itemCrystalNum = testData.crystalNum;
         }
-        //随机魔晶道具数量
-        int itemCrystalNumRandomLimit = itemCrystalNum / 2;
-        int randomNum = Random.Range(-itemCrystalNumRandomLimit, itemCrystalNumRandomLimit);
-        var itemData = new ItemBean(ItemIdEnum.Crystal, itemCrystalNum + randomNum);
+        var itemData = new ItemBean(ItemIdEnum.Crystal, itemCrystalNum);
         listReward.Add(itemData);
     }
     #endregion

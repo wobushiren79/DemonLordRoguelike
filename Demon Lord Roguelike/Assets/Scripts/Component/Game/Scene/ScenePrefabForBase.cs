@@ -27,6 +27,10 @@ public class ScenePrefabForBase : ScenePrefabBase
     public GameObject objBuildingAchievement;
     //魔汁机
     public GameObject objBuildingJuicer;
+    //传送门(实体建筑,故事演出镜头锚点)
+    public GameObject objBuildingPortal;
+    //扭蛋机(实体建筑,故事演出镜头锚点)
+    public GameObject objBuildingGashaponMachine;
     //光线
     public Light lightSun;
     public GameObject lightRay;

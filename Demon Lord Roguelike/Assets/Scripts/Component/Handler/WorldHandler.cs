@@ -514,8 +514,8 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
            await gameLogic.ClearGame();
         }
         await new WaitNextFrame();
-        //清理粒子
-        EffectHandler.Instance.manager.Clear();
+        //清理粒子(统一入口：实例+飘字+拖尾VFX,与 ClearGame 同一收口)
+        EffectHandler.Instance.ClearAllEffect();
         await new WaitNextFrame();
         //清理缓存
         System.GC.Collect();

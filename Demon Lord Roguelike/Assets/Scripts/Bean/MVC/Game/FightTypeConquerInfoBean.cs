@@ -82,7 +82,7 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	/// <summary>
 	///奖励-魔晶
 	/// </summary>
-	public int reward_crystal;
+	public string reward_crystal;
 	/// <summary>
 	///奖励-装备稀有度
 	/// </summary>

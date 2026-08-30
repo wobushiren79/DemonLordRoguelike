@@ -226,6 +226,7 @@ LauncherTest (Inspector)
 ├── CreatureJuicer: 魔汁机测试参数（选存档 + 投入魔物上限滑条 5~15）
 ├── EffectTest: 粒子特效测试（▶️ 开始粒子特效测试按钮，打开纯代码 IMGUI 面板 TestEffectGUI）
 ├── ConversationTest: 对话系统测试（说话NPC下拉/手动ID + 自由文本 TextArea + ▶️ 开始对话展示）
+├── StoryTest: 故事演出测试（故事下拉/手动ID + 存档槽位 + ▶️ 播放故事演出；另有「清除存档故事演出数据」区块：选槽位1~3 → 查询已播数量 → 删整个 UserStory 拆分档；「删除指定故事」子区：查询状态后从已播记录下拉选单个故事 → 仅移除该条记录其余保留）
 └── ▶️ 开始测试 按钮（仅运行时可用）
 ```
 
@@ -312,7 +313,7 @@ LauncherTest (Inspector)
 
 可视化编辑故事演出配置三表（StoryInfo/StoryDetailsInfo/StoryTalkInfo）+ `excel_language` 对应 sheet。骨架照抄 `FightTypeConquerEditorWindow`，增删行照 `EquipSuitEditorWindow`。
 
-- **四栏布局**：故事列表（搜索/新增/删除——删除级联删步骤并提示孤儿对话）｜故事字段（名字中文直接编辑写回语言表 content_cn）｜步骤编排（foldout 列表/step_type EnumPopup/is_async/**➕行前插入**/↑↓移/末尾添加，按类型动态参数标签；Talk 步骤只做引用选择+只读预览）｜对话列表（本故事+通用对话统一 CRUD：npc 下拉/中文/备注/删除(被引用时提示并自动移除引用)/新增自动绑定当前故事）。
+- **四栏布局**：故事列表（搜索/新增/删除——删除级联删步骤并提示孤儿对话）｜故事字段（名字中文直接编辑写回语言表 content_cn）｜步骤编排（foldout 列表/step_type EnumPopup/is_async/**➕行前插入**/↑↓移/末尾添加，按类型动态参数标签；Talk 步骤只做引用选择+只读预览 + 对话框对齐下拉/偏移X-Y/目标高亮开关+目标下拉/形状下拉(方形/圆形)+尺寸倍率(param_2=对齐[|高亮[|形状[|倍率]]]组合、param_3/4=偏移，空=默认下对齐不高亮)）｜对话列表（本故事+通用对话统一 CRUD：npc 下拉/中文/备注/删除(被引用时提示并自动移除引用)/新增自动绑定当前故事且 id=story_id*1000+号段内序号、上限999句超出报错）。三个固定栏的栏间分隔条可拖拽调宽、双击复位默认宽；步骤栏为弹性栏自动占满剩余宽度（DrawSplitter/HandleSplitterDrag，各栏有最小宽保护）。
 - **步骤与对话分离**：对话 CRUD 全在对话列表面板，步骤编排只负责下拉引用；对话下拉按 StoryTalkInfo.story_id 过滤只显示当前故事（+story_id=0 通用），可手输 ID 跨故事引用。
 - **保存**：Validate（场景-条件一致性/参数合法性/对话存在性，错误阻断、警告可过）→ 4 个 xlsx 各自单 EPPlus 会话写回（删除降序 DeleteRow/修改/新增）→ `ExcelUtil.ExcelToJsonItem`×4 重导 JSON → `AssetDatabase.Refresh` → 提交快照。
 

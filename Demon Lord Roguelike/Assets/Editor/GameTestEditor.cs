@@ -1151,8 +1151,178 @@ public partial class GameTestEditor : Editor
 
         EditorGUILayout.HelpBox("按故事配置的演出场景自动进入对应场景(基地/战斗/终焉议会)后强制播放演出；战斗场景用内置默认测试战斗数据。存档槽位选 1~3 时先读取该存档作为运行时数据(基地场景故事可看到真实基地状态),全程测试模拟不写回真实存档；测试场景不注册自动触发,这里直接调 StoryHandler.PlayStory。", MessageType.Info);
 
+        EditorGUILayout.Space(10);
+
+        // 清除存档故事演出数据(删除指定槽位的 UserStory 拆分存档,让故事触发条件重新生效,便于反复测试真实演出)
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.LabelField("清除存档故事演出数据", EditorStyles.boldLabel);
+        //槽位切换后旧状态文本/已播故事下拉失效,清空待重新查询
+        EditorGUI.BeginChangeCheck();
+        storyTestClearSlot = EditorGUILayout.IntPopup(
+            new GUIContent("目标存档槽位", "要清除故事演出已播记录的存档槽位(UserStory_{槽位} 拆分存档);仅 1~3 真实存档"),
+            storyTestClearSlot,
+            new[] { new GUIContent("存档 1"), new GUIContent("存档 2"), new GUIContent("存档 3") },
+            new[] { 1, 2, 3 });
+        if (EditorGUI.EndChangeCheck())
+        {
+            storyTestClearStatus = null;
+            storyTestRemoveOptions = null;
+            storyTestRemoveIds = null;
+            storyTestRemoveSelectIndex = 0;
+        }
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("🔍 查询状态", GUILayout.Width(90)))
+        {
+            RefreshStoryClearStatus();
+        }
+        EditorGUILayout.LabelField(storyTestClearStatus ?? "未查询", EditorStyles.miniLabel);
+        EditorGUILayout.EndHorizontal();
+        GUI.backgroundColor = new Color(0.9f, 0.5f, 0.4f);
+        if (GUILayout.Button("🗑️ 清除该存档的故事演出数据", GUILayout.Height(24)))
+        {
+            ClearStoryDataForSlot(storyTestClearSlot);
+        }
+        GUI.backgroundColor = Color.white;
+        EditorGUILayout.HelpBox("删除指定槽位的故事演出已播记录(UserStory 拆分存档),故事触发条件将重新生效,便于进游戏反复测试同一存档的真实演出;不影响主档与其它数据。若游戏正在运行且当前加载的正是该槽位,会同步清空运行时内存记录。", MessageType.None);
+
+        EditorGUILayout.Space(5);
+        // 删除指定故事(仅移除选中故事的一条已播记录,其余保留;选项来自「查询状态」时构建的已播记录)
+        EditorGUILayout.LabelField("删除指定故事(仅移除一条已播记录)", EditorStyles.boldLabel);
+        if (storyTestRemoveOptions == null || storyTestRemoveOptions.Length == 0)
+        {
+            EditorGUILayout.HelpBox("暂无可删除的已播故事,请先点「🔍 查询状态」或该槽位无已播记录。", MessageType.Info);
+        }
+        else
+        {
+            storyTestRemoveSelectIndex = EditorGUILayout.Popup(
+                new GUIContent("已播故事", "从该槽位已播记录中选择要单独删除的故事(先「🔍 查询状态」刷新列表)"),
+                Mathf.Clamp(storyTestRemoveSelectIndex, 0, storyTestRemoveOptions.Length - 1),
+                storyTestRemoveOptions);
+            GUI.backgroundColor = new Color(0.9f, 0.5f, 0.4f);
+            if (GUILayout.Button("🗑️ 删除指定的故事数据", GUILayout.Height(24)))
+            {
+                long targetStoryId = storyTestRemoveIds[Mathf.Clamp(storyTestRemoveSelectIndex, 0, storyTestRemoveIds.Length - 1)];
+                RemoveStoryDataForSlot(storyTestClearSlot, targetStoryId);
+            }
+            GUI.backgroundColor = Color.white;
+        }
+        EditorGUILayout.HelpBox("仅删除下拉选中故事的已播记录(其它已播故事保留),该故事触发条件重新生效;不影响主档与其它数据。若游戏正在运行且当前加载的正是该槽位,会同步清空运行时内存中的该条记录。", MessageType.None);
+        EditorGUILayout.EndVertical();
+
         EditorGUI.indentLevel--;
         EditorGUILayout.Space(10);
+    }
+
+    /// <summary>
+    /// 刷新清除区的存档故事数据状态显示(已播故事数量)并重建已播故事下拉(删除指定故事用)
+    /// </summary>
+    private void RefreshStoryClearStatus()
+    {
+        var service = new UserDataService(storyTestClearSlot);
+        var storyData = service.LoadStoryData();
+        BuildStoryRemoveOptions(storyData);
+        if (storyData == null)
+        {
+            storyTestClearStatus = "该槽位暂无故事存档(无已播记录)";
+            return;
+        }
+        int count = storyData.GetDicPlayedStory().Count;
+        storyTestClearStatus = count > 0 ? $"已播放 {count} 个故事" : "故事存档存在,无已播记录";
+    }
+
+    /// <summary>
+    /// 构建已播故事下拉选项(id + 中文名,按id排序;空/无已播记录时清成 null)
+    /// 中文名直读 Language_StoryInfo_cn.txt,不切 LanguageCfg 语言——避免 Inspector 绘制时篡改正在运行游戏的语言
+    /// </summary>
+    private void BuildStoryRemoveOptions(UserStoryBean storyData)
+    {
+        storyTestRemoveOptions = null;
+        storyTestRemoveIds = null;
+        storyTestRemoveSelectIndex = 0;
+        if (storyData == null || storyData.GetDicPlayedStory().Count == 0)
+            return;
+        Dictionary<long, LanguageBean> dicLanguage = LoadLanguageForCn("Language_StoryInfo_cn.txt");
+        var listEntries = new List<KeyValuePair<long, GUIContent>>();
+        foreach (var kv in storyData.GetDicPlayedStory())
+        {
+            var storyInfo = StoryInfoCfg.GetItemData(kv.Key);
+            string storyName = "(未配置名字)";
+            if (storyInfo != null && storyInfo.name != 0 && dicLanguage.TryGetValue(storyInfo.name, out LanguageBean languageBean) && !languageBean.content.IsNull())
+                storyName = languageBean.content;
+            listEntries.Add(new KeyValuePair<long, GUIContent>(kv.Key, new GUIContent($"{kv.Key}  {storyName}")));
+        }
+        //按 id 排序保证下拉顺序稳定(与故事测试下拉一致)
+        listEntries.Sort((a, b) => a.Key.CompareTo(b.Key));
+        storyTestRemoveOptions = new GUIContent[listEntries.Count];
+        storyTestRemoveIds = new long[listEntries.Count];
+        for (int i = 0; i < listEntries.Count; i++)
+        {
+            storyTestRemoveIds[i] = listEntries[i].Key;
+            storyTestRemoveOptions[i] = listEntries[i].Value;
+        }
+    }
+
+    /// <summary>
+    /// 清除指定槽位的故事演出数据(二次确认后删除 UserStory 拆分存档;
+    /// 运行时若当前加载的正是该槽位,同步清空内存已播记录与触发条件耗尽缓存,防止后续写盘写回旧记录/触发被短路)
+    /// </summary>
+    /// <param name="slot">存档槽位(1~3)</param>
+    private void ClearStoryDataForSlot(int slot)
+    {
+        if (!EditorUtility.DisplayDialog("清除故事演出数据",
+            $"确定清除存档 {slot} 的故事演出已播记录吗?\n清除后该存档的故事触发条件将重新生效(不影响主档与其它数据)。",
+            "清除", "取消"))
+        {
+            return;
+        }
+        var service = new UserDataService(slot);
+        service.DeleteStoryData();
+        //游戏运行中且当前加载的正是该槽位:同步清内存,保持与磁盘一致
+        if (Application.isPlaying)
+        {
+            var userData = GameDataHandler.Instance.manager.GetUserData();
+            if (userData != null && userData.saveIndex == slot)
+            {
+                userData.GetUserStoryData().GetDicPlayedStory().Clear();
+                var storyManager = StoryHandler.Instance.manager;
+                storyManager.setExhaustedCondition.Clear();
+                storyManager.exhaustedForStoryData = null;
+            }
+        }
+        RefreshStoryClearStatus();
+        EditorUtility.DisplayDialog("完成", $"已清除存档 {slot} 的故事演出数据。", "确定");
+    }
+
+    /// <summary>
+    /// 删除指定槽位的单个故事已播记录(二次确认后仅移除该故事,其余保留;
+    /// 运行时若当前加载的正是该槽位,同步清空内存中的该条记录与触发条件耗尽缓存,防止后续写盘写回旧记录/触发被短路)
+    /// </summary>
+    /// <param name="slot">存档槽位(1~3)</param>
+    /// <param name="storyId">故事ID(StoryInfo.id)</param>
+    private void RemoveStoryDataForSlot(int slot, long storyId)
+    {
+        if (!EditorUtility.DisplayDialog("删除故事演出数据",
+            $"确定删除存档 {slot} 的该条故事已播记录吗?\n故事ID:{storyId}\n仅移除这条记录,其余已播故事保留;该故事触发条件重新生效(不影响主档与其它数据)。",
+            "删除", "取消"))
+        {
+            return;
+        }
+        var service = new UserDataService(slot);
+        service.RemoveStoryData(storyId);
+        //游戏运行中且当前加载的正是该槽位:同步清内存,保持与磁盘一致
+        if (Application.isPlaying)
+        {
+            var userData = GameDataHandler.Instance.manager.GetUserData();
+            if (userData != null && userData.saveIndex == slot)
+            {
+                userData.GetUserStoryData().RemoveStoryPlayed(storyId);
+                var storyManager = StoryHandler.Instance.manager;
+                storyManager.setExhaustedCondition.Clear();
+                storyManager.exhaustedForStoryData = null;
+            }
+        }
+        RefreshStoryClearStatus();
+        EditorUtility.DisplayDialog("完成", $"已删除存档 {slot} 的故事数据(故事ID:{storyId})。", "确定");
     }
 
     /// <summary>

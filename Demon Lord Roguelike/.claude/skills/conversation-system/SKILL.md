@@ -20,7 +20,7 @@ watched_files:
 | 文件 | 说明 |
 |---|---|
 | [UIGameConversation.cs](Assets/Scripts/Component/UI/Game/GameConversation/UIGameConversation.cs) | 对话界面逻辑（BaseUIComponent） |
-| [UIGameConversationComponent.cs](Assets/Scripts/Component/UI/Game/GameConversation/UIGameConversationComponent.cs) | AutoLinkUI 字段绑定（ui_TalkText/ui_Icon/ui_IconImg/ui_BG/ui_Gift/ui_Name/ui_IconContent） |
+| [UIGameConversationComponent.cs](Assets/Scripts/Component/UI/Game/GameConversation/UIGameConversationComponent.cs) | AutoLinkUI 字段绑定（ui_TalkText/ui_Icon/ui_IconImg/ui_BG/ui_Gift/ui_Name/ui_IconContent/ui_Content/ui_MaskTarget） |
 | [ConversationCouncilorInfoBeanPartial.cs](Assets/Scripts/Bean/MVC/Game/ConversationCouncilorInfoBeanPartial.cs) | 台词按关系筛选 `GetDataByRelationship` |
 | [DoomCouncilLogic.cs](Assets/Scripts/Game/Logic/DoomCouncilLogic.cs) | 对话触发入口 `InteractCouncilor` |
 
@@ -45,6 +45,8 @@ watched_files:
 
 - **npc_id=0（旁白）**：隐藏 ui_Icon/ui_IconImg/ui_Gift、ui_IconContent 置空、名字置空，直接 `SetContent` 起打字机（无头像无名字纯文字）。
 - **npc_id≠0**：`new CreatureBean(NpcInfoCfg.GetItemData(npc_id))` 走现有 `SetData` 管线（spine/静态头像/名字复用），再强制隐藏 ui_Gift（故事无贿赂）。
+
+**对话框布局/目标高亮（故事演出专用）**：`OpenUI` 每次打开自动 `ResetContentLayout()`（还原 ui_Content 到预制体默认锚点/pivot/坐标，首次打开捕获快照）+ `HideStoryHighlight()`——演出自定义的对齐/偏移/高亮不会残留到议会对话等其它打开方式。演出侧 API：`SetStoryContentLayout(anchor, offset)`（9 宫格锚点+偏移）；`SetStoryHighlight(RectTransform/Bounds, shapeType=0, sizeScale=1)`（UV 相机约定：UI 目标与 mask 同属 UI Canvas——**Overlay 模式 UGUI 约定相机传 null**（世界点=像素平面，用主相机投影会得到天文数字般的屏幕坐标导致洞错位，见 feedback_story_highlight_overlay）、ScreenSpaceCamera 模式传 Canvas worldCamera；场景目标投影屏幕必须经 mainCamera、屏幕点转 mask 矩形再按 Canvas 模式取相机；**范围默认=目标自身大小**（UI 矩形/世界包围盒）、倍率在其基准上缩放，shapeType 0方形/1圆形——圆形按屏幕像素取最大边为直径换算正圆；克隆 MaskTarget 材质写 `_Center/_Size/_ShapeType`——Shader_UI_GuideHighlight 压暗全屏透亮目标，遮罩兜底拉伸满屏、尺寸下限 0.03；`OnDestroy` 销毁克隆材质）、`HideStoryHighlight()`。**出场/切换动画**：亮→亮连续切换时透明度恒定（压暗不闪），`_Center/_Size` 从旧值 0.18s 插值过渡到新目标（洞移动引导视线，快速连点 Kill 重启）；仅首现/无亮→有亮时 mask alpha 从 0 淡入 0.12s 出现（unscaled，见 story-system「高亮生命周期与防闪烁」）。调用方是 `StoryHandler.PlayTalkOnce`（对齐/偏移/高亮目标/形状/倍率来自 Talk 步骤 param_2/3/4，详见 story-system）。
 
 ## 头像图片模式（无 spine NPC）
 

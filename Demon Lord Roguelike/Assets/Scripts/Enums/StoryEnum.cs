@@ -26,7 +26,7 @@ public enum StoryTriggerConditionEnum
 {
     None = 0,
     EnterBaseSceneFirst = 1,//首次进入基地场景后
-    EnterFightSceneFirst = 2,//首次进入战斗场景后
+    EnterFightSceneFirst = 2,//首次进入战斗场景(下方卡片出现动画播完)后
     FightFirstDropCrystal = 3,//战斗中首次掉落魔晶
     //EnterDoomCouncilFirst = 4,//首次进入终焉议会(预留,第二期接 EnterDoomCouncilScene 链尾事件)
 }
@@ -37,7 +37,7 @@ public enum StoryTriggerConditionEnum
 public enum StoryStepTypeEnum
 {
     None = 0,
-    Talk = 1,//对话(param_1=对话ID,&分隔连播)
+    Talk = 1,//对话(param_1=对话ID,&分隔连播; param_2=对话框对齐 bottom/bottom_left/bottom_right/middle/middle_left/middle_right/top/top_left/top_right 空=bottom下对齐,可接|高亮目标 demon魔王核心/crystal掉落魔晶/ui_fight_card手卡/ui_fight_remove删除按钮/ui_fight_att_progress进攻进度,可再接|形状rect方形默认/circle圆形|尺寸倍率默认1; param_3=偏移X默认0, param_4=偏移Y默认0)
     CameraMove = 2,//镜头移动(param_1=目标标记/back, param_2=时长秒, param_3=缓动序号)
     Wait = 3,//等待(param_1=秒,实时)
     Effect = 4,//特效(param_1=特效ID, param_2=目标标记空=核心/魔王, param_3=尺寸倍率)

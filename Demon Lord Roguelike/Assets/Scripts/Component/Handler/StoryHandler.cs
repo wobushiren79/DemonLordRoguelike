@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
+using Unity.Cinemachine;
 using UnityEngine;
 
 /// <summary>
 /// 故事演出处理器
 /// 监听触发事件 -> 判定未播故事 -> 锁输入/暂停战斗 -> 接管镜头逐步执行演出 -> 恢复并记录存档
-/// <para>事件注册仅由 LauncherGame 调用(真实游戏入口)；测试场景不注册,自动触发天然关闭,测试面板直接调 PlayStory</para>
+/// <para>事件注册由 LauncherGame.Launch(真实游戏入口)与 LauncherTest.StartForNormalGame(正常启动游戏)调用；StoryTest 测试场景不注册,自动触发天然关闭,测试面板直接调 PlayStory</para>
 /// </summary>
 public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
 {
@@ -20,7 +22,7 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
             return;
         manager.isInited = true;
         EventHandler.Instance.RegisterEvent(EventsInfo.World_EnterGameForBaseScene, EventForEnterBaseScene);
-        EventHandler.Instance.RegisterEvent(EventsInfo.GameFightLogic_StartGame, EventForFightStartGame);
+        EventHandler.Instance.RegisterEvent(EventsInfo.UIFightMain_CardCreateAnimEnd, EventForFightCardCreateAnimEnd);
         EventHandler.Instance.RegisterEvent<FightDropCrystalBean>(EventsInfo.GameFightLogic_CreatureDeadDropCrystal, EventForFightDropCrystal);
     }
     #endregion
@@ -35,9 +37,9 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
     }
 
     /// <summary>
-    /// 战斗开始回调(所有战斗模式 PreGame 完成进入 Gaming)
+    /// 战斗卡片出现动画播完回调(进战斗场景的演出就绪时机:等下方卡片弹入落位后再触发,保证高亮手卡等目标已在最终位置)
     /// </summary>
-    private void EventForFightStartGame()
+    private void EventForFightCardCreateAnimEnd()
     {
         TryTriggerStory(StoryTriggerConditionEnum.EnterFightSceneFirst);
     }
@@ -168,7 +170,7 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
             Time.timeScale = 0f;
         }
         //3.接管镜头并记录起始位(back 标记与结束归还都以此为锚)
-        var cameraMoveTarget = CameraHandler.Instance.BeginStoryCameraControl(isFight);
+        var cameraMoveTarget = BeginStoryCamera();
         manager.storyCameraOriginPos = cameraMoveTarget.position;
         try
         {
@@ -178,9 +180,17 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
             {
                 var step = steps[i];
                 if (step.IsAsync())
+                {
+                    //并发步骤(`_ =`)只发起不等完成,不在此关闭对话 UI(它可能仍在上一句对话中,关闭会打断演示)
                     _ = ExecuteStep(step);
+                }
                 else
+                {
+                    //进入非对话步骤前关闭仍开着的演出对话 UI(对话步骤间连播保持打开复用,防亮→亮切换重开闪一帧;收尾兜底在 FinishStory)
+                    if (step.GetStepType() != StoryStepTypeEnum.Talk)
+                        CloseStoryConversationUI();
                     await ExecuteStep(step);
+                }
             }
         }
         finally
@@ -195,8 +205,8 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
     /// </summary>
     private async UniTask FinishStory(StoryInfoBean storyData, bool isFight)
     {
-        //镜头归还(补间回起始位后,基地恢复跟随魔王;内部 unscaled,战斗暂停下照常)
-        await CameraHandler.Instance.EndStoryCameraControl(manager.storyCameraOriginPos, 0.5f);
+        //镜头归还(补间回起始位后瞬切还原,原虚拟相机参数全程未动;内部 unscaled,战斗暂停下照常)
+        await EndStoryCamera();
         //恢复暂停与输入
         if (isFight)
         {
@@ -207,6 +217,8 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
         {
             GameControlHandler.Instance.SetBaseControl();
         }
+        //兜底关闭演出对话 UI(对话步骤保持打开机制下,故事结束必须收口,防高亮/对话框残留)
+        CloseStoryConversationUI();
         //记录存档(is_once 才记;isTestSimulation 时 SaveUserData 被 GameDataManager 拦截不落盘)
         var userData = GameDataHandler.Instance.manager.GetUserData();
         if (userData != null && storyData.IsOnce())
@@ -224,7 +236,7 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
 
     /// <summary>
     /// 演出锁输入:基地锁控制但保持魔王可见(与议会交谈同款);战斗全禁
-    /// 锁后重新激活镜头跟随目标 controlTargetForEmpty(EnableAllControl 会隐藏它,而演出镜头移动依赖 Cinemachine 跟随)
+    /// <para>镜头走 Story 专用虚拟相机(独立锚点),不再依赖 controlTargetForEmpty,锁输入隐藏它也不影响演出</para>
     /// </summary>
     private void LockInputForStory(bool isFight)
     {
@@ -236,7 +248,6 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
         {
             GameControlHandler.Instance.SetBaseControl(false, isHideControlTarget: false);
         }
-        GameControlHandler.Instance.manager.controlTargetForEmpty.SetActive(true);
     }
     #endregion
 
@@ -274,7 +285,7 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
     }
 
     /// <summary>
-    /// 对话步骤:param_1 按 &amp; 拆分多个对话ID,同一步内顺序连播(每句各等一次点击)
+    /// 对话步骤:param_1 按 &amp; 拆分多个对话ID,同一步内顺序连播(每句各等一次点击);param_2/3/4 为对话框对齐与偏移(空=默认下对齐(0,0))
     /// </summary>
     private async UniTask ExecuteStepForTalk(StoryDetailsInfoBean stepData)
     {
@@ -287,24 +298,175 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
                 LogUtil.LogError($"故事演出对话步骤跳过,找不到对话配置 id:{talkIds[i]} (步骤id:{stepData.id})");
                 continue;
             }
-            await PlayTalkOnce(talkData);
+            await PlayTalkOnce(talkData, stepData);
         }
     }
 
     /// <summary>
-    /// 播放单句故事对话:打开对话UI(不关其它UI,保留 UIFightMain 等),等玩家点击结束后关闭
+    /// 播放单句故事对话:打开对话UI(不关其它UI,保留 UIFightMain 等),按步骤配置设置对话框对齐/偏移,等玩家点击结束后关闭
     /// </summary>
-    private async UniTask PlayTalkOnce(StoryTalkInfoBean talkData)
+    private async UniTask PlayTalkOnce(StoryTalkInfoBean talkData, StoryDetailsInfoBean stepData)
     {
         bool isTalkEnd = false;
-        var uiConversation = UIHandler.Instance.OpenUI<UIGameConversation>();
+        //实例复用:上一句对话 UI 仍打开(未关闭)时直接续用,不重走 OpenUI——OpenUI 含 HideStoryHighlight 防残留,
+        //连播复用路径执行它会让高亮遮罩"隐藏一瞬再淡入",造成亮→亮切换闪烁;由非对话步骤/故事收尾统一关闭
+        var uiConversation = manager.storyConversationUI != null && manager.storyConversationUI.gameObject.activeInHierarchy
+            ? manager.storyConversationUI
+            : UIHandler.Instance.OpenUI<UIGameConversation>();
+        manager.storyConversationUI = uiConversation;
+        //对话 UI 置顶(演出不关其它 UI,UIFightMain 等保持打开;复用旧实例时 sibling 位置停留创建时,可能在战斗主UI之下,置顶保证永远显示在其他UI之上)
+        uiConversation.transform.SetAsLastSibling();
+        //OpenUI 内已先把 ui_Content 还原默认布局,这里再覆盖为本步骤的对齐/偏移(先布局后起打字机,防首帧跳变)
+        uiConversation.SetStoryContentLayout(stepData.GetTalkContentAnchor(), stepData.GetTalkContentOffset());
+        //目标高亮(param_2 高亮/形状/倍率段;空=不高亮,OpenUI 已默认隐藏)
+        ApplyTalkHighlight(uiConversation, stepData);
         uiConversation.SetDataForStory(null, talkData, () =>
         {
             isTalkEnd = true;
-            uiConversation.CloseUI();
+            //不在此 CloseUI:对话保持打开复用(亮→亮切换不闪),收口统一走 CloseStoryConversationUI
         });
         //等点击结束(逐帧轮询不依赖时间,战斗暂停下照常)
         await GTask.WaitUntil(() => isTalkEnd, manager.cancelForStory);
+    }
+
+    /// <summary>
+    /// 关闭故事演出对话 UI(非对话步骤/故事收尾时收口;对话步骤连播期间保持打开复用,防止关闭重开闪一帧)
+    /// </summary>
+    private void CloseStoryConversationUI()
+    {
+        //魔晶引导置顶一并还原(置于 null 检查前,防对话 UI 已关闭但置顶态残留;渲染器未装配时零副作用)
+        SetCrystalAlwaysOnTop(false);
+        if (manager.storyConversationUI == null)
+            return;
+        manager.storyConversationUI.CloseUI();
+        manager.storyConversationUI = null;
+    }
+
+    /// <summary>
+    /// 解析对话步骤的高亮配置并设置对话框遮罩高亮(目标标记空=不高亮;范围默认取目标自身大小(UI 矩形/场景包围盒),形状/倍率按步骤配置;目标当前不存在时警告并兜底不高亮)
+    /// </summary>
+    private void ApplyTalkHighlight(UIGameConversation uiConversation, StoryDetailsInfoBean stepData)
+    {
+        string marker = stepData.GetTalkHighlightMarker();
+        if (marker.IsNull())
+        {
+            uiConversation.HideStoryHighlight();
+            //无高亮目标时同步退出魔晶引导置顶(从上一步 crystal 高亮转此步骤时还原)
+            SetCrystalAlwaysOnTop(false);
+            return;
+        }
+        int shapeType = stepData.GetTalkHighlightShape();
+        float sizeScale = stepData.GetTalkHighlightScale();
+        //UI 类目标(UIFightMain 上的控件,ui_fight_ 前缀)
+        if (marker.StartsWith("ui_fight_", StringComparison.OrdinalIgnoreCase))
+        {
+            RectTransform targetRect = GetFightUIHighlightRect(marker);
+            if (targetRect != null)
+            {
+                uiConversation.SetStoryHighlight(targetRect, shapeType, sizeScale);
+                SetCrystalAlwaysOnTop(false);
+                return;
+            }
+        }
+        //场景类目标(世界包围盒→屏幕 UV)
+        else if (TryGetSceneHighlightBounds(marker, out Bounds bounds))
+        {
+            //crystal 高亮时魔晶引导置顶:随机落点在尸体背后也能透过遮挡看到;还原由非 crystal 步骤/收尾兜底(见 SetCrystalAlwaysOnTop 调用点)
+            SetCrystalAlwaysOnTop(string.Equals(marker, "crystal", StringComparison.OrdinalIgnoreCase));
+            uiConversation.SetStoryHighlight(bounds, shapeType, sizeScale);
+            return;
+        }
+        LogUtil.LogWarning($"故事演出高亮跳过,找不到目标:{marker}");
+        uiConversation.HideStoryHighlight();
+        SetCrystalAlwaysOnTop(false);
+    }
+
+    /// <summary>
+    /// 魔晶引导置顶开关:仅"crystal"高亮目标生效——开启期间魔晶 ZTest Always 无视深度永远绘制在最前(随机落点在尸体背后也可见);
+    /// 随同步骤高亮状态开启/关闭,收尾另有 CloseStoryConversationUI 统一兜底还原
+    /// </summary>
+    private static void SetCrystalAlwaysOnTop(bool value)
+    {
+        //渲染器可能未装配(如基地场景演出),接口内零副作用
+        FightHandler.Instance.manager.fightDropCrystalInstanceRenderer.SetAlwaysOnTop(value);
+    }
+
+    /// <summary>
+    /// 取 UIFightMain 上的高亮目标控件(仅取已打开且激活的 UIFightMain;未开战斗主UI返回 null)
+    /// </summary>
+    private RectTransform GetFightUIHighlightRect(string marker)
+    {
+        UIFightMain uiFightMain = GetOpenedFightMain();
+        if (uiFightMain == null)
+            return null;
+        switch (marker.ToLowerInvariant())
+        {
+            case "ui_fight_card":
+                //有手卡则高亮第一张(模板隐藏态不可见),无卡兜底模板区域
+                if (uiFightMain.listCreatureCard.Count > 0 && uiFightMain.listCreatureCard[0] != null)
+                    return uiFightMain.listCreatureCard[0].GetComponent<RectTransform>();
+                return uiFightMain.ui_CardContent;
+            case "ui_fight_remove":
+                return uiFightMain.ui_BtnRemoveCreature.GetComponent<RectTransform>();
+            case "ui_fight_att_progress":
+                return uiFightMain.ui_UIViewFightMainAttCreateProgress.GetComponent<RectTransform>();
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 取已打开且激活的 UIFightMain(只扫已存在 UI 列表;不用 GetUI——它找不到会自动创建,基地场景会误生成战斗主UI)
+    /// </summary>
+    private UIFightMain GetOpenedFightMain()
+    {
+        var uiList = UIHandler.Instance.manager.uiList;
+        if (uiList == null)
+            return null;
+        for (int i = 0; i < uiList.Count; i++)
+        {
+            if (uiList[i] is UIFightMain fightMain && fightMain.gameObject.activeInHierarchy)
+                return fightMain;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 取场景类高亮目标的世界包围盒(demon=魔王核心合并子 Renderer 包围盒;crystal=第一颗在屏魔晶+固定尺寸)
+    /// </summary>
+    private bool TryGetSceneHighlightBounds(string marker, out Bounds bounds)
+    {
+        bounds = default;
+        switch (marker.ToLowerInvariant())
+        {
+            case "demon":
+                var fightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+                var coreObj = fightLogic?.fightData?.fightDefenseCoreCreature?.creatureObj;
+                if (coreObj == null)
+                    return false;
+                bounds = GetWorldBoundsForObj(coreObj, 2f);
+                return true;
+            case "crystal":
+                var crystalRenderer = FightHandler.Instance.manager.fightDropCrystalInstanceRenderer;
+                if (crystalRenderer == null || !crystalRenderer.TryGetFirstCrystalPosition(out Vector3 crystalPos))
+                    return false;
+                bounds = new Bounds(crystalPos, Vector3.one * 0.6f);
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 取物体的世界包围盒(合并所有子 Renderer;无 Renderer 时以中心+默认尺寸兜底)
+    /// </summary>
+    private Bounds GetWorldBoundsForObj(GameObject obj, float defaultSize)
+    {
+        var renderers = obj.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0)
+            return new Bounds(obj.transform.position, Vector3.one * defaultSize);
+        Bounds bounds = renderers[0].bounds;
+        for (int i = 1; i < renderers.Length; i++)
+            bounds.Encapsulate(renderers[i].bounds);
+        return bounds;
     }
 
     /// <summary>
@@ -319,7 +481,7 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
             LogUtil.LogError($"故事演出镜头步骤跳过,无法解析目标标记:{marker} (步骤id:{stepData.id})");
             return;
         }
-        await CameraHandler.Instance.MoveStoryCameraTarget(targetPos, stepData.GetParamFloat(2, 1f), stepData.GetParamInt(3, 0));
+        await MoveStoryCamera(targetPos, stepData.GetParamFloat(2, 1f), stepData.GetParamInt(3, 0));
     }
 
     /// <summary>
@@ -386,6 +548,113 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
     }
     #endregion
 
+    #region 故事专用镜头
+    /// <summary>
+    /// 懒创建故事专用虚拟相机与跟随锚点(幂等;挂 Handler 下随单例常驻,初始隐藏,Priority=0 不参与渲染)
+    /// </summary>
+    private void EnsureStoryCamera()
+    {
+        if (manager.storyCamera != null)
+            return;
+        var objCamera = new GameObject("StoryCamera");
+        objCamera.transform.SetParent(transform, false);
+        var storyCam = objCamera.AddComponent<CinemachineCamera>();
+        objCamera.AddComponent<CinemachineFollow>();
+        objCamera.AddComponent<CinemachineRotationComposer>();
+        storyCam.Priority = 0;
+        var objAnchor = new GameObject("StoryCameraAnchor");
+        objAnchor.transform.SetParent(transform, false);
+        storyCam.Follow = objAnchor.transform;
+        storyCam.LookAt = objAnchor.transform;
+        objCamera.SetActive(false);
+        manager.storyCamera = storyCam;
+        manager.storyCameraAnchor = objAnchor.transform;
+    }
+
+    /// <summary>
+    /// 演出开始接管镜头:从当前生效虚拟相机复制镜头参数(FOV/跟随偏移/阻尼/看向偏移)到故事相机,停靠原相机并瞬切;返回演出期唯一补间锚点(位置已同步,镜头不跳变)
+    /// <para>原相机只改激活态,Follow/LookAt 等参数全程不动,结束由 EndStoryCamera 还原</para>
+    /// </summary>
+    private Transform BeginStoryCamera()
+    {
+        EnsureStoryCamera();
+        var cameraManager = CameraHandler.Instance.manager;
+        var brain = cameraManager.cinemachineBrain;
+        if (brain == null)
+        {
+            LogUtil.LogError("故事演出接管镜头失败,主相机尚未初始化(无 CinemachineBrain)");
+            return manager.storyCameraAnchor;
+        }
+        var srcCam = brain.ActiveVirtualCamera as CinemachineCamera;
+        if (srcCam == null)
+        {
+            LogUtil.LogError("故事演出接管镜头失败,当前没有生效的虚拟相机");
+            return manager.storyCameraAnchor;
+        }
+        var storyCam = manager.storyCamera;
+        //1.复制镜头参数(FOV/近远裁剪/荷兰角)
+        storyCam.Lens = srcCam.Lens;
+        //2.复制跟随/构图参数(偏移+阻尼,保证演出镜头手感与原相机一致;新增构图参数需同步复制)
+        var srcFollow = srcCam.GetComponent<CinemachineFollow>();
+        var dstFollow = storyCam.GetComponent<CinemachineFollow>();
+        if (srcFollow != null)
+        {
+            dstFollow.FollowOffset = srcFollow.FollowOffset;
+            dstFollow.TrackerSettings = srcFollow.TrackerSettings;
+        }
+        var srcComposer = srcCam.GetComponent<CinemachineRotationComposer>();
+        var dstComposer = storyCam.GetComponent<CinemachineRotationComposer>();
+        if (srcComposer != null)
+        {
+            dstComposer.TargetOffset = srcComposer.TargetOffset;
+            dstComposer.Damping = srcComposer.Damping;
+        }
+        //3.锚点同步到原相机跟随目标位(无跟随目标时取相机位,镜头不跳变)
+        manager.storyCameraAnchor.position = srcCam.Follow != null ? srcCam.Follow.position : srcCam.transform.position;
+        //4.停靠原相机并瞬切到故事相机(混合时长缓存,结束还原;不瞬切会在战斗 timeScale=0 下混合冻结)
+        manager.storyParkedCamera = srcCam;
+        manager.storyBlendTimeOrigin = brain.DefaultBlend.Time;
+        cameraManager.SetMainCameraDefaultBlend(0);
+        srcCam.gameObject.SetActive(false);
+        storyCam.gameObject.SetActive(true);
+        storyCam.Priority = int.MaxValue;
+        return manager.storyCameraAnchor;
+    }
+
+    /// <summary>
+    /// 故事演出镜头移动:补间故事锚点到指定位置(unscaled,战斗演出 timeScale=0 下照常;先打断在途移动防并发步骤补间叠加)
+    /// </summary>
+    /// <param name="targetPos">目标世界坐标</param>
+    /// <param name="duration">时长秒</param>
+    /// <param name="easeIndex">缓动序号(0=走DOTween默认缓动,其余按 DG.Tweening.Ease 强转)</param>
+    private async UniTask MoveStoryCamera(Vector3 targetPos, float duration, int easeIndex)
+    {
+        var anchor = manager.storyCameraAnchor;
+        anchor.DOKill();
+        var tween = anchor.DOMove(targetPos, duration).SetUpdate(true);
+        if (easeIndex > 0 && Enum.IsDefined(typeof(Ease), easeIndex))
+            tween.SetEase((Ease)easeIndex);
+        //取消源传 null:结束回位必须不可取消,否则演出取消/异常时还原链会断
+        await GTask.WaitTween(tween, null);
+    }
+
+    /// <summary>
+    /// 演出结束归还镜头:锚点补间回演出起始位后停用故事相机,恢复停靠相机与默认混合时长(姿态与起始一致,瞬切无跳变)
+    /// </summary>
+    private async UniTask EndStoryCamera()
+    {
+        await MoveStoryCamera(manager.storyCameraOriginPos, 0.5f, 0);
+        manager.storyCamera.gameObject.SetActive(false);
+        manager.storyCamera.Priority = 0;
+        if (manager.storyParkedCamera != null)
+        {
+            manager.storyParkedCamera.gameObject.SetActive(true);
+            manager.storyParkedCamera = null;
+            CameraHandler.Instance.manager.SetMainCameraDefaultBlend(manager.storyBlendTimeOrigin);
+        }
+    }
+    #endregion
+
     #region 镜头目标标记解析
     /// <summary>
     /// 解析镜头目标标记为世界坐标(通用:back=演出起始位;战斗:core=防守核心;基地:self=魔王/core/portal/gashapon/juicer/altar/vat/achievement/council;未知标记 isValid=false)
@@ -427,17 +696,12 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
                 case "council": targetObj = scenePrefab.objBuildingjDoomCouncil; break;
                 case "achievement": targetObj = scenePrefab.objBuildingAchievement; break;
                 case "juicer": targetObj = scenePrefab.objBuildingJuicer; break;
+                //传送门/扭蛋机:取实体建筑锚点(勿用 CV 机位节点——常驻未激活,Cinemachine 不驱动其 transform,读到的是出厂陈旧坐标)
+                case "portal": targetObj = scenePrefab.objBuildingPortal; break;
+                case "gashapon": targetObj = scenePrefab.objBuildingGashaponMachine; break;
             }
             if (targetObj != null)
                 return targetObj.transform.position;
-        }
-        //传送门/扭蛋机无场景建筑物体,取对应固定机位 CV 节点位置作为近似锚点
-        if (string.Equals(marker, "portal", StringComparison.OrdinalIgnoreCase) || string.Equals(marker, "gashapon", StringComparison.OrdinalIgnoreCase))
-        {
-            string cvName = marker.ToLower() == "portal" ? "CV_Portal" : "CV_GashaponMachine";
-            var cv = CameraHandler.Instance.GetBaseSceneCamera(cvName);
-            if (cv != null)
-                return cv.transform.position;
         }
         isValid = false;
         return Vector3.zero;

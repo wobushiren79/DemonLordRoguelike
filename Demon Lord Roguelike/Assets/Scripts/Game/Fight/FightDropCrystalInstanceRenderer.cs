@@ -82,6 +82,12 @@ public class FightDropCrystalInstanceRenderer
     //渲染资源(Setup 注册)：Quad 网格 + instanced 材质；未注册时本渲染器零副作用
     private Mesh mesh;
     private Material material;
+    //基础材质(Setup 记录的常规渲染材质；置顶关闭/战斗清理时还原到此)
+    private Material materialBase;
+    //置顶材质(故事演出魔晶引导期间：ZTest Always+ZWrite Off+queue 4000，无视深度永远绘制在最前；懒创建一次跨战斗复用，克隆自基础材质不污染共享资源)
+    private Material materialForAlwaysOnTop;
+    //当前是否置顶渲染(幂等去重:引导亮→亮连播反复调用不重切材质)
+    private bool alwaysOnTop;
     //魔晶世界尺寸(Setup 时按材质 _BaseMap 贴图像素/PPU×0.7 换算)
     private Vector2 baseScale = new Vector2(0.224f, 0.224f);
     //活跃魔晶槽(保持生成序——魔王自动拾取按 FIFO 取最先掉落；删除走帧末稳定压缩保序,不用 swap-back)
@@ -119,6 +125,9 @@ public class FightDropCrystalInstanceRenderer
         if (material != null && !material.enableInstancing)
             material = new Material(material) { enableInstancing = true };
         this.material = material;
+        //记录基础材质与重置置顶态(装配=新战斗起点,旧的置顶状态必然过期)
+        materialBase = material;
+        alwaysOnTop = false;
         //世界尺寸 = 贴图像素/PPU×0.7(对齐旧预制 SpriteRenderer 的实际显示大小)
         Texture baseMap = material != null ? material.GetTexture("_BaseMap") : null;
         if (baseMap != null)
@@ -144,6 +153,37 @@ public class FightDropCrystalInstanceRenderer
         rendererClock = 0f;
         actionForCrystalArrived = null;
         arrivedNumBuffer.Clear();
+        //还原置顶渲染(故事引导未结束而战斗先结束的兜底,防止魔晶引导置顶状态残留到下一场)
+        material = materialBase;
+        alwaysOnTop = false;
+    }
+
+    /// <summary>
+    /// 设置魔晶置顶渲染(故事演出魔晶引导高亮期间)：开启后魔晶 ZTest Always 无视深度永远绘制在最前
+    /// (随机落点撒到尸体背后也能透过遮挡看到,引导高亮定位即真实位置)；关闭后还原为正常深度交互。
+    /// <para>幂等:同值重复调用不重复克隆/切换(引导亮→亮连播每句都会调);置顶材质懒创建一次跨战斗复用,克隆自基础材质,不污染共享资源。</para>
+    /// </summary>
+    public void SetAlwaysOnTop(bool value)
+    {
+        if (!IsReady || alwaysOnTop == value)
+            return;
+        alwaysOnTop = value;
+        if (value)
+        {
+            if (materialForAlwaysOnTop == null)
+            {
+                materialForAlwaysOnTop = new Material(materialBase) { enableInstancing = true };
+                //ZTest Always(8) 无视深度 + ZWrite 0 不写深度 + queue 提升到 Overlay(4000) 世界内最后绘制(UI 层正常叠加其上);贴图/UV 参数随克隆继承
+                materialForAlwaysOnTop.SetFloat("_ZTest", (float)UnityEngine.Rendering.CompareFunction.Always);
+                materialForAlwaysOnTop.SetFloat("_ZWrite", 0f);
+                materialForAlwaysOnTop.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Overlay;
+            }
+            material = materialForAlwaysOnTop;
+        }
+        else
+        {
+            material = materialBase;
+        }
     }
     #endregion
 
@@ -249,6 +289,32 @@ public class FightDropCrystalInstanceRenderer
                 pickResultBuffer.Add(i);
         }
         return pickResultBuffer;
+    }
+
+    /// <summary>
+    /// 取第一颗在屏魔晶的世界坐标(只读,供故事演出高亮定位)：优先已落地 Landed 的(位置恒定不飘),无落地则兜底第一颗存活槽;无存活魔晶返回 false。
+    /// </summary>
+    public bool TryGetFirstCrystalPosition(out Vector3 pos)
+    {
+        for (int i = 0; i < listSlot.Count; i++)
+        {
+            if (!listSlot[i].dead && listSlot[i].state == SlotStateEnum.Landed)
+            {
+                pos = listSlot[i].currentPos;
+                return true;
+            }
+        }
+        //无落地魔晶时兜底第一颗存活槽(掉落中/飞回中也给位置)
+        for (int i = 0; i < listSlot.Count; i++)
+        {
+            if (!listSlot[i].dead)
+            {
+                pos = listSlot[i].currentPos;
+                return true;
+            }
+        }
+        pos = default;
+        return false;
     }
 
     /// <summary>

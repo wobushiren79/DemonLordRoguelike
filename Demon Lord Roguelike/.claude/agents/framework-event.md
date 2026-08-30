@@ -18,7 +18,7 @@ watched_files:
 - **EventHandler** - 全局事件管理器单例，支持 0-4 泛型参数
 - **BaseEvent** - 实例级事件基类，提供 RegisterEvent / UnRegisterEvent / TriggerEvent
 - **EventEntity\<T\> / EventSignal** - 事件实体与信号
-- **EventsInfo** (游戏层) - 全局事件常量定义 [Scripts/Common/EventsInfo.cs](Assets/Scripts/Common/EventsInfo.cs)；「战斗中」region 含 `GameFightLogic_StartGame`（战斗开始：所有模式 PreGame 完成进入 Gaming 时由 `GameFightLogic.PreGame` 末尾 `StartGame()` 后触发，无参数，供故事演出 StoryHandler/新手引导挂钩）
+- **EventsInfo** (游戏层) - 全局事件常量定义 [Scripts/Common/EventsInfo.cs](Assets/Scripts/Common/EventsInfo.cs)；「战斗中」region 含 `GameFightLogic_StartGame`（战斗开始：所有模式 PreGame 完成进入 Gaming 时由 `GameFightLogic.PreGame` 末尾 `StartGame()` 后触发，无参数，通用挂钩）与 `UIFightMain_CardCreateAnimEnd`（战斗主UI下方卡片出现动画播完：`UIFightMain.ShowCardCreateAnim` 末卡落位广播，空卡列表立即广播，无参数；故事演出"首次进战斗"触发条件挂此事件）
 
 ## 关键 API
 

@@ -55,5 +55,14 @@ public class UserStoryBean
         GetDicPlayedStory()[storyId] = DateTime.Now.Ticks;
     }
 
+    /// <summary>
+    /// 移除单个故事的已播标记（仅删除指定故事，其它记录保留；未播过该故事为空操作）
+    /// </summary>
+    /// <param name="storyId">故事ID（StoryInfo.id）</param>
+    public void RemoveStoryPlayed(long storyId)
+    {
+        GetDicPlayedStory().Remove(storyId);
+    }
+
     #endregion
 }

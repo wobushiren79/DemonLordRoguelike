@@ -31,7 +31,8 @@ public static class EventsInfo
 
 
     #region 战斗中
-    public const string GameFightLogic_StartGame = "GameFightLogic_StartGame";//战斗开始(所有模式PreGame完成进入Gaming,供故事演出/新手引导挂钩)
+    public const string GameFightLogic_StartGame = "GameFightLogic_StartGame";//战斗开始(所有模式PreGame完成进入Gaming的通用挂钩;故事演出"首次进战斗"改挂 UIFightMain_CardCreateAnimEnd)
+    public const string UIFightMain_CardCreateAnimEnd = "UIFightMain_CardCreateAnimEnd";//战斗主UI下方卡片出现动画播放完成(最后一张卡落位;供故事演出"首次进战斗"挂钩)
     public const string GameFightLogic_SelectCard = "GameFightLogic_SelectCard";//卡片选择
     public const string GameFightLogic_UnSelectCard = "GameFightLogic_UnSelectCard";//取消卡片选择
     public const string GameFightLogic_PutCard = "GameFightLogic_PutCard";//放置卡片选择    

@@ -374,66 +374,6 @@ public partial class CameraHandler
     }
     #endregion
 
-    #region 故事演出镜头
-    //故事演出接管前 cm_Base 的跟随/看向目标缓存(基地=魔王本体;战斗的 cm_Fight 本就跟随自由目标,无需缓存)
-    protected Transform storyCameraOriginalFollow;
-    protected Transform storyCameraOriginalLookAt;
-
-    /// <summary>
-    /// 故事演出开始接管镜头:返回演出期可自由补间的移动目标(战斗=controlTargetForEmpty;基地=cm_Base 跟随从魔王临时切到 controlTargetForEmpty,位置先同步到魔王位保证镜头连续)
-    /// </summary>
-    /// <param name="isFightScene">当前是否战斗场景</param>
-    public Transform BeginStoryCameraControl(bool isFightScene)
-    {
-        var controlTarget = GameControlHandler.Instance.manager.controlTargetForEmpty;
-        if (!isFightScene)
-        {
-            //基地:cm_Base 跟随魔王本体(controlTargetForCreature),演出改跟随自由目标,避免移动魔王
-            storyCameraOriginalFollow = manager.cm_Base.Follow;
-            storyCameraOriginalLookAt = manager.cm_Base.LookAt;
-            var creatureTarget = GameControlHandler.Instance.manager.controlTargetForCreature;
-            if (creatureTarget != null)
-                controlTarget.transform.position = creatureTarget.transform.position;
-            manager.cm_Base.Follow = controlTarget.transform;
-            manager.cm_Base.LookAt = controlTarget.transform;
-        }
-        return controlTarget.transform;
-    }
-
-    /// <summary>
-    /// 故事演出镜头移动:补间演出跟随目标到指定位置(unscaled,战斗演出 timeScale=0 下照常;先打断在途移动防并发步骤补间叠加)
-    /// </summary>
-    /// <param name="targetPos">目标世界坐标</param>
-    /// <param name="duration">时长秒</param>
-    /// <param name="easeIndex">缓动序号(0=走DOTween默认缓动,其余按 DG.Tweening.Ease 强转)</param>
-    public async UniTask MoveStoryCameraTarget(Vector3 targetPos, float duration, int easeIndex)
-    {
-        var controlTarget = GameControlHandler.Instance.manager.controlTargetForEmpty;
-        controlTarget.transform.DOKill();
-        var tween = controlTarget.transform.DOMove(targetPos, duration).SetUpdate(true);
-        if (easeIndex > 0 && System.Enum.IsDefined(typeof(Ease), easeIndex))
-            tween.SetEase((Ease)easeIndex);
-        await GTask.WaitTween(tween, null);
-    }
-
-    /// <summary>
-    /// 故事演出结束归还镜头:跟随目标补间回演出起始位后,基地恢复 cm_Base 跟随魔王本体
-    /// </summary>
-    /// <param name="originPos">演出起始位(BeginStoryCameraControl 接管时记录)</param>
-    /// <param name="duration">回位时长秒</param>
-    public async UniTask EndStoryCameraControl(Vector3 originPos, float duration)
-    {
-        await MoveStoryCameraTarget(originPos, duration, 0);
-        if (storyCameraOriginalFollow != null)
-        {
-            manager.cm_Base.Follow = storyCameraOriginalFollow;
-            manager.cm_Base.LookAt = storyCameraOriginalLookAt != null ? storyCameraOriginalLookAt : storyCameraOriginalFollow;
-            storyCameraOriginalFollow = null;
-            storyCameraOriginalLookAt = null;
-        }
-    }
-    #endregion
-
 
     #region  卡片测试摄像头
     /// <summary>

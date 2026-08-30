@@ -26,7 +26,8 @@ watched_files:
 ```
 PreGame → StartGame → UpdateGame → EndGame → ClearGame
 ```
-> **战斗开始事件**：`PreGame()` 末尾 `StartGame()` 之后触发 `EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_StartGame)`——基类单点触发覆盖征服/终焉议会/无限/测试全部模式（子类只重写 PreGameForAfterXxx 钩子不重写 PreGame），无参数；已知监听方：故事演出 StoryHandler（故事触发条件=首次进战斗）。
+> **ClearGame 清理职责**：战斗数据/生物/弹道/AI/BUFF/战斗粒子(`EffectHandler.Instance.ClearAllEffect()`：实例+飘字+拖尾统一入口) + 卸载战斗场景。粒子必须显式清——特效实例挂在 DontDestroyOnLoad 的 EffectHandler 下，进奖励选择场景(`EnterRewardSelectScene(isClearLastGame)` 不走 ClearWorldData)时仍会残留播放（2026-08-30 修复补齐）。
+> **战斗开始事件**：`PreGame()` 末尾 `StartGame()` 之后触发 `EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_StartGame)`——基类单点触发覆盖征服/终焉议会/无限/测试全部模式（子类只重写 PreGameForAfterXxx 钩子不重写 PreGame），无参数；通用挂钩（故事演出"首次进战斗"已改挂 `UIFightMain_CardCreateAnimEnd`——等 UIFightMain 下方卡片出现动画播完再触发，保证高亮手卡等目标已落位）。
 
 ### PreGame 扩展钩子（按时序，virtual 空实现供子类重写）
 1. `PreGameForAfterInitFightSceneCamera` - 战斗镜头初始化后

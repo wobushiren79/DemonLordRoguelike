@@ -16,6 +16,8 @@ watched_files:
 - 需要管理Unity资源（预制体、材质、动画等）
 - 用户提到了与Unity Editor相关的任何操作
 
+> ⚠️ **例外——Play 模式验证不走 MCP**：需要进入 Unity Play 模式（▶ 点击运行）验证的环节，**不得**通过 MCP 自动启动/停止 Play（`manage_editor` 的 play/pause/stop、`batch_execute` 等）自行验证，一律由用户手动 Play + 截图反馈（见项目 CLAUDE.md「Play 模式验证规则」）。本 SKILL 仅服务非玩运行态的编辑/资源/工具类交互。
+
 ## 连接架构
 
 ```
@@ -181,7 +183,7 @@ initialize (获取 Session ID)
 | `manage_asset` | 资源管理 | `search`, `create`, `modify`, `delete` |
 | `manage_prefabs` / `manage_material` / `manage_scriptable_object` | 预制体/材质/SO 资源 | - |
 | `manage_shader` | `.shader` 文本 CRUD（**非** Shader Graph 节点图） | `create`, `read`, `update`, `delete` |
-| `manage_editor` | 编辑器控制 | `play`, `pause`, `stop` |
+| `manage_editor` | 编辑器控制 | `play`, `pause`, `stop`（⚠️ 禁止用于自动 Play 验证，见「Play 模式验证规则」，由用户手动操作） |
 | `manage_camera` / `manage_animation` / `manage_ui` / `manage_physics` | 相机/动画/UI/物理 | - |
 | `read_console` / `run_tests` / `get_test_job` | 控制台/测试 | - |
 | `execute_menu_item` / `refresh_unity` / `batch_execute` | 菜单/刷新/批量执行 | - |

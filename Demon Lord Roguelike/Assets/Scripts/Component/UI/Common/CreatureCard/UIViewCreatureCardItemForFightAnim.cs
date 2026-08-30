@@ -1,4 +1,5 @@
 using DG.Tweening;
+using System;
 using UnityEngine;
 
 //战斗卡片特殊设置 - 动画相关(动画参数 / Tween 句柄 / 创建·选择·避让动画)
@@ -34,12 +35,13 @@ public partial class UIViewCreatureCardItemForFight
     /// 创建动画(出现弹入统一走 UIViewCreatureCardItem.AnimForCardShow,此处仅做清理与参数透传)
     /// </summary>
     /// <param name="index">卡片序号，用于错开延迟</param>
-    public void AnimForCreateShow(int index)
+    /// <param name="actionForComplete">本卡落位完成回调(一般只给最后一张卡传,用于广播整组动画结束)</param>
+    public void AnimForCreateShow(int index, Action actionForComplete = null)
     {
         ClearAnim();
         //先归位到 originalCardPos(SetData 只记坐标不动位置,InitCreatureCardList 流程此时 transform 还在模板原位),再以当前本地坐标为落位目标
         rectTransform.anchoredPosition = cardData.originalCardPos;
-        animForCreate = AnimForCardShow(rectTransform.localPosition, index, animCardCreateDelayTime, animCardCreateTimeType2, animCardCreateEase);
+        animForCreate = AnimForCardShow(rectTransform.localPosition, index, animCardCreateDelayTime, animCardCreateTimeType2, animCardCreateEase, actionForComplete);
     }
 
     /// <summary>

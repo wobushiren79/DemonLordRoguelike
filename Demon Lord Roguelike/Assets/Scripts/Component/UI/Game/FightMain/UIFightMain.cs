@@ -88,9 +88,11 @@ public partial class UIFightMain : BaseUIComponent
     public void RefreshUIData()
     {
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        //征服模式专属UI显隐控制(关卡进度文本 / 进攻进度条)
-        bool isConquer = gameFightLogic.fightData.gameFightType == GameFightTypeEnum.Conquer;
-        SetConquerUIShow(isConquer);
+        var fightType = gameFightLogic.fightData.gameFightType;
+        //关卡进度文本仅征服模式显示；进攻进度条征服与测试模式均显示(测试模式同样有进攻波次数据)
+        bool isConquer = fightType == GameFightTypeEnum.Conquer;
+        SetFightLevelShow(isConquer);
+        SetAttCreateProgressShow(isConquer || fightType == GameFightTypeEnum.Test);
         //仅征服模式刷新当前关卡进度
         if (isConquer)
         {
@@ -122,14 +124,21 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// 设置征服模式专属UI显隐(关卡进度文本 / 进攻进度条)
-    /// 当前仅征服模式展示，其余模式隐藏
+    /// 设置关卡进度文本显隐(仅征服模式)
     /// </summary>
     /// <param name="isShow">是否显示</param>
-    public void SetConquerUIShow(bool isShow)
+    public void SetFightLevelShow(bool isShow)
     {
         if (ui_FightLevel != null)
             ui_FightLevel.gameObject.SetActive(isShow);
+    }
+
+    /// <summary>
+    /// 设置进攻进度条显隐(征服与测试模式显示，其余模式隐藏)
+    /// </summary>
+    /// <param name="isShow">是否显示</param>
+    public void SetAttCreateProgressShow(bool isShow)
+    {
         if (ui_UIViewFightMainAttCreateProgress != null)
             ui_UIViewFightMainAttCreateProgress.gameObject.SetActive(isShow);
     }
@@ -289,16 +298,21 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// 展示卡片创建动画
+    /// 展示卡片创建动画(最后一张卡落位后广播 UIFightMain_CardCreateAnimEnd,供故事演出"首次进战斗"挂钩)
     /// </summary>
     public void ShowCardCreateAnim()
     {
+        //无卡片可播时直接广播结束,防止挂钩方(故事演出)干等
         if (listCreatureCard.IsNull())
+        {
+            EventHandler.Instance.TriggerEvent(EventsInfo.UIFightMain_CardCreateAnimEnd);
             return;
+        }
+        int lastIndex = listCreatureCard.Count - 1;
         for (int i = 0; i < listCreatureCard.Count; i++)
         {
             var itemView = listCreatureCard[i];
-            itemView.AnimForCreateShow(i);
+            itemView.AnimForCreateShow(i, i == lastIndex ? () => EventHandler.Instance.TriggerEvent(EventsInfo.UIFightMain_CardCreateAnimEnd) : null);
         }
     }
 

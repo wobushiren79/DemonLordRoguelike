@@ -1,6 +1,6 @@
 ---
 name: game-conversation
-description: 对话系统开发：议员对话界面(UIGameConversation)、台词配置(ConversationCouncilorInfo 按好感关系分档随机)、文本逐字动画(打字机/点击跳过显示全文)、说话音效(sound_talk_1)、贿赂送礼入口、无spine NPC静态头像模式(NpcInfo.icon_res + ui_IconImg)。
+description: 对话系统开发：议员对话界面(UIGameConversation)、台词配置(ConversationCouncilorInfo 按好感关系分档随机)、文本逐字动画(打字机/点击跳过显示全文)、说话音效(sound_talk_1)、贿赂送礼入口、无spine NPC静态头像模式(NpcInfo.icon_res + ui_IconImg)、故事演出对话框布局/目标高亮(OpenUI 自动还原 ui_Content 默认布局+隐藏高亮防残留,SetStoryContentLayout/SetStoryHighlight/HideStoryHighlight API,MaskTarget 用 Shader_UI_GuideHighlight 压暗全屏透亮目标,UV 换算相机按 Canvas 模式取:Overlay 传 null/ScreenSpaceCamera 传 worldCamera,场景目标投影才用 mainCamera)。
 tools: Read, Write, Edit, Glob, Grep, Bash
 skill: conversation-system
 watched_files:

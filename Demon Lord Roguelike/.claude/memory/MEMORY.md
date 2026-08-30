@@ -22,6 +22,7 @@
 - [`reference_colored_icons.md`](reference_colored_icons.md) — 彩色图标(深渊馈赠ui_abyssalblessing_/成就ui_achievement_)32x32 每张≤N色(用户可调,2026-07为≤6)：create_1_direction_object size32(64个/批)→quantize6(合成黑底再中位切分)控色流水线；深渊暂存已到2621(下一个2622)、成就已到63(下一个64)
 
 ### Reference
+- [reference_vfx_startposition_space.md](reference_vfx_startposition_space.md) - VFX 图 Position 块消费 StartPosition 注入必须标 World(m_Space:1)：Local+世界注入= 2x 命中点双倍偏移（生物1003/1004 火冰球击中特效错位根因，连带修复爆炸300001，2026-08-30）
 - [reference_fog_stripping_pc_build.md](reference_fog_stripping_pc_build.md) — PC 打包后战斗场景雾消失根因：雾由代码运行时开启但 GraphicsSettings 雾剥离=Automatic 只扫 Build Settings 场景（仅 TestScene 且雾关）→ FOG_LINEAR 变体被剥离；已修 m_FogStripping=1(Custom) 三雾型全保留，须重新打包生效；「编辑器有包体没有」先查变体剥离
 - [reference_shadergraph_fog_bypass.md](reference_shadergraph_fog_bypass.md) — ShaderGraph 材质控雾破解与教训：**URP 雾因子语义是"保色度"(1=无雾)非雾量**，缩放须换算 1-(1-因子)*权重（直接乘会让 0=全雾色）；路面已导出为手工维护的 Shader_FightSceneRoad_1.shader（内部名 Game/Fight/FightSceneRoad_1，Fog Influence 滑杆 0=无雾）；导出器一次性用完已删；URP ShaderGraph 无 fog 开关、6.3 起 Generator 全 internal、生成代码不内联模板须宏拦截 include；**路面 Alpha 仅取材质 _Alpha 浮点（road_color 的 alpha 通道无效）**，按场景 road_alpha 列驱动（空默认0.5，王宫0.1/其余0.5），道路参数一律走 MaterialPropertyBlock——禁止 sharedMaterial 改共享路面材质（会持久化污染 .mat 串场景）
 - [reference_unityskills_shadergraph_limits.md](reference_unityskills_shadergraph_limits.md) — Unity-Skills shadergraph 工具限制：节点白名单(无噪声/Time/NormalFromHeight)、Vector2 赋值 bug、值格式约定
@@ -52,6 +53,7 @@
 - [`project_attack_dead_pos_pool_aba_bug.md`](project_attack_dead_pos_pool_aba_bug.md) — 进攻生物"攻击死亡位置/原地抽搐"偶发BUG排查中(2026-08-03起未结案)：主嫌疑=FightCreatureEntity对象池ABA复用(SetData重置state=Live使持尸引用IsDead()=false)；含已排除路径清单与下次复现的三处插桩方案
 
 ### Collaboration Feedback
+- [`feedback_play_verify_manual.md`](feedback_play_verify_manual.md) — 需要 Unity Play 模式验证的环节一律由用户手动 Play + 截图反馈（AI 列检查要点并等待截图判断），禁止 MCP 自动启动/停止 Play 自行验证（manage_editor play/pause/stop、batch_execute 等）
 - [`feedback_task_summary.md`](feedback_task_summary.md) — 任务总结必须列出参与的 Agent/Skill 名称及操作
 - [`feedback_bean_partial.md`](feedback_bean_partial.md) — 文件可改性只看文件头有无 AUTO-GENERATED-DO-NOT-EDIT 标记：有则写 Partial，无（含 Bean/Game 手写 Bean、MVC 脚手架 UserDataBean）可直接改
 - [`feedback_code_style.md`](feedback_code_style.md) — 方法/属性必须加 XML 注释并用 #region 分类；方法体内注释尽量单行（多行先总结，压不下再多行）
@@ -67,3 +69,5 @@
 - [`feedback_audio_use_enum.md`](feedback_audio_use_enum.md) — 音频播放统一用 AudioEnum 枚举调用，禁止裸 id；音频 id 全面 long 化（AudioEnum 底层 long、框架层接口 long）；游戏层 partial 提供枚举重载转发；新增音频须同步维护枚举
 - [`feedback_toasthint_state.md`](feedback_toasthint_state.md) — UIHandler.ToastHintText(content, state) 第二参数 state：0=失败(红)、1=成功(绿)，默认0；正向反馈必传1，别传错图标
 - [`feedback_creature_layer_front_design.md`](feedback_creature_layer_front_design.md) — creature_layer 配 CreatureDef_Front/Att_Front 让敌人物理搜索搜不到是故意设计（烂泥史莱姆3003：走过减速但不被当目标），禁止当索敌bug扩搜索mask；"显示在前"已用战斗场景相机透明排序自定义Z轴根治（勿用全局sortingOrder，会压过前排生物）
+- [`feedback_story_highlight_overlay.md`](feedback_story_highlight_overlay.md) — 故事演出高亮 UV 换算相机约定：UI Canvas 是 ScreenSpaceOverlay（BaseUIManager 只赋 worldCamera 字段没设 renderMode），WorldToScreenPoint/屏幕点转矩形须传 null 相机；误传主相机→37万级天文屏幕坐标→洞错位到屏幕中心+被clamp 0.03（症状"整屏压暗但目标区没透亮、中心小亮块"）；诊断看 mask.canvas.renderMode + 角点 screen 值；修复基准实现 GetMaskUVCamera()
+- [`story_highlight_flicker_fix.md`](story_highlight_flicker_fix.md) — 故事演出高亮"亮→亮"切换防闪烁与动画约定：对话步骤间复用 UIGameConversation 实例不重走 OpenUI（OpenUI 的 Hide 会致压暗消失一瞬）；非对话步骤进入前/故事收尾 CloseStoryConversationUI 统一关闭；ApplyStoryHighlight 状态机化——亮→亮 alpha 恒定+_Center/_Size 0.18s 插值过渡（洞移动引导视线、快速连点 Kill 重启）、首现/无亮→有亮 alpha 从 0 淡入 0.12s；HideStoryHighlight/CloseUI/OnDestroy 双 tween Kill 收口

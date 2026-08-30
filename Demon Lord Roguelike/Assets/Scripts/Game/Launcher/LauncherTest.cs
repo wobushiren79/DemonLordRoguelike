@@ -448,6 +448,9 @@ public class LauncherTest : BaseLauncher
     /// </summary>
     public void StartForNormalGame()
     {
+        //与 LauncherGame 对齐:注册故事演出自动触发事件——此入口等价正式游戏流程,不注册则进存档后引导演出(进基地/进战斗/掉晶)全部无人监听永不触发;
+        //StoryTest 测试场景(StartForStoryTest)仍不注册,自动触发天然关闭,测试走 PlayStory 强制播放
+        StoryHandler.Instance.InitData();
         //测试模拟标记的复位统一在 WorldHandler.EnterMainForBaseScene 内(真实回主菜单收口点)完成，此处无需再复位
         WorldHandler.Instance.EnterMainForBaseScene();
     }
@@ -491,8 +494,8 @@ public class LauncherTest : BaseLauncher
                 WorldHandler.Instance.EnterGameForBaseScene(GameDataHandler.Instance.manager.GetUserData());
                 break;
             case StorySceneTypeEnum.Fight:
-                //战斗开始(StartGame)后强制播放;用内置默认测试战斗数据进入
-                RegisterStoryTestPlayCallback(EventsInfo.GameFightLogic_StartGame, storyId);
+                //战斗卡片出现动画播完后强制播放(与真实触发同钩点,保证高亮手卡等目标已落位);用内置默认测试战斗数据进入
+                RegisterStoryTestPlayCallback(EventsInfo.UIFightMain_CardCreateAnimEnd, storyId);
                 WorldHandler.Instance.EnterGameForFightScene(BuildStoryTestFightData());
                 break;
             case StorySceneTypeEnum.DoomCouncil:
@@ -506,21 +509,21 @@ public class LauncherTest : BaseLauncher
     /// <summary>
     /// 注册故事演出测试的一次性场景就绪回调(就绪后强制播放;重复调用先清旧回调防重复注册)
     /// </summary>
-    /// <param name="eventName">就绪事件名(World_EnterGameForBaseScene / GameFightLogic_StartGame)</param>
+    /// <param name="eventName">就绪事件名(World_EnterGameForBaseScene / UIFightMain_CardCreateAnimEnd)</param>
     /// <param name="storyId">待播放的故事ID</param>
     private void RegisterStoryTestPlayCallback(string eventName, long storyId)
     {
         if (actionForStoryTest != null)
         {
             EventHandler.Instance.UnRegisterEvent(EventsInfo.World_EnterGameForBaseScene, actionForStoryTest);
-            EventHandler.Instance.UnRegisterEvent(EventsInfo.GameFightLogic_StartGame, actionForStoryTest);
+            EventHandler.Instance.UnRegisterEvent(EventsInfo.UIFightMain_CardCreateAnimEnd, actionForStoryTest);
             actionForStoryTest = null;
         }
         actionForStoryTest = () =>
         {
             //一次性回调,触发后立即注销
             EventHandler.Instance.UnRegisterEvent(EventsInfo.World_EnterGameForBaseScene, actionForStoryTest);
-            EventHandler.Instance.UnRegisterEvent(EventsInfo.GameFightLogic_StartGame, actionForStoryTest);
+            EventHandler.Instance.UnRegisterEvent(EventsInfo.UIFightMain_CardCreateAnimEnd, actionForStoryTest);
             actionForStoryTest = null;
             StoryHandler.Instance.PlayStory(storyId);
         };

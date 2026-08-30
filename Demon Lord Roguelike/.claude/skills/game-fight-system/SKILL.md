@@ -50,7 +50,7 @@ GameFightTypeEnum
 public class GameFightLogic : BaseGameLogic
 {
     // 1. 准备阶段：加载场景 -> 创建核心生物 -> (钩子:核心创建后) -> 开启控制 -> 打开UI -> StartGame
-    //    -> 触发 EventsInfo.GameFightLogic_StartGame 事件(基类单点触发覆盖全部模式,无参数,供故事演出/新手引导挂钩)
+    //    -> 触发 EventsInfo.GameFightLogic_StartGame 事件(基类单点触发覆盖全部模式,无参数,通用挂钩;故事演出"首次进战斗"改挂卡片动画播完事件 UIFightMain_CardCreateAnimEnd)
     public override async void PreGame() { }
     
     // 2. 游戏更新：生物生成、生物更新、魔王魔力恢复、BUFF更新
@@ -59,7 +59,7 @@ public class GameFightLogic : BaseGameLogic
     // 3. 游戏结束触发
     public override void EndGame() { }
     
-    // 4. 清理：销毁生物、清理场景、回收资源
+    // 4. 清理：销毁生物、清理场景、回收资源(含战斗粒子 EffectHandler.ClearAllEffect() 统一入口=粒子实例+飘字+拖尾VFX——特效实例挂 DontDestroyOnLoad 的 EffectHandler 下,进奖励选择场景等不走 ClearWorldData 的路径必须显式清,否则残留播放)
     public override async Task ClearGame() { }
 }
 ```
@@ -350,7 +350,7 @@ public partial class UIFightMain : BaseUIComponent
 
 ### 进攻进度条 Quick(加快进攻节奏) 按钮
 
-进攻进度条子视图 `UIViewFightMainAttCreateProgress`（仅征服模式显示，含 `ui_CreateProgress`/`ui_CreateEnd`/`ui_Quick`）上的 **Quick 按钮**用于**加速进攻节奏**：
+进攻进度条子视图 `UIViewFightMainAttCreateProgress`（征服与测试模式显示：显隐由 `UIFightMain.RefreshUIData` 拆分控制——关卡进度文本 `SetFightLevelShow` 仅征服模式，进度条 `SetAttCreateProgressShow` 在 `Conquer || Test` 时显示；含 `ui_CreateProgress`/`ui_CreateEnd`/`ui_Quick`）上的 **Quick 按钮**用于**加速进攻节奏**：
 
 - **与世界+难度绑定的显隐**：`UIFightMain.RefreshUIData` → `RefreshQuickButtonShow`：仅征服模式、且 `UserUnlockBean.CheckIsUnlockWorldQuickAttack(worldId, difficultyLevel)`（当前世界「当前难度」的「加快进攻节奏」研究已解锁）时才显示 Quick 按钮。worldId 与 difficultyLevel 取 `FightBeanForConquer.gameWorldInfoRandomData` 同名字段。Quick 研究已按难度拆分(难度2~10各一个)，研究节点/id 块约定见 [`research-system`](../research-system/SKILL.md) 世界分支。
 - **点击逻辑**：`UIViewFightMainAttCreateProgress.OnClickForQuick` → 若 `GetAttackProgress()>=1` 直接 return（已到 100% 点击无效）；否则 `GameFightLogic.QuickAdvanceAttackCreate(0.1f)` 推进后 `SetProgress(newProgress, animTime:0.3f)` 平滑过渡（不瞬跳）。
@@ -407,7 +407,8 @@ FightHandler.Instance.RemoveFightPrefab(prefabEntity);
 
 ```csharp
 EventsInfo.GameFightLogic_CreatureDeadEnd       // 生物死亡结束
-EventsInfo.GameFightLogic_StartGame             // 战斗开始(PreGame末尾StartGame后由基类单点触发,覆盖征服/终焉议会/无限/测试全部模式;无参数,供故事演出StoryHandler/新手引导挂钩)
+EventsInfo.GameFightLogic_StartGame             // 战斗开始(PreGame末尾StartGame后由基类单点触发,覆盖征服/终焉议会/无限/测试全部模式;无参数,通用挂钩)
+EventsInfo.UIFightMain_CardCreateAnimEnd        // 战斗主UI下方卡片出现动画播完(UIFightMain.ShowCardCreateAnim末卡落位广播,空卡列表立即广播;无参数,故事演出"首次进战斗"挂钩)
 EventsInfo.GameFightLogic_EndGame               // 战斗结束
 EventsInfo.GameFightLogic_SelectCard            // 选中卡片
 EventsInfo.GameFightLogic_UnSelectCard          // 取消选择卡片

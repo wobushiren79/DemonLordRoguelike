@@ -35,7 +35,7 @@ watched_files:
 - **UIGameSetting** - 游戏设置界面
 - **UIGameSystem** - 游戏系统界面
 - **UIGameWorldMap** - 世界地图界面
-- **UIGameConversation** - 对话界面（议员交谈：台词逐字动画+sound_talk_1音效+点击跳过，详见 game-conversation agent；故事演出走专用入口 `SetDataForStory`——npc_id=0 旁白隐藏立绘/名字/贿赂按钮，npc_id≠0 复用 SetData 后强制隐藏贿赂按钮，打字机等待用 GTask.WaitReal 在 timeScale=0 下照常播放，详见 conversation-system）
+- **UIGameConversation** - 对话界面（议员交谈：台词逐字动画+sound_talk_1音效+点击跳过，详见 game-conversation agent；故事演出走专用入口 `SetDataForStory`——npc_id=0 旁白隐藏立绘/名字/贿赂按钮，npc_id≠0 复用 SetData 后强制隐藏贿赂按钮，打字机等待用 GTask.WaitReal 在 timeScale=0 下照常播放，还可由 StoryHandler 设对话框对齐/偏移(SetStoryContentLayout)与 MaskTarget 目标高亮(SetStoryHighlight,UV 相机按 Canvas 模式取:Overlay=null/ScreenSpaceCamera=worldCamera,场景目标才经 mainCamera)、OpenUI 自动还原默认布局+隐藏高亮防残留，详见 conversation-system）
 - **UIRewardSelect** - 奖励选择界面
 - **UICreatureVat** - 魔物进阶界面（CreatureVat 培养槽）
 

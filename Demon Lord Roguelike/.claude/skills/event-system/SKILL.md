@@ -64,7 +64,8 @@ public static class EventsInfo
     public const string GameFightLogic_DropAddCrystal = "GameFightLogic_DropAddCrystal";
     public const string GameFightLogic_CreatureChangeState = "GameFightLogic_CreatureChangeState";
     public const string GameFightLogic_EndGame = "GameFightLogic_EndGame";
-    public const string GameFightLogic_StartGame = "GameFightLogic_StartGame";//战斗开始(所有模式PreGame完成进入Gaming,供故事演出/新手引导挂钩;GameFightLogic.PreGame末尾StartGame后基类单点触发,无参数,已知监听方StoryHandler)
+    public const string GameFightLogic_StartGame = "GameFightLogic_StartGame";//战斗开始(所有模式PreGame完成进入Gaming;GameFightLogic.PreGame末尾StartGame后基类单点触发,无参数;通用挂钩,故事演出"首次进战斗"改挂下面卡片动画播完事件)
+    public const string UIFightMain_CardCreateAnimEnd = "UIFightMain_CardCreateAnimEnd";//战斗主UI下方卡片出现动画播完(UIFightMain.ShowCardCreateAnim末卡落位广播,空卡列表立即广播,无参数,已知监听方StoryHandler)
     public const string GameFightLogic_SelectCard = "GameFightLogic_SelectCard";
     public const string GameFightLogic_UnSelectCard = "GameFightLogic_UnSelectCard";
     public const string GameFightLogic_PutCard = "GameFightLogic_PutCard";

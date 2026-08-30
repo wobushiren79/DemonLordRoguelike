@@ -80,7 +80,7 @@ public class GameFightLogic : BaseGameLogic
         uiFightMain.InitData();
         //开始游戏
         StartGame();
-        //发送战斗开始事件（所有模式共用基类 PreGame，单点覆盖；故事演出/新手引导在此挂钩）
+        //发送战斗开始事件（所有模式共用基类 PreGame，单点覆盖；故事演出"首次进战斗"改挂卡片动画播完事件 UIFightMain_CardCreateAnimEnd）
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_StartGame);
     }
 
@@ -151,8 +151,8 @@ public class GameFightLogic : BaseGameLogic
         AIHandler.Instance.manager.Clear();
         //Buff清理
         BuffHandler.Instance.manager.ClearFightCreatureBuff();
-        //飘字粒子清理
-        EffectHandler.Instance.ClearTextNumEffect();
+        //战斗粒子清理(实例+飘字+拖尾):特效实例挂在 DontDestroyOnLoad 的 EffectHandler 下,不显式清则进奖励选择场景(EnterRewardSelectScene 不走 ClearWorldData)时残留播放
+        EffectHandler.Instance.ClearAllEffect();
         //清理战斗场景
         await WorldHandler.Instance.UnLoadScene(GameSceneTypeEnum.Fight);
         //清理缓存

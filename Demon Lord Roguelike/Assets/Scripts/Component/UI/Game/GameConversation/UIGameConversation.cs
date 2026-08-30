@@ -2,6 +2,7 @@
 
 using System;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,12 +22,21 @@ public partial class UIGameConversation : BaseUIComponent
     public override void OpenUI()
     {
         base.OpenUI();
-
+        //每次打开先把对话框布局还原到预制体默认（故事演出可能改过对齐/偏移，不还原会残留到议会对话等其它打开方式）
+        ResetContentLayout();
+        //每次打开默认不高亮（故事演出开过目标高亮，不隐藏会残留到其它打开方式）
+        HideStoryHighlight();
     }
 
     public override void CloseUI()
     {
         base.CloseUI();
+        //终止高亮出现/位置动画(UI 隐藏后不渲染,停止防残留;透明度置满防下次打开残留半透明态)
+        highlightFadeTween?.Kill();
+        highlightFadeTween = null;
+        highlightMoveTween?.Kill();
+        highlightMoveTween = null;
+        ui_MaskTarget.color = Color.white;
         //终止动画推进令牌（防在途异步访问已销毁控件）+ 截断说话音效
         StopTextAnim();
     }
@@ -36,6 +46,14 @@ public partial class UIGameConversation : BaseUIComponent
         base.OnDestroy();
         //销毁取消源（链接令牌本也会自动取消，这里显式收口释放 CTS）
         cancelForTextAnim?.Dispose();
+        //终止高亮动画(防 DOTween 继续访问已销毁的材质报错)
+        highlightFadeTween?.Kill();
+        highlightFadeTween = null;
+        highlightMoveTween?.Kill();
+        highlightMoveTween = null;
+        //销毁克隆的高亮材质（防材质泄漏）
+        if (maskHighlightMaterial != null)
+            Destroy(maskHighlightMaterial);
     }
 
     /// <summary>
@@ -115,6 +133,220 @@ public partial class UIGameConversation : BaseUIComponent
     {
         StartTextAnim(content);
     }
+
+    #region 对话框布局（故事演出对齐/偏移）
+    //ui_Content 预制体默认布局（首次打开时捕获，捕获后才允许还原）
+    protected bool isCapturedContentLayout;
+    protected Vector2 contentLayoutAnchorMin;
+    protected Vector2 contentLayoutAnchorMax;
+    protected Vector2 contentLayoutPivot;
+    protected Vector2 contentLayoutPos;
+
+    /// <summary>
+    /// 还原 ui_Content 到预制体默认布局（首次打开时先捕获默认快照；此后每次打开都还原，防故事演出的自定义对齐/偏移残留）
+    /// </summary>
+    public void ResetContentLayout()
+    {
+        if (!isCapturedContentLayout)
+        {
+            contentLayoutAnchorMin = ui_Content.anchorMin;
+            contentLayoutAnchorMax = ui_Content.anchorMax;
+            contentLayoutPivot = ui_Content.pivot;
+            contentLayoutPos = ui_Content.anchoredPosition;
+            isCapturedContentLayout = true;
+            return;
+        }
+        ui_Content.anchorMin = contentLayoutAnchorMin;
+        ui_Content.anchorMax = contentLayoutAnchorMax;
+        ui_Content.pivot = contentLayoutPivot;
+        ui_Content.anchoredPosition = contentLayoutPos;
+    }
+
+    /// <summary>
+    /// 设置故事演出的对话框布局（对齐锚点(0~1) + 偏移坐标；OpenUI 已先还原默认，这里覆盖为演出配置）
+    /// </summary>
+    /// <param name="anchor">对齐锚点（x: 0左/0.5中/1右，y: 0下/0.5中/1上）</param>
+    /// <param name="offset">相对对齐点的 anchoredPosition 偏移</param>
+    public void SetStoryContentLayout(Vector2 anchor, Vector2 offset)
+    {
+        ui_Content.anchorMin = anchor;
+        ui_Content.anchorMax = anchor;
+        ui_Content.pivot = anchor;
+        ui_Content.anchoredPosition = offset;
+    }
+    #endregion
+
+    #region 目标高亮（故事演出 MaskTarget，Shader_UI_GuideHighlight）
+    //高亮材质实例(克隆自 ui_MaskTarget 材质,仅写本实例的 _Center/_Size,不污染共享材质)
+    protected Material maskHighlightMaterial;
+    //GetWorldCorners 复用缓冲(固定 4 角,避免每次高亮分配)
+    protected readonly Vector3[] highlightCornerBuffer = new Vector3[4];
+    //高亮出现淡入动画(仅首现/无亮→有亮时从 0 淡入;亮→亮连续切换保持透明度只更新位置,防切换闪一帧)
+    protected Tween highlightFadeTween;
+    //高亮位置/尺寸过渡动画(亮→亮切换时 _Center/_Size 从旧值平滑插值到新值:洞移动过程可见,压暗恒定不闪)
+    protected Tween highlightMoveTween;
+
+    /// <summary>
+    /// 隐藏目标高亮（每次打开 UI 默认不高亮，防上次演出残留）
+    /// </summary>
+    public void HideStoryHighlight()
+    {
+        //停止在途出现/位置动画并复位画面透明度(防残留动画在下次淡入前把 alpha 慢慢拉回造成闪动)
+        highlightFadeTween?.Kill();
+        highlightFadeTween = null;
+        highlightMoveTween?.Kill();
+        highlightMoveTween = null;
+        ui_MaskTarget.color = Color.white;
+        ui_MaskTarget.gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// 高亮一个 UI 目标（世界四角→uiCamera 屏幕→Mask UV；目标区域透亮，其余压暗）
+    /// </summary>
+    /// <param name="targetRect">目标 UI（默认取目标自身大小为高亮范围）</param>
+    /// <param name="shapeType">高亮形状（0=方形 1=圆形，对应 Shader_UI_GuideHighlight 的 _ShapeType）</param>
+    /// <param name="sizeScale">尺寸倍率（以目标大小为基准放大缩小，默认 1）</param>
+    public void SetStoryHighlight(RectTransform targetRect, int shapeType = 0, float sizeScale = 1f)
+    {
+        //UV 计算前先把遮罩拉伸满屏,保证 UV 相对全屏
+        EnsureMaskFullStretch();
+        //UI 矩形与 mask 同属 UI Canvas: Overlay 模式时 UGUI 约定相机传 null(世界点即像素平面,用主相机投影会得到天文数字般的屏幕坐标)
+        Camera uvCam = GetMaskUVCamera();
+        targetRect.GetWorldCorners(highlightCornerBuffer);
+        Vector2 min = new Vector2(float.MaxValue, float.MaxValue);
+        Vector2 max = new Vector2(float.MinValue, float.MinValue);
+        for (int i = 0; i < highlightCornerBuffer.Length; i++)
+        {
+            Vector2 uv = WorldPointToMaskUV(highlightCornerBuffer[i], uvCam, uvCam);
+            min = Vector2.Min(min, uv);
+            max = Vector2.Max(max, uv);
+        }
+        ApplyStoryHighlight((min + max) * 0.5f, max - min, shapeType, sizeScale);
+    }
+
+    /// <summary>
+    /// 高亮一个世界空间目标（bounds 八顶点→mainCamera 屏幕→Mask UV；场景物体走此入口）
+    /// </summary>
+    /// <param name="worldBounds">目标世界包围盒（默认取包围盒大小为高亮范围）</param>
+    /// <param name="shapeType">高亮形状（0=方形 1=圆形，对应 Shader_UI_GuideHighlight 的 _ShapeType）</param>
+    /// <param name="sizeScale">尺寸倍率（以包围盒大小为基准放大缩小，默认 1）</param>
+    public void SetStoryHighlight(Bounds worldBounds, int shapeType = 0, float sizeScale = 1f)
+    {
+        //UV 计算前先把遮罩拉伸满屏,保证 UV 相对全屏
+        EnsureMaskFullStretch();
+        var mainCam = CameraHandler.Instance.manager.mainCamera;
+        //场景世界点投影到屏幕必须用主相机;屏幕点转 mask 矩形相机随 Canvas 模式(Overlay=null,ScreenSpaceCamera=worldCamera)
+        Camera rectCam = GetMaskUVCamera();
+        Vector3 center = worldBounds.center;
+        Vector3 extents = worldBounds.extents;
+        Vector2 min = new Vector2(float.MaxValue, float.MaxValue);
+        Vector2 max = new Vector2(float.MinValue, float.MinValue);
+        //八顶点投影取屏幕 AABB(斜视角下世界 AABB 的面投影不单调,顶点全投最稳)
+        for (int i = 0; i < 8; i++)
+        {
+            Vector3 corner = center + new Vector3((i & 1) == 0 ? -extents.x : extents.x, (i & 2) == 0 ? -extents.y : extents.y, (i & 4) == 0 ? -extents.z : extents.z);
+            Vector2 uv = WorldPointToMaskUV(corner, mainCam, rectCam);
+            min = Vector2.Min(min, uv);
+            max = Vector2.Max(max, uv);
+        }
+        ApplyStoryHighlight((min + max) * 0.5f, max - min, shapeType, sizeScale);
+    }
+
+    /// <summary>
+    /// 高亮遮罩拉伸铺满父节点（压暗整屏只留目标区域透亮；UV 计算前必须先调用，保证 UV 相对全屏）
+    /// </summary>
+    protected void EnsureMaskFullStretch()
+    {
+        RectTransform maskRect = ui_MaskTarget.rectTransform;
+        maskRect.anchorMin = Vector2.zero;
+        maskRect.anchorMax = Vector2.one;
+        maskRect.offsetMin = Vector2.zero;
+        maskRect.offsetMax = Vector2.zero;
+    }
+
+    /// <summary>
+    /// 应用高亮（按倍率缩放范围、圆形换算正圆；克隆材质写 _Center/_Size/_ShapeType 并显示）
+    /// </summary>
+    protected void ApplyStoryHighlight(Vector2 centerUV, Vector2 sizeUV, int shapeType, float sizeScale)
+    {
+        //尺寸倍率(以目标大小为基准放大缩小,下限防退化)
+        sizeUV *= Mathf.Max(sizeScale, 0.01f);
+        //圆形:shader 的圆=按 _Size 长短轴的椭圆,这里按屏幕像素取最大边为直径换算 UV,保证正圆
+        if (shapeType == 1)
+        {
+            Rect maskArea = ui_MaskTarget.rectTransform.rect;
+            float diameterPixel = Mathf.Max(sizeUV.x * maskArea.width, sizeUV.y * maskArea.height);
+            sizeUV = new Vector2(diameterPixel / maskArea.width, diameterPixel / maskArea.height);
+        }
+        //尺寸下限保护:目标过小/投影退化时高亮洞不可见,整屏压暗会像死机
+        sizeUV = Vector2.Max(sizeUV, new Vector2(0.03f, 0.03f));
+        if (maskHighlightMaterial == null)
+        {
+            maskHighlightMaterial = new Material(ui_MaskTarget.material);
+            ui_MaskTarget.material = maskHighlightMaterial;
+        }
+        //形状立即写入(无需过渡);位置的插值动画在分支内启动——注意必须先取旧值快照、再启动 tween,绝不能先 SetVector 再 DOVctor
+        //(DOVctor/DOTween.To 的起点读材质当前值,先写目标值会让起点=终点,动画变成零位移,表现为"没有动画")
+        maskHighlightMaterial.SetFloat("_ShapeType", shapeType);
+        //首现判定在 SetActive 前取:false=上次未显示(首现/无亮→有亮),true=亮→亮连续切换
+        bool wasActive = ui_MaskTarget.gameObject.activeSelf;
+        if (wasActive)
+        {
+            //亮→亮连续切换:透明度保持不变(压暗恒定不闪),洞从旧位置/旧尺寸平滑过渡到新目标(可见的出现动画引导视线)
+            highlightFadeTween?.Kill();
+            highlightFadeTween = null;
+            ui_MaskTarget.color = Color.white;
+            highlightMoveTween?.Kill();
+            //起点读旧值(尚未写入新值),setter 每帧写材质:材质从旧值插值到目标,洞移动过程可见
+            highlightMoveTween = DOTween.Sequence().SetUpdate(true)
+                .Join(DOTween.To(() => maskHighlightMaterial.GetVector("_Center"), v => maskHighlightMaterial.SetVector("_Center", v), new Vector4(centerUV.x, centerUV.y, 0f, 0f), 0.18f))
+                .Join(DOTween.To(() => maskHighlightMaterial.GetVector("_Size"), v => maskHighlightMaterial.SetVector("_Size", v), new Vector4(sizeUV.x, sizeUV.y, 0f, 0f), 0.18f));
+        }
+        else
+        {
+            //首现/无亮→有亮:直接写入目标值,alpha 从 0 快速淡入,把玩家注意力引到高亮区
+            //(快速下一句都在"亮→亮"路径不改 alpha,只有真正首现才重新淡入;unscaled,战斗 timeScale=0 演出下照常)
+            highlightMoveTween?.Kill();
+            highlightMoveTween = null;
+            maskHighlightMaterial.SetVector("_Center", new Vector4(centerUV.x, centerUV.y, 0f, 0f));
+            maskHighlightMaterial.SetVector("_Size", new Vector4(sizeUV.x, sizeUV.y, 0f, 0f));
+            highlightFadeTween?.Kill();
+            highlightFadeTween = null;
+            ui_MaskTarget.color = new Color(1f, 1f, 1f, 0f);
+            highlightFadeTween = ui_MaskTarget.DOFade(1f, 0.12f).SetUpdate(true);
+        }
+        ui_MaskTarget.gameObject.SetActive(true);
+    }
+
+    /// <summary>
+    /// 世界点经投影相机转屏幕点，再转 ui_MaskTarget 本地 UV（0~1，原点=Mask 矩形左下）
+    /// <para>viewCam: 世界点投影到屏幕的相机(UI 矩形传 mask Canvas 相机,Overlay Canvas 传 null;场景物体传主相机)</para>
+    /// <para>rectCam: 屏幕点转 Mask 本地矩形的相机(与 mask 所属 Canvas 渲染模式匹配,Overlay 传 null;不匹配会算错)</para>
+    /// </summary>
+    protected Vector2 WorldPointToMaskUV(Vector3 worldPos, Camera viewCam, Camera rectCam)
+    {
+        Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(viewCam, worldPos);
+        RectTransform maskRect = ui_MaskTarget.rectTransform;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(maskRect, screenPos, rectCam, out Vector2 localPos);
+        Rect rect = maskRect.rect;
+        return new Vector2((localPos.x - rect.xMin) / rect.width, (localPos.y - rect.yMin) / rect.height);
+    }
+
+    /// <summary>
+    /// 取 mask 所属 Canvas 的渲染相机约定值(UV 换算用):
+    /// ScreenSpaceOverlay 返回 null(UGUI 约定:Overlay Canvas 下世界点=像素平面,无投影相机);
+    /// ScreenSpaceCamera 返回 Canvas 的 worldCamera(缺失时兜底 uiCamera)
+    /// </summary>
+    protected Camera GetMaskUVCamera()
+    {
+        var maskCanvas = ui_MaskTarget.canvas;
+        if (maskCanvas == null)
+            return null;
+        if (maskCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
+            return null;
+        return maskCanvas.worldCamera != null ? maskCanvas.worldCamera : CameraHandler.Instance.manager.uiCamera;
+    }
+    #endregion
 
     /// <summary>
     /// 设置卡片图像

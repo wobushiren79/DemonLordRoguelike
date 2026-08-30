@@ -1447,6 +1447,8 @@ MonoBehaviour:
   objBuildingjDoomCouncil: {fileID: 5900574542876834370}
   objBuildingAchievement: {fileID: 7797971949846533888}
   objBuildingJuicer: {fileID: 5804248411076856269}
+  objBuildingPortal: {fileID: 3504015467425331588}
+  objBuildingGashaponMachine: {fileID: 4745015986811314027}
   lightSun: {fileID: 754532165140812993}
   lightRay: {fileID: 2049881128164388091}
   objBoard: {fileID: 1412605088136722116}
@@ -6350,6 +6352,11 @@ PrefabInstance:
 --- !u!1 &1792666345929743288 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8432282466825373516, guid: b2bc56b8592010440aebe0fe233e4a76, type: 3}
+  m_PrefabInstance: {fileID: 7918920998317006068}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &4745015986811314027 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3187429608318370719, guid: b2bc56b8592010440aebe0fe233e4a76, type: 3}
   m_PrefabInstance: {fileID: 7918920998317006068}
   m_PrefabAsset: {fileID: 0}
 --- !u!4 &6408438068667943305 stripped

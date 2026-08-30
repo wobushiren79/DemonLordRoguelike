@@ -129,26 +129,9 @@ CameraHandler.Instance.RestoreJuicerCameraFocus();
 CameraHandler.Instance.ShakeJuicerCamera(0.8f, 0.35f);
 ```
 
-### 3.6 故事演出镜头（StoryHandler 接管）
+### 3.6 故事演出镜头（已迁至 Story 系统自管）
 
-游戏层 `CameraHandler` 的 `#region 故事演出镜头` 提供故事演出系统（StoryHandler）专用的接管/移动/归还三件套（战斗与基地场景通用）：
-
-```csharp
-// 接管镜头，返回可自由补间的移动目标：
-// 战斗场景直接返回 controlTargetForEmpty（cm_Fight 本就跟随它）；
-// 基地场景把 cm_Base.Follow/LookAt 从魔王本体(controlTargetForCreature)临时切到 controlTargetForEmpty
-// （位置先同步到魔王位，镜头不跳变），并缓存原 Follow/LookAt 供归还
-Transform moveTarget = CameraHandler.Instance.BeginStoryCameraControl(isFightScene);
-
-// DOMove 补间移动目标：.SetUpdate(true)（timeScale=0 下照常），先 DOKill() 打断在途移动防并发叠加；
-// easeIndex=0 走 DOTween 默认缓动，其余按 DG.Tweening.Ease 强转
-await CameraHandler.Instance.MoveStoryCameraTarget(targetPos, duration, easeIndex);
-
-// 补间回演出起始位后，基地场景恢复 cm_Base.Follow/LookAt 原绑定
-await CameraHandler.Instance.EndStoryCameraControl(originPos, duration);
-```
-
-> 锁输入后需保持 controlTargetForEmpty 激活（`EnableAllControl(false)` 会隐藏它，StoryHandler 已处理）。
+故事演出镜头**不在 CameraHandler**：StoryHandler 自管一台专用 CinemachineCamera（纯代码懒创建挂 StoryHandler 常驻 GameObject 下），演出开始从当前生效虚拟相机（`CinemachineBrain.ActiveVirtualCamera`）复制 `Lens/FollowOffset/TrackerSettings/TargetOffset/Damping`，停靠原虚拟相机（仅改激活态）后 blend=0 瞬切，镜头移动补间 Story 自有锚点，结束回位后还原激活态与默认混合时长——原相机 Follow/LookAt 全程不动。详见 `story-system` Skill「镜头（Story 专用虚拟相机）」。
 
 ### 4. 其它场景镜头
 

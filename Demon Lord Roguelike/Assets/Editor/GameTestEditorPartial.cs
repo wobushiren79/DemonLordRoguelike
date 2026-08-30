@@ -112,6 +112,15 @@ public partial class GameTestEditor
     // 故事下拉选项缓存(不持久化，懒加载；配置重导后可点「刷新列表」重建)
     private GUIContent[] storyTestOptions;
     private long[] storyTestIds;
+    // 清除存档故事数据的目标槽位(1~3;清除的是真实存档的 UserStory 拆分档,故不含 0 测试数据)
+    public int storyTestClearSlot = 1;
+    // 清除区状态显示文本(点「查询状态」或清除后刷新;null=未查询)
+    private string storyTestClearStatus;
+    // 删除指定故事的已播记录下拉索引(选项来自该槽位已播记录,槽位切换/查询状态后重建)
+    public int storyTestRemoveSelectIndex = 0;
+    // 删除指定故事的下拉选项缓存(不持久化;按槽位建,「查询状态」后构建)
+    private GUIContent[] storyTestRemoveOptions;
+    private long[] storyTestRemoveIds;
 
     // 奖励选择测试参数
     public RarityEnum rewardSelectRarity = RarityEnum.N;
@@ -238,6 +247,8 @@ public partial class GameTestEditor
         long.TryParse(EditorPrefs.GetString(PREFS_KEY_PREFIX + "storyTestId", "0"), out storyTestId);
         storyTestSelectIndex = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "storyTestSelectIndex", 0);
         storyTestSaveSlot = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "storyTestSaveSlot", 0), 0, 3);
+        // 清除存档故事数据槽位钳制到 1~3(同 sacrificeTestSaveSlot,防止旧 EditorPrefs 残留越界值)
+        storyTestClearSlot = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "storyTestClearSlot", 1), 1, 3);
 
         // 敌人 IDs
         LoadEnemyIds();
@@ -314,6 +325,7 @@ public partial class GameTestEditor
         EditorPrefs.SetString(PREFS_KEY_PREFIX + "storyTestId", storyTestId.ToString());
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "storyTestSelectIndex", storyTestSelectIndex);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "storyTestSaveSlot", storyTestSaveSlot);
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "storyTestClearSlot", storyTestClearSlot);
 
         // 敌人 IDs
         SaveEnemyIds();

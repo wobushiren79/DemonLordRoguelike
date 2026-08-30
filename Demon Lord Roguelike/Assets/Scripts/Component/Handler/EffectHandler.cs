@@ -45,7 +45,8 @@ public partial class EffectHandler
 
     #region 全局单例粒子(落雷/斩击/地面火焰/冲击波)
     /// <summary>
-    /// 播放全局单例持久型粒子：移动唯一实例到目标点，按 param 有参数才设置主粒子参数，Stop(StopEmitting)保活旧粒子后重播。
+    /// 播放全局单例持久型粒子：VFX 粒子一律不设置实例坐标(粒子位置由图自身逻辑/StartPosition 注入驱动)，纯 PS 粒子把唯一实例移动到目标点；
+    /// 按 param 有参数才设置主粒子参数，Stop(StopEmitting)保活旧粒子后重播。
     /// <para>重播用 Stop(StopEmitting)+Play：保活已发射的存活粒子只停发射，Play 重置系统时间重新触发爆发，
     /// 支持极短间隔连发多刀/多道雷/多片火交叠(旧落点粒子不消失)；要求粒子为 World 空间模拟 + burst 爆发(Thunder_3/Slash_2/FloorFire_1/Shockwave_1 均已配)。</para>
     /// </summary>
@@ -59,7 +60,11 @@ public partial class EffectHandler
         {
             if (targetEffect == null)
                 return;
-            targetEffect.transform.position = param.targetPos;
+            //VFX 全局单例粒子一律不设置 transform 坐标(图内粒子位置由图自身逻辑/StartPosition 注入驱动，实例位置与播放无关)；纯 PS 粒子无注入通道仍需靠 transform 定位到播放点
+            if (targetEffect.GetVisualEffect() == null)
+            {
+                targetEffect.transform.position = param.targetPos;
+            }
             //VFX 暴露属性按 EffectInfo 配置注入(刀光等 VFX 老特效的 Speed/LifeTime/Direction/StartPosition 全靠它,不注入则按预制默认值播放→原地不动/方向错/不可见); PS 新粒子配置数据为空自然跳过
             InjectVfxConfigData(effectId, targetEffect, param);
             if (targetEffect.mainPS != null)
@@ -500,6 +505,17 @@ public partial class EffectHandler
     public void ClearTextNumEffect()
     {
         FightHandler.Instance.manager.fightTextInstanceRenderer.Clear();
+    }
+
+    /// <summary>
+    /// 清理全部战斗粒子(战斗结束统一入口)：粒子实例(一次/持久/池内全部销毁)+飘字在屏槽位+拖尾VFX(实例/缓冲/门控复位)。
+    /// <para>特效实例挂在 DontDestroyOnLoad 的 EffectHandler 下，不经场景卸载销毁；凡结束战斗后切场景的路径(进奖励选择/回基地等)必须经此入口清一次，否则残留播放。</para>
+    /// </summary>
+    public void ClearAllEffect()
+    {
+        ClearAllAttackModeTrailVfx();
+        manager.Clear();
+        ClearTextNumEffect();
     }
     #endregion
 

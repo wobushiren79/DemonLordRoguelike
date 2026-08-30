@@ -596,7 +596,9 @@ public class FightTypeConquerEditorWindow : EditorWindow
         // 难度与奖励
         EditorGUILayout.LabelField("难度与奖励", EditorStyles.boldLabel);
         currentBean.drop_crystal = DrawIntField("掉落魔晶", currentBean.drop_crystal, "drop_crystal");
-        currentBean.reward_crystal = DrawIntField("奖励-魔晶", currentBean.reward_crystal, "reward_crystal");
+        //奖励魔晶: 由Excel类型行决定(重生成Bean后为string), 统一按字符串编辑, 支持单值"200"或区间"100-200"
+        string rewardCrystalStr = DrawRewardCrystalField("奖励-魔晶(x或x-y)", "reward_crystal");
+        SetFieldValueAsString(currentBean, "reward_crystal", rewardCrystalStr);
         currentBean.reward_equip_rarity = DrawIntField("奖励-装备稀有度", currentBean.reward_equip_rarity, "reward_equip_rarity");
 
         GUILayout.Space(5);
@@ -734,6 +736,41 @@ public class FightTypeConquerEditorWindow : EditorWindow
         if (DrawCompareCell(nextBean, fieldName, value)) { result = (string)GetFieldValueObject(nextBean, fieldName) ?? ""; GUI.FocusControl(null); }
         EditorGUILayout.EndHorizontal();
         return result;
+    }
+
+    /// <summary>
+    /// 绘制奖励魔晶字段（统一按字符串编辑：单值"200"固定 或 区间"100-200"随机）
+    /// reward_crystal 字段类型由 Excel 类型行决定，Bean 重生成后为 string；旧 int 过渡态经反射读写兼容，任意阶段可编译
+    /// </summary>
+    private string DrawRewardCrystalField(string label, string fieldName)
+    {
+        string result = GetFieldValueStr(currentBean, fieldName);
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField(label + ":", GUILayout.Width(FieldLabelWidth));
+        if (DrawCompareCell(prevBean, fieldName, result)) result = GetFieldValueStr(prevBean, fieldName);
+        result = EditorGUILayout.TextField(result);
+        if (DrawCompareCell(nextBean, fieldName, result)) { result = GetFieldValueStr(nextBean, fieldName); GUI.FocusControl(null); }
+        EditorGUILayout.EndHorizontal();
+        return result;
+    }
+
+    /// <summary>
+    /// 按字段原始类型把字符串写回字段（string 直接赋值；int 过渡态解析数字后赋值，解析失败保持原值）
+    /// </summary>
+    private void SetFieldValueAsString(FightTypeConquerInfoBean bean, string fieldName, string value)
+    {
+        if (bean == null) return;
+        FieldInfo f = typeof(FightTypeConquerInfoBean).GetField(fieldName);
+        if (f == null) return;
+        if (f.FieldType == typeof(string))
+        {
+            f.SetValue(bean, value);
+        }
+        else if (f.FieldType == typeof(int) && int.TryParse(value, out int intValue))
+        {
+            //旧int过渡态(Bean未重生成前): 数字字符串解析后写回
+            f.SetValue(bean, intValue);
+        }
     }
 
     /// <summary>

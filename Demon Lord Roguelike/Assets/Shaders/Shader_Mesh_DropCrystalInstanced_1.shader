@@ -22,6 +22,8 @@ Shader "Game/Fight/DropCrystalInstanced1"
     //
     // 【渲染状态(对齐原材质)】AlphaTest 硬边裁剪(阈值 _AlphaClipThreshold，原材质 0.1)、ZWrite On、不投影不受影
     // (满屏魔晶的阴影无意义还多走一遍 ShadowCaster Pass；且本 shader 根本不带 ShadowCaster/DepthOnly pass)。
+    // 深度测试/写深度由材质属性 _ZTest/_ZWrite 控制(默认 LEqual/On 与原一致；故事演出魔晶引导置顶时切 Always/Off，
+    // 无视深度永远绘制在最前——见 FightDropCrystalInstanceRenderer.SetAlwaysOnTop)。
     Properties
     {
         [Header(Surface)]
@@ -35,6 +37,10 @@ Shader "Game/Fight/DropCrystalInstanced1"
 
         [Header(Position Offset)]
         _PositionOffset ("世界位置偏移 (仅视觉抬升防穿地面, 默认 +0.1y)", Vector) = (0, 0.1, 0, 0)
+
+        [Header(Render State)]
+        [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest ("深度测试 (4=LEqual 常规, 8=Always 引导置顶)", Float) = 4
+        [Enum(Off, 0, On, 1)] _ZWrite ("写入深度 (1=On 常规, 0=Off 引导置顶)", Float) = 1
     }
 
     SubShader
@@ -71,7 +77,9 @@ Shader "Game/Fight/DropCrystalInstanced1"
             Tags { "LightMode" = "UniversalForward" }
 
             // AlphaTest 不透明裁剪：写深度(与原材质一致, 保证与场景的深度交互不变)，双面(quad 恒正面但 Cull Off 更稳)
-            ZWrite On
+            // _ZTest/_ZWrite 走材质属性(默认 LEqual/On 与原一致；故事魔晶引导置顶时切 Always/Off，见 SetAlwaysOnTop)
+            ZWrite [_ZWrite]
+            ZTest [_ZTest]
             Cull Off
 
             HLSLPROGRAM

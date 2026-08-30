@@ -50,6 +50,10 @@ BaseDataService<T>                    # 泛型数据服务基类（JSON 文件�
 | BaseDataStorage | Assets/FrameWork/Scripts/DataStorage/BaseDataStorage.cs |
 | SQliteHandle | Assets/FrameWork/Scripts/BaseSystem/Sqlite/SQliteHandle.cs |
 
+### 用户存档拆分（UserDataService）
+主档 `UserData_{slot}` + 同槽目录下独立拆分档（`UserUnlock`/`UserAchievement`/`UserBackpackItem`/`UserBackpackCreature`/`UserRelationship`/`UserStory` 各 `_{slot}`），`Save` 一并写、`Load` 后注入、`Delete` 一并删；拆分档无备份。
+故事拆分档提供轻量接口：`LoadStoryData()`（只读）/`DeleteStoryData()`（删整个档）/`RemoveStoryData(storyId)`（只移除单个故事已播记录后写回）——供编辑器测试工具单独操作故事已播记录。详见 data-service-system skill。
+
 ## 约束
 
 - Manager 直接操作 Service 进行数据读写

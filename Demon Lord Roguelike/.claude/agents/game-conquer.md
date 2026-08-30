@@ -43,6 +43,7 @@ watched_files:
 - `FightTypeConquerInfo.txt` - Excel 导出 JSON（不可单独改）
 - `FightTypeConquerInfoBean.cs`（自动生成，禁改）/ `FightTypeConquerInfoBeanPartial.cs`（解析、随机逻辑写这里）
 - 区间字段 `attack_boss_num`/`fight_num`/`road_num`/`road_length`：字符串 `x` 或 `x-y`，统一走 `ParseRandomRange`
+- `reward_crystal`（**string**，通关领奖魔晶）：单值 `x` 固定 或 区间 `x-y`（与其它区间字段同格式），走 `GetRandomRewardCrystal()`（内部复用 `ParseRandomRange`；Excel 第2行类型行为 string）
 - `reward_reputation`（int，通关声望奖励，插在 `reward_exp_boss` 与 `remark` 之间）：完整通关按难度给玩家声望；`FightTypeConquerInfoBeanPartial.GetRewardReputation()` 读取（仿 `GetBGColor`，需 Unity 重导 Bean 后才有该字段）。world_id=1 各难度(level 1~10)依次 1~10
 - `attack_intensity_baserate`（float，基础强度倍率，插在 `attack_intensity_addrate` 之后）：该难度每关恒定乘区(第1关也生效)，0/不配按 1；与 `attack_intensity_addrate`(每关递增) 共同组成 `GetCurrentIntensityRate(fightNum)`
 
@@ -81,7 +82,7 @@ watched_files:
 
 - 配置变更**必须改 Excel**（`excel_fight_type_conquer_info`），由 Unity 编辑器导出 JSON；仅改 JSON 下次导出会被覆盖。
 - `FightTypeConquerInfoBean.cs` 自动生成，**禁止直接修改**；扩展写到 `FightTypeConquerInfoBeanPartial.cs`。改结构先改 Excel 表头再「生成Entity」。
-- 区间字段是字符串（`x` / `x-y`），统一用 `ParseRandomRange` 解析，别当 int 读。
+- 区间字段是字符串（`x` / `x-y`），统一用 `ParseRandomRange` 解析，别当 int 读（`reward_crystal` 同格式，走 `GetRandomRewardCrystal()`）。
 - BOSS 关**仍照常出 `enemy_ids` 普通敌人**，BOSS 是 `enemy_boss_ids` 的额外刷怪；不要把普通波次换成 boss 池。
 - BOSS 特写只在**首个 BOSS 出怪事件**弹一次（`bossShowNpcIds` 仅首条非空）。
 - 关卡推进：下一关 BOSS → 重载场景；否则同场景继续，**不要重建卡片**以免丢失卡片状态。

@@ -40,12 +40,12 @@ watched_files:
   - `InitData(FightTypeConquerInfoBean conquerInfo)`：由征服配置直接生成（传送门预生成/预览）
   - `static List<ItemBean> CreateRewardListForConquer(conquerInfo)`：生成一份奖励列表（传送门创建预生成奖励调此）
   - `static List<ItemBean> CreateRewardListForConquerAllEquip(conquerInfo, bool isAllDemonLord = false)`：生成一份**全装备**奖励列表（createEquipNum=createItemNum，其余规则同；isAllDemonLord=true 时全为魔王专属）——终焉议会「想要更多装备/魔王装备」议案生效时通关领奖调此
-  - `InitDataForReward(List<ItemBean> baseReward, conquerInfo, int extraItemNum)`：**通关领奖入口**，用预生成 `baseReward` 充当 `listReward`（预览=实领，空则容错按 `conquerInfo` 即时生成），其后追加 `extraItemNum` 个魔晶（奖励多多）
+  - `InitDataForReward(List<ItemBean> baseReward, conquerInfo, int extraItemNum)`：**通关领奖入口**，用预生成 `baseReward` 充当 `listReward`（预览=实领，空则容错按 `conquerInfo` 即时生成），其后追加 `extraItemNum` 个装备道具（奖励多多；生成不出装备兜底魔晶）
   - `static int GetConquerEquipPoolSign()` / `static List<long> GetUnlockCreatureModelIdsForEquip()`：装备奖励池"解锁签名"=可生成装备的已解锁生物模型数量；解锁新魔物掉落后变化，触发传送门预生成奖励重生成
   - `static ItemBean EquipUtil.CreateEquipItemForReward(long itemId, int rarity, int userType=0, int addAttributeOverride=-1)`：**征服奖励场景的装备生成封装**（已迁至 `Assets/Scripts/Utils/EquipUtil.cs`，底层收口核心 `CreateEquipItem`；NPC随机装备/GM测试另有 `CreateEquipItemForNpc`/`CreateEquipItemForTest` 场景封装）。按指定道具id+稀有度生成装备（加点数 `<0` 时取 `RarityInfoCfg.GetItemData(rarity).equip_attribute_add`）。供 GM/测试直接发货——GM「添加道具」(`UITestBase.OnClickForAddItem`) 遍历所有道具×每种稀有度(N~L)调 `CreateEquipItemForTest`
 - **RewardSelectTestData** - 测试模式下的领奖参数（品质/属性/数量/魔王专属概率）
 - **FightDropCrystalBean** - 战斗内掉落水晶实例
-- **FightTypeConquerInfoBean(Partial)** - 征服配置（`drop_crystal` / `reward_crystal` / `reward_equip_rarity`，只决定稀有度 / `reward_reputation` 完整通关声望奖励，`GetRewardReputation()` 读取，world_id=1 各难度依次 1~10）
+- **FightTypeConquerInfoBean(Partial)** - 征服配置（`drop_crystal` / `reward_crystal`(string: 单值"200"固定 或 区间"100-200"随机, `GetRandomRewardCrystal()` 读取) / `reward_equip_rarity`，只决定稀有度 / `reward_reputation` 完整通关声望奖励，`GetRewardReputation()` 读取，world_id=1 各难度依次 1~10）
 - **RarityInfoBean** - 稀有度配置，`equip_attribute_add` 决定该稀有度装备的属性加点数量（从征服表迁来）
 
 ### UI
@@ -93,10 +93,10 @@ watched_files:
 1. `GetUnlockCreatureModelIdsForEquip()` 取已解锁生物，过滤掉没有对应装备道具的生物
 2. 循环 `createItemNum`（默认 3）个：前 `createEquipNum`（默认 1）个生成装备，其余生成魔晶
 3. **装备**（CreateItemEquip，吃 `conquerInfo`）：随机解锁生物的随机装备，品质 = `conquerInfo.reward_equip_rarity`、属性加点数量 = `RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add`（由稀有度配置表决定），按 `createEquipDemonLordRate`（默认 1/10）概率标记魔王专属。**先定 rarityItem 再按道具 `reward_rarity` 白名单过滤生物装备池**（`ItemsInfoBean.IsMatchRewardRarity(rarityItem)`，空=全稀有度适配），过滤后为空回退发魔晶；字段/编辑器见 game-item。**魔王专属额外过滤**：`userType == DemonLord` 时同循环再过 `IsEquipTypeMatchForDemonLord`——按魔王当前形态（`selfCreature.creatureInfo`，转生会换故按当前）的 `CanEquipItemType`+`CanEquipWeaponType` 判定，魔王穿不上的类型（如骷髅魔王的武器）不掉落，空则回退魔晶；刻意不校验种族模组（跨模组掉落是既有呈现，且模型掉落需研究解锁，强制匹配会让专属归零）
-4. **魔晶**（CreateItemCrystal，吃 `conquerInfo`）：基础数量 = `conquerInfo.reward_crystal`，在 `±基础值/2` 范围随机浮动
+4. **魔晶**（CreateItemCrystal，吃 `conquerInfo`）：数量 = `conquerInfo.GetRandomRewardCrystal()`——`reward_crystal` 为 string（与其它区间字段同 `x-y` 格式），单值"200"固定发放，区间"100-200"在 [100,200] 闭区间随机（无旧版 ±50% 浮动）
 5. 测试模式由 `InitData(null, testData)` 进入，用 `RewardSelectTestData` 的固定参数（此入口行为不变）
 
-> **魔晶/装备规则与稀有度来源未变**：仍是 `reward_crystal` / `reward_equip_rarity` / `RarityInfo.equip_attribute_add`。本次改动只是把生成入口收敛到 `FightTypeConquerInfoBean`，并新增"传送门预生成 + 通关消费"的链路。
+> 魔晶数量来源 `reward_crystal`（string 单值/区间）、装备稀有度 `reward_equip_rarity` / `RarityInfo.equip_attribute_add`；生成入口统一在 `FightTypeConquerInfoBean`，走"传送门预生成 + 通关消费"链路。
 > **通关领奖**走 `InitDataForReward`，消费传送门预生成的 `baseReward`；奖励多多额外件数追加在基础奖励**之后**（装备道具，生成不出装备兜底魔晶）。
 
 ## 关键文件

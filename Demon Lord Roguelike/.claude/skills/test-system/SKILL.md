@@ -525,7 +525,7 @@ LauncherTest.StartForStoryTest(storyId, saveSlot = 0)     // Assets/Scripts/Game
     │  ② 按故事 scene_type 进场景：
     │     Base        → EnterGameForBaseScene + 一次性 World_EnterGameForBaseScene 回调
     │     Fight       → 内置默认测试战斗数据 BuildStoryTestFightData()(1路x10/2波1010010001/5张2002/核心2001/MP9999)
-    │                 进战斗 + 一次性 GameFightLogic_StartGame 回调
+    │                 进战斗 + 一次性 UIFightMain_CardCreateAnimEnd 回调(卡片出现动画播完,与真实触发同钩点)
     │     DoomCouncil → StartDoomCouncil(议案1000000001) + _ = WaitForDoomCouncilThenPlayStory 轮询场景就绪+1s缓冲
     ▼
 场景就绪 → StoryHandler.Instance.PlayStory(storyId)
@@ -534,8 +534,32 @@ LauncherTest.StartForStoryTest(storyId, saveSlot = 0)     // Assets/Scripts/Game
 ### 关键点
 
 - **一次性回调统一走 `RegisterStoryTestPlayCallback(eventName, storyId)`**：重复调用先清旧回调再注册，防多次触发。
-- **测试场景 StoryHandler 不注册自动触发**：`StoryHandler.InitData` 仅 `LauncherGame.Launch` 调用，测试入口故直接 `PlayStory` 手动播放。
-- **参数持久化**：`storyTestId` 用 EditorPrefs **字符串**存储（10 位 id 超 int 上限，同对话测试 NPC ID 教训）；`storyTestSelectIndex`/`storyTestSaveSlot`(0~3) 常规持久化；选项缓存字段 `storyTestOptions`/`storyTestIds` + 折叠 `showStoryTest` 均在 `GameTestEditorPartial`。
+- **测试场景 StoryHandler 不注册自动触发**：`StoryHandler.InitData` 仅 `LauncherGame.Launch` 与 `LauncherTest.StartForNormalGame`（正常启动游戏）调用，StoryTest 测试入口故直接 `PlayStory` 手动播放。
+- **参数持久化**：`storyTestId` 用 EditorPrefs **字符串**存储（10 位 id 超 int 上限，同对话测试 NPC ID 教训）；`storyTestSelectIndex`/`storyTestSaveSlot`(0~3)/`storyTestClearSlot`(1~3) 常规持久化；选项缓存字段 `storyTestOptions`/`storyTestIds` + 清除区状态缓存 `storyTestClearStatus` + 已播故事下拉缓存 `storyTestRemoveOptions`/`storyTestRemoveIds`/`storyTestRemoveSelectIndex`（数据依赖型下拉，构建时从 0 重建，**不持久化**）+ 折叠 `showStoryTest` 均在 `GameTestEditorPartial`。
+
+### 清除存档故事演出数据
+
+`DrawStoryTest` 播放区下方的独立区块，用于**反复测试同一存档的真实故事触发**（正常进游戏后首次触发条件重新生效）。区内含两个子区：
+
+**① 清除该存档全部**：
+```
+目标存档槽位 IntPopup(1~3,storyTestClearSlot,切换即清状态缓存+已播故事下拉缓存)
+🔍 查询状态 → RefreshStoryClearStatus():new UserDataService(slot).LoadStoryData() 只读 UserStory 拆分档,显示已播数量,并同时重建已播故事下拉(BuildStoryRemoveOptions)
+🗑️ 清除该存档的故事演出数据 → ClearStoryDataForSlot(slot):
+    二次确认 → UserDataService.DeleteStoryData() 删 UserStory_{slot} 拆分档(主档/其它拆分档不动)
+    → 若 Application.isPlaying 且当前 userData.saveIndex==slot:同步清内存 dicPlayedStory
+      + StoryManager.setExhaustedCondition/exhaustedForStoryData(防后续写盘写回旧记录/触发被耗尽缓存短路)
+    → 清除后自动刷新状态显示
+```
+
+**② 删除指定故事**（仅移除一条已播记录，其余保留）：
+```
+已播故事下拉(选项=「查询状态」时从 dicPlayedStory 构建的 id+中文名,下标 storyTestRemoveIndex 持久;无记录时显示提示)
+🗑️ 删除指定的故事数据 → RemoveStoryDataForSlot(slot, storyId):
+    二次确认 → UserDataService.RemoveStoryData(storyId) 读档→移除→写回(仅动 UserStory 拆分档)
+    → 运行时内存同步:userData.GetUserStoryData().RemoveStoryPlayed(storyId) + 清 setExhaustedCondition/exhaustedForStoryData
+    → 删除后自动刷新状态与下拉
+```
 
 ## 正常游戏启动 (NormalGame)
 
@@ -547,6 +571,8 @@ LauncherTest.StartForStoryTest(storyId, saveSlot = 0)     // Assets/Scripts/Game
 GameTestEditor.DrawNormalGameTest()              // Inspector 一个「▶️ 正常启动游戏」按钮
     ▼
 LauncherTest.StartForNormalGame()                // Assets/Scripts/Game/Launcher/LauncherTest.cs
+    ▼
+StoryHandler.InitData()                          // 与 LauncherGame.Launch() 对齐:注册故事演出自动触发(漏调则进档后引导演出永不触发)
     ▼
 WorldHandler.EnterMainForBaseScene()             // 与 LauncherGame.Launch() 调用同一入口
     │  清理运行时数据/BUFF/UserData → 加载基地场景 → VolumeHandler 初始化
@@ -629,7 +655,7 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 对话系统测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForConversationTest`） |
 | 对话系统测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawConversationTest`/`EnsureConversationTestNpcOptions`；通用 helper `LoadLanguageForCn`/`ClearCfgBaseStaticCache`） |
 | 故事演出测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForStoryTest`/`RegisterStoryTestPlayCallback`/`BuildStoryTestFightData`） |
-| 故事演出测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawStoryTest`/`EnsureStoryTestOptions`） + `GameTestEditorPartial.cs`（storyTestId 字符串持久化/storyTestSelectIndex/storyTestOptions/storyTestIds/showStoryTest） |
+| 故事演出测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawStoryTest`/`EnsureStoryTestOptions`/`RefreshStoryClearStatus`/`BuildStoryRemoveOptions`/`ClearStoryDataForSlot`/`RemoveStoryDataForSlot`） + `GameTestEditorPartial.cs`（storyTestId 字符串持久化/storyTestSelectIndex/storyTestSaveSlot/storyTestClearSlot/storyTestOptions/storyTestIds/storyTestClearStatus/storyTestRemoveOptions/storyTestRemoveIds/storyTestRemoveSelectIndex(不持久化)/showStoryTest） |
 | 测试场景 | `Assets/Scenes/TestScene.unity` |
 
 ---

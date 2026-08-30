@@ -182,7 +182,7 @@ public class UserDataBean
     public UserTempBean userTempData;                 // 临时数据（当前战斗等）
     
     // 故事演出
-    public UserStoryBean userStoryData; // 用户故事演出数据（[JsonIgnore] 拆分为独立存档 UserStory_{slot}，由 UserDataService 加载/保存时注入与落盘；内含 dicPlayedStory 字典：key=StoryInfo.id、value=播放完成时间戳 Ticks——字典而非列表，事件多了查询仍 O(1)；IsStoryPlayed/MarkStoryPlayed 操作；故事演出系统 story-system 使用；GetUserStoryData() 兜底懒初始化）
+    public UserStoryBean userStoryData; // 用户故事演出数据（[JsonIgnore] 拆分为独立存档 UserStory_{slot}，由 UserDataService 加载/保存时注入与落盘；内含 dicPlayedStory 字典：key=StoryInfo.id、value=播放完成时间戳 Ticks——字典而非列表，事件多了查询仍 O(1)；IsStoryPlayed/MarkStoryPlayed/RemoveStoryPlayed 操作；故事演出系统 story-system 使用；GetUserStoryData() 兜底懒初始化）
 }
 ```
 
@@ -230,7 +230,9 @@ List<CreatureBean> creatures = userData.GetUserBackpackCreatureData().listBackpa
 ├── UserUnlock_{slot}               # 解锁数据(独立, UserUnlockBean)
 ├── UserAchievement_{slot}          # 成就&统计数据(独立, UserAchievementBean)
 ├── UserBackpackItem_{slot}         # 背包道具(独立, UserBackpackItemsBean{ listBackpackItems })
-└── UserBackpackCreature_{slot}     # 背包生物(独立, UserBackpackCreatureBean{ listBackpackCreature })
+├── UserBackpackCreature_{slot}     # 背包生物(独立, UserBackpackCreatureBean{ listBackpackCreature })
+├── UserRelationship_{slot}         # 好感数据(独立, UserRelationshipBean)
+└── UserStory_{slot}                # 故事演出已播记录(独立, UserStoryBean{ dicPlayedStory })
 ```
 
 - `UserDataBean.userUnlockData` / `userAchievementData` / `userBackpackItemsData` / `userBackpackCreatureData` 均为包裹型 Bean 字段并标注 `[Newtonsoft.Json.JsonIgnore]`，**不随主存档序列化**；统一用懒初始化取数器访问：`GetUserUnlockData()` / `GetUserAchievementData()` / `GetUserBackpackItemsData()` / `GetUserBackpackCreatureData()`。背包列表经容器取出：`GetUserBackpackItemsData().listBackpackItems` / `GetUserBackpackCreatureData().listBackpackCreature`。
@@ -240,6 +242,7 @@ List<CreatureBean> creatures = userData.GetUserBackpackCreatureData().listBackpa
 - **不迁移旧存档**：旧版主存档内嵌的 unlock/achievement/背包 在加 `JsonIgnore` 后被忽略，独立文件不存在时注入空数据（视为新开始）。
 - 独立文件**无备份**：`UserDataService` 的"使用备份"回滚只还原主存档，不联动拆分文件，存在轻微不同步（按需自行扩展）。
 - **存档编辑器联动**：`SaveDataEditorWindow` 也按拆分维度独立加载/展示/回写这些文件（解锁/成就/背包道具/背包生物各一棵 JToken 树），保存时分别反序列化回注 `data`，避免覆盖丢失。新增拆分字段时务必同步更新该编辑器。
+- **单档轻量读写**：故事拆分档提供 `UserDataService.LoadStoryData()`（只读 UserStory_{slot}，不读主档与其它拆分档，文件不存在返回 null）、`DeleteStoryData()`（只删整个故事档，主档不动）与 `RemoveStoryData(storyId)`（读档→移除单个故事已播记录→写回，其余保留；文件不存在或未播过该故事时不动）——供故事测试面板的「清除存档故事演出数据」/「删除指定故事」等只需单档的场景使用，避免整档 Load 的开销与 Delete 的误伤。
 
 ---
 

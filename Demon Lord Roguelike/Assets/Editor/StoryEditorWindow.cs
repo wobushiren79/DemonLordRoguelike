@@ -24,6 +24,18 @@ public class StoryEditorWindow : EditorWindow
     private static string ExcelPathLanguage => ExcelDir + "/excel_language[多语言_FrameWork].xlsx";
     /// <summary>镜头目标标记(基地建筑/通用),与 StoryHandler.GetStoryMarkerPosition 保持一致</summary>
     private static readonly string[] CameraMarkers = { "back", "self", "core", "portal", "gashapon", "juicer", "altar", "vat", "achievement", "council" };
+    /// <summary>对话框对齐下拉值(Talk 步骤 param_2 对齐段,首项=默认下对齐写空串;其余与 StoryDetailsInfoBean.TalkContentAligns 一一对应)</summary>
+    private static readonly string[] TalkAlignValues = { "", "bottom_left", "bottom_right", "middle", "middle_left", "middle_right", "top", "top_left", "top_right" };
+    /// <summary>对话框对齐下拉显示名(与 TalkAlignValues 同序)</summary>
+    private static readonly string[] TalkAlignLabels = { "下(默认)", "下左", "下右", "居中", "中左", "中右", "上", "上左", "上右" };
+    /// <summary>高亮目标下拉值(param_2 高亮段,与 StoryDetailsInfoBean.TalkHighlightMarkers 一一对应;运行时 StoryHandler.ApplyTalkHighlight 解析)</summary>
+    private static readonly string[] TalkHighlightValues = { "demon", "crystal", "ui_fight_card", "ui_fight_remove", "ui_fight_att_progress" };
+    /// <summary>高亮目标下拉显示名(与 TalkHighlightValues 同序)</summary>
+    private static readonly string[] TalkHighlightLabels = { "魔王(战斗场景核心)", "掉落魔晶(第一颗)", "手卡(第一张)", "删除生物按钮", "进攻进度条" };
+    /// <summary>高亮形状下拉值(param_2 形状段,首项=默认方形写空串;另一项 circle,与 StoryDetailsInfoBean.TalkHighlightShapes 对应)</summary>
+    private static readonly string[] TalkHighlightShapeValues = { "", "circle" };
+    /// <summary>高亮形状下拉显示名(与 TalkHighlightShapeValues 同序)</summary>
+    private static readonly string[] TalkHighlightShapeLabels = { "方形(默认)", "圆形" };
     #endregion
 
     #region 行数据模型
@@ -97,6 +109,21 @@ public class StoryEditorWindow : EditorWindow
     private Vector2 scrollStoryField;
     private Vector2 scrollTalkList;
 
+    //四栏宽度(栏间分隔条可拖拽调节,双击分隔条恢复默认宽;步骤栏为弹性栏自动占满剩余宽度)
+    private float widthStoryList = 250f;
+    private float widthStoryField = 340f;
+    private float widthTalkList = 400f;
+    private const float DefaultWidthStoryList = 250f;
+    private const float DefaultWidthStoryField = 340f;
+    private const float DefaultWidthTalkList = 400f;
+    private const float MinWidthStoryList = 160f;
+    private const float MinWidthStoryField = 220f;
+    private const float MinWidthStepList = 260f;
+    private const float MinWidthTalkList = 260f;
+    private const float SplitterWidth = 5f;
+    /// <summary>正在拖拽的分隔条(-1=未拖拽;0=故事列表右 1=故事字段右 2=对话列表左)</summary>
+    private int draggingSplitter = -1;
+
     //NPC下拉缓存(0=旁白 + NpcInfo 全表)
     private long[] npcIds;
     private string[] npcLabels;
@@ -115,7 +142,7 @@ public class StoryEditorWindow : EditorWindow
     {
         var window = GetWindow<StoryEditorWindow>();
         window.titleContent = new GUIContent("故事演出编辑");
-        window.minSize = new Vector2(1500, 750);
+        window.minSize = new Vector2(1300, 700);
         window.Show();
     }
 
@@ -340,7 +367,7 @@ public class StoryEditorWindow : EditorWindow
 
     #region 界面绘制
     /// <summary>
-    /// 绘制窗口(工具栏 + 左故事列表/故事字段/步骤编排/对话列表 四栏)
+    /// 绘制窗口(工具栏 + 左故事列表/故事字段/步骤编排/对话列表 四栏,栏间分隔条可拖拽调宽)
     /// </summary>
     private void OnGUI()
     {
@@ -348,10 +375,84 @@ public class StoryEditorWindow : EditorWindow
         EditorGUILayout.Space(2);
         EditorGUILayout.BeginHorizontal();
         DrawStoryListColumn();
+        DrawSplitter(0);
         DrawStoryFieldColumn();
+        DrawSplitter(1);
         DrawStepListColumn();
+        DrawSplitter(2);
         DrawTalkListColumn();
         EditorGUILayout.EndHorizontal();
+        HandleSplitterDrag();
+    }
+
+    /// <summary>
+    /// 绘制栏间分隔条(按住左右拖拽调节相邻栏宽,双击恢复该栏默认宽;步骤栏为弹性栏,拖动其两侧分隔条时自动伸缩)
+    /// </summary>
+    private void DrawSplitter(int splitterIndex)
+    {
+        GUILayout.Box(GUIContent.none, GUI.skin.box, GUILayout.Width(SplitterWidth), GUILayout.ExpandHeight(true));
+        Rect rect = GUILayoutUtility.GetLastRect();
+        EditorGUIUtility.AddCursorRect(rect, MouseCursor.ResizeHorizontal);
+        var e = Event.current;
+        if (e.type == EventType.MouseDown && e.button == 0 && rect.Contains(e.mousePosition))
+        {
+            if (e.clickCount == 2)
+                ResetSplitterWidth(splitterIndex);
+            else
+                draggingSplitter = splitterIndex;
+            e.Use();
+        }
+    }
+
+    /// <summary>
+    /// 处理分隔条拖拽中/结束(拖拽中按鼠标位移调整相邻固定栏宽并夹取范围,保证弹性步骤栏不小于最小宽)
+    /// </summary>
+    private void HandleSplitterDrag()
+    {
+        if (draggingSplitter < 0)
+            return;
+        var e = Event.current;
+        EditorGUIUtility.AddCursorRect(new Rect(0, 0, position.width, position.height), MouseCursor.ResizeHorizontal);
+        if (e.type == EventType.MouseDrag)
+        {
+            float delta = e.delta.x;
+            if (draggingSplitter == 0)
+                widthStoryList = ClampSplitterWidth(widthStoryList + delta, MinWidthStoryList, widthStoryField + widthTalkList);
+            else if (draggingSplitter == 1)
+                widthStoryField = ClampSplitterWidth(widthStoryField + delta, MinWidthStoryField, widthStoryList + widthTalkList);
+            else if (draggingSplitter == 2)
+                widthTalkList = ClampSplitterWidth(widthTalkList - delta, MinWidthTalkList, widthStoryList + widthStoryField);
+            e.Use();
+            Repaint();
+        }
+        else if (e.rawType == EventType.MouseUp)
+        {
+            draggingSplitter = -1;
+        }
+    }
+
+    /// <summary>
+    /// 夹取栏宽(下限=该栏最小宽;上限=保证弹性步骤栏不小于最小宽,otherFixedWidths=其余两个固定栏宽之和)
+    /// </summary>
+    private float ClampSplitterWidth(float width, float minWidth, float otherFixedWidths)
+    {
+        float maxWidth = position.width - otherFixedWidths - MinWidthStepList - SplitterWidth * 3 - 20f;
+        if (maxWidth < minWidth)
+            maxWidth = minWidth;
+        return Mathf.Clamp(width, minWidth, maxWidth);
+    }
+
+    /// <summary>
+    /// 双击分隔条恢复对应栏默认宽
+    /// </summary>
+    private void ResetSplitterWidth(int splitterIndex)
+    {
+        if (splitterIndex == 0)
+            widthStoryList = DefaultWidthStoryList;
+        else if (splitterIndex == 1)
+            widthStoryField = DefaultWidthStoryField;
+        else if (splitterIndex == 2)
+            widthTalkList = DefaultWidthTalkList;
     }
 
     /// <summary>
@@ -416,7 +517,7 @@ public class StoryEditorWindow : EditorWindow
     /// </summary>
     private void DrawStoryListColumn()
     {
-        EditorGUILayout.BeginVertical("HelpBox", GUILayout.Width(250), GUILayout.ExpandHeight(true));
+        EditorGUILayout.BeginVertical("HelpBox", GUILayout.Width(widthStoryList), GUILayout.ExpandHeight(true));
         EditorGUILayout.LabelField("故事列表", EditorStyles.boldLabel);
         searchText = EditorGUILayout.TextField(searchText, EditorStyles.toolbarSearchField);
         scrollStoryList = EditorGUILayout.BeginScrollView(scrollStoryList);
@@ -450,7 +551,7 @@ public class StoryEditorWindow : EditorWindow
     /// </summary>
     private void DrawStoryFieldColumn()
     {
-        EditorGUILayout.BeginVertical("HelpBox", GUILayout.Width(340), GUILayout.ExpandHeight(true));
+        EditorGUILayout.BeginVertical("HelpBox", GUILayout.Width(widthStoryField), GUILayout.ExpandHeight(true));
         EditorGUILayout.LabelField("故事字段", EditorStyles.boldLabel);
         if (selectedStory == null)
         {
@@ -696,6 +797,7 @@ public class StoryEditorWindow : EditorWindow
         if (pick > 0)
             AppendTalkId(step, filteredTalks[pick - 1].id);
         EditorGUILayout.EndHorizontal();
+        DrawTalkLayoutFields(step);
         //引用对话的只读预览(编辑统一在右侧对话列表)
         BuildNpcOptions();
         var talkIds = ParseLongList(step.param1);
@@ -722,7 +824,7 @@ public class StoryEditorWindow : EditorWindow
     /// </summary>
     private void DrawTalkListColumn()
     {
-        EditorGUILayout.BeginVertical("HelpBox", GUILayout.Width(400), GUILayout.ExpandHeight(true));
+        EditorGUILayout.BeginVertical("HelpBox", GUILayout.Width(widthTalkList), GUILayout.ExpandHeight(true));
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("对话列表(本故事+通用)", EditorStyles.boldLabel);
         GUILayout.FlexibleSpace();
@@ -797,16 +899,33 @@ public class StoryEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 新增对话(id=最大id+1,默认旁白,绑定当前故事)
+    /// 新增对话(id=story_id*1000+号段内序号,默认旁白,绑定当前故事;一个故事最多999句,超号段上限报错)
     /// </summary>
     private void AddTalk()
     {
-        long newId = 1;
-        foreach (var t in allTalks)
-            if (t.id >= newId) newId = t.id + 1;
+        long newId = GetNextTalkId(selectedStory.id);
+        if (newId < 0)
+        {
+            EditorUtility.DisplayDialog("新增失败", $"故事 [{selectedStory.id}] 的对话已达号段上限(最多999句)，无法继续新增。", "确定");
+            return;
+        }
         var talk = new TalkRow { id = newId, storyId = selectedStory.id, npcId = 0, remark = "新对话", isNew = true };
         allTalks.Add(talk);
         talkLabels = null;
+    }
+
+    /// <summary>
+    /// 取下一个对话 id(与步骤表同约定 story_id*1000 号段内聚:本故事对话最大id+1,号段内无对话时取 story_id*1000+1;超过号段上限 story_id*1000+999 返回-1)
+    /// </summary>
+    private long GetNextTalkId(long storyId)
+    {
+        long baseId = storyId * 1000;
+        long maxId = 0;
+        foreach (var t in allTalks)
+            if (t.storyId == storyId && t.id > maxId) maxId = t.id;
+        //存量id不在本号段内(旧全局自增规则的数据)时从号段起点开始
+        long nextId = maxId > baseId ? maxId + 1 : baseId + 1;
+        return nextId <= baseId + 999 ? nextId : -1;
     }
 
     /// <summary>
@@ -842,6 +961,118 @@ public class StoryEditorWindow : EditorWindow
     #endregion
 
     #region 对话步骤辅助
+
+    /// <summary>
+    /// 对话步骤的对话框布局字段(param_2=对齐[|高亮目标[|形状[|倍率]]]组合,空=默认下对齐不高亮;param_3/4=偏移X/Y默认0;运行时 UIGameConversation 每次打开先还原默认再应用,不会残留)
+    /// </summary>
+    private void DrawTalkLayoutFields(StepRow step)
+    {
+        string param2 = GetStepParam(step, 2);
+        string alignPart = GetTalkParam2Segment(param2, 0) ?? "";
+        string highlightPart = GetTalkParam2Segment(param2, 1);
+        string shapePart = GetTalkParam2Segment(param2, 2);
+        string scalePart = GetTalkParam2Segment(param2, 3);
+        //对齐 + 偏移
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField(new GUIContent("对齐/偏移", "对话框 ui_Content 的对齐锚点与偏移坐标;不设置=默认下对齐(0,0)"), GUILayout.Width(110));
+        int alignIndex = string.IsNullOrEmpty(alignPart) ? 0 : System.Array.FindIndex(TalkAlignValues, v => string.Equals(v, alignPart, System.StringComparison.OrdinalIgnoreCase));
+        if (alignIndex < 0)
+            alignIndex = 0;
+        int newAlignIndex = EditorGUILayout.Popup(alignIndex, TalkAlignLabels, GUILayout.Width(80));
+        if (newAlignIndex != alignIndex)
+            SetTalkParam2(step, TalkAlignValues[newAlignIndex], highlightPart, shapePart, scalePart);
+        DrawTalkOffsetField(step, 3, "X");
+        DrawTalkOffsetField(step, 4, "Y");
+        EditorGUILayout.EndHorizontal();
+        //目标高亮开关 + 目标下拉(param_2 高亮段;MaskTarget 压暗全屏仅透亮目标)
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField(new GUIContent("目标高亮", "开启后对话框 MaskTarget 遮罩压暗全屏、仅透亮所选目标(Shader_UI_GuideHighlight);目标当前不存在时跳过不高亮"), GUILayout.Width(110));
+        bool isHighlight = !string.IsNullOrEmpty(highlightPart);
+        bool newIsHighlight = EditorGUILayout.ToggleLeft("开启", isHighlight, GUILayout.Width(45));
+        if (newIsHighlight != isHighlight)
+        {
+            highlightPart = newIsHighlight ? TalkHighlightValues[0] : null;
+            //关闭高亮时同步清空形状/倍率段(否则残留成 对齐||形状|倍率 的非法中间空段)
+            if (!newIsHighlight)
+            {
+                shapePart = null;
+                scalePart = null;
+            }
+            SetTalkParam2(step, alignPart, highlightPart, shapePart, scalePart);
+        }
+        using (new EditorGUI.DisabledScope(!newIsHighlight))
+        {
+            int highlightIndex = System.Array.FindIndex(TalkHighlightValues, v => string.Equals(v, highlightPart, System.StringComparison.OrdinalIgnoreCase));
+            if (highlightIndex < 0)
+                highlightIndex = 0;
+            int newHighlightIndex = EditorGUILayout.Popup(highlightIndex, TalkHighlightLabels, GUILayout.Width(140));
+            if (newHighlightIndex != highlightIndex && newIsHighlight)
+            {
+                highlightPart = TalkHighlightValues[newHighlightIndex];
+                SetTalkParam2(step, alignPart, highlightPart, shapePart, scalePart);
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+        //高亮形状 + 尺寸倍率(param_2 形状/倍率段;范围默认取目标自身大小,倍率在其基准上放大缩小)
+        using (new EditorGUI.DisabledScope(!newIsHighlight))
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(new GUIContent("形状/倍率", "高亮区形状(方形/圆形)与尺寸倍率;范围默认=目标自身大小(UI 矩形/场景包围盒),倍率在其基准上放大缩小,1=默认"), GUILayout.Width(110));
+            int shapeIndex = System.Array.FindIndex(TalkHighlightShapeValues, v => string.Equals(v, shapePart ?? "", System.StringComparison.OrdinalIgnoreCase));
+            if (shapeIndex < 0)
+                shapeIndex = 0;
+            int newShapeIndex = EditorGUILayout.Popup(shapeIndex, TalkHighlightShapeLabels, GUILayout.Width(80));
+            if (newShapeIndex != shapeIndex)
+            {
+                shapePart = TalkHighlightShapeValues[newShapeIndex];
+                SetTalkParam2(step, alignPart, highlightPart, shapePart, scalePart);
+            }
+            EditorGUILayout.LabelField("倍率", GUILayout.Width(28));
+            float scale = float.TryParse(scalePart, out float scaleValue) ? scaleValue : 1f;
+            float newScale = EditorGUILayout.FloatField(scale, GUILayout.Width(50));
+            if (newScale != scale)
+                SetTalkParam2(step, alignPart, highlightPart, shapePart, newScale == 1f ? null : newScale.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            EditorGUILayout.EndHorizontal();
+        }
+    }
+
+    /// <summary>
+    /// 绘制对话偏移单轴字段(param 存 float 字符串,默认0)
+    /// </summary>
+    private void DrawTalkOffsetField(StepRow step, int paramIndex, string axisLabel)
+    {
+        EditorGUILayout.LabelField(axisLabel, GUILayout.Width(12));
+        string value = GetStepParam(step, paramIndex);
+        float number = float.TryParse(value, out float v) ? v : 0f;
+        float newNumber = EditorGUILayout.FloatField(number, GUILayout.Width(55));
+        if (newNumber != number)
+            SetStepParam(step, paramIndex, newNumber.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// 取对话步骤 param_2 的指定段(| 分隔:0=对齐 1=高亮目标 2=形状 3=尺寸倍率;段不存在或为空返回 null)
+    /// </summary>
+    private string GetTalkParam2Segment(string param2, int segmentIndex)
+    {
+        if (string.IsNullOrEmpty(param2))
+            return null;
+        var parts = param2.Split('|');
+        if (segmentIndex >= parts.Length)
+            return null;
+        string segment = parts[segmentIndex];
+        return string.IsNullOrEmpty(segment) ? null : segment;
+    }
+
+    /// <summary>
+    /// 合并写回对话步骤 param_2(对齐|高亮|形状|倍率 四段,尾部空段裁掉保持最短形式;对齐空=默认下对齐,高亮空=不高亮,形状空=方形,倍率空=1)
+    /// </summary>
+    private void SetTalkParam2(StepRow step, string align, string highlight, string shape, string scale)
+    {
+        var parts = new List<string> { align ?? "", highlight ?? "", shape ?? "", scale ?? "" };
+        for (int i = parts.Count - 1; i >= 0 && parts[i] == ""; i--)
+            parts.RemoveAt(i);
+        SetStepParam(step, 2, string.Join("|", parts));
+    }
 
     /// <summary>
     /// 追加对话ID到步骤 param_1(& 分隔)
@@ -1270,14 +1501,14 @@ public class StoryEditorWindow : EditorWindow
             if (string.IsNullOrEmpty(story.nameCn))
                 warnings.Add($"故事[{story.id}] 中文名为空");
             foreach (var step in steps)
-                ValidateStep(story, step, errors);
+                ValidateStep(story, step, errors, warnings);
         }
     }
 
     /// <summary>
-    /// 校验单个步骤的参数合法性
+    /// 校验单个步骤的参数合法性(错误阻断,警告可继续)
     /// </summary>
-    private void ValidateStep(StoryRow story, StepRow step, List<string> errors)
+    private void ValidateStep(StoryRow story, StepRow step, List<string> errors, List<string> warnings)
     {
         string prefix = $"故事[{story.id}]步骤{step.stepOrder}";
         switch ((StoryStepTypeEnum)step.stepType)
@@ -1289,6 +1520,31 @@ public class StoryEditorWindow : EditorWindow
                 foreach (var id in talkIds)
                     if (allTalks.Find(t => t.id == id) == null)
                         errors.Add($"{prefix}: 对话 {id} 不存在");
+                //param_2=对齐[|高亮目标[|形状[|倍率]]] 组合校验(各段须在合法值表内;形状/倍率依赖高亮目标)
+                string alignPart = GetTalkParam2Segment(step.param2, 0);
+                string highlightPart = GetTalkParam2Segment(step.param2, 1);
+                string shapePart = GetTalkParam2Segment(step.param2, 2);
+                string scalePart = GetTalkParam2Segment(step.param2, 3);
+                if (!string.IsNullOrEmpty(alignPart) && System.Array.FindIndex(StoryDetailsInfoBean.TalkContentAligns, a => string.Equals(a, alignPart, System.StringComparison.OrdinalIgnoreCase)) < 0)
+                    errors.Add($"{prefix}: 对话框对齐方式非法 \"{alignPart}\"(可选: {string.Join("/", StoryDetailsInfoBean.TalkContentAligns)})");
+                if (!string.IsNullOrEmpty(step.param2) && step.param2.Split('|').Length > 4)
+                    errors.Add($"{prefix}: param_2 段数过多 \"{step.param2}\"(最多 对齐|高亮|形状|倍率 四段)");
+                if (!string.IsNullOrEmpty(step.param2) && step.param2.Contains("|") && string.IsNullOrEmpty(highlightPart))
+                    errors.Add($"{prefix}: 高亮标记为空(不需要高亮请去掉对齐后的 |)");
+                else if (!string.IsNullOrEmpty(highlightPart) && System.Array.FindIndex(StoryDetailsInfoBean.TalkHighlightMarkers, m => string.Equals(m, highlightPart, System.StringComparison.OrdinalIgnoreCase)) < 0)
+                    errors.Add($"{prefix}: 高亮目标非法 \"{highlightPart}\"(可选: {string.Join("/", StoryDetailsInfoBean.TalkHighlightMarkers)})");
+                if (!string.IsNullOrEmpty(shapePart) && System.Array.FindIndex(StoryDetailsInfoBean.TalkHighlightShapes, s => string.Equals(s, shapePart, System.StringComparison.OrdinalIgnoreCase)) < 0)
+                    errors.Add($"{prefix}: 高亮形状非法 \"{shapePart}\"(可选: {string.Join("/", StoryDetailsInfoBean.TalkHighlightShapes)})");
+                if (!string.IsNullOrEmpty(scalePart) && (!float.TryParse(scalePart, out float highlightScale) || highlightScale <= 0))
+                    errors.Add($"{prefix}: 高亮尺寸倍率非法 \"{scalePart}\"(须为正数)");
+                if (string.IsNullOrEmpty(highlightPart) && (!string.IsNullOrEmpty(shapePart) || !string.IsNullOrEmpty(scalePart)))
+                    errors.Add($"{prefix}: 配置了高亮形状/倍率但未设置高亮目标");
+                if (!string.IsNullOrEmpty(highlightPart) && story.sceneType != (int)StorySceneTypeEnum.Fight)
+                    warnings.Add($"{prefix}: 配置了战斗场景高亮目标,但故事演出场景不是战斗");
+                if (!string.IsNullOrEmpty(step.param3) && !float.TryParse(step.param3, out _))
+                    errors.Add($"{prefix}: 对话框偏移X非法 \"{step.param3}\"");
+                if (!string.IsNullOrEmpty(step.param4) && !float.TryParse(step.param4, out _))
+                    errors.Add($"{prefix}: 对话框偏移Y非法 \"{step.param4}\"");
                 break;
             case StoryStepTypeEnum.CameraMove:
                 if (System.Array.FindIndex(CameraMarkers, m => string.Equals(m, step.param1, System.StringComparison.OrdinalIgnoreCase)) < 0)

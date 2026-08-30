@@ -15,6 +15,7 @@ skill: unity-mcp-connection
 - **自动启动**：在未连接时自动启动MCP HTTP server
 - **手动引导**：当自动启动失败时，指导用户完成手动连接
 - **故障排查**：诊断连接问题并提供解决方案
+- **Play 验证不代理**：需要 Play 模式（▶ 运行游戏）验证的环节不由 MCP 代跑，改为告知用户手动 Play + 截图反馈（见 CLAUDE.md「Play 模式验证规则」）
 
 ## 关键文件
 
@@ -53,6 +54,7 @@ skill: unity-mcp-connection
 - 启动server前确认端口未被占用
 - 多项目环境下注意端口冲突
 - 始终在交互前确认连接状态，避免工具调用失败
+- **不代理 Play 运行验证**：`manage_editor` play/pause/stop、`batch_execute` 等仅作连接建立后的能力说明，禁止用它们替用户跑 Play 验证；验证必须由用户手动执行
 
 ## 关联 Skill
 

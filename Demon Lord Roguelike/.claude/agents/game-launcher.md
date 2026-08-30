@@ -39,11 +39,11 @@ watched_files:
    └── WorldHandler.EnterMainForBaseScene()
 ```
 
-> **LauncherGame.Launch() 初始化链补充**：在 `base.Launch()` 之后新增 `StoryHandler.Instance.InitData()`（故事演出系统初始化，仅真实游戏入口注册自动触发；测试场景 LauncherTest 不调用，故事演出测试改走 `StartForStoryTest` 直接 `PlayStory`）。
+> **LauncherGame.Launch() 初始化链补充**：在 `base.Launch()` 之后新增 `StoryHandler.Instance.InitData()`（故事演出系统初始化，真实游戏入口与 `LauncherTest.StartForNormalGame`「正常启动游戏」注册自动触发——**后者易漏调，漏调则进档后引导演出永不触发**；StoryTest 测试场景不调用，故事演出测试改走 `StartForStoryTest` 直接 `PlayStory`）。
 
 ### LauncherTest 测试入口补充
 
-- **故事演出测试**：`LauncherTest.StartForStoryTest(long storyId, int saveSlot = 0)`——saveSlot>0 时先读档（`UserDataService.ChangeSlot(saveSlot).Load(false)` → `SetUserData`，献祭测试同范式，全程内存模拟不写回真实存档；0=使用 InitTestData 伪造数据），再 `isTestSimulation=true`，按故事 scene_type 进场景（Base=EnterGameForBaseScene+一次性 World_EnterGameForBaseScene 回调；Fight=内置默认测试战斗数据 `BuildStoryTestFightData()` 进战斗+一次性 GameFightLogic_StartGame 回调；DoomCouncil=StartDoomCouncil(议案1000000001)+`WaitForDoomCouncilThenPlayStory` 轮询就绪），场景就绪后 `StoryHandler.Instance.PlayStory(storyId)`；一次性回调统一走 `RegisterStoryTestPlayCallback(eventName, storyId)`（重复调用先清旧回调）。详见 test-system skill。
+- **故事演出测试**：`LauncherTest.StartForStoryTest(long storyId, int saveSlot = 0)`——saveSlot>0 时先读档（`UserDataService.ChangeSlot(saveSlot).Load(false)` → `SetUserData`，献祭测试同范式，全程内存模拟不写回真实存档；0=使用 InitTestData 伪造数据），再 `isTestSimulation=true`，按故事 scene_type 进场景（Base=EnterGameForBaseScene+一次性 World_EnterGameForBaseScene 回调；Fight=内置默认测试战斗数据 `BuildStoryTestFightData()` 进战斗+一次性 UIFightMain_CardCreateAnimEnd 回调(卡片出现动画播完,与真实触发同钩点)；DoomCouncil=StartDoomCouncil(议案1000000001)+`WaitForDoomCouncilThenPlayStory` 轮询就绪），场景就绪后 `StoryHandler.Instance.PlayStory(storyId)`；一次性回调统一走 `RegisterStoryTestPlayCallback(eventName, storyId)`（重复调用先清旧回调）。详见 test-system skill。
 
 ### 关键文件
 
