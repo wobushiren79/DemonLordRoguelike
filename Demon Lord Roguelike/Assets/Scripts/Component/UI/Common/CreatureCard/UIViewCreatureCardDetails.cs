@@ -59,13 +59,13 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         SetCardIcon(creatureData);
         SetName(creatureData.creatureName);
 
-        //魔王:使用稀有度L配置显示、隐藏等级容器(ui_Level)与详情基础容器(ui_DetailsBase)
+        //魔王:使用魔王专属稀有度(DemonLord)配置显示(深黑+暗紫红配色)、隐藏等级容器(ui_Level)与详情基础容器(ui_DetailsBase)
         bool isDemonLord = creatureData.IsDemonLord();
         ui_Level.gameObject.SetActive(!isDemonLord);
         ui_DetailsBase.gameObject.SetActive(!isDemonLord);
 
         SetAttribute(isDemonLord);
-        SetRarity(isDemonLord ? (int)RarityEnum.L : creatureData.rarity);
+        SetRarity(isDemonLord ? (int)RarityEnum.DemonLord : creatureData.rarity);
         SetLevelData(creatureData.level, creatureData.levelExp);
 
         SetRelationship(creatureData.relationship);

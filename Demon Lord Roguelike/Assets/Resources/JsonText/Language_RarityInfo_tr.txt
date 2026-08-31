@@ -1,1 +1,1 @@
-[{"id":1,"content":"N"},{"id":2,"content":"R"},{"id":3,"content":"SR"},{"id":4,"content":"SSR"},{"id":5,"content":"UR"},{"id":6,"content":"L"}]
+[{"id":1,"content":"N"},{"id":2,"content":"R"},{"id":3,"content":"SR"},{"id":4,"content":"SSR"},{"id":5,"content":"UR"},{"id":6,"content":"L"},{"id":7,"content":"İblis Lordu"}]

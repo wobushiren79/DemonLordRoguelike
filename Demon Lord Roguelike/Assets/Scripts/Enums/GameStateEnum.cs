@@ -31,7 +31,9 @@ public enum RarityEnum
     SR = 3,
     SSR = 4,
     UR = 5,
-    L = 6
+    L = 6,
+    //魔王标记值(非真实档位):独占魔王配色与在图鉴/卡面显示。由 IsDemonLord() 判定,仅卡面展示按此取色,不参与稀有度排序/进阶/BUFF/CMP 等数值比较(那些仍按 rarity<=0 归 N 处理)。
+    DemonLord = 999
 }
 
 //卡片用途
