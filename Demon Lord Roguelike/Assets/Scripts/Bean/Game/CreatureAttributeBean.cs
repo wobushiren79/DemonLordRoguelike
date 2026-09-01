@@ -53,29 +53,30 @@ public class CreatureAttributeBean
 
     #region  增加属性点
     /// <summary>
-    /// 增加随机属性
+    /// 增加随机属性(创建时): 每点从属性池中随机一个属性,单点增量取 CreatureUtil.GetAttributePointAddValue(与固定加点口径一致: HP/DR每点+10, ATK/ASPD每点+1)。
+    /// <para>属性池来自 creatureInfo.GetShowAttributeList()(如烂泥/毒液史莱姆池内只有ATK);空/null池兜底默认 HP/DR/ATK/ASPD(与旧版硬编码行为一致)。</para>
     /// </summary>
-    /// <param name="addNum"></param>
-    public void AddRandomAttributeForCreate(int addNum)
+    /// <param name="addNum">加点数</param>
+    /// <param name="listAttributePool">随机属性池(creatureInfo.show_attribute 配置)</param>
+    public void AddRandomAttributeForCreate(int addNum, List<CreatureAttributeTypeEnum> listAttributePool)
     {
+        //空池兜底默认4属性
+        if (listAttributePool.IsNull())
+        {
+            listAttributePool = new List<CreatureAttributeTypeEnum>()
+            {
+                CreatureAttributeTypeEnum.HP,
+                CreatureAttributeTypeEnum.DR,
+                CreatureAttributeTypeEnum.ATK,
+                CreatureAttributeTypeEnum.ASPD,
+            };
+        }
         for (int i = 0; i < addNum; i++)
         {
-            int randomIndex = Random.Range(1, 5);
-            switch (randomIndex)
-            {
-                case 1:
-                    AddAttributeForCreate(CreatureAttributeTypeEnum.HP, 10);
-                    break;
-                case 2:
-                    AddAttributeForCreate(CreatureAttributeTypeEnum.DR, 10);
-                    break;
-                case 3:
-                    AddAttributeForCreate(CreatureAttributeTypeEnum.ATK, 1);
-                    break;
-                case 4:
-                    AddAttributeForCreate(CreatureAttributeTypeEnum.ASPD, 1);
-                    break;
-            }
+            int randomIndex = Random.Range(0, listAttributePool.Count);
+            CreatureAttributeTypeEnum attributeType = listAttributePool[randomIndex];
+            float pointAddValue = CreatureUtil.GetAttributePointAddValue(attributeType);
+            AddAttributeForCreate(attributeType, pointAddValue);
         }
     }
 

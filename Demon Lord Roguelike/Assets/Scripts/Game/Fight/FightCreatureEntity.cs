@@ -490,12 +490,25 @@ public partial class FightCreatureEntity
     }
 
     /// <summary>
-    /// 清理动画
+    /// 入池前复位表现层（回收受击变色Tween、身体颜色还原为白、Idle姿态同步重建网格），保证复用出场为中性状态
     /// </summary>
-    public void ClearAnim()
+    public void ResetForRecycle()
     {
         if (creatureSkeletionAnimation == null)
             return;
+        //回收受击变色动画：先置空字段再 Complete(触发OnComplete还原颜色)/Kill 兜底，避免残留Tween持有池化实体在复用后继续改色
+        var tweenForUnderAttackColor = animForUnderAttackColor;
+        animForUnderAttackColor = null;
+        if (tweenForUnderAttackColor != null)
+        {
+            if (tweenForUnderAttackColor.IsPlaying())
+            {
+                tweenForUnderAttackColor.Complete();
+            }
+            tweenForUnderAttackColor.Kill();
+        }
+        //身体颜色还原为纯白：死亡时BUFF变色/受击红闪残留在 skeleton.color 与已烘焙顶点色里，不复位则复用出场仍带色
+        SetBodyColor(Color.white);
         //再清除动画
         //creatureSkeletionAnimation.AnimationState.ClearTracks();;
         var trackEntry = PlayAnim(SpineAnimationStateEnum.Idle, true, 0);
@@ -505,11 +518,6 @@ public partial class FightCreatureEntity
         if (creatureSkeletionAnimation.Renderer is SkeletonRenderer skeletonRenderer)
         {
             skeletonRenderer.LateUpdateImplementation(true);
-        }
-        //清理数据
-        if (animForUnderAttackColor != null && animForUnderAttackColor.IsPlaying())
-        {
-            animForUnderAttackColor.Complete();
         }
     }
 

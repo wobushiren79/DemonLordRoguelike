@@ -196,6 +196,7 @@ public partial class CreatureBean
     /// <summary>
     /// 创建生物时随机属性加点(孕育扭蛋/新建存档初始魔物共用)
     /// <para>总点数取自 UserLimmitBean.gashaponRandomAttributeNum, 配置异常(小于等于0)时兜底不加点。</para>
+    /// <para>随机池按 creatureInfo.show_attribute 配置过滤(如烂泥/毒液史莱姆只会随机到ATK);creatureInfo 为 null(纯对话NPC)时底层兜底默认池。</para>
     /// </summary>
     /// <param name="userData">用户数据(新建存档时 GameDataHandler 尚未 SetUserData, 需显式传入新建的 UserDataBean)</param>
     public void RandomAttributeForCreate(UserDataBean userData)
@@ -205,7 +206,7 @@ public partial class CreatureBean
         int randomAttributeNum = userData.GetUserLimmitData().gashaponRandomAttributeNum;
         if (randomAttributeNum <= 0)
             return;
-        creatureAttribute.AddRandomAttributeForCreate(randomAttributeNum);
+        creatureAttribute.AddRandomAttributeForCreate(randomAttributeNum, creatureInfo?.GetShowAttributeList());
     }
 
     /// <summary>

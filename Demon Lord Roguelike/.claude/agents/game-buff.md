@@ -32,7 +32,8 @@ BuffBaseEntity                              # 抽象基类
 │   │   ├── BuffEntityAttributeScaleByDefenseCount  # 通用功能类：属性%随"当前场上存活防守魔物数N"缩放，率=(N-1)×每只率(曾用于馈赠「都是兄弟」，现役无配置、可复用)
 │   │   ├── BuffEntityAttributeScaleByKillCount     # 通用功能类(兼 IBuffSingleTarget)：选取时随机锁定一只防守生物，属性%随"该只自身累计击杀敌人数"缩放，率=该只killNum×每只率(曾用于馈赠「杀红了眼」，现役无配置、可复用)
 │   │   └── BuffEntityAttributeDecayByAllyCount     # 通用功能类：属性%随"当前场上存活防守魔物数N"反向衰减，率=基础率-每友方衰减率×(N-1)、下限0(trigger_value复用为衰减百分点:50=每友方-50%,因扭蛋isRandom整数化0.5会归零)；现役用于R稀有度BUFF「独行者A-D」(11001300001~04,各+ATK/ASPD/DR/HP 300%)
-│   └── BuffEntityAttributeMulti            # 多属性BUFF：一次随机率同时改多个属性(class_entity_data "ATK:1|HP:-1"=ATK+率/HP等量负率)，实现"一增益、对应属性等比减益"；扭蛋R级双刃(狂战士/快枪手/铜墙铁壁/大块头 A/B/C)。纯属性BUFF走烘焙路径
+│   ├── BuffEntityAttributeMulti            # 多属性BUFF：一次随机率同时改多个属性(class_entity_data "ATK:1|HP:-1"=ATK+率/HP等量负率)，实现"一增益、对应属性等比减益"；扭蛋R级双刃(狂战士/快枪手/铜墙铁壁/大块头 A/B/C)。纯属性BUFF走烘焙路径
+│   └── BuffEntityAttributeDurationByApplierATK  # 动态时长属性BUFF：持续时间=trigger_time+施加者实时ATK×0.1(常量DurationAddPerATK)，重写GetTriggerTimeForUpdate，离场/死亡沿用最后快照；烂泥史莱姆3003「粘液减速」1000200001(400001触碰挂MSPD-40%，基础1.1s+ATK加成)
 ├── BuffEntityBaseHPChange                  # 周期改血（按目标最大HP%）：value+目标最大HP×rate，正回负扣；子类Area=范围版；持续回血12000100001
 ├── BuffEntityBaseHPChangeByApplierATK      # 周期掉血（按施加者实时ATK）：伤害=施加者当前ATK×|rate|+value，施加者不在场/死亡跳过本次；火骷髅法师「烧伤」1000500001（攻击模式201003命中50%挂，3秒×3次，rate=-0.5）、毒液史莱姆3004「中毒」1000400001（400002触碰100%挂，1秒×10次，rate=-0.2=史莱姆ATK20%/跳）
 ├── BuffEntityInstant                       # 瞬时触发（SetData后isValid=false）

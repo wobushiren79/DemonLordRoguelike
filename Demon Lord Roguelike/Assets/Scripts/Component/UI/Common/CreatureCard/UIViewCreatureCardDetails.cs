@@ -64,7 +64,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         ui_Level.gameObject.SetActive(!isDemonLord);
         ui_DetailsBase.gameObject.SetActive(!isDemonLord);
 
-        SetAttribute(isDemonLord);
+        SetAttribute();
         SetRarity(isDemonLord ? (int)RarityEnum.DemonLord : creatureData.rarity);
         SetLevelData(creatureData.level, creatureData.levelExp);
 
@@ -325,41 +325,50 @@ public partial class UIViewCreatureCardDetails : BaseUIView
 
     /// <summary>
     /// 设置属性显示
-    /// <para>非魔王：生命/防御/攻击/攻速；魔王：攻击/移速/魔力/魔力回复（生命、防御项隐藏，魔力、魔力回复项显示；加血/加护甲回复项固定不显示）。</para>
-    /// <para>回复型生物(攻击方式为恢复类)：隐藏攻击力条目，按回复子类改显示治疗量条目(AddLife，RegainHP系)或回甲量条目(AddDef，RegainDR系)，值=当前ATK×攻击模式伤害加成倍率。</para>
+    /// <para>按 creatureInfo.show_attribute 配置开关槽位：HP→生命/DR→防御/ATK→攻击/ASPD→Speed槽(攻速)/MSPD→Speed槽(移速)/MP→魔力/MPF→MPR槽(魔力回复)；未配置的槽位隐藏。</para>
+    /// <para>Speed 槽为 ASPD/MSPD 共用(同一生物不应同时配置两者,同时配置时优先显示攻速ASPD)；MPR(魔力回复%)无对应槽位,配置后忽略。</para>
+    /// <para>回复型生物(攻击方式为恢复类)：配置含 ATK 时攻击槽改显示治疗量条目(AddLife，RegainHP系)或回甲量条目(AddDef，RegainDR系)，值=当前ATK×攻击模式伤害加成倍率。</para>
+    /// <para>魔王同样走配置(其物种行 id 1-7 配 4,5,2,11 = ATK/MSPD/MP/MPF),无特判分支。</para>
     /// <para>详情面板按「含深渊馈赠全局池」口径取属性(includeAbyssalBlessing=true)，与场上实际数值一致(如随机一只攻击力翻倍)。</para>
     /// </summary>
-    /// <param name="isDemonLord">是否为魔王本体</param>
-    public void SetAttribute(bool isDemonLord)
+    public void SetAttribute()
     {
-        //生命/防御仅非魔王显示，魔力/魔力回复仅魔王显示；攻击与Speed项两者共用
-        ui_ViewCreatureCardItemAttribute_Life.gameObject.SetActive(!isDemonLord);
-        ui_ViewCreatureCardItemAttribute_Def.gameObject.SetActive(!isDemonLord);
-        ui_ViewCreatureCardItemAttribute_MP.gameObject.SetActive(isDemonLord);
-        ui_ViewCreatureCardItemAttribute_MPR.gameObject.SetActive(isDemonLord);
-        //加血/加护甲条目先统一隐藏：魔王固定不显示，非魔王由下方按回复子类再开（防详情面板池化复用残留）
-        ui_ViewCreatureCardItemAttribute_AddLife.gameObject.SetActive(false);
-        ui_ViewCreatureCardItemAttribute_AddDef.gameObject.SetActive(false);
-        if (isDemonLord)
-        {
-            //Speed项在魔王处复用显示移速MSPD（MSPD与ASPD共用一套Speed UI），MPR项显示魔力回复MPF；Atk槽显式置开防池化复用后空白
-            ui_ViewCreatureCardItemAttribute_Atk.gameObject.SetActive(true);
-            ui_AttributeItemText_Atk.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true)}";
-            ui_AttributeItemText_Speed.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MSPD, true)}";
-            ui_AttributeItemText_MP.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MP, true)}";
-            ui_AttributeItemText_MPR.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MPF, true)}";
-        }
-        else
-        {
-            //回复型：隐藏攻击力条目，按回复子类改显示治疗量(AddLife)或回甲量(AddDef)条目；非回复型正常显示攻击力
-            bool isRegainHP = creatureData.creatureInfo.IsRegainHPAttackMode();
-            bool isRegainDR = creatureData.creatureInfo.IsRegainDRAttackMode();
-            ui_ViewCreatureCardItemAttribute_Atk.gameObject.SetActive(!isRegainHP && !isRegainDR);
-            ui_ViewCreatureCardItemAttribute_AddLife.gameObject.SetActive(isRegainHP);
-            ui_ViewCreatureCardItemAttribute_AddDef.gameObject.SetActive(isRegainDR);
-            //Speed项在非魔王处显示攻速ASPD
+        //按 creatureInfo.show_attribute 配置开关槽位(未配置的属性隐藏),8 槽全部显式设置激活态(防详情面板池化复用残留)
+        var listShowAttribute = creatureData.creatureInfo.GetShowAttributeList();
+        //回复型:配置含 ATK 时攻击槽映射为治疗量(AddLife,RegainHP系)/回甲量(AddDef,RegainDR系);非回复型正常显示攻击槽
+        bool isRegainHP = creatureData.creatureInfo.IsRegainHPAttackMode();
+        bool isRegainDR = creatureData.creatureInfo.IsRegainDRAttackMode();
+        bool isShowHP = listShowAttribute.Contains(CreatureAttributeTypeEnum.HP);
+        bool isShowDR = listShowAttribute.Contains(CreatureAttributeTypeEnum.DR);
+        bool isShowATK = listShowAttribute.Contains(CreatureAttributeTypeEnum.ATK);
+        bool isShowASPD = listShowAttribute.Contains(CreatureAttributeTypeEnum.ASPD);
+        bool isShowMSPD = listShowAttribute.Contains(CreatureAttributeTypeEnum.MSPD);
+        bool isShowMP = listShowAttribute.Contains(CreatureAttributeTypeEnum.MP);
+        bool isShowMPF = listShowAttribute.Contains(CreatureAttributeTypeEnum.MPF);
+        ui_ViewCreatureCardItemAttribute_Life.gameObject.SetActive(isShowHP);
+        ui_ViewCreatureCardItemAttribute_Def.gameObject.SetActive(isShowDR);
+        ui_ViewCreatureCardItemAttribute_MP.gameObject.SetActive(isShowMP);
+        ui_ViewCreatureCardItemAttribute_MPR.gameObject.SetActive(isShowMPF);
+        ui_ViewCreatureCardItemAttribute_Atk.gameObject.SetActive(isShowATK && !isRegainHP && !isRegainDR);
+        ui_ViewCreatureCardItemAttribute_AddLife.gameObject.SetActive(isShowATK && isRegainHP);
+        ui_ViewCreatureCardItemAttribute_AddDef.gameObject.SetActive(isShowATK && isRegainDR);
+        //Speed槽为 ASPD/MSPD 共用(同一生物不应同时配置两者,同时配置时优先显示攻速)
+        ui_ViewCreatureCardItemAttribute_Speed.gameObject.SetActive(isShowASPD || isShowMSPD);
+        //文本只填可见槽位
+        if (isShowHP)
             ui_AttributeItemText_Life.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.HP, true)}";
+        if (isShowDR)
             ui_AttributeItemText_Def.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.DR, true)}";
+        if (isShowMP)
+            ui_AttributeItemText_MP.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MP, true)}";
+        if (isShowMPF)
+            ui_AttributeItemText_MPR.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MPF, true)}";
+        if (isShowASPD)
+            ui_AttributeItemText_Speed.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD, true)}";
+        else if (isShowMSPD)
+            ui_AttributeItemText_Speed.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MSPD, true)}";
+        if (isShowATK)
+        {
             if (isRegainHP || isRegainDR)
             {
                 //回复量=当前ATK×攻击模式伤害加成倍率(配置0=按1倍)，与战斗实际恢复量口径一致
@@ -379,7 +388,6 @@ public partial class UIViewCreatureCardDetails : BaseUIView
             {
                 ui_AttributeItemText_Atk.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true)}";
             }
-            ui_AttributeItemText_Speed.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD, true)}";
         }
     }
 

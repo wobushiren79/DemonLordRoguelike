@@ -16,6 +16,8 @@ public partial class CreatureInfoBean
     protected Vector3 shieldEffectPosition;
     //生物buff
     protected List<BuffBean> listCreatureBuff;
+    //展示属性列表(详情面板显示/献祭加点/创建随机加点池,懒解析缓存)
+    protected List<CreatureAttributeTypeEnum> listShowAttribute;
 
     public CreatureTypeEnum GetCreatureType()
     {
@@ -89,6 +91,43 @@ public partial class CreatureInfoBean
             }
         }
         return listEquipItemsType;
+    }
+
+    /// <summary>
+    /// 获取展示属性列表(同一配置同时控制三处: 卡片详情面板显示项 / 献祭加点界面可加项 / 创建随机加点池)。
+    /// <para>配置 show_attribute 为逗号分隔的 CreatureAttributeTypeEnum 枚举值(如 "1,3,4,6"=HP/DR/ATK/ASPD,"4"=仅攻击力)。</para>
+    /// <para>空配置/解析失败/解析结果为空时统一兜底默认 HP/DR/ATK/ASPD,与旧版硬编码行为一致(旧Mod无此键同样兼容)。</para>
+    /// <para>回复型生物仍配置 HP/DR/ATK/ASPD,显示层按回复子类把 ATK 槽映射为治疗量/回甲量(见 UIViewCreatureCardDetails.SetAttribute)。</para>
+    /// </summary>
+    public List<CreatureAttributeTypeEnum> GetShowAttributeList()
+    {
+        if (listShowAttribute == null)
+        {
+            if (!show_attribute.IsNull())
+            {
+                //SplitForListEnum 底层 Enum.Parse 遇非法 token 会抛异常,此处捕获后回退默认
+                try
+                {
+                    listShowAttribute = show_attribute.SplitForListEnum<CreatureAttributeTypeEnum>(',');
+                }
+                catch (Exception e)
+                {
+                    LogUtil.LogWarning($"生物 id:{id} show_attribute 配置解析失败:\"{show_attribute}\",回退默认属性列表。{e.Message}");
+                    listShowAttribute = null;
+                }
+            }
+            if (listShowAttribute == null || listShowAttribute.Count == 0)
+            {
+                listShowAttribute = new List<CreatureAttributeTypeEnum>()
+                {
+                    CreatureAttributeTypeEnum.HP,
+                    CreatureAttributeTypeEnum.DR,
+                    CreatureAttributeTypeEnum.ATK,
+                    CreatureAttributeTypeEnum.ASPD,
+                };
+            }
+        }
+        return listShowAttribute;
     }
 
     /// <summary>

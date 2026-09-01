@@ -30,7 +30,7 @@ BuffInfoBean      - BUFF配置数据（来自BuffInfo配置表，含 class_entit
 ### BUFF 实体类型体系
 
 ```
-BuffBaseEntity                              # 抽象基类（事件回调 + ShowBuffEffect + CheckIsPre）
+BuffBaseEntity                              # 抽象基类（事件回调 + ShowBuffEffect + CheckIsPre；UpdateBuffTime 的时长门槛走虚方法 GetTriggerTimeForUpdate，默认=配置 trigger_time，子类可重写做动态时长）
 ├── BuffEntityAttribute                     # 属性BUFF（实现 IAttributeModifierSource）
 │   ├── BuffEntityAttributeAttackTime       # 改攻击前摇/动画时间的属性BUFF（独立通道）
 │   │   └── BuffEntityAttributeAttackTimeSingleTarget  # 单体定向攻速BUFF：随机锁定一只防守生物攻速翻倍(攻击时间×0.5)，实现 IBuffSingleTarget（曾用于馈赠「急性子」，现役无配置、机制留存）
@@ -39,7 +39,8 @@ BuffBaseEntity                              # 抽象基类（事件回调 + Show
 │   │   ├── BuffEntityAttributeScaleByDefenseCount  # 通用功能类：属性%随"当前场上存活防守魔物数N"缩放，率=(N-1)×每只率(曾用于馈赠「都是兄弟」，现役无配置、可被其它同功能馈赠复用)
 │   │   ├── BuffEntityAttributeScaleByKillCount     # 通用功能类(兼 IBuffSingleTarget)：选取时随机锁定一只防守生物，属性%随"该只自身累计击杀敌人数"缩放，率=该只killNum×每只率(曾用于馈赠「杀红了眼」，现役无配置、可被其它同功能馈赠复用)
 │   │   └── BuffEntityAttributeDecayByAllyCount     # 通用功能类：属性%随"当前场上存活防守魔物数N"反向衰减，率=基础率-每友方衰减率×(N-1)、下限0(trigger_value复用为衰减百分点:50=每友方-50%,因扭蛋isRandom整数化0.5会归零)；现役用于R稀有度BUFF「独行者A-D」(11001300001~04,各+ATK/ASPD/DR/HP 300%)
-│   └── BuffEntityAttributeMulti            # 多属性BUFF：一次随机率(trigger_value_rate)同时改多个属性；class_entity_data="属性:倍率|属性:倍率"(如 "ATK:1|HP:-1"=ATK+率、HP等量负率)，实现"一属性增益、对应属性等比减益"。扭蛋R级双刃BUFF(狂战士/快枪手/铜墙铁壁/大块头 各A/B/C)。与单属性同为"纯属性BUFF"(IsBuffEntityAttributeOnly)，走属性烘焙路径
+│   ├── BuffEntityAttributeMulti            # 多属性BUFF：一次随机率(trigger_value_rate)同时改多个属性；class_entity_data="属性:倍率|属性:倍率"(如 "ATK:1|HP:-1"=ATK+率、HP等量负率)，实现"一属性增益、对应属性等比减益"。扭蛋R级双刃BUFF(狂战士/快枪手/铜墙铁壁/大块头 各A/B/C)。与单属性同为"纯属性BUFF"(IsBuffEntityAttributeOnly)，走属性烘焙路径
+│   └── BuffEntityAttributeDurationByApplierATK  # 动态时长属性BUFF：实际持续时间=配置trigger_time+施加者实时ATK×0.1(常量DurationAddPerATK)，重写 GetTriggerTimeForUpdate，施加者在场实时刷新快照、离场/死亡沿用最后快照；属性修正部分仍走基类管线不变。烂泥史莱姆3003「粘液减速」1000200001（攻击模式400001触碰挂MSPD-40%，基础1.1s+ATK加成）
 ├── BuffEntityBaseHPChange                  # 周期改血BUFF（按目标最大生命结算）：每 trigger_time 触发、共 trigger_num 次，HP变化=value+目标最大HP×rate（正回血/负扣血，扣血走UnderAttack管线）；子类 BuffEntityBaseHPChangeArea=范围版；持续回血12000100001
 ├── BuffEntityBaseHPChangeByApplierATK      # 周期掉血BUFF（按施加者实时攻击力结算）：每次触发伤害=施加者当前ATK×|rate|+value，施加者不在场/已死亡跳过本次，走UnderAttack管线；骷髅魔法师(火)「烧伤」1000500001（攻击模式201003命中50%概率挂，3秒×3次，rate=-0.5）、毒液史莱姆3004「中毒」1000400001（攻击模式400002触碰100%挂，1秒×10次，rate=-0.2=史莱姆实时ATK的20%/跳）
 ├── BuffEntityInstant                       # 瞬时BUFF（SetData中立即触发并isValid=false）

@@ -127,6 +127,8 @@ public class GashaponMachineLogic : BaseGameLogic
 
             GashaponItemBean itemGashapon = new GashaponItemBean(randomCreatureData.creatureId, randomCreatureData);
             listGashaponData.Add(itemGashapon);
+            //派发扭蛋抽出事件(成就统计按职业累计抽出数量)
+            EventHandler.Instance.TriggerEvent(EventsInfo.Achievement_GashaponDraw, randomCreatureData.creatureId);
 
             var creatureInfo = itemGashapon.creatureData.creatureInfo;
             var caretureModelInfo = CreatureModelCfg.GetItemData(creatureInfo.model_id);

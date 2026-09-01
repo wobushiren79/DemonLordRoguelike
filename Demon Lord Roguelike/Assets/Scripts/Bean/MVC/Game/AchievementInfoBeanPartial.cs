@@ -10,6 +10,7 @@ public enum AchievementTypeEnum
     PlayTime = 2,       //游玩时间(单位:秒)
     ConquerComplete = 3,//征服模式通关(按世界×难度: target_world=世界id, target_extra=难度)
     ConquerWorldClear = 4,//征服某世界-按【已通不同难度数】(target_world=世界id, 进度=该世界通关次数≥1的难度种类数)
+    GashaponCreature = 5, //扭蛋抽出指定职业生物(target_extra=职业生物id, 进度=UserAchievementBean.gashaponCreatureDrawCount 累计抽出数)
 }
 
 /// <summary>

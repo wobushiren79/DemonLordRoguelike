@@ -86,5 +86,7 @@ public static class EventsInfo
     public const string Achievement_CreatureKill = "Achievement_CreatureKill";
     /// <summary>征服模式完整通关 参数: int difficultyLevel</summary>
     public const string Achievement_ConquerComplete = "Achievement_ConquerComplete";
+    /// <summary>扭蛋抽出生物(生成蛋入账时触发) 参数: long creatureId</summary>
+    public const string Achievement_GashaponDraw = "Achievement_GashaponDraw";
     #endregion
 }

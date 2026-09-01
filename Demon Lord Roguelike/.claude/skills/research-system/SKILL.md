@@ -178,9 +178,11 @@ World1ConquerCompleteCount2:1                          // 世界1难度2通关�
 World1ConquerCompleteCount1:10&World1ConquerCompleteCount10:4   // 两条同时满足
 ```
 
-**条件枚举**：`ResearchPreConditionEnum`（在 `Assets/Scripts/Enums/GameStateEnum.cs`，紧随 `ResearchInfoTypeEnum`）。现有 10 个条件 `World1ConquerCompleteCount1~10` = 剑与魔法（世界1）征服模式难度1~10通关次数（数值=要求的通关次数下限，数据由成就统计 `UserAchievementBean.GetConquerCompleteCount` 提供）。
+**条件枚举**：`ResearchPreConditionEnum`（在 `Assets/Scripts/Enums/GameStateEnum.cs`，紧随 `ResearchInfoTypeEnum`）。现有两类条件：
+- `World1ConquerCompleteCount1~10`（值 1~10）= 剑与魔法（世界1）征服模式难度1~10通关次数（数值=要求的通关次数下限，数据由成就统计 `UserAchievementBean.GetConquerCompleteCount` 提供）
+- `GashaponCreatureDrawCount1001~7004`（30 个，**枚举值=职业生物id**）= 该职业扭蛋累计抽出次数（数值=要求的抽出数量下限，数据由 `UserAchievementBean.GetGashaponCreatureDrawCount` 提供；典型用法：职业独立扭蛋 x1 研究填 `GashaponCreatureDrawCount{职业id}:99`）
 
-**判定链路**：`ResearchInfoBeanPartial.GetPreDataConditions()`（拆分走通用扩展 `StringExtension.SplitForDictionaryEnumLong<T>`：缺省值补1、无法识别的条目回收到错误列表不抛异常；缓存为 `Dictionary<ResearchPreConditionEnum, long>`，出错记 `isPreDataParseError`）→ `CheckPreDataIsMeet()` → 静态 `CheckPreDataConditionIsMeet(userData, condition, value)`（按枚举区间分发求值，世界1通关次数=枚举值偏移+1 得难度）。
+**判定链路**：`ResearchInfoBeanPartial.GetPreDataConditions()`（拆分走通用扩展 `StringExtension.SplitForDictionaryEnumLong<T>`：缺省值补1、无法识别的条目回收到错误列表不抛异常；缓存为 `Dictionary<ResearchPreConditionEnum, long>`，出错记 `isPreDataParseError`）→ `CheckPreDataIsMeet()` → 静态 `CheckPreDataConditionIsMeet(userData, condition, value)`（按枚举区间分发求值，世界1通关次数=枚举值偏移+1 得难度；职业抽出次数=枚举值本身即职业 id 直接读统计）。
 
 **新增条件类型**：在 `ResearchPreConditionEnum` 追加枚举值（同类连续区间便于范围分发）→ 在 `CheckPreDataConditionIsMeet` 补求值分支 → Excel 该列填 `枚举名:数值`。
 
@@ -319,6 +321,17 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 - **解锁后** `UILineupManager` 显示 RenameBtn（`OpenUI` 里 `CheckIsUnlock(UnlockEnum.LineupRename)` 控显隐，悬停气泡 UIText 30008），点击开 `UIDialogRename` 给当前选中阵容改名；自定义名存 `UserDataBean.dicLineupName`(阵容序号→名字)，显示名走 `UserDataBean.GetLineupShowName`(自定义名优先、未改名回退默认「阵容 {序号}」UIText 30005；UILineupManager 页签与 UIDialogPortalDetails 出战阵容选择区共用)；提交空名=清除改名恢复默认。
 - 落表同其他节点：`excel_research_info`(id=201000001, `name`=同id) + `excel_unlock_info`(id=201000001, `unlock_type=0`) + 多语言 `ResearchInfo`(id=201000001, cn「阵容重命名」) 与 `UIText`(id=30008, cn「重命名当前阵容」按钮气泡)。
 - 无衍生数值方法（纯开关），UI 直接用 `CheckIsUnlock(UnlockEnum.LineupRename)` 门控。
+
+### 魔物分支(300X1NNND 段) — 职业独立扭蛋研究（30 职业 × 3 档 = 90 节点）
+
+每个可抽职业（30 种：7 族各 4~5 个）有 x1/x5/x10 三个「职业独立扭蛋」解锁研究（`research_type=3` 魔物分支），解锁后扭蛋商店出现对应「必中该职业」的独立扭蛋商品（见 gashapon-system SKILL「职业独立扭蛋」）：
+
+- **id 编码**：研究 id = unlock_id = `300X1NNND`（X=种族 1~7，NNN=职业序号 001~005=职业 id 个位两位，D=档位 1=x1/2=x5/3=x10）。例：`300110011`=人类战士(1001)x1 研究、`300410053`=魅魔盾之魅魔(4005)x10 研究。与现有 300X00xxx 段（种族/职业/x5/x10/转生/装备奖励）不冲突。
+- **前置链**：x1 研究 `pre_unlock_ids`=该族「孕育x10」研究（`300X00102`）**且** `pre_data`=`GashaponCreatureDrawCount{职业id}:99`（该职业扭蛋累计抽出 99 只才显示，混合抽抽出也计数）；x5 pre=x1 研究；x10 pre=x5 研究。
+- **消耗**：`pay_crystal` = 该族 x10 研究消耗 ×2（x1）/×5（x5）/×10（x10）。各族基数 100（史莱姆族 1000），即普通族 200/500/1000、史莱姆族 2000/5000/10000。
+- **图标**：与该职业「解锁职业」研究（300X0000N）同图标（ui_research_N，Research 图集，如人类战士 x1/x5/x10 研究均用 300100001 的 `ui_research_43`）。
+- **坐标**：以各族 x10 节点为锚点（人800,600/骷髅0,600/史莱姆-800,600/魅魔-2400,600/牛头人2400,600/哥布林-1600,600/兽人1600,600），每职业一列横向居中排开（间距 160），x1/x5/x10 三档纵向在锚点上方 +160/+320/+480。
+- **落表**：`excel_research_info`（90 行）+ `excel_unlock_info`（90 行，`unlock_type=0`）+ 多语言 `ResearchInfo` 工作表（90 行，textId=unlock_id，cn「孕育{职业名}x{档}」）。90 节点均为纯数据驱动，**无需新增 UnlockEnum**（消费方是扭蛋商品 `pre_unlock_ids`）。
 
 ### 世界分支(1003_10_W_nn 段) — 征服难度研究 + 各难度「加快进攻节奏(Quick)」研究 + 各难度「2倍速游戏」研究
 

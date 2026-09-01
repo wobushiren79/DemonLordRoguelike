@@ -38,6 +38,13 @@ public class UserAchievementBean
     /// </summary>
     public Dictionary<long, Dictionary<int, long>> conquerCompleteCountByWorldLevel = new Dictionary<long, Dictionary<int, long>>();
 
+    /// <summary>
+    /// 扭蛋累计抽出数量(按职业生物id分别统计, 混合抽与职业独立抽共用)
+    /// Key: 职业生物id(对应 CreatureInfoBean.id, 1001~7005)
+    /// Value: 累计抽出数量
+    /// </summary>
+    public Dictionary<long, long> gashaponCreatureDrawCount = new Dictionary<long, long>();
+
     #endregion
 
     #region 成就已领取等级
@@ -172,6 +179,52 @@ public class UserAchievementBean
             {
                 total += item.Value;
             }
+        }
+        return total;
+    }
+
+    #endregion
+
+    #region 统计数据-扭蛋抽取
+
+    /// <summary>
+    /// 增加扭蛋抽出数量(按职业生物id)
+    /// </summary>
+    /// <param name="creatureId">职业生物id</param>
+    /// <param name="delta">增量</param>
+    public void AddGashaponCreatureDrawCount(long creatureId, long delta = 1)
+    {
+        if (delta <= 0) return;
+        if (gashaponCreatureDrawCount.TryGetValue(creatureId, out long curr))
+        {
+            gashaponCreatureDrawCount[creatureId] = curr + delta;
+        }
+        else
+        {
+            gashaponCreatureDrawCount[creatureId] = delta;
+        }
+    }
+
+    /// <summary>
+    /// 获取指定职业生物的扭蛋累计抽出数量
+    /// </summary>
+    /// <param name="creatureId">职业生物id</param>
+    public long GetGashaponCreatureDrawCount(long creatureId)
+    {
+        return gashaponCreatureDrawCount.TryGetValue(creatureId, out long count) ? count : 0;
+    }
+
+    /// <summary>
+    /// 获取指定种族的扭蛋累计抽出数量(该族所有职业合计; 种族id=生物id千位段1~7)
+    /// </summary>
+    /// <param name="raceId">种族id(1人类/2骷髅/3史莱姆/4魅魔/5牛头人/6哥布林/7兽人)</param>
+    public long GetGashaponRaceDrawCount(long raceId)
+    {
+        long total = 0;
+        foreach (var item in gashaponCreatureDrawCount)
+        {
+            if (item.Key / 1000 == raceId)
+                total += item.Value;
         }
         return total;
     }

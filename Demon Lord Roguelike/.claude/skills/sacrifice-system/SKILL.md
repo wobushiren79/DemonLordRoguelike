@@ -72,7 +72,7 @@ CreatureSacrificeLogic (BaseGameLogic)   献祭玩法逻辑
     │      - 失败: 数据已在动画前结算落盘,仅触发 Fail + EndGame() 返回 UICreatureManager
     ▼
 UICreatureAddAttribute (BaseUIComponent)   升级加点界面(成功后弹出)
-    │  SetData(targetCreature, totalPoint, onConfirm); 4 个 UIViewCreatureAddAttributeItem(HP/DR/ATK/ASPD) 左减右加
+    │  SetData(targetCreature, totalPoint, onConfirm); 4 个 UIViewCreatureAddAttributeItem(HP/DR/ATK/ASPD) 按 creatureInfo.show_attribute 配置显隐后左减右加
     │  单点增量 CreatureUtil.GetAttributePointAddValue(HP/DR +10, ATK/ASPD +1); 实时作用属性并 RefreshCard
     │  注: Item.RefreshNum 仅显示已分配「点数」(allocatedCount, 如 +1)，与单点实际增量解耦，各属性步进器统一显示点数
     │  ui_LimmitText 显示「剩余点数:{0}」(多语言 textId 61005, string.Format 填入 remainPoint); 剩余必须全部分配完(无 exit 退出按钮)
@@ -134,7 +134,7 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 | `CanUpLevel()` | 未满级 且 `levelExp >= 下一级 level_exp`（未满级下决定升级按钮是否置灰/能否发起献祭；满级另由 `IsMaxLevel()` 隐藏按钮） |
 | `UpLevelForSacrifice()` | 经验清 0(不保留溢出余量) → `level++` → **返回本次可分配加点数**(`LevelInfo.attribute_point`，当前全等级配置为 5，`<=0` 兜底1)；不再自动加属性 |
 
-> **升级属性成长（手动加点）**：升级**不再自动加属性**。`UpLevelForSacrifice()` 升级后返回下一级 `LevelInfo.attribute_point`(当前全等级配置为 5) 个可分配点数，由玩家在 `UICreatureAddAttribute` 界面手动分配到 HP/护甲/攻击/攻速。单点增量见 `CreatureUtil.GetAttributePointAddValue`（HP/DR 每点 +10、ATK/ASPD 每点 +1），写入 `creatureAttribute.dicAttributeLevelUp`。要调整每级点数改 Excel `attribute_point` 列；要调单点增量改 `GetAttributePointAddValue`。
+> **升级属性成长（手动加点）**：升级**不再自动加属性**。`UpLevelForSacrifice()` 升级后返回下一级 `LevelInfo.attribute_point`(当前全等级配置为 5) 个可分配点数，由玩家在 `UICreatureAddAttribute` 界面手动分配到 HP/护甲/攻击/攻速（**可加点属性种类按 `creatureInfo.show_attribute` 配置显隐**，默认 `1,3,4,6` 四项全显，如史莱姆 3003/3004 只显 ATK 一项；同一列还控制详情面板显示与创建随机加点池，见 creature-system「show_attribute」）。单点增量见 `CreatureUtil.GetAttributePointAddValue`（HP/DR 每点 +10、ATK/ASPD 每点 +1），写入 `creatureAttribute.dicAttributeLevelUp`。要调整每级点数改 Excel `attribute_point` 列；要调单点增量改 `GetAttributePointAddValue`。
 
 ### 属性体系
 - `CreatureAttributeBean`（`Assets/Scripts/Bean/Game/CreatureAttributeBean.cs`）：`dicAttributeCreate`(创建随机) + `dicAttributeLevelUp`(升级加点)，两个字典均为 **public** 以保证 Newtonsoft 存档（私有字段默认不序列化）
@@ -227,7 +227,7 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
 - **每级获得点数**：改 Excel `excel_level_info` 的 `attribute_point` 列（唯一真实源，当前全等级配置为 5），再 `ExcelEditorWindow` 导出 JSON。`UpLevelForSacrifice()` 读该列返回点数（`<=0` 回退 1）。
 - **单点增量**（每点加多少 HP/护甲/攻击/攻速）：改 `CreatureUtil.GetAttributePointAddValue(type)`。
 - **加点界面**：`UICreatureAddAttribute`（`Assets/Scripts/Component/UI/Game/CreatureAddAttribute/`）。`SetData(creature, totalPoint, onConfirm)`；`OnItemChangeForAttribute` 校验剩余点数后增减并实时 `RefreshCard`；`RefreshLimmit` 显示「剩余点数:{0}」(textId 61005)；**已去掉 exit 退出按钮，改由 `ui_BtnConfirm` 确认**：`OnClickForConfirm` 剩余>0 时 ToastHintText(textId 61004)拦截，剩余=0 时 `ShowDialogNormal` 弹二次确认弹窗(content=textId 61006「确认按当前方案分配属性点吗？…」)，确认弹窗提交后才触发 `onConfirm`(=`SaveAndEndGame`) 保存。
-- **可加点的属性种类**：在预制体里增删 `UIViewCreatureAddAttributeItem` 项并在 `InitItems()` 里对应 `SetData(attributeType, ...)`。
+- **可加点的属性种类**：改 Excel `excel_creature_info` 的 `show_attribute` 列（逗号分隔枚举值，`InitItems()` 按它显隐 4 个固定项）；新增 HP/DR/ATK/ASPD 以外的可加点属性才需要在预制体里增删 `UIViewCreatureAddAttributeItem` 项并在 `InitItems()` 里对应 `InitItem(item, attributeType, list)`（当前配置含 4 项以外属性会 LogWarning 忽略）。
 
 ### 调祭品基础数量 / 等级经验
 改 Excel `excel_level_info` 的 `sacrifice_num` / `level_exp` 列（唯一真实源），再 `ExcelEditorWindow` 导出 JSON。新增等级行按 id 升序插入。

@@ -36,7 +36,7 @@ BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播
 | `attackerCDMG` | CDMG | 暴击伤害倍率（基础1.5=+50%，经BUFF可调；`ClearData()` 重置为 1.5） |
 | `attackerSpeedRate` | ASPD | 弹道飞行速度倍率：ASPD 按 0~100 线性插值映射 1~`BaseAttackMode.SpeedRateASPDMax`(当前3倍)；无攻击者时保持默认 1，`ClearData()` 重置为 1 |
 
-> **恢复/治疗型判断**：`AttackModeInfoBeanPartial.IsRegainType()` 按 `class_name` 是否以 `AttackModeRegain` 开头判断该攻击方式是否为回复类（覆盖 `AttackModeRegainHP`/`AttackModeRegainDR` 及未来恢复系子类，自动命中）；子类细分 `IsRegainHPType()`（加血系，配置 id=500001）/`IsRegainDRType()`（加护甲系，id=500002）。`CreatureInfoBeanPartial.IsRegainAttackMode()`/`IsRegainHPAttackMode()`/`IsRegainDRAttackMode()` 按生物的 `attack_mode` 查表判断某生物是否为回复型/加血型/加护甲型。卡片详情等 UI 据此对回复型隐藏攻击力、按子类改显示治疗量(AddLife)或回甲量(AddDef)条目（值 = 当前ATK×`GetDamageAddRate()`，与战斗实际恢复量口径一致），魔王两项均不显示。
+> **恢复/治疗型判断**：`AttackModeInfoBeanPartial.IsRegainType()` 按 `class_name` 是否以 `AttackModeRegain` 开头判断该攻击方式是否为回复类（覆盖 `AttackModeRegainHP`/`AttackModeRegainDR` 及未来恢复系子类，自动命中）；子类细分 `IsRegainHPType()`（加血系，配置 id=500001）/`IsRegainDRType()`（加护甲系，id=500002）。`CreatureInfoBeanPartial.IsRegainAttackMode()`/`IsRegainHPAttackMode()`/`IsRegainDRAttackMode()` 按生物的 `attack_mode` 查表判断某生物是否为回复型/加血型/加护甲型。卡片详情等 UI 据此对回复型把攻击力槽改显示治疗量(AddLife)或回甲量(AddDef)条目（值 = 当前ATK×`GetDamageAddRate()`，与战斗实际恢复量口径一致），魔王两项均不显示；注意回复型槽位显隐还受 `creatureInfo.show_attribute` 配置门控（配置不含 ATK 时治疗量/回甲量槽也不显示，详见 creature-card-system「卡片详情属性显示配置化」）。
 
 ### BaseAttackMode 关键状态字段
 

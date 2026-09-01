@@ -23,9 +23,9 @@ watched_files:
   - `target_values`：各级目标值，如击杀 `"10,100,1000,10000,100000,1000000"`（顺序即等级 1..N）
   - `reward_crystals`：各级奖励魔晶，与 target_values 一一对应，如 `"10,50,200,500,1000,5000"`
 - **描述用 name+details 两列（标准模式）+ 占位符模板**（不再每级一条）：`name[language]`/`details[language_1]` 两列**指向同一文本id**（同一条多语言数据），`name`→`content`(名字，如"生物猎手")、`details`→`content_1`(模板，含 `{Name}` 占位符)。`GetLevelDescription(级)` 取 `details_language`（框架自动生成的 `content_1` 属性，**优先用 `_language` 不手写 GetTextById**），用 `TextHandler.GetTextReplace` 把占位符替换为该级**格式化后的目标值**（时长类换算小时）。例：模板 `"累计击杀 {Name} 只生物"` + 目标100 → `"累计击杀 100 只生物"`。详见 [localization-system] 的 GetTextReplace 与"一个ID承载 content/content_1"。
-- **一行一个成就**：类型1(击杀)1行(6级)；类型2(时长)1行(10级)；类型3(征服)按 `难度` 各 1 行(每行 1/10/100 次 = 3级)，共 10 行；类型4(征服某世界·按已通不同难度数)1行(10级)。总计 **13 行 = 13 张卡**。
+- **一行一个成就**：类型1(击杀)1行(6级)；类型2(时长)1行(10级)；类型3(征服)**合并为 1 行**(全难度合计 1/10/100/1000/10000 次 = 5级)；类型4(征服某世界·按已通不同难度数)1行(10级)；类型5(扭蛋种族抽出)7 行(每种族 1 行 5 级)。总计 **11 行 = 11 张卡**。
 - **当前激活等级** = "已领取等级数"（0基索引）：玩家只能领取这一级，领取后 +1，天然逐级、无法跳级。
-- **UI 卡片数据源** = `AchievementManager.GetAllAchievementsSorted`（12 行直接展示）；卡片内部用 `GetClaimedLevelCount` 解析当前激活等级展示目标/进度/奖励。
+- **UI 卡片数据源** = `AchievementManager.GetAllAchievementsSorted`（11 行直接展示）；类型5 种族孕育成就再经 `RefreshAchievementList` 按种族解锁过滤；卡片内部用 `GetClaimedLevelCount` 解析当前激活等级展示目标/进度/奖励。
 - **存档**：`UserAchievementBean.achievementLevelClaimed: Dictionary<long,int>` = 成就id → 已领取等级数。整族完成 = 已领取数 ≥ 等级总数。
 
 ### 解锁前置
@@ -44,12 +44,13 @@ AchievementHandler (BaseHandler)
     │  GetClaimedLevelCount / IsCompleted / TryUnlockNextLevel
     │
 AchievementManager (BaseManager)
-    │  缓存排序后的成就列表(12 行)
+    │  缓存排序后的成就列表(11 行)
     │
 UserAchievementBean (用户存档)
     │  achievementLevelClaimed: Dictionary<long, int>  // 成就id → 已领取等级数(0..等级总数)
     │  totalKillCount: long
     │  conquerCompleteCountByWorldLevel: Dictionary<long, Dictionary<int, long>>  // 外层worldId→内层难度→次数
+    │  gashaponCreatureDrawCount: Dictionary<long, long>  // 职业生物id(1001~7005) → 扭蛋累计抽出数(类型5成就按种族汇总消费: GetGashaponRaceDrawCount)
     │
 AchievementInfoBean (配置, 单行多级)
     │  achievement_type / target_extra / target_world / icon_res / sort / name
@@ -64,8 +65,9 @@ AchievementInfoBean (配置, 单行多级)
 ### AchievementTypeEnum
 - `Kill = 1` 击杀生物（累计）
 - `PlayTime = 2` 游玩时间（单位秒，UserData.gameTime）
-- `ConquerComplete = 3` 征服模式通关（按**世界×难度**区分：target_world=世界id，target_extra=难度等级 1~10）
+- `ConquerComplete = 3` 征服模式通关（target_world=世界id；**target_extra=0 表示该世界全难度合计**（难度合并成就，进度=`GetConquerCompleteCountByWorld`），target_extra=难度等级 1~10 则按该难度（进度=`GetConquerCompleteCount(world,难度)`）——现配置仅保留合计版，分难度行已删除）
 - `ConquerWorldClear = 4` 征服某世界·按【已通不同难度数】（target_world=世界id；进度=该世界通关次数≥1 的难度种类数，每通一个**新**难度进度+1，与难度顺序无关；target_extra 不用）。判定走 `GetClearedDifficultyCountByWorld(worldId)`
+- `GashaponCreature = 5` 扭蛋抽出指定**种族**生物（**target_extra=种族id 1~7**；进度=`UserAchievementBean.GetGashaponRaceDrawCount(种族)`=该族所有职业抽出合计，混合抽与职业独立抽均计数；7 种族各 1 行 5 级=1/10/100/1000/10000 只，奖励 20/100/200/1000/2000 魔晶，图标统一 `ui_achievement_45,Achievement`）。**显示门控：成就卡片仅在对应种族解锁（研究 300X00000）后显示**（过滤在 `UIAchievement.RefreshAchievementList`）；统计 Tab 仍按**职业**逐行（30 行不合并），门控按**职业解锁**（`creatureInfo.unlock_id`=300X0000N）
 
 ### AchievementStateEnum（针对"当前激活等级"）
 - `NotReached = 0` 当前激活等级未达成（显示灰色蒙版）
@@ -84,8 +86,9 @@ NotReached --[打开UI时按统计数据实时计算]--> Reached --[领取该级
 ID 编码规则（每个可升级成就一行，取原一级 id 作行 id）：
 - `100001` 击杀类（1 行 6 级：target_values=10/100/1000/10000/100000/1000000）
 - `200001` 时长类（1 行 10 级：target_values=3600/18000/36000/72000/180000/360000/720000/1080000/1440000/1800000 秒 = 1/5/10/20/50/100/200/300/400/500 小时）
-- `30X001` 征服通关（每难度 1 行 3 级：target_values=1/10/100 次；X=难度 1~10，世界id=1）。新增世界时另起 id 段（如世界2用 `32X001` 等避免冲突）。
-- `400001` 征服某世界·按已通不同难度数（类型4，1 行 10 级：target_values=1,2,…,10；target_world=1 剑与魔法，文本 id=4004001）。与那 10 条类型3 难度成就**并存**。
+- `30X001` 征服通关~~按难度 10 行~~ **已合并为 1 行 `301001`**（target_extra=0=全难度合计，5 级：target_values=`1,10,100,1000,10000`，reward=`100,500,1000,5000,10000`，文本 id=4003101）。新增世界时另起 id 段（如世界2用 `32X001` 等避免冲突）。
+- `400001` 征服某世界·按已通不同难度数（类型4，1 行 10 级：target_values=1,2,…,10；target_world=1 剑与魔法，文本 id=4004001）。
+- `5X000` 扭蛋种族抽出（类型5，**id = 50000+种族id×1000**，`51000`=人类…`57000`=兽人）：7 种族各 1 行 5 级（target_values=`1,10,100,1000,10000`，reward_crystals=`20,100,200,1000,2000`，target_extra=种族id，图标 `ui_achievement_45,Achievement`，文本 id=4005001~4005007 按种族顺序）
 
 > **target_world 列**：类型3专用，0=不限定世界。读取走 `info.GetTargetWorldId()`。
 
@@ -97,7 +100,8 @@ ID 编码规则（每个可升级成就一行，取原一级 id 作行 id）：
 
 ### 文本 ID 段
 - `4000001~4000017` 通用 UI 文本（在 `excel_ui_text`/`Language_UIText_*`；其中 `4000016`=`Lv.{0}/{1}`(等级改用图标格子后卡片已不再用此文本)，`4000017`=已完成/Completed）
-- 每个成就**一条** AchievementInfo 文本（该行 `name`/`details` 同指此 id）：`content`=名字，`content_1`=描述模板（含 `{Name}` 占位符）。当前 13 条：击杀 `4001001`、时长 `4002001`、征服难度1~10 `4003101/4003201/.../4003901/4003001`、征服某世界按已通难度数 `4004001`(剑与魔法征服者，模板 `在剑与魔法通关 {Name} 种不同难度`)
+- 每个成就**一条** AchievementInfo 文本（该行 `name`/`details` 同指此 id）：`content`=名字，`content_1`=描述模板（含 `{Name}` 占位符）。当前 11 条：击杀 `4001001`、时长 `4002001`、征服通关合计 `4003101`(征服者·剑与魔法，模板 `在剑与魔法世界累计通关 {Name} 次征服模式`)、征服某世界按已通难度数 `4004001`、扭蛋种族抽出 `4005001~4005007`（7 种族，content=「{种族}孕育者」，content_1=「通过孕育累计获得 {Name} 只{种族}魔物」）。难度分档旧文本 4003201~4003901/4003001 与职业旧文本 4005008~4005030 已删除
+- 统计 Tab 职业孕育行：模板 `UIText 4000021`（cn「孕育获得 {0}」，`{0}`=职业名 `creatureInfo.name_language`）；`BuildStatisticList` 末尾遍历扭蛋池职业（CreatureInfo id 1001~7005 且 unlock_id>0）逐行展示 `GetGashaponCreatureDrawCount`，**仅已解锁职业（`creatureInfo.unlock_id` 职业研究 300X0000N）显示**
 
 > ⚠️ **成就文本源 = `excel_language` 工作簿的 `AchievementInfo` 工作表**（列 `id/content_cn/content_en/content_1_cn/content_1_en/remark`），导出生成 `Language_AchievementInfo_cn/en.txt`。**改文本必须改这个 Excel 工作表**——只改 `.txt` 会在下次导出时被覆盖丢失。同理各配置表的多语言都在 `excel_language` 的同名工作表里。
 
@@ -109,8 +113,9 @@ ID 编码规则（每个可升级成就一行，取原一级 id 作行 id）：
 |------|------|----------|
 | `Achievement_CreatureKill` | `bool isAttacker` | `AIIntentCreatureDead.IntentEntering` |
 | `Achievement_ConquerComplete` | `long worldId, int difficultyLevel` | `GameFightLogicConquer.ActionForUIRewardSelectEnd` |
+| `Achievement_GashaponDraw` | `long creatureId` | `GashaponMachineLogic.InitGashaponMachineData`（生成蛋入账循环内，混合抽/职业独立抽共用） |
 
-> 这两个事件**仅用于累加统计数据**（`AddKillCount` / `AddConquerCompleteCount`），不触发任何达成判定与 UI 刷新。
+> 这三个事件**仅用于累加统计数据**（`AddKillCount` / `AddConquerCompleteCount` / `AddGashaponCreatureDrawCount`），不触发任何达成判定与 UI 刷新。
 >
 > 已移除的事件：`Achievement_StateChange` / `Achievement_ProgressChange`（高频空转）、`Achievement_GameTimeChange`（曾用于驱动每秒达成判定，改为打开 UI 时实时计算后已无消费者）。
 >
@@ -144,9 +149,11 @@ achievementData.GetClaimedLevelCount(id);      // 已领取等级数
 achievementData.SetClaimedLevelCount(id, n);   // 仅领奖成功时调用
 achievementData.GetTotalKillCount();
 achievementData.GetConquerCompleteCount(worldId, difficultyLevel);  // 按世界×难度
-achievementData.GetConquerCompleteCountByWorld(worldId);            // 某世界合计
+achievementData.GetConquerCompleteCountByWorld(worldId);            // 某世界合计(类型3合计版进度)
 achievementData.GetClearedDifficultyCountByWorld(worldId);          // 某世界已通不同难度数(类型4 ConquerWorldClear 进度)
 achievementData.GetTotalConquerCompleteCount();                     // 全世界合计
+achievementData.GetGashaponCreatureDrawCount(creatureId);           // 某职业扭蛋累计抽出数(研究 pre_data 条件用)
+achievementData.GetGashaponRaceDrawCount(raceId);                   // 某种族扭蛋累计抽出数(族内职业合计, 类型5成就进度)
 ```
 
 ## UI 结构

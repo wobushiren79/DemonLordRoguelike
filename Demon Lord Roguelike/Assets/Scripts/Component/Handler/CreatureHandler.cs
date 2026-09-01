@@ -413,8 +413,8 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     {
         if (targetEntity == null)
             return;
-        //清理动画
-        targetEntity.ClearAnim();
+        //入池前复位表现层（动画/身体颜色/网格）
+        targetEntity.ResetForRecycle();
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         //删掉对应的BUFF数据
         BuffHandler.Instance.RemoveFightCreatureBuffs(targetEntity.fightCreatureData.creatureData.creatureUUId);

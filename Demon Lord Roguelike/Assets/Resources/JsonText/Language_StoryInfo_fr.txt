@@ -1,1 +1,1 @@
-[{"id":1},{"id":2},{"id":3}]
+[{"id":1,"content":"Guide : Base"},{"id":2,"content":"Guide : Premier combat"},{"id":3,"content":"Guide : Premier cristal"}]

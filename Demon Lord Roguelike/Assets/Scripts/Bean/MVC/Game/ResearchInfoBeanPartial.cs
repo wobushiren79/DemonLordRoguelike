@@ -67,6 +67,12 @@ public partial class ResearchInfoBean
             int difficultyLevel = (int)(condition - ResearchPreConditionEnum.World1ConquerCompleteCount1) + 1;
             return userData.GetUserAchievementData().GetConquerCompleteCount(1, difficultyLevel) >= value;
         }
+        //扭蛋职业抽出次数：职业生物id = 枚举值本身(枚举值=职业id), 要求累计抽出数量 >= value
+        if (condition >= ResearchPreConditionEnum.GashaponCreatureDrawCount1001 && condition <= ResearchPreConditionEnum.GashaponCreatureDrawCount7004)
+        {
+            long creatureId = (long)condition;
+            return userData.GetUserAchievementData().GetGashaponCreatureDrawCount(creatureId) >= value;
+        }
         LogUtil.LogError($"未处理的研究前置条件类型:{condition}");
         return false;
     }

@@ -23,6 +23,7 @@ public partial class AchievementHandler : BaseHandler<AchievementHandler, Achiev
         //注册事件(仅用于累加统计数据)
         EventHandler.Instance.RegisterEvent<bool>(EventsInfo.Achievement_CreatureKill, OnEventCreatureKill);
         EventHandler.Instance.RegisterEvent<long, int>(EventsInfo.Achievement_ConquerComplete, OnEventConquerComplete);
+        EventHandler.Instance.RegisterEvent<long>(EventsInfo.Achievement_GashaponDraw, OnEventGashaponDraw);
     }
 
     #endregion
@@ -58,6 +59,19 @@ public partial class AchievementHandler : BaseHandler<AchievementHandler, Achiev
         achievementData.AddConquerCompleteCount(worldId, difficultyLevel, 1);
     }
 
+    /// <summary>
+    /// 扭蛋抽出生物回调
+    /// </summary>
+    /// <param name="creatureId">抽出的职业生物id</param>
+    private void OnEventGashaponDraw(long creatureId)
+    {
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        if (userData == null) return;
+        var achievementData = userData.GetUserAchievementData();
+        //运行期只累加统计数据, 不做达成判定
+        achievementData.AddGashaponCreatureDrawCount(creatureId, 1);
+    }
+
     #endregion
 
     #region 成就进度/统计
@@ -78,10 +92,16 @@ public partial class AchievementHandler : BaseHandler<AchievementHandler, Achiev
             case AchievementTypeEnum.PlayTime:
                 return userData.gameTime;
             case AchievementTypeEnum.ConquerComplete:
+                //target_extra=0 表示该世界全难度合计(合并难度成就), 否则按世界×难度
+                if (info.target_extra == 0)
+                    return achievementData.GetConquerCompleteCountByWorld(info.GetTargetWorldId());
                 return achievementData.GetConquerCompleteCount(info.GetTargetWorldId(), info.target_extra);
             case AchievementTypeEnum.ConquerWorldClear:
                 //进度 = 该世界【已通关的不同难度个数】(通关次数≥1的难度种类数); 各级目标值为 1..N 种
                 return achievementData.GetClearedDifficultyCountByWorld(info.GetTargetWorldId());
+            case AchievementTypeEnum.GashaponCreature:
+                //进度 = 指定种族(target_extra=种族id1~7)扭蛋累计抽出数量(该族所有职业合计)
+                return achievementData.GetGashaponRaceDrawCount(info.target_extra);
             default:
                 return 0;
         }

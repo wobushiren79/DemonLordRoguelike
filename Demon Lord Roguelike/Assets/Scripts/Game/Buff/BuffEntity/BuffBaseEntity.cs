@@ -57,7 +57,7 @@ public class BuffBaseEntity
     {
         buffEntityData.timeUpdateTotal += buffTime;
         buffEntityData.timeUpdate += buffTime;
-        float triggerTime = buffEntityData.GetTriggerTime();
+        float triggerTime = GetTriggerTimeForUpdate();
         int triggerNum = buffEntityData.GetTriggerNum();
         //周期性触发，有次数限制
         if (triggerNum > 0)
@@ -85,6 +85,13 @@ public class BuffBaseEntity
                 TriggerBuffPeriodic(buffEntityData);
             }
         }
+    }
+    /// <summary>
+    /// 获取本帧计时判定用的触发时间门槛；默认取配置 trigger_time，子类可重写实现动态时长（如按施加者ATK加成的BUFF持续时间）
+    /// </summary>
+    protected virtual float GetTriggerTimeForUpdate()
+    {
+        return buffEntityData.GetTriggerTime();
     }
     #endregion
 

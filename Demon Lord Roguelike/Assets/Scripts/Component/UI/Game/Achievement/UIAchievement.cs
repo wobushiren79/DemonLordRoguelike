@@ -33,6 +33,14 @@ public partial class UIAchievement : BaseUIComponent, IRadioGroupCallBack
 
     #region 生命周期
 
+    public override void Awake()
+    {
+        base.Awake();
+        //cell刷新回调仅注册一次(放在Refresh里会随每次刷新重复累积, 导致同一cell被回调多次)
+        if (ui_ScrollAchievement != null) ui_ScrollAchievement.AddCellListener(OnAchievementCellUpdate);
+        if (ui_ScrollStatistic != null) ui_ScrollStatistic.AddCellListener(OnStatisticCellUpdate);
+    }
+
     public override void OpenUI()
     {
         base.OpenUI();
@@ -137,14 +145,28 @@ public partial class UIAchievement : BaseUIComponent, IRadioGroupCallBack
     /// <summary>
     /// 刷新成就列表
     /// 每个可升级成就一张卡(单行多级), 由卡片内部解析当前激活等级。
+    /// 类型5(种族孕育)成就需解锁对应种族(研究 300X00000)后才显示, 未解锁隐藏。
     /// </summary>
     public void RefreshAchievementList()
     {
         if (ui_ScrollAchievement == null) return;
         _listAchievement = AchievementHandler.Instance.manager.GetAllAchievementsSorted();
+        //过滤未解锁种族的孕育成就(类型5, target_extra=种族id)
+        var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+        List<AchievementInfoBean> listFiltered = new List<AchievementInfoBean>(_listAchievement.Count);
+        for (int i = 0; i < _listAchievement.Count; i++)
+        {
+            var info = _listAchievement[i];
+            if (info.GetAchievementType() == AchievementTypeEnum.GashaponCreature
+                && !userUnlock.CheckIsUnlock(300000000 + info.target_extra * 100000))
+            {
+                continue;
+            }
+            listFiltered.Add(info);
+        }
+        _listAchievement = listFiltered;
         ui_ScrollAchievement.ClearAllCell();
         ui_ScrollAchievement.SetCellCount(_listAchievement.Count);
-        ui_ScrollAchievement.AddCellListener(OnAchievementCellUpdate);
     }
 
     /// <summary>
@@ -237,6 +259,27 @@ public partial class UIAchievement : BaseUIComponent, IRadioGroupCallBack
                 }
             }
         }
+
+        //按职业分别统计扭蛋抽出数量(仅展示已解锁职业: 职业解锁研究 300X0000N, 即 CreatureInfo.unlock_id)
+        var allCreature = CreatureInfoCfg.GetAllArrayData();
+        if (allCreature != null)
+        {
+            string gashaponLabelTemplate = TextHandler.Instance.GetTextById(4000021);
+            var userUnlockStat = userData.GetUserUnlockData();
+            for (int c = 0; c < allCreature.Length; c++)
+            {
+                var creatureInfo = allCreature[c];
+                if (creatureInfo.id < 1001 || creatureInfo.id > 7005 || creatureInfo.unlock_id <= 0)
+                    continue;
+                if (!userUnlockStat.CheckIsUnlock(creatureInfo.unlock_id))
+                    continue;
+                list.Add(new AchievementStatisticItemBean()
+                {
+                    label = string.Format(gashaponLabelTemplate, creatureInfo.name_language),
+                    value = achievementData.GetGashaponCreatureDrawCount(creatureInfo.id).ToString(),
+                });
+            }
+        }
         return list;
     }
 
@@ -249,7 +292,6 @@ public partial class UIAchievement : BaseUIComponent, IRadioGroupCallBack
         _listStatistic = BuildStatisticList();
         ui_ScrollStatistic.ClearAllCell();
         ui_ScrollStatistic.SetCellCount(_listStatistic.Count);
-        ui_ScrollStatistic.AddCellListener(OnStatisticCellUpdate);
     }
 
     /// <summary>

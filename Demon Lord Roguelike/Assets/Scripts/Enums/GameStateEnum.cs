@@ -188,6 +188,69 @@ public enum ResearchPreConditionEnum
     /// <summary>剑与魔法征服模式难度10通关次数</summary>
     World1ConquerCompleteCount10 = 10,
     #endregion
+
+    #region 扭蛋职业抽出次数(枚举值=职业生物id, 数值=要求的累计抽出数量下限; 数据由 UserAchievementBean.gashaponCreatureDrawCount 提供)
+    /// <summary>人类战士 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount1001 = 1001,
+    /// <summary>人类弓箭手 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount1002 = 1002,
+    /// <summary>人类魔法师(火) 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount1003 = 1003,
+    /// <summary>人类魔法师(冰) 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount1004 = 1004,
+    /// <summary>骷髅战士 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount2001 = 2001,
+    /// <summary>骷髅投手 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount2002 = 2002,
+    /// <summary>骷髅魔法师(火) 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount2003 = 2003,
+    /// <summary>骷髅魔法师(冰) 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount2004 = 2004,
+    /// <summary>守护史莱姆 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount3001 = 3001,
+    /// <summary>自爆史莱姆 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount3002 = 3002,
+    /// <summary>烂泥史莱姆 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount3003 = 3003,
+    /// <summary>毒液史莱姆 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount3004 = 3004,
+    /// <summary>战之魅魔 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount4001 = 4001,
+    /// <summary>愈之魅魔 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount4002 = 4002,
+    /// <summary>惑之魅魔 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount4003 = 4003,
+    /// <summary>奥之魅魔 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount4004 = 4004,
+    /// <summary>盾之魅魔 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount4005 = 4005,
+    /// <summary>牛头人战士 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount5001 = 5001,
+    /// <summary>牛头人投手 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount5002 = 5002,
+    /// <summary>牛头人魔法师(火) 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount5003 = 5003,
+    /// <summary>牛头人魔法师(冰) 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount5004 = 5004,
+    /// <summary>哥布林刺客 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount6001 = 6001,
+    /// <summary>哥布林弓箭手 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount6002 = 6002,
+    /// <summary>哥布林敢死队 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount6003 = 6003,
+    /// <summary>哥布林魔法师(火) 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount6004 = 6004,
+    /// <summary>哥布林魔法师(冰) 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount6005 = 6005,
+    /// <summary>兽人战士 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount7001 = 7001,
+    /// <summary>兽人投手 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount7002 = 7002,
+    /// <summary>兽人魔法师(火) 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount7003 = 7003,
+    /// <summary>兽人魔法师(冰) 扭蛋累计抽出数量</summary>
+    GashaponCreatureDrawCount7004 = 7004,
+    #endregion
 }
 
 

@@ -14,7 +14,7 @@ watched_files:
 ## 职责范围
 
 ### 框架层 UI 组件
-- **ScrollGrid** - 滚动网格（Horizontal/Vertical/Cell/BaseContent）
+- **ScrollGrid** - 滚动网格（Horizontal/Vertical/Cell/BaseContent）。`SetCellCount` 重建时「保持位置」（offsetMin 按旧 offsetMax 换算滚动偏移不变），重建后已主动补一次 `OnValueChange` 复用校正——否则 content 位置不变时 ScrollRect 不再派发 onValueChanged，新 cell 全停在顶部导致视野处列表空白（UIAchievement 切页签空白即此坑）；`AddCellListener` 应在 Awake 只注册一次，放 Refresh 里会随每次刷新重复累积
 - **SelectView / SelectColorView** - 选择器 / 颜色选择器
 - **CartogramBarView / CartogramBarForItem / CartogramBaseView** - 柱状图组件
 - **ProgressView** - 进度条

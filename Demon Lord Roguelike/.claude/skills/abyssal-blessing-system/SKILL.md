@@ -470,7 +470,7 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 
 ### 卡片详情 popup 的属性数值同步
 
-战斗中点开魔物卡牌的详情 popup(`UIViewCreatureCardDetails`)展示属性时（非魔王 HP/DR/ATK/ASPD，魔王 ATK/MSPD/MP/MPF），必须用 **`CreatureBean.GetAttribute(类型, includeAbyssalBlessing: true)`** 才会反映深渊馈赠（含单体定向翻倍）；漏传 `true` 会导致详情面板数值与场上实际值不符（历史典型症状：单体定向翻倍馈赠生效后场上伤害翻倍但详情攻击力没变）。
+战斗中点开魔物卡牌的详情 popup(`UIViewCreatureCardDetails`)展示属性时（所有生物按 `show_attribute` 配置显示——普通生物默认 HP/DR/ATK/ASPD，魔王物种行配 4,5,2,11=ATK/MSPD/MP/MPF），必须用 **`CreatureBean.GetAttribute(类型, includeAbyssalBlessing: true)`** 才会反映深渊馈赠（含单体定向翻倍）；漏传 `true` 会导致详情面板数值与场上实际值不符（历史典型症状：单体定向翻倍馈赠生效后场上伤害翻倍但详情攻击力没变）。
 
 - `GetAttribute(true)` 内部经 `CreatureBean.GetAbyssalBlessingChangeAttribute`，该方法对全局池每个 BUFF 先用 **`AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature(buff, this, creatureFightType=FightDefense)`** 做与战斗管线一致的三连过滤，再 `ChangeData` 叠加——故单体定向馈赠**只对被锁定 UUID 的那只魔物翻倍**，不会无差别加到所有卡（缺此过滤即为该 bug 根因）。
 - 战斗实体走的是另一条链路(`FightCreatureBean.RefreshBaseAttribute` 经 `ModifierPipeline`)，两条链路对单个翻倍馈赠结果一致；非战斗场景馈赠池已 `ClearAbyssalBlessing` 清空，详情面板传 `true` 无副作用。

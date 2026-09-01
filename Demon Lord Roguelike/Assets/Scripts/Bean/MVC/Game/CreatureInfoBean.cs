@@ -193,6 +193,10 @@ public partial class CreatureInfoBean : BaseBean
 	[JsonIgnore]
 	public string details_language { get => _details_language.Get(() => TextHandler.Instance.GetTextById(CreatureInfoCfg.fileName, details, 1)); set => _details_language.Set(value); }
 	private LanguageCache _details_language;
+	/// <summary>
+	///详情面板显示/献祭加点/创建随机加点属性(逗号分隔枚举值:1HP 3DR 4ATK 6ASPD;空=默认1,3,4,6)
+	/// </summary>
+	public string show_attribute;
 }
 public partial class CreatureInfoCfg : BaseCfg<long, CreatureInfoBean>
 {

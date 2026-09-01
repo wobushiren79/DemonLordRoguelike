@@ -1,1 +1,1 @@
-[{"id":1},{"id":2},{"id":3}]
+[{"id":1,"content":"Samouczek: Baza"},{"id":2,"content":"Samouczek: Pierwsza bitwa"},{"id":3,"content":"Samouczek: Pierwszy kryształ"}]

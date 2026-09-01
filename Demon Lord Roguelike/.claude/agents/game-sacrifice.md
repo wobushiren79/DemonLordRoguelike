@@ -56,7 +56,7 @@ UICreatureManager(升级按钮) → GameHandler.StartCreatureSacrifice
 ### 升级加点（手动分配）
 - 献祭**升级成功后弹出 `UICreatureAddAttribute`** 让玩家手动加点(HP/护甲每点+10、攻击/攻速每点+1)，单点增量取 `CreatureUtil.GetAttributePointAddValue(type)`
 - `OnSacrificeAnimEnd` 成功分支：`attributePoint = SettleSacrificeData(true)`(升级,只改内存**不落盘**) → 有点数则 `OpenAddAttributeUI(target, point)`（落盘延迟到加点确认弹窗 `SaveAndEndGame`，加点界面强退则不写盘、祭品恢复）；无点数走 `SaveAndEndGame`(落盘)
-- `UICreatureAddAttribute`：`SetData(creature, totalPoint, onConfirm)` → 4 个 `UIViewCreatureAddAttributeItem`(HP/DR/ATK/ASPD) 左减右加，实时作用属性并 `RefreshCard`，`RefreshLimmit` 用 `ui_LimmitText` 显示「剩余点数:{0}」(多语言 textId 61005)；**已去掉 exit 退出按钮，改 `ui_BtnConfirm` 确认**：`OnClickForConfirm` 剩余>0 弹 ToastHintText(textId 61004)拦截，剩余=0 弹 `ShowDialogNormal` 二次确认弹窗(textId 61006)，确认后才 `onConfirm`(=SaveAndEndGame)
+- `UICreatureAddAttribute`：`SetData(creature, totalPoint, onConfirm)` → 4 个 `UIViewCreatureAddAttributeItem`(HP/DR/ATK/ASPD) 按 `creatureInfo.show_attribute` 配置显隐（`InitItems`，如史莱姆 3003/3004 只显示 ATK 一项；配置含 4 项以外属性告警忽略，全隐藏兜底强制显示 HP 项）左减右加，实时作用属性并 `RefreshCard`，`RefreshLimmit` 用 `ui_LimmitText` 显示「剩余点数:{0}」(多语言 textId 61005)；**已去掉 exit 退出按钮，改 `ui_BtnConfirm` 确认**：`OnClickForConfirm` 剩余>0 弹 ToastHintText(textId 61004)拦截，剩余=0 弹 `ShowDialogNormal` 二次确认弹窗(textId 61006)，确认后才 `onConfirm`(=SaveAndEndGame)
 - `UIViewCreatureAddAttributeItem.RefreshNum`：步进器数字仅显示已分配「点数」(`allocatedCount`，如 +1)，与单点实际增量(HP/DR +10、ATK/ASPD +1)解耦，各属性统一显示点数
 
 ### UI
