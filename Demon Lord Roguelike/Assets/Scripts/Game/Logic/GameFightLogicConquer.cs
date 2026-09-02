@@ -192,9 +192,10 @@ public class GameFightLogicConquer : GameFightLogic
             rewardSelectData.InitDataForReward(baseReward, fightDataForConquer.fightTypeConquerInfo, fightDataForConquer.rewardAddItemNum);
             //深渊馈赠「再来一瓶」：增加可选择奖励次数
             rewardSelectData.selectNumMax += fightDataForConquer.rewardAddSelectNum;
-            //可选次数不超过实际奖励数量，避免多余次数无对应宝箱可开
-            if (rewardSelectData.selectNumMax > rewardSelectData.listReward.Count)
-                rewardSelectData.selectNumMax = rewardSelectData.listReward.Count;
+            //可选次数不超过可选宝箱数（首箱保底会自动打开且不消耗选择次数，可开宝箱数 = 总数-1），避免多余次数无对应宝箱可开
+            int selectBoxMax = rewardSelectData.listReward.Count - 1;
+            if (rewardSelectData.selectNumMax > selectBoxMax)
+                rewardSelectData.selectNumMax = selectBoxMax;
             //isClearLastGame:true → 进入领奖场景前先卸载本场BOSS战斗场景并清理战斗实体，避免BOSS战斗场景残留叠加在领奖场景上
             uiRewardSelect.SetData(rewardSelectData, ActionForUIRewardSelectEnd, isClearLastGame: true);
         }

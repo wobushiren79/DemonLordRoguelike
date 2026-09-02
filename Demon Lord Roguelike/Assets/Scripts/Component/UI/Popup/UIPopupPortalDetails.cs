@@ -57,8 +57,12 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
             isShowFightNum && userUnlock.CheckIsUnlock(UnlockEnum.PortalPreviewRoadLength));
 
         //奖励道具显示: 需解锁「奖励预览」研究 + 非无尽模式(无尽模式无通关奖励); 未解锁则不展示奖励
+        //预览只展示首箱保底奖励(listReward[0]: 已解锁装备=装备/未解锁=魔晶, 通关时该箱自动开启必得), 其余可选箱不预览
         bool isShowReward = isShowFightNum && userUnlock.CheckIsUnlock(UnlockEnum.PortalPreviewReward);
-        List<ItemBean> listReward = isShowReward ? gameWorldInfoRandom.GetDifficultyReward(difficultyLevel) : null;
+        List<ItemBean> listRewardAll = isShowReward ? gameWorldInfoRandom.GetDifficultyReward(difficultyLevel) : null;
+        List<ItemBean> listReward = (listRewardAll != null && listRewardAll.Count > 0)
+            ? new List<ItemBean> { listRewardAll[0] }
+            : null;
         RefreshRewardItems(listReward);
 
         //内容变化后立即重建布局(先重建奖励容器再重建整体), 保证气泡尺寸与跟随定位正确
@@ -86,7 +90,7 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
     /// <summary>
     /// 按奖励列表刷新道具显示: 以模板 ui_UIViewItem 为池首项, 不足时克隆复用, 多余项隐藏
     /// </summary>
-    /// <param name="listReward">该传送门世界预生成的奖励(无奖励/未解锁时全部隐藏)</param>
+    /// <param name="listReward">要展示的奖励(当前只传首箱保底奖励单件列表; 无奖励/未解锁时全部隐藏)</param>
     protected void RefreshRewardItems(List<ItemBean> listReward)
     {
         if (ui_UIViewItem == null)

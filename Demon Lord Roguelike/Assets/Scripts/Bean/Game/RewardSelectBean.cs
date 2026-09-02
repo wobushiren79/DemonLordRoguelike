@@ -16,8 +16,8 @@ public class RewardSelectTestData
     public int crystalNum = 100;
     //装备生成数量（默认为1）
     public int createEquipNum = 1;
-    //道具生成数量（默认为3）
-    public int createItemNum = 3;
+    //道具生成数量（默认为4：第1件为首箱保底位，其余为选择位）
+    public int createItemNum = 4;
     //可以选择的最大次数（默认为1）
     public int selectNumMax = 1;
     //装备是魔王专属的概率（默认 0.1f = 1/10）
@@ -29,13 +29,13 @@ public class RewardSelectTestData
         addAttribute = 5;
         crystalNum = 100;
         createEquipNum = 1;
-        createItemNum = 3;
+        createItemNum = 4;
         selectNumMax = 1;
         createEquipDemonLordRate = 0.1f;
     }
 
     public RewardSelectTestData(RarityEnum rarity, int addAttribute, int crystalNum = 100,
-        int createEquipNum = 1, int createItemNum = 3, int selectNumMax = 1, float createEquipDemonLordRate = 0.1f)
+        int createEquipNum = 1, int createItemNum = 4, int selectNumMax = 1, float createEquipDemonLordRate = 0.1f)
     {
         this.rarity = rarity;
         this.addAttribute = addAttribute;
@@ -60,7 +60,7 @@ public class RewardSelectBean
     public int selectNum;
     //可以选择的最大次数
     public int selectNumMax;
-    //道具生成数量
+    //道具生成数量（默认4：第1件为首箱保底位——已解锁装备=装备/未解锁回退魔晶，其余为可选的魔晶位）
     public int createItemNum;
     //装备生成数量
     public int createEquipNum;
@@ -71,7 +71,7 @@ public class RewardSelectBean
     {
         selectNum = 0;
         selectNumMax = 1;
-        createItemNum = 3;
+        createItemNum = 4;
         createEquipNum = 1;
         createEquipDemonLordRate = 0.1f;
     }

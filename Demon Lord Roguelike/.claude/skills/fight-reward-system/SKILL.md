@@ -20,13 +20,13 @@ watched_files:
 | 通道 | 触发时机 | 内容 | 入账方式 |
 |------|---------|------|---------|
 | **A. 战斗内即时掉落** | 敌人死亡（每关都有） | 水晶 Crystal | 实时拾取直接入账 |
-| **B. 结算后领奖界面** | 仅"征服模式 BOSS 关通关" | 装备 + 魔晶 | 玩家在 UIRewardSelect 选择后入账 |
+| **B. 结算后领奖界面** | 仅"征服模式 BOSS 关通关" | 装备 + 魔晶 | 首箱保底自动开启即入账 + 玩家在 UIRewardSelect 从剩余宝箱选择入账 |
 
 > **最关键的一点**：结算面板 `UIFightSettlement` 本身**不发任何奖励**，它只是战斗过程统计的可排序排行榜（伤害/击杀/受伤/治疗/受疗/经验）。真正的发奖逻辑在 `UIRewardSelect` + `RewardSelectBean`。
 
 > **结算行的生物卡片**：`UIViewFightSettlementItem` 预制体内嵌完整 `UIViewCreatureCardItem`（x=-508, scale 1.2），由 `SetCardData(creatureData)` → 卡片自身 `SetData(creatureData, CardUseStateEnum.Show)` 驱动，表现与其他场景卡片完全一致（图标/稀有度/等级/MP/职业图标 + 悬浮弹 `UIPopupCreatureCardDetails`）。名字仍用结算行自己的 `ui_Name_TextMeshProUGUI`（Details/Name 节点）——**字段名不能改成 `ui_Name`**，否则与卡片内部 "Name" 节点撞名，AutoLinkUI 会优先绑到卡片里那个（且在默认隐藏的 NameBg 下），行内名字就不显示了。
 
-> **预览即实领（传送门预生成奖励）**：B 通道的奖励**不是通关时才现生成**，而是在**创建传送门时按难度预生成并冻结**，存到 `GameWorldDifficultyRandomBean.listReward`（详见 `conquer-system`）。传送门详情 `UIPopupPortalDetails` 展示的就是这份预生成奖励，通关 BOSS 领奖时**直接消费同一份**（`gameWorldInfoRandomData.GetDifficultyReward(difficulty)`），保证"预览所见 = 实际所领"。`RewardSelectBean` 退化为奖励生成的**单一真实源**：既被传送门预生成调用，也被通关领奖复用，规则完全一致。
+> **预览即实领（传送门预生成奖励）**：B 通道的奖励**不是通关时才现生成**，而是在**创建传送门时按难度预生成并冻结**，存到 `GameWorldDifficultyRandomBean.listReward`（详见 `conquer-system`）。传送门详情 `UIPopupPortalDetails` 只展示其中**首箱保底奖励**（`listReward[0]`），通关 BOSS 领奖时**直接消费同一份**（`gameWorldInfoRandomData.GetDifficultyReward(difficulty)`），保证"预览所见 = 实际所领"。`RewardSelectBean` 退化为奖励生成的**单一真实源**：既被传送门预生成调用，也被通关领奖复用，规则完全一致。
 
 ## 系统架构
 
@@ -73,7 +73,7 @@ UIRewardSelect (领奖界面)
 ### RewardSelectBean（奖励数据 + 生成逻辑，奖励生成单一真实源）
 - `listReward: List<ItemBean>` 生成的奖励物品列表
 - `selectNum / selectNumMax` 已选/可选次数
-- `createItemNum`（默认3）/ `createEquipNum`（默认1）/ `createEquipDemonLordRate`（默认0.1）
+- `createItemNum`（默认4：第1件=首箱保底位）/ `createEquipNum`（默认1）/ `createEquipDemonLordRate`（默认0.1）
 - **API（全部以 `FightTypeConquerInfoBean` 为奖励配置源，私有 `CreateItemEquip`/`CreateItemCrystal`/`InitRewardList` 均吃 `conquerInfo` 不再吃 `FightBean`）**：
   - `InitData(FightBean fightData, RewardSelectTestData testData = null)`：原签名不变。内部从 `(fightData as FightBeanForConquer)?.fightTypeConquerInfo` 取 `conquerInfo`；测试模式 `InitData(null, testData)` 行为不变。
   - `InitData(FightTypeConquerInfoBean conquerInfo)`：由征服配置直接生成（传送门预生成/预览用，与通关领奖同规则）。
@@ -95,15 +95,15 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
   1. GetUnlockCreatureModelIdsForEquip()：取已解锁生物，过滤掉无对应装备道具的生物
   2. （测试入口 InitData(null,testData) 先用 testData 覆盖数量参数）
   3. for i in createItemNum:
-       if i < createEquipNum:  CreateItemEquip(conquerInfo, ...)   // 优先生成装备
-       else:                   CreateItemCrystal(conquerInfo, ...) // 其余生成魔晶
+       if i < createEquipNum:  CreateItemEquip(conquerInfo, ...)   // 第1件=首箱保底位(已解锁装备=装备/未解锁回退魔晶)
+       else:                   CreateItemCrystal(conquerInfo, ...) // 其余生成魔晶(可选箱)
 ```
 
 **通关领奖消费链（预览即实领）**：`GameFightLogicConquer.ActionForUIFightSettlementNext`（BOSS 关）→ `baseReward = gameWorldInfoRandomData.GetDifficultyReward(difficultyLevel)`（取传送门预生成并冻结的奖励）→ `rewardSelectData.InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`。其中：
 - 终焉议会「想要更多装备/魔王装备」议案在列时，`baseReward` 先被替换为 `CreateRewardListForConquerAllEquip(...)` 重生成的全装备列表——**仅影响实领，传送门预览不同步**。判定顺序：先 `HasDoomCouncilMoreDemonLordEquip()`（全魔王，`isAllDemonLord: true` 且该次领奖 `createEquipDemonLordRate=1` 让「奖励多多」追加件也全魔王），否则 `HasDoomCouncilMoreEquip()`（全装备）。
 - `baseReward` 直接成为 `listReward`，与传送门详情 `UIPopupPortalDetails` 预览的是同一份。
 - 深渊馈赠「奖励多多」额外件数 `rewardAddItemNum` 在基础奖励**之后**追加（追加内容为装备道具，与首件同规则、生成不出装备时兜底魔晶）。
-- 再 `selectNumMax += rewardAddSelectNum`（「再来一瓶」），并钳制 `selectNumMax = Min(selectNumMax, listReward.Count)`。
+- 再 `selectNumMax += rewardAddSelectNum`（「再来一瓶」），并钳制 `selectNumMax = Min(selectNumMax, listReward.Count - 1)`（首箱保底自动开启不占选择次数，可开宝箱数=总数-1）。
 
 ### 装备生成 CreateItemEquip
 - 随机挑一个解锁生物 → 取该生物的随机装备道具（无道具则容错改生成魔晶）
@@ -120,10 +120,11 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 
 ## 领奖界面交互（UIRewardSelect）
 
-- `SetData(rewardSelectData, actionForEnd, isClearLastGame)` → **先 `UICommonMask` 淡入遮罩（`TimeMaskFadeIn`=0.3s）盖住屏幕**，遮罩完成后在回调里做全部重活：`WorldHandler.EnterRewardSelectScene(isClearLastGame)` 加载独立领奖场景 → `scenePrefab.InitRewardBox(listReward)` 实例化宝箱并**预热渲染 2 帧**（宝箱/道具/粒子激活但 Animator `speed=0` 停在 Show 第 0 帧，把 shader 编译/实时灯/粒子首次激活开销消化在遮罩下）→ UI 显活刷新（Canvas 重建尖峰也在遮罩下）→ `EndMask`（`TimeMaskFadeOut`=0.4s）揭开 + 播音效 `sound_reward_6` + `PlayAllBoxShowAnim()` 统一播落地动画（各箱随机 0~0.2s 错峰，`Task.WhenAll` 等全部落地）。这套遮罩+预热流程是为了解决"进入领奖场景卡顿吃掉宝箱落地动画只剩尾帧"的问题，改进入口流程时不要拆掉遮罩或预热，否则卡顿会回归。
+- `SetData(rewardSelectData, actionForEnd, isClearLastGame)` → **先 `UICommonMask` 淡入遮罩（`TimeMaskFadeIn`=0.3s）盖住屏幕**，遮罩完成后在回调里做全部重活：`WorldHandler.EnterRewardSelectScene(isClearLastGame)` 加载独立领奖场景 → `scenePrefab.InitRewardBox(listReward)` 实例化宝箱并**预热渲染 2 帧**（宝箱/道具/粒子激活但 Animator `speed=0` 停在 Show 第 0 帧，把 shader 编译/实时灯/粒子首次激活开销消化在遮罩下）→ （UI 保持隐藏）→ `EndMask`（`TimeMaskFadeOut`=0.4s）揭开 + 播音效 `sound_reward_6` + `PlayAllBoxShowAnim()` 统一播落地动画（各箱随机 0~0.2s 错峰，`Task.WhenAll` 等全部落地）→ 首箱保底自动开并等开箱播完后才 `SetActive(true)` 显示 UI。这套遮罩+预热流程是为了解决"进入领奖场景卡顿吃掉宝箱落地动画只剩尾帧"的问题，改进入口流程时不要拆掉遮罩或预热，否则卡顿会回归。
   - `isClearLastGame=true`：进入领奖场景前先 `gameLogic.ClearGame()` 卸载上一场战斗场景并清理战斗实体。**征服模式通关 BOSS 进领奖必须传 true**（`ActionForUIFightSettlementNext` 已传），否则 BOSS 战斗场景不会卸载，会与领奖场景叠加残留；独立测试(LauncherTest)无上一场战斗，保持默认 false。
   - 注意：结算流程里 `ClearGameForSimple()` 只清 AI/BUFF/在途弹道，**不卸载战斗场景**；战斗场景的卸载靠领奖入口的 `isClearLastGame` 或返回基地时的 `ClearWorldData`。
   - 宝箱落地动画链路：`RewardSelectBoxComponent.InitData` 只做数据初始化（图标/数量/藏道具藏箱子）→ `SetPrewarmActive(true)` 预热显隐 → `PlayShowAnim(delay)` 恢复 `speed=1` 播 Show（时长运行时从 Animator 读 `timeBoxShowAnim`）→ 播完放落地音 `sound_hit_6`。
+  - **首箱保底自动开**：`await PlayAllBoxShowAnim()` 全部落地完成后 `await AutoOpenFirstRewardBox()`——Idle 检查通过才 `await firstBox.OpenBox()` 等开箱动画播完（道具升起落定），随后 `AddBackpackItem` 入账并展示道具详情；**不自增 `selectNum`**（保底赠送不占选择次数）。**UI 全程保持隐藏直到首箱开完才 `SetActive(true)` 显示**（此期间点击/跳过被 `activeSelf` 检查屏蔽），玩家在剩余宝箱按 `selectNumMax` 选择。
 - 点击宝箱 `OnClickForSelectBox`：射线检测命中宝箱 → `scenePrefab.OpenRewardBox` 返回状态：
   - `0` 没有次数 → Toast 提示
   - `1` 打开宝箱 → `userData.AddBackpackItem(itemData)` 入账 + `selectNum++` + 展示道具详情
@@ -186,7 +187,7 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 ### 深渊馈赠对领奖的加成（奖励多多 / 再来一瓶）
 - 注入点在 `GameFightLogicConquer.ActionForUIFightSettlementNext`（BOSS 关分支）。因奖励改为传送门预生成、领奖即"消费"这份冻结奖励，注入方式与旧版不同：
   - **奖励多多（rewardAddItemNum）**：作为额外件数传给 `InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`，在预生成基础奖励**之后**追加（追加内容为装备道具，与首件同规则、生成不出装备时兜底魔晶）。不再通过预生成前 `createItemNum +=` 实现。
-  - **再来一瓶（rewardAddSelectNum）**：`InitDataForReward` **之后** `selectNumMax += rewardAddSelectNum`，并钳制 `selectNumMax = Min(selectNumMax, listReward.Count)` 避免多余次数无箱可开。
+  - **再来一瓶（rewardAddSelectNum）**：`InitDataForReward` **之后** `selectNumMax += rewardAddSelectNum`，并钳制 `selectNumMax = Min(selectNumMax, listReward.Count - 1)` 避免多余次数无箱可开（首箱保底自动开启不占选择次数）。
 - 计数器 `rewardAddItemNum / rewardAddSelectNum` 挂在 `FightBeanForConquer`，由两个即时BUFF（`BuffEntityInstantRewardMoreItem` / `BuffEntityInstantRewardMoreSelect`）在选取馈赠时累加。完整机制见 [`abyssal-blessing-system`](../abyssal-blessing-system/SKILL.md) Skill「影响奖励系统的特殊馈赠」一节。
 
 ### 调整敌人掉落水晶数量
@@ -208,7 +209,7 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 ### 修改传送门预生成奖励 / 预览
 - 奖励的预生成与冻结在 `GameWorldInfoBeanPartial.CreateDifficultyRandom`，存到 `GameWorldDifficultyRandomBean.listReward`（并记录 `rewardUnlockSign`）；取用走 `GameWorldInfoRandomBean.GetDifficultyReward(difficulty)`。生成调的就是本 Skill 的 `RewardSelectBean.CreateRewardListForConquer(conquerInfo)`。完整数据/流程归 [`conquer-system`](../conquer-system/SKILL.md)。
 - **重新生成时机**：`listReward` 为空（老存档）或装备奖励池签名变化（`rewardUnlockSign != GetConquerEquipPoolSign()`，即解锁了新魔物掉落）时，`GetDifficultyReward` 会按 `FightTypeConquerInfo` 重新生成并刷新签名。
-- 传送门详情 `UIPopupPortalDetails` 的"奖励道具"区直接展示这份预生成奖励（以 `ui_UIViewItem` 为模板的缓存池实时生成 cell），受"设施"研究门控 `UnlockEnum.PortalPreviewReward`(100300005)；无尽模式不展示奖励。门控与 UI 细节归 `conquer-system` / `research-system`。
+- 传送门详情 `UIPopupPortalDetails` 的"奖励道具"区**只展示这份预生成奖励的首箱保底位**（`listReward[0]` 组单件列表喂 `ui_UIViewItem` 模板缓存池），受"设施"研究门控 `UnlockEnum.PortalPreviewReward`(100300005)；无尽模式不展示奖励。门控与 UI 细节归 `conquer-system` / `research-system`。
 
 ## 关键文件
 

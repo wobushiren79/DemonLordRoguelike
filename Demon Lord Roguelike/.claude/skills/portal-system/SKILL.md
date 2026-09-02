@@ -124,7 +124,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
   | 路径长度 | 414 | `PortalPreviewRoadLength` | 100300004 |
   | 奖励道具 | — | `PortalPreviewReward` | 100300005 |
 
-- **奖励缓存池**：以 `ui_UIViewItem` 为模板的 `listRewardItemPool`(池首=模板、不足克隆、多余隐藏)，按 `GetDifficultyReward(difficultyLevel)` 填充；改动后 `LayoutRebuilder.ForceRebuildLayoutImmediate(ui_Items)` 再整体重建。
+- **奖励缓存池**：以 `ui_UIViewItem` 为模板的 `listRewardItemPool`(池首=模板、不足克隆、多余隐藏)，**只取 `GetDifficultyReward(difficultyLevel)` 的首箱保底位(`listReward[0]`)组单件列表填充**（通关时该箱自动开启必得，其余可选箱不预览）；改动后 `LayoutRebuilder.ForceRebuildLayoutImmediate(ui_Items)` 再整体重建。
 - `UIViewPopupPortalDetailsItem.SetData(title, content, isShow)`：`isShow==false` 整行隐藏。
 - `UIViewItem`(`Common/Item`)：通用道具项(图标+数量+ItemInfo悬停气泡)，子类 `UIViewItemBackpack`/`UIViewItemEquip`。
 
@@ -132,7 +132,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 
 - 创建传送门时 `CreateDifficultyRandom` 按难度**预生成并冻结** `listReward`(`RewardSelectBean.CreateRewardListForConquer`) + 记录 `rewardUnlockSign`(`GetConquerEquipPoolSign`)。
 - `GetDifficultyReward`：`listReward` 空(老存档) 或 解锁新魔物掉落致签名变化(`rewardUnlockSign != GetConquerEquipPoolSign()`)时按配置**重新生成并刷新签名**(魔物掉落装备需研究解锁，解锁后奖励池变大→重 roll)。
-- 通关 BOSS 领奖消费同一份(`GameFightLogicConquer.ActionForUIFightSettlementNext → InitDataForReward`)，保证**预览=实领**。详见 `fight-reward-system` / `conquer-system`。
+- 通关 BOSS 领奖消费同一份(`GameFightLogicConquer.ActionForUIFightSettlementNext → InitDataForReward`)，保证**预览=实领**（预览只显示首箱保底奖励 `listReward[0]`——即通关领奖时落地动画播完自动开启、必得的那件）。详见 `fight-reward-system` / `conquer-system`。
 
 ## 解锁相关（UnlockEnum / UserUnlockBean）
 

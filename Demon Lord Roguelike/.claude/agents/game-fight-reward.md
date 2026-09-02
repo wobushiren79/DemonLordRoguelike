@@ -24,11 +24,11 @@ watched_files:
 | 通道 | 触发时机 | 内容 | 入账方式 |
 |------|---------|------|---------|
 | **A. 战斗内即时掉落** | 敌人死亡（每关都有） | 水晶 Crystal | 实时拾取直接入账 |
-| **B. 结算后领奖界面** | 仅"征服模式 BOSS 关通关" | 装备 + 魔晶 | 玩家在 UIRewardSelect 选择后入账 |
+| **B. 结算后领奖界面** | 仅"征服模式 BOSS 关通关" | 装备 + 魔晶 | 首箱保底自动开启即入账 + 玩家在 UIRewardSelect 从剩余宝箱选择入账 |
 
 **关键**：结算面板 `UIFightSettlement` 本身**不发任何奖励**，它只是一个可排序的战斗数据统计排行榜（伤害/击杀/受伤/治疗/受疗/经验）。真正的发奖逻辑在 `UIRewardSelect` + `RewardSelectBean`。
 
-**预览即实领**：B 通道奖励不是通关时现生成，而是**创建传送门时按难度预生成并冻结**到 `GameWorldDifficultyRandomBean.listReward`（归 `game-conquer` 代理）。传送门详情 `UIPopupPortalDetails` 展示的就是这份预生成奖励；通关 BOSS 领奖直接消费同一份（`gameWorldInfoRandomData.GetDifficultyReward(difficulty)`），"预览所见 = 实际所领"。`RewardSelectBean` 现为奖励生成的**单一真实源**，被预生成与通关领奖共用，规则一致。
+**预览即实领**：B 通道奖励不是通关时现生成，而是**创建传送门时按难度预生成并冻结**到 `GameWorldDifficultyRandomBean.listReward`（归 `game-conquer` 代理）。传送门详情 `UIPopupPortalDetails` 只展示其中**首箱保底奖励**（`listReward[0]`）；通关 BOSS 领奖直接消费同一份（`gameWorldInfoRandomData.GetDifficultyReward(difficulty)`），"预览所见 = 实际所领"。`RewardSelectBean` 现为奖励生成的**单一真实源**，被预生成与通关领奖共用，规则一致。
 
 ## 职责范围
 
@@ -52,7 +52,7 @@ watched_files:
 - **UIFightSettlement** - 结算数据排行榜（6 维度展示：伤害/击杀/受伤/治疗/受疗/经验；排序当前仅接通伤害/击杀/受伤/经验 4 维），只展示不发奖；`OpenUI` 重写里调用 `AudioHandler.Instance.StopMusic()` 在结算界面打开时停止战斗音乐
 - **UIViewFightSettlementItem** - 单生物统计 cell（6 条进度条 + 内嵌 `UIViewCreatureCardItem`：`SetCardData` 走卡片自身 `SetData(creatureData, CardUseStateEnum.Show)`，与其他场景卡片表现一致含悬浮详情；名字用行内 `ui_Name_TextMeshProUGUI`，字段名勿改成 `ui_Name` 会与卡片内部 Name 节点撞名）
 - **UIViewFightSettlementItemProgress** - 单条进度条组件
-- **UIRewardSelect** - BOSS 通关领奖界面（宝箱选择 + 跳过预览），唯一发奖 UI
+- **UIRewardSelect** - BOSS 通关领奖界面（默认 4 箱：落地动画播完**首箱保底自动开**并直接入账(不占选择次数)，**开箱播完才显示 UI**，玩家从剩余宝箱选择 + 跳过预览），唯一发奖 UI
 
 ### 流程逻辑（各模式结算差异）
 - **GameFightLogicConquer** - 征服模式，唯一有完整领奖流程的模式
@@ -72,10 +72,10 @@ watched_files:
  → baseReward = gameWorldInfoRandomData.GetDifficultyReward(difficultyLevel) (取传送门预生成并冻结的奖励)
  → 若终焉议会「想要更多装备/魔王装备」议案在列(UserTempBean.HasDoomCouncilMoreEquip()/HasDoomCouncilMoreDemonLordEquip(), 魔王优先): baseReward 替换为 RewardSelectBean.CreateRewardListForConquerAllEquip(...) 全装备重生成(仅实领, 预览不同步; 魔王版另将该次领奖 createEquipDemonLordRate=1, 奖励多多追加件也全魔王)
  → new RewardSelectBean().InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum) (预览=实领；奖励多多额外件数在基础奖励后追加装备道具，生成不出装备兜底魔晶)
- → selectNumMax += rewardAddSelectNum; 钳制 = Min(selectNumMax, listReward.Count)
+ → selectNumMax += rewardAddSelectNum; 钳制 = Min(selectNumMax, listReward.Count - 1)（首箱保底自动开启不占选择次数）
  → 打开 UIRewardSelect.SetData(rewardSelectData, ActionForUIRewardSelectEnd, isClearLastGame:true)
     (领奖场景加载完成、UI 显示时播放进入领奖音效 AudioEnum.sound_reward_6)
- → 玩家选宝箱 → userData.AddBackpackItem(itemData) (水晶走 AddCrystal,装备入背包)
+ → 宝箱落地动画全部播完 → await AutoOpenFirstRewardBox() 自动开首箱并等开箱播完(listReward[0] 保底位，直接入账不占次数) → 首箱开完才 SetActive 显示 UI → 玩家从剩余宝箱选择 → userData.AddBackpackItem(itemData) (水晶走 AddCrystal,装备入背包)
  → ActionForUIRewardSelectEnd → 触发 Achievement_ConquerComplete(worldId, difficultyLevel) 成就(按世界×难度统计)
  → AddReputationForConquerComplete(fightTypeConquerInfo) 发放通关声望(研究 UnlockEnum.ConquerReputationReward 解锁才 userData.AddReputation(conquerInfo.GetRewardReputation()); 存档前发放,随存档落盘)
  → EndGameAndReturnToBase()
@@ -91,7 +91,7 @@ watched_files:
 各 `InitData*` 入口最终收口到私有 `InitRewardList(conquerInfo, testData)`：
 
 1. `GetUnlockCreatureModelIdsForEquip()` 取已解锁生物，过滤掉没有对应装备道具的生物
-2. 循环 `createItemNum`（默认 3）个：前 `createEquipNum`（默认 1）个生成装备，其余生成魔晶
+2. 循环 `createItemNum`（默认 4）个：前 `createEquipNum`（默认 1）个生成装备，其余生成魔晶——**第 1 件即首箱保底位**（已解锁装备=装备；未解锁装备/过滤后池空=回退魔晶），领奖时该箱落地动画播完自动开启并直接入账（不占选择次数）
 3. **装备**（CreateItemEquip，吃 `conquerInfo`）：随机解锁生物的随机装备，品质 = `conquerInfo.reward_equip_rarity`、属性加点数量 = `RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add`（由稀有度配置表决定），按 `createEquipDemonLordRate`（默认 1/10）概率标记魔王专属。**先定 rarityItem 再按道具 `reward_rarity` 白名单过滤生物装备池**（`ItemsInfoBean.IsMatchRewardRarity(rarityItem)`，空=全稀有度适配），过滤后为空回退发魔晶；字段/编辑器见 game-item。**魔王专属额外过滤**：`userType == DemonLord` 时同循环再过 `IsEquipTypeMatchForDemonLord`——按魔王当前形态（`selfCreature.creatureInfo`，转生会换故按当前）的 `CanEquipItemType`+`CanEquipWeaponType` 判定，魔王穿不上的类型（如骷髅魔王的武器）不掉落，空则回退魔晶；刻意不校验种族模组（跨模组掉落是既有呈现，且模型掉落需研究解锁，强制匹配会让专属归零）
 4. **魔晶**（CreateItemCrystal，吃 `conquerInfo`）：数量 = `conquerInfo.GetRandomRewardCrystal()`——`reward_crystal` 为 string（与其它区间字段同 `x-y` 格式），单值"200"固定发放，区间"100-200"在 [100,200] 闭区间随机（无旧版 ±50% 浮动）
 5. 测试模式由 `InitData(null, testData)` 进入，用 `RewardSelectTestData` 的固定参数（此入口行为不变）
@@ -132,7 +132,7 @@ watched_files:
 - 存档统一收口在 `EndGameAndReturnToBase`，会先 `ClearAbyssalBlessing` 再 `SaveUserData` —— 深渊馈赠是单局临时加成，不跨局保留。
 - 水晶掉落数量来自 `FightTypeConquerInfo.drop_crystal`，BUFF 可监听 `GameFightLogic_CreatureDeadDropCrystal` 追加掉落（具体 BUFF 逻辑归 `game-buff` 代理）。
 - 征服配置 Bean (`FightTypeConquerInfoBean.cs`) 是自动生成的，**禁止直接修改**；扩展写到 `FightTypeConquerInfoBeanPartial.cs`。配置数据变更必须改对应 Excel 源表，仅改 JSON 会被下次导出覆盖。
-- `UIRewardSelect` 依赖独立的领奖场景 `ScenePrefabForRewardSelect`（`WorldHandler.EnterRewardSelectScene`）与 3D 宝箱交互（射线点击），改动 UI 时注意场景配合。进入流程为「遮罩+预热」：`SetData` 先 `UICommonMask` 淡入盖住屏幕（0.3s），在遮罩下完成清场/场景加载/宝箱实例化与预热渲染（`InitRewardBox` 激活宝箱道具渲染 2 帧消化 shader 编译与灯光/粒子首次激活开销，Animator `speed=0` 暂停在 Show 第 0 帧），再 `EndMask` 揭开（0.4s）同时 `PlayAllBoxShowAnim` 播宝箱落地动画——不要拆掉遮罩或预热，否则"进入卡顿吃掉落地动画"的问题会回归。领奖结束 `OpenAllRewardBoxPreview()` 的节奏：未开箱子第一个立即开、之后每个间隔 0.5 秒连续开（不等单个动画播完），最后固定等 1 秒回调 `actionForEnd`。开箱显示道具时道具下的 `Effect_Sparkle_1` 粒子会按道具稀有度上色（`RewardSelectBoxComponent.SetSparkleColorByRarity`，取 `RarityInfo.ui_board_color_item`）。
+- `UIRewardSelect` 依赖独立的领奖场景 `ScenePrefabForRewardSelect`（`WorldHandler.EnterRewardSelectScene`）与 3D 宝箱交互（射线点击），改动 UI 时注意场景配合。进入流程为「遮罩+预热」：`SetData` 先 `UICommonMask` 淡入盖住屏幕（0.3s），在遮罩下完成清场/场景加载/宝箱实例化与预热渲染（`InitRewardBox` 激活宝箱道具渲染 2 帧消化 shader 编译与灯光/粒子首次激活开销，Animator `speed=0` 暂停在 Show 第 0 帧），再 `EndMask` 揭开（0.4s）同时 `PlayAllBoxShowAnim` 播宝箱落地动画——不要拆掉遮罩或预热，否则"进入卡顿吃掉落地动画"的问题会回归。**落地动画全部播完后 `await AutoOpenFirstRewardBox()` 自动开首箱并等开箱动画播完**（listReward[0] 保底位，Idle 检查防重复发奖；不自增 `selectNum` 不占选择次数）；**UI 全程保持隐藏直到首箱开完才 `SetActive(true)` 显示**（此期间点击/跳过被 `activeSelf` 检查屏蔽）。领奖结束 `OpenAllRewardBoxPreview()` 的节奏：未开箱子第一个立即开、之后每个间隔 0.5 秒连续开（不等单个动画播完），最后固定等 1 秒回调 `actionForEnd`。开箱显示道具时道具下的 `Effect_Sparkle_1` 粒子会按道具稀有度上色（`RewardSelectBoxComponent.SetSparkleColorByRarity`，取 `RarityInfo.ui_board_color_item`）。
 - 进入领奖场景前必须卸载上一场战斗场景：`SetData(..., isClearLastGame: true)` → `EnterRewardSelectScene(true)` → `gameLogic.ClearGame()`（卸载战斗场景+清理战斗实体）。征服 BOSS 领奖入口已传 true；若漏传，BOSS 战斗场景会与领奖场景叠加残留（结算阶段的 `ClearGameForSimple` 只清 AI/BUFF/弹道，不卸场景）。
 
 ## 关联 Skill 与 Agent

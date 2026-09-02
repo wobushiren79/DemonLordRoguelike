@@ -43,7 +43,7 @@ watched_files:
 - **出战阵容选择区(ui_Lineup)**：`GetUnlockLineupNum()`>=2 才显示。标题 UIText 30009「出战阵容」；`ui_LineupName` 显示当前出战阵容名(`userData.GetLineupShowName(lineupFightIndex)`，自定义名优先、未改名回退默认 30005)；`ui_LineupLeftBtn/RightBtn` 循环切换(`OnClickForChangeLineup(±1)`)。选择存 `UserDataBean.lineupFightIndex`(`Get/SetLineupFightIndex` 夹取 [1,已解锁数])，切换即 SaveUserData，下次打开默认选中；进战斗 `FightBeanForConquer`/`FightBeanForDoomCouncil` 按该序号读阵容(替代旧写死第1套)。
 
 ### 详情气泡（UIPopupPortalDetails）
-- 5 个 `UIViewPopupPortalDetailsItem`(名字/难度/线路数/关卡数/路径长度) + `ui_UIViewItem` 模板缓存池(奖励)。
+- 5 个 `UIViewPopupPortalDetailsItem`(名字/难度/线路数/关卡数/路径长度) + `ui_UIViewItem` 模板缓存池(奖励——只显示首箱保底奖励 `listReward[0]`，即通关时自动开启必得的那件)。
 - **名字/难度始终显示(不门控)，线路数/关卡数/路径长度/奖励受设施研究门控**(`CheckIsUnlock(UnlockEnum.PortalPreview*)`，未解锁整行隐藏；无尽模式不展示难度/关卡数/路径长度/奖励——难度是征服模式专属)：难度→无门控(文本415,内容=difficultyLevel)、线路数→`PortalPreviewRoadNum`(100300002)、关卡数→`PortalPreviewFightNum`(100300003)、路径长度→`PortalPreviewRoadLength`(100300004,文本414)、奖励→`PortalPreviewReward`(100300005)。
 
 ### 传送门随机数据（GameWorldInfoRandomBean / GameWorldInfoBeanPartial）

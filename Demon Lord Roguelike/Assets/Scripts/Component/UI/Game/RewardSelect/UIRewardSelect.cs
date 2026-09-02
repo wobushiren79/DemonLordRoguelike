@@ -1,6 +1,7 @@
 
 
 using System;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -46,10 +47,7 @@ public partial class UIRewardSelect : BaseUIComponent
             scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForRewardSelect>(GameSceneTypeEnum.RewardSelect);
             //初始化宝箱(实例化后先预热渲染2帧 完成shader编译/灯光/粒子预热 此时尚有遮罩 玩家不可见)
             await scenePrefab.InitRewardBox(rewardSelectData.listReward);
-            //UI显活并刷新(Canvas重建尖峰同样藏在遮罩后)
-            gameObject.SetActive(true);
-            RefreshUI();
-            //再等1帧 确保UI与场景在遮罩下都完成了首帧渲染
+            //再等1帧 确保场景在遮罩下完成首帧渲染(UI保持隐藏 等首箱打开后再显示)
             await new WaitForEndOfFrame();
             //揭开遮罩
             maskUI.EndMask(TimeMaskFadeOut, null, null);
@@ -57,7 +55,35 @@ public partial class UIRewardSelect : BaseUIComponent
             AudioHandler.Instance.PlaySound(AudioEnum.sound_reward_6);
             //宝箱落地动画随遮罩淡出同步开始
             await scenePrefab.PlayAllBoxShowAnim();
+            //全部宝箱落地后 自动打开第一个宝箱(首箱保底奖励直接入账 不消耗选择次数) 并等开箱动画播完
+            await AutoOpenFirstRewardBox();
+            //首箱打开后再显示UI(此期间UI隐藏 点击/跳过均被屏蔽 玩家只能看完首箱开启演出)
+            gameObject.SetActive(true);
+            RefreshUI();
         });
+    }
+
+    /// <summary>
+    /// 自动打开第一个宝箱（首箱保底：已解锁装备=装备位/未解锁装备时为魔晶），等开箱动画播完；奖励直接入账且不消耗选择次数
+    /// </summary>
+    public async Task AutoOpenFirstRewardBox()
+    {
+        //防御：无奖励数据或场景未生成宝箱时不处理
+        if (rewardSelectData.listReward == null || rewardSelectData.listReward.Count == 0) return;
+        if (scenePrefab.listRewardSelectBox == null || scenePrefab.listRewardSelectBox.Count == 0) return;
+        var firstBox = scenePrefab.listRewardSelectBox[0];
+        //仅 Idle 状态才自动开(理论上玩家抢先点开则不重复发奖)
+        if (firstBox.rewardSelectBoxState != RewardSelectBoxStateEnum.Idle) return;
+        //首箱为保底赠送 不占用选择次数；等开箱动画播完(道具升起落定)再返回
+        await firstBox.OpenBox();
+        ItemBean itemData = rewardSelectData.listReward[0];
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        //添加道具到背包里
+        userData.AddBackpackItem(itemData);
+        //刷新UI
+        RefreshUI();
+        //展示道具详情
+        ShowItemDetails(true, itemData);
     }
 
     /// <summary>
