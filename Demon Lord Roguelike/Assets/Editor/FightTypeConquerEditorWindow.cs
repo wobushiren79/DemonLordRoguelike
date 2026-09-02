@@ -88,6 +88,15 @@ public class FightTypeConquerEditorWindow : EditorWindow
     /// <summary>对比单元格样式(差异高亮)</summary>
     private GUIStyle compareCellDiffStyle;
 
+    /// <summary>ID列表对比单元格样式(名字换行显示)</summary>
+    private GUIStyle compareCellWrapStyle;
+
+    /// <summary>ID列表对比单元格样式(名字换行+差异高亮)</summary>
+    private GUIStyle compareCellWrapDiffStyle;
+
+    /// <summary>ID列表对比单元格高度(换行显示多个名字)</summary>
+    private const float CompareWrapCellHeight = 54f;
+
     /// <summary>滚动位置</summary>
     private Vector2 scrollPos = Vector2.zero;
 
@@ -126,6 +135,18 @@ public class FightTypeConquerEditorWindow : EditorWindow
 
     /// <summary>场景ID到名字的映射</summary>
     private Dictionary<long, string> sceneNameMap = new Dictionary<long, string>();
+
+    /// <summary>NPC下拉选项ID列表（升序，与npcOptionNames一一对应）</summary>
+    private List<long> npcOptionIds = new List<long>();
+
+    /// <summary>NPC下拉选项显示文本（格式 "[id] 名字"）</summary>
+    private List<string> npcOptionNames = new List<string>();
+
+    /// <summary>场景下拉选项ID列表（升序，与sceneOptionNames一一对应）</summary>
+    private List<long> sceneOptionIds = new List<long>();
+
+    /// <summary>场景下拉选项显示文本（格式 "[id] 名字"）</summary>
+    private List<string> sceneOptionNames = new List<string>();
 
     #endregion
 
@@ -228,6 +249,23 @@ public class FightTypeConquerEditorWindow : EditorWindow
                 new Color(1f, 0.78f, 0.35f) : new Color(0.80f, 0.45f, 0.0f) }
         };
 
+        // ID列表对比单元格：小号字+自动换行，尽量在窄列内放下多个名字
+        compareCellWrapStyle = new GUIStyle(EditorStyles.textField)
+        {
+            alignment = TextAnchor.UpperCenter,
+            wordWrap = true,
+            fontSize = 10,
+            padding = new RectOffset(2, 2, 2, 2),
+            normal = { textColor = new Color(0.55f, 0.55f, 0.55f) }
+        };
+
+        compareCellWrapDiffStyle = new GUIStyle(compareCellWrapStyle)
+        {
+            fontStyle = FontStyle.Bold,
+            normal = { textColor = EditorGUIUtility.isProSkin ?
+                new Color(1f, 0.78f, 0.35f) : new Color(0.80f, 0.45f, 0.0f) }
+        };
+
         stylesInitialized = true;
     }
 
@@ -307,6 +345,8 @@ public class FightTypeConquerEditorWindow : EditorWindow
                 }
                 npcNameMap[npc.id] = displayName;
             }
+
+            BuildOptionList(npcNameMap, npcOptionIds, npcOptionNames);
         }
         catch (Exception e)
         {
@@ -341,6 +381,8 @@ public class FightTypeConquerEditorWindow : EditorWindow
                 }
                 sceneNameMap[scene.id] = displayName;
             }
+
+            BuildOptionList(sceneNameMap, sceneOptionIds, sceneOptionNames);
         }
         catch (Exception e)
         {
@@ -790,6 +832,70 @@ public class FightTypeConquerEditorWindow : EditorWindow
     }
 
     /// <summary>
+    /// 绘制一侧(前或后)最多3个难度的ID列表对比单元格：单元格内换行显示具体名字，点击复制到当前难度
+    /// </summary>
+    private FightTypeConquerInfoBean DrawIdListCompareCells(FightTypeConquerInfoBean[] beans, string fieldKey, string currentValueStr, bool nearOnRight)
+    {
+        FightTypeConquerInfoBean clicked = null;
+        if (nearOnRight)
+        {
+            for (int i = beans.Length - 1; i >= 0; i--)
+            {
+                if (DrawIdListCompareCell(beans[i], fieldKey, currentValueStr)) clicked = beans[i];
+            }
+        }
+        else
+        {
+            for (int i = 0; i < beans.Length; i++)
+            {
+                if (DrawIdListCompareCell(beans[i], fieldKey, currentValueStr)) clicked = beans[i];
+            }
+        }
+        return clicked;
+    }
+
+    /// <summary>
+    /// 绘制单个ID列表对比单元格：名字以、连接并自动换行直观展示，tooltip 显示完整 "id 名字" 列表
+    /// </summary>
+    private bool DrawIdListCompareCell(FightTypeConquerInfoBean bean, string fieldKey, string currentValueStr)
+    {
+        if (bean == null)
+        {
+            EditorGUILayout.LabelField("", compareCellWrapStyle, GUILayout.Width(CompareColumnWidth), GUILayout.Height(CompareWrapCellHeight));
+            return false;
+        }
+        string rawValue = GetFieldValueStr(bean, fieldKey);
+        string cellText = GetIdListCellText(rawValue, fieldKey, out string tooltipList);
+        bool differs = rawValue != currentValueStr;
+        GUIStyle style = differs ? compareCellWrapDiffStyle : compareCellWrapStyle;
+        GUIContent content = new GUIContent(cellText, $"{tooltipList}\n点击复制到当前难度");
+        return GUILayout.Button(content, style, GUILayout.Width(CompareColumnWidth), GUILayout.Height(CompareWrapCellHeight));
+    }
+
+    /// <summary>
+    /// 把 & 分隔的ID串解析成单元格显示文本（名字以、连接）与 tooltip 完整列表（每行 "id 名字"）
+    /// </summary>
+    private string GetIdListCellText(string rawValue, string fieldKey, out string tooltipList)
+    {
+        List<long> ids = ParseIdList(rawValue);
+        if (ids.Count == 0)
+        {
+            tooltipList = "(空)";
+            return "(空)";
+        }
+        List<string> names = new List<string>();
+        List<string> lines = new List<string>();
+        foreach (long id in ids)
+        {
+            string name = GetDisplayName(id, fieldKey);
+            names.Add(name);
+            lines.Add($"{id} {name}");
+        }
+        tooltipList = string.Join("\n", lines);
+        return string.Join("、", names);
+    }
+
+    /// <summary>
     /// 绘制字符串字段（左=前3难度 / 中=当前可编辑 / 右=后3难度）
     /// </summary>
     private string DrawStringField(string label, string value, string fieldName)
@@ -899,12 +1005,12 @@ public class FightTypeConquerEditorWindow : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
 
-        // 前后3难度对比行(只读+点击复制，与上方列头对齐；长ID串截断展示，完整值见tooltip)
+        // 前后3难度对比行(显示解析后的具体名字而非原始ID串，差异高亮，点击复制到当前；完整列表见tooltip)
         EditorGUILayout.BeginHorizontal();
         GUILayout.Space(FieldLabelWidth);
-        var clickedPrev = DrawCompareCells(prevBeans, fieldKey, value, true);
+        var clickedPrev = DrawIdListCompareCells(prevBeans, fieldKey, value, true);
         GUILayout.FlexibleSpace();
-        var clickedNext = DrawCompareCells(nextBeans, fieldKey, value, false);
+        var clickedNext = DrawIdListCompareCells(nextBeans, fieldKey, value, false);
         EditorGUILayout.EndHorizontal();
         var clickedBean = clickedPrev != null ? clickedPrev : clickedNext;
         if (clickedBean != null)
@@ -938,26 +1044,31 @@ public class FightTypeConquerEditorWindow : EditorWindow
                 // 显示每个ID
                 for (int i = 0; i < idList.Count; i++)
                 {
+                    int rowIndex = i; // 闭包捕获副本
                     EditorGUILayout.BeginHorizontal();
                     GUILayout.Space(20);
-                    EditorGUILayout.LabelField($"[{i + 1}]", GUILayout.Width(30));
+                    EditorGUILayout.LabelField($"[{rowIndex + 1}]", GUILayout.Width(30));
 
-                    long newId = EditorGUILayout.LongField(idList[i], GUILayout.Width(100));
-                    if (newId != idList[i])
+                    // 方式一：直接输入ID
+                    long newId = EditorGUILayout.LongField(idList[rowIndex], GUILayout.Width(70));
+                    if (newId != idList[rowIndex])
                     {
-                        idList[i] = newId;
+                        idList[rowIndex] = newId;
                         value = BuildIdString(idList);
                     }
 
-                    // 显示名字（场景字段查场景映射，敌人字段查NPC映射）
-                    string displayName = GetDisplayName(idList[i], fieldKey);
-                    EditorGUILayout.LabelField(displayName, EditorStyles.miniLabel, GUILayout.MinWidth(50));
+                    // 方式二：下拉按名字选取（与手动输入ID等价，二选一即可）
+                    DrawIdDropdown(fieldKey, idList[rowIndex], (selectedId) =>
+                    {
+                        idList[rowIndex] = selectedId;
+                        value = BuildIdString(idList);
+                    }, GUILayout.MinWidth(120));
 
                     Color prevColor = GUI.backgroundColor;
                     GUI.backgroundColor = new Color(0.9f, 0.3f, 0.3f);
                     if (GUILayout.Button("×", GUILayout.Width(25), GUILayout.Height(18)))
                     {
-                        pendingRemoveIndex = i;
+                        pendingRemoveIndex = rowIndex;
                         pendingRemoveFieldKey = fieldKey;
                     }
                     GUI.backgroundColor = prevColor;
@@ -971,11 +1082,12 @@ public class FightTypeConquerEditorWindow : EditorWindow
 
                 GUILayout.Space(4);
 
-                // 添加新ID行
+                // 添加新ID行（手动输入ID 或 下拉按名字选取，二者等价，选/填后点 + 添加）
                 EditorGUILayout.BeginHorizontal();
                 GUILayout.Space(20);
                 EditorGUILayout.LabelField("新ID:", GUILayout.Width(40));
-                newIdInputs[fieldKey] = EditorGUILayout.LongField(newIdInputs[fieldKey]);
+                newIdInputs[fieldKey] = EditorGUILayout.LongField(newIdInputs[fieldKey], GUILayout.Width(70));
+                DrawIdDropdown(fieldKey, newIdInputs[fieldKey], (selectedId) => newIdInputs[fieldKey] = selectedId, GUILayout.MinWidth(120));
 
                 Color addPrevColor = GUI.backgroundColor;
                 GUI.backgroundColor = new Color(0.20f, 0.75f, 0.35f);
@@ -1026,6 +1138,58 @@ public class FightTypeConquerEditorWindow : EditorWindow
                 return npcName;
         }
         return "(未知)";
+    }
+
+    /// <summary>
+    /// 由 ID→名字 映射构建下拉选项列表（按ID升序，显示为 "[id] 名字"）
+    /// </summary>
+    private void BuildOptionList(Dictionary<long, string> nameMap, List<long> idList, List<string> nameList)
+    {
+        idList.Clear();
+        nameList.Clear();
+        List<long> sortedIds = new List<long>(nameMap.Keys);
+        sortedIds.Sort();
+        foreach (long id in sortedIds)
+        {
+            idList.Add(id);
+            nameList.Add($"[{id}] {nameMap[id]}");
+        }
+    }
+
+    /// <summary>
+    /// 按字段类型取下拉选项（场景字段取场景配置，敌人字段取NpcInfo配置）
+    /// </summary>
+    private void GetOptionsForField(string fieldKey, out List<long> ids, out List<string> names)
+    {
+        if (fieldKey.Contains("scene"))
+        {
+            ids = sceneOptionIds;
+            names = sceneOptionNames;
+        }
+        else
+        {
+            ids = npcOptionIds;
+            names = npcOptionNames;
+        }
+    }
+
+    /// <summary>
+    /// 绘制ID下拉选择框（按名字选取，选中后回调对应ID；当前ID不在选项中时显示空，可配合手动输入ID使用）
+    /// </summary>
+    private void DrawIdDropdown(string fieldKey, long currentId, Action<long> onSelected, params GUILayoutOption[] options)
+    {
+        GetOptionsForField(fieldKey, out List<long> ids, out List<string> names);
+        if (ids.Count == 0)
+        {
+            EditorGUILayout.LabelField("(无配置数据)", EditorStyles.miniLabel, options);
+            return;
+        }
+        int index = ids.IndexOf(currentId);
+        int newIndex = EditorGUILayout.Popup(index, names.ToArray(), options);
+        if (newIndex != index && newIndex >= 0 && newIndex < ids.Count)
+        {
+            onSelected(ids[newIndex]);
+        }
     }
 
     /// <summary>

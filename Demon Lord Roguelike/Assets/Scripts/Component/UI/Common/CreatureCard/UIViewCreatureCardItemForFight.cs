@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 //战斗卡片特殊设置
-public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IPointerEnterHandler, IPointerExitHandler
+public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IPointerExitHandler
 {
     protected float FightRestRCDTime = 0;//复活CD时间（需要在重置是刷新数据）
 
@@ -188,11 +188,13 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
 
     #region 触摸相关事件
     /// <summary>
-    /// 触摸-进入
+    /// 触摸-进入(悬停音效由基类 OnPointerEnter 统一播放)
     /// </summary>
     /// <param name="eventData"></param>
-    void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
+    public override void OnPointerEnter(PointerEventData eventData)
     {
+        //基类统一播放悬停卡片音效(sound_card_7)
+        base.OnPointerEnter(eventData);
         //LogUtil.Log($"OnPointerEnter_{cardData.originalSibling}");
         //播放选择放大动画(动画实现见 partial 文件 UIViewCreatureCardItemForFightAnim)
         PlaySelectEnterAnim();

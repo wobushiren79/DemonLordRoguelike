@@ -209,7 +209,7 @@ public partial class UIViewCreatureCardItemForXXX : UIViewCreatureCardItem
 EventsInfo.UIViewCreatureCardItem_SelectKeep
     // 参数: int targetIndex, Vector2 targetPos, bool isKeep
 
-// 鼠标进入卡片
+// 鼠标进入卡片(悬停音效由基类 UIViewCreatureCardItem.OnPointerEnter 统一播放 sound_card_7；本事件仍仅由战斗卡片 ForFight 触发，基类不触发)
 EventsInfo.UIViewCreatureCardItem_OnPointerEnter
     // 参数: UIViewCreatureCardItem targetView
 
@@ -222,7 +222,7 @@ EventsInfo.UIViewCreatureCardItem_OnClickSelect
     // 参数: UIViewCreatureCardItem targetView
 ```
 
-> **场上魔物描边高亮**：`UIViewCreatureCardItemForFight.OnPointerEnter` 末尾调 `ShowFieldCreatureOutline()` —— 若本卡对应魔物已上场(`fightData.GetCreatureById(uuid, FightDefense) != null`)，调 `CreatureHandler.ShowCreatureOutlinePreview(entity)` 给场上魔物套一圈亮蓝描边；`OnPointerExit` 调 `CreatureHandler.HideCreatureOutlinePreview()` 收起。描边实现见 creature-system / game-creature(共享单例预览预制 `FightCreature_OutlinePreview` + OutlineOnly 材质；平面 Spine 精灵固定法线导致 Rim 边缘光不可见，故改用描边)。
+> **场上魔物描边高亮**：`UIViewCreatureCardItemForFight.OnPointerEnter`(override 基类，首行调 base 播悬停音效 `sound_card_7`) 末尾调 `ShowFieldCreatureOutline()` —— 若本卡对应魔物已上场(`fightData.GetCreatureById(uuid, FightDefense) != null`)，调 `CreatureHandler.ShowCreatureOutlinePreview(entity)` 给场上魔物套一圈亮蓝描边；`OnPointerExit` 调 `CreatureHandler.HideCreatureOutlinePreview()` 收起。描边实现见 creature-system / game-creature(共享单例预览预制 `FightCreature_OutlinePreview` + OutlineOnly 材质；平面 Spine 精灵固定法线导致 Rim 边缘光不可见，故改用描边)。
 
 > **战斗卡片深渊馈赠展示**：`UIViewCreatureCardItemForFight` 上的 `ui_AbyssalBlessingContent`(GridLayout 容器) + `ui_AbyssalBlessingItem`(Image 模板，prefab 中默认隐藏) 用来展示「**实际作用在本魔物身上**」的深渊馈赠图标。`RefreshAbyssalBlessing()`(在 `SetData` 末尾及监听 `EventsInfo.Buff_AbyssalBlessingChange` 时调用) → 调 **`AbyssalBlessingUtil.CollectAbyssalBlessingEntityBean(creatureData, FightDefense, listAbyssalBlessingForCreature)`**(在 `Assets/Scripts/Utils/AbyssalBlessingUtil.cs`，收集逻辑已从 UI 层下沉至此)：遍历 `dicAbyssalBlessingBuffsActivie`，内部用 `IsAbyssalBlessingTargetCreature` 判定每个馈赠的任一 BUFF 是否真作用于本魔物——口径与属性管线(`FightCreatureBean.CollectFromBuffList`)/攻速管线一致：含**全体防守加成**（每张防守卡都显示一份）与**定向到本魔物**的馈赠（单体定向类，按锁定 UUID 精确匹配）；排除作用敌方/防守核心/掉落(钱多多)/奖励(奖励多多·再来一瓶)/复制(增殖)等不改本魔物数值的馈赠（⚠️ 现役 4 族馈赠均不改生物数值，当前卡面不会出现馈赠图标；历史会显示的例：强身健体/大力出奇迹等，2026-07 已删）。按收集个数用 `GetOrCreateAbyssalBlessingItem` 缓存池(`listAbyssalBlessingItem`)复用/克隆模板，`IconHandler.SetAbyssalBlessingIcon` 设图标，无馈赠时隐藏整个容器。卡片上魔物固定为 `FightDefense`。⚠️ **复制魔物(增殖)产生的克隆体是新 UUID，只会显示「全体防守馈赠」(靠 trigger_creature_type 自动生效)，不显示/不继承针对原魔物的单体定向馈赠**。深渊馈赠机制见 abyssal-blessing-system / game-abyssal-blessing。
 
@@ -367,7 +367,7 @@ protected void OnConfirmOrderFilter(OrderFilterResultBean result) {
 
 | 功能 | 文件路径 |
 |------|----------|
-| 卡片基类 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItem.cs` + `UIViewCreatureCardItemAnim.cs`(partial：通用出现动画 `AnimForCardShow`，下方弹入回弹+启动播放 `sound_card_7`+落位播放 `sound_card_1`；序列 `SetTarget(rectTransform)` 可被 `transform.DOKill()` 整体杀掉) |
+| 卡片基类 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItem.cs`(实现 `IPointerEnterHandler`：`OnPointerEnter`(virtual) 鼠标悬停统一播放 `sound_card_7`，子类 override 须调 base) + `UIViewCreatureCardItemAnim.cs`(partial：通用出现动画 `AnimForCardShow`，下方弹入回弹+启动播放 `sound_card_7`+落位播放 `sound_card_1`；序列 `SetTarget(rectTransform)` 可被 `transform.DOKill()` 整体杀掉) |
 | 卡片组件声明 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemComponent.cs` |
 | 战斗卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForFight.cs`(主体：生命周期/快捷按键/状态/触摸事件/深渊馈赠展示) + `UIViewCreatureCardItemForFightAnim.cs`(partial：动画参数/Tween 句柄/创建·选择·避让动画 `AnimForCreateShow`(委托基类 `AnimForCardShow`,可选完成回调 actionForComplete)/`PlaySelectEnterAnim`/`PlaySelectExitAnim`/`PlaySelectKeepAnim`/`PlaySelectKeepReturnAnim`/`ClearAnim`/`KillAnim*`) |
 | 阵容行卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForLineup.cs` |

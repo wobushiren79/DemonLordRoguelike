@@ -1,8 +1,9 @@
 using Spine;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public partial class UIViewCreatureCardItem : BaseUIView
+public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler
 {
     public CreatureCardItemBean cardData = new CreatureCardItemBean();
     public override void Awake()
@@ -179,4 +180,14 @@ public partial class UIViewCreatureCardItem : BaseUIView
     {
         TriggerEvent(EventsInfo.UIViewCreatureCardItem_OnClickSelect, this);
     }
+
+    #region 触摸相关事件
+    /// <summary>
+    /// 触摸-进入:鼠标悬停到卡片上时播放卡片音效
+    /// </summary>
+    public virtual void OnPointerEnter(PointerEventData eventData)
+    {
+        AudioHandler.Instance.PlaySound(AudioEnum.sound_card_7);
+    }
+    #endregion
 }
