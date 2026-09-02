@@ -23,7 +23,7 @@ public class FightTypeConquerEditorWindow : EditorWindow
     {
         var window = EditorWindow.GetWindow<FightTypeConquerEditorWindow>();
         window.titleContent = new GUIContent("战斗模式难度编辑");
-        window.minSize = new Vector2(780, 700);
+        window.minSize = new Vector2(900, 700);
         window.Show();
     }
 
@@ -67,14 +67,17 @@ public class FightTypeConquerEditorWindow : EditorWindow
     /// <summary>原始Bean用于对比变更</summary>
     private FightTypeConquerInfoBean originalBean;
 
-    /// <summary>上一个难度(level-1)的数据，只读用于对比</summary>
-    private FightTypeConquerInfoBean prevBean;
+    /// <summary>前后对比难度数量(各预览N个)</summary>
+    private const int CompareRange = 3;
 
-    /// <summary>下一个难度(level+1)的数据，只读用于对比</summary>
-    private FightTypeConquerInfoBean nextBean;
+    /// <summary>前侧难度(level-1~level-3)的数据，只读用于对比(索引0=最近的level-1)</summary>
+    private FightTypeConquerInfoBean[] prevBeans = new FightTypeConquerInfoBean[CompareRange];
 
-    /// <summary>对比列(上一/下一难度)固定宽度</summary>
-    private const float CompareColumnWidth = 95f;
+    /// <summary>后侧难度(level+1~level+3)的数据，只读用于对比(索引0=最近的level+1)</summary>
+    private FightTypeConquerInfoBean[] nextBeans = new FightTypeConquerInfoBean[CompareRange];
+
+    /// <summary>对比列(前后难度)固定宽度</summary>
+    private const float CompareColumnWidth = 70f;
 
     /// <summary>字段标签固定宽度</summary>
     private const float FieldLabelWidth = 150f;
@@ -430,14 +433,18 @@ public class FightTypeConquerEditorWindow : EditorWindow
         long worldId = GetSelectedWorldId();
 
         currentBean = null;
-        prevBean = null;
-        nextBean = null;
+        for (int i = 0; i < CompareRange; i++)
+        {
+            prevBeans[i] = null;
+            nextBeans[i] = null;
+        }
         foreach (var bean in allConfigList)
         {
             if (bean.world_id != worldId) continue;
-            if (bean.level == selectedDifficulty) currentBean = bean;
-            else if (bean.level == selectedDifficulty - 1) prevBean = bean;
-            else if (bean.level == selectedDifficulty + 1) nextBean = bean;
+            int offset = bean.level - selectedDifficulty;
+            if (offset == 0) currentBean = bean;
+            else if (offset >= -CompareRange && offset <= -1) prevBeans[-offset - 1] = bean;
+            else if (offset >= 1 && offset <= CompareRange) nextBeans[offset - 1] = bean;
         }
 
         if (currentBean != null)
@@ -516,7 +523,7 @@ public class FightTypeConquerEditorWindow : EditorWindow
         EditorGUILayout.LabelField("数据编辑", sectionHeaderStyle);
         GUILayout.Space(10);
 
-        // 对比列头(上一难度 | 当前 | 下一难度)
+        // 对比列头(前3难度 | 当前 | 后3难度)
         DrawCompareHeader();
 
         GUILayout.Space(4);
@@ -613,7 +620,7 @@ public class FightTypeConquerEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 绘制对比列头：上一难度 | 当前难度 | 下一难度
+    /// 绘制对比列头：前3难度 | 当前难度 | 后3难度
     /// </summary>
     private void DrawCompareHeader()
     {
@@ -621,41 +628,71 @@ public class FightTypeConquerEditorWindow : EditorWindow
 
         EditorGUILayout.BeginHorizontal();
         GUILayout.Space(FieldLabelWidth + 4);
-        EditorGUILayout.LabelField($"难度 {selectedDifficulty - 1}", headerStyle, GUILayout.Width(CompareColumnWidth));
+        // 前3难度(远→近排列，贴近当前列的是level-1)
+        for (int i = CompareRange; i >= 1; i--)
+        {
+            EditorGUILayout.LabelField($"难度 {selectedDifficulty - i}", headerStyle, GUILayout.Width(CompareColumnWidth));
+        }
         EditorGUILayout.LabelField($"◀ 当前 难度 {selectedDifficulty} ▶", headerStyle);
-        EditorGUILayout.LabelField($"难度 {selectedDifficulty + 1}", headerStyle, GUILayout.Width(CompareColumnWidth));
+        // 后3难度(近→远排列)
+        for (int i = 1; i <= CompareRange; i++)
+        {
+            EditorGUILayout.LabelField($"难度 {selectedDifficulty + i}", headerStyle, GUILayout.Width(CompareColumnWidth));
+        }
         EditorGUILayout.EndHorizontal();
 
         // 缺失提示行
         EditorGUILayout.BeginHorizontal();
         GUILayout.Space(FieldLabelWidth + 4);
-        EditorGUILayout.LabelField(prevBean == null ? "(无)" : "", compareCellStyle, GUILayout.Width(CompareColumnWidth));
+        for (int i = CompareRange - 1; i >= 0; i--)
+        {
+            EditorGUILayout.LabelField(prevBeans[i] == null ? "(无)" : "", compareCellStyle, GUILayout.Width(CompareColumnWidth));
+        }
         GUILayout.FlexibleSpace();
-        EditorGUILayout.LabelField(nextBean == null ? "(无)" : "", compareCellStyle, GUILayout.Width(CompareColumnWidth));
+        for (int i = 0; i < CompareRange; i++)
+        {
+            EditorGUILayout.LabelField(nextBeans[i] == null ? "(无)" : "", compareCellStyle, GUILayout.Width(CompareColumnWidth));
+        }
         EditorGUILayout.EndHorizontal();
     }
 
     /// <summary>
-    /// 绘制整难度一键复制按钮（把上一/下一难度的全部参数复制到当前，id/world_id/level 保持不变）
+    /// 绘制整难度一键复制按钮（把前/后3个难度中任一个的全部参数复制到当前，id/world_id/level 保持不变）
     /// </summary>
     private void DrawCopyAllButtons()
     {
         EditorGUILayout.BeginHorizontal();
         GUILayout.Space(FieldLabelWidth + 4);
 
-        EditorGUI.BeginDisabledGroup(prevBean == null);
-        if (GUILayout.Button($"← 复制上一难度({selectedDifficulty - 1})全部数值", EditorStyles.miniButton, GUILayout.Height(20)))
+        // 前3难度(远→近排列，与列头对齐)
+        for (int i = CompareRange - 1; i >= 0; i--)
         {
-            CopyAllFrom(prevBean);
+            FightTypeConquerInfoBean bean = prevBeans[i];
+            int level = selectedDifficulty - (i + 1);
+            EditorGUI.BeginDisabledGroup(bean == null);
+            GUIContent content = new GUIContent($"难度{level}→", $"复制难度 {level} 全部数值到当前难度");
+            if (GUILayout.Button(content, EditorStyles.miniButton, GUILayout.Width(CompareColumnWidth), GUILayout.Height(20)))
+            {
+                CopyAllFrom(bean);
+            }
+            EditorGUI.EndDisabledGroup();
         }
-        EditorGUI.EndDisabledGroup();
 
-        EditorGUI.BeginDisabledGroup(nextBean == null);
-        if (GUILayout.Button($"复制下一难度({selectedDifficulty + 1})全部数值 →", EditorStyles.miniButton, GUILayout.Height(20)))
+        GUILayout.FlexibleSpace();
+
+        // 后3难度(近→远排列，与列头对齐)
+        for (int i = 0; i < CompareRange; i++)
         {
-            CopyAllFrom(nextBean);
+            FightTypeConquerInfoBean bean = nextBeans[i];
+            int level = selectedDifficulty + (i + 1);
+            EditorGUI.BeginDisabledGroup(bean == null);
+            GUIContent content = new GUIContent($"←难度{level}", $"复制难度 {level} 全部数值到当前难度");
+            if (GUILayout.Button(content, EditorStyles.miniButton, GUILayout.Width(CompareColumnWidth), GUILayout.Height(20)))
+            {
+                CopyAllFrom(bean);
+            }
+            EditorGUI.EndDisabledGroup();
         }
-        EditorGUI.EndDisabledGroup();
 
         EditorGUILayout.EndHorizontal();
     }
@@ -706,7 +743,7 @@ public class FightTypeConquerEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 绘制单个对比单元格：只读展示上一/下一难度值，与当前值不同则高亮，点击可复制到当前
+    /// 绘制单个对比单元格：只读展示相邻难度值，与当前值不同则高亮，点击可复制到当前
     /// </summary>
     /// <returns>被点击(需复制)返回 true</returns>
     private bool DrawCompareCell(FightTypeConquerInfoBean bean, string fieldName, string currentValueStr)
@@ -719,21 +756,56 @@ public class FightTypeConquerEditorWindow : EditorWindow
         string text = GetFieldValueStr(bean, fieldName);
         bool differs = text != currentValueStr;
         GUIStyle style = differs ? compareCellDiffStyle : compareCellStyle;
-        GUIContent content = new GUIContent(text, "点击复制到当前难度");
+        // 单元格宽度有限，tooltip放完整值避免长文本被截断后不可读
+        GUIContent content = new GUIContent(text, $"{text}\n点击复制到当前难度");
         return GUILayout.Button(content, style, GUILayout.Width(CompareColumnWidth), GUILayout.Height(18));
     }
 
     /// <summary>
-    /// 绘制字符串字段（左=上一难度 / 中=当前可编辑 / 右=下一难度）
+    /// 绘制一侧(前或后)最多3个难度的对比单元格，点击某个单元格即复制其值到当前难度
+    /// </summary>
+    /// <param name="beans">该侧难度Bean数组(索引0=最近难度)</param>
+    /// <param name="fieldName">字段名</param>
+    /// <param name="currentValueStr">当前值的字符串形式(用于差异高亮)</param>
+    /// <param name="nearOnRight">true=最近难度排最右(前侧)；false=最近难度排最左(后侧)</param>
+    /// <returns>被点击的Bean(无点击返回null)</returns>
+    private FightTypeConquerInfoBean DrawCompareCells(FightTypeConquerInfoBean[] beans, string fieldName, string currentValueStr, bool nearOnRight)
+    {
+        FightTypeConquerInfoBean clicked = null;
+        if (nearOnRight)
+        {
+            for (int i = beans.Length - 1; i >= 0; i--)
+            {
+                if (DrawCompareCell(beans[i], fieldName, currentValueStr)) clicked = beans[i];
+            }
+        }
+        else
+        {
+            for (int i = 0; i < beans.Length; i++)
+            {
+                if (DrawCompareCell(beans[i], fieldName, currentValueStr)) clicked = beans[i];
+            }
+        }
+        return clicked;
+    }
+
+    /// <summary>
+    /// 绘制字符串字段（左=前3难度 / 中=当前可编辑 / 右=后3难度）
     /// </summary>
     private string DrawStringField(string label, string value, string fieldName)
     {
         string result = value;
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField(label + ":", GUILayout.Width(FieldLabelWidth));
-        if (DrawCompareCell(prevBean, fieldName, value)) result = (string)GetFieldValueObject(prevBean, fieldName) ?? "";
+        var clickedPrev = DrawCompareCells(prevBeans, fieldName, value, true);
         result = EditorGUILayout.TextField(result);
-        if (DrawCompareCell(nextBean, fieldName, value)) { result = (string)GetFieldValueObject(nextBean, fieldName) ?? ""; GUI.FocusControl(null); }
+        var clickedNext = DrawCompareCells(nextBeans, fieldName, value, false);
+        var clicked = clickedPrev != null ? clickedPrev : clickedNext;
+        if (clicked != null)
+        {
+            result = (string)GetFieldValueObject(clicked, fieldName) ?? "";
+            GUI.FocusControl(null);
+        }
         EditorGUILayout.EndHorizontal();
         return result;
     }
@@ -747,9 +819,15 @@ public class FightTypeConquerEditorWindow : EditorWindow
         string result = GetFieldValueStr(currentBean, fieldName);
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField(label + ":", GUILayout.Width(FieldLabelWidth));
-        if (DrawCompareCell(prevBean, fieldName, result)) result = GetFieldValueStr(prevBean, fieldName);
+        var clickedPrev = DrawCompareCells(prevBeans, fieldName, result, true);
         result = EditorGUILayout.TextField(result);
-        if (DrawCompareCell(nextBean, fieldName, result)) { result = GetFieldValueStr(nextBean, fieldName); GUI.FocusControl(null); }
+        var clickedNext = DrawCompareCells(nextBeans, fieldName, result, false);
+        var clicked = clickedPrev != null ? clickedPrev : clickedNext;
+        if (clicked != null)
+        {
+            result = GetFieldValueStr(clicked, fieldName);
+            GUI.FocusControl(null);
+        }
         EditorGUILayout.EndHorizontal();
         return result;
     }
@@ -821,11 +899,17 @@ public class FightTypeConquerEditorWindow : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
 
-        // 上一/下一难度对比行(只读+复制按钮)
-        string copiedValue = DrawIdListCompareLine(fieldKey, value);
-        if (copiedValue != value)
+        // 前后3难度对比行(只读+点击复制，与上方列头对齐；长ID串截断展示，完整值见tooltip)
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.Space(FieldLabelWidth);
+        var clickedPrev = DrawCompareCells(prevBeans, fieldKey, value, true);
+        GUILayout.FlexibleSpace();
+        var clickedNext = DrawCompareCells(nextBeans, fieldKey, value, false);
+        EditorGUILayout.EndHorizontal();
+        var clickedBean = clickedPrev != null ? clickedPrev : clickedNext;
+        if (clickedBean != null)
         {
-            value = copiedValue;
+            value = GetFieldValueStr(clickedBean, fieldKey);
             idList = ParseIdList(value);
             GUI.FocusControl(null);
         }
@@ -925,38 +1009,6 @@ public class FightTypeConquerEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 绘制ID列表字段的上一/下一难度对比行（只读展示原始ID串+差异高亮，「复制」按钮可覆盖当前）
-    /// </summary>
-    /// <returns>点击复制则返回被复制的ID串，否则返回原值</returns>
-    private string DrawIdListCompareLine(string fieldKey, string currentValue)
-    {
-        string result = currentValue;
-        string prevStr = prevBean != null ? GetFieldValueStr(prevBean, fieldKey) : null;
-        string nextStr = nextBean != null ? GetFieldValueStr(nextBean, fieldKey) : null;
-        if (prevStr == null && nextStr == null) return result;
-
-        EditorGUILayout.BeginHorizontal();
-        GUILayout.Space(FieldLabelWidth);
-
-        // 上一难度
-        if (prevStr != null)
-        {
-            GUIStyle s = prevStr != (currentValue ?? "") ? compareCellDiffStyle : compareCellStyle;
-            EditorGUILayout.LabelField($"◀难度{selectedDifficulty - 1}: {(string.IsNullOrEmpty(prevStr) ? "(空)" : prevStr)}", s);
-            if (GUILayout.Button("复制", EditorStyles.miniButton, GUILayout.Width(40))) result = prevStr;
-        }
-        // 下一难度
-        if (nextStr != null)
-        {
-            if (GUILayout.Button("复制", EditorStyles.miniButton, GUILayout.Width(40))) result = nextStr;
-            GUIStyle s = nextStr != (currentValue ?? "") ? compareCellDiffStyle : compareCellStyle;
-            EditorGUILayout.LabelField($"难度{selectedDifficulty + 1}: {(string.IsNullOrEmpty(nextStr) ? "(空)" : nextStr)}▶", s);
-        }
-        EditorGUILayout.EndHorizontal();
-        return result;
-    }
-
-    /// <summary>
     /// 根据字段类型获取显示名字
     /// </summary>
     private string GetDisplayName(long id, string fieldKey)
@@ -1016,7 +1068,7 @@ public class FightTypeConquerEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 绘制整数字段（左=上一难度 / 中=当前可编辑 / 右=下一难度）
+    /// 绘制整数字段（左=前3难度 / 中=当前可编辑 / 右=后3难度）
     /// </summary>
     private int DrawIntField(string label, int value, string fieldName)
     {
@@ -1024,15 +1076,21 @@ public class FightTypeConquerEditorWindow : EditorWindow
         string valueStr = value.ToString();
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField(label + ":", GUILayout.Width(FieldLabelWidth));
-        if (DrawCompareCell(prevBean, fieldName, valueStr)) result = (int)GetFieldValueObject(prevBean, fieldName);
+        var clickedPrev = DrawCompareCells(prevBeans, fieldName, valueStr, true);
         result = EditorGUILayout.IntField(result);
-        if (DrawCompareCell(nextBean, fieldName, valueStr)) { result = (int)GetFieldValueObject(nextBean, fieldName); GUI.FocusControl(null); }
+        var clickedNext = DrawCompareCells(nextBeans, fieldName, valueStr, false);
+        var clicked = clickedPrev != null ? clickedPrev : clickedNext;
+        if (clicked != null)
+        {
+            result = (int)GetFieldValueObject(clicked, fieldName);
+            GUI.FocusControl(null);
+        }
         EditorGUILayout.EndHorizontal();
         return result;
     }
 
     /// <summary>
-    /// 绘制浮点数字段（左=上一难度 / 中=当前可编辑 / 右=下一难度）
+    /// 绘制浮点数字段（左=前3难度 / 中=当前可编辑 / 右=后3难度）
     /// </summary>
     private float DrawFloatField(string label, float value, string fieldName)
     {
@@ -1040,9 +1098,15 @@ public class FightTypeConquerEditorWindow : EditorWindow
         string valueStr = value.ToString();
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField(label + ":", GUILayout.Width(FieldLabelWidth));
-        if (DrawCompareCell(prevBean, fieldName, valueStr)) result = (float)GetFieldValueObject(prevBean, fieldName);
+        var clickedPrev = DrawCompareCells(prevBeans, fieldName, valueStr, true);
         result = EditorGUILayout.FloatField(result);
-        if (DrawCompareCell(nextBean, fieldName, valueStr)) { result = (float)GetFieldValueObject(nextBean, fieldName); GUI.FocusControl(null); }
+        var clickedNext = DrawCompareCells(nextBeans, fieldName, valueStr, false);
+        var clicked = clickedPrev != null ? clickedPrev : clickedNext;
+        if (clicked != null)
+        {
+            result = (float)GetFieldValueObject(clicked, fieldName);
+            GUI.FocusControl(null);
+        }
         EditorGUILayout.EndHorizontal();
         return result;
     }

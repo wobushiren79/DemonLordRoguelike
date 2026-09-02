@@ -5,6 +5,7 @@ public class UIGameSettingForDisplay : UIGameSettingBase
 {
 
     protected UIViewGameSettingSelect selectForScreen;
+    protected UIViewGameSettingCheckBox checkboxForVSync;
     protected UIViewGameSettingCheckBox checkboxForFrameLock;
     protected UIViewGameSettingRange rangeForFrame;
     //分辨率选项列表（预设列表 + 拖动窗口产生的自定义分辨率）
@@ -31,6 +32,11 @@ public class UIGameSettingForDisplay : UIGameSettingBase
         }
         selectForScreen = CreatureItemForSelect(textScreenTitle, listResolutionData);
         selectForScreen.SetSelcet(indexResolution);
+
+        //垂直同步
+        string textVSyncTitle = TextHandler.Instance.GetTextById(42004);
+        checkboxForVSync = CreatureItemForCheckBox(textVSyncTitle);
+        checkboxForVSync.SetSelect(gameConfig.vsync);
 
         //帧数锁定
         string textFrameLockTitle = TextHandler.Instance.GetTextById(42002);
@@ -74,6 +80,11 @@ public class UIGameSettingForDisplay : UIGameSettingBase
         {
             gameConfig.stateForFrames = isCheck ? 1 : 0;
             FPSHandler.Instance.SetData(gameConfig.stateForFrames, gameConfig.frames);
+        }
+        else if (targetView == checkboxForVSync)
+        {
+            gameConfig.vsync = isCheck;
+            FPSHandler.Instance.SetSyncCount(isCheck ? 1 : 0);
         }
     }
 }

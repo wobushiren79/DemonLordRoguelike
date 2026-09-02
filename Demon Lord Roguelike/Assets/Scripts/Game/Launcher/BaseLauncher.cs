@@ -28,6 +28,8 @@ public class BaseLauncher : BaseMonoBehaviour
         ScreenResolutionHandler.Instance.InitData();
         //设置FPS
         FPSHandler.Instance.SetData(gameConfig.stateForFrames, gameConfig.frames);
+        //设置垂直同步
+        FPSHandler.Instance.SetSyncCount(gameConfig.vsync ? 1 : 0);
         //修改抗锯齿
         //CameraHandler.Instance.ChangeAntialiasing(gameConfig.GetAntialiasingMode(), gameConfig.antialiasingQualityLevel);
         //音效初始化
