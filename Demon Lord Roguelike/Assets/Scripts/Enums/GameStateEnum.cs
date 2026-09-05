@@ -106,7 +106,6 @@ public enum TestSceneTypeEnum
     Base = 4,//基地测试
     RewardSelect = 5,//奖励选择
     DoomCouncil = 6,//终焉议会
-    NpcCreate = 7,//NPC创建
     ResearchUI = 8,//研究ui
     AbyssalBlessing = 9,//深渊馈赠UI
     CreatureSacrifice = 10,//生物献祭升级测试

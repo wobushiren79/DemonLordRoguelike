@@ -322,9 +322,11 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 
 **文件**：`Assets/Editor/FightTypeConquerEditorWindow.cs`（菜单：自定义编辑窗口）
 
-- 提供按 world/难度浏览编辑各行字段；区间字段（`attack_boss_num`/`fight_num`/`road_num`/`road_length`）用字符串输入框。
-- **ID 列表字段**（`fight_scene_ids`/`fight_scene_boss_ids`/`enemy_ids`/`enemy_boss_ids`）：列表编辑模式下每行「LongField 手输 ID ＋ 下拉按名字选取（`DrawIdDropdown`，选项为 `[id] 名字`，场景字段取 FightScene、敌人字段取 NpcInfo，由 `BuildOptionList` 按 ID 升序构建）」二选一设置，新增行同理（下拉选中即写入新 ID 输入框）；另可切文本编辑模式直接改 `&` 分隔串。
-- **前后难度对比**：编辑区每个数值字段一行七列——左=前3难度(`level-3~-1`，远→近)只读值 / 中=当前难度可编辑 / 右=后3难度(`level+1~+3`，近→远)只读值，与当前值不同的对比单元格会**高亮**，方便跨难度调数值；ID 列表字段在标签下方追加一行前后各3难度对比，但单元格**显示解析后的具体名字**（`DrawIdListCompareCells`/`DrawIdListCompareCell`，名字以、连接+自动换行，tooltip 为每行 "id 名字" 完整列表，差异判定仍按原始 ID 串）。`LoadData` 中在同一 world 内一次遍历按难度偏移填充 `prevBeans[3]`(level-1~-3，索引0=最近)/`currentBean`/`nextBeans[3]`(level+1~+3)；对比值一律用 `GetFieldValueStr` 反射按字段名读取（只读展示，不参与保存）。
+- 提供按 world/难度浏览编辑各行字段；区间字段（`attack_boss_num`/`fight_num`/`road_num`/`road_length`）用字符串输入框。字段标签只写短名，完整说明（字段名+格式）放 tooltip。
+- **窗口布局**：顶部工具栏（刷新数据/导出 JSON/打开 4 张 Excel 表，toolbar 小按钮单行固定）＋ 选择区固定不滚动（世界 Popup ＋ 难度 1~10 页签 toggle ＋「加载数据」按钮；状态行显示当前编辑信息，选择已变更未加载/有未保存修改时橙色提示）＋ 中间编辑区滚动 ＋ 底部保存栏固定（保存按钮显示变更数、无变更禁用）。
+- **ID 列表字段**（`fight_scene_ids`/`fight_scene_boss_ids`/`enemy_ids`/`enemy_boss_ids`）：首行「标签＋foldout 共N个＋列表/文本模式切换＋快捷开表」，展开后列表编辑模式每行「LongField 手输 ID ＋ 下拉按名字选取（`DrawIdDropdown`，选项为 `[id] 名字`，场景字段取 FightScene、敌人字段取 NpcInfo，由 `BuildOptionList` 按 ID 升序构建）」二选一设置，新增行同理（下拉选中即写入新 ID 输入框）；另可切文本编辑模式直接改 `&` 分隔串。
+- **前后难度对比**：编辑区每个数值字段一行七列——左=前3难度(`level-3~-1`，远→近)只读值 / 中=当前难度可编辑 / 右=后3难度(`level+1~+3`，近→远)只读值，与当前值不同的对比单元格会**高亮**，方便跨难度调数值；ID 列表字段的对比行与标量字段同一网格对齐，中间列放当前值名字摘要格，两侧单元格**显示解析后的具体名字**（`DrawIdListCompareCells`/`DrawIdListCompareCell`，名字以、连接+自动换行，tooltip 为每行 "id 名字" 完整列表，差异判定仍按原始 ID 串）。`LoadData` 中在同一 world 内一次遍历按难度偏移填充 `prevBeans[3]`(level-1~-3，索引0=最近)/`currentBean`/`nextBeans[3]`(level+1~+3)；对比值一律用 `GetFieldValueStr` 反射按字段名读取（只读展示，不参与保存）。
+- **修改高亮**：当前值与加载时原始值（`originalBean` 深拷贝）不同的字段，编辑框淡黄底标记（`IsFieldModified` + `ModifiedBgColor`），保存栏与选择区同步显示变更数（`CountChanges`）。
 - **参数可复制**：两种粒度——① 点击任意对比单元格（`DrawCompareCell` 返回 bool，`DrawCompareCells` 一次画一侧3格并返回被点 Bean）把该字段对应难度的值复制到当前；② 编辑区顶部按难度排列的 6 个一键复制按钮（`CopyAllFrom` 反射整表覆盖，**跳过 id/world_id/level**）。复制只改内存 `currentBean`，仍需点「保存到Excel并生成Json」才写回。
 - 「保存到Excel并生成Json」：用**反射按字段名**对比变更写回 Excel，并 `RegenerateJson` 重新导出 JSON（同样按字段名 + `Convert.ChangeType` 反射赋值）。
 - 改字段结构（增删列）后需保证 Excel 表头与 Bean 字段名一致，否则反射赋值会跳过该列。

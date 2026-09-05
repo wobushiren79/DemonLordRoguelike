@@ -35,4 +35,15 @@ public class CreatureNpcBean
         this.npcId = npcId;
     }
 
+#if UNITY_EDITOR
+    /// <summary>
+    /// 编辑器专用：注入 npcInfo 编辑副本（供 NPC创建编辑器窗口预览未保存/编辑中的 NPC，
+    /// 绕过 npcInfo getter 的 Cfg 懒加载——未保存的新 id 会 LogError 返回 null，已有 id 会返回缓存原值而非编辑副本）
+    /// </summary>
+    public void SetNpcInfoForEditor(NpcInfoBean info)
+    {
+        _npcInfo = info;
+    }
+#endif
+
 }

@@ -1,6 +1,6 @@
 ---
 name: test-system
-description: Demon Lord Roguelike 游戏的测试系统开发指南。使用此SKILL当需要创建或修改测试工具、测试UI、测试编辑器扩展、测试数据等，包括战斗场景测试、卡片测试、基地测试、奖励选择测试、终焉议会测试、NPC创建测试、研究UI测试等。
+description: Demon Lord Roguelike 游戏的测试系统开发指南。使用此SKILL当需要创建或修改测试工具、测试UI、测试编辑器扩展、测试数据等，包括战斗场景测试、卡片测试、基地测试、奖励选择测试、终焉议会测试、研究UI测试等。
 watched_files:
   - Assets/Scripts/Game/Launcher/LauncherTest.cs
   - Assets/Editor/GameTestEditor.cs
@@ -27,10 +27,11 @@ LauncherTest                    - 测试启动器，初始化测试数据并提�
 └── 测试UI们
     ├── UITestBase              - GM工具面板
     ├── UITestCard              - 卡片显示参数校准
-    ├── UITestNpcCreate         - NPC外观/属性/装备配置(预制版)
-    ├── TestNpcCreateGUI        - NPC外观/属性/装备配置(纯IMGUI代码版，不依赖预制)
+    ├── TestCreatureCardGUI     - 卡片编辑器(稀有度/等级/生物/NPC/颜色, 纯IMGUI代码版, 不依赖预制)
     └── UIBaseResearchTest      - 研究节点坐标配置
 ```
+
+> NPC 创建（外观/属性/装备配置）已迁移为非运行态编辑器工具 `游戏/NPC创建编辑`（`Assets/Editor/NpcCreateEditorWindow.cs`，见 editor-extension-system SKILL），测试模式的 UITestNpcCreate/TestNpcCreateGUI 已删除。
 
 ### 测试场景类型
 
@@ -44,7 +45,6 @@ public enum TestSceneTypeEnum
     Base = 4,               // 基地测试
     RewardSelect = 5,       // 奖励选择
     DoomCouncil = 6,        // 终焉议会
-    NpcCreate = 7,          // NPC创建
     ResearchUI = 8,         // 研究UI
     AbyssalBlessing = 9,    // 深渊馈赠UI
     CreatureSacrifice = 10, // 生物献祭升级测试
@@ -339,6 +339,41 @@ GameFightLogicTest.PreGameForAfterCreateDefenseCore()        // 防守核心创�
 - **重开语义**：测试战斗结算后「下一步」重进战斗仍走同一钩子（清理+重加），故每场战斗馈赠状态一致；同一族配多行时后添加替换先添加（同族升级替换机制，面板有提示）。
 - **持久化**：`abyssalBlessingFightTestList`（族根 id 用 EditorPrefs **字符串**存储，避免 10 位 id 强转 int 溢出）+ `AbyssalBlessingFightTestItem{familyRootId, level}`。
 
+## 卡片编辑器测试 (CardTest)
+
+`TestSceneTypeEnum.CardTest` 面板（`GameTestEditor.DrawCardTest`）有两个入口：
+
+- **▶️ 显示卡片**：打开预制 UI `UITestCard`（卡片图标尺寸/坐标校准，「生成数据」写回 `excel_creature_model` 的 `ui_data_s`/`ui_data_b`/`size_spine`）。
+- **🎛️ 卡片编辑器**：`LauncherTest.StartForCreatureCardEditor(creatureId, npcInfoId)`（沿用面板的生物/NPC ID 作初始值，creatureId>0 默认生物模式否则 NPC 模式）→ 纯代码 IMGUI 面板 `TestCreatureCardGUI`（不依赖预制，单例 `Instance` 防重复叠加）。
+
+### 流程
+
+```
+GameTestEditor.DrawCardTest()                    // 「🎛️ 卡片编辑器」按钮
+    ▼
+LauncherTest.StartForCreatureCardEditor(creatureId, npcInfoId)
+    │  ClearWorldData() → DoF Off → CameraHandler.InitData() → CloseAllUI() → 清旧面板
+    ▼
+TestCreatureCardGUI.Start()
+    │  自建 ScreenSpaceOverlay Canvas(1920x1080 适配, sortingOrder=5000, 随面板销毁)
+    │  → Resources.Load 实例化真实预制体 UIViewCreatureCardItem + UIViewCreatureCardDetails
+    │  → NormalizeRoot 固化尺寸+居中锚点(防拉伸型根节点铺满Canvas) → RefreshCards()
+    ▼
+左侧面板 OnGUI: 来源切换(生物/NPC) + 下拉(懒加载 CreatureInfoCfg/NpcInfoCfg, id+名字) + 手动ID(long, 非空合法优先)
+    │  稀有度下拉(RarityInfoCfg 全量行含999魔王配色档) + 等级滑条(0~10) + 缩放滑条(0.5~2)
+    ▼
+RefreshCards(): new CreatureBean(creatureId/npcInfo) → 覆写 rarity/level → AddSkinForBase()
+    → 小卡 SetData(creature, ShowNoPopup)(禁用悬停弹窗) + 大卡 SetData(creature) → ApplyCustomColors()
+```
+
+### 关键点
+
+- **为什么不做成编辑器窗口**：卡片 `SetData` 链路依赖运行时单例（TextHandler 多语言/IconHandler 图标纹理/CreatureHandler+SpineHandler Spine 图标/GameDataHandler/BuffHandler 属性管线），编辑模式 `BaseSingletonMonoBehaviour.Instance` 会 `new GameObject` 进当前场景造成污染（同 NpcCreateEditorWindow 安全铁律），且卡片图标是 Spine SkeletonGraphic 走运行时加载链——故真实卡片只能在 Play 模式显示。
+- **自定义颜色（勾选后覆盖配置色实时预览）**：主板色(支持渐变) `GameUIUtil.SetGradientColor` 到小卡 `ui_CardBgBorad` + 大卡 `ui_CardBgBoard`/`ui_CardSceneBg`；副板色到小卡 `ui_IconContent` + 大卡 `ui_CardRate`；等级色直设两者 `ui_LevelText.color`（均为 public 字段，无需改卡片视图代码）。每个颜色经 `ColorEditState`（颜色值+RGB/Hex文本框双向同步：滑条/调色盘/读配置→`SetColor` 全同步，RGB 文本输入→`ApplyRgbInput` 同步 Hex 保留原文，Hex 输入→`ApplyHexInput` 同步 RGB 保留原文）支持四种编辑方式：RGB 滑条 + RGB 数值输入(0~255) + Hex 输入 + 16 色调色盘点选（预设色与 NpcCreateEditorWindow 皮肤调色盘同一套，当前色块显示✔）。
+- **变更检测**：数据指纹 `ComputeDataKey()`(来源/id/稀有度/等级) 变更才重建生物；颜色/缩放变更仅轻量覆盖，不重建 Spine 防拖拽滑条时反复加载骨骼。
+- **保存颜色到配置表**（`#if UNITY_EDITOR`）：`ExcelUtil.SetExcelData` 写回当前稀有度行 `ui_board_color`/`ui_board_other_color`（`excel_rarity_info[稀有度].xlsx`，RarityInfo sheet）与当前等级行 `level_color`（`excel_level_info[等级信息].xlsx`，LevelInfo sheet，仅 level>=1）→ `ExcelUtil.ExcelToJsonItem` 再生 JSON → 反射清 Cfg 的 `dicData`/`arrayData` 静态缓存立即生效（运行时程序集无法引用编辑器程序集的 `GameTestEditor.ClearCfgBaseStaticCache`，面板内就地反射实现）。
+- **0 级无等级色配置**：`LevelInfoCfg.GetLevelColor(0)` 固定白色，等级色编辑器在 level=0 时禁用并提示。
+
 ## 献祭升级测试 (CreatureSacrifice)
 
 `TestSceneTypeEnum.CreatureSacrifice` —— 读取某个**真实存档**的数据，对其中一只生物直接发起献祭升级，便于验证成功率公式/升级成长/保底等，且**不会把结果写回真实存档**（依赖上面的[测试模拟不落盘通用机制](#测试模拟不落盘通用机制)）。
@@ -632,9 +667,9 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 测试控制台 | `Assets/FrameWork/Scripts/Component/UI/UITestConsole.cs` |
 | 测试基础 UI | `Assets/Scripts/Component/UI/Test/UITestBase.cs` + `UITestBaseComponent.cs` |
 | 卡片测试 UI | `Assets/Scripts/Component/UI/Test/UITestCard.cs` + `UITestCardComponent.cs` |
-| NPC 创建测试（预制版） | `Assets/Scripts/Component/UI/Test/UITestNpcCreate.cs` + `UITestNpcCreateComponent.cs`（`LauncherTest.StartNpcCreate` 打开预制 UI；皮肤图标规则同 GUI 版：普通皮肤走 Skins 图集拼接命名，穿戴类(帽子/衣服/裤子等)按 `ItemsInfo.creature_model_info_id` 反查装备 icon_res 走 Items 图集，见 `BuildSkinItemIconResMap`；头发颜色经 `skin_color_data` 列持久化(加载时读回并回显 `UIViewColorShow`，保存时保留其他部位已配置颜色仅覆盖 Hair 项、头发皮肤不可调色则移除该部位配置，保存后同步 `ExcelUtil.ExcelToJsonItem` 重生成 NpcInfo.txt)） |
-| NPC 创建测试（GUI版） | `Assets/Scripts/Component/UI/Test/TestNpcCreateGUI.cs`（纯 IMGUI 代码 UI + 代码生成场景 Spine 预览 + 文本列出卡片数据，不依赖任何预制；预览大小滑条手动调节(默认5倍/0.5~10，SetCreatureData 每次按 size_spine×体型倍率重置缩放后由 ApplyPreviewScale 统一覆盖)；NPC 通过下拉列表选择(列出 id+名字，`NpcInfoCfg.GetAllArrayData` 懒加载；id 为 long 不能用 int.TryParse 解析——议会随机议员 id 3xxxxxxxxx 超 int 上限；随机议员无名字走通用命名 `NpcInfoBean.GetCouncilorRandomDisplayName` 评级称谓名)；创建后可下拉切换生物 creatureInfo(`CreatureInfoCfg.GetAllArrayData` 懒加载，列出 id+名字，`OnChangeCreatureInfo` 改写 creatureId：同模组(model_id 相同, spine/皮肤池/随机池均按 model_id 取)保留皮肤/调色/随机池，仅过滤新生物 equip_items_type 不支持的装备；不同模组才清空皮肤/装备/随机皮肤池，保存时 creature_id 一并落盘)；身体皮肤区顶部带随机皮肤下拉(`CreatureRandomInfoCfg` 列出 id+remark，0=不使用；启用后固定皮肤部位/发色选项隐藏，RefreshCreature 按 NpcInfoBean.GetSkins 同规则拼 固定皮肤+随机池，每次刷新重新随机，保存时 creature_random_id 一并落盘)；装备区顶部带随机装备下拉(列 random_type=1 散件池与 random_type=2 套装池，标签带[散件]/[套装]前缀，0=不使用；改写经 `NpcInfoBean.SetEquipRandom` 即时重置解析缓存)+稀有度开关(N~L 点选加入/移出、至少保留1个；稀有度重复加权需直接改 Excel)，启用后 RefreshCreature 在固定装备 `InitEquip` 后追加 `CreatureBean.InitRandomEquip` 抽池填充空槽(每次刷新重抽便于看组合)，保存时 equip_random 一并落盘，切换不同模组生物时随机皮肤池与随机装备一并重置(`SetEquipRandom("")`)；随机皮肤下拉只列 random_type=0 皮肤池(装备池已分流)；皮肤/装备选择面板带图标预览(普通皮肤图标名=表记录拼接 `{CreatureModel.mark_name}_Atlas_{CreatureModelInfo.res_name(/转_)}` 走 Skins 图集；穿戴类皮肤(帽子/衣服/裤子等)贴图不在 Skins 图集而是作为装备图标打进 Items 图集，按 `ItemsInfo.creature_model_info_id` 反查装备取 icon_res 走 Items 图集；装备图标=ItemsInfo.icon_res 走 Items 图集并显示装备名，IMGUI 异步加载缓存+`GUI.DrawTextureWithTexCoords` 画图集子图)；身体皮肤区不列出装备驱动部位(帽子/衣服/裤子/鼻环/武器等，数据驱动判定 `ItemsInfoCfg.GetEquipDrivenSkinPartTypes`=该部位皮肤被装备 ItemsInfo.creature_model_info_id 引用，换皮走装备区；含史莱姆 Hat 用旧 part_type=2 的情况；预制版同规则)；皮肤颜色区对所有已装备的可调色皮肤(color_state!=0)逐部位列出色块，点击展开 RGB 滑条(实时应用)+16 色调色盘(`paletteSkinColors` 预设，点选即应用)，color_state==2 追加 A 滑条；选中可调色皮肤自动展开该部位调色，同部位换皮肤保留已调颜色(与 UIMainCreate 同规则)，未手动调色的部位首次刷新固化随机颜色防抖动；皮肤颜色经 `skin_color_data` 列持久化(格式 `部位类型int,r,g,b,a&` rgba 0~255：加载时读回 `dicSkinColorEdit`，保存时只保留当前固定皮肤存在的部位、随机池部位不存；游戏内 `CreatureBean.InitSkin(NpcInfoBean)` 随机染色后用配置色覆盖，空=随机)；保存按钮写 Excel 后调 `ExcelUtil.ExcelToJsonItem` 同步重新生成 NpcInfo.txt；`LauncherTest.StartNpcCreateGUI` 挂到空物体 `NpcCreateGUI` 上启动；两版并存，编辑器面板各有一个按钮） |
-| 图标显示测试 | `Assets/Scripts/Component/UI/Test/UIViewTestIconShow.cs` + `UIViewTestIconShowComponent.cs` |
+| 卡片编辑器测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForCreatureCardEditor`） |
+| 卡片编辑器测试面板 | `Assets/Scripts/Component/UI/Test/TestCreatureCardGUI.cs`（纯代码 IMGUI + 实例化真实卡片预制体 UIViewCreatureCardItem/UIViewCreatureCardDetails；稀有度/等级/生物/NPC 下拉+手动ID；自定义板色(渐变)/等级色：RGB滑条+RGB数值输入(0~255)+Hex输入+16色调色盘(ColorEditState 双向同步)；保存写回 excel_rarity_info/excel_level_info + ExcelToJsonItem + 反射清 Cfg 缓存） |
+| NPC 创建编辑（编辑器版，非运行态） | `Assets/Editor/NpcCreateEditorWindow.cs` + 5 个 partial（菜单 `游戏/NPC创建编辑`）：非运行态 NPC 创建/修改/删除工具（皮肤/调色/装备/随机池/属性 + Spine 双模型预览；Play 模式的 UITestNpcCreate/TestNpcCreateGUI 已删除并入本工具），另支持全字段编辑、新建（建议id+模板复制+中文名写语言表）与删除登记；编辑副本+JSON快照判脏，保存走 EPPlus 双表写回+ExcelToJsonItem 重导+清Cfg缓存；编辑器安全约束（禁止 new CreatureBean(npcInfo)、禁止 *_language、EditorUtility 弹窗）详见 editor-extension-system SKILL 的 NpcCreateEditorWindow 章节 |
 | 研究 UI 测试 | `Assets/Scripts/Component/UI/Game/BaseResearch/UIBaseResearchTest.cs` |
 | 终焉议会测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForDoomCouncil` 正常随机议员；`StartForDoomCouncilAllFixed` 直接载入所有固定议员，标记 `DoomCouncilBean.isTestAllFixedCouncilor=true`） |
 | 终焉议会测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawDoomCouncilTest`：▶️ 开始终焉议会 / ▶️ 查看所有固定议员 两个按钮 + 加载议案名字） |

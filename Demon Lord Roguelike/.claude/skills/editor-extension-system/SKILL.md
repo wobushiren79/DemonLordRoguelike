@@ -42,6 +42,7 @@ EditorWindow (Unity)
 ├── EquipSuitEditorWindow          # 装备套装配置 (EquipSuitInfo 套装表: 物种下拉+7槽位点选填入+新建/删除套装, 单EPPlus会话写回+同步JSON)
 ├── FightSceneEditorWindow         # 战斗场景配置 (excel_fight_scene: 预制/道路色/天空盒/雾/环境光/细节预制直观编辑, 保存写回Excel+再生JSON, Play时实时应用到当前战斗场景)
 ├── StoryEditorWindow              # 故事演出编辑 (StoryInfo/StoryDetailsInfo/StoryTalkInfo 三表+excel_language 对应 sheet: 三栏布局故事列表/字段/步骤编排+对话内联编辑, 4个xlsx各单EPPlus会话写回+重导JSON)
+├── NpcCreateEditorWindow          # NPC创建编辑 (excel_npc_info 全字段 + 语言表中文名: 三栏布局 列表/字段+外观/Spine双模型预览, 非运行态版 NPC创建GUI)
 └── PixelDaEditorWindow            # PixelDa 像素美术生成 (AI 文生图/图编辑/图生视频/抽帧/音乐)
 ```
 
@@ -60,8 +61,15 @@ EditorWindow (Unity)
 ### 打开方式
 
 ```
-菜单: Custom/工具弹窗/Excel编辑器
+菜单: Custom/工具弹窗/处理 Excel
+主工具栏(Unity 6000.3+): 左侧「Excel处理」下拉（MainToolbarDropdown，元素ID「自定义标题/处理 Excel 快捷操作」不可改，改 ID 会被当新元素默认隐藏）
 ```
+
+**工具栏下拉菜单**（快捷操作不开窗口直接执行，走 `DefaultExcelFolderPath` 等静态默认路径）：
+
+- 打开 Excel 处理窗口
+- 导出所有 Json → `QuickExcelToJson()` → `ExcelToJsonAll(excelFolder, jsonFolder)` 静态实现
+- 生成所有 Entity → `QuickCreateEntities()` → `CreateEntitiesAll(excelFolder, entityDir, entityDirFramework)` 静态实现（`CreateEntitiesItem`/`CreateEntityPartial`/`CreateEntity` 均有带输出目录参数的静态重载，窗口实例方法只是转发）
 
 ### 使用流程
 
@@ -214,11 +222,10 @@ LauncherTest (Inspector)
 ├── ──── 根据类型显示对应参数 ────
 ├── NormalGame: 正常游戏启动（走真实开始流程）
 ├── FightSceneTest: 战斗参数配置
-├── CardTest: 卡片测试参数
+├── CardTest: 卡片测试参数（两个启动按钮：显示卡片 UITestCard 图标尺寸校准 / 🎛️ 卡片编辑器 StartForCreatureCardEditor 纯代码GUI实时预览稀有度/等级/颜色，详见 test-system skill）
 ├── Base: 基地测试参数
 ├── RewardSelect: 奖励选择参数
 ├── DoomCouncil: 终焉议会参数（两个启动按钮：开始终焉议会 StartForDoomCouncil / 查看所有固定议员 StartForDoomCouncilAllFixed）
-├── NpcCreate: NPC创建参数（两个启动按钮：预制版 StartNpcCreate / 纯GUI代码版 StartNpcCreateGUI）
 ├── ResearchUI: 研究UI参数
 ├── AbyssalBlessing: 深渊馈赠UI参数
 ├── CreatureSacrifice: 献祭升级测试参数
@@ -266,7 +273,7 @@ LauncherTest (Inspector)
 - **随机池下拉**（`id | remark`）+ 当前池具体内容展示（压缩串只读 TextArea + 部件总数/覆盖部位/无效ID 统计）。
 - **左列表 = 已加入随机的皮肤**：按部位(`CreatureSkinTypeEnum`)分组排序，逐行「移除」；池中悬空 ID（模型表不存在）红色标记排在最后。**右列表 = 未加入随机的皮肤**：**按池内已有部件的物种自动限定**（选了人类池只列人类皮肤，空池不限定，无物种下拉），支持部位/搜索(id/res_name/remark) 筛选，逐行「加入」；另有「全部移除」「加入全部(筛选结果)」批量按钮。
 - **装备/武器类部位（统一维护在 `ExcludePartTypes` 列表：鼻环9/帽子50/衣服51/裤子52/鞋53/腰带54/手套55/武器线80/武器左右手90-91/双手武器92）双列表均不展示**——此类皮肤由装备道具驱动换皮（鼻环虽在枚举身体段，但道具表 item_type=5 经 `creature_model_info_id` 对接）；池内已有的装备部件数据保留不删，仅隐藏并在左列表头提示数量。新增装备类部位直接往 `ExcludePartTypes` 加，`IsEquipPart` 统一判定。
-- **每行带皮肤图标**：命名约定 `{CreatureModel.mark_name}_Atlas_{CreatureModelInfo.res_name 的 / 换成 _}`（与 UITestNpcCreate 取图同约定），图标是 `GameDataEditor.SpineAllSkinInit` 抽取到 `Assets/LoadResources/Textures/Skins/` 的产物，懒加载+缓存，缺失时灰块占位（缺图标可跑「生成所有 Spine 皮肤图标」补齐）。
+- **每行带皮肤图标**：命名约定 `{CreatureModel.mark_name}_Atlas_{CreatureModelInfo.res_name 的 / 换成 _}`（与 NpcCreateEditorWindow 取图同约定），图标是 `GameDataEditor.SpineAllSkinInit` 抽取到 `Assets/LoadResources/Textures/Skins/` 的产物，懒加载+缓存，缺失时灰块占位（缺图标可跑「生成所有 Spine 皮肤图标」补齐）。
 - 多池切换编辑不丢变更（每池独立 `skinSet`/`equipSet` + `originalData`/`originalEquipData` 对比出 dirty，`IsPoolDirty` 按池类型比对对应集合），刷新前有未保存变更确认。
 - **保存**：把 ID 集合升序压缩为区间串（连续段 `a-b`，逗号连接，与表内原有书写格式一致）→ 按池类型写回 `skin_random_data`/`equip_random_data` 列（`ExcelUtil.SetExcelData`；套装池与装备池同写 `equip_random_data`）→ `ExcelUtil.ExcelToJsonItem` 整体再生 `CreatureRandomInfo.txt`（该 Excel 仅单表，再生安全）→ `AssetDatabase.Refresh`。解析与运行时 `SplitForListLong(',', '-')` 同规则。部件全集直读 `excel_creature_model_info[生物模型详情信息] .xlsx`（不经 JSON 保证最新），物种名/mark_name 取自 `excel_creature_model[生物模型信息].xlsx`。
 
@@ -316,6 +323,32 @@ LauncherTest (Inspector)
 - **四栏布局**：故事列表（搜索/新增/删除——删除级联删步骤并提示孤儿对话）｜故事字段（名字中文直接编辑写回语言表 content_cn）｜步骤编排（foldout 列表/step_type EnumPopup/is_async/**➕行前插入**/↑↓移/末尾添加，按类型动态参数标签；Talk 步骤只做引用选择+只读预览 + 对话框对齐下拉/偏移X-Y/目标高亮开关+目标下拉/形状下拉(方形/圆形)+尺寸倍率(param_2=对齐[|高亮[|形状[|倍率]]]组合、param_3/4=偏移，空=默认下对齐不高亮)）｜对话列表（本故事+通用对话统一 CRUD：npc 下拉/中文/备注/删除(被引用时提示并自动移除引用)/新增自动绑定当前故事且 id=story_id*1000+号段内序号、上限999句超出报错）。三个固定栏的栏间分隔条可拖拽调宽、双击复位默认宽；步骤栏为弹性栏自动占满剩余宽度（DrawSplitter/HandleSplitterDrag，各栏有最小宽保护）。
 - **步骤与对话分离**：对话 CRUD 全在对话列表面板，步骤编排只负责下拉引用；对话下拉按 StoryTalkInfo.story_id 过滤只显示当前故事（+story_id=0 通用），可手输 ID 跨故事引用。
 - **保存**：Validate（场景-条件一致性/参数合法性/对话存在性，错误阻断、警告可过）→ 4 个 xlsx 各自单 EPPlus 会话写回（删除降序 DeleteRow/修改/新增）→ `ExcelUtil.ExcelToJsonItem`×4 重导 JSON → `AssetDatabase.Refresh` → 提交快照。
+
+---
+
+## NPC 创建编辑 (NpcCreateEditorWindow)
+
+**文件**: `Assets/Editor/NpcCreateEditorWindow.cs` + 5 个 partial（`.List/.Edit/.Appearance/.Preview/.Save`），**菜单**: `游戏/NPC创建编辑`
+
+### 功能
+
+非运行态的 NPC 创建/修改/删除工具（Play 模式的 UITestNpcCreate/TestNpcCreateGUI 已删除并入本工具），提供完整 NPC 创建 GUI 功能（外观皮肤/逐部位调色/装备/随机池/属性编辑 + Spine 实时预览），写回 `excel_npc_info[NPC信息].xlsx`（NpcInfo sheet 全 25 列）与 `excel_language[多语言_FrameWork].xlsx`（NpcInfo sheet 中文名 content_cn，**textId 约定==NPC id**）。
+
+- **三栏布局**（分隔条拖拽/双击复位照搬 StoryEditorWindow）：左栏 NPC 列表（搜索/npc_type/稀有度筛选/排序 + 新建[建议id+模板复制+中文名]/删除登记）｜中栏 上区基础字段+属性、下区外观编辑（随机皮肤池/固定皮肤按部位/逐部位调色RGB(A)+16色预设盘/随机装备池+稀有度勾选/固定装备按槽位，皮肤装备候选面板作为中右之间的第4栏带图集图标）｜右栏 Spine 预览（参考模型生物2001+目标双模型、动画列表/播放控制/滚轮缩放拖拽平移）。
+- **编辑副本+快照判脏**：选中 NPC 时 JSON 深拷贝出 editingNpcInfo（**绝不直改 Cfg 缓存 Bean**），外观编辑即时写回副本字符串字段（skin_data/equip_item_ids/SetSkinColorData/SetEquipRandom），脏判定=JsonConvert 序列化比对；切换/新建/刷新前三选（保存/放弃/取消）。删除仅内存登记 deletedNpcIds，保存时双表 DeleteRow（行号降序）。
+- **保存**：ValidateAll（creature_id/随机池/装备/皮肤/额外技能存在性+body_size解析，错误阻断警告可过）→ 变更摘要确认 → File.Open 探测 Excel 占用（ExcelToJsonItem 对占用文件静默跳过，不探测会有「保存成功但 JSON 没更新」隐性事故）→ 双表各单 EPPlus 会话写回 → `ExcelUtil.ExcelToJsonItem`×2 重导 JSON → 反射清 Cfg 静态缓存（dicData/arrayData，拷贝自 GameTestEditor.ClearCfgBaseStaticCache；外加 ItemsInfoCfg.dicDataForCreatureModel / CreatureModelInfoCfg.dicDetailsModelInfo / SpineAnimationStateCfg.dicSpineAnimData 三个 public 静态缓存）。
+
+### 编辑器安全铁律（本窗口强制，其他编辑器工具同样适用）
+
+1. **禁止 `new CreatureBean(npcInfo)`/`new CreatureBean(creatureId)`**：`SetData` 内部读 `name_language` → `TextHandler.Instance` → `BaseSingletonMonoBehaviour.Instance` 在非 Play 模式会 `new GameObject("TextHandler")` **污染当前场景**；一律 `new CreatureBean()` 无参构造后手动装配字段（Preview partial 的 `BuildCreatureForEditor`），并经 `CreatureNpcBean.SetNpcInfoForEditor`（`#if UNITY_EDITOR`）注入编辑副本绕过 npcInfo 的 Cfg 懒加载。
+2. **禁止读任何 Bean 的 `*_language` 属性**（同地雷1）；中文名一律直读 `Assets/Resources/JsonText/Language_{表}_cn.txt`（不切 `LanguageCfg.ChangeLanguageData`，避免篡改运行中游戏语言）。
+3. **禁止 `GetAttributeInt` 等战斗属性链路**（碰 GameDataHandler/BuffHandler 单例）；属性展示直接用配置原始字段。
+4. **禁止 `UIHandler.Instance` 弹窗**，统一 `EditorUtility.DisplayDialog`/`DisplayDialogComplex`。
+5. `CreatureBean.InitSkin/InitEquip/InitRandomEquip/GetSkinData/ChangeSkinColor` 已核实为纯 Cfg+数据链路，编辑器可直接调用。
+
+### Spine 编辑器预览（拷贝改造自 SpineWindowPreview，非复用）
+
+PreviewRenderUtility + `EditorInstantiation.InstantiateSkeletonAnimation`（HideAndDontSave+layer30+AddSingleGO）+ EditorApplication.update 手动驱动 `Update(dt)`+`Renderer.LateUpdate()`，Repaint 时 BeginPreview/Render/EndPreview。SkeletonDataAsset 由 `CreatureModelCfg.GetItemData(model_id).res_name`（资源全路径）经 `AssetDatabase.LoadAssetAtPath` 直读（`Mod/` 开头的 Mod 资源读不到，HelpBox 兜底）。皮肤应用为 SpineHandler.ChangeSkeletonSkin 的等价纯 Spine API 重写（FindSkin→组合Skin→SetSkin→SetupPoseSlots→按皮肤名末段取 slot 染色）。动画名解析用 `SpineAnimationStateCfg.CheckSpineAnim` 静态方法绕开 SpineHandler 单例。域重载后 OnGUI 检测实例销毁自动 RebuildPreview；进 Play 模式 DisposePreview。
 
 ---
 
@@ -548,6 +581,7 @@ public class InspectorMyComponent : Editor
 | 装备套装配置 | `Assets/Editor/EquipSuitEditorWindow.cs` |
 | 战斗场景配置 | `Assets/Editor/FightSceneEditorWindow.cs` |
 | 故事演出编辑 | `Assets/Editor/StoryEditorWindow.cs` |
+| NPC 创建编辑 | `Assets/Editor/NpcCreateEditorWindow.cs` + 5 个 partial（.List/.Edit/.Appearance/.Preview/.Save） |
 | 研究模块编辑 | `Assets/Editor/ResearchEditorWindow.cs` |
 | Excel 配置目录 | `Assets/Data/Excel/` |
 

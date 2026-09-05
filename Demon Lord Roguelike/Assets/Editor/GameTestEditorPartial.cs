@@ -137,7 +137,6 @@ public partial class GameTestEditor
     private bool showBaseSceneTest = true;
     private bool showRewardSelectTest = true;
     private bool showDoomCouncilTest = true;
-    private bool showNpcCreateTest = true;
     private bool showResearchTest = true;
     private bool showAbyssalBlessingTest = true;
     private bool showCreatureSacrificeTest = true;

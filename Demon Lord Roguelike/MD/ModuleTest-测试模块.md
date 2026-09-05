@@ -2,7 +2,7 @@
 
 ## 一、模块概述
 
-测试模块为游戏开发提供了一套完整的测试工具和测试场景，支持在 Unity Editor 和运行时对游戏的各个子系统进行快速验证和调试。涵盖战斗场景测试、卡片测试、基地测试、奖励选择测试、终焉议会测试、NPC 创建测试和研究 UI 测试。
+测试模块为游戏开发提供了一套完整的测试工具和测试场景，支持在 Unity Editor 和运行时对游戏的各个子系统进行快速验证和调试。涵盖战斗场景测试、卡片测试、基地测试、奖励选择测试、终焉议会测试和研究 UI 测试；NPC 创建编辑已迁移为非运行态编辑器工具（见 3.4 节）。
 
 ---
 
@@ -35,7 +35,6 @@
 | `StartForBaseTest(CreatureBean)` | 进入基地场景测试 |
 | `StartForRewardSelect(RewardSelectTestData)` | 打开奖励选择测试 |
 | `StartForDoomCouncil(long billId)` | 进入终焉议会测试 |
-| `StartNpcCreate()` | 打开 NPC 创建测试 UI |
 | `StartForResearchUI()` | 打开研究 UI 测试 |
 
 ---
@@ -52,13 +51,20 @@
 public enum TestSceneTypeEnum
 {
     None = 0,
-    FightSceneTest = 1,     // 战斗场景测试
-    CardTest = 2,           // 卡片效果测试
-    Base = 3,               // 基地测试
-    RewardSelect = 4,       // 奖励选择
-    DoomCouncil = 5,        // 终焉议会
-    NpcCreate = 6,          // NPC 创建
-    ResearchUI = 7,         // 研究 UI
+    NormalGame = 1,         // 正常游戏启动
+    FightSceneTest = 2,     // 战斗场景测试
+    CardTest = 3,           // 卡片效果测试
+    Base = 4,               // 基地测试
+    RewardSelect = 5,       // 奖励选择
+    DoomCouncil = 6,        // 终焉议会
+    ResearchUI = 8,         // 研究 UI（7 为已删除的 NPC创建，号段留空防存档错位）
+    AbyssalBlessing = 9,    // 深渊馈赠UI
+    CreatureSacrifice = 10, // 生物献祭升级测试
+    CreatureVat = 11,       // 魔物进阶(生物升阶容器)测试
+    CreatureJuicer = 12,    // 魔汁机(魔物回收)测试
+    EffectTest = 13,        // 粒子特效测试
+    ConversationTest = 14,  // 对话系统测试
+    StoryTest = 15,         // 故事演出测试
 }
 ```
 
@@ -177,47 +183,27 @@ GM 工具面板，提供快速添加游戏资源的功能。
 **保存数据**: 点击"生成数据"按钮，自动将参数写入 `excel_creature_model[生物模型信息].xlsx`
 
 ---
+### 3.4 NpcCreateEditorWindow（NPC 创建编辑器窗口，非运行态）
 
-### 3.4 UITestNpcCreate（NPC 创建测试 UI）
+**文件**: `Editor/NpcCreateEditorWindow.cs` + 5 个 partial（`.List/.Edit/.Appearance/.Preview/.Save`），**菜单**: `游戏/NPC创建编辑`
 
-**文件**: `Scripts/Component/UI/Test/UITestNpcCreate.cs`
-
-用于测试和配置 NPC 的外观、属性和装备，支持实时预览和保存到 Excel。
-
-**功能**:
+非运行态的 NPC 创建/修改/删除工具（Play 模式的 UITestNpcCreate/TestNpcCreateGUI 已删除并入本工具），覆盖全字段编辑：
 
 | 功能 | 说明 |
 |------|------|
-| 加载 NPC | 通过 NPC ID 加载基础数据 |
-| 皮肤切换 | 为每个身体部位选择不同皮肤 |
-| 装备切换 | 为每个装备槽选择不同装备 |
-| 头发颜色 | 调整头发染色 |
-| 属性编辑 | 实时修改 HP/DR/MP/ATK/ASPD/MSPD |
-| 装备显隐 | 切换是否显示装备 |
-| 保存数据 | 将外观、装备、属性保存到 `excel_npc_info[NPC信息].xlsx` |
+| NPC 列表 | 搜索/npc_type/稀有度筛选/排序（左栏） |
+| 新建 NPC | 建议 id（maxId+1）+模板复制+中文名（textId 约定==NPC id，写语言表 NpcInfo sheet 的 content_cn，其他语种 Excel 补录） |
+| 删除 NPC | 内存登记、保存时才双表删行（业务表+语言表） |
+| 全字段编辑 | id/名字/生物/npc_type/稀有度/等级/议会评级/属性七项/body_size/称号/额外技能(带校验)/地区/头像(带预览)/备注 |
+| 外观编辑 | 随机皮肤池/固定皮肤按部位/逐部位调色 RGB(A)+16 色盘/随机装备池+稀有度勾选/固定装备按槽位（候选面板带图集图标） |
+| Spine 预览 | 参考模型（生物2001)+目标双模型（可关参考模型），动画列表/播放控制/滚轮缩放/拖拽平移；驱动模式拷贝改造自 SpineWindow 动画预览页签 |
+| 保存 | 校验（错误阻断/警告可过）→变更摘要→Excel 占用探测→EPPlus 双表写回→ExcelToJsonItem 重导 JSON→清 Cfg 静态缓存 |
 
-**属性编辑字段**:
-
-| 字段 | 说明 |
-|------|------|
-| HP | 生命值 |
-| DR | 防御 |
-| MP | 魔法值 |
-| ATK | 攻击力 |
-| ASPD | 攻击速度 |
-| MSPD | 移动速度 |
+**编辑器安全约束**：编辑目标是 JSON 深拷贝的编辑副本（快照判脏、切换/新建/刷新前三选保护），绝不直改 Cfg 缓存 Bean；编辑器内零运行时单例访问（禁止 `new CreatureBean(npcInfo)`、禁止 `*_language` 属性、禁止 UIHandler 弹窗——详见 `.claude/skills/editor-extension-system` 的 NpcCreateEditorWindow 章节）。
 
 ---
 
-### 3.5 UIViewTestIconShow（图标显示测试）
-
-**文件**: `Scripts/Component/UI/Test/UIViewTestIconShow.cs`
-
-测试 UI 中用于展示可选皮肤/装备图标的子组件。
-
----
-
-### 3.6 UIBaseResearchTest（研究 UI 测试扩展）
+### 3.5 UIBaseResearchTest（研究 UI 测试扩展）
 
 **文件**: `Scripts/Component/UI/Game/BaseResearch/UIBaseResearchTest.cs`
 
@@ -240,10 +226,9 @@ GM 工具面板，提供快速添加游戏资源的功能。
 | 测试战斗逻辑 | `Assets/Scripts/Game/Logic/GameFightLogicTest.cs` |
 | 测试战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForTest.cs` |
 | 测试控制台 | `Assets/FrameWork/Scripts/Component/UI/UITestConsole.cs` |
+| NPC 创建编辑器窗口（非运行态） | `Assets/Editor/NpcCreateEditorWindow.cs` + 5 个 partial |
 | 测试基础 UI | `Assets/Scripts/Component/UI/Test/UITestBase.cs` |
 | 卡片测试 UI | `Assets/Scripts/Component/UI/Test/UITestCard.cs` |
-| NPC 创建测试 | `Assets/Scripts/Component/UI/Test/UITestNpcCreate.cs` |
-| 图标显示测试 | `Assets/Scripts/Component/UI/Test/UIViewTestIconShow.cs` |
 | 研究 UI 测试 | `Assets/Scripts/Component/UI/Game/BaseResearch/UIBaseResearchTest.cs` |
 | 临时测试 | `Assets/Scripts/TestTemp.cs` |
 | 测试场景 | `Assets/Scenes/TestScene.unity` |
@@ -269,10 +254,10 @@ GM 工具面板，提供快速添加游戏资源的功能。
 4. 实时调整小卡/大卡的尺寸和位置
 5. 点击"生成数据"保存到 Excel
 
-### 5.3 NPC 创建测试
+### 5.3 NPC 创建编辑（编辑器版，无需运行）
 
-1. 选择 `NpcCreate`
-2. 运行后进入 NPC 创建界面
-3. 输入 NPC ID 加载数据
-4. 切换皮肤、装备、调整属性
-5. 点击保存写入 Excel
+1. 菜单 `游戏/NPC创建编辑` 打开窗口（无需 Play）
+2. 左侧列表搜索/筛选/选中 NPC，或底部「＋ 新建NPC」（建议 id + 模板复制 + 中文名）
+3. 中栏编辑基础字段/属性/外观，右栏 Spine 双模型实时预览（可切换动画）
+4. 改完点工具栏「💾 保存」，确认变更摘要后写回 Excel 并自动重导 JSON
+5. 删除：选中后点「－ 删除选中」登记，保存时生效（列表再点一次置灰项可撤销登记）

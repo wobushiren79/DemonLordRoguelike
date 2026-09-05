@@ -864,9 +864,7 @@ UI/
 │   └── ...
 └── Test/             # 测试 UI
     ├── UITestBase          # 测试基础
-    ├── UITestCard          # 测试卡片
-    ├── UITestNpcCreate     # NPC 创建测试
-    └── UIViewTestIconShow  # 图标显示测试
+    └── UITestCard          # 测试卡片
 ```
 
 ### 4.6 DataService - 游戏数据服务实现

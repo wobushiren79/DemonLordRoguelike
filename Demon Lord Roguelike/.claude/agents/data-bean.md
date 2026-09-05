@@ -52,6 +52,8 @@ Bean/
 
 > **`CreatureInfoBean.show_attribute`（Excel 自动生成列，string）**：展示属性列表，逗号分隔 `CreatureAttributeTypeEnum` 枚举值（如 `1,3,4,6`=HP/DR/ATK/ASPD）；**同一配置同时控制三处**——卡片详情面板显示项（`UIViewCreatureCardDetails.SetAttribute`）、献祭加点界面可加项（`UICreatureAddAttribute.InitItems`）、创建随机加点池（`CreatureAttributeBean.AddRandomAttributeForCreate`）。配套手写解析 `CreatureInfoBeanPartial.GetShowAttributeList()`（懒解析缓存，空/解析失败兜底默认 HP/DR/ATK/ASPD）。当前配置：烂泥/毒液史莱姆（3003/3004）配 `4`（仅攻击力）、守护史莱姆（3001）配 `1,3`（仅 HP/DR，无攻击模式纯肉盾）、魔王物种行（id 1-7，creature_type=0 创建角色）配 `4,5,2,11`（ATK/MSPD/MP/MPF），其余全配 `1,3,4,6`。
 
+> **`CreatureNpcBean.SetNpcInfoForEditor`（手写 `Assets/Scripts/Bean/Game/CreatureNpcBean.cs`，`#if UNITY_EDITOR` 编辑器专用）**：注入 npcInfo 编辑副本，供 NPC创建编辑器窗口（`游戏/NPC创建编辑`）预览未保存/编辑中的 NPC——`npcInfo` getter 懒查 `NpcInfoCfg.GetItemData(npcId)`，未保存的新 id 会 LogError 返回 null，已有 id 返回的是 Cfg 缓存原值而非编辑副本，编辑器装配 CreatureBean 预览时必须注入。
+
 > **`UserStoryBean`（手写 `Assets/Scripts/Bean/Game/UserStoryBean.cs`，仿 UserUnlockBean 拆档模式）**：用户故事演出数据存档——`dicPlayedStory`（`Dictionary<long,long>`，key=StoryInfo.id、value=播放完成时间戳 Ticks；字典而非列表，事件多了查询仍 O(1)）+ `IsStoryPlayed/MarkStoryPlayed/GetDicPlayedStory` 懒加载；已拆分为独立存档 `UserStory_{slot}`（`UserDataService` 加载/保存/删除时与 UserUnlock 等同管线注入落盘），经 `UserDataBean.userStoryData`（[JsonIgnore]）+ `GetUserStoryData()` 访问（故事演出系统 story-system 使用）。
 
 ### Bean 命名规范

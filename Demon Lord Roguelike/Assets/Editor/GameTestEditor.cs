@@ -40,9 +40,6 @@ public partial class GameTestEditor : Editor
             case TestSceneTypeEnum.DoomCouncil:
                 DrawDoomCouncilTest();
                 break;
-            case TestSceneTypeEnum.NpcCreate:
-                DrawNpcCreateTest();
-                break;
             case TestSceneTypeEnum.ResearchUI:
                 DrawResearchTest();
                 break;
@@ -634,6 +631,14 @@ public partial class GameTestEditor : Editor
             launcher.StartForCardTest(fightCreature);
         }
         GUI.backgroundColor = Color.white;
+
+        GUI.backgroundColor = new Color(0.4f, 0.7f, 0.9f);
+        if (GUILayout.Button("🎛️ 卡片编辑器(自由设置稀有度/等级/颜色)", GUILayout.Height(30)) && Application.isPlaying)
+        {
+            launcher.StartForCreatureCardEditor(creatureId, npcInfoId);
+        }
+        GUI.backgroundColor = Color.white;
+        EditorGUILayout.HelpBox("「显示卡片」= 图标尺寸校准(UITestCard预制)；「卡片编辑器」= 纯代码GUI面板实时预览小卡+大卡详情，可自由设置稀有度/等级/生物或NPC，并自定义稀有度板色/等级颜色(可写回配置表)。", MessageType.Info);
         EditorGUILayout.Space(10);
 
         EditorGUILayout.BeginVertical("box");
@@ -802,34 +807,6 @@ public partial class GameTestEditor : Editor
             return $"[无中文名] 议案 ID {billId} 的多语言文本(textId {billInfo.name})为空";
         }
         return languageBean.content;
-    }
-
-    private void DrawNpcCreateTest()
-    {
-        showNpcCreateTest = EditorGUILayout.Foldout(showNpcCreateTest, "🧙 NPC 创建测试", true);
-        if (!showNpcCreateTest) return;
-
-        EditorGUI.indentLevel++;
-        EditorGUILayout.Space(5);
-
-        GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
-        if (GUILayout.Button("▶️ 开始 NPC 创建", GUILayout.Height(30)) && Application.isPlaying)
-        {
-            launcher.StartNpcCreate();
-        }
-        GUI.backgroundColor = Color.white;
-
-        EditorGUILayout.Space(3);
-
-        GUI.backgroundColor = new Color(0.4f, 0.6f, 0.9f);
-        if (GUILayout.Button("▶️ 开始 NPC 创建（GUI）", GUILayout.Height(30)) && Application.isPlaying)
-        {
-            launcher.StartNpcCreateGUI();
-        }
-        GUI.backgroundColor = Color.white;
-
-        EditorGUI.indentLevel--;
-        EditorGUILayout.Space(10);
     }
 
     private void DrawResearchTest()

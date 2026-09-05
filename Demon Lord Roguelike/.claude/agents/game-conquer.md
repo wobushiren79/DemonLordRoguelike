@@ -58,7 +58,7 @@ watched_files:
 - **传送门详情气泡 `UIPopupPortalDetails` 四项预览受「设施」研究门控**（`UserUnlock.CheckIsUnlock`，未解锁该项整行隐藏；名字行始终显示；无尽模式不展示关卡数/路径长度/奖励）：线路数→`UnlockEnum.PortalPreviewRoadNum`(100300002)、关卡数→`PortalPreviewFightNum`(100300003)、路径长度→`PortalPreviewRoadLength`(100300004,文本id 414)、奖励道具→`PortalPreviewReward`(100300005)
 
 ### 编辑器
-- **FightTypeConquerEditorWindow** - 征服配置可视化编辑、保存回 Excel 并重导 JSON（反射按字段名）；数值字段左右分列对比前后各3个难度(level±1~±3)只读值、差异高亮，方便跨难度调数值；ID 列表字段（场景/敌人/BOSS）支持「手输 ID 或下拉按名字选取」，其前后难度对比单元格显示解析后的具体名字（换行展示，完整列表见 tooltip）而非原始 ID 串；参数可复制（点任意对比单元格复制单字段 / 顶部按难度一键「复制全部数值」按钮，跳过 id/world_id/level，复制后仍需保存）
+- **FightTypeConquerEditorWindow** - 征服配置可视化编辑、保存回 Excel 并重导 JSON（反射按字段名）；布局：顶部工具栏(刷新/导出/快捷开表)+固定选择区(世界 Popup+难度1~10页签+加载)+滚动编辑区+固定底部保存栏(显示变更数、无变更禁用)；数值字段左右分列对比前后各3个难度(level±1~±3)只读值、差异高亮，方便跨难度调数值；已修改未保存字段编辑框淡黄高亮(IsFieldModified/CountChanges)；ID 列表字段（场景/敌人/BOSS）支持「手输 ID 或下拉按名字选取」，其前后难度对比单元格与标量字段同网格对齐、显示解析后的具体名字（换行展示，完整列表见 tooltip）而非原始 ID 串；参数可复制（点任意对比单元格复制单字段 / 顶部按难度一键「复制全部数值」按钮，跳过 id/world_id/level，复制后仍需保存）
 
 ## 关键文件
 

@@ -167,33 +167,25 @@ public class LauncherTest : BaseLauncher
     }
 
     /// <summary>
-    /// 开始NPC创建
+    /// 开始卡片编辑器测试（GUI版，纯代码控制面板 + 真实卡片预制体）
+    /// 自由设置稀有度/等级/生物ID/NPC ID 查看卡片与详情显示，支持自定义稀有度板色/等级颜色预览并写回配置表。
     /// </summary>
-    public async void StartNpcCreate()
+    /// <param name="creatureId">初始生物ID(>0 时默认生物模式)</param>
+    /// <param name="npcInfoId">初始NPC ID(生物ID为0时默认NPC模式)</param>
+    public async void StartForCreatureCardEditor(long creatureId, long npcInfoId)
     {
         await WorldHandler.Instance.ClearWorldData();
         //设置焦距
         VolumeHandler.Instance.SetDepthOfField(UnityEngine.Rendering.Universal.DepthOfFieldMode.Off, 0, 0, 0);
         //镜头初始化
         CameraHandler.Instance.InitData();
-        //关闭额外的摄像头
-        var ui = UIHandler.Instance.OpenUIAndCloseOther<UITestNpcCreate>();
-    }
-
-    /// <summary>
-    /// 开始NPC创建（GUI版，纯代码UI，不依赖预制）
-    /// </summary>
-    public async void StartNpcCreateGUI()
-    {
-        await WorldHandler.Instance.ClearWorldData();
-        //设置焦距
-        VolumeHandler.Instance.SetDepthOfField(UnityEngine.Rendering.Universal.DepthOfFieldMode.Off, 0, 0, 0);
-        //镜头初始化
-        CameraHandler.Instance.InitData();
-        //关闭其它UI，避免预制版NPC创建界面叠加
+        //关闭其它UI
         UIHandler.Instance.CloseAllUI();
-        //挂载纯GUI代码的NPC创建组件到空物体
-        new GameObject("NpcCreateGUI").AddComponent<TestNpcCreateGUI>();
+        //清理上一次可能残留的卡片编辑器面板，避免重复开始导致面板叠加
+        if (TestCreatureCardGUI.Instance != null) Destroy(TestCreatureCardGUI.Instance.gameObject);
+        //挂载纯GUI代码的卡片编辑器组件到空物体
+        var gui = new GameObject("CreatureCardTestGUI").AddComponent<TestCreatureCardGUI>();
+        gui.SetInitData(creatureId, npcInfoId);
     }
 
     /// <summary>

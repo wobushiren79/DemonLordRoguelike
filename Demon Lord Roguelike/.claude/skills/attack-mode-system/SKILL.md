@@ -54,7 +54,7 @@ BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播
 ```
 BaseAttackMode                      - 攻击模式基类
 ├── AttackModeMelee                 - 近战单体（瞬间命中目标）
-├── AttackModeMeleeArea             - 近战范围（起点范围伤害；可配 hit_max 限制命中数，如人类战士1001的101005配3=前方1单位只打本路最多命中3个敌人）
+├── AttackModeMeleeArea             - 近战范围（起点范围伤害；可配 hit_max 限制命中数，如人类战士1001的101005配3=前方1单位只打本路最多命中3个敌人；BOSS技能应用：102001=向前挥砍前方6格本路1排[持盾战士BOSS,ext100001,3s]、102002=前方6格上中下3排[难度4大剑战士BOSS,ext100004,3s,克隆102001改Z半宽0.25→1.25]，101006=大剑战士BOSS普攻[克隆战之魅魔101001前方范围hit_max3]）
 ├── AttackModeRanged                - 远程直线弹道（逐帧移动+碰撞检测；InitAttackModeShow 开启 visualVelocityOrient——火球/冰球 billboard 视觉按 _VelocityWS.w 速度朝向：贴图头（默认朝右）对准飞行方向、拖尾朝飞行反方向，仅桶材质声明 _VelocityWS 才生效，RangedNormal 等材质零副作用）
 │   ├── AttackModeRangedArea        - 远程范围弹道（击中时范围AOE）
 │   ├── AttackModeRangedArc         - 远程抛物线弹道（到达终点走 `HandleForReachEnd` 虚方法，默认回收，子类覆盖为落点AOE等收尾）

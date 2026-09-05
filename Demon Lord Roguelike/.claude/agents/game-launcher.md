@@ -43,6 +43,7 @@ watched_files:
 
 ### LauncherTest 测试入口补充
 
+- **卡片编辑器测试**：`LauncherTest.StartForCreatureCardEditor(long creatureId, long npcInfoId)`——清场+DoF Off+镜头初始化+CloseAllUI 后，挂纯代码 IMGUI 面板 `TestCreatureCardGUI`（实例化真实卡片预制体，自由设置稀有度/等级/生物/NPC 与显示颜色，可写回配置表）。详见 test-system skill「卡片编辑器测试」。
 - **故事演出测试**：`LauncherTest.StartForStoryTest(long storyId, int saveSlot = 0)`——saveSlot>0 时先读档（`UserDataService.ChangeSlot(saveSlot).Load(false)` → `SetUserData`，献祭测试同范式，全程内存模拟不写回真实存档；0=使用 InitTestData 伪造数据），再 `isTestSimulation=true`，按故事 scene_type 进场景（Base=EnterGameForBaseScene+一次性 World_EnterGameForBaseScene 回调；Fight=内置默认测试战斗数据 `BuildStoryTestFightData()` 进战斗+一次性 UIFightMain_CardCreateAnimEnd 回调(卡片出现动画播完,与真实触发同钩点)；DoomCouncil=StartDoomCouncil(议案1000000001)+`WaitForDoomCouncilThenPlayStory` 轮询就绪），场景就绪后 `StoryHandler.Instance.PlayStory(storyId)`；一次性回调统一走 `RegisterStoryTestPlayCallback(eventName, storyId)`（重复调用先清旧回调）。详见 test-system skill。
 
 ### 关键文件

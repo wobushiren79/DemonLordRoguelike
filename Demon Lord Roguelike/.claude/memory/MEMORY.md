@@ -22,6 +22,7 @@
 - [`reference_colored_icons.md`](reference_colored_icons.md) — 彩色图标(深渊馈赠ui_abyssalblessing_/成就ui_achievement_)32x32 每张≤N色(用户可调,2026-07为≤6)：create_1_direction_object size32(64个/批)→quantize6(合成黑底再中位切分)控色流水线；深渊暂存已到2621(下一个2622)、成就已到63(下一个64)
 
 ### Reference
+- [reference_unity6000_maintoolbar_element.md](reference_unity6000_maintoolbar_element.md) — Unity 6000.3 主工具栏新增 MainToolbarElement 默认 displayed=False 不可见（Overlay 体系，ToolbarExtension 旧树恒空勿误判）；查真状态反射 MainToolbarWindow.instance.overlayCanvas.overlays，修复=overlay.displayed=true 或用户在 ⋮/编辑模式手动启用；附 MainToolbarDropdown(content, Action<Rect>) 签名
 - [project_creature_attribute_type_sync.md](project_creature_attribute_type_sync.md) — 装備属性池新增枚举必须同步 excel_creature_attribute_type_info 配置表，否则道具详情显示"???"+黑色（MPF=11 缺行实例：魔王专属装備随机到 MPF 时 2026-08-30 已补行）
 - [reference_vfx_startposition_space.md](reference_vfx_startposition_space.md) - VFX 图 Position 块消费 StartPosition 注入必须标 World(m_Space:1)：Local+世界注入= 2x 命中点双倍偏移（生物1003/1004 火冰球击中特效错位根因，连带修复爆炸300001，2026-08-30）
 - [reference_fog_stripping_pc_build.md](reference_fog_stripping_pc_build.md) — PC 打包后战斗场景雾消失根因：雾由代码运行时开启但 GraphicsSettings 雾剥离=Automatic 只扫 Build Settings 场景（仅 TestScene 且雾关）→ FOG_LINEAR 变体被剥离；已修 m_FogStripping=1(Custom) 三雾型全保留，须重新打包生效；「编辑器有包体没有」先查变体剥离

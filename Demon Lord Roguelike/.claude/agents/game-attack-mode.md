@@ -19,7 +19,7 @@ watched_files:
 
 ### 近战 (Melee)
 - **AttackModeMelee** - 普通近战
-- **AttackModeMeleeArea** - 范围近战（走基类 `CheckHitTargetArea`，可配 `hit_max` 命中上限：近者优先截断+同生物去重，0=不限；如人类战士1001的101005配3）
+- **AttackModeMeleeArea** - 范围近战（走基类 `CheckHitTargetArea`，可配 `hit_max` 命中上限：近者优先截断+同生物去重，0=不限；如人类战士1001的101005配3；BOSS技能应用：102001=前方6格1排[持盾战士BOSS,ext100001]、102002=前方6格上中下3排[难度4大剑战士BOSS,ext100004]，101006=大剑战士BOSS普攻[克隆战之魅魔101001]）
 
 ### 远程 (Ranged)
 - **AttackModeRanged** - 普通远程（`InitAttackModeShow` 开启 `visualVelocityOrient`：火球/冰球 billboard 视觉按 `_VelocityWS.w` 速度朝向——贴图头（默认朝右）对准飞行方向、拖尾朝飞行反方向；仅桶材质声明 `_VelocityWS` 才生效，RangedNormal 等材质零副作用——骷髅投手 200001 不受影响，子类 Tracking/SplitChild/Piercing/Arc 自动继承）

@@ -21,7 +21,7 @@ using UnityEngine.U2D;
 /// 部件全集取自 excel_creature_model_info[生物模型详情信息]，物种名取自 excel_creature_model[生物模型信息]。
 /// 规则：右侧未加入列表按池内已有部件的物种自动过滤（如选了人类池只列人类皮肤）；
 /// 装备/武器类部位（part_type>=50，及装备驱动的身体部位如鼻环 NoseRing=9）不展示（皮肤由装备道具驱动）；每行按
-/// {mark_name}_Atlas_{res_name(/→_)} 约定加载 Textures/Skins 下的皮肤图标（与游戏内 UITestNpcCreate 同约定）；
+/// {mark_name}_Atlas_{res_name(/→_)} 约定加载 Textures/Skins 下的皮肤图标（与 NPC创建编辑器窗口 NpcCreateEditorWindow 同约定）；
 /// 装备图标按 icon_res 从 AtlasForItems 图集取 sprite。
 /// </summary>
 public class SkinRandomEditorWindow : EditorWindow

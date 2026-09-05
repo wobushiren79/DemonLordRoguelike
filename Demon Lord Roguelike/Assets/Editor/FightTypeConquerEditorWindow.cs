@@ -23,7 +23,7 @@ public class FightTypeConquerEditorWindow : EditorWindow
     {
         var window = EditorWindow.GetWindow<FightTypeConquerEditorWindow>();
         window.titleContent = new GUIContent("战斗模式难度编辑");
-        window.minSize = new Vector2(900, 700);
+        window.minSize = new Vector2(980, 620);
         window.Show();
     }
 
@@ -77,10 +77,10 @@ public class FightTypeConquerEditorWindow : EditorWindow
     private FightTypeConquerInfoBean[] nextBeans = new FightTypeConquerInfoBean[CompareRange];
 
     /// <summary>对比列(前后难度)固定宽度</summary>
-    private const float CompareColumnWidth = 70f;
+    private const float CompareColumnWidth = 64f;
 
     /// <summary>字段标签固定宽度</summary>
-    private const float FieldLabelWidth = 150f;
+    private const float FieldLabelWidth = 170f;
 
     /// <summary>对比单元格样式(只读灰字)</summary>
     private GUIStyle compareCellStyle;
@@ -94,8 +94,29 @@ public class FightTypeConquerEditorWindow : EditorWindow
     /// <summary>ID列表对比单元格样式(名字换行+差异高亮)</summary>
     private GUIStyle compareCellWrapDiffStyle;
 
+    /// <summary>ID列表当前值摘要单元格样式(名字换行显示)</summary>
+    private GUIStyle currentCellWrapStyle;
+
+    /// <summary>对比列头样式(前后难度)</summary>
+    private GUIStyle compareHeaderStyle;
+
+    /// <summary>对比列头样式(当前列，高亮)</summary>
+    private GUIStyle compareHeaderCurrentStyle;
+
+    /// <summary>难度页签按钮样式</summary>
+    private GUIStyle difficultyToggleStyle;
+
+    /// <summary>未保存提示样式(橙色小字)</summary>
+    private GUIStyle dirtyHintStyle;
+
     /// <summary>ID列表对比单元格高度(换行显示多个名字)</summary>
     private const float CompareWrapCellHeight = 54f;
+
+    /// <summary>字段已修改时的编辑框背景色(淡黄)</summary>
+    private static readonly Color ModifiedBgColor = new Color(1f, 0.93f, 0.55f);
+
+    /// <summary>难度页签选中态背景色(蓝)</summary>
+    private static readonly Color DifficultyOnBgColor = new Color(0.30f, 0.60f, 0.95f);
 
     /// <summary>滚动位置</summary>
     private Vector2 scrollPos = Vector2.zero;
@@ -103,10 +124,10 @@ public class FightTypeConquerEditorWindow : EditorWindow
     /// <summary>样式初始化标记</summary>
     private bool stylesInitialized = false;
 
-    /// <summary>分区标题样式</summary>
-    private GUIStyle sectionHeaderStyle;
+    /// <summary>选择区域分组框样式</summary>
+    private GUIStyle selectionBoxStyle;
 
-    /// <summary>分组框样式</summary>
+    /// <summary>编辑区域分组框样式</summary>
     private GUIStyle boxStyle;
 
     /// <summary>数据已加载标记</summary>
@@ -170,7 +191,7 @@ public class FightTypeConquerEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// GUI 渲染入口
+    /// GUI 渲染入口：顶部工具栏与选择区固定不滚动，中间编辑区滚动，底部保存栏固定
     /// </summary>
     private void OnGUI()
     {
@@ -179,33 +200,33 @@ public class FightTypeConquerEditorWindow : EditorWindow
             InitializeStyles();
         }
 
-        scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
+        // 顶部工具栏(刷新/导出/打开表格，固定)
+        DrawToolbar();
 
-        // 快捷操作按钮
-        DrawOpenNpcInfoButton();
-
-        GUILayout.Space(10);
-
-        // 顶部选择区域
+        // 顶部选择区域(固定)
         DrawSelectionArea();
 
-        GUILayout.Space(10);
-
-        // 数据编辑区域
+        // 数据编辑区域(滚动)
+        scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
         if (dataLoaded && currentBean != null)
         {
             DrawDataEditArea();
-
-            GUILayout.Space(10);
-
-            DrawActionButtons();
         }
         else if (dataLoaded && currentBean == null)
         {
             EditorGUILayout.HelpBox($"未找到世界ID {GetSelectedWorldId()} 难度 {selectedDifficulty} 的数据", MessageType.Warning);
         }
-
+        else
+        {
+            EditorGUILayout.HelpBox("请选择世界与难度，点击「加载数据」开始编辑", MessageType.Info);
+        }
         EditorGUILayout.EndScrollView();
+
+        // 底部保存栏(固定，始终可见)
+        if (dataLoaded && currentBean != null)
+        {
+            DrawActionButtons();
+        }
     }
 
     #endregion
@@ -219,20 +240,16 @@ public class FightTypeConquerEditorWindow : EditorWindow
     {
         if (stylesInitialized) return;
 
-        sectionHeaderStyle = new GUIStyle(EditorStyles.boldLabel)
+        selectionBoxStyle = new GUIStyle("HelpBox")
         {
-            fontSize = 14,
-            fixedHeight = 28,
-            alignment = TextAnchor.MiddleLeft,
-            padding = new RectOffset(10, 0, 8, 8),
-            normal = { textColor = EditorGUIUtility.isProSkin ?
-                new Color(0.9f, 0.9f, 0.9f) : new Color(0.1f, 0.1f, 0.1f) }
+            padding = new RectOffset(10, 10, 8, 8),
+            margin = new RectOffset(4, 4, 2, 2)
         };
 
         boxStyle = new GUIStyle("HelpBox")
         {
-            padding = new RectOffset(15, 15, 15, 15),
-            margin = new RectOffset(5, 5, 10, 10)
+            padding = new RectOffset(12, 12, 10, 10),
+            margin = new RectOffset(4, 4, 4, 4)
         };
 
         compareCellStyle = new GUIStyle(EditorStyles.textField)
@@ -264,6 +281,38 @@ public class FightTypeConquerEditorWindow : EditorWindow
             fontStyle = FontStyle.Bold,
             normal = { textColor = EditorGUIUtility.isProSkin ?
                 new Color(1f, 0.78f, 0.35f) : new Color(0.80f, 0.45f, 0.0f) }
+        };
+
+        // ID列表当前值摘要格：与对比格同高同字号，但用正常字色突出"当前值"
+        currentCellWrapStyle = new GUIStyle(compareCellWrapStyle)
+        {
+            alignment = TextAnchor.UpperLeft,
+            normal = { textColor = EditorGUIUtility.isProSkin ?
+                new Color(0.85f, 0.85f, 0.85f) : new Color(0.15f, 0.15f, 0.15f) }
+        };
+
+        compareHeaderStyle = new GUIStyle(EditorStyles.miniBoldLabel)
+        {
+            alignment = TextAnchor.MiddleCenter
+        };
+
+        compareHeaderCurrentStyle = new GUIStyle(EditorStyles.boldLabel)
+        {
+            alignment = TextAnchor.MiddleCenter,
+            normal = { textColor = EditorGUIUtility.isProSkin ?
+                new Color(0.55f, 0.80f, 1f) : new Color(0.10f, 0.35f, 0.75f) }
+        };
+
+        difficultyToggleStyle = new GUIStyle(EditorStyles.miniButton)
+        {
+            fontSize = 11,
+            alignment = TextAnchor.MiddleCenter
+        };
+
+        dirtyHintStyle = new GUIStyle(EditorStyles.miniBoldLabel)
+        {
+            normal = { textColor = EditorGUIUtility.isProSkin ?
+                new Color(1f, 0.70f, 0.30f) : new Color(0.85f, 0.45f, 0.0f) }
         };
 
         stylesInitialized = true;
@@ -498,55 +547,141 @@ public class FightTypeConquerEditorWindow : EditorWindow
         dataLoaded = true;
     }
 
+    /// <summary>
+    /// 统计当前数据相对原始数据的变更字段数（用于未保存提示与保存按钮状态）
+    /// </summary>
+    private int CountChanges()
+    {
+        if (currentBean == null || originalBean == null) return 0;
+        int count = 0;
+        FieldInfo[] fields = typeof(FightTypeConquerInfoBean).GetFields();
+        foreach (FieldInfo field in fields)
+        {
+            if (field.Name == "id") continue; // ID不修改
+            if (!Equals(field.GetValue(currentBean), field.GetValue(originalBean))) count++;
+        }
+        return count;
+    }
+
+    /// <summary>
+    /// 判断指定字段当前值是否与原始值不同（用于编辑框淡黄高亮）
+    /// </summary>
+    private bool IsFieldModified(string fieldName)
+    {
+        if (currentBean == null || originalBean == null) return false;
+        return GetFieldValueStr(currentBean, fieldName) != GetFieldValueStr(originalBean, fieldName);
+    }
+
+    #endregion
+
+    #region UI 绘制 - 顶部工具栏
+
+    /// <summary>
+    /// 绘制顶部工具栏（刷新/导出/快捷打开各 Excel 表，单行小按钮固定显示）
+    /// </summary>
+    private void DrawToolbar()
+    {
+        EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+
+        if (GUILayout.Button("刷新数据", EditorStyles.toolbarButton, GUILayout.Width(70)))
+        {
+            LoadAllConfigFromExcel();
+            LoadData();
+            EditorUtility.DisplayDialog("完成", "已从Excel重新加载数据", "确定");
+        }
+
+        if (GUILayout.Button("导出 JSON", EditorStyles.toolbarButton, GUILayout.Width(70)))
+        {
+            ExportJsonOnly();
+        }
+
+        GUILayout.FlexibleSpace();
+
+        EditorGUILayout.LabelField("打开表格:", EditorStyles.miniLabel, GUILayout.Width(60));
+        if (GUILayout.Button("难度配置", EditorStyles.toolbarButton, GUILayout.Width(64)))
+        {
+            OpenFightTypeConquerExcel();
+        }
+        if (GUILayout.Button("NPC配置", EditorStyles.toolbarButton, GUILayout.Width(64)))
+        {
+            OpenNpcInfoExcel();
+        }
+        if (GUILayout.Button("场景配置", EditorStyles.toolbarButton, GUILayout.Width(64)))
+        {
+            OpenFightSceneExcel();
+        }
+        if (GUILayout.Button("世界配置", EditorStyles.toolbarButton, GUILayout.Width(64)))
+        {
+            OpenWorldInfoExcel();
+        }
+
+        EditorGUILayout.EndHorizontal();
+    }
+
     #endregion
 
     #region UI 绘制 - 选择区域
 
     /// <summary>
-    /// 绘制顶部选择区域
+    /// 绘制顶部选择区域（世界下拉 + 难度1-10页签 + 加载按钮，附当前编辑状态行）
     /// </summary>
     private void DrawSelectionArea()
     {
-        EditorGUILayout.BeginVertical(boxStyle);
-        EditorGUILayout.LabelField("选择世界与难度", sectionHeaderStyle);
-        GUILayout.Space(10);
+        EditorGUILayout.BeginVertical(selectionBoxStyle);
 
         EditorGUILayout.BeginHorizontal();
 
         // 世界选择
-        EditorGUILayout.BeginVertical(GUILayout.Width(250));
-        EditorGUILayout.LabelField("世界:", EditorStyles.boldLabel);
-        selectedWorldIndex = EditorGUILayout.Popup(selectedWorldIndex, worldNameList.ToArray(), GUILayout.Height(25));
-        EditorGUILayout.EndVertical();
+        EditorGUILayout.LabelField("世界", EditorStyles.boldLabel, GUILayout.Width(32));
+        selectedWorldIndex = EditorGUILayout.Popup(selectedWorldIndex, worldNameList.ToArray(), GUILayout.Width(200), GUILayout.Height(22));
 
-        GUILayout.Space(15);
+        GUILayout.Space(12);
 
-        // 难度选择
-        EditorGUILayout.BeginVertical(GUILayout.Width(120));
-        EditorGUILayout.LabelField("难度:", EditorStyles.boldLabel);
-        selectedDifficulty = EditorGUILayout.IntSlider(selectedDifficulty, 1, 10, GUILayout.Height(25));
-        EditorGUILayout.EndVertical();
+        // 难度选择(1-10页签，选中态蓝色)
+        EditorGUILayout.LabelField("难度", EditorStyles.boldLabel, GUILayout.Width(32));
+        for (int d = 1; d <= 10; d++)
+        {
+            bool isOn = selectedDifficulty == d;
+            Color prevBg = GUI.backgroundColor;
+            if (isOn) GUI.backgroundColor = DifficultyOnBgColor;
+            bool click = GUILayout.Toggle(isOn, d.ToString(), difficultyToggleStyle, GUILayout.Width(26), GUILayout.Height(22));
+            GUI.backgroundColor = prevBg;
+            if (click && !isOn) selectedDifficulty = d;
+        }
 
-        GUILayout.Space(15);
+        GUILayout.Space(12);
 
         // 加载按钮
-        EditorGUILayout.BeginVertical(GUILayout.Width(100));
-        EditorGUILayout.LabelField(" ", EditorStyles.boldLabel);
         Color prevColor = GUI.backgroundColor;
         GUI.backgroundColor = new Color(0.20f, 0.75f, 0.35f);
-        if (GUILayout.Button("加载数据", GUILayout.Height(25)))
+        if (GUILayout.Button("加载数据", GUILayout.Width(80), GUILayout.Height(22)))
         {
             LoadData();
         }
         GUI.backgroundColor = prevColor;
-        EditorGUILayout.EndVertical();
 
         EditorGUILayout.EndHorizontal();
 
+        // 状态行：当前编辑信息 + 未加载/未保存提示
         if (dataLoaded && currentBean != null)
         {
-            GUILayout.Space(5);
-            EditorGUILayout.LabelField($"当前: ID={currentBean.id} | {currentBean.remark}", EditorStyles.miniLabel);
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField($"当前编辑: ID={currentBean.id} | {currentBean.remark}", EditorStyles.miniLabel);
+            GUILayout.FlexibleSpace();
+
+            // 选择已变更但尚未加载的提示，防止误以为切换即生效
+            if (currentBean.world_id != GetSelectedWorldId() || currentBean.level != selectedDifficulty)
+            {
+                EditorGUILayout.LabelField("⚠ 选择已变更，请点击「加载数据」", dirtyHintStyle);
+            }
+
+            int changes = CountChanges();
+            if (changes > 0)
+            {
+                GUILayout.Space(10);
+                EditorGUILayout.LabelField($"● {changes} 项未保存修改", dirtyHintStyle);
+            }
+            EditorGUILayout.EndHorizontal();
         }
 
         EditorGUILayout.EndVertical();
@@ -562,138 +697,108 @@ public class FightTypeConquerEditorWindow : EditorWindow
     private void DrawDataEditArea()
     {
         EditorGUILayout.BeginVertical(boxStyle);
-        EditorGUILayout.LabelField("数据编辑", sectionHeaderStyle);
-        GUILayout.Space(10);
 
         // 对比列头(前3难度 | 当前 | 后3难度)
         DrawCompareHeader();
 
-        GUILayout.Space(4);
-
         // 整难度一键复制
         DrawCopyAllButtons();
 
-        GUILayout.Space(6);
-
         // 基础信息
-        EditorGUILayout.LabelField("基础信息", EditorStyles.boldLabel);
+        DrawSectionTitle("基础信息");
         EditorGUI.BeginDisabledGroup(true);
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("ID:", GUILayout.Width(120));
-        EditorGUILayout.LongField(currentBean.id);
+        EditorGUILayout.LabelField("ID:", GUILayout.Width(FieldLabelWidth));
+        EditorGUILayout.LongField(currentBean.id, GUILayout.Width(200));
         EditorGUILayout.EndHorizontal();
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("世界ID:", GUILayout.Width(120));
-        EditorGUILayout.LongField(currentBean.world_id);
-        //世界ID 右侧：打开世界配置表
+        EditorGUILayout.LabelField("世界ID:", GUILayout.Width(FieldLabelWidth));
+        EditorGUILayout.LongField(currentBean.world_id, GUILayout.Width(200));
         EditorGUI.EndDisabledGroup();
         if (GUILayout.Button("打开世界配置表", GUILayout.Width(110), GUILayout.Height(18)))
         {
             OpenWorldInfoExcel();
         }
-        EditorGUI.BeginDisabledGroup(true);
         EditorGUILayout.EndHorizontal();
+        EditorGUI.BeginDisabledGroup(true);
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("难度:", GUILayout.Width(120));
-        EditorGUILayout.IntField(currentBean.level);
+        EditorGUILayout.LabelField("难度:", GUILayout.Width(FieldLabelWidth));
+        EditorGUILayout.IntField(currentBean.level, GUILayout.Width(200));
         EditorGUILayout.EndHorizontal();
         EditorGUI.EndDisabledGroup();
 
-        GUILayout.Space(5);
-        Rect lineRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(1));
-        EditorGUI.DrawRect(lineRect, new Color(0.4f, 0.4f, 0.4f, 0.3f));
-        GUILayout.Space(5);
-
         // 场景配置
-        EditorGUILayout.LabelField("场景配置", EditorStyles.boldLabel);
-        currentBean.fight_scene_ids = DrawIdListField("战斗场景列表", currentBean.fight_scene_ids, "fight_scene_ids");
-        currentBean.fight_scene_boss_ids = DrawIdListField("Boss战斗场景列表", currentBean.fight_scene_boss_ids, "fight_scene_boss_ids");
-
-        GUILayout.Space(5);
-        lineRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(1));
-        EditorGUI.DrawRect(lineRect, new Color(0.4f, 0.4f, 0.4f, 0.3f));
-        GUILayout.Space(5);
+        DrawSectionTitle("场景配置");
+        currentBean.fight_scene_ids = DrawIdListField(new GUIContent("战斗场景列表", "fight_scene_ids：普通关卡的战斗场景池"), currentBean.fight_scene_ids, "fight_scene_ids");
+        currentBean.fight_scene_boss_ids = DrawIdListField(new GUIContent("Boss战斗场景列表", "fight_scene_boss_ids：BOSS 关卡的战斗场景池"), currentBean.fight_scene_boss_ids, "fight_scene_boss_ids");
 
         // 敌人配置
-        EditorGUILayout.LabelField("敌人配置", EditorStyles.boldLabel);
-        currentBean.enemy_ids = DrawIdListField("敌人列表", currentBean.enemy_ids, "enemy_ids");
-        currentBean.enemy_boss_ids = DrawIdListField("Boss列表", currentBean.enemy_boss_ids, "enemy_boss_ids");
-        currentBean.attack_boss_num = DrawStringField("Boss数量(x或x-y)", currentBean.attack_boss_num, "attack_boss_num");
-        currentBean.attack_start_num = DrawIntField("第一关敌人数量", currentBean.attack_start_num, "attack_start_num");
-        currentBean.attack_show_time = DrawFloatField("进攻时间(秒)", currentBean.attack_show_time, "attack_show_time");
-        currentBean.attack_num_addrate = DrawFloatField("每关敌人倍数", currentBean.attack_num_addrate, "attack_num_addrate");
-        currentBean.attack_num_add = DrawIntField("每关增加敌人数量", currentBean.attack_num_add, "attack_num_add");
-        currentBean.attack_intensity_baserate = DrawFloatField("基础强度倍率(默认1,每关都生效)", currentBean.attack_intensity_baserate, "attack_intensity_baserate");
-        currentBean.attack_intensity_addrate = DrawFloatField("每关强度倍率(HP/护甲/攻击)", currentBean.attack_intensity_addrate, "attack_intensity_addrate");
-
-        GUILayout.Space(5);
-        lineRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(1));
-        EditorGUI.DrawRect(lineRect, new Color(0.4f, 0.4f, 0.4f, 0.3f));
-        GUILayout.Space(5);
+        DrawSectionTitle("敌人配置");
+        currentBean.enemy_ids = DrawIdListField(new GUIContent("敌人列表", "enemy_ids：普通敌人刷怪池"), currentBean.enemy_ids, "enemy_ids");
+        currentBean.enemy_boss_ids = DrawIdListField(new GUIContent("Boss列表", "enemy_boss_ids：BOSS 关额外刷怪池"), currentBean.enemy_boss_ids, "enemy_boss_ids");
+        currentBean.attack_boss_num = DrawStringField(new GUIContent("Boss数量", "attack_boss_num：x 固定 或 x-y 区间随机"), currentBean.attack_boss_num, "attack_boss_num");
+        currentBean.attack_start_num = DrawIntField(new GUIContent("第一关敌人数量", "attack_start_num"), currentBean.attack_start_num, "attack_start_num");
+        currentBean.attack_show_time = DrawFloatField(new GUIContent("进攻时间", "attack_show_time：单位秒"), currentBean.attack_show_time, "attack_show_time");
+        currentBean.attack_num_addrate = DrawFloatField(new GUIContent("每关敌人倍数", "attack_num_addrate"), currentBean.attack_num_addrate, "attack_num_addrate");
+        currentBean.attack_num_add = DrawIntField(new GUIContent("每关增加敌人数量", "attack_num_add"), currentBean.attack_num_add, "attack_num_add");
+        currentBean.attack_intensity_baserate = DrawFloatField(new GUIContent("基础强度倍率", "attack_intensity_baserate：默认 1，每关都生效"), currentBean.attack_intensity_baserate, "attack_intensity_baserate");
+        currentBean.attack_intensity_addrate = DrawFloatField(new GUIContent("每关强度倍率", "attack_intensity_addrate：作用于 HP/护甲/攻击"), currentBean.attack_intensity_addrate, "attack_intensity_addrate");
 
         // 关卡配置(单值"x"或区间"x-y")
-        EditorGUILayout.LabelField("关卡配置", EditorStyles.boldLabel);
-        currentBean.fight_num = DrawStringField("关卡次数(x或x-y)", currentBean.fight_num, "fight_num");
-        currentBean.road_num = DrawStringField("道路数量(x或x-y)", currentBean.road_num, "road_num");
-        currentBean.road_length = DrawStringField("道路长度(x或x-y)", currentBean.road_length, "road_length");
-
-        GUILayout.Space(5);
-        lineRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(1));
-        EditorGUI.DrawRect(lineRect, new Color(0.4f, 0.4f, 0.4f, 0.3f));
-        GUILayout.Space(5);
+        DrawSectionTitle("关卡配置");
+        currentBean.fight_num = DrawStringField(new GUIContent("关卡次数", "fight_num：x 固定 或 x-y 区间随机"), currentBean.fight_num, "fight_num");
+        currentBean.road_num = DrawStringField(new GUIContent("道路数量", "road_num：x 固定 或 x-y 区间随机"), currentBean.road_num, "road_num");
+        currentBean.road_length = DrawStringField(new GUIContent("道路长度", "road_length：x 固定 或 x-y 区间随机"), currentBean.road_length, "road_length");
 
         // 难度与奖励
-        EditorGUILayout.LabelField("难度与奖励", EditorStyles.boldLabel);
-        currentBean.drop_crystal = DrawIntField("掉落魔晶", currentBean.drop_crystal, "drop_crystal");
+        DrawSectionTitle("难度与奖励");
+        currentBean.drop_crystal = DrawIntField(new GUIContent("掉落魔晶", "drop_crystal"), currentBean.drop_crystal, "drop_crystal");
         //奖励魔晶: 由Excel类型行决定(重生成Bean后为string), 统一按字符串编辑, 支持单值"200"或区间"100-200"
-        string rewardCrystalStr = DrawRewardCrystalField("奖励-魔晶(x或x-y)", "reward_crystal");
+        string rewardCrystalStr = DrawRewardCrystalField(new GUIContent("奖励-魔晶", "reward_crystal：x 固定 或 x-y 区间随机"), "reward_crystal");
         SetFieldValueAsString(currentBean, "reward_crystal", rewardCrystalStr);
-        currentBean.reward_equip_rarity = DrawIntField("奖励-装备稀有度", currentBean.reward_equip_rarity, "reward_equip_rarity");
-
-        GUILayout.Space(5);
-        lineRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(1));
-        EditorGUI.DrawRect(lineRect, new Color(0.4f, 0.4f, 0.4f, 0.3f));
-        GUILayout.Space(5);
+        currentBean.reward_equip_rarity = DrawIntField(new GUIContent("奖励-装备稀有度", "reward_equip_rarity"), currentBean.reward_equip_rarity, "reward_equip_rarity");
 
         // 备注
-        currentBean.remark = DrawStringField("备注", currentBean.remark, "remark");
+        DrawSectionTitle("备注");
+        currentBean.remark = DrawStringField(new GUIContent("备注", "remark"), currentBean.remark, "remark");
 
+        GUILayout.Space(6);
         EditorGUILayout.EndVertical();
     }
 
     /// <summary>
-    /// 绘制对比列头：前3难度 | 当前难度 | 后3难度
+    /// 绘制分区标题（加粗文字 + 下方细分隔线）
+    /// </summary>
+    private void DrawSectionTitle(string title)
+    {
+        GUILayout.Space(8);
+        EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+        Rect lineRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(1));
+        EditorGUI.DrawRect(lineRect, new Color(0.4f, 0.4f, 0.4f, 0.3f));
+        GUILayout.Space(4);
+    }
+
+    /// <summary>
+    /// 绘制对比列头：前3难度 | 当前难度 | 后3难度（与字段行同网格对齐；缺失难度在列头标注"(无)"）
     /// </summary>
     private void DrawCompareHeader()
     {
-        GUIStyle headerStyle = new GUIStyle(EditorStyles.miniBoldLabel) { alignment = TextAnchor.MiddleCenter };
-
         EditorGUILayout.BeginHorizontal();
         GUILayout.Space(FieldLabelWidth + 4);
         // 前3难度(远→近排列，贴近当前列的是level-1)
         for (int i = CompareRange; i >= 1; i--)
         {
-            EditorGUILayout.LabelField($"难度 {selectedDifficulty - i}", headerStyle, GUILayout.Width(CompareColumnWidth));
+            string text = $"难度 {selectedDifficulty - i}";
+            if (prevBeans[i - 1] == null) text += "\n(无)";
+            EditorGUILayout.LabelField(text, compareHeaderStyle, GUILayout.Width(CompareColumnWidth));
         }
-        EditorGUILayout.LabelField($"◀ 当前 难度 {selectedDifficulty} ▶", headerStyle);
+        EditorGUILayout.LabelField($"▶ 当前 难度 {selectedDifficulty} ◀", compareHeaderCurrentStyle);
         // 后3难度(近→远排列)
         for (int i = 1; i <= CompareRange; i++)
         {
-            EditorGUILayout.LabelField($"难度 {selectedDifficulty + i}", headerStyle, GUILayout.Width(CompareColumnWidth));
-        }
-        EditorGUILayout.EndHorizontal();
-
-        // 缺失提示行
-        EditorGUILayout.BeginHorizontal();
-        GUILayout.Space(FieldLabelWidth + 4);
-        for (int i = CompareRange - 1; i >= 0; i--)
-        {
-            EditorGUILayout.LabelField(prevBeans[i] == null ? "(无)" : "", compareCellStyle, GUILayout.Width(CompareColumnWidth));
-        }
-        GUILayout.FlexibleSpace();
-        for (int i = 0; i < CompareRange; i++)
-        {
-            EditorGUILayout.LabelField(nextBeans[i] == null ? "(无)" : "", compareCellStyle, GUILayout.Width(CompareColumnWidth));
+            string text = $"难度 {selectedDifficulty + i}";
+            if (nextBeans[i - 1] == null) text += "\n(无)";
+            EditorGUILayout.LabelField(text, compareHeaderStyle, GUILayout.Width(CompareColumnWidth));
         }
         EditorGUILayout.EndHorizontal();
     }
@@ -896,15 +1001,27 @@ public class FightTypeConquerEditorWindow : EditorWindow
     }
 
     /// <summary>
+    /// 绘制当前值编辑框（值与原始值不同则淡黄背景标记"已修改"）
+    /// </summary>
+    private string DrawCurrentTextField(string value, bool modified)
+    {
+        Color prevColor = GUI.backgroundColor;
+        if (modified) GUI.backgroundColor = ModifiedBgColor;
+        string result = EditorGUILayout.TextField(value);
+        GUI.backgroundColor = prevColor;
+        return result;
+    }
+
+    /// <summary>
     /// 绘制字符串字段（左=前3难度 / 中=当前可编辑 / 右=后3难度）
     /// </summary>
-    private string DrawStringField(string label, string value, string fieldName)
+    private string DrawStringField(GUIContent labelContent, string value, string fieldName)
     {
         string result = value;
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField(label + ":", GUILayout.Width(FieldLabelWidth));
+        EditorGUILayout.LabelField(labelContent, GUILayout.Width(FieldLabelWidth));
         var clickedPrev = DrawCompareCells(prevBeans, fieldName, value, true);
-        result = EditorGUILayout.TextField(result);
+        result = DrawCurrentTextField(result, IsFieldModified(fieldName));
         var clickedNext = DrawCompareCells(nextBeans, fieldName, value, false);
         var clicked = clickedPrev != null ? clickedPrev : clickedNext;
         if (clicked != null)
@@ -920,13 +1037,13 @@ public class FightTypeConquerEditorWindow : EditorWindow
     /// 绘制奖励魔晶字段（统一按字符串编辑：单值"200"固定 或 区间"100-200"随机）
     /// reward_crystal 字段类型由 Excel 类型行决定，Bean 重生成后为 string；旧 int 过渡态经反射读写兼容，任意阶段可编译
     /// </summary>
-    private string DrawRewardCrystalField(string label, string fieldName)
+    private string DrawRewardCrystalField(GUIContent labelContent, string fieldName)
     {
         string result = GetFieldValueStr(currentBean, fieldName);
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField(label + ":", GUILayout.Width(FieldLabelWidth));
+        EditorGUILayout.LabelField(labelContent, GUILayout.Width(FieldLabelWidth));
         var clickedPrev = DrawCompareCells(prevBeans, fieldName, result, true);
-        result = EditorGUILayout.TextField(result);
+        result = DrawCurrentTextField(result, IsFieldModified(fieldName));
         var clickedNext = DrawCompareCells(nextBeans, fieldName, result, false);
         var clicked = clickedPrev != null ? clickedPrev : clickedNext;
         if (clicked != null)
@@ -958,11 +1075,11 @@ public class FightTypeConquerEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 绘制ID列表字段（支持列表编辑和文本编辑两种模式）
+    /// 绘制ID列表字段（首行=标签+展开计数+模式切换+快捷开表；次行=前后难度对比+当前值摘要；展开后为列表/文本编辑区）
     /// </summary>
-    private string DrawIdListField(string label, string value, string fieldKey)
+    private string DrawIdListField(GUIContent labelContent, string value, string fieldKey)
     {
-        // 初始化状态
+        // 初始化状态(列表默认展开，直接显示逐行编辑明细)
         if (!listFoldoutStates.ContainsKey(fieldKey))
             listFoldoutStates[fieldKey] = true;
         if (!listEditMode.ContainsKey(fieldKey))
@@ -975,12 +1092,15 @@ public class FightTypeConquerEditorWindow : EditorWindow
 
         EditorGUILayout.BeginVertical();
 
-        // 标签行 + 编辑模式切换
+        // 首行：标签 + 展开foldout(共N个) + 编辑模式切换 + 快捷打开配置表
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField(label + ":", GUILayout.Width(120));
+        EditorGUILayout.LabelField(labelContent, GUILayout.Width(FieldLabelWidth));
+        listFoldoutStates[fieldKey] = EditorGUILayout.Foldout(listFoldoutStates[fieldKey], $"共 {idList.Count} 个", true);
 
-        string modeLabel = listEditMode[fieldKey] ? "切换到文本编辑" : "切换到列表编辑";
-        if (GUILayout.Button(modeLabel, EditorStyles.miniButton, GUILayout.Width(100)))
+        GUILayout.FlexibleSpace();
+
+        string modeLabel = listEditMode[fieldKey] ? "切换文本编辑" : "切换列表编辑";
+        if (GUILayout.Button(modeLabel, EditorStyles.miniButton, GUILayout.Width(90)))
         {
             listEditMode[fieldKey] = !listEditMode[fieldKey];
         }
@@ -988,7 +1108,6 @@ public class FightTypeConquerEditorWindow : EditorWindow
         // 场景字段：在列表旁提供「打开场景配置表」按钮（打开战斗场景 Excel）
         if (fieldKey.Contains("scene"))
         {
-            GUILayout.Space(5);
             if (GUILayout.Button("打开场景配置表", EditorStyles.miniButton, GUILayout.Width(110)))
             {
                 OpenFightSceneExcel();
@@ -997,7 +1116,6 @@ public class FightTypeConquerEditorWindow : EditorWindow
         // 敌人字段：在列表旁提供「打开NpcInfo配置表」按钮（打开NpcInfo Excel）
         else if (fieldKey.Contains("enemy"))
         {
-            GUILayout.Space(5);
             if (GUILayout.Button("打开NpcInfo配置表", EditorStyles.miniButton, GUILayout.Width(120)))
             {
                 OpenNpcInfoExcel();
@@ -1005,11 +1123,15 @@ public class FightTypeConquerEditorWindow : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
 
-        // 前后3难度对比行(显示解析后的具体名字而非原始ID串，差异高亮，点击复制到当前；完整列表见tooltip)
+        // 次行：前后3难度对比 + 中间当前值摘要(与标量字段同一网格对齐；差异高亮，点击对比格复制到当前；完整列表见tooltip)
         EditorGUILayout.BeginHorizontal();
-        GUILayout.Space(FieldLabelWidth);
+        GUILayout.Space(FieldLabelWidth + 4);
         var clickedPrev = DrawIdListCompareCells(prevBeans, fieldKey, value, true);
-        GUILayout.FlexibleSpace();
+        string currentCellText = GetIdListCellText(value, fieldKey, out string currentTooltip);
+        Color summaryBg = GUI.backgroundColor;
+        if (IsFieldModified(fieldKey)) GUI.backgroundColor = ModifiedBgColor;
+        EditorGUILayout.LabelField(new GUIContent(currentCellText, currentTooltip), currentCellWrapStyle, GUILayout.Height(CompareWrapCellHeight));
+        GUI.backgroundColor = summaryBg;
         var clickedNext = DrawIdListCompareCells(nextBeans, fieldKey, value, false);
         EditorGUILayout.EndHorizontal();
         var clickedBean = clickedPrev != null ? clickedPrev : clickedNext;
@@ -1024,11 +1146,11 @@ public class FightTypeConquerEditorWindow : EditorWindow
 
         if (listEditMode[fieldKey])
         {
-            // 列表编辑模式
-            listFoldoutStates[fieldKey] = EditorGUILayout.Foldout(listFoldoutStates[fieldKey], $"  共 {idList.Count} 个ID", true);
-
+            // 列表编辑模式（首行 foldout 展开时显示明细）
             if (listFoldoutStates[fieldKey])
             {
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Space(20);
                 EditorGUILayout.BeginVertical(GUI.skin.box);
                 GUILayout.Space(4);
 
@@ -1046,7 +1168,6 @@ public class FightTypeConquerEditorWindow : EditorWindow
                 {
                     int rowIndex = i; // 闭包捕获副本
                     EditorGUILayout.BeginHorizontal();
-                    GUILayout.Space(20);
                     EditorGUILayout.LabelField($"[{rowIndex + 1}]", GUILayout.Width(30));
 
                     // 方式一：直接输入ID
@@ -1077,14 +1198,13 @@ public class FightTypeConquerEditorWindow : EditorWindow
 
                 if (idList.Count == 0)
                 {
-                    EditorGUILayout.LabelField("  （空列表）", EditorStyles.centeredGreyMiniLabel);
+                    EditorGUILayout.LabelField("（空列表）", EditorStyles.centeredGreyMiniLabel);
                 }
 
                 GUILayout.Space(4);
 
                 // 添加新ID行（手动输入ID 或 下拉按名字选取，二者等价，选/填后点 + 添加）
                 EditorGUILayout.BeginHorizontal();
-                GUILayout.Space(20);
                 EditorGUILayout.LabelField("新ID:", GUILayout.Width(40));
                 newIdInputs[fieldKey] = EditorGUILayout.LongField(newIdInputs[fieldKey], GUILayout.Width(70));
                 DrawIdDropdown(fieldKey, newIdInputs[fieldKey], (selectedId) => newIdInputs[fieldKey] = selectedId, GUILayout.MinWidth(120));
@@ -1105,11 +1225,12 @@ public class FightTypeConquerEditorWindow : EditorWindow
 
                 GUILayout.Space(4);
                 EditorGUILayout.EndVertical();
+                EditorGUILayout.EndHorizontal();
             }
         }
         else
         {
-            // 文本编辑模式
+            // 文本编辑模式（直接改 & 分隔串）
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(20);
             value = EditorGUILayout.TextArea(value, GUILayout.MinHeight(40));
@@ -1234,14 +1355,17 @@ public class FightTypeConquerEditorWindow : EditorWindow
     /// <summary>
     /// 绘制整数字段（左=前3难度 / 中=当前可编辑 / 右=后3难度）
     /// </summary>
-    private int DrawIntField(string label, int value, string fieldName)
+    private int DrawIntField(GUIContent labelContent, int value, string fieldName)
     {
         int result = value;
         string valueStr = value.ToString();
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField(label + ":", GUILayout.Width(FieldLabelWidth));
+        EditorGUILayout.LabelField(labelContent, GUILayout.Width(FieldLabelWidth));
         var clickedPrev = DrawCompareCells(prevBeans, fieldName, valueStr, true);
+        Color prevColor = GUI.backgroundColor;
+        if (IsFieldModified(fieldName)) GUI.backgroundColor = ModifiedBgColor;
         result = EditorGUILayout.IntField(result);
+        GUI.backgroundColor = prevColor;
         var clickedNext = DrawCompareCells(nextBeans, fieldName, valueStr, false);
         var clicked = clickedPrev != null ? clickedPrev : clickedNext;
         if (clicked != null)
@@ -1256,14 +1380,17 @@ public class FightTypeConquerEditorWindow : EditorWindow
     /// <summary>
     /// 绘制浮点数字段（左=前3难度 / 中=当前可编辑 / 右=后3难度）
     /// </summary>
-    private float DrawFloatField(string label, float value, string fieldName)
+    private float DrawFloatField(GUIContent labelContent, float value, string fieldName)
     {
         float result = value;
         string valueStr = value.ToString();
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField(label + ":", GUILayout.Width(FieldLabelWidth));
+        EditorGUILayout.LabelField(labelContent, GUILayout.Width(FieldLabelWidth));
         var clickedPrev = DrawCompareCells(prevBeans, fieldName, valueStr, true);
+        Color prevColor = GUI.backgroundColor;
+        if (IsFieldModified(fieldName)) GUI.backgroundColor = ModifiedBgColor;
         result = EditorGUILayout.FloatField(result);
+        GUI.backgroundColor = prevColor;
         var clickedNext = DrawCompareCells(nextBeans, fieldName, valueStr, false);
         var clicked = clickedPrev != null ? clickedPrev : clickedNext;
         if (clicked != null)
@@ -1280,26 +1407,35 @@ public class FightTypeConquerEditorWindow : EditorWindow
     #region UI 绘制 - 操作按钮
 
     /// <summary>
-    /// 绘制保存和重置按钮
+    /// 绘制底部固定保存栏（保存按钮显示变更数、无变更时禁用；附重置按钮）
     /// </summary>
     private void DrawActionButtons()
     {
+        int changes = CountChanges();
+
+        Rect lineRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(1));
+        EditorGUI.DrawRect(lineRect, new Color(0.4f, 0.4f, 0.4f, 0.3f));
+        GUILayout.Space(4);
+
         EditorGUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
 
-        // 保存按钮
+        // 保存按钮（无变更时禁用，避免点开"没有检测到数据变更"的空弹窗）
+        EditorGUI.BeginDisabledGroup(changes == 0);
         Color prevColor = GUI.backgroundColor;
         GUI.backgroundColor = new Color(0.30f, 0.55f, 0.90f);
-        if (GUILayout.Button("保存到Excel并生成Json", GUILayout.Width(200), GUILayout.Height(35)))
+        string saveText = changes > 0 ? $"保存到Excel并生成Json ({changes}项变更)" : "保存到Excel并生成Json";
+        if (GUILayout.Button(saveText, GUILayout.Width(240), GUILayout.Height(30)))
         {
             SaveData();
         }
         GUI.backgroundColor = prevColor;
+        EditorGUI.EndDisabledGroup();
 
         GUILayout.Space(15);
 
         // 重置按钮
-        if (GUILayout.Button("重置", GUILayout.Width(80), GUILayout.Height(35)))
+        if (GUILayout.Button("重置", GUILayout.Width(80), GUILayout.Height(30)))
         {
             if (EditorUtility.DisplayDialog("确认", "确定要重置当前数据吗？未保存的修改将丢失。", "确定", "取消"))
             {
@@ -1309,86 +1445,7 @@ public class FightTypeConquerEditorWindow : EditorWindow
 
         GUILayout.FlexibleSpace();
         EditorGUILayout.EndHorizontal();
-    }
-
-    /// <summary>
-    /// 绘制打开NpcInfo Excel按钮
-    /// </summary>
-    private void DrawOpenNpcInfoButton()
-    {
-        EditorGUILayout.BeginVertical(boxStyle);
-        EditorGUILayout.LabelField("快捷操作", sectionHeaderStyle);
-        GUILayout.Space(10);
-
-        EditorGUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
-
-        Color prevColor = GUI.backgroundColor;
-        GUI.backgroundColor = new Color(0.90f, 0.55f, 0.25f);
-        if (GUILayout.Button("打开 NpcInfo Excel 表格", GUILayout.Width(220), GUILayout.Height(35)))
-        {
-            OpenNpcInfoExcel();
-        }
-        GUI.backgroundColor = prevColor;
-
-        GUILayout.Space(10);
-
-        prevColor = GUI.backgroundColor;
-        GUI.backgroundColor = new Color(0.25f, 0.65f, 0.90f);
-        if (GUILayout.Button("打开 战斗场景 Excel 表格", GUILayout.Width(220), GUILayout.Height(35)))
-        {
-            OpenFightSceneExcel();
-        }
-        GUI.backgroundColor = prevColor;
-
-        GUILayout.Space(10);
-
-        prevColor = GUI.backgroundColor;
-        GUI.backgroundColor = new Color(0.65f, 0.35f, 0.90f);
-        if (GUILayout.Button("打开 战斗模式难度 Excel 表格", GUILayout.Width(220), GUILayout.Height(35)))
-        {
-            OpenFightTypeConquerExcel();
-        }
-        GUI.backgroundColor = prevColor;
-
-        GUILayout.Space(10);
-
-        prevColor = GUI.backgroundColor;
-        GUI.backgroundColor = new Color(0.35f, 0.80f, 0.55f);
-        if (GUILayout.Button("打开 世界配置 Excel 表格", GUILayout.Width(220), GUILayout.Height(35)))
-        {
-            OpenWorldInfoExcel();
-        }
-        GUI.backgroundColor = prevColor;
-
-        GUILayout.Space(15);
-
-        // 重新加载Excel按钮
-        prevColor = GUI.backgroundColor;
-        GUI.backgroundColor = new Color(0.55f, 0.55f, 0.55f);
-        if (GUILayout.Button("刷新数据", GUILayout.Width(120), GUILayout.Height(35)))
-        {
-            LoadAllConfigFromExcel();
-            LoadData();
-            EditorUtility.DisplayDialog("完成", "已从Excel重新加载数据", "确定");
-        }
-        GUI.backgroundColor = prevColor;
-
-        GUILayout.Space(10);
-
-        // 导出JSON按钮（不需要数据变更，直接从当前Excel重新生成Json）
-        prevColor = GUI.backgroundColor;
-        GUI.backgroundColor = new Color(0.30f, 0.55f, 0.90f);
-        if (GUILayout.Button("导出 JSON", GUILayout.Width(120), GUILayout.Height(35)))
-        {
-            ExportJsonOnly();
-        }
-        GUI.backgroundColor = prevColor;
-
-        GUILayout.FlexibleSpace();
-        EditorGUILayout.EndHorizontal();
-
-        EditorGUILayout.EndVertical();
+        GUILayout.Space(4);
     }
 
     #endregion
@@ -1567,7 +1624,7 @@ public class FightTypeConquerEditorWindow : EditorWindow
 
     #endregion
 
-    #region 打开NpcInfo Excel
+    #region 打开 Excel 表格
 
     /// <summary>
     /// 打开NpcInfo Excel表格
