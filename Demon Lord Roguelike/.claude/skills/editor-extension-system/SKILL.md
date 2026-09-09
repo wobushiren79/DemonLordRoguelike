@@ -37,7 +37,8 @@ EditorWindow (Unity)
 ├── PixelArtPreviewWindow          # 像素图预览工具（多文件夹拖拽→Grid预览→点击Ping定位；虚拟滚动+AssetPreview异步缩略图）
 ├── StyleBaseWindow                # 样式基础窗口
 ├── GameTestEditor                 # 游戏测试编辑器 (Inspector扩展)
-├── GameBuildEditorWindow          # 打包游戏工具 (打包前 Spine 资源生成 + BuildPlayer)
+├── GameBuildEditorWindow          # 打包游戏工具 (打包前资源生成(复用 GameResourceEditor) + BuildPlayer)
+├── GameResourceEditor(+Spine/Atlas/Common partial)  # 游戏资源处理 (Spine/图集/通用 三板块页签)
 ├── SkinRandomEditorWindow         # 皮肤/装备/套装随机池配置 (CreatureRandomInfo 三模式: 皮肤池编辑skin_random_data/装备池·套装池编辑equip_random_data, 双列表点选增删, 写回Excel+同步JSON)
 ├── EquipSuitEditorWindow          # 装备套装配置 (EquipSuitInfo 套装表: 物种下拉+7槽位点选填入+新建/删除套装, 单EPPlus会话写回+同步JSON)
 ├── FightSceneEditorWindow         # 战斗场景配置 (excel_fight_scene: 预制/道路色/天空盒/雾/环境光/细节预制直观编辑, 保存写回Excel+再生JSON, Play时实时应用到当前战斗场景)
@@ -243,13 +244,27 @@ LauncherTest (Inspector)
 
 ---
 
+## 游戏资源处理 (GameResourceEditor)
+
+**文件**: `Assets/Editor/GameResourceEditor.cs` + `GameResourceEditor.Spine.cs` / `GameResourceEditor.Atlas.cs` / `GameResourceEditor.Common.cs`（按板块拆 partial），**菜单**: `游戏/游戏资源处理`，**主工具栏**: 左侧「游戏资源处理」按钮（`MainToolbarButton` 直接开窗，元素 ID `自定义标题/游戏资源处理` 不可改）
+
+### 功能
+
+- 三板块页签（`GUILayout.Toolbar` 切换）：
+  - **Spine**：批量生成道具图标（皮肤名筛选 `Clothes,Pants,Weapon,Shoes,Hat,Mask,NoseRing,Arrow` → `Textures/Items` + 重打 `AtlasForItems`）/ 皮肤图标（筛选 `Eye,Head,Mouth,Body,Hair,Horn,Wing` → `Textures/Skins` + 重打 `AtlasForSkins`）；指定 SkeletonDataAsset 单独导出（未选中时按钮置灰）。提取实现复用框架层 `SpineWindow.ExtractSkinTextures`（输入固定 `Assets/LoadResources/Spine/Creature`）。**Spine 资源导入**：导入项列表（目标目录=外部美术目录绝对路径如 `../资源/生物/人类` + 导入目录=项目内 `Assets/` 相对路径如 `Assets/LoadResources/Spine/Creature/Human`，浏览选择或拖拽文件夹到目录行（拖文件则取所在目录），改动即写入 EditorPrefs `GameResourceEditor.SpineImportEntries` 持久化（注意：必须先赋值写回 entry 再保存，否则序列化的是旧值；另带「保存配置」手动保存按钮）），以导入目录顶层文件为准回查目标目录、同名 `.atlas.txt`/`.json`/`.png` 覆盖复制（导入目录没有的文件不复制），支持单条导入/全部导入，完成后 `AssetDatabase.Refresh`。
+  - **图集**：重打 `Assets/LoadResources/Textures/SpriteAtlas` 下所有 SpriteAtlas（`SpriteAtlasUtility.PackAtlases`）。
+  - **通用**：一键生成所有资源（道具图标 → 皮肤图标 → 刷新图集）。
+- public static 方法（`SpineAllItemInit`/`SpineAllSkinInit`/`SpineSelectedItemInit`/`SpineSelectedSkinInit`/`RefreshAllAtlases`/`GenerateAllResources`/`ImportSpineResources`）供 `GameBuildEditorWindow` 打包前流程直接复用。
+
+---
+
 ## 打包游戏工具 (GameBuildEditorWindow)
 
 **文件**: `Assets/Editor/GameBuildEditorWindow.cs`，**菜单**: `游戏/打包游戏`
 
 ### 功能
 
-- 打包前 3 个可勾选步骤（默认全勾选）：生成所有 Spine 道具图标 / 生成所有 Spine 皮肤图标 / 刷新所有图集 —— 均直接复用 `GameDataEditor` 的 public static 方法（`SpineAllItemInit`/`SpineAllSkinInit`/`RefreshAllAtlases`）。
+- 打包前 3 个可勾选步骤（默认全勾选）：生成所有 Spine 道具图标 / 生成所有 Spine 皮肤图标 / 刷新所有图集 —— 均直接复用 `GameResourceEditor` 的 public static 方法（`SpineAllItemInit`/`SpineAllSkinInit`/`RefreshAllAtlases`）。
 - 打包选项（均经 EditorPrefs 持久化）：开发包(Development)、允许脚本调试(AllowDebugging)、自动连接 Profiler(ConnectWithProfiler)、深度分析(EnableDeepProfilingSupport)、完成后自动运行(AutoRunPlayer)、完成后打开输出目录(ShowBuiltPlayer)。调试/Profiler/深度分析三个子选项依赖开发包，取消开发包时联动关闭并置灰。
 - 打包路径选择：默认为 git 仓库根的上级目录下 `DLR/`（从 `Application.dataPath` 向上找 `.git` 动态推导，找不到则退化为项目根上级目录），支持浏览修改与「重置为默认路径」，选择经 EditorPrefs 持久化。
 - 「开始打包」：先 `EnsureURPCompatibilityModeDefine` 确保当前平台带 `URP_COMPATIBILITY_MODE` 编译宏（Unity 6.3 起 URP 兼容模式被打包校验拦截，缺宏直接 BuildFailedException；缺宏时自动补宏并弹窗提示——补宏触发脚本重编译会中断本次打包，重编译完成后需重新点击「开始打包」）→ 自动切换到 `Assets/Scenes/GameScene.unity`（未保存修改弹保存提示、取消则中止；打包完成后自动切回原场景）→ 执行勾选步骤 → **固定只用 GameScene 打包**（不读 Build Settings 场景列表，避免日常挂的 TestScene 混进正式包）→ 按勾选项组装 `BuildOptions` → `BuildPipeline.BuildPlayer` 打到 `activeBuildTarget`（Windows 平台自动追加 `PlayerSettings.productName + ".exe"`），成功后打开产物目录（勾选 ShowBuiltPlayer 时由 Unity 打开，否则手动 `RevealInFinder`）。
@@ -273,7 +288,7 @@ LauncherTest (Inspector)
 - **随机池下拉**（`id | remark`）+ 当前池具体内容展示（压缩串只读 TextArea + 部件总数/覆盖部位/无效ID 统计）。
 - **左列表 = 已加入随机的皮肤**：按部位(`CreatureSkinTypeEnum`)分组排序，逐行「移除」；池中悬空 ID（模型表不存在）红色标记排在最后。**右列表 = 未加入随机的皮肤**：**按池内已有部件的物种自动限定**（选了人类池只列人类皮肤，空池不限定，无物种下拉），支持部位/搜索(id/res_name/remark) 筛选，逐行「加入」；另有「全部移除」「加入全部(筛选结果)」批量按钮。
 - **装备/武器类部位（统一维护在 `ExcludePartTypes` 列表：鼻环9/帽子50/衣服51/裤子52/鞋53/腰带54/手套55/武器线80/武器左右手90-91/双手武器92）双列表均不展示**——此类皮肤由装备道具驱动换皮（鼻环虽在枚举身体段，但道具表 item_type=5 经 `creature_model_info_id` 对接）；池内已有的装备部件数据保留不删，仅隐藏并在左列表头提示数量。新增装备类部位直接往 `ExcludePartTypes` 加，`IsEquipPart` 统一判定。
-- **每行带皮肤图标**：命名约定 `{CreatureModel.mark_name}_Atlas_{CreatureModelInfo.res_name 的 / 换成 _}`（与 NpcCreateEditorWindow 取图同约定），图标是 `GameDataEditor.SpineAllSkinInit` 抽取到 `Assets/LoadResources/Textures/Skins/` 的产物，懒加载+缓存，缺失时灰块占位（缺图标可跑「生成所有 Spine 皮肤图标」补齐）。
+- **每行带皮肤图标**：命名约定 `{CreatureModel.mark_name}_Atlas_{CreatureModelInfo.res_name 的 / 换成 _}`（与 NpcCreateEditorWindow 取图同约定），图标是 `GameResourceEditor.SpineAllSkinInit` 抽取到 `Assets/LoadResources/Textures/Skins/` 的产物，懒加载+缓存，缺失时灰块占位（缺图标可跑「生成所有 Spine 皮肤图标」补齐）。
 - 多池切换编辑不丢变更（每池独立 `skinSet`/`equipSet` + `originalData`/`originalEquipData` 对比出 dirty，`IsPoolDirty` 按池类型比对对应集合），刷新前有未保存变更确认。
 - **保存**：把 ID 集合升序压缩为区间串（连续段 `a-b`，逗号连接，与表内原有书写格式一致）→ 按池类型写回 `skin_random_data`/`equip_random_data` 列（`ExcelUtil.SetExcelData`；套装池与装备池同写 `equip_random_data`）→ `ExcelUtil.ExcelToJsonItem` 整体再生 `CreatureRandomInfo.txt`（该 Excel 仅单表，再生安全）→ `AssetDatabase.Refresh`。解析与运行时 `SplitForListLong(',', '-')` 同规则。部件全集直读 `excel_creature_model_info[生物模型详情信息] .xlsx`（不经 JSON 保证最新），物种名/mark_name 取自 `excel_creature_model[生物模型信息].xlsx`。
 
@@ -334,7 +349,7 @@ LauncherTest (Inspector)
 
 非运行态的 NPC 创建/修改/删除工具（Play 模式的 UITestNpcCreate/TestNpcCreateGUI 已删除并入本工具），提供完整 NPC 创建 GUI 功能（外观皮肤/逐部位调色/装备/随机池/属性编辑 + Spine 实时预览），写回 `excel_npc_info[NPC信息].xlsx`（NpcInfo sheet 全 25 列）与 `excel_language[多语言_FrameWork].xlsx`（NpcInfo sheet 中文名 content_cn，**textId 约定==NPC id**）。
 
-- **三栏布局**（分隔条拖拽/双击复位照搬 StoryEditorWindow）：左栏 NPC 列表（搜索/npc_type/稀有度筛选/排序 + 新建[建议id+模板复制+中文名]/删除登记）｜中栏 上区基础字段+属性、下区外观编辑（随机皮肤池/固定皮肤按部位/逐部位调色RGB(A)+16色预设盘/随机装备池+稀有度勾选/固定装备按槽位，皮肤装备候选面板作为中右之间的第4栏带图集图标）｜右栏 Spine 预览（参考模型生物2001+目标双模型、动画列表/播放控制/滚轮缩放拖拽平移）。
+- **三栏布局**（分隔条拖拽/双击复位照搬 StoryEditorWindow）：左栏 NPC 列表（搜索/npc_type/稀有度筛选/排序 + 新建[建议id+模板复制+中文名]/删除登记；**BOSS 项标注 `[BOSS]` 前缀**——判定源=全部征服配置 `FightTypeConquerInfo.enemy_boss_ids` 解析出的 npcId 集合 setBossNpcIds，ReloadAllCfg 时随 `FightTypeConquerInfoCfg` 缓存清理一并重建）｜中栏 上区基础字段+属性、下区外观编辑（随机皮肤池/固定皮肤按部位/逐部位调色RGB(A)+16色预设盘/随机装备池+稀有度勾选/固定装备按槽位，皮肤装备候选面板作为中右之间的第4栏带图集图标）｜右栏 Spine 预览（参考模型生物2001+目标双模型、动画列表/播放控制/滚轮缩放拖拽平移）。
 - **编辑副本+快照判脏**：选中 NPC 时 JSON 深拷贝出 editingNpcInfo（**绝不直改 Cfg 缓存 Bean**），外观编辑即时写回副本字符串字段（skin_data/equip_item_ids/SetSkinColorData/SetEquipRandom），脏判定=JsonConvert 序列化比对；切换/新建/刷新前三选（保存/放弃/取消）。删除仅内存登记 deletedNpcIds，保存时双表 DeleteRow（行号降序）。
 - **保存**：ValidateAll（creature_id/随机池/装备/皮肤/额外技能存在性+body_size解析，错误阻断警告可过）→ 变更摘要确认 → File.Open 探测 Excel 占用（ExcelToJsonItem 对占用文件静默跳过，不探测会有「保存成功但 JSON 没更新」隐性事故）→ 双表各单 EPPlus 会话写回 → `ExcelUtil.ExcelToJsonItem`×2 重导 JSON → 反射清 Cfg 静态缓存（dicData/arrayData，拷贝自 GameTestEditor.ClearCfgBaseStaticCache；外加 ItemsInfoCfg.dicDataForCreatureModel / CreatureModelInfoCfg.dicDetailsModelInfo / SpineAnimationStateCfg.dicSpineAnimData 三个 public 静态缓存）。
 

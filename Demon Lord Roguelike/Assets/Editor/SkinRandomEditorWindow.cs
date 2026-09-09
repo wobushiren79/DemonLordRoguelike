@@ -120,7 +120,7 @@ public class SkinRandomEditorWindow : EditorWindow
     /// <summary>列表行高(带图标)</summary>
     private const float RowHeight = 40f;
 
-    /// <summary>皮肤图标所在目录(GameDataEditor.SpineAllSkinInit 抽取产物)</summary>
+    /// <summary>皮肤图标所在目录(GameResourceEditor.SpineAllSkinInit 抽取产物)</summary>
     private const string SkinIconFolder = "Assets/LoadResources/Textures/Skins";
 
     /// <summary>可进入装备池的道具类型(帽/衣/裤/鞋/鼻环/戒指/武器)</summary>
@@ -880,7 +880,7 @@ public class SkinRandomEditorWindow : EditorWindow
 
     /// <summary>
     /// 获取皮肤部件图标贴图(懒加载并缓存；命名约定与游戏内一致：{mark_name}_Atlas_{res_name的/换成_}，
-    /// 图标由 GameDataEditor.SpineAllSkinInit 从 Spine 抽取到 Textures/Skins；找不到时回退全局按名搜索)
+    /// 图标由 GameResourceEditor.SpineAllSkinInit 从 Spine 抽取到 Textures/Skins；找不到时回退全局按名搜索)
     /// </summary>
     private Texture2D GetSkinIconTexture(ModelInfoItem item)
     {

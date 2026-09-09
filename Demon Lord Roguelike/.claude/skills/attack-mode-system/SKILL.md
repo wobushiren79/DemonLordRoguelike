@@ -54,6 +54,7 @@ BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播
 ```
 BaseAttackMode                      - 攻击模式基类
 ├── AttackModeMelee                 - 近战单体（瞬间命中目标）
+│   └── AttackModeMeleeMulti        - 近战多段（继承 Melee：一次攻击 N 段伤害、段间不同帧——首段当帧结算+立即回调保 AI 节奏，余段 Update 按 other_data 键 hit_times&hit_interval 间隔累计 GetFightDeltaTime 静默追加；每段独立暴击/闪避判定；目标中途死亡放弃余段；解析 GetMultiHitConfig()；盗贼104001 用 100002[配 hit_times:2&hit_interval:0.1]）
 ├── AttackModeMeleeArea             - 近战范围（起点范围伤害；可配 hit_max 限制命中数，如人类战士1001的101005配3=前方1单位只打本路最多命中3个敌人；BOSS技能应用：102001=向前挥砍前方6格本路1排[持盾战士BOSS,ext100001,3s]、102002=前方6格上中下3排[难度4大剑战士BOSS,ext100004,3s,克隆102001改Z半宽0.25→1.25]，101006=大剑战士BOSS普攻[克隆战之魅魔101001前方范围hit_max3]）
 ├── AttackModeRanged                - 远程直线弹道（逐帧移动+碰撞检测；InitAttackModeShow 开启 visualVelocityOrient——火球/冰球 billboard 视觉按 _VelocityWS.w 速度朝向：贴图头（默认朝右）对准飞行方向、拖尾朝飞行反方向，仅桶材质声明 _VelocityWS 才生效，RangedNormal 等材质零副作用）
 │   ├── AttackModeRangedArea        - 远程范围弹道（击中时范围AOE）
@@ -105,6 +106,7 @@ BaseAttackMode                      - 攻击模式基类
 | 基类 | 行为特征 | 适用场景 |
 |------|---------|---------|
 | `AttackModeMelee` | 瞬间命中单个目标 | 近战普攻、直接打击 |
+| `AttackModeMeleeMulti` | 瞬间命中同一目标 N 段（段间隔可配 hit_times&hit_interval，首段当帧+立即回调，余段 Update 按 GetFightDeltaTime 追加，目标死亡放弃余段） | 多段近战普攻（盗贼 100002） |
 | `AttackModeMeleeArea` | 瞬间范围伤害（可配 hit_max 上限，近者优先截断+同生物去重） | 近战AOE、旋风斩 |
 | `AttackModeRanged` | 直线飞行弹道（InitAttackModeShow 开启 `visualVelocityOrient`：火球/冰球 billboard 视觉按 `_VelocityWS.w` 速度朝向——贴图头（默认朝右）对准飞行方向、拖尾朝飞行反方向，无 `_VelocityWS` 属性材质零副作用） | 箭矢、法术弹 |
 | `AttackModeRangedArea` | 飞行弹道+击中AOE | 爆炸箭、火球术 |
@@ -785,6 +787,7 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | 战斗处理器 | `Assets/Scripts/Component/Handler/FightHandler.cs` |
 | 战斗管理器 | `Assets/Scripts/Component/Manager/FightManager.cs` |
 | 近战单体 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeMelee.cs` |
+| 近战多段（盗贼 100002） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeMeleeMulti.cs` |
 | 近战范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeMeleeArea.cs` |
 | 远程弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRanged.cs` |
 | 远程范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedArea.cs` |

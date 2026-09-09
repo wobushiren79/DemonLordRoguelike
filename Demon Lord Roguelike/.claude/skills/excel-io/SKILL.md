@@ -160,7 +160,7 @@ python .claude/scripts/excel_delete_row.py \
 | 生物属性类型 | excel_creature_attribute_type_info | CreatureAttributeTypeInfo | 12 |
 | 生物信息 | excel_creature_info | CreatureInfo | 114 |
 | 生物模型 | excel_creature_model | CreatureModel | 66 |
-| 生物模型详情 | excel_creature_model_info | CreatureModelInfo | 438 |
+| 生物模型详情 | excel_creature_model_info | CreatureModelInfo | 440 |
 | 生物随机 | excel_creature_random_info | CreatureRandomInfo | 28 |
 | 装备套装 | excel_equip_suit_info | EquipSuitInfo | 8 |
 | 终焉议会 | excel_doom_council_info | DoomCouncilInfo | 13 |
@@ -169,7 +169,7 @@ python .claude/scripts/excel_delete_row.py \
 | 战斗场景 | excel_fight_scene | FightScene | 12 |
 | 战斗-征服 | excel_fight_type_conquer_info | FightTypeConquerInfo | 12 |
 | 游戏世界 | excel_game_world_info | GameWorldInfo | 6 |
-| 道具信息 | excel_items_info | ItemsInfo | 228 |
+| 道具信息 | excel_items_info | ItemsInfo | 229 |
 | 道具类型 | excel_items_type | ItemsType | 10 |
 | 多语言 | excel_language | UIText(+17子表) | 152+ |
 | 等级信息 | excel_level_info | LevelInfo | 12 |

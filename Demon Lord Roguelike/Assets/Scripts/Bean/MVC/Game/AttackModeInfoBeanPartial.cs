@@ -268,6 +268,30 @@ public partial class AttackModeInfoBean
     }
     #endregion
 
+    #region 近战多段攻击(MultiHit 配置，存于 other_data)
+    protected bool isInitMultiHitConfig = false;
+    protected int multiHitTimes = 1;
+    protected float multiHitInterval = 0.1f;
+
+    /// <summary>
+    /// 获取近战多段攻击配置（从通用扩展列 other_data 中解析 hit_times/hit_interval 键；缓存解析结果）。
+    /// <para>hit_times:总段数(默认1=单段,下限1)；hit_interval:段间隔秒(默认0.1,下限0)。目前仅 AttackModeMeleeMulti 使用（盗贼104001 用 100002 配 hit_times:2&amp;hit_interval:0.1）。</para>
+    /// </summary>
+    public void GetMultiHitConfig(out int hitTimes, out float hitInterval)
+    {
+        if (!isInitMultiHitConfig)
+        {
+            ParseOtherDataInt("hit_times", ref multiHitTimes);
+            ParseOtherDataFloat("hit_interval", ref multiHitInterval);
+            if (multiHitTimes < 1) multiHitTimes = 1;
+            if (multiHitInterval < 0f) multiHitInterval = 0f;
+            isInitMultiHitConfig = true;
+        }
+        hitTimes = multiHitTimes;
+        hitInterval = multiHitInterval;
+    }
+    #endregion
+
     #region other_data 通用解析
     /// <summary>
     /// 从 other_data 解析 float 键值（按 &amp; 拆项、每项以第一个 : 拆 key/value，与 aim_up/stuck 同规约）；未配/解析失败保持传入的原值
@@ -287,6 +311,27 @@ public partial class AttackModeInfoBean
                 continue;
             if (item.Substring(0, sep).Trim() == key)
                 float.TryParse(item.Substring(sep + 1).Trim(), out value);
+        }
+    }
+
+    /// <summary>
+    /// 从 other_data 解析 int 键值（与 ParseOtherDataFloat 同规约）；未配/解析失败保持传入的原值
+    /// </summary>
+    protected void ParseOtherDataInt(string key, ref int value)
+    {
+        if (other_data.IsNull())
+            return;
+        string[] items = other_data.Split('&');
+        for (int i = 0; i < items.Length; i++)
+        {
+            string item = items[i];
+            if (string.IsNullOrEmpty(item))
+                continue;
+            int sep = item.IndexOf(':');
+            if (sep <= 0)
+                continue;
+            if (item.Substring(0, sep).Trim() == key)
+                int.TryParse(item.Substring(sep + 1).Trim(), out value);
         }
     }
     #endregion

@@ -44,7 +44,7 @@ public partial class NpcCreateEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 绘制NPC列表项（搜索/筛选/排序后；新建项置顶显示[新]，删除登记项置灰）
+    /// 绘制NPC列表项（搜索/筛选/排序后；新建项置顶显示[新]，删除登记项置灰，BOSS项标注[BOSS]）
     /// </summary>
     private void DrawNpcListItems()
     {
@@ -56,6 +56,8 @@ public partial class NpcCreateEditorWindow : EditorWindow
         {
             bool isDeleted = deletedNpcIds.Contains(npcInfo.id);
             string label = $"{npcInfo.id}  {GetNpcNameCn(npcInfo)}";
+            if (setBossNpcIds.Contains(npcInfo.id))
+                label = $"[BOSS] {label}";
             DrawNpcListItem(npcInfo.id, isDeleted ? $"❌ {label}" : label, isDeleted);
         }
         EditorGUILayout.EndScrollView();

@@ -921,7 +921,7 @@ AI/
 
 | 类名 | 功能 |
 |------|------|
-| `GameDataEditor` | 游戏数据编辑器 |
+| `GameResourceEditor`(+Spine/Atlas/Common partial) | 游戏资源处理（菜单 `游戏/游戏资源处理`；Spine/图集/通用 三板块页签：Spine 皮肤纹理提取道具·皮肤图标、Spine 资源导入、SpriteAtlas 刷新、一键全生成） |
 | `GameTestEditor` / `GameTestEditorPartial` | 游戏测试编辑器 |
 
 ---

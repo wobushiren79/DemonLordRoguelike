@@ -56,6 +56,8 @@ public partial class NpcCreateEditorWindow : EditorWindow
     private Dictionary<long, string> dicCreatureNameCn = new Dictionary<long, string>();
     /// <summary>道具中文名映射（直读 Language_ItemsInfo_cn.txt）</summary>
     private Dictionary<long, string> dicItemNameCn = new Dictionary<long, string>();
+    /// <summary>BOSS NPC id 集合（来源全部征服配置 FightTypeConquerInfo.enemy_boss_ids，ReloadAllCfg 时重建）</summary>
+    private readonly HashSet<long> setBossNpcIds = new HashSet<long>();
     /// <summary>搜索文本（id包含 或 中文名模糊）</summary>
     private string searchText = "";
     /// <summary>类型筛选序号（0=全部，其余映射 filterNpcTypeValues）</summary>
@@ -154,6 +156,7 @@ public partial class NpcCreateEditorWindow : EditorWindow
         ClearCfgBaseStaticCache(typeof(CreatureRandomInfoCfg));
         ClearCfgBaseStaticCache(typeof(AttackModeExtInfoCfg));
         ClearCfgBaseStaticCache(typeof(SpineAnimationStateCfg));
+        ClearCfgBaseStaticCache(typeof(FightTypeConquerInfoCfg));
         //清各Cfg在Partial里额外声明的public静态缓存
         ItemsInfoCfg.dicDataForCreatureModel = null;
         CreatureModelInfoCfg.dicDetailsModelInfo = null;
@@ -164,8 +167,27 @@ public partial class NpcCreateEditorWindow : EditorWindow
         dicNpcNameCn = LoadLanguageCnMap(NpcInfoCfg.fileName);
         dicCreatureNameCn = LoadLanguageCnMap(CreatureInfoCfg.fileName);
         dicItemNameCn = LoadLanguageCnMap(ItemsInfoCfg.fileName);
+        LoadBossNpcIds();
         //下拉候选依赖配置缓存，一并失效重建
         InvalidateOptionsCache();
+    }
+
+    /// <summary>
+    /// 重建 BOSS NPC id 集合（遍历全部征服配置，解析 enemy_boss_ids 字段——& 分隔的 npcInfoId）
+    /// </summary>
+    private void LoadBossNpcIds()
+    {
+        setBossNpcIds.Clear();
+        var allConquer = FightTypeConquerInfoCfg.GetAllArrayData();
+        if (allConquer == null)
+            return;
+        foreach (var conquerInfo in allConquer)
+        {
+            if (conquerInfo.enemy_boss_ids.IsNull())
+                continue;
+            foreach (long bossId in conquerInfo.enemy_boss_ids.SplitForArrayLong('&'))
+                setBossNpcIds.Add(bossId);
+        }
     }
 
     /// <summary>

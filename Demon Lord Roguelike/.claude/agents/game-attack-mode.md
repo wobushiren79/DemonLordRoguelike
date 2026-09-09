@@ -1,6 +1,6 @@
 ---
 name: game-attack-mode
-description: 攻击模式系统开发：32种攻击模式（近战/远程/特殊/恢复），BaseAttackMode 策略模式。
+description: 攻击模式系统开发：33种攻击模式（近战/远程/特殊/恢复），BaseAttackMode 策略模式。
 tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Game/Fight/AttackMode/
@@ -19,6 +19,7 @@ watched_files:
 
 ### 近战 (Melee)
 - **AttackModeMelee** - 普通近战
+- **AttackModeMeleeMulti** - 近战多段（继承 AttackModeMelee：首段当帧结算+立即回调保 AI 节奏，余段 Update 按 other_data 键 hit_interval 间隔累计 GetFightDeltaTime 静默追加，hit_times 段数默认1；每段独立暴击/闪避判定；目标中途死亡放弃剩余段；配置解析 AttackModeInfoBeanPartial.GetMultiHitConfig；盗贼104001 用 100002，配 hit_times:2&hit_interval:0.1）
 - **AttackModeMeleeArea** - 范围近战（走基类 `CheckHitTargetArea`，可配 `hit_max` 命中上限：近者优先截断+同生物去重，0=不限；如人类战士1001的101005配3；BOSS技能应用：102001=前方6格1排[持盾战士BOSS,ext100001]、102002=前方6格上中下3排[难度4大剑战士BOSS,ext100004]，101006=大剑战士BOSS普攻[克隆战之魅魔101001]）
 
 ### 远程 (Ranged)

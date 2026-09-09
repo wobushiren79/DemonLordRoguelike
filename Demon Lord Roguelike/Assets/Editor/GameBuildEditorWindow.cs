@@ -7,7 +7,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 
 /// <summary>
-/// 打包游戏工具窗口：打包前按勾选项执行 Spine 资源生成（道具图标/皮肤图标/刷新图集，逻辑复用 GameDataEditor），随后执行 BuildPlayer 打包
+/// 打包游戏工具窗口：打包前按勾选项执行资源生成（道具图标/皮肤图标/刷新图集，逻辑复用 GameResourceEditor），随后执行 BuildPlayer 打包
 /// </summary>
 public class GameBuildEditorWindow : EditorWindow
 {
@@ -102,13 +102,13 @@ public class GameBuildEditorWindow : EditorWindow
         GUILayout.Label("打包游戏工具", titleStyle);
         GUILayout.Space(16);
 
-        DrawSectionBox("打包前执行（复用 Spine 资源生成工具）", () =>
+        DrawSectionBox("打包前执行（复用 游戏资源处理 工具）", () =>
         {
-            isGenItemIcons = EditorGUILayout.Toggle(new GUIContent("生成所有 Spine 道具图标", "调用 GameDataEditor.SpineAllItemInit"), isGenItemIcons);
+            isGenItemIcons = EditorGUILayout.Toggle(new GUIContent("生成所有 Spine 道具图标", "调用 GameResourceEditor.SpineAllItemInit"), isGenItemIcons);
             GUILayout.Space(4);
-            isGenSkinIcons = EditorGUILayout.Toggle(new GUIContent("生成所有 Spine 皮肤图标", "调用 GameDataEditor.SpineAllSkinInit"), isGenSkinIcons);
+            isGenSkinIcons = EditorGUILayout.Toggle(new GUIContent("生成所有 Spine 皮肤图标", "调用 GameResourceEditor.SpineAllSkinInit"), isGenSkinIcons);
             GUILayout.Space(4);
-            isRefreshAtlases = EditorGUILayout.Toggle(new GUIContent("刷新所有图集", "调用 GameDataEditor.RefreshAllAtlases"), isRefreshAtlases);
+            isRefreshAtlases = EditorGUILayout.Toggle(new GUIContent("刷新所有图集", "调用 GameResourceEditor.RefreshAllAtlases"), isRefreshAtlases);
         });
 
         GUILayout.Space(16);
@@ -191,7 +191,7 @@ public class GameBuildEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 绘制分组框（与 GameDataEditor 风格一致）
+    /// 绘制分组框（与 GameResourceEditor 风格一致）
     /// </summary>
     private void DrawSectionBox(string header, System.Action content)
     {
@@ -302,17 +302,17 @@ public class GameBuildEditorWindow : EditorWindow
         if (isGenItemIcons)
         {
             LogUtil.Log("========== 打包前：生成所有 Spine 道具图标 ==========");
-            GameDataEditor.SpineAllItemInit();
+            GameResourceEditor.SpineAllItemInit();
         }
         if (isGenSkinIcons)
         {
             LogUtil.Log("========== 打包前：生成所有 Spine 皮肤图标 ==========");
-            GameDataEditor.SpineAllSkinInit();
+            GameResourceEditor.SpineAllSkinInit();
         }
         if (isRefreshAtlases)
         {
             LogUtil.Log("========== 打包前：刷新所有图集 ==========");
-            GameDataEditor.RefreshAllAtlases();
+            GameResourceEditor.RefreshAllAtlases();
         }
 
         // 固定使用 Game 场景打包（不读 Build Settings 的场景列表，避免日常挂的 TestScene 混进正式包）

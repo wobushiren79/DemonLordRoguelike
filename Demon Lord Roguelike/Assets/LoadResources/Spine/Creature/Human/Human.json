@@ -1,11 +1,11 @@
 {
 "skeleton": {
-	"hash": "LExmf/9B/d0",
-	"spine": "4.3.23",
-	"x": -10,
-	"y": 56,
-	"width": 18,
-	"height": 18,
+	"hash": "ADYmQWwXgS8",
+	"spine": "4.3.26",
+	"x": -6,
+	"y": 5,
+	"width": 39,
+	"height": 62,
 	"images": "./images/",
 	"audio": "E:/Unity/DemonLordRoguelike/资源/生物/人类"
 },
@@ -104,6 +104,7 @@
 	{ "name": "Clothes_1_Palm_R", "bone": "Palm_R", "attachment": "Clothes_1_Palm_R" },
 	{ "name": "Weapon_R_22", "bone": "Weapon_R", "attachment": "Weapon_R_22" },
 	{ "name": "Weapon_R_21", "bone": "Weapon_R", "attachment": "Weapon_R_21" },
+	{ "name": "Weapon_R_14", "bone": "Weapon_R", "attachment": "Weapon_R_14" },
 	{ "name": "Weapon_R_3", "bone": "Weapon_R_Bow", "attachment": "Weapon_R_3" },
 	{ "name": "Weapon_R_2", "bone": "Weapon_R_Bow", "attachment": "Weapon_R_2" },
 	{ "name": "Weapon_R_1", "bone": "Weapon_R_Bow", "attachment": "Weapon_R_1" },
@@ -311,6 +312,7 @@
 	{ "name": "Hat_3", "bone": "Head", "attachment": "Hat_3" },
 	{ "name": "Hat_2", "bone": "Head", "attachment": "Hat_2" },
 	{ "name": "Hat_1", "bone": "Head", "attachment": "Hat_1" },
+	{ "name": "Weapon_L_14", "bone": "Weapon_L", "attachment": "Weapon_L_14" },
 	{ "name": "Weapon_L_13", "bone": "Weapon_L", "attachment": "Weapon_L_13" },
 	{ "name": "Weapon_L_12", "bone": "Weapon_L", "attachment": "Weapon_L_12" },
 	{ "name": "Weapon_L_11", "bone": "Weapon_L", "attachment": "Weapon_L_11" },
@@ -374,7 +376,8 @@
 	{ "name": "Clothes_11_FG", "bone": "Body", "attachment": "Clothes_11_FG" },
 	{ "name": "Clothes_7_FG", "bone": "Body", "attachment": "Clothes_7_FG" },
 	{ "name": "Weapon_L_22", "bone": "Weapon_L", "attachment": "Weapon_L_22" },
-	{ "name": "Weapon_L_21", "bone": "Weapon_L", "attachment": "Weapon_L_21" }
+	{ "name": "Weapon_L_21", "bone": "Weapon_L", "attachment": "Weapon_L_21" },
+	{ "name": "Weapon_L_15", "bone": "Weapon_L", "attachment": "Weapon_L_15" }
 ],
 "skins": [
 	{
@@ -1757,6 +1760,17 @@
 		}
 	},
 	{
+		"name": "Weapon/Weapon_LR_14",
+		"attachments": {
+			"Weapon_L_14": {
+				"Weapon_L_14": { "x": -0.4999981, "y": 11.999998, "rotation": 90, "width": 34, "height": 9 }
+			},
+			"Weapon_R_14": {
+				"Weapon_R_14": { "x": 1.5096817, "y": 12.498836, "rotation": 89.95563, "width": 34, "height": 9 }
+			}
+		}
+	},
+	{
 		"name": "Weapon/Weapon_LR_21",
 		"attachments": {
 			"Weapon_L_21": {
@@ -1783,6 +1797,12 @@
 		"attachments": {
 			"Weapon_L_1": {
 				"Weapon_L_1": { "y": 15.499997, "rotation": 90, "width": 43, "height": 8 }
+			},
+			"Weapon_L_14": {
+				"Weapon_L_14": { "x": -0.4999981, "y": 11.999998, "rotation": 90, "width": 34, "height": 9 }
+			},
+			"Weapon_R_14": {
+				"Weapon_R_14": { "x": 1.5096817, "y": 12.498836, "rotation": 89.95563, "width": 34, "height": 9 }
 			}
 		}
 	},
@@ -1879,6 +1899,14 @@
 		"attachments": {
 			"Weapon_L_13": {
 				"Weapon_L_13": { "x": -0.9999981, "y": 7.5, "rotation": 90, "width": 77, "height": 14 }
+			}
+		}
+	},
+	{
+		"name": "Weapon/Weapon_L_15",
+		"attachments": {
+			"Weapon_L_15": {
+				"Weapon_L_15": { "x": -4.999998, "y": 28.5, "rotation": 90, "width": 39, "height": 62 }
 			}
 		}
 	},
@@ -2629,6 +2657,299 @@
 			}
 		}
 	},
+	"Attack6": {
+		"bones": {
+			"ArmDown_L": {
+				"rotate": [
+					{},
+					{ "time": 0.3, "value": 47.11385 },
+					{ "time": 0.4, "value": -5.077923 },
+					{ "time": 0.5, "value": 24.73063 },
+					{ "time": 1 }
+				]
+			},
+			"ArmDown_R": {
+				"rotate": [
+					{},
+					{ "time": 0.3, "value": 7.381996 },
+					{ "time": 0.4, "value": 20.156965 },
+					{ "time": 0.5, "value": 73.32835 },
+					{ "time": 1 }
+				]
+			},
+			"ArmUp_L": {
+				"rotate": [
+					{},
+					{ "time": 0.3, "value": 2.453995 },
+					{ "time": 0.4, "value": -18.149666 },
+					{ "time": 0.5, "value": 66.73448 },
+					{ "time": 1 }
+				]
+			},
+			"ArmUp_R": {
+				"rotate": [
+					{},
+					{ "time": 0.3, "value": -25.91701 },
+					{ "time": 0.4, "value": 48.31853 },
+					{ "time": 0.5, "value": -64.3664 },
+					{ "time": 1 }
+				]
+			},
+			"Body": {
+				"rotate": [
+					{},
+					{ "time": 0.3, "value": -16.739334 },
+					{ "time": 0.4, "value": -5.868706 },
+					{ "time": 0.5, "value": -15.262596 },
+					{ "time": 1 }
+				],
+				"translate": [
+					{},
+					{ "time": 0.3, "x": -2.432861, "y": -4.865715 },
+					{ "time": 0.4, "x": 5.052841, "y": -0.18714905 },
+					{ "time": 1 }
+				]
+			},
+			"Calf_L": {
+				"rotate": [
+					{},
+					{ "time": 0.3, "value": -43.95095 },
+					{ "time": 0.4, "value": -40.94832 },
+					{ "time": 1 }
+				],
+				"translate": [
+					{},
+					{ "time": 0.3, "x": -3.878215, "y": 0.47875 },
+					{ "time": 1 }
+				]
+			},
+			"Calf_R": {
+				"rotate": [
+					{},
+					{ "time": 0.3, "value": -13.39587 },
+					{ "time": 1 }
+				],
+				"translate": [
+					{},
+					{ "time": 0.3, "x": -2.948785, "y": 0.5199504 },
+					{ "time": 1 }
+				]
+			},
+			"Head": {
+				"translate": [
+					{},
+					{ "time": 0.3, "x": -1.1707077, "y": -0.3521051 },
+					{ "time": 0.4, "x": -0.3599815, "y": -0.2687721 }
+				]
+			},
+			"Palm_R": {
+				"rotate": [
+					{},
+					{ "time": 0.4, "value": -8.995583 },
+					{ "time": 1 }
+				]
+			},
+			"Pelvis_Base": {
+				"rotate": [
+					{},
+					{ "time": 0.3, "value": -7.700996 },
+					{ "time": 0.4, "value": -8.662188 },
+					{ "time": 1 }
+				],
+				"translate": [
+					{},
+					{ "time": 0.3, "x": -2.058571, "y": -4.678566 },
+					{ "time": 0.4, "x": 4.070345, "y": 0.421072 },
+					{ "time": 1 }
+				]
+			},
+			"Thigh_L": {
+				"rotate": [
+					{},
+					{ "time": 0.3, "value": -1.5553513 },
+					{ "time": 0.4, "value": -19.11085 },
+					{ "time": 1 }
+				],
+				"translate": [
+					{},
+					{ "time": 0.3, "x": 1.247615, "y": -6.425226 },
+					{ "time": 0.4, "x": 5.801422, "y": -3.368572 },
+					{ "time": 1 }
+				]
+			},
+			"Thigh_R": {
+				"rotate": [
+					{},
+					{ "time": 0.4, "value": 14.359596 },
+					{ "time": 1 }
+				],
+				"translate": [
+					{},
+					{ "time": 0.3, "x": -4.11715, "y": -3.555706 },
+					{ "time": 0.4, "x": 1.777846, "y": -1.918214 },
+					{ "time": 1 }
+				]
+			},
+			"Weapon_L": {
+				"rotate": [
+					{},
+					{ "time": 0.5, "value": -78.89563 },
+					{ "time": 1 }
+				]
+			},
+			"Weapon_R": {
+				"rotate": [
+					{},
+					{ "time": 0.3, "value": 48.42091 },
+					{ "time": 0.4, "value": -59.074 },
+					{ "time": 0.5, "value": -24.2703 },
+					{ "time": 1 }
+				]
+			}
+		}
+	},
+	"Attack7": {
+		"bones": {
+			"ArmDown_L": {
+				"rotate": [
+					{ "value": 34.99938 }
+				]
+			},
+			"ArmDown_R": {
+				"rotate": [
+					{ "value": 30.40697 },
+					{ "time": 0.3333333, "value": 43.4741 },
+					{ "time": 0.5, "value": 38.48483 },
+					{ "time": 1, "value": 30.40697 }
+				]
+			},
+			"ArmUp_L": {
+				"rotate": [
+					{ "value": 48.38521 },
+					{ "time": 0.3333333, "value": 33.71741 },
+					{ "time": 1, "value": 48.38521 }
+				]
+			},
+			"ArmUp_R": {
+				"rotate": [
+					{ "value": 29.76541 },
+					{ "time": 0.3333333, "value": 16.03398 },
+					{ "time": 0.5, "value": 31.42227 },
+					{ "time": 1, "value": 29.76541 }
+				]
+			},
+			"Body": {
+				"rotate": [
+					{},
+					{ "time": 0.3333333, "value": -16.739334 },
+					{ "time": 0.5, "value": -5.868706 },
+					{ "time": 1 }
+				],
+				"translate": [
+					{},
+					{ "time": 0.3333333, "x": -2.432861, "y": -4.865715 },
+					{ "time": 0.5, "x": 5.052841, "y": -0.18714905 },
+					{ "time": 1 }
+				]
+			},
+			"Calf_L": {
+				"rotate": [
+					{},
+					{ "time": 0.3333333, "value": -43.95095 },
+					{ "time": 0.5, "value": -40.94832 },
+					{ "time": 1 }
+				],
+				"translate": [
+					{},
+					{ "time": 0.3333333, "x": -3.878215, "y": 0.47875 },
+					{ "time": 1 }
+				]
+			},
+			"Calf_R": {
+				"rotate": [
+					{},
+					{ "time": 0.3333333, "value": -13.39587 },
+					{ "time": 1 }
+				],
+				"translate": [
+					{},
+					{ "time": 0.3333333, "x": -2.948785, "y": 0.5199504 },
+					{ "time": 1 }
+				]
+			},
+			"Head": {
+				"translate": [
+					{},
+					{ "time": 0.3333333, "x": -1.1707077, "y": -0.3521051 },
+					{ "time": 0.5, "x": -0.3599815, "y": -0.2687721 }
+				]
+			},
+			"Pelvis_Base": {
+				"rotate": [
+					{},
+					{ "time": 0.3333333, "value": -7.700996 },
+					{ "time": 0.5, "value": -8.662188 },
+					{ "time": 1 }
+				],
+				"translate": [
+					{},
+					{ "time": 0.3333333, "x": -2.058571, "y": -4.678566 },
+					{ "time": 0.5, "x": 4.070345, "y": 0.421072 },
+					{ "time": 1 }
+				]
+			},
+			"Thigh_L": {
+				"rotate": [
+					{},
+					{ "time": 0.3333333, "value": -1.5553513 },
+					{ "time": 0.5, "value": -19.11085 },
+					{ "time": 1 }
+				],
+				"translate": [
+					{},
+					{ "time": 0.3333333, "x": 1.247615, "y": -6.425226 },
+					{ "time": 0.5, "x": 5.801422, "y": -3.368572 },
+					{ "time": 1 }
+				]
+			},
+			"Thigh_R": {
+				"rotate": [
+					{},
+					{ "time": 0.5, "value": 14.359596 },
+					{ "time": 1 }
+				],
+				"translate": [
+					{},
+					{ "time": 0.3333333, "x": -4.11715, "y": -3.555706 },
+					{ "time": 0.5, "x": 1.777846, "y": -1.918214 },
+					{ "time": 1 }
+				]
+			},
+			"Weapon_L": {
+				"rotate": [
+					{ "value": -83.7057 },
+					{ "time": 0.5, "value": -70.10145, "curve": "stepped" },
+					{ "time": 0.6666667, "value": -70.10145 },
+					{ "time": 1, "value": -83.7057 }
+				],
+				"translate": [
+					{ "x": -24.68365, "y": -12.29391 },
+					{ "time": 0.3333333, "x": -26.712383, "y": -5.965713 },
+					{ "time": 0.5, "x": -13.502673, "y": -9.538073, "curve": "stepped" },
+					{ "time": 0.6666667, "x": -13.502673, "y": -9.538073 },
+					{ "time": 1, "x": -24.68365, "y": -12.29391 }
+				]
+			},
+			"Weapon_R": {
+				"rotate": [
+					{},
+					{ "time": 0.3333333, "value": 48.42091 },
+					{ "time": 0.5, "value": -59.074 },
+					{ "time": 1 }
+				]
+			}
+		}
+	},
 	"Dead": {
 		"bones": {
 			"ArmDown_L": {
@@ -2733,11 +3054,7 @@
 			"Weapon_L": {
 				"rotate": [
 					{},
-					{ "time": 0.6666667, "value": 37.56123 }
-				],
-				"translate": [
-					{},
-					{ "time": 0.6666667, "x": 0.1639509, "y": 0.5834026 }
+					{ "time": 0.6666667, "value": 35.61787 }
 				]
 			},
 			"Weapon_R": {
@@ -3383,6 +3700,130 @@
 					{ "time": 0.06666667, "x": 1.5663414, "y": 2.484419 },
 					{ "time": 0.5666666, "x": 2.7986546, "y": 1.126705 },
 					{ "time": 1, "x": 2.361449, "y": 2.0029244 }
+				]
+			},
+			"Weapon_R_Bow": {
+				"rotate": [
+					{ "value": -54.20182 },
+					{ "time": 0.06666667, "value": -49.68406 },
+					{ "time": 0.5666666, "value": -83.56718 },
+					{ "time": 1, "value": -54.20182 }
+				],
+				"translate": [
+					{ "x": 2.361449, "y": 2.0029244 },
+					{ "time": 0.06666667, "x": 1.5663414, "y": 2.484419 },
+					{ "time": 0.5666666, "x": 2.7986546, "y": 1.126705 },
+					{ "time": 1, "x": 2.361449, "y": 2.0029244 }
+				]
+			}
+		}
+	},
+	"Walk4": {
+		"bones": {
+			"ArmDown_L": {
+				"rotate": [
+					{ "value": 34.99938 }
+				]
+			},
+			"ArmDown_R": {
+				"rotate": [
+					{ "value": 30.40697 }
+				]
+			},
+			"ArmUp_L": {
+				"rotate": [
+					{ "value": 48.38521 }
+				]
+			},
+			"ArmUp_R": {
+				"rotate": [
+					{ "value": 29.76541 }
+				]
+			},
+			"Body": {
+				"translate": [
+					{ "y": -0.13146496 },
+					{ "time": 0.03333333 },
+					{ "time": 0.5333333, "y": -1.9719772 },
+					{ "time": 0.9666666, "y": -0.2629304 },
+					{ "time": 1, "y": -0.13146496 }
+				]
+			},
+			"Calf_L": {
+				"rotate": [
+					{ "value": -40.01993 },
+					{ "time": 0.3333333, "value": -29.465134 },
+					{ "time": 0.5, "value": -20.574104 },
+					{ "time": 1, "value": -40.01993 }
+				],
+				"translate": [
+					{ "x": -1.7564754, "y": -0.645536 },
+					{ "time": 0.5, "x": -0.5188064, "y": -0.1774721 },
+					{ "time": 1, "x": -1.7564754, "y": -0.645536 }
+				]
+			},
+			"Calf_R": {
+				"rotate": [
+					{ "value": -6.077768 },
+					{ "time": 0.16666667, "value": 0.7126541 },
+					{ "time": 0.5, "value": -8.667723 },
+					{ "time": 1, "value": -6.077768 }
+				]
+			},
+			"Head": {
+				"translate": [
+					{ "x": -0.12599945 },
+					{ "time": 0.1 },
+					{ "time": 0.6, "x": -0.6299972 },
+					{ "time": 1, "x": -0.12599945 }
+				]
+			},
+			"Pelvis_Base": {
+				"translate": [
+					{},
+					{ "time": 0.5, "y": -1.1876068 },
+					{ "time": 1 }
+				]
+			},
+			"Thigh_L": {
+				"rotate": [
+					{ "value": -4.723915 },
+					{ "time": 0.3333333, "value": 31.66218 },
+					{ "time": 0.5, "value": 35.9708 },
+					{ "time": 1, "value": -4.723915 }
+				],
+				"translate": [
+					{ "x": 1.1860046, "y": 0.2730026 },
+					{ "time": 0.3333333, "x": 0.580002, "y": 3.47699 },
+					{ "time": 0.5, "x": 0.8700027 },
+					{ "time": 1, "x": 0.909996, "y": 0.2730026 }
+				]
+			},
+			"Thigh_R": {
+				"rotate": [
+					{ "value": 4.987549 },
+					{ "time": 0.5, "value": -51.98805 },
+					{ "time": 1, "value": 4.987549 }
+				],
+				"translate": [
+					{ "x": -0.8099975 },
+					{ "time": 0.16666667, "x": -1.519997, "y": 0.14400244 },
+					{ "time": 0.3333333, "x": -1.5459988, "y": 0.027950287 },
+					{ "time": 0.5, "x": -1.5720005, "y": 0.720007 },
+					{ "time": 0.6666667, "x": -1.3359995, "y": 2.200989 },
+					{ "time": 0.8333333, "x": -1.0999987, "y": 2.409991 },
+					{ "time": 1, "x": -0.8099975 }
+				]
+			},
+			"Weapon_L": {
+				"rotate": [
+					{ "value": -83.7057 }
+				],
+				"translate": [
+					{ "x": -24.68365, "y": -12.29391 },
+					{ "time": 0.3333333, "x": -25.035215, "y": -9.262508 },
+					{ "time": 0.6666667, "x": -24.60469, "y": -12.974695 },
+					{ "time": 1, "x": -24.68365, "y": -12.29391 }
 				]
 			},
 			"Weapon_R_Bow": {
