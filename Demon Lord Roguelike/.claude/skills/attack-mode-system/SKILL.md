@@ -475,7 +475,7 @@ public virtual void AttackHandle()
 
 **发射方示例（BUFF 纯数据发射路径，照分裂弹发射器先例内联发射）**：深渊馈赠「闪电」BUFF（`BuffEntityPeriodicAttackMultiInstant`）负责周期触发→快照全场敌人→**不放回**抽 N 个主目标（一轮内多道雷主目标互不重复；敌人少于雷数时只发同等数量的雷；限制只在主目标层面——溅射不受限：同一目标可被多道雷重复溅射、被溅射过的目标仍可作后续雷主目标）→第 1 道立即+后续 0.1 秒间隔逐个发射，每道雷注入伤害快照（魔王实时ATK×trigger_value、CRT=0 不暴击）、落点（startPos=targetPos）、`attackedLayerTarget=LayerInfo.CreatureAtt`、`filterCreatureIds` 快照名单。配置：buff 表 `class_entity_data="次数,攻击模块ID"`；攻击模块表 300031~300035（Lv1~5 各一行，半径/命中上限随级配在 `collider_area_size`/`hit_max`）。
 
-> **⚠️雷电粒子(Effect_Thunder_3,900003)走 effect_hit 配置即可**：2026-08-16 起**所有**攻击模式的击中粒子统一由 `PlayEffectForHit` 走 `EffectHandler.ShowEnduringSingletonEffect` 全局单例通道（Stop(StopEmitting)+Play 重播才支持 0.1 秒连发交叠）——落雷攻击模块 300031~300035 已配 `effect_hit=900003`，无需任何代码 override。标准 `ShowEffect` 通道对持久型粒子不会重触发爆发（且不会移动单例位置），切勿改回。走 EffectHandler 专用方法与血液/护盾（`ShowBloodEffect`/`ShowShieldHitEffect`）是同一先例。
+> **⚠️雷电粒子(Effect_Thunder_3,900003)走 effect_hit 配置即可**：2026-08-16 起**所有**攻击模式的击中粒子统一由 `PlayEffectForHit` 走 `EffectHandler.ShowEnduringSingletonEffect` 全局单例通道（Stop(StopEmitting)+Play 重播才支持 0.1 秒连发交叠）——落雷攻击模块 300031~300035 已配 `effect_hit=900003`，无需任何代码 override。标准 `ShowEffect` 通道对持久型粒子不会重触发爆发（且不会移动单例位置），切勿改回。走 EffectHandler 专用方法与血液/护盾（`ShowBloodEffect`/`ShowShieldHitEffect`）是同一先例。**方向生效路径**（2026-09-10 补，修复大剑战士BOSS普攻101006刀光反向）：`PlayEffectForHit` 按 `attackDirection.x` 算出的 direction 对 VFX 老特效走 EffectInfo `{Direction}` 占位注入；对纯 PS 新粒子（如 `Effect_Slash_2`=400003，无注入配置）由 `ShowEnduringSingletonEffect` 按 Left/Right 对单例实例 transform 做 X 镜像（Left=scale.x 取负），故近战刀光类 PS 特效配进 effect_hit 即自动朝向正确，无需配置方向字段。
 
 #### 自爆与「死亡即引爆」统一路径（冲锋型专用）
 

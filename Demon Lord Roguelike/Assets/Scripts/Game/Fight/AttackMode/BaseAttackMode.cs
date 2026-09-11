@@ -424,7 +424,7 @@ public class BaseAttackMode
     /// 播放攻击命中特效：按配置的击中粒子ID(effect_hit)直接走全局单例通道，无需按 id 分流。
     /// <para>全局单例通道=移动唯一实例到命中点+Stop(StopEmitting)保活+Play 重播，多攻击交叠旧粒子不消失；
     /// 故所有 effect_hit 粒子须为 World 空间模拟+burst 一次性爆发。</para>
-    /// <para>direction/size 供 VFX 老特效(如 BOSS 刀光 Effect_Slash_1)的 {Direction}/{Size} 占位配置注入，PS 新粒子无此配置不受影响。</para>
+    /// <para>direction/size 供 VFX 老特效(如 BOSS 刀光 Effect_Slash_1)的 {Direction}/{Size} 占位配置注入；direction 对纯 PS 新粒子(如 Effect_Slash_2)则由全局单例通道按 transform X 镜像生效。</para>
     /// </summary>
     /// <param name="startPosition">命中点世界坐标</param>
     /// <param name="effectIndex">effect_hit 索引(0=初始击中特效,1=连锁击中特效)</param>

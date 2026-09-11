@@ -51,7 +51,8 @@ public partial class EffectHandler
     /// 支持极短间隔连发多刀/多道雷/多片火交叠(旧落点粒子不消失)；要求粒子为 World 空间模拟 + burst 爆发(Thunder_3/Slash_2/FloorFire_1/Shockwave_1 均已配)。</para>
     /// </summary>
     /// <param name="effectId">EffectInfo 配置表 id</param>
-    /// <param name="param">播放参数(必填 targetPos；duration/startSizeMultiplier/startLifetimeMultiplier/direction/size 为哨兵默认值 0 时不设置)</param>
+    /// <param name="param">播放参数(必填 targetPos；duration/startSizeMultiplier/startLifetimeMultiplier/direction/size 为哨兵默认值 0 时不设置；
+    /// direction 对纯 PS 粒子改为 transform 镜像实现：Left=scale.x 取负、Right=归正)</param>
     /// <param name="actionForGet">取到实例后的回传回调(播放后调用)：发射方需持有实例做播放后逐帧控制时传入(如冲击波 simulationSpeed 逐帧跟随游戏速度)</param>
     public void ShowEnduringSingletonEffect(long effectId, SingletonEffectParam param, Action<EffectBase> actionForGet = null)
     {
@@ -64,6 +65,13 @@ public partial class EffectHandler
             if (targetEffect.GetVisualEffect() == null)
             {
                 targetEffect.transform.position = param.targetPos;
+                //纯 PS 粒子无 {Direction} 注入通道,方向靠 transform 镜像(Left=scale.x 取负)；单例复用须每次按方向显式设置而非取反切换；World 空间模拟的已发射粒子不受影响,多刀交叠旧刀光保持原向
+                if (param.direction != Direction2DEnum.None)
+                {
+                    Vector3 effectScale = targetEffect.transform.localScale;
+                    effectScale.x = param.direction == Direction2DEnum.Left ? -Mathf.Abs(effectScale.x) : Mathf.Abs(effectScale.x);
+                    targetEffect.transform.localScale = effectScale;
+                }
             }
             //VFX 暴露属性按 EffectInfo 配置注入(刀光等 VFX 老特效的 Speed/LifeTime/Direction/StartPosition 全靠它,不注入则按预制默认值播放→原地不动/方向错/不可见); PS 新粒子配置数据为空自然跳过
             InjectVfxConfigData(effectId, targetEffect, param);
