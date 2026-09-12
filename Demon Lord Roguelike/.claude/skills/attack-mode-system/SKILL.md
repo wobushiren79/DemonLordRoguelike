@@ -53,7 +53,7 @@ BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播
 
 ```
 BaseAttackMode                      - 攻击模式基类
-├── AttackModeMelee                 - 近战单体（瞬间命中目标）
+├── AttackModeMelee                 - 近战单体（瞬间命中目标；命中特效播在 攻击者位置+攻击起始位置 attack_start_position 偏移，世界轴原始叠加不镜像——给向左攻击者配"向前"偏移时 X 写负值）
 │   └── AttackModeMeleeMulti        - 近战多段（继承 Melee：一次攻击 N 段伤害、段间不同帧——首段当帧结算+立即回调保 AI 节奏，余段 Update 按 other_data 键 hit_times&hit_interval 间隔累计 GetFightDeltaTime 静默追加；每段独立暴击/闪避判定；目标中途死亡放弃余段；解析 GetMultiHitConfig()；盗贼104001 用 100002[配 hit_times:2&hit_interval:0.1]）
 ├── AttackModeMeleeArea             - 近战范围（起点范围伤害；可配 hit_max 限制命中数，如人类战士1001的101005配3=前方1单位只打本路最多命中3个敌人；BOSS技能应用：102001=向前挥砍前方6格本路1排[持盾战士BOSS,ext100001,3s]、102002=前方6格上中下3排[难度4大剑战士BOSS,ext100004,3s,克隆102001改Z半宽0.25→1.25]，101006=大剑战士BOSS普攻[克隆战之魅魔101001前方范围hit_max3]）
 ├── AttackModeRanged                - 远程直线弹道（逐帧移动+碰撞检测；InitAttackModeShow 开启 visualVelocityOrient——火球/冰球 billboard 视觉按 _VelocityWS.w 速度朝向：贴图头（默认朝右）对准飞行方向、拖尾朝飞行反方向，仅桶材质声明 _VelocityWS 才生效，RangedNormal 等材质零副作用）
@@ -147,17 +147,20 @@ public class AttackModeMelee : BaseAttackMode
     public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
+        OnMeleeStartAttack(attacker, attacked, actionForAttackEnd);   // 虚方法，默认单段：命中→回收→回调
+    }
+
+    // 近战单段命中：扣血 + 播放击中粒子特效
+    // 特效位置 = 攻击者位置 + 攻击起始位置 attack_start_position 偏移（世界轴原始叠加不镜像；攻击者物体销毁时回退目标位置，偏移仍叠加）
+    protected void MeleeHit(FightCreatureEntity attacker, FightCreatureEntity attacked)
+    {
         if (attacker != null && attacked != null && !attacked.IsDead())
         {
-            // 扣血（触发受击逻辑）
-            attacked.UnderAttack(this);
-            // 播放击中粒子特效
-            PlayEffectForHit(attacker.creatureObj.transform.position);
+            attacked.UnderAttack(this);   // 扣血（触发受击逻辑）
+            Vector3 hitPos = attacker.creatureObj != null ? attacker.creatureObj.transform.position : attacked.creatureObj.transform.position;
+            hitPos += attacker.fightCreatureData.creatureData.creatureInfo.GetAttackStartPosition();
+            PlayEffectForHit(hitPos);
         }
-        // 攻击完成，回收攻击模块
-        Destroy();
-        // 触发攻击结束回调
-        actionForAttackEnd?.Invoke(this);
     }
 }
 ```

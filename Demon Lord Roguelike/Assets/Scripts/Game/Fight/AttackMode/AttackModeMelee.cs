@@ -31,7 +31,7 @@ public class AttackModeMelee : BaseAttackMode
     }
 
     /// <summary>
-    /// 近战单段命中：扣血 + 播放击中粒子特效（攻击者物体已销毁时特效回退到目标位置）
+    /// 近战单段命中：扣血 + 播放击中粒子特效（攻击者位置 + 攻击起始位置 attack_start_position 偏移；攻击者物体已销毁时回退到目标位置，偏移仍叠加）
     /// </summary>
     protected void MeleeHit(FightCreatureEntity attacker, FightCreatureEntity attacked)
     {
@@ -39,8 +39,9 @@ public class AttackModeMelee : BaseAttackMode
         {
             //扣血
             attacked.UnderAttack(this);
-            //播放击中粒子特效
+            //播放击中粒子特效（攻击起始偏移与弹道起点/魅惑命中同口径：世界轴原始叠加，不做朝向镜像，给向左攻击者配"向前"偏移时 X 写负值）
             Vector3 hitPos = attacker.creatureObj != null ? attacker.creatureObj.transform.position : attacked.creatureObj.transform.position;
+            hitPos += attacker.fightCreatureData.creatureData.creatureInfo.GetAttackStartPosition();
             PlayEffectForHit(hitPos);
         }
     }
