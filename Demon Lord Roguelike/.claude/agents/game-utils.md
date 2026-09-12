@@ -25,7 +25,7 @@ watched_files:
 | [EquipUtil.cs](Assets/Scripts/Utils/EquipUtil.cs) | 装备生成统一入口：核心 `CreateEquipItem` + 场景封装 `CreateEquipItemForReward`（征服奖励）/ `CreateEquipItemForNpc`（NPC随机装备）/ `CreateEquipItemForTest`（GM测试） | ItemBean、RarityInfoCfg |
 | [ItemsUtil.cs](Assets/Scripts/Utils/ItemsUtil.cs) | 道具枚举多语言扩展 | TextHandler、Item 枚举 |
 | [GameUIUtil.cs](Assets/Scripts/Utils/GameUIUtil.cs) | 渐变色 / 生物 UI 简易设置 / 详情设置 | CreatureHandler、SpineHandler、IconHandler |
-| [FightCreatureSearchUtil.cs](Assets/Scripts/Utils/FightCreatureSearchUtil.cs) | 战斗目标搜索（射线/范围/距离遍历） | RayUtil、GameFightLogic |
+| [FightCreatureSearchUtil.cs](Assets/Scripts/Utils/FightCreatureSearchUtil.cs) | 战斗目标搜索（射线/范围/距离遍历/最前排排名 `FindFrontRowCreatures`） | RayUtil、GameFightLogic |
 
 ### 与其他系统的边界
 

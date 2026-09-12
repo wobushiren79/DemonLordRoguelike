@@ -243,28 +243,35 @@ public partial class FightCreatureEntity
 ```
 UnderAttack(BaseAttackMode)
     │
-    ├── 0. 无敌判定（FightCreatureBean.isInvincible,由SSR稀有度BUFF「真男人」BuffEntityConditionalInvincible驱动）
+    ├── 0. 伤害转移判定（FightCreatureBean.damageTransferApplierId 非空且数据未带 isDamageTransferred 旗标时，
+    │   │  先于一切；当前由大盾战士BOSS「援护护盾」BuffEntityConditionalShieldTransfer 驱动）
+    │   ├── 代受者已死/离场 → 惰性清标记，本帧起恢复承伤，继续走后续流程
+    │   └── 代受者存活 → 目标处播护盾闪白(PlayHitFlash) + 原数据回收 + 生成改道数据(isDamageTransferred=true)
+    │       → 代受者走完整 UnderAttack 管线（目标零承伤、不滚闪避暴击、不吃命中DEBUFF、无回调；
+    │          暴击在代受端按原攻击者面板单次判定，统计/跳字/击杀自然归属代受者）→ 结束
+    │
+    ├── 1. 无敌判定（FightCreatureBean.isInvincible,由SSR稀有度BUFF「真男人」BuffEntityConditionalInvincible驱动）
     │   └── 无敌中 → 跳0伤害字+播miss音效(复用闪避表现) → 结束（不掉血/不上受击BUFF/不播受击特效）
     │
-    ├── 1. 闪避判定（EVA属性）
+    ├── 2. 闪避判定（EVA属性）
     │   └── 闪避成功 → 显示 MISS → 结束
     │
-    ├── 2. 暴击判定（攻击者CRT属性快照）
+    ├── 3. 暴击判定（攻击者CRT属性快照）
     │   └── 暴击 → 伤害 ×= 攻击者暴击伤害倍率（CDMG属性快照attackerCDMG，默认1.5=+50%，可由BUFF调整）
     │
-    ├── 3. 扣护甲（DR属性）
+    ├── 4. 扣护甲（DR属性）
     │   └── 护甲 > 0 → 扣护甲，减伤（默认 ChangeDRAndHP 护甲吃满后溢出到血；
     │       若受击数据带 drDamageRate/hpDamageRate 分段倍率[≠1/1，来自攻击模式 other_data 键 dr_damage_rate/hp_damage_rate]则走串联破甲：
     │       护甲>0 只以 dr 倍率打甲不掉血、破甲击溢出不结转，破甲后只以 hp 倍率打血——如牛头人法师 101003/101004 配 dr2/hp0.5）
     │
-    ├── 4. 扣血量（HP属性）
+    ├── 5. 扣血量（HP属性）
     │   └── HP -= 最终伤害
     │
-    ├── 5. 触发 BUFF（受击/死亡）
+    ├── 6. 触发 BUFF（受击/死亡）
     │
-    ├── 6. 更新血条
+    ├── 7. 更新血条
     │
-    └── 7. 检查死亡
+    └── 8. 检查死亡
         ├── HP <= 0 → SetCreatureDead()
         │   ├── 播放死亡动画
         │   ├── 触发死亡 BUFF

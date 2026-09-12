@@ -44,6 +44,8 @@ Bean/
 
 > **`FightCreatureBean.isPositionReleased`（手写 `Assets/Scripts/Bean/Game/FightCreatureBean.cs`，bool，占位已释放）**：冲锋自爆型生物（如 6003 哥布林敢死队）冲锋开始时置位（`AIIntentDefenseCreatureCharge`），此后占位/删除扫描（`FightBean.CheckDefenseCreatureByPos`/`GetDefenseCreatureByPos`）跳过它，原格可立即放第二只魔物；`ResetData()` 里清零防对象池残留。
 
+> **`FightCreatureBean.damageTransferApplierId` / `damageTransferBuff`（手写 `FightCreatureBean.cs`，string / BuffBaseEntity，伤害转移标记）**：非空时该生物受到的 `UnderAttack` 伤害在结算前拦截、改道给代受者（UUID 指向的生物）承受（`FightCreatureEntity.UnderAttack` 方法头分支，先于无敌/闪避）；`damageTransferBuff` 回指护盾 BUFF 实例供受击闪白反馈（避免受击扫 BUFF 列表）；代受者已死/离场时拦截分支惰性清空两字段恢复承伤。当前由大盾战士 BOSS「援护护盾」BUFF（`BuffEntityConditionalShieldTransfer`）写入/清理；`ResetData()` 里清空防对象池残留。配套：`FightUnderAttackBean.isDamageTransferred`（改道数据旗标，防转移成环最多一跳，`ClearData` 重置）+ `SetDataForTransferFrom(source, newAttackedId)` 拷贝构造。
+
 > **`FightBean` 防御生物按占位操作（手写 `Assets/Scripts/Bean/Game/FightBean.cs`）**：`CheckDefenseCreatureByPos`/`GetDefenseCreatureByPos` 均跳过 `isPositionReleased` 实体；**`RemoveDefenseCreatureByPos` 已删除**，替换为 **`RemoveDefenseCreature(FightCreatureEntity)`**——`DictionaryList.RemoveByValue` 按实例精确移除（按 positionCreate 首匹配会误删同格新生物、按 UUID 会误删重生替换的新实体）。
 
 > **`CreatureInfoBean.charge_attack`（Excel 自动生成列，int）**：冲锋自爆开关（0=默认站桩，1=放卡后立即向前冲锋并释放原占位格，遇敌/到路尽头/被打死时原地自爆）；配套手写解析 `CreatureInfoBeanPartial.IsChargeAttack()`。

@@ -1,4 +1,4 @@
----
+﻿---
 name: game-attack-mode
 description: 攻击模式系统开发：33种攻击模式（近战/远程/特殊/恢复），BaseAttackMode 策略模式。
 tools: Read, Write, Edit, Glob, Grep, Bash

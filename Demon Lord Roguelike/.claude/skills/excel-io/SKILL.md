@@ -151,14 +151,14 @@ python .claude/scripts/excel_delete_row.py \
 | 中文名 | 文件名（精简） | Sheet名 | 数据行 |
 |--------|---------------|---------|--------|
 | 深渊馈赠 | excel_abyssal_blessing_info | AbyssalBlessingInfo | 6 |
-| 攻击方式 | excel_attackmode_info | AttackModeInfo | 57 |
+| 攻击方式 | excel_attackmode_info | AttackModeInfo | 61 |
 | 音频信息 | excel_audio_info | AudioInfo | 39 |
 | 基础信息 | excel_base_info | BaseInfo | 3 |
 | Buff信息 | excel_buff_info | BuffInfo | 135 |
 | Buff前置 | excel_buff_pre_info | BuffPreInfo | 6 |
 | 议员对话 | excel_conversation_councilor_info | ConversationCouncilorInfo | 33 |
 | 生物属性类型 | excel_creature_attribute_type_info | CreatureAttributeTypeInfo | 12 |
-| 生物信息 | excel_creature_info | CreatureInfo | 114 |
+| 生物信息 | excel_creature_info | CreatureInfo | 113 |
 | 生物模型 | excel_creature_model | CreatureModel | 66 |
 | 生物模型详情 | excel_creature_model_info | CreatureModelInfo | 440 |
 | 生物随机 | excel_creature_random_info | CreatureRandomInfo | 28 |

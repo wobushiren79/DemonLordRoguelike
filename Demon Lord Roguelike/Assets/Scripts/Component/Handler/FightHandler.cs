@@ -132,6 +132,16 @@ public class FightHandler : BaseHandler<FightHandler, FightManager>
     }
 
     /// <summary>
+    /// 获取被攻击数据-伤害转移（援护护盾改道：以源攻击数据生成指向代受者的新数据）
+    /// </summary>
+    public FightUnderAttackBean GetFightUnderAttackDataForTransfer(FightUnderAttackBean sourceData, string newAttackedId)
+    {
+        var targetData = manager.GetFightUnderAttackData();
+        targetData.SetDataForTransferFrom(sourceData, newAttackedId);
+        return targetData;
+    }
+
+    /// <summary>
     /// 移除被攻击数据
     /// </summary>
     public void RemoveFightUnderAttackData(FightUnderAttackBean fightUnderAttackData)

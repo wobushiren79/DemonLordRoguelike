@@ -17,6 +17,8 @@ public class FightCreatureBean
     public int DRCurrent;//当前护甲值
     public float MPCurrent;//当前魔力值（仅战斗中有效 魔王核心创建魔物消耗的魔力 float用于累积每帧的MPF恢复量）
     public bool isInvincible;//是否无敌（免疫一切 UnderAttack 伤害；当前由SSR稀有度BUFF「真男人」驱动）
+    public string damageTransferApplierId;//伤害转移代受者UUID（非空时受到的 UnderAttack 伤害在结算前改道给该生物承受；当前由大盾战士BOSS「援护护盾」BUFF驱动）
+    public BuffBaseEntity damageTransferBuff;//伤害转移来源BUFF实例（回指用于受击反馈，避免受击时扫描BUFF列表）
     public bool isPositionReleased;//占位已释放（冲锋生物冲锋开始后置位：占位/删除扫描跳过本生物，原格可立即放第二只；重生落点改取死亡位置）
     public Dictionary<CreatureAttributeTypeEnum, float> dicAttribute = new Dictionary<CreatureAttributeTypeEnum, float>(); //属性
 
@@ -65,6 +67,9 @@ public class FightCreatureBean
         MPCurrent = GetAttribute(CreatureAttributeTypeEnum.MP);
         //重置无敌状态（BUFF会在生成挂接时按需重新开启）
         isInvincible = false;
+        //重置伤害转移标记（对象池复用防残留；护盾BUFF生效时才会重新写入）
+        damageTransferApplierId = null;
+        damageTransferBuff = null;
         //重置占位释放标记（对象池复用防残留；冲锋意图进入时才会重新置位）
         isPositionReleased = false;
     }

@@ -318,4 +318,46 @@ public static class FightCreatureSearchUtil
         return listData;
     }
 
+    /// <summary>
+    /// 找寻最前排的N个存活生物（按 x 坐标排名选取；进攻方向约定：敌人从 +x 向 -x 推进，故 FightAttack 前排=x 最小，FightDefense 前排=x 最大）
+    /// </summary>
+    /// <param name="listCreature">候选列表（某阵营全场生物列表，如 fightData.dlAttackCreatureEntity.List）</param>
+    /// <param name="count">选取数量（存活不足时返回实际数量）</param>
+    /// <param name="excludeCreature">排除的生物（如施法者自己，可空）</param>
+    /// <param name="searchCreatureFightType">阵营（决定前排方向）</param>
+    /// <returns>最前排生物列表（按从前到后排序）；无存活生物时返回 null</returns>
+    public static List<FightCreatureEntity> FindFrontRowCreatures(List<FightCreatureEntity> listCreature, int count, FightCreatureEntity excludeCreature, CreatureFightTypeEnum searchCreatureFightType)
+    {
+        if (listCreature.IsNull() || count <= 0)
+            return null;
+        //收集存活候选（排除指定生物）
+        List<FightCreatureEntity> listCandidate = null;
+        for (int i = 0; i < listCreature.Count; i++)
+        {
+            var itemEntity = listCreature[i];
+            if (itemEntity == null || itemEntity.creatureObj == null || itemEntity.IsDead())
+                continue;
+            if (excludeCreature != null && itemEntity == excludeCreature)
+                continue;
+            if (listCandidate == null)
+                listCandidate = new List<FightCreatureEntity>();
+            listCandidate.Add(itemEntity);
+        }
+        if (listCandidate.IsNull())
+            return null;
+        //按前排方向排序（FightAttack 前排=x 最小升序，其余前排=x 最大降序；10秒级低频调用，排序分配可接受）
+        if (searchCreatureFightType == CreatureFightTypeEnum.FightAttack)
+        {
+            listCandidate.Sort((a, b) => a.creatureObj.transform.position.x.CompareTo(b.creatureObj.transform.position.x));
+        }
+        else
+        {
+            listCandidate.Sort((a, b) => b.creatureObj.transform.position.x.CompareTo(a.creatureObj.transform.position.x));
+        }
+        //截取前N个
+        if (listCandidate.Count > count)
+            listCandidate.RemoveRange(count, listCandidate.Count - count);
+        return listCandidate;
+    }
+
 }

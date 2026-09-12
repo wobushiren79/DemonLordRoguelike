@@ -27,6 +27,9 @@ public class FightUnderAttackBean
     //未命中音效
     public long soundMissId;
 
+    /// <summary>是否伤害转移产生的改道数据（援护护盾：true 时拦截分支不再二次转移，防配置错误成环时最多转移一跳）</summary>
+    public bool isDamageTransferred;
+
     public FightUnderAttackBean()
     {
 
@@ -65,6 +68,26 @@ public class FightUnderAttackBean
         this.soundMissId = 0;
     }
 
+    /// <summary>
+    /// 伤害转移（援护护盾）：以一次尚未结算的攻击数据为源，生成改道给代受者的新数据
+    /// （攻击者/伤害/暴击快照/分段倍率/音效原样保留，仅改写被攻击者；暴击在代受端单次判定）
+    /// </summary>
+    /// <param name="sourceData">源攻击数据</param>
+    /// <param name="newAttackedId">代受者UUID</param>
+    public void SetDataForTransferFrom(FightUnderAttackBean sourceData, string newAttackedId)
+    {
+        this.attackedId = newAttackedId;
+        this.attackerId = sourceData.attackerId;
+        this.attackerDamage = sourceData.attackerDamage;
+        this.attackerCRT = sourceData.attackerCRT;
+        this.attackerCDMG = sourceData.attackerCDMG;
+        this.drDamageRate = sourceData.drDamageRate;
+        this.hpDamageRate = sourceData.hpDamageRate;
+        this.soundHitId = sourceData.soundHitId;
+        this.soundMissId = sourceData.soundMissId;
+        this.isDamageTransferred = true;
+    }
+
     public void ClearData()
     {
         attackerId = null;
@@ -76,5 +99,6 @@ public class FightUnderAttackBean
         hpDamageRate = 1f;
         soundHitId = 0;
         soundMissId = 0;
+        isDamageTransferred = false;
     }
 }

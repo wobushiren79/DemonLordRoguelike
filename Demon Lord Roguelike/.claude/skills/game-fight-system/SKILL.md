@@ -171,7 +171,8 @@ CreatureHandler.Instance.RemoveFightCreatureEntity(entity, CreatureFightTypeEnum
 // partial 拆分：通用接口在主文件；RefreshMPShow 在 FightCreatureEntityForDefenseCore.cs；ChangeRoad 在 FightCreatureEntityForAttack.cs
 public partial class FightCreatureEntity
 {
-    // 受到攻击（自动处理无敌拦截(isInvincible,先于一切)、闪避、暴击、扣护甲、扣血、死亡检测；
+    // 受到攻击（自动处理伤害转移拦截(damageTransferApplierId非空时代受者代受,先于一切——援护护盾,目标零承伤不吃命中DEBUFF,改道数据isDamageTransferred防环,代受者已死则惰性清标记恢复承伤)、
+    // 无敌拦截(isInvincible)、闪避、暴击、扣护甲、扣血、死亡检测；
     // 扣护甲/扣血默认走 ChangeDRAndHP 溢出逻辑，受击数据带 dr/hpDamageRate 分段倍率[≠1/1]时走串联破甲：
     // 护甲>0只以dr倍率打甲不掉血、破甲击溢出不结转，破甲后只以hp倍率打血，如牛头人法师101003/101004配dr2/hp0.5）
     public void UnderAttack(BaseAttackMode baseAttackMode);

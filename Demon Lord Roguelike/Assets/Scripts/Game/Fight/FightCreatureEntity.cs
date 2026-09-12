@@ -375,6 +375,29 @@ public partial class FightCreatureEntity
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var fightData = gameLogic.fightData;
         var fightRecordsData = fightData.fightRecordsData;
+        //伤害转移判定（援护护盾：被套盾期间本生物零承伤，伤害原样改道给代受者走完整管线）——先于无敌/闪避/暴击判定；
+        //目标侧不滚闪避不滚暴击，暴击在代受端按原攻击者面板单次判定；统计/跳字/击杀归属自然落到代受者
+        if (!fightUnderAttackData.isDamageTransferred && !fightCreatureData.damageTransferApplierId.IsNull())
+        {
+            var transferApplier = fightData.GetCreatureById(fightCreatureData.damageTransferApplierId, CreatureFightTypeEnum.None);
+            if (transferApplier == null || transferApplier.IsDead())
+            {
+                //代受者已死/离场：惰性清标记，本帧起恢复承伤（正常路径由护盾BUFF检测施加者死亡时主动清理）
+                fightCreatureData.damageTransferApplierId = null;
+                fightCreatureData.damageTransferBuff = null;
+            }
+            else
+            {
+                //目标处播护盾受击闪白反馈
+                (fightCreatureData.damageTransferBuff as BuffEntityConditionalShieldTransfer)?.PlayHitFlash();
+                //生成改道数据并回收原数据（提前return走不到方法尾部回收，对象池需平衡）
+                var transferData = FightHandler.Instance.GetFightUnderAttackDataForTransfer(fightUnderAttackData, fightCreatureData.damageTransferApplierId);
+                FightHandler.Instance.RemoveFightUnderAttackData(fightUnderAttackData);
+                //代受者走完整 UnderAttack 管线（不传原回调——与无敌/闪避 early-return 先例一致，目标零承伤且不吃命中携带的DEBUFF）
+                transferApplier.UnderAttack(transferData);
+                return;
+            }
+        }
         //无敌判定：免疫一切 UnderAttack 伤害（不掉血/不上受击BUFF/不播受击特效），跳0伤害字+miss音效（复用闪避表现）
         if (fightCreatureData.isInvincible)
         {

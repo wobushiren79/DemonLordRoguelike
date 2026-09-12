@@ -1,4 +1,4 @@
----
+﻿---
 name: attack-mode-system
 description: Demon Lord Roguelike 游戏的攻击模块(AttackMode)系统开发指南。使用此SKILL当需要创建或修改攻击模式、战斗弹道、攻击特效、攻击伤害逻辑等，包括近战/远程/范围/追踪/抛物线/爆炸/回复/连锁/穿透/分裂等攻击类型。
 watched_files:
