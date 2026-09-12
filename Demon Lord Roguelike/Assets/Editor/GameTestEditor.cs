@@ -247,8 +247,101 @@ public partial class GameTestEditor : Editor
             EditorGUI.indentLevel--;
         }
 
+        EditorGUILayout.Space(5);
+
+        // 防守方固定属性设置
+        showFightFixedAttributeSettings = EditorGUILayout.Foldout(showFightFixedAttributeSettings, "🛡️ 防守方固定属性", true);
+        if (showFightFixedAttributeSettings)
+        {
+            EditorGUI.indentLevel++;
+            EditorGUILayout.BeginVertical("box");
+            DrawFightFixedAttributeSettings();
+            EditorGUILayout.EndVertical();
+            EditorGUI.indentLevel--;
+        }
+
         EditorGUI.indentLevel--;
         EditorGUILayout.Space(10);
+    }
+
+    /// <summary>
+    /// 绘制防守方固定属性设置(每行: 属性下拉[中文名] + 固定值输入 + 删除；底部: 添加/移除最后一个)。
+    /// 语义: 基础值替换——加点/装备/BUFF/深渊馈赠等修正仍在固定值上叠加；作用于防守方全部生物(卡片魔物+魔王核心)。
+    /// </summary>
+    private void DrawFightFixedAttributeSettings()
+    {
+        EditorGUILayout.HelpBox("设置后防守方所有魔物与魔王核心的该项属性【基础值】替换为固定值（加点/装备/BUFF/深渊馈赠等修正仍会在固定值上叠加）。\n" +
+            "卡片属性显示、召唤消耗、复活CD 同步生效；同一属性重复配置时以最后一行为准；固定 MP 时「魔王蓝量」设置不生效。", MessageType.Info);
+
+        //属性下拉选项每帧重建(配置重导后名字即时刷新; CreatureAttributeTypeInfoCfg 未加载时(非运行态)退化为纯枚举名)
+        var listAttributeType = EnumExtension.GetEnumValue<CreatureAttributeTypeEnum>();
+        List<GUIContent> listOption = new List<GUIContent>();
+        List<int> listOptionValue = new List<int>();
+        for (int i = 0; i < listAttributeType.Count; i++)
+        {
+            var attributeType = listAttributeType[i];
+            if (attributeType == CreatureAttributeTypeEnum.None)
+                continue;
+            string attributeName = CreatureAttributeTypeInfoCfg.GetAttributeTypeNameByEnum(attributeType);
+            string label = attributeName == "???" ? attributeType.ToString() : $"{attributeType}({attributeName})";
+            listOption.Add(new GUIContent(label));
+            listOptionValue.Add((int)attributeType);
+        }
+        GUIContent[] options = listOption.ToArray();
+        int[] optionValues = listOptionValue.ToArray();
+
+        for (int i = 0; i < fightFixedAttributes.Count; i++)
+        {
+            var item = fightFixedAttributes[i];
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField($"属性 {i + 1}", GUILayout.Width(60));
+            int selectIndex = Array.IndexOf(optionValues, (int)item.attributeType);
+            if (selectIndex < 0) selectIndex = 0;
+            int newIndex = EditorGUILayout.Popup(selectIndex, options, GUILayout.MinWidth(140));
+            item.attributeType = (CreatureAttributeTypeEnum)optionValues[newIndex];
+            item.value = EditorGUILayout.FloatField(item.value, GUILayout.Width(80));
+            if (GUILayout.Button("🗑️", GUILayout.Width(30)))
+            {
+                fightFixedAttributes.RemoveAt(i);
+                break;
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        EditorGUILayout.Space(3);
+        EditorGUILayout.BeginHorizontal();
+        //新增行默认取第一个未被占用的属性(都已占用时回落 HP)，值沿用最后一行
+        if (GUILayout.Button("➕ 添加固定属性"))
+        {
+            CreatureAttributeTypeEnum addType = CreatureAttributeTypeEnum.HP;
+            for (int i = 0; i < optionValues.Length; i++)
+            {
+                bool isUsed = false;
+                for (int j = 0; j < fightFixedAttributes.Count; j++)
+                {
+                    if ((int)fightFixedAttributes[j].attributeType == optionValues[i])
+                    {
+                        isUsed = true;
+                        break;
+                    }
+                }
+                if (!isUsed)
+                {
+                    addType = (CreatureAttributeTypeEnum)optionValues[i];
+                    break;
+                }
+            }
+            fightFixedAttributes.Add(new FightFixedAttributeItem
+            {
+                attributeType = addType,
+                value = fightFixedAttributes.Count > 0 ? fightFixedAttributes[fightFixedAttributes.Count - 1].value : 100
+            });
+        }
+        if (fightFixedAttributes.Count > 0 && GUILayout.Button("🗑️ 移除最后一个"))
+        {
+            fightFixedAttributes.RemoveAt(fightFixedAttributes.Count - 1);
+        }
+        EditorGUILayout.EndHorizontal();
     }
 
     /// <summary>
@@ -1610,6 +1703,16 @@ public partial class GameTestEditor : Editor
         }
         fightData.fightAttackDataRemark = ClassUtil.DeepCopy(fightData.fightAttackData);
 
+        // 防守方固定属性: 列表转字典(同一属性重复配置时以最后一行为准)；由 GameFightLogicTest 应用到魔王核心，此处预设到卡片生物
+        fightData.dicTestDefenseFixedAttribute.Clear();
+        for (int i = 0; i < fightFixedAttributes.Count; i++)
+        {
+            var itemFixedAttribute = fightFixedAttributes[i];
+            if (itemFixedAttribute == null || itemFixedAttribute.attributeType == CreatureAttributeTypeEnum.None)
+                continue;
+            fightData.dicTestDefenseFixedAttribute[itemFixedAttribute.attributeType] = itemFixedAttribute.value;
+        }
+
         // 所有的卡片数据(卡片生物ID列表为空时兜底2002，避免取模除零)
         fightData.dlDefenseCreatureData.Clear();
         long[] ids = fightCardIds.Count > 0 ? fightCardIds.ToArray() : new long[] { 2002 };
@@ -1625,6 +1728,12 @@ public partial class GameTestEditor : Editor
             }
             itemData.order = i;
             fightData.dlDefenseCreatureData.Add(itemData.creatureUUId, itemData);
+
+            // 防守方固定属性: 预设到生物数据(放置前卡片显示/召唤消耗/复活CD 读 CreatureBean.GetAttribute 即时生效；放置后战斗属性以固定基础值重算)
+            if (fightData.dicTestDefenseFixedAttribute.Count > 0)
+            {
+                itemData.dicFixedAttribute = new Dictionary<CreatureAttributeTypeEnum, float>(fightData.dicTestDefenseFixedAttribute);
+            }
 
             // 攻击模式测试
             if (attackModeDefenseTestId != 0)

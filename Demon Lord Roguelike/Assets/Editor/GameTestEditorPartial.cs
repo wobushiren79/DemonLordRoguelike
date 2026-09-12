@@ -45,6 +45,13 @@ public partial class GameTestEditor
         public int level = 1;
     }
     public List<AbyssalBlessingFightTestItem> abyssalBlessingFightTestList = new List<AbyssalBlessingFightTestItem>();
+    // 战斗测试-防守方固定属性项(属性类型 + 固定值; 作为基础值替换, BUFF/馈赠等修正仍叠加)
+    public class FightFixedAttributeItem
+    {
+        public CreatureAttributeTypeEnum attributeType = CreatureAttributeTypeEnum.HP;
+        public float value = 100;
+    }
+    public List<FightFixedAttributeItem> fightFixedAttributes = new List<FightFixedAttributeItem>();
     // 深渊馈赠下拉选项缓存(不持久化，懒加载；配置重导后可点「刷新列表」重建)
     private GUIContent[] abyssalBlessingFamilyOptions;
     private long[] abyssalBlessingFamilyRootIds;
@@ -151,6 +158,7 @@ public partial class GameTestEditor
     private bool showFightBasicSettings = true;
     private bool showFightEnemySettings = true;
     private bool showFightBuffSettings = true;
+    private bool showFightFixedAttributeSettings = true;
 
     private const string PREFS_KEY_PREFIX = "GameTestEditor_";
     private const string ENEMY_IDS_KEY = PREFS_KEY_PREFIX + "enemyIds";
@@ -163,6 +171,8 @@ public partial class GameTestEditor
     private const string ABYSSAL_BLESSING_TEST_IDS_COUNT_KEY = PREFS_KEY_PREFIX + "abyssalBlessingTestIdsCount";
     private const string ABYSSAL_BLESSING_FIGHT_TEST_KEY = PREFS_KEY_PREFIX + "abyssalBlessingFightTest";
     private const string ABYSSAL_BLESSING_FIGHT_TEST_COUNT_KEY = PREFS_KEY_PREFIX + "abyssalBlessingFightTestCount";
+    private const string FIGHT_FIXED_ATTRIBUTE_KEY = PREFS_KEY_PREFIX + "fightFixedAttribute";
+    private const string FIGHT_FIXED_ATTRIBUTE_COUNT_KEY = PREFS_KEY_PREFIX + "fightFixedAttributeCount";
 
     private void OnEnable()
     {
@@ -208,6 +218,9 @@ public partial class GameTestEditor
         // 深渊馈赠
         LoadAbyssalBlessingFightTestList();
         LoadAbyssalBlessingTestIds();
+
+        // 防守方固定属性
+        LoadFightFixedAttributes();
 
         // 终焉议会
         doomCouncilBillId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "doomCouncilBillId", 1000000001);
@@ -287,6 +300,9 @@ public partial class GameTestEditor
         // 深渊馈赠
         SaveAbyssalBlessingFightTestList();
         SaveAbyssalBlessingTestIds();
+
+        // 防守方固定属性
+        SaveFightFixedAttributes();
 
         // 终焉议会
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "doomCouncilBillId", (int)doomCouncilBillId);
@@ -425,6 +441,31 @@ public partial class GameTestEditor
             long.TryParse(idStr, out long familyRootId);
             int level = EditorPrefs.GetInt(ABYSSAL_BLESSING_FIGHT_TEST_KEY + "_lv_" + i, 1);
             abyssalBlessingFightTestList.Add(new AbyssalBlessingFightTestItem { familyRootId = familyRootId, level = level });
+        }
+    }
+
+    /// <summary>
+    /// 持久化战斗测试的防守方固定属性列表(属性类型存 int，固定值存 float)
+    /// </summary>
+    private void SaveFightFixedAttributes()
+    {
+        EditorPrefs.SetInt(FIGHT_FIXED_ATTRIBUTE_COUNT_KEY, fightFixedAttributes.Count);
+        for (int i = 0; i < fightFixedAttributes.Count; i++)
+        {
+            EditorPrefs.SetInt(FIGHT_FIXED_ATTRIBUTE_KEY + "_attr_" + i, (int)fightFixedAttributes[i].attributeType);
+            EditorPrefs.SetFloat(FIGHT_FIXED_ATTRIBUTE_KEY + "_value_" + i, fightFixedAttributes[i].value);
+        }
+    }
+
+    private void LoadFightFixedAttributes()
+    {
+        int count = EditorPrefs.GetInt(FIGHT_FIXED_ATTRIBUTE_COUNT_KEY, 0);
+        fightFixedAttributes.Clear();
+        for (int i = 0; i < count; i++)
+        {
+            int attributeType = EditorPrefs.GetInt(FIGHT_FIXED_ATTRIBUTE_KEY + "_attr_" + i, (int)CreatureAttributeTypeEnum.HP);
+            float value = EditorPrefs.GetFloat(FIGHT_FIXED_ATTRIBUTE_KEY + "_value_" + i, 100);
+            fightFixedAttributes.Add(new FightFixedAttributeItem { attributeType = (CreatureAttributeTypeEnum)attributeType, value = value });
         }
     }
 }

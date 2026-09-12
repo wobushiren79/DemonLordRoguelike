@@ -23,7 +23,7 @@
 
 ### Reference
 - [reference_unity6000_maintoolbar_element.md](reference_unity6000_maintoolbar_element.md) — Unity 6000.3 主工具栏新增 MainToolbarElement 默认 displayed=False 不可见（Overlay 体系，ToolbarExtension 旧树恒空勿误判）；查真状态反射 MainToolbarWindow.instance.overlayCanvas.overlays，修复=overlay.displayed=true 或用户在 ⋮/编辑模式手动启用；附 MainToolbarDropdown(content, Action<Rect>) 签名
-- [project_creature_attribute_type_sync.md](project_creature_attribute_type_sync.md) — 装備属性池新增枚举必须同步 excel_creature_attribute_type_info 配置表，否则道具详情显示"???"+黑色（MPF=11 缺行实例：魔王专属装備随机到 MPF 时 2026-08-30 已补行）
+- [project_creature_attribute_type_sync.md](project_creature_attribute_type_sync.md) — 装備属性池新增枚举必须同步 excel_creature_attribute_type_info 配置表，否则道具详情显示"???"+黑色；另有「行在但语言文本缺失」变体（CDMG=13 缺语言行 LogError，2026-09-12 已补齐 12 语种）
 - [reference_vfx_startposition_space.md](reference_vfx_startposition_space.md) - VFX 图 Position 块消费 StartPosition 注入必须标 World(m_Space:1)：Local+世界注入= 2x 命中点双倍偏移（生物1003/1004 火冰球击中特效错位根因，连带修复爆炸300001，2026-08-30）
 - [reference_fog_stripping_pc_build.md](reference_fog_stripping_pc_build.md) — PC 打包后战斗场景雾消失根因：雾由代码运行时开启但 GraphicsSettings 雾剥离=Automatic 只扫 Build Settings 场景（仅 TestScene 且雾关）→ FOG_LINEAR 变体被剥离；已修 m_FogStripping=1(Custom) 三雾型全保留，须重新打包生效；「编辑器有包体没有」先查变体剥离
 - [reference_shadergraph_fog_bypass.md](reference_shadergraph_fog_bypass.md) — ShaderGraph 材质控雾破解与教训：**URP 雾因子语义是"保色度"(1=无雾)非雾量**，缩放须换算 1-(1-因子)*权重（直接乘会让 0=全雾色）；路面已导出为手工维护的 Shader_FightSceneRoad_1.shader（内部名 Game/Fight/FightSceneRoad_1，Fog Influence 滑杆 0=无雾）；导出器一次性用完已删；URP ShaderGraph 无 fog 开关、6.3 起 Generator 全 internal、生成代码不内联模板须宏拦截 include；**路面 Alpha 仅取材质 _Alpha 浮点（road_color 的 alpha 通道无效）**，按场景 road_alpha 列驱动（空默认0.5，王宫0.1/其余0.5），道路参数一律走 MaterialPropertyBlock——禁止 sharedMaterial 改共享路面材质（会持久化污染 .mat 串场景）

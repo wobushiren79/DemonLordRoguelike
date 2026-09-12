@@ -309,7 +309,16 @@ foreach (var itemData in GameWorldInfoCfg.GetAllData())
 `TestSceneTypeEnum.FightSceneTest` —— 自定义场景/敌人/BUFF/深渊馈赠的战斗测试（含普通模式、单体测试模式、征服模式BOSS关三个子模式）。
 
 - **魔王(防守核心)生物**：由基础设置区的「魔王生物 ID」(`fightDefenseCoreId`，EditorPrefs 持久化，默认 `2001` 骷髅战士)决定，`GetTestData()` 用它构建 `fightData.fightDefenseCoreData`（原硬编码 2001 已改为该字段）。
-- **魔王蓝量**：基础设置区的「魔王蓝量」(`fightDemonLordMP`，EditorPrefs 持久化 float，默认 `9999`)，`GetTestData()` 存入 `FightBeanForTest.testDemonLordMP`，由 `GameFightLogicTest.PreGameForAfterCreateDefenseCore()` 在防守核心创建后统一应用：设 `MPCurrent = testDemonLordMP`，并在配置 MP 上限不足时同步把 `dicAttribute[MP]` 提升到该值（否则 `ChangeMP` 消耗时会把超上限蓝量一次夹回配置上限）。应用在馈赠添加**之后**（AddAbyssalBlessing 触发的 RefreshBaseAttribute 会重算 dicAttribute，顺序颠倒会把上限提升冲掉；重开战斗走同一钩子故每场一致）。
+- **魔王蓝量**：基础设置区的「魔王蓝量」(`fightDemonLordMP`，EditorPrefs 持久化 float，默认 `9999`)，`GetTestData()` 存入 `FightBeanForTest.testDemonLordMP`，由 `GameFightLogicTest.PreGameForAfterCreateDefenseCore()` 在防守核心创建后统一应用：设 `MPCurrent = testDemonLordMP`，并在配置 MP 上限不足时同步把 `dicAttribute[MP]` 提升到该值（否则 `ChangeMP` 消耗时会把超上限蓝量一次夹回配置上限）。应用在馈赠添加**之后**（AddAbyssalBlessing 触发的 RefreshBaseAttribute 会重算 dicAttribute，顺序颠倒会把上限提升冲掉；重开战斗走同一钩子故每场一致）。**MP 被「防守方固定属性」固定时蓝量设置让位**（固定值即上限，当前蓝量=固定值）。
+
+### 防守方固定属性设置（基础值替换）
+
+独立折叠区「🛡️ 防守方固定属性」（BUFF 设置区下方），逐行配置：属性下拉（全部 CreatureAttributeTypeEnum 除 None，选项 `HP(生命)` 中文名取 `CreatureAttributeTypeInfoCfg.GetAttributeTypeNameByEnum`，非运行态配置未加载时退化为纯枚举名）+ 固定值 FloatField；「➕ 添加」默认取第一个未占用属性、值沿用最后一行。字段 `fightFixedAttributes: List<FightFixedAttributeItem>`，EditorPrefs 持久化（attr 存 int + value 存 float）。
+
+- **语义=基础值替换（非最终值锁定）**：`CreatureBean.dicFixedAttribute`（`CreatureBeanPartial.cs` 手写，`[JsonIgnore]+[NonSerialized]` 运行时字段不入存档）设置后，`GetAttribute` 该项**基础值**直接取固定值（跳过 creatureInfo/npcInfo 配置分支），角色加点/装备/自身BUFF/深渊馈赠等修正**仍在固定值上照常叠加**。注意区别于 `CreatureBean.FixedAttributeForCreate`——那是新建存档初始魔物的"固定**加点**"（写入 `creatureAttribute` 入存档），与本测试机制无关。
+- **作用范围**：防守方全部生物 = 卡片魔物 + 魔王核心（2026-09 与用户确认的设定）。
+- **链路**：`GetTestData()` 把列表转字典存入 `FightBeanForTest.dicTestDefenseFixedAttribute`（同一属性重复配置以最后一行为准），并给每张卡片生物 `itemData.dicFixedAttribute` 预设字典副本——卡片属性显示/召唤消耗 CMP/复活CD RCD 读 `CreatureBean.GetAttribute` 即时生效；放置上场后 `FightCreatureBean.RefreshBaseAttribute` 以固定基础值重算，战斗 BUFF/馈赠管线照常叠加。魔王核心由 `GameFightLogicTest.PreGameForAfterCreateDefenseCore()` 补设字典并重算属性（当前生命/护甲重置为固定后满值）。
+- **克隆兜底**：战中克隆 BUFF（`BuffEntityInstantCloneDefenseCreature`）经 `ClassUtil.DeepCopy`(JsonUtility) 产出的生物数据会丢失 `dicFixedAttribute`（NonSerialized 不随深拷贝），`GameFightLogicTest.PreGame()` 注册 `GameFightLogic_DefenseCreatureCreate` 事件（`EventForDefenseCreatureCreateForFixedAttribute`）在放置时兜底补设并重算。
 
 ### ID 列表编辑（手动输入 + 下拉选择已有配置）
 
@@ -663,7 +672,7 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 测试启动器 | `Assets/Scripts/Game/Launcher/LauncherTest.cs` |
 | 测试编辑器 | `Assets/Editor/GameTestEditor.cs` + `GameTestEditorPartial.cs` |
 | 测试战斗逻辑 | `Assets/Scripts/Game/Logic/GameFightLogicTest.cs` |
-| 测试战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForTest.cs`（fightAttackDataRemark 进攻数据备份；testAbyssalBlessingIds 测试馈赠目标行id列表，由 GameFightLogicTest 在防守核心创建后统一添加；testDemonLordMP 测试魔王蓝量，由 GameFightLogicTest 统一应用并同步提升 MP 上限） |
+| 测试战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForTest.cs`（fightAttackDataRemark 进攻数据备份；testAbyssalBlessingIds 测试馈赠目标行id列表，由 GameFightLogicTest 在防守核心创建后统一添加；testDemonLordMP 测试魔王蓝量，由 GameFightLogicTest 统一应用并同步提升 MP 上限；dicTestDefenseFixedAttribute 测试防守方固定属性=基础值替换，作用于卡片魔物+魔王核心，MP 被固定时蓝量设置让位） |
 | 测试控制台 | `Assets/FrameWork/Scripts/Component/UI/UITestConsole.cs` |
 | 测试基础 UI | `Assets/Scripts/Component/UI/Test/UITestBase.cs` + `UITestBaseComponent.cs` |
 | 卡片测试 UI | `Assets/Scripts/Component/UI/Test/UITestCard.cs` + `UITestCardComponent.cs` |

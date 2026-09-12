@@ -56,6 +56,11 @@ public partial class CreatureBean
     [NonSerialized]
     public float RCDTimeUpdate = 0;    //生物复活更新时间
 
+    //固定属性表(测试模式专用运行时数据, 不入存档): 设置后 GetAttribute 该项属性的基础值替换为固定值, 加点/装备/BUFF/深渊馈赠等修正仍在固定值上叠加
+    [Newtonsoft.Json.JsonIgnore]
+    [NonSerialized]
+    public Dictionary<CreatureAttributeTypeEnum, float> dicFixedAttribute;
+
     [Newtonsoft.Json.JsonIgnore]
     [NonSerialized]
     protected CreatureInfoBean _creatureInfo;

@@ -267,6 +267,7 @@ public class FightBean
 
     /// <summary>
     /// 通过ID获取某一生物
+    /// <para>战斗清理期(ClearGame 先 ClearEntity 后清BUFF)实体列表与核心已置空，查询安全返回 null，调用方需判空。</para>
     /// </summary>
     public FightCreatureEntity GetCreatureById(string creatureUUID, CreatureFightTypeEnum creatureType = CreatureFightTypeEnum.None)
     {
@@ -280,7 +281,8 @@ public class FightBean
             {
                 return defenseCreature;
             }
-            if (fightDefenseCoreCreature.fightCreatureData.creatureData.creatureUUId.Equals(creatureUUID))
+            //核心可能已在清理流程中置空(ClearEntity 先于 BUFF 清理执行)，判空防 NRE
+            if (fightDefenseCoreCreature != null && fightDefenseCoreCreature.fightCreatureData.creatureData.creatureUUId.Equals(creatureUUID))
             {
                 return fightDefenseCoreCreature;
             }

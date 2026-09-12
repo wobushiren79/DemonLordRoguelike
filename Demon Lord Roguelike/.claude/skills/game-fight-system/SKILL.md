@@ -444,7 +444,7 @@ public class GameFightLogicCustom : GameFightLogic
     // 2b. 准备阶段-防守核心创建之后(此时可安全操作以核心为目标的系统,如深渊馈赠)
     public override async Task PreGameForAfterCreateDefenseCore()
     {
-        // 例：GameFightLogicTest 在此清理并添加测试深渊馈赠、应用测试魔王蓝量
+        // 例：GameFightLogicTest 在此清理并添加测试深渊馈赠、应用测试防守方固定属性与测试魔王蓝量(MP 被固定时蓝量让位)
     }
     
     // 3. 重写状态切换

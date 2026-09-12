@@ -129,6 +129,10 @@ float mp = creature.GetAttribute(CreatureAttributeTypeEnum.MP);
 // 等级增加倍率取 LevelInfo.CMP_rate（按 level），稀有度增加倍率取 RarityInfo.CMP_rate（按 rarity，N=0 依次+0.5），
 // 两者求和由 CreatureBean.GetCreateMPAddRate() 提供（level 0/越界记0，rarity≤0视为N）。
 
+// 测试固定基础值（仅测试模式）：CreatureBean.dicFixedAttribute（运行时字段，[JsonIgnore]+[NonSerialized] 不入存档）
+// 设置后 GetAttribute 该项【基础值】直接取固定值（跳过 creatureInfo/npcInfo 配置分支），加点/装备/BUFF/馈赠仍照常叠加；
+// 由 GameTestEditor「🛡️ 防守方固定属性」配置、GameFightLogicTest 应用到测试战斗防守方（卡片魔物+魔王核心），详见 test-system skill
+
 // 配置信息
 CreatureInfoBean info = creature.creatureInfoBean;
 string name = info.name_language;     // 本地化名称

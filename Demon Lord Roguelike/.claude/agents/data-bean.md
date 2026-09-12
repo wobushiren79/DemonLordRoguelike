@@ -48,7 +48,11 @@ Bean/
 
 > **`FightCreatureBean.damageTransferApplierId` / `damageTransferBuff`（手写 `FightCreatureBean.cs`，string / BuffBaseEntity，伤害转移标记）**：非空时该生物受到的 `UnderAttack` 伤害在结算前拦截、改道给代受者（UUID 指向的生物）承受（`FightCreatureEntity.UnderAttack` 方法头分支，先于无敌/闪避）；`damageTransferBuff` 回指护盾 BUFF 实例供受击闪白反馈（避免受击扫 BUFF 列表）；代受者已死/离场时拦截分支惰性清空两字段恢复承伤。当前由大盾战士 BOSS「援护护盾」BUFF（`BuffEntityConditionalShieldTransfer`）写入/清理；`ResetData()` 里清空防对象池残留。配套：`FightUnderAttackBean.isDamageTransferred`（改道数据旗标，防转移成环最多一跳，`ClearData` 重置）+ `SetDataForTransferFrom(source, newAttackedId)` 拷贝构造。
 
+> **`CreatureBean.dicFixedAttribute`（手写 `CreatureBeanPartial.cs`，`Dictionary<CreatureAttributeTypeEnum,float>`，`[JsonIgnore]+[NonSerialized]` 运行时字段不入存档）**：测试模式专用的**固定基础值**——设置后 `CreatureBean.GetAttribute` 该项基础值直接取固定值（跳过 creatureInfo/npcInfo 配置分支），角色加点/装备/自身BUFF/深渊馈赠仍照常叠加（**非最终值锁定**）。由 GameTestEditor「🛡️ 防守方固定属性」配置（`FightBeanForTest.dicTestDefenseFixedAttribute` 中转），`GameFightLogicTest` 应用到测试战斗防守方全部生物（卡片魔物+魔王核心；MP 被固定时测试魔王蓝量让位），战中克隆生物经 `GameFightLogic_DefenseCreatureCreate` 事件兜底补设（DeepCopy 丢 NonSerialized 字段）。⚠️ 区别于 `FixedAttributeForCreate`（新建存档初始魔物的固定**加点**，写入 `creatureAttribute` 入存档）——两者名字相近但完全不同机制。详见 test-system skill「防守方固定属性设置」。
+
 > **`FightBean` 防御生物按占位操作（手写 `Assets/Scripts/Bean/Game/FightBean.cs`）**：`CheckDefenseCreatureByPos`/`GetDefenseCreatureByPos` 均跳过 `isPositionReleased` 实体；**`RemoveDefenseCreatureByPos` 已删除**，替换为 **`RemoveDefenseCreature(FightCreatureEntity)`**——`DictionaryList.RemoveByValue` 按实例精确移除（按 positionCreate 首匹配会误删同格新生物、按 UUID 会误删重生替换的新实体）。
+
+> **`FightBean.GetCreatureById`（手写 `FightBean.cs`）清理期安全**：`GameFightLogic.ClearGame` 顺序为**先 `fightData.ClearEntity()`（实体列表清空 + `fightDefenseCoreCreature=null`）后 `ClearFightCreatureBuff()`**——清理期走到 `GetCreatureById(uuid, None)` 时两列表已空，会落到核心比对分支；核心判空后返回 null（2026-09 修复：援护护盾 BUFF `ClearTransferMark` 在战斗重开清理期查目标，核心已置空直接解引用 NRE）。调用方一律判空，不得假定清理期还能解析到实体。
 
 > **`CreatureInfoBean.charge_attack`（Excel 自动生成列，int）**：冲锋自爆开关（0=默认站桩，1=放卡后立即向前冲锋并释放原占位格，遇敌/到路尽头/被打死时原地自爆）；配套手写解析 `CreatureInfoBeanPartial.IsChargeAttack()`。
 
