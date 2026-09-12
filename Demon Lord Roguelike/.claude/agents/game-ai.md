@@ -73,6 +73,11 @@ AICreatureEntity                    # 生物 AI 基类
 - **运行机制（融入普通攻击循环，非并行）**：各额外攻击独立累计CD（`UpdateExtraAttackTimer` 仅计时）；在每次攻击循环开始的判定点 `AttackCreatureStart→GetReadyExtraAttack()` 选第一个CD已到的额外攻击，`AttackCreatureStartEnd` 发射并清零其CD。**额外攻击优先级>普通攻击**：本次有就绪额外攻击则替代普通攻击（占用该循环）；CD到了不立刻打断，需等下次 `attackState==0` 判定。每循环最多一次攻击 → 多个就绪按序逐循环出、天然串行。`InitExtraAttack` 仅收集 `ext_type==BossSkill`，未来新类型在此加分支。发射复用 `FightHandler.StartCreateAttackMode(self, target, ActionForAttackEnd, customAttackModeId)`。
 - **术语**：敌方"BOSS"= `FightAttack` 进攻型 NPC（走 `AIIntentAttackCreatureAttack`），**不是**玩家防守的核心 `AIDefenseCoreCreatureEntity`。
 
+### 攻速(ASPD)换算与攻速连发（AIIntentCreatureAttack 基类，攻防通用）
+- **换算公式**（`FightCreatureBean.GetAttackTimeData(out pre, out attacking, out attackTimes)`，2026-09 重构，替换旧 0~100→0.02s 封顶插值）：频率倍率 = `max(1+0.05×ASPD, 0.25)`；攻击次数 = `1+max(0, floor(ASPD÷20))`；时间倍率 = 次数÷频率倍率，准备/出手时间 = 基础×时间倍率（下限 0.02s），BUFF 之后再乘。效果：**每点攻速严格 +5% 攻击频率**、无上限无断崖；逢 20 倍数时间回基础值、攻击次数 +1（0.2 秒窗口多打一发）。
+- **连发调度**：`RefreshData` 缓存 `attackTimes`；`AttackCreatureStartEnd` 普通攻击分支发射主攻击后若 `attackTimes>1` 置 `extraShotsLeft/extraShotInterval(=0.2÷次数)/extraShotTimer`，由 `IntentUpdate→UpdateExtraShots()` 走 `GetFightDeltaTime` 逐帧推进（**不用 GTask.Wait**——其只跟 timeScale 不跟 gameSpeed，2倍速下会脱节），单帧跨多间隔用 while 补齐。每发 `FireExtraShot` 校验自身存活（死则清零终止）、目标已死则沿 `lastAttackDirection`（`AttackCreatureStartEnd` 发射前按目标方位记录）重搜、搜不到跳过本发；发射即忘（`StartCreateAttackMode(self, target, null)` 无回调）不进状态机，与主循环解耦可并存。
+- **边界**：BossSkill（`currentExtraAttack` 就绪）循环不触发连发；`IntentLeaving` 清零 `extraShotsLeft` 取消在途连发；负攻速只拉长时间（频率倍率下限 0.25），不减攻击次数。
+
 ### 防守生物转身攻击身后（正面优先 + 背后补搜，门控 `CreatureInfo.attack_search_back`）
 - **门控**：`attack_search_back`(0/1) 开启的防守生物正面无目标时转身攻击身后，身后清空/超范围转回正面。首用者骷髅战士 `CreatureInfo id=2001`。缓存 `bool isAttackSearchBack = creatureInfo.IsAttackSearchBack()`（`IntentEntering` 缓存，避免每循环重读）。未开启行为不变、零开销。
 - **双向搜索**：`AICreatureEntity.FindCreatureEntityForSingeFrontThenBack(DirectionEnum frontDirection, bool searchBack)`——正面优先命中即短路，正面无目标且 searchBack 才反向补搜一次（背后范围=正面范围）。防守正面=Right。`AIIntentDefenseCreatureIdle`/`AIIntentDefenseCreatureAttack` 均改用它。

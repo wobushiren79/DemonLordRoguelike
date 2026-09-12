@@ -227,19 +227,38 @@ public class FightCreatureBean
         return colorBodyCurrent;
     }
 
+    /// <summary>每点攻速的攻击频率收益（线性：频率倍率 = 1 + 攻速×本值）</summary>
+    public const float ASPD_FREQUENCY_RATE_PER_POINT = 0.05f;
+    /// <summary>每累积多少点攻速转化为 1 次额外攻击（0.2 秒窗口连发，由攻击意图调度）</summary>
+    public const float ASPD_POINT_PER_EXTRA_ATTACK = 20f;
+    /// <summary>攻击频率倍率下限（负攻速兜底，防 debuff 把频率压到 0 导致永不攻击）</summary>
+    public const float ASPD_FREQUENCY_RATE_MIN = 0.25f;
+    /// <summary>攻击时间下限（秒，防配置时间为 0 时攻击循环每帧空转）</summary>
+    public const float ATTACK_TIME_MIN = 0.02f;
+
     /// <summary>
-    /// 获取攻击时间数据
+    /// 获取攻击时间数据：攻速(ASPD)线性提升攻击频率（每点 +5%），每满 20 点转化为 1 次额外攻击，余数继续压缩准备/出手时间。
+    /// <para>时间倍率 = 攻击次数 ÷ 频率倍率——使「段内时间压缩」与「跨段多打一发」在 20/40/60… 边界处连续（边界上时间回到基础值、攻击次数 +1），
+    /// 攻击频率恒 = 基础频率 × (1 + 0.05×攻速)，无断崖、无上限；时间倍率 ≥ 0.5（正攻速时），动画最多 2 倍速。</para>
+    /// <para>负攻速（debuff）：不减少攻击次数，仅按频率倍率（下限 <see cref="ASPD_FREQUENCY_RATE_MIN"/>）等比拉长时间。</para>
     /// </summary>
-    /// <returns></returns>
-    public void GetAttackTimeData(out float timeAttackPre,out float timeAttacking)
+    /// <param name="timeAttackPre">攻击准备时间</param>
+    /// <param name="timeAttacking">攻击出手时间</param>
+    /// <param name="attackTimes">本轮攻击循环发出的攻击次数（含主攻击；额外攻击由攻击意图在 0.2 秒窗口内连发）</param>
+    public void GetAttackTimeData(out float timeAttackPre, out float timeAttacking, out int attackTimes)
     {
         float attributeASPD = GetAttribute(CreatureAttributeTypeEnum.ASPD);
-        
+
         float attackPreTime = creatureData.GetAttackPreTime();
         float attackAnimTime = creatureData.GetAttackAnimTime();
 
-        timeAttackPre =  MathUtil.InterpolationLerp(attributeASPD, 0, 100, attackPreTime, 0.02f);
-        timeAttacking =  MathUtil.InterpolationLerp(attributeASPD, 0, 100, attackAnimTime, 0.02f);
+        //攻击次数：每满 20 点攻速 +1 次；频率倍率：每点 +5%
+        attackTimes = 1 + Mathf.Max(0, Mathf.FloorToInt(attributeASPD / ASPD_POINT_PER_EXTRA_ATTACK));
+        float frequencyRate = Mathf.Max(1 + ASPD_FREQUENCY_RATE_PER_POINT * attributeASPD, ASPD_FREQUENCY_RATE_MIN);
+        float timeRate = attackTimes / frequencyRate;
+
+        timeAttackPre = Mathf.Max(attackPreTime * timeRate, ATTACK_TIME_MIN);
+        timeAttacking = Mathf.Max(attackAnimTime * timeRate, ATTACK_TIME_MIN);
 
         //根据BUFF改变攻击时间
         BuffHandler.Instance.ChangeAttackTimeDataForBuff(creatureData.creatureUUId, ref timeAttackPre, ref timeAttacking);

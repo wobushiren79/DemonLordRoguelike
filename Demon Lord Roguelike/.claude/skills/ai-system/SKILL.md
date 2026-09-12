@@ -394,6 +394,21 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 
 ---
 
+## 攻速(ASPD)换算与攻速连发（AIIntentCreatureAttack 基类，攻防通用）
+
+2026-09 重构：攻速从「0~100 插值压时间（100 封顶、满攻速 25 倍速动画、频率超线性）」改为**线性频率制**——每点攻速严格 +5% 攻击频率，无上限。
+
+- **换算公式**（`FightCreatureBean.GetAttackTimeData(out timeAttackPre, out timeAttacking, out int attackTimes)`，唯一调用方 `AIIntentCreatureAttack.RefreshData`）：
+  - 频率倍率 = `max(1 + 0.05×ASPD, 0.25)`（常量 `ASPD_FREQUENCY_RATE_PER_POINT`/`ASPD_FREQUENCY_RATE_MIN`）
+  - 本轮攻击次数 = `1 + max(0, floor(ASPD ÷ 20))`（常量 `ASPD_POINT_PER_EXTRA_ATTACK`：每满 20 点 +1 次）
+  - 时间倍率 = 次数 ÷ 频率倍率 → 准备/出手时间 = 基础时间 × 时间倍率（下限 `ATTACK_TIME_MIN`=0.02s），BUFF（`BuffEntityAttributeAttackTime` 系）之后再乘
+  - 效果：段内压缩时间、逢 20 倍数时间回基础值且攻击次数 +1，边界连续无断崖；正攻速下时间倍率 ≥ 0.5，动画最多 2 倍速
+- **连发调度**（0.2 秒窗口）：`AttackCreatureStartEnd` 普通攻击分支发射主攻击后，若 `attackTimes>1` 置 `extraShotsLeft/extraShotInterval(=EXTRA_SHOT_WINDOW 0.2÷次数)/extraShotTimer`，由 `IntentUpdate→UpdateExtraShots()` 逐帧推进、每过一间隔 `FireExtraShot()` 一发。**计时走 `GetFightDeltaTime`（同意图计时铁律），不用 GTask.Wait**——后者只跟 timeScale 不跟 `fightData.gameSpeed`，2倍速下会脱节；单帧跨多间隔用 while 补齐。
+- **每发独立校验**（`FireExtraShot`）：自身已死/缺失 → 清零 `extraShotsLeft` 终止；目标已死/缺失 → 沿 `lastAttackDirection`（`AttackCreatureStartEnd` 发射前按目标方位记录）重搜，搜不到跳过本发；发射即忘（`StartCreateAttackMode(self, target, null)` 无回调）不进攻击状态机，与主循环解耦——极短周期下新一轮循环与在途连发可并存。
+- **边界**：BossSkill（`currentExtraAttack` 就绪的额外攻击循环）不触发连发；`IntentLeaving` 清零 `extraShotsLeft` 取消在途连发；负攻速（debuff）只拉长时间（频率倍率下限 0.25≈4 倍时间），不减少攻击次数。
+
+---
+
 ## 击退意图（AIIntentAttackCreatureKnockback，位移效果统一机制）
 
 - **发起入口**：`AIAttackCreatureEntity.StartKnockback(direction, distance)`——击退参数经 `GetIntent` 直接写入击退意图实例（`SetupKnockback`）后 `ChangeIntent`（照 Lured 强制切换先例）；**击退中再次被击退只刷新参数**（原地续推，不重进意图）。调用先例：`AttackModeShockwaveRing`（深渊馈赠「第六次冲击」，方向固定 `Vector3.right` 沿道路向后推，不带 z 分量防敌人被推离路径）。

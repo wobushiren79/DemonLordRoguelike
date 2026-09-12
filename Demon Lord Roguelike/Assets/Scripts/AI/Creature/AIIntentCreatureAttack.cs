@@ -5,6 +5,7 @@ using UnityEngine;
 /// 生物通用攻击意图：以"准备→出手→发起攻击→找下个目标"循环驱动普通攻击；
 /// 并内置"额外攻击(攻击模块扩展)"机制——带 NpcInfo.attack_mode_ext 的生物在每次攻击判定时可优先出额外攻击。
 /// 进攻/防守生物的攻击意图均继承自本类。
+/// <para>攻速连发：攻速换算的本轮攻击次数(attackTimes)>1 时，主攻击发出后额外攻击均匀压进 0.2 秒窗口内依次生成（见 UpdateExtraShots）。</para>
 /// </summary>
 public class AIIntentCreatureAttack : AIBaseIntent
 {
@@ -31,6 +32,18 @@ public class AIIntentCreatureAttack : AIBaseIntent
     public float attackPreTimeBase;
     /// <summary>攻击动画基础时长（动画基准，用于动画速度换算）</summary>
     public float attackAnimTimeBase;
+    /// <summary>本轮攻击循环发出的攻击次数（由攻速ASPD换算，每次 RefreshData 刷新；1=仅主攻击，不连发）</summary>
+    public int attackTimes = 1;
+    /// <summary>上次主攻击的发射方向（连发脱靶重搜时沿用）</summary>
+    protected DirectionEnum lastAttackDirection = DirectionEnum.Right;
+    /// <summary>待生成的连发剩余次数（>0 表示连发进行中；走战斗时钟逐帧推进，离开意图即清零取消）</summary>
+    protected int extraShotsLeft = 0;
+    /// <summary>连发已计时（秒，按 GetFightDeltaTime 累计，随2倍速/暂停同步）</summary>
+    protected float extraShotTimer = 0;
+    /// <summary>连发每发间隔（秒 = EXTRA_SHOT_WINDOW ÷ 次数，触发连发时计算）</summary>
+    protected float extraShotInterval = 0;
+    /// <summary>攻速连发窗口（秒）：本轮所有额外攻击均匀压进该窗口内生成</summary>
+    protected const float EXTRA_SHOT_WINDOW = 0.2f;
     #endregion
 
     #region 意图生命周期
@@ -45,6 +58,9 @@ public class AIIntentCreatureAttack : AIBaseIntent
         timeUpdateAttackPre = 0;
         timeUpdateAttacking = 0;
         attackState = 0;
+        //重置连发（防上一次离开意图时残留）
+        extraShotsLeft = 0;
+        extraShotTimer = 0;
         RefreshData();
         //刚进来立即开始一次攻击
         timeUpdateAttackPre = timeUpdateAttackPreCD;
@@ -53,7 +69,7 @@ public class AIIntentCreatureAttack : AIBaseIntent
     }
 
     /// <summary>
-    /// 每帧更新：先复查目标距离（脱靶即中断回待机），再累计额外攻击CD，并推进"准备→出手"普通攻击循环
+    /// 每帧更新：先复查目标距离（脱靶即中断回待机），再累计额外攻击CD与推进攻速连发，并推进"准备→出手"普通攻击循环
     /// </summary>
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
@@ -66,6 +82,8 @@ public class AIIntentCreatureAttack : AIBaseIntent
         }
         //额外攻击各自累计CD（仅计时，释放时机融入下方普通攻击循环的判定）
         UpdateExtraAttackTimer();
+        //攻速连发推进（走战斗时钟，与状态机并行）
+        UpdateExtraShots();
         //攻击准备中
         if (attackState == 0)
         {
@@ -97,19 +115,23 @@ public class AIIntentCreatureAttack : AIBaseIntent
     {
         timeUpdateAttackPre = 0;
         timeUpdateAttacking = 0;
+        //离开攻击意图即取消全部在途连发
+        extraShotsLeft = 0;
+        extraShotTimer = 0;
         //离开攻击状态时清空额外攻击运行时数据
         listExtraAttack = null;
         currentExtraAttack = null;
     }
 
     /// <summary>
-    /// 刷新攻击时长：按攻速ASPD换算准备/出手两阶段的CD
+    /// 刷新攻击时长：按攻速ASPD换算准备/出手两阶段的CD与本轮攻击次数（连发）
     /// </summary>
     public void RefreshData()
     {
-        fightCreatureData.GetAttackTimeData(out float timeAttackPre, out float timeAttacking);
+        fightCreatureData.GetAttackTimeData(out float timeAttackPre, out float timeAttacking, out int times);
         timeUpdateAttackPreCD = timeAttackPre;
         timeUpdateAttackingCD = timeAttacking;
+        attackTimes = times;
     }
     #endregion
 
@@ -164,14 +186,22 @@ public class AIIntentCreatureAttack : AIBaseIntent
     }
 
     /// <summary>
-    /// 攻击出手（发射点）：本次有就绪额外攻击则用其攻击模块并清零其CD，否则用生物默认攻击模块
+    /// 攻击出手（发射点）：本次有就绪额外攻击则用其攻击模块并清零其CD，否则用生物默认攻击模块；
+    /// 普通攻击后若本轮攻击次数>1 则触发攻速连发（额外攻击压进 0.2 秒窗口）
     /// </summary>
     public virtual void AttackCreatureStartEnd()
     {
         attackState = 2;
+        //记录本次发射方向，供连发脱靶时沿同向重搜
+        var targetObj = selfAIEntity.targetCreatureEntity?.creatureObj;
+        var selfObj = selfAIEntity.selfCreatureEntity?.creatureObj;
+        if (targetObj != null && selfObj != null)
+        {
+            lastAttackDirection = targetObj.transform.position.x >= selfObj.transform.position.x ? DirectionEnum.Right : DirectionEnum.Left;
+        }
         if (currentExtraAttack != null)
         {
-            //出额外攻击：用其 attack_mode_id 发射，并重置该额外攻击CD
+            //出额外攻击：用其 attack_mode_id 发射，并重置该额外攻击CD（BossSkill 属技能释放，不触发攻速连发）
             long extraAttackModeId = currentExtraAttack.extInfo.attack_mode_id;
             currentExtraAttack.timer = 0;
             currentExtraAttack = null;
@@ -181,7 +211,54 @@ public class AIIntentCreatureAttack : AIBaseIntent
         {
             //出普通攻击：用生物默认攻击模块
             FightHandler.Instance.StartCreateAttackMode(selfAIEntity.selfCreatureEntity, selfAIEntity.targetCreatureEntity, ActionForAttackEnd);
+            //攻速连发：攻击次数>1 时，额外攻击由 UpdateExtraShots 逐帧推进、全部压进 0.2 秒窗口内生成
+            if (attackTimes > 1)
+            {
+                extraShotsLeft = attackTimes - 1;
+                extraShotInterval = EXTRA_SHOT_WINDOW / extraShotsLeft;
+                extraShotTimer = 0;
+            }
         }
+    }
+
+    /// <summary>
+    /// 推进攻速连发（每帧由 IntentUpdate 驱动）：按战斗时钟(GetFightDeltaTime)累计，每过一个间隔生成一发额外攻击，
+    /// 全部压进 <see cref="EXTRA_SHOT_WINDOW"/> 秒窗口；发射即忘（无回调、不进攻击状态机），与主攻击循环解耦可并存。
+    /// <para>计时与意图内其他计时同走 GetFightDeltaTime——2倍速/暂停(timeScale=0)/BOSS特写减速时连发节奏同步，不用 GTask.Wait（其只跟 timeScale，不跟 gameSpeed）。</para>
+    /// </summary>
+    protected virtual void UpdateExtraShots()
+    {
+        if (extraShotsLeft <= 0)
+            return;
+        extraShotTimer += GameFightLogic.GetFightDeltaTime();
+        //while 兜底：单帧跨多个间隔时（高倍速+多发连发）一次补齐
+        while (extraShotsLeft > 0 && extraShotTimer >= extraShotInterval)
+        {
+            extraShotTimer -= extraShotInterval;
+            extraShotsLeft--;
+            FireExtraShot();
+        }
+    }
+
+    /// <summary>
+    /// 生成一发连发额外攻击：校验自身存活（已死则终止后续连发）与目标（目标已死/缺失则沿上次发射方向重搜，搜不到跳过本发）
+    /// </summary>
+    protected virtual void FireExtraShot()
+    {
+        var selfCreature = selfAIEntity.selfCreatureEntity;
+        if (selfCreature == null || selfCreature.IsDead())
+        {
+            extraShotsLeft = 0;
+            return;
+        }
+        var targetCreature = selfAIEntity.targetCreatureEntity;
+        if (targetCreature == null || targetCreature.IsDead())
+        {
+            targetCreature = selfAIEntity.FindCreatureEntityForSinge(lastAttackDirection);
+            if (targetCreature == null)
+                return;
+        }
+        FightHandler.Instance.StartCreateAttackMode(selfCreature, targetCreature, null);
     }
 
     /// <summary>
