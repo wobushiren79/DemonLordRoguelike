@@ -78,8 +78,9 @@ BaseAttackMode                      - 攻击模式基类
 ├── AttackModeExplosion             - 爆炸（以自身为中心范围伤害，攻击者死亡；冲锋型 charge_attack=1 走「死亡即引爆」纯数据路径 CreateAttackModeForDeadExplosion，不走 StartAttack(attacker,…)；敢死队 300002：collider_area_type=11&collider_area_size=1.5&damage_add_rate=1，effect_hit=300002(Effect_Explosion_2,2026-08-18 起爆炸两个攻击模块 300001/300002 均改用此粒子,原 Effect_Explosion_1=300001 特效已无引用)/sound_hit=420008/sound_miss=100001）
 ├── AttackModeFallupon              - 天降单体（直接对锁定目标造成伤害）
 ├── AttackModeFalluponArea          - 天降范围（对目标位置范围伤害；Update 的 gameObject==null→AttackHandle 兜底仅限老 prefab 模式，DSP 视觉模式(visual_name 非空)无实体 gameObject 跳过该检查正常下落）
-│   └── AttackModeFalluponAreaRandom - 天降范围-随机落点（发射时从全场存活防守生物随机取落点替换 attacked 实参[最多重试3次,落空沿用原目标],父类下落/AOE/叠buff全复用;随机源 fightData.dlDefenseCreatureEntity 不含魔王核心;火/水/冰/雷大魔法师BOSS技能 700001 火球[buff=1000500001:0.5烧伤]/700002 水球[buff=1000600001:0.5潮湿]/700005 冰球[buff=1000700001:0.5冰缓,effect_hit=200001(Effect_Boom_Ice_1)]/700006 雷电[无visual无prefab=瞬发无弹道,effect_hit=900003(Effect_Thunder_3),无buff],经 AttackModeExtInfo 100002/100003/100006/100007 以 trigger_interval=5 BossSkill 挂载, start_pos_offset=0,6,0 六格高天降, effect_hit=2000001(Effect_Boom_Fire_2 火爆发)/2000002(Effect_Boom_Water_2 水爆发)(2026-08-24 由 800001 火锥拆分,PS Burst 新粒子,原名 Effect_Burst_Fire_1/Water_1), 子弹视觉 visual_name=AttackModeVisual_RangedFireBall_2/WaterBall_2/IceBall_2(火/水2026-08-24 由 prefab_name 实体弹道迁入 DSP 模式,prefab_name 已留空;冰2026-09-13 由 AttackModeVisual_RangedIceBall 小冰球换成新增大冰球视觉,材质 Mat_AttackModeVisual_RangedIceBall_2 调冰青色系,落速调慢=other_data 配 gravity:2.4525(9.81 两次减半)+speed_move=1.5), sound_hit=420008）
+│   └── AttackModeFalluponAreaRandom - 天降范围-随机落点（发射时从全场存活防守生物随机取落点替换 attacked 实参[最多重试3次,落空沿用原目标],父类下落/AOE/叠buff全复用;随机源 fightData.dlDefenseCreatureEntity 不含魔王核心;火/水/冰大魔法师BOSS技能 700001 火球[buff=1000500001:0.5烧伤]/700002 水球[buff=1000600001:0.5潮湿]/700005 冰球[buff=1000700001:0.5冰缓,effect_hit=200001(Effect_Boom_Ice_1)],经 AttackModeExtInfo 100002/100003/100006 以 trigger_interval=5 BossSkill 挂载, start_pos_offset=0,6,0 六格高天降, effect_hit=2000001(Effect_Boom_Fire_2 火爆发)/2000002(Effect_Boom_Water_2 水爆发)(2026-08-24 由 800001 火锥拆分,PS Burst 新粒子,原名 Effect_Burst_Fire_1/Water_1), 子弹视觉 visual_name=AttackModeVisual_RangedFireBall_2/WaterBall_2/IceBall_2(火/水2026-08-24 由 prefab_name 实体弹道迁入 DSP 模式,prefab_name 已留空;冰2026-09-13 由 AttackModeVisual_RangedIceBall 小冰球换成新增大冰球视觉,材质 Mat_AttackModeVisual_RangedIceBall_2 调冰青色系,落速调慢=other_data 配 gravity:2.4525(9.81 两次减半)+speed_move=1.5), sound_hit=420008）
 ├── AttackModeFalluponChain         - 天降连锁（连锁弹射多个目标，伤害递减）
+├── AttackModeFalluponChainMulti    - 天降连锁-三连发发射器（自身无伤害无特效：首发当帧+Update 按 other_data 键 hit_times/hit_interval 排程[GetFightDeltaTime 累计,首发后立即回调保 AI 节奏]，逐发调 FightHandler.StartCreateAttackMode 实体路径发射 child_attack_mode_id 指向的子雷[每发重新取 ATK 快照]，每发独立随机选全场存活防守生物[不含核心,重试3次,落空跳过本发]，攻击者死亡/实体池复用[UUId 双判]取消余发；不继承 FalluponChain[连锁循环 private+无参 StartAttack 废路径]；雷大魔法师BOSS技能 700006[child=800001 完整普攻雷击,hit_times:3&hit_interval:0.25=0.5秒3发]经 ext 100007 挂载 5s,2026-09-14 由单次随机落点天降雷电改造）
 ├── AttackModeOverlap               - 重叠检测（以自身为中心范围触碰，命中走正常 UnderAttack 伤害管线）
 │   └── AttackModeOverlapNoDamage   - 无伤害重叠（纯DEBUFF触碰变体：只附加 buff 字段配置的BUFF+播命中音，不掉血/不跳伤害数字/不播受击特效/不进伤害统计，走 FightCreatureEntity.UnderAttackNoDamage；烂泥史莱姆3003粘液减速400001(buff=1000200001:1,MSPD-40%×1s)、毒液史莱姆3004中毒400002(buff=1000400001:1,每跳=史莱姆实时ATK×20%[ATK=10→2/跳],每秒1跳共10次,毒伤跳伤走UnderAttack管线属正常)）
 ├── AttackModeLure                  - 引诱（改变被攻击者线路；魅惑成功播配置命中音效 sound_hit + 全局单例粒子 effect_hit，粒子位置=敌人位置+攻击者 attack_start_position 偏移，600001 配 sound_medicine_1=470001 / Effect_Buff_1=500002，4003 配攻击偏移 0,0.5,0）
@@ -131,6 +132,7 @@ BaseAttackMode                      - 攻击模式基类
 | `AttackModeFallupon` | 直接对目标造成伤害 | 天降打击、瞬移攻击 |
 | `AttackModeFalluponArea` | 对目标位置范围伤害 | 天降火球/水球、天降AOE |
 | `AttackModeFalluponChain` | 连锁弹射递减伤害 | 闪电链、弹射攻击 |
+| `AttackModeFalluponChainMulti` | 三连发发射器：按 hit_times/hit_interval 逐发发射 child_attack_mode_id 子雷（每发实体路径重新取 ATK 快照+独立随机防守落点，攻击者死亡取消余发，首发即回调保 AI 节奏） | BOSS 多连发技能（雷大魔法师 700006 三连雷击） |
 | `AttackModeInstantArea` | 当帧瞬时落点AOE（无飞行过程；可配 hit_max 上限+注入快照名单，伤害按命中次序乘 hit_decay 递减率[默认0.5=依次减半，配1=全额]保底1，单次攻击内局部去重） | 落雷、瞬发地面AOE（牛头人法师 101003/101004 目标脚下瞬发地刺） |
 | `AttackModeRegain` | 回复而非伤害 | 治疗术、护盾恢复 |
 | `BaseAttackMode` | 完全自定义 | 特殊机制攻击 |
@@ -813,8 +815,9 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | 爆炸 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeExplosion.cs` |
 | 天降单体 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFallupon.cs` |
 | 天降范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponArea.cs` |
-| 天降范围-随机落点（火/水/冰/雷大魔法师BOSS技能 700001/700002/700005/700006） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponAreaRandom.cs` |
+| 天降范围-随机落点（火/水/冰大魔法师BOSS技能 700001/700002/700005） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponAreaRandom.cs` |
 | 天降连锁 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponChain.cs` |
+| 天降连锁-三连发发射器（雷大魔法师BOSS技能 700006，ext 100007） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponChainMulti.cs` |
 | 重叠检测（范围触碰，正常伤害管线） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlap.cs` |
 | 无伤害重叠（纯DEBUFF触碰，走 UnderAttackNoDamage） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlapNoDamage.cs` |
 | 瞬时落点范围（通用基类） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeInstantArea.cs` |

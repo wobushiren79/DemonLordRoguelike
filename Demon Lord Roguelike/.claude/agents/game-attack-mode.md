@@ -1,6 +1,6 @@
 ﻿---
 name: game-attack-mode
-description: 攻击模式系统开发：34种攻击模式（近战/远程/特殊/恢复），BaseAttackMode 策略模式。
+description: 攻击模式系统开发：35种攻击模式（近战/远程/特殊/恢复），BaseAttackMode 策略模式。
 tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Game/Fight/AttackMode/
@@ -46,6 +46,7 @@ watched_files:
 - **AttackModeFallupon** - 降临
 - **AttackModeFalluponArea** - 范围降临
 - **AttackModeFalluponChain** - 连锁降临
+- **AttackModeFalluponChainMulti** - 天降连锁-三连发发射器（继承 BaseAttackMode 的发射器[不继承 FalluponChain：连锁循环全 private 且无参 StartAttack 是废路径]，自身无伤害无特效：首发当帧发射并立即回调 actionForAttackEnd 保 AI 节奏（MeleeMulti 先例），余发由 Update 按 GetFightDeltaTime 累计排程、while 兜底单帧补齐；每发走 FightHandler.StartCreateAttackMode 实体路径发射 child_attack_mode_id 子雷[每发重新取 ATK 快照=完整普攻]，独立随机选全场存活防守生物[不含核心,重试3次,落空跳过本发]；攻击者死亡/实体池复用[缓存 UUId 双判]取消余发；配置=child_attack_mode_id + other_data 键 hit_times/hit_interval[复用 GetMultiHitConfig]；雷大魔法师BOSS 1031040001 用 700006[child=800001，hit_times:3&hit_interval:0.25=0.5秒3发完整普攻雷击]经 ext 100007 挂载 5s，2026-09-14 由 AttackModeFalluponAreaRandom 单次随机落雷改造）
 - **AttackModeLure** - 引诱（改变被攻击者线路；魅惑成功播配置命中音效 sound_hit + 全局单例命中粒子 effect_hit，粒子位置=敌人位置+攻击者 attack_start_position 偏移，600001 配 sound_medicine_1=470001 / Effect_Buff_1=500002，4003 配攻击偏移 0,0.5,0）
 - **AttackModeShieldCast** - 援护护盾施法（瞬发无弹道无伤害：当帧搜索同阵营最前排 N 个存活友军[排除自己，FightCreatureSearchUtil.FindFrontRowCreatures]逐个套 other_data 键 shield_buff 指定的护盾BUFF[applier=自己]；出手特效 effect_hit 播在自己出手点[自身位置+攻击模块 start_pos_offset 偏移，空=0,0,0 播在脚下；不用生物 attack_start_position，避免牵连普攻命中特效取点]，出手音走 sound_start 自动播；大盾战士BOSS技能 500003[shield_count:3&shield_buff:2000700001，effect_hit=500003=Effect_Buff_Def_1，sound_start=470001]，经 ext 100005[trigger_scene=1 释放技能意图]挂载——NPC ai_param=skill_update:100005:10 注册通用 Update 事件固定 10s 触发「释放技能」意图发射，走路也放）
 - **AttackModeOverlap** - 重叠（范围触碰，命中走正常 UnderAttack 伤害管线）
