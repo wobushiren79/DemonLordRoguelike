@@ -52,7 +52,8 @@ AIBaseEntity (AI实体基类)
     │       │       ├── AIIntentAttackCreatureAttackCore (攻击魔王: 靠近后固定处决, 不走 AttackMode)
     │       │       ├── AIIntentAttackCreatureDead       (死亡)
     │       │       ├── AIIntentAttackCreatureLured      (被诱惑)
-    │       │       └── AIIntentAttackCreatureKnockback  (被击退: StartKnockback 强制切换，固定 0.2s 匀速推完，结束回 Idle 重新索敌)
+    │       │       ├── AIIntentAttackCreatureKnockback  (被击退: StartKnockback 强制切换，固定 0.2s 匀速推完，结束回 Idle 重新索敌)
+    │       │       └── AIIntentAttackCreatureCastSkill  (释放技能: trigger_scene=1 技能的释放载体——NPC ai_param 的 skill_update 事件[AICreatureEntity 通用 Update 事件系统]到点切入[走路/待机也放,与攻击意图无关]，播一次攻击动作+出手点 StartCreateAttackMode(customAttackModeId) 发射，回调回 Idle；打断规则: Idle/Move 立即、Attack 仅 attackState!=2、击退/魅惑/死亡不切保持就绪补放；首用者大盾战士BOSS援护护盾 ai_param=skill_update:100005:10→500003)
     │       │
     │       ├── AIDefenseCreatureEntity (防守型)
     │       │       ├── AIIntentDefenseCreatureIdle   (闲置)
@@ -85,6 +86,7 @@ public enum AIIntentEnum
     AttackCreatureDead,       // 死亡
     AttackCreatureLured,      // 被诱惑
     AttackCreatureKnockback,  // 被击退（冲击波等位移效果强制切换，推移过程结束后回闲置重新索敌）
+    AttackCreatureCastSkill,  // 释放技能（trigger_scene=1 技能的释放载体：NPC ai_param 的 skill_update 事件[AICreatureEntity 通用 Update 事件]到点切入，播一次攻击动作+出手点发射技能攻击模块，结束回闲置）
 
     // 防守生物
     DefenseCreatureIdle,     // 闲置
@@ -481,7 +483,7 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 | AI管理器 | `Assets/FrameWork/Scripts/Component/Manager/AIManager.cs` |
 | AI处理器 | `Assets/FrameWork/Scripts/Component/Handler/AIHandler.cs` |
 | 意图枚举 | `Assets/Scripts/Enums/AIIntentEnum.cs` |
-| 生物AI基类 | `Assets/Scripts/AI/Creature/AICreatureEntity.cs` |
+| 生物AI基类 | `Assets/Scripts/AI/Creature/AICreatureEntity.cs`（partial：通用 Update 事件系统在 `AICreatureEntityForUpdateEvent.cs`） |
 | 通用攻击意图 | `Assets/Scripts/AI/Creature/AIIntentCreatureAttack.cs` |
 | 意图工厂注册器 | `Assets/Scripts/AI/Creature/AIIntentFactory.cs` |
 | 进攻生物AI | `Assets/Scripts/AI/Creature/FightAttackCreature/AIAttackCreatureEntity.cs`（含 `StartKnockback` 击退统一入口） |

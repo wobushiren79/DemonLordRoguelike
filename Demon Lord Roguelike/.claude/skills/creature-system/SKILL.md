@@ -496,7 +496,7 @@ Color rarityColor = CreatureUtil.GetRarityColor(creature.rarity);
 | 生物管理器 | `Assets/Scripts/Component/Manager/CreatureManager.cs` |
 | 生物工具 | `Assets/Scripts/Utils/CreatureUtil.cs` |
 | 生物枚举 | `Assets/Scripts/Enums/CreatureEnum.cs` |
-| 生物AI基类 | `Assets/Scripts/AI/Creature/AICreatureEntity.cs` |
+| 生物AI基类 | `Assets/Scripts/AI/Creature/AICreatureEntity.cs`（partial：通用 Update 事件系统在 `AICreatureEntityForUpdateEvent.cs`） |
 | 生物AI意图 | `Assets/Scripts/AI/Creature/` |
 | 属性类型枚举 | `Assets/Scripts/Enums/GameStateEnum.cs` (CreatureAttributeTypeEnum) |
 

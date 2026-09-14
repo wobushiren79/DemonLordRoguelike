@@ -17,6 +17,8 @@ public class AIAttackCreatureEntity : AICreatureEntity
         RegisterEvent<UIViewCreatureCardItem>(EventsInfo.GameFightLogic_PutCard, EventForGameFightLogicPutCard);
         RegisterEvent<FightCreatureEntity>(EventsInfo.GameFightLogic_CreatureDeadStart, EventForGameFightLogicCreatureDeadStart);
         this.selfCreatureEntity = selfAttCreatureEntity;
+        //初始化通用 Update 事件（读 NPC ai_param 配置注册，如 skill_update 技能定时触发；需在 selfCreatureEntity 赋值后）
+        InitUpdateEvents();
     }
 
     public override void StartAIEntity()
@@ -50,6 +52,7 @@ public class AIAttackCreatureEntity : AICreatureEntity
         listIntentEnum.Add(AIIntentEnum.AttackCreatureMove);
         listIntentEnum.Add(AIIntentEnum.AttackCreatureLured);
         listIntentEnum.Add(AIIntentEnum.AttackCreatureKnockback);
+        listIntentEnum.Add(AIIntentEnum.AttackCreatureCastSkill);
     }
 
     #region 击退

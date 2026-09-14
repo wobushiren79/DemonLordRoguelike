@@ -107,6 +107,10 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public string icon_res;
 	/// <summary>
+	///AI参数(&分隔多项,每项 类型:参数1:参数2,空=无)。skill_update:技能extId:间隔秒=注册Update事件,每隔N秒触发指定attack_mode_ext技能(该技能 trigger_scene 须配1=释放技能意图;触发间隔以本参数为准,ext的trigger_interval对scene1无效)。如 skill_update:100005:10
+	/// </summary>
+	public string ai_param;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

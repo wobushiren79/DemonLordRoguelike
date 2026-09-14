@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class AICreatureEntity : AIBaseEntity
+/// <summary>
+/// 生物 AI 基类（partial：通用 Update 事件系统在 AICreatureEntityForUpdateEvent.cs）
+/// </summary>
+public abstract partial class AICreatureEntity : AIBaseEntity
 {
     //自己
     public FightCreatureEntity selfCreatureEntity;

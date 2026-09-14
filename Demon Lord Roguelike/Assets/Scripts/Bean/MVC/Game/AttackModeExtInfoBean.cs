@@ -24,6 +24,10 @@ public partial class AttackModeExtInfoBean : BaseBean
 	/// </summary>
 	public float trigger_interval;
 	/// <summary>
+	///触发场景(默认0): 0=攻击意图内释放(攻击循环出手点,trigger_interval生效); 1=释放技能意图(由NPC ai_param的skill_update事件全局周期驱动,走路也放,trigger_interval无效以ai_param为准)
+	/// </summary>
+	public int trigger_scene;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

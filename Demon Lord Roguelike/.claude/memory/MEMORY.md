@@ -22,6 +22,7 @@
 - [`reference_colored_icons.md`](reference_colored_icons.md) — 彩色图标(深渊馈赠ui_abyssalblessing_/成就ui_achievement_)32x32 每张≤N色(用户可调,2026-07为≤6)：create_1_direction_object size32(64个/批)→quantize6(合成黑底再中位切分)控色流水线；深渊暂存已到2621(下一个2622)、成就已到63(下一个64)
 
 ### Reference
+- [reference_logutil_gated.md](reference_logutil_gated.md) — LogUtil 所有级别输出（含 LogError）受 ProjectConfigInfo.IS_OPEN_LOG_MSG 总开关门控，关闭时插桩日志全静默；排障插桩前先确认开关，日志缺失≠代码没跑（2026-09-13 大盾战士排障教训）
 - [reference_unity6000_maintoolbar_element.md](reference_unity6000_maintoolbar_element.md) — Unity 6000.3 主工具栏新增 MainToolbarElement 默认 displayed=False 不可见（Overlay 体系，ToolbarExtension 旧树恒空勿误判）；查真状态反射 MainToolbarWindow.instance.overlayCanvas.overlays，修复=overlay.displayed=true 或用户在 ⋮/编辑模式手动启用；附 MainToolbarDropdown(content, Action<Rect>) 签名
 - [project_creature_attribute_type_sync.md](project_creature_attribute_type_sync.md) — 装備属性池新增枚举必须同步 excel_creature_attribute_type_info 配置表，否则道具详情显示"???"+黑色；另有「行在但语言文本缺失」变体（CDMG=13 缺语言行 LogError，2026-09-12 已补齐 12 语种）
 - [reference_vfx_startposition_space.md](reference_vfx_startposition_space.md) - VFX 图 Position 块消费 StartPosition 注入必须标 World(m_Space:1)：Local+世界注入= 2x 命中点双倍偏移（生物1003/1004 火冰球击中特效错位根因，连带修复爆炸300001，2026-08-30）

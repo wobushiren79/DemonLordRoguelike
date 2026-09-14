@@ -6,6 +6,9 @@ using System.Collections.Generic;
 /// 为每个目标挂上 class_entity_data[1] 指定的护盾BUFF（伤害转移护盾）。</para>
 /// <para>计时由 BuffHandler.UpdateData 每帧驱动，与AI意图/出手点无关（走路/硬直中也计时），随暂停/倍速同步。</para>
 /// <para>class_entity_data 格式："目标数量,护盾BUFF的ID"（如 "3,2000700001"）。</para>
+/// <para>⚠️2026-09-13 起配置已摘除（104102 creature_buff 清空）：大盾战士改走 attack_mode_ext trigger_scene=1[释放技能意图]
+/// （NPC ai_param=skill_update:100005:10 → 攻击模块 500003 AttackModeShieldCast），由「释放技能」意图播放施法动作；
+/// 本类保留备用（机制=纯 BUFF 驱动、无释放动作的静默套盾）。</para>
 /// </summary>
 public class BuffEntityPeriodicShieldCast : BuffEntityPeriodic
 {

@@ -24,7 +24,8 @@ metadata:
 
 ## manage_material / manage_asset 改材质颜色的坑（2026-08-09 实测）
 
-- **`manage_material(action=set_material_color)` 会把"任一分量>1"的颜色当 Color32 字节处理，整体除以 255（连 alpha 也除）**：给 HDR 颜色（如冰球核心 (2.5,4.5,6)）落盘变成 (0.0098,0.0176,0.0235, 0.0039)≈透明黑。HDR 材质颜色**不要用它**。
+- **`manage_material(action=set_material_color)` 会把"任一分量>1"的颜色当 Color32 字节处理，整体除以 255（连 alpha 也除）**：给 HDR 颜色（如冰球核心 (2.5,4.5,6)）落盘变成 (0.0098,0.0176,0.0235, 0.0039)≈透明黑。HDR 材质颜色**不要用它**。参数名是 `material_path`/`property`/`color`（2026-09-13 实测）。
+- **2026-09-13 补充：÷255 是纯浮点除法（不做字节取整），故"×255 补偿法"也可行**——把目标值×255 传入（如目标 (0.1,0.85,2.4) 传 (25.5,216.75,612)），落盘值精确（本次 Mat_AttackModeVisual_RangedIceBall_2 四色已验证）。但 execute_code 直写法仍是首选，×255 仅作备选。
 - **`manage_asset(action=modify)` 对 .mat 的 shader 属性无效**：返回 "No applicable or modifiable properties found"。
 - **可靠做法 = `execute_code` 跑 C#**：`AssetDatabase.LoadAssetAtPath<Material>(路径)` → `mat.SetColor("_Xxx", new Color(...))` → `EditorUtility.SetDirty(mat)` → `AssetDatabase.SaveAssets()`（不 Save 则只改在编辑器内存，.mat 不落盘）。
 - 改完务必 Grep 磁盘 `.mat` 文件核对落盘值（如本次冰球材质 Mat_AttackModeVisual_RangedIceBall 火色→冰蓝）。

@@ -10,6 +10,7 @@ public enum AIIntentEnum
     AttackCreatureDead,//死亡
     AttackCreatureLured,//被诱惑中
     AttackCreatureKnockback,//被击退中（冲击波等位移效果强制切换，推移过程结束后回闲置重新索敌）
+    AttackCreatureCastSkill,//释放技能（trigger_scene=1 技能的释放载体：由 NPC ai_param 的 skill_update 事件[AICreatureEntity 通用 Update 事件]到点切入，播一次攻击动作并在出手点发射技能攻击模块，结束回闲置）
 
     DefenseCreatureIdle,//闲置
     DefenseCreatureAttack,//攻击

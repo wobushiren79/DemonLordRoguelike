@@ -30,6 +30,7 @@ AICreatureEntity                    # 生物 AI 基类
 │   ├── AIIntentAttackCreatureAttackCore # 攻击魔王(靠近后固定触发一次攻击并让魔王死亡, 不走 AttackMode)
 │   ├── AIIntentAttackCreatureLured      # 被引诱
 │   ├── AIIntentAttackCreatureKnockback  # 被击退(冲击波等位移效果：StartKnockback 强制切换，固定 0.2s 匀速推完，结束回 Idle 重新索敌)
+│   ├── AIIntentAttackCreatureCastSkill  # 释放技能(trigger_scene=1 技能的释放载体：AICreatureEntity 通用 Update 事件[NPC ai_param skill_update 配置]到点切入，播一次攻击动作+出手点发射技能攻击模块，结束回 Idle；见下「通用 Update 事件」)
 │   └── AIIntentAttackCreatureDead       # 死亡
 ├── AIDefenseCreatureEntity         # 防守生物（5 个意图：Idle/Attack/Defend/Dead/Charge）
 │   ├── AIIntentDefenseCreatureAttack
@@ -45,6 +46,15 @@ AICreatureEntity                    # 生物 AI 基类
 ### 通用意图
 - **AIIntentCreatureAttack** - 通用攻击意图（可继承复用）；内置 **额外攻击** 机制（见下）；内置 **目标距离复查**（见下）
 - **AIIntentCreatureDead** - 通用死亡意图
+
+### 通用 Update 事件 + 释放技能意图（2026-09-14 重构：替代专用 GlobalSkillTimer；事件系统拆在 partial 文件 AICreatureEntityForUpdateEvent.cs）
+- **定位**：`AICreatureEntity`（partial，事件系统全在 `AICreatureEntityForUpdateEvent.cs`）只提供**通用 Update 事件注册**（`RegisterUpdateEvent(interval, action)` + `Update()` 末尾 tick，`GetFightDeltaTime` 计时跟随暂停/倍速）；创建时 `InitUpdateEvents()` 读 NPC `ai_param` 配置决定注册（无配置不建列表，每帧仅一次 null 判断）。事件契约：到点调 action——返回 true=tick 清零重计、false=保持就绪下帧再试。
+- **ai_param（NpcInfo 新列）**：`&` 分隔多项，每项 `类型:参数...`；解析为**通用容器** `AIParamUpdateEventBean`（`eventType` 枚举 `AIParamUpdateEventTypeEnum` + `listParam` 原始参数，新增事件类型不用新建类），解析走 `NpcInfoBeanPartial.GetListAIParamUpdateEvent()`。当前类型 `skill_update:技能extId:间隔秒`（listParam=[extId,间隔]）= 每 N 秒触发指定 attack_mode_ext 技能（多技能不同间隔可并存；触发间隔以 ai_param 为准，ext 的 trigger_interval 对 scene=1 无效）。
+- **trigger_scene（AttackModeExtInfo 新列）**：0=攻击意图内释放（默认，现 BossSkill 行为，AIIntentCreatureAttack 额外攻击机制消费，InitExtraAttack 只收 scene=0）；1=「释放技能」意图释放（由 ai_param skill_update 驱动）。
+- **释放技能意图（AIIntentAttackCreatureCastSkill）**：到点切入后播一次 anim_attack（攻速换算倍速同攻击意图）→ 出手点 `StartCreateAttackMode(customAttackModeId)` 发射 → 回调回 Idle（回调带意图校验防外力抢切；发射后 3s 超时兜底）。切入前 `SetupCastSkill(extInfo)` 先写后切（照 SetupKnockback 先例）。
+- **打断规则**（`CanEnterCastSkillIntent`）：Idle/Move 立即切入；Attack 意图仅 `attackState!=2`（无在途攻击回调）可打断；击退/魅惑/死亡/攻核心/CastSkill 中不切，事件保持就绪、恢复后下帧补放。⚠️契约取舍：事件计时在**切入时**清零——抬手期（0.5s）被打断则本轮技能丢失等下周期（换取事件系统简单通用）。
+- **首个用户**：大盾战士BOSS援护护盾（1041020001 配 `ai_param=skill_update:100005:10` + ext 100005 trigger_scene=1 → 攻击模块 500003 AttackModeShieldCast，固定 10s 走路也放）。
+- **注册三处**（同击退）：`AIIntentFactory.RegisterAll` 工厂注册；`AIAttackCreatureEntity.InitIntentEnum` 加枚举；`AIIntentEnum` 加 `AttackCreatureCastSkill`。
 
 ### 击退意图（AIIntentAttackCreatureKnockback，位移效果统一机制）
 - **发起入口**：`AIAttackCreatureEntity.StartKnockback(direction, distance)`——击退参数经 `GetIntent` 直接写入击退意图实例（`SetupKnockback`）后 `ChangeIntent`；**击退中再次被击退只刷新参数**（原地续推，不重进意图）。调用先例：`AttackModeShockwaveRing`（深渊馈赠「第六次冲击」，方向固定 `Vector3.right` 沿道路向后推，不带 z 分量防敌人被推离路径）。
@@ -70,7 +80,7 @@ AICreatureEntity                    # 生物 AI 基类
 ### 额外攻击（攻击模块扩展，命名通用、不限于 BOSS）
 - **配置**：`NpcInfo.attack_mode_ext`（逗号分隔的 `AttackModeExtInfo` id）→ `AttackModeExtInfo`（`ext_type` 类型，目前仅 `1`=`AttackModeExtTypeEnum.BossSkill` 按间隔释放、`trigger_interval` 间隔秒、`attack_mode_id` 指向 `AttackModeInfo`）。
 - **实现位置**：逻辑全部在基类 `AIIntentCreatureAttack`（`InitExtraAttack/UpdateExtraAttackTimer/GetReadyExtraAttack` + `IntentEntering/IntentUpdate/AttackCreatureStart/AttackCreatureStartEnd/IntentLeaving` 挂钩），进攻/防守生物均自动获得，**无需新增意图/枚举/工厂**。
-- **运行机制（融入普通攻击循环，非并行）**：各额外攻击独立累计CD（`UpdateExtraAttackTimer` 仅计时）；在每次攻击循环开始的判定点 `AttackCreatureStart→GetReadyExtraAttack()` 选第一个CD已到的额外攻击，`AttackCreatureStartEnd` 发射并清零其CD。**额外攻击优先级>普通攻击**：本次有就绪额外攻击则替代普通攻击（占用该循环）；CD到了不立刻打断，需等下次 `attackState==0` 判定。每循环最多一次攻击 → 多个就绪按序逐循环出、天然串行。`InitExtraAttack` 仅收集 `ext_type==BossSkill`，未来新类型在此加分支。发射复用 `FightHandler.StartCreateAttackMode(self, target, ActionForAttackEnd, customAttackModeId)`。
+- **运行机制（融入普通攻击循环，非并行）**：各额外攻击独立累计CD（`UpdateExtraAttackTimer` 仅计时）；在每次攻击循环开始的判定点 `AttackCreatureStart→GetReadyExtraAttack()` 选第一个CD已到的额外攻击，`AttackCreatureStartEnd` 发射并清零其CD。**额外攻击优先级>普通攻击**：本次有就绪额外攻击则替代普通攻击（占用该循环）；CD到了不立刻打断，需等下次 `attackState==0` 判定。每循环最多一次攻击 → 多个就绪按序逐循环出、天然串行。`InitExtraAttack` 仅收集 `ext_type==BossSkill` 且 `trigger_scene==AttackIntent(0)` 的项（scene=1 的技能由 ai_param skill_update 事件驱动，见上方「通用 Update 事件」节）。发射复用 `FightHandler.StartCreateAttackMode(self, target, ActionForAttackEnd, customAttackModeId)`。
 - **术语**：敌方"BOSS"= `FightAttack` 进攻型 NPC（走 `AIIntentAttackCreatureAttack`），**不是**玩家防守的核心 `AIDefenseCoreCreatureEntity`。
 
 ### 攻速(ASPD)换算与攻速连发（AIIntentCreatureAttack 基类，攻防通用）

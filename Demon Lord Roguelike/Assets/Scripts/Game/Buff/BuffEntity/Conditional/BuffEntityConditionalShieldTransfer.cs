@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// 条件触发-伤害转移护盾（大盾战士BOSS「援护护盾」套给最前排友军的护盾）
-/// <para>生效期间（trigger_value=5 秒）：目标零承伤——其受到的 UnderAttack 伤害在结算前拦截并原样改道给施加者（BOSS）
+/// <para>生效期间（trigger_value=9 秒）：目标零承伤——其受到的 UnderAttack 伤害在结算前拦截并原样改道给施加者（BOSS）
 /// （拦截分支在 FightCreatureEntity.UnderAttack 方法头，靠 FightCreatureBean.damageTransferApplierId/damageTransferBuff 标记驱动）。</para>
 /// <para>视觉：Effect_ShieldBubble_1（罩体+能量连线子功能合一，连线为子节点 Line、由 EffectShieldBubble 统一驱动）走「战斗杂项预制」通道
 /// （FightManager.GetFightPrefabCommon + dicPoolFightObj 按路径分桶缓存池），挂为目标生物子节点（罩体跟随目标，连线两端点由本 BUFF 每帧喂给 bubble.SetLinkEndpoints：目标胸口→施加者胸口，脉冲流向代受者）；

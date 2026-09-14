@@ -292,6 +292,29 @@ public partial class AttackModeInfoBean
     }
     #endregion
 
+    #region 援护护盾施法(ShieldCast 配置，存于 other_data)
+    protected bool isInitShieldCastConfig = false;
+    protected int shieldCastCount = 3;
+    protected long shieldCastBuffId = 0;
+
+    /// <summary>
+    /// 获取援护护盾施法配置（从通用扩展列 other_data 中解析 shield_count/shield_buff 键；缓存解析结果）。
+    /// <para>shield_count:单次套盾的最前排友军数量(默认3)；shield_buff:护盾BUFF的ID(默认0=未配置，施法空放)。目前仅 AttackModeShieldCast 使用（大盾战士BOSS技能 500003 配 shield_count:3&amp;shield_buff:2000700001）。</para>
+    /// </summary>
+    public void GetShieldCastConfig(out int shieldCount, out long shieldBuffId)
+    {
+        if (!isInitShieldCastConfig)
+        {
+            ParseOtherDataInt("shield_count", ref shieldCastCount);
+            ParseOtherDataLong("shield_buff", ref shieldCastBuffId);
+            if (shieldCastCount < 1) shieldCastCount = 1;
+            isInitShieldCastConfig = true;
+        }
+        shieldCount = shieldCastCount;
+        shieldBuffId = shieldCastBuffId;
+    }
+    #endregion
+
     #region other_data 通用解析
     /// <summary>
     /// 从 other_data 解析 float 键值（按 &amp; 拆项、每项以第一个 : 拆 key/value，与 aim_up/stuck 同规约）；未配/解析失败保持传入的原值
@@ -332,6 +355,27 @@ public partial class AttackModeInfoBean
                 continue;
             if (item.Substring(0, sep).Trim() == key)
                 int.TryParse(item.Substring(sep + 1).Trim(), out value);
+        }
+    }
+
+    /// <summary>
+    /// 从 other_data 解析 long 键值（与 ParseOtherDataFloat 同规约）；未配/解析失败保持传入的原值。BUFF/配置表ID等长位数键用本方法
+    /// </summary>
+    protected void ParseOtherDataLong(string key, ref long value)
+    {
+        if (other_data.IsNull())
+            return;
+        string[] items = other_data.Split('&');
+        for (int i = 0; i < items.Length; i++)
+        {
+            string item = items[i];
+            if (string.IsNullOrEmpty(item))
+                continue;
+            int sep = item.IndexOf(':');
+            if (sep <= 0)
+                continue;
+            if (item.Substring(0, sep).Trim() == key)
+                long.TryParse(item.Substring(sep + 1).Trim(), out value);
         }
     }
     #endregion

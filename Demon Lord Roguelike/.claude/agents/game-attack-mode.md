@@ -1,6 +1,6 @@
 ﻿---
 name: game-attack-mode
-description: 攻击模式系统开发：33种攻击模式（近战/远程/特殊/恢复），BaseAttackMode 策略模式。
+description: 攻击模式系统开发：34种攻击模式（近战/远程/特殊/恢复），BaseAttackMode 策略模式。
 tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Game/Fight/AttackMode/
@@ -47,6 +47,7 @@ watched_files:
 - **AttackModeFalluponArea** - 范围降临
 - **AttackModeFalluponChain** - 连锁降临
 - **AttackModeLure** - 引诱（改变被攻击者线路；魅惑成功播配置命中音效 sound_hit + 全局单例命中粒子 effect_hit，粒子位置=敌人位置+攻击者 attack_start_position 偏移，600001 配 sound_medicine_1=470001 / Effect_Buff_1=500002，4003 配攻击偏移 0,0.5,0）
+- **AttackModeShieldCast** - 援护护盾施法（瞬发无弹道无伤害：当帧搜索同阵营最前排 N 个存活友军[排除自己，FightCreatureSearchUtil.FindFrontRowCreatures]逐个套 other_data 键 shield_buff 指定的护盾BUFF[applier=自己]；出手特效 effect_hit 播在自己出手点[自身位置+攻击模块 start_pos_offset 偏移，空=0,0,0 播在脚下；不用生物 attack_start_position，避免牵连普攻命中特效取点]，出手音走 sound_start 自动播；大盾战士BOSS技能 500003[shield_count:3&shield_buff:2000700001，effect_hit=500003=Effect_Buff_Def_1，sound_start=470001]，经 ext 100005[trigger_scene=1 释放技能意图]挂载——NPC ai_param=skill_update:100005:10 注册通用 Update 事件固定 10s 触发「释放技能」意图发射，走路也放）
 - **AttackModeOverlap** - 重叠（范围触碰，命中走正常 UnderAttack 伤害管线）
 - **AttackModeOverlapNoDamage** - 无伤害重叠（继承上者的纯DEBUFF触碰变体：只对范围内敌人附加 buff 字段配置的BUFF+播命中音，不掉血/不跳伤害数字/不播受击特效/不进伤害统计，走 FightCreatureEntity.UnderAttackNoDamage；使用者：烂泥史莱姆3003粘液减速400001(buff=1000200001:1,MSPD-40%×1s)、毒液史莱姆3004中毒400002(buff=1000400001:1,每跳=史莱姆实时ATK×20%[ATK=10→2/跳],每秒1跳共10次,毒伤跳伤走UnderAttack管线属正常)）
 - **AttackModeInstantArea** - 瞬时落点范围（无弹道飞行，StartAttack 当帧对 targetPos 范围攻击并自毁；支持配置 `hit_max` 命中上限(近者优先截断) + 发射方注入 `filterCreatureIds` 快照名单(StartAttack 前写入、Destroy 置空)；AOE 多目标伤害按命中次序乘 other_data 键 `hit_decay` 递减率（默认0.5=依次减半，配1=全额）保底1；单次攻击内局部去重——同一生物多碰撞体只命中一次，道与道之间不共享；生物路径复用示例：牛头人法师5003火/5004冰用 101003/101004，远程瞬时捶地地刺[目标脚下落点，特效 800001/800002 火锥/冰锥播在落点]，配 `hit_decay:1` 全额 + `dr_damage_rate:2&hp_damage_rate:0.5` 串联破甲 + buff=1000500002:0.1 烧伤/1000100002:0.1 冰缓，生物索敌 attack_search_type=0&range=10 同人类法师）

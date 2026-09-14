@@ -371,6 +371,11 @@ public class AIIntentCreatureAttack : AIBaseIntent
             {
                 continue;
             }
+            //触发场景非「攻击意图内释放」（如 trigger_scene=CastSkillIntent 由 ai_param skill_update 事件驱动）的技能不由本机制消费
+            if (extInfo.GetTriggerScene() != AttackModeExtTriggerSceneEnum.AttackIntent)
+            {
+                continue;
+            }
             if (listExtraAttack == null)
             {
                 listExtraAttack = new List<ExtraAttackRuntime>();

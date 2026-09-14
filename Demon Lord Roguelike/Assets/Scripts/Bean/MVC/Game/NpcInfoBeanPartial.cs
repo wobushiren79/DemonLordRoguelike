@@ -318,6 +318,69 @@ public partial class NpcInfoBean
         return listAttackModeExt;
     }
 
+    #region AI参数（ai_param）
+    /// <summary>ai_param 解析缓存（Update 事件列表）</summary>
+    protected List<AIParamUpdateEventBean> listAIParamUpdateEvent;
+    /// <summary>ai_param 是否已解析（空配置也置位，防空配置每次重复解析）</summary>
+    protected bool isInitAIParamUpdateEvent;
+
+    /// <summary>
+    /// 获取 AI Update 事件配置列表（ai_param 解析结果，缓存；无配置/无有效项时返回 null）。
+    /// <para>ai_param 格式：&amp; 分隔多项，每项 类型:参数1:参数2...（类型段映射 AIParamUpdateEventTypeEnum）；</para>
+    /// <para>当前类型：skill_update:技能extId:间隔秒（listParam=[技能extId,间隔秒]，技能须配 trigger_scene=1 释放技能意图）。</para>
+    /// </summary>
+    public List<AIParamUpdateEventBean> GetListAIParamUpdateEvent()
+    {
+        if (!isInitAIParamUpdateEvent)
+        {
+            listAIParamUpdateEvent = null;
+            if (!ai_param.IsNull())
+            {
+                string[] items = ai_param.Split('&');
+                for (int i = 0; i < items.Length; i++)
+                {
+                    string item = items[i];
+                    if (string.IsNullOrEmpty(item)) continue;
+                    string[] parts = item.Split(':');
+                    AIParamUpdateEventTypeEnum eventType = ParseAIParamEventType(parts[0]);
+                    switch (eventType)
+                    {
+                        case AIParamUpdateEventTypeEnum.SkillUpdate:
+                            //skill_update:技能extId:间隔秒
+                            if (parts.Length == 3 && long.TryParse(parts[1].Trim(), out _) && float.TryParse(parts[2].Trim(), out float interval) && interval > 0)
+                            {
+                                if (listAIParamUpdateEvent == null) listAIParamUpdateEvent = new List<AIParamUpdateEventBean>();
+                                listAIParamUpdateEvent.Add(new AIParamUpdateEventBean { eventType = eventType, listParam = new string[] { parts[1].Trim(), parts[2].Trim() } });
+                            }
+                            else
+                            {
+                                LogUtil.LogError($"NPC[{id}]的 ai_param 项格式错误（应为 skill_update:技能extId:间隔秒）：{item}");
+                            }
+                            break;
+                        default:
+                            LogUtil.LogError($"NPC[{id}]的 ai_param 项类型不支持：{item}");
+                            break;
+                    }
+                }
+            }
+            isInitAIParamUpdateEvent = true;
+        }
+        return listAIParamUpdateEvent;
+    }
+
+    /// <summary>
+    /// 解析 ai_param 项的类型段为事件类型枚举（不认识的类型返回 None）
+    /// </summary>
+    protected static AIParamUpdateEventTypeEnum ParseAIParamEventType(string typeStr)
+    {
+        switch (typeStr.Trim().ToLower())
+        {
+            case "skill_update": return AIParamUpdateEventTypeEnum.SkillUpdate;
+            default: return AIParamUpdateEventTypeEnum.None;
+        }
+    }
+    #endregion
+
     /// <summary>
     /// 获取体型缩放倍率（在目标大小 size_spine 的基础上再相乘）
     /// <para>配置 body_size 规则：空 / "0" / 解析失败 => 1（默认大小）；</para>
@@ -491,4 +554,17 @@ public partial class NpcInfoCfg
         }
         return listFixed[UnityEngine.Random.Range(0, listFixed.Count)];
     }
+}
+
+/// <summary>
+/// AI参数 Update 事件（NpcInfo.ai_param 每项的解析结果，通用容器：新增事件类型无需新建类——
+/// eventType 决定语义，listParam 按类型解释，各消费方自行按类型取用并转换）
+/// <para>当前类型约定：SkillUpdate → listParam=[技能extId, 间隔秒]。</para>
+/// </summary>
+public class AIParamUpdateEventBean
+{
+    /// <summary>事件类型</summary>
+    public AIParamUpdateEventTypeEnum eventType;
+    /// <summary>参数列表（类型段之后的全部参数，按顺序；各事件类型自行约定含义与解析）</summary>
+    public string[] listParam;
 }
