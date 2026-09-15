@@ -20,4 +20,7 @@ public enum AIIntentEnum
 
     DefenseCoreCreatureIdle,//闲置
     DefenseCoreCreatureDead,//死亡
+
+    //通用（进攻/防守生物均可切换，注册见各自 InitIntentEnum）
+    CreatureEmerge,//出土冒出（召唤物出场动画，攻守通用：由 AICreatureEntity.StartEmerge 强制切换，从地底匀速升回地面，期间不能移动/索敌/攻击，冒出完成按阵营回各自闲置意图）
 }

@@ -645,6 +645,9 @@ public partial class FightCreatureEntity
     /// <param name="state">0:所有生物掉落水晶 1:只有进攻生物才掉落水晶 2只有防守生物才掉落水晶</param>
     public void DropCrystal(int state)
     {
+        //召唤物不掉水晶（AttackModeSummon 生成时置位，防低血召唤物被挂机刷魔晶）
+        if (fightCreatureData.isSummoned)
+            return;
         Action actionForDrop = () =>
         {
             int dropCrystal = 1;

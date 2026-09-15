@@ -53,6 +53,8 @@ public class AIAttackCreatureEntity : AICreatureEntity
         listIntentEnum.Add(AIIntentEnum.AttackCreatureLured);
         listIntentEnum.Add(AIIntentEnum.AttackCreatureKnockback);
         listIntentEnum.Add(AIIntentEnum.AttackCreatureCastSkill);
+        //通用意图
+        listIntentEnum.Add(AIIntentEnum.CreatureEmerge);
     }
 
     #region 击退

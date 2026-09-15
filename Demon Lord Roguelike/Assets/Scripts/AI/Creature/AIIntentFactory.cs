@@ -33,6 +33,9 @@ public static class AIIntentFactory
         //核心生物
         AIBaseEntity.RegisterIntentFactory(AIIntentEnum.DefenseCoreCreatureIdle, () => new AIIntentDefenseCoreCreatureIdle());
         AIBaseEntity.RegisterIntentFactory(AIIntentEnum.DefenseCoreCreatureDead, () => new AIIntentDefenseCoreCreatureDead());
+
+        //通用（进攻/防守生物均可切换）
+        AIBaseEntity.RegisterIntentFactory(AIIntentEnum.CreatureEmerge, () => new AIIntentCreatureEmerge());
     }
     #endregion
 }

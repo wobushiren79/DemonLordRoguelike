@@ -315,6 +315,38 @@ public partial class AttackModeInfoBean
     }
     #endregion
 
+    #region 召唤(Summon 配置，存于 other_data)
+    protected bool isInitSummonConfig = false;
+    protected List<long> summonNpcIds;
+    protected int summonCountPerRoad = 1;
+    protected int summonRoadSpread = 0;
+
+    /// <summary>
+    /// 获取召唤配置（从通用扩展列 other_data 中解析 summon_npc_ids/summon_count/road_spread 键；缓存解析结果）。
+    /// <para>summon_npc_ids:召唤的NPC id池(逗号分隔,每只独立随机等概率抽取;默认空=未配置,召唤空放并报错)；
+    /// summon_count:每路召唤数量(默认1,下限1)；road_spread:以攻击者所在路为中心向上下各扩展的路数(默认0=仅自己所在路,1=自己+上下相邻共最多3路;越界路自然衰减跳过)。</para>
+    /// <para>目前仅 AttackModeSummon 使用（骷髅召唤师普攻 500004 配 summon_npc_ids:20010001&amp;summon_count:1&amp;road_spread:0；BOSS三路技能 500005 配 summon_npc_ids:20010001,20020001&amp;summon_count:3&amp;road_spread:1）。</para>
+    /// </summary>
+    public void GetSummonConfig(out List<long> npcIds, out int countPerRoad, out int roadSpread)
+    {
+        if (!isInitSummonConfig)
+        {
+            string npcIdsStr = "";
+            ParseOtherDataString("summon_npc_ids", ref npcIdsStr);
+            if (!npcIdsStr.IsNull())
+                summonNpcIds = npcIdsStr.SplitForListLong(',');
+            ParseOtherDataInt("summon_count", ref summonCountPerRoad);
+            ParseOtherDataInt("road_spread", ref summonRoadSpread);
+            if (summonCountPerRoad < 1) summonCountPerRoad = 1;
+            if (summonRoadSpread < 0) summonRoadSpread = 0;
+            isInitSummonConfig = true;
+        }
+        npcIds = summonNpcIds;
+        countPerRoad = summonCountPerRoad;
+        roadSpread = summonRoadSpread;
+    }
+    #endregion
+
     #region other_data 通用解析
     /// <summary>
     /// 从 other_data 解析 float 键值（按 &amp; 拆项、每项以第一个 : 拆 key/value，与 aim_up/stuck 同规约）；未配/解析失败保持传入的原值
@@ -376,6 +408,27 @@ public partial class AttackModeInfoBean
                 continue;
             if (item.Substring(0, sep).Trim() == key)
                 long.TryParse(item.Substring(sep + 1).Trim(), out value);
+        }
+    }
+
+    /// <summary>
+    /// 从 other_data 解析 string 键值（与 ParseOtherDataFloat 同规约）；未配/解析失败保持传入的原值。逗号分隔列表等字符串键用本方法（值内不可含 &amp; 与 :）
+    /// </summary>
+    protected void ParseOtherDataString(string key, ref string value)
+    {
+        if (other_data.IsNull())
+            return;
+        string[] items = other_data.Split('&');
+        for (int i = 0; i < items.Length; i++)
+        {
+            string item = items[i];
+            if (string.IsNullOrEmpty(item))
+                continue;
+            int sep = item.IndexOf(':');
+            if (sep <= 0)
+                continue;
+            if (item.Substring(0, sep).Trim() == key)
+                value = item.Substring(sep + 1).Trim();
         }
     }
     #endregion

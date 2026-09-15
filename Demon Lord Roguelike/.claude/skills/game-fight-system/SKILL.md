@@ -195,7 +195,7 @@ public partial class FightCreatureEntity
     // 设置死亡
     public void SetCreatureDead();
     
-    // 掉落水晶
+    // 掉落水晶（方法头先判 FightCreatureBean.isSummoned——AttackModeSummon 召唤物被置位，死亡不掉魔晶防挂机刷取）
     public void DropCrystal(int state); // 0所有 1仅进攻 2仅防守
     
     // 是否死亡

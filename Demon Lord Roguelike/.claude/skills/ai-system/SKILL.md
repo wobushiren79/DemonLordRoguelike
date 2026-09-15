@@ -62,9 +62,12 @@ AIBaseEntity (AI实体基类)
     │       │       ├── AIIntentDefenseCreatureDead   (死亡)
     │       │       └── AIIntentDefenseCreatureCharge (冲锋: 冲锋自爆型放卡即向+X冲锋, 遇敌/到路尽头引爆)
     │       │
-    │       └── AIDefenseCoreCreatureEntity (核心)
-    │               ├── AIIntentDefenseCoreCreatureIdle (闲置)
-    │               └── AIIntentDefenseCoreCreatureDead (死亡)
+    │       ├── AIDefenseCoreCreatureEntity (核心)
+    │       │       ├── AIIntentDefenseCoreCreatureIdle (闲置)
+    │       │       └── AIIntentDefenseCoreCreatureDead (死亡)
+    │       │
+    │       └── 通用意图（进攻/防守生物均可切换，注册在两侧 InitIntentEnum）
+    │               └── AIIntentCreatureEmerge           (出土冒出: 召唤物出场动画，攻守通用——AICreatureEntity.StartEmerge 强制切换，压入地底 1.2 深处+播 Effect_BodySlam_1 破土特效[道路面深度遮挡形成破土观感]，0.6s 匀速升回地面，按阵营回各自 Idle[防守朝右/进攻朝左]；当前唯一调用方=AttackModeSummon 召唤生成当帧，防守方召唤系可直接复用)
     │
     └── AIBaseIntent (意图基类)
             ├── IntentEntering()   // 进入意图
@@ -97,7 +100,10 @@ public enum AIIntentEnum
 
     // 核心生物
     DefenseCoreCreatureIdle, // 闲置
-    DefenseCoreCreatureDead  // 死亡
+    DefenseCoreCreatureDead, // 死亡
+
+    // 通用（进攻/防守生物均可切换，注册在两侧 InitIntentEnum）
+    CreatureEmerge,          // 出土冒出（召唤物出场动画，攻守通用：AICreatureEntity.StartEmerge 强制切换，从地底匀速升回地面，期间不能移动/索敌/攻击，冒出完成按阵营回各自闲置意图；当前唯一调用方=AttackModeSummon 召唤生成当帧）
 }
 ```
 
@@ -420,6 +426,17 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 
 ---
 
+## 出土冒出意图（AIIntentCreatureEmerge，召唤物出场动画统一机制，攻守通用，2026-09-15 新增）
+
+- **发起入口**：`AICreatureEntity.StartEmerge()`（生物 AI 基类，攻守通用）——无参直接 `ChangeIntent(CreatureEmerge)`（照 StartKnockback 强制切换先例）；**当前唯一调用方=`AttackModeSummon.MarkSummoned`**（骷髅召唤师召唤的骷髅 20010001/20020001 生成当帧，与置 `isSummoned` 标记同处），后续防守方召唤系同样走本入口。时序安全：`CreateAIEntity` 同步 `StartAIEntity` 已进 Idle，StartEmerge 干净切走。
+- **冒出**：进入时把生物压到地面下 `EmergeDepth=1.2` 深处（低于地面的部分被不透明道路面**深度遮挡**，自然形成破土观感）并在地面位置播破土特效（`EmergeEffectId=700001` Effect_BodySlam_1 地面打击，走 `EffectHandler.ShowEffect` 逐实例通道，多只同帧冒出各自可见）；随后 `EmergeDuration=0.6s` 匀速升回地面（计时走 `GetFightDeltaTime` 跟随倍速/暂停）；期间不能移动/索敌/攻击（攻击循环被自然打断）；播 Idle 动画。
+- **阵营解析**：`aiEntity is AIDefenseCreatureEntity` → 回 `DefenseCreatureIdle`、朝右；否则回 `AttackCreatureIdle`、朝左。
+- **结束**：升回地面（y=出生 y）按阵营回各自闲置意图，重新走「闲置→移动→攻击」索敌流程。
+- **死亡**：冒出中死亡由各阵营死亡流程 `ChangeIntent(Dead)` 覆盖，意图无需自处理。
+- **注册**：`AIIntentFactory.RegisterAll` 注册 `CreatureEmerge`（通用区）；`AIAttackCreatureEntity` 与 `AIDefenseCreatureEntity` 的 `InitIntentEnum` 均已加入；`AIIntentEnum` 加 `CreatureEmerge`（末尾通用区）。魔王核心 `AIDefenseCoreCreatureEntity` 未注册——核心生物不会被召唤，需要时先补注册并确认阵营解析。
+
+---
+
 ## 冲锋意图（AIIntentDefenseCreatureCharge，冲锋自爆型防守生物）
 
 冲锋自爆型防守生物（`CreatureInfo.charge_attack=1`，如 6003 哥布林敢死队）放卡后**不站桩**，立即向 +X（敌人来向）冲锋，遇敌或冲到路尽头即自爆。
@@ -488,6 +505,7 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 | 意图工厂注册器 | `Assets/Scripts/AI/Creature/AIIntentFactory.cs` |
 | 进攻生物AI | `Assets/Scripts/AI/Creature/FightAttackCreature/AIAttackCreatureEntity.cs`（含 `StartKnockback` 击退统一入口） |
 | 击退意图 | `Assets/Scripts/AI/Creature/FightAttackCreature/AIIntentAttackCreatureKnockback.cs` |
+| 出土冒出意图（召唤物出场动画，攻守通用） | `Assets/Scripts/AI/Creature/AIIntentCreatureEmerge.cs` |
 | 冲锋意图（冲锋自爆） | `Assets/Scripts/AI/Creature/FightDefenseCreature/AIIntentDefenseCreatureCharge.cs` |
 | 防守生物AI | `Assets/Scripts/AI/Creature/FightDefenseCreature/AIDefenseCreatureEntity.cs` |
 | 核心生物AI | `Assets/Scripts/AI/Creature/FightDefenseCoreCreature/AIDefenseCoreCreatureEntity.cs` |

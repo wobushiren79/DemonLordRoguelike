@@ -24,6 +24,18 @@ public abstract partial class AICreatureEntity : AIBaseEntity
         return listData[0];
     }
 
+    #region 出土冒出
+    /// <summary>
+    /// 发起出土冒出（召唤物出场动画的统一入口，攻守通用，照 AIAttackCreatureEntity.StartKnockback 强制切换先例）：
+    /// 切换到通用出土意图 CreatureEmerge 从地底冒出，冒出完成按阵营回各自闲置意图；
+    /// 当前唯一调用方=AttackModeSummon 召唤生成当帧（召唤物 isSummoned 生物），后续防守方召唤系同样走本入口。
+    /// </summary>
+    public void StartEmerge()
+    {
+        ChangeIntent(AIIntentEnum.CreatureEmerge);
+    }
+    #endregion
+
     /// <summary>
     /// 搜索目标
     /// </summary>

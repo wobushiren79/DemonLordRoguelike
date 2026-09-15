@@ -58,6 +58,8 @@ public class AIDefenseCreatureEntity : AICreatureEntity
         listIntentEnum.Add(AIIntentEnum.DefenseCreatureDefend);
         listIntentEnum.Add(AIIntentEnum.DefenseCreatureDead);
         listIntentEnum.Add(AIIntentEnum.DefenseCreatureCharge);
+        //通用意图
+        listIntentEnum.Add(AIIntentEnum.CreatureEmerge);
     }
 
     #region 事件回调

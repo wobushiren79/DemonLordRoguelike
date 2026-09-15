@@ -219,7 +219,7 @@ public partial class FightCreatureEntity
     public void CheckDead(Action noDead, Action dead);    // 死亡检测（内置血条/护盾进度刷新）
     public void SetCreatureDead();                       // 设置死亡（分发到各类型partial的死亡意图切换）
     public bool IsDead();                                // 是否死亡
-    public void DropCrystal(int state);                  // 掉落水晶（0所有 1仅进攻 2仅防守）
+    public void DropCrystal(int state);                  // 掉落水晶（0所有 1仅进攻 2仅防守；方法头先判 FightCreatureBean.isSummoned——AttackModeSummon 召唤物被置位，死亡不掉魔晶防挂机刷取）
 
     // === 表现（主文件） ===
     public TrackEntry PlayAnim(SpineAnimationStateEnum anim, bool loop);  // 播放动画

@@ -20,6 +20,7 @@ public class FightCreatureBean
     public string damageTransferApplierId;//伤害转移代受者UUID（非空时受到的 UnderAttack 伤害在结算前改道给该生物承受；当前由大盾战士BOSS「援护护盾」BUFF驱动）
     public BuffBaseEntity damageTransferBuff;//伤害转移来源BUFF实例（回指用于受击反馈，避免受击时扫描BUFF列表）
     public bool isPositionReleased;//占位已释放（冲锋生物冲锋开始后置位：占位/删除扫描跳过本生物，原格可立即放第二只；重生落点改取死亡位置）
+    public bool isSummoned;//是否召唤物（AttackModeSummon 召唤生成时置位；当前消费：DropCrystal 跳过不掉魔晶，防低血召唤物被挂机刷取）
     public Dictionary<CreatureAttributeTypeEnum, float> dicAttribute = new Dictionary<CreatureAttributeTypeEnum, float>(); //属性
 
     //强度倍率(用于征服模式普通进攻敌人按关卡递增强度; 默认1=不变, 对 HP/护甲(DR)/攻击力(ATK) 最终值整体相乘)
@@ -72,6 +73,8 @@ public class FightCreatureBean
         damageTransferBuff = null;
         //重置占位释放标记（对象池复用防残留；冲锋意图进入时才会重新置位）
         isPositionReleased = false;
+        //重置召唤物标记（对象池复用防残留；AttackModeSummon 召唤生成时才会重新置位）
+        isSummoned = false;
     }
 
     //modifier 收集缓冲区（复用以避免每次 Refresh 都重新分配）
