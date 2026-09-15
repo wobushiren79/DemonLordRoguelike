@@ -4,6 +4,7 @@ using UnityEngine;
 /// <summary>
 /// 粒子特效测试（GUI版，纯代码UI）
 /// 下拉选择(或手动输入)特效id后点播放，在10x10平面(顶面高度0)上方1格随机位置，按正式游戏里该特效对应的执行方法播放；
+/// 方向可选(随机/左/右)，按生产 attackDirection 方向语义传递(命中特效X镜像与{Direction}注入、血/护盾飞溅朝向、拖尾铺点走向)；
 /// 播放次数可设，点击后按"每帧一次"分帧播放(单例粒子的Play一帧只能触发一次)。不依赖任何运行时UI预制。
 /// 由 LauncherTest.StartForEffectTest 挂到空物体上启动。
 /// </summary>
@@ -40,6 +41,8 @@ public class TestEffectGUI : MonoBehaviour
     private string inputEffectId = "";           //手动输入的特效id(空=使用下拉选择)
     private string inputPlayCount = "1";         //播放次数(点击后每帧播一次, 共播N帧)
     private int playRemaining;                   //剩余待播放次数(每帧减1)
+    private int directionIndex;                  //方向选择下标(0随机/1左/2右)
+    private static readonly string[] DirectionTexts = { "随机", "← 左", "→ 右" };//方向选项文本
     #endregion
 
     #region GUI样式
@@ -171,17 +174,18 @@ public class TestEffectGUI : MonoBehaviour
         if (EffectInfoCfg.GetItemData(effectId) == null) return;
         Vector3 randomPos = GetRandomPos();
         EffectManager effectManager = EffectHandler.Instance.manager;
-        //受击溅血：生产为 ShowBloodEffect(生物位置+(0,0.5,0), 攻击来向), 方向随机左右
+        //本次播放方向(随机=每次播放重新随机左右); attDirection 为生产同款攻击来向向量(x符号决定朝向)
+        Direction2DEnum playDirection = GetPlayDirection();
+        Vector3 attDirection = playDirection == Direction2DEnum.Right ? Vector3.right : Vector3.left;
+        //受击溅血：生产为 ShowBloodEffect(生物位置+(0,0.5,0), 攻击来向), 方向按选择
         if (effectId == effectManager.effectBloodId)
         {
-            Vector3 attDirection = Random.Range(0, 2) == 0 ? Vector3.left : Vector3.right;
             EffectHandler.Instance.ShowBloodEffect(randomPos + new Vector3(0, 0.5f, 0), attDirection);
             return;
         }
-        //护盾打击：生产为 ShowShieldHitEffect(生物位置+护盾偏移, 攻击来向), 偏移取默认(0,0.5,0), 方向随机左右
+        //护盾打击：生产为 ShowShieldHitEffect(生物位置+护盾偏移, 攻击来向), 偏移取默认(0,0.5,0), 方向按选择
         if (effectId == effectManager.effectShieldHitId)
         {
-            Vector3 attDirection = Random.Range(0, 2) == 0 ? Vector3.left : Vector3.right;
             EffectHandler.Instance.ShowShieldHitEffect(randomPos + new Vector3(0, 0.5f, 0), attDirection);
             return;
         }
@@ -214,12 +218,14 @@ public class TestEffectGUI : MonoBehaviour
             return;
         }
         //攻击弹道拖尾(方案2 VFX)：生产为常驻实例+每帧喂位置缓冲(Register/Add/Flush), 非播放式；
-        //测试按生产链路模拟一条直线弹道: 注册桶→清帧→沿随机水平方向铺采样点→Flush 一次性喷发
+        //测试按生产链路模拟一条直线弹道: 注册桶→清帧→沿水平方向铺采样点→Flush 一次性喷发(方向按选择, 随机=随机水平向)
         if (effectId == effectManager.effectAttackModeTrailId)
         {
             EffectHandler.Instance.RegisterAttackModeTrailVfx(TrailVisualKey);
             EffectHandler.Instance.BeginAttackModeTrailVfxFrame();
-            Vector3 trailDirection = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
+            Vector3 trailDirection = directionIndex == 0
+                ? new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized
+                : attDirection;
             Vector3 trailColor = new Vector3(1f, 1f, 1f);
             for (int i = 0; i < TrailPointCount; i++)
             {
@@ -252,14 +258,14 @@ public class TestEffectGUI : MonoBehaviour
             return;
         }
         //攻击命中粒子(火球/冰球/爆炸/刀锋/加血/加甲/魅惑/地面打击/火锥/冰锥/雷电/落雷)：
-        //生产统一走 BaseAttackMode.PlayEffectForHit → ShowEnduringSingletonEffect(effect_hit, {targetPos})
+        //生产统一走 BaseAttackMode.PlayEffectForHit → ShowEnduringSingletonEffect(effect_hit, {targetPos, direction}), 方向按选择
         if (setHitEffectIds.Contains(effectId))
         {
-            EffectHandler.Instance.ShowEnduringSingletonEffect(effectId, new SingletonEffectParam() { targetPos = randomPos });
+            EffectHandler.Instance.ShowEnduringSingletonEffect(effectId, new SingletonEffectParam() { targetPos = randomPos, direction = playDirection });
             return;
         }
-        //兜底：配置新增且未归类到生产方法的特效走通用配置驱动通道
-        EffectHandler.Instance.ShowEffect(effectId, randomPos);
+        //兜底：配置新增且未归类到生产方法的特效走通用配置驱动通道(方向供 {Direction} 占位注入)
+        EffectHandler.Instance.ShowEffect(effectId, randomPos, playDirection);
     }
 
     /// <summary>
@@ -268,6 +274,16 @@ public class TestEffectGUI : MonoBehaviour
     private Vector3 GetRandomPos()
     {
         return new Vector3(Random.Range(-PlaneHalfSize, PlaneHalfSize), PlayHeight, Random.Range(-PlaneHalfSize, PlaneHalfSize));
+    }
+
+    /// <summary>
+    /// 取本次播放的方向：左/右按选择，随机时每次播放重新随机左右(与生产 attackDirection.x>0?Right:Left 同源)
+    /// </summary>
+    private Direction2DEnum GetPlayDirection()
+    {
+        if (directionIndex == 1) return Direction2DEnum.Left;
+        if (directionIndex == 2) return Direction2DEnum.Right;
+        return Random.Range(0, 2) == 0 ? Direction2DEnum.Left : Direction2DEnum.Right;
     }
 
     /// <summary>攻击命中粒子集合(excel_attackmode_info 的 effect_hit 引用, 生产统一走全局单例通道)</summary>
@@ -375,6 +391,13 @@ public class TestEffectGUI : MonoBehaviour
         GUILayout.Label("(每帧播1次)", hintStyle);
         GUILayout.EndHorizontal();
 
+        //方向选择(随机=每次播放随机左右, 按生产 attackDirection 方向语义传递)
+        GUILayout.Space(4);
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("方向", labelStyle, GUILayout.Width(60));
+        directionIndex = GUILayout.Toolbar(directionIndex, DirectionTexts, GUILayout.Height(26), GUILayout.Width(220));
+        GUILayout.EndHorizontal();
+
         //播放按钮
         GUILayout.Space(6);
         GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
@@ -389,7 +412,7 @@ public class TestEffectGUI : MonoBehaviour
 
         //行为说明
         GUILayout.Space(6);
-        GUILayout.Label("提示：按正式游戏对应执行方法播放。持久型粒子为全局单例，重复播放会移动原实例；血/护盾飞溅朝向随机。", hintStyle);
+        GUILayout.Label("提示：按正式游戏对应执行方法播放。持久型粒子为全局单例，重复播放会移动原实例；方向按生产语义传递(命中特效X镜像/{Direction}注入、血/护盾飞溅朝向、拖尾铺点走向)。", hintStyle);
         GUILayout.EndScrollView();
         GUILayout.EndArea();
     }

@@ -5,14 +5,14 @@ using UnityEngine;
 /// <summary>
 /// 天降连锁-三连发发射器：本身不命中、不播特效，只在存活期内按 hit_interval 逐发发射
 /// child_attack_mode_id 指向的子雷攻击模块（每发独立随机选取全场存活防守生物为落点）。
-/// <para>【为什么是发射器】子雷=完整普攻雷击(800001 AttackModeFalluponChain，落雷+连锁+伤害减半)，
+/// <para>【为什么是发射器】子雷=BOSS版普攻雷击(800002 AttackModeFalluponChain，复制自普攻800001、特效换Effect_Thunder_4，落雷+连锁+伤害减半)，
 /// 其实体路径 StartAttack(attacker, attacked, cb) 自带完整快照管线，每发调一次
 /// <see cref="FightHandler.StartCreateAttackMode(FightCreatureEntity, FightCreatureEntity, Action{BaseAttackMode}, long)"/>
 /// 即重新取当时 ATK 快照——正合"0.5秒内3次普通雷击"语义。</para>
 /// <para>【为何不继承 FalluponChain】其连锁循环全 private 且与发射器语义冲突；且无参 StartAttack 是废路径，不能作为子雷发射通道。</para>
 /// <para>【排程】首发当帧发射并立即回调 actionForAttackEnd（保 AI 攻击循环节奏，照 AttackModeMeleeMulti 先例），
 /// 余发由 Update 按战斗帧时间(GetFightDeltaTime,随倍速/暂停缩放)累计到点补发；攻击者死亡/实体池复用则取消余发。</para>
-/// <para>【配置】class_name=本类 + child_attack_mode_id=800001 + other_data 键 hit_times(总发数,默认1)&amp;hit_interval(发间隔秒,默认0.1)，
+/// <para>【配置】class_name=本类 + child_attack_mode_id=800002 + other_data 键 hit_times(总发数,默认1)&amp;hit_interval(发间隔秒,默认0.1)，
 /// 解析见 AttackModeInfoBeanPartial.GetMultiHitConfig()；发射器自身不配伤害/特效/音效（全由子雷行承担）。</para>
 /// <para>使用者：雷大魔法师BOSS 1031040001 用 700006（ext 100007，5秒一次）。</para>
 /// </summary>

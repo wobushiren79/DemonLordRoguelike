@@ -75,11 +75,21 @@ public class LauncherTest : BaseLauncher
     }
 
     /// <summary>
+    /// 清理测试专用的纯GUI面板(粒子特效测试/卡片编辑器测试), 每个测试入口开始处统一调用, 切换测试模块时防面板与其场景残留
+    /// </summary>
+    private void ClearTestGUIs()
+    {
+        if (TestEffectGUI.Instance != null) Destroy(TestEffectGUI.Instance.gameObject);
+        if (TestCreatureCardGUI.Instance != null) Destroy(TestCreatureCardGUI.Instance.gameObject);
+    }
+
+    /// <summary>
     /// 开始战斗场景测试
     /// </summary>
     /// <param name="fightData"></param>
     public void StartForFightSceneTest(FightBean fightData)
     {
+        ClearTestGUIs();
         WorldHandler.Instance.EnterGameForFightScene(fightData);
     }
 
@@ -91,6 +101,7 @@ public class LauncherTest : BaseLauncher
     /// <param name="difficultyLevel">难度等级</param>
     public void StartForConquerBossTest(long worldId, int difficultyLevel)
     {
+        ClearTestGUIs();
         //校验征服模式配置是否存在
         FightTypeConquerInfoBean conquerInfo = FightTypeConquerInfoCfg.GetItemData(worldId, difficultyLevel);
         if (conquerInfo == null)
@@ -118,6 +129,7 @@ public class LauncherTest : BaseLauncher
     /// </summary>
     public void StartForDoomCouncil(long billId)
     {
+        ClearTestGUIs();
         //打开终焉ui
         //var uiDoomCouncil = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilBill>();
         //进入议会场景
@@ -131,6 +143,7 @@ public class LauncherTest : BaseLauncher
     /// <param name="billId">议案 ID(仍需有效, 用于议员态度生成)</param>
     public void StartForDoomCouncilAllFixed(long billId)
     {
+        ClearTestGUIs();
         //进入议会场景, 标记为载入所有固定议员
         DoomCouncilBean doomCouncilData = new DoomCouncilBean(billId);
         doomCouncilData.isTestAllFixedCouncilor = true;
@@ -143,6 +156,7 @@ public class LauncherTest : BaseLauncher
     /// <param name="testData">测试数据，可配置装备品质、使用者类型、属性加成</param>
     public void StartForRewardSelect(RewardSelectTestData testData = null)
     {
+        ClearTestGUIs();
         //打开领奖界面
         var uiRewardSelect = UIHandler.Instance.OpenUIAndCloseOther<UIRewardSelect>();
         RewardSelectBean rewardSelectData = new RewardSelectBean();
@@ -156,6 +170,7 @@ public class LauncherTest : BaseLauncher
     /// <param name="fightCreature"></param>
     public async void StartForCardTest(FightCreatureBean fightCreature)
     {
+        ClearTestGUIs();
         await WorldHandler.Instance.ClearWorldData();
         //设置焦距
         VolumeHandler.Instance.SetDepthOfField(UnityEngine.Rendering.Universal.DepthOfFieldMode.Off, 0, 0, 0);
@@ -174,6 +189,8 @@ public class LauncherTest : BaseLauncher
     /// <param name="npcInfoId">初始NPC ID(生物ID为0时默认NPC模式)</param>
     public async void StartForCreatureCardEditor(long creatureId, long npcInfoId)
     {
+        //清理可能残留的测试GUI面板(含重复开始时的自身旧面板, 防面板叠加)
+        ClearTestGUIs();
         await WorldHandler.Instance.ClearWorldData();
         //设置焦距
         VolumeHandler.Instance.SetDepthOfField(UnityEngine.Rendering.Universal.DepthOfFieldMode.Off, 0, 0, 0);
@@ -181,8 +198,6 @@ public class LauncherTest : BaseLauncher
         CameraHandler.Instance.InitData();
         //关闭其它UI
         UIHandler.Instance.CloseAllUI();
-        //清理上一次可能残留的卡片编辑器面板，避免重复开始导致面板叠加
-        if (TestCreatureCardGUI.Instance != null) Destroy(TestCreatureCardGUI.Instance.gameObject);
         //挂载纯GUI代码的卡片编辑器组件到空物体
         var gui = new GameObject("CreatureCardTestGUI").AddComponent<TestCreatureCardGUI>();
         gui.SetInitData(creatureId, npcInfoId);
@@ -193,6 +208,8 @@ public class LauncherTest : BaseLauncher
     /// </summary>
     public async void StartForEffectTest()
     {
+        //清理可能残留的测试GUI面板(含重复开始时的自身旧面板, 防面板叠加)
+        ClearTestGUIs();
         await WorldHandler.Instance.ClearWorldData();
         //设置焦距
         VolumeHandler.Instance.SetDepthOfField(UnityEngine.Rendering.Universal.DepthOfFieldMode.Off, 0, 0, 0);
@@ -200,8 +217,6 @@ public class LauncherTest : BaseLauncher
         CameraHandler.Instance.InitData();
         //关闭其它UI
         UIHandler.Instance.CloseAllUI();
-        //清理上一次可能残留的特效测试面板，避免重复开始导致面板叠加
-        if (TestEffectGUI.Instance != null) Destroy(TestEffectGUI.Instance.gameObject);
         //挂载纯GUI代码的特效测试组件到空物体
         new GameObject("EffectTestGUI").AddComponent<TestEffectGUI>();
     }
@@ -214,6 +229,7 @@ public class LauncherTest : BaseLauncher
     /// <param name="content">要展示的对话文本（自由输入，不走多语言）</param>
     public async void StartForConversationTest(long npcId, string content)
     {
+        ClearTestGUIs();
         //校验NPC配置与对话文本
         NpcInfoBean npcInfo = NpcInfoCfg.GetItemData(npcId);
         if (npcInfo == null)
@@ -247,6 +263,7 @@ public class LauncherTest : BaseLauncher
     /// </summary>
     public void StartForBaseTest(CreatureBean creatureData)
     {
+        ClearTestGUIs();
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         userData.selfCreature = creatureData;
         WorldHandler.Instance.EnterGameForBaseScene(userData);
@@ -257,6 +274,7 @@ public class LauncherTest : BaseLauncher
     /// </summary>
     public void StartForResearchUI()
     {
+        ClearTestGUIs();
         UIBaseResearch uiBaseResearch = UIHandler.Instance.OpenUIAndCloseOther<UIBaseResearch>();
         uiBaseResearch.SetDataForTest();
     }
@@ -271,6 +289,7 @@ public class LauncherTest : BaseLauncher
     /// <param name="manualSuccessRate">手动成功率(0~1)</param>
     public void StartForCreatureSacrificeTest(int saveSlot, string targetCreatureUUId, bool useManualSuccessRate, float manualSuccessRate)
     {
+        ClearTestGUIs();
         //加载指定槽位存档数据
         UserDataService dataService = new UserDataService();
         dataService.ChangeSlot(saveSlot);
@@ -332,6 +351,7 @@ public class LauncherTest : BaseLauncher
     /// <param name="addProgressLevel">解锁的魔晶加速等级(0=加速锁定/隐藏加速按钮，运行时按配置钳制到 CreatureVatAddProgress研究满级)</param>
     public void StartForCreatureVatTest(int saveSlot, int vatNum, int addProgressLevel)
     {
+        ClearTestGUIs();
         //加载指定槽位存档数据
         UserDataService dataService = new UserDataService();
         dataService.ChangeSlot(saveSlot);
@@ -390,6 +410,7 @@ public class LauncherTest : BaseLauncher
     /// <param name="juicerCreatureMax">投入魔物可选上限(运行时按配置钳制到 基础juicerCreatureMax+JuicerNum研究满级)</param>
     public void StartForCreatureJuicerTest(int saveSlot, int juicerCreatureMax)
     {
+        ClearTestGUIs();
         //加载指定槽位存档数据
         UserDataService dataService = new UserDataService();
         dataService.ChangeSlot(saveSlot);
@@ -440,6 +461,7 @@ public class LauncherTest : BaseLauncher
     /// </summary>
     public void StartForNormalGame()
     {
+        ClearTestGUIs();
         //与 LauncherGame 对齐:注册故事演出自动触发事件——此入口等价正式游戏流程,不注册则进存档后引导演出(进基地/进战斗/掉晶)全部无人监听永不触发;
         //StoryTest 测试场景(StartForStoryTest)仍不注册,自动触发天然关闭,测试走 PlayStory 强制播放
         StoryHandler.Instance.InitData();
@@ -457,6 +479,7 @@ public class LauncherTest : BaseLauncher
     /// <param name="saveSlot">存档槽位(0=使用当前测试数据 InitTestData 伪造数据;1~3=读取对应存档槽位 UserData_1/2/3 作为运行时数据,与献祭测试同范式)</param>
     public void StartForStoryTest(long storyId, int saveSlot = 0)
     {
+        ClearTestGUIs();
         var storyInfo = StoryInfoCfg.GetItemData(storyId);
         if (storyInfo == null)
         {
@@ -574,6 +597,7 @@ public class LauncherTest : BaseLauncher
     /// <param name="ids">深渊馈赠 ID 列表，null 或空时不展示任何卡片</param>
     public void StartForAbyssalBlessingUI(List<long> ids)
     {
+        ClearTestGUIs();
         long[] arrayIds = ids == null ? new long[0] : ids.ToArray();
         var uiBlessing = UIHandler.Instance.OpenUIAndCloseOther<UIFightAbyssalBlessing>();
         uiBlessing.SetDataForTest(

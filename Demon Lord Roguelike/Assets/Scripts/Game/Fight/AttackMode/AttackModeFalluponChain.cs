@@ -163,13 +163,19 @@ public class AttackModeFalluponChain : BaseAttackMode
     }
 
     /// <summary>
-    /// 执行攻击
+    /// 执行攻击（命中特效抬升：目标位置 + 攻击者攻击起始位置偏移 attack_start_position，照 AttackModeLure 先例，劈在躯干而非脚底）
     /// </summary>
     private void ExecuteAttack(FightCreatureEntity target, int damage, bool isFirst)
     {
         attackModeData.attackerDamage = damage;
         target.UnderAttack(this);
-        PlayEffectForHit(target.creatureObj.transform.position, isFirst ? 0 : 1);
+        //攻击者缺省(已销毁)时退化为目标脚底位置，偏移仍由存活攻击者提供
+        Vector3 effectPosition = target.creatureObj.transform.position;
+        if (attackerEntity != null && attackerEntity.fightCreatureData?.creatureData?.creatureInfo != null)
+        {
+            effectPosition += attackerEntity.fightCreatureData.creatureData.creatureInfo.GetAttackStartPosition();
+        }
+        PlayEffectForHit(effectPosition, isFirst ? 0 : 1);
         listAttackedCreatureId.Add(target.fightCreatureData.creatureData.creatureUUId);
     }
 

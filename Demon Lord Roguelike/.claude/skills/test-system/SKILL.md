@@ -153,6 +153,7 @@ public class LauncherTest : BaseLauncher
     /// </summary>
     public void StartForMyNewTest(int param)
     {
+        ClearTestGUIs();//必须首行调用: 清理残留的纯GUI测试面板(粒子/卡片编辑器), 切换模块防残留
         // 实现测试入口逻辑
         // 例如：打开UI、进入场景等
     }
@@ -480,7 +481,7 @@ LauncherTest.StartForCreatureJuicerTest(...)                   // Assets/Scripts
 
 ## 粒子特效测试 (EffectTest)
 
-`TestSceneTypeEnum.EffectTest` —— 纯代码 IMGUI 面板(`TestEffectGUI`，不依赖任何预制)，下拉选择特效 id 后点播放，在 10x10 平面(顶面高度0)上方 1 格随机位置、**按该特效在正式游戏里的执行方法**播放，用于快速验证 `excel_effect_info` 配置的粒子在真实调用路径下的表现。
+`TestSceneTypeEnum.EffectTest` —— 纯代码 IMGUI 面板(`TestEffectGUI`，不依赖任何预制)，下拉选择特效 id 后点播放，在 10x10 平面(顶面高度0)上方 1 格随机位置、**按该特效在正式游戏里的执行方法**播放，方向可选(随机/左/右，按生产 attackDirection 方向语义传递)，用于快速验证 `excel_effect_info` 配置的粒子在真实调用路径下的表现。
 
 ### 流程
 
@@ -488,9 +489,10 @@ LauncherTest.StartForCreatureJuicerTest(...)                   // Assets/Scripts
 GameTestEditor.DrawEffectTest()                        // Inspector 一个「▶️ 开始粒子特效测试」按钮(无参数)
     ▼
 LauncherTest.StartForEffectTest()                      // Assets/Scripts/Game/Launcher/LauncherTest.cs
+    │  ⓪ ClearTestGUIs() 清理残留测试GUI面板(所有测试入口统一收口, 见下方「清理」)
     │  ① ClearWorldData() 清场(场景/粒子/逻辑)
     │  ② SetDepthOfField(Off) + CameraHandler.InitData() 加载主相机
-    │  ③ CloseAllUI() + 清理残留的旧 TestEffectGUI 面板(防重复开始叠加)
+    │  ③ CloseAllUI()
     │  ④ new GameObject("EffectTestGUI").AddComponent<TestEffectGUI>()
     ▼
 TestEffectGUI.Start()                                  // Assets/Scripts/Component/UI/Test/TestEffectGUI.cs
@@ -502,24 +504,26 @@ TestEffectGUI.Start()                                  // Assets/Scripts/Compone
     ▼
 「▶️ 随机位置播放」→ 按「播放次数」(输入N, 点击后 Update 每帧播1次共N帧——单例粒子一帧只能Play一次)
     逐帧按 id 分发到正式游戏对应执行方法(见下方映射表), 每次位置 = (Random.Range(-5,5), 1, Random.Range(-5,5))
+    方向 = GetPlayDirection()(选择左/右, 随机则每次播放重新随机左右, 与生产 attackDirection.x>0?Right:Left 同源)
 ```
 
 ### 关键点
 
 - **特效 id 是 long**：面板解析/存储一律 long，不用 int（同 NPC 创建 GUI 版议会 id 教训）。
 - **播放次数与手动ID**：播放次数输入 N(上限999)，点击后由 `Update` 每帧播一次共 N 帧（单例粒子一帧只能 Play 一次）；手动ID输入非空且存在于配置表时优先于下拉选择，非法/不存在回退下拉并在面板提示。
+- **方向选择(随机/左/右 Toolbar)**：`GetPlayDirection()` 解析为 `Direction2DEnum.Left/Right`（随机=每次播放重新随机，与生产 `attackDirection.x>0?Right:Left` 同源），再按生产通道各自的方向语义传递——命中特效 `SingletonEffectParam.direction`(纯PS粒子 transform X 镜像 / VFX {Direction} int 注入，同 `PlayEffectForHit`)、血/护盾 `attDirection` 向量(x 符号决定朝向)、拖尾铺点走向(随机=随机水平向)、兜底 `ShowEffect(..., direction)`；游戏粒子方向只用 Left/Right(Direction2DEnum.Up/Down 仅 UI 气泡用)，故选项不含上下。
 - **按正式调用方法分发**（面板信息行会显示所选特效的正式调用方法名）：
-  - 攻击命中粒子(effect_hit 引用：100001/200001/300001/300002/400001~3/500001/500002/500003/600001/700001/800001/800002/900001~3) → `ShowEnduringSingletonEffect(id, {targetPos})`（同 `BaseAttackMode.PlayEffectForHit`）
-  - 1200001 血 / 1300001 护盾 → `ShowBloodEffect` / `ShowShieldHitEffect`(位置+(0,0.5,0)，方向随机左右)
+  - 攻击命中粒子(effect_hit 引用：100001/200001/300001/300002/400001~3/500001/500002/500003/600001/700001/800001/800002/900001~3) → `ShowEnduringSingletonEffect(id, {targetPos, direction})`（同 `BaseAttackMode.PlayEffectForHit`）
+  - 1200001 血 / 1300001 护盾 → `ShowBloodEffect` / `ShowShieldHitEffect`(位置+(0,0.5,0)，方向按选择)
   - 1400001 / 1500001 → `ShowCreatureAscendAddProgressEffect`(向上飞2格) / `ShowCreatureAscendCompleteEffect`(随机稀有度主色，位置+(0,1.2,0))
   - 1000001 / 1100001 → `ShowCreaturePlaceEffect(effectId, pos)`(全局单例通道，同生产)
-  - 1600001 拖尾 → 非播放式：Register 测试桶→Begin→沿随机水平方向铺 30 点→Flush 一次喷发（生产为攻击弹道每帧喂点）
+  - 1600001 拖尾 → 非播放式：Register 测试桶→Begin→沿水平方向铺 30 点→Flush 一次喷发（生产为攻击弹道每帧喂点；方向按选择，随机=随机水平向）
   - 1700001 冲击波 → `ShowEnduringSingletonEffect` 按生产同公式换算半径/时长乘数(测试半径5/波速10)
   - 1800001 地面火焰 → `ShowEnduringSingletonEffect` 带燃烧时长(5s)
-  - 兜底(配置新增未归类) → 通用 `ShowEffect`
+  - 兜底(配置新增未归类) → 通用 `ShowEffect(..., direction)`
 - **持久型特效(show_type=1)走全局单例**：同一特效重复播放会移动原实例(如 900003 落雷/1800001 地面火焰)——这是游戏真实行为，面板提示行已说明。
 - **播放高度**：播放位置 y 取 1（`PlayHeight` 常量）——平面顶面在 y=0，播放点抬高 1 格后粒子正好落在平面上；`ShowEffect` 内部还会对 targetPos 做 +0.002 微抬防 z-fighting。
-- **清理**：`OnDestroy` 销毁平面并注销拖尾测试桶；重复点「开始」由 `StartForEffectTest` 先清理旧面板防叠加。
+- **清理**：`OnDestroy` 销毁平面并注销拖尾测试桶；切换测试模块与重复开始的旧面板清理由 `LauncherTest.ClearTestGUIs()` 统一收口——该helper销毁 `TestEffectGUI.Instance`/`TestCreatureCardGUI.Instance` 两个纯GUI面板（它们手工创建于常驻启动场景，`ClearWorldData`/`UnLoadAllScene` 卸载不到），**每个 `StartFor*` 入口首行都必须调用**（新增测试入口时别忘了），否则切换模块后旧面板与其场景(如粒子测试平面)会残留。
 
 ## 对话系统测试 (ConversationTest)
 
@@ -669,7 +673,7 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 
 | 功能 | 文件路径 |
 |------|----------|
-| 测试启动器 | `Assets/Scripts/Game/Launcher/LauncherTest.cs` |
+| 测试启动器 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（含 `ClearTestGUIs()` 纯GUI测试面板统一清理收口，所有 `StartFor*` 入口首行调用） |
 | 测试编辑器 | `Assets/Editor/GameTestEditor.cs` + `GameTestEditorPartial.cs` |
 | 测试战斗逻辑 | `Assets/Scripts/Game/Logic/GameFightLogicTest.cs` |
 | 测试战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForTest.cs`（fightAttackDataRemark 进攻数据备份；testAbyssalBlessingIds 测试馈赠目标行id列表，由 GameFightLogicTest 在防守核心创建后统一添加；testDemonLordMP 测试魔王蓝量，由 GameFightLogicTest 统一应用并同步提升 MP 上限；dicTestDefenseFixedAttribute 测试防守方固定属性=基础值替换，作用于卡片魔物+魔王核心，MP 被固定时蓝量设置让位） |
@@ -695,7 +699,7 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 正常游戏启动 UI | `Assets/Editor/GameTestEditor.cs`（`DrawNormalGameTest`） |
 | 粒子特效测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForEffectTest`） |
 | 粒子特效测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawEffectTest`） |
-| 粒子特效测试面板 | `Assets/Scripts/Component/UI/Test/TestEffectGUI.cs`（纯代码 IMGUI，无预制；手动ID输入+下拉 `EffectInfoCfg.GetAllArrayData` 懒加载 + 按 id 分发到正式游戏对应执行方法播放 + 播放次数经 Update 每帧1次分帧播放） |
+| 粒子特效测试面板 | `Assets/Scripts/Component/UI/Test/TestEffectGUI.cs`（纯代码 IMGUI，无预制；手动ID输入+下拉 `EffectInfoCfg.GetAllArrayData` 懒加载 + 按 id 分发到正式游戏对应执行方法播放 + 播放次数经 Update 每帧1次分帧播放 + 方向选择(随机/左/右 Toolbar，按生产 attackDirection 语义传递)） |
 | 对话系统测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForConversationTest`） |
 | 对话系统测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawConversationTest`/`EnsureConversationTestNpcOptions`；通用 helper `LoadLanguageForCn`/`ClearCfgBaseStaticCache`） |
 | 故事演出测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForStoryTest`/`RegisterStoryTestPlayCallback`/`BuildStoryTestFightData`） |
