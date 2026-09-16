@@ -49,6 +49,10 @@ BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播
 | `gameObject` / `spriteRenderer` | Unity 组件 | 攻击模块可视化对象（预制字段保留：DSP 过渡期作渲染/兼容载体，位置真实源已改 `position`） |
 | `attackModeInfo` / `attackModeData` | Bean | 配置数据 / 运行时数据 |
 
+### 技能触发预检（CheckCanTriggerSkill）
+
+「释放技能」意图（trigger_scene=1，由 NPC ai_param skill_update 驱动）切入前，`TryTriggerExtSkill` 统一调用 `BaseAttackMode.CheckCanTriggerSkill(attacker, attackModeInfo)` 虚方法做触发预检——默认 true 不拦截，各攻击类按需重写拦截空放（如群体治疗范围内无血量不满友军时不施法）；返回 false=保持就绪下帧再试、不切入施法。预检时无发射实例，实例经 `FightManager.GetAttackModeClass(attack_mode_id)` 取**类级共享无状态实例**（按 id 懒创建缓存，反射失败=不拦截；刻意不挂靠 `dlAttackModePrefab`——那是在途攻击表、按 instanceId 登记且技能未放时为空，也不进对象池；该缓存同样可供其他需要类级无状态实例的调用方复用），重写实现须保持无状态（配置从 attackModeInfo 入参取，禁止读写实例字段）。首个重写者：`AttackModeRegainHPArea`（2026-09-16）。
+
 ### 攻击模式类型体系
 
 ```
@@ -92,7 +96,7 @@ BaseAttackMode                      - 攻击模式基类
 └── AttackModeRegain                - 回复基类（不造成伤害，提供增益）
     ├── AttackModeRegainHP          - 回复生命（4002 用 500001：effect_hit=500001(Effect_Buff_Health_1)，sound_hit=470001 由 FightCreatureEntity.RegainHP 真实回血>0 时播）
     ├── AttackModeRegainDR          - 回复护甲（4005 用 500002：effect_hit=500003(Effect_Buff_Def_1 全局单例)，sound_hit=470001 由 FightCreatureEntity.RegainDR 真实加甲>0 时播）
-    ├── AttackModeRegainHPArea      - 群体治疗-自身周围（直接继承 BaseAttackMode，类名前缀命中 IsRegainType；瞬发无弹道：当帧遍历同阵营存活友军[含自己，照 AttackModeShieldCast 列表遍历不走物理层级]，筛 距自己≤collider_area_size[0](=5) 且 HP不满 者逐个 RegainHP[治疗量=ATK×damage_add_rate 快照]+各播一个一次性治疗粒子[ShowEffect 独立实例通道，多目标同帧不互顶——PlayEffectForHit 全局单例会顶替]；牧师/神官技能 500006[effect_hit=2100002(Effect_Buff_Health_2)，sound_start/sound_hit=470001]，经 ext 100009[trigger_scene=1]挂载——NPC ai_param=skill_update:100009:3 固定 3s 触发，走路也放[2026-09-16 新增]）
+    ├── AttackModeRegainHPArea      - 群体治疗-自身周围（直接继承 BaseAttackMode，类名前缀命中 IsRegainType；瞬发无弹道：当帧遍历同阵营存活友军[含自己，照 AttackModeShieldCast 列表遍历不走物理层级]，筛 距自己≤collider_area_size[0](=5) 且 HP不满 者逐个 RegainHP[治疗量=ATK×damage_add_rate 快照]+各播一个一次性治疗粒子[ShowEffect 独立实例通道，多目标同帧不互顶——PlayEffectForHit 全局单例会顶替]；**空放预检**：重写基类虚方法 CheckCanTriggerSkill——「释放技能」意图切入前判定，范围内无血量不满友军时保持就绪下帧再试[不播动作/音效/粒子]；牧师/神官技能 500006[effect_hit=2100002(Effect_Buff_Health_2)，sound_start/sound_hit=470001]，经 ext 100009[trigger_scene=1]挂载——NPC ai_param=skill_update:100009:3 固定 3s 触发，走路也放[2026-09-16 新增]）
     └── AttackModeRegainHPGround    - 地面持续治疗区域（直接继承 BaseAttackMode，类名前缀命中 IsRegainType；施法快照圆心=自身位置/阵营/半径=collider_area_size[0](=2)，发射当帧即回调[生物继续行动,区域 Update 自持——每1秒对区域内同阵营存活且 HP不满 友军跳一次 RegainHP，治疗量=施法瞬间 ATK×damage_add_rate(0.1) 快照，施法者死亡照跳,照 AttackModeRangedArcGround 地面火焰先例]，满5秒自毁；区域视觉=effect_hit 走 ShowEffect 一次性独立实例[配置 show_time=5 到期框架自动销毁，多施法者同场不互顶]；神官BOSS技能 500007[effect_hit=2100003(Effect_Buff_Health_3)]，经 ext 100010[trigger_scene=1]挂载——NPC ai_param=skill_update:100010:10 固定 10s 触发；Destroy 清零计时与阵营快照防对象池残留[2026-09-16 新增]）
 ```
 

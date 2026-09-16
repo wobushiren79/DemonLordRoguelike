@@ -14,6 +14,9 @@ public class FightManager : BaseManager
     public Dictionary<long, Queue<BaseAttackMode>> dicPoolAttackModeObj = new Dictionary<long, Queue<BaseAttackMode>>();
     //攻击预制列表（用 DictionaryList 便于按 instanceId 快速 Remove 同时保留可遍历 List）
     public DictionaryList<long, BaseAttackMode> dlAttackModePrefab = new DictionaryList<long, BaseAttackMode>();
+    /// <summary>攻击模块类级共享实例缓存（按攻击模块id，每个攻击类一个无状态实例；不参与发射/对象池回收，跨战斗常驻）</summary>
+    private readonly Dictionary<long, BaseAttackMode> dicAttackModeClass = new Dictionary<long, BaseAttackMode>();
+
     //攻击模块实例ID自增计数器
     private long attackModeInstanceCounter = 0;
     //攻击模块射线检测的批量调度器(RaycastCommand)，替代每个弹道各自 Physics.RaycastAll
@@ -558,6 +561,28 @@ public class FightManager : BaseManager
 
         dlAttackModePrefab.Add(targetModeNew.instanceId, targetModeNew);
         actionForComplete?.Invoke(targetModeNew);
+    }
+
+    /// <summary>
+    /// 取指定攻击模块的类级共享实例（每个攻击类一个无状态实例，按 id 懒创建缓存；配置缺失或反射创建失败返回 null）。
+    /// <para>用途=类级无状态调用（如「释放技能」意图切入前的 CheckCanTriggerSkill 预检）：刻意不挂靠 dlAttackModePrefab（那是按 instanceId 登记的在途攻击，技能未放时为空）、不进对象池。</para>
+    /// <para>⚠️调用方禁止用返回值发射攻击或读写实例字段（实例按攻击模块id跨战斗共享，须保持无状态；配置已从 attackModeInfo 字段挂好可直接读）。</para>
+    /// </summary>
+    public BaseAttackMode GetAttackModeClass(long attackModeId)
+    {
+        if (!dicAttackModeClass.TryGetValue(attackModeId, out BaseAttackMode attackModeClass))
+        {
+            var attackModeInfo = AttackModeInfoCfg.GetItemData(attackModeId);
+            if (attackModeInfo == null || attackModeInfo.class_name.IsNull())
+                return null;
+            attackModeClass = ReflexUtil.CreateInstance<BaseAttackMode>(attackModeInfo.class_name);
+            if (attackModeClass == null)
+                return null;
+            //只挂配置供类级调用读取，不走对象池/在途表（类级实例生命周期独立于发射实例）
+            attackModeClass.attackModeInfo = attackModeInfo;
+            dicAttackModeClass.Add(attackModeId, attackModeClass);
+        }
+        return attackModeClass;
     }
 
     /// <summary>

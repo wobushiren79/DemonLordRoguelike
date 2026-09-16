@@ -419,6 +419,20 @@ public class BaseAttackMode
         }
     }
 
+    #region  技能触发预检
+    /// <summary>
+    /// 是否能触发技能（「释放技能」意图切入前预检；默认 true=不拦截，子类按需重写——如群体治疗范围内无血量不满友军时返回 false 不空放动作/音效/粒子）。
+    /// <para>预检经 FightManager.GetAttackModeClass(attack_mode_id) 取类级共享实例调用（不挂靠 dlAttackModePrefab 在途表、不进对象池），实现内禁止读写实例字段（实例按攻击模块id跨战斗共享，须保持无状态）。</para>
+    /// </summary>
+    /// <param name="attacker">施法者</param>
+    /// <param name="attackModeInfo">技能攻击模块配置（预检器实例也挂了 attackModeInfo 字段，此处由调用方显式传入保证现取现准）</param>
+    /// <returns>true=允许施放；false=保持就绪下帧再试</returns>
+    public virtual bool CheckCanTriggerSkill(FightCreatureEntity attacker, AttackModeInfoBean attackModeInfo)
+    {
+        return true;
+    }
+    #endregion
+
     #region  特效
     /// <summary>
     /// 播放攻击命中特效：按配置的击中粒子ID(effect_hit)直接走全局单例通道，无需按 id 分流。

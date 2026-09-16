@@ -53,7 +53,7 @@ AIBaseEntity (AI实体基类)
     │       │       ├── AIIntentAttackCreatureDead       (死亡)
     │       │       ├── AIIntentAttackCreatureLured      (被诱惑)
     │       │       ├── AIIntentAttackCreatureKnockback  (被击退: StartKnockback 强制切换，固定 0.2s 匀速推完，结束回 Idle 重新索敌)
-    │       │       └── AIIntentAttackCreatureCastSkill  (释放技能: trigger_scene=1 技能的释放载体——NPC ai_param 的 skill_update 事件[AICreatureEntity 通用 Update 事件系统]到点切入[走路/待机也放,与攻击意图无关]，播一次攻击动作+出手点 StartCreateAttackMode(customAttackModeId) 发射，回调回 Idle；打断规则: Idle/Move 立即、Attack 仅 attackState!=2、击退/魅惑/死亡不切保持就绪补放；首用者大盾战士BOSS援护护盾 ai_param=skill_update:100005:10→500003)
+    │       │       └── AIIntentAttackCreatureCastSkill  (释放技能: trigger_scene=1 技能的释放载体——NPC ai_param 的 skill_update 事件[AICreatureEntity 通用 Update 事件系统]到点切入[走路/待机也放,与攻击意图无关]，播一次攻击动作+出手点 StartCreateAttackMode(customAttackModeId) 发射，回调回 Idle；打断规则: Idle/Move 立即、Attack 仅 attackState!=2、击退/魅惑/死亡不切保持就绪补放；切入前预检[2026-09-16 新增]: 统一走攻击模块基类虚方法 BaseAttackMode.CheckCanTriggerSkill[默认true不拦截,各攻击类按需重写,实例经 FightManager.GetAttackModeClass 取类级共享无状态实例,不挂 dlAttackModePrefab 不进对象池],如群体治疗 AttackModeRegainHPArea 范围内无血量不满友军时不切入[防空放动作/音效/粒子]保持就绪下帧再试；首用者大盾战士BOSS援护护盾 ai_param=skill_update:100005:10→500003)
     │       │
     │       ├── AIDefenseCreatureEntity (防守型)
     │       │       ├── AIIntentDefenseCreatureIdle   (闲置)

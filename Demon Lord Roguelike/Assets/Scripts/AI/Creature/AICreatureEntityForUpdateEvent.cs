@@ -89,8 +89,8 @@ public abstract partial class AICreatureEntity
     }
 
     /// <summary>
-    /// 尝试触发指定技能（skill_update 事件的动作）：校验技能配 trigger_scene=释放技能意图 → 当前意图可切入时先写后切「释放技能」意图；
-    /// 不可切入返回 false 保持就绪（恢复后下帧补放）；配错时禁用本事件防日志刷屏
+    /// 尝试触发指定技能（skill_update 事件的动作）：校验技能配 trigger_scene=释放技能意图 → 攻击模块触发预检（CheckCanTriggerSkill，各攻击类可各自拦截空放，如群体治疗无血量不满友军时不施法）→ 当前意图可切入时先写后切「释放技能」意图；
+    /// 不可切入/预检拦截返回 false 保持就绪（恢复后下帧补放）；配错时禁用本事件防日志刷屏
     /// </summary>
     protected virtual bool TryTriggerExtSkill(long extId, AIUpdateEventRuntime eventRuntime)
     {
@@ -100,6 +100,13 @@ public abstract partial class AICreatureEntity
             LogUtil.LogError($"NPC技能定时触发配置错误：技能[{extId}]不存在或 trigger_scene 未配 1（释放技能意图）");
             eventRuntime.interval = float.MaxValue;
             return true;
+        }
+        //技能触发预检：走攻击模块基类虚方法（经 FightManager 取类级共享实例，反射失败=不拦截），各攻击类按需拦截空放
+        var attackModeInfo = AttackModeInfoCfg.GetItemData(extInfo.attack_mode_id);
+        var attackModeClass = FightHandler.Instance.manager.GetAttackModeClass(extInfo.attack_mode_id);
+        if (attackModeInfo != null && attackModeClass != null && !attackModeClass.CheckCanTriggerSkill(selfCreatureEntity, attackModeInfo))
+        {
+            return false;
         }
         if (!CanEnterCastSkillIntent()) return false;
         EnterCastSkillIntent(extInfo);

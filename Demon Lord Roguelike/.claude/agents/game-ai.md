@@ -54,6 +54,7 @@ AICreatureEntity                    # 生物 AI 基类
 - **trigger_scene（AttackModeExtInfo 新列）**：0=攻击意图内释放（默认，现 BossSkill 行为，AIIntentCreatureAttack 额外攻击机制消费，InitExtraAttack 只收 scene=0）；1=「释放技能」意图释放（由 ai_param skill_update 驱动）。
 - **释放技能意图（AIIntentAttackCreatureCastSkill）**：到点切入后播一次 anim_attack（攻速换算倍速同攻击意图）→ 出手点 `StartCreateAttackMode(customAttackModeId)` 发射 → 回调回 Idle（回调带意图校验防外力抢切；发射后 3s 超时兜底）。切入前 `SetupCastSkill(extInfo)` 先写后切（照 SetupKnockback 先例）。
 - **打断规则**（`CanEnterCastSkillIntent`）：Idle/Move 立即切入；Attack 意图仅 `attackState!=2`（无在途攻击回调）可打断；击退/魅惑/死亡/攻核心/CastSkill 中不切，事件保持就绪、恢复后下帧补放。⚠️契约取舍：事件计时在**切入时**清零——抬手期（0.5s）被打断则本轮技能丢失等下周期（换取事件系统简单通用）。
+- **切入前预检（`TryTriggerExtSkill`，2026-09-16 新增）**：切入意图前统一走攻击模块基类虚方法 `BaseAttackMode.CheckCanTriggerSkill(attacker, attackModeInfo)`（默认 true 不拦截，各攻击类按需重写拦截空放）——实例经 `FightManager.GetAttackModeClass(attack_mode_id)` 取类级共享无状态实例（按 id 懒创建缓存，反射失败=不拦截；不挂靠 dlAttackModePrefab 在途表[按 instanceId 登记、技能未放时为空]、不进对象池；预检无发射实例，attackModeInfo 由调用方传入）；返回 false=保持就绪下帧再试、不切入施法。首个重写者：AttackModeRegainHPArea 群体治疗——范围内无血量不满友军时不切入（空放=白播施法动作+sound_start 音效+无粒子，牧师群体治疗 ext 100009 的实测问题）。
 - **首个用户**：大盾战士BOSS援护护盾（1041020001 配 `ai_param=skill_update:100005:10` + ext 100005 trigger_scene=1 → 攻击模块 500003 AttackModeShieldCast，固定 10s 走路也放）。
 - **注册三处**（同击退）：`AIIntentFactory.RegisterAll` 工厂注册；`AIAttackCreatureEntity.InitIntentEnum` 加枚举；`AIIntentEnum` 加 `AttackCreatureCastSkill`。
 
