@@ -113,11 +113,23 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 19825070, guid: c0c7a81b04345b346923a9762cea5a11, type: 3}
+      propertyPath: scalingMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 19825070, guid: c0c7a81b04345b346923a9762cea5a11, type: 3}
       propertyPath: moveWithTransform
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 19891006, guid: c0c7a81b04345b346923a9762cea5a11, type: 3}
+      propertyPath: scalingMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 19891006, guid: c0c7a81b04345b346923a9762cea5a11, type: 3}
       propertyPath: moveWithTransform
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 198535239526381674, guid: c0c7a81b04345b346923a9762cea5a11, type: 3}
+      propertyPath: scalingMode
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 198535239526381674, guid: c0c7a81b04345b346923a9762cea5a11, type: 3}

@@ -95,6 +95,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 548136b1e4786314ba2931a9f294c68f
+    m_Address: Assets/LoadResources/Effects/Effect_Hit_2.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 589723e1ea887934cb590f14cfaabaea
     m_Address: Assets/LoadResources/Effects/Effect_Trail_1.prefab
     m_ReadOnly: 0
@@ -170,6 +175,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a8196d0cd5bbfa7478e185b30a3e529f
+    m_Address: Assets/LoadResources/Effects/Effect_Buff_Health_2.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a9a76b8fd3aba3d4ca88f5250952700f
     m_Address: Assets/LoadResources/Effects/Effect_StateSleep_1.prefab
     m_ReadOnly: 0
@@ -202,6 +212,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d17d3d4aa0ef42b4d9fb794d046aaf02
     m_Address: Assets/LoadResources/Effects/Effect_Smoke_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d309e144c977a624dab476582a135aa6
+    m_Address: Assets/LoadResources/Effects/Effect_Buff_Health_3.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

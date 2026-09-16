@@ -67,7 +67,7 @@ AIBaseEntity (AI实体基类)
     │       │       └── AIIntentDefenseCoreCreatureDead (死亡)
     │       │
     │       └── 通用意图（进攻/防守生物均可切换，注册在两侧 InitIntentEnum）
-    │               └── AIIntentCreatureEmerge           (出土冒出: 召唤物出场动画，攻守通用——AICreatureEntity.StartEmerge 强制切换，压入地底 1.2 深处+播 Effect_BodySlam_1 破土特效[道路面深度遮挡形成破土观感]，0.6s 匀速升回地面，按阵营回各自 Idle[防守朝右/进攻朝左]；当前唯一调用方=AttackModeSummon 召唤生成当帧，防守方召唤系可直接复用)
+    │               └── AIIntentCreatureEmerge           (出土冒出: 召唤物出场动画，攻守通用——AICreatureEntity.StartEmerge 强制切换，压入地底 1.2 深处[道路面深度遮挡形成破土观感,不播任何出场特效]，0.6s 匀速升回地面，按阵营回各自 Idle[防守朝右/进攻朝左]；当前唯一调用方=AttackModeSummon 召唤生成当帧，防守方召唤系可直接复用)
     │
     └── AIBaseIntent (意图基类)
             ├── IntentEntering()   // 进入意图
@@ -429,7 +429,7 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 ## 出土冒出意图（AIIntentCreatureEmerge，召唤物出场动画统一机制，攻守通用，2026-09-15 新增）
 
 - **发起入口**：`AICreatureEntity.StartEmerge()`（生物 AI 基类，攻守通用）——无参直接 `ChangeIntent(CreatureEmerge)`（照 StartKnockback 强制切换先例）；**当前唯一调用方=`AttackModeSummon.MarkSummoned`**（骷髅召唤师召唤的骷髅 20010001/20020001 生成当帧，与置 `isSummoned` 标记同处），后续防守方召唤系同样走本入口。时序安全：`CreateAIEntity` 同步 `StartAIEntity` 已进 Idle，StartEmerge 干净切走。
-- **冒出**：进入时把生物压到地面下 `EmergeDepth=1.2` 深处（低于地面的部分被不透明道路面**深度遮挡**，自然形成破土观感）并在地面位置播破土特效（`EmergeEffectId=700001` Effect_BodySlam_1 地面打击，走 `EffectHandler.ShowEffect` 逐实例通道，多只同帧冒出各自可见）；随后 `EmergeDuration=0.6s` 匀速升回地面（计时走 `GetFightDeltaTime` 跟随倍速/暂停）；期间不能移动/索敌/攻击（攻击循环被自然打断）；播 Idle 动画。
+- **冒出**：进入时把生物压到地面下 `EmergeDepth=1.2` 深处（低于地面的部分被不透明道路面**深度遮挡**，自然形成破土观感），随后 `EmergeDuration=0.6s` 匀速升回地面（计时走 `GetFightDeltaTime` 跟随倍速/暂停）；期间不能移动/索敌/攻击（攻击循环被自然打断）；播 Idle 动画。**不播任何出场特效**（2026-09-16 按需求去掉原 Effect_BodySlam_1 破土特效，只保留纯位移冒出）。
 - **阵营解析**：`aiEntity is AIDefenseCreatureEntity` → 回 `DefenseCreatureIdle`、朝右；否则回 `AttackCreatureIdle`、朝左。
 - **结束**：升回地面（y=出生 y）按阵营回各自闲置意图，重新走「闲置→移动→攻击」索敌流程。
 - **死亡**：冒出中死亡由各阵营死亡流程 `ChangeIntent(Dead)` 覆盖，意图无需自处理。

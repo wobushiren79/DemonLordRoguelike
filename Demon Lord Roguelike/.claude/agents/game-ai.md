@@ -46,7 +46,7 @@ AICreatureEntity                    # 生物 AI 基类
 ### 通用意图
 - **AIIntentCreatureAttack** - 通用攻击意图（可继承复用）；内置 **额外攻击** 机制（见下）；内置 **目标距离复查**（见下）
 - **AIIntentCreatureDead** - 通用死亡意图
-- **AIIntentCreatureEmerge** - 通用出土冒出意图（召唤物出场动画，攻守通用：`AICreatureEntity.StartEmerge()` 强制切换，压入地底 1.2 深处+播 Effect_BodySlam_1 破土特效[道路面深度遮挡形成破土观感]，0.6s 匀速升回地面，按阵营回各自 Idle[防守朝右/进攻朝左]；两侧 InitIntentEnum 均已注册 CreatureEmerge；当前唯一调用方=AttackModeSummon 召唤生成当帧，防守方召唤系可直接复用 StartEmerge 入口；2026-09-15 新增）
+- **AIIntentCreatureEmerge** - 通用出土冒出意图（召唤物出场动画，攻守通用：`AICreatureEntity.StartEmerge()` 强制切换，压入地底 1.2 深处[道路面深度遮挡形成破土观感,不播任何出场特效]，0.6s 匀速升回地面，按阵营回各自 Idle[防守朝右/进攻朝左]；两侧 InitIntentEnum 均已注册 CreatureEmerge；当前唯一调用方=AttackModeSummon 召唤生成当帧，防守方召唤系可直接复用 StartEmerge 入口；2026-09-15 新增）
 
 ### 通用 Update 事件 + 释放技能意图（2026-09-14 重构：替代专用 GlobalSkillTimer；事件系统拆在 partial 文件 AICreatureEntityForUpdateEvent.cs）
 - **定位**：`AICreatureEntity`（partial，事件系统全在 `AICreatureEntityForUpdateEvent.cs`）只提供**通用 Update 事件注册**（`RegisterUpdateEvent(interval, action)` + `Update()` 末尾 tick，`GetFightDeltaTime` 计时跟随暂停/倍速）；创建时 `InitUpdateEvents()` 读 NPC `ai_param` 配置决定注册（无配置不建列表，每帧仅一次 null 判断）。事件契约：到点调 action——返回 true=tick 清零重计、false=保持就绪下帧再试。
@@ -65,7 +65,7 @@ AICreatureEntity                    # 生物 AI 基类
 
 ### 出土冒出意图（AIIntentCreatureEmerge，召唤物出场动画统一机制，攻守通用，2026-09-15 新增）
 - **发起入口**：`AICreatureEntity.StartEmerge()`（生物 AI 基类，攻守通用）——无参直接 `ChangeIntent(CreatureEmerge)`（照 StartKnockback 强制切换先例）；**当前唯一调用方=`AttackModeSummon.MarkSummoned`**（骷髅召唤师召唤的骷髅生成当帧，与置 `isSummoned` 标记同处），后续防守方召唤系同样走本入口。时序安全：`CreateAIEntity` 同步 `StartAIEntity` 已进 Idle，StartEmerge 干净切走。
-- **冒出**：进入时压到地面下 `EmergeDepth=1.2` 深处（低于地面部分被不透明道路面**深度遮挡**，自然形成破土观感）+ 地面位置播破土特效（`EmergeEffectId=700001` Effect_BodySlam_1，走 `EffectHandler.ShowEffect` 逐实例通道，多只同帧冒出各自可见）；随后 `EmergeDuration=0.6s` 匀速升回地面（计时走 `GetFightDeltaTime`）；期间不能移动/索敌/攻击；播 Idle 动画。
+- **冒出**：进入时压到地面下 `EmergeDepth=1.2` 深处（低于地面部分被不透明道路面**深度遮挡**，自然形成破土观感）；随后 `EmergeDuration=0.6s` 匀速升回地面（计时走 `GetFightDeltaTime`）；期间不能移动/索敌/攻击；播 Idle 动画。**不播任何出场特效**（2026-09-16 按需求去掉原 Effect_BodySlam_1 破土特效，只保留纯位移冒出）。
 - **阵营解析与结束**：`aiEntity is AIDefenseCreatureEntity` → 回 `DefenseCreatureIdle`、朝右；否则回 `AttackCreatureIdle`、朝左。升回地面后重新索敌。
 - **注册**：`AIIntentFactory.RegisterAll` 注册 `CreatureEmerge`（通用区）；`AIAttackCreatureEntity` 与 `AIDefenseCreatureEntity` 的 `InitIntentEnum` 均已加入；`AIIntentEnum` 末尾通用区加 `CreatureEmerge`。魔王核心 `AIDefenseCoreCreatureEntity` 未注册（核心生物不会被召唤，需要时先补注册并确认阵营解析）。
 

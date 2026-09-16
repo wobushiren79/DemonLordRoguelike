@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// 生物出土冒出意图（召唤物出场动画：从地底冒出；攻守通用——进攻/防守生物均可经 StartEmerge 切入）。
 /// <para>由 AICreatureEntity.StartEmerge 强制切换进入（照 AIAttackCreatureEntity.StartKnockback 先例；当前唯一调用方=AttackModeSummon 召唤生成当帧）：</para>
-/// <para>进入时把生物压到地面下 EmergeDepth 深处并播破土特效(Effect_BodySlam_1)，随后 EmergeDuration 秒匀速升回地面（期间不能移动/索敌/攻击，攻击循环被自然打断）；</para>
+/// <para>进入时把生物压到地面下 EmergeDepth 深处，随后 EmergeDuration 秒匀速升回地面（期间不能移动/索敌/攻击，攻击循环被自然打断；不播任何出场特效——按需求 2026-09-16 去掉，只保留纯位移冒出）；</para>
 /// <para>生物低于地面部分被不透明道路面深度遮挡，自然形成"破土而出"观感；冒出完成按阵营回各自闲置意图（防守→DefenseCreatureIdle 朝右，进攻→AttackCreatureIdle 朝左，按 AI 实体类型解析）；计时走 GetFightDeltaTime 随倍速/暂停缩放。</para>
 /// <para>注册：AIIntentFactory 注册 CreatureEmerge；进攻(AIAttackCreatureEntity)/防守(AIDefenseCreatureEntity) 的 InitIntentEnum 均已加入（魔王核心 AIDefenseCoreCreatureEntity 未注册——核心生物不会被召唤，需要时先补注册并确认回 idle 的阵营解析）。</para>
 /// </summary>
@@ -14,8 +14,6 @@ public class AIIntentCreatureEmerge : AIBaseIntent
     public const float EmergeDuration = 0.6f;
     /// <summary>地底下压深度（世界单位）</summary>
     public const float EmergeDepth = 1.2f;
-    /// <summary>破土特效（EffectInfo 配置表 id：Effect_BodySlam_1 地面打击，走 ShowEffect 逐实例通道，多只同帧冒出各自可见）</summary>
-    public const long EmergeEffectId = 700001;
     #endregion
 
     #region 字段
@@ -33,7 +31,7 @@ public class AIIntentCreatureEmerge : AIBaseIntent
 
     #region 意图生命周期
     /// <summary>
-    /// 进入出土意图：按阵营解析回落意图与朝向，压到地底并播破土特效，播待机动画（被控出土状态）
+    /// 进入出土意图：按阵营解析回落意图与朝向，压到地底，播待机动画（被控出土状态；不播出场特效）
     /// </summary>
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
@@ -45,9 +43,8 @@ public class AIIntentCreatureEmerge : AIBaseIntent
         Transform selfTF = selfAIEntity.selfCreatureEntity.creatureObj.transform;
         groundY = selfTF.position.y;
         emergeTimer = 0;
-        //压到地底（低于地面的部分被道路面深度遮挡）+ 在地面位置播破土特效
+        //压到地底（低于地面的部分被道路面深度遮挡）
         selfTF.position = new Vector3(selfTF.position.x, groundY - EmergeDepth, selfTF.position.z);
-        EffectHandler.Instance.ShowEffect(EmergeEffectId, new Vector3(selfTF.position.x, groundY, selfTF.position.z));
         selfAIEntity.selfCreatureEntity.SetFaceDirection(faceDirection);
         selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true);
     }

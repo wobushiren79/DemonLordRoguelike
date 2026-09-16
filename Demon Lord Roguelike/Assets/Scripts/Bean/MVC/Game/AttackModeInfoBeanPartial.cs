@@ -320,14 +320,16 @@ public partial class AttackModeInfoBean
     protected List<long> summonNpcIds;
     protected int summonCountPerRoad = 1;
     protected int summonRoadSpread = 0;
+    protected float summonOffsetX = 0;
 
     /// <summary>
-    /// 获取召唤配置（从通用扩展列 other_data 中解析 summon_npc_ids/summon_count/road_spread 键；缓存解析结果）。
+    /// 获取召唤配置（从通用扩展列 other_data 中解析 summon_npc_ids/summon_count/road_spread/summon_offset_x 键；缓存解析结果）。
     /// <para>summon_npc_ids:召唤的NPC id池(逗号分隔,每只独立随机等概率抽取;默认空=未配置,召唤空放并报错)；
-    /// summon_count:每路召唤数量(默认1,下限1)；road_spread:以攻击者所在路为中心向上下各扩展的路数(默认0=仅自己所在路,1=自己+上下相邻共最多3路;越界路自然衰减跳过)。</para>
-    /// <para>目前仅 AttackModeSummon 使用（骷髅召唤师普攻 500004 配 summon_npc_ids:20010001&amp;summon_count:1&amp;road_spread:0；BOSS三路技能 500005 配 summon_npc_ids:20010001,20020001&amp;summon_count:3&amp;road_spread:1）。</para>
+    /// summon_count:每路召唤数量(默认1,下限1)；road_spread:以攻击者所在路为中心向上下各扩展的路数(默认0=仅自己所在路,1=自己+上下相邻共最多3路;越界路自然衰减跳过)；
+    /// summon_offset_x:召唤落点相对攻击者的 x 偏移(默认0=攻击者当前位置;世界轴原始叠加不做朝向镜像,向左攻击者前方=X 负值[照 AttackModeMelee 约定])。</para>
+    /// <para>目前仅 AttackModeSummon 使用（骷髅召唤师普攻 500004 配 summon_npc_ids:20010001&amp;summon_count:1&amp;road_spread:0&amp;summon_offset_x:-0.5；BOSS三路技能 500005 配 summon_npc_ids:20010001,20020001&amp;summon_count:3&amp;road_spread:1&amp;summon_offset_x:-0.5）。</para>
     /// </summary>
-    public void GetSummonConfig(out List<long> npcIds, out int countPerRoad, out int roadSpread)
+    public void GetSummonConfig(out List<long> npcIds, out int countPerRoad, out int roadSpread, out float offsetX)
     {
         if (!isInitSummonConfig)
         {
@@ -337,6 +339,7 @@ public partial class AttackModeInfoBean
                 summonNpcIds = npcIdsStr.SplitForListLong(',');
             ParseOtherDataInt("summon_count", ref summonCountPerRoad);
             ParseOtherDataInt("road_spread", ref summonRoadSpread);
+            ParseOtherDataFloat("summon_offset_x", ref summonOffsetX);
             if (summonCountPerRoad < 1) summonCountPerRoad = 1;
             if (summonRoadSpread < 0) summonRoadSpread = 0;
             isInitSummonConfig = true;
@@ -344,6 +347,7 @@ public partial class AttackModeInfoBean
         npcIds = summonNpcIds;
         countPerRoad = summonCountPerRoad;
         roadSpread = summonRoadSpread;
+        offsetX = summonOffsetX;
     }
     #endregion
 
