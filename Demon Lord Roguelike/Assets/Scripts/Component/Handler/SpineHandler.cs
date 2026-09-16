@@ -51,6 +51,9 @@ public partial class SpineHandler
 
     protected string GetAnimNameAppoint(SpineAnimationStateEnum spineAnimationState, CreatureBean creatureData)
     {
+        //幻化整骨替换后原生物 anim_* 配置名不适用于新骨架:不指定动画名,交框架按目标骨架实际动画列表解析(缺失仅日志不播,避免 SetAnimation 抛异常)
+        if (creatureData.GetTransformSpineRes() != null)
+            return null;
         string animNameAppoint = null;
         switch (spineAnimationState)
         {

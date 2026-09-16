@@ -5,6 +5,8 @@ public enum ItemIdEnum
 {
     Crystal = 1,//魔晶
     Juice = 200001,//魔汁(榨汁产物,使用后给魔物加经验,实例经验值存 ItemBean.juicerExp)
+    TransformPotion = 200002,//幻化药(对生物使用替换spine形象,形象资源读 ItemsInfo.other_data,状态存 CreatureBean.transformItemId)
+    RestorePotion = 200003,//幻原药(清除幻化恢复原本形象)
 }
 
 
@@ -21,6 +23,8 @@ public enum ItemTypeEnum
     FingerRing = 6,
     Weapon = 10,
     Juice = 11,//魔汁(消耗品,非装备,除魔王外所有生物可用)
+    TransformPotion = 18,//幻化药(消耗品,非装备,所有生物含魔王可用;使用后替换spine形象,效果存 CreatureBean.transformItemId)
+    RestorePotion = 19,//幻原药(消耗品,非装备,所有生物含魔王可用;清除幻化恢复原本形象)
     Portrait = 101,
 }
 

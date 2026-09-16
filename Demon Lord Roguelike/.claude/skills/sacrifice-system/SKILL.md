@@ -216,7 +216,7 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
 - 选择上限：`UserUnlockBean.GetUnlockSacrificeMax()` = `UserLimmitBean.sacrificeMax`（基础默认 3）+ 「增加祭品数量」研究等级（`UnlockEnum.SacrificeNum = 100100002`，研究 `level_max=12`，满级即 3+12=15）。`UICreatureSacrifice` 的 `RefreshUI`/`EventForCardClickSelect` 两处上限判定都走此方法，不要再直接读 `limmitData.sacrificeMax`
 - 成功率显示：`SetSuccessRate(GetCurrentSuccessRate())`，`GetCurrentSuccessRate` 调 `CreatureUtil.GetSacrificeSuccessRate`；进度条颜色按成功率分5段（`GetSuccessRateColor` 现仅转发 `ColorUtil.GetProgressColor`：0-20%红`#C0392B`、20-40%橙`#E67E22`、40-60%黄`#F1C40F`、60-80%浅绿`#2ECC71`、80-100%蓝`#3498DB`，配色单一真实源在 ColorUtil，与孵化缸进阶BUFF概率共用），随 `DOColor`/`DOFillAmount` 0.5s 同步渐变
 - 升级经验条：`UIViewCreatureCardDetails.SetLevelData(level, levelExp)`，用 `LevelInfoCfg.GetItemData(level+1).level_exp` 算百分比
-- 魔汁使用：背包道具点击 `EventForItemBackpackClickSelect` 对 `ItemTypeEnum.Juice`(=11) 类型分流到 `UseJuiceItem`（`#region 魔汁使用`）——确认弹窗（textId 61014「是否对{0}使用魔汁？经验+{1}」）→ 选中生物 `levelExp += itemData.juicerExp` + 消耗道具 + 落盘；满级 Toast（61015）拦截防浪费；魔王/无选中兜底拦截。其余道具照旧走装备 `SetCreatureEquip`。详见 juicer-system Skill
+- 魔汁使用：背包道具点击 `EventForItemBackpackClickSelect` 对 `ItemTypeEnum.Juice`(=11) 类型分流到 `UseJuiceItem`（`#region 魔汁使用`）——确认弹窗（textId 61014「是否对{0}使用魔汁？经验+{1}」）→ 选中生物 `levelExp += itemData.juicerExp` + 消耗道具 + 落盘；满级 Toast（61015）拦截防浪费；魔王/无选中兜底拦截。`TransformPotion`(=18)/`RestorePotion`(=19) 分流到 `UseTransformPotionItem`/`UseRestorePotionItem`（幻化形象写入/清除 `CreatureBean.transformItemId`，与献祭无关）；其余道具照旧走装备 `SetCreatureEquip`。详见 juicer-system Skill
 
 ## 接入 / 修改流程
 

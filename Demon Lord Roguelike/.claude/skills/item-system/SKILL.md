@@ -38,7 +38,10 @@ ItemTypeEnum
 ├── NoseRing = 5     // 鼻环
 ├── FingerRing = 6   // 指环
 ├── Weapon = 10      // 武器
-└── Juice = 11       // 魔汁（消耗品，非装备，除魔王外所有生物可用）
+├── Juice = 11       // 魔汁（消耗品，非装备，除魔王外所有生物可用）
+├── TransformPotion = 18  // 幻化药（消耗品，非装备，所有生物含魔王可用；整骨替换 spine 形象）
+├── RestorePotion = 19    // 幻原药（消耗品，非装备，所有生物含魔王可用；清除幻化恢复原形象）
+└── Portrait = 101   // 头像
 
 // 武器子类型
 ItemTypeWeaponEnum
@@ -66,8 +69,10 @@ ItemUserTypeEnum
 // Assets/Scripts/Enums/ItemsEnum.cs
 public enum ItemIdEnum
 {
-    Crystal = 1,           // 魔晶
-    Juice = 200001,        // 魔汁（实例经验值存 ItemBean.juicerExp）
+    Crystal = 1,              // 魔晶
+    Juice = 200001,           // 魔汁（实例经验值存 ItemBean.juicerExp）
+    TransformPotion = 200002, // 幻化药（形象资源读 ItemsInfo.other_data，状态存 CreatureBean.transformItemId）
+    RestorePotion = 200003,   // 幻原药（清除幻化恢复原本形象）
     // 新增道具ID
     NewItem = 100001,
 }
@@ -88,7 +93,7 @@ public enum ItemTypeEnum
 
 道具配置表字段（ItemsInfo）:
 - `id` - 道具唯一ID
-- `item_type` - 道具类型(1帽子 2衣服 3裤子 4鞋子 5鼻环 6戒指 10武器 11魔汁 1000魔晶)
+- `item_type` - 道具类型(1帽子 2衣服 3裤子 4鞋子 5鼻环 6戒指 10武器 11魔汁 18幻化药 19幻原药 101头像 1000魔晶)
 - `item_weapon_type` - 武器类型（仅武器有效）
 - `num_max` - 道具堆叠上限
 - `creature_model_id` - 生物模型ID（装备外观）
@@ -96,7 +101,7 @@ public enum ItemTypeEnum
 - `icon_res` - 图标资源路径（格式 `名字` 或 `名字,图集Tag`，默认图集 Items）
 - `icon_rotate_z` - 图标旋转角度
 - `attack_mode_data` - 攻击模式数据
-- `other_data` - 其他数据
+- `other_data` - 其他数据（幻化药=Spine SkeletonDataAsset 的 Addressables 资源名）
 - `name` - 文本表ID
 - `remark` - 备注
 - `reward_rarity` - **奖励可出稀有度白名单**（string，逗号分隔稀有度ID，空=全稀有度适配）
@@ -157,7 +162,7 @@ equip_items_weapon_type = 0        // 0表示可使用所有武器类型
 2. **种族模组匹配**：装备 `creature_model_id` 为 0 表示通用装备（任何种族可装）；否则须与生物 `model_id` 相等（如人类不能装备史莱姆专属装备）。
 3. **武器子类型匹配**（仅当道具为武器）：生物 `equip_items_weapon_type` 为 0 表示通配所有武器；否则须与武器 `item_weapon_type` 相等。
 
-> `UIViewItemBackpackList.FilterItems` 与 `UICreatureManager.SetCreatureEquip` 均走此统一入口，故装备类道具的列表展示与装备操作资格判断一致，改判定只需改这两个 Partial。**例外**：FilterItems 额外放行魔汁（见下节），非装备类的展示规则不走 CanEquipItem。
+> `UIViewItemBackpackList.FilterItems` 与 `UICreatureManager.SetCreatureEquip` 均走此统一入口，故装备类道具的列表展示与装备操作资格判断一致，改判定只需改这两个 Partial。**例外**：FilterItems 额外放行魔汁/幻化药/幻原药（见下两节），非装备类的展示规则不走 CanEquipItem。
 
 ### NPC 随机装备（装备随机池 + 套装池）
 
@@ -173,15 +178,27 @@ NPC 可按配置在创建时随机穿装备（首用于终焉议会随机议员�
 
 ## 魔汁（Juice，首个消耗品类道具）
 
-道具类型不再只有装备部位：**魔汁是首个消耗品**（`ItemTypeEnum.Juice = 11`，紧随 Weapon=10；`ItemIdEnum.Juice = 200001`），由榨汁产出、对魔物使用加经验。
+道具类型不再只有装备部位：**魔汁是首个消耗品**（`ItemTypeEnum.Juice = 11`，紧随 Weapon=10；`ItemIdEnum.Juice = 200001`），由榨汁产出、对魔物使用加经验。消耗品现有三个：魔汁=11（限非魔王）、幻化药=18、幻原药=19（两药含魔王可用，见下节）。
 
 - **实例字段 `ItemBean.juicerExp`**（long）：仅 Juice 类型有效，榨汁时按投入魔物等级汇总写入（产出端 `CreatureJuicerLogic.SettleJuiceReward`，详见 juicer-system）；旧存档无此字段 JSON 反序列化默认 0 兼容。
 - **配置行**：excel_items_info id=200001（item_type=11、`num_max=1` **不堆叠**——每个魔汁实例经验不同故不入堆、creature_model_id=0、icon_res=`Item_Juicer_1`——**无图集后缀走默认 Items 图集 AtlasForItems**（该图集按 Textures/Items 文件夹整包，图标 Item_Juicer_1.png 放该目录即自动入内，导入设置 textureType=8 Sprite）、name textId=200001、remark=魔汁(榨汁产物,对魔物使用后增加经验)）。入账走 `userData.AddBackpackItem(itemBean)` 不堆叠重载（每个魔汁是独立 ItemBean）。
-- **使用流程**（魔物管理页 `UICreatureManager`）：`EventForItemBackpackClickSelect` 点击分流——Juice 类型 → `UseJuiceItem(itemData)`（`#region 魔汁使用`），其余道具照旧 `SetCreatureEquip`。`UseJuiceItem`：无选中生物/魔王兜底返回（列表已隐藏魔汁）→ `IsMaxLevel()` 满级 Toast 61015「目标已满级，无法使用魔汁」拦截 → `UIHandler.ShowDialogNormal(DialogBean)` 确认框（content = textId 61014「是否对{0}使用魔汁？经验+{1}」格式化生物名+juicerExp）→ 确定回调：`creatureData.levelExp += juicerExp` → `RemoveBackpackItem` → `SaveUserData()` → 三连刷新（`ui_UIViewCreatureCardEquipDetails.SetCardDetails` 经验显示 + `RefreshSacrificeButton` 经验达标点亮献祭按钮 + `InitBackpackItemsData` 列表移除魔汁）。
+- **使用流程**（魔物管理页 `UICreatureManager`）：`EventForItemBackpackClickSelect` 点击统一进 `UseOrEquipItem(itemData)` 分流——Juice → `UseJuiceItem`（`#region 魔汁使用`）、TransformPotion → `UseTransformPotionItem`、RestorePotion → `UseRestorePotionItem`，其余道具照旧 `SetCreatureEquip`。`UseJuiceItem`：无选中生物/魔王兜底返回（列表已隐藏魔汁）→ `IsMaxLevel()` 满级 Toast 61015「目标已满级，无法使用魔汁」拦截 → `UIHandler.ShowDialogNormal(DialogBean)` 确认框（content = textId 61014「是否对{0}使用魔汁？经验+{1}」格式化生物名+juicerExp）→ 确定回调：`creatureData.levelExp += juicerExp` → `RemoveBackpackItem` → `SaveUserData()` → 三连刷新（`ui_UIViewCreatureCardEquipDetails.SetCardDetails` 经验显示 + `RefreshSacrificeButton` 经验达标点亮献祭按钮 + `InitBackpackItemsData` 列表移除魔汁）。
 - **经验语义**：只累计 levelExp 不自动升级（沿用战斗结算加经验语义，升级仍走献祭 `CanUpLevel`/`UpLevelForSacrifice`）。
-- **列表过滤例外**：`UIViewItemBackpackList.FilterItems` 保留条件 = `creatureInfo.CanEquipItem` 或（`GetItemType()==Juice` 且 `!creatureData.IsDemonLord()`）——选中魔王时魔汁在管理页列表隐藏（魔王隐藏等级不吃经验），选普通魔物时可见；`UIDialogSelectItem` 传 creatureData=null 显示全部不受影响。
+- **列表过滤例外**：`UIViewItemBackpackList.FilterItems` 保留条件 = `creatureInfo.CanEquipItem` 或（`GetItemType()==Juice` 且 `!creatureData.IsDemonLord()`）或 `GetItemType()==TransformPotion` 或 `GetItemType()==RestorePotion`——选中魔王时魔汁在管理页列表隐藏（魔王隐藏等级不吃经验），**两药不带 IsDemonLord 排除**（魔王选中时可见可用）；`UIDialogSelectItem` 传 creatureData=null 显示全部不受影响。
 - **气泡显示**：`UIPopupItemInfo.SetJuiceExp(itemData, itemInfo)`（SetData 末尾调用）——Juice 类型显示 `ui_JuiceExpText` 并填 textId 61017「经验+{0}」格式化 juicerExp，其余道具隐藏；字段经 AutoLinkUI 按名绑定（prefab Details 节点下 `JuiceExpText`，复制 RarityText 而来、sibling index 1、默认 SetActive(false)），为 null 时容错跳过；魔汁 dicAttribute 为空故属性区自动隐藏，两者互斥不冲突。
 - **相关配置**：LevelInfo 新增 `juicer_exp` 列（long，1~10 级 = 同级升级经验 100%：100/1000/5000/…/10000000；另有 id=0 行 juicer_exp=20=1 级的 20%）；excel_language UIText sheet 新增 61014/61015/61016/61017 四条文本（12 语种），ItemsInfo sheet 新增 id=200001「魔汁/Demon Juice…」。
+
+## 幻化药 / 幻原药（TransformPotion=18 / RestorePotion=19）
+
+第二、三个消耗品（`ItemIdEnum.TransformPotion = 200002` / `RestorePotion = 200003`），**所有生物含魔王可用**（与魔汁限非魔王不同）：幻化药把生物 spine 形象整骨替换为配置资源，幻原药清除幻化恢复原形象。
+
+- **存档字段 `CreatureBean.transformItemId`**（long，0=无幻化；旧存档默认 0 兼容）——**只存道具ID不存资源名**（Mod 保底核心）；`CreatureBeanPartial.ClearTempData()` 增加 transformItemId=0 重置。
+- **形象解析唯一入口 `CreatureBeanPartial.GetTransformSpineRes()`**（`#region 幻化相关`）：transformItemId=0→null；配置缺失→每 id 一次 LogError（静态 `loggedMissingTransformIds` 防列表刷屏）+null；类型非 TransformPotion→null（防 Mod id 复用）；other_data 空→null；否则返回 `ItemsInfo.other_data`。
+- **展示覆盖范围 = 详情UI + 列表小图标 + 对话头像 + 基地/议会 + 战斗**：中枢在 `CreatureHandler.SetCreatureData`——幻化时 resName 换幻化资源、`ChangeSkeletonSkin` 两分支包 `if (!hasTransform)` 跳过套皮（传 null 不够，末尾 SetSkin(空) 会清默认外观）；战斗场景经 `GetFightCreatureObj` 新可选参数 `resNameOverride`（`CreateDefenseCreature` 与 `CreateDefenseCoreCreature` 均传 `GetTransformSpineRes()`）；游戏层 `SpineHandler.GetAnimNameAppoint` 开头守卫：幻化时返回 null（原生物 anim_* 配置名不适用新骨架，交框架按目标骨架动画列表解析，缺失仅日志不播防 ArgumentException）。形象尺寸按原生物 creatureModel 缩放。
+- **优先级与语义**：Portrait > 幻化 > 原形象（`GameUIUtil.SetCreatureUIForDetails` 的 Portrait 分支在 SetCreatureData 之后再覆盖，零逻辑改动仅补注释）；连续吃幻化药后者覆盖前者；幻化整骨替换不套原皮肤。
+- **使用流程**（`UICreatureManager`，经 `UseOrEquipItem` 分流）：`UseTransformPotionItem`——配置缺失或 other_data 空→Toast 61021 拦截；确认框 textId 61018（{0}生物名{1}道具名）→ 写入 transformItemId（覆盖旧值=以最后吃的为准）+ `RemoveBackpackItem` 消耗 + `SaveUserData()` 落盘 + 三连刷新（`SetCardDetails` + `InitBackpackItemsData` + `RefreshBaseControlForDemonLord`）；`UseRestorePotionItem`——transformItemId==0→Toast 61020 不消耗拦截，确认框 61019 → 置 0 恢复。`RefreshBaseControlForDemonLord`：魔王专属，同步基地走路 spine（非基地场景防护）。
+- **Mod 保底（核心语义）**：只存道具ID、展示时实时查 ItemsInfoCfg——Mod 提供幻化药时 Mod 移除→配置 null→所有展示路径自动回落原形象；Mod 装回自动恢复；幻原药只判 id==0 不读配置，Mod 没了也能清残留；spine 资源缺失经 `GetSkeletonDataAssetWithMod` 回落 + null-check 不崩。
+- **配置行**：excel_items_info id=200002（item_type=18、num_max=1、icon_res=`Item_TransformPotion_1`、other_data=空待用户自填 spine 资源名、name textId=200002）、id=200003（item_type=19、num_max=1、icon_res=`Item_RestorePotion_1`、name=200003）；num_max=1 因 `RemoveBackpackItem` 整 Bean 移除不做递减。excel_language ItemsInfo sheet 加 200002/200003 道具名（12 语种）、UIText sheet 加 61018（幻化确认）/61019（幻原确认）/61020（无幻化拦截）/61021（配置异常拦截）。
 
 ## 背包管理
 
@@ -334,5 +351,6 @@ EventsInfo.UIViewItemEquip_OnClickSelect      // RegisterEvent<UIViewItemEquip>
 | 道具工具类 | `Assets/Scripts/Utils/ItemsUtil.cs` |
 | 背包管理 | `Assets/Scripts/Bean/MVC/UserDataBean.cs` |
 | 生物装备 | `Assets/Scripts/Bean/Game/CreatureBean.cs` |
+| 幻化形象解析 | `Assets/Scripts/Bean/Game/CreatureBeanPartial.cs`（`GetTransformSpineRes`） |
 | 道具项UI(基类/装备/背包) | `Assets/Scripts/Component/UI/Common/Item/` |
 | UI背包列表组件 | `Assets/Scripts/Component/UI/Common/Backpack/` |

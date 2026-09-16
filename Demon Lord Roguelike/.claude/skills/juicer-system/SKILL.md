@@ -140,11 +140,11 @@ watched_files:
 
 ### 5.6 魔汁道具与魔汁使用（ItemsEnum/ItemBean/UICreatureManager）
 
-- **道具定义**：`ItemTypeEnum.Juice = 11`（消耗品，非装备，除魔王外所有生物可用）、`ItemIdEnum.Juice = 200001`（`Assets/Scripts/Enums/ItemsEnum.cs`）；配置在 `excel_items_info[道具信息].xlsx` 新行 200001（num_max=1 不堆叠、icon_res=`Item_Juicer_1` 无图集后缀，走默认 Items 图集 AtlasForItems——该图集按 Textures/Items 文件夹整包，Item_Juicer_1.png 自动入内）
+- **道具定义**：`ItemTypeEnum.Juice = 11`（消耗品，非装备，除魔王外所有生物可用）、`ItemIdEnum.Juice = 200001`（`Assets/Scripts/Enums/ItemsEnum.cs`）；配置在 `excel_items_info[道具信息].xlsx` 新行 200001（num_max=1 不堆叠、icon_res=`Item_Juicer_1` 无图集后缀，走默认 Items 图集 AtlasForItems——该图集按 Textures/Items 文件夹整包，Item_Juicer_1.png 自动入内）。消耗品现有三个——魔汁=11（首个，限非魔王）、幻化药 TransformPotion=18 / 幻原药 RestorePotion=19（ItemIdEnum 200002/200003，所有生物含魔王可用，详见 item-system Skill）
 - **实例经验**：`ItemBean.juicerExp`（long，仅 Juice 类型有效，榨汁时按投入魔物等级汇总；旧存档无此字段默认 0）
 - **经验来源**：`LevelInfo.juicer_exp`（long，每级被榨汁贡献的经验，`excel_level_info[等级信息].xlsx`）——1~10 级 = 同级 level_exp 的 100%（100/1000/5000/10000/50000/100000/500000/1000000/5000000/10000000）；新增 id=0 行（level_exp=0，juicer_exp=20=1 级的 20%）
-- **使用入口在魔物管理页（UICreatureManager，非榨汁 UI）**：道具列表点魔汁（`EventForItemBackpackClickSelect` 按 `GetItemType()==Juice` 分流，其余道具照旧走装备）→ `UseJuiceItem(itemData)` 弹确认框「是否对{生物名}使用魔汁？经验+X」（textId 61014，`ShowDialogNormal`）→ 确定后当前选中生物 `levelExp += juicerExp` + `RemoveBackpackItem` 消耗 + `SaveUserData` 落盘 + 三连刷新（卡片详情 `SetCardDetails` / 献祭按钮 `RefreshSacrificeButton` / 背包列表 `InitBackpackItemsData`）；经验只累计不自动升级（沿用战斗经验语义，升级仍走献祭）
-- **拦截**：满级生物（`IsMaxLevel()`）Toast 61015 拦截防浪费；魔王不可用（`UIViewItemBackpackList` 过滤对魔王隐藏魔汁，`UseJuiceItem` 里 null/魔王兜底 return）
+- **使用入口在魔物管理页（UICreatureManager，非榨汁 UI）**：道具列表点击统一经 `UseOrEquipItem` 分流（Juice→`UseJuiceItem`、TransformPotion→`UseTransformPotionItem`、RestorePotion→`UseRestorePotionItem`、其余道具照旧走装备）→ `UseJuiceItem(itemData)` 弹确认框「是否对{生物名}使用魔汁？经验+X」（textId 61014，`ShowDialogNormal`）→ 确定后当前选中生物 `levelExp += juicerExp` + `RemoveBackpackItem` 消耗 + `SaveUserData` 落盘 + 三连刷新（卡片详情 `SetCardDetails` / 献祭按钮 `RefreshSacrificeButton` / 背包列表 `InitBackpackItemsData`）；经验只累计不自动升级（沿用战斗经验语义，升级仍走献祭）
+- **拦截**：满级生物（`IsMaxLevel()`）Toast 61015 拦截防浪费；魔王不可用（`UIViewItemBackpackList` 过滤对魔王隐藏魔汁——仅魔汁带 IsDemonLord 排除，幻化药/幻原药对魔王可见可用；`UseJuiceItem` 里 null/魔王兜底 return）
 - **道具气泡**：`UIPopupItemInfo.SetJuiceExp` 仅 Juice 类型显示「经验+X」行（textId 61017，魔汁无属性，与属性区互斥自动隐藏）
 
 ## 多语言
@@ -178,9 +178,9 @@ watched_files:
 | 枚举 | Assets/Scripts/Enums/GameStateEnum.cs (`UnlockEnum.Juicer/JuicerNum` / `ControlInteractionEnum.JuicerInteraction`) |
 | 镜头 | Assets/Scripts/Component/Handler/CameraHandler.cs (`SetJuicerCamera`→CV_Juicer；`GetBaseSceneCamera`/`FocusJuicerCameraOnHole`/`RestoreJuicerCameraFocus`/`ShakeJuicerCamera`) |
 | 投入上限 | Assets/Scripts/Bean/Game/UserUnlockBean.cs (`GetUnlockJuicerCreatureMax`) · UserLimmitBean.cs (`juicerCreatureMax`) |
-| 魔汁道具/枚举 | Assets/Scripts/Enums/ItemsEnum.cs (`ItemTypeEnum.Juice=11` / `ItemIdEnum.Juice=200001`) · Assets/Scripts/Bean/Game/ItemBean.cs (`juicerExp`) · excel_items_info(200001,num_max=1 不堆叠) |
+| 魔汁道具/枚举 | Assets/Scripts/Enums/ItemsEnum.cs (`ItemTypeEnum.Juice=11` / `ItemIdEnum.Juice=200001`；同文件另有消耗品 TransformPotion=18/RestorePotion=19、ItemIdEnum 200002/200003) · Assets/Scripts/Bean/Game/ItemBean.cs (`juicerExp`) · excel_items_info(200001,num_max=1 不堆叠) |
 | 榨汁经验配置 | excel_level_info(`juicer_exp` 列,1~10级=同级 level_exp 100%,新增 id=0 行=20) · LevelInfoBean |
-| 魔汁使用 | Assets/Scripts/Component/UI/Game/CreatureManager/UICreatureManager.cs (`UseJuiceItem`) · UIViewItemBackpackList.cs(魔王隐藏魔汁过滤) · UIPopupItemInfo.cs(`SetJuiceExp` 61017) |
+| 魔汁使用 | Assets/Scripts/Component/UI/Game/CreatureManager/UICreatureManager.cs (`UseOrEquipItem` 分流 → `UseJuiceItem`) · UIViewItemBackpackList.cs(魔王隐藏魔汁过滤,幻化药/幻原药例外放行含魔王) · UIPopupItemInfo.cs(`SetJuiceExp` 61017) |
 | 研究/解锁 | excel_research_info(100600001/100600002) · excel_unlock_info · ResearchInfo.txt · UnlockInfo.txt |
 | 多语言 | excel_language · Language_ResearchInfo_cn/en · Language_UIText_cn/en |
 | 测试入口 | Assets/Scripts/Game/Launcher/LauncherTest.cs (`StartForCreatureJuicerTest`) · Assets/Editor/GameTestEditor.cs (`DrawCreatureJuicerTest`) |

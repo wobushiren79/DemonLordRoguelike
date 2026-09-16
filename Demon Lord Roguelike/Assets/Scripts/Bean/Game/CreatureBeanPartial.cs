@@ -272,6 +272,7 @@ public partial class CreatureBean
         dicSkinData.Clear();
         dicEquipItemData.Clear();
         dicRarityBuff.Clear();
+        transformItemId = 0;
     }
 
     /// <summary>
@@ -286,5 +287,35 @@ public partial class CreatureBean
         RCDTimeUpdate = 0;
         creatureState = CreatureStateEnum.Idle;
     }
+
+    #region 幻化相关
+    /// <summary>已日志过的缺失幻化配置ID（防列表刷新每只生物都调解析时错误日志刷屏，每id每会话只记一次）</summary>
+    protected static HashSet<long> loggedMissingTransformIds = new HashSet<long>();
+
+    /// <summary>
+    /// 获取当前幻化状态应替换的 spine 资源名（SkeletonDataAsset 的 Addressables 资源名），全项目唯一形象解析入口。
+    /// <para>transformItemId=0 / 配置缺失 / 类型非幻化药 / other_data 为空时均返回 null，调用方回落为原形象；</para>
+    /// <para>只存道具ID实时查配置：Mod 提供幻化药时 Mod 移除（配置失效）即自动失效，Mod 装回自动恢复；幻原药置0可主动清除。</para>
+    /// </summary>
+    /// <returns>spine 资源名；无幻化或配置异常返回 null</returns>
+    public string GetTransformSpineRes()
+    {
+        if (transformItemId == 0)
+            return null;
+        ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(transformItemId);
+        if (itemInfo == null)
+        {
+            if (loggedMissingTransformIds.Add(transformItemId))
+                LogUtil.LogError($"获取幻化资源失败 没有找到道具配置:{transformItemId}(Mod移除或配置被删,幻化自动失效)");
+            return null;
+        }
+        //防 Mod id 被复用/覆盖成其它道具时幻化错误触发
+        if (itemInfo.GetItemType() != ItemTypeEnum.TransformPotion)
+            return null;
+        if (itemInfo.other_data.IsNull())
+            return null;
+        return itemInfo.other_data;
+    }
+    #endregion
 
 }

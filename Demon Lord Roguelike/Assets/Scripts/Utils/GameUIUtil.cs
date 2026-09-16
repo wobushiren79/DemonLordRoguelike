@@ -66,9 +66,9 @@ public static class GameUIUtil
     public static void SetCreatureUIForDetails(SkeletonGraphic ui_Icon, RawImage ui_Scene, CreatureBean creatureData,
         float customUISize = 0, float customUIPosOffsetX = 0, float customUIPosOffsetY = 0)
     {
-        //设置spine
+        //设置spine(内部已应用幻化整骨替换——若生物处于幻化状态,此处的骨架已是幻化资源)
         CreatureHandler.Instance.SetCreatureData(ui_Icon, creatureData, isUIShow: true);
-        //如果装备了肖像道具 使用肖像资源替换spine
+        //如果装备了肖像道具 使用肖像资源替换spine(Portrait 优先级最高:在幻化之后再覆盖,卸下 Portrait 后幻化自动显现)
         ItemBean portraitItem = creatureData.GetEquip(ItemTypeEnum.Portrait);
         if (portraitItem != null)
         {

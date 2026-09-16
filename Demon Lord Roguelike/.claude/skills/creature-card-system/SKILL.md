@@ -279,6 +279,8 @@ GameUIUtil.SetCreatureUIForDetails(ui_Icon, ui_CardScene, creatureData);
 GameUIUtil.SetCreatureUIForSimple(ui_Icon, creatureData, scale: 2);
 ```
 
+> **图标形象来源（幻化/Portrait 优先级）**：两个接口底层都走 `CreatureHandler.SetCreatureData` 中枢——生物处于幻化状态（`CreatureBean.transformItemId≠0`，幻化药写入/幻原药清除，机制见 creature-system）时自动整骨替换为幻化资源并跳过原皮肤，卡片小图标/详情图标**无需任何特判**即显示幻化形象。`SetCreatureUIForDetails` 的 Portrait 装备分支优先级最高（在幻化之后再覆盖；卸下 Portrait 后幻化自动显现），优先级链 **Portrait > 幻化 > 原形象**。
+
 ### 获取卡片数据
 
 ```csharp
@@ -358,6 +360,8 @@ protected void OnConfirmOrderFilter(OrderFilterResultBean result) {
 > **魔王装备槽 = 同 model_id 扭蛋魔物非武器槽并集(除武器)**：魔王(create 生物 `creature_type=0`，id 1-7)的可装备槽位**通过 Excel 配置 `equip_items_type` 落地**(非运行时计算)——按 `model_id`(种族)对应，取同 `model_id` 扭蛋魔物(`creature_type=1`)所有非武器槽的**并集**；**武器槽保持原样不加**(create 生物原为空)；**人类(model_id=1)** 扭蛋版 1001 槽位为空，手动指定为 `1,2,3`(帽/衣/裤)。当前值：id1=`1,2,3`、id2=`1,2,3`、id3=`1,6`、id4=`1,2,3,6`、id5=`1,2,3,5`、id6=`1,2,3`、id7=`1,2,3,5,6`。装备槽展示与"能否装备"判定共用 `creatureInfo.GetEquipItemsType()`，故改配置即同时生效两端；后续扭蛋槽位若变动需手动同步魔王配置。
 
 > **道具列表默认基序**：同界面的背包道具列表 `UIViewItemBackpackList` 也由 `UICreatureManager.InitBackpackItemsData` 传入前用 `GetSortedBackpackItem` 预排序：**稀有度降序（`ItemBean.rarity` 高→低）→ 道具类型升序（`GetItemType()` 强转 int，同类道具相邻）**。同样作用于副本，不改动存档 `listBackpackItems` 原始顺序。
+
+> **魔物管理页消耗品使用分流（`UICreatureManager.UseOrEquipItem`）**：背包道具左键点击（`EventForItemBackpackClickSelect`）与道具选项-装备（`EventForItemSelectEquip`）统一走 `UseOrEquipItem` 按道具类型分流——魔汁（Juice）→`UseJuiceItem`；**幻化药（TransformPotion）→`UseTransformPotionItem`**（确认框 UIText 61018；配置缺失/`other_data` 空 Toast 61021 拦截防浪费；确认后写入 `creatureData.transformItemId`，覆盖旧值=以最后吃的为准，所有生物含魔王可用、不做 IsDemonLord 拦截）；**幻原药（RestorePotion）→`UseRestorePotionItem`**（确认框 61019；无幻化 Toast 61020 拦截不消耗；确认后 `transformItemId` 置0 恢复原形象，流程只判 id==0 不读配置，Mod 移除后残留 id 仍可清除）；其余类型→`SetCreatureEquip` 装备。幻化/幻原确认后刷新三件套：卡片详情 `SetCardDetails`（重绘 spine 即显示幻化/原形象）+ 背包列表 `InitBackpackItemsData` + `RefreshBaseControlForDemonLord`（基地自控魔王形象同步）；落盘 `SaveUserData`。
 
 ### 空列表提示
 

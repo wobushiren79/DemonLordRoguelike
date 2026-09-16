@@ -75,6 +75,7 @@ public class CreatureBean
     public List<BuffBean> listBuff;                        // BUFF 列表
     public Dictionary<long, long> creatureSkinData;        // 皮肤数据
     public CreatureInfoBean creatureInfoBean;              // 配置信息
+    public long transformItemId = 0;           // 幻化道具ID（0=无幻化，幻化药写入/幻原药置0，见下注「幻化」）
     
     // 计算最终属性 = 基础 + 装备 + BUFF
     public CreatureAttributeBean GetFinalAttribute();
@@ -84,6 +85,8 @@ public class CreatureBean
 > **体型缩放**：`CreatureBean.bodySizeScale`(float, 默认1) 是模型体型倍率，两条来源共用同一套解析规则（空/"0"=1倍、`"min,max"`如"0.9,1.1"=区间随机、`"1.1"`=固定倍数）：NPC 读 `NpcInfo.body_size` + `NpcInfoBean.GetBodySizeRandomScale()`（`SetData(NpcInfoBean)`）；按 creatureId 创建的生物（扭蛋/建号等）读 `CreatureInfo.body_size` + `CreatureInfoBean.GetBodySizeRandomScale()`（`SetData(long creatureId)`）。均在创建时随机一次并缓存，渲染时 `CreatureHandler.SetCreatureData` 以 `localScale = size_spine × CreatureBean.GetBodySizeScale()`（带≤0回退1的保护）应用。未配置 body_size 的生物倍率恒为1，行为不变。CreatureInfo 侧另有区间解析 `CreatureInfoBean.GetBodySizeRange(out min, out max)`（供创建界面身高滑条取上下限，`GetBodySizeRandomScale` 已改为基于它随机）。
 
 > **NPC 稀有度**：NPC 创建（`SetData(NpcInfoBean)`）稀有度取自 `NpcInfo.rarity` 列（int，空/0=N，按 RarityEnum 值 1=N~6=L），未配置时维持旧行为全 N。仅写入 `CreatureBean.rarity`（详情显示/CMP 倍率等读 `GetRarityValue()` 的链路自动生效），**不授予稀有度 BUFF**——稀有度 BUFF 仍仅孕育扭蛋（`GashaponItemBean`）与测试添加（`UITestBase`）经 `RandomRarityBuffForCreate` 发放。
+
+> **幻化（`CreatureBean.transformItemId`，long 持久化字段）**：0=无幻化；幻化药（`ItemTypeEnum.TransformPotion`=18，消耗品）使用后写入对应道具 id，幻原药（`RestorePotion`=19）置0 清除恢复原形象；连续吃幻化药后者覆盖前者（直接覆写 id）。随存档 JSON 序列化（旧存档无此字段默认0兼容）；**只存 id 不存资源名**——展示时实时查 `ItemsInfoCfg`，Mod 提供的幻化药被移除→配置 null→全路径自动回落原形象，装回自动恢复；幻原药流程只判 id==0 不读配置，Mod 移除后残留 id 仍可正常清除。`ClearTempData()` 重置为0（防一次性 Bean 入池复用残留），`ClearFightTempData()` 不动（战斗结束幻化保留）。**解析入口 `CreatureBeanPartial.GetTransformSpineRes()`**（`#region 幻化相关`，全项目唯一形象解析入口）：transformItemId=0 / 配置缺失（静态 `loggedMissingTransformIds` 每 id 每会话只 LogError 一次，防列表刷新刷屏）/ 道具类型非 TransformPotion（防 Mod id 被复用成其它道具）/ `other_data` 为空 均返回 null（调用方回落原形象），否则返回 `ItemsInfo.other_data`（Spine SkeletonDataAsset 的 Addressables 资源名）。⚠️ 幻化目标资源须含完整动画集（Idle/Walk/Attack/Dead）。**形象优先级链：Portrait 装备 > 幻化 > 原形象**。
 
 > **creatureInfo/creatureModel 为自校验懒加载缓存**（`CreatureBeanPartial.cs`）：getter 发现缓存 id 与当前 `creatureId`（或 `creatureInfo.model_id`）不一致时自动重新解析。`creatureId` 允许中途直接改写（终焉议会转生 `DoomCouncilEntityReincarnation` 直接赋值、`CreatureManager.GetCreatureData` 对象池复用后 `SetData`），**无需手动清缓存**；改动种类相关字段时禁止另设平行的配置缓存字段绕过自校验。
 
@@ -306,6 +309,8 @@ CreatureHandler.Instance.RemoveFightCreatureEntity(entity, creatureFightType);
 // 获取生物
 FightCreatureEntity entity = CreatureHandler.Instance.GetFightCreatureEntity(creatureUUId);
 ```
+
+> **`SetCreatureData` 幻化整骨替换（生物展示核心行为，务必知悉）**：`SetCreatureData` 是全部生物 Spine 展示的中枢漏斗，资源解析后注入 `string transformSpineRes = creatureData.GetTransformSpineRes()`，非空（`hasTransform`）则以幻化资源名顶替 `resName`——**整骨替换（换 SkeletonDataAsset），不是换肤**。SkeletonAnimation 与 SkeletonGraphic 两个分支的 `ChangeSkeletonSkin` 调用都包 `if (!hasTransform)` **整体跳过**——禁止改成传 null 皮肤进去：皮肤按原骨架槽位配置、对幻化骨架无意义，且 `ChangeSkeletonSkin` 末尾 `SetSkin(空皮肤)` 会把幻化骨架的默认外观清掉。缩放行不变（形象大小仍按原生物 `creatureModel.size_spine × GetBodySizeScale()`，幻化不改体型）。此一处漏斗覆盖全部展示场景：详情UI（`GameUIUtil.SetCreatureUIForDetails`）/列表小图标（`SetCreatureUIForSimple`）/对话头像/破蛋/献祭/加点/终焉议会议员/基地自控魔王/战斗实体皮肤阶段；**Portrait 装备优先级更高**，由 `GameUIUtil.SetCreatureUIForDetails` 在 `SetCreatureData` 之后再覆盖（卸下 Portrait 幻化自动显现）。战斗实体的骨骼替换走 `GetFightCreatureObj` 的 `resNameOverride` 参数，见 [game-fight-system](../game-fight-system/SKILL.md)。
 
 > **`CreateDefenseCreatureEntity` 末尾推送新事件（事件驱动，不再直接重算）**：加完新防守魔物的 BUFF 后 `EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_DefenseCreatureCreate, fightCreatureEntity)`——CreatureHandler 只负责生成、推事件；由 `GameFightLogic.EventForDefenseCreatureCreate` 监听后按守卫 `BuffHandler.Instance.HasDynamicRateAbyssalBlessing()` 重算全体防守属性，供随魔物数缩放类动态率馈赠（加成率随场上魔物数 N 变化；曾用于「都是兄弟」，现役无配置、机制留存）在放置/增殖新魔物、N 增大时即时生效。守卫仅当馈赠池含指定类型/子类 BUFF 才广播，普通对局无开销。重算职责归 GameFightLogic。详见 abyssal-blessing-system SKILL。
 

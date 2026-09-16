@@ -110,7 +110,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 |--------|-------|--------|--------|
 | `excel_audio_info[音频信息_FrameWork].xlsx` | AudioInfo | 185 | id, name_res, remark, audio_type(0音效/1音乐/2环境音), volume_scale。id 段位：音效 1~640001、音乐 1000001~1200001、环境音 2000001 起（2000001=sound_night_1 夜晚虫鸣，被 FightScene 10002 引用） |
 | `excel_base_info[基础信息_FrameWork].xlsx` | BaseInfo | 3 | id, content |
-| `excel_language[多语言_FrameWork].xlsx` | UIText + 18个子表 | 20(UIText) | id, content_{12种语言: cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr}（含 content_1_* 详情列的表：BuffInfo、AchievementInfo、CreatureInfo[2026-08新增,生物详情描述/攻击方式说明] 等） |
+| `excel_language[多语言_FrameWork].xlsx` | UIText + 18个子表 | 240(UIText) | id, content_{12种语言: cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr}（含 content_1_* 详情列的表：BuffInfo、AchievementInfo、CreatureInfo[2026-08新增,生物详情描述/攻击方式说明] 等） |
 | `excel_spine_animation_state[骨骼动画枚举_FrameWork].xlsx` | SpineAnimationState | 33 | id, res |
 | `excel_ui_text[UI文本_FrameWork].xlsx` | UIText | 152 | id, content[language] |
 
@@ -148,7 +148,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
-| `excel_items_info[道具信息].xlsx` | ItemsInfo | 229 | id, item_type, item_weapon_type, num_max, creature_model_id, icon_res, attack_mode_data, name[language] （12列）。200001=魔汁(item_type=11 新类型 Juice 消耗品[仅枚举,ItemsType 表无对应行],num_max=1 不堆叠每瓶经验独立,creature_model_id=0,icon_res=`Item_Juicer_1`[无图集后缀,走默认 Items 图集 AtlasForItems——该图集按 Textures/Items 文件夹整包,Item_Juicer_1.png 自动入内],榨汁产物:对魔物使用增加经验,经验值存 ItemBean.juicerExp 实例字段) |
+| `excel_items_info[道具信息].xlsx` | ItemsInfo | 231 | id, item_type, item_weapon_type, num_max, creature_model_id, icon_res, attack_mode_data, name[language] （12列）。200001=魔汁(item_type=11 新类型 Juice 消耗品[仅枚举,ItemsType 表无对应行],num_max=1 不堆叠每瓶经验独立,creature_model_id=0,icon_res=`Item_Juicer_1`[无图集后缀,走默认 Items 图集 AtlasForItems——该图集按 Textures/Items 文件夹整包,Item_Juicer_1.png 自动入内],榨汁产物:对魔物使用增加经验,经验值存 ItemBean.juicerExp 实例字段)；200002=幻化药(item_type=18 TransformPotion 消耗品[仅枚举,ItemsType 表无对应行],num_max=1,icon_res=`Item_TransformPotion_1`,other_data=幻化形象 spine 资源名[SkeletonDataAsset Addressables 名,当前空=配置异常待填,使用端 Toast 61021 拦截防浪费;消费方 CreatureBeanPartial.GetTransformSpineRes],所有生物含魔王可用,幻化状态存 CreatureBean.transformItemId)；200003=幻原药(item_type=19 RestorePotion 消耗品,icon_res=`Item_RestorePotion_1`,other_data 无需配置[清除只判 transformItemId==0 不读配置,Mod 移除后残留 id 仍可清],清除幻化恢复原本形象,所有生物含魔王可用) |
 | `excel_items_type[道具类型].xlsx` | ItemsType | 10 | id, icon_res, name[language] |
 
 ---

@@ -37,6 +37,10 @@ public partial class CreatureBean
     /// 按 creatureId 创建的生物（扭蛋/建号等）读 CreatureInfo.body_size；未配置则恒为1。
     /// 含随机区间的配置在创建时解析一次并缓存到此，保证后续重复渲染体型稳定。</summary>
     public float bodySizeScale = 1f;
+    /// <summary>幻化道具ID（0=无幻化；ItemTypeEnum.TransformPotion=18 类消耗品使用后写入对应道具ID，RestorePotion=19 置0）。
+    /// 展示时经 ItemsInfoCfg 实时查配置整骨替换 spine，优先级低于 Portrait 装备；
+    /// 只存ID不存资源名——Mod 提供幻化药时 Mod 移除配置失效，展示自动回落原形象。旧存档无此字段默认0兼容。</summary>
+    public long transformItemId = 0;
     #endregion
 
     #region 构造与初始化

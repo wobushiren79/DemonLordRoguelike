@@ -190,6 +190,8 @@ SpineHandler.Instance.PlayAnim(
 );
 ```
 
+> **带生物数据播放的动画名解析双路径 + 幻化守卫（游戏层 `SpineHandler.GetAnimNameAppoint`，`Assets/Scripts/Component/Handler/SpineHandler.cs`）**：带 `CreatureBean` 的 `PlayAnim` 重载先经 `GetAnimNameAppoint` 解析指定动画名——路径①**指定名**：仅 Idle/Attack/Walk/Dead 四状态读 `creatureInfo.anim_idle/anim_attack/anim_walk/anim_dead` 配置直传（配置为空或其它状态原本就返回 null）；路径②**安全解析（返回 null）**：`GetAnimNameAppoint` 方法开头有幻化守卫——`creatureData.GetTransformSpineRes() != null` 时直接返回 null（不指定动画名），交框架 `SpineManager.GetSkeletonDataAnimName` 按目标骨架实际动画列表解析，缺失仅 LogError 不播。**守卫原因**：幻化是整骨替换，原生物 anim_* 配置名不适用于幻化骨架，直传指定名会跳过框架安全校验、`AnimationState.SetAnimation` 在目标骨架缺该动画时抛 `ArgumentException`；守卫后战斗缺动画不崩（状态机驱动、无 `TrackEntry.Complete` 依赖）。此守卫顺带覆盖 Portrait 装备换骨（同为整骨替换）的同款隐患。幻化机制详见 creature-system SKILL。
+
 ### 设置混合时间
 
 ```csharp

@@ -42,6 +42,8 @@ Bean/
 
 > **`ItemBean.juicerExp`（手写 `Assets/Scripts/Bean/Game/ItemBean.cs`，long）**：魔汁经验值实例字段，仅 `ItemTypeEnum.Juice=11`（消耗品）类型、`ItemIdEnum.Juice=200001` 有效；榨汁结算（`CreatureJuicerLogic.SettleJuiceReward`）按投入魔物等级的 `LevelInfo.juicer_exp` 汇总写入，`num_max=1` 不堆叠保证每瓶经验独立；旧存档无此字段默认 0 兼容。
 
+> **`CreatureBean.transformItemId`（手写 `Assets/Scripts/Bean/Game/CreatureBean.cs`，long，幻化状态存档字段）**：幻化药（`ItemTypeEnum.TransformPotion=18`/`ItemIdEnum.TransformPotion=200002`）使用后写入所用道具 id（0=无幻化，连续吃后者覆盖；幻原药 `RestorePotion=19`/`200003` 置0清除），持久化入存档、旧档无此字段默认 0 兼容；`ClearTempData()` 清零。形象解析唯一入口 `CreatureBeanPartial.GetTransformSpineRes()`（#region 幻化相关）：0/配置缺失（每 id 每会话一次 LogError 防刷屏）/类型非 18（防 Mod id 复用误触发）/`other_data` 空 → null 回落原形象，否则返回 `ItemsInfo.other_data`（SkeletonDataAsset 资源名）；**只存 id 实时查配置**——Mod 移除全路径自动回落原形象、装回自动恢复、幻原药不依赖配置仍可清。消费中枢 `CreatureHandler.SetCreatureData`（幻化时整骨替换+跳过套原皮，覆盖详情UI/列表图标/对话头像/基地/议会/战斗皮肤）与 `GetFightCreatureObj(resNameOverride)`（防御+核心传幻化资源，进攻敌人不传）。
+
 > **`FightCreatureBean.isPositionReleased`（手写 `Assets/Scripts/Bean/Game/FightCreatureBean.cs`，bool，占位已释放）**：冲锋自爆型生物（如 6003 哥布林敢死队）冲锋开始时置位（`AIIntentDefenseCreatureCharge`），此后占位/删除扫描（`FightBean.CheckDefenseCreatureByPos`/`GetDefenseCreatureByPos`）跳过它，原格可立即放第二只魔物；`ResetData()` 里清零防对象池残留。
 
 > **`FightCreatureBean.isSummoned`（手写 `FightCreatureBean.cs`，bool，是否召唤物，2026-09-15 新增）**：`AttackModeSummon` 召唤生成时置位（经 `CreateAttackCreature` 返回 obj.name=creatureUUId 反查实体）；当前消费=`FightCreatureEntity.DropCrystal` 方法头判到直接 return——召唤物（当前=骷髅召唤师召唤的骷髅 20010001/20020001）死亡不掉魔晶，防低血召唤物被挂机刷取；`ResetData()` 里清零防对象池残留（置位发生在 CreateAttackCreature 两次 ResetData 之后，顺序无冲突）。

@@ -42,7 +42,17 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         {
             creatureData.creatureModel.GetShowRes(out resName, out skinType);
         }
-        Dictionary<string, SpineSkinBean> skinData = creatureData.GetSkinData(showType: skinType, isNeedWeapon: isNeedWeapon, isNeedEquip: isNeedEquip);
+        //幻化整骨替换:有幻化状态时改用幻化资源,且跳过原生物皮肤(皮肤按原骨架配置,ChangeSkeletonSkin 末尾 SetSkin(空) 会清掉幻化骨架默认外观;
+        //优先级低于详情UI的Portrait装备——Portrait 由 GameUIUtil.SetCreatureUIForDetails 在本调用之后再覆盖)
+        string transformSpineRes = creatureData.GetTransformSpineRes();
+        bool hasTransform = !transformSpineRes.IsNull();
+        if (hasTransform)
+        {
+            resName = transformSpineRes;
+        }
+        //幻化状态不取皮肤(皮肤按原骨架配置,用不上)
+        Dictionary<string, SpineSkinBean> skinData = hasTransform ? null
+            : creatureData.GetSkinData(showType: skinType, isNeedWeapon: isNeedWeapon, isNeedEquip: isNeedEquip);
         //设置SkeletonAnimation
         if (skeletonAnimation != null)
         {
@@ -50,8 +60,11 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             {
                 SpineHandler.Instance.SetSkeletonDataAsset(skeletonAnimation, resName);
             }
-            //修改皮肤
-            SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, skinData);
+            //修改皮肤(幻化状态跳过)
+            if (!hasTransform)
+            {
+                SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, skinData);
+            }
             //设置模型大小（目标大小 size_spine × NPC体型倍率 bodySizeScale，普通生物体型倍率恒为1）
             skeletonAnimation.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine * creatureData.GetBodySizeScale();
         }
@@ -62,8 +75,11 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             {
                 SpineHandler.Instance.SetSkeletonDataAsset(skeletonGraphic, resName);
             }
-            //修改皮肤
-            SpineHandler.Instance.ChangeSkeletonSkin(skeletonGraphic.Skeleton, skinData);
+            //修改皮肤(幻化状态跳过)
+            if (!hasTransform)
+            {
+                SpineHandler.Instance.ChangeSkeletonSkin(skeletonGraphic.Skeleton, skinData);
+            }
         }
     }
 
@@ -93,7 +109,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// </summary>
     public Task<FightCreatureEntity> CreateDefenseCoreCreature(CreatureBean creatureData, Vector3 creaturePos)
     {
-        var targetObj = GetFightCreatureObj(creatureData.creatureId, CreatureFightTypeEnum.FightDefenseCore);
+        var targetObj = GetFightCreatureObj(creatureData.creatureId, CreatureFightTypeEnum.FightDefenseCore, creatureData.GetTransformSpineRes());
 
         targetObj.transform.position = creaturePos;
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
@@ -138,7 +154,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// </summary>
     public GameObject CreateDefenseCreature(CreatureBean creatureData)
     {
-        var targetObj = GetFightCreatureObj(creatureData.creatureId, CreatureFightTypeEnum.FightDefense);
+        var targetObj = GetFightCreatureObj(creatureData.creatureId, CreatureFightTypeEnum.FightDefense, creatureData.GetTransformSpineRes());
 
         Transform rendererTF = targetObj.transform.Find("Spine");
         SkeletonAnimation targetSkeletonAnimation = rendererTF.GetComponent<SkeletonAnimation>();
@@ -313,11 +329,14 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// <summary>
     /// 获取一个生物的obj
     /// </summary>
-    public GameObject GetFightCreatureObj(long creatureId, CreatureFightTypeEnum creatureFightType)
+    /// <param name="resNameOverride">形象资源覆盖（幻化状态传 creatureData.GetTransformSpineRes()；无幻化/进攻生物传 null 用原骨架）</param>
+    public GameObject GetFightCreatureObj(long creatureId, CreatureFightTypeEnum creatureFightType, string resNameOverride = null)
     {
         var targetObj = manager.GetFightCreatureObj(creatureId, creatureFightType);
         var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
         var creatureModel = CreatureModelCfg.GetItemData(creatureInfo.model_id);
+        //幻化状态整骨替换为幻化资源,否则用原骨架
+        string targetResName = resNameOverride.IsNull() ? creatureModel.res_name : resNameOverride;
         //设置层级
         if (!creatureInfo.creature_layer.IsNull())
         {
@@ -345,12 +364,12 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             var existSkeletonAnimation = rendererTF.GetComponent<SkeletonAnimation>();
             if (existSkeletonAnimation == null)
             {
-                SpineHandler.Instance.AddSkeletonAnimation(rendererTF.gameObject, creatureModel.res_name);
+                SpineHandler.Instance.AddSkeletonAnimation(rendererTF.gameObject, targetResName);
             }
             else
             {
                 //复用池对象:池按战斗类型共享(非按id),须把骨骼重置为当前生物,避免残留上一个魔物骨骼致套皮失败(内部同资源会跳过,复用同魔物零开销)
-                SpineHandler.Instance.SetSkeletonDataAsset(existSkeletonAnimation, creatureModel.res_name);
+                SpineHandler.Instance.SetSkeletonDataAsset(existSkeletonAnimation, targetResName);
             }
 
             rendererTF.localPosition = Vector3.zero;

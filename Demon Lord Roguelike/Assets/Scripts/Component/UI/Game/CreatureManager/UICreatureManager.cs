@@ -390,12 +390,19 @@ public partial class UICreatureManager : BaseUIComponent
     }
 
     /// <summary>
-    /// 使用或装备道具：魔汁走使用流程(确认弹窗→加经验)，其余道具走装备
+    /// 使用或装备道具：消耗品(魔汁/幻化药/幻原药)走各自使用流程(确认弹窗→生效)，其余道具走装备
     /// </summary>
     public void UseOrEquipItem(ItemBean itemData)
     {
-        if (itemData != null && itemData.GetItemType() == ItemTypeEnum.Juice)
+        if (itemData == null)
+            return;
+        ItemTypeEnum itemType = itemData.GetItemType();
+        if (itemType == ItemTypeEnum.Juice)
             UseJuiceItem(itemData);
+        else if (itemType == ItemTypeEnum.TransformPotion)
+            UseTransformPotionItem(itemData);
+        else if (itemType == ItemTypeEnum.RestorePotion)
+            UseRestorePotionItem(itemData);
         else
             SetCreatureEquip(itemData);
     }
@@ -468,6 +475,90 @@ public partial class UICreatureManager : BaseUIComponent
             InitBackpackItemsData();
         };
         UIHandler.Instance.ShowDialogNormal(dialogData);
+    }
+    #endregion
+
+    #region 幻化药使用
+    /// <summary>
+    /// 使用幻化药:对当前选中生物弹出确认框,确定后写入 transformItemId 并消耗道具。
+    /// <para>重复使用时以最后吃的为准(直接覆盖);与 Portrait 同时存在时 Portrait 显示优先,幻化状态保留;
+    /// 所有生物含魔王可用(不做 IsDemonLord 拦截);配置异常(other_data 空/配置缺失,如 Mod 已移除) Toast 拦截防浪费。</para>
+    /// </summary>
+    /// <param name="itemData">被点击的幻化药道具(形象资源读 ItemsInfo.other_data)</param>
+    public void UseTransformPotionItem(ItemBean itemData)
+    {
+        CreatureBean creatureData = ui_UIViewCreatureCardEquipDetails.creatureData;
+        if (creatureData == null)
+            return;
+        var itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
+        if (itemInfo == null || itemInfo.other_data.IsNull())
+        {
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61021), 0);
+            return;
+        }
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(61018), creatureData.creatureName, itemInfo.name_language);
+        dialogData.actionSubmit = (view, data) =>
+        {
+            var userData = GameDataHandler.Instance.manager.GetUserData();
+            //写入幻化(覆盖旧值=以最后吃的为准) → 消耗道具 → 落盘
+            creatureData.transformItemId = itemData.itemId;
+            userData.RemoveBackpackItem(itemData);
+            GameDataHandler.Instance.manager.SaveUserData();
+            //两件套刷新:卡片详情(重绘spine) + 背包列表(道具移除);不涉及经验故不刷献祭按钮
+            ui_UIViewCreatureCardEquipDetails.SetCardDetails(creatureData);
+            InitBackpackItemsData();
+            RefreshBaseControlForDemonLord(creatureData);
+        };
+        UIHandler.Instance.ShowDialogNormal(dialogData);
+    }
+    #endregion
+
+    #region 幻原药使用
+    /// <summary>
+    /// 使用幻原药:清除选中生物的幻化状态(transformItemId 置0)恢复原形象。
+    /// <para>无幻化效果时 Toast 拦截不消耗道具;流程只判 id==0 不读道具配置,Mod 移除后残留 id 仍可正常清除。</para>
+    /// </summary>
+    /// <param name="itemData">被点击的幻原药道具</param>
+    public void UseRestorePotionItem(ItemBean itemData)
+    {
+        CreatureBean creatureData = ui_UIViewCreatureCardEquipDetails.creatureData;
+        if (creatureData == null)
+            return;
+        if (creatureData.transformItemId == 0)
+        {
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61020), 0);
+            return;
+        }
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(61019), creatureData.creatureName);
+        dialogData.actionSubmit = (view, data) =>
+        {
+            var userData = GameDataHandler.Instance.manager.GetUserData();
+            //清除幻化 → 消耗道具 → 落盘
+            creatureData.transformItemId = 0;
+            userData.RemoveBackpackItem(itemData);
+            GameDataHandler.Instance.manager.SaveUserData();
+            //两件套刷新:卡片详情(重绘spine) + 背包列表(道具移除)
+            ui_UIViewCreatureCardEquipDetails.SetCardDetails(creatureData);
+            InitBackpackItemsData();
+            RefreshBaseControlForDemonLord(creatureData);
+        };
+        UIHandler.Instance.ShowDialogNormal(dialogData);
+    }
+
+    /// <summary>
+    /// 若目标生物是魔王 刷新基地场景自控角色spine(管理页打开期间控制目标仅隐藏不重设骨骼,幻化/幻原后走路形象需手动同步)
+    /// </summary>
+    protected void RefreshBaseControlForDemonLord(CreatureBean creatureData)
+    {
+        if (!creatureData.IsDemonLord())
+            return;
+        var controlManager = GameControlHandler.Instance.manager;
+        //非基地场景防护(控制目标仅在基地场景创建,未创建时 controlForGameBase.skeletonAnimation 懒查找会NRE)
+        if (controlManager == null || controlManager.controlTargetForCreature == null)
+            return;
+        controlManager.controlForGameBase.SetCreatureData(creatureData);
     }
     #endregion
 }

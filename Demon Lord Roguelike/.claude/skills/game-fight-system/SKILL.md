@@ -165,6 +165,8 @@ CreatureHandler.Instance.RemoveFightCreatureEntity(entity, CreatureFightTypeEnum
 
 > **防守生物移除：按实例 + 卡片CD条件（2026-08 改动）**：`RemoveFightCreatureEntity` 防守分支移除改为**按实例**——新 `FightBean.RemoveDefenseCreature(FightCreatureEntity)`（`DictionaryList.RemoveByValue`）；`FightBean.RemoveDefenseCreatureByPos` **已删除**（按 positionCreate 首匹配会误删同格生物）。卡片进 Rest(CD) 的条件改为「场上已无该 UUID 存活实体」——DeadRebirth 重生替换场景新实体在场，卡片保持 Fighting 不进 CD；且 `CreateDefenseCreatureEntity` Add 前会预清理同 UUID 已死旧实体，防 `DictionaryList.Add` 静默失败生成幽灵实体（详见 creature-system SKILL / buff-system SKILL「死亡重生」）。
 
+> **防守魔物/魔王核心的战斗幻化换骨（`GetFightCreatureObj` 新可选参数 `resNameOverride`）**：签名 `CreatureHandler.GetFightCreatureObj(long creatureId, CreatureFightTypeEnum creatureFightType, string resNameOverride = null)`——幻化状态传 `creatureData.GetTransformSpineRes()`，内部 `targetResName = resNameOverride.IsNull() ? creatureModel.res_name : resNameOverride`，新建（`AddSkeletonAnimation`）与池复用（`SetSkeletonDataAsset`）两处统一走 targetResName **整骨替换**（换骨架非换肤）。**传参规则**：`CreateDefenseCreature`（防守魔物）与 `CreateDefenseCoreCreature`（魔王核心）均传 `creatureData.GetTransformSpineRes()`（无幻化返回 null=原骨架，零副作用）；**进攻敌人（npcInfo 路径）不传**——敌人每场新建 Bean 永不幻化。**战斗换骨安全性结论**：幻化骨架不套原皮肤（无骨骼槽位依赖）、战斗动画由状态机驱动（无 `TrackEntry.Complete` 完成回调依赖）、目标骨架缺动画仅 LogError 不播不崩（游戏层 `SpineHandler.GetAnimNameAppoint` 幻化守卫返回 null 交框架按目标骨架实际动画列表解析，见 spine-system SKILL）；幻化目标资源须含完整动画集（Idle/Walk/Attack/Dead）。幻化机制本体（`CreatureBean.transformItemId` 字段/解析入口/UI 展示漏斗）见 creature-system SKILL。
+
 ### 生物交互接口
 
 ```csharp
