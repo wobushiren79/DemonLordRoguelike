@@ -140,7 +140,7 @@ BaseAttackMode                      - 攻击模式基类
 | `AttackModeFallupon` | 直接对目标造成伤害 | 天降打击、瞬移攻击 |
 | `AttackModeFalluponArea` | 对目标位置范围伤害 | 天降火球/水球、天降AOE |
 | `AttackModeFalluponChain` | 连锁弹射递减伤害 | 闪电链、弹射攻击 |
-| `AttackModeFalluponChainMulti` | 三连发发射器：按 hit_times/hit_interval 逐发发射 child_attack_mode_id 子雷（每发实体路径重新取 ATK 快照+独立随机防守落点，攻击者死亡取消余发，首发即回调保 AI 节奏） | BOSS 多连发技能（雷大魔法师 700006 三连雷击） |
+| `AttackModeFalluponChainMulti` | 三连发发射器：按 hit_times/hit_interval 逐发发射 child_attack_mode_id 子雷（每发实体路径重新取 ATK 快照+独立随机防守落点，攻击者死亡取消余发，首发即回调保 AI 节奏） | BOSS 多连发技能（雷大魔法师 700006 三连雷击；大魔导师经 ext 100014[scene=2 替代普攻]随机四系之一） |
 | `AttackModeInstant` | 当帧瞬时单体命中（无弹道无飞行；命中特效播在目标位置+攻击者 attack_start_position 偏移[劈躯干]，当帧回收+回调） | 瞬发单体攻击（牧师/神官普攻 102003 神圣瞬击） |
 | `AttackModeInstantArea` | 当帧瞬时落点AOE（无飞行过程；可配 hit_max 上限+注入快照名单，伤害按命中次序乘 hit_decay 递减率[默认0.5=依次减半，配1=全额]保底1，单次攻击内局部去重） | 落雷、瞬发地面AOE（牛头人法师 101003/101004 目标脚下瞬发地刺） |
 | `AttackModeRegain` | 回复而非伤害 | 治疗术、护盾恢复 |
@@ -831,9 +831,9 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | 爆炸 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeExplosion.cs` |
 | 天降单体 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFallupon.cs` |
 | 天降范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponArea.cs` |
-| 天降范围-随机落点（火/水/冰大魔法师BOSS技能 700001/700002/700005） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponAreaRandom.cs` |
+| 天降范围-随机落点（火/水/冰大魔法师BOSS技能 700001/700002/700005 经 ext 100002/100003/100006[scene=0]；大魔导师 1031010002 经 ext 100011-100013[scene=2 替代普攻]随机四系之一） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponAreaRandom.cs` |
 | 天降连锁 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponChain.cs` |
-| 天降连锁-三连发发射器（雷大魔法师BOSS技能 700006，ext 100007） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponChainMulti.cs` |
+| 天降连锁-三连发发射器（雷大魔法师BOSS技能 700006，ext 100007[scene=0]；大魔导师经 ext 100014[scene=2 替代普攻]随机四系之一） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponChainMulti.cs` |
 | 重叠检测（范围触碰，正常伤害管线） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlap.cs` |
 | 无伤害重叠（纯DEBUFF触碰，走 UnderAttackNoDamage） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOverlapNoDamage.cs` |
 | 瞬时落点范围（通用基类） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeInstantArea.cs` |

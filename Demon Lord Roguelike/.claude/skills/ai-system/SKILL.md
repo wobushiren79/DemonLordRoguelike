@@ -387,7 +387,7 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 
 ---
 
-## 额外攻击（攻击模块扩展，按间隔自动释放）
+## 额外攻击（攻击模块扩展：按间隔自动释放 / 替代普攻）
 
 通用攻击意图 [AIIntentCreatureAttack.cs](Assets/Scripts/AI/Creature/AIIntentCreatureAttack.cs) 内置了一套"额外攻击"机制（命名通用、不限于 BOSS）：凡 **NPC 配置了 `NpcInfo.attack_mode_ext`** 的生物（典型为敌方 BOSS，如 `1010020001` 持盾战士-Boss），进入攻击状态后会在普通攻击之外，按各额外攻击自己的间隔**额外**释放攻击模块。
 
@@ -395,7 +395,8 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 - **挂载在基类**：逻辑写在基类 `AIIntentCreatureAttack`，故进攻/防守生物（`AIIntentAttackCreatureAttack` / `AIIntentDefenseCreatureAttack`）均自动获得，**无需新增意图/枚举/工厂**。敌方 BOSS 是 `FightAttack` 型 → 走 `AIIntentAttackCreatureAttack`（继承基类、仅重写 `IntentEntering` 并 `base` 调用，故基类 `IntentUpdate/IntentLeaving` 直接生效）。
 - **计时与判定（融入普通攻击循环，非并行）**：`IntentEntering→InitExtraAttack()` 重置各额外攻击计时器；`IntentUpdate→UpdateExtraAttackTimer()` 每帧**仅累加**各额外攻击CD（不在此释放）。释放融入普通攻击循环：在 `AttackCreatureStart`（attackState 准备完毕、本次攻击开始的判定点）调 `GetReadyExtraAttack()` 选出第一个CD已到的额外攻击；在 `AttackCreatureStartEnd` 用其 `attack_mode_id` 发射并把该额外攻击CD清零。`IntentLeaving` 清空、离开/重入会重新计时。
 - **优先级与串行**：**额外攻击优先级 > 普通攻击**——某次攻击判定时若有就绪额外攻击，本次出额外攻击（占用该攻击循环、替代普通攻击）；没有则照常普通攻击。CD到了**不会立刻打断**当前攻击，要等下一次 `attackState==0` 的判定。每个攻击循环最多出一次攻击，故多个就绪的额外攻击按列表顺序逐循环释放、天然串行（无需额外标志）。
-- **类型筛选与扩展**：`InitExtraAttack` 仅收集 `ext_type==BossSkill` 的额外攻击；未来新增其他 `ext_type` 可在该筛选处加独立分支（不同类型可有不同触发逻辑）。
+- **替代普攻（trigger_scene=AttackReplace(2)，2026-09-17 新增）**：scene=2 技能进独立池 `listAttackReplace`（不计时、`trigger_interval` 失效）；`AttackCreatureStart` 判定优先级 **替代普攻池 > CD额外攻击 > 普攻**——替代池非空时每次出手 `UnityEngine.Random.Range` 随机取一个顶替当次普通攻击（"技能即普攻"、不再有普攻）；发射复用 `currentExtraAttack` 分支（`AttackCreatureStartEnd` 零改动，同 BossSkill 不触发连发）；`IntentLeaving` 与 CD 池一并清空。首个用户=大魔导师（NpcInfo 1031010002，ext 100011-100014 四系天降随机；旧 ext 100002/100003/100006/100007 仍归四个单系大魔法师 BOSS 走 scene=0）。
+- **类型筛选与扩展**：`InitExtraAttack` 仅收 `ext_type==BossSkill`，再按 `trigger_scene` 分流双池（`AttackIntent(0)`→`listExtraAttack` CD池、`AttackReplace(2)`→`listAttackReplace` 替代普攻池）；未来新增其他 `ext_type` 可在该筛选处加独立分支（不同类型可有不同触发逻辑）。
 - **发射入口**：复用 `FightHandler.StartCreateAttackMode(self, target, ActionForAttackEnd, customAttackModeId: ext.attack_mode_id)`（与 BUFF 触发攻击同一入口），回调即普通攻击的 `ActionForAttackEnd`（找下个目标并回到 `attackState==0`）。
 
 > 术语提醒：游戏内"BOSS"=**敌方强力 NPC**（征服 `enemy_boss_ids` 刷出、`FightAttack` 进攻型），**不是**玩家防守的"魔王核心" `AIDefenseCoreCreatureEntity`。给 BOSS（或任意 NPC）加额外攻击应改基类攻击意图，而非核心生物 AI。
@@ -413,7 +414,7 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
   - 效果：段内压缩时间、逢 20 倍数时间回基础值且攻击次数 +1，边界连续无断崖；正攻速下时间倍率 ≥ 0.5，动画最多 2 倍速
 - **连发调度**（0.2 秒窗口）：`AttackCreatureStartEnd` 普通攻击分支发射主攻击后，若 `attackTimes>1` 置 `extraShotsLeft/extraShotInterval(=EXTRA_SHOT_WINDOW 0.2÷次数)/extraShotTimer`，由 `IntentUpdate→UpdateExtraShots()` 逐帧推进、每过一间隔 `FireExtraShot()` 一发。**计时走 `GetFightDeltaTime`（同意图计时铁律），不用 GTask.Wait**——后者只跟 timeScale 不跟 `fightData.gameSpeed`，2倍速下会脱节；单帧跨多间隔用 while 补齐。
 - **每发独立校验**（`FireExtraShot`）：自身已死/缺失 → 清零 `extraShotsLeft` 终止；目标已死/缺失 → 沿 `lastAttackDirection`（`AttackCreatureStartEnd` 发射前按目标方位记录）重搜，搜不到跳过本发；发射即忘（`StartCreateAttackMode(self, target, null)` 无回调）不进攻击状态机，与主循环解耦——极短周期下新一轮循环与在途连发可并存。
-- **边界**：BossSkill（`currentExtraAttack` 就绪的额外攻击循环）不触发连发；`IntentLeaving` 清零 `extraShotsLeft` 取消在途连发；负攻速（debuff）只拉长时间（频率倍率下限 0.25≈4 倍时间），不减少攻击次数。
+- **边界**：BossSkill（`currentExtraAttack` 就绪的额外攻击循环）不触发连发——替代普攻（scene=2）技能同走该分支，同样不连发，每节拍恰好 1 个技能；`IntentLeaving` 清零 `extraShotsLeft` 取消在途连发；负攻速（debuff）只拉长时间（频率倍率下限 0.25≈4 倍时间），不减少攻击次数。
 
 ---
 

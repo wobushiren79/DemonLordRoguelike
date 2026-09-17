@@ -3,7 +3,8 @@ using UnityEngine;
 
 /// <summary>
 /// 生物通用攻击意图：以"准备→出手→发起攻击→找下个目标"循环驱动普通攻击；
-/// 并内置"额外攻击(攻击模块扩展)"机制——带 NpcInfo.attack_mode_ext 的生物在每次攻击判定时可优先出额外攻击。
+/// 并内置"额外攻击(攻击模块扩展)"机制——带 NpcInfo.attack_mode_ext 的生物在每次攻击判定时可优先出额外攻击；
+/// 以及"替代普攻"机制——trigger_scene=AttackReplace 的技能组成随机池，每次出手随机取一个顶替当次普通攻击（无CD概念，如大魔导师四系天降随机）。
 /// 进攻/防守生物的攻击意图均继承自本类。
 /// <para>攻速连发：攻速换算的本轮攻击次数(attackTimes)>1 时，主攻击发出后额外攻击均匀压进 0.2 秒窗口内依次生成（见 UpdateExtraShots）。</para>
 /// </summary>
@@ -118,8 +119,9 @@ public class AIIntentCreatureAttack : AIBaseIntent
         //离开攻击意图即取消全部在途连发
         extraShotsLeft = 0;
         extraShotTimer = 0;
-        //离开攻击状态时清空额外攻击运行时数据
+        //离开攻击状态时清空额外攻击/替代普攻运行时数据
         listExtraAttack = null;
+        listAttackReplace = null;
         currentExtraAttack = null;
     }
 
@@ -145,7 +147,7 @@ public class AIIntentCreatureAttack : AIBaseIntent
     }
 
     /// <summary>
-    /// 攻击开始（准备完毕的判定点）：校验目标/自身存活，判定本次出额外攻击还是普通攻击，并播放攻击动画
+    /// 攻击开始（准备完毕的判定点）：校验目标/自身存活，判定本次出替代普攻技能/额外攻击还是普通攻击，并播放攻击动画
     /// </summary>
     public virtual void AttackCreatureStart()
     {
@@ -164,8 +166,17 @@ public class AIIntentCreatureAttack : AIBaseIntent
         }
         //出手前按目标位置刷新朝向（默认空实现，仅需转身的生物如防守生物覆盖）
         RefreshFaceForTarget();
-        //本次攻击判定：额外攻击CD已到则本次出额外攻击(优先级高于普通攻击)，否则普通攻击
-        currentExtraAttack = GetReadyExtraAttack();
+        //本次攻击判定（优先级 替代普攻 > CD额外攻击 > 普通攻击）：
+        //替代普攻池非空则随机取一个技能顶替本次普攻（无CD概念，每次出手必放技能）；
+        //否则额外攻击CD已到则本次出额外攻击，都没有则普通攻击
+        if (!listAttackReplace.IsNull())
+        {
+            currentExtraAttack = listAttackReplace[UnityEngine.Random.Range(0, listAttackReplace.Count)];
+        }
+        else
+        {
+            currentExtraAttack = GetReadyExtraAttack();
+        }
         var selfCreatureInfo = fightCreatureData.creatureData.creatureInfo;
         //按基础动画时长与实际出手CD等比例计算动画播放速度
         float animSpeed = 1f;
@@ -201,7 +212,7 @@ public class AIIntentCreatureAttack : AIBaseIntent
         }
         if (currentExtraAttack != null)
         {
-            //出额外攻击：用其 attack_mode_id 发射，并重置该额外攻击CD（BossSkill 属技能释放，不触发攻速连发）
+            //出额外攻击：用其 attack_mode_id 发射，并重置该额外攻击CD（BossSkill 属技能释放，不触发攻速连发；替代普攻池项 timer 恒0，清零无影响）
             long extraAttackModeId = currentExtraAttack.extInfo.attack_mode_id;
             currentExtraAttack.timer = 0;
             currentExtraAttack = null;
@@ -342,15 +353,19 @@ public class AIIntentCreatureAttack : AIBaseIntent
     }
     /// <summary>当前生物的额外攻击列表（无则为null）</summary>
     protected List<ExtraAttackRuntime> listExtraAttack;
+    /// <summary>当前生物的替代普攻技能池（trigger_scene=AttackReplace；非空时每次出手随机取一个顶替普攻，无CD概念、trigger_interval失效，timer恒0不使用）</summary>
+    protected List<ExtraAttackRuntime> listAttackReplace;
     /// <summary>本次攻击循环选中的额外攻击（AttackCreatureStart 判定、AttackCreatureStartEnd 发射；null=本次为普通攻击）</summary>
     protected ExtraAttackRuntime currentExtraAttack;
 
     /// <summary>
-    /// 初始化额外攻击：读取NPC的 attack_mode_ext，筛选按间隔释放的类型并重置各自计时器
+    /// 初始化额外攻击：读取NPC的 attack_mode_ext，筛选 BossSkill 类型后按 trigger_scene 分流——
+    /// AttackIntent→CD技能池(各自计时)、AttackReplace→替代普攻池(不计时)
     /// </summary>
     protected void InitExtraAttack()
     {
         listExtraAttack = null;
+        listAttackReplace = null;
         currentExtraAttack = null;
         //仅NPC生物(敌人)带有 attack_mode_ext 配置
         var npcInfo = fightCreatureData?.creatureData?.creatureNpcData?.npcInfo;
@@ -371,8 +386,19 @@ public class AIIntentCreatureAttack : AIBaseIntent
             {
                 continue;
             }
+            var triggerScene = extInfo.GetTriggerScene();
+            //替代普攻池：每次出手随机取一个顶替普攻，无CD概念不计时
+            if (triggerScene == AttackModeExtTriggerSceneEnum.AttackReplace)
+            {
+                if (listAttackReplace == null)
+                {
+                    listAttackReplace = new List<ExtraAttackRuntime>();
+                }
+                listAttackReplace.Add(new ExtraAttackRuntime { extInfo = extInfo, timer = 0 });
+                continue;
+            }
             //触发场景非「攻击意图内释放」（如 trigger_scene=CastSkillIntent 由 ai_param skill_update 事件驱动）的技能不由本机制消费
-            if (extInfo.GetTriggerScene() != AttackModeExtTriggerSceneEnum.AttackIntent)
+            if (triggerScene != AttackModeExtTriggerSceneEnum.AttackIntent)
             {
                 continue;
             }
