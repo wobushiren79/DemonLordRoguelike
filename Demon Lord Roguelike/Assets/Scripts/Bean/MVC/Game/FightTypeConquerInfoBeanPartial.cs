@@ -157,36 +157,14 @@ public partial class FightTypeConquerInfoBean
     }
 
     /// <summary>
-    /// 解析 "x" 或 "x-y" 格式的字符串为一个随机整数
+    /// 解析 "x" 或 "x-y" 格式的字符串为一个随机整数（转调 RandomUtil.GetRandomIntByRangeString，保留本入口兼容既有调用）
     /// 单值"x"直接返回 x; 区间"x-y"返回 [x,y] 闭区间内的随机整数; 解析失败返回 defaultValue
     /// </summary>
     /// <param name="value">配置字符串</param>
     /// <param name="defaultValue">解析失败或空时的默认值</param>
     public static int ParseRandomRange(string value, int defaultValue = 0)
     {
-        if (string.IsNullOrEmpty(value))
-            return defaultValue;
-        value = value.Trim();
-        int splitIndex = value.IndexOf('-');
-        //没有"-"则视为单个数值
-        if (splitIndex < 0)
-        {
-            return int.TryParse(value, out int single) ? single : defaultValue;
-        }
-        //区间格式 x-y
-        string minStr = value.Substring(0, splitIndex).Trim();
-        string maxStr = value.Substring(splitIndex + 1).Trim();
-        if (int.TryParse(minStr, out int min) && int.TryParse(maxStr, out int max))
-        {
-            if (min > max)
-            {
-                int temp = min;
-                min = max;
-                max = temp;
-            }
-            return UnityEngine.Random.Range(min, max + 1);
-        }
-        return defaultValue;
+        return RandomUtil.GetRandomIntByRangeString(value, defaultValue);
     }
 }
 public partial class FightTypeConquerInfoCfg

@@ -265,6 +265,17 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 获取「是魔王就挑战100勇士」世界出现概率(百分数0~100)
+    /// = 研究(UnlockEnum.ChallengeHundredShowRate)等级 × 10; 未解锁(0级)返回 0,满级(10级)为 100
+    /// 每次传送门数据刷新生成世界时按该概率判定是否生成为挑战100勇士世界
+    /// </summary>
+    /// <returns>出现概率百分数(0~100)</returns>
+    public int GetUnlockChallengeHundredShowRate()
+    {
+        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.ChallengeHundredShowRate) * 10;
+    }
+
+    /// <summary>
     /// 获取深渊馈赠刷新次数上限
     /// 上限 = 深渊馈赠刷新研究(AbyssalBlessingRefreshNum)等级; 未解锁(0级)返回 0; 满级(5级)上限 5
     /// </summary>

@@ -25,5 +25,11 @@ public partial class UIDialogPortalDetails
 
     public RectTransform ui_Lineup;
 
+    public RectTransform ui_Difficulty;
+
+    public RectTransform ui_CreatureList;
+
+    public UIViewDialogPortalDetailsCreatureItem ui_UIViewDialogPortalDetailsCreatureItem;
+
 
 }

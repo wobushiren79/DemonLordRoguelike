@@ -124,6 +124,7 @@ public enum FightTestModeEnum
     Normal = 0,//普通模式(自定义场景/敌人/BUFF的战斗测试)
     ConquerBoss = 1,//征服模式BOSS关(指定世界与难度，直接进入征服BOSS关)
     SingleUnit = 2,//单体测试模式(道路长度/道路数量/进攻生物数量/进攻间隔均为固定值不显示，其余同普通模式)
+    ChallengeHundred = 3,//挑战100勇士(下拉选配置行+存档槽位，冻结该行直接进入挑战100勇士战斗，测试模拟不落盘)
 }
 
 public enum CinemachineCameraEnum
@@ -141,6 +142,7 @@ public enum GameFightTypeEnum
     Infinite,//无限模式
     Conquer,//征服模式
     DoomCouncil,//终焉议会
+    ChallengeHundred,//是魔王就挑战100勇士(单关100只怪;新值务必追加末尾,序列化存档兼容)
 }
 
 /// <summary>
@@ -286,6 +288,7 @@ public enum UnlockEnum : long
     PortalPreviewRoadLength = 100300004, //传送门详情-路径长度预览(研究门控)
     PortalPreviewReward = 100300005, //传送门详情-奖励预览(研究门控)
     PortalRefreshNum = 100300006, //传送门刷新次数(研究等级=可用刷新次数上限,通关世界回满)
+    ChallengeHundredShowRate = 100300007, //是魔王就挑战100勇士-出现概率(研究等级×10%=传送门世界刷新为该模式的概率;前置=剑与魔法征服难度2研究100310112)
 
     GashaponMachine = 100400000,//解锁孕育
     GashaponShowAll = 100400001,//显示所有抽取

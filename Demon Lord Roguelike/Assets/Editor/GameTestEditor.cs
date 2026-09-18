@@ -110,7 +110,7 @@ public partial class GameTestEditor : Editor
 
         // 战斗测试模式选择
         EditorGUILayout.BeginVertical("box");
-        fightTestMode = (FightTestModeEnum)EditorGUILayout.EnumPopup(new GUIContent("战斗测试模式", "普通模式=自定义场景/敌人/BUFF的战斗；征服模式BOSS关=指定世界与难度直接进入征服BOSS关；单体测试模式=道路长度10/道路数量1/进攻生物数量1/进攻间隔1固定不显示，其余同普通模式"), fightTestMode);
+        fightTestMode = (FightTestModeEnum)EditorGUILayout.EnumPopup(new GUIContent("战斗测试模式", "普通模式=自定义场景/敌人/BUFF的战斗；征服模式BOSS关=指定世界与难度直接进入征服BOSS关；单体测试模式=道路长度10/道路数量1/进攻生物数量1/进攻间隔1固定不显示，其余同普通模式；挑战100勇士=下拉选配置行+存档槽位，冻结该行直接进入挑战100勇士战斗(测试模拟不落盘)"), fightTestMode);
         EditorGUILayout.EndVertical();
         EditorGUILayout.Space(5);
 
@@ -118,6 +118,15 @@ public partial class GameTestEditor : Editor
         if (fightTestMode == FightTestModeEnum.ConquerBoss)
         {
             DrawFightSceneTestConquerBoss();
+            EditorGUI.indentLevel--;
+            EditorGUILayout.Space(10);
+            return;
+        }
+
+        // 挑战100勇士：下拉选配置行+存档槽位，冻结该行直接进入挑战100勇士战斗
+        if (fightTestMode == FightTestModeEnum.ChallengeHundred)
+        {
+            DrawFightSceneTestChallengeHundred();
             EditorGUI.indentLevel--;
             EditorGUILayout.Space(10);
             return;
@@ -697,6 +706,100 @@ public partial class GameTestEditor : Editor
         EditorGUILayout.EndVertical();
 
         EditorGUILayout.HelpBox("将关卡总数设为 1，使首关即为 BOSS 关，启动后直接进入指定世界/难度的征服模式 BOSS 关。", MessageType.Info);
+    }
+
+    /// <summary>
+    /// 绘制挑战100勇士测试配置(下拉选配置行+存档槽位，冻结该行直接进入挑战100勇士战斗；测试模拟不落盘)
+    /// </summary>
+    private void DrawFightSceneTestChallengeHundred()
+    {
+        // 运行按钮
+        GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
+        if (GUILayout.Button("▶️ 开始挑战100勇士测试", GUILayout.Height(30)) && Application.isPlaying)
+        {
+            if (challengeHundredRowIds == null || challengeHundredRowIds.Length == 0)
+            {
+                EditorUtility.DisplayDialog("提示", "配置行列表为空，请点「刷新列表」或检查配置表导出。", "确定");
+                return;
+            }
+            int index = Mathf.Clamp(challengeHundredTestRowSelectIndex, 0, challengeHundredRowIds.Length - 1);
+            launcher.StartForChallengeHundredTest(challengeHundredRowIds[index], challengeHundredTestSaveSlot);
+        }
+        GUI.backgroundColor = Color.white;
+        EditorGUILayout.Space(10);
+
+        // 配置行选择(下拉选项懒加载)
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("挑战100勇士配置", EditorStyles.boldLabel);
+        if (GUILayout.Button("🔄 刷新列表", GUILayout.Width(90)))
+        {
+            //配置重导后清空选项缓存，下次绘制时重建
+            challengeHundredRowOptions = null;
+            //Cfg 的 static 缓存只加载一次(不随 JSON 重导失效)，需一并清掉才能读到新行
+            ClearCfgBaseStaticCache(typeof(FightTypeChallengeHundredInfoCfg));
+        }
+        if (GUILayout.Button("📂 配置表", GUILayout.Width(80)))
+        {
+            string path = Path.Combine(Application.dataPath, "Data/Excel/excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx");
+            if (File.Exists(path))
+            {
+                Application.OpenURL("file:///" + path.Replace("\\", "/"));
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("文件未找到", $"找不到挑战100勇士配置表:\n{path}", "确定");
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+
+        EnsureChallengeHundredRowOptions();
+        if (challengeHundredRowOptions == null || challengeHundredRowOptions.Length == 0)
+        {
+            EditorGUILayout.HelpBox("未读取到挑战100勇士配置，请检查配置表导出或点「刷新列表」。", MessageType.Warning);
+        }
+        else
+        {
+            challengeHundredTestRowSelectIndex = EditorGUILayout.Popup(
+                new GUIContent("配置行选择", "从 FightTypeChallengeHundredInfo 配置表选择要测试的配置行(冻结该行直接进入战斗，不走传送门概率判定)"),
+                Mathf.Clamp(challengeHundredTestRowSelectIndex, 0, challengeHundredRowOptions.Length - 1),
+                challengeHundredRowOptions);
+        }
+        //存档槽位选择(0=当前测试数据,1~3=读取对应存档作为运行时数据;防守方=该存档魔王+当前出战阵容,测试模拟不写回真实存档)
+        challengeHundredTestSaveSlot = EditorGUILayout.IntPopup(
+            new GUIContent("存档槽位", "0=使用当前测试数据(InitTestData 伪造数据)；1~3=读取对应存档槽位(UserData_1/2/3)作为运行时数据(防守方=该存档魔王+当前出战阵容)；全程测试模拟,不写回真实存档"),
+            challengeHundredTestSaveSlot,
+            new[] { new GUIContent("当前测试数据"), new GUIContent("存档 1"), new GUIContent("存档 2"), new GUIContent("存档 3") },
+            new[] { 0, 1, 2, 3 });
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.HelpBox("冻结所选配置行直接进入挑战100勇士战斗(与真实传送门共用同一冻结链路，强度/敌人构成/奖励与正式玩法一致)；防守方使用所选存档的魔王+当前出战阵容，全程测试模拟不写回真实存档。", MessageType.Info);
+    }
+
+    /// <summary>
+    /// 懒加载挑战100勇士配置行下拉选项([id] 难度列表 强度倍率 备注，按id排序)
+    /// </summary>
+    private void EnsureChallengeHundredRowOptions()
+    {
+        if (challengeHundredRowOptions != null) return;
+        var allData = FightTypeChallengeHundredInfoCfg.GetAllArrayData();
+        var listEntries = new List<KeyValuePair<long, GUIContent>>();
+        for (int i = 0; i < allData.Length; i++)
+        {
+            var info = allData[i];
+            if (info == null) continue;
+            string remark = info.remark.IsNull() ? "" : $" {info.remark}";
+            listEntries.Add(new KeyValuePair<long, GUIContent>(info.id, new GUIContent($"[{info.id}] 难度:{info.difficulty_levels} 强度x{info.attack_intensity_baserate}{remark}")));
+        }
+        //按 id 排序保证下拉顺序稳定
+        listEntries.Sort((a, b) => a.Key.CompareTo(b.Key));
+        challengeHundredRowOptions = new GUIContent[listEntries.Count];
+        challengeHundredRowIds = new long[listEntries.Count];
+        for (int i = 0; i < listEntries.Count; i++)
+        {
+            challengeHundredRowIds[i] = listEntries[i].Key;
+            challengeHundredRowOptions[i] = listEntries[i].Value;
+        }
     }
 
     private void DrawCardTest()

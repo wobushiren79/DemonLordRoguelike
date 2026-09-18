@@ -1,6 +1,6 @@
 ---
 name: fight-reward-system
-description: Demon Lord Roguelike 游戏的战斗结算奖励系统开发指南。使用此SKILL当需要创建或修改战斗结束后的奖励逻辑，包括战斗结算面板(UIFightSettlement 伤害/击杀/受伤/经验排行榜)、BOSS通关领奖界面(UIRewardSelect 宝箱选择)、奖励生成规则(RewardSelectBean 装备/魔晶)、敌人死亡水晶掉落(FightCreatureEntity.DropCrystal)、战斗统计记录(FightRecordsBean)、奖励入账与存档链路、各战斗模式(征服/终焉议会/测试)结算差异、征服奖励配置(reward_crystal/reward_equip_rarity/drop_crystal)、装备属性加点数量由稀有度配置表(RarityInfo.equip_attribute_add)决定等。
+description: Demon Lord Roguelike 游戏的战斗结算奖励系统开发指南。使用此SKILL当需要创建或修改战斗结束后的奖励逻辑，包括战斗结算面板(UIFightSettlement 伤害/击杀/受伤/经验排行榜)、BOSS通关领奖界面(UIRewardSelect 宝箱选择)、奖励生成规则(RewardSelectBean 装备/魔晶)、敌人死亡水晶掉落(FightCreatureEntity.DropCrystal)、战斗统计记录(FightRecordsBean)、奖励入账与存档链路、各战斗模式(征服/终焉议会/测试/挑战100勇士)结算差异、征服奖励配置(reward_crystal/reward_equip_rarity/drop_crystal)、挑战100勇士奖励配置(固定3箱3抽全手动/装备池空则全魔晶)、装备属性加点数量由稀有度配置表(RarityInfo.equip_attribute_add)决定等。
 watched_files:
   - Assets/Scripts/Component/UI/Game/FightSettlement/
   - Assets/Scripts/Component/UI/Game/RewardSelect/
@@ -9,6 +9,8 @@ watched_files:
   - Assets/Scripts/Bean/Game/FightDropCrystalBean.cs
   - Assets/Scripts/Bean/MVC/Game/FightTypeConquerInfoBean.cs
   - Assets/Scripts/Bean/MVC/Game/FightTypeConquerInfoBeanPartial.cs
+  - Assets/Scripts/Bean/MVC/Game/FightTypeChallengeHundredInfoBean.cs
+  - Assets/Scripts/Bean/MVC/Game/FightTypeChallengeHundredInfoBeanPartial.cs
 ---
 
 # 战斗结算奖励系统开发指南
@@ -20,7 +22,7 @@ watched_files:
 | 通道 | 触发时机 | 内容 | 入账方式 |
 |------|---------|------|---------|
 | **A. 战斗内即时掉落** | 敌人死亡（每关都有） | 水晶 Crystal | 实时拾取直接入账 |
-| **B. 结算后领奖界面** | 仅"征服模式 BOSS 关通关" | 装备 + 魔晶 | 首箱保底自动开启即入账 + 玩家在 UIRewardSelect 从剩余宝箱选择入账 |
+| **B. 结算后领奖界面** | "征服模式 BOSS 关通关" 或 "挑战100勇士胜利" | 装备 + 魔晶 | 征服：首箱保底自动开启即入账 + 玩家从剩余宝箱选择；挑战100勇士：3箱3抽全手动选择入账 |
 
 > **最关键的一点**：结算面板 `UIFightSettlement` 本身**不发任何奖励**，它只是战斗过程统计的可排序排行榜（伤害/击杀/受伤/治疗/受疗/经验）。真正的发奖逻辑在 `UIRewardSelect` + `RewardSelectBean`。
 
@@ -40,7 +42,11 @@ watched_files:
     │
     ├─ GameFightLogicDoomCouncil → 弹结算UI(展示投票) → SaveUserData → 返回基地（无领奖）
     │
-    └─ GameFightLogicTest → 弹结算UI → Next 重启战斗（不发奖不存档）
+    ├─ GameFightLogicTest → 弹结算UI → Next 重启战斗（不发奖不存档）
+    │
+    └─ GameFightLogicChallengeHundred.HandleForChangeGameStateSettlement（单关100只怪）
+          ├─ 胜利 → 发阵容经验(行 reward_exp) → 弹结算UI → Next → 弹 UIRewardSelect（3箱3抽全手动开箱，无首箱保底）
+          └─ 失败 → 弹结算UI → Next → 直接返回基地（无奖励）；不发成就/声望、无关卡间深渊馈赠
 
 UIFightSettlement (结算排行榜，只展示)
     │  数据源: FightBean.fightRecordsData (FightRecordsBean)
@@ -51,6 +57,8 @@ RewardSelectBean (奖励生成单一真实源)
     │  生成规则统一吃 FightTypeConquerInfoBean(不再吃 FightBean)
     │  通关领奖: InitDataForReward(预生成基础奖励, conquerInfo, 额外件数) → listReward
     │  传送门预生成/预览: CreateRewardListForConquer(conquerInfo) → List<ItemBean>
+    │  挑战100勇士预生成/预览: CreateRewardListForChallengeHundred(challengeHundredInfo) → 固定3箱
+    │     (装备池空=3箱全魔晶/否则3箱全装备; 装备生成走抽取出的 CreateItemEquipCore/CreateItemCrystalCore)
     │
 UIRewardSelect (领奖界面)
     │  3D 宝箱场景 ScenePrefabForRewardSelect，射线点击选择
@@ -74,11 +82,14 @@ UIRewardSelect (领奖界面)
 - `listReward: List<ItemBean>` 生成的奖励物品列表
 - `selectNum / selectNumMax` 已选/可选次数
 - `createItemNum`（默认4：第1件=首箱保底位）/ `createEquipNum`（默认1）/ `createEquipDemonLordRate`（默认0.1）
+- `isAutoOpenFirstBox`（默认 true=征服首箱保底自动开行为；挑战100勇士置 false=3箱3抽全手动，跳过 AutoOpenFirstRewardBox）
 - **API（全部以 `FightTypeConquerInfoBean` 为奖励配置源，私有 `CreateItemEquip`/`CreateItemCrystal`/`InitRewardList` 均吃 `conquerInfo` 不再吃 `FightBean`）**：
   - `InitData(FightBean fightData, RewardSelectTestData testData = null)`：原签名不变。内部从 `(fightData as FightBeanForConquer)?.fightTypeConquerInfo` 取 `conquerInfo`；测试模式 `InitData(null, testData)` 行为不变。
   - `InitData(FightTypeConquerInfoBean conquerInfo)`：由征服配置直接生成（传送门预生成/预览用，与通关领奖同规则）。
   - `static List<ItemBean> CreateRewardListForConquer(FightTypeConquerInfoBean conquerInfo)`：生成一份奖励列表（传送门创建时预生成奖励即调此）。
   - `static List<ItemBean> CreateRewardListForConquerAllEquip(FightTypeConquerInfoBean conquerInfo, bool isAllDemonLord = false)`：生成一份**全装备**奖励列表（`createEquipNum = createItemNum`，稀有度/解锁池/兜底魔晶等同规则；`isAllDemonLord=true` 时 `createEquipDemonLordRate` 拉满=**全魔王专属**）——终焉议会「想要更多装备/魔王装备」议案生效时通关领奖调此（见 [`doom-council-system`](../doom-council-system/SKILL.md)）。
+  - `static List<ItemBean> CreateRewardListForChallengeHundred(FightTypeChallengeHundredInfoBean challengeHundredInfo)`：**挑战100勇士**奖励列表（固定 3 箱，`createItemNum=selectNumMax=3`）：装备池（`GetUnlockCreatureModelIdsForEquip()`）为空=**3箱全魔晶**（`行.GetRandomRewardCrystal()`），否则**3箱全装备**（稀有度=行 `reward_equip_rarity`，加点数仍由 `RarityInfo.equip_attribute_add` 决定，魔王专属 10% 沿用默认 `createEquipDemonLordRate`）——传送门生成时预生成冻结（`GameWorldInfoRandomBean.SetRandomDataForChallengeHundred`），通关领奖消费同一份（`GetChallengeHundredReward()`）。
+  - **核心方法抽取（2026-09，征服零行为变化）**：原私有 `CreateItemEquip`/`CreateItemCrystal` 的生成主体抽为 `CreateItemEquipCore(rarityItem, addAttribute, userType, unlockCreatureModelIds, getFallbackCrystalNum回调)` / `CreateItemCrystalCore(itemCrystalNum)` / `static GetFallbackCrystalNum(conquerInfo, testData)`；原方法保留签名转调 Core。挑战100勇士直接复用 Core（兜底魔晶回调=`行.GetRandomRewardCrystal()`），不复用征服外壳。
   - `InitDataForReward(List<ItemBean> baseReward, FightTypeConquerInfoBean conquerInfo, int extraItemNum)`：用预生成的 `baseReward` 充当 `listReward`（预览=实领）；`baseReward` 为空则容错按 `conquerInfo` 即时生成；其后按 `extraItemNum` 追加装备道具（深渊馈赠「奖励多多」，`CreateItemEquip` 与首件同规则、生成不出装备时兜底魔晶）。**通关领奖走此入口。**
   - `static int GetConquerEquipPoolSign()` / `static List<long> GetUnlockCreatureModelIdsForEquip()`：装备奖励池「解锁签名」= 可生成装备的已解锁生物模型数量。解锁新魔物掉落（生物分支 `EquipReward*` 研究）后签名变化，传送门预生成奖励据此判定是否需重新生成。
   - `static ItemBean EquipUtil.CreateEquipItemForReward(long itemId, int rarity, int userType = 0, int addAttributeOverride = -1)`：**征服奖励场景的装备生成封装**（在 `Assets/Scripts/Utils/EquipUtil.cs`，底层收口核心 `CreateEquipItem`；NPC随机装备/GM测试另有 `CreateEquipItemForNpc`/`CreateEquipItemForTest` 场景封装）。按指定 `itemId`+`rarity` 生成一个装备道具，属性条数=品质、每条加点数取 `addAttributeOverride`（`<0` 时按 `RarityInfoCfg.GetItemData(rarity).equip_attribute_add`）。私有 `CreateItemEquip` 复用它（传入已算好的 `addAttribute`/`userType`，行为不变）。
@@ -121,10 +132,10 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 ## 领奖界面交互（UIRewardSelect）
 
 - `SetData(rewardSelectData, actionForEnd, isClearLastGame)` → **先 `UICommonMask` 淡入遮罩（`TimeMaskFadeIn`=0.3s）盖住屏幕**，遮罩完成后在回调里做全部重活：`WorldHandler.EnterRewardSelectScene(isClearLastGame)` 加载独立领奖场景 → `scenePrefab.InitRewardBox(listReward)` 实例化宝箱并**预热渲染 2 帧**（宝箱/道具/粒子激活但 Animator `speed=0` 停在 Show 第 0 帧，把 shader 编译/实时灯/粒子首次激活开销消化在遮罩下）→ （UI 保持隐藏）→ `EndMask`（`TimeMaskFadeOut`=0.4s）揭开 + 播音效 `sound_reward_6` + `PlayAllBoxShowAnim()` 统一播落地动画（各箱随机 0~0.2s 错峰，`Task.WhenAll` 等全部落地）→ 首箱保底自动开并等开箱播完后才 `SetActive(true)` 显示 UI。这套遮罩+预热流程是为了解决"进入领奖场景卡顿吃掉宝箱落地动画只剩尾帧"的问题，改进入口流程时不要拆掉遮罩或预热，否则卡顿会回归。
-  - `isClearLastGame=true`：进入领奖场景前先 `gameLogic.ClearGame()` 卸载上一场战斗场景并清理战斗实体。**征服模式通关 BOSS 进领奖必须传 true**（`ActionForUIFightSettlementNext` 已传），否则 BOSS 战斗场景不会卸载，会与领奖场景叠加残留；独立测试(LauncherTest)无上一场战斗，保持默认 false。
+  - `isClearLastGame=true`：进入领奖场景前先 `gameLogic.ClearGame()` 卸载上一场战斗场景并清理战斗实体。**征服模式通关 BOSS 与挑战100勇士胜利进领奖都必须传 true**（两处 `ActionForUIFightSettlementNext` 均已传），否则战斗场景不会卸载，会与领奖场景叠加残留；独立测试(LauncherTest)无上一场战斗，保持默认 false。
   - 注意：结算流程里 `ClearGameForSimple()` 只清 AI/BUFF/在途弹道，**不卸载战斗场景**；战斗场景的卸载靠领奖入口的 `isClearLastGame` 或返回基地时的 `ClearWorldData`。
   - 宝箱落地动画链路：`RewardSelectBoxComponent.InitData` 只做数据初始化（图标/数量/藏道具藏箱子）→ `SetPrewarmActive(true)` 预热显隐 → `PlayShowAnim(delay)` 恢复 `speed=1` 播 Show（时长运行时从 Animator 读 `timeBoxShowAnim`）→ 播完放落地音 `sound_hit_6`。
-  - **首箱保底自动开**：`await PlayAllBoxShowAnim()` 全部落地完成后 `await AutoOpenFirstRewardBox()`——Idle 检查通过才 `await firstBox.OpenBox()` 等开箱动画播完（道具升起落定），随后 `AddBackpackItem` 入账并展示道具详情；**不自增 `selectNum`**（保底赠送不占选择次数）。**UI 全程保持隐藏直到首箱开完才 `SetActive(true)` 显示**（此期间点击/跳过被 `activeSelf` 检查屏蔽），玩家在剩余宝箱按 `selectNumMax` 选择。
+  - **首箱保底自动开**：`await PlayAllBoxShowAnim()` 全部落地完成后 `await AutoOpenFirstRewardBox()`——Idle 检查通过才 `await firstBox.OpenBox()` 等开箱动画播完（道具升起落定），随后 `AddBackpackItem` 入账并展示道具详情；**不自增 `selectNum`**（保底赠送不占选择次数）。**UI 全程保持隐藏直到首箱开完才 `SetActive(true)` 显示**（此期间点击/跳过被 `activeSelf` 检查屏蔽），玩家在剩余宝箱按 `selectNumMax` 选择。**`isAutoOpenFirstBox=false`（挑战100勇士 3箱3抽）时跳过整个 AutoOpenFirstRewardBox**——无首箱保底、落地动画播完直接显示 UI 全手动开箱，且可开数=总箱数（不套用征服 `selectNumMax=Min(...,Count-1)` 的 -1 钳制，该钳制在 `GameFightLogicConquer` 内只对征服生效）。
 - 点击宝箱 `OnClickForSelectBox`：射线检测命中宝箱 → `scenePrefab.OpenRewardBox` 返回状态：
   - `0` 没有次数 → Toast 提示
   - `1` 打开宝箱 → `userData.AddBackpackItem(itemData)` 入账 + `selectNum++` + 展示道具详情
@@ -137,7 +148,9 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 
 ```
 生物死亡 → DropCrystal(state)
-  → dropCrystal = conquerFightData.fightTypeConquerInfo.drop_crystal
+  → 默认 dropCrystal = 1；按模式分流：
+      Conquer          → dropCrystal = conquerFightData.fightTypeConquerInfo.drop_crystal
+      ChallengeHundred → dropCrystal = 冻结行 fightTypeChallengeHundredInfo.drop_crystal（战斗数据/冻结行为空则保持默认 1）
   → FightHandler.manager.GetFightDropCrystalBean(dropCrystal, pos)  (记录 dropperCreatureUUId)
   → lifeTime = FightDropCrystalBean.BASE_LIFE_TIME(30) + 研究加成     (魔晶掉落时长研究 DropCrystalLifeTime 每级+5秒)
   → FightHandler.CreateDropCrystal(fightDropCrystal)                (生成可拾取物)
@@ -167,6 +180,19 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 | `reward_exp` | 普通关卡胜利时给出战阵容生物的经验 |
 | `reward_exp_boss` | BOSS 关卡胜利时给出战阵容生物的经验 |
 | `reward_reputation` | **完整通关声望奖励**：打完 BOSS、领奖结束后按难度给玩家「声望(reputation)」，受研究 `UnlockEnum.ConquerReputationReward` 门控（world_id=1 各难度依次 1~10） |
+
+### 配置依赖（FightTypeChallengeHundredInfoBean，挑战100勇士）
+
+Excel 源表 `excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx` → `FightTypeChallengeHundredInfo.txt`，取行=`FightTypeChallengeHundredInfoCfg.GetItemData(冻结行id)`。与奖励相关的列：
+
+| 字段 | 含义 |
+|------|------|
+| `drop_crystal` | int，敌人死亡掉落魔晶（战斗内即时掉落） |
+| `reward_crystal` | **string** 每箱魔晶：单值/区间 `x-y`（`GetRandomRewardCrystal()` 解析，走 `RandomUtil.GetRandomIntByRangeString`） |
+| `reward_equip_rarity` | 奖励装备稀有度（只决定稀有度；加点数量见 `RarityInfo.equip_attribute_add`） |
+| `reward_exp` | 胜利时给出战阵容每只生物的经验（失败不发） |
+
+> 模式差异要点：**3箱3抽全手动**（`isAutoOpenFirstBox=false`，无首箱保底）、装备池空则 3 箱全魔晶、**无成就/声望/深渊馈赠**（`ActionForUIRewardSelectEnd` 只回满传送门刷新次数+清空传送门随机数据后返回基地）。
 
 ## 征服关卡经验奖励（生物成长经验 levelExp）
 
@@ -208,6 +234,7 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 
 ### 修改传送门预生成奖励 / 预览
 - 奖励的预生成与冻结在 `GameWorldInfoBeanPartial.CreateDifficultyRandom`，存到 `GameWorldDifficultyRandomBean.listReward`（并记录 `rewardUnlockSign`）；取用走 `GameWorldInfoRandomBean.GetDifficultyReward(difficulty)`。生成调的就是本 Skill 的 `RewardSelectBean.CreateRewardListForConquer(conquerInfo)`。完整数据/流程归 [`conquer-system`](../conquer-system/SKILL.md)。
+- **挑战100勇士同契约**：预生成冻结 3 箱奖励在 `GameWorldInfoRandomBean.SetRandomDataForChallengeHundred`（`listRewardChallengeHundred` + `rewardUnlockSignChallengeHundred`），取用走 `GetChallengeHundredReward()`（未生成/装备池签名失效时重生成），生成调 `RewardSelectBean.CreateRewardListForChallengeHundred(challengeHundredInfo)`；气泡预览全量 3 箱（非首箱）。
 - **重新生成时机**：`listReward` 为空（老存档）或装备奖励池签名变化（`rewardUnlockSign != GetConquerEquipPoolSign()`，即解锁了新魔物掉落）时，`GetDifficultyReward` 会按 `FightTypeConquerInfo` 重新生成并刷新签名。
 - 传送门详情 `UIPopupPortalDetails` 的"奖励道具"区**只展示这份预生成奖励的首箱保底位**（`listReward[0]` 组单件列表喂 `ui_UIViewItem` 模板缓存池），受"设施"研究门控 `UnlockEnum.PortalPreviewReward`(100300005)；无尽模式不展示奖励。门控与 UI 细节归 `conquer-system` / `research-system`。
 
@@ -230,6 +257,8 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 | 征服结算流程 | Assets/Scripts/Game/Logic/GameFightLogicConquer.cs |
 | 议会结算流程 | Assets/Scripts/Game/Logic/GameFightLogicDoomCouncil.cs |
 | 测试结算流程 | Assets/Scripts/Game/Logic/GameFightLogicTest.cs |
+| 挑战100勇士结算流程 | Assets/Scripts/Game/Logic/GameFightLogicChallengeHundred.cs |
+| 挑战100勇士配置 Bean/扩展 | Assets/Scripts/Bean/MVC/Game/FightTypeChallengeHundredInfoBean.cs（禁改）/ FightTypeChallengeHundredInfoBeanPartial.cs |
 | 水晶掉落逻辑 | Assets/Scripts/Game/Fight/FightCreatureEntity.cs（DropCrystal） |
 | 事件常量 | Assets/Scripts/Common/EventsInfo.cs（GameFightLogic_*） |
 | 入账方法 | Assets/Scripts/Bean/MVC/UserDataBean.cs（AddBackpackItem/AddCrystal） |
@@ -237,9 +266,9 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 ## 约束与注意事项
 
 - 结算面板 `UIFightSettlement` 只负责展示统计，**不要在此加发奖逻辑**；其 `OpenUI` 重写会调用 `AudioHandler.Instance.StopMusic()`，在结算界面打开时停止战斗音乐。
-- 领奖只在征服 BOSS 通关触发（`ActionForUIFightSettlementNext` 的 `isWin && isBossFight` 分支）；失败/非 BOSS 关/其他模式都不进领奖。
+- 领奖只在两处触发：征服 BOSS 通关（`GameFightLogicConquer.ActionForUIFightSettlementNext` 的 `isWin && isBossFight` 分支）、挑战100勇士胜利（`GameFightLogicChallengeHundred.ActionForUIFightSettlementNext` 的 `isWin` 分支，3箱3抽全手动）；失败/征服非 BOSS 关/其他模式都不进领奖。
 - 配置数据（奖励/掉落数量、品质）变更**必须改 Excel 源表**，再用 Unity 编辑器导出 JSON；仅改 JSON 会被下次导出覆盖。
-- `FightTypeConquerInfoBean.cs` 自动生成，**禁止直接修改**；扩展写到 `FightTypeConquerInfoBeanPartial.cs`。
+- `FightTypeConquerInfoBean.cs` / `FightTypeChallengeHundredInfoBean.cs` 自动生成，**禁止直接修改**；扩展写到各自的 `*BeanPartial.cs`。
 - 存档收口在 `EndGameAndReturnToBase`，先清深渊馈赠再保存 —— 不要在中途调 `ClearAbyssalBlessing`。
 - BUFF 追加掉落逻辑（监听 `GameFightLogic_CreatureDeadDropCrystal`）属于 BUFF 系统，走 `buff-system`。
 - 所有 C# 方法/属性需 `/// <summary>` 注释并用 `#region` 分类。

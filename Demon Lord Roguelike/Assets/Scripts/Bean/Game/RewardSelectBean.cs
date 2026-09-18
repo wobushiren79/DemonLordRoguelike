@@ -66,6 +66,8 @@ public class RewardSelectBean
     public int createEquipNum;
     //装备是魔王专属的概率（默认 1/10）
     public float createEquipDemonLordRate;
+    //是否自动开启首箱保底位（默认true=征服行为：首箱自动开不占次数；false=手动开全部箱，如挑战100勇士3箱3抽）
+    public bool isAutoOpenFirstBox;
 
     public RewardSelectBean()
     {
@@ -74,6 +76,7 @@ public class RewardSelectBean
         createItemNum = 4;
         createEquipNum = 1;
         createEquipDemonLordRate = 0.1f;
+        isAutoOpenFirstBox = true;
     }
     #endregion
 
@@ -162,6 +165,39 @@ public class RewardSelectBean
         rewardSelect.InitData(conquerInfo);
         return rewardSelect.listReward;
     }
+
+    /// <summary>
+    /// 由挑战100勇士配置生成一份奖励物品列表（固定3箱：装备研究未解锁即装备池为空→3箱全魔晶；否则3箱全装备, 稀有度=配置行 reward_equip_rarity）
+    /// </summary>
+    /// <param name="challengeHundredInfo">挑战100勇士配置行（决定装备稀有度与魔晶数）</param>
+    /// <returns>奖励物品列表（3件）</returns>
+    public static List<ItemBean> CreateRewardListForChallengeHundred(FightTypeChallengeHundredInfoBean challengeHundredInfo)
+    {
+        RewardSelectBean rewardSelect = new RewardSelectBean();
+        rewardSelect.createItemNum = 3;
+        rewardSelect.selectNumMax = 3;
+        rewardSelect.listReward = new List<ItemBean>();
+        List<long> unlockCreatureModelIds = GetUnlockCreatureModelIdsForEquip();
+        //装备研究未解锁(装备池为空)时3箱全魔晶; 解锁后3箱全装备
+        bool hasEquipPool = unlockCreatureModelIds.Count > 0;
+        for (int i = 0; i < rewardSelect.createItemNum; i++)
+        {
+            if (hasEquipPool)
+            {
+                int rarityItem = challengeHundredInfo.reward_equip_rarity;
+                //属性加点数量由稀有度配置表决定
+                int addAttribute = RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add;
+                //根据概率决定是否生成魔王专属装备
+                int userType = UnityEngine.Random.value < rewardSelect.createEquipDemonLordRate ? (int)ItemUserTypeEnum.DemonLord : 0;
+                rewardSelect.CreateItemEquipCore(rarityItem, addAttribute, userType, unlockCreatureModelIds, () => challengeHundredInfo.GetRandomRewardCrystal());
+            }
+            else
+            {
+                rewardSelect.CreateItemCrystalCore(challengeHundredInfo.GetRandomRewardCrystal());
+            }
+        }
+        return rewardSelect.listReward;
+    }
     #endregion
 
     #region 奖励生成
@@ -227,15 +263,6 @@ public class RewardSelectBean
     /// <param name="testData">测试数据，测试模式下使用</param>
     private void CreateItemEquip(FightTypeConquerInfoBean conquerInfo, List<long> unlockCreatureModelIds, RewardSelectTestData testData = null)
     {
-        var randomCreatureModelId = RandomUtil.GetRandomDataByList(unlockCreatureModelIds);
-        List<ItemsInfoBean> listItemsInfo = ItemsInfoCfg.GetDataByCreatureModelId(randomCreatureModelId);
-        //如果没有相关道具 生成魔晶（容错）
-        if (listItemsInfo == null)
-        {
-            CreateItemCrystal(conquerInfo);
-            return;
-        }
-
         //先确定本次装备的目标稀有度/加点数/使用者类型（稀有度过滤依赖目标稀有度，故需先算）
         int rarityItem = 1;
         int addAttribute = 0;
@@ -248,7 +275,7 @@ public class RewardSelectBean
             //属性加点数量由稀有度配置表决定
             addAttribute = RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add;
             //根据概率决定是否生成魔王专属装备
-            if (Random.value < createEquipDemonLordRate)
+            if (UnityEngine.Random.value < createEquipDemonLordRate)
             {
                 userType = (int)ItemUserTypeEnum.DemonLord;
             }
@@ -259,7 +286,7 @@ public class RewardSelectBean
             rarityItem = (int)testData.rarity;
             addAttribute = testData.addAttribute;
             //根据测试数据的概率决定是否生成魔王专属装备
-            if (Random.value < testData.createEquipDemonLordRate)
+            if (UnityEngine.Random.value < testData.createEquipDemonLordRate)
             {
                 userType = (int)ItemUserTypeEnum.DemonLord;
             }
@@ -270,6 +297,27 @@ public class RewardSelectBean
             rarityItem = 1;
             userType = 0;
             addAttribute = RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add;
+        }
+        CreateItemEquipCore(rarityItem, addAttribute, userType, unlockCreatureModelIds, () => GetFallbackCrystalNum(conquerInfo, testData));
+    }
+
+    /// <summary>
+    /// 创建一个装备道具（核心逻辑：稀有度/加点数/使用者类型已确定；生成不出装备时按 getFallbackCrystalNum 兜底魔晶）
+    /// </summary>
+    /// <param name="rarityItem">目标稀有度</param>
+    /// <param name="addAttribute">属性加点数量</param>
+    /// <param name="userType">使用者类型（0=通用；ItemUserTypeEnum.DemonLord=魔王专属）</param>
+    /// <param name="unlockCreatureModelIds">已解锁的生物模型ID列表</param>
+    /// <param name="getFallbackCrystalNum">兜底魔晶数量取值回调（每次兜底重新随机）</param>
+    private void CreateItemEquipCore(int rarityItem, int addAttribute, int userType, List<long> unlockCreatureModelIds, System.Func<int> getFallbackCrystalNum)
+    {
+        var randomCreatureModelId = RandomUtil.GetRandomDataByList(unlockCreatureModelIds);
+        List<ItemsInfoBean> listItemsInfo = ItemsInfoCfg.GetDataByCreatureModelId(randomCreatureModelId);
+        //如果没有相关道具 生成魔晶（容错）
+        if (listItemsInfo == null)
+        {
+            CreateItemCrystalCore(getFallbackCrystalNum());
+            return;
         }
 
         //按道具 reward_rarity 白名单过滤：只保留可在本次目标稀有度产出的道具(空白名单=全稀有度适配)
@@ -290,7 +338,7 @@ public class RewardSelectBean
         //过滤后无匹配道具 生成魔晶（容错，与"无相关道具"一致）
         if (listMatchItemsInfo.Count == 0)
         {
-            CreateItemCrystal(conquerInfo, testData);
+            CreateItemCrystalCore(getFallbackCrystalNum());
             return;
         }
         //从匹配白名单的道具中随机取一件
@@ -326,20 +374,34 @@ public class RewardSelectBean
     /// <param name="testData">测试数据，测试模式下使用</param>
     private void CreateItemCrystal(FightTypeConquerInfoBean conquerInfo, RewardSelectTestData testData = null)
     {
-        //基础魔晶道具数量
-        int itemCrystalNum = 100;
-        //征服配置 获取魔晶奖励数量(支持单值"x"固定或区间"x-y"随机)
-        if (conquerInfo != null)
-        {
-            itemCrystalNum = conquerInfo.GetRandomRewardCrystal();
-        }
-        else if (testData != null)
-        {
-            //测试模式：使用传入的测试数据
-            itemCrystalNum = testData.crystalNum;
-        }
+        CreateItemCrystalCore(GetFallbackCrystalNum(conquerInfo, testData));
+    }
+
+    /// <summary>
+    /// 创建一个魔晶道具（核心逻辑：数量已确定）
+    /// </summary>
+    /// <param name="itemCrystalNum">魔晶数量</param>
+    private void CreateItemCrystalCore(int itemCrystalNum)
+    {
         var itemData = new ItemBean(ItemIdEnum.Crystal, itemCrystalNum);
         listReward.Add(itemData);
+    }
+
+    /// <summary>
+    /// 获取装备生成不出时的兜底魔晶数量（征服配置随机区间/测试数据/默认100）
+    /// </summary>
+    /// <param name="conquerInfo">征服配置</param>
+    /// <param name="testData">测试数据</param>
+    /// <returns>兜底魔晶数量</returns>
+    private static int GetFallbackCrystalNum(FightTypeConquerInfoBean conquerInfo, RewardSelectTestData testData = null)
+    {
+        //征服配置 获取魔晶奖励数量(支持单值"x"固定或区间"x-y"随机)
+        if (conquerInfo != null)
+            return conquerInfo.GetRandomRewardCrystal();
+        //测试模式：使用传入的测试数据
+        if (testData != null)
+            return testData.crystalNum;
+        return 100;
     }
     #endregion
 }

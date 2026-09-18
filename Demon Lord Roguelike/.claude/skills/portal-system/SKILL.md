@@ -1,17 +1,25 @@
 ---
 name: portal-system
-description: Demon Lord Roguelike 游戏的传送门(Portal)系统开发指南。使用此SKILL当需要创建或修改基地地图的传送门世界选择/生成、传送门随机数据(世界类型随机 Conquer/Infinite、难度、道路数/道路长度/关卡数预生成、奖励预生成)、传送门数量(研究 PortalShowNum)、地图刷新/位置避重叠/行星贴图、悬停详情气泡(UIPopupPortalDetails 四项预览+奖励, 受设施研究门控)、进入确认与难度选择对话框(UIDialogPortalDetails 7+1池左右滑动/点击item直切)、点击进入世界→生成 FightBean→进战斗场景等，包括 UIBasePortal、UIViewBasePortalItem、UIDialogPortalDetails、UIPopupPortalDetails、GameWorldInfoBean、GameWorldInfoRandomBean/GameWorldDifficultyRandomBean、excel_game_world_info。注意：进入后的征服战斗逻辑见 conquer-system，奖励生成规则见 fight-reward-system，研究节点/解锁机制见 research-system。
+description: Demon Lord Roguelike 游戏的传送门(Portal)系统开发指南。使用此SKILL当需要创建或修改基地地图的传送门世界选择/生成、传送门随机数据(世界类型随机 Conquer/Infinite/ChallengeHundred挑战100勇士(研究 ChallengeHundredShowRate 概率出现,无难度概念,冻结配置行+3箱奖励)、难度、道路数/道路长度/关卡数预生成、奖励预生成)、传送门数量(研究 PortalShowNum)、地图刷新/位置避重叠/行星贴图、悬停详情气泡(UIPopupPortalDetails 四项预览+奖励, 受设施研究门控; 挑战100勇士隐藏难度/关卡数行,奖励全量3箱预览)、进入确认与难度选择对话框(UIDialogPortalDetails 7+1池左右滑动/点击item直切; 挑战100勇士分支=来袭魔物列表)、点击进入世界→生成 FightBean→进战斗场景等，包括 UIBasePortal、UIViewBasePortalItem、UIDialogPortalDetails、UIPopupPortalDetails、GameWorldInfoBean、GameWorldInfoRandomBean/GameWorldDifficultyRandomBean、FightTypeChallengeHundredInfoBean(Partial)、FightBeanForChallengeHundred、excel_game_world_info、excel_fight_type_challenge_hundred_info。注意：进入后的征服战斗逻辑见 conquer-system，奖励生成规则见 fight-reward-system，研究节点/解锁机制见 research-system。
 watched_files:
   - Assets/Scripts/Component/UI/Game/BasePortal/UIBasePortal.cs
   - Assets/Scripts/Component/UI/Game/BasePortal/UIViewBasePortalItem.cs
   - Assets/Scripts/Component/UI/Dialog/UIDialogPortalDetails.cs
   - Assets/Scripts/Component/UI/Dialog/PortalDetails/UIViewDialogPortalDetailsItem.cs
+  - Assets/Scripts/Component/UI/Dialog/PortalDetails/UIViewDialogPortalDetailsCreatureItem.cs
+  - Assets/Scripts/Component/UI/Dialog/PortalDetails/UIViewDialogPortalDetailsCreatureItemComponent.cs
   - Assets/Scripts/Component/UI/Popup/UIPopupPortalDetails.cs
   - Assets/Scripts/Component/UI/Popup/PortalDetails/UIViewPopupPortalDetailsItem.cs
   - Assets/Scripts/Bean/MVC/Game/GameWorldInfoBean.cs
   - Assets/Scripts/Bean/MVC/Game/GameWorldInfoBeanPartial.cs
+  - Assets/Scripts/Bean/MVC/Game/FightTypeChallengeHundredInfoBean.cs
+  - Assets/Scripts/Bean/MVC/Game/FightTypeChallengeHundredInfoBeanPartial.cs
+  - Assets/Scripts/Bean/Game/FightBeanForChallengeHundred.cs
   - Assets/Data/Excel/excel_game_world_info[游戏世界信息].xlsx
   - Assets/Resources/JsonText/GameWorldInfo.txt
+  - Assets/Data/Excel/excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx
+  - Assets/Resources/JsonText/FightTypeChallengeHundredInfo.txt
+  - Assets/Editor/FightModeEditorTabChallengeHundred.cs
 ---
 
 # 传送门 (Portal) 系统开发指南
@@ -21,7 +29,7 @@ watched_files:
 传送门系统是**基地地图的"世界选择/进入"层**——玩家在基地地图上看到若干随机生成的传送门(每个=一个世界实例)，悬停看详情、点击选难度并进入对应战斗模式。它**只负责"选哪局、进哪局"**，进入后的战斗由 `conquer-system`(征服) / `game-fight-logic`(无尽等) 接管。
 
 - **传送门 = 一个世界随机实例**：`GameWorldInfoRandomBean`（运行时随机数据），引用一张世界配置 `GameWorldInfoBean`。
-- **两种世界类型**：开局随机 `GameFightTypeEnum.Conquer`(默认) 或 `Infinite`(无尽，需 `unlock_id_infinite` 解锁)，见 `SetGameFightTypeRandom`。
+- **世界类型随机**：`SetGameFightTypeRandom` **先 roll `ChallengeHundred`**（是魔王就挑战100勇士，单关100只怪；出现概率=研究 `UnlockEnum.ChallengeHundredShowRate`(100300007) 等级×10%，命中且当前世界最高已解锁难度有匹配配置行才生效，否则落回），未命中再均匀随机 `GameFightTypeEnum.Conquer`(默认) 或 `Infinite`(无尽，需 `unlock_id_infinite` 解锁)。
 - **数量受研究控制**：地图上传送门个数 = `UserUnlockBean.GetUnlockPortalShowCount()`(基础 `portalShowMax` + 研究 `UnlockEnum.PortalShowNum` 等级)。
 - **数据缓存在临时存档**：`UserTempBean.listPortalWorldInfoRandomData`，打开地图不重新洗牌，只按数量缺口补足；点"刷新"（需研究 `PortalRefreshNum` 解锁、有次数限制、通关回满）才清空重洗。
 
@@ -39,8 +47,8 @@ UIViewBasePortalItem (单个传送门, BaseUIView)
     │  点击 ui_BG → OnClickForEnterWorld
     ▼
 OnClickForEnterWorld
-    │  确认对话框(文本401) + 难度选择 UIDialogPortalDetails
-    │  确认 → ShowMask → 按 gameFightType 造 FightBeanForConquer / FightBeanForInfinite
+    │  确认对话框(文本401征服/416挑战100勇士) + 难度选择 UIDialogPortalDetails(挑战100勇士分支=来袭魔物列表)
+    │  确认 → ShowMask → 按 gameFightType 造 FightBeanForConquer / FightBeanForInfinite / FightBeanForChallengeHundred
     ▼
 WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-system / game-fight-logic)
 ```
@@ -64,16 +72,25 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 ### GameWorldInfoRandomBean（传送门运行时随机数据, 手写, 可改）
 `Assets/Scripts/Bean/MVC/Game/GameWorldInfoBeanPartial.cs` — 一个传送门一份，存 `UserTempBean.listPortalWorldInfoRandomData`。
 
-- 字段：`worldId`、`gameFightType`、`roadNum`/`roadLength`/`fightNum`(当前难度的值)、`uiPosition`(Vector2Bean 规避 Newtonsoft 递归)、`iconSeed`、`difficultyLevel`、`listDifficultyRandom`(各难度预生成数据)。
-- `SetGameFightTypeRandom(worldId)`：随机世界类型(Conquer/已解锁则可 Infinite) → 调 `SetRandomData`。
+- 字段：`worldId`、`gameFightType`、`roadNum`/`roadLength`/`fightNum`(当前难度的值)、`uiPosition`(Vector2Bean 规避 Newtonsoft 递归)、`iconSeed`、`difficultyLevel`、`listDifficultyRandom`(各难度预生成数据)；ChallengeHundred 专用：`challengeHundredRowId`(冻结的配置行id，0=未冻结)、`listRewardChallengeHundred`(冻结的3箱通关奖励)、`rewardUnlockSignChallengeHundred`(生成奖励时的装备池解锁签名)。
+- `SetGameFightTypeRandom(worldId)`：**先 roll ChallengeHundred 出现概率**(`UserUnlockBean.GetUnlockChallengeHundredShowRate()`=研究 `UnlockEnum.ChallengeHundredShowRate`(100300007) 等级×10%)，命中且当前世界最高已解锁难度有匹配行(`FightTypeChallengeHundredInfoCfg.GetRandomRow(unlockDifficultyMax)`，无匹配返回 null)才生成为该模式并直接调 `SetRandomDataForChallengeHundred`；否则落回原 Conquer/Infinite 均匀随机 → 调 `SetRandomData`。
 - `SetRandomDataForConquer`：创建时把 `1~已解锁最高难度` 逐档随机出 `GameWorldDifficultyRandomBean`(道路数/长度/关卡数 + **预生成奖励**)缓存进 `listDifficultyRandom`，默认难度取已解锁最高。
 - `SetRandomDataForInfinite`：无尽模式只随 `roadNum`。
+- `SetRandomDataForChallengeHundred(challengeHundredInfo)`：冻结配置行 id；`roadNum`/`roadLength` 从行区间(`GetRandomRoadNum`/`GetRandomRoadLength`，x或x-y)随出；`fightNum=1`(固定单关)；`difficultyLevel`=当前最高已解锁难度(**仅气泡展示用**，强度由配置行 `attack_intensity_baserate` 自配)；预生成并冻结3箱奖励(`RewardSelectBean.CreateRewardListForChallengeHundred`，装备池空=3箱全魔晶，否则3箱全装备)。
+- `GetChallengeHundredReward()`：取冻结3箱奖励(预览=实领)；空或装备池签名变化(`rewardUnlockSignChallengeHundred != RewardSelectBean.GetConquerEquipPoolSign()`)时按冻结行重新生成并刷新签名；冻结行缺失返回 null。
+- `SetRandomData` switch 有 ChallengeHundred **防御性 case**：正常由 `SetGameFightTypeRandom` 直接调 `SetRandomDataForChallengeHundred`；走到 switch 说明只有冻结行id(如旧数据重放)，按 `challengeHundredRowId` 找回配置行重建，缺失则 LogError。
 - `SetDifficultyLevel(level)`：切换难度，把 `roadNum/roadLength/fightNum` 同步为该难度缓存值(气泡、战斗都读这些字段)。
 - `GetDifficultyRandom(level)`：取某难度数据(缺失懒生成并缓存)。
 - `GetDifficultyReward(level)`：取该难度**预生成奖励**(预览即实领)；空或解锁池签名变化时重新生成，见下。
 
 ### GameWorldDifficultyRandomBean（单难度随机数据）
 每难度一份：`difficultyLevel`、`roadNum`、`roadLength`、`fightNum`、`listReward`(预生成通关奖励)、`rewardUnlockSign`(生成时的装备奖励池解锁签名)。
+
+### FightTypeChallengeHundredInfoBean（挑战100勇士配置, Bean 自动生成禁改 / Partial 手写扩展）
+`Assets/Scripts/Bean/MVC/Game/FightTypeChallengeHundredInfoBean(Partial).cs`（Cfg.fileName = `FightTypeChallengeHundredInfo`，一行一难度，当前10行）。
+
+- Partial 扩展：`GetEnemyIdList()`/`GetRandomEnemyId()`(enemy_ids ,分隔；生成100只怪时每只独立从列表随机抽取)、`GetDifficultyLevelList()`/`IsMatchDifficulty(level)`(本行是否可被指定难度抽中，即 difficulty_levels 含该难度)、`GetRandomFightScene()`(fight_scene_ids 随机其一)、`GetRandomRoadNum()`/`GetRandomRoadLength()`(x或x-y区间)、`GetRandomRewardCrystal()`(x固定或x-y随机，解析失败返回0)、`GetIntensityRate()`(attack_intensity_baserate 强度倍率，敌人HP/护甲/攻击力×该值，≤0按1)。
+- Cfg 扩展：`GetMatchRows(unlockDifficultyMax)`(指定难度可抽中的全部行)、`GetRandomRow(unlockDifficultyMax)`(随机其一，**无匹配返回 null，调用方需落回默认模式**)。
 
 ## 地图生成与刷新（UIBasePortal）
 
@@ -90,16 +107,19 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 - 悬停气泡：`ui_BG` 上的 `PopupButtonCommonView` 注册 Enter/Exit，`SetData((gameWorldInfo, gameWorldInfoRandom, difficultyLevel), PopupEnum.PortalDetails)`（地图item展示**当前难度** `gameWorldInfoRandom.difficultyLevel`）。悬停时停止旋转(`isRotate=false`)。
   - **气泡展示哪个难度**：SetData 第三参 `difficultyLevel` 即展示难度。地图item传的是**当前难度**——它在世界创建时由 `SetRandomDataForConquer` 末尾 `SetDifficultyLevel(unlockDifficultyMax)` 置为**已解锁最高难度**(非难度1；构造器 `difficultyLevel=1` 只是占位，创建时被覆盖)，之后跟随难度对话框选择。故解锁多难度时，地图气泡默认显示**已解锁最高难度**。对话框各item则传各自难度号(展示该item自身难度)。事后解锁更高难度不会自动抬高已缓存世界(clamp 只向下夹)，需世界重新生成(通关清空/刷新)才重取。
 - 缓慢绕 `rotateCenter` 旋转(随机 speed)；出现 `DOScale` OutBack。
+- **名字显示按模式区分**：ChallengeHundred 传送门名字显示模式名(UIText 417「是魔王就挑战100勇士」)替代世界名；其余模式显示世界配置名。
 - 点击 `ui_BG` → `OnClickForEnterWorld`。
 
 ## 进入流程（OnClickForEnterWorld）
 
-1. 造确认 `DialogBean`(content=文本401「是否开启{0}的征服之旅？」)，`actionSubmit` 内：item 放大靠近动画 + `ShowMask` → 按 `gameFightType` 造 `FightBeanForConquer`/`FightBeanForInfinite` → `WorldHandler.EnterGameForFightScene(fightData)`。
+1. 造确认 `DialogBean`(content 按模式区分：征服=文本401「是否开启{0}的征服之旅？」带世界名参数，ChallengeHundred=文本416「是否接受100勇士的挑战？」)，`actionSubmit` 内：item 放大靠近动画 + `ShowMask` → 按 `gameFightType` 造 `FightBeanForConquer`/`FightBeanForInfinite`/`FightBeanForChallengeHundred`(switch case) → `WorldHandler.EnterGameForFightScene(fightData)`。
 2. 同时 `UIHandler.ShowDialogPortalDetails(dialogData)` 弹**难度选择对话框** `UIDialogPortalDetails.SetData(gameWorldInfo, gameWorldInfoRandom)`。
 3. `actionCancel` → `isSelectWorld=false`(恢复旋转)。
 
 ## 难度选择对话框（UIDialogPortalDetails）
 
+- **ChallengeHundred 模式分支（`SetDataForChallengeHundred`）**：`SetData` 开头按 `gameFightType` 分支——该模式**无难度概念**：隐藏 `ui_Difficulty` 容器与左右难度按钮(难度item池 `HideAllItems` 防上次征服打开残留)，显示 `ui_CreatureList` 来袭魔物列表——按冻结行 `challengeHundredRowId` 取配置，`GetEnemyIdList()` **去重**后动态实例化 `UIViewDialogPortalDetailsCreatureItem`(模板隐藏作蓝本，手动等距居中排布，`spacing=Min(creatureItemSpacing=230, 容器宽/(n-1))`，数量多时间距收缩)；阵容选择区与由内到外的布局重建(ContentPro→ContentShow→DialogContent)与原逻辑共用。`OnInputActionForStarted` 的 Navigate 左右切难度对 ChallengeHundred **直接 return**。AutoLink 新增绑定 `ui_Difficulty`/`ui_CreatureList`/`ui_UIViewDialogPortalDetailsCreatureItem`（`UIDialogPortalDetailsComponent.cs` 由框架 AutoLink 同步生成）；prefab 结构：DialogContent 下 Difficulty 容器(默认隐藏，含难度item模板与左右按钮)与 CreatureList 容器(含隐藏的 CreatureItem 嵌套模板)。
+- **UIViewDialogPortalDetailsCreatureItem**（PortalDetails 目录，挑战100勇士专用来袭魔物item）：`SetData(npcId)` → `NpcInfoCfg.GetItemData` → `GameUIUtil.SetCreatureUIForSimple(ui_Icon, new CreatureBean(npcInfo))`(Simple 管线 Spine 图标)；Component 的 `ui_Icon` 为 SkeletonGraphic(prefab 上 Icon 残留的 SkeletonAnimation 已移除)。
 - **7+1 item 对象池**：常驻显示中心±3 共**最多 7 档**，切换时第 8 个临时滑出(`InitItemPool` 克隆共 8 个)。透明度/缩放按距中心距离取梯度(`alphaByDistance`/`scaleByDistance`，0=中心 1/0.75… → 3=最外 0.4/0.6)。
 - 左右滑动切换(`AnimSwitchDifficulty`，`itemSpacing=230`，`Ease.OutBack`)，到边界回弹(`AnimSwitchBlocked`)；超 `unlockDifficultyMax` 不可选，更高且 `configDifficultyMax>unlockDifficultyMax` 时 Toast「难度未解锁」(文本404)。
 - **点击item直切**：`OnClickForDifficultyLevel(itemView)`——点击任一 item 直接 `SetDifficultyLevel` 到该难度(未解锁 item 回弹+提示)；左右切换按钮/方向键仍走 `OnClickForChangeDifficultyLevel(±1)`。
@@ -113,7 +133,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 
 继承 `PopupShowCommonView`，`SetData((GameWorldInfoBean, GameWorldInfoRandomBean, int difficultyLevel))`。AutoLinkUI 按名绑定的 5 个 `UIViewPopupPortalDetailsItem`(名字/难度/线路数/关卡数/路径长度) + `ui_UIViewItem` 模板缓存池(奖励道具)。
 
-- **名字/难度始终显示（不受研究门控），其余 4 项受「设施」研究门控**（`UserUnlock.CheckIsUnlock(UnlockEnum.PortalPreview*)`，**未解锁该项整行隐藏**；无尽模式不展示难度/关卡数/路径长度/奖励，即只有征服模式才有难度概念）：
+- **名字/难度始终显示（不受研究门控），其余 4 项受「设施」研究门控**（`UserUnlock.CheckIsUnlock(UnlockEnum.PortalPreview*)`，**未解锁该项整行隐藏**；无尽模式不展示难度/关卡数/路径长度/奖励，即只有征服模式才有难度概念；**ChallengeHundred 隐藏难度行与关卡数行**(单关恒1无信息量)，线路数量/路径长度行保留(门控照旧)，奖励行数据源改 `GetChallengeHundredReward()`）：
 
   | 详情项 | 文本id | UnlockEnum | 值 |
   |--------|--------|-----------|----|
@@ -124,7 +144,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
   | 路径长度 | 414 | `PortalPreviewRoadLength` | 100300004 |
   | 奖励道具 | — | `PortalPreviewReward` | 100300005 |
 
-- **奖励缓存池**：以 `ui_UIViewItem` 为模板的 `listRewardItemPool`(池首=模板、不足克隆、多余隐藏)，**只取 `GetDifficultyReward(difficultyLevel)` 的首箱保底位(`listReward[0]`)组单件列表填充**（通关时该箱自动开启必得，其余可选箱不预览）；改动后 `LayoutRebuilder.ForceRebuildLayoutImmediate(ui_Items)` 再整体重建。
+- **奖励缓存池**：以 `ui_UIViewItem` 为模板的 `listRewardItemPool`(池首=模板、不足克隆、多余隐藏)。征服**只取 `GetDifficultyReward(difficultyLevel)` 的首箱保底位(`listReward[0]`)组单件列表填充**（通关时该箱自动开启必得，其余可选箱不预览）；**ChallengeHundred 取 `GetChallengeHundredReward()` 全量3件传入 `RefreshRewardItems`**(预览=实领，通关3箱全手动开)。改动后 `LayoutRebuilder.ForceRebuildLayoutImmediate(ui_Items)` 再整体重建。
 - `UIViewPopupPortalDetailsItem.SetData(title, content, isShow)`：`isShow==false` 整行隐藏。
 - `UIViewItem`(`Common/Item`)：通用道具项(图标+数量+ItemInfo悬停气泡)，子类 `UIViewItemBackpack`/`UIViewItemEquip`。
 
@@ -133,16 +153,20 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 - 创建传送门时 `CreateDifficultyRandom` 按难度**预生成并冻结** `listReward`(`RewardSelectBean.CreateRewardListForConquer`) + 记录 `rewardUnlockSign`(`GetConquerEquipPoolSign`)。
 - `GetDifficultyReward`：`listReward` 空(老存档) 或 解锁新魔物掉落致签名变化(`rewardUnlockSign != GetConquerEquipPoolSign()`)时按配置**重新生成并刷新签名**(魔物掉落装备需研究解锁，解锁后奖励池变大→重 roll)。
 - 通关 BOSS 领奖消费同一份(`GameFightLogicConquer.ActionForUIFightSettlementNext → InitDataForReward`)，保证**预览=实领**（预览只显示首箱保底奖励 `listReward[0]`——即通关领奖时落地动画播完自动开启、必得的那件）。详见 `fight-reward-system` / `conquer-system`。
+- **ChallengeHundred 同契约**：`SetRandomDataForChallengeHundred` 预生成冻结 `listRewardChallengeHundred`(3箱) + `rewardUnlockSignChallengeHundred`；`GetChallengeHundredReward()` 在空或签名变化时重生成；通关领奖消费同一份(`GameFightLogicChallengeHundred.ActionForUIFightSettlementNext`：`selectNumMax=3`、`isAutoOpenFirstBox=false`，3箱3抽全手动开，无首箱保底自动开)。
 
 ## 解锁相关（UnlockEnum / UserUnlockBean）
 
 - 世界池：`GetUnlockGameWorldIds()`；传送门数量：`GetUnlockPortalShowCount()`(含 `UnlockEnum.PortalShowNum=100300001` 研究等级)。
 - 征服难度上限：`GetUnlockGameWorldConquerDifficultyLevel(worldId)`。
 - 详情预览门控：`UnlockEnum.PortalPreviewRoadNum/FightNum/RoadLength/Reward = 100300002~100300005`(设施研究)。新增/调整这些研究节点(配置表/解锁/多语言)见 `research-system`。
+- **ChallengeHundred 出现概率**：`UnlockEnum.ChallengeHundredShowRate = 100300007`(研究等级×10%=传送门刷新为该模式的概率，满级10级=100%；前置=剑与魔法征服难度2研究100310112)；取值 `UserUnlockBean.GetUnlockChallengeHundredShowRate()`。
 
 ## 配置（Excel）
 
-- `excel_game_world_info[游戏世界信息].xlsx`(工作表 `GameWorldInfo`) —— 世界配置唯一真实源；导出 `Assets/Resources/JsonText/GameWorldInfo.txt`。
+- `excel_game_world_info[游戏世界信息].xlsx`(工作表 `GameWorldInfo`) —— 世界配置唯一真实源；导出 `Assets/Resources/JsonText/GameWorldInfo.txt`。**ChallengeHundred 未给该表加列**(该模式用全局研究门控，所有已解锁世界都可能刷出)。
+- `excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx`(工作表 `FightTypeChallengeHundredInfo`) —— 挑战100勇士配置唯一真实源；导出 `FightTypeChallengeHundredInfo.txt`。列：`id` / `enemy_ids`(,分隔，100只怪每只独立抽取) / `difficulty_levels`(,分隔，可抽中难度) / `attack_intensity_baserate`(强度倍率) / `attack_show_time` / `road_num`(x或x-y) / `road_length` / `fight_scene_ids`(,分隔) / `drop_crystal` / `reward_crystal`(x或x-y) / `reward_equip_rarity` / `reward_exp` / `remark`；一行=一个挑战配置，`difficulty_levels` 声明该行适配的难度列表(可多选；当前数据 2 行=难度1-5 / 6-10)。
+- **可视化编辑**：战斗模式编辑工具（菜单 `游戏/战斗模式编辑`）的「挑战100勇士」页签 `Assets/Editor/FightModeEditorTabChallengeHundred.cs`——**以配置行列表为主组织**(不再按难度分页)：顶部难度覆盖总览(难度1~10 各一格显示可抽中行数，0 行红色警示该难度不会刷出本模式；点击格子按难度筛选行列表，再点或「清除筛选」取消)→配置行下拉(`[id] 备注 (难度:x,y)`)→加载编辑；`difficulty_levels` 用 1~10 多选页签编辑(附实时覆盖提示，全不选警示任何难度都抽不中)、敌人/场景 ID 列表(逗号分隔,与征服的 `&` 不同)手输或下拉按名字选取、修改字段淡黄高亮(ID 列表改用「●已修改」文字标记)；支持新增行(id=max+1、适配难度取当前筛选难度/无筛选沿用模板行、可复制模板)与删除行(EPPlus 删行)，保存/增删均单 EPPlus 会话写回 Excel(数值列写数值类型)后 `ExcelUtil.ExcelToJsonItem` 重导 JSON。
 - 改配置**必须改 Excel** 再由 Unity 导出 JSON；仅改 JSON 下次导出会被覆盖。
 
 ## 关键文件
@@ -153,13 +177,19 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 | 单个传送门item | Assets/Scripts/Component/UI/Game/BasePortal/UIViewBasePortalItem.cs |
 | 难度选择对话框 | Assets/Scripts/Component/UI/Dialog/UIDialogPortalDetails.cs |
 | 难度item | Assets/Scripts/Component/UI/Dialog/PortalDetails/UIViewDialogPortalDetailsItem.cs |
+| 来袭魔物item(挑战100勇士) | Assets/Scripts/Component/UI/Dialog/PortalDetails/UIViewDialogPortalDetailsCreatureItem.cs (+Component.cs) |
 | 详情气泡(名字/难度+4预览+奖励,门控) | Assets/Scripts/Component/UI/Popup/UIPopupPortalDetails.cs |
 | 详情项 | Assets/Scripts/Component/UI/Popup/PortalDetails/UIViewPopupPortalDetailsItem.cs |
 | 世界配置 Bean(禁改) | Assets/Scripts/Bean/MVC/Game/GameWorldInfoBean.cs |
 | 传送门随机数据 | Assets/Scripts/Bean/MVC/Game/GameWorldInfoBeanPartial.cs |
+| 挑战100勇士配置 Bean(禁改)+Partial | Assets/Scripts/Bean/MVC/Game/FightTypeChallengeHundredInfoBean.cs / FightTypeChallengeHundredInfoBeanPartial.cs |
+| 挑战100勇士战斗数据 | Assets/Scripts/Bean/Game/FightBeanForChallengeHundred.cs |
 | 传送门数据缓存 | Assets/Scripts/Bean/Game/UserTempBean.cs (listPortalWorldInfoRandomData) |
 | 世界配置 Excel | Assets/Data/Excel/excel_game_world_info[游戏世界信息].xlsx |
 | 导出 JSON | Assets/Resources/JsonText/GameWorldInfo.txt |
+| 挑战100勇士配置 Excel | Assets/Data/Excel/excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx |
+| 导出 JSON | Assets/Resources/JsonText/FightTypeChallengeHundredInfo.txt |
+| 挑战100勇士配置编辑器 | Assets/Editor/FightModeEditorWindow.cs (主窗口,菜单:游戏/战斗模式编辑) + Assets/Editor/FightModeEditorTabChallengeHundred.cs (挑战100勇士页签) |
 
 ## 约束
 
@@ -167,7 +197,8 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 - `GameWorldInfoBean.cs` 自动生成**禁改**；扩展写 `GameWorldInfoBeanPartial.cs`。`GameWorldInfoRandomBean`/`GameWorldDifficultyRandomBean` 是手写 Bean，可直接改。
 - 地图位置用 `Vector2Bean` 包装序列化(规避 Newtonsoft 序列化 Vector2 的 normalized 递归栈溢出)。
 - `InitMap` 是"补足不洗牌"语义：别改成每次重随(会让已解锁数量/缓存失效、每次打开都变)；要重洗走 `OnClickForRefresh`。
-- 气泡名字/难度始终显示(不门控)，线路数/关卡数/路径长度/奖励四项**未解锁整行隐藏**(不是占位)；无尽模式不展示难度/关卡数/路径长度/奖励(难度是征服模式专属概念)。
+- 气泡名字/难度始终显示(不门控)，线路数/关卡数/路径长度/奖励四项**未解锁整行隐藏**(不是占位)；无尽模式不展示难度/关卡数/路径长度/奖励(难度是征服模式专属概念)；ChallengeHundred 隐藏难度/关卡数行(单关恒1无信息量)，奖励行全量3箱预览(征服仅首箱保底 `listReward[0]`)。
+- ChallengeHundred 无难度概念：对话框隐藏难度选择器(来袭魔物列表替代)、传送门名字显示模式名(UIText 417)而非世界名、确认文案用 416；`difficultyLevel` 字段仅气泡展示用，强度由配置行 `attack_intensity_baserate` 决定。文本 id：416=「是否接受100勇士的挑战？」、417=「是魔王就挑战100勇士」、418=「来袭魔物」(预留标题文案，当前代码未用)。
 - 输入走 `InputActionUIEnum`(ESC/Navigate)，禁用旧版 `Input` API。
 
 ## 关联 Skill 与 Agent

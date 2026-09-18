@@ -1,6 +1,6 @@
 ---
 name: conquer-system
-description: Demon Lord Roguelike 游戏的征服模式(Conquer)系统开发指南。使用此SKILL当需要创建或修改征服模式战斗流程、多关卡推进、BOSS关逻辑(enemy_boss_ids/attack_boss_num/UIDialogBossShow 特写)、普通敌人波次排程、关卡间深渊馈赠衔接、征服配置表(excel_fight_type_conquer_info)、关卡数/道路数/道路长度的随机区间(x 或 x-y)、难度等级、征服结算与奖励等，包括 GameFightLogicConquer、FightBeanForConquer、FightTypeConquerInfoBean(Partial)、GameWorldInfoRandomBean.SetRandomDataForConquer、FightTypeConquerEditorWindow。
+description: Demon Lord Roguelike 游戏的征服模式(Conquer)系统开发指南。使用此SKILL当需要创建或修改征服模式战斗流程、多关卡推进、BOSS关逻辑(enemy_boss_ids/attack_boss_num/UIDialogBossShow 特写)、普通敌人波次排程、关卡间深渊馈赠衔接、征服配置表(excel_fight_type_conquer_info)、关卡数/道路数/道路长度的随机区间(x 或 x-y)、难度等级、征服结算与奖励等，包括 GameFightLogicConquer、FightBeanForConquer、FightTypeConquerInfoBean(Partial)、GameWorldInfoRandomBean.SetRandomDataForConquer、FightModeEditorWindow(战斗模式编辑工具,征服页签=FightModeEditorTabConquer)。
 watched_files:
   - Assets/Scripts/Game/Logic/GameFightLogicConquer.cs
   - Assets/Scripts/Bean/Game/FightBeanForConquer.cs
@@ -9,7 +9,8 @@ watched_files:
   - Assets/Scripts/Bean/MVC/Game/GameWorldInfoBeanPartial.cs
   - Assets/Scripts/Component/UI/Dialog/UIDialogBossShow.cs
   - Assets/Scripts/Bean/UI/DialogBossShowBean.cs
-  - Assets/Editor/FightTypeConquerEditorWindow.cs
+  - Assets/Editor/FightModeEditorWindow.cs
+  - Assets/Editor/FightModeEditorTabConquer.cs
   - Assets/Data/Excel/excel_fight_type_conquer_info[战斗-征服模式].xlsx
   - Assets/Resources/JsonText/FightTypeConquerInfo.txt
 ---
@@ -110,7 +111,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → GameFightLogicConquer 跑起
 - 填单个数 `3` → 固定取 3
 - 填区间 `2-5` → 闭区间 `[2,5]` 内随机一个整数
 
-解析统一走 `FightTypeConquerInfoBean.ParseRandomRange(value, defaultValue)`（在 Partial 中），封装为：
+解析统一走 `FightTypeConquerInfoBean.ParseRandomRange(value, defaultValue)`（在 Partial 中；**2026-09 起改为转调框架工具 `RandomUtil.GetRandomIntByRangeString`，语义不变**——x 或 x-y 闭区间随机，该工具同时供挑战100勇士配置表 `FightTypeChallengeHundredInfoBeanPartial` 复用），封装为：
 
 ```csharp
 fightTypeConquerInfo.GetRandomFightNum();   // 解析 fight_num
@@ -143,6 +144,7 @@ public int GetRandomFightNum();
 public int GetRandomRoadNum();
 public int GetRandomRoadLength();
 public int GetRandomBossNum();
+// 转调 RandomUtil.GetRandomIntByRangeString（语义不变；供挑战100勇士表复用同一区间解析）
 public static int ParseRandomRange(string value, int defaultValue = 0);
 
 // 难度背景色：解析 bg_color(十六进制字符串如 "#2ECC71")为 Color，空/失败返回白色
@@ -194,7 +196,7 @@ public bool IsNextBossFight()  => figthNumMax > 0 && fightNum + 1 >= figthNumMax
    - **BOSS 同样享受本关强度倍率** `intensityRate`（与普通敌人取同一 `GetCurrentIntensityRate(fightNum)`，BOSS 关 `fightNum = figthNumMax`），作用到 HP/护甲/攻击力
 3. 所有事件按时间排序 → 转 `FightAttackDetailsBean(delay, npcId)` 入队，首个 BOSS 那条带 `bossShowNpcIds`。
 
-> **强度倍率还叠加终焉议会议案**：`InitFightAttackData` 计算出 `GetCurrentIntensityRate(fightNum)` 后，再 `intensityRate *= userTempData.GetEnemyIntensityRate()`（连乘所有在列议案的 `GetEnemyIntensityRate`）。终焉议会「挑战更强/更弱的敌人」议案(`DoomCouncilEntityEnemyIntensity`, ×2/×0.5)即经此叠加，作用于**下一整场征服 run 所有关卡+BOSS**，run 结束时议案自身在 `TriggerGameFightLogicEndGame` 消耗移除。详见 doom-council-system。
+> **强度倍率还叠加终焉议会议案**：`InitFightAttackData` 计算出 `GetCurrentIntensityRate(fightNum)` 后，再 `intensityRate *= userTempData.GetEnemyIntensityRate()`（连乘所有在列议案的 `GetEnemyIntensityRate`）。终焉议会「挑战更强/更弱的敌人」议案(`DoomCouncilEntityEnemyIntensity`, ×2/×0.5)即经此叠加，作用于**下一整场征服 run 所有关卡+BOSS**，run 结束时议案自身在 `TriggerGameFightLogicEndGame` 消耗移除。详见 doom-council-system。**终焉议会议案均不适用于挑战100勇士（有意设计）**：`EnemyIntensity`/`MoreEquip`/`MoreDemonLordEquip` 均以 `gameFightType == Conquer` 判等门控（MoreExp/MoreCrystal 经配置 `class_entity_data` 指向征服流程）——ChallengeHundred 强度由配置行 `attack_intensity_baserate` 自配、奖励由 `CreateRewardListForChallengeHundred` 自配。
 
 ### 关卡推进时的数据刷新
 
@@ -298,6 +300,8 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 - `GetDifficultyRandom(level)`：取某难度缓存数据，缺失（老存档/仅预览的未解锁难度）时懒生成并缓存，保证同一难度数值稳定。气泡按各 item 自身难度取数。
 - 难度解锁存档：`UserUnlockBean.GetUnlockGameWorldConquerDifficultyLevel`。
 
+> **挑战100勇士旁路（ChallengeHundred）**：`SetGameFightTypeRandom` 在随机世界模式**之前**优先判定挑战100勇士出现概率（研究 `UnlockEnum.ChallengeHundredShowRate` 等级×10%）：命中且当前最高已解锁难度有匹配配置行（`FightTypeChallengeHundredInfoCfg.GetRandomRow`）时，该传送门世界生成为 ChallengeHundred 并走 `SetRandomDataForChallengeHundred`——冻结配置行 id（`challengeHundredRowId`）、道路数/长度（行区间随出）、固定 `fightNum=1` 单关、预生成冻结 3 箱奖励（`listRewardChallengeHundred` + 签名 `rewardUnlockSignChallengeHundred`，取用走 `GetChallengeHundredReward()`，签名失效重生成同征服契约）。**本旁路不走 `SetRandomDataForConquer`/难度逐档缓存**（无难度概念），传送门气泡/进入流程细节见 [`portal-system`](../portal-system/SKILL.md)。
+
 #### 奖励预生成与冻结（预览即实领）
 
 - **创建即冻结奖励**：`CreateDifficultyRandom` 生成每档 `GameWorldDifficultyRandomBean` 时，除 roadNum/roadLength/fightNum 外，**一并按难度预生成并冻结**该档的通关奖励列表 `listReward`，同时记录 `rewardUnlockSign`（= 生成那一刻的「装备奖励池解锁签名」）。传送门详情气泡展示的奖励就是这份预生成数据，**预览即实领**（领奖时直接消费这份冻结奖励，不再二次随机）。
@@ -318,9 +322,11 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 
 ---
 
-## FightTypeConquerEditorWindow - 配置编辑器
+## FightModeEditorWindow - 战斗模式编辑工具（原 FightTypeConquerEditorWindow）
 
-**文件**：`Assets/Editor/FightTypeConquerEditorWindow.cs`（菜单：自定义编辑窗口）
+**文件**：主窗口 `Assets/Editor/FightModeEditorWindow.cs`（菜单：游戏/战斗模式编辑，标题「战斗模式编辑工具」）＋ 征服页签 `Assets/Editor/FightModeEditorTabConquer.cs`。主窗口只负责页签栏（`GUILayout.Toolbar`）与持有各页签实例（切页签不丢状态），各模式页签继承 `FightModeEditorTabBase`（`Init()`/`OnGUI()`）自绘；**挑战100勇士页签见 `FightModeEditorTabChallengeHundred.cs`（portal-system skill）**。
+
+以下为**征服页签**（FightModeEditorTabConquer）的编辑能力：
 
 - 提供按 world/难度浏览编辑各行字段；区间字段（`attack_boss_num`/`fight_num`/`road_num`/`road_length`）用字符串输入框。字段标签只写短名，完整说明（字段名+格式）放 tooltip。
 - **窗口布局**：顶部工具栏（刷新数据/导出 JSON/打开 4 张 Excel 表，toolbar 小按钮单行固定）＋ 选择区固定不滚动（世界 Popup ＋ 难度 1~10 页签 toggle ＋「加载数据」按钮；状态行显示当前编辑信息，选择已变更未加载/有未保存修改时橙色提示）＋ 中间编辑区滚动 ＋ 底部保存栏固定（保存按钮显示变更数、无变更禁用）。
@@ -350,14 +356,14 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 | BOSS 特写数据 | `Assets/Scripts/Bean/UI/DialogBossShowBean.cs` |
 | Excel 源表 | `Assets/Data/Excel/excel_fight_type_conquer_info[战斗-征服模式].xlsx` |
 | 导出 JSON | `Assets/Resources/JsonText/FightTypeConquerInfo.txt` |
-| 配置编辑器 | `Assets/Editor/FightTypeConquerEditorWindow.cs` |
+| 配置编辑器 | `Assets/Editor/FightModeEditorWindow.cs`（主窗口）+ `Assets/Editor/FightModeEditorTabConquer.cs`（征服页签） |
 | 难度解锁存档 | `Assets/Scripts/Bean/Game/UserUnlockBean.cs`（GetUnlockGameWorldConquerDifficultyLevel） |
 
 ---
 
 ## 注意事项
 
-1. **配置唯一真实源是 Excel**：任何数据变更必须改 `excel_fight_type_conquer_info`，再由 Unity 编辑器（ExcelEditorWindow 或 FightTypeConquerEditorWindow）导出 JSON；只改 JSON 下次导出会被覆盖。
+1. **配置唯一真实源是 Excel**：任何数据变更必须改 `excel_fight_type_conquer_info`，再由 Unity 编辑器（ExcelEditorWindow 或 战斗模式编辑工具 FightModeEditorWindow 的征服页签）导出 JSON；只改 JSON 下次导出会被覆盖。
 2. **Bean 自动生成禁改**：`FightTypeConquerInfoBean.cs` 改结构要改 Excel 表头后重新「生成Entity」；解析/辅助逻辑写到 `FightTypeConquerInfoBeanPartial.cs`。
 3. **区间字段是字符串**：`attack_boss_num`/`fight_num`/`road_num`/`road_length` 用 `x` 或 `x-y`；统一走 `ParseRandomRange`，别再当 int 读。
 4. **BOSS 关仍出普通敌人**：普通波次始终取 `enemy_ids`（`GetRandomEmenyId(false)`），BOSS 是 `enemy_boss_ids` 的**额外**敌人，不要把普通波次换成 boss 池。

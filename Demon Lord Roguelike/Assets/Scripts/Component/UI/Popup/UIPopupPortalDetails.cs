@@ -41,28 +41,40 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
         var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
         //无尽模式无关卡数/路径长度/通关奖励(均为征服模式数据)
         bool isShowFightNum = gameWorldInfoRandom.gameFightType != GameFightTypeEnum.Infinite;
+        //挑战100勇士: 无难度概念(难度行隐藏), 固定单关(关卡数行隐藏, 恒1无信息量)
+        bool isChallengeHundred = gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred;
 
         //名字: 始终显示(不受研究门控)
         SetDetailsItem(ui_UIViewPopupProtalDetailsItem_Name, TextHandler.Instance.GetTextById(411), $"{gameWorldInfo.name_language}", true);
-        //难度: 始终显示(不受研究门控), 仅征服模式有难度概念(无尽模式整行隐藏)
-        SetDetailsItem(ui_UIViewPopupProtalDetailsItem_Level, TextHandler.Instance.GetTextById(415), $"{difficultyLevel}", isShowFightNum);
+        //难度: 始终显示(不受研究门控), 仅征服模式有难度概念(无尽/挑战100勇士整行隐藏)
+        SetDetailsItem(ui_UIViewPopupProtalDetailsItem_Level, TextHandler.Instance.GetTextById(415), $"{difficultyLevel}", isShowFightNum && !isChallengeHundred);
         //线路数量: 需解锁「线路数预览」研究, 未解锁整行隐藏
         SetDetailsItem(ui_UIViewPopupProtalDetailsItem_RoadNum, TextHandler.Instance.GetTextById(412), $"{roadNum}",
             userUnlock.CheckIsUnlock(UnlockEnum.PortalPreviewRoadNum));
-        //关卡数量: 需解锁「关卡数预览」研究 + 非无尽模式
+        //关卡数量: 需解锁「关卡数预览」研究 + 非无尽模式 + 非挑战100勇士(单关无信息量)
         SetDetailsItem(ui_UIViewPopupProtalDetailsItem_FightNum, TextHandler.Instance.GetTextById(413), $"{fightNum}",
-            isShowFightNum && userUnlock.CheckIsUnlock(UnlockEnum.PortalPreviewFightNum));
+            isShowFightNum && !isChallengeHundred && userUnlock.CheckIsUnlock(UnlockEnum.PortalPreviewFightNum));
         //路径长度: 需解锁「路径长度预览」研究 + 非无尽模式
         SetDetailsItem(ui_UIViewPopupProtalDetailsItem_RoadLength, TextHandler.Instance.GetTextById(414), $"{roadLength}",
             isShowFightNum && userUnlock.CheckIsUnlock(UnlockEnum.PortalPreviewRoadLength));
 
         //奖励道具显示: 需解锁「奖励预览」研究 + 非无尽模式(无尽模式无通关奖励); 未解锁则不展示奖励
-        //预览只展示首箱保底奖励(listReward[0]: 已解锁装备=装备/未解锁=魔晶, 通关时该箱自动开启必得), 其余可选箱不预览
+        //征服预览只展示首箱保底奖励(listReward[0]: 通关时该箱自动开启必得); 挑战100勇士预览全量3箱(预览=实领, 3箱全手动开)
         bool isShowReward = isShowFightNum && userUnlock.CheckIsUnlock(UnlockEnum.PortalPreviewReward);
-        List<ItemBean> listRewardAll = isShowReward ? gameWorldInfoRandom.GetDifficultyReward(difficultyLevel) : null;
-        List<ItemBean> listReward = (listRewardAll != null && listRewardAll.Count > 0)
-            ? new List<ItemBean> { listRewardAll[0] }
-            : null;
+        List<ItemBean> listReward = null;
+        if (isShowReward)
+        {
+            if (isChallengeHundred)
+            {
+                listReward = gameWorldInfoRandom.GetChallengeHundredReward();
+            }
+            else
+            {
+                List<ItemBean> listRewardAll = gameWorldInfoRandom.GetDifficultyReward(difficultyLevel);
+                if (listRewardAll != null && listRewardAll.Count > 0)
+                    listReward = new List<ItemBean> { listRewardAll[0] };
+            }
+        }
         RefreshRewardItems(listReward);
 
         //内容变化后立即重建布局(先重建奖励容器再重建整体), 保证气泡尺寸与跟随定位正确

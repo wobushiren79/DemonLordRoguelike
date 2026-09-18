@@ -125,6 +125,48 @@ public class LauncherTest : BaseLauncher
     }
 
     /// <summary>
+    /// 开始挑战100勇士测试
+    /// 指定配置行id，手搓随机数据(冻结该行)直接进入挑战100勇士战斗；
+    /// 可选择读取某个存档槽位作为运行时数据(防守方=该存档魔王+当前出战阵容)，全程测试模拟不落盘回真实存档
+    /// </summary>
+    /// <param name="rowId">配置行id(FightTypeChallengeHundredInfo)</param>
+    /// <param name="saveSlot">存档槽位(0=使用当前测试数据 InitTestData 伪造数据;1~3=读取对应存档槽位 UserData_1/2/3 作为运行时数据,与故事演出测试同范式)</param>
+    public void StartForChallengeHundredTest(long rowId, int saveSlot = 0)
+    {
+        ClearTestGUIs();
+        //校验挑战100勇士配置是否存在
+        FightTypeChallengeHundredInfoBean challengeHundredInfo = FightTypeChallengeHundredInfoCfg.GetItemData(rowId);
+        if (challengeHundredInfo == null)
+        {
+            LogUtil.LogError($"挑战100勇士测试失败，找不到配置 rowId:{rowId}");
+            return;
+        }
+        //选择存档槽位(1~3)时,读取该存档数据替换为运行时数据(防守方=该存档魔王+当前出战阵容;全程内存模拟,不写回真实存档)
+        if (saveSlot > 0)
+        {
+            UserDataService dataService = new UserDataService();
+            dataService.ChangeSlot(saveSlot);
+            UserDataBean userData = dataService.Load(false);
+            if (userData == null)
+            {
+                LogUtil.LogError($"挑战100勇士测试失败，存档 {saveSlot} 不存在或为空");
+                return;
+            }
+            GameDataHandler.Instance.manager.SetUserData(userData);
+        }
+        //开启测试模拟:战斗奖励结算/掉落入账等 SaveUserData 被 GameDataManager 统一拦截,测试数据不保存
+        GameDataHandler.Instance.manager.isTestSimulation = true;
+        //构建挑战100勇士随机数据(冻结配置行+道路数据; 奖励在 SetRandomDataForChallengeHundred 内预生成)
+        GameWorldInfoRandomBean gameWorldInfoRandomData = new GameWorldInfoRandomBean();
+        gameWorldInfoRandomData.worldId = 1;
+        gameWorldInfoRandomData.gameFightType = GameFightTypeEnum.ChallengeHundred;
+        gameWorldInfoRandomData.SetRandomDataForChallengeHundred(challengeHundredInfo);
+        //进入挑战100勇士战斗
+        FightBeanForChallengeHundred fightData = new FightBeanForChallengeHundred(gameWorldInfoRandomData);
+        WorldHandler.Instance.EnterGameForFightScene(fightData);
+    }
+
+    /// <summary>
     /// 开始终焉议会测试
     /// </summary>
     public void StartForDoomCouncil(long billId)

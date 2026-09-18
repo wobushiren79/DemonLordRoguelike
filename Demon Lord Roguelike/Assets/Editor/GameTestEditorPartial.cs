@@ -15,6 +15,15 @@ public partial class GameTestEditor
     public long conquerTestWorldId = 1;
     public int conquerTestDifficultyLevel = 1;
 
+    // 挑战100勇士测试参数
+    // 配置行下拉选择索引(配置行id列表见 challengeHundredRowIds，按id排序)
+    public int challengeHundredTestRowSelectIndex = 0;
+    // 存档槽位(0=使用当前测试数据 InitTestData 伪造数据;1~3=读取对应存档槽位 UserData_1/2/3 作为运行时数据)
+    public int challengeHundredTestSaveSlot = 0;
+    // 配置行下拉选项缓存(不持久化，懒加载；配置重导后可点「刷新列表」重建)
+    private GUIContent[] challengeHundredRowOptions;
+    private long[] challengeHundredRowIds;
+
     // 基础测试参数
     public int testDataCardNum = 20;
     public int fightSceneId = 10001;
@@ -191,6 +200,10 @@ public partial class GameTestEditor
         conquerTestWorldId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "conquerTestWorldId", 1);
         conquerTestDifficultyLevel = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "conquerTestDifficultyLevel", 1);
 
+        // 挑战100勇士测试参数
+        challengeHundredTestRowSelectIndex = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "challengeHundredTestRowSelectIndex", 0);
+        challengeHundredTestSaveSlot = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "challengeHundredTestSaveSlot", 0), 0, 3);
+
         // 基础测试
         testDataCardNum = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "testDataCardNum", 20);
         fightSceneId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneId", 10001);
@@ -272,6 +285,10 @@ public partial class GameTestEditor
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightTestMode", (int)fightTestMode);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "conquerTestWorldId", (int)conquerTestWorldId);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "conquerTestDifficultyLevel", conquerTestDifficultyLevel);
+
+        // 挑战100勇士测试参数
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "challengeHundredTestRowSelectIndex", challengeHundredTestRowSelectIndex);
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "challengeHundredTestSaveSlot", challengeHundredTestSaveSlot);
 
         // 基础测试
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "testDataCardNum", testDataCardNum);

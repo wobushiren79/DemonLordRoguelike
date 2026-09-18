@@ -1,6 +1,6 @@
 ---
 name: game-fight-logic
-description: 战斗游戏逻辑开发：各种战斗模式逻辑（征服、终焉议会、无限、测试），GameFightLogic 基类与子类。
+description: 战斗游戏逻辑开发：各种战斗模式逻辑（征服、终焉议会、无限、测试、挑战100勇士），GameFightLogic 基类与子类。
 tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Game/Logic/
@@ -21,6 +21,7 @@ watched_files:
 - **GameFightLogicDoomCouncil** - 终焉议会战斗
 - **GameFightLogicInfinite** - 无限模式战斗
 - **GameFightLogicTest** - 测试战斗
+- **GameFightLogicChallengeHundred** - 是魔王就挑战100勇士（单关100只怪；胜→阵容经验+UIFightSettlement→3箱3抽全手动领奖，败→返回基地；不发成就/声望、无关卡间深渊馈赠；`IsSkipPutCardMPCost()=>true` 魔王蓝量无限）
 
 ### 游戏状态流转
 ```
@@ -43,13 +44,15 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 | 终焉议会 | Assets/Scripts/Game/Logic/GameFightLogicDoomCouncil.cs |
 | 无限模式 | Assets/Scripts/Game/Logic/GameFightLogicInfinite.cs |
 | 测试模式 | Assets/Scripts/Game/Logic/GameFightLogicTest.cs |
+| 挑战100勇士 | Assets/Scripts/Game/Logic/GameFightLogicChallengeHundred.cs |
+| 挑战100勇士战斗数据 | Assets/Scripts/Bean/Game/FightBeanForChallengeHundred.cs |
 | BaseGameLogic | Assets/Scripts/Game/Base/BaseGameLogic.cs |
 | GameHandler | Assets/Scripts/Component/Handler/GameHandler.cs |
 | GameManager | Assets/Scripts/Component/Manager/GameManager.cs |
 
 ### 魔王魔力(MP)系统（仅战斗中有效）
 - `UpdateGameForMPRecover(updateTime)` - 每帧给魔王核心恢复 MPF*updateTime 点魔力（MPF=每秒恢复量），并调用 `RefreshMPShow()` 通知刷新魔力显示
-- `PutCard()` - 召唤耗魔取 `creatureData.GetAttributeInt(CreatureAttributeTypeEnum.CMP)`（= 基础CMP×(1+等级/稀有度增加倍率)经自身/稀有度BUFF修正，如扭蛋 CMP 减益；倍率求和见 `CreatureBean.GetCreateMPAddRate()`）；放置前检查魔王 `MPCurrent >= GetAttributeInt(CMP)`，不足则 Toast"魔力不足"(UIText 50006)；足够则 `ChangeMP(-GetAttributeInt(CMP))` 扣除并刷新显示。放置成功后播放两个全局单例粒子：在魔王(防守核心)位置 `EffectHandler.ShowCreaturePlaceEffect(EffectHandler.Instance.manager.effectManaId, coreCreature.creatureObj.transform.position)`(消耗魔力,EffectInfo id=1000001 Effect_Mana_1)、在生成位置 `EffectHandler.ShowCreaturePlaceEffect(EffectHandler.Instance.manager.effectCreatureShowId, selectTargetPos)`(魔物登场,id=1100001 Effect_CreatureShow_1)，再播 `AudioEnum.sound_btn_19`（2026-08-16 起原 ShowManaEffect/ShowCreatureShowEffect 已合并为 ShowCreaturePlaceEffect，走全局单例通道）。复活CD判定走 `GetAttribute(CreatureAttributeTypeEnum.RCD, true)`（基础值creatureInfo.RCD→角色加点→装备→自身/稀有度RCD减益→再叠加深渊馈赠全局池；第二参 includeAbyssalBlessing=true 开启深渊馈赠按需叠加，逻辑统一在 CreatureBean.GetAttribute 内，原 GetRCD 已并入）
+- `PutCard()` - 召唤耗魔取 `creatureData.GetAttributeInt(CreatureAttributeTypeEnum.CMP)`（= 基础CMP×(1+等级/稀有度增加倍率)经自身/稀有度BUFF修正，如扭蛋 CMP 减益；倍率求和见 `CreatureBean.GetCreateMPAddRate()`）；放置前检查魔王 `MPCurrent >= GetAttributeInt(CMP)`，不足则 Toast"魔力不足"(UIText 50006)；足够则 `ChangeMP(-GetAttributeInt(CMP))` 扣除并刷新显示。**无限蓝钩子**：魔力不足检查与扣蓝两处均被 `if (!isSkipMPCost)` 包裹，`isSkipMPCost` 取自虚方法 `IsSkipPutCardMPCost()`（基类默认 false；挑战100勇士重写为 true，魔王蓝量无限）——无限蓝模式的唯一改动点。放置成功后播放两个全局单例粒子：在魔王(防守核心)位置 `EffectHandler.ShowCreaturePlaceEffect(EffectHandler.Instance.manager.effectManaId, coreCreature.creatureObj.transform.position)`(消耗魔力,EffectInfo id=1000001 Effect_Mana_1)、在生成位置 `EffectHandler.ShowCreaturePlaceEffect(EffectHandler.Instance.manager.effectCreatureShowId, selectTargetPos)`(魔物登场,id=1100001 Effect_CreatureShow_1)，再播 `AudioEnum.sound_btn_19`（2026-08-16 起原 ShowManaEffect/ShowCreatureShowEffect 已合并为 ShowCreaturePlaceEffect，走全局单例通道）。复活CD判定走 `GetAttribute(CreatureAttributeTypeEnum.RCD, true)`（基础值creatureInfo.RCD→角色加点→装备→自身/稀有度RCD减益→再叠加深渊馈赠全局池；第二参 includeAbyssalBlessing=true 开启深渊馈赠按需叠加，逻辑统一在 CreatureBean.GetAttribute 内，原 GetRCD 已并入）
 
 ### 进攻刷怪 / Quick(加快进攻节奏)
 - `UpdateGameForAttackCreate(updateTime)` - 逐帧累加，达标即出下一波：`fightAttackData.GetNextAttackDetailData()` 取波次 → 刷新间隔 `timeUpdateTargetForAttackCreate=timeNextAttack` → BOSS 首波 `ShowBossDialog` → `CreatureHandler.CreateAttackCreature`。
@@ -73,6 +76,6 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 
 ## 约束
 
-- 新增战斗模式需继承 GameFightLogic，实现 Pre/Start/Update/End/Clear
+- 新增战斗模式需继承 GameFightLogic，实现 Pre/Start/Update/End/Clear；`GameHandler.StartGameFight` 按 `"GameFightLogic" + gameFightType.GetEnumName()` 反射创建实例，故新增模式只需「GameFightTypeEnum 末尾追加枚举（保序列化兼容）+ 新建同名 `GameFightLogic<枚举名>` 类」，工厂零改动
 - 战斗逻辑通过 EventHandler 与其他系统通信
 - GameHandler 是游戏逻辑的统一入口

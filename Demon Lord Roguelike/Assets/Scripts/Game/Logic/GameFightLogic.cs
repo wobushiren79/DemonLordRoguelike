@@ -568,17 +568,19 @@ public class GameFightLogic : BaseGameLogic
             //已经有生物了
             return;
         }
+        //无限蓝模式(如挑战100勇士)跳过魔力检查与扣蓝
+        bool isSkipMPCost = IsSkipPutCardMPCost();
         //检测魔王的魔力是否足够创建该魔物（GetAttribute(CMP)=基础CMP×(1+等级/稀有度增加倍率) 再经自身/稀有度BUFF修正后的召唤魔力消耗）
         int createMP = selectCreatureCard.cardData.creatureData.GetAttributeInt(CreatureAttributeTypeEnum.CMP);
         var coreCreature = fightData.fightDefenseCoreCreature;
-        if (coreCreature != null && coreCreature.fightCreatureData.MPCurrent < createMP)
+        if (!isSkipMPCost && coreCreature != null && coreCreature.fightCreatureData.MPCurrent < createMP)
         {
             //魔力不足
             UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(50006));
             return;
         }
         //扣除创建消耗的魔力 并通知更新魔力显示
-        if (coreCreature != null && createMP > 0)
+        if (!isSkipMPCost && coreCreature != null && createMP > 0)
         {
             coreCreature.fightCreatureData.ChangeMP(-createMP, out _, out _);
             coreCreature.RefreshMPShow();
@@ -597,6 +599,15 @@ public class GameFightLogic : BaseGameLogic
         selectCreature = null;
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_PutCard, selectCreatureCard);
         ClearSelectData();
+    }
+
+    /// <summary>
+    /// 放卡是否跳过魔力消耗(默认false; 无限蓝模式如挑战100勇士重写为true,跳过魔力不足检查与扣蓝)
+    /// </summary>
+    /// <returns>true=放卡不耗蓝</returns>
+    public virtual bool IsSkipPutCardMPCost()
+    {
+        return false;
     }
     #endregion
 

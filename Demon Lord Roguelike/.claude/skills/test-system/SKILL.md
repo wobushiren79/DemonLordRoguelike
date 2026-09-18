@@ -297,17 +297,17 @@ foreach (var itemData in GameWorldInfoCfg.GetAllData())
 
 ## 测试模拟不落盘（通用机制）
 
-**"读真实存档 → 内存模拟 → 不写回"是献祭升级测试、魔物进阶测试、魔汁机测试共用的统一机制**，单一真实源是 `GameDataManager.isTestSimulation`：
+**"读真实存档 → 内存模拟 → 不写回"是献祭升级测试、魔物进阶测试、魔汁机测试、故事演出测试、挑战100勇士测试共用的统一机制**，单一真实源是 `GameDataManager.isTestSimulation`：
 
 - **单一开关**：`GameDataManager.isTestSimulation`（游戏层 partial）。为 `true` 时 `SaveUserData` **一律不落盘**（在 `SaveUserData(UserDataBean)` 入口统一 `return`），任何存档路径（含 UI 直接存档、结算存档、乃至进入基地时的附带存档）都自动跳过。
-- **谁置位/复位**：`LauncherTest.StartForCreatureSacrificeTest` / `StartForCreatureVatTest` / `StartForCreatureJuicerTest` 在 `SetUserData(真实存档)` 之后立即 `isTestSimulation = true`。复位统一在 **`WorldHandler.EnterMainForBaseScene`**（`ClearUserData` 旁）`= false`——它是"回到真实主菜单"的唯一收口点（`LauncherGame.Launch` 启动、游戏内 `UIGameSystem` 返回主菜单、`StartForNormalGame` 都经它），随后读档/新建再 `EnterGameForBaseScene` 进正式游玩即恢复落盘。**测试入口走 `EnterGameForBaseScene` 直接进场、不经 `EnterMainForBaseScene`**，故测试标记不会被误清；正式游戏则总会先过一次主菜单而复位。正式游戏流程永不置 true。
+- **谁置位/复位**：`LauncherTest.StartForCreatureSacrificeTest` / `StartForCreatureVatTest` / `StartForCreatureJuicerTest` / `StartForStoryTest` / `StartForChallengeHundredTest` 在 `SetUserData(真实存档)` 之后立即 `isTestSimulation = true`。复位统一在 **`WorldHandler.EnterMainForBaseScene`**（`ClearUserData` 旁）`= false`——它是"回到真实主菜单"的唯一收口点（`LauncherGame.Launch` 启动、游戏内 `UIGameSystem` 返回主菜单、`StartForNormalGame` 都经它），随后读档/新建再 `EnterGameForBaseScene` 进正式游玩即恢复落盘。**测试入口走 `EnterGameForBaseScene`/`EnterGameForFightScene` 直接进场、不经 `EnterMainForBaseScene`**，故测试标记不会被误清；正式游戏则总会先过一次主菜单而复位。正式游戏流程永不置 true。
 - **各功能不再各自判断**：`UICreatureVat` 的开始/完成存档、`CreatureSacrificeLogic` 的失败落盘与 `SaveAndEndGame` 都**直接调 `SaveUserData()`**（不再写 `if (!isTestMode)`），测试拦截统一在存档层完成。
 - **献祭手动成功率**：`CreatureSacrificeLogic.StartSacrifice` 读全局 `isTestSimulation && useManualSuccessRate` 决定是否用手动值掷骰（原 `CreatureSacrificeBean.isTestMode` 已删除，仅保留献祭专属的 `useManualSuccessRate`/`manualSuccessRate`）。
 - **好处**：既是"通用测试数据"，又比逐处 `if(!isTestMode)` 更稳——多一条存档路径也不会漏，还顺带堵住了模拟测试期间基地附带存档误写真实档的隐患。
 
 ## 战斗场景测试 (FightSceneTest)
 
-`TestSceneTypeEnum.FightSceneTest` —— 自定义场景/敌人/BUFF/深渊馈赠的战斗测试（含普通模式、单体测试模式、征服模式BOSS关三个子模式）。
+`TestSceneTypeEnum.FightSceneTest` —— 自定义场景/敌人/BUFF/深渊馈赠的战斗测试（含普通模式、单体测试模式、征服模式BOSS关、挑战100勇士四个子模式，挑战100勇士见[挑战100勇士测试](#挑战100勇士测试-fightscenetest-子模式-challengehundred)章节）。
 
 - **魔王(防守核心)生物**：由基础设置区的「魔王生物 ID」(`fightDefenseCoreId`，EditorPrefs 持久化，默认 `2001` 骷髅战士)决定，`GetTestData()` 用它构建 `fightData.fightDefenseCoreData`（原硬编码 2001 已改为该字段）。
 - **魔王蓝量**：基础设置区的「魔王蓝量」(`fightDemonLordMP`，EditorPrefs 持久化 float，默认 `9999`)，`GetTestData()` 存入 `FightBeanForTest.testDemonLordMP`，由 `GameFightLogicTest.PreGameForAfterCreateDefenseCore()` 在防守核心创建后统一应用：设 `MPCurrent = testDemonLordMP`，并在配置 MP 上限不足时同步把 `dicAttribute[MP]` 提升到该值（否则 `ChangeMP` 消耗时会把超上限蓝量一次夹回配置上限）。应用在馈赠添加**之后**（AddAbyssalBlessing 触发的 RefreshBaseAttribute 会重算 dicAttribute，顺序颠倒会把上限提升冲掉；重开战斗走同一钩子故每场一致）。**MP 被「防守方固定属性」固定时蓝量设置让位**（固定值即上限，当前蓝量=固定值）。
@@ -478,6 +478,42 @@ LauncherTest.StartForCreatureJuicerTest(...)                   // Assets/Scripts
 - **退出落点**：测试入口注入 `actionForExit → UIBaseMain`，与场景 E 键交互(`ControlInteractionEnum.JuicerInteraction`)打开时的行为一致（进阶测试注入的是 UIBaseCore，两者入口语义不同）。
 - **无需选目标生物**：投入魔物在 `UICreatureJuicer` 内多选（仅空闲且未上阵），故编辑器只需选存档，不像献祭测试那样预加载生物下拉。
 - **不落盘(全程模拟)**：由[测试模拟不落盘通用机制](#测试模拟不落盘通用机制)统一保证。
+
+## 挑战100勇士测试 (FightSceneTest 子模式 ChallengeHundred)
+
+`FightTestModeEnum.ChallengeHundred`（战斗场景测试的第 4 个子模式）—— **下拉选择 `FightTypeChallengeHundredInfo` 配置行 + 存档槽位**，手搓传送门随机数据（冻结该行）直接进入挑战100勇士战斗，**不走真实传送门的出现概率判定**；防守方使用所选存档的魔王+当前出战阵容，**全程测试模拟不落盘回真实存档**（依赖[测试模拟不落盘通用机制](#测试模拟不落盘通用机制)）。
+
+### 流程
+
+```
+GameTestEditor.DrawFightSceneTest()                        // 战斗测试模式选 ChallengeHundred 后走独立分支
+    ▼ DrawFightSceneTestChallengeHundred()                 // 与征服BOSS关同级的独立简化配置区
+    │  配置行下拉(EnsureChallengeHundredRowOptions 懒加载：FightTypeChallengeHundredInfoCfg.GetAllArrayData()
+    │    按 id 排序，选项「[id] 难度:{difficulty_levels} 强度x{attack_intensity_baserate} {remark}」；
+    │    「🔄 刷新列表」清选项缓存 + ClearCfgBaseStaticCache(typeof(FightTypeChallengeHundredInfoCfg))；
+    │    「📂 配置表」打开 excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx)
+    │  存档槽位 IntPopup(0=当前测试数据 InitTestData 伪造数据,1~3=读 UserData_1/2/3 作为运行时数据)
+    │  ▶️ 开始挑战100勇士测试 → launcher.StartForChallengeHundredTest(rowId, saveSlot)
+    ▼
+LauncherTest.StartForChallengeHundredTest(rowId, saveSlot = 0)   // Assets/Scripts/Game/Launcher/LauncherTest.cs
+    │  ⓪ ClearTestGUIs() 清理残留纯GUI测试面板(所有 StartFor* 入口统一收口)
+    │  ① FightTypeChallengeHundredInfoCfg.GetItemData(rowId) 校验配置行存在(找不到 LogError 返回)
+    │  ② saveSlot>0 时读档:UserDataService.ChangeSlot(saveSlot).Load(false) → SetUserData(献祭/故事测试同范式)
+    │  ③ isTestSimulation = true   // 奖励结算/掉落入账等 SaveUserData 被 GameDataManager 统一拦截,测试数据不保存
+    │  ④ 手搓 GameWorldInfoRandomBean: worldId=1、gameFightType=ChallengeHundred，
+    │     调 SetRandomDataForChallengeHundred(challengeHundredInfo) 冻结配置行/道路/3箱奖励
+    │  ⑤ new FightBeanForChallengeHundred(gameWorldInfoRandomData)
+    │     → InitData 从当前 UserData 取 selfCreature(防守核心)+GetLineupCreature(当前出战阵容)
+    │  ⑥ WorldHandler.EnterGameForFightScene(fightData)
+```
+
+### 关键点
+
+- **冻结链路即真实链路**：`SetRandomDataForChallengeHundred` 与真实传送门生成共用同一方法（冻结配置行 id/道路数/道路长度/预生成 3 箱奖励），故测试进战斗所见强度/敌人构成/奖励与正式玩法一致；区别仅在世界来源是手搓而非传送门概率刷出。
+- **存档意义=防守阵容**：`FightBeanForChallengeHundred.InitData()` 从当前 `UserData` 读 `selfCreature`（魔王防守核心）与 `GetLineupCreature(GetLineupFightIndex())`（当前出战阵容），故选 1~3 槽位即用该存档真实阵容测试；选 0 用 `InitTestData` 伪造数据（50 只随机生物满阵容）。
+- **不落盘**：统一 `isTestSimulation = true`（无论槽位 0 还是 1~3），复位仍由 `WorldHandler.EnterMainForBaseScene` 收口。
+- **rowId 来自配置表**：`excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx`（一行=一个挑战配置，`difficulty_levels` 列声明该行可被哪些难度抽中）。
+- **参数持久化**：`challengeHundredTestRowSelectIndex`/`challengeHundredTestSaveSlot`(0~3 钳制) EditorPrefs 持久化；选项缓存 `challengeHundredRowOptions`/`challengeHundredRowIds` 懒加载不持久化（均在 `GameTestEditorPartial`）。
 
 ## 粒子特效测试 (EffectTest)
 
@@ -695,6 +731,8 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 魔物进阶测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawCreatureVatTest`） |
 | 魔汁机测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForCreatureJuicerTest`） |
 | 魔汁机测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawCreatureJuicerTest`） |
+| 挑战100勇士测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForChallengeHundredTest(rowId, saveSlot = 0)`：校验 `FightTypeChallengeHundredInfoCfg` 配置行→saveSlot>0 读档 SetUserData→`isTestSimulation=true`→手搓 `GameWorldInfoRandomBean`(worldId=1/gameFightType=ChallengeHundred/`SetRandomDataForChallengeHundred` 冻结行/道路/3箱奖励)→`new FightBeanForChallengeHundred`(从当前 UserData 取魔王+出战阵容)→`EnterGameForFightScene`） |
+| 挑战100勇士测试 UI | `Assets/Editor/GameTestEditor.cs`（FightSceneTest 子模式 `FightTestModeEnum.ChallengeHundred`：`DrawFightSceneTestChallengeHundred`/`EnsureChallengeHundredRowOptions` 配置行下拉+存档槽位 0~3） + `GameTestEditorPartial.cs`（challengeHundredTestRowSelectIndex/challengeHundredTestSaveSlot 持久化） |
 | 正常游戏启动入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForNormalGame`） |
 | 正常游戏启动 UI | `Assets/Editor/GameTestEditor.cs`（`DrawNormalGameTest`） |
 | 粒子特效测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForEffectTest`） |

@@ -8,26 +8,12 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// 战斗模式难度编辑窗口
+/// 战斗模式编辑工具 - 征服模式页签
 /// 用于可视化编辑 excel_fight_type_conquer_info[战斗-征服模式] 表
+/// 宿主窗口见 FightModeEditorWindow（菜单：游戏/战斗模式编辑）
 /// </summary>
-public class FightTypeConquerEditorWindow : EditorWindow
+public class FightModeEditorTabConquer : FightModeEditorTabBase
 {
-    #region 菜单项与窗口创建
-
-    /// <summary>
-    /// 菜单项：游戏/战斗模式难度编辑
-    /// </summary>
-    [MenuItem("游戏/战斗模式难度编辑")]
-    private static void CreateWindow()
-    {
-        var window = EditorWindow.GetWindow<FightTypeConquerEditorWindow>();
-        window.titleContent = new GUIContent("战斗模式难度编辑");
-        window.minSize = new Vector2(980, 620);
-        window.Show();
-    }
-
-    #endregion
 
     #region 成员变量
 
@@ -174,9 +160,9 @@ public class FightTypeConquerEditorWindow : EditorWindow
     #region Unity 生命周期
 
     /// <summary>
-    /// 窗口启用时初始化路径和加载数据
+    /// 宿主窗口启用时初始化路径和加载数据
     /// </summary>
-    private void OnEnable()
+    public override void Init()
     {
         excelPath = Application.dataPath + "/Data/Excel/excel_fight_type_conquer_info[战斗-征服模式].xlsx";
         npcInfoExcelPath = Application.dataPath + "/Data/Excel/excel_npc_info[NPC信息].xlsx";
@@ -193,7 +179,7 @@ public class FightTypeConquerEditorWindow : EditorWindow
     /// <summary>
     /// GUI 渲染入口：顶部工具栏与选择区固定不滚动，中间编辑区滚动，底部保存栏固定
     /// </summary>
-    private void OnGUI()
+    public override void OnGUI()
     {
         if (!stylesInitialized)
         {

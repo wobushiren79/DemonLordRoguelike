@@ -41,9 +41,10 @@ ModIdMapBean                      - Mod名称到modId的映射
 ModIdMapService                   - 数据持久化服务 (BaseDataService<ModIdMapBean>)
 ```
 
-每个已加载的Mod会被分配一个唯一的 `modId`（1~9999），用于：
-- 区分不同Mod的资源，避免ID冲突
-- Mod新增时不会导致旧Mod的ID变化（持久化存储在 `ModIdMap.json`）
+每个已加载的Mod会被分配一个唯一的 `modId`（1~`ModManager.MaxModId`=92232），用于：
+- 区分不同Mod的资源，避免ID冲突（配置行 id 改写为 `modId*10^14 + 原id`，见 BaseBean.CombineModId）
+- Mod新增时不会导致旧Mod的ID变化（持久化存储在 `persistentDataPath/ModIdMap`，**全局一份，不按存档槽位区分**）
+- 超过 92232 上限时新 Mod **拒绝分配 ID**：打错误日志、不进入映射、其 JsonText 配置不合并（资源仍可按 modName 加载）
 
 ## Mod目录结构
 
@@ -194,7 +195,7 @@ string modName = ModHandler.Instance.GetModNameForAsset("amelia_skeletondata");
 ### 获取ModID
 
 ```csharp
-// 获取指定Mod的modId（1~9999），未分配则返回1
+// 获取指定Mod的modId（1~ModManager.MaxModId=92232），未分配（或超限被拒）则返回1
 int modId = ModManager.Instance.GetModId("Spine");
 ```
 
@@ -254,9 +255,10 @@ GameDataHandler.Instance.manager.SaveModIdMap();
 ### ModID分配规则
 
 1. ModID按Mod名称字母顺序分配
-2. 已分配ID的Mod持久化存储，跨会话保持不变
+2. 已分配ID的Mod持久化存储（`persistentDataPath/ModIdMap`，全局一份、不按存档槽位区分），跨会话保持不变
 3. 新增Mod分配第一个空闲ID（从1开始递增）
 4. 卸载Mod不会删除其ID映射，保证重新加载时ID不变
+5. 上限为 `ModManager.MaxModId = 92232`（由 BaseBean.CombineModId 的 `modId*10^14 + selfId` 不溢出 long 推出）；超限的新 Mod 拒绝分配 ID、JsonText 配置不合并（`GetModJsonTextFileInfos` 跳过未分配映射的 Mod），资源仍可按 modName 加载
 
 ## 常用代码模板
 

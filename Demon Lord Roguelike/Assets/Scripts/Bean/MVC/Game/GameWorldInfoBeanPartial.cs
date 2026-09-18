@@ -25,6 +25,12 @@ public partial class GameWorldInfoRandomBean
     public int difficultyLevel;
     //各难度对应的随机数据(创建时把所有已解锁难度一次性随出来, 切换难度直接取用, 保证来回切换时同一难度的道路/关卡数恒定)
     public List<GameWorldDifficultyRandomBean> listDifficultyRandom = new List<GameWorldDifficultyRandomBean>();
+    //挑战100勇士-冻结的配置行id(FightTypeChallengeHundredInfo; 仅 gameFightType==ChallengeHundred 时有意义, 0=未冻结)
+    public long challengeHundredRowId;
+    //挑战100勇士-冻结的3箱通关奖励(预览=实领, 与征服 listDifficultyRandom.listReward 同契约)
+    public List<ItemBean> listRewardChallengeHundred;
+    //挑战100勇士-生成奖励时的装备奖励池解锁签名(池变化时 GetChallengeHundredReward 重新生成)
+    public int rewardUnlockSignChallengeHundred;
 
     public GameWorldInfoRandomBean()
     {
@@ -38,14 +44,29 @@ public partial class GameWorldInfoRandomBean
     {
         this.worldId = worldId;
         var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var UserUnlock = userData.GetUserUnlockData();
+
+        //优先判定挑战100勇士出现概率(研究等级×10%): 命中且当前最高已解锁难度有匹配配置行时才生成为该模式, 否则落回原随机
+        int challengeHundredShowRate = UserUnlock.GetUnlockChallengeHundredShowRate();
+        if (challengeHundredShowRate > 0 && UnityEngine.Random.Range(0, 100) < challengeHundredShowRate)
+        {
+            int unlockDifficultyMax = Mathf.Max(1, UserUnlock.GetUnlockGameWorldConquerDifficultyLevel(worldId));
+            FightTypeChallengeHundredInfoBean challengeHundredInfo = FightTypeChallengeHundredInfoCfg.GetRandomRow(unlockDifficultyMax);
+            if (challengeHundredInfo != null)
+            {
+                gameFightType = GameFightTypeEnum.ChallengeHundred;
+                SetRandomDataForChallengeHundred(challengeHundredInfo);
+                return;
+            }
+        }
+
         //随机世界模式
-        List<GameFightTypeEnum> listRandomGameFightType = new List<GameFightTypeEnum>() 
-        { 
+        List<GameFightTypeEnum> listRandomGameFightType = new List<GameFightTypeEnum>()
+        {
             GameFightTypeEnum.Conquer //默认有征服模式
         };
         //如果无尽模式解锁了
-        var userData = GameDataHandler.Instance.manager.GetUserData();
-        var UserUnlock = userData.GetUserUnlockData();
         if (UserUnlock.CheckIsUnlock(gameWorldInfo.unlock_id_infinite))
         {
             listRandomGameFightType.Add(GameFightTypeEnum.Infinite);
@@ -70,6 +91,18 @@ public partial class GameWorldInfoRandomBean
                 break;
             case GameFightTypeEnum.Infinite:
                 SetRandomDataForInfinite();
+                break;
+            case GameFightTypeEnum.ChallengeHundred:
+                //防御性分支: 正常由 SetGameFightTypeRandom 直接调 SetRandomDataForChallengeHundred; 走到这里说明只有冻结行id(如旧数据重放), 按行id找回配置
+                var challengeHundredInfo = FightTypeChallengeHundredInfoCfg.GetItemData(challengeHundredRowId);
+                if (challengeHundredInfo != null)
+                {
+                    SetRandomDataForChallengeHundred(challengeHundredInfo);
+                }
+                else
+                {
+                    LogUtil.LogError($"初始化挑战100勇士模式失败 worldId:{worldId} challengeHundredRowId:{challengeHundredRowId}");
+                }
                 break;
         }
     }
@@ -203,6 +236,51 @@ public partial class GameWorldInfoRandomBean
     {
         int roadNumRandom = UnityEngine.Random.Range(1, 7);
         roadNum = roadNumRandom;
+    }
+
+    /// <summary>
+    /// 设置挑战100勇士模式数据(单关100只怪; 冻结配置行/道路/3箱奖励, 保证气泡预览=实领=实际战斗)
+    /// </summary>
+    /// <param name="challengeHundredInfo">抽中的配置行</param>
+    public void SetRandomDataForChallengeHundred(FightTypeChallengeHundredInfoBean challengeHundredInfo)
+    {
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlock = userData.GetUserUnlockData();
+        //冻结配置行(怪物构成/强度/奖励稀有度/刷怪时长均来自该行)
+        challengeHundredRowId = challengeHundredInfo.id;
+        //道路数量/长度从配置行区间随出并冻结
+        roadNum = challengeHundredInfo.GetRandomRoadNum();
+        roadLength = challengeHundredInfo.GetRandomRoadLength();
+        //固定单关
+        fightNum = 1;
+        //难度仅记录当前最高已解锁难度(气泡展示用), 不影响强度(强度由配置行 attack_intensity_baserate 自配)
+        difficultyLevel = Mathf.Max(1, userUnlock.GetUnlockGameWorldConquerDifficultyLevel(worldId));
+        //预生成并冻结3箱通关奖励(装备池空=3箱全魔晶, 否则3箱全装备)
+        listRewardChallengeHundred = RewardSelectBean.CreateRewardListForChallengeHundred(challengeHundredInfo);
+        rewardUnlockSignChallengeHundred = RewardSelectBean.GetConquerEquipPoolSign();
+    }
+
+    /// <summary>
+    /// 获取挑战100勇士预生成的通关奖励(3箱); 与通关领奖同一份, 保证 UIPopupPortalDetails 预览=通关实领。
+    /// 以下情况会重新生成并缓存: 尚未生成, 或解锁了新魔物掉落致装备奖励池变化(签名变化)。
+    /// </summary>
+    /// <returns>3箱奖励列表; 冻结行配置缺失时返回 null</returns>
+    public List<ItemBean> GetChallengeHundredReward()
+    {
+        //当前装备奖励池的解锁签名(解锁新魔物掉落后会变化)
+        int currentUnlockSign = RewardSelectBean.GetConquerEquipPoolSign();
+        bool needRegenerate = listRewardChallengeHundred == null
+            || listRewardChallengeHundred.Count == 0
+            || rewardUnlockSignChallengeHundred != currentUnlockSign;
+        if (needRegenerate)
+        {
+            FightTypeChallengeHundredInfoBean challengeHundredInfo = FightTypeChallengeHundredInfoCfg.GetItemData(challengeHundredRowId);
+            if (challengeHundredInfo == null)
+                return null;
+            listRewardChallengeHundred = RewardSelectBean.CreateRewardListForChallengeHundred(challengeHundredInfo);
+            rewardUnlockSignChallengeHundred = currentUnlockSign;
+        }
+        return listRewardChallengeHundred;
     }
 }
 

@@ -68,6 +68,14 @@ Bean/
 
 > **`UserStoryBean`（手写 `Assets/Scripts/Bean/Game/UserStoryBean.cs`，仿 UserUnlockBean 拆档模式）**：用户故事演出数据存档——`dicPlayedStory`（`Dictionary<long,long>`，key=StoryInfo.id、value=播放完成时间戳 Ticks；字典而非列表，事件多了查询仍 O(1)）+ `IsStoryPlayed/MarkStoryPlayed/GetDicPlayedStory` 懒加载；已拆分为独立存档 `UserStory_{slot}`（`UserDataService` 加载/保存/删除时与 UserUnlock 等同管线注入落盘），经 `UserDataBean.userStoryData`（[JsonIgnore]）+ `GetUserStoryData()` 访问（故事演出系统 story-system 使用）。
 
+> **`FightTypeChallengeHundredInfoBean` / `FightTypeChallengeHundredInfoBeanPartial`（2026-09 新增自动生成对，Bean 禁改）**：`excel_fight_type_challenge_hundred_info[战斗-挑战100勇士]` 配置对（一行=一个挑战配置、`difficulty_levels` 声明适配难度可多选，当前 2 行=难度1-5/6-10；本表多值列统一 `,` 分隔，与征服表 `&` 各自独立）。Partial 手写扩展：`GetEnemyIdList`/`GetRandomEnemyId`（enemy_ids 池，生成 100 只怪每只独立随机）、`GetDifficultyLevelList`/`IsMatchDifficulty`（世界最高已解锁难度在 difficulty_levels 列内才可抽中本行）、`GetRandomFightScene`/`GetRandomRoadNum`/`GetRandomRoadLength`/`GetRandomRewardCrystal`（后三者走框架层 `RandomUtil.GetRandomIntByRangeString` 解析 "x" 或 "x-y" 区间——**该方法为本次新增，位于 git submodule `Assets/FrameWork` 内，改动在子模块内提交**）、`GetIntensityRate`（≤0 按 1）；Cfg 扩展 `GetMatchRows(unlockDifficultyMax)`/`GetRandomRow`（无匹配返回 null，调用方落回原随机）。
+
+> **`FightBeanForChallengeHundred`（手写 `Assets/Scripts/Bean/Game/FightBeanForChallengeHundred.cs`，FightBean 子类）**：挑战100勇士战斗数据——冻结配置行 `fightTypeChallengeHundredInfo`（由 `gameWorldInfoRandomData.challengeHundredRowId` 取回）、`gameWorldInfoRandomData`、常量 `AttackCreatureNum=100`、固定单关（`figthNumMax=1`）；`InitData` 读冻结道路数量/长度、配置行场景池随机其一；`InitFightAttackData` 把 100 只怪在 `attack_show_time` 内**分桶均匀随机**排程（每桶随机一个时刻、每只独立抽 enemy_ids、携带配置行强度倍率 `intensityRate`——本模式强度自配，不叠加终焉议会强度议案）。
+
+> **`GameWorldInfoRandomBean` 挑战100勇士字段（手写于 `Assets/Scripts/Bean/MVC/Game/GameWorldInfoBeanPartial.cs`）**：`challengeHundredRowId`（冻结配置行 id，仅 gameFightType==ChallengeHundred 时有意义，0=未冻结）/ `listRewardChallengeHundred`（冻结的 3 箱通关奖励，预览=实领，与征服 `listDifficultyRandom.listReward` 同契约）/ `rewardUnlockSignChallengeHundred`（生成奖励时的装备奖励池解锁签名，池变化时 `GetChallengeHundredReward` 重新生成并缓存）；JSON 新增字段对老存档安全（缺省 0/null）。生成入口 `SetGameFightTypeRandom` 头部按 `UserUnlockBean.GetUnlockChallengeHundredShowRate()` 概率判定（命中但当前世界最高已解锁难度无匹配配置行则落回原随机），`SetRandomDataForChallengeHundred` 冻结行/道路/3箱奖励。
+
+> **`RewardSelectBean` 挑战100勇士改造（手写 `Assets/Scripts/Bean/Game/RewardSelectBean.cs`）**：新增 `isAutoOpenFirstBox` 字段（默认 true=征服行为：首箱保底自动开不占次数；false=手动开全部箱——挑战100勇士 3箱3抽用，`GameFightLogicChallengeHundred` 通关领奖时置 false）与静态 `CreateRewardListForChallengeHundred(challengeHundredInfo)`（固定 3 箱：装备池空→3 箱全魔晶，否则 3 箱全装备、稀有度=配置行 `reward_equip_rarity`）；原 `CreateItemEquip`/`CreateItemCrystal` 拆出核心方法 `CreateItemEquipCore`（稀有度/加点数/使用者类型已确定，生成不出装备时按 `getFallbackCrystalNum` 回调兜底魔晶）/`CreateItemCrystalCore`（数量已确定）供征服与挑战100勇士两模式复用。
+
 ### Bean 命名规范
 - 基础 Bean 后缀：`Bean`
 - 部分数据 Bean：`BeanPartial`

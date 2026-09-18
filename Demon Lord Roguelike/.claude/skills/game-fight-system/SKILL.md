@@ -1,6 +1,6 @@
 ---
 name: game-fight-system
-description: Demon Lord Roguelike 游戏的战斗系统(GameFight)开发指南。使用此SKILL当需要创建或修改战斗逻辑、战斗流程、战斗数据管理、战斗生物实体、战斗场景控制、战斗UI、战斗结算等，包括征服模式/无限模式/终焉议会/测试模式等战斗类型。注意：攻击弹道逻辑请使用 attack-mode-system skill，BUFF逻辑请使用 buff-system skill，AI逻辑请使用 ai-system skill。
+description: Demon Lord Roguelike 游戏的战斗系统(GameFight)开发指南。使用此SKILL当需要创建或修改战斗逻辑、战斗流程、战斗数据管理、战斗生物实体、战斗场景控制、战斗UI、战斗结算等，包括征服模式/无限模式/终焉议会/测试模式/挑战100勇士(ChallengeHundred)等战斗类型。注意：攻击弹道逻辑请使用 attack-mode-system skill，BUFF逻辑请使用 buff-system skill，AI逻辑请使用 ai-system skill。
 watched_files:
   - Assets/Scripts/Game/Logic/
   - Assets/Scripts/Bean/Game/FightBean.cs
@@ -38,11 +38,16 @@ UIFightMain             - 战斗主界面
 
 ```
 GameFightTypeEnum
-├── Test        - 测试模式（GameFightLogicTest）
-├── Infinite    - 无限模式（GameFightLogicInfinite）
-├── Conquer     - 征服模式（GameFightLogicConquer）
-└── DoomCouncil - 终焉议会（GameFightLogicDoomCouncil）
+├── Test            - 测试模式（GameFightLogicTest）
+├── Infinite        - 无限模式（GameFightLogicInfinite）
+├── Conquer         - 征服模式（GameFightLogicConquer）
+├── DoomCouncil     - 终焉议会（GameFightLogicDoomCouncil）
+└── ChallengeHundred - 是魔王就挑战100勇士（GameFightLogicChallengeHundred；枚举追加末尾保序列化兼容）
 ```
+
+> **反射工厂自动接入**：`GameHandler.StartGameFight` 按 `"GameFightLogic" + gameFightType.GetEnumName()` 反射创建逻辑实例——新增模式只需「枚举末尾追加 + 新建同名 `GameFightLogic<枚举名>` 类」，工厂零改动。
+
+> **挑战100勇士模式要点（ChallengeHundred，2026-09 新增）**：单关 100 只怪（`FightBeanForChallengeHundred.AttackCreatureNum=100`）在冻结配置行 `attack_show_time` 内分桶均匀随机出怪（每桶随机时刻，每只独立从行 `enemy_ids` 随机）；强度倍率=行 `GetIntensityRate()`（= `attack_intensity_baserate`，≤0按1；**不叠加终焉议会强度议案**，本模式强度自配）。道路数/长度/3箱奖励在传送门生成时随出并冻结（预览=实领，见 conquer-system / portal-system）。结算：胜利发阵容经验（行 `reward_exp`）→ `UIFightSettlement` → Next → 3箱3抽**全手动**开箱（`isAutoOpenFirstBox=false`，无首箱保底）；失败直接返回基地。**不发成就/声望、无关卡间深渊馈赠**；魔王蓝量无限（重写 `IsSkipPutCardMPCost()=>true`，见「魔王魔力（MP）系统」）。配置表：`excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx` → `FightTypeChallengeHundredInfoBean(Partial)`。
 
 ## 战斗逻辑生命周期
 
@@ -245,6 +250,8 @@ public void ChangeMP(float changeMP, out float leftMP, out float changeMPReal); 
 // 消耗链路：GameFightLogic.PutCard()
 //   放置卡片时检查 MPCurrent >= GetAttributeInt(CMP)，不足则 Toast 提示"魔力不足"(UIText 50006)并取消放置；
 //   足够则 ChangeMP(-GetAttributeInt(CMP)) 扣除并 RefreshMPShow()
+//   无限蓝钩子：魔力不足检查与扣蓝两处均被 if (!isSkipMPCost) 包裹，isSkipMPCost 取自虚方法
+//   IsSkipPutCardMPCost()（基类默认 false；挑战100勇士重写为 true=魔王蓝量无限）——无限蓝模式的唯一改动点
 //   放置成功后播全局单例粒子：魔王处 EffectHandler.ShowCreaturePlaceEffect(effectManaId,pos)(消耗魔力 EffectInfo id=1000001) + 生成位置 ShowCreaturePlaceEffect(effectCreatureShowId,pos)(魔物登场 id=1100001)，再播 sound_btn_19
 // 显示链路：魔王预制(FightCreature_DefCore_1)下 MPShow(MeshRenderer+Quad+Mat_Creature_Mana_1，新版 FrameWork/URP/MeshProgressBar 圆形进度材质，RefreshMPShow 里 SetFloat("_Progress",MP/MPMax) 单一进度、无护盾层)
 //   + MPShow/MPText(TextMeshPro 显示"100/100"格式)；注意 MPShow 已不再与防守生物 LifeShow 同款材质
@@ -353,7 +360,7 @@ public partial class UIFightMain : BaseUIComponent
 
 ### 进攻进度条 Quick(加快进攻节奏) 按钮
 
-进攻进度条子视图 `UIViewFightMainAttCreateProgress`（征服与测试模式显示：显隐由 `UIFightMain.RefreshUIData` 拆分控制——关卡进度文本 `SetFightLevelShow` 仅征服模式，进度条 `SetAttCreateProgressShow` 在 `Conquer || Test` 时显示；含 `ui_CreateProgress`/`ui_CreateEnd`/`ui_Quick`）上的 **Quick 按钮**用于**加速进攻节奏**：
+进攻进度条子视图 `UIViewFightMainAttCreateProgress`（征服/测试/挑战100勇士模式显示：显隐由 `UIFightMain.RefreshUIData` 拆分控制——关卡进度文本 `SetFightLevelShow` 仅征服模式，进度条 `SetAttCreateProgressShow` 在 `Conquer || Test || ChallengeHundred` 时显示；含 `ui_CreateProgress`/`ui_CreateEnd`/`ui_Quick`）上的 **Quick 按钮**用于**加速进攻节奏**：
 
 - **与世界+难度绑定的显隐**：`UIFightMain.RefreshUIData` → `RefreshQuickButtonShow`：仅征服模式、且 `UserUnlockBean.CheckIsUnlockWorldQuickAttack(worldId, difficultyLevel)`（当前世界「当前难度」的「加快进攻节奏」研究已解锁）时才显示 Quick 按钮。worldId 与 difficultyLevel 取 `FightBeanForConquer.gameWorldInfoRandomData` 同名字段。Quick 研究已按难度拆分(难度2~10各一个)，研究节点/id 块约定见 [`research-system`](../research-system/SKILL.md) 世界分支。
 - **点击逻辑**：`UIViewFightMainAttCreateProgress.OnClickForQuick` → 若 `GetAttackProgress()>=1` 直接 return（已到 100% 点击无效）；否则 `GameFightLogic.QuickAdvanceAttackCreate(0.1f)` 推进后 `SetProgress(newProgress, animTime:0.3f)` 平滑过渡（不瞬跳）。
@@ -513,7 +520,9 @@ gameLogic.SetGameSpeed(1.0f);                          // 正常速度
 | 无限模式 | `Assets/Scripts/Game/Logic/GameFightLogicInfinite.cs` |
 | 终焉议会 | `Assets/Scripts/Game/Logic/GameFightLogicDoomCouncil.cs` |
 | 测试模式 | `Assets/Scripts/Game/Logic/GameFightLogicTest.cs` |
+| 挑战100勇士模式 | `Assets/Scripts/Game/Logic/GameFightLogicChallengeHundred.cs` |
 | 战斗数据Bean | `Assets/Scripts/Bean/Game/FightBean.cs` |
+| 挑战100勇士战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForChallengeHundred.cs` |
 | 战斗生物实体(通用) | `Assets/Scripts/Game/Fight/FightCreatureEntity.cs` |
 | 战斗生物实体(进攻:换路诱导/死亡意图) | `Assets/Scripts/Game/Fight/FightCreatureEntityForAttack.cs` |
 | 战斗生物实体(防守:死亡意图) | `Assets/Scripts/Game/Fight/FightCreatureEntityForDefense.cs` |

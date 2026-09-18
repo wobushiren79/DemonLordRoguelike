@@ -249,6 +249,7 @@ public enum UnlockEnum : long
     PortalPreviewRoadLength = 100300004, // 传送门详情预览-路径长度
     PortalPreviewReward = 100300005,     // 传送门详情预览-奖励道具
     PortalRefreshNum = 100300006,        // 传送门刷新次数(研究等级=可用刷新次数上限,通关回满,level_max=10)
+    ChallengeHundredShowRate = 100300007, // 是魔王就挑战100勇士出现概率(研究等级×10=传送门世界刷为该模式的概率百分数0~100;前置=剑与魔法征服难度2研究100310112,同世界分支)
     GashaponMachine = 100400000,       // 解锁孕育
     GashaponRarityR = 100401000,       // 稀有度R
     GashaponRarityRRate = 100401001,   // 稀有度R +1%
@@ -302,6 +303,14 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 ```
 
 > `UIPopupPortalDetails` 详细改造（AutoLink 的 4 个 `UIViewPopupPortalDetailsItem`、奖励缓存池、预生成奖励来源 `GameWorldInfoRandomBean.GetDifficultyReward`）属传送门/征服模块，本 Skill 仅覆盖"研究门控"这一面。
+
+### 世界分支(1003 段) — 挑战100勇士出现概率（概率型研究消费点）
+
+`ChallengeHundredShowRate`（unlock_id **100300007**，`research_type=4` 世界节点，`icon_res=ui_research_9`，`level_max=10`，`position(-160,-160)` 与难度链同列、位于前置 `100310112`（剑与魔法征服难度2研究）正下方，`pre_unlock_ids="100310112"`——同分支前置，连线正常绘制）——研究等级 ×10 = 传送门世界刷新为「是魔王就挑战100勇士」模式的概率（百分数 0~100，未解锁=0，满级 100）。
+
+- **概率型研究消费点先例**（仿扭蛋概率研究）：消费不在 UI 门控，而在 `GameWorldInfoRandomBean.SetGameFightTypeRandom`——每次生成传送门世界时先按该概率判定，命中则用 `FightTypeChallengeHundredInfoCfg.GetRandomRow(当前世界最高已解锁难度)` 抽配置行生成为挑战100勇士世界（**所有已解锁世界都可能刷出**）；命中但当前世界最高已解锁难度无匹配配置行时落回原征服/无尽随机。数值读取 `UserUnlockBean.GetUnlockChallengeHundredShowRate()`（=研究等级×10）。
+- **落表**同其他节点：`excel_research_info`(id=100300007, `research_type=4`, `pay_crystal` 十级独立阶梯 `100,200,400,800,1500,2500,4000,6000,9000,15000`, `pre_data` 留空, `name`=同id, 备注「是魔王就挑战100勇士-出现概率+10%」) + `excel_unlock_info`(id=100300007, `unlock_type=0`, 备注「是魔王就挑战100勇士出现概率」) + 多语言 `excel_language` 的 `ResearchInfo` 工作表(id=100300007, **全语言统一填原名「是魔王就挑战100勇士」**——该模式翻译统一用原名)。
+- 挑战100勇士模式本身的战斗配置表/Bean/流程见 [`portal-system`](../portal-system/SKILL.md) / [`game-fight-system`](../game-fight-system/SKILL.md) 等文档，本 Skill 仅覆盖「研究→出现概率」这一面。
 
 ### 设施分支(1002 段) — 征服通关获得声望（解锁开关驱动游戏逻辑）
 
@@ -435,6 +444,7 @@ public int GetUnlockResearchLevelByResearchInfo(ResearchInfoBean researchInfo);
 public int GetUnlockPortalShowCount();                 // 3 + PortalShowNum 等级
 public int GetUnlockPortalRefreshMax();                // 传送门刷新次数上限 = PortalRefreshNum 等级(未解锁0,满级10)
 public bool CheckIsUnlockPortalRefresh();              // 是否解锁传送门刷新(等级>0,门控刷新按钮显隐)
+public int GetUnlockChallengeHundredShowRate();        // 挑战100勇士出现概率 = ChallengeHundredShowRate 等级 × 10(百分数0~100,未解锁0,满级100)；GameWorldInfoRandomBean.SetGameFightTypeRandom 生成传送门世界时按该概率判定生成为挑战100勇士世界(命中但当前世界最高已解锁难度无匹配配置行则落回原随机)
 public int GetUnlockAbyssalBlessingRefreshMax();       // 深渊馈赠刷新次数上限 = AbyssalBlessingRefreshNum 等级(未解锁0,满级5)；剩余次数池挂 FightBeanForConquer(整个征服run共享,新run自动回满)
 public bool CheckIsUnlockAbyssalBlessingRefresh();     // 是否解锁深渊馈赠刷新(等级>0,门控 UIFightAbyssalBlessing 刷新按钮显隐)
 public int GetUnlockLineupNum();                       // 1 + LineupNum 等级

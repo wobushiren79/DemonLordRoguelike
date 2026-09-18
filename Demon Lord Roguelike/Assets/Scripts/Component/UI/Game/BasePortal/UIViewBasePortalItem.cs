@@ -56,8 +56,10 @@ public partial class UIViewBasePortalItem : BaseUIView
         this.gameWorldInfoRandom = gameWorldInfoRandom;
         //设置地图位置
         SetMapPosition(gameWorldInfoRandom.uiPosition.GetVector());
-        //设置名字
+        //设置名字(挑战100勇士世界显示模式名, 地图上可直接辨识)
         string targetName = gameWorldInfo.name_language;
+        if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred)
+            targetName = TextHandler.Instance.GetTextById(417);
         SetName(targetName);
         //设置图标
         SetIcon(gameWorldInfo.icon_res, gameWorldInfoRandom.iconSeed);
@@ -122,7 +124,11 @@ public partial class UIViewBasePortalItem : BaseUIView
     {
         isSelectWorld = true;
         DialogBean dialogData = new DialogBean();
-        dialogData.content = string.Format(TextHandler.Instance.GetTextById(401), gameWorldInfo.name_language);
+        //确认文案按模式区分: 征服=401「是否开启{0}的征服之旅？」; 挑战100勇士=416「是否接受100勇士的挑战？」
+        if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred)
+            dialogData.content = TextHandler.Instance.GetTextById(416);
+        else
+            dialogData.content = string.Format(TextHandler.Instance.GetTextById(401), gameWorldInfo.name_language);
 
         float animTimeForShowMask = 1f;
         //float animTimeForHideMask = 1f;
@@ -144,6 +150,9 @@ public partial class UIViewBasePortalItem : BaseUIView
                         break;
                     case GameFightTypeEnum.Infinite:
                         fightData = new FightBeanForInfinite(gameWorldInfoRandom);
+                        break;
+                    case GameFightTypeEnum.ChallengeHundred:
+                        fightData = new FightBeanForChallengeHundred(gameWorldInfoRandom);
                         break;
                 }
                 WorldHandler.Instance.EnterGameForFightScene(fightData);

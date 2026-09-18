@@ -55,8 +55,9 @@ public partial class UIRewardSelect : BaseUIComponent
             AudioHandler.Instance.PlaySound(AudioEnum.sound_reward_6);
             //宝箱落地动画随遮罩淡出同步开始
             await scenePrefab.PlayAllBoxShowAnim();
-            //全部宝箱落地后 自动打开第一个宝箱(首箱保底奖励直接入账 不消耗选择次数) 并等开箱动画播完
-            await AutoOpenFirstRewardBox();
+            //全部宝箱落地后 自动打开第一个宝箱(首箱保底奖励直接入账 不消耗选择次数) 并等开箱动画播完; isAutoOpenFirstBox=false 的模式(如挑战100勇士3箱3抽)跳过保底
+            if (rewardSelectData.isAutoOpenFirstBox)
+                await AutoOpenFirstRewardBox();
             //首箱打开后再显示UI(此期间UI隐藏 点击/跳过均被屏蔽 玩家只能看完首箱开启演出)
             gameObject.SetActive(true);
             RefreshUI();

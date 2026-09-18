@@ -89,10 +89,10 @@ public partial class UIFightMain : BaseUIComponent
     {
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var fightType = gameFightLogic.fightData.gameFightType;
-        //关卡进度文本仅征服模式显示；进攻进度条征服与测试模式均显示(测试模式同样有进攻波次数据)
+        //关卡进度文本仅征服模式显示；进攻进度条征服/测试/挑战100勇士均显示(挑战100勇士同样有100只怪的进攻波次数据)
         bool isConquer = fightType == GameFightTypeEnum.Conquer;
         SetFightLevelShow(isConquer);
-        SetAttCreateProgressShow(isConquer || fightType == GameFightTypeEnum.Test);
+        SetAttCreateProgressShow(isConquer || fightType == GameFightTypeEnum.Test || fightType == GameFightTypeEnum.ChallengeHundred);
         //仅征服模式刷新当前关卡进度
         if (isConquer)
         {

@@ -657,6 +657,13 @@ public partial class FightCreatureEntity
                 FightBeanForConquer conquerFightData = gameFightLogic.fightData as FightBeanForConquer;
                 dropCrystal = conquerFightData.fightTypeConquerInfo.drop_crystal;
             }
+            else if (gameFightLogic.fightData.gameFightType == GameFightTypeEnum.ChallengeHundred)
+            {
+                //挑战100勇士按配置行 drop_crystal 掉落
+                FightBeanForChallengeHundred challengeHundredFightData = gameFightLogic.fightData as FightBeanForChallengeHundred;
+                if (challengeHundredFightData?.fightTypeChallengeHundredInfo != null)
+                    dropCrystal = challengeHundredFightData.fightTypeChallengeHundredInfo.drop_crystal;
+            }
 
             FightDropCrystalBean fightDropCrystal = FightHandler.Instance.manager.GetFightDropCrystalBean(dropCrystal, creatureObj.transform.position);
             //存在时长 = 基础时长 + 研究加成(魔晶掉落时长 每级+5秒)；显式赋值避免对象池复用残留的旧时长

@@ -28,6 +28,10 @@ public partial class UIDialogPortalDetails : DialogView
     protected int configDifficultyMax;
     //当前是否正在播放切换动画(动画期间禁止再次切换)
     protected bool isAnimating;
+    //挑战100勇士-来袭魔物item列表(动态实例化, 模板 ui_UIViewDialogPortalDetailsCreatureItem 不列入)
+    protected List<UIViewDialogPortalDetailsCreatureItem> listCreatureItem;
+    //来袭魔物item最大水平间距(数量多时间距按容器宽度收缩)
+    protected const float creatureItemSpacing = 230f;
     #endregion
 
     #region 数据设置
@@ -41,16 +45,34 @@ public partial class UIDialogPortalDetails : DialogView
 
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
-        //用户可选择的最高难度
-        unlockDifficultyMax = userUnlock.GetUnlockGameWorldConquerDifficultyLevel(gameWorldInfoRandom.worldId);
-        //该世界配置存在的最高难度
-        configDifficultyMax = FightTypeConquerInfoCfg.GetMaxLevel(gameWorldInfoRandom.worldId);
-        //把默认难度约束在 [1, 已解锁最高] 范围内, 并同步该难度预生成的道路/关卡随机数据
-        int defaultDifficulty = Mathf.Clamp(gameWorldInfoRandom.difficultyLevel, 1, Mathf.Max(1, unlockDifficultyMax));
-        gameWorldInfoRandom.SetDifficultyLevel(defaultDifficulty);
 
-        InitItemPool();
-        RefreshItemsImmediate(gameWorldInfoRandom.difficultyLevel);
+        //挑战100勇士模式: 无难度概念, 隐藏难度选择器并显示来袭魔物列表; 其余模式走难度选择器原逻辑
+        bool isChallengeHundred = gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred;
+        if (isChallengeHundred)
+        {
+            SetDataForChallengeHundred();
+        }
+        else
+        {
+            //用户可选择的最高难度
+            unlockDifficultyMax = userUnlock.GetUnlockGameWorldConquerDifficultyLevel(gameWorldInfoRandom.worldId);
+            //该世界配置存在的最高难度
+            configDifficultyMax = FightTypeConquerInfoCfg.GetMaxLevel(gameWorldInfoRandom.worldId);
+            //把默认难度约束在 [1, 已解锁最高] 范围内, 并同步该难度预生成的道路/关卡随机数据
+            int defaultDifficulty = Mathf.Clamp(gameWorldInfoRandom.difficultyLevel, 1, Mathf.Max(1, unlockDifficultyMax));
+            gameWorldInfoRandom.SetDifficultyLevel(defaultDifficulty);
+
+            InitItemPool();
+            RefreshItemsImmediate(gameWorldInfoRandom.difficultyLevel);
+        }
+        //模式容器与难度切换按钮显隐(弹窗复用时按模式归位, 防上次打开残留)
+        if (ui_Difficulty != null)
+            ui_Difficulty.gameObject.SetActive(!isChallengeHundred);
+        ui_DifficultySelectLeftBtn.gameObject.SetActive(!isChallengeHundred);
+        ui_DifficultySelectRightBtn.gameObject.SetActive(!isChallengeHundred);
+        if (ui_CreatureList != null)
+            ui_CreatureList.gameObject.SetActive(isChallengeHundred);
+
         //出战阵容选择区: 已解锁阵容数量>=2才显示, 默认选中上次保存的出战阵容
         int lineupNum = userUnlock.GetUnlockLineupNum();
         ui_Lineup.gameObject.SetActive(lineupNum >= 2);
@@ -63,6 +85,64 @@ public partial class UIDialogPortalDetails : DialogView
         LayoutRebuilder.ForceRebuildLayoutImmediate(ui_ContentPro.rectTransform);
         LayoutRebuilder.ForceRebuildLayoutImmediate(ui_ContentShow);
         LayoutRebuilder.ForceRebuildLayoutImmediate(ui_DialogContent);
+    }
+
+    /// <summary>
+    /// 设置挑战100勇士模式数据: 按冻结配置行(challengeHundredRowId)的敌人列表去重后动态实例化来袭魔物item, 手动等距居中排布
+    /// </summary>
+    protected void SetDataForChallengeHundred()
+    {
+        //难度item池全部隐藏(防上次征服打开残留的动画/显示状态)
+        if (listItemPool != null)
+            HideAllItems();
+        if (ui_UIViewDialogPortalDetailsCreatureItem == null || ui_CreatureList == null)
+            return;
+
+        //清理上次打开的魔物item(模板不列入列表, 不销毁)
+        if (listCreatureItem != null)
+        {
+            for (int i = 0; i < listCreatureItem.Count; i++)
+            {
+                if (listCreatureItem[i] != null)
+                    Destroy(listCreatureItem[i].gameObject);
+            }
+        }
+        listCreatureItem = new List<UIViewDialogPortalDetailsCreatureItem>();
+        //模板item保持隐藏作为克隆蓝本
+        ui_UIViewDialogPortalDetailsCreatureItem.gameObject.SetActive(false);
+
+        //取传送门生成时冻结的配置行
+        var challengeHundredInfo = FightTypeChallengeHundredInfoCfg.GetItemData(gameWorldInfoRandom.challengeHundredRowId);
+        if (challengeHundredInfo == null)
+        {
+            LogUtil.LogError($"挑战100勇士详情弹窗找不到配置行 rowId:{gameWorldInfoRandom.challengeHundredRowId}");
+            return;
+        }
+        //敌人列表去重(同一魔物可能重复配置)
+        List<long> enemyIds = new List<long>();
+        long[] enemyIdArray = challengeHundredInfo.GetEnemyIdList();
+        for (int i = 0; i < enemyIdArray.Length; i++)
+        {
+            if (!enemyIds.Contains(enemyIdArray[i]))
+                enemyIds.Add(enemyIdArray[i]);
+        }
+        //动态实例化魔物item, 手动等距居中排布(数量多时间距收缩)
+        int count = enemyIds.Count;
+        float spacing = creatureItemSpacing;
+        float containerWidth = ui_CreatureList.rect.width;
+        if (count > 1 && containerWidth > 0 && spacing * (count - 1) > containerWidth)
+            spacing = containerWidth / (count - 1);
+        for (int i = 0; i < count; i++)
+        {
+            GameObject objItem = Instantiate(ui_UIViewDialogPortalDetailsCreatureItem.gameObject, ui_CreatureList);
+            objItem.transform.localScale = Vector3.one;
+            UIViewDialogPortalDetailsCreatureItem itemView = objItem.GetComponent<UIViewDialogPortalDetailsCreatureItem>();
+            itemView.SetData(enemyIds[i]);
+            //以容器中心为原点等距排布
+            float posX = (i - (count - 1) / 2f) * spacing;
+            (objItem.transform as RectTransform).anchoredPosition = new Vector2(posX, 0);
+            listCreatureItem.Add(itemView);
+        }
     }
 
     /// <summary>
@@ -306,6 +386,9 @@ public partial class UIDialogPortalDetails : DialogView
         }
         else if (inputType == InputActionUIEnum.Navigate)
         {
+            //挑战100勇士无难度概念, 方向键不切换
+            if (gameWorldInfoRandom != null && gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred)
+                return;
             //左右方向键切换难度(上一档/下一档), 上下方向不处理
             Vector2 navigateData = callback.ReadValue<Vector2>();
             if (navigateData.x < 0)

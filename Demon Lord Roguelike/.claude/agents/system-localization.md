@@ -60,6 +60,7 @@ TextManager 加载 Language_UIText_*.txt
 - 所有文本显示必须使用 UITextLanguageView 或通过 TextHandler 获取
 - 新增文本 key 需在 Excel 配置中添加
 - 语言切换触发全局事件，所有 UI 需响应刷新
+- **「是魔王就挑战100勇士」模式名全语言用原名**：该模式(ChallengeHundred)翻译统一保留原名——`excel_language` 的 `ResearchInfo` 工作表 id=100300007 十二语言均填「是魔王就挑战100勇士」；配套 UIText：416「是否接受100勇士的挑战？」（传送门进入确认文案，ChallengeHundred 分支用，征服仍用 401）/ 417「是魔王就挑战100勇士」（模式名，ChallengeHundred 传送门在基地地图上的显示名）/ 418「来袭魔物」（详情弹窗魔物列表标题，预留，当前代码未引用）
 
 ## ⚠️ 一个多语言ID承载多条文本（content / content_1 / content_2）
 

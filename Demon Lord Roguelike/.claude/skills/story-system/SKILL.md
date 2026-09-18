@@ -87,7 +87,7 @@ watched_files:
 
 ## 编辑器（StoryEditorWindow）
 
-[StoryEditorWindow.cs](Assets/Editor/StoryEditorWindow.cs)，菜单 `游戏/故事演出编辑`。骨架照抄 FightTypeConquerEditorWindow（Excel 直读→编辑→单会话写回→重导JSON），增删行照 EquipSuitEditorWindow（降序 DeleteRow/追加/新id=max+1）。
+[StoryEditorWindow.cs](Assets/Editor/StoryEditorWindow.cs)，菜单 `游戏/故事演出编辑`。骨架照抄 FightModeEditorTabConquer（战斗模式编辑工具征服页签，原 FightTypeConquerEditorWindow；Excel 直读→编辑→单会话写回→重导JSON），增删行照 EquipSuitEditorWindow（降序 DeleteRow/追加/新id=max+1）。
 
 - 四栏：左故事列表（搜索/新增/删除，删除级联删步骤并提示孤儿对话）｜故事字段（名字中文直接编辑写回语言表 content_cn）｜步骤编排（foldout 列表/类型 EnumPopup/并发开关/**➕行前插入**/↑↓移/末尾添加，按 step_type 动态参数标签；Talk 步骤只做引用选择与只读预览 + 对话框对齐下拉/偏移X-Y/目标高亮开关+目标下拉/形状下拉(方形/圆形)+尺寸倍率（param_2=对齐[|高亮[|形状[|倍率]]]组合、param_3/4=偏移，空=默认下对齐(0,0)不高亮））｜**对话列表**（本故事+通用对话的统一 CRUD 面板：npc 下拉含 0=旁白/内容中文/备注/删除——删除时若被步骤引用会提示并自动移除引用；+新增对话自动绑定当前故事）。步骤编排与对话管理分离，不混在一起。新步骤 id 规则=本故事最大 id+1（story_id*1000 号段内聚，中间插入后 id 与 step_order 不再一一对应属正常，执行只读 step_order）；新对话 id 同约定=story_id*1000+号段内序号（GetNextTalkId：号段内最大+1，无对话取 story_id*1000+1，超上限 story_id*1000+999 报错阻断）。
 - 栏宽：三个固定栏（故事列表/故事字段/对话列表）栏间分隔条可拖拽调宽、双击复位默认宽；步骤栏为弹性栏自动占满剩余宽度（DrawSplitter/HandleSplitterDrag/ClampSplitterWidth，各栏有最小宽保护）。
