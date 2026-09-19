@@ -13,6 +13,7 @@ using UnityEngine;
 /// 每行=一个挑战配置(无世界维度)，行内 difficulty_levels 声明该行适配的难度列表，challenge_type 区分普通/BOSS挑战；
 /// 世界最高已解锁难度在列才可抽中本行，同一难度多行匹配时随机其一，无匹配行的难度不会刷出本模式。
 /// 强度倍率/击杀掉晶/每箱魔晶/装备稀有度/通关经验为「逐难度对齐字段」：单值=全难度共用，或与难度列表等长的逗号分隔值按难度逐档取。
+/// 编辑体验：勾选多个难度后这些字段按难度逐档显示独立输入框（无需手写逗号串）；勾选增删难度时自动插入/删除对应档。
 /// 本页签以「配置行列表」为主组织编辑。
 /// 注意：本表 ID 列表字段(enemy_ids/fight_scene_ids/difficulty_levels)约定用英文逗号 "," 分割（与征服模式的 "&" 不同）。
 /// 宿主窗口见 FightModeEditorWindow（菜单：游戏/战斗模式编辑）
@@ -122,6 +123,10 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
 
     /// <summary>挑战类型下拉选项（与 challenge_type 取值一一对应：0=普通挑战 1=BOSS挑战）</summary>
     private static readonly string[] ChallengeTypeOptions = { "0 - 普通挑战", "1 - BOSS挑战(奖励翻倍)" };
+
+    /// <summary>逐难度对齐字段名列表（难度勾选增删时需同步插入/删除对应档值）</summary>
+    private static readonly string[] AlignedFieldNames =
+        { "attack_intensity_baserate", "drop_crystal", "reward_crystal", "reward_equip_rarity", "reward_exp" };
 
     #endregion
 
@@ -682,49 +687,70 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
     }
 
     /// <summary>
-    /// 绘制逐难度对齐字段（文本编辑 + 下方按难度解析预览；多值数量与难度数量不一致时警示）
-    /// 约定：单值=全难度共用；逗号分隔多值=与 difficulty_levels 等长，按难度下标逐档取值
+    /// 绘制逐难度对齐字段：已选多个难度时每个难度一行独立输入框（直观逐档配置，无需手写逗号串），单难度/未选难度时退化为单输入框
+    /// 存储约定不变：单值=全难度共用；逗号分隔多值=与 difficulty_levels 等长逐档取值；编辑后各档相同则自动折叠回单值
     /// </summary>
     private string DrawDifficultyAlignedField(GUIContent labelContent, string value, string fieldName)
     {
+        List<int> levels = ParseIntList(currentBean.difficulty_levels);
+
+        // 未选难度/单难度：保持单输入框（单值=全难度共用）
+        if (levels.Count <= 1)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField(labelContent, GUILayout.Width(FieldLabelWidth));
+            string singleResult = DrawCurrentTextField(value ?? "", IsFieldModified(fieldName));
+            EditorGUILayout.EndHorizontal();
+            return singleResult;
+        }
+
+        // 多难度：展开为与难度等长的逐档值（单值=各档共用同一值；不足钳到末位档；超出截断）
+        string[] parts = (value ?? "").Split(ListSeparator);
+        int valueCount = (parts.Length == 1 && string.IsNullOrEmpty(parts[0])) ? 0 : parts.Length;
+        string[] values = new string[levels.Count];
+        for (int i = 0; i < values.Length; i++)
+        {
+            values[i] = valueCount == 0 ? "" : parts[Math.Min(i, valueCount - 1)].Trim();
+        }
+
+        // 标题行：字段标签 + 共用/逐档提示 + 数量不符警示
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField(labelContent, GUILayout.Width(FieldLabelWidth));
-        string result = DrawCurrentTextField(value ?? "", IsFieldModified(fieldName));
+        EditorGUILayout.LabelField(valueCount <= 1 ? "逐难度配置(当前为全难度共用值)" : "逐难度配置", alignedPreviewStyle);
+        if (valueCount > 1 && valueCount != levels.Count)
+        {
+            EditorGUILayout.LabelField($"⚠ 值数量({valueCount}) ≠ 难度数量({levels.Count})，不足档已按末位档补齐", dirtyHintStyle);
+        }
         EditorGUILayout.EndHorizontal();
 
-        // 解析预览：按当前难度列表逐档对齐展示
-        List<int> levels = ParseIntList(currentBean.difficulty_levels);
-        string[] values = (result ?? "").Split(ListSeparator);
-        int valueCount = (values.Length == 1 && string.IsNullOrEmpty(values[0])) ? 0 : values.Length;
-        if (valueCount <= 1)
+        // 逐难度输入行（任一档被编辑即按当前难度列表重组存储串）
+        bool modified = IsFieldModified(fieldName);
+        bool changed = false;
+        for (int i = 0; i < levels.Count; i++)
         {
             EditorGUILayout.BeginHorizontal();
-            GUILayout.Space(FieldLabelWidth + 4);
-            EditorGUILayout.LabelField(valueCount == 0 ? "(空)" : $"全难度共用: {values[0]}", alignedPreviewStyle);
+            GUILayout.Space(20);
+            EditorGUILayout.LabelField($"难度 {levels[i]}", GUILayout.Width(50));
+            Color prevColor = GUI.backgroundColor;
+            if (modified) GUI.backgroundColor = ModifiedBgColor;
+            string newValue = EditorGUILayout.TextField(values[i]);
+            GUI.backgroundColor = prevColor;
+            if (newValue != values[i])
+            {
+                values[i] = newValue;
+                changed = true;
+            }
             EditorGUILayout.EndHorizontal();
         }
-        else
+
+        if (!changed) return value;
+
+        // 各档值相同则折叠回单值（全难度共用），保持配置精简
+        for (int i = 1; i < values.Length; i++)
         {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            int pairCount = Math.Min(levels.Count, valueCount);
-            for (int i = 0; i < pairCount; i++)
-            {
-                if (i > 0) sb.Append("   ");
-                sb.Append($"难度{levels[i]}={values[i].Trim()}");
-            }
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.Space(FieldLabelWidth + 4);
-            EditorGUILayout.LabelField(sb.ToString(), alignedPreviewStyle);
-            EditorGUILayout.EndHorizontal();
-            if (levels.Count != valueCount)
-            {
-                EditorGUILayout.BeginHorizontal();
-                GUILayout.Space(FieldLabelWidth + 4);
-                EditorGUILayout.LabelField($"⚠ 值数量({valueCount}) ≠ 难度数量({levels.Count})，超出的难度将钳到末位档", dirtyHintStyle);
-                EditorGUILayout.EndHorizontal();
-            }
+            if (values[i] != values[0]) return string.Join(ListSeparator.ToString(), values);
         }
-        return result;
+        return values[0];
     }
 
     /// <summary>
@@ -749,6 +775,8 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
             bool newOn = GUILayout.Toggle(isOn, d.ToString(), difficultyToggleStyle, GUILayout.Width(26), GUILayout.Height(20));
             if (newOn != isOn)
             {
+                // 先同步逐难度对齐字段的档位增删（在难度列表改动前，按旧难度数对齐下标），再改难度列表
+                SyncAlignedFieldsOnDifficultyToggle(d, newOn, levels);
                 if (newOn) levels.Add(d);
                 else levels.Remove(d);
                 changed = true;
@@ -773,6 +801,46 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
 
         EditorGUILayout.EndHorizontal();
         return result;
+    }
+
+    /// <summary>
+    /// 难度勾选增删时同步逐难度对齐字段：新增难度在升序插入位继承邻档值，移除难度删除对应档
+    /// 空/单值（全难度共用）与数量已对不上的旧数据保持原样（后者由对齐字段UI警示）
+    /// </summary>
+    private void SyncAlignedFieldsOnDifficultyToggle(int difficulty, bool added, List<int> oldLevels)
+    {
+        if (currentBean == null) return;
+        // 对齐下标按升序难度串计算（本工具写出的难度列表恒为升序）
+        List<int> sortedOld = new List<int>(oldLevels);
+        sortedOld.Sort();
+        foreach (string fieldName in AlignedFieldNames)
+        {
+            FieldInfo fieldInfo = typeof(FightTypeChallengeHundredInfoBean).GetField(fieldName);
+            if (fieldInfo == null || fieldInfo.FieldType != typeof(string)) continue;
+            string raw = (string)fieldInfo.GetValue(currentBean) ?? "";
+            string[] parts = raw.Split(ListSeparator);
+            int valueCount = (parts.Length == 1 && string.IsNullOrEmpty(parts[0])) ? 0 : parts.Length;
+            // 空/单值=全难度共用，增删难度无需变动；数量≠旧难度数的旧数据保持原样
+            if (valueCount <= 1 || valueCount != sortedOld.Count) continue;
+
+            List<string> values = new List<string>(parts);
+            if (added)
+            {
+                List<int> sortedNew = new List<int>(sortedOld) { difficulty };
+                sortedNew.Sort();
+                int insertIndex = sortedNew.IndexOf(difficulty);
+                // 继承该插入位原有档值（末位插入则继承原末档）
+                string inheritValue = values[Math.Min(insertIndex, values.Count - 1)];
+                values.Insert(Math.Min(insertIndex, values.Count), inheritValue);
+            }
+            else
+            {
+                int removeIndex = sortedOld.IndexOf(difficulty);
+                if (removeIndex < 0 || removeIndex >= values.Count) continue;
+                values.RemoveAt(removeIndex);
+            }
+            fieldInfo.SetValue(currentBean, string.Join(ListSeparator.ToString(), values));
+        }
     }
 
     /// <summary>

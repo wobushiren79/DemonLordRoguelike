@@ -66,7 +66,7 @@ watched_files:
 
 ### 配置（Excel + JSON + Bean）
 - `excel_game_world_info[游戏世界信息].xlsx`(工作表 `GameWorldInfo`) —— 唯一真实源；导出 `GameWorldInfo.txt`。**ChallengeHundred 未加列**(全局研究门控，所有已解锁世界都可能刷出)。
-- `excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx`(工作表 `FightTypeChallengeHundredInfo`) —— 挑战100勇士配置唯一真实源；导出 `FightTypeChallengeHundredInfo.txt`。列：id/enemy_ids(,分隔)/difficulty_levels(,分隔,适配难度列表)/challenge_type(0普通/1BOSS通关宝箱翻倍)/attack_intensity_baserate/attack_show_time/road_num(x或x-y)/road_length/fight_scene_ids(,分隔)/drop_crystal/reward_crystal(每档x或x-y)/reward_equip_rarity/reward_exp/remark；强度/掉晶/箱晶/稀有度/经验为逐难度对齐字段(单值全难度共用,或等长逗号分隔按冻结难度取档)。可视化编辑走战斗模式编辑工具（菜单 `游戏/战斗模式编辑`）的「挑战100勇士」页签 `FightModeEditorTabChallengeHundred.cs`（配置行列表为主、挑战类型下拉、逐难度对齐字段带解析预览、新增/删除行、保存写回Excel并重导JSON）。
+- `excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx`(工作表 `FightTypeChallengeHundredInfo`) —— 挑战100勇士配置唯一真实源；导出 `FightTypeChallengeHundredInfo.txt`。列：id/enemy_ids(,分隔)/difficulty_levels(,分隔,适配难度列表)/challenge_type(0普通/1BOSS通关宝箱翻倍)/attack_intensity_baserate/attack_show_time/road_num(x或x-y)/road_length/fight_scene_ids(,分隔)/drop_crystal/reward_crystal(每档x或x-y)/reward_equip_rarity/reward_exp/remark；强度/掉晶/箱晶/稀有度/经验为逐难度对齐字段(单值全难度共用,或等长逗号分隔按冻结难度取档)。可视化编辑走战斗模式编辑工具（菜单 `游戏/战斗模式编辑`）的「挑战100勇士」页签 `FightModeEditorTabChallengeHundred.cs`（配置行列表为主、挑战类型下拉、逐难度对齐字段按已选难度逐档独立输入框(增删难度自动插入/删除对应档)、新增/删除行、保存写回Excel并重导JSON）。
 - `GameWorldInfoBean.cs`(自动生成,禁改) / `GameWorldInfoBeanPartial.cs`(随机数据 Bean,手写可改)。`FightTypeChallengeHundredInfoBean.cs`(自动生成,禁改) / `FightTypeChallengeHundredInfoBeanPartial.cs`(手写扩展,可改)。
 
 ## 关键文件
