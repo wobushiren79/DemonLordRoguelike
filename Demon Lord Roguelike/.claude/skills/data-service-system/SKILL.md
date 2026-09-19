@@ -363,6 +363,10 @@ Assets/Data/Excel/
 └── ...
 ```
 
+### 列头标记剥离（ExcelToJsonItemForBase）
+
+导出 JSON 时列头的 `[language]`/`[language_1]`/`[language_2]`/`[mode_id]` 标记会被剥离（JSON 键=干净字段名）；这四种标记同时驱动 `ExcelEditorWindow.CreateEntity` 在 Bean 里自动生成 Mod 合并拼接（`CombineModReferenceIds`），详见 editor-extension-system SKILL「Mod 引用列标记约定」。
+
 ### 配置表字段命名规范
 
 ```

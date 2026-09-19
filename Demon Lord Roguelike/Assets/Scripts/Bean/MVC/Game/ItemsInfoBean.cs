@@ -62,6 +62,13 @@ public partial class ItemsInfoBean : BaseBean
 	///奖励可出的稀有度白名单(逗号分隔,空=全稀有度) 1N 2R 3SR 4SSR 5UR 6L
 	/// </summary>
 	public string reward_rarity;
+	/// <summary>
+	/// Mod合并引用字段拼接（由Excel列头 [language]/[mode_id] 标记自动生成，请勿手改）：该行来自 Mod JsonText 时，下列字段按同一 modId 拼接，指向 Mod 自带配置/语言表的同自ID行；0=无引用不拼接
+	/// </summary>
+	public override void CombineModReferenceIds(int modId)
+	{
+		if (name > 0) name = ItemsInfoCfg.CombineModId(modId, name);
+	}
 }
 public partial class ItemsInfoCfg : BaseCfg<long, ItemsInfoBean>
 {

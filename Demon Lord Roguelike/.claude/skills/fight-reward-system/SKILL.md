@@ -1,6 +1,6 @@
 ---
 name: fight-reward-system
-description: Demon Lord Roguelike 游戏的战斗结算奖励系统开发指南。使用此SKILL当需要创建或修改战斗结束后的奖励逻辑，包括战斗结算面板(UIFightSettlement 伤害/击杀/受伤/经验排行榜)、BOSS通关领奖界面(UIRewardSelect 宝箱选择)、奖励生成规则(RewardSelectBean 装备/魔晶)、敌人死亡水晶掉落(FightCreatureEntity.DropCrystal)、战斗统计记录(FightRecordsBean)、奖励入账与存档链路、各战斗模式(征服/终焉议会/测试/挑战100勇士)结算差异、征服奖励配置(reward_crystal/reward_equip_rarity/drop_crystal)、挑战100勇士奖励配置(固定3箱3抽全手动/装备池空则全魔晶)、装备属性加点数量由稀有度配置表(RarityInfo.equip_attribute_add)决定等。
+description: Demon Lord Roguelike 游戏的战斗结算奖励系统开发指南。使用此SKILL当需要创建或修改战斗结束后的奖励逻辑，包括战斗结算面板(UIFightSettlement 伤害/击杀/受伤/经验排行榜)、BOSS通关领奖界面(UIRewardSelect 宝箱选择)、奖励生成规则(RewardSelectBean 装备/魔晶)、敌人死亡水晶掉落(FightCreatureEntity.DropCrystal)、战斗统计记录(FightRecordsBean)、奖励入账与存档链路、各战斗模式(征服/终焉议会/测试/挑战100勇士)结算差异、征服奖励配置(reward_crystal/reward_equip_rarity/drop_crystal)、挑战100勇士奖励配置(全手动开箱/装备池空则全魔晶/BOSS挑战奖励翻倍:装备3箱→6件·魔晶单箱x2/逐难度对齐字段按冻结难度取档)、装备属性加点数量由稀有度配置表(RarityInfo.equip_attribute_add)决定等。
 watched_files:
   - Assets/Scripts/Component/UI/Game/FightSettlement/
   - Assets/Scripts/Component/UI/Game/RewardSelect/
@@ -187,12 +187,13 @@ Excel 源表 `excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xl
 
 | 字段 | 含义 |
 |------|------|
-| `drop_crystal` | int，敌人死亡掉落魔晶（战斗内即时掉落） |
-| `reward_crystal` | **string** 每箱魔晶：单值/区间 `x-y`（`GetRandomRewardCrystal()` 解析，走 `RandomUtil.GetRandomIntByRangeString`） |
-| `reward_equip_rarity` | 奖励装备稀有度（只决定稀有度；加点数量见 `RarityInfo.equip_attribute_add`） |
-| `reward_exp` | 胜利时给出战阵容每只生物的经验（失败不发） |
+| `drop_crystal` | **string 逐难度对齐**，敌人死亡掉落魔晶（战斗内即时掉落，`GetDropCrystal(冻结难度)` 取档） |
+| `reward_crystal` | **string 逐难度对齐**：每档单值/区间 `x-y`，多档与难度列表等长逗号分隔（`GetRandomRewardCrystal(冻结难度)` 解析，走 `RandomUtil.GetRandomIntByRangeString`） |
+| `reward_equip_rarity` | **string 逐难度对齐**，奖励装备稀有度（`GetRewardEquipRarity(冻结难度)` 取档；只决定稀有度，加点数量见 `RarityInfo.equip_attribute_add`） |
+| `reward_exp` | **string 逐难度对齐**，胜利时给出战阵容每只生物的经验（`GetRewardExp(冻结难度)` 取档；失败不发） |
+| `challenge_type` | int，0=普通挑战；**1=BOSS挑战→通关宝箱奖励翻倍**：装备不可堆叠走件数 x2（3箱→6箱=6件装备），魔晶可堆叠走单箱数量 x2（仍3箱）；`IsBossChallenge()` 判定，`CreateRewardListForChallengeHundred(行, 冻结难度)` 内统一处理（含装备兜底魔晶也 x2） |
 
-> 模式差异要点：**3箱3抽全手动**（`isAutoOpenFirstBox=false`，无首箱保底）、装备池空则 3 箱全魔晶、**无成就/声望/深渊馈赠**（`ActionForUIRewardSelectEnd` 只回满传送门刷新次数+清空传送门随机数据后返回基地）。
+> 模式差异要点：**全手动开箱**（`isAutoOpenFirstBox=false`，无首箱保底）、可开宝箱数=奖励总数（`selectNumMax=listReward.Count`，普通 3 / BOSS 装备 6）、装备池空则全魔晶、**无成就/声望/深渊馈赠**（`ActionForUIRewardSelectEnd` 只回满传送门刷新次数+清空传送门随机数据后返回基地）。逐难度对齐字段取值依据=传送门生成时冻结的 `difficultyLevel`（世界最高已解锁难度），预览=实领。
 
 ## 征服关卡经验奖励（生物成长经验 levelExp）
 

@@ -39,11 +39,12 @@ public class GameFightLogicChallengeHundred : GameFightLogic
     {
         bool isWin = fightData.gameIsWin;
 
-        //胜利 → 给本场出战阵容生物发放等级经验（配置行 reward_exp；失败不发）
+        //胜利 → 给本场出战阵容生物发放等级经验（配置行 reward_exp 按冻结难度取档；失败不发）
         if (isWin)
         {
             FightBeanForChallengeHundred fightDataForChallengeHundred = fightData as FightBeanForChallengeHundred;
-            int addExp = fightDataForChallengeHundred?.fightTypeChallengeHundredInfo?.reward_exp ?? 0;
+            var infoRow = fightDataForChallengeHundred?.fightTypeChallengeHundredInfo;
+            int addExp = infoRow != null ? infoRow.GetRewardExp(fightDataForChallengeHundred.gameWorldInfoRandomData.difficultyLevel) : 0;
             AddLevelExpForLineupCreature(fightDataForChallengeHundred, addExp);
         }
 
@@ -71,11 +72,11 @@ public class GameFightLogicChallengeHundred : GameFightLogic
             //通关 → 打开领奖界面
             var uiRewardSelect = UIHandler.Instance.OpenUIAndCloseOther<UIRewardSelect>();
             RewardSelectBean rewardSelectData = new RewardSelectBean();
-            //3箱3抽全手动开箱（无首箱保底自动开，可开宝箱数=总数，无需征服的 -1 钳制）
-            rewardSelectData.selectNumMax = 3;
-            rewardSelectData.isAutoOpenFirstBox = false;
-            //基础奖励直接取进入传送门时预生成并冻结的3箱奖励(UIPopupPortalDetails 预览=实领)
+            //基础奖励直接取进入传送门时预生成并冻结的宝箱奖励(UIPopupPortalDetails 预览=实领; BOSS挑战装备池解锁时为6箱)
             var baseReward = fightDataForChallengeHundred.gameWorldInfoRandomData.GetChallengeHundredReward();
+            //全手动开箱（无首箱保底自动开，可开宝箱数=奖励总数，无需征服的 -1 钳制）
+            rewardSelectData.selectNumMax = baseReward != null ? baseReward.Count : 3;
+            rewardSelectData.isAutoOpenFirstBox = false;
             rewardSelectData.InitDataForReward(baseReward, null, 0);
             //isClearLastGame:true → 进入领奖场景前先卸载本场战斗场景并清理战斗实体
             uiRewardSelect.SetData(rewardSelectData, ActionForUIRewardSelectEnd, isClearLastGame: true);

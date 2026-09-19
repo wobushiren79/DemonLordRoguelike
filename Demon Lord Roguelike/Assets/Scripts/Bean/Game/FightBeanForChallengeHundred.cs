@@ -76,8 +76,8 @@ public class FightBeanForChallengeHundred : FightBean
         float showTime = fightTypeChallengeHundredInfo.attack_show_time;
         if (showTime <= 0f) showTime = 1f;
 
-        //强度倍率（敌人HP/护甲/攻击力×该值）
-        float intensityRate = fightTypeChallengeHundredInfo.GetIntensityRate();
+        //强度倍率（敌人HP/护甲/攻击力×该值；按冻结难度从配置行逐难度对齐值取档）
+        float intensityRate = fightTypeChallengeHundredInfo.GetIntensityRate(gameWorldInfoRandomData.difficultyLevel);
 
         //将 [0, showTime] 区间均分为 100 段，在每段内随机一个出现时刻，整体随机但不至于过度聚集
         float bucket = showTime / AttackCreatureNum;

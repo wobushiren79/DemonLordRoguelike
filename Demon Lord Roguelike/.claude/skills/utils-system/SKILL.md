@@ -120,7 +120,7 @@ Assets/FrameWork/Scripts/           Assets/Scripts/
 | [CreatureUtil](Assets/Scripts/Utils/CreatureUtil.cs) | `GetCreatureSkinTypeEnumName` | TextHandler |
 | [EquipUtil](Assets/Scripts/Utils/EquipUtil.cs) | 装备生成统一入口：核心 `CreateEquipItem(itemId, rarity, userType, addAttributeOverride)`（品质=属性条数、加点默认取 `RarityInfo.equip_attribute_add`）+ 场景封装 `CreateEquipItemForReward`（征服奖励，全参数）/ `CreateEquipItemForNpc`（NPC随机装备：普通使用者+默认加点）/ `CreateEquipItemForTest`（GM测试：指定id+稀有度直接发货） | ItemBean、RarityInfoCfg |
 | [ItemsUtil](Assets/Scripts/Utils/ItemsUtil.cs) | `GetLanguageText`（`this ItemUserTypeEnum`） | TextHandler |
-| [GameUIUtil](Assets/Scripts/Utils/GameUIUtil.cs) | `SetGradientColor` / `SetCreatureUIForSimple` / `SetCreatureUIForDetails` | CreatureHandler、SpineHandler、IconHandler |
+| [GameUIUtil](Assets/Scripts/Utils/GameUIUtil.cs) | `SetGradientColor` / `SetCreatureUIForSimple` / `SetCreatureUIForDetails`（详情UI：幻化药 other_data 第3段自带尺寸时优先于原生物 `ui_data_b`，见 item-system「幻化药 other_data 组合格式」） | CreatureHandler、SpineHandler、IconHandler |
 | [FightCreatureSearchUtil](Assets/Scripts/Utils/FightCreatureSearchUtil.cs) | `FindCreatureEntity`（统一入口）/ `FindCreatureEntityByRay` / `FindCreatureEntityByArea` / `FindCreatureEntityForDis` / `FindFrontRowCreatures`（最前排 N 个存活生物：FightAttack 前排=x 最小、FightDefense 前排=x 最大，排除施法者） | RayUtil、GameFightLogic |
 
 ---

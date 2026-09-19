@@ -82,8 +82,16 @@ EditorWindow (Unity)
 4. 点击导出，生成 JSON 到 Resources/JsonText/
 ```
 
-### `valid` 有效性列约定（生成器内置过滤）
+### Mod 引用列标记约定（[language]/[mode_id] → 自动生成 CombineModId 拼接）
 
+`CreateEntity` 生成 `*Bean.cs` 时，凡列头带 **`[language]`/`[language_1]`/`[language_2]`（多语言 textId 指向）或 `[mode_id]`（Mod 配置行 id 指向）** 标记的字段（剥离标记后的字段名，long/int 类型），会在 Bean 末尾自动生成 `CombineModReferenceIds(int modId)` 重写：该行来自 Mod JsonText 时（`BaseCfg.GetInitDataForMods` 先拼 `id` 再调本钩子），这些字段按同一 modId 拼接（`if (field > 0) field = XxxCfg.CombineModId(modId, field);`，0=无引用约定不拼接），指向 Mod 自带配置/语言表的同自ID 行。
+
+- **新增需要拼接的引用列 = Excel 列头加标记 + 重新生成该表 Entity**，零代码；不要在 *BeanPartial.cs 手写该重写（特殊手写 Bean 无 Excel 表时除外）。
+- int 列拼接结果会溢出 long 量级（`modId*10^14+自ID`），生成时 LogWarning 提示改 long。
+- 导出 JSON 侧（`ExcelUtil.ExcelToJsonItemForBase`）同样剥离这四种标记，JSON 键始终是干净字段名。
+- 典型实例：ItemsInfo 的 `name[language]` 列 → Mod 道具名指向 Mod 自带 `Language_ItemsInfo_{lang}.txt` 同自ID 行（详见 mod-system / aeonsecho-spine-mod Skill）。
+
+### `valid` 有效性列约定（生成器内置过滤）
 `CreateEntity` 生成 `*Bean.cs` 时会检测工作表是否存在列名为 **`valid`** 的字段（`cellName.Equals("valid")` → `hasValid`）。**只有含该列的表**才会在生成的 `Cfg` 里附带过滤逻辑，其它表生成结果完全不变（按需启用、对存量表零影响）。
 
 约定语义：`valid` 为 `int`，**0=无效（不进入运行时列表），1=有效**。`hasValid` 为真时生成器会：

@@ -5,6 +5,7 @@ watched_files:
   - Assets/FrameWork/Scripts/Component/Manager/ModManager.cs
   - Assets/FrameWork/Scripts/Component/Handler/ModHandler.cs
   - Assets/FrameWork/Scripts/Bean/ModIdMapBean.cs
+  - Assets/FrameWork/Scripts/Bean/BaseBean.cs
   - Assets/FrameWork/Scripts/Component/Manager/GameDataManager.cs
 ---
 
@@ -220,6 +221,17 @@ Mods/YourModName/JsonText/
 └── ...
 ```
 
+### 合并机制（BaseCfg.GetInitDataForMods）
+
+任意走 `BaseCfg.GetInitData(fileName)` 加载的配置表都会被 Mod 同名 JsonText 扩展：主游戏 `Resources/JsonText/{fileName}.txt` 先加载，再追加各 Mod `JsonText/{fileName}.txt` 的行。**每行只做两件事**：
+
+1. `bean.id = CombineModId(modId, bean.id)`（`modId*10^14 + 自ID`，见 ModID 分配规则）
+2. `bean.CombineModReferenceIds(modId)`（`BaseBean` virtual 钩子，默认无操作）——把「指向 Mod 自带配置的引用字段」按同一 modId 拼接。**重写不由手写**：`ExcelEditorWindow.CreateEntity` 生成 `*Bean.cs` 时，凡 Excel 列头带 `[language]`/`[language_1]`/`[language_2]`/`[mode_id]` 标记的字段（long/int 类型）自动生成本重写（`if (field > 0) field = XxxCfg.CombineModId(modId, field);`；0=无引用约定不拼接）。例如 ItemsInfo 的 `name[language]` 列 → Mod 道具名自动指向 Mod 自带语言表 `Language_ItemsInfo_{lang}.txt` 的同自ID 行（约定：name 自ID = 道具自ID；name=0 不拼接显示空文本；**Mod 道具不能复用主游戏 textId**——拼接后必指向 Mod 语言表）。**新增需要拼接的引用列时，只需在 Excel 列头加 `[mode_id]`/`[language]` 标记并重新生成该表 Entity**，无需写任何代码。注意：带标记的列在 Mod 行里一律视为 Mod 本地引用；想引用主游戏配置的行就不要给该列加标记。
+
+多语言表同样可扩展（`LanguageCfg` 也走 `GetInitData`，文件名形如 `Language_ItemsInfo_cn`），Mod 需提供全部 12 语言文件（cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr），缺失语言的玩家会看到 `Error:{id}`。
+
+> 道具型 Mod 的完整生产范式（资源约定/ID规则/生成脚本/构建部署）见 **aeonsecho-spine-mod** Skill（AeonsEchoSpine=首个道具型 Mod 实例，其流程不自动适用于其他 Mod）。
+
 ### 查询JsonText文件
 
 ```csharp
@@ -332,6 +344,7 @@ public void StartGameWithMods()
 | Mod管理器 | `Assets/FrameWork/Scripts/Component/Manager/ModManager.cs` |
 | Mod处理器 | `Assets/FrameWork/Scripts/Component/Handler/ModHandler.cs` |
 | ModID映射Bean | `Assets/FrameWork/Scripts/Bean/ModIdMapBean.cs` |
+| Mod配置合并（id/引用拼接） | `Assets/FrameWork/Scripts/Bean/BaseBean.cs`（`BaseCfg.GetInitDataForMods`/`CombineModId`/`BaseBean.CombineModReferenceIds`） |
 | ModID映射服务 | `Assets/FrameWork/Scripts/Component/Manager/GameDataManager.cs` (内联使用 BaseDataService<ModIdMapBean>) |
 | 游戏数据管理器 | `Assets/FrameWork/Scripts/Component/Manager/GameDataManager.cs` |
 | Mod根目录 | `项目根目录/Mods/` |

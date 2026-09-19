@@ -501,7 +501,7 @@ LauncherTest.StartForChallengeHundredTest(rowId, saveSlot = 0)   // Assets/Scrip
     │  ② saveSlot>0 时读档:UserDataService.ChangeSlot(saveSlot).Load(false) → SetUserData(献祭/故事测试同范式)
     │  ③ isTestSimulation = true   // 奖励结算/掉落入账等 SaveUserData 被 GameDataManager 统一拦截,测试数据不保存
     │  ④ 手搓 GameWorldInfoRandomBean: worldId=1、gameFightType=ChallengeHundred，
-    │     调 SetRandomDataForChallengeHundred(challengeHundredInfo) 冻结配置行/道路/3箱奖励
+    │     调 SetRandomDataForChallengeHundred(challengeHundredInfo) 冻结配置行/道路/宝箱奖励(普通3箱/BOSS翻倍)
     │  ⑤ new FightBeanForChallengeHundred(gameWorldInfoRandomData)
     │     → InitData 从当前 UserData 取 selfCreature(防守核心)+GetLineupCreature(当前出战阵容)
     │  ⑥ WorldHandler.EnterGameForFightScene(fightData)
@@ -731,7 +731,7 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 魔物进阶测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawCreatureVatTest`） |
 | 魔汁机测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForCreatureJuicerTest`） |
 | 魔汁机测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawCreatureJuicerTest`） |
-| 挑战100勇士测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForChallengeHundredTest(rowId, saveSlot = 0)`：校验 `FightTypeChallengeHundredInfoCfg` 配置行→saveSlot>0 读档 SetUserData→`isTestSimulation=true`→手搓 `GameWorldInfoRandomBean`(worldId=1/gameFightType=ChallengeHundred/`SetRandomDataForChallengeHundred` 冻结行/道路/3箱奖励)→`new FightBeanForChallengeHundred`(从当前 UserData 取魔王+出战阵容)→`EnterGameForFightScene`） |
+| 挑战100勇士测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForChallengeHundredTest(rowId, saveSlot = 0)`：校验 `FightTypeChallengeHundredInfoCfg` 配置行→saveSlot>0 读档 SetUserData→`isTestSimulation=true`→手搓 `GameWorldInfoRandomBean`(worldId=1/gameFightType=ChallengeHundred/`SetRandomDataForChallengeHundred` 冻结行/道路/宝箱奖励)→`new FightBeanForChallengeHundred`(从当前 UserData 取魔王+出战阵容)→`EnterGameForFightScene`） |
 | 挑战100勇士测试 UI | `Assets/Editor/GameTestEditor.cs`（FightSceneTest 子模式 `FightTestModeEnum.ChallengeHundred`：`DrawFightSceneTestChallengeHundred`/`EnsureChallengeHundredRowOptions` 配置行下拉+存档槽位 0~3） + `GameTestEditorPartial.cs`（challengeHundredTestRowSelectIndex/challengeHundredTestSaveSlot 持久化） |
 | 正常游戏启动入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForNormalGame`） |
 | 正常游戏启动 UI | `Assets/Editor/GameTestEditor.cs`（`DrawNormalGameTest`） |

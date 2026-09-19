@@ -20,9 +20,13 @@ public partial class FightTypeChallengeHundredInfoBean : BaseBean
 	/// </summary>
 	public string difficulty_levels;
 	/// <summary>
-	///强度倍率(敌人HP/护甲/攻击力×该值;0或不配按1)
+	///挑战类型(0=普通挑战;1=BOSS挑战,通关宝箱奖励翻倍:装备件数x2/魔晶数量x2)
 	/// </summary>
-	public float attack_intensity_baserate;
+	public int challenge_type;
+	/// <summary>
+	///强度倍率(敌人HP/护甲/攻击力×该值;单值=全难度共用,或与难度列表等长的逗号分隔逐难度值;0或不配按1)
+	/// </summary>
+	public string attack_intensity_baserate;
 	/// <summary>
 	///进攻总时间(秒,100只怪在此时间内出完)
 	/// </summary>
@@ -40,21 +44,21 @@ public partial class FightTypeChallengeHundredInfoBean : BaseBean
 	/// </summary>
 	public string fight_scene_ids;
 	/// <summary>
-	///击杀掉落魔晶
+	///击杀掉落魔晶(单值=全难度共用,或与难度列表等长的逗号分隔逐难度值)
 	/// </summary>
-	public int drop_crystal;
+	public string drop_crystal;
 	/// <summary>
-	///奖励-每箱魔晶(单个数x或范围x-y)
+	///奖励-每箱魔晶(每档x或x-y;多档与难度列表等长的逗号分隔逐难度值)
 	/// </summary>
 	public string reward_crystal;
 	/// <summary>
-	///奖励-装备稀有度
+	///奖励-装备稀有度(单值=全难度共用,或与难度列表等长的逗号分隔逐难度值)
 	/// </summary>
-	public int reward_equip_rarity;
+	public string reward_equip_rarity;
 	/// <summary>
-	///通关经验(阵容每只)
+	///通关经验(阵容每只;单值=全难度共用,或与难度列表等长的逗号分隔逐难度值)
 	/// </summary>
-	public int reward_exp;
+	public string reward_exp;
 	/// <summary>
 	///备注
 	/// </summary>

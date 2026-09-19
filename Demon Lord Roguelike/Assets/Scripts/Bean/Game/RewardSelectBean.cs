@@ -167,33 +167,39 @@ public class RewardSelectBean
     }
 
     /// <summary>
-    /// 由挑战100勇士配置生成一份奖励物品列表（固定3箱：装备研究未解锁即装备池为空→3箱全魔晶；否则3箱全装备, 稀有度=配置行 reward_equip_rarity）
+    /// 由挑战100勇士配置生成一份奖励物品列表（装备研究未解锁即装备池为空→全魔晶；否则全装备, 稀有度=配置行 reward_equip_rarity 按冻结难度取档；
+    /// BOSS挑战(challenge_type==1)奖励翻倍: 装备不可堆叠走件数x2(3箱→6箱=6件装备), 魔晶可堆叠走单箱数量x2(仍3箱)）
     /// </summary>
     /// <param name="challengeHundredInfo">挑战100勇士配置行（决定装备稀有度与魔晶数）</param>
-    /// <returns>奖励物品列表（3件）</returns>
-    public static List<ItemBean> CreateRewardListForChallengeHundred(FightTypeChallengeHundredInfoBean challengeHundredInfo)
+    /// <param name="difficultyLevel">冻结的难度等级(传送门随机数据 difficultyLevel)，逐难度对齐字段按它取档</param>
+    /// <returns>奖励物品列表（普通3件；BOSS挑战且装备池解锁时6件）</returns>
+    public static List<ItemBean> CreateRewardListForChallengeHundred(FightTypeChallengeHundredInfoBean challengeHundredInfo, int difficultyLevel)
     {
         RewardSelectBean rewardSelect = new RewardSelectBean();
-        rewardSelect.createItemNum = 3;
-        rewardSelect.selectNumMax = 3;
+        //BOSS挑战奖励翻倍系数(魔晶单箱数量与装备兜底魔晶按它x2)
+        int rewardMultiply = challengeHundredInfo.IsBossChallenge() ? 2 : 1;
         rewardSelect.listReward = new List<ItemBean>();
         List<long> unlockCreatureModelIds = GetUnlockCreatureModelIdsForEquip();
-        //装备研究未解锁(装备池为空)时3箱全魔晶; 解锁后3箱全装备
+        //装备研究未解锁(装备池为空)时全魔晶; 解锁后全装备
         bool hasEquipPool = unlockCreatureModelIds.Count > 0;
+        //件数: BOSS挑战且出装备时 3箱→6箱(每件装备不可堆叠, 件数翻倍即6件装备); 其余情况固定3箱
+        int itemNum = (rewardMultiply > 1 && hasEquipPool) ? 6 : 3;
+        rewardSelect.createItemNum = itemNum;
+        rewardSelect.selectNumMax = itemNum;
         for (int i = 0; i < rewardSelect.createItemNum; i++)
         {
             if (hasEquipPool)
             {
-                int rarityItem = challengeHundredInfo.reward_equip_rarity;
+                int rarityItem = challengeHundredInfo.GetRewardEquipRarity(difficultyLevel);
                 //属性加点数量由稀有度配置表决定
                 int addAttribute = RarityInfoCfg.GetItemData(rarityItem).equip_attribute_add;
                 //根据概率决定是否生成魔王专属装备
                 int userType = UnityEngine.Random.value < rewardSelect.createEquipDemonLordRate ? (int)ItemUserTypeEnum.DemonLord : 0;
-                rewardSelect.CreateItemEquipCore(rarityItem, addAttribute, userType, unlockCreatureModelIds, () => challengeHundredInfo.GetRandomRewardCrystal());
+                rewardSelect.CreateItemEquipCore(rarityItem, addAttribute, userType, unlockCreatureModelIds, () => challengeHundredInfo.GetRandomRewardCrystal(difficultyLevel) * rewardMultiply);
             }
             else
             {
-                rewardSelect.CreateItemCrystalCore(challengeHundredInfo.GetRandomRewardCrystal());
+                rewardSelect.CreateItemCrystalCore(challengeHundredInfo.GetRandomRewardCrystal(difficultyLevel) * rewardMultiply);
             }
         }
         return rewardSelect.listReward;

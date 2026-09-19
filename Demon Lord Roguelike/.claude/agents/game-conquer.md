@@ -50,7 +50,7 @@ watched_files:
 
 ### 随机数据与难度
 - `GameWorldInfoRandomBean.SetRandomDataForConquer`（GameWorldInfoBeanPartial）—— 创建时把 1~已解锁最高难度逐档随机(roadNum/roadLength/fightNum)缓存进 listDifficultyRandom；`SetDifficultyLevel(level)` 切换难度时同步当前字段(气泡与战斗都读这些字段)，`GetDifficultyRandom(level)` 取某难度数据(缺失懒生成)
-- **挑战100勇士旁路（ChallengeHundred）**：`SetGameFightTypeRandom` 随机世界模式**之前**优先判定出现概率（研究 `UnlockEnum.ChallengeHundredShowRate` 等级×10%），命中且有匹配配置行（`FightTypeChallengeHundredInfoCfg.GetRandomRow(最高已解锁难度)`）则生成为 ChallengeHundred 并走 `SetRandomDataForChallengeHundred`——冻结配置行id(`challengeHundredRowId`)/道路数长度/固定单关 fightNum=1/预生成冻结3箱奖励(`listRewardChallengeHundred`+`rewardUnlockSignChallengeHundred`，取用 `GetChallengeHundredReward()` 签名失效重生成同征服契约)。**不走 SetRandomDataForConquer 逐档难度缓存**（无难度概念）；传送门气泡/进入流程见 `game-portal` agent + `portal-system` skill
+- **挑战100勇士旁路（ChallengeHundred）**：`SetGameFightTypeRandom` 随机世界模式**之前**优先判定出现概率（研究 `UnlockEnum.ChallengeHundredShowRate` 等级×10%），命中且有匹配配置行（`FightTypeChallengeHundredInfoCfg.GetRandomRow(最高已解锁难度)`）则生成为 ChallengeHundred 并走 `SetRandomDataForChallengeHundred`——冻结配置行id(`challengeHundredRowId`)/道路数长度/固定单关 fightNum=1/预生成冻结宝箱奖励(`listRewardChallengeHundred`+`rewardUnlockSignChallengeHundred`，普通3箱/BOSS挑战翻倍:装备6件·魔晶x2，取用 `GetChallengeHundredReward()` 签名失效按冻结难度重生成同征服契约)。**不走 SetRandomDataForConquer 逐档难度缓存**（无难度概念）；传送门气泡/进入流程见 `game-portal` agent + `portal-system` skill
 - **奖励预生成+冻结（预览即实领）**：`CreateDifficultyRandom` 生成每档时**一并预生成并冻结**通关奖励 `listReward` + 记录 `rewardUnlockSign`(生成时的装备奖励池解锁签名)。`GetDifficultyReward(difficulty)` 取该档预生成奖励；当 `listReward` 为空(老存档) 或 解锁新魔物掉落致签名变化(`rewardUnlockSign != RewardSelectBean.GetConquerEquipPoolSign()`) 时，按 `RewardSelectBean.CreateRewardListForConquer` 重新生成并刷新签名
 - 难度解锁：`UserUnlockBean.GetUnlockGameWorldConquerDifficultyLevel`
 

@@ -10,9 +10,10 @@ using UnityEngine;
 /// <summary>
 /// 战斗模式编辑工具 - 挑战100勇士页签
 /// 用于可视化编辑 excel_fight_type_challenge_hundred_info[战斗-挑战100勇士] 表：
-/// 每行=一个挑战配置(无世界维度)，行内 difficulty_levels 声明该行适配的难度列表；
+/// 每行=一个挑战配置(无世界维度)，行内 difficulty_levels 声明该行适配的难度列表，challenge_type 区分普通/BOSS挑战；
 /// 世界最高已解锁难度在列才可抽中本行，同一难度多行匹配时随机其一，无匹配行的难度不会刷出本模式。
-/// 本页签以「配置行列表」为主组织编辑；顶部难度覆盖总览展示各难度可抽中行数(0行=红色警示)，点击格子可按难度筛选行列表。
+/// 强度倍率/击杀掉晶/每箱魔晶/装备稀有度/通关经验为「逐难度对齐字段」：单值=全难度共用，或与难度列表等长的逗号分隔值按难度逐档取。
+/// 本页签以「配置行列表」为主组织编辑。
 /// 注意：本表 ID 列表字段(enemy_ids/fight_scene_ids/difficulty_levels)约定用英文逗号 "," 分割（与征服模式的 "&" 不同）。
 /// 宿主窗口见 FightModeEditorWindow（菜单：游戏/战斗模式编辑）
 /// </summary>
@@ -38,10 +39,7 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
     /// <summary>本表 ID 列表字段的分隔符（与运行时 SplitForArrayLong(',') 一致）</summary>
     private const char ListSeparator = ',';
 
-    /// <summary>难度筛选（0=不过滤，1-10=只看该难度可抽中的行；点击难度覆盖总览格子切换）</summary>
-    private int filterDifficulty = 0;
-
-    /// <summary>当前可见的配置行列表（按 id 升序，受难度筛选影响）</summary>
+    /// <summary>当前可见的配置行列表（按 id 升序）</summary>
     private List<FightTypeChallengeHundredInfoBean> visibleList = new List<FightTypeChallengeHundredInfoBean>();
 
     /// <summary>行下拉当前选中索引（对应 visibleList）</summary>
@@ -56,29 +54,20 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
     /// <summary>字段标签固定宽度</summary>
     private const float FieldLabelWidth = 170f;
 
-    /// <summary>难度格子固定宽度</summary>
-    private const float DifficultyCellWidth = 34f;
-
-    /// <summary>难度格子固定高度（两行：难度数字+行数）</summary>
-    private const float DifficultyCellHeight = 30f;
-
-    /// <summary>难度页签/覆盖格子按钮样式</summary>
+    /// <summary>难度多选页签按钮样式</summary>
     private GUIStyle difficultyToggleStyle;
 
-    /// <summary>难度覆盖格子带说明文字的样式（小号字两行显示）</summary>
-    private GUIStyle overviewCellStyle;
-
-    /// <summary>未保存提示样式(橙色小字)</summary>
+    /// <summary>未保存/警示提示样式(橙色小字)</summary>
     private GUIStyle dirtyHintStyle;
+
+    /// <summary>逐难度对齐预览样式(灰色小字)</summary>
+    private GUIStyle alignedPreviewStyle;
 
     /// <summary>字段已修改时的编辑框背景色(淡黄)</summary>
     private static readonly Color ModifiedBgColor = new Color(1f, 0.93f, 0.55f);
 
-    /// <summary>难度选中/命中态背景色(蓝)</summary>
+    /// <summary>难度命中态背景色(蓝)</summary>
     private static readonly Color DifficultyOnBgColor = new Color(0.30f, 0.60f, 0.95f);
-
-    /// <summary>难度无匹配行警示背景色(红)</summary>
-    private static readonly Color DifficultyEmptyBgColor = new Color(0.90f, 0.35f, 0.30f);
 
     /// <summary>滚动位置</summary>
     private Vector2 scrollPos = Vector2.zero;
@@ -131,6 +120,9 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
     /// <summary>场景下拉选项显示文本（格式 "[id] 名字"）</summary>
     private List<string> sceneOptionNames = new List<string>();
 
+    /// <summary>挑战类型下拉选项（与 challenge_type 取值一一对应：0=普通挑战 1=BOSS挑战）</summary>
+    private static readonly string[] ChallengeTypeOptions = { "0 - 普通挑战", "1 - BOSS挑战(奖励翻倍)" };
+
     #endregion
 
     #region 初始化与 GUI 入口
@@ -164,7 +156,7 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
         // 顶部工具栏(刷新/导出/打开表格，固定)
         DrawToolbar();
 
-        // 顶部选择区域(难度覆盖总览+配置行选择，固定)
+        // 顶部选择区域(配置行选择，固定)
         DrawSelectionArea();
 
         // 数据编辑区域(滚动)
@@ -175,14 +167,7 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
         }
         else if (dataLoaded && currentBean == null)
         {
-            if (filterDifficulty > 0)
-            {
-                EditorGUILayout.HelpBox($"难度 {filterDifficulty} 无可抽中的配置行（该难度不会刷出挑战100勇士模式）。\n可点击「新增行」创建，或点击总览格子取消筛选。", MessageType.Warning);
-            }
-            else
-            {
-                EditorGUILayout.HelpBox("配置表没有任何数据行，可点击「新增行」创建。", MessageType.Warning);
-            }
+            EditorGUILayout.HelpBox("配置表没有任何数据行，可点击「新增行」创建。", MessageType.Warning);
         }
         else
         {
@@ -226,19 +211,16 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
             alignment = TextAnchor.MiddleCenter
         };
 
-        // 覆盖总览格子：小号字+两行(难度数字/可抽中行数)
-        overviewCellStyle = new GUIStyle(EditorStyles.miniButton)
-        {
-            fontSize = 10,
-            alignment = TextAnchor.MiddleCenter,
-            wordWrap = true,
-            padding = new RectOffset(1, 1, 1, 1)
-        };
-
         dirtyHintStyle = new GUIStyle(EditorStyles.miniBoldLabel)
         {
             normal = { textColor = EditorGUIUtility.isProSkin ?
                 new Color(1f, 0.70f, 0.30f) : new Color(0.85f, 0.45f, 0.0f) }
+        };
+
+        alignedPreviewStyle = new GUIStyle(EditorStyles.miniLabel)
+        {
+            normal = { textColor = EditorGUIUtility.isProSkin ?
+                new Color(0.60f, 0.60f, 0.60f) : new Color(0.40f, 0.40f, 0.40f) }
         };
 
         stylesInitialized = true;
@@ -387,39 +369,12 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
     }
 
     /// <summary>
-    /// 判断配置行是否可被指定难度抽中（difficulty_levels 含该难度；自行解析不走 BeanPartial 缓存，避免编辑后缓存过期）
-    /// </summary>
-    private bool IsMatchRow(FightTypeChallengeHundredInfoBean bean, int difficulty)
-    {
-        if (bean == null) return false;
-        List<int> levels = ParseIntList(bean.difficulty_levels);
-        return levels.Contains(difficulty);
-    }
-
-    /// <summary>
-    /// 统计指定难度可抽中的配置行数（难度覆盖总览用）
-    /// </summary>
-    private int CountMatchRows(int difficulty)
-    {
-        int count = 0;
-        foreach (var bean in allConfigList)
-        {
-            if (IsMatchRow(bean, difficulty)) count++;
-        }
-        return count;
-    }
-
-    /// <summary>
-    /// 重算可见行列表（难度筛选/数据刷新后调用；不影响已加载的编辑数据）
+    /// 重算可见行列表（数据刷新后调用；不影响已加载的编辑数据）
     /// </summary>
     private void RecomputeVisibleList()
     {
         visibleList.Clear();
-        foreach (var bean in allConfigList)
-        {
-            if (filterDifficulty > 0 && !IsMatchRow(bean, filterDifficulty)) continue;
-            visibleList.Add(bean);
-        }
+        visibleList.AddRange(allConfigList);
         visibleList.Sort((a, b) => a.id.CompareTo(b.id));
         if (selectedRowIndex >= visibleList.Count)
             selectedRowIndex = 0;
@@ -530,31 +485,29 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
     #region UI 绘制 - 选择区域
 
     /// <summary>
-    /// 绘制顶部选择区域（难度覆盖总览 + 配置行下拉 + 加载/新增/删除按钮，附当前编辑状态行）
+    /// 绘制顶部选择区域（配置行下拉 + 加载/新增/删除按钮，附当前编辑状态行）
     /// </summary>
     private void DrawSelectionArea()
     {
         EditorGUILayout.BeginVertical(selectionBoxStyle);
 
-        // 难度覆盖总览(1-10各难度可抽中行数，0行红色警示，点击格子按难度筛选行列表)
-        DrawDifficultyOverview();
-
         EditorGUILayout.BeginHorizontal();
 
-        // 配置行下拉（"[id] 备注 (难度:x,y)"；受难度筛选影响）
+        // 配置行下拉（"[id] 备注 (难度:x,y)"；BOSS行附类型标记）
         EditorGUILayout.LabelField("配置行", EditorStyles.boldLabel, GUILayout.Width(42));
         if (visibleList.Count > 0)
         {
             string[] rowNames = new string[visibleList.Count];
             for (int i = 0; i < visibleList.Count; i++)
             {
-                rowNames[i] = $"[{visibleList[i].id}] {visibleList[i].remark} (难度:{visibleList[i].difficulty_levels})";
+                string bossTag = visibleList[i].challenge_type == 1 ? "[BOSS]" : "";
+                rowNames[i] = $"[{visibleList[i].id}] {bossTag}{visibleList[i].remark} (难度:{visibleList[i].difficulty_levels})";
             }
-            selectedRowIndex = EditorGUILayout.Popup(selectedRowIndex, rowNames, GUILayout.Width(320), GUILayout.Height(22));
+            selectedRowIndex = EditorGUILayout.Popup(selectedRowIndex, rowNames, GUILayout.Width(360), GUILayout.Height(22));
         }
         else
         {
-            EditorGUILayout.LabelField("(无配置行)", EditorStyles.miniLabel, GUILayout.Width(320), GUILayout.Height(22));
+            EditorGUILayout.LabelField("(无配置行)", EditorStyles.miniLabel, GUILayout.Width(360), GUILayout.Height(22));
         }
 
         GUILayout.Space(12);
@@ -618,58 +571,6 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
         EditorGUILayout.EndVertical();
     }
 
-    /// <summary>
-    /// 绘制难度覆盖总览：难度1-10各一格显示可抽中行数（0行红色警示该难度不会刷出本模式），点击格子按难度筛选下方行列表，再点取消筛选
-    /// </summary>
-    private void DrawDifficultyOverview()
-    {
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("难度覆盖", EditorStyles.boldLabel, GUILayout.Width(56));
-
-        for (int d = 1; d <= 10; d++)
-        {
-            int matchCount = CountMatchRows(d);
-            bool isFiltered = filterDifficulty == d;
-            string cellText = $"{d}\n{matchCount}行";
-            string tooltip = matchCount > 0
-                ? $"难度 {d}：{matchCount} 行可抽中（点击筛选这些行）"
-                : $"难度 {d}：无可抽中行，该难度不会刷出挑战100勇士模式";
-
-            Color prevBg = GUI.backgroundColor;
-            if (isFiltered) GUI.backgroundColor = DifficultyOnBgColor;
-            else if (matchCount == 0) GUI.backgroundColor = DifficultyEmptyBgColor;
-            bool click = GUILayout.Toggle(isFiltered, new GUIContent(cellText, tooltip), overviewCellStyle, GUILayout.Width(DifficultyCellWidth), GUILayout.Height(DifficultyCellHeight));
-            GUI.backgroundColor = prevBg;
-            if (click && !isFiltered)
-            {
-                filterDifficulty = d;
-                RecomputeVisibleList();
-            }
-            else if (!click && isFiltered)
-            {
-                // 再次点击已选中的格子：取消筛选
-                filterDifficulty = 0;
-                RecomputeVisibleList();
-            }
-        }
-
-        // 筛选状态提示与清除
-        if (filterDifficulty > 0)
-        {
-            GUILayout.Space(8);
-            EditorGUILayout.LabelField($"仅显示难度 {filterDifficulty} 可抽中的行", dirtyHintStyle, GUILayout.Width(150), GUILayout.Height(DifficultyCellHeight));
-            if (GUILayout.Button("清除筛选", EditorStyles.miniButton, GUILayout.Width(60), GUILayout.Height(DifficultyCellHeight)))
-            {
-                filterDifficulty = 0;
-                RecomputeVisibleList();
-            }
-        }
-
-        GUILayout.FlexibleSpace();
-        EditorGUILayout.EndHorizontal();
-        GUILayout.Space(4);
-    }
-
     #endregion
 
     #region UI 绘制 - 数据编辑区域
@@ -689,6 +590,7 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
         EditorGUILayout.LongField(currentBean.id, GUILayout.Width(200));
         EditorGUILayout.EndHorizontal();
         EditorGUI.EndDisabledGroup();
+        currentBean.challenge_type = DrawChallengeTypeField(currentBean.challenge_type, "challenge_type");
 
         // 匹配规则
         DrawSectionTitle("匹配规则");
@@ -704,7 +606,7 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
 
         // 进攻配置
         DrawSectionTitle("进攻配置");
-        currentBean.attack_intensity_baserate = DrawFloatField(new GUIContent("强度倍率", "attack_intensity_baserate：敌人HP/护甲/攻击力×该值；0或不配按1"), currentBean.attack_intensity_baserate, "attack_intensity_baserate");
+        currentBean.attack_intensity_baserate = DrawDifficultyAlignedField(new GUIContent("强度倍率", "attack_intensity_baserate：敌人HP/护甲/攻击力×该值；单值=全难度共用，或与难度列表等长的逗号分隔逐难度值；0或不配按1"), currentBean.attack_intensity_baserate, "attack_intensity_baserate");
         currentBean.attack_show_time = DrawFloatField(new GUIContent("进攻总时间", "attack_show_time：单位秒，100只怪在此时间内出完"), currentBean.attack_show_time, "attack_show_time");
 
         // 关卡配置(单值"x"或区间"x-y")
@@ -712,12 +614,12 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
         currentBean.road_num = DrawStringField(new GUIContent("道路数量", "road_num：x 固定 或 x-y 区间随机"), currentBean.road_num, "road_num");
         currentBean.road_length = DrawStringField(new GUIContent("道路长度", "road_length：x 固定 或 x-y 区间随机"), currentBean.road_length, "road_length");
 
-        // 奖励配置
+        // 奖励配置(逐难度对齐字段: 单值=全难度共用, 或与难度列表等长的逗号分隔逐难度值)
         DrawSectionTitle("奖励配置");
-        currentBean.drop_crystal = DrawIntField(new GUIContent("击杀掉落魔晶", "drop_crystal"), currentBean.drop_crystal, "drop_crystal");
-        currentBean.reward_crystal = DrawStringField(new GUIContent("奖励-每箱魔晶", "reward_crystal：x 固定 或 x-y 区间随机"), currentBean.reward_crystal, "reward_crystal");
-        currentBean.reward_equip_rarity = DrawIntField(new GUIContent("奖励-装备稀有度", "reward_equip_rarity"), currentBean.reward_equip_rarity, "reward_equip_rarity");
-        currentBean.reward_exp = DrawIntField(new GUIContent("通关经验(阵容每只)", "reward_exp"), currentBean.reward_exp, "reward_exp");
+        currentBean.drop_crystal = DrawDifficultyAlignedField(new GUIContent("击杀掉落魔晶", "drop_crystal：单值=全难度共用，或与难度列表等长的逗号分隔逐难度值"), currentBean.drop_crystal, "drop_crystal");
+        currentBean.reward_crystal = DrawDifficultyAlignedField(new GUIContent("奖励-每箱魔晶", "reward_crystal：每档 x 固定 或 x-y 区间随机；多档与难度列表等长的逗号分隔逐难度值"), currentBean.reward_crystal, "reward_crystal");
+        currentBean.reward_equip_rarity = DrawDifficultyAlignedField(new GUIContent("奖励-装备稀有度", "reward_equip_rarity：单值=全难度共用，或与难度列表等长的逗号分隔逐难度值"), currentBean.reward_equip_rarity, "reward_equip_rarity");
+        currentBean.reward_exp = DrawDifficultyAlignedField(new GUIContent("通关经验(阵容每只)", "reward_exp：单值=全难度共用，或与难度列表等长的逗号分隔逐难度值"), currentBean.reward_exp, "reward_exp");
 
         // 备注
         DrawSectionTitle("备注");
@@ -758,8 +660,70 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
     {
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField(labelContent, GUILayout.Width(FieldLabelWidth));
-        string result = DrawCurrentTextField(value, IsFieldModified(fieldName));
+        string result = DrawCurrentTextField(value ?? "", IsFieldModified(fieldName));
         EditorGUILayout.EndHorizontal();
+        return result;
+    }
+
+    /// <summary>
+    /// 绘制挑战类型字段（下拉：0=普通挑战 / 1=BOSS挑战）
+    /// </summary>
+    private int DrawChallengeTypeField(int value, string fieldName)
+    {
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField(new GUIContent("挑战类型", "challenge_type：0=普通挑战；1=BOSS挑战（通关宝箱奖励翻倍：装备件数x2/魔晶数量x2）"), GUILayout.Width(FieldLabelWidth));
+        Color prevColor = GUI.backgroundColor;
+        if (IsFieldModified(fieldName)) GUI.backgroundColor = ModifiedBgColor;
+        int index = value == 1 ? 1 : 0;
+        int newIndex = EditorGUILayout.Popup(index, ChallengeTypeOptions, GUILayout.Width(200));
+        GUI.backgroundColor = prevColor;
+        EditorGUILayout.EndHorizontal();
+        return newIndex;
+    }
+
+    /// <summary>
+    /// 绘制逐难度对齐字段（文本编辑 + 下方按难度解析预览；多值数量与难度数量不一致时警示）
+    /// 约定：单值=全难度共用；逗号分隔多值=与 difficulty_levels 等长，按难度下标逐档取值
+    /// </summary>
+    private string DrawDifficultyAlignedField(GUIContent labelContent, string value, string fieldName)
+    {
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField(labelContent, GUILayout.Width(FieldLabelWidth));
+        string result = DrawCurrentTextField(value ?? "", IsFieldModified(fieldName));
+        EditorGUILayout.EndHorizontal();
+
+        // 解析预览：按当前难度列表逐档对齐展示
+        List<int> levels = ParseIntList(currentBean.difficulty_levels);
+        string[] values = (result ?? "").Split(ListSeparator);
+        int valueCount = (values.Length == 1 && string.IsNullOrEmpty(values[0])) ? 0 : values.Length;
+        if (valueCount <= 1)
+        {
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(FieldLabelWidth + 4);
+            EditorGUILayout.LabelField(valueCount == 0 ? "(空)" : $"全难度共用: {values[0]}", alignedPreviewStyle);
+            EditorGUILayout.EndHorizontal();
+        }
+        else
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            int pairCount = Math.Min(levels.Count, valueCount);
+            for (int i = 0; i < pairCount; i++)
+            {
+                if (i > 0) sb.Append("   ");
+                sb.Append($"难度{levels[i]}={values[i].Trim()}");
+            }
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Space(FieldLabelWidth + 4);
+            EditorGUILayout.LabelField(sb.ToString(), alignedPreviewStyle);
+            EditorGUILayout.EndHorizontal();
+            if (levels.Count != valueCount)
+            {
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Space(FieldLabelWidth + 4);
+                EditorGUILayout.LabelField($"⚠ 值数量({valueCount}) ≠ 难度数量({levels.Count})，超出的难度将钳到末位档", dirtyHintStyle);
+                EditorGUILayout.EndHorizontal();
+            }
+        }
         return result;
     }
 
@@ -1211,17 +1175,11 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
             // 重新生成Json并刷新资源
             RegenerateJson();
 
-            // 保存后重载：尽量保持选中同一行；若难度筛选把该行滤掉了（difficulty_levels 被改掉），自动取消筛选
+            // 保存后重载：尽量保持选中同一行
             long keepId = currentBean.id;
             LoadAllConfigFromExcel();
             RecomputeVisibleList();
             int keepIndex = visibleList.FindIndex(b => b.id == keepId);
-            if (keepIndex < 0 && filterDifficulty > 0)
-            {
-                filterDifficulty = 0;
-                RecomputeVisibleList();
-                keepIndex = visibleList.FindIndex(b => b.id == keepId);
-            }
             selectedRowIndex = keepIndex >= 0 ? keepIndex : 0;
             LoadData();
 
@@ -1235,7 +1193,7 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
     }
 
     /// <summary>
-    /// 新增一行配置：id=当前最大id+1，适配难度=当前筛选难度（无筛选则沿用模板行），其余字段复制模板行（优先当前编辑行/表内末行），备注自动生成
+    /// 新增一行配置：id=当前最大id+1，适配难度沿用模板行，其余字段复制模板行（优先当前编辑行/表内末行），备注自动生成
     /// </summary>
     private void CreateNewRow()
     {
@@ -1250,8 +1208,8 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
         }
         newId++;
 
-        // 适配难度：优先取当前筛选难度，无筛选则沿用模板行（无模板则留空，任何难度都抽不中，需在编辑区勾选）
-        string newDifficultyLevels = filterDifficulty > 0 ? filterDifficulty.ToString() : template?.difficulty_levels ?? "";
+        // 适配难度沿用模板行（无模板则留空，任何难度都抽不中，需在编辑区勾选）
+        string newDifficultyLevels = template?.difficulty_levels ?? "";
         string difficultyDesc = string.IsNullOrEmpty(newDifficultyLevels) ? "(空，需在编辑区勾选)" : newDifficultyLevels;
 
         string templateDesc = template != null ? $"ID {template.id}（{template.remark}）" : "内置默认值";
@@ -1279,15 +1237,16 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
             {
                 // 表内无任何行时的兜底默认值
                 newBean.enemy_ids = "";
-                newBean.attack_intensity_baserate = 1f;
-                newBean.attack_show_time = 100f;
-                newBean.road_num = "2";
+                newBean.challenge_type = 0;
+                newBean.attack_intensity_baserate = "1";
+                newBean.attack_show_time = 60f;
+                newBean.road_num = "5";
                 newBean.road_length = "10";
                 newBean.fight_scene_ids = "";
-                newBean.drop_crystal = 1;
+                newBean.drop_crystal = "1";
                 newBean.reward_crystal = "100-200";
-                newBean.reward_equip_rarity = 1;
-                newBean.reward_exp = 50;
+                newBean.reward_equip_rarity = "1";
+                newBean.reward_exp = "50";
             }
             newBean.id = newId;
             newBean.difficulty_levels = newDifficultyLevels;
@@ -1304,8 +1263,7 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
             // 重新生成Json并刷新资源
             RegenerateJson();
 
-            // 重载并选中新行（新行可能不满足当前筛选，先取消筛选保证可见）
-            filterDifficulty = 0;
+            // 重载并选中新行
             LoadAllConfigFromExcel();
             RecomputeVisibleList();
             int newIndex = visibleList.FindIndex(b => b.id == newId);

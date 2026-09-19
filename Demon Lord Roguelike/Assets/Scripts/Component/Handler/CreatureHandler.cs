@@ -49,6 +49,13 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         if (hasTransform)
         {
             resName = transformSpineRes;
+            //高清展示位(详情UI等 isUIShow=true):幻化道具配置了 ui_show_spine(Avator段) 时改用高清资源
+            if (isUIShow)
+            {
+                string transformUIShowRes = creatureData.GetTransformUIShowSpineRes();
+                if (!transformUIShowRes.IsNull())
+                    resName = transformUIShowRes;
+            }
         }
         //幻化状态不取皮肤(皮肤按原骨架配置,用不上)
         Dictionary<string, SpineSkinBean> skinData = hasTransform ? null

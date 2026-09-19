@@ -789,7 +789,8 @@ public partial class GameTestEditor : Editor
             var info = allData[i];
             if (info == null) continue;
             string remark = info.remark.IsNull() ? "" : $" {info.remark}";
-            listEntries.Add(new KeyValuePair<long, GUIContent>(info.id, new GUIContent($"[{info.id}] 难度:{info.difficulty_levels} 强度x{info.attack_intensity_baserate}{remark}")));
+            string bossTag = info.challenge_type == 1 ? "[BOSS]" : "";
+            listEntries.Add(new KeyValuePair<long, GUIContent>(info.id, new GUIContent($"[{info.id}] {bossTag}难度:{info.difficulty_levels} 强度x{info.attack_intensity_baserate}{remark}")));
         }
         //按 id 排序保证下拉顺序稳定
         listEntries.Sort((a, b) => a.Key.CompareTo(b.Key));

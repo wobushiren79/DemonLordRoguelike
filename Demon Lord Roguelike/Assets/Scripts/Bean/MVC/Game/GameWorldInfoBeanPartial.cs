@@ -253,10 +253,10 @@ public partial class GameWorldInfoRandomBean
         roadLength = challengeHundredInfo.GetRandomRoadLength();
         //固定单关
         fightNum = 1;
-        //难度仅记录当前最高已解锁难度(气泡展示用), 不影响强度(强度由配置行 attack_intensity_baserate 自配)
+        //难度仅记录当前最高已解锁难度(气泡展示用+逐难度对齐字段取档依据), 不影响强度(强度由配置行 attack_intensity_baserate 自配)
         difficultyLevel = Mathf.Max(1, userUnlock.GetUnlockGameWorldConquerDifficultyLevel(worldId));
-        //预生成并冻结3箱通关奖励(装备池空=3箱全魔晶, 否则3箱全装备)
-        listRewardChallengeHundred = RewardSelectBean.CreateRewardListForChallengeHundred(challengeHundredInfo);
+        //预生成并冻结3箱通关奖励(装备池空=3箱全魔晶, 否则3箱全装备; BOSS挑战翻倍: 装备6件/魔晶数量x2; 逐难度字段按 difficultyLevel 取档)
+        listRewardChallengeHundred = RewardSelectBean.CreateRewardListForChallengeHundred(challengeHundredInfo, difficultyLevel);
         rewardUnlockSignChallengeHundred = RewardSelectBean.GetConquerEquipPoolSign();
     }
 
@@ -277,7 +277,8 @@ public partial class GameWorldInfoRandomBean
             FightTypeChallengeHundredInfoBean challengeHundredInfo = FightTypeChallengeHundredInfoCfg.GetItemData(challengeHundredRowId);
             if (challengeHundredInfo == null)
                 return null;
-            listRewardChallengeHundred = RewardSelectBean.CreateRewardListForChallengeHundred(challengeHundredInfo);
+            //按冻结难度取档重新生成(与生成时同一难度, 保证预览=实领)
+            listRewardChallengeHundred = RewardSelectBean.CreateRewardListForChallengeHundred(challengeHundredInfo, difficultyLevel);
             rewardUnlockSignChallengeHundred = currentUnlockSign;
         }
         return listRewardChallengeHundred;

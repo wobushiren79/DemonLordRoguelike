@@ -197,6 +197,14 @@ public partial class CreatureInfoBean : BaseBean
 	///详情面板显示/献祭加点/创建随机加点属性(逗号分隔枚举值:1HP 3DR 4ATK 6ASPD;空=默认1,3,4,6)
 	/// </summary>
 	public string show_attribute;
+	/// <summary>
+	/// Mod合并引用字段拼接（由Excel列头 [language]/[mode_id] 标记自动生成，请勿手改）：该行来自 Mod JsonText 时，下列字段按同一 modId 拼接，指向 Mod 自带配置/语言表的同自ID行；0=无引用不拼接
+	/// </summary>
+	public override void CombineModReferenceIds(int modId)
+	{
+		if (name > 0) name = CreatureInfoCfg.CombineModId(modId, name);
+		if (details > 0) details = CreatureInfoCfg.CombineModId(modId, details);
+	}
 }
 public partial class CreatureInfoCfg : BaseCfg<long, CreatureInfoBean>
 {

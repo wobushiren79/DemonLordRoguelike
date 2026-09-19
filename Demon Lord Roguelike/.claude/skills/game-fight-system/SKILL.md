@@ -47,7 +47,7 @@ GameFightTypeEnum
 
 > **反射工厂自动接入**：`GameHandler.StartGameFight` 按 `"GameFightLogic" + gameFightType.GetEnumName()` 反射创建逻辑实例——新增模式只需「枚举末尾追加 + 新建同名 `GameFightLogic<枚举名>` 类」，工厂零改动。
 
-> **挑战100勇士模式要点（ChallengeHundred，2026-09 新增）**：单关 100 只怪（`FightBeanForChallengeHundred.AttackCreatureNum=100`）在冻结配置行 `attack_show_time` 内分桶均匀随机出怪（每桶随机时刻，每只独立从行 `enemy_ids` 随机）；强度倍率=行 `GetIntensityRate()`（= `attack_intensity_baserate`，≤0按1；**不叠加终焉议会强度议案**，本模式强度自配）。道路数/长度/3箱奖励在传送门生成时随出并冻结（预览=实领，见 conquer-system / portal-system）。结算：胜利发阵容经验（行 `reward_exp`）→ `UIFightSettlement` → Next → 3箱3抽**全手动**开箱（`isAutoOpenFirstBox=false`，无首箱保底）；失败直接返回基地。**不发成就/声望、无关卡间深渊馈赠**；魔王蓝量无限（重写 `IsSkipPutCardMPCost()=>true`，见「魔王魔力（MP）系统」）。配置表：`excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx` → `FightTypeChallengeHundredInfoBean(Partial)`。
+> **挑战100勇士模式要点（ChallengeHundred，2026-09 新增）**：单关 100 只怪（`FightBeanForChallengeHundred.AttackCreatureNum=100`）在冻结配置行 `attack_show_time` 内分桶均匀随机出怪（每桶随机时刻，每只独立从行 `enemy_ids` 随机）；强度倍率=行 `GetIntensityRate(冻结难度)`（= `attack_intensity_baserate` 逐难度对齐取档，≤0按1；**不叠加终焉议会强度议案**，本模式强度自配）。道路数/长度/宝箱奖励在传送门生成时随出并冻结（预览=实领，见 conquer-system / portal-system）。**challenge_type=1 为 BOSS挑战**：通关宝箱奖励翻倍（装备 3箱→6件、魔晶单箱数量 x2）。结算：胜利发阵容经验（行 `reward_exp` 按冻结难度取档）→ `UIFightSettlement` → Next → 全手动开箱（`isAutoOpenFirstBox=false`，无首箱保底，可开数=奖励总数：普通3/BOSS装备6）；失败直接返回基地。**不发成就/声望、无关卡间深渊馈赠**；魔王蓝量无限（重写 `IsSkipPutCardMPCost()=>true`，见「魔王魔力（MP）系统」）。配置表：`excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx` → `FightTypeChallengeHundredInfoBean(Partial)`（一行一只怪，当前 28 行=征服全部进攻敌人 14普通+14BOSS）。
 
 ## 战斗逻辑生命周期
 

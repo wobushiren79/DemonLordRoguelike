@@ -659,10 +659,10 @@ public partial class FightCreatureEntity
             }
             else if (gameFightLogic.fightData.gameFightType == GameFightTypeEnum.ChallengeHundred)
             {
-                //挑战100勇士按配置行 drop_crystal 掉落
+                //挑战100勇士按配置行 drop_crystal 掉落(按冻结难度取逐难度对齐档)
                 FightBeanForChallengeHundred challengeHundredFightData = gameFightLogic.fightData as FightBeanForChallengeHundred;
                 if (challengeHundredFightData?.fightTypeChallengeHundredInfo != null)
-                    dropCrystal = challengeHundredFightData.fightTypeChallengeHundredInfo.drop_crystal;
+                    dropCrystal = challengeHundredFightData.fightTypeChallengeHundredInfo.GetDropCrystal(challengeHundredFightData.gameWorldInfoRandomData.difficultyLevel);
             }
 
             FightDropCrystalBean fightDropCrystal = FightHandler.Instance.manager.GetFightDropCrystalBean(dropCrystal, creatureObj.transform.position);

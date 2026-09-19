@@ -17,6 +17,9 @@ public partial class ItemsInfoBean
         return (ItemTypeEnum)item_type;
     }
 
+    // 注：Mod 道具的 name 拼接（CombineModReferenceIds）由 Excel 列头 name[language] 标记驱动，
+    // 在 ItemsInfoBean.cs 重新生成时自动产出（生成器逻辑见 ExcelEditorWindow.CreateEntity），此处不再手写。
+
     /// <summary>
     /// 获取「奖励可出稀有度白名单」列表（解析 reward_rarity 逗号串，结果缓存）。
     /// 空/未配置返回空列表，表示全稀有度适配。

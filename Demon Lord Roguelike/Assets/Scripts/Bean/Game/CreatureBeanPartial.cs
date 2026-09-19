@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public partial class CreatureBean
 {
@@ -293,12 +294,12 @@ public partial class CreatureBean
     protected static HashSet<long> loggedMissingTransformIds = new HashSet<long>();
 
     /// <summary>
-    /// 获取当前幻化状态应替换的 spine 资源名（SkeletonDataAsset 的 Addressables 资源名），全项目唯一形象解析入口。
-    /// <para>transformItemId=0 / 配置缺失 / 类型非幻化药 / other_data 为空时均返回 null，调用方回落为原形象；</para>
+    /// 获取当前幻化道具的配置（transformItemId 指向的 TransformPotion 道具配置），各幻化解析入口共用。
+    /// <para>transformItemId=0 / 配置缺失(Mod移除) / 类型非幻化药(防 Mod id 被复用覆盖) / other_data 为空时均返回 null；</para>
     /// <para>只存道具ID实时查配置：Mod 提供幻化药时 Mod 移除（配置失效）即自动失效，Mod 装回自动恢复；幻原药置0可主动清除。</para>
     /// </summary>
-    /// <returns>spine 资源名；无幻化或配置异常返回 null</returns>
-    public string GetTransformSpineRes()
+    /// <returns>幻化道具配置；无幻化或配置异常返回 null</returns>
+    public ItemsInfoBean GetTransformItemInfo()
     {
         if (transformItemId == 0)
             return null;
@@ -309,12 +310,90 @@ public partial class CreatureBean
                 LogUtil.LogError($"获取幻化资源失败 没有找到道具配置:{transformItemId}(Mod移除或配置被删,幻化自动失效)");
             return null;
         }
-        //防 Mod id 被复用/覆盖成其它道具时幻化错误触发
         if (itemInfo.GetItemType() != ItemTypeEnum.TransformPotion)
             return null;
         if (itemInfo.other_data.IsNull())
             return null;
-        return itemInfo.other_data;
+        return itemInfo;
+    }
+
+    /// <summary>
+    /// 获取当前幻化状态应替换的 spine 资源名（SkeletonDataAsset 的 Addressables 资源名），全项目唯一形象解析入口。
+    /// <para>other_data 组合格式「chessRes,avatorRes|uiScale;x,y」时本方法只取 chess 段（世界/战斗/普通卡片的基础形象）。</para>
+    /// </summary>
+    /// <returns>spine 资源名；无幻化或配置异常返回 null</returns>
+    public string GetTransformSpineRes()
+    {
+        ItemsInfoBean itemInfo = GetTransformItemInfo();
+        if (itemInfo == null)
+            return null;
+        ParseTransformOtherData(itemInfo.other_data, out string chessRes, out _, out _);
+        return chessRes;
+    }
+
+    /// <summary>
+    /// 获取幻化的 ui_show_spine 高清展示资源名（other_data 的 avator 段，详情UI专用）；
+    /// 未配置 avator 段返回 null（调用方回落 chess 段），无幻化/配置异常返回 null。
+    /// </summary>
+    public string GetTransformUIShowSpineRes()
+    {
+        ItemsInfoBean itemInfo = GetTransformItemInfo();
+        if (itemInfo == null)
+            return null;
+        ParseTransformOtherData(itemInfo.other_data, out _, out string avatorRes, out _);
+        return avatorRes;
+    }
+
+    /// <summary>
+    /// 获取幻化高清展示自带的详情UI尺寸配置（other_data 第3段「scale;x,y」，格式同 CreatureModelBean.ui_data_b，
+    /// 生成器按 Avator 骨架高度校准）；原生物 ui_data_b 按原骨架校准、不适用于 Mod 高清骨架，故由道具自带。
+    /// </summary>
+    /// <returns>是否配置了尺寸段（true 时 scale/pos 有效）</returns>
+    public bool GetTransformUIShowData(out float scale, out Vector2 pos)
+    {
+        scale = 1;
+        pos = Vector2.zero;
+        ItemsInfoBean itemInfo = GetTransformItemInfo();
+        if (itemInfo == null)
+            return false;
+        ParseTransformOtherData(itemInfo.other_data, out _, out _, out string uiData);
+        if (uiData.IsNull())
+            return false;
+        string[] uiDataStr = uiData.Split(';');
+        if (uiDataStr.Length < 2 || !float.TryParse(uiDataStr[0], out scale))
+        {
+            scale = 1;
+            return false;
+        }
+        pos = uiDataStr[1].SplitForVector2(',');
+        return true;
+    }
+
+    /// <summary>
+    /// 解析幻化药 other_data 组合格式：「chessRes」或「chessRes,avatorRes|uiData」。
+    /// chessRes=基础形象(世界/战斗/普通卡片)；avatorRes=ui_show_spine高清展示(详情UI,可空)；uiData=详情UI尺寸「scale;x,y」(可空)。
+    /// </summary>
+    public static void ParseTransformOtherData(string otherData, out string chessRes, out string avatorRes, out string uiData)
+    {
+        chessRes = otherData;
+        avatorRes = null;
+        uiData = null;
+        if (otherData.IsNull())
+            return;
+        int uiSplit = otherData.IndexOf('|');
+        string resData = uiSplit >= 0 ? otherData.Substring(0, uiSplit) : otherData;
+        if (uiSplit >= 0)
+            uiData = otherData.Substring(uiSplit + 1);
+        int avatorSplit = resData.IndexOf(',');
+        if (avatorSplit >= 0)
+        {
+            chessRes = resData.Substring(0, avatorSplit);
+            avatorRes = resData.Substring(avatorSplit + 1);
+        }
+        else
+        {
+            chessRes = resData;
+        }
     }
     #endregion
 

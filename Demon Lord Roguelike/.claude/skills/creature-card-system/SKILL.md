@@ -279,7 +279,7 @@ GameUIUtil.SetCreatureUIForDetails(ui_Icon, ui_CardScene, creatureData);
 GameUIUtil.SetCreatureUIForSimple(ui_Icon, creatureData, scale: 2);
 ```
 
-> **图标形象来源（幻化/Portrait 优先级）**：两个接口底层都走 `CreatureHandler.SetCreatureData` 中枢——生物处于幻化状态（`CreatureBean.transformItemId≠0`，幻化药写入/幻原药清除，机制见 creature-system）时自动整骨替换为幻化资源并跳过原皮肤，卡片小图标/详情图标**无需任何特判**即显示幻化形象。`SetCreatureUIForDetails` 的 Portrait 装备分支优先级最高（在幻化之后再覆盖；卸下 Portrait 后幻化自动显现），优先级链 **Portrait > 幻化 > 原形象**。
+> **图标形象来源（幻化/Portrait 优先级）**：两个接口底层都走 `CreatureHandler.SetCreatureData` 中枢——生物处于幻化状态（`CreatureBean.transformItemId≠0`，幻化药写入/幻原药清除，机制见 creature-system）时自动整骨替换为幻化资源并跳过原皮肤，卡片小图标/详情图标**无需任何特判**即显示幻化形象；详情图标（isUIShow=true）在幻化道具配了 avator 段（ui_show_spine 高清图）时自动改用高清资源，尺寸段（other_data `|` 后 `scale;x,y`）替代原生物 `ui_data_b`。`SetCreatureUIForDetails` 的 Portrait 装备分支优先级最高（在幻化之后再覆盖；卸下 Portrait 后幻化自动显现），优先级链 **Portrait > 幻化 > 原形象**。
 
 ### 获取卡片数据
 

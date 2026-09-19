@@ -82,7 +82,16 @@ public static class GameUIUtil
         SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, creatureData, true);
         ui_Icon.ShowObj(true);
         //设置UI大小和坐标
-        creatureData.creatureModel.ChangeUISizeForB(ui_Icon.rectTransform);
+        if (creatureData.GetTransformUIShowData(out float transformUIScale, out Vector2 transformUIPos))
+        {
+            //幻化药自带 ui_show_spine 尺寸(other_data 第3段,按 Avator 骨架高度校准)优先:原生物 ui_data_b 按原骨架校准,不适用于 Mod 高清骨架
+            ui_Icon.transform.localScale = Vector3.one * transformUIScale;
+            ui_Icon.rectTransform.anchoredPosition = transformUIPos;
+        }
+        else
+        {
+            creatureData.creatureModel.ChangeUISizeForB(ui_Icon.rectTransform);
+        }
         //自定义UI大小
         if (customUISize > 0)
         {

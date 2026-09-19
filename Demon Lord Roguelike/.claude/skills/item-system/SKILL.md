@@ -101,10 +101,27 @@ public enum ItemTypeEnum
 - `icon_res` - 图标资源路径（格式 `名字` 或 `名字,图集Tag`，默认图集 Items）
 - `icon_rotate_z` - 图标旋转角度
 - `attack_mode_data` - 攻击模式数据
-- `other_data` - 其他数据（幻化药=Spine SkeletonDataAsset 的 Addressables 资源名）
+- `other_data` - 其他数据（幻化药=spine 资源组合串，见下）
 - `name` - 文本表ID
 - `remark` - 备注
 - `reward_rarity` - **奖励可出稀有度白名单**（string，逗号分隔稀有度ID，空=全稀有度适配）
+
+### 幻化药 other_data 组合格式
+
+幻化药（item_type=18）的 `other_data` 支持组合格式，由 `CreatureBeanPartial.ParseTransformOtherData` 解析（`#region 幻化相关`）：
+
+```
+{chessRes}                              - 仅基础形象（世界/战斗/普通卡片/详情UI 全用它）
+{chessRes},{avatorRes}|{uiScale};{x},{y} - 完整组合
+```
+
+- **chess 段**：基础 spine 形象（SkeletonDataAsset 的 Addressables 资源名/Mod catalog key）
+- **avator 段**（逗号后，可空）：`ui_show_spine` 高清展示形象，详情UI（`SetCreatureData` isUIShow=true）使用；消费点 `CreatureBeanPartial.GetTransformUIShowSpineRes` → `CreatureHandler.SetCreatureData`
+- **`|` 后第三段**（可空）：详情UI尺寸 `scale;x,y`（格式同 `CreatureModelBean.ui_data_b`），消费点 `CreatureBeanPartial.GetTransformUIShowData` → `GameUIUtil.SetCreatureUIForDetails`（替代原生物 ui_data_b——原值按原骨架校准，不适用 Mod 高清骨架）
+
+### Mod 道具（JsonText 扩展）
+
+道具可由 Mod 的 `Mods/{ModName}/JsonText/ItemsInfo.txt` 新增（机制见 mod-system Skill）：行 `id` 与带 `[language]`/`[mode_id]` 标记的列都会被 `CombineModId` 拼接 modId 前缀——拼接代码**由 ExcelEditorWindow.CreateEntity 按列头标记自动生成**到 `ItemsInfoBean.cs`（`name[language]` 列 → name 自动拼接，指向 Mod 自带 `Language_ItemsInfo_{lang}.txt` 的同自ID 行；name=0 不拼接），无需手写。**Mod 道具不能复用主游戏 textId**。首个道具型 Mod 实例=AeonsEchoSpine（回响幻化药 341 个），完整生产流程见 **aeonsecho-spine-mod** Skill。
 
 ### reward_rarity 奖励稀有度白名单
 
