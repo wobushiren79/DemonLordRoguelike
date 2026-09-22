@@ -9,6 +9,9 @@ public partial class ItemsInfoBean
     // 奖励可出的稀有度白名单缓存（解析自 reward_rarity 逗号串；null 表示尚未解析）
     private List<int> listRewardRarityCache;
 
+    // 来源白名单缓存（解析自 source 逗号串；null 表示尚未解析）
+    private List<int> listSourceCache;
+
     /// <summary>
     /// 获取道具类型
     /// </summary>
@@ -54,6 +57,58 @@ public partial class ItemsInfoBean
         if (listRarity.Count == 0)
             return true;
         return listRarity.Contains(rarity);
+    }
+
+    /// <summary>
+    /// 获取「来源」白名单列表（解析 source 逗号串，结果缓存）。
+    /// 空/未配置返回空列表，表示默认来源（不参与任何特殊来源投放）。
+    /// </summary>
+    public List<int> GetSourceList()
+    {
+        if (listSourceCache != null)
+            return listSourceCache;
+        listSourceCache = new List<int>();
+        if (string.IsNullOrEmpty(source))
+            return listSourceCache;
+        string[] parts = source.Split(',');
+        foreach (var part in parts)
+        {
+            string trimmed = part.Trim();
+            if (string.IsNullOrEmpty(trimmed))
+                continue;
+            if (int.TryParse(trimmed, out int sourceId) && !listSourceCache.Contains(sourceId))
+                listSourceCache.Add(sourceId);
+        }
+        return listSourceCache;
+    }
+
+    /// <summary>
+    /// 该道具是否配置了指定来源（如征服模式奖励 ItemSourceEnum.ConquerReward）
+    /// </summary>
+    /// <param name="sourceEnum">来源枚举</param>
+    public bool HasSource(ItemSourceEnum sourceEnum)
+    {
+        return GetSourceList().Contains((int)sourceEnum);
+    }
+
+    /// <summary>
+    /// 是否为装备类型道具（帽/衣/裤/鞋/鼻环/戒指/武器）；其余(魔晶/魔汁/幻化药/幻原药/肖像等)为非装备
+    /// </summary>
+    public bool IsEquipType()
+    {
+        switch (GetItemType())
+        {
+            case ItemTypeEnum.Hat:
+            case ItemTypeEnum.Clothes:
+            case ItemTypeEnum.Pants:
+            case ItemTypeEnum.Shoe:
+            case ItemTypeEnum.NoseRing:
+            case ItemTypeEnum.FingerRing:
+            case ItemTypeEnum.Weapon:
+                return true;
+            default:
+                return false;
+        }
     }
 
     /// <summary>

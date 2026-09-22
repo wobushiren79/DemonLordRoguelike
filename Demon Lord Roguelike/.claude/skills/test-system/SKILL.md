@@ -25,9 +25,11 @@ LauncherTest                    - 测试启动器，初始化测试数据并提�
 ├── GameFightLogicTest          - 测试战斗逻辑，支持循环重置
 ├── UITestConsole               - 游戏内日志控制台
 └── 测试UI们
-    ├── UITestBase              - GM工具面板
+    ├── UITestBase              - GM工具面板(F12, 预制体版)
+    ├── TestGameMasterGUI       - GM工具面板(F11, 纯IMGUI代码版, 不依赖预制; 含Mod道具区)
     ├── UITestCard              - 卡片显示参数校准
     ├── TestCreatureCardGUI     - 卡片编辑器(稀有度/等级/生物/NPC/颜色, 纯IMGUI代码版, 不依赖预制)
+    ├── TestTransformPotionGUI  - Mod幻化药测试(四页签: 单个预览/小卡列表/大卡列表/场景列表, 分页网格批量展示+悬停滚轮缩放/拖拽位置+一键保存全部修改回Mod, 纯IMGUI代码版, 不依赖预制)
     └── UIBaseResearchTest      - 研究节点坐标配置
 ```
 
@@ -153,7 +155,7 @@ public class LauncherTest : BaseLauncher
     /// </summary>
     public void StartForMyNewTest(int param)
     {
-        ClearTestGUIs();//必须首行调用: 清理残留的纯GUI测试面板(粒子/卡片编辑器), 切换模块防残留
+        ClearTestGUIs();//必须首行调用: 清理残留的纯GUI测试面板(粒子/卡片编辑器/GM GUI/幻化药), 切换模块防残留
         // 实现测试入口逻辑
         // 例如：打开UI、进入场景等
     }
@@ -295,19 +297,48 @@ foreach (var itemData in GameWorldInfoCfg.GetAllData())
 
 ---
 
+## GM GUI 面板 (F11, TestGameMasterGUI)
+
+`TestGameMasterGUI`（`Assets/Scripts/Component/UI/Test/TestGameMasterGUI.cs`）——纯代码 IMGUI 版 GM 面板（不依赖预制），在**基地主页面按 F11 打开、再按 F11 关闭**（`TestGameMasterGUI.Toggle()`）。与 F12 的预制体版 `UITestBase` 功能完全对齐，显示与交互做了优化（分区/下拉/滑条/状态栏），并新增 Mod 道具区。
+
+### 打开方式与门控
+
+- 入口在 `UIBaseMain.OnInputActionForStarted` 的 `InputActionUIEnum.F11` 分支，与 F12 同一开关 `ProjectConfigInfo.IsGMMode()` 门控（编辑器内恒可用；正式包由「打包游戏」工具的「开启 GM 模式」选项决定，见 editor-extension-system skill）。
+- F11 动作绑定在 `GameInputActions.inputactions` 的 UI map（`<Keyboard>/f11`），wrapper `GameInputActions.cs` 由 ScriptedImporter 自动重新生成（改 .inputactions 后切回 Unity 自动重导）。
+- 面板打开时 `EnableAllControl(false)` 防点透场景，销毁时 `SetBaseControl()` 恢复（与 UITestBase 退出语义一致）；已注册进 `LauncherTest.ClearTestGUIs()` 统一清理。
+
+### 面板分区
+
+| 分区 | 功能 |
+|------|------|
+| 资源 | 魔晶/声望：数量输入(空=999999) + 添加 |
+| 道具 | 道具ID输入(空=全部道具) + 添加，每种稀有度(N~L)各一（`EquipUtil.CreateEquipItemForTest`） |
+| 生物 | 添加所有生物；测试生物=生物下拉(懒加载 CreatureInfoCfg)+手动ID(合法优先) + 稀有度下拉(随机/1N~6L) + 等级(随机开关+0~10滑条)，走孕育同款随机稀有度BUFF |
+| 解锁 | 解锁ID输入(空=全部，有研究配置按满级) + 世界难度解锁一半/全部（逻辑同 UITestBase） |
+| Mod 道具 | Mod下拉 + 添加该 Mod 全部道具（每稀有度各一） |
+| 状态栏 | 每次操作结果即时显示（成功绿/失败红，8秒隐藏），同步 LogUtil |
+
+### Mod 道具区实现
+
+- 候选列表：`ModHandler.Instance.manager.GetModJsonTextFileInfos("ItemsInfo")`（仅带道具配置且已分配 modId 的 Mod；BaseManager 无静态 Instance，须走 Handler 的 manager 属性），懒加载并统计各种数。
+- 归属判定：道具 id 号段 `id / 10^14 == modId`（与 `BaseBean.CombineModId` 的 `modId:D5 + selfId:D14` 拼接规则一致），面板常量 `ModIdDivisor = 100000000000000L`。
+- 添加：遍历 `ItemsInfoCfg.GetAllData()` 过滤号段，每种稀有度(N~L)各生成一个入背包并 `SaveUserData()`。
+
+---
+
 ## 测试模拟不落盘（通用机制）
 
-**"读真实存档 → 内存模拟 → 不写回"是献祭升级测试、魔物进阶测试、魔汁机测试、故事演出测试、挑战100勇士测试共用的统一机制**，单一真实源是 `GameDataManager.isTestSimulation`：
+**"读真实存档 → 内存模拟 → 不写回"是献祭升级测试、魔物进阶测试、魔汁机测试、故事演出测试、挑战100勇士测试、无尽模式测试共用的统一机制**，单一真实源是 `GameDataManager.isTestSimulation`：
 
 - **单一开关**：`GameDataManager.isTestSimulation`（游戏层 partial）。为 `true` 时 `SaveUserData` **一律不落盘**（在 `SaveUserData(UserDataBean)` 入口统一 `return`），任何存档路径（含 UI 直接存档、结算存档、乃至进入基地时的附带存档）都自动跳过。
-- **谁置位/复位**：`LauncherTest.StartForCreatureSacrificeTest` / `StartForCreatureVatTest` / `StartForCreatureJuicerTest` / `StartForStoryTest` / `StartForChallengeHundredTest` 在 `SetUserData(真实存档)` 之后立即 `isTestSimulation = true`。复位统一在 **`WorldHandler.EnterMainForBaseScene`**（`ClearUserData` 旁）`= false`——它是"回到真实主菜单"的唯一收口点（`LauncherGame.Launch` 启动、游戏内 `UIGameSystem` 返回主菜单、`StartForNormalGame` 都经它），随后读档/新建再 `EnterGameForBaseScene` 进正式游玩即恢复落盘。**测试入口走 `EnterGameForBaseScene`/`EnterGameForFightScene` 直接进场、不经 `EnterMainForBaseScene`**，故测试标记不会被误清；正式游戏则总会先过一次主菜单而复位。正式游戏流程永不置 true。
+- **谁置位/复位**：`LauncherTest.StartForCreatureSacrificeTest` / `StartForCreatureVatTest` / `StartForCreatureJuicerTest` / `StartForStoryTest` / `StartForChallengeHundredTest` / `StartForInfiniteTest` 在 `SetUserData(真实存档)` 之后立即 `isTestSimulation = true`。复位统一在 **`WorldHandler.EnterMainForBaseScene`**（`ClearUserData` 旁）`= false`——它是"回到真实主菜单"的唯一收口点（`LauncherGame.Launch` 启动、游戏内 `UIGameSystem` 返回主菜单、`StartForNormalGame` 都经它），随后读档/新建再 `EnterGameForBaseScene` 进正式游玩即恢复落盘。**测试入口走 `EnterGameForBaseScene`/`EnterGameForFightScene` 直接进场、不经 `EnterMainForBaseScene`**，故测试标记不会被误清；正式游戏则总会先过一次主菜单而复位。正式游戏流程永不置 true。
 - **各功能不再各自判断**：`UICreatureVat` 的开始/完成存档、`CreatureSacrificeLogic` 的失败落盘与 `SaveAndEndGame` 都**直接调 `SaveUserData()`**（不再写 `if (!isTestMode)`），测试拦截统一在存档层完成。
 - **献祭手动成功率**：`CreatureSacrificeLogic.StartSacrifice` 读全局 `isTestSimulation && useManualSuccessRate` 决定是否用手动值掷骰（原 `CreatureSacrificeBean.isTestMode` 已删除，仅保留献祭专属的 `useManualSuccessRate`/`manualSuccessRate`）。
 - **好处**：既是"通用测试数据"，又比逐处 `if(!isTestMode)` 更稳——多一条存档路径也不会漏，还顺带堵住了模拟测试期间基地附带存档误写真实档的隐患。
 
 ## 战斗场景测试 (FightSceneTest)
 
-`TestSceneTypeEnum.FightSceneTest` —— 自定义场景/敌人/BUFF/深渊馈赠的战斗测试（含普通模式、单体测试模式、征服模式BOSS关、挑战100勇士四个子模式，挑战100勇士见[挑战100勇士测试](#挑战100勇士测试-fightscenetest-子模式-challengehundred)章节）。
+`TestSceneTypeEnum.FightSceneTest` —— 自定义场景/敌人/BUFF/深渊馈赠的战斗测试（含普通模式、单体测试模式、征服模式BOSS关、挑战100勇士、无尽模式五个子模式，挑战100勇士见[挑战100勇士测试](#挑战100勇士测试-fightscenetest-子模式-challengehundred)章节，无尽模式见[无尽模式测试](#无尽模式测试-fightscenetest-子模式-infinite)章节）。
 
 - **魔王(防守核心)生物**：由基础设置区的「魔王生物 ID」(`fightDefenseCoreId`，EditorPrefs 持久化，默认 `2001` 骷髅战士)决定，`GetTestData()` 用它构建 `fightData.fightDefenseCoreData`（原硬编码 2001 已改为该字段）。
 - **魔王蓝量**：基础设置区的「魔王蓝量」(`fightDemonLordMP`，EditorPrefs 持久化 float，默认 `9999`)，`GetTestData()` 存入 `FightBeanForTest.testDemonLordMP`，由 `GameFightLogicTest.PreGameForAfterCreateDefenseCore()` 在防守核心创建后统一应用：设 `MPCurrent = testDemonLordMP`，并在配置 MP 上限不足时同步把 `dicAttribute[MP]` 提升到该值（否则 `ChangeMP` 消耗时会把超上限蓝量一次夹回配置上限）。应用在馈赠添加**之后**（AddAbyssalBlessing 触发的 RefreshBaseAttribute 会重算 dicAttribute，顺序颠倒会把上限提升冲掉；重开战斗走同一钩子故每场一致）。**MP 被「防守方固定属性」固定时蓝量设置让位**（固定值即上限，当前蓝量=固定值）。
@@ -351,10 +382,11 @@ GameFightLogicTest.PreGameForAfterCreateDefenseCore()        // 防守核心创�
 
 ## 卡片编辑器测试 (CardTest)
 
-`TestSceneTypeEnum.CardTest` 面板（`GameTestEditor.DrawCardTest`）有两个入口：
+`TestSceneTypeEnum.CardTest` 面板（`GameTestEditor.DrawCardTest`）有三个入口：
 
 - **▶️ 显示卡片**：打开预制 UI `UITestCard`（卡片图标尺寸/坐标校准，「生成数据」写回 `excel_creature_model` 的 `ui_data_s`/`ui_data_b`/`size_spine`）。
 - **🎛️ 卡片编辑器**：`LauncherTest.StartForCreatureCardEditor(creatureId, npcInfoId)`（沿用面板的生物/NPC ID 作初始值，creatureId>0 默认生物模式否则 NPC 模式）→ 纯代码 IMGUI 面板 `TestCreatureCardGUI`（不依赖预制，单例 `Instance` 防重复叠加）。
+- **🧪 Mod幻化药测试**：面板下拉（`DrawTransformPotionTest`/`EnsureTransformPotionOptions`，仅 Play 模式构建候选，首项「无幻化(原形象)」+ 配置表全部幻化药 `item_type==TransformPotion(18)`，显示名=道具名[自ID]，选择索引 `transformPotionTestSelectIndex` EditorPrefs 持久化）→ `LauncherTest.StartForTransformPotionTest(itemId)` → 纯代码 IMGUI 面板 `TestTransformPotionGUI`：给基础生物(2001)设 `transformItemId` 后走真实卡片 SetData 链，**小卡=Chess 基础形象(世界/战斗/普通卡片)、大卡详情=Avator 高清形象(详情UI含自带 ui_data_b 尺寸)**，与魔物管理吃幻化药同显示路径；面板还展示所选药的 other_data 三段解析（chess/avator/uiData）与各 spine 资源在已加载 Mod 中的命中状态（`ModHandler.Instance.IsModAsset`，✓/✗ 便于排查 Mod 资源缺失）。
 
 ### 流程
 
@@ -367,14 +399,28 @@ LauncherTest.StartForCreatureCardEditor(creatureId, npcInfoId)
 TestCreatureCardGUI.Start()
     │  自建 ScreenSpaceOverlay Canvas(1920x1080 适配, sortingOrder=5000, 随面板销毁)
     │  → Resources.Load 实例化真实预制体 UIViewCreatureCardItem + UIViewCreatureCardDetails
-    │  → NormalizeRoot 固化尺寸+居中锚点(防拉伸型根节点铺满Canvas) → RefreshCards()
+    │  → NormalizeRoot 固化尺寸+居中锚点(防拉伸型根节点铺满Canvas)
+    │  → CreateSceneSpineDisplay() 场景Spine展示(见下) → RefreshCards()
     ▼
 左侧面板 OnGUI: 来源切换(生物/NPC) + 下拉(懒加载 CreatureInfoCfg/NpcInfoCfg, id+名字) + 手动ID(long, 非空合法优先)
-    │  稀有度下拉(RarityInfoCfg 全量行含999魔王配色档) + 等级滑条(0~10) + 缩放滑条(0.5~2)
+    │  稀有度下拉(RarityInfoCfg 全量行含999魔王配色档) + 等级滑条(0~10) + 缩放滑条(0.5~2) + 场景Spine开关
     ▼
 RefreshCards(): new CreatureBean(creatureId/npcInfo) → 覆写 rarity/level → AddSkinForBase()
-    → 小卡 SetData(creature, ShowNoPopup)(禁用悬停弹窗) + 大卡 SetData(creature) → ApplyCustomColors()
+    → 小卡 SetData(creature, ShowNoPopup)(禁用悬停弹窗) + 大卡 SetData(creature)
+    → RefreshSceneSpine(creature) 刷新场景目标模型 → ApplyCustomColors()
 ```
+
+### 场景Spine展示（大小对比）
+
+卡片编辑器除小卡/大卡 UI 外，还在**世界空间**并排摆放两个场景 Spine 模型，方便对比生物在场景中的实际大小：
+
+- **标准模型**（左）：固定 `CreatureBean(2001)` 骷髅战士 + `AddSkinForBase()`，与旧版 UITestCard 的「测试标准模型」一致，作大小对比基准。
+- **目标模型**（右）：当前选中生物，随 `RefreshCards` 一起刷新（换骨/换肤/重置缩放）。
+- **创建链**：`new GameObject` → `SpineHandler.AddSkeletonAnimation(obj, creatureModel.res_name)` → `CreatureHandler.SetCreatureData(spine, creature)`（场景缩放 = `size_spine × GetBodySizeScale()`，与基地/战斗场景真实大小同口径）→ `PlayAnim(Idle)` 循环待机；两模型脚下踩 10x10 地平面（顶面 y=0，x=±1.1 并排）。
+- **相机**：主相机 HideAllCM + 激活 + blend0 后摆到 `(0,3.6,-6)` LookAt `(0,2.9,0)` 侧视微俯视，把模型框到屏幕底部避开中间卡片（与特效测试同套镜头逻辑）。
+- **面板区**：「场景Spine」开关（显隐根节点+地平面）+ 大小数值行（标准缩放 | 当前缩放 = 模型 size_spine × 体型倍率）。
+- **清理**：`OnDestroy` 销毁场景根节点与地平面（相机不还原，与其它测试一致，切模块时由 `CameraHandler.InitData` 重置）。
+- **注意**：NPC 的体型倍率在 `new CreatureBean(npcInfo)` 时按 `GetBodySizeRandomScale` 区间随机一次，故 NPC 模式下每次数据变更重建生物都会重掷体型——场景目标模型大小随之变化属预期（真实创建链行为）。
 
 ### 关键点
 
@@ -515,6 +561,49 @@ LauncherTest.StartForChallengeHundredTest(rowId, saveSlot = 0)   // Assets/Scrip
 - **rowId 来自配置表**：`excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx`（一行=一个挑战配置，`difficulty_levels` 列声明该行可被哪些难度抽中）。
 - **参数持久化**：`challengeHundredTestRowSelectIndex`/`challengeHundredTestSaveSlot`(0~3 钳制) EditorPrefs 持久化；选项缓存 `challengeHundredRowOptions`/`challengeHundredRowIds` 懒加载不持久化（均在 `GameTestEditorPartial`）。
 
+## 无尽模式测试 (FightSceneTest 子模式 Infinite)
+
+`FightTestModeEnum.Infinite`（战斗场景测试的第 5 个子模式）—— **下拉选择 `FightTypeInfiniteInfo` 配置行（一行=世界+难度）+ 存档槽位**，手搓传送门随机数据（冻结该世界+难度+道路）直接进入无尽战斗，**不走真实传送门的出现概率判定与无尽研究解锁判定**（可测未解锁难度）；防守方使用所选存档的魔王+当前出战阵容，**全程测试模拟不落盘回真实存档**（依赖[测试模拟不落盘通用机制](#测试模拟不落盘通用机制)）。
+
+### 流程
+
+```
+GameTestEditor.DrawFightSceneTest()                        // 战斗测试模式选 Infinite 后走独立分支
+    ▼ DrawFightSceneTestInfinite()                         // 与挑战100勇士同级的独立简化配置区
+    │  配置行下拉(EnsureInfiniteRowOptions 懒加载：FightTypeInfiniteInfoCfg.GetAllArrayData()
+    │    按 world_id→level 排序，选项「[world_id] 世界名 难度N (每轮强度x{round_intensity_addrate}) {remark}」，
+    │    世界名直读 Language_GameWorldInfo_cn.txt(走通用 helper LoadLanguageForCn，不切 LanguageCfg 语言)；
+    │    「🔄 刷新列表」清选项缓存 + ClearCfgBaseStaticCache(typeof(FightTypeInfiniteInfoCfg))；
+    │    「📂 配置表」打开 excel_fight_type_infinite_info[战斗-无尽模式].xlsx)
+    │  存档槽位 IntPopup(0=当前测试数据 InitTestData 伪造数据,1~3=读 UserData_1/2/3 作为运行时数据)
+    │  ▶️ 开始无尽模式测试 → launcher.StartForInfiniteTest(worldId, level, saveSlot)
+    ▼
+LauncherTest.StartForInfiniteTest(worldId, difficultyLevel, saveSlot = 0)   // Assets/Scripts/Game/Launcher/LauncherTest.cs
+    │  ⓪ ClearTestGUIs() 清理残留纯GUI测试面板(所有 StartFor* 入口统一收口)
+    │  ① 硬校验同难度征服行 FightTypeConquerInfoCfg.GetItemData(worldId, difficultyLevel)
+    │     (无尽复用其怪物构成/数量/时长/场景/道路区间, 缺失 LogError 返回)
+    │  ② 软校验无尽行 FightTypeInfiniteInfoCfg.GetItemData(worldId, difficultyLevel)
+    │     (缺失仅 LogWarning, 轮次强度倍率按1降级, 与 FightBeanForInfinite 语义一致不阻断)
+    │  ③ saveSlot>0 时读档:UserDataService.ChangeSlot(saveSlot).Load(false) → SetUserData(挑战100勇士测试同范式)
+    │  ④ isTestSimulation = true   // 奖励结算/掉落入账等 SaveUserData 被 GameDataManager 统一拦截,测试数据不保存
+    │  ⑤ 手搓 GameWorldInfoRandomBean: worldId/gameFightType=Infinite/difficultyLevel/
+    │     roadNum/roadLength 复用同难度征服行 GetRandomRoadNum()/GetRandomRoadLength() 区间随出并冻结
+    │     (不经 SetRandomDataForInfinite 的解锁判定, 可测未解锁难度)
+    │  ⑥ new FightBeanForInfinite(gameWorldInfoRandomData)
+    │     → InitData 从当前 UserData 取 selfCreature(防守核心)+GetLineupCreature(当前出战阵容), 填充第1轮进攻队列
+    │  ⑦ WorldHandler.EnterGameForFightScene(fightData)
+```
+
+### 关键点
+
+- **一行=世界+难度**：无尽配置行按 (world_id, level) 索引（难度 2~10，无尽无难度1），下拉选中一行即同时确定 worldId+difficultyLevel，故无需像征服BOSS关测试那样分手填世界 ID 与难度。
+- **复用征服行是硬依赖**：`FightBeanForInfinite.InitData()` 必需同难度征服行（怪物构成/数量/时长/场景/魔晶掉落全复用），缺失直接 LogError 返回；无尽行仅提供 `round_intensity_addrate` 逐轮强度乘区，缺失降级为 1 不阻断。测试入口的两个校验与此一一对应。
+- **存档意义=防守阵容**：`FightBeanForInfinite.InitData()` 从当前 `UserData` 读 `selfCreature`（魔王防守核心）与 `GetLineupCreature(GetLineupFightIndex())`（当前出战阵容），故选 1~3 槽位即用该存档真实阵容测试；选 0 用 `InitTestData` 伪造数据（50 只随机生物满阵容）。
+- **冻结链路即真实链路**：测试手搓的 randomData 字段（worldId/difficultyLevel/roadNum/roadLength）与真实传送门 `SetRandomDataForInfinite` 的产出同口径（道路同样取自同难度征服行区间），故测试进战斗所见强度/敌人构成与正式玩法一致；区别仅在世界来源是手搓而非传送门概率刷出、且可测未解锁难度。
+- **不落盘**：统一 `isTestSimulation = true`（无论槽位 0 还是 1~3），复位仍由 `WorldHandler.EnterMainForBaseScene` 收口。
+- **rowId 来自配置表**：`excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（一行=一个世界的一个难度，`round_intensity_addrate` 列控制每轮强度递增倍率）。
+- **参数持久化**：`infiniteTestRowSelectIndex`/`infiniteTestSaveSlot`(0~3 钳制) EditorPrefs 持久化；选项缓存 `infiniteRowOptions`/`infiniteRowWorldIds`/`infiniteRowLevels` 懒加载不持久化（均在 `GameTestEditorPartial`）。
+
 ## 粒子特效测试 (EffectTest)
 
 `TestSceneTypeEnum.EffectTest` —— 纯代码 IMGUI 面板(`TestEffectGUI`，不依赖任何预制)，下拉选择特效 id 后点播放，在 10x10 平面(顶面高度0)上方 1 格随机位置、**按该特效在正式游戏里的执行方法**播放，方向可选(随机/左/右，按生产 attackDirection 方向语义传递)，用于快速验证 `excel_effect_info` 配置的粒子在真实调用路径下的表现。
@@ -559,7 +648,7 @@ TestEffectGUI.Start()                                  // Assets/Scripts/Compone
   - 兜底(配置新增未归类) → 通用 `ShowEffect(..., direction)`
 - **持久型特效(show_type=1)走全局单例**：同一特效重复播放会移动原实例(如 900003 落雷/1800001 地面火焰)——这是游戏真实行为，面板提示行已说明。
 - **播放高度**：播放位置 y 取 1（`PlayHeight` 常量）——平面顶面在 y=0，播放点抬高 1 格后粒子正好落在平面上；`ShowEffect` 内部还会对 targetPos 做 +0.002 微抬防 z-fighting。
-- **清理**：`OnDestroy` 销毁平面并注销拖尾测试桶；切换测试模块与重复开始的旧面板清理由 `LauncherTest.ClearTestGUIs()` 统一收口——该helper销毁 `TestEffectGUI.Instance`/`TestCreatureCardGUI.Instance` 两个纯GUI面板（它们手工创建于常驻启动场景，`ClearWorldData`/`UnLoadAllScene` 卸载不到），**每个 `StartFor*` 入口首行都必须调用**（新增测试入口时别忘了），否则切换模块后旧面板与其场景(如粒子测试平面)会残留。
+- **清理**：`OnDestroy` 销毁平面并注销拖尾测试桶；切换测试模块与重复开始的旧面板清理由 `LauncherTest.ClearTestGUIs()` 统一收口——该helper销毁 `TestEffectGUI.Instance`/`TestCreatureCardGUI.Instance`/`TestGameMasterGUI.Instance`/`TestTransformPotionGUI.Instance` 四个纯GUI面板（前两个手工创建于常驻启动场景，`ClearWorldData`/`UnLoadAllScene` 卸载不到；GM GUI/幻化药面板虽创建于游戏场景会随场景卸载，仍统一登记清理），**每个 `StartFor*` 入口首行都必须调用**（新增测试入口时别忘了），否则切换模块后旧面板与其场景(如粒子测试平面)会残留。
 
 ## 对话系统测试 (ConversationTest)
 
@@ -714,10 +803,13 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 测试战斗逻辑 | `Assets/Scripts/Game/Logic/GameFightLogicTest.cs` |
 | 测试战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForTest.cs`（fightAttackDataRemark 进攻数据备份；testAbyssalBlessingIds 测试馈赠目标行id列表，由 GameFightLogicTest 在防守核心创建后统一添加；testDemonLordMP 测试魔王蓝量，由 GameFightLogicTest 统一应用并同步提升 MP 上限；dicTestDefenseFixedAttribute 测试防守方固定属性=基础值替换，作用于卡片魔物+魔王核心，MP 被固定时蓝量设置让位） |
 | 测试控制台 | `Assets/FrameWork/Scripts/Component/UI/UITestConsole.cs` |
-| 测试基础 UI | `Assets/Scripts/Component/UI/Test/UITestBase.cs` + `UITestBaseComponent.cs` |
+| 测试基础 UI | `Assets/Scripts/Component/UI/Test/UITestBase.cs` + `UITestBaseComponent.cs`（F12 预制体版 GM 面板） |
+| GM GUI 面板 | `Assets/Scripts/Component/UI/Test/TestGameMasterGUI.cs`（F11 纯代码 IMGUI 版 GM 面板：`Toggle()` 开关；资源/道具/生物/解锁/Mod 道具五分区+状态栏；打开时 `EnableAllControl(false)` 销毁时 `SetBaseControl()`；Mod 道具按 `id/10^14==modId` 号段过滤 ItemsInfoCfg；已注册进 `LauncherTest.ClearTestGUIs()`） |
 | 卡片测试 UI | `Assets/Scripts/Component/UI/Test/UITestCard.cs` + `UITestCardComponent.cs` |
 | 卡片编辑器测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForCreatureCardEditor`） |
-| 卡片编辑器测试面板 | `Assets/Scripts/Component/UI/Test/TestCreatureCardGUI.cs`（纯代码 IMGUI + 实例化真实卡片预制体 UIViewCreatureCardItem/UIViewCreatureCardDetails；稀有度/等级/生物/NPC 下拉+手动ID；自定义板色(渐变)/等级色：RGB滑条+RGB数值输入(0~255)+Hex输入+16色调色盘(ColorEditState 双向同步)；保存写回 excel_rarity_info/excel_level_info + ExcelToJsonItem + 反射清 Cfg 缓存） |
+| 卡片编辑器测试面板 | `Assets/Scripts/Component/UI/Test/TestCreatureCardGUI.cs`（纯代码 IMGUI + 实例化真实卡片预制体 UIViewCreatureCardItem/UIViewCreatureCardDetails；稀有度/等级/生物/NPC 下拉+手动ID；场景Spine展示：世界空间并排标准模型(固定2001骷髅战士)+目标模型(缩放=size_spine×体型倍率,主相机侧视取景到屏幕底部,10x10地平面基准,面板带显隐开关与大小数值行; spine=根节点摆放+Renderer子节点承载缩放/位置, 与 SetCreatureData 的世界位置恒管理兼容)；自定义板色(渐变)/等级色：RGB滑条+RGB数值输入(0~255)+Hex输入+16色调色盘(ColorEditState 双向同步)；保存写回 excel_rarity_info/excel_level_info + ExcelToJsonItem + 反射清 Cfg 缓存） |
+| Mod幻化药测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForTransformPotionTest`） + `Assets/Editor/GameTestEditor.cs`（`DrawTransformPotionTest`/`EnsureTransformPotionOptions` 下拉候选仅 Play 模式构建, 选择索引 EditorPrefs 持久化） |
+| Mod幻化药测试面板 | `Assets/Scripts/Component/UI/Test/TestTransformPotionGUI.cs`（纯代码 IMGUI + 真实卡片预制体，**四个页签**：①单个预览=下拉选药(首项无幻化, item_type==TransformPotion(18) 过滤, 道具名[自ID])+**◀▶左右快速切换**(含无幻化项, 两端停住)+基础生物2001设 transformItemId 走真实 SetData 链(小卡=Chess/大卡=Avator高清)+场景并排左基础右幻化(世界空间, 主相机同卡片编辑器机位, 10x10地平面)+other_data 键值解析与 spine 资源 Mod 命中状态(IsModAsset ✓/✗)+三组文本框/滑动条调参；②小卡列表=列x行网格真实卡片(show_data)；③大卡列表=列x行网格真实详情卡**卡面模式**(SetData后隐藏属性/好感/装备/BUFF/MP/备注等详情区块, 只留底板+肖像+名字+稀有度+职业+等级; ui_show_data, 无ui_show_res不可调)；④场景列表=世界spine一排(world_data)；列表分页◀▶+跳页+**Mod筛选**(全部/游戏本地/各已加载Mod)+**横竖个数与间距步进可调**(布局行, 持久化到项目内 `ProjectSettings/TestTransformPotionLayout.json` 随git全队共享), 网格整体右移避开左侧面板, 项下名字标签带●=未保存+**[还原]单段恢复配置/[0,0]位置归零/[复制][粘贴]参数快速套用(静态剪贴板)小按钮**, 拖拽带4px阈值防误触。**悬停交互**(仅编辑器)：移到目标卡片/模型上滚轮等比改缩放(×1.05/格)+左键拖拽改位置(卡片按Canvas单位取整/场景按相机视场换算世界单位2位小数), 经 `TransformPotionUITestOverride` 覆盖层(被 `CreatureBeanPartial.GetTransformUIShowData/GetTransformShowData/GetTransformWorldData` 优先消费)实时生效, 拖拽期间只直改显示不打断动画；场景 spine=根节点摆放+Renderer子节点承载缩放/偏移(与游戏内实体一致, 配合 `CreatureHandler.SetCreatureData` 的 world_data 注入与位置恒管理)。底栏「保存全部修改(N)」批量写回=EPPlus直写MOD道具Excel(唯一真实源,一次写盘,会话首写前自动备份到 MOD项目/ExcelBackup)+直补MOD项目与主项目部署副本两处ItemsInfo.txt+当前会话内存(只换 ui_show_data/show_data/world_data 三键; 内置幻化药跳过计数, Mod项目根读EditorPrefs的ModBuildEditorWindow.ModProjectPath)） |
 | NPC 创建编辑（编辑器版，非运行态） | `Assets/Editor/NpcCreateEditorWindow.cs` + 5 个 partial（菜单 `游戏/NPC创建编辑`）：非运行态 NPC 创建/修改/删除工具（皮肤/调色/装备/随机池/属性 + Spine 双模型预览；Play 模式的 UITestNpcCreate/TestNpcCreateGUI 已删除并入本工具），另支持全字段编辑、新建（建议id+模板复制+中文名写语言表）与删除登记；编辑副本+JSON快照判脏，保存走 EPPlus 双表写回+ExcelToJsonItem 重导+清Cfg缓存；编辑器安全约束（禁止 new CreatureBean(npcInfo)、禁止 *_language、EditorUtility 弹窗）详见 editor-extension-system SKILL 的 NpcCreateEditorWindow 章节 |
 | 研究 UI 测试 | `Assets/Scripts/Component/UI/Game/BaseResearch/UIBaseResearchTest.cs` |
 | 终焉议会测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForDoomCouncil` 正常随机议员；`StartForDoomCouncilAllFixed` 直接载入所有固定议员，标记 `DoomCouncilBean.isTestAllFixedCouncilor=true`） |
@@ -733,6 +825,8 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 魔汁机测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawCreatureJuicerTest`） |
 | 挑战100勇士测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForChallengeHundredTest(rowId, saveSlot = 0)`：校验 `FightTypeChallengeHundredInfoCfg` 配置行→saveSlot>0 读档 SetUserData→`isTestSimulation=true`→手搓 `GameWorldInfoRandomBean`(worldId=1/gameFightType=ChallengeHundred/`SetRandomDataForChallengeHundred` 冻结行/道路/宝箱奖励)→`new FightBeanForChallengeHundred`(从当前 UserData 取魔王+出战阵容)→`EnterGameForFightScene`） |
 | 挑战100勇士测试 UI | `Assets/Editor/GameTestEditor.cs`（FightSceneTest 子模式 `FightTestModeEnum.ChallengeHundred`：`DrawFightSceneTestChallengeHundred`/`EnsureChallengeHundredRowOptions` 配置行下拉+存档槽位 0~3） + `GameTestEditorPartial.cs`（challengeHundredTestRowSelectIndex/challengeHundredTestSaveSlot 持久化） |
+| 无尽模式测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForInfiniteTest(worldId, difficultyLevel, saveSlot = 0)`：硬校验同难度征服行 `FightTypeConquerInfoCfg`+软校验无尽行 `FightTypeInfiniteInfoCfg`→saveSlot>0 读档 SetUserData→`isTestSimulation=true`→手搓 `GameWorldInfoRandomBean`(worldId/gameFightType=Infinite/difficultyLevel/roadNum/roadLength 复用同难度征服行区间,不经解锁判定)→`new FightBeanForInfinite`(从当前 UserData 取魔王+出战阵容)→`EnterGameForFightScene`） |
+| 无尽模式测试 UI | `Assets/Editor/GameTestEditor.cs`（FightSceneTest 子模式 `FightTestModeEnum.Infinite`：`DrawFightSceneTestInfinite`/`EnsureInfiniteRowOptions` 配置行(世界+难度)下拉(世界名直读 Language_GameWorldInfo_cn.txt)+存档槽位 0~3） + `GameTestEditorPartial.cs`（infiniteTestRowSelectIndex/infiniteTestSaveSlot 持久化；infiniteRowOptions/infiniteRowWorldIds/infiniteRowLevels 缓存） |
 | 正常游戏启动入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForNormalGame`） |
 | 正常游戏启动 UI | `Assets/Editor/GameTestEditor.cs`（`DrawNormalGameTest`） |
 | 粒子特效测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForEffectTest`） |

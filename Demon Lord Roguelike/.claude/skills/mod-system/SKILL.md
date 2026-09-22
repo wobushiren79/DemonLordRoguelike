@@ -24,7 +24,7 @@ ModIdMapBean        - ModID映射数据（modName -> modId）
 ### Mod系统架构
 
 ```
-Mods/                          - Mod根目录（与Assets同级）
+Mods/                          - Mod根目录（与Assets同级；已加入仓库根 .gitignore，本地目录不上传 git，分发靠拷贝）
 ├── Spine/                     - 示例Mod目录
 │   ├── catalog.bin            - Addressables Content Catalog
 │   ├── catalog.hash           - Catalog哈希
@@ -83,6 +83,8 @@ bool success = await ModHandler.Instance.InitializeAllModsAsync();
 // 方式3：同步（仅在必要时使用）
 bool success = ModHandler.Instance.InitializeAllModsSync();
 ```
+
+> **统一初始化点**：`BaseLauncher.Launch()` 首行调用 `InitializeAllModsSync()`（LauncherGame/LauncherTest 均经 `base.Launch()` 覆盖，正式包与测试场景同路径）——必须在 `TextHandler.InitData()` 及任何 Cfg 首次访问之前，否则 Mod 的 JsonText（含 `Language_*` 多语言）合并不生效。已加载的 Mod 重复初始化会被 `IsModLoaded` 早退，重复调用安全。
 
 ### 加载单个Mod Catalog
 
@@ -197,7 +199,8 @@ string modName = ModHandler.Instance.GetModNameForAsset("amelia_skeletondata");
 
 ```csharp
 // 获取指定Mod的modId（1~ModManager.MaxModId=92232），未分配（或超限被拒）则返回1
-int modId = ModManager.Instance.GetModId("Spine");
+// 注意：ModManager 没有任何静态成员/Instance，须走 ModHandler.Instance.manager
+int modId = ModHandler.Instance.manager.GetModId("Spine");
 ```
 
 ### 获取Mod目录路径
@@ -235,11 +238,11 @@ Mods/YourModName/JsonText/
 ### 查询JsonText文件
 
 ```csharp
-// 检查是否有Mod包含指定名称的JsonText文件
-bool hasFile = ModManager.Instance.HasModJsonTextFile("CreatureInfo");
+// 检查是否有Mod包含指定名称的JsonText文件（ModManager 无静态 Instance，须走 ModHandler.Instance.manager）
+bool hasFile = ModHandler.Instance.manager.HasModJsonTextFile("CreatureInfo");
 
 // 获取包含指定fileName的所有Mod信息
-var fileInfos = ModManager.Instance.GetModJsonTextFileInfos("CreatureInfo");
+var fileInfos = ModHandler.Instance.manager.GetModJsonTextFileInfos("CreatureInfo");
 foreach (var (modId, modName, filePath) in fileInfos)
 {
     LogUtil.Log($"Mod[{modName}] ID={modId} 路径={filePath}");

@@ -24,6 +24,16 @@ public partial class GameTestEditor
     private GUIContent[] challengeHundredRowOptions;
     private long[] challengeHundredRowIds;
 
+    // 无尽模式测试参数
+    // 配置行下拉选择索引(配置行(世界+难度)列表见 infiniteRowWorldIds/infiniteRowLevels，按 world_id→level 排序)
+    public int infiniteTestRowSelectIndex = 0;
+    // 存档槽位(0=使用当前测试数据 InitTestData 伪造数据;1~3=读取对应存档槽位 UserData_1/2/3 作为运行时数据)
+    public int infiniteTestSaveSlot = 0;
+    // 配置行下拉选项缓存(不持久化，懒加载；配置重导后可点「刷新列表」重建)
+    private GUIContent[] infiniteRowOptions;
+    private long[] infiniteRowWorldIds;
+    private int[] infiniteRowLevels;
+
     // 基础测试参数
     public int testDataCardNum = 20;
     public int fightSceneId = 10001;
@@ -40,6 +50,13 @@ public partial class GameTestEditor
 
     public int creatureId = 1;
     public int npcInfoId = 1010010001;
+
+    // Mod幻化药测试参数
+    // 幻化药下拉选择索引(完整id列表见 transformPotionItemIds，含首项「无幻化」)
+    public int transformPotionTestSelectIndex = 0;
+    // 幻化药下拉选项缓存(不持久化，懒加载，仅Play模式配置可用时构建)
+    private GUIContent[] transformPotionOptions;
+    private long[] transformPotionItemIds;
 
     public int attackModeAttackTestId = 0;
     public int attackModeDefenseTestId = 0;
@@ -204,6 +221,10 @@ public partial class GameTestEditor
         challengeHundredTestRowSelectIndex = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "challengeHundredTestRowSelectIndex", 0);
         challengeHundredTestSaveSlot = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "challengeHundredTestSaveSlot", 0), 0, 3);
 
+        // 无尽模式测试参数
+        infiniteTestRowSelectIndex = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "infiniteTestRowSelectIndex", 0);
+        infiniteTestSaveSlot = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "infiniteTestSaveSlot", 0), 0, 3);
+
         // 基础测试
         testDataCardNum = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "testDataCardNum", 20);
         fightSceneId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneId", 10001);
@@ -217,6 +238,8 @@ public partial class GameTestEditor
 
         // 生物相关
         creatureId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "creatureId", 1);
+        // Mod幻化药测试参数
+        transformPotionTestSelectIndex = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "transformPotionTestSelectIndex", 0);
         npcInfoId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "npcInfoId", 1010010001);
 
         // 攻击模式
@@ -290,6 +313,10 @@ public partial class GameTestEditor
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "challengeHundredTestRowSelectIndex", challengeHundredTestRowSelectIndex);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "challengeHundredTestSaveSlot", challengeHundredTestSaveSlot);
 
+        // 无尽模式测试参数
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "infiniteTestRowSelectIndex", infiniteTestRowSelectIndex);
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "infiniteTestSaveSlot", infiniteTestSaveSlot);
+
         // 基础测试
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "testDataCardNum", testDataCardNum);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightSceneId", fightSceneId);
@@ -304,6 +331,8 @@ public partial class GameTestEditor
         // 生物相关
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "creatureId", creatureId);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "npcInfoId", npcInfoId);
+        // Mod幻化药测试参数
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "transformPotionTestSelectIndex", transformPotionTestSelectIndex);
 
         // 攻击模式
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "attackModeAttackTestId", attackModeAttackTestId);

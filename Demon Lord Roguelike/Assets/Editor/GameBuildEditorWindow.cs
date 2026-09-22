@@ -27,9 +27,14 @@ public class GameBuildEditorWindow : EditorWindow
     private const string EditorPrefsKeyAutoRun = "GameBuildEditorWindow.AutoRun";
     /// <summary>完成后打开输出目录的 EditorPrefs 键</summary>
     private const string EditorPrefsKeyShowBuiltPlayer = "GameBuildEditorWindow.ShowBuiltPlayer";
+    /// <summary>开启 GM 模式的 EditorPrefs 键</summary>
+    private const string EditorPrefsKeyEnableGMMode = "GameBuildEditorWindow.EnableGMMode";
 
     /// <summary>打包用的游戏场景（正式包固定从该场景出包，与 Build Settings 里的日常测试场景解耦）</summary>
     private const string GameScenePath = "Assets/Scenes/GameScene.unity";
+
+    /// <summary>GM 模式开关写入的资源文件（打包前按选项写入 0/1，打包结束恢复 0）</summary>
+    private const string GMModeAssetPath = "Assets/Resources/GMMode.txt";
 
     /// <summary>是否生成所有 Spine 道具图标</summary>
     private bool isGenItemIcons = true;
@@ -61,6 +66,9 @@ public class GameBuildEditorWindow : EditorWindow
     /// <summary>打包完成后是否打开输出目录</summary>
     private bool isShowBuiltPlayer = true;
 
+    /// <summary>是否开启 GM 模式（勾选后正式包中按 F12 也能打开 GM 测试面板，默认关闭）</summary>
+    private bool isEnableGMMode;
+
     #endregion
 
     #region 窗口入口
@@ -83,6 +91,7 @@ public class GameBuildEditorWindow : EditorWindow
         isDeepProfiling = EditorPrefs.GetBool(EditorPrefsKeyDeepProfiling, false);
         isAutoRun = EditorPrefs.GetBool(EditorPrefsKeyAutoRun, false);
         isShowBuiltPlayer = EditorPrefs.GetBool(EditorPrefsKeyShowBuiltPlayer, true);
+        isEnableGMMode = EditorPrefs.GetBool(EditorPrefsKeyEnableGMMode, false);
     }
 
     #endregion
@@ -135,6 +144,7 @@ public class GameBuildEditorWindow : EditorWindow
             DrawOptionToggle("自动连接 Profiler", "BuildOptions.ConnectWithProfiler", isConnectProfiler, EditorPrefsKeyConnectProfiler, v => isConnectProfiler = v);
             DrawOptionToggle("深度分析（Deep Profiling）", "BuildOptions.EnableDeepProfilingSupport", isDeepProfiling, EditorPrefsKeyDeepProfiling, v => isDeepProfiling = v);
             EditorGUI.EndDisabledGroup();
+            DrawOptionToggle("开启 GM 模式（F12 测试面板）", "勾选后正式包中按 F12 也能打开 GM 测试面板（默认关闭）", isEnableGMMode, EditorPrefsKeyEnableGMMode, v => isEnableGMMode = v);
             DrawOptionToggle("打包完成后自动运行", "BuildOptions.AutoRunPlayer", isAutoRun, EditorPrefsKeyAutoRun, v => isAutoRun = v);
             DrawOptionToggle("打包完成后打开输出目录", "BuildOptions.ShowBuiltPlayer", isShowBuiltPlayer, EditorPrefsKeyShowBuiltPlayer, v => isShowBuiltPlayer = v);
         });
@@ -337,21 +347,31 @@ public class GameBuildEditorWindow : EditorWindow
         if (isAutoRun) buildOptions |= BuildOptions.AutoRunPlayer;
         if (isShowBuiltPlayer) buildOptions |= BuildOptions.ShowBuiltPlayer;
 
-        LogUtil.Log($"========== 开始打包：{target} -> {locationPath}（Options: {buildOptions}） ==========");
-        BuildReport report = BuildPipeline.BuildPlayer(scenes, locationPath, target, buildOptions);
+        LogUtil.Log($"========== 开始打包：{target} -> {locationPath}（Options: {buildOptions}，GM模式: {isEnableGMMode}） ==========");
 
-        if (report.summary.result == BuildResult.Succeeded)
+        // 按 GM 选项写入运行时开关文件（打包结束恢复 0，避免残留影响日常开发出包）
+        WriteGMModeConfig(isEnableGMMode);
+        try
         {
-            LogUtil.Log($"========== 打包完成：{locationPath} ==========");
-            // 未勾选 ShowBuiltPlayer 时手动打开一次输出目录，保证用户总能找到产物
-            if (!isShowBuiltPlayer)
+            BuildReport report = BuildPipeline.BuildPlayer(scenes, locationPath, target, buildOptions);
+
+            if (report.summary.result == BuildResult.Succeeded)
             {
-                EditorUtility.RevealInFinder(locationPath);
+                LogUtil.Log($"========== 打包完成：{locationPath} ==========");
+                // 未勾选 ShowBuiltPlayer 时手动打开一次输出目录，保证用户总能找到产物
+                if (!isShowBuiltPlayer)
+                {
+                    EditorUtility.RevealInFinder(locationPath);
+                }
+            }
+            else
+            {
+                Debug.LogError($"打包失败：{report.summary.result}，错误数 {report.summary.totalErrors}");
             }
         }
-        else
+        finally
         {
-            Debug.LogError($"打包失败：{report.summary.result}，错误数 {report.summary.totalErrors}");
+            WriteGMModeConfig(false);
         }
 
         // 打包结束恢复打包前打开的场景（如从 TestScene 发起的打包，打完切回去继续日常开发）
@@ -359,6 +379,16 @@ public class GameBuildEditorWindow : EditorWindow
         {
             EditorSceneManager.OpenScene(prevScenePath);
         }
+    }
+
+    /// <summary>
+    /// 写入 GM 模式开关文件：打包前按选项写入 0/1 并强制同步导入，保证 BuildPlayer 读到最新值
+    /// </summary>
+    /// <param name="isEnable">是否开启 GM 模式</param>
+    private static void WriteGMModeConfig(bool isEnable)
+    {
+        File.WriteAllText(GMModeAssetPath, isEnable ? "1" : "0");
+        AssetDatabase.ImportAsset(GMModeAssetPath, ImportAssetOptions.ForceSynchronousImport);
     }
 
     /// <summary>

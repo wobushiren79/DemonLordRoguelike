@@ -7,6 +7,8 @@ watched_files:
   - Assets/Scripts/Game/Base/BaseGameLogic.cs
   - Assets/Scripts/Component/Handler/GameHandler.cs
   - Assets/Scripts/Component/Manager/GameManager.cs
+  - Assets/Scripts/Bean/Game/FightBeanForInfinite.cs
+  - Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBeanPartial.cs
 ---
 
 # 战斗逻辑 (Fight Logic) 开发代理
@@ -19,7 +21,7 @@ watched_files:
 - **GameFightLogic** - 战斗逻辑基类，继承 BaseGameLogic
 - **GameFightLogicConquer** - 征服模式战斗
 - **GameFightLogicDoomCouncil** - 终焉议会战斗
-- **GameFightLogicInfinite** - 无限模式战斗
+- **GameFightLogicInfinite** - 无限/无尽模式战斗（`FightBeanForInfinite` 持有同难度征服行 `fightTypeConquerInfo`[复用其怪物池/数量/时长/场景/魔晶掉落]+无尽行 `fightTypeInfiniteInfo`[每轮强度倍率,null 降级不阻断]+`roundNum`[从1起]；`InitData` 建核心/收阵容/取BOSS场景池 `GetRandomFightScene(true)`/填充第1轮；`AppendNextRoundAttackData()` 追加下一轮到队列末尾[不重建,每轮=征服BOSS关同款：普通怪 attack_show_time 内分桶随机 + BOSS [50%,90%] 错开0.3s + 首只携带 bossShowNpcIds 每轮弹特写，数量固定不递推]，`GetRoundIntensityRate(round)`=征服 attack_intensity_baserate × 无尽 round_intensity_addrate^(round-1) × 终焉议会强度议案。**永不胜利双重保险**：①重写 `TryRefillNextAttackQueue()`→追加下一轮返 true，基类两层接入[取波次 null 时 + 每次出怪后队列已空立即补]保证队列恒非空无真空窗口；②重写 `CheckGameEnd()` 屏蔽胜利判定只判魔王死亡。结算退出 `ActionForUIFightSettlementExit`：议案EndGame消耗钩子→ClearAbyssalBlessing→还原阵容战斗状态→SaveUserData→回基地，无经验/声望/成就/宝箱/领奖[UIFightSettlement 仅战绩排行榜]，不调 RefillPortalRefreshNum/ClearPortalWorldInfoRandomData[无尽无通关语义]）
 - **GameFightLogicTest** - 测试战斗
 - **GameFightLogicChallengeHundred** - 是魔王就挑战100勇士（单关100只怪；胜→阵容经验+UIFightSettlement→3箱3抽全手动领奖，败→返回基地；不发成就/声望、无关卡间深渊馈赠；`IsSkipPutCardMPCost()=>true` 魔王蓝量无限）
 
@@ -46,6 +48,8 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 | 测试模式 | Assets/Scripts/Game/Logic/GameFightLogicTest.cs |
 | 挑战100勇士 | Assets/Scripts/Game/Logic/GameFightLogicChallengeHundred.cs |
 | 挑战100勇士战斗数据 | Assets/Scripts/Bean/Game/FightBeanForChallengeHundred.cs |
+| 无尽模式战斗数据 | Assets/Scripts/Bean/Game/FightBeanForInfinite.cs |
+| 无尽模式配置表Partial | Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBeanPartial.cs |
 | BaseGameLogic | Assets/Scripts/Game/Base/BaseGameLogic.cs |
 | GameHandler | Assets/Scripts/Component/Handler/GameHandler.cs |
 | GameManager | Assets/Scripts/Component/Manager/GameManager.cs |
@@ -55,8 +59,8 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 - `PutCard()` - 召唤耗魔取 `creatureData.GetAttributeInt(CreatureAttributeTypeEnum.CMP)`（= 基础CMP×(1+等级/稀有度增加倍率)经自身/稀有度BUFF修正，如扭蛋 CMP 减益；倍率求和见 `CreatureBean.GetCreateMPAddRate()`）；放置前检查魔王 `MPCurrent >= GetAttributeInt(CMP)`，不足则 Toast"魔力不足"(UIText 50006)；足够则 `ChangeMP(-GetAttributeInt(CMP))` 扣除并刷新显示。**无限蓝钩子**：魔力不足检查与扣蓝两处均被 `if (!isSkipMPCost)` 包裹，`isSkipMPCost` 取自虚方法 `IsSkipPutCardMPCost()`（基类默认 false；挑战100勇士重写为 true，魔王蓝量无限）——无限蓝模式的唯一改动点。放置成功后播放两个全局单例粒子：在魔王(防守核心)位置 `EffectHandler.ShowCreaturePlaceEffect(EffectHandler.Instance.manager.effectManaId, coreCreature.creatureObj.transform.position)`(消耗魔力,EffectInfo id=1000001 Effect_Mana_1)、在生成位置 `EffectHandler.ShowCreaturePlaceEffect(EffectHandler.Instance.manager.effectCreatureShowId, selectTargetPos)`(魔物登场,id=1100001 Effect_CreatureShow_1)，再播 `AudioEnum.sound_btn_19`（2026-08-16 起原 ShowManaEffect/ShowCreatureShowEffect 已合并为 ShowCreaturePlaceEffect，走全局单例通道）。复活CD判定走 `GetAttribute(CreatureAttributeTypeEnum.RCD, true)`（基础值creatureInfo.RCD→角色加点→装备→自身/稀有度RCD减益→再叠加深渊馈赠全局池；第二参 includeAbyssalBlessing=true 开启深渊馈赠按需叠加，逻辑统一在 CreatureBean.GetAttribute 内，原 GetRCD 已并入）
 
 ### 进攻刷怪 / Quick(加快进攻节奏)
-- `UpdateGameForAttackCreate(updateTime)` - 逐帧累加，达标即出下一波：`fightAttackData.GetNextAttackDetailData()` 取波次 → 刷新间隔 `timeUpdateTargetForAttackCreate=timeNextAttack` → BOSS 首波 `ShowBossDialog` → `CreatureHandler.CreateAttackCreature`。
-- `QuickAdvanceAttackCreate(advanceRate=0.1f)`（public）- Quick 按钮调用：立即推进「`timeAttackTotal*advanceRate`(默认10%)」的时间，用与逐帧刷怪同一套步进语义**逐波消费**推进时间、把这段时间本应生成的波次全部立即生成；队列耗尽则停止、进度封顶 100%；返回推进后的最新进度(0~1)。无消耗无冷却。Quick 按钮与世界绑定的显隐见 game-fight-system / research-system SKILL。
+- `UpdateGameForAttackCreate(updateTime)` - 逐帧累加，达标即出下一波：`fightAttackData.GetNextAttackDetailData()` 取波次 → 刷新间隔 `timeUpdateTargetForAttackCreate=timeNextAttack` → BOSS 首波 `ShowBossDialog` → `CreatureHandler.CreateAttackCreature`。**队列补充虚钩子 `TryRefillNextAttackQueue()`**（protected virtual，基类默认 false=不补充，维持征服等模式"无下一波即进攻结束"语义）两层接入，两处对称：①取波次返回 null（队列耗尽）时先调它，true 则重取一次；②每次 `CreateAttackCreature` 出怪后检查 `queueAttackDetails.Count==0` 立即调（取出本轮最后一波即当场补下一轮），消除"最后一次出怪到下次计时器达标"之间的队列真空窗口。无尽模式重写该钩子追加下一轮，配合其 `CheckGameEnd()` 重写（屏蔽胜利只判魔王死）构成双重保险。
+- `QuickAdvanceAttackCreate(advanceRate=0.1f)`（public）- Quick 按钮调用：立即推进「`timeAttackTotal*advanceRate`(默认10%)」的时间，用与逐帧刷怪同一套步进语义**逐波消费**推进时间、把这段时间本应生成的波次全部立即生成；队列耗尽先对称调 `TryRefillNextAttackQueue()`（Quick 对无尽隐藏，属防御性接入），仍无波次则停止、进度封顶 100%；返回推进后的最新进度(0~1)。无消耗无冷却。Quick 按钮与世界绑定的显隐见 game-fight-system / research-system SKILL。
 
 ### 游戏速度（2倍速 Speed2）
 - `UpdateGame` 的 `updateTime = Time.deltaTime * fightData.gameSpeed`——游戏时间流速倍率挂在 fightData 上（默认1，仅本场战斗有效，不改 Time.timeScale）。

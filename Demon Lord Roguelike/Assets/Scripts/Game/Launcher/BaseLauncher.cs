@@ -14,6 +14,8 @@ public class BaseLauncher : BaseMonoBehaviour
     /// </summary>
     public virtual void Launch()
     {
+        //初始化所有Mod(必须在 TextHandler/任何Cfg首次访问前: Mod的JsonText(含多语言)合并依赖扫描结果)
+        ModHandler.Instance.InitializeAllModsSync();
         //设置多语言
         TextHandler.Instance.InitData();
         //初始化图集

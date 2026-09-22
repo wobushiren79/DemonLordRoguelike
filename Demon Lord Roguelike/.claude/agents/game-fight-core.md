@@ -8,6 +8,7 @@ watched_files:
   - Assets/Scripts/Component/Game/Control/ControlForGameFight.cs
   - Assets/Scripts/Component/Manager/FightManager.cs
   - Assets/Scripts/Component/Handler/FightHandler.cs
+  - Assets/Scripts/Bean/Game/FightBeanForInfinite.cs
 ---
 
 # 战斗核心 (Fight Core) 开发代理
@@ -20,7 +21,7 @@ watched_files:
 - **FightCreatureEntity** - 战斗生物实体，管理生物在战斗中的完整生命周期；按生物类型拆分为 partial 文件：主文件（通用：SetData/受击/回复/动画/检测/死亡分发/朝向 `SetFaceDirection`——内置去重：目标 localScale.x 符号与当前相等则直接 return 不重复写 transform.localScale，惠及所有调用方尤其防守生物每攻击循环转身校准）、`FightCreatureEntityForAttack.cs`（进攻：ChangeRoad 换路诱导、死亡意图）、`FightCreatureEntityForDefense.cs`（防守：死亡意图）、`FightCreatureEntityForDefenseCore.cs`（魔王：魔力显示 `RefreshMPShow()`——MPShow 进度条(Mat_Creature_Mana_1，新版 FrameWork/URP/MeshProgressBar 圆形进度，SetFloat "_Progress" 单一进度无护盾层，已不再与 LifeShow 同款) + MPText"当前/上限"文本，非核心生物无该节点自动跳过；死亡意图）。新增类型专属逻辑时写入对应 partial 文件
 - **SetCreatureDead 幂等守卫** - `FightCreatureEntity.SetCreatureDead()` 开头新增 `if (IsDead()) return;`：同帧多段致死只执行一次（防重复掉水晶/重复死亡事件/冲锋型重复引爆）
 - **召唤物不掉水晶（isSummoned，2026-09-15 新增）** - `DropCrystal` 方法头先判 `fightCreatureData.isSummoned` 直接 return：`AttackModeSummon` 召唤生成的生物（骷髅召唤师的骷髅 20010001/20020001）死亡不掉魔晶，防低血召唤物被挂机刷取；标记由 AttackModeSummon 在 CreateAttackCreature 后置位，`FightCreatureBean.ResetData()` 清零防对象池残留
-- **DropCrystal 掉落数量按模式分流（2026-09 新增 ChallengeHundred 分支）** - 默认 `dropCrystal=1`；`== Conquer` 吃 `fightTypeConquerInfo.drop_crystal`；`== ChallengeHundred` 新增 else if 分支吃冻结配置行 `FightTypeChallengeHundredInfoBean.drop_crystal`（冻结数据/行为空时保持默认 1）。其余链路（时长=BASE_LIFE_TIME+研究加成、事件 `GameFightLogic_CreatureDeadDropCrystal`）不变
+- **DropCrystal 掉落数量按模式分流（2026-09 新增 ChallengeHundred/Infinite 分支）** - 默认 `dropCrystal=1`；`== Conquer` 吃 `fightTypeConquerInfo.drop_crystal`；`== ChallengeHundred` else if 分支吃冻结配置行 `FightTypeChallengeHundredInfoBean.drop_crystal`（冻结数据/行为空时保持默认 1）；`== Infinite` else if 分支吃同难度征服行 `FightBeanForInfinite.fightTypeConquerInfo.drop_crystal`（与征服一致，不随轮次变化；fightTypeConquerInfo 为空时保持默认 1）。其余链路（时长=BASE_LIFE_TIME+研究加成、事件 `GameFightLogic_CreatureDeadDropCrystal`）不变
 - **冲锋自爆型死亡引爆（FightCreatureEntityForDefense.cs）** - 冲锋自爆型（`CreatureInfoBeanPartial.IsChargeAttack()`，creature_info 新列 charge_attack，当前唯一配置=6003 哥布林敢死队）死亡即引爆：`SetCreatureDeadForDefense` 里调新方法 `CreateAttackModeForDeadExplosion()`——纯数据无参路径创建爆炸攻击模块，伤害=ATK×攻击模式 damage_add_rate；绕过 AttackModeExplosion 对已死攻击者不爆的守卫
 - **FightPrefabEntity** - 战斗预制体实体；掉落物寿命按游戏速度消耗（`Update` 用 `GameFightLogic.GetFightDeltaTime()`，2倍速下按游戏时间流速扣 lifeTime）
 - **CreatureSpineOutlineFollow** - 场上魔物描边高亮跟随（选中手牌时悬停高亮对应场上魔物，共享单例预览 `FightCreature_OutlinePreview.prefab` + OutlineOnly 描边材质逐帧复制目标骨骼姿态）；渲染排序取目标 sortingOrder **+1**（前一层）：OutlineOnly 只画轮廓内部全透明，压过本体观感不变，且避免被场景全屏透明效果（如沙漠热浪 HeatHaze，Default 层 order 0 近不透明屏幕扭曲面）盖住洗掉——透明排序中同 Transparent 范围内 sortingOrder 优先于 Render Queue，放后一层(-1)会被 order 0 的热浪绘制覆盖
@@ -39,7 +40,7 @@ watched_files:
 - **FightBean** - 战斗数据基类
 - **FightBeanForConquer** - 征服模式战斗数据
 - **FightBeanForDoomCouncil** - 终焉议会战斗数据
-- **FightBeanForInfinite** - 无限模式战斗数据
+- **FightBeanForInfinite** - 无限/无尽模式战斗数据（持有同难度征服行 `fightTypeConquerInfo`[复用其怪物池/数量/时长/场景/魔晶掉落]+无尽行 `fightTypeInfiniteInfo`[每轮强度倍率,null 降级不阻断]+`roundNum` 当前轮次从1起；`InitData` 建核心/收阵容/取BOSS场景池/填充第1轮；`AppendNextRoundAttackData()` 追加下一轮波次到队列末尾不重建[每轮=征服BOSS关同款构成：普通怪分桶随机+BOSS中后段错开+每轮弹特写，数量固定不递推]；`GetRoundIntensityRate(round)`=征服 attack_intensity_baserate × 无尽 round_intensity_addrate^(round-1) × 终焉议会强度议案）
 - **FightBeanForTest** - 测试战斗数据
 - **FightBeanForChallengeHundred** - 挑战100勇士战斗数据（持有冻结配置行 `fightTypeChallengeHundredInfo` 与 `gameWorldInfoRandomData`；固定100只怪分桶随机排程 `InitFightAttackData`，强度=行 `attack_intensity_baserate` 不叠终焉议会）
 - **FightCreatureBean** - 战斗生物数据

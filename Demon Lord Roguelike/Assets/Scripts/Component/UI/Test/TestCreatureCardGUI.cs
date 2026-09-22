@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Spine.Unity;
 using UnityEngine;
 using UnityEngine.UI;
 #if UNITY_EDITOR
@@ -9,6 +10,7 @@ using static ExcelUtil;
 /// <summary>
 /// 生物卡片编辑器（GUI版，纯代码控制面板 + 真实卡片预制体，不依赖任何测试预制）
 /// 自由设置稀有度/等级/生物ID/NPC ID（或下拉选择生物/NPC）实时查看 UIViewCreatureCardItem 与 UIViewCreatureCardDetails 的显示效果；
+/// 另带场景Spine展示：世界空间并排摆放标准模型(固定2001骷髅战士)与当前生物模型(走真实 SetCreatureData 链, 缩放=size_spine×体型倍率)，方便对比场景实际大小；
 /// 支持自定义稀有度板色(主板/副板,支持双色渐变)与等级字体颜色实时预览，并可写回 excel_rarity_info / excel_level_info 配置表(同步再生JSON并清Cfg缓存立即生效)。
 /// 由 LauncherTest.StartForCreatureCardEditor 挂到空物体上启动。
 /// </summary>
@@ -22,6 +24,10 @@ public class TestCreatureCardGUI : MonoBehaviour
     private const int LevelMax = 10;        //等级滑条上限(LevelInfo 配置 1~10 级颜色, 0级固定白色)
     private const int CanvasSortOrder = 5000;//覆盖层Canvas层级(压过游戏UI)
     private const float PanelWidth = 400;   //左侧IMGUI控制面板宽度
+    private const long StandardSceneCreatureId = 2001;  //场景标准模型生物id(骷髅战士, 与旧版UITestCard测试标准模型一致, 作大小对比基准)
+    private const float SceneSpineOffsetX = 1.1f;   //场景模型相对中心点的横向偏移(标准在左/目标在右)
+    private static readonly Vector3 SceneCameraPos = new Vector3(0, 3.6f, -6f);   //场景展示相机位置(侧视微俯视)
+    private static readonly Vector3 SceneCameraLookAt = new Vector3(0, 2.9f, 0);  //场景展示相机注视点(把模型框到屏幕底部, 避开中间卡片)
     #endregion
 
     #region 数据字段
@@ -31,6 +37,13 @@ public class TestCreatureCardGUI : MonoBehaviour
     private Canvas canvas;                          //卡片显示用覆盖层Canvas(随面板销毁)
     private UIViewCreatureCardItem cardItem;        //小卡实例(真实预制体)
     private UIViewCreatureCardDetails cardDetails;  //大卡详情实例(真实预制体)
+
+    private GameObject sceneRoot;                   //场景Spine展示根节点(世界空间, 随面板销毁)
+    private GameObject scenePlaneObj;               //场景地平面(大小对比的地面基准)
+    private SkeletonAnimation standardSceneSpine;   //场景标准模型(固定2001骷髅战士, 大小对比基准)
+    private SkeletonAnimation targetSceneSpine;     //场景目标模型(当前选中生物)
+    private bool showSceneSpine = true;             //是否显示场景Spine展示
+    private CreatureBean lastCreatureData;          //最近一次构建的生物数据(场景大小信息行用)
 
     private int sourceType;                         //数据来源: 0=生物 1=NPC
     private long currentCreatureId = 2001;          //当前选中的生物id
@@ -126,22 +139,25 @@ public class TestCreatureCardGUI : MonoBehaviour
 
     #region 生命周期
     /// <summary>
-    /// 初始化：创建覆盖层Canvas并实例化真实卡片预制体，随后按初始参数刷新卡片
+    /// 初始化：创建覆盖层Canvas并实例化真实卡片预制体、创建场景Spine展示，随后按初始参数刷新卡片
     /// </summary>
     private void Start()
     {
         Instance = this;
         CreateCards();
+        CreateSceneSpineDisplay();
         ReadConfigColors(false, false, false);
         RefreshCards();
     }
 
     /// <summary>
-    /// 销毁时置空实例引用(Canvas为子物体随之销毁)
+    /// 销毁时置空实例引用并清理场景Spine展示(Canvas为子物体随之销毁)
     /// </summary>
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
+        if (sceneRoot != null) Destroy(sceneRoot);
+        if (scenePlaneObj != null) Destroy(scenePlaneObj);
     }
     #endregion
 
@@ -205,18 +221,106 @@ public class TestCreatureCardGUI : MonoBehaviour
     }
     #endregion
 
+    #region 场景Spine展示
+    /// <summary>
+    /// 创建场景Spine展示：地平面 + 标准模型(固定2001骷髅战士) + 主相机侧视取景(模型框到屏幕底部, 避开中间卡片)
+    /// </summary>
+    private void CreateSceneSpineDisplay()
+    {
+        //地平面(大小对比的地面基准, 与特效测试同款10x10平面, 摆原点即顶面高度0)
+        scenePlaneObj = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        scenePlaneObj.name = "CreatureCardTestPlane";
+        //场景模型根节点(世界空间, 独立于覆盖层Canvas)
+        sceneRoot = new GameObject("CreatureCardTestSceneRoot");
+        //标准模型(固定2001骷髅战士, 与旧版UITestCard的测试标准模型一致, 作大小对比基准)
+        CreatureBean standardCreature = new CreatureBean(StandardSceneCreatureId);
+        standardCreature.AddSkinForBase();
+        standardSceneSpine = CreateSceneSpine("Standard", -SceneSpineOffsetX, standardCreature);
+        //主相机: 隐藏虚拟相机、激活主相机并关闭切换动画(与特效测试同套逻辑), 再摆到侧视微俯视取景位
+        CameraManager cameraManager = CameraHandler.Instance.manager;
+        if (cameraManager.mainCamera != null)
+        {
+            cameraManager.HideAllCM();
+            cameraManager.mainCamera.gameObject.SetActive(true);
+            cameraManager.SetMainCameraDefaultBlend(0);
+            cameraManager.mainCamera.transform.position = SceneCameraPos;
+            cameraManager.mainCamera.transform.LookAt(SceneCameraLookAt);
+        }
+    }
+
+    /// <summary>
+    /// 在场景根节点下创建一个世界空间生物Spine模型(走真实 SetCreatureData 链: 缩放=size_spine×体型倍率)，并循环播放待机；
+    /// 根节点负责摆放、SkeletonAnimation 挂子节点 Renderer(SetCreatureData 对 spine 节点的缩放/位置管理不干扰根节点摆放)
+    /// </summary>
+    /// <param name="name">节点名后缀</param>
+    /// <param name="posX">横向摆放坐标(脚下踩地平面y=0)</param>
+    /// <param name="creatureData">生物数据</param>
+    private SkeletonAnimation CreateSceneSpine(string name, float posX, CreatureBean creatureData)
+    {
+        GameObject spineObj = new GameObject($"SceneSpine_{name}");
+        spineObj.transform.SetParent(sceneRoot.transform, false);
+        spineObj.transform.localPosition = new Vector3(posX, 0, 0);
+        GameObject rendererObj = new GameObject("Renderer");
+        rendererObj.transform.SetParent(spineObj.transform, false);
+        SkeletonAnimation spine = SpineHandler.Instance.AddSkeletonAnimation(rendererObj, creatureData.creatureModel.res_name);
+        CreatureHandler.Instance.SetCreatureData(spine, creatureData);
+        SpineHandler.Instance.PlayAnim(spine, SpineAnimationStateEnum.Idle, creatureData, true);
+        return spine;
+    }
+
+    /// <summary>
+    /// 刷新场景目标模型(数据参数变更时随卡片一起换骨/换肤/重置缩放; 颜色与卡片缩放变更不触发)
+    /// </summary>
+    private void RefreshSceneSpine(CreatureBean creatureData)
+    {
+        if (sceneRoot == null) return;
+        if (targetSceneSpine == null)
+        {
+            targetSceneSpine = CreateSceneSpine("Target", SceneSpineOffsetX, creatureData);
+            return;
+        }
+        CreatureHandler.Instance.SetCreatureData(targetSceneSpine, creatureData);
+        SpineHandler.Instance.PlayAnim(targetSceneSpine, SpineAnimationStateEnum.Idle, creatureData, true);
+    }
+
+    /// <summary>
+    /// 绘制场景Spine展示区(显示开关 + 标准/当前模型大小数值对比)
+    /// </summary>
+    private void DrawSceneSpineSection()
+    {
+        GUILayout.BeginHorizontal();
+        bool newShow = GUILayout.Toggle(showSceneSpine, " 场景Spine", labelStyle, GUILayout.Width(100));
+        if (newShow != showSceneSpine)
+        {
+            showSceneSpine = newShow;
+            if (sceneRoot != null) sceneRoot.SetActive(showSceneSpine);
+            if (scenePlaneObj != null) scenePlaneObj.SetActive(showSceneSpine);
+        }
+        GUILayout.Label("(标准=2001骷髅战士)", hintStyle);
+        GUILayout.EndHorizontal();
+        if (showSceneSpine && standardSceneSpine != null && targetSceneSpine != null && lastCreatureData != null)
+        {
+            float standardScale = standardSceneSpine.transform.localScale.x;
+            float targetScale = targetSceneSpine.transform.localScale.x;
+            GUILayout.Label($"场景大小: 标准 {standardScale:F2} | 当前 {targetScale:F2} (模型{lastCreatureData.creatureModel.size_spine:F2}×体型{lastCreatureData.GetBodySizeScale():F2})", hintStyle);
+        }
+    }
+    #endregion
+
     #region 卡片数据构建与刷新
     /// <summary>
-    /// 重建生物数据并刷新小卡/大卡显示(数据参数变更时调用)，随后应用自定义颜色覆盖
+    /// 重建生物数据并刷新小卡/大卡/场景模型显示(数据参数变更时调用)，随后应用自定义颜色覆盖
     /// </summary>
     private void RefreshCards()
     {
         if (cardItem == null || cardDetails == null) return;
         CreatureBean creatureData = BuildCreature();
         if (creatureData == null) return;
+        lastCreatureData = creatureData;
         //ShowNoPopup: 测试面板无需详情气泡交互, 禁用悬停弹窗按钮
         cardItem.SetData(creatureData, CardUseStateEnum.ShowNoPopup);
         cardDetails.SetData(creatureData);
+        RefreshSceneSpine(creatureData);
         ApplyCustomColors();
     }
 
@@ -467,6 +571,7 @@ public class TestCreatureCardGUI : MonoBehaviour
         DrawRaritySelector();
         DrawLevelSlider();
         DrawScaleSlider();
+        DrawSceneSpineSection();
         GUILayout.Space(6);
         DrawColorEditors();
         GUILayout.Space(6);

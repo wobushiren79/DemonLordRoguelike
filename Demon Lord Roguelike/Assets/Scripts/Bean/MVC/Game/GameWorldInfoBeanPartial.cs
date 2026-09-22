@@ -61,18 +61,16 @@ public partial class GameWorldInfoRandomBean
             }
         }
 
-        //随机世界模式
-        List<GameFightTypeEnum> listRandomGameFightType = new List<GameFightTypeEnum>()
+        //无尽模式判定(固定1/10概率): 前提是该世界无尽已解锁(unlock_id_infinite=无尽研究起始ID, 即难度2无尽节点的解锁ID)
+        if (UserUnlock.CheckIsUnlock(gameWorldInfo.unlock_id_infinite) && UnityEngine.Random.Range(0, 10) == 0)
         {
-            GameFightTypeEnum.Conquer //默认有征服模式
-        };
-        //如果无尽模式解锁了
-        if (UserUnlock.CheckIsUnlock(gameWorldInfo.unlock_id_infinite))
-        {
-            listRandomGameFightType.Add(GameFightTypeEnum.Infinite);
+            gameFightType = GameFightTypeEnum.Infinite;
+            SetRandomDataForInfinite();
+            return;
         }
-        var randomIndex = UnityEngine.Random.Range(0, listRandomGameFightType.Count);
-        gameFightType = listRandomGameFightType[randomIndex];
+
+        //落回征服(默认模式)
+        gameFightType = GameFightTypeEnum.Conquer;
 
         //设置随机数据
         SetRandomData(gameFightType);
@@ -138,21 +136,31 @@ public partial class GameWorldInfoRandomBean
 
     /// <summary>
     /// 切换当前难度等级, 并把当前道路数/道路长度/关卡数同步为该难度预生成的随机数据
-    /// (FightBeanForConquer 与气泡均直接读取这些字段, 故切换难度后必须同步才能反映新难度)
+    /// (FightBeanForConquer/FightBeanForInfinite 与气泡均直接读取这些字段, 故切换难度后必须同步才能反映新难度)
     /// </summary>
     /// <param name="targetDifficultyLevel">目标难度等级</param>
     public void SetDifficultyLevel(int targetDifficultyLevel)
     {
         difficultyLevel = targetDifficultyLevel;
-        //仅征服模式按难度同步道路/关卡数据; 无尽模式无难度概念, 保留 SetRandomDataForInfinite 随出的字段值
-        if (gameFightType != GameFightTypeEnum.Conquer)
-            return;
-        GameWorldDifficultyRandomBean difficultyRandom = GetDifficultyRandom(targetDifficultyLevel);
-        if (difficultyRandom == null)
-            return;
-        roadNum = difficultyRandom.roadNum;
-        roadLength = difficultyRandom.roadLength;
-        fightNum = difficultyRandom.fightNum;
+        if (gameFightType == GameFightTypeEnum.Conquer)
+        {
+            GameWorldDifficultyRandomBean difficultyRandom = GetDifficultyRandom(targetDifficultyLevel);
+            if (difficultyRandom == null)
+                return;
+            roadNum = difficultyRandom.roadNum;
+            roadLength = difficultyRandom.roadLength;
+            fightNum = difficultyRandom.fightNum;
+        }
+        else if (gameFightType == GameFightTypeEnum.Infinite)
+        {
+            //无尽模式: 仅同步该难度预生成的道路数/道路长度(无关卡数/奖励); 不走 GetDifficultyRandom 懒生成(那会连带生成征服通关奖励), 未预生成的难度保留当前值
+            GameWorldDifficultyRandomBean difficultyRandom = listDifficultyRandom?.Find(item => item.difficultyLevel == targetDifficultyLevel);
+            if (difficultyRandom == null)
+                return;
+            roadNum = difficultyRandom.roadNum;
+            roadLength = difficultyRandom.roadLength;
+        }
+        //其余模式(挑战100勇士)无难度概念, 直接返回
     }
 
     /// <summary>
@@ -230,12 +238,43 @@ public partial class GameWorldInfoRandomBean
     }
 
     /// <summary>
-    /// 设置无限模式数据
+    /// 设置无尽模式数据: 按无尽已解锁难度(2~已解锁最高)逐难度预生成道路数/道路长度(取自同难度征服行 road_num/road_length 区间, 切换难度直接取用保证恒定);
+    /// 默认难度=最高已解锁无尽难度; 无尽无关卡数/通关奖励概念(fightNum占位1, listReward留空)
     /// </summary>
     public void SetRandomDataForInfinite()
     {
-        int roadNumRandom = UnityEngine.Random.Range(1, 7);
-        roadNum = roadNumRandom;
+        var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+        //已解锁的最高无尽难度(默认难度); 无尽无难度1, 至少为2
+        int unlockInfiniteMax = userUnlock.GetUnlockInfiniteDifficultyLevel(worldId);
+        if (unlockInfiniteMax < 2)
+        {
+            LogUtil.LogError($"初始化无尽模式失败: 无尽未解锁 worldId:{worldId}");
+            unlockInfiniteMax = 2;
+        }
+        //预生成 2~已解锁最高 的每个无尽难度随机数据(仅道路数/道路长度; 无关卡数与通关奖励)
+        listDifficultyRandom = new List<GameWorldDifficultyRandomBean>();
+        for (int level = 2; level <= unlockInfiniteMax; level++)
+        {
+            FightTypeConquerInfoBean fightTypeConquerInfo = FightTypeConquerInfoCfg.GetItemData(worldId, level);
+            if (fightTypeConquerInfo == null)
+                continue;
+            listDifficultyRandom.Add(new GameWorldDifficultyRandomBean()
+            {
+                difficultyLevel = level,
+                //随机道路数量/长度(复用同难度征服行 road_num/road_length 区间)
+                roadNum = fightTypeConquerInfo.GetRandomRoadNum(),
+                roadLength = fightTypeConquerInfo.GetRandomRoadLength(),
+                //无尽无关卡数概念, 占位1
+                fightNum = 1,
+            });
+        }
+        if (listDifficultyRandom.Count == 0)
+        {
+            LogUtil.LogError($"初始化无尽模式失败: 无可用征服配置 worldId:{worldId} unlockInfiniteMax:{unlockInfiniteMax}");
+            return;
+        }
+        //默认难度取已解锁最高, 并同步当前道路数据
+        SetDifficultyLevel(unlockInfiniteMax);
     }
 
     /// <summary>

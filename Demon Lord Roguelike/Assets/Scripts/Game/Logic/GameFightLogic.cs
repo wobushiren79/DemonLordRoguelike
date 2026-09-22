@@ -338,6 +338,17 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
+    /// 进攻队列耗尽时尝试补充下一轮进攻
+    /// 无尽模式重写: 追加下一轮波次, 保证队列永不空(胜利判定"队列空+场上无敌"永不满足, 只有魔王死亡才结束);
+    /// 默认 false=不补充, 维持征服等模式"无下一波即进攻结束"的语义
+    /// </summary>
+    /// <returns>true=已补充新波次(调用方应重新取下一波); false=无补充</returns>
+    protected virtual bool TryRefillNextAttackQueue()
+    {
+        return false;
+    }
+
+    /// <summary>
     /// 更新-进攻方刷怪
     /// <para>按波次计时器累加，到达目标间隔后取下一波进攻明细：无下一波则不再生成；</para>
     /// <para>否则刷新下次生成间隔(timeNextAttack)，若该波携带 bossShowNpcIds 则弹出BOSS特写UI，最后按明细在场景道路上生成进攻生物。</para>
@@ -352,7 +363,13 @@ public class GameFightLogic : BaseGameLogic
             var attackDetailsData = fightData.fightAttackData.GetNextAttackDetailData();
             if (attackDetailsData == null)
             {
-                return;
+                //队列耗尽: 给无尽等模式一个补充下一轮的机会(同帧同调用栈 refill, 保证帧边界上队列恒非空, CheckGameEnd 胜利分支结构性不可达)
+                if (TryRefillNextAttackQueue())
+                    attackDetailsData = fightData.fightAttackData.GetNextAttackDetailData();
+                if (attackDetailsData == null)
+                {
+                    return;
+                }
             }
             fightData.timeUpdateTargetForAttackCreate = attackDetailsData.timeNextAttack;
             //BOSS出现：弹出BOSS特写UI(仅BOSS首波携带 bossShowNpcIds)
@@ -361,6 +378,9 @@ public class GameFightLogic : BaseGameLogic
                 ShowBossDialog(attackDetailsData.bossShowNpcIds);
             }
             CreatureHandler.Instance.CreateAttackCreature(attackDetailsData, fightData.sceneRoadNum);
+            //本轮最后一波已取出: 给无尽等模式一个立即补充下一轮的机会, 保证队列在帧边界恒非空(无"队列真空"窗口, 节奏连贯)
+            if (fightData.fightAttackData.queueAttackDetails.Count == 0)
+                TryRefillNextAttackQueue();
         }
     }
 
@@ -394,7 +414,9 @@ public class GameFightLogic : BaseGameLogic
             advanceTime -= needTime;
             fightData.timeUpdateForAttackCreate = 0;
             var attackDetailsData = fightAttackData.GetNextAttackDetailData();
-            //没有更多波次，进攻已到末尾
+            //队列耗尽: 给无尽等模式一个补充下一轮的机会(Quick对无尽隐藏, 此为防御性对称接入), 仍无波次则进攻已到末尾
+            if (attackDetailsData == null && TryRefillNextAttackQueue())
+                attackDetailsData = fightAttackData.GetNextAttackDetailData();
             if (attackDetailsData == null)
                 break;
             fightData.timeUpdateTargetForAttackCreate = attackDetailsData.timeNextAttack;
@@ -402,6 +424,9 @@ public class GameFightLogic : BaseGameLogic
             if (attackDetailsData.bossShowNpcIds != null && attackDetailsData.bossShowNpcIds.Count > 0)
                 ShowBossDialog(attackDetailsData.bossShowNpcIds);
             CreatureHandler.Instance.CreateAttackCreature(attackDetailsData, fightData.sceneRoadNum);
+            //本轮最后一波已取出: 给无尽等模式一个立即补充下一轮的机会(与 UpdateGameForAttackCreate 对称)
+            if (fightAttackData.queueAttackDetails.Count == 0)
+                TryRefillNextAttackQueue();
         }
         return fightAttackData.GetAttackProgress();
     }

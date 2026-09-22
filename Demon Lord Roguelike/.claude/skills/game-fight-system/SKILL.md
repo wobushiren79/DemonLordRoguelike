@@ -16,6 +16,11 @@ watched_files:
   - Assets/Scripts/Component/UI/Game/FightSettlement/UIFightSettlement.cs
   - Assets/Scripts/Component/Handler/CreatureHandler.cs
   - Assets/Scripts/Component/Manager/CreatureManager.cs
+  - Assets/Scripts/Bean/Game/FightBeanForInfinite.cs
+  - Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBeanPartial.cs
+  - Assets/Editor/FightModeEditorTabInfinite.cs
+  - Assets/Data/Excel/excel_fight_type_infinite_info[战斗-无尽模式].xlsx
+  - Assets/Resources/JsonText/FightTypeInfiniteInfo.txt
 ---
 
 # 战斗系统开发指南
@@ -48,6 +53,8 @@ GameFightTypeEnum
 > **反射工厂自动接入**：`GameHandler.StartGameFight` 按 `"GameFightLogic" + gameFightType.GetEnumName()` 反射创建逻辑实例——新增模式只需「枚举末尾追加 + 新建同名 `GameFightLogic<枚举名>` 类」，工厂零改动。
 
 > **挑战100勇士模式要点（ChallengeHundred，2026-09 新增）**：单关 100 只怪（`FightBeanForChallengeHundred.AttackCreatureNum=100`）在冻结配置行 `attack_show_time` 内分桶均匀随机出怪（每桶随机时刻，每只独立从行 `enemy_ids` 随机）；强度倍率=行 `GetIntensityRate(冻结难度)`（= `attack_intensity_baserate` 逐难度对齐取档，≤0按1；**不叠加终焉议会强度议案**，本模式强度自配）。道路数/长度/宝箱奖励在传送门生成时随出并冻结（预览=实领，见 conquer-system / portal-system）。**challenge_type=1 为 BOSS挑战**：通关宝箱奖励翻倍（装备 3箱→6件、魔晶单箱数量 x2）。结算：胜利发阵容经验（行 `reward_exp` 按冻结难度取档）→ `UIFightSettlement` → Next → 全手动开箱（`isAutoOpenFirstBox=false`，无首箱保底，可开数=奖励总数：普通3/BOSS装备6）；失败直接返回基地。**不发成就/声望、无关卡间深渊馈赠**；魔王蓝量无限（重写 `IsSkipPutCardMPCost()=>true`，见「魔王魔力（MP）系统」）。配置表：`excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx` → `FightTypeChallengeHundredInfoBean(Partial)`（一行一只怪，当前 28 行=征服全部进攻敌人 14普通+14BOSS）。
+
+> **无尽/无限模式要点（Infinite，2026-09 重构）**：`FightBeanForInfinite` 持有同难度征服行 `fightTypeConquerInfo`（无尽复用其怪物池/数量/时长/场景/魔晶掉落 `drop_crystal`）+ 无尽行 `fightTypeInfiniteInfo`（每轮强度倍率，null 时轮次乘区按1降级不阻断）+ `roundNum`（当前轮次从1起，无关卡语义，`figthNumMax=1`/`fightNum=1` 占位）。场景取 BOSS 场景池 `GetRandomFightScene(true)`（每轮都有 BOSS）。**核心机制=进攻队列永不空，永不胜利**：基类虚钩子 `TryRefillNextAttackQueue()`（默认 false）两层接入 `UpdateGameForAttackCreate`/`QuickAdvanceAttackCreate`（①取波次返回 null 时先调它再重取；②每次出怪后队列已空立即补下一轮，消除队列真空窗口），无尽重写为 `AppendNextRoundAttackData()` 追加到队列末尾（不重建）并返 true；再加重写 `CheckGameEnd()` 屏蔽胜利判定只判魔王死亡——双重保险保证只有魔王死亡（失败）才结束。每轮构成=征服 BOSS 关同款：`attack_start_num` 只普通怪在 `attack_show_time` 内分桶随机 + `attack_boss_num` 只 BOSS 在 [50%,90%] 时刻错开 0.3s、首只携带 `bossShowNpcIds`（**每轮都弹 BOSS 特写**），数量固定不递推。强度=`GetRoundIntensityRate(round)`=征服行 `attack_intensity_baserate` × 无尽行 `round_intensity_addrate^(round-1)`（第1轮恒1）× 终焉议会强度议案。结算仅 `UIFightSettlement` 战绩排行榜，退出收尾（`ActionForUIFightSettlementExit`）：议案 EndGame 消耗钩子（`TriggerDoomCouncil(GameFightLogicEndGame)`，缺了会永久残留到后续战斗）→ `ClearAbyssalBlessing` → 还原阵容生物战斗状态 → `SaveUserData` → 回基地；**无经验/声望/成就/宝箱/领奖，不调 `RefillPortalRefreshNum`/`ClearPortalWorldInfoRandomData`**（那是"通关一次世界"语义，无尽无通关）。配置表：`excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（Sheet=FightTypeInfiniteInfo）→ `FightTypeInfiniteInfoBean(Partial)`：列 id/world_id/level（难度2~10，无难度1）/round_intensity_addrate/remark，当前世界1难度2~10共9行（id 1000102~1000110，倍率 1.20→1.05 递减）；Partial：`Bean.GetRoundIntensityRate(round)`=倍率^(round-1)（非法≤0按1）、`Cfg.GetItemData(worldId, difficultyLevel)`/`Cfg.GetMaxLevel(worldId)`（供传送门详情弹窗展示未解锁预览）。编辑器=战斗模式编辑工具第三页签 `FightModeEditorTabInfinite`（行下拉+字段编辑+新增/删除/保存/导出Json，菜单：游戏/战斗模式编辑）。
 
 ## 战斗逻辑生命周期
 
@@ -299,6 +306,8 @@ public virtual void CheckGameEnd()
 
 > **调用时机注意**：`CheckGameEnd()` 由死亡结束事件（`GameFightLogic_CreatureDeadEnd`）**延迟一帧**触发（`CheckGameEndNextFrame()`，GTask.WaitFrame）。因为 BUFF 契约要求死亡事件先于 `RemoveFightCreatureEntity` 派发（见 `AIIntentCreatureDead`），同步检测会把"已死未移除"的怪误判为场上仍有敌人，导致胜利永不结算。
 
+> **无尽模式特判（双重保险）**：无尽模式重写 `CheckGameEnd()` **屏蔽胜利判定**（永不胜利，只判魔王死亡失败），且重写 `TryRefillNextAttackQueue()` 使进攻队列恒非空（取波次 null 时 + 取出本轮最后一波后立即补下一轮，见 game-fight-logic agent「进攻刷怪」节）——上述"队列空+场上无敌"胜利分支结构性不可达，即使存在队列真空的极端时序也不会误触发胜利结算。
+
 ## 战斗场景控制
 
 ```csharp
@@ -364,7 +373,7 @@ public partial class UIFightMain : BaseUIComponent
 
 - **与世界+难度绑定的显隐**：`UIFightMain.RefreshUIData` → `RefreshQuickButtonShow`：仅征服模式、且 `UserUnlockBean.CheckIsUnlockWorldQuickAttack(worldId, difficultyLevel)`（当前世界「当前难度」的「加快进攻节奏」研究已解锁）时才显示 Quick 按钮。worldId 与 difficultyLevel 取 `FightBeanForConquer.gameWorldInfoRandomData` 同名字段。Quick 研究已按难度拆分(难度2~10各一个)，研究节点/id 块约定见 [`research-system`](../research-system/SKILL.md) 世界分支。
 - **点击逻辑**：`UIViewFightMainAttCreateProgress.OnClickForQuick` → 若 `GetAttackProgress()>=1` 直接 return（已到 100% 点击无效）；否则 `GameFightLogic.QuickAdvanceAttackCreate(0.1f)` 推进后 `SetProgress(newProgress, animTime:0.3f)` 平滑过渡（不瞬跳）。
-- **`GameFightLogic.QuickAdvanceAttackCreate(advanceRate=0.1f)`**：立即向前推进「`fightAttackData.timeAttackTotal * advanceRate`（默认总进攻时长10%）」的时间，用与逐帧刷怪 `UpdateGameForAttackCreate` **同一套「累加达标即出下一波」步进语义**逐波消费推进时间，把这段时间本应生成的进攻波次全部立即 `CreateAttackCreature`（含 BOSS 特写 `ShowBossDialog`）；队列耗尽(进攻到末尾)则停止，进度自然封顶 100%。返回推进后的最新进度(0~1)。无消耗、无冷却，仅上限封顶。
+- **`GameFightLogic.QuickAdvanceAttackCreate(advanceRate=0.1f)`**：立即向前推进「`fightAttackData.timeAttackTotal * advanceRate`（默认总进攻时长10%）」的时间，用与逐帧刷怪 `UpdateGameForAttackCreate` **同一套「累加达标即出下一波」步进语义**逐波消费推进时间，把这段时间本应生成的进攻波次全部立即 `CreateAttackCreature`（含 BOSS 特写 `ShowBossDialog`）；队列耗尽先对称调虚钩子 `TryRefillNextAttackQueue()`（基类默认 false；无尽重写为追加下一轮——Quick 按钮对无尽隐藏，此为防御性对称接入），仍无波次则停止，进度自然封顶 100%。返回推进后的最新进度(0~1)。无消耗、无冷却，仅上限封顶。
 
 ### 进攻进度条 2倍速(Speed2) 按钮
 
@@ -523,6 +532,9 @@ gameLogic.SetGameSpeed(1.0f);                          // 正常速度
 | 挑战100勇士模式 | `Assets/Scripts/Game/Logic/GameFightLogicChallengeHundred.cs` |
 | 战斗数据Bean | `Assets/Scripts/Bean/Game/FightBean.cs` |
 | 挑战100勇士战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForChallengeHundred.cs` |
+| 无尽模式战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForInfinite.cs` |
+| 无尽模式配置表Partial | `Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBeanPartial.cs` |
+| 战斗模式编辑工具-无尽页签 | `Assets/Editor/FightModeEditorTabInfinite.cs` |
 | 战斗生物实体(通用) | `Assets/Scripts/Game/Fight/FightCreatureEntity.cs` |
 | 战斗生物实体(进攻:换路诱导/死亡意图) | `Assets/Scripts/Game/Fight/FightCreatureEntityForAttack.cs` |
 | 战斗生物实体(防守:死亡意图) | `Assets/Scripts/Game/Fight/FightCreatureEntityForDefense.cs` |

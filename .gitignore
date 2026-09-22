@@ -36,3 +36,6 @@ sysinfo.txt
 *.apk
 *.unitypackage
 ThaumAge/Assets/Texture/BlockTextureArray/
+
+# Mods（本地 Mod 目录，不上传仓库；分发靠拷贝，见 Demon Lord Roguelike/.claude/skills/mod-system/）
+/Demon Lord Roguelike/Mods/

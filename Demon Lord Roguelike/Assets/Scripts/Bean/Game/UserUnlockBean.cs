@@ -395,6 +395,46 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 获取游戏世界-无尽模式-已解锁最高难度等级
+    /// 无尽模式无难度1(第一难度没有无尽模式): 难度N(2~10)无尽对应解锁ID = 起始ID(unlock_id_infinite) + (N-2)，
+    /// 从起始id连续向后统计已解锁个数(遇断档即止, 与研究的前置链式解锁语义一致)
+    /// </summary>
+    /// <param name="worldId">游戏世界ID</param>
+    /// <returns>无尽模式当前可挑战的最高难度等级; 0=未解锁无尽模式</returns>
+    public int GetUnlockInfiniteDifficultyLevel(long worldId)
+    {
+        var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
+        long startUnlockId = gameWorldInfo.unlock_id_infinite;
+        //起始id为0表示该世界未配置无尽研究; 起始id未解锁表示无尽未开启(也避免 CheckIsUnlock(0) 恒真导致死循环)
+        if (startUnlockId == 0 || !CheckIsUnlock(startUnlockId))
+            return 0;
+        int unlockNum = 0;
+        while (CheckIsUnlock(startUnlockId + unlockNum))
+        {
+            unlockNum++;
+        }
+        //unlockNum个已解锁 → 难度2~(unlockNum+1)
+        return unlockNum + 1;
+    }
+
+    /// <summary>
+    /// 是否已解锁指定世界指定难度的无尽模式(难度2起; 难度N对应解锁ID = 起始ID(unlock_id_infinite) + (N-2))
+    /// </summary>
+    /// <param name="worldId">游戏世界ID</param>
+    /// <param name="difficultyLevel">无尽难度等级(2~10)</param>
+    /// <returns>true=已解锁</returns>
+    public bool CheckInfiniteUnlock(long worldId, int difficultyLevel)
+    {
+        if (difficultyLevel < 2)
+            return false;
+        var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
+        long startUnlockId = gameWorldInfo.unlock_id_infinite;
+        if (startUnlockId == 0)
+            return false;
+        return CheckIsUnlock(startUnlockId + (difficultyLevel - 2));
+    }
+
+    /// <summary>
     /// 获取指定世界指定征服难度的「加快进攻节奏(Quick)」研究的解锁ID
     /// 起始ID取自世界配置表 GameWorldInfo.unlock_id_quick_attack，各难度按起始ID连续向后推导（起始ID+难度-1）。
     /// 起始ID为0表示该世界未配置此类研究，返回-1（不能用0：CheckIsUnlock(0)按约定恒真）。

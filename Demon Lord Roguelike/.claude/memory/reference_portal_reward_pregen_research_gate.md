@@ -10,7 +10,7 @@ metadata:
 **奖励预生成与冻结（预览即实领）**
 - `GameWorldDifficultyRandomBean.listReward`(+`rewardUnlockSign`) 在 `CreateDifficultyRandom` 创建传送门时按难度一次性随出并冻结（`GameWorldInfoBeanPartial.cs`）。
 - `GameWorldInfoRandomBean.GetDifficultyReward(difficulty)` 取预生成奖励；**列表为空(老存档) 或 解锁了新魔物掉落致装备奖励池签名变化(`rewardUnlockSign != RewardSelectBean.GetConquerEquipPoolSign()`) 时重新生成并刷新签名**。这就是「解锁后重新生成奖励」的实现（无事件、访问时自愈）。
-- 通关 BOSS 领奖 `GameFightLogicConquer.ActionForUIFightSettlementNext` 消费这份预生成奖励：`InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`；深渊馈赠「奖励多多」额外件数(装备道具，与首件同规则、生成不出装备兜底魔晶)追加在基础奖励**之后**，`selectNumMax` 钳制到 `listReward.Count - 1`（首箱保底自动开启不占选择次数）。组成为(1保底装备+3魔晶+extra装备)。
+- 通关 BOSS 领奖 `GameFightLogicConquer.ActionForUIFightSettlementNext` 消费这份预生成奖励：`InitDataForReward(baseReward, fightTypeConquerInfo, rewardAddItemNum)`（**先兜底清洗：配置失效道具[如来源道具所属 Mod 被移除]回退魔晶**）；深渊馈赠「奖励多多」额外件数(装备道具，与首件同规则、生成不出装备兜底魔晶)追加在基础奖励**之后**，`selectNumMax` 钳制到 `listReward.Count - 1`（首箱保底自动开启不占选择次数）。组成为(1保底装备+3魔晶+extra装备)，**其中一个魔晶位会被「来源道具」替换**（道具表 `source` 列含 `ItemSourceEnum.ConquerReward`=1 且非装备的道具进候选池，随机一槽随机一件，如 AeonsEchoSpine 341 个幻化药全配 source="1"；无候选/全装备议案/测试模式不替换；替换只发生在可选魔晶位，首箱保底位不动故气泡预览不受影响）。
 - **4箱制+首箱保底**：奖励默认 4 件（`RewardSelectBean.createItemNum=4`），`listReward[0]` 为首箱保底位（已解锁装备=装备/未解锁回退魔晶）；领奖时落地动画全部播完 `await UIRewardSelect.AutoOpenFirstRewardBox()` 自动开首箱并等开箱播完、直接入账（不占 selectNum），**UI 等首箱开完才显示**，玩家从剩余宝箱选择；气泡奖励区只预览首箱保底位这 1 件。
 
 **气泡展示哪个难度 = 当前 `difficultyLevel`，默认取"已解锁最高难度"**

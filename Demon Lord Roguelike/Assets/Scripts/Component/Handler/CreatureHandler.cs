@@ -49,12 +49,15 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         if (hasTransform)
         {
             resName = transformSpineRes;
-            //高清展示位(详情UI等 isUIShow=true):幻化道具配置了 ui_show_spine(Avator段) 时改用高清资源
-            if (isUIShow)
+        }
+        //高清展示位(详情UI等 isUIShow=true):配置了 ui_show_res 键时改用高清资源——独立于 show_res 判定,支持仅详情UI幻化道具(套装只有 Avator/Secretary/Elf/AVG 无 Chess 时 show_res 缺省,世界/小卡仍显示原生物形象)
+        if (isUIShow)
+        {
+            string transformUIShowRes = creatureData.GetTransformUIShowSpineRes();
+            if (!transformUIShowRes.IsNull())
             {
-                string transformUIShowRes = creatureData.GetTransformUIShowSpineRes();
-                if (!transformUIShowRes.IsNull())
-                    resName = transformUIShowRes;
+                resName = transformUIShowRes;
+                hasTransform = true;
             }
         }
         //幻化状态不取皮肤(皮肤按原骨架配置,用不上)
@@ -73,7 +76,17 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
                 SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, skinData);
             }
             //设置模型大小（目标大小 size_spine × NPC体型倍率 bodySizeScale，普通生物体型倍率恒为1）
-            skeletonAnimation.transform.localScale = Vector3.one * creatureData.creatureModel.size_spine * creatureData.GetBodySizeScale();
+            float spineScale = creatureData.creatureModel.size_spine * creatureData.GetBodySizeScale();
+            //幻化道具自带 world_data 键(世界显示尺寸/偏移): 缩放再乘道具倍率, 偏移落到 spine 节点;
+            //位置恒管理(无 world_data=归零)——调用方 spine 均为子节点(默认0)故未幻化生物零影响, 且防对象池复用残留旧偏移
+            Vector3 worldOffset = Vector3.zero;
+            if (hasTransform && creatureData.GetTransformWorldData(out float transformWorldScale, out Vector2 transformWorldOffset))
+            {
+                spineScale *= transformWorldScale;
+                worldOffset = new Vector3(transformWorldOffset.x, transformWorldOffset.y, 0);
+            }
+            skeletonAnimation.transform.localScale = Vector3.one * spineScale;
+            skeletonAnimation.transform.localPosition = worldOffset;
         }
         //设置SkeletonGraphic
         if (skeletonGraphic != null)

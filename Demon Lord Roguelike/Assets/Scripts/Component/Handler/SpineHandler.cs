@@ -91,4 +91,20 @@ public partial class SpineHandler
             skeletonAnimation.Update(0);
         }
     }
+
+    /// <summary>
+    /// 设置动画到第一帧（静态姿势，不播放，SkeletonGraphic 版）
+    /// </summary>
+    public void SetAnimFirstFrame(SkeletonGraphic skeletonGraphic, SpineAnimationStateEnum spineAnimationState, CreatureBean creatureData)
+    {
+        //内部动画组件为空=骨架数据未设置成功(资源缺失等),保持原姿势不报错
+        if (skeletonGraphic == null || creatureData == null || skeletonGraphic.Animation == null)
+            return;
+        var trackEntry = PlayAnim(skeletonGraphic, spineAnimationState, creatureData, false, animSpeed: 0);
+        if (trackEntry != null)
+        {
+            trackEntry.TrackTime = 0;
+            ((SkeletonAnimation)skeletonGraphic.Animation).Update(0);
+        }
+    }
 }

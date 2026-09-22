@@ -6,6 +6,7 @@ using UnityEngine;
 /// 以页签方式承载各战斗模式的配置编辑：
 /// - 征服模式：编辑 excel_fight_type_conquer_info[战斗-征服模式]，见 FightModeEditorTabConquer
 /// - 挑战100勇士：编辑 excel_fight_type_challenge_hundred_info[战斗-挑战100勇士]，见 FightModeEditorTabChallengeHundred
+/// - 无尽模式：编辑 excel_fight_type_infinite_info[战斗-无尽模式]，见 FightModeEditorTabInfinite
 /// </summary>
 public class FightModeEditorWindow : EditorWindow
 {
@@ -28,7 +29,7 @@ public class FightModeEditorWindow : EditorWindow
     #region 成员变量
 
     /// <summary>页签名称（索引与 tab 实例一一对应）</summary>
-    private static readonly string[] TabNames = { "征服模式", "挑战100勇士" };
+    private static readonly string[] TabNames = { "征服模式", "挑战100勇士", "无尽模式" };
 
     /// <summary>当前选中的页签索引</summary>
     private int selectedTab = 0;
@@ -38,6 +39,9 @@ public class FightModeEditorWindow : EditorWindow
 
     /// <summary>挑战100勇士页签</summary>
     private FightModeEditorTabChallengeHundred challengeHundredTab;
+
+    /// <summary>无尽模式页签</summary>
+    private FightModeEditorTabInfinite infiniteTab;
 
     #endregion
 
@@ -52,6 +56,8 @@ public class FightModeEditorWindow : EditorWindow
         conquerTab.Init();
         challengeHundredTab = new FightModeEditorTabChallengeHundred();
         challengeHundredTab.Init();
+        infiniteTab = new FightModeEditorTabInfinite();
+        infiniteTab.Init();
     }
 
     /// <summary>
@@ -67,6 +73,9 @@ public class FightModeEditorWindow : EditorWindow
                 break;
             case 1:
                 challengeHundredTab.OnGUI();
+                break;
+            case 2:
+                infiniteTab.OnGUI();
                 break;
         }
     }

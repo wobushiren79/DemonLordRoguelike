@@ -505,8 +505,9 @@ public partial class UICreatureManager : BaseUIComponent
             creatureData.transformItemId = itemData.itemId;
             userData.RemoveBackpackItem(itemData);
             GameDataHandler.Instance.manager.SaveUserData();
-            //两件套刷新:卡片详情(重绘spine) + 背包列表(道具移除);不涉及经验故不刷献祭按钮
+            //三件套刷新:卡片详情(重绘spine) + 生物卡片列表(幻化形象刷新) + 背包列表(道具移除);不涉及经验故不刷献祭按钮
             ui_UIViewCreatureCardEquipDetails.SetCardDetails(creatureData);
+            ui_UIViewCreatureCardList.RefreshAllCard();
             InitBackpackItemsData();
             RefreshBaseControlForDemonLord(creatureData);
         };
@@ -539,8 +540,9 @@ public partial class UICreatureManager : BaseUIComponent
             creatureData.transformItemId = 0;
             userData.RemoveBackpackItem(itemData);
             GameDataHandler.Instance.manager.SaveUserData();
-            //两件套刷新:卡片详情(重绘spine) + 背包列表(道具移除)
+            //三件套刷新:卡片详情(重绘spine) + 生物卡片列表(幻化形象刷新) + 背包列表(道具移除)
             ui_UIViewCreatureCardEquipDetails.SetCardDetails(creatureData);
+            ui_UIViewCreatureCardList.RefreshAllCard();
             InitBackpackItemsData();
             RefreshBaseControlForDemonLord(creatureData);
         };

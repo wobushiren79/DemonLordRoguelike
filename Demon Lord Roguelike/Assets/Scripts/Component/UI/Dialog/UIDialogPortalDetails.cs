@@ -26,6 +26,8 @@ public partial class UIDialogPortalDetails : DialogView
     protected int unlockDifficultyMax;
     //该世界配置表中存在的最高难度(用于决定是否展示未解锁的"下一个"预览item)
     protected int configDifficultyMax;
+    //难度下限(征服=1; 无尽=2, 第一难度没有无尽模式)
+    protected int difficultyMin = 1;
     //当前是否正在播放切换动画(动画期间禁止再次切换)
     protected bool isAnimating;
     //挑战100勇士-来袭魔物item列表(动态实例化, 模板 ui_UIViewDialogPortalDetailsCreatureItem 不列入)
@@ -54,12 +56,24 @@ public partial class UIDialogPortalDetails : DialogView
         }
         else
         {
-            //用户可选择的最高难度
-            unlockDifficultyMax = userUnlock.GetUnlockGameWorldConquerDifficultyLevel(gameWorldInfoRandom.worldId);
-            //该世界配置存在的最高难度
-            configDifficultyMax = FightTypeConquerInfoCfg.GetMaxLevel(gameWorldInfoRandom.worldId);
-            //把默认难度约束在 [1, 已解锁最高] 范围内, 并同步该难度预生成的道路/关卡随机数据
-            int defaultDifficulty = Mathf.Clamp(gameWorldInfoRandom.difficultyLevel, 1, Mathf.Max(1, unlockDifficultyMax));
+            //无尽模式: 难度2起(第一难度没有无尽模式), 已解锁上限=无尽研究解锁最高难度, 配置上限=无尽配置表最高难度(供未解锁预览)
+            bool isInfinite = gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Infinite;
+            if (isInfinite)
+            {
+                difficultyMin = 2;
+                unlockDifficultyMax = userUnlock.GetUnlockInfiniteDifficultyLevel(gameWorldInfoRandom.worldId);
+                configDifficultyMax = FightTypeInfiniteInfoCfg.GetMaxLevel(gameWorldInfoRandom.worldId);
+            }
+            else
+            {
+                difficultyMin = 1;
+                //用户可选择的最高难度
+                unlockDifficultyMax = userUnlock.GetUnlockGameWorldConquerDifficultyLevel(gameWorldInfoRandom.worldId);
+                //该世界配置存在的最高难度
+                configDifficultyMax = FightTypeConquerInfoCfg.GetMaxLevel(gameWorldInfoRandom.worldId);
+            }
+            //把默认难度约束在 [难度下限, 已解锁最高] 范围内, 并同步该难度预生成的道路/关卡随机数据
+            int defaultDifficulty = Mathf.Clamp(gameWorldInfoRandom.difficultyLevel, difficultyMin, Mathf.Max(difficultyMin, unlockDifficultyMax));
             gameWorldInfoRandom.SetDifficultyLevel(defaultDifficulty);
 
             InitItemPool();
@@ -275,7 +289,8 @@ public partial class UIDialogPortalDetails : DialogView
         bool isUnlock = difficulty <= unlockDifficultyMax;
         Color bgColor = GetDifficultyBGColor(difficulty);
         itemView.gameObject.SetActive(true);
-        itemView.SetData(gameWorldInfo, gameWorldInfoRandom, difficulty, isUnlock, bgColor);
+        //通关标记仅征服模式显示(无尽无通关统计)
+        itemView.SetData(gameWorldInfo, gameWorldInfoRandom, difficulty, isUnlock, bgColor, isShowCompleteMark: gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Conquer);
         itemView.rectTransform.anchoredPosition = new Vector2(posX, 0);
     }
 
@@ -306,13 +321,13 @@ public partial class UIDialogPortalDetails : DialogView
     }
 
     /// <summary>
-    /// 判断一个难度是否可作为item展示(在 [1, 展示上限] 内, 展示上限取已解锁与配置最高的较大值)
+    /// 判断一个难度是否可作为item展示(在 [难度下限, 展示上限] 内, 展示上限取已解锁与配置最高的较大值)
     /// </summary>
     /// <param name="difficulty">难度等级</param>
     protected bool IsValidDisplayDifficulty(int difficulty)
     {
         int displayMax = Mathf.Max(unlockDifficultyMax, configDifficultyMax);
-        return difficulty >= 1 && difficulty <= displayMax;
+        return difficulty >= difficultyMin && difficulty <= displayMax;
     }
 
     /// <summary>
@@ -490,8 +505,8 @@ public partial class UIDialogPortalDetails : DialogView
         if (isAnimating)
             return;
         int oldDifficulty = gameWorldInfoRandom.difficultyLevel;
-        //难度限制在 [1, 已解锁最高]
-        int newDifficulty = Mathf.Clamp(oldDifficulty + changeLevel, 1, Mathf.Max(1, unlockDifficultyMax));
+        //难度限制在 [难度下限, 已解锁最高](无尽下限=2, 征服下限=1)
+        int newDifficulty = Mathf.Clamp(oldDifficulty + changeLevel, difficultyMin, Mathf.Max(difficultyMin, unlockDifficultyMax));
         if (newDifficulty == oldDifficulty)
         {
             //已到边界无法切换: 播放回弹动画

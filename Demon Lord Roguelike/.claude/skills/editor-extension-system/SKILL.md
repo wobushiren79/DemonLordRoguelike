@@ -38,11 +38,12 @@ EditorWindow (Unity)
 ├── StyleBaseWindow                # 样式基础窗口
 ├── GameTestEditor                 # 游戏测试编辑器 (Inspector扩展)
 ├── GameBuildEditorWindow          # 打包游戏工具 (打包前资源生成(复用 GameResourceEditor) + BuildPlayer)
+├── ModBuildEditorWindow           # Mod构建工具 (批量模式构建MOD项目 + 导出JsonText + 移动到本项目Mods)
 ├── GameResourceEditor(+Spine/Atlas/Common partial)  # 游戏资源处理 (Spine/图集/通用 三板块页签)
 ├── SkinRandomEditorWindow         # 皮肤/装备/套装随机池配置 (CreatureRandomInfo 三模式: 皮肤池编辑skin_random_data/装备池·套装池编辑equip_random_data, 双列表点选增删, 写回Excel+同步JSON)
 ├── EquipSuitEditorWindow          # 装备套装配置 (EquipSuitInfo 套装表: 物种下拉+7槽位点选填入+新建/删除套装, 单EPPlus会话写回+同步JSON)
 ├── FightSceneEditorWindow         # 战斗场景配置 (excel_fight_scene: 预制/道路色/天空盒/雾/环境光/细节预制直观编辑, 保存写回Excel+再生JSON, Play时实时应用到当前战斗场景)
-├── FightModeEditorWindow(+TabConquer/TabChallengeHundred)  # 战斗模式编辑工具 (征服模式/挑战100勇士两页签: 前后难度对比列/ID列表名字下拉/新增删除行, 写回Excel+重导JSON)
+├── FightModeEditorWindow(+TabConquer/TabChallengeHundred/TabInfinite)  # 战斗模式编辑工具 (征服模式/挑战100勇士/无尽模式三页签: 征服页签=前后难度对比列/ID列表名字下拉/新增删除行; 无尽页签=编辑 excel_fight_type_infinite_info, 行下拉显示世界中文名(直读 GameWorldInfo.txt+Language_GameWorldInfo_cn.txt,不走TextHandler)+字段编辑+新增/删除行+保存+导出Json, 复用挑战100勇士页签的 EPPlus 按id整行覆写模式; 均写回Excel+重导JSON)
 ├── StoryEditorWindow              # 故事演出编辑 (StoryInfo/StoryDetailsInfo/StoryTalkInfo 三表+excel_language 对应 sheet: 三栏布局故事列表/字段/步骤编排+对话内联编辑, 4个xlsx各单EPPlus会话写回+重导JSON)
 ├── NpcCreateEditorWindow          # NPC创建编辑 (excel_npc_info 全字段 + 语言表中文名: 三栏布局 列表/字段+外观/Spine双模型预览, 非运行态版 NPC创建GUI)
 └── PixelDaEditorWindow            # PixelDa 像素美术生成 (AI 文生图/图编辑/图生视频/抽帧/音乐)
@@ -231,8 +232,8 @@ LauncherTest (Inspector)
 ├── Test Scene Type 下拉选择
 ├── ──── 根据类型显示对应参数 ────
 ├── NormalGame: 正常游戏启动（走真实开始流程）
-├── FightSceneTest: 战斗参数配置
-├── CardTest: 卡片测试参数（两个启动按钮：显示卡片 UITestCard 图标尺寸校准 / 🎛️ 卡片编辑器 StartForCreatureCardEditor 纯代码GUI实时预览稀有度/等级/颜色，详见 test-system skill）
+├── FightSceneTest: 战斗参数配置（5 个子模式 FightTestModeEnum：Normal 普通/ConquerBoss 征服BOSS关/SingleUnit 单体/ChallengeHundred 挑战100勇士/Infinite 无尽模式，后两个为「配置行下拉+存档槽位 0~3」独立配置区，详见 test-system skill）
+├── CardTest: 卡片测试参数（三个启动按钮：显示卡片 UITestCard 图标尺寸校准 / 🎛️ 卡片编辑器 StartForCreatureCardEditor 纯代码GUI实时预览稀有度/等级/颜色 / 🧪 Mod幻化药测试 StartForTransformPotionTest 下拉选药实时显示展示效果，详见 test-system skill）
 ├── Base: 基地测试参数
 ├── RewardSelect: 奖励选择参数
 ├── DoomCouncil: 终焉议会参数（两个启动按钮：开始终焉议会 StartForDoomCouncil / 查看所有固定议员 StartForDoomCouncilAllFixed）
@@ -274,9 +275,29 @@ LauncherTest (Inspector)
 ### 功能
 
 - 打包前 3 个可勾选步骤（默认全勾选）：生成所有 Spine 道具图标 / 生成所有 Spine 皮肤图标 / 刷新所有图集 —— 均直接复用 `GameResourceEditor` 的 public static 方法（`SpineAllItemInit`/`SpineAllSkinInit`/`RefreshAllAtlases`）。
-- 打包选项（均经 EditorPrefs 持久化）：开发包(Development)、允许脚本调试(AllowDebugging)、自动连接 Profiler(ConnectWithProfiler)、深度分析(EnableDeepProfilingSupport)、完成后自动运行(AutoRunPlayer)、完成后打开输出目录(ShowBuiltPlayer)。调试/Profiler/深度分析三个子选项依赖开发包，取消开发包时联动关闭并置灰。
+- 打包选项（均经 EditorPrefs 持久化）：开发包(Development)、允许脚本调试(AllowDebugging)、自动连接 Profiler(ConnectWithProfiler)、深度分析(EnableDeepProfilingSupport)、开启 GM 模式(默认关闭)、完成后自动运行(AutoRunPlayer)、完成后打开输出目录(ShowBuiltPlayer)。调试/Profiler/深度分析三个子选项依赖开发包，取消开发包时联动关闭并置灰。
+- **GM 模式开关**：「开启 GM 模式」勾选后，正式包中按 F12 也能打开 GM 测试面板（UITestBase）。实现=打包前 `WriteGMModeConfig(选项值)` 把 0/1 写入 `Assets/Resources/GMMode.txt` 并 `AssetDatabase.ImportAsset` 强制同步导入（不走编译宏，避免触发全量重编译），`BuildPlayer` 后 `finally` 中恢复写 0 防残留；运行时 `ProjectConfigInfo.IsGMMode()` 判定（编辑器内恒 true，正式包 `Resources.Load<TextAsset>("GMMode")` 读缓存），判定入口在 `UIBaseMain.OnInputActionForStarted` 的 F12 分支。仓库内 GMMode.txt 固定为 0。
 - 打包路径选择：默认为 git 仓库根的上级目录下 `DLR/`（从 `Application.dataPath` 向上找 `.git` 动态推导，找不到则退化为项目根上级目录），支持浏览修改与「重置为默认路径」，选择经 EditorPrefs 持久化。
 - 「开始打包」：先 `EnsureURPCompatibilityModeDefine` 确保当前平台带 `URP_COMPATIBILITY_MODE` 编译宏（Unity 6.3 起 URP 兼容模式被打包校验拦截，缺宏直接 BuildFailedException；缺宏时自动补宏并弹窗提示——补宏触发脚本重编译会中断本次打包，重编译完成后需重新点击「开始打包」）→ 自动切换到 `Assets/Scenes/GameScene.unity`（未保存修改弹保存提示、取消则中止；打包完成后自动切回原场景）→ 执行勾选步骤 → **固定只用 GameScene 打包**（不读 Build Settings 场景列表，避免日常挂的 TestScene 混进正式包）→ 按勾选项组装 `BuildOptions` → `BuildPipeline.BuildPlayer` 打到 `activeBuildTarget`（Windows 平台自动追加 `PlayerSettings.productName + ".exe"`），成功后打开产物目录（勾选 ShowBuiltPlayer 时由 Unity 打开，否则手动 `RevealInFinder`）。
+
+---
+
+## Mod 构建工具 (ModBuildEditorWindow)
+
+**文件**: `Assets/Editor/ModBuildEditorWindow.cs`，**菜单**: `游戏/Mod构建工具`
+
+### 功能
+
+只打开主项目即可完成 MOD 项目的构建与部署（无需人工打开 MOD 项目编辑器）：
+
+- **⓪ 仅导出配置（Excel→JsonText，秒级）**：跑主项目 `run-python.ps1` + `gen_aeonsecho_spine_mod.py export`（不带 --deploy-main）重建 JsonText 后，**只把 JsonText 目录覆盖拷贝**到本项目 `Mods/<Mod名>/JsonText`——不批量构建、不动 bundle/catalog，改 Excel 数据（道具参数/改名）后的快速同步通道；进程调用统一收口在 `RunPythonGenScript(scriptArgs, actionDesc)`（同步 180s 超时，输出写状态日志，**stdout/stderr 按 UTF-8 解码**——python 侧经 run-python.ps1 输出 UTF-8(PYTHONUTF8=1)，默认 ANSI(GBK) 解码会乱码）。
+- **① 构建 Mod 资源**：用批量模式（`-batchmode -projectPath <MOD项目> -executeMethod <构建方法> -quit -logFile <临时日志>`）调起 MOD 项目自己的 Unity 执行静态构建方法（如 `AeonsEchoSpineModBuilder.BuildMod`，产物 bundle+catalog）；异步等待（`EditorApplication.update` 轮询进程，界面实时耗时+可取消），完成后读日志尾部判定成败。MOD 项目被其他 Unity 实例打开（存在 `Temp/UnityLockfile`）时前置拦截。
+- **② 导出配置 + 整体移动 Mod（含资源包）**：优先跑主项目 `run-python.ps1` + `gen_aeonsecho_spine_mod.py export --deploy-main`（重新导出 JsonText 再整体覆盖到本项目 `Mods/`，导出逻辑单一真实源在 python 脚本）；脚本缺失时退化为纯目录拷贝（先删旧目录再递归复制，要求产物含 catalog.bin）。
+- **③ 仅移动 JsonText（不导出，秒级）**：不跑导出，纯把 MOD 项目侧 `Mods/<Mod名>/JsonText` 覆盖拷贝到本项目（`CopyJsonTextToMainProject`，先删旧目录防残留失效行）——已导出过、只想快速同步配置时用；⓪（导出+同步 JsonText）共用该拷贝方法。
+- **⚡ 一键构建+移动**：①成功（exit=0）后自动接②。
+- **配置项**（均 EditorPrefs 持久化）：Mod 项目路径、Mod 名称（默认 AeonsEchoSpine）、构建方法（默认 `AeonsEchoSpineModBuilder.BuildMod`）、Unity.exe 覆盖路径。
+- **Unity.exe 自动定位**：手动覆盖 → MOD 项目 `ProjectVersion.txt` 版本与当前编辑器一致时用 `EditorApplication.applicationPath` → Hub 标准路径 `C:/Program Files/Unity/Hub/Editor/<version>/Editor/Unity.exe` → 失败提示手动指定。
+- 批量模式补充：MOD 项目侧的构建方法若内部依赖 EditorPrefs（如自动导出部署的主项目路径），批量进程与交互编辑器共享同用户 EditorPrefs 注册表，设置一次即生效。
 
 ---
 
@@ -601,10 +622,11 @@ public class InspectorMyComponent : Editor
 | PixelDa 像素生成工具 | `Assets/FrameWork/Editor/Base/Window/PixelDa/` |
 | 游戏测试编辑器 | `Assets/Editor/GameTestEditor.cs` + `GameTestEditorPartial.cs` |
 | 打包游戏工具 | `Assets/Editor/GameBuildEditorWindow.cs` |
+| Mod构建工具 | `Assets/Editor/ModBuildEditorWindow.cs` |
 | 皮肤/装备/套装随机池配置 | `Assets/Editor/SkinRandomEditorWindow.cs` |
 | 装备套装配置 | `Assets/Editor/EquipSuitEditorWindow.cs` |
 | 战斗场景配置 | `Assets/Editor/FightSceneEditorWindow.cs` |
-| 战斗模式编辑工具 | `Assets/Editor/FightModeEditorWindow.cs` + `FightModeEditorTabConquer.cs`（征服页签）+ `FightModeEditorTabChallengeHundred.cs`（挑战100勇士页签） |
+| 战斗模式编辑工具 | `Assets/Editor/FightModeEditorWindow.cs` + `FightModeEditorTabConquer.cs`（征服页签）+ `FightModeEditorTabChallengeHundred.cs`（挑战100勇士页签）+ `FightModeEditorTabInfinite.cs`（无尽页签，编辑 `excel_fight_type_infinite_info`） |
 | 故事演出编辑 | `Assets/Editor/StoryEditorWindow.cs` |
 | NPC 创建编辑 | `Assets/Editor/NpcCreateEditorWindow.cs` + 5 个 partial（.List/.Edit/.Appearance/.Preview/.Save） |
 | 研究模块编辑 | `Assets/Editor/ResearchEditorWindow.cs` |

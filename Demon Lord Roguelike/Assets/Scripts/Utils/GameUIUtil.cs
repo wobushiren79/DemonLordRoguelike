@@ -55,9 +55,19 @@ public static class GameUIUtil
     {
         //设置spine
         CreatureHandler.Instance.SetCreatureData(ui_Icon, creatureData, isNeedWeapon: false);
+        //定格待机动画第一帧:直接停在 setup pose 会把动画内才隐藏的部件(特效槽/备用附件等)全显示出来;无 idle 动画的骨架保持原姿势
+        SpineHandler.Instance.SetAnimFirstFrame(ui_Icon, SpineAnimationStateEnum.Idle, creatureData);
         ui_Icon.ShowObj(true);
-        //设置UI大小和坐标
-        creatureData.creatureModel.ChangeUISizeForS(ui_Icon.rectTransform, scale);
+        //设置UI大小和坐标：幻化药自带 show 小卡尺寸(other_data 的 show_data 键,按默认展示骨架高度校准)优先:原生物 ui_data_s 按原骨架校准,不适用于 Mod 骨架
+        if (creatureData.GetTransformShowData(out float transformChessScale, out Vector2 transformChessPos))
+        {
+            ui_Icon.transform.localScale = Vector3.one * transformChessScale * scale;
+            ui_Icon.rectTransform.anchoredPosition = transformChessPos * scale;
+        }
+        else
+        {
+            creatureData.creatureModel.ChangeUISizeForS(ui_Icon.rectTransform, scale);
+        }
     }
 
     /// <summary>
@@ -84,7 +94,7 @@ public static class GameUIUtil
         //设置UI大小和坐标
         if (creatureData.GetTransformUIShowData(out float transformUIScale, out Vector2 transformUIPos))
         {
-            //幻化药自带 ui_show_spine 尺寸(other_data 第3段,按 Avator 骨架高度校准)优先:原生物 ui_data_b 按原骨架校准,不适用于 Mod 高清骨架
+            //幻化药自带 ui_show_spine 尺寸(other_data 的 ui_show_data 键,按 UIShow 骨架高度校准)优先:原生物 ui_data_b 按原骨架校准,不适用于 Mod 高清骨架
             ui_Icon.transform.localScale = Vector3.one * transformUIScale;
             ui_Icon.rectTransform.anchoredPosition = transformUIPos;
         }

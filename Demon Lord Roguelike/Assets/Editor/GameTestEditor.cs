@@ -110,7 +110,7 @@ public partial class GameTestEditor : Editor
 
         // 战斗测试模式选择
         EditorGUILayout.BeginVertical("box");
-        fightTestMode = (FightTestModeEnum)EditorGUILayout.EnumPopup(new GUIContent("战斗测试模式", "普通模式=自定义场景/敌人/BUFF的战斗；征服模式BOSS关=指定世界与难度直接进入征服BOSS关；单体测试模式=道路长度10/道路数量1/进攻生物数量1/进攻间隔1固定不显示，其余同普通模式；挑战100勇士=下拉选配置行+存档槽位，冻结该行直接进入挑战100勇士战斗(测试模拟不落盘)"), fightTestMode);
+        fightTestMode = (FightTestModeEnum)EditorGUILayout.EnumPopup(new GUIContent("战斗测试模式", "普通模式=自定义场景/敌人/BUFF的战斗；征服模式BOSS关=指定世界与难度直接进入征服BOSS关；单体测试模式=道路长度10/道路数量1/进攻生物数量1/进攻间隔1固定不显示，其余同普通模式；挑战100勇士=下拉选配置行+存档槽位，冻结该行直接进入挑战100勇士战斗(测试模拟不落盘)；无尽模式=下拉选配置行(世界+难度)+存档槽位，冻结该难度直接进入无尽战斗(测试模拟不落盘)"), fightTestMode);
         EditorGUILayout.EndVertical();
         EditorGUILayout.Space(5);
 
@@ -127,6 +127,15 @@ public partial class GameTestEditor : Editor
         if (fightTestMode == FightTestModeEnum.ChallengeHundred)
         {
             DrawFightSceneTestChallengeHundred();
+            EditorGUI.indentLevel--;
+            EditorGUILayout.Space(10);
+            return;
+        }
+
+        // 无尽模式：下拉选配置行(世界+难度)+存档槽位，冻结该难度直接进入无尽战斗
+        if (fightTestMode == FightTestModeEnum.Infinite)
+        {
+            DrawFightSceneTestInfinite();
             EditorGUI.indentLevel--;
             EditorGUILayout.Space(10);
             return;
@@ -803,6 +812,115 @@ public partial class GameTestEditor : Editor
         }
     }
 
+    /// <summary>
+    /// 绘制无尽模式测试配置(下拉选配置行(世界+难度)+存档槽位，冻结该难度直接进入无尽战斗；测试模拟不落盘)
+    /// </summary>
+    private void DrawFightSceneTestInfinite()
+    {
+        // 运行按钮
+        GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
+        if (GUILayout.Button("▶️ 开始无尽模式测试", GUILayout.Height(30)) && Application.isPlaying)
+        {
+            if (infiniteRowWorldIds == null || infiniteRowWorldIds.Length == 0)
+            {
+                EditorUtility.DisplayDialog("提示", "配置行列表为空，请点「刷新列表」或检查配置表导出。", "确定");
+                return;
+            }
+            int index = Mathf.Clamp(infiniteTestRowSelectIndex, 0, infiniteRowWorldIds.Length - 1);
+            launcher.StartForInfiniteTest(infiniteRowWorldIds[index], infiniteRowLevels[index], infiniteTestSaveSlot);
+        }
+        GUI.backgroundColor = Color.white;
+        EditorGUILayout.Space(10);
+
+        // 配置行选择(下拉选项懒加载)
+        EditorGUILayout.BeginVertical("box");
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("无尽模式配置", EditorStyles.boldLabel);
+        if (GUILayout.Button("🔄 刷新列表", GUILayout.Width(90)))
+        {
+            //配置重导后清空选项缓存，下次绘制时重建
+            infiniteRowOptions = null;
+            //Cfg 的 static 缓存只加载一次(不随 JSON 重导失效)，需一并清掉才能读到新行
+            ClearCfgBaseStaticCache(typeof(FightTypeInfiniteInfoCfg));
+        }
+        if (GUILayout.Button("📂 配置表", GUILayout.Width(80)))
+        {
+            string path = Path.Combine(Application.dataPath, "Data/Excel/excel_fight_type_infinite_info[战斗-无尽模式].xlsx");
+            if (File.Exists(path))
+            {
+                Application.OpenURL("file:///" + path.Replace("\\", "/"));
+            }
+            else
+            {
+                EditorUtility.DisplayDialog("文件未找到", $"找不到无尽模式配置表:\n{path}", "确定");
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+
+        EnsureInfiniteRowOptions();
+        if (infiniteRowOptions == null || infiniteRowOptions.Length == 0)
+        {
+            EditorGUILayout.HelpBox("未读取到无尽模式配置，请检查配置表导出或点「刷新列表」。", MessageType.Warning);
+        }
+        else
+        {
+            infiniteTestRowSelectIndex = EditorGUILayout.Popup(
+                new GUIContent("配置行选择", "从 FightTypeInfiniteInfo 配置表选择要测试的配置行(一行=世界+难度, 冻结该难度直接进入战斗，不走传送门概率判定与无尽研究解锁判定)"),
+                Mathf.Clamp(infiniteTestRowSelectIndex, 0, infiniteRowOptions.Length - 1),
+                infiniteRowOptions);
+        }
+        //存档槽位选择(0=当前测试数据,1~3=读取对应存档作为运行时数据;防守方=该存档魔王+当前出战阵容,测试模拟不写回真实存档)
+        infiniteTestSaveSlot = EditorGUILayout.IntPopup(
+            new GUIContent("存档槽位", "0=使用当前测试数据(InitTestData 伪造数据)；1~3=读取对应存档槽位(UserData_1/2/3)作为运行时数据(防守方=该存档魔王+当前出战阵容)；全程测试模拟,不写回真实存档"),
+            infiniteTestSaveSlot,
+            new[] { new GUIContent("当前测试数据"), new GUIContent("存档 1"), new GUIContent("存档 2"), new GUIContent("存档 3") },
+            new[] { 0, 1, 2, 3 });
+        EditorGUILayout.EndVertical();
+
+        EditorGUILayout.HelpBox("冻结所选配置行的世界+难度直接进入无尽战斗(无尽复用同难度征服行的怪物构成/数量/时长/场景/道路区间，敌人强度按轮次×round_intensity_addrate^(轮-1)递增，每轮弹BOSS特写)；防守方使用所选存档的魔王+当前出战阵容，全程测试模拟不写回真实存档。", MessageType.Info);
+    }
+
+    /// <summary>
+    /// 懒加载无尽模式配置行下拉选项([world_id] 世界名 难度N (每轮强度x倍率) 备注，按 world_id→level 排序)
+    /// </summary>
+    private void EnsureInfiniteRowOptions()
+    {
+        if (infiniteRowOptions != null) return;
+        //世界中文名直读语言表(不切 LanguageCfg 语言避免篡改运行中游戏语言)
+        var dicWorldLanguage = LoadLanguageForCn("Language_GameWorldInfo_cn.txt");
+        var allData = FightTypeInfiniteInfoCfg.GetAllArrayData();
+        var listEntries = new List<KeyValuePair<FightTypeInfiniteInfoBean, GUIContent>>();
+        for (int i = 0; i < allData.Length; i++)
+        {
+            var info = allData[i];
+            if (info == null) continue;
+            //世界名: 优先语言表中文名, 缺失退化为 世界{id}
+            string worldName = $"世界{info.world_id}";
+            var worldInfo = GameWorldInfoCfg.GetItemData(info.world_id);
+            if (worldInfo != null && dicWorldLanguage.TryGetValue(worldInfo.name, out var languageData) && languageData != null && !languageData.content.IsNull())
+            {
+                worldName = languageData.content;
+            }
+            string remark = info.remark.IsNull() ? "" : $" {info.remark}";
+            listEntries.Add(new KeyValuePair<FightTypeInfiniteInfoBean, GUIContent>(info, new GUIContent($"[{info.world_id}] {worldName} 难度{info.level} (每轮强度x{info.round_intensity_addrate}){remark}")));
+        }
+        //按 world_id→level 排序保证下拉顺序稳定
+        listEntries.Sort((a, b) =>
+        {
+            int compareWorld = a.Key.world_id.CompareTo(b.Key.world_id);
+            return compareWorld != 0 ? compareWorld : a.Key.level.CompareTo(b.Key.level);
+        });
+        infiniteRowOptions = new GUIContent[listEntries.Count];
+        infiniteRowWorldIds = new long[listEntries.Count];
+        infiniteRowLevels = new int[listEntries.Count];
+        for (int i = 0; i < listEntries.Count; i++)
+        {
+            infiniteRowWorldIds[i] = listEntries[i].Key.world_id;
+            infiniteRowLevels[i] = listEntries[i].Key.level;
+            infiniteRowOptions[i] = listEntries[i].Value;
+        }
+    }
+
     private void DrawCardTest()
     {
         showCardTest = EditorGUILayout.Foldout(showCardTest, "🃏 卡片测试", true);
@@ -835,7 +953,11 @@ public partial class GameTestEditor : Editor
             launcher.StartForCreatureCardEditor(creatureId, npcInfoId);
         }
         GUI.backgroundColor = Color.white;
-        EditorGUILayout.HelpBox("「显示卡片」= 图标尺寸校准(UITestCard预制)；「卡片编辑器」= 纯代码GUI面板实时预览小卡+大卡详情，可自由设置稀有度/等级/生物或NPC，并自定义稀有度板色/等级颜色(可写回配置表)。", MessageType.Info);
+
+        //Mod幻化药测试: 下拉选择幻化药, 实时显示真实展示效果(小卡=Chess基础形象/大卡=Avator高清)
+        DrawTransformPotionTest(launcher);
+
+        EditorGUILayout.HelpBox("「显示卡片」= 图标尺寸校准(UITestCard预制)；「卡片编辑器」= 纯代码GUI面板实时预览小卡+大卡详情，可自由设置稀有度/等级/生物或NPC，并自定义稀有度板色/等级颜色(可写回配置表)；「Mod幻化药测试」= 四个页签(单个预览/小卡列表/大卡列表/场景列表)批量预览幻化药，悬停滚轮调缩放、拖拽调位置，一键保存全部修改回Mod项目。", MessageType.Info);
         EditorGUILayout.Space(10);
 
         EditorGUILayout.BeginVertical("box");
@@ -847,9 +969,74 @@ public partial class GameTestEditor : Editor
         EditorGUILayout.Space(10);
     }
 
+    /// <summary>
+    /// 绘制 Mod 幻化药测试区（下拉选择幻化药 + 启动按钮；下拉候选仅 Play 模式配置可用时构建）
+    /// </summary>
+    /// <param name="launcher">测试启动器</param>
+    private void DrawTransformPotionTest(LauncherTest launcher)
+    {
+        EditorGUILayout.BeginVertical("box");
+        if (!Application.isPlaying)
+        {
+            EditorGUILayout.HelpBox("Mod 幻化药测试：进入 Play 模式后可下拉选择幻化药。", MessageType.None);
+            EditorGUILayout.EndVertical();
+            return;
+        }
+        EnsureTransformPotionOptions();
+        if (transformPotionItemIds == null || transformPotionItemIds.Length == 0)
+        {
+            EditorGUILayout.HelpBox("配置表中没有幻化药（请确认 Mod 已加载且 ItemsInfo 已合并）。", MessageType.Warning);
+            EditorGUILayout.EndVertical();
+            return;
+        }
+        transformPotionTestSelectIndex = Mathf.Clamp(transformPotionTestSelectIndex, 0, transformPotionItemIds.Length - 1);
+        transformPotionTestSelectIndex = EditorGUILayout.Popup(new GUIContent("幻化药", "要显示效果的幻化药（含 Mod 幻化药），「无幻化」= 显示原形象"), transformPotionTestSelectIndex, transformPotionOptions);
+
+        GUI.backgroundColor = new Color(0.85f, 0.6f, 0.9f);
+        if (GUILayout.Button("🧪 Mod幻化药测试(实时显示展示效果)", GUILayout.Height(30)))
+        {
+            launcher.StartForTransformPotionTest(transformPotionItemIds[transformPotionTestSelectIndex]);
+        }
+        GUI.backgroundColor = Color.white;
+        EditorGUILayout.EndVertical();
+    }
+
+    /// <summary>
+    /// 懒加载幻化药下拉候选（首项「无幻化」，其后为配置表全部幻化药，显示名=道具名[自ID]；仅 Play 模式调用）
+    /// </summary>
+    private void EnsureTransformPotionOptions()
+    {
+        if (transformPotionOptions != null) return;
+        const long ModIdDivisor = 100000000000000L;//与 BaseBean.CombineModId 拼接规则一致, 用于从完整id拆自ID
+        var listPotions = new List<ItemsInfoBean>();
+        foreach (var itemInfo in ItemsInfoCfg.GetAllArrayData())
+        {
+            if (itemInfo.GetItemType() == ItemTypeEnum.TransformPotion)
+            {
+                listPotions.Add(itemInfo);
+            }
+        }
+        //按完整id排序(含modId前缀, 即先按modId再按自ID)
+        listPotions.Sort((a, b) => a.id.CompareTo(b.id));
+        transformPotionItemIds = new long[listPotions.Count + 1];
+        transformPotionOptions = new GUIContent[listPotions.Count + 1];
+        transformPotionItemIds[0] = 0;
+        transformPotionOptions[0] = new GUIContent("无幻化（原形象）");
+        for (int i = 0; i < listPotions.Count; i++)
+        {
+            var itemInfo = listPotions[i];
+            long selfId = itemInfo.id % ModIdDivisor;
+            string name = itemInfo.name_language;
+            transformPotionItemIds[i + 1] = itemInfo.id;
+            transformPotionOptions[i + 1] = new GUIContent(name.IsNull() ? $"[{selfId}]" : $"{name} [{selfId}]");
+        }
+    }
+
     private void DrawBaseTest()
     {
         showBaseSceneTest = EditorGUILayout.Foldout(showBaseSceneTest, "🏰 基地测试", true);
+        if (!showBaseSceneTest) return;
+        if (!showBaseSceneTest) return;
         if (!showBaseSceneTest) return;
 
         EditorGUI.indentLevel++;

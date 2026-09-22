@@ -18,8 +18,8 @@ public class LauncherTest : BaseLauncher
 
     public override void Launch()
     {
-        base.Launch();     
-        ModHandler.Instance.InitializeAllModsSync();
+        //Mod初始化已收口到 BaseLauncher.Launch() 首行(多语言/Cfg访问前)
+        base.Launch();
         InitTestData();
         // CreatureBean itemData = new CreatureBean(999998);
         // itemData.AddAllSkin();
@@ -75,12 +75,14 @@ public class LauncherTest : BaseLauncher
     }
 
     /// <summary>
-    /// 清理测试专用的纯GUI面板(粒子特效测试/卡片编辑器测试), 每个测试入口开始处统一调用, 切换测试模块时防面板与其场景残留
+    /// 清理测试专用的纯GUI面板(粒子特效测试/卡片编辑器测试/GM GUI面板/幻化药测试), 每个测试入口开始处统一调用, 切换测试模块时防面板与其场景残留
     /// </summary>
     private void ClearTestGUIs()
     {
         if (TestEffectGUI.Instance != null) Destroy(TestEffectGUI.Instance.gameObject);
         if (TestCreatureCardGUI.Instance != null) Destroy(TestCreatureCardGUI.Instance.gameObject);
+        if (TestGameMasterGUI.Instance != null) Destroy(TestGameMasterGUI.Instance.gameObject);
+        if (TestTransformPotionGUI.Instance != null) Destroy(TestTransformPotionGUI.Instance.gameObject);
     }
 
     /// <summary>
@@ -167,6 +169,58 @@ public class LauncherTest : BaseLauncher
     }
 
     /// <summary>
+    /// 开始无尽模式测试
+    /// 指定配置行(世界+难度)，手搓随机数据(冻结该难度)直接进入无尽战斗；
+    /// 可选择读取某个存档槽位作为运行时数据(防守方=该存档魔王+当前出战阵容)，全程测试模拟不落盘回真实存档
+    /// </summary>
+    /// <param name="worldId">世界ID(无尽复用同难度征服行的怪物构成/数量/时长/场景/魔晶掉落)</param>
+    /// <param name="difficultyLevel">难度等级(2~10, 无尽模式无难度1)</param>
+    /// <param name="saveSlot">存档槽位(0=使用当前测试数据 InitTestData 伪造数据;1~3=读取对应存档槽位 UserData_1/2/3 作为运行时数据,与挑战100勇士测试同范式)</param>
+    public void StartForInfiniteTest(long worldId, int difficultyLevel, int saveSlot = 0)
+    {
+        ClearTestGUIs();
+        //校验同难度征服行是否存在(无尽复用其怪物构成/数量/时长/场景/道路区间, 缺失则 FightBeanForInfinite.InitData 直接报错返回)
+        FightTypeConquerInfoBean conquerInfo = FightTypeConquerInfoCfg.GetItemData(worldId, difficultyLevel);
+        if (conquerInfo == null)
+        {
+            LogUtil.LogError($"无尽模式测试失败，找不到同难度征服配置 worldId:{worldId} difficultyLevel:{difficultyLevel}");
+            return;
+        }
+        //无尽行缺失仅警告(强度倍率按1降级, 与 FightBeanForInfinite 语义一致, 不阻断战斗)
+        FightTypeInfiniteInfoBean infiniteInfo = FightTypeInfiniteInfoCfg.GetItemData(worldId, difficultyLevel);
+        if (infiniteInfo == null)
+        {
+            LogUtil.LogWarning($"无尽模式测试提示，找不到无尽配置行 worldId:{worldId} difficultyLevel:{difficultyLevel}, 轮次强度倍率按1处理");
+        }
+        //选择存档槽位(1~3)时,读取该存档数据替换为运行时数据(防守方=该存档魔王+当前出战阵容;全程内存模拟,不写回真实存档)
+        if (saveSlot > 0)
+        {
+            UserDataService dataService = new UserDataService();
+            dataService.ChangeSlot(saveSlot);
+            UserDataBean userData = dataService.Load(false);
+            if (userData == null)
+            {
+                LogUtil.LogError($"无尽模式测试失败，存档 {saveSlot} 不存在或为空");
+                return;
+            }
+            GameDataHandler.Instance.manager.SetUserData(userData);
+        }
+        //开启测试模拟:战斗奖励结算/掉落入账等 SaveUserData 被 GameDataManager 统一拦截,测试数据不保存
+        GameDataHandler.Instance.manager.isTestSimulation = true;
+        //手搓随机数据(冻结世界+难度+道路数据; 不经 SetRandomDataForInfinite 的解锁判定, 可测未解锁难度)
+        GameWorldInfoRandomBean gameWorldInfoRandomData = new GameWorldInfoRandomBean();
+        gameWorldInfoRandomData.worldId = worldId;
+        gameWorldInfoRandomData.gameFightType = GameFightTypeEnum.Infinite;
+        gameWorldInfoRandomData.difficultyLevel = difficultyLevel;
+        //道路数量/长度复用同难度征服行区间随出并冻结(与 SetRandomDataForInfinite 同口径)
+        gameWorldInfoRandomData.roadNum = conquerInfo.GetRandomRoadNum();
+        gameWorldInfoRandomData.roadLength = conquerInfo.GetRandomRoadLength();
+        //进入无尽模式战斗
+        FightBeanForInfinite fightData = new FightBeanForInfinite(gameWorldInfoRandomData);
+        WorldHandler.Instance.EnterGameForFightScene(fightData);
+    }
+
+    /// <summary>
     /// 开始终焉议会测试
     /// </summary>
     public void StartForDoomCouncil(long billId)
@@ -243,6 +297,27 @@ public class LauncherTest : BaseLauncher
         //挂载纯GUI代码的卡片编辑器组件到空物体
         var gui = new GameObject("CreatureCardTestGUI").AddComponent<TestCreatureCardGUI>();
         gui.SetInitData(creatureId, npcInfoId);
+    }
+
+    /// <summary>
+    /// 开始 Mod 幻化药测试（GUI版，纯代码控制面板 + 真实卡片预制体）
+    /// 下拉选择指定幻化药，实时显示其真实展示效果（小卡=Chess基础形象，大卡详情=Avator高清形象）。
+    /// </summary>
+    /// <param name="itemId">初始幻化药道具完整id(0=默认第一个候选)</param>
+    public async void StartForTransformPotionTest(long itemId)
+    {
+        //清理可能残留的测试GUI面板(含重复开始时的自身旧面板, 防面板叠加)
+        ClearTestGUIs();
+        await WorldHandler.Instance.ClearWorldData();
+        //设置焦距
+        VolumeHandler.Instance.SetDepthOfField(UnityEngine.Rendering.Universal.DepthOfFieldMode.Off, 0, 0, 0);
+        //镜头初始化
+        CameraHandler.Instance.InitData();
+        //关闭其它UI
+        UIHandler.Instance.CloseAllUI();
+        //挂载纯GUI代码的幻化药测试组件到空物体
+        var gui = new GameObject("TransformPotionTestGUI").AddComponent<TestTransformPotionGUI>();
+        gui.SetInitData(itemId);
     }
 
     /// <summary>

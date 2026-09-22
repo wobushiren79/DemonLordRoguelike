@@ -59,6 +59,10 @@ ItemTypeWeaponEnum
 ItemUserTypeEnum
 ├── Default = 0      // 默认 所有生物可用
 └── DemonLord = 1    // 魔王专属
+
+// 道具来源（ItemsInfo.source 逗号串配置；空=默认来源）
+ItemSourceEnum
+└── ConquerReward = 1  // 征服模式奖励（征服通关领奖的魔晶位之一替换为该道具，仅非装备道具生效）
 ```
 
 ## 创建新道具类型
@@ -71,12 +75,13 @@ public enum ItemIdEnum
 {
     Crystal = 1,              // 魔晶
     Juice = 200001,           // 魔汁（实例经验值存 ItemBean.juicerExp）
-    TransformPotion = 200002, // 幻化药（形象资源读 ItemsInfo.other_data，状态存 CreatureBean.transformItemId）
     RestorePotion = 200003,   // 幻原药（清除幻化恢复原本形象）
     // 新增道具ID
     NewItem = 100001,
 }
 ```
+
+> 注：内置幻化药（原 id=200002）已于 2026-09-21 删除——幻化药道具现全部由 Mod 提供（AeonsEchoSpine 回响幻化药 341 个），`ItemIdEnum.TransformPotion` 枚举同步移除；使用分流只判 `ItemTypeEnum.TransformPotion=18` 不判具体 id，不受影响。
 
 ### 2. 添加道具类型（如需新装备部位）
 
@@ -105,19 +110,24 @@ public enum ItemTypeEnum
 - `name` - 文本表ID
 - `remark` - 备注
 - `reward_rarity` - **奖励可出稀有度白名单**（string，逗号分隔稀有度ID，空=全稀有度适配）
+- `source` - **道具来源白名单**（string，逗号分隔 `ItemSourceEnum` 枚举值，空=默认来源；首个来源 1=征服模式奖励）
 
-### 幻化药 other_data 组合格式
+### 幻化药 other_data 键值格式
 
-幻化药（item_type=18）的 `other_data` 支持组合格式，由 `CreatureBeanPartial.ParseTransformOtherData` 解析（`#region 幻化相关`）：
+幻化药（item_type=18）的 `other_data` 为键值格式，由 `CreatureBeanPartial.ParseTransformOtherData` 解析（`#region 幻化相关`，`&` 拆项、每项首个 `:` 拆键值、缺省键省略）：
 
 ```
-{chessRes}                              - 仅基础形象（世界/战斗/普通卡片/详情UI 全用它）
-{chessRes},{avatorRes}|{uiScale};{x},{y} - 完整组合
+show_res:X                                            - 仅基础形象（世界/战斗/普通卡片/详情UI 全用它）
+show_res:X&show_data:scale;x,y                    - 基础形象 + 小卡UI尺寸
+show_res:X&ui_show_res:X&ui_show_data:scale;x,y&show_data:scale;x,y - 完整组合
 ```
 
-- **chess 段**：基础 spine 形象（SkeletonDataAsset 的 Addressables 资源名/Mod catalog key）
-- **avator 段**（逗号后，可空）：`ui_show_spine` 高清展示形象，详情UI（`SetCreatureData` isUIShow=true）使用；消费点 `CreatureBeanPartial.GetTransformUIShowSpineRes` → `CreatureHandler.SetCreatureData`
-- **`|` 后第三段**（可空）：详情UI尺寸 `scale;x,y`（格式同 `CreatureModelBean.ui_data_b`），消费点 `CreatureBeanPartial.GetTransformUIShowData` → `GameUIUtil.SetCreatureUIForDetails`（替代原生物 ui_data_b——原值按原骨架校准，不适用 Mod 高清骨架）
+- **show_res 键**（必填）：基础 spine 形象（SkeletonDataAsset 的 Addressables 资源名/Mod catalog key）
+- **ui_show_res 键**（可空）：`ui_show_spine` 高清展示形象，详情UI（`SetCreatureData` isUIShow=true）使用；消费点 `CreatureBeanPartial.GetTransformUIShowSpineRes` → `CreatureHandler.SetCreatureData`
+- **ui_show_data 键**（可空）：详情UI尺寸 `scale;x,y`（格式同 `CreatureModelBean.ui_data_b`），消费点 `CreatureBeanPartial.GetTransformUIShowData` → `GameUIUtil.SetCreatureUIForDetails`（替代原生物 ui_data_b——原值按原骨架校准，不适用 Mod 高清骨架）
+- **show_data 键**（可空）：小卡UI尺寸 `scale;x,y`（格式同 `CreatureModelBean.ui_data_s`），消费点 `CreatureBeanPartial.GetTransformShowData` → `GameUIUtil.SetCreatureUIForSimple`（替代原生物 ui_data_s）
+- **world_data 键**（可空）：世界显示尺寸/偏移 `scale;x,y`（x=横向偏移，y=竖向抬升），消费点 `CreatureBeanPartial.GetTransformWorldData` → `CreatureHandler.SetCreatureData`（SkeletonAnimation 分支：缩放=size_spine×体型×world倍率，spine 子节点 localPosition=偏移或归零恒管理）
+- 三个尺寸 Get 在**编辑器下测试覆盖层（`TransformPotionUITestOverride`）有值时优先于配置返回**（幻化药测试面板调参实时预览用，打包无此逻辑）；旧位置段格式（`chessRes,avatorRes|uiData|chessUiData`）已于 2026-09-21 迁移为键值格式
 
 ### Mod 道具（JsonText 扩展）
 
@@ -142,6 +152,15 @@ public enum ItemTypeEnum
 - **稀有度统计/筛选条**：每个稀有度显示「可产出该稀有度的道具数」，其中**全适配(空白名单)道具计入每个稀有度 +1**（与 `IsMatchRewardRarity` 语义一致）；点击某稀有度即一键筛选出所有「含该稀有度或全适配」的道具，再点或点「全部」取消。统计基于 `baseRows`（类型/物种/名字前置过滤内），数字不随稀有度筛选变化；稀有度筛选叠加在前置过滤之上。
 - 右侧每行 6 个稀有度**枚举勾选**(N/R/SR/SSR/UR/L)，"清空"按钮=恢复全稀有度适配。
 - 保存：`ExcelUtil.SetExcelData` 写回 Excel(唯一真实源) + 定向补丁 `ItemsInfo.txt` 的 `reward_rarity`(只改该字段，避开 `name[language]` 特殊处理)。名字取多语言 `Language_ItemsInfo_cn.txt`(id→content)回退 remark。
+
+### source 道具来源白名单（征服模式奖励投放）
+
+`source` 声明「本道具可从哪些特殊来源产出」：**空/未配置 = 默认来源**（不参与任何特殊投放）；可配多个枚举值逗号分隔（如 `1,2`）。枚举 `ItemSourceEnum`（ItemsEnum.cs）：`ConquerReward = 1`（征服模式奖励）。
+
+- 辅助方法在 [ItemsInfoBeanPartial.cs](Assets/Scripts/Bean/MVC/Game/ItemsInfoBeanPartial.cs)：`GetSourceList()`（解析逗号串缓存 `listSourceCache`）、`HasSource(ItemSourceEnum)`、`IsEquipType()`（帽/衣/裤/鞋/鼻环/戒指/武器=装备，其余非装备）。
+- **消费点（唯一）**：[RewardSelectBean.cs](Assets/Scripts/Bean/Game/RewardSelectBean.cs) 的 `ReplaceCrystalSlotBySourceItem`——`InitRewardList` 生成完基础奖励后，候选池=`GetConquerSourceItemPool()`（source 含 ConquerReward 且**非装备**的道具，Mod 道具天然入池），池非空且有魔晶位时**随机一个魔晶位**替换为池内随机道具（数量1）；无候选/无魔晶位（终焉议会全装备）/测试模式（conquerInfo=null）不替换。仅征服奖励生效，挑战100勇士/其它路径不受影响。
+- 首个实例=AeonsEchoSpine 全部 341 个回响幻化药配 `source="1"`（mod Excel `excel_mod_items_info` 与生成脚本 `gen_aeonsecho_spine_mod.py` 的 ITEM_COLUMNS/compute_items 均已带 source 列，scan 重建不丢）。
+- ⚠️ 新增来源时：ItemsEnum.cs 加 `ItemSourceEnum` 枚举值 + Excel 说明行补充；`source` 列改动后需在 Unity 对 ItemsInfo「生成 Entity」使 Bean 字段落地。
 
 ## 装备系统
 
@@ -207,15 +226,15 @@ NPC 可按配置在创建时随机穿装备（首用于终焉议会随机议员�
 
 ## 幻化药 / 幻原药（TransformPotion=18 / RestorePotion=19）
 
-第二、三个消耗品（`ItemIdEnum.TransformPotion = 200002` / `RestorePotion = 200003`），**所有生物含魔王可用**（与魔汁限非魔王不同）：幻化药把生物 spine 形象整骨替换为配置资源，幻原药清除幻化恢复原形象。
+第二、三个消耗品，**所有生物含魔王可用**（与魔汁限非魔王不同）：幻化药把生物 spine 形象整骨替换为配置资源，幻原药清除幻化恢复原形象。**内置幻化药（原 id=200002）已于 2026-09-21 删除**——幻化药道具现全部由 Mod 提供（AeonsEchoSpine 341 个回响幻化药，`source="1"` 可经征服模式奖励魔晶位替换获取）；幻原药保留内置（`ItemIdEnum.RestorePotion = 200003`）。使用分流只判 `ItemTypeEnum`（18/19）不判具体 id，内置药删除不影响代码路径。
 
 - **存档字段 `CreatureBean.transformItemId`**（long，0=无幻化；旧存档默认 0 兼容）——**只存道具ID不存资源名**（Mod 保底核心）；`CreatureBeanPartial.ClearTempData()` 增加 transformItemId=0 重置。
 - **形象解析唯一入口 `CreatureBeanPartial.GetTransformSpineRes()`**（`#region 幻化相关`）：transformItemId=0→null；配置缺失→每 id 一次 LogError（静态 `loggedMissingTransformIds` 防列表刷屏）+null；类型非 TransformPotion→null（防 Mod id 复用）；other_data 空→null；否则返回 `ItemsInfo.other_data`。
 - **展示覆盖范围 = 详情UI + 列表小图标 + 对话头像 + 基地/议会 + 战斗**：中枢在 `CreatureHandler.SetCreatureData`——幻化时 resName 换幻化资源、`ChangeSkeletonSkin` 两分支包 `if (!hasTransform)` 跳过套皮（传 null 不够，末尾 SetSkin(空) 会清默认外观）；战斗场景经 `GetFightCreatureObj` 新可选参数 `resNameOverride`（`CreateDefenseCreature` 与 `CreateDefenseCoreCreature` 均传 `GetTransformSpineRes()`）；游戏层 `SpineHandler.GetAnimNameAppoint` 开头守卫：幻化时返回 null（原生物 anim_* 配置名不适用新骨架，交框架按目标骨架动画列表解析，缺失仅日志不播防 ArgumentException）。形象尺寸按原生物 creatureModel 缩放。
 - **优先级与语义**：Portrait > 幻化 > 原形象（`GameUIUtil.SetCreatureUIForDetails` 的 Portrait 分支在 SetCreatureData 之后再覆盖，零逻辑改动仅补注释）；连续吃幻化药后者覆盖前者；幻化整骨替换不套原皮肤。
-- **使用流程**（`UICreatureManager`，经 `UseOrEquipItem` 分流）：`UseTransformPotionItem`——配置缺失或 other_data 空→Toast 61021 拦截；确认框 textId 61018（{0}生物名{1}道具名）→ 写入 transformItemId（覆盖旧值=以最后吃的为准）+ `RemoveBackpackItem` 消耗 + `SaveUserData()` 落盘 + 三连刷新（`SetCardDetails` + `InitBackpackItemsData` + `RefreshBaseControlForDemonLord`）；`UseRestorePotionItem`——transformItemId==0→Toast 61020 不消耗拦截，确认框 61019 → 置 0 恢复。`RefreshBaseControlForDemonLord`：魔王专属，同步基地走路 spine（非基地场景防护）。
+- **使用流程**（`UICreatureManager`，经 `UseOrEquipItem` 分流）：`UseTransformPotionItem`——配置缺失或 other_data 空→Toast 61021 拦截；确认框 textId 61018（{0}生物名{1}道具名）→ 写入 transformItemId（覆盖旧值=以最后吃的为准）+ `RemoveBackpackItem` 消耗 + `SaveUserData()` 落盘 + 四连刷新（`SetCardDetails` + 生物卡片列表 `ui_UIViewCreatureCardList.RefreshAllCard()`(幻化形象刷新) + `InitBackpackItemsData` + `RefreshBaseControlForDemonLord`）；`UseRestorePotionItem`——transformItemId==0→Toast 61020 不消耗拦截，确认框 61019 → 置 0 恢复。`RefreshBaseControlForDemonLord`：魔王专属，同步基地走路 spine（非基地场景防护）。
 - **Mod 保底（核心语义）**：只存道具ID、展示时实时查 ItemsInfoCfg——Mod 提供幻化药时 Mod 移除→配置 null→所有展示路径自动回落原形象；Mod 装回自动恢复；幻原药只判 id==0 不读配置，Mod 没了也能清残留；spine 资源缺失经 `GetSkeletonDataAssetWithMod` 回落 + null-check 不崩。
-- **配置行**：excel_items_info id=200002（item_type=18、num_max=1、icon_res=`Item_TransformPotion_1`、other_data=空待用户自填 spine 资源名、name textId=200002）、id=200003（item_type=19、num_max=1、icon_res=`Item_RestorePotion_1`、name=200003）；num_max=1 因 `RemoveBackpackItem` 整 Bean 移除不做递减。excel_language ItemsInfo sheet 加 200002/200003 道具名（12 语种）、UIText sheet 加 61018（幻化确认）/61019（幻原确认）/61020（无幻化拦截）/61021（配置异常拦截）。
+- **配置行**：excel_items_info id=200003（item_type=19、num_max=1、icon_res=`Item_RestorePotion_1`、name=200003）保留；原 id=200002 内置幻化药行已删除（幻化药全部由 Mod 提供，图标仍复用内置 `Item_TransformPotion_1`，资源保留不删）；num_max=1 因 `RemoveBackpackItem` 整 Bean 移除不做递减。excel_language ItemsInfo sheet 的 200002 道具名行已同步删除（200003 保留，12 语种）、UIText sheet 加 61018（幻化确认）/61019（幻原确认）/61020（无幻化拦截）/61021（配置异常拦截）。
 
 ## 背包管理
 

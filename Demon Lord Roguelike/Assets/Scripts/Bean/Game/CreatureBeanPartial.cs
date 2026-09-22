@@ -319,7 +319,7 @@ public partial class CreatureBean
 
     /// <summary>
     /// 获取当前幻化状态应替换的 spine 资源名（SkeletonDataAsset 的 Addressables 资源名），全项目唯一形象解析入口。
-    /// <para>other_data 组合格式「chessRes,avatorRes|uiScale;x,y」时本方法只取 chess 段（世界/战斗/普通卡片的基础形象）。</para>
+    /// <para>other_data 键值格式中本方法只取 show_res 键（世界/战斗/普通卡片的默认展示形象）。</para>
     /// </summary>
     /// <returns>spine 资源名；无幻化或配置异常返回 null</returns>
     public string GetTransformSpineRes()
@@ -327,26 +327,27 @@ public partial class CreatureBean
         ItemsInfoBean itemInfo = GetTransformItemInfo();
         if (itemInfo == null)
             return null;
-        ParseTransformOtherData(itemInfo.other_data, out string chessRes, out _, out _);
-        return chessRes;
+        ParseTransformOtherData(itemInfo.other_data, out string showRes, out _, out _, out _, out _);
+        return showRes;
     }
 
     /// <summary>
-    /// 获取幻化的 ui_show_spine 高清展示资源名（other_data 的 avator 段，详情UI专用）；
-    /// 未配置 avator 段返回 null（调用方回落 chess 段），无幻化/配置异常返回 null。
+    /// 获取幻化的 ui_show_spine 高清展示资源名（other_data 的 ui_show_res 键，详情UI专用）；
+    /// 未配置 ui_show_res 键返回 null（调用方回落 show_res），无幻化/配置异常返回 null。
     /// </summary>
     public string GetTransformUIShowSpineRes()
     {
         ItemsInfoBean itemInfo = GetTransformItemInfo();
         if (itemInfo == null)
             return null;
-        ParseTransformOtherData(itemInfo.other_data, out _, out string avatorRes, out _);
-        return avatorRes;
+        ParseTransformOtherData(itemInfo.other_data, out _, out string uiShowRes, out _, out _, out _);
+        return uiShowRes;
     }
 
     /// <summary>
-    /// 获取幻化高清展示自带的详情UI尺寸配置（other_data 第3段「scale;x,y」，格式同 CreatureModelBean.ui_data_b，
+    /// 获取幻化高清展示自带的详情UI尺寸配置（other_data 的 ui_show_data 键「scale;x,y」，格式同 CreatureModelBean.ui_data_b，
     /// 生成器按 Avator 骨架高度校准）；原生物 ui_data_b 按原骨架校准、不适用于 Mod 高清骨架，故由道具自带。
+    /// 编辑器下测试覆盖层(TransformPotionUITestOverride)有值时优先于配置返回(幻化药测试面板调参实时预览用)。
     /// </summary>
     /// <returns>是否配置了尺寸段（true 时 scale/pos 有效）</returns>
     public bool GetTransformUIShowData(out float scale, out Vector2 pos)
@@ -356,7 +357,12 @@ public partial class CreatureBean
         ItemsInfoBean itemInfo = GetTransformItemInfo();
         if (itemInfo == null)
             return false;
-        ParseTransformOtherData(itemInfo.other_data, out _, out _, out string uiData);
+        ParseTransformOtherData(itemInfo.other_data, out _, out _, out string uiData, out _, out _);
+#if UNITY_EDITOR
+        //测试覆盖层优先(幻化药测试面板调参实时预览用, 打包无此逻辑)
+        if (TransformPotionUITestOverride.TryGetUiShowData(transformItemId, out string overrideShowData))
+            uiData = overrideShowData;
+#endif
         if (uiData.IsNull())
             return false;
         string[] uiDataStr = uiData.Split(';');
@@ -370,30 +376,112 @@ public partial class CreatureBean
     }
 
     /// <summary>
-    /// 解析幻化药 other_data 组合格式：「chessRes」或「chessRes,avatorRes|uiData」。
-    /// chessRes=基础形象(世界/战斗/普通卡片)；avatorRes=ui_show_spine高清展示(详情UI,可空)；uiData=详情UI尺寸「scale;x,y」(可空)。
+    /// 获取幻化默认展示形象自带的小卡UI尺寸配置（other_data 的 show_data 键「scale;x,y」，格式同 CreatureModelBean.ui_data_s，
+    /// 生成器按默认展示骨架高度校准）；原生物 ui_data_s 按原骨架校准、不适用于 Mod 骨架，故由道具自带。
+    /// 编辑器下测试覆盖层(TransformPotionUITestOverride)有值时优先于配置返回(幻化药测试面板调参实时预览用)。
     /// </summary>
-    public static void ParseTransformOtherData(string otherData, out string chessRes, out string avatorRes, out string uiData)
+    /// <returns>是否配置了尺寸段（true 时 scale/pos 有效）</returns>
+    public bool GetTransformShowData(out float scale, out Vector2 pos)
     {
-        chessRes = otherData;
-        avatorRes = null;
+        scale = 1;
+        pos = Vector2.zero;
+        ItemsInfoBean itemInfo = GetTransformItemInfo();
+        if (itemInfo == null)
+            return false;
+        ParseTransformOtherData(itemInfo.other_data, out _, out _, out _, out string showData, out _);
+#if UNITY_EDITOR
+        //测试覆盖层优先(幻化药测试面板调参实时预览用, 打包无此逻辑)
+        if (TransformPotionUITestOverride.TryGetShowData(transformItemId, out string overrideChessData))
+            showData = overrideChessData;
+#endif
+        if (showData.IsNull())
+            return false;
+        string[] uiDataStr = showData.Split(';');
+        if (uiDataStr.Length < 2 || !float.TryParse(uiDataStr[0], out scale))
+        {
+            scale = 1;
+            return false;
+        }
+        pos = uiDataStr[1].SplitForVector2(',');
+        return true;
+    }
+
+    /// <summary>
+    /// 解析幻化药 other_data 键值格式：「show_res:X&ui_show_res:X&ui_show_data:scale;x,y&show_data:scale;x,y&world_data:scale;x,y」。
+    /// 按 &amp; 拆项、每项以第一个 : 拆 key/value（与 attack_mode other_data 同规约），缺省键=该段未配置。
+    /// show_res=默认展示形象(世界/战斗/普通卡片,可空——仅详情UI幻化道具=套装无 Chess 时省略,世界/小卡回落原生物形象)；ui_show_res=ui_show_spine高清展示(详情UI,可空)；
+    /// ui_show_data=详情UI尺寸「scale;x,y」(可空)；show_data=默认展示小卡UI尺寸「scale;x,y」(可空)；
+    /// world_data=世界显示尺寸/偏移「scale;x,y」(可空, x=横向偏移,y=竖向抬升, 战斗/基地等世界空间显示用)。
+    /// </summary>
+    public static void ParseTransformOtherData(string otherData, out string showRes, out string uiShowRes, out string uiData, out string showData, out string worldData)
+    {
+        showRes = null;
+        uiShowRes = null;
         uiData = null;
+        showData = null;
+        worldData = null;
         if (otherData.IsNull())
             return;
-        int uiSplit = otherData.IndexOf('|');
-        string resData = uiSplit >= 0 ? otherData.Substring(0, uiSplit) : otherData;
-        if (uiSplit >= 0)
-            uiData = otherData.Substring(uiSplit + 1);
-        int avatorSplit = resData.IndexOf(',');
-        if (avatorSplit >= 0)
+        string[] items = otherData.Split('&');
+        for (int i = 0; i < items.Length; i++)
         {
-            chessRes = resData.Substring(0, avatorSplit);
-            avatorRes = resData.Substring(avatorSplit + 1);
+            string item = items[i];
+            if (string.IsNullOrEmpty(item))
+                continue;
+            int sep = item.IndexOf(':');
+            if (sep <= 0)
+                continue;
+            string value = item.Substring(sep + 1).Trim();
+            switch (item.Substring(0, sep).Trim())
+            {
+                case "show_res":
+                    showRes = value;
+                    break;
+                case "ui_show_res":
+                    uiShowRes = value;
+                    break;
+                case "ui_show_data":
+                    uiData = value;
+                    break;
+                case "show_data":
+                    showData = value;
+                    break;
+                case "world_data":
+                    worldData = value;
+                    break;
+            }
         }
-        else
+    }
+
+    /// <summary>
+    /// 获取幻化世界显示自带的尺寸/偏移配置（other_data 的 world_data 键「scale;x,y」，x=横向偏移,y=竖向抬升）；
+    /// 消费点=CreatureHandler.SetCreatureData 世界缩放/位置注入（战斗/基地/议会等世界空间 SkeletonAnimation 显示）。
+    /// 编辑器下测试覆盖层(TransformPotionUITestOverride)有值时优先于配置返回(幻化药测试面板调参实时预览用)。
+    /// </summary>
+    /// <returns>是否配置了世界显示段（true 时 scale/pos 有效）</returns>
+    public bool GetTransformWorldData(out float scale, out Vector2 pos)
+    {
+        scale = 1;
+        pos = Vector2.zero;
+        ItemsInfoBean itemInfo = GetTransformItemInfo();
+        if (itemInfo == null)
+            return false;
+        ParseTransformOtherData(itemInfo.other_data, out _, out _, out _, out _, out string worldData);
+#if UNITY_EDITOR
+        //测试覆盖层优先(幻化药测试面板调参实时预览用, 打包无此逻辑)
+        if (TransformPotionUITestOverride.TryGetWorldData(transformItemId, out string overrideWorldData))
+            worldData = overrideWorldData;
+#endif
+        if (worldData.IsNull())
+            return false;
+        string[] worldDataStr = worldData.Split(';');
+        if (worldDataStr.Length < 2 || !float.TryParse(worldDataStr[0], out scale))
         {
-            chessRes = resData;
+            scale = 1;
+            return false;
         }
+        pos = worldDataStr[1].SplitForVector2(',');
+        return true;
     }
     #endregion
 

@@ -7,6 +7,7 @@ watched_files:
   - Assets/Scripts/Component/Handler/SpineHandler.cs
   - Assets/FrameWork/Scripts/Bean/SpineSkinBean.cs
   - Assets/FrameWork/Scripts/Bean/MVC/SpineAnimationStateBean.cs
+  - Assets/FrameWork/Scripts/Bean/MVC/SpineAnimationStateBeanPartial.cs
   - Assets/FrameWork/Scripts/Enums/BaseGameEnum.cs
   - Assets/FrameWork/Editor/Base/SpineEditor.cs
   - Assets/FrameWork/Editor/Base/Window/SpineWindow.cs
@@ -192,6 +193,16 @@ SpineHandler.Instance.PlayAnim(
 
 > **带生物数据播放的动画名解析双路径 + 幻化守卫（游戏层 `SpineHandler.GetAnimNameAppoint`，`Assets/Scripts/Component/Handler/SpineHandler.cs`）**：带 `CreatureBean` 的 `PlayAnim` 重载先经 `GetAnimNameAppoint` 解析指定动画名——路径①**指定名**：仅 Idle/Attack/Walk/Dead 四状态读 `creatureInfo.anim_idle/anim_attack/anim_walk/anim_dead` 配置直传（配置为空或其它状态原本就返回 null）；路径②**安全解析（返回 null）**：`GetAnimNameAppoint` 方法开头有幻化守卫——`creatureData.GetTransformSpineRes() != null` 时直接返回 null（不指定动画名），交框架 `SpineManager.GetSkeletonDataAnimName` 按目标骨架实际动画列表解析，缺失仅 LogError 不播。**守卫原因**：幻化是整骨替换，原生物 anim_* 配置名不适用于幻化骨架，直传指定名会跳过框架安全校验、`AnimationState.SetAnimation` 在目标骨架缺该动画时抛 `ArgumentException`；守卫后战斗缺动画不崩（状态机驱动、无 `TrackEntry.Complete` 依赖）。此守卫顺带覆盖 Portrait 装备换骨（同为整骨替换）的同款隐患。幻化机制详见 creature-system SKILL。
 
+### 定格动画第一帧（静态姿势，不播放）
+
+```csharp
+// 显示某状态动画的第一帧(setup pose 会把动画内才隐藏的部件全显示出来,静态展示应定格首帧)
+SpineHandler.Instance.SetAnimFirstFrame(skeletonAnimation, SpineAnimationStateEnum.Idle, creatureData);
+SpineHandler.Instance.SetAnimFirstFrame(skeletonGraphic, SpineAnimationStateEnum.Idle, creatureData); // SkeletonGraphic 重载
+```
+
+> `SetAnimFirstFrame`（游戏层，`Assets/Scripts/Component/Handler/SpineHandler.cs`）= `PlayAnim`(animSpeed:0) + `TrackTime=0` + `Update(0)` 立即应用姿势；SkeletonGraphic 重载经 `skeletonGraphic.Animation` 内部动画组件更新（为空时静默跳过）。骨架无对应动画时走框架安全解析、仅 LogError 不播（保持 setup pose）。典型用法：小卡 `GameUIUtil.SetCreatureUIForSimple` 定格待机首帧；世界空间先例见 `CreatureManager` 选中预览。
+
 ### 设置混合时间
 
 ```csharp
@@ -326,10 +337,15 @@ SpineAnimationState表结构：
 ### 动画匹配规则
 
 ```csharp
-// 系统会根据配置表自动匹配动画名称
-// 例如 Idle(10001) 配置为 "idle,stand"
-// 会依次查找 "idle" -> "stand" -> 使用默认
+// 系统会根据配置表自动匹配动画名称（大小写不敏感）
+// 例如 Idle(10001) 配置为 "idle,wait,idle1,wait1"
+// 会按配置顺序在目标骨架实际动画列表中依次小写比对，
+// 命中后播放骨架里的原始大小写名（Spine SetAnimation 需精确名）；
+// 全部不命中 → LogError 且不播放（无默认兜底）
 ```
+
+- 匹配为**大小写不敏感**（`SpineAnimationStateCfg.CheckSpineAnim` 内部统一转小写比较，2026-09-21 起），配置表**无需再配大小写变体**（原 `Idle,idle,wait,...` 形式已精简为纯小写）
+- 配置唯一真实源：`Assets/Data/Excel/excel_spine_animation_state[骨骼动画枚举_FrameWork].xlsx`，导出产物 `Assets/Resources/JsonText/SpineAnimationState.txt`
 
 ## 常用代码模板
 

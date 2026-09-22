@@ -13,6 +13,9 @@ watched_files:
   - Assets/Scripts/Bean/UI/DialogBossShowBean.cs
   - Assets/Editor/FightModeEditorWindow.cs
   - Assets/Editor/FightModeEditorTabConquer.cs
+  - Assets/Editor/FightModeEditorTabInfinite.cs
+  - Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBean.cs
+  - Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBeanPartial.cs
   - Assets/Data/Excel/excel_fight_type_conquer_info[战斗-征服模式].xlsx
   - Assets/Resources/JsonText/FightTypeConquerInfo.txt
 ---
@@ -47,6 +50,7 @@ watched_files:
 - `reward_crystal`（**string**，通关领奖魔晶）：单值 `x` 固定 或 区间 `x-y`（与其它区间字段同格式），走 `GetRandomRewardCrystal()`（内部复用 `ParseRandomRange`；Excel 第2行类型行为 string）
 - `reward_reputation`（int，通关声望奖励，插在 `reward_exp_boss` 与 `remark` 之间）：完整通关按难度给玩家声望；`FightTypeConquerInfoBeanPartial.GetRewardReputation()` 读取（仿 `GetBGColor`，需 Unity 重导 Bean 后才有该字段）。world_id=1 各难度(level 1~10)依次 1~10
 - `attack_intensity_baserate`（float，基础强度倍率，插在 `attack_intensity_addrate` 之后）：该难度每关恒定乘区(第1关也生效)，0/不配按 1；与 `attack_intensity_addrate`(每关递增) 共同组成 `GetCurrentIntensityRate(fightNum)`
+- **无尽模式（GameFightTypeEnum.Infinite）复用本表同难度行**：怪物池 `enemy_ids`/`enemy_boss_ids`、`attack_start_num`/`attack_show_time`/`attack_boss_num`、BOSS 场景池、`drop_crystal`、`road_num`/`road_length` 均取同难度（world_id+level）征服行（经 `FightBeanForInfinite.fightTypeConquerInfo`）；其每轮强度递增倍率独立配置在 `excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（FightTypeInfiniteInfo，`round_intensity_addrate`，第 N 轮强度=同难度征服行 `attack_intensity_baserate`×该值^(N-1)）；无尽传送门道路预生成（`GameWorldInfoRandomBean.SetRandomDataForInfinite`，难度 2 起逐档）也读征服行 `road_num`/`road_length` 区间
 
 ### 随机数据与难度
 - `GameWorldInfoRandomBean.SetRandomDataForConquer`（GameWorldInfoBeanPartial）—— 创建时把 1~已解锁最高难度逐档随机(roadNum/roadLength/fightNum)缓存进 listDifficultyRandom；`SetDifficultyLevel(level)` 切换难度时同步当前字段(气泡与战斗都读这些字段)，`GetDifficultyRandom(level)` 取某难度数据(缺失懒生成)
@@ -60,7 +64,7 @@ watched_files:
 - **传送门详情气泡 `UIPopupPortalDetails` 四项预览受「设施」研究门控**（`UserUnlock.CheckIsUnlock`，未解锁该项整行隐藏；名字行始终显示；无尽模式不展示关卡数/路径长度/奖励）：线路数→`UnlockEnum.PortalPreviewRoadNum`(100300002)、关卡数→`PortalPreviewFightNum`(100300003)、路径长度→`PortalPreviewRoadLength`(100300004,文本id 414)、奖励道具→`PortalPreviewReward`(100300005)
 
 ### 编辑器
-- **FightModeEditorWindow（战斗模式编辑工具，菜单：游戏/战斗模式编辑）** - 主窗口只承载页签栏（征服模式/挑战100勇士），征服配置编辑在 **FightModeEditorTabConquer** 页签（挑战100勇士页签 FightModeEditorTabChallengeHundred 见 game-portal/portal-system）：可视化编辑、保存回 Excel 并重导 JSON（反射按字段名）；布局：顶部工具栏(刷新/导出/快捷开表)+固定选择区(世界 Popup+难度1~10页签+加载)+滚动编辑区+固定底部保存栏(显示变更数、无变更禁用)；数值字段左右分列对比前后各3个难度(level±1~±3)只读值、差异高亮，方便跨难度调数值；已修改未保存字段编辑框淡黄高亮(IsFieldModified/CountChanges)；ID 列表字段（场景/敌人/BOSS）支持「手输 ID 或下拉按名字选取」，其前后难度对比单元格与标量字段同网格对齐、显示解析后的具体名字（换行展示，完整列表见 tooltip）而非原始 ID 串；参数可复制（点任意对比单元格复制单字段 / 顶部按难度一键「复制全部数值」按钮，跳过 id/world_id/level，复制后仍需保存）
+- **FightModeEditorWindow（战斗模式编辑工具，菜单：游戏/战斗模式编辑）** - 主窗口只承载页签栏（征服模式/挑战100勇士/无尽模式），征服配置编辑在 **FightModeEditorTabConquer** 页签（挑战100勇士页签 FightModeEditorTabChallengeHundred 见 game-portal/portal-system；无尽模式页签 FightModeEditorTabInfinite 编辑 `excel_fight_type_infinite_info`，详见 editor-extension-system skill）：可视化编辑、保存回 Excel 并重导 JSON（反射按字段名）；布局：顶部工具栏(刷新/导出/快捷开表)+固定选择区(世界 Popup+难度1~10页签+加载)+滚动编辑区+固定底部保存栏(显示变更数、无变更禁用)；数值字段左右分列对比前后各3个难度(level±1~±3)只读值、差异高亮，方便跨难度调数值；已修改未保存字段编辑框淡黄高亮(IsFieldModified/CountChanges)；ID 列表字段（场景/敌人/BOSS）支持「手输 ID 或下拉按名字选取」，其前后难度对比单元格与标量字段同网格对齐、显示解析后的具体名字（换行展示，完整列表见 tooltip）而非原始 ID 串；参数可复制（点任意对比单元格复制单字段 / 顶部按难度一键「复制全部数值」按钮，跳过 id/world_id/level，复制后仍需保存）
 
 ## 关键文件
 
@@ -78,7 +82,8 @@ watched_files:
 | BOSS 特写 UI | Assets/Scripts/Component/UI/Dialog/UIDialogBossShow.cs |
 | Excel 源表 | Assets/Data/Excel/excel_fight_type_conquer_info[战斗-征服模式].xlsx |
 | 导出 JSON | Assets/Resources/JsonText/FightTypeConquerInfo.txt |
-| 配置编辑器 | Assets/Editor/FightModeEditorWindow.cs (主窗口) + Assets/Editor/FightModeEditorTabConquer.cs (征服页签) |
+| 无尽配置 Bean(禁改)/扩展 | Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBean.cs / FightTypeInfiniteInfoBeanPartial.cs（无尽逐轮强度倍率，复用本表同难度行其余字段） |
+| 配置编辑器 | Assets/Editor/FightModeEditorWindow.cs (主窗口) + Assets/Editor/FightModeEditorTabConquer.cs (征服页签) + Assets/Editor/FightModeEditorTabInfinite.cs (无尽页签) |
 
 ## 约束
 

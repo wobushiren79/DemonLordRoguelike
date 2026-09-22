@@ -23,7 +23,7 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
         int difficultyLevel = targetData.Item3;
 
         //征服模式: 按指定难度取该难度预生成的道路/关卡/路径数据(各难度在创建时已全部随出);
-        //无尽模式无难度概念, 直接用当前字段值
+        //无尽模式: 道路数/长度同样按难度取预生成值(无关卡数概念, 关卡数行本就隐藏)
         int roadNum = gameWorldInfoRandom.roadNum;
         int fightNum = gameWorldInfoRandom.fightNum;
         int roadLength = gameWorldInfoRandom.roadLength;
@@ -37,17 +37,29 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
                 roadLength = difficultyRandom.roadLength;
             }
         }
+        else if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Infinite)
+        {
+            //不走 GetDifficultyRandom(其懒生成会连带生成征服通关奖励, 无尽无奖励); 只读创建时已预生成的道路数据
+            GameWorldDifficultyRandomBean difficultyRandom = gameWorldInfoRandom.listDifficultyRandom?.Find(item => item.difficultyLevel == difficultyLevel);
+            if (difficultyRandom != null)
+            {
+                roadNum = difficultyRandom.roadNum;
+                roadLength = difficultyRandom.roadLength;
+            }
+        }
 
         var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
         //无尽模式无关卡数/路径长度/通关奖励(均为征服模式数据)
         bool isShowFightNum = gameWorldInfoRandom.gameFightType != GameFightTypeEnum.Infinite;
         //挑战100勇士: 无难度概念(难度行隐藏), 固定单关(关卡数行隐藏, 恒1无信息量)
         bool isChallengeHundred = gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred;
+        //难度: 始终显示(不受研究门控), 征服/无尽有难度概念(挑战100勇士整行隐藏)
+        bool isShowDifficulty = !isChallengeHundred;
 
         //名字: 始终显示(不受研究门控)
         SetDetailsItem(ui_UIViewPopupProtalDetailsItem_Name, TextHandler.Instance.GetTextById(411), $"{gameWorldInfo.name_language}", true);
-        //难度: 始终显示(不受研究门控), 仅征服模式有难度概念(无尽/挑战100勇士整行隐藏)
-        SetDetailsItem(ui_UIViewPopupProtalDetailsItem_Level, TextHandler.Instance.GetTextById(415), $"{difficultyLevel}", isShowFightNum && !isChallengeHundred);
+        //难度行
+        SetDetailsItem(ui_UIViewPopupProtalDetailsItem_Level, TextHandler.Instance.GetTextById(415), $"{difficultyLevel}", isShowDifficulty);
         //线路数量: 需解锁「线路数预览」研究, 未解锁整行隐藏
         SetDetailsItem(ui_UIViewPopupProtalDetailsItem_RoadNum, TextHandler.Instance.GetTextById(412), $"{roadNum}",
             userUnlock.CheckIsUnlock(UnlockEnum.PortalPreviewRoadNum));

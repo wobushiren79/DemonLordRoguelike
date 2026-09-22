@@ -11,6 +11,9 @@ watched_files:
   - Assets/Scripts/Bean/UI/DialogBossShowBean.cs
   - Assets/Editor/FightModeEditorWindow.cs
   - Assets/Editor/FightModeEditorTabConquer.cs
+  - Assets/Editor/FightModeEditorTabInfinite.cs
+  - Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBean.cs
+  - Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBeanPartial.cs
   - Assets/Data/Excel/excel_fight_type_conquer_info[战斗-征服模式].xlsx
   - Assets/Resources/JsonText/FightTypeConquerInfo.txt
 ---
@@ -75,6 +78,8 @@ WorldHandler.EnterGameForFightScene(fightData)  → GameFightLogicConquer 跑起
 **Excel 源表**：`Assets/Data/Excel/excel_fight_type_conquer_info[战斗-征服模式].xlsx`（工作表 `FightTypeConquerInfo`，三行表头：字段名/类型/中文注释，数据从第 4 行起）
 **导出 JSON**：`Assets/Resources/JsonText/FightTypeConquerInfo.txt`（派生产物，不可单独改）
 **取行键**：`world_id` + `level`（`FightTypeConquerInfoCfg.GetItemData(worldId, difficultyLevel)`），一个世界的每个难度等级一行。
+
+> **无尽模式（GameFightTypeEnum.Infinite）复用本表同难度行**：无尽模式的怪物池 `enemy_ids`/`enemy_boss_ids`、`attack_start_num`/`attack_show_time`/`attack_boss_num`、BOSS 场景池、`drop_crystal`、`road_num`/`road_length` 均取同难度（world_id+level）征服行（经 `FightBeanForInfinite.fightTypeConquerInfo`）；其每轮强度递增倍率独立配置在 `excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（FightTypeInfiniteInfo.round_intensity_addrate，第 N 轮强度=本表同难度行 `attack_intensity_baserate`×该值^(N-1)，Bean 扩展 `GetRoundIntensityRate(round)`）。无尽传送门道路预生成 `GameWorldInfoRandomBean.SetRandomDataForInfinite`（难度 2 起逐档，无尽无难度 1）同样读本表 `road_num`/`road_length` 区间。
 
 ### 字段一览
 
@@ -324,7 +329,7 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 
 ## FightModeEditorWindow - 战斗模式编辑工具（原 FightTypeConquerEditorWindow）
 
-**文件**：主窗口 `Assets/Editor/FightModeEditorWindow.cs`（菜单：游戏/战斗模式编辑，标题「战斗模式编辑工具」）＋ 征服页签 `Assets/Editor/FightModeEditorTabConquer.cs`。主窗口只负责页签栏（`GUILayout.Toolbar`）与持有各页签实例（切页签不丢状态），各模式页签继承 `FightModeEditorTabBase`（`Init()`/`OnGUI()`）自绘；**挑战100勇士页签见 `FightModeEditorTabChallengeHundred.cs`（portal-system skill）**。
+**文件**：主窗口 `Assets/Editor/FightModeEditorWindow.cs`（菜单：游戏/战斗模式编辑，标题「战斗模式编辑工具」）＋ 征服页签 `Assets/Editor/FightModeEditorTabConquer.cs`。主窗口只负责页签栏（`GUILayout.Toolbar`，现有 征服模式/挑战100勇士/无尽模式 三页签）与持有各页签实例（切页签不丢状态），各模式页签继承 `FightModeEditorTabBase`（`Init()`/`OnGUI()`）自绘；**挑战100勇士页签见 `FightModeEditorTabChallengeHundred.cs`（portal-system skill）**，**无尽模式页签见 `FightModeEditorTabInfinite.cs`（编辑 `excel_fight_type_infinite_info`，行下拉+字段编辑+新增/删除行+保存+导出Json，详见 editor-extension-system skill）**。
 
 以下为**征服页签**（FightModeEditorTabConquer）的编辑能力：
 
@@ -356,7 +361,8 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 | BOSS 特写数据 | `Assets/Scripts/Bean/UI/DialogBossShowBean.cs` |
 | Excel 源表 | `Assets/Data/Excel/excel_fight_type_conquer_info[战斗-征服模式].xlsx` |
 | 导出 JSON | `Assets/Resources/JsonText/FightTypeConquerInfo.txt` |
-| 配置编辑器 | `Assets/Editor/FightModeEditorWindow.cs`（主窗口）+ `Assets/Editor/FightModeEditorTabConquer.cs`（征服页签） |
+| 无尽配置 Bean（禁改）/扩展 | `Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBean.cs` / `FightTypeInfiniteInfoBeanPartial.cs`（无尽逐轮强度倍率 GetRoundIntensityRate，其余字段复用本表同难度行） |
+| 配置编辑器 | `Assets/Editor/FightModeEditorWindow.cs`（主窗口）+ `Assets/Editor/FightModeEditorTabConquer.cs`（征服页签）+ `Assets/Editor/FightModeEditorTabInfinite.cs`（无尽页签） |
 | 难度解锁存档 | `Assets/Scripts/Bean/Game/UserUnlockBean.cs`（GetUnlockGameWorldConquerDifficultyLevel） |
 
 ---

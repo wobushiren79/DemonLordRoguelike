@@ -72,7 +72,7 @@
         "com.esotericsoftware.spine.spine-csharp": "4.3.36",
         "com.unity.2d.sprite": "1.0.0"
       },
-      "hash": "8c14c63b1dddbcd7f2d85f8a07c165372cc0c1b8"
+      "hash": "6cbd93df540102197f791879ff8c8a26dc034f7b"
     },
     "com.esotericsoftware.spine.urp-shaders": {
       "version": "https://github.com/EsotericSoftware/spine-runtimes.git?path=spine-unity/Modules/com.esotericsoftware.spine.urp-shaders#4.3",
@@ -81,7 +81,7 @@
       "dependencies": {
         "com.unity.render-pipelines.universal": "7.1.5"
       },
-      "hash": "8c14c63b1dddbcd7f2d85f8a07c165372cc0c1b8"
+      "hash": "6cbd93df540102197f791879ff8c8a26dc034f7b"
     },
     "com.unity.2d.animation": {
       "version": "13.0.4",

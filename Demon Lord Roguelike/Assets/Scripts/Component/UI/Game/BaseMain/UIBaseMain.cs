@@ -19,9 +19,18 @@ public partial class UIBaseMain : BaseUIComponent
         base.OnInputActionForStarted(inputType, callback);
         if (inputType == InputActionUIEnum.F12)
         {
-            if (Application.isEditor)
+            // GM 测试面板（编辑器内恒可用；正式包由打包工具的「开启 GM 模式」选项决定）
+            if (ProjectConfigInfo.IsGMMode())
             {
                 UIHandler.Instance.OpenUIAndCloseOther<UITestBase>();
+            }
+        }
+        else if (inputType == InputActionUIEnum.F11)
+        {
+            // GM GUI 面板（F11 开关，再按一次关闭；与 F12 同一 GM 开关门控）
+            if (ProjectConfigInfo.IsGMMode())
+            {
+                TestGameMasterGUI.Toggle();
             }
         }
         else if (inputType == InputActionUIEnum.ESC)

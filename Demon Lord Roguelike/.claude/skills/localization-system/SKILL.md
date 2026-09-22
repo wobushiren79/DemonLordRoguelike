@@ -635,3 +635,4 @@ string text = TextHandler.Instance.GetTextByIdNoBreakingSpace("BuffInfo", 10001)
 6. **延迟加载**：多语言文本是按需加载的，首次访问时会从JSON文件读取
 7. **编辑器预览**：在Editor中可以直接使用`UITextLanguageView`预览多语言效果
 8. **「是魔王就挑战100勇士」模式名全语言统一用原名**：该战斗模式(ChallengeHundred)的翻译不译出，`excel_language` 的 `ResearchInfo` 工作表 id=100300007 十二语言均填「是魔王就挑战100勇士」。配套 UIText 条目：416「是否接受100勇士的挑战？」（传送门进入确认文案，ChallengeHundred 分支用；征服仍用 401）、417「是魔王就挑战100勇士」（模式名，ChallengeHundred 传送门在基地地图上的显示名，`UIViewBasePortalItem` 按模式切换）、418「来袭魔物」（传送门详情弹窗魔物列表标题，**预留，当前代码未引用**）
+9. **无尽模式(Infinite) UIText 条目**：419「是否开启{0}的无尽之战？」（传送门进入确认文案，无尽模式分支用；征服仍用 401、挑战100勇士用 416）、420「{0}·无尽」（无尽模式-世界名后缀，传送门在基地地图上的显示名按模式拼接）；沿用 416~418 的习惯全语言填中文（其余语言暂与中文同值）

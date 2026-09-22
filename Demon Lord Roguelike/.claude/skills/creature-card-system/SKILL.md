@@ -269,17 +269,19 @@ public void EventForCardClickSelect(UIViewCreatureCardItem selectItemView)
 ### 设置生物图标
 
 ```csharp
-// 简单图标（卡片内使用）
+// 简单图标（卡片内使用，定格待机动画第一帧——直接停 setup pose 会把动画内才隐藏的部件显示出来）
 GameUIUtil.SetCreatureUIForSimple(ui_Icon, creatureData);
 
-// 详情图标（带场景背景）
+// 详情图标（带场景背景，循环播放待机动画）
 GameUIUtil.SetCreatureUIForDetails(ui_Icon, ui_CardScene, creatureData);
 
 // 自定义大小
 GameUIUtil.SetCreatureUIForSimple(ui_Icon, creatureData, scale: 2);
 ```
 
-> **图标形象来源（幻化/Portrait 优先级）**：两个接口底层都走 `CreatureHandler.SetCreatureData` 中枢——生物处于幻化状态（`CreatureBean.transformItemId≠0`，幻化药写入/幻原药清除，机制见 creature-system）时自动整骨替换为幻化资源并跳过原皮肤，卡片小图标/详情图标**无需任何特判**即显示幻化形象；详情图标（isUIShow=true）在幻化道具配了 avator 段（ui_show_spine 高清图）时自动改用高清资源，尺寸段（other_data `|` 后 `scale;x,y`）替代原生物 `ui_data_b`。`SetCreatureUIForDetails` 的 Portrait 装备分支优先级最高（在幻化之后再覆盖；卸下 Portrait 后幻化自动显现），优先级链 **Portrait > 幻化 > 原形象**。
+> **图标形象来源（幻化/Portrait 优先级）**：两个接口底层都走 `CreatureHandler.SetCreatureData` 中枢——生物处于幻化状态（`CreatureBean.transformItemId≠0`，幻化药写入/幻原药清除，机制见 creature-system）时自动整骨替换为幻化资源并跳过原皮肤，卡片小图标/详情图标**无需任何特判**即显示幻化形象；详情图标（isUIShow=true）在幻化道具配了 avator 段（ui_show_spine 高清图）时自动改用高清资源，尺寸段（other_data 第3段 `scale;x,y`）替代原生物 `ui_data_b`；小图标在幻化道具配了 chess 小卡尺寸段（other_data 第4段 `scale;x,y`）时替代原生物 `ui_data_s`（`SetCreatureUIForSimple` 内部分支，scale 参数照常叠乘）。`SetCreatureUIForDetails` 的 Portrait 装备分支优先级最高（在幻化之后再覆盖；卸下 Portrait 后幻化自动显现），优先级链 **Portrait > 幻化 > 原形象**。
+
+> **SkeletonGraphic 的 `maskable` 必须为 1（裁切生效前提）**：卡片 `IconContent` 节点挂 `RectMask2D` 负责把 spine 裁在卡片区域内，但 spine 多子网格渲染时 `SkeletonGraphic.EnsureCanvasRendererCount` 会把**自身的 `maskable` 值复制给每个动态生成的 `SkeletonSubmeshGraphic`**——`maskable=0` 时子网格永不向 RectMask2D 注册（`UpdateClipParent` 直接跳过），表现为「第一次显示正常（内容未溢出或单子网格），切换 spine 后新生成的 Renderer 子节点全部漏出遮罩」。曾发于大卡 `UIViewCreatureCardDetails.prefab` 的 Icon（2026-09 修复为 1）；小卡 Icon 为 1 无此问题。新增 spine 卡片 UI 时务必检查该字段。
 
 ### 获取卡片数据
 

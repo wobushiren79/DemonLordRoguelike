@@ -58,7 +58,8 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
     /// <param name="difficultyLevel">该item代表的难度等级</param>
     /// <param name="isUnlock">该难度是否已解锁(未解锁时显示锁链图标)</param>
     /// <param name="bgColor">该难度的背景颜色(由难度表 bg_color 决定)</param>
-    public void SetData(GameWorldInfoBean gameWorldInfo, GameWorldInfoRandomBean gameWorldInfoRandom, int difficultyLevel, bool isUnlock, Color bgColor)
+    /// <param name="isShowCompleteMark">是否显示通关标记(仅征服模式有通关统计; 无尽等模式恒隐藏)</param>
+    public void SetData(GameWorldInfoBean gameWorldInfo, GameWorldInfoRandomBean gameWorldInfoRandom, int difficultyLevel, bool isUnlock, Color bgColor, bool isShowCompleteMark = true)
     {
         this.difficultyLevel = difficultyLevel;
         SetIcon(gameWorldInfo.icon_res, gameWorldInfoRandom.iconSeed);
@@ -66,7 +67,18 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
         SetUnlock(isUnlock);
         SetBGColor(bgColor);
         SetPopup(gameWorldInfo, gameWorldInfoRandom, isUnlock);
-        SetComplete(gameWorldInfoRandom.worldId, difficultyLevel);
+        if (isShowCompleteMark)
+        {
+            SetComplete(gameWorldInfoRandom.worldId, difficultyLevel);
+        }
+        else
+        {
+            //无通关统计的模式(无尽等): 通关标记恒隐藏
+            if (ui_Complete_0 != null)
+                ui_Complete_0.gameObject.SetActive(false);
+            if (ui_Complete_1 != null)
+                ui_Complete_1.gameObject.SetActive(false);
+        }
         //漂浮相位的随机化改在 OnEnable 里做(此处弹窗可能尚未激活, Animator 无法求值)
     }
 

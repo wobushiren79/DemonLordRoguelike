@@ -56,10 +56,12 @@ public partial class UIViewBasePortalItem : BaseUIView
         this.gameWorldInfoRandom = gameWorldInfoRandom;
         //设置地图位置
         SetMapPosition(gameWorldInfoRandom.uiPosition.GetVector());
-        //设置名字(挑战100勇士世界显示模式名, 地图上可直接辨识)
+        //设置名字(挑战100勇士世界显示模式名, 无尽模式世界名加「·无尽」后缀, 地图上可直接辨识)
         string targetName = gameWorldInfo.name_language;
         if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred)
             targetName = TextHandler.Instance.GetTextById(417);
+        else if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Infinite)
+            targetName = string.Format(TextHandler.Instance.GetTextById(420), gameWorldInfo.name_language);
         SetName(targetName);
         //设置图标
         SetIcon(gameWorldInfo.icon_res, gameWorldInfoRandom.iconSeed);
@@ -124,9 +126,11 @@ public partial class UIViewBasePortalItem : BaseUIView
     {
         isSelectWorld = true;
         DialogBean dialogData = new DialogBean();
-        //确认文案按模式区分: 征服=401「是否开启{0}的征服之旅？」; 挑战100勇士=416「是否接受100勇士的挑战？」
+        //确认文案按模式区分: 征服=401「是否开启{0}的征服之旅？」; 无尽=419「是否开启{0}的无尽之战？」; 挑战100勇士=416「是否接受100勇士的挑战？」
         if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred)
             dialogData.content = TextHandler.Instance.GetTextById(416);
+        else if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Infinite)
+            dialogData.content = string.Format(TextHandler.Instance.GetTextById(419), gameWorldInfo.name_language);
         else
             dialogData.content = string.Format(TextHandler.Instance.GetTextById(401), gameWorldInfo.name_language);
 

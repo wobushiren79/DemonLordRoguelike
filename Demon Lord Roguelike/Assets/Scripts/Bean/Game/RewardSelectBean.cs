@@ -60,7 +60,7 @@ public class RewardSelectBean
     public int selectNum;
     //可以选择的最大次数
     public int selectNumMax;
-    //道具生成数量（默认4：第1件为首箱保底位——已解锁装备=装备/未解锁回退魔晶，其余为可选的魔晶位）
+    //道具生成数量（默认4：第1件为首箱保底位（装备池已解锁=装备/未解锁回退魔晶）；装备池已解锁时其余位置中随机1件亦为装备，剩余为可选的魔晶位）
     public int createItemNum;
     //装备生成数量
     public int createEquipNum;
@@ -122,6 +122,15 @@ public class RewardSelectBean
         {
             //基础奖励直接采用预生成列表，保证预览所见即实领
             listReward = new List<ItemBean>(baseReward);
+            //兜底：预生成后配置已失效的道具(如来源道具所属 Mod 被移除)回退为魔晶，防止领奖场景展示/入账异常
+            for (int i = 0; i < listReward.Count; i++)
+            {
+                if (ItemsInfoCfg.GetItemData(listReward[i].itemId) == null)
+                {
+                    LogUtil.LogWarning($"通关奖励道具配置已失效(itemId:{listReward[i].itemId})，回退为魔晶(可能是 Mod 已移除)");
+                    listReward[i] = new ItemBean(ItemIdEnum.Crystal, GetFallbackCrystalNum(conquerInfo, null));
+                }
+            }
         }
         else
         {
@@ -208,7 +217,8 @@ public class RewardSelectBean
 
     #region 奖励生成
     /// <summary>
-    /// 按当前 createItemNum/createEquipNum 生成奖励列表（前 createEquipNum 个生成装备，其余生成魔晶）
+    /// 按当前 createItemNum/createEquipNum 生成奖励列表
+    /// 位置规则：前 createEquipNum 个为保底装备位（首箱必得）；装备池已解锁且还有魔晶位时，随机 1 个魔晶位升级为装备位；其余位置生成魔晶
     /// </summary>
     /// <param name="conquerInfo">征服配置（决定装备稀有度与魔晶数；为null则走测试/默认规则）</param>
     /// <param name="testData">测试数据（conquerInfo为null时生效）</param>
@@ -216,19 +226,86 @@ public class RewardSelectBean
     {
         listReward = new List<ItemBean>();
         List<long> unlockCreatureModelIds = GetUnlockCreatureModelIdsForEquip();
+        //先规划各位置类型（装备位/魔晶位），并记录实际魔晶位索引供来源道具替换
+        bool[] slotIsEquip = PlanRewardSlotTypes(unlockCreatureModelIds);
+        List<int> crystalSlotIndices = new List<int>();
         for (int i = 0; i < createItemNum; i++)
         {
-            //如果还有装备生成数量 优先生成装备
-            if (i < createEquipNum)
+            if (slotIsEquip[i])
             {
                 CreateItemEquip(conquerInfo, unlockCreatureModelIds, testData);
             }
-            //其他生成魔晶
             else
             {
                 CreateItemCrystal(conquerInfo, testData);
+                crystalSlotIndices.Add(i);
             }
         }
+        //征服来源道具替换：source 配置了征服模式奖励的非装备道具，随机一个魔晶位替换（仅征服奖励生效）
+        ReplaceCrystalSlotBySourceItem(conquerInfo, crystalSlotIndices);
+    }
+
+    /// <summary>
+    /// 规划各奖励位置的类型（true=装备位，false=魔晶位）
+    /// 规则：前 createEquipNum 个为保底装备位；装备池已解锁且还有魔晶位时，随机 1 个魔晶位升级为装备位（隐藏装备箱）
+    /// </summary>
+    /// <param name="unlockCreatureModelIds">已解锁的生物模型ID列表（装备奖励池，为空=未解锁装备）</param>
+    private bool[] PlanRewardSlotTypes(List<long> unlockCreatureModelIds)
+    {
+        bool[] slotIsEquip = new bool[createItemNum];
+        //保底装备位
+        for (int i = 0; i < createEquipNum && i < createItemNum; i++)
+        {
+            slotIsEquip[i] = true;
+        }
+        //装备池已解锁且还有魔晶位 → 随机 1 个魔晶位升级为装备位（未解锁时保持魔晶）
+        if (unlockCreatureModelIds.Count > 0 && createEquipNum < createItemNum)
+        {
+            int extraEquipIndex = UnityEngine.Random.Range(createEquipNum, createItemNum);
+            slotIsEquip[extraEquipIndex] = true;
+        }
+        return slotIsEquip;
+    }
+
+    /// <summary>
+    /// 征服奖励「来源道具」替换：道具表 source 配置了征服模式奖励(ItemSourceEnum.ConquerReward)的非装备道具进入候选池，
+    /// 候选池非空且有魔晶位时，随机一个魔晶位替换为池内随机道具(数量1)；无候选或无魔晶位(如终焉议会全装备)时保持原样
+    /// </summary>
+    /// <param name="conquerInfo">征服配置；为null(测试模式)时不替换</param>
+    /// <param name="crystalSlotIndices">当前实际为魔晶的位置索引（保底/升级装备位不在其中）</param>
+    private void ReplaceCrystalSlotBySourceItem(FightTypeConquerInfoBean conquerInfo, List<int> crystalSlotIndices)
+    {
+        if (conquerInfo == null)
+            return;
+        //无魔晶位(全装备)不替换
+        if (crystalSlotIndices == null || crystalSlotIndices.Count == 0)
+            return;
+        List<ItemsInfoBean> pool = GetConquerSourceItemPool();
+        if (pool.Count == 0)
+            return;
+        ItemsInfoBean sourceItem = RandomUtil.GetRandomDataByList(pool);
+        int slotIndex = RandomUtil.GetRandomDataByList(crystalSlotIndices);
+        listReward[slotIndex] = new ItemBean(sourceItem.id, 1);
+    }
+
+    /// <summary>
+    /// 获取征服模式奖励来源的候选道具池（source 含 ConquerReward 且为非装备类型的道具，如 Mod 幻化药）
+    /// </summary>
+    public static List<ItemsInfoBean> GetConquerSourceItemPool()
+    {
+        List<ItemsInfoBean> pool = new List<ItemsInfoBean>();
+        var allData = ItemsInfoCfg.GetAllArrayData();
+        for (int i = 0; i < allData.Length; i++)
+        {
+            var itemInfo = allData[i];
+            //仅非装备道具可配置来源投放（装备走既有装备池规则）
+            if (itemInfo.IsEquipType())
+                continue;
+            if (!itemInfo.HasSource(ItemSourceEnum.ConquerReward))
+                continue;
+            pool.Add(itemInfo);
+        }
+        return pool;
     }
 
     /// <summary>

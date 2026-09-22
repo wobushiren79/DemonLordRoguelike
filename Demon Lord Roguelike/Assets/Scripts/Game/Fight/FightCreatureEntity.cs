@@ -558,7 +558,11 @@ public partial class FightCreatureEntity
         //触发被攻击特效
         if (creatureSkeletionAnimation != null)
         {
-            creatureSkeletionAnimation.transform.localPosition = Vector3.zero;
+            //复位抖动基准位置(幻化 world_data 有偏移时以偏移为基准, 防抖动后偏移丢失)
+            creatureSkeletionAnimation.transform.localPosition =
+                fightCreatureData.creatureData.GetTransformWorldData(out _, out Vector2 worldOffset)
+                    ? new Vector3(worldOffset.x, worldOffset.y, 0)
+                    : Vector3.zero;
             //颤抖
             animForUnderAttackShake = creatureSkeletionAnimation.transform.DOShakePosition(0.06f, strength: 0.05f, vibrato: 10, randomness: 180);
         }
@@ -663,6 +667,13 @@ public partial class FightCreatureEntity
                 FightBeanForChallengeHundred challengeHundredFightData = gameFightLogic.fightData as FightBeanForChallengeHundred;
                 if (challengeHundredFightData?.fightTypeChallengeHundredInfo != null)
                     dropCrystal = challengeHundredFightData.fightTypeChallengeHundredInfo.GetDropCrystal(challengeHundredFightData.gameWorldInfoRandomData.difficultyLevel);
+            }
+            else if (gameFightLogic.fightData.gameFightType == GameFightTypeEnum.Infinite)
+            {
+                //无尽模式按同难度征服行 drop_crystal 掉落(与征服模式一致, 不随轮次变化)
+                FightBeanForInfinite infiniteFightData = gameFightLogic.fightData as FightBeanForInfinite;
+                if (infiniteFightData?.fightTypeConquerInfo != null)
+                    dropCrystal = infiniteFightData.fightTypeConquerInfo.drop_crystal;
             }
 
             FightDropCrystalBean fightDropCrystal = FightHandler.Instance.manager.GetFightDropCrystalBean(dropCrystal, creatureObj.transform.position);
