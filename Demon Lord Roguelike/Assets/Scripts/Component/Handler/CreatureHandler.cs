@@ -51,6 +51,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             resName = transformSpineRes;
         }
         //高清展示位(详情UI等 isUIShow=true):配置了 ui_show_res 键时改用高清资源——独立于 show_res 判定,支持仅详情UI幻化道具(套装只有 Avator/Secretary/Elf/AVG 无 Chess 时 show_res 缺省,世界/小卡仍显示原生物形象)
+        string transformUIShowSkin = null;
         if (isUIShow)
         {
             string transformUIShowRes = creatureData.GetTransformUIShowSpineRes();
@@ -58,6 +59,8 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             {
                 resName = transformUIShowRes;
                 hasTransform = true;
+                //ui_show_skin 键(可空): 幻化 ui_show 资源内指定皮肤(ArkReSpine 单资源多皮肤套装按皮肤出药), 缺省=骨架默认皮肤
+                transformUIShowSkin = creatureData.GetTransformUIShowSkin();
             }
         }
         //幻化状态不取皮肤(皮肤按原骨架配置,用不上)
@@ -70,10 +73,14 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             {
                 SpineHandler.Instance.SetSkeletonDataAsset(skeletonAnimation, resName);
             }
-            //修改皮肤(幻化状态跳过)
+            //修改皮肤(幻化状态跳过; 但配置了 ui_show_skin 的详情UI幻化按名换肤)
             if (!hasTransform)
             {
                 SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, skinData);
+            }
+            else if (!transformUIShowSkin.IsNull())
+            {
+                SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, transformUIShowSkin);
             }
             //设置模型大小（目标大小 size_spine × NPC体型倍率 bodySizeScale，普通生物体型倍率恒为1）
             float spineScale = creatureData.creatureModel.size_spine * creatureData.GetBodySizeScale();
@@ -95,10 +102,14 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             {
                 SpineHandler.Instance.SetSkeletonDataAsset(skeletonGraphic, resName);
             }
-            //修改皮肤(幻化状态跳过)
+            //修改皮肤(幻化状态跳过; 但配置了 ui_show_skin 的详情UI幻化按名换肤)
             if (!hasTransform)
             {
                 SpineHandler.Instance.ChangeSkeletonSkin(skeletonGraphic.Skeleton, skinData);
+            }
+            else if (!transformUIShowSkin.IsNull())
+            {
+                SpineHandler.Instance.ChangeSkeletonSkin(skeletonGraphic.Skeleton, transformUIShowSkin);
             }
         }
     }

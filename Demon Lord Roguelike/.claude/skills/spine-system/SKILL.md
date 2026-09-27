@@ -9,6 +9,8 @@ watched_files:
   - Assets/FrameWork/Scripts/Bean/MVC/SpineAnimationStateBean.cs
   - Assets/FrameWork/Scripts/Bean/MVC/SpineAnimationStateBeanPartial.cs
   - Assets/FrameWork/Scripts/Enums/BaseGameEnum.cs
+  - Assets/FrameWork/Scripts/Component/UI/SkeletonGraphicExtend.cs
+  - Assets/FrameWork/Editor/Base/SkeletonGraphicExtendMenu.cs
   - Assets/FrameWork/Editor/Base/SpineEditor.cs
   - Assets/FrameWork/Editor/Base/Window/SpineWindow.cs
   - Assets/FrameWork/Editor/Base/Window/SpineWindowPreview.cs
@@ -25,10 +27,13 @@ SpineManager              - Spine资源管理器（加载/缓存SkeletonDataAsse
 SpineHandler              - Spine处理器（动画播放、皮肤切换等API）
 SkeletonAnimation         - 3D/世界空间Spine组件
 SkeletonGraphic           - UI Spine组件
+SkeletonGraphicExtend     - UI Spine扩展组件（修复RectMask2D整体误剔除，项目标准）
 SkeletonDataAsset         - Spine数据资源
 SpineSkinBean             - 皮肤数据配置
 SpineAnimationStateEnum   - 动画状态枚举
 ```
+
+> **UI Spine 一律用 SkeletonGraphicExtend**（`Assets/FrameWork/Scripts/Component/UI/SkeletonGraphicExtend.cs`，继承 SkeletonGraphic）：原生组件被 RectMask2D 裁剪时只看 RectTransform 的 rect，rect 完全移出 mask 即整体隐藏——非居中骨架（幻化药 Mod 等）pos 偏移大时内容在 mask 内也被误隐藏。Extend 覆写 `Cull`：rect 与 mask 相交走原版快路径；rect 出 mask 时改用实时 mesh 包围盒判定，内容在 mask 内就照常渲染（mask 外仍由 EnableRectClipping 精确裁剪）。开关字段 `cullByMeshBounds` 默认开。预制体经菜单 `Custom/Spine/替换 SkeletonGraphic 为 SkeletonGraphicExtend` 批量升级（[SkeletonGraphicExtendMenu.cs](Assets/FrameWork/Editor/Base/SkeletonGraphicExtendMenu.cs)，CopyComponent/PasteComponentValues 迁移字段 + 引用重定向，幂等）；运行时 `SpineHandler.AddSkeletonGraphic` 已改产 Extend。
 
 ## 动画状态枚举
 
@@ -251,6 +256,10 @@ Dictionary<string, SpineSkinBean> skinData = new Dictionary<string, SpineSkinBea
 
 // 应用到Skeleton
 SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, skinData);
+
+// 按单个皮肤名整皮替换（重载，2026-09-24 新增；幻化药 ui_show_skin 等指定骨架内皮肤的场景用，
+// FindSkin→SetSkin→SetupPoseSlots，皮肤缺失时报错并保持原皮肤）
+SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, "LV1");
 ```
 
 ### 修改部位颜色
@@ -485,11 +494,14 @@ public SkeletonGraphic CreateUICharacter(GameObject parent, string assetName)
 | Spine编辑器工具 | `Assets/FrameWork/Editor/Base/SpineEditor.cs` |
 | Spine窗口 | `Assets/FrameWork/Editor/Base/Window/SpineWindow.cs` |
 | Spine窗口-动画预览页签 | `Assets/FrameWork/Editor/Base/Window/SpineWindowPreview.cs` |
+| UI Spine扩展组件(mask剔除修复) | `Assets/FrameWork/Scripts/Component/UI/SkeletonGraphicExtend.cs` |
+| SkeletonGraphic批量升级菜单 | `Assets/FrameWork/Editor/Base/SkeletonGraphicExtendMenu.cs` |
 
 ## 注意事项
 
 1. **资源加载**: 大量使用Spine时建议先调用 `PreLoadSkeletonDataAsset` 预加载资源
 2. **内存管理**: 使用 `OptimizeSkeletonAnimationSkin` 可以优化皮肤内存占用
 3. **Mod支持**: 系统支持从Mod加载Spine资源，会自动检测并优先加载Mod资源
-4. **UI Spine**: UI中使用SkeletonGraphic，需要指定合适的Material
+4. **UI Spine**: UI中使用SkeletonGraphic（项目标准为扩展版 SkeletonGraphicExtend），需要指定合适的Material
 5. **动画混合**: 设置合适的 `mixDuration` 可以让动画过渡更平滑
+6. **Mask 剔除**: 原生 SkeletonGraphic 在 RectMask2D 下按 RectTransform rect 判定整体剔除，非居中骨架 pos 偏移出 mask 会被整体误隐藏；SkeletonGraphicExtend 已修复（`cullByMeshBounds` 默认开）。若某 UI 仍整体消失，先确认挂的是否为 Extend（预制体未跑过替换菜单的旧资产可能是原生组件）

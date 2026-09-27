@@ -4,10 +4,10 @@
     "showCols": 4,
     "showRows": 2,
     "sceneCols": 6,
-    "chessCellX": 200,
-    "chessCellY": 230,
-    "showCellX": 320,
-    "showCellY": 520,
+    "chessCellX": 200.0,
+    "chessCellY": 230.0,
+    "showCellX": 320.0,
+    "showCellY": 520.0,
     "sceneSpacing": 1.5,
-    "modFilterIndex": 2
+    "modFilterIndex": 3
 }

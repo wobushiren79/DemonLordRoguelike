@@ -141,6 +141,18 @@ ModHandler.Instance.LoadAssets<GameObject>("Spine", "characters", (assets) =>
 });
 ```
 
+## monoscripts Bundle 冲突去重（InternalIdTransformFunc）
+
+**问题**：多个 Mod 用同一构建环境（同一 Mod 工程/同一 Spine 版本）构建时，会各自产出**内容完全相同**的 monoscripts Bundle（文件名形如 `<工程名哈希>_monoscripts_<内容哈希>.bundle`，同名即同内容）。Unity 禁止两个不同路径的 Bundle 包含相同资产文件（MonoScript 的 GUID 相同），后加载的 Mod 报 `The AssetBundle '...' can't be loaded because another AssetBundle with the same files is already loaded`，导致该 Mod 的 SkeletonDataAsset 等资源整条依赖链加载失败。
+
+**机制**（ModManager.cs「monoscripts Bundle 去重」region，每次加载 Mod Catalog 前经 `EnsureMonoScriptDedupInstalled()` 幂等安装）：
+
+- 通过 `Addressables.InternalIdTransformFunc` 钩子，把同名 monoscripts Bundle 的 InternalId **重定向到首个已加载实例的 InternalId**。
+- `AssetBundleProvider` 按**转换后的 ID** 作缓存键（见其 `CreateCacheKeyForLocation` 注释："so we don't try and load the same bundle twice"），后加载 Mod 的同名 Bundle 直接命中缓存复用，不再触发二次加载。
+- 登记表 `s_MonoScriptBundleCanonicalIds`：文件名 → 首个加载的 InternalId（懒登记，首次出现即为规范来源，与 Mod 加载顺序无关）。
+- 只按**文件名完全相等**（含内容哈希）去重：哈希不同的 monoscripts Bundle 意味着 Mod 与宿主脚本版本不一致，此时**保留报错**（响亮的失败优于静默的版本错配）。
+- 该钩子对主工程自身内容无副作用：非 `_monoscripts_` 命名的 Bundle 一律原样放行。
+
 ## 卸载与释放
 
 ### 卸载单个Mod

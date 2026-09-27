@@ -327,7 +327,7 @@ public partial class CreatureBean
         ItemsInfoBean itemInfo = GetTransformItemInfo();
         if (itemInfo == null)
             return null;
-        ParseTransformOtherData(itemInfo.other_data, out string showRes, out _, out _, out _, out _);
+        ParseTransformOtherData(itemInfo.other_data, out string showRes, out _, out _, out _, out _, out _);
         return showRes;
     }
 
@@ -340,8 +340,21 @@ public partial class CreatureBean
         ItemsInfoBean itemInfo = GetTransformItemInfo();
         if (itemInfo == null)
             return null;
-        ParseTransformOtherData(itemInfo.other_data, out _, out string uiShowRes, out _, out _, out _);
+        ParseTransformOtherData(itemInfo.other_data, out _, out string uiShowRes, out _, out _, out _, out _);
         return uiShowRes;
+    }
+
+    /// <summary>
+    /// 获取幻化 ui_show 高清展示指定皮肤名（other_data 的 ui_show_skin 键，详情UI专用；ArkReSpine 单资源多皮肤套装按皮肤出药时配置）；
+    /// 未配置 ui_show_skin 键返回 null（调用方保持骨架默认皮肤），无幻化/配置异常返回 null。
+    /// </summary>
+    public string GetTransformUIShowSkin()
+    {
+        ItemsInfoBean itemInfo = GetTransformItemInfo();
+        if (itemInfo == null)
+            return null;
+        ParseTransformOtherData(itemInfo.other_data, out _, out _, out _, out _, out _, out string uiShowSkin);
+        return uiShowSkin;
     }
 
     /// <summary>
@@ -357,7 +370,7 @@ public partial class CreatureBean
         ItemsInfoBean itemInfo = GetTransformItemInfo();
         if (itemInfo == null)
             return false;
-        ParseTransformOtherData(itemInfo.other_data, out _, out _, out string uiData, out _, out _);
+        ParseTransformOtherData(itemInfo.other_data, out _, out _, out string uiData, out _, out _, out _);
 #if UNITY_EDITOR
         //测试覆盖层优先(幻化药测试面板调参实时预览用, 打包无此逻辑)
         if (TransformPotionUITestOverride.TryGetUiShowData(transformItemId, out string overrideShowData))
@@ -388,7 +401,7 @@ public partial class CreatureBean
         ItemsInfoBean itemInfo = GetTransformItemInfo();
         if (itemInfo == null)
             return false;
-        ParseTransformOtherData(itemInfo.other_data, out _, out _, out _, out string showData, out _);
+        ParseTransformOtherData(itemInfo.other_data, out _, out _, out _, out string showData, out _, out _);
 #if UNITY_EDITOR
         //测试覆盖层优先(幻化药测试面板调参实时预览用, 打包无此逻辑)
         if (TransformPotionUITestOverride.TryGetShowData(transformItemId, out string overrideChessData))
@@ -407,19 +420,21 @@ public partial class CreatureBean
     }
 
     /// <summary>
-    /// 解析幻化药 other_data 键值格式：「show_res:X&ui_show_res:X&ui_show_data:scale;x,y&show_data:scale;x,y&world_data:scale;x,y」。
+    /// 解析幻化药 other_data 键值格式：「show_res:X&ui_show_res:X&ui_show_data:scale;x,y&show_data:scale;x,y&world_data:scale;x,y&ui_show_skin:LV1」。
     /// 按 &amp; 拆项、每项以第一个 : 拆 key/value（与 attack_mode other_data 同规约），缺省键=该段未配置。
     /// show_res=默认展示形象(世界/战斗/普通卡片,可空——仅详情UI幻化道具=套装无 Chess 时省略,世界/小卡回落原生物形象)；ui_show_res=ui_show_spine高清展示(详情UI,可空)；
     /// ui_show_data=详情UI尺寸「scale;x,y」(可空)；show_data=默认展示小卡UI尺寸「scale;x,y」(可空)；
-    /// world_data=世界显示尺寸/偏移「scale;x,y」(可空, x=横向偏移,y=竖向抬升, 战斗/基地等世界空间显示用)。
+    /// world_data=世界显示尺寸/偏移「scale;x,y」(可空, x=横向偏移,y=竖向抬升, 战斗/基地等世界空间显示用)；
+    /// ui_show_skin=ui_show 高清展示指定皮肤名(可空, ArkReSpine 单资源多皮肤套装按皮肤出药时配置, 缺省=骨架默认皮肤)。
     /// </summary>
-    public static void ParseTransformOtherData(string otherData, out string showRes, out string uiShowRes, out string uiData, out string showData, out string worldData)
+    public static void ParseTransformOtherData(string otherData, out string showRes, out string uiShowRes, out string uiData, out string showData, out string worldData, out string uiShowSkin)
     {
         showRes = null;
         uiShowRes = null;
         uiData = null;
         showData = null;
         worldData = null;
+        uiShowSkin = null;
         if (otherData.IsNull())
             return;
         string[] items = otherData.Split('&');
@@ -449,6 +464,9 @@ public partial class CreatureBean
                 case "world_data":
                     worldData = value;
                     break;
+                case "ui_show_skin":
+                    uiShowSkin = value;
+                    break;
             }
         }
     }
@@ -466,7 +484,7 @@ public partial class CreatureBean
         ItemsInfoBean itemInfo = GetTransformItemInfo();
         if (itemInfo == null)
             return false;
-        ParseTransformOtherData(itemInfo.other_data, out _, out _, out _, out _, out string worldData);
+        ParseTransformOtherData(itemInfo.other_data, out _, out _, out _, out _, out string worldData, out _);
 #if UNITY_EDITOR
         //测试覆盖层优先(幻化药测试面板调参实时预览用, 打包无此逻辑)
         if (TransformPotionUITestOverride.TryGetWorldData(transformItemId, out string overrideWorldData))

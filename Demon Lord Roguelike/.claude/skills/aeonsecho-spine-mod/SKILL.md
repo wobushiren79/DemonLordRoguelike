@@ -66,7 +66,7 @@ MOD项目/Assets/ModResource/Spine/AeonsEcho/
   - `ui_show_res`：ui_show_spine 高清展示资源名（详情UI，isUIShow=true 时使用；可空；**消费侧独立判定、不依赖 show_res**——`CreatureHandler.SetCreatureData` 的 isUIShow 分支只查本键；ui_show=详情UI高清展示，即原 avator 概念，2026-09-21 由 avator_res 改名）
   - `ui_show_data`：详情UI尺寸 `scale;x,y`（格式同 `CreatureModelBean.ui_data_b`）；生成器按 `645/Avator骨架高` 校准 scale（2026-09 起由 430 基准放大 1.5 倍），默认位移 `0,0`（原为 `0,-215`）
   - `show_data`：默认展示小卡UI尺寸 `scale;x,y`（格式同 `CreatureModelBean.ui_data_s`，2026-09-21 由 ui_chess_data 改名）；生成器按 `3159/默认展示骨架高` 校准 scale（3159=842.4×2.5×1.5：主游戏人形骨架 ui_data_s 基准 2.5 放大 1.5 倍，2026-09 起），默认位移 `0,-120`
-  - `world_data`：世界显示尺寸/偏移 `scale;x,y`（x=横向偏移，y=竖向抬升；**战斗/基地/议会等世界空间 SkeletonAnimation 显示消费**，2026-09-21 新增）；**无骨架校准来源，默认不生成该键**——手调入口=主项目幻化药测试面板场景列表/单个预览场景组；**scan 全量重建时按 id 保留手调值**（脚本 `read_preserved_world_data`），不会被校准覆盖
+  - `world_data`：世界显示尺寸/偏移 `scale;x,y`（x=横向偏移，y=竖向抬升；**战斗/基地/议会等世界空间 SkeletonAnimation 显示消费**，2026-09-21 新增）；**无骨架校准来源，默认不生成该键**——手调入口=主项目幻化药测试面板场景列表/单个预览场景组；**scan 全量重建时按 id 保留手调值**（脚本 `read_preserved_layout_data`，2026-09-27 起扩展为 show_data/ui_show_data/world_data 三键同保，`--reset-layout` 可强制重算），不会被校准覆盖
   - 无 ui_show 形态示例：`show_res:851101_Chess_SkeletonData&show_data:3.4439;0,-120`
   - 仅详情UI幻化形态示例（套装无 Chess）：`ui_show_res:6001_Elf_SkeletonData&ui_show_data:0.1828;0,0`
   - 2026-09-21 起由旧位置段格式（`chessRes,avatorRes|uiData|chessUiData`）改为键值格式；旧数据用生成脚本 `migrate` 子命令一次性迁移（幂等，数值原样保留）
@@ -78,9 +78,9 @@ MOD项目/Assets/ModResource/Spine/AeonsEcho/
 
 | 机制 | 位置 |
 |------|------|
-| other_data 键值解析 | `CreatureBeanPartial.ParseTransformOtherData`（`#region 幻化相关`，`&` 拆项 + `:` 拆键值） |
+| other_data 键值解析 | `CreatureBeanPartial.ParseTransformOtherData`（`#region 幻化相关`，`&` 拆项 + `:` 拆键值；**6 出参**，2026-09-24 起含 `ui_show_skin` 键=ui_show 指定皮肤名，ArkReSpine 多皮肤药配置，本 Mod 不用） |
 | 基础形象（show_res 键） | `CreatureBeanPartial.GetTransformSpineRes` |
-| 高清展示（ui_show_res 键） | `CreatureBeanPartial.GetTransformUIShowSpineRes` → `CreatureHandler.SetCreatureData`（isUIShow 分支**独立判定、不依赖 show_res**：有 ui_show_res 即替换详情UI形象并跳过原生物皮肤，2026-09-22 起支持仅详情UI幻化道具） |
+| 高清展示（ui_show_res 键） | `CreatureBeanPartial.GetTransformUIShowSpineRes` → `CreatureHandler.SetCreatureData`（isUIShow 分支**独立判定、不依赖 show_res**：有 ui_show_res 即替换详情UI形象并跳过原生物皮肤，2026-09-22 起支持仅详情UI幻化道具；**例外**：配了 ui_show_skin 键的幻化药在 hasTransform 时仍按名换肤 `SpineHandler.ChangeSkeletonSkin(Skeleton, string)`——ArkReSpine 多皮肤药专用，2026-09-24 起） |
 | 详情UI尺寸（ui_show_data 键） | `CreatureBeanPartial.GetTransformUIShowData` → `GameUIUtil.SetCreatureUIForDetails`（替代原生物 ui_data_b）；编辑器下测试覆盖层 `TransformPotionUITestOverride` 优先 |
 | 小卡UI尺寸（show_data 键） | `CreatureBeanPartial.GetTransformShowData` → `GameUIUtil.SetCreatureUIForSimple`（替代原生物 ui_data_s）；编辑器下测试覆盖层 `TransformPotionUITestOverride` 优先 |
 | 尺寸/位置测试覆盖层 | `Assets/Scripts/Bean/Game/TransformPotionUITestOverride.cs`（`#if UNITY_EDITOR` 整文件，打包无）：key=幻化药完整id 的「scale;x,y」覆盖值×3段，被上面三个 Get 优先消费；`GetAllDirtyIds` 供批量保存 |
@@ -94,9 +94,9 @@ MOD项目/Assets/ModResource/Spine/AeonsEcho/
 - **四个页签**：①单个预览=下拉选药+◀▶左右快速切换（含无幻化项，两端停住） + 小卡/大卡/场景对比 + 三组文本框精输与滑动条粗调（缩放对数映射 0.01~20；位置 UI±600 取整/世界±2 两位小数）；②小卡列表=列×行网格真实卡片（show_data）；③大卡列表=列×行网格真实详情卡**卡面模式**（SetData 后隐藏属性/好感/装备/BUFF/MP/备注等详情区块，只留底板+肖像+名字+稀有度+职业+等级；ui_show_data，无 ui_show_res 不可调）；④场景列表=世界空间 spine 一排（world_data）。列表分页（◀▶+跳页）+ **Mod 筛选**（全部/游戏本地/各已加载 Mod）+ **横竖个数与间距步进可调**（布局行，**持久化到项目内 `ProjectSettings/TestTransformPotionLayout.json`，随 git 全队共享**）；网格整体右移避开左侧面板；每项下方名字标签带 ●=未保存修改，另有 **[还原]=单段恢复配置值、[0,0]=位置归零、[复制]/[粘贴]=参数快速套用（静态剪贴板）** 小按钮，拖拽带 4px 阈值防误触。
 - **悬停交互**（列表与单个预览通吃）：鼠标移到目标卡片/模型上 → 滚轮等比改缩放（×1.05/格）、左键拖拽改位置（卡片按 Canvas 单位取整/场景按相机视场换算世界单位保留 2 位小数）；拖拽期间只直改显示不打断动画。
 - **预览**：调参写入 `TransformPotionUITestOverride` 覆盖层 → 三个 Get 优先返回 → 所有走真实显示链的 UI/世界显示立即生效；场景 spine 为「根节点摆放 + Renderer 子节点承载缩放/偏移」结构（与游戏内实体一致）。
-- **保存链路**（面板底栏「保存全部修改（N)」按钮，`SaveAllOverrides` 批量版）：Mod 项目根读 `EditorPrefs["ModBuildEditorWindow.ModProjectPath"]`（即 Mod构建工具里配的路径）→ ① EPPlus 直写 `MOD项目/Assets/Data/Excel/excel_mod_items_info[Mod道具信息].xlsx`（唯一真实源，按自ID=`完整id % 10^14` 定位行，**全部修改一次打开一次写盘**；**每次 Play 会话首次写入前自动备份到 `MOD项目/ExcelBackup/`**；文件被 Excel/WPS 占用会红字提示）→ ② 直补两处 JsonText（`MOD项目/Mods/AeonsEchoSpine/JsonText/ItemsInfo.txt` + 主项目部署副本 `Mods/AeonsEchoSpine/JsonText/ItemsInfo.txt`，按 `"id":<自ID>,` 锚点定位批量替换 other_data 值）→ ③ 当前会话内存 `ItemsInfoCfg` 同步并清覆盖层。内置幻化药（无 modId 前缀）跳过并计数提示。**不用再跑 export/部署管线**；下次正常跑 export 以 Excel 为准重新生成也不冲突。
+- **保存链路**（面板底栏「保存全部修改（N)」按钮，`SaveAllOverrides` 批量版）：Mod 项目根读 `EditorPrefs["ModBuildEditorWindow.ModProjectPath"]`（即 Mod构建工具里配的路径）→ **按 modId 分组路由**（2026-09-24 起，modId→modName 经 `ModManager.GetModJsonTextFileInfos`，各 Mod 独立处理）：① EPPlus 直写该 Mod 的道具 Excel（唯一真实源；路径按 `GetModItemsExcelRelPath` 约定——AeonsEchoSpine=`Assets/Data/Excel/excel_mod_items_info[Mod道具信息].xlsx` 历史文件名，后续 Mod=`excel_mod_items_info_{modName小写}[Mod道具信息-{modName}].xlsx`，如 ArkReSpine；按自ID=`完整id % 10^14` 定位行，**全部修改一次打开一次写盘**；**每次 Play 会话每文件首次写入前自动备份到 `MOD项目/ExcelBackup/`**；文件被 Excel/WPS 占用会红字提示）→ ② 直补两处 JsonText（`MOD项目/Mods/{modName}/JsonText/ItemsInfo.txt` + 主项目部署副本 `Mods/{modName}/JsonText/ItemsInfo.txt`，按 `"id":<自ID>,` 锚点定位批量替换 other_data 值）→ ③ 当前会话内存 `ItemsInfoCfg` 同步并清覆盖层。内置幻化药（无 modId 前缀）跳过并计数提示。**不用再跑 export/部署管线**；下次正常跑 export 以 Excel 为准重新生成也不冲突。
 - **护栏**：参数非法红字拦截；全部调参与保存逻辑 `#if UNITY_EDITOR`；「清空未保存修改」一键丢弃全部覆盖。
-- 保存只影响三个尺寸键；若资源套装变更（新增/删除套装），仍须走正常 `scan`/`all` 生成流程（ui_show/ui_chess 按骨架高重新校准覆盖，**world_data 手调值按 id 保留**）。
+- 保存只影响三个尺寸键；若资源套装变更（新增/删除套装），仍须走正常 `scan`/`all` 生成流程（**布局三键 show_data/ui_show_data/world_data 手调值默认按 id 保留**，新增资源按骨架校准默认值；需强制全部重算时加 `--reset-layout`，2026-09-27 起）。
 | Mod 道具/语言合并 | `BaseCfg.GetInitDataForMods` → id 拼接 + `BaseBean.CombineModReferenceIds` 钩子（由生成器按列头 `name[language]` 标记自动重写进 `ItemsInfoBean.cs`） |
 | Mod spine 资源加载 | `SpineHandler.GetSkeletonDataAssetWithMod`（assetName 命中已加载 Mod 的 catalog key 时走 Mod 路径） |
 
@@ -143,7 +143,7 @@ MOD项目/Mods/AeonsEchoSpine/JsonText/
 
 ### 2. 构建 Addressables 产物
 
-**方式一（推荐）：主项目「游戏/Mod构建工具」（ModBuildEditorWindow）一键完成**——只开主项目即可：⓪ 仅导出配置（Excel→JsonText 秒级，改道具参数/改名后用）/ ① 批量模式（-batchmode -executeMethod）调 MOD 项目 Unity 执行下方一键构建同款方法 / ② export 导出 JsonText + 移动部署（详见 editor-extension-system skill「Mod 构建工具」）。
+**方式一（推荐）：主项目「游戏/Mod构建工具」（ModBuildEditorWindow）一键完成**——只开主项目即可：「选择 Mod」下拉选中 `AeonsEchoSpine`（已构建过的自动入列，构建方法按约定自动带出，2026-09-27 起）→ ⚡ 一键构建+移动，或分步：⓪ 仅导出配置（Excel→JsonText 秒级，改道具参数/改名后用）/ ① 批量模式（-batchmode -executeMethod）调 MOD 项目 Unity 执行下方一键构建同款方法 / ② export 导出 JsonText + 移动部署（详见 editor-extension-system skill「Mod 构建工具」；**生成脚本路径按 Mod 名自动推导** `gen_{modName去Spine后缀小写}_spine_mod.py`，2026-09-24 起——AeonsEchoSpine→gen_aeonsecho_spine_mod.py、ArkReSpine→gen_arkre_spine_mod.py）。
 
 **方式二：在 MOD 项目的 Unity 编辑器里执行**，菜单：**工具/Mod/AeonsEchoSpine/一键构建(同步分组+构建)**（`MOD项目/Assets/Editor/AeonsEchoSpineModBuilder.cs`）：
 

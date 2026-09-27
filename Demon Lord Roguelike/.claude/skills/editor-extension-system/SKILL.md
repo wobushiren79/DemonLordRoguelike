@@ -290,12 +290,13 @@ LauncherTest (Inspector)
 
 只打开主项目即可完成 MOD 项目的构建与部署（无需人工打开 MOD 项目编辑器）：
 
-- **⓪ 仅导出配置（Excel→JsonText，秒级）**：跑主项目 `run-python.ps1` + `gen_aeonsecho_spine_mod.py export`（不带 --deploy-main）重建 JsonText 后，**只把 JsonText 目录覆盖拷贝**到本项目 `Mods/<Mod名>/JsonText`——不批量构建、不动 bundle/catalog，改 Excel 数据（道具参数/改名）后的快速同步通道；进程调用统一收口在 `RunPythonGenScript(scriptArgs, actionDesc)`（同步 180s 超时，输出写状态日志，**stdout/stderr 按 UTF-8 解码**——python 侧经 run-python.ps1 输出 UTF-8(PYTHONUTF8=1)，默认 ANSI(GBK) 解码会乱码）。
-- **① 构建 Mod 资源**：用批量模式（`-batchmode -projectPath <MOD项目> -executeMethod <构建方法> -quit -logFile <临时日志>`）调起 MOD 项目自己的 Unity 执行静态构建方法（如 `AeonsEchoSpineModBuilder.BuildMod`，产物 bundle+catalog）；异步等待（`EditorApplication.update` 轮询进程，界面实时耗时+可取消），完成后读日志尾部判定成败。MOD 项目被其他 Unity 实例打开（存在 `Temp/UnityLockfile`）时前置拦截。
-- **② 导出配置 + 整体移动 Mod（含资源包）**：优先跑主项目 `run-python.ps1` + `gen_aeonsecho_spine_mod.py export --deploy-main`（重新导出 JsonText 再整体覆盖到本项目 `Mods/`，导出逻辑单一真实源在 python 脚本）；脚本缺失时退化为纯目录拷贝（先删旧目录再递归复制，要求产物含 catalog.bin）。
+- **Mod 选择器（下拉直选，2026-09-27 起）**：自动扫描 MOD 项目合成已知 Mod 列表——`Mods/*` 产物目录（含 catalog.bin 标「已构建」，否则「未构建」）∪ `Assets/Editor/**/*ModBuilder.cs` 构建器脚本（约定命名，**未构建过也可选中构建**）；选中即填入 Mod 名称（只读）与构建方法（约定 `{Mod名}ModBuilder.BuildMod`；手改后**按 Mod 名单独持久化** `ModBuildEditorWindow.BuildMethod.{Mod名}`，改回约定值即恢复推导）。末尾项「＋新建 Mod（手动输入）」=手动模式：名称手输、构建方法随名自动推导（手改脱离，写全局旧键）。状态行显示 产物✔/✗·构建器✔/✗·已部署主项目✔/✗；「刷新」重扫，构建完成与部署完成亦自动重扫（新 Mod 构建一次后即入列可直接选中再构建）。
+- **操作区按流程分组（2026-09-27 起）**：一键流程（⚡=①成功(exit=0)后自动接②）→ 分步·构建（①）→ 分步·配置（⓪/③，秒级）→ 分步·部署（②）；按钮编号 ⓪①②③ 保持不变。
+- **⓪ 仅导出配置（Excel→JsonText，秒级）**：跑主项目 `run-python.ps1` + 生成脚本 `export`（不带 --deploy-main）重建 JsonText 后，**只把 JsonText 目录覆盖拷贝**到本项目 `Mods/<Mod名>/JsonText`——不批量构建、不动 bundle/catalog，改 Excel 数据（道具参数/改名）后的快速同步通道；进程调用统一收口在 `RunPythonGenScript(scriptArgs, actionDesc)`（同步 180s 超时，输出写状态日志，**stdout/stderr 按 UTF-8 解码**——python 侧经 run-python.ps1 输出 UTF-8(PYTHONUTF8=1)，默认 ANSI(GBK) 解码会乱码）。**生成脚本路径按 Mod 名自动推导**（`GetGenScriptPath`：`.claude/scripts/gen_{modName去Spine后缀小写}_spine_mod.py`，2026-09-24 起——AeonsEchoSpine→gen_aeonsecho_spine_mod.py、ArkReSpine→gen_arkre_spine_mod.py）。
+- **① 构建 Mod 资源**：用批量模式（`-batchmode -projectPath <MOD项目> -executeMethod <构建方法> -quit -logFile <临时日志>`）调起 MOD 项目自己的 Unity 执行静态构建方法（如 `AeonsEchoSpineModBuilder.BuildMod`，产物 bundle+catalog）；异步等待（`EditorApplication.update` 轮询进程，**界面进度条**=按上次同 Mod 耗时渐近估算（约 74%@估计耗时、96% 触顶，成功耗时按 Mod 存 EditorPrefs `...LastBuildSeconds.{Mod名}` 供下次估算）+ 增量读构建日志里程碑跳档（`分组条目同步完成`→8% / `自动导出+部署完成`→97% / `构建完成`→100%，FileShare.ReadWrite 共享读），可取消），完成后读日志尾部判定成败。MOD 项目被其他 Unity 实例打开（存在 `Temp/UnityLockfile`）时前置拦截；选中的 Mod 缺构建器脚本时先警告（方法可能不存在）。
+- **② 导出配置 + 整体移动 Mod（含资源包）**：优先跑主项目 `run-python.ps1` + 生成脚本 `export --deploy-main`（脚本路径同 ⓪ 的 Mod 名推导；重新导出 JsonText 再整体覆盖到本项目 `Mods/`，导出逻辑单一真实源在 python 脚本）；脚本缺失时退化为纯目录拷贝（先删旧目录再递归复制，要求产物含 catalog.bin）。
 - **③ 仅移动 JsonText（不导出，秒级）**：不跑导出，纯把 MOD 项目侧 `Mods/<Mod名>/JsonText` 覆盖拷贝到本项目（`CopyJsonTextToMainProject`，先删旧目录防残留失效行）——已导出过、只想快速同步配置时用；⓪（导出+同步 JsonText）共用该拷贝方法。
-- **⚡ 一键构建+移动**：①成功（exit=0）后自动接②。
-- **配置项**（均 EditorPrefs 持久化）：Mod 项目路径、Mod 名称（默认 AeonsEchoSpine）、构建方法（默认 `AeonsEchoSpineModBuilder.BuildMod`）、Unity.exe 覆盖路径。
+- **配置项**（均 EditorPrefs 持久化）：Mod 项目路径、Mod 名称（默认 AeonsEchoSpine）、构建方法（手动模式全局键 `ModBuildEditorWindow.BuildMethod`；选中已有 Mod 时按 `...BuildMethod.{Mod名}` 单独存）、Unity.exe 覆盖路径。
 - **Unity.exe 自动定位**：手动覆盖 → MOD 项目 `ProjectVersion.txt` 版本与当前编辑器一致时用 `EditorApplication.applicationPath` → Hub 标准路径 `C:/Program Files/Unity/Hub/Editor/<version>/Editor/Unity.exe` → 失败提示手动指定。
 - 批量模式补充：MOD 项目侧的构建方法若内部依赖 EditorPrefs（如自动导出部署的主项目路径），批量进程与交互编辑器共享同用户 EditorPrefs 注册表，设置一次即生效。
 

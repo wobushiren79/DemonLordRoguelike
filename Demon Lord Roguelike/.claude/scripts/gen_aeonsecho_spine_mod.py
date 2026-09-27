@@ -28,7 +28,7 @@ Excel 位置（MOD 项目，可用 Excel/WPS 直接打开查看/调整）：
   Assets/Data/Excel/excel_mod_language[Mod多语言].xlsx       - 道具名多语言（id + content_{12语言}，改名在这里）
 
 注意：
-  - scan 会全量重建道具表数据行（覆盖前先备份到 MOD项目/ExcelBackup/，不在 Assets 内），但 **world_data 手调值按 id 保留**；改了道具表参数后请只跑 export
+  - scan 会全量重建道具表数据行（覆盖前先备份到 MOD项目/ExcelBackup/，不在 Assets 内），但 **show_data/ui_show_data/world_data 手调值按 id 保留**（新增资源仍按骨架校准默认值；--reset-layout 可强制全部重算）；改了道具表参数后请只跑 export
   - 语言表按 id 合并保留人工内容：新增道具补默认名，删除的道具行自动清理
   - 规则详见主项目 .claude/skills/aeonsecho-spine-mod/SKILL.md
 
@@ -182,9 +182,14 @@ def migrate_item_excel(excel_path: Path, mod_project: Path):
     print(f"[migrate] other_data 旧格式→键值格式：转换 {migrated} 行，已是新格式/空 {skipped} 行 → {excel_path}")
 
 
-def read_preserved_world_data(excel_path: Path) -> dict:
-    """读现有道具表提取各行 other_data 的 world_data 键 → {道具id: world_data值}；
-    scan 全量重建时按 id 保留手调的世界显示数据（该键无骨架校准来源，重建会丢失；id 已失效的行自然丢弃）"""
+# scan 重建时按 id 保留的布局键（卡片位置/大小手调值）：小卡 show_data、详情UI ui_show_data、世界 world_data
+PRESERVED_LAYOUT_KEYS = ("show_data", "ui_show_data", "world_data")
+
+
+def read_preserved_layout_data(excel_path: Path) -> dict:
+    """读现有道具表提取各行 other_data 的布局三键 → {道具id: {键: 值}}；
+    scan 全量重建时默认按 id 保留测试面板手调的卡片位置/大小（同 id=同资源,骨架未变,手调值仍有效；
+    新增资源无保留值按骨架校准默认值；--reset-layout 可强制全部重算；id 已失效的行自然丢弃）"""
     preserved = {}
     if not excel_path.exists():
         return preserved
@@ -202,18 +207,22 @@ def read_preserved_world_data(excel_path: Path) -> dict:
     for row in ws.iter_rows(min_row=4, values_only=True):
         if row[0] is None or row[col_other] is None:
             continue
+        data = {}
         for seg in str(row[col_other]).split("&"):
-            if seg.startswith("world_data:"):
-                preserved[int(row[col_id])] = seg[len("world_data:"):].strip()
-                break
+            for key in PRESERVED_LAYOUT_KEYS:
+                if seg.startswith(key + ":"):
+                    data[key] = seg[len(key) + 1:].strip()
+                    break
+        if data:
+            preserved[int(row[col_id])] = data
     wb.close()
     return preserved
 
 
-def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, ui_chess_scale_k: float, ui_chess_pos_y: float, preserved_world: dict = None):
+def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, ui_chess_scale_k: float, ui_chess_pos_y: float, preserved_layout: dict = None, reset_layout: bool = False):
     """扫描资源套装计算道具行，返回 (道具行列表, 跳过套装清单, 警告清单)；道具行 key 为干净字段名；
-    preserved_world=scan 前从旧道具表读出的 world_data 手调值（按 id 保留）"""
-    preserved_world = preserved_world or {}
+    preserved_layout=scan 前从旧道具表读出的布局三键手调值（按 id 保留）；reset_layout=True 时忽略保留值全部按骨架重算"""
+    preserved_layout = {} if reset_layout else (preserved_layout or {})
     sets = []
     skipped = []
     for set_dir in sorted(source_dir.iterdir(), key=lambda p: natural_key(p.name)):
@@ -269,28 +278,34 @@ def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, ui_chess
                 warnings.append(f"ID冲突: {self_id} ({set_id} 第{seq}个组合)")
                 continue
             used_ids.add(self_id)
+            # 布局三键手调值按 id 保留(同 id=同资源,骨架未变,手调值仍有效; --reset-layout 时 preserved_layout 已置空=全部重算)
+            preserved = preserved_layout.get(self_id, {})
             # world_data 手调值按 id 保留(无校准来源, 默认不生成该键)
-            world_data = preserved_world.get(self_id, "")
+            world_data = preserved.get("world_data", "")
 
             show_res = chess_ui_data = ui_show_res = ui_show_data = ""
             chess_tag = uishow_tag = ""
             if chess is not None:
-                # show 段：默认展示形象 + 小卡尺寸（按 Chess 骨架高校准 scale=K2/骨架高，每个 Chess 变体各算一次）
+                # show 段：默认展示形象 + 小卡尺寸（有保留值用手调值，否则按 Chess 骨架高校准 scale=K2/骨架高）
                 show_res = f"{set_id}_{chess}_SkeletonData"
-                chess_height = get_spine_height(source_dir / set_id / chess / f"{set_id}_{chess}.json")
-                chess_ui_scale = round(ui_chess_scale_k / chess_height, 4) if chess_height > 0 else 3.75
-                chess_ui_data = f"{chess_ui_scale};0,{int(ui_chess_pos_y)}"
+                chess_ui_data = preserved.get("show_data", "")
+                if not chess_ui_data:
+                    chess_height = get_spine_height(source_dir / set_id / chess / f"{set_id}_{chess}.json")
+                    chess_ui_scale = round(ui_chess_scale_k / chess_height, 4) if chess_height > 0 else 3.75
+                    chess_ui_data = f"{chess_ui_scale};0,{int(ui_chess_pos_y)}"
                 chess_tag = chess
             if uishow is not None:
-                # ui_show 段：详情UI高清形象 + 详情UI尺寸（按 ui_show 骨架高校准 scale=K/骨架高）
+                # ui_show 段：详情UI高清形象 + 详情UI尺寸（有保留值用手调值，否则按 ui_show 骨架高校准 scale=K/骨架高）
                 if not (source_dir / set_id / uishow / f"{set_id}_{uishow}_SkeletonData.asset").exists():
                     # 混合组合中 ui_show 资产缺失：该组合退化为仅 show（序号已消耗）
                     warnings.append(f"{set_id}/{uishow}: 缺 SkeletonData 资产，该组合按无 ui_show 处理")
                 else:
                     ui_show_res = f"{set_id}_{uishow}_SkeletonData"
-                    height = get_spine_height(source_dir / set_id / uishow / f"{set_id}_{uishow}.json")
-                    ui_scale = round(ui_scale_k / height, 4) if height > 0 else 0.12
-                    ui_show_data = f"{ui_scale};0,{int(ui_pos_y)}"
+                    ui_show_data = preserved.get("ui_show_data", "")
+                    if not ui_show_data:
+                        height = get_spine_height(source_dir / set_id / uishow / f"{set_id}_{uishow}.json")
+                        ui_scale = round(ui_scale_k / height, 4) if height > 0 else 0.12
+                        ui_show_data = f"{ui_scale};0,{int(ui_pos_y)}"
                     uishow_tag = f"×{uishow}" if chess_tag else uishow
             other_data = build_other_data(show_res, ui_show_res, ui_show_data, chess_ui_data, world_data=world_data)
 
@@ -443,6 +458,8 @@ def main():
     parser.add_argument("--ui-pos-y", type=float, default=0.0, help="详情UI默认Y偏移（默认0）")
     parser.add_argument("--ui-chess-scale-k", type=float, default=3159.0, help="小卡UI缩放校准常数 K2：scale=K2/Chess骨架高（默认3159=842.4×2.5×1.5，2.5=主游戏人形骨架 ui_data_s 基准，1.5=放大倍率）")
     parser.add_argument("--ui-chess-pos-y", type=float, default=-120.0, help="小卡UI默认Y偏移（默认-120）")
+    parser.add_argument("--reset-layout", action="store_true",
+                        help="重建时重新设置卡片位置/大小（show_data/ui_show_data/world_data 全部按骨架重算）；默认关闭=按 id 保留已有手调值，仅新资源计算默认值")
     args = parser.parse_args()
 
     mod_project = Path(args.mod_project)
@@ -460,14 +477,16 @@ def main():
         if not source_dir.is_dir():
             print(f"[错误] 资源目录不存在: {source_dir}")
             sys.exit(1)
-        preserved_world = read_preserved_world_data(item_excel)
-        items, skipped, warnings = compute_items(source_dir, args.ui_scale_k, args.ui_pos_y, args.ui_chess_scale_k, args.ui_chess_pos_y, preserved_world)
+        preserved_layout = read_preserved_layout_data(item_excel)
+        items, skipped, warnings = compute_items(source_dir, args.ui_scale_k, args.ui_pos_y, args.ui_chess_scale_k, args.ui_chess_pos_y, preserved_layout, reset_layout=args.reset_layout)
         write_item_excel(item_excel, items, mod_project)
         kept = merge_language_excel(lang_excel, items, mod_project)
         print(f"[scan] 重建道具表 {len(items)} 行 → {item_excel}")
         print(f"[scan] 合并语言表（保留人工内容 {kept} 格）→ {lang_excel}")
-        if preserved_world:
-            print(f"[scan] 按 id 保留手调 world_data {len(preserved_world)} 行")
+        if args.reset_layout:
+            print("[scan] --reset-layout：布局三键(show_data/ui_show_data/world_data)全部按骨架重算")
+        elif preserved_layout:
+            print(f"[scan] 按 id 保留布局手调值 {len(preserved_layout)} 行（show_data/ui_show_data/world_data；--reset-layout 可强制重算）")
         if skipped:
             print(f"[scan] 跳过套装（无 Chess/Avator/Secretary/Elf/AVG）: {', '.join(skipped)}")
         for w in warnings:

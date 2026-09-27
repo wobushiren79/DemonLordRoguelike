@@ -5,6 +5,8 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/FrameWork/Scripts/Component/Handler/SpineHandler.cs
   - Assets/FrameWork/Scripts/Component/Manager/SpineManager.cs
+  - Assets/FrameWork/Scripts/Component/UI/SkeletonGraphicExtend.cs
+  - Assets/FrameWork/Editor/Base/SkeletonGraphicExtendMenu.cs
   - Assets/FrameWork/Editor/Base/Window/SpineWindow.cs
   - Assets/FrameWork/Editor/Base/Window/SpineWindowPreview.cs
   - Assets/FrameWork/Addons/Spine/
@@ -27,6 +29,11 @@ watched_files:
 ### Spine 编辑器
 - **SpineWindow** - Spine 工具窗口（皮肤提取页签）[FrameWork/Editor/Base/Window/SpineWindow.cs](Assets/FrameWork/Editor/Base/Window/SpineWindow.cs)
 - **SpineWindowPreview** - 动画预览页签（partial）：绕过官方版本兼容检查的动画预览 + 皮肤分组自由搭配 [FrameWork/Editor/Base/Window/SpineWindowPreview.cs](Assets/FrameWork/Editor/Base/Window/SpineWindowPreview.cs)
+- **SkeletonGraphicExtendMenu** - 菜单 `Custom/Spine/替换 SkeletonGraphic 为 SkeletonGraphicExtend`：批量把 UI 预制体的 SkeletonGraphic 升级为 SkeletonGraphicExtend（CopyComponent/PasteComponentValues 迁移字段 + SerializedObject 引用重定向 + 保持组件顺序，幂等）[FrameWork/Editor/Base/SkeletonGraphicExtendMenu.cs](Assets/FrameWork/Editor/Base/SkeletonGraphicExtendMenu.cs)
+
+### UI Spine 组件
+- **SkeletonGraphicExtend** - SkeletonGraphic 扩展（框架层 UI Spine 标准组件）：修复 RectMask2D 按 RectTransform rect 整体误剔除——rect 出 mask 时改用实时 mesh 包围盒判定（`cullByMeshBounds` 开关默认开），非居中骨架 pos 偏移出 mask 时内容仍正常显示 [FrameWork/Scripts/Component/UI/SkeletonGraphicExtend.cs](Assets/FrameWork/Scripts/Component/UI/SkeletonGraphicExtend.cs)
+- 预制体与运行时创建（`SpineHandler.AddSkeletonGraphic`）一律用它，不再直接用原生 SkeletonGraphic
 
 ### 动画播放
 ```csharp
@@ -47,5 +54,5 @@ creature.PlayAnim(SpineAnimationStateEnum.Attack, false);
 
 - Spine 动画通过 SpineHandler 统一管理
 - 动画状态使用 SpineAnimationStateEnum 枚举
-- 皮肤切换通过 SpineSkinBean 数据驱动
+- 皮肤切换通过 SpineSkinBean 数据驱动；另有 `ChangeSkeletonSkin(Skeleton, string skinName)` 按名整皮替换重载（2026-09-24 新增，幻化药 ui_show_skin 等指定骨架内皮肤的场景用）
 - Spine 资源加载后需正确释放

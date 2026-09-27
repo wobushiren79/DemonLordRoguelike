@@ -150,7 +150,7 @@ public class TestTransformPotionGUI : MonoBehaviour
     private DataKind dragKind;                              //当前拖拽的数据段
     private bool dragActivated;                             //拖拽是否已过阈值生效(未过阈值不移动, 防误触)
     private Vector2 dragStartMouse, dragStartPos;           //拖拽起点(GUI坐标/起始数据pos)
-    private static bool excelBackupDone;                    //本次Play会话是否已备份Mod道具Excel(每次会话首次写入前备份一次)
+    private static readonly HashSet<string> excelBackupDonePaths = new HashSet<string>(); //本次Play会话已备份过的Mod道具Excel路径(每次会话每文件首次写入前备份一次)
 
     //参数剪贴板(static=会话内保持; [复制]存入当前项参数, [粘贴]套用到其他同类项)
     private static bool clipHasValue;
@@ -611,7 +611,7 @@ public class TestTransformPotionGUI : MonoBehaviour
                 item.cardIcon = card.ui_Icon;
                 //无 ui_show_res 的道具大卡详情不消费 ui_show_data, 不可调
                 ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(option.id);
-                CreatureBean.ParseTransformOtherData(itemInfo.other_data, out _, out string uiShowRes, out _, out _, out _);
+                CreatureBean.ParseTransformOtherData(itemInfo.other_data, out _, out string uiShowRes, out _, out _, out _, out _);
                 item.editable = !uiShowRes.IsNull();
             }
             listItems.Add(item);
@@ -969,12 +969,16 @@ public class TestTransformPotionGUI : MonoBehaviour
             GUILayout.Label($"⚠ 找不到道具配置:{currentPotionItemId}(Mod移除或配置被删)", hintStyle);
             return;
         }
-        CreatureBean.ParseTransformOtherData(itemInfo.other_data, out string showRes, out string uiShowRes, out string uiData, out string showData, out string worldData);
+        CreatureBean.ParseTransformOtherData(itemInfo.other_data, out string showRes, out string uiShowRes, out string uiData, out string showData, out string worldData, out string uiShowSkin);
         GUILayout.Label($"other_data: {(itemInfo.other_data.IsNull() ? "(空)" : itemInfo.other_data)}", hintStyle);
         DrawResLoadState("Show(默认展示)", showRes);
         if (!uiShowRes.IsNull())
         {
             DrawResLoadState("UIShow(详情高清)", uiShowRes);
+        }
+        if (!uiShowSkin.IsNull())
+        {
+            GUILayout.Label($"UIShow皮肤: {uiShowSkin}", hintStyle);
         }
         if (!uiData.IsNull())
         {
@@ -1049,7 +1053,7 @@ public class TestTransformPotionGUI : MonoBehaviour
         if (currentPotionItemId == 0) return;
         ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(currentPotionItemId);
         if (itemInfo == null) return;
-        CreatureBean.ParseTransformOtherData(itemInfo.other_data, out _, out string uiShowRes, out string uiData, out string showData, out string worldData);
+        CreatureBean.ParseTransformOtherData(itemInfo.other_data, out _, out string uiShowRes, out string uiData, out string showData, out string worldData, out _);
         hasUiShowRes = !uiShowRes.IsNull();
         if (TransformPotionUITestOverride.TryGetShowData(currentPotionItemId, out string ovShow)) showData = ovShow;
         if (TransformPotionUITestOverride.TryGetUiShowData(currentPotionItemId, out string ovUiShow)) uiData = ovUiShow;
@@ -1132,7 +1136,7 @@ public class TestTransformPotionGUI : MonoBehaviour
         pos = Vector2.zero;
         ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(potionId);
         if (itemInfo == null) return;
-        CreatureBean.ParseTransformOtherData(itemInfo.other_data, out _, out _, out string uiData, out string showData, out string worldData);
+        CreatureBean.ParseTransformOtherData(itemInfo.other_data, out _, out _, out string uiData, out string showData, out string worldData, out _);
         string data = kind == DataKind.Show ? showData : kind == DataKind.UiShow ? uiData : worldData;
         if (kind == DataKind.Show && TransformPotionUITestOverride.TryGetShowData(potionId, out string ovC)) data = ovC;
         if (kind == DataKind.UiShow && TransformPotionUITestOverride.TryGetUiShowData(potionId, out string ovS)) data = ovS;
@@ -1746,46 +1750,73 @@ public class TestTransformPotionGUI : MonoBehaviour
             SetSaveMessage("⚠ 未配置有效的Mod项目路径（请先在「Mod构建工具」里设置Mod项目路径）", true);
             return;
         }
-        //逐药组新 other_data: 只换 ui_show_data/show_data/world_data 三键(覆盖层优先, 无覆盖保留原值), 其余键原样保留
-        Dictionary<long, string> saveData = new Dictionary<long, string>();
+        //modId→modName 映射(保存按 Mod 分组路由: 各 Mod 有独立的道具Excel与JsonText)
+        Dictionary<int, string> modNames = new Dictionary<int, string>();
+        foreach (var (modId, modName, _) in ModHandler.Instance.manager.GetModJsonTextFileInfos("ItemsInfo"))
+            modNames[modId] = modName;
+        //逐药组新 other_data: 只换 ui_show_data/show_data/world_data 三键(覆盖层优先, 无覆盖保留原值), 其余键(ui_show_skin等)原样保留; 按 modId 分组
+        Dictionary<int, Dictionary<long, string>> saveDataByMod = new Dictionary<int, Dictionary<long, string>>();
         List<string> missingCfg = new List<string>();
         foreach (long id in modIds)
         {
             ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(id);
             if (itemInfo == null) { missingCfg.Add($"{id % ModIdDivisor}"); continue; }
-            CreatureBean.ParseTransformOtherData(itemInfo.other_data, out string showRes, out string uiShowRes, out string oldUiShow, out string oldShow, out string oldWorld);
+            CreatureBean.ParseTransformOtherData(itemInfo.other_data, out string showRes, out string uiShowRes, out string oldUiShow, out string oldShow, out string oldWorld, out string oldUiShowSkin);
             string newShow = TransformPotionUITestOverride.TryGetUiShowData(id, out string ovUiShow) ? ovUiShow : oldUiShow;
             string newChess = TransformPotionUITestOverride.TryGetShowData(id, out string ovShow) ? ovShow : oldShow;
             string newWorld = TransformPotionUITestOverride.TryGetWorldData(id, out string ovWorld) ? ovWorld : oldWorld;
-            saveData[id % ModIdDivisor] = BuildOtherData(showRes, uiShowRes, newShow, newChess, newWorld);
+            int modId = (int)(id / ModIdDivisor);
+            if (!saveDataByMod.TryGetValue(modId, out Dictionary<long, string> group))
+            {
+                group = new Dictionary<long, string>();
+                saveDataByMod[modId] = group;
+            }
+            group[id % ModIdDivisor] = BuildOtherData(showRes, uiShowRes, newShow, newChess, newWorld, oldUiShowSkin);
         }
-        if (saveData.Count == 0) { SetSaveMessage($"⚠ 配置全部缺失: {string.Join(",", missingCfg)}", true); return; }
+        if (saveDataByMod.Count == 0) { SetSaveMessage($"⚠ 配置全部缺失: {string.Join(",", missingCfg)}", true); return; }
 
-        //① Excel(唯一真实源, 批量一次写盘)
-        string excelPath = Path.Combine(modRoot, "Assets/Data/Excel/excel_mod_items_info[Mod道具信息].xlsx");
-        if (!File.Exists(excelPath)) { SetSaveMessage($"⚠ 找不到Mod道具Excel:\n{excelPath}", true); return; }
-        if (!excelBackupDone && !TryBackupExcel(excelPath, modRoot, out string backupErr)) { SetSaveMessage(backupErr, true); return; }
-        if (!TryWriteExcelOtherDataBatch(excelPath, saveData, out string excelErr, out List<long> notFound)) { SetSaveMessage(excelErr, true); return; }
-
-        //② 两处 JsonText 直补(Mod项目导出物 + 主项目部署副本, 均为gen脚本产物的单行紧凑JSON数组)
-        int jsonPatched = 0;
-        string modJson = Path.Combine(modRoot, "Mods/AeonsEchoSpine/JsonText/ItemsInfo.txt");
-        string mainJson = Path.Combine(Application.dataPath, "../Mods/AeonsEchoSpine/JsonText/ItemsInfo.txt");
-        if (File.Exists(modJson) && TryPatchItemsInfoJsonBatch(modJson, saveData)) jsonPatched++;
-        if (File.Exists(mainJson) && TryPatchItemsInfoJsonBatch(mainJson, saveData)) jsonPatched++;
+        //①+② 按 Mod 分组写: Excel(唯一真实源,批量一次写盘) + 两处 JsonText 直补(Mod项目导出物 + 主项目部署副本)
+        int savedTotal = 0, jsonPatchedTotal = 0, jsonExpectedTotal = 0;
+        List<long> notFoundAll = new List<long>();
+        List<string> unknownMod = new List<string>();
+        foreach (var kvp in saveDataByMod)
+        {
+            if (!modNames.TryGetValue(kvp.Key, out string modName))
+            {
+                unknownMod.Add($"modId={kvp.Key}({kvp.Value.Count}个)");
+                continue;
+            }
+            Dictionary<long, string> saveData = kvp.Value;
+            //① Excel(唯一真实源, 批量一次写盘)
+            string excelPath = Path.Combine(modRoot, GetModItemsExcelRelPath(modName));
+            if (!File.Exists(excelPath)) { SetSaveMessage($"⚠ 找不到Mod道具Excel({modName}):\n{excelPath}", true); return; }
+            if (!excelBackupDonePaths.Contains(excelPath) && !TryBackupExcel(excelPath, modRoot, out string backupErr)) { SetSaveMessage(backupErr, true); return; }
+            if (!TryWriteExcelOtherDataBatch(excelPath, saveData, out string excelErr, out List<long> notFound)) { SetSaveMessage(excelErr, true); return; }
+            notFoundAll.AddRange(notFound);
+            //② 两处 JsonText 直补(均为gen脚本产物的单行紧凑JSON数组)
+            string modJson = Path.Combine(modRoot, $"Mods/{modName}/JsonText/ItemsInfo.txt");
+            string mainJson = Path.Combine(Application.dataPath, $"../Mods/{modName}/JsonText/ItemsInfo.txt");
+            jsonExpectedTotal += 2;
+            if (File.Exists(modJson) && TryPatchItemsInfoJsonBatch(modJson, saveData)) jsonPatchedTotal++;
+            if (File.Exists(mainJson) && TryPatchItemsInfoJsonBatch(mainJson, saveData)) jsonPatchedTotal++;
+            savedTotal += saveData.Count;
+        }
 
         //③ 当前会话内存同步 + 清覆盖层 + 刷新当前页签
         foreach (long id in modIds)
         {
+            int modId = (int)(id / ModIdDivisor);
+            if (!saveDataByMod.TryGetValue(modId, out Dictionary<long, string> group)) continue;
             ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(id);
-            if (itemInfo != null) itemInfo.other_data = saveData[id % ModIdDivisor];
+            if (itemInfo != null) itemInfo.other_data = group[id % ModIdDivisor];
             TransformPotionUITestOverride.Clear(id);
         }
         if (currentTab == PanelTab.Single) { LoadEditBuffers(); RefreshCards(); }
         else BuildListView();
-        string msg = $"✓ 已保存{saveData.Count}个幻化药（Excel✓ + JsonText×{jsonPatched}/2 + 当前会话✓）";
+        string msg = $"✓ 已保存{savedTotal}个幻化药（Excel✓ + JsonText×{jsonPatchedTotal}/{jsonExpectedTotal} + 当前会话✓）";
         if (skipBuiltin > 0) msg += $"，跳过内置{skipBuiltin}个";
-        if (notFound.Count > 0) msg += $"，Excel缺行:{string.Join(",", notFound)}";
+        if (notFoundAll.Count > 0) msg += $"，Excel缺行:{string.Join(",", notFoundAll)}";
+        if (unknownMod.Count > 0) msg += $"，未知Mod跳过:{string.Join(",", unknownMod)}";
         if (missingCfg.Count > 0) msg += $"，配置缺失:{string.Join(",", missingCfg)}";
         SetSaveMessage(msg, false);
     }
@@ -1800,16 +1831,29 @@ public class TestTransformPotionGUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 拼 other_data 键值串(&amp;拆项, :拆键值, 缺省键省略)——与 gen_aeonsecho_spine_mod.py 的 build_other_data 同规约
+    /// 拼 other_data 键值串(&amp;拆项, :拆键值, 缺省键省略)——与 gen_aeonsecho_spine_mod.py / gen_arkre_spine_mod.py 的 build_other_data 同规约
     /// </summary>
-    private static string BuildOtherData(string showRes, string uiShowRes, string uiShowData, string showData, string worldData)
+    private static string BuildOtherData(string showRes, string uiShowRes, string uiShowData, string showData, string worldData, string uiShowSkin = "")
     {
-        string result = $"show_res:{showRes}";
-        if (!uiShowRes.IsNull()) result += $"&ui_show_res:{uiShowRes}";
-        if (!uiShowData.IsNull()) result += $"&ui_show_data:{uiShowData}";
-        if (!showData.IsNull()) result += $"&show_data:{showData}";
-        if (!worldData.IsNull()) result += $"&world_data:{worldData}";
+        string result = "";
+        if (!showRes.IsNull()) result = $"show_res:{showRes}";
+        if (!uiShowRes.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}ui_show_res:{uiShowRes}";
+        if (!uiShowData.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}ui_show_data:{uiShowData}";
+        if (!showData.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}show_data:{showData}";
+        if (!worldData.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}world_data:{worldData}";
+        if (!uiShowSkin.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}ui_show_skin:{uiShowSkin}";
         return result;
+    }
+
+    /// <summary>
+    /// 按 Mod 名取 Mod 道具 Excel 相对路径(唯一真实源)的约定：AeonsEchoSpine=历史文件名(无后缀)；
+    /// 后续 Mod=excel_mod_items_info_{modName小写}[Mod道具信息-{modName}].xlsx(与 gen_{mod}_spine_mod.py 脚本常量一致)
+    /// </summary>
+    private static string GetModItemsExcelRelPath(string modName)
+    {
+        if (modName == "AeonsEchoSpine")
+            return "Assets/Data/Excel/excel_mod_items_info[Mod道具信息].xlsx";
+        return $"Assets/Data/Excel/excel_mod_items_info_{modName.ToLower()}[Mod道具信息-{modName}].xlsx";
     }
 
     /// <summary>
@@ -1822,9 +1866,9 @@ public class TestTransformPotionGUI : MonoBehaviour
         {
             string backupDir = Path.Combine(modRoot, "ExcelBackup");
             Directory.CreateDirectory(backupDir);
-            string bakPath = Path.Combine(backupDir, $"excel_mod_items_info[Mod道具信息].xlsx.bak.{DateTime.Now:yyyyMMdd_HHmmss}");
+            string bakPath = Path.Combine(backupDir, $"{Path.GetFileName(excelPath)}.bak.{DateTime.Now:yyyyMMdd_HHmmss}");
             File.Copy(excelPath, bakPath);
-            excelBackupDone = true;
+            excelBackupDonePaths.Add(excelPath);
             LogUtil.Log($"[幻化药测试] 已备份Mod道具Excel → {bakPath}");
             return true;
         }
