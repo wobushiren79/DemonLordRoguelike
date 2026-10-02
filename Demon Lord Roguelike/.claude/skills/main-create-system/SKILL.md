@@ -54,6 +54,7 @@ UIMainLoad(加载存档界面) 空槽位 item
 
 - 存档槽位 item 无数据时显示「创建游戏」按钮，`OnClickForCreateGame`（UIViewMainLoadItem.cs:127）打开 `UIMainCreate` 并 `SetData(userDataIndex)` 传入槽位号。
 - 有数据时则是「进入游戏」`OnClickForEnterGame`（直接 `SetUserData` + `EnterGameForBaseScene`，不经过创建界面）。
+- 有数据时 `SetCreatureUI` 展示魔王 spine：复用详情UI显示链 `GameUIUtil.SetCreatureUIForDetails`（含幻化/Portrait 覆盖）后，末按容器实际高度走 `GameUIUtil.ApplyCardIconSizeFit` 等比修正（本容器 340 高≠大卡标准 450，取值口径同详情：幻化 ui_show_data 优先、回落 ui_data_b；prefab ui_Icon pivot=(0.5,0) 与大卡一致）。
 - 创建界面退出（`ui_ViewExit` 或 ESC）回 `UIMainLoad`。
 
 ### 2. 物种选择（listSelectForCreature 硬编码）

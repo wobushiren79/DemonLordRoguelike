@@ -53,5 +53,5 @@ watched_files:
 - 道具默认名：cn/tw「幻化药·放置少女<拼音>」、其余语言「PutGirl Potion <拼音>」（2026-09-29 与用户确认）；人工改名在语言 Excel 进行
 - **调单个药的详情UI尺寸不用跑生成脚本**：测试面板调参保存按 Mod 路由写回；资源目录变更才走 scan/all
 - **该流程仅适用 PutGirlSpine**，其他 Mod 不套用
-- Play 验证一律由用户手动（CLAUDE.md 规则）；PixelLab 不涉及本 Mod（图标复用内置 `Item_TransformPotion_1`）
+- Play 验证一律由用户手动（CLAUDE.md 规则）；PixelLab 不涉及本 Mod（图标复用内置 `Item_Potion_1`）
 - Python 一律走主项目 `run-python.ps1` 包装；临时脚本用完即删；Excel 备份（MOD项目/ExcelBackup/ 外的）任务结束清理

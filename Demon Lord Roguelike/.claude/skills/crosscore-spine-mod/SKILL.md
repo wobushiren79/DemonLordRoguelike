@@ -69,7 +69,7 @@ MOD项目/Assets/ModResource/Spine/CrossCore/
   - `ui_show_data`：详情UI尺寸 `scale;x,y`；生成器按 `645/骨架高` 校准 scale（与其他 Mod 同基准），默认位移 `0,0`；**scan 全量重建时按 id 保留手调值**（`--reset-layout` 可强制重算）
   - `ui_show_idle_anim`：ui_show 骨架的替代待机动画名（仅 9 个无标准候选资源带，如 idle3；命中候选的 405 个不写=框架自动播 idle）
 - **name 自ID = 道具自ID**：指向 Mod 自带语言表同 id 行（`name[language]` 标记驱动 `CombineModReferenceIds`，与其他 Mod 同机制）
-- **固定字段**：item_type=18、num_max=1、icon_res=`Item_TransformPotion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（=ItemSourceEnum.ConquerReward 征服模式奖励）
+- **固定字段**：item_type=18、num_max=1、icon_res=`Item_Potion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（=ItemSourceEnum.ConquerReward 征服模式奖励）
 - **道具名**：cn「幻化药·交错战线10010-01」/ tw「幻化藥·交錯戰線10010-01」/ en「CrossCore Potion 10010-01」（12 语言全生成；套装标签=数字目录号或命名目录名原样；套装内本体 >1 时全部带 `-NN` 序号，单本体不带）
 - **Excel 独立**（与 `TestTransformPotionGUI.GetModItemsExcelRelPath` 约定一致）：
   - `Assets/Data/Excel/excel_mod_items_info_crosscorespine[Mod道具信息-CrossCoreSpine].xlsx`

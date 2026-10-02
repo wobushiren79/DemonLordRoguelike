@@ -7,6 +7,39 @@ public static class GameUIUtil
 {
     public static string pathCardScene = "Assets/LoadResources/Textures/CardScene";//卡片场景路径
 
+    #region 卡片图标尺寸等比适配
+    /// <summary>大卡(详情UI)图标容器 IconContent 标准高度(实测 300x450,ui_Icon pivot=(0.5,0))——ui_data_b/幻化 ui_show_data 的校准基准</summary>
+    public const float cardContentHeightForB = 450f;
+    /// <summary>小卡图标容器 IconContent 标准高度(实测 92x142,ui_Icon pivot=(0.5,0))——ui_data_s/幻化 show_data 的校准基准</summary>
+    public const float cardContentHeightForS = 142f;
+
+    /// <summary>
+    /// 卡片图标尺寸等比适配:把按标准卡片容器(大卡/小卡 IconContent)校准的 scale/pos 应用到任意高度容器内的目标节点——
+    /// scale/pos 同乘「目标显示框高/标准容器高」系数,还原与卡片一致的显示比例(脚底贴底语义,如 UIMainLoad 容器 340≠450 时修正显示)。
+    /// 目标节点要求与卡片 ui_Icon 同 pivot(0.5,0)+父容器中心锚定,且不在 LayoutGroup 控制下(anchoredPosition 会被覆写)。
+    /// 显示框高取父容器 rect.height(自身 sizeDelta 可能被 SetCreatureUIForDetails 防裁切逻辑改写,父容器才是真实显示区域)。
+    /// </summary>
+    /// <param name="targetUI">目标 spine 节点(其父容器=显示框)</param>
+    /// <param name="scale">尺寸配置缩放(ui_data_b/ui_data_s 或幻化尺寸键解析值)</param>
+    /// <param name="pos">尺寸配置偏移</param>
+    /// <param name="cardContentHeight">校准基准容器高(<see cref="cardContentHeightForB"/>/<see cref="cardContentHeightForS"/>)</param>
+    public static void ApplyCardIconSizeFit(RectTransform targetUI, float scale, Vector2 pos, float cardContentHeight)
+    {
+        float fitScale = ((RectTransform)targetUI.parent).rect.height / cardContentHeight;
+        targetUI.localScale = Vector3.one * scale * fitScale;
+        targetUI.anchoredPosition = pos * fitScale;
+    }
+
+    /// <summary>
+    /// 卡片图标尺寸等比适配(尺寸串便捷版):sizeData 格式「scale;x,y」,解析失败=缩放1零偏移(仅乘系数)。
+    /// </summary>
+    public static void ApplyCardIconSizeFit(RectTransform targetUI, string sizeData, float cardContentHeight)
+    {
+        CreatureBean.ParseTransformSizeData(sizeData, out float scale, out Vector2 pos);
+        ApplyCardIconSizeFit(targetUI, scale, pos, cardContentHeight);
+    }
+    #endregion
+
     #region 颜色工具
     /// <summary>自定义材质实例名称，用于标记已克隆的材质副本</summary>
     private const string customMatName = "MatCustom";

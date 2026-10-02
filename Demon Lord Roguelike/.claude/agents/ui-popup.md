@@ -56,10 +56,12 @@ public class UIPopupExample : PopupShowView
 
 ## UIPopupItemInfo 结构（道具信息气泡）
 
-[UIPopupItemInfo.cs](Assets/Scripts/Component/UI/Popup/ItemInfo/UIPopupItemInfo.cs) 的 `SetData` 依次调用 `SetNum` → `SetType` → `SetAttributes` → `SetJuiceExp`：
+[UIPopupItemInfo.cs](Assets/Scripts/Component/UI/Popup/ItemInfo/UIPopupItemInfo.cs) 的 `SetData` 依次调用 `SetNum` → `SetType` → `SetAttributes` → `SetJuiceExp` → `SetTransformPreview`：
 
 - **魔汁经验行（JuiceExpText）**：prefab [UIPopupItemInfo.prefab](Assets/Resources/UI/Popup/UIPopupItemInfo.prefab) Details 节点下新增 `JuiceExpText`（复制 RarityText 而来，sibling index 1 即 RarityText 之后，默认 SetActive(false)）；Component 新增字段 `public TextMeshProUGUI ui_JuiceExpText;`（AutoLinkUI 按名绑定：字段名 ui_JuiceExpText → 子物体 JuiceExpText）。
-- **`SetJuiceExp(itemData, itemInfo)`**（SetData 末尾调用）：仅 `ItemTypeEnum.Juice`（魔汁）显示并填 textId **61017**「经验+{0}」格式化 `itemData.juicerExp`，其余道具隐藏；`ui_JuiceExpText` 为 null 时容错跳过（prefab 未配置该元素不报错）；魔汁 dicAttribute 为空故属性区自动隐藏，两者互斥不冲突。
+- **`SetJuiceExp(itemData, itemInfo)`**：仅 `ItemTypeEnum.Juice`（魔汁）显示并填 textId **61017**「经验+{0}」格式化 `itemData.juicerExp`，其余道具隐藏；`ui_JuiceExpText` 为 null 时容错跳过（prefab 未配置该元素不报错）；魔汁 dicAttribute 为空故属性区自动隐藏，两者互斥不冲突。
+- **幻化药形象预览区（TransformPreviewContent）**（2026-10-02 起）：prefab Details 节点末位 `TransformPreviewContent`（460x300，默认 SetActive(false)），下挂 `ShowArea`/`UIShowArea`（各 230x300，VLG 排版 childControl/forceExpand 全 0=只排列不控尺寸），区内 = 标签 `ShowLabel`/`UIShowLabel`（230x60）+ **两层裁切容器** `ShowRect` → `ShowRectContent`（均 230x240，Image alpha=0 纯载体 + RectMask2D，spine 超出框部分像素级裁切）→ spine 节点 `ShowSpine`/`UIShowSpine`（230x240 居中锚定，SkeletonGraphicExtend + SkeletonAnimation 配对，SkeletonGraphicDefault 材质）——**spine 矩形由布局固定，代码不得改其 sizeDelta/anchoredPosition**。Component 字段：`ui_TransformPreviewContent`/`ui_ShowArea`/`ui_UIShowArea`/`ui_ShowLabel`/`ui_UIShowLabel`/`ui_ShowSpine`/`ui_UIShowSpine`（spine 两字段类型 `SkeletonGraphicExtend`）。
+- **`SetTransformPreview(itemInfo)`**（SetData 末尾调用）：仅幻化药（TransformPotion 且 other_data 非空）显示预览区，经 `CreatureBean.ParseTransformOtherData` 解析后两段独立显隐——show 段有 show_res 键才显示（标签 61022「战斗形象」，`SetSkeletonDataAsset` + `PlayAnim(animNameAppoint: idle_anim)`）；ui_show 段有 ui_show_res 键才显示（标签 61023「详情形象」，+ ui_show_skin 换肤「|」多皮肤叠加、无皮肤键时 `SetSkin(null)+SetupPoseSlots` 防复用残留 + ui_show_idle_anim）。预览尺寸（`ApplyTransformPreviewSize`）：**走 `GameUIUtil.ApplyCardIconSizeFit` 卡片图标尺寸等比适配**——预览 spine 节点与卡片 ui_Icon 同 pivot(0.5,0)+父容器中心锚定（挂 ShowRectContent 绝对定位，不受 LayoutGroup 覆写），show 段传 `cardContentHeightForS`、ui_show 段传 `cardContentHeightForB`，尺寸键 scale;pos 同乘「预览框高/卡片标准容器高」系数，还原小卡/大卡显示效果；Skeleton.X/Y 清零防历史方案残留。注意：直接套尺寸键不乘系数会把骨架推出框外被 RectMask2D 裁光（OtherSpine 药 ui_show pos.y=-226 曾因此全空白）。
 
 ## UIPopupPortalDetails 结构（传送门详情气泡）
 

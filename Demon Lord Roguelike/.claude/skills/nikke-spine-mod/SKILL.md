@@ -54,7 +54,7 @@ MOD项目/Assets/ModResource/Spine/Nikke/
   - `ui_show_data`：详情UI尺寸 `scale;x,y`；生成器按 `645/骨架高` 校准 scale（与其他 Mod 同基准），默认位移 `0,0`；**scan 全量重建时按 id 保留手调值**（`--reset-layout` 可强制重算）
   - `ui_show_idle_anim`：ui_show 骨架的替代待机动画名（**idle 动画替代规则**，2026-09-28 起，详见 mod-system SKILL 通用规则节）：骨架动画列表命中主项目标准待机候选（`idle,wait,idle1,wait1,stand`）时省略=走框架候选解析（Nikke 本体类资源，465 个）；无标准候选时取首个小写含 `idle` 的动画名（aim/cover 系=`aim_idle`/`cover_idle` 等，660 个）；完全没有含 idle 动画则不生成该键+警告
 - **name 自ID = 道具自ID**：指向 Mod 自带语言表同 id 行（`name[language]` 标记驱动 `CombineModReferenceIds`，与其他 Mod 同机制）
-- **固定字段**：item_type=18、num_max=1、icon_res=`Item_TransformPotion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（=ItemSourceEnum.ConquerReward 征服模式奖励）
+- **固定字段**：item_type=18、num_max=1、icon_res=`Item_Potion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（=ItemSourceEnum.ConquerReward 征服模式奖励）
 - **道具名**：cn「幻化药·妮姬c010_00-01」/ tw「幻化藥·妮姬c010_00-01」/ en「Nikke Potion c010_00-01」（12 语言全生成）
 - **Excel 独立**（与 `TestTransformPotionGUI.GetModItemsExcelRelPath` 约定一致）：
   - `Assets/Data/Excel/excel_mod_items_info_nikkespine[Mod道具信息-NikkeSpine].xlsx`

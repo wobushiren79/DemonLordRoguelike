@@ -58,7 +58,7 @@ MOD项目/Assets/ModResource/Spine/ArkRe/
   - `ui_show_skin`：ui_show 资源内指定皮肤名（可空：仅 default 皮肤的资源省略=骨架默认皮肤）
   - `ui_show_idle_anim`：ui_show 骨架的替代待机动画名（**idle 动画替代规则**，2026-09-28 起，详见 mod-system SKILL 通用规则节）：骨架动画列表命中主项目标准待机候选（`idle,wait,idle1,wait1,stand`）时省略=走框架候选解析；无标准候选时取首个小写含 `idle` 的动画名（ArkRe 全部 341 资源=`00_Idle` 等，多皮肤药共享同一检测值）；完全没有含 idle 动画则不生成该键+警告
 - **name 自ID = 道具自ID**：指向 Mod 自带语言表同 id 行（`name[language]` 标记驱动 `CombineModReferenceIds`，与 AeonsEchoSpine 同机制）
-- **固定字段**：item_type=18、num_max=1、icon_res=`Item_TransformPotion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（=ItemSourceEnum.ConquerReward 征服模式奖励）
+- **固定字段**：item_type=18、num_max=1、icon_res=`Item_Potion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（=ItemSourceEnum.ConquerReward 征服模式奖励）
 - **道具名**：具名皮肤药带皮肤后缀——cn「幻化药·方舟H001-01 LV1」/ tw「幻化藥·方舟H001-01 LV1」/ en「Ark Potion H001-01 LV1」；单 default 皮肤药无后缀「幻化药·方舟H120-01」（12 语言全生成）
 - **Excel 独立**：ArkReSpine 的道具/语言 Excel 与 AeonsEchoSpine 相互独立（文件名带 modName 小写后缀，与主项目 `TestTransformPotionGUI.GetModItemsExcelRelPath` 约定一致）：
   - `Assets/Data/Excel/excel_mod_items_info_arkrespine[Mod道具信息-ArkReSpine].xlsx`

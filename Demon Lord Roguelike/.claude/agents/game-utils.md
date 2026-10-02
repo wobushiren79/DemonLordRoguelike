@@ -24,7 +24,7 @@ watched_files:
 | [CreatureUtil.cs](Assets/Scripts/Utils/CreatureUtil.cs) | CreatureSkin 类型多语言名 | TextHandler、Creature 枚举 |
 | [EquipUtil.cs](Assets/Scripts/Utils/EquipUtil.cs) | 装备生成统一入口：核心 `CreateEquipItem` + 场景封装 `CreateEquipItemForReward`（征服奖励）/ `CreateEquipItemForNpc`（NPC随机装备）/ `CreateEquipItemForTest`（GM测试） | ItemBean、RarityInfoCfg |
 | [ItemsUtil.cs](Assets/Scripts/Utils/ItemsUtil.cs) | 道具枚举多语言扩展 | TextHandler、Item 枚举 |
-| [GameUIUtil.cs](Assets/Scripts/Utils/GameUIUtil.cs) | 渐变色 / 生物 UI 简易设置 / 详情设置（`SetCreatureUIForDetails`：幻化药 other_data 第3段自带详情UI尺寸时优先于原生物 `ui_data_b`，见 item-system「幻化药 other_data 组合格式」） | CreatureHandler、SpineHandler、IconHandler |
+| [GameUIUtil.cs](Assets/Scripts/Utils/GameUIUtil.cs) | 渐变色 / 生物 UI 简易设置 / 详情设置（`SetCreatureUIForDetails`：幻化药 other_data 第3段自带详情UI尺寸时优先于原生物 `ui_data_b`，见 item-system「幻化药 other_data 组合格式」）/ **卡片图标尺寸等比适配 `ApplyCardIconSizeFit`**（#region 卡片图标尺寸等比适配：常量 `cardContentHeightForB`=450 大卡 IconContent 高 / `cardContentHeightForS`=142 小卡高（均实测）；把按标准容器校准的 scale;pos（ui_data_b/ui_data_s/幻化尺寸键）同乘「父容器高/标准高」系数应用到任意高度容器，目标节点需 pivot(0.5,0)+父容器中心锚定+不受 LayoutGroup 控制；消费点=幻化药详情气泡预览 `UIPopupItemInfo`、读档槽位 `UIViewMainLoadItem.SetCreatureUI`） | CreatureHandler、SpineHandler、IconHandler |
 | [FightCreatureSearchUtil.cs](Assets/Scripts/Utils/FightCreatureSearchUtil.cs) | 战斗目标搜索（射线/范围/距离遍历/最前排排名 `FindFrontRowCreatures`） | RayUtil、GameFightLogic |
 
 ### 与其他系统的边界

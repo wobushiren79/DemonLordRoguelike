@@ -9,7 +9,7 @@ AeonsEchoSpine Mod 数据生成器（Demon Lord Roguelike）
   migrate 道具表 other_data 旧位置段格式 → 键值格式（一次性迁移，幂等，数值原样保留）
 
 other_data 键值格式（& 拆项、每项首个 : 拆键值，同主项目 attack_mode other_data 规约，缺省键省略）：
-  show_res:1101_Chess_SkeletonData&ui_show_res:1101_Avator_lv1_SkeletonData&ui_show_data:0.1919;0,0&show_data:3.75;0,-120&world_data:1;0,0&idle_anim:idle_battle&ui_show_idle_anim:00_Idle
+  show_res:1101_Chess_SkeletonData&ui_show_res:1101_Avator_lv1_SkeletonData&ui_show_data:0.1919;0,0&show_data:3.75;0,-120&world_data:1;0,0&idle_anim:idle_battle&ui_show_idle_anim:00_Idle&attack_anim:skill1
   show_res     默认展示形象资源名（可空：套装无 Chess 时省略=仅详情UI幻化，世界/小卡回落原生物形象；show=游戏默认展示，即原 chess 概念）
   ui_show_res  ui_show_spine 高清展示资源名（可空，无 ui_show 变体时省略，ui_show=详情UI高清展示，即原 avator 概念；Avator/Secretary/Elf/AVG 同规则）
   ui_show_data 详情UI尺寸「scale;x,y」（有 ui_show 变体时带，格式同 CreatureModelBean.ui_data_b）
@@ -19,6 +19,10 @@ other_data 键值格式（& 拆项、每项首个 : 拆键值，同主项目 att
   idle_anim    show 骨架的替代待机动画名（可空：骨架动画列表命中主项目标准待机候选[excel_spine_animation_state id=10001 的 res 字段,当前 idle,wait,idle1,wait1,stand]时省略=走框架候选解析；
                无标准候选时取首个小写含 idle 的动画名[保留大小写,Spine 需精确名]；完全没有含 idle 动画则不生成该键=保持现状静态+警告）
   ui_show_idle_anim ui_show 骨架的替代待机动画名（可空，规则同 idle_anim，检测对象为 ui_show 变体骨架）
+  attack_anim  show 骨架的替代攻击动画名（可空：骨架动画列表命中主项目标准攻击候选[id=30001,当前 attack,attack1]时省略；
+               无标准候选时按 skill1→skill 顺序取首个大小写不敏感全等命中的动画原始名；都没有则不生成该键=攻击时保持待机+警告）
+  dead_anim    show 骨架的替代死亡动画名（可空：命中主项目标准死亡候选[id=40001,当前 dead,dead1,die]时省略；
+               方案B(用户 2026-10-02 拍板)：有 attacked 映射 attacked(受击抖一下再消失)，否则回退该骨架实际待机动画名；连 idle 都没有则不生成该键+警告）
 
 套装组合规则：Chess×ui_show 笛卡尔积；只有 Chess → 每个 Chess 单独出道具（只设 show 段）；
   只有 ui_show（Avator/Secretary/Elf/AVG）→ 每个 ui_show 变体单独出道具（只设 ui_show 段，详情UI幻化）；
@@ -51,7 +55,7 @@ import openpyxl
 
 MOD_NAME = "AeonsEchoSpine"
 SOURCE_REL = "Assets/ModResource/Spine/AeonsEcho"
-ICON_RES = "Item_TransformPotion_1"  # 复用主游戏内置幻化药图标
+ICON_RES = "Item_Potion_1"  # 复用主游戏内置幻化药图标
 ITEM_TYPE_TRANSFORM_POTION = 18
 LANGUAGES = ["cn", "en", "jp", "kr", "tw", "de", "fr", "ru", "es", "br", "pl", "tr"]
 
@@ -70,7 +74,7 @@ ITEM_COLUMNS = [
     ("icon_res", "string", "图标资源"),
     ("icon_rotate_z", "float", "图标旋转"),
     ("attack_mode_data", "string", "攻击模式数据(幻化药不用)"),
-    ("other_data", "string", "形象键值串:show段(show_res:X&show_data:scale;x,y)与ui_show段(ui_show_res:X&ui_show_data:scale;x,y)至少一段,可选world_data:scale;x,y、idle_anim/ui_show_idle_anim:动画名(无标准idle时的替代待机动画)(&拆项,:拆键值,缺省键省略)"),
+    ("other_data", "string", "形象键值串:show段(show_res:X&show_data:scale;x,y)与ui_show段(ui_show_res:X&ui_show_data:scale;x,y)至少一段,可选world_data:scale;x,y、idle_anim/ui_show_idle_anim:动画名(无标准idle时的替代待机动画)、attack_anim:动画名(无标准attack时的替代攻击动画,skill1→skill)、dead_anim:动画名(无标准dead时的替代死亡动画,方案B:attacked→idle)(&拆项,:拆键值,缺省键省略)"),
     ("name[language]", "long", "道具名textId(=道具id,文本在excel_mod_language)"),
     ("remark", "string", "备注"),
     ("reward_rarity", "string", "奖励稀有度白名单(空=全适配;消耗品不进装备池)"),
@@ -117,22 +121,41 @@ def get_spine_height(json_path: Path) -> float:
 
 # 标准待机动画候选的兜底值（=主项目 excel_spine_animation_state id=10001 的 res 字段；读不到配置时用）
 STD_IDLE_FALLBACK = ["idle", "wait", "idle1", "wait1", "stand"]
+# 标准攻击动画候选的兜底值（=主项目 excel_spine_animation_state id=30001 的 res 字段；读不到配置时用）
+STD_ATTACK_FALLBACK = ["attack", "attack1"]
+# 标准死亡动画候选的兜底值（=主项目 excel_spine_animation_state id=40001 的 res 字段；读不到配置时用）
+STD_DEAD_FALLBACK = ["dead", "dead1", "die"]
 
 
-def load_std_idle_candidates() -> list:
-    """读主项目 SpineAnimationState.txt 的 Idle(id=10001) 候选名列表（配置表为唯一真实源,不硬编码；
-    按脚本位置推导主项目根=.claude/scripts/ 向上两级）；读失败回退 STD_IDLE_FALLBACK"""
+def load_std_anim_candidates(state_id: int, fallback: list) -> list:
+    """读主项目 SpineAnimationState.txt 指定状态行的候选名列表（配置表为唯一真实源,不硬编码；
+    按脚本位置推导主项目根=.claude/scripts/ 向上两级）；读失败回退 fallback"""
     try:
         main_root = Path(__file__).resolve().parents[2]
         rows = json.loads((main_root / "Assets/Resources/JsonText/SpineAnimationState.txt").read_text(encoding="utf-8"))
         for row in rows:
-            if int(row.get("id", 0)) == 10001:
+            if int(row.get("id", 0)) == state_id:
                 candidates = [s.strip() for s in str(row.get("res", "")).split(",") if s.strip()]
                 if candidates:
                     return candidates
     except Exception:
         pass
-    return STD_IDLE_FALLBACK
+    return fallback
+
+
+def load_std_idle_candidates() -> list:
+    """读主项目 SpineAnimationState.txt 的 Idle(id=10001) 候选名列表"""
+    return load_std_anim_candidates(10001, STD_IDLE_FALLBACK)
+
+
+def load_std_attack_candidates() -> list:
+    """读主项目 SpineAnimationState.txt 的 Attack(id=30001) 候选名列表"""
+    return load_std_anim_candidates(30001, STD_ATTACK_FALLBACK)
+
+
+def load_std_dead_candidates() -> list:
+    """读主项目 SpineAnimationState.txt 的 Dead(id=40001) 候选名列表"""
+    return load_std_anim_candidates(40001, STD_DEAD_FALLBACK)
 
 
 def get_spine_anims(json_path: Path) -> list:
@@ -162,6 +185,44 @@ def pick_idle_anim(anims: list, std_candidates: list) -> str:
     return ""
 
 
+def pick_attack_anim(anims: list, std_candidates: list) -> str:
+    """检测骨架动画列表的攻击动画（attack 动画替代规则，用户 2026-10-02 拍板：attack→skill 或 skill1）：
+    命中标准候选(大小写不敏感全等)→返回""(不需替代,运行时走框架候选解析)；
+    否则按 skill1→skill 顺序取首个大小写不敏感全等命中的动画原始名(保留大小写,Spine SetAnimation 需精确名；
+    全等匹配避免 skill3a 等被 skill 误命中)；
+    都没有→返回""(不生成 attack_anim 键,攻击时保持待机+警告)"""
+    lowers = {a.lower() for a in anims}
+    for c in std_candidates:
+        if c.lower() in lowers:
+            return ""
+    for target in ("skill1", "skill"):
+        for a in anims:
+            if a.lower() == target:
+                return a
+    return ""
+
+
+def pick_dead_anim(anims: list, std_candidates: list, std_idle_candidates: list) -> str:
+    """检测骨架动画列表的死亡动画（dead 动画替代规则，用户 2026-10-02 拍板方案B：有 attacked 映射 attacked 受击抖一下再消失，其余 idle 兜底）：
+    命中标准候选(大小写不敏感全等)→返回""(不需替代,运行时走框架候选解析)；
+    否则有 attacked(大小写不敏感全等)→返回 attacked 原始名(保留大小写,Spine SetAnimation 需精确名)；
+    否则回退该骨架实际待机动画名(标准待机候选原始名→首个小写含 idle 的动画名)；
+    连 idle 都没有→返回""(不生成 dead_anim 键,死亡时保持现状+警告)"""
+    lowers = {a.lower(): a for a in anims}
+    for c in std_candidates:
+        if c.lower() in lowers:
+            return ""
+    if "attacked" in lowers:
+        return lowers["attacked"]
+    for c in std_idle_candidates:
+        if c.lower() in lowers:
+            return lowers[c.lower()]
+    for a in anims:
+        if "idle" in a.lower():
+            return a
+    return ""
+
+
 def backup_excel(excel_path: Path, mod_project: Path):
     """覆盖 Excel 前备份到 MOD项目/ExcelBackup/（Assets 之外，不被导出工具扫描、不产生 .meta）；
     滚动复用 .bak.1~.bak.3（1=最新）——移位覆盖旧文件不新增，目录里永远只有最近 3 份，并顺带清掉旧版时间戳命名备份"""
@@ -183,10 +244,12 @@ def backup_excel(excel_path: Path, mod_project: Path):
             old.unlink()
 
 
-def build_other_data(show_res: str, ui_show_res: str = "", ui_show_data: str = "", show_data: str = "", world_data: str = "", idle_anim: str = "", ui_show_idle_anim: str = "") -> str:
+def build_other_data(show_res: str, ui_show_res: str = "", ui_show_data: str = "", show_data: str = "", world_data: str = "", idle_anim: str = "", ui_show_idle_anim: str = "", attack_anim: str = "", dead_anim: str = "") -> str:
     """拼 other_data 键值串：& 拆项、每项首个 : 拆键值（同主项目 attack_mode other_data 规约），缺省键省略；
     show_res 可空——仅详情UI幻化道具（套装无 Chess，只有 ui_show 变体）只有 ui_show 段；
-    idle_anim/ui_show_idle_anim=show/ui_show 骨架无标准待机动画时的替代动画名（idle 动画替代规则自动检测,命中候选/无 idle 均省略）"""
+    idle_anim/ui_show_idle_anim=show/ui_show 骨架无标准待机动画时的替代动画名（idle 动画替代规则自动检测,命中候选/无 idle 均省略）；
+    attack_anim=show 骨架无标准攻击动画时的替代动画名（attack 动画替代规则自动检测 skill1→skill,命中候选/无 skill 均省略）；
+    dead_anim=show 骨架无标准死亡动画时的替代动画名（dead 动画替代规则方案B自动检测 attacked→idle,命中候选/无替代均省略）"""
     segs = []
     if show_res:
         segs.append(f"show_res:{show_res}")
@@ -202,6 +265,10 @@ def build_other_data(show_res: str, ui_show_res: str = "", ui_show_data: str = "
         segs.append(f"idle_anim:{idle_anim}")
     if ui_show_idle_anim:
         segs.append(f"ui_show_idle_anim:{ui_show_idle_anim}")
+    if attack_anim:
+        segs.append(f"attack_anim:{attack_anim}")
+    if dead_anim:
+        segs.append(f"dead_anim:{dead_anim}")
     return "&".join(segs)
 
 
@@ -303,13 +370,54 @@ def detect_idle_anim(json_path: Path, std_candidates: list, idle_stats: dict, wa
     return idle_anim
 
 
-def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, ui_chess_scale_k: float, ui_chess_pos_y: float, preserved_layout: dict = None, reset_layout: bool = False, std_idle_candidates: list = None):
-    """扫描资源套装计算道具行，返回 (道具行列表, 跳过套装清单, 警告清单, idle统计dict)；道具行 key 为干净字段名；
+def detect_attack_anim(json_path: Path, std_candidates: list, attack_stats: dict, warnings: list, tag: str) -> str:
+    """对单个骨架执行 attack 动画替代规则检测并累计统计；tag=警告里的资源标识。
+    返回替代攻击动画名（命中标准候选/无 skill 均返回 ""）"""
+    anims = get_spine_anims(json_path)
+    attack_anim = pick_attack_anim(anims, std_candidates)
+    if not anims:
+        attack_stats["none"] += 1
+        warnings.append(f"{tag} 动画列表读取失败,未检测 attack 动画")
+    elif attack_anim:
+        attack_stats["replaced"] += 1
+    elif not any(c.lower() in {a.lower() for a in anims} for c in std_candidates):
+        attack_stats["none"] += 1
+        warnings.append(f"{tag} 无 attack 候选也无 skill1/skill 动画(攻击时保持待机)")
+    else:
+        attack_stats["std"] += 1
+    return attack_anim
+
+
+def detect_dead_anim(json_path: Path, std_candidates: list, std_idle_candidates: list, dead_stats: dict, warnings: list, tag: str) -> str:
+    """对单个骨架执行 dead 动画替代规则检测并累计统计（方案B：attacked→idle 链）；tag=警告里的资源标识。
+    返回替代死亡动画名（命中标准候选/无可用替代均返回 ""）"""
+    anims = get_spine_anims(json_path)
+    dead_anim = pick_dead_anim(anims, std_candidates, std_idle_candidates)
+    if not anims:
+        dead_stats["none"] += 1
+        warnings.append(f"{tag} 动画列表读取失败,未检测 dead 动画")
+    elif dead_anim:
+        if dead_anim.lower() == "attacked":
+            dead_stats["attacked"] += 1
+        else:
+            dead_stats["idle"] += 1
+    elif not any(c.lower() in {a.lower() for a in anims} for c in std_candidates):
+        dead_stats["none"] += 1
+        warnings.append(f"{tag} 无 dead 候选也无 attacked/idle 动画(死亡时保持现状)")
+    else:
+        dead_stats["std"] += 1
+    return dead_anim
+
+
+def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, ui_chess_scale_k: float, ui_chess_pos_y: float, preserved_layout: dict = None, reset_layout: bool = False, std_idle_candidates: list = None, std_attack_candidates: list = None, std_dead_candidates: list = None):
+    """扫描资源套装计算道具行，返回 (道具行列表, 跳过套装清单, 警告清单, idle统计dict, attack统计dict, dead统计dict)；道具行 key 为干净字段名；
     preserved_layout=scan 前从旧道具表读出的布局三键手调值（按 id 保留）；reset_layout=True 时忽略保留值全部按骨架重算；
-    std_idle_candidates=主项目标准待机动画候选名列表（idle 动画替代规则检测用,None 时跳过检测）"""
+    std_idle/std_attack/std_dead_candidates=主项目标准 待机/攻击/死亡 动画候选名列表（对应动画替代规则检测用,None 时跳过检测）"""
     preserved_layout = {} if reset_layout else (preserved_layout or {})
-    # idle 动画检测统计（show/ui_show 两段合计）：std=命中标准候选, replaced=替代动画, none=完全无 idle
+    # idle/attack/dead 动画检测统计（idle 为 show/ui_show 两段合计；attack/dead 仅 show 段 Chess 检测）：std=命中标准候选, replaced/attacked/idle=替代动画, none=完全无对应动画
     idle_stats = {"std": 0, "replaced": 0, "none": 0}
+    attack_stats = {"std": 0, "replaced": 0, "none": 0}
+    dead_stats = {"std": 0, "attacked": 0, "idle": 0, "none": 0}
     sets = []
     skipped = []
     for set_dir in sorted(source_dir.iterdir(), key=lambda p: natural_key(p.name)):
@@ -370,7 +478,7 @@ def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, ui_chess
             # world_data 手调值按 id 保留(无校准来源, 默认不生成该键)
             world_data = preserved.get("world_data", "")
 
-            show_res = chess_ui_data = ui_show_res = ui_show_data = idle_anim = ui_show_idle_anim = ""
+            show_res = chess_ui_data = ui_show_res = ui_show_data = idle_anim = ui_show_idle_anim = attack_anim = dead_anim = ""
             chess_tag = uishow_tag = ""
             if chess is not None:
                 # show 段：默认展示形象 + 小卡尺寸（有保留值用手调值，否则按 Chess 骨架高校准 scale=K2/骨架高）
@@ -380,9 +488,16 @@ def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, ui_chess
                     chess_height = get_spine_height(source_dir / set_id / chess / f"{set_id}_{chess}.json")
                     chess_ui_scale = round(ui_chess_scale_k / chess_height, 4) if chess_height > 0 else 3.75
                     chess_ui_data = f"{chess_ui_scale};0,{int(ui_chess_pos_y)}"
+                chess_json = source_dir / set_id / chess / f"{set_id}_{chess}.json"
                 # idle 动画替代规则(show 段):Chess 骨架无标准待机动画时取首个含 idle 的动画名写入 idle_anim 键
                 if std_idle_candidates is not None:
-                    idle_anim = detect_idle_anim(source_dir / set_id / chess / f"{set_id}_{chess}.json", std_idle_candidates, idle_stats, warnings, f"{set_id}/{chess}(show段):")
+                    idle_anim = detect_idle_anim(chess_json, std_idle_candidates, idle_stats, warnings, f"{set_id}/{chess}(show段):")
+                # attack 动画替代规则(show 段):Chess 骨架无标准攻击动画时按 skill1→skill 取替代动画名写入 attack_anim 键
+                if std_attack_candidates is not None:
+                    attack_anim = detect_attack_anim(chess_json, std_attack_candidates, attack_stats, warnings, f"{set_id}/{chess}(show段):")
+                # dead 动画替代规则(show 段,方案B):Chess 骨架无标准死亡动画时按 attacked→idle 取替代动画名写入 dead_anim 键
+                if std_dead_candidates is not None:
+                    dead_anim = detect_dead_anim(chess_json, std_dead_candidates, std_idle_candidates or STD_IDLE_FALLBACK, dead_stats, warnings, f"{set_id}/{chess}(show段):")
                 chess_tag = chess
             if uishow is not None:
                 # ui_show 段：详情UI高清形象 + 详情UI尺寸（有保留值用手调值，否则按 ui_show 骨架高校准 scale=K/骨架高）
@@ -400,7 +515,7 @@ def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, ui_chess
                     if std_idle_candidates is not None:
                         ui_show_idle_anim = detect_idle_anim(source_dir / set_id / uishow / f"{set_id}_{uishow}.json", std_idle_candidates, idle_stats, warnings, f"{set_id}/{uishow}(ui_show段):")
                     uishow_tag = f"×{uishow}" if chess_tag else uishow
-            other_data = build_other_data(show_res, ui_show_res, ui_show_data, chess_ui_data, world_data=world_data, idle_anim=idle_anim, ui_show_idle_anim=ui_show_idle_anim)
+            other_data = build_other_data(show_res, ui_show_res, ui_show_data, chess_ui_data, world_data=world_data, idle_anim=idle_anim, ui_show_idle_anim=ui_show_idle_anim, attack_anim=attack_anim, dead_anim=dead_anim)
 
             items.append({
                 "id": self_id,
@@ -421,7 +536,7 @@ def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, ui_chess
                 "_set_id": set_id,  # 内部字段：供语言默认名使用，不进 Excel/JSON
                 "_seq": seq,
             })
-    return items, skipped, warnings, idle_stats
+    return items, skipped, warnings, idle_stats, attack_stats, dead_stats
 
 
 def write_item_excel(excel_path: Path, items, mod_project: Path):
@@ -572,12 +687,16 @@ def main():
             sys.exit(1)
         preserved_layout = read_preserved_layout_data(item_excel)
         std_idle_candidates = load_std_idle_candidates()
-        items, skipped, warnings, idle_stats = compute_items(source_dir, args.ui_scale_k, args.ui_pos_y, args.ui_chess_scale_k, args.ui_chess_pos_y, preserved_layout, reset_layout=args.reset_layout, std_idle_candidates=std_idle_candidates)
+        std_attack_candidates = load_std_attack_candidates()
+        std_dead_candidates = load_std_dead_candidates()
+        items, skipped, warnings, idle_stats, attack_stats, dead_stats = compute_items(source_dir, args.ui_scale_k, args.ui_pos_y, args.ui_chess_scale_k, args.ui_chess_pos_y, preserved_layout, reset_layout=args.reset_layout, std_idle_candidates=std_idle_candidates, std_attack_candidates=std_attack_candidates, std_dead_candidates=std_dead_candidates)
         write_item_excel(item_excel, items, mod_project)
         kept = merge_language_excel(lang_excel, items, mod_project)
         print(f"[scan] 重建道具表 {len(items)} 行 → {item_excel}")
         print(f"[scan] 合并语言表（保留人工内容 {kept} 格）→ {lang_excel}")
         print(f"[scan] idle 动画检测：命中标准候选 {idle_stats['std']}，替代动画 {idle_stats['replaced']}，无 idle {idle_stats['none']}（标准候选={','.join(std_idle_candidates)}）")
+        print(f"[scan] attack 动画检测：命中标准候选 {attack_stats['std']}，替代动画 {attack_stats['replaced']}，无 attack/skill {attack_stats['none']}（标准候选={','.join(std_attack_candidates)}）")
+        print(f"[scan] dead 动画检测：命中标准候选 {dead_stats['std']}，替代 attacked {dead_stats['attacked']}，替代 idle {dead_stats['idle']}，无可用替代 {dead_stats['none']}（标准候选={','.join(std_dead_candidates)}，方案B=attacked→idle 链）")
         if args.reset_layout:
             print("[scan] --reset-layout：布局三键(show_data/ui_show_data/world_data)全部按骨架重算")
         elif preserved_layout:

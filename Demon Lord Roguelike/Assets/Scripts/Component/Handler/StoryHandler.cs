@@ -174,23 +174,26 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
         manager.storyCameraOriginPos = cameraMoveTarget.position;
         try
         {
-            //4.逐步执行(is_async=1 并发发起即下一步;=0 阻塞等完成)
+            //4.分组执行:执行组=当前步+紧随的连续并发步骤(is_async=1),同组同时发起、整组完成才进下一组
+            //(并发=与上一步同时进行,如 Talk+并发CameraMove=对话打开即镜头开始移动,对话与补间都结束才继续后续步骤)
             var steps = StoryDetailsInfoCfg.GetDataByStoryId(storyData.id);
-            for (int i = 0; i < steps.Count; i++)
+            int indexStep = 0;
+            while (indexStep < steps.Count)
             {
-                var step = steps[i];
-                if (step.IsAsync())
+                var listStepTasks = new List<UniTask>();
+                var step = steps[indexStep];
+                indexStep++;
+                //进入非对话步骤的组前关闭仍开着的演出对话 UI(对话步骤间连播保持打开复用,防亮→亮切换重开闪一帧;收尾兜底在 FinishStory)
+                if (step.GetStepType() != StoryStepTypeEnum.Talk)
+                    CloseStoryConversationUI();
+                listStepTasks.Add(ExecuteStep(step));
+                //组内紧随的并发步骤同时发起(不逐个等,整组最后经 WhenAll 一并等完成)
+                while (indexStep < steps.Count && steps[indexStep].IsAsync())
                 {
-                    //并发步骤(`_ =`)只发起不等完成,不在此关闭对话 UI(它可能仍在上一句对话中,关闭会打断演示)
-                    _ = ExecuteStep(step);
+                    listStepTasks.Add(ExecuteStep(steps[indexStep]));
+                    indexStep++;
                 }
-                else
-                {
-                    //进入非对话步骤前关闭仍开着的演出对话 UI(对话步骤间连播保持打开复用,防亮→亮切换重开闪一帧;收尾兜底在 FinishStory)
-                    if (step.GetStepType() != StoryStepTypeEnum.Talk)
-                        CloseStoryConversationUI();
-                    await ExecuteStep(step);
-                }
+                await GTask.WhenAll(listStepTasks.ToArray());
             }
         }
         finally
@@ -253,7 +256,7 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
 
     #region 演出步骤执行
     /// <summary>
-    /// 执行单个演出步骤(按 step_type 分发;并发步骤由调用方发射即忘,不等返回)
+    /// 执行单个演出步骤(按 step_type 分发;并发步骤由调用方与同组上一步同时发起,整组经 WhenAll 一并等完成)
     /// </summary>
     private async UniTask ExecuteStep(StoryDetailsInfoBean stepData)
     {
@@ -752,12 +755,18 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
 
     /// <summary>
     /// 演出结束归还镜头:锚点与镜头参数同步补间回演出起始态后停用故事相机,恢复停靠相机与默认混合时长(姿态与起始一致,瞬切无跳变;参数不补回会停在最后一个 CV 值导致跳变)
+    /// <para>锚点已在起始位(末尾并发回位步已播完或无镜头步骤)时跳过补间直接还原,避免无意义的 0.5s 停顿</para>
     /// </summary>
     private async UniTask EndStoryCamera()
     {
-        await GTask.WhenAll(
-            MoveStoryCamera(manager.storyCameraOriginPos, 0.5f, 0),
-            TweenStoryCameraParamsToOrigin(0.5f, 0));
+        //位置与参数在镜头步骤中始终同步移动,锚点已在起始位即参数也在起始态,无需再补间
+        bool needRestore = (manager.storyCameraAnchor.position - manager.storyCameraOriginPos).sqrMagnitude > 0.0001f;
+        if (needRestore)
+        {
+            await GTask.WhenAll(
+                MoveStoryCamera(manager.storyCameraOriginPos, 0.5f, 0),
+                TweenStoryCameraParamsToOrigin(0.5f, 0));
+        }
         manager.storyCamera.gameObject.SetActive(false);
         manager.storyCamera.Priority = 0;
         if (manager.storyParkedCamera != null)
@@ -770,11 +779,10 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
     #endregion
 
     #region 镜头目标标记解析
-    /// <summary>基地建筑标记→CV_List 专属虚拟相机节点名(无映射标记:back/self/council/战斗场景 core,保持现状沿用演出起始参数;与 StoryEditorWindow.CameraMarkers 保持一致)</summary>
+    /// <summary>基地建筑标记→CV_List 专属虚拟相机节点名(无映射标记:back/self/portal/council/战斗场景 core,保持现状沿用演出起始参数;与 StoryEditorWindow.CameraMarkers 保持一致)</summary>
     private static readonly Dictionary<string, string> dicMarkerToCVName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
         { "core", "CV_Core" },
-        { "portal", "CV_Portal" },
         { "gashapon", "CV_GashaponMachine" },
         { "juicer", "CV_Juicer" },
         { "altar", "CV_CreatureSacrifice" },
@@ -784,7 +792,7 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
 
     /// <summary>
     /// 取镜头目标标记对应的基地专属虚拟相机(只读查找,不改激活态/优先级)
-    /// <para>返回 null 的三类情况均走"补回起始参数"路径:①无映射标记(back/self/council) ②战斗场景(含 core,前置短路防误读) ③有映射但 CV 节点缺失(降级为现状行为并警告)</para>
+    /// <para>返回 null 的三类情况均走"补回起始参数"路径:①无映射标记(back/self/portal/council) ②战斗场景(含 core,前置短路防误读) ③有映射但 CV 节点缺失(降级为现状行为并警告)</para>
     /// </summary>
     /// <param name="marker">镜头目标标记</param>
     private CinemachineCamera GetStoryMarkerCamera(string marker)

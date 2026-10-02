@@ -1981,6 +1981,9 @@ public class TestTransformPotionGUI : MonoBehaviour
         if (!data.uiShowSkin.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}ui_show_skin:{data.uiShowSkin}";
         if (!data.idleAnim.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}idle_anim:{data.idleAnim}";
         if (!data.uiShowIdleAnim.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}ui_show_idle_anim:{data.uiShowIdleAnim}";
+        if (!data.walkAnim.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}walk_anim:{data.walkAnim}";
+        if (!data.attackAnim.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}attack_anim:{data.attackAnim}";
+        if (!data.deadAnim.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}dead_anim:{data.deadAnim}";
         return result;
     }
 

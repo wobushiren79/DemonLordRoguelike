@@ -22,6 +22,7 @@
 - [`reference_colored_icons.md`](reference_colored_icons.md) — 彩色图标(深渊馈赠ui_abyssalblessing_/成就ui_achievement_)32x32 每张≤N色(用户可调,2026-07为≤6)：create_1_direction_object size32(64个/批)→quantize6(合成黑底再中位切分)控色流水线；深渊暂存已到2621(下一个2622)、成就已到63(下一个64)
 
 ### Reference
+- [reference_mod_excel_source.md](reference_mod_excel_source.md) — Mod 道具(幻化药)真实源是 Mod 项目的 excel_mod_items_info_*(AeonsEcho 用无后缀基础名)，scan→Excel→export→JsonText 两段式流水线；改数据必须 生成脚本常量/Mod Excel/主项目 JsonText 三处同步，只改产物下次 export 静默回退(2026-10-02 图标改动漏 Excel 教训)
 - [reference_epplus_stream_write_noop.md](reference_epplus_stream_write_noop.md) — EPPlus 写 xlsx 严禁「new FileStream + new ExcelPackage(fs)」模式：本项目 DLL 下 Save() 无异常但文件完全未落盘（2026-09-30 幻化药保存两次事故根因，PowerShell 实证）；写必须用 new ExcelPackage(new FileInfo)，敏感路径加写后回读校验
 - [project_spine_mod_pma_requirement.md](project_spine_mod_pma_requirement.md) — 所有 Spine Mod 图集贴图必须 PMA（透明区纯黑）+ 材质直通开关关闭；直通 alpha 依赖的 _STRAIGHT_ALPHA_INPUT 是 shader_feature 变体，bundle 构建被裁剪 → 主工程全体白边（BrownDust 2026-09-29 事故，已转 PMA 修复）；新资源入库必查（含多页图集 `{图集}_{页}.mat`）
 - [reference_logutil_gated.md](reference_logutil_gated.md) — LogUtil 所有级别输出（含 LogError）受 ProjectConfigInfo.IS_OPEN_LOG_MSG 总开关门控，关闭时插桩日志全静默；排障插桩前先确认开关，日志缺失≠代码没跑（2026-09-13 大盾战士排障教训）

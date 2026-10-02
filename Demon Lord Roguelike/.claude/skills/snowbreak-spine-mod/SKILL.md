@@ -61,7 +61,7 @@ MOD项目/Assets/ModResource/Spine/Snowbreak/
   - `ui_show_data`：详情UI尺寸 `scale;x,y`；生成器按 `645/骨架高` 校准；scan 全量重建时按 id 保留手调值（`--reset-layout` 强制重算）
   - `ui_show_idle_anim`：stand 链检出的待机动画名（每药必带）
 - **name 自ID = 道具自ID**（`name[language]` 标记驱动 `CombineModReferenceIds`，与其他 Mod 同机制）
-- **固定字段**：item_type=18、num_max=1、icon_res=`Item_TransformPotion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（征服模式奖励）
+- **固定字段**：item_type=18、num_max=1、icon_res=`Item_Potion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（征服模式奖励）
 - **道具名**：cn「幻化药·尘白Girl001_01-01」/ tw「幻化藥·塵白…」/ en「Snowbreak Potion Girl001_01-01」（12 语言全生成；set_id 用资源名而非序号，目录无数值规律时更可读）
 - **Excel 独立**（与 `TestTransformPotionGUI.GetModItemsExcelRelPath` 约定一致）：
   - `Assets/Data/Excel/excel_mod_items_info_snowbreakspine[Mod道具信息-SnowbreakSpine].xlsx`

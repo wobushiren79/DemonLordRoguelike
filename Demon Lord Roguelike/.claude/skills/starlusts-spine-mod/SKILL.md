@@ -58,7 +58,7 @@ MOD项目/Assets/ModResource/Spine/StarLusts/
   - `ui_show_skin`：数字皮肤名（仅皮肤药带；default 皮药省略=骨架默认皮肤）
   - `ui_show_idle_anim`：替代待机动画名（命中标准候选省略；CG 药=InteractiveMode/P1_Idle 等）
 - **name 自ID = 道具自ID**（`name[language]` 标记驱动 `CombineModReferenceIds`，与其他 Mod 同机制）
-- **固定字段**：item_type=18、num_max=1、icon_res=`Item_TransformPotion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（征服模式奖励）
+- **固定字段**：item_type=18、num_max=1、icon_res=`Item_Potion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（征服模式奖励）
 - **道具名**：皮肤药带皮肤后缀——cn「幻化药·星欲01-02 1」/ tw「幻化藥·星欲…」/ en「StarLusts Potion 01-02 1」；default 皮药无后缀「幻化药·星欲01-01」（12 语言全生成）
 - **Excel 独立**（与 `TestTransformPotionGUI.GetModItemsExcelRelPath` 约定一致）：
   - `Assets/Data/Excel/excel_mod_items_info_starlustsspine[Mod道具信息-StarLustsSpine].xlsx`

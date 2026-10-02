@@ -37,12 +37,12 @@ watched_files:
 `id | name[language] | trigger_type(1引导 2剧情预留) | scene_type(1基地 2战斗 3议会) | trigger_condition(1首次进基地后 2首次进战斗(下方卡片出现动画播完)后 3战斗首次掉魔晶) | priority(小先播) | is_once | valid | remark`
 
 ### StoryDetailsInfo 列与 param 语义表（三方同步：Excel 表头 / BeanPartial 注释 / 本表）
-`id(约定=story_id*1000+step_order) | story_id | step_order | step_type | is_async(0阻塞 1并发) | param_1~4 | remark`
+`id(约定=story_id*1000+step_order) | story_id | step_order | step_type | is_async(0阻塞 1并发=与上一步同组同时发起,同组全完成才进下一步) | param_1~4 | remark`
 
 | step_type | param_1 | param_2 | param_3 | param_4 |
 |---|---|---|---|---|
 | Talk(1) 对话 | talk_id（`&`分隔=同一步内顺序连播多句，每句各等一次点击） | 对话框对齐（bottom/bottom_left/bottom_right/middle/middle_left/middle_right/top/top_left/top_right，空=bottom下对齐）；可接 `\|`高亮目标（demon魔王核心/crystal掉落魔晶/ui_fight_card手卡/ui_fight_remove删除按钮/ui_fight_att_progress进攻进度，空=不高亮）`\|`形状（rect方形默认/circle圆形）`\|`尺寸倍率（默认1，以目标自身大小为基准） | 对话框偏移X（默认0） | 对话框偏移Y（默认0） |
-| CameraMove(2) 镜头 | 目标标记（基地: self/core/portal/gashapon/juicer/altar/vat/achievement/council；战斗: core；通用: back=回演出起始位。基地建筑标记 core/portal/gashapon/juicer/altar/vat/achievement 的镜头参数同步补间到对应 CV(映射=dicMarkerToCVName,如 core→CV_Core)，其余标记补回演出起始参数） | 时长秒(默认1) | 缓动DOTween序号(默认0=默认缓动) | — |
+| CameraMove(2) 镜头 | 目标标记（基地: self/core/portal/gashapon/juicer/altar/vat/achievement/council；战斗: core；通用: back=回演出起始位。基地建筑标记 core/gashapon/juicer/altar/vat/achievement 的镜头参数同步补间到对应 CV(映射=dicMarkerToCVName,如 core→CV_Core)，其余标记(含 portal)补回演出起始参数） | 时长秒(默认1) | 缓动DOTween序号(默认0=默认缓动) | — |
 | Wait(3) 等待 | 秒（实时，不受 timeScale 影响） | — | — | — |
 | Effect(4) 特效 | effect_id(EffectInfo.id) | 目标标记(空=战斗防守核心/基地魔王位) | 尺寸倍率(默认1) | — |
 | Audio(5) 音效 | audio_id(AudioInfo.id) | — | — | — |
@@ -66,7 +66,7 @@ watched_files:
 1. 锁输入：基地 `SetBaseControl(false, isHideControlTarget:false)`（魔王保持可见，与议会交谈同款）；战斗 `EnableAllControl(false)`。（镜头走专用虚拟相机+独立锚点，**不再依赖 controlTargetForEmpty**，锁输入隐藏它不影响演出。）
 2. 战斗场景：`Time.timeScale=0`（缓存原值，结束还原；先例 UIGameSystem）。
 3. `BeginStoryCamera()` 接管镜头并记录 `storyCameraOriginPos`（详见下方「镜头」）。
-4. 逐步执行：`is_async=1` → `_ = ExecuteStep`（并发，发起即下一步）；`=0` → `await ExecuteStep`（阻塞）。**"弹对话同时移动镜头"= 一个并发 CameraMove + 一个阻塞 Talk。**
+4. **分组执行**：执行组=当前步+紧随的连续并发步骤（is_async=1），同组**同时发起、`GTask.WhenAll` 整组完成才进下一组**。并发语义=与上一步同时进行（**不是**"发起即忘"）：**"弹对话同时移动镜头"= 阻塞 Talk + 紧随的并发 CameraMove**（对话打开即镜头开始移动，对话与补间都结束才继续后续步骤）。**并发步骤不要配 Talk**——同组两个 Talk 复用同一对话 UI 实例会互相覆盖结束回调导致卡死；同一步内连播多句用 param_1 的 `&` 分隔。
 5. `try/finally` 兜底 `FinishStory`：镜头归还 → 恢复 timeScale/控制（SetFightControl/SetBaseControl）→ is_once 记录 `UserStoryBean.MarkStoryPlayed` + SaveUserData（isTestSimulation 自动拦截）。
 
 ### unscaled 纪律（战斗演出 timeScale=0 下一切照常的关键）
@@ -85,8 +85,9 @@ watched_files:
 
 - `BeginStoryCamera()` → Transform（锚点）：取 `CinemachineBrain.ActiveVirtualCamera` 为源相机（通用，不分战斗/基地/议会）→ **复制参数**（`Lens`；源有 `CinemachineFollow` 则复制 `FollowOffset/TrackerSettings`，有 `CinemachineRotationComposer` 则复制 `TargetOffset/Damping/Composition`——新增构图参数需同步复制）→ **备份起始参数**到 manager 的 6 个 `story*Origin` 字段（struct 字段赋值即拷贝，供 back/无映射标记/收尾还原）→ 锚点同步到源相机跟随目标位（镜头不跳变）→ 缓存 `storyParkedCamera=源相机` 与 `storyBlendTimeOrigin` → `SetMainCameraDefaultBlend(0)` → 源相机 `SetActive(false)`（**只改激活态，Follow/LookAt 全程不动**）→ 故事相机 `SetActive(true)`+`Priority=int.MaxValue` 瞬切。
 - `MoveStoryCamera(pos, duration, easeIndex)`：DOMove 锚点 + `.SetUpdate(true)`，先 DOKill 防并发叠加；取消源传 null（结束回位必须不可取消，否则取消/异常时还原链会断）。
-- **镜头参数补间**（`TweenStoryCameraParams` 核心 + `FromCV`/`ToOrigin` 两包装，与位置移动同 duration/ease 并行 `GTask.WhenAll`）：CameraMove 步骤对基地建筑标记（`dicMarkerToCVName`：core→CV_Core/portal→CV_Portal/gashapon→CV_GashaponMachine/juicer→CV_Juicer/altar→CV_CreatureSacrifice/vat→CV_CreatureVat/achievement→CV_Achievement）把镜头参数补向对应 CV（`GetStoryMarkerCamera` 只读查找，复用 `CameraHandler.GetBaseSceneCamera`，不改 CV 激活态；战斗场景前置短路、CV 缺失 LogWarning 降级），无映射标记（back/self/council/战斗 core）补回起始备份。视觉连续参数（FOV/FollowOffset/TargetOffset）走 DOTween 平滑过渡，非视觉连续参数（Lens 其余字段/TrackerSettings/Damping/Composition）起点直接赋值；三条参数 tween 统一 `SetTarget(storyCam)`+`storyCam.DOKill()`，与锚点位置补间（target=anchor）**通道独立互不干扰**；CV 上的噪波组件（Perlin）不触碰，演出镜头保持无噪波。**系统不变量：任一时刻故事相机参数 = 最后落脚标记的映射值**，纯旧配置（无 CV 映射步骤）是原地补间零行为变化。
-- `EndStoryCamera()`：锚点与镜头参数**同步**补间回起始态（各 0.5s，参数不补回会停在最后一个 CV 值导致瞬切跳变）→ 故事相机 `SetActive(false)`+`Priority=0` → 恢复 `storyParkedCamera` 激活态与默认混合时长（姿态与起始一致，blend 0 瞬切无跳变）。
+- **镜头参数补间**（`TweenStoryCameraParams` 核心 + `FromCV`/`ToOrigin` 两包装，与位置移动同 duration/ease 并行 `GTask.WhenAll`）：CameraMove 步骤对基地建筑标记（`dicMarkerToCVName`：core→CV_Core/gashapon→CV_GashaponMachine/juicer→CV_Juicer/altar→CV_CreatureSacrifice/vat→CV_CreatureVat/achievement→CV_Achievement）把镜头参数补向对应 CV（`GetStoryMarkerCamera` 只读查找，复用 `CameraHandler.GetBaseSceneCamera`，不改 CV 激活态；战斗场景前置短路、CV 缺失 LogWarning 降级），无映射标记（back/self/portal/council/战斗 core）补回起始备份。视觉连续参数（FOV/FollowOffset/TargetOffset）走 DOTween 平滑过渡，非视觉连续参数（Lens 其余字段/TrackerSettings/Damping/Composition）起点直接赋值；三条参数 tween 统一 `SetTarget(storyCam)`+`storyCam.DOKill()`，与锚点位置补间（target=anchor）**通道独立互不干扰**；CV 上的噪波组件（Perlin）不触碰，演出镜头保持无噪波。**系统不变量：任一时刻故事相机参数 = 最后落脚标记的映射值**，纯旧配置（无 CV 映射步骤）是原地补间零行为变化。
+- `EndStoryCamera()`：锚点不在起始位时才补——锚点与镜头参数**同步**补间回起始态（各 0.5s，参数不补回会停在最后一个 CV 值导致瞬切跳变；**锚点已在起始位**（末尾并发回位步已播完或无镜头步骤）**跳过补间直接还原**，省 0.5s 死等）→ 故事相机 `SetActive(false)`+`Priority=0` → 恢复 `storyParkedCamera` 激活态与默认混合时长（姿态与起始一致，blend 0 瞬切无跳变）。
+- **演出期锁外部切镜**：`CameraHandler.SetCameraForControl` 在 `isStoryPlaying` 期间直接 return（如新手引导末步 UIHandle 打开 UIBaseMain，其 OpenUI 会切 cm_Base）——否则外部切镜以 blend=0 瞬切抢走 CinemachineBrain，演出镜头移动全部不可见（2026-10 修复"引导末步镜头回位不播放、直接跳回"的根因）。
 - 标记解析在 StoryHandler.GetStoryMarkerPosition：基地建筑读 ScenePrefabForBase.objBuilding*（portal/gashapon 有专属字段 objBuildingPortal/objBuildingGashaponMachine，取实体建筑锚点，预制体手动接线；**勿用 CV 机位节点当锚点**——机位常驻未激活时 Cinemachine 不驱动其 transform，读到的是出厂陈旧坐标）；战斗 core=fightDefenseCoreCreature.creatureObj。**新标记=改这一个 switch（有专属 CV 的再在 dicMarkerToCVName 加映射），不动表结构。**
 
 ## 编辑器（StoryEditorWindow）

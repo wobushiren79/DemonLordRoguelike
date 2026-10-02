@@ -54,12 +54,29 @@ public partial class SpineHandler
         //幻化整骨替换后原生物 anim_* 配置名不适用于新骨架:不指定动画名,交框架按目标骨架实际动画列表解析(缺失仅日志不播,避免 SetAnimation 抛异常)
         if (creatureData.GetTransformSpineRes() != null)
         {
-            //Idle 例外:幻化药配置了 show 骨架替代待机动画(other_data 的 idle_anim 键,生成期检测骨架无标准待机候选时写入)时优先按名直播
-            if (spineAnimationState == SpineAnimationStateEnum.Idle)
+            //映射动画例外:幻化药配置了 show 骨架替代动画(other_data 的 idle_anim/walk_anim/attack_anim/dead_anim 键,生成期检测骨架无标准候选时写入)时优先按名直播
+            switch (spineAnimationState)
             {
-                string transformIdleAnim = creatureData.GetTransformIdleAnim();
-                if (!transformIdleAnim.IsNull())
-                    return transformIdleAnim;
+                case SpineAnimationStateEnum.Idle:
+                    string transformIdleAnim = creatureData.GetTransformIdleAnim();
+                    if (!transformIdleAnim.IsNull())
+                        return transformIdleAnim;
+                    break;
+                case SpineAnimationStateEnum.Walk:
+                    string transformWalkAnim = creatureData.GetTransformWalkAnim();
+                    if (!transformWalkAnim.IsNull())
+                        return transformWalkAnim;
+                    break;
+                case SpineAnimationStateEnum.Attack:
+                    string transformAttackAnim = creatureData.GetTransformAttackAnim();
+                    if (!transformAttackAnim.IsNull())
+                        return transformAttackAnim;
+                    break;
+                case SpineAnimationStateEnum.Dead:
+                    string transformDeadAnim = creatureData.GetTransformDeadAnim();
+                    if (!transformDeadAnim.IsNull())
+                        return transformDeadAnim;
+                    break;
             }
             return null;
         }

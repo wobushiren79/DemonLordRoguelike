@@ -39,3 +39,7 @@ ThaumAge/Assets/Texture/BlockTextureArray/
 
 # Mods（本地 Mod 目录，不上传仓库；分发靠拷贝，见 Demon Lord Roguelike/.claude/skills/mod-system/）
 /Demon Lord Roguelike/Mods/
+
+# Python 字节码缓存（.claude/scripts 下脚本运行的派生产物，不入库）
+__pycache__/
+*.pyc

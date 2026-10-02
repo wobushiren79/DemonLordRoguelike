@@ -74,12 +74,22 @@ public partial class UIViewMainLoadItem : BaseUIView
     }
 
     /// <summary>
-    /// 设置生物UI(按大卡参数: 复用详情UI显示链, 含幻化ui_show_data尺寸/肖像覆盖/ui_data_b缩放位置/等比sizeDelta防裁切)
+    /// 设置生物UI(按大卡参数: 复用详情UI显示链, 含幻化ui_show_data尺寸/肖像覆盖/ui_data_b缩放位置/等比sizeDelta防裁切;
+    /// 末按容器实际高度走 ApplyCardIconSizeFit 等比修正——本容器 340 高≠大卡标准 450,直接套大卡尺寸会偏大偏位)
     /// </summary>
     public void SetCreatureUI(CreatureBean creatureData)
     {
         GameUIUtil.SetCreatureUIForDetails(ui_Icon, null, creatureData);
         ui_Icon.raycastTarget = false;
+        //按容器实际高度等比修正尺寸(取值口径同 SetCreatureUIForDetails: 幻化 ui_show_data 优先, 回落原生物 ui_data_b)
+        if (creatureData.GetTransformUIShowData(out float transformUIScale, out Vector2 transformUIPos))
+        {
+            GameUIUtil.ApplyCardIconSizeFit(ui_Icon.rectTransform, transformUIScale, transformUIPos, GameUIUtil.cardContentHeightForB);
+        }
+        else
+        {
+            GameUIUtil.ApplyCardIconSizeFit(ui_Icon.rectTransform, creatureData.creatureModel.ui_data_b, GameUIUtil.cardContentHeightForB);
+        }
     }
 
     /// <summary>

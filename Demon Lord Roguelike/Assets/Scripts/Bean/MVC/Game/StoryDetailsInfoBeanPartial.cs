@@ -23,7 +23,8 @@ public partial class StoryDetailsInfoBean
     }
 
     /// <summary>
-    /// 是否并发执行（true=发起后立即进行下一步，不等待本步完成）
+    /// 是否并发执行（true=与本组上一步同时发起，同组全部步骤完成后才进下一步；false=独占一组，本步完成才进下一步）
+    /// <para>典型用法：阻塞 Talk + 紧随并发 CameraMove = 对话打开的同时镜头移动，对话与补间都结束才继续后续步骤；并发步骤不要配 Talk（同组两个 Talk 复用同一对话 UI 实例会互相覆盖结束回调导致卡死）</para>
     /// </summary>
     public bool IsAsync()
     {

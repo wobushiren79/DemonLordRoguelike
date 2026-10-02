@@ -57,7 +57,7 @@ import openpyxl
 
 MOD_NAME = "PutGirlSpine"
 SOURCE_REL = "Assets/ModResource/Spine/PutGirl"
-ICON_RES = "Item_TransformPotion_1"  # 复用主游戏内置幻化药图标
+ICON_RES = "Item_Potion_1"  # 复用主游戏内置幻化药图标
 ITEM_TYPE_TRANSFORM_POTION = 18
 LANGUAGES = ["cn", "en", "jp", "kr", "tw", "de", "fr", "ru", "es", "br", "pl", "tr"]
 

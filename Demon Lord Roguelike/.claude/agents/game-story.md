@@ -32,14 +32,15 @@ watched_files:
 ### 运行时（StoryHandler/StoryManager）
 - `StoryHandler.InitData()` **由 LauncherGame.Launch 与 LauncherTest.StartForNormalGame 调用**（正常启动游戏入口漏调会导致进档后引导演出永不触发）；StoryTest 测试场景不注册自动触发，测试面板直接 `PlayStory`。
 - 三触发事件：`World_EnterGameForBaseScene` / `UIFightMain_CardCreateAnimEnd`(下方卡片出现动画播完,`UIFightMain.ShowCardCreateAnim` 末卡落位广播,空卡列表立即广播) / `GameFightLogic_CreatureDeadDropCrystal`。
-- 演出期：锁输入（基地 SetBaseControl(false,false) 魔王可见；战斗 EnableAllControl(false)+timeScale=0）→ 镜头接管 → 逐步执行 → finally 收尾恢复 + 记录 `UserStoryBean.MarkStoryPlayed`（独立存档 UserStory_{slot}）。
+- 演出期：锁输入（基地 SetBaseControl(false,false) 魔王可见；战斗 EnableAllControl(false)+timeScale=0）→ 镜头接管 → **分组执行**（执行组=当前步+紧随的连续并发步骤，同组同时发起、`WhenAll` 整组完成才进下一组；"弹对话同时移动镜头"=阻塞 Talk+紧随并发 CameraMove；并发步骤不要配 Talk——同组两 Talk 复用同一对话框会覆盖结束回调卡死）→ finally 收尾恢复 + 记录 `UserStoryBean.MarkStoryPlayed`（独立存档 UserStory_{slot}）。
+- **演出期锁外部切镜**：`CameraHandler.SetCameraForControl` 在 isStoryPlaying 期间直接 return（如末步 UIHandle 打开 UIBaseMain 会切 cm_Base）——否则 blend=0 瞬切抢走 CinemachineBrain，演出镜头移动全部不可见（2026-10 修复"引导末步镜头回位不播放、直接跳回"根因）；EndStoryCamera 在锚点已在起始位时跳过补间直接还原（省 0.5s 死等）。
 - 触发判定带高频短路：`dicConditionStories` 缓存候选列表；条件候选全部只播一次且已播完记入 `setExhaustedCondition` 后续事件秒退（掉晶等高频事件不重复全量判定）；切档自动重建。
 - crystal 高亮联动魔晶置顶：对话步骤高亮目标为 `crystal`（掉落魔晶）时，ApplyTalkHighlight 调 `FightDropCrystalInstanceRenderer.SetAlwaysOnTop(true)`——魔晶 ZTest Always/queue 4000 无视深度永远绘制在最前（随机落点撒到尸体背后也能透过遮挡看到，防止引导暂停画面看不到魔晶）；非 crystal 高亮/无高亮步骤自动还原，CloseStoryConversationUI 再兜底还原（置顶渲染细节见 game-fight-core）。
 - **unscaled 纪律**：演出内一切等待/补间必须实时（GTask.WaitReal / SetUpdate(true)），否则战斗暂停时卡死。
 
 ### 协作边界
 - 对话 UI 复用归 [game-conversation](.claude/agents/game-conversation.md)（SetDataForStory 是本系统加的入口，打字机 WaitReal 兼容 timeScale=0）。
-- 镜头归本系统自管（「故事专用镜头」region）：专用 CinemachineCamera 懒创建挂 StoryHandler 下，从 ActiveVirtualCamera 复制参数+备份起始参数+停靠/瞬切/还原，移动补间自有锚点 storyCameraAnchor，CameraMove 基地建筑标记时镜头参数同步补间到对应 CV（dicMarkerToCVName，如 core→CV_Core），不再改绑场景相机 Follow/LookAt；基础相机设施（mainCamera/CinemachineBrain/SetMainCameraDefaultBlend/GetBaseSceneCamera）归 [system-camera](.claude/agents/system-camera.md)。
+- 镜头归本系统自管（「故事专用镜头」region）：专用 CinemachineCamera 懒创建挂 StoryHandler 下，从 ActiveVirtualCamera 复制参数+备份起始参数+停靠/瞬切/还原，移动补间自有锚点 storyCameraAnchor，CameraMove 有 CV 映射的基地建筑标记（dicMarkerToCVName，如 core→CV_Core；portal 无映射补回起始参数）镜头参数同步补间到对应 CV，不再改绑场景相机 Follow/LookAt；基础相机设施（mainCamera/CinemachineBrain/SetMainCameraDefaultBlend/GetBaseSceneCamera）归 [system-camera](.claude/agents/system-camera.md)。
 - 触发事件常量归 [framework-event](.claude/agents/framework-event.md)；战斗挂钩点归 [game-fight-logic](.claude/agents/game-fight-logic.md)。
 - 测试四件套归 test-system skill（DrawStoryTest/LauncherTest.StartForStoryTest）。
 

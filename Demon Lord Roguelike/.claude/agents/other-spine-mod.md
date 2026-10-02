@@ -54,4 +54,4 @@ watched_files:
 - **调单个药的尺寸不用跑生成脚本**：测试面板调参保存按 Mod 路由写回（三尺寸键）；资源目录变更才走 scan/all
 - **发布后禁止 `--reset-layout`**（目录序号重排会让已发道具 id 漂移、存档幻化串角色）
 - **该流程仅适用 OtherSpine**，其他 Mod 不套用
-- Play 验证一律由用户手动（CLAUDE.md 规则）；PixelLab 不涉及本 Mod（图标复用内置 `Item_TransformPotion_1`）
+- Play 验证一律由用户手动（CLAUDE.md 规则）；PixelLab 不涉及本 Mod（图标复用内置 `Item_Potion_1`）

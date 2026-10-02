@@ -69,18 +69,21 @@ MOD项目/Assets/ModResource/Spine/AeonsEcho/
   - `show_data`：默认展示小卡UI尺寸 `scale;x,y`（格式同 `CreatureModelBean.ui_data_s`，2026-09-21 由 ui_chess_data 改名）；生成器按 `3159/默认展示骨架高` 校准 scale（3159=842.4×2.5×1.5：主游戏人形骨架 ui_data_s 基准 2.5 放大 1.5 倍，2026-09 起），默认位移 `0,-120`
   - `world_data`：世界显示尺寸/偏移 `scale;x,y`（x=横向偏移，y=竖向抬升；**战斗/基地/议会等世界空间 SkeletonAnimation 显示消费**，2026-09-21 新增）；**无骨架校准来源，默认不生成该键**——手调入口=主项目幻化药测试面板场景列表/单个预览场景组；**scan 全量重建时按 id 保留手调值**（脚本 `read_preserved_layout_data`，2026-09-27 起扩展为 show_data/ui_show_data/world_data 三键同保，`--reset-layout` 可强制重算），不会被校准覆盖
   - `idle_anim` / `ui_show_idle_anim`：show / ui_show 骨架的替代待机动画名（**idle 动画替代规则**，2026-09-28 起，详见 mod-system SKILL 通用规则节）：对应骨架动画列表命中主项目标准待机候选（`idle,wait,idle1,wait1,stand`）时省略=走框架候选解析；无标准候选时取首个小写含 `idle` 的动画名（如 Elf 系=`idle_emo1`，当前仅 26 个段次命中替代）；完全没有含 idle 动画则不生成该键+警告
+  - `attack_anim`：show 骨架的替代攻击动画名（**attack 动画替代规则**，2026-10-02 起，用户拍板 attack→skill 或 skill1）：命中主项目标准攻击候选（`attack,attack1`）时省略；否则按 `skill1`→`skill` 顺序取首个大小写不敏感全等命中的动画原始名（全等匹配防 `skill3a` 被 `skill` 误命中）；都没有则不生成该键+警告（当前仅 5001_Chess 1 个段次=攻击时保持待机，56 个段次命中替代 skill1×23/skill×33）
+  - `dead_anim`：show 骨架的替代死亡动画名（**dead 动画替代规则·方案B**，2026-10-02 起，用户拍板：有 attacked 映射 attacked=受击抖一下再消失，其余 idle 兜底）：命中主项目标准死亡候选（`dead,dead1,die`）时省略；否则有 `attacked`（全等）取 attacked 原始名，否则回退该骨架实际待机动画名（标准待机候选原始名→首个含 idle 动画）；连 idle 都没有则不生成该键+警告（当前 65 个段次命中替代 attacked×10/idle×55，无例外）
+  - **Walk 不走映射键**：Walk 缺失由主项目配置表兜底（2026-10-02 起 `excel_spine_animation_state` id=20001 候选加 `move1,move2`，覆盖 B/D 型 43 个骨架；A 型 213 个无任何移动动画的骨架仍不命中=移动时保持待机+LogError，用户已知悉；`walk_anim` 键 C# 机制已备、本 Mod 未启用）
   - 无 ui_show 形态示例：`show_res:851101_Chess_SkeletonData&show_data:3.4439;0,-120`
   - 仅详情UI幻化形态示例（套装无 Chess）：`ui_show_res:6001_Elf_SkeletonData&ui_show_data:0.1828;0,0`
   - 2026-09-21 起由旧位置段格式（`chessRes,avatorRes|uiData|chessUiData`）改为键值格式；旧数据用生成脚本 `migrate` 子命令一次性迁移（幂等，数值原样保留）
 - **name 自ID = 道具自ID**（约定）：指向 Mod 自带语言表同 id 行；运行时拼接由 **Excel 列头 `name[language]` 标记驱动**——`ExcelEditorWindow.CreateEntity` 生成 `ItemsInfoBean.cs` 时自动产出 `CombineModReferenceIds` 重写（无标记/0 值不拼接）。**Mod 道具不支持复用主游戏 textId**（会被拼接后查不到），空文本用 name=0
-- **固定字段**：item_type=18、num_max=1（不堆叠）、icon_res=`Item_TransformPotion_1`（复用主游戏内置图标）、creature_model_id=0、reward_rarity=""（消耗品不进装备奖励池——奖励生成按 creature_model_id 过滤，0 型道具天然不进池）、**source="1"（=ItemSourceEnum.ConquerReward 征服模式奖励：征服通关领奖随机一个魔晶位替换为池内随机幻化药，见 fight-reward-system；ITEM_COLUMNS 与 compute_items 均已带 source 列，scan 全量重建不会丢）**
+- **固定字段**：item_type=18、num_max=1（不堆叠）、icon_res=`Item_Potion_1`（复用主游戏内置图标）、creature_model_id=0、reward_rarity=""（消耗品不进装备奖励池——奖励生成按 creature_model_id 过滤，0 型道具天然不进池）、**source="1"（=ItemSourceEnum.ConquerReward 征服模式奖励：征服通关领奖随机一个魔晶位替换为池内随机幻化药，见 fight-reward-system；ITEM_COLUMNS 与 compute_items 均已带 source 列，scan 全量重建不会丢）**
 - **道具名**：cn「幻化药·回响{套装}-{序号}」/ tw「幻化藥·迴響…」/ 其他语言「Echo Potion …」（12 语言全生成）
 
 ## 主项目配套代码（消费侧）
 
 | 机制 | 位置 |
 |------|------|
-| other_data 键值解析 | `CreatureBeanPartial.ParseTransformOtherData`（`#region 幻化相关`，`&` 拆项 + `:` 拆键值；返回 `TransformOtherData` 结构体，2026-09-28 由多 out 参数重构，含 `idle_anim`/`ui_show_idle_anim` 键=show/ui_show 骨架替代待机动画） |
+| other_data 键值解析 | `CreatureBeanPartial.ParseTransformOtherData`（`#region 幻化相关`，`&` 拆项 + `:` 拆键值；返回 `TransformOtherData` 结构体，2026-09-28 由多 out 参数重构，含 `idle_anim`/`ui_show_idle_anim` 键=show/ui_show 骨架替代待机动画、`walk_anim`/`attack_anim`/`dead_anim` 键=show 骨架替代移动/攻击/死亡动画[2026-10-02 起]） |
 | 基础形象（show_res 键） | `CreatureBeanPartial.GetTransformSpineRes` |
 | 高清展示（ui_show_res 键） | `CreatureBeanPartial.GetTransformUIShowSpineRes` → `CreatureHandler.SetCreatureData`（isUIShow 分支**独立判定、不依赖 show_res**：有 ui_show_res 即替换详情UI形象并跳过原生物皮肤，2026-09-22 起支持仅详情UI幻化道具；**例外**：配了 ui_show_skin 键的幻化药在 hasTransform 时仍按名换肤 `SpineHandler.ChangeSkeletonSkin(Skeleton, string)`——ArkReSpine 多皮肤药专用，2026-09-24 起；皮肤串支持「|」分隔多皮肤，拆分后多个改调 params 叠加重载——CherryTaleSpine 组合皮药用，2026-09-29 起） |
 | 详情UI尺寸（ui_show_data 键） | `CreatureBeanPartial.GetTransformUIShowData` → `GameUIUtil.SetCreatureUIForDetails`（替代原生物 ui_data_b）；编辑器下测试覆盖层 `TransformPotionUITestOverride` 优先 |
@@ -88,6 +91,7 @@ MOD项目/Assets/ModResource/Spine/AeonsEcho/
 | 尺寸/位置测试覆盖层 | `Assets/Scripts/Bean/Game/TransformPotionUITestOverride.cs`（`#if UNITY_EDITOR` 整文件，打包无）：key=幻化药完整id 的「scale;x,y」覆盖值×3段，被上面三个 Get 优先消费；`GetAllDirtyIds` 供批量保存 |
 | 世界显示尺寸/偏移（world_data 键） | `CreatureBeanPartial.GetTransformWorldData` → `CreatureHandler.SetCreatureData`（SkeletonAnimation 分支：缩放=size_spine×体型×world倍率，spine 节点 localPosition=偏移或归零恒管理防池化残留；**仅 hasTransform[有 show_res] 时消费**，无 show_res 的详情UI幻化药写了也不生效——测试面板场景段对此类药已禁调，2026-10-01 起）；编辑器下测试覆盖层优先；战斗受击抖动基准=`FightCreatureEntity.AnimForAnimForUnderAttackShake` 按偏移复位（同样带 show_res 门控，2026-10-01 起） |
 | 替代待机动画（idle_anim/ui_show_idle_anim 键，2026-09-28 起） | show 段=`CreatureBeanPartial.GetTransformIdleAnim` → 游戏层 `SpineHandler.GetAnimNameAppoint`（Idle 分支幻化时优先按名直播，缺省交框架候选）；ui_show 段=`GetTransformUIShowIdleAnim` → `GameUIUtil.SetCreatureUIForDetails` 播放动画三级分支（非空→框架按名直播；ui_show_res 非空→框架候选；否则原链路） |
+| 替代移动/攻击/死亡动画（walk_anim/attack_anim/dead_anim 键，2026-10-02 起；机制与 idle_anim 同款） | show 段=`CreatureBeanPartial.GetTransformWalkAnim`/`GetTransformAttackAnim`/`GetTransformDeadAnim` → 游戏层 `SpineHandler.GetAnimNameAppoint`（幻化守卫分支扩展为 Idle/Walk/Attack/Dead 四状态各查映射键，非空优先按名直播，缺省交框架候选）；本 Mod 已生成 attack_anim（skill1→skill）与 dead_anim（方案B：attacked→idle），walk_anim 为预留未启用 |
 | 调参预览+写回 | `Assets/Scripts/Component/UI/Test/TestTransformPotionGUI.cs`（测试模式-卡片测试-Mod幻化药测试面板，四个页签）：单个预览/小卡列表/大卡列表/场景列表，详见下节 |
 
 ## 调参写回（幻化药测试面板，2026-09-21 新增；同日开始支持列表批量与 world_data）
@@ -129,7 +133,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".claude/scripts/run-pyt
 
 **两段式流水线**（脚本 `.claude/scripts/gen_aeonsecho_spine_mod.py`）：
 
-- `scan`：扫描 AeonsEcho 资源套装 → 重建/合并 **MOD 项目的两张 Excel**（可用 Excel/WPS 直接打开查看、调整参数）；**idle 动画检测**（2026-09-28 起：show 段 Chess 骨架→`idle_anim` 键、ui_show 段变体骨架→`ui_show_idle_anim` 键，无标准待机候选时取首个含 idle 动画名，扫描结束打印 命中/替代/无idle 统计）：
+- `scan`：扫描 AeonsEcho 资源套装 → 重建/合并 **MOD 项目的两张 Excel**（可用 Excel/WPS 直接打开查看、调整参数）；**idle 动画检测**（2026-09-28 起：show 段 Chess 骨架→`idle_anim` 键、ui_show 段变体骨架→`ui_show_idle_anim` 键，无标准待机候选时取首个含 idle 动画名，扫描结束打印 命中/替代/无idle 统计）+ **attack 动画检测**（2026-10-02 起：仅 show 段 Chess 骨架→`attack_anim` 键，无标准攻击候选时按 skill1→skill 取替代动画名）+ **dead 动画检测·方案B**（2026-10-02 起：仅 show 段 Chess 骨架→`dead_anim` 键，无标准死亡候选时按 attacked→idle 链取替代动画名），扫描结束各打印 命中/替代/无 统计：
   - `Assets/Data/Excel/excel_mod_items_info[Mod道具信息].xlsx` — 道具配置（3 行表头：列名/类型/说明，与主项目 excel_items_info 同布局，`name[language]` 标记列）；**全量重建**，覆盖前自动备份到 `MOD项目/ExcelBackup/`（Assets 之外，符合 Excel 备份清理规则；滚动复用 .bak.1~3，只留最近 3 份）
   - `Assets/Data/Excel/excel_mod_language[Mod多语言].xlsx` — 道具名多语言（id + content_{12语言}）；**按 id 合并保留人工改名**，新增道具补默认名、失效 id 清理；某语言留空 = 英文兜底
 - `export`：读两张 Excel → 导出 JsonText

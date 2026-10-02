@@ -69,7 +69,7 @@ MOD项目/Assets/ModResource/Spine/Other/
   - `world_data`：世界显示尺寸/偏移（无校准来源默认不生成，测试面板手调；scan 重建按「目录名/资源token」保留）
   - **scan 全量重建时 show_data/ui_show_data/world_data 三键手调值按「目录名/资源token」(remark 资源身份)保留**——按资源身份而非道具 id 保留，出药规则变化/资源增减导致 id 漂移时保留值也不会贴错道具（2026-09-30 起，此前按 id 保留在皮肤拆分规则变化时发生过移位；`--reset-layout` 强制重算）
 - **name 自ID = 道具自ID**：指向 Mod 自带语言表同 id 行（`name[language]` 标记驱动 `CombineModReferenceIds`，与其他 Mod 同机制）
-- **固定字段**：item_type=18、num_max=1、icon_res=`Item_TransformPotion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（=ItemSourceEnum.ConquerReward 征服模式奖励）
+- **固定字段**：item_type=18、num_max=1、icon_res=`Item_Potion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（=ItemSourceEnum.ConquerReward 征服模式奖励）
 - **道具名**：cn「幻化药·Other Amelia」/ tw「幻化藥·Other Amelia」/ en「Other Potion Amelia」（12 语言全生成）；目录内第 2 个起的基础药名字带 `-NN` 后缀（如「幻化药·Other Aoliweiya-02」）；皮肤药=基础名+皮肤名（如「幻化药·Other Asitelinna angry」——多皮肤目录只有皮肤药，无纯目录名药）
 - **Excel 独立**（与 `TestTransformPotionGUI.GetModItemsExcelRelPath` 约定一致）：
   - `Assets/Data/Excel/excel_mod_items_info_otherspine[Mod道具信息-OtherSpine].xlsx`

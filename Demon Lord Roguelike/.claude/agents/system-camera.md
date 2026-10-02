@@ -25,6 +25,7 @@ watched_files:
 - 基地 CV_List 语义镜头：`SetXxxCamera(priority, isEnable)` 系列转调 `SetCameraForBaseScene`（详见 `camera-system` Skill）
 - 运行期聚焦/震动（`#region 魔汁机镜头聚焦/震动`）：`GetBaseSceneCamera(cvName)` 仅查找不改态；`FocusJuicerCameraOnHole/RestoreJuicerCameraFocus` 运行期改 CV_Juicer 的 Follow/LookAt/FollowOffset/TargetOffset 做滴嘴特写（缓存还原，`isJuicerCameraFocused` 门控）；`ShakeJuicerCamera` 抬升 Perlin 振幅做冲击震动——同一 CV 运行期改字段的范式，不动预制
 - 故事演出镜头**已迁至 Story 系统自管**（CameraHandler 不再有故事 region）：StoryHandler 自管一台专用 CinemachineCamera（纯代码懒创建挂 StoryHandler 常驻 GameObject 下），演出开始从 `CinemachineBrain.ActiveVirtualCamera` 复制 Lens/FollowOffset/TrackerSettings/TargetOffset/Damping，停靠原虚拟相机（仅改激活态，Follow/LookAt 全程不动）后 blend=0 瞬切，移动补间 Story 自有锚点，结束回位后还原激活态与默认混合时长——详见 `story-system` Skill
+- **演出期锁镜头**：`SetCameraForControl` 在 `StoryHandler.Instance.manager.isStoryPlaying` 为 true 时直接 return——外部切镜（如 UIBaseMain/UIDoomCouncilMain 的 OpenUI）会以 blend=0 瞬切抢走 CinemachineBrain，导致演出镜头移动不可见；归还由 StoryHandler.EndStoryCamera 负责
 
 ## 约束
 

@@ -80,6 +80,7 @@ CameraHandler.Instance.SetCameraForControl(CinemachineCameraEnum.Base);
 ```
 - `Base`：启用 `cm_Base`，并按当前场景类型设置 `Lens.FieldOfView`（普通基地 55、终焉议会 50）。
 - `Fight`：启用 `cm_Fight`，`Priority = int.MaxValue`。
+- **故事演出期间直接忽略**：`StoryHandler.Instance.manager.isStoryPlaying` 为 true 时本方法立即 return——演出镜头由 StoryHandler 专用 CinemachineCamera 接管，外部切镜（如新手引导末步 UIHandle 打开 UIBaseMain，其 OpenUI 会调本方法）会以 blend=0 瞬切抢走 CinemachineBrain，导致演出镜头移动全部不可见（2026-10 修复"引导末步镜头回位不播放直接跳回"的根因）；演出结束由 `StoryHandler.EndStoryCamera` 自行归还停靠相机。
 
 ### 2. 初始化场景镜头
 

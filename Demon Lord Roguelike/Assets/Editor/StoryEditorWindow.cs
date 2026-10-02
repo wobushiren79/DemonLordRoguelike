@@ -631,7 +631,7 @@ public class StoryEditorWindow : EditorWindow
         var newStepType = (StoryStepTypeEnum)EditorGUILayout.EnumPopup((StoryStepTypeEnum)step.stepType, GUILayout.Width(90));
         if (newStepType != (StoryStepTypeEnum)step.stepType)
             step.stepType = (int)newStepType;
-        step.isAsync = EditorGUILayout.ToggleLeft(new GUIContent("并发", "勾选=发起后立即执行下一步(如镜头移动与对话同时进行);不勾=等本步完成"), step.isAsync, GUILayout.Width(50));
+        step.isAsync = EditorGUILayout.ToggleLeft(new GUIContent("并发", "勾选=与上一步同时发起,同组全部步骤完成才进下一步(如对话打开同时镜头移动);不勾=等本步完成才进下一步。注意:并发步骤不要配对话(同组两个对话会互相覆盖结束回调导致卡死)"), step.isAsync, GUILayout.Width(50));
         GUILayout.FlexibleSpace();
         GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
         if (GUILayout.Button(new GUIContent("➕", "在此步骤之前插入新步骤"), GUILayout.Width(24)))
@@ -668,7 +668,7 @@ public class StoryEditorWindow : EditorWindow
                 DrawTalkStepParams(step);
                 break;
             case StoryStepTypeEnum.CameraMove:
-                DrawMarkerField(new GUIContent("目标标记", "back=回演出起始位;基地=self/core/portal/gashapon/juicer/altar/vat/achievement/council;战斗=core。基地建筑标记(core/portal/gashapon/juicer/altar/vat/achievement)镜头参数同步补间到对应 CV(如 core→CV_Core),其余标记沿用演出起始参数"), step, 1);
+                DrawMarkerField(new GUIContent("目标标记", "back=回演出起始位;基地=self/core/portal/gashapon/juicer/altar/vat/achievement/council;战斗=core。基地建筑标记(core/gashapon/juicer/altar/vat/achievement)镜头参数同步补间到对应 CV(如 core→CV_Core),其余标记(含 portal)沿用演出起始参数"), step, 1);
                 DrawFloatField(new GUIContent("时长(秒)", "默认1"), step, 2, 1f);
                 DrawIntField(new GUIContent("缓动序号", "0=DOTween默认缓动,其余按 DG.Tweening.Ease 强转"), step, 3, 0);
                 break;

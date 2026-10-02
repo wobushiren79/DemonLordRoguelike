@@ -24,6 +24,12 @@ public struct TransformOtherData
     public string idleAnim;
     /// <summary>ui_show_idle_anim：ui_show 骨架替代待机动画名（可空，规则同 idle_anim，仅详情UI播放消费）</summary>
     public string uiShowIdleAnim;
+    /// <summary>walk_anim：show 骨架替代移动动画名（可空，生成期检测：骨架无标准移动候选时写入替代动画）</summary>
+    public string walkAnim;
+    /// <summary>attack_anim：show 骨架替代攻击动画名（可空，生成期检测：骨架无标准攻击候选时写入 skill1/skill 等替代动画）</summary>
+    public string attackAnim;
+    /// <summary>dead_anim：show 骨架替代死亡动画名（可空，生成期检测：骨架无标准死亡候选时写入替代动画）</summary>
+    public string deadAnim;
 }
 
 public partial class CreatureBean
@@ -404,6 +410,42 @@ public partial class CreatureBean
     }
 
     /// <summary>
+    /// 获取幻化 show 骨架的替代移动动画名（other_data 的 walk_anim 键，世界/战斗 show 段播放消费）；
+    /// 生成期检测：show 骨架无标准移动候选(walk,walk1,move,move1,move2)时写入替代动画；未配置返回 null（调用方走框架候选解析）。
+    /// </summary>
+    public string GetTransformWalkAnim()
+    {
+        ItemsInfoBean itemInfo = GetTransformItemInfo();
+        if (itemInfo == null)
+            return null;
+        return ParseTransformOtherData(itemInfo.other_data).walkAnim;
+    }
+
+    /// <summary>
+    /// 获取幻化 show 骨架的替代攻击动画名（other_data 的 attack_anim 键，世界/战斗 show 段播放消费）；
+    /// 生成期检测：show 骨架无标准攻击候选(attack,attack1)时写入 skill1/skill 等替代动画；未配置返回 null（调用方走框架候选解析）。
+    /// </summary>
+    public string GetTransformAttackAnim()
+    {
+        ItemsInfoBean itemInfo = GetTransformItemInfo();
+        if (itemInfo == null)
+            return null;
+        return ParseTransformOtherData(itemInfo.other_data).attackAnim;
+    }
+
+    /// <summary>
+    /// 获取幻化 show 骨架的替代死亡动画名（other_data 的 dead_anim 键，世界/战斗 show 段播放消费）；
+    /// 生成期检测：show 骨架无标准死亡候选(dead,dead1,die)时写入替代动画；未配置返回 null（调用方走框架候选解析）。
+    /// </summary>
+    public string GetTransformDeadAnim()
+    {
+        ItemsInfoBean itemInfo = GetTransformItemInfo();
+        if (itemInfo == null)
+            return null;
+        return ParseTransformOtherData(itemInfo.other_data).deadAnim;
+    }
+
+    /// <summary>
     /// 获取幻化高清展示自带的详情UI尺寸配置（other_data 的 ui_show_data 键「scale;x,y」，格式同 CreatureModelBean.ui_data_b，
     /// 生成器按 Avator 骨架高度校准）；原生物 ui_data_b 按原骨架校准、不适用于 Mod 高清骨架，故由道具自带。
     /// 编辑器下测试覆盖层(TransformPotionUITestOverride)有值时优先于配置返回(幻化药测试面板调参实时预览用)。
@@ -422,16 +464,7 @@ public partial class CreatureBean
         if (TransformPotionUITestOverride.TryGetUiShowData(transformItemId, out string overrideShowData))
             uiData = overrideShowData;
 #endif
-        if (uiData.IsNull())
-            return false;
-        string[] uiDataStr = uiData.Split(';');
-        if (uiDataStr.Length < 2 || !float.TryParse(uiDataStr[0], out scale))
-        {
-            scale = 1;
-            return false;
-        }
-        pos = uiDataStr[1].SplitForVector2(',');
-        return true;
+        return ParseTransformSizeData(uiData, out scale, out pos);
     }
 
     /// <summary>
@@ -453,20 +486,32 @@ public partial class CreatureBean
         if (TransformPotionUITestOverride.TryGetShowData(transformItemId, out string overrideChessData))
             showData = overrideChessData;
 #endif
-        if (showData.IsNull())
+        return ParseTransformSizeData(showData, out scale, out pos);
+    }
+
+    /// <summary>
+    /// 解析幻化尺寸键值「scale;x,y」为缩放与偏移（show_data/ui_show_data/world_data 三键同格式；
+    /// 各实例方法取键值(含编辑器覆盖层)后统一走本方法，无生物场景的调用方(如道具详情popup预览)亦可直接静态调用）。
+    /// </summary>
+    /// <returns>是否配置了尺寸段（true 时 scale/pos 有效）</returns>
+    public static bool ParseTransformSizeData(string sizeData, out float scale, out Vector2 pos)
+    {
+        scale = 1;
+        pos = Vector2.zero;
+        if (sizeData.IsNull())
             return false;
-        string[] uiDataStr = showData.Split(';');
-        if (uiDataStr.Length < 2 || !float.TryParse(uiDataStr[0], out scale))
+        string[] sizeDataStr = sizeData.Split(';');
+        if (sizeDataStr.Length < 2 || !float.TryParse(sizeDataStr[0], out scale))
         {
             scale = 1;
             return false;
         }
-        pos = uiDataStr[1].SplitForVector2(',');
+        pos = sizeDataStr[1].SplitForVector2(',');
         return true;
     }
 
     /// <summary>
-    /// 解析幻化药 other_data 键值格式：「show_res:X&ui_show_res:X&ui_show_data:scale;x,y&show_data:scale;x,y&world_data:scale;x,y&ui_show_skin:LV1&idle_anim:X&ui_show_idle_anim:X」。
+    /// 解析幻化药 other_data 键值格式：「show_res:X&ui_show_res:X&ui_show_data:scale;x,y&show_data:scale;x,y&world_data:scale;x,y&ui_show_skin:LV1&idle_anim:X&ui_show_idle_anim:X&walk_anim:X&attack_anim:X&dead_anim:X」。
     /// 按 &amp; 拆项、每项以第一个 : 拆 key/value（与 attack_mode other_data 同规约），缺省键=对应字段为 null；未知键静默忽略（向后兼容）。
     /// 各键语义见 <see cref="TransformOtherData"/> 字段注释；新增键=TransformOtherData 加字段+此处加 case，调用点零改动。
     /// </summary>
@@ -511,6 +556,15 @@ public partial class CreatureBean
                 case "ui_show_idle_anim":
                     data.uiShowIdleAnim = value;
                     break;
+                case "walk_anim":
+                    data.walkAnim = value;
+                    break;
+                case "attack_anim":
+                    data.attackAnim = value;
+                    break;
+                case "dead_anim":
+                    data.deadAnim = value;
+                    break;
             }
         }
         return data;
@@ -535,16 +589,7 @@ public partial class CreatureBean
         if (TransformPotionUITestOverride.TryGetWorldData(transformItemId, out string overrideWorldData))
             worldData = overrideWorldData;
 #endif
-        if (worldData.IsNull())
-            return false;
-        string[] worldDataStr = worldData.Split(';');
-        if (worldDataStr.Length < 2 || !float.TryParse(worldDataStr[0], out scale))
-        {
-            scale = 1;
-            return false;
-        }
-        pos = worldDataStr[1].SplitForVector2(',');
-        return true;
+        return ParseTransformSizeData(worldData, out scale, out pos);
     }
     #endregion
 

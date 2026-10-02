@@ -23,5 +23,19 @@ public partial class UIPopupItemInfo
 
     public RectTransform ui_AttributeContent;
 
+    public RectTransform ui_TransformPreviewContent;
+
+    public RectTransform ui_ShowArea;
+
+    public RectTransform ui_UIShowArea;
+
+    public TextMeshProUGUI ui_ShowLabel;
+
+    public TextMeshProUGUI ui_UIShowLabel;
+
+    public SkeletonGraphicExtend ui_ShowSpine;
+
+    public SkeletonGraphicExtend ui_UIShowSpine;
+
 
 }

@@ -57,7 +57,7 @@ MOD项目/Assets/ModResource/Spine/GirlWars/
   - `ui_show_data`：详情UI尺寸 `scale;x,y`；生成器按 `645/骨架高` 校准 scale（与其他 Mod 同基准；骨架高实测 403~4918），默认位移 `0,0`；**scan 全量重建时按 id 保留手调值**（`--reset-layout` 可强制重算）
   - `ui_show_idle_anim`：固定 `A`（骨架无 A 时省略+警告）
 - **name 自ID = 道具自ID**：指向 Mod 自带语言表同 id 行（`name[language]` 标记驱动 `CombineModReferenceIds`，与其他 Mod 同机制）
-- **固定字段**：item_type=18、num_max=1、icon_res=`Item_TransformPotion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（=ItemSourceEnum.ConquerReward 征服模式奖励）
+- **固定字段**：item_type=18、num_max=1、icon_res=`Item_Potion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（=ItemSourceEnum.ConquerReward 征服模式奖励）
 - **道具名**：cn「幻化药·少女战争1001」/ tw「幻化藥·少女戰爭1001」/ en「GirlWars Potion 1001」（12 语言全生成；每目录通常 1 个本体不带序号，同目录第 2 个起追加 `-02` 区分）
 - **Excel 独立**（与 `TestTransformPotionGUI.GetModItemsExcelRelPath` 约定一致）：
   - `Assets/Data/Excel/excel_mod_items_info_girlwarsspine[Mod道具信息-GirlWarsSpine].xlsx`

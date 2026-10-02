@@ -393,10 +393,13 @@ public partial class CameraHandler
 
     #region  控制操作摄像头
     /// <summary>
-    /// 设置控制摄像头
+    /// 设置控制摄像头(故事演出期间直接忽略:镜头由 StoryHandler 专用相机接管,外部切镜会以 blend=0 瞬切抢走 CinemachineBrain,导致演出镜头移动全不可见;演出结束由 StoryHandler.EndStoryCamera 自行归还停靠相机)
     /// </summary>
     public void SetCameraForControl(CinemachineCameraEnum cinemachineCameraEnum)
     {
+        //演出期锁镜头:如新手引导末步 UIHandle 打开 UIBaseMain(OpenUI 内调本方法),会把故事相机顶掉造成镜头瞬切跳回
+        if (StoryHandler.Instance.manager.isStoryPlaying)
+            return;
         manager.HideAllCM();
         switch (cinemachineCameraEnum)
         {

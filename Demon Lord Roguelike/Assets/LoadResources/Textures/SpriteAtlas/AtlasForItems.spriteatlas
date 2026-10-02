@@ -163,6 +163,7 @@ SpriteAtlas:
     - a98ad5b714ff47b42b8a8db5113970ff: 21300000
     - 5e92a6b798b2d534c8e9ce047006a47e: 21300000
     - 64a02db77aa571c4b9c8b42b5bdbd7de: 21300000
+    - 5883d5d7ace51fd48a592e9ae4565c7b: 21300000
     - 02126bf7dda7f0d4294c4a5b2c691311: 21300000
     - 6f616428e90a7b34b9fd59cd2e16c5cf: 21300000
     - a46719284965dab4292e0b91d802909a: 21300000
@@ -397,6 +398,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: a98ad5b714ff47b42b8a8db5113970ff, type: 3}
   - {fileID: 21300000, guid: 5e92a6b798b2d534c8e9ce047006a47e, type: 3}
   - {fileID: 21300000, guid: 64a02db77aa571c4b9c8b42b5bdbd7de, type: 3}
+  - {fileID: 21300000, guid: 5883d5d7ace51fd48a592e9ae4565c7b, type: 3}
   - {fileID: 21300000, guid: 02126bf7dda7f0d4294c4a5b2c691311, type: 3}
   - {fileID: 21300000, guid: 6f616428e90a7b34b9fd59cd2e16c5cf, type: 3}
   - {fileID: 21300000, guid: a46719284965dab4292e0b91d802909a, type: 3}
@@ -630,6 +632,7 @@ SpriteAtlas:
   - Human_Atlas_Pants_Pants_6
   - Skeleton_Atlas_Weapon_Weapon_L_1
   - Human_Atlas_Weapon_Weapon_L_15
+  - Item_Potion_1
   - Skeleton_Atlas_Hat_Hat_1
   - Human_Atlas_Weapon_Weapon_LR_16
   - Slime_Atlas_Hat_Hat_7

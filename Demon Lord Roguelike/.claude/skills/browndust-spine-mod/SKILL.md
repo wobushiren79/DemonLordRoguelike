@@ -69,7 +69,7 @@ MOD项目/Assets/ModResource/Spine/BrownDust/
   - `ui_show_data`：详情UI尺寸 `scale;x,y`；生成器按 `645/骨架高` 校准（同骨架全部药共用校准值，手调按药 id 各自保留）；scan 全量重建时按 id 保留手调值（`--reset-layout` 强制重算）
   - `ui_show_idle_anim`：该药对应的目标动画名（按动画拆药必带；0 匹配兜底药省略）
 - **name 自ID = 道具自ID**（`name[language]` 标记驱动 `CombineModReferenceIds`，与其他 Mod 同机制）
-- **固定字段**：item_type=18、num_max=1、icon_res=`Item_TransformPotion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（征服模式奖励）
+- **固定字段**：item_type=18、num_max=1、icon_res=`Item_Potion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（征服模式奖励）
 - **道具名**（带**动画名后缀**，玩家可区分同 char 的不同动画药）：cn「幻化药·棕尘char_000202-02 cut_1」/ tw「幻化藥·棕塵…」/ en「BrownDust Potion char_000202-02 cut_1」（12 语言全生成；0 匹配兜底药无后缀）
 - **Excel 独立**（与 `TestTransformPotionGUI.GetModItemsExcelRelPath` 约定一致）：
   - `Assets/Data/Excel/excel_mod_items_info_browndustspine[Mod道具信息-BrownDustSpine].xlsx`

@@ -58,7 +58,7 @@ MOD项目/Assets/ModResource/Spine/Echocalypse/
   - `ui_show_data`：详情UI尺寸 `scale;x,y`；生成器按 `645/骨架高` 校准；scan 全量重建时按 id 保留手调值（`--reset-layout` 强制重算）
   - `ui_show_idle_anim`：替代待机动画名（仅 idle_A 三药带；命中标准候选的药省略=框架候选解析）
 - **name 自ID = 道具自ID**（`name[language]` 标记驱动 `CombineModReferenceIds`，与其他 Mod 同机制）
-- **固定字段**：item_type=18、num_max=1、icon_res=`Item_TransformPotion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（征服模式奖励）
+- **固定字段**：item_type=18、num_max=1、icon_res=`Item_Potion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（征服模式奖励）
 - **道具名**：cn「幻化药·绯色回响200003-01」/ tw「幻化藥·緋色迴響200003-01」/ en「Echocalypse Potion 200003-01」（12 语言全生成）
 - **Excel 独立**（与 `TestTransformPotionGUI.GetModItemsExcelRelPath` 约定一致）：
   - `Assets/Data/Excel/excel_mod_items_info_echocalypsespine[Mod道具信息-EchocalypseSpine].xlsx`

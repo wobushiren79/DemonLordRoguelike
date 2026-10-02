@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using Spine;
 
 public partial class UIPopupItemInfo : PopupShowCommonView
 {
@@ -23,7 +24,90 @@ public partial class UIPopupItemInfo : PopupShowCommonView
         SetType(itemData, itemInfo);
         SetAttributes(itemData);
         SetJuiceExp(itemData, itemInfo);
+        SetTransformPreview(itemInfo);
     }
+
+    #region 幻化药形象预览
+    /// <summary>
+    /// 设置幻化药形象预览:仅幻化药(TransformPotion 且 other_data 非空)显示预览区,
+    /// 展示该药的 show(战斗/小卡形象)与 ui_show(详情高清形象)两段 spine,两段按配置键有无独立显隐
+    /// </summary>
+    public void SetTransformPreview(ItemsInfoBean itemInfo)
+    {
+        //prefab 未配置预览区时容错跳过(字段经 AutoLink 绑定)
+        if (ui_TransformPreviewContent == null)
+            return;
+        bool isTransformPotion = itemInfo != null && itemInfo.GetItemType() == ItemTypeEnum.TransformPotion && !itemInfo.other_data.IsNull();
+        ui_TransformPreviewContent.gameObject.SetActive(isTransformPotion);
+        if (!isTransformPotion)
+            return;
+        TransformOtherData transformData = CreatureBean.ParseTransformOtherData(itemInfo.other_data);
+        SetTransformPreviewForShow(transformData);
+        SetTransformPreviewForUIShow(transformData);
+    }
+
+    /// <summary>
+    /// 设置 show 段预览(战斗/小卡形象):有 show_res 键才显示(仅详情UI幻化道具缺省该键,本区隐藏)
+    /// </summary>
+    protected void SetTransformPreviewForShow(TransformOtherData transformData)
+    {
+        bool hasShow = !transformData.showRes.IsNull();
+        ui_ShowArea.gameObject.SetActive(hasShow);
+        if (!hasShow)
+            return;
+        ui_ShowLabel.text = TextHandler.Instance.GetTextById(61022);
+        SpineHandler.Instance.SetSkeletonDataAsset(ui_ShowSpine, transformData.showRes);
+        //待机动画:idle_anim 键缺省时传 null,框架按该骨架实际动画列表候选解析
+        SpineHandler.Instance.PlayAnim(ui_ShowSpine, SpineAnimationStateEnum.Idle, true, animNameAppoint: transformData.idleAnim);
+        ApplyTransformPreviewSize(ui_ShowSpine, transformData.showData, GameUIUtil.cardContentHeightForS);
+    }
+
+    /// <summary>
+    /// 设置 ui_show 段预览(详情高清形象):有 ui_show_res 键才显示;支持 ui_show_skin 换肤(「|」分隔多皮肤叠加)
+    /// </summary>
+    protected void SetTransformPreviewForUIShow(TransformOtherData transformData)
+    {
+        bool hasUIShow = !transformData.uiShowRes.IsNull();
+        ui_UIShowArea.gameObject.SetActive(hasUIShow);
+        if (!hasUIShow)
+            return;
+        ui_UIShowLabel.text = TextHandler.Instance.GetTextById(61023);
+        SpineHandler.Instance.SetSkeletonDataAsset(ui_UIShowSpine, transformData.uiShowRes);
+        //ui_show_skin 换肤:单皮肤整皮替换,多皮肤叠加(同 CreatureHandler.SetCreatureData 处理)
+        if (!transformData.uiShowSkin.IsNull())
+        {
+            string[] uiShowSkins = transformData.uiShowSkin.Split('|');
+            if (uiShowSkins.Length > 1)
+                SpineHandler.Instance.ChangeSkeletonSkin(ui_UIShowSpine.Skeleton, uiShowSkins);
+            else
+                SpineHandler.Instance.ChangeSkeletonSkin(ui_UIShowSpine.Skeleton, transformData.uiShowSkin);
+        }
+        else if (ui_UIShowSpine.Skeleton != null && ui_UIShowSpine.Skeleton.Skin != null)
+        {
+            //无皮肤键但当前挂着指定皮肤时重置回骨架默认外观,防 popup 复用残留上一预览药的皮肤(同骨架异药场景)
+            ui_UIShowSpine.Skeleton.SetSkin((Skin)null);
+            ui_UIShowSpine.Skeleton.SetupPoseSlots();
+        }
+        //待机动画:ui_show_idle_anim 键缺省时传 null,框架按该骨架实际动画列表候选解析
+        SpineHandler.Instance.PlayAnim(ui_UIShowSpine, SpineAnimationStateEnum.Idle, true, animNameAppoint: transformData.uiShowIdleAnim);
+        ApplyTransformPreviewSize(ui_UIShowSpine, transformData.uiShowData, GameUIUtil.cardContentHeightForB);
+    }
+
+    /// <summary>
+    /// 应用预览尺寸(走 GameUIUtil.ApplyCardIconSizeFit 卡片图标尺寸等比适配):预览 spine 节点与大/小卡 ui_Icon 同 pivot(0.5,0)+父容器中心锚定,
+    /// 尺寸键 scale;pos 直接套用并同乘「预览框高/卡片容器高」系数,即还原小卡(SetCreatureUIForSimple)/大卡(SetCreatureUIForDetails)的显示效果;
+    /// Skeleton.X/Y 清零防历史方案残留;pos 落 anchoredPosition 需 spine 节点不在 LayoutGroup 控制下(现挂 ShowRectContent 绝对定位)。
+    /// </summary>
+    protected void ApplyTransformPreviewSize(SkeletonGraphicExtend spineGraphic, string sizeData, float cardContentHeight)
+    {
+        GameUIUtil.ApplyCardIconSizeFit(spineGraphic.rectTransform, sizeData, cardContentHeight);
+        if (spineGraphic.Skeleton != null)
+        {
+            spineGraphic.Skeleton.X = 0;
+            spineGraphic.Skeleton.Y = 0;
+        }
+    }
+    #endregion
 
     /// <summary>
     /// 设置魔汁经验行:仅魔汁(ItemTypeEnum.Juice)显示「经验+X」,其余道具隐藏(魔汁无属性,属性区自动隐藏互斥)

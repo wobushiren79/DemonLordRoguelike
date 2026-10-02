@@ -64,7 +64,7 @@ MOD项目/Assets/ModResource/Spine/CherryTale/
   - `ui_show_skin`：ui_show 资源内指定皮肤（可空：A 类省略；C 类=01；D 类=Eye|Mouth 组合，**「|」分隔多皮肤叠加**，消费侧拆分后走多皮肤换肤重载）
   - `ui_show_idle_anim`：该药对应的目标动画名（按动画拆药必带）
 - **name 自ID = 道具自ID**（`name[language]` 标记驱动 `CombineModReferenceIds`，与其他 Mod 同机制）
-- **固定字段**：item_type=18、num_max=1、icon_res=`Item_TransformPotion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（征服模式奖励）
+- **固定字段**：item_type=18、num_max=1、icon_res=`Item_Potion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（征服模式奖励）
 - **道具名**（带**动画名后缀**，同 BrownDust）：cn「幻化药·樱桃a001_01-01 Idle_lv1」/ tw「幻化藥·櫻桃…」/ en「Cherry Potion a001_01-01 Idle_lv1」（12 语言全生成）
 - **Excel 独立**（与 `TestTransformPotionGUI.GetModItemsExcelRelPath` 约定一致）：
   - `Assets/Data/Excel/excel_mod_items_info_cherrytalespine[Mod道具信息-CherryTaleSpine].xlsx`
