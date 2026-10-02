@@ -123,6 +123,9 @@ public partial class ItemBean
     /// </summary>
     public ItemTypeEnum GetItemType()
     {
+        //配置缺失(如所属Mod未开启)时兜底返回0:不匹配任何已知类型,排序时聚到最前,不抛空引用
+        if (itemsInfo == null)
+            return (ItemTypeEnum)0;
         return itemsInfo.GetItemType();
     }
 

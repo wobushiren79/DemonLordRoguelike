@@ -54,7 +54,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 846950250683605743}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d85b887af7e6c3f45a2e2d2920d641bc, type: 3}
+  m_Script: {fileID: 11500000, guid: 0ef22ffa951b1f1458f9d0ee12476ea5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 2100000, guid: b66cf7a186d13054989b33a5c90044e4, type: 2}
@@ -109,10 +109,22 @@ MonoBehaviour:
   separatorParts: []
   disableMeshAssignmentOnOverride: 1
   wasDeprecatedTransferred: 1
+  meshGeneratorDeprecated:
+    settings:
+      useClipping: 1
+      zSpacing: 0
+      tintBlack: 0
+      canvasGroupCompatible: 0
+      pmaVertexColors: 1
+      addNormals: 0
+      calculateTangents: 0
+      immutableTriangles: 0
+  updateTimingDeprecated: 1
   startingAnimationDeprecated: 
   startingLoopDeprecated: 0
   timeScaleDeprecated: 1
   unscaledTimeDeprecated: 0
+  cullByMeshBounds: 1
 --- !u!1 &3746743489467722174
 GameObject:
   m_ObjectHideFlags: 0

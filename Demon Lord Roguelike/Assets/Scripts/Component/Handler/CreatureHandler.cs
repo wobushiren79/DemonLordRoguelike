@@ -80,7 +80,16 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             }
             else if (!transformUIShowSkin.IsNull())
             {
-                SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, transformUIShowSkin);
+                //ui_show_skin 支持「|」分隔多皮肤叠加组合（CherryTaleSpine 组合皮肤药）；单皮肤名仍走整皮替换
+                string[] transformUIShowSkins = transformUIShowSkin.Split('|');
+                if (transformUIShowSkins.Length > 1)
+                {
+                    SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, transformUIShowSkins);
+                }
+                else
+                {
+                    SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, transformUIShowSkin);
+                }
             }
             //设置模型大小（目标大小 size_spine × NPC体型倍率 bodySizeScale，普通生物体型倍率恒为1）
             float spineScale = creatureData.creatureModel.size_spine * creatureData.GetBodySizeScale();
@@ -109,7 +118,16 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             }
             else if (!transformUIShowSkin.IsNull())
             {
-                SpineHandler.Instance.ChangeSkeletonSkin(skeletonGraphic.Skeleton, transformUIShowSkin);
+                //ui_show_skin 支持「|」分隔多皮肤叠加组合（CherryTaleSpine 组合皮肤药）；单皮肤名仍走整皮替换
+                string[] transformUIShowSkins = transformUIShowSkin.Split('|');
+                if (transformUIShowSkins.Length > 1)
+                {
+                    SpineHandler.Instance.ChangeSkeletonSkin(skeletonGraphic.Skeleton, transformUIShowSkins);
+                }
+                else
+                {
+                    SpineHandler.Instance.ChangeSkeletonSkin(skeletonGraphic.Skeleton, transformUIShowSkin);
+                }
             }
         }
     }

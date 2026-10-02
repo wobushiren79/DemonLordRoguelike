@@ -43,4 +43,5 @@ public enum StoryStepTypeEnum
     Effect = 4,//特效(param_1=特效ID, param_2=目标标记空=核心/魔王, param_3=尺寸倍率)
     Audio = 5,//音效(param_1=音效ID)
     Fade = 6,//淡入淡出(param_1=out淡出/in淡入, param_2=时长秒)
+    UIHandle = 7,//UI处理(param_1=要隐藏的UI名字,&分隔多个; param_2=要显示的UI名字,&分隔多个;名字=类名=Resources/UI/预制体名)
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// GM 面板（GUI版，纯代码 IMGUI，不依赖预制体）：在基地主页面按 F11 打开，再次按 F11 关闭。
 /// 覆盖 UITestBase 预制面板的全部功能（魔晶/声望/道具/生物/测试生物/解锁/世界难度），
-/// 并新增 Mod 道具区：下拉选择具体某个 Mod，一键添加该 Mod 的全部道具（每种稀有度各一）。
+/// 并新增 Mod 道具区：下拉选择具体某个 Mod，一键添加该 Mod 的全部道具（装备每种稀有度各一，非装备仅1件）。
 /// 由 UIBaseMain 的 F11 输入触发 TestGameMasterGUI.Toggle() 创建/销毁（面板专用文本直接写死，不走多语言）。
 /// </summary>
 public class TestGameMasterGUI : MonoBehaviour
@@ -189,7 +189,7 @@ public class TestGameMasterGUI : MonoBehaviour
     #region GM功能-道具
 
     /// <summary>
-    /// 添加道具：输入道具ID=仅该道具；空=全部道具。均按每种稀有度(N~L)各生成一个，走统一装备生成逻辑(EquipUtil.CreateEquipItemForTest)
+    /// 添加道具：输入道具ID=仅该道具；空=全部道具。按道具类型分流生成(见 AddItemByType)
     /// </summary>
     private void AddItem()
     {
@@ -197,11 +197,12 @@ public class TestGameMasterGUI : MonoBehaviour
         if (inputItemId.IsNull())
         {
             var allData = ItemsInfoCfg.GetAllData();
+            int totalCount = 0;
             foreach (var itemData in allData)
             {
-                AddItemForAllRarity(userData, itemData.Value.id);
+                totalCount += AddItemByType(userData, itemData.Value.id);
             }
-            SetStatus($"全部道具添加成功（共{allData.Count}种 × 6稀有度）！");
+            SetStatus($"全部道具添加成功（共{allData.Count}种 {totalCount}件；装备6稀有度/非装备1件）！");
         }
         else if (long.TryParse(inputItemId, out var itemId))
         {
@@ -210,8 +211,8 @@ public class TestGameMasterGUI : MonoBehaviour
                 SetStatus($"道具ID {itemId} 不存在", true);
                 return;
             }
-            AddItemForAllRarity(userData, itemId);
-            SetStatus($"道具 {itemId} 添加成功（6稀有度各一）！");
+            int addCount = AddItemByType(userData, itemId);
+            SetStatus(addCount > 1 ? $"道具 {itemId} 添加成功（6稀有度各一）！" : $"道具 {itemId} 添加成功（非装备，1件）！");
         }
         else
         {
@@ -222,17 +223,28 @@ public class TestGameMasterGUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 按每一种稀有度(N~L)各生成一个指定道具并入背包，均走统一装备生成逻辑(EquipUtil.CreateEquipItemForTest)
+    /// 按道具类型生成测试道具并入背包：装备每种稀有度(N~L)各一(走统一装备生成逻辑 EquipUtil.CreateEquipItemForTest 随机属性)；
+    /// 非装备(幻化药/幻原药/魔汁/魔晶/肖像等)只生成1件(稀有度1、无随机属性，与征服奖励投放 new ItemBean(id,1) 一致)
     /// </summary>
     /// <param name="userData">用户数据</param>
     /// <param name="itemId">道具ID</param>
-    private void AddItemForAllRarity(UserDataBean userData, long itemId)
+    /// <returns>实际生成的件数</returns>
+    private int AddItemByType(UserDataBean userData, long itemId)
     {
+        ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(itemId);
+        //非装备(含配置缺失兜底): 固定稀有度1, 不添加随机属性
+        if (itemInfo == null || !itemInfo.IsEquipType())
+        {
+            userData.AddBackpackItem(new ItemBean(itemId, 1));
+            return 1;
+        }
+        //装备: 每种稀有度(N~L)各生成一个
         for (int rarity = (int)RarityEnum.N; rarity <= (int)RarityEnum.L; rarity++)
         {
             ItemBean rewardItem = EquipUtil.CreateEquipItemForTest(itemId, rarity);
             userData.AddBackpackItem(rewardItem);
         }
+        return (int)RarityEnum.L - (int)RarityEnum.N + 1;
     }
 
     #endregion
@@ -400,7 +412,7 @@ public class TestGameMasterGUI : MonoBehaviour
     #region GM功能-Mod道具
 
     /// <summary>
-    /// 添加选中 Mod 的全部道具：按 modId 过滤 ItemsInfoCfg（id 号段 = modId×10^14 起），每种稀有度(N~L)各生成一个
+    /// 添加选中 Mod 的全部道具：按 modId 过滤 ItemsInfoCfg（id 号段 = modId×10^14 起），按道具类型分流生成(见 AddItemByType)
     /// </summary>
     private void AddModItems()
     {
@@ -412,11 +424,12 @@ public class TestGameMasterGUI : MonoBehaviour
         ModOption modOption = listModOptions[modSelectIndex];
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         int itemKindCount = 0;
+        int totalCount = 0;
         foreach (var itemData in ItemsInfoCfg.GetAllData())
         {
             if (itemData.Key / ModIdDivisor != modOption.modId)
                 continue;
-            AddItemForAllRarity(userData, itemData.Key);
+            totalCount += AddItemByType(userData, itemData.Key);
             itemKindCount++;
         }
         if (itemKindCount == 0)
@@ -425,7 +438,7 @@ public class TestGameMasterGUI : MonoBehaviour
             return;
         }
         GameDataHandler.Instance.manager.SaveUserData();
-        SetStatus($"Mod 道具添加成功：{itemKindCount}种 × 6稀有度 = {itemKindCount * 6}件！");
+        SetStatus($"Mod 道具添加成功：{itemKindCount}种，共{totalCount}件（装备6稀有度/非装备1件）！");
     }
 
     #endregion
@@ -610,7 +623,7 @@ public class TestGameMasterGUI : MonoBehaviour
             AddItem();
         }
         GUILayout.EndHorizontal();
-        GUILayout.Label("空=全部道具；每种稀有度(N~L)各生成一个", hintStyle);
+        GUILayout.Label("空=全部道具；装备每种稀有度(N~L)各一，非装备(幻化药等)仅1件无属性", hintStyle);
     }
 
     /// <summary>
@@ -775,7 +788,7 @@ public class TestGameMasterGUI : MonoBehaviour
             }
             GUILayout.EndScrollView();
         }
-        if (GUILayout.Button("添加该 Mod 全部道具（每稀有度各一）", GUILayout.Height(26)))
+        if (GUILayout.Button("添加该 Mod 全部道具（装备每稀有度各一）", GUILayout.Height(26)))
         {
             AddModItems();
         }

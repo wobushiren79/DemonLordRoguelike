@@ -18,6 +18,8 @@ public class LauncherTest : BaseLauncher
 
     public override void Launch()
     {
+        //测试模式默认全开所有Mod(仅本次运行内存生效, 不写GameConfig不落盘, 正式游戏设置项不受影响; 卡片/幻化药等测试直接可见全部Mod资源, 免逐一手动开启+重启)
+        ModHandler.Instance.manager.isForceAllModsEnabled = true;
         //Mod初始化已收口到 BaseLauncher.Launch() 首行(多语言/Cfg访问前)
         base.Launch();
         InitTestData();

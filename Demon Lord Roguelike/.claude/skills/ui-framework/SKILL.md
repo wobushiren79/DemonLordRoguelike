@@ -279,6 +279,9 @@ UIHandler.Instance.OpenUI<UIExample>((ui) =>
 // 打开UI并指定层级
 UIHandler.Instance.OpenUI<UIExample>(layer: 1);
 
+// 打开指定名称的UI(名字=类名=Resources/UI/预制体名;无缓存实例时按名字加载创建,无需泛型)
+UIHandler.Instance.OpenUI("UIExample");
+
 // 关闭UI
 UIHandler.Instance.CloseUI<UIExample>();
 

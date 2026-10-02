@@ -10,6 +10,7 @@ public partial class UIGameSetting : BaseUIComponent, IRadioGroupCallBack
     protected UIGameSettingForGame gameSettingForGame;
     protected UIGameSettingForDisplay gameSettingForDisplay;
     protected UIGameSettingForAudio gameSettingForAudio;
+    protected UIGameSettingForMods gameSettingForMods;
 
     public int currentSettingType = 1;
     public int enterType = 0;
@@ -22,6 +23,7 @@ public partial class UIGameSetting : BaseUIComponent, IRadioGroupCallBack
         gameSettingForGame = new UIGameSettingForGame(ui_List.gameObject);
         gameSettingForDisplay = new UIGameSettingForDisplay(ui_List.gameObject);
         gameSettingForAudio = new UIGameSettingForAudio(ui_List.gameObject);
+        gameSettingForMods = new UIGameSettingForMods(ui_List.gameObject);
     }
 
     public override void OpenUI()
@@ -89,6 +91,9 @@ public partial class UIGameSetting : BaseUIComponent, IRadioGroupCallBack
             case 3:
                 gameSettingForAudio.Open();
                 break;
+            case 4:
+                gameSettingForMods.Open();
+                break;
         }
     }
 
@@ -107,6 +112,10 @@ public partial class UIGameSetting : BaseUIComponent, IRadioGroupCallBack
         else if (rbview == ui_GameSetttingLabel_Audio)
         {
             SetSettingType(3);
+        }
+        else if (rbview == ui_GameSetttingLabel_Mods)
+        {
+            SetSettingType(4);
         }
     }
 

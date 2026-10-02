@@ -53,7 +53,8 @@ ItemTypeWeaponEnum
 ├── GreatShield = 6  // 大盾
 ├── Bow = 7          // 弓
 ├── Thrown = 8       // 投掷物
-└── Explosive = 9    // 爆炸物（哥布林敢死队专用，5 个哥布林投掷武器 61010008/61010017~20 已归入此类）
+├── Explosive = 9    // 爆炸物（哥布林敢死队专用，5 个哥布林投掷武器 61010008/61010017~20 已归入此类）
+└── Lance = 10       // 长枪（首个：11020016 长枪=Weapon_LR_16 部件 1920016，长枪骑士 BOSS 武器）
 
 // 道具使用者类型
 ItemUserTypeEnum
@@ -114,7 +115,7 @@ public enum ItemTypeEnum
 
 ### 幻化药 other_data 键值格式
 
-幻化药（item_type=18）的 `other_data` 为键值格式，由 `CreatureBeanPartial.ParseTransformOtherData` 解析（`#region 幻化相关`，`&` 拆项、每项首个 `:` 拆键值、缺省键省略）：
+幻化药（item_type=18）的 `other_data` 为键值格式，由 `CreatureBeanPartial.ParseTransformOtherData` 解析（`#region 幻化相关`，返回 `TransformOtherData` 结构体——2026-09-28 由多 out 参数重构，新增键=结构体加字段+解析加 case 调用点零改动；`&` 拆项、每项首个 `:` 拆键值、缺省键省略）：
 
 ```
 show_res:X                                            - 仅基础形象（世界/战斗/普通卡片/详情UI 全用它）
@@ -126,7 +127,9 @@ show_res:X&ui_show_res:X&ui_show_data:scale;x,y&show_data:scale;x,y - 完整组�
 - **ui_show_res 键**（可空）：`ui_show_spine` 高清展示形象，详情UI（`SetCreatureData` isUIShow=true）使用；消费点 `CreatureBeanPartial.GetTransformUIShowSpineRes` → `CreatureHandler.SetCreatureData`
 - **ui_show_data 键**（可空）：详情UI尺寸 `scale;x,y`（格式同 `CreatureModelBean.ui_data_b`），消费点 `CreatureBeanPartial.GetTransformUIShowData` → `GameUIUtil.SetCreatureUIForDetails`（替代原生物 ui_data_b——原值按原骨架校准，不适用 Mod 高清骨架）
 - **show_data 键**（可空）：小卡UI尺寸 `scale;x,y`（格式同 `CreatureModelBean.ui_data_s`），消费点 `CreatureBeanPartial.GetTransformShowData` → `GameUIUtil.SetCreatureUIForSimple`（替代原生物 ui_data_s）
-- **world_data 键**（可空）：世界显示尺寸/偏移 `scale;x,y`（x=横向偏移，y=竖向抬升），消费点 `CreatureBeanPartial.GetTransformWorldData` → `CreatureHandler.SetCreatureData`（SkeletonAnimation 分支：缩放=size_spine×体型×world倍率，spine 子节点 localPosition=偏移或归零恒管理）
+- **world_data 键**（可空）：世界显示尺寸/偏移 `scale;x,y`（x=横向偏移，y=竖向抬升），消费点 `CreatureBeanPartial.GetTransformWorldData` → `CreatureHandler.SetCreatureData`（SkeletonAnimation 分支：缩放=size_spine×体型×world倍率，spine 子节点 localPosition=偏移或归零恒管理；**仅 hasTransform[有 show_res] 时消费**——无 show_res 的详情UI幻化药写了也不生效，战斗受击抖动基准 `FightCreatureEntity.AnimForAnimForUnderAttackShake` 同样带 show_res 门控，2026-10-01 起）
+- **ui_show_skin 键**（可空，2026-09-24 起）：详情UI指定皮肤名（ArkReSpine 单资源多皮肤按皮肤出药时配置；**支持「|」分隔多皮肤叠加**，2026-09-29 起——CherryTaleSpine 组合皮药如 `Eye_01|Mouth_01`，见 mod-system SKILL「幻化药型 Mod 通用规则：ui_show_skin 组合皮肤语法」），消费点 `CreatureBeanPartial.GetTransformUIShowSkin` → `CreatureHandler.SetCreatureData`（hasTransform 时按名整皮替换；多皮肤改调 params 叠加重载）
+- **idle_anim / ui_show_idle_anim 键**（可空，2026-09-28 起）：show / ui_show 骨架的替代待机动画名（生成期检测：骨架无标准待机候选 idle,wait,idle1,wait1,stand 时取首个含 idle 字段的动画名写入，见 mod-system SKILL「幻化药型 Mod 通用规则：idle 动画检测」），消费点 show 段=游戏层 `SpineHandler.GetAnimNameAppoint`（Idle 分支 `GetTransformIdleAnim` 优先）、详情UI=`GameUIUtil.SetCreatureUIForDetails` 三级分支（`GetTransformUIShowIdleAnim` 非空→框架按名直播）
 - 三个尺寸 Get 在**编辑器下测试覆盖层（`TransformPotionUITestOverride`）有值时优先于配置返回**（幻化药测试面板调参实时预览用，打包无此逻辑）；旧位置段格式（`chessRes,avatorRes|uiData|chessUiData`）已于 2026-09-21 迁移为键值格式
 
 ### Mod 道具（JsonText 扩展）
@@ -220,7 +223,7 @@ NPC 可按配置在创建时随机穿装备（首用于终焉议会随机议员�
 - **配置行**：excel_items_info id=200001（item_type=11、`num_max=1` **不堆叠**——每个魔汁实例经验不同故不入堆、creature_model_id=0、icon_res=`Item_Juicer_1`——**无图集后缀走默认 Items 图集 AtlasForItems**（该图集按 Textures/Items 文件夹整包，图标 Item_Juicer_1.png 放该目录即自动入内，导入设置 textureType=8 Sprite）、name textId=200001、remark=魔汁(榨汁产物,对魔物使用后增加经验)）。入账走 `userData.AddBackpackItem(itemBean)` 不堆叠重载（每个魔汁是独立 ItemBean）。
 - **使用流程**（魔物管理页 `UICreatureManager`）：`EventForItemBackpackClickSelect` 点击统一进 `UseOrEquipItem(itemData)` 分流——Juice → `UseJuiceItem`（`#region 魔汁使用`）、TransformPotion → `UseTransformPotionItem`、RestorePotion → `UseRestorePotionItem`，其余道具照旧 `SetCreatureEquip`。`UseJuiceItem`：无选中生物/魔王兜底返回（列表已隐藏魔汁）→ `IsMaxLevel()` 满级 Toast 61015「目标已满级，无法使用魔汁」拦截 → `UIHandler.ShowDialogNormal(DialogBean)` 确认框（content = textId 61014「是否对{0}使用魔汁？经验+{1}」格式化生物名+juicerExp）→ 确定回调：`creatureData.levelExp += juicerExp` → `RemoveBackpackItem` → `SaveUserData()` → 三连刷新（`ui_UIViewCreatureCardEquipDetails.SetCardDetails` 经验显示 + `RefreshSacrificeButton` 经验达标点亮献祭按钮 + `InitBackpackItemsData` 列表移除魔汁）。
 - **经验语义**：只累计 levelExp 不自动升级（沿用战斗结算加经验语义，升级仍走献祭 `CanUpLevel`/`UpLevelForSacrifice`）。
-- **列表过滤例外**：`UIViewItemBackpackList.FilterItems` 保留条件 = `creatureInfo.CanEquipItem` 或（`GetItemType()==Juice` 且 `!creatureData.IsDemonLord()`）或 `GetItemType()==TransformPotion` 或 `GetItemType()==RestorePotion`——选中魔王时魔汁在管理页列表隐藏（魔王隐藏等级不吃经验），**两药不带 IsDemonLord 排除**（魔王选中时可见可用）；`UIDialogSelectItem` 传 creatureData=null 显示全部不受影响。
+- **列表过滤例外**：`UIViewItemBackpackList.FilterItems` 保留条件 = `creatureInfo.CanEquipItem` 或（`GetItemType()==Juice` 且 `!creatureData.IsDemonLord()`）或 `GetItemType()==TransformPotion` 或 `GetItemType()==RestorePotion`——选中魔王时魔汁在管理页列表隐藏（魔王隐藏等级不吃经验），**两药不带 IsDemonLord 排除**（魔王选中时可见可用）；`UIDialogSelectItem` 传 creatureData=null 走 `AddValidItems` 显示全部配置有效道具。**失效道具统一隐藏**：配置缺失（所属Mod未开启/已删除）的道具在所有分支一律跳过不展示（有上下文分支 `itemInfo==null continue`、无上下文分支 `AddValidItems`），数据保留在存档待 Mod 重开后恢复；`ItemBean.GetItemType()` 对 itemsInfo==null 兜底返回 `(ItemTypeEnum)0` 防排序崩溃，`itemsInfo` getter 查询失败只打一次日志（`_isItemsInfoQueried` 标记防刷屏）。
 - **气泡显示**：`UIPopupItemInfo.SetJuiceExp(itemData, itemInfo)`（SetData 末尾调用）——Juice 类型显示 `ui_JuiceExpText` 并填 textId 61017「经验+{0}」格式化 juicerExp，其余道具隐藏；字段经 AutoLinkUI 按名绑定（prefab Details 节点下 `JuiceExpText`，复制 RarityText 而来、sibling index 1、默认 SetActive(false)），为 null 时容错跳过；魔汁 dicAttribute 为空故属性区自动隐藏，两者互斥不冲突。
 - **相关配置**：LevelInfo 新增 `juicer_exp` 列（long，1~10 级 = 同级升级经验 100%：100/1000/5000/…/10000000；另有 id=0 行 juicer_exp=20=1 级的 20%）；excel_language UIText sheet 新增 61014/61015/61016/61017 四条文本（12 语种），ItemsInfo sheet 新增 id=200001「魔汁/Demon Juice…」。
 
@@ -230,7 +233,7 @@ NPC 可按配置在创建时随机穿装备（首用于终焉议会随机议员�
 
 - **存档字段 `CreatureBean.transformItemId`**（long，0=无幻化；旧存档默认 0 兼容）——**只存道具ID不存资源名**（Mod 保底核心）；`CreatureBeanPartial.ClearTempData()` 增加 transformItemId=0 重置。
 - **形象解析唯一入口 `CreatureBeanPartial.GetTransformSpineRes()`**（`#region 幻化相关`）：transformItemId=0→null；配置缺失→每 id 一次 LogError（静态 `loggedMissingTransformIds` 防列表刷屏）+null；类型非 TransformPotion→null（防 Mod id 复用）；other_data 空→null；否则返回 `ItemsInfo.other_data`。
-- **展示覆盖范围 = 详情UI + 列表小图标 + 对话头像 + 基地/议会 + 战斗**：中枢在 `CreatureHandler.SetCreatureData`——幻化时 resName 换幻化资源、`ChangeSkeletonSkin` 两分支包 `if (!hasTransform)` 跳过套皮（传 null 不够，末尾 SetSkin(空) 会清默认外观）；战斗场景经 `GetFightCreatureObj` 新可选参数 `resNameOverride`（`CreateDefenseCreature` 与 `CreateDefenseCoreCreature` 均传 `GetTransformSpineRes()`）；游戏层 `SpineHandler.GetAnimNameAppoint` 开头守卫：幻化时返回 null（原生物 anim_* 配置名不适用新骨架，交框架按目标骨架动画列表解析，缺失仅日志不播防 ArgumentException）。形象尺寸按原生物 creatureModel 缩放。
+- **展示覆盖范围 = 详情UI + 列表小图标 + 对话头像 + 基地/议会 + 战斗**：中枢在 `CreatureHandler.SetCreatureData`——幻化时 resName 换幻化资源、`ChangeSkeletonSkin` 两分支包 `if (!hasTransform)` 跳过套皮（传 null 不够，末尾 SetSkin(空) 会清默认外观）；战斗场景经 `GetFightCreatureObj` 新可选参数 `resNameOverride`（`CreateDefenseCreature` 与 `CreateDefenseCoreCreature` 均传 `GetTransformSpineRes()`）；游戏层 `SpineHandler.GetAnimNameAppoint` 开头守卫：幻化时返回 null（原生物 anim_* 配置名不适用新骨架，交框架按目标骨架动画列表解析，缺失仅日志不播防 ArgumentException；**Idle 例外**=幻化药 idle_anim 键配置的替代待机动画优先按名直播，2026-09-28 起，见 spine-system / mod-system SKILL）。形象尺寸按原生物 creatureModel 缩放。
 - **优先级与语义**：Portrait > 幻化 > 原形象（`GameUIUtil.SetCreatureUIForDetails` 的 Portrait 分支在 SetCreatureData 之后再覆盖，零逻辑改动仅补注释）；连续吃幻化药后者覆盖前者；幻化整骨替换不套原皮肤。
 - **使用流程**（`UICreatureManager`，经 `UseOrEquipItem` 分流）：`UseTransformPotionItem`——配置缺失或 other_data 空→Toast 61021 拦截；确认框 textId 61018（{0}生物名{1}道具名）→ 写入 transformItemId（覆盖旧值=以最后吃的为准）+ `RemoveBackpackItem` 消耗 + `SaveUserData()` 落盘 + 四连刷新（`SetCardDetails` + 生物卡片列表 `ui_UIViewCreatureCardList.RefreshAllCard()`(幻化形象刷新) + `InitBackpackItemsData` + `RefreshBaseControlForDemonLord`）；`UseRestorePotionItem`——transformItemId==0→Toast 61020 不消耗拦截，确认框 61019 → 置 0 恢复。`RefreshBaseControlForDemonLord`：魔王专属，同步基地走路 spine（非基地场景防护）。
 - **Mod 保底（核心语义）**：只存道具ID、展示时实时查 ItemsInfoCfg——Mod 提供幻化药时 Mod 移除→配置 null→所有展示路径自动回落原形象；Mod 装回自动恢复；幻原药只判 id==0 不读配置，Mod 没了也能清残留；spine 资源缺失经 `GetSkeletonDataAssetWithMod` 回落 + null-check 不崩。

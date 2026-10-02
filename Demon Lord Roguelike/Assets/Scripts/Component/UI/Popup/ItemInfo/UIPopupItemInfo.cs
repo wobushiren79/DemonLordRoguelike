@@ -14,7 +14,8 @@ public partial class UIPopupItemInfo : PopupShowCommonView
     {
         ItemBean itemData = (ItemBean)data;
         var itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
-        string itemName = itemInfo.name_language;
+        //配置缺失(如所属Mod未开启)时名字兜底显示道具ID,其余各Set方法内部均已判空容错
+        string itemName = itemInfo != null ? itemInfo.name_language : $"ID:{itemData.itemId}";
         SetIcon(itemData.itemId);
         SetName(itemName);
         SetRarity(itemData.rarity);

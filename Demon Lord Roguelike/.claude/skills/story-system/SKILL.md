@@ -1,6 +1,6 @@
 ---
 name: story-system
-description: Demon Lord Roguelike 游戏的故事演出(Story/新手引导/剧情演出)系统开发指南。使用此SKILL当需要新增/修改故事演出配置(StoryInfo/StoryDetailsInfo/StoryTalkInfo 三表)、演出步骤(对话/镜头移动/等待/特效/音效/淡入淡出)、触发条件(首次进基地/首次进战斗(等下方卡片出现动画播完,UIFightMain_CardCreateAnimEnd)/首次掉魔晶)、演出运行时(StoryHandler/StoryManager)、故事演出编辑器(StoryEditorWindow)、故事演出测试(StoryTest)等，包括 StoryEnum、三个 BeanPartial、UIGameConversation.SetDataForStory 旁白模式、Story 专用虚拟相机(自管 CinemachineCamera,复制参数+停靠还原)、UserStoryBean 已播记录(独立存档 UserStory_{slot})等。
+description: Demon Lord Roguelike 游戏的故事演出(Story/新手引导/剧情演出)系统开发指南。使用此SKILL当需要新增/修改故事演出配置(StoryInfo/StoryDetailsInfo/StoryTalkInfo 三表)、演出步骤(对话/镜头移动/等待/特效/音效/淡入淡出/UI处理)、触发条件(首次进基地/首次进战斗(等下方卡片出现动画播完,UIFightMain_CardCreateAnimEnd)/首次掉魔晶)、演出运行时(StoryHandler/StoryManager)、故事演出编辑器(StoryEditorWindow)、故事演出测试(StoryTest)等，包括 StoryEnum、三个 BeanPartial、UIGameConversation.SetDataForStory 旁白模式、Story 专用虚拟相机(自管 CinemachineCamera,复制参数+基地建筑标记 CV 参数补间+停靠还原)、UserStoryBean 已播记录(独立存档 UserStory_{slot})等。
 watched_files:
   - Assets/Scripts/Component/Handler/StoryHandler.cs
   - Assets/Scripts/Component/Manager/StoryManager.cs
@@ -19,7 +19,7 @@ watched_files:
 
 ## 系统定位
 
-故事演出系统承载**新手引导**与后续**剧情演出**：按配置触发（进基地/进战斗/掉魔晶等时机）→ 锁定输入（战斗场景叠加暂停）→ 按步骤表顺序执行演出（对话/镜头/等待/特效/音效/淡入淡出）→ 恢复并记录存档（只播一次）。
+故事演出系统承载**新手引导**与后续**剧情演出**：按配置触发（进基地/进战斗/掉魔晶等时机）→ 锁定输入（战斗场景叠加暂停）→ 按步骤表顺序执行演出（对话/镜头/等待/特效/音效/淡入淡出/UI处理）→ 恢复并记录存档（只播一次）。
 
 第一期只有「引导」触发类型（trigger_type=1）；对话树/选项/议会触发等为预留扩展点（见文末）。
 
@@ -42,11 +42,14 @@ watched_files:
 | step_type | param_1 | param_2 | param_3 | param_4 |
 |---|---|---|---|---|
 | Talk(1) 对话 | talk_id（`&`分隔=同一步内顺序连播多句，每句各等一次点击） | 对话框对齐（bottom/bottom_left/bottom_right/middle/middle_left/middle_right/top/top_left/top_right，空=bottom下对齐）；可接 `\|`高亮目标（demon魔王核心/crystal掉落魔晶/ui_fight_card手卡/ui_fight_remove删除按钮/ui_fight_att_progress进攻进度，空=不高亮）`\|`形状（rect方形默认/circle圆形）`\|`尺寸倍率（默认1，以目标自身大小为基准） | 对话框偏移X（默认0） | 对话框偏移Y（默认0） |
-| CameraMove(2) 镜头 | 目标标记（基地: self/core/portal/gashapon/juicer/altar/vat/achievement/council；战斗: core；通用: back=回演出起始位） | 时长秒(默认1) | 缓动DOTween序号(默认0=默认缓动) | — |
+| CameraMove(2) 镜头 | 目标标记（基地: self/core/portal/gashapon/juicer/altar/vat/achievement/council；战斗: core；通用: back=回演出起始位。基地建筑标记 core/portal/gashapon/juicer/altar/vat/achievement 的镜头参数同步补间到对应 CV(映射=dicMarkerToCVName,如 core→CV_Core)，其余标记补回演出起始参数） | 时长秒(默认1) | 缓动DOTween序号(默认0=默认缓动) | — |
 | Wait(3) 等待 | 秒（实时，不受 timeScale 影响） | — | — | — |
 | Effect(4) 特效 | effect_id(EffectInfo.id) | 目标标记(空=战斗防守核心/基地魔王位) | 尺寸倍率(默认1) | — |
 | Audio(5) 音效 | audio_id(AudioInfo.id) | — | — | — |
-| Fade(6) 淡入淡出 | out=淡出变黑 / in=淡入 | 时长秒(默认0.5) | — | — |
+| Fade(6) 淡入淡出 | out=淡出变黑 / in=淡入（双向均 `isCloseOther=false`，遮罩不关 UIBaseMain/UIFightMain 等场景UI；`UIHandler.HideMask` 同签名带 `isCloseOther` 参数，默认 true 保持其它调用方行为） | 时长秒(默认0.5) | — | — |
+| UIHandle(7) UI处理 | 要隐藏的UI名字（`&`分隔多个；名字=类名=Resources/UI/预制体名，如 UIBaseMain） | 要显示的UI名字（`&`分隔多个） | — | — |
+
+> UIHandle 步骤即触发即完成，先隐藏后显示（同名时显示生效）：隐藏走 `UIHandler.CloseUI(uiName)`，显示走 `UIHandler.OpenUI(uiName)`（按名字打开重载，无缓存实例时按名字加载创建，无需泛型）。**演出期间 UI 显隐只由本步骤显式控制**——淡入淡出等其它步骤均不再附带关 UI 的副作用；应用例：新手引导（故事1）首步隐藏 UIBaseMain、末步显示。
 
 ### StoryTalkInfo 列
 `id(约定=story_id*1000+号段内序号,一个故事最多999句;存量旧全局自增id已于2026-08迁移) | story_id(所属故事 StoryInfo.id,0=通用;编辑器按此过滤对话下拉,新增对话自动绑定当前故事) | npc_id(NpcInfo.id, 0=旁白无立绘无名字无贿赂) | content[language] | remark`
@@ -57,7 +60,7 @@ watched_files:
 - [StoryHandler.cs](Assets/Scripts/Component/Handler/StoryHandler.cs)：`BaseHandler<StoryHandler, StoryManager>`；`InitData()` **由 LauncherGame.Launch 与 LauncherTest.StartForNormalGame（「正常启动游戏」入口，漏调会导致进档后引导演出永不触发）调用**；StoryTest 测试场景不注册，自动触发天然关闭，测试走 `PlayStory` 强制播放。
 - 监听三事件：`World_EnterGameForBaseScene`→条件1、`UIFightMain_CardCreateAnimEnd`(下方卡片出现动画播完,`UIFightMain.ShowCardCreateAnim` 末卡落位广播;空卡列表立即广播)→条件2、`GameFightLogic_CreatureDeadDropCrystal`→条件3。
 - `TryTriggerStory(condition)`：演出中/无存档丢弃；候选列表经 `StoryManager.dicConditionStories` 缓存（配置静态不变，不重复筛选排序）找第一个未播（`UserStoryBean.IsStoryPlayed`）且场景匹配的故事播放；一次事件最多播一个。**高频事件短路**（掉晶等）：候选全部为只播一次且已播完时把条件记入 `setExhaustedCondition`，后续事件一次 HashSet 查询秒退；`exhaustedForStoryData` 记录标记对应的存档实例，切换存档槽（实例变更）自动重建防误伤新档。
-- [StoryManager.cs](Assets/Scripts/Component/Manager/StoryManager.cs)：纯状态（isInited/isStoryPlaying/currentStoryData/timeScaleOrigin/storyCameraOriginPos/storyCamera/storyCameraAnchor/storyParkedCamera/storyBlendTimeOrigin/cancelForStory）。
+- [StoryManager.cs](Assets/Scripts/Component/Manager/StoryManager.cs)：纯状态（isInited/isStoryPlaying/currentStoryData/timeScaleOrigin/storyCameraOriginPos/storyCamera/storyCameraAnchor/storyParkedCamera/storyBlendTimeOrigin/storyLensOrigin·storyFollowOffsetOrigin·storyTrackerSettingsOrigin·storyComposerTargetOffsetOrigin·storyComposerDampingOrigin·storyComposerCompositionOrigin(演出起始镜头参数备份,BeginStoryCamera 写入)/cancelForStory）。
 
 ### PlayStory 主流程（PlayStoryAsync）
 1. 锁输入：基地 `SetBaseControl(false, isHideControlTarget:false)`（魔王保持可见，与议会交谈同款）；战斗 `EnableAllControl(false)`。（镜头走专用虚拟相机+独立锚点，**不再依赖 controlTargetForEmpty**，锁输入隐藏它不影响演出。）
@@ -80,16 +83,17 @@ watched_files:
 
 演出**不接管场景相机**：StoryHandler 自管一台专用 `CinemachineCamera`（`EnsureStoryCamera()` 纯代码懒创建挂 StoryHandler 常驻 GameObject 下，含 `CinemachineFollow`+`CinemachineRotationComposer`，初始隐藏 Priority=0），移动目标是自己持有的 `storyCameraAnchor` 空物体（不再复用 controlTargetForEmpty）。主相机持续渲染，故 UI/场景高亮投影、AudioListener、后处理全不受影响。
 
-- `BeginStoryCamera()` → Transform（锚点）：取 `CinemachineBrain.ActiveVirtualCamera` 为源相机（通用，不分战斗/基地/议会）→ **复制参数**（`Lens`；源有 `CinemachineFollow` 则复制 `FollowOffset/TrackerSettings`，有 `CinemachineRotationComposer` 则复制 `TargetOffset/Damping`——新增构图参数需同步复制）→ 锚点同步到源相机跟随目标位（镜头不跳变）→ 缓存 `storyParkedCamera=源相机` 与 `storyBlendTimeOrigin` → `SetMainCameraDefaultBlend(0)` → 源相机 `SetActive(false)`（**只改激活态，Follow/LookAt 全程不动**）→ 故事相机 `SetActive(true)`+`Priority=int.MaxValue` 瞬切。
+- `BeginStoryCamera()` → Transform（锚点）：取 `CinemachineBrain.ActiveVirtualCamera` 为源相机（通用，不分战斗/基地/议会）→ **复制参数**（`Lens`；源有 `CinemachineFollow` 则复制 `FollowOffset/TrackerSettings`，有 `CinemachineRotationComposer` 则复制 `TargetOffset/Damping/Composition`——新增构图参数需同步复制）→ **备份起始参数**到 manager 的 6 个 `story*Origin` 字段（struct 字段赋值即拷贝，供 back/无映射标记/收尾还原）→ 锚点同步到源相机跟随目标位（镜头不跳变）→ 缓存 `storyParkedCamera=源相机` 与 `storyBlendTimeOrigin` → `SetMainCameraDefaultBlend(0)` → 源相机 `SetActive(false)`（**只改激活态，Follow/LookAt 全程不动**）→ 故事相机 `SetActive(true)`+`Priority=int.MaxValue` 瞬切。
 - `MoveStoryCamera(pos, duration, easeIndex)`：DOMove 锚点 + `.SetUpdate(true)`，先 DOKill 防并发叠加；取消源传 null（结束回位必须不可取消，否则取消/异常时还原链会断）。
-- `EndStoryCamera()`：锚点补间回 `storyCameraOriginPos`（0.5s）→ 故事相机 `SetActive(false)`+`Priority=0` → 恢复 `storyParkedCamera` 激活态与默认混合时长（姿态与起始一致，blend 0 瞬切无跳变）。
-- 标记解析在 StoryHandler.GetStoryMarkerPosition：基地建筑读 ScenePrefabForBase.objBuilding*（portal/gashapon 有专属字段 objBuildingPortal/objBuildingGashaponMachine，取实体建筑锚点，预制体手动接线；**勿用 CV 机位节点当锚点**——机位常驻未激活时 Cinemachine 不驱动其 transform，读到的是出厂陈旧坐标）；战斗 core=fightDefenseCoreCreature.creatureObj。**新标记=改这一个 switch，不动表结构。**
+- **镜头参数补间**（`TweenStoryCameraParams` 核心 + `FromCV`/`ToOrigin` 两包装，与位置移动同 duration/ease 并行 `GTask.WhenAll`）：CameraMove 步骤对基地建筑标记（`dicMarkerToCVName`：core→CV_Core/portal→CV_Portal/gashapon→CV_GashaponMachine/juicer→CV_Juicer/altar→CV_CreatureSacrifice/vat→CV_CreatureVat/achievement→CV_Achievement）把镜头参数补向对应 CV（`GetStoryMarkerCamera` 只读查找，复用 `CameraHandler.GetBaseSceneCamera`，不改 CV 激活态；战斗场景前置短路、CV 缺失 LogWarning 降级），无映射标记（back/self/council/战斗 core）补回起始备份。视觉连续参数（FOV/FollowOffset/TargetOffset）走 DOTween 平滑过渡，非视觉连续参数（Lens 其余字段/TrackerSettings/Damping/Composition）起点直接赋值；三条参数 tween 统一 `SetTarget(storyCam)`+`storyCam.DOKill()`，与锚点位置补间（target=anchor）**通道独立互不干扰**；CV 上的噪波组件（Perlin）不触碰，演出镜头保持无噪波。**系统不变量：任一时刻故事相机参数 = 最后落脚标记的映射值**，纯旧配置（无 CV 映射步骤）是原地补间零行为变化。
+- `EndStoryCamera()`：锚点与镜头参数**同步**补间回起始态（各 0.5s，参数不补回会停在最后一个 CV 值导致瞬切跳变）→ 故事相机 `SetActive(false)`+`Priority=0` → 恢复 `storyParkedCamera` 激活态与默认混合时长（姿态与起始一致，blend 0 瞬切无跳变）。
+- 标记解析在 StoryHandler.GetStoryMarkerPosition：基地建筑读 ScenePrefabForBase.objBuilding*（portal/gashapon 有专属字段 objBuildingPortal/objBuildingGashaponMachine，取实体建筑锚点，预制体手动接线；**勿用 CV 机位节点当锚点**——机位常驻未激活时 Cinemachine 不驱动其 transform，读到的是出厂陈旧坐标）；战斗 core=fightDefenseCoreCreature.creatureObj。**新标记=改这一个 switch（有专属 CV 的再在 dicMarkerToCVName 加映射），不动表结构。**
 
 ## 编辑器（StoryEditorWindow）
 
 [StoryEditorWindow.cs](Assets/Editor/StoryEditorWindow.cs)，菜单 `游戏/故事演出编辑`。骨架照抄 FightModeEditorTabConquer（战斗模式编辑工具征服页签，原 FightTypeConquerEditorWindow；Excel 直读→编辑→单会话写回→重导JSON），增删行照 EquipSuitEditorWindow（降序 DeleteRow/追加/新id=max+1）。
 
-- 四栏：左故事列表（搜索/新增/删除，删除级联删步骤并提示孤儿对话）｜故事字段（名字中文直接编辑写回语言表 content_cn）｜步骤编排（foldout 列表/类型 EnumPopup/并发开关/**➕行前插入**/↑↓移/末尾添加，按 step_type 动态参数标签；Talk 步骤只做引用选择与只读预览 + 对话框对齐下拉/偏移X-Y/目标高亮开关+目标下拉/形状下拉(方形/圆形)+尺寸倍率（param_2=对齐[|高亮[|形状[|倍率]]]组合、param_3/4=偏移，空=默认下对齐(0,0)不高亮））｜**对话列表**（本故事+通用对话的统一 CRUD 面板：npc 下拉含 0=旁白/内容中文/备注/删除——删除时若被步骤引用会提示并自动移除引用；+新增对话自动绑定当前故事）。步骤编排与对话管理分离，不混在一起。新步骤 id 规则=本故事最大 id+1（story_id*1000 号段内聚，中间插入后 id 与 step_order 不再一一对应属正常，执行只读 step_order）；新对话 id 同约定=story_id*1000+号段内序号（GetNextTalkId：号段内最大+1，无对话取 story_id*1000+1，超上限 story_id*1000+999 报错阻断）。
+- 四栏：左故事列表（搜索/新增/删除，删除级联删步骤并提示孤儿对话）｜故事字段（名字中文直接编辑写回语言表 content_cn）｜步骤编排（foldout 列表/类型 EnumPopup/并发开关/**➕行前插入**/↑↓移/末尾添加，按 step_type 动态参数标签；Talk 步骤只做引用选择与只读预览 + 对话框对齐下拉/偏移X-Y/目标高亮开关+目标下拉/形状下拉(方形/圆形)+尺寸倍率（param_2=对齐[|高亮[|形状[|倍率]]]组合、param_3/4=偏移，空=默认下对齐(0,0)不高亮）；UI处理步骤=隐藏/显示UI名两个文本框（`&`分隔，保存校验逐个检查 Resources/UI 预制体存在性））｜**对话列表**（本故事+通用对话的统一 CRUD 面板：npc 下拉含 0=旁白/内容中文/备注/删除——删除时若被步骤引用会提示并自动移除引用；+新增对话自动绑定当前故事）。步骤编排与对话管理分离，不混在一起。新步骤 id 规则=本故事最大 id+1（story_id*1000 号段内聚，中间插入后 id 与 step_order 不再一一对应属正常，执行只读 step_order）；新对话 id 同约定=story_id*1000+号段内序号（GetNextTalkId：号段内最大+1，无对话取 story_id*1000+1，超上限 story_id*1000+999 报错阻断）。
 - 栏宽：三个固定栏（故事列表/故事字段/对话列表）栏间分隔条可拖拽调宽、双击复位默认宽；步骤栏为弹性栏自动占满剩余宽度（DrawSplitter/HandleSplitterDrag/ClampSplitterWidth，各栏有最小宽保护）。
 - 对话选择：Talk 步骤 param_1 下拉追加（**按 story_id 过滤只显示当前故事的对话** + story_id=0 的通用对话；引用其它故事对话可手输 ID）。
 - 保存：Validate（场景-条件一致性/步骤参数合法性/对话存在性，错误阻断警告可过）→ 4 个 xlsx 各自单会话写回 → `ExcelUtil.ExcelToJsonItem` ×4 → Refresh → 提交快照。

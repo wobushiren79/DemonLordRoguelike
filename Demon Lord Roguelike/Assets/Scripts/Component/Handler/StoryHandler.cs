@@ -278,6 +278,9 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
             case StoryStepTypeEnum.Fade:
                 await ExecuteStepForFade(stepData);
                 break;
+            case StoryStepTypeEnum.UIHandle:
+                ExecuteStepForUIHandle(stepData);
+                break;
             default:
                 LogUtil.LogWarning($"故事演出跳过未知步骤类型:{stepData.step_type} (步骤id:{stepData.id})");
                 break;
@@ -471,6 +474,7 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
 
     /// <summary>
     /// 镜头移动步骤:解析目标标记取世界坐标,补间演出跟随目标(param_2=时长秒默认1, param_3=缓动序号默认0)
+    /// <para>基地建筑标记(core/portal/gashapon/juicer/altar/vat/achievement)镜头参数同步补间到对应 CV(同 duration/ease);无映射标记(back/self/战斗 core/council)补回演出起始参数,维持现状行为</para>
     /// </summary>
     private async UniTask ExecuteStepForCameraMove(StoryDetailsInfoBean stepData)
     {
@@ -481,7 +485,14 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
             LogUtil.LogError($"故事演出镜头步骤跳过,无法解析目标标记:{marker} (步骤id:{stepData.id})");
             return;
         }
-        await MoveStoryCamera(targetPos, stepData.GetParamFloat(2, 1f), stepData.GetParamInt(3, 0));
+        float duration = stepData.GetParamFloat(2, 1f);
+        int easeIndex = stepData.GetParamInt(3, 0);
+        var cvCam = GetStoryMarkerCamera(marker);
+        //有 CV 映射→参数补向 CV;无映射→补回起始备份;两者都与位置移动同 duration/ease 并行(两通道 DOKill 各自独立:anchor vs storyCam)
+        var tweenParams = cvCam != null
+            ? TweenStoryCameraParamsFromCV(cvCam, duration, easeIndex)
+            : TweenStoryCameraParamsToOrigin(duration, easeIndex);
+        await GTask.WhenAll(MoveStoryCamera(targetPos, duration, easeIndex), tweenParams);
     }
 
     /// <summary>
@@ -542,9 +553,29 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
         }
         else
         {
-            UIHandler.Instance.HideMask(duration, null, () => isFadeEnd = true);
+            //isCloseOther=false:与淡出分支同理,遮罩不能关掉 UIFightMain/UIBaseMain 等场景UI(关掉后演出结束无人重开)
+            UIHandler.Instance.HideMask(duration, null, () => isFadeEnd = true, isCloseOther: false);
         }
         await GTask.WaitUntil(() => isFadeEnd, manager.cancelForStory);
+    }
+
+    /// <summary>
+    /// UI处理步骤:即触发即完成(param_1=要隐藏的UI名字,&amp;分隔多个;param_2=要显示的UI名字,&amp;分隔多个;先隐藏后显示,同名时显示生效)
+    /// <para>显式管控演出期间 UI 显隐(如新手引导首步隐藏 UIBaseMain/末步显示);UI 显隐只由本步骤控制,淡入淡出等其它步骤均不再附带关 UI 的副作用</para>
+    /// </summary>
+    private void ExecuteStepForUIHandle(StoryDetailsInfoBean stepData)
+    {
+        var hideNames = stepData.GetUIHandleHideNames();
+        for (int i = 0; i < hideNames.Length; i++)
+        {
+            UIHandler.Instance.CloseUI(hideNames[i]);
+        }
+        var showNames = stepData.GetUIHandleShowNames();
+        for (int i = 0; i < showNames.Length; i++)
+        {
+            //按名字打开(无缓存实例时按名字加载创建);找不到预制体时 OpenUI 内部已报错,这里无需重复处理
+            UIHandler.Instance.OpenUI(showNames[i]);
+        }
     }
     #endregion
 
@@ -572,7 +603,7 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
     }
 
     /// <summary>
-    /// 演出开始接管镜头:从当前生效虚拟相机复制镜头参数(FOV/跟随偏移/阻尼/看向偏移)到故事相机,停靠原相机并瞬切;返回演出期唯一补间锚点(位置已同步,镜头不跳变)
+    /// 演出开始接管镜头:从当前生效虚拟相机复制镜头参数(FOV/跟随偏移/阻尼/看向偏移/构图)到故事相机并备份为起始参数(manager.story*Origin,供 back/无映射标记/收尾还原),停靠原相机并瞬切;返回演出期唯一补间锚点(位置已同步,镜头不跳变)
     /// <para>原相机只改激活态,Follow/LookAt 等参数全程不动,结束由 EndStoryCamera 还原</para>
     /// </summary>
     private Transform BeginStoryCamera()
@@ -608,7 +639,15 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
         {
             dstComposer.TargetOffset = srcComposer.TargetOffset;
             dstComposer.Damping = srcComposer.Damping;
+            dstComposer.Composition = srcComposer.Composition;
         }
+        //2.5.备份起始参数到 manager(CV 参数补间后,back/无映射标记/EndStoryCamera 以此为还原目标;struct 字段赋值即拷贝)
+        manager.storyLensOrigin = storyCam.Lens;
+        manager.storyFollowOffsetOrigin = dstFollow.FollowOffset;
+        manager.storyTrackerSettingsOrigin = dstFollow.TrackerSettings;
+        manager.storyComposerTargetOffsetOrigin = dstComposer.TargetOffset;
+        manager.storyComposerDampingOrigin = dstComposer.Damping;
+        manager.storyComposerCompositionOrigin = dstComposer.Composition;
         //3.锚点同步到原相机跟随目标位(无跟随目标时取相机位,镜头不跳变)
         manager.storyCameraAnchor.position = srcCam.Follow != null ? srcCam.Follow.position : srcCam.transform.position;
         //4.停靠原相机并瞬切到故事相机(混合时长缓存,结束还原;不瞬切会在战斗 timeScale=0 下混合冻结)
@@ -639,11 +678,86 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
     }
 
     /// <summary>
-    /// 演出结束归还镜头:锚点补间回演出起始位后停用故事相机,恢复停靠相机与默认混合时长(姿态与起始一致,瞬切无跳变)
+    /// 补间故事相机镜头参数到指定值(与位置移动同 duration/ease 并行;FOV/跟随偏移/看向偏移走 DOTween 平滑过渡,Lens 其余字段/TrackerSettings/Damping/Composition 等非视觉连续参数在起点直接赋值)
+    /// <para>补间统一 SetTarget(storyCam)+storyCam.DOKill(),与锚点位置补间(anchor.DOKill)target 不同互不干扰;SetUpdate(true) 战斗 timeScale=0 下照常</para>
+    /// </summary>
+    private async UniTask TweenStoryCameraParams(float duration, int easeIndex, LensSettings endLens, Vector3 endFollowOffset, Unity.Cinemachine.TargetTracking.TrackerSettings endTracker, Vector3 endTargetOffset, Vector2 endDamping, ScreenComposerSettings endComposition)
+    {
+        var storyCam = manager.storyCamera;
+        //打断在途参数补间(防并发镜头步骤叠加;不碰 anchor 上的位置补间)
+        storyCam.DOKill();
+        var follow = storyCam.GetComponent<CinemachineFollow>();
+        var composer = storyCam.GetComponent<CinemachineRotationComposer>();
+        //1.非视觉连续参数起点直接赋值(阻尼/死区/裁剪面非画面构图,瞬切无可见跳变;Lens 是 struct 字段,读-改-写回)
+        var lensNow = storyCam.Lens;
+        lensNow.OrthographicSize = endLens.OrthographicSize;
+        lensNow.NearClipPlane = endLens.NearClipPlane;
+        lensNow.FarClipPlane = endLens.FarClipPlane;
+        lensNow.Dutch = endLens.Dutch;
+        storyCam.Lens = lensNow;
+        follow.TrackerSettings = endTracker;
+        composer.Damping = endDamping;
+        composer.Composition = endComposition;
+        //2.视觉连续参数 DOTween 补间(Lens 是 struct 字段,块 lambda 读-改-写回)
+        var tweenFov = DOTween.To(() => storyCam.Lens.FieldOfView, v => { var l = storyCam.Lens; l.FieldOfView = v; storyCam.Lens = l; }, endLens.FieldOfView, duration)
+            .SetTarget(storyCam).SetUpdate(true);
+        var tweenOffset = DOTween.To(() => follow.FollowOffset, v => follow.FollowOffset = v, endFollowOffset, duration)
+            .SetTarget(storyCam).SetUpdate(true);
+        var tweenTarget = DOTween.To(() => composer.TargetOffset, v => composer.TargetOffset = v, endTargetOffset, duration)
+            .SetTarget(storyCam).SetUpdate(true);
+        //缓动与 MoveStoryCamera 同规则(0=DOTween 默认,其余按 Ease 强转)
+        if (easeIndex > 0 && Enum.IsDefined(typeof(Ease), easeIndex))
+        {
+            var ease = (Ease)easeIndex;
+            tweenFov.SetEase(ease);
+            tweenOffset.SetEase(ease);
+            tweenTarget.SetEase(ease);
+        }
+        //取消源传 null:与 MoveStoryCamera 同理,结束还原必须不可取消;被后续步骤 DOKill 时 WaitTween 因 tween 失活正常结束
+        await GTask.WhenAll(GTask.WaitTween(tweenFov, null), GTask.WaitTween(tweenOffset, null), GTask.WaitTween(tweenTarget, null));
+    }
+
+    /// <summary>
+    /// 补间故事相机参数到指定虚拟相机的参数(基地建筑标记专属 CV 用;CV 上组件缺失的项保持故事相机当前值不补;噪波组件不触碰,演出镜头保持无噪波)
+    /// </summary>
+    private UniTask TweenStoryCameraParamsFromCV(CinemachineCamera cvCam, float duration, int easeIndex)
+    {
+        var storyCam = manager.storyCamera;
+        var follow = storyCam.GetComponent<CinemachineFollow>();
+        var composer = storyCam.GetComponent<CinemachineRotationComposer>();
+        var cvFollow = cvCam.GetComponent<CinemachineFollow>();
+        var cvComposer = cvCam.GetComponent<CinemachineRotationComposer>();
+        return TweenStoryCameraParams(duration, easeIndex,
+            cvCam.Lens,
+            cvFollow != null ? cvFollow.FollowOffset : follow.FollowOffset,
+            cvFollow != null ? cvFollow.TrackerSettings : follow.TrackerSettings,
+            cvComposer != null ? cvComposer.TargetOffset : composer.TargetOffset,
+            cvComposer != null ? cvComposer.Damping : composer.Damping,
+            cvComposer != null ? cvComposer.Composition : composer.Composition);
+    }
+
+    /// <summary>
+    /// 补间故事相机参数回演出起始备份(back 标记/无映射标记/EndStoryCamera 收尾共用,维持"无 CV 映射即起始参数"不变量;纯旧配置下是原地补间零行为变化)
+    /// </summary>
+    private UniTask TweenStoryCameraParamsToOrigin(float duration, int easeIndex)
+    {
+        return TweenStoryCameraParams(duration, easeIndex,
+            manager.storyLensOrigin,
+            manager.storyFollowOffsetOrigin,
+            manager.storyTrackerSettingsOrigin,
+            manager.storyComposerTargetOffsetOrigin,
+            manager.storyComposerDampingOrigin,
+            manager.storyComposerCompositionOrigin);
+    }
+
+    /// <summary>
+    /// 演出结束归还镜头:锚点与镜头参数同步补间回演出起始态后停用故事相机,恢复停靠相机与默认混合时长(姿态与起始一致,瞬切无跳变;参数不补回会停在最后一个 CV 值导致跳变)
     /// </summary>
     private async UniTask EndStoryCamera()
     {
-        await MoveStoryCamera(manager.storyCameraOriginPos, 0.5f, 0);
+        await GTask.WhenAll(
+            MoveStoryCamera(manager.storyCameraOriginPos, 0.5f, 0),
+            TweenStoryCameraParamsToOrigin(0.5f, 0));
         manager.storyCamera.gameObject.SetActive(false);
         manager.storyCamera.Priority = 0;
         if (manager.storyParkedCamera != null)
@@ -656,6 +770,38 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
     #endregion
 
     #region 镜头目标标记解析
+    /// <summary>基地建筑标记→CV_List 专属虚拟相机节点名(无映射标记:back/self/council/战斗场景 core,保持现状沿用演出起始参数;与 StoryEditorWindow.CameraMarkers 保持一致)</summary>
+    private static readonly Dictionary<string, string> dicMarkerToCVName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        { "core", "CV_Core" },
+        { "portal", "CV_Portal" },
+        { "gashapon", "CV_GashaponMachine" },
+        { "juicer", "CV_Juicer" },
+        { "altar", "CV_CreatureSacrifice" },
+        { "vat", "CV_CreatureVat" },
+        { "achievement", "CV_Achievement" },
+    };
+
+    /// <summary>
+    /// 取镜头目标标记对应的基地专属虚拟相机(只读查找,不改激活态/优先级)
+    /// <para>返回 null 的三类情况均走"补回起始参数"路径:①无映射标记(back/self/council) ②战斗场景(含 core,前置短路防误读) ③有映射但 CV 节点缺失(降级为现状行为并警告)</para>
+    /// </summary>
+    /// <param name="marker">镜头目标标记</param>
+    private CinemachineCamera GetStoryMarkerCamera(string marker)
+    {
+        if (marker.IsNull())
+            return null;
+        //战斗场景标记无 CV 映射(core=防守核心),保持现状沿用起始参数;前置短路防战斗场景误挂 CV_List 时被误读
+        if (GameHandler.Instance.manager.GetGameLogic<GameFightLogic>() != null)
+            return null;
+        if (!dicMarkerToCVName.TryGetValue(marker, out string cvName))
+            return null;
+        var cvCam = CameraHandler.Instance.GetBaseSceneCamera(cvName);
+        if (cvCam == null)
+            LogUtil.LogWarning($"故事演出镜头参数补间跳过,标记 {marker} 映射的 {cvName} 在当前场景 CV_List 下不存在(位置移动照常,参数保持现状)");
+        return cvCam;
+    }
+
     /// <summary>
     /// 解析镜头目标标记为世界坐标(通用:back=演出起始位;战斗:core=防守核心;基地:self=魔王/core/portal/gashapon/juicer/altar/vat/achievement/council;未知标记 isValid=false)
     /// </summary>

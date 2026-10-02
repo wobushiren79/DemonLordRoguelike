@@ -12,7 +12,7 @@ using Debug = UnityEngine.Debug;
 ///   选中即填入名称与构建方法(约定 {Mod名}ModBuilder.BuildMod，可按 Mod 单独覆盖持久化)；「＋新建 Mod」走手动输入(方法随名自动推导)；
 /// · 操作区分组：一键流程(⚡ 构建→导出配置→整体部署) / 分步·构建(① 批量构建,产物 bundle+catalog) /
 ///   分步·配置(⓪ 仅导出配置+同步 JsonText,秒级 / ③ 仅移动 JsonText) / 分步·部署(② 导出配置+整体移动,含资源包)；
-/// · 构建过程带进度条（按上次同 Mod 耗时渐近估算 + 构建日志里程碑跳档：分组同步完成 8% / 导出部署完成 97% / 构建完成 100%）。
+/// · 构建过程带进度条（按上次同 Mod 耗时渐近估算 + 构建日志里程碑跳档：分组同步完成 8% / 导出部署完成 97% / 构建完成 99%，100% 由进程退出置）。
 /// 全程无需人工打开 MOD 项目编辑器。
 /// </summary>
 public class ModBuildEditorWindow : EditorWindow
@@ -75,12 +75,12 @@ public class ModBuildEditorWindow : EditorWindow
     /// <summary>当前构建进度（0~1，GUI 读取）</summary>
     private float buildProgress;
 
-    /// <summary>构建日志里程碑 → 进度下限与阶段描述（子串匹配，两个 Mod 构建器共用同一套措辞）</summary>
+    /// <summary>构建日志里程碑 → 进度下限与阶段描述（子串匹配，两个 Mod 构建器共用同一套措辞；「构建完成：」只到 0.99 不顶满——构建器打印后批量 Unity 还有退出收尾，真正 100% 由进程退出设置，防显示 100% 却还在构建）</summary>
     private static readonly (string mark, float floor, string stage)[] BuildLogMilestones =
     {
         ("分组条目同步完成", 0.08f, "Addressables 分组同步完成，构建资源包…"),
         ("自动导出+部署完成", 0.97f, "导出配置+部署完成，收尾中…"),
-        ("构建完成：", 1.0f, "构建完成"),
+        ("构建完成：", 0.99f, "构建器执行完毕，等待批量进程退出…"),
     };
 
     /// <summary>上次构建耗时的 EditorPrefs 键（按 Mod 存，用于时间法估算进度）</summary>
@@ -93,6 +93,8 @@ public class ModBuildEditorWindow : EditorWindow
     private string logText = "";
     /// <summary>日志区滚动位置</summary>
     private Vector2 scrollLog;
+    /// <summary>窗口整体滚动位置（dock 面板过矮时整体可滚，日志框才不被等比压缩到只剩两行）</summary>
+    private Vector2 scrollMain;
 
     #endregion
 
@@ -108,7 +110,8 @@ public class ModBuildEditorWindow : EditorWindow
     {
         modProjectPath = EditorPrefs.GetString(EditorPrefsKeyModProjectPath, "");
         modName = EditorPrefs.GetString(EditorPrefsKeyModName, "AeonsEchoSpine");
-        buildMethod = EditorPrefs.GetString(EditorPrefsKeyBuildMethod, "AeonsEchoSpineModBuilder.BuildMod");
+        // 默认值按当前 modName 推导（不写死某个 Mod——否则该 Mod 被恢复选中但方法字段停留在此默认值时，会「选 A 建 B」）
+        buildMethod = EditorPrefs.GetString(EditorPrefsKeyBuildMethod, DeriveBuildMethod(modName));
         unityExeOverride = EditorPrefs.GetString(EditorPrefsKeyUnityExeOverride, "");
         buildMethodAutoDerived = buildMethod == DeriveBuildMethod(modName);
         RefreshKnownMods();
@@ -125,6 +128,8 @@ public class ModBuildEditorWindow : EditorWindow
 
     private void OnGUI()
     {
+        // 外层整体滚动：dock 面板过矮时窗口内容整体可滚，保住日志区最小高度（否则 GUILayout 等比压缩会把日志框压到只剩两行）
+        scrollMain = EditorGUILayout.BeginScrollView(scrollMain);
         // 标题
         GUILayout.Space(12);
         GUIStyle titleStyle = new GUIStyle(EditorStyles.largeLabel)
@@ -251,7 +256,9 @@ public class ModBuildEditorWindow : EditorWindow
 
         DrawSectionBox("状态 / 日志", () =>
         {
-            scrollLog = EditorGUILayout.BeginScrollView(scrollLog, GUILayout.MinHeight(120));
+            // 垂直滚动条常驻（alwaysShowVertical=true）：日志超视口即可下拉翻看，内容少时置灰占位
+            scrollLog = EditorGUILayout.BeginScrollView(scrollLog, false, true, GUILayout.MinHeight(160));
+            // ExpandHeight(true)：内容少时填满视口（日志框始终够高），内容超视口时按自然高度出滚动条（只放 max 不动 min，顶不掉滚动条）
             EditorGUILayout.SelectableLabel(logText, EditorStyles.textArea, GUILayout.ExpandHeight(true));
             EditorGUILayout.EndScrollView();
             EditorGUILayout.BeginHorizontal();
@@ -261,6 +268,7 @@ public class ModBuildEditorWindow : EditorWindow
             }
             EditorGUILayout.EndHorizontal();
         });
+        EditorGUILayout.EndScrollView();
     }
 
     /// <summary>
@@ -384,6 +392,7 @@ public class ModBuildEditorWindow : EditorWindow
         {
             logText = logText.Substring(logText.Length - 9000);
         }
+        scrollLog.y = float.MaxValue;// 新日志吸底（下一帧 GUILayout 生效）
         Repaint();
     }
 
@@ -465,11 +474,27 @@ public class ModBuildEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 按当前 modName 同步选中态（名称命中已知 Mod 则选中，否则落回手动输入模式）
+    /// 加载指定 Mod 的构建方法：按 Mod 持久化的覆盖值优先，否则按约定 {Mod名}ModBuilder.BuildMod 推导
+    /// </summary>
+    private static string LoadBuildMethodForMod(string name)
+    {
+        string perMod = EditorPrefs.GetString(GetPerModBuildMethodKey(name), "");
+        return !string.IsNullOrEmpty(perMod) ? perMod : DeriveBuildMethod(name);
+    }
+
+    /// <summary>
+    /// 按当前 modName 同步选中态（名称命中已知 Mod 则选中，否则落回手动输入模式）；
+    /// 选中已有 Mod 时必须同步加载其构建方法——否则窗口重开恢复选中态后，方法字段停留在全局键旧值上，
+    /// 下拉选的是 A Mod、实际构建的却是 B Mod（2026-09-30 OtherSpine 误建 AeonsEchoSpine 事故）。
+    /// 安全性：选中态下方法字段的每次编辑都即时持久化到按 Mod 键（OnBuildMethodEdited），重载不会丢输入
     /// </summary>
     private void SyncSelectionFromModName()
     {
         selectedKnownModIndex = knownMods.FindIndex(m => m.name == modName);
+        if (selectedKnownModIndex >= 0)
+        {
+            buildMethod = LoadBuildMethodForMod(modName);
+        }
         buildMethodAutoDerived = buildMethod == DeriveBuildMethod(modName);
     }
 
@@ -487,8 +512,7 @@ public class ModBuildEditorWindow : EditorWindow
         selectedKnownModIndex = optionIndex;
         modName = knownMods[optionIndex].name;
         EditorPrefs.SetString(EditorPrefsKeyModName, modName);
-        string perMod = EditorPrefs.GetString(GetPerModBuildMethodKey(modName), "");
-        buildMethod = !string.IsNullOrEmpty(perMod) ? perMod : DeriveBuildMethod(modName);
+        buildMethod = LoadBuildMethodForMod(modName);
         buildMethodAutoDerived = buildMethod == DeriveBuildMethod(modName);
     }
 
@@ -599,6 +623,11 @@ public class ModBuildEditorWindow : EditorWindow
         {
             AppendLog($"⚠ 未在 MOD 项目 Assets/Editor 找到 {modName}ModBuilder.cs，请确认构建方法 {buildMethod} 存在");
         }
+        // 已有 Mod 的构建方法偏离约定推导值时强提示（按 Mod 覆盖属合法场景，但若是残留旧值则会「选 A 建 B」，2026-09-30 OtherSpine 误建 AeonsEchoSpine 事故）
+        if (selectedKnownModIndex >= 0 && buildMethod != DeriveBuildMethod(modName))
+        {
+            AppendLog($"⚠ 构建方法「{buildMethod}」与约定「{DeriveBuildMethod(modName)}」不一致——若不是你有意覆盖的，请改回约定值再构建");
+        }
         // 校验 Unity.exe
         string unityExe = ResolveUnityExe(out string resolveMsg);
         if (unityExe == null)
@@ -606,15 +635,22 @@ public class ModBuildEditorWindow : EditorWindow
             AppendLog($"✗ Unity.exe 定位失败：{resolveMsg}");
             return;
         }
-        // 同一项目不能被两个编辑器实例同时打开（项目锁）
+        // 同一项目不能被两个编辑器实例同时打开（项目锁）；锁文件未被任何进程占用=上次 Unity 崩溃/被强杀的残留，自动清理后继续
         string lockFile = Path.Combine(modProjectPath, "Temp", "UnityLockfile");
         if (File.Exists(lockFile))
         {
-            AppendLog("✗ MOD 项目似乎正被另一个 Unity 实例打开（存在 Temp/UnityLockfile），请先关闭它再构建");
-            return;
+            if (IsFileLockedByProcess(lockFile))
+            {
+                AppendLog("✗ MOD 项目正被另一个 Unity 实例打开（Temp/UnityLockfile 被占用中），请先关闭它再构建");
+                return;
+            }
+            try { File.Delete(lockFile); AppendLog("⚠ 检测到残留的 Temp/UnityLockfile（上次 Unity 未正常退出），已自动清理"); }
+            catch (Exception ex) { AppendLog($"✗ 残留锁文件清理失败：{ex.Message}，请手动删除 {lockFile} 后重试"); return; }
         }
 
         buildLogPath = Path.Combine(Path.GetTempPath(), "ModBuildEditorWindow_build.log");
+        // 先删上次的旧日志：新 Unity 启动到清空日志有窗口期，残留旧日志（含「构建完成：」）会被误读把进度顶到 100%
+        try { if (File.Exists(buildLogPath)) File.Delete(buildLogPath); } catch { }
         string arguments = $"-batchmode -projectPath \"{modProjectPath}\" -executeMethod {buildMethod} -quit -logFile \"{buildLogPath}\"";
         AppendLog($"▶ 开始批量构建：{buildMethod}\n    {unityExe} {arguments}");
         if (isOneClick)
@@ -622,8 +658,8 @@ public class ModBuildEditorWindow : EditorWindow
             AppendLog("（一键模式：构建成功后将自动执行 ② 导出配置+移动）");
         }
 
-        // 进度状态复位（时间法估算 + 日志里程碑跳档）
-        buildLogReadPos = 0;
+        // 进度状态复位（时间法估算 + 日志里程碑跳档）；readPos 取当前文件长度兜底：上面删除失败（被占用）时跳过残留旧内容防误读旧里程碑
+        buildLogReadPos = File.Exists(buildLogPath) ? new FileInfo(buildLogPath).Length : 0;
         buildStageFloor = 0;
         buildProgress = 0;
         buildStageText = "启动 MOD 项目 Unity…";
@@ -637,6 +673,22 @@ public class ModBuildEditorWindow : EditorWindow
         buildStartTime = DateTime.Now;
         isOneClickPending = isOneClick;
         EditorApplication.update += PollBuildProcess;
+    }
+
+    /// <summary>
+    /// 文件是否正被进程占用：以独占方式尝试打开，IOException 视为被占用（区分存活 Unity 实例与崩溃残留的锁文件）
+    /// </summary>
+    private static bool IsFileLockedByProcess(string path)
+    {
+        try
+        {
+            using (File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None)) { }
+            return false;
+        }
+        catch (IOException)
+        {
+            return true;
+        }
     }
 
     /// <summary>

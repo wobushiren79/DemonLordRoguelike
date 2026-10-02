@@ -94,6 +94,10 @@ public enum CreatureSkinTypeEnum
     Horn = 7,//角
     Wing = 8,//翅膀
     NoseRing = 9,//鼻环(装备道具驱动换皮,不参与皮肤随机池)
+    //---------------------坐骑
+    Horse = 20,//马(身体)
+    Horse_Hair = 21,//马鬃
+    Horse_Tail = 22,//马尾
     //---------------------穿戴
     Hat = 50,//帽子
     Clothes = 51,//衣服
@@ -105,5 +109,6 @@ public enum CreatureSkinTypeEnum
     Weapon_Line = 80,//武器线
     //---------------------武器
     Weapon_L = 90,//武器左手
-    Weapon_R = 91//武器右手
+    Weapon_R = 91,//武器右手
+    Weapon_LR = 92//武器双手(刀盾/长枪等,左右贴图组合)
 }

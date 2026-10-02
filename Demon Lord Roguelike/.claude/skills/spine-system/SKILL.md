@@ -33,7 +33,7 @@ SpineSkinBean             - 皮肤数据配置
 SpineAnimationStateEnum   - 动画状态枚举
 ```
 
-> **UI Spine 一律用 SkeletonGraphicExtend**（`Assets/FrameWork/Scripts/Component/UI/SkeletonGraphicExtend.cs`，继承 SkeletonGraphic）：原生组件被 RectMask2D 裁剪时只看 RectTransform 的 rect，rect 完全移出 mask 即整体隐藏——非居中骨架（幻化药 Mod 等）pos 偏移大时内容在 mask 内也被误隐藏。Extend 覆写 `Cull`：rect 与 mask 相交走原版快路径；rect 出 mask 时改用实时 mesh 包围盒判定，内容在 mask 内就照常渲染（mask 外仍由 EnableRectClipping 精确裁剪）。开关字段 `cullByMeshBounds` 默认开。预制体经菜单 `Custom/Spine/替换 SkeletonGraphic 为 SkeletonGraphicExtend` 批量升级（[SkeletonGraphicExtendMenu.cs](Assets/FrameWork/Editor/Base/SkeletonGraphicExtendMenu.cs)，CopyComponent/PasteComponentValues 迁移字段 + 引用重定向，幂等）；运行时 `SpineHandler.AddSkeletonGraphic` 已改产 Extend。
+> **UI Spine 一律用 SkeletonGraphicExtend**（`Assets/FrameWork/Scripts/Component/UI/SkeletonGraphicExtend.cs`，继承 SkeletonGraphic）：原生组件被 RectMask2D 裁剪时只看 RectTransform 的 rect，rect 完全移出 mask 即整体隐藏——非居中骨架（幻化药 Mod 等）pos 偏移大时内容在 mask 内也被误隐藏。Extend 覆写 `Cull`：rect 与 mask 相交走原版快路径；rect 出 mask 时改用实时 mesh 包围盒判定，内容在 mask 内就照常渲染（mask 外仍由 EnableRectClipping 精确裁剪）。开关字段 `cullByMeshBounds` 默认开。预制体经菜单 `Custom/Spine/替换 SkeletonGraphic 为 SkeletonGraphicExtend` 批量升级（[SkeletonGraphicExtendMenu.cs](Assets/FrameWork/Editor/Base/SkeletonGraphicExtendMenu.cs)，SerializedObject 改写 m_Script 引用、组件 fileID/字段/外部引用零改动，幂等）；运行时 `SpineHandler.AddSkeletonGraphic` 已改产 Extend。
 
 ## 动画状态枚举
 
@@ -196,7 +196,7 @@ SpineHandler.Instance.PlayAnim(
 );
 ```
 
-> **带生物数据播放的动画名解析双路径 + 幻化守卫（游戏层 `SpineHandler.GetAnimNameAppoint`，`Assets/Scripts/Component/Handler/SpineHandler.cs`）**：带 `CreatureBean` 的 `PlayAnim` 重载先经 `GetAnimNameAppoint` 解析指定动画名——路径①**指定名**：仅 Idle/Attack/Walk/Dead 四状态读 `creatureInfo.anim_idle/anim_attack/anim_walk/anim_dead` 配置直传（配置为空或其它状态原本就返回 null）；路径②**安全解析（返回 null）**：`GetAnimNameAppoint` 方法开头有幻化守卫——`creatureData.GetTransformSpineRes() != null` 时直接返回 null（不指定动画名），交框架 `SpineManager.GetSkeletonDataAnimName` 按目标骨架实际动画列表解析，缺失仅 LogError 不播。**守卫原因**：幻化是整骨替换，原生物 anim_* 配置名不适用于幻化骨架，直传指定名会跳过框架安全校验、`AnimationState.SetAnimation` 在目标骨架缺该动画时抛 `ArgumentException`；守卫后战斗缺动画不崩（状态机驱动、无 `TrackEntry.Complete` 依赖）。此守卫顺带覆盖 Portrait 装备换骨（同为整骨替换）的同款隐患。幻化机制详见 creature-system SKILL。
+> **带生物数据播放的动画名解析双路径 + 幻化守卫（游戏层 `SpineHandler.GetAnimNameAppoint`，`Assets/Scripts/Component/Handler/SpineHandler.cs`）**：带 `CreatureBean` 的 `PlayAnim` 重载先经 `GetAnimNameAppoint` 解析指定动画名——路径①**指定名**：仅 Idle/Attack/Walk/Dead 四状态读 `creatureInfo.anim_idle/anim_attack/anim_walk/anim_dead` 配置直传（配置为空或其它状态原本就返回 null）；路径②**安全解析（返回 null）**：`GetAnimNameAppoint` 方法开头有幻化守卫——`creatureData.GetTransformSpineRes() != null` 时直接返回 null（不指定动画名），交框架 `SpineManager.GetSkeletonDataAnimName` 按目标骨架实际动画列表解析，缺失仅 LogError 不播。**守卫的 Idle 例外**（2026-09-28 起）：幻化药 other_data 配了 `idle_anim` 键（show 骨架替代待机动画，生成期检测骨架无标准待机候选 idle,wait,idle1,wait1,stand 时写入首个含 idle 字段的动画名，见 mod-system SKILL「幻化药型 Mod 通用规则：idle 动画检测」）时优先返回该动画名按名直播——Mod spine 待机动画名不标准（如 ArkRe `00_Idle`、Nikke aim/cover 系 `aim_idle`/`cover_idle`）时详情UI/世界不再静态。**守卫原因**：幻化是整骨替换，原生物 anim_* 配置名不适用于幻化骨架，直传指定名会跳过框架安全校验、`AnimationState.SetAnimation` 在目标骨架缺该动画时抛 `ArgumentException`；守卫后战斗缺动画不崩（状态机驱动、无 `TrackEntry.Complete` 依赖）。此守卫顺带覆盖 Portrait 装备换骨（同为整骨替换）的同款隐患。幻化机制详见 creature-system SKILL。
 
 ### 定格动画第一帧（静态姿势，不播放）
 
@@ -260,6 +260,11 @@ SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, skinData);
 // 按单个皮肤名整皮替换（重载，2026-09-24 新增；幻化药 ui_show_skin 等指定骨架内皮肤的场景用，
 // FindSkin→SetSkin→SetupPoseSlots，皮肤缺失时报错并保持原皮肤）
 SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, "LV1");
+
+// 按多个皮肤名叠加换肤（params 重载，2026-09-29 新增；幻化药 ui_show_skin「|」分隔组合皮肤场景用，
+// 如 CherryTaleSpine 的 Eye_01|Mouth_01——new Skin + AddSkin×N + SetSkin + SetupPoseSlots，
+// 未在组合内的部件自动回落骨架默认皮肤；单皮肤缺失时报错跳过、不阻断其余叠加）
+SpineHandler.Instance.ChangeSkeletonSkin(skeletonAnimation.skeleton, "Eye_01", "Mouth_01");
 ```
 
 ### 修改部位颜色
@@ -347,7 +352,7 @@ SpineAnimationState表结构：
 
 ```csharp
 // 系统会根据配置表自动匹配动画名称（大小写不敏感）
-// 例如 Idle(10001) 配置为 "idle,wait,idle1,wait1"
+// 例如 Idle(10001) 配置为 "idle,wait,idle1,wait1,stand"
 // 会按配置顺序在目标骨架实际动画列表中依次小写比对，
 // 命中后播放骨架里的原始大小写名（Spine SetAnimation 需精确名）；
 // 全部不命中 → LogError 且不播放（无默认兜底）

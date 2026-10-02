@@ -10,6 +10,7 @@ using UnityEngine;
 /// <para>Effect(4):    param_1=特效ID param_2=目标标记(空=战斗防守核心/基地魔王位) param_3=尺寸倍率(默认1)</para>
 /// <para>Audio(5):     param_1=音效ID</para>
 /// <para>Fade(6):      param_1=out淡出变黑/in淡入 param_2=时长秒(默认0.5)</para>
+/// <para>UIHandle(7):  param_1=要隐藏的UI名字(&amp;分隔多个) param_2=要显示的UI名字(&amp;分隔多个;名字=类名=Resources/UI/预制体名)</para>
 /// </summary>
 public partial class StoryDetailsInfoBean
 {
@@ -93,6 +94,26 @@ public partial class StoryDetailsInfoBean
         if (param_1.IsNull())
             return new long[0];
         return param_1.SplitForArrayLong('&');
+    }
+
+    /// <summary>
+    /// 解析UI处理步骤要隐藏的UI名字列表（param_1 按 &amp; 分隔；名字=类名=Resources/UI/预制体名）
+    /// </summary>
+    public string[] GetUIHandleHideNames()
+    {
+        if (param_1.IsNull())
+            return new string[0];
+        return param_1.SplitForArrayStr('&');
+    }
+
+    /// <summary>
+    /// 解析UI处理步骤要显示的UI名字列表（param_2 按 &amp; 分隔；名字=类名=Resources/UI/预制体名）
+    /// </summary>
+    public string[] GetUIHandleShowNames()
+    {
+        if (param_2.IsNull())
+            return new string[0];
+        return param_2.SplitForArrayStr('&');
     }
 
     /// <summary>对话步骤可选的对话框对齐方式（param_2 对齐段合法值，空串=bottom 下对齐；编辑器下拉与保存校验共用此表）</summary>

@@ -26,6 +26,18 @@ public class StoryManager : BaseManager
     public CinemachineCamera storyParkedCamera;
     /// <summary>演出前主相机默认混合时长缓存(瞬切后还原)</summary>
     public float storyBlendTimeOrigin;
+    /// <summary>演出起始镜头参数备份:Lens 整体(struct 值拷贝;CV 参数补间后 back 标记/EndStoryCamera 以此为还原目标)</summary>
+    public LensSettings storyLensOrigin;
+    /// <summary>演出起始镜头参数备份:CinemachineFollow.FollowOffset</summary>
+    public Vector3 storyFollowOffsetOrigin;
+    /// <summary>演出起始镜头参数备份:CinemachineFollow.TrackerSettings(struct 整体备份,字段赋值即拷贝)</summary>
+    public Unity.Cinemachine.TargetTracking.TrackerSettings storyTrackerSettingsOrigin;
+    /// <summary>演出起始镜头参数备份:CinemachineRotationComposer.TargetOffset</summary>
+    public Vector3 storyComposerTargetOffsetOrigin;
+    /// <summary>演出起始镜头参数备份:CinemachineRotationComposer.Damping</summary>
+    public Vector2 storyComposerDampingOrigin;
+    /// <summary>演出起始镜头参数备份:CinemachineRotationComposer.Composition(ScreenComposerSettings 同为 struct)</summary>
+    public ScreenComposerSettings storyComposerCompositionOrigin;
     /// <summary>演出统一取消源(懒创建一次复用,链接 Handler gameObject 销毁自动取消)</summary>
     public GTaskCancel cancelForStory;
     /// <summary>演出对话 UI 实例(对话步骤首句打开,连播/相邻对话步骤保持打开复用,非对话步骤与故事收尾统一关闭;保持打开避免亮→亮切换关闭重开闪一帧)</summary>

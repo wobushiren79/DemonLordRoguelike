@@ -160,8 +160,8 @@ public partial class UITestBase : BaseUIComponent
 
     /// <summary>
     /// 点击添加道具
-    /// <para>输入为空: 遍历所有道具，每种道具的每一种稀有度(N~L)各生成一个，均走统一装备生成逻辑(EquipUtil.CreateEquipItemForTest，按稀有度随机加属性)。</para>
-    /// <para>输入为道具ID: 仅该道具走同款生成逻辑，每种稀有度(N~L)各生成一个。</para>
+    /// <para>输入为空: 遍历所有道具按类型分流生成(见 AddItemByType)。</para>
+    /// <para>输入为道具ID: 仅该道具走同款生成逻辑。</para>
     /// </summary>
     public void OnClickForAddItem()
     {
@@ -172,14 +172,14 @@ public partial class UITestBase : BaseUIComponent
             var allData = ItemsInfoCfg.GetAllData();
             foreach (var itemData in allData)
             {
-                AddItemForAllRarity(userData, itemData.Value.id);
+                AddItemByType(userData, itemData.Value.id);
             }
         }
         else
         {
             if (long.TryParse(inputData, out var itemId))
             {
-                AddItemForAllRarity(userData, itemId);
+                AddItemByType(userData, itemId);
             }
             else
             {
@@ -191,12 +191,21 @@ public partial class UITestBase : BaseUIComponent
     }
 
     /// <summary>
-    /// 按每一种稀有度(N~L)各生成一个指定道具并入背包，均走统一装备生成逻辑(EquipUtil.CreateEquipItemForTest)
+    /// 按道具类型生成测试道具并入背包：装备每种稀有度(N~L)各一(走统一装备生成逻辑 EquipUtil.CreateEquipItemForTest 随机属性)；
+    /// 非装备(幻化药/幻原药/魔汁/魔晶/肖像等)只生成1件(稀有度1、无随机属性，与征服奖励投放 new ItemBean(id,1) 一致)
     /// </summary>
     /// <param name="userData">用户数据</param>
     /// <param name="itemId">道具ID</param>
-    private void AddItemForAllRarity(UserDataBean userData, long itemId)
+    private void AddItemByType(UserDataBean userData, long itemId)
     {
+        ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(itemId);
+        //非装备(含配置缺失兜底): 固定稀有度1, 不添加随机属性
+        if (itemInfo == null || !itemInfo.IsEquipType())
+        {
+            userData.AddBackpackItem(new ItemBean(itemId, 1));
+            return;
+        }
+        //装备: 每种稀有度(N~L)各生成一个
         for (int rarity = (int)RarityEnum.N; rarity <= (int)RarityEnum.L; rarity++)
         {
             ItemBean rewardItem = EquipUtil.CreateEquipItemForTest(itemId, rarity);

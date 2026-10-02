@@ -35,6 +35,8 @@ LauncherTest                    - 测试启动器，初始化测试数据并提�
 
 > NPC 创建（外观/属性/装备配置）已迁移为非运行态编辑器工具 `游戏/NPC创建编辑`（`Assets/Editor/NpcCreateEditorWindow.cs`，见 editor-extension-system SKILL），测试模式的 UITestNpcCreate/TestNpcCreateGUI 已删除。
 
+> **测试场景默认全开所有 Mod**：`LauncherTest.Launch()` 在 `base.Launch()` 前置 `ModHandler.Instance.manager.isForceAllModsEnabled = true`——`FilterEnabledMods` 跳过 `GameConfig.listModEnable` 过滤全量加载（仅内存不持久化，正式游戏与用户设置项不受影响），卡片/幻化药等全部测试入口默认可用所有 Mod，免逐一手动开启+重启（机制详见 mod-system skill「测试模式强制全开」）。
+
 ### 测试场景类型
 
 ```csharp
@@ -245,11 +247,20 @@ userData.AddCrystal(99999);
 userData.AddReputation(1000);
 
 // 添加道具(OnClickForAddItem)：输入空=遍历所有道具，输入=仅该道具ID；
-// 两者都对每一种稀有度(N~L 共6级)各生成一个，走装备生成统一入口(EquipUtil 的 GM测试场景封装)
-for (int rarity = (int)RarityEnum.N; rarity <= (int)RarityEnum.L; rarity++)
+// 按道具类型分流(AddItemByType)：装备每种稀有度(N~L 共6级)各一，走装备生成统一入口(EquipUtil 的 GM测试场景封装)；
+// 非装备(幻化药/幻原药/魔汁/魔晶/肖像等，IsEquipType()=false)只生成1件(稀有度1、无随机属性，与征服奖励投放一致)
+ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(itemId);
+if (itemInfo == null || !itemInfo.IsEquipType())
 {
-    ItemBean rewardItem = EquipUtil.CreateEquipItemForTest(itemId, rarity);
-    userData.AddBackpackItem(rewardItem);
+    userData.AddBackpackItem(new ItemBean(itemId, 1));
+}
+else
+{
+    for (int rarity = (int)RarityEnum.N; rarity <= (int)RarityEnum.L; rarity++)
+    {
+        ItemBean rewardItem = EquipUtil.CreateEquipItemForTest(itemId, rarity);
+        userData.AddBackpackItem(rewardItem);
+    }
 }
 
 // 添加生物
@@ -312,17 +323,17 @@ foreach (var itemData in GameWorldInfoCfg.GetAllData())
 | 分区 | 功能 |
 |------|------|
 | 资源 | 魔晶/声望：数量输入(空=999999) + 添加 |
-| 道具 | 道具ID输入(空=全部道具) + 添加，每种稀有度(N~L)各一（`EquipUtil.CreateEquipItemForTest`） |
+| 道具 | 道具ID输入(空=全部道具) + 添加，按类型分流(`AddItemByType`)：装备每种稀有度(N~L)各一（`EquipUtil.CreateEquipItemForTest`），非装备(幻化药等)仅1件无属性 |
 | 生物 | 添加所有生物；测试生物=生物下拉(懒加载 CreatureInfoCfg)+手动ID(合法优先) + 稀有度下拉(随机/1N~6L) + 等级(随机开关+0~10滑条)，走孕育同款随机稀有度BUFF |
 | 解锁 | 解锁ID输入(空=全部，有研究配置按满级) + 世界难度解锁一半/全部（逻辑同 UITestBase） |
-| Mod 道具 | Mod下拉 + 添加该 Mod 全部道具（每稀有度各一） |
+| Mod 道具 | Mod下拉 + 添加该 Mod 全部道具（装备每稀有度各一，非装备仅1件） |
 | 状态栏 | 每次操作结果即时显示（成功绿/失败红，8秒隐藏），同步 LogUtil |
 
 ### Mod 道具区实现
 
 - 候选列表：`ModHandler.Instance.manager.GetModJsonTextFileInfos("ItemsInfo")`（仅带道具配置且已分配 modId 的 Mod；BaseManager 无静态 Instance，须走 Handler 的 manager 属性），懒加载并统计各种数。
 - 归属判定：道具 id 号段 `id / 10^14 == modId`（与 `BaseBean.CombineModId` 的 `modId:D5 + selfId:D14` 拼接规则一致），面板常量 `ModIdDivisor = 100000000000000L`。
-- 添加：遍历 `ItemsInfoCfg.GetAllData()` 过滤号段，每种稀有度(N~L)各生成一个入背包并 `SaveUserData()`。
+- 添加：遍历 `ItemsInfoCfg.GetAllData()` 过滤号段，按道具类型分流(`AddItemByType`，装备每种稀有度(N~L)各一/非装备仅1件)入背包并 `SaveUserData()`。
 
 ---
 
@@ -809,7 +820,7 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 卡片编辑器测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForCreatureCardEditor`） |
 | 卡片编辑器测试面板 | `Assets/Scripts/Component/UI/Test/TestCreatureCardGUI.cs`（纯代码 IMGUI + 实例化真实卡片预制体 UIViewCreatureCardItem/UIViewCreatureCardDetails；稀有度/等级/生物/NPC 下拉+手动ID；场景Spine展示：世界空间并排标准模型(固定2001骷髅战士)+目标模型(缩放=size_spine×体型倍率,主相机侧视取景到屏幕底部,10x10地平面基准,面板带显隐开关与大小数值行; spine=根节点摆放+Renderer子节点承载缩放/位置, 与 SetCreatureData 的世界位置恒管理兼容)；自定义板色(渐变)/等级色：RGB滑条+RGB数值输入(0~255)+Hex输入+16色调色盘(ColorEditState 双向同步)；保存写回 excel_rarity_info/excel_level_info + ExcelToJsonItem + 反射清 Cfg 缓存） |
 | Mod幻化药测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForTransformPotionTest`） + `Assets/Editor/GameTestEditor.cs`（`DrawTransformPotionTest`/`EnsureTransformPotionOptions` 下拉候选仅 Play 模式构建, 选择索引 EditorPrefs 持久化） |
-| Mod幻化药测试面板 | `Assets/Scripts/Component/UI/Test/TestTransformPotionGUI.cs`（纯代码 IMGUI + 真实卡片预制体，**四个页签**：①单个预览=下拉选药(首项无幻化, item_type==TransformPotion(18) 过滤, 道具名[自ID])+**◀▶左右快速切换**(含无幻化项, 两端停住)+基础生物2001设 transformItemId 走真实 SetData 链(小卡=Chess/大卡=Avator高清)+场景并排左基础右幻化(世界空间, 主相机同卡片编辑器机位, 10x10地平面)+other_data 键值解析与 spine 资源 Mod 命中状态(IsModAsset ✓/✗)+三组文本框/滑动条调参；②小卡列表=列x行网格真实卡片(show_data)；③大卡列表=列x行网格真实详情卡**卡面模式**(SetData后隐藏属性/好感/装备/BUFF/MP/备注等详情区块, 只留底板+肖像+名字+稀有度+职业+等级; ui_show_data, 无ui_show_res不可调)；④场景列表=世界spine一排(world_data)；列表分页◀▶+跳页+**Mod筛选**(全部/游戏本地/各已加载Mod)+**横竖个数与间距步进可调**(布局行, 持久化到项目内 `ProjectSettings/TestTransformPotionLayout.json` 随git全队共享), 网格整体右移避开左侧面板, 项下名字标签带●=未保存+**[还原]单段恢复配置/[0,0]位置归零/[复制][粘贴]参数快速套用(静态剪贴板)小按钮**, 拖拽带4px阈值防误触。**悬停交互**(仅编辑器)：移到目标卡片/模型上滚轮等比改缩放(×1.05/格)+左键拖拽改位置(卡片按Canvas单位取整/场景按相机视场换算世界单位2位小数), 经 `TransformPotionUITestOverride` 覆盖层(被 `CreatureBeanPartial.GetTransformUIShowData/GetTransformShowData/GetTransformWorldData` 优先消费)实时生效, 拖拽期间只直改显示不打断动画；场景 spine=根节点摆放+Renderer子节点承载缩放/偏移(与游戏内实体一致, 配合 `CreatureHandler.SetCreatureData` 的 world_data 注入与位置恒管理)。底栏「保存全部修改(N)」批量写回=**按 modId 分组路由**（2026-09-24 起，modId→modName 经 `ModManager.GetModJsonTextFileInfos`）：EPPlus直写该Mod道具Excel(唯一真实源,一次写盘;路径约定 `GetModItemsExcelRelPath`——AeonsEchoSpine=历史文件名 `excel_mod_items_info[Mod道具信息].xlsx`,后续Mod=`excel_mod_items_info_{modName小写}[Mod道具信息-{modName}].xlsx`;会话每文件首写前自动备份到 MOD项目/ExcelBackup)+直补MOD项目与主项目部署副本两处 `Mods/{modName}/JsonText/ItemsInfo.txt`+当前会话内存(只换 ui_show_data/show_data/world_data 三键,`BuildOtherData` 保留 ui_show_skin 等其余键、show_res 空时省略; 内置幻化药跳过计数, Mod项目根读EditorPrefs的ModBuildEditorWindow.ModProjectPath)） |
+| Mod幻化药测试面板 | `Assets/Scripts/Component/UI/Test/TestTransformPotionGUI.cs`（纯代码 IMGUI + 真实卡片预制体，**四个页签**：①单个预览=下拉选药(首项无幻化, item_type==TransformPotion(18) 过滤, 道具名[自ID])+**◀▶左右快速切换**(含无幻化项, 两端停住)+基础生物2001设 transformItemId 走真实 SetData 链(**BuildCreature 体型倍率恒钉1**——CreatureBean 构造时按 CreatureInfo.body_size 区间随机 roll 一次并缓存, 真实游戏个体体型差异与 world_data 倍率无关, 面板调参/对比需确定性基准, 2026-10-01起)(小卡=Chess/大卡=Avator高清)+场景并排左基础右幻化(世界空间, 主相机同卡片编辑器机位, 10x10地平面)+other_data 键值解析与 spine 资源 Mod 命中状态(IsModAsset ✓/✗)+三组文本框/滑动条调参；②小卡列表=列x行网格真实卡片(show_data)；③大卡列表=列x行网格真实详情卡**卡面模式**(SetData后隐藏属性/好感/装备/BUFF/MP/备注等详情区块, 只留底板+肖像+名字+稀有度+职业+等级; ui_show_data, 仅基础药无ui_show_res=详情UI回落show形象同样可调, 标签标注(无Avator), 2026-09-30起)；④场景列表=世界spine一排(world_data, **最左固定基础样板**=transformItemId=0 原形象每页常驻作对比基准, `editable=false` 不响应悬停调参、标签灰色无小按钮、不占「每页」数量, 2026-10-01起; **world 段可调性门控**: 无 show_res 的药 world_data 不被真实链[SetCreatureData hasTransform]消费——场景列表强制 `editable=false` 灰显标注「(无世界幻化)」+单个预览场景调参组禁用/悬停排除, 防"调参假象生效、保存后弹回", 2026-10-01起; **标签追加当前生效 world_data 值**(覆盖层优先的实际值 ×scale (x,y), 同骨架同参数必等大, 值不同即未保存覆盖差异, 2026-10-01起)+**调试读数行**(按钮行下方, 短格式: 实×实际Renderer缩放+皮肤名, 防相邻项重叠)+**「📋输出场景诊断到控制台」按钮**(逐项 dump 数据值/sceneBaseScale/期望与实际缩放/骨架资产名与实例ID与导入scale/皮肤/骨骼Scale/当前动画与轨道时间/坐标, 定位"数据同渲染异", 2026-10-01起))；列表分页◀▶+跳页+**Mod筛选**(全部/游戏本地/各已加载Mod)+**横竖个数与间距步进可调**(布局行, 持久化到项目内 `ProjectSettings/TestTransformPotionLayout.json` 随git全队共享), 网格整体右移避开左侧面板, 项下名字标签带●=未保存+**[还原]单段恢复配置/[0,0]位置归零/[复制][粘贴]参数快速套用(静态剪贴板, 带数据段标签 clipKind, 跨段粘贴拒绝并提示——show/ui_show=绝对UI缩放与坐标、world=相对倍率与世界坐标, 单位不同串段必错, 2026-10-01起)小按钮**, 拖拽带4px阈值防误触。**悬停交互**(仅编辑器)：移到目标卡片/模型上滚轮等比改缩放(×1.05/格)+左键拖拽改位置(卡片按Canvas单位取整/场景按相机视场换算世界单位2位小数), 经 `TransformPotionUITestOverride` 覆盖层(被 `CreatureBeanPartial.GetTransformUIShowData/GetTransformShowData/GetTransformWorldData` 优先消费)实时生效, 键缺失时卡片段首次调整基线取卡片图标当前显示值防跳变(如仅基础药无 ui_show_data 键, 2026-09-30起), 拖拽期间只直改显示不打断动画；场景 spine=根节点摆放+Renderer子节点承载缩放/偏移(与游戏内实体一致, 配合 `CreatureHandler.SetCreatureData` 的 world_data 注入与位置恒管理)。底栏「保存全部修改(N)」批量写回=**按 modId 分组路由**（2026-09-24 起，modId→modName 经 `ModManager.GetModJsonTextFileInfos`）：EPPlus直写该Mod道具Excel(唯一真实源,一次写盘;路径约定 `GetModItemsExcelRelPath`——AeonsEchoSpine=历史文件名 `excel_mod_items_info[Mod道具信息].xlsx`,后续Mod=`excel_mod_items_info_{modName小写}[Mod道具信息-{modName}].xlsx`;会话每文件首写前自动备份到 MOD项目/ExcelBackup,滚动复用.bak.1~3只留最近3份)+直补MOD项目与主项目部署副本两处 `Mods/{modName}/JsonText/ItemsInfo.txt`+当前会话内存(只换 ui_show_data/show_data/world_data 三键——保存循环 `ParseTransformOtherData` 读出 `TransformOtherData` 结构体→直接改写三尺寸字段→`BuildOtherData` 整体拼回, ui_show_skin/idle_anim 等其余键天然保留、show_res 空时省略; 内置幻化药跳过计数, Mod项目根读EditorPrefs的ModBuildEditorWindow.ModProjectPath)；**保存加固**(2026-09-30)：Excel 写盘用项目标准的 `new ExcelPackage(FileInfo)` 模式——**严禁 `new FileStream + new ExcelPackage(fs)` 写模式**（本项目 EPPlus 版本下 Save() 无异常但文件完全未落盘, 已两次实证, 是"显示保存成功却被 export 覆盖"事故的根因; ExcelUtil.GetExcelPackage 的流模式仅用于 FileAccess.Read 读取）+ **写后回读校验**（比对每行 other_data, 不符即弹窗报错且保留覆盖层可重试）+ 写盘失败(如Excel/WPS 正打开该 xlsx)弹 `EditorUtility.DisplayDialog` 强提示防红字小字被忽略 + 「已保存0个」按红字错误处理防"绿勾0个"被误读为成功 + 未写盘成功的 Mod 组不同步内存且不清覆盖层(保留未保存修改供修复后重试)——保存后确认绿色「✓ 已保存N个(Excel✓+JsonText×2/2+当前会话✓)」且无弹窗才算真正落盘) |
 | NPC 创建编辑（编辑器版，非运行态） | `Assets/Editor/NpcCreateEditorWindow.cs` + 5 个 partial（菜单 `游戏/NPC创建编辑`）：非运行态 NPC 创建/修改/删除工具（皮肤/调色/装备/随机池/属性 + Spine 双模型预览；Play 模式的 UITestNpcCreate/TestNpcCreateGUI 已删除并入本工具），另支持全字段编辑、新建（建议id+模板复制+中文名写语言表）与删除登记；编辑副本+JSON快照判脏，保存走 EPPlus 双表写回+ExcelToJsonItem 重导+清Cfg缓存；编辑器安全约束（禁止 new CreatureBean(npcInfo)、禁止 *_language、EditorUtility 弹窗）详见 editor-extension-system SKILL 的 NpcCreateEditorWindow 章节 |
 | 研究 UI 测试 | `Assets/Scripts/Component/UI/Game/BaseResearch/UIBaseResearchTest.cs` |
 | 终焉议会测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForDoomCouncil` 正常随机议员；`StartForDoomCouncilAllFixed` 直接载入所有固定议员，标记 `DoomCouncilBean.isTestAllFixedCouncilor=true`） |

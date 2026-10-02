@@ -80,7 +80,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 ### Excel 处理工具
 - **openpyxl**（Python）- 直接读写 xlsx 文件（唯一允许的库）
 - **ExcelUtil** - Unity 内 Excel 读取与转换工具（C# 静态类，运行时程序集可直接调）：`GetExcelPackage`(EPPlus 读取)、`SetExcelData`(按 id+列名写单元格)、`ExcelToJsonItem`(单文件 Excel→Json 导出静态实现；`string` 重载用默认 JsonText 目录并刷新 AssetDatabase，供 NpcCreateEditorWindow/StoryEditorWindow 等编辑器内工具保存后同步生成 JSON)
-- **EPPlus** - Unity Excel 处理库（Assets/FrameWork/Plugins/EPPlus/）
+- **EPPlus** - Unity Excel 处理库（Assets/FrameWork/Plugins/EPPlus/）。**写文件必须用 `new ExcelPackage(new FileInfo(path))` 模式 + using + `Save()`**（ExcelUtil.SetExcelData 及全部编辑器工具同款）；**严禁 `new FileStream(...) + new ExcelPackage(fs)` 写模式**——本项目 EPPlus 版本下该模式 `Save()` 无异常但文件完全未落盘（mtime/内容均不变，2026-09-30 用 PowerShell 加载同一 DLL 两次实证，是幻化药测试面板"显示保存成功却被 export 覆盖"事故的根因；`ExcelUtil.GetExcelPackage` 的流模式仅用于 `FileAccess.Read` 读取）。对可靠性敏感的写路径建议加写后回读校验（参照 TestTransformPotionGUI.TryWriteExcelOtherDataBatch）
 - **ExcelEditorWindow** - Excel 编辑器窗口（导出 JSON，单文件导出 `ExcelToJsonItem(FileInfo)` 转调 ExcelUtil 静态实现）
   - **主工具栏入口（Unity 6000.3+ MainToolbarElement）**：左侧「Excel处理」下拉（`MainToolbarDropdown`），菜单直接执行「打开窗口 / 导出所有 Json(`QuickExcelToJson`) / 生成所有 Entity(`QuickCreateEntities`)」——快捷操作走 `ExcelToJsonAll`/`CreateEntitiesAll` 静态实现 + `DefaultExcelFolderPath` 等默认路径，不打开窗口。⚠️ 元素 ID `自定义标题/处理 Excel 快捷操作` 不可改——主工具栏按 ID 持久化 displayed 状态，改 ID 会被当新元素默认隐藏（见 memory `reference_unity6000_maintoolbar_element`）
   - **自动化导出/生成路径（Unity MCP）**：无需手点窗口按钮，可通过 Unity MCP 的 `execute_code` 调公共方法完成——`GetWindow<ExcelEditorWindow>(false, null, false)` 拿到窗口实例后依次调 `ExcelToJson()`（等效「所有 Excel 转 Json」）+ `CreateEntities()`（等效「生成所有 Entity」）
@@ -196,7 +196,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 | 文件名 | Sheet | 数据行 | 主要列 |
 |--------|-------|--------|--------|
 | `excel_story_info[故事信息].xlsx` | StoryInfo | - | id, name[language], trigger_type(1引导 2剧情预留), scene_type(1基地 2战斗 3议会), trigger_condition(1首次进基地 2首次进战斗(下方卡片出现动画播完) 3首次掉魔晶), priority, is_once, valid, remark。故事演出主表 |
-| `excel_story_details_info[故事详情信息].xlsx` | StoryDetailsInfo | - | id(约定=story_id*1000+step_order), story_id, step_order, step_type(1对话 2镜头移动 3等待 4特效 5音效 6淡入淡出), is_async, param_1~4, remark。演出步骤表 |
+| `excel_story_details_info[故事详情信息].xlsx` | StoryDetailsInfo | - | id(约定=story_id*1000+step_order), story_id, step_order, step_type(1对话 2镜头移动 3等待 4特效 5音效 6淡入淡出 7UI处理[param_1=隐藏UI名&分隔 param_2=显示UI名&分隔]), is_async, param_1~4, remark。演出步骤表 |
 | `excel_story_talk_info[故事对话信息].xlsx` | StoryTalkInfo | - | id, story_id(所属故事,0=通用,编辑器按此过滤对话下拉), npc_id(0=旁白), content[language], remark。故事对话表，textId 约定=业务行 id |
 
 ---

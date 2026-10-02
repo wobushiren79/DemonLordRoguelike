@@ -2,6 +2,30 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 幻化药 other_data 键值解析结果（按 &amp; 拆项、每项首个 : 拆 key/value，缺省键=对应字段为 null）。
+/// <para>用结构体承载替代多 out 参数：新增键时只需加字段 + ParseTransformOtherData 加 case，全部调用点零改动；值类型无 GC 分配。</para>
+/// </summary>
+public struct TransformOtherData
+{
+    /// <summary>show_res：默认展示形象（世界/战斗/普通卡片；可空=仅详情UI幻化道具，世界/小卡回落原生物形象）</summary>
+    public string showRes;
+    /// <summary>ui_show_res：ui_show_spine 高清展示资源（详情UI，可空）</summary>
+    public string uiShowRes;
+    /// <summary>ui_show_data：详情UI尺寸「scale;x,y」（可空）</summary>
+    public string uiShowData;
+    /// <summary>show_data：默认展示小卡UI尺寸「scale;x,y」（可空）</summary>
+    public string showData;
+    /// <summary>world_data：世界显示尺寸/偏移「scale;x,y」（可空，x=横向偏移,y=竖向抬升）</summary>
+    public string worldData;
+    /// <summary>ui_show_skin：ui_show 高清展示指定皮肤名（可空，ArkReSpine 单资源多皮肤按皮肤出药时配置；支持「|」分隔多皮肤叠加组合，CherryTaleSpine 组合皮肤药如 Eye_01|Mouth_01）</summary>
+    public string uiShowSkin;
+    /// <summary>idle_anim：show 骨架替代待机动画名（可空，生成期检测：骨架无标准待机候选时写入首个含 idle 字段动画）</summary>
+    public string idleAnim;
+    /// <summary>ui_show_idle_anim：ui_show 骨架替代待机动画名（可空，规则同 idle_anim，仅详情UI播放消费）</summary>
+    public string uiShowIdleAnim;
+}
+
 public partial class CreatureBean
 {
     #region 终焉议会议员
@@ -327,8 +351,7 @@ public partial class CreatureBean
         ItemsInfoBean itemInfo = GetTransformItemInfo();
         if (itemInfo == null)
             return null;
-        ParseTransformOtherData(itemInfo.other_data, out string showRes, out _, out _, out _, out _, out _);
-        return showRes;
+        return ParseTransformOtherData(itemInfo.other_data).showRes;
     }
 
     /// <summary>
@@ -340,12 +363,12 @@ public partial class CreatureBean
         ItemsInfoBean itemInfo = GetTransformItemInfo();
         if (itemInfo == null)
             return null;
-        ParseTransformOtherData(itemInfo.other_data, out _, out string uiShowRes, out _, out _, out _, out _);
-        return uiShowRes;
+        return ParseTransformOtherData(itemInfo.other_data).uiShowRes;
     }
 
     /// <summary>
-    /// 获取幻化 ui_show 高清展示指定皮肤名（other_data 的 ui_show_skin 键，详情UI专用；ArkReSpine 单资源多皮肤套装按皮肤出药时配置）；
+    /// 获取幻化 ui_show 高清展示指定皮肤名（other_data 的 ui_show_skin 键，详情UI专用；ArkReSpine 单资源多皮肤套装按皮肤出药时配置；
+    /// 支持「|」分隔多皮肤叠加组合，CherryTaleSpine 组合皮肤药如 Eye_01|Mouth_01，调用方拆分后走多皮肤换肤）；
     /// 未配置 ui_show_skin 键返回 null（调用方保持骨架默认皮肤），无幻化/配置异常返回 null。
     /// </summary>
     public string GetTransformUIShowSkin()
@@ -353,8 +376,31 @@ public partial class CreatureBean
         ItemsInfoBean itemInfo = GetTransformItemInfo();
         if (itemInfo == null)
             return null;
-        ParseTransformOtherData(itemInfo.other_data, out _, out _, out _, out _, out _, out string uiShowSkin);
-        return uiShowSkin;
+        return ParseTransformOtherData(itemInfo.other_data).uiShowSkin;
+    }
+
+    /// <summary>
+    /// 获取幻化 show 骨架的替代待机动画名（other_data 的 idle_anim 键，世界/战斗/小卡等 show 段播放消费）；
+    /// 生成期检测：show 骨架无标准待机候选(idle,wait,idle1,wait1,stand)时取首个含 idle 字段的动画名写入；未配置返回 null（调用方走框架候选解析）。
+    /// </summary>
+    public string GetTransformIdleAnim()
+    {
+        ItemsInfoBean itemInfo = GetTransformItemInfo();
+        if (itemInfo == null)
+            return null;
+        return ParseTransformOtherData(itemInfo.other_data).idleAnim;
+    }
+
+    /// <summary>
+    /// 获取幻化 ui_show 骨架的替代待机动画名（other_data 的 ui_show_idle_anim 键，仅详情UI播放消费）；
+    /// 生成期检测：ui_show 骨架无标准待机候选时取首个含 idle 字段的动画名写入；未配置返回 null（调用方走框架候选解析）。
+    /// </summary>
+    public string GetTransformUIShowIdleAnim()
+    {
+        ItemsInfoBean itemInfo = GetTransformItemInfo();
+        if (itemInfo == null)
+            return null;
+        return ParseTransformOtherData(itemInfo.other_data).uiShowIdleAnim;
     }
 
     /// <summary>
@@ -370,7 +416,7 @@ public partial class CreatureBean
         ItemsInfoBean itemInfo = GetTransformItemInfo();
         if (itemInfo == null)
             return false;
-        ParseTransformOtherData(itemInfo.other_data, out _, out _, out string uiData, out _, out _, out _);
+        string uiData = ParseTransformOtherData(itemInfo.other_data).uiShowData;
 #if UNITY_EDITOR
         //测试覆盖层优先(幻化药测试面板调参实时预览用, 打包无此逻辑)
         if (TransformPotionUITestOverride.TryGetUiShowData(transformItemId, out string overrideShowData))
@@ -401,7 +447,7 @@ public partial class CreatureBean
         ItemsInfoBean itemInfo = GetTransformItemInfo();
         if (itemInfo == null)
             return false;
-        ParseTransformOtherData(itemInfo.other_data, out _, out _, out _, out string showData, out _, out _);
+        string showData = ParseTransformOtherData(itemInfo.other_data).showData;
 #if UNITY_EDITOR
         //测试覆盖层优先(幻化药测试面板调参实时预览用, 打包无此逻辑)
         if (TransformPotionUITestOverride.TryGetShowData(transformItemId, out string overrideChessData))
@@ -420,23 +466,15 @@ public partial class CreatureBean
     }
 
     /// <summary>
-    /// 解析幻化药 other_data 键值格式：「show_res:X&ui_show_res:X&ui_show_data:scale;x,y&show_data:scale;x,y&world_data:scale;x,y&ui_show_skin:LV1」。
-    /// 按 &amp; 拆项、每项以第一个 : 拆 key/value（与 attack_mode other_data 同规约），缺省键=该段未配置。
-    /// show_res=默认展示形象(世界/战斗/普通卡片,可空——仅详情UI幻化道具=套装无 Chess 时省略,世界/小卡回落原生物形象)；ui_show_res=ui_show_spine高清展示(详情UI,可空)；
-    /// ui_show_data=详情UI尺寸「scale;x,y」(可空)；show_data=默认展示小卡UI尺寸「scale;x,y」(可空)；
-    /// world_data=世界显示尺寸/偏移「scale;x,y」(可空, x=横向偏移,y=竖向抬升, 战斗/基地等世界空间显示用)；
-    /// ui_show_skin=ui_show 高清展示指定皮肤名(可空, ArkReSpine 单资源多皮肤套装按皮肤出药时配置, 缺省=骨架默认皮肤)。
+    /// 解析幻化药 other_data 键值格式：「show_res:X&ui_show_res:X&ui_show_data:scale;x,y&show_data:scale;x,y&world_data:scale;x,y&ui_show_skin:LV1&idle_anim:X&ui_show_idle_anim:X」。
+    /// 按 &amp; 拆项、每项以第一个 : 拆 key/value（与 attack_mode other_data 同规约），缺省键=对应字段为 null；未知键静默忽略（向后兼容）。
+    /// 各键语义见 <see cref="TransformOtherData"/> 字段注释；新增键=TransformOtherData 加字段+此处加 case，调用点零改动。
     /// </summary>
-    public static void ParseTransformOtherData(string otherData, out string showRes, out string uiShowRes, out string uiData, out string showData, out string worldData, out string uiShowSkin)
+    public static TransformOtherData ParseTransformOtherData(string otherData)
     {
-        showRes = null;
-        uiShowRes = null;
-        uiData = null;
-        showData = null;
-        worldData = null;
-        uiShowSkin = null;
+        TransformOtherData data = new TransformOtherData();
         if (otherData.IsNull())
-            return;
+            return data;
         string[] items = otherData.Split('&');
         for (int i = 0; i < items.Length; i++)
         {
@@ -450,25 +488,32 @@ public partial class CreatureBean
             switch (item.Substring(0, sep).Trim())
             {
                 case "show_res":
-                    showRes = value;
+                    data.showRes = value;
                     break;
                 case "ui_show_res":
-                    uiShowRes = value;
+                    data.uiShowRes = value;
                     break;
                 case "ui_show_data":
-                    uiData = value;
+                    data.uiShowData = value;
                     break;
                 case "show_data":
-                    showData = value;
+                    data.showData = value;
                     break;
                 case "world_data":
-                    worldData = value;
+                    data.worldData = value;
                     break;
                 case "ui_show_skin":
-                    uiShowSkin = value;
+                    data.uiShowSkin = value;
+                    break;
+                case "idle_anim":
+                    data.idleAnim = value;
+                    break;
+                case "ui_show_idle_anim":
+                    data.uiShowIdleAnim = value;
                     break;
             }
         }
+        return data;
     }
 
     /// <summary>
@@ -484,7 +529,7 @@ public partial class CreatureBean
         ItemsInfoBean itemInfo = GetTransformItemInfo();
         if (itemInfo == null)
             return false;
-        ParseTransformOtherData(itemInfo.other_data, out _, out _, out _, out _, out string worldData, out _);
+        string worldData = ParseTransformOtherData(itemInfo.other_data).worldData;
 #if UNITY_EDITOR
         //测试覆盖层优先(幻化药测试面板调参实时预览用, 打包无此逻辑)
         if (TransformPotionUITestOverride.TryGetWorldData(transformItemId, out string overrideWorldData))

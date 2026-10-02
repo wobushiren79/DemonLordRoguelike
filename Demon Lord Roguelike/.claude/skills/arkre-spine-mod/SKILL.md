@@ -4,6 +4,8 @@ description: ArkReSpine Mod（方舟幻化药）数据生成流程指南。使�
 watched_files:
   - Assets/Scripts/Bean/Game/CreatureBeanPartial.cs
   - Assets/Scripts/Component/Handler/CreatureHandler.cs
+  - Assets/Scripts/Component/Handler/SpineHandler.cs
+  - Assets/Scripts/Utils/GameUIUtil.cs
   - Assets/FrameWork/Scripts/Component/Handler/SpineHandler.cs
   - Assets/Scripts/Component/UI/Test/TestTransformPotionGUI.cs
   - Assets/Editor/ModBuildEditorWindow.cs
@@ -47,13 +49,14 @@ MOD项目/Assets/ModResource/Spine/ArkRe/
   - **仅 default 皮肤资源**：出 1 个幻化药，不带皮肤键（骨架默认皮肤即目标外观）
   - 套装内序号排序 = 资源（子目录自然序）→ 皮肤（skins 数组顺序）
 - **道具自ID**：`18` + 套装号（HXXX 的数字部分，当前 001~811 均 3 位）+ `2位序号`（01 起）。例：H001 → 1800101~1800108；H120 → 1812001。与 AeonsEchoSpine 的号段（18+4位起套装号，最短 18110101）不冲突；套装号超 3 位时脚本告警（当前最大 H811，安全）
-- **other_data 键值格式**（`&` 拆项、首个 `:` 拆键值，缺省键省略）——**只有 ui_show 三键，无 show_res/show_data/world_data**：
+- **other_data 键值格式**（`&` 拆项、首个 `:` 拆键值，缺省键省略）——**只有 ui_show 系键，无 show_res/show_data/world_data/idle_anim**：
   ```
-  ui_show_res:H001_CG_H001_a_SkeletonData&ui_show_data:0.1787;0,0&ui_show_skin:LV1
+  ui_show_res:H001_CG_H001_a_SkeletonData&ui_show_data:0.1787;0,0&ui_show_skin:LV1&ui_show_idle_anim:00_Idle
   ```
   - `ui_show_res`：ui_show_spine 高清展示资源名（详情UI，isUIShow=true 时使用）
   - `ui_show_data`：详情UI尺寸 `scale;x,y`；生成器按 `645/骨架高` 校准 scale（与 AeonsEchoSpine 同基准），默认位移 `0,0`；**scan 全量重建时按 id 保留手调值**（脚本 `read_preserved_ui_show_data`：同 id=同资源同皮肤，骨架未变手调仍有效；新增资源按骨架校准；`--reset-layout` 可强制全部重算，2026-09-27 起）
   - `ui_show_skin`：ui_show 资源内指定皮肤名（可空：仅 default 皮肤的资源省略=骨架默认皮肤）
+  - `ui_show_idle_anim`：ui_show 骨架的替代待机动画名（**idle 动画替代规则**，2026-09-28 起，详见 mod-system SKILL 通用规则节）：骨架动画列表命中主项目标准待机候选（`idle,wait,idle1,wait1,stand`）时省略=走框架候选解析；无标准候选时取首个小写含 `idle` 的动画名（ArkRe 全部 341 资源=`00_Idle` 等，多皮肤药共享同一检测值）；完全没有含 idle 动画则不生成该键+警告
 - **name 自ID = 道具自ID**：指向 Mod 自带语言表同 id 行（`name[language]` 标记驱动 `CombineModReferenceIds`，与 AeonsEchoSpine 同机制）
 - **固定字段**：item_type=18、num_max=1、icon_res=`Item_TransformPotion_1`、creature_model_id=0、reward_rarity=""、**source="1"**（=ItemSourceEnum.ConquerReward 征服模式奖励）
 - **道具名**：具名皮肤药带皮肤后缀——cn「幻化药·方舟H001-01 LV1」/ tw「幻化藥·方舟H001-01 LV1」/ en「Ark Potion H001-01 LV1」；单 default 皮肤药无后缀「幻化药·方舟H120-01」（12 语言全生成）
@@ -65,10 +68,11 @@ MOD项目/Assets/ModResource/Spine/ArkRe/
 
 | 机制 | 位置 |
 |------|------|
-| other_data 键值解析（含 ui_show_skin 键，6 出参） | `CreatureBeanPartial.ParseTransformOtherData`（`#region 幻化相关`） |
+| other_data 键值解析（返回 `TransformOtherData` 结构体，2026-09-28 由多 out 参数重构，含 idle_anim/ui_show_idle_anim 键） | `CreatureBeanPartial.ParseTransformOtherData`（`#region 幻化相关`） |
 | 高清展示资源（ui_show_res 键） | `CreatureBeanPartial.GetTransformUIShowSpineRes` → `CreatureHandler.SetCreatureData`（isUIShow 分支独立判定、不依赖 show_res） |
-| **指定皮肤（ui_show_skin 键）** | `CreatureBeanPartial.GetTransformUIShowSkin` → `CreatureHandler.SetCreatureData`：isUIShow 且有 ui_show_res 时取皮肤名，SkeletonAnimation/SkeletonGraphic 两分支在 `hasTransform` 且皮肤名非空时调 `SpineHandler.ChangeSkeletonSkin(Skeleton, string)` 按名整皮替换（**幻化换肤跳过规则的显式例外**；无皮肤键的幻化药行为不变=保持骨架默认皮肤） |
-| 按名换肤 API | `SpineHandler.ChangeSkeletonSkin(Skeleton skeleton, string skinName)` 重载（FindSkin→SetSkin→SetupPoseSlots；皮肤缺失时 `SpineManager.GetSkeletonDataSkin` 报错并保持原皮肤） |
+| **替代待机动画（ui_show_idle_anim 键）** | `CreatureBeanPartial.GetTransformUIShowIdleAnim` → `GameUIUtil.SetCreatureUIForDetails` 播放动画三级分支：该键非空→框架层按名直播（绕过 GetAnimNameAppoint 防误用）；ui_show_res 非空→框架候选；否则原链路 |
+| **指定皮肤（ui_show_skin 键）** | `CreatureBeanPartial.GetTransformUIShowSkin` → `CreatureHandler.SetCreatureData`：isUIShow 且有 ui_show_res 时取皮肤名，SkeletonAnimation/SkeletonGraphic 两分支在 `hasTransform` 且皮肤名非空时调 `SpineHandler.ChangeSkeletonSkin(Skeleton, string)` 按名整皮替换（**幻化换肤跳过规则的显式例外**；无皮肤键的幻化药行为不变=保持骨架默认皮肤；**皮肤串支持「|」分隔多皮肤**——拆分后多个改调 params 叠加重载，2026-09-29 起，CherryTaleSpine 组合皮药用，本 Mod 单皮肤名不受影响） |
+| 按名换肤 API | `SpineHandler.ChangeSkeletonSkin(Skeleton skeleton, string skinName)` 重载（FindSkin→SetSkin→SetupPoseSlots；皮肤缺失时 `SpineManager.GetSkeletonDataSkin` 报错并保持原皮肤）；另有 `ChangeSkeletonSkin(Skeleton, params string[])` 多皮肤叠加重载（2026-09-29 新增，new Skin + AddSkin×N，未命中部件回落骨架默认皮肤） |
 | 详情UI尺寸（ui_show_data 键） | `CreatureBeanPartial.GetTransformUIShowData` → `GameUIUtil.SetCreatureUIForDetails`；编辑器下测试覆盖层 `TransformPotionUITestOverride` 优先 |
 | 调参预览+写回 | `TestTransformPotionGUI`（测试模式-卡片测试-Mod幻化药测试面板）：**保存按 modId 分组路由**——modId→modName（`ModManager.GetModJsonTextFileInfos`）→ 各 Mod 独立 Excel（`GetModItemsExcelRelPath` 约定）+ `Mods/{modName}/JsonText/ItemsInfo.txt` 两处直补 + 会话内存；`BuildOtherData` 保留 ui_show_skin 等键、show_res 空时省略 |
 | Mod 道具/语言合并 | `BaseCfg.GetInitDataForMods` → id 拼接 + `BaseBean.CombineModReferenceIds`（同 AeonsEchoSpine） |
@@ -89,7 +93,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".claude/scripts/run-pyt
 
 **两段式流水线**（脚本 `.claude/scripts/gen_arkre_spine_mod.py`）：
 
-- `scan`：扫描 ArkRe 资源套装 → 重建/合并 **MOD 项目的两张 Excel**（道具表**全量重建**但 **ui_show_data 手调值按 id 保留**；语言表**按 id 合并保留人工改名**）；覆盖前自动备份到 `MOD项目/ExcelBackup/`
+- `scan`：扫描 ArkRe 资源套装 → 重建/合并 **MOD 项目的两张 Excel**（道具表**全量重建**但 **ui_show_data 手调值按 id 保留**；语言表**按 id 合并保留人工改名**）；覆盖前自动备份到 `MOD项目/ExcelBackup/`（滚动复用 .bak.1~3，只留最近 3 份）；**idle 动画检测**（资源级：每个 SkeletonData 同名 json 读 animations → 无标准候选取首个含 idle 动画名写 `ui_show_idle_anim` 键，多皮肤药共享检测值，扫描结束打印 命中/替代/无idle 统计）
 - `export`：读两张 Excel → 导出 JsonText
 - 无 migrate 子命令（本 Mod 自始即键值格式）
 

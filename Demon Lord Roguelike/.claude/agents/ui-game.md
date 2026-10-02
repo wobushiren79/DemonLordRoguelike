@@ -32,7 +32,7 @@ watched_files:
 - **UIFightAbyssalBlessing** - 深渊祝福选择
 
 ### 游戏功能 UI
-- **UIGameSetting** - 游戏设置界面
+- **UIGameSetting** - 游戏设置界面。页签（RadioGroup `ui_TitleRadioGroup`）：游戏(1)/画面(2)/音频(3)/Mods(4)，各对应 `UIGameSettingForGame/ForDisplay/ForAudio/ForMods`（继承 `UIGameSettingBase`，往 `ui_List` 容器动态建 item，复用 `UIViewGameSettingSelect/CheckBox/Range` 三种控件）。**Mods 页签**（`UIGameSettingForMods`）：`ModHandler.GetAvailableModNames()` 列出 Mods 目录全部 Mod，每个一个 CheckBox（标题=Mod 名，选中=`GameConfigBean.IsModEnable`），切换即 `SetModEnable`+`SaveGameConfig` 落盘并 Toast 43003 提示重启生效（Mod 加载过滤机制见 mod-system skill）；页签按钮多语言 textId=40004
 - **UIGameSystem** - 游戏系统界面
 - **UIGameWorldMap** - 世界地图界面
 - **UIGameConversation** - 对话界面（议员交谈：台词逐字动画+sound_talk_1音效+点击跳过，详见 game-conversation agent；故事演出走专用入口 `SetDataForStory`——npc_id=0 旁白隐藏立绘/名字/贿赂按钮，npc_id≠0 复用 SetData 后强制隐藏贿赂按钮，打字机等待用 GTask.WaitReal 在 timeScale=0 下照常播放，还可由 StoryHandler 设对话框对齐/偏移(SetStoryContentLayout)与 MaskTarget 目标高亮(SetStoryHighlight,UV 相机按 Canvas 模式取:Overlay=null/ScreenSpaceCamera=worldCamera,场景目标才经 mainCamera)、OpenUI 自动还原默认布局+隐藏高亮防残留，详见 conversation-system）

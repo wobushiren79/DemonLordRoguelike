@@ -558,11 +558,13 @@ public partial class FightCreatureEntity
         //触发被攻击特效
         if (creatureSkeletionAnimation != null)
         {
-            //复位抖动基准位置(幻化 world_data 有偏移时以偏移为基准, 防抖动后偏移丢失)
-            creatureSkeletionAnimation.transform.localPosition =
-                fightCreatureData.creatureData.GetTransformWorldData(out _, out Vector2 worldOffset)
-                    ? new Vector3(worldOffset.x, worldOffset.y, 0)
-                    : Vector3.zero;
+            //复位抖动基准位置(世界幻化[有 show_res]且 world_data 有偏移时以偏移为基准, 防抖动后偏移丢失; 与 SetCreatureData 的 hasTransform 门控同口径, 防仅详情UI幻化药上的死 world_data 键残留偏移)
+            Vector2 worldOffset = Vector2.zero; //预置零: && 短路时 out 不执行, 防 CS0170 可能未赋值
+            bool hasWorldOffset = !fightCreatureData.creatureData.GetTransformSpineRes().IsNull()
+                && fightCreatureData.creatureData.GetTransformWorldData(out _, out worldOffset);
+            creatureSkeletionAnimation.transform.localPosition = hasWorldOffset
+                ? new Vector3(worldOffset.x, worldOffset.y, 0)
+                : Vector3.zero;
             //颤抖
             animForUnderAttackShake = creatureSkeletionAnimation.transform.DOShakePosition(0.06f, strength: 0.05f, vibrato: 10, randomness: 180);
         }

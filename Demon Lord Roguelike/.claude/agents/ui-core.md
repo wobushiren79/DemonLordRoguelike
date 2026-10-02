@@ -42,6 +42,7 @@ Model3D (5) - 3D 模型    | 3D 预览
 UIHandler.Instance.OpenUI<T>()
 UIHandler.Instance.CloseUI<T>()
 UIHandler.Instance.GetUI<T>()
+UIHandler.Instance.OpenUI("UIExample") // 按名字打开(名字=类名=预制体名,无缓存实例时按名字创建,无需泛型)
 
 // 弹窗/提示/气泡
 UIHandler.Instance.ShowDialog<T>(dialogBean)

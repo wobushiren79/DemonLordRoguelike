@@ -1,4 +1,4 @@
----
+﻿---
 name: game-main-create
 description: 初始创建角色(创建魔王)系统开发：新开存档时的创建角色界面(UIMainCreate)、物种选择(当前仅骷髅 creature_id=2，人类 id=1 已移除，listSelectForCreature 硬编码)、皮肤/颜色选择(CreatureInfo.creature_random_id→CreatureRandomInfoCfg.GetAllRandomData 按部位分组、CreatureModelInfoCfg.color_state 判颜色)、身高设置(UIViewMainCreateProgressItem 滑条调 bodySizeScale、CreatureInfo.GetBodySizeRange 取 body_size 区间)、Spine 预览(基地场景 PreviewCreate 物体 + CV_PreviewCreate 镜头)、创建逻辑(魔王 selfCreature 固定 level=0/rarity=0 + 初始3魔物 NpcInfoCfg 1/2/3 不高兴/没头脑/忠心 固定属性 NpcId1→HP/2→DR/3→ASPD)、存档初始化(UserDataBean/SaveUserData/SetUserData)与进入基地场景(EnterGameForBaseScene)。包含 UIViewMainCreateSelectItem 左右环形切换控件、UIViewColorShow 颜色选择、UIViewMainLoadItem.OnClickForCreateGame 入口、CameraHandler.SetPreviewCreateCamera、CreatureBean.FixedAttributeForCreate/IsDemonLord、NpcInfoBean.GetSkins、excel_creature_info/excel_npc_info/excel_creature_random_info/excel_creature_model_info 配置等。
 tools: Read, Write, Edit, Glob, Grep, Bash
@@ -27,7 +27,7 @@ watched_files:
 
 ```
 UIMainLoad(加载存档界面) 空槽位 item
-  └─ UIViewMainLoadItem.OnClickForCreateGame (UIViewMainLoadItem.cs:121)
+  └─ UIViewMainLoadItem.OnClickForCreateGame (UIViewMainLoadItem.cs:127)
        → OpenUIAndCloseOther<UIMainCreate>() + SetData(userDataIndex)  // userDataIndex=存档槽位
             └─ UIMainCreate：选物种/皮肤/颜色 + 输入名字 → 点创建
                  → 新建 UserDataBean → SaveUserData + SetUserData

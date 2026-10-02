@@ -79,6 +79,7 @@ public static class GameUIUtil
         //设置spine(内部已应用幻化整骨替换——若生物处于幻化状态,此处的骨架已是幻化资源)
         CreatureHandler.Instance.SetCreatureData(ui_Icon, creatureData, isUIShow: true);
         //如果装备了肖像道具 使用肖像资源替换spine(Portrait 优先级最高:在幻化之后再覆盖,卸下 Portrait 后幻化自动显现)
+        bool hasPortrait = false;
         ItemBean portraitItem = creatureData.GetEquip(ItemTypeEnum.Portrait);
         if (portraitItem != null)
         {
@@ -86,10 +87,26 @@ public static class GameUIUtil
             if (portraitItemInfo != null && !portraitItemInfo.other_data.IsNull())
             {
                 SpineHandler.Instance.SetSkeletonDataAsset(ui_Icon, portraitItemInfo.other_data);
+                hasPortrait = true;
             }
         }
         //播放动画
-        SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, creatureData, true);
+        string transformUIShowIdleAnim = hasPortrait ? null : creatureData.GetTransformUIShowIdleAnim();
+        if (!transformUIShowIdleAnim.IsNull())
+        {
+            //幻化药 ui_show 骨架配置了替代待机动画(other_data 的 ui_show_idle_anim 键):框架层按名直播,绕过 GetAnimNameAppoint 防 show 段 idle_anim/原 anim_idle 误用到 ui_show 骨架
+            SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, true, animNameAppoint: transformUIShowIdleAnim);
+        }
+        else if (!creatureData.GetTransformUIShowSpineRes().IsNull())
+        {
+            //详情UI显示 ui_show 幻化骨架但无替代动画键(或 Portrait 场景):不指定动画名,交框架按该骨架实际动画列表候选解析
+            SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, true);
+        }
+        else
+        {
+            //非 ui_show 幻化场景(原生物/仅 show 段药详情UI显示 show 骨架):原链路(含 show 段 idle_anim 替代与 anim_idle 配置)
+            SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, creatureData, true);
+        }
         ui_Icon.ShowObj(true);
         //设置UI大小和坐标
         if (creatureData.GetTransformUIShowData(out float transformUIScale, out Vector2 transformUIPos))

@@ -17,7 +17,7 @@ using OfficeOpenXml;
 /// 实现=给基础生物设置 transformItemId 后走真实卡片 SetData / SetCreatureData 链（与魔物管理吃幻化药同路径）。
 /// 调参(仅编辑器)：文本框精输 + 滑动条粗调(缩放对数映射) + 悬停滚轮/拖拽, 经 TransformPotionUITestOverride 覆盖层实时生效；
 /// 数据键: show_data=小卡默认展示尺寸, ui_show_data=大卡详情尺寸, world_data=世界显示尺寸/偏移(战斗/基地等 SkeletonAnimation 消费)。
-/// 「保存全部修改」一键批量写回 Mod道具Excel(唯一真实源, 会话首写前备份到 Mod项目/ExcelBackup) + Mod项目与主项目部署副本两处 ItemsInfo.txt + 当前会话内存。
+/// 「保存全部修改」一键批量写回 Mod道具Excel(唯一真实源, 会话首写前备份到 Mod项目/ExcelBackup, 滚动复用.bak.1~3只留最近3份) + Mod项目与主项目部署副本两处 ItemsInfo.txt + 当前会话内存。
 /// 由 LauncherTest.StartForTransformPotionTest 挂到空物体上启动。
 /// </summary>
 public class TestTransformPotionGUI : MonoBehaviour
@@ -121,7 +121,9 @@ public class TestTransformPotionGUI : MonoBehaviour
         public GameObject sceneObj;         //场景列表: 摆放根(脚下踩地)
         public Transform sceneRenderer;     //场景列表: Renderer子节点(缩放/偏移落点)
         public float sceneBaseScale;        //场景列表: 基础缩放(size_spine×体型倍率)
-        public bool editable = true;        //可否编辑(大卡列表中无 ui_show_res 的道具不可调)
+        public bool editable = true;        //可否编辑(大卡列表: 任一展示资源存在即可调——无 ui_show_res 时详情UI回落 show 形象, ui_show_data 仍被消费)
+        public bool hasUiShowRes = true;    //是否配置 ui_show_res(仅标签提示用: 无Avator=详情UI显示回落的 show 形象)
+        public bool hasShowRes = true;      //是否配置 show_res(场景列表用: 无则世界显示不幻化=world_data 不被真实链消费, 不可调并标注"(无世界幻化)")
     }
 
     #endregion
@@ -142,7 +144,9 @@ public class TestTransformPotionGUI : MonoBehaviour
     private string editUiShowScale, editUiShowX, editUiShowY;     //详情(Avator)调参缓冲
     private string editWorldScale, editWorldX, editWorldY;  //场景(world_data)调参缓冲
     private string appliedShowData, appliedUiShowData, appliedWorldData; //已应用的「scale;x,y」(变更检测用)
-    private bool hasUiShowRes;                              //当前药是否配置 ui_show_res(决定详情调参组可用性)
+    private bool hasUiShowRes;                              //当前药是否配置 ui_show_res
+    private bool hasShowRes;                                //当前药是否配置 show_res(世界幻化资源; 场景/world_data 调参可用性——无则真实链 SetCreatureData 的 hasTransform 门控不消费 world_data)
+    private bool hasDetailAdjust;                           //详情调参组可用性(ui_show_res 或 show_res 任一即可——无 ui_show_res 时详情UI回落 show 形象, ui_show_data 仍被消费)
     private string adjustError;                             //调参输入错误提示(红字)
     private string saveMessage;                             //保存结果提示
     private bool saveMessageIsError;                        //保存结果提示是否为错误(红/绿)
@@ -152,10 +156,11 @@ public class TestTransformPotionGUI : MonoBehaviour
     private Vector2 dragStartMouse, dragStartPos;           //拖拽起点(GUI坐标/起始数据pos)
     private static readonly HashSet<string> excelBackupDonePaths = new HashSet<string>(); //本次Play会话已备份过的Mod道具Excel路径(每次会话每文件首次写入前备份一次)
 
-    //参数剪贴板(static=会话内保持; [复制]存入当前项参数, [粘贴]套用到其他同类项)
+    //参数剪贴板(static=会话内保持; [复制]存入当前项参数, [粘贴]套用到其他同段项; clipKind=数据段标签, 跨段粘贴拒绝——show/ui_show=绝对UI缩放与坐标、world=相对倍率与世界坐标, 单位不同串段粘贴必错)
     private static bool clipHasValue;
     private static float clipScale;
     private static Vector2 clipPos;
+    private static DataKind clipKind;
 
     //滑动条量程: 缩放=对数映射0.01~20(兼容小卡~3.75与详情~0.19两个量级, 手感与滚轮等比一致); 位置=线性±600(超出量程的文本值不被滑条覆盖, 抓握即拉回); 世界位置=线性±2(世界单位)
     private const float ScaleSliderMin = 0.01f;
@@ -415,7 +420,9 @@ public class TestTransformPotionGUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 构建基础生物并设置指定幻化药(transformItemId)，0=无幻化显示原形象(场景基础对比位用)
+    /// 构建基础生物并设置指定幻化药(transformItemId)，0=无幻化显示原形象(场景基础对比位用)；
+    /// 体型倍率恒钉为1——CreatureBean 构造时会按 CreatureInfo.body_size 区间随机 roll 一次并缓存(真实游戏的个体体型差异)，
+    /// 面板调参/对比需要确定性基准，world_data 倍率应相对标准体型校准
     /// </summary>
     /// <param name="transformItemId">幻化药道具完整id(0=无幻化)</param>
     private CreatureBean BuildCreature(long transformItemId)
@@ -425,6 +432,7 @@ public class TestTransformPotionGUI : MonoBehaviour
         creatureData.rarity = 1;
         creatureData.level = 0;
         creatureData.AddSkinForBase();
+        creatureData.bodySizeScale = 1; //钉死标准体型, 防构建随机 roll 导致同参数不同大小/每次重建大小都变
         creatureData.transformItemId = transformItemId;
         return creatureData;
     }
@@ -538,28 +546,14 @@ public class TestTransformPotionGUI : MonoBehaviour
                 float visibleHalfWidth = dist * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad) * cam.aspect;
                 worldShift = guardLeftCanvas / 1920f * visibleHalfWidth;
             }
+            //最左固定基础样板(transformItemId=0 原形象, 每页常驻最左作对比基准; 不可编辑、不占「每页」数量), 幻化药依次排其右
+            int visualCount = count + 1;
+            CreateSceneListItem(0, "基础样板(原形象)", worldShift + (0 - (visualCount - 1) / 2f) * sceneSpacing, false);
             for (int i = 0; i < count; i++)
             {
                 SelectItem option = potions[start + i];
-                CreatureBean creatureData = BuildCreature(option.id);
-                if (creatureData == null) continue;
-                float posX = worldShift + (i - (count - 1) / 2f) * sceneSpacing;
-                GameObject spineObj = new GameObject($"SceneListSpine_{option.id}");
-                spineObj.transform.SetParent(sceneListRoot.transform, false);
-                spineObj.transform.localPosition = new Vector3(posX, 0, 0);
-                GameObject rendererObj = new GameObject("Renderer");
-                rendererObj.transform.SetParent(spineObj.transform, false);
-                SkeletonAnimation spine = SpineHandler.Instance.AddSkeletonAnimation(rendererObj, creatureData.creatureModel.res_name);
-                CreatureHandler.Instance.SetCreatureData(spine, creatureData);
-                SpineHandler.Instance.PlayAnim(spine, SpineAnimationStateEnum.Idle, creatureData, true);
-                listItems.Add(new ListItem
-                {
-                    potionId = option.id,
-                    label = option.label,
-                    sceneObj = spineObj,
-                    sceneRenderer = rendererObj.transform,
-                    sceneBaseScale = creatureData.creatureModel.size_spine * creatureData.GetBodySizeScale(),
-                });
+                float posX = worldShift + ((i + 1) - (visualCount - 1) / 2f) * sceneSpacing;
+                CreateSceneListItem(option.id, option.label, posX);
             }
             return;
         }
@@ -609,10 +603,12 @@ public class TestTransformPotionGUI : MonoBehaviour
                 HideDetailsChrome(card);
                 item.cardRoot = card.transform as RectTransform;
                 item.cardIcon = card.ui_Icon;
-                //无 ui_show_res 的道具大卡详情不消费 ui_show_data, 不可调
+                //大卡详情对带任一展示资源的药均可调: 无 ui_show_res 时详情UI回落 show 形象(SetCreatureData 的 isUIShow 分支),
+                //ui_show_data 仍被 SetCreatureUIForDetails 消费(与有无 ui_show_res 无关)——仅基础药(如 Kuluoxierback)同样可调
                 ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(option.id);
-                CreatureBean.ParseTransformOtherData(itemInfo.other_data, out _, out string uiShowRes, out _, out _, out _, out _);
-                item.editable = !uiShowRes.IsNull();
+                TransformOtherData otherData = CreatureBean.ParseTransformOtherData(itemInfo.other_data);
+                item.hasUiShowRes = !otherData.uiShowRes.IsNull();
+                item.editable = item.hasUiShowRes || !otherData.showRes.IsNull();
             }
             listItems.Add(item);
         }
@@ -634,6 +630,45 @@ public class TestTransformPotionGUI : MonoBehaviour
         {
             if (rt != null) rt.gameObject.SetActive(false);
         }
+    }
+
+    /// <summary>
+    /// 创建场景列表单个spine项: 摆放根(脚下踩地)+Renderer子节点(承载缩放/偏移, 与游戏内实体一致)+Idle播放, 并登记到 listItems；
+    /// 无 show_res(世界幻化资源)的药场景显示的是原生物, world_data 不被真实链(SetCreatureData 的 hasTransform 门控)消费,
+    /// 强制 editable=false 防"调参假象生效、保存后弹回"(与大卡列表"(无Avator)"同套路)
+    /// </summary>
+    /// <param name="potionId">幻化药道具完整id(0=基础样板原形象, 跳过 show_res 判定)</param>
+    /// <param name="label">项下名字标签</param>
+    /// <param name="posX">世界空间X坐标</param>
+    /// <param name="editable">可否编辑(基础样板=否, 仅作对比基准不响应悬停调参)</param>
+    private void CreateSceneListItem(long potionId, string label, float posX, bool editable = true)
+    {
+        CreatureBean creatureData = BuildCreature(potionId);
+        if (creatureData == null) return;
+        bool hasShowRes = true;
+        if (potionId != 0)
+        {
+            ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(potionId);
+            hasShowRes = itemInfo != null && !CreatureBean.ParseTransformOtherData(itemInfo.other_data).showRes.IsNull();
+        }
+        GameObject spineObj = new GameObject(potionId == 0 ? "SceneListSpine_Base" : $"SceneListSpine_{potionId}");
+        spineObj.transform.SetParent(sceneListRoot.transform, false);
+        spineObj.transform.localPosition = new Vector3(posX, 0, 0);
+        GameObject rendererObj = new GameObject("Renderer");
+        rendererObj.transform.SetParent(spineObj.transform, false);
+        SkeletonAnimation spine = SpineHandler.Instance.AddSkeletonAnimation(rendererObj, creatureData.creatureModel.res_name);
+        CreatureHandler.Instance.SetCreatureData(spine, creatureData);
+        SpineHandler.Instance.PlayAnim(spine, SpineAnimationStateEnum.Idle, creatureData, true);
+        listItems.Add(new ListItem
+        {
+            potionId = potionId,
+            label = label,
+            sceneObj = spineObj,
+            sceneRenderer = rendererObj.transform,
+            sceneBaseScale = creatureData.creatureModel.size_spine * creatureData.GetBodySizeScale(),
+            editable = editable && hasShowRes,
+            hasShowRes = hasShowRes,
+        });
     }
 
     /// <summary>
@@ -842,18 +877,22 @@ public class TestTransformPotionGUI : MonoBehaviour
         else
         {
             string hint = currentTab == PanelTab.ChessList ? "小卡列表：悬停目标卡片，滚轮=改缩放，拖拽=改位置（show_data）"
-                : currentTab == PanelTab.ShowList ? "大卡列表：悬停目标卡片，滚轮=改缩放，拖拽=改位置（ui_show_data；无Avator不可调）"
-                : "场景列表：悬停目标模型，滚轮=改大小，拖拽=改位置（world_data 世界显示）";
+                : currentTab == PanelTab.ShowList ? "大卡列表：悬停目标卡片，滚轮=改缩放，拖拽=改位置（ui_show_data；无Avator=调回落的show形象）"
+                : "场景列表：最左=基础样板(原形象)对比基准(不可调)；悬停目标模型，滚轮=改大小，拖拽=改位置（world_data 世界显示）";
             GUILayout.Label(hint, hintStyle);
             GUILayout.Label("项下小按钮：[还原]=恢复配置值 [0,0]=位置归零 [复制][粘贴]=参数快速套用", hintStyle);
 #if UNITY_EDITOR
             if (clipHasValue)
-                GUILayout.Label($"剪贴板: {FmtNum(clipScale)};{FmtNum(clipPos.x)},{FmtNum(clipPos.y)}", hintStyle);
+                GUILayout.Label($"剪贴板[{KindName(clipKind)}]: {FmtNum(clipScale)};{FmtNum(clipPos.x)},{FmtNum(clipPos.y)}", hintStyle);
 #endif
             GUILayout.Space(4);
             DrawModFilter();
             DrawGridSizeRow();
             DrawPager();
+#if UNITY_EDITOR
+            if (currentTab == PanelTab.SceneList && GUILayout.Button("📋 输出场景诊断到控制台(按 ` 键查看)", GUILayout.Height(22)))
+                LogSceneListDiagnostics();
+#endif
         }
 
         GUILayout.FlexibleSpace();
@@ -969,28 +1008,36 @@ public class TestTransformPotionGUI : MonoBehaviour
             GUILayout.Label($"⚠ 找不到道具配置:{currentPotionItemId}(Mod移除或配置被删)", hintStyle);
             return;
         }
-        CreatureBean.ParseTransformOtherData(itemInfo.other_data, out string showRes, out string uiShowRes, out string uiData, out string showData, out string worldData, out string uiShowSkin);
+        TransformOtherData transformData = CreatureBean.ParseTransformOtherData(itemInfo.other_data);
         GUILayout.Label($"other_data: {(itemInfo.other_data.IsNull() ? "(空)" : itemInfo.other_data)}", hintStyle);
-        DrawResLoadState("Show(默认展示)", showRes);
-        if (!uiShowRes.IsNull())
+        DrawResLoadState("Show(默认展示)", transformData.showRes);
+        if (!transformData.uiShowRes.IsNull())
         {
-            DrawResLoadState("UIShow(详情高清)", uiShowRes);
+            DrawResLoadState("UIShow(详情高清)", transformData.uiShowRes);
         }
-        if (!uiShowSkin.IsNull())
+        if (!transformData.uiShowSkin.IsNull())
         {
-            GUILayout.Label($"UIShow皮肤: {uiShowSkin}", hintStyle);
+            GUILayout.Label($"UIShow皮肤: {transformData.uiShowSkin}", hintStyle);
         }
-        if (!uiData.IsNull())
+        if (!transformData.uiShowData.IsNull())
         {
-            GUILayout.Label($"详情UI尺寸: {uiData}", hintStyle);
+            GUILayout.Label($"详情UI尺寸: {transformData.uiShowData}", hintStyle);
         }
-        if (!showData.IsNull())
+        if (!transformData.showData.IsNull())
         {
-            GUILayout.Label($"小卡UI尺寸: {showData}", hintStyle);
+            GUILayout.Label($"小卡UI尺寸: {transformData.showData}", hintStyle);
         }
-        if (!worldData.IsNull())
+        if (!transformData.worldData.IsNull())
         {
-            GUILayout.Label($"世界显示: {worldData}", hintStyle);
+            GUILayout.Label($"世界显示: {transformData.worldData}", hintStyle);
+        }
+        if (!transformData.idleAnim.IsNull())
+        {
+            GUILayout.Label($"Show替代待机: {transformData.idleAnim}", hintStyle);
+        }
+        if (!transformData.uiShowIdleAnim.IsNull())
+        {
+            GUILayout.Label($"UIShow替代待机: {transformData.uiShowIdleAnim}", hintStyle);
         }
     }
 
@@ -1044,6 +1091,8 @@ public class TestTransformPotionGUI : MonoBehaviour
         adjustError = null;
         saveMessage = null;
         hasUiShowRes = false;
+        hasShowRes = false;
+        hasDetailAdjust = false;
         appliedShowData = null;
         appliedUiShowData = null;
         appliedWorldData = null;
@@ -1053,8 +1102,11 @@ public class TestTransformPotionGUI : MonoBehaviour
         if (currentPotionItemId == 0) return;
         ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(currentPotionItemId);
         if (itemInfo == null) return;
-        CreatureBean.ParseTransformOtherData(itemInfo.other_data, out _, out string uiShowRes, out string uiData, out string showData, out string worldData, out _);
-        hasUiShowRes = !uiShowRes.IsNull();
+        TransformOtherData transformData = CreatureBean.ParseTransformOtherData(itemInfo.other_data);
+        hasUiShowRes = !transformData.uiShowRes.IsNull();
+        hasShowRes = !transformData.showRes.IsNull();
+        hasDetailAdjust = hasUiShowRes || hasShowRes;
+        string showData = transformData.showData, uiData = transformData.uiShowData, worldData = transformData.worldData;
         if (TransformPotionUITestOverride.TryGetShowData(currentPotionItemId, out string ovShow)) showData = ovShow;
         if (TransformPotionUITestOverride.TryGetUiShowData(currentPotionItemId, out string ovUiShow)) uiData = ovUiShow;
         if (TransformPotionUITestOverride.TryGetWorldData(currentPotionItemId, out string ovWorld)) worldData = ovWorld;
@@ -1092,7 +1144,7 @@ public class TestTransformPotionGUI : MonoBehaviour
         adjustError = null;
         bool changed = false;
         changed |= TryApplyOneGroup(editShowScale, editShowX, editShowY, true, DataKind.Show, ref appliedShowData, "小卡");
-        if (hasUiShowRes)
+        if (hasDetailAdjust)
             changed |= TryApplyOneGroup(editUiShowScale, editUiShowX, editUiShowY, true, DataKind.UiShow, ref appliedUiShowData, "详情");
         changed |= TryApplyOneGroup(editWorldScale, editWorldX, editWorldY, true, DataKind.World, ref appliedWorldData, "场景");
         if (changed) ApplyAdjustToIcons();
@@ -1128,20 +1180,28 @@ public class TestTransformPotionGUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 取指定幻化药指定数据段的当前有效值(覆盖层优先, 无覆盖读配置; world_data 无配置默认 1,0,0)
+    /// 取指定幻化药指定数据段的当前有效值(覆盖层优先, 无覆盖读配置; world_data 无配置默认 1,0,0)；
+    /// 键缺失且给了列表项时卡片段回落读卡片图标当前显示的缩放/坐标作基线
+    /// (仅基础药无 ui_show_data 键时大卡按原生物 ui_data_b 显示, 基线须从显示值起调防首次调整跳变)
     /// </summary>
-    private void GetCurrentData(long potionId, DataKind kind, out float scale, out Vector2 pos)
+    private void GetCurrentData(long potionId, DataKind kind, out float scale, out Vector2 pos, ListItem item = null)
     {
         scale = 1;
         pos = Vector2.zero;
         ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(potionId);
         if (itemInfo == null) return;
-        CreatureBean.ParseTransformOtherData(itemInfo.other_data, out _, out _, out string uiData, out string showData, out string worldData, out _);
-        string data = kind == DataKind.Show ? showData : kind == DataKind.UiShow ? uiData : worldData;
+        TransformOtherData transformData = CreatureBean.ParseTransformOtherData(itemInfo.other_data);
+        string data = kind == DataKind.Show ? transformData.showData : kind == DataKind.UiShow ? transformData.uiShowData : transformData.worldData;
         if (kind == DataKind.Show && TransformPotionUITestOverride.TryGetShowData(potionId, out string ovC)) data = ovC;
         if (kind == DataKind.UiShow && TransformPotionUITestOverride.TryGetUiShowData(potionId, out string ovS)) data = ovS;
         if (kind == DataKind.World && TransformPotionUITestOverride.TryGetWorldData(potionId, out string ovW)) data = ovW;
-        TryParseUIData(data, out scale, out pos);
+        if (TryParseUIData(data, out scale, out pos)) return;
+        //键缺失(如仅基础药无 ui_show_data): 卡片段回落读图标当前显示值作基线(场景段 1;0,0 即恒等基线无需回落)
+        if (kind != DataKind.World && item != null && item.cardIcon != null)
+        {
+            scale = item.cardIcon.transform.localScale.x;
+            pos = item.cardIcon.rectTransform.anchoredPosition;
+        }
     }
 
     /// <summary>
@@ -1268,8 +1328,8 @@ public class TestTransformPotionGUI : MonoBehaviour
         GUILayout.Label(dirty ? "尺寸/位置调整（●已修改未保存）" : "尺寸/位置调整", labelStyle);
         GUILayout.Label("拖拽卡片/场景形象=改位置；滚轮=改缩放；或下方文本框精输/滑动条粗调", hintStyle);
         DrawAdjustFields("小卡(Show 默认展示形象)", true, DataKind.Show);
-        DrawAdjustFields(hasUiShowRes ? "详情(UIShow 高清形象)" : "详情(无 ui_show_res 不可调)", hasUiShowRes, DataKind.UiShow);
-        DrawAdjustFields("场景(world_data 世界显示)", true, DataKind.World);
+        DrawAdjustFields(hasDetailAdjust ? (hasUiShowRes ? "详情(UIShow 高清形象)" : "详情(无Avator 回落show形象)") : "详情(无展示资源 不可调)", hasDetailAdjust, DataKind.UiShow);
+        DrawAdjustFields(hasShowRes ? "场景(world_data 世界显示)" : "场景(无 show_res 世界不幻化, world_data 不被消费不可调)", hasShowRes, DataKind.World);
         TryApplyEditBuffers();
         if (!adjustError.IsNull())
         {
@@ -1285,7 +1345,7 @@ public class TestTransformPotionGUI : MonoBehaviour
     /// 绘制一组调参控件(缩放/X/Y 三行, 每行=标签+文本框+滑动条; 世界组位置量程±2且保留2位小数)
     /// </summary>
     /// <param name="title">组标题</param>
-    /// <param name="enabled">该组是否可编辑(无 ui_show_res 时详情组禁用)</param>
+    /// <param name="enabled">该组是否可编辑(详情组=ui_show_res/show_res 任一存在即可, 均无才禁用)</param>
     /// <param name="kind">数据段(决定缓冲归属与位置滑条量程/取整)</param>
     private void DrawAdjustFields(string title, bool enabled, DataKind kind)
     {
@@ -1468,7 +1528,7 @@ public class TestTransformPotionGUI : MonoBehaviour
     #region 悬停交互(滚轮缩放/拖拽位置)
 
     /// <summary>
-    /// 收集当前页签可交互项(单个预览=小卡/大卡/场景幻化模型; 列表页=当前页全部可见项)
+    /// 收集当前页签可交互项(单个预览=小卡/大卡/场景幻化模型[场景项需当前药配 show_res, 否则 world_data 真实链不消费]; 列表页=当前页全部可见项)
     /// </summary>
     private void CollectInteractiveItems(List<ListItem> outItems)
     {
@@ -1478,9 +1538,9 @@ public class TestTransformPotionGUI : MonoBehaviour
             if (currentPotionItemId == 0 || currentCreature == null) return;
             if (cardItem != null)
                 outItems.Add(new ListItem { potionId = currentPotionItemId, cardRoot = cardItem.transform as RectTransform, cardIcon = cardItem.ui_Icon });
-            if (cardDetails != null && hasUiShowRes)
+            if (cardDetails != null && hasDetailAdjust)
                 outItems.Add(new ListItem { potionId = currentPotionItemId, cardRoot = cardDetails.transform as RectTransform, cardIcon = cardDetails.ui_Icon });
-            if (sceneSpineTransform != null && showSceneSpine)
+            if (sceneSpineTransform != null && showSceneSpine && hasShowRes)
                 outItems.Add(new ListItem
                 {
                     potionId = currentPotionItemId,
@@ -1532,7 +1592,7 @@ public class TestTransformPotionGUI : MonoBehaviour
                             : item.cardIcon != null ? DataKind.UiShow : DataKind.World);
                     dragActivated = false;
                     dragStartMouse = e.mousePosition;
-                    GetCurrentData(item.potionId, dragKind, out _, out Vector2 startPos);
+                    GetCurrentData(item.potionId, dragKind, out _, out Vector2 startPos, item);
                     dragStartPos = startPos;
                     e.Use();
                     break;
@@ -1564,7 +1624,7 @@ public class TestTransformPotionGUI : MonoBehaviour
                     newPos = dragStartPos + uiDelta;
                     newPos = new Vector2(Mathf.RoundToInt(newPos.x), Mathf.RoundToInt(newPos.y));
                 }
-                GetCurrentData(dragItem.potionId, dragKind, out float curScale, out Vector2 curPos);
+                GetCurrentData(dragItem.potionId, dragKind, out float curScale, out Vector2 curPos, dragItem);
                 if (newPos != curPos)
                 {
                     SetOverrideData(dragItem.potionId, dragKind, curScale, newPos);
@@ -1588,7 +1648,7 @@ public class TestTransformPotionGUI : MonoBehaviour
                         : currentTab == PanelTab.SceneList ? DataKind.World
                         : (item.cardIcon != null && cardItem != null && item.cardIcon == cardItem.ui_Icon ? DataKind.Show
                             : item.cardIcon != null ? DataKind.UiShow : DataKind.World);
-                    GetCurrentData(item.potionId, kind, out float scale, out Vector2 pos);
+                    GetCurrentData(item.potionId, kind, out float scale, out Vector2 pos, item);
                     scale = Mathf.Max(0.001f, scale * (e.delta.y > 0 ? 1.05f : 1f / 1.05f));
                     SetOverrideData(item.potionId, kind, scale, pos);
                     DirectApply(item, kind, scale, pos);
@@ -1642,7 +1702,7 @@ public class TestTransformPotionGUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 绘制列表项名称标签(卡片下方/模型脚下, ●=有未保存修改; 大卡列表无Avator的标注不可调)与每项小按钮(还原/0,0)
+    /// 绘制列表项名称标签(卡片下方/模型脚下, ●=有未保存修改; 大卡列表无Avator的标注提示但同样可调)与每项小按钮(还原/0,0)
     /// </summary>
     private void DrawListLabels()
     {
@@ -1652,11 +1712,32 @@ public class TestTransformPotionGUI : MonoBehaviour
         {
             Rect rect = GetItemGuiRect(item);
             bool dirty = TransformPotionUITestOverride.HasOverride(item.potionId);
-            string text = (dirty ? "●" : "") + item.label + (item.editable ? "" : "(无Avator)");
+            //资源缺失标注: 场景列表=无 show_res(无世界幻化, world_data 真实链不消费), 卡片列表=无 ui_show_res(无Avator)
+            string resNote = currentTab == PanelTab.SceneList
+                ? (item.hasShowRes ? "" : "(无世界幻化)")
+                : (item.hasUiShowRes ? "" : "(无Avator)");
+            string text = (dirty ? "●" : "") + item.label + resNote;
+            //场景列表追加当前生效 world_data 值(覆盖层优先的实际值): 同骨架同参数必等大, 值不同即定位到未保存覆盖差异
+            if (currentTab == PanelTab.SceneList && item.potionId != 0)
+            {
+                GetCurrentData(item.potionId, DataKind.World, out float effScale, out Vector2 effPos);
+                text += $" ×{FmtNum(effScale)} ({FmtNum(effPos.x)},{FmtNum(effPos.y)})";
+            }
             Color old = GUI.color;
             if (!item.editable) GUI.color = Color.gray;
             else if (dirty) GUI.color = new Color(1f, 0.8f, 0.3f);
             GUI.Label(new Rect(rect.x - 30, rect.yMax + 2, rect.width + 60, 20), text, labelCenterStyle);
+            //场景列表调试读数行(按钮行下方, 只放短值防相邻项重叠; 资产/骨骼/动画等完整信息用「📋输出场景诊断」dump 到控制台)
+            if (currentTab == PanelTab.SceneList && item.sceneRenderer != null)
+            {
+                SkeletonAnimation sk = item.sceneRenderer.GetComponent<SkeletonAnimation>();
+                if (sk != null && sk.Skeleton != null)
+                {
+                    string skinName = sk.Skeleton.Skin != null ? sk.Skeleton.Skin.Name : "默认";
+                    GUI.Label(new Rect(rect.x - 30, rect.yMax + 42, rect.width + 60, 20),
+                        $"实×{FmtNum(item.sceneRenderer.localScale.x)} 皮肤:{skinName}", labelCenterStyle);
+                }
+            }
             GUI.color = old;
             if (!item.editable) continue;
             //每项小按钮: 还原=清该药本段覆盖恢复配置值(防误拖动一键恢复); 0,0=位置快速归零(保留缩放); 复制/粘贴=参数快速套用
@@ -1669,6 +1750,27 @@ public class TestTransformPotionGUI : MonoBehaviour
             if (GUI.Button(new Rect(rect.center.x + 50, rect.yMax + 22, 42, 18), "粘贴", smallButtonStyle))
                 PasteItem(item, kind);
         }
+    }
+
+    /// <summary>
+    /// 输出场景列表诊断到控制台(按 ` 键打开 UITestConsole 查看/Unity Console 均有): 逐项列出 数据值/sceneBaseScale/期望与实际Renderer缩放/
+    /// 骨架资产名与实例ID/皮肤/骨骼ScaleX,Y/当前动画与轨道时间/坐标——"数据相同但渲染不同"时逐项对比, 不同的一列即差异源头
+    /// </summary>
+    private void LogSceneListDiagnostics()
+    {
+        Camera cam = CameraHandler.Instance.manager.mainCamera;
+        System.Text.StringBuilder sb = new System.Text.StringBuilder($"[幻化药场景列表诊断] 共{listItems.Count}项 相机pos={(cam != null ? cam.transform.position.ToString() : "null")} fov={(cam != null ? cam.fieldOfView : 0)} ortho={(cam != null && cam.orthographic)}");
+        foreach (var item in listItems)
+        {
+            if (item.sceneObj == null || item.sceneRenderer == null) continue;
+            GetCurrentData(item.potionId, DataKind.World, out float effScale, out Vector2 effPos);
+            sb.Append($"\n[{item.potionId}] {item.label} | 数据×{FmtNum(effScale)} ({FmtNum(effPos.x)},{FmtNum(effPos.y)}) | base×{FmtNum(item.sceneBaseScale)} 期望×{FmtNum(item.sceneBaseScale * effScale)} 实×{FmtNum(item.sceneRenderer.localScale.x)} | 根pos={item.sceneObj.transform.position} renderer局部pos={item.sceneRenderer.localPosition}");
+            SkeletonAnimation sk = item.sceneRenderer.GetComponent<SkeletonAnimation>();
+            if (sk == null || sk.Skeleton == null) { sb.Append(" | SkeletonAnimation缺失"); continue; }
+            Spine.TrackEntry track = sk.AnimationState != null ? sk.AnimationState.GetTrack(0) : null;
+            sb.Append($" | 资产={sk.skeletonDataAsset.name}#{sk.skeletonDataAsset.GetInstanceID()}(导入scale={sk.skeletonDataAsset.scale:0.#####}) | 皮肤={(sk.Skeleton.Skin != null ? sk.Skeleton.Skin.Name : "默认")} | 骨骼Scale=({sk.Skeleton.ScaleX:0.####},{sk.Skeleton.ScaleY:0.####}) | 动画={(track != null ? track.Animation.Name : "无")} t={(track != null ? track.TrackTime.ToString("0.00") : "-")} 速率={(track != null ? track.TimeScale.ToString("0.##") : "-")}");
+        }
+        LogUtil.Log(sb.ToString());
     }
 
     /// <summary>
@@ -1687,27 +1789,41 @@ public class TestTransformPotionGUI : MonoBehaviour
     /// </summary>
     private void ZeroItemPos(ListItem item, DataKind kind)
     {
-        GetCurrentData(item.potionId, kind, out float scale, out _);
+        GetCurrentData(item.potionId, kind, out float scale, out _, item);
         SetOverrideData(item.potionId, kind, scale, Vector2.zero);
         DirectApply(item, kind, scale, Vector2.zero);
         SyncSingleBuffersFromOverride(item.potionId, kind);
     }
 
     /// <summary>
-    /// 复制列表项当前参数到剪贴板(覆盖层优先的当前有效值)
+    /// 复制列表项当前参数到剪贴板(覆盖层优先的当前有效值, 记录数据段标签 clipKind)
     /// </summary>
     private void CopyItem(ListItem item, DataKind kind)
     {
-        GetCurrentData(item.potionId, kind, out clipScale, out clipPos);
+        GetCurrentData(item.potionId, kind, out clipScale, out clipPos, item);
+        clipKind = kind;
         clipHasValue = true;
     }
 
     /// <summary>
-    /// 把剪贴板参数粘贴到列表项(写覆盖层并直接应用, 同类项快速套用)
+    /// 数据段显示名(剪贴板跨段提示用)
+    /// </summary>
+    private static string KindName(DataKind kind)
+    {
+        return kind == DataKind.Show ? "小卡(show_data)" : kind == DataKind.UiShow ? "大卡(ui_show_data)" : "场景(world_data)";
+    }
+
+    /// <summary>
+    /// 把剪贴板参数粘贴到列表项(写覆盖层并直接应用, 同段项快速套用; 跨段拒绝——三段参数单位/语义不同, 串段粘贴必产生错误值)
     /// </summary>
     private void PasteItem(ListItem item, DataKind kind)
     {
         if (!clipHasValue) return;
+        if (kind != clipKind)
+        {
+            SetSaveMessage($"⚠ 剪贴板是{KindName(clipKind)}参数，不能粘贴到{KindName(kind)}", true);
+            return;
+        }
         SetOverrideData(item.potionId, kind, clipScale, clipPos);
         DirectApply(item, kind, clipScale, clipPos);
         SyncSingleBuffersFromOverride(item.potionId, kind);
@@ -1728,7 +1844,7 @@ public class TestTransformPotionGUI : MonoBehaviour
     #region 保存写回Mod项目
 
     /// <summary>
-    /// 一键保存全部未保存修改：①Mod道具Excel(唯一真实源, 会话首次写入前备份到 Mod项目/ExcelBackup, 批量一次写盘)
+    /// 一键保存全部未保存修改：①Mod道具Excel(唯一真实源, 会话首次写入前备份到 Mod项目/ExcelBackup(滚动复用.bak.1~3只留最近3份), 批量一次写盘)
     /// ②Mod项目与主项目部署副本两处 ItemsInfo.txt ③当前会话内存配置；最后清对应覆盖层并刷新当前页签显示
     /// </summary>
     private void SaveAllOverrides()
@@ -1743,42 +1859,44 @@ public class TestTransformPotionGUI : MonoBehaviour
             if (id >= ModIdDivisor) modIds.Add(id);
             else skipBuiltin++;
         }
-        if (modIds.Count == 0) { SetSaveMessage($"⚠ 可保存的Mod幻化药为0（跳过内置幻化药{skipBuiltin}个，内置请改主项目Excel）", true); return; }
+        if (modIds.Count == 0) { SetSaveError($"⚠ 可保存的Mod幻化药为0（跳过内置幻化药{skipBuiltin}个，内置请改主项目Excel）"); return; }
         string modRoot = UnityEditor.EditorPrefs.GetString("ModBuildEditorWindow.ModProjectPath", "");
         if (modRoot.IsNull() || !Directory.Exists(Path.Combine(modRoot, "Assets")))
         {
-            SetSaveMessage("⚠ 未配置有效的Mod项目路径（请先在「Mod构建工具」里设置Mod项目路径）", true);
+            SetSaveError("⚠ 未配置有效的Mod项目路径（请先在「Mod构建工具」里设置Mod项目路径）");
             return;
         }
         //modId→modName 映射(保存按 Mod 分组路由: 各 Mod 有独立的道具Excel与JsonText)
         Dictionary<int, string> modNames = new Dictionary<int, string>();
         foreach (var (modId, modName, _) in ModHandler.Instance.manager.GetModJsonTextFileInfos("ItemsInfo"))
             modNames[modId] = modName;
-        //逐药组新 other_data: 只换 ui_show_data/show_data/world_data 三键(覆盖层优先, 无覆盖保留原值), 其余键(ui_show_skin等)原样保留; 按 modId 分组
+        //逐药组新 other_data: 只换 ui_show_data/show_data/world_data 三键(覆盖层优先, 无覆盖保留原值——直接改写结构体字段), 其余键(ui_show_skin/idle_anim/ui_show_idle_anim等)原样保留; 按 modId 分组
         Dictionary<int, Dictionary<long, string>> saveDataByMod = new Dictionary<int, Dictionary<long, string>>();
         List<string> missingCfg = new List<string>();
         foreach (long id in modIds)
         {
             ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(id);
             if (itemInfo == null) { missingCfg.Add($"{id % ModIdDivisor}"); continue; }
-            CreatureBean.ParseTransformOtherData(itemInfo.other_data, out string showRes, out string uiShowRes, out string oldUiShow, out string oldShow, out string oldWorld, out string oldUiShowSkin);
-            string newShow = TransformPotionUITestOverride.TryGetUiShowData(id, out string ovUiShow) ? ovUiShow : oldUiShow;
-            string newChess = TransformPotionUITestOverride.TryGetShowData(id, out string ovShow) ? ovShow : oldShow;
-            string newWorld = TransformPotionUITestOverride.TryGetWorldData(id, out string ovWorld) ? ovWorld : oldWorld;
+            TransformOtherData data = CreatureBean.ParseTransformOtherData(itemInfo.other_data);
+            if (TransformPotionUITestOverride.TryGetUiShowData(id, out string ovUiShow)) data.uiShowData = ovUiShow;
+            if (TransformPotionUITestOverride.TryGetShowData(id, out string ovShow)) data.showData = ovShow;
+            if (TransformPotionUITestOverride.TryGetWorldData(id, out string ovWorld)) data.worldData = ovWorld;
             int modId = (int)(id / ModIdDivisor);
             if (!saveDataByMod.TryGetValue(modId, out Dictionary<long, string> group))
             {
                 group = new Dictionary<long, string>();
                 saveDataByMod[modId] = group;
             }
-            group[id % ModIdDivisor] = BuildOtherData(showRes, uiShowRes, newShow, newChess, newWorld, oldUiShowSkin);
+            group[id % ModIdDivisor] = BuildOtherData(data);
         }
-        if (saveDataByMod.Count == 0) { SetSaveMessage($"⚠ 配置全部缺失: {string.Join(",", missingCfg)}", true); return; }
+        if (saveDataByMod.Count == 0) { SetSaveError($"⚠ 配置全部缺失: {string.Join(",", missingCfg)}"); return; }
 
         //①+② 按 Mod 分组写: Excel(唯一真实源,批量一次写盘) + 两处 JsonText 直补(Mod项目导出物 + 主项目部署副本)
         int savedTotal = 0, jsonPatchedTotal = 0, jsonExpectedTotal = 0;
         List<long> notFoundAll = new List<long>();
         List<string> unknownMod = new List<string>();
+        HashSet<int> writtenModIds = new HashSet<int>();    //实际写盘成功的modId(③只同步这些组, 未落盘的保留覆盖层供重试)
+        HashSet<long> notFoundFullIds = new HashSet<long>(); //Excel缺行的药完整id(③跳过不清覆盖层——Excel未落盘, JsonText直补会在下次export被盖回)
         foreach (var kvp in saveDataByMod)
         {
             if (!modNames.TryGetValue(kvp.Key, out string modName))
@@ -1789,23 +1907,27 @@ public class TestTransformPotionGUI : MonoBehaviour
             Dictionary<long, string> saveData = kvp.Value;
             //① Excel(唯一真实源, 批量一次写盘)
             string excelPath = Path.Combine(modRoot, GetModItemsExcelRelPath(modName));
-            if (!File.Exists(excelPath)) { SetSaveMessage($"⚠ 找不到Mod道具Excel({modName}):\n{excelPath}", true); return; }
-            if (!excelBackupDonePaths.Contains(excelPath) && !TryBackupExcel(excelPath, modRoot, out string backupErr)) { SetSaveMessage(backupErr, true); return; }
-            if (!TryWriteExcelOtherDataBatch(excelPath, saveData, out string excelErr, out List<long> notFound)) { SetSaveMessage(excelErr, true); return; }
+            if (!File.Exists(excelPath)) { SetSaveError($"⚠ 找不到Mod道具Excel({modName}):\n{excelPath}"); return; }
+            if (!excelBackupDonePaths.Contains(excelPath) && !TryBackupExcel(excelPath, modRoot, out string backupErr)) { SetSaveError(backupErr); return; }
+            if (!TryWriteExcelOtherDataBatch(excelPath, saveData, out string excelErr, out List<long> notFound)) { SetSaveError(excelErr); return; }
             notFoundAll.AddRange(notFound);
+            foreach (long selfId in notFound) notFoundFullIds.Add(kvp.Key * ModIdDivisor + selfId);
             //② 两处 JsonText 直补(均为gen脚本产物的单行紧凑JSON数组)
             string modJson = Path.Combine(modRoot, $"Mods/{modName}/JsonText/ItemsInfo.txt");
             string mainJson = Path.Combine(Application.dataPath, $"../Mods/{modName}/JsonText/ItemsInfo.txt");
             jsonExpectedTotal += 2;
             if (File.Exists(modJson) && TryPatchItemsInfoJsonBatch(modJson, saveData)) jsonPatchedTotal++;
             if (File.Exists(mainJson) && TryPatchItemsInfoJsonBatch(mainJson, saveData)) jsonPatchedTotal++;
+            writtenModIds.Add(kvp.Key);
             savedTotal += saveData.Count;
         }
 
-        //③ 当前会话内存同步 + 清覆盖层 + 刷新当前页签
+        //③ 当前会话内存同步 + 清覆盖层 + 刷新当前页签(仅实际落盘的Mod——未写盘成功的组/Excel缺行的药保留覆盖层, 供修复问题后重试保存)
         foreach (long id in modIds)
         {
             int modId = (int)(id / ModIdDivisor);
+            if (!writtenModIds.Contains(modId)) continue;
+            if (notFoundFullIds.Contains(id)) continue;
             if (!saveDataByMod.TryGetValue(modId, out Dictionary<long, string> group)) continue;
             ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(id);
             if (itemInfo != null) itemInfo.other_data = group[id % ModIdDivisor];
@@ -1813,12 +1935,17 @@ public class TestTransformPotionGUI : MonoBehaviour
         }
         if (currentTab == PanelTab.Single) { LoadEditBuffers(); RefreshCards(); }
         else BuildListView();
-        string msg = $"✓ 已保存{savedTotal}个幻化药（Excel✓ + JsonText×{jsonPatchedTotal}/{jsonExpectedTotal} + 当前会话✓）";
+        //落盘完整性分级：0个落盘=整体失败(弹窗强提示, 防"已保存0个"绿勾被误读为成功)；有落盘但存在Excel缺行/未知Mod跳过/配置缺失=部分丢失(红字警告)；跳过内置药/JsonText副本缺失不算丢失(Excel才是唯一真实源, JsonText可由export再生)
+        string msg = savedTotal > 0
+            ? $"✓ 已保存{savedTotal}个幻化药（Excel✓ + JsonText×{jsonPatchedTotal}/{jsonExpectedTotal} + 当前会话✓）"
+            : "✗ 已保存0个幻化药（Excel未写入，修改只留在本次Play会话内存）";
         if (skipBuiltin > 0) msg += $"，跳过内置{skipBuiltin}个";
         if (notFoundAll.Count > 0) msg += $"，Excel缺行:{string.Join(",", notFoundAll)}";
         if (unknownMod.Count > 0) msg += $"，未知Mod跳过:{string.Join(",", unknownMod)}";
         if (missingCfg.Count > 0) msg += $"，配置缺失:{string.Join(",", missingCfg)}";
-        SetSaveMessage(msg, false);
+        bool hasLoss = notFoundAll.Count > 0 || unknownMod.Count > 0 || missingCfg.Count > 0;
+        if (savedTotal == 0) SetSaveError(msg);
+        else SetSaveMessage(msg, hasLoss);
     }
 
     /// <summary>
@@ -1831,17 +1958,29 @@ public class TestTransformPotionGUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 拼 other_data 键值串(&amp;拆项, :拆键值, 缺省键省略)——与 gen_aeonsecho_spine_mod.py / gen_arkre_spine_mod.py 的 build_other_data 同规约
+    /// 设置保存失败提示：底部红字 + 弹窗强提示（防红字小字被忽略——失败时修改只活在本次Play会话内存覆盖层, 退出即丢失）
     /// </summary>
-    private static string BuildOtherData(string showRes, string uiShowRes, string uiShowData, string showData, string worldData, string uiShowSkin = "")
+    private void SetSaveError(string msg)
+    {
+        SetSaveMessage(msg, true);
+        UnityEditor.EditorUtility.DisplayDialog("幻化药保存失败", $"{msg}\n\n（修改目前只生效于本次Play会话内存，未写回Excel，退出即丢失）", "知道了");
+    }
+
+    /// <summary>
+    /// 拼 other_data 键值串(&amp;拆项, :拆键值, 缺省键省略)——与 gen_aeonsecho_spine_mod.py / gen_arkre_spine_mod.py / gen_nikke_spine_mod.py 的 build_other_data 同规约；
+    /// 键集合=TransformOtherData 结构体字段, 新增键只需加一行拼接
+    /// </summary>
+    private static string BuildOtherData(TransformOtherData data)
     {
         string result = "";
-        if (!showRes.IsNull()) result = $"show_res:{showRes}";
-        if (!uiShowRes.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}ui_show_res:{uiShowRes}";
-        if (!uiShowData.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}ui_show_data:{uiShowData}";
-        if (!showData.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}show_data:{showData}";
-        if (!worldData.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}world_data:{worldData}";
-        if (!uiShowSkin.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}ui_show_skin:{uiShowSkin}";
+        if (!data.showRes.IsNull()) result = $"show_res:{data.showRes}";
+        if (!data.uiShowRes.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}ui_show_res:{data.uiShowRes}";
+        if (!data.uiShowData.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}ui_show_data:{data.uiShowData}";
+        if (!data.showData.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}show_data:{data.showData}";
+        if (!data.worldData.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}world_data:{data.worldData}";
+        if (!data.uiShowSkin.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}ui_show_skin:{data.uiShowSkin}";
+        if (!data.idleAnim.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}idle_anim:{data.idleAnim}";
+        if (!data.uiShowIdleAnim.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}ui_show_idle_anim:{data.uiShowIdleAnim}";
         return result;
     }
 
@@ -1857,7 +1996,8 @@ public class TestTransformPotionGUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 会话首次写入前备份Excel到 Mod项目/ExcelBackup/(Assets之外不会被导出工具扫描, 长期保留)
+    /// 会话首次写入前备份Excel到 Mod项目/ExcelBackup/(Assets之外不会被导出工具扫描)；
+    /// 滚动复用 .bak.1~.bak.3(1=最新)——移位覆盖旧文件不新增, 目录里永远只有最近3份, 并顺带清掉旧版时间戳命名备份
     /// </summary>
     private static bool TryBackupExcel(string excelPath, string modRoot, out string error)
     {
@@ -1866,8 +2006,28 @@ public class TestTransformPotionGUI : MonoBehaviour
         {
             string backupDir = Path.Combine(modRoot, "ExcelBackup");
             Directory.CreateDirectory(backupDir);
-            string bakPath = Path.Combine(backupDir, $"{Path.GetFileName(excelPath)}.bak.{DateTime.Now:yyyyMMdd_HHmmss}");
-            File.Copy(excelPath, bakPath);
+            string name = Path.GetFileName(excelPath);
+            // 移位覆盖：bak.3←bak.2、bak.2←bak.1（复用旧文件，不产生新文件）
+            for (int i = 3; i > 1; i--)
+            {
+                string newer = Path.Combine(backupDir, $"{name}.bak.{i - 1}");
+                string older = Path.Combine(backupDir, $"{name}.bak.{i}");
+                if (File.Exists(newer))
+                {
+                    if (File.Exists(older))
+                        File.Delete(older);
+                    File.Move(newer, older);
+                }
+            }
+            string bakPath = Path.Combine(backupDir, $"{name}.bak.1");
+            File.Copy(excelPath, bakPath, true);
+            // 清理非滚动命名的旧备份（时间戳版等），保证永远都只有 3 份
+            HashSet<string> keep = new HashSet<string> { $"{name}.bak.1", $"{name}.bak.2", $"{name}.bak.3" };
+            foreach (string old in Directory.GetFiles(backupDir, $"{name}.bak.*"))
+            {
+                if (!keep.Contains(Path.GetFileName(old)))
+                    File.Delete(old);
+            }
             excelBackupDonePaths.Add(excelPath);
             LogUtil.Log($"[幻化药测试] 已备份Mod道具Excel → {bakPath}");
             return true;
@@ -1880,7 +2040,10 @@ public class TestTransformPotionGUI : MonoBehaviour
     }
 
     /// <summary>
-    /// EPPlus批量写Excel: 按自ID定位道具行, 只改 other_data 列(3行表头, 数据从第4行起, 与gen脚本布局一致), 全部行一次写盘
+    /// EPPlus批量写Excel: 按自ID定位道具行, 只改 other_data 列(3行表头, 数据从第4行起, 与gen脚本布局一致), 全部行一次写盘；
+    /// 写后回读校验防静默失败——2026-09-30 实证: 「new FileStream + new ExcelPackage(fs) + Save()」在本项目 EPPlus 版本下
+    /// 无异常但文件完全未落盘(mtime/内容均不变), 导致手调值显示"保存成功"却被随后的 export 用旧Excel覆盖;
+    /// 故改用项目标准的 new ExcelPackage(FileInfo) 写模式(ExcelUtil.SetExcelData 及全部编辑器工具同款)并加写后回读比对
     /// </summary>
     private static bool TryWriteExcelOtherDataBatch(string excelPath, Dictionary<long, string> saveData, out string error, out List<long> notFound)
     {
@@ -1888,12 +2051,12 @@ public class TestTransformPotionGUI : MonoBehaviour
         notFound = new List<long>(saveData.Keys);
         try
         {
-            using (FileStream fs = new FileStream(excelPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            int colId, colOther;
+            using (ExcelPackage ep = new ExcelPackage(new FileInfo(excelPath)))
             {
-                ExcelPackage ep = new ExcelPackage(fs);
                 ExcelWorksheet ws = ep.Workbook.Worksheets["ItemsInfo"];
                 if (ws == null) { error = "⚠ Mod道具Excel缺少 ItemsInfo 工作表"; return false; }
-                int colId = -1, colOther = -1;
+                colId = -1; colOther = -1;
                 for (int c = 1; c <= ws.Dimension.End.Column; c++)
                 {
                     string header = ws.Cells[1, c].Text.Trim();
@@ -1909,8 +2072,27 @@ public class TestTransformPotionGUI : MonoBehaviour
                     notFound.Remove(rowId);
                 }
                 ep.Save();
-                return true;
             }
+            //写后回读校验：任何"Save()无异常但未落盘"的静默失败在此拦截(返回false→弹窗报错, 覆盖层保留可重试)
+            List<long> verifyFailed = new List<long>();
+            using (ExcelPackage epCheck = new ExcelPackage(new FileInfo(excelPath)))
+            {
+                ExcelWorksheet wsCheck = epCheck.Workbook.Worksheets["ItemsInfo"];
+                if (wsCheck == null) { error = "⚠ 写后校验失败: 缺少 ItemsInfo 工作表"; return false; }
+                for (int r = 4; r <= wsCheck.Dimension.End.Row; r++)
+                {
+                    if (!long.TryParse(wsCheck.Cells[r, colId].Text.Trim(), out long rowId)) continue;
+                    if (!saveData.TryGetValue(rowId, out string expected)) continue;
+                    if (wsCheck.Cells[r, colOther].Text.Trim() != expected)
+                        verifyFailed.Add(rowId);
+                }
+            }
+            if (verifyFailed.Count > 0)
+            {
+                error = $"⚠ Excel写后校验失败({verifyFailed.Count}行未落盘): {string.Join(",", verifyFailed)}";
+                return false;
+            }
+            return true;
         }
         catch (Exception e)
         {

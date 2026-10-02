@@ -53,7 +53,16 @@ public partial class SpineHandler
     {
         //幻化整骨替换后原生物 anim_* 配置名不适用于新骨架:不指定动画名,交框架按目标骨架实际动画列表解析(缺失仅日志不播,避免 SetAnimation 抛异常)
         if (creatureData.GetTransformSpineRes() != null)
+        {
+            //Idle 例外:幻化药配置了 show 骨架替代待机动画(other_data 的 idle_anim 键,生成期检测骨架无标准待机候选时写入)时优先按名直播
+            if (spineAnimationState == SpineAnimationStateEnum.Idle)
+            {
+                string transformIdleAnim = creatureData.GetTransformIdleAnim();
+                if (!transformIdleAnim.IsNull())
+                    return transformIdleAnim;
+            }
             return null;
+        }
         string animNameAppoint = null;
         switch (spineAnimationState)
         {

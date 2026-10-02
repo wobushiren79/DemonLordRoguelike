@@ -152,7 +152,7 @@ public class SkinRandomEditorWindow : EditorWindow
         (int)CreatureSkinTypeEnum.Weapon_Line, //80 武器线
         (int)CreatureSkinTypeEnum.Weapon_L,    //90 武器左手
         (int)CreatureSkinTypeEnum.Weapon_R,    //91 武器右手
-        92,                                    //92 双手武器(枚举未定义,部件表内存在)
+        (int)CreatureSkinTypeEnum.Weapon_LR,   //92 武器双手
     };
 
     #endregion

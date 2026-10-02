@@ -1,4 +1,4 @@
----
+﻿---
 name: main-create-system
 description: Demon Lord Roguelike 游戏的初始创建角色(创建魔王/MainCreate)系统开发指南。使用此SKILL当需要创建或修改新开存档的创建角色界面、可选物种(当前仅骷髅 creature_id=2，人类 id=1 已移除，listSelectForCreature 硬编码)、皮肤/颜色选择(CreatureRandomInfo 皮肤随机池按部位分组、CreatureModelInfo.color_state 颜色开关、UIViewColorShow 实时变色)、身高设置(UIViewMainCreateProgressItem 滑条调 bodySizeScale、CreatureInfo.GetBodySizeRange 取 body_size 区间)、创建预览(PreviewCreate 物体+CV_PreviewCreate 镜头+Spine Idle)、创建逻辑(魔王 selfCreature 固定 level=0/rarity=0、初始3魔物 NpcInfoCfg 1/2/3 不高兴/没头脑/忠心 固定属性 NpcId1→HP/2→DR/3→ASPD 与孕育同点数预算)、存档初始化(UserDataBean/SaveUserData/SetUserData/EnterGameForBaseScene)等，包括 UIMainCreate、UIViewMainCreateSelectItem 环形切换控件、UIViewMainLoadItem.OnClickForCreateGame 入口、CameraHandler.SetPreviewCreateCamera、CreatureBean.FixedAttributeForCreate/IsDemonLord/SetData、CreatureRandomInfoBean.GetAllRandomData、NpcInfoBean.GetSkins、excel_creature_info/excel_npc_info/excel_creature_random_info/excel_creature_model_info 配置等。
 watched_files:
@@ -28,7 +28,7 @@ watched_files:
 
 ```
 UIMainLoad(加载存档界面) 空槽位 item
-  └─ UIViewMainLoadItem.OnClickForCreateGame (UIViewMainLoadItem.cs:121)
+  └─ UIViewMainLoadItem.OnClickForCreateGame (UIViewMainLoadItem.cs:127)
        → OpenUIAndCloseOther<UIMainCreate>() + SetData(userDataIndex)   // userDataIndex=存档槽位号
             └─ UIMainCreate.OpenUI → ShowPreviewCreate(true) + InitData
                  ├─ 物种选择 ui_UIViewMainCreateSelectItem_Species（listSelectForCreature，当前仅骷髅）
@@ -52,7 +52,7 @@ UIMainLoad(加载存档界面) 空槽位 item
 
 ### 1. 入口（UIViewMainLoadItem）
 
-- 存档槽位 item 无数据时显示「创建游戏」按钮，`OnClickForCreateGame`（UIViewMainLoadItem.cs:121）打开 `UIMainCreate` 并 `SetData(userDataIndex)` 传入槽位号。
+- 存档槽位 item 无数据时显示「创建游戏」按钮，`OnClickForCreateGame`（UIViewMainLoadItem.cs:127）打开 `UIMainCreate` 并 `SetData(userDataIndex)` 传入槽位号。
 - 有数据时则是「进入游戏」`OnClickForEnterGame`（直接 `SetUserData` + `EnterGameForBaseScene`，不经过创建界面）。
 - 创建界面退出（`ui_ViewExit` 或 ESC）回 `UIMainLoad`。
 

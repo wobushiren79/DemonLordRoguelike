@@ -16,5 +16,6 @@ public partial class UIGameSetting
 
     public RadioButtonView ui_GameSetttingLabel_Audio;
 
+    public RadioButtonView ui_GameSetttingLabel_Mods;
 
 }

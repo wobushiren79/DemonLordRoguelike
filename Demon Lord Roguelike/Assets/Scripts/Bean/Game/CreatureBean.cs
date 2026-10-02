@@ -608,6 +608,7 @@ public partial class CreatureBean
                             {
                                 case CreatureSkinTypeEnum.Weapon_L:
                                 case CreatureSkinTypeEnum.Weapon_R:
+                                case CreatureSkinTypeEnum.Weapon_LR:
                                     continue;
                             }
                         }
@@ -618,7 +619,7 @@ public partial class CreatureBean
                             continue;
                         }
                         //如果有装备武器 则不需要再添加基础武器
-                        if (dicEquipItemData.ContainsKey(ItemTypeEnum.Weapon) && (itemPartType == CreatureSkinTypeEnum.Weapon_L || itemPartType == CreatureSkinTypeEnum.Weapon_R))
+                        if (dicEquipItemData.ContainsKey(ItemTypeEnum.Weapon) && (itemPartType == CreatureSkinTypeEnum.Weapon_L || itemPartType == CreatureSkinTypeEnum.Weapon_R || itemPartType == CreatureSkinTypeEnum.Weapon_LR))
                         {
                             continue;
                         }
@@ -631,6 +632,7 @@ public partial class CreatureBean
         if (showType == 0 && isNeedWeapon
             && !dicSkinData.ContainsKey(CreatureSkinTypeEnum.Weapon_L)
             && !dicSkinData.ContainsKey(CreatureSkinTypeEnum.Weapon_R)
+            && !dicSkinData.ContainsKey(CreatureSkinTypeEnum.Weapon_LR)
             && !dicEquipItemData.ContainsKey(ItemTypeEnum.Weapon))
         {
             long baseWeaponId = creatureInfo.GetEquipBaseWeaponId();
@@ -661,6 +663,11 @@ public partial class CreatureBean
                     }
                 }
                 ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
+                //装备配置缺失(如所属Mod未开启)时跳过该装备的皮肤,不抛空引用
+                if (itemInfo == null)
+                {
+                    continue;
+                }
                 CreatureModelInfoBean itemSkinInfo = CreatureModelInfoCfg.GetItemData(itemInfo.creature_model_info_id);
                 if (itemSkinInfo == null)
                 {

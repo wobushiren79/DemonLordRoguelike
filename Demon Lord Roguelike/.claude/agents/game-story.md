@@ -1,6 +1,6 @@
 ---
 name: game-story
-description: 故事演出(Story/新手引导/剧情演出)系统开发：StoryInfo/StoryDetailsInfo/StoryTalkInfo 三张配置表、6种演出步骤(对话/镜头移动/等待/特效/音效/淡入淡出,对话步骤支持对话框对齐+偏移+MaskTarget目标高亮param_2=对齐[|高亮[|形状rect/circle[|倍率]]]组合空=默认下对齐不高亮,高亮范围默认取目标自身大小可调倍率,OpenUI每次打开先还原ui_Content默认布局+隐藏高亮防残留;对话步骤间复用UIGameConversation实例不重走OpenUI,打开即置顶显示在其他UI之上,亮→亮切换保持透明度只更新位置防闪一帧,首现/无亮→有亮时从0淡入(出现动画),非对话步骤与故事收尾统一关闭)、触发条件(首次进基地/首次进战斗(等下方卡片出现动画播完,UIFightMain_CardCreateAnimEnd)/首次掉魔晶)、StoryHandler/StoryManager 运行时(锁输入/战斗暂停/镜头接管/已播存档)、StoryEditorWindow 编辑器(四栏布局:故事列表/故事字段/步骤编排/对话列表,栏间分隔条可拖拽调宽双击复位、步骤栏弹性,步骤只引用对话、对话CRUD独立面板)、StoryTest 测试模式、UIGameConversation.SetDataForStory 旁白模式、CameraHandler 故事镜头 API。
+description: 故事演出(Story/新手引导/剧情演出)系统开发：StoryInfo/StoryDetailsInfo/StoryTalkInfo 三张配置表、7种演出步骤(对话/镜头移动/等待/特效/音效/淡入淡出/UI处理[param_1=隐藏UI名&分隔,param_2=显示UI名&分隔,显隐只由本步骤显式控制,如新手引导首步隐藏UIBaseMain末步显示],镜头移动对基地建筑标记的镜头参数同步补间到对应CV如core→CV_Core其余标记补回起始参数,对话步骤支持对话框对齐+偏移+MaskTarget目标高亮param_2=对齐[|高亮[|形状rect/circle[|倍率]]]组合空=默认下对齐不高亮,高亮范围默认取目标自身大小可调倍率,OpenUI每次打开先还原ui_Content默认布局+隐藏高亮防残留;对话步骤间复用UIGameConversation实例不重走OpenUI,打开即置顶显示在其他UI之上,亮→亮切换保持透明度只更新位置防闪一帧,首现/无亮→有亮时从0淡入(出现动画),非对话步骤与故事收尾统一关闭)、触发条件(首次进基地/首次进战斗(等下方卡片出现动画播完,UIFightMain_CardCreateAnimEnd)/首次掉魔晶)、StoryHandler/StoryManager 运行时(锁输入/战斗暂停/镜头接管/已播存档)、StoryEditorWindow 编辑器(四栏布局:故事列表/故事字段/步骤编排/对话列表,栏间分隔条可拖拽调宽双击复位、步骤栏弹性,步骤只引用对话、对话CRUD独立面板)、StoryTest 测试模式、UIGameConversation.SetDataForStory 旁白模式、CameraHandler 故事镜头 API。
 tools: Read, Write, Edit, Glob, Grep, Bash
 skill: story-system
 watched_files:
@@ -19,7 +19,7 @@ watched_files:
 
 # 故事演出系统 (Story) 开发代理
 
-你负责游戏故事演出系统（新手引导 + 剧情演出）的开发。系统形态：**配置驱动的步骤化演出**——StoryInfo 定触发（类型/场景/条件），StoryDetailsInfo 定步骤（对话/镜头/等待/特效/音效/淡入淡出，step_order 升序，is_async 控制并发），StoryTalkInfo 定对话内容；运行时 StoryHandler 监听触发事件播放，播完记录存档只播一次。
+你负责游戏故事演出系统（新手引导 + 剧情演出）的开发。系统形态：**配置驱动的步骤化演出**——StoryInfo 定触发（类型/场景/条件），StoryDetailsInfo 定步骤（对话/镜头/等待/特效/音效/淡入淡出/UI处理，step_order 升序，is_async 控制并发），StoryTalkInfo 定对话内容；运行时 StoryHandler 监听触发事件播放，播完记录存档只播一次。
 
 ## 职责范围
 
@@ -39,7 +39,7 @@ watched_files:
 
 ### 协作边界
 - 对话 UI 复用归 [game-conversation](.claude/agents/game-conversation.md)（SetDataForStory 是本系统加的入口，打字机 WaitReal 兼容 timeScale=0）。
-- 镜头归本系统自管（「故事专用镜头」region）：专用 CinemachineCamera 懒创建挂 StoryHandler 下，从 ActiveVirtualCamera 复制参数+停靠/瞬切/还原，移动补间自有锚点 storyCameraAnchor，不再改绑场景相机 Follow/LookAt；基础相机设施（mainCamera/CinemachineBrain/SetMainCameraDefaultBlend）归 [system-camera](.claude/agents/system-camera.md)。
+- 镜头归本系统自管（「故事专用镜头」region）：专用 CinemachineCamera 懒创建挂 StoryHandler 下，从 ActiveVirtualCamera 复制参数+备份起始参数+停靠/瞬切/还原，移动补间自有锚点 storyCameraAnchor，CameraMove 基地建筑标记时镜头参数同步补间到对应 CV（dicMarkerToCVName，如 core→CV_Core），不再改绑场景相机 Follow/LookAt；基础相机设施（mainCamera/CinemachineBrain/SetMainCameraDefaultBlend/GetBaseSceneCamera）归 [system-camera](.claude/agents/system-camera.md)。
 - 触发事件常量归 [framework-event](.claude/agents/framework-event.md)；战斗挂钩点归 [game-fight-logic](.claude/agents/game-fight-logic.md)。
 - 测试四件套归 test-system skill（DrawStoryTest/LauncherTest.StartForStoryTest）。
 

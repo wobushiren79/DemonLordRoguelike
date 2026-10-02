@@ -45,6 +45,7 @@ watched_files:
 
 ### LauncherTest 测试入口补充
 
+- **测试模式默认全开所有 Mod**：`LauncherTest.Launch()` 在 `base.Launch()` 前置 `ModHandler.Instance.manager.isForceAllModsEnabled = true`——`FilterEnabledMods` 跳过 `GameConfig.listModEnable` 过滤全量加载（仅内存标记不持久化，正式游戏 `LauncherGame` 不置位、用户设置项不受影响），卡片/幻化药等全部测试入口默认可见所有 Mod 资源，免逐一手动开启+重启（机制详见 mod-system skill「测试模式强制全开」）。
 - **卡片编辑器测试**：`LauncherTest.StartForCreatureCardEditor(long creatureId, long npcInfoId)`——清场+DoF Off+镜头初始化+CloseAllUI 后，挂纯代码 IMGUI 面板 `TestCreatureCardGUI`（实例化真实卡片预制体，自由设置稀有度/等级/生物/NPC 与显示颜色，可写回配置表）。详见 test-system skill「卡片编辑器测试」。
 - **Mod幻化药测试**：`LauncherTest.StartForTransformPotionTest(long itemId)`——同卡片编辑器的前置清理后，挂纯代码 IMGUI 面板 `TestTransformPotionGUI`（实例化真实卡片预制体，下拉选幻化药→基础生物设 transformItemId 走真实 SetData 链，小卡=Chess/大卡=Avator 高清；场景Spine展示=世界空间并排左基础原形象+右幻化形象，走真实 SetCreatureData 链，与卡片编辑器同机位取景+地平面基准+显隐开关；含 other_data 解析与 spine 资源 Mod 命中状态展示）。详见 test-system skill「卡片编辑器测试」。
 - **故事演出测试**：`LauncherTest.StartForStoryTest(long storyId, int saveSlot = 0)`——saveSlot>0 时先读档（`UserDataService.ChangeSlot(saveSlot).Load(false)` → `SetUserData`，献祭测试同范式，全程内存模拟不写回真实存档；0=使用 InitTestData 伪造数据），再 `isTestSimulation=true`，按故事 scene_type 进场景（Base=EnterGameForBaseScene+一次性 World_EnterGameForBaseScene 回调；Fight=内置默认测试战斗数据 `BuildStoryTestFightData()` 进战斗+一次性 UIFightMain_CardCreateAnimEnd 回调(卡片出现动画播完,与真实触发同钩点)；DoomCouncil=StartDoomCouncil(议案1000000001)+`WaitForDoomCouncilThenPlayStory` 轮询就绪），场景就绪后 `StoryHandler.Instance.PlayStory(storyId)`；一次性回调统一走 `RegisterStoryTestPlayCallback(eventName, storyId)`（重复调用先清旧回调）。详见 test-system skill。

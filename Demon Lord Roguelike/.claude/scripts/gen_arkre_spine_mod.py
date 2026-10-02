@@ -14,10 +14,12 @@ ArkReSpine Mod 数据生成器（Demon Lord Roguelike）
     只有 default 一套皮肤的资源出 1 个幻化药（不带皮肤键，骨架默认皮肤即目标外观）
 
 other_data 键值格式（& 拆项、每项首个 : 拆键值，同主项目 attack_mode other_data 规约，缺省键省略）：
-  ui_show_res:H001_CG_H001_a_SkeletonData&ui_show_data:0.1919;0,0&ui_show_skin:LV1
+  ui_show_res:H001_CG_H001_a_SkeletonData&ui_show_data:0.1919;0,0&ui_show_skin:LV1&ui_show_idle_anim:00_Idle
   ui_show_res  ui_show_spine 高清展示资源名（详情UI，isUIShow=true 时使用）
   ui_show_data 详情UI尺寸「scale;x,y」（生成器按 645/骨架高 校准 scale，默认位移 0,0；scan 重建时默认按 id 保留手调值，--reset-layout 强制重算）
   ui_show_skin ui_show 资源内指定皮肤名（可空：仅单 default 皮肤的资源省略=骨架默认皮肤）
+  ui_show_idle_anim ui_show 骨架的替代待机动画名（可空：骨架动画列表命中主项目标准待机候选[excel_spine_animation_state id=10001 的 res 字段,当前 idle,wait,idle1,wait1,stand]时省略=走框架候选解析；
+               无标准候选时取首个小写含 idle 的动画名[保留大小写,Spine 需精确名]；完全没有含 idle 动画则不生成该键=保持现状静态+警告；同骨架多皮肤药共用同一检测值）
 
 道具自ID规则：`18` + 套装号(HXXX 的数字部分,当前 001~811 均 3 位) + 2位序号(01 起)；name 自ID=道具自ID。
   套装内序号排序 = 资源(子目录自然序) → 皮肤(skins 数组顺序,跳过 default)。
@@ -42,7 +44,6 @@ import json
 import re
 import shutil
 import sys
-from datetime import datetime
 from pathlib import Path
 
 import openpyxl
@@ -67,7 +68,7 @@ ITEM_COLUMNS = [
     ("icon_res", "string", "图标资源"),
     ("icon_rotate_z", "float", "图标旋转"),
     ("attack_mode_data", "string", "攻击模式数据(幻化药不用)"),
-    ("other_data", "string", "形象键值串:ui_show_res:X&ui_show_data:scale;x,y[&ui_show_skin:皮肤名](&拆项,:拆键值,缺省键省略;只改详情UI,不动show/world)"),
+    ("other_data", "string", "形象键值串:ui_show_res:X&ui_show_data:scale;x,y[&ui_show_skin:皮肤名][&ui_show_idle_anim:动画名](&拆项,:拆键值,缺省键省略;只改详情UI,不动show/world;idle_anim=无标准idle时的替代待机动画)"),
     ("name[language]", "long", "道具名textId(=道具id,文本在excel_mod_language_arkrespine)"),
     ("remark", "string", "备注"),
     ("reward_rarity", "string", "奖励稀有度白名单(空=全适配;消耗品不进装备池)"),
@@ -122,18 +123,78 @@ def get_spine_skins(json_path: Path) -> list:
     return []
 
 
+# 标准待机动画候选的兜底值（=主项目 excel_spine_animation_state id=10001 的 res 字段；读不到配置时用）
+STD_IDLE_FALLBACK = ["idle", "wait", "idle1", "wait1", "stand"]
+
+
+def load_std_idle_candidates() -> list:
+    """读主项目 SpineAnimationState.txt 的 Idle(id=10001) 候选名列表（配置表为唯一真实源,不硬编码；
+    按脚本位置推导主项目根=.claude/scripts/ 向上两级）；读失败回退 STD_IDLE_FALLBACK"""
+    try:
+        main_root = Path(__file__).resolve().parents[2]
+        rows = json.loads((main_root / "Assets/Resources/JsonText/SpineAnimationState.txt").read_text(encoding="utf-8"))
+        for row in rows:
+            if int(row.get("id", 0)) == 10001:
+                candidates = [s.strip() for s in str(row.get("res", "")).split(",") if s.strip()]
+                if candidates:
+                    return candidates
+    except Exception:
+        pass
+    return STD_IDLE_FALLBACK
+
+
+def get_spine_anims(json_path: Path) -> list:
+    """读 spine json 的动画名列表（4.x 格式 animations 为 dict,取 keys 保持声明顺序）；异常返回空列表"""
+    try:
+        data = json.loads(json_path.read_text(encoding="utf-8"))
+        anims = data.get("animations")
+        if isinstance(anims, dict):
+            return list(anims.keys())
+    except Exception:
+        pass
+    return []
+
+
+def pick_idle_anim(anims: list, std_candidates: list) -> str:
+    """检测骨架动画列表的待机动画（idle 动画替代规则,新 Mod 生成脚本同样继承）：
+    命中标准候选(大小写不敏感全等)→返回""(不需替代,运行时走框架候选解析)；
+    否则取首个小写含 idle 的动画原始名(保留大小写,Spine SetAnimation 需精确名)；
+    完全没有含 idle 动画→返回""(不生成 idle_anim 键,保持现状静态显示)"""
+    lowers = {a.lower() for a in anims}
+    for c in std_candidates:
+        if c.lower() in lowers:
+            return ""
+    for a in anims:
+        if "idle" in a.lower():
+            return a
+    return ""
+
+
 def backup_excel(excel_path: Path, mod_project: Path):
-    """覆盖 Excel 前备份到 MOD项目/ExcelBackup/（Assets 之外，不被导出工具扫描、不产生 .meta）"""
-    if excel_path.exists():
-        backup_dir = mod_project / "ExcelBackup"
-        backup_dir.mkdir(exist_ok=True)
-        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        shutil.copy2(excel_path, backup_dir / f"{excel_path.name}.bak.{stamp}")
+    """覆盖 Excel 前备份到 MOD项目/ExcelBackup/（Assets 之外，不被导出工具扫描、不产生 .meta）；
+    滚动复用 .bak.1~.bak.3（1=最新）——移位覆盖旧文件不新增，目录里永远只有最近 3 份，并顺带清掉旧版时间戳命名备份"""
+    if not excel_path.exists():
+        return
+    backup_dir = mod_project / "ExcelBackup"
+    backup_dir.mkdir(exist_ok=True)
+    name = excel_path.name
+    # 移位覆盖：bak.3←bak.2、bak.2←bak.1（replace 直接覆盖复用旧文件，不产生新文件）
+    for i in range(3, 1, -1):
+        newer = backup_dir / f"{name}.bak.{i - 1}"
+        if newer.exists():
+            newer.replace(backup_dir / f"{name}.bak.{i}")
+    shutil.copy2(excel_path, backup_dir / f"{name}.bak.1")
+    # 清理非滚动命名的旧备份（时间戳版等），保证永远都只有 3 份
+    keep = {f"{name}.bak.{i}" for i in range(1, 4)}
+    for old in backup_dir.iterdir():
+        if old.is_file() and old.name.startswith(f"{name}.bak.") and old.name not in keep:
+            old.unlink()
 
 
-def build_other_data(ui_show_res: str, ui_show_data: str = "", ui_show_skin: str = "") -> str:
+def build_other_data(ui_show_res: str, ui_show_data: str = "", ui_show_skin: str = "", ui_show_idle_anim: str = "") -> str:
     """拼 other_data 键值串：& 拆项、每项首个 : 拆键值（同主项目 attack_mode other_data 规约），缺省键省略；
-    ArkReSpine 药只改 ui_show（详情UI），不动 show/world，故只有 ui_show 三键"""
+    ArkReSpine 药只改 ui_show（详情UI），不动 show/world，故只有 ui_show 系键；
+    ui_show_idle_anim=ui_show 骨架无标准待机动画时的替代动画名（idle 动画替代规则自动检测,命中候选/无 idle 均省略）"""
     segs = []
     if ui_show_res:
         segs.append(f"ui_show_res:{ui_show_res}")
@@ -141,6 +202,8 @@ def build_other_data(ui_show_res: str, ui_show_data: str = "", ui_show_skin: str
         segs.append(f"ui_show_data:{ui_show_data}")
     if ui_show_skin:
         segs.append(f"ui_show_skin:{ui_show_skin}")
+    if ui_show_idle_anim:
+        segs.append(f"ui_show_idle_anim:{ui_show_idle_anim}")
     return "&".join(segs)
 
 
@@ -172,14 +235,17 @@ def read_preserved_ui_show_data(excel_path: Path) -> dict:
     return preserved
 
 
-def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, preserved_ui: dict = None):
-    """扫描资源套装计算道具行，返回 (道具行列表, 跳过套装清单, 警告清单)；道具行 key 为干净字段名；
-    preserved_ui=scan 前从旧道具表读出的 ui_show_data 手调值（按 id 保留）"""
+def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, preserved_ui: dict = None, std_idle_candidates: list = None):
+    """扫描资源套装计算道具行，返回 (道具行列表, 跳过套装清单, 警告清单, idle统计dict)；道具行 key 为干净字段名；
+    preserved_ui=scan 前从旧道具表读出的 ui_show_data 手调值（按 id 保留）；
+    std_idle_candidates=主项目标准待机动画候选名列表（idle 动画替代规则检测用,None 时跳过检测）"""
     preserved_ui = preserved_ui or {}
     items = []
     used_ids = set()
     warnings = []
     skipped = []
+    # idle 动画检测统计（资源级,多皮肤药共享同一检测值）：std=命中标准候选, replaced=替代动画, none=完全无 idle
+    idle_stats = {"std": 0, "replaced": 0, "none": 0}
 
     for set_dir in sorted(source_dir.iterdir(), key=lambda p: natural_key(p.name)):
         if not set_dir.is_dir():
@@ -194,7 +260,7 @@ def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, preserve
         # 收集套装内全部资源：子目录(自然序)下每个 *_SkeletonData.asset
         # 资源名=资产文件名去扩展名(保留 _SkeletonData, 与构建器 Address=Path.GetFileNameWithoutExtension 及 AeonsEchoSpine 约定一致)；
         # 同名 spine json=文件名去 _SkeletonData.asset + .json
-        resources = []  # [(子目录名, 资源名, json路径, 皮肤列表)]
+        resources = []  # [(子目录名, 资源名, json路径, 皮肤列表, 替代待机动画名)]
         for sub_dir in sorted([d for d in set_dir.iterdir() if d.is_dir()], key=lambda p: natural_key(p.name)):
             for sd_file in sorted(sub_dir.glob("*_SkeletonData.asset"), key=lambda p: natural_key(p.name)):
                 res_name = sd_file.name[: -len(".asset")]
@@ -202,13 +268,28 @@ def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, preserve
                 if not json_path.exists():
                     warnings.append(f"{set_dir.name}/{sub_dir.name}: {res_name} 缺同名 spine json,跳过该资源")
                     continue
-                resources.append((sub_dir.name, res_name, json_path, get_spine_skins(json_path)))
+                # idle 动画替代规则(资源级检测,多皮肤药共享):骨架无标准待机动画时取首个含 idle 的动画名
+                res_idle_anim = ""
+                if std_idle_candidates is not None:
+                    anims = get_spine_anims(json_path)
+                    res_idle_anim = pick_idle_anim(anims, std_candidates=std_idle_candidates)
+                    if not anims:
+                        idle_stats["none"] += 1
+                        warnings.append(f"{set_dir.name}/{sub_dir.name}: {res_name} 动画列表读取失败,未检测 idle 动画")
+                    elif res_idle_anim:
+                        idle_stats["replaced"] += 1
+                    elif not any(c.lower() in {a.lower() for a in anims} for c in std_idle_candidates):
+                        idle_stats["none"] += 1
+                        warnings.append(f"{set_dir.name}/{sub_dir.name}: {res_name} 无任何 idle 动画(详情UI将静态显示)")
+                    else:
+                        idle_stats["std"] += 1
+                resources.append((sub_dir.name, res_name, json_path, get_spine_skins(json_path), res_idle_anim))
         if not resources:
             skipped.append(f"{set_dir.name}(无有效 spine 资源)")
             continue
 
         seq = 0
-        for sub_name, res_name, json_path, skins in resources:
+        for sub_name, res_name, json_path, skins, res_idle_anim in resources:
             # 组合规则：具名皮肤(≠default)各出 1 药带 ui_show_skin 键；只有 default(或无皮肤) → 出 1 药不带皮肤键
             named_skins = [s for s in skins if s != DEFAULT_SKIN]
             combos = [(s,) for s in named_skins] if named_skins else [("",)]
@@ -228,7 +309,7 @@ def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, preserve
                     height = get_spine_height(json_path)
                     ui_scale = round(ui_scale_k / height, 4) if height > 0 else 0.12
                     ui_show_data = f"{ui_scale};0,{int(ui_pos_y)}"
-                other_data = build_other_data(res_name, ui_show_data, skin)
+                other_data = build_other_data(res_name, ui_show_data, skin, res_idle_anim)
                 items.append({
                     "id": self_id,
                     "item_type": ITEM_TYPE_TRANSFORM_POTION,
@@ -249,7 +330,7 @@ def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, preserve
                     "_seq": seq,
                     "_skin": skin,
                 })
-    return items, skipped, warnings
+    return items, skipped, warnings, idle_stats
 
 
 def write_item_excel(excel_path: Path, items, mod_project: Path):
@@ -391,11 +472,13 @@ def main():
             print(f"[错误] 资源目录不存在: {source_dir}")
             sys.exit(1)
         preserved_ui = {} if args.reset_layout else read_preserved_ui_show_data(item_excel)
-        items, skipped, warnings = compute_items(source_dir, args.ui_scale_k, args.ui_pos_y, preserved_ui)
+        std_idle_candidates = load_std_idle_candidates()
+        items, skipped, warnings, idle_stats = compute_items(source_dir, args.ui_scale_k, args.ui_pos_y, preserved_ui, std_idle_candidates)
         write_item_excel(item_excel, items, mod_project)
         kept = merge_language_excel(lang_excel, items, mod_project)
         print(f"[scan] 重建道具表 {len(items)} 行 → {item_excel}")
         print(f"[scan] 合并语言表（保留人工内容 {kept} 格）→ {lang_excel}")
+        print(f"[scan] idle 动画检测：命中标准候选 {idle_stats['std']}，替代动画 {idle_stats['replaced']}，无 idle {idle_stats['none']}（标准候选={','.join(std_idle_candidates)}）")
         if args.reset_layout:
             print("[scan] --reset-layout：ui_show_data 全部按骨架重算")
         elif preserved_ui:

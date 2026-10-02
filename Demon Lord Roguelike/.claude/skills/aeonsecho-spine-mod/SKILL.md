@@ -6,6 +6,7 @@ watched_files:
   - Assets/Scripts/Bean/MVC/Game/ItemsInfoBean.cs
   - Assets/Scripts/Bean/MVC/Game/ItemsInfoBeanPartial.cs
   - Assets/Scripts/Component/Handler/CreatureHandler.cs
+  - Assets/Scripts/Component/Handler/SpineHandler.cs
   - Assets/Scripts/Utils/GameUIUtil.cs
   - Assets/FrameWork/Scripts/Bean/BaseBean.cs
   - Assets/FrameWork/Editor/Base/Window/ExcelEditorWindow.cs
@@ -67,6 +68,7 @@ MOD项目/Assets/ModResource/Spine/AeonsEcho/
   - `ui_show_data`：详情UI尺寸 `scale;x,y`（格式同 `CreatureModelBean.ui_data_b`）；生成器按 `645/Avator骨架高` 校准 scale（2026-09 起由 430 基准放大 1.5 倍），默认位移 `0,0`（原为 `0,-215`）
   - `show_data`：默认展示小卡UI尺寸 `scale;x,y`（格式同 `CreatureModelBean.ui_data_s`，2026-09-21 由 ui_chess_data 改名）；生成器按 `3159/默认展示骨架高` 校准 scale（3159=842.4×2.5×1.5：主游戏人形骨架 ui_data_s 基准 2.5 放大 1.5 倍，2026-09 起），默认位移 `0,-120`
   - `world_data`：世界显示尺寸/偏移 `scale;x,y`（x=横向偏移，y=竖向抬升；**战斗/基地/议会等世界空间 SkeletonAnimation 显示消费**，2026-09-21 新增）；**无骨架校准来源，默认不生成该键**——手调入口=主项目幻化药测试面板场景列表/单个预览场景组；**scan 全量重建时按 id 保留手调值**（脚本 `read_preserved_layout_data`，2026-09-27 起扩展为 show_data/ui_show_data/world_data 三键同保，`--reset-layout` 可强制重算），不会被校准覆盖
+  - `idle_anim` / `ui_show_idle_anim`：show / ui_show 骨架的替代待机动画名（**idle 动画替代规则**，2026-09-28 起，详见 mod-system SKILL 通用规则节）：对应骨架动画列表命中主项目标准待机候选（`idle,wait,idle1,wait1,stand`）时省略=走框架候选解析；无标准候选时取首个小写含 `idle` 的动画名（如 Elf 系=`idle_emo1`，当前仅 26 个段次命中替代）；完全没有含 idle 动画则不生成该键+警告
   - 无 ui_show 形态示例：`show_res:851101_Chess_SkeletonData&show_data:3.4439;0,-120`
   - 仅详情UI幻化形态示例（套装无 Chess）：`ui_show_res:6001_Elf_SkeletonData&ui_show_data:0.1828;0,0`
   - 2026-09-21 起由旧位置段格式（`chessRes,avatorRes|uiData|chessUiData`）改为键值格式；旧数据用生成脚本 `migrate` 子命令一次性迁移（幂等，数值原样保留）
@@ -78,23 +80,24 @@ MOD项目/Assets/ModResource/Spine/AeonsEcho/
 
 | 机制 | 位置 |
 |------|------|
-| other_data 键值解析 | `CreatureBeanPartial.ParseTransformOtherData`（`#region 幻化相关`，`&` 拆项 + `:` 拆键值；**6 出参**，2026-09-24 起含 `ui_show_skin` 键=ui_show 指定皮肤名，ArkReSpine 多皮肤药配置，本 Mod 不用） |
+| other_data 键值解析 | `CreatureBeanPartial.ParseTransformOtherData`（`#region 幻化相关`，`&` 拆项 + `:` 拆键值；返回 `TransformOtherData` 结构体，2026-09-28 由多 out 参数重构，含 `idle_anim`/`ui_show_idle_anim` 键=show/ui_show 骨架替代待机动画） |
 | 基础形象（show_res 键） | `CreatureBeanPartial.GetTransformSpineRes` |
-| 高清展示（ui_show_res 键） | `CreatureBeanPartial.GetTransformUIShowSpineRes` → `CreatureHandler.SetCreatureData`（isUIShow 分支**独立判定、不依赖 show_res**：有 ui_show_res 即替换详情UI形象并跳过原生物皮肤，2026-09-22 起支持仅详情UI幻化道具；**例外**：配了 ui_show_skin 键的幻化药在 hasTransform 时仍按名换肤 `SpineHandler.ChangeSkeletonSkin(Skeleton, string)`——ArkReSpine 多皮肤药专用，2026-09-24 起） |
+| 高清展示（ui_show_res 键） | `CreatureBeanPartial.GetTransformUIShowSpineRes` → `CreatureHandler.SetCreatureData`（isUIShow 分支**独立判定、不依赖 show_res**：有 ui_show_res 即替换详情UI形象并跳过原生物皮肤，2026-09-22 起支持仅详情UI幻化道具；**例外**：配了 ui_show_skin 键的幻化药在 hasTransform 时仍按名换肤 `SpineHandler.ChangeSkeletonSkin(Skeleton, string)`——ArkReSpine 多皮肤药专用，2026-09-24 起；皮肤串支持「|」分隔多皮肤，拆分后多个改调 params 叠加重载——CherryTaleSpine 组合皮药用，2026-09-29 起） |
 | 详情UI尺寸（ui_show_data 键） | `CreatureBeanPartial.GetTransformUIShowData` → `GameUIUtil.SetCreatureUIForDetails`（替代原生物 ui_data_b）；编辑器下测试覆盖层 `TransformPotionUITestOverride` 优先 |
 | 小卡UI尺寸（show_data 键） | `CreatureBeanPartial.GetTransformShowData` → `GameUIUtil.SetCreatureUIForSimple`（替代原生物 ui_data_s）；编辑器下测试覆盖层 `TransformPotionUITestOverride` 优先 |
 | 尺寸/位置测试覆盖层 | `Assets/Scripts/Bean/Game/TransformPotionUITestOverride.cs`（`#if UNITY_EDITOR` 整文件，打包无）：key=幻化药完整id 的「scale;x,y」覆盖值×3段，被上面三个 Get 优先消费；`GetAllDirtyIds` 供批量保存 |
-| 世界显示尺寸/偏移（world_data 键） | `CreatureBeanPartial.GetTransformWorldData` → `CreatureHandler.SetCreatureData`（SkeletonAnimation 分支：缩放=size_spine×体型×world倍率，spine 节点 localPosition=偏移或归零恒管理防池化残留）；编辑器下测试覆盖层优先；战斗受击抖动基准=`FightCreatureEntity.AnimForAnimForUnderAttackShake` 按偏移复位 |
+| 世界显示尺寸/偏移（world_data 键） | `CreatureBeanPartial.GetTransformWorldData` → `CreatureHandler.SetCreatureData`（SkeletonAnimation 分支：缩放=size_spine×体型×world倍率，spine 节点 localPosition=偏移或归零恒管理防池化残留；**仅 hasTransform[有 show_res] 时消费**，无 show_res 的详情UI幻化药写了也不生效——测试面板场景段对此类药已禁调，2026-10-01 起）；编辑器下测试覆盖层优先；战斗受击抖动基准=`FightCreatureEntity.AnimForAnimForUnderAttackShake` 按偏移复位（同样带 show_res 门控，2026-10-01 起） |
+| 替代待机动画（idle_anim/ui_show_idle_anim 键，2026-09-28 起） | show 段=`CreatureBeanPartial.GetTransformIdleAnim` → 游戏层 `SpineHandler.GetAnimNameAppoint`（Idle 分支幻化时优先按名直播，缺省交框架候选）；ui_show 段=`GetTransformUIShowIdleAnim` → `GameUIUtil.SetCreatureUIForDetails` 播放动画三级分支（非空→框架按名直播；ui_show_res 非空→框架候选；否则原链路） |
 | 调参预览+写回 | `Assets/Scripts/Component/UI/Test/TestTransformPotionGUI.cs`（测试模式-卡片测试-Mod幻化药测试面板，四个页签）：单个预览/小卡列表/大卡列表/场景列表，详见下节 |
 
 ## 调参写回（幻化药测试面板，2026-09-21 新增；同日开始支持列表批量与 world_data）
 
 在主项目里预览并调整幻化药的小卡/详情UI/世界显示的尺寸与位置，无需离开 Play 模式即可写回本 Mod（**只改 ui_show_data/show_data/world_data 三键，show_res/ui_show_res 等其余键原样保留**）：
 
-- **四个页签**：①单个预览=下拉选药+◀▶左右快速切换（含无幻化项，两端停住） + 小卡/大卡/场景对比 + 三组文本框精输与滑动条粗调（缩放对数映射 0.01~20；位置 UI±600 取整/世界±2 两位小数）；②小卡列表=列×行网格真实卡片（show_data）；③大卡列表=列×行网格真实详情卡**卡面模式**（SetData 后隐藏属性/好感/装备/BUFF/MP/备注等详情区块，只留底板+肖像+名字+稀有度+职业+等级；ui_show_data，无 ui_show_res 不可调）；④场景列表=世界空间 spine 一排（world_data）。列表分页（◀▶+跳页）+ **Mod 筛选**（全部/游戏本地/各已加载 Mod）+ **横竖个数与间距步进可调**（布局行，**持久化到项目内 `ProjectSettings/TestTransformPotionLayout.json`，随 git 全队共享**）；网格整体右移避开左侧面板；每项下方名字标签带 ●=未保存修改，另有 **[还原]=单段恢复配置值、[0,0]=位置归零、[复制]/[粘贴]=参数快速套用（静态剪贴板）** 小按钮，拖拽带 4px 阈值防误触。
+- **四个页签**：①单个预览=下拉选药+◀▶左右快速切换（含无幻化项，两端停住） + 小卡/大卡/场景对比 + 三组文本框精输与滑动条粗调（缩放对数映射 0.01~20；位置 UI±600 取整/世界±2 两位小数）；②小卡列表=列×行网格真实卡片（show_data）；③大卡列表=列×行网格真实详情卡**卡面模式**（SetData 后隐藏属性/好感/装备/BUFF/MP/备注等详情区块，只留底板+肖像+名字+稀有度+职业+等级；ui_show_data，仅基础药无 ui_show_res=详情UI回落 show 形象同样可调，标签标注（无Avator)，2026-09-30 起）；④场景列表=世界空间 spine 一排（world_data）。列表分页（◀▶+跳页）+ **Mod 筛选**（全部/游戏本地/各已加载 Mod）+ **横竖个数与间距步进可调**（布局行，**持久化到项目内 `ProjectSettings/TestTransformPotionLayout.json`，随 git 全队共享**）；网格整体右移避开左侧面板；每项下方名字标签带 ●=未保存修改，另有 **[还原]=单段恢复配置值、[0,0]=位置归零、[复制]/[粘贴]=参数快速套用（静态剪贴板）** 小按钮，拖拽带 4px 阈值防误触。
 - **悬停交互**（列表与单个预览通吃）：鼠标移到目标卡片/模型上 → 滚轮等比改缩放（×1.05/格）、左键拖拽改位置（卡片按 Canvas 单位取整/场景按相机视场换算世界单位保留 2 位小数）；拖拽期间只直改显示不打断动画。
 - **预览**：调参写入 `TransformPotionUITestOverride` 覆盖层 → 三个 Get 优先返回 → 所有走真实显示链的 UI/世界显示立即生效；场景 spine 为「根节点摆放 + Renderer 子节点承载缩放/偏移」结构（与游戏内实体一致）。
-- **保存链路**（面板底栏「保存全部修改（N)」按钮，`SaveAllOverrides` 批量版）：Mod 项目根读 `EditorPrefs["ModBuildEditorWindow.ModProjectPath"]`（即 Mod构建工具里配的路径）→ **按 modId 分组路由**（2026-09-24 起，modId→modName 经 `ModManager.GetModJsonTextFileInfos`，各 Mod 独立处理）：① EPPlus 直写该 Mod 的道具 Excel（唯一真实源；路径按 `GetModItemsExcelRelPath` 约定——AeonsEchoSpine=`Assets/Data/Excel/excel_mod_items_info[Mod道具信息].xlsx` 历史文件名，后续 Mod=`excel_mod_items_info_{modName小写}[Mod道具信息-{modName}].xlsx`，如 ArkReSpine；按自ID=`完整id % 10^14` 定位行，**全部修改一次打开一次写盘**；**每次 Play 会话每文件首次写入前自动备份到 `MOD项目/ExcelBackup/`**；文件被 Excel/WPS 占用会红字提示）→ ② 直补两处 JsonText（`MOD项目/Mods/{modName}/JsonText/ItemsInfo.txt` + 主项目部署副本 `Mods/{modName}/JsonText/ItemsInfo.txt`，按 `"id":<自ID>,` 锚点定位批量替换 other_data 值）→ ③ 当前会话内存 `ItemsInfoCfg` 同步并清覆盖层。内置幻化药（无 modId 前缀）跳过并计数提示。**不用再跑 export/部署管线**；下次正常跑 export 以 Excel 为准重新生成也不冲突。
+- **保存链路**（面板底栏「保存全部修改（N)」按钮，`SaveAllOverrides` 批量版）：Mod 项目根读 `EditorPrefs["ModBuildEditorWindow.ModProjectPath"]`（即 Mod构建工具里配的路径）→ **按 modId 分组路由**（2026-09-24 起，modId→modName 经 `ModManager.GetModJsonTextFileInfos`，各 Mod 独立处理）：① EPPlus 直写该 Mod 的道具 Excel（唯一真实源；路径按 `GetModItemsExcelRelPath` 约定——AeonsEchoSpine=`Assets/Data/Excel/excel_mod_items_info[Mod道具信息].xlsx` 历史文件名，后续 Mod=`excel_mod_items_info_{modName小写}[Mod道具信息-{modName}].xlsx`，如 ArkReSpine；按自ID=`完整id % 10^14` 定位行，**全部修改一次打开一次写盘**；**每次 Play 会话每文件首次写入前自动备份到 `MOD项目/ExcelBackup/`（滚动复用 .bak.1~3，只留最近 3 份）**；文件被 Excel/WPS 占用会红字提示）→ ② 直补两处 JsonText（`MOD项目/Mods/{modName}/JsonText/ItemsInfo.txt` + 主项目部署副本 `Mods/{modName}/JsonText/ItemsInfo.txt`，按 `"id":<自ID>,` 锚点定位批量替换 other_data 值）→ ③ 当前会话内存 `ItemsInfoCfg` 同步并清覆盖层。内置幻化药（无 modId 前缀）跳过并计数提示。**不用再跑 export/部署管线**；下次正常跑 export 以 Excel 为准重新生成也不冲突。
 - **护栏**：参数非法红字拦截；全部调参与保存逻辑 `#if UNITY_EDITOR`；「清空未保存修改」一键丢弃全部覆盖。
 - 保存只影响三个尺寸键；若资源套装变更（新增/删除套装），仍须走正常 `scan`/`all` 生成流程（**布局三键 show_data/ui_show_data/world_data 手调值默认按 id 保留**，新增资源按骨架校准默认值；需强制全部重算时加 `--reset-layout`，2026-09-27 起）。
 | Mod 道具/语言合并 | `BaseCfg.GetInitDataForMods` → id 拼接 + `BaseBean.CombineModReferenceIds` 钩子（由生成器按列头 `name[language]` 标记自动重写进 `ItemsInfoBean.cs`） |
@@ -126,8 +129,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".claude/scripts/run-pyt
 
 **两段式流水线**（脚本 `.claude/scripts/gen_aeonsecho_spine_mod.py`）：
 
-- `scan`：扫描 AeonsEcho 资源套装 → 重建/合并 **MOD 项目的两张 Excel**（可用 Excel/WPS 直接打开查看、调整参数）：
-  - `Assets/Data/Excel/excel_mod_items_info[Mod道具信息].xlsx` — 道具配置（3 行表头：列名/类型/说明，与主项目 excel_items_info 同布局，`name[language]` 标记列）；**全量重建**，覆盖前自动备份到 `MOD项目/ExcelBackup/`（Assets 之外，符合 Excel 备份清理规则）
+- `scan`：扫描 AeonsEcho 资源套装 → 重建/合并 **MOD 项目的两张 Excel**（可用 Excel/WPS 直接打开查看、调整参数）；**idle 动画检测**（2026-09-28 起：show 段 Chess 骨架→`idle_anim` 键、ui_show 段变体骨架→`ui_show_idle_anim` 键，无标准待机候选时取首个含 idle 动画名，扫描结束打印 命中/替代/无idle 统计）：
+  - `Assets/Data/Excel/excel_mod_items_info[Mod道具信息].xlsx` — 道具配置（3 行表头：列名/类型/说明，与主项目 excel_items_info 同布局，`name[language]` 标记列）；**全量重建**，覆盖前自动备份到 `MOD项目/ExcelBackup/`（Assets 之外，符合 Excel 备份清理规则；滚动复用 .bak.1~3，只留最近 3 份）
   - `Assets/Data/Excel/excel_mod_language[Mod多语言].xlsx` — 道具名多语言（id + content_{12语言}）；**按 id 合并保留人工改名**，新增道具补默认名、失效 id 清理；某语言留空 = 英文兜底
 - `export`：读两张 Excel → 导出 JsonText
 - `migrate`：道具表 other_data 旧位置段格式 → 键值格式的一次性迁移（幂等：已是键值格式的行跳过；数值原样保留，有改动才备份写回）。仅 2026-09-21 格式切换时使用，新跑的 scan 直接产键值格式，正常流程不再需要

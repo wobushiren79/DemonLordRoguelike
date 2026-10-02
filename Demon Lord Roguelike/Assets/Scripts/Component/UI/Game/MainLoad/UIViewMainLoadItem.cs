@@ -74,16 +74,11 @@ public partial class UIViewMainLoadItem : BaseUIView
     }
 
     /// <summary>
-    /// 设置生物UI
+    /// 设置生物UI(按大卡参数: 复用详情UI显示链, 含幻化ui_show_data尺寸/肖像覆盖/ui_data_b缩放位置/等比sizeDelta防裁切)
     /// </summary>
     public void SetCreatureUI(CreatureBean creatureData)
     {
-        //设置spine
-        CreatureHandler.Instance.SetCreatureData(ui_Icon, creatureData, isUIShow: true);
-        //播放动画
-        SpineHandler.Instance.PlayAnim(ui_Icon, SpineAnimationStateEnum.Idle, creatureData, true);
-        //设置UI大小和坐标
-        creatureData.creatureModel.ChangeUISizeForB(ui_Icon.rectTransform);
+        GameUIUtil.SetCreatureUIForDetails(ui_Icon, null, creatureData);
         ui_Icon.raycastTarget = false;
     }
 

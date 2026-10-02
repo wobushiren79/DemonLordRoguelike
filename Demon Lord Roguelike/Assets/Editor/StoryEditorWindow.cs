@@ -22,7 +22,7 @@ public class StoryEditorWindow : EditorWindow
     private static string ExcelPathDetails => ExcelDir + "/excel_story_details_info[故事详情信息].xlsx";
     private static string ExcelPathTalk => ExcelDir + "/excel_story_talk_info[故事对话信息].xlsx";
     private static string ExcelPathLanguage => ExcelDir + "/excel_language[多语言_FrameWork].xlsx";
-    /// <summary>镜头目标标记(基地建筑/通用),与 StoryHandler.GetStoryMarkerPosition 保持一致</summary>
+    /// <summary>镜头目标标记(基地建筑/通用),与 StoryHandler.GetStoryMarkerPosition 保持一致;基地建筑标记→CV 参数映射见 StoryHandler.dicMarkerToCVName</summary>
     private static readonly string[] CameraMarkers = { "back", "self", "core", "portal", "gashapon", "juicer", "altar", "vat", "achievement", "council" };
     /// <summary>对话框对齐下拉值(Talk 步骤 param_2 对齐段,首项=默认下对齐写空串;其余与 StoryDetailsInfoBean.TalkContentAligns 一一对应)</summary>
     private static readonly string[] TalkAlignValues = { "", "bottom_left", "bottom_right", "middle", "middle_left", "middle_right", "top", "top_left", "top_right" };
@@ -668,7 +668,7 @@ public class StoryEditorWindow : EditorWindow
                 DrawTalkStepParams(step);
                 break;
             case StoryStepTypeEnum.CameraMove:
-                DrawMarkerField(new GUIContent("目标标记", "back=回演出起始位;基地=self/core/portal/gashapon/juicer/altar/vat/achievement/council;战斗=core"), step, 1);
+                DrawMarkerField(new GUIContent("目标标记", "back=回演出起始位;基地=self/core/portal/gashapon/juicer/altar/vat/achievement/council;战斗=core。基地建筑标记(core/portal/gashapon/juicer/altar/vat/achievement)镜头参数同步补间到对应 CV(如 core→CV_Core),其余标记沿用演出起始参数"), step, 1);
                 DrawFloatField(new GUIContent("时长(秒)", "默认1"), step, 2, 1f);
                 DrawIntField(new GUIContent("缓动序号", "0=DOTween默认缓动,其余按 DG.Tweening.Ease 强转"), step, 3, 0);
                 break;
@@ -693,7 +693,25 @@ public class StoryEditorWindow : EditorWindow
                 EditorGUILayout.EndHorizontal();
                 DrawFloatField(new GUIContent("时长(秒)", "默认0.5"), step, 2, 0.5f);
                 break;
+            case StoryStepTypeEnum.UIHandle:
+                DrawTextField(new GUIContent("隐藏UI名(&分隔)", "要隐藏的UI名字,多个用&分隔;名字=类名=Resources/UI/预制体名,如 UIBaseMain"), step, 1);
+                DrawTextField(new GUIContent("显示UI名(&分隔)", "要显示的UI名字,多个用&分隔;名字=类名=Resources/UI/预制体名,如 UIBaseMain"), step, 2);
+                break;
         }
+    }
+
+    /// <summary>
+    /// 通用纯文本参数行(写回字符串参数列)
+    /// </summary>
+    private void DrawTextField(GUIContent label, StepRow step, int paramIndex)
+    {
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField(label, GUILayout.Width(110));
+        string value = GetStepParam(step, paramIndex);
+        string newValue = EditorGUILayout.TextField(value);
+        if (newValue != value)
+            SetStepParam(step, paramIndex, newValue);
+        EditorGUILayout.EndHorizontal();
     }
 
     /// <summary>
@@ -1568,9 +1586,37 @@ public class StoryEditorWindow : EditorWindow
                 if (step.param1 != "out" && step.param1 != "in")
                     errors.Add($"{prefix}: 淡入淡出方向只能是 out/in \"{step.param1}\"");
                 break;
+            case StoryStepTypeEnum.UIHandle:
+                //隐藏/显示至少填一项;每个名字按 Resources/UI/ 预制体存在性校验(名字=类名=预制体名)
+                if (string.IsNullOrEmpty(step.param1) && string.IsNullOrEmpty(step.param2))
+                    errors.Add($"{prefix}: UI处理步骤没有配置任何隐藏/显示UI名");
+                ValidateUIHandleNames(step.param1, $"{prefix}隐藏UI名", errors);
+                ValidateUIHandleNames(step.param2, $"{prefix}显示UI名", errors);
+                break;
             default:
                 errors.Add($"{prefix}: 未知步骤类型 {step.stepType}");
                 break;
+        }
+    }
+
+    /// <summary>
+    /// 校验UI处理步骤的UI名字串(&amp;分隔):逐个检查 Resources/UI/ 下存在同名预制体
+    /// </summary>
+    private void ValidateUIHandleNames(string paramValue, string prefix, List<string> errors)
+    {
+        if (string.IsNullOrEmpty(paramValue))
+            return;
+        var names = paramValue.Split('&');
+        foreach (var name in names)
+        {
+            string uiName = name.Trim();
+            if (string.IsNullOrEmpty(uiName))
+            {
+                errors.Add($"{prefix}: 存在空的UI名(多余的 & 分隔符?) \"{paramValue}\"");
+                continue;
+            }
+            if (Resources.Load<BaseUIComponent>($"UI/{uiName}") == null)
+                errors.Add($"{prefix}: 找不到UI预制体 UI/{uiName}(名字=类名=Resources/UI/预制体名)");
         }
     }
     #endregion

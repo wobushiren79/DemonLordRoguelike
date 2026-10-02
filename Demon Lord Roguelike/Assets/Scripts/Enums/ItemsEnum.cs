@@ -46,6 +46,7 @@ public enum ItemTypeWeaponEnum
     Bow = 7,             // 弓
     Thrown = 8,          // 投掷物
     Explosive = 9,       // 爆炸物
+    Lance = 10,          // 长枪
 }
 
 

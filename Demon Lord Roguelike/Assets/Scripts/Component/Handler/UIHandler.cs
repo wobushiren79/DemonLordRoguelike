@@ -75,9 +75,14 @@ public partial class UIHandler
         maskUI.StartMask(maskTime, acionForStart, acionForComplete);
     }
 
-    public void HideMask(float maskTime, Action acionForStart, Action acionForComplete, bool isCloseSelf = true)
-    {     
-        var maskUI = OpenUIAndCloseOther<UICommonMask>();
+    /// <summary>
+    /// 隐藏遮罩UI
+    /// </summary>
+    /// <param name="isCloseOther">是否关闭其它UI(故事演出等场景必须传 false,否则会把 UIBaseMain/UIFightMain 等场景UI一并关掉且无人重开)</param>
+    public void HideMask(float maskTime, Action acionForStart, Action acionForComplete, bool isCloseSelf = true, bool isCloseOther = true)
+    {
+        //不关其它UI时强制遮罩置顶(layer 99),保证淡入盖住场景UI(与 ShowMask 的 isCloseOther=false 分支同款处理)
+        var maskUI = isCloseOther ? OpenUIAndCloseOther<UICommonMask>() : OpenUI<UICommonMask>(layer: 99);
         if (maskTime <= 0)
         {
             maskUI.CloseUI();

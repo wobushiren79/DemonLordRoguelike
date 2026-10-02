@@ -77,17 +77,17 @@ public partial class UIViewItemBackpackList : BaseUIView
     {
         listFilterItems.Clear();
 
-        // 如果没有生物数据，显示所有道具
+        // 如果没有生物数据，显示所有道具(配置缺失的失效道具除外——如所属Mod未开启,统一隐藏不展示,数据保留待Mod重开后恢复)
         if (creatureData == null)
         {
-            listFilterItems.AddRange(listBackpackItems);
+            AddValidItems(listFilterItems, listBackpackItems);
             return;
         }
 
         CreatureInfoBean creatureInfo = creatureData.creatureInfo;
         if (creatureInfo == null)
         {
-            listFilterItems.AddRange(listBackpackItems);
+            AddValidItems(listFilterItems, listBackpackItems);
             return;
         }
 
@@ -106,6 +106,20 @@ public partial class UIViewItemBackpackList : BaseUIView
             {
                 listFilterItems.Add(itemData);
             }
+        }
+    }
+
+    /// <summary>
+    /// 把配置有效的道具加入目标列表：跳过 ItemsInfo 配置缺失的失效道具（与有生物上下文分支的过滤口径一致）
+    /// </summary>
+    /// <param name="listTarget">目标列表</param>
+    /// <param name="listSource">源道具列表</param>
+    protected void AddValidItems(List<ItemBean> listTarget, List<ItemBean> listSource)
+    {
+        for (int i = 0; i < listSource.Count; i++)
+        {
+            if (ItemsInfoCfg.GetItemData(listSource[i].itemId) != null)
+                listTarget.Add(listSource[i]);
         }
     }
 
