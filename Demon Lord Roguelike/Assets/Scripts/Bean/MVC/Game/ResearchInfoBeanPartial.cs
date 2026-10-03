@@ -1,9 +1,26 @@
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEngine;
 public partial class ResearchInfoBean
 {
     public List<long> preUnlockIds;
     public long[] arrayPayCrystal;
+
+    #region details 详情描述(临时字段)
+    /// <summary>
+    /// [临时]详情描述-语言id(对应 excel_research_info 的 details[language] 列, 0=无详情)。
+    /// 因本次未跑 Unity 重新生成 Entity 而手写在 Partial(与生成器产物保持一致, 仿 pre_data 先例);
+    /// 重新生成 ResearchInfoBean.cs 后删除本 region(生成物自带 details/details_language, 且 CombineModReferenceIds 自动补 details 拼接)。
+    /// </summary>
+    public long details;
+
+    /// <summary>
+    /// [临时]详情描述多语言文本(懒加载缓存, 语言切换经 LanguageCache 版本号自动失效)
+    /// </summary>
+    [JsonIgnore]
+    public string details_language { get => _details_language.Get(() => TextHandler.Instance.GetTextById(ResearchInfoCfg.fileName, details)); set => _details_language.Set(value); }
+    private LanguageCache _details_language;
+    #endregion
 
     #region pre_data 前置解锁条件(特殊条件)
     /// <summary>pre_data 解析缓存(条件枚举 → 要求数值)</summary>
@@ -61,6 +78,18 @@ public partial class ResearchInfoBean
     /// <param name="value">要求数值</param>
     private static bool CheckPreDataConditionIsMeet(UserDataBean userData, ResearchPreConditionEnum condition, long value)
     {
+        //任意一个世界的无尽模式已解锁(任一世界无尽难度等级>0即满足; GetUnlockInfiniteDifficultyLevel 对未配置/未解锁的世界安全返回0)
+        if (condition == ResearchPreConditionEnum.AnyWorldInfiniteUnlocked)
+        {
+            var userUnlock = userData.GetUserUnlockData();
+            var arrayWorld = GameWorldInfoCfg.GetAllArrayData();
+            for (int i = 0; i < arrayWorld.Length; i++)
+            {
+                if (userUnlock.GetUnlockInfiniteDifficultyLevel(arrayWorld[i].id) > 0)
+                    return true;
+            }
+            return false;
+        }
         //世界1(剑与魔法)征服模式难度通关次数：难度 = 枚举值 - World1ConquerCompleteCount1 + 1, 要求通关次数 >= value
         if (condition >= ResearchPreConditionEnum.World1ConquerCompleteCount1 && condition <= ResearchPreConditionEnum.World1ConquerCompleteCount10)
         {
@@ -115,40 +144,113 @@ public partial class ResearchInfoBean
         return (ResearchInfoTypeEnum)research_type;
     }
 
+    #region details 详情描述(按待解锁等级填充累计效果数值)
+
     /// <summary>
-    /// 获取带「待解锁等级数值详情」的研究名称(如 空格突进（距离1.5）/突进冷却（2.5秒）)
-    /// 仅对多语言模板含 {Value} 占位的节点生效(当前为空格突进 SpaceDash/突进冷却 SpaceDashCD),其余节点原样返回 name_language;
-    /// 数值取 待解锁等级=min(当前等级+1,满级) 对应的效果值——每级只显示当前要解锁那一级的距离/冷却。
-    /// 替换走多语言通用机制 TextHandler.GetTextReplace + TextReplaceEnum.Value(与成就 GetLevelDescription 同口径)。
+    /// 获取带「待解锁等级累计效果」的详情描述(如 （概率40%）/（距离4.5）/（祭品上限5）)
+    /// details==0(无详情配置)返回空串; 模板不含 {Value} 时原样返回(兼容未来的静态详情);
+    /// 数值取 待解锁等级=min(当前等级+1,满级) 对应的累计总效果, 公式统一收口 UserUnlockBean 的 static ForLevel 方法;
+    /// 替换走多语言通用机制 TextHandler.GetTextReplace + TextReplaceEnum.Value(与成就 GetLevelDescription 同口径);
+    /// 括号样式/前导空格由各语言详情文本自带(cn/tw/jp 全角无空格, 其余半角带前导空格), 调用方直接拼在名字后
     /// </summary>
     /// <param name="currentLevel">当前已解锁的研究等级</param>
-    /// <returns>填充数值后的研究名称</returns>
-    public string GetNameLanguageWithLevelDetail(int currentLevel)
+    /// <returns>填充数值后的详情描述; 无详情时返回空串</returns>
+    public string GetDetailsLanguageWithLevelDetail(int currentLevel)
     {
-        string nameLanguage = name_language;
-        if (nameLanguage.IsNull() || !nameLanguage.Contains("{Value}"))
-            return nameLanguage;
+        string detailsLanguage = details_language;
+        if (detailsLanguage.IsNull())
+            return "";
+        if (!detailsLanguage.Contains("{Value}"))
+            return detailsLanguage;
         //待解锁等级:未满级取下一级,满级停留在满级数值
         int targetLevel = Mathf.Min(currentLevel + 1, level_max);
-        float detailValue;
-        if (unlock_id == (long)UnlockEnum.SpaceDash)
+        string detailValue = GetLevelDetailValueString(targetLevel);
+        if (detailValue == null)
         {
-            detailValue = UserUnlockBean.GetSpaceDashDistanceForLevel(targetLevel);
-        }
-        else if (unlock_id == (long)UnlockEnum.SpaceDashCD)
-        {
-            detailValue = UserUnlockBean.GetSpaceDashCDForLevel(targetLevel);
-        }
-        else
-        {
-            return nameLanguage;
+            LogUtil.LogError($"研究(id:{id}) 配置了详情但未登记等级公式(unlock_id:{unlock_id})");
+            return detailsLanguage;
         }
         var dicReplace = new Dictionary<TextReplaceEnum, string>
         {
-            { TextReplaceEnum.Value, $"{detailValue}" },
+            { TextReplaceEnum.Value, detailValue },
         };
-        return TextHandler.Instance.GetTextReplace(nameLanguage, dicReplace);
+        return TextHandler.Instance.GetTextReplace(detailsLanguage, dicReplace);
     }
+
+    /// <summary>
+    /// 获取指定等级的效果数值显示串(按 unlock_id 分发到 UserUnlockBean 的 static ForLevel 公式, 22 个 level_max>1 节点)
+    /// </summary>
+    /// <param name="targetLevel">待解锁等级</param>
+    /// <returns>数值显示串; 未登记公式返回 null(调用方报错并原样显示模板)</returns>
+    private string GetLevelDetailValueString(int targetLevel)
+    {
+        long unlockId = unlock_id;
+        //进阶设施数量 = creatureVatMax + 等级
+        if (unlockId == (long)UnlockEnum.CreatureVatAdd)
+            return $"{UserUnlockBean.GetCreatureVatNumForLevel(targetLevel)}";
+        //进阶加速每次推进秒数(=倍率) = 等级
+        if (unlockId == (long)UnlockEnum.CreatureVatAddProgress)
+            return $"{UserUnlockBean.GetCreatureVatAddProgressForLevel(targetLevel)}";
+        //进阶素材可选上限 = creatureVatMaterialMax + 等级
+        if (unlockId == (long)UnlockEnum.CreatureVatMaterialNum)
+            return $"{UserUnlockBean.GetCreatureVatMaterialMaxForLevel(targetLevel)}";
+        //献祭祭品上限 = sacrificeMax + 等级
+        if (unlockId == (long)UnlockEnum.SacrificeNum)
+            return $"{UserUnlockBean.GetSacrificeMaxForLevel(targetLevel)}";
+        //献祭失败保底概率 = 等级×5%(×100 转百分数, RoundToInt 防 0.05f 浮点尾差)
+        if (unlockId == (long)UnlockEnum.SacrificePityRate)
+            return $"{Mathf.RoundToInt(UserUnlockBean.GetSacrificeFailPityAddRateForLevel(targetLevel) * 100)}";
+        //不同魔物献祭成功率 = 等级×5%(同上转百分数)
+        if (unlockId == (long)UnlockEnum.SacrificeDifferentIdRate)
+            return $"{Mathf.RoundToInt(UserUnlockBean.GetSacrificeDifferentIdRateForLevel(targetLevel) * 100)}";
+        //传送门刷新次数 = 等级
+        if (unlockId == (long)UnlockEnum.PortalRefreshNum)
+            return $"{UserUnlockBean.GetPortalRefreshMaxForLevel(targetLevel)}";
+        //是魔王就挑战100勇士出现概率 = 等级×10
+        if (unlockId == (long)UnlockEnum.ChallengeHundredShowRate)
+            return $"{UserUnlockBean.GetChallengeHundredShowRateForLevel(targetLevel)}";
+        //无尽模式出现概率 = 基础10 + 等级×10(满级9级=100)
+        if (unlockId == (long)UnlockEnum.InfiniteShowRate)
+            return $"{UserUnlockBean.GetInfiniteShowRateForLevel(targetLevel)}";
+        //孕育稀有度命中概率(R/SR/SSR 三条共用) = rarityBaseRate(10) + 等级
+        if (unlockId == (long)UnlockEnum.GashaponRarityRRate || unlockId == (long)UnlockEnum.GashaponRaritySRRate || unlockId == (long)UnlockEnum.GashaponRaritySSRRate)
+            return $"{UserUnlockBean.GetGashaponRarityRateForLevel(targetLevel)}";
+        //魔汁机投入上限 = juicerCreatureMax + 等级
+        if (unlockId == (long)UnlockEnum.JuicerNum)
+            return $"{UserUnlockBean.GetJuicerCreatureMaxForLevel(targetLevel)}";
+        //阵容生物上限 = lineupCreatureMax + 等级
+        if (unlockId == (long)UnlockEnum.LineupCreatureAddNum)
+            return $"{UserUnlockBean.GetLineupCreatureNumForLevel(targetLevel)}";
+        //阵容数量 = lineupMax + 等级
+        if (unlockId == (long)UnlockEnum.LineupNum)
+            return $"{UserUnlockBean.GetLineupNumForLevel(targetLevel)}";
+        //魔晶掉落额外存在时长 = 等级×5 秒
+        if (unlockId == (long)UnlockEnum.DropCrystalLifeTime)
+            return $"{UserUnlockBean.GetDropCrystalAddLifeTimeForLevel(targetLevel)}";
+        //魔王魔力上限加成 = 等级×10
+        if (unlockId == (long)UnlockEnum.DemonLordMPMax)
+            return $"{UserUnlockBean.GetDemonLordMPMaxAddValueForLevel(targetLevel)}";
+        //魔王魔力恢复加成 = 等级×1/秒
+        if (unlockId == (long)UnlockEnum.DemonLordMPF)
+            return $"{UserUnlockBean.GetDemonLordMPFAddValueForLevel(targetLevel)}";
+        //深渊馈赠刷新次数 = 等级
+        if (unlockId == (long)UnlockEnum.AbyssalBlessingRefreshNum)
+            return $"{UserUnlockBean.GetAbyssalBlessingRefreshMaxForLevel(targetLevel)}";
+        //空格突进距离 = 等级×SPACE_DASH_DISTANCE_PER_LEVEL
+        if (unlockId == (long)UnlockEnum.SpaceDash)
+            return $"{UserUnlockBean.GetSpaceDashDistanceForLevel(targetLevel)}";
+        //突进冷却 = max(3-等级×0.5, 1)
+        if (unlockId == (long)UnlockEnum.SpaceDashCD)
+            return $"{UserUnlockBean.GetSpaceDashCDForLevel(targetLevel)}";
+        //魔王自动拾取间隔 = 11-等级(秒)(气泡 targetLevel>=1, 不会命中 -1 禁用档)
+        if (unlockId == (long)UnlockEnum.DemonLordAutoPickCrystal)
+            return $"{UserUnlockBean.GetDemonLordAutoPickCrystalIntervalForLevel(targetLevel)}";
+        //魔王每次拾取魔晶数量 = 1 + 等级
+        if (unlockId == (long)UnlockEnum.DemonLordAutoPickCrystalNum)
+            return $"{UserUnlockBean.GetDemonLordAutoPickCrystalCountForLevel(targetLevel)}";
+        return null;
+    }
+    #endregion
 
     /// <summary>
     /// 获取支付的水晶

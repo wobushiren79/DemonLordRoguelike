@@ -31,7 +31,7 @@
 | 方法 | 说明 |
 |------|------|
 | `StartForFightSceneTest(FightBean)` | 进入战斗场景测试 |
-| `StartForCardTest(FightCreatureBean)` | 打开卡片测试 UI |
+| `StartForCreatureCardEditor(long creatureId, long npcInfoId)` | 打开卡片编辑器测试面板（含图标/模型尺寸校准） |
 | `StartForBaseTest(CreatureBean)` | 进入基地场景测试 |
 | `StartForRewardSelect(RewardSelectTestData)` | 打开奖励选择测试 |
 | `StartForDoomCouncil(long billId)` | 进入终焉议会测试 |
@@ -166,21 +166,25 @@ GM 工具面板，提供快速添加游戏资源的功能。
 
 ---
 
-### 3.3 UITestCard（卡片测试 UI）
+### 3.3 TestCreatureCardGUI（卡片编辑器，运行态）
 
-**文件**: `Scripts/Component/UI/Test/UITestCard.cs`
+**文件**: `Scripts/Component/UI/Test/TestCreatureCardGUI.cs`
 
-用于测试和校准生物卡片的 UI 显示参数，支持实时调整卡片图标大小和位置，并将结果保存到 Excel 配置表。
+纯代码 IMGUI 卡片编辑器面板（不依赖预制，由 `LauncherTest.StartForCreatureCardEditor` 启动），实时预览小卡（`UIViewCreatureCardItem`）+ 大卡详情（`UIViewCreatureCardDetails`）+ 场景 Spine 模型（标准 2001 骷髅战士 vs 当前生物）。
 
 **可调参数**:
 
 | 参数 | 说明 |
 |------|------|
-| 小卡尺寸/位置 | `ui_CreatureCardItem` 的图标缩放和锚点位置 |
-| 大卡尺寸/位置 | `ui_ViewCreatureCardDetails` 的图标缩放和锚点位置 |
-| 实体大小 | Spine 模型的缩放比例 |
+| 数据设置 | 生物/NPC 下拉+手动ID、稀有度、等级、卡片整体缩放 |
+| 颜色编辑 | 稀有度主板/副板色（支持渐变）、等级色，可写回 `excel_rarity_info` / `excel_level_info` |
+| 小卡尺寸/位置 | `UIViewCreatureCardItem` 的图标缩放和锚点位置 |
+| 大卡尺寸/位置 | `UIViewCreatureCardDetails` 的图标缩放和锚点位置 |
+| 模型大小 | 场景 Spine 模型的 `size_spine`（实际缩放=size_spine×体型倍率） |
 
-**保存数据**: 点击"生成数据"按钮，自动将参数写入 `excel_creature_model[生物模型信息].xlsx`
+**保存数据**: 点击「💾 保存尺寸到配置表」，将 `ui_data_s`/`ui_data_b`/`size_spine` 写入 `excel_creature_model[生物模型信息].xlsx` 并再生 JSON、清 Cfg 缓存立即生效。
+
+> 原预制体版「显示卡片」UITestCard 已删除，图标/模型尺寸校准功能并入本面板。
 
 ---
 ### 3.4 NpcCreateEditorWindow（NPC 创建编辑器窗口，非运行态）
@@ -228,7 +232,7 @@ GM 工具面板，提供快速添加游戏资源的功能。
 | 测试控制台 | `Assets/FrameWork/Scripts/Component/UI/UITestConsole.cs` |
 | NPC 创建编辑器窗口（非运行态） | `Assets/Editor/NpcCreateEditorWindow.cs` + 5 个 partial |
 | 测试基础 UI | `Assets/Scripts/Component/UI/Test/UITestBase.cs` |
-| 卡片测试 UI | `Assets/Scripts/Component/UI/Test/UITestCard.cs` |
+| 卡片编辑器测试面板 | `Assets/Scripts/Component/UI/Test/TestCreatureCardGUI.cs` |
 | 研究 UI 测试 | `Assets/Scripts/Component/UI/Game/BaseResearch/UIBaseResearchTest.cs` |
 | 临时测试 | `Assets/Scripts/TestTemp.cs` |
 | 测试场景 | `Assets/Scenes/TestScene.unity` |
@@ -250,9 +254,9 @@ GM 工具面板，提供快速添加游戏资源的功能。
 
 1. 选择 `CardTest`
 2. 输入生物 ID 或 NPC ID
-3. 运行后点击"显示卡片"
-4. 实时调整小卡/大卡的尺寸和位置
-5. 点击"生成数据"保存到 Excel
+3. 运行后点击「🎛️ 卡片编辑器」
+4. 左侧面板调整稀有度/等级/颜色与小卡/大卡图标尺寸位置、场景模型大小（滑条或文本输入，实时生效）
+5. 分别点击「💾 保存颜色到配置表」/「💾 保存尺寸到配置表」写回 Excel 并再生 JSON
 
 ### 5.3 NPC 创建编辑（编辑器版，无需运行）
 

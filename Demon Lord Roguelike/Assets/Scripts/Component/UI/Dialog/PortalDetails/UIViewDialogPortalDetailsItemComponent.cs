@@ -11,7 +11,7 @@ public partial class UIViewDialogPortalDetailsItem
 
     public TextMeshProUGUI ui_Level;
 
-    public RawImage ui_Icon;
+    public Image ui_Icon;
 
     public CanvasGroup ui_UIViewDialogPortalDetailsItem;
 

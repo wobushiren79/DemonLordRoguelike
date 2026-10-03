@@ -251,7 +251,17 @@ public class UserUnlockBean
     /// <returns>每次回满时的刷新次数上限</returns>
     public int GetUnlockPortalRefreshMax()
     {
-        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.PortalRefreshNum);
+        return GetPortalRefreshMaxForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.PortalRefreshNum));
+    }
+
+    /// <summary>
+    /// 获取指定「传送门刷新」研究等级对应的刷新次数上限：等级即上限(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">传送门刷新研究等级</param>
+    /// <returns>该等级的刷新次数上限</returns>
+    public static int GetPortalRefreshMaxForLevel(int level)
+    {
+        return level;
     }
 
     /// <summary>
@@ -265,14 +275,62 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 「是魔王就挑战100勇士」出现概率每级研究增量(百分数)：总概率=研究等级×此值(1级=10%,满级10级=100%)。
+    /// 集中此处便于统一调整(传送门世界生成与研究气泡文本均引用此值)
+    /// </summary>
+    public const int CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL = 10;
+
+    /// <summary>
     /// 获取「是魔王就挑战100勇士」世界出现概率(百分数0~100)
-    /// = 研究(UnlockEnum.ChallengeHundredShowRate)等级 × 10; 未解锁(0级)返回 0,满级(10级)为 100
+    /// = 研究(UnlockEnum.ChallengeHundredShowRate)等级 × CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL; 未解锁(0级)返回 0,满级(10级)为 100
     /// 每次传送门数据刷新生成世界时按该概率判定是否生成为挑战100勇士世界
     /// </summary>
     /// <returns>出现概率百分数(0~100)</returns>
     public int GetUnlockChallengeHundredShowRate()
     {
-        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.ChallengeHundredShowRate) * 10;
+        return GetChallengeHundredShowRateForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.ChallengeHundredShowRate));
+    }
+
+    /// <summary>
+    /// 获取指定研究等级对应的「是魔王就挑战100勇士」世界出现概率(百分数)：等级×CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL
+    /// </summary>
+    /// <param name="level">挑战100勇士出现概率研究等级</param>
+    /// <returns>该等级的出现概率百分数(0~100)</returns>
+    public static int GetChallengeHundredShowRateForLevel(int level)
+    {
+        return level * CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL;
+    }
+
+    /// <summary>
+    /// 无尽模式出现概率基础值(百分数10, 即原固定1/10概率)：总概率=此值+研究等级×INFINITE_SHOW_RATE_PER_LEVEL。
+    /// 集中此处便于统一调整(传送门世界生成与研究气泡文本均引用此值)
+    /// </summary>
+    public const int INFINITE_SHOW_RATE_BASE = 10;
+
+    /// <summary>
+    /// 无尽模式出现概率每级研究增量(百分数)：9级满级时总概率=10+9×10=100%
+    /// </summary>
+    public const int INFINITE_SHOW_RATE_PER_LEVEL = 10;
+
+    /// <summary>
+    /// 获取无尽模式世界出现概率(百分数0~100)
+    /// = INFINITE_SHOW_RATE_BASE + 研究(UnlockEnum.InfiniteShowRate)等级 × INFINITE_SHOW_RATE_PER_LEVEL; 未研究(0级)保持原固定10%,满级(9级)为100
+    /// 每次传送门数据刷新生成世界时按该概率判定是否生成为无尽世界(前提是该世界无尽已解锁)
+    /// </summary>
+    /// <returns>出现概率百分数(0~100)</returns>
+    public int GetUnlockInfiniteShowRate()
+    {
+        return GetInfiniteShowRateForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.InfiniteShowRate));
+    }
+
+    /// <summary>
+    /// 获取指定研究等级对应的无尽模式世界出现概率(百分数)：INFINITE_SHOW_RATE_BASE + 等级×INFINITE_SHOW_RATE_PER_LEVEL
+    /// </summary>
+    /// <param name="level">无尽模式出现概率研究等级</param>
+    /// <returns>该等级的出现概率百分数(10~100)</returns>
+    public static int GetInfiniteShowRateForLevel(int level)
+    {
+        return INFINITE_SHOW_RATE_BASE + level * INFINITE_SHOW_RATE_PER_LEVEL;
     }
 
     /// <summary>
@@ -282,7 +340,17 @@ public class UserUnlockBean
     /// <returns>单次征服run内的刷新次数上限</returns>
     public int GetUnlockAbyssalBlessingRefreshMax()
     {
-        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.AbyssalBlessingRefreshNum);
+        return GetAbyssalBlessingRefreshMaxForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.AbyssalBlessingRefreshNum));
+    }
+
+    /// <summary>
+    /// 获取指定「深渊馈赠刷新」研究等级对应的刷新次数上限：等级即上限(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">深渊馈赠刷新研究等级</param>
+    /// <returns>该等级的刷新次数上限</returns>
+    public static int GetAbyssalBlessingRefreshMaxForLevel(int level)
+    {
+        return level;
     }
 
     /// <summary>
@@ -302,8 +370,18 @@ public class UserUnlockBean
     /// <returns>可使用的阵容数量</returns>
     public int GetUnlockLineupNum()
     {
+        return GetLineupNumForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.LineupNum));
+    }
+
+    /// <summary>
+    /// 获取指定「解锁新阵容」研究等级对应的阵容数量：UserLimmitBean.lineupMax + 等级(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">阵容数量研究等级</param>
+    /// <returns>该等级的阵容数量</returns>
+    public static int GetLineupNumForLevel(int level)
+    {
         var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
-        return limmitData.lineupMax + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.LineupNum);
+        return limmitData.lineupMax + level;
     }
 
     /// <summary>
@@ -313,8 +391,18 @@ public class UserUnlockBean
     /// <returns>单个阵容可容纳的生物数量上限</returns>
     public int GetUnlockLineupCreatureNum()
     {
+        return GetLineupCreatureNumForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.LineupCreatureAddNum));
+    }
+
+    /// <summary>
+    /// 获取指定「阵容生物上限」研究等级对应的单阵容生物上限：UserLimmitBean.lineupCreatureMax + 等级(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">阵容生物上限研究等级</param>
+    /// <returns>该等级的阵容生物上限</returns>
+    public static int GetLineupCreatureNumForLevel(int level)
+    {
         var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
-        return limmitData.lineupCreatureMax + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.LineupCreatureAddNum);
+        return limmitData.lineupCreatureMax + level;
     }
 
     /// <summary>
@@ -324,27 +412,57 @@ public class UserUnlockBean
     /// <returns>叠加到掉落水晶基础存在时长上的额外秒数</returns>
     public float GetUnlockDropCrystalAddLifeTime()
     {
-        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.DropCrystalLifeTime) * 5f;
+        return GetDropCrystalAddLifeTimeForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.DropCrystalLifeTime));
+    }
+
+    /// <summary>
+    /// 获取指定「魔晶掉落存在时长」研究等级对应的额外存在时长(秒)：等级×5(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">魔晶掉落存在时长研究等级</param>
+    /// <returns>该等级的额外存在时长(秒)</returns>
+    public static float GetDropCrystalAddLifeTimeForLevel(int level)
+    {
+        return level * 5f;
     }
 
     /// <summary>
     /// 获取魔王魔力上限(MP)的研究加成
-    /// 未解锁(0级)返回 0；每级研究 +10（UnlockEnum.DemonLordMPMax，level_max=5，满级 +50）
+    /// 未解锁(0级)返回 0；每级研究 +10（UnlockEnum.DemonLordMPMax，level_max=10，满级 +100）
     /// </summary>
     /// <returns>叠加到魔王魔力上限上的额外点数</returns>
     public float GetUnlockDemonLordMPMaxAddValue()
     {
-        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.DemonLordMPMax) * 10f;
+        return GetDemonLordMPMaxAddValueForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.DemonLordMPMax));
+    }
+
+    /// <summary>
+    /// 获取指定「魔王魔力上限」研究等级对应的MP加成：等级×10(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">魔王魔力上限研究等级</param>
+    /// <returns>该等级的MP加成</returns>
+    public static float GetDemonLordMPMaxAddValueForLevel(int level)
+    {
+        return level * 10f;
     }
 
     /// <summary>
     /// 获取魔王魔力恢复速度(MPF)的研究加成(每秒)
-    /// 未解锁(0级)返回 0；每级研究 +1/秒（UnlockEnum.DemonLordMPF，level_max=3，满级 +3/秒）
+    /// 未解锁(0级)返回 0；每级研究 +1/秒（UnlockEnum.DemonLordMPF，level_max=10，满级 +10/秒）
     /// </summary>
     /// <returns>叠加到魔王每秒魔力恢复速度上的额外点数</returns>
     public float GetUnlockDemonLordMPFAddValue()
     {
-        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.DemonLordMPF) * 1f;
+        return GetDemonLordMPFAddValueForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.DemonLordMPF));
+    }
+
+    /// <summary>
+    /// 获取指定「魔王魔力恢复」研究等级对应的MPF加成(每秒)：等级×1(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">魔王魔力恢复研究等级</param>
+    /// <returns>该等级的MPF加成(每秒)</returns>
+    public static float GetDemonLordMPFAddValueForLevel(int level)
+    {
+        return level * 1f;
     }
 
     /// <summary>
@@ -354,7 +472,16 @@ public class UserUnlockBean
     /// <returns>两次自动拾取之间的秒数；-1 表示未解锁不拾取</returns>
     public float GetUnlockDemonLordAutoPickCrystalInterval()
     {
-        int level = GetUnlockResearchLeveByUnlockEnum(UnlockEnum.DemonLordAutoPickCrystal);
+        return GetDemonLordAutoPickCrystalIntervalForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.DemonLordAutoPickCrystal));
+    }
+
+    /// <summary>
+    /// 获取指定「魔王自动拾取魔晶」研究等级对应的拾取间隔(秒)：等级<=0返回-1(禁用)，否则 11-等级（1级10秒…满级1秒）(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">自动拾取魔晶研究等级</param>
+    /// <returns>该等级的拾取间隔(秒)；-1 表示未解锁不拾取</returns>
+    public static float GetDemonLordAutoPickCrystalIntervalForLevel(int level)
+    {
         if (level <= 0)
             return -1f;
         return 11f - level;
@@ -367,7 +494,17 @@ public class UserUnlockBean
     /// <returns>单次自动拾取的魔晶颗数</returns>
     public int GetUnlockDemonLordAutoPickCrystalCount()
     {
-        return 1 + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.DemonLordAutoPickCrystalNum);
+        return GetDemonLordAutoPickCrystalCountForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.DemonLordAutoPickCrystalNum));
+    }
+
+    /// <summary>
+    /// 获取指定「每次拾取魔晶数量」研究等级对应的单次拾取颗数：基础 1 颗 + 等级(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">拾取数量研究等级</param>
+    /// <returns>该等级的单次拾取魔晶颗数</returns>
+    public static int GetDemonLordAutoPickCrystalCountForLevel(int level)
+    {
+        return 1 + level;
     }
 
     /// <summary>
@@ -507,8 +644,18 @@ public class UserUnlockBean
     /// <returns>献祭时可选择的最大祭品数量</returns>
     public int GetUnlockSacrificeMax()
     {
+        return GetSacrificeMaxForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.SacrificeNum));
+    }
+
+    /// <summary>
+    /// 获取指定「献祭祭品数量」研究等级对应的祭品上限：UserLimmitBean.sacrificeMax + 等级(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">献祭祭品数量研究等级</param>
+    /// <returns>该等级的祭品选择上限</returns>
+    public static int GetSacrificeMaxForLevel(int level)
+    {
         var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
-        return limmitData.sacrificeMax + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.SacrificeNum);
+        return limmitData.sacrificeMax + level;
     }
 
     /// <summary>
@@ -518,7 +665,17 @@ public class UserUnlockBean
     /// <returns>本次失败应累加到 sacrificePityRate 上的保底增量(0~0.5)</returns>
     public float GetUnlockSacrificeFailPityAddRate()
     {
-        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.SacrificePityRate) * 0.05f;
+        return GetSacrificeFailPityAddRateForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.SacrificePityRate));
+    }
+
+    /// <summary>
+    /// 获取指定「献祭失败保底概率」研究等级对应的保底成功率增量：等级×0.05(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">献祭失败保底概率研究等级</param>
+    /// <returns>该等级的保底增量(0~0.5)</returns>
+    public static float GetSacrificeFailPityAddRateForLevel(int level)
+    {
+        return level * 0.05f;
     }
 
     /// <summary>
@@ -528,7 +685,17 @@ public class UserUnlockBean
     /// <returns>单个不同id祭品的基础成功率(0~0.5，稀有度惩罚在公式中另行叠加)</returns>
     public float GetUnlockSacrificeDifferentIdRate()
     {
-        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.SacrificeDifferentIdRate) * 0.05f;
+        return GetSacrificeDifferentIdRateForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.SacrificeDifferentIdRate));
+    }
+
+    /// <summary>
+    /// 获取指定「不同魔物献祭成功率」研究等级对应的单个不同id祭品成功率：等级×0.05(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">不同魔物献祭成功率研究等级</param>
+    /// <returns>该等级的单个不同id祭品基础成功率(0~0.5)</returns>
+    public static float GetSacrificeDifferentIdRateForLevel(int level)
+    {
+        return level * 0.05f;
     }
 
     /// <summary>
@@ -541,14 +708,23 @@ public class UserUnlockBean
         bool isUnlockVat = CheckIsUnlock(UnlockEnum.CreatureVat);
         if (isUnlockVat)
         {
-            var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
-            int unlockLevel = GetUnlockResearchLeveByUnlockEnum(UnlockEnum.CreatureVatAdd);
-            return limmitData.creatureVatMax + unlockLevel;
+            return GetCreatureVatNumForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.CreatureVatAdd));
         }
         else
         {
             return 0;
         }
+    }
+
+    /// <summary>
+    /// 获取指定「进阶设施」研究等级对应的生物升阶容器数量：UserLimmitBean.creatureVatMax + 等级(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">进阶设施研究等级</param>
+    /// <returns>该等级的升阶容器数量</returns>
+    public static int GetCreatureVatNumForLevel(int level)
+    {
+        var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
+        return limmitData.creatureVatMax + level;
     }
 
     /// <summary>
@@ -562,14 +738,34 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 获取指定「进阶魔晶加速」研究等级对应的单次加速推进秒数(=倍率)：等级即秒数(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">进阶魔晶加速研究等级</param>
+    /// <returns>该等级的单次加速推进秒数</returns>
+    public static int GetCreatureVatAddProgressForLevel(int level)
+    {
+        return level;
+    }
+
+    /// <summary>
     /// 获取生物进阶素材魔物可选上限
     /// 基础数量取自 UserLimmitBean.creatureVatMaterialMax + 对应研究等级（UnlockEnum.CreatureVatMaterialNum，满级+5）
     /// </summary>
     /// <returns>进阶时可选择的最大素材魔物数量</returns>
     public int GetUnlockCreatureVatMaterialMax()
     {
+        return GetCreatureVatMaterialMaxForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.CreatureVatMaterialNum));
+    }
+
+    /// <summary>
+    /// 获取指定「进阶素材数量」研究等级对应的素材魔物可选上限：UserLimmitBean.creatureVatMaterialMax + 等级(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">进阶素材数量研究等级</param>
+    /// <returns>该等级的素材魔物可选上限</returns>
+    public static int GetCreatureVatMaterialMaxForLevel(int level)
+    {
         var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
-        return limmitData.creatureVatMaterialMax + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.CreatureVatMaterialNum);
+        return limmitData.creatureVatMaterialMax + level;
     }
 
     /// <summary>
@@ -579,8 +775,29 @@ public class UserUnlockBean
     /// <returns>榨汁时可投入选择的最大魔物数量</returns>
     public int GetUnlockJuicerCreatureMax()
     {
+        return GetJuicerCreatureMaxForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.JuicerNum));
+    }
+
+    /// <summary>
+    /// 获取指定「魔汁机投入数量」研究等级对应的投入魔物可选上限：UserLimmitBean.juicerCreatureMax + 等级(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">魔汁机投入数量研究等级</param>
+    /// <returns>该等级的投入魔物可选上限</returns>
+    public static int GetJuicerCreatureMaxForLevel(int level)
+    {
         var limmitData = GameDataHandler.Instance.manager.GetUserData().GetUserLimmitData();
-        return limmitData.juicerCreatureMax + GetUnlockResearchLeveByUnlockEnum(UnlockEnum.JuicerNum);
+        return limmitData.juicerCreatureMax + level;
+    }
+
+    /// <summary>
+    /// 获取指定「孕育稀有度概率」研究等级对应的稀有度命中概率(百分数)：GashaponItemBean.rarityBaseRate + 等级
+    /// R/SR/SSR/UR 概率研究共用(扭蛋抽取与展示、研究气泡详情文本均引用此值)
+    /// </summary>
+    /// <param name="level">稀有度概率研究等级</param>
+    /// <returns>该等级的稀有度命中概率百分数</returns>
+    public static float GetGashaponRarityRateForLevel(int level)
+    {
+        return GashaponItemBean.rarityBaseRate + level;
     }
 
     /// <summary>

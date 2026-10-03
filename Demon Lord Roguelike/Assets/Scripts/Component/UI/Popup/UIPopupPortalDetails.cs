@@ -11,7 +11,7 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
 
     #region 数据设置
     /// <summary>
-    /// 设置数据(气泡展示传送门名字/难度(仅征服模式), 以及受研究门控的线路数/关卡数/路径长度/奖励; 未解锁的项整行隐藏)
+    /// 设置数据(气泡展示传送门名字/模式名/难度(仅征服模式), 以及受研究门控的线路数/关卡数/路径长度/奖励; 未解锁的项整行隐藏)
     /// </summary>
     /// <param name="data">(世界配置, 世界随机数据, 要展示的难度)三元组</param>
     public override void SetData(object data)
@@ -58,6 +58,10 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
 
         //名字: 始终显示(不受研究门控)
         SetDetailsItem(ui_UIViewPopupProtalDetailsItem_Name, TextHandler.Instance.GetTextById(411), $"{gameWorldInfo.name_language}", true);
+        //模式: 始终显示(不受研究门控), 按战斗类型显示模式名(征服422/无尽423/挑战100勇士417)
+        int modeNameTextId = isChallengeHundred ? 417
+            : gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Infinite ? 423 : 422;
+        SetDetailsItem(ui_UIViewPopupProtalDetailsItem_Details, TextHandler.Instance.GetTextById(421), TextHandler.Instance.GetTextById(modeNameTextId), true);
         //难度行
         SetDetailsItem(ui_UIViewPopupProtalDetailsItem_Level, TextHandler.Instance.GetTextById(415), $"{difficultyLevel}", isShowDifficulty);
         //线路数量: 需解锁「线路数预览」研究, 未解锁整行隐藏

@@ -263,25 +263,8 @@ public class LauncherTest : BaseLauncher
     }
 
     /// <summary>
-    /// 开始卡片测试
-    /// </summary>
-    /// <param name="fightCreature"></param>
-    public async void StartForCardTest(FightCreatureBean fightCreature)
-    {
-        ClearTestGUIs();
-        await WorldHandler.Instance.ClearWorldData();
-        //设置焦距
-        VolumeHandler.Instance.SetDepthOfField(UnityEngine.Rendering.Universal.DepthOfFieldMode.Off, 0, 0, 0);
-        //镜头初始化
-        CameraHandler.Instance.InitData();
-        //关闭额外的摄像头
-        var ui = UIHandler.Instance.OpenUIAndCloseOther<UITestCard>();
-        ui.SetData(fightCreature);
-    }
-
-    /// <summary>
     /// 开始卡片编辑器测试（GUI版，纯代码控制面板 + 真实卡片预制体）
-    /// 自由设置稀有度/等级/生物ID/NPC ID 查看卡片与详情显示，支持自定义稀有度板色/等级颜色预览并写回配置表。
+    /// 自由设置稀有度/等级/生物ID/NPC ID 查看卡片与详情显示，支持自定义稀有度板色/等级颜色与图标/模型尺寸校准预览并写回配置表。
     /// </summary>
     /// <param name="creatureId">初始生物ID(>0 时默认生物模式)</param>
     /// <param name="npcInfoId">初始NPC ID(生物ID为0时默认NPC模式)</param>

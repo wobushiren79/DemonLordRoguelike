@@ -8,7 +8,7 @@ public partial class UIViewBasePortalItem
 
     public Button ui_BG;
 
-    public RawImage ui_Icon;
+    public Image ui_Icon;
 
 
 }

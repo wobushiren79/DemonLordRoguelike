@@ -17,5 +17,7 @@ public partial class UIPopupPortalDetails
 
     public UIViewPopupPortalDetailsItem ui_UIViewPopupProtalDetailsItem_Level;
 
+    public UIViewPopupPortalDetailsItem ui_UIViewPopupProtalDetailsItem_Details;
+
 
 }

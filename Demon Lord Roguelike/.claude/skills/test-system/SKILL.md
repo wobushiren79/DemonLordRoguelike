@@ -27,8 +27,7 @@ LauncherTest                    - 测试启动器，初始化测试数据并提�
 └── 测试UI们
     ├── UITestBase              - GM工具面板(F12, 预制体版)
     ├── TestGameMasterGUI       - GM工具面板(F11, 纯IMGUI代码版, 不依赖预制; 含Mod道具区)
-    ├── UITestCard              - 卡片显示参数校准
-    ├── TestCreatureCardGUI     - 卡片编辑器(稀有度/等级/生物/NPC/颜色, 纯IMGUI代码版, 不依赖预制)
+    ├── TestCreatureCardGUI     - 卡片编辑器(稀有度/等级/生物/NPC/颜色 + 图标/模型尺寸校准, 纯IMGUI代码版, 不依赖预制)
     ├── TestTransformPotionGUI  - Mod幻化药测试(四页签: 单个预览/小卡列表/大卡列表/场景列表, 分页网格批量展示+悬停滚轮缩放/拖拽位置+一键保存全部修改回Mod, 纯IMGUI代码版, 不依赖预制)
     └── UIBaseResearchTest      - 研究节点坐标配置
 ```
@@ -393,10 +392,9 @@ GameFightLogicTest.PreGameForAfterCreateDefenseCore()        // 防守核心创�
 
 ## 卡片编辑器测试 (CardTest)
 
-`TestSceneTypeEnum.CardTest` 面板（`GameTestEditor.DrawCardTest`）有三个入口：
+`TestSceneTypeEnum.CardTest` 面板（`GameTestEditor.DrawCardTest`）有两个入口：
 
-- **▶️ 显示卡片**：打开预制 UI `UITestCard`（卡片图标尺寸/坐标校准，「生成数据」写回 `excel_creature_model` 的 `ui_data_s`/`ui_data_b`/`size_spine`）。
-- **🎛️ 卡片编辑器**：`LauncherTest.StartForCreatureCardEditor(creatureId, npcInfoId)`（沿用面板的生物/NPC ID 作初始值，creatureId>0 默认生物模式否则 NPC 模式）→ 纯代码 IMGUI 面板 `TestCreatureCardGUI`（不依赖预制，单例 `Instance` 防重复叠加）。
+- **🎛️ 卡片编辑器**：`LauncherTest.StartForCreatureCardEditor(creatureId, npcInfoId)`（沿用面板的生物/NPC ID 作初始值，creatureId>0 默认生物模式否则 NPC 模式）→ 纯代码 IMGUI 面板 `TestCreatureCardGUI`（不依赖预制，单例 `Instance` 防重复叠加）。图标/模型尺寸校准（小卡/大卡图标缩放与位置、场景模型 size_spine，写回 `excel_creature_model` 的 `ui_data_s`/`ui_data_b`/`size_spine`）也在本面板——原预制体版「显示卡片」`UITestCard` 已删除并入。
 - **🧪 Mod幻化药测试**：面板下拉（`DrawTransformPotionTest`/`EnsureTransformPotionOptions`，仅 Play 模式构建候选，首项「无幻化(原形象)」+ 配置表全部幻化药 `item_type==TransformPotion(18)`，显示名=道具名[自ID]，选择索引 `transformPotionTestSelectIndex` EditorPrefs 持久化）→ `LauncherTest.StartForTransformPotionTest(itemId)` → 纯代码 IMGUI 面板 `TestTransformPotionGUI`：给基础生物(2001)设 `transformItemId` 后走真实卡片 SetData 链，**小卡=Chess 基础形象(世界/战斗/普通卡片)、大卡详情=Avator 高清形象(详情UI含自带 ui_data_b 尺寸)**，与魔物管理吃幻化药同显示路径；面板还展示所选药的 other_data 三段解析（chess/avator/uiData）与各 spine 资源在已加载 Mod 中的命中状态（`ModHandler.Instance.IsModAsset`，✓/✗ 便于排查 Mod 资源缺失）。
 
 ### 流程
@@ -411,21 +409,23 @@ TestCreatureCardGUI.Start()
     │  自建 ScreenSpaceOverlay Canvas(1920x1080 适配, sortingOrder=5000, 随面板销毁)
     │  → Resources.Load 实例化真实预制体 UIViewCreatureCardItem + UIViewCreatureCardDetails
     │  → NormalizeRoot 固化尺寸+居中锚点(防拉伸型根节点铺满Canvas)
-    │  → CreateSceneSpineDisplay() 场景Spine展示(见下) → RefreshCards()
+    │  → CreateSceneSpineDisplay() 场景Spine展示(见下) → RefreshCards() → SyncCalibrationInputs()
     ▼
 左侧面板 OnGUI: 来源切换(生物/NPC) + 下拉(懒加载 CreatureInfoCfg/NpcInfoCfg, id+名字) + 手动ID(long, 非空合法优先)
     │  稀有度下拉(RarityInfoCfg 全量行含999魔王配色档) + 等级滑条(0~10) + 缩放滑条(0.5~2) + 场景Spine开关
+    │  + 图标/模型尺寸校准区(小卡/大卡图标缩放与X/Y + 模型大小size_spine, FloatEditState 滑条+文本双向同步)
     ▼
 RefreshCards(): new CreatureBean(creatureId/npcInfo) → 覆写 rarity/level → AddSkinForBase()
     → 小卡 SetData(creature, ShowNoPopup)(禁用悬停弹窗) + 大卡 SetData(creature)
     → RefreshSceneSpine(creature) 刷新场景目标模型 → ApplyCustomColors()
+    → 数据参数变更后 SyncCalibrationInputs() 读回新模型配置显示值, 再 ApplyIconCalibration() 应用校准(防旧值覆盖新模型)
 ```
 
 ### 场景Spine展示（大小对比）
 
 卡片编辑器除小卡/大卡 UI 外，还在**世界空间**并排摆放两个场景 Spine 模型，方便对比生物在场景中的实际大小：
 
-- **标准模型**（左）：固定 `CreatureBean(2001)` 骷髅战士 + `AddSkinForBase()`，与旧版 UITestCard 的「测试标准模型」一致，作大小对比基准。
+- **标准模型**（左）：固定 `CreatureBean(2001)` 骷髅战士 + `AddSkinForBase()`，作大小对比基准。
 - **目标模型**（右）：当前选中生物，随 `RefreshCards` 一起刷新（换骨/换肤/重置缩放）。
 - **创建链**：`new GameObject` → `SpineHandler.AddSkeletonAnimation(obj, creatureModel.res_name)` → `CreatureHandler.SetCreatureData(spine, creature)`（场景缩放 = `size_spine × GetBodySizeScale()`，与基地/战斗场景真实大小同口径）→ `PlayAnim(Idle)` 循环待机；两模型脚下踩 10x10 地平面（顶面 y=0，x=±1.1 并排）。
 - **相机**：主相机 HideAllCM + 激活 + blend0 后摆到 `(0,3.6,-6)` LookAt `(0,2.9,0)` 侧视微俯视，把模型框到屏幕底部避开中间卡片（与特效测试同套镜头逻辑）。
@@ -437,7 +437,8 @@ RefreshCards(): new CreatureBean(creatureId/npcInfo) → 覆写 rarity/level →
 
 - **为什么不做成编辑器窗口**：卡片 `SetData` 链路依赖运行时单例（TextHandler 多语言/IconHandler 图标纹理/CreatureHandler+SpineHandler Spine 图标/GameDataHandler/BuffHandler 属性管线），编辑模式 `BaseSingletonMonoBehaviour.Instance` 会 `new GameObject` 进当前场景造成污染（同 NpcCreateEditorWindow 安全铁律），且卡片图标是 Spine SkeletonGraphic 走运行时加载链——故真实卡片只能在 Play 模式显示。
 - **自定义颜色（勾选后覆盖配置色实时预览）**：主板色(支持渐变) `GameUIUtil.SetGradientColor` 到小卡 `ui_CardBgBorad` + 大卡 `ui_CardBgBoard`/`ui_CardSceneBg`；副板色到小卡 `ui_IconContent` + 大卡 `ui_CardRate`；等级色直设两者 `ui_LevelText.color`（均为 public 字段，无需改卡片视图代码）。每个颜色经 `ColorEditState`（颜色值+RGB/Hex文本框双向同步：滑条/调色盘/读配置→`SetColor` 全同步，RGB 文本输入→`ApplyRgbInput` 同步 Hex 保留原文，Hex 输入→`ApplyHexInput` 同步 RGB 保留原文）支持四种编辑方式：RGB 滑条 + RGB 数值输入(0~255) + Hex 输入 + 16 色调色盘点选（预设色与 NpcCreateEditorWindow 皮肤调色盘同一套，当前色块显示✔）。
-- **变更检测**：数据指纹 `ComputeDataKey()`(来源/id/稀有度/等级) 变更才重建生物；颜色/缩放变更仅轻量覆盖，不重建 Spine 防拖拽滑条时反复加载骨骼。
+- **变更检测**：数据指纹 `ComputeDataKey()`(来源/id/稀有度/等级) 变更才重建生物；颜色/缩放/校准变更仅轻量覆盖，不重建 Spine 防拖拽滑条时反复加载骨骼。
+- **图标/模型尺寸校准**（原 UITestCard「显示卡片」并入）：`FloatEditState`（值+文本框双向同步，滑条拖动强制同步文本框、文本输入合法即应用，同 `ColorEditState` 模式）调小卡/大卡 `ui_Icon` 的 `localScale`/`rectTransform.anchoredPosition` 与场景模型 `size_spine`（`ApplyIconCalibration` 应用到卡片图标与目标模型，场景实际缩放=size_spine×体型倍率）；保存从**实际显示值**取数写回 `excel_creature_model[生物模型信息].xlsx`（CreatureModel sheet）的 `ui_data_s`/`ui_data_b`/`size_spine` + `ExcelToJsonItem` + 反射清 `CreatureModelInfoCfg` 缓存立即生效。注意与旧 UITestCard 的口径差异：`size_spine` 只存模型倍率因子（旧版存的是含体型倍率的总缩放，普通生物体型恒 1 两者等价，NPC 新口径更正确）。
 - **保存颜色到配置表**（`#if UNITY_EDITOR`）：`ExcelUtil.SetExcelData` 写回当前稀有度行 `ui_board_color`/`ui_board_other_color`（`excel_rarity_info[稀有度].xlsx`，RarityInfo sheet）与当前等级行 `level_color`（`excel_level_info[等级信息].xlsx`，LevelInfo sheet，仅 level>=1）→ `ExcelUtil.ExcelToJsonItem` 再生 JSON → 反射清 Cfg 的 `dicData`/`arrayData` 静态缓存立即生效（运行时程序集无法引用编辑器程序集的 `GameTestEditor.ClearCfgBaseStaticCache`，面板内就地反射实现）。
 - **0 级无等级色配置**：`LevelInfoCfg.GetLevelColor(0)` 固定白色，等级色编辑器在 level=0 时禁用并提示。
 
@@ -816,9 +817,8 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 测试控制台 | `Assets/FrameWork/Scripts/Component/UI/UITestConsole.cs` |
 | 测试基础 UI | `Assets/Scripts/Component/UI/Test/UITestBase.cs` + `UITestBaseComponent.cs`（F12 预制体版 GM 面板） |
 | GM GUI 面板 | `Assets/Scripts/Component/UI/Test/TestGameMasterGUI.cs`（F11 纯代码 IMGUI 版 GM 面板：`Toggle()` 开关；资源/道具/生物/解锁/Mod 道具五分区+状态栏；打开时 `EnableAllControl(false)` 销毁时 `SetBaseControl()`；Mod 道具按 `id/10^14==modId` 号段过滤 ItemsInfoCfg；已注册进 `LauncherTest.ClearTestGUIs()`） |
-| 卡片测试 UI | `Assets/Scripts/Component/UI/Test/UITestCard.cs` + `UITestCardComponent.cs` |
 | 卡片编辑器测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForCreatureCardEditor`） |
-| 卡片编辑器测试面板 | `Assets/Scripts/Component/UI/Test/TestCreatureCardGUI.cs`（纯代码 IMGUI + 实例化真实卡片预制体 UIViewCreatureCardItem/UIViewCreatureCardDetails；稀有度/等级/生物/NPC 下拉+手动ID；场景Spine展示：世界空间并排标准模型(固定2001骷髅战士)+目标模型(缩放=size_spine×体型倍率,主相机侧视取景到屏幕底部,10x10地平面基准,面板带显隐开关与大小数值行; spine=根节点摆放+Renderer子节点承载缩放/位置, 与 SetCreatureData 的世界位置恒管理兼容)；自定义板色(渐变)/等级色：RGB滑条+RGB数值输入(0~255)+Hex输入+16色调色盘(ColorEditState 双向同步)；保存写回 excel_rarity_info/excel_level_info + ExcelToJsonItem + 反射清 Cfg 缓存） |
+| 卡片编辑器测试面板 | `Assets/Scripts/Component/UI/Test/TestCreatureCardGUI.cs`（纯代码 IMGUI + 实例化真实卡片预制体 UIViewCreatureCardItem/UIViewCreatureCardDetails；稀有度/等级/生物/NPC 下拉+手动ID；场景Spine展示：世界空间并排标准模型(固定2001骷髅战士)+目标模型(缩放=size_spine×体型倍率,主相机侧视取景到屏幕底部,10x10地平面基准,面板带显隐开关与大小数值行; spine=根节点摆放+Renderer子节点承载缩放/位置, 与 SetCreatureData 的世界位置恒管理兼容)；图标/模型尺寸校准：小卡/大卡图标缩放与锚点位置+场景模型 size_spine(FloatEditState 滑条+文本双向同步)，保存写回 excel_creature_model 的 ui_data_s/ui_data_b/size_spine + ExcelToJsonItem + 反射清 Cfg 缓存（原 UITestCard「显示卡片」已删除并入）；自定义板色(渐变)/等级色：RGB滑条+RGB数值输入(0~255)+Hex输入+16色调色盘(ColorEditState 双向同步)；保存写回 excel_rarity_info/excel_level_info + ExcelToJsonItem + 反射清 Cfg 缓存） |
 | Mod幻化药测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForTransformPotionTest`） + `Assets/Editor/GameTestEditor.cs`（`DrawTransformPotionTest`/`EnsureTransformPotionOptions` 下拉候选仅 Play 模式构建, 选择索引 EditorPrefs 持久化） |
 | Mod幻化药测试面板 | `Assets/Scripts/Component/UI/Test/TestTransformPotionGUI.cs`（纯代码 IMGUI + 真实卡片预制体，**四个页签**：①单个预览=下拉选药(首项无幻化, item_type==TransformPotion(18) 过滤, 道具名[自ID])+**◀▶左右快速切换**(含无幻化项, 两端停住)+基础生物2001设 transformItemId 走真实 SetData 链(**BuildCreature 体型倍率恒钉1**——CreatureBean 构造时按 CreatureInfo.body_size 区间随机 roll 一次并缓存, 真实游戏个体体型差异与 world_data 倍率无关, 面板调参/对比需确定性基准, 2026-10-01起)(小卡=Chess/大卡=Avator高清)+场景并排左基础右幻化(世界空间, 主相机同卡片编辑器机位, 10x10地平面)+other_data 键值解析与 spine 资源 Mod 命中状态(IsModAsset ✓/✗)+三组文本框/滑动条调参；②小卡列表=列x行网格真实卡片(show_data)；③大卡列表=列x行网格真实详情卡**卡面模式**(SetData后隐藏属性/好感/装备/BUFF/MP/备注等详情区块, 只留底板+肖像+名字+稀有度+职业+等级; ui_show_data, 仅基础药无ui_show_res=详情UI回落show形象同样可调, 标签标注(无Avator), 2026-09-30起)；④场景列表=世界spine一排(world_data, **最左固定基础样板**=transformItemId=0 原形象每页常驻作对比基准, `editable=false` 不响应悬停调参、标签灰色无小按钮、不占「每页」数量, 2026-10-01起; **world 段可调性门控**: 无 show_res 的药 world_data 不被真实链[SetCreatureData hasTransform]消费——场景列表强制 `editable=false` 灰显标注「(无世界幻化)」+单个预览场景调参组禁用/悬停排除, 防"调参假象生效、保存后弹回", 2026-10-01起; **标签追加当前生效 world_data 值**(覆盖层优先的实际值 ×scale (x,y), 同骨架同参数必等大, 值不同即未保存覆盖差异, 2026-10-01起)+**调试读数行**(按钮行下方, 短格式: 实×实际Renderer缩放+皮肤名, 防相邻项重叠)+**「📋输出场景诊断到控制台」按钮**(逐项 dump 数据值/sceneBaseScale/期望与实际缩放/骨架资产名与实例ID与导入scale/皮肤/骨骼Scale/当前动画与轨道时间/坐标, 定位"数据同渲染异", 2026-10-01起))；列表分页◀▶+跳页+**Mod筛选**(全部/游戏本地/各已加载Mod)+**横竖个数与间距步进可调**(布局行, 持久化到项目内 `ProjectSettings/TestTransformPotionLayout.json` 随git全队共享), 网格整体右移避开左侧面板, 项下名字标签带●=未保存+**[还原]单段恢复配置/[0,0]位置归零/[复制][粘贴]参数快速套用(静态剪贴板, 带数据段标签 clipKind, 跨段粘贴拒绝并提示——show/ui_show=绝对UI缩放与坐标、world=相对倍率与世界坐标, 单位不同串段必错, 2026-10-01起)小按钮**, 拖拽带4px阈值防误触。**悬停交互**(仅编辑器)：移到目标卡片/模型上滚轮等比改缩放(×1.05/格)+左键拖拽改位置(卡片按Canvas单位取整/场景按相机视场换算世界单位2位小数), 经 `TransformPotionUITestOverride` 覆盖层(被 `CreatureBeanPartial.GetTransformUIShowData/GetTransformShowData/GetTransformWorldData` 优先消费)实时生效, 键缺失时卡片段首次调整基线取卡片图标当前显示值防跳变(如仅基础药无 ui_show_data 键, 2026-09-30起), 拖拽期间只直改显示不打断动画；场景 spine=根节点摆放+Renderer子节点承载缩放/偏移(与游戏内实体一致, 配合 `CreatureHandler.SetCreatureData` 的 world_data 注入与位置恒管理)。底栏「保存全部修改(N)」批量写回=**按 modId 分组路由**（2026-09-24 起，modId→modName 经 `ModManager.GetModJsonTextFileInfos`）：EPPlus直写该Mod道具Excel(唯一真实源,一次写盘;路径约定 `GetModItemsExcelRelPath`——AeonsEchoSpine=历史文件名 `excel_mod_items_info[Mod道具信息].xlsx`,后续Mod=`excel_mod_items_info_{modName小写}[Mod道具信息-{modName}].xlsx`;会话每文件首写前自动备份到 MOD项目/ExcelBackup,滚动复用.bak.1~3只留最近3份)+直补MOD项目与主项目部署副本两处 `Mods/{modName}/JsonText/ItemsInfo.txt`+当前会话内存(只换 ui_show_data/show_data/world_data 三键——保存循环 `ParseTransformOtherData` 读出 `TransformOtherData` 结构体→直接改写三尺寸字段→`BuildOtherData` 整体拼回, ui_show_skin/idle_anim 等其余键天然保留、show_res 空时省略; 内置幻化药跳过计数, Mod项目根读EditorPrefs的ModBuildEditorWindow.ModProjectPath)；**保存加固**(2026-09-30)：Excel 写盘用项目标准的 `new ExcelPackage(FileInfo)` 模式——**严禁 `new FileStream + new ExcelPackage(fs)` 写模式**（本项目 EPPlus 版本下 Save() 无异常但文件完全未落盘, 已两次实证, 是"显示保存成功却被 export 覆盖"事故的根因; ExcelUtil.GetExcelPackage 的流模式仅用于 FileAccess.Read 读取）+ **写后回读校验**（比对每行 other_data, 不符即弹窗报错且保留覆盖层可重试）+ 写盘失败(如Excel/WPS 正打开该 xlsx)弹 `EditorUtility.DisplayDialog` 强提示防红字小字被忽略 + 「已保存0个」按红字错误处理防"绿勾0个"被误读为成功 + 未写盘成功的 Mod 组不同步内存且不清覆盖层(保留未保存修改供修复后重试)——保存后确认绿色「✓ 已保存N个(Excel✓+JsonText×2/2+当前会话✓)」且无弹窗才算真正落盘) |
 | NPC 创建编辑（编辑器版，非运行态） | `Assets/Editor/NpcCreateEditorWindow.cs` + 5 个 partial（菜单 `游戏/NPC创建编辑`）：非运行态 NPC 创建/修改/删除工具（皮肤/调色/装备/随机池/属性 + Spine 双模型预览；Play 模式的 UITestNpcCreate/TestNpcCreateGUI 已删除并入本工具），另支持全字段编辑、新建（建议id+模板复制+中文名写语言表）与删除登记；编辑副本+JSON快照判脏，保存走 EPPlus 双表写回+ExcelToJsonItem 重导+清Cfg缓存；编辑器安全约束（禁止 new CreatureBean(npcInfo)、禁止 *_language、EditorUtility 弹窗）详见 editor-extension-system SKILL 的 NpcCreateEditorWindow 章节 |

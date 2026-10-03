@@ -40,16 +40,32 @@ public partial class GameWorldInfoRandomBean
     /// <summary>
     /// 随机设置游戏类型
     /// </summary>
-    public void SetGameFightTypeRandom(long worldId)
+    /// <param name="worldId">世界id</param>
+    /// <param name="listExistWorld">传送门已存在的世界列表(挑战100勇士/无尽全场各只刷1个: 已存在则跳过对应模式判定; 旧存档存量多个不清理, 仅不再新增)</param>
+    public void SetGameFightTypeRandom(long worldId, List<GameWorldInfoRandomBean> listExistWorld)
     {
         this.worldId = worldId;
         var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var UserUnlock = userData.GetUserUnlockData();
+        //特殊模式全场唯一标记(已存在则跳过该模式判定)
+        bool existChallengeHundred = false;
+        bool existInfinite = false;
+        if (listExistWorld != null)
+        {
+            for (int i = 0; i < listExistWorld.Count; i++)
+            {
+                GameFightTypeEnum existType = listExistWorld[i].gameFightType;
+                if (existType == GameFightTypeEnum.ChallengeHundred)
+                    existChallengeHundred = true;
+                else if (existType == GameFightTypeEnum.Infinite)
+                    existInfinite = true;
+            }
+        }
 
         //优先判定挑战100勇士出现概率(研究等级×10%): 命中且当前最高已解锁难度有匹配配置行时才生成为该模式, 否则落回原随机
         int challengeHundredShowRate = UserUnlock.GetUnlockChallengeHundredShowRate();
-        if (challengeHundredShowRate > 0 && UnityEngine.Random.Range(0, 100) < challengeHundredShowRate)
+        if (!existChallengeHundred && challengeHundredShowRate > 0 && UnityEngine.Random.Range(0, 100) < challengeHundredShowRate)
         {
             int unlockDifficultyMax = Mathf.Max(1, UserUnlock.GetUnlockGameWorldConquerDifficultyLevel(worldId));
             FightTypeChallengeHundredInfoBean challengeHundredInfo = FightTypeChallengeHundredInfoCfg.GetRandomRow(unlockDifficultyMax);
@@ -61,8 +77,8 @@ public partial class GameWorldInfoRandomBean
             }
         }
 
-        //无尽模式判定(固定1/10概率): 前提是该世界无尽已解锁(unlock_id_infinite=无尽研究起始ID, 即难度2无尽节点的解锁ID)
-        if (UserUnlock.CheckIsUnlock(gameWorldInfo.unlock_id_infinite) && UnityEngine.Random.Range(0, 10) == 0)
+        //无尽模式判定(概率=基础10%+无尽概率研究等级×10%, 满级100%): 前提是该世界无尽已解锁(unlock_id_infinite=无尽研究起始ID, 即难度2无尽节点的解锁ID)
+        if (!existInfinite && UserUnlock.CheckIsUnlock(gameWorldInfo.unlock_id_infinite) && UnityEngine.Random.Range(0, 100) < UserUnlock.GetUnlockInfiniteShowRate())
         {
             gameFightType = GameFightTypeEnum.Infinite;
             SetRandomDataForInfinite();

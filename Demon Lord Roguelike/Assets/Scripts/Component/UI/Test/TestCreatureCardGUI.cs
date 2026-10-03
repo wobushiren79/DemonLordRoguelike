@@ -11,6 +11,8 @@ using static ExcelUtil;
 /// 生物卡片编辑器（GUI版，纯代码控制面板 + 真实卡片预制体，不依赖任何测试预制）
 /// 自由设置稀有度/等级/生物ID/NPC ID（或下拉选择生物/NPC）实时查看 UIViewCreatureCardItem 与 UIViewCreatureCardDetails 的显示效果；
 /// 另带场景Spine展示：世界空间并排摆放标准模型(固定2001骷髅战士)与当前生物模型(走真实 SetCreatureData 链, 缩放=size_spine×体型倍率)，方便对比场景实际大小；
+/// 图标/模型尺寸校准（原预制体版「显示卡片」UITestCard 已删除并入本面板）：小卡/大卡图标缩放与锚点位置 + 场景模型 size_spine 滑条/文本调整，
+/// 保存写回 excel_creature_model(ui_data_s/ui_data_b/size_spine)并再生JSON清Cfg缓存立即生效；
 /// 支持自定义稀有度板色(主板/副板,支持双色渐变)与等级字体颜色实时预览，并可写回 excel_rarity_info / excel_level_info 配置表(同步再生JSON并清Cfg缓存立即生效)。
 /// 由 LauncherTest.StartForCreatureCardEditor 挂到空物体上启动。
 /// </summary>
@@ -21,10 +23,11 @@ public class TestCreatureCardGUI : MonoBehaviour
     private const string PathCardDetailsPrefab = "UI/Common/UIViewCreatureCardDetails"; //卡片详情预制(Resources路径)
     private const string PathRarityExcel = "Assets/Data/Excel/excel_rarity_info[稀有度].xlsx";    //稀有度配置表(写回用)
     private const string PathLevelExcel = "Assets/Data/Excel/excel_level_info[等级信息].xlsx";    //等级配置表(写回用)
+    private const string PathCreatureModelExcel = "Assets/Data/Excel/excel_creature_model[生物模型信息].xlsx";  //生物模型配置表(图标/模型尺寸写回用)
     private const int LevelMax = 10;        //等级滑条上限(LevelInfo 配置 1~10 级颜色, 0级固定白色)
     private const int CanvasSortOrder = 5000;//覆盖层Canvas层级(压过游戏UI)
     private const float PanelWidth = 400;   //左侧IMGUI控制面板宽度
-    private const long StandardSceneCreatureId = 2001;  //场景标准模型生物id(骷髅战士, 与旧版UITestCard测试标准模型一致, 作大小对比基准)
+    private const long StandardSceneCreatureId = 2001;  //场景标准模型生物id(骷髅战士, 作大小对比基准)
     private const float SceneSpineOffsetX = 1.1f;   //场景模型相对中心点的横向偏移(标准在左/目标在右)
     private static readonly Vector3 SceneCameraPos = new Vector3(0, 3.6f, -6f);   //场景展示相机位置(侧视微俯视)
     private static readonly Vector3 SceneCameraLookAt = new Vector3(0, 2.9f, 0);  //场景展示相机注视点(把模型框到屏幕底部, 避开中间卡片)
@@ -52,6 +55,11 @@ public class TestCreatureCardGUI : MonoBehaviour
     private int rarity = 1;                         //稀有度(1~6, 含999魔王配色档)
     private int level;                              //等级(0~10)
     private float cardScale = 1f;                   //卡片整体缩放
+
+    //图标/模型尺寸校准(小卡/大卡图标缩放与锚点位置 + 场景模型size_spine, 保存写回 excel_creature_model 的 ui_data_s/ui_data_b/size_spine)
+    private readonly FloatEditState iconSSize = new FloatEditState(), iconSX = new FloatEditState(), iconSY = new FloatEditState();   //小卡图标 缩放/X/Y
+    private readonly FloatEditState iconBSize = new FloatEditState(), iconBX = new FloatEditState(), iconBY = new FloatEditState();   //大卡图标 缩放/X/Y
+    private readonly FloatEditState sceneSizeSpine = new FloatEditState();  //场景模型大小(size_spine, 实际缩放再×体型倍率)
 
     //自定义颜色(勾选启用后覆盖配置色显示; 板色支持渐变: 起点色+终点色)
     private bool customBoardColor, customOtherColor, customLevelColor;
@@ -137,6 +145,28 @@ public class TestCreatureCardGUI : MonoBehaviour
         }
     }
 
+    /// <summary>单个浮点数值的编辑状态(数值 + 文本框内容)，滑条与文本框双向同步，非法输入保留原文不打断</summary>
+    private class FloatEditState
+    {
+        /// <summary>当前数值</summary>
+        public float value = 1f;
+        /// <summary>文本框内容</summary>
+        public string input = "1";
+
+        /// <summary>设置数值并同步文本框(滑条拖动/读回实际显示值后调用)</summary>
+        public void SetValue(float newValue)
+        {
+            value = newValue;
+            input = $"{newValue:F2}";
+        }
+
+        /// <summary>文本输入合法时应用(保留原文防打断输入)</summary>
+        public void ApplyInput()
+        {
+            if (float.TryParse(input, out float parsed)) value = parsed;
+        }
+    }
+
     #region 生命周期
     /// <summary>
     /// 初始化：创建覆盖层Canvas并实例化真实卡片预制体、创建场景Spine展示，随后按初始参数刷新卡片
@@ -148,6 +178,7 @@ public class TestCreatureCardGUI : MonoBehaviour
         CreateSceneSpineDisplay();
         ReadConfigColors(false, false, false);
         RefreshCards();
+        SyncCalibrationInputs();
     }
 
     /// <summary>
@@ -232,7 +263,7 @@ public class TestCreatureCardGUI : MonoBehaviour
         scenePlaneObj.name = "CreatureCardTestPlane";
         //场景模型根节点(世界空间, 独立于覆盖层Canvas)
         sceneRoot = new GameObject("CreatureCardTestSceneRoot");
-        //标准模型(固定2001骷髅战士, 与旧版UITestCard的测试标准模型一致, 作大小对比基准)
+        //标准模型(固定2001骷髅战士, 作大小对比基准)
         CreatureBean standardCreature = new CreatureBean(StandardSceneCreatureId);
         standardCreature.AddSkinForBase();
         standardSceneSpine = CreateSceneSpine("Standard", -SceneSpineOffsetX, standardCreature);
@@ -304,6 +335,80 @@ public class TestCreatureCardGUI : MonoBehaviour
             float targetScale = targetSceneSpine.transform.localScale.x;
             GUILayout.Label($"场景大小: 标准 {standardScale:F2} | 当前 {targetScale:F2} (模型{lastCreatureData.creatureModel.size_spine:F2}×体型{lastCreatureData.GetBodySizeScale():F2})", hintStyle);
         }
+    }
+    #endregion
+
+    #region 图标/模型尺寸校准
+    /// <summary>
+    /// 把当前卡片图标与场景模型的实际缩放/位置读回校准编辑框(数据刷新后调用, 保证编辑框始终从当前模型的配置显示值起调)
+    /// </summary>
+    private void SyncCalibrationInputs()
+    {
+        if (cardItem != null)
+        {
+            iconSSize.SetValue(cardItem.ui_Icon.transform.localScale.x);
+            iconSX.SetValue(cardItem.ui_Icon.rectTransform.anchoredPosition.x);
+            iconSY.SetValue(cardItem.ui_Icon.rectTransform.anchoredPosition.y);
+        }
+        if (cardDetails != null)
+        {
+            iconBSize.SetValue(cardDetails.ui_Icon.transform.localScale.x);
+            iconBX.SetValue(cardDetails.ui_Icon.rectTransform.anchoredPosition.x);
+            iconBY.SetValue(cardDetails.ui_Icon.rectTransform.anchoredPosition.y);
+        }
+        if (lastCreatureData != null)
+            sceneSizeSpine.SetValue(lastCreatureData.creatureModel.size_spine);
+    }
+
+    /// <summary>
+    /// 把校准值应用到卡片图标(缩放/锚点位置)与场景目标模型(缩放=size_spine×体型倍率, 标准模型不动保持对比基准)
+    /// </summary>
+    private void ApplyIconCalibration()
+    {
+        if (cardItem != null)
+        {
+            cardItem.ui_Icon.transform.localScale = Vector3.one * iconSSize.value;
+            cardItem.ui_Icon.rectTransform.anchoredPosition = new Vector2(iconSX.value, iconSY.value);
+        }
+        if (cardDetails != null)
+        {
+            cardDetails.ui_Icon.transform.localScale = Vector3.one * iconBSize.value;
+            cardDetails.ui_Icon.rectTransform.anchoredPosition = new Vector2(iconBX.value, iconBY.value);
+        }
+        if (targetSceneSpine != null && lastCreatureData != null)
+            targetSceneSpine.transform.localScale = Vector3.one * sceneSizeSpine.value * lastCreatureData.GetBodySizeScale();
+    }
+
+    /// <summary>
+    /// 保存当前校准到配置表(当前生物模型行的 ui_data_s/ui_data_b/size_spine)并再生JSON、清Cfg缓存立即生效
+    /// </summary>
+    private void SaveCalibrationToExcel()
+    {
+#if UNITY_EDITOR
+        if (lastCreatureData == null || cardItem == null || cardDetails == null) return;
+        long modelId = lastCreatureData.creatureModel.id;
+        //从实际显示值取数保存(而非编辑框文本), 与旧 UITestCard 生成数据同口径
+        float sSize = cardItem.ui_Icon.transform.localScale.x;
+        Vector2 sPos = cardItem.ui_Icon.rectTransform.anchoredPosition;
+        float bSize = cardDetails.ui_Icon.transform.localScale.x;
+        Vector2 bPos = cardDetails.ui_Icon.rectTransform.anchoredPosition;
+        //size_spine 只存模型倍率因子(不含体型倍率, 场景实际缩放=size_spine×体型, 旧 UITestCard 存的是含体型的总缩放)
+        List<ExcelChangeData> listData = new List<ExcelChangeData>
+        {
+            new ExcelChangeData(modelId, "ui_data_s", $"{sSize};{sPos.x},{sPos.y}"),
+            new ExcelChangeData(modelId, "ui_data_b", $"{bSize};{bPos.x},{bPos.y}"),
+            new ExcelChangeData(modelId, "size_spine", $"{sceneSizeSpine.value}"),
+        };
+        ExcelUtil.SetExcelData(PathCreatureModelExcel, "CreatureModel", listData);
+        ExcelUtil.ExcelToJsonItem(PathCreatureModelExcel);
+        ClearCfgCache(typeof(CreatureModelInfoCfg));
+
+        RefreshCards();
+        SyncCalibrationInputs();
+        saveHint = $"已保存: 模型{modelId} 小卡/大卡图标 + size_spine={sceneSizeSpine.value:F2}";
+        saveHintTime = Time.unscaledTime + 5f;
+        LogUtil.Log($"[卡片编辑器] 尺寸校准已写回配置表: 模型{modelId} ui_data_s({sSize};{sPos.x},{sPos.y}) ui_data_b({bSize};{bPos.x},{bPos.y}) size_spine({sceneSizeSpine.value})");
+#endif
     }
     #endregion
 
@@ -573,6 +678,8 @@ public class TestCreatureCardGUI : MonoBehaviour
         DrawScaleSlider();
         DrawSceneSpineSection();
         GUILayout.Space(6);
+        DrawCalibrationSection();
+        GUILayout.Space(6);
         DrawColorEditors();
         GUILayout.Space(6);
         DrawSaveAndClose();
@@ -580,7 +687,7 @@ public class TestCreatureCardGUI : MonoBehaviour
         GUILayout.EndScrollView();
         GUILayout.EndArea();
 
-        //变更检测: 数据参数变更重建生物刷新卡片; 颜色/缩放变更只做轻量覆盖(不重建Spine)
+        //变更检测: 数据参数变更重建生物刷新卡片; 颜色/缩放/校准变更只做轻量覆盖(不重建Spine)
         if (GUI.changed)
         {
             long newDataKey = ComputeDataKey();
@@ -589,9 +696,12 @@ public class TestCreatureCardGUI : MonoBehaviour
                 lastDataKey = newDataKey;
                 ReadConfigColors(false, false, false);
                 RefreshCards();
+                //数据变更后图标/模型已被 SetData 重置为新模型配置值, 读回校准框再应用(防旧模型校准值覆盖新模型)
+                SyncCalibrationInputs();
             }
             ApplyCardScale();
             ApplyCustomColors();
+            ApplyIconCalibration();
         }
     }
 
@@ -724,6 +834,54 @@ public class TestCreatureCardGUI : MonoBehaviour
         GUILayout.Label("缩放", labelStyle, GUILayout.Width(60));
         cardScale = GUILayout.HorizontalSlider(cardScale, 0.5f, 2f, GUILayout.Height(26));
         GUILayout.Label($"{cardScale:F2}x", labelStyle, GUILayout.Width(46));
+        GUILayout.EndHorizontal();
+    }
+
+    /// <summary>
+    /// 绘制图标/模型尺寸校准区(小卡/大卡图标缩放与锚点位置 + 场景模型size_spine; 保存写回 excel_creature_model 并再生JSON立即生效)
+    /// </summary>
+    private void DrawCalibrationSection()
+    {
+        GUILayout.Label("—— 图标/模型尺寸校准（作用于当前生物模型）——", hintStyle);
+        DrawFloatEditor("小卡缩放", iconSSize, 0.05f, 4f);
+        DrawFloatEditor("小卡X", iconSX, -500f, 500f);
+        DrawFloatEditor("小卡Y", iconSY, -500f, 500f);
+        DrawFloatEditor("大卡缩放", iconBSize, 0.05f, 4f);
+        DrawFloatEditor("大卡X", iconBX, -500f, 500f);
+        DrawFloatEditor("大卡Y", iconBY, -500f, 500f);
+        DrawFloatEditor("模型大小", sceneSizeSpine, 0.05f, 4f);
+        GUILayout.Label("模型大小=size_spine(场景实际缩放=size_spine×体型倍率)", hintStyle);
+#if UNITY_EDITOR
+        GUI.backgroundColor = new Color(0.9f, 0.75f, 0.4f);
+        if (GUILayout.Button("💾 保存尺寸到配置表", GUILayout.Height(30)))
+            SaveCalibrationToExcel();
+        GUI.backgroundColor = Color.white;
+        GUILayout.Label("写回当前生物模型行(ui_data_s/ui_data_b/size_spine), 再生JSON后立即生效", hintStyle);
+#endif
+    }
+
+    /// <summary>
+    /// 绘制单个浮点数值编辑行(标签 + 滑条 + 文本输入; 滑条拖动强制同步文本框, 文本输入合法即应用)
+    /// </summary>
+    /// <param name="label">标签</param>
+    /// <param name="state">数值编辑状态</param>
+    /// <param name="min">滑条下限</param>
+    /// <param name="max">滑条上限</param>
+    private void DrawFloatEditor(string label, FloatEditState state, float min, float max)
+    {
+        GUILayout.BeginHorizontal();
+        GUILayout.Label(label, labelStyle, GUILayout.Width(60));
+        float sliderValue = GUILayout.HorizontalSlider(state.value, min, max, GUILayout.Height(26));
+        bool sliderChanged = !Mathf.Approximately(sliderValue, state.value);
+        //文本输入框; 滑条刚拖动的帧强制显示滑条换算值, 避免文本框残留旧值
+        string newText = GUILayout.TextField(sliderChanged ? $"{sliderValue:F2}" : state.input, GUILayout.Height(26), GUILayout.Width(64));
+        if (sliderChanged)
+            state.SetValue(sliderValue);
+        else if (newText != state.input)
+        {
+            state.input = newText;
+            state.ApplyInput();
+        }
         GUILayout.EndHorizontal();
     }
 

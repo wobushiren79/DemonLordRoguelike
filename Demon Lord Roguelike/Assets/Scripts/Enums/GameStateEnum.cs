@@ -253,6 +253,11 @@ public enum ResearchPreConditionEnum
     /// <summary>兽人魔法师(冰) 扭蛋累计抽出数量</summary>
     GashaponCreatureDrawCount7004 = 7004,
     #endregion
+
+    #region 世界通用(不限定单个世界; 数值无意义,缺省1)
+    /// <summary>任意一个世界的无尽模式已解锁(任一世界无尽难度等级>0)</summary>
+    AnyWorldInfiniteUnlocked = 10001,
+    #endregion
 }
 
 
@@ -290,6 +295,7 @@ public enum UnlockEnum : long
     PortalPreviewReward = 100300005, //传送门详情-奖励预览(研究门控)
     PortalRefreshNum = 100300006, //传送门刷新次数(研究等级=可用刷新次数上限,通关世界回满)
     ChallengeHundredShowRate = 100300007, //是魔王就挑战100勇士-出现概率(研究等级×10%=传送门世界刷新为该模式的概率;前置=剑与魔法征服难度2研究100310112)
+    InfiniteShowRate = 100300008, //无尽模式-出现概率(基础10%+研究等级×10%,9级满级=100%;前置=任意一个世界无尽已解锁,走pre_data条件AnyWorldInfiniteUnlocked)
 
     GashaponMachine = 100400000,//解锁孕育
     GashaponShowAll = 100400001,//显示所有抽取

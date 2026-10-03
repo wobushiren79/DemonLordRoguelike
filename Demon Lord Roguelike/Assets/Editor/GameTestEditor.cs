@@ -929,26 +929,8 @@ public partial class GameTestEditor : Editor
         EditorGUI.indentLevel++;
         EditorGUILayout.Space(5);
 
-        GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
-        if (GUILayout.Button("▶️ 显示卡片", GUILayout.Height(30)) && Application.isPlaying)
-        {
-            FightCreatureBean fightCreature;
-            if (creatureId == 0)
-            {
-                var npcInfo = NpcInfoCfg.GetItemData(npcInfoId);
-                fightCreature = CreatureHandler.Instance.GetFightCreatureData(npcInfo, CreatureFightTypeEnum.FightDefense);
-            }
-            else
-            {
-                fightCreature = CreatureHandler.Instance.GetFightCreatureData(creatureId, CreatureFightTypeEnum.FightDefense);
-            }
-            fightCreature.creatureData.AddSkinForBase();
-            launcher.StartForCardTest(fightCreature);
-        }
-        GUI.backgroundColor = Color.white;
-
         GUI.backgroundColor = new Color(0.4f, 0.7f, 0.9f);
-        if (GUILayout.Button("🎛️ 卡片编辑器(自由设置稀有度/等级/颜色)", GUILayout.Height(30)) && Application.isPlaying)
+        if (GUILayout.Button("🎛️ 卡片编辑器(自由设置稀有度/等级/颜色/尺寸)", GUILayout.Height(30)) && Application.isPlaying)
         {
             launcher.StartForCreatureCardEditor(creatureId, npcInfoId);
         }
@@ -957,7 +939,7 @@ public partial class GameTestEditor : Editor
         //Mod幻化药测试: 下拉选择幻化药, 实时显示真实展示效果(小卡=Chess基础形象/大卡=Avator高清)
         DrawTransformPotionTest(launcher);
 
-        EditorGUILayout.HelpBox("「显示卡片」= 图标尺寸校准(UITestCard预制)；「卡片编辑器」= 纯代码GUI面板实时预览小卡+大卡详情，可自由设置稀有度/等级/生物或NPC，并自定义稀有度板色/等级颜色(可写回配置表)；「Mod幻化药测试」= 四个页签(单个预览/小卡列表/大卡列表/场景列表)批量预览幻化药，悬停滚轮调缩放、拖拽调位置，一键保存全部修改回Mod项目。", MessageType.Info);
+        EditorGUILayout.HelpBox("「卡片编辑器」= 纯代码GUI面板实时预览小卡+大卡详情+场景Spine模型，可自由设置稀有度/等级/生物或NPC，自定义稀有度板色/等级颜色、卡片图标缩放与位置、场景模型大小(均可写回配置表)；「Mod幻化药测试」= 四个页签(单个预览/小卡列表/大卡列表/场景列表)批量预览幻化药，悬停滚轮调缩放、拖拽调位置，一键保存全部修改回Mod项目。", MessageType.Info);
         EditorGUILayout.Space(10);
 
         EditorGUILayout.BeginVertical("box");

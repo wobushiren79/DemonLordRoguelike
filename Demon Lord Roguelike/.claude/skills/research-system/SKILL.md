@@ -148,11 +148,15 @@ public ResearchInfoTypeEnum GetResearchType();
 // researchLevel 越界会被钳制到 [1, arrayPayCrystal.Length]
 public long GetPayCrystal(int researchLevel);
 
-// 获取带「待解锁等级数值详情」的研究名称(如 控制魔王时可进行突进（距离1.5）/突进冷却（2.5秒）)
-// 仅对多语言模板含 {Value} 占位的节点生效(当前为 SpaceDash/SpaceDashCD),其余原样返回 name_language;
-// 数值取 待解锁等级=min(当前等级+1,level_max) 的效果值(每级只显示当前要解锁那一级),满级停留在满级数值;
-// 替换走通用机制 TextHandler.GetTextReplace + TextReplaceEnum.Value(与成就 GetLevelDescription 同口径)
-public string GetNameLanguageWithLevelDetail(int currentLevel);
+// 获取带「待解锁等级累计效果」的详情描述(如 （概率40%）/（距离4.5）/（祭品上限5）)
+// 读研究表 details[language] 列对应的详情模板(details==0 返回空串, 模板无 {Value} 原样返回);
+// 数值取 待解锁等级=min(当前等级+1,level_max) 的累计总效果,满级停留在满级数值;
+// 公式统一收口 UserUnlockBean 的 static Get*ForLevel 方法(私有 GetLevelDetailValueString 按 unlock_id 分发 22 个 level_max>1 节点);
+// 替换走通用机制 TextHandler.GetTextReplace + TextReplaceEnum.Value(与成就 GetLevelDescription 同口径);
+// 括号/前导空格由各语言详情自带(cn/tw/jp 全角无空格,其余半角带前导空格),气泡里直接拼在名字后
+public string GetDetailsLanguageWithLevelDetail(int currentLevel);
+// 注意: details/details_language 字段暂在 Partial([JsonIgnore]+LanguageCache, 仿 pre_data 先例),
+// 重新生成 ResearchInfoBean.cs 后需删除该临时 region(生成物自带且 CombineModReferenceIds 自动补 details 拼接)
 ```
 
 ### Cfg 扩展方法
@@ -178,11 +182,12 @@ World1ConquerCompleteCount2:1                          // 世界1难度2通关�
 World1ConquerCompleteCount1:10&World1ConquerCompleteCount10:4   // 两条同时满足
 ```
 
-**条件枚举**：`ResearchPreConditionEnum`（在 `Assets/Scripts/Enums/GameStateEnum.cs`，紧随 `ResearchInfoTypeEnum`）。现有两类条件：
+**条件枚举**：`ResearchPreConditionEnum`（在 `Assets/Scripts/Enums/GameStateEnum.cs`，紧随 `ResearchInfoTypeEnum`）。现有三类条件：
 - `World1ConquerCompleteCount1~10`（值 1~10）= 剑与魔法（世界1）征服模式难度1~10通关次数（数值=要求的通关次数下限，数据由成就统计 `UserAchievementBean.GetConquerCompleteCount` 提供）
 - `GashaponCreatureDrawCount1001~7004`（30 个，**枚举值=职业生物id**）= 该职业扭蛋累计抽出次数（数值=要求的抽出数量下限，数据由 `UserAchievementBean.GetGashaponCreatureDrawCount` 提供；典型用法：职业独立扭蛋 x1 研究填 `GashaponCreatureDrawCount{职业id}:99`）
+- `AnyWorldInfiniteUnlocked`（值 10001，世界通用段）= **任意一个世界的无尽模式已解锁**（数值无意义缺省1；判定=遍历 `GameWorldInfoCfg.GetAllArrayData()` 任一世界 `GetUnlockInfiniteDifficultyLevel(worldId)>0` 即满足；用于无尽出现概率研究 100300008 的前置——四世界无尽起始id中 100310202/302/402 无研究节点，若走 `pre_unlock_ids` OR 表达式会触发 `UIBaseResearch.CreateLine` 空引用，故走 pre_data 通道）
 
-**判定链路**：`ResearchInfoBeanPartial.GetPreDataConditions()`（拆分走通用扩展 `StringExtension.SplitForDictionaryEnumLong<T>`：缺省值补1、无法识别的条目回收到错误列表不抛异常；缓存为 `Dictionary<ResearchPreConditionEnum, long>`，出错记 `isPreDataParseError`）→ `CheckPreDataIsMeet()` → 静态 `CheckPreDataConditionIsMeet(userData, condition, value)`（按枚举区间分发求值，世界1通关次数=枚举值偏移+1 得难度；职业抽出次数=枚举值本身即职业 id 直接读统计）。
+**判定链路**：`ResearchInfoBeanPartial.GetPreDataConditions()`（拆分走通用扩展 `StringExtension.SplitForDictionaryEnumLong<T>`：缺省值补1、无法识别的条目回收到错误列表不抛异常；缓存为 `Dictionary<ResearchPreConditionEnum, long>`，出错记 `isPreDataParseError`）→ `CheckPreDataIsMeet()` → 静态 `CheckPreDataConditionIsMeet(userData, condition, value)`（区间分发求值：世界1通关次数=枚举值偏移+1 得难度；职业抽出次数=枚举值本身即职业 id 直接读统计；`AnyWorldInfiniteUnlocked` 为等值判断、遍历世界表查无尽解锁，放区间判定之前）。
 
 **新增条件类型**：在 `ResearchPreConditionEnum` 追加枚举值（同类连续区间便于范围分发）→ 在 `CheckPreDataConditionIsMeet` 补求值分支 → Excel 该列填 `枚举名:数值`。
 
@@ -249,7 +254,8 @@ public enum UnlockEnum : long
     PortalPreviewRoadLength = 100300004, // 传送门详情预览-路径长度
     PortalPreviewReward = 100300005,     // 传送门详情预览-奖励道具
     PortalRefreshNum = 100300006,        // 传送门刷新次数(研究等级=可用刷新次数上限,通关回满,level_max=10)
-    ChallengeHundredShowRate = 100300007, // 是魔王就挑战100勇士出现概率(研究等级×10=传送门世界刷为该模式的概率百分数0~100;前置=剑与魔法征服难度2研究100310112,同世界分支)
+    ChallengeHundredShowRate = 100300007, // 是魔王就挑战100勇士出现概率(研究等级×10=传送门世界刷为该模式的概率百分数0~100;前置=剑与魔法征服难度2研究100310112,同世界分支;详情 details=900000022 含{Value}占位,气泡拼接填待解锁级概率)
+    InfiniteShowRate = 100300008,        // 无尽模式出现概率(基础10+研究等级×10=概率百分数,9级满级=100;前置=pre_data条件 AnyWorldInfiniteUnlocked 任意世界无尽已解锁,不走pre_unlock_ids;详情复用 details=900000022)
     GashaponMachine = 100400000,       // 解锁孕育
     GashaponRarityR = 100401000,       // 稀有度R
     GashaponRarityRRate = 100401001,   // 稀有度R +1%
@@ -260,8 +266,8 @@ public enum UnlockEnum : long
     DemonLordMPMax = 200300001,        // 魔王魔力上限+10/级(level_max=5)
     DemonLordMPF = 200400001,          // 魔王魔力恢复速度+1/秒/级(level_max=3)
     AbyssalBlessingRefreshNum = 200500001, // 深渊馈赠刷新次数(研究等级=单次征服run内可用刷新次数上限,level_max=5,新run自动回满)
-    SpaceDash = 200600001,             // 空格突进(基地控制,level_max=3;1/2/3级向朝向突进1/2/3距离单位;多语言文本含{Value}占位,气泡由 GetNameLanguageWithLevelDetail 动态填待解锁级距离)
-    SpaceDashCD = 200700001,           // 空格突进冷却缩减(子研究,前置=SpaceDash,level_max=4;默认3s每级-0.5最低1s;多语言文本含{Value}占位,气泡动态填待解锁级冷却)
+    SpaceDash = 200600001,             // 空格突进(基地控制,level_max=3;1/2/3级向朝向突进1/2/3距离单位;名字纯文本,详情 details=900000018「（距离{Value}）」气泡拼接填待解锁级距离)
+    SpaceDashCD = 200700001,           // 空格突进冷却缩减(子研究,前置=SpaceDash,level_max=4;默认3s每级-0.5最低1s;名字纯文本,详情 details=900000019「（{Value}秒）」气泡拼接填待解锁级冷却)
     DemonLordAutoPickCrystal = 200800001,    // 魔王自动拾取魔晶(level_max=10;间隔=11-等级秒,10级10s→满级1s;每次按FIFO取场上最先掉落的魔晶,基础1颗;无前置,强化分支新根)
     DemonLordAutoPickCrystalNum = 200900001, // 魔王每次拾取魔晶数量+1(level_max=5;每次拾取数=1+等级;前置=DemonLordAutoPickCrystal)
     LineupRename = 201000001,          // 阵容重命名(level_max=1 纯解锁;前置=LineupNum(200100001);解锁后阵容管理界面 UILineupManager 显示重命名按钮,可给当前选中阵容自定义名字,页签文本优先显示自定义名;自定义名存 UserDataBean.dicLineupName)
@@ -309,8 +315,18 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 `ChallengeHundredShowRate`（unlock_id **100300007**，`research_type=4` 世界节点，`icon_res=ui_research_9`，`level_max=10`，`position(-160,-160)` 与难度链同列、位于前置 `100310112`（剑与魔法征服难度2研究）正下方，`pre_unlock_ids="100310112"`——同分支前置，连线正常绘制）——研究等级 ×10 = 传送门世界刷新为「是魔王就挑战100勇士」模式的概率（百分数 0~100，未解锁=0，满级 100）。
 
 - **概率型研究消费点先例**（仿扭蛋概率研究）：消费不在 UI 门控，而在 `GameWorldInfoRandomBean.SetGameFightTypeRandom`——每次生成传送门世界时先按该概率判定，命中则用 `FightTypeChallengeHundredInfoCfg.GetRandomRow(当前世界最高已解锁难度)` 抽配置行生成为挑战100勇士世界（**所有已解锁世界都可能刷出**）；命中但当前世界最高已解锁难度无匹配配置行时落回原征服/无尽随机。数值读取 `UserUnlockBean.GetUnlockChallengeHundredShowRate()`（=研究等级×10）。
-- **落表**同其他节点：`excel_research_info`(id=100300007, `research_type=4`, `pay_crystal` 十级独立阶梯 `100,200,400,800,1500,2500,4000,6000,9000,15000`, `pre_data` 留空, `name`=同id, 备注「是魔王就挑战100勇士-出现概率+10%」) + `excel_unlock_info`(id=100300007, `unlock_type=0`, 备注「是魔王就挑战100勇士出现概率」) + 多语言 `excel_language` 的 `ResearchInfo` 工作表(id=100300007, **全语言统一填原名「是魔王就挑战100勇士」**——该模式翻译统一用原名)。
+- **气泡按级标概率**：名字十二语言保持原名「是魔王就挑战100勇士」，概率详情经研究表 `details[language]` 列=900000022「（概率{Value}%）」（cn/tw/jp 全角括号、其余半角带前导空格，12 语言全翻译），`GetDetailsLanguageWithLevelDetail` 按 待解锁等级=min(当前+1,满级) 填概率拼在名字后（走 `UserUnlockBean.GetChallengeHundredShowRateForLevel(level)`=等级×`CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL`(10)；details 机制详见「研究配置 Bean 扩展方法」节，22 个 level_max>1 节点详情语言条目占号段 900000001~900000022）。
+- **落表**同其他节点：`excel_research_info`(id=100300007, `research_type=4`, `pay_crystal` 十级独立阶梯 `100,200,400,800,1500,2500,4000,6000,9000,15000`, `pre_data` 留空, `name`=同id, `details[language]`=900000022, 备注「是魔王就挑战100勇士-出现概率+10%」) + `excel_unlock_info`(id=100300007, `unlock_type=0`, 备注「是魔王就挑战100勇士出现概率」) + 多语言 `excel_language` 的 `ResearchInfo` 工作表(id=100300007 名字**全语言统一填原名「是魔王就挑战100勇士」**——该模式翻译统一用原名；id=900000022 为概率详情行)。
 - 挑战100勇士模式本身的战斗配置表/Bean/流程见 [`portal-system`](../portal-system/SKILL.md) / [`game-fight-system`](../game-fight-system/SKILL.md) 等文档，本 Skill 仅覆盖「研究→出现概率」这一面。
+
+### 世界分支(1003 段) — 无尽模式出现概率（pre_data 条件前置先例）
+
+`InfiniteShowRate`（unlock_id **100300008**，`research_type=4` 世界节点，`icon_res=ui_research_11`（沿用无尽链图标），`level_max=9`，`position(-480,-160)` 无尽链根部 (-480,0) 正下方空位，`pre_unlock_ids` **留空**、`pre_data="AnyWorldInfiniteUnlocked"`——前置=任意一个世界的无尽已解锁，未满足时节点隐藏、不画连线）——概率 = **基础 10% + 研究等级 ×10%**（百分数，未研究 0 级=10% 保持原固定概率，9 级满级=100%）。
+
+- **为什么前置走 pre_data 而非 pre_unlock_ids**：「任意一个世界无尽已解锁」语义上是四世界无尽起始 id 的 OR（`100310102|100310202|100310302|100310402`），但 100310202/302/402 **只有 unlock_info 登记、没有研究节点**，`UIBaseResearch.CreateLine` 对拍平后的前置 id 解引用在判空之前，会 NullReferenceException——故新增 `ResearchPreConditionEnum.AnyWorldInfiniteUnlocked` 走 pre_data 通道（不参与连线，天然避开）。
+- **消费点**与 100勇士同款：`GameWorldInfoRandomBean.SetGameFightTypeRandom` 无尽分支 `Random.Range(0,100) < UserUnlockBean.GetUnlockInfiniteShowRate()`（= `INFINITE_SHOW_RATE_BASE`(10) + 等级×`INFINITE_SHOW_RATE_PER_LEVEL`(10)）；前提仍是该世界 `unlock_id_infinite` 已解锁。
+- **气泡按级标概率**：详情**复用** details=900000022「（概率{Value}%）」，公式登记 `GetLevelDetailValueString` → `UserUnlockBean.GetInfiniteShowRateForLevel(level)`（1 级=20…9 级=100）。
+- **落表**：`excel_research_info`(id=100300008, `research_type=4`, `level_max=9`, `pay_crystal` 九档 `100,200,400,800,1500,2500,4000,6000,9000`, `pre_data=AnyWorldInfiniteUnlocked`, `name`=同id, `details[language]`=900000022, 备注「无尽模式-出现概率+10%/级」) + `excel_unlock_info`(id=100300008, `unlock_type=0`, 备注「无尽模式出现概率」) + 多语言 `excel_language` ResearchInfo(id=100300008, cn「无尽涌现」, 其余语言暂中文占位)。
 
 ### 设施分支(1002 段) — 征服通关获得声望（解锁开关驱动游戏逻辑）
 
@@ -448,7 +464,28 @@ public int GetUnlockResearchLevelByResearchInfo(ResearchInfoBean researchInfo);
 public int GetUnlockPortalShowCount();                 // 3 + PortalShowNum 等级
 public int GetUnlockPortalRefreshMax();                // 传送门刷新次数上限 = PortalRefreshNum 等级(未解锁0,满级10)
 public bool CheckIsUnlockPortalRefresh();              // 是否解锁传送门刷新(等级>0,门控刷新按钮显隐)
-public int GetUnlockChallengeHundredShowRate();        // 挑战100勇士出现概率 = ChallengeHundredShowRate 等级 × 10(百分数0~100,未解锁0,满级100)；GameWorldInfoRandomBean.SetGameFightTypeRandom 生成传送门世界时按该概率判定生成为挑战100勇士世界(命中但当前世界最高已解锁难度无匹配配置行则落回原随机)
+public int GetUnlockChallengeHundredShowRate();        // 挑战100勇士出现概率 = ChallengeHundredShowRate 等级 × CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL(10)(百分数0~100,未解锁0,满级100)；GameWorldInfoRandomBean.SetGameFightTypeRandom 生成传送门世界时按该概率判定生成为挑战100勇士世界(命中但当前世界最高已解锁难度无匹配配置行则落回原随机)
+public static int GetChallengeHundredShowRateForLevel(int level); // 指定等级的挑战100勇士出现概率 = 等级×CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL(10)(供研究气泡详情填充)
+public int GetUnlockInfiniteShowRate();                // 无尽模式出现概率 = INFINITE_SHOW_RATE_BASE(10) + InfiniteShowRate(100300008) 等级 × INFINITE_SHOW_RATE_PER_LEVEL(10)(百分数10~100,未研究保持10,满级9级=100)；SetGameFightTypeRandom 无尽分支按它判定(前提该世界无尽已解锁)
+public static int GetInfiniteShowRateForLevel(int level); // 指定等级的无尽出现概率 = 10 + 等级×10(供研究气泡详情填充)
+// —— 数值公式 static ForLevel 收口(2026-10 details 机制配套, 实例方法均委托对应 static, 研究气泡详情按任意等级求值) ——
+public static int GetCreatureVatNumForLevel(int level);              // 进阶设施数量 = limmit.creatureVatMax + 等级
+public static int GetCreatureVatAddProgressForLevel(int level);      // 进阶加速每次推进秒数(=倍率) = 等级
+public static int GetCreatureVatMaterialMaxForLevel(int level);      // 进阶素材上限 = limmit.creatureVatMaterialMax + 等级
+public static int GetSacrificeMaxForLevel(int level);                // 献祭祭品上限 = limmit.sacrificeMax + 等级
+public static float GetSacrificeFailPityAddRateForLevel(int level);  // 献祭失败保底增量 = 等级×0.05f
+public static float GetSacrificeDifferentIdRateForLevel(int level);  // 不同id献祭成功率 = 等级×0.05f
+public static int GetPortalRefreshMaxForLevel(int level);            // 传送门刷新上限 = 等级
+public static float GetGashaponRarityRateForLevel(int level);        // 孕育稀有度命中概率% = GashaponItemBean.rarityBaseRate(10, 已改 public) + 等级(扭蛋抽取/展示/气泡三处共用)
+public static int GetJuicerCreatureMaxForLevel(int level);           // 魔汁机投入上限 = limmit.juicerCreatureMax + 等级
+public static int GetLineupCreatureNumForLevel(int level);           // 阵容生物上限 = limmit.lineupCreatureMax + 等级
+public static int GetLineupNumForLevel(int level);                   // 阵容数量 = limmit.lineupMax + 等级
+public static float GetDropCrystalAddLifeTimeForLevel(int level);    // 魔晶掉落额外时长 = 等级×5 秒
+public static float GetDemonLordMPMaxAddValueForLevel(int level);    // 魔王魔力上限加成 = 等级×10
+public static float GetDemonLordMPFAddValueForLevel(int level);      // 魔王魔力恢复加成 = 等级×1/秒
+public static int GetAbyssalBlessingRefreshMaxForLevel(int level);   // 深渊馈赠刷新上限 = 等级
+public static float GetDemonLordAutoPickCrystalIntervalForLevel(int level); // 自动拾取间隔 = 等级<=0→-1 否则 11-等级(秒)
+public static int GetDemonLordAutoPickCrystalCountForLevel(int level);      // 每次拾取魔晶数量 = 1 + 等级
 public int GetUnlockAbyssalBlessingRefreshMax();       // 深渊馈赠刷新次数上限 = AbyssalBlessingRefreshNum 等级(未解锁0,满级5)；剩余次数池挂 FightBeanForConquer(整个征服run共享,新run自动回满)
 public bool CheckIsUnlockAbyssalBlessingRefresh();     // 是否解锁深渊馈赠刷新(等级>0,门控 UIFightAbyssalBlessing 刷新按钮显隐)
 public int GetUnlockLineupNum();                       // 1 + LineupNum 等级
@@ -644,7 +681,8 @@ public override void SetData(object data)
     int currentLevel = userUnlock.GetUnlockResearchLevelByResearchInfo(researchInfo);
     long payCrystal = researchInfo.GetPayCrystal(currentLevel + 1);
 
-    SetName(researchInfo.GetNameLanguageWithLevelDetail(currentLevel)); // 名称含 {Value} 占位的节点(空格突进/突进冷却)动态填待解锁等级数值
+    //名字与「待解锁等级累计效果」详情直接拼接(括号/前导空格由各语言详情文本自带; 无详情配置时详情为空串仅显示名字)
+    SetName($"{researchInfo.name_language}{researchInfo.GetDetailsLanguageWithLevelDetail(currentLevel)}");
     SetIcon(researchInfo.icon_res);
     SetPayCrystal(payCrystal);
     SetLevel(researchInfo.level_max, currentLevel);

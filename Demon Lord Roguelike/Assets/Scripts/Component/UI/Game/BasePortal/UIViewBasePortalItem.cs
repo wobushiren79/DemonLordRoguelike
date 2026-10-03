@@ -6,6 +6,11 @@ using DG.Tweening;
 
 public partial class UIViewBasePortalItem : BaseUIView
 {
+    //固定图标资源名(位于 UI 图集): 挑战100勇士传送门图标
+    public const string IconResChallengeHundred = "ui_game_1";
+    //固定图标资源名(位于 UI 图集): 无尽模式传送门图标
+    public const string IconResInfinite = "ui_game_2";
+
     protected GameWorldInfoRandomBean gameWorldInfoRandom;
     protected GameWorldInfoBean gameWorldInfo;
 
@@ -63,8 +68,8 @@ public partial class UIViewBasePortalItem : BaseUIView
         else if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Infinite)
             targetName = string.Format(TextHandler.Instance.GetTextById(420), gameWorldInfo.name_language);
         SetName(targetName);
-        //设置图标
-        SetIcon(gameWorldInfo.icon_res, gameWorldInfoRandom.iconSeed);
+        //设置图标(征服=随机星球; 无尽=ui_game_2; 挑战100勇士=ui_game_1)
+        SetIcon(gameWorldInfo.icon_res, gameWorldInfoRandom.iconSeed, gameWorldInfoRandom.gameFightType);
         //初始化弹窗(地图传送门展示当前难度的数据)
         popupForPortalDetails.SetData((gameWorldInfo, gameWorldInfoRandom, gameWorldInfoRandom.difficultyLevel), PopupEnum.PortalDetails);
 
@@ -98,15 +103,33 @@ public partial class UIViewBasePortalItem : BaseUIView
     }
 
     /// <summary>
-    /// 设置图标
+    /// 设置图标(征服等默认模式=按种子程序化生成星球; 无尽=ui_game_2; 挑战100勇士=ui_game_1)
     /// </summary>
-    public void SetIcon(string iconRes,int iconSeed)
+    /// <param name="iconRes">图标资源名</param>
+    /// <param name="iconSeed">星球图标随机种子</param>
+    /// <param name="gameFightType">战斗模式(决定是否用固定图标替代随机星球)</param>
+    public void SetIcon(string iconRes, int iconSeed, GameFightTypeEnum gameFightType)
     {
+        //无尽/挑战100勇士使用固定图标替代随机星球
+        string fixedIconRes = null;
+        if (gameFightType == GameFightTypeEnum.Infinite)
+            fixedIconRes = IconResInfinite;
+        else if (gameFightType == GameFightTypeEnum.ChallengeHundred)
+            fixedIconRes = IconResChallengeHundred;
+        if (!fixedIconRes.IsNull())
+        {
+            IconHandler.Instance.GetIconSprite(SpriteAtlasTypeEnum.UI, fixedIconRes, (sprite) =>
+            {
+                ui_Icon.sprite = sprite;
+                ui_Icon.gameObject.SetActive(true);
+            });
+            return;
+        }
         if (iconRes.IsNull())
         {
             CreateToolsForPlanetTextureBean createData = new CreateToolsForPlanetTextureBean(iconSeed);
             var planetTex = CreateTools.CreatePlanetTexture(createData);
-            ui_Icon.texture = planetTex;
+            ui_Icon.sprite = Sprite.Create(planetTex, new Rect(0, 0, planetTex.width, planetTex.height), new Vector2(0.5f, 0.5f));
             ui_Icon.gameObject.SetActive(true);
         }
     }

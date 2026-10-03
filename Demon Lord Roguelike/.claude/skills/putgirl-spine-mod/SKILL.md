@@ -108,7 +108,7 @@ MOD项目/Mods/PutGirlSpine/JsonText/
 
 1. 扫描 `Assets/ModResource/Spine/PutGirl` 全部 `SkeletonDataAsset` → 同步进 `Mod_PutGirlSpine` 分组（Address=资产名；**PackSeparately** 每资源一个 bundle 按需加载）
 2. **SkeletonData 缩放统一复位**（`ApplyUIShowSkeletonDataScale`，幂等）：PutGirl 全部资源都是 ui_show 系，scale 统一 `0.01f`
-3. 临时把其他分组 `IncludeInBuild=false`（隔离构建），构建后自动恢复
+3. 临时把其他分组 `IncludeInBuild=false`（隔离构建），构建后自动恢复；构建器含防空构建保险：本分组残留 false 自动恢复、分组 0 条目时中止构建（2026-10-02 空构建事故后加）
 4. 新增/复用 Profile `PutGirlSpine`，构建/加载路径指向 `Mods/PutGirlSpine` 并设为激活
 5. 清理旧产物（**保留 JsonText 子目录**）→ `BuildPlayerContent()` 构建
 6. **构建后自动把 catalog 三件套从引擎默认输出目录拷进 Mod 目录**

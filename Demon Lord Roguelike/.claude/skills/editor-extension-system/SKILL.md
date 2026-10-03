@@ -233,7 +233,7 @@ LauncherTest (Inspector)
 ├── ──── 根据类型显示对应参数 ────
 ├── NormalGame: 正常游戏启动（走真实开始流程）
 ├── FightSceneTest: 战斗参数配置（5 个子模式 FightTestModeEnum：Normal 普通/ConquerBoss 征服BOSS关/SingleUnit 单体/ChallengeHundred 挑战100勇士/Infinite 无尽模式，后两个为「配置行下拉+存档槽位 0~3」独立配置区，详见 test-system skill）
-├── CardTest: 卡片测试参数（三个启动按钮：显示卡片 UITestCard 图标尺寸校准 / 🎛️ 卡片编辑器 StartForCreatureCardEditor 纯代码GUI实时预览稀有度/等级/颜色 / 🧪 Mod幻化药测试 StartForTransformPotionTest 下拉选药实时显示展示效果，详见 test-system skill）
+├── CardTest: 卡片测试参数（两个启动按钮：🎛️ 卡片编辑器 StartForCreatureCardEditor 纯代码GUI实时预览稀有度/等级/颜色 + 图标/模型尺寸校准(原「显示卡片」UITestCard 已删除并入) / 🧪 Mod幻化药测试 StartForTransformPotionTest 下拉选药实时显示展示效果，详见 test-system skill）
 ├── Base: 基地测试参数
 ├── RewardSelect: 奖励选择参数
 ├── DoomCouncil: 终焉议会参数（两个启动按钮：开始终焉议会 StartForDoomCouncil / 查看所有固定议员 StartForDoomCouncilAllFixed）

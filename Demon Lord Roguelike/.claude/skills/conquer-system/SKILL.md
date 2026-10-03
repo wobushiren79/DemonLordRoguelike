@@ -305,7 +305,7 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 - `GetDifficultyRandom(level)`：取某难度缓存数据，缺失（老存档/仅预览的未解锁难度）时懒生成并缓存，保证同一难度数值稳定。气泡按各 item 自身难度取数。
 - 难度解锁存档：`UserUnlockBean.GetUnlockGameWorldConquerDifficultyLevel`。
 
-> **挑战100勇士旁路（ChallengeHundred）**：`SetGameFightTypeRandom` 在随机世界模式**之前**优先判定挑战100勇士出现概率（研究 `UnlockEnum.ChallengeHundredShowRate` 等级×10%）：命中且当前最高已解锁难度有匹配配置行（`FightTypeChallengeHundredInfoCfg.GetRandomRow`）时，该传送门世界生成为 ChallengeHundred 并走 `SetRandomDataForChallengeHundred`——冻结配置行 id（`challengeHundredRowId`）、道路数/长度（行区间随出）、固定 `fightNum=1` 单关、预生成冻结 3 箱奖励（`listRewardChallengeHundred` + 签名 `rewardUnlockSignChallengeHundred`，取用走 `GetChallengeHundredReward()`，签名失效重生成同征服契约）。**本旁路不走 `SetRandomDataForConquer`/难度逐档缓存**（无难度概念），传送门气泡/进入流程细节见 [`portal-system`](../portal-system/SKILL.md)。
+> **挑战100勇士旁路（ChallengeHundred）**：`SetGameFightTypeRandom(worldId, listExistWorld)` 在随机世界模式**之前**优先判定挑战100勇士出现概率（研究 `UnlockEnum.ChallengeHundredShowRate` 等级×10%；**全场只刷 1 个**——`listExistWorld` 已存在该模式则跳过判定，无尽同理）：命中且当前最高已解锁难度有匹配配置行（`FightTypeChallengeHundredInfoCfg.GetRandomRow`）时，该传送门世界生成为 ChallengeHundred 并走 `SetRandomDataForChallengeHundred`——冻结配置行 id（`challengeHundredRowId`）、道路数/长度（行区间随出）、固定 `fightNum=1` 单关、预生成冻结 3 箱奖励（`listRewardChallengeHundred` + 签名 `rewardUnlockSignChallengeHundred`，取用走 `GetChallengeHundredReward()`，签名失效重生成同征服契约）。**本旁路不走 `SetRandomDataForConquer`/难度逐档缓存**（无难度概念），传送门气泡/进入流程细节见 [`portal-system`](../portal-system/SKILL.md)。
 
 #### 奖励预生成与冻结（预览即实领）
 

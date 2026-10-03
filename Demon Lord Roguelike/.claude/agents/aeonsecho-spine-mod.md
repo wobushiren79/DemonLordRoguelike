@@ -31,7 +31,7 @@ watched_files:
 - 执行一律走 `.claude/scripts/run-python.ps1` 包装（CLAUDE.md Python 规则），路径用参数传入不写死
 
 ### 构建器（MOD 项目侧）
-- **`MOD项目/Assets/Editor/AeonsEchoSpineModBuilder.cs`** — 菜单「工具/Mod/AeonsEchoSpine/一键构建」：同步 `Mod_AeonsEchoSpine` 分组条目（Address=资产名，**PackSeparately 每资源一个 bundle 按需加载**）→ SkeletonData 缩放双向校准（`ApplyChessSkeletonDataScale`：Chess 系=`ChessSkeletonDataScale=0.002f` 非 ui_show_spine 显示 ×1/5；ui_show 系 Avator/Secretary/Elf/AVG 主动复位=`UIShowSkeletonDataScale=0.01f`，幂等）→ 隔离构建（临时禁用其他分组）→ Profile 输出到 `Mods/AeonsEchoSpine` → 保留 JsonText 清理旧产物 → 构建 → 恢复分组 → catalog 三件套从 `Library/com.unity.addressables/aa/Windows` 拷进 Mod 目录
+- **`MOD项目/Assets/Editor/AeonsEchoSpineModBuilder.cs`** — 菜单「工具/Mod/AeonsEchoSpine/一键构建」：同步 `Mod_AeonsEchoSpine` 分组条目（Address=资产名，**PackSeparately 每资源一个 bundle 按需加载**）→ SkeletonData 缩放双向校准（`ApplyChessSkeletonDataScale`：Chess 系=`ChessSkeletonDataScale=0.002f` 非 ui_show_spine 显示 ×1/5；ui_show 系 Avator/Secretary/Elf/AVG 主动复位=`UIShowSkeletonDataScale=0.01f`，幂等）→ 隔离构建(本组残留false自愈+0条目中止)（临时禁用其他分组）→ Profile 输出到 `Mods/AeonsEchoSpine` → 保留 JsonText 清理旧产物 → 构建 → 恢复分组 → catalog 三件套从 `Library/com.unity.addressables/aa/Windows` 拷进 Mod 目录
 
 ### 主项目消费侧代码（改这些文件时必须同步本 agent 与 Skill）
 - `CreatureBeanPartial.cs`（`#region 幻化相关`）：`GetTransformItemInfo`/`GetTransformSpineRes`/`GetTransformUIShowSpineRes`/`GetTransformUIShowData`/`GetTransformShowData`/`GetTransformIdleAnim`/`GetTransformUIShowIdleAnim`/`ParseTransformOtherData`（返回 `TransformOtherData` 结构体，2026-09-28 由多 out 参数重构——新增键=结构体加字段+解析加 case，调用点零改动；含 `idle_anim`/`ui_show_idle_anim` 键=show/ui_show 骨架替代待机动画）；两个尺寸 Get 在编辑器下测试覆盖层优先（见下）

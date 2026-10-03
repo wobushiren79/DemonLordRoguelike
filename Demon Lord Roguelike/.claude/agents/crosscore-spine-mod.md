@@ -30,7 +30,7 @@ watched_files:
 - 执行一律走 `.claude/scripts/run-python.ps1` 包装（CLAUDE.md Python 规则），路径用参数传入不写死
 
 ### 构建器（MOD 项目侧）
-- **`MOD项目/Assets/Editor/CrossCoreSpineModBuilder.cs`** — 菜单「工具/Mod/CrossCoreSpine/一键构建」：同步 `Mod_CrossCoreSpine` 分组条目（Address=资产名，**PackSeparately**，**effect 系特效/背景层跳过**=`IsEffectLayer`）→ SkeletonData 缩放统一复位（`ApplyUIShowSkeletonDataScale`：全部 ui_show 系=0.01，幂等，同样跳过特效层）→ 隔离构建 → Profile 输出 `Mods/CrossCoreSpine` → 保留 JsonText 清理 → 构建 → catalog 三件套拷进 Mod 目录 → 自动导出部署（EditorPrefs 键 `CrossCoreSpineModBuilder.MainProjectRoot`，与其他 Mod 的相互独立）
+- **`MOD项目/Assets/Editor/CrossCoreSpineModBuilder.cs`** — 菜单「工具/Mod/CrossCoreSpine/一键构建」：同步 `Mod_CrossCoreSpine` 分组条目（Address=资产名，**PackSeparately**，**effect 系特效/背景层跳过**=`IsEffectLayer`）→ SkeletonData 缩放统一复位（`ApplyUIShowSkeletonDataScale`：全部 ui_show 系=0.01，幂等，同样跳过特效层）→ 隔离构建(本组残留false自愈+0条目中止) → Profile 输出 `Mods/CrossCoreSpine` → 保留 JsonText 清理 → 构建 → catalog 三件套拷进 Mod 目录 → 自动导出部署（EditorPrefs 键 `CrossCoreSpineModBuilder.MainProjectRoot`，与其他 Mod 的相互独立）
 - **`MOD项目/Assets/Editor/TempCrossCorePmaFix.cs`** — 【一次性临时脚本，首次接入跑完即删】菜单「工具/Mod/CrossCoreSpine/[一次性]PMA修正」：PNG 抽样检测直通→rgb*=a 转 PMA（幂等）+ 全部非特效层材质关直通开关。**首次构建前必跑**
 
 ### 主项目消费侧代码（改这些文件时必须同步本 agent 与 Skill）

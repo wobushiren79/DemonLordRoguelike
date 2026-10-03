@@ -22,6 +22,7 @@
 - [`reference_colored_icons.md`](reference_colored_icons.md) — 彩色图标(深渊馈赠ui_abyssalblessing_/成就ui_achievement_)32x32 每张≤N色(用户可调,2026-07为≤6)：create_1_direction_object size32(64个/批)→quantize6(合成黑底再中位切分)控色流水线；深渊暂存已到2621(下一个2622)、成就已到63(下一个64)
 
 ### Reference
+- [project_mod_empty_build_selfheal.md](project_mod_empty_build_selfheal.md) — Mod 空构建事故链：构建中断残留分组 IncludeInBuild=false → 0.07s 空跑「成功」→ 空 catalog 覆盖部署 → 主项目 InvalidKeyException(Keys=空)；诊断=bundle 0 个+catalog.bin 几百字节；12 构建器已加自愈+0条目中止，ModManager 空 catalog 判失败（2026-10-02）
 - [reference_mod_excel_source.md](reference_mod_excel_source.md) — Mod 道具(幻化药)真实源是 Mod 项目的 excel_mod_items_info_*(AeonsEcho 用无后缀基础名)，scan→Excel→export→JsonText 两段式流水线；改数据必须 生成脚本常量/Mod Excel/主项目 JsonText 三处同步，只改产物下次 export 静默回退(2026-10-02 图标改动漏 Excel 教训)
 - [reference_epplus_stream_write_noop.md](reference_epplus_stream_write_noop.md) — EPPlus 写 xlsx 严禁「new FileStream + new ExcelPackage(fs)」模式：本项目 DLL 下 Save() 无异常但文件完全未落盘（2026-09-30 幻化药保存两次事故根因，PowerShell 实证）；写必须用 new ExcelPackage(new FileInfo)，敏感路径加写后回读校验
 - [project_spine_mod_pma_requirement.md](project_spine_mod_pma_requirement.md) — 所有 Spine Mod 图集贴图必须 PMA（透明区纯黑）+ 材质直通开关关闭；直通 alpha 依赖的 _STRAIGHT_ALPHA_INPUT 是 shader_feature 变体，bundle 构建被裁剪 → 主工程全体白边（BrownDust 2026-09-29 事故，已转 PMA 修复）；新资源入库必查（含多页图集 `{图集}_{页}.mat`）

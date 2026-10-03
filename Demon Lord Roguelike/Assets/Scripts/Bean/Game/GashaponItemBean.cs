@@ -9,8 +9,8 @@ public class GashaponItemBean
     public CreatureBean creatureData;
     //是否打开
     public bool isBreak;
-    //解锁某稀有度档位后的起始命中概率(%),在此基础上叠加"概率+1%"研究等级
-    private const float rarityBaseRate = 10f;
+    //解锁某稀有度档位后的起始命中概率(%),在此基础上叠加"概率+1%"研究等级(扭蛋抽取/展示与研究气泡详情共用,经 UserUnlockBean.GetGashaponRarityRateForLevel 引用)
+    public const float rarityBaseRate = 10f;
 
     public GashaponItemBean(long creatureId, GashaponMachineCreatureStruct gashaponMachineCreature)
     {
@@ -64,7 +64,7 @@ public class GashaponItemBean
         if (userUnlock.CheckIsUnlock(unlockRarity))
         {
             //起始10% + 概率研究等级(每级+1%)
-            float successRate = rarityBaseRate + userUnlock.GetUnlockResearchLeveByUnlockEnum(unlockRarityRate);
+            float successRate = UserUnlockBean.GetGashaponRarityRateForLevel(userUnlock.GetUnlockResearchLeveByUnlockEnum(unlockRarityRate));
             float randomData = Random.Range(0f, 100f);
             if (randomData < successRate)
             {
@@ -113,7 +113,7 @@ public class GashaponItemBean
             return;
         }
         //起始10% + 概率研究等级(每级+1%),与 RandomRarityItem 口径一致
-        float rate = (rarityBaseRate + userUnlock.GetUnlockResearchLeveByUnlockEnum(unlockRarityRate)) / 100f;
+        float rate = UserUnlockBean.GetGashaponRarityRateForLevel(userUnlock.GetUnlockResearchLeveByUnlockEnum(unlockRarityRate)) / 100f;
         float probability = remaining * rate;
         remaining -= probability;
         listHigh.Add(new KeyValuePair<RarityEnum, float>(rarityEnum, probability));

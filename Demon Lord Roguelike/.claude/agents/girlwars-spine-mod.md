@@ -30,7 +30,7 @@ watched_files:
 - 执行一律走 `.claude/scripts/run-python.ps1` 包装（CLAUDE.md Python 规则），路径用参数传入不写死
 
 ### 构建器（MOD 项目侧）
-- **`MOD项目/Assets/Editor/GirlWarsSpineModBuilder.cs`** — 菜单「工具/Mod/GirlWarsSpine/一键构建」：同步 `Mod_GirlWarsSpine` 分组条目（Address=资产名，**PackSeparately**，**含 Back/Front/BG 的背景层跳过**）→ SkeletonData 缩放统一复位（`ApplyUIShowSkeletonDataScale`：全部 ui_show 系=0.01，幂等，同样跳过背景层）→ 隔离构建 → Profile 输出 `Mods/GirlWarsSpine` → 保留 JsonText 清理 → 构建 → catalog 三件套拷进 Mod 目录 → 自动导出部署（EditorPrefs 键 `GirlWarsSpineModBuilder.MainProjectRoot`，与其他 Mod 的相互独立）
+- **`MOD项目/Assets/Editor/GirlWarsSpineModBuilder.cs`** — 菜单「工具/Mod/GirlWarsSpine/一键构建」：同步 `Mod_GirlWarsSpine` 分组条目（Address=资产名，**PackSeparately**，**含 Back/Front/BG 的背景层跳过**）→ SkeletonData 缩放统一复位（`ApplyUIShowSkeletonDataScale`：全部 ui_show 系=0.01，幂等，同样跳过背景层）→ 隔离构建(本组残留false自愈+0条目中止) → Profile 输出 `Mods/GirlWarsSpine` → 保留 JsonText 清理 → 构建 → catalog 三件套拷进 Mod 目录 → 自动导出部署（EditorPrefs 键 `GirlWarsSpineModBuilder.MainProjectRoot`，与其他 Mod 的相互独立）
 
 ### 主项目消费侧代码（改这些文件时必须同步本 agent 与 Skill）
 - `CreatureBeanPartial.cs`（`#region 幻化相关`）：`ParseTransformOtherData`（返回 `TransformOtherData` 结构体）、`GetTransformUIShowSpineRes`/`GetTransformUIShowData`/`GetTransformUIShowIdleAnim`（本 Mod 用 ui_show_idle_anim 键=固定 A，不用 idle_anim/ui_show_skin 键）

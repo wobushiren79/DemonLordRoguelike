@@ -30,7 +30,7 @@ watched_files:
 - 执行一律走 `.claude/scripts/run-python.ps1` 包装（CLAUDE.md Python 规则），路径用参数传入不写死
 
 ### 构建器（MOD 项目侧）
-- **`MOD项目/Assets/Editor/ArkReSpineModBuilder.cs`** — 菜单「工具/Mod/ArkReSpine/一键构建」：同步 `Mod_ArkReSpine` 分组条目（Address=资产名，**PackSeparately**）→ SkeletonData 缩放统一复位（`ApplyUIShowSkeletonDataScale`：全部 ui_show 系=0.01，幂等）→ 隔离构建 → Profile 输出 `Mods/ArkReSpine` → 保留 JsonText 清理 → 构建 → catalog 三件套拷进 Mod 目录 → 自动导出部署（EditorPrefs 键 `ArkReSpineModBuilder.MainProjectRoot`，与 AeonsEchoSpine 的相互独立）
+- **`MOD项目/Assets/Editor/ArkReSpineModBuilder.cs`** — 菜单「工具/Mod/ArkReSpine/一键构建」：同步 `Mod_ArkReSpine` 分组条目（Address=资产名，**PackSeparately**）→ SkeletonData 缩放统一复位（`ApplyUIShowSkeletonDataScale`：全部 ui_show 系=0.01，幂等）→ 隔离构建(本组残留false自愈+0条目中止) → Profile 输出 `Mods/ArkReSpine` → 保留 JsonText 清理 → 构建 → catalog 三件套拷进 Mod 目录 → 自动导出部署（EditorPrefs 键 `ArkReSpineModBuilder.MainProjectRoot`，与 AeonsEchoSpine 的相互独立）
 
 ### 主项目消费侧代码（改这些文件时必须同步本 agent 与 Skill）
 - `CreatureBeanPartial.cs`（`#region 幻化相关`）：`ParseTransformOtherData`（返回 `TransformOtherData` 结构体，2026-09-28 由多 out 参数重构，含 `ui_show_skin`/`idle_anim`/`ui_show_idle_anim` 键）、`GetTransformUIShowSpineRes`/`GetTransformUIShowSkin`/`GetTransformUIShowData`/`GetTransformUIShowIdleAnim`

@@ -1,6 +1,6 @@
 ---
 name: camera-system
-description: Demon Lord Roguelike 游戏的摄像机(Camera)系统开发指南。使用此SKILL当需要创建或修改摄像机控制、Cinemachine 虚拟相机切换、场景镜头(战斗/基地/终焉议会/奖励选择/卡片测试)、跟随目标、镜头混合动画(Blend)、FieldOfView、屏幕适配等，包括 CameraHandler/CameraManager(框架层+游戏层 partial)、CinemachineCamera(cm_Fight/cm_Base)、CinemachineBrain、CV_List 场景虚拟相机组(CV_Core/CV_Portal/CV_GashaponMachine 等)、CinemachineCameraEnum、SetCameraForControl/SetCameraForBaseScene、HideAllCM、SetMainCameraDefaultBlend、GetDistanceFollow 等。
+description: Demon Lord Roguelike 游戏的摄像机(Camera)系统开发指南。使用此SKILL当需要创建或修改摄像机控制、Cinemachine 虚拟相机切换、场景镜头(战斗/基地/终焉议会/奖励选择)、跟随目标、镜头混合动画(Blend)、FieldOfView、屏幕适配等，包括 CameraHandler/CameraManager(框架层+游戏层 partial)、CinemachineCamera(cm_Fight/cm_Base)、CinemachineBrain、CV_List 场景虚拟相机组(CV_Core/CV_Portal/CV_GashaponMachine 等)、CinemachineCameraEnum、SetCameraForControl/SetCameraForBaseScene、HideAllCM、SetMainCameraDefaultBlend、GetDistanceFollow 等。
 watched_files:
   - Assets/FrameWork/Scripts/Component/Handler/CameraHandler.cs
   - Assets/FrameWork/Scripts/Component/Manager/CameraManager.cs
@@ -31,7 +31,7 @@ CV_List         - 各场景预制体下的虚拟相机组（按用途命名的�
 | --- | --- | --- |
 | [Assets/FrameWork/Scripts/Component/Handler/CameraHandler.cs](Assets/FrameWork/Scripts/Component/Handler/CameraHandler.cs) | 框架 | 通用逻辑：`ChangeAngleForCamera`、`GetDistanceFollow` |
 | [Assets/FrameWork/Scripts/Component/Manager/CameraManager.cs](Assets/FrameWork/Scripts/Component/Manager/CameraManager.cs) | 框架 | `mainCamera` / `uiCamera` 懒加载属性 |
-| [Assets/Scripts/Component/Handler/CameraHandler.cs](Assets/Scripts/Component/Handler/CameraHandler.cs) | 游戏 | 各场景镜头切换 API（战斗/基地/议会/奖励/卡片测试/控制） |
+| [Assets/Scripts/Component/Handler/CameraHandler.cs](Assets/Scripts/Component/Handler/CameraHandler.cs) | 游戏 | 各场景镜头切换 API（战斗/基地/议会/奖励/控制） |
 | [Assets/Scripts/Component/Manager/CameraManager.cs](Assets/Scripts/Component/Manager/CameraManager.cs) | 游戏 | `cm_Fight`/`cm_Base`/`cinemachineBrain` 引用与加载、`HideAllCM`、`SetMainCameraDefaultBlend`、透明排序(`SetTransparencySortForFight`/`ResetTransparencySort`) |
 | [Assets/Scripts/Enums/GameStateEnum.cs](Assets/Scripts/Enums/GameStateEnum.cs) | 游戏 | `CinemachineCameraEnum` 枚举 |
 
@@ -142,9 +142,6 @@ CameraHandler.Instance.SetCameraForDoomCouncilVote(blendTime: 0.5f);
 
 // 奖励选择场景镜头
 CameraHandler.Instance.SetCameraForRewardSelectScene(blendTime: 0.5f);
-
-// 卡片测试镜头（只用主相机，关闭混合动画）
-CameraHandler.Instance.SetCardTestCamera();
 ```
 
 ### 5. 混合动画 / 隐藏 / 工具
@@ -186,6 +183,6 @@ float dist = CameraHandler.Instance.GetDistanceFollow(cinemachineCamera);
 - **混合动画**：需要瞬切（初始化、传送门）时务必先 `SetMainCameraDefaultBlend(0)`，否则会有残留插值。
 - **跟随重置**：切换跟随目标后设 `PreviousStateIsValid = false`，避免镜头从上一位置滑入。
 - **场景虚拟相机依赖命名约定**：`CV_List` 容器 + `CV_Xxx` 子节点名必须与代码里的字符串一致，改名需同步代码。
-- **代码规范**：所有方法/属性加 `/// <summary>` XML 注释，并用 `#region`/`#endregion` 按场景用途分类（现有文件已按「战斗/基地/议会/奖励/卡片测试/控制」分区）。
+- **代码规范**：所有方法/属性加 `/// <summary>` XML 注释，并用 `#region`/`#endregion` 按场景用途分类（现有文件已按「战斗/基地/议会/奖励/控制」分区）。
 - **Bean 规则**：若涉及自动生成的 `*Bean.cs`，扩展写在对应 `*BeanPartial.cs`。
 - **Unity 资源修改**（摄像机预制体、CV 节点）必须通过 Unity MCP，禁止直接编辑 `.prefab`。

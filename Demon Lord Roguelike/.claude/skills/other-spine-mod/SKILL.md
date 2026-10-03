@@ -129,7 +129,7 @@ MOD项目/Mods/OtherSpine/JsonText/
 
 1. 扫描 `Assets/ModResource/Spine/Other` 全部 `SkeletonDataAsset` → 同步进 `Mod_OtherSpine` 分组（Address=资产名；**PackSeparately** 每资源一个 bundle 按需加载；**无背景层跳过**）
 2. **SkeletonData 缩放双向校准**（`ApplySkeletonDataScale`，幂等）：文件名带 Avator 的 ui_show 系=`0.01f`（详情UI尺寸由 ui_show_data 键控制）、不带的基础 show 系=`0.002f`（非 ui_show_spine 显示 ×1/5，与 AeonsEchoSpine Chess 同值）
-3. 临时把其他分组 `IncludeInBuild=false`（隔离构建），构建后自动恢复
+3. 临时把其他分组 `IncludeInBuild=false`（隔离构建），构建后自动恢复；构建器含防空构建保险：本分组残留 false 自动恢复、分组 0 条目时中止构建（2026-10-02 空构建事故后加）
 4. 新增/复用 Profile `OtherSpine`，构建/加载路径指向 `Mods/OtherSpine` 并设为激活
 5. 清理旧产物（**保留 JsonText 子目录**）→ `BuildPlayerContent()` 构建
 6. **构建后自动把 catalog 三件套从引擎默认输出目录拷进 Mod 目录**

@@ -30,7 +30,7 @@ watched_files:
 - 执行一律走 `.claude/scripts/run-python.ps1` 包装（CLAUDE.md Python 规则），路径用参数传入不写死
 
 ### 构建器（MOD 项目侧）
-- **`MOD项目/Assets/Editor/OtherSpineModBuilder.cs`** — 菜单「工具/Mod/OtherSpine/一键构建」：同步 `Mod_OtherSpine` 分组条目（Address=资产名，**PackSeparately**，无背景层跳过）→ SkeletonData 缩放双向校准（`ApplySkeletonDataScale`：文件名带 Avator=ui_show 系 0.01、不带=基础 show 系 0.002，幂等）→ 隔离构建 → Profile 输出 `Mods/OtherSpine` → 保留 JsonText 清理 → 构建 → catalog 三件套拷进 Mod 目录 → 自动导出部署（EditorPrefs 键 `OtherSpineModBuilder.MainProjectRoot`，与其他 Mod 的相互独立）
+- **`MOD项目/Assets/Editor/OtherSpineModBuilder.cs`** — 菜单「工具/Mod/OtherSpine/一键构建」：同步 `Mod_OtherSpine` 分组条目（Address=资产名，**PackSeparately**，无背景层跳过）→ SkeletonData 缩放双向校准（`ApplySkeletonDataScale`：文件名带 Avator=ui_show 系 0.01、不带=基础 show 系 0.002，幂等）→ 隔离构建(本组残留false自愈+0条目中止) → Profile 输出 `Mods/OtherSpine` → 保留 JsonText 清理 → 构建 → catalog 三件套拷进 Mod 目录 → 自动导出部署（EditorPrefs 键 `OtherSpineModBuilder.MainProjectRoot`，与其他 Mod 的相互独立）
 
 ### 主项目消费侧代码（改这些文件时必须同步本 agent 与 Skill）
 - `CreatureBeanPartial.cs`（`#region 幻化相关`）：`ParseTransformOtherData`（返回 `TransformOtherData` 结构体）、`GetTransformSpineRes`/`GetTransformShowData`/`GetTransformUIShowSpineRes`/`GetTransformUIShowData`/`GetTransformUIShowSkin`/`GetTransformWorldData`/`GetTransformIdleAnim`/`GetTransformUIShowIdleAnim`

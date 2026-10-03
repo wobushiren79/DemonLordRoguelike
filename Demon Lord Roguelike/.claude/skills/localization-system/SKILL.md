@@ -516,7 +516,7 @@ TextReplaceEnum
 
 - **BUFF 描述**：`UIViewBuffShowItem` —— `content_language` 模板 + `{Percentage}`/`{Time_S}`/`{Value}` + 按前置条件追加 `{KillNum}` 等键。
 - **成就逐级描述**：`AchievementInfoBeanPartial.GetLevelDescription` —— 一条 `{Name}` 模板按等级替换目标值，省去逐级建文本。
-- **研究节点名称带待解锁数值**：`ResearchInfoBeanPartial.GetNameLanguageWithLevelDetail` —— 模板 `控制魔王时可进行突进（距离{Value}）`/`突进冷却（{Value}秒）`，按「待解锁等级=min(当前+1,满级)」算数值替换，每级只显示要解锁那一级；数值源 `UserUnlockBean.SPACE_DASH_*` 常量（控制层同引用，单一真实源）。
+- **研究详情描述带待解锁数值**：`ResearchInfoBeanPartial.GetDetailsLanguageWithLevelDetail` —— 研究表 `details[language]` 列的详情模板（如 `（距离{Value}）`/`（{Value}秒）`/`（概率{Value}%）`），按「待解锁等级=min(当前+1,满级)」算累计效果数值替换并**拼在名字后**；数值源 `UserUnlockBean` 的 static `Get*ForLevel` 方法（单一真实源）。22 个 level_max>1 节点的详情条目占语言表 ResearchInfo 工作表号段 **900000001~900000022**；括号约定：**cn/tw/jp 全角（）无前导空格，其余语言半角() 带一个前导空格**（分隔样式由详情文本自带，代码不加分隔符）。
 
 ---
 
@@ -634,5 +634,6 @@ string text = TextHandler.Instance.GetTextByIdNoBreakingSpace("BuffInfo", 10001)
 5. **字段命名**：配置表中的文本字段名建议与多语言属性名对应（如`name`对应`name_language`）
 6. **延迟加载**：多语言文本是按需加载的，首次访问时会从JSON文件读取
 7. **编辑器预览**：在Editor中可以直接使用`UITextLanguageView`预览多语言效果
-8. **「是魔王就挑战100勇士」模式名全语言统一用原名**：该战斗模式(ChallengeHundred)的翻译不译出，`excel_language` 的 `ResearchInfo` 工作表 id=100300007 十二语言均填「是魔王就挑战100勇士」。配套 UIText 条目：416「是否接受100勇士的挑战？」（传送门进入确认文案，ChallengeHundred 分支用；征服仍用 401）、417「是魔王就挑战100勇士」（模式名，ChallengeHundred 传送门在基地地图上的显示名，`UIViewBasePortalItem` 按模式切换）、418「来袭魔物」（传送门详情弹窗魔物列表标题，**预留，当前代码未引用**）
+8. **「是魔王就挑战100勇士」模式名全语言统一用原名**：该战斗模式(ChallengeHundred)的翻译不译出，`excel_language` 的 `ResearchInfo` 工作表 id=100300007 十二语言名字均保持「是魔王就挑战100勇士」（概率 `{Value}` 占位自 2026-10 起移至详情条目 900000022「（概率{Value}%）」，研究气泡按待解锁等级填概率拼在名字后，机制见上条）。配套 UIText 条目：416「是否接受100勇士的挑战？」（传送门进入确认文案，ChallengeHundred 分支用；征服仍用 401）、417「是魔王就挑战100勇士」（模式名，ChallengeHundred 传送门在基地地图上的显示名，`UIViewBasePortalItem` 按模式切换）、418「来袭魔物」（传送门详情弹窗魔物列表标题，**预留，当前代码未引用**）
 9. **无尽模式(Infinite) UIText 条目**：419「是否开启{0}的无尽之战？」（传送门进入确认文案，无尽模式分支用；征服仍用 401、挑战100勇士用 416）、420「{0}·无尽」（无尽模式-世界名后缀，传送门在基地地图上的显示名按模式拼接）；沿用 416~418 的习惯全语言填中文（其余语言暂与中文同值）
+10. **传送门详情气泡「模式」行 UIText 条目**：421「模式」（行标题）、422「征服」（征服模式名）、423「无尽」（无尽模式名）；`UIPopupPortalDetails` 按战斗类型取内容（征服→422、无尽→423、挑战100勇士→417 复用），三模式始终显示不受研究门控；421~423 已配齐 12 语言翻译（非中文占位）

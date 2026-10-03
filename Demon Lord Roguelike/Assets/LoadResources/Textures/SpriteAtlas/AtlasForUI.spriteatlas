@@ -108,6 +108,7 @@ SpriteAtlas:
     - 0486fa77d2e501e46a879f097988ee17: 21300000
     - 279cb697c0f86af40a6b8c71e16ed525: 21300000
     - 88edbec7bd8858a4985debc28bf159d5: 21300000
+    - 5ecb08d76e498104782fce9716ac5e3d: 21300000
     - 28e2e418de1b3a6418589e8ebd4acd71: 21300000
     - 75659f18973c9294a9b37f5932ff2cb3: 21300000
     - bdc15d287767d714aa85aebbcf2c4502: 21300000
@@ -182,6 +183,7 @@ SpriteAtlas:
     - 9eb83b8fffcc3984f89300ccabd5f88d: 21300000
     - c8e5029fd2a5bf64eac20ef86f2e021f: 21300000
     - 4578deaf7adf7af449a4797554c3d40d: 21300000
+    - 09af21bf9d00fe74787d6d30e77ff420: 21300000
     - 29b329cfdc0aa314c8de7e5ceab2265e: 21300000
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
@@ -243,6 +245,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 0486fa77d2e501e46a879f097988ee17, type: 3}
   - {fileID: 21300000, guid: 279cb697c0f86af40a6b8c71e16ed525, type: 3}
   - {fileID: 21300000, guid: 88edbec7bd8858a4985debc28bf159d5, type: 3}
+  - {fileID: 21300000, guid: 5ecb08d76e498104782fce9716ac5e3d, type: 3}
   - {fileID: 21300000, guid: 28e2e418de1b3a6418589e8ebd4acd71, type: 3}
   - {fileID: 21300000, guid: 75659f18973c9294a9b37f5932ff2cb3, type: 3}
   - {fileID: 21300000, guid: bdc15d287767d714aa85aebbcf2c4502, type: 3}
@@ -317,6 +320,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 9eb83b8fffcc3984f89300ccabd5f88d, type: 3}
   - {fileID: 21300000, guid: c8e5029fd2a5bf64eac20ef86f2e021f, type: 3}
   - {fileID: 21300000, guid: 4578deaf7adf7af449a4797554c3d40d, type: 3}
+  - {fileID: 21300000, guid: 09af21bf9d00fe74787d6d30e77ff420, type: 3}
   - {fileID: 21300000, guid: 29b329cfdc0aa314c8de7e5ceab2265e, type: 3}
   m_PackedSpriteNamesToIndex:
   - ui_class_7
@@ -377,6 +381,7 @@ SpriteAtlas:
   - ui_bg_1
   - ui_border_4
   - ui_random_1
+  - ui_game_2
   - ui_creature_class_7
   - ui_class_10
   - ui_core_3
@@ -451,6 +456,7 @@ SpriteAtlas:
   - ui_dead_1
   - ui_unlock_1
   - ui_equip_9
+  - ui_game_1
   - ui_other_3
   m_RenderDataMap: {}
   m_Tag: AtlasForUI

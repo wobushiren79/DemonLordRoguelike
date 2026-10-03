@@ -864,7 +864,7 @@ UI/
 │   └── ...
 └── Test/             # 测试 UI
     ├── UITestBase          # 测试基础
-    └── UITestCard          # 测试卡片
+    └── TestCreatureCardGUI # 卡片编辑器(含图标/模型尺寸校准, 纯IMGUI代码版)
 ```
 
 ### 4.6 DataService - 游戏数据服务实现

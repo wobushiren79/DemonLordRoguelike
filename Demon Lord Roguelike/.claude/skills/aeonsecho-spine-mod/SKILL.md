@@ -156,7 +156,7 @@ MOD项目/Mods/AeonsEchoSpine/JsonText/
 
 1. 扫描 `Assets/ModResource/Spine/AeonsEcho` 全部 `SkeletonDataAsset` → 同步进 `Mod_AeonsEchoSpine` 分组（先清空再全量加，Address=资产名；旧空分组 `Mod_AeonsEcho` 自动改名复用）；**打包模式 PackSeparately**（每个 SkeletonData 一个 bundle——幻化药使用时按需加载单个资源，避免 PackTogether 单大 bundle 首次全量加载慢）
 2. **SkeletonData 缩放双向校准**（`ApplyChessSkeletonDataScale`，幂等可重跑）：Chess 系 `SkeletonDataAsset.scale` 统一设为 `ChessSkeletonDataScale=0.002f`（默认导入 0.01 × 0.2 = 非 ui_show_spine 显示大小 ×1/5）；**ui_show 系（Avator/Secretary/Elf/AVG 目录）主动复位为 `UIShowSkeletonDataScale=0.01f`**——详情UI尺寸由道具 other_data 的 ui_show_data 键控制（历史构建曾把 Secretary/Elf 误设为 0.002，校准会自动改回，2026-09-22 起）
-3. 临时把其他分组 `IncludeInBuild=false`（隔离构建，只出本 Mod 的 bundle），构建后自动恢复
+3. 临时把其他分组 `IncludeInBuild=false`（隔离构建，只出本 Mod 的 bundle），构建后自动恢复；构建器含防空构建保险：本分组残留 false 自动恢复、分组 0 条目时中止构建（2026-10-02 空构建事故后加）
 4. 新增/复用 Profile `AeonsEchoSpine`，构建/加载路径指向 `Mods/AeonsEchoSpine` 并设为激活
 5. 清理旧产物（**保留 JsonText 子目录**）→ `BuildPlayerContent()` 构建
 6. **构建后自动把 `catalog.bin`/`catalog.hash`/`settings.json` 从引擎默认输出目录（`Library/com.unity.addressables/aa/Windows`，catalog 不跟随分组 BuildPath）拷进 Mod 目录**——手工补拷时来源也是这里

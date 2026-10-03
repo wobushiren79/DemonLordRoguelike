@@ -108,7 +108,6 @@ SpriteAtlas:
     - e3d50997b40b16e4ca9dd79683d2f30d: 21300000
     - 54fa1fb7722e46b489ddf4e71fbf2abc: 21300000
     - 701f43c74d7ac784399b862a5c3d238a: 21300000
-    - 5ecb08d76e498104782fce9716ac5e3d: 21300000
     - 6cb5e5f7d374f014b8fdcfddf23d3dc8: 21300000
     - e873a018306cece41a1c83073d2024cc: 21300000
     - d6ecd948ba2c20649bb19ee7274c4e2a: 21300000
@@ -175,7 +174,6 @@ SpriteAtlas:
     - 3eba293fe2c6fbd499269dff16fd5787: 21300000
     - 2454696f156508a4baf7b58d27780fd8: 21300000
     - 9f38977f67c613c49a69f851880afdea: 21300000
-    - 09af21bf9d00fe74787d6d30e77ff420: 21300000
     - 0f6735ef71cc493458c045b478cdff76: 21300000
     - 45b1e8efb37827149b1db11cfde36d2a: 21300000
     - 8d27eeff4bdc38146b5c2044f8406b07: 21300000
@@ -239,7 +237,6 @@ SpriteAtlas:
   - {fileID: 21300000, guid: e3d50997b40b16e4ca9dd79683d2f30d, type: 3}
   - {fileID: 21300000, guid: 54fa1fb7722e46b489ddf4e71fbf2abc, type: 3}
   - {fileID: 21300000, guid: 701f43c74d7ac784399b862a5c3d238a, type: 3}
-  - {fileID: 21300000, guid: 5ecb08d76e498104782fce9716ac5e3d, type: 3}
   - {fileID: 21300000, guid: 6cb5e5f7d374f014b8fdcfddf23d3dc8, type: 3}
   - {fileID: 21300000, guid: e873a018306cece41a1c83073d2024cc, type: 3}
   - {fileID: 21300000, guid: d6ecd948ba2c20649bb19ee7274c4e2a, type: 3}
@@ -306,7 +303,6 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 3eba293fe2c6fbd499269dff16fd5787, type: 3}
   - {fileID: 21300000, guid: 2454696f156508a4baf7b58d27780fd8, type: 3}
   - {fileID: 21300000, guid: 9f38977f67c613c49a69f851880afdea, type: 3}
-  - {fileID: 21300000, guid: 09af21bf9d00fe74787d6d30e77ff420, type: 3}
   - {fileID: 21300000, guid: 0f6735ef71cc493458c045b478cdff76, type: 3}
   - {fileID: 21300000, guid: 45b1e8efb37827149b1db11cfde36d2a, type: 3}
   - {fileID: 21300000, guid: 8d27eeff4bdc38146b5c2044f8406b07, type: 3}
@@ -369,7 +365,6 @@ SpriteAtlas:
   - ui_abyssalblessing_80
   - ui_abyssalblessing_51
   - ui_abyssalblessing_70
-  - ui_abyssalblessing_8
   - ui_abyssalblessing_45
   - ui_abyssalblessing_pingpang
   - ui_abyssalblessing_key
@@ -436,7 +431,6 @@ SpriteAtlas:
   - ui_abyssalblessing_56
   - ui_abyssalblessing_boomerang
   - ui_abyssalblessing_94
-  - ui_abyssalblessing_2
   - ui_abyssalblessing_book
   - ui_abyssalblessing_90
   - ui_abyssalblessing_89

@@ -17,7 +17,8 @@ public partial class UIPopupResearchInfo : PopupShowCommonView
         //获取支付金额
         long payCrystal = researchInfo.GetPayCrystal(currentLevel + 1);
 
-        SetName(researchInfo.GetNameLanguageWithLevelDetail(currentLevel));
+        //名字与「待解锁等级累计效果」详情直接拼接: 括号样式/前导空格由各语言详情文本自带, 代码不加分隔符; 无详情配置时详情为空串即仅显示名字
+        SetName($"{researchInfo.name_language}{researchInfo.GetDetailsLanguageWithLevelDetail(currentLevel)}");
         SetIcon(researchInfo.icon_res);
         SetPayCrystal(payCrystal);
         SetLevel(researchInfo.level_max, currentLevel);

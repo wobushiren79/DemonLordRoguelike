@@ -374,23 +374,6 @@ public partial class CameraHandler
     }
     #endregion
 
-
-    #region  卡片测试摄像头
-    /// <summary>
-    /// 设置卡片测试镜头
-    /// </summary>
-    public void SetCardTestCamera()
-    {
-        manager.HideAllCM();
-
-        var mainCamera = manager.mainCamera;
-        mainCamera.gameObject.SetActive(true);
-
-        //关闭切换动画
-        manager.SetMainCameraDefaultBlend(0);
-    }
-    #endregion
-
     #region  控制操作摄像头
     /// <summary>
     /// 设置控制摄像头(故事演出期间直接忽略:镜头由 StoryHandler 专用相机接管,外部切镜会以 blend=0 瞬切抢走 CinemachineBrain,导致演出镜头移动全不可见;演出结束由 StoryHandler.EndStoryCamera 自行归还停靠相机)

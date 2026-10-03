@@ -177,7 +177,7 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 | `excel_game_world_info[游戏世界信息].xlsx` | GameWorldInfo | 4 | id, icon_res, unlock_id, unlock_id_infinite/conquer_difficulty_level/quick_attack/speed2, map_pos, name[language] |
 | `excel_level_info[等级信息].xlsx` | LevelInfo | 11(0~10级) | id, level_exp(历史遗留 string 类型,用的地方 long.Parse), sacrifice_num, attribute_point(升级获得加点数,当前全等级配置5), CMP_rate(魔力召唤增加倍率,按等级递增), level_color(等级字体颜色,1~10级渐进色), juicer_exp(榨汁经验:被榨汁时按等级贡献的经验值,long,各行=本行 level_exp×100%;榨汁结算按投入魔物等级汇总产出魔汁道具) （7列）。⚠️ 含 id=0 兜底行:level_exp/sacrifice_num/attribute_point=0(实际不会被读到,升级读的是 level+1 行),CMP_rate=0/level_color=#FFFFFF(与原有 null 兜底行为一致),juicer_exp=20(=1级 level_exp 的20%) |
 | `excel_rarity_info[稀有度].xlsx` | RarityInfo | 7 | id(N=1~L=6,另含魔王专属 id=999 标记值), ui_board_color(主/暗色渐变对), ui_board_other_color, ui_board_color_item(道具单色), buff_color, item_add_relationship, name[language](引用 excel_language RarityInfo), CMP_rate(魔力召唤增加倍率,N=0依次+0.5;魔王档置0), equip_attribute_add, ascend_time(进阶所需秒,0=满级不可进阶), remark |
-| `excel_research_info[研究信息].xlsx` | ResearchInfo | 232 | id, research_type, icon_res, level_max, position_x/y, unlock_id, pre_unlock_ids, pay_crystal, name[language] |
+| `excel_research_info[研究信息].xlsx` | ResearchInfo | 241 | id, research_type, icon_res, level_max, position_x/y, unlock_id, pre_unlock_ids, pre_data, pay_crystal, name[language], details[language](2026-10 新增,详情描述语言id,0=无详情,详情条目在语言表 ResearchInfo 工作表 900000001~900000022 号段), remark |
 | `excel_title_info[称号信息].xlsx` | TitleInfo | 15 | id, name[language] |
 | `excel_unlock_info[解锁信息].xlsx` | UnlockInfo | 255 | id, unlock_type |
 

@@ -63,7 +63,7 @@ public partial class UIBasePortal : BaseUIComponent
         //按缺口补足世界(解锁研究提升数量后, 旧世界不变, 仅新增差额部分)
         for (int i = cachedCount; i < showCount; i++)
         {
-            GameWorldInfoRandomBean gameWorldInfoRandomData = CreateRandomPortalWorld(userUnlockData, listOldPos);
+            GameWorldInfoRandomBean gameWorldInfoRandomData = CreateRandomPortalWorld(userUnlockData, listOldPos, userTempData.listPortalWorldInfoRandomData);
             SetItemMapData(gameWorldInfoRandomData);
             userTempData.AddPortalWorldInfoRandomData(gameWorldInfoRandomData);
         }
@@ -94,8 +94,9 @@ public partial class UIBasePortal : BaseUIComponent
     /// </summary>
     /// <param name="userUnlockData">用户解锁数据(取已解锁世界id池)</param>
     /// <param name="listOldPos">已占用的地图位置, 用于避免新世界与其重叠(会把新位置加入)</param>
+    /// <param name="listExistWorld">已存在的世界列表(挑战100勇士/无尽全场各只刷1个的判定依据)</param>
     /// <returns>新的传送门世界随机数据</returns>
-    protected GameWorldInfoRandomBean CreateRandomPortalWorld(UserUnlockBean userUnlockData, List<Vector2> listOldPos)
+    protected GameWorldInfoRandomBean CreateRandomPortalWorld(UserUnlockBean userUnlockData, List<Vector2> listOldPos, List<GameWorldInfoRandomBean> listExistWorld)
     {
         //所有已解锁的世界
         List<long> unlockWorldIds = userUnlockData.GetUnlockGameWorldIds();
@@ -104,7 +105,7 @@ public partial class UIBasePortal : BaseUIComponent
         long randomWorldId = unlockWorldIds[randomWorldKey];
         GameWorldInfoRandomBean gameWorldInfoRandomData = new GameWorldInfoRandomBean();
         //设置游戏类型随机
-        gameWorldInfoRandomData.SetGameFightTypeRandom(randomWorldId);
+        gameWorldInfoRandomData.SetGameFightTypeRandom(randomWorldId, listExistWorld);
         //随机地图位置
         Vector2 randomMapPos = GetRandomMapPos(listOldPos);
         listOldPos.Add(randomMapPos);

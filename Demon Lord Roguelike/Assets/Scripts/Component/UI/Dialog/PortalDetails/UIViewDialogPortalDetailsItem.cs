@@ -62,7 +62,7 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
     public void SetData(GameWorldInfoBean gameWorldInfo, GameWorldInfoRandomBean gameWorldInfoRandom, int difficultyLevel, bool isUnlock, Color bgColor, bool isShowCompleteMark = true)
     {
         this.difficultyLevel = difficultyLevel;
-        SetIcon(gameWorldInfo.icon_res, gameWorldInfoRandom.iconSeed);
+        SetIcon(gameWorldInfo.icon_res, gameWorldInfoRandom.iconSeed, gameWorldInfoRandom.gameFightType);
         SetLevel(difficultyLevel);
         SetUnlock(isUnlock);
         SetBGColor(bgColor);
@@ -115,17 +115,33 @@ public partial class UIViewDialogPortalDetailsItem : BaseUIView
     }
 
     /// <summary>
-    /// 设置星球图标(与 UIViewBasePortalItem.SetIcon 逻辑一致)
+    /// 设置星球图标(与 UIViewBasePortalItem.SetIcon 逻辑一致: 征服=随机星球; 无尽=ui_game_2; 挑战100勇士=ui_game_1)
     /// </summary>
     /// <param name="iconRes">图标资源名(为空则根据种子程序化生成星球图)</param>
     /// <param name="iconSeed">星球图标随机种子</param>
-    public void SetIcon(string iconRes, int iconSeed)
+    /// <param name="gameFightType">战斗模式(决定是否用固定图标替代随机星球)</param>
+    public void SetIcon(string iconRes, int iconSeed, GameFightTypeEnum gameFightType)
     {
+        //无尽/挑战100勇士使用固定图标替代随机星球
+        string fixedIconRes = null;
+        if (gameFightType == GameFightTypeEnum.Infinite)
+            fixedIconRes = UIViewBasePortalItem.IconResInfinite;
+        else if (gameFightType == GameFightTypeEnum.ChallengeHundred)
+            fixedIconRes = UIViewBasePortalItem.IconResChallengeHundred;
+        if (!fixedIconRes.IsNull())
+        {
+            IconHandler.Instance.GetIconSprite(SpriteAtlasTypeEnum.UI, fixedIconRes, (sprite) =>
+            {
+                ui_Icon.sprite = sprite;
+                ui_Icon.gameObject.SetActive(true);
+            });
+            return;
+        }
         if (iconRes.IsNull())
         {
             CreateToolsForPlanetTextureBean createData = new CreateToolsForPlanetTextureBean(iconSeed);
             var planetTex = CreateTools.CreatePlanetTexture(createData);
-            ui_Icon.texture = planetTex;
+            ui_Icon.sprite = Sprite.Create(planetTex, new Rect(0, 0, planetTex.width, planetTex.height), new Vector2(0.5f, 0.5f));
             ui_Icon.gameObject.SetActive(true);
         }
     }

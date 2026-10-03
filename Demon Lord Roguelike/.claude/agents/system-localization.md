@@ -60,8 +60,9 @@ TextManager 加载 Language_UIText_*.txt
 - 所有文本显示必须使用 UITextLanguageView 或通过 TextHandler 获取
 - 新增文本 key 需在 Excel 配置中添加
 - 语言切换触发全局事件，所有 UI 需响应刷新
-- **「是魔王就挑战100勇士」模式名全语言用原名**：该模式(ChallengeHundred)翻译统一保留原名——`excel_language` 的 `ResearchInfo` 工作表 id=100300007 十二语言均填「是魔王就挑战100勇士」；配套 UIText：416「是否接受100勇士的挑战？」（传送门进入确认文案，ChallengeHundred 分支用，征服仍用 401）/ 417「是魔王就挑战100勇士」（模式名，ChallengeHundred 传送门在基地地图上的显示名）/ 418「来袭魔物」（详情弹窗魔物列表标题，预留，当前代码未引用）
+- **「是魔王就挑战100勇士」模式名全语言用原名**：该模式(ChallengeHundred)翻译统一保留原名——`excel_language` 的 `ResearchInfo` 工作表 id=100300007 十二语言名字均保持「是魔王就挑战100勇士」（概率 `{Value}` 占位移至详情条目 900000022，研究气泡拼接显示，见下方「研究详情描述」条）；配套 UIText：416「是否接受100勇士的挑战？」（传送门进入确认文案，ChallengeHundred 分支用，征服仍用 401）/ 417「是魔王就挑战100勇士」（模式名，ChallengeHundred 传送门在基地地图上的显示名）/ 418「来袭魔物」（详情弹窗魔物列表标题，预留，当前代码未引用）
 - **无尽模式(Infinite) 配套 UIText 条目**：419「是否开启{0}的无尽之战？」（传送门进入确认文案，无尽模式分支用；征服仍用 401、挑战100勇士用 416）/ 420「{0}·无尽」（无尽模式-世界名后缀，传送门在基地地图上的显示名按模式拼接）；沿用 416~418 的习惯全语言填中文（其余语言暂与中文同值）
+- **传送门详情气泡「模式」行 UIText 条目**：421「模式」（行标题）/ 422「征服」（征服模式名）/ 423「无尽」（无尽模式名）；`UIPopupPortalDetails` 按战斗类型取内容（征服→422、无尽→423、挑战100勇士→417 复用），始终显示不受研究门控；421~423 已配齐 12 语言翻译（非中文占位）
 
 ## ⚠️ 一个多语言ID承载多条文本（content / content_1 / content_2）
 
@@ -106,4 +107,5 @@ string desc = TextHandler.Instance.GetTextReplace(template, dic); // "累计击�
 - **同一模板套不同数值**：把"一个成就多个等级目标"做成一条带 `{Name}` 的模板，按级替换即可（成就系统正是此用法）；省去逐级建文本。
 - 模板里写死的文案（数字、单位、"只生物"等）原样保留；字典给哪个键替换哪个占位符。
 - **选键原则**：有语义占位优先语义占位（击杀 `{KillNum}`、秒 `{Time_S}`、百分比 `{Percentage}`），无合适语义用通用 `{Value}`，都不合适再在 `TextReplaceEnum` 追加新枚举（不改旧值）。
-- 范例：`UIViewBuffShowItem`（BUFF 描述 `content_language` + 多个占位符）、成就 `AchievementInfoBean.GetLevelDescription`、研究节点 `ResearchInfoBeanPartial.GetNameLanguageWithLevelDetail`（名称模板 `控制魔王时可进行突进（距离{Value}）` 按待解锁等级动态填距离/冷却，数值源 `UserUnlockBean.SPACE_DASH_*` 常量）。详见 [localization-system] skill。
+- 范例：`UIViewBuffShowItem`（BUFF 描述 `content_language` + 多个占位符）、成就 `AchievementInfoBean.GetLevelDescription`、研究节点 `ResearchInfoBeanPartial.GetDetailsLanguageWithLevelDetail`（研究表 `details[language]` 列的详情模板如 `（距离{Value}）`，按待解锁等级动态填累计效果数值并拼在名字后，数值源 `UserUnlockBean` 的 static `Get*ForLevel` 方法）。详见 [localization-system] skill。
+- **研究详情描述（2026-10 新增）**：研究表 `details[language]` 列承载按级数值详情（取代旧的名字模板 `{Value}` 写法）；22 个 level_max>1 节点的详情语言条目在 `excel_language` ResearchInfo 工作表占号段 **900000001~900000022**（12 语言全翻译；SpaceDash 900000018/SpaceDashCD 900000019/挑战100勇士 900000022 三条由名字译文剪取迁移而来）。**括号约定：cn/tw/jp 全角（）无前导空格，en/kr/de/fr/ru/es/br/pl/tr 半角() 带一个前导空格**——气泡将详情直接拼在名字后，分隔样式全由详情文本自带，新增详情条目必须遵守该约定

@@ -107,6 +107,8 @@ bool success = await ModHandler.Instance.LoadModCatalogAsync("Spine");
 bool success = ModHandler.Instance.LoadModCatalogSync("Spine");
 ```
 
+> **空 Catalog 判失败（2026-10-02 起）**：三个 `LoadModCatalog*` 变体在 Catalog 加载成功后检查资源条目数，**0 条目直接判失败**并 LogError「Catalog为空（0个资源条目），疑似空构建产物（Mod 分组未参与构建）」——否则空 catalog 会让下游 `DownloadDependenciesAsync` 报难懂的 `InvalidKeyException: No Union of Assets between Keys=`。遇到该报错去查 `Mods/<Mod名>/` 是否缺 bundle（MOD 项目构建器空构建所致，典型根因：上次构建中断残留分组 `IncludeInBuild=false`，各 Mod 构建器已带自愈）。
+
 ## 加载Mod资源
 
 ### 同步加载单个资源
