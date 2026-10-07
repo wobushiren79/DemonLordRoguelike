@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary>
 /// 战斗生物实体-魔王（防守核心）专属逻辑
 /// <para>魔王：被防守的核心生物（CreatureFightTypeEnum.FightDefenseCore），魔王死亡则战斗失败。</para>
-/// <para>魔力(MP)显示：魔王预制下的 MPShow 进度条（Mat_Creature_Mana_1，新版 FrameWork/URP/MeshProgressBar 圆形进度，单一 _Progress 无护盾层）+ MPText 文本（当前/上限格式）。</para>
+/// <para>魔力(MP)显示：魔王预制下的 MPShow 进度条（Mat_Creature_Mana_1，新版 FrameWork/URP/MeshProgressBar 圆形进度，单一 _Progress 无护盾层）+ MPText 文本（当前/上限格式）；无限蓝模式(IsSkipPutCardMPCost=true 如挑战100勇士)初始化时整个隐藏并清空引用。</para>
 /// <para>渲染层级：MPText 在预制体里使用 Overlay 着色器材质(MatTMP_MPTextOverlay，TMP_SDF Overlay：ZTest Always + Overlay 队列)，
 /// 不做深度测试，保证文本始终渲染在不透明 3D 地面/场景几何体之上——这是文本压过地面的真正机制；
 /// 代码里的 sortingOrder 仅作透明队列内部排序的补充（单纯 sortingOrder 压不过不透明地面写入的深度缓冲）。</para>
@@ -43,6 +43,14 @@ public partial class FightCreatureEntity
         //获取魔力值显示（仅魔王核心有 创建魔物消耗魔力）
         creatureMPShow = creatureObj.transform.Find("MPShow")?.GetComponent<MeshRenderer>();
         creatureMPText = creatureObj.transform.Find("MPShow/MPText")?.GetComponent<TextMeshPro>();
+        //无限蓝模式(如挑战100勇士)蓝量无意义：整个隐藏魔力显示并清空引用(RefreshMPShow因creatureMPShow==null直接跳过 每帧零开销)
+        var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        if (gameFightLogic != null && gameFightLogic.IsSkipPutCardMPCost() && creatureMPShow != null)
+        {
+            creatureMPShow.gameObject.SetActive(false);
+            creatureMPShow = null;
+            creatureMPText = null;
+        }
         //补充设置魔力文本的渲染排序（透明队列内部排序用；不被地面遮挡的关键是预制体上的 Overlay 着色器材质 ZTest Always）
         if (creatureMPText != null)
         {

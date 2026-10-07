@@ -40,7 +40,10 @@ other_data 键值格式（& 拆项、每项首个 : 拆键值，同主项目 att
   ui_show_skin   ui_show 资源内指定皮肤名（仅皮肤药带）
   idle_anim / ui_show_idle_anim  替代待机动画名（仅骨架无标准待机候选时生成）
   world_data     世界显示尺寸/偏移（无校准来源不生成，测试面板手调；scan 重建按「目录名/资源token」保留）
-  scan 全量重建时 show_data/ui_show_data/world_data 手调值按「目录名/资源token」(remark 资源身份)保留
+  show_brightness 场景调暗系数「(0,1] 浮点」（贴图平均亮度>基准65 才生成：k=65/avg 只压不提，avg=图集全页
+                     alpha>25 有效像素 Rec.601 均值，基准=主项目生物贴图口径；仅场景实例调暗，UI 不消费；
+                     保留优先——手调值不丢，删键后下次 scan 强制重算）
+  scan 全量重建时 show_data/ui_show_data/world_data/show_brightness 手调值按「目录名/资源token」(remark 资源身份)保留
   ——按资源身份而非道具id保留，出药规则变化/资源增减导致 id 漂移时保留值也不会贴错道具（--reset-layout 可强制重算）
 
 道具自ID规则：`18` + `4位目录序号`(0001 起,按目录名自然序分配) + `2位序号`(01 起,目录内出药顺序)。
@@ -52,7 +55,7 @@ Excel 位置（MOD 项目，可用 Excel/WPS 直接打开查看/调整；与其�
   Assets/Data/Excel/excel_mod_language_otherspine[Mod多语言-OtherSpine].xlsx     - 道具名多语言（id + content_{12语言}）
 
 注意：
-  - scan 会全量重建道具表数据行（覆盖前先备份到 MOD项目/ExcelBackup/），但布局三键手调值按 remark 资源身份、目录序号按目录名保留；改了道具表参数后请只跑 export
+  - scan 会全量重建道具表数据行（覆盖前先备份到 MOD项目/ExcelBackup/），但布局三键与 show_brightness 手调值按 remark 资源身份、目录序号按目录名保留；改了道具表参数后请只跑 export
   - 语言表按 id 合并保留人工内容：新增道具补默认名，删除的道具行自动清理
   - 规则详见主项目 .claude/skills/other-spine-mod/SKILL.md
 
@@ -91,7 +94,7 @@ ITEM_COLUMNS = [
     ("icon_res", "string", "图标资源"),
     ("icon_rotate_z", "float", "图标旋转"),
     ("attack_mode_data", "string", "攻击模式数据(幻化药不用)"),
-    ("other_data", "string", "形象键值串:show_res/ui_show_res=X_SkeletonData&show_data/ui_show_data=scale;x,y&ui_show_skin=皮肤名(&拆项,:拆键值,缺省键省略;带Avator=ui_show详情UI段,不带=基础show段;多皮肤Avator按具名皮肤拆药)"),
+    ("other_data", "string", "形象键值串:show_res/ui_show_res=X_SkeletonData&show_data/ui_show_data=scale;x,y&ui_show_skin=皮肤名&show_brightness=场景调暗系数(0,1](&拆项,:拆键值,缺省键省略;带Avator=ui_show详情UI段,不带=基础show段;多皮肤Avator按具名皮肤拆药)"),
     ("name[language]", "long", "道具名textId(=道具id,文本在excel_mod_language_otherspine)"),
     ("remark", "string", "备注"),
     ("reward_rarity", "string", "奖励稀有度白名单(空=全适配;消耗品不进装备池)"),
@@ -106,10 +109,17 @@ LANG_EXCEL_REL = "Assets/Data/Excel/excel_mod_language_otherspine[Mod多语言-O
 AVATOR_MARK = "Avator"
 # Avator→基础配对：Avator 名截到 _Avator 前 = 基础名（Amelia_Avator→Amelia、Luna_2_Avator→Luna_2）
 AVATOR_SUFFIX_PATTERN = re.compile(r"_Avator")
-# 布局手调值保留键（scan 重建按「目录名/资源token」保留，与 remark 同源）
-LAYOUT_KEYS = ("show_data", "ui_show_data", "world_data")
+# 手调值保留键（scan 重建按「目录名/资源token」保留，与 remark 同源；show_brightness=场景调暗系数键）
+PRESERVED_KEYS = ("show_data", "ui_show_data", "world_data", "show_brightness")
 # remark 完整解析：格式「Other幻化药(目录名/资源token)」，token=基础stem 或 AvatorStem skin:皮肤名（含空格）
 REMARK_FULL_PATTERN = re.compile(r"Other幻化药\(([^/]+)/([^)]+)\)")
+
+# 场景调暗亮度键（other_data）：贴图偏亮的骨架才写键，运行时场景实例按系数调暗（UI 不消费）
+BRIGHTNESS_KEY = "show_brightness"
+# 亮度基准=主项目三生物贴图平均亮度口径（Goblin 57.9/Skeleton 69.5/Succubus 67.5 的均值≈65，alpha>25 有效像素 Rec.601 加权）
+BRIGHTNESS_BASELINE = 65.0
+# 有效像素 alpha 阈值（与抽样口径一致）
+ALPHA_THRESHOLD = 25
 
 
 def natural_key(name: str):
@@ -134,6 +144,40 @@ def get_spine_height(json_path: Path) -> float:
         return float(data["skeleton"]["height"])
     except Exception:
         return 0.0
+
+
+def get_atlas_page_pngs(set_dir: Path, stem: str) -> list:
+    """解析骨架同名 atlas.txt 的图集页 PNG 清单：strip 后以 .png 结尾的行=页头，收集存在的文件（禁 glob——Luna_2.png 这类变体骨架会被误当分页）"""
+    atlas_path = set_dir / f"{stem}.atlas.txt"
+    if not atlas_path.exists():
+        return []
+    pages = []
+    for line in atlas_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if line.lower().endswith(".png"):
+            png = set_dir / line
+            if png.exists():
+                pages.append(png)
+    return pages
+
+
+def compute_avg_luminance(png_paths: list) -> float:
+    """多页图集有效像素（alpha>ALPHA_THRESHOLD）的 Rec.601 加权平均亮度：ΣR/ΣG/ΣB 跨页累加后一次除（像素数加权）；
+    纯 PIL 实现（环境无 numpy），无有效像素/无页返回 0.0"""
+    from PIL import Image  # 懒 import：仅本功能依赖 PIL，缺失时由调用方捕获降级
+    sum_r = sum_g = sum_b = count = 0
+    for png_path in png_paths:
+        with Image.open(png_path) as im:
+            r, g, b, a = im.convert("RGBA").split()
+            mask = a.point(lambda v: 255 if v > ALPHA_THRESHOLD else 0)
+            hr, hg, hb = r.histogram(mask=mask), g.histogram(mask=mask), b.histogram(mask=mask)
+            sum_r += sum(i * n for i, n in enumerate(hr))
+            sum_g += sum(i * n for i, n in enumerate(hg))
+            sum_b += sum(i * n for i, n in enumerate(hb))
+            count += sum(hr)
+    if count == 0:
+        return 0.0
+    return (0.299 * sum_r + 0.587 * sum_g + 0.114 * sum_b) / count
 
 
 def get_spine_anims(json_path: Path) -> list:
@@ -235,7 +279,7 @@ def backup_excel(excel_path: Path, mod_project: Path):
 
 def build_other_data(show_res: str = "", show_data: str = "", idle_anim: str = "",
                      ui_show_res: str = "", ui_show_data: str = "", ui_show_skin: str = "",
-                     ui_show_idle_anim: str = "", world_data: str = "") -> str:
+                     ui_show_idle_anim: str = "", world_data: str = "", show_brightness: str = "") -> str:
     """拼 other_data 键值串：& 拆项、每项首个 : 拆键值（同主项目 attack_mode other_data 规约），缺省键省略"""
     segs = []
     if show_res:
@@ -254,6 +298,8 @@ def build_other_data(show_res: str = "", show_data: str = "", idle_anim: str = "
         segs.append(f"ui_show_idle_anim:{ui_show_idle_anim}")
     if world_data:
         segs.append(f"world_data:{world_data}")
+    if show_brightness:
+        segs.append(f"show_brightness:{show_brightness}")
     return "&".join(segs)
 
 
@@ -284,7 +330,7 @@ def read_preserved_rows(excel_path: Path):
         row_id = int(row[col_id])
         layout = {}
         for seg in str(row[col_other]).split("&"):
-            for key in LAYOUT_KEYS:
+            for key in PRESERVED_KEYS:
                 if seg.startswith(f"{key}:"):
                     layout[key] = seg[len(key) + 1:].strip()
         if col_remark >= 0 and row[col_remark]:
@@ -320,9 +366,11 @@ def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, show_sca
     items = []
     used_ids = set()
     warnings = []
-    # 统计：配对成功/仅基础/仅Avator/皮肤药；idle 检测 std=命中标准候选, alt=替代, none=无idle
+    # 统计：配对成功/仅基础/仅Avator/皮肤药；idle 检测 std=命中标准候选, alt=替代, none=无idle；brightness=写调暗键的药数
     stats = {"paired": 0, "base_only": 0, "avator_only": 0, "skin": 0,
-             "idle_std": 0, "idle_alt": 0, "idle_none": 0}
+             "idle_std": 0, "idle_alt": 0, "idle_none": 0, "brightness": 0}
+    # 亮度 top 收集：[（平均亮度, 系数, 目录/骨架）]，scan 结束打印 top10 供人工核对
+    brightness_top = []
 
     dir_names = sorted([p.name for p in source_dir.iterdir() if p.is_dir()], key=natural_key)
     dir_nums = alloc_dir_nums(dir_names, preserved_dir_nums)
@@ -335,6 +383,44 @@ def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, show_sca
         height = get_spine_height(json_path)
         scale = round(scale_k / height, 4) if height > 0 else fallback_scale
         return f"{scale};0,{int(pos_y)}"
+
+    # 亮度测量缓存（同骨架多药共享一份：皮肤药与基础药同 show 骨架）
+    lum_cache = {}
+    # PIL 可用性（None=未探测，首次用时确定；缺失则全程跳过自动算，保留值仍透传）
+    pil_ok = None
+
+    def make_brightness(set_dir: Path, base_stem: str, preserve_key, res_label: str) -> str:
+        """场景调暗键取值：手调保留(按「目录名/资源token」)优先，否则按图集贴图平均亮度归一 k=min(1,基准/avg) 只压不提；
+        avg≤基准=不亮不写键（k=1 无调暗必要）；页缺失/无有效像素=警告不写键；PIL 缺失=一次警告跳过"""
+        nonlocal pil_ok
+        old = preserved_layout.get(preserve_key, {})
+        if BRIGHTNESS_KEY in old:
+            return old[BRIGHTNESS_KEY]
+        if pil_ok is False:
+            return ""
+        key = f"{set_dir}/{base_stem}"
+        if key not in lum_cache:
+            if pil_ok is None:
+                try:
+                    import PIL  # noqa: F401
+                    pil_ok = True
+                except ImportError:
+                    pil_ok = False
+                    warnings.append("未安装 PIL，show_brightness 自动计算跳过（已有保留值仍透传；pip install pillow 后重跑 scan 可生成）")
+                    return ""
+            pages = get_atlas_page_pngs(set_dir, base_stem)
+            if not pages:
+                lum_cache[key] = 0.0
+                warnings.append(f"{res_label} 未找到图集页 PNG（{base_stem}.atlas.txt 页头解析为空），show_brightness 未生成")
+            else:
+                lum_cache[key] = compute_avg_luminance(pages)
+        avg = lum_cache[key]
+        if avg <= BRIGHTNESS_BASELINE:
+            return ""
+        k = round(BRIGHTNESS_BASELINE / avg, 4)
+        stats["brightness"] += 1
+        brightness_top.append((avg, k, res_label))
+        return str(k)
 
     # idle/皮肤检测结果缓存（同一 Avator 骨架被多个基础配对时不重复检测/计数）
     idle_cache = {}
@@ -464,7 +550,8 @@ def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, show_sca
                 preserve_key = (dir_name, token)
                 data = {"show_res": res_name,
                         "show_data": make_layout(json_path, show_scale_k, show_pos_y, preserve_key, "show_data", 0.84),
-                        "idle_anim": idle_anim}
+                        "idle_anim": idle_anim,
+                        "show_brightness": make_brightness(set_dir, stem, preserve_key, f"{dir_name}/{stem}")}
                 if av_match:
                     data["ui_show_res"] = av_res
                     data["ui_show_data"] = make_layout(av_json, ui_scale_k, ui_pos_y, preserve_key, "ui_show_data", 0.17)
@@ -495,6 +582,7 @@ def compute_items(source_dir: Path, ui_scale_k: float, ui_pos_y: float, show_sca
                     data["ui_show_skin"] = skin
                     stats["skin"] += 1
                 append_item(dir_name, dir_num, seq, title, skin, token, **data)
+    stats["brightness_top"] = brightness_top
     return items, stats, warnings
 
 
@@ -650,6 +738,9 @@ def main():
         print(f"[scan] 出药统计：基础+Avator配对 {stats['paired']}，仅基础 {stats['base_only']}，"
               f"仅Avator {stats['avator_only']}，皮肤药 {stats['skin']}")
         print(f"[scan] 待机检测（标准候选={','.join(std_idle)}）：命中标准 {stats['idle_std']}，替代 {stats['idle_alt']}，无idle {stats['idle_none']}")
+        print(f"[scan] 场景调暗（基准={BRIGHTNESS_BASELINE:g}，avg≤基准不写键）：写 show_brightness 键 {stats['brightness']} 个药")
+        for avg, k, label in sorted(stats.get("brightness_top", []), reverse=True)[:10]:
+            print(f"[scan]   最亮 top：{label} avg={avg:.1f} k={k}")
         if args.reset_layout:
             print("[scan] --reset-layout：布局三键全部按骨架重算，目录序号重新分配")
         elif preserved_layout:

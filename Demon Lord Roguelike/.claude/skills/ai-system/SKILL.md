@@ -421,7 +421,7 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 ## 击退意图（AIIntentAttackCreatureKnockback，位移效果统一机制）
 
 - **发起入口**：`AIAttackCreatureEntity.StartKnockback(direction, distance)`——击退参数经 `GetIntent` 直接写入击退意图实例（`SetupKnockback`）后 `ChangeIntent`（照 Lured 强制切换先例）；**击退中再次被击退只刷新参数**（原地续推，不重进意图）。调用先例：`AttackModeShockwaveRing`（深渊馈赠「第六次冲击」，方向固定 `Vector3.right` 沿道路向后推，不带 z 分量防敌人被推离路径）。
-- **推移**：固定 `KnockbackDuration=0.2s` 匀速推完全程（任何击退距离时长一致、推速=距离/时长，计时走 `GetFightDeltaTime` 跟随 2 倍速）；落点 x 钳制：右缘硬钳 `[0.5+路长]`、左缘只防「从道路内被推出左缘」——已在左缘内(x<0.5，直冲魔王阶段)的敌人不往前拉（防击退变"前吸"），自然向右推回道路；播 Idle 动画（被控状态）。
+- **推移**：固定 `KnockbackDuration=0.2s` 匀速推完全程（任何击退距离时长一致、推速=距离/时长，计时走 `GetFightDeltaTime` 跟随 2 倍速）；落点 x 钳制：右缘不钳（可被推出道路右缘外——如刚好在边界的敌人被击退到路外，之后由移动意图沿本道路走回重新进场）、左缘只防「从道路内被推出左缘」——已在左缘内(x<0.5，直冲魔王阶段)的敌人不往前拉（防击退变"前吸"），自然向右推回道路；播 Idle 动画（被控状态）。
 - **结束**：剩余距离走完回 `AttackCreatureIdle`，重新走「闲置→移动→攻击」索敌流程——与防守目标的距离重新判定，不会隔空续打；强制切换本身即打断攻击循环（挥刀被打飞中断）。
 - **死亡**：击退中死亡由 `FightCreatureEntityForAttack` 死亡流程 `ChangeIntent(Dead)` 覆盖，意图无需自处理。
 

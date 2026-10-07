@@ -47,6 +47,7 @@ creature.PlayAnim(SpineAnimationStateEnum.Attack, false);
 ### Spine 运行时
 - [Assets/FrameWork/Addons/Spine/](Assets/FrameWork/Addons/Spine/)
 - spine-unity 4.3（git 包），多线程由 `SkeletonUpdateSystem` 单例驱动（工人线程做顶点 deform，主线程做 Mesh 上传）
+- **线程化开关策略（2026-10-05 UI 闪烁事故定案）**：全局 `SpineRuntimeSettings` 两开关（`useThreadedMeshGeneration`/`useThreadedAnimation`）**必须保持关闭**——UI 骨架走线程化时，其网格生成与自身 `UpdateWorldTransform` 分属不同工作线程任务，高负载下会读到 `ResetConstrained()` 之后、约束重算之前的无约束中间态，双缓冲网格交替写入两版姿势，带 IK/Transform 约束的骨架（如 OtherSpine 幻化资源）在 UI 上表现为部件（发型）位置闪烁（无约束骨架竞态不可见）。spine-unity 三态语义=「`组件==Enable || 全局`」，只支持全局关时单独开、不支持全局开时单独关，故采取「全局关 + 世界骨架单独开」：框架层 `SpineHandler.AddSkeletonAnimation`（世界生物唯一创建入口）+ `FightCreatureEntity.SetData` 均显式 `ThreadedAnimation`/`ThreadedMeshGeneration=Enable`；UI 骨架（卡片/弹窗/详情）保持 `UseGlobalSetting` 走主线程串行。**禁止重开全局开关**（一开 UI 竞态即复发）
 - **多线程性能配置**：`SpineHandler.Awake → ConfigureSkeletonUpdateSystem()` 全局应用一次——`UpdateChunksPerThread`/`LateUpdateChunksPerThread` 由官方默认 8 降为 2（const `SpineUpdateChunksPerThread`/`SpineLateUpdateChunksPerThread`，骨架总量不大时切太碎反增调度/信号开销）、`GroupRenderersBySkeletonType`/`GroupAnimationBySkeletonType=true`（同种骨架连续处理提缓存命中）、`MainThreadUpdateCallbacks=false`（const `SpineMainThreadUpdateCallbacks`，省"工人→主线程→再等工人"分段循环；前提是全项目无 Spine 动画事件订阅，目前仅 `CreatureSpineOutlineFollow.UpdateLocal` 纯骨骼数据读写可在线程侧执行——**新增 `UpdateLocal`/`AnimationState` 事件订阅时若触碰 Unity API 须先改回 true**）
 - 战斗生物渲染器优化项（`FightCreatureEntity.SetData`）：`UpdateWhenInvisible=Nothing`、关法线/切线/tintBlack/裁剪、`immutableTriangles`、`singleSubmesh`、`ThreadedAnimation`/`ThreadedMeshGeneration=Enable`
 

@@ -399,9 +399,21 @@ public class TestCreatureCardGUI : MonoBehaviour
             new ExcelChangeData(modelId, "ui_data_b", $"{bSize};{bPos.x},{bPos.y}"),
             new ExcelChangeData(modelId, "size_spine", $"{sceneSizeSpine.value}"),
         };
-        ExcelUtil.SetExcelData(PathCreatureModelExcel, "CreatureModel", listData);
-        ExcelUtil.ExcelToJsonItem(PathCreatureModelExcel);
-        ClearCfgCache(typeof(CreatureModelInfoCfg));
+        try
+        {
+            ExcelUtil.SetExcelData(PathCreatureModelExcel, "CreatureModel", listData);
+            ExcelUtil.ExcelToJsonItem(PathCreatureModelExcel);
+        }
+        catch (System.Exception e)
+        {
+            //xlsx 被 Excel/WPS 占用等写盘失败时明确提示, 避免静默失败(后续 RefreshCards 会读回旧配置造成"还原"假象)
+            LogUtil.LogError($"[卡片编辑器] 尺寸校准写回配置表失败(请先关闭占用该xlsx的Excel/WPS): {e}");
+            saveHint = "⚠ 保存失败, 详见Console(可能xlsx被Excel/WPS占用)";
+            saveHintTime = Time.unscaledTime + 5f;
+            return;
+        }
+        //注意清的是 CreatureModelCfg(尺寸表, fileName=CreatureModel), 不是 CreatureModelInfoCfg(部件资源表, fileName=CreatureModelInfo)——两者名字相近易混
+        ClearCfgCache(typeof(CreatureModelCfg));
 
         RefreshCards();
         SyncCalibrationInputs();

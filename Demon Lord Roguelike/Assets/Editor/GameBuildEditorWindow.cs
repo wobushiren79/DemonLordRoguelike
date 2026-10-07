@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -29,6 +30,10 @@ public class GameBuildEditorWindow : EditorWindow
     private const string EditorPrefsKeyShowBuiltPlayer = "GameBuildEditorWindow.ShowBuiltPlayer";
     /// <summary>开启 GM 模式的 EditorPrefs 键</summary>
     private const string EditorPrefsKeyEnableGMMode = "GameBuildEditorWindow.EnableGMMode";
+    /// <summary>打包后复制 Mod 资源总开关的 EditorPrefs 键</summary>
+    private const string EditorPrefsKeyCopyMods = "GameBuildEditorWindow.CopyMods";
+    /// <summary>单个 Mod 是否复制的 EditorPrefs 键前缀（完整键 = 前缀 + Mod 名）</summary>
+    private const string EditorPrefsKeyPrefixCopyMod = "GameBuildEditorWindow.CopyMod.";
 
     /// <summary>打包用的游戏场景（正式包固定从该场景出包，与 Build Settings 里的日常测试场景解耦）</summary>
     private const string GameScenePath = "Assets/Scenes/GameScene.unity";
@@ -69,6 +74,18 @@ public class GameBuildEditorWindow : EditorWindow
     /// <summary>是否开启 GM 模式（勾选后正式包中按 F12 也能打开 GM 测试面板，默认关闭）</summary>
     private bool isEnableGMMode;
 
+    /// <summary>打包成功后是否把勾选的 Mod 资源复制到输出目录的 Mods 下</summary>
+    private bool isCopyMods;
+
+    /// <summary>项目 Mods 目录下扫描到的 Mod 名列表</summary>
+    private readonly List<string> listModNames = new List<string>();
+
+    /// <summary>各 Mod 是否勾选复制（键 = Mod 名，新增 Mod 默认不勾选）</summary>
+    private readonly Dictionary<string, bool> dictModSelection = new Dictionary<string, bool>();
+
+    /// <summary>Mod 列表滚动位置</summary>
+    private Vector2 scrollPosModList;
+
     #endregion
 
     #region 窗口入口
@@ -76,7 +93,7 @@ public class GameBuildEditorWindow : EditorWindow
     [MenuItem("游戏/打包游戏")]
     public static void ShowWindow()
     {
-        GetWindow<GameBuildEditorWindow>("打包游戏", typeof(SceneView)).minSize = new Vector2(360, 320);
+        GetWindow<GameBuildEditorWindow>("打包游戏", typeof(SceneView)).minSize = new Vector2(360, 480);
     }
 
     private void OnEnable()
@@ -92,6 +109,8 @@ public class GameBuildEditorWindow : EditorWindow
         isAutoRun = EditorPrefs.GetBool(EditorPrefsKeyAutoRun, false);
         isShowBuiltPlayer = EditorPrefs.GetBool(EditorPrefsKeyShowBuiltPlayer, true);
         isEnableGMMode = EditorPrefs.GetBool(EditorPrefsKeyEnableGMMode, false);
+        isCopyMods = EditorPrefs.GetBool(EditorPrefsKeyCopyMods, false);
+        RefreshModList();
     }
 
     #endregion
@@ -151,6 +170,50 @@ public class GameBuildEditorWindow : EditorWindow
 
         GUILayout.Space(16);
 
+        DrawSectionBox("Mod 资源复制", () =>
+        {
+            DrawOptionToggle("打包后复制 Mod 资源到输出目录", "打包成功后，把勾选的 Mod 从项目 Mods 目录复制到输出目录的 Mods 下（先删后拷，与项目内保持一致）", isCopyMods, EditorPrefsKeyCopyMods, v => isCopyMods = v);
+            EditorGUI.BeginDisabledGroup(!isCopyMods);
+            // 工具行：全选/全不选/刷新列表
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("全选", GUILayout.Width(50)))
+            {
+                SetAllModSelection(true);
+            }
+            if (GUILayout.Button("全不选", GUILayout.Width(60)))
+            {
+                SetAllModSelection(false);
+            }
+            if (GUILayout.Button("刷新列表", GUILayout.Width(70)))
+            {
+                RefreshModList();
+            }
+            EditorGUILayout.EndHorizontal();
+            // Mod 勾选列表（新增 Mod 默认不勾选）
+            if (listModNames.Count == 0)
+            {
+                EditorGUILayout.LabelField("（项目 Mods 目录下未找到任何 Mod）", EditorStyles.miniLabel);
+            }
+            else
+            {
+                scrollPosModList = EditorGUILayout.BeginScrollView(scrollPosModList, GUILayout.MaxHeight(150));
+                foreach (var modName in listModNames)
+                {
+                    bool selected = dictModSelection.TryGetValue(modName, out bool value) && value;
+                    bool newSelected = EditorGUILayout.ToggleLeft(modName, selected);
+                    if (newSelected != selected)
+                    {
+                        dictModSelection[modName] = newSelected;
+                        EditorPrefs.SetBool(EditorPrefsKeyPrefixCopyMod + modName, newSelected);
+                    }
+                }
+                EditorGUILayout.EndScrollView();
+            }
+            EditorGUI.EndDisabledGroup();
+        });
+
+        GUILayout.Space(16);
+
         DrawSectionBox("打包路径", () =>
         {
             EditorGUILayout.BeginHorizontal();
@@ -163,6 +226,12 @@ public class GameBuildEditorWindow : EditorWindow
                     buildPath = selectedPath;
                 }
             }
+            EditorGUI.BeginDisabledGroup(string.IsNullOrEmpty(buildPath) || !Directory.Exists(buildPath));
+            if (GUILayout.Button("打开", GUILayout.Width(50)))
+            {
+                EditorUtility.RevealInFinder(buildPath);
+            }
+            EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndHorizontal();
 
             GUILayout.Space(4);
@@ -358,6 +427,15 @@ public class GameBuildEditorWindow : EditorWindow
             if (report.summary.result == BuildResult.Succeeded)
             {
                 LogUtil.Log($"========== 打包完成：{locationPath} ==========");
+                // Mod 复制失败不阻断打包收尾（场景恢复/GM配置还原等），只记错误日志
+                try
+                {
+                    CopySelectedModsToBuild();
+                }
+                catch (System.Exception e)
+                {
+                    LogUtil.LogError($"[打包] 复制 Mod 资源失败：{e.Message}");
+                }
                 // 未勾选 ShowBuiltPlayer 时手动打开一次输出目录，保证用户总能找到产物
                 if (!isShowBuiltPlayer)
                 {
@@ -407,6 +485,97 @@ public class GameBuildEditorWindow : EditorWindow
         }
         PlayerSettings.SetScriptingDefineSymbols(namedBuildTarget, string.IsNullOrEmpty(defines) ? define : defines + ";" + define);
         return true;
+    }
+
+    #endregion
+
+    #region Mod 资源复制
+
+    /// <summary>
+    /// 扫描项目根目录下的 Mods 文件夹，刷新可勾选 Mod 列表；勾选状态从 EditorPrefs 读取，新出现的 Mod 默认不勾选
+    /// </summary>
+    private void RefreshModList()
+    {
+        listModNames.Clear();
+        dictModSelection.Clear();
+        string modsRoot = GetProjectModsRootPath();
+        if (Directory.Exists(modsRoot))
+        {
+            foreach (var dir in Directory.GetDirectories(modsRoot))
+            {
+                listModNames.Add(Path.GetFileName(dir));
+            }
+            listModNames.Sort();
+        }
+        foreach (var modName in listModNames)
+        {
+            dictModSelection[modName] = EditorPrefs.GetBool(EditorPrefsKeyPrefixCopyMod + modName, false);
+        }
+    }
+
+    /// <summary>
+    /// 全选/全不选所有 Mod，并写入 EditorPrefs 持久化
+    /// </summary>
+    private void SetAllModSelection(bool isSelected)
+    {
+        foreach (var modName in listModNames)
+        {
+            dictModSelection[modName] = isSelected;
+            EditorPrefs.SetBool(EditorPrefsKeyPrefixCopyMod + modName, isSelected);
+        }
+    }
+
+    /// <summary>
+    /// 获取项目内 Mods 根目录（与 Assets 同级，与 ModManager.GetModsRootPath 编辑器模式下一致）
+    /// </summary>
+    private static string GetProjectModsRootPath()
+    {
+        return Path.Combine(Directory.GetParent(Application.dataPath).FullName, "Mods");
+    }
+
+    /// <summary>
+    /// 打包成功后，把勾选的 Mod 目录复制到输出目录的 Mods 下（目标已存在时先删后拷，保证与项目内一致）
+    /// </summary>
+    private void CopySelectedModsToBuild()
+    {
+        if (!isCopyMods)
+            return;
+        string sourceRoot = GetProjectModsRootPath();
+        string targetRoot = Path.Combine(buildPath, "Mods");
+        foreach (var modName in listModNames)
+        {
+            if (!dictModSelection.TryGetValue(modName, out bool selected) || !selected)
+                continue;
+            string sourceDir = Path.Combine(sourceRoot, modName);
+            if (!Directory.Exists(sourceDir))
+            {
+                LogUtil.LogWarning($"[打包] 勾选复制的 Mod 目录不存在，已跳过：{sourceDir}");
+                continue;
+            }
+            string targetDir = Path.Combine(targetRoot, modName);
+            if (Directory.Exists(targetDir))
+            {
+                Directory.Delete(targetDir, true);
+            }
+            CopyDirectory(sourceDir, targetDir);
+            LogUtil.Log($"[打包] 已复制 Mod：{modName} -> {targetDir}");
+        }
+    }
+
+    /// <summary>
+    /// 递归复制目录（同名文件覆盖）
+    /// </summary>
+    private static void CopyDirectory(string sourceDir, string targetDir)
+    {
+        Directory.CreateDirectory(targetDir);
+        foreach (var file in Directory.GetFiles(sourceDir))
+        {
+            File.Copy(file, Path.Combine(targetDir, Path.GetFileName(file)), true);
+        }
+        foreach (var dir in Directory.GetDirectories(sourceDir))
+        {
+            CopyDirectory(dir, Path.Combine(targetDir, Path.GetFileName(dir)));
+        }
     }
 
     #endregion

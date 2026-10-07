@@ -79,6 +79,8 @@ public class BaseAttackMode
         {
             if (spriteRenderer != null)
             {
+                //还原缩放(对象池复用不残留上一发武器的 StartSize/换图缩放；有武器时由 HandleItemsInfoAttackModeData 还原)
+                spriteRenderer.transform.localScale = Vector3.one;
                 IconHandler.Instance.GetUnKnowSprite((targetSprite) =>
                 {
                     if (spriteRenderer != null)

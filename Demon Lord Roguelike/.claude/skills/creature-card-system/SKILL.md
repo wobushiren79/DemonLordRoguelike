@@ -102,6 +102,8 @@ UIPopupCreatureCardDetails   // 卡片详情弹窗
 
 > **献祭升级提示特效 `ui_SacrificeEffect`**（`UIViewCreatureCardItemComponent` 的 `Image` 字段，prefab `UIViewCreatureCardItem` 上挂，材质 `Mat_UIViewCreatureCardItem_Sacrifice.mat`）：`SetData` 内部调用 `SetSacrificeEffect(creatureData, cardUseState)` 控制显隐——**仅当 `cardUseState == CreatureManager` 且 已解锁祭坛(`UnlockEnum.Altar`) 且 `creatureData.CanUpLevel()`** 时显示，其它使用状态恒隐藏。此高亮亮起 ⇔ `UICreatureManager` 升级按钮"显示且未置灰"（按钮解锁祭坛且未满级才显示、`CanUpLevel()` 决定其置灰与否；满级时按钮隐藏、卡片高亮也因 `CanUpLevel()` 为 false 而隐藏），用于在魔物管理列表里高亮"可献祭升级"的生物。
 
+> **魔物管理卡片阵容标记 `ui_CreatureLineUpMark`**（`UIViewCreatureCardItemForCreatureManager` 专属，prefab `UIViewCreatureCardItemForCreatureManager` 底部：RectTransform 容器 + VerticalLayoutGroup + ContentSizeFitter 纵向自适应，子节点 `ui_CreatureLineUpMarkItem` 为 TMP 模板）：基类 `SetData` 为 `virtual`，子类 override 末尾调 `SetLineupMark(creatureData)`——经 `UserDataBean.GetLineupIndexes(creatureUUId)`（返回生物所在的**全部**阵容序号列表，升序；区别于只取首个的 `GetLinupIndex`）逐行展示各阵容显示名（`GetLineupShowName`：自定义名优先，否则默认「阵容 {序号}」，一个生物可同时属于多套阵容）；**不在任何阵容时隐藏整个 Mark**。Item 数量用 `queuePoolMarkItem`/`listShowMarkItem` 池化增删（模板 Item 在 Awake 隐藏仅作实例化模型，池随卡片实例被 ScrollGrid 复用而保留）；Mark 及其子元素在 Awake 统一 `raycastTarget = false`（与卡片其它遮罩元素一致，纯展示不挡卡片点击）。魔王从不入阵容，自然隐藏，无需特判。
+
 ## 创建/使用生物卡片
 
 ### 1. 基础卡片使用
@@ -363,7 +365,7 @@ protected void OnConfirmOrderFilter(OrderFilterResultBean result) {
 
 > **道具列表默认基序**：同界面的背包道具列表 `UIViewItemBackpackList` 也由 `UICreatureManager.InitBackpackItemsData` 传入前用 `GetSortedBackpackItem` 预排序：**稀有度降序（`ItemBean.rarity` 高→低）→ 道具类型升序（`GetItemType()` 强转 int，同类道具相邻；配置缺失如所属Mod未开启时 `GetItemType()` 兜底返回 0 聚到最前，不抛空引用）**。同样作用于副本，不改动存档 `listBackpackItems` 原始顺序。
 
-> **魔物管理页消耗品使用分流（`UICreatureManager.UseOrEquipItem`）**：背包道具左键点击（`EventForItemBackpackClickSelect`）与道具选项-装备（`EventForItemSelectEquip`）统一走 `UseOrEquipItem` 按道具类型分流——魔汁（Juice）→`UseJuiceItem`；**幻化药（TransformPotion）→`UseTransformPotionItem`**（确认框 UIText 61018；配置缺失/`other_data` 空 Toast 61021 拦截防浪费；确认后写入 `creatureData.transformItemId`，覆盖旧值=以最后吃的为准，所有生物含魔王可用、不做 IsDemonLord 拦截）；**幻原药（RestorePotion）→`UseRestorePotionItem`**（确认框 61019；无幻化 Toast 61020 拦截不消耗；确认后 `transformItemId` 置0 恢复原形象，流程只判 id==0 不读配置，Mod 移除后残留 id 仍可清除）；其余类型→`SetCreatureEquip` 装备。幻化/幻原确认后刷新三件套：卡片详情 `SetCardDetails`（重绘 spine 即显示幻化/原形象）+ 背包列表 `InitBackpackItemsData` + `RefreshBaseControlForDemonLord`（基地自控魔王形象同步）；落盘 `SaveUserData`。
+> **魔物管理页消耗品使用分流（`UICreatureManager.UseOrEquipItem`）**：背包道具左键点击（`EventForItemBackpackClickSelect`）与道具选项-装备（`EventForItemSelectEquip`）统一走 `UseOrEquipItem` 按道具类型分流——魔汁（Juice）→`UseJuiceItem`；**幻化药（TransformPotion）→`UseTransformPotionItem`**（确认框 UIText 61018；配置缺失/`other_data` 空 Toast 61021 拦截防浪费；确认后写入 `creatureData.transformItemId`，覆盖旧值=以最后吃的为准，所有生物含魔王可用、不做 IsDemonLord 拦截）；**幻原药（RestorePotion）→`UseRestorePotionItem`**（确认框 61019；无幻化 Toast 61020 拦截不消耗；确认后 `transformItemId` 置0 恢复原形象，流程只判 id==0 不读配置，Mod 移除后残留 id 仍可清除）；其余类型→`SetCreatureEquip` 装备（装备资格收口 `ItemBean.CanEquipForCreature`，含魔王专属校验：仅魔王可穿魔王专属装备，见 item-system skill）。幻化/幻原确认后刷新三件套：卡片详情 `SetCardDetails`（重绘 spine 即显示幻化/原形象）+ 背包列表 `InitBackpackItemsData` + `RefreshBaseControlForDemonLord`（基地自控魔王形象同步）；落盘 `SaveUserData`。
 
 ### 空列表提示
 

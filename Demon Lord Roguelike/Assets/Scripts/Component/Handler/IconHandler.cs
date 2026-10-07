@@ -4,6 +4,9 @@ using System;
 
 public partial class IconHandler
 {
+    /// <summary>道具贴图的基准 PPU：世界空间道具 sprite 的观感是按 PPU=100 调试的（100px=1 世界单位）；贴图 PPU 统一改为 16 后，按 当前PPU/基准PPU 反比补偿缩放钉住世界尺寸</summary>
+    public const float ItemSpriteBasePPU = 100f;
+
     /// <summary>
     /// 获取图标（游戏层枚举重载）。内部转字符串后调用框架层 GetIconSprite。
     /// </summary>
@@ -73,7 +76,13 @@ public partial class IconHandler
         });
     }
 
-    public void SetItemIcon(string iconName, float rotateZ, SpriteRenderer spriteRenderer, float targetSizeX = 100f, float targetSizeY = 100f)
+    /// <summary>
+    /// 设置道具图标（世界空间 SpriteRenderer 版）：把 sprite 完整缩放进 targetSize×targetSize 的像素框内（contain 取较小缩放比）。
+    /// <para>尺寸基准 PPU=100（<see cref="ItemSpriteBasePPU"/>）：世界尺寸 = targetSize÷100，与贴图实际 PPU 解耦——默认 100 即 1 世界单位；
+    /// targetSize≤0 表示按 sprite 原始像素尺寸显示（世界尺寸=像素÷100，弹道换图用）。</para>
+    /// </summary>
+    /// <param name="scaleMul">额外整体缩放（如弹道武器 StartSize），默认 1</param>
+    public void SetItemIcon(string iconName, float rotateZ, SpriteRenderer spriteRenderer, float targetSizeX = 100f, float targetSizeY = 100f, float scaleMul = 1f)
     {
         SpriteAtlasTypeEnum atlasType = ParseIconName(iconName, SpriteAtlasTypeEnum.Items, out string actualIconName);
         GetIconSprite(atlasType, actualIconName, (sprite) =>
@@ -86,13 +95,16 @@ public partial class IconHandler
                 // 获取 Sprite 的原始像素尺寸
                 Vector2 spriteSize = sprite.rect.size;
 
-                // 计算缩放比例：取宽高的较小缩放比，确保完整显示在目标区域内
-                float scaleX = targetSizeX / spriteSize.x;
-                float scaleY = targetSizeY / spriteSize.y;
+                // 计算缩放比例：targetSize>0 时 contain 进目标像素框(取宽高较小比)；≤0 按原始像素尺寸(scale=1)
+                float scaleX = targetSizeX > 0 ? targetSizeX / spriteSize.x : 1f;
+                float scaleY = targetSizeY > 0 ? targetSizeY / spriteSize.y : 1f;
                 float scale = Mathf.Min(scaleX, scaleY);
 
+                // PPU 基准补偿：SpriteRenderer 世界尺寸=像素÷贴图PPU，乘 贴图PPU/基准100 后世界尺寸只由 targetSize 决定、与贴图 PPU 解耦
+                float ppuFix = sprite.pixelsPerUnit / ItemSpriteBasePPU;
+
                 // 应用缩放（假设 spriteRenderer 的 transform 是独立的，或使用 lossyScale 计算）
-                spriteRenderer.transform.localScale = new Vector3(scale, scale, 1f);
+                spriteRenderer.transform.localScale = new Vector3(scale * ppuFix * scaleMul, scale * ppuFix * scaleMul, 1f);
             }
         });
     }
@@ -103,24 +115,10 @@ public partial class IconHandler
         SetItemIcon(itemInfo.icon_res, itemInfo.icon_rotate_z, targetIV);
     }
 
-    public void SetItemIcon(long itemId, SpriteRenderer spriteRenderer, float targetSizeX = 100f, float targetSizeY = 100f)
+    public void SetItemIcon(long itemId, SpriteRenderer spriteRenderer, float targetSizeX = 100f, float targetSizeY = 100f, float scaleMul = 1f)
     {
         var itemInfo = ItemsInfoCfg.GetItemData(itemId);
-        SetItemIcon(itemInfo.icon_res, itemInfo.icon_rotate_z, spriteRenderer, targetSizeX, targetSizeY);
-    }
-
-    public void SetItemIconForAttackMode(string showSpriteName, SpriteRenderer spriteRenderer)
-    {
-        if (spriteRenderer == null)
-            return;
-        GetIconSprite(SpriteAtlasTypeEnum.Items, showSpriteName, (sprite) =>
-        {
-            if (spriteRenderer != null)
-            {
-                spriteRenderer.sprite = sprite;
-                //spriteRenderer.transform.eulerAngles = new Vector3(0, 0, rotateZ);
-            }
-        });
+        SetItemIcon(itemInfo.icon_res, itemInfo.icon_rotate_z, spriteRenderer, targetSizeX, targetSizeY, scaleMul);
     }
 
     /// <summary>

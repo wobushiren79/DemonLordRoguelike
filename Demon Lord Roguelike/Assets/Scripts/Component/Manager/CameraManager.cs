@@ -40,15 +40,15 @@ public partial class CameraManager
     {
         cm_Fight?.gameObject.SetActive(false);
         cm_Base?.gameObject.SetActive(false);
-        //切走镜头时还原默认透明排序(战斗镜头启用时会重新设置, 保证自定义Z轴排序只在战斗场景生效)
-        ResetTransparencySort();
+        //按当前场景刷新透明排序(所有镜头切换路径都经本方法, 排序设置始终匹配当前场景)
+        RefreshTransparencySortForCurrentScene();
     }
 
     #region 透明排序
     /// <summary>
-    /// 设置战斗场景的透明排序: 固定按世界Z轴而非视距, 让Front层生物Spine Z前移0.1的"显示在前"与镜头角度无关(斜视角下依然生效)
+    /// 设置游戏内场景的透明排序: 固定按世界Z轴而非视距, 让Front层生物Spine Z前移0.1的"显示在前"与镜头角度无关(斜视角下依然生效)
     /// </summary>
-    public void SetTransparencySortForFight()
+    public void SetTransparencySortForGameScene()
     {
         if (mainCamera == null)
             return;
@@ -57,13 +57,25 @@ public partial class CameraManager
     }
 
     /// <summary>
-    /// 还原默认透明排序(按视距): 非战斗场景使用
+    /// 还原默认透明排序(按视距): 非游戏内场景使用
     /// </summary>
     public void ResetTransparencySort()
     {
         if (mainCamera == null)
             return;
         mainCamera.transparencySortMode = TransparencySortMode.Default;
+    }
+
+    /// <summary>
+    /// 按当前场景刷新透明排序: 战斗/基地/终焉议会场景固定按世界Z轴(见 SetTransparencySortForGameScene), 其余场景(主菜单/奖励选择等)还原默认视距排序
+    /// </summary>
+    public void RefreshTransparencySortForCurrentScene()
+    {
+        var sceneType = WorldHandler.Instance.GetCurrentSceneType();
+        if (sceneType == GameSceneTypeEnum.Fight || sceneType == GameSceneTypeEnum.BaseGaming || sceneType == GameSceneTypeEnum.DoomCouncil)
+            SetTransparencySortForGameScene();
+        else
+            ResetTransparencySort();
     }
     #endregion
 

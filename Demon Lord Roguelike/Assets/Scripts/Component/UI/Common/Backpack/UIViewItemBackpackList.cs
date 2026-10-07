@@ -98,8 +98,8 @@ public partial class UIViewItemBackpackList : BaseUIView
             var itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
             if (itemInfo == null)
                 continue;
-            //装备类按装备资格过滤;魔汁仅非魔王(魔王隐藏等级不吃经验);幻化药/幻原药所有生物含魔王可见可用
-            if (creatureInfo.CanEquipItem(itemInfo)
+            //装备类按装备资格过滤(含魔王专属: 非魔王选中时魔王专属装备不显示);魔汁仅非魔王(魔王隐藏等级不吃经验);幻化药/幻原药所有生物含魔王可见可用
+            if (itemData.CanEquipForCreature(creatureData)
                 || (itemInfo.GetItemType() == ItemTypeEnum.Juice && !creatureData.IsDemonLord())
                 || itemInfo.GetItemType() == ItemTypeEnum.TransformPotion
                 || itemInfo.GetItemType() == ItemTypeEnum.RestorePotion)

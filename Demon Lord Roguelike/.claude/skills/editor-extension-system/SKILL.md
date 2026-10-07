@@ -261,10 +261,10 @@ LauncherTest (Inspector)
 ### 功能
 
 - 三板块页签（`GUILayout.Toolbar` 切换）：
-  - **Spine**：批量生成道具图标（皮肤名筛选 `Clothes,Pants,Weapon,Shoes,Hat,Mask,NoseRing,Arrow` → `Textures/Items` + 重打 `AtlasForItems`）/ 皮肤图标（筛选 `Eye,Head,Mouth,Body,Hair,Horn,Wing` → `Textures/Skins` + 重打 `AtlasForSkins`）；指定 SkeletonDataAsset 单独导出（未选中时按钮置灰）。提取实现复用框架层 `SpineWindow.ExtractSkinTextures`（输入固定 `Assets/LoadResources/Spine/Creature`）。**Spine 资源导入**：导入项列表（目标目录=外部美术目录绝对路径如 `../资源/生物/人类` + 导入目录=项目内 `Assets/` 相对路径如 `Assets/LoadResources/Spine/Creature/Human`，浏览选择或拖拽文件夹到目录行（拖文件则取所在目录），改动即写入 EditorPrefs `GameResourceEditor.SpineImportEntries` 持久化（注意：必须先赋值写回 entry 再保存，否则序列化的是旧值；另带「保存配置」手动保存按钮）），以导入目录顶层文件为准回查目标目录、同名 `.atlas.txt`/`.json`/`.png` 覆盖复制（导入目录没有的文件不复制），支持单条导入/全部导入，完成后 `AssetDatabase.Refresh`。
+  - **Spine**：批量生成道具图标（皮肤名筛选 `Clothes,Pants,Weapon,Shoes,Hat,Mask,NoseRing,Arrow` → `Textures/Items` + 重打 `AtlasForItems`）/ 皮肤图标（筛选 `Eye,Head,Mouth,Body,Hair,Horn,Wing` → `Textures/Skins` + 重打 `AtlasForSkins`）；**两类图标导出 PPU 均固定 16**——`IconPixelsPerUnit`，经 `SpineWindow.ExtractSkinTextures`/`ExtractAndSaveTextures`/`SaveRegionTexture` 的可选参数 `pixelsPerUnit`（默认 100，SpineWindow 自身提取入口仍 100）透传；「修正所有图标 PPU 为 16」按钮（`FixAllIconsPixelsPerUnit` 幂等：遍历 `Textures/Items` + `Textures/Skins` 所有贴图 TextureImporter 改 PPU 为 16 + 重打 `AtlasForItems`/`AtlasForSkins`，PPU 打包时烘进图集所以必须重打，单目录逻辑在私有 `FixIconsPixelsPerUnit`）；指定 SkeletonDataAsset 单独导出（未选中时按钮置灰）。提取实现复用框架层 `SpineWindow.ExtractSkinTextures`（输入固定 `Assets/LoadResources/Spine/Creature`）。**Spine 资源导入**：导入项列表（目标目录=外部美术目录绝对路径如 `../资源/生物/人类` + 导入目录=项目内 `Assets/` 相对路径如 `Assets/LoadResources/Spine/Creature/Human`，浏览选择或拖拽文件夹到目录行（拖文件则取所在目录），改动即写入 EditorPrefs `GameResourceEditor.SpineImportEntries` 持久化（注意：必须先赋值写回 entry 再保存，否则序列化的是旧值；另带「保存配置」手动保存按钮）），以导入目录顶层文件为准回查目标目录、同名 `.atlas.txt`/`.json`/`.png` 覆盖复制（导入目录没有的文件不复制），支持单条导入/全部导入，完成后 `AssetDatabase.Refresh`。
   - **图集**：重打 `Assets/LoadResources/Textures/SpriteAtlas` 下所有 SpriteAtlas（`SpriteAtlasUtility.PackAtlases`）。
   - **通用**：一键生成所有资源（道具图标 → 皮肤图标 → 刷新图集）。
-- public static 方法（`SpineAllItemInit`/`SpineAllSkinInit`/`SpineSelectedItemInit`/`SpineSelectedSkinInit`/`RefreshAllAtlases`/`GenerateAllResources`/`ImportSpineResources`）供 `GameBuildEditorWindow` 打包前流程直接复用。
+- public static 方法（`SpineAllItemInit`/`SpineAllSkinInit`/`SpineSelectedItemInit`/`SpineSelectedSkinInit`/`RefreshAllAtlases`/`GenerateAllResources`/`ImportSpineResources`/`FixAllIconsPixelsPerUnit`）供 `GameBuildEditorWindow` 打包前流程直接复用。
 
 ---
 
@@ -277,7 +277,8 @@ LauncherTest (Inspector)
 - 打包前 3 个可勾选步骤（默认全勾选）：生成所有 Spine 道具图标 / 生成所有 Spine 皮肤图标 / 刷新所有图集 —— 均直接复用 `GameResourceEditor` 的 public static 方法（`SpineAllItemInit`/`SpineAllSkinInit`/`RefreshAllAtlases`）。
 - 打包选项（均经 EditorPrefs 持久化）：开发包(Development)、允许脚本调试(AllowDebugging)、自动连接 Profiler(ConnectWithProfiler)、深度分析(EnableDeepProfilingSupport)、开启 GM 模式(默认关闭)、完成后自动运行(AutoRunPlayer)、完成后打开输出目录(ShowBuiltPlayer)。调试/Profiler/深度分析三个子选项依赖开发包，取消开发包时联动关闭并置灰。
 - **GM 模式开关**：「开启 GM 模式」勾选后，正式包中按 F12 也能打开 GM 测试面板（UITestBase）。实现=打包前 `WriteGMModeConfig(选项值)` 把 0/1 写入 `Assets/Resources/GMMode.txt` 并 `AssetDatabase.ImportAsset` 强制同步导入（不走编译宏，避免触发全量重编译），`BuildPlayer` 后 `finally` 中恢复写 0 防残留；运行时 `ProjectConfigInfo.IsGMMode()` 判定（编辑器内恒 true，正式包 `Resources.Load<TextAsset>("GMMode")` 读缓存），判定入口在 `UIBaseMain.OnInputActionForStarted` 的 F12 分支。仓库内 GMMode.txt 固定为 0。
-- 打包路径选择：默认为 git 仓库根的上级目录下 `DLR/`（从 `Application.dataPath` 向上找 `.git` 动态推导，找不到则退化为项目根上级目录），支持浏览修改与「重置为默认路径」，选择经 EditorPrefs 持久化。
+- **Mod 资源复制**（2026-10-05 起）：「打包后复制 Mod 资源到输出目录」总开关（EditorPrefs `GameBuildEditorWindow.CopyMods`，默认关）+ 项目根 `Mods/` 子目录勾选列表（每个 Mod 单独持久化 `GameBuildEditorWindow.CopyMod.{Mod名}`，**新 Mod 默认不勾选**；全选/全不选/刷新列表按钮，滚动区展示）。打包成功后 `CopySelectedModsToBuild` 把勾选的 `Mods/<Mod名>` 从项目根复制到 `<输出目录>/Mods/<Mod名>`（先删后拷保证与项目内一致；目标=运行时 `ModManager.GetModsRootPath` 打包后的解析位置，即与 `GameName_Data` 同级的 Mods）。未勾选的已有目录不动。
+- 打包路径选择：默认为 git 仓库根的上级目录下 `DLR/`（从 `Application.dataPath` 向上找 `.git` 动态推导，找不到则退化为项目根上级目录），支持浏览修改、「打开」按钮直接 `RevealInFinder` 打开输出目录（目录不存在时置灰）与「重置为默认路径」，选择经 EditorPrefs 持久化。
 - 「开始打包」：先 `EnsureURPCompatibilityModeDefine` 确保当前平台带 `URP_COMPATIBILITY_MODE` 编译宏（Unity 6.3 起 URP 兼容模式被打包校验拦截，缺宏直接 BuildFailedException；缺宏时自动补宏并弹窗提示——补宏触发脚本重编译会中断本次打包，重编译完成后需重新点击「开始打包」）→ 自动切换到 `Assets/Scenes/GameScene.unity`（未保存修改弹保存提示、取消则中止；打包完成后自动切回原场景）→ 执行勾选步骤 → **固定只用 GameScene 打包**（不读 Build Settings 场景列表，避免日常挂的 TestScene 混进正式包）→ 按勾选项组装 `BuildOptions` → `BuildPipeline.BuildPlayer` 打到 `activeBuildTarget`（Windows 平台自动追加 `PlayerSettings.productName + ".exe"`），成功后打开产物目录（勾选 ShowBuiltPlayer 时由 Unity 打开，否则手动 `RevealInFinder`）。
 
 ---

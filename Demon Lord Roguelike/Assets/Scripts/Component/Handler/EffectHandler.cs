@@ -79,7 +79,8 @@ public partial class EffectHandler
             {
                 //main 为 struct，先拷局部再改；有参数才设置——哨兵默认值(0)的字段保持粒子配置原值
                 var mainModule = targetEffect.mainPS.main;
-                if (param.duration > 0)
+                //Unity 限制：系统仍存活(播放中/有未过期粒子)时禁改 duration，仅完全停息时写入；单例重播沿用上次值(同一特效时长恒定)
+                if (param.duration > 0 && !targetEffect.mainPS.IsAlive(true))
                     mainModule.duration = Mathf.Max(param.duration, 0.1f);
                 if (param.startSizeMultiplier != 0)
                     mainModule.startSizeMultiplier = param.startSizeMultiplier;

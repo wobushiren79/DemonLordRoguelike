@@ -204,6 +204,7 @@ userData.AddBackpackCreature(creature); // 添加生物
 userData.RemoveBackpackCreature(uuid);  // 移除生物
 userData.AddLineupCreature(lineupId, uuid); // 添加到阵容
 userData.MoveLineupCreature(lineupId, uuid, posIndex); // 阵容内拖拽换位(重排顺序)
+List<int> lineupIds = userData.GetLineupIndexes(uuid); // 生物所在的全部阵容序号(升序;不在任何阵容返回空列表)
 
 // 背包列表已包裹进容器Bean，直接读取列表须经访问器(增删仍走上面的方法)
 List<ItemBean> items = userData.GetUserBackpackItemsData().listBackpackItems;

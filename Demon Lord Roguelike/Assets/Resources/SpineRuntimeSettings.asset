@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a6a3378dfca7914d8ba2b337350cab8, type: 3}
   m_Name: SpineRuntimeSettings
   m_EditorClassIdentifier: spine-unity::Spine.Unity.RuntimeSettings
-  useThreadedMeshGeneration: 1
-  useThreadedAnimation: 1
+  useThreadedMeshGeneration: 0
+  useThreadedAnimation: 0

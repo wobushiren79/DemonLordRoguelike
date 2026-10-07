@@ -97,10 +97,10 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         {
             var itemChildTF = ui_Buff.GetChild(i);
             if (i < listBuffData.Count)
-            {       
+            {
                 itemChildTF.gameObject.SetActive(true);
                 var itemBuffData = listBuffData[i];
-                var viewItem =  itemChildTF.GetComponent<UIViewBuffShowItem>();
+                var viewItem = itemChildTF.GetComponent<UIViewBuffShowItem>();
                 viewItem.SetData(itemBuffData);
             }
             else
@@ -165,14 +165,14 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         }
         ui_Equip.gameObject.SetActive(true);
         List<ItemTypeEnum> listEquipType = creatureData.creatureInfo.GetEquipItemsType();
-        
+
         for (int i = 0; i < ui_Equip.transform.childCount; i++)
         {
             var itemChildTF = ui_Equip.transform.GetChild(i);
             if (i < listEquipType.Count)
-            {       
+            {
                 var itemType = listEquipType[i];
-                var viewItemEquip =  itemChildTF.GetComponent<UIViewItemEquip>();
+                var viewItemEquip = itemChildTF.GetComponent<UIViewItemEquip>();
                 viewItemEquip.SetData(itemType);
                 itemChildTF.gameObject.SetActive(true);
                 var itemData = creatureData.GetEquip(itemType);
@@ -183,7 +183,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
                 itemChildTF.gameObject.SetActive(false);
             }
         }
-    } 
+    }
 
     /// <summary>
     /// 设置终焉议会数据（如果是议会成员）
@@ -202,7 +202,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
                 int rating = npcInfo.GetCouncilorRatings();
                 var rarityInfo = DoomCouncilRatingsInfoCfg.GetItemData(rating);
                 ui_NameDoomCouncilText.text = $"{TextHandler.Instance.GetTextById(53000)}{rarityInfo.name_language}({rarityInfo.vote})";
-                return;   
+                return;
             }
         }
         ui_NameDoomCouncil.gameObject.SetActive(false);
@@ -471,7 +471,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
     /// </summary>
     public void OnClickForIconShow()
     {
-        DialogCreatureShowBean dialogCreatureShow=new DialogCreatureShowBean();
+        DialogCreatureShowBean dialogCreatureShow = new DialogCreatureShowBean();
         dialogCreatureShow.creatureData = creatureData;
         UIHandler.Instance.ShowDialogCreatureShow(dialogCreatureShow);
     }

@@ -5,8 +5,9 @@ using UnityEngine;
 /// 圆环冲击波弹道（深渊馈赠「第六次冲击」）
 /// <para>以魔王为圆心的扩张圆环：半径从 0 起每帧按 speed_move 扩张，XZ 距离落在「上一帧半径~当前半径」环带内的存活敌人被命中，
 /// 每只敌人每波只命中一次（命中名单去重）；伤害由发射方 BUFF 注入（魔王实时攻击力×倍率、不暴击）。</para>
+/// <para>只命中道路范围内的敌人（x ≤ 道路右缘 0.5+路长，与移动意图「走进道路」同口径）——右缘外还没走进道路的敌人不受伤害与击退。</para>
 /// <para>命中时击退敌人（交 AIAttackCreatureEntity.StartKnockback 击退意图：方向固定 +x 沿道路向后推、不带 z 分量防推离路径，
-/// 固定时长推移、落点 x 钳制道路范围、攻击循环被打断、结束回闲置重新索敌；距离配在 collider_area_size 第 2 项）。</para>
+/// 固定时长推移、落点不钳右缘（可被推出道路右缘外，之后由移动意图走回道路）、攻击循环被打断、结束回闲置重新索敌；距离配在 collider_area_size 第 2 项）。</para>
 /// <para>最大半径 = 道路右缘(0.5+路长) + 余量(collider_area_size 第 1 项) − 圆心 x：保证波扫到路尽头、覆盖整条道路，达到即销毁；
 /// 扩张时长 = 最大半径 / 扩张速度（GetMoveSpeed，纯数据发射 attackerSpeedRate=1 即配置速度）。</para>
 /// <para>纯数据发射路径：由 BuffEntityPeriodicAttackShockwave 创建，伤害/圆心由 BUFF 侧注入；无 prefab/visual_name，
@@ -33,6 +34,8 @@ public class AttackModeShockwaveRing : BaseAttackMode
     private float radiusMax;
     /// <summary>击退距离（发射时从 collider_area_size 第 2 项读取，默认 0.5）</summary>
     private float knockbackDistance = 0.5f;
+    /// <summary>道路右缘 x（StartAttackBase 按当场路长缓存）：只命中 x ≤ 此值的「已走进道路」敌人，右缘外敌人不受伤害与击退</summary>
+    private float roadMaxX;
     /// <summary>圆心（魔王位置+攻击起始偏移，由 BUFF 注入 startPos；距离判定只算 XZ 平面）</summary>
     private Vector3 centerPos;
     /// <summary>本波已命中名单（每只敌人只命中一次，对象池复用前清空）</summary>
@@ -57,7 +60,6 @@ public class AttackModeShockwaveRing : BaseAttackMode
         float radiusMargin = (arrAreaSize != null && arrAreaSize.Length > 0 && arrAreaSize[0] > 0) ? arrAreaSize[0] : 0.5f;
         knockbackDistance = (arrAreaSize != null && arrAreaSize.Length > 1 && arrAreaSize[1] > 0) ? arrAreaSize[1] : 0.5f;
         // 道路右缘 x（矿车同款：左缘 0.5，右缘 0.5+路长）
-        float roadMaxX;
         var fightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
         if (fightLogic?.fightData != null)
         {
@@ -103,7 +105,8 @@ public class AttackModeShockwaveRing : BaseAttackMode
     }
 
     /// <summary>
-    /// 环带命中检测：XZ 距离落在 [radiusPrev, radiusNow] 内的存活敌人，命中+击退；每只敌人每波只中一次
+    /// 环带命中检测：XZ 距离落在 [radiusPrev, radiusNow] 内的存活敌人，命中+击退；每只敌人每波只中一次；
+    /// 只命中道路范围内（x ≤ 道路右缘）的敌人，右缘外未走进道路的敌人不受伤害与击退
     /// </summary>
     private void CheckHitRing(float radiusPrev, float radiusNow)
     {
@@ -124,6 +127,9 @@ public class AttackModeShockwaveRing : BaseAttackMode
             if (hitCreatureIds.Contains(creatureId))
                 continue;
             Vector3 enemyPos = enemy.creatureObj.transform.position;
+            //道路范围过滤：右缘外(x>roadMaxX)还没走进道路的敌人不命中（与移动意图「走进道路」同口径）
+            if (enemyPos.x > roadMaxX)
+                continue;
             // XZ 平面距离（忽略 y 高度差），落在环带内才命中
             float dirX = enemyPos.x - centerPos.x;
             float dirZ = enemyPos.z - centerPos.z;

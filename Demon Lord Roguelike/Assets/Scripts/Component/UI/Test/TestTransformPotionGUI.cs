@@ -16,7 +16,10 @@ using OfficeOpenXml;
 /// 小卡列表/大卡列表/场景列表=分页网格一次展示多个幻化药, 悬停目标后滚轮改缩放/拖拽改位置。
 /// 实现=给基础生物设置 transformItemId 后走真实卡片 SetData / SetCreatureData 链（与魔物管理吃幻化药同路径）。
 /// 调参(仅编辑器)：文本框精输 + 滑动条粗调(缩放对数映射) + 悬停滚轮/拖拽, 经 TransformPotionUITestOverride 覆盖层实时生效；
-/// 数据键: show_data=小卡默认展示尺寸, ui_show_data=大卡详情尺寸, world_data=世界显示尺寸/偏移(战斗/基地等 SkeletonAnimation 消费)。
+/// 数据键: show_data=小卡默认展示尺寸, ui_show_data=大卡详情尺寸, world_data=世界显示尺寸/偏移(战斗/基地等 SkeletonAnimation 消费),
+/// show_brightness=场景调暗系数(场景列表 Alt+滚轮调, 消费=SetCreatureData→SpineHandler.ApplySceneDimOverride, UI 不消费)。
+/// 场景列表另带「测试场景」区: 循环加载 FightSceneCfg 各行真实场景预制体(森林/沙漠/皇宫/平原各变体)并还原光照(天空盒/雾/环境光/Details显隐,
+/// 体积雾/景深不还原), 卸载时还原面板原环境, 关面板自动卸载。
 /// 「保存全部修改」一键批量写回 Mod道具Excel(唯一真实源, 会话首写前备份到 Mod项目/ExcelBackup, 滚动复用.bak.1~3只留最近3份) + Mod项目与主项目部署副本两处 ItemsInfo.txt + 当前会话内存。
 /// 由 LauncherTest.StartForTransformPotionTest 挂到空物体上启动。
 /// </summary>
@@ -34,6 +37,8 @@ public class TestTransformPotionGUI : MonoBehaviour
     private static readonly Vector3 SceneCameraPos = new Vector3(0, 3.6f, -6f);  //场景展示相机位置(与卡片编辑器同机位: 侧视微俯视)
     private static readonly Vector3 SceneCameraLookAt = new Vector3(0, 2.9f, 0);  //场景展示相机注视点(把模型框到屏幕底部, 避开中间卡片)
     private const float SceneSpineOffsetX = 1.1f;   //场景模型相对中心点的横向偏移(基础在左/幻化在右)
+    private const float BrightnessStep = 0.02f;     //亮度调节步进(场景列表 Alt+滚轮, show_brightness 系数)
+    private const float BrightnessMin = 0.3f;       //亮度系数下限(防误滚到全黑)
 
     //列表布局: 间距与横竖个数(用户可调, EditorPrefs 持久化跨会话保持, 见 DrawGridSizeRow 布局调整行)
     private const float DragThresholdPx = 4f;                                //拖拽生效阈值(防误触微小拖动)
@@ -75,6 +80,24 @@ public class TestTransformPotionGUI : MonoBehaviour
     private string pageJumpBuffer = "";             //页码跳转输入框缓冲
     private GameObject listRoot;                    //卡片列表容器(覆盖层Canvas子节点, 换页/换页签重建)
     private GameObject sceneListRoot;               //场景列表容器(世界空间, 换页/换页签重建)
+    private GameObject testSceneObj;                //测试场景实例(场景列表页签加载的游戏场景prefab, 切换/卸载/关面板时销毁)
+    private int testSceneIndex = -1;                //当前测试场景索引(-1=无场景, 否则 testSceneRows 下标)
+    private bool testSceneLoading;                  //测试场景加载中(防连点重入)
+    private List<TestSceneOption> testSceneRows;    //测试场景候选(首项=基地特殊档, 其后 FightSceneCfg 全量按 id 排序; 懒加载)
+    private bool isSceneDropdownOpen;               //测试场景下拉展开状态
+    private Vector2 scrollSceneDropdown;            //测试场景下拉滚动位置
+    private bool hasCacheTestEnv;                   //是否已缓存面板环境(首个场景加载时缓存, 卸载还原用)
+    private Color cacheEnvAmbient;                  //缓存: 原全局环境光
+    private Material cacheEnvSkybox;                //缓存: 原天空盒材质
+    private bool cacheEnvFog;                       //缓存: 原雾开关
+    private Color cacheEnvFogColor;                 //缓存: 原雾颜色
+    private float cacheEnvFogStart;                 //缓存: 原雾起始距离
+    private float cacheEnvFogEnd;                   //缓存: 原雾结束距离
+    private FogMode cacheEnvFogMode;                //缓存: 原雾模式
+    private CameraClearFlags cacheEnvCamClearFlags; //缓存: 原主相机清屏标志
+    private Color cacheEnvCamBgColor;               //缓存: 原主相机背景色
+    private Light[] cacheEnvLights;                 //缓存: 面板场景的原有灯光(加载测试场景时禁用, 防与场景自带灯光叠加双份光照)
+    private bool[] cacheEnvLightsEnabled;           //缓存: 各原有灯各自的开关状态(卸载时按原状恢复)
     private readonly List<ListItem> listItems = new List<ListItem>(); //当前列表页可见项
 
     //列表布局/筛选设置(static=本次Play会话内重开面板保持, 项目内JSON持久化随git共享)
@@ -111,9 +134,15 @@ public class TestTransformPotionGUI : MonoBehaviour
         }
     }
 
-    /// <summary>列表可见项(卡片列表=卡根+图标, 场景列表=摆放根+Renderer子节点+基础缩放; 悬停交互与直接应用用)</summary>
-    private class ListItem
+    /// <summary>测试场景候选项（fightScene=null=基地特殊档）</summary>
+    private class TestSceneOption
     {
+        public string label;                //显示名（基地 / FightScene 行的 remark）
+        public FightSceneBean fightScene;   //战斗场景配置行（null=基地）
+    }
+
+    /// <summary>列表可见项(卡片列表=卡根+图标, 场景列表=摆放根+Renderer子节点+基础缩放; 悬停交互与直接应用用)</summary>
+    private class ListItem    {
         public long potionId;
         public string label;
         public RectTransform cardRoot;      //卡片列表: 卡根RectTransform
@@ -206,6 +235,9 @@ public class TestTransformPotionGUI : MonoBehaviour
         if (sceneRoot != null) Destroy(sceneRoot);
         if (scenePlaneObj != null) Destroy(scenePlaneObj);
         if (sceneListRoot != null) Destroy(sceneListRoot);
+#if UNITY_EDITOR
+        UnloadTestScene();
+#endif
     }
 
     #endregion
@@ -878,9 +910,9 @@ public class TestTransformPotionGUI : MonoBehaviour
         {
             string hint = currentTab == PanelTab.ChessList ? "小卡列表：悬停目标卡片，滚轮=改缩放，拖拽=改位置（show_data）"
                 : currentTab == PanelTab.ShowList ? "大卡列表：悬停目标卡片，滚轮=改缩放，拖拽=改位置（ui_show_data；无Avator=调回落的show形象）"
-                : "场景列表：最左=基础样板(原形象)对比基准(不可调)；悬停目标模型，滚轮=改大小，拖拽=改位置（world_data 世界显示）";
+                : "场景列表：最左=基础样板(原形象)对比基准(不可调)；悬停目标模型，滚轮=改大小，拖拽=改位置（world_data 世界显示），Alt+滚轮=调亮度（show_brightness 场景调暗）";
             GUILayout.Label(hint, hintStyle);
-            GUILayout.Label("项下小按钮：[还原]=恢复配置值 [0,0]=位置归零 [复制][粘贴]=参数快速套用", hintStyle);
+            GUILayout.Label("项下小按钮：[还原]=恢复配置值(场景页含亮度) [0,0]=位置归零 [复制][粘贴]=参数快速套用", hintStyle);
 #if UNITY_EDITOR
             if (clipHasValue)
                 GUILayout.Label($"剪贴板[{KindName(clipKind)}]: {FmtNum(clipScale)};{FmtNum(clipPos.x)},{FmtNum(clipPos.y)}", hintStyle);
@@ -892,6 +924,8 @@ public class TestTransformPotionGUI : MonoBehaviour
 #if UNITY_EDITOR
             if (currentTab == PanelTab.SceneList && GUILayout.Button("📋 输出场景诊断到控制台(按 ` 键查看)", GUILayout.Height(22)))
                 LogSceneListDiagnostics();
+            if (currentTab == PanelTab.SceneList)
+                DrawTestSceneSection();
 #endif
         }
 
@@ -1643,6 +1677,15 @@ public class TestTransformPotionGUI : MonoBehaviour
                 foreach (var item in items)
                 {
                     if (!GetItemGuiRect(item).Contains(e.mousePosition)) continue;
+                    //场景列表按住 Alt 滚轮=调亮度(show_brightness 场景调暗系数), 不按住=改大小(world_data)
+                    if (currentTab == PanelTab.SceneList && e.alt)
+                    {
+                        float brightness = GetCurrentBrightness(item.potionId);
+                        brightness = Mathf.Clamp(brightness + (e.delta.y > 0 ? BrightnessStep : -BrightnessStep), BrightnessMin, 1f);
+                        ApplyBrightness(item, brightness);
+                        e.Use();
+                        break;
+                    }
                     DataKind kind = currentTab == PanelTab.ChessList ? DataKind.Show
                         : currentTab == PanelTab.ShowList ? DataKind.UiShow
                         : currentTab == PanelTab.SceneList ? DataKind.World
@@ -1674,6 +1717,42 @@ public class TestTransformPotionGUI : MonoBehaviour
         if (item.cardIcon == null) return;
         item.cardIcon.transform.localScale = Vector3.one * scale;
         item.cardIcon.rectTransform.anchoredPosition = pos;
+    }
+
+    /// <summary>
+    /// 取幻化药当前生效的场景调暗系数（覆盖层优先 → 配置 show_brightness 键 → 默认 1=不调暗；基础样板 potionId=0 恒 1）
+    /// </summary>
+    /// <param name="potionId">幻化药道具完整id</param>
+    /// <returns>亮度系数（1=不调暗）</returns>
+    private float GetCurrentBrightness(long potionId)
+    {
+        if (potionId == 0) return 1f;
+        ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(potionId);
+        if (itemInfo == null) return 1f;
+        string raw = CreatureBean.ParseTransformOtherData(itemInfo.other_data).showBrightness;
+#if UNITY_EDITOR
+        if (TransformPotionUITestOverride.TryGetShowBrightness(potionId, out string ov)) raw = ov;
+#endif
+        if (string.IsNullOrEmpty(raw) || !float.TryParse(raw, out float k) || k >= 1f || k <= 0f) return 1f;
+        return k;
+    }
+
+    /// <summary>
+    /// 设置幻化药亮度覆盖并实时应用到场景列表项（写覆盖层 + 直接重跑调暗覆盖/清除，不走完整 SetData 防打断动画；k=1=强制不调暗）
+    /// </summary>
+    /// <param name="item">场景列表项</param>
+    /// <param name="brightness">目标亮度系数（clamp 到 [BrightnessMin,1]）</param>
+    private void ApplyBrightness(ListItem item, float brightness)
+    {
+        brightness = Mathf.Clamp(brightness, BrightnessMin, 1f);
+        TransformPotionUITestOverride.SetShowBrightness(item.potionId, brightness.ToString("0.00"));
+        if (item.sceneRenderer == null) return;
+        SkeletonAnimation sk = item.sceneRenderer.GetComponent<SkeletonAnimation>();
+        if (sk == null) return;
+        if (brightness >= 1f)
+            SpineHandler.Instance.ClearSceneDimOverride(sk);
+        else
+            SpineHandler.Instance.ApplySceneDimOverride(sk, brightness);
     }
 
     /// <summary>
@@ -1721,7 +1800,7 @@ public class TestTransformPotionGUI : MonoBehaviour
             if (currentTab == PanelTab.SceneList && item.potionId != 0)
             {
                 GetCurrentData(item.potionId, DataKind.World, out float effScale, out Vector2 effPos);
-                text += $" ×{FmtNum(effScale)} ({FmtNum(effPos.x)},{FmtNum(effPos.y)})";
+                text += $" ×{FmtNum(effScale)} ({FmtNum(effPos.x)},{FmtNum(effPos.y)}) 亮{Mathf.RoundToInt(GetCurrentBrightness(item.potionId) * 100)}%";
             }
             Color old = GUI.color;
             if (!item.editable) GUI.color = Color.gray;
@@ -1749,6 +1828,18 @@ public class TestTransformPotionGUI : MonoBehaviour
                 CopyItem(item, kind);
             if (GUI.Button(new Rect(rect.center.x + 50, rect.yMax + 22, 42, 18), "粘贴", smallButtonStyle))
                 PasteItem(item, kind);
+            //亮度调节行(场景列表): 滑动条+数值显示+「亮原」还原亮度专用按钮(还原=回配置键值)
+            if (currentTab == PanelTab.SceneList)
+            {
+                float curBright = GetCurrentBrightness(item.potionId);
+                Rect brightRect = new Rect(rect.x - 30, rect.yMax + 62, 116, 18);
+                float newBright = GUI.HorizontalSlider(brightRect, curBright, BrightnessMin, 1f);
+                GUI.Label(new Rect(brightRect.xMax + 2, brightRect.y, 40, 18), $"{Mathf.RoundToInt(curBright * 100)}%", smallButtonStyle);
+                if (GUI.Button(new Rect(brightRect.xMax + 42, brightRect.y, 30, 18), "亮原", smallButtonStyle))
+                    RestoreItemBrightness(item);
+                if (!Mathf.Approximately(newBright, curBright))
+                    ApplyBrightness(item, Mathf.Round(newBright / BrightnessStep) * BrightnessStep);
+            }
         }
     }
 
@@ -1774,7 +1865,7 @@ public class TestTransformPotionGUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 还原列表项: 清该药当前数据段的覆盖并重建列表(走真实显示链按配置值重绘)
+    /// 还原列表项: 清该药当前数据段的覆盖并重建列表(走真实显示链按配置值重绘; 亮度有专用「亮原」按钮, 此处不含 show_brightness)
     /// </summary>
     private void RestoreItem(ListItem item)
     {
@@ -1782,6 +1873,23 @@ public class TestTransformPotionGUI : MonoBehaviour
         else if (currentTab == PanelTab.ShowList) TransformPotionUITestOverride.ClearUiShowData(item.potionId);
         else TransformPotionUITestOverride.ClearWorldData(item.potionId);
         BuildListView();
+    }
+
+    /// <summary>
+    /// 还原列表项亮度(「亮原」按钮): 清 show_brightness 覆盖回到配置键值, 并按配置重跑调暗(配置有键=应用配置系数, 无键=清除调暗)
+    /// </summary>
+    private void RestoreItemBrightness(ListItem item)
+    {
+        TransformPotionUITestOverride.ClearShowBrightness(item.potionId);
+        if (item.sceneRenderer == null) return;
+        SkeletonAnimation sk = item.sceneRenderer.GetComponent<SkeletonAnimation>();
+        if (sk == null) return;
+        //覆盖层已清, GetCurrentBrightness 此时返回配置键值(无键=1)
+        float k = GetCurrentBrightness(item.potionId);
+        if (k >= 1f)
+            SpineHandler.Instance.ClearSceneDimOverride(sk);
+        else
+            SpineHandler.Instance.ApplySceneDimOverride(sk, k);
     }
 
     /// <summary>
@@ -1841,6 +1949,259 @@ public class TestTransformPotionGUI : MonoBehaviour
 
     #endregion
 
+    #region 测试场景加载(场景列表真实光照预览)
+
+    /// <summary>懒加载测试场景候选（首项=基地特殊档，其后 FightSceneCfg 全量按 id 排序：森林×4/沙漠×2/皇宫/平原×4）</summary>
+    private void InitTestSceneRows()
+    {
+        if (testSceneRows != null) return;
+        testSceneRows = new List<TestSceneOption> { new TestSceneOption { label = "基地", fightScene = null } };
+        var all = new List<FightSceneBean>(FightSceneCfg.GetAllData().Values);
+        all.Sort((a, b) => a.id.CompareTo(b.id));
+        foreach (FightSceneBean row in all)
+            testSceneRows.Add(new TestSceneOption { label = row.remark, fightScene = row });
+    }
+
+    /// <summary>
+    /// 绘制测试场景选择区（下拉列表：无场景/基地/各战斗场景变体），卸载还原按钮；
+    /// 只还原天空盒/雾/全局环境光/Details 显隐——体积雾与景深不进测试预览（标注提示）
+    /// </summary>
+    private void DrawTestSceneSection()
+    {
+        InitTestSceneRows();
+        GUILayout.Space(4);
+        GUILayout.Label("── 测试场景（真实场景光照预览；体积雾/景深不还原）──", hintStyle);
+        string curName = testSceneIndex >= 0 && testSceneIndex < testSceneRows.Count ? testSceneRows[testSceneIndex].label : "无场景";
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("场景:", labelStyle, GUILayout.Width(36));
+        if (GUILayout.Button(curName + (isSceneDropdownOpen ? " ▲" : " ▼"), buttonLeftStyle, GUILayout.Height(24), GUILayout.Width(170)))
+            isSceneDropdownOpen = !isSceneDropdownOpen;
+        if (testSceneIndex >= 0 && GUILayout.Button("卸载还原", GUILayout.Width(64)))
+        {
+            isSceneDropdownOpen = false;
+            UnloadTestScene();
+        }
+        GUILayout.EndHorizontal();
+        if (isSceneDropdownOpen)
+        {
+            scrollSceneDropdown = GUILayout.BeginScrollView(scrollSceneDropdown, GUI.skin.box, GUILayout.Height(180));
+            //首项=无场景档(选中即卸载还原)
+            Color oldColor = GUI.color;
+            if (testSceneIndex < 0) GUI.color = Color.green;
+            if (GUILayout.Button(testSceneIndex < 0 ? "✔ 无场景" : "无场景", buttonLeftStyle, GUILayout.Height(22)))
+            {
+                GUI.color = oldColor;
+                isSceneDropdownOpen = false;
+                UnloadTestScene();
+            }
+            else GUI.color = oldColor;
+            for (int i = 0; i < testSceneRows.Count; i++)
+            {
+                bool isCurrent = i == testSceneIndex;
+                oldColor = GUI.color;
+                if (isCurrent) GUI.color = Color.green;
+                if (GUILayout.Button(isCurrent ? $"✔ {testSceneRows[i].label}" : testSceneRows[i].label, buttonLeftStyle, GUILayout.Height(22)))
+                {
+                    GUI.color = oldColor;
+                    isSceneDropdownOpen = false;
+                    if (i != testSceneIndex && !testSceneLoading)
+                    {
+                        UnloadTestScene();
+                        testSceneIndex = i;
+                        _ = LoadTestSceneAsync(testSceneRows[i]);
+                    }
+                    break;
+                }
+                GUI.color = oldColor;
+            }
+            GUILayout.EndScrollView();
+        }
+        if (testSceneLoading) GUILayout.Label("加载中…", hintStyle);
+    }
+
+    /// <summary>
+    /// 异步加载测试场景：与游戏同路径同加载器实例化场景预制体到原点，随后应用光照还原；
+    /// await 期间面板关闭/已卸载时销毁到手的实例防残留
+    /// </summary>
+    /// <param name="opt">测试场景候选项（fightScene=null=基地档）</param>
+    private async Cysharp.Threading.Tasks.UniTaskVoid LoadTestSceneAsync(TestSceneOption opt)
+    {
+        testSceneLoading = true;
+        CacheTestEnv();
+        GameObject sceneObj;
+        Material skyMat = null;
+        if (opt.fightScene != null)
+        {
+            sceneObj = await WorldHandler.Instance.manager.GetFightScene($"{PathInfo.FightScenePrefabPath}/{opt.fightScene.name_res}");
+            if (!opt.fightScene.skybox_mat.IsNull())
+                skyMat = await WorldHandler.Instance.manager.GetSkybox(opt.fightScene.skybox_mat);
+        }
+        else
+        {
+            //基地档: 与游戏同加载器(WorldManager.GetBaseScene)
+            sceneObj = await WorldHandler.Instance.manager.GetBaseScene();
+        }
+        if (this == null || testSceneIndex < 0)
+        {
+            //面板已关/已卸载：销毁到手的实例防残留
+            if (sceneObj != null) Destroy(sceneObj);
+            return;
+        }
+        if (sceneObj == null)
+        {
+            LogUtil.LogError($"[幻化药测试] 测试场景加载失败: {opt.label}");
+            testSceneLoading = false;
+            return;
+        }
+        testSceneObj = sceneObj;
+        testSceneObj.transform.position = Vector3.zero;
+        testSceneObj.transform.eulerAngles = Vector3.zero;
+        //禁用面板原有灯光(如 TestScene 默认 Directional Light), 防与测试场景自带灯光叠加双份光照
+        SetTestEnvLightsRestore(false);
+        if (opt.fightScene != null)
+        {
+            testSceneObj.name = $"TransformPotionTestScene_{opt.fightScene.name_res}";
+            ApplyTestSceneLighting(opt.fightScene, skyMat);
+        }
+        else
+        {
+            testSceneObj.name = "TransformPotionTestScene_Base";
+            //销毁基地业务组件: 其 Update 依赖基地控制器(测试场景无), 不销毁会每帧空引用; 光照所需的 Light/渲染器不受影响
+            var baseComp = testSceneObj.GetComponent<ScenePrefabForBase>();
+            if (baseComp != null) Destroy(baseComp);
+            //基地观感还原: 环境光白(游戏 GameScene Flat 白) + 纯色深底(游戏基地 RemoveSkybox+SolidColor #080613) + 无雾
+            RenderSettings.ambientLight = Color.white;
+            WorldHandler.Instance.manager.SetSkyboxColor(CameraClearFlags.SolidColor, new Color(0.031f, 0.024f, 0.075f));
+            WorldHandler.Instance.manager.RemoveSkybox();
+            VolumeHandler.Instance.SetFogActive(false);
+        }
+        testSceneLoading = false;
+    }
+
+    /// <summary>
+    /// 应用测试场景光照（精简版 WorldHandler.InitData）：天空盒+旋转、雾（未配置=关闭）、
+    /// 全局环境光（未配置=置白——与游戏 GameScene 默认 Flat 白一致，保证过曝场景还原度）、Details 显隐
+    /// </summary>
+    private void ApplyTestSceneLighting(FightSceneBean data, Material skyMat)
+    {
+        if (skyMat != null)
+        {
+            RenderSettings.skybox = skyMat;
+            Vector3 skyboxRotate = data.GetSkyboxRotate();
+            RenderSettings.skybox.SetFloat("_RotateX", skyboxRotate.x);
+            RenderSettings.skybox.SetFloat("_RotateY", skyboxRotate.y);
+            RenderSettings.skybox.SetFloat("_RotateZ", skyboxRotate.z);
+        }
+        if (data.HasFog && data.GetFogParams(out var fogColor, out var fogStart, out var fogEnd, out var fogMode))
+            VolumeHandler.Instance.SetFog(fogColor, fogMode, fogStart, fogEnd, isActive: true);
+        else
+            VolumeHandler.Instance.SetFogActive(false);
+        //未配置 ambient_light 的场景在游戏里沿用 GameScene 的 Flat 白, 这里对齐置白而非「不修改」(测试面板环境光未知)
+        RenderSettings.ambientLight = data.HasAmbientLight ? data.GetAmbientLightColor() : Color.white;
+        ApplyDetailsVisibility(data);
+    }
+
+    /// <summary>
+    /// Details 显隐（与 WorldHandler.HandleFightSceneDetails 同语义）：配置了 details=只显示 Details 下同名子预制、其余隐藏；未配置=整个 Details 隐藏；无 Details 节点不处理
+    /// </summary>
+    private void ApplyDetailsVisibility(FightSceneBean data)
+    {
+        if (testSceneObj == null) return;
+        Transform detailsRoot = testSceneObj.transform.Find("Details");
+        if (detailsRoot == null) return;
+        if (string.IsNullOrEmpty(data.details))
+        {
+            detailsRoot.gameObject.SetActive(false);
+            return;
+        }
+        detailsRoot.gameObject.SetActive(true);
+        bool isFind = false;
+        foreach (Transform child in detailsRoot)
+        {
+            bool show = child.name == data.details;
+            child.gameObject.SetActive(show);
+            if (show) isFind = true;
+        }
+        if (!isFind)
+            LogUtil.LogWarning($"[幻化药测试] 场景 {data.name_res} 配置了细节预制 {data.details}，但 Details 节点下没有找到同名子物体");
+    }
+
+    /// <summary>缓存面板进入时的环境（首个测试场景加载时一次；卸载时还原）</summary>
+    private void CacheTestEnv()
+    {
+        if (hasCacheTestEnv) return;
+        cacheEnvAmbient = RenderSettings.ambientLight;
+        cacheEnvSkybox = RenderSettings.skybox;
+        cacheEnvFog = RenderSettings.fog;
+        cacheEnvFogColor = RenderSettings.fogColor;
+        cacheEnvFogStart = RenderSettings.fogStartDistance;
+        cacheEnvFogEnd = RenderSettings.fogEndDistance;
+        cacheEnvFogMode = RenderSettings.fogMode;
+        Camera cam = CameraHandler.Instance.manager.mainCamera;
+        if (cam != null)
+        {
+            cacheEnvCamClearFlags = cam.clearFlags;
+            cacheEnvCamBgColor = cam.backgroundColor;
+        }
+        //此刻测试场景实例尚未加载, 全场 Light 均为面板原有灯(如 TestScene 默认 Directional Light), 记录备用
+        cacheEnvLights = FindObjectsOfType<Light>();
+        cacheEnvLightsEnabled = new bool[cacheEnvLights.Length];
+        for (int i = 0; i < cacheEnvLights.Length; i++)
+            cacheEnvLightsEnabled[i] = cacheEnvLights[i].enabled;
+        hasCacheTestEnv = true;
+    }
+
+    /// <summary>禁用/恢复面板原有灯光（加载测试场景后禁用防双份光照叠加；卸载时按各自原状恢复）</summary>
+    /// <param name="restore">true=恢复原状，false=全部禁用</param>
+    private void SetTestEnvLightsRestore(bool restore)
+    {
+        if (cacheEnvLights == null) return;
+        for (int i = 0; i < cacheEnvLights.Length; i++)
+        {
+            if (cacheEnvLights[i] != null && i < cacheEnvLightsEnabled.Length)
+                cacheEnvLights[i].enabled = restore ? cacheEnvLightsEnabled[i] : false;
+        }
+    }
+
+    /// <summary>还原缓存的面板环境（卸载测试场景时）</summary>
+    private void RestoreTestEnv()
+    {
+        if (!hasCacheTestEnv) return;
+        VolumeHandler.Instance.SetFogActive(false);
+        RenderSettings.ambientLight = cacheEnvAmbient;
+        RenderSettings.skybox = cacheEnvSkybox;
+        RenderSettings.fog = cacheEnvFog;
+        RenderSettings.fogColor = cacheEnvFogColor;
+        RenderSettings.fogStartDistance = cacheEnvFogStart;
+        RenderSettings.fogEndDistance = cacheEnvFogEnd;
+        RenderSettings.fogMode = cacheEnvFogMode;
+        Camera cam = CameraHandler.Instance.manager.mainCamera;
+        if (cam != null)
+        {
+            cam.clearFlags = cacheEnvCamClearFlags;
+            cam.backgroundColor = cacheEnvCamBgColor;
+        }
+        //恢复面板原有灯光到各自原状
+        SetTestEnvLightsRestore(true);
+        hasCacheTestEnv = false;
+    }
+
+    /// <summary>卸载测试场景并还原环境（切换场景/选「无场景」档/关面板时调用，幂等）</summary>
+    private void UnloadTestScene()
+    {
+        if (testSceneObj != null)
+        {
+            Destroy(testSceneObj);
+            testSceneObj = null;
+        }
+        testSceneIndex = -1;
+        //释放 manager 持有的天空盒加载句柄(GetSkybox 会覆写占用), 再还原面板环境
+        WorldHandler.Instance.manager.RemoveSkybox();
+        RestoreTestEnv();
+    }
+
+    #endregion
+
     #region 保存写回Mod项目
 
     /// <summary>
@@ -1881,6 +2242,7 @@ public class TestTransformPotionGUI : MonoBehaviour
             if (TransformPotionUITestOverride.TryGetUiShowData(id, out string ovUiShow)) data.uiShowData = ovUiShow;
             if (TransformPotionUITestOverride.TryGetShowData(id, out string ovShow)) data.showData = ovShow;
             if (TransformPotionUITestOverride.TryGetWorldData(id, out string ovWorld)) data.worldData = ovWorld;
+            if (TransformPotionUITestOverride.TryGetShowBrightness(id, out string ovBright)) data.showBrightness = ovBright;
             int modId = (int)(id / ModIdDivisor);
             if (!saveDataByMod.TryGetValue(modId, out Dictionary<long, string> group))
             {
@@ -1978,6 +2340,7 @@ public class TestTransformPotionGUI : MonoBehaviour
         if (!data.uiShowData.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}ui_show_data:{data.uiShowData}";
         if (!data.showData.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}show_data:{data.showData}";
         if (!data.worldData.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}world_data:{data.worldData}";
+        if (!data.showBrightness.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}show_brightness:{data.showBrightness}";
         if (!data.uiShowSkin.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}ui_show_skin:{data.uiShowSkin}";
         if (!data.idleAnim.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}idle_anim:{data.idleAnim}";
         if (!data.uiShowIdleAnim.IsNull()) result += $"{(result.Length > 0 ? "&" : "")}ui_show_idle_anim:{data.uiShowIdleAnim}";

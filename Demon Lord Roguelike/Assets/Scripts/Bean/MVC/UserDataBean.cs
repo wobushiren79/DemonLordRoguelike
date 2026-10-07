@@ -511,6 +511,26 @@ public class UserDataBean : BaseBean
     }
 
     /// <summary>
+    /// 获取生物所在的全部阵容序号(升序;一个生物可同时属于多套阵容)
+    /// </summary>
+    /// <param name="creatureUUId">生物UUID</param>
+    /// <returns>所在阵容序号列表;不在任何阵容时返回空列表</returns>
+    public List<int> GetLineupIndexes(string creatureUUId)
+    {
+        List<int> listLineupIndex = new List<int>();
+        foreach (var item in dicLineupCreature)
+        {
+            if (item.Value != null && item.Value.Contains(creatureUUId))
+            {
+                listLineupIndex.Add(item.Key);
+            }
+        }
+        //升序排列保证显示顺序稳定(字典遍历顺序不作为显示依据)
+        listLineupIndex.Sort();
+        return listLineupIndex;
+    }
+
+    /// <summary>
     /// 检测生物是否上阵(被任意阵容包含)。
     /// 注:GetLinupIndex 用返回 0 表示「未找到」与合法 index 0 存在歧义,故单独提供布尔判定。
     /// </summary>

@@ -235,7 +235,9 @@ public partial class FightCreatureEntity
     // === 魔王专属（FightCreatureEntityForDefenseCore.cs） ===
     public MeshRenderer creatureMPShow;                  // 魔力条（MeshRenderer+Quad 新版圆形 MeshProgressBar 材质）
     public TMPro.TextMeshPro creatureMPText;             // 魔力文本（当前/上限）
-    public void RefreshMPShow();                         // 刷新魔力显示
+    public void RefreshMPShow();                         // 刷新魔力显示（creatureMPShow==null 直接跳过）
+    // 无限蓝模式(IsSkipPutCardMPCost=true 如挑战100勇士)：SetDataForDefenseCore 初始化时整个隐藏 MPShow 节点并清空
+    // creatureMPShow/creatureMPText 引用，蓝条与文本均不显示
 
     // === 魔王专属-深渊馈赠环绕图标(GPU单Mesh)（FightCreatureEntityForDefenseCore.cs） ===
     public void InitAbyssalBlessingOrbit();              // 初始化（SetDataForDefenseCore 调用，仅魔王执行；Find 预制下已配好的 AbyssalBlessingOrbit 节点）

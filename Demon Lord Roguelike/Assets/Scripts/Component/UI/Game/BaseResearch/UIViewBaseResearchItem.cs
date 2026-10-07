@@ -39,8 +39,33 @@ public partial class UIViewBaseResearchItem : BaseUIView
         SetPosition(itemPosition);
         SetState();
         SetLevel();
+        RefreshCanPayFx();
         //设置浮窗信息
         ui_BG_PopupButtonCommonView.SetData(researchInfo, PopupEnum.ResearchInfo);
+    }
+
+    /// <summary>
+    /// 刷新「魔晶足够可购买」高亮提示（图标呼吸脉冲 + 流光扫光，成就可领取提示同款）。
+    /// 条件：未满级（含未解锁）且当前魔晶 >= 下一级价格，与 OnClickForPay 的可购买判定同口径；
+    /// 魔晶变化时由 UIBaseResearch 监听 Backpack_Crystal_Change 统一重刷
+    /// </summary>
+    public void RefreshCanPayFx()
+    {
+        if (ui_Shine == null || ui_Icon_Animator == null)
+            return;
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        var userUnlock = userData.GetUserUnlockData();
+        int level = userUnlock.GetUnlockResearchLevelByResearchInfo(researchInfo);
+        bool canPay = level < researchInfo.level_max
+                   && userData.CheckHasCrystal(researchInfo.GetPayCrystal(level + 1));
+        //图标脉冲: 可购买启用循环缩放, 否则停用并复位缩放(防停在放大态)
+        ui_Icon_Animator.enabled = canPay;
+        if (!canPay)
+        {
+            ui_Icon.transform.localScale = Vector3.one;
+        }
+        //流光覆盖层: 可购买显示扫光, 否则隐藏
+        ui_Shine.gameObject.SetActive(canPay);
     }
 
     /// <summary>

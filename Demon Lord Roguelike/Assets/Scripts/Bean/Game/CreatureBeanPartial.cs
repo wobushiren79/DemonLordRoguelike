@@ -18,6 +18,8 @@ public struct TransformOtherData
     public string showData;
     /// <summary>world_data：世界显示尺寸/偏移「scale;x,y」（可空，x=横向偏移,y=竖向抬升）</summary>
     public string worldData;
+    /// <summary>show_brightness：场景实例调暗系数「(0,1] 浮点」（可空，仅贴图偏亮的 Mod 幻化药带键；UI 的 SkeletonGraphic 不消费）</summary>
+    public string showBrightness;
     /// <summary>ui_show_skin：ui_show 高清展示指定皮肤名（可空，ArkReSpine 单资源多皮肤按皮肤出药时配置；支持「|」分隔多皮肤叠加组合，CherryTaleSpine 组合皮肤药如 Eye_01|Mouth_01）</summary>
     public string uiShowSkin;
     /// <summary>idle_anim：show 骨架替代待机动画名（可空，生成期检测：骨架无标准待机候选时写入首个含 idle 字段动画）</summary>
@@ -547,6 +549,9 @@ public partial class CreatureBean
                 case "world_data":
                     data.worldData = value;
                     break;
+                case "show_brightness":
+                    data.showBrightness = value;
+                    break;
                 case "ui_show_skin":
                     data.uiShowSkin = value;
                     break;
@@ -590,6 +595,37 @@ public partial class CreatureBean
             worldData = overrideWorldData;
 #endif
         return ParseTransformSizeData(worldData, out scale, out pos);
+    }
+
+    /// <summary>
+    /// 获取幻化场景调暗系数（other_data 的 show_brightness 键，(0,1] 浮点）；
+    /// 消费点=CreatureHandler.SetCreatureData 世界空间 SkeletonAnimation 分支 → SpineHandler.ApplySceneDimOverride/ClearSceneDimOverride（仅场景实例调暗，UI 不消费）。
+    /// 键缺失/非法（解析失败、≥1、≤0）时视为「无调暗」，用于清除残留覆盖。
+    /// 编辑器下测试覆盖层(TransformPotionUITestOverride)有值时优先于配置返回(幻化药测试面板调参实时预览用)。
+    /// </summary>
+    /// <param name="brightness">调暗系数（true 时有效，恒 ∈ (0,1)）</param>
+    /// <returns>是否配置了有效调暗系数</returns>
+    public bool GetTransformShowBrightness(out float brightness)
+    {
+        brightness = 1;
+        ItemsInfoBean itemInfo = GetTransformItemInfo();
+        if (itemInfo == null)
+            return false;
+        string showBrightness = ParseTransformOtherData(itemInfo.other_data).showBrightness;
+#if UNITY_EDITOR
+        //测试覆盖层优先(幻化药测试面板亮度调参实时预览用, 打包无此逻辑)
+        if (TransformPotionUITestOverride.TryGetShowBrightness(transformItemId, out string overrideBrightness))
+            showBrightness = overrideBrightness;
+#endif
+        if (string.IsNullOrEmpty(showBrightness))
+            return false;
+        //≥1=无调暗语义视为无键(生成端 avg≤65 不写键); ≤0 非法防御
+        if (!float.TryParse(showBrightness, out brightness) || brightness >= 1 || brightness <= 0)
+        {
+            brightness = 1;
+            return false;
+        }
+        return true;
     }
     #endregion
 

@@ -29,6 +29,8 @@ public partial class UICreatureVat : BaseUIComponent
 
     //退出回调(由各打开入口注入,决定退出时的关闭/跳转逻辑):核心入口返回UIBaseCore;场景容器交互返回UIBaseMain
     public Action actionForExit;
+    //打开时要切换到的容器序号(由场景容器交互入口注入,使用后复位为0;其他入口保持默认0=第一个容器)
+    public int indexVatForOpen;
 
     //进阶BUFF增益item缓存(实时生成、按需复用)
     protected List<UIViewCreatureVatAscendBuffItem> listAscendBuffItem = new List<UIViewCreatureVatAscendBuffItem>();
@@ -79,8 +81,9 @@ public partial class UICreatureVat : BaseUIComponent
         vatCamera = CameraHandler.Instance.SetCreatureVatCamera(int.MaxValue, true);
         //关闭远景
         VolumeHandler.Instance.SetDepthOfFieldActive(false);
-        //设置数据
-        SetCurrentVat(0);
+        //设置数据(切换到注入的目标容器,用后复位为默认0)
+        SetCurrentVat(indexVatForOpen);
+        indexVatForOpen = 0;
         RefreshVatState();
         RefreshVatProgress();
     }
@@ -826,6 +829,8 @@ public partial class UICreatureVat : BaseUIComponent
             creatureState = source.creatureState,
             bodySizeScale = source.bodySizeScale,
             creatureAttribute = source.creatureAttribute,
+            //幻化道具ID一并复制:否则升阶后预览卡丢失幻化形象(卡牌图标经 SetCreatureData 按 transformItemId 整骨替换)
+            transformItemId = source.transformItemId,
             dicSkinData = source.dicSkinData,
             dicEquipItemData = source.dicEquipItemData,
             dicRarityBuff = source.dicRarityBuff,

@@ -429,7 +429,7 @@ public class FightDropCrystalInstanceRenderer
 
     /// <summary>
     /// 每帧渲染(FightHandler.Update)：≤1023 时仅槽集变化帧重灌缓冲、无变化帧(全 Landed 静止)复用旧缓冲一次绘制；超单批上限逐帧重灌分批绘制(极端情况)。
-    /// <para>矩阵由槽内 currentPos 现算填充(只含平移+缩放)；显式不投影不受影(shader 也无 ShadowCaster pass)；无活跃槽不绘制。</para>
+    /// <para>矩阵由槽内 currentPos 现算填充(只含平移+缩放)；投阴影随游戏设置「物品阴影」开关(每帧读一次,改动下帧即生效；shader 有 ShadowCaster pass)，恒不受影；无活跃槽不绘制。</para>
     /// </summary>
     public void RenderAll()
     {
@@ -441,6 +441,9 @@ public class FightDropCrystalInstanceRenderer
             lastFillCount = 0;
             return;
         }
+        //读游戏设置的物品阴影开关(每帧一次,设置界面改动下帧即生效;关=省一遍 ShadowCaster Pass)
+        ShadowCastingMode castMode = GameDataHandler.Instance.manager.GetGameConfig().itemShadow
+            ? ShadowCastingMode.On : ShadowCastingMode.Off;
         if (total <= MaxInstancesPerBatch)
         {
             //单批可容:仅 dirty 帧重灌(恰好装满 1023 也走此处一次绘完,不留尾巴)
@@ -452,7 +455,7 @@ public class FightDropCrystalInstanceRenderer
                 lastFillCount = total;
             }
             if (lastFillCount > 0)
-                Graphics.DrawMeshInstanced(mesh, 0, material, matrixBuffer, lastFillCount, null, ShadowCastingMode.Off, false);
+                Graphics.DrawMeshInstanced(mesh, 0, material, matrixBuffer, lastFillCount, null, castMode, false);
         }
         else
         {
@@ -463,12 +466,12 @@ public class FightDropCrystalInstanceRenderer
                 matrixBuffer[fillCount++] = BuildSlotMatrix(listSlot[i].currentPos);
                 if (fillCount >= MaxInstancesPerBatch)
                 {
-                    Graphics.DrawMeshInstanced(mesh, 0, material, matrixBuffer, fillCount, null, ShadowCastingMode.Off, false);
+                    Graphics.DrawMeshInstanced(mesh, 0, material, matrixBuffer, fillCount, null, castMode, false);
                     fillCount = 0;
                 }
             }
             if (fillCount > 0)
-                Graphics.DrawMeshInstanced(mesh, 0, material, matrixBuffer, fillCount, null, ShadowCastingMode.Off, false);
+                Graphics.DrawMeshInstanced(mesh, 0, material, matrixBuffer, fillCount, null, castMode, false);
         }
     }
     #endregion

@@ -296,6 +296,7 @@ public enum UnlockEnum : long
     PortalRefreshNum = 100300006, //传送门刷新次数(研究等级=可用刷新次数上限,通关世界回满)
     ChallengeHundredShowRate = 100300007, //是魔王就挑战100勇士-出现概率(研究等级×10%=传送门世界刷新为该模式的概率;前置=剑与魔法征服难度2研究100310112)
     InfiniteShowRate = 100300008, //无尽模式-出现概率(基础10%+研究等级×10%,9级满级=100%;前置=任意一个世界无尽已解锁,走pre_data条件AnyWorldInfiniteUnlocked)
+    ChallengeHundredBossRate = 100300009, //真勇者挑战(是魔王就挑战100勇士-BOSS挑战)出现概率(基础10%+研究等级×10%,4级满级=50%;前置=是魔王就挑战100勇士出现概率研究100300007)
 
     GashaponMachine = 100400000,//解锁孕育
     GashaponShowAll = 100400001,//显示所有抽取

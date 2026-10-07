@@ -302,6 +302,38 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 「是魔王就挑战100勇士」BOSS挑战出现概率基础值(百分数10)：总概率=此值+研究等级×CHALLENGE_HUNDRED_BOSS_RATE_PER_LEVEL。
+    /// 集中此处便于统一调整(传送门世界生成与研究气泡文本均引用此值)
+    /// </summary>
+    public const int CHALLENGE_HUNDRED_BOSS_RATE_BASE = 10;
+
+    /// <summary>
+    /// BOSS挑战出现概率每级研究增量(百分数)：4级满级时总概率=10+4×10=50%
+    /// </summary>
+    public const int CHALLENGE_HUNDRED_BOSS_RATE_PER_LEVEL = 10;
+
+    /// <summary>
+    /// 获取「是魔王就挑战100勇士」BOSS挑战出现概率(百分数)
+    /// = CHALLENGE_HUNDRED_BOSS_RATE_BASE + 研究(UnlockEnum.ChallengeHundredBossRate)等级 × CHALLENGE_HUNDRED_BOSS_RATE_PER_LEVEL; 未研究(0级)为固定10%,满级(4级)为50
+    /// 挑战100勇士世界生成抽配置行时先按该概率两段判定是否BOSS挑战, 命中后再在对应挑战类型的行内等概率随机
+    /// </summary>
+    /// <returns>BOSS挑战出现概率百分数(10~50)</returns>
+    public int GetUnlockChallengeHundredBossRate()
+    {
+        return GetChallengeHundredBossRateForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.ChallengeHundredBossRate));
+    }
+
+    /// <summary>
+    /// 获取指定研究等级对应的BOSS挑战出现概率(百分数)：CHALLENGE_HUNDRED_BOSS_RATE_BASE + 等级×CHALLENGE_HUNDRED_BOSS_RATE_PER_LEVEL
+    /// </summary>
+    /// <param name="level">BOSS挑战出现概率研究等级</param>
+    /// <returns>该等级的BOSS挑战出现概率百分数(10~50)</returns>
+    public static int GetChallengeHundredBossRateForLevel(int level)
+    {
+        return CHALLENGE_HUNDRED_BOSS_RATE_BASE + level * CHALLENGE_HUNDRED_BOSS_RATE_PER_LEVEL;
+    }
+
+    /// <summary>
     /// 无尽模式出现概率基础值(百分数10, 即原固定1/10概率)：总概率=此值+研究等级×INFINITE_SHOW_RATE_PER_LEVEL。
     /// 集中此处便于统一调整(传送门世界生成与研究气泡文本均引用此值)
     /// </summary>
@@ -790,14 +822,17 @@ public class UserUnlockBean
     }
 
     /// <summary>
-    /// 获取指定「孕育稀有度概率」研究等级对应的稀有度命中概率(百分数)：GashaponItemBean.rarityBaseRate + 等级
+    /// 获取指定稀有度在「孕育稀有度概率」研究等级下的稀有度命中概率(百分数)：RarityInfo.gashapon_rate(基础概率) + 等级
     /// R/SR/SSR/UR 概率研究共用(扭蛋抽取与展示、研究气泡详情文本均引用此值)
     /// </summary>
+    /// <param name="rarity">稀有度档位(基础概率取自稀有度配置表)</param>
     /// <param name="level">稀有度概率研究等级</param>
     /// <returns>该等级的稀有度命中概率百分数</returns>
-    public static float GetGashaponRarityRateForLevel(int level)
+    public static float GetGashaponRarityRateForLevel(RarityEnum rarity, int level)
     {
-        return GashaponItemBean.rarityBaseRate + level;
+        var rarityInfo = RarityInfoCfg.GetItemData(rarity);
+        float baseRate = rarityInfo != null ? rarityInfo.gashapon_rate : 0f;
+        return baseRate + level;
     }
 
     /// <summary>

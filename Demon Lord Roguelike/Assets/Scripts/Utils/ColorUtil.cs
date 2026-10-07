@@ -63,6 +63,11 @@ public static class ColorUtil
     }
     #endregion
 
+    #region 挑战100勇士-BOSS挑战深紫
+    /// <summary>挑战100勇士-BOSS挑战(困难)传送门BG/悬停气泡底色 深紫(#5B2C6F)</summary>
+    public static readonly Color ChallengeHundredBossPurple = ParseHtmlString("#5B2C6F");
+    #endregion
+
     #region 通用达上限警示红
     /// <summary>达到数量上限时的警示红色HTML串(用于 TMP 富文本 &lt;color&gt; 包裹)</summary>
     public const string LimitFullHtml = "#FF4D4D";

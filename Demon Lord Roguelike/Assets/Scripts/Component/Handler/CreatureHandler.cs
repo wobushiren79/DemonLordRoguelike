@@ -103,6 +103,11 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             }
             skeletonAnimation.transform.localScale = Vector3.one * spineScale;
             skeletonAnimation.transform.localPosition = worldOffset;
+            //场景调暗(仅带 show_brightness 键的幻化药): 有键=按系数覆盖实例材质, 无键=清除残留(对象池复用每次必走此方法, 安全)
+            if (creatureData.GetTransformShowBrightness(out float transformShowBrightness))
+                SpineHandler.Instance.ApplySceneDimOverride(skeletonAnimation, transformShowBrightness);
+            else
+                SpineHandler.Instance.ClearSceneDimOverride(skeletonAnimation);
         }
         //设置SkeletonGraphic
         if (skeletonGraphic != null)
@@ -427,7 +432,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             {
                 rendererTF.position = rendererTF.position.AddZ(-0.1f);
             }
-            else if (targetObj.layer == LayerInfo.CreatureDef_Back || targetObj.layer == LayerInfo.CreatureDef_Back)
+            else if (targetObj.layer == LayerInfo.CreatureDef_Back || targetObj.layer == LayerInfo.CreatureAtt_Back)
             {
                 rendererTF.position = rendererTF.position.AddZ(0.1f);
             }

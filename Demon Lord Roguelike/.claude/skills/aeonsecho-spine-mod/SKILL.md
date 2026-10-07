@@ -45,6 +45,7 @@ MOD项目/Assets/ModResource/Spine/AeonsEcho/
 - 每个变体文件夹内含完整 spine 导出物：`{套装号}_{变体名}_SkeletonData.asset` + `_Atlas.asset` + `.json/.atlas.txt/.png/.mat`
 - **资源名 = SkeletonData 资产文件名（不含扩展名）**，如 `1101_Chess_s01_SkeletonData`；构建器按此名登记 Addressables Address，游戏侧 `SpineHandler.GetSkeletonDataAssetWithMod` 按此名精确匹配（大小写敏感）
 - **ui_show 变体前缀 = `Avator`/`Secretary`/`Elf`/`AVG` 四种**（2026-09-22 起，同规则均走详情UI高清展示=ui_show_res/ui_show_data 键，脚本 `UI_SHOW_PREFIXES` 常量）；其他命名的文件夹不参与幻化药生成
+- **材质 shader 约定（2026-10-04 起）**：图集**普通页**材质统一为 URP 受光 `Universal Render Pipeline/Spine/Sprite`（GUID `9f253724b2d29a3438eeea48277c25cb`，与主项目生物材质同一 shader；MOD 项目经 `com.esotericsoftware.spine.urp-shaders` 包解析，主项目运行时解析到本地拷贝 `Assets/Shaders/Spine-Sprite-URP.shader`），全属性以主项目 `Goblin_Material.mat` 为模板（关键字 `_ALPHAPREMULTIPLY_ON + _FIXED_NORMALS_VIEWSPACE`、`_FixedNormal=(0,0,1,1)`、`_SrcBlend=1/_DstBlend=10`）。**混合页**（`-Multiply`/`-Screen`/`-Additive` 后缀）**保持内置管线 `Spine/Skeleton-PMA-*` 不换**（sprite shader 无 Screen 关键字、Multiply 公式不等价）。**原因**：spine-unity 图集自动生成的材质默认是内置无光照 `Spine/Skeleton`，不吃战斗场景灯光，战斗/基地场景比主项目生物**暗 30~50%**（2026-10-04 OtherSpine 偏暗事故根因，详见记忆 project_spine_mod_unlit_material）。**新增套装入库时自动生成的材质必须批量换成受光 shader 才能构建入包**：以 Goblin_Material.mat 为模板整文件重写（仅替换 m_Name 与 _MainTex guid，保留 .meta）
 
 ## Spine JSON 格式陷阱（2026-09 已修复）
 

@@ -13,6 +13,9 @@ public partial class UIPopupItemInfo : PopupShowCommonView
 
     public override void SetData(object data)
     {
+        //容错：prefab内非激活对象的ui_字段未经编辑器序列化仅靠Awake的AutoLink绑定，SetData先于Awake被调用时(如UIRewardSelect隐藏期自动开首箱)补一次绑定，防属性行模板为null致属性区静默空白
+        if (ui_UIViewPopupItemAttribute == null)
+            AutoLinkUI();
         ItemBean itemData = (ItemBean)data;
         var itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
         //配置缺失(如所属Mod未开启)时名字兜底显示道具ID,其余各Set方法内部均已判空容错

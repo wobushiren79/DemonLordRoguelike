@@ -32,4 +32,4 @@ watched_files:
 - 摄像机操作通过 CameraHandler 调用
 - 支持多摄像机场景管理
 - 屏幕适配考虑不同分辨率
-- 透明排序：启用 cm_Fight 时 `SetTransparencySortForFight()` 设 CustomAxis(世界Z轴)，`HideAllCM()` 内 `ResetTransparencySort()` 还原 Default——仅战斗场景生效，Front 层生物 Spine Z 前移 0.1 的"显示在前"依赖此机制与镜头角度无关
+- 透明排序：`HideAllCM()` 内 `RefreshTransparencySortForCurrentScene()` 按当前场景统一刷新——战斗/基地/终焉议会场景调 `SetTransparencySortForGameScene()` 设 CustomAxis(世界Z轴)，其余场景(主菜单/奖励选择等)调 `ResetTransparencySort()` 还原 Default；场景类型经 `WorldHandler.GetCurrentSceneType()` 反查 `dicCurrentScene` 获得（战斗场景无 ScenePrefabBase 组件，不能靠组件识别）。所有镜头切换路径都先经 `HideAllCM`，故排序始终匹配当前场景；Front 层生物 Spine Z 前移 0.1 的"显示在前"依赖此机制与镜头角度无关

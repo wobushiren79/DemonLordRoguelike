@@ -595,23 +595,26 @@ public enum AttackModeAmbientType
 /// <summary>
 /// 攻击弹道视觉渲染配置：由配置表 visual_data 列解析而来（ambient:flat|sh&cast:0|1&receive:0|1）。
 /// <para>ambient 控制环境光补偿方式：flat=6轴平均均匀光(默认)；sh=方向性球谐环境光(3D立体模型用)。</para>
-/// <para>cast/receive 控制弹体桶的投阴影/接收阴影（Graphics.DrawMeshInstanced 参数），默认关。</para>
+/// <para>cast/receive 控制弹体桶的投阴影/接收阴影（Graphics.DrawMeshInstanced 参数）：实际生效以游戏设置「弹道阴影」GameConfigBean.bulletShadow 为总开关——
+/// 设置开启时所有弹道投阴影，仅显式配置 cast:0 的弹道单独不投；设置关闭时全部不投。接收阴影=设置开启且 receive:1。</para>
 /// </summary>
 public struct AttackModeVisualConfig
 {
     /// <summary>环境光补偿方式（默认 Flat=6轴平均均匀光，与历史一致）</summary>
     public AttackModeAmbientType ambient;
-    /// <summary>是否投阴影（BodyShadowCasting；默认 false=Off）</summary>
+    /// <summary>是否投阴影（仅在 castExplicit 显式配置时有意义：cast:0=全局开启下单独不投，cast:1=与未配置一致）</summary>
     public bool castShadow;
-    /// <summary>是否接收阴影（BodyReceiveShadows；默认 false）</summary>
+    /// <summary>是否显式配置了 cast 键（区分"未配置=跟随全局默认投"与"cast:0=单独不投"）</summary>
+    public bool castExplicit;
+    /// <summary>是否接收阴影（BodyReceiveShadows；默认 false，还需游戏设置弹道阴影开启才生效）</summary>
     public bool receiveShadow;
 
     /// <summary>
-    /// 解析 visual_data 字符串为视觉配置；空串/无效返回默认配置（Flat + 不投/不收阴影）。
+    /// 解析 visual_data 字符串为视觉配置；空串/无效返回默认配置（Flat + cast 未显式配置(跟随游戏设置全局投阴影) + 不收阴影）。
     /// </summary>
     public static AttackModeVisualConfig Parse(string visualData)
     {
-        AttackModeVisualConfig cfg = default;   //Flat + cast:0 + receive:0
+        AttackModeVisualConfig cfg = default;   //Flat + cast 未配置 + receive:0
         if (string.IsNullOrEmpty(visualData))
             return cfg;
         //按 & 拆项，每项以第一个 : 拆 key/value（与 trail_data 一致）
@@ -634,6 +637,7 @@ public struct AttackModeVisualConfig
                     break;
                 case "cast":
                     cfg.castShadow = val == "1";
+                    cfg.castExplicit = true;
                     break;
                 case "receive":
                     cfg.receiveShadow = val == "1";

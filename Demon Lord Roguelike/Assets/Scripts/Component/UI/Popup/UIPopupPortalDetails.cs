@@ -7,6 +7,16 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
     #region 数据
     //奖励道具显示的缓存池(模板 ui_UIViewItem 为池首项, 不足时克隆复用, 多余项隐藏)
     protected List<UIViewItem> listRewardItemPool;
+    //气泡自身底图(根节点Image; 气泡缓存复用, 每次SetData必须显式设置防残留)
+    protected Image imageBG;
+    #endregion
+
+    #region 生命周期
+    public override void Awake()
+    {
+        base.Awake();
+        imageBG = GetComponent<Image>();
+    }
     #endregion
 
     #region 数据设置
@@ -21,6 +31,8 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
         GameWorldInfoRandomBean gameWorldInfoRandom = targetData.Item2;
         //气泡要展示的难度(由调用方传入: 难度详情每个item展示各自难度, 地图传送门item展示当前难度)
         int difficultyLevel = targetData.Item3;
+        //气泡底色: 挑战100勇士-BOSS挑战=深紫, 其余恢复默认白
+        imageBG.color = gameWorldInfoRandom.IsChallengeHundredBossChallenge() ? ColorUtil.ChallengeHundredBossPurple : Color.white;
 
         //征服模式: 按指定难度取该难度预生成的道路/关卡/路径数据(各难度在创建时已全部随出);
         //无尽模式: 道路数/长度同样按难度取预生成值(无关卡数概念, 关卡数行本就隐藏)

@@ -21,6 +21,8 @@ public partial class UIBaseResearch : BaseUIComponent, IRadioGroupCallBack
         base.Awake();
         ui_TitleRadioGroup.SetCallBack(this);
         ui_TitleRadioGroup.SetPosition(0, false);
+        //魔晶变化时重刷所有节点的可购买高亮(成就领奖/议会发放等界面开着期间的入账场景)
+        RegisterEvent(EventsInfo.Backpack_Crystal_Change, RefreshAllCanPayFx);
     }
 
     public override void CloseUI()
@@ -98,6 +100,20 @@ public partial class UIBaseResearch : BaseUIComponent, IRadioGroupCallBack
         {
             ui_Content.anchoredPosition = Vector2.zero;
         }
+    }
+
+    /// <summary>
+    /// 刷新当前页所有节点的「魔晶足够可购买」高亮（魔晶变化事件回调）
+    /// </summary>
+    public void RefreshAllCanPayFx()
+    {
+        listResearchItemView.ForEach((index, itemView) =>
+        {
+            if (itemView.gameObject.activeSelf)
+            {
+                itemView.RefreshCanPayFx();
+            }
+        });
     }
 
     /// <summary>

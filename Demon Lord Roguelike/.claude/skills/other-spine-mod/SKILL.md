@@ -45,6 +45,7 @@ MOD项目/Assets/ModResource/Spine/Other/
 - 同名 spine json = 文件名去 `_SkeletonData.asset` + `.json`，生成脚本读其骨架高校准 show_data/ui_show_data、读 skins 拆皮肤药、读 animations 做 idle 检测
 - **Spine JSON 格式**：全部为真 4.3.26（2026-09-29 全量 104 个 JSON 扫描确认：无旧 linkedmesh、无顶层分离约束数组），主项目 spine-csharp 4.3.39 直接兼容，**无需格式转换**。脚本 scan 已内置格式校验（`check_spine_json_format`），新增资源若出现旧 linkedmesh（skins 内含 `"parent"`）或顶层 `"ik"/"transform"/"path"` 约束数组会告警，须先转换（参照 aeonsecho-spine-mod SKILL「Spine JSON 格式陷阱」节）
 - **贴图 PMA 已确认**（2026-09-29：81 个材质全部 `_StraightAlphaInput: 0`，PNG 抽样透明区纯黑），无需转换。**新增资源入库时必须复查**两项：① PNG 透明区纯黑；② 该图集全部 `*.mat` `_StraightAlphaInput: 0`（详见 browndust-spine-mod SKILL 白边事故记录 / 记忆 project_spine_mod_pma_requirement）
+- **材质 shader 约定（2026-10-04 起）**：图集**普通页**材质统一为 URP 受光 `Universal Render Pipeline/Spine/Sprite`（GUID `9f253724b2d29a3438eeea48277c25cb`，与主项目生物材质同一 shader；MOD 项目经 `com.esotericsoftware.spine.urp-shaders` 包解析，主项目运行时解析到本地拷贝 `Assets/Shaders/Spine-Sprite-URP.shader`），关键字 `_ALPHAPREMULTIPLY_ON + _FIXED_NORMALS_VIEWSPACE`、`_FixedNormal=(0,0,1,1)`、`_SrcBlend=1/_DstBlend=10`——全属性以主项目 `Goblin_Material.mat` 为模板。**混合页**（`-Multiply`/`-Screen`/`-Additive` 后缀）**保持内置管线 `Spine/Skeleton-PMA-*` 不换**（sprite shader 无 Screen 关键字、Multiply 公式不等价）。**原因**：spine-unity 图集导入自动生成的材质默认是内置无光照 `Spine/Skeleton`——不吃战斗场景灯光（森林 Day 平行光 1.5 + 环境光），战斗/基地场景比主项目生物**暗 30~50%**（2026-10-04 偏暗事故根因，详见记忆 project_spine_mod_unlit_material）。**新增资源入库时自动生成的材质必须批量换成受光 shader 才能构建入包**：以 Goblin_Material.mat 为模板整文件重写（仅替换 m_Name 与 _MainTex guid，保留 .meta）
 
 ## 道具生成规则
 
@@ -56,14 +57,16 @@ MOD项目/Assets/ModResource/Spine/Other/
 - **道具自ID**：`18` + `4位目录序号`（0001 起，按目录名自然序分配）+ `2位序号`（01 起，目录内出药顺序）。例：Amelia(0001) → `18000101`；Luna(0032) → `18003201`/`18003202`。**目录序号 scan 重建时按目录名从旧道具表 remark 回收保留**（新增目录取 max+1，不复用已释放号，防存档 id 串目录；`--reset-layout` 会连序号一起重排——仅首次/未发布时使用）
 - **other_data 键值格式**（`&` 拆项、首个 `:` 拆键值，缺省键省略）：
   ```
-  配对药：show_res:Amelia_SkeletonData&show_data:0.8415;0,-120&ui_show_res:Amelia_Avator_SkeletonData&ui_show_data:0.1719;0,0
-  皮肤药：配对药全部键 & ui_show_skin:angry
-  仅基础：show_res:Baolilong_SkeletonData&show_data:4.833;0,-120
+  配对药：show_res:Amelia_SkeletonData&show_data:0.8415;0,-120&ui_show_res:Amelia_Avator_SkeletonData&ui_show_data:0.1719;0,0&show_brightness:0.5801
+  皮肤药：配对药全部键 & ui_show_skin:angry（show_brightness 按同骨架同系数自动带上）
+  仅基础：show_res:Baolilong_SkeletonData&show_data:4.833;0,-120&show_brightness:0.63
   （仅基础药无 ui_show 段键；详情UI回落 show 形象仍消费 ui_show_data——测试面板可手调补上，scan 按资源身份保留，同 world_data 机制，2026-09-30 起）
   仅详情：ui_show_res:Anniboni_Avator_SkeletonData&ui_show_data:0.1388;0,0
+  （仅详情药无 show 段不进场景，**不写 show_brightness**）
   ```
   - `show_res`：默认展示形象资源名（世界/战斗/小卡；可空=仅详情UI幻化）
   - `show_data`：小卡UI尺寸 `scale;x,y`；生成器按 `3159/骨架高` 校准 scale（与 AeonsEchoSpine 同基准），默认位移 `0,-120`
+  - `show_brightness`：**场景调暗系数** `(0,1] 浮点`（仅场景实例调暗，UI 不消费）——**scan 自动生成**：show 骨架图集全页 PNG 有效像素（alpha>25）Rec.601 平均亮度 `avg > 基准65` 才写键（`k=65/avg` 只压不提，round 4；基准 65=主项目生物贴图 Goblin 57.9/Skeleton 69.5/Succubus 67.5 口径，修基地/森林 1.5 白平行光下浅色立绘过曝）；**保留优先**（手调值按资源身份保留，**删键=下次 scan 强制重算**的逃生口；`--reset-layout` 连保留值一起清）；皮肤药与同骨架基础药同系数；PIL 缺失时跳过自动算（保留值仍透传）
   - `ui_show_res` / `ui_show_data`：详情UI高清展示资源名/尺寸（`645/骨架高` 校准，位移 `0,0`）；仅基础药无 Avator 不自动生成 ui_show_data，但详情UI回落 show 形象（`SetCreatureData` 的 isUIShow 分支）时该键**仍被 `SetCreatureUIForDetails` 消费（与有无 ui_show_res 无关）**，测试面板大卡列表/单个预览可手调补上
   - `ui_show_skin`：ui_show 资源内指定皮肤名（仅皮肤药带）
   - `world_data`：世界显示尺寸/偏移（无校准来源默认不生成，测试面板手调；scan 重建按「目录名/资源token」保留）
@@ -88,8 +91,9 @@ MOD项目/Assets/ModResource/Spine/Other/
 | 详情UI尺寸（ui_show_data 键） | `CreatureBeanPartial.GetTransformUIShowData` → `GameUIUtil.SetCreatureUIForDetails`（**消费不看有无 ui_show_res**——仅基础药详情UI回落 show 形象同样生效）；编辑器下测试覆盖层 `TransformPotionUITestOverride` 优先 |
 | 小卡UI尺寸（show_data 键） | `CreatureBeanPartial.GetTransformShowData` → `GameUIUtil.SetCreatureUIForSimple`；覆盖层同优先 |
 | 世界显示尺寸（world_data 键） | `CreatureBeanPartial.GetTransformWorldData` → `CreatureHandler.SetCreatureData`（SkeletonAnimation 分支） |
+| 场景调暗系数（show_brightness 键） | `CreatureBeanPartial.GetTransformShowBrightness` → `CreatureHandler.SetCreatureData`（SkeletonAnimation 分支，world_data 注入同位）→ 游戏层 `SpineHandler.ApplySceneDimOverride`/`ClearSceneDimOverride`：`CustomMaterialOverride` 把场景实例普通页图集材质换成克隆调暗材质（`_COLOR_ADJUST`+`_Brightness`，HSV 只缩 V 不碰 alpha，PMA 安全；混合页 -Multiply/-Screen 跳过；无键/幻原药恢复=按值识别 Remove 清除，对象池安全；**UI SkeletonGraphic 不受影响**；`_COLOR_ADJUST` 变体剥离保险=`Assets/Resources/Materials/SpineSpriteURP_DimDummy.mat`） |
 | 替代待机动画（idle_anim/ui_show_idle_anim 键） | show 段=`GetTransformIdleAnim`→游戏层 `SpineHandler.GetAnimNameAppoint`；ui_show 段=`GetTransformUIShowIdleAnim`→`GameUIUtil.SetCreatureUIForDetails` 三级分支（本 Mod 当前全部骨架命中标准候选，无药带键） |
-| 调参预览+写回 | `TestTransformPotionGUI`（测试模式-卡片测试-Mod幻化药测试面板）：大卡列表/单个预览对**仅基础药（无 Avator）同样可调**（详情UI回落 show 形象，调的是 ui_show_data 键；无键时首次调整基线取卡片图标当前显示值防跳变，2026-09-30 起）；保存按 modId 分组路由——各 Mod 独立 Excel（`GetModItemsExcelRelPath` 约定自动覆盖 OtherSpine）+ `Mods/{modName}/JsonText/ItemsInfo.txt` 两处直补 + 会话内存 |
+| 调参预览+写回 | `TestTransformPotionGUI`（测试模式-卡片测试-Mod幻化药测试面板）：大卡列表/单个预览对**仅基础药（无 Avator）同样可调**（详情UI回落 show 形象，调的是 ui_show_data 键；无键时首次调整基线取卡片图标当前显示值防跳变，2026-09-30 起）；**场景列表支持亮度调参**（Alt+滚轮 或 项下亮度滑动条调 show_brightness，标签显「亮xx%」+滑动条实时数值，「亮原」专用按钮清覆盖回配置键值；「还原」按钮只管 world_data，2026-10-05 起）与**测试场景加载**（下拉选择真实场景 prefab 还原光照：首项基地档（销毁 ScenePrefabForBase 业务组件+白环境光+纯色深底）+ FightSceneCfg 各行变体（天空盒/雾/环境光/Details 显隐），体积雾/景深不还原；卸载/关面板自动还原环境含相机 clearFlags，2026-10-05 起）；保存按 modId 分组路由——各 Mod 独立 Excel（`GetModItemsExcelRelPath` 约定自动覆盖 OtherSpine）+ `Mods/{modName}/JsonText/ItemsInfo.txt` 两处直补 + 会话内存 |
 | Mod 道具/语言合并 | `BaseCfg.GetInitDataForMods` → id 拼接 + `BaseBean.CombineModReferenceIds` |
 | Mod spine 资源加载 | `SpineHandler.GetSkeletonDataAssetWithMod` |
 | Mod 构建工具 | `ModBuildEditorWindow`：下拉自动扫描（产物目录 ∪ `*ModBuilder.cs`），构建方法约定推导 `OtherSpineModBuilder.BuildMod`，生成脚本路径推导 `gen_other_spine_mod.py`——**均按约定自动生效，无需改代码** |
@@ -109,7 +113,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".claude/scripts/run-pyt
 
 **两段式流水线**（脚本 `.claude/scripts/gen_other_spine_mod.py`）：
 
-- `scan`：扫描 Other 资源目录 → 重建/合并 **MOD 项目的两张 Excel**（道具表**全量重建**但 **布局三键手调值按「目录名/资源token」(remark 资源身份)保留**——id 漂移不贴错 + **目录序号按目录名回收保留**；语言表**按 id 合并保留人工改名**）；覆盖前自动备份到 `MOD项目/ExcelBackup/`（滚动复用 .bak.1~3，只留最近 3 份）；**idle 动画检测**（标准候选命中→不生成键；无候选→首个含 idle 动画名写键，扫描结束打印统计）；**Spine JSON 格式校验**（旧 linkedmesh/分离约束数组告警）
+- `scan`：扫描 Other 资源目录 → 重建/合并 **MOD 项目的两张 Excel**（道具表**全量重建**但 **布局三键与 show_brightness 手调值按「目录名/资源token」(remark 资源身份)保留**——id 漂移不贴错 + **目录序号按目录名回收保留**；语言表**按 id 合并保留人工改名**）；覆盖前自动备份到 `MOD项目/ExcelBackup/`（滚动复用 .bak.1~3，只留最近 3 份）；**idle 动画检测**（标准候选命中→不生成键；无候选→首个含 idle 动画名写键，扫描结束打印统计）；**场景调暗键自动生成**（show 骨架图集全页平均亮度 >65 → 写 `show_brightness=65/avg` 只压不提，保留优先、删键强制重算，扫描结束打印写键数+最亮 top10）；**Spine JSON 格式校验**（旧 linkedmesh/分离约束数组告警）
 - `export`：读两张 Excel → 导出 JsonText
 
 产出（写入 MOD 项目，属 Mod 包一部分）：

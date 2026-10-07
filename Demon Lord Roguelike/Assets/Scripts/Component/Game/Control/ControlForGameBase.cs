@@ -514,9 +514,12 @@ public class ControlForGameBase : BaseControl
                 });
                 break;
             case ControlInteractionEnum.VatInteraction://魔物进阶容器(Vat)
+                //定位命中的容器序号:从哪个设施点击E打开,UI就切换到那个vat
+                int indexVat = GetInteractionVatIndex(firstHit.transform);
                 //由场景互动打开: 退出时直接返回场景(UIBaseMain)，不再打开 UIBaseCore
                 UIHandler.Instance.OpenUIAndCloseOther<UICreatureVat>((ui) =>
                 {
+                    ui.indexVatForOpen = indexVat;
                     ui.actionForExit = () => UIHandler.Instance.OpenUIAndCloseOther<UIBaseMain>();
                 });
                 break;
@@ -587,6 +590,28 @@ public class ControlForGameBase : BaseControl
             return ControlInteractionEnum.None;
         }
         return interactionEnum;
+    }
+
+    /// <summary>
+    /// 获取命中进阶容器(Vat)的序号:从交互体向上查找 objBuildingVat 的直接子物体,取其兄弟序号(与 UserAscendBean/UICreatureVat 的容器索引同口径);未找到返回0
+    /// </summary>
+    /// <param name="hitTransform">命中的交互体Transform(VatInteraction)</param>
+    /// <returns>容器序号</returns>
+    protected int GetInteractionVatIndex(Transform hitTransform)
+    {
+        if (hitTransform == null)
+            return 0;
+        var scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForBase>(GameSceneTypeEnum.BaseGaming);
+        if (scenePrefab == null || scenePrefab.objBuildingVat == null)
+            return 0;
+        Transform vatRoot = hitTransform;
+        while (vatRoot != null && vatRoot.parent != scenePrefab.objBuildingVat.transform)
+        {
+            vatRoot = vatRoot.parent;
+        }
+        if (vatRoot == null)
+            return 0;
+        return vatRoot.GetSiblingIndex();
     }
 
     /// <summary>

@@ -70,7 +70,7 @@ ControlForGameFight  - 战斗场景控制：WASD/右键拖拽移镜头、左键�
 - 战斗交互均通过 `GameHandler.manager.GetGameLogic<GameFightLogic>()` 落到战斗逻辑层。
 
 ### 4. 交互枚举（ControlInteractionEnum）
-`None / CoreInteraction / PortalInteraction / DoomCouncilInteraction / DoomCouncilPodium / Councilor / AchievementInteraction / VatInteraction(=8) / JuicerInteraction(=9,魔汁机→UICreatureJuicer,详见 juicer-system)`。交互物体 GameObject 名字即枚举名（带 `_UUID` 后缀的取下划线前段，如 `Councilor_xxx`），`Enum.TryParse` 失败回退 `None`。
+`None / CoreInteraction / PortalInteraction / DoomCouncilInteraction / DoomCouncilPodium / Councilor / AchievementInteraction / VatInteraction(=8，按 E 时经 `GetInteractionVatIndex` 定位命中的容器序号并注入 `UICreatureVat.indexVatForOpen`，从哪个设施打开就切到哪个 vat) / JuicerInteraction(=9,魔汁机→UICreatureJuicer,详见 juicer-system)`。交互物体 GameObject 名字即枚举名（带 `_UUID` 后缀的取下划线前段，如 `Councilor_xxx`），`Enum.TryParse` 失败回退 `None`。
 
 ## 约束与注意
 

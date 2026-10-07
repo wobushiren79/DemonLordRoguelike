@@ -32,4 +32,22 @@ public partial class ItemBean
             return _itemsInfo;
         }
     }
+
+    #region 装备资格
+    /// <summary>
+    /// 判断指定生物是否可装备该道具：在配置级校验(CanEquipItem: 槽位/种族模组/武器类型)之上叠加实例级使用者类型校验(魔王专属仅魔王本体可装备)。
+    /// <para>userType 是生成装备时写入的实例字段(见 RewardSelectBean),配置级 CanEquipItem 拿不到,必须由本方法收口。</para>
+    /// </summary>
+    /// <param name="creatureData">目标生物</param>
+    /// <returns>true=可装备</returns>
+    public bool CanEquipForCreature(CreatureBean creatureData)
+    {
+        if (creatureData == null || creatureData.creatureInfo == null || itemsInfo == null)
+            return false;
+        //魔王专属装备仅魔王本体可装备
+        if (GetUserTypeEnum() == ItemUserTypeEnum.DemonLord && !creatureData.IsDemonLord())
+            return false;
+        return creatureData.creatureInfo.CanEquipItem(itemsInfo);
+    }
+    #endregion
 }

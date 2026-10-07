@@ -197,13 +197,15 @@ equip_items_weapon_type = 0        // 0表示可使用所有武器类型
 
 ### 能否装备的判定规则（CanEquipItem / CanEquipForCreature）
 
-统一入口 `CreatureInfoBean.CanEquipItem(itemInfo)`（对称的 `ItemsInfoBean.CanEquipForCreature(creatureInfo)` 逻辑一致），按顺序做三重校验，全部通过才可装备：
+判定分两层，玩家装备入口必须走实例级：
 
-1. **道具类型匹配**：道具 `ItemTypeEnum` 须在生物 `equip_items_type` 列表内。
-2. **种族模组匹配**：装备 `creature_model_id` 为 0 表示通用装备（任何种族可装）；否则须与生物 `model_id` 相等（如人类不能装备史莱姆专属装备）。
-3. **武器子类型匹配**（仅当道具为武器）：生物 `equip_items_weapon_type` 为 0 表示通配所有武器；否则须与武器 `item_weapon_type` 相等。
+- **配置级** `CreatureInfoBean.CanEquipItem(itemInfo)`（对称的 `ItemsInfoBean.CanEquipForCreature(creatureInfo)` 逻辑一致），按顺序做三重校验，全部通过才可装备：
+  1. **道具类型匹配**：道具 `ItemTypeEnum` 须在生物 `equip_items_type` 列表内。
+  2. **种族模组匹配**：装备 `creature_model_id` 为 0 表示通用装备（任何种族可装）；否则须与生物 `model_id` 相等（如人类不能装备史莱姆专属装备）。
+  3. **武器子类型匹配**（仅当道具为武器）：生物 `equip_items_weapon_type` 为 0 表示通配所有武器；否则须与武器 `item_weapon_type` 相等。
+- **实例级** `ItemBean.CanEquipForCreature(creatureData)`（`ItemBeanPartial` #region 装备资格）：在配置级三重校验之上叠加**使用者类型校验**——`userType == ItemUserTypeEnum.DemonLord`（魔王专属）的装备仅魔王本体（`CreatureBean.IsDemonLord()`）可装备。`userType` 是奖励生成时写入的实例字段（见 RewardSelectBean），配置级校验拿不到，故玩家装备入口统一收口本方法。
 
-> `UIViewItemBackpackList.FilterItems` 与 `UICreatureManager.SetCreatureEquip` 均走此统一入口，故装备类道具的列表展示与装备操作资格判断一致，改判定只需改这两个 Partial。**例外**：FilterItems 额外放行魔汁/幻化药/幻原药（见下两节），非装备类的展示规则不走 CanEquipItem。
+> 玩家装备的两处入口 `UIViewItemBackpackList.FilterItems` 与 `UICreatureManager.SetCreatureEquip` 均走实例级 `ItemBean.CanEquipForCreature`——魔王专属装备在选中非魔王生物时**直接从背包列表隐藏**，装备操作再兜一层校验，两端口径一致；NPC 随机装备/套装池等配置级场景仍走 `CanEquipItem`（NPC 装备 userType 恒为 0 不受影响）。**例外**：FilterItems 额外放行魔汁/幻化药/幻原药（见下两节），非装备类的展示规则不走装备资格判定。
 
 ### NPC 随机装备（装备随机池 + 套装池）
 
@@ -225,7 +227,7 @@ NPC 可按配置在创建时随机穿装备（首用于终焉议会随机议员�
 - **配置行**：excel_items_info id=200001（item_type=11、`num_max=1` **不堆叠**——每个魔汁实例经验不同故不入堆、creature_model_id=0、icon_res=`Item_Juicer_1`——**无图集后缀走默认 Items 图集 AtlasForItems**（该图集按 Textures/Items 文件夹整包，图标 Item_Juicer_1.png 放该目录即自动入内，导入设置 textureType=8 Sprite）、name textId=200001、remark=魔汁(榨汁产物,对魔物使用后增加经验)）。入账走 `userData.AddBackpackItem(itemBean)` 不堆叠重载（每个魔汁是独立 ItemBean）。
 - **使用流程**（魔物管理页 `UICreatureManager`）：`EventForItemBackpackClickSelect` 点击统一进 `UseOrEquipItem(itemData)` 分流——Juice → `UseJuiceItem`（`#region 魔汁使用`）、TransformPotion → `UseTransformPotionItem`、RestorePotion → `UseRestorePotionItem`，其余道具照旧 `SetCreatureEquip`。`UseJuiceItem`：无选中生物/魔王兜底返回（列表已隐藏魔汁）→ `IsMaxLevel()` 满级 Toast 61015「目标已满级，无法使用魔汁」拦截 → `UIHandler.ShowDialogNormal(DialogBean)` 确认框（content = textId 61014「是否对{0}使用魔汁？经验+{1}」格式化生物名+juicerExp）→ 确定回调：`creatureData.levelExp += juicerExp` → `RemoveBackpackItem` → `SaveUserData()` → 三连刷新（`ui_UIViewCreatureCardEquipDetails.SetCardDetails` 经验显示 + `RefreshSacrificeButton` 经验达标点亮献祭按钮 + `InitBackpackItemsData` 列表移除魔汁）。
 - **经验语义**：只累计 levelExp 不自动升级（沿用战斗结算加经验语义，升级仍走献祭 `CanUpLevel`/`UpLevelForSacrifice`）。
-- **列表过滤例外**：`UIViewItemBackpackList.FilterItems` 保留条件 = `creatureInfo.CanEquipItem` 或（`GetItemType()==Juice` 且 `!creatureData.IsDemonLord()`）或 `GetItemType()==TransformPotion` 或 `GetItemType()==RestorePotion`——选中魔王时魔汁在管理页列表隐藏（魔王隐藏等级不吃经验），**两药不带 IsDemonLord 排除**（魔王选中时可见可用）；`UIDialogSelectItem` 传 creatureData=null 走 `AddValidItems` 显示全部配置有效道具。**失效道具统一隐藏**：配置缺失（所属Mod未开启/已删除）的道具在所有分支一律跳过不展示（有上下文分支 `itemInfo==null continue`、无上下文分支 `AddValidItems`），数据保留在存档待 Mod 重开后恢复；`ItemBean.GetItemType()` 对 itemsInfo==null 兜底返回 `(ItemTypeEnum)0` 防排序崩溃，`itemsInfo` getter 查询失败只打一次日志（`_isItemsInfoQueried` 标记防刷屏）。
+- **列表过滤例外**：`UIViewItemBackpackList.FilterItems` 保留条件 = `itemData.CanEquipForCreature(creatureData)`（含魔王专属校验：选中非魔王生物时魔王专属装备直接隐藏）或（`GetItemType()==Juice` 且 `!creatureData.IsDemonLord()`）或 `GetItemType()==TransformPotion` 或 `GetItemType()==RestorePotion`——选中魔王时魔汁在管理页列表隐藏（魔王隐藏等级不吃经验），**两药不带 IsDemonLord 排除**（魔王选中时可见可用）；`UIDialogSelectItem` 传 creatureData=null 走 `AddValidItems` 显示全部配置有效道具。**失效道具统一隐藏**：配置缺失（所属Mod未开启/已删除）的道具在所有分支一律跳过不展示（有上下文分支 `itemInfo==null continue`、无上下文分支 `AddValidItems`），数据保留在存档待 Mod 重开后恢复；`ItemBean.GetItemType()` 对 itemsInfo==null 兜底返回 `(ItemTypeEnum)0` 防排序崩溃，`itemsInfo` getter 查询失败只打一次日志（`_isItemsInfoQueried` 标记防刷屏）。
 - **气泡显示**：`UIPopupItemInfo.SetJuiceExp(itemData, itemInfo)`（SetData 末尾调用）——Juice 类型显示 `ui_JuiceExpText` 并填 textId 61017「经验+{0}」格式化 juicerExp，其余道具隐藏；字段经 AutoLinkUI 按名绑定（prefab Details 节点下 `JuiceExpText`，复制 RarityText 而来、sibling index 1、默认 SetActive(false)），为 null 时容错跳过；魔汁 dicAttribute 为空故属性区自动隐藏，两者互斥不冲突。
 - **相关配置**：LevelInfo 新增 `juicer_exp` 列（long，1~10 级 = 同级升级经验 100%：100/1000/5000/…/10000000；另有 id=0 行 juicer_exp=20=1 级的 20%）；excel_language UIText sheet 新增 61014/61015/61016/61017 四条文本（12 语种），ItemsInfo sheet 新增 id=200001「魔汁/Demon Juice…」。
 

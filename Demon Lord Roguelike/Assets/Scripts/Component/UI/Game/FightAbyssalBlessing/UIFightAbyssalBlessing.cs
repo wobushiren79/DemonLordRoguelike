@@ -33,6 +33,11 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     /// </summary>
     private const long TEXT_ID_REFRESH_EMPTY = 2007;
 
+    /// <summary>
+    /// 跳过确认弹窗的内容文本 UIText id
+    /// </summary>
+    private const long TEXT_ID_SKIP_CONFIRM = 61024;
+
     #endregion
 
     #region 回调
@@ -314,9 +319,21 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     }
 
     /// <summary>
-    /// 点击跳过-所有可见卡片同时收缩消失，动画结束后再触发回调
+    /// 点击跳过-先弹确认弹窗，确认后才执行跳过流程（取消则无事发生）
     /// </summary>
     public void OnClickForSkip()
+    {
+        if (isAnimating) return;
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = TextHandler.Instance.GetTextById(TEXT_ID_SKIP_CONFIRM);
+        dialogData.actionSubmit = (view, data) => ExecuteSkip();
+        UIHandler.Instance.ShowDialogNormal(dialogData);
+    }
+
+    /// <summary>
+    /// 执行跳过-所有可见卡片同时收缩消失，动画结束后再触发回调
+    /// </summary>
+    private void ExecuteSkip()
     {
         if (isAnimating) return;
         isAnimating = true;

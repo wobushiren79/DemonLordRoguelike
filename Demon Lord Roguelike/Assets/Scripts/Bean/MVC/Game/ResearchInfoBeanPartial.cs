@@ -209,12 +209,19 @@ public partial class ResearchInfoBean
         //是魔王就挑战100勇士出现概率 = 等级×10
         if (unlockId == (long)UnlockEnum.ChallengeHundredShowRate)
             return $"{UserUnlockBean.GetChallengeHundredShowRateForLevel(targetLevel)}";
+        //是魔王就挑战100勇士-BOSS挑战出现概率 = 基础10 + 等级×10(满级4级=50)
+        if (unlockId == (long)UnlockEnum.ChallengeHundredBossRate)
+            return $"{UserUnlockBean.GetChallengeHundredBossRateForLevel(targetLevel)}";
         //无尽模式出现概率 = 基础10 + 等级×10(满级9级=100)
         if (unlockId == (long)UnlockEnum.InfiniteShowRate)
             return $"{UserUnlockBean.GetInfiniteShowRateForLevel(targetLevel)}";
-        //孕育稀有度命中概率(R/SR/SSR 三条共用) = rarityBaseRate(10) + 等级
-        if (unlockId == (long)UnlockEnum.GashaponRarityRRate || unlockId == (long)UnlockEnum.GashaponRaritySRRate || unlockId == (long)UnlockEnum.GashaponRaritySSRRate)
-            return $"{UserUnlockBean.GetGashaponRarityRateForLevel(targetLevel)}";
+        //孕育稀有度命中概率 = 稀有度配置基础概率(RarityInfo.gashapon_rate) + 等级(R/SR/SSR 各取本档基础概率)
+        if (unlockId == (long)UnlockEnum.GashaponRarityRRate)
+            return $"{UserUnlockBean.GetGashaponRarityRateForLevel(RarityEnum.R, targetLevel)}";
+        if (unlockId == (long)UnlockEnum.GashaponRaritySRRate)
+            return $"{UserUnlockBean.GetGashaponRarityRateForLevel(RarityEnum.SR, targetLevel)}";
+        if (unlockId == (long)UnlockEnum.GashaponRaritySSRRate)
+            return $"{UserUnlockBean.GetGashaponRarityRateForLevel(RarityEnum.SSR, targetLevel)}";
         //魔汁机投入上限 = juicerCreatureMax + 等级
         if (unlockId == (long)UnlockEnum.JuicerNum)
             return $"{UserUnlockBean.GetJuicerCreatureMaxForLevel(targetLevel)}";

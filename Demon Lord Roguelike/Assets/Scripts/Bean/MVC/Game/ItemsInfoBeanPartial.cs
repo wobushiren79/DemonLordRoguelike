@@ -190,6 +190,7 @@ public partial class ItemsInfoBean
             attackMode.spriteRenderer.material.SetVector("_VertexRotateAxis", Vector3.one);
         }
         bool isShowSprite = false;
+        string showSpriteName = null;
         foreach (var item in dicAttackModeData)
         {
             switch (item.Key)
@@ -207,13 +208,10 @@ public partial class ItemsInfoBean
                         attackMode.spriteRenderer.material.SetFloat("_VertexRotateSpeed", itemVertexRotateSpeed);
                     break;
                 case ItemInfoAttackModeDataEnum.ShowSprite:
-                    var itemShowSprite = item.Value;
                     //记录换图名供 DSP 子桶分桶(FightManager.EnsureAttackModeVisual(attackMode) 用它从图集取 sprite 改子桶材质贴图)
-                    attackMode.visualSpriteName = itemShowSprite;
+                    attackMode.visualSpriteName = item.Value;
+                    showSpriteName = item.Value;
                     isShowSprite = true;
-                    //保留原 spriteRenderer 换图(prefab 渲染通道并行生效；DSP 通道不看 spriteRenderer)
-                    if (attackMode.spriteRenderer != null)
-                        IconHandler.Instance.SetItemIconForAttackMode(itemShowSprite, attackMode.spriteRenderer);
                     break;
                 case ItemInfoAttackModeDataEnum.StartPosition:
                     if (attackMode.gameObject != null)
@@ -223,10 +221,7 @@ public partial class ItemsInfoBean
                     }
                     break;
                 case ItemInfoAttackModeDataEnum.StartSize:
-                    var itemStartSize = float.Parse(item.Value);
-                    attackMode.visualScale = itemStartSize;   //DSP per-instance 缩放
-                    if (attackMode.spriteRenderer != null)
-                        attackMode.spriteRenderer.transform.localScale = Vector3.one * itemStartSize;
+                    attackMode.visualScale = float.Parse(item.Value);   //DSP per-instance 缩放；prefab 通道缩放在下方换图时作 scaleMul 带入
                     break;
                 case ItemInfoAttackModeDataEnum.StartRotate:
                     var itemStartAngle = float.Parse(item.Value);
@@ -237,13 +232,21 @@ public partial class ItemsInfoBean
             }
         }
         //是否有展示精灵 如果没有需要展示？
-        if (!isShowSprite)
+        if (isShowSprite)
+        {
+            //换图统一在最后处理(此时 StartSize 已解析完)：targetSize=0 按原始像素尺寸、PPU 基准补偿由 SetItemIcon 收口，StartSize 作 scaleMul 一次带入(GetSprite 同步回调,无先后覆盖问题)
+            if (attackMode.spriteRenderer != null)
+                IconHandler.Instance.SetItemIcon(showSpriteName, 0, attackMode.spriteRenderer, 0f, 0f, attackMode.visualScale >= 0 ? attackMode.visualScale : 1f);
+        }
+        else
         {
             IconHandler.Instance.GetUnKnowSprite((targetSprite) =>
             {
                 if (attackMode.spriteRenderer != null)
                 {
                     attackMode.spriteRenderer.sprite = targetSprite;
+                    //无换图武器的 StartSize 缩放在此收口(换图武器已由 SetItemIcon 的 scaleMul 带入)
+                    attackMode.spriteRenderer.transform.localScale = Vector3.one * (attackMode.visualScale >= 0 ? attackMode.visualScale : 1f);
                 }
             });
         }

@@ -134,7 +134,7 @@ GashaponRaritySR       = 100402000   GashaponRaritySRRate  = 100402001
 GashaponRaritySSR      = 100403000   GashaponRaritySSRRate = 100403001
 GashaponRarityUR       = 100404000   GashaponRarityURRate  = 100404001
 ```
-稀有度档位由研究系统解锁，`GashaponItemBean.RandomRarity()` 据此决定概率。每档命中率 = **起始 `rarityBaseRate`(public 常量,当前 10%) + 对应 `*Rate` 概率研究等级(每级+1%)**；即解锁档位即有 10% 起始概率，再靠概率研究节点叠加。公式已收口 `UserUnlockBean.GetGashaponRarityRateForLevel(level)`（抽取/展示/研究气泡详情三处共用，2026-10 起）。研究节点 `100401001`/`100402001`/`100403001`(R/SR/SSR 概率+1%) 的 `level_max` 均为 50，故每档最高 10%+50%=60%。
+稀有度档位由研究系统解锁，`GashaponItemBean.RandomRarity()` 据此决定概率。每档命中率 = **稀有度配置表基础概率 `RarityInfo.gashapon_rate`（按档配置：R=25/SR=20/SSR=15，N/UR/L=10，魔王档=0；2026-10 起从写死 10% 改为按档配置） + 对应 `*Rate` 概率研究等级(每级+1%)**；即解锁档位即有该档基础概率，再靠概率研究节点叠加。公式已收口 `UserUnlockBean.GetGashaponRarityRateForLevel(rarity, level)`（抽取/展示/研究气泡详情三处共用，2026-10 起）。研究节点 `100401001`/`100402001`/`100403001`(R/SR/SSR 概率+1%) 的 `level_max` 均为 50，故 R/SR/SSR 满加成分别为 75%/70%/65%。改基础概率改 `excel_rarity_info` 的 `gashapon_rate` 列即可（Bean 字段暂手写于 `RarityInfoBeanPartial` 临时 region，重新生成 Entity 后删除）。
 
 ## 多语言
 
@@ -175,7 +175,7 @@ UIGashaponBreak (BaseUIComponent)     破蛋交互
 
 ### 改抽奖/稀有度逻辑
 改 `GashaponItemBean`（RandomSkill/RandomAttribute/RandomRarity）与 `UnlockEnum.GashaponRarity*` 关联，**不要**改自动生成的 Bean。「按稀有度逐级授予稀有度 BUFF」已收口到 `CreatureBean.RandomRarityBuffForCreate()`（`RandomRarity` 定好稀有度后调用它，测试面板 `UITestBase` 也复用）；单档「按稀有度抽 1 条」再走 `BuffUtil.CreateRandomRarityBuff`，与魔物进阶共用。要改通用规则应改 `BuffUtil` / `RandomRarityBuffForCreate`，而非在 `GashaponItemBean` 内重新内联。
-> 同一套 `GashaponRarity*`/`*Rate` 解锁门控还被**展示用**的 `GashaponItemBean.GetRarityProbabilityList()` 消费（孕育商店项概率弹窗）。概率数值已收口 `UserUnlockBean.GetGashaponRarityRateForLevel(level)`（= `rarityBaseRate` + 研究等级），`RandomRarity`(实际抽取) 与 `GetRarityProbabilityList`(展示概率) 均走该方法，改口径只改一处；改稀有度顺序/门控仍需两处同步，否则弹窗显示与真实概率不符。
+> 同一套 `GashaponRarity*`/`*Rate` 解锁门控还被**展示用**的 `GashaponItemBean.GetRarityProbabilityList()` 消费（孕育商店项概率弹窗）。概率数值已收口 `UserUnlockBean.GetGashaponRarityRateForLevel(rarity, level)`（= `RarityInfo.gashapon_rate` 基础概率 + 研究等级），`RandomRarity`(实际抽取) 与 `GetRarityProbabilityList`(展示概率) 均走该方法，改口径只改一处；改稀有度顺序/门控仍需两处同步，否则弹窗显示与真实概率不符。
 
 ### 改破蛋流程/动画
 改 `GashaponMachineLogic`（AnimForEggBreak / AnimForShowEgg / AnimForEggPunch / ProcessForFocusEgg）。蛋子物体名：`Egg_1`(壳) / `Renderer`(Spine)；破壳粒子走 `scenePrefab.effectEggBreak`（VFX，传 Color1/Color2）；破壳音效在 `AnimForEggBreak` 播 `AudioHandler.Instance.PlaySound(AudioEnum.sound_break_1)`；点击「跳过所有」(`EventForShowAll`) 会先显式再播一次 `sound_break_1`，因为随后逐帧连续破蛋会被 `AudioHandler` 的 0.1s 同音重复保护抑制（否则跳过时听不到破壳声）。**蛋出现（吐蛋）音效**：`AnimForShowEgg` 在蛋跳出（DOJump）时播 `AudioHandler.Instance.PlaySound(AudioEnum.sound_btn_31)`，每个蛋出现各播一次。

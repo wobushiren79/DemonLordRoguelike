@@ -19,9 +19,9 @@ public partial class UIDialogCreatureShow : DialogView
         dialogCreatureShowData = dialogData as DialogCreatureShowBean;
         InitCreature(dialogCreatureShowData.creatureData);
 
-#if UNITY_EDITOR
+//#if UNITY_EDITOR
         InitAnimList();
-#endif
+//#endif
     }
 
     public void InitCreature(CreatureBean creatureData)

@@ -7,6 +7,8 @@ public class UIGameSettingForDisplay : UIGameSettingBase
     protected UIViewGameSettingSelect selectForScreen;
     protected UIViewGameSettingCheckBox checkboxForVSync;
     protected UIViewGameSettingCheckBox checkboxForFrameLock;
+    protected UIViewGameSettingCheckBox checkboxForBulletShadow;
+    protected UIViewGameSettingCheckBox checkboxForItemShadow;
     protected UIViewGameSettingRange rangeForFrame;
     //分辨率选项列表（预设列表 + 拖动窗口产生的自定义分辨率）
     protected List<string> listResolutionData;
@@ -47,6 +49,16 @@ public class UIGameSettingForDisplay : UIGameSettingBase
         string textFrameTitle = TextHandler.Instance.GetTextById(42003);
         rangeForFrame = CreatureItemForRange(textFrameTitle, 30, 120);
         rangeForFrame.SetProgress((float)gameConfig.frames);
+
+        //弹道阴影
+        string textBulletShadowTitle = TextHandler.Instance.GetTextById(42005);
+        checkboxForBulletShadow = CreatureItemForCheckBox(textBulletShadowTitle);
+        checkboxForBulletShadow.SetSelect(gameConfig.bulletShadow);
+
+        //物品阴影(战斗中魔晶掉落物阴影)
+        string textItemShadowTitle = TextHandler.Instance.GetTextById(42006);
+        checkboxForItemShadow = CreatureItemForCheckBox(textItemShadowTitle);
+        checkboxForItemShadow.SetSelect(gameConfig.itemShadow);
     }
 
     public override void ActionForRangeValueChange(UIViewGameSettingRange targetView, float progress)
@@ -85,6 +97,16 @@ public class UIGameSettingForDisplay : UIGameSettingBase
         {
             gameConfig.vsync = isCheck;
             FPSHandler.Instance.SetSyncCount(isCheck ? 1 : 0);
+        }
+        else if (targetView == checkboxForBulletShadow)
+        {
+            //无需即时调用 Handler：弹道渲染器每帧读 GameConfig 判定投/收阴影，下帧即生效
+            gameConfig.bulletShadow = isCheck;
+        }
+        else if (targetView == checkboxForItemShadow)
+        {
+            //同上：魔晶渲染器每帧读 GameConfig，下帧即生效
+            gameConfig.itemShadow = isCheck;
         }
     }
 }

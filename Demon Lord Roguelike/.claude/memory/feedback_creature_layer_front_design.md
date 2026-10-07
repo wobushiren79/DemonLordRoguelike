@@ -16,6 +16,6 @@ metadata:
 **How to apply:**
 - 禁止以"修复索敌失效/打不到"为由扩大搜索 mask（把 Front 层加进 mask）或把生物 layer 改回默认层——那会直接破坏烂泥史莱姆的设计。
 - 涉及 creature_layer / 生物前后显示（渲染排序）的需求时，先认清这套机制的**双重语义**：①移出敌人物理搜索（不被攻击）②Spine Z 前移（显示在前）；只想要"显示在前"而不想影响索敌时，不能复用 Front 层，应走渲染侧方案（sortingOrder 等）。
-- 渲染侧"显示在前"的根治方案已落地（2026-08-03）：**战斗场景相机透明排序改自定义世界 Z 轴**（`CameraManager.SetTransparencySortForFight()`，仅 `SetCameraForControlFight` 启用 cm_Fight 时调用；`HideAllCM` 内 `ResetTransparencySort()` 还原 Default，仅战斗场景生效），使 Z 前移 0.1 与镜头角度无关。注意勿选"全局抬 sortingOrder"方案——它会让 Front 生物压过更前排（小路号）的生物，破坏"前排挡后排"语义。
+- 渲染侧"显示在前"的根治方案已落地（2026-08-03 落地、2026-10-06 扩展范围）：**游戏内场景相机透明排序改自定义世界 Z 轴**（`CameraManager.SetTransparencySortForGameScene()`；`HideAllCM` 内 `RefreshTransparencySortForCurrentScene()` 按当前场景统一刷新——战斗/基地/终焉议会=CustomAxis Z 轴，其余场景还原 Default，场景类型经 `WorldHandler.GetCurrentSceneType()` 反查 `dicCurrentScene`），使 Z 前移 0.1 与镜头角度无关。注意勿选"全局抬 sortingOrder"方案——它会让 Front 生物压过更前排（小路号）的生物，破坏"前排挡后排"语义。
 - `creature_layer_find` 字段（"生物优先级搜寻"）在配置里存在但代码未接线，勿假设它生效。
 - 语义权威文档：[[creature-system]] SKILL「CreatureInfoBean - 生物配置」章节的 creature_layer 说明块。

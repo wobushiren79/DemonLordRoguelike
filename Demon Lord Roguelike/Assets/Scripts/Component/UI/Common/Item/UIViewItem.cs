@@ -51,6 +51,8 @@ public partial class UIViewItem : BaseUIView
         if (itemId <= 0)
         {
             ui_ItemIcon.color = new Color(1, 1, 1, 0.3f);
+            // 重置旋转，防止沿用上一个带 icon_rotate_z 道具留下的角度
+            ui_ItemIcon.transform.eulerAngles = Vector3.zero;
             return;
         }
         IconHandler.Instance.SetItemIcon(itemId, ui_ItemIcon);

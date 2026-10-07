@@ -60,7 +60,7 @@ AICreatureEntity                    # 生物 AI 基类
 
 ### 击退意图（AIIntentAttackCreatureKnockback，位移效果统一机制）
 - **发起入口**：`AIAttackCreatureEntity.StartKnockback(direction, distance)`——击退参数经 `GetIntent` 直接写入击退意图实例（`SetupKnockback`）后 `ChangeIntent`；**击退中再次被击退只刷新参数**（原地续推，不重进意图）。调用先例：`AttackModeShockwaveRing`（深渊馈赠「第六次冲击」，方向固定 `Vector3.right` 沿道路向后推，不带 z 分量防敌人被推离路径）。
-- **推移**：固定 `KnockbackDuration=0.2s` 匀速推完全程（任何击退距离时长一致、推速=距离/时长，计时走 `GetFightDeltaTime` 跟随 2 倍速）；落点 x 钳制：右缘硬钳 `[0.5+路长]`、左缘只防「从道路内被推出左缘」——已在左缘内(x<0.5，直冲魔王阶段)的敌人不往前拉（防击退变"前吸"），自然向右推回道路；播 Idle 动画（被控状态）。
+- **推移**：固定 `KnockbackDuration=0.2s` 匀速推完全程（任何击退距离时长一致、推速=距离/时长，计时走 `GetFightDeltaTime` 跟随 2 倍速）；落点 x 钳制：右缘不钳（可被推出道路右缘外——如刚好在边界的敌人被击退到路外，之后由移动意图沿本道路走回重新进场）、左缘只防「从道路内被推出左缘」——已在左缘内(x<0.5，直冲魔王阶段)的敌人不往前拉（防击退变"前吸"），自然向右推回道路；播 Idle 动画（被控状态）。
 - **结束**：剩余距离走完回 `AttackCreatureIdle`，重新走「闲置→移动→攻击」索敌流程——与防守目标的距离重新判定，不会隔空续打；强制切换本身即打断攻击循环（挥刀被打飞中断）。
 - **死亡**：击退中死亡由 `FightCreatureEntityForAttack` 死亡流程 `ChangeIntent(Dead)` 覆盖，意图无需自处理。
 
@@ -110,7 +110,7 @@ Idle → Move → Attack → Dead
  └──────┘       │ (目标消失)
  └───────────────┘
 ```
-- **进攻生物走进道路才索敌**：敌人出生线 x≈11.5 在道路右缘（`roadMaxX = 0.5 + sceneRoadLength`，与击退意图同口径）之外；`AIIntentAttackCreatureIdle`/`AIIntentAttackCreatureMove` 索敌前均判 `x <= roadMaxX`，**未走进道路时不索敌**——目标锁定魔王核心、沿本道路直行（z 收敛 roadIndex），避免 road 外提前索到防守生物后斜向走位；走进道路后索到目标即切 `AttackCreatureAttack`（原写死的 `attackEnablePosX=10.5` 阈值已并入 roadMaxX 动态口径，征服模式随机路长自适应）。
+- **进攻生物走进道路才索敌**：敌人出生线 x≈11.5 在道路右缘（`roadMaxX = 0.5 + sceneRoadLength`，与冲击波命中过滤同口径）之外；`AIIntentAttackCreatureIdle`/`AIIntentAttackCreatureMove` 索敌前均判 `x <= roadMaxX`，**未走进道路时不索敌**——目标锁定魔王核心、沿本道路直行（z 收敛 roadIndex），避免 road 外提前索到防守生物后斜向走位；走进道路后索到目标即切 `AttackCreatureAttack`（原写死的 `attackEnablePosX=10.5` 阈值已并入 roadMaxX 动态口径，征服模式随机路长自适应）。
 - **进攻生物打魔王（核心）专用路径**：敌人（近战/远程一视同仁）**不会用 AttackMode 攻击魔王**。`AIIntentAttackCreatureMove` 的核心分支持续向魔王推进，当与魔王距离 `< AIIntentAttackCreatureMove.CloseCoreDistance`(0.25) 时切到 `AttackCreatureAttackCore`；该意图固定播放一次攻击动作（`GetAttackAnimTime` 缺省用 0.5s 保底），进意图时播出手挥击音（`sound_knife_miss_3`，与近战攻击模式主流 sound_start=100003 一致），出手时对魔王播出血特效+击中音效（`sound_hit_1`/`sound_hit_3` 随机，PlaySound 0.1s 同音去重防多单位叠音）并直接 `coreCreature.SetCreatureDead()` 让魔王死亡（不经任何 AttackMode，故音效不走配置表的 sound_start/sound_hit、由本链路硬编码播放），随后核心走 `DefenseCoreCreatureDead` 死亡意图，死亡结束事件驱动 `GameFightLogic.CheckGameEnd()` 判定战斗失败、游戏结束。原因：远程弹道靠 layer 掩码只检测 `CreatureDef` 层，而魔王核心在默认层 layer0，弹道本就打不到；近战原本直接结算能打死核心——现统一改为"靠近即固定处决"，让近远程行为一致。
   - **多单位并发**：允许多个进攻生物同时靠近并各自播攻击动作，但"魔王出血死亡"全局只结算一次——`KillDefenseCore` 内 `IsDead()` 守卫拦截同帧/后续单位的重复致死；魔王已被他人处决时本单位直接回 `AttackCreatureIdle`，不空转、不重复播出血/结束游戏。
 

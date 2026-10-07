@@ -9,7 +9,7 @@ public class AIIntentAttackCreatureMove : AIBaseIntent
     public FightCreatureBean fightCreatureData;
     public float timeUpdateForFindTarget = 0;
     public float timeUpdateForFindTargetCD = 0;
-    /// <summary>道路右缘X(=0.5+路长，与击退意图 roadMaxX 同口径)：自身x大于此值说明还没走进道路，不索敌、沿本道路直行</summary>
+    /// <summary>道路右缘X(=0.5+路长)：自身x大于此值说明还没走进道路，不索敌、沿本道路直行</summary>
     public float roadMaxX = 10.5f;
     /// <summary>攻击魔王的靠近距离阈值：与魔王距离小于此值时固定触发一次攻击并让魔王死亡</summary>
     public const float CloseCoreDistance = 0.25f;

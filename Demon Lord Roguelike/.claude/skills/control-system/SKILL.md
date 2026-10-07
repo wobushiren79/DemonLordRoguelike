@@ -86,7 +86,7 @@ GameControlHandler.Instance.manager.controlForGameBase.EnabledControl(false);
 | DoomCouncilPodium | `DoomCouncilLogic.InteractPodium()`（讲台） |
 | Councilor | `DoomCouncilLogic.InteractCouncilor(go)`（议员） |
 | AchievementInteraction | 打开 `UIAchievement`（退出直接回 `UIBaseMain`） |
-| VatInteraction | 打开 `UICreatureVat`（魔物进阶容器，退出直接回 `UIBaseMain`；枚举值=8跳过7，因提示文本 textId=2000+值=2008，避开2007已占用） |
+| VatInteraction | 打开 `UICreatureVat`（魔物进阶容器，退出直接回 `UIBaseMain`；**从哪个设施按 E 就切到哪个 vat**——`GetInteractionVatIndex` 从命中的 `VatInteraction` 交互体向上找 `objBuildingVat` 直接子物体取 `GetSiblingIndex()`，注入 `ui.indexVatForOpen`，UI 在 `OpenUI` 用该序号 `SetCurrentVat` 后复位 0；枚举值=8跳过7，因提示文本 textId=2000+值=2008，避开2007已占用） |
 | JuicerInteraction | 打开 `UICreatureJuicer`（魔汁机/魔物回收，退出直接回 `UIBaseMain`；枚举值=9，提示文本 textId=2009；交互碰撞体命名 `JuicerInteraction`。详见 juicer-system Skill） |
 
 > 交互物体 GameObject 名字即枚举名；带 `_UUID` 后缀的（如 `Councilor_xxx`）只取下划线前段；`Enum.TryParse` 失败回退 `None`。

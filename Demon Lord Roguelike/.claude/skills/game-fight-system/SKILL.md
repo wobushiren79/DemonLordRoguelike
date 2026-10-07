@@ -262,6 +262,8 @@ public void ChangeMP(float changeMP, out float leftMP, out float changeMPReal); 
 //   放置成功后播全局单例粒子：魔王处 EffectHandler.ShowCreaturePlaceEffect(effectManaId,pos)(消耗魔力 EffectInfo id=1000001) + 生成位置 ShowCreaturePlaceEffect(effectCreatureShowId,pos)(魔物登场 id=1100001)，再播 sound_btn_19
 // 显示链路：魔王预制(FightCreature_DefCore_1)下 MPShow(MeshRenderer+Quad+Mat_Creature_Mana_1，新版 FrameWork/URP/MeshProgressBar 圆形进度材质，RefreshMPShow 里 SetFloat("_Progress",MP/MPMax) 单一进度、无护盾层)
 //   + MPShow/MPText(TextMeshPro 显示"100/100"格式)；注意 MPShow 已不再与防守生物 LifeShow 同款材质
+//   无限蓝模式(IsSkipPutCardMPCost=true 如挑战100勇士)：SetDataForDefenseCore 初始化时整个隐藏 MPShow 节点并清空
+//   creatureMPShow/creatureMPText 引用，RefreshMPShow 因 creatureMPShow==null 直接跳过(每帧零开销)，蓝条与文本均不显示
 // 渲染层级：MPText 用 Overlay 着色器材质(MatTMP_MPTextOverlay，TMP_SDF Overlay：ZTest Always + Overlay队列)，
 //   不做深度测试，保证魔力文本始终画在不透明3D地面之上。
 //   注意：标准 TMP_SDF 的 ZTest=LEqual 会被地面写入的深度缓冲遮挡，单靠 MeshRenderer.sortingOrder 压不过不透明地面（深度测试与排序无关）；
@@ -393,7 +395,7 @@ public partial class UIFightMain : BaseUIComponent
 
 ### 掉落水晶
 
-> 魔晶渲染：`FightManager.fightDropCrystalInstanceRenderer`（DSP 式 GPU Instancing 批量渲染器，与弹道/飘字同思路）每颗魔晶=纯数据槽（零 GameObject/零碰撞体/零 DOTween，旧 GameObject 模式已删除），掉落/拾取抛物线 CPU 参数化复刻旧 DOJump，待机浮动与 billboard 朝向在 shader（`Game/Fight/DropCrystalInstanced1`，永远面向摄像头）；`FightHandler.Update` 每帧 `Update()`+`RenderAll()` 多批绘制（满 1023 即绘不设上限）。**机制细节见 game-fight-core agent**。
+> 魔晶渲染：`FightManager.fightDropCrystalInstanceRenderer`（DSP 式 GPU Instancing 批量渲染器，与弹道/飘字同思路）每颗魔晶=纯数据槽（零 GameObject/零碰撞体/零 DOTween，旧 GameObject 模式已删除），掉落/拾取抛物线 CPU 参数化复刻旧 DOJump，待机浮动与 billboard 朝向在 shader（`Game/Fight/DropCrystalInstanced1`，永远面向摄像头）；`FightHandler.Update` 每帧 `Update()`+`RenderAll()` 多批绘制（满 1023 即绘不设上限）；投阴影随游戏设置「物品阴影」开关（`GameConfigBean.itemShadow` 默认开，每帧读取；ShadowCaster pass 以光源轴展开 billboard）。**机制细节见 game-fight-core agent**。
 
 ```csharp
 // 创建掉落

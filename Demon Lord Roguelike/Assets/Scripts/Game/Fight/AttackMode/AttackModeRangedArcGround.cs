@@ -10,7 +10,8 @@ using UnityEngine;
 /// （伤害=投掷瞬间魔王ATK×BUFF trigger_value 快照，不暴击、不递减——多片火焰叠加对同一目标多次跳伤），满5秒自毁。</para>
 /// <para>视觉：飞行段 DSP 批量渲染火瓶贴图（visual_name）并自旋（弹体自旋 -720°/s，绕 -Z 轴）；到达燃烧后 visualBucketKey 置空隐藏 DSP 弹体，
 /// 改由击中粒子ID(effect_hit=1800001) 走 EffectHandler.ShowEnduringSingletonEffect 播放全局单例地面火焰粒子（粒子时长与燃烧时长同步）。</para>
-/// <para>音效：发射音走配置 sound_start；落地切燃烧瞬间播放 sound_water_4（PlaySound 0.1s 同音去重，同帧多瓶只播一声）。</para>
+/// <para>音效：发射音走配置 sound_start；落地切燃烧瞬间播放 sound_water_4（PlaySound 0.1s 同音去重，同帧多瓶只播一声）；
+/// 火焰跳伤命中音走通用 sound_hit 配置（420006=sound_hit_6，记入受击数据由受击侧播放，多片火焰同帧跳伤经 0.1s 同音去重只播一声）。</para>
 /// <para>纯数据发射路径：由 BuffEntityPeriodicAttackFireBottle 创建，伤害/起终点由 BUFF 侧注入；无 prefab/武器视觉。</para>
 /// </summary>
 public class AttackModeRangedArcGround : AttackModeRangedArc

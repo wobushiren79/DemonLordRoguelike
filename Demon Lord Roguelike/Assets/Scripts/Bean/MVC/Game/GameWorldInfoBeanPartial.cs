@@ -68,7 +68,9 @@ public partial class GameWorldInfoRandomBean
         if (!existChallengeHundred && challengeHundredShowRate > 0 && UnityEngine.Random.Range(0, 100) < challengeHundredShowRate)
         {
             int unlockDifficultyMax = Mathf.Max(1, UserUnlock.GetUnlockGameWorldConquerDifficultyLevel(worldId));
-            FightTypeChallengeHundredInfoBean challengeHundredInfo = FightTypeChallengeHundredInfoCfg.GetRandomRow(unlockDifficultyMax);
+            //两段抽取: 先按BOSS挑战出现概率(基础10%+研究每级+10%,满级50%)判定普通/BOSS, 再在命中类型的配置行内等概率随机
+            int challengeHundredBossRate = UserUnlock.GetUnlockChallengeHundredBossRate();
+            FightTypeChallengeHundredInfoBean challengeHundredInfo = FightTypeChallengeHundredInfoCfg.GetRandomRow(unlockDifficultyMax, challengeHundredBossRate);
             if (challengeHundredInfo != null)
             {
                 gameFightType = GameFightTypeEnum.ChallengeHundred;
@@ -337,6 +339,18 @@ public partial class GameWorldInfoRandomBean
             rewardUnlockSignChallengeHundred = currentUnlockSign;
         }
         return listRewardChallengeHundred;
+    }
+
+    /// <summary>
+    /// 是否为挑战100勇士-BOSS挑战(困难): 该模式且冻结配置行 challenge_type==1;
+    /// 用于传送门BG/悬停气泡的深紫底色(ColorUtil.ChallengeHundredBossPurple)
+    /// </summary>
+    public bool IsChallengeHundredBossChallenge()
+    {
+        if (gameFightType != GameFightTypeEnum.ChallengeHundred)
+            return false;
+        var challengeHundredInfo = FightTypeChallengeHundredInfoCfg.GetItemData(challengeHundredRowId);
+        return challengeHundredInfo != null && challengeHundredInfo.IsBossChallenge();
     }
 }
 

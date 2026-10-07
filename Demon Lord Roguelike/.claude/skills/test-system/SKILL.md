@@ -28,7 +28,7 @@ LauncherTest                    - 测试启动器，初始化测试数据并提�
     ├── UITestBase              - GM工具面板(F12, 预制体版)
     ├── TestGameMasterGUI       - GM工具面板(F11, 纯IMGUI代码版, 不依赖预制; 含Mod道具区)
     ├── TestCreatureCardGUI     - 卡片编辑器(稀有度/等级/生物/NPC/颜色 + 图标/模型尺寸校准, 纯IMGUI代码版, 不依赖预制)
-    ├── TestTransformPotionGUI  - Mod幻化药测试(四页签: 单个预览/小卡列表/大卡列表/场景列表, 分页网格批量展示+悬停滚轮缩放/拖拽位置+一键保存全部修改回Mod, 纯IMGUI代码版, 不依赖预制)
+    ├── TestTransformPotionGUI  - Mod幻化药测试(四页签: 单个预览/小卡列表/大卡列表/场景列表, 分页网格批量展示+悬停滚轮缩放/拖拽位置+场景列表Alt+滚轮或滑动条调亮度(show_brightness,亮原按钮回配置值)+测试场景下拉加载(基地+FightSceneCfg各行真实场景光照预览)+一键保存全部修改回Mod, 纯IMGUI代码版, 不依赖预制; 键值细节见 other-spine-mod skill)
     └── UIBaseResearchTest      - 研究节点坐标配置
 ```
 
@@ -438,7 +438,7 @@ RefreshCards(): new CreatureBean(creatureId/npcInfo) → 覆写 rarity/level →
 - **为什么不做成编辑器窗口**：卡片 `SetData` 链路依赖运行时单例（TextHandler 多语言/IconHandler 图标纹理/CreatureHandler+SpineHandler Spine 图标/GameDataHandler/BuffHandler 属性管线），编辑模式 `BaseSingletonMonoBehaviour.Instance` 会 `new GameObject` 进当前场景造成污染（同 NpcCreateEditorWindow 安全铁律），且卡片图标是 Spine SkeletonGraphic 走运行时加载链——故真实卡片只能在 Play 模式显示。
 - **自定义颜色（勾选后覆盖配置色实时预览）**：主板色(支持渐变) `GameUIUtil.SetGradientColor` 到小卡 `ui_CardBgBorad` + 大卡 `ui_CardBgBoard`/`ui_CardSceneBg`；副板色到小卡 `ui_IconContent` + 大卡 `ui_CardRate`；等级色直设两者 `ui_LevelText.color`（均为 public 字段，无需改卡片视图代码）。每个颜色经 `ColorEditState`（颜色值+RGB/Hex文本框双向同步：滑条/调色盘/读配置→`SetColor` 全同步，RGB 文本输入→`ApplyRgbInput` 同步 Hex 保留原文，Hex 输入→`ApplyHexInput` 同步 RGB 保留原文）支持四种编辑方式：RGB 滑条 + RGB 数值输入(0~255) + Hex 输入 + 16 色调色盘点选（预设色与 NpcCreateEditorWindow 皮肤调色盘同一套，当前色块显示✔）。
 - **变更检测**：数据指纹 `ComputeDataKey()`(来源/id/稀有度/等级) 变更才重建生物；颜色/缩放/校准变更仅轻量覆盖，不重建 Spine 防拖拽滑条时反复加载骨骼。
-- **图标/模型尺寸校准**（原 UITestCard「显示卡片」并入）：`FloatEditState`（值+文本框双向同步，滑条拖动强制同步文本框、文本输入合法即应用，同 `ColorEditState` 模式）调小卡/大卡 `ui_Icon` 的 `localScale`/`rectTransform.anchoredPosition` 与场景模型 `size_spine`（`ApplyIconCalibration` 应用到卡片图标与目标模型，场景实际缩放=size_spine×体型倍率）；保存从**实际显示值**取数写回 `excel_creature_model[生物模型信息].xlsx`（CreatureModel sheet）的 `ui_data_s`/`ui_data_b`/`size_spine` + `ExcelToJsonItem` + 反射清 `CreatureModelInfoCfg` 缓存立即生效。注意与旧 UITestCard 的口径差异：`size_spine` 只存模型倍率因子（旧版存的是含体型倍率的总缩放，普通生物体型恒 1 两者等价，NPC 新口径更正确）。
+- **图标/模型尺寸校准**（原 UITestCard「显示卡片」并入）：`FloatEditState`（值+文本框双向同步，滑条拖动强制同步文本框、文本输入合法即应用，同 `ColorEditState` 模式）调小卡/大卡 `ui_Icon` 的 `localScale`/`rectTransform.anchoredPosition` 与场景模型 `size_spine`（`ApplyIconCalibration` 应用到卡片图标与目标模型，场景实际缩放=size_spine×体型倍率）；保存从**实际显示值**取数写回 `excel_creature_model[生物模型信息].xlsx`（CreatureModel sheet）的 `ui_data_s`/`ui_data_b`/`size_spine` + `ExcelToJsonItem` + 反射清 `CreatureModelCfg` 缓存立即生效（**注意是 `CreatureModelCfg`[尺寸表 fileName=CreatureModel]，不是名字相近的 `CreatureModelInfoCfg`[部件资源表 fileName=CreatureModelInfo]，清错缓存会导致保存后显示"还原"**；写盘有 try/catch 兜底，xlsx 被 Excel/WPS 占用时面板红字提示而非静默失败）。注意与旧 UITestCard 的口径差异：`size_spine` 只存模型倍率因子（旧版存的是含体型倍率的总缩放，普通生物体型恒 1 两者等价，NPC 新口径更正确）。
 - **保存颜色到配置表**（`#if UNITY_EDITOR`）：`ExcelUtil.SetExcelData` 写回当前稀有度行 `ui_board_color`/`ui_board_other_color`（`excel_rarity_info[稀有度].xlsx`，RarityInfo sheet）与当前等级行 `level_color`（`excel_level_info[等级信息].xlsx`，LevelInfo sheet，仅 level>=1）→ `ExcelUtil.ExcelToJsonItem` 再生 JSON → 反射清 Cfg 的 `dicData`/`arrayData` 静态缓存立即生效（运行时程序集无法引用编辑器程序集的 `GameTestEditor.ClearCfgBaseStaticCache`，面板内就地反射实现）。
 - **0 级无等级色配置**：`LevelInfoCfg.GetLevelColor(0)` 固定白色，等级色编辑器在 level=0 时禁用并提示。
 

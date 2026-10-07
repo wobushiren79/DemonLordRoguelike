@@ -32,6 +32,7 @@ UIBaseResearch (研究主界面)
     ├─► UIViewBaseResearchItem (单节点 View)
     │     ├─ SetState  → 已解锁/未解锁/已满级 三态切换图标与色调
     │     ├─ SetLevel  → 显示研究等级 (1/levelMax 时隐藏)
+    │     ├─ RefreshCanPayFx → 「魔晶足够可购买」高亮(图标脉冲+流光)
     │     ├─ OnClickForPay → 弹出确认 → 扣水晶 → AddUnlock → SaveUserData → 解锁动画
     │     └─ ui_BG_PopupButtonCommonView → 悬停弹 UIPopupResearchInfo
     │
@@ -256,6 +257,7 @@ public enum UnlockEnum : long
     PortalRefreshNum = 100300006,        // 传送门刷新次数(研究等级=可用刷新次数上限,通关回满,level_max=10)
     ChallengeHundredShowRate = 100300007, // 是魔王就挑战100勇士出现概率(研究等级×10=传送门世界刷为该模式的概率百分数0~100;前置=剑与魔法征服难度2研究100310112,同世界分支;详情 details=900000022 含{Value}占位,气泡拼接填待解锁级概率)
     InfiniteShowRate = 100300008,        // 无尽模式出现概率(基础10+研究等级×10=概率百分数,9级满级=100;前置=pre_data条件 AnyWorldInfiniteUnlocked 任意世界无尽已解锁,不走pre_unlock_ids;详情复用 details=900000022)
+    ChallengeHundredBossRate = 100300009, // 真勇者挑战(挑战100勇士-BOSS挑战)出现概率(基础10+研究等级×10=概率百分数,4级满级=50;前置=是魔王就挑战100勇士出现概率研究100300007,pre_data留空;详情复用 details=900000022)
     GashaponMachine = 100400000,       // 解锁孕育
     GashaponRarityR = 100401000,       // 稀有度R
     GashaponRarityRRate = 100401001,   // 稀有度R +1%
@@ -314,7 +316,7 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 
 `ChallengeHundredShowRate`（unlock_id **100300007**，`research_type=4` 世界节点，`icon_res=ui_research_9`，`level_max=10`，`position(-160,-160)` 与难度链同列、位于前置 `100310112`（剑与魔法征服难度2研究）正下方，`pre_unlock_ids="100310112"`——同分支前置，连线正常绘制）——研究等级 ×10 = 传送门世界刷新为「是魔王就挑战100勇士」模式的概率（百分数 0~100，未解锁=0，满级 100）。
 
-- **概率型研究消费点先例**（仿扭蛋概率研究）：消费不在 UI 门控，而在 `GameWorldInfoRandomBean.SetGameFightTypeRandom`——每次生成传送门世界时先按该概率判定，命中则用 `FightTypeChallengeHundredInfoCfg.GetRandomRow(当前世界最高已解锁难度)` 抽配置行生成为挑战100勇士世界（**所有已解锁世界都可能刷出**）；命中但当前世界最高已解锁难度无匹配配置行时落回原征服/无尽随机。数值读取 `UserUnlockBean.GetUnlockChallengeHundredShowRate()`（=研究等级×10）。
+- **概率型研究消费点先例**（仿扭蛋概率研究）：消费不在 UI 门控，而在 `GameWorldInfoRandomBean.SetGameFightTypeRandom`——每次生成传送门世界时先按该概率判定，命中则抽配置行生成为挑战100勇士世界（**所有已解锁世界都可能刷出**）；抽行为**两段判定**：先按 BOSS 挑战出现概率（`GetUnlockChallengeHundredBossRate()`，基础 10%+研究 `ChallengeHundredBossRate`(100300009) 等级×10%，满级 50%，详见下文「真勇者挑战」节）判定普通/BOSS，再在命中类型行内等概率随机（`FightTypeChallengeHundredInfoCfg.GetRandomRow(当前世界最高已解锁难度, bossRate)`）；命中但当前世界最高已解锁难度无匹配配置行时落回原征服/无尽随机。数值读取 `UserUnlockBean.GetUnlockChallengeHundredShowRate()`（=研究等级×10）。
 - **气泡按级标概率**：名字十二语言保持原名「是魔王就挑战100勇士」，概率详情经研究表 `details[language]` 列=900000022「（概率{Value}%）」（cn/tw/jp 全角括号、其余半角带前导空格，12 语言全翻译），`GetDetailsLanguageWithLevelDetail` 按 待解锁等级=min(当前+1,满级) 填概率拼在名字后（走 `UserUnlockBean.GetChallengeHundredShowRateForLevel(level)`=等级×`CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL`(10)；details 机制详见「研究配置 Bean 扩展方法」节，22 个 level_max>1 节点详情语言条目占号段 900000001~900000022）。
 - **落表**同其他节点：`excel_research_info`(id=100300007, `research_type=4`, `pay_crystal` 十级独立阶梯 `100,200,400,800,1500,2500,4000,6000,9000,15000`, `pre_data` 留空, `name`=同id, `details[language]`=900000022, 备注「是魔王就挑战100勇士-出现概率+10%」) + `excel_unlock_info`(id=100300007, `unlock_type=0`, 备注「是魔王就挑战100勇士出现概率」) + 多语言 `excel_language` 的 `ResearchInfo` 工作表(id=100300007 名字**全语言统一填原名「是魔王就挑战100勇士」**——该模式翻译统一用原名；id=900000022 为概率详情行)。
 - 挑战100勇士模式本身的战斗配置表/Bean/流程见 [`portal-system`](../portal-system/SKILL.md) / [`game-fight-system`](../game-fight-system/SKILL.md) 等文档，本 Skill 仅覆盖「研究→出现概率」这一面。
@@ -327,6 +329,14 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 - **消费点**与 100勇士同款：`GameWorldInfoRandomBean.SetGameFightTypeRandom` 无尽分支 `Random.Range(0,100) < UserUnlockBean.GetUnlockInfiniteShowRate()`（= `INFINITE_SHOW_RATE_BASE`(10) + 等级×`INFINITE_SHOW_RATE_PER_LEVEL`(10)）；前提仍是该世界 `unlock_id_infinite` 已解锁。
 - **气泡按级标概率**：详情**复用** details=900000022「（概率{Value}%）」，公式登记 `GetLevelDetailValueString` → `UserUnlockBean.GetInfiniteShowRateForLevel(level)`（1 级=20…9 级=100）。
 - **落表**：`excel_research_info`(id=100300008, `research_type=4`, `level_max=9`, `pay_crystal` 九档 `100,200,400,800,1500,2500,4000,6000,9000`, `pre_data=AnyWorldInfiniteUnlocked`, `name`=同id, `details[language]`=900000022, 备注「无尽模式-出现概率+10%/级」) + `excel_unlock_info`(id=100300008, `unlock_type=0`, 备注「无尽模式出现概率」) + 多语言 `excel_language` ResearchInfo(id=100300008, cn「无尽涌现」, 其余语言暂中文占位)。
+
+### 世界分支(1003 段) — 真勇者挑战（挑战100勇士BOSS挑战）出现概率（两段抽行）
+
+`ChallengeHundredBossRate`（unlock_id **100300009**，研究名「真勇者挑战」，`research_type=4` 世界节点，`icon_res=ui_research_9`（沿用100勇士出现概率节点图标），`level_max=4`，`position(-480,-160)` 无尽链列空位、与前置节点 (-160,-160) 水平连线，`pre_unlock_ids="100300007"` 前置=是魔王就挑战100勇士出现概率研究，`pre_data` **留空**）——概率 = **基础 10% + 研究等级 ×10%**（百分数，未研究 0 级=10%，4 级满级=50%）。
+
+- **消费点（两段抽行）**：`GameWorldInfoRandomBean.SetGameFightTypeRandom` 挑战100勇士分支命中后，抽配置行改为**先按该概率判定普通/BOSS**（`FightTypeChallengeHundredInfoCfg.GetRandomRow(unlockDifficultyMax, bossRate)`：命中在 BOSS 行(challenge_type==1)内等概率随机、未命中在普通行内等概率随机；命中类型无匹配行落回另一类型，全无匹配返回 null 落回原随机），替代旧的「全部匹配行等概率随机」（旧逻辑 BOSS 率随行数分布漂移，约 37%~60%）。数值读取 `UserUnlockBean.GetUnlockChallengeHundredBossRate()`（= `CHALLENGE_HUNDRED_BOSS_RATE_BASE`(10) + 等级×`CHALLENGE_HUNDRED_BOSS_RATE_PER_LEVEL`(10)）。
+- **气泡按级标概率**：详情**复用** details=900000022「（概率{Value}%）」，公式登记 `GetLevelDetailValueString` → `UserUnlockBean.GetChallengeHundredBossRateForLevel(level)`（0 级=10…4 级=50）。
+- **落表**：`excel_research_info`(id=100300009, `research_type=4`, `level_max=4`, `pay_crystal` 四档 `100,200,400,800`, `pre_unlock_ids="100300007"`, `pre_data` 留空, `name`=同id, `details[language]`=900000022, 备注「真勇者挑战(挑战100勇士-BOSS挑战)出现概率+10%/级(基础10%,满级50%)」) + `excel_unlock_info`(id=100300009, `unlock_type=0`, 备注「真勇者挑战(挑战100勇士-BOSS挑战)出现概率」) + 多语言 `excel_language` ResearchInfo(id=100300009, cn「真勇者挑战」, 12 语言已翻译)。
 
 ### 设施分支(1002 段) — 征服通关获得声望（解锁开关驱动游戏逻辑）
 
@@ -466,6 +476,8 @@ public int GetUnlockPortalRefreshMax();                // 传送门刷新次数�
 public bool CheckIsUnlockPortalRefresh();              // 是否解锁传送门刷新(等级>0,门控刷新按钮显隐)
 public int GetUnlockChallengeHundredShowRate();        // 挑战100勇士出现概率 = ChallengeHundredShowRate 等级 × CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL(10)(百分数0~100,未解锁0,满级100)；GameWorldInfoRandomBean.SetGameFightTypeRandom 生成传送门世界时按该概率判定生成为挑战100勇士世界(命中但当前世界最高已解锁难度无匹配配置行则落回原随机)
 public static int GetChallengeHundredShowRateForLevel(int level); // 指定等级的挑战100勇士出现概率 = 等级×CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL(10)(供研究气泡详情填充)
+public int GetUnlockChallengeHundredBossRate();        // 挑战100勇士-BOSS挑战出现概率 = CHALLENGE_HUNDRED_BOSS_RATE_BASE(10) + ChallengeHundredBossRate(100300009) 等级 × CHALLENGE_HUNDRED_BOSS_RATE_PER_LEVEL(10)(百分数10~50,未研究10,满级4级=50)；SetGameFightTypeRandom 挑战100勇士分支抽配置行时先按它两段判定普通/BOSS再在类型内随机
+public static int GetChallengeHundredBossRateForLevel(int level); // 指定等级的BOSS挑战出现概率 = 10 + 等级×10(供研究气泡详情填充)
 public int GetUnlockInfiniteShowRate();                // 无尽模式出现概率 = INFINITE_SHOW_RATE_BASE(10) + InfiniteShowRate(100300008) 等级 × INFINITE_SHOW_RATE_PER_LEVEL(10)(百分数10~100,未研究保持10,满级9级=100)；SetGameFightTypeRandom 无尽分支按它判定(前提该世界无尽已解锁)
 public static int GetInfiniteShowRateForLevel(int level); // 指定等级的无尽出现概率 = 10 + 等级×10(供研究气泡详情填充)
 // —— 数值公式 static ForLevel 收口(2026-10 details 机制配套, 实例方法均委托对应 static, 研究气泡详情按任意等级求值) ——
@@ -476,7 +488,7 @@ public static int GetSacrificeMaxForLevel(int level);                // 献祭�
 public static float GetSacrificeFailPityAddRateForLevel(int level);  // 献祭失败保底增量 = 等级×0.05f
 public static float GetSacrificeDifferentIdRateForLevel(int level);  // 不同id献祭成功率 = 等级×0.05f
 public static int GetPortalRefreshMaxForLevel(int level);            // 传送门刷新上限 = 等级
-public static float GetGashaponRarityRateForLevel(int level);        // 孕育稀有度命中概率% = GashaponItemBean.rarityBaseRate(10, 已改 public) + 等级(扭蛋抽取/展示/气泡三处共用)
+public static float GetGashaponRarityRateForLevel(RarityEnum rarity, int level); // 孕育稀有度命中概率% = RarityInfo.gashapon_rate(按档配置: R25/SR20/SSR15/其他10) + 等级(扭蛋抽取/展示/气泡三处共用)
 public static int GetJuicerCreatureMaxForLevel(int level);           // 魔汁机投入上限 = limmit.juicerCreatureMax + 等级
 public static int GetLineupCreatureNumForLevel(int level);           // 阵容生物上限 = limmit.lineupCreatureMax + 等级
 public static int GetLineupNumForLevel(int level);                   // 阵容数量 = limmit.lineupMax + 等级
@@ -559,6 +571,11 @@ public void InitResearchItems(ResearchInfoTypeEnum type, bool isInitContentPos =
 // 前置过滤：只有 pre_unlock_ids 全部解锁的节点才会被创建（满足才"亮"出来）
 public bool CheckPreIsUnlock(ResearchInfoBean info);
 
+// 刷新当前页所有节点的「魔晶足够可购买」高亮（遍历 active item 调 RefreshCanPayFx）；
+// Awake 里 RegisterEvent(EventsInfo.Backpack_Crystal_Change, RefreshAllCanPayFx) 事件驱动，
+// 兜住界面开着期间的魔晶入账(成就领奖/议会发放)与购买扣款后的即时灭灯
+public void RefreshAllCanPayFx();
+
 // 节点池：复用 listResearchItemView
 public void CreateResearchItem(int index, ResearchInfoBean info);
 
@@ -611,6 +628,14 @@ public void SetState();   // 读当前存档等级 → SetStateForLevel(currentL
 public void SetStateForLevel(int unlockLevel);
 public void SetIcon(string iconRes);
 
+// 「魔晶足够可购买」高亮（成就可领取提示同款：图标呼吸脉冲 + 流光扫光）
+// 条件：未满级(含未解锁) 且 当前魔晶 >= 下一级价格(GetPayCrystal(level+1))，与 OnClickForPay 可购买判定同口径；
+// 满足则启用 ui_Icon_Animator(Icon 上脉冲 Animator，controller=UIViewAchievementRewardPulse，驱动自身 localScale 循环缩放)
+// 并显示 ui_Shine(CardContent 下全拉伸流光层，材质 Mat_UIViewBaseResearchItemShine，默认隐藏)；
+// 不满足停用 Animator 并复位 Icon localScale=1(防停在放大态)、隐藏 Shine
+// SetData 末尾调用一次；魔晶变化由 UIBaseResearch 监听 Backpack_Crystal_Change 统一重刷
+public void RefreshCanPayFx();
+
 // 购买流程：检查满级 → 检查水晶 → 弹 DialogNormal → 扣水晶 → AnimForUnlock(回调里 AddUnlock → SaveUserData → 刷新)
 public void OnClickForPay();
 
@@ -630,6 +655,8 @@ prefab（`UIViewBaseResearchItem.prefab`）结构：根节点下新建 `CardCont
 2. 解锁动画 `AnimForUnlock` 操作根 transform（DOScale+DOShakePosition），与悬停动画操作 CardContent 分属不同 transform，两套动画天然隔离，**无需任何抑制协调代码**（item 脚本零改动）；
 3. 组件在 `Awake`+`Start` 两次缓存初始变换，`Start` 重缓存保证拿到 SetData/布局之后的真实静止态。
 
+「可购买高亮」的两个 prefab 元素同样挂在该结构内、与既有动画互不冲突：`Shine`（CardContent 下全拉伸 Image，流光材质 `Mat_UIViewBaseResearchItemShine.mat`——由成就流光材质复制解耦，`RaycastTarget=0`，默认 `SetActive(false)`，动画在材质 shader 内不碰 transform）与 Icon 节点上的 `Animator`（controller 复用成就的 `UIViewAchievementRewardPulse.controller`，驱动 Icon 自身 `localScale` 呼吸缩放，`enabled=false`、`writeDefaultValuesOnDisable=false` 初始禁用；脉冲只动 Icon 自身 scale，与悬停(CardContent)/解锁动画(根)三层 transform 各自独立）。
+
 ### AutoLink 字段
 
 ```csharp
@@ -640,6 +667,8 @@ public Image ui_Board;
 public MaskUIView ui_UIViewBaseResearchItem_MaskUIView;     // 未解锁灰罩
 public RectTransform ui_UIViewBaseResearchItem_RectTransform;
 public TextMeshProUGUI ui_Level;
+public Image ui_Shine;                                      // 可购买流光层(prefab 序列化为 null, 运行时反射绑 Shine 节点)
+public Animator ui_Icon_Animator;                           // 可购买图标脉冲(prefab 序列化为 null, 反射绑 Icon 节点的 Animator)
 ```
 
 ### 购买确认弹窗
@@ -741,6 +770,7 @@ public void SaveResearchDataForTest()
 | 事件常量 | 触发位置 | 监听位置 | 用途 |
 |----------|----------|----------|------|
 | `EventsInfo.User_AddUnlock` | `UserUnlockBean.AddUnlock(...)` 新增解锁**或等级变化**时 | `ScenePrefabForBase`（全工程唯一监听者） | 通知基地场景刷新对应解锁的内容（建筑出现动画/打开新功能入口）；非建筑解锁在 `EventForUserAddUnlock` 中直接 return，无副作用 |
+| `EventsInfo.Backpack_Crystal_Change` | `UserDataBean.AddCrystal(...)` 魔晶增减（含购买扣款） | `UIBaseResearch.Awake` 注册 → `RefreshAllCanPayFx`（另有 `UIViewBaseInfoContent` 刷新魔晶数字） | 魔晶变化时重刷当前页所有研究节点的「可购买」高亮（图标脉冲+流光） |
 
 ---
 

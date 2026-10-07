@@ -38,6 +38,21 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         return currentScene;
     }
 
+    /// <summary>
+    /// 获取当前场景的类型(currentScene 在 dicCurrentScene 中反查; 无当前场景或未注册返回 None)
+    /// </summary>
+    public GameSceneTypeEnum GetCurrentSceneType()
+    {
+        if (currentScene == null)
+            return GameSceneTypeEnum.None;
+        foreach (var item in dicCurrentScene)
+        {
+            if (item.Value == currentScene)
+                return item.Key;
+        }
+        return GameSceneTypeEnum.None;
+    }
+
     public T GetCurrentScenePrefab<T>() where T : ScenePrefabForBase
     {
         return currentScene?.GetComponent<T>();

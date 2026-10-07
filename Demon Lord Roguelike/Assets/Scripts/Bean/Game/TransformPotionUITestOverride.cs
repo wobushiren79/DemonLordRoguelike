@@ -3,20 +3,22 @@ using System.Collections.Generic;
 
 /// <summary>
 /// 幻化药 UI/世界 尺寸/位置测试覆盖层（仅编辑器编译，打包无此类）：
-/// 幻化药测试面板(TestTransformPotionGUI)调参时写入，CreatureBeanPartial.GetTransformUIShowData/GetTransformShowData/GetTransformWorldData
+/// 幻化药测试面板(TestTransformPotionGUI)调参时写入，CreatureBeanPartial.GetTransformUIShowData/GetTransformShowData/GetTransformWorldData/GetTransformShowBrightness
 /// 查询时优先于道具 other_data 配置生效，使所有走真实显示链的 UI/世界显示立即反映调参结果；保存写回 Mod 项目或重置时清除。
-/// 数据段对应 other_data 三键：show_data=默认展示(小卡)尺寸、ui_show_data=详情UI尺寸、world_data=世界显示尺寸/偏移。
+/// 数据段对应 other_data 键：show_data=默认展示(小卡)尺寸、ui_show_data=详情UI尺寸、world_data=世界显示尺寸/偏移、show_brightness=场景调暗系数。
 /// </summary>
 public static class TransformPotionUITestOverride
 {
     #region 数据字段
 
-    /// <summary>单条覆盖数据：详情UI/默认展示(小卡)/世界显示 各自的「scale;x,y」覆盖值(null=该段不覆盖)</summary>
+    /// <summary>单条覆盖数据：详情UI/默认展示(小卡)/世界显示 各自的「scale;x,y」覆盖值 + 场景调暗系数(null=该段不覆盖)</summary>
     private class OverrideData
     {
         public string uiShowData;
         public string showData;
         public string worldData;
+        /// <summary>场景调暗系数 show_brightness 覆盖值（「0.58」形式，null=不覆盖）</summary>
+        public string showBrightness;
     }
 
     /// <summary>覆盖表：key=幻化药道具完整id</summary>
@@ -57,6 +59,16 @@ public static class TransformPotionUITestOverride
     }
 
     /// <summary>
+    /// 设置指定幻化药的场景调暗系数覆盖值(show_brightness 键)
+    /// </summary>
+    /// <param name="itemId">幻化药道具完整id</param>
+    /// <param name="data">「0.58」形式的系数覆盖值（1=不调暗）</param>
+    public static void SetShowBrightness(long itemId, string data)
+    {
+        GetOrAdd(itemId).showBrightness = data;
+    }
+
+    /// <summary>
     /// 清除指定幻化药的全部覆盖(保存写回后/重置为配置值时调用)
     /// </summary>
     /// <param name="itemId">幻化药道具完整id</param>
@@ -93,6 +105,15 @@ public static class TransformPotionUITestOverride
     }
 
     /// <summary>
+    /// 只清除指定幻化药的场景调暗系数覆盖(列表项「还原」恢复配置值用)
+    /// </summary>
+    /// <param name="itemId">幻化药道具完整id</param>
+    public static void ClearShowBrightness(long itemId)
+    {
+        if (dicOverride.TryGetValue(itemId, out OverrideData od)) od.showBrightness = null;
+    }
+
+    /// <summary>
     /// 清空全部覆盖(列表页「清空全部未保存修改」用)
     /// </summary>
     public static void ClearAll()
@@ -107,7 +128,7 @@ public static class TransformPotionUITestOverride
     public static bool HasOverride(long itemId)
     {
         return dicOverride.TryGetValue(itemId, out OverrideData data)
-            && (data.uiShowData != null || data.showData != null || data.worldData != null);
+            && (data.uiShowData != null || data.showData != null || data.worldData != null || data.showBrightness != null);
     }
 
     /// <summary>
@@ -118,7 +139,7 @@ public static class TransformPotionUITestOverride
         List<long> list = new List<long>();
         foreach (var kv in dicOverride)
         {
-            if (kv.Value.uiShowData != null || kv.Value.showData != null || kv.Value.worldData != null)
+            if (kv.Value.uiShowData != null || kv.Value.showData != null || kv.Value.worldData != null || kv.Value.showBrightness != null)
                 list.Add(kv.Key);
         }
         list.Sort();
@@ -169,6 +190,22 @@ public static class TransformPotionUITestOverride
         if (itemId != 0 && dicOverride.TryGetValue(itemId, out OverrideData od) && od.worldData != null)
         {
             data = od.worldData;
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 尝试获取指定幻化药的场景调暗系数覆盖值(show_brightness 键)
+    /// </summary>
+    /// <param name="itemId">幻化药道具完整id(0=无幻化, 恒返回false)</param>
+    /// <returns>有覆盖返回 true 且 data 为系数字符串</returns>
+    public static bool TryGetShowBrightness(long itemId, out string data)
+    {
+        data = null;
+        if (itemId != 0 && dicOverride.TryGetValue(itemId, out OverrideData od) && od.showBrightness != null)
+        {
+            data = od.showBrightness;
             return true;
         }
         return false;

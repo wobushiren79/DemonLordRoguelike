@@ -24,7 +24,7 @@ watched_files:
 
 ```
 SpineManager              - Spine资源管理器（加载/缓存SkeletonDataAsset）
-SpineHandler              - Spine处理器（动画播放、皮肤切换等API）
+SpineHandler              - Spine处理器（动画播放、皮肤切换等API；游戏层 partial 另含「场景调暗」region：幻化药 show_brightness 键驱动的场景实例材质调暗覆盖 ApplySceneDimOverride/ClearSceneDimOverride，详见 other-spine-mod SKILL）
 SkeletonAnimation         - 3D/世界空间Spine组件
 SkeletonGraphic           - UI Spine组件
 SkeletonGraphicExtend     - UI Spine扩展组件（修复RectMask2D整体误剔除，项目标准）
@@ -510,3 +510,4 @@ public SkeletonGraphic CreateUICharacter(GameObject parent, string assetName)
 4. **UI Spine**: UI中使用SkeletonGraphic（项目标准为扩展版 SkeletonGraphicExtend），需要指定合适的Material
 5. **动画混合**: 设置合适的 `mixDuration` 可以让动画过渡更平滑
 6. **Mask 剔除**: 原生 SkeletonGraphic 在 RectMask2D 下按 RectTransform rect 判定整体剔除，非居中骨架 pos 偏移出 mask 会被整体误隐藏；SkeletonGraphicExtend 已修复（`cullByMeshBounds` 默认开）。若某 UI 仍整体消失，先确认挂的是否为 Extend（预制体未跑过替换菜单的旧资产可能是原生组件）
+7. **线程化策略（2026-10-05 起，UI 闪烁事故定案）**: 全局 `SpineRuntimeSettings` 的 `useThreadedMeshGeneration`/`useThreadedAnimation` **必须保持关闭**。原因：UI 骨架（SkeletonGraphic）走线程化时，其网格生成与自身 `UpdateWorldTransform` 分属不同工作线程任务，高负载下会读到 `ResetConstrained()` 之后、约束重算之前的**无约束中间态**，双缓冲网格交替写入两版姿势——带 IK/Transform 约束的骨架（如 OtherSpine 幻化资源）在 UI 上表现为部件（发型）位置闪烁；无约束骨架竞态不可见。spine-unity 三态语义为 `组件==Enable || 全局`，**只支持「全局关时单独开」、不支持「全局开时单独关」**，故采取「全局关 + 世界骨架单独开」：框架层 `SpineHandler.AddSkeletonAnimation`（世界生物唯一创建入口）与 `FightCreatureEntity.SetData` 均显式 `ThreadedAnimation`/`ThreadedMeshGeneration=Enable`；UI 骨架（卡片/弹窗/详情等）保持 `UseGlobalSetting` 走主线程串行。**禁止重新打开全局开关**（一开 UI 竞态即复发），如需给某世界骨架开线程化，走上述两个入口

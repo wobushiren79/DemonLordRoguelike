@@ -26,7 +26,7 @@ watched_files:
 ## 职责范围
 
 ### 生成脚本（主项目侧）
-- **`.claude/scripts/gen_other_spine_mod.py`** — 两段式生成器（Excel 为唯一真实源）：`scan`=资源目录(角色名目录)→MOD 项目两张 Excel（`excel_mod_items_info_otherspine[Mod道具信息-OtherSpine].xlsx` 全量重建但 **show_data/ui_show_data/world_data 三键手调值按「目录名/资源token」(remark 资源身份)保留**——按资源身份而非道具 id 保留，出药规则变化/资源增减致 id 漂移时也不贴错，2026-09-30 起 + **目录序号按目录名从 remark 回收保留**（新增取 max+1），`--reset-layout` 强制重算（含序号重排，仅首次/未发布用）+ `excel_mod_language_otherspine[Mod多语言-OtherSpine].xlsx` 按 id 合并保留人工改名）；`export`=Excel→JsonText（ItemsInfo + 12 语言 Language_ItemsInfo）；`all`=两者（默认）；参数 `--mod-project` / `--deploy-main` / `--ui-scale-k` / `--ui-pos-y` / `--show-scale-k` / `--show-pos-y` / `--reset-layout`
+- **`.claude/scripts/gen_other_spine_mod.py`** — 两段式生成器（Excel 为唯一真实源）：`scan`=资源目录(角色名目录)→MOD 项目两张 Excel（`excel_mod_items_info_otherspine[Mod道具信息-OtherSpine].xlsx` 全量重建但 **show_data/ui_show_data/world_data/show_brightness 四键手调值按「目录名/资源token」(remark 资源身份)保留**——按资源身份而非道具 id 保留，出药规则变化/资源增减致 id 漂移时也不贴错，2026-09-30 起 + **目录序号按目录名从 remark 回收保留**（新增取 max+1），`--reset-layout` 强制重算（含序号重排，仅首次/未发布用）+ `excel_mod_language_otherspine[Mod多语言-OtherSpine].xlsx` 按 id 合并保留人工改名）；scan 另含 **show_brightness 自动生成**（show 骨架图集全页 PNG alpha>25 有效像素 Rec.601 均值 avg>基准65 才写 k=65/avg 只压不提，保留优先、删键即强制重算；修浅色立绘在基地/森林 1.5 白平行光下过曝，2026-10-05 起）；`export`=Excel→JsonText（ItemsInfo + 12 语言 Language_ItemsInfo）；`all`=两者（默认）；参数 `--mod-project` / `--deploy-main` / `--ui-scale-k` / `--ui-pos-y` / `--show-scale-k` / `--show-pos-y` / `--reset-layout`
 - 执行一律走 `.claude/scripts/run-python.ps1` 包装（CLAUDE.md Python 规则），路径用参数传入不写死
 
 ### 构建器（MOD 项目侧）
@@ -47,7 +47,7 @@ watched_files:
 - **待机动画走通用 idle 检测**（mod-system SKILL）：当前 104 骨架全命中标准候选（idle/wait/idle1/wait1/stand，其中 13 个 Avator 待机=wait）均不带 idle 键；无标准候选时自动取首个含 idle 动画名写 idle_anim/ui_show_idle_anim 键
 - 道具自ID = `18` + 4位目录序号(按目录名自然序分配,重建时回收保留) + 2位序号(01 起)；name 自ID = 道具自ID
 - **全部幻化药固定 `source="1"`**（征服模式奖励）；手工改 mod Excel 时勿删该列
-- other_data 键：`show_res/show_data(3159/高校准,0,-120)` + `ui_show_res/ui_show_data(645/高校准,0,0)` + 皮肤药 `ui_show_skin`；资源名=SkeletonData 资产名去扩展名（**保留 _SkeletonData**，大小写敏感，与 catalog key 精确匹配）；**仅基础药无 ui_show 段键，但详情UI回落 show 形象仍消费 ui_show_data**（消费与有无 ui_show_res 无关）——测试面板大卡列表/单个预览可手调补上（标签标注（无Avator)，键缺失时首次调整基线取卡片图标当前显示值防跳变，2026-09-30 起），scan 重建按「目录名/资源token」同机制保留（append_item 兜底，同 world_data）
+- other_data 键：`show_res/show_data(3159/高校准,0,-120)` + `ui_show_res/ui_show_data(645/高校准,0,0)` + 皮肤药 `ui_show_skin` + **贴图偏亮骨架 `show_brightness`(场景调暗系数(0,1]，scan 自动算=65/avg，消费=`CreatureHandler.SetCreatureData` SkeletonAnimation 分支→游戏层 `SpineHandler.ApplySceneDimOverride` 克隆材质 `_COLOR_ADJUST`+`_Brightness` 覆盖场景实例，UI 不消费；混合页跳过；bundle 内嵌 shader 变体被裁剪故克隆时统一换主项目 shader 资产，变体由 `Resources/Materials/SpineSpriteURP_DimDummy.mat` 保住)**；资源名=SkeletonData 资产名去扩展名（**保留 _SkeletonData**，大小写敏感，与 catalog key 精确匹配）；**仅基础药无 ui_show 段键，但详情UI回落 show 形象仍消费 ui_show_data**（消费与有无 ui_show_res 无关）——测试面板大卡列表/单个预览可手调补上（标签标注（无Avator)，键缺失时首次调整基线取卡片图标当前显示值防跳变，2026-09-30 起），scan 重建按「目录名/资源token」同机制保留（append_item 兜底，同 world_data）
 - Spine JSON 全部为真 4.3.26（2026-09-29 全量 104 个扫描确认），无需格式转换；**新增资源时仍需校验**旧 linkedmesh/分离约束数组（脚本 scan 已内置校验告警）
 - **贴图必须 PMA**：本 Mod 已确认（81 材质全 `_StraightAlphaInput: 0` + PNG 抽样透明区纯黑）；**新增资源入库必须复查**（详见 project_spine_mod_pma_requirement 记忆）
 - Excel 独立：otherspine 后缀的两张 Excel 与其他 Mod 的相互独立（与 `TestTransformPotionGUI.GetModItemsExcelRelPath` 约定一致）

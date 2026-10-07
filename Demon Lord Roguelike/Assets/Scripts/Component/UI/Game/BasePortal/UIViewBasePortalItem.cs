@@ -70,6 +70,8 @@ public partial class UIViewBasePortalItem : BaseUIView
         SetName(targetName);
         //设置图标(征服=随机星球; 无尽=ui_game_2; 挑战100勇士=ui_game_1)
         SetIcon(gameWorldInfo.icon_res, gameWorldInfoRandom.iconSeed, gameWorldInfoRandom.gameFightType);
+        //设置BG颜色(挑战100勇士-BOSS挑战=深紫, 其余恢复默认白)
+        SetBGColor(gameWorldInfoRandom.IsChallengeHundredBossChallenge() ? ColorUtil.ChallengeHundredBossPurple : Color.white);
         //初始化弹窗(地图传送门展示当前难度的数据)
         popupForPortalDetails.SetData((gameWorldInfo, gameWorldInfoRandom, gameWorldInfoRandom.difficultyLevel), PopupEnum.PortalDetails);
 
@@ -140,6 +142,16 @@ public partial class UIViewBasePortalItem : BaseUIView
     public void SetName(string name)
     {
         ui_Name.text = name;
+    }
+
+    /// <summary>
+    /// 设置BG颜色(挑战100勇士-BOSS挑战=深紫, 其余默认白; ui_BG过渡为SpriteSwap不换色, 直接改image.color可持久生效)
+    /// </summary>
+    public void SetBGColor(Color color)
+    {
+        //保留 prefab 原透明度(0.9), 只替换 RGB
+        color.a = ui_BG.image.color.a;
+        ui_BG.image.color = color;
     }
     #region 按钮点击
     /// <summary>

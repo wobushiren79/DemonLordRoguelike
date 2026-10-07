@@ -67,6 +67,7 @@ Assets/FrameWork/Scripts/           Assets/Scripts/
 | SystemUtil | 系统信息 |
 | TimeUtil | 时间格式化 |
 | UnitUtil | 单位转换 |
+| PerformanceUtil | 运行时性能消耗采样（静态快照类）：CPU/GPU 帧耗时 ms（`FrameTimingManager`，预分配缓冲零 GC）、CPU 占用率 %（进程处理器时间差分）、GPU 占用率 %（pdh.dll PInvoke `PdhAddEnglishCounter` 英文路径 `\GPU Engine(*)\Utilization Percentage`，无视中文系统计数器名本地化，按 `pid_{pid}_` 实例前缀过滤求和）、总预留内存 MB（`Profiler.GetTotalReservedMemoryLong`）；`Init/Refresh(0.5s节流)/CaptureFrame/Dispose`，% 仅 Windows 有效，其余平台与未就绪时 `Has*` 标志 false（界面显示 -）；供 FPSHandler 性能浮层读取 |
 | **反射/类型** | |
 | ReflexUtil | 反射工具 |
 | ClassUtil | 类型工具 |
@@ -116,7 +117,7 @@ Assets/FrameWork/Scripts/           Assets/Scripts/
 |------|---------|------|
 | [AnimUtil](Assets/Scripts/Utils/AnimUtil.cs) | `AnimForUINumberChange`（UI 数字滚动） | DOTween、TMP |（`partial class`，通用 Animator 方法 `GetAnimClipLength` 在框架层 [AnimUtil](Assets/FrameWork/Scripts/Utils/AnimUtil.cs)）
 | [BuffUtil](Assets/Scripts/Utils/BuffUtil.cs) | `GetRarityBuffType` / `CreateRandomRarityBuff`（扭蛋通用稀有度 BUFF）/ `CreateAscendRarityBuff`（魔物进阶：素材 BUFF 按 id 聚合，每 id 提供 25%×数量 直接命中概率，命中继承并用 `BuffBean.CreateRandomWithFloor` 重随机数值≥素材原值，未命中回退通用随机）/ `GetCreatureAscendBuffChances`（同口径算各 BUFF 命中概率列表供进阶详情展示，末尾追加「随机增益」buffId=-1 兜底剩余概率，无对应类型空列表） | BuffBean、CreatureBean、RarityEnum/BuffTypeEnum |
-| [ColorUtil](Assets/Scripts/Utils/ColorUtil.cs) | `ParseHtmlString` / `GetProgressColor(rate01)`（0~1 进度分5段配色红/橙/黄/浅绿/蓝，献祭成功率进度条与孵化缸进阶BUFF概率统一复用） / `LimitFullHtml`(#FF4D4D 富文本串)、`LimitFull`(Color)、`WrapLimitFull(content,isFull)`（通用「数量达上限」警示红：阵容满员 UILineupManager、进阶素材选满 UICreatureVat 统一复用） | UnityEngine |
+| [ColorUtil](Assets/Scripts/Utils/ColorUtil.cs) | `ParseHtmlString` / `GetProgressColor(rate01)`（0~1 进度分5段配色红/橙/黄/浅绿/蓝，献祭成功率进度条与孵化缸进阶BUFF概率统一复用） / `LimitFullHtml`(#FF4D4D 富文本串)、`LimitFull`(Color)、`WrapLimitFull(content,isFull)`（通用「数量达上限」警示红：阵容满员 UILineupManager、进阶素材选满 UICreatureVat 统一复用） / `ChallengeHundredBossPurple`(#5B2C6F 深紫，挑战100勇士-BOSS挑战传送门item BG 与悬停气泡底色统一复用) | UnityEngine |
 | [CreatureUtil](Assets/Scripts/Utils/CreatureUtil.cs) | `GetCreatureSkinTypeEnumName` | TextHandler |
 | [EquipUtil](Assets/Scripts/Utils/EquipUtil.cs) | 装备生成统一入口：核心 `CreateEquipItem(itemId, rarity, userType, addAttributeOverride)`（品质=属性条数、加点默认取 `RarityInfo.equip_attribute_add`）+ 场景封装 `CreateEquipItemForReward`（征服奖励，全参数）/ `CreateEquipItemForNpc`（NPC随机装备：普通使用者+默认加点）/ `CreateEquipItemForTest`（GM测试：指定id+稀有度直接发货） | ItemBean、RarityInfoCfg |
 | [ItemsUtil](Assets/Scripts/Utils/ItemsUtil.cs) | `GetLanguageText`（`this ItemUserTypeEnum`） | TextHandler |

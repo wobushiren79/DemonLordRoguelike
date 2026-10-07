@@ -46,9 +46,11 @@ public partial class AttackModeInstanceRenderer
         //——per-bucket 渲染参数(由配置表 visual_data 解析而来，见 AttackModeVisualConfig)——
         //本桶环境光补偿方式(Flat=6轴平均均匀光(默认)/SH=方向性球谐环境光，3D立体模型用)
         public AttackModeAmbientType ambient = AttackModeAmbientType.Flat;
-        //本桶是否投阴影(默认 Off；visual_data cast:1 开启，3D 模型投影用)
+        //本桶是否投阴影(仅 castExplicit 显式配置时有意义：cast:0=全局设置开启下单独不投；实际生效见 DrawBucket 与 frameBulletShadow)
         public ShadowCastingMode castShadow = ShadowCastingMode.Off;
-        //本桶是否接收阴影(默认 false；visual_data receive:1 开启)
+        //本桶是否显式配置了 cast 键(区分"未配置=跟随游戏设置全局投"与"cast:0=单独不投")
+        public bool castExplicit;
+        //本桶是否接收阴影(默认 false；visual_data receive:1 且游戏设置弹道阴影开启时生效)
         public bool receiveShadow = false;
         //——逐实例属性(仅"桶材质声明了 _VelocityWS"的桶启用，如火球/冰球；其余桶三个缓冲恒为 null，不占内存也不进热路径)——
         //本桶是否需要逐实例世界速度+种子+缩放：注册期按材质有无 _VelocityWS 判定一次(见 RegisterVisual)
@@ -71,6 +73,10 @@ public partial class AttackModeInstanceRenderer
     //弹体桶注册表：key = 视觉桶签名(BuildVisualBucketKey，默认桶即 visual_name)，value = 弹体桶
     private readonly Dictionary<string, VisualBucket> dicBucket = new Dictionary<string, VisualBucket>();
     //方案1 轨迹桶 TrailBucket / dicTrailBucket / PropBaseColor 在分部文件 AttackModeInstanceRendererTrail.cs
+
+    //——游戏设置(GameConfigBean)的弹道阴影开关，每帧 RenderAll 读一次进字段(设置界面改动下帧即生效，无需重注册桶)——
+    //弹道阴影总开关：开=所有弹道投阴影(显式 cast:0 的桶除外、接收阴影按桶 receive:1)，关=全部不投也不收
+    private bool frameBulletShadow;
 
     //——环境光(GI)+主光补偿：DrawMeshInstanced 的 SampleSH 读不到全局环境探针、URP 主光 uniform 亦缺失(实测主光强度归零弹体毫无变化)，
     //开 Lit 的桶材质会偏暗；按桶 ambient 方式经 MPB 灌入环境光、并统一灌入模拟主光补齐(详见 RefreshAmbientSH/RefreshInstancedLight)——
@@ -140,9 +146,10 @@ public partial class AttackModeInstanceRenderer
         }
         bucket.mesh = mesh;
         bucket.material = material;
-        //per-bucket 渲染参数：环境光补偿方式 + 投/收阴影(未配 visual_data 的桶默认 Flat + 不投/不收，与历史一致)
+        //per-bucket 渲染参数：环境光补偿方式 + 投/收阴影配置(实际生效以游戏设置 bulletShadow 为总开关，见 DrawBucket)
         bucket.ambient = visualConfig.ambient;
         bucket.castShadow = visualConfig.castShadow ? ShadowCastingMode.On : ShadowCastingMode.Off;
+        bucket.castExplicit = visualConfig.castExplicit;
         bucket.receiveShadow = visualConfig.receiveShadow;
         ApplyBucketSpin(material, spinAxis, spinSpeed);
         //逐实例世界速度：只有声明了 _VelocityWS 的材质(火球/冰球)才启用并分配缓冲，其余桶零内存零热路径开销
@@ -247,6 +254,9 @@ public partial class AttackModeInstanceRenderer
 
         //1) 同步全局环境光到共享 MPB(仅探针变化时真正重填)，供各桶实例化绘制注入 SH
         RefreshAmbientSH();
+
+        //1.5) 读游戏设置的弹道阴影开关(每帧一次进字段，设置界面改动下帧即生效；绘制时按桶配置与开关求最终投/收)
+        frameBulletShadow = GameDataHandler.Instance.manager.GetGameConfig().bulletShadow;
 
         //2) VFX 轨迹(方案2)帧初始化：清空 EffectHandler 各 VFX 桶本帧收集缓冲(本帧无弹道时也要走，见方法注释)
         EffectHandler effectHandler = EffectHandler.Instance;
@@ -436,7 +446,8 @@ public partial class AttackModeInstanceRenderer
     /// <summary>
     /// 用携带环境光+模拟主光补偿的共享 MPB(按桶 ambient 方式二选一)批量绘制单个弹体桶当前缓冲的实例。
     /// <para>Flat 桶的 _InstancedFlatGI / SH 桶的 _InstancedSH0..6 补齐 Lit 材质在实例化绘制下缺失的环境光，两桶共用的 _InstancedLightDir/_InstancedLightColor 补齐缺失的主光，使亮度与预制 MeshRenderer 一致；
-    /// 不走光照探针(LightProbeUsage.Off，自定义 shader 未启用逐实例 SH)；投/收阴影按桶的 visual_data 配置(cast/receive，默认关省一遍 ShadowCaster Pass)。</para>
+    /// 不走光照探针(LightProbeUsage.Off，自定义 shader 未启用逐实例 SH)；投/收阴影以游戏设置 bulletShadow 为总开关：
+    /// 关=全部不投不收(省一遍 ShadowCaster Pass)；开=未显式配 cast 的桶一律投、显式 cast:0 的桶单独不投、receive:1 的桶接收阴影。</para>
     /// <para>【逐实例数组现灌现画】火球/冰球桶的 _VelocityWS/_SeedOffset/_InstanceScale 在此刻才灌进 MPB：Set*Array 是即时拷贝、
     /// 紧接着就提交绘制，故同方式各桶轮流借用同一个 MPB 不会串数据，无需每桶再建 MPB。必须每桶一份的只有缓冲数组本身——各桶的填充是交错进行的。
     /// 数组按定长 1023 整份上传(超出 count 的部分被忽略)，与轨迹桶的 _TrailAlpha 同理；未声明这些属性的桶提交时 Unity 直接忽略残留数组。</para>
@@ -451,8 +462,13 @@ public partial class AttackModeInstanceRenderer
             mpb.SetFloatArray(PropSeedOffset, bucket.seedBuffer);
             mpb.SetFloatArray(PropInstanceScale, bucket.scaleBuffer);
         }
+        //投阴影最终判定：设置总开关开启 且 (桶未显式配 cast=跟随全局投 或 显式 cast:1)；显式 cast:0 是全局开启下唯一的单桶豁免
+        ShadowCastingMode castMode = frameBulletShadow && (!bucket.castExplicit || bucket.castShadow == ShadowCastingMode.On)
+            ? ShadowCastingMode.On : ShadowCastingMode.Off;
+        //收阴影最终判定：设置总开关开启 且 桶配置 receive:1
+        bool receiveShadows = frameBulletShadow && bucket.receiveShadow;
         Graphics.DrawMeshInstanced(bucket.mesh, 0, bucket.material, bucket.matrixBuffer, bucket.count,
-            mpb, bucket.castShadow, bucket.receiveShadow, 0, null, LightProbeUsage.Off, null);
+            mpb, castMode, receiveShadows, 0, null, LightProbeUsage.Off, null);
     }
     #endregion
 

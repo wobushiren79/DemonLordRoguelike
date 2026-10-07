@@ -4,7 +4,8 @@ using UnityEngine;
 /// 进攻生物被击退意图（深渊馈赠「第六次冲击」冲击波等位移效果用）
 /// <para>被击退时由 AIAttackCreatureEntity.StartKnockback 强制切换进入：按击退方向匀速推移，
 /// 固定 KnockbackDuration 秒推完全程（任何击退距离时长一致、手感统一），期间不能攻击/索敌（攻击循环被自然打断）；</para>
-/// <para>推移落点 x 钳制：右缘硬钳(0.5+路长)、左缘只防「从道路内被推出左缘」——已在左缘内(x&lt;0.5，直冲魔王阶段)的敌人不往前拉，自然向右推回道路；</para>
+/// <para>推移落点 x 钳制：右缘不钳（可被推出道路右缘外——如刚好在边界的敌人会被击退到路外，之后由移动意图沿本道路走回重新进场）、
+/// 左缘只防「从道路内被推出左缘」——已在左缘内(x&lt;0.5，直冲魔王阶段)的敌人不往前拉，自然向右推回道路；</para>
 /// <para>击退中再次被击退：StartKnockback 直接刷新本意图的方向/剩余距离（原地续推，不重进意图）；</para>
 /// <para>推移结束回 AttackCreatureIdle，重新走「闲置→移动→攻击」索敌流程（与防守目标的距离重新判定，不会隔空续打）。</para>
 /// </summary>
@@ -24,33 +25,23 @@ public class AIIntentAttackCreatureKnockback : AIBaseIntent
     public float knockbackDistanceRemain;
     /// <summary>击退推移速度（= 总距离/KnockbackDuration，SetupKnockback 时算）</summary>
     public float knockbackSpeed;
-    /// <summary>道路 x 范围（落点钳制用，IntentEntering 时按当场路长缓存）</summary>
-    public float roadMinX, roadMaxX;
+    /// <summary>道路左缘 x（落点钳制用；右缘不钳——击退可把人推出道路右缘外）</summary>
+    public float roadMinX;
     #endregion
 
     #region 意图生命周期
     /// <summary>
-    /// 进入击退意图：缓存道路 x 范围并播待机动画（被控推移状态）
+    /// 进入击退意图：缓存道路左缘并播待机动画（被控推移状态）
     /// </summary>
     public override void IntentEntering(AIBaseEntity aiEntity)
     {
         selfAIEntity = aiEntity as AIAttackCreatureEntity;
-        var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        if (gameFightLogic?.fightData != null)
-        {
-            roadMinX = 0.5f;
-            roadMaxX = 0.5f + gameFightLogic.fightData.sceneRoadLength;
-        }
-        else
-        {
-            roadMinX = 0.5f;
-            roadMaxX = 15f;
-        }
+        roadMinX = 0.5f;
         selfAIEntity.selfCreatureEntity.PlayAnim(SpineAnimationStateEnum.Idle, true);
     }
 
     /// <summary>
-    /// 每帧：按击退速度推移（x 钳制道路范围），剩余距离走完回闲置重新索敌
+    /// 每帧：按击退速度推移（右缘不钳可推出路外，左缘防前吸），剩余距离走完回闲置重新索敌
     /// </summary>
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
@@ -65,9 +56,9 @@ public class AIIntentAttackCreatureKnockback : AIBaseIntent
         knockbackDistanceRemain -= moveDistance;
         Transform selfTF = selfAIEntity.selfCreatureEntity.creatureObj.transform;
         Vector3 newPos = selfTF.position + knockbackDirection * moveDistance;
-        //x 钳制：右缘硬钳；左缘下限取「当前x与左缘的较小者」——道路内敌人防被推出左缘，
-        //已在左缘内(x<roadMinX，直冲魔王阶段)的敌人不往前拉（防击退变"前吸"），自然向右推回道路
-        newPos.x = Mathf.Clamp(newPos.x, Mathf.Min(roadMinX, selfTF.position.x), roadMaxX);
+        //x 钳制：右缘不钳（可被推出道路右缘外，之后由移动意图沿本道路走回重新进场）；左缘下限取「当前x与左缘的较小者」——
+        //道路内敌人防被推出左缘，已在左缘内(x<roadMinX，直冲魔王阶段)的敌人不往前拉（防击退变"前吸"），自然向右推回道路
+        newPos.x = Mathf.Max(newPos.x, Mathf.Min(roadMinX, selfTF.position.x));
         selfTF.position = newPos;
     }
     #endregion

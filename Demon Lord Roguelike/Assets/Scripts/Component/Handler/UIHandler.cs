@@ -28,11 +28,11 @@ public partial class UIHandler
         {
             case 0:
                 iconRes = "ui_other_3";
-                ColorUtility.TryParseHtmlString("#E32626",out iconColor);
+                ColorUtility.TryParseHtmlString("#E32626", out iconColor);
                 break;
             case 1:
                 iconRes = "ui_other_6";
-                ColorUtility.TryParseHtmlString("#25BC29",out iconColor);
+                ColorUtility.TryParseHtmlString("#25BC29", out iconColor);
                 break;
         }
         IconHandler.Instance.GetIconSprite(SpriteAtlasTypeEnum.UI, iconRes, (sprite) =>
@@ -48,7 +48,7 @@ public partial class UIHandler
     {
         for (int i = 0; i < manager.uiList.Count; i++)
         {
-            var itemUI =  manager.uiList[i];
+            var itemUI = manager.uiList[i];
             if (itemUI.name.Contains("UIMain"))
             {
                 i--;
@@ -142,7 +142,7 @@ public partial class UIHandler
         {
             dialogData.characterLimit = 10;
         }
-        dialogData.content = TextHandler.Instance.GetTextById(1004001);   
+        dialogData.content = TextHandler.Instance.GetTextById(1004001);
         dialogData.inputHint = TextHandler.Instance.GetTextById(1004002);
         if (dialogData.submitStr.IsNull())
             dialogData.submitStr = TextHandler.Instance.GetTextById(1000001);
@@ -187,7 +187,7 @@ public partial class UIHandler
             dialogData.cancelStr = TextHandler.Instance.GetTextById(1000002);
         return ShowDialog<UIDialogNormal>(dialogData);
     }
-    
+
     /// <summary>
     /// 展示选项提示
     /// </summary>

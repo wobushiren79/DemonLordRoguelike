@@ -219,15 +219,33 @@ public partial class FightTypeChallengeHundredInfoCfg
     }
 
     /// <summary>
-    /// 从指定难度可抽中的配置行中随机一行(无匹配返回null, 调用方需落回默认模式)
+    /// 从指定难度可抽中的配置行中两段随机一行：先按 bossRate(百分数0~100) 判定是否BOSS挑战, 命中后再在该挑战类型(challenge_type)的行内等概率随机;
+    /// 命中类型无匹配行时落回另一类型(防御: 该难度只配了一类行时不致抽空); 全无匹配返回null, 调用方需落回默认模式
     /// </summary>
     /// <param name="unlockDifficultyMax">世界当前最高已解锁难度</param>
+    /// <param name="bossRate">BOSS挑战出现概率百分数(0~100, 基础10+研究等级×10, 见 UserUnlockBean.GetUnlockChallengeHundredBossRate)</param>
     /// <returns>随机匹配行; 无匹配返回null</returns>
-    public static FightTypeChallengeHundredInfoBean GetRandomRow(int unlockDifficultyMax)
+    public static FightTypeChallengeHundredInfoBean GetRandomRow(int unlockDifficultyMax, int bossRate)
     {
         var matchList = GetMatchRows(unlockDifficultyMax);
         if (matchList.Count == 0)
             return null;
-        return matchList.GetRandomData();
+        //按挑战类型分桶(普通/BOSS)
+        List<FightTypeChallengeHundredInfoBean> normalList = new List<FightTypeChallengeHundredInfoBean>();
+        List<FightTypeChallengeHundredInfoBean> bossList = new List<FightTypeChallengeHundredInfoBean>();
+        for (int i = 0; i < matchList.Count; i++)
+        {
+            var itemData = matchList[i];
+            if (itemData.IsBossChallenge())
+                bossList.Add(itemData);
+            else
+                normalList.Add(itemData);
+        }
+        bool isBoss = UnityEngine.Random.Range(0, 100) < bossRate;
+        var targetList = isBoss ? bossList : normalList;
+        //命中类型无匹配行时落回另一类型(该难度只配了一类行的防御)
+        if (targetList.Count == 0)
+            targetList = isBoss ? normalList : bossList;
+        return targetList.GetRandomData();
     }
 }

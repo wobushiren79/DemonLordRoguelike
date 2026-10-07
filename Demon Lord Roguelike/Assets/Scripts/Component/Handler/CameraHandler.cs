@@ -424,8 +424,7 @@ public partial class CameraHandler
     {
         manager.cm_Fight.gameObject.SetActive(true);
         manager.cm_Fight.Priority = int.MaxValue;
-        //战斗镜头启用时设置自定义Z轴透明排序(仅在战斗场景生效, HideAllCM会还原)
-        manager.SetTransparencySortForFight();
+        //透明排序无需在此设置: 唯一入口 SetCameraForControl 先经 HideAllCM, 其内已按当前场景统一刷新(见 CameraManager.RefreshTransparencySortForCurrentScene)
     }
     #endregion
 }

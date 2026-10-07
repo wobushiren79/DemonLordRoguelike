@@ -14,6 +14,9 @@ public partial class GameResourceEditor
 {
     #region 字段
 
+    /// <summary>图标（道具/皮肤）的 Pixels Per Unit 标准值</summary>
+    private const int IconPixelsPerUnit = 16;
+
     /// <summary>单独导出时选中的目标 SkeletonDataAsset</summary>
     private SkeletonDataAsset targetSkeletonDataAsset;
 
@@ -69,6 +72,8 @@ public partial class GameResourceEditor
             DrawButton("生成所有 Spine 道具图标", _colorItem, 32, SpineAllItemInit);
             GUILayout.Space(6);
             DrawButton("生成所有 Spine 皮肤图标", _colorSkin, 32, SpineAllSkinInit);
+            GUILayout.Space(6);
+            DrawButton($"修正所有图标 PPU 为 {IconPixelsPerUnit}", _colorRefresh, 26, () => FixAllIconsPixelsPerUnit(true));
         });
 
         GUILayout.Space(16);
@@ -400,7 +405,7 @@ public partial class GameResourceEditor
         string inputPath = "Assets/LoadResources/Spine/Creature";
         string outputPath = "Assets/LoadResources/Textures/Items";
         string filterSkinName = "Clothes,Pants,Weapon,Shoes,Hat,Mask,NoseRing,Arrow";//筛选名字
-        SpineWindow.ExtractSkinTextures(inputPath, outputPath, null, true, null, filterSkinName);
+        SpineWindow.ExtractSkinTextures(inputPath, outputPath, null, true, null, filterSkinName, IconPixelsPerUnit);
 
         string targetPath = "Assets/LoadResources/Textures/SpriteAtlas/AtlasForItems.spriteatlas";
         SpriteAtlas atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(targetPath);
@@ -421,7 +426,7 @@ public partial class GameResourceEditor
         string inputPath = "Assets/LoadResources/Spine/Creature";
         string outputPath = "Assets/LoadResources/Textures/Skins";
         string filterSkinName = "Eye,Head,Mouth,Body,Hair,Horn,Wing";//筛选名字
-        SpineWindow.ExtractSkinTextures(inputPath, outputPath, null, true, null, filterSkinName);
+        SpineWindow.ExtractSkinTextures(inputPath, outputPath, null, true, null, filterSkinName, IconPixelsPerUnit);
 
         string targetPath = "Assets/LoadResources/Textures/SpriteAtlas/AtlasForSkins.spriteatlas";
         SpriteAtlas atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(targetPath);
@@ -442,7 +447,7 @@ public partial class GameResourceEditor
         string inputPath = "Assets/LoadResources/Spine/Creature";
         string outputPath = "Assets/LoadResources/Textures/Items";
         string filterSkinName = "Clothes,Pants,Weapon,Shoes,Hat,Mask,NoseRing,Arrow";//筛选名字
-        SpineWindow.ExtractSkinTextures(inputPath, outputPath, skeletonDataAsset, true, null, filterSkinName);
+        SpineWindow.ExtractSkinTextures(inputPath, outputPath, skeletonDataAsset, true, null, filterSkinName, IconPixelsPerUnit);
 
         string targetPath = "Assets/LoadResources/Textures/SpriteAtlas/AtlasForItems.spriteatlas";
         SpriteAtlas atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(targetPath);
@@ -463,7 +468,7 @@ public partial class GameResourceEditor
         string inputPath = "Assets/LoadResources/Spine/Creature";
         string outputPath = "Assets/LoadResources/Textures/Skins";
         string filterSkinName = "Eye,Head,Mouth,Body,Hair,Horn,Wing";//筛选名字
-        SpineWindow.ExtractSkinTextures(inputPath, outputPath, skeletonDataAsset, true, null, filterSkinName);
+        SpineWindow.ExtractSkinTextures(inputPath, outputPath, skeletonDataAsset, true, null, filterSkinName, IconPixelsPerUnit);
 
         string targetPath = "Assets/LoadResources/Textures/SpriteAtlas/AtlasForSkins.spriteatlas";
         SpriteAtlas atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(targetPath);
@@ -474,6 +479,60 @@ public partial class GameResourceEditor
         }
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
+    }
+
+    /// <summary>
+    /// 批量修正 Textures/Items 与 Textures/Skins 下所有图标的 Pixels Per Unit 为 IconPixelsPerUnit，并重新打包对应图集（PPU 在打包时烘进图集，需同步重打）
+    /// </summary>
+    /// <param name="showDialog">完成后是否弹窗提示（按钮调用时传 true）</param>
+    /// <returns>实际修正的贴图数量</returns>
+    public static int FixAllIconsPixelsPerUnit(bool showDialog = false)
+    {
+        int fixCount = 0;
+        fixCount += FixIconsPixelsPerUnit("Assets/LoadResources/Textures/Items", "Assets/LoadResources/Textures/SpriteAtlas/AtlasForItems.spriteatlas");
+        fixCount += FixIconsPixelsPerUnit("Assets/LoadResources/Textures/Skins", "Assets/LoadResources/Textures/SpriteAtlas/AtlasForSkins.spriteatlas");
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        LogUtil.Log($"图标 PPU 修正完成：共修正 {fixCount} 张为 {IconPixelsPerUnit}");
+        if (showDialog)
+        {
+            EditorUtility.DisplayDialog("图标 PPU 修正", $"修正完成，共修正 {fixCount} 张贴图为 {IconPixelsPerUnit}", "确定");
+        }
+        return fixCount;
+    }
+
+    /// <summary>
+    /// 修正单个目录下所有贴图的 Pixels Per Unit 为 IconPixelsPerUnit，并重新打包指定图集
+    /// </summary>
+    /// <returns>实际修正的贴图数量</returns>
+    private static int FixIconsPixelsPerUnit(string texturesDir, string atlasPath)
+    {
+        string[] guids = AssetDatabase.FindAssets("t:Texture2D", new[] { texturesDir });
+        int fixCount = 0;
+        foreach (string guid in guids)
+        {
+            string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+            TextureImporter importer = AssetImporter.GetAtPath(assetPath) as TextureImporter;
+            if (importer == null) continue;
+
+            TextureImporterSettings settings = new TextureImporterSettings();
+            importer.ReadTextureSettings(settings);
+            if (Mathf.Approximately(settings.spritePixelsPerUnit, IconPixelsPerUnit)) continue;
+
+            settings.spritePixelsPerUnit = IconPixelsPerUnit;
+            importer.SetTextureSettings(settings);
+            importer.SaveAndReimport();
+            fixCount++;
+        }
+
+        SpriteAtlas atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(atlasPath);
+        if (atlas != null)
+        {
+            SpriteAtlasUtility.PackAtlases(new[] { atlas }, EditorUserBuildSettings.activeBuildTarget);
+            LogUtil.Log($"已重新生成图集: {atlas.name}");
+        }
+        return fixCount;
     }
 
     #endregion

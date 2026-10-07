@@ -19,5 +19,8 @@ public partial class UIViewBaseResearchItem
 
     public TextMeshProUGUI ui_Level;
 
+    public Image ui_Shine;
+
+    public Animator ui_Icon_Animator;
 
 }

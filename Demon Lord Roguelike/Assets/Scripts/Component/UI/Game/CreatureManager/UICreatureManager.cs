@@ -260,9 +260,8 @@ public partial class UICreatureManager : BaseUIComponent
             return;
         }
 
-        // 判断生物是否可以装备该道具
-        CreatureInfoBean creatureInfo = creatureData.creatureInfo;
-        if (!creatureInfo.CanEquipItem(itemInfo))
+        // 判断生物是否可以装备该道具(含魔王专属校验: 魔王专属装备仅魔王本体可装备)
+        if (!itemData.CanEquipForCreature(creatureData))
         {
             LogUtil.Log($"生物{creatureData.creatureName}无法装备该道具");
             return;

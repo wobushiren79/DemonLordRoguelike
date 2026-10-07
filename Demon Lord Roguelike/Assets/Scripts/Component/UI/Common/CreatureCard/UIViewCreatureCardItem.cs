@@ -14,7 +14,7 @@ public partial class UIViewCreatureCardItem : BaseUIView, IPointerEnterHandler
     /// <summary>
     /// 设置数据
     /// </summary>
-    public void SetData(CreatureBean creatureData, CardUseStateEnum cardUseState)
+    public virtual void SetData(CreatureBean creatureData, CardUseStateEnum cardUseState)
     {
         this.cardData.cardUseState = cardUseState;
         this.cardData.creatureData = creatureData;
