@@ -81,7 +81,7 @@ public class AttackModeRangedObliqueTracking : AttackModeRangedTracking
             visualStartAngle = baseVisualAngle + Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         }
         //贴身保底命中：与瞄准点距离足够近直接判中（短射线在目标迎面相撞穿进碰撞体后永久失效，不穿这一层会挂在目标身上空转）
-        if (attacked != null && !attacked.IsDead() && attacked.creatureObj != null)
+        if (CheckTargetEntityValid(attacked, attackedUUId))
         {
             float disToAim = Vector3.Distance(position, attacked.creatureObj.transform.position + Vector3.up * aimUpHeight);
             if (disToAim <= HitTouchDistance)
@@ -134,11 +134,11 @@ public class AttackModeRangedObliqueTracking : AttackModeRangedTracking
     }
 
     /// <summary>
-    /// 刷新跟踪方向：目标存活时方向=当前位置→瞄准点（目标脚底+aim_up 上抬，含 Y 不拍平）；目标死亡则保持上一帧方向（朝死亡点直飞）
+    /// 刷新跟踪方向：目标存活时方向=当前位置→瞄准点（目标脚底+aim_up 上抬，含 Y 不拍平）；目标死亡（或实体被对象池复用，UUId 变化）则保持上一帧方向（朝死亡点直飞）
     /// </summary>
     protected void RefreshTrackDirection()
     {
-        if (attacked != null && !attacked.IsDead() && attacked.creatureObj != null)
+        if (CheckTargetEntityValid(attacked, attackedUUId))
         {
             attackModeData.attackDirection = Vector3.Normalize(attacked.creatureObj.transform.position + Vector3.up * aimUpHeight - position);
         }

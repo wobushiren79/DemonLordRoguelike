@@ -5,6 +5,7 @@ watched_files:
   - Assets/Scripts/Game/Launcher/LauncherTest.cs
   - Assets/Editor/GameTestEditor.cs
   - Assets/Editor/GameTestEditorPartial.cs
+  - Assets/Editor/GameTestEditorSceneEdit.cs
   - Assets/Scripts/Game/Logic/GameFightLogicTest.cs
   - Assets/Scripts/Bean/Game/FightBeanForTest.cs
   - Assets/FrameWork/Scripts/Component/UI/UITestConsole.cs
@@ -348,8 +349,9 @@ foreach (var itemData in GameWorldInfoCfg.GetAllData())
 
 ## 战斗场景测试 (FightSceneTest)
 
-`TestSceneTypeEnum.FightSceneTest` —— 自定义场景/敌人/BUFF/深渊馈赠的战斗测试（含普通模式、单体测试模式、征服模式BOSS关、挑战100勇士、无尽模式五个子模式，挑战100勇士见[挑战100勇士测试](#挑战100勇士测试-fightscenetest-子模式-challengehundred)章节，无尽模式见[无尽模式测试](#无尽模式测试-fightscenetest-子模式-infinite)章节）。
+`TestSceneTypeEnum.FightSceneTest` —— 自定义场景/敌人/BUFF/深渊馈赠的战斗测试（含普通模式、单体测试模式、征服模式BOSS关、挑战100勇士、无尽模式、场景编辑六个子模式，挑战100勇士见[挑战100勇士测试](#挑战100勇士测试-fightscenetest-子模式-challengehundred)章节，无尽模式见[无尽模式测试](#无尽模式测试-fightscenetest-子模式-infinite)章节，场景编辑见[场景编辑测试](#场景编辑测试-fightscenetest-子模式-sceneedit)章节）。
 
+- **测试场景**：基础设置区的「测试场景」**下拉选择**（原手填「测试场景 ID」IntField 已改下拉），选项 `[id] 备注名`（FightScene.remark，空备注回退场景预制名 name_res），数据源 `FightSceneCfg.GetAllArrayData()`（`EnsureFightSceneOptions` 懒加载，按 id 排序）。首项固定「(手动输入)」占位——当前 `fightSceneId` 不在配置中时显示占位且**不覆盖原值**，选中有效项才覆盖；旁侧「🔄」清缓存 + `ClearCfgBaseStaticCache(typeof(FightSceneCfg))` 重建、「📂 场景表」打开 Excel；配置读取失败时回退手动 IntField + 警告。字段 `fightSceneId`（int，EditorPrefs 持久化，默认 10001）不变，`GetTestData()` 照旧存入 `fightData.fightSceneId`。
 - **魔王(防守核心)生物**：由基础设置区的「魔王生物 ID」(`fightDefenseCoreId`，EditorPrefs 持久化，默认 `2001` 骷髅战士)决定，`GetTestData()` 用它构建 `fightData.fightDefenseCoreData`（原硬编码 2001 已改为该字段）。
 - **魔王蓝量**：基础设置区的「魔王蓝量」(`fightDemonLordMP`，EditorPrefs 持久化 float，默认 `9999`)，`GetTestData()` 存入 `FightBeanForTest.testDemonLordMP`，由 `GameFightLogicTest.PreGameForAfterCreateDefenseCore()` 在防守核心创建后统一应用：设 `MPCurrent = testDemonLordMP`，并在配置 MP 上限不足时同步把 `dicAttribute[MP]` 提升到该值（否则 `ChangeMP` 消耗时会把超上限蓝量一次夹回配置上限）。应用在馈赠添加**之后**（AddAbyssalBlessing 触发的 RefreshBaseAttribute 会重算 dicAttribute，顺序颠倒会把上限提升冲掉；重开战斗走同一钩子故每场一致）。**MP 被「防守方固定属性」固定时蓝量设置让位**（固定值即上限，当前蓝量=固定值）。
 
@@ -367,7 +369,7 @@ foreach (var itemData in GameWorldInfoCfg.GetAllData())
 卡片生物 ID 与进攻生物 NPC ID 均为 **逐行列表编辑**：每行 = 序号 + 手动 ID 输入框(LongField) + 下拉选择(选中覆盖该行 ID) + 删除；底部「➕ 添加」(默认复制最后一行值)/「🗑️ 移除最后一个」。统一由 `DrawIdListWithDropdown(idList, 标签前缀, options, optionIds)` 绘制；下拉选项**首项固定为"(手动输入)"占位**——当前 ID 不在选项中时显示它且选中不改动 ID，避免手动值被误覆盖。
 
 - **卡片生物 IDs**（基础设置区，`fightCardIds: List<long>`，旧版逗号分隔 string `fightCardId` 已废弃，EditorPrefs 旧 key 首次加载时一次性迁移后删除）：下拉选项 `[id] 中文名`，数据源 `CreatureInfoCfg.GetAllArrayData()` + 直读 `Language_CreatureInfo_cn.txt`（`EnsureFightCardCreatureOptions` 懒加载，「🔄 刷新列表」清缓存 + `ClearCfgBaseStaticCache(typeof(CreatureInfoCfg))`）。`GetTestData()` 按卡片数量循环取列表 id（空列表兜底 2002 防取模除零）；基地测试(Base)的「手下生物 IDs」与卡片测试的「生物 ID」均复用同一份 `fightCardIds` 与同一绘制方法 `DrawFightCardIdList(title)`。
-- **进攻生物 IDs（NPCID）**（敌人设置区，`enemyIds: List<long>`）：下拉选项 `id  中文名`，数据源 `NpcInfoCfg.GetAllArrayData()` + 直读 `Language_NpcInfo_cn.txt`（`EnsureFightEnemyNpcOptions` → 与对话测试共用构建方法 `BuildNpcOptions(withManualPlaceholder, out options, out ids)`，对话测试传 false 无占位项）。
+- **进攻生物 IDs（NPCID）**（敌人设置区，`enemyIds: List<long>`）：下拉选项 `id  中文名`（**BOSS 前置 `[BOSS]` 标记**，判定取 `NpcInfoBean.IsBoss()`=备注 remark 含 boss 字样不区分大小写，与征服 `enemy_boss_ids` 引用一致；不能用 `attack_mode_ext` 非空判定——牧师/勇者等非BOSS也配了额外技能），数据源 `NpcInfoCfg.GetAllArrayData()` + 直读 `Language_NpcInfo_cn.txt`（`EnsureFightEnemyNpcOptions` → 与对话测试共用构建方法 `BuildNpcOptions(withManualPlaceholder, out options, out ids)`，对话测试传 false 无占位项；BOSS 标记两处下拉都生效）。
 
 ### 深渊馈赠测试设置（下拉选择族 + 目标等级）
 
@@ -616,6 +618,46 @@ LauncherTest.StartForInfiniteTest(worldId, difficultyLevel, saveSlot = 0)   // A
 - **rowId 来自配置表**：`excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（一行=一个世界的一个难度，`round_intensity_addrate` 列控制每轮强度递增倍率）。
 - **参数持久化**：`infiniteTestRowSelectIndex`/`infiniteTestSaveSlot`(0~3 钳制) EditorPrefs 持久化；选项缓存 `infiniteRowOptions`/`infiniteRowWorldIds`/`infiniteRowLevels` 懒加载不持久化（均在 `GameTestEditorPartial`）。
 
+## 场景编辑测试 (FightSceneTest 子模式 SceneEdit)
+
+`FightTestModeEnum.SceneEdit`（战斗场景测试的第 6 个子模式）—— 配置与普通模式完全相同（测试生物/场景/敌人/BUFF/固定属性），开始测试后在**运行中编辑战斗场景**（Hierarchy 拖入新预制、移动/旋转/缩放原有物体），Inspector 会话区提供「💾 保存场景编辑」（写回场景预制资产）与「↩️ 还原场景」（回到开始测试时的样子）按钮。**纯编辑器侧实现**（`GameTestEditorSceneEdit.cs`，GameTestEditor 的 partial），不新增 LauncherTest 入口——开始按钮复用 `GetTestData()` + `StartForFightSceneTest`。
+
+### 流程
+
+```
+GameTestEditor.DrawFightSceneTest()                        // 战斗测试模式选 SceneEdit(配置区同普通模式不早退)
+    ▼ ▶️ 开始场景编辑测试
+    │  GetTestData() + launcher.StartForFightSceneTest(fightData)   // 与普通模式同一入口
+    │  BeginSceneEditSession()：清旧快照+清扫泄漏备份+记录旧场景引用(sceneEditPrevSceneObj)
+    │    + sceneEditPendingSnapshot=true
+    ▼
+EditorApplication.update 轮询(OnSceneEditUpdate)
+    │  等 战斗场景实例 != 旧场景(防拍到未卸载的旧场景) 且 防守核心已创建
+    │  (此时场景位置/道路/Details 均已按配置处理完, 才是最终初始状态)
+    ▼
+CaptureSceneEditSnapshot(sceneObj)
+    │  Object.Instantiate 整场景克隆 → SetActive(false) + HideAndDontSave(仅内存, Hierarchy 不可见)
+    │  记录场景预制路径 sceneEditPrefabPath(fightData.fightSceneId → FightSceneCfg.name_res)
+    ▼
+用户在 Hierarchy 编辑场景(拖入新预制/移动旋转缩放/删除/重命名)
+    ▼
+💾 保存场景编辑：ComputeSceneEditDiff(快照 vs 运行时场景) → 二次确认
+    │  → PrefabUtility.LoadPrefabContents → ①按路径写 TRS ②新增预制 InstantiatePrefab 保链接
+    │    (非预制物体整体克隆) → SaveAsPrefabAsset 写回预制资产 → 重新拍摄快照(存档点语义)
+↩️ 还原场景：RestoreSceneEditLevel 按快照逐层恢复
+    │  新加的删除、动过的回位(TRS+激活+顺序)、删掉的从备份克隆补回
+```
+
+### 关键点
+
+- **改动匹配=「同名第N个」逐层匹配**：备份子物体按 名字+同名序号 匹配运行时子物体，定位路径形如 `/Details#0/Day#0/FlowerSea#0`；用户**重命名**原物体会被视为「删除+新增」（其变换修改丢失、按新增物体处理），属已知限制。
+- **保存范围**：仅「新增预制/物体」+「原有物体的位置/旋转/缩放修改」。**不保存**：删除原物体（仅在确认框提示，需删请直接编辑预制）、激活状态（Details 显隐由场景配置 details 驱动）、组件参数修改。新增只收集**最外层**未匹配节点：预制实例走 `PrefabUtility.InstantiatePrefab` 保链接（来源=场景预制自身的套娃跳过）、非预制物体整体克隆（内部预制链接保留、组件当前值一并拷贝）。
+- **道路排除**：`FightSceneRoad` 是战斗逻辑运行时动态加载进场景根的（WorldHandler.LoadFightScene），快照/保存/还原三环均按根层物体名跳过（实例名可能带 `(Clone)` 后缀）。
+- **还原即快照语义**：快照在开始测试场景就绪后拍摄；**保存成功后会重新拍摄快照**（存档点语义——还原回到最近保存的状态而非最初状态）。
+- **重开战斗会重载场景**：结算后点「下一步」走 `EnterGameForFightScene` 重新实例化场景，**未保存的编辑全部丢失**（面板 HelpBox 已提示）；重开后新旧场景结构一致，旧快照仍可继续用于 diff/还原。
+- **备份生命周期**：退出 Play 自动销毁（playModeStateChanged）；域重载丢引用后按名字后缀 `_SceneEditBackup` + HideAndDontSave 扫描清扫（下次开始时）；快照对象不参与存档/打包（HideAndDontSave）。
+- **无持久化参数**：会话状态(备份/路径/检测结果)均为编辑器实例字段不存 EditorPrefs，`fightTestMode=SceneEdit` 本身随既有机制持久化。
+
 ## 粒子特效测试 (EffectTest)
 
 `TestSceneTypeEnum.EffectTest` —— 纯代码 IMGUI 面板(`TestEffectGUI`，不依赖任何预制)，下拉选择特效 id 后点播放，在 10x10 平面(顶面高度0)上方 1 格随机位置、**按该特效在正式游戏里的执行方法**播放，方向可选(随机/左/右，按生产 attackDirection 方向语义传递)，用于快速验证 `excel_effect_info` 配置的粒子在真实调用路径下的表现。
@@ -812,6 +854,7 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 |------|----------|
 | 测试启动器 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（含 `ClearTestGUIs()` 纯GUI测试面板统一清理收口，所有 `StartFor*` 入口首行调用） |
 | 测试编辑器 | `Assets/Editor/GameTestEditor.cs` + `GameTestEditorPartial.cs` |
+| 场景编辑测试（战斗测试子模式 SceneEdit） | `Assets/Editor/GameTestEditorSceneEdit.cs`（GameTestEditor 的 partial：会话区 UI + 快照拍摄(HideAndDontSave 整场景克隆) + 改动检测(同名第N个逐层匹配) + 保存写回场景预制(LoadPrefabContents/InstantiatePrefab/SaveAsPrefabAsset) + 按快照还原；道路 FightSceneRoad 三环均排除；纯编辑器侧不新增 LauncherTest 入口） |
 | 测试战斗逻辑 | `Assets/Scripts/Game/Logic/GameFightLogicTest.cs` |
 | 测试战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForTest.cs`（fightAttackDataRemark 进攻数据备份；testAbyssalBlessingIds 测试馈赠目标行id列表，由 GameFightLogicTest 在防守核心创建后统一添加；testDemonLordMP 测试魔王蓝量，由 GameFightLogicTest 统一应用并同步提升 MP 上限；dicTestDefenseFixedAttribute 测试防守方固定属性=基础值替换，作用于卡片魔物+魔王核心，MP 被固定时蓝量设置让位） |
 | 测试控制台 | `Assets/FrameWork/Scripts/Component/UI/UITestConsole.cs` |

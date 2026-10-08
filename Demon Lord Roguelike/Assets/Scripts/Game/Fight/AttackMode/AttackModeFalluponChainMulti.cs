@@ -117,9 +117,8 @@ public class AttackModeFalluponChainMulti : BaseAttackMode
             hasPassedFirstFrame = true;
             return;
         }
-        //攻击者死亡或实体已被对象池复用（UUId 变了）：取消余发并回收
-        if (cachedAttacker == null || cachedAttacker.IsDead()
-            || cachedAttacker.fightCreatureData?.creatureData?.creatureUUId != cachedAttackerUUId)
+        //攻击者死亡或实体已被对象池复用（UUId 变了）：取消余发并回收（统一走基类双判，含 creatureObj 判空）
+        if (!CheckTargetEntityValid(cachedAttacker, cachedAttackerUUId))
         {
             Destroy();
             return;

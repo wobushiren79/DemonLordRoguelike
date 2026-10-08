@@ -576,6 +576,19 @@ public class BaseAttackMode
 
     #region  检测相关
     /// <summary>
+    /// 校验持有的目标实体是否仍为锁定时的那个生物：非空+未死亡+creatureObj 在+UUId 与快照一致。
+    /// <para>战斗生物实体走对象池（CreatureManager.queuePoolForFightCreatureEntity），死亡回收后会被复用成新生物且 SetData 重置为存活状态——
+    /// 仅判 IsDead 会把复用后的新生物误判为"原目标还活着"，导致追踪弹道转向锁定其他路的敌人，故须叠加 UUId 双判（照 AttackModeFalluponChainMulti 先例）。</para>
+    /// </summary>
+    /// <param name="target">跨帧持有的目标实体引用</param>
+    /// <param name="snapshotUUId">锁定目标时缓存的 creatureUUId 快照（换目标时同步更新）</param>
+    protected static bool CheckTargetEntityValid(FightCreatureEntity target, string snapshotUUId)
+    {
+        return target != null && !target.IsDead() && target.creatureObj != null
+            && target.fightCreatureData?.creatureData?.creatureUUId == snapshotUUId;
+    }
+
+    /// <summary>
     /// 检测弹道当前位置(position)是否到达边界（DSP 方案B 首选，脱离 gameObject）
     /// </summary>
     public virtual bool CheckIsMoveBound()

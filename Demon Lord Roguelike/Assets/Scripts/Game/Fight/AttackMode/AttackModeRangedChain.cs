@@ -22,6 +22,8 @@ public class AttackModeRangedChain : AttackModeRanged
     private int chainCurrent;
     /// <summary>当前锁定目标（追踪用，发射/每次连锁时写入；死亡置null转直飞落点销毁）</summary>
     private FightCreatureEntity currentTarget;
+    /// <summary>当前锁定目标的身份快照（实体池复用后 UUId 会变，防把复用成的新生物误判为存活目标继续追踪）</summary>
+    private string currentTargetUUId;
     /// <summary>全程命中去重名单（同一弹道的命中目标不重复；复用避免每次发射 new）</summary>
     private readonly HashSet<string> hitCreatureIds = new HashSet<string>();
     /// <summary>连锁候选缓冲（复用，避免每次 new List 产生 GC）</summary>
@@ -52,6 +54,7 @@ public class AttackModeRangedChain : AttackModeRanged
         currentTarget = fightLogic?.fightData?.GetCreatureById(attackModeData.attackedId, searchCreatureType);
         if (currentTarget != null && currentTarget.IsDead())
             currentTarget = null;
+        currentTargetUUId = currentTarget?.fightCreatureData?.creatureData?.creatureUUId;
     }
     #endregion
 
@@ -63,7 +66,7 @@ public class AttackModeRangedChain : AttackModeRanged
     public override void PrepareRaycast(FightRaycastBatch batch)
     {
         batchRayStart = -1;
-        if (currentTarget != null)
+        if (CheckTargetEntityValid(currentTarget, currentTargetUUId))
         {
             attackModeData.attackDirection = (currentTarget.creatureObj.transform.position - position).SetY(0).normalized;
             EnqueueSingleRay(batch);
@@ -99,9 +102,11 @@ public class AttackModeRangedChain : AttackModeRanged
     {
         if (currentTarget != null)
         {
-            if (currentTarget.IsDead() || currentTarget.creatureObj == null)
+            //目标死亡或实体被对象池复用（UUId 变化）即失效：置 null 直飞最后已知位置销毁
+            if (!CheckTargetEntityValid(currentTarget, currentTargetUUId))
             {
                 currentTarget = null;
+                currentTargetUUId = null;
             }
             else
             {
@@ -137,7 +142,7 @@ public class AttackModeRangedChain : AttackModeRanged
     /// </summary>
     private void HandleForArrive()
     {
-        if (currentTarget != null && !currentTarget.IsDead() && !IsHitBefore(currentTarget))
+        if (CheckTargetEntityValid(currentTarget, currentTargetUUId) && !IsHitBefore(currentTarget))
         {
             HandleForHitTarget(currentTarget);
             return;
@@ -153,7 +158,7 @@ public class AttackModeRangedChain : AttackModeRanged
     /// </summary>
     public override FightCreatureEntity CheckHitTargetForSingle()
     {
-        if (currentTarget == null)
+        if (!CheckTargetEntityValid(currentTarget, currentTargetUUId))
             return null;
         FightCreatureEntity hitTarget = base.CheckHitTargetForSingle();
         if (hitTarget != currentTarget)
@@ -188,6 +193,7 @@ public class AttackModeRangedChain : AttackModeRanged
         }
         chainCurrent++;
         currentTarget = chainTarget;
+        currentTargetUUId = chainTarget.fightCreatureData?.creatureData?.creatureUUId;
         attackModeData.targetPos = chainTarget.creatureObj.transform.position;
     }
 
@@ -241,6 +247,7 @@ public class AttackModeRangedChain : AttackModeRanged
         chainMax = 0;
         chainCurrent = 0;
         currentTarget = null;
+        currentTargetUUId = null;
         hitCreatureIds.Clear();
         listChainCandidate.Clear();
         base.Destroy(isPermanently);

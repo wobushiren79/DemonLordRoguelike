@@ -79,12 +79,29 @@ public partial class UIRewardSelect : BaseUIComponent
         await firstBox.OpenBox();
         ItemBean itemData = rewardSelectData.listReward[0];
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        //添加道具到背包里
-        userData.AddBackpackItem(itemData);
+        //添加道具到背包里(幻化药会附赠幻原药)
+        GrantRewardItemToBackpack(userData, itemData);
         //刷新UI
         RefreshUI();
         //展示道具详情
         ShowItemDetails(true, itemData);
+    }
+
+    /// <summary>
+    /// 奖励道具入账：添加到背包；若入账的是幻化药(ItemTypeEnum.TransformPotion)则额外赠送1瓶幻原药(配套还原道具，避免幻化后无法还原)
+    /// </summary>
+    /// <param name="userData">用户数据</param>
+    /// <param name="itemData">入账的奖励道具</param>
+    public void GrantRewardItemToBackpack(UserDataBean userData, ItemBean itemData)
+    {
+        userData.AddBackpackItem(itemData);
+        var itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
+        if (itemInfo != null && itemInfo.GetItemType() == ItemTypeEnum.TransformPotion)
+        {
+            //幻原药走 id 版本入账(可堆叠合并到既有道具堆,上限 num_max=99)
+            userData.AddBackpackItem((long)ItemIdEnum.RestorePotion, 1);
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61025), 0);
+        }
     }
 
     /// <summary>
@@ -140,8 +157,8 @@ public partial class UIRewardSelect : BaseUIComponent
                     break;
                 case 1://打开宝箱
                     UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-                    //添加道具到背包里
-                    userData.AddBackpackItem(itemData);
+                    //添加道具到背包里(幻化药会附赠幻原药)
+                    GrantRewardItemToBackpack(userData, itemData);
                     //数量+1
                     rewardSelectData.selectNum++;
                     //刷新UI

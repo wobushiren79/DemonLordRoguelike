@@ -16,6 +16,8 @@ public class AttackModeRangedArcTracking : AttackModeRangedArc
     #region 字段
     /// <summary>落点跟踪目标（死亡后落点锁定其最后位置，即死亡点）</summary>
     public FightCreatureEntity attacked;
+    /// <summary>目标身份快照（实体池复用后 UUId 会变，防把复用成的新生物误判为存活目标继续跟踪落点）</summary>
+    protected string attackedUUId;
     /// <summary>弹体贴图朝向修正基准角（发射时取武器 StartRotate 写入的 visualStartAngle，切线角在其上叠加）</summary>
     protected float baseVisualAngle;
     /// <summary>落点相对目标脚底的偏移（=本发弹道起始点相对攻击者位置的偏移，发射时缓存；落点与发射口同高）</summary>
@@ -60,6 +62,7 @@ public class AttackModeRangedArcTracking : AttackModeRangedArc
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
         this.attacked = attacked;
+        attackedUUId = attacked?.fightCreatureData?.creatureData?.creatureUUId;
         //记录发射时武器 StartRotate 写入的修正角（DSP 每帧读 visualStartAngle 建矩阵，切线角在其上叠加）
         baseVisualAngle = visualStartAngle;
         //落点偏移=弹道起始点相对攻击者位置的偏移（落点=目标脚底+该偏移，起落同高）
@@ -98,8 +101,8 @@ public class AttackModeRangedArcTracking : AttackModeRangedArc
                 Destroy();
             return;
         }
-        //落点跟踪：目标存活则落点跟随目标当前位置（脚底+起始偏移）；死亡则不再更新（targetPos 停于死亡点）
-        if (attacked != null && !attacked.IsDead() && attacked.creatureObj != null)
+        //落点跟踪：目标存活则落点跟随目标当前位置（脚底+起始偏移）；死亡（或实体被对象池复用，UUId 变化）则不再更新（targetPos 停于死亡点）
+        if (CheckTargetEntityValid(attacked, attackedUUId))
         {
             attackModeData.targetPos = attacked.creatureObj.transform.position + targetPosOffset;
         }
@@ -163,6 +166,18 @@ public class AttackModeRangedArcTracking : AttackModeRangedArc
             SetPosition(position + new Vector3(0, -stuckConfig.sink, 0));
         trailMode = AttackModeTrailType.None;
         stuckTimeRemaining = stuckConfig.time;
+    }
+    #endregion
+
+    #region 回收
+    /// <summary>
+    /// 回收：清空落点跟踪目标与其身份快照，防对象池复用残留
+    /// </summary>
+    public override void Destroy(bool isPermanently = false)
+    {
+        attacked = null;
+        attackedUUId = null;
+        base.Destroy(isPermanently);
     }
     #endregion
 }

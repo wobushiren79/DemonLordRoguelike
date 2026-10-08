@@ -20,8 +20,12 @@ public class AttackModeFalluponChain : BaseAttackMode
     private Action<BaseAttackMode> actionForAttackEnd;
     //当前被攻击者（用于确定下一次检测的中心位置）
     private FightCreatureEntity currentAttacked;
+    //当前被攻击者的身份快照（实体池复用后 UUId 会变，防把复用成的新生物误判为存活目标继续连锁）
+    private string currentAttackedUUId;
     //攻击者
     private FightCreatureEntity attackerEntity;
+    //攻击者的身份快照（实体池复用后 UUId 会变，复用后命中特效偏移退化为目标脚底）
+    private string attackerUUId;
 
 
     public override void StartAttack()
@@ -36,6 +40,8 @@ public class AttackModeFalluponChain : BaseAttackMode
         this.actionForAttackEnd = actionForAttackEnd;
         this.attackerEntity = attacker;
         this.currentAttacked = attacked;
+        currentAttackedUUId = attacked?.fightCreatureData?.creatureData?.creatureUUId;
+        attackerUUId = attacker?.fightCreatureData?.creatureData?.creatureUUId;
 
         if (attacker == null || attacked == null || attacked.IsDead())
         {
@@ -68,8 +74,8 @@ public class AttackModeFalluponChain : BaseAttackMode
                 return;
             }
 
-            //检测当前目标是否有效
-            if (currentAttacked == null || currentAttacked.creatureObj == null || currentAttacked.IsDead())
+            //检测当前目标是否有效（UUId 双判防实体池复用成新生物后以其为圆心继续连锁）
+            if (!CheckTargetEntityValid(currentAttacked, currentAttackedUUId))
             {
                 EndAttack();
                 return;
@@ -158,6 +164,7 @@ public class AttackModeFalluponChain : BaseAttackMode
         //执行攻击
         ExecuteAttack(nextTarget, chainDamage, false);
         currentAttacked = nextTarget;
+        currentAttackedUUId = nextTarget.fightCreatureData?.creatureData?.creatureUUId;
 
         return true;
     }
@@ -169,9 +176,10 @@ public class AttackModeFalluponChain : BaseAttackMode
     {
         attackModeData.attackerDamage = damage;
         target.UnderAttack(this);
-        //攻击者缺省(已销毁)时退化为目标脚底位置，偏移仍由存活攻击者提供
+        //攻击者缺省(已销毁/实体被对象池复用)时退化为目标脚底位置，偏移仍由存活攻击者提供
         Vector3 effectPosition = target.creatureObj.transform.position;
-        if (attackerEntity != null && attackerEntity.fightCreatureData?.creatureData?.creatureInfo != null)
+        if (attackerEntity != null && attackerEntity.fightCreatureData?.creatureData?.creatureInfo != null
+            && attackerEntity.fightCreatureData?.creatureData?.creatureUUId == attackerUUId)
         {
             effectPosition += attackerEntity.fightCreatureData.creatureData.creatureInfo.GetAttackStartPosition();
         }
@@ -196,6 +204,10 @@ public class AttackModeFalluponChain : BaseAttackMode
         listAttackedCreatureId.Clear();
         listCandidate.Clear();
         currentChainCount = 0;
+        currentAttacked = null;
+        currentAttackedUUId = null;
+        attackerEntity = null;
+        attackerUUId = null;
         base.Destroy(isPermanently);
     }
 }

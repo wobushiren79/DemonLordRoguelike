@@ -85,7 +85,7 @@ watched_files:
  → selectNumMax += rewardAddSelectNum; 钳制 = Min(selectNumMax, listReward.Count - 1)（首箱保底自动开启不占选择次数）
  → 打开 UIRewardSelect.SetData(rewardSelectData, ActionForUIRewardSelectEnd, isClearLastGame:true)
     (领奖场景加载完成、UI 显示时播放进入领奖音效 AudioEnum.sound_reward_6)
- → 宝箱落地动画全部播完 → await AutoOpenFirstRewardBox() 自动开首箱并等开箱播完(listReward[0] 保底位，直接入账不占次数) → 首箱开完才 SetActive 显示 UI → 玩家从剩余宝箱选择 → userData.AddBackpackItem(itemData) (水晶走 AddCrystal,装备入背包)
+ → 宝箱落地动画全部播完 → await AutoOpenFirstRewardBox() 自动开首箱并等开箱播完(listReward[0] 保底位，直接入账不占次数) → 首箱开完才 SetActive 显示 UI → 玩家从剩余宝箱选择 → GrantRewardItemToBackpack(userData, itemData) 统一入账(水晶走 AddCrystal,装备入背包; **选中幻化药(TransformPotion=18)时附赠1瓶幻原药(RestorePotion=200003，走 id 版本 AddBackpackItem 可堆叠合并, num_max=99) + Toast 61025「额外获得幻原药×1」**，首箱保底位同为该入口)
  → ActionForUIRewardSelectEnd → 触发 Achievement_ConquerComplete(worldId, difficultyLevel) 成就(按世界×难度统计)
  → AddReputationForConquerComplete(fightTypeConquerInfo) 发放通关声望(研究 UnlockEnum.ConquerReputationReward 解锁才 userData.AddReputation(conquerInfo.GetRewardReputation()); 存档前发放,随存档落盘)
  → EndGameAndReturnToBase()

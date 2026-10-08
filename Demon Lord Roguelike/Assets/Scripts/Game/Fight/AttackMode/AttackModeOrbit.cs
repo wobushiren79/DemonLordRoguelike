@@ -15,8 +15,20 @@ using UnityEngine;
 public class AttackModeOrbit : BaseAttackMode
 {
     #region 注入参数（由 BUFF 在 StartAttack 前写入、宿主变更时更新；Destroy 时清空防对象池残留）
-    /// <summary>环绕宿主（最前排己方魔物，由 BUFF 负责选取与变更）</summary>
-    public FightCreatureEntity orbitCenterEntity;
+    /// <summary>环绕宿主（最前排己方魔物，由 BUFF 负责选取与变更；setter 自动同步 UUId 快照，防实体池复用后把新生物误判为原宿主）</summary>
+    public FightCreatureEntity orbitCenterEntity
+    {
+        get => orbitCenterEntityInternal;
+        set
+        {
+            orbitCenterEntityInternal = value;
+            orbitCenterUUId = value?.fightCreatureData?.creatureData?.creatureUUId;
+        }
+    }
+    /// <summary>宿主实体内部引用（走 orbitCenterEntity 属性读写）</summary>
+    private FightCreatureEntity orbitCenterEntityInternal;
+    /// <summary>宿主身份快照（实体池复用后 UUId 会变，setter 自动同步）</summary>
+    private string orbitCenterUUId;
     /// <summary>当前环绕角（弧度；生成时按序号均分错开）</summary>
     public float orbitAngle;
     /// <summary>旋转角速度（弧度/秒）</summary>
@@ -72,8 +84,8 @@ public class AttackModeOrbit : BaseAttackMode
     {
         if (!isValid)
             return;
-        // 宿主无效（未选/死亡/实体回收）则原地待命，书本生死由 BUFF 统一管理
-        if (orbitCenterEntity == null || orbitCenterEntity.creatureObj == null || orbitCenterEntity.IsDead())
+        // 宿主无效（未选/死亡/实体被池复用，UUId 双判）则原地待命，书本生死由 BUFF 统一管理
+        if (!CheckTargetEntityValid(orbitCenterEntity, orbitCenterUUId))
             return;
         float deltaTime = GameFightLogic.GetFightDeltaTime();
         orbitTime += deltaTime;

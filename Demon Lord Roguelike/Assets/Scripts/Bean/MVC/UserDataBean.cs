@@ -342,6 +342,21 @@ public class UserDataBean : BaseBean
         GetUserBackpackItemsData().listBackpackItems.Remove(itemData);
         EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Item_Change);
     }
+
+    /// <summary>
+    /// 移除背包里的道具(按数量消耗：itemNum 扣减 num，≤0 时才整 Bean 移除；消耗品 num_max>1 堆叠时使用，如幻原药)
+    /// </summary>
+    /// <param name="itemData">要消耗的背包道具</param>
+    /// <param name="num">消耗数量</param>
+    public void RemoveBackpackItem(ItemBean itemData, int num)
+    {
+        if (itemData == null || itemData.itemId == 0)
+            return;
+        itemData.itemNum -= num;
+        if (itemData.itemNum <= 0)
+            GetUserBackpackItemsData().listBackpackItems.Remove(itemData);
+        EventHandler.Instance.TriggerEvent(EventsInfo.Backpack_Item_Change);
+    }
     #endregion
 
     #region 阵容生物相关

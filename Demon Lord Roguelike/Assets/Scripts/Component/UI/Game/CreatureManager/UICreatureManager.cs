@@ -535,9 +535,9 @@ public partial class UICreatureManager : BaseUIComponent
         dialogData.actionSubmit = (view, data) =>
         {
             var userData = GameDataHandler.Instance.manager.GetUserData();
-            //清除幻化 → 消耗道具 → 落盘
+            //清除幻化 → 消耗1瓶(幻原药 num_max=99 堆叠,按数量递减为0才移除) → 落盘
             creatureData.transformItemId = 0;
-            userData.RemoveBackpackItem(itemData);
+            userData.RemoveBackpackItem(itemData, 1);
             GameDataHandler.Instance.manager.SaveUserData();
             //三件套刷新:卡片详情(重绘spine) + 生物卡片列表(幻化形象刷新) + 背包列表(道具移除)
             ui_UIViewCreatureCardEquipDetails.SetCardDetails(creatureData);

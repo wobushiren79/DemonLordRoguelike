@@ -263,6 +263,16 @@ public partial class NpcInfoBean
         return (NpcTypeEnum)npc_type;
     }
 
+    /// <summary>
+    /// 是否BOSS（配置约定：备注 remark 中含 "boss" 字样，不区分大小写，如「持盾战士-Boss」「神官-BOSS」；
+    /// 与征服配置 enemy_boss_ids 的引用保持一致。注意不能用 attack_mode_ext 非空判定——牧师/勇者等非BOSS也配了额外技能）
+    /// </summary>
+    /// <returns>true=BOSS</returns>
+    public bool IsBoss()
+    {
+        return !remark.IsNull() && remark.IndexOf("boss", StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
     #region 地区限制
     /// <summary>
     /// 是否匹配当前语言的地区限制(region)：空=不限语言；配置语言代码(如 cn 或 cn,en，见LanguageEnum)时仅当前语言在列表内才允许出现

@@ -67,7 +67,8 @@ RewardSelectBean (奖励生成单一真实源)
     │
 UIRewardSelect (领奖界面)
     │  3D 宝箱场景 ScenePrefabForRewardSelect，射线点击选择
-    │  选中 → userData.AddBackpackItem(itemData)
+    │  选中 → GrantRewardItemToBackpack(userData, itemData) 统一入账
+    │    (幻化药 TransformPotion=18 入账时附赠1瓶幻原药 RestorePotion=200003 + Toast 61025)
 ```
 
 ## 数据结构
@@ -145,10 +146,11 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
   - `isClearLastGame=true`：进入领奖场景前先 `gameLogic.ClearGame()` 卸载上一场战斗场景并清理战斗实体。**征服模式通关 BOSS 与挑战100勇士胜利进领奖都必须传 true**（两处 `ActionForUIFightSettlementNext` 均已传），否则战斗场景不会卸载，会与领奖场景叠加残留；独立测试(LauncherTest)无上一场战斗，保持默认 false。
   - 注意：结算流程里 `ClearGameForSimple()` 只清 AI/BUFF/在途弹道，**不卸载战斗场景**；战斗场景的卸载靠领奖入口的 `isClearLastGame` 或返回基地时的 `ClearWorldData`。
   - 宝箱落地动画链路：`RewardSelectBoxComponent.InitData` 只做数据初始化（图标/数量/藏道具藏箱子）→ `SetPrewarmActive(true)` 预热显隐 → `PlayShowAnim(delay)` 恢复 `speed=1` 播 Show（时长运行时从 Animator 读 `timeBoxShowAnim`）→ 播完放落地音 `sound_hit_6`。
-  - **首箱保底自动开**：`await PlayAllBoxShowAnim()` 全部落地完成后 `await AutoOpenFirstRewardBox()`——Idle 检查通过才 `await firstBox.OpenBox()` 等开箱动画播完（道具升起落定），随后 `AddBackpackItem` 入账并展示道具详情；**不自增 `selectNum`**（保底赠送不占选择次数）。**UI 全程保持隐藏直到首箱开完才 `SetActive(true)` 显示**（此期间点击/跳过被 `activeSelf` 检查屏蔽），玩家在剩余宝箱按 `selectNumMax` 选择。**`isAutoOpenFirstBox=false`（挑战100勇士 3箱3抽）时跳过整个 AutoOpenFirstRewardBox**——无首箱保底、落地动画播完直接显示 UI 全手动开箱，且可开数=总箱数（不套用征服 `selectNumMax=Min(...,Count-1)` 的 -1 钳制，该钳制在 `GameFightLogicConquer` 内只对征服生效）。
+  - **首箱保底自动开**：`await PlayAllBoxShowAnim()` 全部落地完成后 `await AutoOpenFirstRewardBox()`——Idle 检查通过才 `await firstBox.OpenBox()` 等开箱动画播完（道具升起落定），随后 `GrantRewardItemToBackpack` 入账并展示道具详情；**不自增 `selectNum`**（保底赠送不占选择次数）。**UI 全程保持隐藏直到首箱开完才 `SetActive(true)` 显示**（此期间点击/跳过被 `activeSelf` 检查屏蔽），玩家在剩余宝箱按 `selectNumMax` 选择。**`isAutoOpenFirstBox=false`（挑战100勇士 3箱3抽）时跳过整个 AutoOpenFirstRewardBox**——无首箱保底、落地动画播完直接显示 UI 全手动开箱，且可开数=总箱数（不套用征服 `selectNumMax=Min(...,Count-1)` 的 -1 钳制，该钳制在 `GameFightLogicConquer` 内只对征服生效）。
 - 点击宝箱 `OnClickForSelectBox`：射线检测命中宝箱 → `scenePrefab.OpenRewardBox` 返回状态：
   - `0` 没有次数 → Toast 提示
-  - `1` 打开宝箱 → `userData.AddBackpackItem(itemData)` 入账 + `selectNum++` + 展示道具详情
+  - `1` 打开宝箱 → `GrantRewardItemToBackpack(userData, itemData)` 入账 + `selectNum++` + 展示道具详情
+- **入账统一入口 `GrantRewardItemToBackpack`**（2026-10-08 起，首箱保底与手动开箱共用）：`AddBackpackItem(itemData)` 后若入账道具是幻化药（`GetItemType()==ItemTypeEnum.TransformPotion`），附赠 1 瓶幻原药——走 id 版本 `AddBackpackItem((long)ItemIdEnum.RestorePotion, 1)`（可堆叠合并进既有道具堆，上限 num_max=99）+ Toast 61025「额外获得幻原药×1」；幻原药消耗对应走 `RemoveBackpackItem(itemData, 1)` 递减重载（item-system）。
   - `2` 已打开 → 仅展示道具详情
 - 点击跳过 `OnClickForSkip`：若还有未选次数先弹确认框 → `OpenAllRewardBoxPreview()` 展示全部宝箱后回调 `actionForEnd`
 - 结束开箱节奏（`ScenePrefabForRewardSelect.OpenAllRewardBoxPreview`）：未开的箱子第一个立即打开、之后每个间隔 0.5 秒连续打开（开火即忘，不等单个开箱动画播完，已开的箱子跳过不占间隔），全部触发后固定再等 1 秒才回调 `actionForEnd` 切换场景。间隔在 `OpenAllRewardBoxPreview` 内 `timeOpenInterval` 局部变量调整。

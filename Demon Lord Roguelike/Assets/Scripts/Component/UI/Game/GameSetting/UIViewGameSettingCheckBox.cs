@@ -29,11 +29,20 @@ public partial class UIViewGameSettingCheckBox : BaseUIView,IRadioButtonCallBack
     }
 
     /// <summary>
-    /// 设置是否选中
+    /// 设置是否选中（触发回调）
     /// </summary>
     public void SetSelect(bool isSelect)
     {
         ui_Check.SetStates(isSelect);
+    }
+
+    /// <summary>
+    /// 设置是否选中（不触发回调；用于互斥联动时同步对端勾选状态，避免回调回环）
+    /// </summary>
+    public void SetSelectNoCallback(bool isSelect)
+    {
+        ui_Check.ChangeStates(isSelect);
+        ui_CheckText.text = isSelect ? selectStr : unselectStr;
     }
 
     /// <summary>

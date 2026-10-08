@@ -37,6 +37,9 @@ public partial class GameTestEditor
     // 基础测试参数
     public int testDataCardNum = 20;
     public int fightSceneId = 10001;
+    // 战斗场景下拉选项缓存(首项为"(手动输入)"占位；不持久化，懒加载，配置重导后点「🔄」重建)
+    private GUIContent[] fightSceneOptions;
+    private long[] fightSceneIds;
     // 卡片生物ID列表(战斗测试防守方卡片/基地测试手下生物共用；每行可手动输入或下拉选择已有生物)
     public List<long> fightCardIds = new List<long>() { 2002 };
     public int fightSceneRoadNum = 1;

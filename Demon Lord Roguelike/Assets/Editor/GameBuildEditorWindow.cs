@@ -8,7 +8,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 
 /// <summary>
-/// 打包游戏工具窗口：打包前按勾选项执行资源生成（道具图标/皮肤图标/刷新图集，逻辑复用 GameResourceEditor），随后执行 BuildPlayer 打包
+/// 打包游戏工具窗口：打包前按勾选项执行资源生成（导出所有 Excel 为 Json/道具图标/皮肤图标/刷新图集，逻辑分别复用 ExcelEditorWindow 与 GameResourceEditor），随后执行 BuildPlayer 打包
 /// </summary>
 public class GameBuildEditorWindow : EditorWindow
 {
@@ -43,6 +43,9 @@ public class GameBuildEditorWindow : EditorWindow
 
     /// <summary>是否生成所有 Spine 道具图标</summary>
     private bool isGenItemIcons = true;
+
+    /// <summary>是否导出一次所有 Excel 为 Json（配置表是 Excel 唯一真实源，打包前默认导出一次保证包内配置最新）</summary>
+    private bool isExportAllJsons = true;
 
     /// <summary>是否生成所有 Spine 皮肤图标</summary>
     private bool isGenSkinIcons = true;
@@ -130,8 +133,10 @@ public class GameBuildEditorWindow : EditorWindow
         GUILayout.Label("打包游戏工具", titleStyle);
         GUILayout.Space(16);
 
-        DrawSectionBox("打包前执行（复用 游戏资源处理 工具）", () =>
+        DrawSectionBox("打包前执行（复用 Excel处理 / 游戏资源处理 工具）", () =>
         {
+            isExportAllJsons = EditorGUILayout.Toggle(new GUIContent("导出所有 Excel 为 Json", "调用 ExcelEditorWindow.QuickExcelToJson（默认路径，全量导出配置表 Json）"), isExportAllJsons);
+            GUILayout.Space(4);
             isGenItemIcons = EditorGUILayout.Toggle(new GUIContent("生成所有 Spine 道具图标", "调用 GameResourceEditor.SpineAllItemInit"), isGenItemIcons);
             GUILayout.Space(4);
             isGenSkinIcons = EditorGUILayout.Toggle(new GUIContent("生成所有 Spine 皮肤图标", "调用 GameResourceEditor.SpineAllSkinInit"), isGenSkinIcons);
@@ -378,6 +383,11 @@ public class GameBuildEditorWindow : EditorWindow
         }
 
         // 打包前资源生成（全部成功后再打包）
+        if (isExportAllJsons)
+        {
+            LogUtil.Log("========== 打包前：导出所有 Excel 为 Json ==========");
+            ExcelEditorWindow.QuickExcelToJson();
+        }
         if (isGenItemIcons)
         {
             LogUtil.Log("========== 打包前：生成所有 Spine 道具图标 ==========");

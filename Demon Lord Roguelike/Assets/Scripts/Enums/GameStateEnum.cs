@@ -126,6 +126,7 @@ public enum FightTestModeEnum
     SingleUnit = 2,//单体测试模式(道路长度/道路数量/进攻生物数量/进攻间隔均为固定值不显示，其余同普通模式)
     ChallengeHundred = 3,//挑战100勇士(下拉选配置行+存档槽位，冻结该行直接进入挑战100勇士战斗，测试模拟不落盘)
     Infinite = 4,//无尽模式(下拉选配置行(世界+难度)+存档槽位，冻结该难度直接进入无尽战斗，测试模拟不落盘)
+    SceneEdit = 5,//场景编辑(配置同普通模式，开始后可在运行中编辑战斗场景，Inspector 提供保存场景编辑(写回场景预制)/还原场景按钮)
 }
 
 public enum CinemachineCameraEnum

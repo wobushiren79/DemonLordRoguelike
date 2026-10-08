@@ -24,6 +24,8 @@ public class AttackModeMeleeMulti : AttackModeMelee
     protected bool hasPassedFirstFrame = false;
     /// <summary>缓存的被攻击目标（段间隔期间持续命中同一目标）</summary>
     protected FightCreatureEntity cachedAttacked;
+    /// <summary>缓存目标的身份快照（实体池复用后 UUId 会变，防余段打到复用成的新生物）</summary>
+    protected string cachedAttackedUUId;
     /// <summary>缓存的攻击者（仅用于命中特效定位；伤害快照在 attackModeData 中，与其存活无关）</summary>
     protected FightCreatureEntity cachedAttacker;
     #endregion
@@ -41,6 +43,7 @@ public class AttackModeMeleeMulti : AttackModeMelee
         timeToNextHit = 0;
         hasPassedFirstFrame = false;
         cachedAttacked = attacked;
+        cachedAttackedUUId = attacked?.fightCreatureData?.creatureData?.creatureUUId;
         cachedAttacker = attacker;
         //第 1 段当帧结算
         MeleeHit(attacker, attacked);
@@ -74,8 +77,8 @@ public class AttackModeMeleeMulti : AttackModeMelee
         if (timeToNextHit < hitInterval)
             return;
         timeToNextHit -= hitInterval;
-        //目标在段间隔期间死亡/失效：放弃剩余段并回收
-        if (cachedAttacked == null || cachedAttacked.IsDead())
+        //目标在段间隔期间死亡/失效（实体被池复用 UUId 变化同判失效）：放弃剩余段并回收
+        if (!CheckTargetEntityValid(cachedAttacked, cachedAttackedUUId))
         {
             Destroy();
             return;
@@ -99,6 +102,7 @@ public class AttackModeMeleeMulti : AttackModeMelee
         timeToNextHit = 0;
         hasPassedFirstFrame = false;
         cachedAttacked = null;
+        cachedAttackedUUId = null;
         cachedAttacker = null;
         base.Destroy(isPermanently);
     }

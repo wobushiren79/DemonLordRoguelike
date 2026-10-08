@@ -110,7 +110,7 @@ public partial class GameTestEditor : Editor
 
         // 战斗测试模式选择
         EditorGUILayout.BeginVertical("box");
-        fightTestMode = (FightTestModeEnum)EditorGUILayout.EnumPopup(new GUIContent("战斗测试模式", "普通模式=自定义场景/敌人/BUFF的战斗；征服模式BOSS关=指定世界与难度直接进入征服BOSS关；单体测试模式=道路长度10/道路数量1/进攻生物数量1/进攻间隔1固定不显示，其余同普通模式；挑战100勇士=下拉选配置行+存档槽位，冻结该行直接进入挑战100勇士战斗(测试模拟不落盘)；无尽模式=下拉选配置行(世界+难度)+存档槽位，冻结该难度直接进入无尽战斗(测试模拟不落盘)"), fightTestMode);
+        fightTestMode = (FightTestModeEnum)EditorGUILayout.EnumPopup(new GUIContent("战斗测试模式", "普通模式=自定义场景/敌人/BUFF的战斗；征服模式BOSS关=指定世界与难度直接进入征服BOSS关；单体测试模式=道路长度10/道路数量1/进攻生物数量1/进攻间隔1固定不显示，其余同普通模式；挑战100勇士=下拉选配置行+存档槽位，冻结该行直接进入挑战100勇士战斗(测试模拟不落盘)；无尽模式=下拉选配置行(世界+难度)+存档槽位，冻结该难度直接进入无尽战斗(测试模拟不落盘)；场景编辑=配置同普通模式，开始后可在运行中编辑战斗场景并保存回场景预制/还原"), fightTestMode);
         EditorGUILayout.EndVertical();
         EditorGUILayout.Space(5);
 
@@ -141,13 +141,20 @@ public partial class GameTestEditor : Editor
             return;
         }
 
-        // 运行按钮(单体测试模式与普通模式共用同一进入逻辑，仅按钮文案区分)
+        // 运行按钮(单体测试模式/场景编辑模式与普通模式共用同一进入逻辑，仅按钮文案区分)
         GUI.backgroundColor = new Color(0.4f, 0.8f, 0.4f);
-        string startFightBtnText = fightTestMode == FightTestModeEnum.SingleUnit ? "▶️ 开始单体测试" : "▶️ 开始战斗测试";
+        string startFightBtnText = fightTestMode == FightTestModeEnum.SingleUnit ? "▶️ 开始单体测试"
+            : fightTestMode == FightTestModeEnum.SceneEdit ? "▶️ 开始场景编辑测试"
+            : "▶️ 开始战斗测试";
         if (GUILayout.Button(startFightBtnText, GUILayout.Height(30)) && Application.isPlaying)
         {
             FightBean fightData = GetTestData();
             launcher.StartForFightSceneTest(fightData);
+            //场景编辑模式：清旧快照，等战斗场景加载完成后拍摄初始快照
+            if (fightTestMode == FightTestModeEnum.SceneEdit)
+            {
+                BeginSceneEditSession();
+            }
         }
         GUI.backgroundColor = Color.white;
         EditorGUILayout.Space(10);
@@ -159,8 +166,29 @@ public partial class GameTestEditor : Editor
             EditorGUI.indentLevel++;
             EditorGUILayout.BeginVertical("box");
             testDataCardNum = EditorGUILayout.IntField(new GUIContent("卡片数量", "初始生成的卡片数量"), testDataCardNum);
+            //战斗场景下拉选项懒加载([id] 备注名，首项"(手动输入)"占位)
+            EnsureFightSceneOptions();
             EditorGUILayout.BeginHorizontal();
-            fightSceneId = EditorGUILayout.IntField(new GUIContent("测试场景 ID", "战斗场景的 ID"), fightSceneId);
+            if (fightSceneOptions == null || fightSceneOptions.Length == 0)
+            {
+                //配置读取失败时回退手动输入
+                fightSceneId = EditorGUILayout.IntField(new GUIContent("测试场景 ID", "战斗场景的 ID(FightScene.id)"), fightSceneId);
+            }
+            else
+            {
+                //下拉选择：当前ID不在选项中时回落到首项"(手动输入)"占位(不覆盖原值)，选中有效项后覆盖 fightSceneId
+                int sceneSelectIndex = Array.IndexOf(fightSceneIds, (long)fightSceneId);
+                if (sceneSelectIndex < 0) sceneSelectIndex = 0;
+                sceneSelectIndex = EditorGUILayout.Popup(new GUIContent("测试场景", "从 FightScene 配置表选择战斗场景；当前 ID 不在配置中时显示「(手动输入)」占位，不会覆盖原值"), sceneSelectIndex, fightSceneOptions);
+                if (sceneSelectIndex > 0) fightSceneId = (int)fightSceneIds[sceneSelectIndex];
+            }
+            if (GUILayout.Button("🔄", GUILayout.Width(30)))
+            {
+                //配置重导后清空选项缓存，下次绘制时重建
+                fightSceneOptions = null;
+                //Cfg 的 static 缓存只加载一次(不随 JSON 重导失效)，需一并清掉才能读到新行
+                ClearCfgBaseStaticCache(typeof(FightSceneCfg));
+            }
             if (GUILayout.Button("📂 场景表", GUILayout.Width(80)))
             {
                 string scenePath = Path.Combine(Application.dataPath, "Data/Excel/excel_fight_scene[战斗场景].xlsx");
@@ -174,6 +202,10 @@ public partial class GameTestEditor : Editor
                 }
             }
             EditorGUILayout.EndHorizontal();
+            if (fightSceneOptions == null || fightSceneOptions.Length == 0)
+            {
+                EditorGUILayout.HelpBox("未读取到战斗场景配置，已回退为手动输入；请检查配置表导出或点「🔄」刷新。", MessageType.Warning);
+            }
             // 卡片生物ID列表(手动输入 + 下拉选择已有生物)
             DrawFightCardIdList("卡片生物 IDs");
             fightDefenseCoreId = EditorGUILayout.IntField(new GUIContent("魔王生物 ID", "防守核心(魔王)的生物 ID，默认 2001 骷髅战士"), fightDefenseCoreId);
@@ -276,6 +308,12 @@ public partial class GameTestEditor : Editor
             DrawFightFixedAttributeSettings();
             EditorGUILayout.EndVertical();
             EditorGUI.indentLevel--;
+        }
+
+        // 场景编辑会话区(保存场景编辑/还原场景按钮，仅场景编辑模式显示)
+        if (fightTestMode == FightTestModeEnum.SceneEdit)
+        {
+            DrawSceneEditSession();
         }
 
         EditorGUI.indentLevel--;
@@ -496,6 +534,44 @@ public partial class GameTestEditor : Editor
     {
         if (fightEnemyNpcOptions != null) return;
         BuildNpcOptions(true, out fightEnemyNpcOptions, out fightEnemyNpcIds);
+    }
+
+    /// <summary>
+    /// 懒加载战斗场景下拉选项(首项"(手动输入)"占位，其余为 [id] 备注名，按id排序；备注为空时回退场景预制名)。
+    /// 备注(remark)即中文名直接取自 FightScene 配置，无需读多语言文件。
+    /// </summary>
+    private void EnsureFightSceneOptions()
+    {
+        if (fightSceneOptions != null) return;
+        var allData = FightSceneCfg.GetAllArrayData();
+        if (allData == null)
+        {
+            //配置缺失时置空数组(不重试)，绘制处回退为手动输入
+            fightSceneOptions = new GUIContent[0];
+            fightSceneIds = new long[0];
+            return;
+        }
+        var listEntries = new List<KeyValuePair<long, GUIContent>>();
+        for (int i = 0; i < allData.Length; i++)
+        {
+            var sceneInfo = allData[i];
+            if (sceneInfo == null) continue;
+            //优先显示中文备注，空备注回退场景预制名
+            string sceneName = sceneInfo.remark.IsNull() ? sceneInfo.name_res : sceneInfo.remark;
+            listEntries.Add(new KeyValuePair<long, GUIContent>(sceneInfo.id, new GUIContent($"[{sceneInfo.id}] {sceneName}")));
+        }
+        //按 id 排序保证下拉顺序稳定
+        listEntries.Sort((a, b) => a.Key.CompareTo(b.Key));
+        //首项插入"(手动输入)"占位(当前ID不在选项中时显示，选中不改动ID)
+        fightSceneOptions = new GUIContent[listEntries.Count + 1];
+        fightSceneIds = new long[listEntries.Count + 1];
+        fightSceneOptions[0] = new GUIContent("(手动输入)");
+        fightSceneIds[0] = 0;
+        for (int i = 0; i < listEntries.Count; i++)
+        {
+            fightSceneIds[i + 1] = listEntries[i].Key;
+            fightSceneOptions[i + 1] = listEntries[i].Value;
+        }
     }
 
     /// <summary>
@@ -1737,7 +1813,9 @@ public partial class GameTestEditor : Editor
             {
                 npcName = "(未配置名字)";
             }
-            listEntries.Add(new KeyValuePair<long, GUIContent>(npcInfo.id, new GUIContent($"{npcInfo.id}  {npcName}")));
+            //BOSS前置 [BOSS] 标记便于下拉中识别(判定取 NpcInfoBean.IsBoss: 备注含boss字样)
+            string bossTag = npcInfo.IsBoss() ? "[BOSS] " : "";
+            listEntries.Add(new KeyValuePair<long, GUIContent>(npcInfo.id, new GUIContent($"{npcInfo.id}  {bossTag}{npcName}")));
         }
         //按 id 排序保证下拉顺序稳定
         listEntries.Sort((a, b) => a.Key.CompareTo(b.Key));

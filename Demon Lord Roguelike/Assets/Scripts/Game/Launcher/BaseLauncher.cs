@@ -28,10 +28,11 @@ public class BaseLauncher : BaseMonoBehaviour
         Screen.fullScreen = gameConfig.window == 1 ? true : false;
         //初始化屏幕分辨率Handler（窗口自由拖动等比缩放）
         ScreenResolutionHandler.Instance.InitData();
-        //设置FPS
-        FPSHandler.Instance.SetData(gameConfig.stateForFrames, gameConfig.frames);
-        //设置垂直同步
+        //设置垂直同步与FPS（两者互斥，锁帧优先：vSyncCount 非 0 时 targetFrameRate 会被忽略；旧配置可能两项同开，此处强制修正；必须先设 vSync 再设帧率）
+        if (gameConfig.stateForFrames == 1)
+            gameConfig.vsync = false;
         FPSHandler.Instance.SetSyncCount(gameConfig.vsync ? 1 : 0);
+        FPSHandler.Instance.SetData(gameConfig.stateForFrames, gameConfig.frames);
         //修改抗锯齿
         //CameraHandler.Instance.ChangeAntialiasing(gameConfig.GetAntialiasingMode(), gameConfig.antialiasingQualityLevel);
         //音效初始化

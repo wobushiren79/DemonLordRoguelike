@@ -91,11 +91,25 @@ public class UIGameSettingForDisplay : UIGameSettingBase
         if (targetView == checkboxForFrameLock)
         {
             gameConfig.stateForFrames = isCheck ? 1 : 0;
+            if (isCheck)
+            {
+                //帧数锁定与垂直同步互斥：vSyncCount 非 0 时 targetFrameRate 会被忽略，锁帧需先联动关掉垂直同步
+                gameConfig.vsync = false;
+                FPSHandler.Instance.SetSyncCount(0);
+                checkboxForVSync.SetSelectNoCallback(false);
+            }
             FPSHandler.Instance.SetData(gameConfig.stateForFrames, gameConfig.frames);
         }
         else if (targetView == checkboxForVSync)
         {
             gameConfig.vsync = isCheck;
+            if (isCheck)
+            {
+                //互斥：垂直同步开启时帧数锁定不生效，联动取消锁帧勾选
+                gameConfig.stateForFrames = 0;
+                FPSHandler.Instance.SetData(0, gameConfig.frames);
+                checkboxForFrameLock.SetSelectNoCallback(false);
+            }
             FPSHandler.Instance.SetSyncCount(isCheck ? 1 : 0);
         }
         else if (targetView == checkboxForBulletShadow)

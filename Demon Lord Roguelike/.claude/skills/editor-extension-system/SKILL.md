@@ -37,7 +37,7 @@ EditorWindow (Unity)
 ├── PixelArtPreviewWindow          # 像素图预览工具（多文件夹拖拽→Grid预览→点击Ping定位；虚拟滚动+AssetPreview异步缩略图）
 ├── StyleBaseWindow                # 样式基础窗口
 ├── GameTestEditor                 # 游戏测试编辑器 (Inspector扩展)
-├── GameBuildEditorWindow          # 打包游戏工具 (打包前资源生成(复用 GameResourceEditor) + BuildPlayer)
+├── GameBuildEditorWindow          # 打包游戏工具 (打包前资源生成(复用 ExcelEditorWindow/GameResourceEditor) + BuildPlayer)
 ├── ModBuildEditorWindow           # Mod构建工具 (批量模式构建MOD项目 + 导出JsonText + 移动到本项目Mods)
 ├── GameResourceEditor(+Spine/Atlas/Common partial)  # 游戏资源处理 (Spine/图集/通用 三板块页签)
 ├── SkinRandomEditorWindow         # 皮肤/装备/套装随机池配置 (CreatureRandomInfo 三模式: 皮肤池编辑skin_random_data/装备池·套装池编辑equip_random_data, 双列表点选增删, 写回Excel+同步JSON)
@@ -60,6 +60,15 @@ EditorWindow (Unity)
 - Excel 配置表 → JSON 文件导出
 - 多语言文本导出
 - 支持增量导出
+
+### 窗口布局（列表区左右分栏）
+
+- **左侧分类树**（`DrawCategoryTree`）：全量 `.xlsx` 按表名前缀分组的可折叠列表——分组键=去 `excel_` 前缀与 `[...]` 后缀后第一段下划线前的单词（`GetCategoryKey`，如 `excel_creature_info` → `creature`），类别按字母序、组内按文件名排序；折叠状态存 `dicCategoryFoldout`，跨刷新保留；宽度按折叠头+全部文件显示名（无论折叠状态）**字符单位估算**（`MeasureTextUnits`：CJK/全角=2 单位、其余=1，`RecalcCategoryTreeWidth` = maxUnits×7+46 clamp 在 `CategoryTreeMinWidth=180` ~ `CategoryTreeMaxWidth=420`；刷新置脏标记触发重算，`float.IsNaN || <=1` 兜底重建后字段丢初始值与非法值，且 BeginVertical Width+MinWidth+MaxWidth 三重锁定、内层 ScrollView 不传宽度 option 靠 ExpandWidth 填满）。**宽度可拖拽微调**：分类树与右侧列表之间有 6px 可拖拽分隔条（`DrawCategorySplitter`，MouseDown/Drag/Up + `e.delta.x` 增量调宽 + `AddCursorRect(SplitResizeLeftRight)`，clamp 同上；点刷新后重新按内容自适应）。⚠️ **不要用 `GUIStyle.CalcSize` 算宽度**：裸 `new GUIStyle()`（font=null）上它会返回 **NaN**，而 `Mathf.Max/Clamp` 遇 NaN 直接传播 NaN（NaN 比较恒 false），最终 `GUILayout.Width(NaN)` 被 GUILayout **静默忽略**、布局退回自然宽度（症状：面板宽度=最长折叠头宽度，折叠时很窄、展开后被内容撑宽，极具迷惑性）。视觉：面板 `categoryPanelStyle` 主题适配纯色背景、折叠头 `categoryHeaderStyle` 加粗主题色、文件项 `categoryItemStyle` 无边框 label 风格（类 Project 侧栏，hover 淡色高亮）、选中项 `categoryItemSelectedStyle` 蓝底白字。
+- **右侧查询列表**：保持原逻辑（搜索框按文件名/工作表名过滤 + 最近 10 条/全部切换 + 修改时间倒序）。
+- **点击联动**：点左侧某个 Excel → `selectedExcelPath` 记录完整路径，右侧列表直接只展示该文件（选中优先于搜索/显示模式）；再点已选中项或顶部「✖ 取消选择」按钮恢复查询列表。选中文件被删除/重命名时刷新自动清除选中态。
+- 样式注意（两条血泪教训）：
+  1. `GUI.skin`/`GUIStyle` 只能在 `OnGUI` 内访问，`InitializeStyles` 由 `OnGUI` 首帧懒加载（**禁止在 `OnEnable` 调用**，会抛 `ArgumentException: You can only call GUI functions from inside OnGUI`）。
+  2. **EditorWindow 重建/domain reload 后私有实例字段状态不可信**（不走构造函数，字段丢初始值恢复类型默认值——bool 守卫可能失真、float 宽度可能变 0、新增样式字段必为 null）：样式初始化守卫统一用**字段判空**（`NeedsStyleInit()` 逐个查 null），不用 bool 标记；依赖初始值的字段（如自适应宽度）绘制时加 `<=1` 兜底自愈，否则会出现 `GUILayout.Button(text, null)` 抛 NRE + `Invalid GUILayout state`、或布局塌缩。
 
 ### 打开方式
 
@@ -217,7 +226,7 @@ Toolbar: UI脚本创建 按钮
 
 ## 游戏测试编辑器 (GameTestEditor)
 
-**文件**: `Assets/Editor/GameTestEditor.cs` + `GameTestEditorPartial.cs`
+**文件**: `Assets/Editor/GameTestEditor.cs` + `GameTestEditorPartial.cs` + `GameTestEditorSceneEdit.cs`(场景编辑子模式 partial)
 
 ### 功能
 
@@ -232,7 +241,7 @@ LauncherTest (Inspector)
 ├── Test Scene Type 下拉选择
 ├── ──── 根据类型显示对应参数 ────
 ├── NormalGame: 正常游戏启动（走真实开始流程）
-├── FightSceneTest: 战斗参数配置（5 个子模式 FightTestModeEnum：Normal 普通/ConquerBoss 征服BOSS关/SingleUnit 单体/ChallengeHundred 挑战100勇士/Infinite 无尽模式，后两个为「配置行下拉+存档槽位 0~3」独立配置区，详见 test-system skill）
+├── FightSceneTest: 战斗参数配置（6 个子模式 FightTestModeEnum：Normal 普通/ConquerBoss 征服BOSS关/SingleUnit 单体/ChallengeHundred 挑战100勇士/Infinite 无尽模式/SceneEdit 场景编辑[开始后可在运行中编辑战斗场景,Inspector 会话区提供保存场景编辑(写回场景预制)/还原场景按钮,实现见 GameTestEditorSceneEdit.cs partial]，挑战100勇士/无尽为「配置行下拉+存档槽位 0~3」独立配置区；基础设置区「测试场景」已改 FightSceneCfg 下拉([id]备注名,首项"(手动输入)"占位,+🔄刷新/📂场景表,配置缺失回退手填 ID)，详见 test-system skill）
 ├── CardTest: 卡片测试参数（两个启动按钮：🎛️ 卡片编辑器 StartForCreatureCardEditor 纯代码GUI实时预览稀有度/等级/颜色 + 图标/模型尺寸校准(原「显示卡片」UITestCard 已删除并入) / 🧪 Mod幻化药测试 StartForTransformPotionTest 下拉选药实时显示展示效果，详见 test-system skill）
 ├── Base: 基地测试参数
 ├── RewardSelect: 奖励选择参数
@@ -274,7 +283,7 @@ LauncherTest (Inspector)
 
 ### 功能
 
-- 打包前 3 个可勾选步骤（默认全勾选）：生成所有 Spine 道具图标 / 生成所有 Spine 皮肤图标 / 刷新所有图集 —— 均直接复用 `GameResourceEditor` 的 public static 方法（`SpineAllItemInit`/`SpineAllSkinInit`/`RefreshAllAtlases`）。
+- 打包前 4 个可勾选步骤（默认全勾选）：导出所有 Excel 为 Json / 生成所有 Spine 道具图标 / 生成所有 Spine 皮肤图标 / 刷新所有图集 —— 前者复用 `ExcelEditorWindow.QuickExcelToJson`（为此从 private 改为 public static，默认路径全量导出），后三者复用 `GameResourceEditor` 的 public static 方法（`SpineAllItemInit`/`SpineAllSkinInit`/`RefreshAllAtlases`）。
 - 打包选项（均经 EditorPrefs 持久化）：开发包(Development)、允许脚本调试(AllowDebugging)、自动连接 Profiler(ConnectWithProfiler)、深度分析(EnableDeepProfilingSupport)、开启 GM 模式(默认关闭)、完成后自动运行(AutoRunPlayer)、完成后打开输出目录(ShowBuiltPlayer)。调试/Profiler/深度分析三个子选项依赖开发包，取消开发包时联动关闭并置灰。
 - **GM 模式开关**：「开启 GM 模式」勾选后，正式包中按 F12 也能打开 GM 测试面板（UITestBase）。实现=打包前 `WriteGMModeConfig(选项值)` 把 0/1 写入 `Assets/Resources/GMMode.txt` 并 `AssetDatabase.ImportAsset` 强制同步导入（不走编译宏，避免触发全量重编译），`BuildPlayer` 后 `finally` 中恢复写 0 防残留；运行时 `ProjectConfigInfo.IsGMMode()` 判定（编辑器内恒 true，正式包 `Resources.Load<TextAsset>("GMMode")` 读缓存），判定入口在 `UIBaseMain.OnInputActionForStarted` 的 F12 分支。仓库内 GMMode.txt 固定为 0。
 - **Mod 资源复制**（2026-10-05 起）：「打包后复制 Mod 资源到输出目录」总开关（EditorPrefs `GameBuildEditorWindow.CopyMods`，默认关）+ 项目根 `Mods/` 子目录勾选列表（每个 Mod 单独持久化 `GameBuildEditorWindow.CopyMod.{Mod名}`，**新 Mod 默认不勾选**；全选/全不选/刷新列表按钮，滚动区展示）。打包成功后 `CopySelectedModsToBuild` 把勾选的 `Mods/<Mod名>` 从项目根复制到 `<输出目录>/Mods/<Mod名>`（先删后拷保证与项目内一致；目标=运行时 `ModManager.GetModsRootPath` 打包后的解析位置，即与 `GameName_Data` 同级的 Mods）。未勾选的已有目录不动。
@@ -622,7 +631,7 @@ public class InspectorMyComponent : Editor
 | Steam 编辑器 | `Assets/FrameWork/Editor/Steamworks.NET/` |
 | 项目编辑器 | `Assets/Editor/` |
 | PixelDa 像素生成工具 | `Assets/FrameWork/Editor/Base/Window/PixelDa/` |
-| 游戏测试编辑器 | `Assets/Editor/GameTestEditor.cs` + `GameTestEditorPartial.cs` |
+| 游戏测试编辑器 | `Assets/Editor/GameTestEditor.cs` + `GameTestEditorPartial.cs` + `GameTestEditorSceneEdit.cs`(场景编辑子模式) |
 | 打包游戏工具 | `Assets/Editor/GameBuildEditorWindow.cs` |
 | Mod构建工具 | `Assets/Editor/ModBuildEditorWindow.cs` |
 | 皮肤/装备/套装随机池配置 | `Assets/Editor/SkinRandomEditorWindow.cs` |

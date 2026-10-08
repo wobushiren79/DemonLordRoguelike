@@ -5,6 +5,8 @@ using UnityEngine;
 public class AttackModeRangedTracking :  AttackModeRanged
 {
     public FightCreatureEntity attacked;
+    /// <summary>目标身份快照（实体池复用后 UUId 会变，防把复用成的新生物误判为存活目标继续追踪）</summary>
+    protected string attackedUUId;
 
     public override void StartAttack()
     {
@@ -19,8 +21,9 @@ public class AttackModeRangedTracking :  AttackModeRanged
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
         if(attacked != null && !attacked.IsDead())
-        {        
+        {
             this.attacked = attacked;
+            attackedUUId = attacked.fightCreatureData?.creatureData?.creatureUUId;
         }
         else
         {
@@ -35,7 +38,7 @@ public class AttackModeRangedTracking :  AttackModeRanged
     {
         batchRayStart = -1;
         //仅当目标仍存活时才检测（与 Update 一致）
-        if (attacked != null && !attacked.IsDead())
+        if (CheckTargetEntityValid(attacked, attackedUUId))
         {
             attackModeData.attackDirection = Vector3.Normalize(attacked.creatureObj.transform.position - position).SetY(0);
             EnqueueSingleRay(batch);
@@ -47,8 +50,8 @@ public class AttackModeRangedTracking :  AttackModeRanged
     /// </summary>
     public override void Update()
     {
-        //如果还存在目标
-        if (attacked != null && !attacked.IsDead())
+        //如果还存在目标（UUId 双判防实体池复用成新生物后误追踪）
+        if (CheckTargetEntityValid(attacked, attackedUUId))
         {
             //实时改变方向
             attackModeData.attackDirection = Vector3.Normalize(attacked.creatureObj.transform.position - position);
@@ -76,4 +79,13 @@ public class AttackModeRangedTracking :  AttackModeRanged
         TranslatePosition(attackModeData.attackDirection * GameFightLogic.GetFightDeltaTime() * GetMoveSpeed());
     }
 
+    /// <summary>
+    /// 回收：清空跟踪目标与其身份快照，防对象池复用残留
+    /// </summary>
+    public override void Destroy(bool isPermanently = false)
+    {
+        attacked = null;
+        attackedUUId = null;
+        base.Destroy(isPermanently);
+    }
 }

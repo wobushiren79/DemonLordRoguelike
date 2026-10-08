@@ -38,6 +38,8 @@ public class AttackModeRangedArcBounce : AttackModeRangedArc
     private int bounceCurrent;
     /// <summary>当前锁定目标（追踪用，发射/每次弹跳时写入）</summary>
     private FightCreatureEntity currentTarget;
+    /// <summary>当前锁定目标的身份快照（实体池复用后 UUId 会变，防把复用成的新生物误判为存活目标继续追踪）</summary>
+    private string currentTargetUUId;
     /// <summary>全程命中去重名单（同一斧头的命中目标不重复）</summary>
     private readonly HashSet<string> hitCreatureIds = new HashSet<string>();
     /// <summary>弹跳候选缓冲（复用，避免每次 new List 产生 GC）</summary>
@@ -85,6 +87,7 @@ public class AttackModeRangedArcBounce : AttackModeRangedArc
         currentTarget = fightLogic?.fightData?.GetCreatureById(attackModeData.attackedId, CreatureFightTypeEnum.FightAttack);
         if (currentTarget != null && currentTarget.IsDead())
             currentTarget = null;
+        currentTargetUUId = currentTarget?.fightCreatureData?.creatureData?.creatureUUId;
         SetupSegment(attackModeData.startPos, attackModeData.targetPos);
     }
     #endregion
@@ -108,9 +111,11 @@ public class AttackModeRangedArcBounce : AttackModeRangedArc
     {
         if (currentTarget != null)
         {
-            if (currentTarget.IsDead() || currentTarget.creatureObj == null)
+            //目标死亡或实体被对象池复用（UUId 变化）即失效：置 null 飞到最后已知位置
+            if (!CheckTargetEntityValid(currentTarget, currentTargetUUId))
             {
                 currentTarget = null;
+                currentTargetUUId = null;
             }
             else
             {
@@ -163,7 +168,7 @@ public class AttackModeRangedArcBounce : AttackModeRangedArc
     /// </summary>
     private void HandleForArrive()
     {
-        if (currentTarget != null && !currentTarget.IsDead() && !IsHitBefore(currentTarget))
+        if (CheckTargetEntityValid(currentTarget, currentTargetUUId) && !IsHitBefore(currentTarget))
         {
             HandleForHitTarget(currentTarget);
             return;
@@ -223,6 +228,7 @@ public class AttackModeRangedArcBounce : AttackModeRangedArc
         }
         bounceCurrent++;
         currentTarget = bounceTarget;
+        currentTargetUUId = bounceTarget.fightCreatureData?.creatureData?.creatureUUId;
         SetupSegment(position, bounceTarget.creatureObj.transform.position);
     }
 
@@ -273,6 +279,7 @@ public class AttackModeRangedArcBounce : AttackModeRangedArc
         bounceMax = 0;
         bounceCurrent = 0;
         currentTarget = null;
+        currentTargetUUId = null;
         hitCreatureIds.Clear();
         listBounceCandidate.Clear();
         base.Destroy(isPermanently);
