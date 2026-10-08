@@ -242,7 +242,7 @@ NPC 可按配置在创建时随机穿装备（首用于终焉议会随机议员�
 - **使用流程**（`UICreatureManager`，经 `UseOrEquipItem` 分流）：`UseTransformPotionItem`——配置缺失或 other_data 空→Toast 61021 拦截；确认框 textId 61018（{0}生物名{1}道具名）→ 写入 transformItemId（覆盖旧值=以最后吃的为准）+ `RemoveBackpackItem` 消耗 + `SaveUserData()` 落盘 + 四连刷新（`SetCardDetails` + 生物卡片列表 `ui_UIViewCreatureCardList.RefreshAllCard()`(幻化形象刷新) + `InitBackpackItemsData` + `RefreshBaseControlForDemonLord`）；`UseRestorePotionItem`——transformItemId==0→Toast 61020 不消耗拦截，确认框 61019 → 置 0 恢复 + `RemoveBackpackItem(itemData, 1)` 递减消耗（幻原药 num_max=99 可堆叠，≤0 才整 Bean 移除）。`RefreshBaseControlForDemonLord`：魔王专属，同步基地走路 spine（非基地场景防护）。
 - **Mod 保底（核心语义）**：只存道具ID、展示时实时查 ItemsInfoCfg——Mod 提供幻化药时 Mod 移除→配置 null→所有展示路径自动回落原形象；Mod 装回自动恢复；幻原药只判 id==0 不读配置，Mod 没了也能清残留；spine 资源缺失经 `GetSkeletonDataAssetWithMod` 回落 + null-check 不崩。
 - **详情气泡预览**（2026-10-02 起）：`UIPopupItemInfo.SetTransformPreview`（SetData 末尾调用）——幻化药气泡展示该药的 show（战斗/小卡形象，标签 61022「战斗形象」）与 ui_show（详情高清形象，标签 61023「详情形象」）两段 spine 预览，按 show_res/ui_show_res 键有无独立显隐；复用 `CreatureBean.ParseTransformOtherData` 解析，直接 `SpineHandler.SetSkeletonDataAsset` 加载（Mod 资源链路同生物展示），ui_show 段支持 ui_show_skin 换肤（无皮肤键时重置防 popup 复用残留）；预览尺寸**走 `GameUIUtil.ApplyCardIconSizeFit` 卡片图标尺寸等比适配**（show 段传 `cardContentHeightForS`、ui_show 段传 `cardContentHeightForB`）——spine 节点与卡片 ui_Icon 同 pivot(0.5,0)，尺寸键 scale;pos 同乘「预览框高/卡片标准容器高」系数还原小卡/大卡显示效果（直接套不乘系数会被 RectMask2D 裁光）；预览区 = prefab Details 下 `TransformPreviewContent`（ShowArea/UIShowArea 各含标签+spine 节点，spine 套在 ShowRect→ShowRectContent 两层 RectMask2D 裁切容器内，超出 230x240 框部分被裁切），详见 ui-popup agent「UIPopupItemInfo 结构」。
-- **配置行**：excel_items_info id=200003（item_type=19、num_max=1、icon_res=`Item_Potion_1`、name=200003）保留；原 id=200002 内置幻化药行已删除（幻化药全部由 Mod 提供，图标统一复用内置 `Item_Potion_1`，位于 Assets/LoadResources/Textures/Items/ 进 AtlasForItems 图集）；num_max=1 因 `RemoveBackpackItem` 整 Bean 移除不做递减。excel_language ItemsInfo sheet 的 200002 道具名行已同步删除（200003 保留，12 语种）、UIText sheet 加 61018（幻化确认）/61019（幻原确认）/61020（无幻化拦截）/61021（配置异常拦截）/61022（预览标签「战斗形象」）/61023（预览标签「详情形象」）。
+- **配置行**：excel_items_info id=200003（item_type=19、num_max=99、icon_res=`Item_Potion_2`、name=200003）保留；原 id=200002 内置幻化药行已删除（幻化药全部由 Mod 提供，图标统一复用内置 `Item_Potion_1`，位于 Assets/LoadResources/Textures/Items/ 进 AtlasForItems 图集）。**num_max=99 可堆叠（2026-10-08 起）**：消耗走 `UserDataBean.RemoveBackpackItem(itemData, num)` 递减重载（itemNum 扣减、≤0 才整 Bean 移除；无参重载仍整 Bean 移除，幻化药 num_max=1 不受影响）。**获取途径**=征服通关领奖选中幻化药时附赠 1 瓶（`UIRewardSelect.GrantRewardItemToBackpack` 统一入账入口，id 版本 AddBackpackItem 堆叠合并 + Toast 61025「额外获得幻原药×1」，详见 fight-reward-system）。excel_language ItemsInfo sheet 的 200002 道具名行已同步删除（200003 保留，12 语种）、UIText sheet 加 61018（幻化确认）/61019（幻原确认）/61020（无幻化拦截）/61021（配置异常拦截）/61022（预览标签「战斗形象」）/61023（预览标签「详情形象」）/61025（附赠幻原药 Toast）。
 
 ## 背包管理
 
@@ -254,7 +254,8 @@ userData.AddBackpackItem(new ItemBean(itemId, num));
 userData.AddBackpackItem(itemBean);
 
 // 移除道具
-userData.RemoveBackpackItem(itemBean);
+userData.RemoveBackpackItem(itemBean);        // 整 Bean 移除（不堆叠道具用）
+userData.RemoveBackpackItem(itemBean, num);   // 按数量递减，≤0 才移除（num_max>1 堆叠消耗品用，如幻原药）
 
 // 访问背包(列表已包裹进 UserBackpackItemsBean，经访问器取列表)
 List<ItemBean> backpack = userData.GetUserBackpackItemsData().listBackpackItems;

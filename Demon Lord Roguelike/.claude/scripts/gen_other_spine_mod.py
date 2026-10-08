@@ -40,8 +40,9 @@ other_data 键值格式（& 拆项、每项首个 : 拆键值，同主项目 att
   ui_show_skin   ui_show 资源内指定皮肤名（仅皮肤药带）
   idle_anim / ui_show_idle_anim  替代待机动画名（仅骨架无标准待机候选时生成）
   world_data     世界显示尺寸/偏移（无校准来源不生成，测试面板手调；scan 重建按「目录名/资源token」保留）
-  show_brightness 场景调暗系数「(0,1] 浮点」（贴图平均亮度>基准65 才生成：k=65/avg 只压不提，avg=图集全页
-                     alpha>25 有效像素 Rec.601 均值，基准=主项目生物贴图口径；仅场景实例调暗，UI 不消费；
+  show_brightness 场景亮度系数「(0,2] 浮点，1=原亮度，<1调暗/>1调亮」（贴图平均亮度>基准65 才生成：k=65/avg 只压不提，
+                     >1 调亮生成端不产出、只能测试面板手调（2026-10-08 起放开上限至 2）；avg=图集全页
+                     alpha>25 有效像素 Rec.601 均值，基准=主项目生物贴图口径；仅场景实例生效，UI 不消费；
                      保留优先——手调值不丢，删键后下次 scan 强制重算）
   scan 全量重建时 show_data/ui_show_data/world_data/show_brightness 手调值按「目录名/资源token」(remark 资源身份)保留
   ——按资源身份而非道具id保留，出药规则变化/资源增减导致 id 漂移时保留值也不会贴错道具（--reset-layout 可强制重算）
@@ -94,7 +95,7 @@ ITEM_COLUMNS = [
     ("icon_res", "string", "图标资源"),
     ("icon_rotate_z", "float", "图标旋转"),
     ("attack_mode_data", "string", "攻击模式数据(幻化药不用)"),
-    ("other_data", "string", "形象键值串:show_res/ui_show_res=X_SkeletonData&show_data/ui_show_data=scale;x,y&ui_show_skin=皮肤名&show_brightness=场景调暗系数(0,1](&拆项,:拆键值,缺省键省略;带Avator=ui_show详情UI段,不带=基础show段;多皮肤Avator按具名皮肤拆药)"),
+    ("other_data", "string", "形象键值串:show_res/ui_show_res=X_SkeletonData&show_data/ui_show_data=scale;x,y&ui_show_skin=皮肤名&show_brightness=场景亮度系数(0,2],1=原亮度,<1调暗/>1调亮(&拆项,:拆键值,缺省键省略;带Avator=ui_show详情UI段,不带=基础show段;多皮肤Avator按具名皮肤拆药)"),
     ("name[language]", "long", "道具名textId(=道具id,文本在excel_mod_language_otherspine)"),
     ("remark", "string", "备注"),
     ("reward_rarity", "string", "奖励稀有度白名单(空=全适配;消耗品不进装备池)"),

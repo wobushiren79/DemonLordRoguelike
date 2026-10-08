@@ -15,6 +15,7 @@ Material:
   - _GRADIENT_ON
   - _HUE_ON
   - _INTERNAL_TIME_ON
+  - _SHINE_ON
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -138,12 +139,12 @@ Material:
     - _GradientOn: 1
     - _GradientScale: 1
     - _GradientScrollSpeed: 0
-    - _HueAngle: 0
+    - _HueAngle: 90
     - _HueOn: 1
-    - _HueRangeScale: 0
-    - _HueSaturation: 1
+    - _HueRangeScale: 0.5
+    - _HueSaturation: 3
     - _HueShiftOffset: 0
-    - _HueShiftSpeed: 0.2
+    - _HueShiftSpeed: 0.3
     - _InternalTime: 1
     - _MainAlpha: 1
     - _MainTexRotation: 0
@@ -169,13 +170,14 @@ Material:
     - _ScrollSpeedX: 0
     - _ScrollSpeedY: 0
     - _ShineAngle: 45
-    - _ShineIntensity: 3
-    - _ShineInterval: 1
-    - _ShineMaskByAlpha: 1
-    - _ShineOn: 0
+    - _ShineIntensity: 5
+    - _ShineInterval: 2
+    - _ShineMaskByAlpha: 0
+    - _ShineMaskFollowAlpha: 0
+    - _ShineOn: 1
     - _ShineSoftness: 1
     - _ShineSpeed: 0.5
-    - _ShineWidth: 0.2
+    - _ShineWidth: 0.3
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
@@ -201,7 +203,7 @@ Material:
     - _GradientColorB: {r: 0.5, g: 0.5, b: 1, a: 1}
     - _PolarOffset: {r: 0, g: 0, b: 0, a: 0}
     - _PolarScale: {r: 1, g: 1, b: 0, a: 0}
-    - _ShineColor: {r: 0.14930485, g: 0.043137234, b: 0.7176471, a: 1}
+    - _ShineColor: {r: 0.05918475, g: 0.6603774, b: 0.103456356, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

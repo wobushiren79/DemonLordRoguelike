@@ -408,6 +408,10 @@ public class RewardSelectBean
         CreatureInfoBean demonLordInfo = null;
         if (userType == (int)ItemUserTypeEnum.DemonLord)
             demonLordInfo = GameDataHandler.Instance.manager.GetUserData()?.selfCreature?.creatureInfo;
+        //通用装备(非魔王专属)需至少存在一个「已解锁可孕育生物」能装备，否则过滤——防止掉出永远无人能穿的装备(如仅为敌方单位外观存在的武器皮肤：刀盾/大盾/长枪等)；取不到解锁数据时不过滤(容错,保持旧行为)
+        List<CreatureInfoBean> listUnlockGashaponCreature = null;
+        if (demonLordInfo == null)
+            listUnlockGashaponCreature = GameDataHandler.Instance.manager.GetUserData()?.GetUserUnlockData()?.GetUnlockGashaponCreatureInfos();
         List<ItemsInfoBean> listMatchItemsInfo = new List<ItemsInfoBean>();
         for (int i = 0; i < listItemsInfo.Count; i++)
         {
@@ -415,6 +419,8 @@ public class RewardSelectBean
             if (!itemInfo.IsMatchRewardRarity(rarityItem))
                 continue;
             if (demonLordInfo != null && !IsEquipTypeMatchForDemonLord(demonLordInfo, itemInfo))
+                continue;
+            if (listUnlockGashaponCreature != null && !IsEquipUsableByAnyCreature(listUnlockGashaponCreature, itemInfo))
                 continue;
             listMatchItemsInfo.Add(itemInfo);
         }
@@ -448,6 +454,22 @@ public class RewardSelectBean
         if (itemType == ItemTypeEnum.Weapon && !demonLordInfo.CanEquipWeaponType(itemInfo.GetWeaponType()))
             return false;
         return true;
+    }
+
+    /// <summary>
+    /// 校验道具是否至少能被列表中一个生物装备（装备类型 + 种族模组 + 武器类型三重匹配，见 CreatureInfoBean.CanEquipItem）
+    /// </summary>
+    /// <param name="listCreatureInfo">候选生物配置列表（通常为已解锁可孕育生物）</param>
+    /// <param name="itemInfo">候选道具配置</param>
+    /// <returns>存在可用生物</returns>
+    private static bool IsEquipUsableByAnyCreature(List<CreatureInfoBean> listCreatureInfo, ItemsInfoBean itemInfo)
+    {
+        for (int i = 0; i < listCreatureInfo.Count; i++)
+        {
+            if (listCreatureInfo[i].CanEquipItem(itemInfo))
+                return true;
+        }
+        return false;
     }
 
     /// <summary>

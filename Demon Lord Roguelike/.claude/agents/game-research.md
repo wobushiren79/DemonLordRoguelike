@@ -58,7 +58,7 @@ watched_files:
   - 魔物分支(300X1NNND 段) 职业独立扭蛋研究：30 职业 × 3 档(x1/x5/x10) 共 90 节点（如 `300110011`=人类战士x1）。x1 pre=族「孕育x10」研究(300X00102)+`pre_data` 该职业抽出99只，x5 pre=x1、x10 pre=x5；消耗=族x10研究 ×2/×5/×10（普通族 200/500/1000、史莱姆族 2000/5000/10000）；图标与该职业「解锁职业」研究(300X0000N)同图标（ui_research_N）；纯数据驱动无需新增 UnlockEnum，解锁后扭蛋商店出现对应职业独立扭蛋（见 game-gashapon）
   - 世界征服难度：难度2~10 已拆分为每难度独立研究节点(块内 nn=12~20, 链式前置), `GetUnlockGameWorldConquerDifficultyLevel(worldId)` = `conquerDifficultyMax` + 从难度起始id(`unlock_id_conquer_difficulty_level`)连续向后统计的已解锁个数
   - 世界无尽难度：难度2~10 已拆分为每难度独立研究节点(块内 nn=02~10, world1 即 100310102~100310110；第一难度没有无尽模式), `level_max=1`，双前置链式(难度2无尽 pre=征服难度2研究 100310112；难度N无尽 pre="上一无尽节点,同难度征服难度研究"，如 100310103 pre="100310102,100310113")，`pay_crystal` 独立阶梯 200/1000/2000/4000/8000/16000/32000/64000/128000，icon 与征服难度链同为 `ui_research_11`，坐标 x=-480(新列)、y=(难度-2)*160(与难度链行 y 对齐 0~1280)；世界表 `unlock_id_infinite`(world1=100310102)语义由「单值解锁ID」改为「无尽研究起始ID」(难度N无尽=起始id+(N-2)，与征服难度链 `unlock_id_conquer_difficulty_level` 的「起始ID+连续块」模式同构)；`GetUnlockInfiniteDifficultyLevel(worldId)` 从起始id连续统计已解锁个数+1(起始id=0/未解锁返回0)，`CheckInfiniteUnlock(worldId, difficultyLevel)` 判定指定难度；世界2/3/4 的 x02 已在 unlock_info 登记但暂无研究节点(这些世界连征服难度链都没有)，后续按 x02~x10 同模式补即可
-  - 解锁列表：`GetUnlockGameWorldIds` / `GetUnlockCreatureModelIds`
+  - 解锁列表：`GetUnlockGameWorldIds` / `GetUnlockCreatureModelIds` / `GetUnlockGashaponCreatureInfos`(已解锁可孕育生物=creature_type=1且职业研究已解锁, 通关奖励装备池可用性过滤用, 见 game-fight-reward)
 
 ### 关键文件
 

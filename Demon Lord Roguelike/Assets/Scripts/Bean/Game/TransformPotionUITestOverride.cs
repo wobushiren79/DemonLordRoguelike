@@ -5,19 +5,19 @@ using System.Collections.Generic;
 /// 幻化药 UI/世界 尺寸/位置测试覆盖层（仅编辑器编译，打包无此类）：
 /// 幻化药测试面板(TestTransformPotionGUI)调参时写入，CreatureBeanPartial.GetTransformUIShowData/GetTransformShowData/GetTransformWorldData/GetTransformShowBrightness
 /// 查询时优先于道具 other_data 配置生效，使所有走真实显示链的 UI/世界显示立即反映调参结果；保存写回 Mod 项目或重置时清除。
-/// 数据段对应 other_data 键：show_data=默认展示(小卡)尺寸、ui_show_data=详情UI尺寸、world_data=世界显示尺寸/偏移、show_brightness=场景调暗系数。
+/// 数据段对应 other_data 键：show_data=默认展示(小卡)尺寸、ui_show_data=详情UI尺寸、world_data=世界显示尺寸/偏移、show_brightness=场景亮度系数(1=原亮度,<1调暗,>1调亮,域(0,2])。
 /// </summary>
 public static class TransformPotionUITestOverride
 {
     #region 数据字段
 
-    /// <summary>单条覆盖数据：详情UI/默认展示(小卡)/世界显示 各自的「scale;x,y」覆盖值 + 场景调暗系数(null=该段不覆盖)</summary>
+    /// <summary>单条覆盖数据：详情UI/默认展示(小卡)/世界显示 各自的「scale;x,y」覆盖值 + 场景亮度系数(null=该段不覆盖)</summary>
     private class OverrideData
     {
         public string uiShowData;
         public string showData;
         public string worldData;
-        /// <summary>场景调暗系数 show_brightness 覆盖值（「0.58」形式，null=不覆盖）</summary>
+        /// <summary>场景亮度系数 show_brightness 覆盖值（「0.58」/「1.50」形式，null=不覆盖）</summary>
         public string showBrightness;
     }
 
@@ -59,10 +59,10 @@ public static class TransformPotionUITestOverride
     }
 
     /// <summary>
-    /// 设置指定幻化药的场景调暗系数覆盖值(show_brightness 键)
+    /// 设置指定幻化药的场景亮度系数覆盖值(show_brightness 键)
     /// </summary>
     /// <param name="itemId">幻化药道具完整id</param>
-    /// <param name="data">「0.58」形式的系数覆盖值（1=不调暗）</param>
+    /// <param name="data">「0.58」/「1.50」形式的系数覆盖值（1=原亮度，&lt;1调暗，&gt;1调亮）</param>
     public static void SetShowBrightness(long itemId, string data)
     {
         GetOrAdd(itemId).showBrightness = data;
@@ -105,7 +105,7 @@ public static class TransformPotionUITestOverride
     }
 
     /// <summary>
-    /// 只清除指定幻化药的场景调暗系数覆盖(列表项「还原」恢复配置值用)
+    /// 只清除指定幻化药的场景亮度系数覆盖(列表项「还原」恢复配置值用)
     /// </summary>
     /// <param name="itemId">幻化药道具完整id</param>
     public static void ClearShowBrightness(long itemId)
@@ -196,7 +196,7 @@ public static class TransformPotionUITestOverride
     }
 
     /// <summary>
-    /// 尝试获取指定幻化药的场景调暗系数覆盖值(show_brightness 键)
+    /// 尝试获取指定幻化药的场景亮度系数覆盖值(show_brightness 键)
     /// </summary>
     /// <param name="itemId">幻化药道具完整id(0=无幻化, 恒返回false)</param>
     /// <returns>有覆盖返回 true 且 data 为系数字符串</returns>

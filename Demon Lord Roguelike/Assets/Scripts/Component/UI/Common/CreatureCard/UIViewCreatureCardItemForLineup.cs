@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 //阵容行卡片特殊设置(仅阵容行内使用,支持拖拽换位;阵容管理的生物列表请用 UIViewCreatureCardItemForLineupList)
-public partial class UIViewCreatureCardItemForLineup : UIViewCreatureCardItem, IBeginDragHandler, IDragHandler, IEndDragHandler
+public partial class UIViewCreatureCardItemForLineup : UIViewCreatureCardItem, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerExitHandler
 {
     //是否正在拖拽(用于屏蔽拖拽结束瞬间误触发的点击移除)
     protected bool isDragging = false;
@@ -19,6 +19,26 @@ public partial class UIViewCreatureCardItemForLineup : UIViewCreatureCardItem, I
         if (isDragging)
             return;
         base.OnClickSelect();
+    }
+    #endregion
+
+    #region 触摸相关事件
+    /// <summary>
+    /// 触摸-进入：派发悬停事件由管理器置顶本卡(拖拽中管理器会忽略,保证拖拽卡始终最上)
+    /// </summary>
+    public override void OnPointerEnter(PointerEventData eventData)
+    {
+        //基类统一播放悬停卡片音效(sound_card_7)
+        base.OnPointerEnter(eventData);
+        TriggerEvent(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, (UIViewCreatureCardItem)this);
+    }
+
+    /// <summary>
+    /// 触摸-退出：派发离开事件由管理器按槽位还原层级
+    /// </summary>
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        TriggerEvent(EventsInfo.UIViewCreatureCardItem_OnPointerExit, (UIViewCreatureCardItem)this);
     }
     #endregion
 

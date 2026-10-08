@@ -24,7 +24,7 @@ watched_files:
 
 ```
 SpineManager              - Spine资源管理器（加载/缓存SkeletonDataAsset）
-SpineHandler              - Spine处理器（动画播放、皮肤切换等API；游戏层 partial 另含「场景调暗」region：幻化药 show_brightness 键驱动的场景实例材质调暗覆盖 ApplySceneDimOverride/ClearSceneDimOverride，详见 other-spine-mod SKILL）
+SpineHandler              - Spine处理器（动画播放、皮肤切换等API；游戏层 partial 另含「场景亮度调整」region：幻化药 show_brightness 键驱动的场景实例材质亮暗覆盖（域 (0,2]，1=原亮度，<1调暗/>1调亮）ApplySceneDimOverride/ClearSceneDimOverride，详见 other-spine-mod SKILL）
 SkeletonAnimation         - 3D/世界空间Spine组件
 SkeletonGraphic           - UI Spine组件
 SkeletonGraphicExtend     - UI Spine扩展组件（修复RectMask2D整体误剔除，项目标准）

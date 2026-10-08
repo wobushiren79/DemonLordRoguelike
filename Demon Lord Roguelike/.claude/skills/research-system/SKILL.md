@@ -265,8 +265,8 @@ public enum UnlockEnum : long
     LineupCreatureAddNum = 200000001,  // 阵容生物上限+1
     LineupNum = 200100001,             // 解锁多阵容
     DropCrystalLifeTime = 200200001,   // 魔晶掉落物存在时长+5秒/级(level_max=6)
-    DemonLordMPMax = 200300001,        // 魔王魔力上限+10/级(level_max=5)
-    DemonLordMPF = 200400001,          // 魔王魔力恢复速度+1/秒/级(level_max=3)
+    DemonLordMPMax = 200300001,        // 魔王魔力上限+10/级(level_max=100,满级+1000;消耗100*1=首级100每级+100)
+    DemonLordMPF = 200400001,          // 魔王魔力恢复速度+1/秒/级(level_max=100,满级+100/s;消耗100*1=首级100每级+100)
     AbyssalBlessingRefreshNum = 200500001, // 深渊馈赠刷新次数(研究等级=单次征服run内可用刷新次数上限,level_max=5,新run自动回满)
     SpaceDash = 200600001,             // 空格突进(基地控制,level_max=3;1/2/3级向朝向突进1/2/3距离单位;名字纯文本,详情 details=900000018「（距离{Value}）」气泡拼接填待解锁级距离)
     SpaceDashCD = 200700001,           // 空格突进冷却缩减(子研究,前置=SpaceDash,level_max=4;默认3s每级-0.5最低1s;名字纯文本,详情 details=900000019「（{Value}秒）」气泡拼接填待解锁级冷却)
@@ -513,8 +513,8 @@ public int GetUnlockJuicerCreatureMax();               // 魔汁机投入魔物�
 public float GetUnlockSacrificeFailPityAddRate();      // 献祭失败保底增量 = SacrificePityRate 等级 × 5%(未解锁0,满级50%)
 public float GetUnlockSacrificeDifferentIdRate();      // 单个不同id祭品成功率 = SacrificeDifferentIdRate 等级 × 5%(未解锁0,满级50%)
 public float GetUnlockDropCrystalAddLifeTime();        // 魔晶掉落物额外存在时长 = DropCrystalLifeTime 等级 × 5秒(未解锁0,满级+30s)；在 FightCreatureEntity.DropCrystal 叠加到 FightDropCrystalBean.BASE_LIFE_TIME(30)
-public float GetUnlockDemonLordMPMaxAddValue();        // 魔王魔力上限加成 = DemonLordMPMax 等级 × 10(未解锁0,满级+50)；在 CreatureBean.GetAttribute 的 MP 分支对 IsDemonLord() 叠加(战斗/基地同一口径)
-public float GetUnlockDemonLordMPFAddValue();          // 魔王魔力恢复速度加成 = DemonLordMPF 等级 × 1/秒(未解锁0,满级+3/s)；同上在 GetAttribute 的 MPF 分支叠加
+public float GetUnlockDemonLordMPMaxAddValue();        // 魔王魔力上限加成 = DemonLordMPMax 等级 × 10(未解锁0,满级+1000)；在 CreatureBean.GetAttribute 的 MP 分支对 IsDemonLord() 叠加(战斗/基地同一口径)
+public float GetUnlockDemonLordMPFAddValue();          // 魔王魔力恢复速度加成 = DemonLordMPF 等级 × 1/秒(未解锁0,满级+100/s)；同上在 GetAttribute 的 MPF 分支叠加
 public int GetUnlockSpaceDashLevel();                  // 空格突进研究等级 = SpaceDash 等级(0=未解锁不可突进,1/2/3级=1/2/3距离单位)；由 ControlForGameBase 读取决定突进距离
 public float GetUnlockSpaceDashCD();                   // 空格突进冷却(秒) = GetSpaceDashCDForLevel(SpaceDashCD 等级)(未解锁3s,每级-0.5,满级最低1s)；由 ControlForGameBase 读取决定突进CD
 public static float GetSpaceDashDistanceForLevel(int level); // 指定空格突进等级的突进距离(世界单位) = 等级×SPACE_DASH_DISTANCE_PER_LEVEL(1.5,每级距离唯一真实源,ControlForGameBase.dashDistancePerLevel 默认值亦引用之)；供研究气泡文本填充
@@ -528,6 +528,7 @@ public int GetUnlockDemonLordAutoPickCrystalCount();     // 魔王每次自动�
 ```csharp
 public List<long> GetUnlockGameWorldIds();      // 默认包含 worldId=1，再遍历配置
 public List<long> GetUnlockCreatureModelIds();  // 遍历生物模型，按 unlock_id 过滤
+public List<CreatureInfoBean> GetUnlockGashaponCreatureInfos(); // 已解锁可孕育生物(creature_type=1扭蛋 且职业研究 unlock_id 已解锁, 与孕育池同口径)；通关奖励装备池可用性过滤用(见 fight-reward-system)
 ```
 
 ---

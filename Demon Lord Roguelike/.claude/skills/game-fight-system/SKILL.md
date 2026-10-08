@@ -248,8 +248,8 @@ public void ChangeMP(float changeMP, out float leftMP, out float changeMPReal); 
 
 // 研究加成（仅魔王）：已下沉到 CreatureBean.GetAttribute 的 MP/MPF 分支，
 //   当 IsDemonLord() 时叠加研究值（战斗/基地魔物管理页面同一口径，FightCreatureBean 不再额外叠加）：
-//   MP  += UserUnlockBean.GetUnlockDemonLordMPMaxAddValue()  (强化研究 UnlockEnum.DemonLordMPMax=200300001，每级+10，满级5级+50)
-//   MPF += UserUnlockBean.GetUnlockDemonLordMPFAddValue()    (强化研究 UnlockEnum.DemonLordMPF=200400001，每级+1/秒，满级3级+3/s)
+//   MP  += UserUnlockBean.GetUnlockDemonLordMPMaxAddValue()  (强化研究 UnlockEnum.DemonLordMPMax=200300001，每级+10，满级100级+1000)
+//   MPF += UserUnlockBean.GetUnlockDemonLordMPFAddValue()    (强化研究 UnlockEnum.DemonLordMPF=200400001，每级+1/秒，满级100级+100/s)
 //   普通生物 IsDemonLord()=false 不应用，避免影响非核心生物魔力数值。
 
 // 恢复链路：GameFightLogic.UpdateGameForMPRecover(updateTime)

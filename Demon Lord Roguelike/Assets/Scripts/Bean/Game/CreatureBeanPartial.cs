@@ -18,7 +18,7 @@ public struct TransformOtherData
     public string showData;
     /// <summary>world_data：世界显示尺寸/偏移「scale;x,y」（可空，x=横向偏移,y=竖向抬升）</summary>
     public string worldData;
-    /// <summary>show_brightness：场景实例调暗系数「(0,1] 浮点」（可空，仅贴图偏亮的 Mod 幻化药带键；UI 的 SkeletonGraphic 不消费）</summary>
+    /// <summary>show_brightness：场景实例亮度系数「(0,2] 浮点，1=原亮度，&lt;1调暗 &gt;1调亮」（可空，默认仅贴图偏亮的 Mod 幻化药由生成端带调暗键；UI 的 SkeletonGraphic 不消费）</summary>
     public string showBrightness;
     /// <summary>ui_show_skin：ui_show 高清展示指定皮肤名（可空，ArkReSpine 单资源多皮肤按皮肤出药时配置；支持「|」分隔多皮肤叠加组合，CherryTaleSpine 组合皮肤药如 Eye_01|Mouth_01）</summary>
     public string uiShowSkin;
@@ -598,13 +598,13 @@ public partial class CreatureBean
     }
 
     /// <summary>
-    /// 获取幻化场景调暗系数（other_data 的 show_brightness 键，(0,1] 浮点）；
-    /// 消费点=CreatureHandler.SetCreatureData 世界空间 SkeletonAnimation 分支 → SpineHandler.ApplySceneDimOverride/ClearSceneDimOverride（仅场景实例调暗，UI 不消费）。
-    /// 键缺失/非法（解析失败、≥1、≤0）时视为「无调暗」，用于清除残留覆盖。
+    /// 获取幻化场景亮度系数（other_data 的 show_brightness 键，(0,2] 浮点，1=原亮度，&lt;1 调暗，&gt;1 调亮）；
+    /// 消费点=CreatureHandler.SetCreatureData 世界空间 SkeletonAnimation 分支 → SpineHandler.ApplySceneDimOverride/ClearSceneDimOverride（仅场景实例调亮暗，UI 不消费）。
+    /// 键缺失/非法（解析失败、≤0、&gt;2）或 ≈1（原亮度无需覆盖）时视为「无亮度调整」，用于清除残留覆盖。
     /// 编辑器下测试覆盖层(TransformPotionUITestOverride)有值时优先于配置返回(幻化药测试面板调参实时预览用)。
     /// </summary>
-    /// <param name="brightness">调暗系数（true 时有效，恒 ∈ (0,1)）</param>
-    /// <returns>是否配置了有效调暗系数</returns>
+    /// <param name="brightness">亮度系数（true 时有效，∈ (0,1)∪(1,2]）</param>
+    /// <returns>是否配置了有效亮度系数</returns>
     public bool GetTransformShowBrightness(out float brightness)
     {
         brightness = 1;
@@ -619,8 +619,8 @@ public partial class CreatureBean
 #endif
         if (string.IsNullOrEmpty(showBrightness))
             return false;
-        //≥1=无调暗语义视为无键(生成端 avg≤65 不写键); ≤0 非法防御
-        if (!float.TryParse(showBrightness, out brightness) || brightness >= 1 || brightness <= 0)
+        //≈1=原亮度无覆盖语义视为无键(生成端 avg≤65 不写键); ≤0 或 >2 非法防御(shader _Brightness 属性域 Range(0,2))
+        if (!float.TryParse(showBrightness, out brightness) || brightness <= 0 || brightness > 2 || Mathf.Approximately(brightness, 1))
         {
             brightness = 1;
             return false;

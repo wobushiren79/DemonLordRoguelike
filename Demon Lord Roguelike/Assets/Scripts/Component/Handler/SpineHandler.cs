@@ -136,7 +136,7 @@ public partial class SpineHandler
         }
     }
 
-    #region 场景调暗(幻化药 show_brightness)
+    #region 场景亮度调整(幻化药 show_brightness, <1调暗/>1调亮)
 
     /// <summary>调暗材质缓存：key=(原图集材质, 系数量化千分位)，value=克隆调暗材质（会话级复用，上界≈图集数×系数种数，可忽略）</summary>
     protected static readonly Dictionary<(Material src, int kQuant), Material> sceneDimMaterialCache = new Dictionary<(Material, int), Material>();
@@ -162,11 +162,11 @@ public partial class SpineHandler
     }
 
     /// <summary>
-    /// 应用场景调暗覆盖：把场景实例的普通页图集材质经 CustomMaterialOverride 替换为克隆调暗材质（_COLOR_ADJUST+_Brightness，HSV 只缩明度不碰 alpha，PMA 安全）；
-    /// 仅作用于世界空间 SkeletonAnimation（UI 的 SkeletonGraphic 走另一渲染路径不受影响）；混合页(-Multiply/-Screen)材质跳过（混合公式不同，调暗语义不成立）。
+    /// 应用场景亮度覆盖：把场景实例的普通页图集材质经 CustomMaterialOverride 替换为克隆调亮暗材质（_COLOR_ADJUST+_Brightness，HSV 只缩明度不碰 alpha，PMA 安全）；
+    /// 仅作用于世界空间 SkeletonAnimation（UI 的 SkeletonGraphic 走另一渲染路径不受影响）；混合页(-Multiply/-Screen)材质跳过（混合公式不同，调亮暗语义不成立）。
     /// </summary>
     /// <param name="skeletonAnimation">目标场景生物</param>
-    /// <param name="brightness">调暗系数（other_data 的 show_brightness 键值，∈ (0,1)）</param>
+    /// <param name="brightness">亮度系数（other_data 的 show_brightness 键值，∈ (0,2]，&lt;1 调暗，&gt;1 调亮；shader _Brightness 属性域 Range(0,2) 原生支持）</param>
     public void ApplySceneDimOverride(SkeletonAnimation skeletonAnimation, float brightness)
     {
         if (skeletonAnimation == null)

@@ -13,11 +13,12 @@ using OfficeOpenXml;
 /// <summary>
 /// Mod 幻化药测试面板（GUI版，纯代码控制面板 + 真实卡片预制体，不依赖测试预制），四个页签：
 /// 单个预览=下拉选药, 小卡=Chess基础形象/大卡=Avator高清/场景并排左基础右幻化(世界空间对比)；
-/// 小卡列表/大卡列表/场景列表=分页网格一次展示多个幻化药, 悬停目标后滚轮改缩放/拖拽改位置。
+/// 小卡列表/大卡列表/场景列表=分页网格一次展示多个幻化药, 悬停目标后滚轮改缩放/拖拽改位置; 项下小按钮[复制][粘贴]走参数剪贴板快速套用,
+/// 场景列表另有「粘贴剪贴板到全部场景项」按钮=一键把剪贴板 world_data 套用到当前筛选(Mod筛选)全部项(同MOD骨架大小相近, 免逐项粘贴)。
 /// 实现=给基础生物设置 transformItemId 后走真实卡片 SetData / SetCreatureData 链（与魔物管理吃幻化药同路径）。
 /// 调参(仅编辑器)：文本框精输 + 滑动条粗调(缩放对数映射) + 悬停滚轮/拖拽, 经 TransformPotionUITestOverride 覆盖层实时生效；
 /// 数据键: show_data=小卡默认展示尺寸, ui_show_data=大卡详情尺寸, world_data=世界显示尺寸/偏移(战斗/基地等 SkeletonAnimation 消费),
-/// show_brightness=场景调暗系数(场景列表 Alt+滚轮调, 消费=SetCreatureData→SpineHandler.ApplySceneDimOverride, UI 不消费)。
+/// show_brightness=场景亮度系数(1=原亮度,<1调暗,>1调亮,域(0,2]; 场景列表 Alt+滚轮调, 消费=SetCreatureData→SpineHandler.ApplySceneDimOverride, UI 不消费)。
 /// 场景列表另带「测试场景」区: 循环加载 FightSceneCfg 各行真实场景预制体(森林/沙漠/皇宫/平原各变体)并还原光照(天空盒/雾/环境光/Details显隐,
 /// 体积雾/景深不还原), 卸载时还原面板原环境, 关面板自动卸载。
 /// 「保存全部修改」一键批量写回 Mod道具Excel(唯一真实源, 会话首写前备份到 Mod项目/ExcelBackup, 滚动复用.bak.1~3只留最近3份) + Mod项目与主项目部署副本两处 ItemsInfo.txt + 当前会话内存。
@@ -39,6 +40,7 @@ public class TestTransformPotionGUI : MonoBehaviour
     private const float SceneSpineOffsetX = 1.1f;   //场景模型相对中心点的横向偏移(基础在左/幻化在右)
     private const float BrightnessStep = 0.02f;     //亮度调节步进(场景列表 Alt+滚轮, show_brightness 系数)
     private const float BrightnessMin = 0.3f;       //亮度系数下限(防误滚到全黑)
+    private const float BrightnessMax = 2f;         //亮度系数上限(1=原亮度, >1调亮; shader _Brightness 属性域 Range(0,2))
 
     //列表布局: 间距与横竖个数(用户可调, EditorPrefs 持久化跨会话保持, 见 DrawGridSizeRow 布局调整行)
     private const float DragThresholdPx = 4f;                                //拖拽生效阈值(防误触微小拖动)
@@ -910,7 +912,7 @@ public class TestTransformPotionGUI : MonoBehaviour
         {
             string hint = currentTab == PanelTab.ChessList ? "小卡列表：悬停目标卡片，滚轮=改缩放，拖拽=改位置（show_data）"
                 : currentTab == PanelTab.ShowList ? "大卡列表：悬停目标卡片，滚轮=改缩放，拖拽=改位置（ui_show_data；无Avator=调回落的show形象）"
-                : "场景列表：最左=基础样板(原形象)对比基准(不可调)；悬停目标模型，滚轮=改大小，拖拽=改位置（world_data 世界显示），Alt+滚轮=调亮度（show_brightness 场景调暗）";
+                : "场景列表：最左=基础样板(原形象)对比基准(不可调)；悬停目标模型，滚轮=改大小，拖拽=改位置（world_data 世界显示），Alt+滚轮=调亮度（show_brightness 场景亮暗 30%~200%）";
             GUILayout.Label(hint, hintStyle);
             GUILayout.Label("项下小按钮：[还原]=恢复配置值(场景页含亮度) [0,0]=位置归零 [复制][粘贴]=参数快速套用", hintStyle);
 #if UNITY_EDITOR
@@ -922,10 +924,15 @@ public class TestTransformPotionGUI : MonoBehaviour
             DrawGridSizeRow();
             DrawPager();
 #if UNITY_EDITOR
-            if (currentTab == PanelTab.SceneList && GUILayout.Button("📋 输出场景诊断到控制台(按 ` 键查看)", GUILayout.Height(22)))
-                LogSceneListDiagnostics();
             if (currentTab == PanelTab.SceneList)
+            {
+                //同MOD场景骨架大小相近: 一键把剪贴板 world_data 套用到当前筛选全部项, 免逐项粘贴
+                if (GUILayout.Button("⇪ 粘贴剪贴板到全部场景项(当前筛选)", GUILayout.Height(22)))
+                    PasteClipboardToAllScenes();
+                if (GUILayout.Button("📋 输出场景诊断到控制台(按 ` 键查看)", GUILayout.Height(22)))
+                    LogSceneListDiagnostics();
                 DrawTestSceneSection();
+            }
 #endif
         }
 
@@ -1677,11 +1684,11 @@ public class TestTransformPotionGUI : MonoBehaviour
                 foreach (var item in items)
                 {
                     if (!GetItemGuiRect(item).Contains(e.mousePosition)) continue;
-                    //场景列表按住 Alt 滚轮=调亮度(show_brightness 场景调暗系数), 不按住=改大小(world_data)
+                    //场景列表按住 Alt 滚轮=调亮度(show_brightness 场景亮度系数), 不按住=改大小(world_data)
                     if (currentTab == PanelTab.SceneList && e.alt)
                     {
                         float brightness = GetCurrentBrightness(item.potionId);
-                        brightness = Mathf.Clamp(brightness + (e.delta.y > 0 ? BrightnessStep : -BrightnessStep), BrightnessMin, 1f);
+                        brightness = Mathf.Clamp(brightness + (e.delta.y > 0 ? BrightnessStep : -BrightnessStep), BrightnessMin, BrightnessMax);
                         ApplyBrightness(item, brightness);
                         e.Use();
                         break;
@@ -1720,10 +1727,10 @@ public class TestTransformPotionGUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 取幻化药当前生效的场景调暗系数（覆盖层优先 → 配置 show_brightness 键 → 默认 1=不调暗；基础样板 potionId=0 恒 1）
+    /// 取幻化药当前生效的场景亮度系数（覆盖层优先 → 配置 show_brightness 键 → 默认 1=原亮度；基础样板 potionId=0 恒 1）
     /// </summary>
     /// <param name="potionId">幻化药道具完整id</param>
-    /// <returns>亮度系数（1=不调暗）</returns>
+    /// <returns>亮度系数（1=原亮度，&lt;1调暗，&gt;1调亮）</returns>
     private float GetCurrentBrightness(long potionId)
     {
         if (potionId == 0) return 1f;
@@ -1733,23 +1740,23 @@ public class TestTransformPotionGUI : MonoBehaviour
 #if UNITY_EDITOR
         if (TransformPotionUITestOverride.TryGetShowBrightness(potionId, out string ov)) raw = ov;
 #endif
-        if (string.IsNullOrEmpty(raw) || !float.TryParse(raw, out float k) || k >= 1f || k <= 0f) return 1f;
-        return k;
+        if (string.IsNullOrEmpty(raw) || !float.TryParse(raw, out float k) || k <= 0f) return 1f;
+        return Mathf.Min(k, BrightnessMax);
     }
 
     /// <summary>
-    /// 设置幻化药亮度覆盖并实时应用到场景列表项（写覆盖层 + 直接重跑调暗覆盖/清除，不走完整 SetData 防打断动画；k=1=强制不调暗）
+    /// 设置幻化药亮度覆盖并实时应用到场景列表项（写覆盖层 + 直接重跑亮度覆盖/清除，不走完整 SetData 防打断动画；k=1=强制原亮度）
     /// </summary>
     /// <param name="item">场景列表项</param>
-    /// <param name="brightness">目标亮度系数（clamp 到 [BrightnessMin,1]）</param>
+    /// <param name="brightness">目标亮度系数（clamp 到 [BrightnessMin,BrightnessMax]）</param>
     private void ApplyBrightness(ListItem item, float brightness)
     {
-        brightness = Mathf.Clamp(brightness, BrightnessMin, 1f);
+        brightness = Mathf.Clamp(brightness, BrightnessMin, BrightnessMax);
         TransformPotionUITestOverride.SetShowBrightness(item.potionId, brightness.ToString("0.00"));
         if (item.sceneRenderer == null) return;
         SkeletonAnimation sk = item.sceneRenderer.GetComponent<SkeletonAnimation>();
         if (sk == null) return;
-        if (brightness >= 1f)
+        if (Mathf.Approximately(brightness, 1f))
             SpineHandler.Instance.ClearSceneDimOverride(sk);
         else
             SpineHandler.Instance.ApplySceneDimOverride(sk, brightness);
@@ -1787,6 +1794,7 @@ public class TestTransformPotionGUI : MonoBehaviour
     {
         if (currentTab == PanelTab.Single) return;
         DataKind kind = currentTab == PanelTab.ChessList ? DataKind.Show : currentTab == PanelTab.ShowList ? DataKind.UiShow : DataKind.World;
+        ListItem pendingRestore = null; //「还原」延迟到枚举结束后执行(RestoreItem→BuildListView→Clear 会就地修改 listItems 使枚举器失效)
         foreach (var item in listItems)
         {
             Rect rect = GetItemGuiRect(item);
@@ -1821,7 +1829,7 @@ public class TestTransformPotionGUI : MonoBehaviour
             if (!item.editable) continue;
             //每项小按钮: 还原=清该药本段覆盖恢复配置值(防误拖动一键恢复); 0,0=位置快速归零(保留缩放); 复制/粘贴=参数快速套用
             if (GUI.Button(new Rect(rect.center.x - 92, rect.yMax + 22, 42, 18), "还原", smallButtonStyle))
-                RestoreItem(item);
+                pendingRestore = item;
             if (GUI.Button(new Rect(rect.center.x - 46, rect.yMax + 22, 42, 18), "0,0", smallButtonStyle))
                 ZeroItemPos(item, kind);
             if (GUI.Button(new Rect(rect.center.x + 4, rect.yMax + 22, 42, 18), "复制", smallButtonStyle))
@@ -1833,7 +1841,7 @@ public class TestTransformPotionGUI : MonoBehaviour
             {
                 float curBright = GetCurrentBrightness(item.potionId);
                 Rect brightRect = new Rect(rect.x - 30, rect.yMax + 62, 116, 18);
-                float newBright = GUI.HorizontalSlider(brightRect, curBright, BrightnessMin, 1f);
+                float newBright = GUI.HorizontalSlider(brightRect, curBright, BrightnessMin, BrightnessMax);
                 GUI.Label(new Rect(brightRect.xMax + 2, brightRect.y, 40, 18), $"{Mathf.RoundToInt(curBright * 100)}%", smallButtonStyle);
                 if (GUI.Button(new Rect(brightRect.xMax + 42, brightRect.y, 30, 18), "亮原", smallButtonStyle))
                     RestoreItemBrightness(item);
@@ -1841,6 +1849,7 @@ public class TestTransformPotionGUI : MonoBehaviour
                     ApplyBrightness(item, Mathf.Round(newBright / BrightnessStep) * BrightnessStep);
             }
         }
+        if (pendingRestore != null) RestoreItem(pendingRestore);
     }
 
     /// <summary>
@@ -1876,7 +1885,7 @@ public class TestTransformPotionGUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 还原列表项亮度(「亮原」按钮): 清 show_brightness 覆盖回到配置键值, 并按配置重跑调暗(配置有键=应用配置系数, 无键=清除调暗)
+    /// 还原列表项亮度(「亮原」按钮): 清 show_brightness 覆盖回到配置键值, 并按配置重跑亮度覆盖(配置有键=应用配置系数, 无键=清除还原亮度)
     /// </summary>
     private void RestoreItemBrightness(ListItem item)
     {
@@ -1886,7 +1895,7 @@ public class TestTransformPotionGUI : MonoBehaviour
         if (sk == null) return;
         //覆盖层已清, GetCurrentBrightness 此时返回配置键值(无键=1)
         float k = GetCurrentBrightness(item.potionId);
-        if (k >= 1f)
+        if (Mathf.Approximately(k, 1f))
             SpineHandler.Instance.ClearSceneDimOverride(sk);
         else
             SpineHandler.Instance.ApplySceneDimOverride(sk, k);
@@ -1935,6 +1944,36 @@ public class TestTransformPotionGUI : MonoBehaviour
         SetOverrideData(item.potionId, kind, clipScale, clipPos);
         DirectApply(item, kind, clipScale, clipPos);
         SyncSingleBuffersFromOverride(item.potionId, kind);
+    }
+
+    /// <summary>
+    /// 一键把剪贴板参数粘贴到当前筛选(Mod筛选)下的全部场景项(同MOD骨架大小相近, 批量套用免逐项粘贴)：
+    /// 只写覆盖层(仍走「保存全部修改」统一写回Excel), 无 show_res 项跳过(world_data 不被真实链消费, 贴了是假脏数据),
+    /// 完成后重建列表按真实链重绘(同时重跑亮度覆盖), 跨段剪贴板拒绝(与 PasteItem 同规约)
+    /// </summary>
+    private void PasteClipboardToAllScenes()
+    {
+        if (!clipHasValue) { SetSaveMessage("⚠ 剪贴板为空，请先在某项上点[复制]", true); return; }
+        if (clipKind != DataKind.World)
+        {
+            SetSaveMessage($"⚠ 剪贴板是{KindName(clipKind)}参数，不能粘贴到{KindName(DataKind.World)}", true);
+            return;
+        }
+        List<SelectItem> potions = GetFilteredPotions();
+        if (potions == null || potions.Count == 0) { SetSaveMessage("⚠ 当前筛选无幻化药", true); return; }
+        int applied = 0, skipNoRes = 0;
+        foreach (SelectItem potion in potions)
+        {
+            ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(potion.id);
+            if (itemInfo == null) continue;
+            if (CreatureBean.ParseTransformOtherData(itemInfo.other_data).showRes.IsNull()) { skipNoRes++; continue; }
+            SetOverrideData(potion.id, DataKind.World, clipScale, clipPos);
+            applied++;
+        }
+        BuildListView();
+        string msg = $"✓ 已把 {ComposeUIData(clipScale, clipPos)} 套用到{applied}个场景项(world_data)，待「💾保存全部修改」写回Excel";
+        if (skipNoRes > 0) msg += $"，跳过无世界幻化{skipNoRes}个";
+        SetSaveMessage(msg, false);
     }
 
     /// <summary>

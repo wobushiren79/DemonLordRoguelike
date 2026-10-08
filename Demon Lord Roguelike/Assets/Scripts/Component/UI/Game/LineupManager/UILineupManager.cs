@@ -29,6 +29,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     protected float timeForLineupCardStagger = 0.04f;
     //当前阵容的序号
     protected int currentLineupIndex = 1;
+    //当前正在拖拽的阵容卡片(非空时屏蔽悬停层级变化,保证拖拽卡始终最上)
+    protected UIViewCreatureCardItem currentDragCard;
     public override void Awake()
     {
         base.Awake();
@@ -51,6 +53,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
 
         //默认打开第一套阵容
         currentLineupIndex = 1;
+        //防御性清理拖拽标记(拖拽中意外关闭UI时 currentDragCard 可能残留,导致悬停置顶失效)
+        currentDragCard = null;
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, EventForCardPointerEnter);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnPointerExit, EventForCardPointerExit);
         this.RegisterEvent<UIViewCreatureCardItem>(EventsInfo.UIViewCreatureCardItem_OnClickSelect, EventForOnClickSelect);
@@ -386,6 +390,32 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         }
         listShowCardLineup.Clear();
     }
+
+    /// <summary>
+    /// 按当前阵容槽位序号重排展示中的卡片列表(列表顺序=从左到右的视觉顺序,作为层级与动画错开顺序的基准)
+    /// </summary>
+    protected void SortShowCardLineupByPos()
+    {
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        listShowCardLineup.Sort((a, b) =>
+        {
+            int posA = userData.GetLineupCreaturePosIndex(currentLineupIndex, a.cardData.creatureData.creatureUUId);
+            int posB = userData.GetLineupCreaturePosIndex(currentLineupIndex, b.cardData.creatureData.creatureUUId);
+            return posA.CompareTo(posB);
+        });
+    }
+
+    /// <summary>
+    /// 重排阵容卡片层级:按槽位从左到右依次置顶(最右卡层级最高),用于悬停结束后还原层级
+    /// </summary>
+    protected void RefreshLineupCardLayer()
+    {
+        SortShowCardLineupByPos();
+        for (int i = 0; i < listShowCardLineup.Count; i++)
+        {
+            listShowCardLineup[i].transform.SetAsLastSibling();
+        }
+    }
     #endregion
     #region  点击相关
 
@@ -445,19 +475,29 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
 
     #region 回调相关
     /// <summary>
-    /// 事件-焦点选中卡片
+    /// 事件-焦点选中卡片(悬停卡置顶;拖拽中屏蔽,保证拖拽卡始终最上)
     /// </summary>
     public void EventForCardPointerEnter(UIViewCreatureCardItem targetView)
     {
-
+        //仅阵容行卡片响应悬停层级(背包列表卡片不参与,避免打乱列表顺序)
+        if (targetView.cardData.cardUseState != CardUseStateEnum.Lineup)
+            return;
+        if (currentDragCard != null)
+            return;
+        targetView.transform.SetAsLastSibling();
     }
 
     /// <summary>
-    /// 事件-焦点离开
+    /// 事件-焦点离开(还原为槽位层级;拖拽中屏蔽,划过时其他卡的进出事件不生效)
     /// </summary>
     public void EventForCardPointerExit(UIViewCreatureCardItem targetView)
     {
-
+        if (targetView.cardData.cardUseState != CardUseStateEnum.Lineup)
+            return;
+        if (currentDragCard != null)
+            return;
+        //悬停结束,按槽位重排所有卡片层级
+        RefreshLineupCardLayer();
     }
 
     /// <summary>
@@ -502,24 +542,27 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// 事件-开始拖拽阵容卡片(卡片自身已置顶跟手，此处无需额外处理)
+    /// 事件-开始拖拽阵容卡片(卡片自身已置顶跟手,此处记录拖拽卡以屏蔽悬停层级变化)
     /// </summary>
     public void EventForCardBeginDrag(UIViewCreatureCardItem targetView)
     {
-
+        currentDragCard = targetView;
     }
 
     /// <summary>
-    /// 事件-结束拖拽阵容卡片：按落点横坐标反解目标槽位换位，随后全部卡片吸附归位(夹回)
+    /// 事件-结束拖拽阵容卡片：按落点横坐标反解目标槽位换位，随后全部卡片吸附归位(夹回)并按新槽位重排层级
     /// </summary>
     public void EventForCardEndDrag(UIViewCreatureCardItem targetView)
     {
+        currentDragCard = null;
         int totalCard = listShowCardLineup.Count;
         if (totalCard > 1)
         {
             int targetPosIndex = GetLineupDropPosIndex(targetView.transform.localPosition.x, totalCard);
             var userData = GameDataHandler.Instance.manager.GetUserData();
             userData.MoveLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureUUId, targetPosIndex);
+            //换位后按新槽位重排展示列表,让层级跟随视觉位置(最右最上),避免拖拽卡残留旧层级
+            SortShowCardLineupByPos();
         }
         //所有卡吸附到新槽位(含夹回)
         AnimForAllLineupCardPosReset(0, null);

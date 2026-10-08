@@ -459,7 +459,7 @@ public class UserUnlockBean
 
     /// <summary>
     /// 获取魔王魔力上限(MP)的研究加成
-    /// 未解锁(0级)返回 0；每级研究 +10（UnlockEnum.DemonLordMPMax，level_max=10，满级 +100）
+    /// 未解锁(0级)返回 0；每级研究 +10（UnlockEnum.DemonLordMPMax，level_max=100，满级 +1000）
     /// </summary>
     /// <returns>叠加到魔王魔力上限上的额外点数</returns>
     public float GetUnlockDemonLordMPMaxAddValue()
@@ -479,7 +479,7 @@ public class UserUnlockBean
 
     /// <summary>
     /// 获取魔王魔力恢复速度(MPF)的研究加成(每秒)
-    /// 未解锁(0级)返回 0；每级研究 +1/秒（UnlockEnum.DemonLordMPF，level_max=10，满级 +10/秒）
+    /// 未解锁(0级)返回 0；每级研究 +1/秒（UnlockEnum.DemonLordMPF，level_max=100，满级 +100/秒）
     /// </summary>
     /// <returns>叠加到魔王每秒魔力恢复速度上的额外点数</returns>
     public float GetUnlockDemonLordMPFAddValue()
@@ -940,6 +940,29 @@ public class UserUnlockBean
             if (CheckIsUnlock(itemCreatureModelInfo.unlock_id))
             {
                 listUnlock.Add(itemCreatureModelInfo.id);
+            }
+        }
+        return listUnlock;
+    }
+
+    /// <summary>
+    /// 获取已解锁的可孕育生物配置列表
+    /// 遍历生物配置表，筛选出「可孕育(扭蛋)且职业研究已解锁」的生物；与孕育池(UIGashaponMachine.StartGashaponMachine 按 unlock_id 过滤)同口径
+    /// </summary>
+    /// <returns>已解锁的可孕育生物配置列表</returns>
+    public List<CreatureInfoBean> GetUnlockGashaponCreatureInfos()
+    {
+        List<CreatureInfoBean> listUnlock = new List<CreatureInfoBean>();
+        var allCreatureInfo = CreatureInfoCfg.GetAllArrayData();
+        for (int i = 0; i < allCreatureInfo.Length; i++)
+        {
+            var itemCreatureInfo = allCreatureInfo[i];
+            //仅可孕育(扭蛋)生物；敌人/创建(魔王)/测试类型不参与
+            if (itemCreatureInfo.creature_type != (int)CreatureTypeEnum.GashaponMachine)
+                continue;
+            if (CheckIsUnlock(itemCreatureInfo.unlock_id))
+            {
+                listUnlock.Add(itemCreatureInfo);
             }
         }
         return listUnlock;
