@@ -27,7 +27,11 @@ public partial class UIDialogCreatureShow : DialogView
     public void InitCreature(CreatureBean creatureData)
     {
         this.currentCreatureData = creatureData;
-        GameUIUtil.SetCreatureUIForDetails(ui_CreatureSpine, null, creatureData, customUISize: 2);
+        //Chess 模式=显示小卡本身的 show 基础展示形象(测试面板小卡列表详情, 放大2倍与详情显示尺寸对齐); 默认=ui_show 详情高清形象
+        if (dialogCreatureShowData != null && dialogCreatureShowData.isShowChessSpine)
+            GameUIUtil.SetCreatureUIForSimple(ui_CreatureSpine, creatureData, 2);
+        else
+            GameUIUtil.SetCreatureUIForDetails(ui_CreatureSpine, null, creatureData, customUISize: 2);
     }
 
     /// <summary>

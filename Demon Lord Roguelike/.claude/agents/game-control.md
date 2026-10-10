@@ -20,7 +20,7 @@ watched_files:
 控制系统走 `BaseHandler<GameControlHandler, GameControlManager>` 配对模式，具体控制器是挂在同一 GameObject 上、继承 `BaseControl` 的多个组件，通过 `enabledControl` 开关互斥启用。
 
 ```
-GameControlHandler   - 对外 API(单例)：SetFightControl / SetBaseControl / AnimForBaseControlShow
+GameControlHandler   - 对外 API(单例)：SetFightControl / SetBaseControl / AnimForBaseControlShow(从天而降出场：保留 Renderer 的幻化 world_data 偏移+起跳即播 Idle)
 GameControlManager   - 资源管理：持有 controlTargetForEmpty(空物体/镜头锚) 与 controlTargetForCreature(角色)
                        懒加载 controlForGameFight / controlForGameBase，登记进 listControl
 BaseControl          - 框架层基类(partial)：仅一个 enabledControl 字段 + 虚方法 EnabledControl(bool)
@@ -55,7 +55,7 @@ ControlForGameFight  - 战斗场景控制：WASD/右键拖拽移镜头、左键�
 - **恶魔城式残影（框架层通用组件·对象池）**：残影已抽成**框架层通用能力**，`dashGhost` 类型是 [AfterimageGhostMesh.cs](Assets/FrameWork/Scripts/Component/Other/AfterimageGhostMesh.cs)（基类 [AfterimageGhostBase.cs](Assets/FrameWork/Scripts/Component/Other/AfterimageGhostBase.cs)，原 DashGhostSpawner 移入 FrameWork/Component/Other 并去 Spine 耦合，控制层 `Init(skeletonAnimation.gameObject)` 传物体即可）。对 `Renderer` 的 MeshRenderer/MeshFilter 做「网格快照 + 材质淡出」，压 `sortingOrder-1` 身后、半透明冷色虚影。关键实现（属 framework-core 域）：**残影走对象池**（基类管 `listActive`/`poolIdle`/`listAll`，淡出即 `Recycle` 回池复用**不销毁**，频繁突进不反复 Instantiate/Destroy）；网格每个池对象各持一份 `Mesh`、复用时 `CopyMesh` 原地刷新（避双缓冲覆盖）；材质**共享**源 `sharedMaterials`（不克隆），淡出用 `MaterialPropertyBlock` 覆盖 `_Color`（PMA 整体乘 `ghostTint*t`，免克隆免泄漏、不影响本体）。同族还有 `AfterimageGhostSkinnedMesh`(3D骨骼 BakeMesh)/`AfterimageGhostSprite`(2D精灵) 变体。
   - **数量按突进等级**：`HandleForDashDown` 调 `dashGhost.StartSpawn(dashLevel * dashGhostCountPerLevel, dashDuration)`，`dashGhostCountPerLevel=3` → 1级3个/2级6个/3级9个；`StartSpawn(count,duration)` 用 `spawnInterval=duration/count` 把 count 个残影均匀铺满冲刺，`spawnRemaining` 计数生成够即止。`EndDash`/`CancelDash` 用 backing field `_dashGhost?.StopSpawn()`（只停生成、保留池）。
   - **清理在 `EnabledControl(false)`**（不在 WorldHandler）：控制被禁用时（打开界面，或切场景经 `EnableAllControl(false)`）在 `EnabledControl` 的 `!enabled` 分支 `_dashGhost?.ClearAll()` 统一销毁池；`OnDestroy` 兜底防 Mesh 泄漏。平时突进复用、控制未挂起时池常驻。
-- **动画**：`PlayAnimForControlTarget` 用 `SpineAnimationStateEnum`（Idle/Walk）驱动 `skeletonAnimation`，去重避免重复切换。
+- **动画**：`PlayAnimForControlTarget` 用 `SpineAnimationStateEnum`（Idle/Walk）驱动 `skeletonAnimation`，去重避免重复切换；`SetCreatureData` 换骨架后重置 `creatureAnimEnum=None`（轨道已清空，不重置则再进基地/换幻化后 Idle 被去重跳过、角色一直静止）。
 - **走路声**：移动中 `PlayLoopSound(AudioEnum.sound_walk_1, pitch:1.5f)`（加快 1.5 倍速，幂等），静止/禁用时 `StopLoopSound`。
 - **交互**：`HandleForInteraction` 每 0.2s 用 `RayUtil.OverlapToSphere` 探 `LayerInfo.Interaction`，命中显示交互提示气泡；按 E(`inputActionUseE`)抬起时 `GetInteractionEnum`→按 `ControlInteractionEnum` 打开对应 UI/逻辑并播 `sound_btn_1`。
 - **供 UI 轮询的只读状态**：`IsInteractionShowing`（=交互提示物体 `controlTargetForInteraction.activeSelf`，即「当前可交互」）与 `DashCdRemain`（突进冷却剩余）供按键提示组 `UIViewPressControlForGameBase`（UIBaseMain/UIDoomCouncilMain 子视图，见 ui-components）每帧轮询 E 键显隐与 Space CD 遮罩；CD 总时长由 UI 侧实时读 `GetUnlockSpaceDashCD()`。

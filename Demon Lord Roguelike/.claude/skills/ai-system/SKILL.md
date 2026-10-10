@@ -295,7 +295,7 @@ private static void RegisterAll()
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| `selfCreatureEntity` | `FightCreatureEntity` | 该AI控制的生物实体 |
+| `selfCreatureEntity` | `FightCreatureEntity` | 该AI控制的生物实体；**死亡回池/清场时被 `ClearData()` 置 null**（`RemoveFightCreatureEntity` 会立即同步回收 AI，但其已发射的在途弹道不随之销毁，落地回调仍会到达——回调入口须先判 `selfAIEntity == null || selfAIEntity.selfCreatureEntity == null` 跳过，先例：`AIIntentCreatureDead`、`AIIntentCreatureAttack.ActionForAttackEnd`） |
 | `targetCreatureEntity` | `FightCreatureEntity` | 当前锁定的目标生物 |
 
 | 方法 | 说明 |
@@ -304,7 +304,7 @@ private static void RegisterAll()
 | `FindCreatureEntityForSingeFrontThenBack(DirectionEnum frontDirection, bool searchBack)` | 正面优先搜 frontDirection，命中即短路返回；正面无目标且 searchBack==true 时才向反方向补搜一次（复用同一 searchType/searchRange，背后范围=正面范围）。防守生物「转身攻击身后」用 |
 | `FindCreatureEntity(DirectionEnum)` | 朝指定方向搜索多个目标 |
 | `FindCreatureEntityForSinge(Vector3)` | 朝指定向量方向搜索单个目标 |
-| `FindCreatureEntity(Vector3)` | 朝指定向量方向搜索多个目标 |
+| `FindCreatureEntity(Vector3)` | 朝指定向量方向搜索多个目标；**`selfCreatureEntity` 为 null（已回收）时返回 null**，是全部索敌入口的兜底 |
 
 ### AIHandler (AI处理器)
 

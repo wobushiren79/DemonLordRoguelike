@@ -193,35 +193,6 @@ MCP 已连接（或用户已同意开启）后，上述操作的 PowerShell 命�
 - **委派给 Agent/Skill 执行任务**时，若过程中产生临时脚本，亦需在任务结束总结前完成清理，或在 prompt 中明确告知子代理执行该清理动作。
 - **任务结束总结**中如有创建过临时脚本，应在总结里简要说明已删除的脚本路径，便于用户审计。
 
-## PixelLab 像素图生成规则
-
-### 调用前必须征得用户同意（最高优先级）
-
-PixelLab 是付费外部服务（消耗账号 credits），用户可能不想使用它。**任何**调用生成类工具（`create_*`、`animate_*`）之前，必须满足以下其一，否则禁止调用：
-
-- 用户在**当前请求中明确要求**生成像素图（如使用"生成像素图/画像素图/生成像素美术"等触发词），且生成对象就是用户点名的内容；
-- 已先向用户说明"计划用 PixelLab 生成 X（会消耗 credits）"并获得**明确同意**（可用 AskUserQuestion 或直接询问）。
-
-特别禁止：**在配置表/代码等其他任务中"顺带"自行生成图片**（例如新增配置时发现缺图标就直接生成）。缺图时应留空或使用占位（fallback `icon_unknow`），在任务总结中告知用户缺图，由用户决定是否生成。**委派给 Agent/Skill 执行 PixelLab 任务时**，prompt 中必须注明"用户已同意使用 PixelLab"；子代理未收到该声明时应拒绝生成并返回要求先征得同意。
-
-### Outline（描边）规则
-
-使用 PixelLab MCP 工具生成像素图时，所有生成的图片中的物体轮廓必须带有 **outline（描边）**：
-
-- 调用任何生成类工具（`create_character`、`create_object`、`create_isometric_tile`、`create_topdown_tileset`、`create_sidescroller_tileset`、`create_tiles_pro` 等）时，必须在 `description` 或相关参数中明确要求 outline，例如添加描述词：`with black outline`、`outlined`、`with clear pixel outline`。
-- 若工具提供独立的 outline 参数，优先使用该参数开启描边。
-- 禁止生成无轮廓（no outline）的像素图片。
-
-### 生成等待与轮询规则
-
-PixelLab 所有生成类工具均为异步任务（返回 job/资源 ID 后需要后续查询）。**无论是主对话直接调用，还是通过 Agent（如 general-purpose、Explore、Plan 等子代理）或 Skill 间接调用 PixelLab MCP 工具**，在等待生成结果期间均必须遵守以下轮询规范：
-
-- **轮询间隔固定为 60 秒**：每次调用对应的 `get_*` 工具（如 `get_character`、`get_object`、`get_isometric_tile`、`get_topdown_tileset`、`get_sidescroller_tileset`、`get_tiles_pro` 等）查询状态后，若状态仍为 `processing` / `pending` / `review` 未完成，等待 60 秒再发起下一次查询，不要进行其他操作。
-- **不得使用更短的轮询间隔**（如每 1~15 秒查询一次），避免对 PixelLab 服务造成不必要的负担。
-- 等待过程中应通过 `ScheduleWakeup` 或带有 60 秒延迟的脚本/sleep 命令实现间隔检测，禁止使用空轮询或无延迟循环。
-- 一旦状态变为 `completed` 或 `failed`，立即停止轮询并处理结果。
-- **委派给 Agent/Skill 执行 PixelLab 任务时**，必须在 prompt 中明确写明"轮询间隔固定为 60 秒"的要求，确保子代理或技能内部循环亦遵守该规则。
-
 ## 任务结束总结规则
 
 每次任务处理完成后的总结中，如果有 Agent 或 Skill 参与执行，必须列出：

@@ -92,6 +92,14 @@ public partial class FightTypeChallengeHundredInfoBean
     protected string[] rewardCrystalValueList;
     protected string[] rewardEquipRarityValueList;
     protected string[] rewardExpValueList;
+    protected string[] rewardReputationValueList;
+
+    /// <summary>
+    /// [临时]通关声望奖励(对应 excel_fight_type_challenge_hundred_info 的 reward_reputation 列)。
+    /// 因本次未跑 Unity 重新生成 Entity 而手写在 Partial(仿 ResearchInfoBean.pre_data/details 先例, 导出器按表头名反射 GetField 可正常导出/反序列化);
+    /// 重新生成 FightTypeChallengeHundredInfoBean.cs 后删除本字段(生成物自带, 重复会编译报错)。
+    /// </summary>
+    public string reward_reputation;
 
     /// <summary>
     /// 取难度在 difficulty_levels 中的对齐下标; 不在列时取距离最近的档(理论上行被抽中即含该难度, 此为防御钳位)
@@ -195,6 +203,21 @@ public partial class FightTypeChallengeHundredInfoBean
         if (!int.TryParse(value, out int exp))
             return 0;
         return exp;
+    }
+
+    /// <summary>
+    /// 获取指定难度下的通关声望奖励(reward_reputation 逐难度对齐值; 解析失败按0=不发放)
+    /// 发放门控: 研究 UnlockEnum.ChallengeHundredReputationReward(100200011), 见 GameFightLogicChallengeHundred.AddReputationForChallengeHundredComplete
+    /// </summary>
+    /// <param name="difficultyLevel">难度等级(冻结于传送门随机数据 difficultyLevel)</param>
+    public int GetRewardReputation(int difficultyLevel)
+    {
+        if (rewardReputationValueList == null)
+            rewardReputationValueList = (reward_reputation ?? "").Split(',');
+        string value = GetValueForDifficulty(rewardReputationValueList, difficultyLevel);
+        if (!int.TryParse(value, out int reputation))
+            return 0;
+        return reputation;
     }
 
     #endregion

@@ -14,6 +14,9 @@ using OfficeOpenXml;
 /// Mod 幻化药测试面板（GUI版，纯代码控制面板 + 真实卡片预制体，不依赖测试预制），四个页签：
 /// 单个预览=下拉选药, 小卡=Chess基础形象/大卡=Avator高清/场景并排左基础右幻化(世界空间对比)；
 /// 小卡列表/大卡列表/场景列表=分页网格一次展示多个幻化药, 悬停目标后滚轮改缩放/拖拽改位置; 项下小按钮[复制][粘贴]走参数剪贴板快速套用,
+/// 小卡/大卡列表项另带[详情]按钮=打开游戏生物展示弹窗 UIDialogCreatureShow 查看幻化形象与骨架全部动画(点动画名即播放;
+/// 小卡列表=Chess 基础形象(show 骨架, isShowChessSpine), 大卡列表=ui_show 高清形象),
+/// 打开期间进入详情模式隐藏测试面板(覆盖层Canvas sortingOrder=5000 且 IMGUI 恒渲染在最上层, 不隐藏会遮挡弹窗), 弹窗销毁回调自动恢复;
 /// 场景列表另有「粘贴剪贴板到全部场景项」按钮=一键把剪贴板 world_data 套用到当前筛选(Mod筛选)全部项(同MOD骨架大小相近, 免逐项粘贴)。
 /// 实现=给基础生物设置 transformItemId 后走真实卡片 SetData / SetCreatureData 链（与魔物管理吃幻化药同路径）。
 /// 调参(仅编辑器)：文本框精输 + 滑动条粗调(缩放对数映射) + 悬停滚轮/拖拽, 经 TransformPotionUITestOverride 覆盖层实时生效；
@@ -101,6 +104,7 @@ public class TestTransformPotionGUI : MonoBehaviour
     private Light[] cacheEnvLights;                 //缓存: 面板场景的原有灯光(加载测试场景时禁用, 防与场景自带灯光叠加双份光照)
     private bool[] cacheEnvLightsEnabled;           //缓存: 各原有灯各自的开关状态(卸载时按原状恢复)
     private readonly List<ListItem> listItems = new List<ListItem>(); //当前列表页可见项
+    private UIDialogCreatureShow creatureShowDialog;    //当前打开的生物展示弹窗(列表项[详情]按钮; 打开期间为详情模式=隐藏测试面板防遮挡, 弹窗销毁回调恢复)
 
     //列表布局/筛选设置(static=本次Play会话内重开面板保持, 项目内JSON持久化随git共享)
     private static int chessCols = 5, chessRows = 2;    //小卡列表 列x行
@@ -234,6 +238,12 @@ public class TestTransformPotionGUI : MonoBehaviour
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
+        //详情弹窗随面板关闭(防切换测试模块时弹窗残留; 其销毁回调里的恢复详情模式对已销毁canvas判空安全)
+        if (creatureShowDialog != null)
+        {
+            creatureShowDialog.DestroyDialog();
+            creatureShowDialog = null;
+        }
         if (sceneRoot != null) Destroy(sceneRoot);
         if (scenePlaneObj != null) Destroy(scenePlaneObj);
         if (sceneListRoot != null) Destroy(sceneListRoot);
@@ -633,6 +643,8 @@ public class TestTransformPotionGUI : MonoBehaviour
                 UIViewCreatureCardDetails card = Instantiate(Resources.Load<GameObject>(PathCardDetailsPrefab), listRootRT).GetComponent<UIViewCreatureCardDetails>();
                 NormalizeRoot(card.transform as RectTransform, pos);
                 card.SetData(creatureData);
+                //大卡图标点击原本也会打开生物展示弹窗(OnClickForIconShow), 但不走详情模式会被测试面板遮挡——禁用, 统一走项下[详情]按钮
+                if (card.ui_IconBtn != null) card.ui_IconBtn.interactable = false;
                 //大卡列表只展示卡面(底板+肖像+名字+稀有度+职业+等级), 隐藏详情UI区块(属性/好感/装备/BUFF/MP/备注等噪音)
                 HideDetailsChrome(card);
                 item.cardRoot = card.transform as RectTransform;
@@ -885,6 +897,8 @@ public class TestTransformPotionGUI : MonoBehaviour
     /// </summary>
     private void OnGUI()
     {
+        //详情模式(生物展示弹窗打开中): 跳过全部IMGUI绘制与悬停交互——IMGUI 恒渲染在最上层, 不跳过会遮挡弹窗
+        if (creatureShowDialog != null) return;
         InitGUIStyle();
 
         float panelWidth = Mathf.Min(PanelWidth, Screen.width - 20);
@@ -1111,8 +1125,8 @@ public class TestTransformPotionGUI : MonoBehaviour
         hintStyle = new GUIStyle(GUI.skin.label) { fontSize = 13, wordWrap = true };
         //按钮文本左对齐(下拉按钮/选项按钮显示 名字+自ID 长文本用)
         buttonLeftStyle = new GUIStyle(GUI.skin.button) { alignment = TextAnchor.MiddleLeft, padding = new RectOffset(8, 8, 0, 0) };
-        //列表项名称标签(卡片下方/模型脚下, 居中)
-        labelCenterStyle = new GUIStyle(GUI.skin.label) { fontSize = 13, alignment = TextAnchor.MiddleCenter };
+        //列表项名称标签(卡片下方/模型脚下, 居中, 禁换行——过长由 TruncateLabel 截断加…, 防换行溢出显示不全)
+        labelCenterStyle = new GUIStyle(GUI.skin.label) { fontSize = 13, alignment = TextAnchor.MiddleCenter, wordWrap = false };
         //列表项小按钮(还原/0,0, 44x18小尺寸)
         smallButtonStyle = new GUIStyle(GUI.skin.button) { fontSize = 11, padding = new RectOffset(2, 2, 0, 0) };
     }
@@ -1813,7 +1827,7 @@ public class TestTransformPotionGUI : MonoBehaviour
             Color old = GUI.color;
             if (!item.editable) GUI.color = Color.gray;
             else if (dirty) GUI.color = new Color(1f, 0.8f, 0.3f);
-            GUI.Label(new Rect(rect.x - 30, rect.yMax + 2, rect.width + 60, 20), text, labelCenterStyle);
+            GUI.Label(new Rect(rect.x - 30, rect.yMax + 2, rect.width + 60, 20), TruncateLabel(text, labelCenterStyle, rect.width + 60), labelCenterStyle);
             //场景列表调试读数行(按钮行下方, 只放短值防相邻项重叠; 资产/骨骼/动画等完整信息用「📋输出场景诊断」dump 到控制台)
             if (currentTab == PanelTab.SceneList && item.sceneRenderer != null)
             {
@@ -1822,10 +1836,13 @@ public class TestTransformPotionGUI : MonoBehaviour
                 {
                     string skinName = sk.Skeleton.Skin != null ? sk.Skeleton.Skin.Name : "默认";
                     GUI.Label(new Rect(rect.x - 30, rect.yMax + 42, rect.width + 60, 20),
-                        $"实×{FmtNum(item.sceneRenderer.localScale.x)} 皮肤:{skinName}", labelCenterStyle);
+                        TruncateLabel($"实×{FmtNum(item.sceneRenderer.localScale.x)} 皮肤:{skinName}", labelCenterStyle, rect.width + 60), labelCenterStyle);
                 }
             }
             GUI.color = old;
+            //详情按钮(仅卡片列表, 与可否编辑无关, 第二排居中): 打开游戏生物展示弹窗查看该幻化形象与骨架全部动画
+            if (currentTab != PanelTab.SceneList && GUI.Button(new Rect(rect.center.x - 21, rect.yMax + 42, 42, 18), "详情", smallButtonStyle))
+                OpenCreatureShowDialog(item);
             if (!item.editable) continue;
             //每项小按钮: 还原=清该药本段覆盖恢复配置值(防误拖动一键恢复); 0,0=位置快速归零(保留缩放); 复制/粘贴=参数快速套用
             if (GUI.Button(new Rect(rect.center.x - 92, rect.yMax + 22, 42, 18), "还原", smallButtonStyle))
@@ -1850,6 +1867,23 @@ public class TestTransformPotionGUI : MonoBehaviour
             }
         }
         if (pendingRestore != null) RestoreItem(pendingRestore);
+    }
+
+    /// <summary>
+    /// 按显示宽度截断文本(超出末尾加…), 防单行标签文本过长换行溢出显示不全
+    /// </summary>
+    /// <param name="text">原文本</param>
+    /// <param name="style">绘制样式(按其实际字号计算宽度)</param>
+    /// <param name="maxWidth">可用最大宽度(px)</param>
+    private static string TruncateLabel(string text, GUIStyle style, float maxWidth)
+    {
+        if (style.CalcSize(new GUIContent(text)).x <= maxWidth) return text;
+        for (int len = text.Length - 1; len > 0; len--)
+        {
+            string candidate = text.Substring(0, len) + "…";
+            if (style.CalcSize(new GUIContent(candidate)).x <= maxWidth) return candidate;
+        }
+        return "…";
     }
 
     /// <summary>
@@ -1984,6 +2018,51 @@ public class TestTransformPotionGUI : MonoBehaviour
         Vector3[] corners = new Vector3[4];
         rt.GetWorldCorners(corners);
         return Rect.MinMaxRect(corners[0].x, Screen.height - corners[1].y, corners[2].x, Screen.height - corners[0].y);
+    }
+
+    #endregion
+
+    #region 生物展示弹窗(列表项详情按钮)
+
+    /// <summary>
+    /// 打开列表项的生物展示弹窗(详情按钮): 按真实链构建带幻化的生物数据(与卡片同源 BuildCreature, transformItemId=该项药),
+    /// 复用游戏 UIDialogCreatureShow——展示生物形象与骨架全部动画列表(点动画名即播放);
+    /// 小卡列表=显示小卡本身的 Chess 基础形象(show 骨架, isShowChessSpine=true), 大卡列表=显示 ui_show 高清形象(无Avator自动回落show形象);
+    /// 打开期间进入详情模式=隐藏覆盖层Canvas + OnGUI 整体跳过(覆盖层 sortingOrder=5000 且 IMGUI 恒渲染在最上层, 不隐藏会遮挡弹窗),
+    /// 弹窗销毁回调(点背景关闭, isDestroyBG=true)自动退出详情模式恢复面板
+    /// </summary>
+    /// <param name="item">列表项</param>
+    private void OpenCreatureShowDialog(ListItem item)
+    {
+        if (creatureShowDialog != null) return;
+        CreatureBean creatureData = BuildCreature(item.potionId);
+        if (creatureData == null) return;
+        DialogCreatureShowBean dialogData = new DialogCreatureShowBean
+        {
+            creatureData = creatureData,
+            isShowChessSpine = currentTab == PanelTab.ChessList,
+            actionDestoryAfter = (_) => CloseCreatureShowDialog(),
+        };
+        creatureShowDialog = UIHandler.Instance.ShowDialogCreatureShow(dialogData);
+        SetDetailMode(true);
+    }
+
+    /// <summary>
+    /// 详情弹窗销毁回调: 退出详情模式恢复测试面板显示
+    /// </summary>
+    private void CloseCreatureShowDialog()
+    {
+        creatureShowDialog = null;
+        SetDetailMode(false);
+    }
+
+    /// <summary>
+    /// 切换详情模式: 隐藏/恢复覆盖层Canvas(卡片列表网格); IMGUI面板由 OnGUI 入口按 creatureShowDialog 判空整体跳过
+    /// </summary>
+    /// <param name="isDetail">true=进入详情模式(隐藏测试面板)</param>
+    private void SetDetailMode(bool isDetail)
+    {
+        if (canvas != null) canvas.enabled = !isDetail;
     }
 
     #endregion

@@ -9,12 +9,16 @@ using System.Threading.Tasks;
 
 public class ScenePrefabForRewardSelect : ScenePrefabBase
 {
-    //箱子预制
+    //宝箱预制
     public GameObject objBoxModel;
     //箱子容积
     public GameObject objBoxContainer;
     //箱子列表
     public List<RewardSelectBoxComponent> listRewardSelectBox = new List<RewardSelectBoxComponent>();
+    //宝箱横向间距(沿X轴居中排开)
+    public const float SpacingBox = 2.5f;
+    //单箱半宽+边距余量(计算镜头FOV时保证最两侧宝箱完整入镜)
+    public const float PaddingBoxHalfWidth = 1.0f;
 
     /// <summary>
     /// 初始化场景
@@ -45,7 +49,7 @@ public class ScenePrefabForRewardSelect : ScenePrefabBase
             var itemBox = objItemBox.GetComponent<RewardSelectBoxComponent>();
 
             //设置箱子名字和位置
-            float offsetX = VectorUtil.GetCenterToTwoSide(0, 2.5f, listReward.Count, i);
+            float offsetX = VectorUtil.GetCenterToTwoSide(0, SpacingBox, listReward.Count, i);
             objItemBox.transform.position = new Vector3(offsetX, 0, 0);
             objItemBox.transform.eulerAngles = new Vector3(0, 180, 0);
             objItemBox.name = $"{i}";
@@ -53,6 +57,12 @@ public class ScenePrefabForRewardSelect : ScenePrefabBase
             itemBox.InitData(itemData);
             //添加箱子到列表
             listRewardSelectBox.Add(itemBox);
+        }
+        //宝箱数量多(>=6)时默认FOV装不下两侧宝箱,按横向总宽度刷新镜头FOV(此时尚有遮罩 玩家不可见)
+        if (listReward.Count > 1)
+        {
+            float halfWidthForBox = SpacingBox * (listReward.Count - 1) / 2f + PaddingBoxHalfWidth;
+            CameraHandler.Instance.RefreshRewardSelectCameraFov(halfWidthForBox);
         }
         //预热渲染:短暂激活所有宝箱与道具渲染2帧 把shader编译/实时灯/粒子的首次激活开销在此消化掉(遮罩盖着 玩家不可见)
         for (int i = 0; i < listRewardSelectBox.Count; i++)

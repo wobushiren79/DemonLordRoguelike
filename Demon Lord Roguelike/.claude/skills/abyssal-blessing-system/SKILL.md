@@ -454,7 +454,7 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 - 属性类由 `FightCreatureBean.CollectFromBuffList` 按 UUID 过滤（`SingleTargetCreatureUUId != 本生物` 则跳过，只对锁定生物 emit modifier）；攻速类由 `BuffHandler.ChangeAttackTimeDataForBuff` 扫描馈赠池按同一 UUID 比对。
 - **复制魔物(增殖)不继承单体定向**：`BuffEntityInstantCloneDefenseCreature` 克隆出的魔物是**新 UUID**，与单体定向馈赠锁定的原魔物 UUID 不匹配，故**不显示也不继承**针对原魔物的单体定向馈赠；克隆体只继承「作用于全体防守生物」的馈赠(靠 `trigger_creature_type` 过滤、与 UUID 无关，新魔物 `RefreshBaseAttribute` 时自动收集)。这是预期行为。
 - **关键安全约束**：`dlDefenseCreatureData` 的 `CreatureBean` 与玩家**存档共享引用**，故**绝不能改 `creatureAttribute`**（会污染永久存档）；本方案只改运行时计算出的 `dicAttribute`/攻击时间，征服全通关领奖后随 `ClearAbyssalBlessing` 清空。
-- 图标历史用 `ui_abyssalblessing_11~14`（PixelLab 32px 描边图，文件闲置未删，新馈赠可复用或另配）。
+- 图标历史用 `ui_abyssalblessing_11~14`（32px 描边图，文件闲置未删，新馈赠可复用或另配）。
 
 > 与「领奖参数型」(即时BUFF+计数器)的区别：单体定向用的是**常驻属性/攻速BUFF**(非Instant)，靠 UUID 过滤限定到单只生物、由 `RefreshBaseAttribute` 重算生效，无需计数器。
 > ⚠️ 属性类(ATK/HP/DR 翻倍)依赖 `dicAttribute` 重算，故选取时由 `Buff_AbyssalBlessingChange` 事件 → `GameFightLogic.EventForAbyssalBlessingChange` **立即刷新**已在场的防守核心与全部防守生物（否则普通关卡内选取不生效，须等下次场景重载/切BOSS关才重算——已修复）。攻速类(历史例：急性子)由 `ChangeAttackTimeDataForBuff` 每次攻击实时缩放，不依赖刷新；被一并刷新也无副作用。

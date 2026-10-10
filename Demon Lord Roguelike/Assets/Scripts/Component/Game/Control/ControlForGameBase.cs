@@ -185,10 +185,12 @@ public class ControlForGameBase : BaseControl
     /// </summary>
     /// <param name="creatureData"></param>
     public void SetCreatureData(CreatureBean creatureData)
-    {        
+    {
         this.creatureData = creatureData;
         //展示生物数据
         CreatureHandler.Instance.SetCreatureData(skeletonAnimation, creatureData, isNeedWeapon : false);
+        //骨架已重设(动画轨道清空), 重置动画状态记录防去重跳过——否则再进基地/换幻化后 PlayAnimForControlTarget(Idle) 被跳过, 角色一直静止
+        creatureAnimEnum = SpineAnimationStateEnum.None;
     }
 
     /// <summary>

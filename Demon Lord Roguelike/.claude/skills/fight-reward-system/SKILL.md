@@ -48,7 +48,7 @@ watched_files:
     │
     ├─ GameFightLogicChallengeHundred.HandleForChangeGameStateSettlement（单关100只怪）
     │     ├─ 胜利 → 发阵容经验(行 reward_exp) → 弹结算UI → Next → 弹 UIRewardSelect（3箱3抽全手动开箱，无首箱保底）
-    │     └─ 失败 → 弹结算UI → Next → 直接返回基地（无奖励）；不发成就/声望、无关卡间深渊馈赠
+    │     └─ 失败 → 弹结算UI → Next → 直接返回基地（无奖励）；不发成就、无关卡间深渊馈赠（胜利通关声望受研究门控，见下「声望」）
     │
     └─ GameFightLogicInfinite（无尽模式：进攻队列耗尽自动续下一轮永不胜利，魔王死亡即失败）
           └─ 失败 → 弹结算UI（仅战绩排行榜）→ Next=退出 → 直接返回基地（无宝箱/经验/声望/成就；魔晶战斗中即时入账，退出时统一落盘）
@@ -147,6 +147,7 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
   - `isClearLastGame=true`：进入领奖场景前先 `gameLogic.ClearGame()` 卸载上一场战斗场景并清理战斗实体。**征服模式通关 BOSS 与挑战100勇士胜利进领奖都必须传 true**（两处 `ActionForUIFightSettlementNext` 均已传），否则战斗场景不会卸载，会与领奖场景叠加残留；独立测试(LauncherTest)无上一场战斗，保持默认 false。
   - 注意：结算流程里 `ClearGameForSimple()` 只清 AI/BUFF/在途弹道，**不卸载战斗场景**；战斗场景的卸载靠领奖入口的 `isClearLastGame` 或返回基地时的 `ClearWorldData`。
   - 宝箱落地动画链路：`RewardSelectBoxComponent.InitData` 只做数据初始化（图标/数量/藏道具藏箱子）→ `SetPrewarmActive(true)` 预热显隐 → `PlayShowAnim(delay)` 恢复 `speed=1` 播 Show（时长运行时从 Animator 读 `timeBoxShowAnim`）→ 播完放落地音 `sound_hit_6`。
+  - **宝箱布局与镜头FOV自适应**：宝箱沿 X 轴居中排开，间距 `ScenePrefabForRewardSelect.SpacingBox=2.5`；宝箱>=6 个时默认镜头 FOV(60) 装不下两侧宝箱（只能看到一半），`InitRewardBox` 生成宝箱后调 `CameraHandler.RefreshRewardSelectCameraFov(halfWidth)` 按几何关系（横向半宽=间距×(n-1)/2+`PaddingBoxHalfWidth=1.0`，tan(hFov/2)=半宽/相机到箱排 z 距离≈6，tan(hFov/2)=tan(vFov/2)×aspect）放大垂直 FOV，只在默认不够装时才放大（遮罩盖住期间完成，玩家不可见）。
   - **首箱保底自动开**：`await PlayAllBoxShowAnim()` 全部落地完成后 `await AutoOpenFirstRewardBox()`——Idle 检查通过才 `await firstBox.OpenBox()` 等开箱动画播完（道具升起落定），随后 `GrantRewardItemToBackpack` 入账并展示道具详情；**不自增 `selectNum`**（保底赠送不占选择次数）。**UI 全程保持隐藏直到首箱开完才 `SetActive(true)` 显示**（此期间点击/跳过被 `activeSelf` 检查屏蔽），玩家在剩余宝箱按 `selectNumMax` 选择。**`isAutoOpenFirstBox=false`（挑战100勇士 3箱3抽）时跳过整个 AutoOpenFirstRewardBox**——无首箱保底、落地动画播完直接显示 UI 全手动开箱，且可开数=总箱数（不套用征服 `selectNumMax=Min(...,Count-1)` 的 -1 钳制，该钳制在 `GameFightLogicConquer` 内只对征服生效）。
 - 点击宝箱 `OnClickForSelectBox`：射线检测命中宝箱 → `scenePrefab.OpenRewardBox` 返回状态：
   - `0` 没有次数 → Toast 提示
@@ -178,7 +179,7 @@ InitRewardList(conquerInfo, testData)   // 各 InitData* 入口最终都收口�
 
 - 装备/普通道具：`UserDataBean.AddBackpackItem(itemData)`（特殊道具如水晶内部转 `AddCrystal`）
 - 水晶：`UserDataBean.AddCrystal(num)`
-- 声望（第二货币，与魔晶并列，终焉议会消耗）：`UserDataBean.AddReputation(long)`。**完整通关征服**（打完 BOSS、领奖结束 `ActionForUIRewardSelectEnd`）时由 `GameFightLogicConquer.AddReputationForConquerComplete` 按难度发放，受研究 `UnlockEnum.ConquerReputationReward` 门控：已解锁才 `AddReputation(conquerInfo.GetRewardReputation())`（声望值取征服难度表 `reward_reputation`；≤0 不发放）。在 `EndGameAndReturnToBase` 存档前发放，随存档落盘。声望系统本已存在，此处仅新增获取来源；研究节点见 [`research-system`](../research-system/SKILL.md)。
+- 声望（第二货币，与魔晶并列，终焉议会消耗）：`UserDataBean.AddReputation(long)`。**完整通关征服**（打完 BOSS、领奖结束 `ActionForUIRewardSelectEnd`）时由 `GameFightLogicConquer.AddReputationForConquerComplete` 按难度发放，受研究 `UnlockEnum.ConquerReputationReward` 门控：已解锁才 `AddReputation(conquerInfo.GetRewardReputation())`（声望值取征服难度表 `reward_reputation`；≤0 不发放）。在 `EndGameAndReturnToBase` 存档前发放，随存档落盘。声望系统本已存在，此处仅新增获取来源；研究节点见 [`research-system`](../research-system/SKILL.md)。**通关挑战100勇士**（领奖结束 `ActionForUIRewardSelectEnd`）同理由 `GameFightLogicChallengeHundred.AddReputationForChallengeHundredComplete` 发放，受研究 `UnlockEnum.ChallengeHundredReputationReward`(100200011，前置=征服声望研究+100勇士出现概率研究) 门控，声望值取挑战100勇士表逐难度对齐列 `reward_reputation`（`GetRewardReputation(冻结难度)`，当前值=难度等级）。无尽模式不发声望。
 - 存档：征服模式统一在 `GameFightLogicConquer.EndGameAndReturnToBase`：
   1. `BuffHandler.manager.ClearAbyssalBlessing()` 清深渊馈赠（单局临时加成）
   2. `GameDataHandler.manager.SaveUserData()` 落盘
@@ -205,9 +206,10 @@ Excel 源表 `excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xl
 | `reward_crystal` | **string 逐难度对齐**：每档单值/区间 `x-y`，多档与难度列表等长逗号分隔（`GetRandomRewardCrystal(冻结难度)` 解析，走 `RandomUtil.GetRandomIntByRangeString`） |
 | `reward_equip_rarity` | **string 逐难度对齐**，奖励装备稀有度（`GetRewardEquipRarity(冻结难度)` 取档；只决定稀有度，加点数量见 `RarityInfo.equip_attribute_add`） |
 | `reward_exp` | **string 逐难度对齐**，胜利时给出战阵容每只生物的经验（`GetRewardExp(冻结难度)` 取档；失败不发） |
+| `reward_reputation` | **string 逐难度对齐**，通关声望奖励：领奖结束按冻结难度发放（`GetRewardReputation(冻结难度)` 取档；≤0 不发放），受研究 `UnlockEnum.ChallengeHundredReputationReward`(100200011) 门控；当前值=难度等级（与征服 1~10 同口径）。**字段暂在 Partial**（仿 pre_data 先例，重新生成 Entity 后删除临时字段） |
 | `challenge_type` | int，0=普通挑战；**1=BOSS挑战→通关宝箱奖励翻倍**：装备不可堆叠走件数 x2（3箱→6箱=6件装备），魔晶可堆叠走单箱数量 x2（仍3箱）；`IsBossChallenge()` 判定，`CreateRewardListForChallengeHundred(行, 冻结难度)` 内统一处理（含装备兜底魔晶也 x2） |
 
-> 模式差异要点：**全手动开箱**（`isAutoOpenFirstBox=false`，无首箱保底）、可开宝箱数=奖励总数（`selectNumMax=listReward.Count`，普通 3 / BOSS 装备 6）、装备池空则全魔晶、**无成就/声望/深渊馈赠**（`ActionForUIRewardSelectEnd` 只回满传送门刷新次数+清空传送门随机数据后返回基地）。逐难度对齐字段取值依据=传送门生成时冻结的 `difficultyLevel`（世界最高已解锁难度），预览=实领。
+> 模式差异要点：**全手动开箱**（`isAutoOpenFirstBox=false`，无首箱保底）、可开宝箱数=奖励总数（`selectNumMax=listReward.Count`，普通 3 / BOSS 装备 6）、装备池空则全魔晶、**无成就/深渊馈赠**（`ActionForUIRewardSelectEnd` 发放通关声望(研究100200011门控) + 回满传送门刷新次数+清空传送门随机数据后返回基地）。逐难度对齐字段取值依据=传送门生成时冻结的 `difficultyLevel`（世界最高已解锁难度），预览=实领。
 
 ## 征服关卡经验奖励（生物成长经验 levelExp）
 

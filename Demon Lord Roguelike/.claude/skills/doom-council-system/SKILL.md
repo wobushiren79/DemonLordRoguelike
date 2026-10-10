@@ -87,7 +87,7 @@ watched_files:
 > ⚠️ 下方「## 核心概念 / DoomCouncilLogic / GenerateProposals / DoomCouncilBaseEntity.ExecuteEffect」等历史小节多已过时，**议案展示与效果执行以本节为准**。
 
 ### 议案配置 `DoomCouncilInfo`（`excel_doom_council_info` / `DoomCouncilInfo.txt`）
-字段：`success_rate`(通过率0~1, `>=1`直接通过不进议会) · `council_num`("min,max") · `cost_reputation`(消耗声望) · `cost_crystal`(消耗魔晶) · `icon_res` · `class_entity_name`(效果实体类名, 反射) · `class_entity_data`(效果参数字符串, 各实体自解析) · `unlock_id`(解锁ID) · `name`/`details`(文本id)。**无独立数值字段，效果参数全编码进 `class_entity_data`**。多语言真实源在 `excel_language` 的 `DoomCouncilInfo` 工作表(id/content_cn/content_en/content_1_cn/content_1_en)。
+字段：`success_rate`(通过率0~1, `>=1`直接通过不进议会) · `council_num`("min,max") · `cost_reputation`(消耗声望) · `cost_crystal`(消耗魔晶) · `icon_res` · `class_entity_name`(效果实体类名, 反射) · `class_entity_data`(效果参数字符串, 各实体自解析) · `unlock_id`(解锁ID) · `name`/`details`(文本id)。**无独立数值字段，效果参数全编码进 `class_entity_data`**。多语言真实源在 `excel_language` 的 `DoomCouncilInfo` 工作表(id/content_cn/content_en/content_1_cn/content_1_en)。**议案参数快速修改用编辑器工具 `DoomCouncilEditorWindow`（菜单 `游戏/终焉议会编辑`，含议员评级页签），勿手改 JSON**。
 
 ### 议案展示：全部平铺，非随机
 `UIDoomCouncilBill.InitData` 取 `GetAllArrayData()` **全部**行，仅按 `unlock_id` 用 `userUnlock.CheckIsUnlock` 过滤后平铺（**无随机抽N/权重**）。
@@ -591,6 +591,7 @@ public List<DoomCouncilBean> GetRandomProposals(int count = 3)
 | 议会投票界面 | `Assets/Scripts/Component/UI/Game/DoomCouncil/UIDoomCouncilVote.cs` |
 | 议会结算界面 | `Assets/Scripts/Component/UI/Game/DoomCouncil/UIDoomCouncilVoteEnd.cs` |
 | 议会详情气泡 | `Assets/Scripts/Component/UI/Popup/UIPopupDoomCouncilBillDetails.cs` |
+| 议会议案/议员评级编辑工具 | `Assets/Editor/DoomCouncilEditorWindow.cs` + `DoomCouncilEditorTabBill.cs`(议案页签) + `DoomCouncilEditorTabRatings.cs`(议员评级页签)，菜单 `游戏/终焉议会编辑` |
 
 ---
 

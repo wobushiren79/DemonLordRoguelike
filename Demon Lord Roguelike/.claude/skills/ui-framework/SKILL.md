@@ -698,11 +698,11 @@ EventsInfo.Language_Change                // 语言切换
 
 `Assets/Scripts/Component/UI/Game/CreatureVat/UICreatureVat.cs`，魔物进阶主界面（升稀有度 + 授予稀有度 BUFF）：
 
-- **打开时切到目标容器（`indexVatForOpen`）**：`OpenUI` 调 `SetCurrentVat(indexVatForOpen)` 后立即复位 0；仅场景 Vat 建筑按 E 交互入口注入（`ControlForGameBase.GetInteractionVatIndex` 从命中的 `VatInteraction` 交互体向上找 `objBuildingVat` 直接子物体取 `GetSiblingIndex()`，与 `UserAscendBean.GetAscendData(i)`/`SetCurrentVat(i)` 的容器索引同口径），从哪个设施按 E 就切到哪个 vat；基地核心/测试入口不注入，默认 0=第一个容器。
+- **打开时切到目标容器（`indexVatForOpen`）**：`OpenUI` 调 `SetCurrentVat(indexVatForOpen)` 后立即复位 0；仅场景 Vat 建筑按 E 交互入口注入（`ControlForGameBase.GetInteractionVatIndex` 从命中的 `VatInteraction` 交互体向上找 `objBuildingVat` 直接子物体取 `GetSiblingIndex()`，与 `UserAscendBean.GetAscendData(i)`/`SetCurrentVat(i)` 的容器索引同口径），从哪个设施按 E 就切到哪个 vat；基地核心/测试入口不注入，默认 0=第一个容器。**ESC 键退出**：重写 `OnInputActionForStarted` 拦截 `InputActionUIEnum.ESC` 调 `OnClickForExit()`，等同点击离开按钮（走入口注入的 `actionForExit`）。
 
 - **进阶效果**：目标魔物稀有度 +1，并把开始时即确定的「预定 BUFF」写入 `creatureData.dicRarityBuff[新稀有度]`。
 - **开始进阶即托管目标魔物**：`OnClickForStart` 确认后由 `UserAscendBean.AddAscendData` 内部收口——置 `creatureState=Vat`、`RemoveBackpackCreature`（连带移出所有阵容）把目标魔物**从背包物理移除**，本体（含装备）嵌入 `UserAscendDetailsBean.creatureData` 托管——进阶期间阵容/魔物管理/献祭/榨汁等背包列表天然不可见不可操作（替代旧方案「仅置 Vat 状态、各 UI 自行筛选」）。完成/取消时 `RemoveAscendData` 复位 `Idle` 并 `AddBackpackCreature` 归还背包（列表末尾、不自动回阵容；无托管生物=旧存档时按 `creatureUUId` 兜底回查复位）。确认弹窗文案 80010 含「进阶中的魔物将移出阵容」提示。
-- **目标列表**：仅 Idle 且未满级（`RarityInfoCfg.GetAscendTimeByRarity(rarity) > 0`，排除 L）。**默认排序**（`InitCreaturekDataForTarget` 内 `List.Sort`）：稀有度升序 N→L，同稀有度按等级降序。
+- **目标列表**：仅 Idle 且未满级（`RarityInfoCfg.GetAscendTimeByRarity(rarity) > 0`，排除 L）。**默认排序**（`InitCreaturekDataForTarget` 内 `List.Sort`）：**阵容魔物优先**（`GetLinupIndex` 阵容序号升序，未上阵返回 0 排最后），其余稀有度升序 N→L，同稀有度按等级降序。目标/素材列表卡片（`UIViewCreatureCardItemForCreatureAscend`）带阵容标记通用控件 `ui_UIViewCreatureCardItemLineUpMark`（不在任何阵容自动隐藏，详见 creature-card-system skill）。
 - **素材列表**：Idle + 排除目标 + 排除上阵（`UserDataBean.CheckIsInAnyLineup`）+ 仅保留稀有度高于目标的魔物；可选上限做成研究 `GetUnlockCreatureVatMaterialMax()`=基础5(`UserLimmitBean.creatureVatMaterialMax`)+`UnlockEnum.CreatureVatMaterialNum`(100000008)等级(满级10)，超出弹 Toast（文本 id 80011）。`LimmitText` 经 `RefreshMaterialLimitText()` 显示「已选/上限」，满时数量转通用警示红 `ColorUtil.WrapLimitFull`。**默认排序**（`InitCreaturekDataForMaterial` 内 `List.Sort`）：目标下一阶段稀有度(=目标稀有度+1)置顶，其余稀有度升序，同稀有度等级降序。
 - **预定 BUFF**：`BuffUtil.CreateAscendRarityBuff(newRarity, materials)`（素材 BUFF 按 id 聚合，每 id 25%×数量 命中概率，命中继承并重随机数值≥素材原值；UR/L 无类型为 null）。
 - **耗时**：按源稀有度查 `RarityInfoCfg.GetAscendTimeByRarity`（excel_rarity_info 新列 `ascend_time`）作 `timeMax`；被动 tick 每秒 +1 秒。**魔晶加速研究门控**：`GetUnlockCreatureVatAddProgressLevel()`(`UnlockEnum.CreatureVatAddProgress`=100000007,level_max=5) 0级隐藏加速按钮；已研究时**恒消耗1魔晶**，等级=进度增加秒数=进度倍率(Lv N=1魔晶+N秒)，按钮文本 80009「加速进阶 +{等级}秒/晶」。
@@ -731,6 +731,8 @@ EventsInfo.Language_Change                // 语言切换
 | 2026-07-21 | 进阶改为「生物数据托管」：AddAscendData 内置 Vat+RemoveBackpackCreature 把目标魔物从背包物理移除、本体(含装备)嵌入 UserAscendDetailsBean.creatureData，进阶期间各背包列表 UI 天然不可操作（修复旧「仅置状态+各 UI 自筛」漏筛导致的可被献祭/重新上阵）；RemoveAscendData 复位 Idle 并归还背包(旧存档按 creatureUUId 兜底)；ScenePrefabForBase.BuildingVatRefreshItemWithProgress 缸内展示与完成落地改直读 creatureData；OnClickForEnd 取消进阶后补齐重建目标列表(与完成收口一致,归还生物立即可再选) | - |
 | 2026-10-06 | 修复 UICreatureVat 升阶后预览卡不显示幻化形象：BuildAscendPreviewCreature 补复制 transformItemId（卡牌图标经 SetCreatureData 按该字段整骨替换幻化 spine），吃过幻化药的目标魔物进阶前后两张卡均正确显示幻化效果 | - |
 | 2026-10-07 | 修复场景按 E 打开 UICreatureVat 永远切到第一个 vat：新增 indexVatForOpen 注入字段（OpenUI 用其 SetCurrentVat 后复位 0），ControlForGameBase 新增 GetInteractionVatIndex 从命中交互体向上找 objBuildingVat 直接子物体取兄弟序号，从哪个设施按 E 就切到哪个 vat | - |
+| 2026-10-09 | UICreatureVat 新增 ESC 键退出：重写 OnInputActionForStarted 拦截 InputActionUIEnum.ESC 调 OnClickForExit()，等同点击离开按钮（走入口注入的 actionForExit），与其他业务 UI 退出方式对齐 | - |
+| 2026-10-10 | UICreatureVat 进阶 UI 优化：① 目标列表默认排序改为阵容魔物优先（GetLinupIndex 升序，未上阵排最后）→ 稀有度升序 → 等级降序；② 阵容标记抽成通用控件 UIViewCreatureCardItemLineUpMark（独立 prefab 嵌套进卡片，逻辑自管理卡片迁入），进阶卡片 UIViewCreatureCardItemForCreatureAscend 同步挂载（经 Unity MCP manage_prefabs 加嵌套实例，字段运行时 AutoLink 按名绑定） | - |
 | 2026-08-21 | PopupShowView 内建出现/消失动画：开关字段 isAnimForShow/isAnimForHide/isAnimWithFade + virtual 方法 AnimForShow/AnimForHide/ShowWithAnim/HideWithAnim（DOScale 弹出/缩回+可选淡出，unscaled，中断恢复）；UIHandler.ShowPopup/HidePopup 收口走 ShowWithAnim/HideWithAnim，全部 7 个 UIPopup* 默认获得动画、调用方零改动 | - |
 
 ---

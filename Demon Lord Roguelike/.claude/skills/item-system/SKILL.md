@@ -229,7 +229,7 @@ NPC 可按配置在创建时随机穿装备（首用于终焉议会随机议员�
 - **经验语义**：只累计 levelExp 不自动升级（沿用战斗结算加经验语义，升级仍走献祭 `CanUpLevel`/`UpLevelForSacrifice`）。
 - **列表过滤例外**：`UIViewItemBackpackList.FilterItems` 保留条件 = `itemData.CanEquipForCreature(creatureData)`（含魔王专属校验：选中非魔王生物时魔王专属装备直接隐藏）或（`GetItemType()==Juice` 且 `!creatureData.IsDemonLord()`）或 `GetItemType()==TransformPotion` 或 `GetItemType()==RestorePotion`——选中魔王时魔汁在管理页列表隐藏（魔王隐藏等级不吃经验），**两药不带 IsDemonLord 排除**（魔王选中时可见可用）；`UIDialogSelectItem` 传 creatureData=null 走 `AddValidItems` 显示全部配置有效道具。**失效道具统一隐藏**：配置缺失（所属Mod未开启/已删除）的道具在所有分支一律跳过不展示（有上下文分支 `itemInfo==null continue`、无上下文分支 `AddValidItems`），数据保留在存档待 Mod 重开后恢复；`ItemBean.GetItemType()` 对 itemsInfo==null 兜底返回 `(ItemTypeEnum)0` 防排序崩溃，`itemsInfo` getter 查询失败只打一次日志（`_isItemsInfoQueried` 标记防刷屏）。
 - **气泡显示**：`UIPopupItemInfo.SetJuiceExp(itemData, itemInfo)`（SetData 末尾调用）——Juice 类型显示 `ui_JuiceExpText` 并填 textId 61017「经验+{0}」格式化 juicerExp，其余道具隐藏；字段经 AutoLinkUI 按名绑定（prefab Details 节点下 `JuiceExpText`，复制 RarityText 而来、sibling index 1、默认 SetActive(false)），为 null 时容错跳过；魔汁 dicAttribute 为空故属性区自动隐藏，两者互斥不冲突。
-- **相关配置**：LevelInfo 新增 `juicer_exp` 列（long，1~10 级 = 同级升级经验 100%：100/1000/5000/…/10000000；另有 id=0 行 juicer_exp=20=1 级的 20%）；excel_language UIText sheet 新增 61014/61015/61016/61017 四条文本（12 语种），ItemsInfo sheet 新增 id=200001「魔汁/Demon Juice…」。
+- **相关配置**：LevelInfo 新增 `juicer_exp` 列（long，1~10 级 = 同级升级经验 100%：100/1000/3000/6000/10000/15000/21000/28000/36000/45000（2026-10 随 level_exp 调平同步）；另有 id=0 行 juicer_exp=20=1 级的 20%）；excel_language UIText sheet 新增 61014/61015/61016/61017 四条文本（12 语种），ItemsInfo sheet 新增 id=200001「魔汁/Demon Juice…」。
 
 ## 幻化药 / 幻原药（TransformPotion=18 / RestorePotion=19）
 

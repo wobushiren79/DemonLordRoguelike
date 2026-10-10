@@ -72,7 +72,7 @@ MOD项目/Assets/ModResource/Spine/AeonsEcho/
   - `idle_anim` / `ui_show_idle_anim`：show / ui_show 骨架的替代待机动画名（**idle 动画替代规则**，2026-09-28 起，详见 mod-system SKILL 通用规则节）：对应骨架动画列表命中主项目标准待机候选（`idle,wait,idle1,wait1,stand`）时省略=走框架候选解析；无标准候选时取首个小写含 `idle` 的动画名（如 Elf 系=`idle_emo1`，当前仅 26 个段次命中替代）；完全没有含 idle 动画则不生成该键+警告
   - `attack_anim`：show 骨架的替代攻击动画名（**attack 动画替代规则**，2026-10-02 起，用户拍板 attack→skill 或 skill1）：命中主项目标准攻击候选（`attack,attack1`）时省略；否则按 `skill1`→`skill` 顺序取首个大小写不敏感全等命中的动画原始名（全等匹配防 `skill3a` 被 `skill` 误命中）；都没有则不生成该键+警告（当前仅 5001_Chess 1 个段次=攻击时保持待机，56 个段次命中替代 skill1×23/skill×33）
   - `dead_anim`：show 骨架的替代死亡动画名（**dead 动画替代规则·方案B**，2026-10-02 起，用户拍板：有 attacked 映射 attacked=受击抖一下再消失，其余 idle 兜底）：命中主项目标准死亡候选（`dead,dead1,die`）时省略；否则有 `attacked`（全等）取 attacked 原始名，否则回退该骨架实际待机动画名（标准待机候选原始名→首个含 idle 动画）；连 idle 都没有则不生成该键+警告（当前 65 个段次命中替代 attacked×10/idle×55，无例外）
-  - **Walk 不走映射键**：Walk 缺失由主项目配置表兜底（2026-10-02 起 `excel_spine_animation_state` id=20001 候选加 `move1,move2`，覆盖 B/D 型 43 个骨架；A 型 213 个无任何移动动画的骨架仍不命中=移动时保持待机+LogError，用户已知悉；`walk_anim` 键 C# 机制已备、本 Mod 未启用）
+  - `walk_anim`：show 骨架的替代移动动画名（**walk 动画替代规则**，2026-10-09 起，用户拍板：无 walk 候选时用 idle 映射）：命中主项目标准移动候选（`excel_spine_animation_state` id=20001，当前 `walk,walk1,move,move1,move2`——2026-10-02 扩容 `move1,move2` 保留作候选层）时省略=走框架候选解析；无候选时回退该骨架实际待机动画名（标准待机候选原始名→首个小写含 `idle` 的动画名，保留大小写）；连 idle 都没有则不生成该键+警告（当前 379 个 Chess 段次=63 命中标准候选/316 替代 idle/0 无可用替代）
   - 无 ui_show 形态示例：`show_res:851101_Chess_SkeletonData&show_data:3.4439;0,-120`
   - 仅详情UI幻化形态示例（套装无 Chess）：`ui_show_res:6001_Elf_SkeletonData&ui_show_data:0.1828;0,0`
   - 2026-09-21 起由旧位置段格式（`chessRes,avatorRes|uiData|chessUiData`）改为键值格式；旧数据用生成脚本 `migrate` 子命令一次性迁移（幂等，数值原样保留）
@@ -92,7 +92,7 @@ MOD项目/Assets/ModResource/Spine/AeonsEcho/
 | 尺寸/位置测试覆盖层 | `Assets/Scripts/Bean/Game/TransformPotionUITestOverride.cs`（`#if UNITY_EDITOR` 整文件，打包无）：key=幻化药完整id 的「scale;x,y」覆盖值×3段，被上面三个 Get 优先消费；`GetAllDirtyIds` 供批量保存 |
 | 世界显示尺寸/偏移（world_data 键） | `CreatureBeanPartial.GetTransformWorldData` → `CreatureHandler.SetCreatureData`（SkeletonAnimation 分支：缩放=size_spine×体型×world倍率，spine 节点 localPosition=偏移或归零恒管理防池化残留；**仅 hasTransform[有 show_res] 时消费**，无 show_res 的详情UI幻化药写了也不生效——测试面板场景段对此类药已禁调，2026-10-01 起）；编辑器下测试覆盖层优先；战斗受击抖动基准=`FightCreatureEntity.AnimForAnimForUnderAttackShake` 按偏移复位（同样带 show_res 门控，2026-10-01 起） |
 | 替代待机动画（idle_anim/ui_show_idle_anim 键，2026-09-28 起） | show 段=`CreatureBeanPartial.GetTransformIdleAnim` → 游戏层 `SpineHandler.GetAnimNameAppoint`（Idle 分支幻化时优先按名直播，缺省交框架候选）；ui_show 段=`GetTransformUIShowIdleAnim` → `GameUIUtil.SetCreatureUIForDetails` 播放动画三级分支（非空→框架按名直播；ui_show_res 非空→框架候选；否则原链路） |
-| 替代移动/攻击/死亡动画（walk_anim/attack_anim/dead_anim 键，2026-10-02 起；机制与 idle_anim 同款） | show 段=`CreatureBeanPartial.GetTransformWalkAnim`/`GetTransformAttackAnim`/`GetTransformDeadAnim` → 游戏层 `SpineHandler.GetAnimNameAppoint`（幻化守卫分支扩展为 Idle/Walk/Attack/Dead 四状态各查映射键，非空优先按名直播，缺省交框架候选）；本 Mod 已生成 attack_anim（skill1→skill）与 dead_anim（方案B：attacked→idle），walk_anim 为预留未启用 |
+| 替代移动/攻击/死亡动画（walk_anim/attack_anim/dead_anim 键，2026-10-02 起；机制与 idle_anim 同款） | show 段=`CreatureBeanPartial.GetTransformWalkAnim`/`GetTransformAttackAnim`/`GetTransformDeadAnim` → 游戏层 `SpineHandler.GetAnimNameAppoint`（幻化守卫分支扩展为 Idle/Walk/Attack/Dead 四状态各查映射键，非空优先按名直播，缺省交框架候选）；本 Mod 三键均已生成：attack_anim（skill1→skill）、dead_anim（方案B：attacked→idle）、walk_anim（2026-10-09 起：无标准候选→该骨架实际待机动画名） |
 | 调参预览+写回 | `Assets/Scripts/Component/UI/Test/TestTransformPotionGUI.cs`（测试模式-卡片测试-Mod幻化药测试面板，四个页签）：单个预览/小卡列表/大卡列表/场景列表，详见下节 |
 
 ## 调参写回（幻化药测试面板，2026-09-21 新增；同日开始支持列表批量与 world_data）

@@ -1,6 +1,6 @@
 
 
-public partial class UIViewCreatureCardItemForCreatureManager
+public partial class UIViewCreatureCardItemForCreatureAscend
 {
     public UIViewCreatureCardItemLineUpMark ui_UIViewCreatureCardItemLineUpMark;
 

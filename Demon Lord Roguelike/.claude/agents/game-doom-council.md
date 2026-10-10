@@ -87,6 +87,7 @@ watched_files:
 | NPC枚举(类型/关系/投票) | Assets/Scripts/Enums/NpcEnum.cs |
 | 议会主界面 | Assets/Scripts/Component/UI/Game/DoomCouncil/UIDoomCouncilMain.cs |
 | 议会 UI | Assets/Scripts/Component/UI/Game/DoomCouncil/ |
+| 议会议案/议员评级编辑工具(菜单 游戏/终焉议会编辑) | Assets/Editor/DoomCouncilEditorWindow.cs + DoomCouncilEditorTabBill.cs + DoomCouncilEditorTabRatings.cs |
 
 ## 约束
 

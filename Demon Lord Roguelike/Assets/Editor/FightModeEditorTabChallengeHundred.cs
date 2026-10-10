@@ -126,7 +126,7 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
 
     /// <summary>逐难度对齐字段名列表（难度勾选增删时需同步插入/删除对应档值）</summary>
     private static readonly string[] AlignedFieldNames =
-        { "attack_intensity_baserate", "drop_crystal", "reward_crystal", "reward_equip_rarity", "reward_exp" };
+        { "attack_intensity_baserate", "drop_crystal", "reward_crystal", "reward_equip_rarity", "reward_exp", "reward_reputation" };
 
     #endregion
 
@@ -625,6 +625,7 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
         currentBean.reward_crystal = DrawDifficultyAlignedField(new GUIContent("奖励-每箱魔晶", "reward_crystal：每档 x 固定 或 x-y 区间随机；多档与难度列表等长的逗号分隔逐难度值"), currentBean.reward_crystal, "reward_crystal");
         currentBean.reward_equip_rarity = DrawDifficultyAlignedField(new GUIContent("奖励-装备稀有度", "reward_equip_rarity：单值=全难度共用，或与难度列表等长的逗号分隔逐难度值"), currentBean.reward_equip_rarity, "reward_equip_rarity");
         currentBean.reward_exp = DrawDifficultyAlignedField(new GUIContent("通关经验(阵容每只)", "reward_exp：单值=全难度共用，或与难度列表等长的逗号分隔逐难度值"), currentBean.reward_exp, "reward_exp");
+        currentBean.reward_reputation = DrawDifficultyAlignedField(new GUIContent("通关声望奖励", "reward_reputation：单值=全难度共用，或与难度列表等长的逗号分隔逐难度值；需解锁研究100200011才发放"), currentBean.reward_reputation, "reward_reputation");
 
         // 备注
         DrawSectionTitle("备注");
@@ -1315,6 +1316,7 @@ public class FightModeEditorTabChallengeHundred : FightModeEditorTabBase
                 newBean.reward_crystal = "100-200";
                 newBean.reward_equip_rarity = "1";
                 newBean.reward_exp = "50";
+                newBean.reward_reputation = "1";
             }
             newBean.id = newId;
             newBean.difficulty_levels = newDifficultyLevels;

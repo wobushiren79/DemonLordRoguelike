@@ -45,6 +45,7 @@ EditorWindow (Unity)
 ├── FightSceneEditorWindow         # 战斗场景配置 (excel_fight_scene: 预制/道路色/天空盒/雾/环境光/细节预制直观编辑, 保存写回Excel+再生JSON, Play时实时应用到当前战斗场景)
 ├── FightModeEditorWindow(+TabConquer/TabChallengeHundred/TabInfinite)  # 战斗模式编辑工具 (征服模式/挑战100勇士/无尽模式三页签: 征服页签=前后难度对比列/ID列表名字下拉/新增删除行; 无尽页签=编辑 excel_fight_type_infinite_info, 行下拉显示世界中文名(直读 GameWorldInfo.txt+Language_GameWorldInfo_cn.txt,不走TextHandler)+字段编辑+新增/删除行+保存+导出Json, 复用挑战100勇士页签的 EPPlus 按id整行覆写模式; 均写回Excel+重导JSON)
 ├── StoryEditorWindow              # 故事演出编辑 (StoryInfo/StoryDetailsInfo/StoryTalkInfo 三表+excel_language 对应 sheet: 三栏布局故事列表/字段/步骤编排+对话内联编辑, 4个xlsx各单EPPlus会话写回+重导JSON)
+├── DoomCouncilEditorWindow(+TabBill/TabRatings)  # 终焉议会编辑 (excel_doom_council_info 议案/excel_doom_council_ratings_info 议员评级 两页签: 左列表右编辑, 泛型基类 DoomCouncilEditorTabBase<T> 封装EPPlus读表/变更对比淡黄高亮/SetExcelData写回+ExcelToJsonItem重导JSON; 议案页签=解锁ID下拉(直读UnlockInfo.txt)/效果实体类9选1下拉/class_entity_data按实体显示参数提示/文本ID中文预览(直读Language_*_cn.txt))
 ├── NpcCreateEditorWindow          # NPC创建编辑 (excel_npc_info 全字段 + 语言表中文名: 三栏布局 列表/字段+外观/Spine双模型预览, 非运行态版 NPC创建GUI)
 └── PixelDaEditorWindow            # PixelDa 像素美术生成 (AI 文生图/图编辑/图生视频/抽帧/音乐)
 ```
@@ -639,6 +640,7 @@ public class InspectorMyComponent : Editor
 | 战斗场景配置 | `Assets/Editor/FightSceneEditorWindow.cs` |
 | 战斗模式编辑工具 | `Assets/Editor/FightModeEditorWindow.cs` + `FightModeEditorTabConquer.cs`（征服页签）+ `FightModeEditorTabChallengeHundred.cs`（挑战100勇士页签）+ `FightModeEditorTabInfinite.cs`（无尽页签，编辑 `excel_fight_type_infinite_info`） |
 | 故事演出编辑 | `Assets/Editor/StoryEditorWindow.cs` |
+| 终焉议会编辑 | `Assets/Editor/DoomCouncilEditorWindow.cs`（含泛型页签基类 `DoomCouncilEditorTabBase<T>`）+ `DoomCouncilEditorTabBill.cs`（议案页签，编辑 `excel_doom_council_info`）+ `DoomCouncilEditorTabRatings.cs`（议员评级页签，编辑 `excel_doom_council_ratings_info`），菜单 `游戏/终焉议会编辑` |
 | NPC 创建编辑 | `Assets/Editor/NpcCreateEditorWindow.cs` + 5 个 partial（.List/.Edit/.Appearance/.Preview/.Save） |
 | 研究模块编辑 | `Assets/Editor/ResearchEditorWindow.cs` |
 | Excel 配置目录 | `Assets/Data/Excel/` |

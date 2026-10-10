@@ -32,13 +32,17 @@ public class GameControlHandler : BaseHandler<GameControlHandler,GameControlMana
     /// <param name="animTimeForJump"></param>
     public void AnimForBaseControlShow(Vector3 endPos,float animTime)
     {
-        var targetTF = manager.controlTargetForCreature.transform;   
+        var targetTF = manager.controlTargetForCreature.transform;
         targetTF.gameObject.ShowObj(true);
         var targetRenderer = targetTF.Find("Renderer");
-        targetRenderer.position = endPos + new Vector3(0,5,0);
+        //保留 SetCreatureData 注入的幻化 world_data 偏移(Renderer 的 localPosition), 否则落地即被归零
+        Vector3 localOffset = targetRenderer.localPosition;
+        targetRenderer.position = endPos + localOffset + new Vector3(0,5,0);
         targetRenderer.eulerAngles = Vector3.zero;
+        //从天而降起跳即播待机动画(此前要等落地后 UIBaseMain 打开经 EnabledControl 才播 Idle, 坠落全程是静止姿势)
+        manager.controlForGameBase.PlayAnimForControlTarget(SpineAnimationStateEnum.Idle);
         targetRenderer
-            .DOMove(endPos, animTime)
+            .DOMove(endPos + localOffset, animTime)
             .SetEase(Ease.InCubic)
             .OnComplete(() =>
             {

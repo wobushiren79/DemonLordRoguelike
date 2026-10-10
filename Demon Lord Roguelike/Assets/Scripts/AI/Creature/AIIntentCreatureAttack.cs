@@ -277,6 +277,9 @@ public class AIIntentCreatureAttack : AIBaseIntent
     /// </summary>
     public void ActionForAttackEnd(BaseAttackMode attackMode)
     {
+        //自身已被回收（在途弹道落地回调到达时生物可能已死亡回池/清场，selfCreatureEntity 置空）→ 直接跳过（照 AIIntentCreatureDead 先例）
+        if (selfAIEntity == null || selfAIEntity.selfCreatureEntity == null)
+            return;
         //按方向策略重新搜索目标（默认沿本发攻击方向单向搜；子类可覆盖为正面优先+背后补搜）
         var findTargetCreature = FindNextTarget(attackMode);
         //找不到最近目标 → 回待机

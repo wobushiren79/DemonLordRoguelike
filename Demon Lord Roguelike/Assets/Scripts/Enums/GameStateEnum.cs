@@ -289,6 +289,7 @@ public enum UnlockEnum : long
     SacrificeDifferentIdRate = 100100004,//不同生物id献祭成功率提升(每个不同id祭品单个成功率+5%,满级+50%)
     DoomCouncil = 100200001,//终焉议会模块
     ConquerReputationReward = 100200004,//征服通关获得声望(解锁后完整通关征服按难度reward_reputation增加玩家声望;前置=DoomCouncil)
+    ChallengeHundredReputationReward = 100200011,//挑战100勇士通关获得声望(解锁后通关挑战100勇士按冻结难度reward_reputation增加玩家声望;前置=ConquerReputationReward+ChallengeHundredShowRate研究)
     PortalShowNum = 100300001, //传送门显示数量
     PortalPreviewRoadNum = 100300002, //传送门详情-线路数量预览(研究门控)
     PortalPreviewFightNum = 100300003, //传送门详情-关卡数量预览(研究门控)

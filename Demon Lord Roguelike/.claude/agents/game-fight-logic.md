@@ -23,7 +23,7 @@ watched_files:
 - **GameFightLogicDoomCouncil** - 终焉议会战斗
 - **GameFightLogicInfinite** - 无限/无尽模式战斗（`FightBeanForInfinite` 持有同难度征服行 `fightTypeConquerInfo`[复用其怪物池/数量/时长/场景/魔晶掉落]+无尽行 `fightTypeInfiniteInfo`[每轮强度倍率,null 降级不阻断]+`roundNum`[从1起]；`InitData` 建核心/收阵容/取BOSS场景池 `GetRandomFightScene(true)`/填充第1轮；`AppendNextRoundAttackData()` 追加下一轮到队列末尾[不重建,每轮=征服BOSS关同款：普通怪 attack_show_time 内分桶随机 + BOSS [50%,90%] 错开0.3s + 首只携带 bossShowNpcIds 每轮弹特写，数量固定不递推]，`GetRoundIntensityRate(round)`=征服 attack_intensity_baserate × 无尽 round_intensity_addrate^(round-1) × 终焉议会强度议案。**永不胜利双重保险**：①重写 `TryRefillNextAttackQueue()`→追加下一轮返 true，基类两层接入[取波次 null 时 + 每次出怪后队列已空立即补]保证队列恒非空无真空窗口；②重写 `CheckGameEnd()` 屏蔽胜利判定只判魔王死亡。结算退出 `ActionForUIFightSettlementExit`：议案EndGame消耗钩子→ClearAbyssalBlessing→还原阵容战斗状态→SaveUserData→回基地，无经验/声望/成就/宝箱/领奖[UIFightSettlement 仅战绩排行榜]，不调 RefillPortalRefreshNum/ClearPortalWorldInfoRandomData[无尽无通关语义]）
 - **GameFightLogicTest** - 测试战斗
-- **GameFightLogicChallengeHundred** - 是魔王就挑战100勇士（单关100只怪；胜→阵容经验+UIFightSettlement→3箱3抽全手动领奖，败→返回基地；不发成就/声望、无关卡间深渊馈赠；`IsSkipPutCardMPCost()=>true` 魔王蓝量无限）
+- **GameFightLogicChallengeHundred** - 是魔王就挑战100勇士（单关100只怪；胜→阵容经验+UIFightSettlement→3箱3抽全手动领奖，败→返回基地；不发成就、无关卡间深渊馈赠，通关声望需解锁研究 ChallengeHundredReputationReward(100200011) 由 `AddReputationForChallengeHundredComplete` 按冻结难度 `reward_reputation` 发放；`IsSkipPutCardMPCost()=>true` 魔王蓝量无限）
 
 ### 游戏状态流转
 ```

@@ -36,7 +36,7 @@ controlTargetForCreature - 基地可控角色(子节点 Renderer=Spine, Interact
 | 文件 | 层 | 职责 |
 |------|----|----|
 | [BaseControl.cs](Assets/FrameWork/Scripts/Component/Control/BaseControl.cs) | 框架 | 基类：`enabledControl` + `virtual EnabledControl(bool)` |
-| [GameControlHandler.cs](Assets/Scripts/Component/Handler/GameControlHandler.cs) | 游戏 | 控制切换：`SetFightControl`/`SetBaseControl`/`AnimForBaseControlShow` |
+| [GameControlHandler.cs](Assets/Scripts/Component/Handler/GameControlHandler.cs) | 游戏 | 控制切换：`SetFightControl`/`SetBaseControl`/`AnimForBaseControlShow`(从天而降出场：保留 Renderer 的幻化 world_data 偏移 + 起跳即播 Idle) |
 | [GameControlManager.cs](Assets/Scripts/Component/Manager/GameControlManager.cs) | 游戏 | 加载/持有控制目标、懒加载控制器、`EnableAllControl` |
 | [ControlForGameBase.cs](Assets/Scripts/Component/Game/Control/ControlForGameBase.cs) | 游戏 | 基地角色移动/交互 |
 | [ControlForGameFight.cs](Assets/Scripts/Component/Game/Control/ControlForGameFight.cs) | 游戏 | 战斗镜头/放卡/删卡 |
@@ -63,7 +63,8 @@ GameControlHandler.Instance.manager.controlForGameBase.EnabledControl(false);
 | 环节 | 位置 | 要点 |
 |------|------|------|
 | 移动 | `FixedUpdate → HandleForMoveUpdate` | 读 `inputActionMove`，按生物 `MSPD` 经 `MathUtil.InterpolationLerp(msp,0,100,2,5)` 映射速度；`CheckSceneBoard`(BOX 边界)拦边界；按 x 翻转 localScale |
-| 动画 | `PlayAnimForControlTarget` | `SpineAnimationStateEnum`(Idle/Walk)，去重避免重复切；走路动画速度 = `moveSpeedFinal*0.8` |
+| 动画 | `PlayAnimForControlTarget` | `SpineAnimationStateEnum`(Idle/Walk)，去重避免重复切；走路动画速度 = `moveSpeedFinal*0.8`；`SetCreatureData` 换骨架后重置 `creatureAnimEnum=None`（轨道已清空，不重置则再进基地/换幻化后 Idle 被去重跳过、角色一直静止） |
+| 出场动画 | `GameControlHandler.AnimForBaseControlShow`（`WorldHandler.EnterGameForBaseScene` 且 `isAnimForBuildingShow=true` 时，读档/新游戏进基地都会触发） | 从天而降 DOMove 直接驱动 **Renderer 世界坐标**：起跳前先捕获 `Renderer.localPosition`（=`SetCreatureData` 刚注入的幻化 world_data 偏移），起跳点与 DOMove 落点都加上该偏移——否则落地后 localPosition 归零、幻化偏移整场丢失；**起跳即播 Idle**（此前要等落地后 UIBaseMain 打开经 `EnabledControl` 才播，坠落全程是静止姿势）；落地 OnComplete 播 `Effect_BodySlam_1`+`sound_hit_6` |
 | 走路声 | 移动/静止/禁用三处 | 移动 `PlayLoopSound(sound_walk_1, pitch:1.5f)`（加快脚步节奏, 1.5 倍速）；静止、禁用、打开界面均 `StopLoopSound`（幂等） |
 | 朝向 | `dashFacing` | 水平面朝向，默认进入基地朝上 `(0,0,1)`；移动时更新为最近移动方向；`EnabledControl` 切换时重置为默认朝上 |
 | 空格突进 | `HandleForDashDown`(Jump/Space) + `HandleForDashUpdate`(FixedUpdate) | 研究门控：`UnlockEnum.SpaceDash` 等级>0 才可突进，距离=等级×`dashDistancePerLevel`(默认引用 `UserUnlockBean.SPACE_DASH_DISTANCE_PER_LEVEL`=1.5，1/2/3级=1.5/3/4.5单位，研究气泡文本同引该常量保持单一真实源)，`dashDuration`(0.2s) 内**逐帧移动非瞬移**；命中 `CheckSceneBoard`/`CheckDashObstacle`(Obstacle层) 即 `EndDash` 停住不穿建筑/出界 |

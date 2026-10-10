@@ -20,6 +20,16 @@ public partial class UIFightMain : BaseUIComponent
         base.RefreshUI(isOpenInit);
         if (!isOpenInit)
             RefreshUIData();
+        //UI关闭期间窗口尺寸可能变化过(OnRectTransformDimensionsChange对隐藏物体不触发)，统一按当前画布宽度重排一次卡片(空列表为空循环)
+        RefreshCardListPos();
+    }
+
+    /// <summary>
+    /// 画布尺寸变化回调(窗口拉伸/修改分辨率时由Unity自动触发，编辑器与打包版均生效)：卡片布局依赖画布宽度，需重新计算排布
+    /// </summary>
+    protected void OnRectTransformDimensionsChange()
+    {
+        RefreshCardListPos();
     }
 
     public override void OpenUI()
@@ -326,7 +336,8 @@ public partial class UIFightMain : BaseUIComponent
     {
         float cardW = ui_UIViewCreatureCardItemForFight.sizeDelta.x + 10;
         float cardH = ui_UIViewCreatureCardItemForFight.sizeDelta.y;
-        float screenWidth = Screen.width - cardW;
+        //可用宽度取根节点逻辑宽(根RectTransform全屏拉伸,宽=画布逻辑宽1920/uiSize)；不能用Screen.width物理像素,分辨率或uiSize变化后单位不一致会算错间距
+        float screenWidth = ((RectTransform)transform).rect.width - cardW;
 
         //如果超出了屏幕
         if ((cardW * maxIndex) > screenWidth)

@@ -89,7 +89,7 @@ watched_files:
 ### 魔汁道具与魔汁使用（ItemsEnum/ItemBean/UICreatureManager）
 - **道具定义**：`ItemTypeEnum.Juice = 11`(消耗品,非装备,除魔王外所有生物可用)、`ItemIdEnum.Juice = 200001`(`Assets/Scripts/Enums/ItemsEnum.cs`)；配置在 excel_items_info 新行 200001(num_max=1 不堆叠、icon_res=`Item_Juicer_1` 无图集后缀,走默认 Items 图集 AtlasForItems——该图集按 Textures/Items 文件夹整包,Item_Juicer_1.png 自动入内)。消耗品现有三个——魔汁=11(首个,限非魔王)、幻化药 TransformPotion=18 / 幻原药 RestorePotion=19(类型枚举 18/19；内置幻化药 200002 已删除、幻化药全部由 Mod 提供,幻原药保留 ItemIdEnum 200003,所有生物含魔王可用,详见 item-system)
 - **实例经验**：`ItemBean.juicerExp`(long,仅 Juice 类型有效,榨汁时按投入魔物等级汇总;旧存档无此字段默认0)
-- **经验来源**：`LevelInfo.juicer_exp`(long,每级被榨汁贡献的经验,excel_level_info)——1~10级 = 同级 level_exp 的 100%(100/1000/5000/10000/50000/100000/500000/1000000/5000000/10000000)；新增 id=0 行(level_exp=0,juicer_exp=20=1级的20%)
+- **经验来源**：`LevelInfo.juicer_exp`(long,每级被榨汁贡献的经验,excel_level_info)——1~10级 = 同级 level_exp 的 100%(100/1000/3000/6000/10000/15000/21000/28000/36000/45000，2026-10 随 level_exp 调平同步)；新增 id=0 行(level_exp=0,juicer_exp=20=1级的20%)
 - **使用入口在魔物管理页(UICreatureManager,非榨汁 UI)**：道具列表点击统一经 `UseOrEquipItem` 分流(Juice→`UseJuiceItem`、TransformPotion→`UseTransformPotionItem`、RestorePotion→`UseRestorePotionItem`、其余道具照旧走装备) → `UseJuiceItem(itemData)` 弹确认框「是否对{生物名}使用魔汁？经验+X」(textId 61014) → 确定后当前选中生物 `levelExp += juicerExp` + `RemoveBackpackItem` 消耗 + `SaveUserData` 落盘 + 三连刷新(卡片详情/献祭按钮/背包列表)；经验只累计不自动升级(沿用战斗经验语义,升级仍走献祭)
 - **拦截**：满级生物 Toast 61015 拦截防浪费；魔王不可用(`UIViewItemBackpackList` 过滤对魔王隐藏魔汁——仅魔汁带 IsDemonLord 排除,幻化药/幻原药对魔王可见可用,`UseJuiceItem` 里 null/魔王兜底 return)
 - **道具气泡**：`UIPopupItemInfo.SetJuiceExp` 仅 Juice 类型显示「经验+X」行(textId 61017,魔汁无属性,与属性区互斥)

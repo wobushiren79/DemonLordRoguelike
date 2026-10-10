@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// 直线斜射跟踪弹道（范围伤害版）：从高处出手（如生物 attack_start_position 配 0,2.5,0）沿直线斜射向目标，
+/// 直线斜射跟踪弹道（范围伤害版）：从高处出手（如防守方人类魔法师 attack_start_position 配 0,3,0）沿直线斜射向目标，
 /// 飞行中方向实时跟踪目标（含 Y 不拍平——区别于 <see cref="AttackModeRangedTracking"/> 的水平追踪），
 /// 瞄准点=目标脚底 + other_data 键 aim_up 上抬高度（默认 0=瞄脚底，配 0.5 即瞄准身体上段）；
 /// 目标死亡则方向冻结朝其死亡点继续直飞，全程命中检测有效（可命中路径上任意敌人），直至命中或飞出边界回收。

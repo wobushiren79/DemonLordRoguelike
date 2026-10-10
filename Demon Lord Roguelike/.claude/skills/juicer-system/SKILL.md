@@ -142,7 +142,7 @@ watched_files:
 
 - **道具定义**：`ItemTypeEnum.Juice = 11`（消耗品，非装备，除魔王外所有生物可用）、`ItemIdEnum.Juice = 200001`（`Assets/Scripts/Enums/ItemsEnum.cs`）；配置在 `excel_items_info[道具信息].xlsx` 新行 200001（num_max=1 不堆叠、icon_res=`Item_Juicer_1` 无图集后缀，走默认 Items 图集 AtlasForItems——该图集按 Textures/Items 文件夹整包，Item_Juicer_1.png 自动入内）。消耗品现有三个——魔汁=11（首个，限非魔王）、幻化药 TransformPotion=18 / 幻原药 RestorePotion=19（类型枚举 18/19；内置幻化药 200002 已删除、幻化药全部由 Mod 提供，幻原药保留 ItemIdEnum 200003，所有生物含魔王可用，详见 item-system Skill）
 - **实例经验**：`ItemBean.juicerExp`（long，仅 Juice 类型有效，榨汁时按投入魔物等级汇总；旧存档无此字段默认 0）
-- **经验来源**：`LevelInfo.juicer_exp`（long，每级被榨汁贡献的经验，`excel_level_info[等级信息].xlsx`）——1~10 级 = 同级 level_exp 的 100%（100/1000/5000/10000/50000/100000/500000/1000000/5000000/10000000）；新增 id=0 行（level_exp=0，juicer_exp=20=1 级的 20%）
+- **经验来源**：`LevelInfo.juicer_exp`（long，每级被榨汁贡献的经验，`excel_level_info[等级信息].xlsx`）——1~10 级 = 同级 level_exp 的 100%（100/1000/3000/6000/10000/15000/21000/28000/36000/45000，2026-10 随 level_exp 调平同步）；新增 id=0 行（level_exp=0，juicer_exp=20=1 级的 20%）
 - **使用入口在魔物管理页（UICreatureManager，非榨汁 UI）**：道具列表点击统一经 `UseOrEquipItem` 分流（Juice→`UseJuiceItem`、TransformPotion→`UseTransformPotionItem`、RestorePotion→`UseRestorePotionItem`、其余道具照旧走装备）→ `UseJuiceItem(itemData)` 弹确认框「是否对{生物名}使用魔汁？经验+X」（textId 61014，`ShowDialogNormal`）→ 确定后当前选中生物 `levelExp += juicerExp` + `RemoveBackpackItem` 消耗 + `SaveUserData` 落盘 + 三连刷新（卡片详情 `SetCardDetails` / 献祭按钮 `RefreshSacrificeButton` / 背包列表 `InitBackpackItemsData`）；经验只累计不自动升级（沿用战斗经验语义，升级仍走献祭）
 - **拦截**：满级生物（`IsMaxLevel()`）Toast 61015 拦截防浪费；魔王不可用（`UIViewItemBackpackList` 过滤对魔王隐藏魔汁——仅魔汁带 IsDemonLord 排除，幻化药/幻原药对魔王可见可用；`UseJuiceItem` 里 null/魔王兜底 return）
 - **道具气泡**：`UIPopupItemInfo.SetJuiceExp` 仅 Juice 类型显示「经验+X」行（textId 61017，魔汁无属性，与属性区互斥自动隐藏）
@@ -203,5 +203,5 @@ watched_files:
 - 卡片态**复用 CreatureAscend 系列**；计数文本 `ui_LimmitText`(TMP,AutoLinkUI 按名绑定,预制需同名子物体)。
 - 配置改 **Excel 唯一真实源**并同步 JSON；自动生成 Bean/JSON 不手改结构（Bean 扩展写 Partial）。
 - UI 继承 `BaseUIComponent`；输入走 `InputActionUIEnum`（禁用旧版 Input API）。
-- 研究 `icon_res` 目前占位（`ui_research_65`），需专属图标时**先征得用户同意再用 PixelLab**。
+- 研究 `icon_res` 目前占位（`ui_research_65`），需专属图标时用项目内 PixelDa 编辑器工具（Custom/AI/像素图生成）生成。
 - 预制体（objBuildingJuicer 交互碰撞体、CV_Juicer 镜头、UICreatureJuicer 接线含 `ui_LimmitText`）由用户手动接好；改动涉及预制体时优先走 Unity MCP 或提示用户手工处理。

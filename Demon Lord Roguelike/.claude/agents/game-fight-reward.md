@@ -53,7 +53,7 @@ watched_files:
 - **RewardSelectTestData** - 测试模式下的领奖参数（品质/属性/数量/魔王专属概率）
 - **FightDropCrystalBean** - 战斗内掉落水晶实例
 - **FightTypeConquerInfoBean(Partial)** - 征服配置（`drop_crystal` / `reward_crystal`(string: 单值"200"固定 或 区间"100-200"随机, `GetRandomRewardCrystal()` 读取) / `reward_equip_rarity`，只决定稀有度 / `reward_reputation` 完整通关声望奖励，`GetRewardReputation()` 读取，world_id=1 各难度依次 1~10）
-- **FightTypeChallengeHundredInfoBean(Partial)** - 挑战100勇士配置（`drop_crystal` / `reward_crystal`(string 单值/区间, `GetRandomRewardCrystal()` 走 `RandomUtil.GetRandomIntByRangeString`) / `reward_equip_rarity` / `reward_exp` 通关阵容经验；另有 `enemy_ids`/`difficulty_levels`/`attack_intensity_baserate`/`attack_show_time`/`road_num`/`road_length`/`fight_scene_ids`；`Cfg.GetRandomRow(unlockDifficultyMax)` 按世界最高已解锁难度抽行）
+- **FightTypeChallengeHundredInfoBean(Partial)** - 挑战100勇士配置（`drop_crystal` / `reward_crystal`(string 单值/区间, `GetRandomRewardCrystal()` 走 `RandomUtil.GetRandomIntByRangeString`) / `reward_equip_rarity` / `reward_exp` 通关阵容经验 / `reward_reputation` 通关声望(逐难度对齐,`GetRewardReputation(冻结难度)` 读取,受研究 ChallengeHundredReputationReward(100200011) 门控;字段暂在 Partial,重新生成 Entity 后删除)；另有 `enemy_ids`/`difficulty_levels`/`attack_intensity_baserate`/`attack_show_time`/`road_num`/`road_length`/`fight_scene_ids`；`Cfg.GetRandomRow(unlockDifficultyMax)` 按世界最高已解锁难度抽行）
 - **RarityInfoBean** - 稀有度配置，`equip_attribute_add` 决定该稀有度装备的属性加点数量（从征服表迁来）
 
 ### UI
@@ -66,7 +66,7 @@ watched_files:
 - **GameFightLogicConquer** - 征服模式，多关卡 run 的领奖流程（BOSS 关通关领奖，4箱首箱保底）
 - **GameFightLogicDoomCouncil** - 终焉议会，结算展示投票结果，**无领奖界面**
 - **GameFightLogicTest** - 测试模式，Next 重启战斗，**不发奖不存档**
-- **GameFightLogicChallengeHundred** - 挑战100勇士（单关100只怪）：胜利→发阵容经验(行 `reward_exp` 按冻结难度取档)→结算UI→Next→UIRewardSelect **全手动开箱**（无首箱保底，可开数=奖励总数（普通3/BOSS装备6)，不套征服 `Count-1` 钳制）；失败→直接返回基地；**不发成就/声望、无关卡间深渊馈赠**
+- **GameFightLogicChallengeHundred** - 挑战100勇士（单关100只怪）：胜利→发阵容经验(行 `reward_exp` 按冻结难度取档)→结算UI→Next→UIRewardSelect **全手动开箱**（无首箱保底，可开数=奖励总数（普通3/BOSS装备6)，不套征服 `Count-1` 钳制）；失败→直接返回基地；**不发成就、无关卡间深渊馈赠；通关声望受研究 ChallengeHundredReputationReward(100200011) 门控，领奖结束 `ActionForUIRewardSelectEnd` 调 `AddReputationForChallengeHundredComplete` 按冻结难度 `reward_reputation` 发放**
 - **GameFightLogicInfinite** - 无尽模式（进攻队列耗尽自动续下一轮永不胜利，魔王死亡即失败）：失败结算仅打开 `UIFightSettlement` 战绩排行榜（`ActionForUIFightSettlementExit` 直接返回基地），**无宝箱/经验/声望/成就**（魔晶战斗中即时入账，退出时统一落盘；保留议案 EndGame 消耗钩子+清深渊馈赠+还原阵容状态）
 
 ### 掉落
@@ -105,8 +105,8 @@ watched_files:
      │        .InitDataForReward(gameWorldInfoRandomData.GetChallengeHundredReward()/*传送门预生成冻结的宝箱, 预览=实领, 普通3/BOSS6*/, null, 0)
      │        → UIRewardSelect.SetData(..., isClearLastGame: true) → 全手动开箱(selectNumMax=奖励总数)
      └─ 失败: EndGameAndReturnToBase()
- → ActionForUIRewardSelectEnd: userTempData.RefillPortalRefreshNum() + ClearPortalWorldInfoRandomData()（通关一次世界回满刷新次数+清空传送门，随存档落盘）
- → EndGameAndReturnToBase()（不发成就/声望，无深渊馈赠介入）
+ → ActionForUIRewardSelectEnd: AddReputationForChallengeHundredComplete(研究100200011门控,按冻结难度 reward_reputation 发放声望) + userTempData.RefillPortalRefreshNum() + ClearPortalWorldInfoRandomData()（通关一次世界回满刷新次数+清空传送门，随存档落盘）
+ → EndGameAndReturnToBase()（不发成就，无深渊馈赠介入）
 ```
 
 ## 奖励生成规则（RewardSelectBean，单一真实源）

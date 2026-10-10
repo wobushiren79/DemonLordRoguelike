@@ -42,11 +42,26 @@ public partial class CameraHandler
 
     #region 奖励选择摄像头
     /// <summary>
-    /// 设置基础场景的摄像头
+    /// 设置奖励选择场景的摄像头
     /// </summary>
     public CinemachineCamera SetCameraForRewardSelectScene(float blendTime = 0.5f)
     {
         manager.HideAllCM();
+        var targetCV = GetRewardSelectCamera();
+        if (targetCV == null)
+            return null;
+        //打开切换动画
+        manager.SetMainCameraDefaultBlend(blendTime);
+        targetCV.gameObject.SetActive(true);
+        targetCV.Priority = int.MaxValue;
+        return targetCV;
+    }
+
+    /// <summary>
+    /// 获取奖励选择场景的摄像头(仅查找返回,不改激活态/优先级)
+    /// </summary>
+    protected CinemachineCamera GetRewardSelectCamera()
+    {
         var targetBaseScene = WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.RewardSelect);
         if (targetBaseScene == null)
         {
@@ -59,12 +74,31 @@ public partial class CameraHandler
             LogUtil.LogError("设置摄像头失败 没有找到对应CV_List Transfrom");
             return null;
         }
-        var targetCV = targetCVListTF.GetComponentInChildren<CinemachineCamera>(true);
-        //打开切换动画
-        manager.SetMainCameraDefaultBlend(blendTime);
-        targetCV.gameObject.SetActive(true);
-        targetCV.Priority = int.MaxValue;
-        return targetCV;
+        return targetCVListTF.GetComponentInChildren<CinemachineCamera>(true);
+    }
+
+    /// <summary>
+    /// 根据宝箱横向总宽度刷新奖励选择镜头的FOV:宝箱数量多(>=6)时两侧宝箱超出默认视野,按几何关系增大垂直FOV让所有宝箱完整入镜
+    /// </summary>
+    /// <param name="halfWidthForBox">宝箱排横向半宽(最外侧宝箱中心到排中心距离 + 单箱半宽与边距余量)</param>
+    public void RefreshRewardSelectCameraFov(float halfWidthForBox)
+    {
+        var targetCV = GetRewardSelectCamera();
+        if (targetCV == null)
+            return;
+        //宝箱排在 z=0 一行且相机无偏航角,横向入镜只取决于相机到箱排的 z 向距离与屏幕宽高比
+        float distZ = Mathf.Abs(targetCV.transform.position.z);
+        if (distZ < 0.01f)
+            return;
+        //当前配置FOV为基准(预制体配置值),只在不够装时才放大
+        float fovDefault = targetCV.Lens.FieldOfView;
+        float aspect = manager.mainCamera.aspect;
+        //tan(横向半视角)=半宽/距离,再由 tan(hFov/2)=tan(vFov/2)*aspect 反推所需垂直FOV
+        float fovNeed = 2f * Mathf.Atan(halfWidthForBox / distZ / aspect) * Mathf.Rad2Deg;
+        if (fovNeed > fovDefault)
+        {
+            targetCV.Lens.FieldOfView = fovNeed;
+        }
     }
     #endregion
 

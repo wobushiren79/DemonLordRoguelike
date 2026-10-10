@@ -84,9 +84,9 @@ UIViewCreatureCardItem (基类)
 ├── UIViewCreatureCardItemForFight          // 战斗卡片（支持拖拽、CD、选中动画）
 ├── UIViewCreatureCardItemForLineup         // 阵容行卡片（支持拖拽换位：IBeginDrag/IDrag/IEndDrag，仅用于阵容行，勿作列表cell）
 ├── UIViewCreatureCardItemForLineupList     // 阵容管理列表卡片（无拖拽接口，接管 LineupSelect/LineupNoSelect 遮罩；阵容管理生物列表的 tempCell）
-├── UIViewCreatureCardItemForCreatureManager // 魔物管理卡片
+├── UIViewCreatureCardItemForCreatureManager // 魔物管理卡片（含阵容标记）
 ├── UIViewCreatureCardItemForCreatureSacrifice // 献祭卡片
-├── UIViewCreatureCardItemForCreatureAscend // 进阶卡片
+├── UIViewCreatureCardItemForCreatureAscend // 进阶卡片（含阵容标记）
 └── UIViewCreatureCardItemForSelectCreature // 选择卡片
 
 UIViewCreatureCardList       // 卡片列表（滚动网格）
@@ -104,7 +104,7 @@ UIPopupCreatureCardDetails   // 卡片详情弹窗
 
 > **献祭升级提示特效 `ui_SacrificeEffect`**（`UIViewCreatureCardItemComponent` 的 `Image` 字段，prefab `UIViewCreatureCardItem` 上挂，材质 `Mat_UIViewCreatureCardItem_Sacrifice.mat`）：`SetData` 内部调用 `SetSacrificeEffect(creatureData, cardUseState)` 控制显隐——**仅当 `cardUseState == CreatureManager` 且 已解锁祭坛(`UnlockEnum.Altar`) 且 `creatureData.CanUpLevel()`** 时显示，其它使用状态恒隐藏。此高亮亮起 ⇔ `UICreatureManager` 升级按钮"显示且未置灰"（按钮解锁祭坛且未满级才显示、`CanUpLevel()` 决定其置灰与否；满级时按钮隐藏、卡片高亮也因 `CanUpLevel()` 为 false 而隐藏），用于在魔物管理列表里高亮"可献祭升级"的生物。
 
-> **魔物管理卡片阵容标记 `ui_CreatureLineUpMark`**（`UIViewCreatureCardItemForCreatureManager` 专属，prefab `UIViewCreatureCardItemForCreatureManager` 底部：RectTransform 容器 + VerticalLayoutGroup + ContentSizeFitter 纵向自适应，子节点 `ui_CreatureLineUpMarkItem` 为 TMP 模板）：基类 `SetData` 为 `virtual`，子类 override 末尾调 `SetLineupMark(creatureData)`——经 `UserDataBean.GetLineupIndexes(creatureUUId)`（返回生物所在的**全部**阵容序号列表，升序；区别于只取首个的 `GetLinupIndex`）逐行展示各阵容显示名（`GetLineupShowName`：自定义名优先，否则默认「阵容 {序号}」，一个生物可同时属于多套阵容）；**不在任何阵容时隐藏整个 Mark**。Item 数量用 `queuePoolMarkItem`/`listShowMarkItem` 池化增删（模板 Item 在 Awake 隐藏仅作实例化模型，池随卡片实例被 ScrollGrid 复用而保留）；Mark 及其子元素在 Awake 统一 `raycastTarget = false`（与卡片其它遮罩元素一致，纯展示不挡卡片点击）。魔王从不入阵容，自然隐藏，无需特判。
+> **阵容标记通用控件 `UIViewCreatureCardItemLineUpMark`**（2026-10 由魔物管理卡片专属逻辑抽出；独立 prefab `Assets/Resources/UI/Common/UIViewCreatureCardItemLineUpMark.prefab`：根节点默认 inactive，Image 黑底 0.8 + VerticalLayoutGroup + ContentSizeFitter 纵向自适应，子节点 `ui_CreatureLineUpMarkItem` 为 TMP 模板）：**接入方式**——以嵌套 prefab 实例挂到卡片 prefab 的 `CreatureCardItem/CardContent` 下（锚点居中、pivot(0.5,0)、anchoredPosition(12,-39)），卡片子类的 `*Component.cs` 声明 `ui_UIViewCreatureCardItemLineUpMark` 字段（**运行时 `AutoLinkUI` 按名字绑定，无需 prefab 序列化**），`SetData` override 末尾调 `ui_UIViewCreatureCardItemLineUpMark.SetData(creatureData)` 即可。**逻辑**——经 `UserDataBean.GetLineupIndexes(creatureUUId)`（返回生物所在的**全部**阵容序号列表，升序；区别于只取首个的 `GetLinupIndex`）逐行展示各阵容显示名（`GetLineupShowName`：自定义名优先，否则默认「阵容 {序号}」，一个生物可同时属于多套阵容）；**不在任何阵容（或传 null）时隐藏整个 Mark**。Item 数量用 `queuePoolMarkItem`/`listShowMarkItem` 池化增删（模板 Item 在 Awake 隐藏仅作实例化模型，池随控件实例被 ScrollGrid 复用而保留）；Mark 及其子元素在 Awake 统一 `raycastTarget = false`（与卡片其它遮罩元素一致，纯展示不挡卡片点击）。**当前使用方**：魔物管理卡片、进阶卡片。魔王从不入阵容，自然隐藏，无需特判。
 
 ## 创建/使用生物卡片
 
@@ -382,9 +382,10 @@ protected void OnConfirmOrderFilter(OrderFilterResultBean result) {
 | 战斗卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForFight.cs`(主体：生命周期/快捷按键/状态/触摸事件/深渊馈赠展示) + `UIViewCreatureCardItemForFightAnim.cs`(partial：动画参数/Tween 句柄/创建·选择·避让动画 `AnimForCreateShow`(委托基类 `AnimForCardShow`,可选完成回调 actionForComplete)/`PlaySelectEnterAnim`/`PlaySelectExitAnim`/`PlaySelectKeepAnim`/`PlaySelectKeepReturnAnim`/`ClearAnim`/`KillAnim*`) |
 | 阵容行卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForLineup.cs` |
 | 阵容管理列表卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForLineupList.cs` |
-| 管理卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForCreatureManager.cs` |
+| 管理卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForCreatureManager.cs` + `UIViewCreatureCardItemForCreatureManagerComponent.cs`（声明 `ui_UIViewCreatureCardItemLineUpMark`） |
 | 献祭卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForCreatureSacrifice.cs` |
-| 进阶卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForCreatureAscend.cs` |
+| 进阶卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForCreatureAscend.cs` + `UIViewCreatureCardItemForCreatureAscendComponent.cs`（声明 `ui_UIViewCreatureCardItemLineUpMark`） |
+| 阵容标记通用控件 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemLineUpMark.cs` + `UIViewCreatureCardItemLineUpMarkComponent.cs`，prefab `Assets/Resources/UI/Common/UIViewCreatureCardItemLineUpMark.prefab` |
 | 选择卡片 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForSelectCreature.cs` |
 | 卡片列表 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardList.cs` |
 | 卡片详情 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardDetails.cs` |

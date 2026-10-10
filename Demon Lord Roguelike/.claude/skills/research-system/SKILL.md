@@ -249,6 +249,7 @@ public enum UnlockEnum : long
     SacrificeDifferentIdRate = 100100004, // 不同魔物献祭成功率提升(+5%/级, level_max=10)
     DoomCouncil = 100200001,           // 终焉议会模块
     ConquerReputationReward = 100200004, // 征服通关获得声望(解锁后完整通关征服按难度加玩家声望; 前置=DoomCouncil)
+    ChallengeHundredReputationReward = 100200011, // 挑战100勇士通关获得声望(解锁后通关挑战100勇士按冻结难度reward_reputation加玩家声望; 前置=ConquerReputationReward+ChallengeHundredShowRate研究)
     PortalShowNum = 100300001,         // 传送门显示数量
     PortalPreviewRoadNum = 100300002,    // 传送门详情预览-线路数
     PortalPreviewFightNum = 100300003,   // 传送门详情预览-关卡数
@@ -346,6 +347,16 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 - 逻辑门控在 `GameFightLogicConquer.AddReputationForConquerComplete`：`userData.GetUserUnlockData().CheckIsUnlock(UnlockEnum.ConquerReputationReward)` 已解锁才 `userData.AddReputation(conquerInfo.GetRewardReputation())`（声望值取征服难度表新增列 `reward_reputation`，world_id=1 各难度依次 1~10；声望≤0 不发放）。
 - 落表同其他节点：`excel_research_info`(id=100200004, `research_type=1`, `icon_res=ui_research_59`, `level_max=1`, `unlock_id=100200004`, `pre_unlock_ids="100200001"`, `pay_crystal=1000`, `name=100200004`, 备注「征服通关获得声望」) + `excel_unlock_info`(id=100200004, `unlock_type=0`, 备注「征服通关获得声望」) + 多语言 `excel_language` 的 `ResearchInfo` 工作表(id=100200004, cn「征服通关获得声望」/en「Gain Reputation on Conquest Clear」)。
 - 声望系统（第二货币，与魔晶并列，终焉议会消耗它）本已存在；本节点只是新增一个声望获取来源。发放与配置细节见 [`conquer-system`](../conquer-system/SKILL.md) / [`fight-reward-system`](../fight-reward-system/SKILL.md)。
+
+### 设施分支(1002 段) — 挑战100勇士通关获得声望（双前置：声望研究+模式解锁）
+
+`ChallengeHundredReputationReward`（unlock_id **100200011**，`research_type=1` 设施节点，`pre_unlock_ids="100200004,100300007"`——前置=征服通关获得声望研究 **且** 是魔王就挑战100勇士出现概率研究（后者即该模式的解锁开关），`level_max=1`，`pay_crystal=1000`，`position(-300,-700)` 位于征服声望节点(-300,-500)正下方，`icon_res=ui_research_7` 与征服声望同款）——征服声望研究的同口径扩展：
+
+- **解锁后**，玩家每次**通关挑战100勇士**（清空100只怪、领奖结束）按**冻结难度**增加自身声望：声望值取挑战100勇士配置表新增逐难度对齐列 `reward_reputation`（当前值=难度等级本身，与征服 1~10 同口径），读取 `FightTypeChallengeHundredInfoBeanPartial.GetRewardReputation(冻结难度)`。
+- 逻辑门控在 `GameFightLogicChallengeHundred.AddReputationForChallengeHundredComplete`（领奖结束回调 `ActionForUIRewardSelectEnd` 里、`EndGameAndReturnToBase` 存档前发放，随存档落盘；≤0 不发放）。
+- **跨类型前置不画线仍生效**：`100300007` 是世界分支(type=4)节点，`CreateLine` 跳过该连线但 `CheckPreIsUnlock` 照常判定；`100200004` 同类型正常画竖线。
+- 落表同其他节点：`excel_research_info`(id=100200011, `name`=同id, `details`留空) + `excel_unlock_info`(id=100200011, `unlock_type=0`) + 多语言 `ResearchInfo`(id=100200011, cn「挑战100勇士通关获得声望」，12语言已翻译)。
+- 注意：挑战100勇士表的 `reward_reputation` 字段暂在 `FightTypeChallengeHundredInfoBeanPartial.cs`（仿 pre_data/details 先例），重新生成 Entity 后需删除该临时字段。
 
 同分支（1002 段、`research_type=1`、`level_max=1`、`icon_res=ui_research_59`）还有终焉议会议案解锁节点组：100200005/6（魔物等级下降/归0）、100200007/8（魔物稀有度下降/归0）、**100200009（议案「想要更多装备！」，pre=100200001、pay_crystal=100、position(-500,-900)）**、**100200010（议案「想要更多魔王装备！」，pre=100200009 子研究、pay_crystal=200、position(-700,-900)）**——这类节点解锁的只是议案在议会列表的可见性（`DoomCouncilInfo.unlock_id` 配置驱动过滤，`UnlockEnum` 无需新增枚举）；议案效果本身见 [`doom-council-system`](../doom-council-system/SKILL.md)。
 

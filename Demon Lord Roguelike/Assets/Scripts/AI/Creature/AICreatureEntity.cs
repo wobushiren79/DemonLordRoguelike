@@ -90,6 +90,9 @@ public abstract partial class AICreatureEntity : AIBaseEntity
     /// </summary>
     public List<FightCreatureEntity> FindCreatureEntity(Vector3 direction)
     {
+        //自身已被回收（死亡回池/清场后 selfCreatureEntity 置空，在途弹道回调仍会触发索敌）→ 返回空（照 AIIntentCreatureDead 先例，兜底所有索敌入口）
+        if (selfCreatureEntity == null)
+            return null;
         var fightCreatureData = selfCreatureEntity.fightCreatureData;
         var creatureInfo = fightCreatureData.creatureData.creatureInfo;
         //如果有NPC数据 优先使用NPC数据里的属性

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Cinemachine;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public partial class UICreatureVat : BaseUIComponent
@@ -209,9 +210,18 @@ public partial class UICreatureVat : BaseUIComponent
                 return;
             listTargetCreatureShow.Add(creatureData);
         });
-        //默认排序:稀有度升序(N→L),同稀有度按等级降序
+        //默认排序:阵容魔物优先(按阵容序号升序,未上阵排最后),其余按稀有度升序(N→L),同稀有度按等级降序
         listTargetCreatureShow.Sort((a, b) =>
         {
+            int lineupA = userData.GetLinupIndex(a.creatureUUId);
+            int lineupB = userData.GetLinupIndex(b.creatureUUId);
+            if (lineupA != lineupB)
+            {
+                //未上阵(GetLinupIndex 返回 0)排到最后
+                if (lineupA == 0) return 1;
+                if (lineupB == 0) return -1;
+                return lineupA.CompareTo(lineupB);
+            }
             int rarityA = a.GetRarityValue();
             int rarityB = b.GetRarityValue();
             if (rarityA != rarityB) return rarityA.CompareTo(rarityB);
@@ -294,6 +304,16 @@ public partial class UICreatureVat : BaseUIComponent
 
 
     #region  点击相关
+    public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
+    {
+        base.OnInputActionForStarted(inputType, callback);
+        if (inputType == InputActionUIEnum.ESC)
+        {
+            //ESC 退出(等同点击离开按钮,走打开入口注入的退出回调)
+            OnClickForExit();
+        }
+    }
+
     public override void OnClickForButton(Button viewButton)
     {
         base.OnClickForButton(viewButton);

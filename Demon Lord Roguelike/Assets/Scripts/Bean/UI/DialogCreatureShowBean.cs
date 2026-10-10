@@ -8,4 +8,6 @@ public class DialogCreatureShowBean : DialogBean
 {
     /// <summary>生物数据，包含要展示的生物的完整信息</summary>
     public CreatureBean creatureData;
+    /// <summary>true=显示 Chess 小卡基础展示形象(show 骨架, 测试面板小卡列表详情用); false=默认 ui_show 详情高清形象</summary>
+    public bool isShowChessSpine;
 }

@@ -144,6 +144,11 @@ CameraHandler.Instance.SetCameraForDoomCouncilVote(blendTime: 0.5f);
 
 // 奖励选择场景镜头
 CameraHandler.Instance.SetCameraForRewardSelectScene(blendTime: 0.5f);
+
+// 奖励选择镜头FOV按宝箱横向总宽度自适应：数量多(>=6)时两侧宝箱超出默认视野(60),
+// 由 ScenePrefabForRewardSelect.InitRewardBox 生成宝箱后调用(遮罩盖住期间,玩家不可见),
+// 几何关系: tan(hFov/2)=半宽/相机到箱排z距离, tan(hFov/2)=tan(vFov/2)*aspect,只在不够装时才放大FOV
+CameraHandler.Instance.RefreshRewardSelectCameraFov(halfWidthForBox);
 ```
 
 ### 5. 混合动画 / 隐藏 / 工具

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 挑战100勇士战斗逻辑（单关100只怪；通关3箱3抽全手动开箱；魔王放卡不耗蓝；不发成就/声望，无关卡间深渊馈赠）
+/// 挑战100勇士战斗逻辑（单关100只怪；通关3箱3抽全手动开箱；魔王放卡不耗蓝；不发成就，通关声望需解锁研究 ChallengeHundredReputationReward(100200011)，无关卡间深渊馈赠）
 /// </summary>
 public class GameFightLogicChallengeHundred : GameFightLogic
 {
@@ -93,6 +93,8 @@ public class GameFightLogicChallengeHundred : GameFightLogic
     /// </summary>
     public void ActionForUIRewardSelectEnd()
     {
+        //通关声望奖励: 解锁「挑战100勇士通关获得声望」研究后, 按冻结难度配置 reward_reputation 增加玩家声望(存档前发放,随存档落盘)
+        AddReputationForChallengeHundredComplete(fightData as FightBeanForChallengeHundred);
         //通关一次世界: 回满刷新次数 + 清空全部传送门世界(下次打开传送门UI时全量重新生成); 随 EndGameAndReturnToBase 的 SaveUserData 一并落盘
         var userTempData = GameDataHandler.Instance.manager.GetUserData().GetUserTempData();
         userTempData.RefillPortalRefreshNum();
@@ -102,6 +104,27 @@ public class GameFightLogicChallengeHundred : GameFightLogic
     #endregion
 
     #region 工具
+    /// <summary>
+    /// 通关挑战100勇士后按冻结难度发放声望奖励
+    /// 研究门控: 需解锁 UnlockEnum.ChallengeHundredReputationReward「挑战100勇士通关获得声望」; 声望值取配置行 reward_reputation 逐难度对齐值(≤0不发放)
+    /// 在 EndGameAndReturnToBase 的 SaveUserData 之前调用, 随存档一并落盘
+    /// </summary>
+    /// <param name="fightDataForChallengeHundred">本次通关的挑战100勇士战斗数据</param>
+    private void AddReputationForChallengeHundredComplete(FightBeanForChallengeHundred fightDataForChallengeHundred)
+    {
+        var infoRow = fightDataForChallengeHundred?.fightTypeChallengeHundredInfo;
+        if (infoRow == null)
+            return;
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        //未解锁「挑战100勇士通关获得声望」研究则不发放
+        if (!userData.GetUserUnlockData().CheckIsUnlock(UnlockEnum.ChallengeHundredReputationReward))
+            return;
+        int reputationReward = infoRow.GetRewardReputation(fightDataForChallengeHundred.gameWorldInfoRandomData.difficultyLevel);
+        if (reputationReward <= 0)
+            return;
+        userData.AddReputation(reputationReward);
+    }
+
     /// <summary>
     /// 胜利后给本场出战阵容(防御方)生物累加指定经验
     /// 经验直接累加到生物存档对象(CreatureBean.levelExp)，随返回基地时统一保存落盘，魔王(不吃经验)与已达等级上限的生物跳过
