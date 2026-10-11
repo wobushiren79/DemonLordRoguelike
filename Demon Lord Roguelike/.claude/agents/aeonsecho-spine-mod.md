@@ -56,4 +56,4 @@ watched_files:
 - **调单个药的尺寸/位置不用跑生成脚本**：测试模式-卡片测试-Mod幻化药测试面板里拖拽/滚轮实时调，「保存全部修改」按 modId 分组路由写回本 Mod 的 Excel+两处 JsonText+内存（只换 ui_show_data/show_data/world_data 三键，其余键原样保留）；资源套装变更才走 scan/all 生成流程（scan 默认按 id 保留三键手调值、新增资源按骨架校准，`--reset-layout` 强制全部重算，2026-09-27 起）
 - Mod 目录名（`AeonsEchoSpine`）= Mod 名；Addressables 分组名只影响 bundle 文件名
 - **该流程仅适用 AeonsEchoSpine**，其他 Mod 不套用
-- Play 验证一律由用户手动（CLAUDE.md 规则）；PixelLab 不涉及本 Mod（图标复用内置 `Item_Potion_1`）
+- Play 验证一律由用户手动（CLAUDE.md 规则）

@@ -44,10 +44,6 @@
       "Read(//usr/**)",
       "Bash(cmd.exe /c \"python --version\")",
       "Bash(cmd.exe /c \"py --version\")",
-      "WebFetch(domain:api.pixellab.ai)",
-      "mcp__pixellab__create_object",
-      "mcp__pixellab__animate_object",
-      "mcp__pixellab__get_object",
       "Bash(mkdir -p \".claude/skills\")",
       "Bash(mkdir -p \".claude/scripts\")",
       "Bash(sed -i 's|\\.claude/scripts/|\\.claude/scripts/|g' \".claude/settings.json\" && echo \"Done\")",
@@ -71,7 +67,6 @@
     ]
   },
   "enabledMcpjsonServers": [
-    "pixellab",
     "context7"
   ]
 }

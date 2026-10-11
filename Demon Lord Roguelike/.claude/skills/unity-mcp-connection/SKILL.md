@@ -188,7 +188,7 @@ initialize (获取 Session ID)
 | `read_console` / `run_tests` / `get_test_job` | 控制台/测试 | `run_tests` 支持 `clear_stuck`（10.1.2+，清除卡死的测试 job） |
 | `execute_menu_item` / `refresh_unity` / `batch_execute` | 菜单/刷新/批量执行 | - |
 
-> ⚠️ **AI 生成类** `generate_image` / `generate_audio`（10.1.0 新增，付费）/ `generate_model`（及 `import_model`/`import_model_file`）为**付费/AI 生成**能力，调用前须比照 PixelLab 规则**先征得用户明确同意**，禁止在其他任务中"顺带"生成。
+> ⚠️ **AI 生成类** `generate_image` / `generate_audio`（10.1.0 新增，付费）/ `generate_model`（及 `import_model`/`import_model_file`）为**付费/AI 生成**能力，调用前须**先征得用户明确同意**，禁止在其他任务中"顺带"生成。
 > 脚本编辑类 `manage_script`/`create_script`/`apply_text_edits` 等可读写 `.cs`，但项目规则本就允许直接用 Write/Edit 改 `.cs`，是否走 MCP 随意。
 
 ### 注意事项

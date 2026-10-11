@@ -155,4 +155,4 @@ watched_files:
 - 目标列表卡片态**复用 CreatureAscend 系列**（预制体已如此接线），改卡片变体前先确认预制体挂的脚本。
 - 配置改 **Excel 唯一真实源**，同步 JSON 让运行时即时生效；自动生成 Bean/JSON 不手改结构。
 - UI 继承 `BaseUIComponent`；输入走 `InputActionUIEnum`（禁用旧版 Input）。
-- 研究 `icon_res` 目前是占位（`ui_research_65`），需要专属魔汁机研究图标时**先征得用户同意再用 PixelLab**。
+- 研究 `icon_res` 目前是占位（`ui_research_65`），需要专属魔汁机研究图标时用项目内 PixelDa 编辑器工具（Custom/AI/像素图生成）生成。
