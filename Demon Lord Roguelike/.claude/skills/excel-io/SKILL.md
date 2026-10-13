@@ -154,7 +154,7 @@ python .claude/scripts/excel_delete_row.py \
 | 攻击方式 | excel_attackmode_info | AttackModeInfo | 61 |
 | 音频信息 | excel_audio_info | AudioInfo | 39 |
 | 基础信息 | excel_base_info | BaseInfo | 3 |
-| Buff信息 | excel_buff_info | BuffInfo | 135 |
+| Buff信息 | excel_buff_info | BuffInfo | 143 |
 | Buff前置 | excel_buff_pre_info | BuffPreInfo | 6 |
 | 议员对话 | excel_conversation_councilor_info | ConversationCouncilorInfo | 33 |
 | 生物属性类型 | excel_creature_attribute_type_info | CreatureAttributeTypeInfo | 12 |
@@ -171,7 +171,7 @@ python .claude/scripts/excel_delete_row.py \
 | 游戏世界 | excel_game_world_info | GameWorldInfo | 6 |
 | 道具信息 | excel_items_info | ItemsInfo | 229 |
 | 道具类型 | excel_items_type | ItemsType | 10 |
-| 多语言 | excel_language | UIText(+17子表) | 152+ |
+| 多语言 | excel_language | UIText(+17子表) | 267+ |
 | 等级信息 | excel_level_info | LevelInfo | 12 |
 | NPC信息 | excel_npc_info | NpcInfo | 181 |
 | NPC关系 | excel_npc_relationship_info | NpcRelationshipInfo | 7 |
@@ -180,7 +180,7 @@ python .claude/scripts/excel_delete_row.py \
 | 骨骼动画枚举 | excel_spine_animation_state | SpineAnimationState | 33 |
 | 扭蛋机 | excel_store_gashaponmachine_info | StoreGashaponMachineInfo | 23 |
 | 称号 | excel_title_info | TitleInfo | 15 |
-| UI文本 | excel_ui_text | UIText | 152 |
+| UI文本 | excel_ui_text | UIText | 227 |
 | 解锁信息 | excel_unlock_info | UnlockInfo | 108 |
 
 ## 典型工作流

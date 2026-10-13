@@ -225,8 +225,6 @@ public enum ResearchPreConditionEnum
     GashaponCreatureDrawCount4003 = 4003,
     /// <summary>奥之魅魔 扭蛋累计抽出数量</summary>
     GashaponCreatureDrawCount4004 = 4004,
-    /// <summary>盾之魅魔 扭蛋累计抽出数量</summary>
-    GashaponCreatureDrawCount4005 = 4005,
     /// <summary>牛头人战士 扭蛋累计抽出数量</summary>
     GashaponCreatureDrawCount5001 = 5001,
     /// <summary>牛头人投手 扭蛋累计抽出数量</summary>

@@ -23,5 +23,9 @@ public partial class UILineupManager
 
     public Button ui_RenameBtn_Button;
 
+    public PopupButtonCommonView ui_CleanBtn_PopupButtonCommonView;
+
+    public Button ui_CleanBtn_Button;
+
 
 }

@@ -9,7 +9,7 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// 战斗游戏逻辑基类
 /// <para>承载一场战斗的完整生命周期：准备(PreGame 加载场景/魔王核心) → 每帧更新(UpdateGame 选择/进攻生成/生物CD/魔王) → 结束(EndGame) → 清理(ClearGame)。</para>
-/// <para>同时负责防守卡片的选择/放置/删除、魔晶拾取、结束返回基地等战斗内交互；各战斗模式(征服/终焉议会/无限/测试)通过子类重写差异逻辑。</para>
+/// <para>同时负责防守卡片的选择/放置/删除、魔晶拾取、重新挑战、结束返回基地等战斗内交互；各战斗模式(征服/终焉议会/无限/测试)通过子类重写差异逻辑。</para>
 /// </summary>
 public class GameFightLogic : BaseGameLogic
 {
@@ -179,6 +179,9 @@ public class GameFightLogic : BaseGameLogic
     #endregion
 
     #region 游戏速度
+    /// <summary>0速按钮开启时的游戏速度倍率（游戏时间流速归零=战斗暂停，一切走游戏速度的逻辑与生物动画全部冻结）</summary>
+    public const float GAME_SPEED_0X = 0f;
+
     /// <summary>2倍速按钮开启时的游戏速度倍率</summary>
     public const float GAME_SPEED_2X = 2f;
 
@@ -207,10 +210,10 @@ public class GameFightLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// 设置游戏速度（2倍速按钮开关）
+    /// 设置游戏速度（Speed0 0速/Speed2 2倍速按钮开关）
     /// 只改游戏时间流速（fightData.gameSpeed），不改 Time.timeScale；速度随 fightData 仅存于本场战斗，战斗结束自然还原。
     /// </summary>
-    /// <param name="gameSpeed">目标游戏速度倍率（1=原速, GAME_SPEED_2X=2倍速）</param>
+    /// <param name="gameSpeed">目标游戏速度倍率（GAME_SPEED_0X=0速暂停, 1=原速, GAME_SPEED_2X=2倍速）</param>
     public void SetGameSpeed(float gameSpeed)
     {
         fightData.gameSpeed = gameSpeed;
@@ -769,6 +772,55 @@ public class GameFightLogic : BaseGameLogic
                 continue;
             creatureEntity.fightCreatureData.RefreshBaseAttribute();
         }
+    }
+    #endregion
+
+    #region 重新挑战
+    /// <summary>
+    /// 当前战斗是否支持重新挑战（系统界面「重新挑战」按钮显隐依据）
+    /// 默认不支持；支持的模式重写为 true 并实现 <see cref="CreateRestartFightData"/>。
+    /// 无尽模式(只能挑战一次,无论输赢挑战后世界即刷新)与终焉议会(暴力说服一次性)明确不支持。
+    /// </summary>
+    /// <returns>true=支持重新挑战</returns>
+    public virtual bool IsCanRestartFight()
+    {
+        return false;
+    }
+
+    /// <summary>
+    /// 构建重新挑战用的全新战斗数据（支持重开的子类重写；返回 null 表示不支持）
+    /// </summary>
+    /// <returns>从头开始挑战的战斗数据</returns>
+    protected virtual FightBean CreateRestartFightData()
+    {
+        return null;
+    }
+
+    /// <summary>
+    /// 重新挑战：放弃当前战斗进度，以同一世界/同一配置从头重新进入战斗场景（不返回基地）
+    /// <para>由系统界面(UIGameSystem)的「重新挑战」按钮触发，仅游戏中(Gaming)状态可触发。</para>
+    /// <para>重开=全新挑战：清理深渊馈赠、还原阵容生物战斗状态、本场已入账的魔晶/经验先落盘再重开；</para>
+    /// <para>终焉议会 EndGame 消耗型议案在此不消耗（与 ExitFightAndReturnToBase 中途退出同口径，议案延续到重开后的战斗）。</para>
+    /// </summary>
+    public void RestartFight()
+    {
+        //仅支持重开的模式且游戏中状态可触发
+        if (!IsCanRestartFight() || gameState != GameStateEnum.Gaming)
+            return;
+        FightBean restartFightData = CreateRestartFightData();
+        if (restartFightData == null)
+            return;
+        UIHandler.Instance.ShowMask(1, null, () =>
+        {
+            //清理深渊馈赠数据(重开=全新挑战, 不携带本场已选馈赠)
+            BuffHandler.Instance.manager.ClearAbyssalBlessing();
+            //还原阵容生物战斗状态(Fight/Rest → Idle)，新战斗重新读取阵容时卡片全部从头开始
+            RestoreDefenseCreatureFightState();
+            //保存用户数据(本场已拾取魔晶/已发经验等即时入账数据统一落盘)
+            GameDataHandler.Instance.manager.SaveUserData();
+            //重新进入战斗场景(内部 ClearWorldData 会走当前逻辑的 ClearGame 完整清理, 再按新数据重开)
+            WorldHandler.Instance.EnterGameForFightScene(restartFightData);
+        }, false);
     }
     #endregion
 

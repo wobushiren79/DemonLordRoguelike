@@ -13,5 +13,7 @@ public partial class UIGameSystem
 
     public Button ui_BtnExitFight;
 
+    public Button ui_BtnRestartFight;
+
 
 }

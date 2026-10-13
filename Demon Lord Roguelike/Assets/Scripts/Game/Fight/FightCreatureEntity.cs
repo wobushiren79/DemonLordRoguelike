@@ -275,6 +275,51 @@ public partial class FightCreatureEntity
     }
 
     /// <summary>
+    /// 回复生命+护甲（血甲双补，愈之魅魔 500001 用）：总回复量=攻击方快照 attackerDamage 一份，
+    /// 先补生命、生命补满后余量再补护甲（镜像受击 ChangeDRAndHP 的先甲后血）；各分段按自身缺口截断，血甲全满的余量丢弃。
+    /// <para>例：总量10——血10/100→血+10；血95/100→血+5满、甲+5；血满甲10/100→甲+10。</para>
+    /// <para>BUFF挂载与命中音效收口到第一有效分段（血优先，血无缺口则甲），防同帧叠播；跳字各分段各跳各的真实值（无缺口不分段、不跳0）。</para>
+    /// </summary>
+    public void RegainHPAndDR(BaseAttackMode baseAttackMode)
+    {
+        int totalRegain = baseAttackMode.attackModeData.attackerDamage;
+        if (totalRegain <= 0)
+            return;
+        string attackerId = baseAttackMode.attackModeData.attackerId;
+        string attackedId = fightCreatureData.creatureData.creatureUUId;
+        //先血后甲串联分配：血缺口优先吃回复量，余量给甲；各分段不超过自身缺口（与 ChangeHP/ChangeDR 截断同口径 int 截断）
+        int hpLack = (int)fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.HP) - fightCreatureData.HPCurrent;
+        int drLack = (int)fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.DR) - fightCreatureData.DRCurrent;
+        int hpPart = Math.Min(totalRegain, Math.Max(hpLack, 0));
+        int drPart = Math.Min(totalRegain - hpPart, Math.Max(drLack, 0));
+        //BUFF/音效收口标志：血分段有效则由血回调执行，否则由甲回调执行
+        bool sideEffectInHP = hpPart > 0;
+        if (hpPart > 0)
+        {
+            RegainHP(attackerId, attackedId, hpPart,
+                actionForNoDead: (changeHPReal) =>
+                {
+                    AddBuff(baseAttackMode);
+                    if (changeHPReal > 0)
+                        AudioHandler.Instance.PlaySound(baseAttackMode.attackModeInfo.sound_hit);
+                });
+        }
+        if (drPart > 0)
+        {
+            RegainDR(attackerId, attackedId, drPart,
+                actionForNoDead: (changeDRReal) =>
+                {
+                    if (!sideEffectInHP)
+                    {
+                        AddBuff(baseAttackMode);
+                        if (changeDRReal > 0)
+                            AudioHandler.Instance.PlaySound(baseAttackMode.attackModeInfo.sound_hit);
+                    }
+                });
+        }
+    }
+
+    /// <summary>
     /// 回复护甲
     /// </summary>
     public void RegainDR(string attackerId, string attackedId, int drChangeData,

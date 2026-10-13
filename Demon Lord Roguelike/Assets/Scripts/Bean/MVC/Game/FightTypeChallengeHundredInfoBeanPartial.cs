@@ -95,13 +95,6 @@ public partial class FightTypeChallengeHundredInfoBean
     protected string[] rewardReputationValueList;
 
     /// <summary>
-    /// [临时]通关声望奖励(对应 excel_fight_type_challenge_hundred_info 的 reward_reputation 列)。
-    /// 因本次未跑 Unity 重新生成 Entity 而手写在 Partial(仿 ResearchInfoBean.pre_data/details 先例, 导出器按表头名反射 GetField 可正常导出/反序列化);
-    /// 重新生成 FightTypeChallengeHundredInfoBean.cs 后删除本字段(生成物自带, 重复会编译报错)。
-    /// </summary>
-    public string reward_reputation;
-
-    /// <summary>
     /// 取难度在 difficulty_levels 中的对齐下标; 不在列时取距离最近的档(理论上行被抽中即含该难度, 此为防御钳位)
     /// </summary>
     /// <param name="difficultyLevel">难度等级</param>

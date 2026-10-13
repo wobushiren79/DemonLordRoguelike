@@ -5,6 +5,22 @@ public class GameFightLogicConquer : GameFightLogic
 {
     #region 重写方法
     /// <summary>
+    /// 征服模式支持重新挑战（同一世界配置从第1关重开；深渊馈赠/奖励累计/馈赠刷新已用次数等run级数据随新 FightBean 重建归零）
+    /// </summary>
+    public override bool IsCanRestartFight()
+    {
+        return true;
+    }
+
+    /// <summary>
+    /// 构建重新挑战数据：以同一传送门随机数据(gameWorldInfoRandomData)重建征服战斗（关卡回到第1关、进攻波次重新随机）
+    /// </summary>
+    protected override FightBean CreateRestartFightData()
+    {
+        return new FightBeanForConquer((fightData as FightBeanForConquer).gameWorldInfoRandomData);
+    }
+
+    /// <summary>
     /// 加载场景之后
     /// </summary>
     public override async Task PreGameForAfterLoadFightScene()

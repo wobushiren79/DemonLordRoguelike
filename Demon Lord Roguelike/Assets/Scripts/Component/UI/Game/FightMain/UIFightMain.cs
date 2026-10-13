@@ -20,12 +20,12 @@ public partial class UIFightMain : BaseUIComponent
         base.RefreshUI(isOpenInit);
         if (!isOpenInit)
             RefreshUIData();
-        //UI关闭期间窗口尺寸可能变化过(OnRectTransformDimensionsChange对隐藏物体不触发)，统一按当前画布宽度重排一次卡片(空列表为空循环)
+        //UI关闭期间窗口尺寸可能变化过(OnRectTransformDimensionsChange对隐藏物体不触发)，统一按当前CardContent实际宽度重排一次卡片(空列表为空循环)
         RefreshCardListPos();
     }
 
     /// <summary>
-    /// 画布尺寸变化回调(窗口拉伸/修改分辨率时由Unity自动触发，编辑器与打包版均生效)：卡片布局依赖画布宽度，需重新计算排布
+    /// 画布尺寸变化回调(窗口拉伸/修改分辨率时由Unity自动触发，编辑器与打包版均生效)：卡片布局依赖CardContent实际宽度(拉伸锚点随画布变化)，需重新计算排布
     /// </summary>
     protected void OnRectTransformDimensionsChange()
     {
@@ -81,6 +81,9 @@ public partial class UIFightMain : BaseUIComponent
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var listCreatureData = gameFightLogic.fightData.dlDefenseCreatureData.List;
 
+        //按键提示组切换为战斗模式(WASD移动镜头/F1 2倍速/F2 加快进攻节奏/Space 0倍速)
+        if (ui_UIViewPressControlForGameBase != null)
+            ui_UIViewPressControlForGameBase.SetShowMode(UIViewPressControlForGameBase.ShowModeEnum.GameFight);
         //初始所有卡片
         SetCreatureCardList(listCreatureData);
         //初始进攻进度
@@ -112,6 +115,8 @@ public partial class UIFightMain : BaseUIComponent
         RefreshQuickButtonShow(isConquer, gameFightLogic);
         //2倍速按钮显隐：仅征服模式且已解锁当前世界的「2倍速游戏」研究才显示
         RefreshSpeed2ButtonShow(isConquer, gameFightLogic);
+        //0速按钮显隐：仅征服模式且已解锁当前世界的「0倍速游戏」研究才显示
+        RefreshSpeed0ButtonShow(isConquer, gameFightLogic);
 
         float progressAttack = gameFightLogic.fightData.fightAttackData.GetAttackProgress();
         float progressAttackTime = 0;
@@ -173,6 +178,9 @@ public partial class UIFightMain : BaseUIComponent
             isShowQuick = userUnlock.CheckIsUnlockWorldQuickAttack(worldId, difficultyLevel);
         }
         ui_UIViewFightMainAttCreateProgress.SetQuickButtonShow(isShowQuick);
+        //同步 F2(加快进攻节奏)按键提示显隐,与Quick按钮同门控
+        if (ui_UIViewPressControlForGameBase != null)
+            ui_UIViewPressControlForGameBase.SetQuickKeyShow(isShowQuick);
     }
 
     /// <summary>
@@ -198,6 +206,37 @@ public partial class UIFightMain : BaseUIComponent
         //显示时同步一次选中态，保证与当局游戏速度一致
         if (isShowSpeed2)
             ui_UIViewFightMainAttCreateProgress.RefreshSpeed2State();
+        //同步 F1(2倍速)按键提示显隐,与2倍速按钮同门控
+        if (ui_UIViewPressControlForGameBase != null)
+            ui_UIViewPressControlForGameBase.SetSpeed2KeyShow(isShowSpeed2);
+    }
+
+    /// <summary>
+    /// 刷新 0速 按钮显隐与选中态
+    /// 仅征服模式、且已解锁当前世界「当前难度」的「0倍速游戏」研究时显示；选中态跟随 fightData.gameSpeed（BOSS关重载场景后不丢失）
+    /// </summary>
+    /// <param name="isConquer">当前是否征服模式</param>
+    /// <param name="gameFightLogic">当前战斗逻辑</param>
+    public void RefreshSpeed0ButtonShow(bool isConquer, GameFightLogic gameFightLogic)
+    {
+        bool isShowSpeed0 = false;
+        //仅征服模式才有世界概念，非征服模式一律隐藏 0速
+        if (isConquer
+            && gameFightLogic.fightData is FightBeanForConquer fightDataForConquer
+            && fightDataForConquer.gameWorldInfoRandomData != null)
+        {
+            long worldId = fightDataForConquer.gameWorldInfoRandomData.worldId;
+            int difficultyLevel = fightDataForConquer.gameWorldInfoRandomData.difficultyLevel;
+            var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+            isShowSpeed0 = userUnlock.CheckIsUnlockWorldSpeed0(worldId, difficultyLevel);
+        }
+        ui_UIViewFightMainAttCreateProgress.SetSpeed0ButtonShow(isShowSpeed0);
+        //显示时同步一次选中态，保证与当局游戏速度一致
+        if (isShowSpeed0)
+            ui_UIViewFightMainAttCreateProgress.RefreshSpeed0State();
+        //同步 Space(0倍速)按键提示显隐,与0速按钮同门控
+        if (ui_UIViewPressControlForGameBase != null)
+            ui_UIViewPressControlForGameBase.SetSpeed0KeyShow(isShowSpeed0);
     }
 
     /// <summary>
@@ -336,8 +375,8 @@ public partial class UIFightMain : BaseUIComponent
     {
         float cardW = ui_UIViewCreatureCardItemForFight.sizeDelta.x + 10;
         float cardH = ui_UIViewCreatureCardItemForFight.sizeDelta.y;
-        //可用宽度取根节点逻辑宽(根RectTransform全屏拉伸,宽=画布逻辑宽1920/uiSize)；不能用Screen.width物理像素,分辨率或uiSize变化后单位不一致会算错间距
-        float screenWidth = ((RectTransform)transform).rect.width - cardW;
+        //可用宽度直接取预制里CardContent的运行时实际宽度(锚点拉伸后的rect.width)，排布范围在预制体上调节即可
+        float screenWidth = ui_CardContent.rect.width - cardW;
 
         //如果超出了屏幕
         if ((cardW * maxIndex) > screenWidth)

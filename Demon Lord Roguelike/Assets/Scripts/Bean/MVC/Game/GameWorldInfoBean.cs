@@ -36,6 +36,10 @@ public partial class GameWorldInfoBean : BaseBean
 	/// </summary>
 	public long unlock_id_speed2;
 	/// <summary>
+	///解锁ID-征服模式-0倍速游戏起始ID
+	/// </summary>
+	public long unlock_id_speed0;
+	/// <summary>
 	///地图坐标
 	/// </summary>
 	public string map_pos;

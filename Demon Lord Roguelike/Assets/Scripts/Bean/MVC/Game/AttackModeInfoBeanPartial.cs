@@ -249,6 +249,25 @@ public partial class AttackModeInfoBean
     }
     #endregion
 
+    #region 爆炸半径伤害衰减(Falloff 配置，存于 other_data)
+    protected bool isInitFalloffMinRate = false;
+    protected float falloffMinRate = 0.5f;
+
+    /// <summary>
+    /// 获取爆炸半径边缘最低伤害倍率（从通用扩展列 other_data 中解析 falloff_min 键；缓存解析结果）。
+    /// <para>默认 0.5=半径最边缘目标伤害为中心点的 1/2，伤害按距爆心距离线性衰减（中心全额→边缘本值）；配 1=不衰减全额伤害。目前仅 AttackModeExplosion（自爆史莱姆 300001/敢死队 300002）使用。</para>
+    /// </summary>
+    public float GetFalloffMinRate()
+    {
+        if (!isInitFalloffMinRate)
+        {
+            ParseOtherDataFloat("falloff_min", ref falloffMinRate);
+            isInitFalloffMinRate = true;
+        }
+        return falloffMinRate;
+    }
+    #endregion
+
     #region 重力加速度(Gravity 配置，存于 other_data)
     protected bool isInitGravity = false;
     protected float gravity = 9.81f;

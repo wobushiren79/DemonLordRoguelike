@@ -51,6 +51,9 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
             ui_RenameBtn_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(30008), PopupEnum.Text);
         }
 
+        //清空按钮常驻显示,挂悬停气泡
+        ui_CleanBtn_PopupButtonCommonView.SetData(TextHandler.Instance.GetTextById(30010), PopupEnum.Text);
+
         //默认打开第一套阵容
         currentLineupIndex = 1;
         //防御性清理拖拽标记(拖拽中意外关闭UI时 currentDragCard 可能残留,导致悬停置顶失效)
@@ -430,6 +433,10 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         {
             OnClickForRename();
         }
+        else if (viewButton == ui_CleanBtn_Button)
+        {
+            OnClickForClean();
+        }
     }
 
     public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
@@ -470,6 +477,44 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
             UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(3000003), 1);
         };
         UIHandler.Instance.ShowDialogRename(dialogRenameData);
+    }
+
+    /// <summary>
+    /// 点击清空:阵容非空时弹确认框,确认后清空当前阵容的所有魔物
+    /// </summary>
+    public void OnClickForClean()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        //阵容为空时不处理(无可清空内容,不弹确认框)
+        if (userData.GetLineupCreatureIds(currentLineupIndex).Count == 0)
+            return;
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = TextHandler.Instance.GetTextById(30011);
+        dialogData.actionSubmit = (view, data) =>
+        {
+            CleanCurrentLineup();
+        };
+        UIHandler.Instance.ShowDialogNormal(dialogData);
+    }
+
+    /// <summary>
+    /// 清空当前阵容的所有魔物(与单卡移除一致,由 CloseUI 统一落盘)
+    /// </summary>
+    public void CleanCurrentLineup()
+    {
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        //复制列表后再逐个移除(边遍历边删会改原集合)
+        var listLineupCreatureIds = new List<string>(userData.GetLineupCreatureIds(currentLineupIndex));
+        foreach (var creatureUUId in listLineupCreatureIds)
+        {
+            userData.RemoveLineupCreature(currentLineupIndex, creatureUUId);
+        }
+        //移除所有展示中的阵容卡片
+        RemoveLineupCardShow();
+        //刷新背包卡片选中状态
+        ui_UIViewCreatureCardList.RefreshAllCard();
+        //刷新UI数据
+        RefreshUIData();
     }
     #endregion
 

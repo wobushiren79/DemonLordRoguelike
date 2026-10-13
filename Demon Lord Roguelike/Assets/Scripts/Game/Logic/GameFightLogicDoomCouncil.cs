@@ -24,6 +24,14 @@ public class GameFightLogicDoomCouncil : GameFightLogic
     }
 
     /// <summary>
+    /// 终焉议会暴力说服不支持重新挑战（一次性战斗：失败即议案否决，不允许反复重打刷到赢，系统界面不显示「重新挑战」）
+    /// </summary>
+    public override bool IsCanRestartFight()
+    {
+        return false;
+    }
+
+    /// <summary>
     /// 处理结算
     /// </summary>
     public void HandleForChangeGameStateSettlement()

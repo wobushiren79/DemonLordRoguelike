@@ -20,19 +20,19 @@ public partial class StoryDetailsInfoBean : BaseBean
 	/// </summary>
 	public int step_order;
 	/// <summary>
-	///步骤类型(1对话 2镜头移动 3等待 4特效 5音效 6淡入淡出)
+	///步骤类型(1对话 2镜头移动 3等待 4特效 5音效 6淡入淡出 7UI处理)
 	/// </summary>
 	public int step_type;
 	/// <summary>
-	///执行方式(0阻塞等完成 1并发发起即下一步)
+	///执行方式(0阻塞等完成 1并发=与上一步同时发起,同组全完成才进下一步;并发步骤不要配对话)
 	/// </summary>
 	public int is_async;
 	/// <summary>
-	///参数1(对话=对话ID,&分隔连播;镜头=目标标记self/core/portal/gashapon/juicer/altar/vat/achievement/council,back=回起始位;等待=秒;特效=特效ID;音效=音效ID;淡入淡出=out淡出/in淡入)
+	///参数1(对话=对话ID,&分隔连播;镜头=目标标记self/core/portal/gashapon/juicer/altar/vat/achievement/council,back=回起始位;等待=秒;特效=特效ID;音效=音效ID;淡入淡出=out淡出/in淡入;UI处理=要隐藏的UI名字,&分隔多个)
 	/// </summary>
 	public string param_1;
 	/// <summary>
-	///参数2(镜头=时长秒默认1;特效=目标标记空=核心/魔王位;淡入淡出=时长秒默认0.5)
+	///参数2(镜头=时长秒默认1;特效=目标标记空=核心/魔王位;淡入淡出=时长秒默认0.5;UI处理=要显示的UI名字,&分隔多个)
 	/// </summary>
 	public string param_2;
 	/// <summary>

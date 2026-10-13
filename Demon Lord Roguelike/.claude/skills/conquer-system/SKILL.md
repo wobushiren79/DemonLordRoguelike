@@ -271,6 +271,10 @@ private void AddReputationForConquerComplete(FightTypeConquerInfoBean conquerInf
 
 清深渊馈赠 → 还原阵容生物战斗状态(`RestoreDefenseCreatureFightState`) → `SaveUserData` → 回基地。
 
+### 重新挑战（ESC 系统界面，2026-10 新增）
+
+征服支持重新挑战（`IsCanRestartFight()=true`）：ESC 系统界面「重新挑战」确认后，以同一 `gameWorldInfoRandomData` 重建 `FightBeanForConquer` 从第 1 关重开（不回基地）；深渊馈赠、`rewardAddItemNum`/`rewardAddSelectNum`、馈赠刷新已用次数等 run 级数据随新 bean 归零重建。通用流程（清馈赠/还原阵容状态/落盘/重进场景）见 game-fight-system SKILL「重新挑战」节。
+
 ---
 
 ## BOSS 关特写 UI (UIDialogBossShow)

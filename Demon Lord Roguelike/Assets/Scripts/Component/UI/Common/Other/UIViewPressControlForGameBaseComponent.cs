@@ -14,5 +14,9 @@ public partial class UIViewPressControlForGameBase
 
     public UIViewPressCommon ui_UIViewPressCommon_Space;
 
+    public UIViewPressCommon ui_UIViewPressCommon_F1;
+
+    public UIViewPressCommon ui_UIViewPressCommon_F2;
+
 
 }

@@ -434,6 +434,10 @@ public void OnClickForSelect(...)
 
 > 配套保留 `bool isAnimating` 做"同帧重入"双保险（ShowScreenLock 是异步 OpenUI，本帧内仍可能被点到第二次）。
 
+### 遮罩过渡期间的全局输入屏蔽（2026-10 新增）
+
+全屏过渡遮罩 `UICommonMask` 拉起期间不允许任何操作：`OpenUI` 时把现有总开关 `UIManager.CanClickUIButtons` / `CanInputActionStarted` 置 false（`BaseUIInit` 的按钮注册与快捷键分发本就走这两个门禁，遮罩的 `raycastTarget` 只挡鼠标射线、挡不住键盘，拨开关后键盘这一路同步封死）；`OnDisable` 时对称恢复 true——CloseUI/被 `OpenUIAndCloseOther` 关掉/销毁等一切隐藏路径都经 OnDisable 收口，不会遗留锁定。例外让位：`UIScreenLock` 仍在展示时 OnDisable 不恢复（独立锁屏流程由 `HideScreenLock` 负责解锁）。因此场景切换/战斗重开/退出战斗等 `ShowMask` 过渡窗口无需各自再锁输入。
+
 ---
 
 ## UI生命周期与事件
@@ -705,10 +709,10 @@ EventsInfo.Language_Change                // 语言切换
 - **目标列表**：仅 Idle 且未满级（`RarityInfoCfg.GetAscendTimeByRarity(rarity) > 0`，排除 L）。**默认排序**（`InitCreaturekDataForTarget` 内 `List.Sort`）：**阵容魔物优先**（`GetLinupIndex` 阵容序号升序，未上阵返回 0 排最后），其余稀有度升序 N→L，同稀有度按等级降序。目标/素材列表卡片（`UIViewCreatureCardItemForCreatureAscend`）带阵容标记通用控件 `ui_UIViewCreatureCardItemLineUpMark`（不在任何阵容自动隐藏，详见 creature-card-system skill）。
 - **素材列表**：Idle + 排除目标 + 排除上阵（`UserDataBean.CheckIsInAnyLineup`）+ 仅保留稀有度高于目标的魔物；可选上限做成研究 `GetUnlockCreatureVatMaterialMax()`=基础5(`UserLimmitBean.creatureVatMaterialMax`)+`UnlockEnum.CreatureVatMaterialNum`(100000008)等级(满级10)，超出弹 Toast（文本 id 80011）。`LimmitText` 经 `RefreshMaterialLimitText()` 显示「已选/上限」，满时数量转通用警示红 `ColorUtil.WrapLimitFull`。**默认排序**（`InitCreaturekDataForMaterial` 内 `List.Sort`）：目标下一阶段稀有度(=目标稀有度+1)置顶，其余稀有度升序，同稀有度等级降序。
 - **预定 BUFF**：`BuffUtil.CreateAscendRarityBuff(newRarity, materials)`（素材 BUFF 按 id 聚合，每 id 25%×数量 命中概率，命中继承并重随机数值≥素材原值；UR/L 无类型为 null）。
-- **耗时**：按源稀有度查 `RarityInfoCfg.GetAscendTimeByRarity`（excel_rarity_info 新列 `ascend_time`）作 `timeMax`；被动 tick 每秒 +1 秒。**魔晶加速研究门控**：`GetUnlockCreatureVatAddProgressLevel()`(`UnlockEnum.CreatureVatAddProgress`=100000007,level_max=5) 0级隐藏加速按钮；已研究时**恒消耗1魔晶**，等级=进度增加秒数=进度倍率(Lv N=1魔晶+N秒)，按钮文本 80009「加速进阶 +{等级}秒/晶」。
-- **临时进阶数据**：`UserAscendDetailsBean`（随存档序列化）—— `progress` 为「已累积秒数」，含 `creatureUUId`（冗余索引/兜底回查）、`creatureData`（托管的目标生物本体，含装备）、`targetRarity`/`timeMax`/`ascendBuff`，`IsComplete()` / `GetProgressNormalized()` 驱动完成判定与进度条；缸内展示与完成落地均直读 `creatureData`，不回查背包。
+- **耗时与进度（真实时间驱动）**：按源稀有度查 `RarityInfoCfg.GetAscendTimeByRarity`（excel_rarity_info 新列 `ascend_time`）作 `timeMax`；进度**不再逐秒累加**，由开始进阶本地时间戳 `startTimeTicks` 实时计算 `GetProgress()=Max(0,(Now-startTime).秒)+extraProgress`——暂停/关游戏不停，重进自动补算离线差。**魔晶加速研究门控**：`GetUnlockCreatureVatAddProgressLevel()`(`UnlockEnum.CreatureVatAddProgress`=100000007,level_max=5) 0级隐藏加速按钮；已研究时**恒消耗1魔晶**，等级=奖励进度秒数=进度倍率(Lv N=1魔晶+N秒，累入 `extraProgress`)，按钮文本 80009「加速进阶 +{等级}秒/晶」。
+- **临时进阶数据**：`UserAscendDetailsBean`（随存档序列化）——`startTimeTicks`（开始时间戳）+ `extraProgress`（魔晶奖励秒数）算出进度，旧字段 `progress` 仅作旧存档迁移源（首次读取反推后清零），含 `creatureUUId`（冗余索引/兜底回查）、`creatureData`（托管的目标生物本体，含装备）、`targetRarity`/`timeMax`/`ascendBuff`，`GetProgress()`/`IsComplete()` / `GetProgressNormalized()` 驱动完成判定与进度条；缸内展示与完成落地均直读 `creatureData`，不回查背包。
 - **进度条配色（`RefreshVatProgress`）**：`ui_ProgressText` 与 `ui_Progress`(fillAmount) 的 `color` 按归一化进度 `ColorUtil.GetProgressColor(progressNormalized)` 分段着色（与献祭成功率同口径）。
-- **存档时机**：开始进阶存一次、点完成存一次；培养过程（`GameDataHandler.HandleForAscendData` 每秒 `AddProgress()` + 广播 `CreatureAscend_AddProgress`、魔晶加速）不主动存档。
+- **存档时机**：开始进阶存一次（开始时间戳随之落盘）、点完成存一次；培养过程不主动存档（进度由时间戳算出无需存档）；`GameDataHandler.HandleForAscendData`（独立 unscaled 计时器每秒驱动，暂停照常）只做时钟回拨修正（startTime>now 时重置起点并落盘一次）+ 广播 `CreatureAscend_AddProgress` 刷新。
 - **测试模式不落盘**：上述两处直接 `SaveUserData()`，不落盘由全局 `GameDataManager.isTestSimulation`（存档层统一拦截）负责——魔物进阶测试（`TestSceneTypeEnum.CreatureVat`）与献祭测试共用该机制，见 test-system skill；本 UI 不再自带测试标记。
 - **开始进阶动画音效（`ScenePrefabForBase.BuildingVatAnimForStart`）**：素材魔物按序号 0.13s 级联错开投入（避开 0.1s 同音效防抖，每只落水各播一次 `AudioEnum.sound_water_3`，最多 10 只时最后一只也在 2s 盖盖前落水）；盖盖播 `AudioEnum.sound_door_2`；水位上升 3s 用 `PlaySoundTimedFade(AudioEnum.sound_water_1, animTimeWater, animTimeWater-0.5f, -1f)` 截断长音效并末段淡出。
 - **完成进阶收尾（`OnClickForComplete`）**：落地数据→`RemoveAscendData`→存档→清空容器后做**反馈**（胜利音效 `AudioEnum.sound_win_1` + 容器处庆祝粒子 `EffectHandler.ShowCreatureAscendCompleteEffect(pos, rarityColor)`——专用粒子 `Effect_AscendComplete_1`(白模板 ParticleSystem,运行时按新稀有度 `ui_board_color` 给 startColor 上色 = 稀有度流光) + 成功 Toast `GetTextById(80013)` state=1 绿色，口径同献祭 61007），并**重建目标列表**（`targetCreatureSelect=null`+清素材+`InitCreaturekDataForTarget()`）以反映升阶后的新稀有度，否则列表停留在进阶前状态。

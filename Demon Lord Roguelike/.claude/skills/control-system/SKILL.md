@@ -93,7 +93,7 @@ GameControlHandler.Instance.manager.controlForGameBase.EnabledControl(false);
 > 交互物体 GameObject 名字即枚举名；带 `_UUID` 后缀的（如 `Councilor_xxx`）只取下划线前段；`Enum.TryParse` 失败回退 `None`。
 > 由场景交互打开的 UI（成就/魔物进阶）用注入式退出回调 `actionForExit` 决定退出去向，`OnClickForExit` 只 `actionForExit?.Invoke()`：**各入口自行注入**——场景交互入口注入回 `UIBaseMain`，基地核心/测试入口注入回 `UIBaseCore`（不再有 UI 内的默认分支）。
 
-**供 UI 轮询的只读状态**（按键提示组 `UIViewPressControlForGameBase` 每帧读取，见 ui-framework / ui-components 域）：`IsInteractionShowing`(=交互提示物体 `controlTargetForInteraction.activeSelf`，即「当前可交互」)、`DashCdRemain`(=突进冷却剩余 `_dashCdRemain` 只读)；CD 总时长由 UI 侧实时读 `UserUnlockBean.GetUnlockSpaceDashCD()`。
+**供 UI 轮询的只读状态**（按键提示组 `UIViewPressControlForGameBase` 仅 GameBase 模式每帧读取；GameFight 战斗模式不轮询——E 恒隐、无突进 CD，见 ui-framework / ui-components 域）：`IsInteractionShowing`(=交互提示物体 `controlTargetForInteraction.activeSelf`，即「当前可交互」)、`DashCdRemain`(=突进冷却剩余 `_dashCdRemain` 只读)；CD 总时长由 UI 侧实时读 `UserUnlockBean.GetUnlockSpaceDashCD()`。
 
 ## 战斗场景控制（ControlForGameFight）
 

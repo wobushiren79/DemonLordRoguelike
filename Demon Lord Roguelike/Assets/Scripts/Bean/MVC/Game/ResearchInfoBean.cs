@@ -55,6 +55,13 @@ public partial class ResearchInfoBean : BaseBean
 	public string name_language { get => _name_language.Get(() => TextHandler.Instance.GetTextById(ResearchInfoCfg.fileName, name)); set => _name_language.Set(value); }
 	private LanguageCache _name_language;
 	/// <summary>
+	///详情-中文
+	/// </summary>
+	public long details;
+	[JsonIgnore]
+	public string details_language { get => _details_language.Get(() => TextHandler.Instance.GetTextById(ResearchInfoCfg.fileName, details)); set => _details_language.Set(value); }
+	private LanguageCache _details_language;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;
@@ -64,6 +71,7 @@ public partial class ResearchInfoBean : BaseBean
 	public override void CombineModReferenceIds(int modId)
 	{
 		if (name > 0) name = ResearchInfoCfg.CombineModId(modId, name);
+		if (details > 0) details = ResearchInfoCfg.CombineModId(modId, details);
 	}
 }
 public partial class ResearchInfoCfg : BaseCfg<long, ResearchInfoBean>

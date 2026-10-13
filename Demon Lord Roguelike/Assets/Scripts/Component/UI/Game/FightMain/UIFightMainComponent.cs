@@ -19,5 +19,7 @@ public partial class UIFightMain
 
     public RectTransform ui_UIViewCreatureCardItemForFight;
 
+    public UIViewPressControlForGameBase ui_UIViewPressControlForGameBase;
+
 
 }

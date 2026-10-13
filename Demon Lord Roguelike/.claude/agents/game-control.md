@@ -58,7 +58,7 @@ ControlForGameFight  - 战斗场景控制：WASD/右键拖拽移镜头、左键�
 - **动画**：`PlayAnimForControlTarget` 用 `SpineAnimationStateEnum`（Idle/Walk）驱动 `skeletonAnimation`，去重避免重复切换；`SetCreatureData` 换骨架后重置 `creatureAnimEnum=None`（轨道已清空，不重置则再进基地/换幻化后 Idle 被去重跳过、角色一直静止）。
 - **走路声**：移动中 `PlayLoopSound(AudioEnum.sound_walk_1, pitch:1.5f)`（加快 1.5 倍速，幂等），静止/禁用时 `StopLoopSound`。
 - **交互**：`HandleForInteraction` 每 0.2s 用 `RayUtil.OverlapToSphere` 探 `LayerInfo.Interaction`，命中显示交互提示气泡；按 E(`inputActionUseE`)抬起时 `GetInteractionEnum`→按 `ControlInteractionEnum` 打开对应 UI/逻辑并播 `sound_btn_1`。
-- **供 UI 轮询的只读状态**：`IsInteractionShowing`（=交互提示物体 `controlTargetForInteraction.activeSelf`，即「当前可交互」）与 `DashCdRemain`（突进冷却剩余）供按键提示组 `UIViewPressControlForGameBase`（UIBaseMain/UIDoomCouncilMain 子视图，见 ui-components）每帧轮询 E 键显隐与 Space CD 遮罩；CD 总时长由 UI 侧实时读 `GetUnlockSpaceDashCD()`。
+- **供 UI 轮询的只读状态**：`IsInteractionShowing`（=交互提示物体 `controlTargetForInteraction.activeSelf`，即「当前可交互」）与 `DashCdRemain`（突进冷却剩余）供按键提示组 `UIViewPressControlForGameBase`（UIBaseMain/UIDoomCouncilMain/UIFightMain 子视图，仅 GameBase 模式轮询 E 键显隐与 Space CD 遮罩；GameFight 战斗模式不轮询，见 ui-components）使用；CD 总时长由 UI 侧实时读 `GetUnlockSpaceDashCD()`。
 - **交互名字**：`GetInteractionEnumName` 用 `textId = 2000 + (int)枚举` 走 `TextHandler.GetTextById` 取多语言。
 - **输入反订阅**：`Awake` 订阅 E/Jump 的 `started`，`OnDestroy` 对称反订阅，避免回调悬挂。
 

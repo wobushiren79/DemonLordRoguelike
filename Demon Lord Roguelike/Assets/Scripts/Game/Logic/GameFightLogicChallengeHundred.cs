@@ -28,6 +28,22 @@ public class GameFightLogicChallengeHundred : GameFightLogic
     {
         return true;
     }
+
+    /// <summary>
+    /// 挑战100勇士支持重新挑战（同一冻结配置行/冻结奖励从头重打）
+    /// </summary>
+    public override bool IsCanRestartFight()
+    {
+        return true;
+    }
+
+    /// <summary>
+    /// 构建重新挑战数据：以同一传送门随机数据(gameWorldInfoRandomData, 含冻结配置行 challengeHundredRowId 与冻结宝箱奖励)重建挑战100勇士战斗
+    /// </summary>
+    protected override FightBean CreateRestartFightData()
+    {
+        return new FightBeanForChallengeHundred((fightData as FightBeanForChallengeHundred).gameWorldInfoRandomData);
+    }
     #endregion
 
     #region 状态处理

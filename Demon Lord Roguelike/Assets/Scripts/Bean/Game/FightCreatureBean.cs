@@ -369,6 +369,23 @@ public class FightCreatureBean
             RefreshBaseAttribute();
         }
     }
+
+    /// <summary>
+    /// 当前生命值是否不满（与 ChangeHP 截断同口径：比较上限的 int 截断值；
+    /// 直接用 float 上限比较时，百分比加成（稀有度/研究/强度倍率）产生的小数尾巴会让满血 int 值恒小于 float 上限，被回复系索敌误判为"不满"而无限奶 0）
+    /// </summary>
+    public bool IsHPNotFull()
+    {
+        return HPCurrent < (int)GetAttribute(CreatureAttributeTypeEnum.HP);
+    }
+
+    /// <summary>
+    /// 当前护甲值是否不满（与 ChangeDR 截断同口径；小数尾巴问题同 <see cref="IsHPNotFull"/>）
+    /// </summary>
+    public bool IsDRNotFull()
+    {
+        return DRCurrent < (int)GetAttribute(CreatureAttributeTypeEnum.DR);
+    }
     #endregion
 
     #region 改变魔力

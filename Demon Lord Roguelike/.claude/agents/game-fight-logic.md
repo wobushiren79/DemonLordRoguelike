@@ -19,11 +19,11 @@ watched_files:
 
 ### 战斗逻辑类
 - **GameFightLogic** - 战斗逻辑基类，继承 BaseGameLogic
-- **GameFightLogicConquer** - 征服模式战斗
-- **GameFightLogicDoomCouncil** - 终焉议会战斗
-- **GameFightLogicInfinite** - 无限/无尽模式战斗（`FightBeanForInfinite` 持有同难度征服行 `fightTypeConquerInfo`[复用其怪物池/数量/时长/场景/魔晶掉落]+无尽行 `fightTypeInfiniteInfo`[每轮强度倍率,null 降级不阻断]+`roundNum`[从1起]；`InitData` 建核心/收阵容/取BOSS场景池 `GetRandomFightScene(true)`/填充第1轮；`AppendNextRoundAttackData()` 追加下一轮到队列末尾[不重建,每轮=征服BOSS关同款：普通怪 attack_show_time 内分桶随机 + BOSS [50%,90%] 错开0.3s + 首只携带 bossShowNpcIds 每轮弹特写，数量固定不递推]，`GetRoundIntensityRate(round)`=征服 attack_intensity_baserate × 无尽 round_intensity_addrate^(round-1) × 终焉议会强度议案。**永不胜利双重保险**：①重写 `TryRefillNextAttackQueue()`→追加下一轮返 true，基类两层接入[取波次 null 时 + 每次出怪后队列已空立即补]保证队列恒非空无真空窗口；②重写 `CheckGameEnd()` 屏蔽胜利判定只判魔王死亡。结算退出 `ActionForUIFightSettlementExit`：议案EndGame消耗钩子→ClearAbyssalBlessing→还原阵容战斗状态→SaveUserData→回基地，无经验/声望/成就/宝箱/领奖[UIFightSettlement 仅战绩排行榜]，不调 RefillPortalRefreshNum/ClearPortalWorldInfoRandomData[无尽无通关语义]）
-- **GameFightLogicTest** - 测试战斗
-- **GameFightLogicChallengeHundred** - 是魔王就挑战100勇士（单关100只怪；胜→阵容经验+UIFightSettlement→3箱3抽全手动领奖，败→返回基地；不发成就、无关卡间深渊馈赠，通关声望需解锁研究 ChallengeHundredReputationReward(100200011) 由 `AddReputationForChallengeHundredComplete` 按冻结难度 `reward_reputation` 发放；`IsSkipPutCardMPCost()=>true` 魔王蓝量无限）
+- **GameFightLogicConquer** - 征服模式战斗（支持重新挑战：以同一 `gameWorldInfoRandomData` 重建 `FightBeanForConquer`，关卡回第1关）
+- **GameFightLogicDoomCouncil** - 终焉议会战斗（不支持重新挑战：暴力说服一次性）
+- **GameFightLogicInfinite** - 无限/无尽模式战斗（不支持重新挑战：无尽世界只能挑战一次；`FightBeanForInfinite` 持有同难度征服行 `fightTypeConquerInfo`[复用其怪物池/数量/时长/场景/魔晶掉落]+无尽行 `fightTypeInfiniteInfo`[每轮强度倍率,null 降级不阻断]+`roundNum`[从1起]；`InitData` 建核心/收阵容/取BOSS场景池 `GetRandomFightScene(true)`/填充第1轮；`AppendNextRoundAttackData()` 追加下一轮到队列末尾[不重建,每轮=征服BOSS关同款：普通怪 attack_show_time 内分桶随机 + BOSS [50%,90%] 错开0.3s + 首只携带 bossShowNpcIds 每轮弹特写，数量固定不递推]，`GetRoundIntensityRate(round)`=征服 attack_intensity_baserate × 无尽 round_intensity_addrate^(round-1) × 终焉议会强度议案。**永不胜利双重保险**：①重写 `TryRefillNextAttackQueue()`→追加下一轮返 true，基类两层接入[取波次 null 时 + 每次出怪后队列已空立即补]保证队列恒非空无真空窗口；②重写 `CheckGameEnd()` 屏蔽胜利判定只判魔王死亡。结算退出 `ActionForUIFightSettlementExit`：议案EndGame消耗钩子→ClearAbyssalBlessing→还原阵容战斗状态→SaveUserData→回基地，无经验/声望/成就/宝箱/领奖[UIFightSettlement 仅战绩排行榜]，不调 RefillPortalRefreshNum/ClearPortalWorldInfoRandomData[无尽无通关语义]）
+- **GameFightLogicTest** - 测试战斗（支持重新挑战：复用同一 fightData，进攻队列从 `fightAttackDataRemark` 快照深拷贝还原）
+- **GameFightLogicChallengeHundred** - 是魔王就挑战100勇士（支持重新挑战：以同一 `gameWorldInfoRandomData`[含冻结配置行/冻结奖励]重建；单关100只怪；胜→阵容经验+UIFightSettlement→3箱3抽全手动领奖，败→返回基地；不发成就、无关卡间深渊馈赠，通关声望需解锁研究 ChallengeHundredReputationReward(100200011) 由 `AddReputationForChallengeHundredComplete` 按冻结难度 `reward_reputation` 发放；`IsSkipPutCardMPCost()=>true` 魔王蓝量无限）
 
 ### 游戏状态流转
 ```
@@ -62,10 +62,16 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 - `UpdateGameForAttackCreate(updateTime)` - 逐帧累加，达标即出下一波：`fightAttackData.GetNextAttackDetailData()` 取波次 → 刷新间隔 `timeUpdateTargetForAttackCreate=timeNextAttack` → BOSS 首波 `ShowBossDialog` → `CreatureHandler.CreateAttackCreature`。**队列补充虚钩子 `TryRefillNextAttackQueue()`**（protected virtual，基类默认 false=不补充，维持征服等模式"无下一波即进攻结束"语义）两层接入，两处对称：①取波次返回 null（队列耗尽）时先调它，true 则重取一次；②每次 `CreateAttackCreature` 出怪后检查 `queueAttackDetails.Count==0` 立即调（取出本轮最后一波即当场补下一轮），消除"最后一次出怪到下次计时器达标"之间的队列真空窗口。无尽模式重写该钩子追加下一轮，配合其 `CheckGameEnd()` 重写（屏蔽胜利只判魔王死）构成双重保险。
 - `QuickAdvanceAttackCreate(advanceRate=0.1f)`（public）- Quick 按钮调用：立即推进「`timeAttackTotal*advanceRate`(默认10%)」的时间，用与逐帧刷怪同一套步进语义**逐波消费**推进时间、把这段时间本应生成的波次全部立即生成；队列耗尽先对称调 `TryRefillNextAttackQueue()`（Quick 对无尽隐藏，属防御性接入），仍无波次则停止、进度封顶 100%；返回推进后的最新进度(0~1)。无消耗无冷却。Quick 按钮与世界绑定的显隐见 game-fight-system / research-system SKILL。
 
-### 游戏速度（2倍速 Speed2）
-- `UpdateGame` 的 `updateTime = Time.deltaTime * fightData.gameSpeed`——游戏时间流速倍率挂在 fightData 上（默认1，仅本场战斗有效，不改 Time.timeScale）。
-- `SetGameSpeed(float)`（public）- 2倍速按钮入口：写 `fightData.gameSpeed` 并 `RefreshAllCreatureAnimTimeScale()` 给全部在场生物（防守核心+进攻/防守）`SetAnimTimeScale(gameSpeed)`（=`SkeletonAnimation.timeScale`）；新建生物在 `FightCreatureEntity.SetData` 里按当前速度自动初始化。
-- `GetCurrentGameSpeed()`（static）- 当前战斗速度（非战斗逻辑/无 fightData 恒1）；`GetFightDeltaTime()`（static）= `Time.deltaTime × GetCurrentGameSpeed()`——**不经 UpdateGame 驱动的战斗系统（AI意图、弹道、掉落物寿命）统一用它替代 `Time.deltaTime`**，新增战斗内计时逻辑同此约定。常量 `GAME_SPEED_2X = 2`。2倍速按钮显隐/研究门控见 game-fight-system / research-system SKILL。
+### 游戏速度（Speed0 0速暂停 / Speed2 2倍速）
+- `UpdateGame` 的 `updateTime = Time.deltaTime * fightData.gameSpeed`——游戏时间流速倍率挂在 fightData 上（默认1，仅本场战斗有效，不改 Time.timeScale）；`gameSpeed=0` 即战斗暂停（一切走游戏速度的逻辑冻结）。
+- `SetGameSpeed(float)`（public）- Speed0/Speed2 按钮入口：写 `fightData.gameSpeed` 并 `RefreshAllCreatureAnimTimeScale()` 给全部在场生物（防守核心+进攻/防守）`SetAnimTimeScale(gameSpeed)`（=`SkeletonAnimation.timeScale`，0=动画定格）；新建生物在 `FightCreatureEntity.SetData` 里按当前速度自动初始化。
+- `GetCurrentGameSpeed()`（static）- 当前战斗速度（非战斗逻辑/无 fightData 恒1）；`GetFightDeltaTime()`（static）= `Time.deltaTime × GetCurrentGameSpeed()`——**不经 UpdateGame 驱动的战斗系统（AI意图、弹道、掉落物寿命）统一用它替代 `Time.deltaTime`**，新增战斗内计时逻辑同此约定。常量 `GAME_SPEED_0X = 0`（Speed0 暂停，研究门控）、`GAME_SPEED_2X = 2`（Speed2 研究门控）；按钮显隐/互斥/快捷键(F1=Speed0/F2=Speed2)见 game-fight-system SKILL，Speed0/Speed2 研究门控见 research-system SKILL。
+
+### 重新挑战（ESC 系统界面「重新挑战」按钮，2026-10 新增）
+- `IsCanRestartFight()`（virtual，基类默认 false=不支持）——按钮显隐依据；`CreateRestartFightData()`（protected virtual，基类默认 null）——构建从头开始的全新战斗数据。支持矩阵：征服/挑战100勇士/测试=支持；无尽=不支持（只能挑战一次，输赢后传送门世界即刷新）；终焉议会=不支持（暴力说服一次性，不允许重打刷赢）。
+- `RestartFight()`（public，UIGameSystem 确认弹窗后调用，仅 Gaming 状态生效）：ShowMask → `ClearAbyssalBlessing`（重开=全新挑战不携带已选馈赠）→ `RestoreDefenseCreatureFightState` → `SaveUserData`（本场已入账魔晶/经验落盘）→ `WorldHandler.EnterGameForFightScene(新数据)`（内部 ClearWorldData 走当前逻辑 ClearGame 完整清理再重开）。**议案 EndGame 消耗钩子不触发**（与 ExitFightAndReturnToBase 中途退出同口径，议案延续到重开后的战斗）。
+- 各模式重建方式：征服/挑战100勇士 = `new FightBeanForXxx(gameWorldInfoRandomData)`（传送门冻结数据重开：关卡回第1关、馈赠/奖励累计/馈赠刷新次数等 run 级数据随新 bean 归零）；测试 = 进攻队列从 `fightAttackDataRemark` 深拷贝还原后复用同一 fightData（结算界面「下一个」已重构为走 `CreateRestartFightData` 同一路径）。
+- UI 侧：`UIGameSystem.RefreshButtonShow` 按 `IsCanRestartFight()` 控制 `ui_BtnRestartFight` 显隐（预制体 BtnRestartFight 排在 BtnExitFight 之前，VerticalLayoutGroup 自动布局），确认弹窗文本 UIText 504、按钮文本 UIText 49005。遮罩过渡期间的 ESC/点击由遮罩统一锁定（`UICommonMask` 拉起即置 `CanClickUIButtons/CanInputActionStarted=false`，隐藏即恢复，见 ui-framework SKILL「遮罩过渡期间的全局输入屏蔽」），无需本流程单独锁输入。
 
 ### 防守属性重算（深渊馈赠联动）
 - `RefreshAllDefenseCreatureAttribute()`（public）- 刷新防守核心 + 全部防守魔物 `RefreshBaseAttribute`（由原 `EventForAbyssalBlessingChange` 的循环抽出，后者改为调它）。供动态数值BUFF（加成率随场上魔物数/累计击杀数变化；馈赠侧曾用于都是兄弟/杀红了眼、现役无配置，稀有度BUFF侧现役「独行者」）在战况变化时重算属性。

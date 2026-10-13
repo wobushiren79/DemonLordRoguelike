@@ -18,5 +18,7 @@ public partial class UICreatureAddAttribute
 
     public Button ui_BtnConfirm;
 
+    public UIViewCreatureAddAttributeItem ui_UIViewCreatureAddAttributeItem_AddLife;
+
 
 }

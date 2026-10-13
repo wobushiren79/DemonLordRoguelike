@@ -354,6 +354,7 @@ foreach (var itemData in GameWorldInfoCfg.GetAllData())
 - **测试场景**：基础设置区的「测试场景」**下拉选择**（原手填「测试场景 ID」IntField 已改下拉），选项 `[id] 备注名`（FightScene.remark，空备注回退场景预制名 name_res），数据源 `FightSceneCfg.GetAllArrayData()`（`EnsureFightSceneOptions` 懒加载，按 id 排序）。首项固定「(手动输入)」占位——当前 `fightSceneId` 不在配置中时显示占位且**不覆盖原值**，选中有效项才覆盖；旁侧「🔄」清缓存 + `ClearCfgBaseStaticCache(typeof(FightSceneCfg))` 重建、「📂 场景表」打开 Excel；配置读取失败时回退手动 IntField + 警告。字段 `fightSceneId`（int，EditorPrefs 持久化，默认 10001）不变，`GetTestData()` 照旧存入 `fightData.fightSceneId`。
 - **魔王(防守核心)生物**：由基础设置区的「魔王生物 ID」(`fightDefenseCoreId`，EditorPrefs 持久化，默认 `2001` 骷髅战士)决定，`GetTestData()` 用它构建 `fightData.fightDefenseCoreData`（原硬编码 2001 已改为该字段）。
 - **魔王蓝量**：基础设置区的「魔王蓝量」(`fightDemonLordMP`，EditorPrefs 持久化 float，默认 `9999`)，`GetTestData()` 存入 `FightBeanForTest.testDemonLordMP`，由 `GameFightLogicTest.PreGameForAfterCreateDefenseCore()` 在防守核心创建后统一应用：设 `MPCurrent = testDemonLordMP`，并在配置 MP 上限不足时同步把 `dicAttribute[MP]` 提升到该值（否则 `ChangeMP` 消耗时会把超上限蓝量一次夹回配置上限）。应用在馈赠添加**之后**（AddAbyssalBlessing 触发的 RefreshBaseAttribute 会重算 dicAttribute，顺序颠倒会把上限提升冲掉；重开战斗走同一钩子故每场一致）。**MP 被「防守方固定属性」固定时蓝量设置让位**（固定值即上限，当前蓝量=固定值）。
+- **重新挑战/重开**：测试模式支持 ESC 系统界面「重新挑战」（`IsCanRestartFight()=true`）；`CreateRestartFightData()` 从 `fightAttackDataRemark` 快照深拷贝还原进攻队列后复用同一 `fightData` 重开，结算界面「下一个」(`ActionForUIFightSettlementNext`) 已重构为走同一 `CreateRestartFightData` 路径（2026-10）。
 
 ### 防守方固定属性设置（基础值替换）
 

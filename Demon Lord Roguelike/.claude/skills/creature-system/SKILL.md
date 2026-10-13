@@ -289,6 +289,8 @@ UnderAttack(BaseAttackMode)
         └── HP > 0 → 播放受击动画
 ```
 
+> **⚠️「血/甲不满」判定必须走 `FightCreatureBean.IsHPNotFull()` / `IsDRNotFull()`**：`HPCurrent`/`DRCurrent` 是 int，初始化与 `ChangeHP`/`ChangeDR` 截断都用 `(int)GetAttribute(...)` 向下取整；若判定处直接拿 float 上限比（`HPCurrent < GetAttribute(HP)`），百分比加成（稀有度 BUFF/研究/装备/征服强度倍率 intensityRate）产生的小数尾巴会让满值 int 恒小于 float 上限——回复系索敌把满血目标误判为"不满"、无限奶且跳字 0（2026-10 愈之魅魔 BUG 根因）。int 截断口径与 Change 截断闭环：判定不满 ⇒ 必能回复 ≥1。所有"要不要奶/要不要入选"的筛选（回复系索敌、攻击模式出手校验、治疗区域 Tick）统一调这两个方法，禁止再写裸比较。
+
 ---
 
 ## CreatureHandler / CreatureManager

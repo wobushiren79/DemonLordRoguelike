@@ -123,13 +123,31 @@ public class GameFightLogicTest : GameFightLogic
     }
 
     /// <summary>
+    /// 测试模式支持重新挑战（与结算界面「下一个」重开同口径：进攻队列从备注快照还原后复用同一 fightData 重开）
+    /// </summary>
+    public override bool IsCanRestartFight()
+    {
+        return true;
+    }
+
+    /// <summary>
+    /// 构建重新挑战数据：进攻队列从备注快照深拷贝还原，复用同一 fightData（与 ActionForUIFightSettlementNext 同口径）
+    /// </summary>
+    protected override FightBean CreateRestartFightData()
+    {
+        FightBeanForTest fightBeanForTest = fightData as FightBeanForTest;
+        fightData.fightAttackData = ClassUtil.DeepCopy(fightBeanForTest.fightAttackDataRemark);
+        return fightData;
+    }
+
+    /// <summary>
     /// 回调-点击下一步 重启战斗
     /// </summary>
     public void ActionForUIFightSettlementNext()
     {
-        FightBeanForTest fightBeanForTest = fightData as FightBeanForTest;
-        fightData.fightAttackData = ClassUtil.DeepCopy(fightBeanForTest.fightAttackDataRemark);
+        //重开数据构建与系统界面「重新挑战」共用 CreateRestartFightData
+        FightBean restartFightData = CreateRestartFightData();
         //重开走 PreGameForAfterCreateDefenseCore 统一清理并重新添加测试深渊馈赠
-        WorldHandler.Instance.EnterGameForFightScene(fightData);
+        WorldHandler.Instance.EnterGameForFightScene(restartFightData);
     }
 }

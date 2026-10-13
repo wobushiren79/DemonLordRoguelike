@@ -15,7 +15,8 @@ public class AttackModeRegain : BaseAttackMode
     public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
         base.StartAttack(attacker, attacked, actionForAttackEnd);
-        if (attacker != null && attacked != null && !attacked.IsDead())
+        //出手瞬间校验目标仍满足回复条件：索敌筛选只发生在锁定时，前摇期间目标可能已被其他治疗源奶满，满载则空放（不回复/不播特效/不跳字/不播音效），回调照走让 AI 重搜
+        if (attacker != null && attacked != null && !attacked.IsDead() && CheckTargetRegainable(attacked))
         {
             HandleRegain(attacker, attacked);
             //播放一个范围攻击特效
@@ -33,5 +34,13 @@ public class AttackModeRegain : BaseAttackMode
     public virtual void HandleRegain(FightCreatureEntity attacker, FightCreatureEntity attacked)
     {
 
+    }
+
+    /// <summary>
+    /// 校验目标当前是否仍可被回复（与索敌筛选同口径；子类按回复类型判定 HP 不满 / DR 不满）
+    /// </summary>
+    public virtual bool CheckTargetRegainable(FightCreatureEntity attacked)
+    {
+        return true;
     }
 }

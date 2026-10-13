@@ -6,7 +6,7 @@ public partial class UIGameSystem : BaseUIComponent
 {
     /// <summary>进入类型-基地(默认，显示设置/返回/退出按钮)</summary>
     public const int EnterTypeBase = 0;
-    /// <summary>进入类型-战斗(仅显示结束战斗按钮)</summary>
+    /// <summary>进入类型-战斗(显示结束战斗按钮，支持重开的战斗模式额外显示重新挑战按钮)</summary>
     public const int EnterTypeFight = 1;
 
     /// <summary>当前进入类型，决定按钮显隐与退出逻辑</summary>
@@ -62,6 +62,10 @@ public partial class UIGameSystem : BaseUIComponent
         {
             OnClickForExitFight();
         }
+        else if (viewButton == ui_BtnRestartFight)
+        {
+            OnClickForRestartFight();
+        }
     }
 
     public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
@@ -75,13 +79,22 @@ public partial class UIGameSystem : BaseUIComponent
 
     /// <summary>
     /// 根据进入类型刷新按钮显隐
-    /// 战斗模式：仅显示结束战斗按钮；基地模式：显示设置/返回/退出，隐藏结束战斗
+    /// 战斗模式：显示结束战斗按钮(支持重开的模式额外显示重新挑战)；基地模式：显示设置/返回/退出，隐藏结束战斗/重新挑战
     /// </summary>
     public void RefreshButtonShow()
     {
         bool isFight = enterType == EnterTypeFight;
         if (ui_BtnExitFight != null)
             ui_BtnExitFight.gameObject.SetActive(isFight);
+        //重新挑战按钮: 仅战斗模式且当前战斗支持重开时显示(无尽=只能挑战一次/终焉议会=暴力说服一次性, 均不显示)
+        bool isCanRestart = false;
+        if (isFight)
+        {
+            var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+            isCanRestart = gameFightLogic != null && gameFightLogic.IsCanRestartFight();
+        }
+        if (ui_BtnRestartFight != null)
+            ui_BtnRestartFight.gameObject.SetActive(isCanRestart);
         if (ui_BtnSetting != null)
             ui_BtnSetting.gameObject.SetActive(!isFight);
         if (ui_BtnBack != null)
@@ -120,6 +133,22 @@ public partial class UIGameSystem : BaseUIComponent
         {
             var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
             gameFightLogic?.ExitFightAndReturnToBase();
+        };
+        UIHandler.Instance.ShowDialogNormal(dialogData);
+    }
+
+    /// <summary>
+    /// 点击重新挑战
+    /// 弹出确认弹窗，确认后放弃当前战斗进度，以同一世界/同一配置从头重新挑战(不返回基地)
+    /// </summary>
+    public void OnClickForRestartFight()
+    {
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = TextHandler.Instance.GetTextById(504);
+        dialogData.actionSubmit = (view, data) =>
+        {
+            var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+            gameFightLogic?.RestartFight();
         };
         UIHandler.Instance.ShowDialogNormal(dialogData);
     }

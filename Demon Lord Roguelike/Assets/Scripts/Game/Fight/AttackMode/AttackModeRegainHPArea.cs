@@ -102,14 +102,14 @@ public class AttackModeRegainHPArea : BaseAttackMode
     }
 
     /// <summary>
-    /// 目标是否为有效治疗对象：存活、距中心≤半径、HP不满（满血回血为0且白播特效/跳字）
+    /// 目标是否为有效治疗对象：存活、距中心≤半径、HP不满（int 截断口径，见 FightCreatureBean.IsHPNotFull；满血回血为0且白播特效/跳字）
     /// </summary>
     private static bool IsValidHealTarget(FightCreatureEntity itemTarget, Vector3 center, float sqrRadius)
     {
         if (itemTarget == null || itemTarget.IsDead() || itemTarget.creatureObj == null)
             return false;
         var fightData = itemTarget.fightCreatureData;
-        if (fightData == null || fightData.HPCurrent >= fightData.GetAttribute(CreatureAttributeTypeEnum.HP))
+        if (fightData == null || !fightData.IsHPNotFull())
             return false;
         return (itemTarget.creatureObj.transform.position - center).sqrMagnitude <= sqrRadius;
     }

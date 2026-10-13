@@ -630,6 +630,32 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 获取指定世界指定征服难度的「0倍速游戏」研究的解锁ID
+    /// 起始ID取自世界配置表 GameWorldInfo.unlock_id_speed0，各难度按起始ID连续向后推导（起始ID+难度-1）。
+    /// 起始ID为0表示该世界未配置此类研究，返回-1（不能用0：CheckIsUnlock(0)按约定恒真）。
+    /// </summary>
+    /// <param name="worldId">游戏世界ID</param>
+    /// <param name="difficultyLevel">征服难度等级(1~10)</param>
+    /// <returns>该世界该难度0倍速研究对应的解锁ID；-1 表示该世界未配置</returns>
+    public long GetWorldSpeed0UnlockId(long worldId, int difficultyLevel)
+    {
+        var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
+        return GetWorldResearchUnlockIdByDifficulty(gameWorldInfo.unlock_id_speed0, difficultyLevel);
+    }
+
+    /// <summary>
+    /// 是否已解锁指定世界指定征服难度的「0倍速游戏」研究
+    /// 0速按钮与世界+难度绑定：仅当玩该世界该难度、且已解锁对应难度的0倍速研究时，战斗界面才显示0速按钮。
+    /// </summary>
+    /// <param name="worldId">游戏世界ID</param>
+    /// <param name="difficultyLevel">当前征服难度等级</param>
+    /// <returns>true=已解锁该世界该难度的0倍速游戏研究</returns>
+    public bool CheckIsUnlockWorldSpeed0(long worldId, int difficultyLevel)
+    {
+        return CheckIsUnlock(GetWorldSpeed0UnlockId(worldId, difficultyLevel));
+    }
+
+    /// <summary>
     /// 获取指定世界指定征服难度的「2倍速游戏」研究的解锁ID
     /// 起始ID取自世界配置表 GameWorldInfo.unlock_id_speed2，各难度按起始ID连续向后推导（起始ID+难度-1）。
     /// 起始ID为0表示该世界未配置此类研究，返回-1（不能用0：CheckIsUnlock(0)按约定恒真）。

@@ -6,22 +6,6 @@ public partial class ResearchInfoBean
     public List<long> preUnlockIds;
     public long[] arrayPayCrystal;
 
-    #region details 详情描述(临时字段)
-    /// <summary>
-    /// [临时]详情描述-语言id(对应 excel_research_info 的 details[language] 列, 0=无详情)。
-    /// 因本次未跑 Unity 重新生成 Entity 而手写在 Partial(与生成器产物保持一致, 仿 pre_data 先例);
-    /// 重新生成 ResearchInfoBean.cs 后删除本 region(生成物自带 details/details_language, 且 CombineModReferenceIds 自动补 details 拼接)。
-    /// </summary>
-    public long details;
-
-    /// <summary>
-    /// [临时]详情描述多语言文本(懒加载缓存, 语言切换经 LanguageCache 版本号自动失效)
-    /// </summary>
-    [JsonIgnore]
-    public string details_language { get => _details_language.Get(() => TextHandler.Instance.GetTextById(ResearchInfoCfg.fileName, details)); set => _details_language.Set(value); }
-    private LanguageCache _details_language;
-    #endregion
-
     #region pre_data 前置解锁条件(特殊条件)
     /// <summary>pre_data 解析缓存(条件枚举 → 要求数值)</summary>
     public Dictionary<ResearchPreConditionEnum, long> dicPreDataCondition;

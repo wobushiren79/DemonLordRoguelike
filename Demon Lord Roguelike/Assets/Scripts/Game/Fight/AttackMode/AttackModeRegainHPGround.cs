@@ -100,7 +100,7 @@ public class AttackModeRegainHPGround : BaseAttackMode
             if (itemTarget == null || itemTarget.IsDead() || itemTarget.creatureObj == null)
                 continue;
             var fightData = itemTarget.fightCreatureData;
-            if (fightData == null || fightData.HPCurrent >= fightData.GetAttribute(CreatureAttributeTypeEnum.HP))
+            if (fightData == null || !fightData.IsHPNotFull())
                 continue;
             if ((itemTarget.creatureObj.transform.position - centerPos).sqrMagnitude > sqrRadius)
                 continue;

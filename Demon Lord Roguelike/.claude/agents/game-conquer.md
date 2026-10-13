@@ -27,7 +27,7 @@ watched_files:
 ## 职责范围
 
 ### 战斗逻辑
-- **GameFightLogicConquer** - 征服战斗逻辑（继承 GameFightLogic）：状态流转、结算分流、关卡推进、回调
+- **GameFightLogicConquer** - 征服战斗逻辑（继承 GameFightLogic）：状态流转、结算分流、关卡推进、回调；支持重新挑战（`IsCanRestartFight()=true`，ESC 系统界面「重新挑战」以同一 `gameWorldInfoRandomData` 重建 bean 从第 1 关重开，run 级馈赠/奖励累计归零，详见 game-fight-logic「重新挑战」节）
 - **FightBeanForConquer** - 征服战斗运行时数据（继承 FightBean）：关卡进度、进攻队列生成、深渊馈赠持有
 
 ### 关卡推进与判定

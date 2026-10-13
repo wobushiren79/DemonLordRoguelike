@@ -372,7 +372,7 @@ public partial class UICreatureVat : BaseUIComponent
         //检测水晶是否足够
         if (userData.CheckHasCrystal(payCrystal, isHintEnoughCrystal, true))
         {
-            //消耗1颗魔晶,进度增加 addProgressValue 秒(=研究等级);培养过程不主动存档
+            //消耗1颗魔晶,奖励进度增加 addProgressValue 秒(=研究等级,真实时间差之外的额外推进);培养过程不主动存档
             userAscendDetails.AddProgress(addProgressValue);
             EventHandler.Instance.TriggerEvent(EventsInfo.CreatureAscend_AddProgress);
 

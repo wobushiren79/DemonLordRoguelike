@@ -71,6 +71,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 | `unlock_id_conquer_difficulty_level` | 征服难度起始解锁id |
 | `unlock_id_quick_attack` | 加快进攻节奏(Quick)研究起始解锁id(0=该世界无此类研究, 实际id=起始id+难度-1) |
 | `unlock_id_speed2` | 2倍速游戏研究起始解锁id(0=该世界无此类研究, 实际id=起始id+难度-1) |
+| `unlock_id_speed0` | 0倍速游戏研究起始解锁id(0=该世界无此类研究, 实际id=起始id+难度-1；字段暂在 GameWorldInfoBeanPartial 临时 region,重新生成 Entity 后删除) |
 | `map_pos` | 地图坐标(配置) |
 | `name` | 名字多语言id(`name_language` 带缓存) |
 
@@ -182,7 +183,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 - **ChallengeHundred 出现概率**：`UnlockEnum.ChallengeHundredShowRate = 100300007`(研究等级×10%=传送门刷新为该模式的概率，满级10级=100%；前置=剑与魔法征服难度2研究100310112)；取值 `UserUnlockBean.GetUnlockChallengeHundredShowRate()`。
 - **ChallengeHundred BOSS挑战出现概率**：`UnlockEnum.ChallengeHundredBossRate = 100300009`(研究名「真勇者挑战」；**基础10%**+研究等级×10%，4级满级=50%；前置=是魔王就挑战100勇士出现概率研究 `pre_unlock_ids="100300007"`)；取值 `UserUnlockBean.GetUnlockChallengeHundredBossRate()`，消费在挑战100勇士抽配置行的两段判定(先按它判定普通/BOSS，再在命中类型行内等概率随机)——替代旧的"全部匹配行等概率随机"(旧逻辑 BOSS 率随行数分布漂移)。研究节点配置详见 `research-system`。
 - **无尽难度解锁**：`unlock_id_infinite` 是**无尽研究起始ID**(非单值)——难度N(2~10)无尽对应解锁ID = 起始ID+(N-2)(世界1=100310102~100310110，难度2~10；第一难度没有无尽模式)。`UserUnlockBean.GetUnlockInfiniteDifficultyLevel(worldId)`：从起始id连续向后统计已解锁个数(遇断档即止，与研究前置链式解锁语义一致)，返回已解锁最高无尽难度，0=未解锁(起始id为0或未解锁返回0，防 `CheckIsUnlock(0)` 恒真死循环)；`CheckInfiniteUnlock(worldId, difficultyLevel)`：难度<2 恒 false，否则查 `CheckIsUnlock(起始id+(难度-2))`。
-- **无尽研究链(世界1)**：excel_research_info 新增9行无尽研究(research_type=4，icon `ui_research_11`，position x=-480/y 与征服难度链对齐 0~1280，pay_crystal 200/1000/2000/4000/8000/16000/32000/64000/128000)：100310102(前置=100310112 征服难度2研究)~100310110，**双前置链式**(难度N无尽 前置=上一无尽节点+对应征服难度研究 100310112+N-2)；excel_unlock_info 补登记 100310103~110(100310102 原有，备注改"剑与魔法-无尽模式·难度2")。世界2/3/4 暂无征服难度研究链，本期未配无尽节点(代码天然兼容)。研究节点配置详见 `research-system`。
+- **无尽研究链(世界1)**：excel_research_info 新增9行无尽研究(research_type=4，icon `ui_research_11`，position x=-480/y 与征服难度链对齐 0~2560(2026-10-12 行距160→320加倍)，pay_crystal 200/1000/2000/4000/8000/16000/32000/64000/128000)：100310102(前置=100310112 征服难度2研究)~100310110，**双前置链式**(难度N无尽 前置=上一无尽节点+对应征服难度研究 100310112+N-2)；excel_unlock_info 补登记 100310103~110(100310102 原有，备注改"剑与魔法-无尽模式·难度2")。世界2/3/4 暂无征服难度研究链，本期未配无尽节点(代码天然兼容)。研究节点配置详见 `research-system`。
 
 ## 配置（Excel）
 

@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 
 /// <summary>
-/// 属性加点界面: 献祭升级成功后弹出, 玩家把本次升级获得的属性点手动分配到该生物 creatureInfo.show_attribute 配置的属性上(HP/护甲(DR)/攻击(ATK)/攻速(ASPD) 4 项内按配置显隐)。
+/// 属性加点界面: 献祭升级成功后弹出, 玩家把本次升级获得的属性点手动分配到该生物 creatureInfo.show_attribute 配置的属性上(HP/护甲(DR)/攻击(ATK)/攻速(ASPD) 4 项内按配置显隐;
+/// 加血回复型生物(如愈之魅魔)配置含 ATK 时攻击项替换为治疗量(AddLife)项)。
 /// <para>加点实时作用于生物的升级加点属性并刷新详情展示; 必须分配完所有点数后, 点击确认按钮(BtnConfirm)弹出二次确认弹窗, 确认后才保存数据(当场加完, 不持久化剩余点数)。</para>
 /// </summary>
 public partial class UICreatureAddAttribute : BaseUIComponent
@@ -52,13 +53,19 @@ public partial class UICreatureAddAttribute : BaseUIComponent
     /// <summary>
     /// 初始化属性加点项: 按 creatureInfo.show_attribute 配置开关 HP/护甲/攻击/攻速 4 个固定项的显隐(每项显式设置防UI复用残留),
     /// 仅可见项绑定属性类型与加减回调;配置含 4 项以外属性时告警忽略;配置无可加点属性时强制显示HP项兜底可分配出口。
+    /// <para>加血回复型生物(IsRegainHPAttackMode, 如愈之魅魔): 配置含 ATK 时攻击项隐藏、改显示治疗量项(AddLife),
+    /// AddLife 项底层仍绑定 ATK 属性加点(治疗量=ATK×攻击模式倍率, 与 UIViewCreatureCardDetails.SetAttribute 详情口径一致); 回甲型(RegainDR)暂无对应加点项仍显示ATK。</para>
     /// </summary>
     public void InitItems()
     {
         var listShowAttribute = creatureData.creatureInfo.GetShowAttributeList();
+        //加血回复型(愈之魅魔等): 配置含 ATK 时 ATK 项与 AddLife 项互斥替换, AddLife 项实际仍加 ATK 属性
+        bool isRegainHP = creatureData.creatureInfo.IsRegainHPAttackMode();
+        bool isShowATK = listShowAttribute.Contains(CreatureAttributeTypeEnum.ATK);
         InitItem(ui_UIViewCreatureAddAttributeItem_HP, CreatureAttributeTypeEnum.HP, listShowAttribute);
         InitItem(ui_UIViewCreatureAddAttributeItem_DR, CreatureAttributeTypeEnum.DR, listShowAttribute);
-        InitItem(ui_UIViewCreatureAddAttributeItem_ATK, CreatureAttributeTypeEnum.ATK, listShowAttribute);
+        InitItem(ui_UIViewCreatureAddAttributeItem_ATK, CreatureAttributeTypeEnum.ATK, isShowATK && !isRegainHP);
+        InitItem(ui_UIViewCreatureAddAttributeItem_AddLife, CreatureAttributeTypeEnum.ATK, isShowATK && isRegainHP);
         InitItem(ui_UIViewCreatureAddAttributeItem_ASPD, CreatureAttributeTypeEnum.ASPD, listShowAttribute);
         //配置含 4 固定项以外的属性(如MSPD移速)时告警忽略(加点界面无对应item),同时检查是否存在可加点项
         bool hasAllocatable = false;
@@ -92,7 +99,17 @@ public partial class UICreatureAddAttribute : BaseUIComponent
     /// <param name="listShowAttribute">配置的可加点属性列表(creatureInfo.show_attribute)</param>
     protected void InitItem(UIViewCreatureAddAttributeItem item, CreatureAttributeTypeEnum attributeType, List<CreatureAttributeTypeEnum> listShowAttribute)
     {
-        bool isShow = listShowAttribute.Contains(attributeType);
+        InitItem(item, attributeType, listShowAttribute.Contains(attributeType));
+    }
+
+    /// <summary>
+    /// 初始化单个加点项(显式显隐版): isShow 为 true 则显示并绑定数据,否则隐藏;用于 ATK/AddLife 这类同属性互斥替换的项。
+    /// </summary>
+    /// <param name="item">加点项</param>
+    /// <param name="attributeType">该项实际加点的属性类型(AddLife 项仍绑定 ATK)</param>
+    /// <param name="isShow">是否显示该项</param>
+    protected void InitItem(UIViewCreatureAddAttributeItem item, CreatureAttributeTypeEnum attributeType, bool isShow)
+    {
         item.gameObject.SetActive(isShow);
         if (isShow)
         {

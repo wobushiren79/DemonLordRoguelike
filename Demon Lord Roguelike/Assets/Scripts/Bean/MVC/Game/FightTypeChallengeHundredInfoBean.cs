@@ -60,6 +60,10 @@ public partial class FightTypeChallengeHundredInfoBean : BaseBean
 	/// </summary>
 	public string reward_exp;
 	/// <summary>
+	///通关声望奖励(通关领奖后按冻结难度发放,需解锁研究100200011;单值=全难度共用,或与难度列表等长的逗号分隔逐难度值)
+	/// </summary>
+	public string reward_reputation;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

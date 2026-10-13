@@ -284,7 +284,7 @@ switch (searchType)
 
 ### 3. 复制粘贴时类型交叉
 
-`FindCreatureEntityByArea` 内部曾出现 `AreaBoxHPNoMax` 走 `OverlapToSphere`、`AreaSphereDRNoMax` 走 `OverlapToBox` 的情况——枚举名与实际形状不一致。**新增 case 时要按枚举字面语义分组**，可以用枚举值的位运算掩码或独立的几何形状提取方法来避免。
+`FindCreatureEntityByArea` 内部曾出现 Box/Sphere 类型交叉走错形状的情况（HPNoMax/DRNoMax 系列的 case 分错组）——枚举名与实际形状不一致。**新增 case 时要按枚举字面语义分组**，可以用枚举值的位运算掩码或独立的几何形状提取方法来避免。（注：12 现为 `RoadAllyHPOrDRNoMax` 走同路友军搜索[血或甲任一不满]、不再经 `FindCreatureEntityByArea`，13 已随盾之魅魔移除；当前 Area 内仅剩 22/23 的 Box 版 HP/DR 不满筛选）
 
 ---
 

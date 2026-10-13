@@ -2,6 +2,14 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+/// <summary>
+/// 游戏世界配置
+/// </summary>
+public partial class GameWorldInfoBean
+{
+
+}
+
 [Serializable]
 /// <summary>
 /// 游戏世界随机数据

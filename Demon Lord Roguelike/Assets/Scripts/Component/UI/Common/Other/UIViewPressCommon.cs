@@ -109,6 +109,35 @@ public partial class UIViewPressCommon : BaseUIView
 
     #endregion
 
+    #region 悬浮提示
+
+    /// <summary>悬浮提示组件(懒加载挂载,仅设置过提示文本的按键才挂)</summary>
+    protected PopupButtonCommonView popupButtonForTip;
+
+    /// <summary>
+    /// 设置悬浮提示文本：鼠标悬停按键时弹出文本气泡说明该键用途；传空=不弹气泡
+    /// </summary>
+    /// <param name="tipText">提示文本</param>
+    public void SetPopupTip(string tipText)
+    {
+        if (tipText.IsNull())
+        {
+            //清空提示数据,悬停不再弹气泡
+            if (popupButtonForTip != null)
+                popupButtonForTip.SetData(null, PopupEnum.Text);
+            return;
+        }
+        if (popupButtonForTip == null)
+        {
+            popupButtonForTip = GetComponent<PopupButtonCommonView>();
+            if (popupButtonForTip == null)
+                popupButtonForTip = gameObject.AddComponent<PopupButtonCommonView>();
+        }
+        popupButtonForTip.SetData(tipText, PopupEnum.Text);
+    }
+
+    #endregion
+
     #region 按键名补全
 
     /// <summary>

@@ -32,6 +32,14 @@ public class GameFightLogicInfinite : GameFightLogic
     }
 
     /// <summary>
+    /// 无尽模式不支持重新挑战（无尽世界只能挑战一次：无论输赢挑战结束后传送门世界即刷新，系统界面不显示「重新挑战」）
+    /// </summary>
+    public override bool IsCanRestartFight()
+    {
+        return false;
+    }
+
+    /// <summary>
     /// 检测游戏是否结束(无尽模式重写: 屏蔽胜利判定, 永不胜利; 只有魔王(防守核心)死亡才失败结束)
     /// 与 refill 钩子构成双重保险: 即使存在队列真空的极端时序, 也不会误触发胜利结算
     /// </summary>

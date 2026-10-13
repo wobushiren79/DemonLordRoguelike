@@ -108,7 +108,7 @@ public abstract partial class AICreatureEntity : AIBaseEntity
         Vector3 startPosition = selfCreatureEntity.creatureObj.transform.position + new Vector3(0, 0.5f, 0);
 
         int searchRoadIndex = fightCreatureData.roadIndex;
-        var listSearchResult = FightCreatureSearchUtil.FindCreatureEntity(searchType, searchCreatureFightType, startPosition, direction, Vector3.zero, searchRange, searchRoadIndex);
+        var listSearchResult = FightCreatureSearchUtil.FindCreatureEntity(searchType, searchCreatureFightType, startPosition, direction, Vector3.zero, searchRange, searchRoadIndex, selfCreatureEntity);
         return listSearchResult;
     }
 }

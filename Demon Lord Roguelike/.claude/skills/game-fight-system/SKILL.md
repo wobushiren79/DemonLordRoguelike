@@ -310,6 +310,15 @@ public virtual void CheckGameEnd()
 
 > **无尽模式特判（双重保险）**：无尽模式重写 `CheckGameEnd()` **屏蔽胜利判定**（永不胜利，只判魔王死亡失败），且重写 `TryRefillNextAttackQueue()` 使进攻队列恒非空（取波次 null 时 + 取出本轮最后一波后立即补下一轮，见 game-fight-logic agent「进攻刷怪」节）——上述"队列空+场上无敌"胜利分支结构性不可达，即使存在队列真空的极端时序也不会误触发胜利结算。
 
+### 重新挑战（ESC 系统界面，2026-10 新增）
+
+战斗中 ESC 打开 `UIGameSystem`（enterType=Fight），除「退出战斗」外还有「**重新挑战**」按钮：确认后放弃当前进度、以同一世界/同一配置从头重开（不回基地）。
+
+- **支持矩阵**（基类 `GameFightLogic.IsCanRestartFight()` virtual 默认 false）：**征服/挑战100勇士/测试**=支持；**无尽**=不支持（只能挑战一次，输赢后传送门世界即刷新）；**终焉议会**=不支持（暴力说服一次性，不允许重打刷赢）。
+- **流程**（`GameFightLogic.RestartFight()`，仅 Gaming 状态生效）：确认弹窗（UIText 504）→ ShowMask → `ClearAbyssalBlessing`（重开=全新挑战不携带已选馈赠）→ `RestoreDefenseCreatureFightState` → `SaveUserData`（本场已入账魔晶/经验落盘）→ `EnterGameForFightScene(CreateRestartFightData())`（内部 ClearWorldData 走当前逻辑 ClearGame 完整清理再重开）。**议案 EndGame 消耗钩子不触发**（与中途退出同口径，议案延续到重开后的战斗）。
+- **重建方式**：征服/挑战100勇士 = `new FightBeanForXxx(gameWorldInfoRandomData)`（传送门冻结数据重开：关卡回第1关、run 级累计归零）；测试 = 进攻队列从 `fightAttackDataRemark` 深拷贝还原后复用同一 fightData。
+- **UI 侧**：`UIGameSystem.RefreshButtonShow` 按 `IsCanRestartFight()` 控制 `ui_BtnRestartFight` 显隐（预制体 BtnRestartFight 排在 BtnExitFight 之前），按钮文本 UIText 49005。遮罩过渡期间的 ESC/点击由遮罩统一锁定（`UICommonMask` 拉起即置 `CanClickUIButtons/CanInputActionStarted=false`，隐藏即恢复，见 ui-framework SKILL「遮罩过渡期间的全局输入屏蔽」），无需本流程单独锁输入。
+
 ## 战斗场景控制
 
 ```csharp
@@ -366,10 +375,12 @@ public partial class UIFightMain : BaseUIComponent
     public void RefreshQuickButtonShow(bool isConquer, GameFightLogic gameFightLogic);
     // 2倍速(Speed2)按钮显隐+选中态同步：仅征服模式且已解锁当前世界的 2倍速游戏 研究才显示
     public void RefreshSpeed2ButtonShow(bool isConquer, GameFightLogic gameFightLogic);
+    // 0速(Speed0)按钮显隐+选中态同步：仅征服模式且已解锁当前世界的 0倍速游戏 研究才显示
+    public void RefreshSpeed0ButtonShow(bool isConquer, GameFightLogic gameFightLogic);
 }
 ```
 
-> **底部卡片排布的窗口自适应（2026-10 修复）**：卡片位置由 `GetCardItemPos` 计算，可用宽基准是**根 RectTransform 逻辑宽**（`((RectTransform)transform).rect.width`，根节点全屏拉伸 = 画布逻辑宽 1920/uiSize），**禁止用 `Screen.width` 物理像素**（ScaleWithScreenSize 按宽匹配下单位不一致，分辨率/uiSize 变化会算错间距）。重排触发点：① 建卡/加卡（`SetCreatureCardList`/`AddCreatureCard`→`RefreshCardListPos`）；② `OnRectTransformDimensionsChange`（窗口拉伸/分辨率修改时 Unity 自动回调，编辑器与打包版均生效）；③ `RefreshUI` 兜底（覆盖 UI 关闭期间窗口变化，回调对隐藏物体不触发）。
+> **底部卡片排布的窗口自适应（2026-10 调整）**：卡片位置由 `GetCardItemPos` 计算，可用宽基准直接取 **prefab 里 `ui_CardContent` 容器的运行时实际宽度**（`ui_CardContent.rect.width`——CardContent 是卡片实例化的父容器，横向拉伸锚点、宽度随画布变化；prefab 默认 `sizeDelta.x=-400` 即两侧各留 200 像素避开右下角删除按钮 `ui_BtnRemoveCreature` 遮挡）。**排布范围直接在 prefab 上调节 CardContent 的锚点/sizeDelta 即可，代码中无任何宽度比例常量**；仍禁止改用 `Screen.width` 物理像素（ScaleWithScreenSize 按宽匹配下单位不一致，分辨率/uiSize 变化会算错间距）。卡片本体不缩放，超宽时只压缩间距（间距<卡宽后左右叠压，右卡压左卡），整排总宽恒收敛在可用宽内。重排触发点：① 建卡/加卡（`SetCreatureCardList`/`AddCreatureCard`→`RefreshCardListPos`）；② `OnRectTransformDimensionsChange`（窗口拉伸/分辨率修改时 Unity 自动回调，编辑器与打包版均生效）；③ `RefreshUI` 兜底（覆盖 UI 关闭期间窗口变化，回调对隐藏物体不触发）。
 
 ### 进攻进度条 Quick(加快进攻节奏) 按钮
 
@@ -379,15 +390,16 @@ public partial class UIFightMain : BaseUIComponent
 - **点击逻辑**：`UIViewFightMainAttCreateProgress.OnClickForQuick` → 若 `GetAttackProgress()>=1` 直接 return（已到 100% 点击无效）；否则 `GameFightLogic.QuickAdvanceAttackCreate(0.1f)` 推进后 `SetProgress(newProgress, animTime:0.3f)` 平滑过渡（不瞬跳）。
 - **`GameFightLogic.QuickAdvanceAttackCreate(advanceRate=0.1f)`**：立即向前推进「`fightAttackData.timeAttackTotal * advanceRate`（默认总进攻时长10%）」的时间，用与逐帧刷怪 `UpdateGameForAttackCreate` **同一套「累加达标即出下一波」步进语义**逐波消费推进时间，把这段时间本应生成的进攻波次全部立即 `CreateAttackCreature`（含 BOSS 特写 `ShowBossDialog`）；队列耗尽先对称调虚钩子 `TryRefillNextAttackQueue()`（基类默认 false；无尽重写为追加下一轮——Quick 按钮对无尽隐藏，此为防御性对称接入），仍无波次则停止，进度自然封顶 100%。返回推进后的最新进度(0~1)。无消耗、无冷却，仅上限封顶。
 
-### 进攻进度条 2倍速(Speed2) 按钮
+### 进攻进度条速度按钮（Speed0 0速暂停 / Speed2 2倍速）
 
-`UIViewFightMainAttCreateProgress` 上的 **Speed2 RadioButton**（`ui_Speed2_RadioButtonView`/`ui_Speed2_Button`）用于切换**整场战斗 2 倍速**：
+`UIViewFightMainAttCreateProgress` 上有两个**互斥**的速度 RadioButton——**Speed0**（`ui_Speed0_RadioButtonView`/`ui_Speed0_Button`，0速=暂停）与 **Speed2**（`ui_Speed2_RadioButtonView`/`ui_Speed2_Button`，2倍速）：
 
-- **与世界+难度绑定的显隐**：`UIFightMain.RefreshUIData` → `RefreshSpeed2ButtonShow`：仅征服模式、且 `UserUnlockBean.CheckIsUnlockWorldSpeed2(worldId, difficultyLevel)`（当前世界「当前难度」的「2倍速游戏」研究已解锁）时才显示；显示时同步 `RefreshSpeed2State()` 把按钮选中态对齐 `fightData.gameSpeed`（BOSS关重载场景后选中态不丢失）。研究节点/id 块约定（nn=40~49 段）见 [`research-system`](../research-system/SKILL.md) 世界分支。
-- **开关语义**：默认不开启（每场新战斗 `fightData.gameSpeed=1`）；点击 RadioButton 切换 2倍/原速，速度挂在 `fightData` 上**仅本场战斗有效**（征服 run 内跨关卡保留，战斗结束随 fightData 销毁自然还原）。
-- **点击链路**：`RadioButtonView` 自身回调（`UIViewFightMainAttCreateProgress : IRadioButtonCallBack`，Awake 里 `SetCallBack(this)`）→ `RadioButtonSelected` → `OnSpeed2Changed(isOpen)` → `GameFightLogic.SetGameSpeed(isOpen ? GAME_SPEED_2X(2) : 1)`。
-- **加速原理（不是 TimeScale）**：`SetGameSpeed` 只改 `fightData.gameSpeed`（游戏时间流速），不改 `Time.timeScale`（TimeScale 保留给暂停/BOSS特写减速）。全场节奏一致靠两条路径：① `UpdateGame` 的 `updateTime = Time.deltaTime * fightData.gameSpeed`（刷怪/BUFF/魔王/RCD）；② 不经 UpdateGame 驱动的战斗系统（AI意图移动/攻击计时、弹道飞行、掉落物寿命）统一用 `GameFightLogic.GetFightDeltaTime()`（= `Time.deltaTime × GetCurrentGameSpeed()`，非战斗场景恒 1 倍）替代 `Time.deltaTime`。**新增战斗内按时间推进的逻辑时，必须用 `GetFightDeltaTime()` 而不是 `Time.deltaTime`**。
-- **动画同步**：`SetGameSpeed` 同时 `RefreshAllCreatureAnimTimeScale()` 给全部在场生物 `SetAnimTimeScale(gameSpeed)`（`SkeletonAnimation.timeScale`，与各 PlayAnim 的 animSpeed 相乘叠加）；新建生物在 `FightCreatureEntity.SetData` 里自动按当前游戏速度初始化，2倍速中途生成的生物动画也是 2 倍。
+- **显隐门控（两按钮同口径）**：Speed0 与 Speed2 均与世界+难度绑定——`UIFightMain.RefreshUIData` → `RefreshSpeed0ButtonShow` / `RefreshSpeed2ButtonShow`：仅征服模式、且 `UserUnlockBean.CheckIsUnlockWorldSpeed0 / CheckIsUnlockWorldSpeed2(worldId, difficultyLevel)`（当前世界「当前难度」的「0倍速游戏」/「2倍速游戏」研究已解锁）时才显示，非征服模式一律隐藏；显示时同步 `RefreshSpeed0State()/RefreshSpeed2State()` 把按钮选中态对齐 `fightData.gameSpeed`（BOSS关重载场景后选中态不丢失）。研究节点/id 块约定（nn=40~49 2倍速段 / nn=50~59 0倍速段）见 [`research-system`](../research-system/SKILL.md) 世界分支。
+- **开关语义与互斥**：默认均不开启（每场新战斗 `fightData.gameSpeed=1`）；点击切换 0速/2倍/原速，速度挂在 `fightData` 上**仅本场战斗有效**（征服 run 内跨关卡保留，战斗结束随 fightData 销毁自然还原）。开启一方时若另一方处于选中态会被 `ChangeStates(false)` 取消（速度由开启方直接 SetGameSpeed，不走回调）。
+- **快捷键**：**F1=切换 Speed2，F2=加快进攻节奏（同点击 Quick，走 `TriggerQuickByKey` 校验 `ui_Quick` 可见才生效），Space=切换 Speed0**——由 View 重写 `OnInputActionForStarted` 处理（`InputActionUIEnum.F1/F2/Space`；Space 为 UI 映射新增动作，inputactions 绑定 `<Keyboard>/space`，与基地 Player 映射 Jump 突进互不冲突——战斗中基地控制 `enabledControl=false` 不响应突进，基地场景也无 UI 处理 Space 枚举），速度切换走与点击相同的 `SetStates(!isSelect)` 路径；按钮隐藏（未解锁研究/进度条视图隐藏）时对应快捷键无效。左下角按键提示组 `ui_UIViewPressControlForGameBase`（`UIFightMain.InitData` 切 GameFight 模式）同步提示 WASD(移动镜头)/F1(2倍速)/F2(加快进攻节奏)/Space(0倍速)，F1/F2/Space 提示显隐由 `RefreshSpeed2ButtonShow`/`RefreshQuickButtonShow`/`RefreshSpeed0ButtonShow` 同门控推送到 `SetSpeed2KeyShow`/`SetQuickKeyShow`/`SetSpeed0KeyShow`，各键悬浮气泡文本 id 2000026~2000032（详见 ui-components agent 的 UIViewPressControlForGameBase）。
+- **点击链路**：`RadioButtonView` 自身回调（`UIViewFightMainAttCreateProgress : IRadioButtonCallBack`，Awake 里 `SetCallBack(this)`）→ `RadioButtonSelected` → `OnSpeed0Changed/OnSpeed2Changed(isOpen)` → `GameFightLogic.SetGameSpeed(...)`（Speed0: `isOpen ? GAME_SPEED_0X(0) : 1`；Speed2: `isOpen ? GAME_SPEED_2X(2) : 1`）。
+- **变速原理（不是 TimeScale）**：`SetGameSpeed` 只改 `fightData.gameSpeed`（游戏时间流速），不改 `Time.timeScale`（TimeScale 保留给暂停/BOSS特写减速）；0速下一切走游戏速度的逻辑全部冻结（等效战斗暂停）。全场节奏一致靠两条路径：① `UpdateGame` 的 `updateTime = Time.deltaTime * fightData.gameSpeed`（刷怪/BUFF/魔王/RCD）；② 不经 UpdateGame 驱动的战斗系统（AI意图移动/攻击计时、弹道飞行、掉落物寿命）统一用 `GameFightLogic.GetFightDeltaTime()`（= `Time.deltaTime × GetCurrentGameSpeed()`，非战斗场景恒 1 倍）替代 `Time.deltaTime`。**新增战斗内按时间推进的逻辑时，必须用 `GetFightDeltaTime()` 而不是 `Time.deltaTime`**。
+- **动画同步**：`SetGameSpeed` 同时 `RefreshAllCreatureAnimTimeScale()` 给全部在场生物 `SetAnimTimeScale(gameSpeed)`（`SkeletonAnimation.timeScale`，与各 PlayAnim 的 animSpeed 相乘叠加；0速=动画定格）；新建生物在 `FightCreatureEntity.SetData` 里自动按当前游戏速度初始化，2倍速中途生成的生物动画也是 2 倍。
 
 ## 战斗预制管理
 
