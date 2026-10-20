@@ -113,7 +113,7 @@ watched_files:
 - 流程（立即型，`TriggerFirst` 返 true）：`CloseAllUI` → `ShowDialogSelectCreature` 选 1 只背包魔物（`listBackpackCreature`，不含魔王）→ 执行降级 → `SaveUserData()` + Toast → `BackDoomCouncilBill`；取消/空选直接 `BackDoomCouncilBill`。
 - **选择列表过滤**：经 `DialogSelectCreatureBean.filterCreature` 在弹窗 `SetData` 时筛掉已最低的魔物——等级议案 `creature.level > 0` 才进列表、稀有度议案 `creature.rarity > (int)RarityEnum.N` 才进列表（`UIDialogSelectCreature.SetData` 用 `FindAll` 生成新列表，不动背包原列表）。
 - **降级**（LevelDown）：`levelExp` 清零 + `creatureAttribute.dicAttributeLevelUp` 清空（已分配升级属性点供重新分配；`dicAttributeCreate` 创建时加成不动）。
-- **降稀有度**（RarityDown）：同步移除 `dicRarityBuff` 中 key 高于新稀有度档位的稀有度BUFF（与 `RandomRarityBuffForCreate` 逐级授予逻辑对称）。
+- **降稀有度**（RarityDown）：实体只计算目标档位并调用公共方法 `CreatureBean.DownRarity(targetRarity)`；该方法钳制到 `[N,当前档位]`、写 `rarity` 并移除 `dicRarityBuff` 中 key 高于新档位的稀有度BUFF（与 `RandomRarityBuffForCreate` 逐级授予逻辑对称）。GM 降阶药水也复用此方法，避免双份算法。
 - 边界（兜底）：已最低的魔物正常已被 `filterCreature` 过滤不出现在列表；若目标仍已 0 级 / 已 N 级（如数据异常）则不生效，Toast(3000008/3000009) 提示后返回（声望不退，与重命名取消同口径）。
 - Toast 文本（UIText 表）：`3000006` 等级下降成功 · `3000007` 稀有度下降成功 · `3000008` 已是0级 · `3000009` 已是N级。
 

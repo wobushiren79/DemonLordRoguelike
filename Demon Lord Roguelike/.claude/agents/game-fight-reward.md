@@ -45,7 +45,7 @@ watched_files:
   - `static List<ItemBean> CreateRewardListForConquer(conquerInfo)`：生成一份奖励列表（传送门创建预生成奖励调此）
   - `static List<ItemBean> CreateRewardListForConquerAllEquip(conquerInfo, bool isAllDemonLord = false)`：生成一份**全装备**奖励列表（createEquipNum=createItemNum，其余规则同；isAllDemonLord=true 时全为魔王专属）——终焉议会「想要更多装备/魔王装备」议案生效时通关领奖调此
   - `InitDataForReward(List<ItemBean> baseReward, conquerInfo, int extraItemNum)`：**通关领奖入口**，用预生成 `baseReward` 充当 `listReward`（预览=实领，**先兜底清洗：配置已失效的道具（如来源道具所属 Mod 被移除）回退为魔晶并 LogWarning**；空则容错按 `conquerInfo` 即时生成），其后追加 `extraItemNum` 个装备道具（奖励多多；生成不出装备兜底魔晶）
-  - `static List<ItemBean> CreateRewardListForChallengeHundred(challengeHundredInfo, difficultyLevel)`：**挑战100勇士**奖励列表：装备池空=全魔晶（`行.GetRandomRewardCrystal(冻结难度)`），否则全装备（稀有度=行 `GetRewardEquipRarity(冻结难度)`，加点数仍由 `RarityInfo.equip_attribute_add` 决定，魔王专属10%沿用默认）；**BOSS挑战（`行.IsBossChallenge()`）翻倍：装备3箱→6件、魔晶单箱数量x2（含装备兜底魔晶）**——传送门生成时预生成冻结，通关领奖消费同一份（`GetChallengeHundredReward()`）
+  - `static List<ItemBean> CreateRewardListForChallengeHundred(challengeHundredInfo, difficultyLevel)`：**挑战100勇士**奖励列表：装备池空=全魔晶（`行.GetRandomRewardCrystal(该难度)`），否则全装备（稀有度=行 `GetRewardEquipRarity(该难度)`，加点数仍由 `RarityInfo.equip_attribute_add` 决定，魔王专属10%沿用默认）；**BOSS挑战（`行.IsBossChallenge()`）翻倍：装备3箱→6件、魔晶单箱数量x2（含装备兜底魔晶）**——传送门生成时**逐难度**预生成冻结到 `listChallengeHundredRandom`，通关领奖按本场难度消费同一份（`GetChallengeHundredReward(difficultyLevel)`）
   - **核心方法抽取（征服零行为变化）**：`CreateItemEquip`/`CreateItemCrystal` 的生成主体抽为 `CreateItemEquipCore(rarityItem, addAttribute, userType, unlockCreatureModelIds, getFallbackCrystalNum回调)` / `CreateItemCrystalCore(itemCrystalNum)` / `static GetFallbackCrystalNum(conquerInfo, testData)`，原方法保留签名转调；挑战100勇士复用 Core 而非征服外壳
   - 新字段 `isAutoOpenFirstBox`（默认 true=征服首箱保底自动开；挑战100勇士置 false，`UIRewardSelect.SetData` 跳过 AutoOpenFirstRewardBox，宝箱全手动开）
   - `static int GetConquerEquipPoolSign()` / `static List<long> GetUnlockCreatureModelIdsForEquip()`：装备奖励池"解锁签名"=可生成装备的已解锁生物模型数量；解锁新魔物掉落后变化，触发传送门预生成奖励重生成
@@ -66,7 +66,7 @@ watched_files:
 - **GameFightLogicConquer** - 征服模式，多关卡 run 的领奖流程（BOSS 关通关领奖，4箱首箱保底）
 - **GameFightLogicDoomCouncil** - 终焉议会，结算展示投票结果，**无领奖界面**
 - **GameFightLogicTest** - 测试模式，Next 重启战斗，**不发奖不存档**
-- **GameFightLogicChallengeHundred** - 挑战100勇士（单关100只怪）：胜利→发阵容经验(行 `reward_exp` 按冻结难度取档)→结算UI→Next→UIRewardSelect **全手动开箱**（无首箱保底，可开数=奖励总数（普通3/BOSS装备6)，不套征服 `Count-1` 钳制）；失败→直接返回基地；**不发成就、无关卡间深渊馈赠；通关声望受研究 ChallengeHundredReputationReward(100200011) 门控，领奖结束 `ActionForUIRewardSelectEnd` 调 `AddReputationForChallengeHundredComplete` 按冻结难度 `reward_reputation` 发放**
+- **GameFightLogicChallengeHundred** - 挑战100勇士（单关100只怪）：100勇士自 2026-10 起有独立难度链、传送门详情弹窗可切换，`difficultyLevel`=本场所选/冻结难度，每档独立预生成配置行/道路/奖励；胜利→发阵容经验(行 `reward_exp` 按该难度取档)→结算UI→Next→UIRewardSelect **全手动开箱**（无首箱保底，可开数=奖励总数（普通3/BOSS装备6)，不套征服 `Count-1` 钳制；奖励调 `GetChallengeHundredReward(difficultyLevel)`）；失败→直接返回基地；**不发成就、无关卡间深渊馈赠；通关声望受研究 ChallengeHundredReputationReward(100200011) 门控，领奖结束 `ActionForUIRewardSelectEnd` 调 `AddReputationForChallengeHundredComplete` 按该难度 `reward_reputation` 发放**
 - **GameFightLogicInfinite** - 无尽模式（进攻队列耗尽自动续下一轮永不胜利，魔王死亡即失败）：失败结算仅打开 `UIFightSettlement` 战绩排行榜（`ActionForUIFightSettlementExit` 直接返回基地），**无宝箱/经验/声望/成就**（魔晶战斗中即时入账，退出时统一落盘；保留议案 EndGame 消耗钩子+清深渊馈赠+还原阵容状态）
 
 ### 掉落
@@ -102,7 +102,7 @@ watched_files:
  → ClearGameForSimple → 打开 UIFightSettlement.SetData(fightData, ActionForUIFightSettlementNext)
  → 玩家点 Next → ActionForUIFightSettlementNext
      ├─ 胜利: new RewardSelectBean(){ selectNumMax=3, isAutoOpenFirstBox=false }
-     │        .InitDataForReward(gameWorldInfoRandomData.GetChallengeHundredReward()/*传送门预生成冻结的宝箱, 预览=实领, 普通3/BOSS6*/, null, 0)
+     │        .InitDataForReward(gameWorldInfoRandomData.GetChallengeHundredReward(gameWorldInfoRandomData.difficultyLevel)/*按本场难度取传送门逐难度预生成冻结的宝箱, 预览=实领, 普通3/BOSS6*/, null, 0)
      │        → UIRewardSelect.SetData(..., isClearLastGame: true) → 全手动开箱(selectNumMax=奖励总数)
      └─ 失败: EndGameAndReturnToBase()
  → ActionForUIRewardSelectEnd: AddReputationForChallengeHundredComplete(研究100200011门控,按冻结难度 reward_reputation 发放声望) + userTempData.RefillPortalRefreshNum() + ClearPortalWorldInfoRandomData()（通关一次世界回满刷新次数+清空传送门，随存档落盘）
@@ -122,7 +122,7 @@ watched_files:
 
 > 魔晶数量来源 `reward_crystal`（string 单值/区间）、装备稀有度 `reward_equip_rarity` / `RarityInfo.equip_attribute_add`；生成入口统一在 `FightTypeConquerInfoBean`，走"传送门预生成 + 通关消费"链路。
 > **通关领奖**走 `InitDataForReward`，消费传送门预生成的 `baseReward`；奖励多多额外件数追加在基础奖励**之后**（装备道具，生成不出装备兜底魔晶）。
-> **挑战100勇士不走 `InitRewardList`**：`CreateRewardListForChallengeHundred(challengeHundredInfo, difficultyLevel)` 直接循环调抽取出的 `CreateItemEquipCore`/`CreateItemCrystalCore`（装备池空→全魔晶，否则全装备；BOSS挑战翻倍：装备6件/魔晶x2），预生成/冻结在 `GameWorldInfoRandomBean.SetRandomDataForChallengeHundred`（`listRewardChallengeHundred`+`rewardUnlockSignChallengeHundred`），领奖取 `GetChallengeHundredReward()`（签名失效按冻结难度重生成，同征服契约）。
+> **挑战100勇士不走 `InitRewardList`**：`CreateRewardListForChallengeHundred(challengeHundredInfo, difficultyLevel)` 直接循环调抽取出的 `CreateItemEquipCore`/`CreateItemCrystalCore`（装备池空→全魔晶，否则全装备；BOSS挑战翻倍：装备6件/魔晶x2），**逐难度**预生成/冻结在 `GameWorldInfoRandomBean.SetRandomDataForChallengeHundred`（`listChallengeHundredRandom` 每档含 `listRewardChallengeHundred`+`rewardUnlockSignChallengeHundred`），领奖取 `GetChallengeHundredReward(difficultyLevel)`（签名失效按该难度重生成，同征服契约）。
 
 ## 关键文件
 

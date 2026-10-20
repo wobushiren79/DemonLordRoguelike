@@ -500,12 +500,21 @@ public class FightManager : BaseManager
                     subMat.SetTexture("_BaseMap", sprite.texture);
                     subMat.SetTextureScale("_BaseMap", new Vector2(outerUV.z - outerUV.x, outerUV.w - outerUV.y));
                     subMat.SetTextureOffset("_BaseMap", new Vector2(outerUV.x, outerUV.y));
-                    //宽高比修正：按 sprite 像素宽高 contain 归一化(长边=1)写进材质 _VertexScaleXY，由 shader 在对象空间(自旋之前最内层)缩放，非方形 sprite 不再拉伸、且自旋不抖动
+                    //尺寸修正=按贴图绝对像素缩放：基准=基础桶贴图像素(如 RangedNormal 的 Weapon_1 32×32)，换图与基础贴图同像素即与默认子弹同尺寸、更小/更大按比例缩放(8×8 金币→1/4)；各轴独立比在 Quad(1:1) 上天然保留宽高比不拉伸、且在对象空间(自旋最内层)缩放故自旋不抖动；基础材质无 _BaseMap(程序化shader)时回退旧长边归一化
                     float spriteW = sprite.rect.width;
                     float spriteH = sprite.rect.height;
-                    float spriteMax = Mathf.Max(spriteW, spriteH);
-                    if (spriteMax > 0f)
-                        subMat.SetVector("_VertexScaleXY", new Vector4(spriteW / spriteMax, spriteH / spriteMax, 1f, 1f));
+                    Texture baseTex = baseMat.HasProperty("_BaseMap") ? baseMat.GetTexture("_BaseMap") : null;
+                    if (baseTex != null)
+                    {
+                        subMat.SetVector("_VertexScaleXY", new Vector4(spriteW / baseTex.width, spriteH / baseTex.height, 1f, 1f));
+                    }
+                    else
+                    {
+                        //回退：仅宽高比修正(长边归一化)
+                        float spriteMax = Mathf.Max(spriteW, spriteH);
+                        if (spriteMax > 0f)
+                            subMat.SetVector("_VertexScaleXY", new Vector4(spriteW / spriteMax, spriteH / spriteMax, 1f, 1f));
+                    }
                 }
                 //自旋用上面快照的局部量，勿改回读 attackMode(本回调时它可能已被对象池回收重发，见 spinAxis 快照处注释)
                 attackModeInstanceRenderer.RegisterVisual(key, mesh, subMat, attackModeInfo.GetVisualConfig(), spinAxis, spinSpeed);

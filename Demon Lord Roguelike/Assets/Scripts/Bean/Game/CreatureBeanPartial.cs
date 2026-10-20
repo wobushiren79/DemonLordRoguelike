@@ -171,6 +171,69 @@ public partial class CreatureBean
     {
         return rarity <= 0 ? (int)RarityEnum.N : rarity;
     }
+
+    /// <summary>
+    /// 当前稀有度是否还能继续提升(L 满阶或配置不可进阶时返回 false)
+    /// </summary>
+    /// <returns>可升阶返回 true</returns>
+    public bool CanUpRarity()
+    {
+        int rarityValue = GetRarityValue();
+        if (rarityValue >= (int)RarityEnum.L)
+            return false;
+        return RarityInfoCfg.GetAscendTimeByRarity(rarityValue) > 0;
+    }
+
+    /// <summary>
+    /// 通过升阶药水提升 1 档稀有度,并为新档位随机生成稀有度BUFF(UR/L 无对应BUFF类型时只升档)。
+    /// </summary>
+    /// <returns>新档位随机BUFF;无BUFF或不可升阶返回 null</returns>
+    public BuffBean UpRarityForPotion()
+    {
+        if (!CanUpRarity())
+            return null;
+        int newRarity = GetRarityValue() + 1;
+        rarity = newRarity;
+        BuffBean buffData = BuffUtil.CreateRandomRarityBuff((RarityEnum)newRarity);
+        if (buffData != null)
+            dicRarityBuff[(RarityEnum)newRarity] = buffData;
+        return buffData;
+    }
+
+    /// <summary>
+    /// 当前稀有度是否还能继续下降(N 已是最低档)
+    /// </summary>
+    /// <returns>可降阶返回 true</returns>
+    public bool CanDownRarity()
+    {
+        return GetRarityValue() > (int)RarityEnum.N;
+    }
+
+    /// <summary>
+    /// 将稀有度降到目标档位(钳制在 N~当前档位),并移除所有高于新档位的稀有度BUFF。
+    /// </summary>
+    /// <param name="targetRarity">目标稀有度档位</param>
+    /// <returns>稀有度发生下降返回 true</returns>
+    public bool DownRarity(int targetRarity)
+    {
+        int currentRarity = GetRarityValue();
+        int newRarity = Mathf.Clamp(targetRarity, (int)RarityEnum.N, currentRarity);
+        if (newRarity >= currentRarity)
+            return false;
+        rarity = newRarity;
+        //移除高于新稀有度档位的稀有度BUFF
+        List<RarityEnum> listRemoveKey = new List<RarityEnum>();
+        foreach (var item in dicRarityBuff)
+        {
+            if ((int)item.Key > newRarity)
+                listRemoveKey.Add(item.Key);
+        }
+        for (int i = 0; i < listRemoveKey.Count; i++)
+        {
+            dicRarityBuff.Remove(listRemoveKey[i]);
+        }
+        return true;
+    }
     #endregion
 
     #region 等级升级
@@ -206,6 +269,51 @@ public partial class CreatureBean
     }
 
     /// <summary>
+    /// 当前等级是否还能继续下降(0 级已是最低级)
+    /// </summary>
+    /// <returns>可降级返回 true</returns>
+    public bool CanDownLevel()
+    {
+        return level > 0;
+    }
+
+    /// <summary>
+    /// 通过降级药水降低 1 级: 经验清 0,并按降级前等级的 attribute_point 随机回退升级加点。
+    /// <para>存档没有每级加点历史,无法精确删除该级原加点,只能按本级点数从累计加点中随机回退。</para>
+    /// </summary>
+    /// <returns>等级发生下降返回 true</returns>
+    public bool DownLevelForPotion()
+    {
+        if (!CanDownLevel())
+            return false;
+        var currentLevelInfo = LevelInfoCfg.GetItemData(level);
+        int removePoint = currentLevelInfo != null ? currentLevelInfo.attribute_point : 1;
+        if (removePoint <= 0)
+            removePoint = 1;
+        level = Mathf.Max(0, level - 1);
+        levelExp = 0;
+        creatureAttribute.RemoveRandomAttributeForLevelUp(removePoint);
+        return true;
+    }
+
+    /// <summary>
+    /// 通过降级药水连续降低多级: 逐级调用单级降级,到 0 级自动停止。
+    /// </summary>
+    /// <param name="downLevelNum">药水档位(要降低的最大等级数)</param>
+    /// <returns>实际下降的等级数</returns>
+    public int DownLevelForPotion(int downLevelNum)
+    {
+        int downCount = 0;
+        for (int i = 0; i < downLevelNum; i++)
+        {
+            if (!DownLevelForPotion())
+                break;
+            downCount++;
+        }
+        return downCount;
+    }
+
+    /// <summary>
     /// 通过献祭升级一级: 经验清 0、等级+1,并返回本次升级获得的可分配属性加点数。
     /// <para>升级成功后 levelExp 直接归零(不保留溢出余量),后续经验从 0 重新累积。</para>
     /// <para>属性加点不再自动加成, 改由玩家在 UICreatureAddAttribute 界面手动分配(见献祭升级成功流程)。</para>
@@ -227,6 +335,24 @@ public partial class CreatureBean
         if (attributePoint <= 0)
             attributePoint = 1;
         return attributePoint;
+    }
+
+    /// <summary>
+    /// 通过升级药水连续提升多级: 逐级调用单级升级并累计加点数,到满级自动停止。
+    /// </summary>
+    /// <param name="upLevelNum">药水档位(要提升的最大等级数)</param>
+    /// <returns>本次升级累计获得的可分配属性加点数;已满级返回 0</returns>
+    public int UpLevelForPotion(int upLevelNum)
+    {
+        int totalAttributePoint = 0;
+        for (int i = 0; i < upLevelNum; i++)
+        {
+            int attributePoint = UpLevelForSacrifice();
+            if (attributePoint <= 0)
+                break;
+            totalAttributePoint += attributePoint;
+        }
+        return totalAttributePoint;
     }
     #endregion
 

@@ -1,6 +1,6 @@
 ---
 name: creature-system
-description: Demon Lord Roguelike 游戏的生物系统开发指南。使用此SKILL当需要创建或修改生物实体、生物属性、生物创建/删除/管理、生物数据(CreatureBean)、生物稀有度/等级系统等，与 creature-card-system(卡片UI) 和 ai-system(AI行为) 互补。
+description: Demon Lord Roguelike 游戏的生物系统开发指南。使用此SKILL当需要创建或修改生物实体、生物属性、生物创建/删除/管理、生物数据(CreatureBean)、生物稀有度/等级系统、GM升级/降级/升阶/降阶药水数据方法等，与 creature-card-system(卡片UI) 和 ai-system(AI行为) 互补。
 watched_files:
   - Assets/Scripts/Component/Handler/CreatureHandler.cs
   - Assets/Scripts/Component/Manager/CreatureManager.cs
@@ -188,6 +188,10 @@ public enum CreatureAttributeTypeEnum
 最终属性 (GetFinalAttribute())
     用于战斗中的伤害计算、速度计算等
 ```
+
+### 升级加点回退（降级药水）
+
+`dicAttributeLevelUp` 只保存“属性类型 → 累计数值”，没有每级加点历史；新增 `RemoveRandomAttributeForLevelUp(removeNum)` 供降级药水按等级档位逐级回退：每点从仍有整点数的属性中随机一项，按 `CreatureUtil.GetAttributePointAddValue` 扣减，0 值键最后清理；不足时能退多少退多少并记录 warning。该回退不按 `show_attribute` 过滤，避免历史/异常数据无法退回。多级降级由 `CreatureBean.DownLevelForPotion(int)` 逐级调用，0 级自动停止。
 
 ---
 

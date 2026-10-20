@@ -103,7 +103,7 @@ public partial class UIViewFightMainAttCreateProgress : BaseUIView, IRadioButton
     }
 
     /// <summary>
-    /// 快捷键触发加快进攻节奏（F2）：Quick 按钮隐藏(未解锁研究/非征服模式)时无效
+    /// 快捷键触发加快进攻节奏（F2）：Quick 按钮隐藏(未解锁研究/该模式无世界难度数据)时无效
     /// </summary>
     private void TriggerQuickByKey()
     {
@@ -166,7 +166,7 @@ public partial class UIViewFightMainAttCreateProgress : BaseUIView, IRadioButton
 
     /// <summary>
     /// 设置2倍速按钮显隐
-    /// 2倍速与世界绑定：仅征服模式且已解锁当前世界当前难度的「2倍速游戏」研究时才显示
+    /// 2倍速与世界绑定：征服/无尽/100勇士模式且已解锁当前世界当前难度的「2倍速游戏」研究时才显示
     /// </summary>
     /// <param name="isShow">是否显示2倍速按钮</param>
     public void SetSpeed2ButtonShow(bool isShow)
@@ -177,7 +177,7 @@ public partial class UIViewFightMainAttCreateProgress : BaseUIView, IRadioButton
 
     /// <summary>
     /// 设置0速按钮显隐
-    /// 0速与世界绑定：仅征服模式且已解锁当前世界当前难度的「0倍速游戏」研究时才显示
+    /// 0速与世界绑定：征服/无尽/100勇士模式且已解锁当前世界当前难度的「0倍速游戏」研究时才显示
     /// </summary>
     /// <param name="isShow">是否显示0速按钮</param>
     public void SetSpeed0ButtonShow(bool isShow)
@@ -214,7 +214,7 @@ public partial class UIViewFightMainAttCreateProgress : BaseUIView, IRadioButton
     #region 显隐控制
     /// <summary>
     /// 设置 Quick 按钮显隐
-    /// Quick 与世界绑定：仅征服模式且已解锁当前世界的「加快进攻节奏」研究时才显示
+    /// Quick 与世界绑定：征服/无尽/100勇士模式且已解锁当前世界当前难度的「加快进攻节奏」研究时才显示
     /// </summary>
     /// <param name="isShow">是否显示 Quick 按钮</param>
     public void SetQuickButtonShow(bool isShow)

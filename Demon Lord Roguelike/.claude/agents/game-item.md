@@ -1,6 +1,6 @@
 ---
 name: game-item
-description: 道具系统开发：道具创建/装备/使用、背包系统、道具商店、道具信息弹窗。
+description: 道具系统开发：道具创建/装备/使用、背包系统、道具商店、道具信息弹窗、GM成长药水(升级/降级多级档位、升阶/降阶)。
 tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Bean/Game/ItemBean.cs
@@ -20,7 +20,7 @@ watched_files:
 
 ### 道具数据
 - **ItemBean / ItemBeanPartial** - 道具基础数据（运行时实例含 `rarity` 品质；`juicerExp` 魔汁经验值，仅 Juice 类型有效，旧存档无此字段默认 0 兼容）
-- **ItemsEnum** - 道具枚举定义（`ItemTypeEnum`：装备部位 Hat=1~Weapon=10 + **消耗品 Juice=11（魔汁，限非魔王）/ TransformPotion=18（幻化药）/ RestorePotion=19（幻原药），均非装备、两药含魔王可用** + Portrait=101 头像；`ItemIdEnum.Juice = 200001` / `RestorePotion = 200003`——内置幻化药 200002 已删除、枚举同步移除，幻化药全部由 Mod 提供；`ItemSourceEnum.ConquerReward = 1` 征服模式奖励来源）
+- **ItemsEnum** - 道具枚举定义（`ItemTypeEnum`：装备部位 Hat=1~Weapon=10 + **消耗品 Juice=11（魔汁，限非魔王）/ TransformPotion=18（幻化药）/ RestorePotion=19（幻原药），GM 成长药水 LevelUp=91 / LevelDown=92 / RarityUp=93 / RarityDown=94（均限普通魔物）** + Portrait=101 头像；`ItemIdEnum.Juice = 200001` / `RestorePotion = 200003` / 4 种 GM 药水 `200004~200007`——内置幻化药 200002 已删除、枚举同步移除，幻化药全部由 Mod 提供；`ItemSourceEnum.ConquerReward = 1` 征服模式奖励来源）
 - **ItemsInfoBean** - 道具配置信息（来自 Excel）
   - `reward_rarity`（string，逗号分隔稀有度ID，空=全稀有度）：**奖励可出稀有度白名单**。空表示该道具在任意稀有度奖励中都可能产出；配了(如 `5,6`)则仅在 UR/L 稀有度的奖励里出现。辅助方法在 `ItemsInfoBeanPartial`：`GetRewardRarityList()`（解析缓存）、`IsMatchRewardRarity(int rarity)`（空白名单→true）。注意与 `ItemBean.rarity`（运行时实例品质）语义不同。
   - 消费点：`RewardSelectBean.CreateItemEquip`（征服/传送门装备奖励池）先定目标稀有度→按 `IsMatchRewardRarity` 过滤道具池→随机取一件；过滤后为空回退发魔晶。**仅**作用于装备奖励生成，扭蛋/其它路径不受影响。
@@ -47,12 +47,12 @@ watched_files:
 
 ### 魔汁（Juice，首个消耗品类道具）
 
-道具类型不再只有装备部位 + 头像：**魔汁是首个消耗品**（`ItemTypeEnum.Juice = 11`，紧随 Weapon=10），由榨汁产出、对魔物使用加经验。消耗品后续新增幻化药=18/幻原药=19（见下文「幻化药 / 幻原药」）。
+道具类型不再只有装备部位 + 头像：**魔汁是首个消耗品**（`ItemTypeEnum.Juice = 11`，紧随 Weapon=10），由榨汁产出、对魔物使用加经验。消耗品后续新增幻化药=18/幻原药=19（见下文「幻化药 / 幻原药」）与 4 种 GM 成长药水=91~94（见下文「GM 成长药水」）。
 
 - **数据**：`ItemBean.juicerExp`（long 实例字段）存每个魔汁的经验值，榨汁时按投入魔物等级汇总写入（产出端 `CreatureJuicerLogic.SettleJuiceReward`，详见 juicer-system）；旧存档无此字段 JSON 反序列化默认 0 兼容。
 - **配置**：excel_items_info 新行 id=200001（item_type=11、`num_max=1` 不堆叠——每个魔汁实例经验不同故不入堆、creature_model_id=0、icon_res=`Item_Juicer_1` 无图集后缀走默认 Items 图集、name textId=200001）。入账走 `userData.AddBackpackItem(itemBean)` 不堆叠重载（每个魔汁是独立 ItemBean）。
-- **使用流程**（魔物管理页 `UICreatureManager`）：`EventForItemBackpackClickSelect` 点击统一进 `UseOrEquipItem(itemData)` 分流——Juice → `UseJuiceItem`（`#region 魔汁使用`）、TransformPotion → `UseTransformPotionItem`、RestorePotion → `UseRestorePotionItem`，其余道具照旧 `SetCreatureEquip`。`UseJuiceItem`：无选中生物/魔王兜底返回（列表已隐藏魔汁）→ `IsMaxLevel()` 满级 Toast 61015 拦截 → `UIHandler.ShowDialogNormal` 确认框（textId 61014，格式化生物名+juicerExp）→ 确定回调：`creatureData.levelExp += juicerExp` → `RemoveBackpackItem` → `SaveUserData()` → 三连刷新（`SetCardDetails` 经验显示 + `RefreshSacrificeButton` 献祭按钮点亮 + `InitBackpackItemsData` 列表移除）。**经验只累计 levelExp 不自动升级**（沿用战斗结算加经验语义，升级仍走献祭 CanUpLevel/UpLevelForSacrifice）。
-- **列表过滤**：`UIViewItemBackpackList.FilterItems` 保留条件 = `itemData.CanEquipForCreature(creatureData)`（含魔王专属校验：选中非魔王生物时魔王专属装备直接隐藏）或（`GetItemType()==Juice` 且 `!creatureData.IsDemonLord()`）或 `GetItemType()==TransformPotion` 或 `GetItemType()==RestorePotion`（**两药不带 IsDemonLord 排除**——魔王选中时两药可见可用，魔汁仍限非魔王）；`UIDialogSelectItem`（creatureData=null）走 `AddValidItems` 显示全部配置有效道具。**失效道具统一隐藏**：配置缺失（所属Mod未开启/已删除）的道具在所有分支一律跳过不展示（有上下文分支 `itemInfo==null continue`、无上下文分支 `AddValidItems`），数据保留在存档待 Mod 重开后恢复；`ItemBean.GetItemType()` 对 itemsInfo==null 兜底返回 `(ItemTypeEnum)0` 防排序崩溃，`itemsInfo` getter 查询失败只打一次日志（`_isItemsInfoQueried` 标记防刷屏）。
+- **使用流程**（魔物管理页 `UICreatureManager`）：`EventForItemBackpackClickSelect` 点击统一进 `UseOrEquipItem(itemData)` 分流——Juice → `UseJuiceItem`（`#region 魔汁使用`）、TransformPotion → `UseTransformPotionItem`、RestorePotion → `UseRestorePotionItem`、4 种 GM 成长药水（91~94）→ 各自 `UseXxxPotionItem`，其余道具照旧 `SetCreatureEquip`。`UseJuiceItem`：无选中生物/魔王兜底返回（列表已隐藏魔汁）→ `IsMaxLevel()` 满级 Toast 61015 拦截 → `UIHandler.ShowDialogNormal` 确认框（textId 61014，格式化生物名+juicerExp）→ 确定回调：`creatureData.levelExp += juicerExp` → `RemoveBackpackItem` → `SaveUserData()` → 三连刷新（`SetCardDetails` 经验显示 + `RefreshSacrificeButton` 献祭按钮点亮 + `InitBackpackItemsData` 列表移除）。**经验只累计 levelExp 不自动升级**（沿用战斗结算加经验语义，升级仍走献祭 CanUpLevel/UpLevelForSacrifice）。
+- **列表过滤**：`UIViewItemBackpackList.FilterItems` 保留条件 = `itemData.CanEquipForCreature(creatureData)`（含魔王专属校验：选中非魔王生物时魔王专属装备直接隐藏）或（普通魔物成长消耗品：`Juice`/4 种 GM 药水 且 `!creatureData.IsDemonLord()`）或 `GetItemType()==TransformPotion` 或 `GetItemType()==RestorePotion`（**两药不带 IsDemonLord 排除**——魔王选中时两药可见可用，魔汁与 GM 成长药水仍限普通魔物）；`UIDialogSelectItem`（creatureData=null）走 `AddValidItems` 显示全部配置有效道具。**失效道具统一隐藏**：配置缺失（所属Mod未开启/已删除）的道具在所有分支一律跳过不展示（有上下文分支 `itemInfo==null continue`、无上下文分支 `AddValidItems`），数据保留在存档待 Mod 重开后恢复；`ItemBean.GetItemType()` 对 itemsInfo==null 兜底返回 `(ItemTypeEnum)0` 防排序崩溃，`itemsInfo` getter 查询失败只打一次日志（`_isItemsInfoQueried` 标记防刷屏）。
 - **气泡**：`UIPopupItemInfo.SetJuiceExp`（SetData 末尾调用）——Juice 类型显示 `ui_JuiceExpText` 并填 textId 61017「经验+{0}」，其余道具隐藏；字段经 AutoLinkUI 按名绑定（prefab Details 节点下 `JuiceExpText`，默认隐藏），为 null 容错跳过；魔汁 dicAttribute 为空故属性区自动隐藏，两者互斥。注意：`ui_JuiceExpText` 与 `ui_UIViewPopupItemAttribute`（属性行模板）目标均是非激活对象，**未经编辑器序列化**（YAML fileID:0）只能靠 Awake AutoLink——`SetData` 入口已带 `ui_UIViewPopupItemAttribute == null` 时补 `AutoLinkUI()` 的容错（防 SetData 先于 Awake 被调用时属性区静默空白，详见 ui-popup agent「字段绑定时序容错」）。
 - **相关配置**：LevelInfo 新增 `juicer_exp` 列（1~10 级 = 同级升级经验 100%，另有 id=0 行=20=1级的20%）；excel_language UIText sheet 新增 61014/61015/61016/61017（12 语种），ItemsInfo sheet 新增 id=200001「魔汁」。
 
@@ -71,6 +71,16 @@ watched_files:
 - **配置**：excel_items_info id=200003（item_type=19、num_max=99、icon_res=`Item_Potion_2`、name=200003）保留；原 id=200002 内置幻化药行已删除（幻化药全部由 Mod 提供，图标仍复用内置 `Item_Potion_1`）；num_max=99 可堆叠（2026-10-08 起），消耗走 `RemoveBackpackItem(itemData, num)` 递减重载（无参重载仍整 Bean 移除）；获取途径=征服通关领奖选中幻化药时附赠 1 瓶（`UIRewardSelect.GrantRewardItemToBackpack`，Toast 61025，详见 fight-reward-system）；other_data 语义=spine 资源组合串（`chessRes` 或 `chessRes,avatorRes|uiScale;x,y`，资源名须为 SkeletonDataAsset 的 Addressables 资源名/Mod catalog key，chess 段须含完整动画集 Idle/Walk/Attack/Dead）。excel_language ItemsInfo sheet 的 200002 道具名行已同步删除（200003 保留，12 语种）、UIText sheet 加 61018（幻化确认）/61019（幻原确认）/61020（无幻化拦截）/61021（配置异常拦截）/61022（预览标签「战斗形象」）/61023（预览标签「详情形象」）/61025（附赠幻原药 Toast）。
 - **Mod 幻化药实例**：AeonsEchoSpine Mod（回响幻化药 341 个，Chess×Avator 笛卡尔积）由 `Mods/AeonsEchoSpine/JsonText/ItemsInfo.txt` 注入，全部配 `source="1"`（征服模式奖励来源：征服通关领奖随机一个魔晶位替换为池内随机幻化药，详见 fight-reward-system）；Mod 道具 `name` 的 modId 拼接由 **Excel 列头 `name[language]` 标记驱动**——`ExcelEditorWindow.CreateEntity` 生成 `ItemsInfoBean.cs` 时自动产出 `CombineModReferenceIds` 重写（指向 Mod 自带语言表同自ID 行，name=0 不拼接，**不能复用主游戏 textId**），无需手写。生产流程见 agent **aeonsecho-spine-mod** / skill `aeonsecho-spine-mod`。
 
+### GM 成长药水（LevelUp/LevelDown/RarityUp/RarityDown = 91~94）
+
+GM 调试成长消耗品（2026-10 新增）：类型固定 4 种（升级91/降级92/升阶93/降阶94）；升级档位 id=200004(+1)+200008~200016(+2~+10)，降级档位 id=200005(-1)+200017~200025(-2~-10)，升/降阶=200006/200007。`num_max=999` 可堆叠，升类图标 `Item_Potion_1`、降类图标 `Item_Potion_2`，仅普通魔物可用（列表对魔王隐藏 + Use 方法兜底）。多级档位写 `ItemsInfo.other_data` 的 `level_delta:N`，由 `ItemsInfoBeanPartial.GetLevelPotionDelta()` 解析（空/非法兜底 1）。确认/拦截文案 UIText 61026~61035（12 语种，61034/61035 为多级确认框）。
+
+- **使用链路**：`UICreatureManager.UseOrEquipItem` 分流到 `UseLevelUpPotionItem`/`UseLevelDownPotionItem`/`UseRarityUpPotionItem`/`UseRarityDownPotionItem`；确认框 → 数据层方法 → `RemoveBackpackItem(itemData, 1)` → 落盘/刷新。
+- **升级**：满级 61030 拦截；确认后内存中消耗+`UpLevelForPotion(levelDelta)`（逐级升级并累计加点，满级自动停止），打开 `UICreatureAddAttribute`；加点确认后才统一 `SaveUserData` 并重开管理页（强退全不落盘）。
+- **降级**：0 级 61031 拦截；`DownLevelForPotion(levelDelta)` 逐级降级并按当时等级 `attribute_point` 随机回退累计升级加点（`CreatureAttributeBean.RemoveRandomAttributeForLevelUp`），0 级自动停止。
+- **升阶**：满阶 61032 拦截；`UpRarityForPotion()` 稀有度+1，新档位 R/SR/SSR 经 `BuffUtil.CreateRandomRarityBuff` 随机授 BUFF，UR/L 无 BUFF 只升档。
+- **降阶**：N 阶 61033 拦截；`DownRarity()` 稀有度-1并移除高于新档位的 `dicRarityBuff`，与终焉议会降稀有度共用算法。
+
 ## 关键文件
 
 | 文件 | 路径 |
@@ -81,7 +91,7 @@ watched_files:
 | 道具项（基类+装备+背包） | Assets/Scripts/Component/UI/Common/Item/ |
 | 背包列表 | Assets/Scripts/Component/UI/Common/Backpack/ |
 | 道具信息气泡 | Assets/Scripts/Component/UI/Popup/ItemInfo/ |
-| 道具配置Bean(含 reward_rarity 辅助) | Assets/Scripts/Bean/MVC/Game/ItemsInfoBeanPartial.cs |
+| 道具配置Bean(含 reward_rarity/level_delta 辅助) | Assets/Scripts/Bean/MVC/Game/ItemsInfoBeanPartial.cs |
 | 道具稀有度配置编辑器 | Assets/Editor/ItemRarityConfigEditorWindow.cs |
 | 幻化相关 | Assets/Scripts/Bean/Game/CreatureBeanPartial.cs（`GetTransformSpineRes`）· Assets/Scripts/Component/UI/Game/CreatureManager/UICreatureManager.cs（`UseOrEquipItem`/`UseTransformPotionItem`/`UseRestorePotionItem`） |
 

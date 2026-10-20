@@ -102,21 +102,21 @@ public partial class UIFightMain : BaseUIComponent
     {
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var fightType = gameFightLogic.fightData.gameFightType;
-        //关卡进度文本仅征服模式显示；进攻进度条征服/测试/挑战100勇士均显示(挑战100勇士同样有100只怪的进攻波次数据)
+        //关卡进度文本仅征服模式显示；进攻进度条征服/测试/挑战100勇士/无尽均显示(都有进攻波次数据, Quick/速度按钮挂在进度条上)
         bool isConquer = fightType == GameFightTypeEnum.Conquer;
         SetFightLevelShow(isConquer);
-        SetAttCreateProgressShow(isConquer || fightType == GameFightTypeEnum.Test || fightType == GameFightTypeEnum.ChallengeHundred);
+        SetAttCreateProgressShow(isConquer || fightType == GameFightTypeEnum.Test || fightType == GameFightTypeEnum.ChallengeHundred || fightType == GameFightTypeEnum.Infinite);
         //仅征服模式刷新当前关卡进度
         if (isConquer)
         {
             SetFightLevel(gameFightLogic.fightData.fightNum, gameFightLogic.fightData.figthNumMax);
         }
-        //Quick 按钮显隐：仅征服模式且已解锁当前世界的「加快进攻节奏」研究才显示
-        RefreshQuickButtonShow(isConquer, gameFightLogic);
-        //2倍速按钮显隐：仅征服模式且已解锁当前世界的「2倍速游戏」研究才显示
-        RefreshSpeed2ButtonShow(isConquer, gameFightLogic);
-        //0速按钮显隐：仅征服模式且已解锁当前世界的「0倍速游戏」研究才显示
-        RefreshSpeed0ButtonShow(isConquer, gameFightLogic);
+        //Quick 按钮显隐：征服/无尽/100勇士且已解锁当前世界「当前难度」的「加快进攻节奏」研究才显示
+        RefreshQuickButtonShow(gameFightLogic);
+        //2倍速按钮显隐：征服/无尽/100勇士且已解锁当前世界「当前难度」的「2倍速游戏」研究才显示
+        RefreshSpeed2ButtonShow(gameFightLogic);
+        //0速按钮显隐：征服/无尽/100勇士且已解锁当前世界「当前难度」的「0倍速游戏」研究才显示
+        RefreshSpeed0ButtonShow(gameFightLogic);
 
         float progressAttack = gameFightLogic.fightData.fightAttackData.GetAttackProgress();
         float progressAttackTime = 0;
@@ -149,7 +149,7 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// 设置进攻进度条显隐(征服与测试模式显示，其余模式隐藏)
+    /// 设置进攻进度条显隐(征服/测试/挑战100勇士/无尽显示，其余模式隐藏)
     /// </summary>
     /// <param name="isShow">是否显示</param>
     public void SetAttCreateProgressShow(bool isShow)
@@ -160,22 +160,18 @@ public partial class UIFightMain : BaseUIComponent
 
     /// <summary>
     /// 刷新 Quick(加快进攻节奏) 按钮显隐
-    /// 仅征服模式、且已解锁当前世界「当前难度」的「加快进攻节奏」研究时显示；其余情况隐藏
+    /// 征服/无尽/100勇士模式、且已解锁当前世界「当前难度」的「加快进攻节奏」研究时显示；其余情况隐藏
     /// </summary>
-    /// <param name="isConquer">当前是否征服模式</param>
     /// <param name="gameFightLogic">当前战斗逻辑</param>
-    public void RefreshQuickButtonShow(bool isConquer, GameFightLogic gameFightLogic)
+    public void RefreshQuickButtonShow(GameFightLogic gameFightLogic)
     {
         bool isShowQuick = false;
-        //仅征服模式才有世界概念，非征服模式一律隐藏 Quick
-        if (isConquer
-            && gameFightLogic.fightData is FightBeanForConquer fightDataForConquer
-            && fightDataForConquer.gameWorldInfoRandomData != null)
+        //有世界概念的模式(征服/无尽/100勇士)取当前世界+难度判定; 无世界数据的模式隐藏
+        GameWorldInfoRandomBean worldRandom = gameFightLogic?.fightData?.GetGameWorldInfoRandomData();
+        if (worldRandom != null)
         {
-            long worldId = fightDataForConquer.gameWorldInfoRandomData.worldId;
-            int difficultyLevel = fightDataForConquer.gameWorldInfoRandomData.difficultyLevel;
             var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
-            isShowQuick = userUnlock.CheckIsUnlockWorldQuickAttack(worldId, difficultyLevel);
+            isShowQuick = userUnlock.CheckIsUnlockWorldQuickAttack(worldRandom.worldId, worldRandom.difficultyLevel);
         }
         ui_UIViewFightMainAttCreateProgress.SetQuickButtonShow(isShowQuick);
         //同步 F2(加快进攻节奏)按键提示显隐,与Quick按钮同门控
@@ -185,22 +181,18 @@ public partial class UIFightMain : BaseUIComponent
 
     /// <summary>
     /// 刷新 2倍速 按钮显隐与选中态
-    /// 仅征服模式、且已解锁当前世界「当前难度」的「2倍速游戏」研究时显示；选中态跟随 fightData.gameSpeed（BOSS关重载场景后不丢失）
+    /// 征服/无尽/100勇士模式、且已解锁当前世界「当前难度」的「2倍速游戏」研究时显示；选中态跟随 fightData.gameSpeed（BOSS关重载场景后不丢失）
     /// </summary>
-    /// <param name="isConquer">当前是否征服模式</param>
     /// <param name="gameFightLogic">当前战斗逻辑</param>
-    public void RefreshSpeed2ButtonShow(bool isConquer, GameFightLogic gameFightLogic)
+    public void RefreshSpeed2ButtonShow(GameFightLogic gameFightLogic)
     {
         bool isShowSpeed2 = false;
-        //仅征服模式才有世界概念，非征服模式一律隐藏 2倍速
-        if (isConquer
-            && gameFightLogic.fightData is FightBeanForConquer fightDataForConquer
-            && fightDataForConquer.gameWorldInfoRandomData != null)
+        //有世界概念的模式(征服/无尽/100勇士)取当前世界+难度判定; 无世界数据的模式隐藏
+        GameWorldInfoRandomBean worldRandom = gameFightLogic?.fightData?.GetGameWorldInfoRandomData();
+        if (worldRandom != null)
         {
-            long worldId = fightDataForConquer.gameWorldInfoRandomData.worldId;
-            int difficultyLevel = fightDataForConquer.gameWorldInfoRandomData.difficultyLevel;
             var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
-            isShowSpeed2 = userUnlock.CheckIsUnlockWorldSpeed2(worldId, difficultyLevel);
+            isShowSpeed2 = userUnlock.CheckIsUnlockWorldSpeed2(worldRandom.worldId, worldRandom.difficultyLevel);
         }
         ui_UIViewFightMainAttCreateProgress.SetSpeed2ButtonShow(isShowSpeed2);
         //显示时同步一次选中态，保证与当局游戏速度一致
@@ -213,22 +205,18 @@ public partial class UIFightMain : BaseUIComponent
 
     /// <summary>
     /// 刷新 0速 按钮显隐与选中态
-    /// 仅征服模式、且已解锁当前世界「当前难度」的「0倍速游戏」研究时显示；选中态跟随 fightData.gameSpeed（BOSS关重载场景后不丢失）
+    /// 征服/无尽/100勇士模式、且已解锁当前世界「当前难度」的「0倍速游戏」研究时显示；选中态跟随 fightData.gameSpeed（BOSS关重载场景后不丢失）
     /// </summary>
-    /// <param name="isConquer">当前是否征服模式</param>
     /// <param name="gameFightLogic">当前战斗逻辑</param>
-    public void RefreshSpeed0ButtonShow(bool isConquer, GameFightLogic gameFightLogic)
+    public void RefreshSpeed0ButtonShow(GameFightLogic gameFightLogic)
     {
         bool isShowSpeed0 = false;
-        //仅征服模式才有世界概念，非征服模式一律隐藏 0速
-        if (isConquer
-            && gameFightLogic.fightData is FightBeanForConquer fightDataForConquer
-            && fightDataForConquer.gameWorldInfoRandomData != null)
+        //有世界概念的模式(征服/无尽/100勇士)取当前世界+难度判定; 无世界数据的模式隐藏
+        GameWorldInfoRandomBean worldRandom = gameFightLogic?.fightData?.GetGameWorldInfoRandomData();
+        if (worldRandom != null)
         {
-            long worldId = fightDataForConquer.gameWorldInfoRandomData.worldId;
-            int difficultyLevel = fightDataForConquer.gameWorldInfoRandomData.difficultyLevel;
             var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
-            isShowSpeed0 = userUnlock.CheckIsUnlockWorldSpeed0(worldId, difficultyLevel);
+            isShowSpeed0 = userUnlock.CheckIsUnlockWorldSpeed0(worldRandom.worldId, worldRandom.difficultyLevel);
         }
         ui_UIViewFightMainAttCreateProgress.SetSpeed0ButtonShow(isShowSpeed0);
         //显示时同步一次选中态，保证与当局游戏速度一致

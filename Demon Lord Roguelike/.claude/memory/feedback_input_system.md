@@ -13,6 +13,7 @@ metadata:
 - UI 类（`BaseUIInit`/`BaseUIView`/`BaseUIComponent`）重写 `OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)` 响应输入，**不要**在 `Update()` 里轮询 `Input`。
 - 数字键已封装为 `InputActionUIEnum.N1~N9`（同时绑定主键盘与小键盘），`N1~N9` 连续可用 `inputType - InputActionUIEnum.N1 + 1` 取序号。
 - 新按键：先在 `GameInputActions.inputactions` 配绑定 + `InputActionUIEnum` 补枚举，再走回调派发。
+- 弹窗门禁细节：`BaseUIInit.CallBackForInputActionStarted` 在 `dialogList` 非空时**仅放行最顶层弹窗（列表末位）自身**，其余 UI（含下层弹窗）拦截——弹窗要响应 ESC/快捷键（如 UIDialogPortalDetails 的 ESC 关闭）靠此规则，勿改回"有弹窗全拦截"。
 - 已落地示例：战斗卡片 1-9 快捷选择由 `UIFightMain.OnInputActionForStarted` 接 N1~N9，派发到 `UIViewCreatureCardItemForFight.HandleForPressKeySelect()`（再次按同键取消选中）。
 
 详见 CLAUDE.md「输入处理规则」。相关：[[feedback-code-style]]

@@ -186,7 +186,7 @@ World1ConquerCompleteCount1:10&World1ConquerCompleteCount10:4   // 两条同时�
 **条件枚举**：`ResearchPreConditionEnum`（在 `Assets/Scripts/Enums/GameStateEnum.cs`，紧随 `ResearchInfoTypeEnum`）。现有三类条件：
 - `World1ConquerCompleteCount1~10`（值 1~10）= 剑与魔法（世界1）征服模式难度1~10通关次数（数值=要求的通关次数下限，数据由成就统计 `UserAchievementBean.GetConquerCompleteCount` 提供）
 - `GashaponCreatureDrawCount1001~7004`（30 个，**枚举值=职业生物id**）= 该职业扭蛋累计抽出次数（数值=要求的抽出数量下限，数据由 `UserAchievementBean.GetGashaponCreatureDrawCount` 提供；典型用法：职业独立扭蛋 x1 研究填 `GashaponCreatureDrawCount{职业id}:99`）
-- `AnyWorldInfiniteUnlocked`（值 10001，世界通用段）= **任意一个世界的无尽模式已解锁**（数值无意义缺省1；判定=遍历 `GameWorldInfoCfg.GetAllArrayData()` 任一世界 `GetUnlockInfiniteDifficultyLevel(worldId)>0` 即满足；用于无尽出现概率研究 100300008 的前置——四世界无尽起始id中 100310202/302/402 无研究节点，若走 `pre_unlock_ids` OR 表达式会触发 `UIBaseResearch.CreateLine` 空引用，故走 pre_data 通道）
+- `AnyWorldInfiniteUnlocked`（值 10001，世界通用段）= **任意一个世界的无尽模式已解锁**（数值无意义缺省1；判定=遍历 `GameWorldInfoCfg.GetAllArrayData()` 任一世界 `GetUnlockInfiniteDifficultyLevel(worldId)>0` 即满足；**当前无节点使用**——无尽出现概率研究 100300008 已于 2026-10-20 改为 `pre_unlock_ids="100310102"`；该枚举保留以备多世界无尽研究节点补齐后复用）
 
 **判定链路**：`ResearchInfoBeanPartial.GetPreDataConditions()`（拆分走通用扩展 `StringExtension.SplitForDictionaryEnumLong<T>`：缺省值补1、无法识别的条目回收到错误列表不抛异常；缓存为 `Dictionary<ResearchPreConditionEnum, long>`，出错记 `isPreDataParseError`）→ `CheckPreDataIsMeet()` → 静态 `CheckPreDataConditionIsMeet(userData, condition, value)`（区间分发求值：世界1通关次数=枚举值偏移+1 得难度；职业抽出次数=枚举值本身即职业 id 直接读统计；`AnyWorldInfiniteUnlocked` 为等值判断、遍历世界表查无尽解锁，放区间判定之前）。
 
@@ -256,8 +256,8 @@ public enum UnlockEnum : long
     PortalPreviewRoadLength = 100300004, // 传送门详情预览-路径长度
     PortalPreviewReward = 100300005,     // 传送门详情预览-奖励道具
     PortalRefreshNum = 100300006,        // 传送门刷新次数(研究等级=可用刷新次数上限,通关回满,level_max=10)
-    ChallengeHundredShowRate = 100300007, // 是魔王就挑战100勇士出现概率(研究等级×10=传送门世界刷为该模式的概率百分数0~100;前置=剑与魔法征服难度2研究100310112,同世界分支;详情 details=900000022 含{Value}占位,气泡拼接填待解锁级概率)
-    InfiniteShowRate = 100300008,        // 无尽模式出现概率(基础10+研究等级×10=概率百分数,9级满级=100;前置=pre_data条件 AnyWorldInfiniteUnlocked 任意世界无尽已解锁,不走pre_unlock_ids;详情复用 details=900000022)
+    ChallengeHundredShowRate = 100300007, // 是魔王就挑战100勇士出现概率(研究等级×10=传送门世界刷为该模式的概率百分数0~100;前置=100勇士难度2研究100310160,同世界分支;详情 details=900000022 含{Value}占位,气泡拼接填待解锁级概率)
+    InfiniteShowRate = 100300008,        // 无尽模式出现概率(基础10+研究等级×10=概率百分数,9级满级=100;前置=无尽难度2研究100310102,同世界分支;详情复用 details=900000022)
     ChallengeHundredBossRate = 100300009, // 真勇者挑战(挑战100勇士-BOSS挑战)出现概率(基础10+研究等级×10=概率百分数,4级满级=50;前置=是魔王就挑战100勇士出现概率研究100300007,pre_data留空;详情复用 details=900000022)
     GashaponMachine = 100400000,       // 解锁孕育
     GashaponRarityR = 100401000,       // 稀有度R
@@ -315,25 +315,25 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 
 ### 世界分支(1003 段) — 挑战100勇士出现概率（概率型研究消费点）
 
-`ChallengeHundredShowRate`（unlock_id **100300007**，`research_type=4` 世界节点，`icon_res=ui_research_9`，`level_max=10`，`position(-160,-320)` 与难度链同列、位于前置 `100310112`（剑与魔法征服难度2研究）正下方（行距加倍320后难度1行=-320），`pre_unlock_ids="100310112"`——同分支前置，连线正常绘制）——研究等级 ×10 = 传送门世界刷新为「是魔王就挑战100勇士」模式的概率（百分数 0~100，未解锁=0，满级 100）。
+`ChallengeHundredShowRate`（unlock_id **100300007**，`research_type=4` 世界节点，`icon_res=ui_research_9`，`level_max=10`，`position(-800,-90)` 位于100勇士难度2节点正左方，`pre_unlock_ids="100310160"`——前置=100勇士难度2研究，同分支前置、连线正常绘制）——研究等级 ×10 = 传送门世界刷新为「是魔王就挑战100勇士」模式的概率（百分数 0~100，未解锁=0，满级 100）。
 
-- **概率型研究消费点先例**（仿扭蛋概率研究）：消费不在 UI 门控，而在 `GameWorldInfoRandomBean.SetGameFightTypeRandom`——每次生成传送门世界时先按该概率判定，命中则抽配置行生成为挑战100勇士世界（**所有已解锁世界都可能刷出**）；抽行为**两段判定**：先按 BOSS 挑战出现概率（`GetUnlockChallengeHundredBossRate()`，基础 10%+研究 `ChallengeHundredBossRate`(100300009) 等级×10%，满级 50%，详见下文「真勇者挑战」节）判定普通/BOSS，再在命中类型行内等概率随机（`FightTypeChallengeHundredInfoCfg.GetRandomRow(当前世界最高已解锁难度, bossRate)`）；命中但当前世界最高已解锁难度无匹配配置行时落回原征服/无尽随机。数值读取 `UserUnlockBean.GetUnlockChallengeHundredShowRate()`（=研究等级×10）。
+- **概率型研究消费点先例**（仿扭蛋概率研究）：消费不在 UI 门控，而在 `GameWorldInfoRandomBean.SetGameFightTypeRandom`——每次生成传送门世界时先按该概率判定，命中则抽配置行生成为挑战100勇士世界（**所有已解锁世界都可能刷出**）；抽行为**两段判定**：先按 BOSS 挑战出现概率（`GetUnlockChallengeHundredBossRate()`，基础 10%+研究 `ChallengeHundredBossRate`(100300009) 等级×10%，满级 50%，详见下文「真勇者挑战」节）判定普通/BOSS，再在命中类型行内等概率随机（`FightTypeChallengeHundredInfoCfg.GetRandomRow(当前世界最高已解锁100勇士难度, bossRate)`）；命中但当前最高已解锁100勇士难度无匹配配置行时落回原征服/无尽随机。数值读取 `UserUnlockBean.GetUnlockChallengeHundredShowRate()`（=研究等级×10）。**100勇士难度自 2026-10 起为独立研究链**，不再取征服难度。
 - **气泡按级标概率**：名字十二语言保持原名「是魔王就挑战100勇士」，概率详情经研究表 `details[language]` 列=900000022「（概率{Value}%）」（cn/tw/jp 全角括号、其余半角带前导空格，12 语言全翻译），`GetDetailsLanguageWithLevelDetail` 按 待解锁等级=min(当前+1,满级) 填概率拼在名字后（走 `UserUnlockBean.GetChallengeHundredShowRateForLevel(level)`=等级×`CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL`(10)；details 机制详见「研究配置 Bean 扩展方法」节，22 个 level_max>1 节点详情语言条目占号段 900000001~900000022）。
 - **落表**同其他节点：`excel_research_info`(id=100300007, `research_type=4`, `pay_crystal` 十级独立阶梯 `100,200,400,800,1500,2500,4000,6000,9000,15000`, `pre_data` 留空, `name`=同id, `details[language]`=900000022, 备注「是魔王就挑战100勇士-出现概率+10%」) + `excel_unlock_info`(id=100300007, `unlock_type=0`, 备注「是魔王就挑战100勇士出现概率」) + 多语言 `excel_language` 的 `ResearchInfo` 工作表(id=100300007 名字**全语言统一填原名「是魔王就挑战100勇士」**——该模式翻译统一用原名；id=900000022 为概率详情行)。
 - 挑战100勇士模式本身的战斗配置表/Bean/流程见 [`portal-system`](../portal-system/SKILL.md) / [`game-fight-system`](../game-fight-system/SKILL.md) 等文档，本 Skill 仅覆盖「研究→出现概率」这一面。
 
-### 世界分支(1003 段) — 无尽模式出现概率（pre_data 条件前置先例）
+### 世界分支(1003 段) — 无尽模式出现概率
 
-`InfiniteShowRate`（unlock_id **100300008**，`research_type=4` 世界节点，`icon_res=ui_research_11`（沿用无尽链图标），`level_max=9`，`position(-800,0)` 无尽链根部 (-480,0) 左侧空位，`pre_unlock_ids` **留空**、`pre_data="AnyWorldInfiniteUnlocked"`——前置=任意一个世界的无尽已解锁，未满足时节点隐藏、不画连线）——概率 = **基础 10% + 研究等级 ×10%**（百分数，未研究 0 级=10% 保持原固定概率，9 级满级=100%）。
+`InfiniteShowRate`（unlock_id **100300008**，`research_type=4` 世界节点，`icon_res=ui_research_11`（沿用无尽链图标），`level_max=9`，`position(-800,+90)` 位于无尽难度2节点正左方，`pre_unlock_ids="100310102"`——前置=无尽难度2研究，同分支前置、连线正常绘制；`pre_data` 留空）——概率 = **基础 10% + 研究等级 ×10%**（百分数，未研究 0 级=10% 保持原固定概率，9 级满级=100%）。
 
-- **为什么前置走 pre_data 而非 pre_unlock_ids**：「任意一个世界无尽已解锁」语义上是四世界无尽起始 id 的 OR（`100310102|100310202|100310302|100310402`），但 100310202/302/402 **只有 unlock_info 登记、没有研究节点**，`UIBaseResearch.CreateLine` 对拍平后的前置 id 解引用在判空之前，会 NullReferenceException——故新增 `ResearchPreConditionEnum.AnyWorldInfiniteUnlocked` 走 pre_data 通道（不参与连线，天然避开）。
-- **消费点**与 100勇士同款：`GameWorldInfoRandomBean.SetGameFightTypeRandom` 无尽分支 `Random.Range(0,100) < UserUnlockBean.GetUnlockInfiniteShowRate()`（= `INFINITE_SHOW_RATE_BASE`(10) + 等级×`INFINITE_SHOW_RATE_PER_LEVEL`(10)）；前提仍是该世界 `unlock_id_infinite` 已解锁。
+- **前置改为具体节点（2026-10-20）**：原先用 `pre_data="AnyWorldInfiniteUnlocked"` 表达「任意世界无尽已解锁」（为避开多世界无研究节点导致的 `CreateLine` 空引用）；现改为直接前置无尽难度2研究 `100310102`，节点只在世界1无尽难度2解锁后出现并正常画线。`ResearchPreConditionEnum.AnyWorldInfiniteUnlocked` 仍保留但当前无节点使用。
+- **消费点**与 100勇士同款：`GameWorldInfoRandomBean.SetGameFightTypeRandom` 无尽分支 `Random.Range(0,100) < UserUnlockBean.GetUnlockInfiniteShowRate()`（= `INFINITE_SHOW_RATE_BASE`(10) + 等级×`INFINITE_SHOW_RATE_PER_LEVEL`(10)）；前提是该世界**至少一个无尽难度已解锁**（`GetUnlockInfiniteDifficultyLevel(worldId) >= 2`，支持跳级，不再只查起始id）。
 - **气泡按级标概率**：详情**复用** details=900000022「（概率{Value}%）」，公式登记 `GetLevelDetailValueString` → `UserUnlockBean.GetInfiniteShowRateForLevel(level)`（1 级=20…9 级=100）。
-- **落表**：`excel_research_info`(id=100300008, `research_type=4`, `level_max=9`, `pay_crystal` 九档 `100,200,400,800,1500,2500,4000,6000,9000`, `pre_data=AnyWorldInfiniteUnlocked`, `name`=同id, `details[language]`=900000022, 备注「无尽模式-出现概率+10%/级」) + `excel_unlock_info`(id=100300008, `unlock_type=0`, 备注「无尽模式出现概率」) + 多语言 `excel_language` ResearchInfo(id=100300008, cn「无尽涌现」, 其余语言暂中文占位)。
+- **落表**：`excel_research_info`(id=100300008, `research_type=4`, `level_max=9`, `pay_crystal` 九档 `100,200,400,800,1500,2500,4000,6000,9000`, `pre_unlock_ids="100310102"`, `pre_data` 留空, `name`=同id, `details[language]`=900000022, 备注「无尽模式-出现概率+10%/级」) + `excel_unlock_info`(id=100300008, `unlock_type=0`, 备注「无尽模式出现概率」) + 多语言 `excel_language` ResearchInfo(id=100300008, cn「无尽涌现」, 其余语言暂中文占位)。
 
 ### 世界分支(1003 段) — 真勇者挑战（挑战100勇士BOSS挑战）出现概率（两段抽行）
 
-`ChallengeHundredBossRate`（unlock_id **100300009**，研究名「真勇者挑战」，`research_type=4` 世界节点，`icon_res=ui_research_9`（沿用100勇士出现概率节点图标），`level_max=4`，`position(-480,-320)` 无尽链列空位、与前置节点 (-160,-320) 水平连线，`pre_unlock_ids="100300007"` 前置=是魔王就挑战100勇士出现概率研究，`pre_data` **留空**）——概率 = **基础 10% + 研究等级 ×10%**（百分数，未研究 0 级=10%，4 级满级=50%）。
+`ChallengeHundredBossRate`（unlock_id **100300009**，研究名「真勇者挑战」，`research_type=4` 世界节点，`icon_res=ui_research_9`（沿用100勇士出现概率节点图标），`level_max=4`，`position(-1120,-90)` 位于100300007正左方、与前置节点 (-800,-90) 水平连线，`pre_unlock_ids="100300007"` 前置=是魔王就挑战100勇士出现概率研究，`pre_data` **留空**）——概率 = **基础 10% + 研究等级 ×10%**（百分数，未研究 0 级=10%，4 级满级=50%）。
 
 - **消费点（两段抽行）**：`GameWorldInfoRandomBean.SetGameFightTypeRandom` 挑战100勇士分支命中后，抽配置行改为**先按该概率判定普通/BOSS**（`FightTypeChallengeHundredInfoCfg.GetRandomRow(unlockDifficultyMax, bossRate)`：命中在 BOSS 行(challenge_type==1)内等概率随机、未命中在普通行内等概率随机；命中类型无匹配行落回另一类型，全无匹配返回 null 落回原随机），替代旧的「全部匹配行等概率随机」（旧逻辑 BOSS 率随行数分布漂移，约 37%~60%）。数值读取 `UserUnlockBean.GetUnlockChallengeHundredBossRate()`（= `CHALLENGE_HUNDRED_BOSS_RATE_BASE`(10) + 等级×`CHALLENGE_HUNDRED_BOSS_RATE_PER_LEVEL`(10)）。
 - **气泡按级标概率**：详情**复用** details=900000022「（概率{Value}%）」，公式登记 `GetLevelDetailValueString` → `UserUnlockBean.GetChallengeHundredBossRateForLevel(level)`（0 级=10…4 级=50）。
@@ -379,15 +379,16 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 - **坐标**：以各族 x10 节点为锚点（人800,600/骷髅0,600/史莱姆-800,600/魅魔-2400,600/牛头人2400,600/哥布林-1600,600/兽人1600,600），每职业一列横向居中排开（间距 160），x1/x5/x10 三档纵向在锚点上方 +160/+320/+480。
 - **落表**：`excel_research_info`（90 行）+ `excel_unlock_info`（90 行，`unlock_type=0`）+ 多语言 `ResearchInfo` 工作表（90 行，textId=unlock_id，cn「孕育{职业名}x{档}」）。90 节点均为纯数据驱动，**无需新增 UnlockEnum**（消费方是扭蛋商品 `pre_unlock_ids`）。
 
-### 世界分支(1003_10_W_nn 段) — 征服难度研究 + 无尽难度研究 + 各难度「加快进攻节奏(Quick)」研究 + 各难度「0倍速游戏」研究 + 各难度「2倍速游戏」研究
+### 世界分支(1003_10_W_nn 段) — 征服难度研究 + 无尽难度研究 + 挑战100勇士难度研究 + 各难度「加快进攻节奏(Quick)」研究 + 各难度「0倍速游戏」研究 + 各难度「2倍速游戏」研究
 
-世界分类(research_type=4)里有五种按难度拆分的研究：
+世界分类(research_type=4)里有六种按难度拆分的研究：
 
 1. **征服难度研究**：难度2~10 每个难度一个独立节点（`level_max=1` 纯解锁型），前置链式串联（难度D研究 pre=难度D-1 研究，难度2无前置）。`GetUnlockGameWorldConquerDifficultyLevel(worldId)` = `conquerDifficultyMax` + 从起始id连续向后统计的已解锁个数（断档即止）。
-2. **无尽难度研究**：难度2~10 每个难度一个独立节点（`level_max=1` 纯解锁型；**第一难度没有无尽模式**），**双前置链式**——难度2无尽(起始id) `pre_unlock_ids`=该世界征服难度2研究(100310112，即世界分支根节点)，难度N无尽 `pre_unlock_ids`="上一无尽节点,同难度征服难度研究"（如 100310103 填 `"100310102,100310113"`）。世界表 `unlock_id_infinite` 列语义由「单值解锁ID」变为「无尽研究起始ID」（与征服难度链 `unlock_id_conquer_difficulty_level` 的「起始ID+连续块」模式同构）：难度N无尽解锁ID = 起始ID+(N-2)。代码判定：`GetUnlockInfiniteDifficultyLevel(worldId)` = 从起始id连续向后统计已解锁个数+1（起始id=0 或起始id未解锁返回 0=未解锁无尽，避免 `CheckIsUnlock(0)` 恒真死循环）；`CheckInfiniteUnlock(worldId, difficultyLevel)` 难度<2 恒 false，否则 `CheckIsUnlock(起始id+难度-2)`。
+2. **无尽难度研究**：难度2~10 每个难度一个独立节点（`level_max=1` 纯解锁型；**第一难度没有无尽模式**），**单前置**——难度N无尽 `pre_unlock_ids`=同难度征服难度研究（100310112+(N-2)），2026-10 起删除「上一无尽难度」前置，各难度相互独立、允许跳级。世界表 `unlock_id_infinite` 列语义为「无尽研究起始ID」：难度N无尽解锁ID = 起始ID+(N-2)。代码判定改为**扫描全部难度取最高已解锁**（不再连续计数）：`GetUnlockInfiniteDifficultyLevel(worldId)` = 遍历 D2~D10，取 `CheckIsUnlock(起始id+(D-2))` 为真的最高难度；起始id=0 或全部未解锁返回 0；`CheckInfiniteUnlock(worldId, difficultyLevel)` 难度<2 恒 false，否则 `CheckIsUnlock(起始id+难度-2)`。无尽模式生成前提同步改为 `GetUnlockInfiniteDifficultyLevel(worldId) >= 2`（只买D3不买D2也能刷出）。
 3. **加快进攻节奏(Quick)研究**：难度1~10 每个难度一个 Quick 研究（难度2~10 的 pre=同难度难度研究；难度1默认解锁故无难度研究、pre 留空），与世界+难度双绑定：只有解锁了**当前难度**的 Quick 研究，玩该世界该难度的征服战斗时，战斗界面进攻进度条上的 **Quick 按钮**才显示；点击 Quick 立即向前推进 10% 进攻进度并生成该时间段的进攻生物（详见 [`game-fight-system`](../game-fight-system/SKILL.md) 的 `QuickAdvanceAttackCreate`）。**显示前置**：Quick(难度D) 节点还需**通关过该世界难度D**才出现在研究界面——由配置表 `pre_data` 列驱动（Quick 行填 `World1ConquerCompleteCount{D}:1`），`UIBaseResearch.CheckPreIsUnlock` 在 `pre_unlock_ids` 之外追加 `ResearchInfoBean.CheckPreDataIsMeet()` 判定，未满足不创建该节点（判定逻辑见下方「pre_data 前置解锁条件」）。
 4. **0倍速游戏研究**：难度1~10 每个难度一个 0倍速研究（**pre=同难度征服难度研究**（难度1无难度研究、pre 留空）——2026-10-12 起不再挂 Quick：Quick 有 pre_data 通关显示前置，0倍速只需解锁当前难度即显示、不受通关前置影响；`pre_data` 留空），与世界+难度双绑定：解锁了**当前难度**的 0倍速研究后，玩该世界该难度的征服战斗时，进攻进度条上显示 **0速按钮**（RadioButton 开关，默认不开启，点击后整场战斗游戏时间流速归零=暂停，仅本场有效；机制详见 [`game-fight-system`](../game-fight-system/SKILL.md) 的 Speed0 按钮）。消耗魔晶=同难度 2倍速研究的一半。
 5. **2倍速游戏研究**：难度1~10 每个难度一个 2倍速研究（**pre=同难度 Quick 研究**，挂在每个 Quick 后面、与 0倍速并列；`pre_data` 留空——Quick 自身的通关显示前置已把关），与世界+难度双绑定：解锁了**当前难度**的 2倍速研究后，玩该世界该难度的征服战斗时，进攻进度条上显示 **2倍速按钮**（RadioButton 开关，默认不开启，点击后整场战斗游戏时间流速×2，仅本场有效；机制详见 [`game-fight-system`](../game-fight-system/SKILL.md) 的 Speed2 按钮）。
+6. **挑战100勇士难度研究**：难度2~10 每个难度一个独立节点（`level_max=1` 纯解锁型；难度1默认可用、无研究），**单前置**=同难度征服难度研究。世界表 `unlock_id_challenge_hundred` 列为难度起始ID：难度N解锁ID = 起始ID+(N-2)（world1=100310160，即 100310160~100310168）。消耗与无尽难度完全一致（200/1000/2000/4000/8000/16000/32000/64000/128000）。代码判定：`GetUnlockChallengeHundredDifficultyLevel(worldId)` 扫描 D2~D10 取最高已解锁、最小1；`CheckChallengeHundredUnlock(worldId,D)` 的 D≤1 恒 true，起始id=0 时 D≥2 恒 false。100勇士不再跟随征服难度。
 
 **世界专属解锁 id 块约定**：每个世界的专属解锁 id 都落在 `1003_10_W_nn` 块内（W=世界id, nn=块内偏移，每世界独占 100 个 id）。现有块内偏移：
 
@@ -399,13 +400,17 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 | **30~39** | **各难度加快进攻节奏(Quick, nn=29+难度)** | **100310130(难度1)~100310139(难度10)** |
 | **40~49** | **各难度2倍速游戏(nn=39+难度)** | **100310140(难度1)~100310149(难度10)** |
 | **50~59** | **各难度0倍速游戏(nn=49+难度)** | **100310150(难度1)~100310159(难度10)** |
+| **60~68** | **挑战100勇士难度(难度2~10 各一个独立研究, nn=58+难度)** | **100310160(难度2)~100310168(难度10)** |
 
-> ⚠ Quick 段基址取 **nn=30**、2倍速段基址取 **nn=40**、0倍速段基址取 **nn=50**(实际id再 +难度-1，难度1 占段基址)，刻意避开征服难度占用的 `12~20` 段。**起始id不再由代码常量推导，而是存在世界配置表(excel_game_world_info)的 `unlock_id_quick_attack` / `unlock_id_speed2` / `unlock_id_speed0` 三列**（与难度起始id `unlock_id_conquer_difficulty_level` 同模式）——**新增世界时必须给这三列填上该世界的段起始id**（如 world2 → 100310230 / 100310240 / 100310250，未配置填0=该世界无此类研究），代码只做 `起始id + (难度-1)`。无尽难度起始id 同样存世界表 `unlock_id_infinite` 列（world1=100310102；难度N=起始id+(N-2)，偏移比征服链少 1——无尽没有难度1）。**世界2/3/4 的 x02 已在 unlock_info 登记但暂无研究节点**（这些世界连征服难度链都没有），后续按 x02~x10 同模式补齐即可。
+> ⚠ Quick 段基址取 **nn=30**、2倍速段基址取 **nn=40**、0倍速段基址取 **nn=50**、100勇士难度段基址取 **nn=60**(实际id再 +难度-1/难度-2)，刻意避开征服难度占用的 `12~20` 段。**起始id不再由代码常量推导，而是存在世界配置表(excel_game_world_info)的 `unlock_id_quick_attack` / `unlock_id_speed2` / `unlock_id_speed0` / `unlock_id_infinite` / `unlock_id_challenge_hundred` 列**（与难度起始id `unlock_id_conquer_difficulty_level` 同模式）——**新增世界时必须给这些列填上该世界的段起始id**（如 world2 → 100310230 / 100310240 / 100310250 / 100310260，未配置填0=该世界无此类研究），代码只做 `起始id + (难度-1)`（无尽/100勇士为 `+(难度-2)`，无难度1）。**世界2/3/4 的 x02 已在 unlock_info 登记但暂无研究节点**（这些世界连征服难度链都没有），后续按 x02~x10 同模式补齐即可。
 
-**落表**（world1，其它世界照此在各自块内加 02~10 / 12~20 / 30~39 / 40~49 / 50~59 的行）：
-- 难度研究(9行, 以难度2为例)：`excel_research_info` id=100310112, `research_type=4`, `icon_res=ui_research_11`, `level_max=1`, `unlock_id=100310112`, `pre_unlock_ids` 难度2留空/难度D填难度D-1的id(链式), `pay_crystal` 阶梯 100/500/1000/2000/4000/8000/16000/32000/64000, `name`=同id, 备注「剑与魔法：征服难度2」, 节点坐标 x=-160, y=(难度-2)*320(2026-10-12 行距由160加倍为320, y 范围 0~2560) + `excel_unlock_info`(id同上, `unlock_type=0`) + `excel_language` ResearchInfo(cn「征服难度2」/en「Conquest Difficulty 2」)
-- 无尽难度研究(9行, 以难度2为例)：`excel_research_info` id=100310102, `research_type=4`, `icon_res=ui_research_11`(与征服难度链同图标), `level_max=1`, `unlock_id=100310102`, `pre_unlock_ids` 难度2=征服难度2研究(100310112)/难度N="上一无尽节点,同难度征服难度研究"(如 100310103=`"100310102,100310113"`), `pay_crystal` 九级独立阶梯 200/1000/2000/4000/8000/16000/32000/64000/128000, `name`=同id, 备注「剑与魔法-无尽模式·难度N」, 节点坐标 x=-480(新列), y=(难度-2)*320(随难度链行距同步加倍, 与难度链行 y 对齐 0~2560) + `excel_unlock_info`(100310102 为原有条目、备注改「剑与魔法-无尽模式·难度2」；100310103~110 新登记, `unlock_type=0`) + `excel_language` ResearchInfo(cn「无尽模式·难度N」/en「Infinite Mode - Difficulty N」)
-- Quick研究(10行, 以难度1/2为例)：难度1 id=100310130, `pre_unlock_ids` 留空(难度1默认解锁), `pre_data=World1ConquerCompleteCount1:1`(通关难度1才显示)；难度2 id=100310131, `pre_unlock_ids=100310112`(同难度难度研究), `pre_data=World1ConquerCompleteCount2:1`。其余共性：`research_type=4`, `icon_res=ui_research_66`, `level_max=1`, `pay_crystal`=同难度征服难度研究×2(难度1无难度研究固定100)：100/200/1000/2000/4000/8000/16000/32000/64000/128000(难度1~10), `name`=同id, 备注「剑与魔法-难度D-加快进攻节奏」, 节点坐标 x=160(难度1 y=-320, 难度D≥2 y=(D-2)*320) + `excel_unlock_info`(id同上) + `excel_language` ResearchInfo(cn「加快进攻节奏(难度D)」/en「Faster Assault (D{D})」)
+**布局（2026-10）**：世界难度行距由 320 增大为 **340**；征服难度 x=-160、y=(D-2)×340；无尽难度与100勇士难度共用 x=-480，分别位于 `y=(D-2)×340+90`（上）与 `y=(D-2)×340-90`（下）；Quick/0倍速/2倍速列不变（x=160/160/480），y 随难度行同步。最高点 0倍速(难度10)=2900，仍在 Content 6000×6000 的 ±3000 内。
+
+**落表**（world1，其它世界照此在各自块内加 02~10 / 12~20 / 30~39 / 40~49 / 50~59 / 60~68 的行）：
+- 难度研究(9行, 以难度2为例)：`excel_research_info` id=100310112, `research_type=4`, `icon_res=ui_research_11`, `level_max=1`, `unlock_id=100310112`, `pre_unlock_ids` 难度2留空/难度D填难度D-1的id(链式), `pay_crystal` 阶梯 100/500/1000/2000/4000/8000/16000/32000/64000, `name`=同id, 备注「剑与魔法：征服难度2」, 节点坐标 x=-160, y=(难度-2)*340(2026-10 行距 320→340, y 范围 0~2720) + `excel_unlock_info`(id同上, `unlock_type=0`) + `excel_language` ResearchInfo(cn「征服难度2」/en「Conquest Difficulty 2」)
+- 无尽难度研究(9行, 以难度2为例)：`excel_research_info` id=100310102, `research_type=4`, `icon_res=ui_research_11`(与征服难度链同图标), `level_max=1`, `unlock_id=100310102`, `pre_unlock_ids`=同难度征服难度研究(100310112+(N-2)，单前置、允许跳级), `pay_crystal` 九级独立阶梯 200/1000/2000/4000/8000/16000/32000/64000/128000, `name`=同id, 备注「剑与魔法-无尽模式·难度N」, 节点坐标 x=-480, y=(难度-2)*340+90(行内偏上) + `excel_unlock_info`(100310102 为原有条目、备注改「剑与魔法-无尽模式·难度2」；100310103~110 新登记, `unlock_type=0`) + `excel_language` ResearchInfo(cn「无尽模式·难度N」/en「Infinite Mode - Difficulty N」)
+- 100勇士难度研究(9行, 以难度2为例)：`excel_research_info` id=100310160, `research_type=4`, `icon_res=ui_research_9`, `level_max=1`, `unlock_id=100310160`, `pre_unlock_ids`=同难度征服难度研究(100310112+(N-2)), `pay_crystal` 与无尽同价 200/1000/2000/4000/8000/16000/32000/64000/128000, `name`=同id, 备注「剑与魔法-挑战100勇士·难度N」, 节点坐标 x=-480, y=(难度-2)*340-90(行内偏下) + `excel_unlock_info`(id同上, `unlock_type=0`) + `excel_language` ResearchInfo(cn「挑战100勇士·难度N」/en「Challenge 100 Warriors - Difficulty N」)
+- Quick研究(10行, 以难度1/2为例)：难度1 id=100310130, `pre_unlock_ids` 留空(难度1默认解锁), `pre_data=World1ConquerCompleteCount1:1`(通关难度1才显示)；难度2 id=100310131, `pre_unlock_ids=100310112`(同难度难度研究), `pre_data=World1ConquerCompleteCount2:1`。其余共性：`research_type=4`, `icon_res=ui_research_66`, `level_max=1`, `pay_crystal`=同难度征服难度研究×2(难度1无难度研究固定100)：100/200/1000/2000/4000/8000/16000/32000/64000/128000(难度1~10), `name`=同id, 备注「剑与魔法-难度D-加快进攻节奏」, 节点坐标 x=160(难度1 y=-340, 难度D≥2 y=(D-2)*340) + `excel_unlock_info`(id同上) + `excel_language` ResearchInfo(cn「加快进攻节奏(难度D)」/en「Faster Assault (D{D})」)
 - 0倍速研究(10行, 以难度1/2为例)：难度1 id=100310150, `pre_unlock_ids` **留空**(难度1无难度研究)；难度2 id=100310151, `pre_unlock_ids=100310112`(**同难度征服难度研究**——2026-10-12 起不再挂 Quick：Quick 有 pre_data 通关显示前置，0倍速只需解锁当前难度即显示、不受通关前置影响)。其余共性：`research_type=4`, `icon_res=ui_research_94`(占位,与2倍速同款速度线,后续可换暂停语义图标), `level_max=1`, `pay_crystal`=同难度2倍速的一半(难度1~10=50/100/500/1000/2000/4000/8000/16000/32000/64000), `pre_data` 留空, `name`=同id, 备注「剑与魔法-难度D-0倍速游戏」, 节点坐标 x=160(**与 Quick 同列**), y=同难度 Quick 行+180(**正上方**,2026-10-13 由+80整体上移100) + `excel_unlock_info`(id同上) + `excel_language` ResearchInfo(cn「0倍速游戏(难度D)」/en「0x Game Speed (D{D})」,12语言已翻译)
 - 2倍速研究(10行, 以难度1/2为例)：难度1 id=100310140, `pre_unlock_ids=100310130`(同难度Quick研究)；难度2 id=100310141, `pre_unlock_ids=100310131`。其余共性：`research_type=4`, `icon_res=ui_research_94`(三道速度线), `level_max=1`, `pay_crystal`=同难度 Quick 同价(100/200/1000/2000/4000/8000/16000/32000/64000/128000), `pre_data` 留空, `name`=同id, 备注「剑与魔法-难度D-2倍速游戏」, 节点坐标 x=480(Quick 列 x=160 的下一列), y=**与同难度 Quick 同行**(2026-10-12 起；0倍速在 Quick 同列正上方+180(2026-10-13 由+80上移100)) + `excel_unlock_info`(id同上) + `excel_language` ResearchInfo(cn「2倍速游戏(难度D)」/en「2x Game Speed (D{D})」)
 
@@ -418,8 +423,10 @@ public long GetWorldSpeed0UnlockId(long worldId, int difficultyLevel);        //
 public bool CheckIsUnlockWorldSpeed0(long worldId, int difficultyLevel);      // 战斗中按当前 worldId+难度 判定是否显示 0速按钮
 public long GetWorldSpeed2UnlockId(long worldId, int difficultyLevel);        // = 世界表 unlock_id_speed2 + (难度-1)，起始id=0 返回 -1
 public bool CheckIsUnlockWorldSpeed2(long worldId, int difficultyLevel);      // 战斗中按当前 worldId+难度 判定是否显示 2倍速按钮
-public int GetUnlockInfiniteDifficultyLevel(long worldId);                    // 已解锁最高无尽难度 = 从世界表 unlock_id_infinite 起始id连续向后统计已解锁个数+1；起始id=0 或起始id未解锁返回 0=未解锁无尽(避免 CheckIsUnlock(0) 恒真死循环)
+public int GetUnlockInfiniteDifficultyLevel(long worldId);                    // 已解锁最高无尽难度 = 扫描 D2~D10 取最高已解锁(允许跳级, 不再连续计数)；起始id=0 或全部未解锁返回 0
 public bool CheckInfiniteUnlock(long worldId, int difficultyLevel);           // 指定世界指定难度无尽是否解锁：难度<2 恒 false，否则 CheckIsUnlock(起始id+难度-2)
+public int GetUnlockChallengeHundredDifficultyLevel(long worldId);            // 100勇士最高已解锁难度 = 扫描 D2~D10 取最高(允许跳级), 最小1；世界未配 unlock_id_challenge_hundred 时返回1
+public bool CheckChallengeHundredUnlock(long worldId, int difficultyLevel);   // 100勇士指定难度是否解锁：难度<=1 恒 true；起始id=0 时 D>=2 恒 false；否则 CheckIsUnlock(起始id+难度-2)
 ```
 
 ---
@@ -490,11 +497,11 @@ public int GetUnlockResearchLevelByResearchInfo(ResearchInfoBean researchInfo);
 public int GetUnlockPortalShowCount();                 // 3 + PortalShowNum 等级
 public int GetUnlockPortalRefreshMax();                // 传送门刷新次数上限 = PortalRefreshNum 等级(未解锁0,满级10)
 public bool CheckIsUnlockPortalRefresh();              // 是否解锁传送门刷新(等级>0,门控刷新按钮显隐)
-public int GetUnlockChallengeHundredShowRate();        // 挑战100勇士出现概率 = ChallengeHundredShowRate 等级 × CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL(10)(百分数0~100,未解锁0,满级100)；GameWorldInfoRandomBean.SetGameFightTypeRandom 生成传送门世界时按该概率判定生成为挑战100勇士世界(命中但当前世界最高已解锁难度无匹配配置行则落回原随机)
+public int GetUnlockChallengeHundredShowRate();        // 挑战100勇士出现概率 = ChallengeHundredShowRate 等级 × CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL(10)(百分数0~100,未解锁0,满级100)；GameWorldInfoRandomBean.SetGameFightTypeRandom 生成传送门世界时按该概率判定生成为挑战100勇士世界(命中但当前最高已解锁100勇士难度无匹配配置行则落回原随机)
 public static int GetChallengeHundredShowRateForLevel(int level); // 指定等级的挑战100勇士出现概率 = 等级×CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL(10)(供研究气泡详情填充)
 public int GetUnlockChallengeHundredBossRate();        // 挑战100勇士-BOSS挑战出现概率 = CHALLENGE_HUNDRED_BOSS_RATE_BASE(10) + ChallengeHundredBossRate(100300009) 等级 × CHALLENGE_HUNDRED_BOSS_RATE_PER_LEVEL(10)(百分数10~50,未研究10,满级4级=50)；SetGameFightTypeRandom 挑战100勇士分支抽配置行时先按它两段判定普通/BOSS再在类型内随机
 public static int GetChallengeHundredBossRateForLevel(int level); // 指定等级的BOSS挑战出现概率 = 10 + 等级×10(供研究气泡详情填充)
-public int GetUnlockInfiniteShowRate();                // 无尽模式出现概率 = INFINITE_SHOW_RATE_BASE(10) + InfiniteShowRate(100300008) 等级 × INFINITE_SHOW_RATE_PER_LEVEL(10)(百分数10~100,未研究保持10,满级9级=100)；SetGameFightTypeRandom 无尽分支按它判定(前提该世界无尽已解锁)
+public int GetUnlockInfiniteShowRate();                // 无尽模式出现概率 = INFINITE_SHOW_RATE_BASE(10) + InfiniteShowRate(100300008) 等级 × INFINITE_SHOW_RATE_PER_LEVEL(10)(百分数10~100,未研究保持10,满级9级=100)；SetGameFightTypeRandom 无尽分支按它判定(前提该世界至少一个无尽难度已解锁)
 public static int GetInfiniteShowRateForLevel(int level); // 指定等级的无尽出现概率 = 10 + 等级×10(供研究气泡详情填充)
 // —— 数值公式 static ForLevel 收口(2026-10 details 机制配套, 实例方法均委托对应 static, 研究气泡详情按任意等级求值) ——
 public static int GetCreatureVatNumForLevel(int level);              // 进阶设施数量 = limmit.creatureVatMax + 等级
@@ -519,8 +526,10 @@ public bool CheckIsUnlockAbyssalBlessingRefresh();     // 是否解锁深渊馈�
 public int GetUnlockLineupNum();                       // 1 + LineupNum 等级
 public int GetUnlockLineupCreatureNum();               // 6 + LineupCreatureAddNum 等级
 public int GetUnlockGameWorldConquerDifficultyLevel(long worldId); // 最高可挑战难度 = conquerDifficultyMax + 从难度起始id连续向后统计的已解锁难度研究个数(难度已拆为每难度独立节点,断档即止)
-public int GetUnlockInfiniteDifficultyLevel(long worldId);         // 已解锁最高无尽难度 = 从无尽起始id(unlock_id_infinite)连续向后统计的已解锁个数+1(难度2起；起始id=0或起始id未解锁返回0=未解锁无尽)
+public int GetUnlockInfiniteDifficultyLevel(long worldId);         // 已解锁最高无尽难度 = 扫描D2~D10取最高已解锁(允许跳级；起始id=0或全部未解锁返回0)
 public bool CheckInfiniteUnlock(long worldId, int difficultyLevel); // 指定世界指定难度无尽是否解锁(难度<2恒false；起始id+难度-2)
+public int GetUnlockChallengeHundredDifficultyLevel(long worldId); // 100勇士最高已解锁难度 = 扫描D2~D10取最高(允许跳级, 最小1；世界未配unlock_id_challenge_hundred时返回1)
+public bool CheckChallengeHundredUnlock(long worldId, int difficultyLevel); // 100勇士指定难度是否解锁(难度<=1恒true；起始id=0时D>=2恒false；否则起始id+难度-2)
 public int GetUnlockCreatureVatNum();                  // 未解锁返回 0；已解锁返回 1+CreatureVatAdd
 public int GetUnlockCreatureVatAddProgressLevel();     // 生物进阶魔晶加速研究等级(0~5)；恒消耗1魔晶,等级=每次进度增加秒数=进度倍率，0级隐藏加速按钮
 public int GetUnlockCreatureVatMaterialMax();          // 进阶素材可选上限 = 5(creatureVatMaterialMax) + CreatureVatMaterialNum 等级(满级 10)

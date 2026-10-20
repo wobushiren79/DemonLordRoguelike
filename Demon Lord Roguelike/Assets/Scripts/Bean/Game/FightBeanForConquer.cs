@@ -24,6 +24,15 @@ public class FightBeanForConquer : FightBean
     }
 
     /// <summary>
+    /// 获取本场战斗对应的传送门世界随机数据
+    /// </summary>
+    /// <returns>世界随机数据</returns>
+    public override GameWorldInfoRandomBean GetGameWorldInfoRandomData()
+    {
+        return gameWorldInfoRandomData;
+    }
+
+    /// <summary>
     /// 增加深渊馈赠
     /// </summary>
     /// <param name="abyssalBlessingInfo"></param>

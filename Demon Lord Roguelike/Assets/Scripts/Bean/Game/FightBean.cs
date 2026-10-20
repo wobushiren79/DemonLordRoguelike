@@ -63,6 +63,17 @@ public class FightBean
     }
     #endregion
 
+    #region 世界数据
+    /// <summary>
+    /// 获取本场战斗对应的传送门世界随机数据(征服/无尽/100勇士等有世界概念的模式覆写; 其他模式返回null)
+    /// </summary>
+    /// <returns>世界随机数据; 无世界概念返回null</returns>
+    public virtual GameWorldInfoRandomBean GetGameWorldInfoRandomData()
+    {
+        return null;
+    }
+    #endregion
+
     /// <summary>
     /// 检测是否还拥有进攻生物
     /// </summary>

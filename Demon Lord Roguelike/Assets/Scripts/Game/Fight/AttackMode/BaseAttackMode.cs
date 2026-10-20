@@ -278,6 +278,14 @@ public class BaseAttackMode
     public Vector3[] trailPoints;
     /// <summary>环形自旋角缓冲（与 trailPoints 一一对应，记录采样时刻弹体的时间自转角，供轨迹复现旋转姿态；无自旋时恒 0）</summary>
     public float[] trailSpinAngles;
+    /// <summary>环形视觉朝向角缓冲（与 trailPoints 一一对应，记录采样时刻的 visualStartAngle，供弧线/斜射追踪等每帧改朝向的弹道复现当时姿态；静态朝向弹道不读取）</summary>
+    public float[] trailVisualAngles;
+    /// <summary>
+    /// 本发拖尾是否需逐采样点烘焙视觉朝向（visualStartAngle 每帧变化，如弧线追踪/斜射追踪）。
+    /// <para>默认 false=飞行中朝向恒定，轨迹可整发复用当前帧基准矩阵；每帧改写 visualStartAngle 的子类必须重写为 true，
+    /// 否则所有历史残影都会套用当前帧朝向、整条轨迹跟着弹体一起旋转，复现不出各采样点当时的姿态。</para>
+    /// </summary>
+    public virtual bool trailBakeVisualAngle => false;
     /// <summary>已填充点数（≤TrailMaxPoints）</summary>
     public int trailCount;
     /// <summary>环形写指针（下一个写入下标）</summary>
@@ -312,6 +320,8 @@ public class BaseAttackMode
             trailPoints = new Vector3[TrailMaxPoints];
         if (trailSpinAngles == null)
             trailSpinAngles = new float[TrailMaxPoints];
+        if (trailVisualAngles == null)
+            trailVisualAngles = new float[TrailMaxPoints];
         //采样间隔 = 配置 interval（相邻轨迹时间间距；下限避免除零/过密）
         trailSampleInterval = Mathf.Max(config.interval, 0.001f);
         ResetTrail();
@@ -329,7 +339,8 @@ public class BaseAttackMode
     }
 
     /// <summary>
-    /// 按采样间隔把当前 position 与当前时间自转角(spinSpeed×now，绕 spinAxis)记入环形缓冲（渲染器每帧对启用拖尾的弹道调用；未到间隔则跳过）。
+    /// 按采样间隔把当前 position、当前时间自转角(spinSpeed×now，绕 spinAxis)与当前视觉朝向角(visualStartAngle)记入环形缓冲
+    /// （渲染器每帧对启用拖尾的弹道调用；未到间隔则跳过）。
     /// </summary>
     /// <param name="now">当前时刻（秒，须与 shader 时间自转同基准，即 Time.timeSinceLevelLoad≈_Time.y，使轨迹旋转与弹体连续）</param>
     public void SampleTrail(float now)
@@ -342,6 +353,8 @@ public class BaseAttackMode
         trailPoints[trailHead] = position;
         //记录采样时刻的时间自转角(与桶材质 shader 同式：绕 spinAxis 转 spinSpeed×now 度)；无自旋恒 0
         trailSpinAngles[trailHead] = spinSpeed * now;
+        //记录采样时刻的视觉朝向角：弧线/斜射追踪等弹道每帧改 visualStartAngle，轨迹须复现各点当时的姿态
+        trailVisualAngles[trailHead] = visualStartAngle;
         trailHead = (trailHead + 1) % TrailMaxPoints;
         if (trailCount < TrailMaxPoints)
             trailCount++;
@@ -364,13 +377,16 @@ public class BaseAttackMode
     }
 
     /// <summary>
-    /// 一次取回第 orderIndex 个历史点的位置与采样时自转角：两者同下标，合并取用只算一次环形下标换算(热路径每帧×档数×弹道数调用，故避免 GetTrailPoint+GetTrailSpinAngle 各算一遍取模)。
+    /// 一次取回第 orderIndex 个历史点的位置、采样时自转角与视觉朝向角：三者同下标，合并取用只算一次环形下标换算
+    /// (热路径每帧×档数×弹道数调用，故避免 GetTrailPoint+GetTrailSpinAngle 各算一遍取模)。
+    /// <para>visualAngle=该采样时刻的 visualStartAngle，供弧线/斜射追踪等每帧改朝向的弹道复现当时姿态。</para>
     /// </summary>
-    public void GetTrailSample(int orderIndex, out Vector3 point, out float spinAngle)
+    public void GetTrailSample(int orderIndex, out Vector3 point, out float spinAngle, out float visualAngle)
     {
         int ringIndex = GetTrailRingIndex(orderIndex);
         point = trailPoints[ringIndex];
         spinAngle = trailSpinAngles[ringIndex];
+        visualAngle = trailVisualAngles[ringIndex];
     }
 
     /// <summary>

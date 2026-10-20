@@ -40,6 +40,10 @@ public partial class GameWorldInfoBean : BaseBean
 	/// </summary>
 	public long unlock_id_speed0;
 	/// <summary>
+	///解锁ID-挑战100勇士-难度起始ID
+	/// </summary>
+	public long unlock_id_challenge_hundred;
+	/// <summary>
 	///地图坐标
 	/// </summary>
 	public string map_pos;

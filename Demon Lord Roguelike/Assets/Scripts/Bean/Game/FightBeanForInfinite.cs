@@ -20,6 +20,15 @@ public class FightBeanForInfinite : FightBean
         InitData();
     }
 
+    /// <summary>
+    /// 获取本场战斗对应的传送门世界随机数据
+    /// </summary>
+    /// <returns>世界随机数据</returns>
+    public override GameWorldInfoRandomBean GetGameWorldInfoRandomData()
+    {
+        return gameWorldInfoRandomData;
+    }
+
     #region 初始化
     /// <summary>
     /// 初始化无尽模式: 取同难度征服行+无尽行配置, 建防御核心/收出战阵容, 选战斗场景, 填充第1轮进攻队列

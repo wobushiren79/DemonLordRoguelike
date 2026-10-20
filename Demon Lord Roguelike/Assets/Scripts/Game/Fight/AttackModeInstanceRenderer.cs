@@ -342,15 +342,27 @@ public partial class AttackModeInstanceRenderer
     /// <summary>
     /// 构建单发弹道的 per-instance 变换矩阵(位置 + 起始角 + 自旋角 + 缩放)。弹体与轨迹共用，保证轨迹与弹体同姿态。
     /// <para>弹体本体传 extraSpinAngle=0：时间自转由桶材质 shader 驱动(_RotateSpeed)，矩阵只含起始角 + per-instance 相位。
-    /// 轨迹(轨迹材质冻结自旋)传该采样点的时间自转角，把当时的旋转姿态烤进矩阵，使旋转弹道(如骷髅骨头)的轨迹复现旋转。
+    /// 轨迹(轨迹材质冻结自旋)传该采样点的时间自转角与采样时的视觉朝向角，把当时的姿态烤进矩阵，
+    /// 使旋转弹道(如骷髅骨头)与逐帧改朝向的弹道(弧线/斜射追踪)的轨迹都复现各采样点的历史姿态。
     /// 缩放：visualScale&gt;=0 用武器配置，&lt;0(未配置)取1、实际大小交桶材质 _VertexScale；换图宽高比修正由材质 _VertexScaleXY(对象空间)处理。
     /// scaleMul 为额外的整体缩放系数(仅轨迹按年龄档衰减时传，弹体恒 1)，直接乘在最终 scale 上。</para>
     /// <para>三条构建路径按成本递增：无旋转直接拼对角矩阵 → Z 轴旋转内联拼二维旋转矩阵(起始角恒绕前向+自旋轴 (0,0,±1)，本项目常态) → 一般轴自旋回退 Quaternion.AngleAxis + TRS(extern)。</para>
+    /// <para>本重载用弹道当前 visualStartAngle(弹体本体走这条)；轨迹逐采样点烘焙朝向时走下面显式传 startAngle 的重载。</para>
     /// </summary>
     private static Matrix4x4 BuildInstanceMatrix(BaseAttackMode attackMode, Vector3 position, float extraSpinAngle = 0f, float scaleMul = 1f)
     {
+        return BuildInstanceMatrix(attackMode, attackMode.visualStartAngle, position, extraSpinAngle, scaleMul);
+    }
+
+    /// <summary>
+    /// 构建单发弹道 per-instance 变换矩阵(显式指定视觉朝向角)：除 startAngle 外与上面的重载完全一致。
+    /// <para>供轨迹逐采样点烘焙朝向使用——弧线/斜射追踪等弹道 visualStartAngle 每帧变化，历史残影必须用各自采样时刻的角度，
+    /// 否则整条轨迹会跟着弹体当前朝向一起旋转(复现不出各点的历史姿态)。</para>
+    /// </summary>
+    private static Matrix4x4 BuildInstanceMatrix(BaseAttackMode attackMode, float startAngle, Vector3 position, float extraSpinAngle, float scaleMul)
+    {
         float scale = (attackMode.visualScale >= 0f ? attackMode.visualScale : 1f) * scaleMul;
-        bool hasStartAngle = attackMode.visualStartAngle != 0f;
+        bool hasStartAngle = startAngle != 0f;
         //有自旋时叠加(每发随机相位 + 传入的时间自转角)，绕自旋轴：弹体本体 extra=0(只相位、时间自转交 shader)，轨迹 extra=采样时自转角
         float spinAngle = attackMode.spinSpeed != 0f ? attackMode.spinPhase + extraSpinAngle : 0f;
         //无旋转的快速路径(不配起始角且不自旋，最常见)：直接拼对角矩阵，跳过 Quaternion.AngleAxis + Matrix4x4.TRS 两个原生调用
@@ -372,7 +384,7 @@ public partial class AttackModeInstanceRenderer
         //自旋轴由 AngleAxis 内部归一化、只看 z 符号定转向(绕 -Z 转 θ = 绕 +Z 转 -θ)；非 Z 轴自旋(spinAxis.x/y≠0)才回退四元数路径
         if (spinAngle == 0f || (attackMode.spinAxis.x == 0f && attackMode.spinAxis.y == 0f && attackMode.spinAxis.z != 0f))
         {
-            float zAngle = attackMode.visualStartAngle + (attackMode.spinAxis.z < 0f ? -spinAngle : spinAngle);
+            float zAngle = startAngle + (attackMode.spinAxis.z < 0f ? -spinAngle : spinAngle);
             float rad = zAngle * Mathf.Deg2Rad;
             float cosScale = Mathf.Cos(rad) * scale;
             float sinScale = Mathf.Sin(rad) * scale;
@@ -388,7 +400,7 @@ public partial class AttackModeInstanceRenderer
             zMatrix.m23 = position.z;
             return zMatrix;
         }
-        Quaternion rot = hasStartAngle ? Quaternion.AngleAxis(attackMode.visualStartAngle, Vector3.forward) : Quaternion.identity;
+        Quaternion rot = hasStartAngle ? Quaternion.AngleAxis(startAngle, Vector3.forward) : Quaternion.identity;
         if (spinAngle != 0f)
             rot *= Quaternion.AngleAxis(spinAngle, attackMode.spinAxis);
         return Matrix4x4.TRS(position, rot, Vector3.one * scale);

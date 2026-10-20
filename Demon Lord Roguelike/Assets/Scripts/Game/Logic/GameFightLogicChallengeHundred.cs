@@ -88,8 +88,8 @@ public class GameFightLogicChallengeHundred : GameFightLogic
             //通关 → 打开领奖界面
             var uiRewardSelect = UIHandler.Instance.OpenUIAndCloseOther<UIRewardSelect>();
             RewardSelectBean rewardSelectData = new RewardSelectBean();
-            //基础奖励直接取进入传送门时预生成并冻结的宝箱奖励(UIPopupPortalDetails 预览=实领; BOSS挑战装备池解锁时为6箱)
-            var baseReward = fightDataForChallengeHundred.gameWorldInfoRandomData.GetChallengeHundredReward();
+            //基础奖励按本场冻结难度取进入传送门时预生成并冻结的宝箱奖励(UIPopupPortalDetails 预览=实领; BOSS挑战装备池解锁时为6箱)
+            var baseReward = fightDataForChallengeHundred.gameWorldInfoRandomData.GetChallengeHundredReward(fightDataForChallengeHundred.gameWorldInfoRandomData.difficultyLevel);
             //全手动开箱（无首箱保底自动开，可开宝箱数=奖励总数，无需征服的 -1 钳制）
             rewardSelectData.selectNumMax = baseReward != null ? baseReward.Count : 3;
             rewardSelectData.isAutoOpenFirstBox = false;

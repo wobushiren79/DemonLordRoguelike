@@ -6,11 +6,6 @@ using DG.Tweening;
 
 public partial class UIViewBasePortalItem : BaseUIView
 {
-    //固定图标资源名(位于 UI 图集): 挑战100勇士传送门图标
-    public const string IconResChallengeHundred = "ui_game_1";
-    //固定图标资源名(位于 UI 图集): 无尽模式传送门图标
-    public const string IconResInfinite = "ui_game_2";
-
     protected GameWorldInfoRandomBean gameWorldInfoRandom;
     protected GameWorldInfoBean gameWorldInfo;
 
@@ -68,12 +63,12 @@ public partial class UIViewBasePortalItem : BaseUIView
         else if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Infinite)
             targetName = string.Format(TextHandler.Instance.GetTextById(420), gameWorldInfo.name_language);
         SetName(targetName);
-        //设置图标(征服=随机星球; 无尽=ui_game_2; 挑战100勇士=ui_game_1)
+        //设置图标(征服=圆形随机星球; 无尽=倒三角星球; 挑战100勇士=正方形星球)
         SetIcon(gameWorldInfo.icon_res, gameWorldInfoRandom.iconSeed, gameWorldInfoRandom.gameFightType);
-        //设置BG颜色(挑战100勇士-BOSS挑战=深紫, 其余恢复默认白)
-        SetBGColor(gameWorldInfoRandom.IsChallengeHundredBossChallenge() ? ColorUtil.ChallengeHundredBossPurple : Color.white);
-        //初始化弹窗(地图传送门展示当前难度的数据)
-        popupForPortalDetails.SetData((gameWorldInfo, gameWorldInfoRandom, gameWorldInfoRandom.difficultyLevel), PopupEnum.PortalDetails);
+        //设置BG颜色(按模式: 征服=白, 无尽=深紫, 挑战100勇士=金)
+        SetBGColor(GetBGColorByFightType(gameWorldInfoRandom.gameFightType));
+        //初始化弹窗(地图传送门传-1=气泡跟随当前活动难度, 切换难度后无需重新SetData也能显示正确难度)
+        popupForPortalDetails.SetData((gameWorldInfo, gameWorldInfoRandom, -1), PopupEnum.PortalDetails);
 
         // 计算初始角度和半径
         Vector2 offset = rectTransform.anchoredPosition - rotateCenter;
@@ -105,35 +100,34 @@ public partial class UIViewBasePortalItem : BaseUIView
     }
 
     /// <summary>
-    /// 设置图标(征服等默认模式=按种子程序化生成星球; 无尽=ui_game_2; 挑战100勇士=ui_game_1)
+    /// 设置图标(按种子程序化生成星球, 外形由战斗模式决定: 征服等默认模式=圆形; 无尽=倒三角; 挑战100勇士=正方形)
     /// </summary>
     /// <param name="iconRes">图标资源名</param>
     /// <param name="iconSeed">星球图标随机种子</param>
-    /// <param name="gameFightType">战斗模式(决定是否用固定图标替代随机星球)</param>
+    /// <param name="gameFightType">战斗模式(决定星球外形)</param>
     public void SetIcon(string iconRes, int iconSeed, GameFightTypeEnum gameFightType)
     {
-        //无尽/挑战100勇士使用固定图标替代随机星球
-        string fixedIconRes = null;
-        if (gameFightType == GameFightTypeEnum.Infinite)
-            fixedIconRes = IconResInfinite;
-        else if (gameFightType == GameFightTypeEnum.ChallengeHundred)
-            fixedIconRes = IconResChallengeHundred;
-        if (!fixedIconRes.IsNull())
-        {
-            IconHandler.Instance.GetIconSprite(SpriteAtlasTypeEnum.UI, fixedIconRes, (sprite) =>
-            {
-                ui_Icon.sprite = sprite;
-                ui_Icon.gameObject.SetActive(true);
-            });
-            return;
-        }
         if (iconRes.IsNull())
         {
             CreateToolsForPlanetTextureBean createData = new CreateToolsForPlanetTextureBean(iconSeed);
+            createData.shape = GetPlanetShapeByFightType(gameFightType);
             var planetTex = CreateTools.CreatePlanetTexture(createData);
             ui_Icon.sprite = Sprite.Create(planetTex, new Rect(0, 0, planetTex.width, planetTex.height), new Vector2(0.5f, 0.5f));
             ui_Icon.gameObject.SetActive(true);
         }
+    }
+
+    /// <summary>
+    /// 按战斗模式获取星球外形(无尽=倒三角; 挑战100勇士=正方形; 其余=圆形)
+    /// </summary>
+    /// <param name="gameFightType">战斗模式</param>
+    public static PlanetTextureShapeEnum GetPlanetShapeByFightType(GameFightTypeEnum gameFightType)
+    {
+        if (gameFightType == GameFightTypeEnum.Infinite)
+            return PlanetTextureShapeEnum.InvertedTriangle;
+        if (gameFightType == GameFightTypeEnum.ChallengeHundred)
+            return PlanetTextureShapeEnum.Square;
+        return PlanetTextureShapeEnum.Circle;
     }
 
     /// <summary>
@@ -145,13 +139,26 @@ public partial class UIViewBasePortalItem : BaseUIView
     }
 
     /// <summary>
-    /// 设置BG颜色(挑战100勇士-BOSS挑战=深紫, 其余默认白; ui_BG过渡为SpriteSwap不换色, 直接改image.color可持久生效)
+    /// 设置BG颜色(按模式着色, 见 GetBGColorByFightType; ui_BG过渡为SpriteSwap不换色, 直接改image.color可持久生效)
     /// </summary>
     public void SetBGColor(Color color)
     {
         //保留 prefab 原透明度(0.9), 只替换 RGB
         color.a = ui_BG.image.color.a;
         ui_BG.image.color = color;
+    }
+
+    /// <summary>
+    /// 按战斗模式获取传送门BG颜色(征服等默认=白; 无尽=深紫; 挑战100勇士=金; 悬停气泡底色同步复用)
+    /// </summary>
+    /// <param name="gameFightType">战斗模式</param>
+    public static Color GetBGColorByFightType(GameFightTypeEnum gameFightType)
+    {
+        if (gameFightType == GameFightTypeEnum.Infinite)
+            return ColorUtil.PortalInfinitePurple;
+        if (gameFightType == GameFightTypeEnum.ChallengeHundred)
+            return ColorUtil.PortalChallengeHundredGold;
+        return Color.white;
     }
     #region 按钮点击
     /// <summary>

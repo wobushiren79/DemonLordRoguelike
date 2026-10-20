@@ -52,7 +52,7 @@ GameFightTypeEnum
 
 > **反射工厂自动接入**：`GameHandler.StartGameFight` 按 `"GameFightLogic" + gameFightType.GetEnumName()` 反射创建逻辑实例——新增模式只需「枚举末尾追加 + 新建同名 `GameFightLogic<枚举名>` 类」，工厂零改动。
 
-> **挑战100勇士模式要点（ChallengeHundred，2026-09 新增）**：单关 100 只怪（`FightBeanForChallengeHundred.AttackCreatureNum=100`）在冻结配置行 `attack_show_time` 内分桶均匀随机出怪（每桶随机时刻，每只独立从行 `enemy_ids` 随机）；强度倍率=行 `GetIntensityRate(冻结难度)`（= `attack_intensity_baserate` 逐难度对齐取档，≤0按1；**不叠加终焉议会强度议案**，本模式强度自配）。道路数/长度/宝箱奖励在传送门生成时随出并冻结（预览=实领，见 conquer-system / portal-system）。**challenge_type=1 为 BOSS挑战**：通关宝箱奖励翻倍（装备 3箱→6件、魔晶单箱数量 x2）。结算：胜利发阵容经验（行 `reward_exp` 按冻结难度取档）→ `UIFightSettlement` → Next → 全手动开箱（`isAutoOpenFirstBox=false`，无首箱保底，可开数=奖励总数：普通3/BOSS装备6）；失败直接返回基地。**不发成就、无关卡间深渊馈赠；通关声望需解锁研究 `ChallengeHundredReputationReward`(100200011)，领奖结束按冻结难度 `reward_reputation`(逐难度对齐新列,当前值=难度等级) 发放**；魔王蓝量无限（重写 `IsSkipPutCardMPCost()=>true`，见「魔王魔力（MP）系统」）。配置表：`excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx` → `FightTypeChallengeHundredInfoBean(Partial)`（一行一只怪，当前 28 行=征服全部进攻敌人 14普通+14BOSS；`reward_reputation` 字段暂在 Partial，重新生成 Entity 后删除）。
+> **挑战100勇士模式要点（ChallengeHundred，2026-09 新增；2026-10 独立难度）**：100勇士有独立难度链（`GetUnlockChallengeHundredDifficultyLevel`，难度1默认可用、2~10由研究解锁），传送门详情弹窗内可切换；`GameWorldInfoRandomBean.difficultyLevel`=所选/冻结的100勇士难度，每档预生成独立配置行/道路/奖励（`listChallengeHundredRandom`），通关领奖按本场难度取 `GetChallengeHundredReward(difficultyLevel)`。单关 100 只怪（`FightBeanForChallengeHundred.AttackCreatureNum=100`）在冻结配置行 `attack_show_time` 内分桶均匀随机出怪（每桶随机时刻，每只独立从行 `enemy_ids` 随机）；强度倍率=行 `GetIntensityRate(冻结难度)`（= `attack_intensity_baserate` 逐难度对齐取档，≤0按1；**不叠加终焉议会强度议案**，本模式强度自配）。道路数/长度/宝箱奖励在传送门生成时随出并冻结（预览=实领，见 conquer-system / portal-system）。**challenge_type=1 为 BOSS挑战**：通关宝箱奖励翻倍（装备 3箱→6件、魔晶单箱数量 x2）。结算：胜利发阵容经验（行 `reward_exp` 按冻结难度取档）→ `UIFightSettlement` → Next → 全手动开箱（`isAutoOpenFirstBox=false`，无首箱保底，可开数=奖励总数：普通3/BOSS装备6）；失败直接返回基地。**不发成就、无关卡间深渊馈赠；通关声望需解锁研究 `ChallengeHundredReputationReward`(100200011)，领奖结束按冻结难度 `reward_reputation`(逐难度对齐新列,当前值=难度等级) 发放**；魔王蓝量无限（重写 `IsSkipPutCardMPCost()=>true`，见「魔王魔力（MP）系统」）。配置表：`excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx` → `FightTypeChallengeHundredInfoBean(Partial)`（一行一只怪，当前 28 行=征服全部进攻敌人 14普通+14BOSS；`reward_reputation` 字段暂在 Partial，重新生成 Entity 后删除）。
 
 > **无尽/无限模式要点（Infinite，2026-09 重构）**：`FightBeanForInfinite` 持有同难度征服行 `fightTypeConquerInfo`（无尽复用其怪物池/数量/时长/场景/魔晶掉落 `drop_crystal`）+ 无尽行 `fightTypeInfiniteInfo`（每轮强度倍率，null 时轮次乘区按1降级不阻断）+ `roundNum`（当前轮次从1起，无关卡语义，`figthNumMax=1`/`fightNum=1` 占位）。场景取 BOSS 场景池 `GetRandomFightScene(true)`（每轮都有 BOSS）。**核心机制=进攻队列永不空，永不胜利**：基类虚钩子 `TryRefillNextAttackQueue()`（默认 false）两层接入 `UpdateGameForAttackCreate`/`QuickAdvanceAttackCreate`（①取波次返回 null 时先调它再重取；②每次出怪后队列已空立即补下一轮，消除队列真空窗口），无尽重写为 `AppendNextRoundAttackData()` 追加到队列末尾（不重建）并返 true；再加重写 `CheckGameEnd()` 屏蔽胜利判定只判魔王死亡——双重保险保证只有魔王死亡（失败）才结束。每轮构成=征服 BOSS 关同款：`attack_start_num` 只普通怪在 `attack_show_time` 内分桶随机 + `attack_boss_num` 只 BOSS 在 [50%,90%] 时刻错开 0.3s、首只携带 `bossShowNpcIds`（**每轮都弹 BOSS 特写**），数量固定不递推。强度=`GetRoundIntensityRate(round)`=征服行 `attack_intensity_baserate` × 无尽行 `round_intensity_addrate^(round-1)`（第1轮恒1）× 终焉议会强度议案。结算仅 `UIFightSettlement` 战绩排行榜，退出收尾（`ActionForUIFightSettlementExit`）：议案 EndGame 消耗钩子（`TriggerDoomCouncil(GameFightLogicEndGame)`，缺了会永久残留到后续战斗）→ `ClearAbyssalBlessing` → 还原阵容生物战斗状态 → `SaveUserData` → 回基地；**无经验/声望/成就/宝箱/领奖，不调 `RefillPortalRefreshNum`/`ClearPortalWorldInfoRandomData`**（那是"通关一次世界"语义，无尽无通关）。配置表：`excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（Sheet=FightTypeInfiniteInfo）→ `FightTypeInfiniteInfoBean(Partial)`：列 id/world_id/level（难度2~10，无难度1）/round_intensity_addrate/remark，当前世界1难度2~10共9行（id 1000102~1000110，倍率 1.20→1.05 递减）；Partial：`Bean.GetRoundIntensityRate(round)`=倍率^(round-1)（非法≤0按1）、`Cfg.GetItemData(worldId, difficultyLevel)`/`Cfg.GetMaxLevel(worldId)`（供传送门详情弹窗展示未解锁预览）。编辑器=战斗模式编辑工具第三页签 `FightModeEditorTabInfinite`（行下拉+字段编辑+新增/删除/保存/导出Json，菜单：游戏/战斗模式编辑）。
 
@@ -371,12 +371,12 @@ public partial class UIFightMain : BaseUIComponent
     // GameFightLogic_UnSelectCard    - 取消选择
     // GameFightLogic_PutCard         - 放置卡片
 
-    // Quick(加快进攻节奏)按钮显隐：仅征服模式且已解锁当前世界的 Quick 研究才显示
-    public void RefreshQuickButtonShow(bool isConquer, GameFightLogic gameFightLogic);
-    // 2倍速(Speed2)按钮显隐+选中态同步：仅征服模式且已解锁当前世界的 2倍速游戏 研究才显示
-    public void RefreshSpeed2ButtonShow(bool isConquer, GameFightLogic gameFightLogic);
-    // 0速(Speed0)按钮显隐+选中态同步：仅征服模式且已解锁当前世界的 0倍速游戏 研究才显示
-    public void RefreshSpeed0ButtonShow(bool isConquer, GameFightLogic gameFightLogic);
+    // Quick(加快进攻节奏)按钮显隐：征服/无尽/100勇士且已解锁当前世界当前难度 Quick 研究才显示(取 fightData.GetGameWorldInfoRandomData())
+    public void RefreshQuickButtonShow(GameFightLogic gameFightLogic);
+    // 2倍速(Speed2)按钮显隐+选中态同步：征服/无尽/100勇士且已解锁当前世界当前难度 2倍速游戏 研究才显示
+    public void RefreshSpeed2ButtonShow(GameFightLogic gameFightLogic);
+    // 0速(Speed0)按钮显隐+选中态同步：征服/无尽/100勇士且已解锁当前世界当前难度 0倍速游戏 研究才显示
+    public void RefreshSpeed0ButtonShow(GameFightLogic gameFightLogic);
 }
 ```
 
@@ -384,21 +384,21 @@ public partial class UIFightMain : BaseUIComponent
 
 ### 进攻进度条 Quick(加快进攻节奏) 按钮
 
-进攻进度条子视图 `UIViewFightMainAttCreateProgress`（征服/测试/挑战100勇士模式显示：显隐由 `UIFightMain.RefreshUIData` 拆分控制——关卡进度文本 `SetFightLevelShow` 仅征服模式，进度条 `SetAttCreateProgressShow` 在 `Conquer || Test || ChallengeHundred` 时显示；含 `ui_CreateProgress`/`ui_CreateEnd`/`ui_Quick`）上的 **Quick 按钮**用于**加速进攻节奏**：
+进攻进度条子视图 `UIViewFightMainAttCreateProgress`（征服/测试/挑战100勇士/无尽模式显示：显隐由 `UIFightMain.RefreshUIData` 拆分控制——关卡进度文本 `SetFightLevelShow` 仅征服模式，进度条 `SetAttCreateProgressShow` 在 `Conquer || Test || ChallengeHundred || Infinite` 时显示；含 `ui_CreateProgress`/`ui_CreateEnd`/`ui_Quick`）上的 **Quick 按钮**用于**加速进攻节奏**：
 
-- **与世界+难度绑定的显隐**：`UIFightMain.RefreshUIData` → `RefreshQuickButtonShow`：仅征服模式、且 `UserUnlockBean.CheckIsUnlockWorldQuickAttack(worldId, difficultyLevel)`（当前世界「当前难度」的「加快进攻节奏」研究已解锁）时才显示 Quick 按钮。worldId 与 difficultyLevel 取 `FightBeanForConquer.gameWorldInfoRandomData` 同名字段。Quick 研究已按难度拆分(难度2~10各一个)，研究节点/id 块约定见 [`research-system`](../research-system/SKILL.md) 世界分支。
+- **与世界+难度绑定的显隐**：`UIFightMain.RefreshUIData` → `RefreshQuickButtonShow`：**征服/无尽/100勇士模式**、且 `UserUnlockBean.CheckIsUnlockWorldQuickAttack(worldId, difficultyLevel)`（当前世界「当前难度」的「加快进攻节奏」研究已解锁）时才显示 Quick 按钮。worldId 与 difficultyLevel 取 `gameFightLogic.fightData.GetGameWorldInfoRandomData()`（`FightBean` 虚方法，三个世界模式 Bean 各自覆写返回 `gameWorldInfoRandomData`；无世界概念的模式返回 null 即隐藏）。Quick 研究已按难度拆分(难度1~10各一个)，研究节点/id 块约定见 [`research-system`](../research-system/SKILL.md) 世界分支。
 - **点击逻辑**：`UIViewFightMainAttCreateProgress.OnClickForQuick` → 若 `GetAttackProgress()>=1` 直接 return（已到 100% 点击无效）；否则 `GameFightLogic.QuickAdvanceAttackCreate(0.1f)` 推进后 `SetProgress(newProgress, animTime:0.3f)` 平滑过渡（不瞬跳）。
-- **`GameFightLogic.QuickAdvanceAttackCreate(advanceRate=0.1f)`**：立即向前推进「`fightAttackData.timeAttackTotal * advanceRate`（默认总进攻时长10%）」的时间，用与逐帧刷怪 `UpdateGameForAttackCreate` **同一套「累加达标即出下一波」步进语义**逐波消费推进时间，把这段时间本应生成的进攻波次全部立即 `CreateAttackCreature`（含 BOSS 特写 `ShowBossDialog`）；队列耗尽先对称调虚钩子 `TryRefillNextAttackQueue()`（基类默认 false；无尽重写为追加下一轮——Quick 按钮对无尽隐藏，此为防御性对称接入），仍无波次则停止，进度自然封顶 100%。返回推进后的最新进度(0~1)。无消耗、无冷却，仅上限封顶。
+- **`GameFightLogic.QuickAdvanceAttackCreate(advanceRate=0.1f)`**：立即向前推进「`fightAttackData.timeAttackTotal * advanceRate`（默认总进攻时长10%）」的时间，用与逐帧刷怪 `UpdateGameForAttackCreate` **同一套「累加达标即出下一波」步进语义**逐波消费推进时间，把这段时间本应生成的进攻波次全部立即 `CreateAttackCreature`（含 BOSS 特写 `ShowBossDialog`）；队列耗尽先对称调虚钩子 `TryRefillNextAttackQueue()`（基类默认 false；无尽重写为追加下一轮——无尽模式 Quick 现在正常显示，此钩子保证推进到本轮末尾时无缝续下一轮），仍无波次则停止，进度自然封顶 100%。返回推进后的最新进度(0~1)。无消耗、无冷却，仅上限封顶。
 
 ### 进攻进度条速度按钮（Speed0 0速暂停 / Speed2 2倍速）
 
 `UIViewFightMainAttCreateProgress` 上有两个**互斥**的速度 RadioButton——**Speed0**（`ui_Speed0_RadioButtonView`/`ui_Speed0_Button`，0速=暂停）与 **Speed2**（`ui_Speed2_RadioButtonView`/`ui_Speed2_Button`，2倍速）：
 
-- **显隐门控（两按钮同口径）**：Speed0 与 Speed2 均与世界+难度绑定——`UIFightMain.RefreshUIData` → `RefreshSpeed0ButtonShow` / `RefreshSpeed2ButtonShow`：仅征服模式、且 `UserUnlockBean.CheckIsUnlockWorldSpeed0 / CheckIsUnlockWorldSpeed2(worldId, difficultyLevel)`（当前世界「当前难度」的「0倍速游戏」/「2倍速游戏」研究已解锁）时才显示，非征服模式一律隐藏；显示时同步 `RefreshSpeed0State()/RefreshSpeed2State()` 把按钮选中态对齐 `fightData.gameSpeed`（BOSS关重载场景后选中态不丢失）。研究节点/id 块约定（nn=40~49 2倍速段 / nn=50~59 0倍速段）见 [`research-system`](../research-system/SKILL.md) 世界分支。
+- **显隐门控（两按钮同口径）**：Speed0 与 Speed2 均与世界+难度绑定——`UIFightMain.RefreshUIData` → `RefreshSpeed0ButtonShow` / `RefreshSpeed2ButtonShow`：**征服/无尽/100勇士模式**、且 `UserUnlockBean.CheckIsUnlockWorldSpeed0 / CheckIsUnlockWorldSpeed2(worldId, difficultyLevel)`（当前世界「当前难度」的「0倍速游戏」/「2倍速游戏」研究已解锁）时才显示，其他无世界概念的模式隐藏；worldId/difficultyLevel 取 `gameFightLogic.fightData.GetGameWorldInfoRandomData()`（三个世界模式 Bean 覆写返回各自随机数据）。显示时同步 `RefreshSpeed0State()/RefreshSpeed2State()` 把按钮选中态对齐 `fightData.gameSpeed`（BOSS关重载场景后选中态不丢失）。研究节点/id 块约定（nn=40~49 2倍速段 / nn=50~59 0倍速段）见 [`research-system`](../research-system/SKILL.md) 世界分支。
 - **开关语义与互斥**：默认均不开启（每场新战斗 `fightData.gameSpeed=1`）；点击切换 0速/2倍/原速，速度挂在 `fightData` 上**仅本场战斗有效**（征服 run 内跨关卡保留，战斗结束随 fightData 销毁自然还原）。开启一方时若另一方处于选中态会被 `ChangeStates(false)` 取消（速度由开启方直接 SetGameSpeed，不走回调）。
 - **快捷键**：**F1=切换 Speed2，F2=加快进攻节奏（同点击 Quick，走 `TriggerQuickByKey` 校验 `ui_Quick` 可见才生效），Space=切换 Speed0**——由 View 重写 `OnInputActionForStarted` 处理（`InputActionUIEnum.F1/F2/Space`；Space 为 UI 映射新增动作，inputactions 绑定 `<Keyboard>/space`，与基地 Player 映射 Jump 突进互不冲突——战斗中基地控制 `enabledControl=false` 不响应突进，基地场景也无 UI 处理 Space 枚举），速度切换走与点击相同的 `SetStates(!isSelect)` 路径；按钮隐藏（未解锁研究/进度条视图隐藏）时对应快捷键无效。左下角按键提示组 `ui_UIViewPressControlForGameBase`（`UIFightMain.InitData` 切 GameFight 模式）同步提示 WASD(移动镜头)/F1(2倍速)/F2(加快进攻节奏)/Space(0倍速)，F1/F2/Space 提示显隐由 `RefreshSpeed2ButtonShow`/`RefreshQuickButtonShow`/`RefreshSpeed0ButtonShow` 同门控推送到 `SetSpeed2KeyShow`/`SetQuickKeyShow`/`SetSpeed0KeyShow`，各键悬浮气泡文本 id 2000026~2000032（详见 ui-components agent 的 UIViewPressControlForGameBase）。
 - **点击链路**：`RadioButtonView` 自身回调（`UIViewFightMainAttCreateProgress : IRadioButtonCallBack`，Awake 里 `SetCallBack(this)`）→ `RadioButtonSelected` → `OnSpeed0Changed/OnSpeed2Changed(isOpen)` → `GameFightLogic.SetGameSpeed(...)`（Speed0: `isOpen ? GAME_SPEED_0X(0) : 1`；Speed2: `isOpen ? GAME_SPEED_2X(2) : 1`）。
-- **变速原理（不是 TimeScale）**：`SetGameSpeed` 只改 `fightData.gameSpeed`（游戏时间流速），不改 `Time.timeScale`（TimeScale 保留给暂停/BOSS特写减速）；0速下一切走游戏速度的逻辑全部冻结（等效战斗暂停）。全场节奏一致靠两条路径：① `UpdateGame` 的 `updateTime = Time.deltaTime * fightData.gameSpeed`（刷怪/BUFF/魔王/RCD）；② 不经 UpdateGame 驱动的战斗系统（AI意图移动/攻击计时、弹道飞行、掉落物寿命）统一用 `GameFightLogic.GetFightDeltaTime()`（= `Time.deltaTime × GetCurrentGameSpeed()`，非战斗场景恒 1 倍）替代 `Time.deltaTime`。**新增战斗内按时间推进的逻辑时，必须用 `GetFightDeltaTime()` 而不是 `Time.deltaTime`**。
+- **变速原理（不是 TimeScale）**：`SetGameSpeed` 只改 `fightData.gameSpeed`（游戏时间流速），不改 `Time.timeScale`（TimeScale 保留给暂停/BOSS特写减速）；0速下一切走游戏速度的逻辑全部冻结（等效战斗暂停）。全场节奏一致靠两条路径：① `UpdateGame` 的 `updateTime = Time.deltaTime * fightData.gameSpeed`（刷怪/BUFF/魔王/RCD）；② 不经 UpdateGame 驱动的战斗系统（AI意图移动/攻击计时、弹道飞行、掉落物寿命）统一用 `GameFightLogic.GetFightDeltaTime()`（= `Time.deltaTime × GetCurrentGameSpeed()`，非战斗场景恒 1 倍）替代 `Time.deltaTime`。**新增战斗内按时间推进的逻辑时，必须用 `GetFightDeltaTime()` 而不是 `Time.deltaTime`**。**唯一例外**：魔晶飞回段（`FightDropCrystalInstanceRenderer` 的 FlyBack）用 `Time.deltaTime × Mathf.Max(1, GetCurrentGameSpeed())`——0倍速下点击拾取的魔晶仍按原速飞回魔王入账（其余掉落/寿命逻辑仍冻结），而 ESC 系统界面/故事演出等 `Time.timeScale=0` 的暂停下 `Time.deltaTime=0` 照常冻结。
 - **动画同步**：`SetGameSpeed` 同时 `RefreshAllCreatureAnimTimeScale()` 给全部在场生物 `SetAnimTimeScale(gameSpeed)`（`SkeletonAnimation.timeScale`，与各 PlayAnim 的 animSpeed 相乘叠加；0速=动画定格）；新建生物在 `FightCreatureEntity.SetData` 里自动按当前游戏速度初始化，2倍速中途生成的生物动画也是 2 倍。
 
 ## 战斗预制管理
@@ -534,7 +534,7 @@ gameLogic.SetGameSpeed(GameFightLogic.GAME_SPEED_2X);  // 2倍速（同步刷新
 gameLogic.SetGameSpeed(1.0f);                          // 正常速度
 ```
 
-> **不要直接写 `fightData.gameSpeed`**：那只会缩放 `UpdateGame` 的 updateTime（刷怪/BUFF/魔王/RCD），不会同步生物 Spine 动画速度；`SetGameSpeed` 额外 `RefreshAllCreatureAnimTimeScale()`。AI意图/弹道/掉落物等不经 UpdateGame 驱动的系统统一读 `GameFightLogic.GetFightDeltaTime()`（非战斗场景恒返回 1 倍帧时间），新增战斗内计时逻辑一律用它替代 `Time.deltaTime`。速度挂在 fightData 上仅本场战斗有效。
+> **不要直接写 `fightData.gameSpeed`**：那只会缩放 `UpdateGame` 的 updateTime（刷怪/BUFF/魔王/RCD），不会同步生物 Spine 动画速度；`SetGameSpeed` 额外 `RefreshAllCreatureAnimTimeScale()`。AI意图/弹道/掉落物等不经 UpdateGame 驱动的系统统一读 `GameFightLogic.GetFightDeltaTime()`（非战斗场景恒返回 1 倍帧时间），新增战斗内计时逻辑一律用它替代 `Time.deltaTime`。**例外**：魔晶飞回段用 `Time.deltaTime × Mathf.Max(1, GetCurrentGameSpeed())`（0倍速仍飞回、TimeScale 暂停仍冻结）。速度挂在 fightData 上仅本场战斗有效。
 
 ## 文件位置速查
 

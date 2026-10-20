@@ -540,6 +540,11 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 世界模式(征服/无尽/100勇士)的难度上限
+    /// </summary>
+    private const int MAX_GAME_WORLD_DIFFICULTY_LEVEL = 10;
+
+    /// <summary>
     /// 获取游戏世界-征服模式-难度等级
     /// 基础难度取自 UserLimmitBean.conquerDifficultyMax + 已解锁的难度研究个数。
     /// 难度研究已拆分为每难度独立节点(难度2~10各占一个unlock id, 起始id=unlock_id_conquer_difficulty_level)，
@@ -565,8 +570,8 @@ public class UserUnlockBean
 
     /// <summary>
     /// 获取游戏世界-无尽模式-已解锁最高难度等级
-    /// 无尽模式无难度1(第一难度没有无尽模式): 难度N(2~10)无尽对应解锁ID = 起始ID(unlock_id_infinite) + (N-2)，
-    /// 从起始id连续向后统计已解锁个数(遇断档即止, 与研究的前置链式解锁语义一致)
+    /// 无尽模式无难度1(第一难度没有无尽模式): 难度N(2~10)无尽对应解锁ID = 起始ID(unlock_id_infinite) + (N-2)。
+    /// 各难度研究相互独立(不再要求上一无尽难度), 故扫描全部难度取最高已解锁(允许跳级: 只买难度3不买难度2时返回3)。
     /// </summary>
     /// <param name="worldId">游戏世界ID</param>
     /// <returns>无尽模式当前可挑战的最高难度等级; 0=未解锁无尽模式</returns>
@@ -574,16 +579,17 @@ public class UserUnlockBean
     {
         var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
         long startUnlockId = gameWorldInfo.unlock_id_infinite;
-        //起始id为0表示该世界未配置无尽研究; 起始id未解锁表示无尽未开启(也避免 CheckIsUnlock(0) 恒真导致死循环)
-        if (startUnlockId == 0 || !CheckIsUnlock(startUnlockId))
+        //起始id为0表示该世界未配置无尽研究
+        if (startUnlockId == 0)
             return 0;
-        int unlockNum = 0;
-        while (CheckIsUnlock(startUnlockId + unlockNum))
+        int maxDifficulty = 0;
+        //扫描全部难度取最高已解锁(不要求连续, 支持跳级研究)
+        for (int difficultyLevel = 2; difficultyLevel <= MAX_GAME_WORLD_DIFFICULTY_LEVEL; difficultyLevel++)
         {
-            unlockNum++;
+            if (CheckIsUnlock(startUnlockId + (difficultyLevel - 2)))
+                maxDifficulty = difficultyLevel;
         }
-        //unlockNum个已解锁 → 难度2~(unlockNum+1)
-        return unlockNum + 1;
+        return maxDifficulty;
     }
 
     /// <summary>
@@ -598,6 +604,53 @@ public class UserUnlockBean
             return false;
         var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
         long startUnlockId = gameWorldInfo.unlock_id_infinite;
+        if (startUnlockId == 0)
+            return false;
+        return CheckIsUnlock(startUnlockId + (difficultyLevel - 2));
+    }
+
+    /// <summary>
+    /// 获取游戏世界-挑战100勇士-已解锁最高难度等级
+    /// 难度1默认可用; 难度N(2~10)对应解锁ID = 起始ID(unlock_id_challenge_hundred) + (N-2)。
+    /// 各难度研究相互独立(只前置同难度征服研究), 故扫描全部难度取最高已解锁(允许跳级)。
+    /// </summary>
+    /// <param name="worldId">游戏世界ID</param>
+    /// <returns>挑战100勇士当前可挑战的最高难度等级(最小1)</returns>
+    public int GetUnlockChallengeHundredDifficultyLevel(long worldId)
+    {
+        var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
+        //未配置/找不到世界配置时仅难度1可用
+        if (gameWorldInfo == null)
+            return 1;
+        long startUnlockId = gameWorldInfo.unlock_id_challenge_hundred;
+        //起始id为0表示该世界未配置100勇士难度链, 仅难度1可用
+        if (startUnlockId == 0)
+            return 1;
+        int maxDifficulty = 1;
+        //扫描全部难度取最高已解锁(不要求连续, 支持跳级研究)
+        for (int difficultyLevel = 2; difficultyLevel <= MAX_GAME_WORLD_DIFFICULTY_LEVEL; difficultyLevel++)
+        {
+            if (CheckIsUnlock(startUnlockId + (difficultyLevel - 2)))
+                maxDifficulty = difficultyLevel;
+        }
+        return maxDifficulty;
+    }
+
+    /// <summary>
+    /// 是否已解锁指定世界指定难度的挑战100勇士(难度1恒可用; 难度N对应解锁ID = 起始ID(unlock_id_challenge_hundred) + (N-2))
+    /// </summary>
+    /// <param name="worldId">游戏世界ID</param>
+    /// <param name="difficultyLevel">100勇士难度等级(1~10)</param>
+    /// <returns>true=已解锁</returns>
+    public bool CheckChallengeHundredUnlock(long worldId, int difficultyLevel)
+    {
+        //难度1默认可用
+        if (difficultyLevel <= 1)
+            return true;
+        var gameWorldInfo = GameWorldInfoCfg.GetItemData(worldId);
+        if (gameWorldInfo == null)
+            return false;
+        long startUnlockId = gameWorldInfo.unlock_id_challenge_hundred;
         if (startUnlockId == 0)
             return false;
         return CheckIsUnlock(startUnlockId + (difficultyLevel - 2));

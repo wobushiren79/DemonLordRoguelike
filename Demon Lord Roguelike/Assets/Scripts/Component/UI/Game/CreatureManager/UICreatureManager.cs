@@ -389,7 +389,7 @@ public partial class UICreatureManager : BaseUIComponent
     }
 
     /// <summary>
-    /// 使用或装备道具：消耗品(魔汁/幻化药/幻原药)走各自使用流程(确认弹窗→生效)，其余道具走装备
+    /// 使用或装备道具：消耗品(魔汁/幻化药/幻原药/4类GM药水)走各自使用流程(确认弹窗→生效)，其余道具走装备
     /// </summary>
     public void UseOrEquipItem(ItemBean itemData)
     {
@@ -402,6 +402,14 @@ public partial class UICreatureManager : BaseUIComponent
             UseTransformPotionItem(itemData);
         else if (itemType == ItemTypeEnum.RestorePotion)
             UseRestorePotionItem(itemData);
+        else if (itemType == ItemTypeEnum.LevelUpPotion)
+            UseLevelUpPotionItem(itemData);
+        else if (itemType == ItemTypeEnum.LevelDownPotion)
+            UseLevelDownPotionItem(itemData);
+        else if (itemType == ItemTypeEnum.RarityUpPotion)
+            UseRarityUpPotionItem(itemData);
+        else if (itemType == ItemTypeEnum.RarityDownPotion)
+            UseRarityDownPotionItem(itemData);
         else
             SetCreatureEquip(itemData);
     }
@@ -471,6 +479,164 @@ public partial class UICreatureManager : BaseUIComponent
             //三连刷新:卡片详情(经验显示) + 献祭按钮(经验达标点亮) + 背包列表(魔汁移除)
             ui_UIViewCreatureCardEquipDetails.SetCardDetails(creatureData);
             RefreshSacrificeButton(creatureData);
+            InitBackpackItemsData();
+        };
+        UIHandler.Instance.ShowDialogNormal(dialogData);
+    }
+    #endregion
+
+    #region 升级药水使用
+    /// <summary>
+    /// 使用升级药水:对当前选中生物弹出确认框,确定后按药水档位连续升级并进入加点界面。
+    /// <para>档位读 ItemsInfo.other_data 的 level_delta(空=1);到满级自动停止。道具消耗/升级/加点在加点确认前都只改内存不落盘,加点确认后统一落盘,强退则全部回滚;仅普通魔物可用。</para>
+    /// </summary>
+    /// <param name="itemData">被点击的升级药水道具</param>
+    public void UseLevelUpPotionItem(ItemBean itemData)
+    {
+        CreatureBean creatureData = ui_UIViewCreatureCardEquipDetails.creatureData;
+        if (creatureData == null || creatureData.IsDemonLord())
+            return;
+        if (creatureData.IsMaxLevel())
+        {
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61030), 0);
+            return;
+        }
+        ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
+        int levelDelta = itemInfo?.GetLevelPotionDelta() ?? 1;
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = levelDelta > 1
+            ? string.Format(TextHandler.Instance.GetTextById(61034), creatureData.creatureName, levelDelta)
+            : string.Format(TextHandler.Instance.GetTextById(61026), creatureData.creatureName);
+        dialogData.actionSubmit = (view, data) =>
+        {
+            var userData = GameDataHandler.Instance.manager.GetUserData();
+            //先消耗道具再升级,全程不落盘;加点确认后统一持久化
+            userData.RemoveBackpackItem(itemData, 1);
+            int attributePoint = creatureData.UpLevelForPotion(levelDelta);
+            if (attributePoint > 0)
+            {
+                UIHandler.Instance.OpenUIAndCloseOther<UICreatureAddAttribute>((ui) =>
+                {
+                    ui.SetData(creatureData, attributePoint, OnLevelUpPotionConfirm);
+                });
+                return;
+            }
+            //无加点兜底:直接落盘并刷新管理页
+            GameDataHandler.Instance.manager.SaveUserData();
+            ui_UIViewCreatureCardEquipDetails.SetCardDetails(creatureData);
+            ui_UIViewCreatureCardList.RefreshAllCard();
+            RefreshSacrificeButton(creatureData);
+            InitBackpackItemsData();
+        };
+        UIHandler.Instance.ShowDialogNormal(dialogData);
+    }
+
+    /// <summary>
+    /// 升级药水加点确认:统一保存道具消耗、等级变化与加点结果,并返回生物管理界面。
+    /// </summary>
+    protected void OnLevelUpPotionConfirm()
+    {
+        GameDataHandler.Instance.manager.SaveUserData();
+        UIHandler.Instance.OpenUIAndCloseOther<UICreatureManager>();
+    }
+    #endregion
+
+    #region 降级药水使用
+    /// <summary>
+    /// 使用降级药水:对当前选中生物弹出确认框,确定后按药水档位连续降级并逐级随机回退升级加点。
+    /// <para>档位读 ItemsInfo.other_data 的 level_delta(空=1);到 0 级自动停止。存档没有每级加点历史,按各级 attribute_point 从累计加点中随机回退;仅普通魔物可用。</para>
+    /// </summary>
+    /// <param name="itemData">被点击的降级药水道具</param>
+    public void UseLevelDownPotionItem(ItemBean itemData)
+    {
+        CreatureBean creatureData = ui_UIViewCreatureCardEquipDetails.creatureData;
+        if (creatureData == null || creatureData.IsDemonLord())
+            return;
+        if (!creatureData.CanDownLevel())
+        {
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61031), 0);
+            return;
+        }
+        ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
+        int levelDelta = itemInfo?.GetLevelPotionDelta() ?? 1;
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = levelDelta > 1
+            ? string.Format(TextHandler.Instance.GetTextById(61035), creatureData.creatureName, levelDelta)
+            : string.Format(TextHandler.Instance.GetTextById(61027), creatureData.creatureName);
+        dialogData.actionSubmit = (view, data) =>
+        {
+            var userData = GameDataHandler.Instance.manager.GetUserData();
+            creatureData.DownLevelForPotion(levelDelta);
+            userData.RemoveBackpackItem(itemData, 1);
+            GameDataHandler.Instance.manager.SaveUserData();
+            //等级变化影响属性、卡片与献祭按钮,需完整刷新
+            ui_UIViewCreatureCardEquipDetails.SetCardDetails(creatureData);
+            ui_UIViewCreatureCardList.RefreshAllCard();
+            RefreshSacrificeButton(creatureData);
+            InitBackpackItemsData();
+        };
+        UIHandler.Instance.ShowDialogNormal(dialogData);
+    }
+    #endregion
+
+    #region 升阶药水使用
+    /// <summary>
+    /// 使用升阶药水:对当前选中生物弹出确认框,确定后稀有度提升 1 档并随机获得新档位稀有度BUFF。
+    /// <para>UR/L 无对应BUFF类型时只提升稀有度;仅普通魔物可用。</para>
+    /// </summary>
+    /// <param name="itemData">被点击的升阶药水道具</param>
+    public void UseRarityUpPotionItem(ItemBean itemData)
+    {
+        CreatureBean creatureData = ui_UIViewCreatureCardEquipDetails.creatureData;
+        if (creatureData == null || creatureData.IsDemonLord())
+            return;
+        if (!creatureData.CanUpRarity())
+        {
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61032), 0);
+            return;
+        }
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(61028), creatureData.creatureName);
+        dialogData.actionSubmit = (view, data) =>
+        {
+            var userData = GameDataHandler.Instance.manager.GetUserData();
+            creatureData.UpRarityForPotion();
+            userData.RemoveBackpackItem(itemData, 1);
+            GameDataHandler.Instance.manager.SaveUserData();
+            ui_UIViewCreatureCardEquipDetails.SetCardDetails(creatureData);
+            ui_UIViewCreatureCardList.RefreshAllCard();
+            InitBackpackItemsData();
+        };
+        UIHandler.Instance.ShowDialogNormal(dialogData);
+    }
+    #endregion
+
+    #region 降阶药水使用
+    /// <summary>
+    /// 使用降阶药水:对当前选中生物弹出确认框,确定后稀有度降低 1 档并移除高于新档位的稀有度BUFF。
+    /// <para>与终焉议会降稀有度共用 CreatureBean.DownRarity 算法;仅普通魔物可用。</para>
+    /// </summary>
+    /// <param name="itemData">被点击的降阶药水道具</param>
+    public void UseRarityDownPotionItem(ItemBean itemData)
+    {
+        CreatureBean creatureData = ui_UIViewCreatureCardEquipDetails.creatureData;
+        if (creatureData == null || creatureData.IsDemonLord())
+            return;
+        if (!creatureData.CanDownRarity())
+        {
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61033), 0);
+            return;
+        }
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(61029), creatureData.creatureName);
+        dialogData.actionSubmit = (view, data) =>
+        {
+            var userData = GameDataHandler.Instance.manager.GetUserData();
+            creatureData.DownRarity(creatureData.GetRarityValue() - 1);
+            userData.RemoveBackpackItem(itemData, 1);
+            GameDataHandler.Instance.manager.SaveUserData();
+            ui_UIViewCreatureCardEquipDetails.SetCardDetails(creatureData);
+            ui_UIViewCreatureCardList.RefreshAllCard();
             InitBackpackItemsData();
         };
         UIHandler.Instance.ShowDialogNormal(dialogData);

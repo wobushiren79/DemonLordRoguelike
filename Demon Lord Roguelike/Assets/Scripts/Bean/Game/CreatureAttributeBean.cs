@@ -131,4 +131,46 @@ public class CreatureAttributeBean
         dic[attributeType] = tempValue;
     }
     #endregion
+
+    #region 回退属性点
+    /// <summary>
+    /// 随机回退升级加点: 每次从当前仍有整点数的属性中随机一项,按单点增量扣减。
+    /// <para>dicAttributeLevelUp 只存累计数值不存每级历史,无法精确删除某级;用于降级药水按本级应得点数随机回退。</para>
+    /// </summary>
+    /// <param name="removeNum">要回退的属性点数</param>
+    public void RemoveRandomAttributeForLevelUp(int removeNum)
+    {
+        if (removeNum <= 0)
+            return;
+        List<CreatureAttributeTypeEnum> listCanRemove = new List<CreatureAttributeTypeEnum>();
+        for (int i = 0; i < removeNum; i++)
+        {
+            listCanRemove.Clear();
+            foreach (var item in dicAttributeLevelUp)
+            {
+                float pointValue = CreatureUtil.GetAttributePointAddValue(item.Key);
+                if (pointValue > 0 && item.Value >= pointValue)
+                    listCanRemove.Add(item.Key);
+            }
+            if (listCanRemove.Count == 0)
+            {
+                LogUtil.LogWarning($"升级加点回退不足:剩余 {removeNum - i} 点无可回退属性");
+                break;
+            }
+            CreatureAttributeTypeEnum targetType = listCanRemove[Random.Range(0, listCanRemove.Count)];
+            AddAttributeForLevelUp(targetType, -CreatureUtil.GetAttributePointAddValue(targetType));
+        }
+        //清理已扣到 0 的属性键,避免存档残留 0 值
+        List<CreatureAttributeTypeEnum> listRemoveKey = new List<CreatureAttributeTypeEnum>();
+        foreach (var item in dicAttributeLevelUp)
+        {
+            if (item.Value <= 0)
+                listRemoveKey.Add(item.Key);
+        }
+        for (int i = 0; i < listRemoveKey.Count; i++)
+        {
+            dicAttributeLevelUp.Remove(listRemoveKey[i]);
+        }
+    }
+    #endregion
 }

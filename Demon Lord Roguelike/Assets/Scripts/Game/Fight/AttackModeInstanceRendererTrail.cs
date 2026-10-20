@@ -67,11 +67,12 @@ public partial class AttackModeInstanceRenderer
     private readonly float[] trailAlphaBuffer = new float[MaxInstancesPerBatch];
 
     //——逐发基准矩阵缓存(DrawTrailBuckets 每帧重填，跨桶复用，按需扩容)——
-    //无自旋弹道整发所有档的旋转/缩放完全相同、只有平移在变，故每帧每发只算一次 TRS，逐档改写平移列即可，
+    //旋转恒定的弹道整发所有档的旋转/缩放完全相同、只有平移在变，故每帧每发只算一次 TRS，逐档改写平移列即可，
     //省下"档数×弹道数"次 Quaternion.AngleAxis/Matrix4x4.TRS 原生调用(二者均为 extern，是本函数原先的热点)
     private Matrix4x4[] trailBaseMatrix = new Matrix4x4[64];
-    //对应下标弹道是否有自旋：有自旋则每档旋转姿态不同(要烤入采样时自转角)，不能复用基准矩阵
-    private bool[] trailBaseHasSpin = new bool[64];
+    //对应下标弹道是否需逐档现算姿态：自旋弹道每档自转角不同；弧线/斜射追踪等弹道 visualStartAngle 每帧变化，
+    //历史点也各有当时朝向(trailBakeVisualAngle=true)——两者都不能复用当前帧基准矩阵
+    private bool[] trailBasePerSampleAngle = new bool[64];
     #endregion
 
     #region 轨迹桶注册（拖尾）
@@ -212,15 +213,16 @@ public partial class AttackModeInstanceRenderer
             if (tb.mpb == null)
                 tb.mpb = new MaterialPropertyBlock();
 
-            //预算每发的基准矩阵：无自旋弹道整发所有档同旋转同缩放，逐档只需换平移(见 trailBaseMatrix 注释)
+            //预算每发的基准矩阵：朝向恒定弹道整发所有档同旋转同缩放，逐档只需换平移(见 trailBaseMatrix 注释)
             EnsureTrailBaseCache(amCount);
             for (int a = 0; a < amCount; a++)
             {
                 var attackMode = listAttackMode[a];
-                bool hasSpin = attackMode.spinSpeed != 0f;
-                trailBaseHasSpin[a] = hasSpin;
-                //有自旋的逐档现算(旋转随采样时刻变)，无自旋的在此算一次、平移留空待逐档覆盖
-                if (!hasSpin)
+                //逐档现算姿态的两种情形：自旋(每档自转角不同) / 每帧改 visualStartAngle 的弹道(每个历史点朝向不同)
+                bool perSampleAngle = attackMode.spinSpeed != 0f || attackMode.trailBakeVisualAngle;
+                trailBasePerSampleAngle[a] = perSampleAngle;
+                //恒定朝向的在此算一次、平移留空待逐档覆盖；逐档现算的不能用当前帧角度作整发基准
+                if (!perSampleAngle)
                     trailBaseMatrix[a] = BuildInstanceMatrix(attackMode, Vector3.zero);
             }
 
@@ -241,15 +243,15 @@ public partial class AttackModeInstanceRenderer
                     int order = attackMode.trailCount - 1 - k;
                     if (order < 0)
                         continue;   //历史点不足 k+1 个，本发本档跳过
-                    if (trailBaseHasSpin[a])
+                    if (trailBasePerSampleAngle[a])
                     {
-                        //有自旋：烤入该采样点的时间自转角，使旋转弹道的轨迹复现当时姿态(轨迹 shader 无时间自转)
-                        attackMode.GetTrailSample(order, out Vector3 spinPoint, out float spinAngle);
-                        tb.matrixBuffer[tb.count] = BuildInstanceMatrix(attackMode, spinPoint, spinAngle, scaleMul);
+                        //逐档现算：烤入该采样点的时间自转角与视觉朝向角，使轨迹复现当时姿态(轨迹 shader 无时间自转)
+                        attackMode.GetTrailSample(order, out Vector3 spinPoint, out float spinAngle, out float visualAngle);
+                        tb.matrixBuffer[tb.count] = BuildInstanceMatrix(attackMode, visualAngle, spinPoint, spinAngle, scaleMul);
                     }
                     else
                     {
-                        //无自旋：复用本发基准矩阵，只改写平移列(m03/m13/m23)，等价于同旋转同缩放下换个位置
+                        //朝向恒定：复用本发基准矩阵，只改写平移列(m03/m13/m23)，等价于同旋转同缩放下换个位置
                         Matrix4x4 matrix = trailBaseMatrix[a];
                         //按档缩放：基准矩阵 3x3(旋转×缩放)整体乘 scaleMul(均匀缩放与旋转可交换)，平移列不受影响
                         if (scaleMul != 1f)
@@ -292,7 +294,7 @@ public partial class AttackModeInstanceRenderer
             return;
         int capacity = Mathf.NextPowerOfTwo(amCount);
         trailBaseMatrix = new Matrix4x4[capacity];
-        trailBaseHasSpin = new bool[capacity];
+        trailBasePerSampleAngle = new bool[capacity];
     }
 
     /// <summary>

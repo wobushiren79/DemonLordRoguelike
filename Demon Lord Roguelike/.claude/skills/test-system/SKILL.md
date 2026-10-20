@@ -287,9 +287,9 @@ allUnlockInfo.ForEach((index, value) =>
 });
 ```
 
-### 解锁所有世界征服难度
+### 解锁所有世界难度（征服 + 无尽 + 100勇士）
 
-`UITestBase` 的 `ui_BtnWorldDifHalf` / `ui_BtnWorldDif` 两个按钮分别解锁所有世界的「一半难度(向上取整)」/「全部难度」，逻辑见 `OnClickForUnlockWorldDifficulty(bool isHalf)`：
+`UITestBase` 的 `ui_BtnWorldDifHalf` / `ui_BtnWorldDif` 两个按钮分别解锁所有世界的「一半难度(向上取整)」/「全部难度」，逻辑见 `OnClickForUnlockWorldDifficulty(bool isHalf)`；`TestGameMasterGUI.UnlockWorldDifficulty` 同口径：
 
 ```csharp
 // 难度 = conquerDifficultyMax(基础) + 已解锁难度研究个数(难度已拆为每难度独立节点, 起始id=unlock_id_conquer_difficulty_level)
@@ -300,17 +300,29 @@ foreach (var itemData in GameWorldInfoCfg.GetAllData())
     int configDifficultyMax = FightTypeConquerInfoCfg.GetMaxLevel(itemData.Key); // 该世界配置最高难度
     int targetDifficulty = isHalf ? Mathf.CeilToInt(configDifficultyMax / 2f) : configDifficultyMax;
     int needUnlockLevel = targetDifficulty - conquerDifficultyBase;          // ≤0跳过(基础已覆盖)
-    //难度研究已拆分为每难度独立节点(起始id起连续), 逐个解锁
+    long infiniteUnlockId = itemData.Value.unlock_id_infinite;               // 无尽难度起始ID
+    long challengeHundredUnlockId = itemData.Value.unlock_id_challenge_hundred; // 100勇士难度起始ID
+    //难度研究已拆分为每难度独立节点(起始id起连续), 逐个解锁; 同步解锁无尽与100勇士同难度节点
     for (int i = 0; i < needUnlockLevel; i++)
+    {
         userUnlockData.AddUnlock(unlockId + i);
+        if (infiniteUnlockId != 0)
+            userUnlockData.AddUnlock(infiniteUnlockId + i);
+        if (challengeHundredUnlockId != 0)
+            userUnlockData.AddUnlock(challengeHundredUnlockId + i);
+    }
 }
+// 测试用: 100勇士出现概率/无尽出现概率/BOSS概率拉满, 便于刷出特殊模式
+userUnlockData.AddUnlock((long)UnlockEnum.ChallengeHundredShowRate, 10);
+userUnlockData.AddUnlock((long)UnlockEnum.InfiniteShowRate, 9);
+userUnlockData.AddUnlock((long)UnlockEnum.ChallengeHundredBossRate, 4);
 ```
 
 ---
 
 ## GM GUI 面板 (F11, TestGameMasterGUI)
 
-`TestGameMasterGUI`（`Assets/Scripts/Component/UI/Test/TestGameMasterGUI.cs`）——纯代码 IMGUI 版 GM 面板（不依赖预制），在**基地主页面按 F11 打开、再按 F11 关闭**（`TestGameMasterGUI.Toggle()`）。与 F12 的预制体版 `UITestBase` 功能完全对齐，显示与交互做了优化（分区/下拉/滑条/状态栏），并新增 Mod 道具区。
+`TestGameMasterGUI`（`Assets/Scripts/Component/UI/Test/TestGameMasterGUI.cs`）——纯代码 IMGUI 版 GM 面板（不依赖预制），在**基地主页面按 F11 打开、再按 F11 关闭**（`TestGameMasterGUI.Toggle()`）。与 F12 的预制体版 `UITestBase` 功能完全对齐，显示与交互做了优化（分区/下拉/滑条/状态栏），道具区支持按ID/按类型选择双模式，并新增 Mod 道具区。全部下拉(生物/稀有度/Mod/道具类型/道具)互斥展开，开一个关其他。
 
 ### 打开方式与门控
 
@@ -323,7 +335,7 @@ foreach (var itemData in GameWorldInfoCfg.GetAllData())
 | 分区 | 功能 |
 |------|------|
 | 资源 | 魔晶/声望：数量输入(空=999999) + 添加 |
-| 道具 | 道具ID输入(空=全部道具) + 添加，按类型分流(`AddItemByType`)：装备每种稀有度(N~L)各一（`EquipUtil.CreateEquipItemForTest`），非装备(幻化药等)仅1件无属性 |
+| 道具 | 双模式切换：①按ID添加=道具ID输入(空=全部道具) + 添加，按类型分流(`AddItemByType`)：装备每种稀有度(N~L)各一（`EquipUtil.CreateEquipItemForTest`），非装备(幻化药等)仅1件无属性；②按类型选择=道具类型下拉(`EnsureItemTypeOptions` 懒加载, 按配置表实际出现的 item_type 分组, 中文名由 `GetItemTypeName` 写死映射, 兼容魔晶1000与Mod自定义类型)→该类型道具下拉(id+名字, 按id升序)→数量输入(空=1, 上限999) + 添加(`AddItemBySelection`)：装备每种稀有度各N件，非装备N件走 `AddBackpackItem(itemId, num)` 自动堆叠(魔晶经 `AddBackpackItemForSpecial` 转货币) |
 | 生物 | 添加所有生物；测试生物=生物下拉(懒加载 CreatureInfoCfg)+手动ID(合法优先) + 稀有度下拉(随机/1N~6L) + 等级(随机开关+0~10滑条)，走孕育同款随机稀有度BUFF |
 | 解锁 | 解锁ID输入(空=全部，有研究配置按满级) + 世界难度解锁一半/全部（逻辑同 UITestBase） |
 | Mod 道具 | Mod下拉 + 添加该 Mod 全部道具（装备每稀有度各一，非装备仅1件） |
@@ -562,7 +574,7 @@ LauncherTest.StartForChallengeHundredTest(rowId, saveSlot = 0)   // Assets/Scrip
     │  ② saveSlot>0 时读档:UserDataService.ChangeSlot(saveSlot).Load(false) → SetUserData(献祭/故事测试同范式)
     │  ③ isTestSimulation = true   // 奖励结算/掉落入账等 SaveUserData 被 GameDataManager 统一拦截,测试数据不保存
     │  ④ 手搓 GameWorldInfoRandomBean: worldId=1、gameFightType=ChallengeHundred，
-    │     调 SetRandomDataForChallengeHundred(challengeHundredInfo) 冻结配置行/道路/宝箱奖励(普通3箱/BOSS翻倍)
+    │     调 SetRandomDataForChallengeHundred(challengeHundredInfo, 行难度首档) 逐难度预生成并默认进入该档(普通3箱/BOSS翻倍)
     │  ⑤ new FightBeanForChallengeHundred(gameWorldInfoRandomData)
     │     → InitData 从当前 UserData 取 selfCreature(防守核心)+GetLineupCreature(当前出战阵容)
     │  ⑥ WorldHandler.EnterGameForFightScene(fightData)
@@ -570,7 +582,7 @@ LauncherTest.StartForChallengeHundredTest(rowId, saveSlot = 0)   // Assets/Scrip
 
 ### 关键点
 
-- **冻结链路即真实链路**：`SetRandomDataForChallengeHundred` 与真实传送门生成共用同一方法（冻结配置行 id/道路数/道路长度/预生成 3 箱奖励），故测试进战斗所见强度/敌人构成/奖励与正式玩法一致；区别仅在世界来源是手搓而非传送门概率刷出。
+- **冻结链路即真实链路**：`SetRandomDataForChallengeHundred` 与真实传送门生成共用同一方法（逐难度预生成配置行 id/道路数/道路长度/3 箱奖励），测试额外传「配置行难度首档」作为默认难度（大于当前研究上限时仅生成测试数据），故测试进战斗所见强度/敌人构成/奖励与正式玩法一致；区别仅在世界来源是手搓而非传送门概率刷出。
 - **存档意义=防守阵容**：`FightBeanForChallengeHundred.InitData()` 从当前 `UserData` 读 `selfCreature`（魔王防守核心）与 `GetLineupCreature(GetLineupFightIndex())`（当前出战阵容），故选 1~3 槽位即用该存档真实阵容测试；选 0 用 `InitTestData` 伪造数据（50 只随机生物满阵容）。
 - **不落盘**：统一 `isTestSimulation = true`（无论槽位 0 还是 1~3），复位仍由 `WorldHandler.EnterMainForBaseScene` 收口。
 - **rowId 来自配置表**：`excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx`（一行=一个挑战配置，`difficulty_levels` 列声明该行可被哪些难度抽中）。
@@ -860,7 +872,7 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 测试战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForTest.cs`（fightAttackDataRemark 进攻数据备份；testAbyssalBlessingIds 测试馈赠目标行id列表，由 GameFightLogicTest 在防守核心创建后统一添加；testDemonLordMP 测试魔王蓝量，由 GameFightLogicTest 统一应用并同步提升 MP 上限；dicTestDefenseFixedAttribute 测试防守方固定属性=基础值替换，作用于卡片魔物+魔王核心，MP 被固定时蓝量设置让位） |
 | 测试控制台 | `Assets/FrameWork/Scripts/Component/UI/UITestConsole.cs` |
 | 测试基础 UI | `Assets/Scripts/Component/UI/Test/UITestBase.cs` + `UITestBaseComponent.cs`（F12 预制体版 GM 面板） |
-| GM GUI 面板 | `Assets/Scripts/Component/UI/Test/TestGameMasterGUI.cs`（F11 纯代码 IMGUI 版 GM 面板：`Toggle()` 开关；资源/道具/生物/解锁/Mod 道具五分区+状态栏；打开时 `EnableAllControl(false)` 销毁时 `SetBaseControl()`；Mod 道具按 `id/10^14==modId` 号段过滤 ItemsInfoCfg；已注册进 `LauncherTest.ClearTestGUIs()`） |
+| GM GUI 面板 | `Assets/Scripts/Component/UI/Test/TestGameMasterGUI.cs`（F11 纯代码 IMGUI 版 GM 面板：`Toggle()` 开关；资源/道具/生物/解锁/Mod 道具五分区+状态栏；道具区双模式=按ID添加(空=全部)/按类型选择(类型下拉按 item_type 分组→道具下拉→数量空=1上限999，装备每稀有度各N件/非装备N件堆叠)；打开时 `EnableAllControl(false)` 销毁时 `SetBaseControl()`；Mod 道具按 `id/10^14==modId` 号段过滤 ItemsInfoCfg；已注册进 `LauncherTest.ClearTestGUIs()`） |
 | 卡片编辑器测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForCreatureCardEditor`） |
 | 卡片编辑器测试面板 | `Assets/Scripts/Component/UI/Test/TestCreatureCardGUI.cs`（纯代码 IMGUI + 实例化真实卡片预制体 UIViewCreatureCardItem/UIViewCreatureCardDetails；稀有度/等级/生物/NPC 下拉+手动ID；场景Spine展示：世界空间并排标准模型(固定2001骷髅战士)+目标模型(缩放=size_spine×体型倍率,主相机侧视取景到屏幕底部,10x10地平面基准,面板带显隐开关与大小数值行; spine=根节点摆放+Renderer子节点承载缩放/位置, 与 SetCreatureData 的世界位置恒管理兼容)；图标/模型尺寸校准：小卡/大卡图标缩放与锚点位置+场景模型 size_spine(FloatEditState 滑条+文本双向同步)，保存写回 excel_creature_model 的 ui_data_s/ui_data_b/size_spine + ExcelToJsonItem + 反射清 Cfg 缓存（原 UITestCard「显示卡片」已删除并入）；自定义板色(渐变)/等级色：RGB滑条+RGB数值输入(0~255)+Hex输入+16色调色盘(ColorEditState 双向同步)；保存写回 excel_rarity_info/excel_level_info + ExcelToJsonItem + 反射清 Cfg 缓存） |
 | Mod幻化药测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForTransformPotionTest`） + `Assets/Editor/GameTestEditor.cs`（`DrawTransformPotionTest`/`EnsureTransformPotionOptions` 下拉候选仅 Play 模式构建, 选择索引 EditorPrefs 持久化） |
@@ -878,7 +890,7 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 魔物进阶测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawCreatureVatTest`） |
 | 魔汁机测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForCreatureJuicerTest`） |
 | 魔汁机测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawCreatureJuicerTest`） |
-| 挑战100勇士测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForChallengeHundredTest(rowId, saveSlot = 0)`：校验 `FightTypeChallengeHundredInfoCfg` 配置行→saveSlot>0 读档 SetUserData→`isTestSimulation=true`→手搓 `GameWorldInfoRandomBean`(worldId=1/gameFightType=ChallengeHundred/`SetRandomDataForChallengeHundred` 冻结行/道路/宝箱奖励)→`new FightBeanForChallengeHundred`(从当前 UserData 取魔王+出战阵容)→`EnterGameForFightScene`） |
+| 挑战100勇士测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForChallengeHundredTest(rowId, saveSlot = 0)`：校验 `FightTypeChallengeHundredInfoCfg` 配置行→saveSlot>0 读档 SetUserData→`isTestSimulation=true`→手搓 `GameWorldInfoRandomBean`(worldId=1/gameFightType=ChallengeHundred/`SetRandomDataForChallengeHundred(行, 行难度首档)` 逐难度预生成并默认进入该档)→`new FightBeanForChallengeHundred`(从当前 UserData 取魔王+出战阵容)→`EnterGameForFightScene`） |
 | 挑战100勇士测试 UI | `Assets/Editor/GameTestEditor.cs`（FightSceneTest 子模式 `FightTestModeEnum.ChallengeHundred`：`DrawFightSceneTestChallengeHundred`/`EnsureChallengeHundredRowOptions` 配置行下拉+存档槽位 0~3） + `GameTestEditorPartial.cs`（challengeHundredTestRowSelectIndex/challengeHundredTestSaveSlot 持久化） |
 | 无尽模式测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForInfiniteTest(worldId, difficultyLevel, saveSlot = 0)`：硬校验同难度征服行 `FightTypeConquerInfoCfg`+软校验无尽行 `FightTypeInfiniteInfoCfg`→saveSlot>0 读档 SetUserData→`isTestSimulation=true`→手搓 `GameWorldInfoRandomBean`(worldId/gameFightType=Infinite/difficultyLevel/roadNum/roadLength 复用同难度征服行区间,不经解锁判定)→`new FightBeanForInfinite`(从当前 UserData 取魔王+出战阵容)→`EnterGameForFightScene`） |
 | 无尽模式测试 UI | `Assets/Editor/GameTestEditor.cs`（FightSceneTest 子模式 `FightTestModeEnum.Infinite`：`DrawFightSceneTestInfinite`/`EnsureInfiniteRowOptions` 配置行(世界+难度)下拉(世界名直读 Language_GameWorldInfo_cn.txt)+存档槽位 0~3） + `GameTestEditorPartial.cs`（infiniteTestRowSelectIndex/infiniteTestSaveSlot 持久化；infiniteRowOptions/infiniteRowWorldIds/infiniteRowLevels 缓存） |

@@ -160,11 +160,14 @@ public class LauncherTest : BaseLauncher
         }
         //开启测试模拟:战斗奖励结算/掉落入账等 SaveUserData 被 GameDataManager 统一拦截,测试数据不保存
         GameDataHandler.Instance.manager.isTestSimulation = true;
-        //构建挑战100勇士随机数据(冻结配置行+道路数据; 奖励在 SetRandomDataForChallengeHundred 内预生成)
+        //构建挑战100勇士随机数据(冻结配置行+道路数据; 奖励在 SetRandomDataForChallengeHundred 内逐难度预生成)
         GameWorldInfoRandomBean gameWorldInfoRandomData = new GameWorldInfoRandomBean();
         gameWorldInfoRandomData.worldId = 1;
         gameWorldInfoRandomData.gameFightType = GameFightTypeEnum.ChallengeHundred;
-        gameWorldInfoRandomData.SetRandomDataForChallengeHundred(challengeHundredInfo);
+        //按配置行适配的第一档难度进入测试(避免被当前研究解锁上限覆盖)
+        int[] rowDifficultyLevels = challengeHundredInfo.GetDifficultyLevelList();
+        int testDifficulty = rowDifficultyLevels != null && rowDifficultyLevels.Length > 0 ? rowDifficultyLevels[0] : 0;
+        gameWorldInfoRandomData.SetRandomDataForChallengeHundred(challengeHundredInfo, testDifficulty);
         //进入挑战100勇士战斗
         FightBeanForChallengeHundred fightData = new FightBeanForChallengeHundred(gameWorldInfoRandomData);
         WorldHandler.Instance.EnterGameForFightScene(fightData);

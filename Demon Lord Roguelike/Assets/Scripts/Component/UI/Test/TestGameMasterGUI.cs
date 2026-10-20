@@ -4,6 +4,7 @@ using UnityEngine;
 /// <summary>
 /// GM 面板（GUI版，纯代码 IMGUI，不依赖预制体）：在基地主页面按 F11 打开，再次按 F11 关闭。
 /// 覆盖 UITestBase 预制面板的全部功能（魔晶/声望/道具/生物/测试生物/解锁/世界难度），
+/// 道具区支持两种模式：按ID添加(空=全部) 与 按类型选择(类型下拉→道具下拉→数量1~999，装备每稀有度各N件/非装备N件堆叠)，
 /// 并新增 Mod 道具区：下拉选择具体某个 Mod，一键添加该 Mod 的全部道具（装备每种稀有度各一，非装备仅1件）。
 /// 由 UIBaseMain 的 F11 输入触发 TestGameMasterGUI.Toggle() 创建/销毁（面板专用文本直接写死，不走多语言）。
 /// </summary>
@@ -31,6 +32,13 @@ public class TestGameMasterGUI : MonoBehaviour
 
     //道具区
     private string inputItemId = "";                    //道具ID输入(空=全部道具)
+    private bool isItemSelectByType;                    //道具区模式(false=按ID添加, true=按类型选择)
+    private string inputItemNum = "";                   //道具数量输入(空=1, 上限999)
+    private List<ItemTypeOption> listItemTypeOptions;   //道具类型候选(懒加载, 按配置表实际出现的item_type分组)
+    private int itemTypeSelectIndex;                    //道具类型下拉选中索引
+    private string itemTypeDropdownLabel = "请选择类型";//道具类型下拉按钮显示文本
+    private long currentSelectItemId;                   //类型模式下选中的道具id
+    private string itemSelectDropdownLabel = "请选择道具";//道具下拉按钮显示文本
 
     //生物区
     private long currentCreatureId = 2001;              //测试生物-下拉选中的生物id
@@ -51,7 +59,9 @@ public class TestGameMasterGUI : MonoBehaviour
 
     //下拉展开状态(互斥，开一个关其他)
     private bool isCreatureDropdownOpen, isRarityDropdownOpen, isModDropdownOpen;
+    private bool isItemTypeDropdownOpen, isItemSelectDropdownOpen;
     private Vector2 scrollCreatureDropdown, scrollModDropdown;
+    private Vector2 scrollItemTypeDropdown, scrollItemSelectDropdown;
 
     //操作结果提示
     private string statusText = "";
@@ -89,6 +99,20 @@ public class TestGameMasterGUI : MonoBehaviour
         {
             this.modId = modId;
             this.label = label;
+        }
+    }
+
+    /// <summary>道具类型候选项(item_type + 显示名 + 该类型下的道具列表)</summary>
+    private struct ItemTypeOption
+    {
+        public int itemType;
+        public string label;
+        public List<SelectItem> listItems;
+        public ItemTypeOption(int itemType, string label, List<SelectItem> listItems)
+        {
+            this.itemType = itemType;
+            this.label = label;
+            this.listItems = listItems;
         }
     }
 
@@ -247,6 +271,55 @@ public class TestGameMasterGUI : MonoBehaviour
         return (int)RarityEnum.L - (int)RarityEnum.N + 1;
     }
 
+    /// <summary>
+    /// 按类型下拉选中的道具添加指定数量：装备每种稀有度(N~L)各N件(走 EquipUtil.CreateEquipItemForTest 随机属性)；
+    /// 非装备走 AddBackpackItem(itemId, num) 自动堆叠(魔晶经 AddBackpackItemForSpecial 转货币)
+    /// </summary>
+    private void AddItemBySelection()
+    {
+        if (listItemTypeOptions == null || listItemTypeOptions.Count == 0 || currentSelectItemId == 0)
+        {
+            SetStatus("请先选择道具类型与道具", true);
+            return;
+        }
+        //解析数量: 空=1, 非法/越界报错
+        int count = 1;
+        if (!inputItemNum.IsNull())
+        {
+            if (!int.TryParse(inputItemNum, out count) || count <= 0 || count > 999)
+            {
+                SetStatus("数量必须是 1~999 的数字", true);
+                return;
+            }
+        }
+        ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(currentSelectItemId);
+        if (itemInfo == null)
+        {
+            SetStatus($"道具ID {currentSelectItemId} 不存在", true);
+            return;
+        }
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        if (itemInfo.IsEquipType())
+        {
+            //装备: 每种稀有度(N~L)各 count 件
+            for (int rarity = (int)RarityEnum.N; rarity <= (int)RarityEnum.L; rarity++)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    userData.AddBackpackItem(EquipUtil.CreateEquipItemForTest(currentSelectItemId, rarity));
+                }
+            }
+            int totalCount = ((int)RarityEnum.L - (int)RarityEnum.N + 1) * count;
+            SetStatus($"{itemSelectDropdownLabel} 添加成功（装备6稀有度×{count}，共{totalCount}件）！");
+        }
+        else
+        {
+            userData.AddBackpackItem(currentSelectItemId, count);
+            SetStatus($"{itemSelectDropdownLabel} 添加成功（非装备，{count}件）！");
+        }
+        GameDataHandler.Instance.manager.SaveUserData();
+    }
+
     #endregion
 
     #region GM功能-生物
@@ -397,12 +470,23 @@ public class TestGameMasterGUI : MonoBehaviour
             int needUnlockLevel = targetDifficulty - conquerDifficultyBase;
             if (needUnlockLevel <= 0)
                 continue;
-            //难度研究已拆分为每难度独立节点(起始id起连续), 逐个解锁
+            //难度研究已拆分为每难度独立节点(起始id起连续), 逐个解锁;
+            //同步解锁同难度的无尽难度与100勇士难度研究, 便于测试三套难度链
+            long infiniteUnlockId = gameWorldInfo.unlock_id_infinite;
+            long challengeHundredUnlockId = gameWorldInfo.unlock_id_challenge_hundred;
             for (int i = 0; i < needUnlockLevel; i++)
             {
                 userUnlockData.AddUnlock(unlockId + i);
+                if (infiniteUnlockId != 0)
+                    userUnlockData.AddUnlock(infiniteUnlockId + i);
+                if (challengeHundredUnlockId != 0)
+                    userUnlockData.AddUnlock(challengeHundredUnlockId + i);
             }
         }
+        //测试用: 顺带把100勇士出现概率/无尽出现概率/BOSS概率拉满, 便于刷出特殊模式
+        userUnlockData.AddUnlock((long)UnlockEnum.ChallengeHundredShowRate, 10);
+        userUnlockData.AddUnlock((long)UnlockEnum.InfiniteShowRate, 9);
+        userUnlockData.AddUnlock((long)UnlockEnum.ChallengeHundredBossRate, 4);
         GameDataHandler.Instance.manager.SaveUserData();
         SetStatus(isHalf ? "已解锁所有世界一半难度！" : "已解锁所有世界全部难度！");
     }
@@ -493,6 +577,70 @@ public class TestGameMasterGUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 懒加载道具类型下拉候选：按配置表实际出现的 item_type 分组(兼容魔晶1000与Mod自定义类型)，
+    /// 类型按枚举值升序、类型内道具按id升序，并初始化默认选中(第一个类型+该类型第一个道具)
+    /// </summary>
+    private void EnsureItemTypeOptions()
+    {
+        if (listItemTypeOptions != null) return;
+        listItemTypeOptions = new List<ItemTypeOption>();
+        //按 item_type 分组
+        var dicTypeItems = new SortedDictionary<int, List<SelectItem>>();
+        foreach (var itemInfo in ItemsInfoCfg.GetAllArrayData())
+        {
+            string name = itemInfo.name_language;
+            var option = new SelectItem(itemInfo.id, name.IsNull() ? $"{itemInfo.id}" : $"{itemInfo.id} {name}");
+            if (!dicTypeItems.TryGetValue(itemInfo.item_type, out var listItems))
+            {
+                listItems = new List<SelectItem>();
+                dicTypeItems.Add(itemInfo.item_type, listItems);
+            }
+            listItems.Add(option);
+        }
+        foreach (var pair in dicTypeItems)
+        {
+            pair.Value.Sort((a, b) => a.id.CompareTo(b.id));
+            listItemTypeOptions.Add(new ItemTypeOption(pair.Key, $"{GetItemTypeName(pair.Key)}({pair.Key})（{pair.Value.Count}种）", pair.Value));
+        }
+        //默认选中第一个类型与该类型第一个道具
+        if (listItemTypeOptions.Count > 0)
+        {
+            itemTypeDropdownLabel = listItemTypeOptions[0].label;
+            if (listItemTypeOptions[0].listItems.Count > 0)
+            {
+                currentSelectItemId = listItemTypeOptions[0].listItems[0].id;
+                itemSelectDropdownLabel = listItemTypeOptions[0].listItems[0].label;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 取道具类型中文名(GM面板专用写死文本)：枚举内按 ItemTypeEnum 注释命名，枚举外 1000=魔晶，其余显示 类型N
+    /// </summary>
+    private static string GetItemTypeName(int itemType)
+    {
+        switch ((ItemTypeEnum)itemType)
+        {
+            case ItemTypeEnum.Hat: return "帽子";
+            case ItemTypeEnum.Clothes: return "衣服";
+            case ItemTypeEnum.Pants: return "裤子";
+            case ItemTypeEnum.Shoe: return "鞋子";
+            case ItemTypeEnum.NoseRing: return "鼻环";
+            case ItemTypeEnum.FingerRing: return "戒指";
+            case ItemTypeEnum.Weapon: return "武器";
+            case ItemTypeEnum.Juice: return "魔汁";
+            case ItemTypeEnum.TransformPotion: return "幻化药";
+            case ItemTypeEnum.RestorePotion: return "幻原药";
+            case ItemTypeEnum.LevelUpPotion: return "升级药水";
+            case ItemTypeEnum.LevelDownPotion: return "降级药水";
+            case ItemTypeEnum.RarityUpPotion: return "升阶药水";
+            case ItemTypeEnum.RarityDownPotion: return "降阶药水";
+            case ItemTypeEnum.Portrait: return "肖像";
+            default: return itemType == 1000 ? "魔晶" : $"类型{itemType}";
+        }
+    }
+
     #endregion
 
     #region 状态提示
@@ -529,6 +677,7 @@ public class TestGameMasterGUI : MonoBehaviour
         InitGUIStyle();
         EnsureCreatureOptions();
         EnsureModOptions();
+        EnsureItemTypeOptions();
 
         float panelWidth = Mathf.Min(PanelWidth, Screen.width - 20);
         GUILayout.BeginArea(new Rect(10, 10, panelWidth, Screen.height - 20), GUI.skin.box);
@@ -610,11 +759,47 @@ public class TestGameMasterGUI : MonoBehaviour
     }
 
     /// <summary>
-    /// 绘制道具区（按ID/全部添加，每稀有度各一）
+    /// 绘制道具区（按ID/全部添加 + 按类型选择添加，模式切换）
     /// </summary>
     private void DrawItemSection()
     {
         DrawSectionHeader("道具");
+        //模式切换(按ID添加/按类型选择)
+        GUILayout.BeginHorizontal();
+        Color oldColor = GUI.color;
+        if (!isItemSelectByType) GUI.color = Color.green;
+        if (GUILayout.Button(isItemSelectByType ? "按ID添加" : "✔ 按ID添加", GUILayout.Height(24)))
+        {
+            GUI.color = oldColor;
+            isItemSelectByType = false;
+            isItemTypeDropdownOpen = false;
+            isItemSelectDropdownOpen = false;
+        }
+        GUI.color = oldColor;
+        if (isItemSelectByType) GUI.color = Color.green;
+        if (GUILayout.Button(isItemSelectByType ? "✔ 按类型选择" : "按类型选择", GUILayout.Height(24)))
+        {
+            GUI.color = oldColor;
+            isItemSelectByType = true;
+        }
+        GUI.color = oldColor;
+        GUILayout.EndHorizontal();
+        GUILayout.Space(2);
+        if (!isItemSelectByType)
+        {
+            DrawItemSectionById();
+        }
+        else
+        {
+            DrawItemSectionByType();
+        }
+    }
+
+    /// <summary>
+    /// 绘制道具区-按ID添加模式（输入ID/空=全部，装备每稀有度各一）
+    /// </summary>
+    private void DrawItemSectionById()
+    {
         GUILayout.BeginHorizontal();
         GUILayout.Label("道具ID", labelStyle, GUILayout.Width(50));
         inputItemId = GUILayout.TextField(inputItemId, GUILayout.Height(26), GUILayout.Width(150));
@@ -624,6 +809,100 @@ public class TestGameMasterGUI : MonoBehaviour
         }
         GUILayout.EndHorizontal();
         GUILayout.Label("空=全部道具；装备每种稀有度(N~L)各一，非装备(幻化药等)仅1件无属性", hintStyle);
+    }
+
+    /// <summary>
+    /// 绘制道具区-按类型选择模式（类型下拉→道具下拉→数量输入→添加）
+    /// </summary>
+    private void DrawItemSectionByType()
+    {
+        if (listItemTypeOptions.Count == 0)
+        {
+            GUILayout.Label("道具配置表为空", hintStyle);
+            return;
+        }
+        //类型下拉
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("类型", labelStyle, GUILayout.Width(50));
+        if (GUILayout.Button(itemTypeDropdownLabel, buttonLeftStyle, GUILayout.Height(26)))
+        {
+            isItemTypeDropdownOpen = !isItemTypeDropdownOpen;
+            isItemSelectDropdownOpen = false;
+            isCreatureDropdownOpen = false;
+            isRarityDropdownOpen = false;
+            isModDropdownOpen = false;
+        }
+        GUILayout.EndHorizontal();
+        if (isItemTypeDropdownOpen)
+        {
+            scrollItemTypeDropdown = GUILayout.BeginScrollView(scrollItemTypeDropdown, GUI.skin.box, GUILayout.Height(180));
+            for (int i = 0; i < listItemTypeOptions.Count; i++)
+            {
+                bool isCurrent = i == itemTypeSelectIndex;
+                Color oldColorItem = GUI.color;
+                if (isCurrent) GUI.color = Color.green;
+                if (GUILayout.Button(isCurrent ? $"✔ {listItemTypeOptions[i].label}" : listItemTypeOptions[i].label, buttonLeftStyle, GUILayout.Height(24)))
+                {
+                    GUI.color = oldColorItem;
+                    itemTypeSelectIndex = i;
+                    itemTypeDropdownLabel = listItemTypeOptions[i].label;
+                    //切换类型后重置道具选中到该类型第一个
+                    if (listItemTypeOptions[i].listItems.Count > 0)
+                    {
+                        currentSelectItemId = listItemTypeOptions[i].listItems[0].id;
+                        itemSelectDropdownLabel = listItemTypeOptions[i].listItems[0].label;
+                    }
+                    isItemTypeDropdownOpen = false;
+                    break;
+                }
+                GUI.color = oldColorItem;
+            }
+            GUILayout.EndScrollView();
+        }
+        //道具下拉(当前选中类型下的道具)
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("道具", labelStyle, GUILayout.Width(50));
+        if (GUILayout.Button(itemSelectDropdownLabel, buttonLeftStyle, GUILayout.Height(26)))
+        {
+            isItemSelectDropdownOpen = !isItemSelectDropdownOpen;
+            isItemTypeDropdownOpen = false;
+            isCreatureDropdownOpen = false;
+            isRarityDropdownOpen = false;
+            isModDropdownOpen = false;
+        }
+        GUILayout.EndHorizontal();
+        if (isItemSelectDropdownOpen)
+        {
+            var listItems = listItemTypeOptions[itemTypeSelectIndex].listItems;
+            scrollItemSelectDropdown = GUILayout.BeginScrollView(scrollItemSelectDropdown, GUI.skin.box, GUILayout.Height(240));
+            foreach (var option in listItems)
+            {
+                bool isCurrent = option.id == currentSelectItemId;
+                Color oldColorItem = GUI.color;
+                if (isCurrent) GUI.color = Color.green;
+                if (GUILayout.Button(isCurrent ? $"✔ {option.label}" : option.label, buttonLeftStyle, GUILayout.Height(24)))
+                {
+                    GUI.color = oldColorItem;
+                    currentSelectItemId = option.id;
+                    itemSelectDropdownLabel = option.label;
+                    isItemSelectDropdownOpen = false;
+                    break;
+                }
+                GUI.color = oldColorItem;
+            }
+            GUILayout.EndScrollView();
+        }
+        //数量(空=1)
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("数量", labelStyle, GUILayout.Width(50));
+        inputItemNum = GUILayout.TextField(inputItemNum, GUILayout.Height(26), GUILayout.Width(150));
+        GUILayout.Label("(空=1, 上限999)", hintStyle);
+        GUILayout.EndHorizontal();
+        if (GUILayout.Button("添加选中道具", GUILayout.Height(26)))
+        {
+            AddItemBySelection();
+        }
+        GUILayout.Label("装备=每种稀有度(N~L)各N件；非装备=N件(自动堆叠)；魔晶=直接加货币", hintStyle);
     }
 
     /// <summary>
@@ -645,6 +924,8 @@ public class TestGameMasterGUI : MonoBehaviour
             isCreatureDropdownOpen = !isCreatureDropdownOpen;
             isRarityDropdownOpen = false;
             isModDropdownOpen = false;
+            isItemTypeDropdownOpen = false;
+            isItemSelectDropdownOpen = false;
         }
         GUILayout.EndHorizontal();
         if (isCreatureDropdownOpen)
@@ -689,6 +970,8 @@ public class TestGameMasterGUI : MonoBehaviour
             isRarityDropdownOpen = !isRarityDropdownOpen;
             isCreatureDropdownOpen = false;
             isModDropdownOpen = false;
+            isItemTypeDropdownOpen = false;
+            isItemSelectDropdownOpen = false;
         }
         //等级: 随机开关 + 滑条
         GUILayout.Label("等级", labelStyle, GUILayout.Width(36));
@@ -766,6 +1049,8 @@ public class TestGameMasterGUI : MonoBehaviour
             isModDropdownOpen = !isModDropdownOpen;
             isCreatureDropdownOpen = false;
             isRarityDropdownOpen = false;
+            isItemTypeDropdownOpen = false;
+            isItemSelectDropdownOpen = false;
         }
         GUILayout.EndHorizontal();
         if (isModDropdownOpen)

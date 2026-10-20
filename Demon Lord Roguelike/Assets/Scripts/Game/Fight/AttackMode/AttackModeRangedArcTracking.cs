@@ -36,6 +36,14 @@ public class AttackModeRangedArcTracking : AttackModeRangedArc
     }
     #endregion
 
+    #region 拖尾
+    /// <summary>
+    /// 弹体朝向跟随抛物线切线逐帧变化，轨迹残影须按各采样点当时的切线角绘制；
+    /// 否则所有历史残影套用当前帧朝向，整条轨迹会跟着弹体一起旋转（本体正常、拖尾在转）。
+    /// </summary>
+    public override bool trailBakeVisualAngle => true;
+    #endregion
+
     #region 开始攻击
     /// <summary>
     /// 开始攻击基础：重置插地状态（对象池复用不残留上一发的插地倒计时）

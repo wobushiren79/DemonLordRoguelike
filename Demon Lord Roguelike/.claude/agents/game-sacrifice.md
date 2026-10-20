@@ -1,6 +1,6 @@
 ---
 name: game-sacrifice
-description: 生物献祭升级系统开发：CreatureSacrificeLogic 献祭逻辑、CreatureSacrificeBean 献祭数据、UICreatureSacrifice 献祭UI、献祭升级(等级提升/经验门槛/UpLevelForSacrifice)、成功率公式(同id 1/sacrifice_num + 不同id研究率 + 等级差修正 2^(祭品level-目标level))、保底机制(研究驱动 sacrificePityRate)、不同id/保底研究(SacrificeDifferentIdRate/SacrificePityRate)、祭品装备退回、等级上限、UICreatureManager 升级按钮显隐。
+description: 生物献祭升级系统开发：CreatureSacrificeLogic 献祭逻辑、CreatureSacrificeBean 献祭数据、UICreatureSacrifice 献祭UI、献祭升级(等级提升/经验门槛/UpLevelForSacrifice)、GM升级/降级药水(多级档位 level_delta、升级复用加点UI、降级逐级随机回退点数)、成功率公式(同id 1/sacrifice_num + 不同id研究率 + 等级差修正 2^(祭品level-目标level))、保底机制(研究驱动 sacrificePityRate)、不同id/保底研究(SacrificeDifferentIdRate/SacrificePityRate)、祭品装备退回、等级上限、UICreatureManager 升级按钮显隐。
 tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Game/Logic/CreatureSacrificeLogic.cs
@@ -41,8 +41,8 @@ UICreatureManager(升级按钮) → GameHandler.StartCreatureSacrifice
 - ⚠️ **`UIHandler.ToastHintText(content, state)` 的 state 约定**：`0`=失败(红色 `ui_other_3` 图标)，`1`=成功(绿色 `ui_other_6` 图标)，默认 `0`。正向反馈传 `1`、负向反馈传 `0`，别传错图标
 
 ### 升级与数据
-- **CreatureBean / CreatureBeanPartial** - `level`/`levelExp`/`sacrificePityRate`(保底)；`UpLevelForSacrifice()`(升级,**返回本次可分配加点数**=`LevelInfo.attribute_point` 当前全等级配置5、`<=0`兜底1，不再自动加属性) / `CanUpLevel()` / `IsMaxLevel()` / `GetNextLevelInfo()`
-- **CreatureAttributeBean** - 升级加点 `dicAttributeLevelUp`(public 保证存档)；`AddAttribute` 支持正负增量(减点用)，**已修复首次加该属性丢失第一次加点的 bug**
+- **CreatureBean / CreatureBeanPartial** - `level`/`levelExp`/`sacrificePityRate`(保底)；`UpLevelForSacrifice()`(升级,**返回本次可分配加点数**=`LevelInfo.attribute_point` 当前全等级配置5、`<=0`兜底1，不再自动加属性) / `CanUpLevel()` / `IsMaxLevel()` / `GetNextLevelInfo()`；GM 药水配套 `CanDownLevel()` / `DownLevelForPotion()` / `DownLevelForPotion(int)`（逐级降级+经验清0+随机回退各级加点）/ `UpLevelForPotion(int)`（逐级升级并累计加点，满级自动停止）
+- **CreatureAttributeBean** - 升级加点 `dicAttributeLevelUp`(public 保证存档)；`AddAttribute` 支持正负增量(减点用)，**已修复首次加该属性丢失第一次加点的 bug**；新增 `RemoveRandomAttributeForLevelUp(removeNum)` 供降级药水按本级点数随机回退累计加点（无存档级历史，非精确回退）
 - **CreatureSacrificeBean** - `targetCreature` + `fodderCreatures`；测试字段仅 `useManualSuccessRate`(覆盖)/`manualSuccessRate`(手动成功率)——原 `isTestMode` 已删，「是否测试」改读全局 `GameDataManager.isTestSimulation`
 
 ### 成功率公式
@@ -58,11 +58,12 @@ UICreatureManager(升级按钮) → GameHandler.StartCreatureSacrifice
 - `OnSacrificeAnimEnd` 成功分支：`attributePoint = SettleSacrificeData(true)`(升级,只改内存**不落盘**) → 有点数则 `OpenAddAttributeUI(target, point)`（落盘延迟到加点确认弹窗 `SaveAndEndGame`，加点界面强退则不写盘、祭品恢复）；无点数走 `SaveAndEndGame`(落盘)
 - `UICreatureAddAttribute`：`SetData(creature, totalPoint, onConfirm)` → 5 个 `UIViewCreatureAddAttributeItem`(HP/DR/ATK/ASPD/AddLife) 按 `creatureInfo.show_attribute` 配置显隐（`InitItems`，如史莱姆 3003/3004 只显示 ATK 一项；**加血回复型(`IsRegainHPAttackMode`, 如愈之魅魔4002)配置含 ATK 时 ATK 项与 AddLife 项互斥替换**——隐藏 ATK 项、显示 AddLife 治疗量项，底层仍绑定 ATK 属性加点(治疗量=ATK×攻击模式倍率，与 `UIViewCreatureCardDetails.SetAttribute` 口径一致；回甲型 RegainDR 暂无对应加点项仍显 ATK)；配置含 4 项以外属性告警忽略，全隐藏兜底强制显示 HP 项）左减右加，实时作用属性并 `RefreshCard`，`RefreshLimmit` 用 `ui_LimmitText` 显示「剩余点数:{0}」(多语言 textId 61005)；**已去掉 exit 退出按钮，改 `ui_BtnConfirm` 确认**：`OnClickForConfirm` 剩余>0 弹 ToastHintText(textId 61004)拦截，剩余=0 弹 `ShowDialogNormal` 二次确认弹窗(textId 61006)，确认后才 `onConfirm`(=SaveAndEndGame)
 - `UIViewCreatureAddAttributeItem.RefreshNum`：步进器数字仅显示已分配「点数」(`allocatedCount`，如 +1)，与单点实际增量(HP/DR +10、ATK/ASPD +1)解耦，各属性统一显示点数
+- **GM 升级药水复用加点 UI**：`UseLevelUpPotionItem` 读取 `ItemsInfo.other_data` 的 `level_delta`（空=1），确认后仅内存消耗道具+`UpLevelForPotion(levelDelta)`（逐级升级并累计加点，满级自动停止），打开 `UICreatureAddAttribute`；加点确认回调统一落盘并重开管理页（强退=道具/升级/加点全不写盘）。降级药水不走加点 UI，`DownLevelForPotion(levelDelta)` 逐级随机回退后立即落盘。
 
 ### UI
 - **UICreatureSacrifice** - 祭品选择、实时成功率显示、开始献祭；祭品选择上限走 `userData.GetUserUnlockData().GetUnlockSacrificeMax()`（基础 3 + `UnlockEnum.SacrificeNum=100100002` 研究等级，满级 15），不要再直接读 `limmitData.sacrificeMax`；成功率进度条按区间分5段变色（`GetSuccessRateColor` 现仅转发 `ColorUtil.GetProgressColor`：0-20红/20-40橙/40-60黄/60-80浅绿/80-100蓝，DOColor 0.5s 渐变；配色为 ColorUtil 单一真实源，与孵化缸进阶BUFF概率共用）
 - **UICreatureAddAttribute** - 升级加点界面(`Assets/Scripts/Component/UI/Game/CreatureAddAttribute/`)，献祭升级成功后弹出
-- **UICreatureManager** - `RefreshSacrificeButton`：解锁祭坛且未满级时显示；经验达标则正常，经验未达标则 `SetSacrificeButtonGray` 置灰但仍可点击（点击走 `OnClickForCreatureSacrifice`，`!CanUpLevel()` 时 ToastHintText(textId 61009「经验值未达到100%」) 拦截）。未解锁祭坛/无选中生物/已满级(`IsMaxLevel()`)/魔王(`IsDemonLord()`,隐藏等级不吃经验故不可献祭)则隐藏；`OnClickForCreatureSacrifice` 开头对魔王 `return` 兜底拦截。背包道具点击 `EventForItemBackpackClickSelect` 经 `UseOrEquipItem` 分流：`ItemTypeEnum.Juice`(=11) → `UseJuiceItem`（#region 魔汁使用：确认弹窗 textId 61014 → 选中生物 `levelExp+=juicerExp`+消耗道具+落盘；满级 Toast 61015 拦截；魔王/无选中兜底）；`TransformPotion`(=18)/`RestorePotion`(=19) → `UseTransformPotionItem`/`UseRestorePotionItem`（幻化形象写入/清除 `CreatureBean.transformItemId`，含魔王可用，与献祭流程无关，详见 ui-game）；其余道具照旧走装备 `SetCreatureEquip`（装备资格收口 `ItemBean.CanEquipForCreature`，含魔王专属校验）
+- **UICreatureManager** - `RefreshSacrificeButton`：解锁祭坛且未满级时显示；经验达标则正常，经验未达标则 `SetSacrificeButtonGray` 置灰但仍可点击（点击走 `OnClickForCreatureSacrifice`，`!CanUpLevel()` 时 ToastHintText(textId 61009「经验值未达到100%」) 拦截）。未解锁祭坛/无选中生物/已满级(`IsMaxLevel()`)/魔王(`IsDemonLord()`,隐藏等级不吃经验故不可献祭)则隐藏；`OnClickForCreatureSacrifice` 开头对魔王 `return` 兜底拦截。背包道具点击 `EventForItemBackpackClickSelect` 经 `UseOrEquipItem` 分流：`ItemTypeEnum.Juice`(=11) → `UseJuiceItem`（#region 魔汁使用：确认弹窗 textId 61014 → 选中生物 `levelExp+=juicerExp`+消耗道具+落盘；满级 Toast 61015 拦截；魔王/无选中兜底）；`TransformPotion`(=18)/`RestorePotion`(=19) → `UseTransformPotionItem`/`UseRestorePotionItem`（幻化形象写入/清除 `CreatureBean.transformItemId`，含魔王可用，与献祭流程无关，详见 ui-game）；4 种 GM 药水（91~94，仅普通魔物）→ 升级/降级/升阶/降阶使用流程（升级会复用 `UICreatureAddAttribute`）；其余道具照旧走装备 `SetCreatureEquip`（装备资格收口 `ItemBean.CanEquipForCreature`，含魔王专属校验）
 
 ### 献祭相关研究（设施节点，前置均=开启献祭设施 Altar）
 - `UnlockEnum.SacrificeNum = 100100002`（level_max=12，水晶 1000~12000 每级+1000）提升祭品上限（基础3+等级，满级15）；衍生 `GetUnlockSacrificeMax()`。

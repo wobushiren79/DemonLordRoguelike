@@ -347,14 +347,18 @@ public class FightDropCrystalInstanceRenderer
     /// 每帧更新(FightHandler.Update)：推进渲染器时钟与掉落/飞回抛物线(游戏速度时钟),Landed 到期判定(只读比较时间戳),飞回到账记账；
     /// 到期/到账统一打删除标记,帧末一次性稳定压缩(保序,FIFO 依赖生成序),压缩后统一派发到账回调(遍历中途不 Invoke,避免回调重入 Clear/Add 破坏槽迭代)。
     /// <para>抛物线公式精确复刻 DOTween DOJump:每跳 y += jumpHeight×4×phase×(1-phase),phase 为单跳相位;掉落 Linear、飞回 OutCubic。</para>
+    /// <para>【飞回时钟】飞回段不吃 gameSpeed 的 0 倍速冻结(0 速下点击拾取的魔晶仍要飞回魔王入账),但吃 Time.timeScale：
+    /// ESC 系统界面/故事演出的暂停(timeScale=0)下 Time.deltaTime=0 依旧冻结,符合"暂停时不动"。</para>
     /// </summary>
     public void Update()
     {
         int count = listSlot.Count;
         if (count == 0)
             return;
-        //与旧 FightPrefabEntity 同一时钟源(跟随游戏速度/暂停)
+        //与旧 FightPrefabEntity 同一时钟源(跟随游戏速度/暂停)：掉落抛物线/渲染器时钟/寿命到期
         float deltaTime = GameFightLogic.GetFightDeltaTime();
+        //飞回时钟：跟随游戏速度但下限为原速(0倍速仍按原速飞回，2倍速仍按2倍推进)；纯用 Time.deltaTime 保证 ESC 暂停(timeScale=0)时归零
+        float flyBackDeltaTime = Time.deltaTime * Mathf.Max(1f, GameFightLogic.GetCurrentGameSpeed());
         rendererClock += deltaTime;
         bool anyDead = false;
         for (int i = 0; i < count; i++)
@@ -395,7 +399,7 @@ public class FightDropCrystalInstanceRenderer
                 }
                 case SlotStateEnum.FlyBack:
                 {
-                    slot.animClock += deltaTime;
+                    slot.animClock += flyBackDeltaTime;
                     if (slot.animClock >= slot.animDuration)
                     {
                         //到账:打删除标记并记账,回调延后到帧末压缩后统一派发(对齐旧 DOJump OnComplete 的 AddCrystal+事件+销毁)

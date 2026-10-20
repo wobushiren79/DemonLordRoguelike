@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using UnityEngine;
-
 /// <summary>
 /// 终焉议会议案效果：魔物稀有度下降
 /// <para>class_entity_data: "1"=稀有度下降1级(下限N级); "0"=稀有度直接归0(降到N级)</para>
@@ -49,34 +46,17 @@ public class DoomCouncilEntityCreatureRarityDown : DoomCouncilBaseEntity
     protected void ApplyRarityDown(CreatureBean targetCreature)
     {
         //稀有度已是N级时无法再下降
-        if (targetCreature.rarity <= (int)RarityEnum.N)
+        if (!targetCreature.CanDownRarity())
         {
             UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(3000009), 1);
             BackDoomCouncilBill();
             return;
         }
         //"0"=归0(降到N级)，其余=下降1级
-        if (doomCouncilInfo.class_entity_data.Equals("0"))
-        {
-            targetCreature.rarity = (int)RarityEnum.N;
-        }
-        else
-        {
-            targetCreature.rarity = Mathf.Max((int)RarityEnum.N, targetCreature.rarity - 1);
-        }
-        //移除高于新稀有度档位的稀有度BUFF
-        var listRemoveKey = new List<RarityEnum>();
-        foreach (var item in targetCreature.dicRarityBuff)
-        {
-            if ((int)item.Key > targetCreature.rarity)
-            {
-                listRemoveKey.Add(item.Key);
-            }
-        }
-        foreach (var key in listRemoveKey)
-        {
-            targetCreature.dicRarityBuff.Remove(key);
-        }
+        int targetRarity = doomCouncilInfo.class_entity_data.Equals("0")
+            ? (int)RarityEnum.N
+            : targetCreature.GetRarityValue() - 1;
+        targetCreature.DownRarity(targetRarity);
         //保存数据
         GameDataHandler.Instance.manager.SaveUserData();
         //弹出提示

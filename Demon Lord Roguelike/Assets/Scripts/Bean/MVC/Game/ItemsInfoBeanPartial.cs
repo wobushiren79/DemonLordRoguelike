@@ -20,6 +20,34 @@ public partial class ItemsInfoBean
         return (ItemTypeEnum)item_type;
     }
 
+    #region 等级药水
+    /// <summary>
+    /// 获取升级/降级药水的等级变动档位（other_data 键 `level_delta:N`）。
+    /// <para>空配置/解析失败/非正数均按 1 兜底，兼容最初的一级药水配置。</para>
+    /// </summary>
+    /// <returns>药水等级变动档位（≥1）</returns>
+    public int GetLevelPotionDelta()
+    {
+        if (other_data.IsNull())
+            return 1;
+        string[] listOtherData = other_data.Split('&');
+        for (int i = 0; i < listOtherData.Length; i++)
+        {
+            string itemData = listOtherData[i];
+            if (itemData.IsNull())
+                continue;
+            int splitIndex = itemData.IndexOf(':');
+            if (splitIndex <= 0 || itemData.Substring(0, splitIndex).Trim() != "level_delta")
+                continue;
+            if (int.TryParse(itemData.Substring(splitIndex + 1).Trim(), out int levelDelta) && levelDelta > 0)
+                return levelDelta;
+            LogUtil.LogWarning($"道具 id:{id} 的 level_delta 配置非法:{itemData}");
+            return 1;
+        }
+        return 1;
+    }
+    #endregion
+
     // 注：Mod 道具的 name 拼接（CombineModReferenceIds）由 Excel 列头 name[language] 标记驱动，
     // 在 ItemsInfoBean.cs 重新生成时自动产出（生成器逻辑见 ExcelEditorWindow.CreateEntity），此处不再手写。
 

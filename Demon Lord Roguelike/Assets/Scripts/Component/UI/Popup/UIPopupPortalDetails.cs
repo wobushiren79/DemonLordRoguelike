@@ -21,7 +21,7 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
 
     #region 数据设置
     /// <summary>
-    /// 设置数据(气泡展示传送门名字/模式名/难度(仅征服模式), 以及受研究门控的线路数/关卡数/路径长度/奖励; 未解锁的项整行隐藏)
+    /// 设置数据(气泡展示传送门名字/模式名/难度(挑战100勇士显示勇士/真勇士标签), 以及受研究门控的线路数/关卡数/路径长度/奖励; 未解锁的项整行隐藏)
     /// </summary>
     /// <param name="data">(世界配置, 世界随机数据, 要展示的难度)三元组</param>
     public override void SetData(object data)
@@ -29,10 +29,10 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
         var targetData = ((GameWorldInfoBean, GameWorldInfoRandomBean, int))data;
         GameWorldInfoBean gameWorldInfo = targetData.Item1;
         GameWorldInfoRandomBean gameWorldInfoRandom = targetData.Item2;
-        //气泡要展示的难度(由调用方传入: 难度详情每个item展示各自难度, 地图传送门item展示当前难度)
-        int difficultyLevel = targetData.Item3;
-        //气泡底色: 挑战100勇士-BOSS挑战=深紫, 其余恢复默认白
-        imageBG.color = gameWorldInfoRandom.IsChallengeHundredBossChallenge() ? ColorUtil.ChallengeHundredBossPurple : Color.white;
+        //气泡要展示的难度(由调用方传入: 难度详情每个item展示各自难度; 地图传送门item传-1=跟随当前活动难度)
+        int difficultyLevel = targetData.Item3 < 0 ? gameWorldInfoRandom.difficultyLevel : targetData.Item3;
+        //气泡底色: 与传送门BG一致按模式着色(征服=白, 无尽=深紫, 挑战100勇士=金)
+        imageBG.color = UIViewBasePortalItem.GetBGColorByFightType(gameWorldInfoRandom.gameFightType);
 
         //征服模式: 按指定难度取该难度预生成的道路/关卡/路径数据(各难度在创建时已全部随出);
         //无尽模式: 道路数/长度同样按难度取预生成值(无关卡数概念, 关卡数行本就隐藏)
@@ -59,14 +59,27 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
                 roadLength = difficultyRandom.roadLength;
             }
         }
+        else if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred)
+        {
+            //挑战100勇士: 按指定难度取该难度预生成的道路数据(悬停非当前难度item时也正确)
+            GameWorldChallengeHundredRandomBean challengeHundredRandom = gameWorldInfoRandom.GetChallengeHundredRandom(difficultyLevel);
+            if (challengeHundredRandom != null)
+            {
+                roadNum = challengeHundredRandom.roadNum;
+                roadLength = challengeHundredRandom.roadLength;
+            }
+        }
 
         var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
         //无尽模式无关卡数/路径长度/通关奖励(均为征服模式数据)
         bool isShowFightNum = gameWorldInfoRandom.gameFightType != GameFightTypeEnum.Infinite;
-        //挑战100勇士: 无难度概念(难度行隐藏), 固定单关(关卡数行隐藏, 恒1无信息量)
+        //挑战100勇士: 固定单关(关卡数行隐藏, 恒1无信息量), 难度行显示「难度N（勇士/真勇士）」
         bool isChallengeHundred = gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred;
-        //难度: 始终显示(不受研究门控), 征服/无尽有难度概念(挑战100勇士整行隐藏)
-        bool isShowDifficulty = !isChallengeHundred;
+        //难度: 始终显示(不受研究门控); 征服/无尽显示难度等级, 挑战100勇士显示 难度N + 勇士424/真勇士425
+        string difficultyContent = isChallengeHundred
+            ? string.Format(TextHandler.Instance.GetTextById(426), difficultyLevel,
+                TextHandler.Instance.GetTextById(gameWorldInfoRandom.IsChallengeHundredBossChallenge(difficultyLevel) ? 425 : 424))
+            : $"{difficultyLevel}";
 
         //名字: 始终显示(不受研究门控)
         SetDetailsItem(ui_UIViewPopupProtalDetailsItem_Name, TextHandler.Instance.GetTextById(411), $"{gameWorldInfo.name_language}", true);
@@ -74,8 +87,8 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
         int modeNameTextId = isChallengeHundred ? 417
             : gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Infinite ? 423 : 422;
         SetDetailsItem(ui_UIViewPopupProtalDetailsItem_Details, TextHandler.Instance.GetTextById(421), TextHandler.Instance.GetTextById(modeNameTextId), true);
-        //难度行
-        SetDetailsItem(ui_UIViewPopupProtalDetailsItem_Level, TextHandler.Instance.GetTextById(415), $"{difficultyLevel}", isShowDifficulty);
+        //难度行: 挑战100勇士显示「勇士/真勇士」标签, 供悬停时区分普通/BOSS挑战
+        SetDetailsItem(ui_UIViewPopupProtalDetailsItem_Level, TextHandler.Instance.GetTextById(415), difficultyContent, true);
         //线路数量: 需解锁「线路数预览」研究, 未解锁整行隐藏
         SetDetailsItem(ui_UIViewPopupProtalDetailsItem_RoadNum, TextHandler.Instance.GetTextById(412), $"{roadNum}",
             userUnlock.CheckIsUnlock(UnlockEnum.PortalPreviewRoadNum));
@@ -94,7 +107,7 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
         {
             if (isChallengeHundred)
             {
-                listReward = gameWorldInfoRandom.GetChallengeHundredReward();
+                listReward = gameWorldInfoRandom.GetChallengeHundredReward(difficultyLevel);
             }
             else
             {

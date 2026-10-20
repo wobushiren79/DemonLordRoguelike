@@ -14,7 +14,7 @@ metadata:
 - **4箱制+首箱保底**：奖励默认 4 件（`RewardSelectBean.createItemNum=4`），`listReward[0]` 为首箱保底位（已解锁装备=装备/未解锁回退魔晶）；领奖时落地动画全部播完 `await UIRewardSelect.AutoOpenFirstRewardBox()` 自动开首箱并等开箱播完、直接入账（不占 selectNum），**UI 等首箱开完才显示**，玩家从剩余宝箱选择；气泡奖励区只预览首箱保底位这 1 件。
 
 **气泡展示哪个难度 = 当前 `difficultyLevel`，默认取"已解锁最高难度"**
-- `UIPopupPortalDetails.SetData((GameWorldInfoBean, GameWorldInfoRandomBean, int difficultyLevel))` 第三参决定展示难度，取该难度那份预生成数据(道路/关卡/路径/奖励)。地图悬停气泡(`UIViewBasePortalItem`)传 `gameWorldInfoRandom.difficultyLevel`；难度对话框(`UIViewDialogPortalDetailsItem`)各 item 传各自难度号。
+- `UIPopupPortalDetails.SetData((GameWorldInfoBean, GameWorldInfoRandomBean, int difficultyLevel))` 第三参决定展示难度，取该难度那份预生成数据(道路/关卡/路径/奖励)；**传 -1 表示跟随 `gameWorldInfoRandom.difficultyLevel` 当前活动难度**。地图悬停气泡(`UIViewBasePortalItem`)传 **-1**；难度对话框(`UIViewDialogPortalDetailsItem`)各 item 传各自难度号。100勇士自 2026-10 起有独立难度链，按 `GetChallengeHundredRandom(D)`/`GetChallengeHundredReward(D)` 取该档数据。
 - **默认 = 已解锁最高难度(非难度1)**：`GameWorldInfoRandomBean` 构造器里的 `difficultyLevel=1` 只是占位，创建世界时 `SetRandomDataForConquer()` 预生成 `1~unlockDifficultyMax`(=`GetUnlockGameWorldConquerDifficultyLevel(worldId)`) 各难度后，**末尾 `SetDifficultyLevel(unlockDifficultyMax)` 把当前难度置为已解锁最高**。故新生成世界的地图气泡默认就显示已解锁最高难度。
 - **之后跟随对话框选择**：`SetDifficultyLevel` 是全局唯一改 `difficultyLevel`+同步顶层 roadNum/roadLength/fightNum 的入口；仅 `SetRandomDataForConquer`(默认=max) 与 `UIDialogPortalDetails`(打开时 `Clamp(difficultyLevel,1,unlockMax)`、左右滑动切换) 调用。玩家滑到低难度关闭后，气泡随之显示该低难度。
 - **注意边界**：clamp 只向下夹(超过当前解锁上限才降)，**不会**因事后解锁更高难度而自动升；已缓存世界的 difficultyLevel 要到世界重新生成(通关清空 `ClearPortalWorldInfoRandomData` 或手动刷新)才会重取新的已解锁最高。预生成范围是 `1~unlockDifficultyMax`(仅已解锁)，`GetDifficultyRandom` 的懒生成兜底老存档/预览未在预生成集内的难度。

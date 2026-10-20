@@ -303,12 +303,23 @@ public partial class UITestBase : BaseUIComponent
             int needUnlockLevel = targetDifficulty - conquerDifficultyBase;
             if (needUnlockLevel <= 0)
                 continue;
-            //难度研究已拆分为每难度独立节点(起始id起连续), 逐个解锁
+            //难度研究已拆分为每难度独立节点(起始id起连续), 逐个解锁;
+            //同步解锁同难度的无尽难度与100勇士难度研究, 便于测试三套难度链
+            long infiniteUnlockId = gameWorldInfo.unlock_id_infinite;
+            long challengeHundredUnlockId = gameWorldInfo.unlock_id_challenge_hundred;
             for (int i = 0; i < needUnlockLevel; i++)
             {
                 userUnlockData.AddUnlock(unlockId + i);
+                if (infiniteUnlockId != 0)
+                    userUnlockData.AddUnlock(infiniteUnlockId + i);
+                if (challengeHundredUnlockId != 0)
+                    userUnlockData.AddUnlock(challengeHundredUnlockId + i);
             }
         }
+        //测试用: 顺带把100勇士出现概率/无尽出现概率/BOSS概率拉满, 便于刷出特殊模式
+        userUnlockData.AddUnlock((long)UnlockEnum.ChallengeHundredShowRate, 10);
+        userUnlockData.AddUnlock((long)UnlockEnum.InfiniteShowRate, 9);
+        userUnlockData.AddUnlock((long)UnlockEnum.ChallengeHundredBossRate, 4);
 
         UIHandler.Instance.ToastHintText(isHalf ? "已解锁所有世界一半难度！" : "已解锁所有世界全部难度！", 1);
         GameDataHandler.Instance.manager.SaveUserData();

@@ -1,5 +1,6 @@
 
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,6 +29,8 @@ public partial class UIDialogPortalDetails : DialogView
     protected int configDifficultyMax;
     //难度下限(征服=1; 无尽=2, 第一难度没有无尽模式)
     protected int difficultyMin = 1;
+    //当前模式的逐档解锁判定(无尽/100勇士允许跳级, 不能只用 difficulty<=unlockDifficultyMax)
+    protected Func<int, bool> isDifficultyUnlocked;
     //当前是否正在播放切换动画(动画期间禁止再次切换)
     protected bool isAnimating;
     //挑战100勇士-来袭魔物item列表(动态实例化, 模板 ui_UIViewDialogPortalDetailsCreatureItem 不列入)
@@ -48,44 +51,59 @@ public partial class UIDialogPortalDetails : DialogView
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
 
-        //挑战100勇士模式: 无难度概念, 隐藏难度选择器并显示来袭魔物列表; 其余模式走难度选择器原逻辑
+        //三种模式统一走难度选择器; 挑战100勇士额外显示来袭魔物列表
         bool isChallengeHundred = gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred;
-        if (isChallengeHundred)
+        bool isInfinite = gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Infinite;
+
+        //先按模式归位容器显隐(弹窗复用时防上次打开残留); 必须在量取容器宽高/刷新item之前激活
+        if (ui_Difficulty != null)
+            ui_Difficulty.gameObject.SetActive(true);
+        ui_DifficultySelectLeftBtn.gameObject.SetActive(true);
+        ui_DifficultySelectRightBtn.gameObject.SetActive(true);
+        if (ui_CreatureList != null)
+            ui_CreatureList.gameObject.SetActive(isChallengeHundred);
+
+        if (isInfinite)
         {
-            SetDataForChallengeHundred();
+            //无尽模式: 难度2起(第一难度没有无尽模式), 逐档解锁(允许跳级), 配置上限=无尽配置表最高难度(供未解锁预览)
+            difficultyMin = 2;
+            unlockDifficultyMax = userUnlock.GetUnlockInfiniteDifficultyLevel(gameWorldInfoRandom.worldId);
+            configDifficultyMax = FightTypeInfiniteInfoCfg.GetMaxLevel(gameWorldInfoRandom.worldId);
+            isDifficultyUnlocked = difficulty => userUnlock.CheckInfiniteUnlock(gameWorldInfoRandom.worldId, difficulty);
+        }
+        else if (isChallengeHundred)
+        {
+            //挑战100勇士: 独立难度链, 难度1默认可用, 逐档解锁(允许跳级)
+            difficultyMin = 1;
+            unlockDifficultyMax = userUnlock.GetUnlockChallengeHundredDifficultyLevel(gameWorldInfoRandom.worldId);
+            //世界有100勇士难度链时展示配置表最高难度(未解锁档显示锁链预览), 否则仅展示已解锁档
+            configDifficultyMax = gameWorldInfo.unlock_id_challenge_hundred != 0
+                ? Mathf.Max(unlockDifficultyMax, FightTypeChallengeHundredInfoCfg.GetMaxDifficultyLevel())
+                : unlockDifficultyMax;
+            isDifficultyUnlocked = difficulty => userUnlock.CheckChallengeHundredUnlock(gameWorldInfoRandom.worldId, difficulty);
+            //旧存档兼容: 懒重建逐难度预生成数据
+            gameWorldInfoRandom.EnsureChallengeHundredRandomData();
         }
         else
         {
-            //无尽模式: 难度2起(第一难度没有无尽模式), 已解锁上限=无尽研究解锁最高难度, 配置上限=无尽配置表最高难度(供未解锁预览)
-            bool isInfinite = gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Infinite;
-            if (isInfinite)
-            {
-                difficultyMin = 2;
-                unlockDifficultyMax = userUnlock.GetUnlockInfiniteDifficultyLevel(gameWorldInfoRandom.worldId);
-                configDifficultyMax = FightTypeInfiniteInfoCfg.GetMaxLevel(gameWorldInfoRandom.worldId);
-            }
-            else
-            {
-                difficultyMin = 1;
-                //用户可选择的最高难度
-                unlockDifficultyMax = userUnlock.GetUnlockGameWorldConquerDifficultyLevel(gameWorldInfoRandom.worldId);
-                //该世界配置存在的最高难度
-                configDifficultyMax = FightTypeConquerInfoCfg.GetMaxLevel(gameWorldInfoRandom.worldId);
-            }
-            //把默认难度约束在 [难度下限, 已解锁最高] 范围内, 并同步该难度预生成的道路/关卡随机数据
-            int defaultDifficulty = Mathf.Clamp(gameWorldInfoRandom.difficultyLevel, difficultyMin, Mathf.Max(difficultyMin, unlockDifficultyMax));
-            gameWorldInfoRandom.SetDifficultyLevel(defaultDifficulty);
-
-            InitItemPool();
-            RefreshItemsImmediate(gameWorldInfoRandom.difficultyLevel);
+            difficultyMin = 1;
+            //用户可选择的最高难度
+            unlockDifficultyMax = userUnlock.GetUnlockGameWorldConquerDifficultyLevel(gameWorldInfoRandom.worldId);
+            //该世界配置存在的最高难度
+            configDifficultyMax = FightTypeConquerInfoCfg.GetMaxLevel(gameWorldInfoRandom.worldId);
+            isDifficultyUnlocked = difficulty => difficulty <= unlockDifficultyMax;
         }
-        //模式容器与难度切换按钮显隐(弹窗复用时按模式归位, 防上次打开残留)
-        if (ui_Difficulty != null)
-            ui_Difficulty.gameObject.SetActive(!isChallengeHundred);
-        ui_DifficultySelectLeftBtn.gameObject.SetActive(!isChallengeHundred);
-        ui_DifficultySelectRightBtn.gameObject.SetActive(!isChallengeHundred);
-        if (ui_CreatureList != null)
-            ui_CreatureList.gameObject.SetActive(isChallengeHundred);
+
+        //把默认难度约束在 [难度下限, 展示上限] 内; 若落在未解锁档则取最近的已解锁档
+        int defaultDifficulty = ResolveDefaultDifficulty(gameWorldInfoRandom.difficultyLevel);
+        gameWorldInfoRandom.SetDifficultyLevel(defaultDifficulty);
+
+        //难度选择器与来袭魔物列表的位置/高度完全沿用 prefab 默认布局, 运行时不改兄弟顺序与间距
+        InitItemPool();
+        RefreshItemsImmediate(gameWorldInfoRandom.difficultyLevel);
+        //挑战100勇士: 按当前活动难度重建来袭魔物列表
+        if (isChallengeHundred)
+            SetDataForChallengeHundred();
 
         //出战阵容选择区: 已解锁阵容数量>=2才显示, 默认选中上次保存的出战阵容
         int lineupNum = userUnlock.GetUnlockLineupNum();
@@ -102,13 +120,68 @@ public partial class UIDialogPortalDetails : DialogView
     }
 
     /// <summary>
+    /// 解析默认难度: 夹到 [下限, 展示上限] 后若落在未解锁档, 优先向低再向高找最近的已解锁档
+    /// </summary>
+    /// <param name="activeDifficulty">存档中的当前难度</param>
+    /// <returns>可用的默认难度</returns>
+    protected int ResolveDefaultDifficulty(int activeDifficulty)
+    {
+        int displayMax = Mathf.Max(unlockDifficultyMax, configDifficultyMax);
+        int desired = Mathf.Clamp(activeDifficulty, difficultyMin, Mathf.Max(difficultyMin, displayMax));
+        if (IsDifficultyUnlock(desired))
+            return desired;
+        //优先向低找
+        for (int difficulty = desired - 1; difficulty >= difficultyMin; difficulty--)
+        {
+            if (IsDifficultyUnlock(difficulty))
+                return difficulty;
+        }
+        //再向高找
+        for (int difficulty = desired + 1; difficulty <= displayMax; difficulty++)
+        {
+            if (IsDifficultyUnlock(difficulty))
+                return difficulty;
+        }
+        //兜底: 已解锁最高难度
+        return Mathf.Max(difficultyMin, unlockDifficultyMax);
+    }
+
+    /// <summary>
+    /// 指定难度是否已解锁(无尽/100勇士逐档判定, 允许跳级; 征服为连续档)
+    /// </summary>
+    /// <param name="difficultyLevel">难度等级</param>
+    /// <returns>true=已解锁</returns>
+    protected bool IsDifficultyUnlock(int difficultyLevel)
+    {
+        if (isDifficultyUnlocked != null)
+            return isDifficultyUnlocked(difficultyLevel);
+        return difficultyLevel >= difficultyMin && difficultyLevel <= unlockDifficultyMax;
+    }
+
+    /// <summary>
+    /// 从指定难度向指定方向找下一个已解锁难度(跳过跳级造成的未解锁空档)
+    /// </summary>
+    /// <param name="fromDifficulty">当前难度</param>
+    /// <param name="direction">方向(-1 上一个 / +1 下一个)</param>
+    /// <returns>下一个已解锁难度; 找不到返回原难度</returns>
+    protected int FindNextUnlockDifficulty(int fromDifficulty, int direction)
+    {
+        int displayMax = Mathf.Max(unlockDifficultyMax, configDifficultyMax);
+        for (int difficulty = fromDifficulty + direction;
+             direction > 0 ? difficulty <= displayMax : difficulty >= difficultyMin;
+             difficulty += direction)
+        {
+            if (IsDifficultyUnlock(difficulty))
+                return difficulty;
+        }
+        return fromDifficulty;
+    }
+
+    /// <summary>
     /// 设置挑战100勇士模式数据: 按冻结配置行(challengeHundredRowId)的敌人列表去重后动态实例化来袭魔物item, 手动等距居中排布
     /// </summary>
     protected void SetDataForChallengeHundred()
     {
-        //难度item池全部隐藏(防上次征服打开残留的动画/显示状态)
-        if (listItemPool != null)
-            HideAllItems();
         if (ui_UIViewDialogPortalDetailsCreatureItem == null || ui_CreatureList == null)
             return;
 
@@ -150,6 +223,11 @@ public partial class UIDialogPortalDetails : DialogView
         {
             GameObject objItem = Instantiate(ui_UIViewDialogPortalDetailsCreatureItem.gameObject, ui_CreatureList);
             objItem.transform.localScale = Vector3.one;
+            //实例化尺寸跟随来袭魔物容器高度(当前 prefab 300), 保持方形背景不变形, 并让 Spine 按该高度等比适配
+            RectTransform itemRect = objItem.transform as RectTransform;
+            float itemSize = ui_CreatureList.rect.height;
+            if (itemSize > 0)
+                itemRect.sizeDelta = new Vector2(itemSize, itemSize);
             UIViewDialogPortalDetailsCreatureItem itemView = objItem.GetComponent<UIViewDialogPortalDetailsCreatureItem>();
             itemView.SetData(enemyIds[i]);
             //以容器中心为原点等距排布
@@ -220,6 +298,12 @@ public partial class UIDialogPortalDetails : DialogView
     /// <param name="newCenter">切换后的当前难度</param>
     protected void AnimSwitchDifficulty(int oldCenter, int newCenter)
     {
+        //大幅跳级(跨越超过可视范围)直接刷新, 避免长距离滑入观感突兀
+        if (Mathf.Abs(newCenter - oldCenter) > visibleHalfCount)
+        {
+            RefreshItemsImmediate(newCenter);
+            return;
+        }
         isAnimating = true;
         HideAllItems();
 
@@ -286,7 +370,7 @@ public partial class UIDialogPortalDetails : DialogView
     /// <param name="posX">水平位置</param>
     protected void ShowItem(UIViewDialogPortalDetailsItem itemView, int difficulty, float posX)
     {
-        bool isUnlock = difficulty <= unlockDifficultyMax;
+        bool isUnlock = IsDifficultyUnlock(difficulty);
         Color bgColor = GetDifficultyBGColor(difficulty);
         itemView.gameObject.SetActive(true);
         //通关标记仅征服模式显示(无尽无通关统计)
@@ -401,9 +485,6 @@ public partial class UIDialogPortalDetails : DialogView
         }
         else if (inputType == InputActionUIEnum.Navigate)
         {
-            //挑战100勇士无难度概念, 方向键不切换
-            if (gameWorldInfoRandom != null && gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred)
-                return;
             //左右方向键切换难度(上一档/下一档), 上下方向不处理
             Vector2 navigateData = callback.ReadValue<Vector2>();
             if (navigateData.x < 0)
@@ -484,7 +565,7 @@ public partial class UIDialogPortalDetails : DialogView
         if (targetDifficulty == oldDifficulty)
             return;
         //未解锁难度不可切换: 朝目标方向回弹 + 提示
-        if (targetDifficulty > unlockDifficultyMax)
+        if (!IsDifficultyUnlock(targetDifficulty))
         {
             int changeLevel = targetDifficulty > oldDifficulty ? 1 : -1;
             AnimSwitchBlocked(changeLevel);
@@ -493,6 +574,9 @@ public partial class UIDialogPortalDetails : DialogView
         }
         //切换难度并同步该难度预生成的道路/关卡随机数据(气泡与实际战斗均读取这些字段)
         gameWorldInfoRandom.SetDifficultyLevel(targetDifficulty);
+        //挑战100勇士: 刷新当前难度的来袭魔物列表
+        if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred)
+            SetDataForChallengeHundred();
         AnimSwitchDifficulty(oldDifficulty, targetDifficulty);
     }
 
@@ -505,11 +589,11 @@ public partial class UIDialogPortalDetails : DialogView
         if (isAnimating)
             return;
         int oldDifficulty = gameWorldInfoRandom.difficultyLevel;
-        //难度限制在 [难度下限, 已解锁最高](无尽下限=2, 征服下限=1)
-        int newDifficulty = Mathf.Clamp(oldDifficulty + changeLevel, difficultyMin, Mathf.Max(difficultyMin, unlockDifficultyMax));
+        //向指定方向找下一个已解锁难度(跳过跳级造成的未解锁空档)
+        int newDifficulty = FindNextUnlockDifficulty(oldDifficulty, changeLevel > 0 ? 1 : -1);
         if (newDifficulty == oldDifficulty)
         {
-            //已到边界无法切换: 播放回弹动画
+            //已到边界/前方全是未解锁档: 播放回弹动画
             AnimSwitchBlocked(changeLevel);
             //向更高难度切换且存在更高的未解锁难度时, 提示"难度未解锁"
             if (changeLevel > 0 && configDifficultyMax > unlockDifficultyMax)
@@ -520,6 +604,9 @@ public partial class UIDialogPortalDetails : DialogView
         }
         //切换难度并同步该难度预生成的道路/关卡随机数据(气泡与实际战斗均读取这些字段)
         gameWorldInfoRandom.SetDifficultyLevel(newDifficulty);
+        //挑战100勇士: 刷新当前难度的来袭魔物列表
+        if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred)
+            SetDataForChallengeHundred();
         AnimSwitchDifficulty(oldDifficulty, newDifficulty);
     }
     #endregion

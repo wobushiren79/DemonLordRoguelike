@@ -23,7 +23,7 @@ watched_files:
 - **GameFightLogicDoomCouncil** - 终焉议会战斗（不支持重新挑战：暴力说服一次性）
 - **GameFightLogicInfinite** - 无限/无尽模式战斗（不支持重新挑战：无尽世界只能挑战一次；`FightBeanForInfinite` 持有同难度征服行 `fightTypeConquerInfo`[复用其怪物池/数量/时长/场景/魔晶掉落]+无尽行 `fightTypeInfiniteInfo`[每轮强度倍率,null 降级不阻断]+`roundNum`[从1起]；`InitData` 建核心/收阵容/取BOSS场景池 `GetRandomFightScene(true)`/填充第1轮；`AppendNextRoundAttackData()` 追加下一轮到队列末尾[不重建,每轮=征服BOSS关同款：普通怪 attack_show_time 内分桶随机 + BOSS [50%,90%] 错开0.3s + 首只携带 bossShowNpcIds 每轮弹特写，数量固定不递推]，`GetRoundIntensityRate(round)`=征服 attack_intensity_baserate × 无尽 round_intensity_addrate^(round-1) × 终焉议会强度议案。**永不胜利双重保险**：①重写 `TryRefillNextAttackQueue()`→追加下一轮返 true，基类两层接入[取波次 null 时 + 每次出怪后队列已空立即补]保证队列恒非空无真空窗口；②重写 `CheckGameEnd()` 屏蔽胜利判定只判魔王死亡。结算退出 `ActionForUIFightSettlementExit`：议案EndGame消耗钩子→ClearAbyssalBlessing→还原阵容战斗状态→SaveUserData→回基地，无经验/声望/成就/宝箱/领奖[UIFightSettlement 仅战绩排行榜]，不调 RefillPortalRefreshNum/ClearPortalWorldInfoRandomData[无尽无通关语义]）
 - **GameFightLogicTest** - 测试战斗（支持重新挑战：复用同一 fightData，进攻队列从 `fightAttackDataRemark` 快照深拷贝还原）
-- **GameFightLogicChallengeHundred** - 是魔王就挑战100勇士（支持重新挑战：以同一 `gameWorldInfoRandomData`[含冻结配置行/冻结奖励]重建；单关100只怪；胜→阵容经验+UIFightSettlement→3箱3抽全手动领奖，败→返回基地；不发成就、无关卡间深渊馈赠，通关声望需解锁研究 ChallengeHundredReputationReward(100200011) 由 `AddReputationForChallengeHundredComplete` 按冻结难度 `reward_reputation` 发放；`IsSkipPutCardMPCost()=>true` 魔王蓝量无限）
+- **GameFightLogicChallengeHundred** - 是魔王就挑战100勇士（2026-10 起有独立难度链，`difficultyLevel`=本场所选/冻结的100勇士难度，每档独立预生成行/道路/奖励；支持重新挑战：以同一 `gameWorldInfoRandomData`[含冻结配置行/冻结奖励]重建；单关100只怪；胜→阵容经验+UIFightSettlement→3箱3抽全手动领奖（`GetChallengeHundredReward(difficultyLevel)`），败→返回基地；不发成就、无关卡间深渊馈赠，通关声望需解锁研究 ChallengeHundredReputationReward(100200011) 由 `AddReputationForChallengeHundredComplete` 按该难度 `reward_reputation` 发放；`IsSkipPutCardMPCost()=>true` 魔王蓝量无限）
 
 ### 游戏状态流转
 ```
@@ -60,7 +60,7 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 
 ### 进攻刷怪 / Quick(加快进攻节奏)
 - `UpdateGameForAttackCreate(updateTime)` - 逐帧累加，达标即出下一波：`fightAttackData.GetNextAttackDetailData()` 取波次 → 刷新间隔 `timeUpdateTargetForAttackCreate=timeNextAttack` → BOSS 首波 `ShowBossDialog` → `CreatureHandler.CreateAttackCreature`。**队列补充虚钩子 `TryRefillNextAttackQueue()`**（protected virtual，基类默认 false=不补充，维持征服等模式"无下一波即进攻结束"语义）两层接入，两处对称：①取波次返回 null（队列耗尽）时先调它，true 则重取一次；②每次 `CreateAttackCreature` 出怪后检查 `queueAttackDetails.Count==0` 立即调（取出本轮最后一波即当场补下一轮），消除"最后一次出怪到下次计时器达标"之间的队列真空窗口。无尽模式重写该钩子追加下一轮，配合其 `CheckGameEnd()` 重写（屏蔽胜利只判魔王死）构成双重保险。
-- `QuickAdvanceAttackCreate(advanceRate=0.1f)`（public）- Quick 按钮调用：立即推进「`timeAttackTotal*advanceRate`(默认10%)」的时间，用与逐帧刷怪同一套步进语义**逐波消费**推进时间、把这段时间本应生成的波次全部立即生成；队列耗尽先对称调 `TryRefillNextAttackQueue()`（Quick 对无尽隐藏，属防御性接入），仍无波次则停止、进度封顶 100%；返回推进后的最新进度(0~1)。无消耗无冷却。Quick 按钮与世界绑定的显隐见 game-fight-system / research-system SKILL。
+- `QuickAdvanceAttackCreate(advanceRate=0.1f)`（public）- Quick 按钮调用：立即推进「`timeAttackTotal*advanceRate`(默认10%)」的时间，用与逐帧刷怪同一套步进语义**逐波消费**推进时间、把这段时间本应生成的波次全部立即生成；队列耗尽先对称调 `TryRefillNextAttackQueue()`（Quick 现在对无尽/100勇士也生效，无尽推进到本轮末尾时由此续下一轮），仍无波次则停止、进度封顶 100%；返回推进后的最新进度(0~1)。无消耗无冷却。Quick 按钮与世界绑定的显隐见 game-fight-system / research-system SKILL。
 
 ### 游戏速度（Speed0 0速暂停 / Speed2 2倍速）
 - `UpdateGame` 的 `updateTime = Time.deltaTime * fightData.gameSpeed`——游戏时间流速倍率挂在 fightData 上（默认1，仅本场战斗有效，不改 Time.timeScale）；`gameSpeed=0` 即战斗暂停（一切走游戏速度的逻辑冻结）。

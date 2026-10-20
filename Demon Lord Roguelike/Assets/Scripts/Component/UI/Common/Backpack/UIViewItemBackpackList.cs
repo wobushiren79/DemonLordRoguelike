@@ -71,7 +71,7 @@ public partial class UIViewItemBackpackList : BaseUIView
 
 
     /// <summary>
-    /// 过滤道具列表:展示当前生物可装备的道具 + 消耗品(魔汁选中生物非魔王时可见;幻化药/幻原药所有生物含魔王可见)
+    /// 过滤道具列表:展示当前生物可装备的道具 + 消耗品(魔汁/4种GM药水选中普通魔物时可见;幻化药/幻原药所有生物含魔王可见)
     /// </summary>
     public void FilterItems()
     {
@@ -91,18 +91,24 @@ public partial class UIViewItemBackpackList : BaseUIView
             return;
         }
 
-        // 过滤出可装备的道具(魔汁例外:选中生物非魔王即可用,见 ItemTypeEnum.Juice)
+        // 过滤出可装备的道具(魔汁与4种GM药水仅普通魔物可用;幻化药/幻原药所有生物含魔王可见可用)
         for (int i = 0; i < listBackpackItems.Count; i++)
         {
             var itemData = listBackpackItems[i];
             var itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
             if (itemInfo == null)
                 continue;
-            //装备类按装备资格过滤(含魔王专属: 非魔王选中时魔王专属装备不显示);魔汁仅非魔王(魔王隐藏等级不吃经验);幻化药/幻原药所有生物含魔王可见可用
+            ItemTypeEnum itemType = itemInfo.GetItemType();
+            bool isNormalCreaturePotion = itemType == ItemTypeEnum.Juice
+                || itemType == ItemTypeEnum.LevelUpPotion
+                || itemType == ItemTypeEnum.LevelDownPotion
+                || itemType == ItemTypeEnum.RarityUpPotion
+                || itemType == ItemTypeEnum.RarityDownPotion;
+            //装备类按装备资格过滤(含魔王专属: 非魔王选中时魔王专属装备不显示);普通魔物成长类消耗品对魔王隐藏
             if (itemData.CanEquipForCreature(creatureData)
-                || (itemInfo.GetItemType() == ItemTypeEnum.Juice && !creatureData.IsDemonLord())
-                || itemInfo.GetItemType() == ItemTypeEnum.TransformPotion
-                || itemInfo.GetItemType() == ItemTypeEnum.RestorePotion)
+                || (isNormalCreaturePotion && !creatureData.IsDemonLord())
+                || itemType == ItemTypeEnum.TransformPotion
+                || itemType == ItemTypeEnum.RestorePotion)
             {
                 listFilterItems.Add(itemData);
             }

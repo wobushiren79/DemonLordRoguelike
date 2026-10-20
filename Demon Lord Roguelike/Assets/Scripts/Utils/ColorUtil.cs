@@ -63,9 +63,11 @@ public static class ColorUtil
     }
     #endregion
 
-    #region 挑战100勇士-BOSS挑战深紫
-    /// <summary>挑战100勇士-BOSS挑战(困难)传送门BG/悬停气泡底色 深紫(#5B2C6F)</summary>
-    public static readonly Color ChallengeHundredBossPurple = ParseHtmlString("#5B2C6F");
+    #region 传送门模式配色
+    /// <summary>传送门BG/悬停气泡底色-无尽模式 深紫(#5B2C6F)</summary>
+    public static readonly Color PortalInfinitePurple = ParseHtmlString("#5B2C6F");
+    /// <summary>传送门BG/悬停气泡底色-挑战100勇士 金色(#D4AF37)</summary>
+    public static readonly Color PortalChallengeHundredGold = ParseHtmlString("#D4AF37");
     #endregion
 
     #region 通用达上限警示红

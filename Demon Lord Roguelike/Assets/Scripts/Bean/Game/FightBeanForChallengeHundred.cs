@@ -23,6 +23,15 @@ public class FightBeanForChallengeHundred : FightBean
     }
 
     /// <summary>
+    /// 获取本场战斗对应的传送门世界随机数据
+    /// </summary>
+    /// <returns>世界随机数据</returns>
+    public override GameWorldInfoRandomBean GetGameWorldInfoRandomData()
+    {
+        return gameWorldInfoRandomData;
+    }
+
+    /// <summary>
     /// 初始化挑战100勇士模式
     /// </summary>
     public override void InitData()

@@ -44,6 +44,14 @@ public class AttackModeRangedObliqueTracking : AttackModeRangedTracking
     }
     #endregion
 
+    #region 拖尾
+    /// <summary>
+    /// 弹体朝向跟随飞行方向逐帧变化，轨迹残影须按各采样点当时的俯仰角绘制；
+    /// 否则所有历史残影套用当前帧朝向，整条轨迹会跟着弹体一起旋转（本体正常、拖尾在转）。
+    /// </summary>
+    public override bool trailBakeVisualAngle => true;
+    #endregion
+
     #region 开始攻击
     /// <summary>
     /// 开始攻击-生物：缓存朝向基准角与瞄准上抬高度，并按「出手点→瞄准点」重算首发方向（基类算的是攻击者脚底→目标，丢了出手高度，不配的话第一帧会先平飞）

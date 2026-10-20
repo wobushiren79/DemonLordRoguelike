@@ -1,6 +1,6 @@
 ---
 name: sacrifice-system
-description: Demon Lord Roguelike 游戏的生物献祭升级系统开发指南。使用此SKILL当需要创建或修改生物献祭流程、献祭升级(等级提升)、献祭成功率公式(祭品数量/生物id/等级差修正 2^(祭品level-目标level))、保底机制、祭坛动画、献祭祭品消耗与装备退回、等级上限、献祭UI、升级手动加点UI(UICreatureAddAttribute)等，包括 CreatureSacrificeLogic 献祭逻辑、CreatureSacrificeBean 献祭数据、UICreatureSacrifice 献祭界面、UICreatureAddAttribute 升级加点界面、UICreatureManager 升级按钮、CreatureBean.UpLevelForSacrifice/CanUpLevel/IsMaxLevel/sacrificePityRate、CreatureUtil.GetSacrificeSuccessRate 成功率公式、CreatureUtil.GetAttributePointAddValue 单点增量、LevelInfo(level_exp/sacrifice_num/attribute_point) 等级配置、CreatureSacrifice_* 事件常量、UnlockEnum.Altar 祭坛解锁等。
+description: Demon Lord Roguelike 游戏的生物献祭升级系统开发指南。使用此SKILL当需要创建或修改生物献祭流程、献祭升级(等级提升)、献祭成功率公式(祭品数量/生物id/等级差修正 2^(祭品level-目标level))、保底机制、祭坛动画、献祭祭品消耗与装备退回、等级上限、献祭UI、升级手动加点UI(UICreatureAddAttribute)、GM升级/降级药水等，包括 CreatureSacrificeLogic 献祭逻辑、CreatureSacrificeBean 献祭数据、UICreatureSacrifice 献祭界面、UICreatureAddAttribute 升级加点界面、UICreatureManager 升级按钮、CreatureBean.UpLevelForSacrifice/CanUpLevel/IsMaxLevel/CanDownLevel/DownLevelForPotion/UpLevelForPotion/sacrificePityRate、CreatureAttributeBean.RemoveRandomAttributeForLevelUp、CreatureUtil.GetSacrificeSuccessRate 成功率公式、CreatureUtil.GetAttributePointAddValue 单点增量、LevelInfo(level_exp/sacrifice_num/attribute_point) 等级配置、CreatureSacrifice_* 事件常量、UnlockEnum.Altar 祭坛解锁等。
 watched_files:
   - Assets/Scripts/Game/Logic/CreatureSacrificeLogic.cs
   - Assets/Scripts/Bean/Game/CreatureSacrificeBean.cs
@@ -133,13 +133,22 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 | `GetNextLevelInfo()` | `LevelInfoCfg.GetItemData(level + 1)`，满级返回 null |
 | `IsMaxLevel()` | 无下一级配置即满级（满级时**隐藏**升级按钮） |
 | `CanUpLevel()` | 未满级 且 `levelExp >= 下一级 level_exp`（未满级下决定升级按钮是否置灰/能否发起献祭；满级另由 `IsMaxLevel()` 隐藏按钮） |
+| `CanDownLevel()` | `level > 0`，供降级药水拦截 0 级生物 |
+| `DownLevelForPotion()` | 降级药水专用：先取**降级前等级** `LevelInfo.attribute_point` → `level-1`（下限0）→ `levelExp=0` → `CreatureAttributeBean.RemoveRandomAttributeForLevelUp(本级点数)` 随机回退升级加点 |
+| `DownLevelForPotion(int downLevelNum)` | 多级降级药水：逐级调用单级降级，到 0 级自动停止，返回实际下降级数 |
 | `UpLevelForSacrifice()` | 经验清 0(不保留溢出余量) → `level++` → **返回本次可分配加点数**(`LevelInfo.attribute_point`，当前全等级配置为 5，`<=0` 兜底1)；不再自动加属性 |
+| `UpLevelForPotion(int upLevelNum)` | 多级升级药水：逐级调用 `UpLevelForSacrifice()` 并累计各级加点数，到满级自动停止 |
 
 > **升级属性成长（手动加点）**：升级**不再自动加属性**。`UpLevelForSacrifice()` 升级后返回下一级 `LevelInfo.attribute_point`(当前全等级配置为 5) 个可分配点数，由玩家在 `UICreatureAddAttribute` 界面手动分配到 HP/护甲/攻击/攻速（**可加点属性种类按 `creatureInfo.show_attribute` 配置显隐**，默认 `1,3,4,6` 四项全显，如史莱姆 3003/3004 只显 ATK 一项；**加血回复型生物（如愈之魅魔 4002）配置含 ATK 时攻击项替换为 AddLife 治疗量项**，底层仍加 ATK，见下文「调升级加点」；同一列还控制详情面板显示与创建随机加点池，见 creature-system「show_attribute」）。单点增量见 `CreatureUtil.GetAttributePointAddValue`（HP/DR 每点 +10、ATK/ASPD 每点 +1），写入 `creatureAttribute.dicAttributeLevelUp`。要调整每级点数改 Excel `attribute_point` 列；要调单点增量改 `GetAttributePointAddValue`。
+
+### GM 升级/降级药水（复用加点界面）
+
+升级药水（`ItemTypeEnum.LevelUpPotion=91`）在魔物管理页使用：档位读 `ItemsInfo.other_data` 的 `level_delta:N`（空=1，现有 id 支持 +1~+10）；满级 Toast 61030 拦截；确认后先**仅内存**消耗 1 瓶并调用 `UpLevelForPotion(levelDelta)`（逐级升级、累计各级加点，满级自动停止），随后打开 `UICreatureAddAttribute`；加点确认回调统一 `SaveUserData()` 并重开 `UICreatureManager`。道具消耗、升级、加点在同一原子窗口内，加点界面强退则全部不写盘（与献祭成功路径同语义）。降级药水（`LevelDownPotion=92`）走 `DownLevelForPotion(levelDelta)`（id 支持 -1~-10）：0 级 Toast 61031 拦截，确认后立即落盘；因存档没有每级加点历史，回退策略为**逐级按当时等级应得点数随机扣累计升级加点**，与终焉议会降级“全清加点”的惩罚语义不同。
 
 ### 属性体系
 - `CreatureAttributeBean`（`Assets/Scripts/Bean/Game/CreatureAttributeBean.cs`）：`dicAttributeCreate`(创建随机) + `dicAttributeLevelUp`(升级加点)，两个字典均为 **public** 以保证 Newtonsoft 存档（私有字段默认不序列化）
 - `AddAttribute(dic, type, addNum)` 支持**正负增量**(加点/减点共用)，clamp 到 ≥0；**已修复**首次加某属性时把第一次增量误置为0导致丢失的 bug
+- `RemoveRandomAttributeForLevelUp(removeNum)`（2026-10 新增）：降级药水专用随机回退——每点从 `dicAttributeLevelUp` 当前仍有整点数的属性中随机一项，按 `CreatureUtil.GetAttributePointAddValue` 扣减；不按 `show_attribute` 过滤，异常/历史加点也可回退；不足时“能退多少退多少”并 LogWarning，末尾清理 0 值键
 - `CreatureBean.GetAttribute()` 最终属性 = 基础(creatureInfo/npcInfo) + `creatureAttribute`(创建+升级) + 装备 + BUFF；**注意 `level` 本身不直接参与属性计算**，升级收益全靠 `AddAttributeForLevelUp` 写入
 
 ## 祭品处理

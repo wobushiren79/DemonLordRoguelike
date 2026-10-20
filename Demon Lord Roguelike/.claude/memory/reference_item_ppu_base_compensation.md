@@ -24,7 +24,7 @@ ppuFix     = sprite.pixelsPerUnit / IconHandler.ItemSpriteBasePPU(基准100)
 
 不受影响、勿乱改的通道：
 
-- **DSP 弹道批量渲染**（visual_name 通道，AttackModeInstanceRenderer）：尺寸 = 内置 Quad(1×1) × 桶材质 `_VertexScale` × 逐实例 visualScale(StartSize) × `_VertexScaleXY` 宽高比修正（像素 rect 归一化），全程与 PPU 无关。
+- **DSP 弹道批量渲染**（visual_name 通道，AttackModeInstanceRenderer）：尺寸 = 内置 Quad(1×1) × 桶材质 `_VertexScale` × 逐实例 visualScale(StartSize) × `_VertexScaleXY`，全程与 PPU 无关。`_VertexScaleXY`（2026-10-19 起）= **换图 sprite 像素 ÷ 基础桶贴图像素尺寸**（`baseMat._BaseMap` 的 texture 宽高，如 RangedNormal 的 Weapon_1 32×32）：同像素即与默认子弹同尺寸、8×8 金币→1/4，各轴独立比天然保留宽高比；基础材质无 `_BaseMap`（程序化 shader 火球/冰球）时回退旧长边归一化。此前为「长边 contain 归一化=1」仅修宽高比、丢失绝对像素（8×8 金币与 32×32 默认弹同尺寸，金币 21000010 踩坑）。
 - **UI Image**：尺寸由 RectTransform 决定，与 sprite PPU 无关（未用 SetNativeSize）。
 - 生物身上装备显示走 spine 皮肤，不是 sprite 图标。
 

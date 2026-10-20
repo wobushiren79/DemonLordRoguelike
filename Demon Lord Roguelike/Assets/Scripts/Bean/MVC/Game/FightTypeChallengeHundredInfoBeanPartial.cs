@@ -264,4 +264,25 @@ public partial class FightTypeChallengeHundredInfoCfg
             targetList = isBoss ? normalList : bossList;
         return targetList.GetRandomData();
     }
+
+    /// <summary>
+    /// 获取配置表中出现的最高难度等级(扫描全部行的 difficulty_levels; 无配置返回0)
+    /// 供传送门详情弹窗展示未解锁的高难度预览
+    /// </summary>
+    /// <returns>配置表中的最高难度等级</returns>
+    public static int GetMaxDifficultyLevel()
+    {
+        int maxLevel = 0;
+        var allData = GetAllData();
+        foreach (var itemData in allData)
+        {
+            int[] levelList = itemData.Value.GetDifficultyLevelList();
+            for (int i = 0; i < levelList.Length; i++)
+            {
+                if (levelList[i] > maxLevel)
+                    maxLevel = levelList[i];
+            }
+        }
+        return maxLevel;
+    }
 }

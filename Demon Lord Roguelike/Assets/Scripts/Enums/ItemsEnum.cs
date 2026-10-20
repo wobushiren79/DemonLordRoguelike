@@ -6,6 +6,10 @@ public enum ItemIdEnum
     Crystal = 1,//魔晶
     Juice = 200001,//魔汁(榨汁产物,使用后给魔物加经验,实例经验值存 ItemBean.juicerExp)
     RestorePotion = 200003,//幻原药(清除幻化恢复原本形象)
+    LevelUpPotion = 200004,//升级药水(GM道具,使用后等级+1并进入加点界面)
+    LevelDownPotion = 200005,//降级药水(GM道具,使用后等级-1并随机回退本级加点)
+    RarityUpPotion = 200006,//升阶药水(GM道具,使用后稀有度+1并随机获得新档位BUFF)
+    RarityDownPotion = 200007,//降阶药水(GM道具,使用后稀有度-1并移除高档位BUFF)
 }
 
 /// <summary>
@@ -32,6 +36,10 @@ public enum ItemTypeEnum
     Juice = 11,//魔汁(消耗品,非装备,除魔王外所有生物可用)
     TransformPotion = 18,//幻化药(消耗品,非装备,所有生物含魔王可用;使用后替换spine形象,效果存 CreatureBean.transformItemId)
     RestorePotion = 19,//幻原药(消耗品,非装备,所有生物含魔王可用;清除幻化恢复原本形象)
+    LevelUpPotion = 91,//升级药水(GM消耗品,非装备,除魔王外所有生物可用)
+    LevelDownPotion = 92,//降级药水(GM消耗品,非装备,除魔王外所有生物可用)
+    RarityUpPotion = 93,//升阶药水(GM消耗品,非装备,除魔王外所有生物可用)
+    RarityDownPotion = 94,//降阶药水(GM消耗品,非装备,除魔王外所有生物可用)
     Portrait = 101,
 }
 
