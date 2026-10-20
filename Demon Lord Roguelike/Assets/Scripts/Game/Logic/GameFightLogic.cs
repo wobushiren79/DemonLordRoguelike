@@ -310,7 +310,7 @@ public class GameFightLogic : BaseGameLogic
     public void UpdateGameForSelectCreature(float updateTime)
     {
         //如果有选中的物体
-        if (selectCreature != null || selectCreatureDestory != null)
+        if (HasSelectData())
         {
             RayUtil.RayToScreenPointForMousePosition(50, 1 << LayerInfo.Road, out bool isCollider, out RaycastHit hit);
             if (isCollider && hit.collider != null)
@@ -525,6 +525,16 @@ public class GameFightLogic : BaseGameLogic
     #endregion
 
     #region 选择
+    /// <summary>
+    /// 当前是否处于选择状态(已选中待放置的卡片 / 删除生物模式)。
+    /// 供 ESC 等取消操作判断：有选择时优先取消选择，无选择时才执行其它行为(如打开系统界面)。
+    /// </summary>
+    /// <returns>true=存在可取消的选择</returns>
+    public bool HasSelectData()
+    {
+        return selectCreature != null || selectCreatureCard != null || selectCreatureDestory != null;
+    }
+
     /// <summary>
     /// 选择了删除生物
     /// </summary>

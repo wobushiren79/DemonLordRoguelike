@@ -21,12 +21,26 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     // 展示中的阵容卡片
     public List<UIViewCreatureCardItem> listShowCardLineup = new List<UIViewCreatureCardItem>();
 
-    //阵容动画卡片移动时间
-    protected float timeForLineupCardMove = 0.3f;
-    //阵容动画卡片移动时间(初始化)
-    protected float timeForLineupCardMoveInit = 0.5f;
+    //阵容卡片重排移动时长(增删/拖拽后归位)
+    protected float timeForLineupCardMove = 0.2f;
+    //上阵新卡从被点击背包卡位置飞入槽位的时长
+    protected float timeForLineupCardAddFly = 0.3f;
+    //阵容卡片出现动画时长(原地淡入+放大)
+    protected float timeForLineupCardMoveInit = 0.25f;
+    //阵容卡片出现动画的淡入时长(与放大过冲峰值对齐)
+    protected float timeForLineupCardFadeInit = 0.15f;
+    //阵容卡片出现动画的起始缩放(小于1,从缩小状态弹出)
+    protected float scaleForLineupCardShowStart = 0.85f;
+    //阵容卡片出现动画的过冲缩放峰值(大于1,随后回落至1)
+    protected float scaleForLineupCardShowOvershoot = 1.08f;
     //卡片动画错开间隔
     protected float timeForLineupCardStagger = 0.04f;
+    //卡片动画错开等待总上限(卡片多时延迟封顶,避免末尾卡片等待过久)
+    protected float timeForLineupCardStaggerMax = 0.5f;
+    //重排时位移卡的缩放脉冲峰值(不额外延长动画时长)
+    protected float scaleForLineupCardMovePulse = 1.06f;
+    //位置判定阈值:与目标位差小于该值视为未位移(仅过滤浮点/拖拽噪声)
+    protected float epsForLineupCardPos = 0.1f;
     //当前阵容的序号
     protected int currentLineupIndex = 1;
     //当前正在拖拽的阵容卡片(非空时屏蔽悬停层级变化,保证拖拽卡始终最上)
@@ -135,18 +149,25 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// 初始化阵容内容
+    /// 初始化阵容内容(整组建好后只播一次出现动画,避免逐卡添加触发多次全量动画)
     /// </summary>
     public void InitLineupData()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         List<CreatureBean> listLineupCreature = userData.GetLineupCreature(currentLineupIndex);
-        RectTransform rtfLineupIndexTitle = (RectTransform)ui_LineupIndexTitle.transform;
-        for (int i = 0; i < listLineupCreature.Count; i++)
+        int totalCard = listLineupCreature.Count;
+        for (int i = 0; i < totalCard; i++)
         {
             var creatureData = listLineupCreature[i];
-            AddLineupCard(creatureData, new Vector3(rtfLineupIndexTitle.sizeDelta.x / 2f + 120, 0, 0), 1);
+            var itemView = GetOrCreateLineupCardView(creatureData);
+            //直接落位到槽位(出现动画为原地淡入放大,不需要起始位置)
+            int posIndex = userData.GetLineupCreaturePosIndex(currentLineupIndex, creatureData.creatureUUId);
+            itemView.transform.localPosition = GetLineupPostion(totalCard, posIndex);
+            listShowCardLineup.Add(itemView);
+            itemView.gameObject.SetActive(true);
         }
+        //整组一次性播出现动画(无卡时内部直接回调)
+        AnimForAllLineupCardPosReset(1, null);
     }
 
     /// <summary>
@@ -224,17 +245,31 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// 获取阵容卡片位置
+    /// 获取阵容槽位间距：卡片少时按单卡宽度排布；卡片多到整行放不下时压缩间距，卡片尺寸保持不变
+    /// </summary>
+    /// <param name="totalNum">当前阵容卡片数量</param>
+    /// <returns>相邻卡片的中心间距</returns>
+    protected float GetLineupItemWidth(int totalNum)
+    {
+        float cardW = modelLineupItem.rectTransform.rect.width;
+        float wView = ui_LineupContent.rect.width;
+        //单张卡无相邻间距概念,其它情况数据异常时按原尺寸
+        if (totalNum <= 1 || cardW <= 0f || wView <= 0f)
+            return cardW;
+        //卡片中心可用范围 = 内容区宽度 - 单卡宽度(首尾卡外沿贴边)，均分到 totalNum-1 个间隔
+        float pitch = (wView - cardW) / (totalNum - 1);
+        return Mathf.Clamp(pitch, 0f, cardW);
+    }
+
+    /// <summary>
+    /// 获取阵容卡片位置：首卡左沿贴住 LineupContent 左边界，按槽位间距依次排列(间距未压缩时与按卡宽均分一致)
     /// </summary>
     public Vector3 GetLineupPostion(int maxLineupNum, int lineupPosIndex)
     {
         float wView = ui_LineupContent.rect.width;
-        float itemW = wView / maxLineupNum;
-        if (itemW > modelLineupItem.rectTransform.rect.width)
-        {
-            itemW = modelLineupItem.rectTransform.rect.width;
-        }
-        return new Vector3(itemW * lineupPosIndex - wView / 2f + itemW / 2f, 0, 0);
+        float cardW = modelLineupItem.rectTransform.rect.width;
+        float itemW = GetLineupItemWidth(maxLineupNum);
+        return new Vector3(-wView / 2f + cardW / 2f + itemW * lineupPosIndex, 0, 0);
     }
 
     /// <summary>
@@ -243,12 +278,11 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     public int GetLineupDropPosIndex(float localX, int maxLineupNum)
     {
         float wView = ui_LineupContent.rect.width;
-        float itemW = wView / maxLineupNum;
-        if (itemW > modelLineupItem.rectTransform.rect.width)
-        {
-            itemW = modelLineupItem.rectTransform.rect.width;
-        }
-        int posIndex = Mathf.RoundToInt((localX + wView / 2f - itemW / 2f) / itemW);
+        float cardW = modelLineupItem.rectTransform.rect.width;
+        float itemW = GetLineupItemWidth(maxLineupNum);
+        if (itemW <= 0f)
+            return 0;
+        int posIndex = Mathf.RoundToInt((localX + wView / 2f - cardW / 2f) / itemW);
         return Mathf.Clamp(posIndex, 0, maxLineupNum - 1);
     }
 
@@ -272,72 +306,147 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     #endregion
     #region 动画相关
     /// <summary>
+    /// 参与阵容重排动画的卡片(仅位置真正发生变化的卡)
+    /// </summary>
+    private struct LineupCardMoveInfo
+    {
+        /// <summary>卡片视图</summary>
+        public UIViewCreatureCardItem view;
+        /// <summary>落位目标本地坐标</summary>
+        public Vector3 targetPos;
+        /// <summary>错开延迟(秒)</summary>
+        public float delay;
+        /// <summary>本卡移动时长(秒)</summary>
+        public float moveTime;
+    }
+
+    /// <summary>
     /// 播放所有lineup卡片重置位置动画
     /// </summary>
-    /// <param name="animType">0默认 1初始化</param>
-    /// <param name="actionForComplete"></param>
-    public void AnimForAllLineupCardPosReset(int animType, Action actionForComplete)
+    /// <param name="animType">0增删/拖拽后重排 1初始化出现</param>
+    /// <param name="actionForComplete">全部动画完成回调(无动画卡时立即回调)</param>
+    /// <param name="focusPosIndex">操作点槽位序号(错开延迟的起点,离它越远越晚动);小于0时按最右槽位处理</param>
+    /// <param name="moveTimeForFocus">操作点卡片的移动时长(上阵飞入用);小于0时统一用 timeForLineupCardMove</param>
+    public void AnimForAllLineupCardPosReset(int animType, Action actionForComplete, int focusPosIndex = -1, float moveTimeForFocus = -1f)
+    {
+        int totalCard = listShowCardLineup.Count;
+        //如果没有卡片，直接回调
+        if (totalCard == 0)
+        {
+            actionForComplete?.Invoke();
+            return;
+        }
+        //统一按槽位排序:列表顺序=视觉顺序,层级与错开方向都以它为准
+        SortShowCardLineupByPos();
+        if (animType == 1)
+        {
+            //初始化动画:原地淡入+放大(不再从下方弹入,避免遮挡背包列表)
+            AnimForAllLineupCardShow(totalCard, actionForComplete);
+            return;
+        }
+
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        int focusIndex = focusPosIndex >= 0 ? focusPosIndex : totalCard - 1;
+        //第一遍:未位移卡瞬间吸附(不建tween/不发声),位移卡收集目标位置与延迟
+        List<LineupCardMoveInfo> listMoveInfo = new List<LineupCardMoveInfo>(totalCard);
+        for (int i = 0; i < totalCard; i++)
+        {
+            var itemCardView = listShowCardLineup[i];
+            //层级按槽位从左到右置顶(与是否播动画解耦),拖拽/悬停后还原正确层级
+            itemCardView.transform.SetAsLastSibling();
+            //杀残留序列并复位缩放/透明度(不改坐标)
+            itemCardView.ResetCardAnimStateForReuse();
+            var itemLineupPosIndex = userData.GetLineupCreaturePosIndex(currentLineupIndex, itemCardView.cardData.creatureData.creatureUUId);
+            Vector3 itemLineupPos = GetLineupPostion(totalCard, itemLineupPosIndex);
+            if ((itemCardView.transform.localPosition - itemLineupPos).sqrMagnitude <= epsForLineupCardPos * epsForLineupCardPos)
+            {
+                //位置没变:瞬间归位,不参与动画
+                itemCardView.transform.localPosition = itemLineupPos;
+                continue;
+            }
+            //错开延迟 = 离操作点的槽位距离 × 间隔,总等待封顶
+            float delay = Mathf.Min(Mathf.Abs(itemLineupPosIndex - focusIndex) * timeForLineupCardStagger, timeForLineupCardStaggerMax);
+            //操作点卡片(上阵新卡)可用单独时长,如从背包卡飞入槽位
+            float itemMoveTime = moveTimeForFocus >= 0f && itemLineupPosIndex == focusIndex ? moveTimeForFocus : timeForLineupCardMove;
+            listMoveInfo.Add(new LineupCardMoveInfo
+            {
+                view = itemCardView,
+                targetPos = itemLineupPos,
+                delay = delay,
+                moveTime = itemMoveTime,
+            });
+        }
+
+        int animNum = listMoveInfo.Count;
+        if (animNum == 0)
+        {
+            //没有位移卡(如删掉最右卡且间距未压缩):直接回调
+            actionForComplete?.Invoke();
+            return;
+        }
+
+        //第二遍:只有位移卡建序列(缩放脉冲用 Join+Insert 铺满移动时长,序列总时长仍为 delay+timeForMove)
+        int completeNum = 0;
+        for (int i = 0; i < animNum; i++)
+        {
+            LineupCardMoveInfo moveInfo = listMoveInfo[i];
+            Transform cardTransform = moveInfo.view.transform;
+            float delay = moveInfo.delay;
+            float timeForMove = moveInfo.moveTime;
+            DOTween.Sequence()
+                .SetTarget(cardTransform)
+                .AppendInterval(delay)
+                .Append(cardTransform.DOLocalMove(moveInfo.targetPos, timeForMove).SetEase(Ease.OutBack))
+                .Join(cardTransform.DOScale(scaleForLineupCardMovePulse, timeForMove * 0.5f).SetEase(Ease.OutQuad))
+                .Insert(delay + timeForMove * 0.5f, cardTransform.DOScale(1f, timeForMove * 0.5f).SetEase(Ease.InOutQuad))
+                .OnComplete(() =>
+                {
+                    completeNum++;
+                    if (completeNum == animNum)
+                    {
+                        actionForComplete?.Invoke();
+                    }
+                });
+        }
+    }
+
+    /// <summary>
+    /// 播放整组阵容卡片出现动画(原地淡入+放大,按槽位左到右错开;整组只播一遍)
+    /// </summary>
+    /// <param name="totalCard">当前展示卡片数量</param>
+    /// <param name="actionForComplete">全部动画完成回调</param>
+    protected void AnimForAllLineupCardShow(int totalCard, Action actionForComplete)
     {
         var userData = GameDataHandler.Instance.manager.GetUserData();
         int completeNum = 0;
-        int totalCard = listShowCardLineup.Count;
-        //通知卡片移动位置
         for (int i = 0; i < totalCard; i++)
         {
             var itemCardView = listShowCardLineup[i];
             itemCardView.transform.SetAsLastSibling();
+            itemCardView.ResetCardAnimStateForReuse();
             var itemLineupPosIndex = userData.GetLineupCreaturePosIndex(currentLineupIndex, itemCardView.cardData.creatureData.creatureUUId);
             Vector3 itemLineupPos = GetLineupPostion(totalCard, itemLineupPosIndex);
-            //错开延迟：初始化(animType==1)左到右级联；单卡增删(animType==0)让刚操作的卡(列表末位)零延迟先动，其余依次跟上，避免点击后等待
-            float delay = (animType == 1 ? i : (totalCard - 1 - i)) * timeForLineupCardStagger;
-            //播放动画
-            itemCardView.transform.DOKill();
-            if (animType == 1)
-            {
-                //初始化动画：从下方弹入带回弹(与战斗发牌统一走 AnimForCardShow,落位时播放卡片音效)
-                itemCardView.AnimForCardShow(itemLineupPos, i, timeForLineupCardStagger, timeForLineupCardMoveInit, Ease.OutBack, () =>
+            //i 已按槽位排序=左到右级联;错开延迟在方法内按上限封顶
+            itemCardView.AnimForCardShowByFadeScale(itemLineupPos, i, timeForLineupCardStagger,
+                timeForLineupCardMoveInit, timeForLineupCardFadeInit, scaleForLineupCardShowStart, scaleForLineupCardShowOvershoot, () =>
                 {
                     completeNum++;
                     if (completeNum == totalCard)
                     {
                         actionForComplete?.Invoke();
                     }
-                });
-            }
-            else
-            {
-                //默认动画：带轻微缩放弹跳和错开效果(SetTarget后可被 DOKill 整体杀掉,防止切页签时残留)
-                float timeForMove = timeForLineupCardMove;
-                Sequence cardSequence = DOTween.Sequence().SetTarget(itemCardView.transform);
-                cardSequence
-                    .AppendInterval(delay)
-                    .Append(itemCardView.transform.DOLocalMove(itemLineupPos, timeForMove).SetEase(Ease.OutBack))
-                    .Join(itemCardView.transform.DOScale(1.08f, timeForMove * 0.5f).SetEase(Ease.OutQuad))
-                    .Append(itemCardView.transform.DOScale(1f, timeForMove * 0.5f).SetEase(Ease.InOutQuad))
-                    .OnComplete(() =>
-                    {
-                        completeNum++;
-                        if (completeNum == totalCard)
-                        {
-                            actionForComplete?.Invoke();
-                        }
-                    });
-            }
-        }
-        //如果没有卡片，直接回调
-        if (totalCard == 0)
-        {
-            actionForComplete?.Invoke();
+                }, timeForLineupCardStaggerMax);
         }
     }
     #endregion
     #region 阵容里卡片相关处理
     /// <summary>
-    /// 增加阵容里面的卡片
+    /// 从池中取(或新建)一张阵容卡片并设置数据(不加入展示列表、不播动画)
     /// </summary>
-    public void AddLineupCard(CreatureBean creatureData, Vector3 startPos, int animType = 0)
+    /// <param name="creatureData">生物数据</param>
+    /// <returns>设置好数据的卡片视图</returns>
+    protected UIViewCreatureCardItem GetOrCreateLineupCardView(CreatureBean creatureData)
     {
-        //UIHandler.Instance.ShowScreenLock();
         UIViewCreatureCardItem lineupView;
         if (queuePoolCardLineup.Count > 0)
         {
@@ -345,37 +454,49 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         }
         else
         {
+            //BaseMonoBehaviour.Instantiate(父容器, 模板):把卡片模板实例化到 lineup 容器下
             GameObject ObjNewCard = Instantiate(ui_LineupContent.gameObject, modelLineupItem.gameObject);
             lineupView = ObjNewCard.GetComponent<UIViewCreatureCardItem>();
         }
         lineupView.SetData(creatureData, CardUseStateEnum.Lineup);
+        //池复用时先复位缩放/透明度,避免上一轮动画残留
+        lineupView.ResetCardAnimStateForReuse();
+        return lineupView;
+    }
+
+    /// <summary>
+    /// 增加阵容里面的卡片
+    /// </summary>
+    /// <param name="creatureData">生物数据</param>
+    /// <param name="startPos">起始位置(上阵时=被点击背包卡在阵容容器里的局部坐标,新卡从这里飞入槽位)</param>
+    /// <param name="animType">0默认(飞入) 1初始化出现</param>
+    public void AddLineupCard(CreatureBean creatureData, Vector3 startPos, int animType = 0)
+    {
+        UIViewCreatureCardItem lineupView = GetOrCreateLineupCardView(creatureData);
         lineupView.transform.localPosition = startPos;
         listShowCardLineup.Add(lineupView);
         lineupView.gameObject.SetActive(true);
-        //播放动画
-        AnimForAllLineupCardPosReset(animType, () =>
-        {
-            //UIHandler.Instance.HideScreenLock();
-        });
+        //操作点=新卡自己的目标槽位:新卡零延迟先飞入(单独时长),其余位移卡按距离依次跟上
+        int focusPosIndex = GameDataHandler.Instance.manager.GetUserData()
+            .GetLineupCreaturePosIndex(currentLineupIndex, creatureData.creatureUUId);
+        AnimForAllLineupCardPosReset(animType, null, focusPosIndex, timeForLineupCardAddFly);
     }
 
     /// <summary>
     /// 移除阵容里的卡片
     /// </summary>
-    /// <param name="targetView"></param>
-    public void RemoveLineupCard(UIViewCreatureCardItem targetView, int animType = 0)
+    /// <param name="targetView">被移除的卡片</param>
+    /// <param name="animType">0默认 1初始化</param>
+    /// <param name="focusPosIndex">操作点槽位序号(被移除卡片的原槽位);小于0时按最右槽位处理</param>
+    public void RemoveLineupCard(UIViewCreatureCardItem targetView, int animType = 0, int focusPosIndex = -1)
     {
-        //UIHandler.Instance.ShowScreenLock();
-        //入池前杀掉残留动画序列(含未触发的音效回调),避免隐藏卡片继续播放动画/音效
-        targetView.transform.DOKill();
+        //入池前复位动画状态(杀残留序列+缩放/透明度回满),避免隐藏卡片继续播放动画/音效
+        targetView.ResetCardAnimStateForReuse();
         targetView.gameObject.SetActive(false);
         queuePoolCardLineup.Enqueue(targetView);
         listShowCardLineup.Remove(targetView);
 
-        AnimForAllLineupCardPosReset(animType, () =>
-        {
-            //UIHandler.Instance.HideScreenLock();
-        });
+        AnimForAllLineupCardPosReset(animType, null, focusPosIndex);
     }
 
     /// <summary>
@@ -386,8 +507,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         for (int i = 0; i < listShowCardLineup.Count; i++)
         {
             var targetView = listShowCardLineup[i];
-            //入池前杀掉残留动画序列(含未触发的音效回调),避免快速切换页签时旧阵容动画/音效继续播放
-            targetView.transform.DOKill();
+            //入池前复位动画状态(杀残留序列+缩放/透明度回满),避免快速切换页签时旧阵容动画/音效继续播放
+            targetView.ResetCardAnimStateForReuse();
             targetView.gameObject.SetActive(false);
             queuePoolCardLineup.Enqueue(targetView);
         }
@@ -576,11 +697,13 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         }
         else if (targetView.cardData.cardUseState == CardUseStateEnum.Lineup)
         {
+            //操作点=被移除卡片的原槽位(删除后数据中已查不到,必须先取)
+            int removedPosIndex = userData.GetLineupCreaturePosIndex(currentLineupIndex, targetView.cardData.creatureData.creatureUUId);
             userData.RemoveLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureUUId);
             //刷新背包里的卡片
             ui_UIViewCreatureCardList.RefreshCardByCreatureUUId(targetView.cardData.creatureData.creatureUUId);
             //移除阵容卡
-            RemoveLineupCard(targetView);
+            RemoveLineupCard(targetView, 0, removedPosIndex);
             //刷新UI数据
             RefreshUIData();
         }
@@ -601,16 +724,18 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     {
         currentDragCard = null;
         int totalCard = listShowCardLineup.Count;
+        //操作点=拖拽落点槽位(拖拽卡自身距离0先吸附,其余位移卡按距离依次跟上)
+        int focusPosIndex = -1;
         if (totalCard > 1)
         {
-            int targetPosIndex = GetLineupDropPosIndex(targetView.transform.localPosition.x, totalCard);
+            focusPosIndex = GetLineupDropPosIndex(targetView.transform.localPosition.x, totalCard);
             var userData = GameDataHandler.Instance.manager.GetUserData();
-            userData.MoveLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureUUId, targetPosIndex);
+            userData.MoveLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureUUId, focusPosIndex);
             //换位后按新槽位重排展示列表,让层级跟随视觉位置(最右最上),避免拖拽卡残留旧层级
             SortShowCardLineupByPos();
         }
         //所有卡吸附到新槽位(含夹回)
-        AnimForAllLineupCardPosReset(0, null);
+        AnimForAllLineupCardPosReset(0, null, focusPosIndex);
     }
 
     public void RadioButtonSelected(RadioGroupView rgView, int position, RadioButtonView rbview)

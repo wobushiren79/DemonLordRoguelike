@@ -18,6 +18,9 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     //卡片快捷按键(1-9)，按阵容排序分配；-1 表示无快捷键(阵容序号超过9)
     protected int pressKeyNum = -1;
 
+    //指针是否悬停在本卡(用于延迟还原层级：复原动画期间卡片仍是放大的，提前降层会被右邻居遮住并抢走悬停)
+    protected bool isPointerHovered = false;
+
     /// <summary>
     /// 当前卡片的快捷按键序号(1-9)；-1 表示无快捷键(阵容序号超过9)。
     /// 由 UIFightMain 接收 InputActionUIEnum.N1~N9 后按此序号派发选择。
@@ -100,7 +103,16 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
         cardData.originalCardPos = originalCardPos;
         cardData.originalSibling = sibling;
         transform.SetSiblingIndex(sibling);
+        //悬停中的卡片保持置顶：重排只更新它的原层级序号，不能把用户正指着的卡降回原位
+        if (isPointerHovered)
+            transform.SetAsLastSibling();
         gameObject.name = $"UIViewCreatureCardItem_{sibling}";
+        //创建动画(由下方弹入)播放中不改坐标:否则会把动画起点覆盖成目标位,位移变"原地→原地"(只剩缩放);动画结束后由下次重排归位
+        if (IsPlayingCreateAnim())
+        {
+            SetPressKey(sibling);
+            return;
+        }
         //归位到新位置(直接设置，避免与选择/避让动画冲突)
         rectTransform.anchoredPosition = originalCardPos;
         //重排后同步刷新快捷按键(1-9)与按键提示
@@ -196,10 +208,12 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
         //基类统一播放悬停卡片音效(sound_card_7)
         base.OnPointerEnter(eventData);
         //LogUtil.Log($"OnPointerEnter_{cardData.originalSibling}");
+        //标记悬停中(先于动画设置：PlaySelectEnterAnim 会杀掉复原动画，复原动画的完成回调据此跳过层级还原)
+        isPointerHovered = true;
         //播放选择放大动画(动画实现见 partial 文件 UIViewCreatureCardItemForFightAnim)
         PlaySelectEnterAnim();
-        //设置层级最上
-        transform.SetAsLastSibling();
+        //整排按阵容序号重排层级并把本卡追加到最上(顺带清掉其它卡复原动画期间的临时置顶)
+        RefreshAllCardLayerBySibling();
         //触发避让事件
         TriggerEvent(EventsInfo.UIViewCreatureCardItem_SelectKeep, cardData.originalSibling, cardData.originalCardPos, true);
         //进入事件
@@ -215,16 +229,87 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
     {
         //LogUtil.Log($"OnPointerExit_{cardData.originalSibling}");
-        //播放选择还原动画(动画实现见 partial 文件 UIViewCreatureCardItemForFightAnim)
-        PlaySelectExitAnim();
-        //还原层级
-        transform.SetSiblingIndex(cardData.originalSibling);
+        //标记已离开悬停
+        isPointerHovered = false;
+        //播放选择还原动画(动画实现见 partial 文件 UIViewCreatureCardItemForFightAnim)，层级等缩回原始尺寸后再还原
+        PlaySelectExitAnim(RestoreLayerAfterSelectExitAnim);
+        //指针已离开整排卡片(不在任何卡片上)时立即重排还原：否则多张卡各自等0.5s复原动画到点才还原，期间层级会长时间错乱
+        if (!IsPointerOverAnyCard(eventData))
+            RefreshAllCardLayerBySibling();
         //触发避让事件
         TriggerEvent(EventsInfo.UIViewCreatureCardItem_SelectKeep, cardData.originalSibling, cardData.originalCardPos, false);
         //离开事件
         TriggerEvent(EventsInfo.UIViewCreatureCardItem_OnPointerExit, this);
         //移出卡牌，隐藏描边高亮
         CreatureHandler.Instance.HideCreatureOutlinePreview();
+    }
+
+    /// <summary>
+    /// 复原动画播完后重排整排层级(悬停置顶 → 常规层级)。
+    /// <para>不能在 OnPointerExit 里立即还原：此时卡片还处于放大收缩中，右侧邻居绘制在其上，鼠标移回放大区域会被邻居接住，本卡收不到 OnPointerEnter 而无法再次置顶。</para>
+    /// <para>整排重排而非本卡 SetSiblingIndex(originalSibling)：多张卡同时处于复原动画时，各自的绝对序号定位会互相打乱顺序。</para>
+    /// </summary>
+    protected void RestoreLayerAfterSelectExitAnim()
+    {
+        //复原途中重新悬停会杀掉该动画(不触发本回调)，这里再兜底一次防误还原
+        if (isPointerHovered)
+            return;
+        RefreshAllCardLayerBySibling();
+    }
+
+    /// <summary>
+    /// 判断退出事件发生瞬间指针是否仍落在任意一张战斗卡片(含卡片子节点)上。
+    /// <para>从射线新命中对象逐级向上查找，在遇到卡片容器前找到卡片组件即视为仍在卡片区，用于区分「移到相邻卡」与「离开整排卡片」。</para>
+    /// </summary>
+    /// <param name="eventData">指针事件数据(OnPointerExit 时 pointerCurrentRaycast 已是新的命中目标)</param>
+    /// <returns>是否仍停留在某张卡片上</returns>
+    protected bool IsPointerOverAnyCard(PointerEventData eventData)
+    {
+        GameObject pointerOverObject = eventData != null ? eventData.pointerCurrentRaycast.gameObject : null;
+        if (pointerOverObject == null)
+            return false;
+        Transform cardContainer = transform.parent;
+        Transform checkTransform = pointerOverObject.transform;
+        while (checkTransform != null && checkTransform != cardContainer)
+        {
+            //命中卡片组件即说明指针仍在卡片上(容器自身是模板组件，循环在到达容器前结束，不参与判定)
+            if (checkTransform.GetComponent<UIViewCreatureCardItemForFight>() != null)
+                return true;
+            checkTransform = checkTransform.parent;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 按阵容序号重排同一容器内全部战斗卡片的层级，悬停中的卡恒置顶。
+    /// <para>用「按序 SetAsLastSibling 整体追加」而非各自 SetSiblingIndex(originalSibling) 绝对定位：多张卡同时处于复原动画、各自到点还原时，绝对定位会互相打乱顺序。</para>
+    /// </summary>
+    protected void RefreshAllCardLayerBySibling()
+    {
+        Transform cardContainer = transform.parent;
+        if (cardContainer == null)
+            return;
+        //收集同一容器下的卡片实例(非卡片子节点/容器自身模板不参与)
+        List<UIViewCreatureCardItemForFight> listCard = new List<UIViewCreatureCardItemForFight>(cardContainer.childCount);
+        for (int i = 0; i < cardContainer.childCount; i++)
+        {
+            UIViewCreatureCardItemForFight itemCard = cardContainer.GetChild(i).GetComponent<UIViewCreatureCardItemForFight>();
+            if (itemCard != null)
+                listCard.Add(itemCard);
+        }
+        //按阵容序号升序追加，保证相对层级与布局一致
+        listCard.Sort((a, b) => a.cardData.originalSibling.CompareTo(b.cardData.originalSibling));
+        for (int i = 0; i < listCard.Count; i++)
+        {
+            if (!listCard[i].isPointerHovered)
+                listCard[i].transform.SetAsLastSibling();
+        }
+        //悬停中的卡最后追加，保证其始终在最上层
+        for (int i = 0; i < listCard.Count; i++)
+        {
+            if (listCard[i].isPointerHovered)
+                listCard[i].transform.SetAsLastSibling();
+        }
     }
 
     /// <summary>

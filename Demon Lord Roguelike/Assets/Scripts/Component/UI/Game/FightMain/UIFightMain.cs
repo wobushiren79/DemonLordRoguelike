@@ -61,6 +61,13 @@ public partial class UIFightMain : BaseUIComponent
         base.OnInputActionForStarted(inputType, callback);
         if (inputType == InputActionUIEnum.ESC)
         {
+            //有选择(待放置卡片/删除生物模式)时 ESC 仅取消选择，不打开系统界面；再次按 ESC 才调出系统界面
+            GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+            if (gameFightLogic != null && gameFightLogic.HasSelectData())
+            {
+                gameFightLogic.ClearSelectData();
+                return;
+            }
             //战斗中调出系统界面(仅显示结束战斗按钮)
             UIHandler.Instance.OpenUIAndCloseOther<UIGameSystem>((ui) => ui.enterType = UIGameSystem.EnterTypeFight);
             return;

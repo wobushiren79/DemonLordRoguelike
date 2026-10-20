@@ -312,7 +312,7 @@ public virtual void CheckGameEnd()
 
 ### 重新挑战（ESC 系统界面，2026-10 新增）
 
-战斗中 ESC 打开 `UIGameSystem`（enterType=Fight），除「退出战斗」外还有「**重新挑战**」按钮：确认后放弃当前进度、以同一世界/同一配置从头重开（不回基地）。
+战斗中 ESC 打开 `UIGameSystem`（enterType=Fight），除「退出战斗」外还有「**重新挑战**」按钮：确认后放弃当前进度、以同一世界/同一配置从头重开（不回基地）。**注意 ESC 有选择时优先取消选择**（待放置卡片/删除生物模式，见下文「卡片操作流程」），无选择时才打开系统界面。
 
 - **支持矩阵**（基类 `GameFightLogic.IsCanRestartFight()` virtual 默认 false）：**征服/挑战100勇士/测试**=支持；**无尽**=不支持（只能挑战一次，输赢后传送门世界即刷新）；**终焉议会**=不支持（暴力说服一次性，不允许重打刷赢）。
 - **流程**（`GameFightLogic.RestartFight()`，仅 Gaming 状态生效）：确认弹窗（UIText 504）→ ShowMask → `ClearAbyssalBlessing`（重开=全新挑战不携带已选馈赠）→ `RestoreDefenseCreatureFightState` → `SaveUserData`（本场已入账魔晶/经验落盘）→ `EnterGameForFightScene(CreateRestartFightData())`（内部 ClearWorldData 走当前逻辑 ClearGame 完整清理再重开）。**议案 EndGame 消耗钩子不触发**（与中途退出同口径，议案延续到重开后的战斗）。
@@ -340,7 +340,8 @@ public class ControlForGameFight : BaseControl
 // 3. 左键点击空地 -> GameFightLogic.PutCard()
 //    -> 检测位置是否已有生物 -> 检测魔王魔力是否足够(GetAttributeInt(CMP) 不足则Toast"魔力不足")
 //    -> 扣除魔力并刷新MPShow -> 创建实体 -> 触发事件
-// 4. 右键 -> GameFightLogic.UnSelectCard() -> 取消选择
+// 4. 右键 -> GameFightLogic.HasSelectData() 为真时 ClearSelectData() -> 取消选择(卡片/删除模式共用同一清空逻辑)
+// 5. ESC -> 有选择时优先 GameFightLogic.ClearSelectData() 取消选择(不打开系统界面)；无选择时再按 ESC 才打开系统界面
 ```
 
 ### 删除生物流程
@@ -350,8 +351,11 @@ public class ControlForGameFight : BaseControl
 //    -> 显示删除预览跟随鼠标
 // 2. 左键点击生物 -> GameFightLogic.SelectCreatureDestoryHandle()
 //    -> 移除该位置防守生物
-// 3. 右键 -> GameFightLogic.UnSelectCreatureDestroy() -> 取消
+// 3. 右键 -> 同卡片选择：GameFightLogic.HasSelectData() 为真时 ClearSelectData() -> 取消
+// 4. ESC -> 同样优先取消删除模式(与卡片选择共用 ClearSelectData)
 ```
+
+> **ESC 与选择状态（2026-10）**：`UIFightMain.OnInputActionForStarted` 收到 ESC 时先查 `GameFightLogic.HasSelectData()`（`selectCreature`/`selectCreatureCard`/`selectCreatureDestory` 任一非空），有选择则只 `ClearSelectData()` 取消选择并 return，无选择才 `OpenUIAndCloseOther<UIGameSystem>` 打开系统界面。若丢掉这个判断，选择数据会残留在 `GameFightLogic` 里——系统界面挡不住世界左键，点击空地仍会走 `PutCard()` 放卡，且回到战斗后卡片仍是选中态。
 
 ## 战斗UI
 
@@ -370,6 +374,9 @@ public partial class UIFightMain : BaseUIComponent
     // GameFightLogic_SelectCard      - 选中卡片
     // GameFightLogic_UnSelectCard    - 取消选择
     // GameFightLogic_PutCard         - 放置卡片
+
+    // ESC：有选择(待放置卡片/删除生物模式, GameFightLogic.HasSelectData)时先取消选择；无选择才打开系统界面 UIGameSystem
+    // 数字键 1-9：快捷选择对应卡片(再次按同键取消选中)
 
     // Quick(加快进攻节奏)按钮显隐：征服/无尽/100勇士且已解锁当前世界当前难度 Quick 研究才显示(取 fightData.GetGameWorldInfoRandomData())
     public void RefreshQuickButtonShow(GameFightLogic gameFightLogic);

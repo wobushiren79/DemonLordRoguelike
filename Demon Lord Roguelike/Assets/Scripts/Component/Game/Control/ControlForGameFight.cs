@@ -170,10 +170,8 @@ public class ControlForGameFight : BaseControl
             return;
         if (CheckUtil.CheckIsPointerUI())
             return;
-        //手里没有物品
-        if (gameFightLogic.selectCreature != null)
-            return;
-        if (gameFightLogic.selectCreatureDestory != null)
+        //处于选择状态(待放置卡片/删除生物模式)时不拾取
+        if (gameFightLogic.HasSelectData())
             return;
         float inputValue = inputActionUseL.ReadValue<float>();
         if (inputValue < 1)
@@ -252,14 +250,10 @@ public class ControlForGameFight : BaseControl
             return;
 
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        //如果有选择的物体 放置物体
-        if (gameFightLogic.selectCreature != null)
+        //右键抬起取消当前选择(待放置卡片/删除生物模式，二者共用同一清空逻辑)
+        if (gameFightLogic.HasSelectData())
         {
-            gameFightLogic.UnSelectCard();
-        }
-        if (gameFightLogic.selectCreatureDestory != null)
-        {
-            gameFightLogic.UnSelectCreatureDestroy();
+            gameFightLogic.ClearSelectData();
         }
     }
 }

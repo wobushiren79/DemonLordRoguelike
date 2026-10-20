@@ -101,9 +101,9 @@ GameControlHandler.Instance.manager.controlForGameBase.EnabledControl(false);
 |------|------|------|
 | WASD (`inputActionMove`) | `HandleForMoveUpdate` | 移动 `controlTargetForEmpty`，`ClampCameraPosition` 限位(minX/maxX/minZ/maxZ) |
 | 鼠标右键拖拽 (`UseR`) | `HandleForMoveMouseUpdate` + Down/Up | 按下记 `dragCameraOrigin` 进拖拽；按位移移镜头；抬起退出拖拽 |
-| 鼠标左键长按 (`UseL`) | `HandleForClickDropUpdate` | 手里无卡/非删除模式时 `PickupCrystalForMouse()` 拾水晶 |
+| 鼠标左键长按 (`UseL`) | `HandleForClickDropUpdate` | 无选择(`HasSelectData()==false`)时 `PickupCrystalForMouse()` 拾水晶 |
 | 鼠标左键抬起 | `HandleForUseLUp` | 手持卡 → `PutCard()`；删除模式 → `SelectCreatureDestoryHandle()` |
-| 鼠标右键抬起 | `HandleForUseRUp` | 手持卡 → `UnSelectCard()`；删除模式 → `UnSelectCreatureDestroy()` |
+| 鼠标右键抬起 | `HandleForUseRUp` | 有选择(`HasSelectData()`) → `ClearSelectData()`；卡片选择与删除模式共用同一清空逻辑 |
 | C 键 (`inputActionDeleteCreature`) | `HandleForDeleteCreatureToggle` | 切换删除生物模式(`SelectCreatureDestroy`/`UnSelectCreatureDestroy`) |
 
 战斗交互均通过 `GameHandler.Instance.manager.GetGameLogic<GameFightLogic>()` 落到战斗逻辑；`CheckUtil.CheckIsPointerUI()` 拦截 UI 上的点击。

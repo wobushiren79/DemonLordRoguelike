@@ -1,4 +1,3 @@
-using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -52,7 +51,8 @@ public partial class UIViewCreatureCardItemForLineup : UIViewCreatureCardItem, I
         if (cardData.cardUseState != CardUseStateEnum.Lineup)
             return;
         isDragging = true;
-        transform.DOKill();
+        //开始拖拽即复位动画状态(杀残留序列+缩放/透明度回满),出现动画未播完时立刻恢复不透明并跟手
+        ResetCardAnimStateForReuse();
         transform.SetAsLastSibling();
         RectTransform parentRect = transform.parent as RectTransform;
         if (parentRect != null &&

@@ -54,6 +54,12 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 | GameHandler | Assets/Scripts/Component/Handler/GameHandler.cs |
 | GameManager | Assets/Scripts/Component/Manager/GameManager.cs |
 
+### 选择/放卡状态（ESC 取消，2026-10）
+- `HasSelectData()`（public）- 是否处于选择状态：`selectCreature`（待放置生物预览）/`selectCreatureCard`（选中卡片UI）/`selectCreatureDestory`（删除生物模式标记）任一非空即 true。
+- `ClearSelectData(bool isDestroyImm=false)` - 取消全部选择：回收预览生物、广播 `GameFightLogic_UnSelectCard`（卡片回 `FightIdle`）、隐藏删除标记、退出删除模式时还原光标，最后置空三个选择字段；`UnSelectCard()`/`UnSelectCreatureDestroy()` 内部均走它。
+- **统一判空入口**：`ControlForGameFight` 的拾水晶门禁（`HandleForClickDropUpdate`）、右键取消（`HandleForUseRUp`：有选择即 `ClearSelectData`）、`UpdateGameForSelectCreature` 的跟随更新判定、`UIFightMain` 的 ESC 分支均已改走 `HasSelectData()`。新增"是否有选择"判断一律复用它，别重复写三个字段判空；只有需要区分"卡片 / 删除模式"时（如 `HandleForUseLUp` 分派 `PutCard`/`SelectCreatureDestoryHandle`、`HandleForDeleteCreatureToggle` 只认删除模式）才单独判对应字段。
+- **ESC 优先级**：`UIFightMain.OnInputActionForStarted` 拦 `InputActionUIEnum.ESC` 时先查 `HasSelectData()`，有选择只 `ClearSelectData()` 取消选择并 return；无选择才 `OpenUIAndCloseOther<UIGameSystem>` 打开系统界面（再按一次 ESC 才是系统界面）。**不要去掉该判断**——否则选择数据残留，系统界面（timeScale=0）期间世界左键仍会落到 `PutCard()` 放卡，返回战斗后卡片也仍是选中态。
+
 ### 魔王魔力(MP)系统（仅战斗中有效）
 - `UpdateGameForMPRecover(updateTime)` - 每帧给魔王核心恢复 MPF*updateTime 点魔力（MPF=每秒恢复量），并调用 `RefreshMPShow()` 通知刷新魔力显示
 - `PutCard()` - 召唤耗魔取 `creatureData.GetAttributeInt(CreatureAttributeTypeEnum.CMP)`（= 基础CMP×(1+等级/稀有度增加倍率)经自身/稀有度BUFF修正，如扭蛋 CMP 减益；倍率求和见 `CreatureBean.GetCreateMPAddRate()`）；放置前检查魔王 `MPCurrent >= GetAttributeInt(CMP)`，不足则 Toast"魔力不足"(UIText 50006)；足够则 `ChangeMP(-GetAttributeInt(CMP))` 扣除并刷新显示。**无限蓝钩子**：魔力不足检查与扣蓝两处均被 `if (!isSkipMPCost)` 包裹，`isSkipMPCost` 取自虚方法 `IsSkipPutCardMPCost()`（基类默认 false；挑战100勇士重写为 true，魔王蓝量无限）——无限蓝模式的唯一改动点。放置成功后播放两个全局单例粒子：在魔王(防守核心)位置 `EffectHandler.ShowCreaturePlaceEffect(EffectHandler.Instance.manager.effectManaId, coreCreature.creatureObj.transform.position)`(消耗魔力,EffectInfo id=1000001 Effect_Mana_1)、在生成位置 `EffectHandler.ShowCreaturePlaceEffect(EffectHandler.Instance.manager.effectCreatureShowId, selectTargetPos)`(魔物登场,id=1100001 Effect_CreatureShow_1)，再播 `AudioEnum.sound_btn_19`（2026-08-16 起原 ShowManaEffect/ShowCreatureShowEffect 已合并为 ShowCreaturePlaceEffect，走全局单例通道）。复活CD判定走 `GetAttribute(CreatureAttributeTypeEnum.RCD, true)`（基础值creatureInfo.RCD→角色加点→装备→自身/稀有度RCD减益→再叠加深渊馈赠全局池；第二参 includeAbyssalBlessing=true 开启深渊馈赠按需叠加，逻辑统一在 CreatureBean.GetAttribute 内，原 GetRCD 已并入）

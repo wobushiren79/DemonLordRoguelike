@@ -19,8 +19,7 @@ public partial class UIViewBuffShowItem : BaseUIView
         var rarityInfo = RarityInfoCfg.GetItemData(rarityEnum);
         ColorUtility.TryParseHtmlString(rarityInfo.buff_color, out Color buffColor);
 
-        //设置名字
-        ui_BuffName.text = $"{buffInfo.name_language}";
+        //设置名字颜色
         ui_BuffName.color = buffColor;
         //设置背景颜色
         ui_UIViewBuffShowItem_Image.color = buffColor;
@@ -70,7 +69,10 @@ public partial class UIViewBuffShowItem : BaseUIView
         }
 
         string contentText = TextHandler.Instance.GetTextReplace(buffInfo.content_language, dicReplace);
-        ui_UIViewBuffShowItem_PopupButtonCommonView.SetData(contentText, PopupEnum.Text);
+        //名字栏改为显示效果详情，前面拼接 ">" 前缀
+        ui_BuffName.text = $"> {contentText}";
+        //提示弹窗改为显示名字
+        ui_UIViewBuffShowItem_PopupButtonCommonView.SetData(buffInfo.name_language, PopupEnum.Text);
     }
 
 

@@ -45,6 +45,16 @@ public partial class UIViewCreatureCardItemForFight
     }
 
     /// <summary>
+    /// 创建动画(由下方弹入)是否播放中,含错开延迟阶段。
+    /// <para>重排布局时须跳过直接改坐标:位移 tween 的起点在真正启动时才捕获,延迟期间被外部写成目标位会让动画变成"原地→原地"(只剩缩放没有上移)。</para>
+    /// </summary>
+    /// <returns>是否正在播创建动画</returns>
+    public bool IsPlayingCreateAnim()
+    {
+        return animForCreate != null && animForCreate.IsActive();
+    }
+
+    /// <summary>
     /// 选择动画-进入：鼠标进入时放大本卡(由 OnPointerEnter 调用)
     /// </summary>
     public void PlaySelectEnterAnim()
@@ -58,12 +68,15 @@ public partial class UIViewCreatureCardItemForFight
     /// <summary>
     /// 选择动画-退出：鼠标离开时还原本卡缩放(由 OnPointerExit 调用)
     /// </summary>
-    public void PlaySelectExitAnim()
+    /// <param name="actionForComplete">复原动画播完回调(卡片层级须等缩回原始尺寸后再还原，否则放大状态会被邻居卡遮住并抢走悬停)</param>
+    public void PlaySelectExitAnim(Action actionForComplete = null)
     {
         KillAnimForSelect();
         animForSelectEnd = rectTransform
                 .DOScale(Vector3.one, animCardSelectEndTime)
-                .SetEase(animCardSelectEnd);
+                .SetEase(animCardSelectEnd)
+                //KillAnimForSelect 未播完就杀掉的 tween 不会触发 OnComplete(重新悬停时即走此路径)
+                .OnComplete(() => actionForComplete?.Invoke());
     }
 
     /// <summary>

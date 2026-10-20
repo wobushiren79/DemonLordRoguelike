@@ -15,6 +15,8 @@ public partial class UIDialogPortalDetails : DialogView
 
     //难度item的水平间距(中心±3 共7个, 间距按容器宽度收缩以保证不压到左右切换按钮)
     protected const float itemSpacing = 230f;
+    //难度item的Y轴位置(取模板item在prefab中的原始Y, 由设计器直接调prefab, 代码不再写死0)
+    protected float itemPosY;
     //难度切换左右滑动动画时长
     protected const float animDuration = 0.6f;
     //难度item对象池(7个常驻显示 + 切换滑动时第8个临时滑出)
@@ -256,6 +258,8 @@ public partial class UIDialogPortalDetails : DialogView
         listItemPool = new List<UIViewDialogPortalDetailsItem>();
         //模板item作为对象池第一个
         listItemPool.Add(ui_UIViewDialogPortalDetailsItem);
+        //记录模板item在prefab中的原始Y(设计器可在prefab中直接调整上下位置), 排布时所有item沿用
+        itemPosY = ui_UIViewDialogPortalDetailsItem.rectTransform.anchoredPosition.y;
         Transform itemParent = ui_UIViewDialogPortalDetailsItem.transform.parent;
         //再克隆7个(共8个)
         for (int i = 1; i < 8; i++)
@@ -375,7 +379,7 @@ public partial class UIDialogPortalDetails : DialogView
         itemView.gameObject.SetActive(true);
         //通关标记仅征服模式显示(无尽无通关统计)
         itemView.SetData(gameWorldInfo, gameWorldInfoRandom, difficulty, isUnlock, bgColor, isShowCompleteMark: gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Conquer);
-        itemView.rectTransform.anchoredPosition = new Vector2(posX, 0);
+        itemView.rectTransform.anchoredPosition = new Vector2(posX, itemPosY);
     }
 
     /// <summary>

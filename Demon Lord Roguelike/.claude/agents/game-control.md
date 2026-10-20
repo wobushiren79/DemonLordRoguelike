@@ -64,8 +64,8 @@ ControlForGameFight  - 战斗场景控制：WASD/右键拖拽移镜头、左键�
 
 ### 3. 战斗场景控制（ControlForGameFight）
 - **移镜头**：`HandleForMoveUpdate`(WASD) 与 `HandleForMoveMouseUpdate`(右键拖拽) 移动 `controlTargetForEmpty`，`ClampCameraPosition` 用 minX/maxX/minZ/maxZ 限位。
-- **左键(UseL)**：`HandleForClickDropUpdate` 长按拾取水晶(`PickupCrystalForMouse`)；抬起时若手持卡则 `PutCard`、若删除模式则 `SelectCreatureDestoryHandle`。
-- **右键(UseR)**：按下进入拖拽镜头；抬起取消手持卡(`UnSelectCard`)或取消删除模式(`UnSelectCreatureDestroy`)。
+- **左键(UseL)**：`HandleForClickDropUpdate` 仅在无选择(`!gameFightLogic.HasSelectData()`)时长按拾取水晶(`PickupCrystalForMouse`)；抬起时若手持卡则 `PutCard`、若删除模式则 `SelectCreatureDestoryHandle`。
+- **右键(UseR)**：按下进入拖拽镜头；抬起时 `HasSelectData()` 为真才 `ClearSelectData()` 取消当前选择——卡片选择与删除模式共用同一清空逻辑（不要按字段分别判空再分别调 `UnSelectCard`/`UnSelectCreatureDestroy`）。
 - **C 键**：`HandleForDeleteCreatureToggle` 切换删除生物模式(`SelectCreatureDestroy`/`UnSelectCreatureDestroy`)。
 - 战斗交互均通过 `GameHandler.manager.GetGameLogic<GameFightLogic>()` 落到战斗逻辑层。
 
