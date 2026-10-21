@@ -414,12 +414,17 @@ public partial class UIViewCreatureCardDetails : BaseUIView
             ui_Details.anchoredPosition = new Vector2(-20, 0);
 
         }
-        else
+        else if (direction == Direction2DEnum.Right)
         {
             ui_Details.anchorMin = new Vector2(1, 0.5f);
             ui_Details.anchorMax = new Vector2(1, 0.5f);
             ui_Details.pivot = new Vector2(0, 0.5f);
             ui_Details.anchoredPosition = new Vector2(20, 0);
+        }
+        //其他方向保持不变
+        else
+        {
+            
         }
     }
 

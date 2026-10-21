@@ -125,6 +125,19 @@ public class UserTempBean
     }
 
     /// <summary>
+    /// 移除指定的一个传送门世界(无尽/挑战100勇士挑战结束即消耗该世界: 只移除该条, 其余世界保持不变;
+    /// 下次打开传送门UI时 InitMap 按数量缺口自动补生成一个新世界)
+    /// </summary>
+    /// <param name="removeData">要移除的世界随机数据(按引用匹配)</param>
+    /// <returns>true=已移除</returns>
+    public bool RemovePortalWorldInfoRandomData(GameWorldInfoRandomBean removeData)
+    {
+        if (removeData == null || listPortalWorldInfoRandomData.IsNull())
+            return false;
+        return listPortalWorldInfoRandomData.Remove(removeData);
+    }
+
+    /// <summary>
     /// 清理传送门随机数据
     /// </summary>
     public void ClearPortalWorldInfoRandomData()

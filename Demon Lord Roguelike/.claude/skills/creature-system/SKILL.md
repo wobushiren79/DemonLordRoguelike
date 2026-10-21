@@ -515,6 +515,16 @@ Color rarityColor = CreatureUtil.GetRarityColor(creature.rarity);
 
 ---
 
+## 扭蛋职业速查（29 个）
+
+全部可抽职业的种族分布、攻击方式、基础属性（HP/护甲/攻击/造兵CD/耗魔）、自带 BUFF、攻击模块机制对照表，见 **[reference/gacha-creature-classes.md](reference/gacha-creature-classes.md)**。
+
+- 7 个种族共 29 个职业，`creature_type=1` 即扭蛋可抽单位；id 千位区分种族（人类10xx/骷髅20xx/史莱姆30xx/魅魔40xx/牛头人50xx/哥布林60xx/兽人70xx）。
+- **暴击率/闪避/暴击伤害不在 `CreatureInfo` 表里**：基础值分别是 `CRT=0`、`EVA=0`、`CDMG=1.5`（150% 伤害），职业级差异全部来自 `creature_buff`（出生自带 BUFF）——如 6001 哥布林刺客 闪避50%/暴击50%/暴伤200%、2001 骷髅战士 闪避20%、1002 人类弓箭手与 2002 骷髅投手 暴击20%/暴伤200%、7001 兽人战士 HP<50% 狂暴（ATK+50%）。装备随机属性**不会**产出这三项。
+- 职业特色文案在 `excel_language` 的 `CreatureInfo.content_1_cn`（**不是** `content_cn`，那是名字）；取法：creature 的 `details[language_1]` = 自身 id。
+- 骷髅族（2001~2004）全员 `attack_search_back=1`：**正面无目标时可转身攻击身后**，属种族特色。
+- 问"某个职业多少攻击 / 什么攻击方式 / 自带什么 BUFF"直接查该参考表，不必再翻 xlsx。
+
 ## 注意事项
 
 1. **UUID 唯一性**: 每个 CreatureBean 的 creatureUUId 是全局唯一的，使用 GUID 生成。

@@ -39,8 +39,8 @@ public partial class UICreatureVat : BaseUIComponent
     protected const int AscendBuffMaxPerRow = 5;
     //BUFF增益item横向格距(item宽150 + 间隔)
     protected const float AscendBuffCellWidth = 162f;
-    //BUFF增益item纵向格距(item高60 + 间隔)
-    protected const float AscendBuffCellHeight = 70f;
+    //BUFF增益item纵向格距(item高60 + 间隔,多排时排间距100)
+    protected const float AscendBuffCellHeight = 100f;
 
     //升阶前/后卡牌的初始锚点位置与缩放(用于掉落动画的落点,Awake时缓存)
     protected Vector2 advanceCardBeforePos;

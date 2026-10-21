@@ -31,9 +31,11 @@ public partial class GameWorldInfoRandomBean
     public int iconSeed;
     //难度等级
     public int difficultyLevel;
-    //各难度对应的随机数据(创建时把所有已解锁难度一次性随出来, 切换难度直接取用, 保证来回切换时同一难度的道路/关卡数恒定)
+    //各难度对应的随机数据(创建时把所有已解锁难度一次性随出来, 切换难度直接取用, 保证来回切换时同一难度的道路/关卡数恒定;
+    //传送门创建后研究新解锁的难度在首次访问时懒补齐并冻结)
     public List<GameWorldDifficultyRandomBean> listDifficultyRandom = new List<GameWorldDifficultyRandomBean>();
-    //挑战100勇士-各难度预生成的随机数据(创建时把 1~已解锁最高难度 一次性随出并冻结, 切换难度直接取用)
+    //挑战100勇士-各难度预生成的随机数据(创建时把 1~已解锁最高难度 一次性随出并冻结, 切换难度直接取用;
+    //传送门创建后研究新解锁的难度在首次访问时懒补齐并冻结)
     public List<GameWorldChallengeHundredRandomBean> listChallengeHundredRandom = new List<GameWorldChallengeHundredRandomBean>();
     //挑战100勇士-当前活动难度的冻结配置行id(FightTypeChallengeHundredInfo; 仅 gameFightType==ChallengeHundred 时有意义, 0=未冻结)
     public long challengeHundredRowId;
@@ -178,8 +180,9 @@ public partial class GameWorldInfoRandomBean
         }
         else if (gameFightType == GameFightTypeEnum.Infinite)
         {
-            //无尽模式: 仅同步该难度预生成的道路数/道路长度(无关卡数/奖励); 不走 GetDifficultyRandom 懒生成(那会连带生成征服通关奖励), 未预生成的难度保留当前值
-            GameWorldDifficultyRandomBean difficultyRandom = listDifficultyRandom?.Find(item => item.difficultyLevel == targetDifficultyLevel);
+            //无尽模式: 仅同步该难度预生成的道路数/道路长度(无关卡数/奖励); 不走 GetDifficultyRandom(会连带生成征服通关奖励),
+            //研究新解锁难度未预生成时由 GetInfiniteDifficultyRandom 懒补齐(只补道路数据)
+            GameWorldDifficultyRandomBean difficultyRandom = GetInfiniteDifficultyRandom(targetDifficultyLevel);
             if (difficultyRandom == null)
                 return;
             roadNum = difficultyRandom.roadNum;
@@ -292,18 +295,9 @@ public partial class GameWorldInfoRandomBean
         listDifficultyRandom = new List<GameWorldDifficultyRandomBean>();
         for (int level = 2; level <= unlockInfiniteMax; level++)
         {
-            FightTypeConquerInfoBean fightTypeConquerInfo = FightTypeConquerInfoCfg.GetItemData(worldId, level);
-            if (fightTypeConquerInfo == null)
-                continue;
-            listDifficultyRandom.Add(new GameWorldDifficultyRandomBean()
-            {
-                difficultyLevel = level,
-                //随机道路数量/长度(复用同难度征服行 road_num/road_length 区间)
-                roadNum = fightTypeConquerInfo.GetRandomRoadNum(),
-                roadLength = fightTypeConquerInfo.GetRandomRoadLength(),
-                //无尽无关卡数概念, 占位1
-                fightNum = 1,
-            });
+            GameWorldDifficultyRandomBean difficultyRandom = CreateInfiniteDifficultyRandom(level);
+            if (difficultyRandom != null)
+                listDifficultyRandom.Add(difficultyRandom);
         }
         if (listDifficultyRandom.Count == 0)
         {
@@ -312,6 +306,50 @@ public partial class GameWorldInfoRandomBean
         }
         //默认难度取已解锁最高, 并同步当前道路数据
         SetDifficultyLevel(unlockInfiniteMax);
+    }
+
+    /// <summary>
+    /// 获取指定无尽难度预生成的道路数据(道路数/道路长度); 已解锁但未预生成时懒补齐并缓存
+    /// (传送门创建后研究新解锁的无尽难度, 首次预览/切换时走此路径; 冻结后同一难度数据不再变化)
+    /// </summary>
+    /// <param name="targetDifficultyLevel">难度等级</param>
+    /// <returns>该难度的随机数据; 未解锁/无对应征服配置时返回null</returns>
+    public GameWorldDifficultyRandomBean GetInfiniteDifficultyRandom(int targetDifficultyLevel)
+    {
+        if (listDifficultyRandom == null)
+            listDifficultyRandom = new List<GameWorldDifficultyRandomBean>();
+        GameWorldDifficultyRandomBean difficultyRandom = listDifficultyRandom.Find(item => item.difficultyLevel == targetDifficultyLevel);
+        if (difficultyRandom != null)
+            return difficultyRandom;
+        //仅补齐已解锁难度(逐档判定, 允许跳级)
+        var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+        if (!userUnlock.CheckInfiniteUnlock(worldId, targetDifficultyLevel))
+            return null;
+        difficultyRandom = CreateInfiniteDifficultyRandom(targetDifficultyLevel);
+        if (difficultyRandom != null)
+            listDifficultyRandom.Add(difficultyRandom);
+        return difficultyRandom;
+    }
+
+    /// <summary>
+    /// 按同难度征服行的道路区间创建单个无尽难度的随机数据(仅道路数/道路长度, 无关卡数与通关奖励)
+    /// </summary>
+    /// <param name="targetDifficultyLevel">难度等级</param>
+    /// <returns>单难度随机数据; 无对应征服配置时返回null</returns>
+    protected GameWorldDifficultyRandomBean CreateInfiniteDifficultyRandom(int targetDifficultyLevel)
+    {
+        FightTypeConquerInfoBean fightTypeConquerInfo = FightTypeConquerInfoCfg.GetItemData(worldId, targetDifficultyLevel);
+        if (fightTypeConquerInfo == null)
+            return null;
+        return new GameWorldDifficultyRandomBean()
+        {
+            difficultyLevel = targetDifficultyLevel,
+            //随机道路数量/长度(复用同难度征服行 road_num/road_length 区间)
+            roadNum = fightTypeConquerInfo.GetRandomRoadNum(),
+            roadLength = fightTypeConquerInfo.GetRandomRoadLength(),
+            //无尽无关卡数概念, 占位1
+            fightNum = 1,
+        };
     }
 
     /// <summary>
@@ -410,16 +448,44 @@ public partial class GameWorldInfoRandomBean
     }
 
     /// <summary>
-    /// 获取指定难度的挑战100勇士预生成数据(未预生成返回null)
+    /// 获取指定难度的挑战100勇士预生成数据; 老存档列表为空时懒重建,
+    /// 传送门创建后研究新解锁的难度(列表里没有该档)首次访问时补生成并缓存(冻结后不再变化)
     /// </summary>
     /// <param name="difficultyLevel">难度等级</param>
-    /// <returns>该难度的随机数据; 无对应数据返回null</returns>
+    /// <returns>该难度的随机数据; 未解锁/无匹配配置行返回null</returns>
     public GameWorldChallengeHundredRandomBean GetChallengeHundredRandom(int difficultyLevel)
     {
         //旧存档兼容: 首次访问时懒重建(Ensure 内部只在构建成功后才会回调 SetDifficultyLevel, 不会递归)
         if (listChallengeHundredRandom == null || listChallengeHundredRandom.Count == 0)
             EnsureChallengeHundredRandomData();
-        return listChallengeHundredRandom?.Find(item => item.difficultyLevel == difficultyLevel);
+        GameWorldChallengeHundredRandomBean challengeHundredRandom = listChallengeHundredRandom?.Find(item => item.difficultyLevel == difficultyLevel);
+        if (challengeHundredRandom == null)
+            challengeHundredRandom = CreateChallengeHundredRandomByLevel(difficultyLevel);
+        return challengeHundredRandom;
+    }
+
+    /// <summary>
+    /// 补齐单个难度的挑战100勇士预生成数据: 仅对已解锁难度生效(研究新解锁后首次预览/切换该难度时调用), 生成后缓存冻结;
+    /// 未解锁难度(详情弹窗仅作锁链预览)/无匹配配置行时返回null
+    /// </summary>
+    /// <param name="difficultyLevel">难度等级</param>
+    /// <returns>该难度的随机数据; 不可生成时返回null</returns>
+    protected GameWorldChallengeHundredRandomBean CreateChallengeHundredRandomByLevel(int difficultyLevel)
+    {
+        if (gameFightType != GameFightTypeEnum.ChallengeHundred)
+            return null;
+        var userUnlock = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData();
+        //逐档判定(允许跳级): 未解锁档不预生成, 避免为锁链预览浪费数据
+        if (!userUnlock.CheckChallengeHundredUnlock(worldId, difficultyLevel))
+            return null;
+        FightTypeChallengeHundredInfoBean challengeHundredInfo = FightTypeChallengeHundredInfoCfg.GetRandomRow(difficultyLevel, userUnlock.GetUnlockChallengeHundredBossRate());
+        if (challengeHundredInfo == null)
+            return null;
+        if (listChallengeHundredRandom == null)
+            listChallengeHundredRandom = new List<GameWorldChallengeHundredRandomBean>();
+        GameWorldChallengeHundredRandomBean challengeHundredRandom = CreateChallengeHundredRandom(difficultyLevel, challengeHundredInfo);
+        listChallengeHundredRandom.Add(challengeHundredRandom);
+        return challengeHundredRandom;
     }
 
     /// <summary>

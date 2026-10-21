@@ -27,6 +27,7 @@ public abstract class BuffEntityAttributeDynamicRate : BuffEntityAttribute
     #region 属性收集(战斗热点)
     /// <summary>
     /// 收集属性 modifier：用动态率替代配置固定率，按 PercentAdd 通道加到 sink
+    /// <para>ASPD 例外：基础值恒为 0，百分比通道无效，动态率按 CreatureUtil.ASPD_POINT_PER_FREQUENCY_RATE 换算成点数走 Flat。</para>
     /// </summary>
     public override void CollectModifiers(List<AttributeModifier> sink)
     {
@@ -34,6 +35,11 @@ public abstract class BuffEntityAttributeDynamicRate : BuffEntityAttribute
         if (attributeType == CreatureAttributeTypeEnum.None) return;
         float rate = GetDynamicRate();
         if (rate <= 0f) return;
+        if (attributeType == CreatureAttributeTypeEnum.ASPD)
+        {
+            sink.Add(new AttributeModifier { attributeType = attributeType, channel = ModifierChannel.Flat, value = CreatureUtil.AspdRateToPoint(rate), source = this });
+            return;
+        }
         sink.Add(new AttributeModifier { attributeType = attributeType, channel = ModifierChannel.PercentAdd, value = rate, source = this });
     }
     #endregion
@@ -41,13 +47,17 @@ public abstract class BuffEntityAttributeDynamicRate : BuffEntityAttribute
     #region 兼容层(卡片详情预览路径)
     /// <summary>
     /// 兼容层：单BUFF应用到 targetData，用动态率做百分比加成(供 CreatureBean.GetAbyssalBlessingChangeAttribute 详情预览调用)
+    /// <para>ASPD 例外：动态率换算成点数直接相加，与战斗管线口径一致。</para>
     /// </summary>
     public override float ChangeData(CreatureAttributeTypeEnum targetAttributeType, float targetData)
     {
         if (targetAttributeType != attributeType) return targetData;
         float rate = GetDynamicRate();
         if (rate <= 0f) return targetData;
-        targetData *= 1f + rate;
+        if (attributeType == CreatureAttributeTypeEnum.ASPD)
+            targetData += CreatureUtil.AspdRateToPoint(rate);
+        else
+            targetData *= 1f + rate;
         if (targetData < 0) targetData = 0;
         return targetData;
     }

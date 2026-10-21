@@ -79,7 +79,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → GameFightLogicConquer 跑起
 **导出 JSON**：`Assets/Resources/JsonText/FightTypeConquerInfo.txt`（派生产物，不可单独改）
 **取行键**：`world_id` + `level`（`FightTypeConquerInfoCfg.GetItemData(worldId, difficultyLevel)`），一个世界的每个难度等级一行。
 
-> **无尽模式（GameFightTypeEnum.Infinite）复用本表同难度行**：无尽模式的怪物池 `enemy_ids`/`enemy_boss_ids`、`attack_start_num`/`attack_show_time`/`attack_boss_num`、BOSS 场景池、`drop_crystal`、`road_num`/`road_length` 均取同难度（world_id+level）征服行（经 `FightBeanForInfinite.fightTypeConquerInfo`）；其每轮强度递增倍率独立配置在 `excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（FightTypeInfiniteInfo.round_intensity_addrate，第 N 轮强度=本表同难度行 `attack_intensity_baserate`×该值^(N-1)，Bean 扩展 `GetRoundIntensityRate(round)`）。无尽传送门道路预生成 `GameWorldInfoRandomBean.SetRandomDataForInfinite`（难度 2 起逐档，无尽无难度 1）同样读本表 `road_num`/`road_length` 区间。
+> **无尽模式（GameFightTypeEnum.Infinite）复用本表同难度行**：无尽模式的怪物池 `enemy_ids`/`enemy_boss_ids`、`attack_start_num`/`attack_show_time`/`attack_boss_num`、BOSS 场景池、`drop_crystal`、`road_num`/`road_length` 均取同难度（world_id+level）征服行（经 `FightBeanForInfinite.fightTypeConquerInfo`）；其每轮强度递增倍率独立配置在 `excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（FightTypeInfiniteInfo.round_intensity_addrate，第 N 轮强度=本表同难度行 `attack_intensity_baserate`×该值^(N-1)，Bean 扩展 `GetRoundIntensityRate(round)`）。无尽传送门道路预生成 `GameWorldInfoRandomBean.SetRandomDataForInfinite`（难度 2 起逐档，无尽无难度 1；传送门创建后研究新解锁的难度由 `GetInfiniteDifficultyRandom(D)` 懒补齐）同样读本表 `road_num`/`road_length` 区间。
 
 ### 字段一览
 

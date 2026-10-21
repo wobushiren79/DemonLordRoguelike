@@ -24,6 +24,14 @@ watched_files:
 ### 解锁前置
 孕育系统需要解锁：`UnlockEnum.GashaponMachine = 100400000`。入口按钮在 `UIBaseCore`（`ui_ViewBaseCoreItemFunction_Gashapon`），未解锁时隐藏；点击 `OnClickForGashapon` → `OpenUIAndCloseOther<UIGashaponMachine>()`。各扭蛋商品本身还有独立的 `pre_unlock_ids` 前置解锁。
 
+### 可抽职业速查（29 个）
+
+7 族 29 个职业的攻击方式、基础属性（HP/护甲/攻击/CMP/RCD/索敌）、自带固有能力（暴击/闪避/暴击伤害）、元素异常概率，见 creature-system 技能的参考表 **[reference/gacha-creature-classes.md](../creature-system/reference/gacha-creature-classes.md)**。
+
+- **职业差异不只在属性**：部分职业靠 `CreatureInfo.creature_buff` 出生自带 BUFF——6001 哥布林刺客（闪避 50%/暴击 50%/暴伤 200%）、2001 骷髅战士（闪避 20%）、1002 人类弓箭手 & 2002 骷髅投手（暴击 20%/暴伤 200%）、7001 兽人战士（HP<50% 狂暴 ATK+50%）。**CRT/EVA/CDMG 不在 `CreatureInfo` 属性列里**，基础值 `0/0/1.5`，全靠这类 BUFF。
+- 骷髅族（2001~2004）全员 `attack_search_back=1`：正面无目标时可**转身攻击身后**。
+- 元素异常概率配在 `excel_attackmode_info.buff`（格式 `BUFFID:创建概率`）：法师系 25%，骷髅法师（单体）50% 且用强化版 DEBUFF。
+
 ## 系统架构
 
 ```
@@ -94,9 +102,9 @@ userData.AddBackpackCreature(creatureData) + SaveUserData()   // 入账并落盘
 - **生物 ID 区间(creature_ids)**：人类 1001-1004、骷髅 2001-2004、史莱姆 3001-3004、魅魔 4001-4004（4005 盾之魅魔已于 2026-10 移除，愈之魅魔 4002 改血甲双补）、牛头人 5001-5004、哥布林 6001-6005、兽人 7001-7004
 - **pre_unlock_ids 解锁表达式**：逗号 `,` 分隔的是 **AND** 条件组；竖线 `|` 分隔的是组内 **OR** 选项。例 `"A,B|C|D"` = `A 且 (B 或 C 或 D)`。判定走 `userUnlock.CheckIsUnlock(...)`
 
-### 职业独立扭蛋（30 职业 × 3 档 = 90 条）
+### 职业独立扭蛋（29 职业 × 3 档 = 87 条）
 
-每种可抽职业（30 种：7 族各 4~5 个职业）有独立的 x1/x5/x10 扭蛋，**必中该职业**（creature_ids 单职业），其余随机（皮肤/属性/稀有度）与混合抽同口径：
+每种可抽职业（29 种：7 族各 4~5 个职业）有独立的 x1/x5/x10 扭蛋，**必中该职业**（creature_ids 单职业），其余随机（皮肤/属性/稀有度）与混合抽同口径：
 
 - **价格** = 该族混合抽对应档位 ×10（如人类战士 x1=200、x5=1000、x10=2000；骷髅战士 x1=100；史莱姆系 x5=2000、x10=4000）
 - **解锁**：`pre_unlock_ids` = 对应职业扭蛋研究 unlock_id（`300X1NNND`，见 research-system SKILL「魔物分支-职业扭蛋研究」），研究解锁后商店项自动出现
@@ -107,7 +115,7 @@ userData.AddBackpackCreature(creatureData) + SaveUserData()   // 入账并落盘
 
 - **Excel 源表**：`Assets/Data/Excel/excel_store_gashaponmachine_info[商店-扭蛋机].xlsx`（工作表 `StoreGashaponMachineInfo`，数据从第 4 行起，前 3 行为表头/类型/注释）
 - **派生 JSON**：`Assets/Resources/JsonText/StoreGashaponMachineInfo.txt`（由 `ExcelEditorWindow` 导出，理论可再生，改配置必须落到 Excel）
-- 共 111 条：7 族群 × 3 档位混合抽（21 条）+ 30 职业 × 3 档位职业独立抽（90 条）
+- 共 108 条：7 族群 × 3 档位混合抽（21 条）+ 29 职业 × 3 档位职业独立抽（87 条）
 
 > 修改配置数据务必改 Excel；仅改 JSON 会在下次导出时被覆盖丢失。新增行按 id 升序插入。
 

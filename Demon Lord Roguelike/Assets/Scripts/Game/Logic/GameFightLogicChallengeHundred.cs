@@ -109,12 +109,8 @@ public class GameFightLogicChallengeHundred : GameFightLogic
     /// </summary>
     public void ActionForUIRewardSelectEnd()
     {
-        //通关声望奖励: 解锁「挑战100勇士通关获得声望」研究后, 按冻结难度配置 reward_reputation 增加玩家声望(存档前发放,随存档落盘)
         AddReputationForChallengeHundredComplete(fightData as FightBeanForChallengeHundred);
-        //通关一次世界: 回满刷新次数 + 清空全部传送门世界(下次打开传送门UI时全量重新生成); 随 EndGameAndReturnToBase 的 SaveUserData 一并落盘
-        var userTempData = GameDataHandler.Instance.manager.GetUserData().GetUserTempData();
-        userTempData.RefillPortalRefreshNum();
-        userTempData.ClearPortalWorldInfoRandomData();
+        //挑战100勇士世界只能挑战一次: 消耗本场传送门世界由 EndGameAndReturnToBase 统一处理(只移除该世界、下次补生成新世界, 不回满刷新次数)
         EndGameAndReturnToBase();
     }
     #endregion
@@ -171,7 +167,7 @@ public class GameFightLogicChallengeHundred : GameFightLogic
     }
 
     /// <summary>
-    /// 结束游戏返回基地
+    /// 结束游戏返回基地(胜利领奖结束/失败结算结束都经此处)
     /// </summary>
     private void EndGameAndReturnToBase()
     {
@@ -180,6 +176,8 @@ public class GameFightLogicChallengeHundred : GameFightLogic
         {
             //战斗run结束(输赢皆经此处): 显式分发议案EndGame消耗钩子(各议案自身按模式门控, 征服专属议案不会在本模式消耗)
             userData.GetUserTempData().TriggerDoomCouncil(TriggerTypeDoomCouncilEntityEnum.GameFightLogicEndGame);
+            //挑战100勇士世界只能挑战一次: 输赢皆消耗本场传送门世界(只移除该世界, 下次打开传送门UI按缺口补生成新世界; 不回满刷新次数)
+            ConsumeCurrentPortalWorld();
             //清理深渊馈赠数据
             BuffHandler.Instance.manager.ClearAbyssalBlessing();
             //存盘前还原阵容生物战斗状态(Fight/Rest → Idle)，避免中间状态写入存档导致阵容只剩1个
@@ -189,6 +187,16 @@ public class GameFightLogicChallengeHundred : GameFightLogic
             //返回基地
             WorldHandler.Instance.EnterGameForBaseScene(userData);
         }, false);
+    }
+
+    /// <summary>
+    /// 中途结束战斗(系统界面「结束战斗」, 含 ESC 调出系统界面后的退出)
+    /// 挑战100勇士世界有一次挑战机会, 中途放弃同样视为挑战结束 → 先消耗该传送门世界, 再走基类返回基地流程
+    /// </summary>
+    public override void ExitFightAndReturnToBase()
+    {
+        ConsumeCurrentPortalWorld();
+        base.ExitFightAndReturnToBase();
     }
     #endregion
 }

@@ -63,8 +63,10 @@ public class BuffEntityAttribute : BuffBaseEntity, IAttributeModifierSource
     }
 
     /// <summary>
-    /// 把指定属性的 val(Flat) / rate(PercentAdd) 追加为 modifier（val/rate 需已含 stack 缩放）。
-    /// CRT/EVA：rate 本身是百分比绝对值，直接 Flat 累加；其他属性：val 走 Flat，rate 走 PercentAdd。
+    /// 把指定属性的 val(Flat) / rate 追加为 modifier（val/rate 需已含 stack 缩放）。
+    /// CRT/EVA/CDMG：rate 本身是百分比绝对值，直接 Flat 累加；
+    /// ASPD：rate 是攻速百分比，按 <see cref="CreatureUtil.ASPD_POINT_PER_FREQUENCY_RATE"/> 换算成 ASPD 点数后走 Flat（基础 ASPD 恒为 0，百分比通道恒无效）；
+    /// 其他属性：val 走 Flat，rate 走 PercentAdd。
     /// 供单属性(EmitModifiers 上方重载)与多属性(BuffEntityAttributeMulti)按每个属性各自缩放后复用。
     /// </summary>
     public static void EmitModifiers(List<AttributeModifier> sink, CreatureAttributeTypeEnum attributeType, float val, float rate, object source)
@@ -77,6 +79,13 @@ public class BuffEntityAttribute : BuffBaseEntity, IAttributeModifierSource
                 //CRT/EVA/CDMG：rate 本身是百分比绝对值（如 +15%），直接累加（CDMG为暴击伤害倍率加成，基础1.5）
                 if (rate != 0f)
                     sink.Add(new AttributeModifier { attributeType = attributeType, channel = ModifierChannel.Flat, value = rate, source = source });
+                break;
+            case CreatureAttributeTypeEnum.ASPD:
+                //ASPD：基础值恒为 0（生物配置全为 0），百分比通道 0×(1+rate) 恒等于 0；改为把攻速百分比换算成点数(每100%=20点)后与 flat 线性叠加
+                if (val != 0f)
+                    sink.Add(new AttributeModifier { attributeType = attributeType, channel = ModifierChannel.Flat, value = val, source = source });
+                if (rate != 0f)
+                    sink.Add(new AttributeModifier { attributeType = attributeType, channel = ModifierChannel.Flat, value = CreatureUtil.AspdRateToPoint(rate), source = source });
                 break;
             default:
                 if (val != 0f)
@@ -113,7 +122,8 @@ public class BuffEntityAttribute : BuffBaseEntity, IAttributeModifierSource
 
     /// <summary>
     /// 兼容层：把指定属性的 val / rate（需已含 stack 缩放）应用到 targetData。
-    /// CRT/EVA：rate 直接加为绝对百分点；其他属性：先 +val，再 ×(1+rate)。
+    /// CRT/EVA：rate 直接加为绝对百分点；ASPD：rate 换算成 ASPD 点数后与 val 线性叠加；
+    /// 其他属性：先 +val，再 ×(1+rate)。
     /// 供单属性与多属性(BuffEntityAttributeMulti)按每个属性各自缩放后复用。
     /// </summary>
     public static float ChangeData(CreatureAttributeTypeEnum targetAttributeType, float targetData, float val, float rate)
@@ -124,6 +134,10 @@ public class BuffEntityAttribute : BuffBaseEntity, IAttributeModifierSource
             case CreatureAttributeTypeEnum.EVA:
             case CreatureAttributeTypeEnum.CDMG:
                 targetData += rate;
+                break;
+            case CreatureAttributeTypeEnum.ASPD:
+                //ASPD：基础值恒为 0，百分比通道无效；攻速百分比换算成点数(每100%=20点)后与 flat 线性叠加
+                targetData += val + CreatureUtil.AspdRateToPoint(rate);
                 break;
             default:
                 targetData += val;

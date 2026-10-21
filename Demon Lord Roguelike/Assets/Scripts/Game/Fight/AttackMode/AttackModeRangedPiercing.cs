@@ -5,6 +5,8 @@ using System.Collections.Generic;
 /// 远程穿透弹道：直线飞行，可依次穿透多个目标，每个目标只打一次，穿满 numPierceMax 个后销毁。
 /// <para>命中检测复用 <see cref="AttackModeRanged"/> 的单射线批处理（穿透靠读同一条射线的多命中窗口，
 /// 上限见 <see cref="FightRaycastBatch.MaxHitsPerRay"/>）。</para>
+/// <para>【配置】攻击模块表 hit_max &gt; 0 时覆盖穿透数上限（&lt;=0/空 时沿用类内默认 3）：
+/// 兽人弓箭手 205001 = 3（贯穿直线但最多 3 个）。</para>
 /// </summary>
 public class AttackModeRangedPiercing : AttackModeRanged
 {
@@ -16,6 +18,19 @@ public class AttackModeRangedPiercing : AttackModeRanged
     #endregion
 
     #region 开始攻击
+    /// <summary>
+    /// 开始攻击基础：按攻击模块表 hit_max 覆盖穿透数上限（>0 生效，0/空=沿用类内默认值）。
+    /// <para>放在 StartAttackBase 里，「生物对战」与「纯数据发射」两条路径都能读到配置。</para>
+    /// </summary>
+    public override void StartAttackBase()
+    {
+        base.StartAttackBase();
+        if (attackModeInfo != null && attackModeInfo.hit_max > 0)
+        {
+            numPierceMax = attackModeInfo.hit_max;
+        }
+    }
+
     /// <summary>
     /// 开始攻击-默认
     /// </summary>

@@ -298,7 +298,7 @@ public enum UnlockEnum : long
 | `PortalPreviewRoadLength` | 100300004 | 路径长度 | RoadLength | UI 文本 id 414；无尽模式不展示 |
 | `PortalPreviewReward` | 100300005 | 奖励道具 | 奖励缓存池(`ui_UIViewItem` 模板) | 无尽模式不展示 |
 
-> 同段 `PortalShowNum`(100300001) 为传送门显示数量、`PortalRefreshNum`(100300006) 为传送门刷新次数（研究等级=可用刷新次数上限，`level_max=10`，每通关一次世界回满；`UIBasePortal` 用 `CheckIsUnlockPortalRefresh` 门控刷新按钮显隐、`GetUnlockPortalRefreshMax` 取上限），均属同一 1003 设施段。上述节点均落在 `excel_research_info`(各一条 `research_type=1` 节点) + `excel_unlock_info`(`unlock_type=0`，`id` 同 `unlock_id`) + 多语言 `Language_ResearchInfo`(节点名 textId)。
+> 同段 `PortalShowNum`(100300001) 为传送门显示数量、`PortalRefreshNum`(100300006) 为传送门刷新次数（研究等级=可用刷新次数上限，`level_max=10`，**征服**每通关一次世界回满；无尽/挑战100勇士挑战结束只消耗该世界、不回满；`UIBasePortal` 用 `CheckIsUnlockPortalRefresh` 门控刷新按钮显隐、`GetUnlockPortalRefreshMax` 取上限），均属同一 1003 设施段。上述节点均落在 `excel_research_info`(各一条 `research_type=1` 节点) + `excel_unlock_info`(`unlock_type=0`，`id` 同 `unlock_id`) + 多语言 `Language_ResearchInfo`(节点名 textId)。
 
 **UI 门控范例**（`UIPopupPortalDetails`）：用 `UserUnlock.CheckIsUnlock(UnlockEnum)` 决定每个详情项是否显示，未解锁整行隐藏：
 
@@ -368,9 +368,9 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 - 落表同其他节点：`excel_research_info`(id=201000001, `name`=同id) + `excel_unlock_info`(id=201000001, `unlock_type=0`) + 多语言 `ResearchInfo`(id=201000001, cn「阵容重命名」) 与 `UIText`(id=30008, cn「重命名当前阵容」按钮气泡)。
 - 无衍生数值方法（纯开关），UI 直接用 `CheckIsUnlock(UnlockEnum.LineupRename)` 门控。
 
-### 魔物分支(300X1NNND 段) — 职业独立扭蛋研究（30 职业 × 3 档 = 90 节点）
+### 魔物分支(300X1NNND 段) — 职业独立扭蛋研究（29 职业 × 3 档 = 87 节点）
 
-每个可抽职业（30 种：7 族各 4~5 个）有 x1/x5/x10 三个「职业独立扭蛋」解锁研究（`research_type=3` 魔物分支），解锁后扭蛋商店出现对应「必中该职业」的独立扭蛋商品（见 gashapon-system SKILL「职业独立扭蛋」）：
+每个可抽职业（29 种：7 族各 4~5 个）有 x1/x5/x10 三个「职业独立扭蛋」解锁研究（`research_type=3` 魔物分支），解锁后扭蛋商店出现对应「必中该职业」的独立扭蛋商品（见 gashapon-system SKILL「职业独立扭蛋」）：
 
 - **id 编码**：研究 id = unlock_id = `300X1NNND`（X=种族 1~7，NNN=职业序号 001~005=职业 id 个位两位，D=档位 1=x1/2=x5/3=x10）。例：`300110011`=人类战士(1001)x1 研究、`300410043`=魅魔奥之魅魔(4004)x10 研究。与现有 300X00xxx 段（种族/职业/x5/x10/转生/装备奖励）不冲突。（注：魅魔 005 盾之魅魔系列 300400005/300410051~053 已于 2026-10 随生物移除）
 - **前置链**：x1 研究 `pre_unlock_ids`=该族「孕育x10」研究（`300X00102`）**且** `pre_data`=`GashaponCreatureDrawCount{职业id}:99`（该职业扭蛋累计抽出 99 只才显示，混合抽抽出也计数）；x5 pre=x1 研究；x10 pre=x5 研究。

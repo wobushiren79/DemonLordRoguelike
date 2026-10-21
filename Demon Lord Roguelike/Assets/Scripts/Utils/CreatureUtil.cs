@@ -68,6 +68,25 @@ public static class CreatureUtil
     }
     #endregion
 
+    #region 攻速换算
+    /// <summary>
+    /// 攻速属性(ASPD)的换算基准：每 100% 攻速对应的 ASPD 点数。
+    /// <para>攻击频率 = 1 + 0.05 × ASPD（见 FightCreatureBean.GetAttackTimeData），故 20 点 = 攻速 +100%。</para>
+    /// <para>用于把 BUFF 的 trigger_value_rate（攻速百分比）换算成 ASPD 点数：生物基础 ASPD 恒为 0，百分比通道对它无效。</para>
+    /// </summary>
+    public const float ASPD_POINT_PER_FREQUENCY_RATE = 20f;
+
+    /// <summary>
+    /// 把「攻速百分比」换算成 ASPD 点数（如 +100% 攻速 = +20 点）。
+    /// </summary>
+    /// <param name="rate">攻速百分比（1 = +100%）</param>
+    /// <returns>对应的 ASPD 点数增量</returns>
+    public static float AspdRateToPoint(float rate)
+    {
+        return rate * ASPD_POINT_PER_FREQUENCY_RATE;
+    }
+    #endregion
+
     #region 生物加点
     /// <summary>
     /// 获取「单个属性加点」对应增加的属性数值。

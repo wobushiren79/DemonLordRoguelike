@@ -15,6 +15,7 @@ watched_files:
 
 ### 框架层 UI 组件
 - **ScrollGrid** - 滚动网格（Horizontal/Vertical/Cell/BaseContent）。`SetCellCount` 重建时「保持位置」（offsetMin 按旧 offsetMax 换算滚动偏移不变），重建后已主动补一次 `OnValueChange` 复用校正——否则 content 位置不变时 ScrollRect 不再派发 onValueChanged，新 cell 全停在顶部导致视野处列表空白（UIAchievement 切页签空白即此坑）；`AddCellListener` 应在 Awake 只注册一次，放 Refresh 里会随每次刷新重复累积
+- **ScrollGrid 两套对齐正交**：`crossAlign`（0=Start/1=Center/2=End，已被 prefab 序列化，**禁止改 int 值**）对齐「整块网格」在交叉轴上的位置；`lastRowAlign`（`ScrollGridLastRowAlign`：0=Start 靠左/1=Center 居中/2=End 靠右）只控制「数据末行不满时」末行元素在整行槽位内的对齐（cellCount 不是每行槽位数整数倍才有空闲槽，纵向=col、横向=allCol）。末行偏移 = 空槽宽度按对齐方式分配（Start=0、Center=空槽总宽/2、End=空槽总宽；Center 且空槽数为奇数时是半格偏移，**不落在格子线上**），由 `CellUpdate` 按行号统一施加。**`ScrollGridCell.layoutPosition` 存「不含末行偏移的规范位置」**：滚动复用搬移（`OnValueChange`）与行列反算（`CellUpdate` 反算 x/y）一律只用它，视觉上的 `anchoredPosition3D` 带偏移，直接反算会把偏移 ceil 成多一列导致 index 错位
 - **SelectView / SelectColorView** - 选择器 / 颜色选择器
 - **CartogramBarView / CartogramBarForItem / CartogramBaseView** - 柱状图组件
 - **ProgressView** - 进度条

@@ -17,7 +17,8 @@ metadata:
 - `UIPopupPortalDetails.SetData((GameWorldInfoBean, GameWorldInfoRandomBean, int difficultyLevel))` 第三参决定展示难度，取该难度那份预生成数据(道路/关卡/路径/奖励)；**传 -1 表示跟随 `gameWorldInfoRandom.difficultyLevel` 当前活动难度**。地图悬停气泡(`UIViewBasePortalItem`)传 **-1**；难度对话框(`UIViewDialogPortalDetailsItem`)各 item 传各自难度号。100勇士自 2026-10 起有独立难度链，按 `GetChallengeHundredRandom(D)`/`GetChallengeHundredReward(D)` 取该档数据。
 - **默认 = 已解锁最高难度(非难度1)**：`GameWorldInfoRandomBean` 构造器里的 `difficultyLevel=1` 只是占位，创建世界时 `SetRandomDataForConquer()` 预生成 `1~unlockDifficultyMax`(=`GetUnlockGameWorldConquerDifficultyLevel(worldId)`) 各难度后，**末尾 `SetDifficultyLevel(unlockDifficultyMax)` 把当前难度置为已解锁最高**。故新生成世界的地图气泡默认就显示已解锁最高难度。
 - **之后跟随对话框选择**：`SetDifficultyLevel` 是全局唯一改 `difficultyLevel`+同步顶层 roadNum/roadLength/fightNum 的入口；仅 `SetRandomDataForConquer`(默认=max) 与 `UIDialogPortalDetails`(打开时 `Clamp(difficultyLevel,1,unlockMax)`、左右滑动切换) 调用。玩家滑到低难度关闭后，气泡随之显示该低难度。
-- **注意边界**：clamp 只向下夹(超过当前解锁上限才降)，**不会**因事后解锁更高难度而自动升；已缓存世界的 difficultyLevel 要到世界重新生成(通关清空 `ClearPortalWorldInfoRandomData` 或手动刷新)才会重取新的已解锁最高。预生成范围是 `1~unlockDifficultyMax`(仅已解锁)，`GetDifficultyRandom` 的懒生成兜底老存档/预览未在预生成集内的难度。
+- **注意边界**：clamp 只向下夹(超过当前解锁上限才降)，**不会**因事后解锁更高难度而自动升；已缓存世界的 difficultyLevel 要到世界重新生成(征服通关清空 `ClearPortalWorldInfoRandomData`、无尽/100勇士挑战结束 `RemovePortalWorldInfoRandomData` 单条消耗、或手动刷新)才会重取新的已解锁最高。预生成范围是 `1~unlockDifficultyMax`(仅已解锁)，`GetDifficultyRandom` 的懒生成兜底老存档/预览未在预生成集内的难度。
+- **研究新解锁难度=懒补齐(2026-10-21)**：预生成列表只在传送门创建时按当时解锁上限建好，之后研究解锁的难度不在列表里。取用时不要自己 `list.Find`——`GetChallengeHundredRandom(D)` 会调 `CreateChallengeHundredRandomByLevel` 懒补齐该**已解锁**档(按当前 BOSS 概率抽行 + `CreateRewardListForChallengeHundred` 生成3箱并冻结)，无尽侧 `GetInfiniteDifficultyRandom(D)` 只补道路数据。修的就是"解锁难度3后气泡不显示该档奖励/切难度战斗仍用旧档冻结行"。
 
 **RewardSelectBean = 奖励生成单一真实源**（`RewardSelectBean.cs`）
 - 私有 `CreateItemEquip/CreateItemCrystal` 改吃 `FightTypeConquerInfoBean`(不再吃 FightBean)；私有 `InitRewardList(conquerInfo,testData)` 收口。

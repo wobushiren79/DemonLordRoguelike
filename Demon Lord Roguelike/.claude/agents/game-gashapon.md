@@ -40,7 +40,8 @@ watched_files:
 ## 约束
 
 - 扭蛋逻辑通过 GashaponMachineLogic 统一管理
-- **职业独立扭蛋**：除 7 族×3 档种族混合抽（id=X000N）外，30 个可抽职业各有 x1/x5/x10 独立扭蛋（id=creatureId×10+档位，creature_ids 单职业必中，价格=族混合抽×10，图标=职业 class_icon_res），解锁走职业扭蛋研究（300X1NNND，见 research-system）；纯配置驱动，抽取逻辑无需改代码
+- **职业独立扭蛋**：除 7 族×3 档种族混合抽（id=X000N）外，29 个可抽职业各有 x1/x5/x10 独立扭蛋（id=creatureId×10+档位，creature_ids 单职业必中，价格=族混合抽×10，图标=职业 class_icon_res），解锁走职业扭蛋研究（300X1NNND，见 research-system）；纯配置驱动，抽取逻辑无需改代码
+- **可抽职业速查（29 个）**：各职业攻击方式、基础属性、自带固有能力（暴击/闪避/暴击伤害）、元素异常概率见 [creature-system 参考表](../skills/creature-system/reference/gacha-creature-classes.md)。注意职业级差异有一部分在 `CreatureInfo.creature_buff`（出生自带 BUFF）而非属性列：6001 哥布林刺客 闪避50%/暴击50%/暴伤200%、2001 骷髅战士 闪避20%、1002/2002 暴击20%/暴伤200%、7001 兽人战士 HP<50% 狂暴；`CRT/EVA/CDMG` 基础值 0/0/1.5 且装备不产出。骷髅族全员可攻击身后（`attack_search_back=1`）
 - 扭蛋道具和普通道具数据隔离
 - 扭蛋机 UI 使用 UIGashapon 前缀命名
 - 稀有度 BUFF 生成两级收口：`RandomRarity()` 定好稀有度后调用 `CreatureBean.RandomRarityBuffForCreate()`（`CreatureBeanPartial.cs`）按稀有度逐级授予；单档随机走 `BuffUtil.CreateRandomRarityBuff(rarityEnum)`（`Assets/Scripts/Utils/BuffUtil.cs`），与**魔物进阶（UICreatureVat）共用同一口径**，并被测试面板 `UITestBase.OnClickForAddTestCreature` 复用。原 `GashaponItemBean.RandomRarityBuff(RarityEnum)` 已删除；改通用规则应改 `BuffUtil` / `RandomRarityBuffForCreate`，不要在 `GashaponItemBean` 内重新内联（详见 buff-system / utils-system skill）

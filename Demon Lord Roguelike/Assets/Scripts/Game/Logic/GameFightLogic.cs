@@ -789,7 +789,7 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>
     /// 当前战斗是否支持重新挑战（系统界面「重新挑战」按钮显隐依据）
     /// 默认不支持；支持的模式重写为 true 并实现 <see cref="CreateRestartFightData"/>。
-    /// 无尽模式(只能挑战一次,无论输赢挑战后世界即刷新)与终焉议会(暴力说服一次性)明确不支持。
+    /// 无尽模式(只能挑战一次,无论输赢/中途放弃挑战后该传送门世界即消耗)与终焉议会(暴力说服一次性)明确不支持。
     /// </summary>
     /// <returns>true=支持重新挑战</returns>
     public virtual bool IsCanRestartFight()
@@ -831,6 +831,22 @@ public class GameFightLogic : BaseGameLogic
             //重新进入战斗场景(内部 ClearWorldData 会走当前逻辑的 ClearGame 完整清理, 再按新数据重开)
             WorldHandler.Instance.EnterGameForFightScene(restartFightData);
         }, false);
+    }
+    #endregion
+
+    #region 传送门世界消耗
+    /// <summary>
+    /// 消耗本场战斗对应的传送门世界（无尽/挑战100勇士语义：挑战结束即消耗该世界，无论输赢或中途放弃）
+    /// <para>仅从传送门随机数据中移除该世界，不回满刷新次数；下次打开传送门UI时 InitMap 按数量缺口自动补生成一个新世界，其余世界保持不变。</para>
+    /// <para>征服模式不走此方法（征服=通关全换地图 + 回满刷新次数）。</para>
+    /// </summary>
+    /// <returns>true=已从传送门列表中移除该世界</returns>
+    protected bool ConsumeCurrentPortalWorld()
+    {
+        GameWorldInfoRandomBean worldRandom = fightData?.GetGameWorldInfoRandomData();
+        if (worldRandom == null)
+            return false;
+        return GameDataHandler.Instance.manager.GetUserData().GetUserTempData().RemovePortalWorldInfoRandomData(worldRandom);
     }
     #endregion
 

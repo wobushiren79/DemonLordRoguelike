@@ -441,6 +441,7 @@ public class BaseUIComponent : BaseUIInit
 
 - **UIHoverCardView** - 小丑牌(Balatro)风格通用悬停组件：鼠标进入弹起放大(OutBack)+上抬，卡面内移动时朝光标方向 3D 倾斜(欠阻尼弹簧驱动，快速划过甩动、松手回摆)，悬停静止期间叠加双轴错相持续摆动(`idleSwayAngle`/`idleSwayFrequency`，0=关闭)，移出还原；大列表性能设计：不调基类Awake(不反射链接/不注册按钮)、输入注册重写为空、父Canvas缓存；支持 `SetHoverSuppressed(bool)` 被其他动画独占变换时抑制、`RefreshOriginalTransform()` 外部永久改变换后重缓存(Awake+Start 自动各缓存一次)；事件沿射线接收层冒泡，可挂 item 根节点或独立子节点
 - **PopupShowView 已内建出现/消失动画**：`isAnimForShow/isAnimForHide/isAnimWithFade` 开关 + `AnimForShow/AnimForHide/ShowWithAnim/HideWithAnim` virtual 方法，UIHandler.ShowPopup/HidePopup 已收口走带动画路径
+- **ScrollGrid 末行元素对齐 `lastRowAlign`**（`ScrollGridLastRowAlign`：Start 靠左 / Center 居中 / End 靠右）：与 `crossAlign`（整块网格交叉轴对齐，0/1/2 已序列化不可改）正交，只在「末行不满」（cellCount 非每行槽位数整数倍）时把末行元素在整行槽位内居中/靠右。偏移 = 空槽总宽按对齐方式分配（Center 且空槽为奇数时是半格偏移），`ScrollGridCell.layoutPosition` 保存不含偏移的规范位置——复用搬移与行列反算必须用它，不能用视觉位置 `anchoredPosition3D`
 
 ---
 

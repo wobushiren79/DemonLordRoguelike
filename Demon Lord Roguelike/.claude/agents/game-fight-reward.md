@@ -66,8 +66,8 @@ watched_files:
 - **GameFightLogicConquer** - 征服模式，多关卡 run 的领奖流程（BOSS 关通关领奖，4箱首箱保底）
 - **GameFightLogicDoomCouncil** - 终焉议会，结算展示投票结果，**无领奖界面**
 - **GameFightLogicTest** - 测试模式，Next 重启战斗，**不发奖不存档**
-- **GameFightLogicChallengeHundred** - 挑战100勇士（单关100只怪）：100勇士自 2026-10 起有独立难度链、传送门详情弹窗可切换，`difficultyLevel`=本场所选/冻结难度，每档独立预生成配置行/道路/奖励；胜利→发阵容经验(行 `reward_exp` 按该难度取档)→结算UI→Next→UIRewardSelect **全手动开箱**（无首箱保底，可开数=奖励总数（普通3/BOSS装备6)，不套征服 `Count-1` 钳制；奖励调 `GetChallengeHundredReward(difficultyLevel)`）；失败→直接返回基地；**不发成就、无关卡间深渊馈赠；通关声望受研究 ChallengeHundredReputationReward(100200011) 门控，领奖结束 `ActionForUIRewardSelectEnd` 调 `AddReputationForChallengeHundredComplete` 按该难度 `reward_reputation` 发放**
-- **GameFightLogicInfinite** - 无尽模式（进攻队列耗尽自动续下一轮永不胜利，魔王死亡即失败）：失败结算仅打开 `UIFightSettlement` 战绩排行榜（`ActionForUIFightSettlementExit` 直接返回基地），**无宝箱/经验/声望/成就**（魔晶战斗中即时入账，退出时统一落盘；保留议案 EndGame 消耗钩子+清深渊馈赠+还原阵容状态）
+- **GameFightLogicChallengeHundred** - 挑战100勇士（单关100只怪）：100勇士自 2026-10 起有独立难度链、传送门详情弹窗可切换，`difficultyLevel`=本场所选/冻结难度，每档独立预生成配置行/道路/奖励；胜利→发阵容经验(行 `reward_exp` 按该难度取档)→结算UI→Next→UIRewardSelect **全手动开箱**（无首箱保底，可开数=奖励总数（普通3/BOSS装备6)，不套征服 `Count-1` 钳制；奖励调 `GetChallengeHundredReward(difficultyLevel)`）；失败→直接返回基地；**不发成就、无关卡间深渊馈赠；通关声望受研究 ChallengeHundredReputationReward(100200011) 门控，领奖结束 `ActionForUIRewardSelectEnd` 调 `AddReputationForChallengeHundredComplete` 按该难度 `reward_reputation` 发放**；输赢/中途放弃都经 `EndGameAndReturnToBase`/`ExitFightAndReturnToBase` 里的 `ConsumeCurrentPortalWorld()` 消耗该传送门世界（只移除该世界、下次补生成新世界，不回满刷新次数）
+- **GameFightLogicInfinite** - 无尽模式（进攻队列耗尽自动续下一轮永不胜利，魔王死亡即失败）：失败结算仅打开 `UIFightSettlement` 战绩排行榜（`ActionForUIFightSettlementExit` 直接返回基地），**无宝箱/经验/声望/成就**（魔晶战斗中即时入账，退出时统一落盘；保留议案 EndGame 消耗钩子+`ConsumeCurrentPortalWorld()`消耗该传送门世界+清深渊馈赠+还原阵容状态；ESC「结束战斗」中途放弃同样消耗）
 
 ### 掉落
 - **FightCreatureEntity.DropCrystal** - 生物死亡掉落水晶（数量按模式分流：默认 1；Conquer 吃 `fightTypeConquerInfo.drop_crystal`；ChallengeHundred 吃冻结行 `fightTypeChallengeHundredInfo.drop_crystal`，冻结数据为空保持默认 1；Infinite 取同难度征服行 `drop_crystal`（经 `FightBeanForInfinite.fightTypeConquerInfo.drop_crystal`），不随轮次变化），生成 `FightDropCrystalBean` → `FightHandler.CreateDropCrystal` → 触发 `GameFightLogic_CreatureDeadDropCrystal` 事件（BUFF 可监听追加掉落）；存在时长 = `FightDropCrystalBean.BASE_LIFE_TIME`(30s) + 研究加成 `UserUnlockBean.GetUnlockDropCrystalAddLifeTime()`(强化研究 `UnlockEnum.DropCrystalLifeTime`=200200001 每级+5秒)，在 `DropCrystal` 内显式赋值避免对象池脏数据
@@ -105,8 +105,8 @@ watched_files:
      │        .InitDataForReward(gameWorldInfoRandomData.GetChallengeHundredReward(gameWorldInfoRandomData.difficultyLevel)/*按本场难度取传送门逐难度预生成冻结的宝箱, 预览=实领, 普通3/BOSS6*/, null, 0)
      │        → UIRewardSelect.SetData(..., isClearLastGame: true) → 全手动开箱(selectNumMax=奖励总数)
      └─ 失败: EndGameAndReturnToBase()
- → ActionForUIRewardSelectEnd: AddReputationForChallengeHundredComplete(研究100200011门控,按冻结难度 reward_reputation 发放声望) + userTempData.RefillPortalRefreshNum() + ClearPortalWorldInfoRandomData()（通关一次世界回满刷新次数+清空传送门，随存档落盘）
- → EndGameAndReturnToBase()（不发成就，无深渊馈赠介入）
+ → ActionForUIRewardSelectEnd: AddReputationForChallengeHundredComplete(研究100200011门控,按冻结难度 reward_reputation 发放声望)
+ → EndGameAndReturnToBase()（不发成就，无深渊馈赠介入；内部 ConsumeCurrentPortalWorld()：100勇士世界只能挑战一次，输赢/中途放弃都只移除该传送门世界、下次打开传送门UI补生成新世界，不回满刷新次数、不全清地图）
 ```
 
 ## 奖励生成规则（RewardSelectBean，单一真实源）
@@ -122,7 +122,7 @@ watched_files:
 
 > 魔晶数量来源 `reward_crystal`（string 单值/区间）、装备稀有度 `reward_equip_rarity` / `RarityInfo.equip_attribute_add`；生成入口统一在 `FightTypeConquerInfoBean`，走"传送门预生成 + 通关消费"链路。
 > **通关领奖**走 `InitDataForReward`，消费传送门预生成的 `baseReward`；奖励多多额外件数追加在基础奖励**之后**（装备道具，生成不出装备兜底魔晶）。
-> **挑战100勇士不走 `InitRewardList`**：`CreateRewardListForChallengeHundred(challengeHundredInfo, difficultyLevel)` 直接循环调抽取出的 `CreateItemEquipCore`/`CreateItemCrystalCore`（装备池空→全魔晶，否则全装备；BOSS挑战翻倍：装备6件/魔晶x2），**逐难度**预生成/冻结在 `GameWorldInfoRandomBean.SetRandomDataForChallengeHundred`（`listChallengeHundredRandom` 每档含 `listRewardChallengeHundred`+`rewardUnlockSignChallengeHundred`），领奖取 `GetChallengeHundredReward(difficultyLevel)`（签名失效按该难度重生成，同征服契约）。
+> **挑战100勇士不走 `InitRewardList`**：`CreateRewardListForChallengeHundred(challengeHundredInfo, difficultyLevel)` 直接循环调抽取出的 `CreateItemEquipCore`/`CreateItemCrystalCore`（装备池空→全魔晶，否则全装备；BOSS挑战翻倍：装备6件/魔晶x2），**逐难度**预生成/冻结在 `GameWorldInfoRandomBean.SetRandomDataForChallengeHundred`（`listChallengeHundredRandom` 每档含 `listRewardChallengeHundred`+`rewardUnlockSignChallengeHundred`），领奖取 `GetChallengeHundredReward(difficultyLevel)`（签名失效按该难度重生成，同征服契约）；**传送门创建后研究新解锁的难度**在首次访问时由 `GetChallengeHundredRandom` 懒补齐(`CreateChallengeHundredRandomByLevel`，含 `CreateRewardListForChallengeHundred`)，保证新解锁难度气泡预览/战斗/结算都有同一份奖励。
 
 ## 关键文件
 

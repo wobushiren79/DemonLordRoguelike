@@ -407,8 +407,9 @@ MonoBehaviour:
   paddingRight: 0
   paddingTop: 0
   paddingBottom: 0
-  crossAlign: 0
-  editorPreviewCount: 20
+  crossAlign: 1
+  lastRowAlign: 0
+  editorPreviewCount: 6
   verticalScrollbar: {fileID: 8778000991941688920}
 --- !u!1 &8609229038803281881
 GameObject:

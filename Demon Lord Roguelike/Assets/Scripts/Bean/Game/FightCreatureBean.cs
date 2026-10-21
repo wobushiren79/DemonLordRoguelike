@@ -230,8 +230,8 @@ public class FightCreatureBean
         return colorBodyCurrent;
     }
 
-    /// <summary>每点攻速的攻击频率收益（线性：频率倍率 = 1 + 攻速×本值）</summary>
-    public const float ASPD_FREQUENCY_RATE_PER_POINT = 0.05f;
+    /// <summary>每点攻速的攻击频率收益（线性：频率倍率 = 1 + 攻速×本值）；与 CreatureUtil.ASPD_POINT_PER_FREQUENCY_RATE（每100%攻速=20点）互为倒数</summary>
+    public const float ASPD_FREQUENCY_RATE_PER_POINT = 1f / CreatureUtil.ASPD_POINT_PER_FREQUENCY_RATE;
     /// <summary>每累积多少点攻速转化为 1 次额外攻击（0.2 秒窗口连发，由攻击意图调度）</summary>
     public const float ASPD_POINT_PER_EXTRA_ATTACK = 20f;
     /// <summary>攻击频率倍率下限（负攻速兜底，防 debuff 把频率压到 0 导致永不攻击）</summary>

@@ -51,8 +51,8 @@ public partial class UIPopupPortalDetails : PopupShowCommonView
         }
         else if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Infinite)
         {
-            //不走 GetDifficultyRandom(其懒生成会连带生成征服通关奖励, 无尽无奖励); 只读创建时已预生成的道路数据
-            GameWorldDifficultyRandomBean difficultyRandom = gameWorldInfoRandom.listDifficultyRandom?.Find(item => item.difficultyLevel == difficultyLevel);
+            //不走 GetDifficultyRandom(其懒生成会连带生成征服通关奖励, 无尽无奖励); 只读道路数据(未预生成的新解锁难度由该方法懒补齐)
+            GameWorldDifficultyRandomBean difficultyRandom = gameWorldInfoRandom.GetInfiniteDifficultyRandom(difficultyLevel);
             if (difficultyRandom != null)
             {
                 roadNum = difficultyRandom.roadNum;

@@ -49,9 +49,11 @@ watched_files:
     ├─ GameFightLogicChallengeHundred.HandleForChangeGameStateSettlement（单关100只怪）
     │     ├─ 胜利 → 发阵容经验(行 reward_exp) → 弹结算UI → Next → 弹 UIRewardSelect（3箱3抽全手动开箱，无首箱保底）
     │     └─ 失败 → 弹结算UI → Next → 直接返回基地（无奖励）；不发成就、无关卡间深渊馈赠（胜利通关声望受研究门控，见下「声望」）
+    │     └─ 收尾（赢/输/中途放弃）→ ConsumeCurrentPortalWorld()：只移除该100勇士传送门世界，下次打开传送门UI按缺口补生成新世界，不回满刷新次数、不全清地图
     │
     └─ GameFightLogicInfinite（无尽模式：进攻队列耗尽自动续下一轮永不胜利，魔王死亡即失败）
           └─ 失败 → 弹结算UI（仅战绩排行榜）→ Next=退出 → 直接返回基地（无宝箱/经验/声望/成就；魔晶战斗中即时入账，退出时统一落盘）
+          └─ 收尾 → ConsumeCurrentPortalWorld()：无尽世界只能挑战一次，输赢/ESC「结束战斗」中途放弃都只移除该世界并补生成新世界，不回满刷新次数
 
 UIFightSettlement (结算排行榜，只展示)
     │  数据源: FightBean.fightRecordsData (FightRecordsBean)
@@ -209,7 +211,7 @@ Excel 源表 `excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xl
 | `reward_reputation` | **string 逐难度对齐**，通关声望奖励：领奖结束按冻结难度发放（`GetRewardReputation(冻结难度)` 取档；≤0 不发放），受研究 `UnlockEnum.ChallengeHundredReputationReward`(100200011) 门控；当前值=难度等级（与征服 1~10 同口径）。**字段暂在 Partial**（仿 pre_data 先例，重新生成 Entity 后删除临时字段） |
 | `challenge_type` | int，0=普通挑战；**1=BOSS挑战→通关宝箱奖励翻倍**：装备不可堆叠走件数 x2（3箱→6箱=6件装备），魔晶可堆叠走单箱数量 x2（仍3箱）；`IsBossChallenge()` 判定，`CreateRewardListForChallengeHundred(行, 冻结难度)` 内统一处理（含装备兜底魔晶也 x2） |
 
-> 模式差异要点：**全手动开箱**（`isAutoOpenFirstBox=false`，无首箱保底）、可开宝箱数=奖励总数（`selectNumMax=listReward.Count`，普通 3 / BOSS 装备 6）、装备池空则全魔晶、**无成就/深渊馈赠**（`ActionForUIRewardSelectEnd` 发放通关声望(研究100200011门控) + 回满传送门刷新次数+清空传送门随机数据后返回基地）。逐难度对齐字段取值依据=传送门**所选/冻结的100勇士难度**（独立研究链，详情弹窗内可切换，默认最高已解锁），预览=实领。
+> 模式差异要点：**全手动开箱**（`isAutoOpenFirstBox=false`，无首箱保底）、可开宝箱数=奖励总数（`selectNumMax=listReward.Count`，普通 3 / BOSS 装备 6）、装备池空则全魔晶、**无成就/深渊馈赠**（`ActionForUIRewardSelectEnd` 发放通关声望(研究100200011门控)，随后 `EndGameAndReturnToBase` 里 `ConsumeCurrentPortalWorld()` 只移除该100勇士传送门世界、下次打开传送门UI补生成新世界后返回基地；不回满刷新次数、不全清地图）。逐难度对齐字段取值依据=传送门**所选/冻结的100勇士难度**（独立研究链，详情弹窗内可切换，默认最高已解锁），预览=实领。
 
 ## 征服关卡经验奖励（生物成长经验 levelExp）
 
@@ -251,7 +253,7 @@ Excel 源表 `excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xl
 
 ### 修改传送门预生成奖励 / 预览
 - 奖励的预生成与冻结在 `GameWorldInfoBeanPartial.CreateDifficultyRandom`，存到 `GameWorldDifficultyRandomBean.listReward`（并记录 `rewardUnlockSign`）；取用走 `GameWorldInfoRandomBean.GetDifficultyReward(difficulty)`。生成调的就是本 Skill 的 `RewardSelectBean.CreateRewardListForConquer(conquerInfo)`。完整数据/流程归 [`conquer-system`](../conquer-system/SKILL.md)。
-- **挑战100勇士同契约**：`GameWorldInfoRandomBean.SetRandomDataForChallengeHundred` 按 `1~已解锁最高100勇士难度` **逐难度预生成** 3 箱奖励到 `listChallengeHundredRandom`（每档含 `listRewardChallengeHundred` + `rewardUnlockSignChallengeHundred`），取用走 `GetChallengeHundredReward(difficultyLevel)`（未生成/装备池签名失效时按该难度重生成）；生成调 `RewardSelectBean.CreateRewardListForChallengeHundred(challengeHundredInfo, difficultyLevel)`；气泡预览全量 3 箱（非首箱），悬停非当前难度item时展示该档自己的奖励。
+- **挑战100勇士同契约**：`GameWorldInfoRandomBean.SetRandomDataForChallengeHundred` 按 `1~已解锁最高100勇士难度` **逐难度预生成** 3 箱奖励到 `listChallengeHundredRandom`（每档含 `listRewardChallengeHundred` + `rewardUnlockSignChallengeHundred`），取用走 `GetChallengeHundredReward(difficultyLevel)`（未生成/装备池签名失效时按该难度重生成；**传送门创建后研究新解锁的难度由 `GetChallengeHundredRandom` 懒补齐**，补齐时同样调 `CreateRewardListForChallengeHundred`）；生成调 `RewardSelectBean.CreateRewardListForChallengeHundred(challengeHundredInfo, difficultyLevel)`；气泡预览全量 3 箱（非首箱），悬停非当前难度item时展示该档自己的奖励。
 - **重新生成时机**：`listReward` 为空（老存档）或装备奖励池签名变化（`rewardUnlockSign != GetConquerEquipPoolSign()`，即解锁了新魔物掉落）时，`GetDifficultyReward` 会按 `FightTypeConquerInfo` 重新生成并刷新签名。
 - 传送门详情 `UIPopupPortalDetails` 的"奖励道具"区**只展示这份预生成奖励的首箱保底位**（`listReward[0]` 组单件列表喂 `ui_UIViewItem` 模板缓存池），受"设施"研究门控 `UnlockEnum.PortalPreviewReward`(100300005)；无尽模式不展示奖励。门控与 UI 细节归 `conquer-system` / `research-system`。
 

@@ -32,11 +32,21 @@ public class GameFightLogicInfinite : GameFightLogic
     }
 
     /// <summary>
-    /// 无尽模式不支持重新挑战（无尽世界只能挑战一次：无论输赢挑战结束后传送门世界即刷新，系统界面不显示「重新挑战」）
+    /// 无尽模式不支持重新挑战（无尽世界只能挑战一次：无论输赢挑战结束后该传送门世界即消耗、下次打开传送门UI补生成新世界，系统界面不显示「重新挑战」）
     /// </summary>
     public override bool IsCanRestartFight()
     {
         return false;
+    }
+
+    /// <summary>
+    /// 中途结束战斗(系统界面「结束战斗」, 含 ESC 调出系统界面后的退出)
+    /// 无尽世界只能挑战一次, 中途放弃同样视为挑战结束 → 先消耗该传送门世界, 再走基类返回基地流程
+    /// </summary>
+    public override void ExitFightAndReturnToBase()
+    {
+        ConsumeCurrentPortalWorld();
+        base.ExitFightAndReturnToBase();
     }
 
     /// <summary>
@@ -72,8 +82,8 @@ public class GameFightLogicInfinite : GameFightLogic
     #region 回调
     /// <summary>
     /// 回调-点击退出结算: 参照挑战100勇士 EndGameAndReturnToBase, 但无经验/声望/成就/宝箱/领奖
-    /// 仅保留: 议案EndGame消耗钩子(敌人强度等议案按run消耗, 缺了会永久残留到后续所有战斗) + 清深渊馈赠(防御性) + 还原阵容生物战斗状态 + 存盘 + 回基地;
-    /// 不调用 RefillPortalRefreshNum/ClearPortalWorldInfoRandomData(那是"通关一次世界"语义, 无尽无通关)
+    /// 仅保留: 议案EndGame消耗钩子(敌人强度等议案按run消耗, 缺了会永久残留到后续所有战斗) + 消耗该传送门世界(无尽只能挑战一次) + 清深渊馈赠(防御性) + 还原阵容生物战斗状态 + 存盘 + 回基地;
+    /// 不调用 RefillPortalRefreshNum(不回满刷新次数)
     /// </summary>
     public void ActionForUIFightSettlementExit()
     {
@@ -83,6 +93,8 @@ public class GameFightLogicInfinite : GameFightLogic
         {
             //战斗run结束: 显式分发议案EndGame消耗钩子(各议案自身按模式门控, 征服专属议案不会在本模式消耗)
             userData.GetUserTempData().TriggerDoomCouncil(TriggerTypeDoomCouncilEntityEnum.GameFightLogicEndGame);
+            //无尽世界只能挑战一次: 移除本场对应的传送门世界(下次打开传送门UI按缺口补生成新世界)
+            ConsumeCurrentPortalWorld();
             //清理深渊馈赠数据
             BuffHandler.Instance.manager.ClearAbyssalBlessing();
             //存盘前还原阵容生物战斗状态(Fight/Rest → Idle), 避免中间状态写入存档导致阵容只剩1个

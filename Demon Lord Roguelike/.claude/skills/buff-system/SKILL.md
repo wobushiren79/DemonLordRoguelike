@@ -129,7 +129,8 @@ BuffBasePreEntity                                # 前置基类（GetEventRole +
 最终公式：`v = (base + flatSum) * (1 + pctAddSum) * pctMulProduct`，若有Override则取覆盖值。
 
 `BuffEntityAttribute.EmitModifiers` 默认把 `trigger_value` 走 Flat、`trigger_value_rate` 走 PercentAdd；
-但 `CRT` / `EVA` 例外：`rate` 本身就是百分比绝对值，直接 Flat 累加。
+两处例外：`CRT` / `EVA` / `CDMG` 的 `rate` 本身就是百分比绝对值，直接 Flat 累加；
+**`ASPD` 的 `rate` 按 `CreatureUtil.ASPD_POINT_PER_FREQUENCY_RATE`（20 点 = 攻速 100%，与 `频率 = 1 + 0.05×ASPD` 互为倒数）换算成点数后走 Flat**——生物 `creature_info.ASPD` 基础值恒为 0，百分比通道 `0×(1+rate)=0` 恒无效（详见「易错点」第 10 条）。`ChangeData`（烘焙/预览路径）同口径。
 
 ### 3. 堆叠策略 — `BuffStackMode`
 
@@ -399,9 +400,10 @@ public interface IBuffSingleTarget { string SingleTargetCreatureUUId { get; } }
 
 普通属性 BUFF 的 rate 由配置 `trigger_value_rate` 写死、恒定；「随场上魔物数缩放 / 随击杀数缩放」要求 rate 随运行时战况（场上魔物数量 / 累计击杀数）**每次重算属性时实时变化**，为此引入抽象基类 `BuffEntityAttributeDynamicRate : BuffEntityAttribute`（`Assets/Scripts/Game/Buff/BuffEntity/Attribute/`）：
 
-- **模式**：基类同时重写两条属性路径，二者都调抽象方法 `protected abstract float GetDynamicRate()` 取当前百分比、**仅走 `PercentAdd` 通道**（用于 ATK/DR/HP；`trigger_value` Flat 不参与）：
+- **模式**：基类同时重写两条属性路径，二者都调抽象方法 `protected abstract float GetDynamicRate()` 取当前百分比、**默认走 `PercentAdd` 通道**（用于 ATK/DR/HP；`trigger_value` Flat 不参与）：
   - `CollectModifiers(sink)`（战斗热点路径）：`rate=GetDynamicRate()`，`>0` 才 emit 一个 `PercentAdd` modifier。
   - `ChangeData(CreatureAttributeTypeEnum, float)`（卡片详情预览路径，供 `CreatureBean.GetAbyssalBlessingChangeAttribute` 调用）：`targetData *= 1 + GetDynamicRate()`。
+  - **`attributeType == ASPD` 例外**（如「独行者-B」）：动态率同样按 `CreatureUtil.AspdRateToPoint()` 换算成点数走 `Flat` / 直接相加，与普通属性 BUFF 的 ASPD 口径一致。
   - 便捷方法 `protected FightBean GetFightData()` = `GameHandler...GetGameLogic<GameFightLogic>()?.fightData`。
 - **抽象基类不在配置 `class_entity` 中直接引用**；子类是**通用功能类**（按缩放来源命名、不绑馈赠名，可被其它同功能馈赠复用），实现具体公式：
   - `BuffEntityAttributeScaleByDefenseCount`（属性随"当前场上存活防守魔物数"缩放，曾用于「都是兄弟」）：`rate = (场上存活防守魔物数 N - 1) * trigger_value_rate`。N = `fightData.dlDefenseCreatureEntity.List` 中 `!IsDead()` 的数量；`N<=1` 时为 0（减 1 扣除自身，只有 1 只不享加成）。
@@ -433,7 +435,7 @@ MP                // 魔法         （MP=2，魔王/核心向，普通生物一
 DR                // 护甲(防御)   （DR=3）
 ATK               // 攻击力       （ATK=4）
 MSPD              // 移动速度     （MSPD=5）
-ASPD              // 攻击速度     （ASPD=6）
+ASPD              // 攻击速度     （ASPD=6；基础值恒为0，频率=1+0.05×ASPD，BUFF 的 rate 按20点/100%换算成点数走 Flat）
 CRT               // 暴击率       （CRT=7，rate 走 Flat 绝对百分点）
 EVA               // 闪避         （EVA=8，rate 走 Flat 绝对百分点）
 RCD               // 复活CD       （RCD=9，扭蛋稀有度BUFF可挂 class_entity_data=RCD 负rate 减少召唤CD）
@@ -563,3 +565,9 @@ public class MyEquip : IAttributeModifierSource
 7. **无 pre_info 的条件 BUFF 直接整体重写 `EventForUnderAttack`/`EventForRegainHP` 做归属过滤（不调 base）** → base 在 pre_info 为空时不做任何过滤，会对全场每次攻击/治疗事件都累积 `conditionalValue` 并调 `HandleForEvent`（参考 `BuffEntityConditionalThorns`/`BuffEntityConditionalLifeSteal` 的写法）。
 8. **时间型 BUFF 到期刷新已自动化**：自然到期（`isValid=false`）由 `UpdateForActivieBuffs` 移除时会触发 `Buff_FightCreatureChange`，事件处理自动 `RefreshBaseAttribute() + RefreshBodyColor()`，BUFF 无需再自理视图刷新（2026-08 修复；此前移除链路不触发事件，减速/变色会永久残留）。但需清理自身运行时旗标的（如 `BuffEntityConditionalInvincible` 的 `isInvincible`）仍要在 `SetData/ClearData/UpdateBuffTime` 三处自理旗标。
 9. **「伤害拦截/改道」型效果不能用 `GameFightLogic_UnderAttack` 事件钩子实现** → 事件在 `FightCreatureEntity.UnderAttack` 扣血结算**之后**才派发，只能做事后代偿（荆棘/吸血模式）；真转移（目标零承伤）须在 `UnderAttack` 结算前加分支（无敌判定同款位置），参考援护护盾 `BuffEntityConditionalShieldTransfer` + `FightCreatureBean.damageTransferApplierId` 标记 + `FightUnderAttackBean.isDamageTransferred` 防环兜底。
+10. **ASPD（攻速）的百分比必须换算成点数（2026-10 修复）** → 属性管线是 `v = (base + Σflat) × (1 + Σpct)`（`ModifierPipeline.Apply`），而**全部生物 `creature_info.ASPD` 基础值都是 0**，所以任何只填 `trigger_value_rate`（百分比通道）的攻速加成都等于 `0 × (1+rate) = 0`——修复前 16 条攻速词条 100% 失效（纯增益白给；「拿攻速换属性」只剩惩罚=纯亏；「拿属性换攻速」负面没生效=白赚；涉及快枪手 A~E、狂战士-C、铜墙铁壁-C、大块头-A、魂牵梦绕-D、折上折-D、独行者-B、SR 四条、R 稀有度 `11000400001` 等）。
+    - **现行规则**：`BuffEntityAttribute.EmitModifiers` / `ChangeData` 对 ASPD 特判——`trigger_value_rate` 按 `CreatureUtil.ASPD_POINT_PER_FREQUENCY_RATE`（20 点 = 100% 攻速，与 `频率 = 1 + 0.05×ASPD` 互为倒数）换算成点数走 **Flat**，与 `trigger_value`（直接加点数）线性叠加，最终 `ASPD = base + flat + 20×Σrate`。动态率类（`BuffEntityAttributeDynamicRate` 及子类）在两条路径里同样特判，不能只 emit PercentAdd。
+    - **新增攻速 BUFF**：仍按「攻速百分比」填 `trigger_value_rate`（+100% 填 `1.0`、-50% 填 `-0.5`），**不要**手动换算成点数填 flat。
+    - **`2000400001`（兽人战士，血量低于50%）**：曾误配 `-0.5`（=攻速-50%，与备注「攻击速度提升」方向相反），已改为 `+1.0`（=+20 点，攻速翻倍）。
+    - **两套语义别混用**：`BuffEntityAttributeAttackTime`（`1000700001` 冰冻减速）走 `BuffHandler.ChangeAttackTimeDataForBuff`，其 `trigger_value_rate` 是**时间倍率绝对值**（2 = 慢一倍）；ASPD 属性通道则是「攻速百分比」，二者独立、互不影响。
+    - **不再有的连带效应**：修复后攻速 BUFF 会真实抬高 `dicAttribute[ASPD]`，因此也会同步影响攻速连发次数（每满 20 点 +1 次额外攻击）与弹道飞行速度倍率（`BaseAttackMode.attackerSpeedRate`，ASPD 0~100 插值 1~3 倍）。
