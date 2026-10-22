@@ -29,16 +29,19 @@ public partial class UIViewItem : BaseUIView
     #region 数据设置
     /// <summary>
     /// 设置道具数据（通用流程：图标 + 数量 + 弹窗）
+    /// <para>同一道具引用也必须刷新数量：堆叠道具被消耗后 Bean 引用不变而 itemNum 变化，整段跳过会让数量文本停在旧值（如升级药水 999→998 仍显示 999）。</para>
     /// </summary>
     public virtual void SetData(ItemBean itemData)
     {
-        if (itemData != null && this.itemData == itemData)
-            return;
+        bool isSameItem = itemData != null && this.itemData == itemData;
         this.itemData = itemData;
         long itemId = itemData == null ? 0 : itemData.itemId;
         int itemNum = itemData == null ? 0 : itemData.itemNum;
-        SetIcon(itemId);
+        //数量每次必刷；图标/背景/弹窗仅换道具时刷，避免重复取图与重复挂弹窗
         SetNum(itemId, itemNum);
+        if (isSameItem)
+            return;
+        SetIcon(itemId);
         SetItemBG(itemData);
         SetItemPopup(itemData);
     }

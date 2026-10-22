@@ -380,6 +380,7 @@ UIViewItem (基类 : BaseUIView)         公共 itemData + SetData/SetIcon/SetNu
 - **点击按钮判定**：基类 `OnClickForButton` 用 `viewButton.gameObject == ui_UIViewItem.gameObject` 判定（按钮与 popup 同物体）。
 - **`OnClickForSelect` 必须留在子类**：消费方用 `RegisterEvent<UIViewItemEquip>`/`<UIViewItemBackpack>` 按具体类型订阅，`TriggerEvent(..., this)` 的 `this` 必须是具体子类，不能上提到基类。
 - **数量背景**：基类 Component 无 `ui_ItemNumBg`，`SetNum` 用 `ui_ItemNum.transform.parent`（即 ItemNumBg）开关。
+- **`SetData` 刷新语义（2026-10-22 修复）**：同一 `ItemBean` 引用也**必须重刷数量**——消耗品栈消耗后 Bean 引用不变而 `itemNum` 变化（如升级药水 999→998），旧实现「同引用整段 return」会让 `SetNum` 被跳过、数量文本停在旧值。现为 `SetNum` 每次必调，`SetIcon`/`SetItemBG`/`SetItemPopup` 仅换道具（引用不同）时刷新，既修 bug 又保留图标/弹窗去重性能。
 - **稀有度底框**：基类含 `ui_ItemBG`（Image），`SetData` 里调 `SetItemBG(itemData)` 按稀有度上色——取 `RarityInfoCfg.GetItemData(itemData.rarity).ui_board_color_item`（道具专用**单色**，非 `ui_board_color` 逗号渐变）经 `ColorUtil.ParseHtmlString` 解析；`itemData==null`（空槽位）或缺配置回退 `Color.white`。`ui_ItemBG` 为 `null`（旧 prefab 未接）时直接跳过，向后兼容。
 - **⚠️ 不要对子类 prefab 重跑 UI 自动生成工具**：工具不感知继承，会重生成 `UIViewItemEquipComponent`/`BackpackComponent` 带回 `ui_ItemIcon` 等公共字段，与基类字段重名隐藏。子类字段一律走继承（这两个 Component 文件已删除）。
 

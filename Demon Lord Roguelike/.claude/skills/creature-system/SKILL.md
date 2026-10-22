@@ -256,12 +256,12 @@ public partial class FightCreatureEntity
 ```
 UnderAttack(BaseAttackMode)
     │
-    ├── 0. 伤害转移判定（FightCreatureBean.damageTransferApplierId 非空且数据未带 isDamageTransferred 旗标时，
-    │   │  先于一切；当前由大盾战士BOSS「援护护盾」BuffEntityConditionalShieldTransfer 驱动）
-    │   ├── 代受者已死/离场 → 惰性清标记，本帧起恢复承伤，继续走后续流程
-    │   └── 代受者存活 → 目标处播护盾闪白(PlayHitFlash) + 原数据回收 + 生成改道数据(isDamageTransferred=true)
-    │       → 代受者走完整 UnderAttack 管线（目标零承伤、不滚闪避暴击、不吃命中DEBUFF、无回调；
-    │          暴击在代受端按原攻击者面板单次判定，统计/跳字/击杀自然归属代受者）→ 结束
+    ├── 0. 受击拦截判定（数据未带 isDamageTransferred 旗标时，先于一切）：遍历目标活跃BUFF
+    │   │  逐个调 BuffBaseEntity.InterceptUnderAttack(剩余伤害, out 代受者UUID)，链式分摊（大盾战士「援护护盾」即此实现）
+    │   ├── 返回0 / 代受者已死离场 → 跳过本BUFF，剩余伤害继续结算（BUFF自身的死亡破碎由UpdateBuffTime处理）
+    │   └── 返回>0 → 该BUFF自己播受击反馈 + 生成改道数据(isDamageTransferred=true,金额=改道额) → 代受者走完整 UnderAttack 管线
+    │       （改道部分不滚目标的闪避暴击、不吃命中DEBUFF、无回调；暴击在代受端按原攻击者面板单次判定，统计/跳字/击杀自然归属代受者）；
+    │       剩余额扣减后继续问下一个BUFF；全部扣完 → 回收原数据后结束；否则剩余部分写回原数据走本目标正常结算（滚闪避/暴击/护甲）
     │
     ├── 1. 无敌判定（FightCreatureBean.isInvincible,由SSR稀有度BUFF「真男人」BuffEntityConditionalInvincible驱动）
     │   └── 无敌中 → 跳0伤害字+播miss音效(复用闪避表现) → 结束（不掉血/不上受击BUFF/不播受击特效）

@@ -41,14 +41,14 @@ watched_files:
 - **FightBean** - 战斗数据基类；虚方法 `GetGameWorldInfoRandomData()` 默认返回 null，征服/无尽/100勇士三个 Bean 覆写返回各自 `gameWorldInfoRandomData`（UI 侧 Quick/0速/2倍速门控与后续需要世界+难度的逻辑统一走它，避免按具体 Bean 类型分支）
 - **FightBeanForConquer** - 征服模式战斗数据
 - **FightBeanForDoomCouncil** - 终焉议会战斗数据
-- **FightBeanForInfinite** - 无限/无尽模式战斗数据（持有同难度征服行 `fightTypeConquerInfo`[复用其怪物池/数量/时长/场景/魔晶掉落]+无尽行 `fightTypeInfiniteInfo`[每轮强度倍率,null 降级不阻断]+`roundNum` 当前轮次从1起；`InitData` 建核心/收阵容/取BOSS场景池/填充第1轮；`AppendNextRoundAttackData()` 追加下一轮波次到队列末尾不重建[每轮=征服BOSS关同款构成：普通怪分桶随机+BOSS中后段错开+每轮弹特写，数量固定不递推]；`GetRoundIntensityRate(round)`=征服 attack_intensity_baserate × 无尽 round_intensity_addrate^(round-1) × 终焉议会强度议案）
+- **FightBeanForInfinite** - 无限/无尽模式战斗数据（持有同难度征服行 `fightTypeConquerInfo`[复用其怪物池/数量/时长/场景/魔晶掉落]+无尽行 `fightTypeInfiniteInfo`[每轮强度倍率,null 降级不阻断]+`roundNum` 当前轮次从1起；`InitData` 建核心/收阵容/取传送门创建时冻结的BOSS场景(`GetFightSceneId(D,true)`)/填充第1轮；`AppendNextRoundAttackData()` 追加下一轮波次到队列末尾不重建[每轮=征服BOSS关同款构成：普通怪分桶随机+BOSS中后段错开+每轮弹特写，数量固定不递推]；`GetRoundIntensityRate(round)`=征服 attack_intensity_baserate × 无尽 round_intensity_addrate^(round-1) × 终焉议会强度议案）
 - **FightBeanForTest** - 测试战斗数据
 - **FightBeanForChallengeHundred** - 挑战100勇士战斗数据（持有冻结配置行 `fightTypeChallengeHundredInfo` 与 `gameWorldInfoRandomData`；固定100只怪分桶随机排程 `InitFightAttackData`，强度=行 `attack_intensity_baserate` 不叠终焉议会）
 - **FightCreatureBean** - 战斗生物数据
 - **FightAttackBean** - 战斗攻击数据
 - **FightDropCrystalBean** - 战斗掉落水晶
 - **FightRecordsBean** - 战斗记录
-- **FightUnderAttackBean** - 受击数据（含 drDamageRate/hpDamageRate 护甲/血量分段伤害倍率[默认1/1=走 ChangeDRAndHP 溢出逻辑；非默认=串联破甲：护甲>0只以dr倍率打甲不掉血、破甲后只以hp倍率打血、破甲击溢出不结转]，仅 SetData(BaseAttackMode) 路径从攻击模式 other_data 键 dr_damage_rate/hp_damage_rate 注入，BUFF 跳伤路径保持默认；目前仅牛头人法师 101003/101004 配 dr2/hp0.5；**isDamageTransferred + SetDataForTransferFrom**=伤害转移改道数据[援护护盾：以源数据为蓝本仅改写 attackedId 给代受者、攻击者/伤害/暴击快照/分段倍率/音效原样保留、置转移旗标防环]，由 `FightHandler.GetFightUnderAttackDataForTransfer(sourceData, newAttackedId)` 经对象池生成）
+- **FightUnderAttackBean** - 受击数据（含 drDamageRate/hpDamageRate 护甲/血量分段伤害倍率[默认1/1=走 ChangeDRAndHP 溢出逻辑；非默认=串联破甲：护甲>0只以dr倍率打甲不掉血、破甲后只以hp倍率打血、破甲击溢出不结转]，仅 SetData(BaseAttackMode) 路径从攻击模式 other_data 键 dr_damage_rate/hp_damage_rate 注入，BUFF 跳伤路径保持默认；目前仅牛头人法师 101003/101004 配 dr2/hp0.5；**isDamageTransferred + SetDataForTransferFrom**=伤害转移改道数据[援护护盾：以源数据为蓝本改写 attackedId 给代受者、攻击者/暴击快照/分段倍率/音效原样保留、置转移旗标防环；`UnderAttack` 遍历目标活跃BUFF调 `BuffBaseEntity.InterceptUnderAttack` 链式分摊——每个BUFF把改道额写进自己的改道数据 attackerDamage，剩余部分继续问下一个BUFF/写回原数据走本目标结算，扣到 0 直接回收原数据]，由 `FightHandler.GetFightUnderAttackDataForTransfer(sourceData, newAttackedId)` 经对象池生成）
 
 ## 关键文件
 
@@ -66,6 +66,8 @@ watched_files:
 | 战斗控制 | Assets/Scripts/Component/Game/Control/ControlForGameFight.cs |
 | FightManager | Assets/Scripts/Component/Manager/FightManager.cs |
 | FightHandler | Assets/Scripts/Component/Handler/FightHandler.cs |
+
+> **战斗杂项预制池（`FightManager.GetFightPrefabCommon` / `dicPoolFightObj` / `listFightPrefab`）**：出池时逐条校验 `targetPrefab == null || targetPrefab.gameObject == null`，死条目直接丢弃并继续取/新建（2026-10-22 加固）。背景：`ClearGame` 顺序是**先 `FightManager.Clear()`（`Destroy(gameObject)` 延迟到帧末才生效）后清 BUFF**，护盾泡泡这类「战斗杂项预制」会在"已排队销毁、尚未真正销毁"的状态下被回池，下一场战斗取出时会访问到已销毁对象（MissingReferenceException）。新增长生命周期的杂项特效时，回池/销毁不要假设对象当场失效。
 
 ## 弹道渲染接线（DSP GPU Instancing）
 

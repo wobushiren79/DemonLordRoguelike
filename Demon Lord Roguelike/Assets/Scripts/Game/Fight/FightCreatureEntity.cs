@@ -420,27 +420,39 @@ public partial class FightCreatureEntity
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var fightData = gameLogic.fightData;
         var fightRecordsData = fightData.fightRecordsData;
-        //伤害转移判定（援护护盾：被套盾期间本生物零承伤，伤害原样改道给代受者走完整管线）——先于无敌/闪避/暴击判定；
-        //目标侧不滚闪避不滚暴击，暴击在代受端按原攻击者面板单次判定；统计/跳字/击杀归属自然落到代受者
-        if (!fightUnderAttackData.isDamageTransferred && !fightCreatureData.damageTransferApplierId.IsNull())
+        //受击拦截判定（援护护盾等伤害改道BUFF）：链式遍历目标身上的活跃BUFF，每个BUFF按自身配置改道一部分剩余伤害给代受者
+        //——先于无敌/闪避/暴击判定；改道部分在代受端按原攻击者面板单次判定，剩余部分由本生物正常结算（全部改道时剩余为0）
+        if (!fightUnderAttackData.isDamageTransferred)
         {
-            var transferApplier = fightData.GetCreatureById(fightCreatureData.damageTransferApplierId, CreatureFightTypeEnum.None);
-            if (transferApplier == null || transferApplier.IsDead())
+            var listBuff = BuffHandler.Instance.manager.GetFightCreatureBuffsActivie(fightCreatureData.creatureData.creatureUUId);
+            if (!listBuff.IsNull())
             {
-                //代受者已死/离场：惰性清标记，本帧起恢复承伤（正常路径由护盾BUFF检测施加者死亡时主动清理）
-                fightCreatureData.damageTransferApplierId = null;
-                fightCreatureData.damageTransferBuff = null;
-            }
-            else
-            {
-                //目标处播护盾受击闪白反馈
-                (fightCreatureData.damageTransferBuff as BuffEntityConditionalShieldTransfer)?.PlayHitFlash();
-                //生成改道数据并回收原数据（提前return走不到方法尾部回收，对象池需平衡）
-                var transferData = FightHandler.Instance.GetFightUnderAttackDataForTransfer(fightUnderAttackData, fightCreatureData.damageTransferApplierId);
-                FightHandler.Instance.RemoveFightUnderAttackData(fightUnderAttackData);
-                //代受者走完整 UnderAttack 管线（不传原回调——与无敌/闪避 early-return 先例一致，目标零承伤且不吃命中携带的DEBUFF）
-                transferApplier.UnderAttack(transferData);
-                return;
+                int remainDamage = fightUnderAttackData.attackerDamage;
+                for (int i = 0; i < listBuff.Count && remainDamage > 0; i++)
+                {
+                    var itemBuff = listBuff[i];
+                    //已失效/已移除的BUFF跳过（列表可能在伤害结算期间被清理）
+                    if (itemBuff == null || itemBuff.buffEntityData == null || !itemBuff.buffEntityData.isValid) continue;
+                    //取本BUFF要改道的伤害额（0=不拦截；受击反馈由BUFF自身处理）
+                    int transferDamage = itemBuff.InterceptUnderAttack(remainDamage, out string transferApplierId);
+                    if (transferDamage <= 0 || transferApplierId.IsNull()) continue;
+                    var transferApplier = fightData.GetCreatureById(transferApplierId, CreatureFightTypeEnum.None);
+                    //代受者已死/离场：本次不转移，剩余伤害原地继续结算（BUFF自身会在Update里检测施加者死亡并破碎）
+                    if (transferApplier == null || transferApplier.IsDead()) continue;
+                    //生成改道数据并把金额改写为本次改道部分（不传原回调——与无敌/闪避 early-return 先例一致，改道部分不吃命中携带的DEBUFF）
+                    var transferData = FightHandler.Instance.GetFightUnderAttackDataForTransfer(fightUnderAttackData, transferApplierId);
+                    transferData.attackerDamage = transferDamage;
+                    transferApplier.UnderAttack(transferData);
+                    remainDamage -= transferDamage;
+                }
+                if (remainDamage <= 0)
+                {
+                    //伤害被全部改道：回收原数据后结束（提前return走不到方法尾部回收，对象池需平衡）
+                    FightHandler.Instance.RemoveFightUnderAttackData(fightUnderAttackData);
+                    return;
+                }
+                //剩余伤害继续走本生物结算（数据对象留待方法尾部统一回收）
+                fightUnderAttackData.attackerDamage = remainDamage;
             }
         }
         //无敌判定：免疫一切 UnderAttack 伤害（不掉血/不上受击BUFF/不播受击特效），跳0伤害字+miss音效（复用闪避表现）

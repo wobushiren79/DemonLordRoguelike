@@ -1,16 +1,19 @@
 using UnityEngine;
 
 /// <summary>
-/// 条件触发-伤害转移护盾（大盾战士BOSS「援护护盾」套给最前排友军的护盾）
-/// <para>生效期间（trigger_value=9 秒）：目标零承伤——其受到的 UnderAttack 伤害在结算前拦截并原样改道给施加者（BOSS）
-/// （拦截分支在 FightCreatureEntity.UnderAttack 方法头，靠 FightCreatureBean.damageTransferApplierId/damageTransferBuff 标记驱动）。</para>
+/// 条件触发-伤害转移护盾（大盾战士BOSS「援护护盾」套给友军的护盾）
+/// <para>生效期间（trigger_value=9 秒）：目标按配置的转移比例承受伤害——其受到的 UnderAttack 伤害在结算前按比例拆分，
+/// 转移部分改道给施加者（BOSS），剩余部分由目标自己继续结算（比例=1 时等同零承伤，比例=0.5 时目标自己吃一半）。
+/// 拦截走 BuffBaseEntity.InterceptUnderAttack 通用钩子：FightCreatureEntity.UnderAttack 链式遍历目标身上的活跃BUFF逐个询问，
+/// 本类状态（代受者/比例）只存自己身上，BUFF在=生效、BUFF移除=失效，无需在生物数据上另存标记。</para>
 /// <para>视觉：Effect_ShieldBubble_1（罩体+能量连线子功能合一，连线为子节点 Line、由 EffectShieldBubble 统一驱动）走「战斗杂项预制」通道
 /// （FightManager.GetFightPrefabCommon + dicPoolFightObj 按路径分桶缓存池），挂为目标生物子节点（罩体跟随目标，连线两端点由本 BUFF 每帧喂给 bubble.SetLinkEndpoints：目标胸口→施加者胸口，脉冲流向代受者）；
 /// 存续期前 4/5 罩体保持完整，最后 1/5 才随已流逝时间渐进溶解（SetLifetimePercent，上限 EffectShieldBubble.AgingDissolveMax 不裁没），受击罩体连线同闪（PlayHitFlash），
 /// 到期/施加者死亡时 PlayBreak 罩体溶解推满+连线淡出后回池。</para>
-/// <para>施加者（BOSS）死亡/离场 → 护盾立即破碎、目标当帧恢复承伤；目标死亡/战斗结束走 ClearData 立即回池（不播溶解）。</para>
-/// <para>堆叠策略须配 Ignore（重复施加直接忽略）：标记字段是单值的，多实例会互相覆盖。</para>
-/// <para>class_entity_data 格式："泡泡特效ID(EffectInfo),基础半径"（如 "500004,0.6"；实际半径=基础半径×目标体型缩放）。</para>
+/// <para>施加者（BOSS）死亡/离场 → 护盾立即破碎、目标当帧恢复全额承伤；目标死亡/战斗结束走 ClearData 立即回池（不播溶解）。</para>
+/// <para>堆叠策略须配 Ignore（重复施加直接忽略）：同一目标不需要两层同源护盾，多实例会让同一份伤害被重复分摊。</para>
+/// <para>class_entity_data 格式："泡泡特效ID(EffectInfo),基础半径[,伤害转移比例]"（如 "500004,0.6,0.5"；实际半径=基础半径×目标体型缩放；
+/// 转移比例 0~1 可省略，省略=1 全额改道；0.5=护盾只承受一半伤害，目标仍吃另一半）。</para>
 /// </summary>
 public class BuffEntityConditionalShieldTransfer : BuffEntityConditional
 {
@@ -26,6 +29,10 @@ public class BuffEntityConditionalShieldTransfer : BuffEntityConditional
     protected long bubbleEffectId;
     /// <summary>泡泡基础半径（class_entity_data[1]，世界单位）</summary>
     protected float bubbleBaseRadius;
+    /// <summary>伤害转移比例（class_entity_data[2]，0~1，省略=1 全额改道；0.5=护盾只承受一半伤害）</summary>
+    protected float damageTransferRate = 1f;
+    /// <summary>代受者UUID（施加者，拦截时改道目标；SetData 从 buffEntityData.applierCreatureUUId 取，ClearData 清空）</summary>
+    protected string transferApplierId;
     /// <summary>参数是否解析成功（class_entity_data 只解析一次）</summary>
     protected bool isDataParsed;
     /// <summary>泡泡杂项预制实体（战斗杂项缓存池复用，gameObject 挂为目标子节点跟随；含连线子节点 Line）</summary>
@@ -40,31 +47,31 @@ public class BuffEntityConditionalShieldTransfer : BuffEntityConditional
 
     #region 数据相关
     /// <summary>
-    /// 设置数据：解析参数 → 给目标写入伤害转移标记 → 生成泡泡
+    /// 设置数据：解析参数 → 记录代受者 → 生成泡泡
     /// </summary>
     public override void SetData(BuffEntityBean buffEntityData)
     {
         base.SetData(buffEntityData);
         ParseEntityData();
+        //代受者=施加者（拦截时改道目标）；BUFF移除即失效，不在生物数据上另存标记
+        transferApplierId = buffEntityData.applierCreatureUUId;
         var targetCreature = GetFightCreatureEntityForTarget();
         if (targetCreature == null || targetCreature.fightCreatureData == null)
             return;
-        //写入伤害转移标记（拦截分支凭此改道；damageTransferBuff 回指本实例供受击闪白，避免受击时扫描BUFF列表）
-        targetCreature.fightCreatureData.damageTransferApplierId = buffEntityData.applierCreatureUUId;
-        targetCreature.fightCreatureData.damageTransferBuff = this;
         SpawnBubble(targetCreature);
     }
 
     /// <summary>
-    /// 清理数据：兜底清标记+泡泡（含连线）立即回池（外部移除路径：目标死亡清BUFF/战斗结束等，不播溶解）
+    /// 清理数据：泡泡（含连线）立即回池（外部移除路径：目标死亡清BUFF/战斗结束等，不播溶解）
     /// </summary>
     public override void ClearData()
     {
-        //先处理自身状态再调 base（base.ClearData 会把 buffEntityData 置 null，届时将找不到目标）
-        ClearTransferMark();
+        //先回收表现层再调 base（base.ClearData 会把 buffEntityData 置 null，届时将找不到目标）
         RecycleBubble();
         bubbleEffectId = 0;
         bubbleBaseRadius = 0;
+        damageTransferRate = 1f;
+        transferApplierId = null;
         isDataParsed = false;
         isBreaking = false;
         breakTimer = 0;
@@ -85,7 +92,7 @@ public class BuffEntityConditionalShieldTransfer : BuffEntityConditional
             bubble.UpdateView(buffTime);
             UpdateLinkEndpoints();
         }
-        //破碎溶解中：播完溶解才真正移除并回池（标记在破碎开始时已清，目标已恢复承伤）
+        //破碎溶解中：播完溶解才真正移除并回池（破碎开始后 InterceptUnderAttack 即停止拦截，目标已恢复承伤）
         if (isBreaking)
         {
             breakTimer += buffTime;
@@ -118,25 +125,46 @@ public class BuffEntityConditionalShieldTransfer : BuffEntityConditional
     }
     #endregion
 
+    #region 受击拦截
+    /// <summary>
+    /// 受击拦截：按转移比例把剩余伤害的一部分改道给施加者（向下取整，零头留给目标），并播罩体+连线闪白
+    /// <para>施加者已死/离场时返回 0 不拦截（也不闪白），护盾的破碎由 UpdateBuffTime 在下一帧主动处理。</para>
+    /// </summary>
+    public override int InterceptUnderAttack(int incomingDamage, out string transferApplierId)
+    {
+        transferApplierId = null;
+        if (incomingDamage <= 0 || isBreaking || this.transferApplierId.IsNull()) return 0;
+        //施加者判活：已死/离场则本帧不转移（调用方另有同样判空，双保险）
+        var applierCreature = GetFightCreatureEntityForApplier();
+        if (applierCreature == null || applierCreature.fightCreatureData == null || applierCreature.IsDead()) return 0;
+        //按比例拆分（向下取整：零头归目标，避免两端四舍五入凭空多/少伤害）
+        int transferDamage = (int)(incomingDamage * damageTransferRate);
+        if (transferDamage <= 0) return 0;
+        transferApplierId = this.transferApplierId;
+        PlayHitFlash();
+        return transferDamage;
+    }
+    #endregion
+
     #region 护盾表现
     /// <summary>
-    /// 受击闪白（伤害被拦截转移时由 FightCreatureEntity.UnderAttack 拦截分支调用；罩体与连线同闪强化转移反馈）
+    /// 受击闪白（伤害被拦截转移时由本类 InterceptUnderAttack 调用；罩体与连线同闪强化转移反馈）
     /// </summary>
-    public void PlayHitFlash()
+    protected void PlayHitFlash()
     {
         if (bubble != null && !isBreaking)
             bubble.PlayHitFlash();
     }
 
     /// <summary>
-    /// 开始破碎：清标记（目标当帧恢复承伤）→ 罩体从当前溶解度推满 + 连线同步淡出（组件内部处理）→ 进入破碎态（溶解播完才置失效并回池）
+    /// 开始破碎：罩体从当前溶解度推满 + 连线同步淡出（组件内部处理）→ 进入破碎态（溶解播完才置失效并回池）
+    /// <para>破碎当帧起 InterceptUnderAttack 不再拦截（isBreaking），目标当帧恢复剩余伤害结算。</para>
     /// </summary>
     protected void StartBreak()
     {
         if (isBreaking) return;
         isBreaking = true;
         breakTimer = 0;
-        ClearTransferMark();
         if (bubble != null)
             bubble.PlayBreak();
         else
@@ -206,7 +234,7 @@ public class BuffEntityConditionalShieldTransfer : BuffEntityConditional
     protected void RecycleBubble()
     {
         if (bubblePrefabEntity == null) return;
-        //防御：gameObject 已被外部销毁（战斗结束 FightManager.Clear 先跑）则不再回池
+        //防御：gameObject 已彻底销毁则不再回池；同帧「已排队 Destroy 但尚未生效」的条目仍会入池，由 GetFightPrefabCommon 出池校验丢弃
         if (bubblePrefabEntity.gameObject != null)
         {
             //回池前摘出目标层级并隐藏（RemoveFightPrefabCommon 不处理显隐/父级，取出时才 SetActive(true)）
@@ -220,21 +248,7 @@ public class BuffEntityConditionalShieldTransfer : BuffEntityConditional
     }
 
     /// <summary>
-    /// 清除目标身上的伤害转移标记（防御性校验：仅当标记回指本实例时才清，防误清新护盾的标记）
-    /// </summary>
-    protected void ClearTransferMark()
-    {
-        var targetCreature = GetFightCreatureEntityForTarget();
-        if (targetCreature == null || targetCreature.fightCreatureData == null) return;
-        if (targetCreature.fightCreatureData.damageTransferBuff == this)
-        {
-            targetCreature.fightCreatureData.damageTransferApplierId = null;
-            targetCreature.fightCreatureData.damageTransferBuff = null;
-        }
-    }
-
-    /// <summary>
-    /// 解析 class_entity_data（"泡泡特效ID,基础半径"）
+    /// 解析 class_entity_data（"泡泡特效ID,基础半径[,伤害转移比例]"）
     /// </summary>
     protected void ParseEntityData()
     {
@@ -242,11 +256,17 @@ public class BuffEntityConditionalShieldTransfer : BuffEntityConditional
         string[] arrEntityData = buffInfo.class_entity_data.Split(',');
         if (arrEntityData.Length < 2)
         {
-            LogUtil.LogError($"伤害转移护盾BUFF[{buffInfo.id}]的 class_entity_data 格式错误，应为 \"泡泡特效ID,基础半径\"：{buffInfo.class_entity_data}");
+            LogUtil.LogError($"伤害转移护盾BUFF[{buffInfo.id}]的 class_entity_data 格式错误，应为 \"泡泡特效ID,基础半径[,伤害转移比例]\"：{buffInfo.class_entity_data}");
             return;
         }
         bubbleEffectId = long.Parse(arrEntityData[0]);
         bubbleBaseRadius = float.Parse(arrEntityData[1]);
+        //第三项可选：伤害转移比例（省略=1 全额改道；越界按 0~1 夹取）
+        damageTransferRate = 1f;
+        if (arrEntityData.Length >= 3 && float.TryParse(arrEntityData[2], out float transferRate))
+        {
+            damageTransferRate = Mathf.Clamp01(transferRate);
+        }
         isDataParsed = true;
     }
     #endregion

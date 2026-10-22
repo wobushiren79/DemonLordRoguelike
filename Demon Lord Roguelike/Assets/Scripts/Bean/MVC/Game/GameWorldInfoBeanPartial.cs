@@ -241,6 +241,9 @@ public partial class GameWorldInfoRandomBean
             roadLength = fightTypeConquerInfo.GetRandomRoadLength(),
             //随机关卡数量(fight_num)
             fightNum = fightTypeConquerInfo.GetRandomFightNum(),
+            //冻结本难度普通关/BOSS关战斗场景(同世界重复进入场地固定, 不再每次进战斗重新随机)
+            fightSceneId = fightTypeConquerInfo.GetRandomFightScene(false),
+            bossFightSceneId = fightTypeConquerInfo.GetRandomFightScene(true),
             //预生成本难度的通关奖励(与通关领奖同规则), 一次性随出并冻结, 保证 UIPopupPortalDetails 预览=通关实领
             listReward = RewardSelectBean.CreateRewardListForConquer(fightTypeConquerInfo),
             //记录生成时的装备奖励池解锁签名, 供解锁新魔物掉落后判定是否需重新生成
@@ -275,6 +278,68 @@ public partial class GameWorldInfoRandomBean
             }
         }
         return difficultyRandom.listReward;
+    }
+
+    /// <summary>
+    /// 获取本世界指定难度已冻结的战斗场景id(创建传送门时随出并冻结, 同世界重复进入场地固定);
+    /// 老存档该字段缺失时按配置懒补齐并写回(补齐后同样固定), 无冻结数据(如无尽测试入口未解锁难度)时按配置随机兜底
+    /// </summary>
+    /// <param name="targetDifficultyLevel">难度等级</param>
+    /// <param name="isBoss">是否取BOSS关场景(挑战100勇士无普通/BOSS场景之分, 忽略该参数)</param>
+    /// <returns>战斗场景id; 无可用配置时返回0</returns>
+    public long GetFightSceneId(int targetDifficultyLevel, bool isBoss)
+    {
+        if (gameFightType == GameFightTypeEnum.ChallengeHundred)
+            return GetChallengeHundredFightSceneId(targetDifficultyLevel);
+        //征服与无尽共用 listDifficultyRandom; 无尽走 GetInfiniteDifficultyRandom, 避免连带生成征服通关奖励
+        GameWorldDifficultyRandomBean difficultyRandom = gameFightType == GameFightTypeEnum.Infinite
+            ? GetInfiniteDifficultyRandom(targetDifficultyLevel)
+            : GetDifficultyRandom(targetDifficultyLevel);
+        if (difficultyRandom == null)
+            return GetRandomFightSceneFromConfig(targetDifficultyLevel, isBoss);
+        //老存档无冻结场景 → 懒补齐并写回(补齐后同世界重复进入不再变化)
+        if (difficultyRandom.fightSceneId <= 0)
+            difficultyRandom.fightSceneId = GetRandomFightSceneFromConfig(targetDifficultyLevel, false);
+        if (difficultyRandom.bossFightSceneId <= 0)
+            difficultyRandom.bossFightSceneId = GetRandomFightSceneFromConfig(targetDifficultyLevel, true);
+        return isBoss ? difficultyRandom.bossFightSceneId : difficultyRandom.fightSceneId;
+    }
+
+    /// <summary>
+    /// 获取挑战100勇士指定难度已冻结的战斗场景id(缺失时按该难度冻结配置行懒补齐并写回)
+    /// </summary>
+    /// <param name="targetDifficultyLevel">难度等级</param>
+    /// <returns>战斗场景id; 无可用配置时返回0</returns>
+    protected long GetChallengeHundredFightSceneId(int targetDifficultyLevel)
+    {
+        GameWorldChallengeHundredRandomBean challengeHundredRandom = GetChallengeHundredRandom(targetDifficultyLevel);
+        if (challengeHundredRandom == null)
+        {
+            //无该难度冻结数据(未解锁/测试): 按当前活动冻结行随机兜底
+            FightTypeChallengeHundredInfoBean currentRow = FightTypeChallengeHundredInfoCfg.GetItemData(challengeHundredRowId);
+            return currentRow == null ? 0 : currentRow.GetRandomFightScene();
+        }
+        if (challengeHundredRandom.fightSceneId <= 0)
+        {
+            FightTypeChallengeHundredInfoBean challengeHundredInfo = FightTypeChallengeHundredInfoCfg.GetItemData(challengeHundredRandom.challengeHundredRowId);
+            if (challengeHundredInfo != null)
+                challengeHundredRandom.fightSceneId = challengeHundredInfo.GetRandomFightScene();
+        }
+        return challengeHundredRandom.fightSceneId;
+    }
+
+    /// <summary>
+    /// 按征服配置行随机一个战斗场景(不冻结; 仅用于老存档补齐与无冻结数据时兜底)
+    /// </summary>
+    /// <param name="targetDifficultyLevel">难度等级</param>
+    /// <param name="isBoss">是否BOSS场景</param>
+    /// <returns>战斗场景id; 无对应配置返回0</returns>
+    protected long GetRandomFightSceneFromConfig(int targetDifficultyLevel, bool isBoss)
+    {
+        FightTypeConquerInfoBean fightTypeConquerInfo = FightTypeConquerInfoCfg.GetItemData(worldId, targetDifficultyLevel);
+        if (fightTypeConquerInfo == null)
+            return 0;
+        return fightTypeConquerInfo.GetRandomFightScene(isBoss);
     }
 
     /// <summary>
@@ -347,6 +412,9 @@ public partial class GameWorldInfoRandomBean
             //随机道路数量/长度(复用同难度征服行 road_num/road_length 区间)
             roadNum = fightTypeConquerInfo.GetRandomRoadNum(),
             roadLength = fightTypeConquerInfo.GetRandomRoadLength(),
+            //冻结本难度战斗场景(无尽每轮都是BOSS, 取BOSS场景池; 普通场景一并冻结保持一致)
+            fightSceneId = fightTypeConquerInfo.GetRandomFightScene(false),
+            bossFightSceneId = fightTypeConquerInfo.GetRandomFightScene(true),
             //无尽无关卡数概念, 占位1
             fightNum = 1,
         };
@@ -442,6 +510,8 @@ public partial class GameWorldInfoRandomBean
             challengeHundredRowId = challengeHundredInfo.id,
             roadNum = challengeHundredInfo.GetRandomRoadNum(),
             roadLength = challengeHundredInfo.GetRandomRoadLength(),
+            //冻结本难度战斗场景(同世界重新挑战沿用同一场地)
+            fightSceneId = challengeHundredInfo.GetRandomFightScene(),
             listRewardChallengeHundred = RewardSelectBean.CreateRewardListForChallengeHundred(challengeHundredInfo, difficultyLevel),
             rewardUnlockSignChallengeHundred = RewardSelectBean.GetConquerEquipPoolSign(),
         };
@@ -594,6 +664,10 @@ public class GameWorldDifficultyRandomBean
     public int roadLength;
     //关卡数量
     public int fightNum;
+    //本难度普通关战斗场景id(创建传送门时一次性随出并冻结, 同世界重复进入/同一次run各普通关均使用该场地)
+    public long fightSceneId;
+    //本难度BOSS关战斗场景id(创建传送门时一次性随出并冻结; 征服BOSS关使用, 无尽每轮也走BOSS场景池)
+    public long bossFightSceneId;
     //本难度预生成的通关奖励(装备+魔晶); 创建传送门时一次性随出并冻结, 保证 UIPopupPortalDetails 预览=通关实领
     public List<ItemBean> listReward = new List<ItemBean>();
     //生成奖励时的"装备奖励池解锁签名"(可生成装备的已解锁生物模型数量); 解锁新魔物掉落后此值变化, GetDifficultyReward 据此重新生成奖励
@@ -602,7 +676,7 @@ public class GameWorldDifficultyRandomBean
 
 [Serializable]
 /// <summary>
-/// 游戏世界-挑战100勇士单个难度的随机数据(配置行/道路数/道路长度/通关奖励, 创建传送门时逐难度随出并缓存)
+/// 游戏世界-挑战100勇士单个难度的随机数据(配置行/道路数/道路长度/战斗场景/通关奖励, 创建传送门时逐难度随出并缓存)
 /// </summary>
 public class GameWorldChallengeHundredRandomBean
 {
@@ -614,6 +688,8 @@ public class GameWorldChallengeHundredRandomBean
     public int roadNum;
     //道路长度
     public int roadLength;
+    //本难度战斗场景id(创建传送门时一次性随出并冻结, 同世界重新挑战使用同一场地)
+    public long fightSceneId;
     //本难度预生成的通关奖励(普通3箱/BOSS挑战装备6箱); 保证预览=实领
     public List<ItemBean> listRewardChallengeHundred = new List<ItemBean>();
     //生成奖励时的"装备奖励池解锁签名"; 解锁新魔物掉落后此值变化, GetChallengeHundredReward 据此重新生成

@@ -58,6 +58,10 @@ public class BaseAttackMode
     protected CreatureFightTypeEnum searchCreatureType = CreatureFightTypeEnum.None;
     /// <summary>本帧射线批处理命令索引（>=0 表示本帧已入队射线，检测时读批处理结果；-1 表示未入队，走 live 路径）</summary>
     protected int batchRayStart = -1;
+    /// <summary>弹道 Z 轴下边界（StartAttackBase 按当前战斗路线数刷新；路面 z∈[1, sceneRoadNum]，两侧各留 2 格余量）</summary>
+    protected float boundZMin = -5f;
+    /// <summary>弹道 Z 轴上边界（=路线数+2，与 boundZMin 一起兜底 Z 轴越界回收，防目标丢失直飞的弹道永久滞留在场外）</summary>
+    protected float boundZMax = 15f;
     #endregion
 
     #region 数值常量（策划调整入口）
@@ -125,6 +129,11 @@ public class BaseAttackMode
     {
         //按目标层级推导并缓存搜索类型（两条发射路径都要，故放在这里而非 StartAttack(attacker,...) 里）
         RefreshSearchCreatureType();
+        //Z 轴边界按当前战斗路线数刷新一次：路面 z∈[1, sceneRoadNum]，魔王核心 z=sceneRoadNum/2+0.5，两侧留 2 格余量
+        var gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
+        int roadNum = (gameFightLogic != null && gameFightLogic.fightData != null) ? gameFightLogic.fightData.sceneRoadNum : 6;
+        boundZMin = -2f;
+        boundZMax = roadNum + 2f;
         //每发随机一个自旋相位，避免同桶所有实例(材质统一自转)角度完全同步
         spinPhase = UnityEngine.Random.Range(0f, 360f);
         //位置真实源置为起点（即使无 gameObject 也生效），再同步到 transform
@@ -621,12 +630,17 @@ public class BaseAttackMode
     }
 
     /// <summary>
-    /// 按世界坐标判定是否越出地图范围（x∈[-5,15]、y∈[-5,15] 之外即越界）
+    /// 按世界坐标判定是否越出地图范围（x∈[-5,15]、y∈[-5,15]、z∈[boundZMin,boundZMax] 之外即越界）
     /// </summary>
     private bool CheckIsMoveBoundByPosition(Vector3 checkPosition)
     {
         if (checkPosition.x > 15 || checkPosition.x < -5 ||
                checkPosition.y < -5 || checkPosition.y > 15)
+        {
+            return true;
+        }
+        //Z 轴越界兜底：路面 z∈[1, sceneRoadNum]，锁敌方向异常或目标丢失直飞时回收（原实现无 Z 判定会永久滞留在场外）
+        if (checkPosition.z < boundZMin || checkPosition.z > boundZMax)
         {
             return true;
         }

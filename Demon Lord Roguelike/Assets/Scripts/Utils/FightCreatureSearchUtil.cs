@@ -375,6 +375,53 @@ public static class FightCreatureSearchUtil
         if (listCreature.IsNull() || count <= 0)
             return null;
         //收集存活候选（排除指定生物）
+        List<FightCreatureEntity> listCandidate = CollectAliveCandidates(listCreature, excludeCreature);
+        if (listCandidate.IsNull())
+            return null;
+        SortByFrontRowDirection(listCandidate, searchCreatureFightType);
+        //截取前N个
+        if (listCandidate.Count > count)
+            listCandidate.RemoveRange(count, listCandidate.Count - count);
+        return listCandidate;
+    }
+
+    /// <summary>
+    /// 找寻"1个最前排 + 其余随机"的N个存活生物（援护护盾用：首个固定为最前排[按阵营前排方向排序第1个]，其余 count-1 个从剩余存活生物中随机不重复抽取）
+    /// </summary>
+    /// <param name="listCreature">候选列表（某阵营全场生物列表，如 fightData.dlAttackCreatureEntity.List）</param>
+    /// <param name="count">选取数量（首个=最前排，其余随机；存活不足时返回实际数量）</param>
+    /// <param name="excludeCreature">排除的生物（如施法者自己，可空）</param>
+    /// <param name="searchCreatureFightType">阵营（决定前排方向）</param>
+    /// <returns>目标列表（[0]=最前排，其后随机）；无存活生物时返回 null</returns>
+    public static List<FightCreatureEntity> FindFrontRowAndRandomCreatures(List<FightCreatureEntity> listCreature, int count, FightCreatureEntity excludeCreature, CreatureFightTypeEnum searchCreatureFightType)
+    {
+        if (listCreature.IsNull() || count <= 0)
+            return null;
+        //收集存活候选（排除指定生物）
+        List<FightCreatureEntity> listCandidate = CollectAliveCandidates(listCreature, excludeCreature);
+        if (listCandidate.IsNull())
+            return null;
+        SortByFrontRowDirection(listCandidate, searchCreatureFightType);
+        //首个固定取最前排
+        var listResult = new List<FightCreatureEntity>(count) { listCandidate[0] };
+        //其余从 [1..n) 中部分洗牌随机抽取（抽完即止，不重复）
+        int randomCount = Mathf.Min(count - 1, listCandidate.Count - 1);
+        for (int i = 0; i < randomCount; i++)
+        {
+            int randomIndex = Random.Range(1 + i, listCandidate.Count);
+            var itemTemp = listCandidate[1 + i];
+            listCandidate[1 + i] = listCandidate[randomIndex];
+            listCandidate[randomIndex] = itemTemp;
+            listResult.Add(listCandidate[1 + i]);
+        }
+        return listResult;
+    }
+
+    /// <summary>
+    /// 收集存活候选生物（排除空实体/无表现对象/已死亡/指定排除项）
+    /// </summary>
+    private static List<FightCreatureEntity> CollectAliveCandidates(List<FightCreatureEntity> listCreature, FightCreatureEntity excludeCreature)
+    {
         List<FightCreatureEntity> listCandidate = null;
         for (int i = 0; i < listCreature.Count; i++)
         {
@@ -387,9 +434,14 @@ public static class FightCreatureSearchUtil
                 listCandidate = new List<FightCreatureEntity>();
             listCandidate.Add(itemEntity);
         }
-        if (listCandidate.IsNull())
-            return null;
-        //按前排方向排序（FightAttack 前排=x 最小升序，其余前排=x 最大降序；10秒级低频调用，排序分配可接受）
+        return listCandidate;
+    }
+
+    /// <summary>
+    /// 按前排方向排序（FightAttack 前排=x 最小升序，其余前排=x 最大降序；10秒级低频调用，排序分配可接受）
+    /// </summary>
+    private static void SortByFrontRowDirection(List<FightCreatureEntity> listCandidate, CreatureFightTypeEnum searchCreatureFightType)
+    {
         if (searchCreatureFightType == CreatureFightTypeEnum.FightAttack)
         {
             listCandidate.Sort((a, b) => a.creatureObj.transform.position.x.CompareTo(b.creatureObj.transform.position.x));
@@ -398,10 +450,6 @@ public static class FightCreatureSearchUtil
         {
             listCandidate.Sort((a, b) => b.creatureObj.transform.position.x.CompareTo(a.creatureObj.transform.position.x));
         }
-        //截取前N个
-        if (listCandidate.Count > count)
-            listCandidate.RemoveRange(count, listCandidate.Count - count);
-        return listCandidate;
     }
 
 }

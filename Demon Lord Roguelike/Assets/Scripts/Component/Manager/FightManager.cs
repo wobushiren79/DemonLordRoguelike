@@ -318,6 +318,8 @@ public class FightManager : BaseManager
 
     /// <summary>
     /// 获取战斗预制-通用
+    /// <para>出池逐条校验：战斗结束时 Destroy 延迟到帧末才生效，若池化条目的 gameObject 已随场景/管理器销毁则直接丢弃重建，
+    /// 避免访问到已销毁对象（援护护盾泡泡在 ClearGame 里就是"先 FightManager.Clear 后丢 BUFF"的时序）。</para>
     /// </summary>
     /// <param name="assetsPath"></param>
     /// <param name="actionForComplete"></param>
@@ -325,9 +327,14 @@ public class FightManager : BaseManager
     {
         if (dicPoolFightObj.TryGetValue(assetsPath, out Queue<FightPrefabEntity> pool))
         {
-            if (pool.Count > 0)
+            //跳过池里已失效的条目（对象池复用前判空，防跨战斗残留死引用）
+            while (pool.Count > 0)
             {
                 FightPrefabEntity targetPrefab = pool.Dequeue();
+                if (targetPrefab == null || targetPrefab.gameObject == null)
+                {
+                    continue;
+                }
                 listFightPrefab.Add(targetPrefab);
 
                 targetPrefab.id = SystemUtil.GetUUID(SystemUtil.UUIDTypeEnum.N);

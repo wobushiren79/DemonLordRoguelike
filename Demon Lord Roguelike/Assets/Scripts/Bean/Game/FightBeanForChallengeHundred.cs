@@ -65,8 +65,8 @@ public class FightBeanForChallengeHundred : FightBean
             dlDefenseCreatureData.Add(itemLineupCreature.creatureUUId, itemLineupCreature);
         }
 
-        //设置战斗场景ID(配置行场景池随机其一)
-        fightSceneId = fightTypeChallengeHundredInfo.GetRandomFightScene();
+        //设置战斗场景ID(读取传送门创建时冻结的场景, 同世界重新挑战沿用同一场地)
+        fightSceneId = gameWorldInfoRandomData.GetFightSceneId(gameWorldInfoRandomData.difficultyLevel, false);
         //初始化战斗数据
         InitFightAttackData();
     }

@@ -32,7 +32,7 @@ watched_files:
 - **GameDataHandler** / **GameDataManager** - 游戏数据处理（含道具持久化）
 
 ### 道具 UI（`Common/Item/`）
-- **UIViewItem** - 道具项**基类**（公共字段 itemData + SetData/SetIcon/SetNum/SetItemBG/SetItemPopup/OnClickForButton；SetItemBG 按 itemData.rarity 用 RarityInfo.ui_board_color_item 给 ui_ItemBG 上色，空槽位/缺配置回退白色）
+- **UIViewItem** - 道具项**基类**（公共字段 itemData + SetData/SetIcon/SetNum/SetItemBG/SetItemPopup/OnClickForButton；SetItemBG 按 itemData.rarity 用 RarityInfo.ui_board_color_item 给 ui_ItemBG 上色，空槽位/缺配置回退白色。**SetData 刷新语义**：同一 ItemBean 引用也必刷数量——消耗品栈消耗后引用不变而 `itemNum` 变化（升级药水 999→998），旧「同引用整段 return」会让数量停在旧值；现 `SetNum` 每次必调，`SetIcon`/`SetItemBG`/`SetItemPopup` 仅换道具时刷）
 - **UIViewItemBackpack** - 背包道具项（`: UIViewItem`，加 creatureData + SetData(item,creature)；右键经 `ui_UIViewItem` 同物体 Button 旁的 PopupButtonCommonView 转发（Awake `AddListenerForRightClick` → `EventForRightClick`，itemData 非空时触发 `EventsInfo.UIViewItemBackpack_OnRightClickSelect` 并 `ClearData` 隐藏悬浮详情；左键仍走 Button.onClick → `OnClickForSelect` → `UIViewItemBackpack_OnClickSelect`）
 - **UIViewItemEquip** - 装备项（`: UIViewItem`，加 itemTypeEnum + 空槽位占位图标/部位名）
 - **UIViewItemBackpackList** - 背包列表（在 `Common/Backpack/`）

@@ -79,7 +79,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → GameFightLogicConquer 跑起
 **导出 JSON**：`Assets/Resources/JsonText/FightTypeConquerInfo.txt`（派生产物，不可单独改）
 **取行键**：`world_id` + `level`（`FightTypeConquerInfoCfg.GetItemData(worldId, difficultyLevel)`），一个世界的每个难度等级一行。
 
-> **无尽模式（GameFightTypeEnum.Infinite）复用本表同难度行**：无尽模式的怪物池 `enemy_ids`/`enemy_boss_ids`、`attack_start_num`/`attack_show_time`/`attack_boss_num`、BOSS 场景池、`drop_crystal`、`road_num`/`road_length` 均取同难度（world_id+level）征服行（经 `FightBeanForInfinite.fightTypeConquerInfo`）；其每轮强度递增倍率独立配置在 `excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（FightTypeInfiniteInfo.round_intensity_addrate，第 N 轮强度=本表同难度行 `attack_intensity_baserate`×该值^(N-1)，Bean 扩展 `GetRoundIntensityRate(round)`）。无尽传送门道路预生成 `GameWorldInfoRandomBean.SetRandomDataForInfinite`（难度 2 起逐档，无尽无难度 1；传送门创建后研究新解锁的难度由 `GetInfiniteDifficultyRandom(D)` 懒补齐）同样读本表 `road_num`/`road_length` 区间。
+> **无尽模式（GameFightTypeEnum.Infinite）复用本表同难度行**：无尽模式的怪物池 `enemy_ids`/`enemy_boss_ids`、`attack_start_num`/`attack_show_time`/`attack_boss_num`、BOSS 场景池、`drop_crystal`、`road_num`/`road_length` 均取同难度（world_id+level）征服行（经 `FightBeanForInfinite.fightTypeConquerInfo`）；其每轮强度递增倍率独立配置在 `excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（FightTypeInfiniteInfo.round_intensity_addrate，第 N 轮强度=本表同难度行 `attack_intensity_baserate`×该值^(N-1)，Bean 扩展 `GetRoundIntensityRate(round)`）。无尽传送门道路与战斗场景预生成 `GameWorldInfoRandomBean.SetRandomDataForInfinite`（难度 2 起逐档，无尽无难度 1；传送门创建后研究新解锁的难度由 `GetInfiniteDifficultyRandom(D)` 懒补齐）同样读本表 `road_num`/`road_length` 区间与场景池，场地经 `GetFightSceneId(D, true)` 取冻结值。
 
 ### 字段一览
 
@@ -87,8 +87,8 @@ WorldHandler.EnterGameForFightScene(fightData)  → GameFightLogicConquer 跑起
 |------|------|------|
 | `id` | long | 编号（约定 `世界*1000000 + 难度`，如 1000001） |
 | `world_id` | long | 世界 ID |
-| `fight_scene_ids` | string | 普通关战斗场景列表（`&` 分割，随机取） |
-| `fight_scene_boss_ids` | string | BOSS 关战斗场景列表（`&` 分割） |
+| `fight_scene_ids` | string | 普通关战斗场景列表（`&` 分割；传送门创建时按难度随机其一并冻结，见 `GameWorldInfoRandomBean.GetFightSceneId`） |
+| `fight_scene_boss_ids` | string | BOSS 关战斗场景列表（`&` 分割；传送门创建时按难度随机其一并冻结） |
 | `enemy_ids` | string | 普通敌人池 npcInfoId（`&` 分割） |
 | `enemy_boss_ids` | string | **BOSS 敌人池** npcInfoId（`&` 分割） |
 | `attack_boss_num` | string | **BOSS 数量**，单值 `2` 或区间 `2-5`（空/0 = 不刷 BOSS） |
@@ -184,7 +184,7 @@ public bool IsNextBossFight()  => figthNumMax > 0 && fightNum + 1 >= figthNumMax
 - `sceneRoadNum/Length` 来自 `gameWorldInfoRandomData`
 - `figthNumMax = gameWorldInfoRandomData.fightNum`，`fightNum = 1`
 - 设魔王核心 `fightDefenseCoreData`、收集**当前出战阵容**（`userData.GetLineupFightIndex()`，在传送门详情弹窗 UIDialogPortalDetails 中选择，替代旧写死第 1 套）的全部生物到 `dlDefenseCreatureData`（不再按 `== Idle` 过滤：进阶中的魔物在开始进阶时已被移出阵容，其余 Idle/Fight/Rest 残留状态都应参战；旧 Idle 过滤会误伤上一场残留状态的阵容生物、也会缩小深渊馈赠「复制魔物」的随机池）
-- `fightSceneId = GetRandomFightScene(IsBossFight())`
+- `fightSceneId = gameWorldInfoRandomData.GetFightSceneId(difficultyLevel, IsBossFight())`（读取传送门创建时冻结的普通关/BOSS关场景，同世界重进场地固定；**不再每次 `GetRandomFightScene` 重随**）
 - `InitFightAttackData()` 生成首关进攻数据
 
 ### 进攻数据生成（InitFightAttackData）—— 含 BOSS 逻辑（重点）
@@ -206,7 +206,7 @@ public bool IsNextBossFight()  => figthNumMax > 0 && fightNum + 1 >= figthNumMax
 ### 关卡推进时的数据刷新
 
 ```csharp
-// 重载场景进 BOSS 关用：保留场上防御生物快照、fightNum++、重选场景、重算进攻数据
+// 重载场景进 BOSS 关用：保留场上防御生物快照、fightNum++、取冻结的BOSS场景、重算进攻数据
 public void InitNextData();
 // 同场景继续下一关用：不保留生物（仍在场）、fightNum++、重置进攻计时器、重算进攻数据
 public void InitNextDataForContinue();

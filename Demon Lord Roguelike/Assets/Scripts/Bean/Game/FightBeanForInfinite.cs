@@ -71,8 +71,8 @@ public class FightBeanForInfinite : FightBean
             dlDefenseCreatureData.Add(itemLineupCreature.creatureUUId, itemLineupCreature);
         }
 
-        //设置战斗场景ID(每轮都有BOSS, 取BOSS场景池)
-        fightSceneId = fightTypeConquerInfo.GetRandomFightScene(true);
+        //设置战斗场景ID(每轮都有BOSS, 读取传送门创建时冻结的BOSS场景, 同世界重复进入场地固定)
+        fightSceneId = gameWorldInfoRandomData.GetFightSceneId(gameWorldInfoRandomData.difficultyLevel, true);
         //初始化战斗数据并填充第1轮进攻队列
         fightAttackData = new FightAttackBean();
         AppendNextRoundAttackData();

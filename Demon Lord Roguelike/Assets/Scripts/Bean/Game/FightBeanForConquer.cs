@@ -115,8 +115,8 @@ public class FightBeanForConquer : FightBean
             dlDefenseCreatureData.Add(itemLineupCreature.creatureUUId, itemLineupCreature);
         }
 
-        //设置战斗场景ID(根据是否为BOSS关选择不同场景)
-        fightSceneId = fightTypeConquerInfo.GetRandomFightScene(IsBossFight());
+        //设置战斗场景ID(读取传送门创建时冻结的场景, 同世界重复进入场地固定; 普通关/BOSS关各一份冻结值)
+        fightSceneId = gameWorldInfoRandomData.GetFightSceneId(gameWorldInfoRandomData.difficultyLevel, IsBossFight());
         //初始化战斗数据
         InitFightAttackData();
     }
@@ -265,8 +265,8 @@ public class FightBeanForConquer : FightBean
             listLastDefenseFightCreatureData.Add(creatureEntity.fightCreatureData);
         }
         fightNum++;
-        //设置战斗场景ID(根据是否为BOSS关选择不同场景)
-        fightSceneId = fightTypeConquerInfo.GetRandomFightScene(IsBossFight());
+        //设置战斗场景ID(读取传送门创建时冻结的场景, BOSS关重载后沿用同一冻结场地)
+        fightSceneId = gameWorldInfoRandomData.GetFightSceneId(gameWorldInfoRandomData.difficultyLevel, IsBossFight());
         //初始化战斗数据
         InitFightAttackData();
     }

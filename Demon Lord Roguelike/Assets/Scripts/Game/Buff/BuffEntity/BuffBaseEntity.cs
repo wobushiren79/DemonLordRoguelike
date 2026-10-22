@@ -158,6 +158,23 @@ public class BuffBaseEntity
     }
     #endregion
 
+    #region 受击拦截
+    /// <summary>
+    /// 受击伤害拦截：按自身配置把 incomingDamage 中的一部分改道给代受者（默认不拦截，返回 0）
+    /// <para>由 FightCreatureEntity.UnderAttack 在无敌/闪避/暴击判定之前逐个调用持有者身上的活跃BUFF，链式分摊——
+    /// 后一个BUFF拿到的 incomingDamage 是前一个扣完后的剩余；返回额由调用方生成改道数据交给代受者结算。</para>
+    /// <para>本类自己负责受击反馈（如护盾闪白），调用方只处理伤害改道与代受者判活。</para>
+    /// </summary>
+    /// <param name="incomingDamage">本次可改道的伤害额（链式分摊时=前一个拦截BUFF扣完后的剩余，恒>0）</param>
+    /// <param name="transferApplierId">代受者UUID（返回值>0 时有效）</param>
+    /// <returns>本次改道给代受者的伤害额；0=本BUFF不拦截</returns>
+    public virtual int InterceptUnderAttack(int incomingDamage, out string transferApplierId)
+    {
+        transferApplierId = null;
+        return 0;
+    }
+    #endregion
+
     #region 事件回调
     /// <summary>
     /// 事件触发-被攻击死亡
