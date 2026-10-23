@@ -212,13 +212,26 @@ public class GameFightLogic : BaseGameLogic
     /// <summary>
     /// 设置游戏速度（Speed0 0速/Speed2 2倍速按钮开关）
     /// 只改游戏时间流速（fightData.gameSpeed），不改 Time.timeScale；速度随 fightData 仅存于本场战斗，战斗结束自然还原。
+    /// 切入0速前自动记录当前速度，关闭0速时用 <see cref="GetGameSpeedForResume"/> 恢复到暂停前速度（2倍速下暂停，恢复仍是2倍速）。
     /// </summary>
     /// <param name="gameSpeed">目标游戏速度倍率（GAME_SPEED_0X=0速暂停, 1=原速, GAME_SPEED_2X=2倍速）</param>
     public void SetGameSpeed(float gameSpeed)
     {
+        //切入0速前记录暂停前速度：关闭0速时恢复到该速度而非固定回原速
+        if (gameSpeed <= GAME_SPEED_0X && fightData.gameSpeed > GAME_SPEED_0X)
+            fightData.gameSpeedBeforePause = fightData.gameSpeed;
         fightData.gameSpeed = gameSpeed;
         //同步全部在场生物的动画播放速度，使动画节奏跟随游戏速度
         RefreshAllCreatureAnimTimeScale();
+    }
+
+    /// <summary>
+    /// 获取关闭0速时应恢复的游戏速度（= 暂停前速度；无有效记录时退回原速1）
+    /// </summary>
+    /// <returns>恢复用游戏速度倍率（1=原速, 2=2倍速）</returns>
+    public float GetGameSpeedForResume()
+    {
+        return fightData.gameSpeedBeforePause > GAME_SPEED_0X ? fightData.gameSpeedBeforePause : 1f;
     }
 
     /// <summary>

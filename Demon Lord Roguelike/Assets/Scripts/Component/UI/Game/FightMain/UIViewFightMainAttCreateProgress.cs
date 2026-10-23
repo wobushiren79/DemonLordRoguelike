@@ -151,8 +151,9 @@ public partial class UIViewFightMainAttCreateProgress : BaseUIView, IRadioButton
     /// <summary>
     /// 0速开关变化：暂停/恢复战斗游戏速度（0速=游戏时间流速归零，一切走游戏速度的逻辑与生物动画全部冻结）
     /// 与2倍速同款机制，只改 fightData.gameSpeed，不改 Time.timeScale；按钮显隐由「0倍速游戏」研究门控（UIFightMain.RefreshSpeed0ButtonShow）
+    /// 关闭0速恢复的是暂停前的速度（2倍速下暂停→恢复仍是2倍速），并把2倍速按钮选中态同步回来
     /// </summary>
-    /// <param name="isOpen">true=开启0速(暂停), false=还原原速</param>
+    /// <param name="isOpen">true=开启0速(暂停), false=恢复暂停前的速度</param>
     private void OnSpeed0Changed(bool isOpen)
     {
         var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
@@ -161,7 +162,11 @@ public partial class UIViewFightMainAttCreateProgress : BaseUIView, IRadioButton
         //0速与2倍速互斥：开启0速时取消2倍速选中态（速度由下方 SetGameSpeed 直接设置，无需回调）
         if (isOpen && ui_Speed2_RadioButtonView != null && ui_Speed2_RadioButtonView.isSelect)
             ui_Speed2_RadioButtonView.ChangeStates(false);
-        gameFightLogic.SetGameSpeed(isOpen ? GameFightLogic.GAME_SPEED_0X : 1f);
+        //开启0速=暂停；关闭0速=恢复到暂停前速度（如2倍速）
+        gameFightLogic.SetGameSpeed(isOpen ? GameFightLogic.GAME_SPEED_0X : gameFightLogic.GetGameSpeedForResume());
+        //恢复后按实际速度同步2倍速按钮选中态（暂停时被取消的选中态要补回）
+        if (!isOpen)
+            RefreshSpeed2State();
     }
 
     /// <summary>

@@ -232,6 +232,8 @@ public partial class GameWorldInfoRandomBean
         FightTypeConquerInfoBean fightTypeConquerInfo = FightTypeConquerInfoCfg.GetItemData(worldId, targetDifficultyLevel);
         if (fightTypeConquerInfo == null)
             return null;
+        //冻结本难度的BOSS种类(配置 enemy_boss_type_num 时固定为随出的若干种; 空=未配置, 出怪从整池全随机)
+        List<long> bossTypeIdList = fightTypeConquerInfo.GetRandomEnemyTypeIdList(true);
         return new GameWorldDifficultyRandomBean()
         {
             difficultyLevel = targetDifficultyLevel,
@@ -244,6 +246,11 @@ public partial class GameWorldInfoRandomBean
             //冻结本难度普通关/BOSS关战斗场景(同世界重复进入场地固定, 不再每次进战斗重新随机)
             fightSceneId = fightTypeConquerInfo.GetRandomFightScene(false),
             bossFightSceneId = fightTypeConquerInfo.GetRandomFightScene(true),
+            //冻结本难度的敌人种类(配置 enemy_type_num/enemy_boss_type_num 时固定为随出的若干种; 空=未配置, 出怪从整池全随机)
+            listEnemyTypeId = fightTypeConquerInfo.GetRandomEnemyTypeIdList(false),
+            listEnemyBossTypeId = bossTypeIdList,
+            //冻结本难度的BOSS出场阵容(BOSS数量×种类一次随出), 战斗与传送门弹窗(去重展示)共用, 保证预览=实际
+            listEnemyBossSpawnId = fightTypeConquerInfo.GetRandomEnemyBossSpawnIdList(bossTypeIdList),
             //预生成本难度的通关奖励(与通关领奖同规则), 一次性随出并冻结, 保证 UIPopupPortalDetails 预览=通关实领
             listReward = RewardSelectBean.CreateRewardListForConquer(fightTypeConquerInfo),
             //记录生成时的装备奖励池解锁签名, 供解锁新魔物掉落后判定是否需重新生成
@@ -278,6 +285,59 @@ public partial class GameWorldInfoRandomBean
             }
         }
         return difficultyRandom.listReward;
+    }
+
+    /// <summary>
+    /// 获取本世界指定难度已冻结的敌人种类集合(创建传送门时按 enemy_type_num/enemy_boss_type_num 随出并冻结, 重新挑战/切换难度后不变);
+    /// 老存档该字段缺失时按配置懒补齐并写回(补齐后同样固定); 返回空列表=该难度未配置种类数量, 出怪时从整池全随机
+    /// </summary>
+    /// <param name="targetDifficultyLevel">难度等级</param>
+    /// <param name="isBoss">true=取BOSS种类</param>
+    /// <returns>冻结的敌人种类列表; 非征服模式/无对应配置时返回null(调用方按整池全随机兜底)</returns>
+    public List<long> GetDifficultyEnemyTypeIdList(int targetDifficultyLevel, bool isBoss)
+    {
+        if (gameFightType != GameFightTypeEnum.Conquer)
+            return null;
+        GameWorldDifficultyRandomBean difficultyRandom = GetDifficultyRandom(targetDifficultyLevel);
+        if (difficultyRandom == null)
+            return null;
+        List<long> typeIdList = isBoss ? difficultyRandom.listEnemyBossTypeId : difficultyRandom.listEnemyTypeId;
+        //老存档无冻结种类 → 按配置懒补齐并写回(补齐后同世界重复进入不再变化)
+        if (typeIdList == null)
+        {
+            FightTypeConquerInfoBean fightTypeConquerInfo = FightTypeConquerInfoCfg.GetItemData(worldId, targetDifficultyLevel);
+            typeIdList = fightTypeConquerInfo == null ? new List<long>() : fightTypeConquerInfo.GetRandomEnemyTypeIdList(isBoss);
+            if (isBoss)
+                difficultyRandom.listEnemyBossTypeId = typeIdList;
+            else
+                difficultyRandom.listEnemyTypeId = typeIdList;
+        }
+        return typeIdList;
+    }
+
+    /// <summary>
+    /// 获取本世界指定难度已冻结的BOSS出场阵容(每个元素=一只BOSS的npcId, 长度=BOSS数量; 创建传送门时由 attack_boss_num × 冻结BOSS种类随出并冻结);
+    /// 战斗出怪与传送门弹窗展示(去重后的种类)共用这一份, 保证「预览=实际出场」; 重新挑战/切换难度后沿用同一阵容
+    /// </summary>
+    /// <param name="targetDifficultyLevel">难度等级</param>
+    /// <returns>BOSS出场阵容; 非征服模式/无对应配置时返回null(调用方按不刷BOSS处理); 空列表=不刷BOSS</returns>
+    public List<long> GetDifficultyEnemyBossSpawnIdList(int targetDifficultyLevel)
+    {
+        if (gameFightType != GameFightTypeEnum.Conquer)
+            return null;
+        GameWorldDifficultyRandomBean difficultyRandom = GetDifficultyRandom(targetDifficultyLevel);
+        if (difficultyRandom == null)
+            return null;
+        //老存档无冻结阵容 → 按冻结种类(或整池)+attack_boss_num 懒补齐并写回(补齐后同世界重复进入不再变化)
+        if (difficultyRandom.listEnemyBossSpawnId == null)
+        {
+            FightTypeConquerInfoBean fightTypeConquerInfo = FightTypeConquerInfoCfg.GetItemData(worldId, targetDifficultyLevel);
+            List<long> bossTypeIdList = GetDifficultyEnemyTypeIdList(targetDifficultyLevel, true);
+            difficultyRandom.listEnemyBossSpawnId = fightTypeConquerInfo == null
+                ? new List<long>()
+                : fightTypeConquerInfo.GetRandomEnemyBossSpawnIdList(bossTypeIdList);
+        }
+        return difficultyRandom.listEnemyBossSpawnId;
     }
 
     /// <summary>
@@ -668,6 +728,14 @@ public class GameWorldDifficultyRandomBean
     public long fightSceneId;
     //本难度BOSS关战斗场景id(创建传送门时一次性随出并冻结; 征服BOSS关使用, 无尽每轮也走BOSS场景池)
     public long bossFightSceneId;
+    //本难度冻结的普通敌人种类(创建传送门时按 enemy_type_num 随出并冻结, 重新挑战沿用; 空列表=未配置, 出怪时从 enemy_ids 整池全随机)
+    //null 表示老存档尚未生成, 由 GameWorldInfoRandomBean.GetDifficultyEnemyTypeIdList 懒补齐并写回
+    public List<long> listEnemyTypeId;
+    //本难度冻结的BOSS种类(创建传送门时按 enemy_boss_type_num 随出并冻结; 空列表=未配置, 出怪时从 enemy_boss_ids 整池全随机)
+    public List<long> listEnemyBossTypeId;
+    //本难度冻结的BOSS出场阵容(每个元素=一只BOSS的npcId, 长度=BOSS数量; 由 attack_boss_num 数量×冻结BOSS种类随出并冻结)
+    //战斗出怪与传送门弹窗展示(去重后的种类)共用这一份, 保证预览=实际; null 表示老存档尚未生成, 由 GetDifficultyEnemyBossSpawnIdList 懒补齐
+    public List<long> listEnemyBossSpawnId;
     //本难度预生成的通关奖励(装备+魔晶); 创建传送门时一次性随出并冻结, 保证 UIPopupPortalDetails 预览=通关实领
     public List<ItemBean> listReward = new List<ItemBean>();
     //生成奖励时的"装备奖励池解锁签名"(可生成装备的已解锁生物模型数量); 解锁新魔物掉落后此值变化, GetDifficultyReward 据此重新生成奖励

@@ -353,3 +353,4 @@ MonoBehaviour:
   uiOpenAnimTarget: {fileID: 0}
   _rectTransform: {fileID: 0}
   ui_Icon: {fileID: 3699882249794689902}
+  ui_BG: {fileID: 7319030733386452783}

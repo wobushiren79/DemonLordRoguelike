@@ -108,6 +108,7 @@ public class FightBean
     public GameFightTypeEnum gameFightType;     // 战斗类型
     public float gameTime;                       // 游戏时间
     public float gameSpeed = 1;                  // 游戏速度
+    public float gameSpeedBeforePause = 1;       // 0速暂停前的游戏速度（关闭0速时恢复到该速度）
     
     // 场景
     public int sceneRoadNum = 6;                 // 路线数量
@@ -402,9 +403,9 @@ public partial class UIFightMain : BaseUIComponent
 `UIViewFightMainAttCreateProgress` 上有两个**互斥**的速度 RadioButton——**Speed0**（`ui_Speed0_RadioButtonView`/`ui_Speed0_Button`，0速=暂停）与 **Speed2**（`ui_Speed2_RadioButtonView`/`ui_Speed2_Button`，2倍速）：
 
 - **显隐门控（两按钮同口径）**：Speed0 与 Speed2 均与世界+难度绑定——`UIFightMain.RefreshUIData` → `RefreshSpeed0ButtonShow` / `RefreshSpeed2ButtonShow`：**征服/无尽/100勇士模式**、且 `UserUnlockBean.CheckIsUnlockWorldSpeed0 / CheckIsUnlockWorldSpeed2(worldId, difficultyLevel)`（当前世界「当前难度」的「0倍速游戏」/「2倍速游戏」研究已解锁）时才显示，其他无世界概念的模式隐藏；worldId/difficultyLevel 取 `gameFightLogic.fightData.GetGameWorldInfoRandomData()`（三个世界模式 Bean 覆写返回各自随机数据）。显示时同步 `RefreshSpeed0State()/RefreshSpeed2State()` 把按钮选中态对齐 `fightData.gameSpeed`（BOSS关重载场景后选中态不丢失）。研究节点/id 块约定（nn=40~49 2倍速段 / nn=50~59 0倍速段）见 [`research-system`](../research-system/SKILL.md) 世界分支。
-- **开关语义与互斥**：默认均不开启（每场新战斗 `fightData.gameSpeed=1`）；点击切换 0速/2倍/原速，速度挂在 `fightData` 上**仅本场战斗有效**（征服 run 内跨关卡保留，战斗结束随 fightData 销毁自然还原）。开启一方时若另一方处于选中态会被 `ChangeStates(false)` 取消（速度由开启方直接 SetGameSpeed，不走回调）。
+- **开关语义与互斥**：默认均不开启（每场新战斗 `fightData.gameSpeed=1`）；点击切换 0速/2倍/原速，速度挂在 `fightData` 上**仅本场战斗有效**（征服 run 内跨关卡保留，战斗结束随 fightData 销毁自然还原）。开启一方时若另一方处于选中态会被 `ChangeStates(false)` 取消（速度由开启方直接 SetGameSpeed，不走回调）。**关闭0速恢复的是暂停前速度**（`gameSpeedBeforePause` 记录，2倍速下暂停→恢复仍是2倍速），并同步 2倍速按钮选中态。
 - **快捷键**：**F1=切换 Speed2，F2=加快进攻节奏（同点击 Quick，走 `TriggerQuickByKey` 校验 `ui_Quick` 可见才生效），Space=切换 Speed0**——由 View 重写 `OnInputActionForStarted` 处理（`InputActionUIEnum.F1/F2/Space`；Space 为 UI 映射新增动作，inputactions 绑定 `<Keyboard>/space`，与基地 Player 映射 Jump 突进互不冲突——战斗中基地控制 `enabledControl=false` 不响应突进，基地场景也无 UI 处理 Space 枚举），速度切换走与点击相同的 `SetStates(!isSelect)` 路径；按钮隐藏（未解锁研究/进度条视图隐藏）时对应快捷键无效。左下角按键提示组 `ui_UIViewPressControlForGameBase`（`UIFightMain.InitData` 切 GameFight 模式）同步提示 WASD(移动镜头)/F1(2倍速)/F2(加快进攻节奏)/Space(0倍速)，F1/F2/Space 提示显隐由 `RefreshSpeed2ButtonShow`/`RefreshQuickButtonShow`/`RefreshSpeed0ButtonShow` 同门控推送到 `SetSpeed2KeyShow`/`SetQuickKeyShow`/`SetSpeed0KeyShow`，各键悬浮气泡文本 id 2000026~2000032（详见 ui-components agent 的 UIViewPressControlForGameBase）。
-- **点击链路**：`RadioButtonView` 自身回调（`UIViewFightMainAttCreateProgress : IRadioButtonCallBack`，Awake 里 `SetCallBack(this)`）→ `RadioButtonSelected` → `OnSpeed0Changed/OnSpeed2Changed(isOpen)` → `GameFightLogic.SetGameSpeed(...)`（Speed0: `isOpen ? GAME_SPEED_0X(0) : 1`；Speed2: `isOpen ? GAME_SPEED_2X(2) : 1`）。
+- **点击链路**：`RadioButtonView` 自身回调（`UIViewFightMainAttCreateProgress : IRadioButtonCallBack`，Awake 里 `SetCallBack(this)`）→ `RadioButtonSelected` → `OnSpeed0Changed/OnSpeed2Changed(isOpen)` → `GameFightLogic.SetGameSpeed(...)`（Speed0: `isOpen ? GAME_SPEED_0X(0) : GetGameSpeedForResume()`（恢复暂停前速度）+ `RefreshSpeed2State()` 同步2倍速选中态；Speed2: `isOpen ? GAME_SPEED_2X(2) : 1`）。暂停前速度由 `SetGameSpeed` 在切入0速时写入 `fightData.gameSpeedBeforePause`。
 - **变速原理（不是 TimeScale）**：`SetGameSpeed` 只改 `fightData.gameSpeed`（游戏时间流速），不改 `Time.timeScale`（TimeScale 保留给暂停/BOSS特写减速）；0速下一切走游戏速度的逻辑全部冻结（等效战斗暂停）。全场节奏一致靠两条路径：① `UpdateGame` 的 `updateTime = Time.deltaTime * fightData.gameSpeed`（刷怪/BUFF/魔王/RCD）；② 不经 UpdateGame 驱动的战斗系统（AI意图移动/攻击计时、弹道飞行、掉落物寿命）统一用 `GameFightLogic.GetFightDeltaTime()`（= `Time.deltaTime × GetCurrentGameSpeed()`，非战斗场景恒 1 倍）替代 `Time.deltaTime`。**新增战斗内按时间推进的逻辑时，必须用 `GetFightDeltaTime()` 而不是 `Time.deltaTime`**。**唯一例外**：魔晶飞回段（`FightDropCrystalInstanceRenderer` 的 FlyBack）用 `Time.deltaTime × Mathf.Max(1, GetCurrentGameSpeed())`——0倍速下点击拾取的魔晶仍按原速飞回魔王入账（其余掉落/寿命逻辑仍冻结），而 ESC 系统界面/故事演出等 `Time.timeScale=0` 的暂停下 `Time.deltaTime=0` 照常冻结。
 - **动画同步**：`SetGameSpeed` 同时 `RefreshAllCreatureAnimTimeScale()` 给全部在场生物 `SetAnimTimeScale(gameSpeed)`（`SkeletonAnimation.timeScale`，与各 PlayAnim 的 animSpeed 相乘叠加；0速=动画定格）；新建生物在 `FightCreatureEntity.SetData` 里自动按当前游戏速度初始化，2倍速中途生成的生物动画也是 2 倍。
 
@@ -539,6 +540,8 @@ var coreCreature = gameLogic.fightData.fightDefenseCoreCreature;
 ```csharp
 var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
 gameLogic.SetGameSpeed(GameFightLogic.GAME_SPEED_2X);  // 2倍速（同步刷新全部在场生物动画速度）
+gameLogic.SetGameSpeed(GameFightLogic.GAME_SPEED_0X);  // 0速暂停（自动记录暂停前速度=2）
+gameLogic.SetGameSpeed(gameLogic.GetGameSpeedForResume()); // 恢复暂停前速度（2倍速）
 gameLogic.SetGameSpeed(1.0f);                          // 正常速度
 ```
 

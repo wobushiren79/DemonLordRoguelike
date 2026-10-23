@@ -36,6 +36,14 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	/// </summary>
 	public string enemy_boss_ids;
 	/// <summary>
+	///普通敌人种类数量(单个数x或范围x-y; 留空=每次出怪从整池全随机)
+	/// </summary>
+	public string enemy_type_num;
+	/// <summary>
+	///boss种类数量(单个数x或范围x-y; 留空=每次出怪从整池全随机)
+	/// </summary>
+	public string enemy_boss_type_num;
+	/// <summary>
 	///boss数量(单个数x或范围x-y)
 	/// </summary>
 	public string attack_boss_num;

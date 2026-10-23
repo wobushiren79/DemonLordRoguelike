@@ -67,6 +67,123 @@ public partial class FightTypeConquerInfoBean
     }
 
     /// <summary>
+    /// 获取敌人池数组(普通取 enemy_ids / BOSS 取 enemy_boss_ids, &amp; 分隔; 结果缓存)
+    /// </summary>
+    /// <param name="isBoss">true=取BOSS池</param>
+    /// <returns>敌人 npcInfoId 数组</returns>
+    public long[] GetEnemyIdArray(bool isBoss)
+    {
+        if (isBoss)
+        {
+            if (emenyBossIds == null)
+                emenyBossIds = enemy_boss_ids.SplitForArrayLong('&');
+            return emenyBossIds;
+        }
+        if (emenyIds == null)
+            emenyIds = enemy_ids.SplitForArrayLong('&');
+        return emenyIds;
+    }
+
+    /// <summary>
+    /// 获取随机的敌人种类数量(解析 enemy_type_num / enemy_boss_type_num, 支持单值"x"或区间"x-y")
+    /// 未配置(留空)返回0, 表示保持原逻辑: 每次出怪从整池全随机
+    /// </summary>
+    /// <param name="isBoss">true=取BOSS种类数量(enemy_boss_type_num)</param>
+    /// <returns>本次冻结的敌人种类数量; 0=未配置(全随机)</returns>
+    public int GetRandomEnemyTypeNum(bool isBoss)
+    {
+        string value = isBoss ? enemy_boss_type_num : enemy_type_num;
+        if (value.IsNull())
+            return 0;
+        return ParseRandomRange(value, 0);
+    }
+
+    /// <summary>
+    /// 按配置随出本难度的敌人种类集合(传送门创建时调用一次并冻结, 之后重新挑战/切难度均沿用):
+    /// 未配置种类数量返回空列表(出怪时从整池全随机); 配置后从池中随机取不重复的 N 种(N 由区间随机), N 不小于池大小时取全池
+    /// </summary>
+    /// <param name="isBoss">true=取BOSS种类(池为 enemy_boss_ids)</param>
+    /// <returns>冻结的敌人种类列表; 空列表=未配置(全随机)</returns>
+    public List<long> GetRandomEnemyTypeIdList(bool isBoss)
+    {
+        List<long> result = new List<long>();
+        int typeNum = GetRandomEnemyTypeNum(isBoss);
+        if (typeNum <= 0)
+            return result;
+        long[] pool = GetEnemyIdArray(isBoss);
+        if (pool == null || pool.Length == 0)
+            return result;
+        //池内去重(同一种敌人可能被重复配置), 同时避免洗牌后取到重复种类
+        List<long> distinctPool = new List<long>();
+        for (int i = 0; i < pool.Length; i++)
+        {
+            if (!distinctPool.Contains(pool[i]))
+                distinctPool.Add(pool[i]);
+        }
+        if (typeNum >= distinctPool.Count)
+            return distinctPool;
+        //洗牌后取前 N 个: 保证种类不重复且随机
+        for (int i = distinctPool.Count - 1; i > 0; i--)
+        {
+            int index = UnityEngine.Random.Range(0, i + 1);
+            long temp = distinctPool[i];
+            distinctPool[i] = distinctPool[index];
+            distinctPool[index] = temp;
+        }
+        for (int i = 0; i < typeNum; i++)
+            result.Add(distinctPool[i]);
+        return result;
+    }
+
+    /// <summary>
+    /// 按 attack_boss_num 随出本难度的BOSS出场阵容(每个元素=一只BOSS的 npcId, 元素个数=BOSS数量):
+    /// 每只BOSS从 bossTypeIdList(冻结的BOSS种类) 中随机取; bossTypeIdList 为空时从 enemy_boss_ids 整池随机。
+    /// 世界生成时调用一次并冻结, 战斗出怪与传送门弹窗展示(去重后的种类)共用同一份, 保证「预览=实际出场」
+    /// </summary>
+    /// <param name="bossTypeIdList">本难度冻结的BOSS种类(空/null=从 enemy_boss_ids 整池随机)</param>
+    /// <returns>BOSS出场阵容; BOSS数量<=0 或池为空时返回空列表</returns>
+    public List<long> GetRandomEnemyBossSpawnIdList(List<long> bossTypeIdList)
+    {
+        List<long> result = new List<long>();
+        int bossNum = GetRandomBossNum();
+        if (bossNum <= 0)
+            return result;
+        //种类池为空(未配置种类数量)时用整池; 池本身为空属配置错误, 直接不出BOSS
+        List<long> randomPool = bossTypeIdList;
+        if (randomPool == null || randomPool.Count == 0)
+        {
+            long[] bossPool = GetEnemyIdArray(true);
+            if (bossPool == null || bossPool.Length == 0)
+                return result;
+            randomPool = new List<long>(bossPool);
+        }
+        for (int i = 0; i < bossNum; i++)
+        {
+            long bossId = randomPool.GetRandomData();
+            if (bossId > 0)
+                result.Add(bossId);
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// 本难度是否会刷出BOSS(attack_boss_num 配置了大于0的数量; 留空/0/区间上限为0 均视为不刷BOSS)
+    /// 注: 传送门弹窗的BOSS展示已改用世界生成时冻结的出场阵容(GameWorldInfoRandomBean.GetDifficultyEnemyBossSpawnIdList),
+    /// 该方法仅保留做配置层面的快速判定
+    /// </summary>
+    /// <returns>true=会刷BOSS</returns>
+    public bool HasBossSpawn()
+    {
+        if (attack_boss_num.IsNull())
+            return false;
+        string value = attack_boss_num.Trim();
+        int splitIndex = value.IndexOf('-');
+        if (splitIndex < 0)
+            return int.TryParse(value, out int single) && single > 0;
+        return int.TryParse(value.Substring(splitIndex + 1).Trim(), out int max) && max > 0;
+    }
+
+    /// <summary>
     /// 获取随机关卡次数(解析 fight_num 字段, 支持单值"x"或区间"x-y")
     /// </summary>
     public int GetRandomFightNum()

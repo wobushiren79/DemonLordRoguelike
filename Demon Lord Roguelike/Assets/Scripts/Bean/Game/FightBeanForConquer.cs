@@ -124,7 +124,8 @@ public class FightBeanForConquer : FightBean
     /// <summary>
     /// 初始化战斗数据
     /// 普通波次始终使用 enemy_ids 敌人池(BOSS关与非BOSS关逻辑一致)，在 attack_show_time 内随机但相对均匀地排布；
-    /// BOSS关额外从 enemy_boss_ids 生成BOSS敌人，出现在进攻总时间的中后段并触发BOSS特写UI
+    /// 配置了 enemy_type_num 时改用传送门创建时冻结的若干种敌人(本难度内固定, 重新挑战不变)，否则整池全随机；
+    /// BOSS关额外从本难度冻结的BOSS出场阵容生成BOSS敌人，出现在进攻总时间的中后段并触发BOSS特写UI(数量与种类世界生成时已定, 重新挑战一致)
     /// </summary>
     public void InitFightAttackData()
     {
@@ -150,23 +151,31 @@ public class FightBeanForConquer : FightBean
         var userTempData = GameDataHandler.Instance.manager.GetUserData().GetUserTempData();
         intensityRate *= userTempData.GetEnemyIntensityRate();
 
+        //本难度冻结的普通敌人种类(传送门创建时按 enemy_type_num 随出并冻结; 空=未配置, 从整池全随机)
+        List<long> enemyTypeIdList = gameWorldInfoRandomData.GetDifficultyEnemyTypeIdList(gameWorldInfoRandomData.difficultyLevel, false);
+
         //普通波次：将 [0, showTime] 区间均分为 waveNum 段，在每段内随机一个出现时刻，整体随机但不至于过度聚集
         //BOSS关也照常出 enemy_ids 的普通敌人，逻辑与非BOSS关一致
         float bucket = showTime / waveNum;
         for (int i = 0; i < waveNum; i++)
         {
             float spawnTime = (i + UnityEngine.Random.value) * bucket;
-            long enemyId = fightTypeConquerInfo.GetRandomEmenyId(false);
+            //配置了敌人种类数量时只在冻结的若干种里随机，否则从 enemy_ids 整池全随机
+            long enemyId = enemyTypeIdList != null && enemyTypeIdList.Count > 0
+                ? enemyTypeIdList.GetRandomData()
+                : fightTypeConquerInfo.GetRandomEmenyId(false);
             SpawnEvent normalEvent = new SpawnEvent(spawnTime, enemyId);
             //普通敌人按关卡强度倍率提升
             normalEvent.intensityRate = intensityRate;
             spawnEvents.Add(normalEvent);
         }
 
-        //BOSS关：额外生成BOSS敌人(来自 enemy_boss_ids)，BOSS 同样享受本关强度倍率
+        //BOSS关：额外生成BOSS敌人(来自本难度冻结的BOSS出场阵容)，BOSS 同样享受本关强度倍率
         if (isBoss)
         {
-            AddBossSpawnEvents(spawnEvents, showTime, intensityRate);
+            //本难度冻结的BOSS出场阵容(传送门创建时由 attack_boss_num 数量 × BOSS种类随出并冻结; 重新挑战/同难度沿用同一份)
+            List<long> bossSpawnIdList = gameWorldInfoRandomData.GetDifficultyEnemyBossSpawnIdList(gameWorldInfoRandomData.difficultyLevel);
+            AddBossSpawnEvents(spawnEvents, showTime, intensityRate, bossSpawnIdList);
         }
 
         //按出现时间升序排序，保证队列按时间顺序出怪
@@ -192,17 +201,19 @@ public class FightBeanForConquer : FightBean
 
     /// <summary>
     /// 生成BOSS出怪事件
-    /// BOSS数量由 attack_boss_num 决定(支持单值"x"或区间"x-y")，出现在进攻总时间的中后段[50%,90%]随机时刻，
-    /// 多个BOSS在该时刻略微错开依次入场，并由首个BOSS携带全部BOSS的npcId用于一次性BOSS特写展示；
+    /// BOSS数量与种类取世界生成时冻结的出场阵容 bossSpawnIdList(长度=BOSS数量, 由 attack_boss_num × BOSS种类随出),
+    /// 出现在进攻总时间的中后段[50%,90%]随机时刻，多个BOSS在该时刻略微错开依次入场，
+    /// 并由首个BOSS携带全部BOSS的npcId用于一次性BOSS特写展示；
     /// BOSS 与普通敌人一样按本关强度倍率(intensityRate)提升 HP/护甲/攻击力
     /// </summary>
     /// <param name="spawnEvents">出怪事件列表(会被追加BOSS事件)</param>
     /// <param name="showTime">本关进攻总时间</param>
     /// <param name="intensityRate">本关强度倍率(同普通敌人，作用到 HP/护甲/攻击力)</param>
-    private void AddBossSpawnEvents(List<SpawnEvent> spawnEvents, float showTime, float intensityRate)
+    /// <param name="bossSpawnIdList">本难度冻结的BOSS出场阵容(每个元素=一只BOSS; 空/null=不刷BOSS)</param>
+    private void AddBossSpawnEvents(List<SpawnEvent> spawnEvents, float showTime, float intensityRate, List<long> bossSpawnIdList)
     {
-        //BOSS数量
-        int bossNum = fightTypeConquerInfo.GetRandomBossNum();
+        //BOSS数量 = 冻结阵容长度(attack_boss_num 已在世界生成时随好)
+        int bossNum = bossSpawnIdList == null ? 0 : bossSpawnIdList.Count;
         if (bossNum <= 0)
             return;
 
@@ -216,7 +227,7 @@ public class FightBeanForConquer : FightBean
         List<SpawnEvent> bossEvents = new List<SpawnEvent>();
         for (int i = 0; i < bossNum; i++)
         {
-            long bossId = fightTypeConquerInfo.GetRandomEmenyId(true);
+            long bossId = bossSpawnIdList[i];
             bossNpcIds.Add(bossId);
             float bossTime = bossAppearTime + i * bossStagger;
             SpawnEvent bossEvent = new SpawnEvent(bossTime, bossId);

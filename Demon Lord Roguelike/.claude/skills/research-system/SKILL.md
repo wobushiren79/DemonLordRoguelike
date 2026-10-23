@@ -255,6 +255,7 @@ public enum UnlockEnum : long
     PortalPreviewFightNum = 100300003,   // 传送门详情预览-关卡数
     PortalPreviewRoadLength = 100300004, // 传送门详情预览-路径长度
     PortalPreviewReward = 100300005,     // 传送门详情预览-奖励道具
+    PortalPreviewCreature = 100300011,   // 传送门详情-来袭魔物预览(挑战100勇士与征服共用,门控 UIDialogPortalDetails 敌人列表;前置=奖励预览100300005;100300010已被旧 UnlockInfo 条目占用故取011)
     PortalRefreshNum = 100300006,        // 传送门刷新次数(研究等级=可用刷新次数上限,通关回满,level_max=10)
     ChallengeHundredShowRate = 100300007, // 是魔王就挑战100勇士出现概率(研究等级×10=传送门世界刷为该模式的概率百分数0~100;前置=100勇士难度2研究100310160,同世界分支;详情 details=900000022 含{Value}占位,气泡拼接填待解锁级概率)
     InfiniteShowRate = 100300008,        // 无尽模式出现概率(基础10+研究等级×10=概率百分数,9级满级=100;前置=无尽难度2研究100310102,同世界分支;详情复用 details=900000022)
@@ -263,7 +264,7 @@ public enum UnlockEnum : long
     GashaponRarityR = 100401000,       // 稀有度R
     GashaponRarityRRate = 100401001,   // 稀有度R +1%
     // ... 更多见源文件
-    LineupCreatureAddNum = 200000001,  // 阵容生物上限+1
+    LineupCreatureAddNum = 200000001,  // 阵容生物上限+1(level_max=30;pay_crystal 30档全展开:首级1,2~21级每级+50(50→1000),22~30级每级+500(1500→5500),不再靠越界钳制复用末档)
     LineupNum = 200100001,             // 解锁多阵容
     DropCrystalLifeTime = 200200001,   // 魔晶掉落物存在时长+5秒/级(level_max=6)
     DemonLordMPMax = 200300001,        // 魔王魔力上限+10/级(level_max=100,满级+1000;消耗100*1=首级100每级+100)
@@ -297,6 +298,9 @@ public enum UnlockEnum : long
 | `PortalPreviewFightNum` | 100300003 | 关卡数 | FightNum | 无尽模式不展示 |
 | `PortalPreviewRoadLength` | 100300004 | 路径长度 | RoadLength | UI 文本 id 414；无尽模式不展示 |
 | `PortalPreviewReward` | 100300005 | 奖励道具 | 奖励缓存池(`ui_UIViewItem` 模板) | 无尽模式不展示 |
+| `PortalPreviewCreature` | 100300011 | 来袭魔物列表（**难度选择对话框** `UIDialogPortalDetails`，非气泡） | `ui_CreatureList`（魔物/BOSS 图标） | 100勇士与征服共用；未解锁整区隐藏且不实例化魔物；前置=奖励预览；1000 魔晶 |
+
+> **来袭魔物预览（100300011）**：`research_type=1` 设施节点，`level_max=1`，`pay_crystal=1000`，`pre_unlock_ids="100300005"`（前置=奖励预览），position(0,-1000) 挂在奖励节点正下方，`icon_res=ui_research_59`（与预览组同款），`name`=同id。C# 门控在 `UIDialogPortalDetails.SetData`：`isShowCreatureList = (挑战100勇士 || 征服) && userUnlock.CheckIsUnlock(UnlockEnum.PortalPreviewCreature)`，为 false 时 `ui_CreatureList` 隐藏、`RefreshCreatureList()` 清空后直接返回。**注意 id 用 011 而非 010**——`excel_unlock_info` 中 100300010 是旧条目「传送门可选择世界+10」（无研究节点、代码不引用），避免重号。
 
 > 同段 `PortalShowNum`(100300001) 为传送门显示数量、`PortalRefreshNum`(100300006) 为传送门刷新次数（研究等级=可用刷新次数上限，`level_max=10`，**征服**每通关一次世界回满；无尽/挑战100勇士挑战结束只消耗该世界、不回满；`UIBasePortal` 用 `CheckIsUnlockPortalRefresh` 门控刷新按钮显隐、`GetUnlockPortalRefreshMax` 取上限），均属同一 1003 设施段。上述节点均落在 `excel_research_info`(各一条 `research_type=1` 节点) + `excel_unlock_info`(`unlock_type=0`，`id` 同 `unlock_id`) + 多语言 `Language_ResearchInfo`(节点名 textId)。
 

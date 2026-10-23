@@ -293,6 +293,7 @@ public enum UnlockEnum : long
     PortalPreviewFightNum = 100300003, //传送门详情-关卡数量预览(研究门控)
     PortalPreviewRoadLength = 100300004, //传送门详情-路径长度预览(研究门控)
     PortalPreviewReward = 100300005, //传送门详情-奖励预览(研究门控)
+    PortalPreviewCreature = 100300011, //传送门详情-来袭魔物预览(研究门控;挑战100勇士与征服共用,未解锁时详情弹窗不显示敌人列表;前置=奖励预览100300005;注:100300010已被旧UnlockInfo条目"传送门可选择世界+10"占用,故取011)
     PortalRefreshNum = 100300006, //传送门刷新次数(研究等级=可用刷新次数上限,通关世界回满)
     ChallengeHundredShowRate = 100300007, //是魔王就挑战100勇士-出现概率(研究等级×10%=传送门世界刷新为该模式的概率;前置=剑与魔法征服难度2研究100310112)
     InfiniteShowRate = 100300008, //无尽模式-出现概率(基础10%+研究等级×10%,9级满级=100%;前置=任意一个世界无尽已解锁,走pre_data条件AnyWorldInfiniteUnlocked)

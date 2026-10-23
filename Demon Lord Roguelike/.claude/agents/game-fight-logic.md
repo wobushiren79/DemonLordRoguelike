@@ -70,7 +70,8 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 
 ### 游戏速度（Speed0 0速暂停 / Speed2 2倍速）
 - `UpdateGame` 的 `updateTime = Time.deltaTime * fightData.gameSpeed`——游戏时间流速倍率挂在 fightData 上（默认1，仅本场战斗有效，不改 Time.timeScale）；`gameSpeed=0` 即战斗暂停（一切走游戏速度的逻辑冻结）。
-- `SetGameSpeed(float)`（public）- Speed0/Speed2 按钮入口：写 `fightData.gameSpeed` 并 `RefreshAllCreatureAnimTimeScale()` 给全部在场生物（防守核心+进攻/防守）`SetAnimTimeScale(gameSpeed)`（=`SkeletonAnimation.timeScale`，0=动画定格）；新建生物在 `FightCreatureEntity.SetData` 里按当前速度自动初始化。
+- `SetGameSpeed(float)`（public）- Speed0/Speed2 按钮入口：写 `fightData.gameSpeed` 并 `RefreshAllCreatureAnimTimeScale()` 给全部在场生物（防守核心+进攻/防守）`SetAnimTimeScale(gameSpeed)`（=`SkeletonAnimation.timeScale`，0=动画定格）；新建生物在 `FightCreatureEntity.SetData` 里按当前速度自动初始化。**切入0速前自动把当时速度记入 `fightData.gameSpeedBeforePause`**（已是0速不覆盖），关闭0速走 `GetGameSpeedForResume()` 恢复——2倍速下暂停、恢复仍是2倍速（2026-10-23）。
+- `GetGameSpeedForResume()`（public）- 关闭0速时应恢复的速度（= `fightData.gameSpeedBeforePause`，无有效记录退回 1），保证 2倍速→0速暂停→恢复仍是 2倍速。
 - `GetCurrentGameSpeed()`（static）- 当前战斗速度（非战斗逻辑/无 fightData 恒1）；`GetFightDeltaTime()`（static）= `Time.deltaTime × GetCurrentGameSpeed()`——**不经 UpdateGame 驱动的战斗系统（AI意图、弹道、掉落物寿命）统一用它替代 `Time.deltaTime`**，新增战斗内计时逻辑同此约定。常量 `GAME_SPEED_0X = 0`（Speed0 暂停，研究门控）、`GAME_SPEED_2X = 2`（Speed2 研究门控）；按钮显隐/互斥/快捷键(F1=Speed0/F2=Speed2)见 game-fight-system SKILL，Speed0/Speed2 研究门控见 research-system SKILL。
 
 ### 重新挑战（ESC 系统界面「重新挑战」按钮，2026-10 新增）

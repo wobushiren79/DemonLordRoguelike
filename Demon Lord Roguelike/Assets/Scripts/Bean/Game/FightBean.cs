@@ -10,6 +10,7 @@ public class FightBean
 
     public float gameTime = 0;//游戏时间
     public float gameSpeed = 1;//游戏速度
+    public float gameSpeedBeforePause = 1;//0速暂停前的游戏速度（关闭0速时恢复到该速度，如2倍速暂停→恢复仍2倍速）
 
     public long fightSceneId;//战斗场景Id;
 

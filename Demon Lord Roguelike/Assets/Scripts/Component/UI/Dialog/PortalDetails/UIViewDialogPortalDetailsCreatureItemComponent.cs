@@ -1,9 +1,11 @@
-using Spine.Unity;
+﻿using UnityEngine.UI;
 
 
 public partial class UIViewDialogPortalDetailsCreatureItem
 {
-    public SkeletonGraphic ui_Icon;
+    public SkeletonGraphicExtend ui_Icon;
+
+    public Image ui_BG;
 
 
 }

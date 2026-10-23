@@ -68,6 +68,8 @@ public static class ColorUtil
     public static readonly Color PortalInfinitePurple = ParseHtmlString("#5B2C6F");
     /// <summary>传送门BG/悬停气泡底色-挑战100勇士 金色(#D4AF37)</summary>
     public static readonly Color PortalChallengeHundredGold = ParseHtmlString("#D4AF37");
+    /// <summary>传送门详情弹窗-来袭魔物BOSS底色 低饱和红(#B85656)，用于区分普通魔物(白底)与BOSS</summary>
+    public static readonly Color PortalCreatureBossRed = ParseHtmlString("#B85656");
     #endregion
 
     #region 通用达上限警示红

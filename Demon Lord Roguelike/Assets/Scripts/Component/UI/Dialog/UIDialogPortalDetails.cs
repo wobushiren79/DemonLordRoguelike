@@ -37,7 +37,9 @@ public partial class UIDialogPortalDetails : DialogView
     protected bool isAnimating;
     //挑战100勇士-来袭魔物item列表(动态实例化, 模板 ui_UIViewDialogPortalDetailsCreatureItem 不列入)
     protected List<UIViewDialogPortalDetailsCreatureItem> listCreatureItem;
-    //来袭魔物item最大水平间距(数量多时间距按容器宽度收缩)
+    //来袭魔物列表是否显示(挑战100勇士/征服 且已解锁「来袭魔物预览」研究 PortalPreviewCreature; 未解锁不显示敌人)
+    protected bool isShowCreatureList;
+    //来袭魔物item基准尺寸(容器未完成布局时的兜底值; 正常按「容器高」定 item 尺寸、「容器宽/数量」定间距, 两者恒相等不叠压)
     protected const float creatureItemSpacing = 230f;
     #endregion
 
@@ -53,9 +55,11 @@ public partial class UIDialogPortalDetails : DialogView
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
 
-        //三种模式统一走难度选择器; 挑战100勇士额外显示来袭魔物列表
+        //三种模式统一走难度选择器; 挑战100勇士与征服额外显示来袭魔物列表(需已解锁「来袭魔物预览」研究, 两种模式共用该研究)
         bool isChallengeHundred = gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred;
         bool isInfinite = gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Infinite;
+        bool isConquer = gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Conquer;
+        isShowCreatureList = (isChallengeHundred || isConquer) && userUnlock.CheckIsUnlock(UnlockEnum.PortalPreviewCreature);
 
         //先按模式归位容器显隐(弹窗复用时防上次打开残留); 必须在量取容器宽高/刷新item之前激活
         if (ui_Difficulty != null)
@@ -63,7 +67,7 @@ public partial class UIDialogPortalDetails : DialogView
         ui_DifficultySelectLeftBtn.gameObject.SetActive(true);
         ui_DifficultySelectRightBtn.gameObject.SetActive(true);
         if (ui_CreatureList != null)
-            ui_CreatureList.gameObject.SetActive(isChallengeHundred);
+            ui_CreatureList.gameObject.SetActive(isShowCreatureList);
 
         if (isInfinite)
         {
@@ -103,9 +107,8 @@ public partial class UIDialogPortalDetails : DialogView
         //难度选择器与来袭魔物列表的位置/高度完全沿用 prefab 默认布局, 运行时不改兄弟顺序与间距
         InitItemPool();
         RefreshItemsImmediate(gameWorldInfoRandom.difficultyLevel);
-        //挑战100勇士: 按当前活动难度重建来袭魔物列表
-        if (isChallengeHundred)
-            SetDataForChallengeHundred();
+        //挑战100勇士 / 征服: 按当前活动难度重建来袭魔物列表
+        RefreshCreatureList();
 
         //出战阵容选择区: 已解锁阵容数量>=2才显示, 默认选中上次保存的出战阵容
         int lineupNum = userUnlock.GetUnlockLineupNum();
@@ -180,9 +183,11 @@ public partial class UIDialogPortalDetails : DialogView
     }
 
     /// <summary>
-    /// 设置挑战100勇士模式数据: 按冻结配置行(challengeHundredRowId)的敌人列表去重后动态实例化来袭魔物item, 手动等距居中排布
+    /// 按当前活动难度重建「来袭魔物」列表(挑战100勇士 / 征服共用), 手动等距居中排布;
+    /// 挑战100勇士: 冻结配置行的敌人去重展示, 真勇士(BOSS挑战)整组红底;
+    /// 征服: 普通敌人在前、BOSS在后(BOSS红底), 配置了种类数量时展示世界生成时冻结的种类, 否则展示整池可能出现的敌人
     /// </summary>
-    protected void SetDataForChallengeHundred()
+    protected void RefreshCreatureList()
     {
         if (ui_UIViewDialogPortalDetailsCreatureItem == null || ui_CreatureList == null)
             return;
@@ -199,7 +204,54 @@ public partial class UIDialogPortalDetails : DialogView
         listCreatureItem = new List<UIViewDialogPortalDetailsCreatureItem>();
         //模板item保持隐藏作为克隆蓝本
         ui_UIViewDialogPortalDetailsCreatureItem.gameObject.SetActive(false);
+        //未解锁「来袭魔物预览」研究(或非征服/100勇士模式): 不显示敌人
+        if (!isShowCreatureList)
+            return;
 
+        //收集本次要展示的魔物(普通在前、BOSS在后)及各自是否BOSS
+        List<long> enemyIds = new List<long>();
+        List<bool> isBossList = new List<bool>();
+        if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred)
+            CollectChallengeHundredCreatureIds(enemyIds, isBossList);
+        else if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Conquer)
+            CollectConquerCreatureIds(enemyIds, isBossList);
+        else
+            return;
+
+        //动态实例化魔物item, 手动等距居中排布:
+        //每格横向占位 = 容器宽/数量(整排刚好铺满且两端不出界), item 尺寸取 min(容器高, 占位宽);
+        //间距恒等于 item 尺寸 → 不论数量多少相邻 item 都不叠压(数量少时间距自动放大, 数量多时同步缩小)
+        int count = enemyIds.Count;
+        float containerWidth = ui_CreatureList.rect.width;
+        float containerHeight = ui_CreatureList.rect.height;
+        //容器尚未完成布局(宽高为0)时的兜底基准尺寸
+        float baseSize = containerHeight > 0 ? containerHeight : creatureItemSpacing;
+        float spacing = count > 0 && containerWidth > 0 ? Mathf.Min(baseSize, containerWidth / count) : baseSize;
+        float itemSize = spacing;
+        for (int i = 0; i < count; i++)
+        {
+            GameObject objItem = Instantiate(ui_UIViewDialogPortalDetailsCreatureItem.gameObject, ui_CreatureList);
+            objItem.transform.localScale = Vector3.one;
+            //实例化尺寸=每格占位(spacing), 保持方形背景不变形, 并让 Spine 按该高度等比适配(ApplyCardIconSizeFit 读父容器高度)
+            RectTransform itemRect = objItem.transform as RectTransform;
+            if (itemSize > 0)
+                itemRect.sizeDelta = new Vector2(itemSize, itemSize);
+            UIViewDialogPortalDetailsCreatureItem itemView = objItem.GetComponent<UIViewDialogPortalDetailsCreatureItem>();
+            itemView.SetData(enemyIds[i], isBossList[i]);
+            //以容器中心为原点等距排布
+            float posX = (i - (count - 1) / 2f) * spacing;
+            itemRect.anchoredPosition = new Vector2(posX, 0);
+            listCreatureItem.Add(itemView);
+        }
+    }
+
+    /// <summary>
+    /// 收集挑战100勇士的来袭魔物: 冻结配置行(challengeHundredRowId)的敌人列表去重; 真勇士(BOSS挑战)整组标记为BOSS(红底)
+    /// </summary>
+    /// <param name="enemyIds">收集到的魔物id列表(输出)</param>
+    /// <param name="isBossList">与id一一对应的是否BOSS标记(输出)</param>
+    protected void CollectChallengeHundredCreatureIds(List<long> enemyIds, List<bool> isBossList)
+    {
         //取传送门生成时冻结的配置行
         var challengeHundredInfo = FightTypeChallengeHundredInfoCfg.GetItemData(gameWorldInfoRandom.challengeHundredRowId);
         if (challengeHundredInfo == null)
@@ -207,36 +259,77 @@ public partial class UIDialogPortalDetails : DialogView
             LogUtil.LogError($"挑战100勇士详情弹窗找不到配置行 rowId:{gameWorldInfoRandom.challengeHundredRowId}");
             return;
         }
-        //敌人列表去重(同一魔物可能重复配置)
-        List<long> enemyIds = new List<long>();
-        long[] enemyIdArray = challengeHundredInfo.GetEnemyIdList();
-        for (int i = 0; i < enemyIdArray.Length; i++)
-        {
-            if (!enemyIds.Contains(enemyIdArray[i]))
-                enemyIds.Add(enemyIdArray[i]);
-        }
-        //动态实例化魔物item, 手动等距居中排布(数量多时间距收缩)
-        int count = enemyIds.Count;
-        float spacing = creatureItemSpacing;
-        float containerWidth = ui_CreatureList.rect.width;
-        if (count > 1 && containerWidth > 0 && spacing * (count - 1) > containerWidth)
-            spacing = containerWidth / (count - 1);
-        for (int i = 0; i < count; i++)
-        {
-            GameObject objItem = Instantiate(ui_UIViewDialogPortalDetailsCreatureItem.gameObject, ui_CreatureList);
-            objItem.transform.localScale = Vector3.one;
-            //实例化尺寸跟随来袭魔物容器高度(当前 prefab 300), 保持方形背景不变形, 并让 Spine 按该高度等比适配
-            RectTransform itemRect = objItem.transform as RectTransform;
-            float itemSize = ui_CreatureList.rect.height;
-            if (itemSize > 0)
-                itemRect.sizeDelta = new Vector2(itemSize, itemSize);
-            UIViewDialogPortalDetailsCreatureItem itemView = objItem.GetComponent<UIViewDialogPortalDetailsCreatureItem>();
-            itemView.SetData(enemyIds[i]);
-            //以容器中心为原点等距排布
-            float posX = (i - (count - 1) / 2f) * spacing;
-            (objItem.transform as RectTransform).anchoredPosition = new Vector2(posX, 0);
-            listCreatureItem.Add(itemView);
-        }
+        //真勇士(BOSS挑战)整组按BOSS红底展示
+        bool isBossChallenge = gameWorldInfoRandom.IsChallengeHundredBossChallenge(gameWorldInfoRandom.difficultyLevel);
+        AddCreatureIds(enemyIds, isBossList, challengeHundredInfo.GetEnemyIdList(), isBossChallenge);
+    }
+
+    /// <summary>
+    /// 收集征服的来袭魔物: 普通敌人在前、BOSS在后(均去重);
+    /// 配置了 enemy_type_num/enemy_boss_type_num 的难度展示世界生成时冻结的种类, 未配置则展示整池可能出现的敌人
+    /// </summary>
+    /// <param name="enemyIds">收集到的魔物id列表(输出)</param>
+    /// <param name="isBossList">与id一一对应的是否BOSS标记(输出)</param>
+    protected void CollectConquerCreatureIds(List<long> enemyIds, List<bool> isBossList)
+    {
+        var conquerInfo = FightTypeConquerInfoCfg.GetItemData(gameWorldInfoRandom.worldId, gameWorldInfoRandom.difficultyLevel);
+        if (conquerInfo == null)
+            return;
+        //普通敌人: 优先取冻结种类, 未配置(空)时展示整池(全随机下整池都可能出现)
+        List<long> normalTypeIds = gameWorldInfoRandom.GetDifficultyEnemyTypeIdList(gameWorldInfoRandom.difficultyLevel, false);
+        if (normalTypeIds != null && normalTypeIds.Count > 0)
+            AddCreatureIds(enemyIds, isBossList, normalTypeIds, false);
+        else
+            AddCreatureIds(enemyIds, isBossList, conquerInfo.GetEnemyIdArray(false), false);
+        //BOSS: 按世界生成时冻结的出场阵容(每个元素=一只BOSS)去重展示——只显示本次真正会出现的种类;
+        //例如 attack_boss_num=5 且 5 只里只有 3 种, 就只显示这 3 种; 阵容为空(不刷BOSS)不显示
+        List<long> bossSpawnIds = gameWorldInfoRandom.GetDifficultyEnemyBossSpawnIdList(gameWorldInfoRandom.difficultyLevel);
+        AddCreatureIds(enemyIds, isBossList, bossSpawnIds, true);
+    }
+
+    /// <summary>
+    /// 追加一批魔物id到展示列表(按id去重; 已出现过的不重复添加, 普通敌人优先占位)
+    /// </summary>
+    /// <param name="enemyIds">目标魔物id列表</param>
+    /// <param name="isBossList">目标是否BOSS标记列表</param>
+    /// <param name="ids">要追加的魔物id集合</param>
+    /// <param name="isBoss">这批魔物是否BOSS</param>
+    protected void AddCreatureIds(List<long> enemyIds, List<bool> isBossList, List<long> ids, bool isBoss)
+    {
+        if (ids == null)
+            return;
+        for (int i = 0; i < ids.Count; i++)
+            AddCreatureId(enemyIds, isBossList, ids[i], isBoss);
+    }
+
+    /// <summary>
+    /// 追加一批魔物id到展示列表(数组重载, 按id去重)
+    /// </summary>
+    /// <param name="enemyIds">目标魔物id列表</param>
+    /// <param name="isBossList">目标是否BOSS标记列表</param>
+    /// <param name="ids">要追加的魔物id数组</param>
+    /// <param name="isBoss">这批魔物是否BOSS</param>
+    protected void AddCreatureIds(List<long> enemyIds, List<bool> isBossList, long[] ids, bool isBoss)
+    {
+        if (ids == null)
+            return;
+        for (int i = 0; i < ids.Length; i++)
+            AddCreatureId(enemyIds, isBossList, ids[i], isBoss);
+    }
+
+    /// <summary>
+    /// 追加单个魔物id(无效id或已存在时跳过)
+    /// </summary>
+    /// <param name="enemyIds">目标魔物id列表</param>
+    /// <param name="isBossList">目标是否BOSS标记列表</param>
+    /// <param name="npcId">魔物npcInfoId</param>
+    /// <param name="isBoss">是否BOSS</param>
+    protected void AddCreatureId(List<long> enemyIds, List<bool> isBossList, long npcId, bool isBoss)
+    {
+        if (npcId <= 0 || enemyIds.Contains(npcId))
+            return;
+        enemyIds.Add(npcId);
+        isBossList.Add(isBoss);
     }
 
     /// <summary>
@@ -578,9 +671,8 @@ public partial class UIDialogPortalDetails : DialogView
         }
         //切换难度并同步该难度预生成的道路/关卡随机数据(气泡与实际战斗均读取这些字段)
         gameWorldInfoRandom.SetDifficultyLevel(targetDifficulty);
-        //挑战100勇士: 刷新当前难度的来袭魔物列表
-        if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred)
-            SetDataForChallengeHundred();
+        //刷新当前难度的来袭魔物列表(挑战100勇士/征服)
+        RefreshCreatureList();
         AnimSwitchDifficulty(oldDifficulty, targetDifficulty);
     }
 
@@ -608,9 +700,8 @@ public partial class UIDialogPortalDetails : DialogView
         }
         //切换难度并同步该难度预生成的道路/关卡随机数据(气泡与实际战斗均读取这些字段)
         gameWorldInfoRandom.SetDifficultyLevel(newDifficulty);
-        //挑战100勇士: 刷新当前难度的来袭魔物列表
-        if (gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred)
-            SetDataForChallengeHundred();
+        //刷新当前难度的来袭魔物列表(挑战100勇士/征服)
+        RefreshCreatureList();
         AnimSwitchDifficulty(oldDifficulty, newDifficulty);
     }
     #endregion
