@@ -160,6 +160,7 @@ SpriteAtlas:
     - 1093c45845fe0464eb58aea921a93ec7: 21300000
     - a8e31d986b4b9bf418f17103b2bb61b0: 21300000
     - 8bb586a8992f3b7478f472ccf234913d: 21300000
+    - 30d2ffa8fb76ee749b4f5a0a6a16b184: 21300000
     - cd15e4b8770dfec48afa7cd6b9dd7053: 21300000
     - 2de8ceb86d39cda42859ad0414d1d3b6: 21300000
     - cf67a01994f744a418413c1916195957: 21300000
@@ -212,6 +213,7 @@ SpriteAtlas:
     - e5aa744c42e2eb84588505d57f8b74ea: 21300000
     - cfd9316c5793fea4696123d887f80aac: 21300000
     - 6608046ca3813134b8fa52d423de7b08: 21300000
+    - 3188de6caad9d514ea700da79c4d7a15: 21300000
     - 25a2a67cb80c9d04ea2740f958a9f095: 21300000
     - 0cec619cd9584e1459992662c4b0a76b: 21300000
     - 0ea7ba9cfe68488429623413ac0d333b: 21300000
@@ -362,6 +364,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 1093c45845fe0464eb58aea921a93ec7, type: 3}
   - {fileID: 21300000, guid: a8e31d986b4b9bf418f17103b2bb61b0, type: 3}
   - {fileID: 21300000, guid: 8bb586a8992f3b7478f472ccf234913d, type: 3}
+  - {fileID: 21300000, guid: 30d2ffa8fb76ee749b4f5a0a6a16b184, type: 3}
   - {fileID: 21300000, guid: cd15e4b8770dfec48afa7cd6b9dd7053, type: 3}
   - {fileID: 21300000, guid: 2de8ceb86d39cda42859ad0414d1d3b6, type: 3}
   - {fileID: 21300000, guid: cf67a01994f744a418413c1916195957, type: 3}
@@ -414,6 +417,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: e5aa744c42e2eb84588505d57f8b74ea, type: 3}
   - {fileID: 21300000, guid: cfd9316c5793fea4696123d887f80aac, type: 3}
   - {fileID: 21300000, guid: 6608046ca3813134b8fa52d423de7b08, type: 3}
+  - {fileID: 21300000, guid: 3188de6caad9d514ea700da79c4d7a15, type: 3}
   - {fileID: 21300000, guid: 25a2a67cb80c9d04ea2740f958a9f095, type: 3}
   - {fileID: 21300000, guid: 0cec619cd9584e1459992662c4b0a76b, type: 3}
   - {fileID: 21300000, guid: 0ea7ba9cfe68488429623413ac0d333b, type: 3}
@@ -563,6 +567,7 @@ SpriteAtlas:
   - ui_research_116
   - ui_research_24
   - ui_research_104
+  - ui_research_201
   - ui_research_173
   - ui_research_122
   - ui_research_99
@@ -615,6 +620,7 @@ SpriteAtlas:
   - ui_research_91
   - ui_research_62
   - ui_research_133
+  - ui_research_202
   - ui_research_54
   - ui_research_28
   - ui_research_57
