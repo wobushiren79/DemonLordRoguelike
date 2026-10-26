@@ -535,6 +535,23 @@ public class GameFightLogic : BaseGameLogic
             PickupCrystalForCoreAuto(demonLordPickCrystalCount);
         }
     }
+
+    /// <summary>
+    /// 更新-结算/深渊馈赠选择暂停期间的自动拾取魔晶（重写 BaseGameLogic 同名虚方法）
+    /// <para>此时 gameState=Settlement，GameHandler 不再驱动 UpdateGame（战斗整体冻结），但魔王「自动拾取魔晶」研究仍要生效：
+    /// 魔晶渲染器的掉落/寿命/飞回本就在 FightHandler 每帧推进，若拾取也冻结，场上魔晶只会白白过期消失。</para>
+    /// <para>只推进自动拾取这一件事（不做 MP 恢复等其它魔王逻辑），时间源与游戏中同口径（Time.deltaTime × 游戏速度）。</para>
+    /// </summary>
+    public override void UpdateGameForSettlement()
+    {
+        if (fightData == null)
+            return;
+        var coreCreature = fightData.fightDefenseCoreCreature;
+        //魔王(防守核心)不存在/已死亡/预制已清理时不拾取
+        if (coreCreature == null || coreCreature.IsDead() || coreCreature.creatureObj == null)
+            return;
+        UpdateGameForDefenseCoreAutoPickCrystal(Time.deltaTime * fightData.gameSpeed);
+    }
     #endregion
 
     #region 选择
@@ -976,8 +993,8 @@ public class GameFightLogic : BaseGameLogic
     /// <param name="crystalIndex">拾取查询返回的槽下标(仅当帧有效)</param>
     public void PickupCrystalByRenderer(int crystalIndex)
     {
-        //如果是正在游戏中
-        if (gameState != GameStateEnum.Gaming)
+        //游戏中或结算暂停(结算界面/深渊馈赠选择)期间可拾取；其它状态不拾取
+        if (gameState != GameStateEnum.Gaming && gameState != GameStateEnum.Settlement)
             return;
         Vector3 corePos = fightData.fightDefenseCoreCreature.creatureObj.transform.position;
         FightHandler.Instance.manager.fightDropCrystalInstanceRenderer.StartFlyBack(crystalIndex, corePos);

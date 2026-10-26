@@ -35,6 +35,16 @@ public abstract class BaseGameLogic : BaseEvent
     }
 
     /// <summary>
+    /// 更新-结算暂停态（gameState=Settlement）
+    /// <para>结算/选择界面等暂停态下游戏整体冻结（GameHandler 不再驱动 UpdateGame），但仍需每帧继续生效的轻量逻辑在此推进。</para>
+    /// <para>默认空实现；GameFightLogic 重写为继续推进魔王「自动拾取魔晶」研究。</para>
+    /// </summary>
+    public virtual void UpdateGameForSettlement()
+    {
+
+    }
+
+    /// <summary>
     /// 结束游戏
     /// </summary>
     public virtual async void EndGame()

@@ -95,8 +95,10 @@ public class CreatureJuicerLogic : BaseGameLogic
         juiceData.juicerExp = totalJuiceExp;
         userData.AddBackpackItem(juiceData);
         GameDataHandler.Instance.manager.SaveUserData();
-        //榨汁成功提示(state=1 成功图标,绿色对勾)
-        UIHandler.Instance.ToastHintText(string.Format(TextHandler.Instance.GetTextById(61016), totalJuiceExp), 1);
+        //榨汁成功提示:图标改用魔汁道具图标(原为 state=1 的默认绿色对勾),取到图后再弹提示
+        string hintContent = string.Format(TextHandler.Instance.GetTextById(61016), totalJuiceExp);
+        IconHandler.Instance.GetItemIconSprite((long)ItemIdEnum.Juice, sprite =>
+            UIHandler.Instance.ToastHint<ToastView>(sprite, Color.white, hintContent));
         LogUtil.Log($"[魔汁机] 榨汁结算完成:消耗魔物={targetCreatures.Count},获得魔汁经验={totalJuiceExp}");
     }
     #endregion

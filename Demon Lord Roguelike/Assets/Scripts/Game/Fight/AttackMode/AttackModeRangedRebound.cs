@@ -29,8 +29,8 @@ public class AttackModeRangedRebound : AttackModeRangedPiercing
     private float lifeTime;
     /// <summary>是否已进入过场地（x≥左墙）：未进入前不做左墙反弹，防出生即被弹回魔王侧</summary>
     private bool hasEnteredField;
-    /// <summary>反弹边界（StartAttackBase 时按当场战斗路数/路长缓存）</summary>
-    private float boundXMin, boundXMax, boundZMin, boundZMax;
+    /// <summary>反弹边界（StartAttackBase 时按当场战斗路数/路长缓存；bounce 前缀区别于基类越界回收用的 boundZMin/boundZMax）</summary>
+    private float bounceXMin, bounceXMax, bounceZMin, bounceZMax;
     /// <summary>各目标最近命中时刻（key=creatureUUId，value=命中时的 lifeTime；冷却判定用）</summary>
     private readonly Dictionary<string, float> dictLastHitTime = new Dictionary<string, float>();
     /// <summary>清理过期条目时的待删键缓冲（复用，避免每次 new List 产生 GC）</summary>
@@ -51,15 +51,15 @@ public class AttackModeRangedRebound : AttackModeRangedPiercing
         if (gameLogic != null && gameLogic.fightData != null)
         {
             //道路矩形：x∈[0.5, 0.5+路长]，z∈[0.5, 路数+0.5]（与矿车路尽头算法一致）
-            boundXMin = 0.5f;
-            boundXMax = 0.5f + gameLogic.fightData.sceneRoadLength;
-            boundZMin = 0.5f;
-            boundZMax = gameLogic.fightData.sceneRoadNum + 0.5f;
+            bounceXMin = 0.5f;
+            bounceXMax = 0.5f + gameLogic.fightData.sceneRoadLength;
+            bounceZMin = 0.5f;
+            bounceZMax = gameLogic.fightData.sceneRoadNum + 0.5f;
         }
         else
         {
-            boundXMin = 0.5f; boundXMax = 11f;
-            boundZMin = 0.5f; boundZMax = 6.5f;
+            bounceXMin = 0.5f; bounceXMax = 11f;
+            bounceZMin = 0.5f; bounceZMax = 6.5f;
         }
     }
     #endregion
@@ -115,33 +115,33 @@ public class AttackModeRangedRebound : AttackModeRangedPiercing
         Vector3 dir = attackModeData.attackDirection;
         bool isBounced = false;
         //左右墙（右墙始终生效；左墙仅入场后生效）
-        if (pos.x > boundXMax && dir.x > 0)
+        if (pos.x > bounceXMax && dir.x > 0)
         {
-            pos.x = boundXMax;
+            pos.x = bounceXMax;
             dir.x = -dir.x;
             isBounced = true;
         }
-        else if (hasEnteredField && pos.x < boundXMin && dir.x < 0)
+        else if (hasEnteredField && pos.x < bounceXMin && dir.x < 0)
         {
-            pos.x = boundXMin;
+            pos.x = bounceXMin;
             dir.x = -dir.x;
             isBounced = true;
         }
         //上下墙（z 向始终生效，出生点 z 本就在界内不会出生即弹）
-        if (pos.z < boundZMin && dir.z < 0)
+        if (pos.z < bounceZMin && dir.z < 0)
         {
-            pos.z = boundZMin;
+            pos.z = bounceZMin;
             dir.z = -dir.z;
             isBounced = true;
         }
-        else if (pos.z > boundZMax && dir.z > 0)
+        else if (pos.z > bounceZMax && dir.z > 0)
         {
-            pos.z = boundZMax;
+            pos.z = bounceZMax;
             dir.z = -dir.z;
             isBounced = true;
         }
         //首次进入场地后左墙才开始生效
-        if (!hasEnteredField && pos.x >= boundXMin)
+        if (!hasEnteredField && pos.x >= bounceXMin)
             hasEnteredField = true;
         if (!isBounced)
             return;

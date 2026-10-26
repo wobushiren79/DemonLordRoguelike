@@ -19,9 +19,17 @@ public class GameHandler : BaseHandler<GameHandler, GameManager>
     /// </summary>
     public void Update()
     {
-        if (manager.gameLogic != null && manager.gameLogic.gameState == GameStateEnum.Gaming)
+        var gameLogic = manager.gameLogic;
+        if (gameLogic == null)
+            return;
+        if (gameLogic.gameState == GameStateEnum.Gaming)
         {
-            manager.gameLogic.UpdateGame();
+            gameLogic.UpdateGame();
+        }
+        //结算/深渊馈赠选择期间游戏整体冻结，但仍需每帧生效的逻辑在基类虚方法里推进(如魔王自动拾取魔晶：场上魔晶仍会过期消失)
+        else if (gameLogic.gameState == GameStateEnum.Settlement)
+        {
+            gameLogic.UpdateGameForSettlement();
         }
     }
 

@@ -283,18 +283,20 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         //按等级配置表的等级颜色给等级字体着色(0 级白色, 1-10 级渐进色)
         ui_LevelText.color = LevelInfoCfg.GetLevelColor(level);
         var levelInfo = LevelInfoCfg.GetItemData(level + 1);
-        //如果没有下一级的数据了
+        //如果没有下一级的数据了(已满级):进度拉满,文本固定100%
         if (levelInfo == null || levelInfo.id == 0)
         {
             ui_LevelProgressData.fillAmount = 1;
+            ui_LevelProgressText.text = $"{MathUtil.GetPercentage(1, 2)}%";
         }
         else
         {
             //经验由战斗持续累积、仅在献祭成功时才消耗并清0,未献祭前 levelExp 可能超过本级所需经验,此处限制进度最大为100%避免显示110%
-            float percentage = (float)levelExp / long.Parse(levelInfo.level_exp);
-            percentage = Mathf.Clamp01(percentage);
+            long needExp = long.Parse(levelInfo.level_exp);
+            float percentage = Mathf.Clamp01((float)levelExp / needExp);
             ui_LevelProgressData.fillAmount = percentage;
-            ui_LevelProgressText.text = $"{MathUtil.GetPercentage(percentage, 2)}%";
+            //百分比后补具体经验数值(当前经验/升级所需经验),如 50%(50/100)
+            ui_LevelProgressText.text = $"{MathUtil.GetPercentage(percentage, 2)}%({levelExp}/{needExp})";
         }
     }
 

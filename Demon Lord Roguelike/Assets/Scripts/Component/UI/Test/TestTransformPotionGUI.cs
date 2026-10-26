@@ -2262,7 +2262,7 @@ public class TestTransformPotionGUI : MonoBehaviour
             cacheEnvCamBgColor = cam.backgroundColor;
         }
         //此刻测试场景实例尚未加载, 全场 Light 均为面板原有灯(如 TestScene 默认 Directional Light), 记录备用
-        cacheEnvLights = FindObjectsOfType<Light>();
+        cacheEnvLights = FindObjectsByType<Light>(FindObjectsSortMode.None);
         cacheEnvLightsEnabled = new bool[cacheEnvLights.Length];
         for (int i = 0; i < cacheEnvLights.Length; i++)
             cacheEnvLightsEnabled[i] = cacheEnvLights[i].enabled;

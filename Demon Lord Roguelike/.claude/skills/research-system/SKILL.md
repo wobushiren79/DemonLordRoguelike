@@ -550,7 +550,7 @@ public int GetUnlockSpaceDashLevel();                  // 空格突进研究等�
 public float GetUnlockSpaceDashCD();                   // 空格突进冷却(秒) = GetSpaceDashCDForLevel(SpaceDashCD 等级)(未解锁3s,每级-0.5,满级最低1s)；由 ControlForGameBase 读取决定突进CD
 public static float GetSpaceDashDistanceForLevel(int level); // 指定空格突进等级的突进距离(世界单位) = 等级×SPACE_DASH_DISTANCE_PER_LEVEL(1.5,每级距离唯一真实源,ControlForGameBase.dashDistancePerLevel 默认值亦引用之)；供研究气泡文本填充
 public static float GetSpaceDashCDForLevel(int level);       // 指定突进CD等级的冷却(秒) = max(SPACE_DASH_CD_BASE(3) - 等级×SPACE_DASH_CD_PER_LEVEL(0.5), SPACE_DASH_CD_MIN(1))；供研究气泡文本填充
-public float GetUnlockDemonLordAutoPickCrystalInterval(); // 魔王自动拾取魔晶间隔(秒) = 11 - DemonLordAutoPickCrystal 等级(未解锁返回-1禁用,10级10s→满级1s)；由 GameFightLogic.UpdateGameForDefenseCore 读取驱动 PickupCrystalForCoreAuto
+public float GetUnlockDemonLordAutoPickCrystalInterval(); // 魔王自动拾取魔晶间隔(秒) = 11 - DemonLordAutoPickCrystal 等级(未解锁返回-1禁用,10级10s→满级1s)；开战 InitFightConstData 缓存，由 GameFightLogic.UpdateGameForDefenseCore(游戏中) 与 UpdateGameForSettlement(结算/深渊馈赠暂停期间) 读取驱动 PickupCrystalForCoreAuto
 public int GetUnlockDemonLordAutoPickCrystalCount();     // 魔王每次自动拾取魔晶数量 = 1 + DemonLordAutoPickCrystalNum 等级(基础1,满级6)；决定单次 PickupCrystalForCoreAuto 拾取颗数
 ```
 

@@ -129,7 +129,8 @@ public class AttackModeRangedTracking :  AttackModeRanged
         //仅当目标有效（含本帧重锁成功）时才检测
         if (EnsureTarget())
         {
-            attackModeData.attackDirection = Vector3.Normalize(attacked.creatureObj.transform.position - position).SetY(0);
+            //先拍平 Y 再归一化：顺序反了会先归一化再抹掉 Y 分量，方向长度<1 导致贴近目标时移动变慢
+            attackModeData.attackDirection = (attacked.creatureObj.transform.position - position).SetY(0).normalized;
             EnqueueSingleRay(batch);
         }
     }
@@ -145,10 +146,8 @@ public class AttackModeRangedTracking :  AttackModeRanged
         //如果还存在目标（UUId 双判防实体池复用成新生物后误追踪）
         if (CheckTargetEntityValid(attacked, attackedUUId))
         {
-            //实时改变方向
-            attackModeData.attackDirection = Vector3.Normalize(attacked.creatureObj.transform.position - position);
-            //高度不变
-            attackModeData.attackDirection = attackModeData.attackDirection.SetY(0);
+            //实时改变方向（先拍平 Y 再归一化：顺序反了会让方向长度随距离缩短而衰减，表现为越靠近敌人越慢）
+            attackModeData.attackDirection = (attacked.creatureObj.transform.position - position).SetY(0).normalized;
             //贴身保底命中：短射线在目标迎面相撞穿进碰撞体后打不到背面，不补这层会绕点空转
             if (GetHorizontalDistanceToTarget() <= HitTouchDistance)
             {
@@ -170,7 +169,7 @@ public class AttackModeRangedTracking :  AttackModeRanged
     }
 
     /// <summary>
-    /// 移动处理
+    /// 移动处理：转向时方向已归一化为纯水平单位向量，恒速飞行（不随与目标的距离衰减）
     /// </summary>
     public override void HandleForMove()
     {

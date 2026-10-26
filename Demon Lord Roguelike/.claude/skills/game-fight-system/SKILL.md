@@ -427,7 +427,9 @@ FightHandler.Instance.CreateDropCrystal(dropData);
 // 拾取（鼠标点击或生物自动拾取）
 GameFightLogic.Instance.PickupCrystalForMouse();   // 鼠标射线世界距离判定(命中播音效 sound_btn_15 id 15)
 GameFightLogic.Instance.PickupCrystalForCreature(entity, pickupRadius);  // 世界距离判定,生物半径内全吸(如周期BUFF BuffEntityPeriodicPickupCrystal)
-GameFightLogic.Instance.PickupCrystalForCoreAuto(count);   // 魔王自动拾取：按槽生成序 FIFO 取最先掉落 count 颗，由 UpdateGameForDefenseCore 按研究间隔驱动(强化 DemonLordAutoPickCrystal 间隔=11-等级秒 / DemonLordAutoPickCrystalNum 数量=1+等级)
+GameFightLogic.Instance.PickupCrystalForCoreAuto(count);   // 魔王自动拾取：按槽生成序 FIFO 取最先掉落 count 颗(强化 DemonLordAutoPickCrystal 间隔=11-等级秒 / DemonLordAutoPickCrystalNum 数量=1+等级)
+//  驱动：游戏中 UpdateGameForDefenseCore 按研究间隔触发；结算/深渊馈赠选择期间(gameState=Settlement, GameHandler.Update 的 Settlement 分支驱动 BaseGameLogic.UpdateGameForSettlement 虚方法，GameFightLogic 重写)继续触发；
+//  PickupCrystalByRenderer 的 gameState 校验放行 Gaming 与 Settlement 两态
 // 拾取统一走 PickupCrystalByRenderer(index) 置 FlyBack 飞回收集点(核心)，到账由渲染器回调 OnDropCrystalArrived(InitFightConstData 注入)：
 //   渲染器内到账先记账 arrivedNumBuffer、帧末压缩后统一派发(遍历中途不 Invoke,防回调重入 Clear/Add 破坏槽迭代)
 //   播放入账音效 sound_pay_2(id 480002) → AddCrystal → 触发 GameFightLogic_DropAddCrystal → RefreshUI(同帧合并一次)

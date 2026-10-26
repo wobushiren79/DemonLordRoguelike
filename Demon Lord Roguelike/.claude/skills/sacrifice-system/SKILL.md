@@ -143,7 +143,7 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择界面
 
 ### GM 升级/降级药水（复用加点界面）
 
-升级药水（`ItemTypeEnum.LevelUpPotion=91`）在魔物管理页使用：档位读 `ItemsInfo.other_data` 的 `level_delta:N`（空=1，现有 id 支持 +1~+10）；满级 Toast 61030 拦截；确认后先**仅内存**消耗 1 瓶并调用 `UpLevelForPotion(levelDelta)`（逐级升级、累计各级加点，满级自动停止），随后打开 `UICreatureAddAttribute`；加点确认回调统一 `SaveUserData()` 并重开 `UICreatureManager`。道具消耗、升级、加点在同一原子窗口内，加点界面强退则全部不写盘（与献祭成功路径同语义）。降级药水（`LevelDownPotion=92`）走 `DownLevelForPotion(levelDelta)`（id 支持 -1~-10）：0 级 Toast 61031 拦截，确认后立即落盘；因存档没有每级加点历史，回退策略为**逐级按当时等级应得点数随机扣累计升级加点**，与终焉议会降级“全清加点”的惩罚语义不同。
+升级药水（`ItemTypeEnum.LevelUpPotion=91`）在魔物管理页使用：档位读 `ItemsInfo.other_data` 的 `level_delta:N`（空=1，现有 id 支持 +1~+10）；满级 Toast 61030 拦截；确认后先**仅内存**消耗 1 瓶并调用 `UpLevelForPotion(levelDelta)`（逐级升级、累计各级加点，满级自动停止），随后打开 `UICreatureAddAttribute`；加点确认回调统一 `SaveUserData()` 并重开 `UICreatureManager`。道具消耗、升级、加点在同一原子窗口内，加点界面强退则全部不写盘（与献祭成功路径同语义）。降级药水（`LevelDownPotion=92`）走 `DownLevelForPotion(levelDelta)`（id 支持 -1~-10）：0 级 Toast 61031 拦截，确认后立即落盘；因存档没有每级加点历史，回退策略为**逐级按当时等级应得点数随机扣累计升级加点**，与终焉议会降级“全清加点”的惩罚语义不同。四类药水确认回调首行均调 `UICreatureManager.PlayItemUseSound(itemData)` 播 `ItemsInfo.use_sound`（当前配置 470001=sound_medicine_1），点确认才响、弹确认框不响。
 
 ### 属性体系
 - `CreatureAttributeBean`（`Assets/Scripts/Bean/Game/CreatureAttributeBean.cs`）：`dicAttributeCreate`(创建随机) + `dicAttributeLevelUp`(升级加点)，两个字典均为 **public** 以保证 Newtonsoft 存档（私有字段默认不序列化）
@@ -225,7 +225,7 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
 
 - 选择上限：`UserUnlockBean.GetUnlockSacrificeMax()` = `UserLimmitBean.sacrificeMax`（基础默认 3）+ 「增加祭品数量」研究等级（`UnlockEnum.SacrificeNum = 100100002`，研究 `level_max=12`，满级即 3+12=15）。`UICreatureSacrifice` 的 `RefreshUI`/`EventForCardClickSelect` 两处上限判定都走此方法，不要再直接读 `limmitData.sacrificeMax`
 - 成功率显示：`SetSuccessRate(GetCurrentSuccessRate())`，`GetCurrentSuccessRate` 调 `CreatureUtil.GetSacrificeSuccessRate`；进度条颜色按成功率分5段（`GetSuccessRateColor` 现仅转发 `ColorUtil.GetProgressColor`：0-20%红`#C0392B`、20-40%橙`#E67E22`、40-60%黄`#F1C40F`、60-80%浅绿`#2ECC71`、80-100%蓝`#3498DB`，配色单一真实源在 ColorUtil，与孵化缸进阶BUFF概率共用），随 `DOColor`/`DOFillAmount` 0.5s 同步渐变
-- 升级经验条：`UIViewCreatureCardDetails.SetLevelData(level, levelExp)`，用 `LevelInfoCfg.GetItemData(level+1).level_exp` 算百分比
+- 升级经验条：`UIViewCreatureCardDetails.SetLevelData(level, levelExp)`，用 `LevelInfoCfg.GetItemData(level+1).level_exp` 算百分比；文本格式为 `百分比%(当前经验/升级所需经验)`（如 `50%(50/100)`，数值取实际累计 `levelExp` 不做封顶；满级无下一级数据时固定显示 `100%`、进度拉满）
 - 魔汁使用：背包道具点击 `EventForItemBackpackClickSelect` 对 `ItemTypeEnum.Juice`(=11) 类型分流到 `UseJuiceItem`（`#region 魔汁使用`）——确认弹窗（textId 61014「是否对{0}使用魔汁？经验+{1}」）→ 选中生物 `levelExp += itemData.juicerExp` + 消耗道具 + 落盘；满级 Toast（61015）拦截防浪费；魔王/无选中兜底拦截。`TransformPotion`(=18)/`RestorePotion`(=19) 分流到 `UseTransformPotionItem`/`UseRestorePotionItem`（幻化形象写入/清除 `CreatureBean.transformItemId`，与献祭无关）；其余道具照旧走装备 `SetCreatureEquip`（装备资格收口 `ItemBean.CanEquipForCreature`，含魔王专属校验：仅魔王可穿魔王专属装备）。详见 juicer-system Skill
 
 ## 接入 / 修改流程

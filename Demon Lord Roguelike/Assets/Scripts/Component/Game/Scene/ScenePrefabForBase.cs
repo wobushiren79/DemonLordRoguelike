@@ -556,7 +556,7 @@ public class ScenePrefabForBase : ScenePrefabBase
         {
             objJuicerBottle.transform.localScale = scaleJuicerBottleOriginal;
         });
-        AudioHandler.Instance.PlaySoundRandom(AudioEnum.sound_water_1, AudioEnum.sound_water_3);
+        AudioHandler.Instance.PlaySoundRandom(AudioEnum.sound_water_2, AudioEnum.sound_water_3);
         await new WaitForSeconds(0.35f);
     }
 

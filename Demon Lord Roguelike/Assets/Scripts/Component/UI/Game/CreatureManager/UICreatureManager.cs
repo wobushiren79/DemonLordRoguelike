@@ -363,6 +363,23 @@ public partial class UICreatureManager : BaseUIComponent
     }
     #endregion
 
+    #region 道具使用公用
+    /// <summary>
+    /// 播放道具使用音效：读取道具配置 ItemsInfo.use_sound（音频表id），>0 才播放。
+    /// <para>在各使用流程的「确认生效」提交回调里调用（点道具弹确认框时不响）；未配置音效的道具（如 Mod 幻化药）静默跳过。</para>
+    /// </summary>
+    /// <param name="itemData">被使用的道具</param>
+    protected void PlayItemUseSound(ItemBean itemData)
+    {
+        if (itemData == null)
+            return;
+        ItemsInfoBean itemInfo = ItemsInfoCfg.GetItemData(itemData.itemId);
+        if (itemInfo == null || itemInfo.use_sound <= 0)
+            return;
+        AudioHandler.Instance.PlaySound(itemInfo.use_sound);
+    }
+    #endregion
+
     #region  回调事件
     /// <summary>
     /// 卡片点击
@@ -471,6 +488,7 @@ public partial class UICreatureManager : BaseUIComponent
         dialogData.content = string.Format(TextHandler.Instance.GetTextById(61014), creatureData.creatureName, itemData.juicerExp);
         dialogData.actionSubmit = (view, data) =>
         {
+            PlayItemUseSound(itemData);
             var userData = GameDataHandler.Instance.manager.GetUserData();
             //加经验 → 消耗魔汁 → 落盘
             creatureData.levelExp += itemData.juicerExp;
@@ -509,6 +527,7 @@ public partial class UICreatureManager : BaseUIComponent
             : string.Format(TextHandler.Instance.GetTextById(61026), creatureData.creatureName);
         dialogData.actionSubmit = (view, data) =>
         {
+            PlayItemUseSound(itemData);
             var userData = GameDataHandler.Instance.manager.GetUserData();
             //先消耗道具再升级,全程不落盘;加点确认后统一持久化
             userData.RemoveBackpackItem(itemData, 1);
@@ -565,6 +584,7 @@ public partial class UICreatureManager : BaseUIComponent
             : string.Format(TextHandler.Instance.GetTextById(61027), creatureData.creatureName);
         dialogData.actionSubmit = (view, data) =>
         {
+            PlayItemUseSound(itemData);
             var userData = GameDataHandler.Instance.manager.GetUserData();
             creatureData.DownLevelForPotion(levelDelta);
             userData.RemoveBackpackItem(itemData, 1);
@@ -599,6 +619,7 @@ public partial class UICreatureManager : BaseUIComponent
         dialogData.content = string.Format(TextHandler.Instance.GetTextById(61028), creatureData.creatureName);
         dialogData.actionSubmit = (view, data) =>
         {
+            PlayItemUseSound(itemData);
             var userData = GameDataHandler.Instance.manager.GetUserData();
             creatureData.UpRarityForPotion();
             userData.RemoveBackpackItem(itemData, 1);
@@ -631,6 +652,7 @@ public partial class UICreatureManager : BaseUIComponent
         dialogData.content = string.Format(TextHandler.Instance.GetTextById(61029), creatureData.creatureName);
         dialogData.actionSubmit = (view, data) =>
         {
+            PlayItemUseSound(itemData);
             var userData = GameDataHandler.Instance.manager.GetUserData();
             creatureData.DownRarity(creatureData.GetRarityValue() - 1);
             userData.RemoveBackpackItem(itemData, 1);
@@ -665,6 +687,7 @@ public partial class UICreatureManager : BaseUIComponent
         dialogData.content = string.Format(TextHandler.Instance.GetTextById(61018), creatureData.creatureName, itemInfo.name_language);
         dialogData.actionSubmit = (view, data) =>
         {
+            PlayItemUseSound(itemData);
             var userData = GameDataHandler.Instance.manager.GetUserData();
             //写入幻化(覆盖旧值=以最后吃的为准) → 消耗道具 → 落盘
             creatureData.transformItemId = itemData.itemId;
@@ -700,6 +723,7 @@ public partial class UICreatureManager : BaseUIComponent
         dialogData.content = string.Format(TextHandler.Instance.GetTextById(61019), creatureData.creatureName);
         dialogData.actionSubmit = (view, data) =>
         {
+            PlayItemUseSound(itemData);
             var userData = GameDataHandler.Instance.manager.GetUserData();
             //清除幻化 → 消耗1瓶(幻原药 num_max=99 堆叠,按数量递减为0才移除) → 落盘
             creatureData.transformItemId = 0;

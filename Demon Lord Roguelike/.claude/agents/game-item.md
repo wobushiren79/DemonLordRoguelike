@@ -22,6 +22,7 @@ watched_files:
 - **ItemBean / ItemBeanPartial** - 道具基础数据（运行时实例含 `rarity` 品质；`juicerExp` 魔汁经验值，仅 Juice 类型有效，旧存档无此字段默认 0 兼容）
 - **ItemsEnum** - 道具枚举定义（`ItemTypeEnum`：装备部位 Hat=1~Weapon=10 + **消耗品 Juice=11（魔汁，限非魔王）/ TransformPotion=18（幻化药）/ RestorePotion=19（幻原药），GM 成长药水 LevelUp=91 / LevelDown=92 / RarityUp=93 / RarityDown=94（均限普通魔物）** + Portrait=101 头像；`ItemIdEnum.Juice = 200001` / `RestorePotion = 200003` / 4 种 GM 药水 `200004~200007`——内置幻化药 200002 已删除、枚举同步移除，幻化药全部由 Mod 提供；`ItemSourceEnum.ConquerReward = 1` 征服模式奖励来源）
 - **ItemsInfoBean** - 道具配置信息（来自 Excel）
+  - `use_sound`（long，音频表 `AudioInfo` 的 id，0/空=不播放）：**道具使用音效**，在「确认使用并生效」时由 `UICreatureManager.PlayItemUseSound` 读取播放；主工程 24 条消耗品药水（200001 魔汁 / 200003 幻原药 / 200004~200025 GM 成长药水）统一配 470001=`sound_medicine_1`，Mod 幻化药源表在外部 Mod 项目、未配该列故不响。新增该列后需在 Unity 对 ItemsInfo「导出 JSON」+「生成 Entity」才生效。
   - `reward_rarity`（string，逗号分隔稀有度ID，空=全稀有度）：**奖励可出稀有度白名单**。空表示该道具在任意稀有度奖励中都可能产出；配了(如 `5,6`)则仅在 UR/L 稀有度的奖励里出现。辅助方法在 `ItemsInfoBeanPartial`：`GetRewardRarityList()`（解析缓存）、`IsMatchRewardRarity(int rarity)`（空白名单→true）。注意与 `ItemBean.rarity`（运行时实例品质）语义不同。
   - 消费点：`RewardSelectBean.CreateItemEquip`（征服/传送门装备奖励池）先定目标稀有度→按 `IsMatchRewardRarity` 过滤道具池→随机取一件；过滤后为空回退发魔晶。**仅**作用于装备奖励生成，扭蛋/其它路径不受影响。
   - `source`（string，逗号分隔 `ItemSourceEnum` 枚举值，空=默认来源）：**道具来源白名单**。辅助方法 `GetSourceList()`（解析缓存）、`HasSource(ItemSourceEnum)`、`IsEquipType()`。消费点：`RewardSelectBean.ReplaceCrystalSlotBySourceItem`——source 含 ConquerReward 且非装备的道具进候选池，征服奖励随机一个魔晶位替换为池内随机道具（数量1；无候选/全装备/测试模式不替换）。首个实例=AeonsEchoSpine 341 个幻化药全配 `source="1"`。
@@ -75,7 +76,7 @@ watched_files:
 
 GM 调试成长消耗品（2026-10 新增）：类型固定 4 种（升级91/降级92/升阶93/降阶94）；升级档位 id=200004(+1)+200008~200016(+2~+10)，降级档位 id=200005(-1)+200017~200025(-2~-10)，升/降阶=200006/200007。`num_max=999` 可堆叠，升类图标 `Item_Potion_1`、降类图标 `Item_Potion_2`，仅普通魔物可用（列表对魔王隐藏 + Use 方法兜底）。多级档位写 `ItemsInfo.other_data` 的 `level_delta:N`，由 `ItemsInfoBeanPartial.GetLevelPotionDelta()` 解析（空/非法兜底 1）。确认/拦截文案 UIText 61026~61035（12 语种，61034/61035 为多级确认框）。
 
-- **使用链路**：`UICreatureManager.UseOrEquipItem` 分流到 `UseLevelUpPotionItem`/`UseLevelDownPotionItem`/`UseRarityUpPotionItem`/`UseRarityDownPotionItem`；确认框 → 数据层方法 → `RemoveBackpackItem(itemData, 1)` → 落盘/刷新。
+- **使用链路**：`UICreatureManager.UseOrEquipItem` 分流到 `UseLevelUpPotionItem`/`UseLevelDownPotionItem`/`UseRarityUpPotionItem`/`UseRarityDownPotionItem`；确认框 → 首行 `PlayItemUseSound(itemData)`（`ItemsInfo.use_sound`=470001）→ 数据层方法 → `RemoveBackpackItem(itemData, 1)` → 落盘/刷新。
 - **升级**：满级 61030 拦截；确认后内存中消耗+`UpLevelForPotion(levelDelta)`（逐级升级并累计加点，满级自动停止），打开 `UICreatureAddAttribute`；加点确认后才统一 `SaveUserData` 并重开管理页（强退全不落盘）。
 - **降级**：0 级 61031 拦截；`DownLevelForPotion(levelDelta)` 逐级降级并按当时等级 `attribute_point` 随机回退累计升级加点（`CreatureAttributeBean.RemoveRandomAttributeForLevelUp`），0 级自动停止。
 - **升阶**：满阶 61032 拦截；`UpRarityForPotion()` 稀有度+1，新档位 R/SR/SSR 经 `BuffUtil.CreateRandomRarityBuff` 随机授 BUFF，UR/L 无 BUFF 只升档。

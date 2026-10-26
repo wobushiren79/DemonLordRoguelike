@@ -120,6 +120,7 @@ public enum ItemTypeEnum
 - `remark` - 备注
 - `reward_rarity` - **奖励可出稀有度白名单**（string，逗号分隔稀有度ID，空=全稀有度适配）
 - `source` - **道具来源白名单**（string，逗号分隔 `ItemSourceEnum` 枚举值，空=默认来源；首个来源 1=征服模式奖励）
+- `use_sound` - **道具使用音效**（long，音频表 `AudioInfo` 的 id，0/空=不播放）：在「确认使用并生效」时播放，由 `UICreatureManager.PlayItemUseSound(itemData)` 统一读取。主工程 24 条消耗品药水（200001 魔汁 / 200003 幻原药 / 200004~200025 GM 成长药水）均配 `470001`（`sound_medicine_1` 药剂1）；Mod 提供的幻化药未配置该列（源表在外部 Mod 项目），使用时不响
 
 ### 幻化药 other_data 键值格式
 

@@ -27,7 +27,7 @@ watched_files:
 ## 当前状态（重要）
 
 魔汁机**全链路已实现**：解锁 → 建筑出现 → E键交互 → 开UI(切 CV_Juicer 镜头)多选投入魔物(上限研究门控) → 点 Start → 场景演出(瓶子弹出 → 锤子3秒砸3次首锤亮血 → 镜头聚焦滴嘴 → 精华滴落入瓶) → **奖励结算(消耗投入魔物 → 产出 1 个魔汁道具 → 落盘+Toast)** → 重回魔汁机UI(可继续榨汁，被榨汁魔物已从背包消失)。
-**奖励结算已实现**：`CreatureJuicerLogic.SettleJuiceReward()`(protected,`#region 奖励结算`)在 StartJuice 演出结束后、**重开 UI 之前**调用——遍历 targetCreatures 按等级取 `LevelInfoCfg.GetItemData(level).juicer_exp` 累计总经验(null 容错) → `RemoveAllEquipToBackpack()` 退装备 → `RemoveBackpackCreature()` 移除(与献祭消耗同写法,背包+阵容双删)；生成 1 个魔汁道具(`ItemIdEnum.Juice=200001`,num_max=1 不堆叠,经验存 `ItemBean.juicerExp` 实例字段)`AddBackpackItem` 入背包 → `SaveUserData()` 立即落盘 → Toast 61016「榨汁完成，获得魔汁（经验+X）」。结算先于重开 UI,保证重开时 InitCreatureData 读到最新存档。
+**奖励结算已实现**：`CreatureJuicerLogic.SettleJuiceReward()`(protected,`#region 奖励结算`)在 StartJuice 演出结束后、**重开 UI 之前**调用——遍历 targetCreatures 按等级取 `LevelInfoCfg.GetItemData(level).juicer_exp` 累计总经验(null 容错) → `RemoveAllEquipToBackpack()` 退装备 → `RemoveBackpackCreature()` 移除(与献祭消耗同写法,背包+阵容双删)；生成 1 个魔汁道具(`ItemIdEnum.Juice=200001`,num_max=1 不堆叠,经验存 `ItemBean.juicerExp` 实例字段)`AddBackpackItem` 入背包 → `SaveUserData()` 立即落盘 → Toast 61016「榨汁完成，获得魔汁（经验+X）」(图标=魔汁道具图标 `Item_Juicer_1`)。结算先于重开 UI,保证重开时 InitCreatureData 读到最新存档。
 
 ## 核心链路（UI 驱动 + 轻量 Logic，仿容器 UICreatureVat 而非献祭全流程）
 
@@ -83,7 +83,7 @@ watched_files:
 - 轻量逻辑，存 `GameManager.gameLogic` 单槽（`GetGameLogic<CreatureJuicerLogic>()` 可取）；**不走 PreGame/StartGame 全流程**，由 UI 的 Start 经 `GameHandler.StartCreatureJuicer` 直接 `StartJuice`
 - 字段：`targetCreatures`（本次投入魔物 List，StartJuice 里**复制一份**防 UI 列表后续被清空）、`scenePrefab`（基地场景预制，榨汁动画作用于 `scenePrefab.objBuildingJuicer`）
 - `StartJuice(List<CreatureBean> targets)`（async void，仿扭蛋 ProcessForShowEgg）按序编排：① 锁UI+镜头(`CloseAllUI`+`SetJuicerCamera(MaxValue,true)`+DoF false) → ② `BuildingJuicerProcessBegin()`(瓶子弹出/液体隐藏/锤子归位/血液隐藏)等0.35s → ③ `await BuildingJuicerAnimForHammer()`(3秒3次,首锤亮血) → ④ `FocusJuicerCameraOnHole(GetBuildingJuicerHole())` 等0.9s → ⑤ `await BuildingJuicerAnimForEssenceDrop()` 等0.6s → ⑥ `BuildingJuicerProcessEnd()`(血液隐藏/瓶子隐藏/锤子归位/清残留水滴)+`RestoreJuicerCameraFocus()` 等0.6s → ⑦ `SettleJuiceReward()` 奖励结算(须先于重开UI,保证重开读到最新存档) → **重回 `OpenUIAndCloseOther<UICreatureJuicer>(ui => ui.actionForExit = ()=>Open UIBaseMain)`（玩家可继续榨汁，被榨汁魔物已从背包消失；注入退出回调与场景E键入口一致，DoF 由 UI 的 OpenUI 自行关闭）**
-- **奖励结算 `SettleJuiceReward()`**（protected,`#region 奖励结算`）：遍历 targetCreatures 按等级取 `LevelInfoCfg.GetItemData(level).juicer_exp` 累计总经验(null 容错) → `RemoveAllEquipToBackpack()` 退装备 → `userData.RemoveBackpackCreature()` 移除(与献祭消耗同写法,背包+阵容双删)；`new ItemBean((long)ItemIdEnum.Juice, 1)` + `juicerExp=总经验` → `AddBackpackItem()`(不堆叠重载,num_max=1) → `SaveUserData()` 立即落盘 → `ToastHintText(string.Format(GetTextById(61016), 总经验), 1)`(state=1 成功图标) 提示「榨汁完成，获得魔汁（经验+X）」
+- **奖励结算 `SettleJuiceReward()`**（protected,`#region 奖励结算`）：遍历 targetCreatures 按等级取 `LevelInfoCfg.GetItemData(level).juicer_exp` 累计总经验(null 容错) → `RemoveAllEquipToBackpack()` 退装备 → `userData.RemoveBackpackCreature()` 移除(与献祭消耗同写法,背包+阵容双删)；`new ItemBean((long)ItemIdEnum.Juice, 1)` + `juicerExp=总经验` → `AddBackpackItem()`(不堆叠重载,num_max=1) → `SaveUserData()` 立即落盘 → `IconHandler.GetItemIconSprite((long)ItemIdEnum.Juice, sprite => ...)` 取**魔汁道具图标**(`ItemsInfo.icon_res=Item_Juicer_1`,Items 图集)后 `ToastHint<ToastView>(sprite, Color.white, string.Format(GetTextById(61016), 总经验))` 提示「榨汁完成，获得魔汁（经验+X）」（图标=道具图标，不再用 `ToastHintText(..., 1)` 的默认绿色对勾）
 - `GameHandler.StartCreatureJuicer(List<CreatureBean>)`：get-or-create logic → `StartJuice(list)`（与 `StartGashaponMachine`/`StartCreatureSacrifice` 同风格）
 
 ### 魔汁道具与魔汁使用（ItemsEnum/ItemBean/UICreatureManager）
@@ -99,7 +99,7 @@ watched_files:
 - `InitBuildingJuicerProcessNodes()`：懒查找缓存节点+瓶子/液体/水滴原始缩放（`isInitJuicerProcessNodes` 只做一次）；关键节点缺失 LogError 打点，流程降级跳过对应演出
 - `BuildingJuicerProcessBegin()`：锤子 localY 归零 + 血液隐藏 + 水滴隐藏 + 瓶子弹出显示(DOScale 0→原始缩放 OutBack 0.3s) + 液体隐藏
 - `BuildingJuicerAnimForHammer()`(async Task)：**3秒内落下3次再升起**，单次1秒 = 砸落0.2s(`DOLocalMoveY(0→-1.5)` InQuad 加速重物坠地)+触底停0.25s+抬起0.45s(OutQuad 缓慢重物感)+顶点停0.1s；每锤触底 `psJuicerBloodSplash.Stop+Play` **血液喷溅**(与砸击同步)+`BuildingJuicerPunch()` 机器抖动+`PlaySoundRandom(sound_hit_1, sound_hit_3)`+`ShakeJuicerCamera()` 镜头震动；**首锤落下后亮血**(内含循环喷血粒子随显示常开)
-- `BuildingJuicerAnimForEssenceDrop()`(async Task)：**复用预制水滴节点 `JuicerEssenceDrop`**(大小/贴图编辑器调,代码缓存其原始缩放为 full 大小) → 移到滴嘴处由零变大(OutBack 0.4s) → 拉长(x×0.75/y×1.3)+InQuad 加速坠入瓶口(0.3s,落点=液体位置) → 压扁(x×1.5/y×0.3,0.08s)后隐藏(节点复用不销毁) → 液体弹出显示(OutBack 0.35s)+`PlaySoundRandom(sound_water_1, sound_water_3)`+瓶子 DOPunchScale；节点缺失兜底直接显示液体
+- `BuildingJuicerAnimForEssenceDrop()`(async Task)：**复用预制水滴节点 `JuicerEssenceDrop`**(大小/贴图编辑器调,代码缓存其原始缩放为 full 大小) → 移到滴嘴处由零变大(OutBack 0.4s) → 拉长(x×0.75/y×1.3)+InQuad 加速坠入瓶口(0.3s,落点=液体位置) → 压扁(x×1.5/y×0.3,0.08s)后隐藏(节点复用不销毁) → 液体弹出显示(OutBack 0.35s)+`PlaySoundRandom(sound_water_2, sound_water_3)`+瓶子 DOPunchScale；节点缺失兜底直接显示液体
 - `BuildingJuicerProcessEnd()`：血液隐藏+**瓶子隐藏**(液体随父级一并隐藏,下次榨汁 ProcessBegin 重新弹出)+锤子归位+精华水滴归位隐藏(打断兜底)
 
 ### 镜头（CameraHandler）
@@ -140,7 +140,7 @@ watched_files:
 | 投入上限 | Assets/Scripts/Bean/Game/UserUnlockBean.cs (`GetUnlockJuicerCreatureMax`) · UserLimmitBean.cs (`juicerCreatureMax`) |
 | 魔汁道具/枚举 | Assets/Scripts/Enums/ItemsEnum.cs (`ItemTypeEnum.Juice=11` / `ItemIdEnum.Juice=200001`；同文件另有消耗品 TransformPotion=18/RestorePotion=19、ItemIdEnum 200003；内置幻化药 200002 已删除) · Assets/Scripts/Bean/Game/ItemBean.cs (`juicerExp`) · excel_items_info(200001,num_max=1 不堆叠) |
 | 榨汁经验配置 | excel_level_info(`juicer_exp` 列,1~10级=同级 level_exp 100%,新增 id=0 行=20) · LevelInfoBean |
-| 魔汁使用 | Assets/Scripts/Component/UI/Game/CreatureManager/UICreatureManager.cs (`UseOrEquipItem` 分流 → `UseJuiceItem`) · UIViewItemBackpackList.cs(魔王隐藏魔汁过滤,幻化药18/幻原药19 例外放行含魔王) · UIPopupItemInfo.cs(`SetJuiceExp` 61017) |
+| 魔汁使用 | Assets/Scripts/Component/UI/Game/CreatureManager/UICreatureManager.cs (`UseOrEquipItem` 分流 → `UseJuiceItem`；确认回调首行 `PlayItemUseSound(itemData)` 播 `ItemsInfo.use_sound`=470001 sound_medicine_1) · UIViewItemBackpackList.cs(魔王隐藏魔汁过滤,幻化药18/幻原药19 例外放行含魔王) · UIPopupItemInfo.cs(`SetJuiceExp` 61017) |
 | 研究/解锁 | excel_research_info(100600001/100600002) · excel_unlock_info · ResearchInfo.txt · UnlockInfo.txt |
 | 多语言 | excel_language · Language_ResearchInfo_cn/en · Language_UIText_cn/en |
 | 测试入口 | Assets/Scripts/Game/Launcher/LauncherTest.cs (`StartForCreatureJuicerTest`) · Assets/Editor/GameTestEditor.cs (`DrawCreatureJuicerTest`) |

@@ -91,7 +91,7 @@ BuffBasePreEntity                                # 前置基类（GetEventRole +
 ```
 
 > **时间驱动条件**：`BuffPreEntityForOnFieldTime` 读 `buffEntityData.timeUpdateTotal`（BUFF 逐帧 `UpdateBuffTime` 累积），
-> 该累积仅在 `gameState == Gaming` 时推进（`GameHandler.Update` 门控），故暂停/深渊馈赠选择期间不计时。
+> 该累积仅在 `gameState == Gaming` 时推进（`GameHandler.Update` 的 Gaming 分支驱动 `UpdateGame`；Settlement 分支只推进魔王自动拾取魔晶，不驱动 BUFF），故暂停/深渊馈赠选择期间不计时。
 > 配套实体 `BuffEntityConditionalAttributeTime`（继承 `BuffEntityConditionalAttribute`）在 `UpdateBuffTime` 里未达标时逐帧调 `HandleForEvent`，跨过阈值当帧刷新属性。此类条件 `class_entity_events` 留空（无需事件订阅）。
 
 `BuffPreEventRole`（None/Attacked/Attacker）用于在 `BuffBaseEntity.EventForUnderAttack` / `EventForRegainHP` 中

@@ -29,6 +29,7 @@ watched_files:
 ```
 PreGame → StartGame → UpdateGame → EndGame → ClearGame
 ```
+> **结算/深渊馈赠暂停（gameState=Settlement）**：`GameHandler.Update` 在 Gaming 状态才驱动 `UpdateGame`（战斗整体冻结）；Settlement 状态改为驱动 `BaseGameLogic.UpdateGameForSettlement()`（基类 virtual 空实现，任何 GameLogic 可重写追加"暂停态仍需每帧推进"的轻量逻辑）。`GameFightLogic` 重写它：只推进魔王「自动拾取魔晶」（研究 DemonLordAutoPickCrystal），不做 MP 恢复等其它魔王逻辑——因为魔晶渲染器的掉落/寿命/飞回本就在 `FightHandler.Update` 每帧推进，拾取若冻结会导致场上魔晶白白过期。0 倍速暂停（gameSpeed=0）不在此列，仍整体冻结。
 > **ClearGame 清理职责**：战斗数据/生物/弹道/AI/BUFF/战斗粒子(`EffectHandler.Instance.ClearAllEffect()`：实例+飘字+拖尾统一入口) + 卸载战斗场景。粒子必须显式清——特效实例挂在 DontDestroyOnLoad 的 EffectHandler 下，进奖励选择场景(`EnterRewardSelectScene(isClearLastGame)` 不走 ClearWorldData)时仍会残留播放（2026-08-30 修复补齐）。
 > **战斗开始事件**：`PreGame()` 末尾 `StartGame()` 之后触发 `EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_StartGame)`——基类单点触发覆盖征服/终焉议会/无限/测试全部模式（子类只重写 PreGameForAfterXxx 钩子不重写 PreGame），无参数；通用挂钩（故事演出"首次进战斗"已改挂 `UIFightMain_CardCreateAnimEnd`——等 UIFightMain 下方卡片出现动画播完再触发，保证高亮手卡等目标已落位）。
 
@@ -88,8 +89,8 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 
 ### 魔晶拾取链路（DSP 渲染器单一路径）
 - 魔晶全程 DSP 批量渲染（`FightManager.fightDropCrystalInstanceRenderer`，每颗魔晶=纯数据槽，零 GameObject/零碰撞体/零 DOTween，旧 GameObject 模式已删除；渲染器机制见 game-fight-core agent）；渲染器未就绪（视觉预制缺失）时生成/拾取接口全部零副作用。
-- 三个拾取入口：`PickupCrystalForMouse`（`TryPickByScreenPoint` 鼠标射线世界距离判定→命中播音效 sound_btn_15）、`PickupCrystalForCreature`（`PickBySphere` 世界距离判定，生物半径内全吸）、`PickupCrystalForCoreAuto(count)`（`PickFIFO` 按槽生成序取最早 count 颗，`UpdateGameForDefenseCore` 按研究间隔驱动）。
-- 拾取统一走 `PickupCrystalByRenderer(index)`（gameState 校验后 `StartFlyBack` 飞回核心，抛物线 CPU 参数化复刻旧 DOJump）；飞回到账由渲染器回调 `OnDropCrystalArrived`（`InitFightConstData` 注入 `actionForCrystalArrived`，`FightManager.Clear` 时清空；渲染器内到账先记账、帧末压缩后统一派发，遍历中途不 Invoke）：`AddCrystal`(内含音效) → `GameFightLogic_DropAddCrystal` 事件 → `RefreshUI`(同帧多颗到账合并为一次)。
+- 三个拾取入口：`PickupCrystalForMouse`（`TryPickByScreenPoint` 鼠标射线世界距离判定→命中播音效 sound_btn_15）、`PickupCrystalForCreature`（`PickBySphere` 世界距离判定，生物半径内全吸）、`PickupCrystalForCoreAuto(count)`（`PickFIFO` 按槽生成序取最早 count 颗，按研究间隔驱动——游戏中由 `UpdateGameForDefenseCore` 驱动，结算/深渊馈赠选择期间（gameState=Settlement）由 `GameHandler.Update` 的 Settlement 分支驱动重写的 `BaseGameLogic.UpdateGameForSettlement()` 继续，场上魔晶不会因暂停而只过期不被收）。
+- 拾取统一走 `PickupCrystalByRenderer(index)`（gameState 校验=Gaming 或 Settlement（结算/深渊馈赠暂停），通过后 `StartFlyBack` 飞回核心，抛物线 CPU 参数化复刻旧 DOJump）；飞回到账由渲染器回调 `OnDropCrystalArrived`（`InitFightConstData` 注入 `actionForCrystalArrived`，`FightManager.Clear` 时清空；渲染器内到账先记账、帧末压缩后统一派发，遍历中途不 Invoke）：`AddCrystal`(内含音效) → `GameFightLogic_DropAddCrystal` 事件 → `RefreshUI`(同帧多颗到账合并为一次)。
 
 ## 约束
 

@@ -9,7 +9,7 @@ using UnityEngine;
 /// 命中时按 collider_area_type/collider_area_size 做范围检测，范围内所有存活敌人全部结算伤害（AOE，hit_max 可配命中上限）。
 /// <para>与基类差异：①跟踪含 Y（能从头顶斜射下压）；②命中检测全程有效（基类目标死亡即关检测与射线）；③命中为范围 AOE（基类单体）；
 /// ④贴身保底命中——0.1 短射线在「目标迎面相撞（相对位移&gt;射线长）穿进碰撞体」后永久失效（射线不打背面），
-/// 跟踪弹瞄准点在体内会绕点空转（挂身抖动 BUG），故与瞄准点距离 ≤ HitTouchDistance 时直接判中；
+/// 跟踪弹瞄准点在体内会绕点空转（挂身抖动 BUG），故与瞄准点距离 ≤ AimTouchDistance 时直接判中；
 /// ⑤触地即毁——下落中弹体中心 y ≤ GroundHitY(0.05) 时播命中特效回收（无伤害结算），目标死亡直飞等无目标场景不会穿地消失。</para>
 /// <para>弹体朝向（两条通道按视觉类型各尽其用）：①面片 quad 类视觉走 visualStartAngle = 武器 StartRotate 基准角 + atan2(dir.y, dir.x)（仅 X-Y 平面俯仰，dz 纵深不参与，与抛物线切线角同规约）；
 /// ②火球/冰球这类 billboard shader 视觉的实例矩阵旋转对核心无效（posOS 恒原点、世界空间 billboard 展开），改走 visualVelocityOrient=true → _VelocityWS.w>0.5，
@@ -19,8 +19,9 @@ using UnityEngine;
 public class AttackModeRangedObliqueTracking : AttackModeRangedTracking
 {
     #region 常量
-    /// <summary>贴身判定距离：弹体与瞄准点距离 ≤ 此值时直接判中（射线失效场景的保底，取值&gt;高速迎面相撞的单帧相对位移）</summary>
-    protected const float HitTouchDistance = 0.2f;
+    /// <summary>贴身判定距离：弹体与瞄准点距离 ≤ 此值时直接判中（射线失效场景的保底，取值&gt;高速迎面相撞的单帧相对位移）；
+    /// 与基类 HitTouchDistance(0.25，锁定目标的水平距离)是两种量测，故改用独立命名避免遮蔽</summary>
+    protected const float AimTouchDistance = 0.2f;
     /// <summary>触地判定高度：弹体中心 y ≤ 此值视为触地（生物脚底地面 y≈0，留少许高度让爆炸特效贴在地面之上而非沉入地里）</summary>
     protected const float GroundHitY = 0.05f;
     #endregion
@@ -92,7 +93,7 @@ public class AttackModeRangedObliqueTracking : AttackModeRangedTracking
         if (CheckTargetEntityValid(attacked, attackedUUId))
         {
             float disToAim = Vector3.Distance(position, attacked.creatureObj.transform.position + Vector3.up * aimUpHeight);
-            if (disToAim <= HitTouchDistance)
+            if (disToAim <= AimTouchDistance)
             {
                 HandleForHitTarget(attacked);
                 return;

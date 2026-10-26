@@ -115,6 +115,24 @@ public partial class IconHandler
         SetItemIcon(itemInfo.icon_res, itemInfo.icon_rotate_z, targetIV);
     }
 
+    /// <summary>
+    /// 获取道具图标 Sprite(异步回调):按 ItemsInfo.icon_res 解析「图标名,图集」后缀(默认 Items 图集)后取图,
+    /// 供 Toast 等非 Image 赋值场景使用;道具配置缺失/图标缺失时返回未知图标。
+    /// </summary>
+    /// <param name="itemId">道具 id</param>
+    /// <param name="callBack">取图完成回调</param>
+    public void GetItemIconSprite(long itemId, Action<Sprite> callBack)
+    {
+        var itemInfo = ItemsInfoCfg.GetItemData(itemId);
+        if (itemInfo == null)
+        {
+            GetIconSprite(SpriteAtlasTypeEnum.Items, IconNameUnKnow, callBack);
+            return;
+        }
+        SpriteAtlasTypeEnum atlasType = ParseIconName(itemInfo.icon_res, SpriteAtlasTypeEnum.Items, out string actualIconName);
+        GetIconSprite(atlasType, actualIconName, callBack);
+    }
+
     public void SetItemIcon(long itemId, SpriteRenderer spriteRenderer, float targetSizeX = 100f, float targetSizeY = 100f, float scaleMul = 1f)
     {
         var itemInfo = ItemsInfoCfg.GetItemData(itemId);
