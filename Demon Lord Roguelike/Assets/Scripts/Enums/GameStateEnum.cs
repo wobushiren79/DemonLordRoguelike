@@ -336,6 +336,7 @@ public enum UnlockEnum : long
 
     Juicer = 100600001,//魔汁机(魔物回收:选目标魔物榨汁,流程/奖励后续接入)
     JuicerNum = 100600002,//魔汁机投入魔物可选上限+1(每级+1,基础5,level_max=10,满级15;前置=Juicer)
+    JuicerCrystalExp = 100600003,//魔汁机榨汁添加魔晶增加经验(每颗魔晶+等级点经验,level_max=10;前置=Juicer)
 
 }
 

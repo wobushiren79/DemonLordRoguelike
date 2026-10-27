@@ -901,6 +901,26 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 获取魔汁机榨汁时「每颗魔晶额外增加的榨汁经验」
+    /// 取对应研究等级（UnlockEnum.JuicerCrystalExp，Lv1=1点/颗 … Lv10=10点/颗；未解锁返回 0）
+    /// </summary>
+    /// <returns>每颗魔晶折算的榨汁经验；0 表示未解锁该研究</returns>
+    public int GetUnlockJuicerCrystalExp()
+    {
+        return GetJuicerCrystalExpForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.JuicerCrystalExp));
+    }
+
+    /// <summary>
+    /// 获取指定「魔汁机榨汁加魔晶」研究等级对应的每颗魔晶经验：等级即每颗经验(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">魔汁机榨汁加魔晶研究等级(0=未解锁)</param>
+    /// <returns>该等级下每颗魔晶折算的榨汁经验</returns>
+    public static int GetJuicerCrystalExpForLevel(int level)
+    {
+        return level;
+    }
+
+    /// <summary>
     /// 获取指定稀有度在「孕育稀有度概率」研究等级下的稀有度命中概率(百分数)：RarityInfo.gashapon_rate(基础概率) + 等级
     /// R/SR/SSR/UR 概率研究共用(扭蛋抽取与展示、研究气泡详情文本均引用此值)
     /// </summary>

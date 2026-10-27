@@ -209,6 +209,9 @@ public partial class ResearchInfoBean
         //魔汁机投入上限 = juicerCreatureMax + 等级
         if (unlockId == (long)UnlockEnum.JuicerNum)
             return $"{UserUnlockBean.GetJuicerCreatureMaxForLevel(targetLevel)}";
+        //魔汁机榨汁加魔晶每颗经验 = 等级
+        if (unlockId == (long)UnlockEnum.JuicerCrystalExp)
+            return $"{UserUnlockBean.GetJuicerCrystalExpForLevel(targetLevel)}";
         //阵容生物上限 = lineupCreatureMax + 等级
         if (unlockId == (long)UnlockEnum.LineupCreatureAddNum)
             return $"{UserUnlockBean.GetLineupCreatureNumForLevel(targetLevel)}";

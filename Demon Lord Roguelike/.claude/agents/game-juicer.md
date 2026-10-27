@@ -1,6 +1,6 @@
 ---
 name: game-juicer
-description: 魔物回收(魔汁机/Juicer)系统开发：基地魔汁机建筑(ScenePrefabForBase.objBuildingJuicer 出现/解锁显隐)、E键场景交互(ControlInteractionEnum.JuicerInteraction 打开 UICreatureJuicer)、多选投入魔物榨汁UI(UICreatureJuicer 多选 listSelectCreature+Start，含 CV_Juicer 镜头/等级降序排序/投入数量门控/ui_LimmitText 计数/JuicerWater 魔汁水位(按总经验等级取 level_color 着色+区间进度×0.95 水位)+JuicerText 经验预览)、选择/取消选择的魔物投入·跳出动画(ScenePrefabForBase.BuildingJuicerAnimForCreatureJumpIn/JumpOut，复用 objVatMaterialCreature 模板 DOJump 出入 Juicer/DropPoint 投料点，入机机器抖动+入汁音效)、榨汁流程演出(BuildingJuicerProcessBegin 瓶子弹出/BuildingJuicerAnimForHammer 锤子3秒砸3次首锤亮血/BuildingJuicerAnimForEssenceDrop 精华滴落入瓶/BuildingJuicerProcessEnd 收尾，CameraHandler.FocusJuicerCameraOnHole/RestoreJuicerCameraFocus/ShakeJuicerCamera 镜头聚焦滴嘴与震动)、榨汁逻辑(CreatureJuicerLogic 经 GameHandler.StartCreatureJuicer(List) 驱动，UI驱动+轻量Logic)、魔汁机镜头(CameraHandler.SetJuicerCamera→CV_Juicer)、投入数量上限(UserUnlockBean.GetUnlockJuicerCreatureMax=UserLimmitBean.juicerCreatureMax 基础5+UnlockEnum.JuicerNum 每级+1 满级15)、魔汁机研究解锁(UnlockEnum.Juicer=100600001 开启/JuicerNum=100600002 投入数量+1，excel_research_info/excel_unlock_info)、奖励结算(CreatureJuicerLogic.SettleJuiceReward：演出结束后消耗投入魔物(退装备+背包/阵容双删)→按各魔物等级 LevelInfo.juicer_exp 汇总经验→生成 1 个魔汁道具(ItemIdEnum.Juice=200001/ItemTypeEnum.Juice=11，经验存 ItemBean.juicerExp，num_max=1 不堆叠)入背包→SaveUserData 落盘→Toast 61016)、魔汁使用(入口在魔物管理页 UICreatureManager.UseJuiceItem，非榨汁UI：背包道具点击统一经 UseOrEquipItem 分流[魔汁/幻化药TransformPotion=18/幻原药RestorePotion=19/GM成长药水91~94(等级档位由 ItemsInfo.other_data 的 level_delta 配置) 各走使用流程、其余走装备]，点魔汁→确认框 61014→选中生物 levelExp+=juicerExp+消耗道具+落盘，满级 Toast 61015 拦截，魔王不可用/背包列表对魔王隐藏魔汁与GM成长药水[两药不过滤含魔王可用])、LevelInfo 新列 juicer_exp(1~10级=同级 level_exp 的100%，新增 id=0 行 juicer_exp=20=1级的20%)、多语言 61014~61017 与道具名 ItemsInfo 200001「魔汁」。
+description: 魔物回收(魔汁机/Juicer)系统开发：基地魔汁机建筑(ScenePrefabForBase.objBuildingJuicer 出现/解锁显隐)、E键场景交互(ControlInteractionEnum.JuicerInteraction 打开 UICreatureJuicer)、多选投入魔物榨汁UI(UICreatureJuicer 多选 listSelectCreature+Start，含 CV_Juicer 镜头/等级降序排序/投入数量门控/ui_LimmitText 计数/JuicerWater 魔汁水位(按总经验等级取 level_color 着色+区间进度×0.95 水位)+JuicerText 经验预览)、选择/取消选择的魔物投入·跳出动画(ScenePrefabForBase.BuildingJuicerAnimForCreatureJumpIn/JumpOut，复用 objVatMaterialCreature 模板 DOJump 出入 Juicer/DropPoint 投料点，入机机器抖动+入汁音效)、榨汁流程演出(BuildingJuicerProcessBegin 瓶子弹出/BuildingJuicerAnimForHammer 锤子3秒砸3次首锤亮血/BuildingJuicerAnimForEssenceDrop 精华滴落入瓶/BuildingJuicerProcessEnd 收尾，CameraHandler.FocusJuicerCameraOnHole/RestoreJuicerCameraFocus/ShakeJuicerCamera 镜头聚焦滴嘴与震动)、榨汁逻辑(CreatureJuicerLogic 经 GameHandler.StartCreatureJuicer(List) 驱动，UI驱动+轻量Logic)、魔汁机镜头(CameraHandler.SetJuicerCamera→CV_Juicer)、投入数量上限(UserUnlockBean.GetUnlockJuicerCreatureMax=UserLimmitBean.juicerCreatureMax 基础5+UnlockEnum.JuicerNum 每级+1 满级15)、魔汁机研究解锁(UnlockEnum.Juicer=100600001 开启/JuicerNum=100600002 投入数量+1/JuicerCrystalExp=100600003 榨汁添加魔晶(研究 LvN=每颗魔晶+N 点经验,10级,pay_crystal="5000*1" 即 5000…50000)，excel_research_info/excel_unlock_info)、榨汁界面魔晶加减行(CrystalAddRoot：+/-按钮+中间颗数，LongPressButton 按住1秒后每0.1秒±1，颗数仅预览、点 Start 一次性扣；EffectHandler.ShowCreatureAscendAddProgressEffect 光点飞入/减少反向飞出；经验预览分两段「+魔物经验（+魔晶经验）」，水位按合计)、奖励结算(CreatureJuicerLogic.SettleJuiceReward：演出结束后消耗投入魔物(退装备+背包/阵容双删)→按各魔物等级 LevelInfo.juicer_exp 汇总经验→生成 1 个魔汁道具(ItemIdEnum.Juice=200001/ItemTypeEnum.Juice=11，经验存 ItemBean.juicerExp，num_max=1 不堆叠)入背包→SaveUserData 落盘→Toast 61016)、魔汁使用(入口在魔物管理页 UICreatureManager.UseJuiceItem，非榨汁UI：背包道具点击统一经 UseOrEquipItem 分流[魔汁/幻化药TransformPotion=18/幻原药RestorePotion=19/GM成长药水91~94(等级档位由 ItemsInfo.other_data 的 level_delta 配置) 各走使用流程、其余走装备]，点魔汁→确认框 61014→选中生物 levelExp+=juicerExp+消耗道具+落盘，满级 Toast 61015 拦截，魔王不可用/背包列表对魔王隐藏魔汁与GM成长药水[两药不过滤含魔王可用])、LevelInfo 新列 juicer_exp(1~10级=同级 level_exp 的100%，新增 id=0 行 juicer_exp=20=1级的20%)、多语言 61014~61017 与道具名 ItemsInfo 200001「魔汁」。
 tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Game/Logic/CreatureJuicerLogic.cs
@@ -26,7 +26,7 @@ watched_files:
 
 ## 当前状态（重要）
 
-魔汁机**全链路已实现**：解锁 → 建筑出现 → E键交互 → 开UI(切 CV_Juicer 镜头)多选投入魔物(上限研究门控) → 点 Start → 场景演出(瓶子弹出 → 锤子3秒砸3次首锤亮血 → 镜头聚焦滴嘴 → 精华滴落入瓶) → **奖励结算(消耗投入魔物 → 产出 1 个魔汁道具 → 落盘+Toast)** → 重回魔汁机UI(可继续榨汁，被榨汁魔物已从背包消失)。
+魔汁机**全链路已实现**：解锁 → 建筑出现 → E键交互 → 开UI(切 CV_Juicer 镜头)多选投入魔物(上限研究门控) → **可选加魔晶(CrystalAddRoot 加减行，研究 100600003 解锁)** → 点 Start(一次性扣魔晶) → 场景演出(瓶子弹出 → 锤子3秒砸3次首锤亮血 → 镜头聚焦滴嘴 → 精华滴落入瓶) → **奖励结算(消耗投入魔物 → 魔物经验+魔晶经验 产出 1 个魔汁道具 → 落盘+Toast)** → 重回魔汁机UI(可继续榨汁，被榨汁魔物已从背包消失)。
 **奖励结算已实现**：`CreatureJuicerLogic.SettleJuiceReward()`(protected,`#region 奖励结算`)在 StartJuice 演出结束后、**重开 UI 之前**调用——遍历 targetCreatures 按等级取 `LevelInfoCfg.GetItemData(level).juicer_exp` 累计总经验(null 容错) → `RemoveAllEquipToBackpack()` 退装备 → `RemoveBackpackCreature()` 移除(与献祭消耗同写法,背包+阵容双删)；生成 1 个魔汁道具(`ItemIdEnum.Juice=200001`,num_max=1 不堆叠,经验存 `ItemBean.juicerExp` 实例字段)`AddBackpackItem` 入背包 → `SaveUserData()` 立即落盘 → Toast 61016「榨汁完成，获得魔汁（经验+X）」(图标=魔汁道具图标 `Item_Juicer_1`)。结算先于重开 UI,保证重开时 InitCreatureData 读到最新存档。
 
 ## 核心链路（UI 驱动 + 轻量 Logic，仿容器 UICreatureVat 而非献祭全流程）
@@ -37,10 +37,11 @@ watched_files:
        case ControlInteractionEnum.JuicerInteraction
        → UIHandler.OpenUIAndCloseOther<UICreatureJuicer>(ui => ui.actionForExit = ()=>Open UIBaseMain)
             └─ UICreatureJuicer.OpenUI: 切 CV_Juicer 镜头 + 关远景 → 多选投入魔物(listSelectCreature,上限门控) → 点 Start
-                 → GameHandler.StartCreatureJuicer(List<CreatureBean>)
-                      → CreatureJuicerLogic.StartJuice(List)  // 关UI看演出 → 瓶子弹出 → 锤子3秒砸3次(首锤亮血)
+                 → GameHandler.StartCreatureJuicer(List<CreatureBean>, long addCrystalNum)
+                      → CreatureJuicerLogic.StartJuice(List, long)  // 场景校验后 CheckHasCrystal 一次性扣魔晶
+                                                            // 关UI看演出 → 瓶子弹出 → 锤子3秒砸3次(首锤亮血)
                                                             // → 镜头聚焦滴嘴 → 精华滴落入瓶 → 血液隐藏+镜头还原
-                                                            // → SettleJuiceReward() 奖励结算(消耗魔物→产魔汁→落盘+Toast 61016) → 重回魔汁机UI(可继续榨汁)
+                                                            // → SettleJuiceReward() 奖励结算(魔物经验+魔晶经验→产魔汁→落盘+Toast 61016) → 重回魔汁机UI(可继续榨汁)
             退出(ui_ViewExit) → actionForExit() → 回 UIBaseMain(基地镜头随之还原)
 ```
 
@@ -75,16 +76,18 @@ watched_files:
 - **选择/取消选择动画**：`EventForCardClickSelect` 里 Add 分支调 `scenePrefab.BuildingJuicerAnimForCreatureJumpIn(魔物)`（跳入投料点+机器抖动+随机敲击音效 sound_knock_3/5）、Remove 分支调 `BuildingJuicerAnimForCreatureJumpOut(魔物)`（弹出过程直接淡出）；`scenePrefab` 字段在 `OpenUI` 抓 `WorldHandler.GetCurrentScenePrefab<ScenePrefabForBase>(BaseGaming)`（与 UICreatureVat 同口径）
 - **投入上限**：`GetJuicerMax()`=`GetUnlockJuicerCreatureMax()`(基础5+JuicerNum 研究等级,满级15)；`RefreshLimitText()` 显示「已选/上限」,`ColorUtil.WrapLimitFull` 达上限转红
 - **魔汁水位/经验预览**（`RefreshJuicerWater()`,`#region 魔汁水位与经验预览`,挂进 `RefreshUI()` 与选择事件末尾）：汇总已选魔物 `LevelInfo.juicer_exp` 得总经验 → 取「juicer_exp ≤ 总经验」的最高等级(0级区间下限按0计) → **水色**=该级 `LevelInfo.level_color`(经 `LevelInfoCfg.GetLevelColor`,0级白,前层原色/后层×0.6暗化写 `_LayerColor1/2`)、**水位**=区间进度(总经验在 本级~下一级juicer_exp 间的比例)×0.95 写 `_WaterLevel`(无下一级=满级进度拉满)、**经验文本** `ui_JuicerText` 显示 `+总经验`；**一个素材都没选时隐藏水位与文本**。水位材质=`Mat_UICreatureJuicer_Exp`(Shader_UI_ImageWaterWave,2层水),运行时 `new Material` 懒克隆防改共享资源(`juicerWaterMatInstance`,`OnDestroy` 销毁)
+- **魔晶加减行**（`#region 魔晶加经验`，`CrystalAddRoot` 整行，研究 `UnlockEnum.JuicerCrystalExp` 未解锁时隐藏）：左 `BtnAddCrystal`(+) / 中 `CrystalAddNumText`(颗数) / 右 `BtnReduceCrystal`(-)，两个按钮同物体挂 `Button` + `LongPressButton`(`longHoldTime=1`/`longHoldEventTime=0.1`，回调在 `Awake` 里 `AddLongEventAction` 只注册一次)。`crystalAddNum` 仅界面预览——添加上限=当前 `userData.crystal` 余额、减少下限 0，**不扣费不触发 `Backpack_Crystal_Change`**；每次加减调 `EffectHandler.ShowCreatureAscendAddProgressEffect(1, start, end)` 播持久光点(添加=建筑上方+2.5 → 滴嘴 `GetBuildingJuicerHole()`；减少=起终点对调反向飞出)。长按回调绕过点击门禁，`CheckCanChangeCrystal()` 自行判 `UIHandler.Instance.manager.CanClickUIButtons` + 研究已解锁；长按统一传 `isHint=false` 避免每 0.1 秒刷 Toast 3000001。`OpenUI` 里 `crystalAddNum=0` 重置(界面实例复用)。经验预览改为两段：有魔晶时 `+{魔物经验}（+{魔晶经验}）`，水位按两者合计计算；魔晶经验 = `CreatureJuicerLogic.GetCrystalJuicerExp(颗数, UnlockEnum.JuicerCrystalExp 研究等级)`。
 - **卡片使用态复用 `CardUseStateEnum.CreatureAscendTarget` + `CardStateEnum.CreatureAscendSelect/NoSelect`**——预制体 `ui_UIViewCreatureCardList_Target` 挂的卡片变体是 `UIViewCreatureCardItemForCreatureAscend`
 - 选择走 `EventsInfo.UIViewCreatureCardItem_OnClickSelect` 事件（`this.RegisterEvent`）
-- Start：`listSelectCreature.Count==0` → `ToastHintText(61010)` 拦截；否则 → `GameHandler.Instance.StartCreatureJuicer(listSelectCreature)`
+- Start：`listSelectCreature.Count==0` → `ToastHintText(61010)` 拦截；否则 → `GameHandler.Instance.StartCreatureJuicer(listSelectCreature, crystalAddNum)`（魔晶颗数一并下传，由逻辑层扣除并折算经验）
 
 ### 榨汁逻辑（CreatureJuicerLogic : BaseGameLogic）
 - 轻量逻辑，存 `GameManager.gameLogic` 单槽（`GetGameLogic<CreatureJuicerLogic>()` 可取）；**不走 PreGame/StartGame 全流程**，由 UI 的 Start 经 `GameHandler.StartCreatureJuicer` 直接 `StartJuice`
-- 字段：`targetCreatures`（本次投入魔物 List，StartJuice 里**复制一份**防 UI 列表后续被清空）、`scenePrefab`（基地场景预制，榨汁动画作用于 `scenePrefab.objBuildingJuicer`）
-- `StartJuice(List<CreatureBean> targets)`（async void，仿扭蛋 ProcessForShowEgg）按序编排：① 锁UI+镜头(`CloseAllUI`+`SetJuicerCamera(MaxValue,true)`+DoF false) → ② `BuildingJuicerProcessBegin()`(瓶子弹出/液体隐藏/锤子归位/血液隐藏)等0.35s → ③ `await BuildingJuicerAnimForHammer()`(3秒3次,首锤亮血) → ④ `FocusJuicerCameraOnHole(GetBuildingJuicerHole())` 等0.9s → ⑤ `await BuildingJuicerAnimForEssenceDrop()` 等0.6s → ⑥ `BuildingJuicerProcessEnd()`(血液隐藏/瓶子隐藏/锤子归位/清残留水滴)+`RestoreJuicerCameraFocus()` 等0.6s → ⑦ `SettleJuiceReward()` 奖励结算(须先于重开UI,保证重开读到最新存档) → **重回 `OpenUIAndCloseOther<UICreatureJuicer>(ui => ui.actionForExit = ()=>Open UIBaseMain)`（玩家可继续榨汁，被榨汁魔物已从背包消失；注入退出回调与场景E键入口一致，DoF 由 UI 的 OpenUI 自行关闭）**
-- **奖励结算 `SettleJuiceReward()`**（protected,`#region 奖励结算`）：遍历 targetCreatures 按等级取 `LevelInfoCfg.GetItemData(level).juicer_exp` 累计总经验(null 容错) → `RemoveAllEquipToBackpack()` 退装备 → `userData.RemoveBackpackCreature()` 移除(与献祭消耗同写法,背包+阵容双删)；`new ItemBean((long)ItemIdEnum.Juice, 1)` + `juicerExp=总经验` → `AddBackpackItem()`(不堆叠重载,num_max=1) → `SaveUserData()` 立即落盘 → `IconHandler.GetItemIconSprite((long)ItemIdEnum.Juice, sprite => ...)` 取**魔汁道具图标**(`ItemsInfo.icon_res=Item_Juicer_1`,Items 图集)后 `ToastHint<ToastView>(sprite, Color.white, string.Format(GetTextById(61016), 总经验))` 提示「榨汁完成，获得魔汁（经验+X）」（图标=道具图标，不再用 `ToastHintText(..., 1)` 的默认绿色对勾）
-- `GameHandler.StartCreatureJuicer(List<CreatureBean>)`：get-or-create logic → `StartJuice(list)`（与 `StartGashaponMachine`/`StartCreatureSacrifice` 同风格）
+- 字段：`targetCreatures`（本次投入魔物 List，StartJuice 里**复制一份**防 UI 列表后续被清空）、`addCrystalNum`（本次界面添加的魔晶颗数，开始榨汁时扣除并折算经验）、`scenePrefab`（基地场景预制，榨汁动画作用于 `scenePrefab.objBuildingJuicer`）
+- **公共经验公式**（`#region 经验公式`，UI 预览与结算共用，防口径分叉）：`static GetCreatureJuicerExp(IReadOnlyList<CreatureBean>)`（按等级累加 `LevelInfo.juicer_exp`，null 兜底 0）、`static GetCrystalJuicerExp(long crystalNum, int expPerCrystal)`（颗数 × 每颗经验，任一项 ≤0 返回 0）
+- `StartJuice(List<CreatureBean> targets, long addCrystalNum = 0)`（async void，仿扭蛋 ProcessForShowEgg）：**场景校验通过后、CloseAllUI 之前**若颗数 >0 调 `CheckHasCrystal(addCrystalNum, isHint:true, isAddCrystal:true)` 一次性扣魔晶(不足则拦截返回，UI 保持打开不进入演出；扣除只在内存，落盘随结算一次完成)，随后按序编排：① 锁UI+镜头(`CloseAllUI`+`SetJuicerCamera(MaxValue,true)`+DoF false) → ② `BuildingJuicerProcessBegin()`(瓶子弹出/液体隐藏/锤子归位/血液隐藏)等0.35s → ③ `await BuildingJuicerAnimForHammer()`(3秒3次,首锤亮血) → ④ `FocusJuicerCameraOnHole(GetBuildingJuicerHole())` 等0.9s → ⑤ `await BuildingJuicerAnimForEssenceDrop()` 等0.6s → ⑥ `BuildingJuicerProcessEnd()`(血液隐藏/瓶子隐藏/锤子归位/清残留水滴)+`RestoreJuicerCameraFocus()` 等0.6s → ⑦ `SettleJuiceReward()` 奖励结算(须先于重开UI,保证重开读到最新存档) → **重回 `OpenUIAndCloseOther<UICreatureJuicer>(ui => ui.actionForExit = ()=>Open UIBaseMain)`（玩家可继续榨汁，被榨汁魔物已从背包消失；注入退出回调与场景E键入口一致，DoF 由 UI 的 OpenUI 自行关闭）**
+- **奖励结算 `SettleJuiceReward()`**（protected,`#region 奖励结算`）：`GetCreatureJuicerExp(targetCreatures)` 汇总魔物经验 + `GetCrystalJuicerExp(addCrystalNum, GetUnlockJuicerCrystalExp())` 汇总魔晶经验 → 遍历 targetCreatures `RemoveAllEquipToBackpack()` 退装备 → `userData.RemoveBackpackCreature()` 移除(与献祭消耗同写法,背包+阵容双删)；`new ItemBean((long)ItemIdEnum.Juice, 1)` + `juicerExp=总经验` → `AddBackpackItem()`(不堆叠重载,num_max=1) → `SaveUserData()` 立即落盘 → `IconHandler.GetItemIconSprite((long)ItemIdEnum.Juice, sprite => ...)` 取**魔汁道具图标**(`ItemsInfo.icon_res=Item_Juicer_1`,Items 图集)后 `ToastHint<ToastView>(sprite, Color.white, string.Format(GetTextById(61016), 总经验))` 提示「榨汁完成，获得魔汁（经验+X）」（图标=道具图标，不再用 `ToastHintText(..., 1)` 的默认绿色对勾）
+- `GameHandler.StartCreatureJuicer(List<CreatureBean>, long addCrystalNum = 0)`：get-or-create logic → `StartJuice(list, addCrystalNum)`（与 `StartGashaponMachine`/`StartCreatureSacrifice` 同风格；默认 0 兼容不传颗数的调用）
 
 ### 魔汁道具与魔汁使用（ItemsEnum/ItemBean/UICreatureManager）
 - **道具定义**：`ItemTypeEnum.Juice = 11`(消耗品,非装备,除魔王外所有生物可用)、`ItemIdEnum.Juice = 200001`(`Assets/Scripts/Enums/ItemsEnum.cs`)；配置在 excel_items_info 新行 200001(num_max=1 不堆叠、icon_res=`Item_Juicer_1` 无图集后缀,走默认 Items 图集 AtlasForItems——该图集按 Textures/Items 文件夹整包,Item_Juicer_1.png 自动入内)。消耗品现有 7 个——魔汁=11(首个,限非魔王)、幻化药 TransformPotion=18 / 幻原药 RestorePotion=19(所有生物含魔王可用)、GM 成长药水 LevelUp=91 / LevelDown=92 / RarityUp=93 / RarityDown=94(均限普通魔物,详见 item-system)
@@ -109,20 +112,27 @@ watched_files:
 
 ### 测试入口（魔汁机测试）
 - `TestSceneTypeEnum.CreatureJuicer = 12`：选存档槽位(1~3) + 投入上限滑条(5~15,默认拉满) → 进基地直接开 `UICreatureJuicer`，全程 `isTestSimulation` 内存模拟不落盘
-- `LauncherTest.StartForCreatureJuicerTest(saveSlot, juicerCreatureMax)`：加载存档 → `SetUserData`+`isTestSimulation=true` → 覆盖 `AddUnlock(Juicer)` + `AddUnlock(JuicerNum, 目标上限-基础juicerCreatureMax)`(按 `ResearchInfoCfg.level_max` 钳制) → 一次性 `World_EnterGameForBaseScene` 回调开 UI，`actionForExit → UIBaseMain`(与场景E键入口一致)
+- `LauncherTest.StartForCreatureJuicerTest(saveSlot, juicerCreatureMax)`：加载存档 → `SetUserData`+`isTestSimulation=true` → 覆盖 `AddUnlock(Juicer)` + `AddUnlock(JuicerNum, 目标上限-基础juicerCreatureMax)`(按 `ResearchInfoCfg.level_max` 钳制) + `AddUnlock(JuicerCrystalExp, 满级)`(让魔晶加减行可见，未解锁态需用真实存档验证) → 一次性 `World_EnterGameForBaseScene` 回调开 UI，`actionForExit → UIBaseMain`(与场景E键入口一致)
 - Editor 面板 `GameTestEditor.DrawCreatureJuicerTest()`；详见 `test-system` / `juicer-system` Skill
 
 ### 投入数量上限（研究门控）
 - `UserLimmitBean.juicerCreatureMax = 5`（基础值）
 - `UserUnlockBean.GetUnlockJuicerCreatureMax()` = `juicerCreatureMax` + `GetUnlockResearchLeveByUnlockEnum(UnlockEnum.JuicerNum)`（每级+1，level_max=10，满级15；同献祭/进阶素材口径）
 
-### 解锁 / 研究（设施类，两个节点）
-- `UnlockEnum.Juicer = 100600001`(开启) / `UnlockEnum.JuicerNum = 100600002`(投入数量+1)（新设施块 1006，`GameStateEnum.cs`）
+### 魔晶加经验（研究门控）
+- `UserUnlockBean.GetUnlockJuicerCrystalExp()` = `GetUnlockResearchLeveByUnlockEnum(UnlockEnum.JuicerCrystalExp)`（Lv1~10 = 每颗魔晶 +1~10 点榨汁经验，未解锁 0 且界面整行隐藏）
+- `static UserUnlockBean.GetJuicerCrystalExpForLevel(int level)` = `level`（供研究气泡详情 `{Value}` 填充）
+- 折算与汇总：`CreatureJuicerLogic.GetCrystalJuicerExp(颗数, 每颗经验)`；结算时与魔物经验相加后写入 `ItemBean.juicerExp`
+- 扣费：`UserDataBean.CheckHasCrystal(颗数, isHint:true, isAddCrystal:true)`（唯一入口，余额不足 Toast 3000001；界面侧添加上限即取 `userData.crystal` 余额）
+
+### 解锁 / 研究（设施类，三个节点）
+- `UnlockEnum.Juicer = 100600001`(开启) / `UnlockEnum.JuicerNum = 100600002`(投入数量+1) / `UnlockEnum.JuicerCrystalExp = 100600003`(榨汁加魔晶)（新设施块 1006，`GameStateEnum.cs`）
 - 研究节点 `excel_research_info[研究信息].xlsx` + `ResearchInfo.txt`：
   - 开启：`research_type=1`、`id=100600001`、`pre_unlock_ids="100500001"`(前置=成就)、`pay_crystal="5"`、`level_max=1`、`icon_res="ui_research_65"`
   - 投入数量：`id=100600002`、`pre_unlock_ids="100600001"`、`level_max=10`、`pay_crystal="1000,…,10000,"`(逐级)、`icon_res="ui_research_65"`(**占位待替换**)、`position` 需在研究图编辑器微调
-- 解锁项 `excel_unlock_info` + `UnlockInfo.txt`：`unlock_type=0`；`id=100600001`/`100600002`
-- 多语言：研究名 `Language_ResearchInfo_cn/en`(100600001 开启魔汁机 / 100600002 魔汁机投入数量+1)；UI 文本 `Language_UIText_cn/en`(2009 魔汁机 / 61010 未投入提示 / 61011 开始榨汁 / 61012 超上限提示 / 61014 魔汁使用确认框 / 61015 满级拦截 / 61016 榨汁获得提示 / 61017 经验+{0}道具气泡,12 语种已配)；道具名 `Language_ItemsInfo_cn/en`(200001 魔汁)。**真实源是 excel_language 同名工作表**
+  - **榨汁加魔晶**：`id=100600003`、`research_type=1`、`pre_unlock_ids="100600001"`(前置=开启魔汁机)、`level_max=10`、`pay_crystal="5000*1"`(展开 5000/10000/…/50000)、`icon_res="ui_research_65"`、`position=(-700,200)`(避开 Juicer→JuicerNum 连线的卡片遮挡)、`details=900000023`(「（每颗魔晶+{Value}经验）」)、`name=100600003`；效果公式 `UserUnlockBean.GetUnlockJuicerCrystalExp()` / `static GetJuicerCrystalExpForLevel(lv)=lv`，气泡 `{Value}` 已在 `ResearchInfoBeanPartial.GetLevelDetailValueString` 登记
+- 解锁项 `excel_unlock_info` + `UnlockInfo.txt`：`unlock_type=0`；`id=100600001`/`100600002`/`100600003`
+- 多语言：研究名 `Language_ResearchInfo_cn/en`(100600001 开启魔汁机 / 100600002 魔汁机投入数量+1 / 100600003 魔晶附加经验；详情模板 900000023)；UI 文本 `Language_UIText_cn/en`(2009 魔汁机 / 61010 未投入提示 / 61011 开始榨汁 / 61012 超上限提示 / 61014 魔汁使用确认框 / 61015 满级拦截 / 61016 榨汁获得提示 / 61017 经验+{0}道具气泡,12 语种已配)；道具名 `Language_ItemsInfo_cn/en`(200001 魔汁)。**真实源是 excel_language 同名工作表**
 - 判定解锁：`userData.GetUserUnlockData().CheckIsUnlock(UnlockEnum.Juicer)`
 
 ### 关键文件
@@ -130,7 +140,8 @@ watched_files:
 | 文件 | 路径 |
 |------|------|
 | 榨汁逻辑 | Assets/Scripts/Game/Logic/CreatureJuicerLogic.cs |
-| 榨汁 UI | Assets/Scripts/Component/UI/Game/CreatureJuicer/ (UICreatureJuicer + Component) |
+| 榨汁 UI | Assets/Scripts/Component/UI/Game/CreatureJuicer/ (UICreatureJuicer + Component) · 预制体 Assets/Resources/UI/UICreatureJuicer.prefab(魔晶加减行 CrystalAddRoot/BtnAddCrystal/CrystalAddNumText/BtnReduceCrystal，字段已序列化) |
+| 长按组件 | Assets/FrameWork/Scripts/Component/UI/LongPressButton.cs(魔晶加减长按；OnDisable 复位防界面关闭后残留触发) |
 | 逻辑入口 | Assets/Scripts/Component/Handler/GameHandler.cs (`StartCreatureJuicer`) |
 | 建筑出现+投入/跳出动画+榨汁流程演出 | Assets/Scripts/Component/Game/Scene/ScenePrefabForBase.cs (`#region 魔汁机`，含 BuildingJuicerAnimForCreatureJumpIn/JumpOut/BuildingJuicerPunch 及 BuildingJuicerProcessBegin/AnimForHammer/AnimForEssenceDrop/ProcessEnd) |
 | 投料点/流程节点 | BaseScene.prefab 中 `Juicer/DropPoint`(本地(0,1,0))、`Juicer/JuicerHammer`、`Juicer/JuicerHammer/JuicerBlood`、`Juicer/JuicerBloodPS`(血液喷溅,锤击播放)、`Juicer/JuicerBottle(/Juicer)`、`Juicer/JuicerHole`(本地(0,0.314,0))、`Juicer/JuicerEssenceDrop`(精华水滴,大小/贴图编辑器调) |

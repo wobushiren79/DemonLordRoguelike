@@ -537,6 +537,10 @@ public class LauncherTest : BaseLauncher
         //确保魔汁机功能已解锁，并把投入上限研究等级覆盖为目标值(上限=基础+研究等级)
         userUnlock.AddUnlock((long)UnlockEnum.Juicer);
         userUnlock.AddUnlock((long)UnlockEnum.JuicerNum, targetJuicerMax - baseJuicerMax);
+        //同时解锁「榨汁添加魔晶」研究到满级，便于测试魔晶加减行(未解锁态需用真实存档验证)
+        int crystalExpLevelMax = ResearchInfoCfg.GetItemDataByUnlockId((long)UnlockEnum.JuicerCrystalExp)?.level_max ?? 0;
+        if (crystalExpLevelMax > 0)
+            userUnlock.AddUnlock((long)UnlockEnum.JuicerCrystalExp, crystalExpLevelMax);
 
         //清理上一次未触发的待执行回调，避免重复注册
         if (actionForJuicerTest != null)

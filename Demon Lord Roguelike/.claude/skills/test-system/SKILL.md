@@ -537,6 +537,7 @@ LauncherTest.StartForCreatureJuicerTest(...)                   // Assets/Scripts
     │  ② GameDataHandler.manager.SetUserData(userData) + isTestSimulation=true  // 存档替换为运行时数据并开测试模拟
     │  ③ 覆盖解锁(传入值按配置 level_max 钳制):AddUnlock(Juicer)
     │             + AddUnlock(JuicerNum, 目标上限-基础juicerCreatureMax)  // 按目标值覆盖,含降级/置0
+    │             + AddUnlock(JuicerCrystalExp, 满级)  // 魔晶加减行可见(未解锁隐藏态需真实存档验证)
     │  ④ 注册一次性 World_EnterGameForBaseScene 回调
     │  ⑤ WorldHandler.EnterGameForBaseScene(userData)
     ▼

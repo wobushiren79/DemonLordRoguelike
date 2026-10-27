@@ -89,12 +89,13 @@ public class GameHandler : BaseHandler<GameHandler, GameManager>
     /// UI 驱动,不走 PreGame/StartGame 全流程,直接 StartJuice(榨汁流程/奖励后续接入)。
     /// </summary>
     /// <param name="targetCreatures">被投入榨汁的魔物列表(多选,上限由研究门控)</param>
-    public void StartCreatureJuicer(List<CreatureBean> targetCreatures)
+    /// <param name="addCrystalNum">本次界面额外添加的魔晶颗数(点 Start 时一次性扣除并折算榨汁经验)</param>
+    public void StartCreatureJuicer(List<CreatureBean> targetCreatures, long addCrystalNum = 0)
     {
         if (manager.gameLogic == null || manager.gameLogic is not CreatureJuicerLogic)
             manager.gameLogic = new CreatureJuicerLogic();
         var gameLogic = manager.gameLogic as CreatureJuicerLogic;
-        gameLogic.StartJuice(targetCreatures);
+        gameLogic.StartJuice(targetCreatures, addCrystalNum);
     }
     #endregion
 

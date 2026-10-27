@@ -152,7 +152,7 @@ public long GetPayCrystal(int researchLevel);
 // 获取带「待解锁等级累计效果」的详情描述(如 （概率40%）/（距离4.5）/（祭品上限5）)
 // 读研究表 details[language] 列对应的详情模板(details==0 返回空串, 模板无 {Value} 原样返回);
 // 数值取 待解锁等级=min(当前等级+1,level_max) 的累计总效果,满级停留在满级数值;
-// 公式统一收口 UserUnlockBean 的 static Get*ForLevel 方法(私有 GetLevelDetailValueString 按 unlock_id 分发 22 个 level_max>1 节点);
+// 公式统一收口 UserUnlockBean 的 static Get*ForLevel 方法(私有 GetLevelDetailValueString 按 unlock_id 分发 23 个 level_max>1 节点);
 // 替换走通用机制 TextHandler.GetTextReplace + TextReplaceEnum.Value(与成就 GetLevelDescription 同口径);
 // 括号/前导空格由各语言详情自带(cn/tw/jp 全角无空格,其余半角带前导空格),气泡里直接拼在名字后
 public string GetDetailsLanguageWithLevelDetail(int currentLevel);
@@ -322,7 +322,7 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 `ChallengeHundredShowRate`（unlock_id **100300007**，`research_type=4` 世界节点，`icon_res=ui_research_181`（100勇士专属图标；2026-10-25 起由 `ui_research_9` 换为 181），`level_max=10`，`position(-800,-90)` 位于100勇士难度2节点正左方，`pre_unlock_ids="100310160"`——前置=100勇士难度2研究，同分支前置、连线正常绘制）——研究等级 ×10 = 传送门世界刷新为「是魔王就挑战100勇士」模式的概率（百分数 0~100，未解锁=0，满级 100）。
 
 - **概率型研究消费点先例**（仿扭蛋概率研究）：消费不在 UI 门控，而在 `GameWorldInfoRandomBean.SetGameFightTypeRandom`——每次生成传送门世界时先按该概率判定，命中则抽配置行生成为挑战100勇士世界（**所有已解锁世界都可能刷出**）；抽行为**两段判定**：先按 BOSS 挑战出现概率（`GetUnlockChallengeHundredBossRate()`，基础 10%+研究 `ChallengeHundredBossRate`(100300009) 等级×10%，满级 50%，详见下文「真勇者挑战」节）判定普通/BOSS，再在命中类型行内等概率随机（`FightTypeChallengeHundredInfoCfg.GetRandomRow(当前世界最高已解锁100勇士难度, bossRate)`）；命中但当前最高已解锁100勇士难度无匹配配置行时落回原征服/无尽随机。数值读取 `UserUnlockBean.GetUnlockChallengeHundredShowRate()`（=研究等级×10）。**100勇士难度自 2026-10 起为独立研究链**，不再取征服难度。
-- **气泡按级标概率**：名字十二语言保持原名「是魔王就挑战100勇士」，概率详情经研究表 `details[language]` 列=900000022「（概率{Value}%）」（cn/tw/jp 全角括号、其余半角带前导空格，12 语言全翻译），`GetDetailsLanguageWithLevelDetail` 按 待解锁等级=min(当前+1,满级) 填概率拼在名字后（走 `UserUnlockBean.GetChallengeHundredShowRateForLevel(level)`=等级×`CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL`(10)；details 机制详见「研究配置 Bean 扩展方法」节，22 个 level_max>1 节点详情语言条目占号段 900000001~900000022）。
+- **气泡按级标概率**：名字十二语言保持原名「是魔王就挑战100勇士」，概率详情经研究表 `details[language]` 列=900000022「（概率{Value}%）」（cn/tw/jp 全角括号、其余半角带前导空格，12 语言全翻译），`GetDetailsLanguageWithLevelDetail` 按 待解锁等级=min(当前+1,满级) 填概率拼在名字后（走 `UserUnlockBean.GetChallengeHundredShowRateForLevel(level)`=等级×`CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL`(10)；details 机制详见「研究配置 Bean 扩展方法」节，23 个 level_max>1 节点详情语言条目占号段 900000001~900000023）。
 - **落表**同其他节点：`excel_research_info`(id=100300007, `research_type=4`, `pay_crystal` 十级独立阶梯 `100,200,400,800,1500,2500,4000,6000,9000,15000`, `pre_data` 留空, `name`=同id, `details[language]`=900000022, 备注「是魔王就挑战100勇士-出现概率+10%」) + `excel_unlock_info`(id=100300007, `unlock_type=0`, 备注「是魔王就挑战100勇士出现概率」) + 多语言 `excel_language` 的 `ResearchInfo` 工作表(id=100300007 名字**全语言统一填原名「是魔王就挑战100勇士」**——该模式翻译统一用原名；id=900000022 为概率详情行)。
 - 挑战100勇士模式本身的战斗配置表/Bean/流程见 [`portal-system`](../portal-system/SKILL.md) / [`game-fight-system`](../game-fight-system/SKILL.md) 等文档，本 Skill 仅覆盖「研究→出现概率」这一面。
 
@@ -519,6 +519,7 @@ public static float GetSacrificeDifferentIdRateForLevel(int level);  // 不同id
 public static int GetPortalRefreshMaxForLevel(int level);            // 传送门刷新上限 = 等级
 public static float GetGashaponRarityRateForLevel(RarityEnum rarity, int level); // 孕育稀有度命中概率% = RarityInfo.gashapon_rate(按档配置: R25/SR20/SSR15/其他10) + 等级(扭蛋抽取/展示/气泡三处共用)
 public static int GetJuicerCreatureMaxForLevel(int level);           // 魔汁机投入上限 = limmit.juicerCreatureMax + 等级
+public static int GetJuicerCrystalExpForLevel(int level);            // 魔汁机榨汁加魔晶每颗经验 = 等级(0=未解锁;详情 details=900000023)
 public static int GetLineupCreatureNumForLevel(int level);           // 阵容生物上限 = limmit.lineupCreatureMax + 等级
 public static int GetLineupNumForLevel(int level);                   // 阵容数量 = limmit.lineupMax + 等级
 public static float GetDropCrystalAddLifeTimeForLevel(int level);    // 魔晶掉落额外时长 = 等级×5 秒
@@ -541,6 +542,7 @@ public int GetUnlockCreatureVatAddProgressLevel();     // 生物进阶魔晶加�
 public int GetUnlockCreatureVatMaterialMax();          // 进阶素材可选上限 = 5(creatureVatMaterialMax) + CreatureVatMaterialNum 等级(满级 10)
 public int GetUnlockSacrificeMax();                    // 献祭祭品选择上限 = 3(sacrificeMax) + SacrificeNum 等级(满级 15)
 public int GetUnlockJuicerCreatureMax();               // 魔汁机投入魔物上限 = 5(juicerCreatureMax) + JuicerNum(100600002) 等级(level_max=10,满级 15)
+public int GetUnlockJuicerCrystalExp();                // 魔汁机榨汁每颗魔晶经验 = JuicerCrystalExp(100600003) 等级(Lv1~10 = 1~10 点;0=未解锁,界面整行隐藏)
 public float GetUnlockSacrificeFailPityAddRate();      // 献祭失败保底增量 = SacrificePityRate 等级 × 5%(未解锁0,满级50%)
 public float GetUnlockSacrificeDifferentIdRate();      // 单个不同id祭品成功率 = SacrificeDifferentIdRate 等级 × 5%(未解锁0,满级50%)
 public float GetUnlockDropCrystalAddLifeTime();        // 魔晶掉落物额外存在时长 = DropCrystalLifeTime 等级 × 5秒(未解锁0,满级+30s)；在 FightCreatureEntity.DropCrystal 叠加到 FightDropCrystalBean.BASE_LIFE_TIME(30)

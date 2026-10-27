@@ -13,8 +13,46 @@ public class CreatureJuicerLogic : BaseGameLogic
     #region 数据
     //本次投入榨汁的魔物列表(多选,上限由研究门控)
     public List<CreatureBean> targetCreatures = new List<CreatureBean>();
+    //本次界面额外添加的魔晶颗数(开始榨汁时一次性扣除,按研究等级折算额外经验)
+    public long addCrystalNum;
     //当前基地场景预制(榨汁动画作用于 scenePrefab.objBuildingJuicer)
     public ScenePrefabForBase scenePrefab;
+    #endregion
+
+    #region 经验公式
+    /// <summary>
+    /// 汇总投入魔物的榨汁经验(各级 LevelInfo.juicer_exp 累加,无配置兜底0)
+    /// <para>UI 预览与结算共用本方法,避免两处口径分叉</para>
+    /// </summary>
+    /// <param name="creatures">投入榨汁的魔物列表</param>
+    /// <returns>魔物等级折算的榨汁经验</returns>
+    public static long GetCreatureJuicerExp(IReadOnlyList<CreatureBean> creatures)
+    {
+        if (creatures == null)
+            return 0;
+        long totalJuiceExp = 0;
+        for (int i = 0; i < creatures.Count; i++)
+        {
+            var levelInfo = LevelInfoCfg.GetItemData(creatures[i].level);
+            if (levelInfo != null)
+                totalJuiceExp += levelInfo.juicer_exp;
+        }
+        return totalJuiceExp;
+    }
+
+    /// <summary>
+    /// 计算魔晶折算的额外榨汁经验 = 颗数 × 每颗经验(=研究等级);任一项非正返回 0
+    /// <para>UI 预览与结算共用本方法</para>
+    /// </summary>
+    /// <param name="crystalNum">本次添加的魔晶颗数</param>
+    /// <param name="expPerCrystal">每颗魔晶折算的榨汁经验</param>
+    /// <returns>魔晶折算的额外榨汁经验</returns>
+    public static long GetCrystalJuicerExp(long crystalNum, int expPerCrystal)
+    {
+        if (crystalNum <= 0 || expPerCrystal <= 0)
+            return 0;
+        return crystalNum * expPerCrystal;
+    }
     #endregion
 
     #region 榨汁流程
@@ -24,10 +62,12 @@ public class CreatureJuicerLogic : BaseGameLogic
     /// 锤子升起后镜头聚焦滴嘴 → 精华水滴坠入瓶子(液体显示) → 血液隐藏+镜头还原 → 奖励结算(消耗投入魔物,产出1个魔汁道具) → 重回魔汁机UI(玩家可继续榨汁)。</para>
     /// </summary>
     /// <param name="targets">被投入榨汁的魔物列表</param>
-    public async void StartJuice(List<CreatureBean> targets)
+    /// <param name="addCrystalNum">本次界面额外添加的魔晶颗数(0=未加魔晶);在开始榨汁时一次性扣除</param>
+    public async void StartJuice(List<CreatureBean> targets, long addCrystalNum = 0)
     {
         //复制一份投入列表(调用方持有的是 UI 选中列表引用,后续可能被清空)
         targetCreatures = targets == null ? new List<CreatureBean>() : new List<CreatureBean>(targets);
+        this.addCrystalNum = addCrystalNum;
         //抓取当前基地场景预制(榨汁动画作用在 objBuildingJuicer 上)
         scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForBase>(GameSceneTypeEnum.BaseGaming);
         if (scenePrefab == null || scenePrefab.objBuildingJuicer == null)
@@ -35,7 +75,22 @@ public class CreatureJuicerLogic : BaseGameLogic
             LogUtil.LogError("[魔汁机] 榨汁失败:找不到基地场景魔汁机建筑");
             return;
         }
-        LogUtil.Log($"[魔汁机] 开始榨汁,投入魔物数量={targetCreatures.Count}");
+        //开始榨汁时一次性扣除本次添加的魔晶(余额不足则拦截,UI 保持打开不进入演出;落盘随结算统一执行)
+        if (this.addCrystalNum > 0)
+        {
+            UserDataBean userDataForPay = GameDataHandler.Instance.manager.GetUserData();
+            //研究等级为0(未解锁/异常)时折算经验为0,直接放弃扣费防白扣
+            if (userDataForPay.GetUserUnlockData().GetUnlockJuicerCrystalExp() <= 0)
+            {
+                this.addCrystalNum = 0;
+            }
+            else if (!userDataForPay.CheckHasCrystal(this.addCrystalNum, isHint: true, isAddCrystal: true))
+            {
+                this.addCrystalNum = 0;
+                return;
+            }
+        }
+        LogUtil.Log($"[魔汁机] 开始榨汁,投入魔物数量={targetCreatures.Count},添加魔晶={this.addCrystalNum}");
 
         //1.锁UI+镜头:关闭全部UI只看场景演出,保持魔汁机镜头,关远景虚化
         UIHandler.Instance.CloseAllUI();
@@ -74,22 +129,23 @@ public class CreatureJuicerLogic : BaseGameLogic
     #region 奖励结算
     /// <summary>
     /// 榨汁奖励结算:消耗全部投入魔物(装备退回背包后移除),按每只魔物等级的 LevelInfo.juicer_exp 汇总经验,
+    /// 再加上本次添加魔晶折算的额外经验(每颗=研究等级点),
     /// 生成 1 个魔汁道具(num_max=1 不堆叠,经验值存 ItemBean.juicerExp 实例字段)入背包,立即落盘并 Toast 提示。
     /// </summary>
     protected void SettleJuiceReward()
     {
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        long totalJuiceExp = 0;
+        //魔物经验走公共公式(与 UI 预览同口径)
+        long totalJuiceExp = GetCreatureJuicerExp(targetCreatures);
         foreach (var creatureData in targetCreatures)
         {
-            //按被榨汁魔物的等级累计榨汁经验(0~10级行均已配置,无配置兜底0)
-            var levelInfo = LevelInfoCfg.GetItemData(creatureData.level);
-            if (levelInfo != null)
-                totalJuiceExp += levelInfo.juicer_exp;
             //装备退回背包后再移除魔物(与献祭消耗写法一致:背包+阵容双删)
             creatureData.RemoveAllEquipToBackpack();
             userData.RemoveBackpackCreature(creatureData);
         }
+        //加上本次添加魔晶折算的额外经验(每颗=「魔汁机榨汁加魔晶」研究等级点)
+        long crystalJuiceExp = GetCrystalJuicerExp(addCrystalNum, userData.GetUserUnlockData().GetUnlockJuicerCrystalExp());
+        totalJuiceExp += crystalJuiceExp;
         //生成魔汁道具(单个不堆叠,经验按投入素材等级汇总)
         ItemBean juiceData = new ItemBean((long)ItemIdEnum.Juice, 1);
         juiceData.juicerExp = totalJuiceExp;
@@ -99,7 +155,7 @@ public class CreatureJuicerLogic : BaseGameLogic
         string hintContent = string.Format(TextHandler.Instance.GetTextById(61016), totalJuiceExp);
         IconHandler.Instance.GetItemIconSprite((long)ItemIdEnum.Juice, sprite =>
             UIHandler.Instance.ToastHint<ToastView>(sprite, Color.white, hintContent));
-        LogUtil.Log($"[魔汁机] 榨汁结算完成:消耗魔物={targetCreatures.Count},获得魔汁经验={totalJuiceExp}");
+        LogUtil.Log($"[魔汁机] 榨汁结算完成:消耗魔物={targetCreatures.Count},添加魔晶={addCrystalNum}(额外经验={crystalJuiceExp}),获得魔汁经验={totalJuiceExp}");
     }
     #endregion
 }

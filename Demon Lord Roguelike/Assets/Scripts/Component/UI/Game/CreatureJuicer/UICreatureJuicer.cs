@@ -22,11 +22,29 @@ public partial class UICreatureJuicer : BaseUIComponent
     protected const float JuicerWaterLevelMax = 0.95f;
     //后层水色相对前层的暗化倍率(仿 Mat_UICreatureJuicer_Exp 已配置的前后层明暗比 ~0.6)
     protected const float JuicerWaterBackLayerRate = 0.6f;
+    //本次榨汁已添加的魔晶颗数(仅界面预览,点 Start 开始榨汁时才一次性扣除)
+    protected long crystalAddNum;
+    //魔晶特效起点高度偏移(魔汁机上方,参照进阶界面 UICreatureVat 的加速光点)
+    protected const float CrystalEffectStartOffsetY = 2.5f;
+    //魔晶特效终点高度偏移(滴嘴附近)
+    protected const float CrystalEffectEndOffsetY = 1.2f;
 
     #region 生命周期
+    public override void Awake()
+    {
+        base.Awake();
+        //长按回调只在此处注册一次(界面实例复用,放 OpenUI 会重复订阅导致一次长按成倍加颗数)
+        if (ui_BtnAddCrystal_LongPressButton != null)
+            ui_BtnAddCrystal_LongPressButton.AddLongEventAction(OnLongPressForAddCrystal);
+        if (ui_BtnReduceCrystal_LongPressButton != null)
+            ui_BtnReduceCrystal_LongPressButton.AddLongEventAction(OnLongPressForReduceCrystal);
+    }
+
     public override void OpenUI()
     {
         base.OpenUI();
+        //本界面实例复用:每次打开清零本次添加的魔晶颗数
+        crystalAddNum = 0;
         //关闭基地移动控制(与其它基地子界面一致):避免榨汁界面期间仍能控制角色移动
         GameControlHandler.Instance.SetBaseControl(false);
         //切换魔汁机摄像头 + 关闭远景虚化(对准魔汁机建筑)
@@ -62,6 +80,7 @@ public partial class UICreatureJuicer : BaseUIComponent
     {
         ui_UIViewCreatureCardList_Target.RefreshAllCard();
         RefreshLimitText();
+        RefreshCrystalAdd();
         RefreshJuicerWater();
     }
     #endregion
@@ -130,9 +149,27 @@ public partial class UICreatureJuicer : BaseUIComponent
 
     #region 魔汁水位与经验预览
     /// <summary>
-    /// 刷新魔汁水位与经验预览:按已选魔物汇总榨汁经验(各级 LevelInfo.juicer_exp 累加,与 CreatureJuicerLogic.SettleJuiceReward 同口径)。
-    /// <para>水色:总经验达到某等级区间则取该等级 LevelInfo.level_color(经 GetLevelColor,0级为白);</para>
-    /// <para>水位:= 当前等级区间进度(0~1) × 0.95(最高不顶到1);</para>
+    /// 汇总已选魔物的榨汁经验(各级 LevelInfo.juicer_exp 累加,与 CreatureJuicerLogic.SettleJuiceReward 同口径,无配置兜底0)
+    /// </summary>
+    /// <returns>魔物等级折算的榨汁经验</returns>
+    protected long GetCreatureJuiceExp()
+    {
+        return CreatureJuicerLogic.GetCreatureJuicerExp(listSelectCreature);
+    }
+
+    /// <summary>
+    /// 汇总本次添加魔晶折算的榨汁经验(颗数 × 研究等级对应的每颗经验)
+    /// </summary>
+    /// <returns>魔晶折算的榨汁经验</returns>
+    protected long GetCrystalJuiceExp()
+    {
+        return CreatureJuicerLogic.GetCrystalJuicerExp(crystalAddNum, GetCrystalExpPerCrystal());
+    }
+
+    /// <summary>
+    /// 刷新魔汁水位与经验预览:按已选魔物 + 本次添加魔晶汇总榨汁经验(与 CreatureJuicerLogic.SettleJuiceReward 同口径)。
+    /// <para>经验文本分两段:有魔晶时显示「+魔物经验（+魔晶经验）」;</para>
+    /// <para>水色/水位按两者合计值计算(水色取该等级区间的 LevelInfo.level_color,水位 = 区间进度 × 0.95);</para>
     /// <para>一个素材都没选时隐藏水位与经验文本。</para>
     /// </summary>
     public void RefreshJuicerWater()
@@ -148,15 +185,11 @@ public partial class UICreatureJuicer : BaseUIComponent
         }
         ui_JuicerWater.gameObject.SetActive(true);
         ui_JuicerText.gameObject.SetActive(true);
-        //汇总本次投入魔物的榨汁经验(无配置兜底0)
-        long totalJuiceExp = 0;
-        foreach (var creatureData in listSelectCreature)
-        {
-            var levelInfo = LevelInfoCfg.GetItemData(creatureData.level);
-            if (levelInfo != null)
-                totalJuiceExp += levelInfo.juicer_exp;
-        }
-        ui_JuicerText.text = $"+{totalJuiceExp}";
+        //魔物经验与魔晶经验分两段显示,水位按合计值计算
+        long creatureJuiceExp = GetCreatureJuiceExp();
+        long crystalJuiceExp = GetCrystalJuiceExp();
+        long totalJuiceExp = creatureJuiceExp + crystalJuiceExp;
+        ui_JuicerText.text = crystalJuiceExp > 0 ? $"+{creatureJuiceExp}（+{crystalJuiceExp}）" : $"+{creatureJuiceExp}";
         //求总经验所处等级:取 juicer_exp <= 总经验 的最高等级(0级区间下限按0计,保证最低投入也有水位)
         int levelMax = 0;
         foreach (var key in LevelInfoCfg.GetAllData().Keys)
@@ -197,6 +230,120 @@ public partial class UICreatureJuicer : BaseUIComponent
     }
     #endregion
 
+    #region 魔晶加经验
+    /// <summary>
+    /// 获取每颗魔晶折算的榨汁经验(=「魔汁机榨汁加魔晶」研究等级,未解锁为0)
+    /// </summary>
+    /// <returns>每颗魔晶增加的榨汁经验</returns>
+    protected int GetCrystalExpPerCrystal()
+    {
+        return GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData().GetUnlockJuicerCrystalExp();
+    }
+
+    /// <summary>
+    /// 刷新魔晶加减行:研究未解锁整行隐藏;已解锁刷新颗数文本,并按魔晶余额/下限设置两按钮可点状态
+    /// </summary>
+    public void RefreshCrystalAdd()
+    {
+        if (ui_CrystalAddRoot == null)
+            return;
+        bool isUnlock = GetCrystalExpPerCrystal() > 0;
+        ui_CrystalAddRoot.gameObject.SetActive(isUnlock);
+        if (!isUnlock)
+            return;
+        //添加上限=当前魔晶余额,减少下限=0(仅界面预览,真正扣费在点 Start 时)
+        long crystal = GameDataHandler.Instance.manager.GetUserData().crystal;
+        if (ui_CrystalAddNumText != null)
+            ui_CrystalAddNumText.text = $"{crystalAddNum}";
+        if (ui_BtnAddCrystal_Button != null)
+            ui_BtnAddCrystal_Button.interactable = crystalAddNum < crystal;
+        if (ui_BtnReduceCrystal_Button != null)
+            ui_BtnReduceCrystal_Button.interactable = crystalAddNum > 0;
+    }
+
+    /// <summary>
+    /// 长按添加魔晶(不逐次提示余额不足)
+    /// </summary>
+    public void OnLongPressForAddCrystal()
+    {
+        OnClickForAddCrystal(false);
+    }
+
+    /// <summary>
+    /// 长按减少魔晶(不逐次提示)
+    /// </summary>
+    public void OnLongPressForReduceCrystal()
+    {
+        OnClickForReduceCrystal(false);
+    }
+
+    /// <summary>
+    /// 添加 1 颗魔晶:只增加本次预览颗数(上限=当前魔晶余额),不立即扣费,点 Start 时统一扣除
+    /// </summary>
+    /// <param name="isHint">达到余额上限时是否提示(长按传 false 避免刷屏)</param>
+    public void OnClickForAddCrystal(bool isHint = true)
+    {
+        if (!CheckCanChangeCrystal())
+            return;
+        long crystal = GameDataHandler.Instance.manager.GetUserData().crystal;
+        if (crystalAddNum >= crystal)
+        {
+            if (isHint)
+                UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(3000001));
+            return;
+        }
+        crystalAddNum++;
+        RefreshCrystalAdd();
+        RefreshJuicerWater();
+        PlayCrystalAddEffect(true);
+    }
+
+    /// <summary>
+    /// 减少 1 颗魔晶:只减少本次预览颗数(下限0),减到 0 后不再变化
+    /// </summary>
+    /// <param name="isHint">已达 0 时是否提示(长按传 false 避免刷屏)</param>
+    public void OnClickForReduceCrystal(bool isHint = true)
+    {
+        if (!CheckCanChangeCrystal() || crystalAddNum <= 0)
+            return;
+        crystalAddNum--;
+        RefreshCrystalAdd();
+        RefreshJuicerWater();
+        PlayCrystalAddEffect(false);
+    }
+
+    /// <summary>
+    /// 加减魔晶的统一前置校验:长按回调绕过点击门禁,锁屏/未解锁研究在此统一拦截
+    /// </summary>
+    /// <returns>允许改变颗数返回 true</returns>
+    protected bool CheckCanChangeCrystal()
+    {
+        if (!UIHandler.Instance.manager.CanClickUIButtons)
+            return false;
+        return GetCrystalExpPerCrystal() > 0;
+    }
+
+    /// <summary>
+    /// 播放魔晶飞入/飞出特效:添加=魔汁机上方飞向滴嘴,减少=滴嘴反向飞回上方
+    /// <para>复用进阶界面的持久光点粒子(Effect_Move_1),连续触发即形成「魔晶持续加入」</para>
+    /// </summary>
+    /// <param name="isAdd">true=添加(飞入) false=减少(飞出)</param>
+    protected void PlayCrystalAddEffect(bool isAdd)
+    {
+        if (scenePrefab == null || scenePrefab.objBuildingJuicer == null)
+            return;
+        Transform buildingJuicer = scenePrefab.objBuildingJuicer.transform;
+        Vector3 startPosition = buildingJuicer.position + new Vector3(0, CrystalEffectStartOffsetY, 0);
+        Transform juicerHole = scenePrefab.GetBuildingJuicerHole();
+        Vector3 endPosition = juicerHole != null ? juicerHole.position : buildingJuicer.position + new Vector3(0, CrystalEffectEndOffsetY, 0);
+        //减少时起终点对调,表现为魔晶从魔汁机飞出
+        if (isAdd)
+            EffectHandler.Instance.ShowCreatureAscendAddProgressEffect(1, startPosition, endPosition);
+        else
+            EffectHandler.Instance.ShowCreatureAscendAddProgressEffect(1, endPosition, startPosition);
+    }
+    #endregion
+
     #region 点击事件
     public override void OnClickForButton(Button viewButton)
     {
@@ -209,6 +356,14 @@ public partial class UICreatureJuicer : BaseUIComponent
         {
             OnClickForStart();
         }
+        else if (viewButton == ui_BtnAddCrystal_Button)
+        {
+            OnClickForAddCrystal();
+        }
+        else if (viewButton == ui_BtnReduceCrystal_Button)
+        {
+            OnClickForReduceCrystal();
+        }
     }
 
     /// <summary>
@@ -220,7 +375,8 @@ public partial class UICreatureJuicer : BaseUIComponent
     }
 
     /// <summary>
-    /// 点击开始榨汁:校验至少投入一只魔物后交由 CreatureJuicerLogic 处理(榨汁流程/奖励后续接入)
+    /// 点击开始榨汁:校验至少投入一只魔物后交由 CreatureJuicerLogic 处理,并带上本次添加的魔晶颗数
+    /// <para>魔晶在逻辑层「开始榨汁时」一次性扣除,加减阶段只做预览不扣费</para>
     /// </summary>
     public void OnClickForStart()
     {
@@ -230,8 +386,8 @@ public partial class UICreatureJuicer : BaseUIComponent
             UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(61010));
             return;
         }
-        //交由逻辑层开始榨汁(当前为留桩,后续接入榨汁流程与奖励)
-        GameHandler.Instance.StartCreatureJuicer(listSelectCreature);
+        //交由逻辑层开始榨汁,并带上本次添加的魔晶颗数(逻辑层扣除并折算经验)
+        GameHandler.Instance.StartCreatureJuicer(listSelectCreature, crystalAddNum);
     }
     #endregion
 
