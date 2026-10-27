@@ -157,6 +157,19 @@ public partial class AudioHandler
     }
 
     /// <summary>
+    /// 限频播放音效（枚举）：同一音效距上次播放不足 interval 秒时跳过本次。
+    /// 用于长按重复触发、连续刷屏类反馈音防连响糊成一片（如长按加魔晶每 0.2 秒一声）。
+    /// </summary>
+    /// <param name="audio">音频枚举</param>
+    /// <param name="interval">最小播放间隔（秒）</param>
+    /// <param name="audioSource">指定播放源，null 时使用默认音效源</param>
+    /// <returns>本次允许播放返回 true</returns>
+    public bool PlaySoundForInterval(AudioEnum audio, float interval, AudioSource audioSource = null)
+    {
+        return PlaySoundForInterval((long)audio, interval, audioSource);
+    }
+
+    /// <summary>
     /// 播放定时淡出音效（枚举）：前 fadeStartTime 秒原音量，之后线性淡出到 0，到 playDuration 停止。
     /// 用于只取长音效前一段并平滑收尾（如 10s 音效只用 5s、第 4s 起淡出）。所有参数均须显式传入。
     /// </summary>

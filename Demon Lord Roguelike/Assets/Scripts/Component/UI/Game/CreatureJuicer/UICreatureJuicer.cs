@@ -28,6 +28,8 @@ public partial class UICreatureJuicer : BaseUIComponent
     protected const float CrystalEffectStartOffsetY = 2.5f;
     //魔晶特效终点高度偏移(滴嘴附近)
     protected const float CrystalEffectEndOffsetY = 1.2f;
+    //长按连续加魔晶的支付音最小间隔:长按回调每0.1秒触发一次,取 0.15 秒≈隔一次响一次(约每0.2秒一声);直接取 0.2 会因整帧累加的抖动退化成每 0.3 秒
+    protected const float CrystalLongPressSoundInterval = 0.15f;
 
     #region 生命周期
     public override void Awake()
@@ -262,11 +264,12 @@ public partial class UICreatureJuicer : BaseUIComponent
     }
 
     /// <summary>
-    /// 长按添加魔晶(不逐次提示余额不足)
+    /// 长按添加魔晶(不逐次提示余额不足):每实际加成功一颗按 0.2 秒限频播一次支付音
     /// </summary>
     public void OnLongPressForAddCrystal()
     {
-        OnClickForAddCrystal(false);
+        if (OnClickForAddCrystal(false))
+            PlayCrystalLongPressSound();
     }
 
     /// <summary>
@@ -281,21 +284,23 @@ public partial class UICreatureJuicer : BaseUIComponent
     /// 添加 1 颗魔晶:只增加本次预览颗数(上限=当前魔晶余额),不立即扣费,点 Start 时统一扣除
     /// </summary>
     /// <param name="isHint">达到余额上限时是否提示(长按传 false 避免刷屏)</param>
-    public void OnClickForAddCrystal(bool isHint = true)
+    /// <returns>颗数实际变化返回 true</returns>
+    public bool OnClickForAddCrystal(bool isHint = true)
     {
         if (!CheckCanChangeCrystal())
-            return;
+            return false;
         long crystal = GameDataHandler.Instance.manager.GetUserData().crystal;
         if (crystalAddNum >= crystal)
         {
             if (isHint)
                 UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(3000001));
-            return;
+            return false;
         }
         crystalAddNum++;
         RefreshCrystalAdd();
         RefreshJuicerWater();
         PlayCrystalAddEffect(true);
+        return true;
     }
 
     /// <summary>
@@ -341,6 +346,14 @@ public partial class UICreatureJuicer : BaseUIComponent
             EffectHandler.Instance.ShowCreatureAscendAddProgressEffect(1, startPosition, endPosition);
         else
             EffectHandler.Instance.ShowCreatureAscendAddProgressEffect(1, endPosition, startPosition);
+    }
+
+    /// <summary>
+    /// 长按连续加魔晶的支付音:交给 AudioHandler 统一限频,最小间隔 0.15 秒(约每 0.2 秒响一声)
+    /// </summary>
+    protected void PlayCrystalLongPressSound()
+    {
+        AudioHandler.Instance.PlaySoundForInterval(AudioEnum.sound_pay_2, CrystalLongPressSoundInterval);
     }
     #endregion
 

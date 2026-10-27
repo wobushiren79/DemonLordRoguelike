@@ -56,6 +56,13 @@ watched_files:
 - **不参与全局 Pause/Stop/音量刷新**（同 TimedFade，不登记 `dicLoopActive`）。
 - **消费方**：对话系统 `UIGameConversation`——文本动画开始 `PlaySoundOnce(sound_talk_1)` 整条只播一次（替代旧的逐字 `PlayOneShot` 叠加：1.42s 长 clip 叠加浑浊、动画结束残留最长 1.42s）；收尾 `FinishTextAnim`（自然播完/跳过，`StopTextAnim`/`CloseUI` 亦经此）`StopSoundOnce(sound_talk_1)` 立即截断，详见 game-conversation。
 
+### 限频音效 (PlaySoundForInterval) — 同一音效最小播放间隔
+- **用途**：长按重复触发、连续刷屏类反馈音，高频触发直接连播会糊成一片噪音。**限频状态统一放 AudioHandler，业务代码不要自己记时间戳**（否则每个调用点各抄一份，间隔口径会走样）。
+- **API**：框架层 `PlaySoundForInterval(long id, float interval, AudioSource audioSource=null)` → 返回本次是否真的播了；游戏层 `AudioEnum` 同名重载。`interval<=0` 或 `id==0` 直接返回 false。
+- **实现**：`dicTimeForIntervalSound`（key=音频 id，value=上次允许播放的 `Time.unscaledTime`）判最小间隔；用 unscaledTime 故不受 timeScale（战斗暂停/加速）影响。与 `PlaySound` 内建的 0.1s 同 id 防抖**独立并存**。
+- **间隔取值坑**：长按回调（`LongPressButton`）按整帧累加触发，配置 0.1s 实际是 0.1~0.12s/次；要在其上实现「约每 0.2s 响一声」应传 **0.15**，传 0.2 会因差几毫秒退化成每 0.3s 才响一次。
+- **消费方**：`UICreatureJuicer`（长按加魔晶 `sound_pay_2`）、`UICreatureVat`（长按魔晶加速 `sound_pay_2`）。
+
 ### 音量管理
 - 音量持久化在 **GameConfigBean**（`musicVolume`/`soundVolume`/`environmentVolume`，默认 0.5）
 - 设置界面 **UIGameSettingForAudio** 滑条改音量，变更后调 `AudioHandler.Instance.InitAudio()` 刷新

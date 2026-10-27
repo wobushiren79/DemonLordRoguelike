@@ -37,7 +37,7 @@ public partial class UIDialogPortalDetails : DialogView
     protected bool isAnimating;
     //挑战100勇士-来袭魔物item列表(动态实例化, 模板 ui_UIViewDialogPortalDetailsCreatureItem 不列入)
     protected List<UIViewDialogPortalDetailsCreatureItem> listCreatureItem;
-    //来袭魔物列表是否显示(挑战100勇士/征服 且已解锁「来袭魔物预览」研究 PortalPreviewCreature; 未解锁不显示敌人)
+    //来袭魔物列表是否显示(挑战100勇士/征服 且已解锁「进攻目标预览」研究 PortalPreviewCreature; 未解锁不显示敌人)
     protected bool isShowCreatureList;
     //来袭魔物item基准尺寸(容器未完成布局时的兜底值; 正常按「容器高」定 item 尺寸、「容器宽/数量」定间距, 两者恒相等不叠压)
     protected const float creatureItemSpacing = 230f;
@@ -55,7 +55,7 @@ public partial class UIDialogPortalDetails : DialogView
         var userData = GameDataHandler.Instance.manager.GetUserData();
         var userUnlock = userData.GetUserUnlockData();
 
-        //三种模式统一走难度选择器; 挑战100勇士与征服额外显示来袭魔物列表(需已解锁「来袭魔物预览」研究, 两种模式共用该研究)
+        //三种模式统一走难度选择器; 挑战100勇士与征服额外显示来袭魔物列表(需已解锁「进攻目标预览」研究, 两种模式共用该研究)
         bool isChallengeHundred = gameWorldInfoRandom.gameFightType == GameFightTypeEnum.ChallengeHundred;
         bool isInfinite = gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Infinite;
         bool isConquer = gameWorldInfoRandom.gameFightType == GameFightTypeEnum.Conquer;
@@ -204,7 +204,7 @@ public partial class UIDialogPortalDetails : DialogView
         listCreatureItem = new List<UIViewDialogPortalDetailsCreatureItem>();
         //模板item保持隐藏作为克隆蓝本
         ui_UIViewDialogPortalDetailsCreatureItem.gameObject.SetActive(false);
-        //未解锁「来袭魔物预览」研究(或非征服/100勇士模式): 不显示敌人
+        //未解锁「进攻目标预览」研究(或非征服/100勇士模式): 不显示敌人
         if (!isShowCreatureList)
             return;
 

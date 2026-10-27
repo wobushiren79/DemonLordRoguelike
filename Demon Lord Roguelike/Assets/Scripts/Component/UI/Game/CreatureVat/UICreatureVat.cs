@@ -48,6 +48,9 @@ public partial class UICreatureVat : BaseUIComponent
     protected Vector3 advanceCardBeforeScale = Vector3.one;
     protected Vector3 advanceCardAfterScale = Vector3.one;
 
+    //长按魔晶加速的支付音最小间隔:长按回调每0.1秒触发一次,取 0.15 秒≈隔一次响一次(约每0.2秒一声);直接取 0.2 会因整帧累加的抖动退化成每 0.3 秒
+    protected const float AddProgressLongPressSoundInterval = 0.15f;
+
     public override void Awake()
     {
         base.Awake();
@@ -348,38 +351,49 @@ public partial class UICreatureVat : BaseUIComponent
     }
 
     /// <summary>
-    /// 事件-长按增加进度
+    /// 事件-长按增加进度:每实际加速一次按 0.2 秒限频播一次支付音
     /// </summary>
     public void OnClickLongForAddProgress()
     {
-        OnClickForAddProgress(isHintEnoughCrystal: false);
+        if (OnClickForAddProgress(isHintEnoughCrystal: false))
+            PlayAddProgressLongPressSound();
     }
 
     /// <summary>
     /// 点击增加进度
     /// </summary>
-    public void OnClickForAddProgress(bool isHintEnoughCrystal = true)
+    /// <param name="isHintEnoughCrystal">魔晶不足时是否提示(长按传 false 避免刷屏)</param>
+    /// <returns>实际扣魔晶并加进度返回 true</returns>
+    public bool OnClickForAddProgress(bool isHintEnoughCrystal = true)
     {
         if (targetVat == null || userAscendDetails == null)
-            return;
+            return false;
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         //恒消耗1魔晶;进度推进秒数=进度倍率=魔晶加速研究等级;未研究(0级)加速按钮隐藏,这里兜底拦截
         int addProgressLevel = userData.GetUserUnlockData().GetUnlockCreatureVatAddProgressLevel();
         if (addProgressLevel <= 0)
-            return;
+            return false;
         int payCrystal = 1;
         int addProgressValue = addProgressLevel;
         //检测水晶是否足够
-        if (userData.CheckHasCrystal(payCrystal, isHintEnoughCrystal, true))
-        {
-            //消耗1颗魔晶,奖励进度增加 addProgressValue 秒(=研究等级,真实时间差之外的额外推进);培养过程不主动存档
-            userAscendDetails.AddProgress(addProgressValue);
-            EventHandler.Instance.TriggerEvent(EventsInfo.CreatureAscend_AddProgress);
+        if (!userData.CheckHasCrystal(payCrystal, isHintEnoughCrystal, true))
+            return false;
+        //消耗1颗魔晶,奖励进度增加 addProgressValue 秒(=研究等级,真实时间差之外的额外推进);培养过程不主动存档
+        userAscendDetails.AddProgress(addProgressValue);
+        EventHandler.Instance.TriggerEvent(EventsInfo.CreatureAscend_AddProgress);
 
-            Vector3 startPosition = targetVat.transform.position + new Vector3(0, 2.5f, 0);
-            Vector3 endPosition = targetVat.transform.position + new Vector3(0, 1.2f, 0);
-            EffectHandler.Instance.ShowCreatureAscendAddProgressEffect(addProgressValue, startPosition, endPosition);
-        }
+        Vector3 startPosition = targetVat.transform.position + new Vector3(0, 2.5f, 0);
+        Vector3 endPosition = targetVat.transform.position + new Vector3(0, 1.2f, 0);
+        EffectHandler.Instance.ShowCreatureAscendAddProgressEffect(addProgressValue, startPosition, endPosition);
+        return true;
+    }
+
+    /// <summary>
+    /// 长按连续魔晶加速的支付音:交给 AudioHandler 统一限频,最小间隔 0.15 秒(约每 0.2 秒响一声)
+    /// </summary>
+    protected void PlayAddProgressLongPressSound()
+    {
+        AudioHandler.Instance.PlaySoundForInterval(AudioEnum.sound_pay_2, AddProgressLongPressSoundInterval);
     }
 
     /// <summary>
