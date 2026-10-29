@@ -11,6 +11,7 @@ metadata:
 
 **How to apply:**
 - UI 类（`BaseUIInit`/`BaseUIView`/`BaseUIComponent`）重写 `OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)` 响应输入，**不要**在 `Update()` 里轮询 `Input`。
+- 需要整体封印 UI 输入（故事演出、屏幕锁等）时**不要直接赋值 `UIManager.CanClickUIButtons`/`CanInputActionStarted`**（已是只读属性），改调 `UIManager.SetUIInputLock(来源常量, true/false)`（多来源引用计数，各方只增删自己的锁，互不覆盖）。唯一例外：`BaseUIInit.isIgnoreClickLock=true` 的 UI（`UIGameConversation` 在 OpenUI 置位）在全局点击锁期间仍可点，用于演出期推进对话。
 - 数字键已封装为 `InputActionUIEnum.N1~N9`（同时绑定主键盘与小键盘），`N1~N9` 连续可用 `inputType - InputActionUIEnum.N1 + 1` 取序号。
 - 新按键：先在 `GameInputActions.inputactions` 配绑定 + `InputActionUIEnum` 补枚举，再走回调派发。
 - 弹窗门禁细节：`BaseUIInit.CallBackForInputActionStarted` 在 `dialogList` 非空时**仅放行最顶层弹窗（列表末位）自身**，其余 UI（含下层弹窗）拦截——弹窗要响应 ESC/快捷键（如 UIDialogPortalDetails 的 ESC 关闭）靠此规则，勿改回"有弹窗全拦截"。

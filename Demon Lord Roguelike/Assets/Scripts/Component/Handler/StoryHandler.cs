@@ -111,19 +111,33 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
 
     /// <summary>
     /// 检查故事配置的演出场景与当前场景是否匹配(防误播,如"战斗中掉晶"条件在基地误触发)
+    /// <para>统一按场景实体判断(卸载即从 dicCurrentScene 移除);不能用 GetGameLogic&lt;T&gt;() != null——GameManager.gameLogic 只在切换逻辑时被替换,清场后从不置空,
+    /// 回基地/离开战斗后依然非空,会让迟到的战斗事件误判为"仍在战斗中"(引导在基地误播的根因之一)</para>
     /// </summary>
     private bool CheckSceneMatch(StoryInfoBean storyData)
     {
-        switch (storyData.GetSceneType())
+        var sceneType = storyData.GetSceneType();
+        //未配置场景类型的故事不播(IsStorySceneAlive 对未知类型返回 true 供场景监视兜底,这里需单独拦截)
+        if (sceneType == StorySceneTypeEnum.None)
+            return false;
+        return IsStorySceneAlive(sceneType);
+    }
+
+    /// <summary>
+    /// 演出场景是否仍存活(基地/战斗/议会的场景实体是否在当前世界;未配置场景类型视为存活,不中断)
+    /// </summary>
+    private bool IsStorySceneAlive(StorySceneTypeEnum sceneType)
+    {
+        switch (sceneType)
         {
             case StorySceneTypeEnum.Base:
                 return WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.BaseGaming) != null;
             case StorySceneTypeEnum.Fight:
-                return GameHandler.Instance.manager.GetGameLogic<GameFightLogic>() != null;
+                return WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.Fight) != null;
             case StorySceneTypeEnum.DoomCouncil:
-                return GameHandler.Instance.manager.GetGameLogic<DoomCouncilLogic>() != null;
+                return WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.DoomCouncil) != null;
             default:
-                return false;
+                return true;
         }
     }
     #endregion
@@ -156,6 +170,8 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
     {
         manager.isStoryPlaying = true;
         manager.currentStoryData = storyData;
+        //播放版本号:场景切换中断时自增,本流程 finally 据此识别"已被中断接管",跳过重复收尾
+        int storyVersion = ++manager.storyPlayVersion;
         //取消源懒创建一次复用,开始 Reset 重建令牌
         if (manager.cancelForStory == null)
             manager.cancelForStory = GTask.NewCancel(gameObject);
@@ -163,6 +179,8 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
         bool isFight = storyData.GetSceneType() == StorySceneTypeEnum.Fight;
         //1.锁输入(基地锁控制但保持魔王可见,与议会交谈同款;战斗全禁)
         LockInputForStory(isFight);
+        //1.1 锁UI输入(按钮点击 + ESC/快捷键):防演出中打开系统界面等 UI 逃逸;对话框走白名单仍可点
+        SetUIInputLockForStory(true);
         //2.战斗场景暂停(先例 UIGameSystem:缓存原值->0->结束还原;演出内一切等待/补间必须 unscaled)
         if (isFight)
         {
@@ -172,6 +190,8 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
         //3.接管镜头并记录起始位(back 标记与结束归还都以此为锚)
         var cameraMoveTarget = BeginStoryCamera();
         manager.storyCameraOriginPos = cameraMoveTarget.position;
+        //3.1 场景存活监视:演出场地被卸载(退出战斗/结算换场景/回基地/重新挑战等)即刻中断,防演出跨场景继续播放
+        _ = WatchStorySceneAsync(storyData, storyVersion);
         try
         {
             //4.分组执行:执行组=当前步+紧随的连续并发步骤(is_async=1),同组同时发起、整组完成才进下一组
@@ -199,15 +219,27 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
         finally
         {
             //5.收尾:镜头归还/恢复暂停与输入/记录存档(取消或异常也必须恢复,防止演出中断后游戏卡死)
-            await FinishStory(storyData, isFight);
+            await FinishStory(storyData, isFight, storyVersion);
         }
     }
 
     /// <summary>
     /// 演出收尾:归还镜头 -> 恢复暂停与输入 -> 记录已播存档
+    /// <para>若本流程已被场景切换中断接管(版本号已变),只做镜头与对话 UI 的幂等兜底,不重复设置控制/时间/存档</para>
     /// </summary>
-    private async UniTask FinishStory(StoryInfoBean storyData, bool isFight)
+    /// <param name="storyData">本次播出的故事配置</param>
+    /// <param name="isFight">是否为战斗场景演出(决定暂停与控制的恢复方式)</param>
+    /// <param name="storyVersion">本次播放的版本号(与 manager.storyPlayVersion 不符即表示已被中断接管)</param>
+    private async UniTask FinishStory(StoryInfoBean storyData, bool isFight, int storyVersion)
     {
+        //已被中断接管:中断流程已同步释放播放状态并清理镜头/对话UI,这里只兜底,不能覆盖新场景的控制与时间缩放
+        if (manager.storyPlayVersion != storyVersion)
+        {
+            EndStoryCameraSync();
+            CloseStoryConversationUI();
+            SetUIInputLockForStory(false);
+            return;
+        }
         //镜头归还(补间回起始位后瞬切还原,原虚拟相机参数全程未动;内部 unscaled,战斗暂停下照常)
         await EndStoryCamera();
         //恢复暂停与输入
@@ -220,6 +252,8 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
         {
             GameControlHandler.Instance.SetBaseControl();
         }
+        //解掉演出期的 UI 输入锁(引用计数:只移除 Story 来源,遮罩/屏幕锁的锁不受影响)
+        SetUIInputLockForStory(false);
         //兜底关闭演出对话 UI(对话步骤保持打开机制下,故事结束必须收口,防高亮/对话框残留)
         CloseStoryConversationUI();
         //记录存档(is_once 才记;isTestSimulation 时 SaveUserData 被 GameDataManager 拦截不落盘)
@@ -238,6 +272,49 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
     }
 
     /// <summary>
+    /// 场景切换中断演出(WorldHandler.ClearWorldData 开头同步调用;场景存活监视兜底意外切场):同步收尾镜头与对话UI并释放播放状态
+    /// <para>必须同步释放 isStoryPlaying——否则新场景初始化镜头时 CameraHandler.SetCameraForControl 会被演出短路,基地/战斗镜头切不过去</para>
+    /// <para>未播完不记 is_once:下次进对应场景会重新触发</para>
+    /// </summary>
+    public void InterruptStoryForSceneChange()
+    {
+        if (!manager.isStoryPlaying)
+            return;
+        var storyData = manager.currentStoryData;
+        LogUtil.LogWarning($"故事演出因场景切换中断,不记录已播 storyId:{storyData?.id}");
+        //1.镜头同步归还(不补间:场景已在卸载,原相机可能已随场景一并销毁)
+        EndStoryCameraSync();
+        //2.对话UI与魔晶置顶收口(否则新场景残留对话框/漏还原压暗)
+        CloseStoryConversationUI();
+        //2.1 恢复 UI 输入总开关(演出期锁,必须在清理前还原,避免新场景 UI 不可点)
+        SetUIInputLockForStory(false);
+        //3.战斗演出把 timeScale 压到 0,中断后必须还原,否则新场景卡死(缓存值本身为 0 时退回 1)
+        if (storyData != null && storyData.GetSceneType() == StorySceneTypeEnum.Fight)
+            Time.timeScale = manager.timeScaleOrigin > 0f ? manager.timeScaleOrigin : 1f;
+        //4.先作废播放版本并释放播放状态,再取消在途流程(其 finally 会因版本不符只做幂等兜底)
+        manager.storyPlayVersion++;
+        manager.isStoryPlaying = false;
+        manager.currentStoryData = null;
+        manager.cancelForStory?.Cancel();
+    }
+
+    /// <summary>
+    /// 演出期间场景存活监视:启动故事的场景实体被卸载(退出战斗/结算换场景/回基地/重新挑战等)即刻中断演出
+    /// <para>逐帧轮询场景实体(卸载即移除,比 gameLogic 引用可靠);时间无关,战斗暂停(timeScale=0)下照常;演出正常结束时自行退出</para>
+    /// </summary>
+    /// <param name="storyData">本次播出的故事配置(取其演出场景类型)</param>
+    /// <param name="storyVersion">本次播放的版本号(与当前版本不符说明演出已结束或已被中断接管,不再动手)</param>
+    private async UniTaskVoid WatchStorySceneAsync(StoryInfoBean storyData, int storyVersion)
+    {
+        var sceneType = storyData.GetSceneType();
+        await GTask.WaitUntil(() => !manager.isStoryPlaying || !IsStorySceneAlive(sceneType));
+        //正常收尾 / 已被中断接管 / 已有新一轮演出接管时直接退出,避免过期监视误中断新演出
+        if (!manager.isStoryPlaying || manager.storyPlayVersion != storyVersion)
+            return;
+        InterruptStoryForSceneChange();
+    }
+
+    /// <summary>
     /// 演出锁输入:基地锁控制但保持魔王可见(与议会交谈同款);战斗全禁
     /// <para>镜头走 Story 专用虚拟相机(独立锚点),不再依赖 controlTargetForEmpty,锁输入隐藏它也不影响演出</para>
     /// </summary>
@@ -251,6 +328,17 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
         {
             GameControlHandler.Instance.SetBaseControl(false, isHideControlTarget: false);
         }
+    }
+
+    /// <summary>
+    /// 演出期 UI 输入锁:锁住全局按钮点击与输入动作,防演出中以 UI 方式逃逸
+    /// (ESC 打开系统界面、点战斗速度/卡片等按钮;故事对话框在 BaseUIInit.isIgnoreClickLock 白名单里仍可点击推进)
+    /// <para>走 UIManager 按来源的引用计数(Story 来源),不会与遮罩/屏幕锁互相覆盖;加减锁均幂等</para>
+    /// </summary>
+    /// <param name="isLock">true=加锁,false=解掉演出这把锁</param>
+    private static void SetUIInputLockForStory(bool isLock)
+    {
+        UIHandler.Instance.manager.SetUIInputLock(UIInputLockSourceEnum.Story, isLock);
     }
     #endregion
 
@@ -445,6 +533,8 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
         switch (marker.ToLowerInvariant())
         {
             case "demon":
+                if (!IsInFightScene())
+                    return false;
                 var fightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
                 var coreObj = fightLogic?.fightData?.fightDefenseCoreCreature?.creatureObj;
                 if (coreObj == null)
@@ -656,6 +746,8 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
         //4.停靠原相机并瞬切到故事相机(混合时长缓存,结束还原;不瞬切会在战斗 timeScale=0 下混合冻结)
         manager.storyParkedCamera = srcCam;
         manager.storyBlendTimeOrigin = brain.DefaultBlend.Time;
+        //标记已接管:结束/中断时据此还原混合时长(停靠相机随场景销毁后也必须还原,否则后续场景镜头一直瞬切)
+        manager.isStoryCameraTakeover = true;
         cameraManager.SetMainCameraDefaultBlend(0);
         srcCam.gameObject.SetActive(false);
         storyCam.gameObject.SetActive(true);
@@ -760,19 +852,38 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
     private async UniTask EndStoryCamera()
     {
         //位置与参数在镜头步骤中始终同步移动,锚点已在起始位即参数也在起始态,无需再补间
-        bool needRestore = (manager.storyCameraAnchor.position - manager.storyCameraOriginPos).sqrMagnitude > 0.0001f;
+        bool needRestore = manager.storyCamera != null && manager.storyCameraAnchor != null
+            && (manager.storyCameraAnchor.position - manager.storyCameraOriginPos).sqrMagnitude > 0.0001f;
         if (needRestore)
         {
             await GTask.WhenAll(
                 MoveStoryCamera(manager.storyCameraOriginPos, 0.5f, 0),
                 TweenStoryCameraParamsToOrigin(0.5f, 0));
         }
-        manager.storyCamera.gameObject.SetActive(false);
-        manager.storyCamera.Priority = 0;
+        EndStoryCameraSync();
+    }
+
+    /// <summary>
+    /// 同步归还镜头(无补间,场景切换中断用):停用故事相机、恢复停靠相机激活态与主相机默认混合时长
+    /// <para>停靠相机可能已随场景销毁(演出中途切场景),仅存活时恢复激活态;混合时长按接管标记无条件还原,防新场景镜头一直瞬切</para>
+    /// </summary>
+    private void EndStoryCameraSync()
+    {
+        if (manager.storyCamera != null)
+        {
+            manager.storyCamera.gameObject.SetActive(false);
+            manager.storyCamera.Priority = 0;
+        }
+        //停靠相机已随场景销毁时 Unity 判空为 true,自动跳过其激活态还原
         if (manager.storyParkedCamera != null)
         {
             manager.storyParkedCamera.gameObject.SetActive(true);
             manager.storyParkedCamera = null;
+        }
+        //只有真正接管过才还原(未接管时 storyBlendTimeOrigin 是默认值,盲目写回会破坏原混合时长)
+        if (manager.isStoryCameraTakeover)
+        {
+            manager.isStoryCameraTakeover = false;
             CameraHandler.Instance.manager.SetMainCameraDefaultBlend(manager.storyBlendTimeOrigin);
         }
     }
@@ -800,7 +911,7 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
         if (marker.IsNull())
             return null;
         //战斗场景标记无 CV 映射(core=防守核心),保持现状沿用起始参数;前置短路防战斗场景误挂 CV_List 时被误读
-        if (GameHandler.Instance.manager.GetGameLogic<GameFightLogic>() != null)
+        if (IsInFightScene())
             return null;
         if (!dicMarkerToCVName.TryGetValue(marker, out string cvName))
             return null;
@@ -818,11 +929,11 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
         isValid = true;
         if (string.Equals(marker, "back", StringComparison.OrdinalIgnoreCase))
             return manager.storyCameraOriginPos;
-        //战斗场景标记:core=防守核心(魔王核心)
-        var fightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        if (fightLogic != null)
+        //战斗场景标记:core=防守核心(魔王核心);按场景实体判断(不能按 gameLogic 引用,清场后不置空会把基地误判成战斗)
+        if (IsInFightScene())
         {
-            if (string.Equals(marker, "core", StringComparison.OrdinalIgnoreCase) && fightLogic.fightData?.fightDefenseCoreCreature != null)
+            var fightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+            if (string.Equals(marker, "core", StringComparison.OrdinalIgnoreCase) && fightLogic?.fightData?.fightDefenseCoreCreature != null)
                 return fightLogic.fightData.fightDefenseCoreCreature.creatureObj.transform.position;
             isValid = false;
             return Vector3.zero;
@@ -866,13 +977,25 @@ public partial class StoryHandler : BaseHandler<StoryHandler, StoryManager>
     /// </summary>
     private Vector3 GetStoryDefaultPosition()
     {
-        var fightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        if (fightLogic?.fightData?.fightDefenseCoreCreature != null)
-            return fightLogic.fightData.fightDefenseCoreCreature.creatureObj.transform.position;
+        //战斗场景取防守核心(按场景实体判断,防 gameLogic 残留把基地误判成战斗);基地取魔王本体
+        if (IsInFightScene())
+        {
+            var fightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+            if (fightLogic?.fightData?.fightDefenseCoreCreature != null)
+                return fightLogic.fightData.fightDefenseCoreCreature.creatureObj.transform.position;
+        }
         var creatureTarget = GameControlHandler.Instance.manager.controlTargetForCreature;
         if (creatureTarget != null)
             return creatureTarget.transform.position;
         return manager.storyCameraOriginPos;
+    }
+
+    /// <summary>
+    /// 当前是否处于战斗场景(按战斗场景实体判断;不能用 GetGameLogic&lt;GameFightLogic&gt;() != null——GameManager.gameLogic 清场后不置空,回基地仍非空)
+    /// </summary>
+    private static bool IsInFightScene()
+    {
+        return WorldHandler.Instance.GetCurrentScene(GameSceneTypeEnum.Fight) != null;
     }
     #endregion
 }

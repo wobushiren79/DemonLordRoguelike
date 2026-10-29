@@ -62,7 +62,7 @@ UIMainLoad(加载存档界面) 空槽位 item
 - **可选物种唯一入口**：`UIMainCreate.listSelectForCreature`（UIMainCreate.cs:24-28），当前为 `{ 2 }`——**仅骷髅**；`1`=人类已于 2026-08 移除（恢复多物种就往列表加 CreatureInfo 的 id）。
 - ⚠️ 列表**至少保留 1 个**：`HandleForSelectCreature(0)` 取 `listSelectForCreature[0]`，空列表会越界。
 - `InitData`（UIMainCreate.cs:51）遍历物种： `CreatureInfoCfg.GetItemData(id)` → 取 `creature_random_id` → `CreatureRandomInfoCfg.GetItemData(...).GetAllRandomData()` 得 `Dictionary<CreatureSkinTypeEnum, List<long>>`（部位→皮肤id列表）缓存进 `dicSelectData`；物种选择项显示 `CreatureInfo.name_language`。
-- 「随机」按钮 `OnClickForRandom`：`Random.Range` 选物种 → `HandleForSelectCreature(select, isRandom:true)`，每个皮肤项随机 `startRandomIndex`（单物种时等价于只随机皮肤）。
+- 「随机」按钮 `OnClickForRandom`：`Random.Range` 选物种 → `HandleForSelectCreature(select, isRandom:true)`，每个皮肤项随机 `startRandomIndex`；随机皮肤后，若该部位支持调色（已生成 `UIViewColorShow`），用 `ColorBean.Random()` 同步随机颜色到颜色控件与 `createCreatureData`（单物种时等价于随机皮肤与可调色部位颜色）。
 
 ### 3. 皮肤 / 颜色选择
 

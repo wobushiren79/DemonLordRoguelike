@@ -44,7 +44,7 @@ UIMainLoad(加载存档界面) 空槽位 item
 - **InitData**（UIMainCreate.cs:51）：遍历物种 → `CreatureInfoCfg.GetItemData` → `creature_random_id` → `CreatureRandomInfoCfg.GetItemData(...).GetAllRandomData()` 得各部位皮肤列表 → 填物种选择项
 - **皮肤选择**（HandleForSelectCreature/HandleForSelectSkin）：按 `CreatureSkinTypeEnum` 部位逐个生成 `UIViewMainCreateSelectItem`（左右按钮**环形**切换，`ChangeSelect` 回绕，**选项 ≤1 个时左右点击直接拦截不处理**；`isInit` 区分初始化调用避免反复刷预览）；选中皮肤 `CreatureModelInfoCfg.GetItemData(selectSkin)`，其 `color_state != 0` 时额外实例化 `UIViewColorShow` 颜色选择（`ChangeSkinColor` 实时变色，离开该皮肤时销毁）
 - **身高设置**（RefreshHeightProgress/ActionForHeightChange）：`UIViewMainCreateProgressItem` 滑条控件（`ui_Title`+`ui_ItemSlider`，标题实时显示百分比如「身高 105%」），实例化到 `ui_SelectContent` 并 `SetSiblingIndex(0)` 置顶于皮肤部位项之前；区间取 `CreatureInfo.GetBodySizeRange()`（body_size 配置，骷髅 0.9~1.1），拖动回调改 `createCreatureData.bodySizeScale` 并刷预览；物种切换/随机时滑条经 `SetValueWithoutNotify` 同步新建生物的随机体型倍率；标题多语言 textId=1007
-- **随机按钮**（OnClickForRandom）：随机选物种 + 每个皮肤项随机 `startRandomIndex`（身高随生物重建重新随机，滑条自动同步）
+- **随机按钮**（OnClickForRandom）：随机选物种 + 每个皮肤项随机 `startRandomIndex`；随机皮肤后，支持调色的部位用 `ColorBean.Random()` 同步随机颜色到 `UIViewColorShow` 与生物数据（身高随生物重建重新随机，滑条自动同步）
 - **Spine 预览**：`ShowPreviewCreate` 取 BaseGaming 场景 `PreviewCreate/Renderer`(SkeletonAnimation) + `CameraHandler.SetPreviewCreateCamera`(CV_PreviewCreate，固定机位)；`SetPreviewCreate` → `CreatureHandler.SetCreatureData` + `SpineHandler.PlayAnim(Idle)`
 
 ### 创建逻辑（OnClickForCreate，UIMainCreate.cs:148）

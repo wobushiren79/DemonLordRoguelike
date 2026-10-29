@@ -429,14 +429,32 @@ public void OnClickForSelect(...)
 
 `ShowScreenLock` 会同时：
 - 拉起 Overlay 层的全透明 `UIScreenLock`（`raycastTarget=1`）拦截所有 UI 点击；
-- 把 `UIManager.CanClickUIButtons` / `CanInputActionStarted` 置 false，键盘 / 手柄输入一起锁；
-- `HideScreenLock` 对称恢复。**比自挂 CanvasGroup 更彻底、可在跨 UI 流程中复用。**
+- 用 `UIManager.SetUIInputLock(UIInputLockSourceEnum.ScreenLock, true)` 锁住键盘 / 手柄输入；
+- `HideScreenLock` 解掉同一来源。**比自挂 CanvasGroup 更彻底、可在跨 UI 流程中复用。**
 
 > 配套保留 `bool isAnimating` 做"同帧重入"双保险（ShowScreenLock 是异步 OpenUI，本帧内仍可能被点到第二次）。
 
-### 遮罩过渡期间的全局输入屏蔽（2026-10 新增）
+### 全局 UI 输入锁：多来源引用计数（2026-10-27 重构）
 
-全屏过渡遮罩 `UICommonMask` 拉起期间不允许任何操作：`OpenUI` 时把现有总开关 `UIManager.CanClickUIButtons` / `CanInputActionStarted` 置 false（`BaseUIInit` 的按钮注册与快捷键分发本就走这两个门禁，遮罩的 `raycastTarget` 只挡鼠标射线、挡不住键盘，拨开关后键盘这一路同步封死）；`OnDisable` 时对称恢复 true——CloseUI/被 `OpenUIAndCloseOther` 关掉/销毁等一切隐藏路径都经 OnDisable 收口，不会遗留锁定。例外让位：`UIScreenLock` 仍在展示时 OnDisable 不恢复（独立锁屏流程由 `HideScreenLock` 负责解锁）。因此场景切换/战斗重开/退出战斗等 `ShowMask` 过渡窗口无需各自再锁输入。
+`UIManager` 的 `CanClickUIButtons` / `CanInputActionStarted` 已**改为只读属性**（`setUIInputLocker.Count == 0`），加解锁统一走：
+
+```csharp
+UIManager.SetUIInputLock(来源, isLock);   // 幂等;来源=UIInputLockSourceEnum(框架层 BaseGameEnum.cs)
+```
+
+| 来源常量 | 持有者 | 加锁时机 | 解锁时机 |
+|---|---|---|---|
+| `UIInputLockSourceEnum.Mask` | `UICommonMask` | `OpenUI` | `OnDisable` |
+| `UIInputLockSourceEnum.ScreenLock` | `UIHandler.ShowScreenLock/HideScreenLock` | ShowScreenLock | HideScreenLock |
+| `UIInputLockSourceEnum.Story` | `StoryHandler.SetUIInputLockForStory` | 演出开始 | 演出收尾 / 场景切换中断 |
+
+枚举定义在框架层 `Assets/FrameWork/Scripts/Enums/BaseGameEnum.cs`（`None=0` 为非法值/直接忽略）；新增来源=枚举加值，无需改 UIManager。
+
+**为什么要引用计数**：旧实现各处直接写 true/false，遮罩关闭会把故事演出/屏幕锁的锁一并放掉（演出 Fade 步骤就会踩到）；反之屏幕锁隐藏也会提前放行。现在各方只增删自己的来源，全局=集合为空才放行，顺序无关。
+
+**白名单例外**：`BaseUIInit.isIgnoreClickLock`（`[NonSerialized]`，默认 false）为 true 的 UI 不受按钮点击锁限制——`UIGameConversation` 在 `OpenUI` 置 true，保证故事演出期间（全 UI 锁死）对话框仍能点击推进，否则 `PlayTalkOnce` 永远等不到点击。
+
+**遮罩过渡期间的全局输入屏蔽**：`UICommonMask.OpenUI` 加 `Mask` 来源锁（`BaseUIInit` 的按钮注册与快捷键分发本就走这两个门禁，遮罩的 `raycastTarget` 只挡鼠标射线、挡不住键盘，加锁后键盘一路同步封死），`OnDisable` 解 `Mask` 来源——CloseUI/被 `OpenUIAndCloseOther` 关掉/销毁等一切隐藏路径都经 OnDisable 收口。因此场景切换/战斗重开/退出战斗等 `ShowMask` 过渡窗口无需各自再锁输入。
 
 ---
 
@@ -721,6 +739,10 @@ EventsInfo.Language_Change                // 语言切换
   - BUFF 增益面板 `ui_AscendBuffs`：`BuffUtil.GetCreatureAscendBuffChances(newRarity, materials)` 算概率，子项 `UIViewCreatureVatAscendBuffItem` 实时克隆/复用缓存、一排≤5 个超出 y 轴下移，出现/消失/移动均 DOTween；`SetData(chance,rarity)` 名字+BG(`ui_BG_Image`)按稀有度配色(`RarityInfo.buff_color`)，BG(`ui_BG_PopupButtonCommonView`)悬浮提示 BUFF 内容(`content_language`，未解锁「进阶增益范围预览」研究时占位参数 `{..}` 数值未定故 Regex 替 `???`，已解锁则 `{Percentage}`/`{Value}` 显示 min~max 范围、其余固定参数显示实际值)；AscendIcon 用向右戳循环 Animator。
 - 详细 BUFF 生成规则见 [buff-system](../buff-system/SKILL.md) / [utils-system](../utils-system/SKILL.md)。
 
+### UIDialogSelectCreature（魔物选择弹窗）
+
+`EventForCardClickSelect` 维护按选择先后排序的 `listSelect`：点击已选魔物会取消选择；达到 `selectNumMax` 后点击未选魔物，先 `RemoveAt(0)` 取消最早选择的一只，再加入当前魔物，不再弹数量上限 Toast。
+
 ---
 
 ## 更新记录
@@ -742,6 +764,7 @@ EventsInfo.Language_Change                // 语言切换
 | 2026-10-20 | UILineupManager 阵容卡片动画优化：① 切换阵容/初始化改用新 `AnimForCardShowByFadeScale` **原地淡入+放大**（0.85→1.08→1，经 `GetOrAddCanvasGroupForAnim` 懒加 CanvasGroup、blocksRaycasts 保持 true），不再从目标位下方 -200px 弹入、不再压在下方背包列表上；② 增删/拖拽重排**只给位置真正变化的卡**播移动+1.06 脉冲（位移判定阈值 0.1），移动时长普通卡 0.2s、上阵新卡 0.3s（`timeForLineupCardAddFly`），错开延迟=`min(|posIndex-focusPosIndex|×0.04, 0.5)`（下阵的 focus 须在 `RemoveLineupCreature` 前取、拖拽取落点槽位），未位移卡瞬间归位；③ `InitLineupData` 整组只播一次出现动画（旧实现逐卡 `AddLineupCard` 触发 N 次全量动画 O(N²)）；④ 新增 `ResetCardAnimStateForReuse` 统一复位 alpha/scale（入池/池复用/重播动画/拖拽开始前） | - |
 | 2026-10-20 | 修复 UIFightMain 战斗卡片"只剩缩放、没有上移"：`RefreshUI`/`OnRectTransformDimensionsChange`（10-10 引入）会调 `RefreshCardListPos`→`RefreshCardPos` 直接写 `anchoredPosition`，而 `AnimForCardShow` 的 `DOLocalMove` 起点在 tween 真正启动（错开延迟结束）时才捕获——首次刷怪/魔晶到账触发的 `UIHandler.RefreshUI` 会把起点覆盖成目标位。现由 `UIViewCreatureCardItemForFightAnim.IsPlayingCreateAnim()`（`animForCreate.IsActive()`，含延迟阶段）门控：创建动画播放中 `RefreshCardPos` 只更新数据/层级/快捷键、不写坐标；`AnimForCardShow` 延迟结束回调里再吸附一次起点兜底 | - |
 | 2026-10-20 | 修复 UIFightMain 战斗卡片悬停层级：① 原在 `OnPointerExit` 复原动画刚开始就 `SetSiblingIndex(originalSibling)`，此时卡片仍放大 1.6 倍（卡宽 100/间距 110，左右各溢出约 25px 压住邻居），右侧邻居绘制在其上，鼠标移回放大区域时射线命中邻居卡，本卡收不到 `OnPointerEnter` → 永不置顶；② 改成各卡等复原动画到点再还原后，多张卡同时复原时绝对序号 `SetSiblingIndex` 互相打乱，快速扫过再移出会整排层级长时间错乱。现统一 `RefreshAllCardLayerBySibling()` 整排按阵容序号升序 `SetAsLastSibling`、悬停卡最后追加（幂等）：进入即整排重排；离开时 `IsPointerOverAnyCard(eventData)`（读 `pointerCurrentRaycast` 判断是否离开整排卡片）为 false 则立即重排，否则等复原动画 OnComplete；`RefreshCardPos` 重排时悬停卡保持置顶 | - |
+| 2026-10-27 | 修复"进战斗立刻 ESC 结束战斗、回基地后仍触发战斗引导"：① `UIFightMain.CloseUI` 重写调 `PauseCardCreateAnim()`（逐卡 `UIViewCreatureCardItemForFightAnim.PauseAnimForCreate`，Pause 而非 Kill——`ClearAnim()` 的 `Complete()` 仍触发 OnComplete 照样广播），`OpenUI` 调 `ResumeCardCreateAnim()` 续播，发牌序列不再在 UI 隐藏/跨场景后跑完并广播 `UIFightMain_CardCreateAnimEnd`；② `UIManager.CanClickUIButtons`/`CanInputActionStarted` 改为**只读属性 + 多来源引用计数**（`SetUIInputLock(UIInputLockSourceEnum.Mask/ScreenLock/Story, isLock)`，枚举定义在框架层 `BaseGameEnum.cs`），遮罩/屏幕锁/故事演出各自持锁互不覆盖（修旧实现"遮罩关闭把演出锁一并放掉"）；③ `BaseUIInit` 新增 `isIgnoreClickLock` 白名单，`UIGameConversation.OpenUI` 置位——故事演出锁住全部 UI 期间对话框仍可点击推进；④ `StoryHandler` 演出开始锁 `Story` 来源、收尾/场景中断解锁 | - |
 
 ---
 

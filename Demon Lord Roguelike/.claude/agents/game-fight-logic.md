@@ -59,7 +59,7 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 - `HasSelectData()`（public）- 是否处于选择状态：`selectCreature`（待放置生物预览）/`selectCreatureCard`（选中卡片UI）/`selectCreatureDestory`（删除生物模式标记）任一非空即 true。
 - `ClearSelectData(bool isDestroyImm=false)` - 取消全部选择：回收预览生物、广播 `GameFightLogic_UnSelectCard`（卡片回 `FightIdle`）、隐藏删除标记、退出删除模式时还原光标，最后置空三个选择字段；`UnSelectCard()`/`UnSelectCreatureDestroy()` 内部均走它。
 - **统一判空入口**：`ControlForGameFight` 的拾水晶门禁（`HandleForClickDropUpdate`）、右键取消（`HandleForUseRUp`：有选择即 `ClearSelectData`）、`UpdateGameForSelectCreature` 的跟随更新判定、`UIFightMain` 的 ESC 分支均已改走 `HasSelectData()`。新增"是否有选择"判断一律复用它，别重复写三个字段判空；只有需要区分"卡片 / 删除模式"时（如 `HandleForUseLUp` 分派 `PutCard`/`SelectCreatureDestoryHandle`、`HandleForDeleteCreatureToggle` 只认删除模式）才单独判对应字段。
-- **ESC 优先级**：`UIFightMain.OnInputActionForStarted` 拦 `InputActionUIEnum.ESC` 时先查 `HasSelectData()`，有选择只 `ClearSelectData()` 取消选择并 return；无选择才 `OpenUIAndCloseOther<UIGameSystem>` 打开系统界面（再按一次 ESC 才是系统界面）。**不要去掉该判断**——否则选择数据残留，系统界面（timeScale=0）期间世界左键仍会落到 `PutCard()` 放卡，返回战斗后卡片也仍是选中态。
+- **ESC 优先级**：`UIFightMain.OnInputActionForStarted`（故事演出期间整条派发链被 `UIManager` 的 `UIInputLockSourceEnum.Story` 输入锁挡掉）拦 `InputActionUIEnum.ESC` 时先查 `HasSelectData()`，有选择只 `ClearSelectData()` 取消选择并 return；无选择才 `OpenUIAndCloseOther<UIGameSystem>` 打开系统界面（再按一次 ESC 才是系统界面）。**不要去掉该判断**——否则选择数据残留，系统界面（timeScale=0）期间世界左键仍会落到 `PutCard()` 放卡，返回战斗后卡片也仍是选中态。
 
 ### 魔王魔力(MP)系统（仅战斗中有效）
 - `UpdateGameForMPRecover(updateTime)` - 每帧给魔王核心恢复 MPF*updateTime 点魔力（MPF=每秒恢复量），并调用 `RefreshMPShow()` 通知刷新魔力显示
@@ -79,7 +79,7 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 - `IsCanRestartFight()`（virtual，基类默认 false=不支持）——按钮显隐依据；`CreateRestartFightData()`（protected virtual，基类默认 null）——构建从头开始的全新战斗数据。支持矩阵：征服/挑战100勇士/测试=支持；无尽=不支持（只能挑战一次，输赢/中途放弃后**该传送门世界即消耗**：`ConsumeCurrentPortalWorld()` 只移除这一条，下次打开传送门UI按数量缺口补生成一个新世界，不回满刷新次数）；终焉议会=不支持（暴力说服一次性，不允许重打刷赢）。
 - `RestartFight()`（public，UIGameSystem 确认弹窗后调用，仅 Gaming 状态生效）：ShowMask → `ClearAbyssalBlessing`（重开=全新挑战不携带已选馈赠）→ `RestoreDefenseCreatureFightState` → `SaveUserData`（本场已入账魔晶/经验落盘）→ `WorldHandler.EnterGameForFightScene(新数据)`（内部 ClearWorldData 走当前逻辑 ClearGame 完整清理再重开）。**议案 EndGame 消耗钩子不触发**（与 ExitFightAndReturnToBase 中途退出同口径，议案延续到重开后的战斗）。
 - 各模式重建方式：征服/挑战100勇士 = `new FightBeanForXxx(gameWorldInfoRandomData)`（传送门冻结数据重开：关卡回第1关、馈赠/奖励累计/馈赠刷新次数等 run 级数据随新 bean 归零）；测试 = 进攻队列从 `fightAttackDataRemark` 深拷贝还原后复用同一 fightData（结算界面「下一个」已重构为走 `CreateRestartFightData` 同一路径）。
-- UI 侧：`UIGameSystem.RefreshButtonShow` 按 `IsCanRestartFight()` 控制 `ui_BtnRestartFight` 显隐（预制体 BtnRestartFight 排在 BtnExitFight 之前，VerticalLayoutGroup 自动布局），确认弹窗文本 UIText 504、按钮文本 UIText 49005。遮罩过渡期间的 ESC/点击由遮罩统一锁定（`UICommonMask` 拉起即置 `CanClickUIButtons/CanInputActionStarted=false`，隐藏即恢复，见 ui-framework SKILL「遮罩过渡期间的全局输入屏蔽」），无需本流程单独锁输入。
+- UI 侧：`UIGameSystem.RefreshButtonShow` 按 `IsCanRestartFight()` 控制 `ui_BtnRestartFight` 显隐（预制体 BtnRestartFight 排在 BtnExitFight 之前，VerticalLayoutGroup 自动布局），确认弹窗文本 UIText 504、按钮文本 UIText 49005。遮罩过渡期间的 ESC/点击由遮罩统一锁定（`UICommonMask` 拉起即 `SetUIInputLock(UIInputLockSourceEnum.Mask,true)`、隐藏即解同一来源，多来源引用计数互不覆盖，见 ui-framework SKILL「全局 UI 输入锁」），无需本流程单独锁输入。
 
 ### 防守属性重算（深渊馈赠联动）
 - `RefreshAllDefenseCreatureAttribute()`（public）- 刷新防守核心 + 全部防守魔物 `RefreshBaseAttribute`（由原 `EventForAbyssalBlessingChange` 的循环抽出，后者改为调它）。供动态数值BUFF（加成率随场上魔物数/累计击杀数变化；馈赠侧曾用于都是兄弟/杀红了眼、现役无配置，稀有度BUFF侧现役「独行者」）在战况变化时重算属性。

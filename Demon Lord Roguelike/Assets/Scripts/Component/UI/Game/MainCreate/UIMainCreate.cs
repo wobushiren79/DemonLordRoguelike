@@ -360,6 +360,13 @@ public partial class UIMainCreate : BaseUIComponent
                 startRandomIndex = Random.Range(0, listSkinName.Count);
             }
             targetView.SetData(listSkinName, ActionForSelect, startRandomIndex);
+            //随机外观时同步随机支持调色的部位颜色
+            if (isRandom && dicSelectColorShow.TryGetValue(item.Key, out UIViewColorShow colorShow))
+            {
+                Color randomColor = ColorBean.Random().GetColor();
+                colorShow.SetShowColor(randomColor);
+                createCreatureData.ChangeSkinColor(item.Key, randomColor);
+            }
             index++;
         }
         //刷新身高设置项

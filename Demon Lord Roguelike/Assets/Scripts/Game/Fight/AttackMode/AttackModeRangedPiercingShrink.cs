@@ -4,8 +4,8 @@ using UnityEngine;
 
 /// <summary>
 /// 远程穿透弹道-逐击衰减收缩（兽人魔法师 火锥205002/冰锥205003）：
-/// 子弹初始为原本 2 倍大小；每穿透一个敌人，伤害减半（向下取整、保底1，照 <see cref="AttackModeRangedPiercingRoad"/> 先例）、大小缩小当前的 1/3（变为上次的 2/3）；
-/// 当次命中结算伤害 ≤1（即伤害降到 1 的那次命中）后子弹销毁。ATK=10 时伤害依次 10/5/2/1、大小依次 2→1.33→0.89→0.59 倍，共命中 4 个目标。
+/// 子弹初始为原本 1.5 倍大小；每穿透一个敌人，伤害减半（向下取整、保底1，照 <see cref="AttackModeRangedPiercingRoad"/> 先例）、大小缩小当前的 1/3（变为上次的 2/3）；
+/// 当次命中结算伤害 ≤1（即伤害降到 1 的那次命中）后子弹销毁。ATK=10 时伤害依次 10/5/2/1、大小依次 1.5→1→0.67→0.44 倍，共命中 4 个目标。
 /// <para>与基类差异：①销毁条件由「穿满 numPierceMax 个」改为「伤害降至 1」（保底1后不再衰减，无此判定会无限穿透，命中数天然有界 ⌊log2(ATK)⌋+1）；</para>
 /// <para>②每命中按 <see cref="ScaleShrinkRate"/> 收缩；③同帧多命中按距本弹近远升序结算（命中检测命中顺序不保证近远；不照矿车按 x 排——本弹可双向飞行，按距离方向无关）。</para>
 /// <para>尺寸通道：visualScale 喂 DSP 桶 _InstanceScale 与实例矩阵（AttackModeInstanceRenderer 每帧现灌现画，当帧生效）；</para>
@@ -18,14 +18,14 @@ public class AttackModeRangedPiercingShrink : AttackModeRangedPiercing
 {
     #region 数值常量（策划调整入口）
     /// <summary>初始大小倍率（相对武器 StartSize 配置值，未配置按 1 即"现在的 N 倍"）</summary>
-    public const float InitialScaleRate = 2f;
+    public const float InitialScaleRate = 1.5f;
     /// <summary>每穿透一个敌人后子弹大小缩小当前大小的比例（1/3=每次变为上次的 2/3；伤害衰减按 /2 写死，照 PiercingRoad 先例）</summary>
     public const float ScaleShrinkRate = 1f / 3f;
     #endregion
 
     #region 开始攻击
     /// <summary>
-    /// 开始攻击基础：应用初始 2 倍大小（时机在 ResetVisualParams 归 -1 与武器 attack_mode_data 覆盖之后，
+    /// 开始攻击基础：应用初始 1.5 倍大小（时机在 ResetVisualParams 归 -1 与武器 attack_mode_data 覆盖之后，
     /// 两条 StartAttack 路径都经由此处，对象池复用每发重算不残留）
     /// </summary>
     public override void StartAttackBase()

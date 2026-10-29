@@ -77,15 +77,13 @@ public partial class UIDialogSelectCreature : DialogView
         //选择
         else
         {
-            //如果已经超过最大选择数量
+            //达到上限时取消最早选择的魔物，再选择当前魔物
             if (listSelect.Count >= dialogSelectCreatureData.selectNumMax)
             {
-                UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(1005003));
+                // UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(1005003));
+                listSelect.RemoveAt(0);
             }
-            else
-            {
-                listSelect.Add(uiViewCreatureCardItem.cardData.creatureData);
-            }
+            listSelect.Add(uiViewCreatureCardItem.cardData.creatureData);
         }
         RefreshUI();
     }

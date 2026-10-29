@@ -45,6 +45,19 @@ public partial class UIFightMain : BaseUIComponent
 
         //新增防御生物(如深渊馈赠增殖复制)：增量添加卡片，不重建整个列表
         RegisterEvent<CreatureBean>(EventsInfo.Buff_DefenseCreatureAdd, EventForDefenseCreatureAdd);
+        //续播上次关闭时被挂起的发牌动画(同一次战斗 ESC 调出系统界面再返回战斗;换战斗会经 SetCreatureCardList 重建卡片)
+        ResumeCardCreateAnim();
+    }
+
+    /// <summary>
+    /// 关闭战斗主UI:先挂起未播完的卡片创建动画,再走基类关闭(UI 隐藏后发牌序列不再推进,落位回调不会迟到广播)
+    /// </summary>
+    public override void CloseUI()
+    {
+        //挂起未播完的发牌动画:UI 已隐藏,序列不应继续跑完并广播 UIFightMain_CardCreateAnimEnd
+        //(该事件是"首次进战斗"引导的触发点,UI 关闭后迟到或跨场景迟到都会误触发引导)
+        PauseCardCreateAnim();
+        base.CloseUI();
     }
 
     public override void OnClickForButton(Button viewButton)
@@ -56,6 +69,9 @@ public partial class UIFightMain : BaseUIComponent
         }
     }
 
+    /// <summary>
+    /// 输入响应(ESC 调出系统界面、数字键快捷选卡;故事演出期间由 StoryHandler 关闭 CanInputActionStarted 总开关,本方法整体不派发)
+    /// </summary>
     public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
     {
         base.OnInputActionForStarted(inputType, callback);
@@ -359,6 +375,39 @@ public partial class UIFightMain : BaseUIComponent
             itemView.AnimForCreateShow(i, i == lastIndex ? () => EventHandler.Instance.TriggerEvent(EventsInfo.UIFightMain_CardCreateAnimEnd) : null);
         }
     }
+
+    #region 卡片创建动画挂起/续播
+    /// <summary>
+    /// 挂起所有卡片的创建动画(战斗主UI关闭时):未播完的序列暂停,落位回调不会触发
+    /// </summary>
+    private void PauseCardCreateAnim()
+    {
+        if (listCreatureCard.IsNull())
+            return;
+        for (int i = 0; i < listCreatureCard.Count; i++)
+        {
+            var itemView = listCreatureCard[i];
+            //Unity 对象判空必须走重载的 != null(已销毁的卡片不会被 ?. 拦下)
+            if (itemView != null)
+                itemView.PauseAnimForCreate();
+        }
+    }
+
+    /// <summary>
+    /// 续播被挂起的卡片创建动画(战斗主UI重新打开时):接着播完并照常广播 UIFightMain_CardCreateAnimEnd
+    /// </summary>
+    private void ResumeCardCreateAnim()
+    {
+        if (listCreatureCard.IsNull())
+            return;
+        for (int i = 0; i < listCreatureCard.Count; i++)
+        {
+            var itemView = listCreatureCard[i];
+            if (itemView != null)
+                itemView.ResumeAnimForCreate();
+        }
+    }
+    #endregion
 
     /// <summary>
     /// 获取卡片原始位置

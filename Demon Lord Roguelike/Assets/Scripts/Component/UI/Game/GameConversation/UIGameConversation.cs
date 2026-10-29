@@ -22,6 +22,8 @@ public partial class UIGameConversation : BaseUIComponent
     public override void OpenUI()
     {
         base.OpenUI();
+        //忽略全局按钮点击锁:故事演出期间会关掉 CanClickUIButtons 防玩家点 UI 逃逸,但对话框(ui_BG)必须仍可点击推进
+        isIgnoreClickLock = true;
         //每次打开先把对话框布局还原到预制体默认（故事演出可能改过对齐/偏移，不还原会残留到议会对话等其它打开方式）
         ResetContentLayout();
         //每次打开默认不高亮（故事演出开过目标高亮，不隐藏会残留到其它打开方式）

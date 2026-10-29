@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public partial class UIDoomCouncilBill : BaseUIComponent
@@ -60,6 +61,18 @@ public partial class UIDoomCouncilBill : BaseUIComponent
         var itemView = itemCell.GetComponent<UIViewDoomCouncilBillItem>();
         var itemData = listShowData[itemCell.index];
         itemView.SetData(itemData);
+    }
+
+    /// <summary>
+    /// 响应输入开始事件，ESC 快捷退出议案选择界面
+    /// </summary>
+    public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
+    {
+        base.OnInputActionForStarted(inputType, callback);
+        if (inputType == InputActionUIEnum.ESC)
+        {
+            OnClickForExit();
+        }
     }
 
     public override void OnClickForButton(Button viewButton)

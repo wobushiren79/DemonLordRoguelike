@@ -39,10 +39,12 @@ public partial class UIDoomCouncilVote : BaseUIComponent
         if (npcVoteType == NpcVoteTypeEnum.Aye)
         {
             ayeVoteNum += voteNum;
+            AudioHandler.Instance.PlaySound(AudioEnum.sound_vote_aye_1);
         }
         else if (npcVoteType == NpcVoteTypeEnum.Nay)
         {
             nayVoteNum += voteNum;
+            AudioHandler.Instance.PlaySound(AudioEnum.sound_vote_nay_1);
         }
         RefreshUI();
     }

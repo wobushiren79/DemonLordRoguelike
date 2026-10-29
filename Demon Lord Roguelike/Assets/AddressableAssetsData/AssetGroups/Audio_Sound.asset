@@ -130,6 +130,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2bf345ddfcf372247a841d7409119be6
+    m_Address: Assets/LoadResources/Audio/Sound/sound_vote_reject_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2ccd0bc1cd481714f9f62f59ec4878fd
     m_Address: Assets/LoadResources/Audio/Sound/sound_card_3.wav
     m_ReadOnly: 0
@@ -385,6 +390,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 74e86fbc5c4e15c4b82df740bff03dab
+    m_Address: Assets/LoadResources/Audio/Sound/sound_vote_nay_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 76723204a4c295b4d8df08a176653253
     m_Address: Assets/LoadResources/Audio/Sound/sound_cook_1.wav
     m_ReadOnly: 0
@@ -542,6 +552,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: ae7c3dfd4f8c5c1479f9bb87515f95da
     m_Address: Assets/LoadResources/Audio/Sound/sound_show_1.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: af9d5086031d57b49a6a5077dbc20987
+    m_Address: Assets/LoadResources/Audio/Sound/sound_vote_aye_1.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -712,6 +727,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e9902b8d836ec484ea8729e1e69fc4d3
     m_Address: Assets/LoadResources/Audio/Sound/sound_pay_6.wav
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ea3e9ff85901c3942aeb77352cdda859
+    m_Address: Assets/LoadResources/Audio/Sound/sound_vote_pass_1.wav
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

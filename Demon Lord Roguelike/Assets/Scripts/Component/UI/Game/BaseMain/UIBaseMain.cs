@@ -14,6 +14,9 @@ public partial class UIBaseMain : BaseUIComponent
         CameraHandler.Instance.SetCameraForControl(CinemachineCameraEnum.Base);
     }
 
+    /// <summary>
+    /// 输入响应(F12/F11 GM 面板、ESC 打开系统界面;故事演出期间由 StoryHandler 关闭 CanInputActionStarted 总开关,本方法整体不派发)
+    /// </summary>
     public override void OnInputActionForStarted(InputActionUIEnum inputType, InputAction.CallbackContext callback)
     {
         base.OnInputActionForStarted(inputType, callback);

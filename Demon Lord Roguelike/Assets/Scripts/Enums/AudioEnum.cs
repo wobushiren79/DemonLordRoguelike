@@ -167,6 +167,10 @@ public enum AudioEnum : long
     sound_water_4 = 630004,//水4
     sound_slime_1 = 630005,//史莱姆1
     sound_talk_1 = 640001,//对话说话1
+    sound_vote_aye_1 = 650001,//议会投票-赞成1
+    sound_vote_nay_1 = 650002,//议会投票-反对1
+    sound_vote_pass_1 = 650003,//议会结果-通过1
+    sound_vote_reject_1 = 650004,//议会结果-否决1
     //==================== 音乐 Music ====================
     music_fight_1 = 1000001,//战斗音乐1
     music_fight_2 = 1000002,//战斗音乐2

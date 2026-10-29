@@ -511,6 +511,10 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     /// </summary>
     public async Task ClearWorldData(bool isShowLoading = true)
     {
+        //场景即将切换:同步中断在播的故事演出(收尾镜头/对话UI/时间并立即释放播放状态)
+        //不中断会导致演出跨场景继续播放、"未播完就退出"的仪式引导跑到基地;且 isStoryPlaying 若仍为 true,
+        //新场景初始化镜头时 CameraHandler.SetCameraForControl 会被演出短路,基地/战斗镜头切不过去
+        StoryHandler.Instance.InterruptStoryForSceneChange();
         //打开加载UI
         if (isShowLoading)
             UIHandler.Instance.OpenUIAndCloseOther<UICommonLoading>();

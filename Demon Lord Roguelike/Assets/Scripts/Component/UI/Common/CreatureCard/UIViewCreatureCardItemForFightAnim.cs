@@ -55,6 +55,26 @@ public partial class UIViewCreatureCardItemForFight
     }
 
     /// <summary>
+    /// 挂起创建动画(战斗主UI关闭时调用):UI 已隐藏,发牌动画不应继续跑完并广播"发牌完成"(该事件是"首次进战斗"引导的触发点,
+    /// 跨场景迟到达会误触发);Pause 而非 Kill,同一次战斗内重新打开UI可经 ResumeAnimForCreate 续播。
+    /// </summary>
+    public void PauseAnimForCreate()
+    {
+        //只判 IsActive(已完成/Kill 的序列自然跳过);不加 IsPlaying 条件——Startup 阶段的序列 playing 标志未必已置位,漏挂起会漏广播
+        if (animForCreate != null && animForCreate.IsActive())
+            animForCreate.Pause();
+    }
+
+    /// <summary>
+    /// 续播被UI关闭挂起的创建动画(战斗主UI重新打开时调用;未挂起/已播完/已Kill则零副作用)。
+    /// </summary>
+    public void ResumeAnimForCreate()
+    {
+        if (animForCreate != null && animForCreate.IsActive() && !animForCreate.IsPlaying())
+            animForCreate.Play();
+    }
+
+    /// <summary>
     /// 选择动画-进入：鼠标进入时放大本卡(由 OnPointerEnter 调用)
     /// </summary>
     public void PlaySelectEnterAnim()

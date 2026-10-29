@@ -22,6 +22,7 @@ public partial class UIDoomCouncilVoteEnd : BaseUIComponent
     public void VoteEndShow(bool isPass)
     {
         ui_VoteEnd_Image.gameObject.SetActive(true);
+        AudioHandler.Instance.PlaySound(isPass ? AudioEnum.sound_vote_pass_1 : AudioEnum.sound_vote_reject_1);
         if (isPass)
         {
             ColorUtility.TryParseHtmlString($"#1DA9D6", out Color targetColorAye);

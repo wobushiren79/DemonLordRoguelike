@@ -53,6 +53,7 @@ watched_files:
 ### 投票（`DoomCouncilLogic.StartVote`）
 - 投票开始即调用 `scenePrefab.HideAllCouncilorAttitudeView()`：正式投票阶段隐藏所有议员意愿(Success)图标，玩家不再看到赞成意愿。
 - 每名议员 `Random(0,100) < attitude ? 赞成 : 反对`；票数按评级 `DoomCouncilRatingsInfo.vote`。
+- `UIDoomCouncilVote.AddVoteData` 在每票入账时播放 `sound_vote_aye_1`(650001，赞成)/`sound_vote_nay_1`(650002，反对)；`UIDoomCouncilVoteEnd.VoteEndShow` 统一播放 `sound_vote_pass_1`(650003，通过)/`sound_vote_reject_1`(650004，否决)，因此普通计票与暴力说服结算均有结果音。
 - 旧逻辑（随机值 vs success_rate + 30% 睡觉）已移除。
 
 ### 贿赂（`UIGameConversation.ActionForItemSelectGift`）
@@ -397,7 +398,7 @@ public class DoomCouncilBean : BaseBean
 
 **文件**: `Assets/Scripts/Component/UI/Game/DoomCouncil/UIDoomCouncilBill.cs`
 
-议会议案（提案）列表、标题等界面元素。
+议会议案（提案）列表、标题等界面元素。支持点击退出按钮或按 ESC 调用 `OnClickForExit`，通过 `OpenUIAndCloseOther<UIBaseMain>()` 关闭并返回基地主界面。
 
 ### UIDoomCouncilVote - 议会投票界面
 

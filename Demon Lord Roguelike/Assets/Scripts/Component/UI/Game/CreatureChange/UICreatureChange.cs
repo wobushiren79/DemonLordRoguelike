@@ -325,6 +325,13 @@ public partial class UICreatureChange : BaseUIComponent
                 startRandomIndex = UnityEngine.Random.Range(0, listSkinName.Count);
             }
             targetView.SetData(listSkinName, ActionForSelect, startRandomIndex);
+            //随机外观时同步随机支持调色的部位颜色
+            if (isRandom && dicSelectColorShow.TryGetValue(item.Key, out UIViewColorShow colorShow))
+            {
+                Color randomColor = ColorBean.Random().GetColor();
+                colorShow.SetShowColor(randomColor);
+                currentCreatureData.ChangeSkinColor(item.Key, randomColor);
+            }
             index++;
         }
         SetPreviewCreate(currentCreatureData);

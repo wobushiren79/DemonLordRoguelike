@@ -95,7 +95,7 @@ BaseAttackMode                      - 攻击模式基类
 │   │   └── AttackModeRangedArcArea - 抛物线范围（继承抛物线轨迹）
 │   ├── AttackModeRangedTracking    - 远程追踪弹道（实时改变方向追击目标）
 │   ├── AttackModeRangedPiercing    - 远程穿透弹道（可穿透多个目标）
-│   │   └── AttackModeRangedPiercingShrink - 逐击衰减收缩穿透（初始2倍、每穿1个伤害减半保底1+大小缩小1/3、降至1销毁；兽人魔法师7003/7004）
+│   │   └── AttackModeRangedPiercingShrink - 逐击衰减收缩穿透（初始1.5倍、每穿1个伤害减半保底1+大小缩小1/3、降至1销毁；兽人魔法师7003/7004）
 │   └── AttackModeRangedSplit       - 远程分裂弹道（分裂为多条线路）
 ├── AttackModeExplosion             - 爆炸（以自身为中心范围伤害，攻击者死亡）
 ├── AttackModeFallupon              - 天降单体（直接对锁定目标造成伤害）
@@ -215,9 +215,9 @@ public override void StartAttack(FightCreatureEntity attacker, FightCreatureEnti
 
 **文件**: `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedPiercingShrink.cs`
 
-继承 `AttackModeRangedPiercing`。子弹初始为原本 2 倍大小（`InitialScaleRate`，`StartAttackBase` 里按 `visualScale` 未配置取 1 再乘倍率，DSP 火球/冰球 billboard 桶经逐实例 `_InstanceScale` 缩放、每帧现灌当帧生效）；每穿透一个敌人伤害减半（向下取整保底 1，照 `AttackModeRangedPiercingRoad` 先例）且大小缩小当前的 1/3（`ScaleShrinkRate=1/3`，变为上次的 2/3）；当次结算伤害 ≤1 后子弹销毁——命中数天然有界（⌊log2(ATK)⌋+1），不看 `numPierceMax`。同帧多命中按距本弹 `position` 近远升序结算（方向无关）。
+继承 `AttackModeRangedPiercing`。子弹初始为原本 1.5 倍大小（`InitialScaleRate`，`StartAttackBase` 里按 `visualScale` 未配置取 1 再乘倍率，DSP 火球/冰球 billboard 桶经逐实例 `_InstanceScale` 缩放、每帧现灌当帧生效）；每穿透一个敌人伤害减半（向下取整保底 1，照 `AttackModeRangedPiercingRoad` 先例）且大小缩小当前的 1/3（`ScaleShrinkRate=1/3`，变为上次的 2/3）；当次结算伤害 ≤1 后子弹销毁——命中数天然有界（⌊log2(ATK)⌋+1），不看 `numPierceMax`。同帧多命中按距本弹 `position` 近远升序结算（方向无关）。
 
-- 典型用法：兽人魔法师 7003（火）/7004（冰），攻击模块 205002/205003（配 `buff=1000500002:0.1` 10%烧伤 / `1000100002:0.1` 10%冰减速），ATK=10 → 伤害 10/5/2/1、大小 2→1.33→0.89→0.59 倍，共命中 4 个目标
+- 典型用法：兽人魔法师 7003（火）/7004（冰），攻击模块 205002/205003（配 `buff=1000500002:0.1` 10%烧伤 / `1000100002:0.1` 10%冰减速），ATK=10 → 伤害 10/5/2/1、大小 1.5→1→0.67→0.44 倍，共命中 4 个目标
 - 规约：闪避/无敌目标不扣血不挂 buff 但仍消耗一次穿透与衰减；`spriteRenderer` 双通道绝对赋值（`Vector3.one × visualScale`）防对象池跨发残留
 
 #### AttackModeRangedSplit（分裂弹道）

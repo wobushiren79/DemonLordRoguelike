@@ -58,16 +58,24 @@ watched_files:
 
 ### StoryHandler / StoryManager（Handler-Manager 配对）
 - [StoryHandler.cs](Assets/Scripts/Component/Handler/StoryHandler.cs)：`BaseHandler<StoryHandler, StoryManager>`；`InitData()` **由 LauncherGame.Launch 与 LauncherTest.StartForNormalGame（「正常启动游戏」入口，漏调会导致进档后引导演出永不触发）调用**；StoryTest 测试场景不注册，自动触发天然关闭，测试走 `PlayStory` 强制播放。
-- 监听三事件：`World_EnterGameForBaseScene`→条件1、`UIFightMain_CardCreateAnimEnd`(下方卡片出现动画播完,`UIFightMain.ShowCardCreateAnim` 末卡落位广播;空卡列表立即广播)→条件2、`GameFightLogic_CreatureDeadDropCrystal`→条件3。
-- `TryTriggerStory(condition)`：演出中/无存档丢弃；候选列表经 `StoryManager.dicConditionStories` 缓存（配置静态不变，不重复筛选排序）找第一个未播（`UserStoryBean.IsStoryPlayed`）且场景匹配的故事播放；一次事件最多播一个。**高频事件短路**（掉晶等）：候选全部为只播一次且已播完时把条件记入 `setExhaustedCondition`，后续事件一次 HashSet 查询秒退；`exhaustedForStoryData` 记录标记对应的存档实例，切换存档槽（实例变更）自动重建防误伤新档。
-- [StoryManager.cs](Assets/Scripts/Component/Manager/StoryManager.cs)：纯状态（isInited/isStoryPlaying/currentStoryData/timeScaleOrigin/storyCameraOriginPos/storyCamera/storyCameraAnchor/storyParkedCamera/storyBlendTimeOrigin/storyLensOrigin·storyFollowOffsetOrigin·storyTrackerSettingsOrigin·storyComposerTargetOffsetOrigin·storyComposerDampingOrigin·storyComposerCompositionOrigin(演出起始镜头参数备份,BeginStoryCamera 写入)/cancelForStory）。
+- 监听三事件：`World_EnterGameForBaseScene`→条件1、`UIFightMain_CardCreateAnimEnd`(下方卡片出现动画播完,`UIFightMain.ShowCardCreateAnim` 末卡落位广播;空卡列表立即广播)→条件2、`GameFightLogic_CreatureDeadDropCrystal`→条件3。**条件2 的事件只在战斗主 UI 打开且一次战斗内完成时才广播**：`UIFightMain.CloseUI` 会 `PauseAnimForCreate` 挂起未播完的发牌序列（`OpenUI` 时 `ResumeAnimForCreate` 续播），UI 隐藏期间序列不会跑完，杜绝"ESC 结束战斗回基地后、迟到的发牌完成事件误触发战斗引导"。
+- `TryTriggerStory(condition)`：演出中/无存档丢弃；候选列表经 `StoryManager.dicConditionStories` 缓存（配置静态不变，不重复筛选排序）找第一个未播（`UserStoryBean.IsStoryPlayed`）且场景匹配的故事播放；一次事件最多播一个。**场景匹配（`CheckSceneMatch`）一律按场景实体**（`WorldHandler.GetCurrentScene(BaseGaming/Fight/DoomCouncil) != null`，卸载即移除），**禁止用 `GetGameLogic<T>() != null`**——`GameManager.gameLogic` 清场后从不置空，回基地仍非空，会让迟到的战斗事件误判为"仍在战斗中"。**高频事件短路**（掉晶等）：候选全部为只播一次且已播完时把条件记入 `setExhaustedCondition`，后续事件一次 HashSet 查询秒退；`exhaustedForStoryData` 记录标记对应的存档实例，切换存档槽（实例变更）自动重建防误伤新档。
+- [StoryManager.cs](Assets/Scripts/Component/Manager/StoryManager.cs)：纯状态（isInited/isStoryPlaying/**storyPlayVersion**(播放版本号,中断时自增,finally 据此识别自己被中断接管)/currentStoryData/timeScaleOrigin/storyCameraOriginPos/storyCamera/storyCameraAnchor/storyParkedCamera/**isStoryCameraTakeover**(接管标记,决定结束/中断时是否还原混合时长)/storyBlendTimeOrigin/storyLensOrigin·storyFollowOffsetOrigin·storyTrackerSettingsOrigin·storyComposerTargetOffsetOrigin·storyComposerDampingOrigin·storyComposerCompositionOrigin(演出起始镜头参数备份,BeginStoryCamera 写入)/cancelForStory）。
 
 ### PlayStory 主流程（PlayStoryAsync）
 1. 锁输入：基地 `SetBaseControl(false, isHideControlTarget:false)`（魔王保持可见，与议会交谈同款）；战斗 `EnableAllControl(false)`。（镜头走专用虚拟相机+独立锚点，**不再依赖 controlTargetForEmpty**，锁输入隐藏它不影响演出。）
 2. 战斗场景：`Time.timeScale=0`（缓存原值，结束还原；先例 UIGameSystem）。
 3. `BeginStoryCamera()` 接管镜头并记录 `storyCameraOriginPos`（详见下方「镜头」）。
+3.1 `_ = WatchStorySceneAsync(storyData)` 启动场景存活监视（见下方「中断与场景绑定」）。
 4. **分组执行**：执行组=当前步+紧随的连续并发步骤（is_async=1），同组**同时发起、`GTask.WhenAll` 整组完成才进下一组**。并发语义=与上一步同时进行（**不是**"发起即忘"）：**"弹对话同时移动镜头"= 阻塞 Talk + 紧随的并发 CameraMove**（对话打开即镜头开始移动，对话与补间都结束才继续后续步骤）。**并发步骤不要配 Talk**——同组两个 Talk 复用同一对话 UI 实例会互相覆盖结束回调导致卡死；同一步内连播多句用 param_1 的 `&` 分隔。
-5. `try/finally` 兜底 `FinishStory`：镜头归还 → 恢复 timeScale/控制（SetFightControl/SetBaseControl）→ is_once 记录 `UserStoryBean.MarkStoryPlayed` + SaveUserData（isTestSimulation 自动拦截）。
+5. `try/finally` 兜底 `FinishStory(storyData, isFight, storyVersion)`：镜头归还 → 恢复 timeScale/控制（SetFightControl/SetBaseControl）→ is_once 记录 `UserStoryBean.MarkStoryPlayed` + SaveUserData（isTestSimulation 自动拦截）。**若已被场景切换中断接管**（`manager.storyPlayVersion != storyVersion`）只做 `EndStoryCameraSync`+`CloseStoryConversationUI` 幂等兜底，不设置控制/时间、不记存档。
+
+### 中断与场景绑定（演出可被场景切换打断）
+- **入口一（主动）**：`WorldHandler.ClearWorldData()` 开头同步调 `StoryHandler.InterruptStoryForSceneChange()`——所有世界切换（进基地/进战斗/回主菜单/重新挑战/进议会）都会经过。**必须同步**把 `isStoryPlaying` 置 false：否则新场景 `CameraHandler.InitBaseSceneControlCamera`/`InitFightSceneCamera` 里的 `SetCameraForControl` 会被演出的"锁外部切镜"短路，基地/战斗镜头切不过去。
+- **入口二（兜底）**：`WatchStorySceneAsync` 逐帧轮询启动故事的场景实体（`IsStorySceneAlive`），被意外卸载（如 `EnterRewardSelectScene` 不经过 ClearWorldData）即刻走同一中断；演出正常结束（isStoryPlaying=false）时自行退出。
+- 中断动作：`EndStoryCameraSync()`（无补间、停靠相机可能已随场景销毁）→ `CloseStoryConversationUI()` → 战斗演出还原 timeScale（缓存值≤0 时退回 1）→ `storyPlayVersion++` + `isStoryPlaying=false` + `currentStoryData=null` + `cancelForStory.Cancel()`。在途 `PlayStoryAsync` 在下一个 await 点抛 OCE 进 finally，因版本不符只做幂等兜底。
+- **未播完不记 is_once**：玩家中途退出战斗 = 本次引导作废，下次进战斗重新触发（与被中断前已记录的完整播放语义区分）。
+- **演出期 UI 全面锁死**：`PlayStoryAsync` 开头 `SetUIInputLockForStory(true)` → `UIManager.SetUIInputLock(UIInputLockSourceEnum.Story, true)`，按钮点击与 UI 输入动作（ESC/快捷键）全部不派发，演出期间调不出系统界面（否则演出对话 UI 被 `OpenUIAndCloseOther` 关掉，`PlayTalkOnce` 永远等不到点击 → 演出卡死）；收尾/中断解锁。**对话框例外**：`BaseUIInit.isIgnoreClickLock`（`UIGameConversation.OpenUI` 置 true）仍可点击推进。按来源引用计数，与遮罩/屏幕锁互不覆盖（详见 ui-framework「全局 UI 输入锁」）。
 
 ### unscaled 纪律（战斗演出 timeScale=0 下一切照常的关键）
 演出系统内一切等待/补间必须 unscaled：`GTask.WaitReal`（不用 Wait）、DOMove/DOColor 一律 `.SetUpdate(true)`、打字机已改 `GTask.WaitReal`（UIGameConversation.TextAnimForContent）、WaitUntil 逐帧轮询不受 timeScale 影响。
@@ -86,9 +94,9 @@ watched_files:
 - `BeginStoryCamera()` → Transform（锚点）：取 `CinemachineBrain.ActiveVirtualCamera` 为源相机（通用，不分战斗/基地/议会）→ **复制参数**（`Lens`；源有 `CinemachineFollow` 则复制 `FollowOffset/TrackerSettings`，有 `CinemachineRotationComposer` 则复制 `TargetOffset/Damping/Composition`——新增构图参数需同步复制）→ **备份起始参数**到 manager 的 6 个 `story*Origin` 字段（struct 字段赋值即拷贝，供 back/无映射标记/收尾还原）→ 锚点同步到源相机跟随目标位（镜头不跳变）→ 缓存 `storyParkedCamera=源相机` 与 `storyBlendTimeOrigin` → `SetMainCameraDefaultBlend(0)` → 源相机 `SetActive(false)`（**只改激活态，Follow/LookAt 全程不动**）→ 故事相机 `SetActive(true)`+`Priority=int.MaxValue` 瞬切。
 - `MoveStoryCamera(pos, duration, easeIndex)`：DOMove 锚点 + `.SetUpdate(true)`，先 DOKill 防并发叠加；取消源传 null（结束回位必须不可取消，否则取消/异常时还原链会断）。
 - **镜头参数补间**（`TweenStoryCameraParams` 核心 + `FromCV`/`ToOrigin` 两包装，与位置移动同 duration/ease 并行 `GTask.WhenAll`）：CameraMove 步骤对基地建筑标记（`dicMarkerToCVName`：core→CV_Core/gashapon→CV_GashaponMachine/juicer→CV_Juicer/altar→CV_CreatureSacrifice/vat→CV_CreatureVat/achievement→CV_Achievement）把镜头参数补向对应 CV（`GetStoryMarkerCamera` 只读查找，复用 `CameraHandler.GetBaseSceneCamera`，不改 CV 激活态；战斗场景前置短路、CV 缺失 LogWarning 降级），无映射标记（back/self/portal/council/战斗 core）补回起始备份。视觉连续参数（FOV/FollowOffset/TargetOffset）走 DOTween 平滑过渡，非视觉连续参数（Lens 其余字段/TrackerSettings/Damping/Composition）起点直接赋值；三条参数 tween 统一 `SetTarget(storyCam)`+`storyCam.DOKill()`，与锚点位置补间（target=anchor）**通道独立互不干扰**；CV 上的噪波组件（Perlin）不触碰，演出镜头保持无噪波。**系统不变量：任一时刻故事相机参数 = 最后落脚标记的映射值**，纯旧配置（无 CV 映射步骤）是原地补间零行为变化。
-- `EndStoryCamera()`：锚点不在起始位时才补——锚点与镜头参数**同步**补间回起始态（各 0.5s，参数不补回会停在最后一个 CV 值导致瞬切跳变；**锚点已在起始位**（末尾并发回位步已播完或无镜头步骤）**跳过补间直接还原**，省 0.5s 死等）→ 故事相机 `SetActive(false)`+`Priority=0` → 恢复 `storyParkedCamera` 激活态与默认混合时长（姿态与起始一致，blend 0 瞬切无跳变）。
+- `EndStoryCamera()`：锚点不在起始位时才补——锚点与镜头参数**同步**补间回起始态（各 0.5s，参数不补回会停在最后一个 CV 值导致瞬切跳变；**锚点已在起始位**（末尾并发回位步已播完或无镜头步骤）**跳过补间直接还原**，省 0.5s 死等）→ 故事相机 `SetActive(false)`+`Priority=0` → 恢复 `storyParkedCamera` 激活态与默认混合时长（姿态与起始一致，blend 0 瞬切无跳变）。补间部分与 `EndStoryCameraSync()`（无补间的同步归还，中断/场景销毁场景用）分离；停靠相机已随场景销毁时其激活态跳过，但**混合时长按 `isStoryCameraTakeover` 仍无条件还原**（否则新场景镜头一直瞬切）。
 - **演出期锁外部切镜**：`CameraHandler.SetCameraForControl` 在 `isStoryPlaying` 期间直接 return（如新手引导末步 UIHandle 打开 UIBaseMain，其 OpenUI 会切 cm_Base）——否则外部切镜以 blend=0 瞬切抢走 CinemachineBrain，演出镜头移动全部不可见（2026-10 修复"引导末步镜头回位不播放、直接跳回"的根因）。
-- 标记解析在 StoryHandler.GetStoryMarkerPosition：基地建筑读 ScenePrefabForBase.objBuilding*（portal/gashapon 有专属字段 objBuildingPortal/objBuildingGashaponMachine，取实体建筑锚点，预制体手动接线；**勿用 CV 机位节点当锚点**——机位常驻未激活时 Cinemachine 不驱动其 transform，读到的是出厂陈旧坐标）；战斗 core=fightDefenseCoreCreature.creatureObj。**新标记=改这一个 switch（有专属 CV 的再在 dicMarkerToCVName 加映射），不动表结构。**
+- 标记解析在 StoryHandler.GetStoryMarkerPosition：基地建筑读 ScenePrefabForBase.objBuilding*（portal/gashapon 有专属字段 objBuildingPortal/objBuildingGashaponMachine，取实体建筑锚点，预制体手动接线；**勿用 CV 机位节点当锚点**——机位常驻未激活时 Cinemachine 不驱动其 transform，读到的是出厂陈旧坐标）；战斗 core=fightDefenseCoreCreature.creatureObj。**战斗/基地分支必须用 `IsInFightScene()`（战斗场景实体是否存在）分流**，不能用 `GetGameLogic<GameFightLogic>() != null`——清场后引用不置空，回基地会被误判进战斗分支导致镜头步骤 LogError 跳过。**新标记=改这一个 switch（有专属 CV 的再在 dicMarkerToCVName 加映射），不动表结构。**
 
 ## 编辑器（StoryEditorWindow）
 
@@ -109,6 +117,8 @@ watched_files:
 ## 触发与事件
 
 - `EventsInfo.UIFightMain_CardCreateAnimEnd`（战斗中 region）：`UIFightMain.ShowCardCreateAnim()` 整组卡片出现动画播完（最后一张卡 `AnimForCreateShow` 落位回调）广播；条件2（首次进战斗）挂此事件而非 `GameFightLogic_StartGame`——等下方卡片弹入落位后再触发，保证 `ui_fight_card` 高亮目标已在最终位置、演出暂停（timeScale=0）不会冻结在途卡片动画。`GameFightLogic_StartGame` 仍在 `GameFightLogic.PreGame()` 末尾 `StartGame()` 后触发（基类单点覆盖全部模式），保留作通用挂钩。
+  - **事件只在"战斗主 UI 打开期间"完成**：`UIFightMain.CloseUI()` 调 `PauseCardCreateAnim()`（逐卡 `PauseAnimForCreate`，Pause 而非 Kill——`ClearAnim` 的 `Complete()` 仍会触发 OnComplete 照样广播），`OpenUI()` 调 `ResumeCardCreateAnim()` 续播。这样 ESC 调出系统界面/结束战斗/重新挑战导致 UI 隐藏或关闭时，发牌序列暂停、不会在 UI 隐藏后继续跑完；换一场战斗由 `SetCreatureCardList → ClearCardList(DestroyImmediate)` 销毁旧卡，序列随 target 销毁自动 Kill。
+  - 事件到达后仍要过两道闸：`CheckSceneMatch` 按**场景实体**判定 + `WatchStorySceneAsync` 场景存活监视，任一不满足即不播/立即中断。
 - 存档：`UserStoryBean.dicPlayedStory`（`Dictionary<long,long>`，key=StoryInfo.id、value=播放完成时间戳 Ticks；字典而非列表，事件多了查询仍 O(1)），拆分为独立存档 `UserStory_{slot}`（仿 UserUnlockBean，UserDataService 注入/落盘/删除同管线），经 `UserDataBean.GetUserStoryData()` 访问；单档轻量读写走 `UserDataService.LoadStoryData()`/`DeleteStoryData()`（不读主档，测试工具用）。
 - 新档/读档不区分：已播记录为空自然首播；老存档上线后首次进基地会补播一次引导（可接受）。
 

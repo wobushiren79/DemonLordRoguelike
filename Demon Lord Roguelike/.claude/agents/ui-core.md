@@ -117,5 +117,5 @@ public void OnClickForSelect(...)
 
 `ShowScreenLock` 会同时：
 - 拉起 Overlay 层的全透明 `UIScreenLock`（`raycastTarget=1`）拦截所有 UI 点击；
-- 把 `UIManager.CanClickUIButtons` / `CanInputActionStarted` 置 false，连键盘 / 手柄输入也一起锁；
-- `HideScreenLock` 对称恢复。**比自挂 CanvasGroup 更彻底、更标准。**
+- 用 `UIManager.SetUIInputLock(UIInputLockSourceEnum.ScreenLock, true)` 锁住键盘 / 手柄输入（`CanClickUIButtons`/`CanInputActionStarted` 已是只读属性 = 多来源引用计数，见 ui-framework「全局 UI 输入锁」）；
+- `HideScreenLock` 解掉同一来源。**比自挂 CanvasGroup 更彻底、更标准。**

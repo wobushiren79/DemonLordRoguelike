@@ -136,6 +136,10 @@ public static class CreatureUtil
                 return TextHandler.Instance.GetTextById(1005);
             case CreatureSkinTypeEnum.Mouth:
                 return TextHandler.Instance.GetTextById(1006);
+            case CreatureSkinTypeEnum.Horn:
+                return TextHandler.Instance.GetTextById(1008);
+            case CreatureSkinTypeEnum.Wing:
+                return TextHandler.Instance.GetTextById(1009);
         }
         return "???";
     }

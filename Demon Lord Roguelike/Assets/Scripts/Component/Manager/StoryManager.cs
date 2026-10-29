@@ -12,6 +12,8 @@ public class StoryManager : BaseManager
     public bool isInited;
     /// <summary>演出是否播放中(防重入;第一期不排队,播放中来的触发直接丢弃)</summary>
     public bool isStoryPlaying;
+    /// <summary>演出播放版本号(每次启动/被场景切换中断时自增;播放流程 finally 据此识别自己是否已被中断接管,防重复收尾覆盖新演出)</summary>
+    public int storyPlayVersion;
     /// <summary>当前播放中的故事配置</summary>
     public StoryInfoBean currentStoryData;
     /// <summary>演出前 Time.timeScale 缓存(战斗演出暂停/还原用)</summary>
@@ -24,6 +26,8 @@ public class StoryManager : BaseManager
     public Transform storyCameraAnchor;
     /// <summary>演出开始时停靠的原虚拟相机(结束还原用;只改激活态,不改其任何相机参数)</summary>
     public CinemachineCamera storyParkedCamera;
+    /// <summary>故事相机是否已接管镜头(BeginStoryCamera 成功后置 true;结束/中断时据此决定是否还原主相机默认混合时长——停靠相机随场景销毁后仍须还原)</summary>
+    public bool isStoryCameraTakeover;
     /// <summary>演出前主相机默认混合时长缓存(瞬切后还原)</summary>
     public float storyBlendTimeOrigin;
     /// <summary>演出起始镜头参数备份:Lens 整体(struct 值拷贝;CV 参数补间后 back 标记/EndStoryCamera 以此为还原目标)</summary>

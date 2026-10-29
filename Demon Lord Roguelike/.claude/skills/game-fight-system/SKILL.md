@@ -318,7 +318,7 @@ public virtual void CheckGameEnd()
 - **支持矩阵**（基类 `GameFightLogic.IsCanRestartFight()` virtual 默认 false）：**征服/挑战100勇士/测试**=支持；**无尽**=不支持（只能挑战一次，输赢/中途放弃后**该传送门世界即消耗**：`ConsumeCurrentPortalWorld()` 只移除这一条，下次打开传送门UI按缺口补生成新世界，不回满刷新次数）；**终焉议会**=不支持（暴力说服一次性，不允许重打刷赢）。
 - **流程**（`GameFightLogic.RestartFight()`，仅 Gaming 状态生效）：确认弹窗（UIText 504）→ ShowMask → `ClearAbyssalBlessing`（重开=全新挑战不携带已选馈赠）→ `RestoreDefenseCreatureFightState` → `SaveUserData`（本场已入账魔晶/经验落盘）→ `EnterGameForFightScene(CreateRestartFightData())`（内部 ClearWorldData 走当前逻辑 ClearGame 完整清理再重开）。**议案 EndGame 消耗钩子不触发**（与中途退出同口径，议案延续到重开后的战斗）。
 - **重建方式**：征服/挑战100勇士 = `new FightBeanForXxx(gameWorldInfoRandomData)`（传送门冻结数据重开：关卡回第1关、run 级累计归零）；测试 = 进攻队列从 `fightAttackDataRemark` 深拷贝还原后复用同一 fightData。
-- **UI 侧**：`UIGameSystem.RefreshButtonShow` 按 `IsCanRestartFight()` 控制 `ui_BtnRestartFight` 显隐（预制体 BtnRestartFight 排在 BtnExitFight 之前），按钮文本 UIText 49005。遮罩过渡期间的 ESC/点击由遮罩统一锁定（`UICommonMask` 拉起即置 `CanClickUIButtons/CanInputActionStarted=false`，隐藏即恢复，见 ui-framework SKILL「遮罩过渡期间的全局输入屏蔽」），无需本流程单独锁输入。
+- **UI 侧**：`UIGameSystem.RefreshButtonShow` 按 `IsCanRestartFight()` 控制 `ui_BtnRestartFight` 显隐（预制体 BtnRestartFight 排在 BtnExitFight 之前），按钮文本 UIText 49005。遮罩过渡期间的 ESC/点击由遮罩统一锁定（`UICommonMask` 拉起即 `SetUIInputLock(UIInputLockSourceEnum.Mask,true)`、隐藏即解同一来源，多来源引用计数互不覆盖，见 ui-framework SKILL「全局 UI 输入锁」），无需本流程单独锁输入。
 
 ## 战斗场景控制
 
@@ -357,6 +357,10 @@ public class ControlForGameFight : BaseControl
 ```
 
 > **ESC 与选择状态（2026-10）**：`UIFightMain.OnInputActionForStarted` 收到 ESC 时先查 `GameFightLogic.HasSelectData()`（`selectCreature`/`selectCreatureCard`/`selectCreatureDestory` 任一非空），有选择则只 `ClearSelectData()` 取消选择并 return，无选择才 `OpenUIAndCloseOther<UIGameSystem>` 打开系统界面。若丢掉这个判断，选择数据会残留在 `GameFightLogic` 里——系统界面挡不住世界左键，点击空地仍会走 `PutCard()` 放卡，且回到战斗后卡片仍是选中态。
+>
+> **ESC 演出期拦截（2026-10-27）**：故事演出期间 `StoryHandler` 持 `UIManager` 的 `UIInputLockSourceEnum.Story` 输入锁（`CanInputActionStarted=false`），`OnInputActionForStarted` 整条派发链被 `BaseUIInit.CallBackForInputActionStarted` 门禁挡掉——UI 类无需各自判断。原因：演出只锁玩家控制、UI 输入仍通，ESC 会 `OpenUIAndCloseOther` 关掉演出对话 UI，使 `PlayTalkOnce` 永远等不到点击（演出卡死、isStoryPlaying 恒 true、后续引导全被丢弃）。锁为多来源引用计数，与遮罩/屏幕锁互不覆盖（见 ui-framework「全局 UI 输入锁」）。
+>
+> **CloseUI 挂起发牌动画（2026-10-27）**：`UIFightMain.CloseUI` 重写调 `PauseCardCreateAnim()`（逐卡 `UIViewCreatureCardItemForFightAnim.PauseAnimForCreate`，Pause 而非 Kill——`ClearAnim()` 的 `Complete()` 仍会触发 OnComplete 照样广播），`OpenUI` 调 `ResumeCardCreateAnim()` 续播。否则进战斗立刻 ESC 结束战斗时，被 `UIGameSystem` 时停冻结的发牌序列会在 `ClearWorldData` 恢复 timeScale 后继续跑完，在"正在切回基地"时广播 `UIFightMain_CardCreateAnimEnd`，误触发故事演出的"首次进战斗"引导（详见 story-system）。
 
 ## 战斗UI
 
@@ -454,7 +458,7 @@ FightHandler.Instance.RemoveFightPrefab(prefabEntity);
 ```csharp
 EventsInfo.GameFightLogic_CreatureDeadEnd       // 生物死亡结束
 EventsInfo.GameFightLogic_StartGame             // 战斗开始(PreGame末尾StartGame后由基类单点触发,覆盖征服/终焉议会/无限/测试全部模式;无参数,通用挂钩)
-EventsInfo.UIFightMain_CardCreateAnimEnd        // 战斗主UI下方卡片出现动画播完(UIFightMain.ShowCardCreateAnim末卡落位广播,空卡列表立即广播;无参数,故事演出"首次进战斗"挂钩)
+EventsInfo.UIFightMain_CardCreateAnimEnd        // 战斗主UI下方卡片出现动画播完(UIFightMain.ShowCardCreateAnim末卡落位广播,空卡列表立即广播;无参数,故事演出"首次进战斗"挂钩;仅 UI 打开期间会完成广播——CloseUI 挂起发牌序列)
 EventsInfo.GameFightLogic_EndGame               // 战斗结束
 EventsInfo.GameFightLogic_SelectCard            // 选中卡片
 EventsInfo.GameFightLogic_UnSelectCard          // 取消选择卡片
