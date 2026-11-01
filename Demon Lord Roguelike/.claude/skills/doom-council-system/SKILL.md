@@ -26,7 +26,7 @@ watched_files:
 ### NPC 类型（`NpcTypeEnum`，`Assets/Scripts/Enums/NpcEnum.cs`）
 - `Councilor = 2` **议会固定NPC**：固定装备/样貌；拥有按 npcId **持久化**的好感系统（默认仇恨）。
 - `CouncilorRandom = 3` **议会随机NPC**：随机外貌（`creature_random_id`）；每场议会临时随机生成。
-- 配置表 `NpcInfo` 为每种生物(CreatureInfo id 1001-7004，共30种)×评级1~5 各建一条 `npc_type=3` 行（30×5=150）；固定NPC为 `npc_type=2` 行。
+- 配置表 `NpcInfo` 当前为29种生物(CreatureInfo id 1001-7004)×评级1~5 各建一条 `npc_type=3` 行（29×5=145）；固定NPC为 `npc_type=2` 行。随机议员的 `creature_random_id` 必须按生物 `model_id` 引用对应物种皮肤池（`model_id×10^6+1`，即 `1000001~7000001`），不能跨物种共用。
 
 ### 议员生成（`DoomCouncilLogic.GenerateCouncilors`）
 1. 议会人数：议案 `DoomCouncilInfo.council_num`（字符串 `"min,max"`）→ `GetRandomCouncilNum()` 区间随机。
@@ -38,9 +38,9 @@ watched_files:
 
 ### 随机议员装备（NpcInfo.equip_random + 装备随机池/套装池）
 - **配置链路（Excel 唯一真实源）**：`NpcInfo.equip_random` 列（格式 `装备池ID,稀有度1,稀有度2...`，如 `10000001,N,R`；稀有度按 `RarityEnum` 枚举名、多个等概率抽、**重复写可加权**；空=不随机）→ 引用 `CreatureRandomInfo` 的随机池行（`random_type=0` 皮肤池存 `skin_random_data`；`random_type=1` **散件池** `equip_random_data` 存 ItemsInfo 道具ID区间串，7 个物种池 id `10000001~70000001`=model_id×10^7+1；`random_type=2` **套装池** `equip_random_data` 改存 EquipSuitInfo 套装ID区间串，7 个物种池 id `10000002~70000002`=model_id×10^7+2）。套装表 `excel_equip_suit_info[装备套装]`（EquipSuitInfo）一行=一套手动精配（`creature_model_id` 物种0=通用 + `hat/clothes/pants/shoe/nose_ring/finger_ring/weapon` 7 槽位列0=空 + `remark` 套装名；套装id段 200001 起），解决散件随机衣裤不搭的问题。
-- **随机议员按评级配稀有度**（150 条 npc_type=3 行已批量填充）：评级1→`N`、2→`N,R`、3→`R`、4→`R,SR`、5→`SR,SSR`；池按生物 model_id 对应**物种套装池**（x0000002 段，已全线从散件池切换）。
+- **随机议员按评级配稀有度**（145 条 npc_type=3 行已批量填充）：评级1→`N`、2→`N,R`、3→`R`、4→`R,SR`、5→`SR,SSR`；池按生物 model_id 对应**物种套装池**（x0000002 段，已全线从散件池切换）。
 - **运行时**：`CreatureBean.SetData(NpcInfoBean)` 在 `InitEquip` 后追加 `InitRandomEquip(npcInfo)`，按池类型分支——散件池：池按 ItemType 分组（`GetAllRandomEquipData`），每槽位经 `CreatureInfoBean.CanEquipItem`（部位/种族模组/武器类型）过滤后**在「空+可装备道具」中等概率抽1个**（裸体率=1/(可装备数+1)），稀有度每件独立抽；套装池（`InitRandomEquipForSuit`）：`GetRandomEquipSuit` 筛整套可装备的套装（`EquipSuitInfoBean.CanEquipFor`，任一件穿不上整套剔除）等概率整套抽1套，**稀有度整套统一roll一次**。**固定装备 `equip_item_ids` 优先，随机只填空槽**；每件走 `EquipUtil.CreateEquipItemForNpc`（NPC随机装备场景：userType=0 不出魔王专属、加点按稀有度配置默认取值，底层收口 `CreateEquipItem`）。解析入口 `NpcInfoBean.GetEquipRandomPoolId()/GetEquipRandomRarities()`（带缓存）。该机制对所有 NPC 类型通用（任何 NPC 配了 equip_random 都会随机穿装）。
-- **外观即装备皮肤**：`GetSkinData(isNeedEquip:true)` 自动挂装备 `creature_model_info_id` 皮肤（帽隐发/武器替换基础武器皮），议会场景/对话/详情面板零改动生效。注意随机议员 npc_type=3 行基础属性全 0，**装备属性是其暴力说服战的主要属性来源**。
+- **外观即装备皮肤**：`GetSkinData(isNeedEquip:true)` 自动挂装备 `creature_model_info_id` 皮肤（帽隐发/武器替换基础武器皮），议会场景/对话/详情面板零改动生效。所有议员（含随机/固定）的基础属性列已于2026-10-31统一复制进攻NPC 1010010001（HP=100、ATK=5、MSPD=10等，后续仍会调整），装备属性继续叠加。
 - **暴力说服快照传递**：`FightBeanForDoomCouncil` 把 `doomCouncilData.listCouncilor` 放进 `FightAttackDetailsBean.creatureSnapshots`（与 npcIds 按下标对应）；`CreatureHandler.CreateAttackCreature(npcId..., creatureSnapshot)` 快照非空时直接用该 CreatureBean 创建（`GetFightCreatureData(creatureData,...)`）——**战斗中的议员与议会场景同一只（同皮肤/同装备/同属性）**，不再按 npcId 重建重抽。征服/其它战斗不传快照，行为不变。防御生物收集当前出战阵容（`userData.GetLineupCreature(userData.GetLineupFightIndex())`，与传送门详情弹窗选择的出战阵容同一口径，替代旧写死第 1 套）。
 - **暴力说服战斗不支持重新挑战**：`GameFightLogicDoomCouncil.IsCanRestartFight()` 显式重写为 false（2026-10 与用户确认的设定）——一次性战斗，失败即议案否决，不允许靠 ESC 系统界面「重新挑战」反复重打刷到赢。
 - **装备池编辑**：编辑器「游戏/皮肤随机池配置」(`SkinRandomEditorWindow`) 支持三模式——装备池([装备]前缀)候选取自 ItemsInfo、套装池([套装]前缀)候选取自 EquipSuitInfo 套装表、均按池物种(creature_model_id)过滤；套装内容本身由「游戏/装备套装配置」(`EquipSuitEditorWindow`) 编辑；保存按池类型写回对应列并同步导出 JSON。
@@ -74,7 +74,7 @@ watched_files:
 ### 相关配置表（Excel 为唯一真实源，改后需在 Unity 运行 ExcelEditorWindow 导出）
 | 表 | 关键列 |
 |----|--------|
-| `excel_npc_info` NpcInfo | `npc_type`(2固定/3随机)、`creature_id`、`creature_random_id`、`councilor_ratings`、`name`、`body_size`(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定)、`equip_random`(随机装备: `装备池ID,稀有度...` 如 `10000001,N,R`，空=不随机)、`region`(地区限制: 空=不限语言、`cn` 或 `cn,en` 等语言代码=仅这些语言下出现，仅议员生成生效)、`rarity`(生物稀有度: 空/0=N、按RarityEnum值1=N~6=L；配置后创建NPC生物时写入 CreatureBean.rarity，仅设置稀有度不授稀有度BUFF；150条npc_type=3随机议员行已按评级填充：评级1-2→N、3-4→R、5→SR) |
+| `excel_npc_info` NpcInfo | `npc_type`(2固定/3随机)、`creature_id`、`creature_random_id`、`councilor_ratings`、`name`、`body_size`(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定)、`equip_random`(随机装备: `装备池ID,稀有度...` 如 `10000001,N,R`，空=不随机)、`region`(地区限制: 空=不限语言、`cn` 或 `cn,en` 等语言代码=仅这些语言下出现，仅议员生成生效)、`rarity`(生物稀有度: 空/0=N、按RarityEnum值1=N~6=L；配置后创建NPC生物时写入 CreatureBean.rarity，仅设置稀有度不授稀有度BUFF；145条npc_type=3随机议员行已按评级填充：评级1-2→N、3-4→R、5→SR) |
 | `excel_creature_random_info` CreatureRandomInfo | `random_type`(0皮肤池/1装备散件池/2套装池)、`skin_random_data`(皮肤池: CreatureModelInfo id区间串)、`equip_random_data`(散件池: ItemsInfo id区间串 / 套装池: EquipSuitInfo id区间串)、散件池id段 `10000001~70000001` / 套装池id段 `10000002~70000002`(已配给议员行) |
 | `excel_equip_suit_info` EquipSuitInfo | `creature_model_id`(物种0=通用)、`hat/clothes/pants/shoe/nose_ring/finger_ring/weapon`(7槽位道具id,0=空)、`remark`(套装名) |
 | `excel_doom_council_info` DoomCouncilInfo | `council_num`("min,max" 议会人数)、`success_rate` |
@@ -97,7 +97,7 @@ watched_files:
 - **需研究解锁的议案**：重命名魔物/魔王(unlock 100200002/3) · 转生×7(unlock 300x00201) · **魔物等级下降/归0(unlock 100200005/6)** · **魔物稀有度下降/归0(unlock 100200007/8)**——后4条对应研究挂终焉议会设施分支(research_type=1) 100200001 下，"归0"研究前置为同族"下降1级"研究(100200006←100200005、100200008←100200007)。**想要更多装备！(unlock 100200009)** · **想要更多魔王装备！(unlock 100200010)**——研究同挂 100200001 下(100200009: pre=100200001、pay_crystal=100、position(-500,-900)；100200010 为其子研究: pre=100200009、pay_crystal=200、position(-700,-900))。
 
 ### 提交与效果执行
-`UIViewDoomCouncilBillItem.OnClickForSubmit`：校验并扣 `cost_crystal`/`cost_reputation`(声望=`UserDataBean.reputation`, `CheckHasReputation`/`AddReputation`) → 二次确认 → `success_rate>=1` 直接 `userTempData.AddDoomCouncil`，否则 `GameHandler.StartDoomCouncil` 进议员投票。**投票议案的入列路径（原漏接已修复）**：投票计票通过(`DoomCouncilLogic.StartVote` isPass 分支)或未通过后「暴力说服」战斗胜利(`GameFightLogicDoomCouncil.ActionForUIFightSettlementNext`，两路径互斥)均会补调 `AddDoomCouncil`——此前两条路径均未调用，导致需投票的议案通过后从不生效。`UserTempBean.AddDoomCouncil` 反射 `class_entity_name` 建实体；`TriggerFirst()` 返 true=立即型(不入列)，返 false=常驻 `listDoomCouncilEntity`。
+`UIViewDoomCouncilBillItem.OnClickForSubmit`：投票议案(`success_rate<1`)在二次确认后、进入议会前扣 `cost_crystal`/`cost_reputation`；直接通过议案(`success_rate>=1`)改调 `AddDoomCouncil(..., isNeedPay:true)`，非交互实体入列前经 `DoomCouncilBaseEntity.TryPayCost()` 支付，重命名/转生/等级下降/稀有度下降等 `isDeferredPayment=true` 实体仅在最终效果成功回调支付，取消/空选/目标无效不扣。投票通过(`DoomCouncilLogic.StartVote`)与暴力说服胜利(`GameFightLogicDoomCouncil.ActionForUIFightSettlementNext`)仍以默认 `isNeedPay=false` 调 `AddDoomCouncil`，不会重复扣费；`TriggerFirst()` 返 true=立即型(不入列)，返 false=常驻 `listDoomCouncilEntity`。
 
 ### `DoomCouncilBaseEntity` 触发钩子（非 `ExecuteEffect`）
 `TriggerFirst` · `TriggerGameFightLogicDropAddCrystal` · `TriggerGameFightLogicAddExp` · `TriggerGameFightLogicEndGame`(返true=出列) · `TriggerWorldEnterGameForBaseScene` · **`GetEnemyIntensityRate()`**(默认1, 返回对下一场敌人 HP/护甲/攻击力的强度倍率)。分发在 `UserTempBean.TriggerDoomCouncil`，由 `GameHandler` 各时机 + `TriggerTypeDoomCouncilEntityEnum` 调用。**查询式消费**（不走事件分发）：`UserTempBean.GetEnemyIntensityRate()` 连乘 · `UserTempBean.HasDoomCouncilMoreEquip()` / `HasDoomCouncilMoreDemonLordEquip()` 检测「想要更多装备/魔王装备」议案在列（内部收口私有泛型 `HasDoomCouncilEntity<T>()`）。
@@ -115,7 +115,7 @@ watched_files:
 - **选择列表过滤**：经 `DialogSelectCreatureBean.filterCreature` 在弹窗 `SetData` 时筛掉已最低的魔物——等级议案 `creature.level > 0` 才进列表、稀有度议案 `creature.rarity > (int)RarityEnum.N` 才进列表（`UIDialogSelectCreature.SetData` 用 `FindAll` 生成新列表，不动背包原列表）。
 - **降级**（LevelDown）：`levelExp` 清零 + `creatureAttribute.dicAttributeLevelUp` 清空（已分配升级属性点供重新分配；`dicAttributeCreate` 创建时加成不动）。
 - **降稀有度**（RarityDown）：实体只计算目标档位并调用公共方法 `CreatureBean.DownRarity(targetRarity)`；该方法钳制到 `[N,当前档位]`、写 `rarity` 并移除 `dicRarityBuff` 中 key 高于新档位的稀有度BUFF（与 `RandomRarityBuffForCreate` 逐级授予逻辑对称）。GM 降阶药水也复用此方法，避免双份算法。
-- 边界（兜底）：已最低的魔物正常已被 `filterCreature` 过滤不出现在列表；若目标仍已 0 级 / 已 N 级（如数据异常）则不生效，Toast(3000008/3000009) 提示后返回（声望不退，与重命名取消同口径）。
+- 边界（兜底）：已最低的魔物正常已被 `filterCreature` 过滤；异常情况下目标仍已 0 级 / N 级则不生效，Toast(3000008/3000009) 后返回，不扣魔晶/声望。
 - Toast 文本（UIText 表）：`3000006` 等级下降成功 · `3000007` 稀有度下降成功 · `3000008` 已是0级 · `3000009` 已是N级。
 
 ### 想要更多装备议案（`DoomCouncilEntityMoreEquip`）

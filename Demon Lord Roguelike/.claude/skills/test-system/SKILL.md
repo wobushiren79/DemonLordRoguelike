@@ -351,10 +351,10 @@ userUnlockData.AddUnlock((long)UnlockEnum.ChallengeHundredBossRate, 4);
 
 ## 测试模拟不落盘（通用机制）
 
-**"读真实存档 → 内存模拟 → 不写回"是献祭升级测试、魔物进阶测试、魔汁机测试、故事演出测试、挑战100勇士测试、无尽模式测试共用的统一机制**，单一真实源是 `GameDataManager.isTestSimulation`：
+**"读真实存档 → 内存模拟 → 不写回"是献祭升级测试、魔物进阶测试、魔汁机测试、故事演出测试、挑战100勇士测试、无尽模式测试、终焉议会测试共用的统一机制**，单一真实源是 `GameDataManager.isTestSimulation`：
 
 - **单一开关**：`GameDataManager.isTestSimulation`（游戏层 partial）。为 `true` 时 `SaveUserData` **一律不落盘**（在 `SaveUserData(UserDataBean)` 入口统一 `return`），任何存档路径（含 UI 直接存档、结算存档、乃至进入基地时的附带存档）都自动跳过。
-- **谁置位/复位**：`LauncherTest.StartForCreatureSacrificeTest` / `StartForCreatureVatTest` / `StartForCreatureJuicerTest` / `StartForStoryTest` / `StartForChallengeHundredTest` / `StartForInfiniteTest` 在 `SetUserData(真实存档)` 之后立即 `isTestSimulation = true`。复位统一在 **`WorldHandler.EnterMainForBaseScene`**（`ClearUserData` 旁）`= false`——它是"回到真实主菜单"的唯一收口点（`LauncherGame.Launch` 启动、游戏内 `UIGameSystem` 返回主菜单、`StartForNormalGame` 都经它），随后读档/新建再 `EnterGameForBaseScene` 进正式游玩即恢复落盘。**测试入口走 `EnterGameForBaseScene`/`EnterGameForFightScene` 直接进场、不经 `EnterMainForBaseScene`**，故测试标记不会被误清；正式游戏则总会先过一次主菜单而复位。正式游戏流程永不置 true。
+- **谁置位/复位**：`LauncherTest.StartForCreatureSacrificeTest` / `StartForCreatureVatTest` / `StartForCreatureJuicerTest` / `StartForStoryTest` / `StartForChallengeHundredTest` / `StartForInfiniteTest` 在 `SetUserData(真实存档)` 之后立即 `isTestSimulation = true`；`StartForDoomCouncil` / `StartForDoomCouncilAllFixed` 共同经 `PrepareDoomCouncilTestData` 完成同样的读档与置位。复位统一在 **`WorldHandler.EnterMainForBaseScene`**（`ClearUserData` 旁）`= false`——它是"回到真实主菜单"的唯一收口点（`LauncherGame.Launch` 启动、游戏内 `UIGameSystem` 返回主菜单、`StartForNormalGame` 都经它），随后读档/新建再 `EnterGameForBaseScene` 进正式游玩即恢复落盘。**测试入口走 `EnterGameForBaseScene`/`EnterGameForFightScene` 直接进场、不经 `EnterMainForBaseScene`**，故测试标记不会被误清；正式游戏则总会先过一次主菜单而复位。正式游戏流程永不置 true。
 - **各功能不再各自判断**：`UICreatureVat` 的开始/完成存档、`CreatureSacrificeLogic` 的失败落盘与 `SaveAndEndGame` 都**直接调 `SaveUserData()`**（不再写 `if (!isTestMode)`），测试拦截统一在存档层完成。
 - **献祭手动成功率**：`CreatureSacrificeLogic.StartSacrifice` 读全局 `isTestSimulation && useManualSuccessRate` 决定是否用手动值掷骰（原 `CreatureSacrificeBean.isTestMode` 已删除，仅保留献祭专属的 `useManualSuccessRate`/`manualSuccessRate`）。
 - **好处**：既是"通用测试数据"，又比逐处 `if(!isTestMode)` 更稳——多一条存档路径也不会漏，还顺带堵住了模拟测试期间基地附带存档误写真实档的隐患。
@@ -632,6 +632,33 @@ LauncherTest.StartForInfiniteTest(worldId, difficultyLevel, saveSlot = 0)   // A
 - **rowId 来自配置表**：`excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（一行=一个世界的一个难度，`round_intensity_addrate` 列控制每轮强度递增倍率）。
 - **参数持久化**：`infiniteTestRowSelectIndex`/`infiniteTestSaveSlot`(0~3 钳制) EditorPrefs 持久化；选项缓存 `infiniteRowOptions`/`infiniteRowWorldIds`/`infiniteRowLevels` 懒加载不持久化（均在 `GameTestEditorPartial`）。
 
+## 终焉议会测试 (DoomCouncil)
+
+`TestSceneTypeEnum.DoomCouncil` —— **下拉选择议案 + 存档槽位**后直接进入指定议案的议会流程；议案下拉列出全部配置（不按研究解锁过滤），每项显示 `[id] 名称 - 内容`，可再用「查看所有固定议员」切换到全固定议员测试。选择真实存档时全程内存模拟，不写回真实存档。
+
+### 流程
+
+```
+GameTestEditor.DrawDoomCouncilTest()
+    │  EnsureDoomCouncilBillOptions：DoomCouncilInfoCfg 全量行按 id 排序
+    │    名称/内容直读 Language_DoomCouncilInfo_cn.txt(name→content、details→content_1)
+    │    不调用 LanguageCfg.ChangeLanguageData，避免篡改运行中游戏语言
+    │  存档槽位 IntPopup(0=当前测试数据,1~3=读取 UserData_1/2/3)
+    ▼ ▶️ 开始终焉议会 / ▶️ 查看所有固定议员
+LauncherTest.StartForDoomCouncil(billId, saveSlot) / StartForDoomCouncilAllFixed(billId, saveSlot)
+    │  PrepareDoomCouncilTestData：校验议案配置 → saveSlot>0 时读档 SetUserData
+    │    → isTestSimulation=true(贿赂、好感、议案效果等 SaveUserData 均不落盘)
+    ▼
+new DoomCouncilBean(billId) → GameHandler.StartDoomCouncil
+    (AllFixed 额外设 isTestAllFixedCouncilor=true)
+```
+
+### 关键点
+
+- **刷新列表**：清空 `doomCouncilBillOptions`/`doomCouncilBillIds` 并 `ClearCfgBaseStaticCache(typeof(DoomCouncilInfoCfg))`，下次绘制重建；语言表每次重建时直读文件。
+- **参数持久化**：`doomCouncilBillSelectIndex`/`doomCouncilTestSaveSlot`(0~3 钳制) 存 EditorPrefs；旧的手填 `doomCouncilBillId` 与「加载名字」已移除。
+- **存档意义**：使用所选存档的魔王、魔物、背包、资源、解锁与固定议员好感等真实数据；空档/缺失档会 LogError 并阻止进入。槽位 0 沿用当前测试数据，两个入口也都开启 `isTestSimulation`。
+
 ## 场景编辑测试 (FightSceneTest 子模式 SceneEdit)
 
 `FightTestModeEnum.SceneEdit`（战斗场景测试的第 6 个子模式）—— 配置与普通模式完全相同（测试生物/场景/敌人/BUFF/固定属性），开始测试后在**运行中编辑战斗场景**（Hierarchy 拖入新预制、移动/旋转/缩放原有物体），Inspector 会话区提供「💾 保存场景编辑」（写回场景预制资产）与「↩️ 还原场景」（回到开始测试时的样子）按钮。**纯编辑器侧实现**（`GameTestEditorSceneEdit.cs`，GameTestEditor 的 partial），不新增 LauncherTest 入口——开始按钮复用 `GetTestData()` + `StartForFightSceneTest`。
@@ -880,8 +907,8 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | Mod幻化药测试面板 | `Assets/Scripts/Component/UI/Test/TestTransformPotionGUI.cs`（纯代码 IMGUI + 真实卡片预制体，**四个页签**：①单个预览=下拉选药(首项无幻化, item_type==TransformPotion(18) 过滤, 道具名[自ID])+**◀▶左右快速切换**(含无幻化项, 两端停住)+基础生物2001设 transformItemId 走真实 SetData 链(**BuildCreature 体型倍率恒钉1**——CreatureBean 构造时按 CreatureInfo.body_size 区间随机 roll 一次并缓存, 真实游戏个体体型差异与 world_data 倍率无关, 面板调参/对比需确定性基准, 2026-10-01起)(小卡=Chess/大卡=Avator高清)+场景并排左基础右幻化(世界空间, 主相机同卡片编辑器机位, 10x10地平面)+other_data 键值解析与 spine 资源 Mod 命中状态(IsModAsset ✓/✗)+三组文本框/滑动条调参；②小卡列表=列x行网格真实卡片(show_data)；③大卡列表=列x行网格真实详情卡**卡面模式**(SetData后隐藏属性/好感/装备/BUFF/MP/备注等详情区块, 只留底板+肖像+名字+稀有度+职业+等级; ui_show_data, 仅基础药无ui_show_res=详情UI回落show形象同样可调, 标签标注(无Avator), 2026-09-30起)；④场景列表=世界spine一排(world_data, **最左固定基础样板**=transformItemId=0 原形象每页常驻作对比基准, `editable=false` 不响应悬停调参、标签灰色无小按钮、不占「每页」数量, 2026-10-01起; **world 段可调性门控**: 无 show_res 的药 world_data 不被真实链[SetCreatureData hasTransform]消费——场景列表强制 `editable=false` 灰显标注「(无世界幻化)」+单个预览场景调参组禁用/悬停排除, 防"调参假象生效、保存后弹回", 2026-10-01起; **标签追加当前生效 world_data 值**(覆盖层优先的实际值 ×scale (x,y), 同骨架同参数必等大, 值不同即未保存覆盖差异, 2026-10-01起)+**调试读数行**(按钮行下方, 短格式: 实×实际Renderer缩放+皮肤名, 防相邻项重叠)+**「📋输出场景诊断到控制台」按钮**(逐项 dump 数据值/sceneBaseScale/期望与实际缩放/骨架资产名与实例ID与导入scale/皮肤/骨骼Scale/当前动画与轨道时间/坐标, 定位"数据同渲染异", 2026-10-01起))；列表分页◀▶+跳页+**Mod筛选**(全部/游戏本地/各已加载Mod)+**横竖个数与间距步进可调**(布局行, 持久化到项目内 `ProjectSettings/TestTransformPotionLayout.json` 随git全队共享), 网格整体右移避开左侧面板, 项下名字标签带●=未保存+**[还原]单段恢复配置/[0,0]位置归零/[复制][粘贴]参数快速套用(静态剪贴板, 带数据段标签 clipKind, 跨段粘贴拒绝并提示——show/ui_show=绝对UI缩放与坐标、world=相对倍率与世界坐标, 单位不同串段必错, 2026-10-01起)小按钮**+**[详情]按钮**(仅小卡/大卡列表项, 按钮行下方第二排居中, 与可否编辑无关)=按真实链 BuildCreature(transformItemId=该项药) 构建生物并打开游戏生物展示弹窗 `UIDialogCreatureShow` 查看幻化形象与骨架全部动画(点动画名即播放; **小卡列表=显示小卡本身的 Chess 基础形象(show 骨架)**——`DialogCreatureShowBean.isShowChessSpine=true` 时弹窗走 `GameUIUtil.SetCreatureUIForSimple` 而非默认的 `SetCreatureUIForDetails`, 2026-10-09起; 大卡列表=ui_show 高清形象, 无Avator自动回落show形象), 打开期间进入详情模式=隐藏覆盖层Canvas+OnGUI 整体跳过(覆盖层 sortingOrder=5000 且 IMGUI 恒渲染在最上层, 不隐藏会遮挡弹窗), 弹窗销毁回调(`DialogBean.actionDestoryAfter`)自动恢复, 面板销毁时顺带关闭残留弹窗; 大卡列表项的 `ui_IconBtn` 图标点击(原本也会开弹窗但不走详情模式会被遮挡)已禁用统一走[详情]按钮, 2026-10-09起, 场景列表页签另有「⇪粘贴剪贴板到全部场景项(当前筛选)」按钮=一键把剪贴板 world_data 套用到 Mod筛选后全部场景项(同MOD骨架大小相近免逐项粘贴; 无 show_res 项跳过防假脏数据; 只写覆盖层, 仍走「保存全部修改」统一写回, 2026-10-08起), 拖拽带4px阈值防误触。**悬停交互**(仅编辑器)：移到目标卡片/模型上滚轮等比改缩放(×1.05/格)+左键拖拽改位置(卡片按Canvas单位取整/场景按相机视场换算世界单位2位小数), 经 `TransformPotionUITestOverride` 覆盖层(被 `CreatureBeanPartial.GetTransformUIShowData/GetTransformShowData/GetTransformWorldData` 优先消费)实时生效, 键缺失时卡片段首次调整基线取卡片图标当前显示值防跳变(如仅基础药无 ui_show_data 键, 2026-09-30起), 拖拽期间只直改显示不打断动画；场景 spine=根节点摆放+Renderer子节点承载缩放/偏移(与游戏内实体一致, 配合 `CreatureHandler.SetCreatureData` 的 world_data 注入与位置恒管理)。底栏「保存全部修改(N)」批量写回=**按 modId 分组路由**（2026-09-24 起，modId→modName 经 `ModManager.GetModJsonTextFileInfos`）：EPPlus直写该Mod道具Excel(唯一真实源,一次写盘;路径约定 `GetModItemsExcelRelPath`——AeonsEchoSpine=历史文件名 `excel_mod_items_info[Mod道具信息].xlsx`,后续Mod=`excel_mod_items_info_{modName小写}[Mod道具信息-{modName}].xlsx`;会话每文件首写前自动备份到 MOD项目/ExcelBackup,滚动复用.bak.1~3只留最近3份)+直补MOD项目与主项目部署副本两处 `Mods/{modName}/JsonText/ItemsInfo.txt`+当前会话内存(只换 ui_show_data/show_data/world_data 三键——保存循环 `ParseTransformOtherData` 读出 `TransformOtherData` 结构体→直接改写三尺寸字段→`BuildOtherData` 整体拼回, ui_show_skin/idle_anim 等其余键天然保留、show_res 空时省略; 内置幻化药跳过计数, Mod项目根读EditorPrefs的ModBuildEditorWindow.ModProjectPath)；**保存加固**(2026-09-30)：Excel 写盘用项目标准的 `new ExcelPackage(FileInfo)` 模式——**严禁 `new FileStream + new ExcelPackage(fs)` 写模式**（本项目 EPPlus 版本下 Save() 无异常但文件完全未落盘, 已两次实证, 是"显示保存成功却被 export 覆盖"事故的根因; ExcelUtil.GetExcelPackage 的流模式仅用于 FileAccess.Read 读取）+ **写后回读校验**（比对每行 other_data, 不符即弹窗报错且保留覆盖层可重试）+ 写盘失败(如Excel/WPS 正打开该 xlsx)弹 `EditorUtility.DisplayDialog` 强提示防红字小字被忽略 + 「已保存0个」按红字错误处理防"绿勾0个"被误读为成功 + 未写盘成功的 Mod 组不同步内存且不清覆盖层(保留未保存修改供修复后重试)——保存后确认绿色「✓ 已保存N个(Excel✓+JsonText×2/2+当前会话✓)」且无弹窗才算真正落盘) |
 | NPC 创建编辑（编辑器版，非运行态） | `Assets/Editor/NpcCreateEditorWindow.cs` + 5 个 partial（菜单 `游戏/NPC创建编辑`）：非运行态 NPC 创建/修改/删除工具（皮肤/调色/装备/随机池/属性 + Spine 双模型预览；Play 模式的 UITestNpcCreate/TestNpcCreateGUI 已删除并入本工具），另支持全字段编辑、新建（建议id+模板复制+中文名写语言表）与删除登记；编辑副本+JSON快照判脏，保存走 EPPlus 双表写回+ExcelToJsonItem 重导+清Cfg缓存；编辑器安全约束（禁止 new CreatureBean(npcInfo)、禁止 *_language、EditorUtility 弹窗）详见 editor-extension-system SKILL 的 NpcCreateEditorWindow 章节 |
 | 研究 UI 测试 | `Assets/Scripts/Component/UI/Game/BaseResearch/UIBaseResearchTest.cs` |
-| 终焉议会测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForDoomCouncil` 正常随机议员；`StartForDoomCouncilAllFixed` 直接载入所有固定议员，标记 `DoomCouncilBean.isTestAllFixedCouncilor=true`） |
-| 终焉议会测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawDoomCouncilTest`：▶️ 开始终焉议会 / ▶️ 查看所有固定议员 两个按钮 + 加载议案名字） |
+| 终焉议会测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForDoomCouncil(billId, saveSlot = 0)` 正常随机议员；`StartForDoomCouncilAllFixed(billId, saveSlot = 0)` 直接载入所有固定议员；共用 `PrepareDoomCouncilTestData` 校验议案、按需读档并开启 `isTestSimulation`） |
+| 终焉议会测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawDoomCouncilTest`/`EnsureDoomCouncilBillOptions`：议案下拉 `[id] 名称 - 内容` + 存档槽位 0~3 + 刷新列表/配置表 + 两个开始按钮） + `GameTestEditorPartial.cs`（`doomCouncilBillSelectIndex`/`doomCouncilTestSaveSlot` 持久化） |
 | 献祭升级测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForCreatureSacrificeTest`） |
 | 献祭升级测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawCreatureSacrificeTest`/`LoadSacrificeTestCreatures`） |
 | 献祭测试数据字段 | `Assets/Scripts/Bean/Game/CreatureSacrificeBean.cs`（`useManualSuccessRate`/`manualSuccessRate`；`isTestMode` 已删，改读全局标记） |

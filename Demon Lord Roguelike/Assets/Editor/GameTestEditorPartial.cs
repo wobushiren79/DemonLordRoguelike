@@ -92,9 +92,12 @@ public partial class GameTestEditor
     private long[] fightEnemyNpcIds;
     public List<long> abyssalBlessingTestIds = new List<long>();
     public List<long> enemyIds = new List<long>() { 1010010001 };
-    public long doomCouncilBillId = 1000000001;
-    // 终焉议会议案名字加载结果(仅用于编辑器显示,不持久化)
-    private string doomCouncilBillNameLoaded = "";
+    // 终焉议会测试参数(议案下拉索引 + 存档槽位;0=当前测试数据,1~3=读取真实存档进行内存模拟)
+    public int doomCouncilBillSelectIndex = 0;
+    public int doomCouncilTestSaveSlot = 0;
+    // 议案下拉选项缓存(不持久化,懒加载;配置重导后可点「刷新列表」重建)
+    private GUIContent[] doomCouncilBillOptions;
+    private long[] doomCouncilBillIds;
 
     // 献祭升级测试参数
     public int sacrificeTestSaveSlot = 1;
@@ -262,7 +265,8 @@ public partial class GameTestEditor
         LoadFightFixedAttributes();
 
         // 终焉议会
-        doomCouncilBillId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "doomCouncilBillId", 1000000001);
+        doomCouncilBillSelectIndex = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "doomCouncilBillSelectIndex", 0);
+        doomCouncilTestSaveSlot = Mathf.Clamp(EditorPrefs.GetInt(PREFS_KEY_PREFIX + "doomCouncilTestSaveSlot", 0), 0, 3);
 
         // 奖励选择测试参数
         rewardSelectRarity = (RarityEnum)EditorPrefs.GetInt(PREFS_KEY_PREFIX + "rewardSelectRarity", 1);
@@ -354,7 +358,8 @@ public partial class GameTestEditor
         SaveFightFixedAttributes();
 
         // 终焉议会
-        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "doomCouncilBillId", (int)doomCouncilBillId);
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "doomCouncilBillSelectIndex", doomCouncilBillSelectIndex);
+        EditorPrefs.SetInt(PREFS_KEY_PREFIX + "doomCouncilTestSaveSlot", doomCouncilTestSaveSlot);
 
         // 奖励选择测试参数
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "rewardSelectRarity", (int)rewardSelectRarity);

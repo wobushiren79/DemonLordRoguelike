@@ -246,7 +246,7 @@ LauncherTest (Inspector)
 ├── CardTest: 卡片测试参数（两个启动按钮：🎛️ 卡片编辑器 StartForCreatureCardEditor 纯代码GUI实时预览稀有度/等级/颜色 + 图标/模型尺寸校准(原「显示卡片」UITestCard 已删除并入) / 🧪 Mod幻化药测试 StartForTransformPotionTest 下拉选药实时显示展示效果，详见 test-system skill）
 ├── Base: 基地测试参数
 ├── RewardSelect: 奖励选择参数
-├── DoomCouncil: 终焉议会参数（两个启动按钮：开始终焉议会 StartForDoomCouncil / 查看所有固定议员 StartForDoomCouncilAllFixed）
+├── DoomCouncil: 终焉议会参数（议案下拉 `[id] 名称 - 内容`[全量配置,直读中文语言表,不按解锁过滤] + 存档槽位 0~3[读档测试模拟不写回] + 刷新列表/配置表；两个启动按钮：开始终焉议会 StartForDoomCouncil / 查看所有固定议员 StartForDoomCouncilAllFixed）
 ├── ResearchUI: 研究UI参数
 ├── AbyssalBlessing: 深渊馈赠UI参数
 ├── CreatureSacrifice: 献祭升级测试参数

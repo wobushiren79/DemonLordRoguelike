@@ -225,31 +225,63 @@ public class LauncherTest : BaseLauncher
         WorldHandler.Instance.EnterGameForFightScene(fightData);
     }
 
+    #region 终焉议会测试
     /// <summary>
-    /// 开始终焉议会测试
+    /// 开始终焉议会测试(随机议员)
     /// </summary>
-    public void StartForDoomCouncil(long billId)
+    /// <param name="billId">要测试的议案 ID</param>
+    /// <param name="saveSlot">存档槽位(0=使用当前测试数据;1~3=读取对应存档作为运行时数据,测试模拟不写回)</param>
+    public void StartForDoomCouncil(long billId, int saveSlot = 0)
     {
         ClearTestGUIs();
-        //打开终焉ui
-        //var uiDoomCouncil = UIHandler.Instance.OpenUIAndCloseOther<UIDoomCouncilBill>();
-        //进入议会场景
+        if (!PrepareDoomCouncilTestData(billId, saveSlot)) return;
         DoomCouncilBean doomCouncilData = new DoomCouncilBean(billId);
         GameHandler.Instance.StartDoomCouncil(doomCouncilData);
     }
 
     /// <summary>
-    /// 开始终焉议会测试(直接载入所有固定议员, 用于测试固定议员的显示/参数)
+    /// 开始终焉议会测试(直接载入所有固定议员,用于测试固定议员的显示/参数)
     /// </summary>
-    /// <param name="billId">议案 ID(仍需有效, 用于议员态度生成)</param>
-    public void StartForDoomCouncilAllFixed(long billId)
+    /// <param name="billId">议案 ID(用于议员态度生成)</param>
+    /// <param name="saveSlot">存档槽位(0=使用当前测试数据;1~3=读取对应存档作为运行时数据,测试模拟不写回)</param>
+    public void StartForDoomCouncilAllFixed(long billId, int saveSlot = 0)
     {
         ClearTestGUIs();
-        //进入议会场景, 标记为载入所有固定议员
+        if (!PrepareDoomCouncilTestData(billId, saveSlot)) return;
         DoomCouncilBean doomCouncilData = new DoomCouncilBean(billId);
         doomCouncilData.isTestAllFixedCouncilor = true;
         GameHandler.Instance.StartDoomCouncil(doomCouncilData);
     }
+
+    /// <summary>
+    /// 准备议会测试数据(校验议案、按需读取存档并开启测试模拟,防止贿赂/好感等数据写回真实存档)
+    /// </summary>
+    /// <param name="billId">要测试的议案 ID</param>
+    /// <param name="saveSlot">存档槽位(0=使用当前测试数据;1~3=读取对应存档)</param>
+    /// <returns>数据准备成功可进入议会时返回 true</returns>
+    private bool PrepareDoomCouncilTestData(long billId, int saveSlot)
+    {
+        if (DoomCouncilInfoCfg.GetItemData(billId) == null)
+        {
+            LogUtil.LogError($"终焉议会测试失败，找不到议案配置 id:{billId}");
+            return false;
+        }
+        if (saveSlot > 0)
+        {
+            UserDataService dataService = new UserDataService();
+            dataService.ChangeSlot(saveSlot);
+            UserDataBean userData = dataService.Load(false);
+            if (userData == null)
+            {
+                LogUtil.LogError($"终焉议会测试失败，存档 {saveSlot} 不存在或为空");
+                return false;
+            }
+            GameDataHandler.Instance.manager.SetUserData(userData);
+        }
+        GameDataHandler.Instance.manager.isTestSimulation = true;
+        return true;
+    }
+    #endregion
 
     /// <summary>
     /// 开始奖励选择

@@ -86,22 +86,25 @@ public partial class UIViewDoomCouncilBillItem : BaseUIView
         dialogData.content = dialogContent;
         dialogData.actionSubmit = (view, data) =>
         {
+            bool isDirectPass = doomCouncilInfo.success_rate >= 1;
+            //投票议案仍在进入议会前支付;直接通过议案由实体在生效时支付
+            bool isPayNow = !isDirectPass;
             //检测是否有足够的魔晶
-            if (!userData.CheckHasCrystal(doomCouncilInfo.cost_crystal, true, true))
+            if (!userData.CheckHasCrystal(doomCouncilInfo.cost_crystal, true, isPayNow))
             {
                 return;
             }
             //检测是否有足够的声望
-            if (!userData.CheckHasReputation(doomCouncilInfo.cost_reputation, true, true))
+            if (!userData.CheckHasReputation(doomCouncilInfo.cost_reputation, true, isPayNow))
             {
                 return;
             }
             DoomCouncilBean doomCouncilData = new DoomCouncilBean(doomCouncilInfo.id);
             var userTempData = userData.GetUserTempData();
             //如果是100%通过 则直接添加
-            if (doomCouncilInfo.success_rate >= 1)
+            if (isDirectPass)
             {
-                userTempData.AddDoomCouncil(doomCouncilData);
+                userTempData.AddDoomCouncil(doomCouncilData, isNeedPay: true);
                 return;
             }
             //小于100%则进入议会

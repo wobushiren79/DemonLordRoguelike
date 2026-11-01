@@ -3,6 +3,12 @@ using System.Collections.Generic;
 
 public class DoomCouncilEntityReincarnation : DoomCouncilBaseEntity
 {
+    #region 支付
+    /// <summary>
+    /// 转生最终确认成功时才支付议案费用
+    /// </summary>
+    public override bool isDeferredPayment => true;
+    #endregion
 
     public override bool TriggerFirst()
     {
@@ -12,7 +18,13 @@ public class DoomCouncilEntityReincarnation : DoomCouncilBaseEntity
             long.Parse(doomCouncilInfo.class_entity_data)
         };
         Action<CreatureBean> actionForComplete = (selectCreatureData) =>
-        {  
+        {
+            //最终确认转生时才支付;支付失败不修改魔王数据
+            if (!TryPayCost())
+            {
+                BackDoomCouncilBill();
+                return;
+            }
             UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
             //清空装备
             userData.selfCreature.RemoveAllEquipToBackpack();

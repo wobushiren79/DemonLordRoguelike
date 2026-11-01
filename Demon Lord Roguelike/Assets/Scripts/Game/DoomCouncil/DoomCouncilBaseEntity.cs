@@ -15,6 +15,37 @@ public class DoomCouncilBaseEntity
         }
     }
     
+    #region 支付
+    /// <summary>
+    /// 是否需要支付议案费用(仅直接通过入口置true;投票路径已在进入议会前支付)
+    /// </summary>
+    public bool isNeedPay;
+
+    /// <summary>
+    /// 是否延后到议案效果最终成功时支付(需要后续交互的立即型议案重写为true)
+    /// </summary>
+    public virtual bool isDeferredPayment => false;
+
+    /// <summary>
+    /// 尝试支付议案费用(魔晶与声望均足够才一起扣除;已支付或无需支付时直接成功)
+    /// </summary>
+    /// <returns>true=无需支付或支付成功</returns>
+    public bool TryPayCost()
+    {
+        if (!isNeedPay)
+            return true;
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        if (!userData.CheckHasCrystal(doomCouncilInfo.cost_crystal, true))
+            return false;
+        if (!userData.CheckHasReputation(doomCouncilInfo.cost_reputation, true))
+            return false;
+        userData.AddCrystal(-doomCouncilInfo.cost_crystal);
+        userData.AddReputation(-doomCouncilInfo.cost_reputation);
+        isNeedPay = false;
+        return true;
+    }
+    #endregion
+
     /// <summary>
     /// 首次添加时触发
     /// </summary>

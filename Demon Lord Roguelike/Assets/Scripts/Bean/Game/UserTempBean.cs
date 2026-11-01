@@ -20,11 +20,19 @@ public class UserTempBean
     /// <summary>
     /// 添加一个终焉议会提案
     /// </summary>
-    public void AddDoomCouncil(DoomCouncilBean doomCouncilData)
+    /// <param name="doomCouncilData">议案数据</param>
+    /// <param name="isNeedPay">是否需要支付费用(仅直接通过入口传true;投票路径已提前支付)</param>
+    public void AddDoomCouncil(DoomCouncilBean doomCouncilData, bool isNeedPay = false)
     {
         var doomCouncilInfo = doomCouncilData.doomCouncilInfo;
         DoomCouncilBaseEntity doomCouncilEntity = ReflexUtil.CreateInstance<DoomCouncilBaseEntity>(doomCouncilInfo.class_entity_name);
         doomCouncilEntity.doomCouncilBillId = doomCouncilData.doomCouncilBillId;
+        doomCouncilEntity.isNeedPay = isNeedPay;
+        //无后续交互的直接通过议案在入列前支付;交互议案由最终成功回调支付
+        if (isNeedPay && !doomCouncilEntity.isDeferredPayment && !doomCouncilEntity.TryPayCost())
+        {
+            return;
+        }
         if (!doomCouncilEntity.TriggerFirst())
         {
             listDoomCouncilEntity.Add(doomCouncilEntity);

@@ -1,5 +1,11 @@
 public class DoomCouncilEntityRename : DoomCouncilBaseEntity
 {
+    #region 支付
+    /// <summary>
+    /// 重命名最终提交成功时才支付议案费用
+    /// </summary>
+    public override bool isDeferredPayment => true;
+    #endregion
 
     public override bool TriggerFirst()
     {
@@ -48,6 +54,12 @@ public class DoomCouncilEntityRename : DoomCouncilBaseEntity
         dialogRenameData.characterLimit = 10;
         dialogRenameData.actionSubmit = (view, data) =>
         {
+            //最终提交重命名时才支付;支付失败不修改名字
+            if (!TryPayCost())
+            {
+                BackDoomCouncilBill();
+                return;
+            }
             if (doomCouncilInfo.class_entity_data.Equals("1"))
             {
 

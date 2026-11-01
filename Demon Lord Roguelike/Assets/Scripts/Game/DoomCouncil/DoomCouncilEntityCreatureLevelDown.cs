@@ -7,6 +7,13 @@ using UnityEngine;
 /// </summary>
 public class DoomCouncilEntityCreatureLevelDown : DoomCouncilBaseEntity
 {
+    #region 支付
+    /// <summary>
+    /// 魔物等级实际下降时才支付议案费用
+    /// </summary>
+    public override bool isDeferredPayment => true;
+    #endregion
+
     #region 触发
     /// <summary>
     /// 首次添加时触发：打开魔物选择窗
@@ -51,6 +58,12 @@ public class DoomCouncilEntityCreatureLevelDown : DoomCouncilBaseEntity
         if (targetCreature.level <= 0)
         {
             UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(3000008), 1);
+            BackDoomCouncilBill();
+            return;
+        }
+        //目标有效且即将实际降级时才支付;支付失败不修改魔物数据
+        if (!TryPayCost())
+        {
             BackDoomCouncilBill();
             return;
         }
