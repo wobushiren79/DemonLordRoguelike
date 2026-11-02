@@ -95,8 +95,8 @@ public partial class UIMainStart : BaseUIComponent
     /// </summary>
     public void OnClickForGameSettting()
     {
-        var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIGameSetting>();
-        targetUI.enterType = 0;
+        //enterType 须在 OpenUI 前设置(设置界面依此决定是否暂停战斗时间)
+        UIHandler.Instance.OpenUIAndCloseOther<UIGameSetting>((ui) => ui.enterType = UIGameSetting.EnterTypeMainStart);
     }
 
     /// <summary>

@@ -40,7 +40,7 @@ AudioManager   - 音频资源管理器（持有 3 条 AudioSource、AudioListene
 
 | 文件 | 层 | 职责 |
 | --- | --- | --- |
-| [Assets/FrameWork/Scripts/Component/Handler/AudioHandler.cs](Assets/FrameWork/Scripts/Component/Handler/AudioHandler.cs) | 框架 | 通用播放 API：`InitAudio`、`PlayMusicForLoop`、`PlayMusicListForLoop`、`PlaySound`、`PlayEnvironment`、暂停/停止/恢复；**连续音效**（`PlayLoopSound`/`StopLoopSound`/`StopAllLoopSound`/`PauseAllLoopSound`/`RestoreAllLoopSound`/`IsLoopSoundPlaying`，含异步竞态令牌防护、`LoopSoundEntry` 活跃字典）；**定时淡出音效** `PlaySoundTimedFade`（借池化独立音源+`CoroutineForPlayTimedFade` 淡出协程，一次性播放不登记 `dicLoopActive`）；**单次音效**（`PlaySoundOnce`/`StopSoundOnce`，独立音源播一次+任意时刻可截断，登记 `dicOnceActive` 含 token 竞态防护）；**限频音效** `PlaySoundForInterval`（同一 id 最小间隔判定，`dicTimeForIntervalSound` 记各 id 上次播放的 unscaledTime） |
+| [Assets/FrameWork/Scripts/Component/Handler/AudioHandler.cs](Assets/FrameWork/Scripts/Component/Handler/AudioHandler.cs) | 框架 | 通用播放 API：`InitAudio`、`PlayMusicForLoop`、`PlayMusicListForLoop`、`PlaySound`、`PlayEnvironment`、暂停/停止/恢复；**连续音效**（`PlayLoopSound`/`StopLoopSound`/`StopAllLoopSound`/`PauseAllLoopSound`/`RestoreAllLoopSound`/`IsLoopSoundPlaying`，含异步竞态令牌防护、`LoopSoundEntry` 活跃字典）；**定时淡出音效** `PlaySoundTimedFade`（借池化独立音源+`CoroutineForPlayTimedFade` 淡出协程，一次性播放不登记 `dicLoopActive`）；**单次音效**（`PlaySoundOnce`/`StopSoundOnce`，独立音源播一次+任意时刻可截断，登记 `dicOnceActive` 含 token 竞态防护）；**重复播放判定**（`dicTimeForLastPlaySound` 按音效 id 记各自上次播放的 unscaledTime + `TryPassRepeatSoundCheck`；`PlaySound` 默认 0.1s 去重与 `PlaySoundForInterval` 限频共用） |
 | [Assets/FrameWork/Scripts/Component/Manager/AudioManager.cs](Assets/FrameWork/Scripts/Component/Manager/AudioManager.cs) | 框架 | 3 条 `AudioSource` 懒加载、`AudioListener`、按类型加载并缓存 `AudioClip`（`GetMusicClip`/`GetSoundClip`/`GetEnvironmentClip` → `LoadClipDataByAddressbles`）；**连续音效音源池**（`loopSoundRoot` 容器 + `DequeueLoopSource`/`RecycleLoopSource` + `MaxLoopSource=16` 上限） |
 | [Assets/Scripts/Component/Handler/AudioHandler.cs](Assets/Scripts/Component/Handler/AudioHandler.cs) | 游戏 | 业务封装：`PlayMusicForMain`/`PlayMusicForGaming`/`PlayMusicForFight`、`ActionForUIOnClick` 通用 UI 点击音效；**`AudioEnum` 重载**（`PlaySound`/`PlayMusicForLoop`/`PlayMusicListForLoop`/`PlayEnvironment`/`PlayLoopSound`/`StopLoopSound`/`IsLoopSoundPlaying`/`PlaySoundTimedFade`/`PlaySoundOnce`/`StopSoundOnce`/`PlaySoundForInterval` 接受枚举，内部 `(long)` 转发到框架层 long 接口） |
 | [Assets/Scripts/Enums/AudioEnum.cs](Assets/Scripts/Enums/AudioEnum.cs) | 游戏 | **音频枚举**：枚举值 = `AudioInfo` 配置表 id，枚举名 = `name_res`（去扩展名）。由 `AudioInfo.txt` 一一对应生成，是业务代码调用音频的**首选方式**（替代裸 id），枚举底层类型为 `long` |
@@ -113,8 +113,8 @@ AudioHandler.Instance.PlaySound(fightUnderAttackData.soundHitId);
 - **首选：配置表 `volume_scale`**（固定缩放）。某个音效需要恒定放大/缩小时，直接在 Excel `AudioInfo` 该行填 `volume_scale`（如 `sound_pay_2 = 1.5`），框架层 `PlaySound` 核心方法会在 `audioInfo` 取到后自动 `volumeScale *= volume_scale`（`volume_scale <= 0` 视为 1 不缩放）。调用处保持普通 `PlaySound(AudioEnum.xxx)` 即可，**无需在代码里写缩放倍率**。
 - `PlaySound(..., float volumeScale, ...)` 的 `volumeScale` 是**绝对音量**（直接作为最终音量）；`PlaySoundForVolumeScale(audio, volumeScale)` 的 `volumeScale` 是**运行时叠加在配置音量上的倍率**，用于代码里临时缩放（会与配置 `volume_scale` 叠乘：`soundVolume × 运行时倍率 × 配置 volume_scale`）。固定缩放优先用配置列，不要写死在代码里。
 - `soundId == 0`（`AudioEnum.None`）或 `volumeScale == 0` 直接跳过。
-- **防抖**：同一 `soundId` 在 0.1s 内重复请求会被忽略（`timeUpdateForRepeatPlay` + `lastPlaySoundId`），避免密集命中时音效炸裂。
-- **限频（可配间隔）**：`PlaySoundForInterval(audio, interval)` 在全局（按音效 id 记）判定最小间隔，返回本次是否真的播了；间隔状态用 `Time.unscaledTime` 记录，不受 timeScale 影响。与上面 0.1s 防抖**独立并存**，只需限频时优先用它、不要在业务里自己记时间戳。长按类按钮的重复触发本身是按整帧累加的（配置 0.1s 实际 0.1~0.12s/次），要在 0.1s 级触发上实现「约每 0.2s 响一声」应传 **0.15** 而不是 0.2，否则会因差几毫秒退化成每 0.3s 才响。
+- **防抖**：同一 `soundId` 在 0.1s 内重复请求会被忽略，且**按音效 id 各自计时**（`dicTimeForLastPlaySound` + `TryPassRepeatSoundCheck`），避免密集命中时音效炸裂。因为不是"只记上一次播放的 id"，`A → B → A` 的第三声也会被丢弃；不同 id 互不影响。计时用 `Time.unscaledTime`，不受 timeScale（战斗暂停/加速）影响。
+- **限频（可配间隔）**：`PlaySoundForInterval(audio, interval)` 按音效 id 判定最小间隔，返回本次是否真的播了。与上面 0.1s 防抖**共用同一份时间记录**（`dicTimeForLastPlaySound`）：通过限频判定后直接实际播放，不会再被默认 0.1s 二次拦截；间隔小于 0.1s 时以显式传入的 interval 为准。只需限频时优先用它、不要在业务里自己记时间戳。长按类按钮的重复触发本身是按整帧累加的（配置 0.1s 实际 0.1~0.12s/次），要在 0.1s 级触发上实现「约每 0.2s 响一声」应传 **0.15** 而不是 0.2，否则会因差几毫秒退化成每 0.3s 才响。
 
 ### 2. 音乐（循环，Music）
 
@@ -209,7 +209,7 @@ bool playing = AudioHandler.Instance.IsLoopSoundPlaying(AudioEnum.sound_walk_1);
 - **异步竞态防护（关键）**：`GetClip` 是异步回调，`PlayLoopSound` 先登记 pending `LoopSoundEntry{source=null, token}` 占位（ContainsKey 即去重，防加载窗口内重复起源），加载回调校验 `token` 未变且 `!canceled` 才真正取源起播；`StopLoopSound` 对"加载中"的 id 置 `canceled` → 回调到达时丢弃。防"停请求先于加载回调到达 → 音源永久播放停不掉"。
 - **音源池**：`AudioManager.DequeueLoopSource/RecycleLoopSource`，`MaxLoopSource=16` 上限（超限告警并静默不播）；回收先 `Stop()` 再清 clip（`SetActive(false)` 不会停播放）；`spatialBlend=0`（第一期 2D 全局单路，不吃位置）。
 - **暂停不误启**：`PauseAllLoopSound` 只暂停当前 `isPlaying` 的源并记录到 `listLoopPaused`，`RestoreAllLoopSound` 只 UnPause 这批。
-- **不复用一次性音效防抖变量**（`lastPlaySoundId`/`timeUpdateForRepeatPlay` 不碰），去重只靠 `dicLoopActive`。
+- **不复用一次性音效的重复播放判定**（`dicTimeForLastPlaySound`/`TryPassRepeatSoundCheck` 不碰），去重只靠 `dicLoopActive`。
 - **生命周期挂钩**：连续音效音源常驻 `DontDestroyOnLoad`**不随场景销毁**，`WorldHandler.ClearWorldData()` 已挂 `StopAllLoopSound()` 兜底防跨场景残留。
 
 **走路声接入示例（唯一现有消费方）：** 基地自控魔王的移动挂在 [ControlForGameBase.cs](Assets/Scripts/Component/Game/Control/ControlForGameBase.cs) —— `HandleForMoveUpdate` 移动分支 `PlayLoopSound(AudioEnum.sound_walk_1, pitch: 1.5f)`（加快脚步节奏, 1.5 倍速）、静止分支 `StopLoopSound(...)`、`EnabledControl(false)` 也 `StopLoopSound(...)`（覆盖"走着走着打开界面"）。单实体，靠 `PlayLoopSound`/`StopLoopSound` 幂等，每 FixedUpdate 重复调无害。走路声**复用一次性音效 `sound_walk_1`**（不新建 `loop_walk_1`）。
@@ -259,7 +259,7 @@ AudioHandler.Instance.StopSoundOnce(AudioEnum.sound_talk_1);
 - **配置表是唯一真实源**：音频 id ↔ 资源名映射改在 Excel，别只改 `AudioInfo.txt`（下次导出会被覆盖）。
 - **资源缓存**：clip 按 `{路径}/{name_res}` 缓存，重复播放不重复加载；新增音频确保 Addressables 地址与三类固定路径前缀一致，否则加载失败（日志 `没有名字为:xxx 的音效资源`）。
 - **枚举拼写**：类型枚举为 `AuidoTypeEnum`（源码即写作 **Auido**，非 Audio），引用时勿"纠正"拼写。
-- **音效防抖**：0.1s 内同 id 不重复播放是刻意设计，需要叠加同音效时注意此限制。
+- **音效防抖**：0.1s 内同一 id 不重复播放是刻意设计，且按 id 各自计时（`A→B→A` 的第三声同样被丢弃）；需要叠加同音效时注意此限制，需要更短/更长的自定义间隔用 `PlaySoundForInterval`。
 - **`VolumeHandler` 不是音量管理**：项目里的 `VolumeHandler`/`VolumeManager` 是 URP 后处理（景深 DepthOfField）控制器，与音频音量无关。音频音量在 `GameConfigBean` + `UIGameSettingForAudio`。
 - **Bean 规则**：`AudioInfoBean.cs` 自动生成，扩展写在 [AudioInfoBeanPartial.cs](Assets/FrameWork/Scripts/Bean/MVC/AudioInfoBeanPartial.cs)。
 - **代码规范**：所有方法/属性加 `/// <summary>` XML 注释，用 `#region`/`#endregion` 按「音乐播放/音效播放/环境音效/停止相关」分区（现有文件已分区）。

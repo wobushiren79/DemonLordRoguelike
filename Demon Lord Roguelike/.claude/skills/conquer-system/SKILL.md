@@ -220,6 +220,8 @@ public bool IsNextBossFight()  => figthNumMax > 0 && fightNum + 1 >= figthNumMax
    - **BOSS 同样享受本关强度倍率** `intensityRate`（与普通敌人取同一 `GetCurrentIntensityRate(fightNum)`，BOSS 关 `fightNum = figthNumMax`），作用到 HP/护甲/攻击力
 3. 所有事件按时间排序 → 转 `FightAttackDetailsBean(delay, npcId)` 入队，首个 BOSS 那条带 `bossShowNpcIds`。
 
+> **`intensityRate` 只属于进攻敌人，防守生物/魔王不得继承**：该字段由 `FightCreatureBean.ResetData(float intensityRate = 1f)` 显式赋值（进入即先写倍率再 `RefreshBaseAttribute`，默认 1）；`SetData`（对象池取用入口）调无参重载复位，敌人创建由 `CreateAttackCreature` 传本关倍率。2026-11 修复的正是池残留：防守生物曾从池中继承敌人 ×2.5，BOSS 关重载 `ClearGame` 清池后重建全部退回 ×1，表现为「未出 BOSS 就突然防不住」。
+
 > **强度倍率还叠加终焉议会议案**：`InitFightAttackData` 计算出 `GetCurrentIntensityRate(fightNum)` 后，再 `intensityRate *= userTempData.GetEnemyIntensityRate()`（连乘所有在列议案的 `GetEnemyIntensityRate`）。终焉议会「挑战更强/更弱的敌人」议案(`DoomCouncilEntityEnemyIntensity`, ×2/×0.5)即经此叠加，作用于**下一整场征服 run 所有关卡+BOSS**，run 结束时议案自身在 `TriggerGameFightLogicEndGame` 消耗移除。详见 doom-council-system。**终焉议会议案均不适用于挑战100勇士（有意设计）**：`EnemyIntensity`/`MoreEquip`/`MoreDemonLordEquip` 均以 `gameFightType == Conquer` 判等门控（MoreExp/MoreCrystal 经配置 `class_entity_data` 指向征服流程）——ChallengeHundred 强度由配置行 `attack_intensity_baserate` 自配、奖励由 `CreateRewardListForChallengeHundred` 自配。
 
 ### 关卡推进时的数据刷新

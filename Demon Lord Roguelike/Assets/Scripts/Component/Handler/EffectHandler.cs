@@ -530,23 +530,27 @@ public partial class EffectHandler
 
     #region 生物进阶粒子
     /// <summary>
-    /// 展示生物进阶增加进度粒子(从起点飞向终点容器的流动光点)
+    /// 展示生物进阶增加进度粒子(从起点飞向终点容器的流动光点,随机散布可配置在起点或终点)
     /// </summary>
     /// <param name="addNum">发射的光点数量</param>
-    /// <param name="startPosition">光点起始世界坐标(带随机散布)</param>
-    /// <param name="endPosition">光点汇聚的终点世界坐标</param>
-    public void ShowCreatureAscendAddProgressEffect(int addNum, Vector3 startPosition, Vector3 endPosition)
+    /// <param name="startPosition">光点起始世界坐标(默认带随机散布,isRandomEnd=true 时固定)</param>
+    /// <param name="endPosition">光点终点世界坐标(默认固定,isRandomEnd=true 时带随机散布)</param>
+    /// <param name="isRandomEnd">true=固定起点并向随机终点发散,false=随机起点向固定终点汇聚</param>
+    public void ShowCreatureAscendAddProgressEffect(int addNum, Vector3 startPosition, Vector3 endPosition, bool isRandomEnd = false)
     {
         ShowEnduringEffect(manager.effectCreatureAscendAddProgressId, (targetEffect) =>
         {
             var targetVisualEffect = targetEffect.GetVisualEffect();
-            float randomRange = 0.5f;
+            float randomRange = isRandomEnd ? 0f : 0.5f;
             targetVisualEffect.SetInt("EffectNum", addNum);
             targetVisualEffect.SetFloat("StartSize", 0.2f);
             targetVisualEffect.SetFloat("MoveSpeed", 0.02f);
             targetVisualEffect.SetVector3("StartPositionRandomA", startPosition + new Vector3(-randomRange, -randomRange, -randomRange));
             targetVisualEffect.SetVector3("StartPositionRandomB", startPosition + new Vector3(randomRange, randomRange, randomRange));
-            targetVisualEffect.SetVector3("EndPosition", endPosition);
+            //添加时 A=B 汇聚到固定终点;回退时在终点上方范围逐颗随机发散
+            Vector3 endRandomRange = isRandomEnd ? new Vector3(0.5f, 0.5f, 0.5f) : Vector3.zero;
+            targetVisualEffect.SetVector3("EndPositionRandomA", endPosition - endRandomRange);
+            targetVisualEffect.SetVector3("EndPositionRandomB", endPosition + endRandomRange);
         });
     }
 

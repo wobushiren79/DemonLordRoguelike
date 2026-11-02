@@ -72,7 +72,7 @@ CreatureSacrificeLogic (BaseGameLogic)   献祭玩法逻辑
     │      - 失败: 数据已在动画前结算落盘,仅触发 Fail + EndGame() 返回 UICreatureManager
     ▼
 UICreatureAddAttribute (BaseUIComponent)   升级加点界面(成功后弹出)
-    │  SetData(targetCreature, totalPoint, onConfirm); 5 个 UIViewCreatureAddAttributeItem(HP/DR/ATK/ASPD/AddLife) 按 creatureInfo.show_attribute 配置显隐后左减右加
+    │  SetData(targetCreature, totalPoint, onConfirm); 5 个 UIViewCreatureAddAttributeItem(HP/DR/ATK/ASPD/AddLife) 按 creatureInfo.show_attribute 配置显隐后左减右加（另有 Max/Min 一键拉满剩余点数/清零本项）
     │  加血回复型(IsRegainHPAttackMode, 如愈之魅魔4002): 配置含 ATK 时 ATK 项隐藏、改显示 AddLife 治疗量项, 底层仍加 ATK 属性(治疗量=ATK×攻击模式倍率, 与详情面板口径一致)
     │  单点增量 CreatureUtil.GetAttributePointAddValue(HP/DR +10, ATK/ASPD +1); 实时作用属性并 RefreshCard
     │  注: Item.RefreshNum 仅显示已分配「点数」(allocatedCount, 如 +1)，与单点实际增量解耦，各属性步进器统一显示点数
@@ -218,7 +218,7 @@ UICreatureSacrifice (BaseUIComponent)   献祭选择
 UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
     ├── ui_UIViewCreatureCardDetails              // 目标生物详情(实时刷新属性)
     ├── ui_UIViewCreatureAddAttributeItem_HP/_DR/_ATK/_ASPD/_AddLife  // 五个属性加点项(ATK与AddLife互斥: 加血回复型显AddLife)
-    │     └── UIViewCreatureAddAttributeItem(BaseUIView): ui_LeftButton(-1)/ui_RightButton(+1)/ui_Num(本次增加值)/ui_Icon(属性图标,预制体内配置)
+    │     └── UIViewCreatureAddAttributeItem(BaseUIView): ui_LeftButton(-1)/ui_RightButton(+1)/ui_LeftButtonMin(一键清零)/ui_RightButtonMax(一键拉满剩余点数)/ui_Num(本次增加值)/ui_Icon(属性图标,预制体内配置)
     ├── ui_LimmitText                             // 剩余加点数量
     └── ui_BtnConfirm                             // 确认按钮(无 exit 退出按钮);剩余>0 ToastHint 拦截,剩余=0 弹二次确认弹窗(textId 61006)确认后保存
 ```
@@ -236,7 +236,7 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
 ### 调升级加点（点数 / 单点增量 / UI）
 - **每级获得点数**：改 Excel `excel_level_info` 的 `attribute_point` 列（唯一真实源，当前全等级配置为 5），再 `ExcelEditorWindow` 导出 JSON。`UpLevelForSacrifice()` 读该列返回点数（`<=0` 回退 1）。
 - **单点增量**（每点加多少 HP/护甲/攻击/攻速）：改 `CreatureUtil.GetAttributePointAddValue(type)`。
-- **加点界面**：`UICreatureAddAttribute`（`Assets/Scripts/Component/UI/Game/CreatureAddAttribute/`）。`SetData(creature, totalPoint, onConfirm)`；`OnItemChangeForAttribute` 校验剩余点数后增减并实时 `RefreshCard`；`RefreshLimmit` 显示「剩余点数:{0}」(textId 61005)；**已去掉 exit 退出按钮，改由 `ui_BtnConfirm` 确认**：`OnClickForConfirm` 剩余>0 时 ToastHintText(textId 61004)拦截，剩余=0 时 `ShowDialogNormal` 弹二次确认弹窗(content=textId 61006「确认按当前方案分配属性点吗？…」)，确认弹窗提交后才触发 `onConfirm`(=`SaveAndEndGame`) 保存。
+- **加点界面**：`UICreatureAddAttribute`（`Assets/Scripts/Component/UI/Game/CreatureAddAttribute/`）。`SetData(creature, totalPoint, onConfirm)`；`OnItemChangeForAttribute` 对增量统一钳制（加点≤剩余点数、减点≥-已加点数，Max/Min 一键设置也走此口）后增减并实时 `RefreshCard`；`RefreshLimmit` 显示「剩余点数:{0}」(textId 61005)；**已去掉 exit 退出按钮，改由 `ui_BtnConfirm` 确认**：`OnClickForConfirm` 剩余>0 时 ToastHintText(textId 61004)拦截，剩余=0 时 `ShowDialogNormal` 弹二次确认弹窗(content=textId 61006「确认按当前方案分配属性点吗？…」)，确认弹窗提交后才触发 `onConfirm`(=`SaveAndEndGame`) 保存。
 - **可加点的属性种类**：改 Excel `excel_creature_info` 的 `show_attribute` 列（逗号分隔枚举值，`InitItems()` 按它显隐 4 个固定项）；**加血回复型生物**（`creatureInfo.IsRegainHPAttackMode()`，如愈之魅魔 4002）配置含 ATK 时 ATK 项与 `AddLife` 项互斥替换（隐藏 ATK 项、显示 AddLife 治疗量项，`AddLife` 项底层仍绑定 ATK 属性加点，治疗量=ATK×攻击模式倍率，与 `UIViewCreatureCardDetails.SetAttribute` 详情口径一致；回甲型 RegainDR 暂无对应加点项仍显示 ATK）；新增 HP/DR/ATK/ASPD 以外的可加点属性才需要在预制体里增删 `UIViewCreatureAddAttributeItem` 项并在 `InitItems()` 里对应 `InitItem(item, attributeType, list)`（当前配置含 4 项以外属性会 LogWarning 忽略）。
 
 ### 调祭品基础数量 / 等级经验

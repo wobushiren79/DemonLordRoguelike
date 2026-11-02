@@ -12,5 +12,9 @@ public partial class UIViewCreatureAddAttributeItem
 
     public TextMeshProUGUI ui_Num;
 
+    public Button ui_RightButtonMax;
+
+    public Button ui_LeftButtonMin;
+
 
 }

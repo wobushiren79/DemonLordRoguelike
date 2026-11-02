@@ -14,7 +14,7 @@ public class FightBeanForDoomCouncil : FightBean
     }
 
     /// <summary>
-    /// 初始化征服模式
+    /// 初始化终焉议会暴力说服战斗
     /// </summary>
     public override void InitData()
     {
@@ -24,7 +24,7 @@ public class FightBeanForDoomCouncil : FightBean
         //设置道路数量
         sceneRoadNum = 1;
         //设置道路长度
-        sceneRoadLength = 1;
+        sceneRoadLength = 10;
         //设置最大关卡数量
         figthNumMax = 1;
         //设置当前关卡数量
@@ -44,9 +44,9 @@ public class FightBeanForDoomCouncil : FightBean
         //设置进攻生物数据 一波进攻
         fightAttackData = new FightAttackBean();
         var councilorAllNpcId = doomCouncilData.GetCouncilorAllNpcId();
-        var councilorPositionX = doomCouncilData.GetCouncilorAllPositionX();
 
-        FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(0, councilorAllNpcId, councilorPositionX);
+        //沿用征服模式的默认出生位置(道路右端x=11.5并附加微小随机偏移)，不再使用议会场景站位
+        FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(0, councilorAllNpcId);
         //携带议员快照(与npcIds按下标对应): 暴力说服战斗直接使用议会同一只生物数据, 保证同皮肤同装备(不再按npcId重新随机)
         fightAttackDetails.creatureSnapshots = doomCouncilData.listCouncilor;
         fightAttackData.AddAttackQueue(fightAttackDetails);

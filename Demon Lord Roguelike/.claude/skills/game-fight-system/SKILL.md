@@ -313,12 +313,12 @@ public virtual void CheckGameEnd()
 
 ### 重新挑战（ESC 系统界面，2026-10 新增）
 
-战斗中 ESC 打开 `UIGameSystem`（enterType=Fight），除「退出战斗」外还有「**重新挑战**」按钮：确认后放弃当前进度、以同一世界/同一配置从头重开（不回基地）。**注意 ESC 有选择时优先取消选择**（待放置卡片/删除生物模式，见下文「卡片操作流程」），无选择时才打开系统界面。
+战斗中 ESC 打开 `UIGameSystem`（enterType=Fight），除「**设置**」「退出战斗」外还有「**重新挑战**」按钮：确认后放弃当前进度、以同一世界/同一配置从头重开（不回基地）。点「设置」进入 `UIGameSetting`（`EnterTypeFight`），打开期间由设置界面保持 `Time.timeScale=0` 暂停战斗，退出后返回战斗系统界面（系统界面已关闭并恢复了时间缩放，故由设置界面自行暂停，详见 ui-game agent「UIGameSetting」）。**注意 ESC 有选择时优先取消选择**（待放置卡片/删除生物模式，见下文「卡片操作流程」），无选择时才打开系统界面。
 
 - **支持矩阵**（基类 `GameFightLogic.IsCanRestartFight()` virtual 默认 false）：**征服/挑战100勇士/测试**=支持；**无尽**=不支持（只能挑战一次，输赢/中途放弃后**该传送门世界即消耗**：`ConsumeCurrentPortalWorld()` 只移除这一条，下次打开传送门UI按缺口补生成新世界，不回满刷新次数）；**终焉议会**=不支持（暴力说服一次性，不允许重打刷赢）。
 - **流程**（`GameFightLogic.RestartFight()`，仅 Gaming 状态生效）：确认弹窗（UIText 504）→ ShowMask → `ClearAbyssalBlessing`（重开=全新挑战不携带已选馈赠）→ `RestoreDefenseCreatureFightState` → `SaveUserData`（本场已入账魔晶/经验落盘）→ `EnterGameForFightScene(CreateRestartFightData())`（内部 ClearWorldData 走当前逻辑 ClearGame 完整清理再重开）。**议案 EndGame 消耗钩子不触发**（与中途退出同口径，议案延续到重开后的战斗）。
 - **重建方式**：征服/挑战100勇士 = `new FightBeanForXxx(gameWorldInfoRandomData)`（传送门冻结数据重开：关卡回第1关、run 级累计归零）；测试 = 进攻队列从 `fightAttackDataRemark` 深拷贝还原后复用同一 fightData。
-- **UI 侧**：`UIGameSystem.RefreshButtonShow` 按 `IsCanRestartFight()` 控制 `ui_BtnRestartFight` 显隐（预制体 BtnRestartFight 排在 BtnExitFight 之前），按钮文本 UIText 49005。遮罩过渡期间的 ESC/点击由遮罩统一锁定（`UICommonMask` 拉起即 `SetUIInputLock(UIInputLockSourceEnum.Mask,true)`、隐藏即解同一来源，多来源引用计数互不覆盖，见 ui-framework SKILL「全局 UI 输入锁」），无需本流程单独锁输入。
+- **UI 侧**：`UIGameSystem.RefreshButtonShow` 按 `IsCanRestartFight()` 控制 `ui_BtnRestartFight` 显隐（预制体 BtnRestartFight 排在 BtnExitFight 之前），按钮文本 UIText 49005；设置按钮 `ui_BtnSetting` 战斗态也显示（与「结束战斗」并列，VerticalLayoutGroup 自动布局）。遮罩过渡期间的 ESC/点击由遮罩统一锁定（`UICommonMask` 拉起即 `SetUIInputLock(UIInputLockSourceEnum.Mask,true)`、隐藏即解同一来源，多来源引用计数互不覆盖，见 ui-framework SKILL「全局 UI 输入锁」），无需本流程单独锁输入。
 
 ## 战斗场景控制
 

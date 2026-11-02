@@ -2,18 +2,21 @@ using System;
 using UnityEngine.UI;
 
 /// <summary>
-/// 单个属性加点项 UI: 展示某一属性(HP/护甲/攻击/攻速)的图标与本次已分配点数,并通过左右按钮加减一点。
+/// 单个属性加点项 UI: 展示某一属性(HP/护甲/攻击/攻速)的图标与本次已分配点数,
+/// 通过左右按钮加减一点, 通过 Max/Min 按钮一键拉满剩余点数或清零本项。
 /// </summary>
 public partial class UIViewCreatureAddAttributeItem : BaseUIView
 {
     #region 数据
+    /// <summary>一键拉满时向父级请求的极大增量(父级会按剩余点数钳制, 不会溢出)</summary>
+    private const int DeltaForSetMax = int.MaxValue;
     /// <summary>本项对应的属性类型</summary>
     public CreatureAttributeTypeEnum attributeType;
     /// <summary>每点该属性增加的数值(由 CreatureUtil.GetAttributePointAddValue 给出)</summary>
     public float addValuePerPoint;
     /// <summary>本次加点会话中已分配到该属性的点数</summary>
     public int allocatedCount;
-    /// <summary>加减回调: 参数为(本项, 增量±1),由父级 UICreatureAddAttribute 校验剩余点数并落实</summary>
+    /// <summary>加减回调: 参数为(本项, 增量), 增量可为负数或超过剩余点数的极值, 由父级 UICreatureAddAttribute 钳制后落实</summary>
     private Action<UIViewCreatureAddAttributeItem, int> actionForChange;
     #endregion
 
@@ -23,7 +26,7 @@ public partial class UIViewCreatureAddAttributeItem : BaseUIView
     /// <para>图标(ui_Icon)按属性固定,在预制体内配置,代码不动态设置。</para>
     /// </summary>
     /// <param name="attributeType">属性类型</param>
-    /// <param name="actionForChange">加减回调(本项, 增量±1)</param>
+    /// <param name="actionForChange">加减回调(本项, 增量), 父级负责钳制</param>
     public void SetData(CreatureAttributeTypeEnum attributeType, Action<UIViewCreatureAddAttributeItem, int> actionForChange)
     {
         this.attributeType = attributeType;
@@ -45,7 +48,7 @@ public partial class UIViewCreatureAddAttributeItem : BaseUIView
 
     #region 点击事件
     /// <summary>
-    /// 按钮点击: 左按钮减一点,右按钮加一点(实际增减由父级回调校验后执行)
+    /// 按钮点击: 左按钮减一点,右按钮加一点; Min 一键清零本项, Max 一键拉满剩余点数(实际增减由父级回调钳制后执行)。
     /// </summary>
     /// <param name="viewButton">被点击的按钮</param>
     public override void OnClickForButton(Button viewButton)
@@ -58,6 +61,16 @@ public partial class UIViewCreatureAddAttributeItem : BaseUIView
         else if (viewButton == ui_RightButton)
         {
             actionForChange?.Invoke(this, 1);
+        }
+        else if (viewButton == ui_LeftButtonMin)
+        {
+            //一键清零: 把本项已加点数全部退回剩余点数(差值即当前已加数)
+            actionForChange?.Invoke(this, -allocatedCount);
+        }
+        else if (viewButton == ui_RightButtonMax)
+        {
+            //一键拉满: 请求加满, 实际增量由父级按剩余点数钳制
+            actionForChange?.Invoke(this, DeltaForSetMax);
         }
     }
     #endregion

@@ -9,4 +9,6 @@ metadata:
 
 **Why:** 2026-09-15 骷髅召唤师任务发现：全库所有敌人生物（10xxxx）都是独立行、配 attack_search_creature_fight_type=1，没有任何「敌方 NPC 复用玩家生物」的先例可抄。
 
-**How to apply:** 需要把玩家生物改作敌人（或反之）时，**克隆生物行**（先例：103106/103107 克隆 2001/2002）只改 `attack_search_creature_fight_type`（敌人=1 索防守方）+ `creature_type=2` + 清 CMP/RCD/unlock_id/creature_random_id/details，皮肤/攻击方式/动画照抄，NPC 行改引用克隆生物 id。不要直接让敌人 NPC 引用玩家生物 id。终焉议会「暴力说服」的议员快照（玩家生物配置=2 当敌人用）存在同类隐患，如需修复可改 AICreatureEntity 让 NPC 驱动生物按实际阵营推导索敌（注意回归测试）。相关：[[reference-npc-attribute-zero-no-inherit]]
+**How to apply:** 一般把玩家生物改作敌人（或反之）时，**克隆生物行**（先例：103106/103107 克隆 2001/2002）只改 `attack_search_creature_fight_type`（敌人=1 索防守方）+ `creature_type=2` + 清 CMP/RCD/unlock_id/creature_random_id/details，皮肤/攻击方式/动画照抄，NPC 行改引用克隆生物 id，不要直接让一般敌人 NPC 引用玩家生物 id。
+
+**随机议员例外：** 终焉议会随机议员按 [[reference-doom-council-rating-class-rule]] 必须直接复用现有扭蛋职业，不能套用上述克隆建议擅自改绑或破坏“职业×评级”模板。其「暴力说服」快照（玩家生物配置=2 当敌人用）仍存在同类索敌阵营隐患；如需修复，应单独调整 NPC 驱动生物的索敌阵营推导并回归测试，而不是违背议员职业复用规则。相关：[[reference-npc-attribute-zero-no-inherit]]

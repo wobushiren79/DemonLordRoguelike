@@ -95,7 +95,7 @@ watched_files:
 
 ### 4. 榨汁 UI（UICreatureJuicer : BaseUIComponent）
 
-- 组件字段（`UICreatureJuicerComponent`）：`ui_BtnStart` / `ui_BtnStartText` / `ui_UIViewBaseInfoContent` / `ui_UIViewCreatureCardList_Target` / **`ui_LimmitText`(TMP,计数文本)** / `ui_ViewExit` / **`ui_JuicerWater`(Image,魔汁水位)** / **`ui_JuicerText`(TMP,经验预览)** / **魔晶加减行**：`ui_CrystalAddRoot`(Transform,整行) / `ui_BtnAddCrystal_Button`+`ui_BtnAddCrystal_LongPressButton` / `ui_CrystalAddNumText`(TMP,颗数) / `ui_BtnReduceCrystal_Button`+`ui_BtnReduceCrystal_LongPressButton`。`ui_LimmitText` 靠运行时 `AutoLinkUI` 按名绑定,**预制体需有同名子物体**(否则计数不显示,`RefreshLimitText` 已判空兜底)；魔晶行在预制体内已序列化绑定(GO 名 `CrystalAddRoot`/`BtnAddCrystal`/`CrystalAddNumText`/`BtnReduceCrystal`)
+- 组件字段（`UICreatureJuicerComponent`）：`ui_BtnStart` / `ui_BtnStartText` / `ui_UIViewBaseInfoContent` / `ui_UIViewCreatureCardList_Target` / **`ui_LimmitText`(TMP,计数文本)** / `ui_ViewExit` / **`ui_JuicerWater`(Image,魔汁水位)** / **`ui_JuicerText`(TMP,经验预览)** / **魔晶加减行**：`ui_CrystalAddRoot`(Transform,整行) / `ui_CrystalAddNumText`(TMP,颗数) / ±1 的 `ui_BtnAddCrystal_Button`+`ui_BtnAddCrystal_LongPressButton`、`ui_BtnReduceCrystal_Button`+`ui_BtnReduceCrystal_LongPressButton` / ±10 的 `ui_BtnAddCrystal10_Button`+`ui_BtnAddCrystal10_LongPressButton`、`ui_BtnReduceCrystal10_Button`+`ui_BtnReduceCrystal10_LongPressButton`。`ui_LimmitText` 靠运行时 `AutoLinkUI` 按名绑定,**预制体需有同名子物体**(否则计数不显示,`RefreshLimitText` 已判空兜底)；魔晶行在预制体内已序列化绑定(GO 名 `CrystalAddRoot`/`BtnAddCrystal`/`BtnReduceCrystal`/`BtnAddCrystal10`/`BtnReduceCrystal10`/`CrystalAddNumText`)
 - `actionForExit`：退出回调，由打开入口注入
 - **镜头**：`OpenUI` 切 `CameraHandler.Instance.SetJuicerCamera(int.MaxValue,true)`(CV_Juicer,固定机位无需 Follow) + `VolumeHandler.SetDepthOfFieldActive(false)`;`CloseUI` 还原 DoF=true(基地镜头由返回 UIBaseMain 统一还原)
 - **可投入魔物列表**：`InitCreatureData()` 取背包内 **`CreatureStateEnum.Idle` 且未上阵(`CheckIsInAnyLineup`)** 的魔物；**默认排序 `listCreatureData.Sort((a,b)=>b.level.CompareTo(a.level))` 等级降序(高→低)**
@@ -106,11 +106,11 @@ watched_files:
 - **卡片使用态复用 `CardUseStateEnum.CreatureAscendTarget` + `CardStateEnum.CreatureAscendSelect/NoSelect`**——因为预制体 `ui_UIViewCreatureCardList_Target` 的卡片变体是 `UIViewCreatureCardItemForCreatureAscend`。`OnCellChangeForTarget` 按 `listSelectCreature.Contains` 回填高亮
 - 选择事件走 `EventsInfo.UIViewCreatureCardItem_OnClickSelect`（`this.RegisterEvent`，实例事件）
 - **魔晶加减行**（`#region 魔晶加经验`）：
-  - 显隐：`RefreshCrystalAdd()` 按 `GetCrystalExpPerCrystal() > 0`（= `UnlockEnum.JuicerCrystalExp` 研究等级）控制 `ui_CrystalAddRoot`，未解锁整行隐藏；同时刷新颗数文本、按「添加上限=当前魔晶余额 / 减少下限=0」设置两按钮 `interactable`
-  - 交互：`OnClickForButton` 分发 `ui_BtnAddCrystal_Button` / `ui_BtnReduceCrystal_Button`；长按由 `Awake` 里 `AddLongEventAction` 注册（**只注册一次**，界面实例复用）→ `OnLongPressForAddCrystal/ReduceCrystal` → 单击方法传 `isHint=false`（避免每 0.1 秒刷 Toast 3000001）
+  - 显隐：`RefreshCrystalAdd()` 按 `GetCrystalExpPerCrystal() > 0`（= `UnlockEnum.JuicerCrystalExp` 研究等级）控制 `ui_CrystalAddRoot`，未解锁整行隐藏；同时刷新颗数文本、按「添加上限=当前魔晶余额 / 减少下限=0」设置 ±1/±10 四个按钮的 `interactable`
+  - 交互：`OnClickForButton` 分发 ±1 的 `ui_BtnAddCrystal_Button`/`ui_BtnReduceCrystal_Button` 与 ±10 的 `ui_BtnAddCrystal10_Button`/`ui_BtnReduceCrystal10_Button`；四个长按回调均在 `Awake` 里 `AddLongEventAction` 注册（**只注册一次**，界面实例复用），单击与长按共用 `ChangeCrystalNum(changeNum,isHint)`，±10 不足整档时按实际剩余/已选颗数钳制，长按传 `isHint=false` 避免刷 Toast 3000001
   - 守卫：`CheckCanChangeCrystal()` = `UIHandler.Instance.manager.CanClickUIButtons` 且研究已解锁（长按回调绕过点击门禁，必须自判）
   - **不扣费**：`crystalAddNum` 只是预览颗数，不调 `AddCrystal`/不触发 `Backpack_Crystal_Change`；真正扣除在点 Start 后由逻辑层一次性执行；`OpenUI` 里 `crystalAddNum = 0` 重置
-  - 特效：`PlayCrystalAddEffect(bool isAdd)` → `EffectHandler.ShowCreatureAscendAddProgressEffect(1, start, end)`（持久光点 `Effect_Move_1`）；添加=建筑上方 `+2.5` → 滴嘴 `GetBuildingJuicerHole()`，减少=起终点对调反向飞出
+  - 特效：`PlayCrystalAddEffect(bool isAdd, int changeNum)` 按实际变化颗数调 `EffectHandler.ShowCreatureAscendAddProgressEffect(changeNum,start,end[,isRandomEnd])`（持久光点 `Effect_Move_1`）；添加=建筑上方 `+2.5` 随机位置向滴嘴汇聚，减少=固定滴嘴向上方随机位置发散（第四参 `isRandomEnd:true`，`VFX_Move_1` 暴露 `EndPositionRandomA/B` 逐颗随机终点）
 - Start(`OnClickForStart`)：`listSelectCreature.Count==0` → `ToastHintText(61010 "请选择要榨汁的目标魔物")` 拦截；否则 → `GameHandler.Instance.StartCreatureJuicer(listSelectCreature, crystalAddNum)`
 - **Start 按钮文本** `ui_BtnStartText`（`UITextLanguageView`）：预制上 `textId = 61011`（无代码赋值）
 - `OpenUI` 关基地移动控制 `GameControlHandler.Instance.SetBaseControl(false)`
@@ -181,7 +181,7 @@ watched_files:
 | 文件 | 路径 |
 |------|------|
 | 榨汁逻辑 | Assets/Scripts/Game/Logic/CreatureJuicerLogic.cs |
-| 榨汁 UI | Assets/Scripts/Component/UI/Game/CreatureJuicer/ (UICreatureJuicer + Component) · 预制体 Assets/Resources/UI/UICreatureJuicer.prefab(魔晶加减行 CrystalAddRoot/BtnAddCrystal/CrystalAddNumText/BtnReduceCrystal，字段已序列化) |
+| 榨汁 UI | Assets/Scripts/Component/UI/Game/CreatureJuicer/ (UICreatureJuicer + Component) · 预制体 Assets/Resources/UI/UICreatureJuicer.prefab(魔晶加减行 CrystalAddRoot/BtnAddCrystal/BtnReduceCrystal/BtnAddCrystal10/BtnReduceCrystal10/CrystalAddNumText，字段已序列化) |
 | 长按组件 | Assets/FrameWork/Scripts/Component/UI/LongPressButton.cs(魔晶加减长按；`OnDisable` 复位防界面关闭后按压残留继续触发) |
 | 逻辑入口 | Assets/Scripts/Component/Handler/GameHandler.cs (`StartCreatureJuicer(List, long addCrystalNum = 0)`) |
 | 建筑出现+投入/跳出动画+榨汁流程演出 | Assets/Scripts/Component/Game/Scene/ScenePrefabForBase.cs (`#region 魔汁机`，含 BuildingJuicerAnimForCreatureJumpIn/JumpOut/BuildingJuicerPunch 及 BuildingJuicerProcessBegin/AnimForHammer/AnimForEssenceDrop/ProcessEnd) |

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
@@ -129,31 +130,28 @@ public partial class UICreatureAddAttribute : BaseUIComponent
     #region 事件
     /// <summary>
     /// 属性项加减回调: 加点需有剩余点数, 减点不能低于本次已加点数; 增减实时作用于生物属性并刷新详情。
+    /// <para>增量可为任意值(如 Max/Min 一键设置传入的极大值), 超出剩余点数或已加点数的部分会被钳制。</para>
     /// </summary>
     /// <param name="item">触发的属性项</param>
-    /// <param name="delta">增量(+1 加点 / -1 减点)</param>
+    /// <param name="delta">增量(+ 加点 / - 减点), 由本方法钳制到合法范围后落实</param>
     public void OnItemChangeForAttribute(UIViewCreatureAddAttributeItem item, int delta)
     {
-        //加点
+        //加点: 不能超过剩余点数
         if (delta > 0)
         {
-            //没有剩余点数
-            if (remainPoint <= 0)
-                return;
-            item.allocatedCount += 1;
-            remainPoint -= 1;
-            creatureData.creatureAttribute.AddAttributeForLevelUp(item.attributeType, item.addValuePerPoint);
+            delta = Mathf.Min(delta, remainPoint);
         }
-        //减点
+        //减点: 不能低于本次已加点数
         else
         {
-            //本次未对该属性加过点, 不能再减
-            if (item.allocatedCount <= 0)
-                return;
-            item.allocatedCount -= 1;
-            remainPoint += 1;
-            creatureData.creatureAttribute.AddAttributeForLevelUp(item.attributeType, -item.addValuePerPoint);
+            delta = Mathf.Max(delta, -item.allocatedCount);
         }
+        //钳制后无需变动
+        if (delta == 0)
+            return;
+        item.allocatedCount += delta;
+        remainPoint -= delta;
+        creatureData.creatureAttribute.AddAttributeForLevelUp(item.attributeType, item.addValuePerPoint * delta);
         //刷新本项数值、详情属性与剩余点数
         item.RefreshNum();
         ui_UIViewCreatureCardDetails.RefreshCard();

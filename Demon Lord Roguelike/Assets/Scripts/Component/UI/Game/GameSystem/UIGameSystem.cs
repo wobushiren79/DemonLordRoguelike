@@ -79,7 +79,7 @@ public partial class UIGameSystem : BaseUIComponent
 
     /// <summary>
     /// 根据进入类型刷新按钮显隐
-    /// 战斗模式：显示结束战斗按钮(支持重开的模式额外显示重新挑战)；基地模式：显示设置/返回/退出，隐藏结束战斗/重新挑战
+    /// 战斗模式：显示设置/结束战斗按钮(支持重开的模式额外显示重新挑战)；基地模式：显示设置/返回/退出，隐藏结束战斗/重新挑战
     /// </summary>
     public void RefreshButtonShow()
     {
@@ -95,8 +95,9 @@ public partial class UIGameSystem : BaseUIComponent
         }
         if (ui_BtnRestartFight != null)
             ui_BtnRestartFight.gameObject.SetActive(isCanRestart);
+        //设置按钮两种模式均显示(战斗中也允许调整游戏/显示/音频设置)
         if (ui_BtnSetting != null)
-            ui_BtnSetting.gameObject.SetActive(!isFight);
+            ui_BtnSetting.gameObject.SetActive(true);
         if (ui_BtnBack != null)
             ui_BtnBack.gameObject.SetActive(!isFight);
         if (ui_BtnExit != null)
@@ -164,11 +165,13 @@ public partial class UIGameSystem : BaseUIComponent
 
     /// <summary>
     /// 点击进入游戏设置
+    /// 战斗进入的设置界面关闭后返回战斗系统界面，基地进入的返回基地系统界面
     /// </summary>
     public void OnClickForGameSetting()
     {
-        var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIGameSetting>();
-        targetUI.enterType = 1;
+        //enterType 须在 OpenUI 前设置(设置界面依此决定是否暂停战斗时间)
+        UIHandler.Instance.OpenUIAndCloseOther<UIGameSetting>((ui) =>
+            ui.enterType = enterType == EnterTypeFight ? UIGameSetting.EnterTypeFight : UIGameSetting.EnterTypeBase);
     }
 
     /// <summary>

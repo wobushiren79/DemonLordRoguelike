@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
@@ -356,19 +357,19 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         ui_ViewCreatureCardItemAttribute_AddDef.gameObject.SetActive(isShowATK && isRegainDR);
         //Speed槽为 ASPD/MSPD 共用(同一生物不应同时配置两者,同时配置时优先显示攻速)
         ui_ViewCreatureCardItemAttribute_Speed.gameObject.SetActive(isShowASPD || isShowMSPD);
-        //文本只填可见槽位
+        //文本只填可见槽位，赋值后同步刷新文本父级 TextBG 的布局宽度
         if (isShowHP)
-            ui_AttributeItemText_Life.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.HP, true)}";
+            SetAttributeText(ui_AttributeItemText_Life, $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.HP, true)}");
         if (isShowDR)
-            ui_AttributeItemText_Def.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.DR, true)}";
+            SetAttributeText(ui_AttributeItemText_Def, $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.DR, true)}");
         if (isShowMP)
-            ui_AttributeItemText_MP.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MP, true)}";
+            SetAttributeText(ui_AttributeItemText_MP, $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MP, true)}");
         if (isShowMPF)
-            ui_AttributeItemText_MPR.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MPF, true)}";
+            SetAttributeText(ui_AttributeItemText_MPR, $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MPF, true)}");
         if (isShowASPD)
-            ui_AttributeItemText_Speed.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD, true)}";
+            SetAttributeText(ui_AttributeItemText_Speed, $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ASPD, true)}");
         else if (isShowMSPD)
-            ui_AttributeItemText_Speed.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MSPD, true)}";
+            SetAttributeText(ui_AttributeItemText_Speed, $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.MSPD, true)}");
         if (isShowATK)
         {
             if (isRegainHP || isRegainDR)
@@ -379,18 +380,29 @@ public partial class UIViewCreatureCardDetails : BaseUIView
                 int regainValue = (int)(creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true) * damageAddRate);
                 if (isRegainDR)
                 {
-                    ui_AttributeItemText_AddDef.text = $"{regainValue}";
+                    SetAttributeText(ui_AttributeItemText_AddDef, $"{regainValue}");
                 }
                 else
                 {
-                    ui_AttributeItemText_AddLife.text = $"{regainValue}";
+                    SetAttributeText(ui_AttributeItemText_AddLife, $"{regainValue}");
                 }
             }
             else
             {
-                ui_AttributeItemText_Atk.text = $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true)}";
+                SetAttributeText(ui_AttributeItemText_Atk, $"{(int)creatureData.GetAttribute(CreatureAttributeTypeEnum.ATK, true)}");
             }
         }
+    }
+
+    /// <summary>
+    /// 设置属性文本并立即重建文本父级布局，确保 TextBG 宽度跟随最新文本
+    /// </summary>
+    /// <param name="attributeText">属性文本</param>
+    /// <param name="value">属性值</param>
+    protected void SetAttributeText(TextMeshProUGUI attributeText, string value)
+    {
+        attributeText.text = value;
+        UGUIUtil.RefreshUISize(attributeText.transform.parent);
     }
 
     /// <summary>

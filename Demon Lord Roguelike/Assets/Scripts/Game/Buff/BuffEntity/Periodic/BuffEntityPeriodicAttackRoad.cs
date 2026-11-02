@@ -7,7 +7,7 @@ using UnityEngine;
 /// 沿道路从左向右碾压，驶到道路尽头消失；出车数=class_entity_data[0]（按馈赠等级1~5配）。</para>
 /// <para>选路规则：车数≤道路数时无放回随机抽对应条数；车数>道路数时每条路先各出1辆，多出的随机重复分配到已有道路上
 /// （同一条路可出多辆），同路的第2辆起按 staggerInterval 秒间隔错开出车防止重叠（由 UpdateBuffTime 驱动）。</para>
-/// <para>伤害 = BUFF目标(魔王)实时攻击力 × trigger_value 倍率（每辆车发车时实时取），不暴击；逐目标伤害递减由攻击模块自身处理。</para>
+/// <para>伤害 = BUFF目标(魔王)实时攻击力 × trigger_value 倍率（每辆车发车时实时取，倍率由 BuffInfo.trigger_value 配置，当前 0.5），不暴击；所有被撞目标均受相同固定伤害，不递减。</para>
 /// <para>class_entity_data 格式："车数,攻击模块ID"（如 "3,300041"）。场上无存活敌人时本轮不触发。</para>
 /// </summary>
 public class BuffEntityPeriodicAttackRoad : BuffEntityPeriodic
@@ -157,7 +157,7 @@ public class BuffEntityPeriodicAttackRoad : BuffEntityPeriodic
 
     #region 矿车发射
     /// <summary>
-    /// 向指定道路发射1辆矿车（沿路攻击模块；移动/命中/伤害递减/消失全部由攻击模式框架处理）
+    /// 向指定道路发射1辆矿车（沿路攻击模块；移动/命中/固定伤害/消失全部由攻击模式框架处理）
     /// </summary>
     protected void LaunchCart(int roadIndex)
     {
@@ -168,7 +168,7 @@ public class BuffEntityPeriodicAttackRoad : BuffEntityPeriodic
         }
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var fightData = gameFightLogic.fightData;
-        //伤害 = BUFF目标(魔王)实时攻击力 × trigger_value 倍率（每辆车发车时实时取）
+        //伤害 = BUFF目标(魔王)实时攻击力 × trigger_value 倍率（每辆车发车时实时取，所有被撞目标固定同额）
         var coreCreature = GetFightCreatureEntityForTarget();
         if (coreCreature == null || coreCreature.fightCreatureData == null)
             return;

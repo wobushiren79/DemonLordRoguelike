@@ -40,6 +40,10 @@ public partial class UICreatureJuicer : BaseUIComponent
             ui_BtnAddCrystal_LongPressButton.AddLongEventAction(OnLongPressForAddCrystal);
         if (ui_BtnReduceCrystal_LongPressButton != null)
             ui_BtnReduceCrystal_LongPressButton.AddLongEventAction(OnLongPressForReduceCrystal);
+        if (ui_BtnAddCrystal10_LongPressButton != null)
+            ui_BtnAddCrystal10_LongPressButton.AddLongEventAction(OnLongPressForAddCrystal10);
+        if (ui_BtnReduceCrystal10_LongPressButton != null)
+            ui_BtnReduceCrystal10_LongPressButton.AddLongEventAction(OnLongPressForReduceCrystal10);
     }
 
     public override void OpenUI()
@@ -243,7 +247,7 @@ public partial class UICreatureJuicer : BaseUIComponent
     }
 
     /// <summary>
-    /// 刷新魔晶加减行:研究未解锁整行隐藏;已解锁刷新颗数文本,并按魔晶余额/下限设置两按钮可点状态
+    /// 刷新魔晶加减行:研究未解锁整行隐藏;已解锁刷新颗数文本,并按魔晶余额/下限设置全部加减按钮可点状态
     /// </summary>
     public void RefreshCrystalAdd()
     {
@@ -257,14 +261,20 @@ public partial class UICreatureJuicer : BaseUIComponent
         long crystal = GameDataHandler.Instance.manager.GetUserData().crystal;
         if (ui_CrystalAddNumText != null)
             ui_CrystalAddNumText.text = $"{crystalAddNum}";
+        bool canAdd = crystalAddNum < crystal;
+        bool canReduce = crystalAddNum > 0;
         if (ui_BtnAddCrystal_Button != null)
-            ui_BtnAddCrystal_Button.interactable = crystalAddNum < crystal;
+            ui_BtnAddCrystal_Button.interactable = canAdd;
+        if (ui_BtnAddCrystal10_Button != null)
+            ui_BtnAddCrystal10_Button.interactable = canAdd;
         if (ui_BtnReduceCrystal_Button != null)
-            ui_BtnReduceCrystal_Button.interactable = crystalAddNum > 0;
+            ui_BtnReduceCrystal_Button.interactable = canReduce;
+        if (ui_BtnReduceCrystal10_Button != null)
+            ui_BtnReduceCrystal10_Button.interactable = canReduce;
     }
 
     /// <summary>
-    /// 长按添加魔晶(不逐次提示余额不足):每实际加成功一颗按 0.2 秒限频播一次支付音
+    /// 长按添加 1 颗魔晶(不逐次提示余额不足):每实际加成功一颗按 0.2 秒限频播一次支付音
     /// </summary>
     public void OnLongPressForAddCrystal()
     {
@@ -273,11 +283,28 @@ public partial class UICreatureJuicer : BaseUIComponent
     }
 
     /// <summary>
-    /// 长按减少魔晶(不逐次提示)
+    /// 长按以 10 为步进添加魔晶(不逐次提示余额不足):实际增加后按限频播放支付音
+    /// </summary>
+    public void OnLongPressForAddCrystal10()
+    {
+        if (OnClickForAddCrystal10(false))
+            PlayCrystalLongPressSound();
+    }
+
+    /// <summary>
+    /// 长按减少 1 颗魔晶(不逐次提示)
     /// </summary>
     public void OnLongPressForReduceCrystal()
     {
         OnClickForReduceCrystal(false);
+    }
+
+    /// <summary>
+    /// 长按以 10 为步进减少魔晶(不逐次提示)
+    /// </summary>
+    public void OnLongPressForReduceCrystal10()
+    {
+        OnClickForReduceCrystal10(false);
     }
 
     /// <summary>
@@ -287,20 +314,17 @@ public partial class UICreatureJuicer : BaseUIComponent
     /// <returns>颗数实际变化返回 true</returns>
     public bool OnClickForAddCrystal(bool isHint = true)
     {
-        if (!CheckCanChangeCrystal())
-            return false;
-        long crystal = GameDataHandler.Instance.manager.GetUserData().crystal;
-        if (crystalAddNum >= crystal)
-        {
-            if (isHint)
-                UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(3000001));
-            return false;
-        }
-        crystalAddNum++;
-        RefreshCrystalAdd();
-        RefreshJuicerWater();
-        PlayCrystalAddEffect(true);
-        return true;
+        return ChangeCrystalNum(1, isHint) > 0;
+    }
+
+    /// <summary>
+    /// 以 10 为步进添加魔晶:剩余可添加不足 10 颗时只加实际剩余颗数
+    /// </summary>
+    /// <param name="isHint">达到余额上限时是否提示(长按传 false 避免刷屏)</param>
+    /// <returns>颗数实际变化返回 true</returns>
+    public bool OnClickForAddCrystal10(bool isHint = true)
+    {
+        return ChangeCrystalNum(10, isHint) > 0;
     }
 
     /// <summary>
@@ -309,12 +333,53 @@ public partial class UICreatureJuicer : BaseUIComponent
     /// <param name="isHint">已达 0 时是否提示(长按传 false 避免刷屏)</param>
     public void OnClickForReduceCrystal(bool isHint = true)
     {
-        if (!CheckCanChangeCrystal() || crystalAddNum <= 0)
-            return;
-        crystalAddNum--;
+        ChangeCrystalNum(-1, isHint);
+    }
+
+    /// <summary>
+    /// 以 10 为步进减少魔晶:当前预览不足 10 颗时直接减到 0
+    /// </summary>
+    /// <param name="isHint">已达 0 时是否提示(长按传 false 避免刷屏)</param>
+    public void OnClickForReduceCrystal10(bool isHint = true)
+    {
+        ChangeCrystalNum(-10, isHint);
+    }
+
+    /// <summary>
+    /// 按指定步进改变预览魔晶颗数,并同步按钮、经验预览与对应数量的飞入/飞出光点
+    /// </summary>
+    /// <param name="changeNum">变化步进(正=添加,负=减少)</param>
+    /// <param name="isHint">达到余额上限时是否提示(长按传 false 避免刷屏)</param>
+    /// <returns>实际变化颗数(正=添加,负=减少,0=未变化)</returns>
+    protected long ChangeCrystalNum(long changeNum, bool isHint = true)
+    {
+        if (changeNum == 0 || !CheckCanChangeCrystal())
+            return 0;
+        long oldCrystalAddNum = crystalAddNum;
+        if (changeNum > 0)
+        {
+            long crystal = GameDataHandler.Instance.manager.GetUserData().crystal;
+            if (oldCrystalAddNum >= crystal)
+            {
+                if (isHint)
+                    UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(3000001));
+                return 0;
+            }
+            crystalAddNum = oldCrystalAddNum + Math.Min(changeNum, crystal - oldCrystalAddNum);
+        }
+        else
+        {
+            if (oldCrystalAddNum <= 0)
+                return 0;
+            crystalAddNum = Math.Max(0, oldCrystalAddNum + changeNum);
+        }
+        long actualChange = crystalAddNum - oldCrystalAddNum;
+        if (actualChange == 0)
+            return 0;
         RefreshCrystalAdd();
         RefreshJuicerWater();
-        PlayCrystalAddEffect(false);
+        PlayCrystalAddEffect(actualChange > 0, (int)Math.Abs(actualChange));
+        return actualChange;
     }
 
     /// <summary>
@@ -329,11 +394,12 @@ public partial class UICreatureJuicer : BaseUIComponent
     }
 
     /// <summary>
-    /// 播放魔晶飞入/飞出特效:添加=魔汁机上方飞向滴嘴,减少=滴嘴反向飞回上方
-    /// <para>复用进阶界面的持久光点粒子(Effect_Move_1),连续触发即形成「魔晶持续加入」</para>
+    /// 播放魔晶飞入/飞出特效:添加=上方随机位置向滴嘴汇聚,减少=固定滴嘴向上方随机位置发散
+    /// <para>复用进阶界面的持久光点粒子(Effect_Move_1),光点数量与实际变化魔晶颗数一致</para>
     /// </summary>
     /// <param name="isAdd">true=添加(飞入) false=减少(飞出)</param>
-    protected void PlayCrystalAddEffect(bool isAdd)
+    /// <param name="changeNum">实际变化的魔晶颗数</param>
+    protected void PlayCrystalAddEffect(bool isAdd, int changeNum)
     {
         if (scenePrefab == null || scenePrefab.objBuildingJuicer == null)
             return;
@@ -341,11 +407,11 @@ public partial class UICreatureJuicer : BaseUIComponent
         Vector3 startPosition = buildingJuicer.position + new Vector3(0, CrystalEffectStartOffsetY, 0);
         Transform juicerHole = scenePrefab.GetBuildingJuicerHole();
         Vector3 endPosition = juicerHole != null ? juicerHole.position : buildingJuicer.position + new Vector3(0, CrystalEffectEndOffsetY, 0);
-        //减少时起终点对调,表现为魔晶从魔汁机飞出
+        //回退时固定滴嘴起点,并把随机散布切到上方终点,与添加的汇聚方向完全相反
         if (isAdd)
-            EffectHandler.Instance.ShowCreatureAscendAddProgressEffect(1, startPosition, endPosition);
+            EffectHandler.Instance.ShowCreatureAscendAddProgressEffect(changeNum, startPosition, endPosition);
         else
-            EffectHandler.Instance.ShowCreatureAscendAddProgressEffect(1, endPosition, startPosition);
+            EffectHandler.Instance.ShowCreatureAscendAddProgressEffect(changeNum, endPosition, startPosition, true);
     }
 
     /// <summary>
@@ -373,9 +439,17 @@ public partial class UICreatureJuicer : BaseUIComponent
         {
             OnClickForAddCrystal();
         }
+        else if (viewButton == ui_BtnAddCrystal10_Button)
+        {
+            OnClickForAddCrystal10();
+        }
         else if (viewButton == ui_BtnReduceCrystal_Button)
         {
             OnClickForReduceCrystal();
+        }
+        else if (viewButton == ui_BtnReduceCrystal10_Button)
+        {
+            OnClickForReduceCrystal10();
         }
     }
 

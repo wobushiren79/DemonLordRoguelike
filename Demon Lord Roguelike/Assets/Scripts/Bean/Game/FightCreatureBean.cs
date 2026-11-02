@@ -56,8 +56,11 @@ public class FightCreatureBean
     /// <summary>
     /// 重置数据
     /// </summary>
-    public void ResetData()
+    /// <param name="intensityRate">本次生效的强度倍率(默认1=不提升；敌人由 CreateAttackCreature 传入本关倍率，对象池复用不会沿用上一只生物的残留值)</param>
+    public void ResetData(float intensityRate = 1f)
     {
+        //强度倍率随本次重置显式赋值：池化复用时不继承上一只生物的值
+        this.intensityRate = intensityRate;
         //刷新一下基础属性
         RefreshBaseAttribute();
         HPCurrent = (int)GetAttribute(CreatureAttributeTypeEnum.HP);

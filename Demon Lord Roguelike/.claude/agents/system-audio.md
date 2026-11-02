@@ -59,7 +59,7 @@ watched_files:
 ### 限频音效 (PlaySoundForInterval) — 同一音效最小播放间隔
 - **用途**：长按重复触发、连续刷屏类反馈音，高频触发直接连播会糊成一片噪音。**限频状态统一放 AudioHandler，业务代码不要自己记时间戳**（否则每个调用点各抄一份，间隔口径会走样）。
 - **API**：框架层 `PlaySoundForInterval(long id, float interval, AudioSource audioSource=null)` → 返回本次是否真的播了；游戏层 `AudioEnum` 同名重载。`interval<=0` 或 `id==0` 直接返回 false。
-- **实现**：`dicTimeForIntervalSound`（key=音频 id，value=上次允许播放的 `Time.unscaledTime`）判最小间隔；用 unscaledTime 故不受 timeScale（战斗暂停/加速）影响。与 `PlaySound` 内建的 0.1s 同 id 防抖**独立并存**。
+- **实现**：`dicTimeForLastPlaySound`（key=音频 id，value=上次允许播放的 `Time.unscaledTime`）+ `TryPassRepeatSoundCheck` 判最小间隔；用 unscaledTime 故不受 timeScale（战斗暂停/加速）影响。与 `PlaySound` 内建的 0.1s 防抖**共用同一份时间记录**——默认防抖也按 id 各自计时（`A→B→A` 第三声同样丢弃），`PlaySoundForInterval` 通过判定后直接实际播放，不会被默认 0.1s 二次拦截；间隔小于 0.1s 时以显式 interval 为准。
 - **间隔取值坑**：长按回调（`LongPressButton`）按整帧累加触发，配置 0.1s 实际是 0.1~0.12s/次；要在其上实现「约每 0.2s 响一声」应传 **0.15**，传 0.2 会因差几毫秒退化成每 0.3s 才响一次。
 - **消费方**：`UICreatureJuicer`（长按加魔晶 `sound_pay_2`）、`UICreatureVat`（长按魔晶加速 `sound_pay_2`）。
 

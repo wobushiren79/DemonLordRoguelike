@@ -19,7 +19,7 @@ metadata:
 - **音量跟随 soundVolume**(不加 loopVolume/滑条)；最终音量=soundVolume×配置volume_scale。
 - **异步竞态防护(核心)**：PlayLoopSound 先登记 pending entry(source=null,token=++seed) 占位→ContainsKey 即去重；加载回调校验 `dicLoopActive[id]==entry && !canceled && token 未变` 才 DequeueLoopSource 起播；StopLoopSound 对加载中 id 置 canceled→回调丢弃。防"停请求先于加载回调→孤儿音源停不掉"。
 - **暂停不误启**：PauseAllLoopSound 只暂停当前 isPlaying 的源并记入 `listLoopPaused`，Restore 只 UnPause 这批。
-- 不碰一次性音效防抖变量(lastPlaySoundId/timeUpdateForRepeatPlay)。
+- 不碰一次性音效的重复播放判定(`dicTimeForLastPlaySound`/`TryPassRepeatSoundCheck`)，去重只靠 `dicLoopActive`。
 
 **游戏层改动**：
 - `AudioHandler`(游戏 partial)：`AudioEnum` 重载 PlayLoopSound(×2)/StopLoopSound/IsLoopSoundPlaying。

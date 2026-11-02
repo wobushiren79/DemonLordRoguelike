@@ -320,11 +320,10 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             ? GetFightCreatureData(creatureSnapshot, CreatureFightTypeEnum.FightAttack)
             : GetFightCreatureData(npcInfo, CreatureFightTypeEnum.FightAttack);
         fightCreatureData.positionCreate = new Vector3Int(0, 0, targetRoad);
-        //应用强度倍率(征服模式敌人含BOSS按关卡递增强度; 改变 HP/护甲/攻击力 并刷新当前血量护甲)
+        //应用强度倍率(征服模式敌人含BOSS按关卡递增强度; ResetData 传参写入倍率并重算 HP/护甲/攻击力；倍率=1 时 SetData 已按默认1复位)
         if (intensityRate != 1f)
         {
-            fightCreatureData.intensityRate = intensityRate;
-            fightCreatureData.ResetData();
+            fightCreatureData.ResetData(intensityRate);
         }
 
         FightCreatureEntity fightCreatureEntity = GetFightCreatureEntity(targetObj, fightCreatureData);

@@ -433,6 +433,8 @@ public void SpawnAttackCreature(AttackDetailData detailData)
 
 > **生物快照创建**：`FightAttackDetailsBean.creatureSnapshots`（与 `npcIds` 按下标对应，元素可为空）非空时，`CreateAttackCreature(npcId..., creatureSnapshot)` 直接用该 CreatureBean 创建（同皮肤/同装备/同属性），不再按 npcId 重建——首用于终焉议会暴力说服战斗（议员与议会场景同一只）。
 
+> **敌人强度倍率**：`CreateAttackCreature(..., intensityRate)` 取到战斗数据后调 `fightCreatureData.ResetData(intensityRate)`；`FightCreatureBean.ResetData(float intensityRate = 1f)` 进入即先写倍率再重算 HP/护甲/攻击力，默认 1——**复位点只在这里**，对象池复用不会沿用上一只生物的倍率（防守生物/魔王恒为 1，2026-11 修复池残留导致进 BOSS 关突然变脆）。
+
 > **NPC 随机装备**：NPC 创建（`CreatureBean.SetData(NpcInfoBean)`）在 `InitEquip` 后追加 `InitRandomEquip(npcInfo)`——NPC 配置了 `NpcInfo.equip_random`（`池ID,稀有度...`）时按池类型分支：散件池（`random_type=1`，`equip_random_data` 按 ItemType 分组）每槽经 `CanEquipItem` 过滤后「空+可装备道具」等概率抽 1 件（裸体率=1/(可装备数+1)）、稀有度每件独立抽；套装池（`random_type=2`，池内为 EquipSuitInfo 套装id）走 `InitRandomEquipForSuit`——`GetRandomEquipSuit` 筛整套可装备（`EquipSuitInfoBean.CanEquipFor`）的套装等概率整套抽 1 套、**稀有度整套统一 roll 一次**。两者均只填空槽（固定装备优先）、走 `EquipUtil.CreateEquipItemForNpc` 生成器(NPC随机装备场景)。首用于终焉议会随机议员（详见 doom-council-system / item-system）。
 
 ### 创建防守生物（玩家操作）
