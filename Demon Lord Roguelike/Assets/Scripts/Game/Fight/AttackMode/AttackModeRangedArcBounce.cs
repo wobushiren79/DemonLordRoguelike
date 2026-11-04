@@ -8,7 +8,7 @@ using UnityEngine;
 /// 直到弹跳次数耗尽或附近无可弹跳目标时销毁。每段均为抛物线（需求：弹跳也以抛物线处理弹道）。</para>
 /// <para>追踪：目标存活时每帧将目标点跟随其当前位置（敌人移动不落空）；目标中途死亡则飞到最后已知位置，落地无碰撞即销毁。</para>
 /// <para>命中规则：每段仅**下落阶段**（progress≥0.5，抛物线顶点之后）才检测命中，上升阶段不命中敌人（继承 Arc 的后半程检测规则，progress 每段重置故天然分段生效）；
-/// 同一斧头全程去重（已命中目标直接穿过不重复结算）；伤害逐目标减半保底1；落地时锁定目标仍存活未命中则强制结算（追踪保底）。</para>
+/// 同一斧头全程去重（已命中目标直接穿过不重复结算）；每次命中按初始伤害减少 hit_decay_step 配置比例，最低为初始伤害的 hit_min_rate 配置比例且至少1点；落地时锁定目标仍存活未命中则强制结算（追踪保底）。</para>
 /// <para>弹跳目标：以被命中者为圆心 1 单位距离内的存活敌人随机取 1（排除已命中者），无候选则不弹跳。</para>
 /// <para>分段节奏：分段时长 = max(距离/速度, MinSegmentTime=0.5s)——水平方向按距离归一化保证恒定世界速度，
 /// 但抛物线竖直速度∝弧高/距离，1 格弹跳若按距离折算仅 ~0.125s（竖直速度数倍于首段、观感比首段还快），故用时长下限托底；
@@ -50,6 +50,10 @@ public class AttackModeRangedArcBounce : AttackModeRangedArc
     private float currentArcHeight;
     /// <summary>当前分段弹跳搜索半径（发射时从攻击模块配置 collider_area_size.x 读取，默认 1 单位）</summary>
     private float bounceSearchRadius = 1f;
+    /// <summary>本把斧头的初始伤害（线性递减统一以此为基准，避免按当前伤害连乘）</summary>
+    private int originalDamage;
+    /// <summary>本把斧头已结算的命中次数（决定下一击的线性递减档位）</summary>
+    private int hitCount;
     #endregion
 
     #region 初始化外形
@@ -73,6 +77,8 @@ public class AttackModeRangedArcBounce : AttackModeRangedArc
     public override void StartAttackBase()
     {
         base.StartAttackBase();
+        originalDamage = attackModeData.attackerDamage;
+        hitCount = 0;
         hitCreatureIds.Clear();
         listBounceCandidate.Clear();
         bounceCurrent = 0;
@@ -204,12 +210,14 @@ public class AttackModeRangedArcBounce : AttackModeRangedArc
     }
 
     /// <summary>
-    /// 命中结算：扣血 → 伤害减半(保底1) → 击中特效 → 去重登记 → 弹跳决策（次数耗尽或无候选则销毁，否则开启新分段）
+    /// 命中结算：扣血 → 按初始伤害线性减少配置比例(最低配置比例且至少1) → 击中特效 → 去重登记 → 弹跳决策（次数耗尽或无候选则销毁，否则开启新分段）
     /// </summary>
     public override void HandleForHitTarget(FightCreatureEntity fightCreatureEntity)
     {
         fightCreatureEntity.UnderAttack(this);
-        attackModeData.attackerDamage = Math.Max(MinDamage, attackModeData.attackerDamage / 2);
+        hitCount++;
+        float nextDamageRate = Mathf.Max(attackModeInfo.GetHitMinRate(), 1f - attackModeInfo.GetHitDecayStep() * hitCount);
+        attackModeData.attackerDamage = Math.Max(MinDamage, (int)(originalDamage * nextDamageRate));
         PlayEffectForHit(fightCreatureEntity.creatureObj.transform.position);
         hitCreatureIds.Add(fightCreatureEntity.fightCreatureData.creatureData.creatureUUId);
 
@@ -278,6 +286,8 @@ public class AttackModeRangedArcBounce : AttackModeRangedArc
     {
         bounceMax = 0;
         bounceCurrent = 0;
+        originalDamage = 0;
+        hitCount = 0;
         currentTarget = null;
         currentTargetUUId = null;
         hitCreatureIds.Clear();

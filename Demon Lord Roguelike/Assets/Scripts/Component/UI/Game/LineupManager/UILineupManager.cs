@@ -102,7 +102,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         listShowCardLineup.Clear();
         //清除所有title
         ui_LineupIndexTitle.DestroyAllChild();
-        //保存一下用户数据
+        //关闭时兜底保存(上阵/下阵/换位/清空已各自即时落盘,这里防未来新增操作漏存)
         GameDataHandler.Instance.manager.SaveUserData();
         base.CloseUI();
     }
@@ -619,7 +619,7 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
     }
 
     /// <summary>
-    /// 清空当前阵容的所有魔物(与单卡移除一致,由 CloseUI 统一落盘)
+    /// 清空当前阵容的所有魔物(逐个移除后统一落盘一次,与单卡移除口径一致)
     /// </summary>
     public void CleanCurrentLineup()
     {
@@ -630,6 +630,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
         {
             userData.RemoveLineupCreature(currentLineupIndex, creatureUUId);
         }
+        //清空后统一落盘(仅一次,避免逐只写盘)
+        GameDataHandler.Instance.manager.SaveUserData();
         //移除所有展示中的阵容卡片
         RemoveLineupCardShow();
         //刷新背包卡片选中状态
@@ -687,6 +689,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
                 return;
             }
             userData.AddLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureUUId);
+            //上阵即时落盘(防强退/异常路径丢失;CloseUI 仍保留兜底保存)
+            GameDataHandler.Instance.manager.SaveUserData();
             //刷新背包里的卡片
             ui_UIViewCreatureCardList.RefreshCardByIndex(targetView.cardData.indexList);
             //增加阵容卡
@@ -700,6 +704,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
             //操作点=被移除卡片的原槽位(删除后数据中已查不到,必须先取)
             int removedPosIndex = userData.GetLineupCreaturePosIndex(currentLineupIndex, targetView.cardData.creatureData.creatureUUId);
             userData.RemoveLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureUUId);
+            //下阵即时落盘(同单卡上阵)
+            GameDataHandler.Instance.manager.SaveUserData();
             //刷新背包里的卡片
             ui_UIViewCreatureCardList.RefreshCardByCreatureUUId(targetView.cardData.creatureData.creatureUUId);
             //移除阵容卡
@@ -731,6 +737,8 @@ public partial class UILineupManager : BaseUIComponent, IRadioGroupCallBack
             focusPosIndex = GetLineupDropPosIndex(targetView.transform.localPosition.x, totalCard);
             var userData = GameDataHandler.Instance.manager.GetUserData();
             userData.MoveLineupCreature(currentLineupIndex, targetView.cardData.creatureData.creatureUUId, focusPosIndex);
+            //拖拽换位即时落盘(防止拖完直接强退丢失槽位顺序)
+            GameDataHandler.Instance.manager.SaveUserData();
             //换位后按新槽位重排展示列表,让层级跟随视觉位置(最右最上),避免拖拽卡残留旧层级
             SortShowCardLineupByPos();
         }

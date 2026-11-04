@@ -249,6 +249,7 @@ UICreatureAddAttribute (BaseUIComponent)   升级加点(成功后弹出)
 > - **失败**：`StartSacrifice` 掷骰判定失败后，会在动画播放前就调用 `SettleSacrificeData(false)` 结算并立即 `SaveUserData()` 落盘，防止玩家在动画期间强退、规避祭品消耗与保底累积后重新献祭。
 > - **成功**：结算 (`SettleSacrificeData(true)`) 延后到动画结束的 `OnSacrificeAnimEnd` 里执行，且**成功时 `SettleSacrificeData` 内部不落盘**(只改内存：扣祭品+升级)。真正落盘统一延后到玩家在加点界面 `UICreatureAddAttribute` 确认后回调的 `SaveAndEndGame`(无加点数时直接 `SaveAndEndGame`)。这样玩家在加点界面强退则本次成功结算全部不写盘、祭品自然恢复，**避免祭品已扣、加点未存的亏损**。
 > 改结算时机/落盘逻辑须同时顾及这两条分支：失败落盘在 `SettleSacrificeData` 内(`!isSuccess` 条件)，成功落盘在 `SaveAndEndGame`。
+> ⚠️ **禁止在 `UICreatureManager.CloseUI` 统一落盘**：升级药水流程经 `OpenUIAndCloseOther<UICreatureAddAttribute>` 会触发管理页 `CloseUI`，此时「扣道具+升级」已改内存但加点未确认，提前保存会把中间态永久写入；装备/卸下已改为在 `SetCreatureEquip`/`UnloadCreatureEquip` 内即时落盘（见 creature-card-system Skill）。
 
 ### 调不同 id 成功率
 不同 id 祭品成功率由研究 `UnlockEnum.SacrificeDifferentIdRate` 驱动：改 `UserUnlockBean.GetUnlockSacrificeDifferentIdRate()`(每级系数)；公式如何应用(per-fodder/等级差修正叠加)改 `CreatureUtil.GetSacrificeFoddersRate`。

@@ -75,5 +75,9 @@ public partial class UIDialogOrderFilter
 
     public UIViewDialogOrderFilterItem ui_UIViewDialogOrderFilterItem_Type_5;
 
+    public TextMeshProUGUI ui_PriorityText;
+
+    public RectTransform ui_PriorityShow;
+
 
 }

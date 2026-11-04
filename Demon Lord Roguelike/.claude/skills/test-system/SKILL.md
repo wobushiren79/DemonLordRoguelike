@@ -27,7 +27,7 @@ LauncherTest                    - 测试启动器，初始化测试数据并提�
 ├── UITestConsole               - 游戏内日志控制台
 └── 测试UI们
     ├── UITestBase              - GM工具面板(F12, 预制体版)
-    ├── TestGameMasterGUI       - GM工具面板(F11, 纯IMGUI代码版, 不依赖预制; 含Mod道具区)
+    ├── TestGameMasterGUI       - GM工具面板(F11, 纯IMGUI代码版, 不依赖预制; 含装备区/Mod道具区)
     ├── TestCreatureCardGUI     - 卡片编辑器(稀有度/等级/生物/NPC/颜色 + 图标/模型尺寸校准, 纯IMGUI代码版, 不依赖预制)
     ├── TestTransformPotionGUI  - Mod幻化药测试(四页签: 单个预览/小卡列表/大卡列表/场景列表, 分页网格批量展示+悬停滚轮缩放/拖拽位置+小卡/大卡列表项[详情]按钮打开游戏生物展示弹窗UIDialogCreatureShow看幻化形象与骨架全部动画[点动画名即播放],打开期间隐藏测试面板防遮挡,关闭自动恢复+场景列表Alt+滚轮或滑动条调亮度(show_brightness 域30%~200%,1=原亮度,<1调暗/>1调亮,亮原按钮回配置值)+「⇪粘贴剪贴板到全部场景项」一键把剪贴板world_data套用到当前筛选全部项(同MOD骨架大小相近免逐项粘贴,2026-10-08起)+测试场景下拉加载(基地+FightSceneCfg各行真实场景光照预览)+一键保存全部修改回Mod, 纯IMGUI代码版, 不依赖预制; 键值细节见 other-spine-mod skill)
     └── UIBaseResearchTest      - 研究节点坐标配置
@@ -322,7 +322,7 @@ userUnlockData.AddUnlock((long)UnlockEnum.ChallengeHundredBossRate, 4);
 
 ## GM GUI 面板 (F11, TestGameMasterGUI)
 
-`TestGameMasterGUI`（`Assets/Scripts/Component/UI/Test/TestGameMasterGUI.cs`）——纯代码 IMGUI 版 GM 面板（不依赖预制），在**基地主页面按 F11 打开、再按 F11 关闭**（`TestGameMasterGUI.Toggle()`）。与 F12 的预制体版 `UITestBase` 功能完全对齐，显示与交互做了优化（分区/下拉/滑条/状态栏），道具区支持按ID/按类型选择双模式，并新增 Mod 道具区。全部下拉(生物/稀有度/Mod/道具类型/道具)互斥展开，开一个关其他。
+`TestGameMasterGUI`（`Assets/Scripts/Component/UI/Test/TestGameMasterGUI.cs`）——纯代码 IMGUI 版 GM 面板（不依赖预制），在**基地主页面按 F11 打开、再按 F11 关闭**（`TestGameMasterGUI.Toggle()`）。与 F12 的预制体版 `UITestBase` 功能完全对齐，显示与交互做了优化（分区/下拉/滑条/状态栏），道具区支持按ID/按类型选择双模式，新增装备区与 Mod 道具区。全部下拉(生物/稀有度/Mod/道具类型/道具/装备职业/装备类型/装备稀有度)互斥展开，开一个关其他。
 
 ### 打开方式与门控
 
@@ -336,6 +336,7 @@ userUnlockData.AddUnlock((long)UnlockEnum.ChallengeHundredBossRate, 4);
 |------|------|
 | 资源 | 魔晶/声望：数量输入(空=999999) + 添加 |
 | 道具 | 双模式切换：①按ID添加=道具ID输入(空=全部道具) + 添加，按类型分流(`AddItemByType`)：装备每种稀有度(N~L)各一（`EquipUtil.CreateEquipItemForTest`），非装备(幻化药等)仅1件无属性；②按类型选择=道具类型下拉(`EnsureItemTypeOptions` 懒加载, 按配置表实际出现的 item_type 分组, 中文名由 `GetItemTypeName` 写死映射, 兼容魔晶1000与Mod自定义类型)→该类型道具下拉(id+名字, 按id升序)→数量输入(空=1, 上限999) + 添加(`AddItemBySelection`)：装备每种稀有度各N件，非装备N件走 `AddBackpackItem(itemId, num)` 自动堆叠(魔晶经 `AddBackpackItemForSpecial` 转货币) |
+| 装备 | 职业下拉(`EnsureEquipProfessionOptions` 懒加载, 仅 `creature_type==GashaponMachine` 抽卡职业 1001~7004)→装备类型下拉(`EnsureEquipTypeOptions` 按该职业 `equip_items_type` 重建, 仅帽/衣/裤/鞋/鼻环/戒指/武器)→稀有度下拉(1N~6L)→数量输入(空=1, 上限999)+添加(`AddEquip`)。候选池 `GetEquipRewardPool`=全装备表中「职业可装备(`CanEquipForCreature`: 类型+模组+武器类型) + 指定装备类型 + `reward_rarity` 白名单」；每件独立随机取池内一件，走 `EquipUtil.CreateEquipItemForReward`(属性条数=稀有度、加点数=`RarityInfoCfg.equip_attribute_add`，同通关奖励)；池为空报错不兜底魔晶 |
 | 生物 | 添加所有生物；测试生物=生物下拉(懒加载 CreatureInfoCfg)+手动ID(合法优先) + 稀有度下拉(随机/1N~6L) + 等级(随机开关+0~10滑条)，走孕育同款随机稀有度BUFF |
 | 解锁 | 解锁ID输入(空=全部，有研究配置按满级) + 世界难度解锁一半/全部（逻辑同 UITestBase） |
 | Mod 道具 | Mod下拉 + 添加该 Mod 全部道具（装备每稀有度各一，非装备仅1件） |
@@ -900,7 +901,7 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 测试战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForTest.cs`（fightAttackDataRemark 进攻数据备份；testAbyssalBlessingIds 测试馈赠目标行id列表，由 GameFightLogicTest 在防守核心创建后统一添加；testDemonLordMP 测试魔王蓝量，由 GameFightLogicTest 统一应用并同步提升 MP 上限；dicTestDefenseFixedAttribute 测试防守方固定属性=基础值替换，作用于卡片魔物+魔王核心，MP 被固定时蓝量设置让位） |
 | 测试控制台 | `Assets/FrameWork/Scripts/Component/UI/UITestConsole.cs` |
 | 测试基础 UI | `Assets/Scripts/Component/UI/Test/UITestBase.cs` + `UITestBaseComponent.cs`（F12 预制体版 GM 面板） |
-| GM GUI 面板 | `Assets/Scripts/Component/UI/Test/TestGameMasterGUI.cs`（F11 纯代码 IMGUI 版 GM 面板：`Toggle()` 开关；资源/道具/生物/解锁/Mod 道具五分区+状态栏；道具区双模式=按ID添加(空=全部)/按类型选择(类型下拉按 item_type 分组→道具下拉→数量空=1上限999，装备每稀有度各N件/非装备N件堆叠)；打开时 `EnableAllControl(false)` 销毁时 `SetBaseControl()`；Mod 道具按 `id/10^14==modId` 号段过滤 ItemsInfoCfg；已注册进 `LauncherTest.ClearTestGUIs()`） |
+| GM GUI 面板 | `Assets/Scripts/Component/UI/Test/TestGameMasterGUI.cs`（F11 纯代码 IMGUI 版 GM 面板：`Toggle()` 开关；资源/道具/装备/生物/解锁/Mod 道具六分区+状态栏；道具区双模式=按ID添加(空=全部)/按类型选择(类型下拉按 item_type 分组→道具下拉→数量空=1上限999，装备每稀有度各N件/非装备N件堆叠)；装备区=职业(抽卡生物)→该职业可装备类型→稀有度(N~L)→数量，候选池按通关奖励规则(职业可装备+装备类型+reward_rarity 白名单)随机，`EquipUtil.CreateEquipItemForReward` 生成；打开时 `EnableAllControl(false)` 销毁时 `SetBaseControl()`；Mod 道具按 `id/10^14==modId` 号段过滤 ItemsInfoCfg；已注册进 `LauncherTest.ClearTestGUIs()`） |
 | 卡片编辑器测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForCreatureCardEditor`） |
 | 卡片编辑器测试面板 | `Assets/Scripts/Component/UI/Test/TestCreatureCardGUI.cs`（纯代码 IMGUI + 实例化真实卡片预制体 UIViewCreatureCardItem/UIViewCreatureCardDetails；稀有度/等级/生物/NPC 下拉+手动ID；场景Spine展示：世界空间并排标准模型(固定2001骷髅战士)+目标模型(缩放=size_spine×体型倍率,主相机侧视取景到屏幕底部,10x10地平面基准,面板带显隐开关与大小数值行; spine=根节点摆放+Renderer子节点承载缩放/位置, 与 SetCreatureData 的世界位置恒管理兼容)；图标/模型尺寸校准：小卡/大卡图标缩放与锚点位置+场景模型 size_spine(FloatEditState 滑条+文本双向同步)，保存写回 excel_creature_model 的 ui_data_s/ui_data_b/size_spine + ExcelToJsonItem + 反射清 Cfg 缓存（原 UITestCard「显示卡片」已删除并入）；自定义板色(渐变)/等级色：RGB滑条+RGB数值输入(0~255)+Hex输入+16色调色盘(ColorEditState 双向同步)；保存写回 excel_rarity_info/excel_level_info + ExcelToJsonItem + 反射清 Cfg 缓存） |
 | Mod幻化药测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForTransformPotionTest`） + `Assets/Editor/GameTestEditor.cs`（`DrawTransformPotionTest`/`EnsureTransformPotionOptions` 下拉候选仅 Play 模式构建, 选择索引 EditorPrefs 持久化） |

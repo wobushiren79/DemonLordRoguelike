@@ -6,6 +6,7 @@ public static class FightCreatureSearchUtil
     /// <summary>
     /// 搜索离自己最近的目标
     /// </summary>
+    /// <param name="selfCreature">搜索者自己：回复系索敌（RoadAllyHPOrDRNoMax）中作为兜底候选排在列表末尾（其他目标优先，无其他可治疗目标时才选中自己），其他搜索类型不使用</param>
     public static List<FightCreatureEntity> FindCreatureEntity
     (
         CreatureSearchType searchType,
@@ -15,7 +16,7 @@ public static class FightCreatureSearchUtil
         Vector3 halfEx,
         float searchRange = 1,
         int searchRoadIndex = 1,
-        FightCreatureEntity excludeCreature = null
+        FightCreatureEntity selfCreature = null
     )
     {
         int searchLayoutInfo;
@@ -49,8 +50,8 @@ public static class FightCreatureSearchUtil
                 return FindCreatureEntityByArea(searchType, searchCreatureFightType, direction, startSearchPosition, halfEx, searchRange, searchLayoutInfo);
 
             case CreatureSearchType.RoadAllyHPOrDRNoMax:
-                //同一路友军搜索（回复系索敌，不走物理检测；排除自己，只留 生命或护甲任一不满 者）
-                return FindCreatureEntityByRoadForAlly(searchType, searchCreatureFightType, searchRoadIndex, excludeCreature);
+                //同一路友军搜索（回复系索敌，不走物理检测；只留 生命或护甲任一不满 者，自己作为兜底候选排最后）
+                return FindCreatureEntityByRoadForAlly(searchType, searchCreatureFightType, searchRoadIndex, selfCreature);
 
             case CreatureSearchType.DisMinByAll:
                 //所有生物距离最最近的
@@ -70,6 +71,155 @@ public static class FightCreatureSearchUtil
         }
         return null;
     }
+
+    #region 指定目标搜索与距离候选共用
+    /// <summary>
+    /// 检查指定生物是否仍命中搜索：距离遍历类型仅取消最近/最远单选，其余候选条件与原搜索一致。
+    /// <para>Dis 系沿用原距离搜索口径，不使用 searchRange 数值过滤；UUID 不符时先返回 false，不执行候选搜索。</para>
+    /// </summary>
+    /// <param name="targetCreature">需要确认仍在搜索候选中的目标</param>
+    /// <param name="snapshotUUId">锁定目标时的 creatureUUId 快照，防止实体池复用误判</param>
+    public static bool CheckCreatureEntityInSearchResult
+    (
+        CreatureSearchType searchType,
+        CreatureFightTypeEnum searchCreatureFightType,
+        FightCreatureEntity targetCreature,
+        string snapshotUUId,
+        Vector3 startSearchPosition,
+        Vector3 direction,
+        Vector3 halfEx,
+        float searchRange = 1,
+        int searchRoadIndex = 1,
+        FightCreatureEntity selfCreature = null
+    )
+    {
+        //身份校验先于候选搜索，目标死亡、回收或 UUID 变化时无需遍历
+        if (!CheckCreatureEntityIdentity(targetCreature, snapshotUUId))
+            return false;
+        List<FightCreatureEntity> listTargetCreature;
+        bool isDisSearch;
+        switch (searchType)
+        {
+            case CreatureSearchType.DisMinByAll:
+            case CreatureSearchType.DisMaxByAll:
+                listTargetCreature = GetCreatureEntityForDisByAll(searchCreatureFightType);
+                isDisSearch = true;
+                break;
+            case CreatureSearchType.DisMinByRoad:
+            case CreatureSearchType.DisMinByRoadAdjacentUpDown:
+            case CreatureSearchType.DisMaxByRoad:
+            case CreatureSearchType.DisMaxByRoadAdjacentUpDown:
+                listTargetCreature = GetCreatureEntityForDisByRoad(searchRoadIndex, searchType, searchCreatureFightType);
+                isDisSearch = true;
+                break;
+            default:
+                //非距离搜索直接复用原完整结果，不复制射线/范围规则
+                listTargetCreature = FindCreatureEntity(searchType, searchCreatureFightType, startSearchPosition, direction, halfEx, searchRange, searchRoadIndex, selfCreature);
+                isDisSearch = false;
+                break;
+        }
+        if (listTargetCreature.IsNull())
+            return false;
+        if (isDisSearch)
+            return CheckCreatureEntityForDis(listTargetCreature, startSearchPosition, direction, targetCreature);
+        for (int i = 0; i < listTargetCreature.Count; i++)
+        {
+            if (ReferenceEquals(listTargetCreature[i], targetCreature))
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 校验跨帧目标身份：目标存活、表现对象存在且当前 UUID 与锁定快照一致。
+    /// </summary>
+    private static bool CheckCreatureEntityIdentity(FightCreatureEntity targetCreature, string snapshotUUId)
+    {
+        if (targetCreature == null || string.IsNullOrEmpty(snapshotUUId))
+            return false;
+        return !targetCreature.IsDead() && targetCreature.creatureObj != null
+            && targetCreature.fightCreatureData?.creatureData?.creatureUUId == snapshotUUId;
+    }
+
+    /// <summary>
+    /// 在距离搜索候选中检查指定目标，跳过距离计算与最近/最远排名。
+    /// </summary>
+    private static bool CheckCreatureEntityForDis(List<FightCreatureEntity> listCreature, Vector3 startSearchPosition, Vector3 direction, FightCreatureEntity targetCreature)
+    {
+        for (int i = 0; i < listCreature.Count; i++)
+        {
+            var itemTargetEntity = listCreature[i];
+            if (ReferenceEquals(itemTargetEntity, targetCreature) && IsCreatureMatchSearchDirection(itemTargetEntity, startSearchPosition, direction))
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 获取距离路径搜索的候选生物，与原 FindCreatureEntityForDisByRoad 共用同一路径口径。
+    /// </summary>
+    private static List<FightCreatureEntity> GetCreatureEntityForDisByRoad(int roadIndex, CreatureSearchType creatureSearchType, CreatureFightTypeEnum searchCreatureFightType)
+    {
+        var gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
+        List<FightCreatureEntity> listTargetCreature = null;
+        if (searchCreatureFightType == CreatureFightTypeEnum.FightAttack)
+        {
+            if (creatureSearchType == CreatureSearchType.DisMinByRoadAdjacentUpDown)
+            {
+                listTargetCreature = gameFightLogic.fightData.GetAttackCreatureByRoad(new List<int> { roadIndex - 1, roadIndex + 1 });
+            }
+            else
+            {
+                listTargetCreature = gameFightLogic.fightData.GetAttackCreatureByRoad(roadIndex);
+            }
+        }
+        else if (searchCreatureFightType == CreatureFightTypeEnum.FightDefense)
+        {
+            if (creatureSearchType == CreatureSearchType.DisMinByRoadAdjacentUpDown)
+            {
+                listTargetCreature = gameFightLogic.fightData.GetDefenseCreatureByRoad(new List<int> { roadIndex - 1, roadIndex + 1 });
+            }
+            else
+            {
+                listTargetCreature = gameFightLogic.fightData.GetDefenseCreatureByRoad(roadIndex);
+            }
+        }
+        return listTargetCreature;
+    }
+
+    /// <summary>
+    /// 获取全场距离搜索的候选生物，与原 FindCreatureEntityForDisByAll 共用同一数据来源。
+    /// </summary>
+    private static List<FightCreatureEntity> GetCreatureEntityForDisByAll(CreatureFightTypeEnum searchCreatureFightType)
+    {
+        var gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
+        DictionaryList<string, FightCreatureEntity> dicTargetCreature = null;
+        if (searchCreatureFightType == CreatureFightTypeEnum.FightAttack)
+        {
+            dicTargetCreature = gameFightLogic.fightData.dlAttackCreatureEntity;
+        }
+        else if (searchCreatureFightType == CreatureFightTypeEnum.FightDefense)
+        {
+            dicTargetCreature = gameFightLogic.fightData.dlDefenseCreatureEntity;
+        }
+        return dicTargetCreature.List;
+    }
+
+    /// <summary>
+    /// 判断候选生物是否存活且位于指定方向，等号边界与原距离搜索一致。
+    /// </summary>
+    private static bool IsCreatureMatchSearchDirection(FightCreatureEntity itemTargetEntity, Vector3 startSearchPosition, Vector3 direction)
+    {
+        if (itemTargetEntity == null || itemTargetEntity.IsDead())
+            return false;
+        var creatureObj = itemTargetEntity.creatureObj;
+        if (direction.x > 0)
+        {
+            return creatureObj.transform.position.x >= startSearchPosition.x;
+        }
+        return creatureObj.transform.position.x <= startSearchPosition.x;
+    }
+    #endregion
 
     /// <summary>
     /// 找寻生物-射线
@@ -205,20 +355,29 @@ public static class FightCreatureSearchUtil
 
     /// <summary>
     /// 找寻同一路的友军生物（回复系索敌：愈之魅魔 RoadAllyHPOrDRNoMax）：
-    /// 遍历搜索者所在路线的同阵营生物，筛选 存活 + 生命或护甲任一不满 + 排除搜索者自己，返回全部命中（调用方取 [0]）
+    /// 遍历搜索者所在路线的同阵营生物，筛选 存活 + 生命或护甲任一不满；
+    /// 搜索者自己满足条件时作为兜底候选追加到列表末尾——其他受伤友军优先，只有没有其他可治疗目标时才会选中自己（自奶）。
+    /// <para>友军阵营取搜索者实际所在阵营：攻击索敌配置 attack_search_creature_fight_type 是「要攻击的目标阵营」，
+    /// 治疗不能套用（议会愈之魅魔作为进攻方时配置=防守方，按配置会治疗玩家）；selfCreature 为空时回退原参数。</para>
+    /// 返回全部命中（调用方取 [0]）
     /// </summary>
-    public static List<FightCreatureEntity> FindCreatureEntityByRoadForAlly(CreatureSearchType creatureSearchType, CreatureFightTypeEnum searchCreatureFightType, int searchRoadIndex, FightCreatureEntity excludeCreature)
+    /// <param name="selfCreature">搜索者自己（不为 null 时：按自身实际阵营取友军列表、其余友军优先、自己追加到列表末尾）</param>
+    public static List<FightCreatureEntity> FindCreatureEntityByRoadForAlly(CreatureSearchType creatureSearchType, CreatureFightTypeEnum searchCreatureFightType, int searchRoadIndex, FightCreatureEntity selfCreature)
     {
         GameFightLogic gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
         if (gameFightLogic == null)
             return null;
+        //友军阵营按搜索者实际所在阵营取（治疗语义），搜索者缺失时回退配置值
+        CreatureFightTypeEnum allyFightType = (selfCreature != null && selfCreature.fightCreatureData != null)
+            ? selfCreature.fightCreatureData.creatureFightType
+            : searchCreatureFightType;
         //同一路的同阵营生物列表
         List<FightCreatureEntity> listRoadCreature;
-        if (searchCreatureFightType == CreatureFightTypeEnum.FightAttack)
+        if (allyFightType == CreatureFightTypeEnum.FightAttack)
         {
             listRoadCreature = gameFightLogic.fightData.GetAttackCreatureByRoad(searchRoadIndex);
         }
-        else if (searchCreatureFightType == CreatureFightTypeEnum.FightDefense)
+        else if (allyFightType == CreatureFightTypeEnum.FightDefense)
         {
             listRoadCreature = gameFightLogic.fightData.GetDefenseCreatureByRoad(searchRoadIndex);
         }
@@ -229,13 +388,12 @@ public static class FightCreatureSearchUtil
         if (listRoadCreature.IsNull())
             return null;
         List<FightCreatureEntity> listData = null;
+        //搜索者自己：满足治疗条件时先挂起，等其他友军全部收集完再追加（保证其他目标优先）
+        FightCreatureEntity selfCreatureTarget = null;
         for (int i = 0; i < listRoadCreature.Count; i++)
         {
             var targetCreature = listRoadCreature[i];
             if (targetCreature == null || targetCreature.IsDead())
-                continue;
-            //排除搜索者自己（回复不能奶自己）
-            if (excludeCreature != null && targetCreature == excludeCreature)
                 continue;
             var fightCreatureData = targetCreature.fightCreatureData;
             if (fightCreatureData == null)
@@ -244,9 +402,22 @@ public static class FightCreatureSearchUtil
             bool isHit = fightCreatureData.IsHPNotFull() || fightCreatureData.IsDRNotFull();
             if (!isHit)
                 continue;
+            //自己入列时跳过本轮，留到列表末尾兜底
+            if (selfCreature != null && targetCreature == selfCreature)
+            {
+                selfCreatureTarget = targetCreature;
+                continue;
+            }
             if (listData == null)
                 listData = new List<FightCreatureEntity>();
             listData.Add(targetCreature);
+        }
+        //自己作为最后的兜底目标：无其他可治疗友军时才能奶自己
+        if (selfCreatureTarget != null)
+        {
+            if (listData == null)
+                listData = new List<FightCreatureEntity>(1);
+            listData.Add(selfCreatureTarget);
         }
         return listData;
     }
@@ -257,32 +428,7 @@ public static class FightCreatureSearchUtil
     /// <returns></returns>
     public static List<FightCreatureEntity> FindCreatureEntityForDisByRoad(int roadIndex, CreatureSearchType creatureSearchType, CreatureFightTypeEnum searchCreatureFightType, Vector3 startSearchPosition, Vector3 direction, int disType)
     {
-        //首先查询同一路的防守生物
-        var gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
-        List<FightCreatureEntity> listTargetCreature = null;
-        if (searchCreatureFightType == CreatureFightTypeEnum.FightAttack)
-        {
-
-            if (creatureSearchType == CreatureSearchType.DisMinByRoadAdjacentUpDown)
-            {
-                listTargetCreature = gameFightLogic.fightData.GetAttackCreatureByRoad(new List<int> { roadIndex - 1, roadIndex + 1 });
-            }
-            else
-            {
-                listTargetCreature = gameFightLogic.fightData.GetAttackCreatureByRoad(roadIndex);
-            }
-        }
-        else if (searchCreatureFightType == CreatureFightTypeEnum.FightDefense)
-        {
-            if (creatureSearchType == CreatureSearchType.DisMinByRoadAdjacentUpDown)
-            {
-                listTargetCreature = gameFightLogic.fightData.GetDefenseCreatureByRoad(new List<int> { roadIndex - 1, roadIndex + 1 });
-            }
-            else
-            {
-                listTargetCreature = gameFightLogic.fightData.GetDefenseCreatureByRoad(roadIndex);
-            }
-        }
+        var listTargetCreature = GetCreatureEntityForDisByRoad(roadIndex, creatureSearchType, searchCreatureFightType);
         return FindCreatureEntityForDis(listTargetCreature, startSearchPosition, direction, disType);
     }
 
@@ -292,18 +438,8 @@ public static class FightCreatureSearchUtil
     /// <returns></returns>
     public static List<FightCreatureEntity> FindCreatureEntityForDisByAll(Vector3 startSearchPosition, CreatureFightTypeEnum searchCreatureFightType, Vector3 direction, int disType)
     {
-        //首先查询同一路的防守生物
-        var gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
-        DictionaryList<string, FightCreatureEntity> dicTargetCreature = null;
-        if (searchCreatureFightType == CreatureFightTypeEnum.FightAttack)
-        {
-            dicTargetCreature = gameFightLogic.fightData.dlAttackCreatureEntity;
-        }
-        else if (searchCreatureFightType == CreatureFightTypeEnum.FightDefense)
-        {
-            dicTargetCreature = gameFightLogic.fightData.dlDefenseCreatureEntity;
-        }
-        return FindCreatureEntityForDis(dicTargetCreature.List, startSearchPosition, direction, disType);
+        var listTargetCreature = GetCreatureEntityForDisByAll(searchCreatureFightType);
+        return FindCreatureEntityForDis(listTargetCreature, startSearchPosition, direction, disType);
     }
 
     /// <summary>
@@ -328,27 +464,13 @@ public static class FightCreatureSearchUtil
         for (int i = 0; i < listCreature.Count; i++)
         {
             var itemTargetEntity = listCreature[i];
-            if (itemTargetEntity != null && !itemTargetEntity.IsDead())
+            if (!IsCreatureMatchSearchDirection(itemTargetEntity, startSearchPosition, direction))
+                continue;
+            float dis = Vector3.Distance(itemTargetEntity.creatureObj.transform.position, startSearchPosition);
+            if ((disType == 0 && dis < disLimit) || (disType == 1 && dis > disLimit))
             {
-                var creatureObj = itemTargetEntity.creatureObj;
-                if (direction.x > 0 && creatureObj.transform.position.x >= startSearchPosition.x)
-                {
-                    float dis = Vector3.Distance(creatureObj.transform.position, startSearchPosition);
-                    if ((disType == 0 && dis < disLimit) || (disType == 1 && dis > disLimit))
-                    {
-                        disLimit = dis;
-                        targetEntity = itemTargetEntity;
-                    }
-                }
-                if (direction.x <= 0 && creatureObj.transform.position.x <= startSearchPosition.x)
-                {
-                    float dis = Vector3.Distance(creatureObj.transform.position, startSearchPosition);
-                    if ((disType == 0 && dis < disLimit) || (disType == 1 && dis > disLimit))
-                    {
-                        disLimit = dis;
-                        targetEntity = itemTargetEntity;
-                    }
-                }
+                disLimit = dis;
+                targetEntity = itemTargetEntity;
             }
         }
 

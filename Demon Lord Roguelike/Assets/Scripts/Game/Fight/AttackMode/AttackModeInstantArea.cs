@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary>
 /// 攻击模式-瞬时落点范围：无弹道飞行，StartAttack 当帧立即对目标点(targetPos)做一次范围攻击。
 /// <para>支持配置 hit_max 单次命中目标数上限（&gt;0 时按距落点近者优先截断，保证落点主目标必中；0=不限）。</para>
-/// <para>伤害按命中次序乘递减率（other_data 键 hit_decay，默认0.5=每多命中一个伤害减半、向下取整、保底1点；配1=全额不递减），照 <see cref="AttackModeRangedBoomerang"/> 逐目标减半规则。</para>
+/// <para>伤害按命中次序乘递减率（other_data 键 hit_decay，默认0.5=每多命中一个伤害减半、向下取整、保底1点；配1=全额不递减），子类可重写单目标结算钩子改为独立规则。</para>
 /// <para>同一道攻击内同一生物只命中一次（局部去重，防同一生物多碰撞体重复命中）；道与道之间不共享该记录——
 /// 溅射可重复作用于同一目标、被溅射过的生物仍可作后续攻击的主目标（如深渊馈赠-闪电的多道落雷）。</para>
 /// <para>支持发射方注入 <see cref="filterCreatureIds"/> 快照名单（非空时只命中名单内生物）——
@@ -52,6 +52,7 @@ public class AttackModeInstantArea : BaseAttackMode
     public virtual void AttackHandle()
     {
         Vector3 centerPos = attackModeData.targetPos;
+        int baseDamage = attackModeData.attackerDamage;
         int hitMax = attackModeInfo.hit_max;
         Collider[] targetColliders = GetHitTargetAreaCollider(centerPos);
         if (!targetColliders.IsNull())
@@ -84,15 +85,27 @@ public class AttackModeInstantArea : BaseAttackMode
                 var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, searchCreatureType);
                 if (targetCreature == null || targetCreature.IsDead())
                     continue;
-                targetCreature.UnderAttack(this);
+                HandleForHitTarget(targetCreature, centerPos, baseDamage, hitDecayRate);
                 hitNum++;
-                //伤害按命中次序乘递减率（默认0.5=依次减半；配1则全额），保底1点（与 AttackModeRangedBoomerang 逐目标减半同规则）
-                attackModeData.attackerDamage = Math.Max(1, (int)(attackModeData.attackerDamage * hitDecayRate));
             }
         }
         //命中特效（无论是否命中目标都播，落点表现）
         PlayHitEffect(centerPos);
         Destroy();
+    }
+
+    /// <summary>
+    /// 结算单个命中目标：基类保持原命中次序递减；子类可重写为独立的伤害规则（如落雷按距落点线性衰减）。
+    /// </summary>
+    /// <param name="targetCreature">本次命中的存活目标</param>
+    /// <param name="centerPos">本次 AOE 的落点中心</param>
+    /// <param name="baseDamage">整个 AOE 循环前快照的中心伤害，供子类独立计算，避免受上一目标改写影响</param>
+    /// <param name="hitDecayRate">配置的多目标命中递减率</param>
+    protected virtual void HandleForHitTarget(FightCreatureEntity targetCreature, Vector3 centerPos, int baseDamage, float hitDecayRate)
+    {
+        targetCreature.UnderAttack(this);
+        //伤害按命中次序乘递减率（默认0.5=依次减半；配1则全额），保底1点
+        attackModeData.attackerDamage = Math.Max(1, (int)(attackModeData.attackerDamage * hitDecayRate));
     }
 
     /// <summary>

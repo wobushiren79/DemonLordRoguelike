@@ -5,7 +5,7 @@ public enum CreatureSearchType
     RaySelf = 1,//射线 远处射向自己
 
     AreaSphere = 11,//范围Sphere
-    RoadAllyHPOrDRNoMax = 12,//同一路友军 生命或护甲任一不满(排除自己；回复系索敌，如愈之魅魔)
+    RoadAllyHPOrDRNoMax = 12,//同一路友军 生命或护甲任一不满(回复系索敌，如愈之魅魔；其他友军优先、自己作为兜底候选排最后)
     AreaSphereFront = 14,//范围Sphere前方
 
     AreaBox = 21,//范围Box

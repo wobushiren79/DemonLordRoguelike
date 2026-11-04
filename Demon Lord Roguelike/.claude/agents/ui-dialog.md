@@ -49,11 +49,12 @@ public class UIDialogExample : DialogView
 
 ## 排序筛选弹窗 UIDialogOrderFilter 使用说明
 
-通用「排序筛选」弹窗：在某个按钮处弹出，**按 5 个区段分组**（外层 `ContentShow` 竖排）：
-- **条件区**（命中即置顶，**不删行、全部展示**）：`ContentName`（模糊名字输入框，大小写不敏感子串）、`ContentLevel`（左右两个整数输入构成等级区间，仅数字、≥0、左≤右）、`ContentRarity`（N/R/SR/SSR/UR/L 多选）。命中这些条件的数据排到列表前面，未命中的仍展示。
+通用「排序筛选」弹窗：在某个按钮处弹出，**按 6 个区段分组**（外层 `ContentShow` 竖排）：
+- **条件区**（命中即置顶，**不删行、全部展示**）：`ContentName`（模糊名字输入框，大小写不敏感子串）、`ContentLevel`（左右两个整数输入构成等级区间，仅数字、≥0、左≤右）、`ContentRarity`（N/R/SR/SSR/UR/L 多选）、`ContentItemType`（道具类型多选，选项由调用方经 `itemTypes` 动态传入、填充预留 5 项）。命中这些条件的数据排到列表前面，未命中的仍展示。
 - **排序区**（多选排序键，按选择顺序定优先级 index0=主键，选中项上移到各自容器标题之后作优先级反馈）：`ContentData`「战斗」（伤害/击杀/承伤/经验）、`ContentOther`「其它」（阵容/同类）。
+- **排序优先级条**：`PriorityShow`（`DialogContent` 内、`ContentShow` 之后，竖排 + ContentSizeFitter）内含单个 `PriorityText`，按选择顺序实时显示「排序优先级：伤害>击杀>经验」（文本 `2000033`，名称复用 `UIViewDialogOrderFilterItem.GetFilterName`，`>` 连接）；**未选择任何排序键时隐藏**。每次选择变化/回填后 `RefreshPriorityShow()` 先刷 `PriorityShow` 自身再刷 `ContentShow`/`DialogContent` 布局。
 
-各区段显隐由 `listFilterType` **推导**：含 `Name`→名字区、`Level`→等级区、`Rarity`→稀有度区、含战斗维度(Damage/Kill/DamageReceived/Exp)→战斗区、含 `Lineup/Class`→其它区；`listFilterType` 为空则全显。单个「确认」按钮（节点 `Submit`/文本 `TextSubmit`，绑定基类 `DialogView.ui_Submit`，走重写 `SubmitOnClick`）回传 **`OrderFilterResultBean`**；点击背景关闭。**无正/倒序概念，排序方向由各调用方自行固定**。
+各区段显隐由 `listFilterType` **推导**：含 `Name`→名字区、`Level`→等级区、`Rarity`→稀有度区、含 `ItemType` 且有可选道具类型→道具类型区、含战斗维度(Damage/Kill/DamageReceived/Exp)→战斗区、含 `Lineup/Class`→其它区；`listFilterType` 为空则全显。单个「确认」按钮（节点 `Submit`/文本 `TextSubmit`，绑定基类 `DialogView.ui_Submit`，走重写 `SubmitOnClick`）回传 **`OrderFilterResultBean`**；点击背景关闭。**无正/倒序概念，排序方向由各调用方自行固定**。
 
 ```csharp
 UIHandler.Instance.ShowDialogOrderFilter(
@@ -74,7 +75,7 @@ protected void OnConfirmOrderFilter(OrderFilterResultBean result) {
 
 - `OrderFilterResultBean`（`Assets/Scripts/Bean/UI/`）自带 `MatchName/MatchLevel/MatchRarity` 便捷判定（对应条件为空即恒命中），调用方别重复实现。**语义=命中即置顶、不删行、全部展示**（不是过滤隐藏）。
 - `OrderFilterTypeEnum`（`GameStateEnum.cs`）：`Rarity=1 / Level=2 / Lineup=3 / Name=4 / Class=5 / Damage=6 / Kill=7 / DamageReceived=8 / Exp=9`。注意：`Name`/`Level`/`Rarity` 现在是**命中置顶**条件（不进 `sortTypes`），只有战斗(Data)+其它(Other)里的维度才是排序键。
-- 各区段标题多语言：名字`2000019` / 等级`2000020` / 稀有度`2000018` / 战斗`2000021` / 其它`2000022`；名字输入占位复用「输入名字...」`302`，等级左右输入占位「低等级...」`2000023`/「高等级...」`2000024`；确认按钮复用`1000001`。阵容/同类排序项名已去「排序：」前缀（`2000006`=阵容、`2000011`=同类）。
+- 各区段标题多语言：名字`2000019` / 等级`2000020` / 稀有度`2000018` / 道具类型`2000025` / 战斗`2000021` / 其它`2000022`；名字输入占位复用「输入名字...」`302`，等级左右输入占位「低等级...」`2000023`/「高等级...」`2000024`；确认按钮复用`1000001`；排序优先级条「排序优先级：{0}」`2000033`。阵容/同类排序项名已去「排序：」前缀（`2000006`=阵容、`2000011`=同类）。
 - **调用方各取所需**（按数据可得性，统一「命中置顶+全部展示」）：生物 `UIViewCreatureCardList`（名字+等级+稀有度命中置顶 + Lineup/Class 次级排序，正序固定，主列表 `listCreatureDataAll` 全量、`OrderByDescending(IsMatch)` 重排不删行）；道具 `UIViewItemBackpackList`（名字+稀有度命中置顶，无等级、无排序键，次按稀有度倒序，装备资格 `FilterItems` 仍为第一阶段硬过滤）；战斗结算 `UIFightSettlement`（仅战斗维度排序，固定倒序，无名字/等级/稀有度）。
 - 相关文件：`UIDialogOrderFilter`、`DialogOrderFilterBean`、`OrderFilterResultBean`、`UIViewDialogOrderFilterItem`（项视图，排序键模式/稀有度多选模式，名称内联在 `NameItem`，无 POPUP）。
 

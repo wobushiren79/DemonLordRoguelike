@@ -236,7 +236,7 @@ public partial class AttackModeInfoBean
 
     /// <summary>
     /// 获取多目标伤害递减率（从通用扩展列 other_data 中解析 hit_decay 键；缓存解析结果）。
-    /// <para>默认 0.5=每多命中一个目标伤害减半（深渊落雷现行为）；配 1=不递减全额伤害（如牛头人法师捶地地刺）。</para>
+    /// <para>默认 0.5=每多命中一个目标伤害减半；配 1=不递减全额伤害（如牛头人法师捶地地刺）。仅 AttackModeInstantArea 基类使用，落雷子类已改为独立的距离衰减。</para>
     /// </summary>
     public float GetHitDecayRate()
     {
@@ -249,13 +249,50 @@ public partial class AttackModeInfoBean
     }
     #endregion
 
-    #region 爆炸半径伤害衰减(Falloff 配置，存于 other_data)
+    #region 线性命中递减(LinearHitDecay 配置，存于 other_data)
+    protected bool isInitLinearHitDecayConfig = false;
+    protected float hitDecayStep = 0.1f;
+    protected float hitMinRate = 0.1f;
+
+    /// <summary>
+    /// 获取线性命中递减步长（从通用扩展列 other_data 中解析 hit_decay_step 键；默认 0.1=每次减少初始伤害的 10%）。
+    /// </summary>
+    public float GetHitDecayStep()
+    {
+        InitLinearHitDecayConfig();
+        return hitDecayStep;
+    }
+
+    /// <summary>
+    /// 获取线性命中最低伤害比例（从通用扩展列 other_data 中解析 hit_min_rate 键；默认 0.1=最低为初始伤害的 10%）。
+    /// </summary>
+    public float GetHitMinRate()
+    {
+        InitLinearHitDecayConfig();
+        return hitMinRate;
+    }
+
+    /// <summary>
+    /// 初始化线性命中递减配置（缓存解析结果，目前仅 AttackModeRangedArcBounce 使用）。
+    /// </summary>
+    private void InitLinearHitDecayConfig()
+    {
+        if (!isInitLinearHitDecayConfig)
+        {
+            ParseOtherDataFloat("hit_decay_step", ref hitDecayStep);
+            ParseOtherDataFloat("hit_min_rate", ref hitMinRate);
+            isInitLinearHitDecayConfig = true;
+        }
+    }
+    #endregion
+
+    #region 半径距离伤害衰减(Falloff 配置，存于 other_data)
     protected bool isInitFalloffMinRate = false;
     protected float falloffMinRate = 0.5f;
 
     /// <summary>
-    /// 获取爆炸半径边缘最低伤害倍率（从通用扩展列 other_data 中解析 falloff_min 键；缓存解析结果）。
-    /// <para>默认 0.5=半径最边缘目标伤害为中心点的 1/2，伤害按距爆心距离线性衰减（中心全额→边缘本值）；配 1=不衰减全额伤害。目前仅 AttackModeExplosion（自爆史莱姆 300001/敢死队 300002）使用。</para>
+    /// 获取范围边缘最低伤害倍率（从通用扩展列 other_data 中解析 falloff_min 键；缓存解析结果）。
+    /// <para>默认 0.5=半径最边缘目标伤害为中心点的 1/2，伤害按距中心距离线性衰减（中心全额→边缘本值）；配 1=不衰减全额伤害。目前由 AttackModeExplosion（自爆）与 AttackModeInstantAreaThunder（落雷）使用。</para>
     /// </summary>
     public float GetFalloffMinRate()
     {

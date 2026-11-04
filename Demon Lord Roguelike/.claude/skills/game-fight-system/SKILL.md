@@ -392,7 +392,7 @@ public partial class UIFightMain : BaseUIComponent
 }
 ```
 
-> **底部卡片排布的窗口自适应（2026-10 调整）**：卡片位置由 `GetCardItemPos` 计算，可用宽基准直接取 **prefab 里 `ui_CardContent` 容器的运行时实际宽度**（`ui_CardContent.rect.width`——CardContent 是卡片实例化的父容器，横向拉伸锚点、宽度随画布变化；prefab 默认 `sizeDelta.x=-400` 即两侧各留 200 像素避开右下角删除按钮 `ui_BtnRemoveCreature` 遮挡）。**排布范围直接在 prefab 上调节 CardContent 的锚点/sizeDelta 即可，代码中无任何宽度比例常量**；仍禁止改用 `Screen.width` 物理像素（ScaleWithScreenSize 按宽匹配下单位不一致，分辨率/uiSize 变化会算错间距）。卡片本体不缩放，超宽时只压缩间距（间距<卡宽后左右叠压，右卡压左卡），整排总宽恒收敛在可用宽内。重排触发点：① 建卡/加卡（`SetCreatureCardList`/`AddCreatureCard`→`RefreshCardListPos`）；② `OnRectTransformDimensionsChange`（窗口拉伸/分辨率修改时 Unity 自动回调，编辑器与打包版均生效）；③ `RefreshUI` 兜底（覆盖 UI 关闭期间窗口变化，回调对隐藏物体不触发）。
+> **底部卡片排布的窗口自适应（2026-10 调整）**：卡片位置由 `GetCardItemPos` 计算，可用宽基准直接取 **prefab 里 `ui_CardContent` 容器的运行时实际宽度**（`ui_CardContent.rect.width`——CardContent 是卡片实例化的父容器，横向拉伸锚点、宽度随画布变化；prefab 默认 `sizeDelta.x=-400` 即两侧各留 200 像素避开右下角删除按钮 `ui_BtnRemoveCreature` 遮挡）。**排布范围直接在 prefab 上调节 CardContent 的锚点/sizeDelta 即可，代码中无任何宽度比例常量**；仍禁止改用 `Screen.width` 物理像素（ScaleWithScreenSize 按宽匹配下单位不一致，分辨率/uiSize 变化会算错间距）。卡片本体不缩放，超宽时只压缩间距（间距<卡宽后左右叠压，右卡压左卡），整排总宽恒收敛在可用宽内。重排触发点：① 建卡/加卡（`SetCreatureCardList`/`AddCreatureCard`→`RefreshCardListPos`）；② `OnRectTransformDimensionsChange`（窗口拉伸/分辨率修改时 Unity 自动回调，编辑器与打包版均生效）；③ `RefreshUI` 兜底（覆盖 UI 关闭期间窗口变化，回调对隐藏物体不触发）。**重排前先比布局输入（2026-11-03 修复）**：`RefreshCardListPos` 缓存上次的卡片数量与 `ui_CardContent.rect.width`，两者都未变化直接跳过——魔晶到账（`GameFightLogic.OnDropCrystalArrived`）/刷怪（`CreatureHandler.CreateAttackCreature`）都会经 `UIHandler.RefreshUI` 周期性刷新 UIFightMain，无条件重排会把坐标写回原位、打断鼠标悬停时其它卡片的避让散开（症状：悬停选中卡约 1 秒后散开又被还原）。真正重排（数量/宽度变化）时若仍有卡片悬停，重排后调 `UIViewCreatureCardItemForFight.TriggerEventForSelectKeep()` 重新广播避让，按新位置恢复散开；`ClearCardList` 重置布局缓存。
 
 ### 进攻进度条 Quick(加快进攻节奏) 按钮
 

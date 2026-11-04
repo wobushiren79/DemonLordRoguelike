@@ -272,8 +272,8 @@ public enum UnlockEnum : long
     AbyssalBlessingRefreshNum = 200500001, // 深渊馈赠刷新次数(研究等级=单次征服run内可用刷新次数上限,level_max=5,新run自动回满)
     SpaceDash = 200600001,             // 空格突进(基地控制,level_max=3;1/2/3级向朝向突进1/2/3距离单位;名字纯文本,详情 details=900000018「（距离{Value}）」气泡拼接填待解锁级距离)
     SpaceDashCD = 200700001,           // 空格突进冷却缩减(子研究,前置=SpaceDash,level_max=4;默认3s每级-0.5最低1s;名字纯文本,详情 details=900000019「（{Value}秒）」气泡拼接填待解锁级冷却)
-    DemonLordAutoPickCrystal = 200800001,    // 魔王自动拾取魔晶(level_max=10;间隔=11-等级秒,10级10s→满级1s;每次按FIFO取场上最先掉落的魔晶,基础1颗;无前置,强化分支新根)
-    DemonLordAutoPickCrystalNum = 200900001, // 魔王每次拾取魔晶数量+1(level_max=5;每次拾取数=1+等级;前置=DemonLordAutoPickCrystal)
+    DemonLordAutoPickCrystal = 200800001,    // 魔王自动拾取魔晶(level_max=10;间隔=11-等级秒,10级10s→满级1s;每次按FIFO取场上最先掉落的魔晶,基础1颗;前置=LineupCreatureAddNum(200000001);pay_crystal=100,500,1000,2000,3000,4000,5000,6000,8000,10000)
+    DemonLordAutoPickCrystalNum = 200900001, // 魔王每次拾取魔晶数量+1(level_max=10;每次拾取数=1+等级,满级11颗;前置=DemonLordAutoPickCrystal;pay_crystal="1000*1"=1000~10000)
     LineupRename = 201000001,          // 阵容重命名(level_max=1 纯解锁;前置=LineupNum(200100001);解锁后阵容管理界面 UILineupManager 显示重命名按钮,可给当前选中阵容自定义名字,页签文本优先显示自定义名;自定义名存 UserDataBean.dicLineupName)
     EquipRewardHuman = 300100301,      // 人类装备奖励
     EquipRewardSkeleton = 300200301,
@@ -553,7 +553,7 @@ public float GetUnlockSpaceDashCD();                   // 空格突进冷却(秒
 public static float GetSpaceDashDistanceForLevel(int level); // 指定空格突进等级的突进距离(世界单位) = 等级×SPACE_DASH_DISTANCE_PER_LEVEL(1.5,每级距离唯一真实源,ControlForGameBase.dashDistancePerLevel 默认值亦引用之)；供研究气泡文本填充
 public static float GetSpaceDashCDForLevel(int level);       // 指定突进CD等级的冷却(秒) = max(SPACE_DASH_CD_BASE(3) - 等级×SPACE_DASH_CD_PER_LEVEL(0.5), SPACE_DASH_CD_MIN(1))；供研究气泡文本填充
 public float GetUnlockDemonLordAutoPickCrystalInterval(); // 魔王自动拾取魔晶间隔(秒) = 11 - DemonLordAutoPickCrystal 等级(未解锁返回-1禁用,10级10s→满级1s)；开战 InitFightConstData 缓存，由 GameFightLogic.UpdateGameForDefenseCore(游戏中) 与 UpdateGameForSettlement(结算/深渊馈赠暂停期间) 读取驱动 PickupCrystalForCoreAuto
-public int GetUnlockDemonLordAutoPickCrystalCount();     // 魔王每次自动拾取魔晶数量 = 1 + DemonLordAutoPickCrystalNum 等级(基础1,满级6)；决定单次 PickupCrystalForCoreAuto 拾取颗数
+public int GetUnlockDemonLordAutoPickCrystalCount();     // 魔王每次自动拾取魔晶数量 = 1 + DemonLordAutoPickCrystalNum 等级(基础1,研究满级10时每次11颗)；决定单次 PickupCrystalForCoreAuto 拾取颗数
 ```
 
 ### 解锁列表

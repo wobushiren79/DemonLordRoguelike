@@ -9,6 +9,11 @@ public partial class UIFightMain : BaseUIComponent
     //所有生成的卡片
     public List<UIViewCreatureCardItemForFight> listCreatureCard = new List<UIViewCreatureCardItemForFight>();
 
+    //上次排布使用的卡片数量与 CardContent 宽度缓存：两者都未变化时目标位置与上次一致，直接跳过重排
+    //(魔晶到账/刷怪等会经 UIHandler.RefreshUI 周期性刷新 UIFightMain，重排把坐标写回原位会打断鼠标悬停时的避让散开)
+    protected int lastLayoutCardCount = -1;
+    protected float lastLayoutCardContentWidth = -1f;
+
     public override void Awake()
     {
         base.Awake();
@@ -344,17 +349,35 @@ public partial class UIFightMain : BaseUIComponent
     }
 
     /// <summary>
-    /// 重新计算并应用所有卡片的布局位置(卡片数量变化后调用)
+    /// 重新计算并应用所有卡片的布局位置(卡片数量或 CardContent 宽度变化后才会真正重排)。
+    /// <para>周期性 UI 刷新(魔晶到账/刷怪)传入的布局输入未变化时直接跳过：重排会无条件把卡片坐标写回原位，
+    /// 导致鼠标悬停散开的其它卡片被强行归位(应只在指针移开/切换悬停卡时才归位)。</para>
     /// </summary>
     public void RefreshCardListPos()
     {
         int count = listCreatureCard.Count;
+        float contentWidth = ui_CardContent.rect.width;
+        //数量和容器宽度都没变化时目标位置与上次一致，无需重排
+        if (count == lastLayoutCardCount && Mathf.Approximately(contentWidth, lastLayoutCardContentWidth))
+            return;
+        lastLayoutCardCount = count;
+        lastLayoutCardContentWidth = contentWidth;
+
+        //记录悬停中的卡片：重排写坐标会覆盖避让偏移，重排结束后需要它重新广播避让恢复散开
+        UIViewCreatureCardItemForFight hoverCard = null;
         for (int i = 0; i < count; i++)
         {
             var itemView = listCreatureCard[i];
+            if (itemView == null)
+                continue;
+            if (itemView.IsPointerHovered)
+                hoverCard = itemView;
             var posTarget = GetCardItemPos(i, count);
             itemView.RefreshCardPos(posTarget, i);
         }
+        //真正重排时若仍有卡片被悬停(如窗口拉伸/新增卡片)：重新广播避让，其它卡片按新位置重算散开偏移
+        if (hoverCard != null)
+            hoverCard.TriggerEventForSelectKeep();
     }
 
     /// <summary>
@@ -447,6 +470,9 @@ public partial class UIFightMain : BaseUIComponent
             DestroyImmediate(itemCard.gameObject);
         }
         listCreatureCard.Clear();
+        //卡片清空后布局缓存失效，下次排布必须重新计算
+        lastLayoutCardCount = -1;
+        lastLayoutCardContentWidth = -1f;
     }
 
     #region 快捷按键

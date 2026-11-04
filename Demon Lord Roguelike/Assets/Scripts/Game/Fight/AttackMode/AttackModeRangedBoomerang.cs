@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,7 +7,7 @@ using UnityEngine;
 /// <para>速度曲线（时间参数化驱动，保证精确到点）：去程前半程全速、后半程线性减速到 0（折返点静止）；
 /// 返程从 0 匀加速到 ReturnMaxSpeedRate 倍基础速度（回到魔王时最快）。</para>
 /// <para>弹体自旋：发射时在 InitAttackModeShow 写入 spinSpeed/spinAxis（DSP 自旋子桶，shader 按 _Time 自转 + 每发随机相位）。</para>
-/// <para>伤害逐目标减半（保底1点）；去重名单在返程开始时刷新，去程不能重复命中同一目标，返程途中可再次命中。</para>
+/// <para>每次命中均使用发射时注入的固定伤害，不在去程或返程递减；去重名单在返程开始时刷新，去程不能重复命中同一目标，返程途中可再次命中。</para>
 /// <para>纯数据发射路径：由 BuffEntityPeriodicAttackBoomerang 创建，伤害与目标位置由 BUFF 侧注入。</para>
 /// <para>无 prefab（走 DSP visual_name 批量渲染），不用射线批处理（gameObject 为空，走 live Physics 回退）。</para>
 /// </summary>
@@ -46,7 +45,6 @@ public class AttackModeRangedBoomerang : BaseAttackMode
     private float returnDuration;
     /// <summary>超出目标的格数（世界单位）</summary>
     private const float PassThroughDistance = 1.0f;
-    private const int MinDamage = 1;
     /// <summary>返程末端最大速度倍率（相对基础速度，回到魔王身边时最快）</summary>
     private const float ReturnMaxSpeedRate = 1.5f;
     /// <summary>弹体自旋速度（度/秒；负值绕 -Z 轴，与视觉材质 Mat_AttackModeVisual_Boomerang_1 的 authored 自旋一致）</summary>
@@ -205,12 +203,11 @@ public class AttackModeRangedBoomerang : BaseAttackMode
 
     #region 命中处理
     /// <summary>
-    /// 对单个目标结算伤害，随后伤害减半（保底1），不销毁弹道；播放击中特效。
+    /// 对单个目标结算发射时注入的固定伤害，不递减、不销毁弹道；播放击中特效。
     /// </summary>
     private void HandleForHitTarget(FightCreatureEntity creature)
     {
         creature.UnderAttack(this);
-        attackModeData.attackerDamage = Math.Max(MinDamage, attackModeData.attackerDamage / 2);
         PlayEffectForHit(creature.creatureObj.transform.position);
     }
     #endregion

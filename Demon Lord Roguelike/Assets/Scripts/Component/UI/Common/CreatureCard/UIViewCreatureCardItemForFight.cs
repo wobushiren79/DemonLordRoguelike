@@ -27,6 +27,11 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
     /// </summary>
     public int PressKeyNum => pressKeyNum;
 
+    /// <summary>
+    /// 指针当前是否悬停在本卡(布局重排时用于识别需要保持置顶/散开的悬停卡)
+    /// </summary>
+    public bool IsPointerHovered => isPointerHovered;
+
 
     public void Update()
     {
@@ -215,11 +220,19 @@ public partial class UIViewCreatureCardItemForFight : UIViewCreatureCardItem, IP
         //整排按阵容序号重排层级并把本卡追加到最上(顺带清掉其它卡复原动画期间的临时置顶)
         RefreshAllCardLayerBySibling();
         //触发避让事件
-        TriggerEvent(EventsInfo.UIViewCreatureCardItem_SelectKeep, cardData.originalSibling, cardData.originalCardPos, true);
+        TriggerEventForSelectKeep();
         //进入事件
         TriggerEvent(EventsInfo.UIViewCreatureCardItem_OnPointerEnter, this);
         //若本卡对应魔物已在场上，高亮其描边
         ShowFieldCreatureOutline();
+    }
+
+    /// <summary>
+    /// 广播本卡的避让事件(悬停卡在布局重排后重新广播，让其它卡片按最新位置重算散开偏移)
+    /// </summary>
+    public void TriggerEventForSelectKeep()
+    {
+        TriggerEvent(EventsInfo.UIViewCreatureCardItem_SelectKeep, cardData.originalSibling, cardData.originalCardPos, true);
     }
 
     /// <summary>

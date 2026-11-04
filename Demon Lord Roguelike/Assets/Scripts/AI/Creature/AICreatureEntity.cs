@@ -41,17 +41,7 @@ public abstract partial class AICreatureEntity : AIBaseEntity
     /// </summary>
     public List<FightCreatureEntity> FindCreatureEntity(DirectionEnum direction)
     {
-        Vector3 directionV = Vector3.right;
-        switch (direction)
-        {
-            case DirectionEnum.Left:
-                directionV = Vector3.left;
-                break;
-            case DirectionEnum.Right:
-                directionV = Vector3.right;
-                break;
-        }
-        return FindCreatureEntity(directionV);
+        return FindCreatureEntity(GetSearchDirection(direction));
     }
 
     /// <summary>
@@ -93,22 +83,50 @@ public abstract partial class AICreatureEntity : AIBaseEntity
         //自身已被回收（死亡回池/清场后 selfCreatureEntity 置空，在途弹道回调仍会触发索敌）→ 返回空（照 AIIntentCreatureDead 先例，兜底所有索敌入口）
         if (selfCreatureEntity == null)
             return null;
+        GetSearchParameters(out CreatureSearchType searchType, out CreatureFightTypeEnum searchCreatureFightType, out float searchRange, out Vector3 startPosition, out int searchRoadIndex);
+        return FightCreatureSearchUtil.FindCreatureEntity(searchType, searchCreatureFightType, startPosition, direction, Vector3.zero, searchRange, searchRoadIndex, selfCreatureEntity);
+    }
+
+    #region 指定目标搜索与索敌参数共用
+    /// <summary>
+    /// 检查指定目标是否仍命中当前生物的索敌结果，身份与候选规则统一由 FightCreatureSearchUtil 校验。
+    /// </summary>
+    /// <param name="direction">搜索方向</param>
+    /// <param name="targetCreature">需要确认的锁定目标</param>
+    /// <param name="snapshotUUId">锁定目标时的 creatureUUId 快照</param>
+    public bool CheckCreatureEntityInSearchResult(DirectionEnum direction, FightCreatureEntity targetCreature, string snapshotUUId)
+    {
+        if (selfCreatureEntity == null || selfCreatureEntity.creatureObj == null || targetCreature == null)
+            return false;
+        GetSearchParameters(out CreatureSearchType searchType, out CreatureFightTypeEnum searchCreatureFightType, out float searchRange, out Vector3 startPosition, out int searchRoadIndex);
+        Vector3 directionV = GetSearchDirection(direction);
+        return FightCreatureSearchUtil.CheckCreatureEntityInSearchResult(searchType, searchCreatureFightType, targetCreature, snapshotUUId, startPosition, directionV, Vector3.zero, searchRange, searchRoadIndex, selfCreatureEntity);
+    }
+
+    /// <summary>
+    /// 将 UI/AI 方向枚举转换为索敌向量，未识别方向沿用原默认向右。
+    /// </summary>
+    private static Vector3 GetSearchDirection(DirectionEnum direction)
+    {
+        return direction == DirectionEnum.Left ? Vector3.left : Vector3.right;
+    }
+
+    /// <summary>
+    /// 准备当前生物的统一索敌参数，供普通搜索与指定目标命中查询共用。
+    /// </summary>
+    private void GetSearchParameters(out CreatureSearchType searchType, out CreatureFightTypeEnum searchCreatureFightType, out float searchRange, out Vector3 startPosition, out int searchRoadIndex)
+    {
         var fightCreatureData = selfCreatureEntity.fightCreatureData;
         var creatureInfo = fightCreatureData.creatureData.creatureInfo;
         //如果有NPC数据 优先使用NPC数据里的属性
         var npcInfo = fightCreatureData.creatureData.creatureNpcData?.npcInfo;
-        //搜索范围
-        float searchRange = (npcInfo != null && npcInfo.attack_search_range != 0)
+        searchRange = (npcInfo != null && npcInfo.attack_search_range != 0)
             ? npcInfo.attack_search_range
             : creatureInfo.attack_search_range;
-        CreatureFightTypeEnum searchCreatureFightType = creatureInfo.GetAttackSearchCreatureFightType();
-        //搜索模式
-        CreatureSearchType searchType = fightCreatureData.creatureData.creatureInfo.GetCreatureSearchType();
-        //起始搜索点
-        Vector3 startPosition = selfCreatureEntity.creatureObj.transform.position + new Vector3(0, 0.5f, 0);
-
-        int searchRoadIndex = fightCreatureData.roadIndex;
-        var listSearchResult = FightCreatureSearchUtil.FindCreatureEntity(searchType, searchCreatureFightType, startPosition, direction, Vector3.zero, searchRange, searchRoadIndex, selfCreatureEntity);
-        return listSearchResult;
+        searchCreatureFightType = creatureInfo.GetAttackSearchCreatureFightType();
+        searchType = creatureInfo.GetCreatureSearchType();
+        startPosition = selfCreatureEntity.creatureObj.transform.position + new Vector3(0, 0.5f, 0);
+        searchRoadIndex = fightCreatureData.roadIndex;
     }
+    #endregion
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 /// GM 面板（GUI版，纯代码 IMGUI，不依赖预制体）：在基地主页面按 F11 打开，再次按 F11 关闭。
 /// 覆盖 UITestBase 预制面板的全部功能（魔晶/声望/道具/生物/测试生物/解锁/世界难度），
 /// 道具区支持两种模式：按ID添加(空=全部) 与 按类型选择(类型下拉→道具下拉→数量1~999，装备每稀有度各N件/非装备N件堆叠)，
+/// 装备区按「职业+该职业可装备类型+稀有度+数量」随机添加装备（通关奖励装备随机规则），
 /// 并新增 Mod 道具区：下拉选择具体某个 Mod，一键添加该 Mod 的全部道具（装备每种稀有度各一，非装备仅1件）。
 /// 由 UIBaseMain 的 F11 输入触发 TestGameMasterGUI.Toggle() 创建/销毁（面板专用文本直接写死，不走多语言）。
 /// </summary>
@@ -18,6 +19,9 @@ public class TestGameMasterGUI : MonoBehaviour
 
     /// <summary>稀有度下拉选项(0=随机，1~6=N~L)</summary>
     private static readonly string[] RarityLabels = { "随机", "1 N", "2 R", "3 SR", "4 SSR", "5 UR", "6 L" };
+
+    /// <summary>装备稀有度下拉选项(1~6=N~L)</summary>
+    private static readonly string[] EquipRarityLabels = { "1 N", "2 R", "3 SR", "4 SSR", "5 UR", "6 L" };
 
     #endregion
 
@@ -40,6 +44,17 @@ public class TestGameMasterGUI : MonoBehaviour
     private long currentSelectItemId;                   //类型模式下选中的道具id
     private string itemSelectDropdownLabel = "请选择道具";//道具下拉按钮显示文本
 
+    //装备区
+    private List<SelectItem> listEquipProfessionOptions;      //装备-职业候选(懒加载，仅抽卡类生物)
+    private int equipProfessionSelectIndex;                   //装备-职业下拉选中索引
+    private string equipProfessionDropdownLabel = "请选择职业"; //装备-职业下拉按钮显示文本
+    private List<SelectItem> listEquipTypeOptions;            //装备-装备类型候选(随职业切换重建)
+    private long equipTypeProfessionId = -1;                  //装备类型候选对应的职业id(切换职业时重建)
+    private int equipTypeSelectIndex;                         //装备-装备类型下拉选中索引
+    private string equipTypeDropdownLabel = "请选择装备类型";   //装备-装备类型下拉按钮显示文本
+    private int equipRaritySelectIndex;                       //装备-稀有度下拉选中索引(0~5=N~L)
+    private string inputEquipNum = "";                        //装备-数量输入(空=1, 上限999)
+
     //生物区
     private long currentCreatureId = 2001;              //测试生物-下拉选中的生物id
     private string inputManualCreatureId = "";          //测试生物-手动输入id(非空且合法时优先于下拉)
@@ -60,8 +75,10 @@ public class TestGameMasterGUI : MonoBehaviour
     //下拉展开状态(互斥，开一个关其他)
     private bool isCreatureDropdownOpen, isRarityDropdownOpen, isModDropdownOpen;
     private bool isItemTypeDropdownOpen, isItemSelectDropdownOpen;
+    private bool isEquipProfessionDropdownOpen, isEquipTypeDropdownOpen, isEquipRarityDropdownOpen;
     private Vector2 scrollCreatureDropdown, scrollModDropdown;
     private Vector2 scrollItemTypeDropdown, scrollItemSelectDropdown;
+    private Vector2 scrollEquipProfessionDropdown, scrollEquipTypeDropdown;
 
     //操作结果提示
     private string statusText = "";
@@ -318,6 +335,83 @@ public class TestGameMasterGUI : MonoBehaviour
             SetStatus($"{itemSelectDropdownLabel} 添加成功（非装备，{count}件）！");
         }
         GameDataHandler.Instance.manager.SaveUserData();
+    }
+
+    #endregion
+
+    #region GM功能-装备
+
+    /// <summary>
+    /// 添加装备：按「选定职业 + 该职业可装备类型 + 稀有度 + 数量」，在通关奖励装备池规则下逐件随机生成入背包
+    /// </summary>
+    private void AddEquip()
+    {
+        if (listEquipProfessionOptions == null || listEquipProfessionOptions.Count == 0
+            || listEquipTypeOptions == null || listEquipTypeOptions.Count == 0)
+        {
+            SetStatus("请先选择职业与装备类型", true);
+            return;
+        }
+        CreatureInfoBean creatureInfo = CreatureInfoCfg.GetItemData(listEquipProfessionOptions[equipProfessionSelectIndex].id);
+        if (creatureInfo == null)
+        {
+            SetStatus("职业配置不存在", true);
+            return;
+        }
+        //解析数量: 空=1, 非法/越界报错
+        int count = 1;
+        if (!inputEquipNum.IsNull())
+        {
+            if (!int.TryParse(inputEquipNum, out count) || count <= 0 || count > 999)
+            {
+                SetStatus("数量必须是 1~999 的数字", true);
+                return;
+            }
+        }
+        ItemTypeEnum itemType = (ItemTypeEnum)listEquipTypeOptions[equipTypeSelectIndex].id;
+        int rarity = (int)RarityEnum.N + equipRaritySelectIndex;
+        //按通关奖励规则收集候选池(职业可装备 + 指定装备类型 + 奖励稀有度白名单)
+        List<ItemsInfoBean> listPool = GetEquipRewardPool(creatureInfo, itemType, rarity);
+        if (listPool.Count == 0)
+        {
+            SetStatus($"「{equipProfessionDropdownLabel}」没有可产出的「{GetItemTypeName((int)itemType)}」装备（稀有度{EquipRarityLabels[equipRaritySelectIndex]}，受 reward_rarity 白名单限制）", true);
+            return;
+        }
+        UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
+        for (int i = 0; i < count; i++)
+        {
+            //每件独立随机(与通关奖励一致: 池内随机取一件, 属性条数=稀有度、加点数取稀有度配置)
+            ItemsInfoBean randomItemInfo = RandomUtil.GetRandomDataByList(listPool);
+            userData.AddBackpackItem(EquipUtil.CreateEquipItemForReward(randomItemInfo.id, rarity));
+        }
+        GameDataHandler.Instance.manager.SaveUserData();
+        SetStatus($"装备添加成功：{equipProfessionDropdownLabel} {GetItemTypeName((int)itemType)} × {count}（{EquipRarityLabels[equipRaritySelectIndex]}，候选池{listPool.Count}种）");
+    }
+
+    /// <summary>
+    /// 收集通关奖励装备随机规则的候选池：全装备表中筛选「该职业可装备 + 指定装备类型 + 奖励稀有度白名单」的道具
+    /// </summary>
+    /// <param name="creatureInfo">目标职业的生物配置</param>
+    /// <param name="itemType">装备类型</param>
+    /// <param name="rarity">目标稀有度(RarityEnum: N=1 ~ L=6)</param>
+    /// <returns>可随机产出的装备配置列表</returns>
+    private static List<ItemsInfoBean> GetEquipRewardPool(CreatureInfoBean creatureInfo, ItemTypeEnum itemType, int rarity)
+    {
+        List<ItemsInfoBean> listPool = new List<ItemsInfoBean>();
+        var allData = ItemsInfoCfg.GetAllArrayData();
+        for (int i = 0; i < allData.Length; i++)
+        {
+            ItemsInfoBean itemInfo = allData[i];
+            if (!itemInfo.IsEquipType() || itemInfo.GetItemType() != itemType)
+                continue;
+            if (!itemInfo.IsMatchRewardRarity(rarity))
+                continue;
+            //职业可装备校验: 装备类型 + 种族模组 + 武器类型三重匹配(通用装备 creature_model_id=0 对所有职业可用)
+            if (!itemInfo.CanEquipForCreature(creatureInfo))
+                continue;
+            listPool.Add(itemInfo);
+        }
+        return listPool;
     }
 
     #endregion
@@ -641,6 +735,73 @@ public class TestGameMasterGUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 懒加载装备区职业下拉候选(仅抽卡类生物)，并初始化下拉按钮显示文本
+    /// </summary>
+    private void EnsureEquipProfessionOptions()
+    {
+        if (listEquipProfessionOptions != null) return;
+        listEquipProfessionOptions = new List<SelectItem>();
+        foreach (var creatureInfo in CreatureInfoCfg.GetAllArrayData())
+        {
+            if (creatureInfo.creature_type != (int)CreatureTypeEnum.GashaponMachine)
+                continue;
+            string name = creatureInfo.name_language;
+            listEquipProfessionOptions.Add(new SelectItem(creatureInfo.id, name.IsNull() ? $"{creatureInfo.id}" : $"{creatureInfo.id} {name}"));
+        }
+        if (listEquipProfessionOptions.Count > 0)
+        {
+            equipProfessionDropdownLabel = listEquipProfessionOptions[0].label;
+        }
+    }
+
+    /// <summary>
+    /// 依据当前选中职业重建装备类型候选(取该职业 equip_items_type 中的装备类型)；
+    /// 职业未变时复用缓存，切换职业后重置选中到第一个类型
+    /// </summary>
+    private void EnsureEquipTypeOptions()
+    {
+        if (listEquipProfessionOptions == null || listEquipProfessionOptions.Count == 0)
+            return;
+        long creatureId = listEquipProfessionOptions[equipProfessionSelectIndex].id;
+        if (listEquipTypeOptions != null && equipTypeProfessionId == creatureId)
+            return;
+        equipTypeProfessionId = creatureId;
+        listEquipTypeOptions = new List<SelectItem>();
+        CreatureInfoBean creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
+        if (creatureInfo != null)
+        {
+            foreach (ItemTypeEnum itemType in creatureInfo.GetEquipItemsType())
+            {
+                if (!IsEquipItemType(itemType))
+                    continue;
+                listEquipTypeOptions.Add(new SelectItem((long)itemType, GetItemTypeName((int)itemType)));
+            }
+        }
+        equipTypeSelectIndex = 0;
+        equipTypeDropdownLabel = listEquipTypeOptions.Count > 0 ? listEquipTypeOptions[0].label : "无可用装备类型";
+    }
+
+    /// <summary>
+    /// 是否为装备类型的道具类型(帽/衣/裤/鞋/鼻环/戒指/武器)
+    /// </summary>
+    private static bool IsEquipItemType(ItemTypeEnum itemType)
+    {
+        switch (itemType)
+        {
+            case ItemTypeEnum.Hat:
+            case ItemTypeEnum.Clothes:
+            case ItemTypeEnum.Pants:
+            case ItemTypeEnum.Shoe:
+            case ItemTypeEnum.NoseRing:
+            case ItemTypeEnum.FingerRing:
+            case ItemTypeEnum.Weapon:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     #endregion
 
     #region 状态提示
@@ -678,6 +839,8 @@ public class TestGameMasterGUI : MonoBehaviour
         EnsureCreatureOptions();
         EnsureModOptions();
         EnsureItemTypeOptions();
+        EnsureEquipProfessionOptions();
+        EnsureEquipTypeOptions();
 
         float panelWidth = Mathf.Min(PanelWidth, Screen.width - 20);
         GUILayout.BeginArea(new Rect(10, 10, panelWidth, Screen.height - 20), GUI.skin.box);
@@ -687,6 +850,7 @@ public class TestGameMasterGUI : MonoBehaviour
         DrawStatusBar();
         DrawResourceSection();
         DrawItemSection();
+        DrawEquipSection();
         DrawCreatureSection();
         DrawUnlockSection();
         DrawModSection();
@@ -831,6 +995,9 @@ public class TestGameMasterGUI : MonoBehaviour
             isCreatureDropdownOpen = false;
             isRarityDropdownOpen = false;
             isModDropdownOpen = false;
+            isEquipProfessionDropdownOpen = false;
+            isEquipTypeDropdownOpen = false;
+            isEquipRarityDropdownOpen = false;
         }
         GUILayout.EndHorizontal();
         if (isItemTypeDropdownOpen)
@@ -869,6 +1036,9 @@ public class TestGameMasterGUI : MonoBehaviour
             isCreatureDropdownOpen = false;
             isRarityDropdownOpen = false;
             isModDropdownOpen = false;
+            isEquipProfessionDropdownOpen = false;
+            isEquipTypeDropdownOpen = false;
+            isEquipRarityDropdownOpen = false;
         }
         GUILayout.EndHorizontal();
         if (isItemSelectDropdownOpen)
@@ -906,6 +1076,129 @@ public class TestGameMasterGUI : MonoBehaviour
     }
 
     /// <summary>
+    /// 绘制装备区（职业下拉→装备类型下拉→稀有度下拉→数量→添加，按通关奖励装备随机规则生成）
+    /// </summary>
+    private void DrawEquipSection()
+    {
+        DrawSectionHeader("装备");
+        if (listEquipProfessionOptions == null || listEquipProfessionOptions.Count == 0)
+        {
+            GUILayout.Label("生物配置表没有抽卡职业", hintStyle);
+            return;
+        }
+        //职业下拉
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("职业", labelStyle, GUILayout.Width(50));
+        if (GUILayout.Button(equipProfessionDropdownLabel, buttonLeftStyle, GUILayout.Height(26)))
+        {
+            isEquipProfessionDropdownOpen = !isEquipProfessionDropdownOpen;
+            isEquipTypeDropdownOpen = false;
+            isEquipRarityDropdownOpen = false;
+            isCreatureDropdownOpen = false;
+            isRarityDropdownOpen = false;
+            isModDropdownOpen = false;
+            isItemTypeDropdownOpen = false;
+            isItemSelectDropdownOpen = false;
+        }
+        GUILayout.EndHorizontal();
+        if (isEquipProfessionDropdownOpen)
+        {
+            scrollEquipProfessionDropdown = GUILayout.BeginScrollView(scrollEquipProfessionDropdown, GUI.skin.box, GUILayout.Height(200));
+            for (int i = 0; i < listEquipProfessionOptions.Count; i++)
+            {
+                bool isCurrent = i == equipProfessionSelectIndex;
+                Color oldColor = GUI.color;
+                if (isCurrent) GUI.color = Color.green;
+                if (GUILayout.Button(isCurrent ? $"✔ {listEquipProfessionOptions[i].label}" : listEquipProfessionOptions[i].label, buttonLeftStyle, GUILayout.Height(24)))
+                {
+                    GUI.color = oldColor;
+                    equipProfessionSelectIndex = i;
+                    equipProfessionDropdownLabel = listEquipProfessionOptions[i].label;
+                    isEquipProfessionDropdownOpen = false;
+                    break;
+                }
+                GUI.color = oldColor;
+            }
+            GUILayout.EndScrollView();
+        }
+        //装备类型下拉(随职业可装备类型过滤)
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("装备类型", labelStyle, GUILayout.Width(64));
+        if (GUILayout.Button(equipTypeDropdownLabel, buttonLeftStyle, GUILayout.Height(26)))
+        {
+            isEquipTypeDropdownOpen = !isEquipTypeDropdownOpen;
+            isEquipProfessionDropdownOpen = false;
+            isEquipRarityDropdownOpen = false;
+            isCreatureDropdownOpen = false;
+            isRarityDropdownOpen = false;
+            isModDropdownOpen = false;
+            isItemTypeDropdownOpen = false;
+            isItemSelectDropdownOpen = false;
+        }
+        GUILayout.EndHorizontal();
+        if (isEquipTypeDropdownOpen)
+        {
+            scrollEquipTypeDropdown = GUILayout.BeginScrollView(scrollEquipTypeDropdown, GUI.skin.box, GUILayout.Height(160));
+            for (int i = 0; i < listEquipTypeOptions.Count; i++)
+            {
+                bool isCurrent = i == equipTypeSelectIndex;
+                Color oldColor = GUI.color;
+                if (isCurrent) GUI.color = Color.green;
+                if (GUILayout.Button(isCurrent ? $"✔ {listEquipTypeOptions[i].label}" : listEquipTypeOptions[i].label, buttonLeftStyle, GUILayout.Height(24)))
+                {
+                    GUI.color = oldColor;
+                    equipTypeSelectIndex = i;
+                    equipTypeDropdownLabel = listEquipTypeOptions[i].label;
+                    isEquipTypeDropdownOpen = false;
+                    break;
+                }
+                GUI.color = oldColor;
+            }
+            GUILayout.EndScrollView();
+        }
+        //稀有度下拉 + 数量
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("稀有度", labelStyle, GUILayout.Width(50));
+        if (GUILayout.Button(EquipRarityLabels[equipRaritySelectIndex], buttonLeftStyle, GUILayout.Height(26), GUILayout.Width(100)))
+        {
+            isEquipRarityDropdownOpen = !isEquipRarityDropdownOpen;
+            isEquipProfessionDropdownOpen = false;
+            isEquipTypeDropdownOpen = false;
+            isCreatureDropdownOpen = false;
+            isRarityDropdownOpen = false;
+            isModDropdownOpen = false;
+            isItemTypeDropdownOpen = false;
+            isItemSelectDropdownOpen = false;
+        }
+        GUILayout.Label("数量", labelStyle, GUILayout.Width(36));
+        inputEquipNum = GUILayout.TextField(inputEquipNum, GUILayout.Height(26), GUILayout.Width(90));
+        GUILayout.Label("(空=1, 上限999)", hintStyle);
+        GUILayout.EndHorizontal();
+        if (isEquipRarityDropdownOpen)
+        {
+            for (int i = 0; i < EquipRarityLabels.Length; i++)
+            {
+                bool isCurrent = i == equipRaritySelectIndex;
+                Color oldColor = GUI.color;
+                if (isCurrent) GUI.color = Color.green;
+                if (GUILayout.Button(isCurrent ? $"✔ {EquipRarityLabels[i]}" : EquipRarityLabels[i], buttonLeftStyle, GUILayout.Height(24)))
+                {
+                    GUI.color = oldColor;
+                    equipRaritySelectIndex = i;
+                    isEquipRarityDropdownOpen = false;
+                    break;
+                }
+                GUI.color = oldColor;
+            }
+        }
+        if (GUILayout.Button("添加装备（通关奖励随机规则）", GUILayout.Height(26)))
+        {
+            AddEquip();
+        }
+        GUILayout.Label("装备池=该职业可装备的对应类型装备；属性条数=稀有度、加点数由稀有度配置决定（同通关奖励）", hintStyle);
+    }
+
+    /// <summary>
     /// 绘制生物区（添加所有生物 + 定制测试生物）
     /// </summary>
     private void DrawCreatureSection()
@@ -926,6 +1219,9 @@ public class TestGameMasterGUI : MonoBehaviour
             isModDropdownOpen = false;
             isItemTypeDropdownOpen = false;
             isItemSelectDropdownOpen = false;
+            isEquipProfessionDropdownOpen = false;
+            isEquipTypeDropdownOpen = false;
+            isEquipRarityDropdownOpen = false;
         }
         GUILayout.EndHorizontal();
         if (isCreatureDropdownOpen)
@@ -972,6 +1268,9 @@ public class TestGameMasterGUI : MonoBehaviour
             isModDropdownOpen = false;
             isItemTypeDropdownOpen = false;
             isItemSelectDropdownOpen = false;
+            isEquipProfessionDropdownOpen = false;
+            isEquipTypeDropdownOpen = false;
+            isEquipRarityDropdownOpen = false;
         }
         //等级: 随机开关 + 滑条
         GUILayout.Label("等级", labelStyle, GUILayout.Width(36));
@@ -1051,6 +1350,9 @@ public class TestGameMasterGUI : MonoBehaviour
             isRarityDropdownOpen = false;
             isItemTypeDropdownOpen = false;
             isItemSelectDropdownOpen = false;
+            isEquipProfessionDropdownOpen = false;
+            isEquipTypeDropdownOpen = false;
+            isEquipRarityDropdownOpen = false;
         }
         GUILayout.EndHorizontal();
         if (isModDropdownOpen)

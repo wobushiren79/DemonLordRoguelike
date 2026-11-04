@@ -521,7 +521,7 @@ public class UserUnlockBean
 
     /// <summary>
     /// 获取魔王每次自动拾取的魔晶数量
-    /// 基础 1 颗 + DemonLordAutoPickCrystalNum 研究等级（level_max=5，满级每次 6 颗）；仅在自动拾取本身已解锁时才有意义
+    /// 基础 1 颗 + DemonLordAutoPickCrystalNum 研究等级（level_max=10，满级每次 11 颗）；仅在自动拾取本身已解锁时才有意义
     /// </summary>
     /// <returns>单次自动拾取的魔晶颗数</returns>
     public int GetUnlockDemonLordAutoPickCrystalCount()

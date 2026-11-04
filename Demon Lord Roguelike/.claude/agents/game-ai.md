@@ -85,6 +85,11 @@ AICreatureEntity                    # 生物 AI 基类
 - **⚠️不能用「中心距 ≤ searchRange」判定**（2026-08 击退后卡死 BUG 根因）：索敌射线命中的是目标 collider **表面**，命中时两中心距离 = searchRange + collider半径——中心距口径比索敌严格一个 collider 半径，会把「索敌认为能打」的位置判成脱靶，造成 Idle→Move→Attack 死循环原地卡住（每帧切换、Move 的索敌 CD 拉满即切走导致位移代码永远执行不到）。
 - **无副作用场景**：敌人 Attack 中站定+目标（防守生物）不动 → 复查恒真；远程大 searchRange 恒真；近战目标被击退 0.5 出射线范围 → 搜不到 → 中断重索敌（设计目的）。
 
+### 人类弓箭手指定目标保靶（creatureId=1002）
+- **首搜不变**：Idle 仍按 `DisMaxByRoad` 选同一路正前方最远敌人；进入 Attack 后缓存目标 `creatureUUId`，后续不再因出现更远敌人而换目标。Dis 系仍不执行 `attack_search_range=10` 的数值过滤。
+- **统一查询**：`AICreatureEntity.CheckCreatureEntityInSearchResult(direction, target, snapshotUUId)` 与原索敌共用配置准备，底层 `FightCreatureSearchUtil.CheckCreatureEntityInSearchResult` 先验目标存活/表现对象/UUID，再按同一实体引用检查候选命中；Dis 分支复用原候选与方向过滤但跳过距离排名，Ray/Area 复用原结果，AI 不直接比较 roadIndex/x。
+- **攻击状态机**：`AIIntentDefenseCreatureAttack.FindNextTarget` 对 1002 固定 Right 查询，命中返回原目标、失效返回 null 回 Idle；`CheckTargetInAttackRange` 同步覆盖为指定目标复查（保留基类空引用兜底），因此死亡/换路/身后均会解锁。`FireExtraShot` 常态只做 O(1) 身份检查，仅 attackState==2 补完整查询，失效取消剩余连发；`IntentLeaving` 调 base 并清目标/UUID。5002 等其他生物仍每发重选目标。
+
 ### 额外攻击（攻击模块扩展，命名通用、不限于 BOSS）
 - **配置**：`NpcInfo.attack_mode_ext`（逗号分隔的 `AttackModeExtInfo` id）→ `AttackModeExtInfo`（`ext_type` 类型，目前仅 `1`=`AttackModeExtTypeEnum.BossSkill` 按间隔释放、`trigger_interval` 间隔秒、`attack_mode_id` 指向 `AttackModeInfo`）。
 - **实现位置**：逻辑全部在基类 `AIIntentCreatureAttack`（`InitExtraAttack/UpdateExtraAttackTimer/GetReadyExtraAttack` + `IntentEntering/IntentUpdate/AttackCreatureStart/AttackCreatureStartEnd/IntentLeaving` 挂钩），进攻/防守生物均自动获得，**无需新增意图/枚举/工厂**。

@@ -9,6 +9,7 @@ using TMPro;
 /// 稀有度区(ContentRarity,多选)、道具类型区(ContentItemType,选项按上下文动态传入并填充预留的 5 个项、多选)、
 /// 战斗区(ContentData,伤害/击杀/承伤/经验,排序键多选)、其它区(ContentOther,阵容/同类,排序键多选)。
 /// 各区段显隐由 listFilterType 推导;排序键按选择顺序决定优先级(index0=主键),战斗区选中项上移到容器最前以表达优先级、其它区保持原始顺序;
+/// 优先级条(PriorityShow/PriorityText)按选择顺序实时展示「排序优先级：A>B>C」,未选择任何排序键时隐藏;
 /// 点击「确认」回传 OrderFilterResultBean(排序键+名字+等级区间+稀有度+道具类型)。点击背景关闭。
 /// 约定:名字/等级/稀有度/道具类型为「命中即置顶」条件——调用方不删行、全部展示,只把命中项排到前面,再按排序键次级排序。
 /// </summary>
@@ -243,6 +244,8 @@ public partial class UIDialogOrderFilter : DialogView
         selectFilterTypes.RemoveAll(t => !dicItem.ContainsKey(t));
         //刷新排序项布局:战斗区选中上移,其它区保持原始顺序
         RefreshSortItemOrder();
+        //刷新排序优先级展示(回填的默认选中也要显示)
+        RefreshPriorityShow();
     }
     #endregion
 
@@ -324,6 +327,30 @@ public partial class UIDialogOrderFilter : DialogView
         //其它区:保持原始顺序,不上移,仅刷新布局
         if (ui_ContentOther != null && ui_ContentOther.gameObject.activeSelf)
             UGUIUtil.RefreshUISize(ui_ContentOther);
+    }
+
+    /// <summary>
+    /// 刷新排序优先级展示:按选择顺序(优先级从高到低)拼接已选排序键名称,显示「排序优先级：A>B>C」;
+    /// 未选择任何排序键时隐藏 PriorityShow;文本更新后刷新自身与父级容器布局
+    /// </summary>
+    protected void RefreshPriorityShow()
+    {
+        if (ui_PriorityShow == null)
+            return;
+        bool isShow = selectFilterTypes.Count > 0;
+        ui_PriorityShow.gameObject.SetActive(isShow);
+        //按选择的优先级顺序拼接各项名称
+        if (isShow && ui_PriorityText != null)
+        {
+            List<string> nameList = new List<string>();
+            for (int i = 0; i < selectFilterTypes.Count; i++)
+                nameList.Add(UIViewDialogOrderFilterItem.GetFilterName(selectFilterTypes[i]));
+            ui_PriorityText.text = string.Format(TextHandler.Instance.GetTextById(2000033), string.Join(">", nameList));
+        }
+        //先刷新优先级条自身高度,再刷新外层容器
+        UGUIUtil.RefreshUISize(ui_PriorityShow);
+        UGUIUtil.RefreshUISize(ui_ContentShow);
+        UGUIUtil.RefreshUISize(ui_DialogContent);
     }
 
     /// <summary>
@@ -456,6 +483,8 @@ public partial class UIDialogOrderFilter : DialogView
         foreach (var itemKV in dicItem)
             itemKV.Value.SetSelect(selectFilterTypes.Contains(itemKV.Key));
         RefreshSortItemOrder();
+        //选择变化后刷新排序优先级展示
+        RefreshPriorityShow();
     }
 
     /// <summary>

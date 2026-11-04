@@ -276,9 +276,12 @@ public partial class UICreatureManager : BaseUIComponent
         //把换下来得装备添加到背包里
         if (beforeItem != null)
             userData.AddBackpackItem(beforeItem);
+        //装备变更即时落盘(不在 CloseUI 统一保存:升级药水加点流程会经 CloseUI 跳转,提前保存会写丢未确认加点)
+        GameDataHandler.Instance.manager.SaveUserData();
 
-        //刷新相关UI
+        //刷新相关UI: 装备栏+卡片详情 + 生物卡片列表(装备皮肤影响卡片形象,不刷新会停在旧形象) + 背包列表
         ui_UIViewCreatureCardEquipDetails.RefreshShowEquip();
+        ui_UIViewCreatureCardList.RefreshAllCard();
         InitBackpackItemsData();
     }
 
@@ -299,9 +302,12 @@ public partial class UICreatureManager : BaseUIComponent
         //把换下来得装备添加到背包里
         if (beforeItem != null)
             userData.AddBackpackItem(beforeItem);
+        //卸下装备即时落盘(同装备,避免关闭页面后丢失)
+        GameDataHandler.Instance.manager.SaveUserData();
 
-        //刷新相关UI
+        //刷新相关UI: 装备栏+卡片详情 + 生物卡片列表(装备皮肤影响卡片形象,不刷新会停在旧形象) + 背包列表
         ui_UIViewCreatureCardEquipDetails.RefreshShowEquip();
+        ui_UIViewCreatureCardList.RefreshAllCard();
         InitBackpackItemsData();
     }
 
@@ -330,10 +336,11 @@ public partial class UICreatureManager : BaseUIComponent
 
     #region 点击事件
     /// <summary>
-    /// 点击返回
+    /// 点击返回(退出管理页前兜底落盘;升级药水加点流程不经此路径,不会提前写入未确认加点)
     /// </summary>
     public void OnClickForExit()
     {
+        GameDataHandler.Instance.manager.SaveUserData();
         UIHandler.Instance.OpenUIAndCloseOther<UIBaseCore>();
     }
 

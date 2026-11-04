@@ -305,6 +305,7 @@ private static void RegisterAll()
 | `FindCreatureEntity(DirectionEnum)` | 朝指定方向搜索多个目标 |
 | `FindCreatureEntityForSinge(Vector3)` | 朝指定向量方向搜索单个目标 |
 | `FindCreatureEntity(Vector3)` | 朝指定向量方向搜索多个目标；**`selfCreatureEntity` 为 null（已回收）时返回 null**，是全部索敌入口的兜底 |
+| `CheckCreatureEntityInSearchResult(DirectionEnum, target, snapshotUUId)` | 检查指定目标是否仍命中当前索敌；与普通搜索共用 NPC 优先范围、搜索类型、阵营、道路和起点配置，身份/候选命中由 `FightCreatureSearchUtil` 统一校验。用于 1002 人类弓箭手保靶 |
 
 ### AIHandler (AI处理器)
 
@@ -454,6 +455,14 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 - **机制**：`IntentUpdate` 开头（仅 `attackState` 0准备/1出手 阶段）调 `CheckTargetInAttackRange()`——**与索敌完全同口径**：向目标所在方向做一次同款 `FindCreatureEntityForSinge` 搜索，搜到任何目标即仍在射程内（可能搜到更近的新目标，攻击循环的 `ActionForAttackEnd` 会自然切换），搜不到才 `ChangeIntent(intentForIdle)` 中断回待机重新索敌，防"目标被击退/诱导拉远后隔老远还在攻击"；`attackState==2`（已发射等回调）不打断，交 `ActionForAttackEnd` 重索敌自然处理。
 - **⚠️不能用「中心距 ≤ searchRange」判定**（2026-08 击退后卡死 BUG 根因）：索敌射线命中的是目标 collider **表面**，命中时两中心距离 = searchRange + collider半径——中心距口径比索敌严格一个 collider 半径，会把「索敌认为能打」的位置判成脱靶，造成 Idle→Move→Attack 死循环原地卡住（每帧切换、Move 的索敌 CD 拉满即切走导致位移代码永远执行不到）。
 - **无副作用场景**：敌人 Attack 中站定+目标（防守生物）不动 → 复查恒真；远程大 searchRange 恒真；近战目标被击退 0.5 出射线范围 → 搜不到 → 中断重索敌（设计目的）。
+
+---
+
+## 人类弓箭手指定目标保靶（creatureId=1002）
+
+- **首搜与保靶**：Idle 仍按 `DisMaxByRoad` 选同一路正前方最远目标；进入 Attack 后缓存目标 UUID，之后每发结束不再重选最远，而是通过 `AICreatureEntity.CheckCreatureEntityInSearchResult` 查询原目标是否仍命中搜索。Dis 复查与原搜索共用候选和方向过滤、仅跳过距离排名，**仍不启用 attack_search_range=10 数值过滤**。
+- **身份与失效**：`FightCreatureSearchUtil.CheckCreatureEntityInSearchResult` 先验目标存活、表现对象和锁定 UUID，再按同一实体引用查候选，防对象池 ABA；目标死亡、UUID 变化、换路或移动到身后即失效。AI 不直接比较 roadIndex/position.x。
+- **状态机覆盖**：`AIIntentDefenseCreatureAttack.FindNextTarget` 对 1002 固定 Right 查询，命中返回原目标、失败返回 null 回 Idle；`CheckTargetInAttackRange` 使用同一查询并保留基类空引用兜底。`FireExtraShot` 常态只做 O(1) 身份检查，仅 attackState==2 补完整搜索，失败取消剩余连发；`IntentLeaving` 调 base 并清目标/UUID。5002 牛头人投手及其他生物保持原每发重索敌逻辑。
 
 ---
 

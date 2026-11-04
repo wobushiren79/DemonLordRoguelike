@@ -112,11 +112,11 @@ public partial class UIViewDialogOrderFilterItem : BaseUIView
 
     #region 私有方法
     /// <summary>
-    /// 获取排序键对应的多语言名称
+    /// 获取排序键对应的多语言名称(供项视图与弹窗排序优先级展示共用)
     /// </summary>
     /// <param name="filterType">排序键</param>
     /// <returns>名称文本</returns>
-    protected string GetFilterName(OrderFilterTypeEnum filterType)
+    public static string GetFilterName(OrderFilterTypeEnum filterType)
     {
         switch (filterType)
         {
