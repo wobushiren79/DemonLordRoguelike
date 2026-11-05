@@ -2821,7 +2821,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 600, y: -32}
-  m_SizeDelta: {x: 1200, y: 0}
+  m_SizeDelta: {x: 1180, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5338922280311937369
 CanvasRenderer:
@@ -4042,8 +4042,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
   m_Padding:
-    m_Left: 16
-    m_Right: 16
+    m_Left: 0
+    m_Right: 0
     m_Top: 32
     m_Bottom: 32
   m_ChildAlignment: 4

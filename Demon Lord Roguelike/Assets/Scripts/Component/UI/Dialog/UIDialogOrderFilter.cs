@@ -9,7 +9,8 @@ using TMPro;
 /// 稀有度区(ContentRarity,多选)、道具类型区(ContentItemType,选项按上下文动态传入并填充预留的 5 个项、多选)、
 /// 战斗区(ContentData,伤害/击杀/承伤/经验,排序键多选)、其它区(ContentOther,阵容/同类,排序键多选)。
 /// 各区段显隐由 listFilterType 推导;排序键按选择顺序决定优先级(index0=主键),战斗区选中项上移到容器最前以表达优先级、其它区保持原始顺序;
-/// 优先级条(PriorityShow/PriorityText)按选择顺序实时展示「排序优先级：A>B>C」,未选择任何排序键时隐藏;
+/// 优先级条(PriorityShow/PriorityText)实时展示「排序优先级：名字(值)>等级(a-b)>稀有度(每值一段)>道具类型(每值一段)>排序键」,
+/// 名字/等级输入即参与且优先级最高,无任何生效条件时隐藏;弹窗内容固定屏幕居中显示;
 /// 点击「确认」回传 OrderFilterResultBean(排序键+名字+等级区间+稀有度+道具类型)。点击背景关闭。
 /// 约定:名字/等级/稀有度/道具类型为「命中即置顶」条件——调用方不删行、全部展示,只把命中项排到前面,再按排序键次级排序。
 /// </summary>
@@ -74,10 +75,12 @@ public partial class UIDialogOrderFilter : DialogView
         InitRaritySection(listFilterType);
         InitItemTypeSection(listFilterType);
         InitSortSections(listFilterType);
-        //内层排布完成后再刷新外层容器,最后按触发按钮定位
+        //内层排布完成后再刷新外层容器,最后定位弹窗内容
         UGUIUtil.RefreshUISize(ui_ContentShow);
         UGUIUtil.RefreshUISize(ui_DialogContent);
-        RefreshDialogContentPosition(filterData.targetButton);
+        //按触发按钮实时定位已停用(改为固定居中),原逻辑注释保留便于还原
+        //RefreshDialogContentPosition(filterData.targetButton);
+        SetDialogContentCenter();
     }
     #endregion
 
@@ -110,6 +113,9 @@ public partial class UIDialogOrderFilter : DialogView
         if (ui_ContentNameInput.placeholder is TextMeshProUGUI placeholder)
             placeholder.text = TextHandler.Instance.GetTextById(302);
         ui_ContentNameInput.SetTextWithoutNotify(defaultName ?? "");
+        //名字输入实时刷新优先级展示
+        ui_ContentNameInput.onValueChanged.RemoveAllListeners();
+        ui_ContentNameInput.onValueChanged.AddListener(OnNameValueChanged);
         UGUIUtil.RefreshUISize(ui_ContentName);
     }
 
@@ -330,27 +336,91 @@ public partial class UIDialogOrderFilter : DialogView
     }
 
     /// <summary>
-    /// 刷新排序优先级展示:按选择顺序(优先级从高到低)拼接已选排序键名称,显示「排序优先级：A>B>C」;
-    /// 未选择任何排序键时隐藏 PriorityShow;文本更新后刷新自身与父级容器布局
+    /// 刷新排序优先级展示:按优先级拼接当前所有生效条件——名字(最高)>等级>稀有度(每个选中值单独一段)>
+    /// 道具类型(每个选中值单独一段)>排序键(按选择顺序),仅显示中的区段参与;
+    /// 无任何条件时隐藏 PriorityShow;文本更新后刷新自身与父级容器布局
     /// </summary>
     protected void RefreshPriorityShow()
     {
         if (ui_PriorityShow == null)
             return;
-        bool isShow = selectFilterTypes.Count > 0;
-        ui_PriorityShow.gameObject.SetActive(isShow);
-        //按选择的优先级顺序拼接各项名称
-        if (isShow && ui_PriorityText != null)
+        List<string> segmentList = new List<string>();
+        //名字:输入非空即参与,优先级最高
+        if (IsSectionActive(ui_ContentName) && ui_ContentNameInput != null && !string.IsNullOrEmpty(ui_ContentNameInput.text))
+            segmentList.Add(FormatPrioritySegment(2000019, ui_ContentNameInput.text));
+        //等级:左/右任一有值即参与,优先级仅次于名字
+        if (IsSectionActive(ui_ContentLevel))
         {
-            List<string> nameList = new List<string>();
-            for (int i = 0; i < selectFilterTypes.Count; i++)
-                nameList.Add(UIViewDialogOrderFilterItem.GetFilterName(selectFilterTypes[i]));
-            ui_PriorityText.text = string.Format(TextHandler.Instance.GetTextById(2000033), string.Join(">", nameList));
+            string levelRange = GetPriorityLevelRange();
+            if (!string.IsNullOrEmpty(levelRange))
+                segmentList.Add(FormatPrioritySegment(2000020, levelRange));
         }
+        //稀有度:每个选中值单独一段,保持选择顺序
+        if (IsSectionActive(ui_ContentRarity))
+        {
+            for (int i = 0; i < selectRarities.Count; i++)
+            {
+                RarityEnum rarity = selectRarities[i];
+                RarityInfoBean rarityInfo = RarityInfoCfg.GetItemData(rarity);
+                segmentList.Add(FormatPrioritySegment(2000018, rarityInfo != null ? rarityInfo.name_language : rarity.ToString()));
+            }
+        }
+        //道具类型:每个选中值单独一段,保持选择顺序
+        if (IsSectionActive(ui_ContentItemType))
+        {
+            for (int i = 0; i < selectItemTypes.Count; i++)
+            {
+                ItemTypeEnum itemType = selectItemTypes[i];
+                ItemsTypeBean itemsTypeInfo = ItemsTypeCfg.GetItemData(itemType);
+                segmentList.Add(FormatPrioritySegment(2000025, itemsTypeInfo != null ? itemsTypeInfo.name_language : itemType.ToString()));
+            }
+        }
+        //排序键:按选择顺序(优先级从高到低)
+        for (int i = 0; i < selectFilterTypes.Count; i++)
+            segmentList.Add(UIViewDialogOrderFilterItem.GetFilterName(selectFilterTypes[i]));
+        //无任何生效条件则隐藏优先级条
+        bool isShow = segmentList.Count > 0;
+        ui_PriorityShow.gameObject.SetActive(isShow);
+        if (isShow && ui_PriorityText != null)
+            ui_PriorityText.text = string.Format(TextHandler.Instance.GetTextById(2000033), string.Join(">", segmentList));
         //先刷新优先级条自身高度,再刷新外层容器
         UGUIUtil.RefreshUISize(ui_PriorityShow);
         UGUIUtil.RefreshUISize(ui_ContentShow);
         UGUIUtil.RefreshUISize(ui_DialogContent);
+    }
+
+    /// <summary>
+    /// 区段是否显示(优先级条只展示显示中的区段,避免隐藏区段的默认值混入)
+    /// </summary>
+    /// <param name="section">区段容器</param>
+    /// <returns>是否显示</returns>
+    protected bool IsSectionActive(RectTransform section)
+    {
+        return section != null && section.gameObject.activeSelf;
+    }
+
+    /// <summary>
+    /// 拼接「维度名(值)」形式的一段优先级文本
+    /// </summary>
+    /// <param name="titleTextId">维度名多语言id</param>
+    /// <param name="value">具体值</param>
+    /// <returns>片段文本</returns>
+    protected string FormatPrioritySegment(long titleTextId, string value)
+    {
+        return string.Format("{0}({1})", TextHandler.Instance.GetTextById(titleTextId), value);
+    }
+
+    /// <summary>
+    /// 读取等级输入用于优先级展示:左右都为空返回空串,单侧为空时显示为「5-」/「-10」
+    /// </summary>
+    /// <returns>等级区间文本</returns>
+    protected string GetPriorityLevelRange()
+    {
+        string left = ui_ContentLevelLeftInput != null ? ui_ContentLevelLeftInput.text : "";
+        string right = ui_ContentLevelRightInput != null ? ui_ContentLevelRightInput.text : "";
+        if (string.IsNullOrEmpty(left) && string.IsNullOrEmpty(right))
+            return "";
+        return string.Format("{0}-{1}", left, right);
     }
 
     /// <summary>
@@ -413,26 +483,38 @@ public partial class UIDialogOrderFilter : DialogView
     }
 
     /// <summary>
-    /// 根据触发按钮调整弹窗内容(DialogContent)的位置与轴心。
-    /// 轴心按鼠标所在屏幕象限取值:左下(0,0)/右下(1,0)/左上(0,1)/右上(1,1),使内容朝屏幕内侧展开;位置对齐到触发按钮处。
+    /// 弹窗内容(DialogContent)固定居中显示:轴心取中心(0.5,0.5),位置归零(锚点在弹窗根中心)
     /// </summary>
-    /// <param name="targetButton">触发弹窗的按钮</param>
-    protected void RefreshDialogContentPosition(RectTransform targetButton)
+    protected void SetDialogContentCenter()
     {
         if (ui_DialogContent == null)
             return;
-        //轴心:依据鼠标所在屏幕象限
-        float pivotX = Input.mousePosition.x <= Screen.width / 2f ? 0 : 1;
-        float pivotY = Input.mousePosition.y <= Screen.height / 2f ? 0 : 1;
-        ui_DialogContent.pivot = new Vector2(pivotX, pivotY);
-        //位置:对齐到触发按钮(转换为内容父级——弹窗根——的本地坐标)
-        if (targetButton != null)
-        {
-            Vector3 screenPoint = RectTransformUtility.WorldToScreenPoint(null, targetButton.position);
-            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, screenPoint, null, out Vector2 localPoint))
-                ui_DialogContent.anchoredPosition = localPoint;
-        }
+        ui_DialogContent.pivot = new Vector2(0.5f, 0.5f);
+        ui_DialogContent.anchoredPosition = Vector2.zero;
     }
+
+    // 已改为固定居中显示,以下「按触发按钮实时定位」逻辑注释保留,便于以后还原(还原时把 SetData 改回调用本方法即可)
+    ///// <summary>
+    ///// 根据触发按钮调整弹窗内容(DialogContent)的位置与轴心。
+    ///// 轴心按鼠标所在屏幕象限取值:左下(0,0)/右下(1,0)/左上(0,1)/右上(1,1),使内容朝屏幕内侧展开;位置对齐到触发按钮处。
+    ///// </summary>
+    ///// <param name="targetButton">触发弹窗的按钮</param>
+    //protected void RefreshDialogContentPosition(RectTransform targetButton)
+    //{
+    //    if (ui_DialogContent == null)
+    //        return;
+    //    //轴心:依据鼠标所在屏幕象限
+    //    float pivotX = Input.mousePosition.x <= Screen.width / 2f ? 0 : 1;
+    //    float pivotY = Input.mousePosition.y <= Screen.height / 2f ? 0 : 1;
+    //    ui_DialogContent.pivot = new Vector2(pivotX, pivotY);
+    //    //位置:对齐到触发按钮(转换为内容父级——弹窗根——的本地坐标)
+    //    if (targetButton != null)
+    //    {
+    //        Vector3 screenPoint = RectTransformUtility.WorldToScreenPoint(null, targetButton.position);
+    //        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, screenPoint, null, out Vector2 localPoint))
+    //            ui_DialogContent.anchoredPosition = localPoint;
+    //    }
+    //}
 
     /// <summary>
     /// 确认:汇总各区段为 OrderFilterResultBean(名字/等级/稀有度/道具类型仅在对应区段显示时生效),回传并关闭弹窗
@@ -499,6 +581,8 @@ public partial class UIDialogOrderFilter : DialogView
             selectRarities.Add(rarity);
         foreach (var itemKV in dicRarityItem)
             itemKV.Value.SetSelect(selectRarities.Contains(itemKV.Key));
+        //选择变化后刷新排序优先级展示
+        RefreshPriorityShow();
     }
 
     /// <summary>
@@ -513,10 +597,21 @@ public partial class UIDialogOrderFilter : DialogView
             selectItemTypes.Add(itemType);
         foreach (var itemKV in dicItemTypeItem)
             itemKV.Value.SetSelect(selectItemTypes.Contains(itemKV.Key));
+        //选择变化后刷新排序优先级展示
+        RefreshPriorityShow();
     }
 
     /// <summary>
-    /// 左等级输入完成:夹为非负;若右输入有值且左大于右,则左夹到右(左不能大于右)
+    /// 名字输入变化:实时刷新排序优先级展示(名字输入后优先级最高)
+    /// </summary>
+    /// <param name="value">输入文本</param>
+    protected void OnNameValueChanged(string value)
+    {
+        RefreshPriorityShow();
+    }
+
+    /// <summary>
+    /// 左等级输入完成:夹为非负;若右输入有值且左大于右,则左夹到右(左不能大于右);随后刷新优先级展示
     /// </summary>
     /// <param name="value">输入文本</param>
     protected void OnLevelLeftEndEdit(string value)
@@ -525,16 +620,18 @@ public partial class UIDialogOrderFilter : DialogView
         if (!hasValue)
         {
             ui_ContentLevelLeftInput.SetTextWithoutNotify("");
+            RefreshPriorityShow();
             return;
         }
         int right = ParseLevelOrDefault(ui_ContentLevelRightInput, int.MaxValue);
         if (left > right)
             left = right;
         ui_ContentLevelLeftInput.SetTextWithoutNotify(left.ToString());
+        RefreshPriorityShow();
     }
 
     /// <summary>
-    /// 右等级输入完成:夹为非负;若左输入有值且右小于左,则右夹到左(右不能小于左)
+    /// 右等级输入完成:夹为非负;若左输入有值且右小于左,则右夹到左(右不能小于左);随后刷新优先级展示
     /// </summary>
     /// <param name="value">输入文本</param>
     protected void OnLevelRightEndEdit(string value)
@@ -543,12 +640,14 @@ public partial class UIDialogOrderFilter : DialogView
         if (!hasValue)
         {
             ui_ContentLevelRightInput.SetTextWithoutNotify("");
+            RefreshPriorityShow();
             return;
         }
         int left = ParseLevelOrDefault(ui_ContentLevelLeftInput, 0);
         if (right < left)
             right = left;
         ui_ContentLevelRightInput.SetTextWithoutNotify(right.ToString());
+        RefreshPriorityShow();
     }
 
     /// <summary>

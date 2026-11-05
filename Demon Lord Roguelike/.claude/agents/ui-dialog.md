@@ -49,16 +49,16 @@ public class UIDialogExample : DialogView
 
 ## 排序筛选弹窗 UIDialogOrderFilter 使用说明
 
-通用「排序筛选」弹窗：在某个按钮处弹出，**按 6 个区段分组**（外层 `ContentShow` 竖排）：
+通用「排序筛选」弹窗：由某个按钮触发、**固定屏幕居中弹出**，**按 6 个区段分组**（外层 `ContentShow` 竖排）：
 - **条件区**（命中即置顶，**不删行、全部展示**）：`ContentName`（模糊名字输入框，大小写不敏感子串）、`ContentLevel`（左右两个整数输入构成等级区间，仅数字、≥0、左≤右）、`ContentRarity`（N/R/SR/SSR/UR/L 多选）、`ContentItemType`（道具类型多选，选项由调用方经 `itemTypes` 动态传入、填充预留 5 项）。命中这些条件的数据排到列表前面，未命中的仍展示。
 - **排序区**（多选排序键，按选择顺序定优先级 index0=主键，选中项上移到各自容器标题之后作优先级反馈）：`ContentData`「战斗」（伤害/击杀/承伤/经验）、`ContentOther`「其它」（阵容/同类）。
-- **排序优先级条**：`PriorityShow`（`DialogContent` 内、`ContentShow` 之后，竖排 + ContentSizeFitter）内含单个 `PriorityText`，按选择顺序实时显示「排序优先级：伤害>击杀>经验」（文本 `2000033`，名称复用 `UIViewDialogOrderFilterItem.GetFilterName`，`>` 连接）；**未选择任何排序键时隐藏**。每次选择变化/回填后 `RefreshPriorityShow()` 先刷 `PriorityShow` 自身再刷 `ContentShow`/`DialogContent` 布局。
+- **排序优先级条**：`PriorityShow`（`DialogContent` 内、`ContentShow` 之后，竖排 + ContentSizeFitter）内含单个 `PriorityText`，实时显示全部生效条件（文本 `2000033`，片段用 `>` 连接）：「排序优先级：名字(骷髅)>等级(5-10)>稀有度(SR)>稀有度(SSR)>道具类型(武器)>伤害>阵容」。顺序：**名字（输入即参与，最高）> 等级（区间，次之）> 稀有度（每个选中值单独一段、按选择顺序）> 道具类型（每个选中值单独一段、按选择顺序）> 排序键（按选择顺序）**；只有显示中的区段参与，**无任何条件时隐藏**。每次选择变化/回填/名字实时输入/等级输入完成都会调 `RefreshPriorityShow()`，先刷 `PriorityShow` 自身再刷 `ContentShow`/`DialogContent` 布局。
 
-各区段显隐由 `listFilterType` **推导**：含 `Name`→名字区、`Level`→等级区、`Rarity`→稀有度区、含 `ItemType` 且有可选道具类型→道具类型区、含战斗维度(Damage/Kill/DamageReceived/Exp)→战斗区、含 `Lineup/Class`→其它区；`listFilterType` 为空则全显。单个「确认」按钮（节点 `Submit`/文本 `TextSubmit`，绑定基类 `DialogView.ui_Submit`，走重写 `SubmitOnClick`）回传 **`OrderFilterResultBean`**；点击背景关闭。**无正/倒序概念，排序方向由各调用方自行固定**。
+各区段显隐由 `listFilterType` **推导**：含 `Name`→名字区、`Level`→等级区、`Rarity`→稀有度区、含 `ItemType` 且有可选道具类型→道具类型区、含战斗维度(Damage/Kill/DamageReceived/Exp)→战斗区、含 `Lineup/Class`→其它区；`listFilterType` 为空则全显。单个「确认」按钮（节点 `Submit`/文本 `TextSubmit`，绑定基类 `DialogView.ui_Submit`，走重写 `SubmitOnClick`）回传 **`OrderFilterResultBean`**；点击背景关闭。**无正/倒序概念，排序方向由各调用方自行固定**。**弹窗内容固定屏幕居中**（`SetDialogContentCenter`，`pivot=(0.5,0.5)`+`anchoredPosition=zero`），不再跟随触发按钮；原 `RefreshDialogContentPosition` 实时定位逻辑已注释保留便于还原，`targetButton` 参数仍保留但当前未使用。
 
 ```csharp
 UIHandler.Instance.ShowDialogOrderFilter(
-    ui_OrderBtn_Button.transform as RectTransform,            // 触发按钮：弹窗内容定位到它处
+    ui_OrderBtn_Button.transform as RectTransform,            // 触发按钮：当前仅保留参数(弹窗已固定居中，不再按它定位)
     OnConfirmOrderFilter,                                     // 确认回调 Action<OrderFilterResultBean>
     listFilterType,                                           // 开放哪些维度(决定区段显隐;null=全显)
     new List<OrderFilterTypeEnum>(currentFilter.sortTypes),   // 默认已选排序键(回填)
