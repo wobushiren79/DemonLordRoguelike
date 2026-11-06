@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+## Codex 兼容入口
+
+本文件、`.claude/agents/`、`.claude/skills/` 和 `.claude/memory/` 同时供 Claude 与 Codex 使用，统一在原位置维护。Codex 通过[仓库 AGENTS.md](../AGENTS.md)直接查找、读取原文；新增或修改文档直接生效，无需额外同步。
+
 ## 回复语言规则
 
 **所有 AI 的回答，以及让用户做的任何选择（如 AskUserQuestion 的问题与选项），都必须使用中文。** 包括任务说明、总结、提问、选项标签与描述等面向用户的文本一律用中文表述。
