@@ -1,5 +1,6 @@
 """Rebuild the Crimson Crown Palace atlas and its Blender and Unity models."""
 import argparse
+import json
 import math
 import struct
 import sys
@@ -9,6 +10,9 @@ from pathlib import Path
 
 import bpy
 import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from crimson_crown_parts import PART_TAG, parent_in_place, split_legacy_props
 
 NAME = "CrimsonCrown_Palace_Atlas"
 WIDTH, HEIGHT = 512, 1024
@@ -249,18 +253,31 @@ class MeshGroup:
         return obj
 
 
-def group_meshes(objects, entries, material):
+def group_meshes(objects, entries):
     groups = defaultdict(MeshGroup)
     unity_groups = defaultdict(lambda: MeshGroup(for_unity=True))
+    placements = []
+    seen = set()
     for obj in objects:
         collection = obj.users_collection[0]
         mesh = obj.data
-        transform = obj.matrix_world
+        placeable = obj.get(PART_TAG)
+        name = mesh.name if placeable else f"{collection.name}__Atlas"
+        key = (collection, name)
+        if placeable:
+            placements.append({
+                "name": obj.name, "group": collection.name, "mesh": name,
+                "parent": obj.parent.name if obj.parent and obj.parent.get(PART_TAG) else "",
+                "matrix": obj.matrix_world.copy(),
+            })
+            if key in seen:
+                continue
+            seen.add(key)
         mesh.calc_loop_triangles()
         uv = mesh.uv_layers.active.uv
-        positions = [transform @ vertex.co for vertex in mesh.vertices]
-        group = groups[collection]
-        unity_group = unity_groups[collection]
+        positions = [vertex.co.copy() if placeable else obj.matrix_world @ vertex.co
+                     for vertex in mesh.vertices]
+        group, unity_group = groups[key], unity_groups[key]
         for triangle in mesh.loop_triangles:
             entry = entries[mesh.materials[triangle.material_index].name]
             polygon = [(uv[loop].vector.copy(), positions[vertex])
@@ -271,39 +288,112 @@ def group_meshes(objects, entries, material):
                     group.add(fragment, entry, x, y)
             else:
                 group.add(polygon, entry)
-    for obj in objects:
+    return unity_groups, groups, placements
+
+
+def export_unity(fbx_path, groups, placements, material):
+    meshes = [group.make_object(name, collection, material)
+              for (collection, name), group in groups.items()]
+    markers = []
+    for part in placements:
+        marker = bpy.data.objects.new(f"Place__{part['name']}", None)
+        bpy.data.collections[part["group"]].objects.link(marker)
+        marker.matrix_world = part["matrix"]
+        markers.append(marker)
+
+    bpy.context.view_layer.update()
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in meshes + markers:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = meshes[0]
+    bpy.ops.export_scene.fbx(filepath=str(fbx_path), use_selection=True,
+                             object_types={"MESH", "EMPTY"}, axis_forward="-Z", axis_up="Y",
+                             apply_unit_scale=True, add_leaf_bones=False, path_mode="RELATIVE",
+                             mesh_smooth_type="FACE")
+    triangles = sum(len(obj.data.polygons) for obj in meshes)
+    for obj in meshes + markers:
         bpy.data.objects.remove(obj, do_unlink=True)
-    return (
-        [group.make_object(f"{collection.name}__Atlas", collection, material)
-         for collection, group in unity_groups.items()],
-        groups,
-    )
+    return triangles
+
+
+def create_atlas_scene(groups, placements, material):
+    by_mesh = defaultdict(list)
+    for part in placements:
+        by_mesh[(part["group"], part["mesh"])].append(part)
+
+    instances = {}
+    for (collection, name), group in groups.items():
+        obj = group.make_object(name, collection, material)
+        parts = by_mesh[(collection.name, name)]
+        for index, part in enumerate(parts):
+            if index > 0:
+                copy = bpy.data.objects.new(part["name"], obj.data)
+                collection.objects.link(copy)
+            else:
+                copy = obj
+                copy.name = part["name"]
+            copy.matrix_world = part["matrix"]
+            copy[PART_TAG] = True
+            instances[part["name"]] = copy
+
+    bpy.context.view_layer.update()
+    for part in placements:
+        if part["parent"]:
+            parent_in_place(instances[part["name"]], instances[part["parent"]])
+    return instances
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", required=True, type=Path, help="Archived editable palace .blend.")
-    parser.add_argument("--output", required=True, type=Path, help="Directory for the three rebuilt assets.")
+    parser.add_argument("--output", required=True, type=Path, help="Directory for the rebuilt assets.")
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     args = parser.parse_args(argv)
     output = args.output.resolve()
     atlas_path = output / "palace_crimson_crown_atlas_1.png"
     fbx_path = output / "Building_Palace_CrimsonCrown_1.fbx"
     blend_path = output / "Building_Palace_CrimsonCrown_Atlas_1.blend"
-    if any(path.exists() for path in (atlas_path, fbx_path, blend_path)):
+    source_path = output / "Building_Palace_CrimsonCrown_Source_1.blend"
+    layout_path = output / "palace_instances.json"
+    if any(path.exists() for path in (atlas_path, fbx_path, blend_path, source_path, layout_path)):
         parser.error("An output already exists. Choose a different output directory.")
     bpy.ops.wm.open_mainfile(filepath=str(args.source.resolve(strict=True)))
     output.mkdir(parents=True, exist_ok=True)
+
+    visibility = {collection: (collection.hide_viewport, collection.hide_render)
+                  for obj in bpy.data.objects if obj.type == "MESH" for collection in obj.users_collection}
+    for collection in visibility:
+        collection.hide_viewport = collection.hide_render = False
+    bpy.context.view_layer.update()
+    split_legacy_props()
+    bpy.context.view_layer.update()
+    for collection, (viewport, render) in visibility.items():
+        collection.hide_viewport, collection.hide_render = viewport, render
+    bpy.context.preferences.filepaths.save_version = 0
+    bpy.ops.wm.save_as_mainfile(filepath=str(source_path))
+    for collection in visibility:
+        collection.hide_viewport = collection.hide_render = False
+    bpy.context.view_layer.update()
+
     objects = [obj for obj in bpy.data.objects if obj.type == "MESH"]
     materials = {slot.material for obj in objects for slot in obj.material_slots}
     entries = build_atlas(materials, atlas_path)
     material, image = shared_material(atlas_path)
-    visibility = {collection: (collection.hide_viewport, collection.hide_render)
-                  for obj in objects for collection in obj.users_collection}
-    for collection in visibility:
-        collection.hide_viewport = collection.hide_render = False
+    unity_groups, portable_groups, placements = group_meshes(objects, entries)
+    triangle_count = export_unity(fbx_path, unity_groups, placements, material)
+    layout_path.write_text(json.dumps([
+        {key: value for key, value in part.items() if key != "matrix"}
+        for part in placements
+    ], indent=2) + "\n", encoding="utf-8")
 
-    unity_meshes, portable_groups = group_meshes(objects, entries, material)
+    lights = [(light, light.parent.name, light.matrix_world.copy()) for light in bpy.data.objects
+              if light.type == "LIGHT" and light.parent and light.parent.get(PART_TAG)]
+    for obj in objects:
+        bpy.data.objects.remove(obj, do_unlink=True)
+    instances = create_atlas_scene(portable_groups, placements, material)
+    for light, parent, matrix in lights:
+        light.parent = instances[parent]
+        light.matrix_world = matrix
     for mesh in list(bpy.data.meshes):
         if mesh.users == 0:
             bpy.data.meshes.remove(mesh)
@@ -312,33 +402,12 @@ def main():
     for previous in list(bpy.data.images):
         if previous != image and previous.users == 0:
             bpy.data.images.remove(previous)
-
-    bpy.ops.object.select_all(action="DESELECT")
-    for obj in unity_meshes:
-        obj.select_set(True)
-    bpy.context.view_layer.objects.active = unity_meshes[0]
-    bpy.ops.export_scene.fbx(filepath=str(fbx_path), use_selection=True,
-                             object_types={"MESH"}, axis_forward="-Z", axis_up="Y", apply_unit_scale=True,
-                             add_leaf_bones=False, path_mode="RELATIVE", mesh_smooth_type="FACE")
-    unity_triangles = sum(len(obj.data.polygons) for obj in unity_meshes)
-    for obj in unity_meshes:
-        mesh = obj.data
-        bpy.data.objects.remove(obj, do_unlink=True)
-        bpy.data.meshes.remove(mesh)
-    merged = [group.make_object(f"{collection.name}__Atlas", collection, material)
-              for collection, group in portable_groups.items()]
-    bpy.context.view_layer.update()
-    for obj in merged:
-        obj.select_set(True)
-    bpy.context.view_layer.objects.active = merged[0]
     for collection, (viewport, render) in visibility.items():
         collection.hide_viewport, collection.hide_render = viewport, render
     image.filepath = bpy.path.relpath(str(atlas_path), start=str(output))
-    bpy.context.preferences.filepaths.save_version = 0
     bpy.ops.wm.save_as_mainfile(filepath=str(blend_path))
-    print(f"Atlas {WIDTH}x{HEIGHT}, {len(materials)} source surfaces, "
-          f"{len(merged)} mesh groups, {unity_triangles} FBX triangles, "
-          f"{sum(len(obj.data.polygons) for obj in merged)} portable triangles")
+    print(f"Atlas {WIDTH}x{HEIGHT}, {len(placements)} placements, "
+          f"{len(unity_groups)} unique FBX meshes and {triangle_count} unique triangles")
 
 
 if __name__ == "__main__":
