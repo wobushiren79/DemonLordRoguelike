@@ -559,12 +559,14 @@ public partial class FightCreatureEntity
     }
 
     /// <summary>
-    /// 增加动画
+    /// 增加动画（未显式指定动画名时按生物配置 anim_* 解析，与 PlayAnim 同口径，避免排队动画绕过生物覆盖——如长枪骑士待机须播马上 Idle2 而非骨架候选 Idle）
     /// </summary>
     public TrackEntry AddAnim(int trackIndex, SpineAnimationStateEnum animationCreatureState, bool isLoop, float delay, string animNameAppoint = null, float animSpeed = 1)
     {
         if (creatureSkeletionAnimation == null)
             return null;
+        if (animNameAppoint.IsNull() && fightCreatureData?.creatureData != null)
+            return SpineHandler.Instance.AddAnimation(creatureSkeletionAnimation, trackIndex, animationCreatureState, isLoop, delay, fightCreatureData.creatureData, animSpeed: animSpeed);
         var animData = SpineHandler.Instance.AddAnimation(creatureSkeletionAnimation, trackIndex, animationCreatureState, isLoop, delay, animNameAppoint, animSpeed: animSpeed);
         return animData;
     }

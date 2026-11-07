@@ -91,6 +91,8 @@ Bean/
 
 > **`RewardSelectBean` 装备位规划（2026-09-22，手写同上文件）**：`InitRewardList` 先经 `PlanRewardSlotTypes(unlockCreatureModelIds)` 规划各位置类型——前 `createEquipNum`（默认1）个为保底装备位（首箱必得），装备池非空且还有魔晶位时**随机 1 个魔晶位升级为装备位**（隐藏装备箱，稀有度/魔王专属概率同保底位规则）；默认构成=**2 装备 + 2 魔晶**（装备池为空时 4 魔晶）。魔晶位索引随生成逐位记录到 `crystalSlotIndices`，`ReplaceCrystalSlotBySourceItem` 改吃该索引列表（不再按 `[createEquipNum, createItemNum)` 区间推算），保证来源道具只替换真实魔晶位。
 
+> **`AttackModeInfoBeanPartial.GetLanceChargeConfig(out jumpTime, out jumpHeight, out chargeFxId, out landFxId)`（手写 Partial，2026-11 新增）**：解析攻击模块 `other_data` 的 `jump_time`/`jump_height`/`charge_fx`/`land_fx` 键（懒解析缓存；jumpTime 钳 0.2~0.8s、jumpHeight 钳 0~5、特效 id 0=不播放），供 `AttackModeChargeLanceKnight`（长枪骑士 BOSS 技能 102004）使用；与 `GetShieldCastConfig`/`GetSummonConfig`/`GetMultiHitConfig` 同套路。Bean 自动生成文件禁改，扩展只写 Partial。
+
 ### Bean 命名规范
 - 基础 Bean 后缀：`Bean`
 - 部分数据 Bean：`BeanPartial`

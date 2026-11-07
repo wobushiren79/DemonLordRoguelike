@@ -22,6 +22,13 @@ metadata:
 ## ⚠️ 术语澄清（多个 AI 在此踩坑）
 游戏内"BOSS" = **敌方强力 NPC**（征服 `enemy_boss_ids` 刷出，创建为 `CreatureFightTypeEnum.FightAttack` 进攻型 → `AIAttackCreatureEntity` → `AIIntentAttackCreatureAttack`，见 `CreatureHandler` 敌人创建路径）。它**不是** `AIDefenseCoreCreatureEntity`——那是玩家防守的"魔王核心/水晶"。给 BOSS 加主动技能要改**攻击意图基类**，绝不是改核心生物 AI。
 
+## 2026-11 新增：长枪骑士沿路冲锋（ext 100015，scene=1）
+
+- `AttackModeExtInfo` `100015` → `AttackModeInfo` `102004`（`AttackModeChargeLanceKnight`），`ext_type=1`、`trigger_scene=1`、`trigger_interval=5`（scene=1 不生效，仅表意）。NPC `1041030001` 配 `ai_param=skill_update:100015:5`，走路/待机也放。
+- 与 scene=0 的「攻击意图内顶替普攻」不同：scene=1 走 `AIIntentAttackCreatureCastSkill`，出手后等待攻击模块回调，**兜底 3 秒**。攻击模块在 `Update()` 里移动施法者本体（沿本路 -X 冲到 `x=0.5` → 抛物线跳回原位），必须保证总时长 < 3 秒，并每帧校验存活/UUID/`currentIntentEnum == AttackCreatureCastSkill`，失配立即中止（跳跃中把 y 拉回地面）。
+- 配置不得复用：`100004`/`102002` 仍归大剑战士 `1041010001`、勇者 `1041040003`；长枪骑士普攻新建 `101008`（`AttackModeMeleeLanceStab`，本路 2 格直线突刺），**不要改共享的 `101006`**（大剑战士 `104101` 仍在用）。
+- 冲锋表现（2026-11 追加）：`102004.other_data` 增 `charge_fx:2200001&land_fx:700001`。`charge_fx` 是跟随施法者的风线特效（`EffectInfo` 2200001=`Effect_ChargeWind_1`，由 `Effect_Weather_Windlines_3` 复制加 EffectBase，Addressables「Effect」组，World 模拟），用**独立实例**（`EffectHandler.ShowEffect(EffectBean)`）而非全局单例，支持多只长枪骑士同屏；2026-11-05 已按贴身冲锋风线重调预制体（原为全屏天气参数照搬：球形发射半径 3 格→0.4 并偏移身后(0.3,0.6)、拖尾宽 startSize 0.04→0.25、发射率 12→30、风速 20~25→6~10、拖尾寿命→0.15~0.35 且 worldSpace=1 留线在身后；RenderMode=None 纯拖尾渲染）。攻击后排队待机 `AddAnim` 已与 `PlayAnim` 同口径读 `anim_idle`（此前按骨架候选误播下马 Idle 而非马上 Idle2，同日修复，见 spine-system SKILL）。`land_fx` 是跳回落地的地面打击 700001=`Effect_BodySlam_1`（showTime 1s 自动销毁）。待机动画 `anim_idle` 已是 `Idle2`。
+
 ## 关键文件
 - 逻辑：[AIIntentCreatureAttack.cs](Assets/Scripts/AI/Creature/AIIntentCreatureAttack.cs)（`#region 额外攻击`，方法 `InitExtraAttack/UpdateExtraAttack/ReleaseExtraAttack`）
 - 解析：[NpcInfoBeanPartial.cs](Assets/Scripts/Bean/MVC/Game/NpcInfoBeanPartial.cs) `GetListAttackModeExtInfo()`、[AttackModeExtInfoBeanPartial.cs](Assets/Scripts/Bean/MVC/Game/AttackModeExtInfoBeanPartial.cs) `GetExtType()`、[AttackModeExtTypeEnum.cs](Assets/Scripts/Enums/AttackModeExtTypeEnum.cs)

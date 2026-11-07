@@ -1,6 +1,6 @@
 ﻿---
 name: game-attack-mode
-description: 攻击模式系统开发：38种攻击模式（近战/远程/特殊/恢复），BaseAttackMode 策略模式。
+description: 攻击模式系统开发：40种攻击模式（近战/远程/特殊/恢复），BaseAttackMode 策略模式。
 tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Game/Fight/AttackMode/
@@ -22,6 +22,8 @@ watched_files:
 - **AttackModeMeleeMulti** - 近战多段（继承 AttackModeMelee：首段当帧结算+立即回调保 AI 节奏，余段 Update 按 other_data 键 hit_interval 间隔累计 GetFightDeltaTime 静默追加，hit_times 段数默认1；每段独立暴击/闪避判定；目标中途死亡（或实体被池复用，UUId 双判失效）放弃剩余段；配置解析 AttackModeInfoBeanPartial.GetMultiHitConfig；盗贼104001 用 100002，配 hit_times:2&hit_interval:0.1）
 - **AttackModeMeleeArea** - 范围近战（走基类 `CheckHitTargetArea`，可配 `hit_max` 命中上限：近者优先截断+同生物去重，0=不限；如人类战士1001的101005配3；BOSS技能应用：102001=前方6格1排[持盾战士BOSS,ext100001]、102002=前方6格上中下3排[难度4大剑战士BOSS,ext100004]，101006=大剑战士BOSS普攻[克隆战之魅魔101001]、101007=勇者专用普攻[2026-09-18克隆101006改size"1.5,1,1.25"=前方3格×上中下3排3x3+hit_max0全打,配生物104104勇者]）
 
+- **AttackModeMeleeLanceStab** - 长枪骑士普攻-本路直线突刺（以施法者根节点为起点，命中本路正前方 `collider_area_size[0]×2` 距离内的全部防守生物，`hit_max` 不参与；不走物理范围检测，改走 `FightBean.GetDefenseCreatureByRoad` 数据列表，天然覆盖 `CreatureDef_Front/Back` 层；配置 101008=前方2格本路全中，creature 104103 普通长枪骑士与 NPC 1041030001 BOSS 共用，2026-11 新增）
+
 ### 远程 (Ranged)
 - **AttackModeRanged** - 普通远程（`InitAttackModeShow` 开启 `visualVelocityOrient`：火球/冰球 billboard 视觉按 `_VelocityWS.w` 速度朝向——贴图头（默认朝右）对准飞行方向、拖尾朝飞行反方向；仅桶材质声明 `_VelocityWS` 才生效，RangedNormal 等材质零副作用——骷髅投手 200001 不受影响，子类 Tracking/SplitChild/Piercing/Arc 自动继承）
 - **AttackModeRangedArc** - 弧形远程（`progress` 为 protected，供弹跳子类重置分段）
@@ -42,6 +44,7 @@ watched_files:
 - **AttackModeRangedObliqueTracking** - 直线斜射跟踪-**范围伤害版**（继承 RangedTracking，三处差异：①跟踪方向含 Y 不拍平（基类 SetY(0) 水平追踪），且首发方向按「出手点→瞄准点」重算（基类是攻击者脚底→目标丢了出手高度）——用于生物 attack_start_position 高空出手（如 0,3,0）从头顶直直斜射向目标，瞄准点=目标脚底+`other_data` 键 `aim_up` 上抬高度（默认0=瞄脚底，解析走 `AttackModeInfoBeanPartial.GetAimUpHeight()`）；②命中检测+射线入队全程有效（基类目标死亡即关检测），目标死亡（或实体被池复用）则方向冻结朝死亡点直飞，直至命中路径上任一敌人或飞出边界；③`HandleForHitTarget` 改走基类 `CheckHitTargetArea` 命中点范围 AOE（hit_max 近者优先截断+同生物去重，201001/201002 配 hit_max=3=离爆炸点最近3个敌人），而非单体；④**贴身保底命中**：与瞄准点距离 ≤ `AimTouchDistance`(0.2) 直接判中——0.1 短射线在「目标迎面相撞（相对位移>射线长）穿进碰撞体」后永久失效（Physics 射线不打背面），跟踪弹瞄准点在体内会绕点空转（2026-08 人类法师火球挂敌身抖动 BUG 根因）；⑤**触地即毁**：下落中（attackDirection.y<0）弹体中心 y ≤ `GroundHitY`(0.05) 时播 effect_hit 特效回收（无伤害结算、不播 sound_hit——音效由受击生物侧播放），目标死亡直飞等无目标场景不会穿地消失；弹体朝向：面片 quad 视觉走 visualStartAngle=武器 StartRotate 基准角+atan2(dir.y, dir.x)（仅 X-Y 平面俯仰，dz 纵深不参与，与抛物线切线角同规约）；⚠️拖尾重写 `trailBakeVisualAngle=true`，残影逐采样点烘焙当时的俯仰角（否则整条拖尾会跟着当前朝向一起转）；火球/冰球 billboard shader 视觉的实例矩阵旋转对核心无效（posOS 恒原点+世界空间 billboard），改走 `visualVelocityOrient`=true（InitAttackModeShow 开启）→`_VelocityWS.w` 由 shader 按速度屏幕角旋转 billboard 角点、贴图头（默认朝右）对准飞行方向；人类法师1003/1004用 201001/201002，配 `other_data=aim_up:0.5`；⑥发射瞬间目标已失效时继承基类的「沿进攻方向重锁」逻辑[重锁不到才销毁]，不再直接空放）
 
 ### 特殊 (Special)
+- **AttackModeChargeLanceKnight** - 长枪骑士BOSS技能-沿路冲锋（长驻攻击模式移动施法者本体：Charging 阶段沿本路向 -X 冲到 x=0.5，按「上帧x~本帧x」区间扫描 `GetDefenseCreatureByRoad`，每目标一次 `UnderAttack`；到左缘切 Jumping，按 `EvalJumpPosition` 同式抛物线跳回施法前精确位置；每帧校验存活/UUID/CastSkill 意图，失配 Abort；冲锋≤1.8s+跳回0.2~0.8s 满足 CastSkill 3秒兜底；Human 骨架无 Jump，跳回保持 Walk；配置 102004 配 `speed_move=12&other_data=jump_time:0.6&jump_height:1.5&charge_fx:2200001&land_fx:700001`（charge_fx=跟随施法者的风线特效独立实例、World 模拟，多 BOSS 同屏不互顶；land_fx=跳回落地的 700001=Effect_BodySlam_1），ext 100015[trigger_scene=1] + NPC `ai_param=skill_update:100015:5`，2026-11 新增）
 - **AttackModeExplosion** - 爆炸（以自身为中心范围伤害+按距爆心半径线性衰减[中心全额→检测球边缘 `other_data` 键 `falloff_min` 倍，默认0.5=边缘1/2，保底1，配1=不衰减；`GetFalloffMinRate()`，2026-10-12 起]；新配置 300002=敢死队爆炸-火焰：collider_area_type=11 AreaSphere + collider_area_size=1.5 爆炸半径 + damage_add_rate=1[伤害=攻击者ATK×1，哥布林500→爆500] + effect_hit=300002(Effect_Explosion_2；2026-08-18 起爆炸两个攻击模块 300001/300002 均改用它，原 Effect_Explosion_1=300001 特效已无引用) + sound_hit=420008 + sound_miss=100001；与史莱姆 300001 同公式不同倍率[damage_add_rate=50，10×50=500]）。**冲锋型（charge_attack=1）的引爆不走 `StartAttack(attacker,…)`**（该路径对已死攻击者直接销毁不爆），统一走「死亡即引爆」路径：`FightCreatureEntity.SetCreatureDead()`（带 `if (IsDead()) return;` 幂等守卫）→ 分发 `SetCreatureDeadForDefense()`（FightCreatureEntityForDefense.cs）→ `IsChargeAttack()` 为真则调 `CreateAttackModeForDeadExplosion()`——纯数据无参路径（照冲击波/矿车 BUFF 先例）：`manager.GetAttackModeData(attack_mode)` 取池化 AttackModeBean，手填 attackerCreatureId/attackerWeaponItemId/attackerId/attackerDamage=ATK×`GetDamageAddRate()`/attackerCRT/attackerCDMG(暴击伤害倍率快照)/startPos=死亡位置+`GetAttackStartPosition()`+`GetStartPosOffset()`/attackedLayerTarget=`GetCreatureLayer(true)`/attackDirection=right，然后 `FightHandler.StartCreateAttackMode(attackModeData)`（无参 StartAttack→AttackHandle 播特效+范围结算）。冲锋遇敌/冲到路尽头/被打死 CheckDead 三条触发汇聚同一入口，IsDead 守卫保证只爆一次；史莱姆（charge_attack=0）仍走原 attacker 路径，衰减同样生效）
 - **AttackModeFallupon** - 降临
 - **AttackModeFalluponArea** - 范围降临
@@ -151,7 +154,7 @@ public class AttackModeCustom : BaseAttackMode
 ## 约束
 
 - 攻击模式必须继承 BaseAttackMode
-- **位置读写走 `position`（`SetPosition`/`TranslatePosition`），禁止直接操作弹体 `transform` 位置**（见上「关键字段 position」）；新增移动型弹道沿用此约定，才能被 AttackModeInstanceRenderer 正确批量绘制
+- **位置读写走 `position`（`SetPosition`/`TranslatePosition`），禁止直接操作弹体 `transform` 位置**（见上「关键字段 position」）；新增移动型弹道沿用此约定，才能被 AttackModeInstanceRenderer 正确批量绘制。**唯一例外**：移动**施法者本体**的长驻技能（`AttackModeChargeLanceKnight`）不操作弹体 `position`，而是缓存 `attacker.creatureObj.transform` 直接改生物根节点；此类类必须每帧 `CheckTargetEntityValid(实体, UUID快照)` + 校验 `currentIntentEnum == AttackCreatureCastSkill`，失配立即 Abort，且总时长 < CastSkill 的 3 秒回调兜底
 - **弹道的移动/计时必须用 `GameFightLogic.GetFightDeltaTime()`**（= `Time.deltaTime × 当前游戏速度`，非战斗场景恒 1 倍）替代 `Time.deltaTime`——否则 2倍速（`fightData.gameSpeed=2`）下弹道飞行仍是 1 倍节奏；现有 `HandleForMove`/重力加速度/归位移动已全部遵守
 - 每种攻击模式独立一个文件
 - 文件名与类名一致：AttackMode + 类型名

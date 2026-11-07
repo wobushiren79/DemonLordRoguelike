@@ -402,6 +402,8 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 
 > 术语提醒：游戏内"BOSS"=**敌方强力 NPC**（征服 `enemy_boss_ids` 刷出、`FightAttack` 进攻型），**不是**玩家防守的"魔王核心" `AIDefenseCoreCreatureEntity`。给 BOSS（或任意 NPC）加额外攻击应改基类攻击意图，而非核心生物 AI。
 
+> **scene=1（释放技能意图）与长驻攻击模式（2026-11 新增）**：`trigger_scene=1` 的技能由 `AIIntentAttackCreatureCastSkill` 承载，出手后等待攻击模块回调，**兜底超时 = `CallbackTimeoutBuffer` 3 秒**。攻击模块若在 `Update()` 中移动施法者本体（如长枪骑士 BOSS 技能 `AttackModeChargeLanceKnight` 冲锋+跳回），必须保证「技能总时长 < 3 秒」，并每帧校验 `currentIntentEnum == AIIntentEnum.AttackCreatureCastSkill` + `CheckTargetEntityValid(实体, UUID快照)`；死亡/击退/魅惑会切走意图，须立即中止位移（跳跃中断把 y 拉回地面），否则会和新意图抢 transform。`trigger_interval` 对 scene=1 无效，周期以 `ai_param` 的 `skill_update:<extId>:<秒>` 为准（长枪骑士 100015：5 秒，走路也放）。
+
 ---
 
 ## 攻速(ASPD)换算与攻速连发（AIIntentCreatureAttack 基类，攻防通用）

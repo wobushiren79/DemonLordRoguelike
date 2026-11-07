@@ -230,6 +230,7 @@ public partial class FightCreatureEntity
 
     // === 表现（主文件） ===
     public TrackEntry PlayAnim(SpineAnimationStateEnum anim, bool loop);  // 播放动画
+    public TrackEntry AddAnim(int trackIndex, SpineAnimationStateEnum anim, bool loop, float delay, string animNameAppoint = null, float animSpeed = 1);  // 排队动画（未显式指定动画名时按生物配置 anim_* 解析，与 PlayAnim 同口径；2026-11-05 起，此前绕过生物覆盖会误播骨架候选动画，如长枪骑士待机误播下马 Idle)
     public void SetAnimTimeScale(float timeScale);                        // 设置动画播放速度(=SkeletonAnimation.timeScale, 与 PlayAnim 的 animSpeed 相乘叠加; SetData 里按 GameFightLogic.GetCurrentGameSpeed() 自动初始化, 全场切换由 GameFightLogic.SetGameSpeed→RefreshAllCreatureAnimTimeScale 驱动)
     public void SetFaceDirection(Direction2DEnum direction);              // 设置朝向（内置去重：目标 localScale.x 符号与当前相等则直接 return，不重复写 transform.localScale；翻转对 Spine creatureSkeletionAnimation.transform.localScale.x 取正负。惠及所有调用方，尤其防守生物每攻击循环转身校准）
 

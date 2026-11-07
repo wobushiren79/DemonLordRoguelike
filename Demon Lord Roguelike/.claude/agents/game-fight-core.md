@@ -19,6 +19,7 @@ watched_files:
 
 ### 战斗实体
 - **FightCreatureEntity** - 战斗生物实体，管理生物在战斗中的完整生命周期；按生物类型拆分为 partial 文件：主文件（通用：SetData/受击/回复/动画/检测/死亡分发/朝向 `SetFaceDirection`——内置去重：目标 localScale.x 符号与当前相等则直接 return 不重复写 transform.localScale，惠及所有调用方尤其防守生物每攻击循环转身校准）、`FightCreatureEntityForAttack.cs`（进攻：ChangeRoad 换路诱导、死亡意图）、`FightCreatureEntityForDefense.cs`（防守：死亡意图）、`FightCreatureEntityForDefenseCore.cs`（魔王：魔力显示 `RefreshMPShow()`——MPShow 进度条(Mat_Creature_Mana_1，新版 FrameWork/URP/MeshProgressBar 圆形进度，SetFloat "_Progress" 单一进度无护盾层，已不再与 LifeShow 同款) + MPText"当前/上限"文本，非核心生物无该节点自动跳过；无限蓝模式(IsSkipPutCardMPCost=true 如挑战100勇士)初始化时整个隐藏 MPShow 并清空引用，RefreshMPShow 因 null 直接跳过；死亡意图）。新增类型专属逻辑时写入对应 partial 文件
+- **AddAnim 与 PlayAnim 同口径（2026-11-05）** - `FightCreatureEntity.AddAnim` 排队动画在未显式指定动画名时，自动按生物配置 `anim_idle/anim_attack/anim_walk/anim_dead` 解析指定动画名（经游戏层 `SpineHandler.AddAnimation` 的 CreatureBean 重载，含幻化守卫），与 `PlayAnim` 一致；此前绕过生物覆盖按骨架通用候选解析，导致长枪骑士(104103) 攻击后排队待机误播 Human 骨架的 `Idle`（下马）而非配置 `Idle2`（马上）
 - **SetCreatureDead 幂等守卫** - `FightCreatureEntity.SetCreatureDead()` 开头新增 `if (IsDead()) return;`：同帧多段致死只执行一次（防重复掉水晶/重复死亡事件/冲锋型重复引爆）
 - **实体对象池复用（跨帧引用须 UUId 双判）** - `FightCreatureEntity` 由 `CreatureManager.queuePoolForFightCreatureEntity` 池化：死亡回收后实体会被**复用成新刷出的生物**（可能已换路），`SetData()` 重新绑定数据并把 `creatureFightState` 重置为 `Live`。故任何**跨帧持有**实体引用的系统（追踪弹道、BUFF 等）仅判 `IsDead()` 会把复用后的新生物误判为"原目标还活着"（2026-10 人类法师火球改追其他路敌人的 BUG 根因）——必须缓存 `creatureUUId` 快照做双判；弹道侧统一走 `BaseAttackMode.CheckTargetEntityValid(target, snapshotUUId)`（详见 game-attack-mode / attack-mode-system skill 的「UUId 双判约束」）
 - **召唤物不掉水晶（isSummoned，2026-09-15 新增）** - `DropCrystal` 方法头先判 `fightCreatureData.isSummoned` 直接 return：`AttackModeSummon` 召唤生成的生物（骷髅召唤师的骷髅 20010001/20020001）死亡不掉魔晶，防低血召唤物被挂机刷取；标记由 AttackModeSummon 在 CreateAttackCreature 后置位，`FightCreatureBean.ResetData()` 清零防对象池残留
@@ -68,6 +69,10 @@ watched_files:
 | FightHandler | Assets/Scripts/Component/Handler/FightHandler.cs |
 
 > **战斗杂项预制池（`FightManager.GetFightPrefabCommon` / `dicPoolFightObj` / `listFightPrefab`）**：出池时逐条校验 `targetPrefab == null || targetPrefab.gameObject == null`，死条目直接丢弃并继续取/新建（2026-10-22 加固）。背景：`ClearGame` 顺序是**先 `FightManager.Clear()`（`Destroy(gameObject)` 延迟到帧末才生效）后清 BUFF**，护盾泡泡这类「战斗杂项预制」会在"已排队销毁、尚未真正销毁"的状态下被回池，下一场战斗取出时会访问到已销毁对象（MissingReferenceException）。新增长生命周期的杂项特效时，回池/销毁不要假设对象当场失效。
+
+## 长驻攻击模式（移动施法者本体）
+
+`AttackModeChargeLanceKnight`（长枪骑士 BOSS 技能 102004）由 CastSkill 意图发射，在 `Update()` 中直接改 `attacker.creatureObj.transform` 做冲锋 + 抛物线跳回，而不是弹道自身 `position`。关键约束：每帧校验 `CheckTargetEntityValid(实体, UUID快照)` 且 `currentIntentEnum == AIIntentEnum.AttackCreatureCastSkill`（死亡/击退/魅惑会切走意图，立即 Abort；跳跃中断只把 y 拉回地面）；总时长必须 < `AIIntentAttackCreatureCastSkill.CallbackTimeoutBuffer`（3 秒）；位移/计时统一 `GetFightDeltaTime()`；命中走 `FightBean.GetDefenseCreatureByRoad` 数据列表（物理 mask 只含 `CreatureDef`，会漏 `CreatureDef_Front/Back` 层）。细节以 attack-mode-system skill 为准。
 
 ## 弹道渲染接线（DSP GPU Instancing）
 

@@ -60,6 +60,7 @@ BaseAttackMode                      - 攻击模式基类
 ├── AttackModeMelee                 - 近战单体（瞬间命中目标；命中特效播在 攻击者位置+攻击起始位置 attack_start_position 偏移，世界轴原始叠加不镜像——给向左攻击者配"向前"偏移时 X 写负值）
 │   └── AttackModeMeleeMulti        - 近战多段（继承 Melee：一次攻击 N 段伤害、段间不同帧——首段当帧结算+立即回调保 AI 节奏，余段 Update 按 other_data 键 hit_times&hit_interval 间隔累计 GetFightDeltaTime 静默追加；每段独立暴击/闪避判定；目标中途死亡（或实体被池复用，UUId 双判失效）放弃余段；解析 GetMultiHitConfig()；盗贼104001 用 100002[配 hit_times:2&hit_interval:0.1]）
 ├── AttackModeMeleeArea             - 近战范围（起点范围伤害；可配 hit_max 限制命中数，如人类战士1001的101005配3=前方1单位只打本路最多命中3个敌人；BOSS技能应用：102001=向前挥砍前方6格本路1排[持盾战士BOSS,ext100001,3s]、102002=前方6格上中下3排[难度4大剑战士BOSS,ext100004,3s,克隆102001改Z半宽0.25→1.25]，101006=大剑战士BOSS普攻[克隆战之魅魔101001前方范围hit_max3]、101007=勇者专用普攻[2026-09-18克隆101006改size"1.5,1,1.25"=前方3格×上中下3排3x3+hit_max0全打,配勇者专用生物104104(NPC1041010003),101006仍留104101/104103]）
+├── AttackModeMeleeLanceStab        - 长枪骑士普攻-本路直线突刺（以施法者根节点为起点，命中本路正前方 collider_area_size[0]×2 距离内的全部防守生物，hit_max 不参与；不走物理范围检测，改走 FightBean.GetDefenseCreatureByRoad 数据列表，天然覆盖 CreatureDef_Front/Back 层；101008=前方2格本路全中，creature 104103 长枪骑士共用，2026-11 新增）
 ├── AttackModeRanged                - 远程直线弹道（逐帧移动+碰撞检测；InitAttackModeShow 开启 visualVelocityOrient——火球/冰球 billboard 视觉按 _VelocityWS.w 速度朝向：贴图头（默认朝右）对准飞行方向、拖尾朝飞行反方向，仅桶材质声明 _VelocityWS 才生效，RangedNormal 等材质零副作用）
 │   ├── AttackModeRangedArea        - 远程范围弹道（击中时范围AOE）
 │   ├── AttackModeRangedArc         - 远程抛物线弹道（到达终点走 `HandleForReachEnd` 虚方法，默认回收，子类覆盖为落点AOE等收尾）
@@ -79,6 +80,7 @@ BaseAttackMode                      - 攻击模式基类
 ├── AttackModeRangedBoomerang       - 回旋镖弹道（继承 BaseAttackMode：起点→锁定点→超出一格折返→返回魔王，时间参数化速度曲线，每次命中固定为注入伤害(当前=魔王攻击力×0.25)、不递减；深渊馈赠「死亡回旋」300051）
 ├── AttackModeOrbit                 - 环绕弹道（常驻不自毁：绕宿主生物 XZ 水平面圆周运动，半径0.75(OrbitRadius 常量)，高度取魔王位置+攻击起始偏移(注入 orbitHeight)，宿主(orbitCenterEntity 属性 setter 自动同步 UUId 快照防实体池复用误判)/角速度/伤害倍率由外部 BUFF 注入并同步；触碰命中走 live 球形检测、每只书对同一敌人 0.5 秒冷却，伤害=魔王实时攻击力×倍率命中瞬间取、不暴击；深渊馈赠「知识的力量」300071）
 ├── AttackModeShockwaveRing         - 圆环冲击波（以魔王为圆心扩张：XZ 环带命中自遍历不走射线批处理、每敌每波只中一次、只命中道路范围内敌人(x≤道路右缘0.5+路长，右缘外未进道路的敌人不受伤害与击退)、命中瞬时击退(落点不钳右缘可推出路外，之后由移动意图走回)、最大半径=道路全长+余量达到即销毁；视觉走 EffectHandler.ShowEnduringSingletonEffect 全局单例通道，特效id取攻击模块配置 effect_hit=1700001(Effect_Shockwave_1,原 manager effectShockwaveId 常量已删)，用 SingletonEffectParam 的 multiplier 字段同步半径/时长，并经 actionForGet 回调缓存实例、Update 逐帧对齐 simulationSpeed=GetCurrentGameSpeed 使视觉扩张跟随游戏速度；深渊馈赠「第六次冲击」300091）
+├── AttackModeChargeLanceKnight     - 长枪骑士BOSS技能-沿路冲锋（长驻攻击模式移动施法者本体：Charging 阶段沿本路向 -X 冲到 x=0.5，按「上帧x~本帧x」区间扫描 GetDefenseCreatureByRoad，每目标一次 UnderAttack；到左缘切 Jumping，按 EvalJumpPosition 同式抛物线跳回施法前精确位置；每帧校验存活/UUID/CastSkill 意图，失配 Abort；冲锋≤1.8s+跳回0.2~0.8s 满足 CastSkill 3秒兜底；Human 骨架无 Jump，跳回保持 Walk；102004 配 speed_move=12&other_data=jump_time:0.6&jump_height:1.5&charge_fx:2200001&land_fx:700001（charge_fx=跟随施法者的风线特效独立实例、World 模拟，多 BOSS 同屏不互顶；land_fx=跳回落地的 700001=Effect_BodySlam_1），ext 100015[trigger_scene=1] + NPC ai_param=skill_update:100015:5，2026-11 新增）
 ├── AttackModeExplosion             - 爆炸（以自身为中心范围伤害+按距爆心半径线性衰减[other_data 键 falloff_min=边缘最低倍率,默认0.5=边缘为中心1/2,保底1,配1=不衰减]，攻击者死亡；冲锋型 charge_attack=1 走「死亡即引爆」纯数据路径 CreateAttackModeForDeadExplosion，不走 StartAttack(attacker,…)；敢死队 300002：collider_area_type=11&collider_area_size=1.5&damage_add_rate=1，effect_hit=300002(Effect_Explosion_2,2026-08-18 起爆炸两个攻击模块 300001/300002 均改用此粒子,原 Effect_Explosion_1=300001 特效已无引用)/sound_hit=420008/sound_miss=100001）
 ├── AttackModeFallupon              - 天降单体（直接对锁定目标造成伤害）
 ├── AttackModeFalluponArea          - 天降范围（对目标位置范围伤害；Update 的 gameObject==null→AttackHandle 兜底仅限老 prefab 模式，DSP 视觉模式(visual_name 非空)无实体 gameObject 跳过该检查正常下落）
@@ -119,6 +121,7 @@ BaseAttackMode                      - 攻击模式基类
 | `AttackModeMelee` | 瞬间命中单个目标 | 近战普攻、直接打击 |
 | `AttackModeMeleeMulti` | 瞬间命中同一目标 N 段（段间隔可配 hit_times&hit_interval，首段当帧+立即回调，余段 Update 按 GetFightDeltaTime 追加，目标死亡放弃余段） | 多段近战普攻（盗贼 100002） |
 | `AttackModeMeleeArea` | 瞬间范围伤害（可配 hit_max 上限，近者优先截断+同生物去重） | 近战AOE、旋风斩 |
+| `AttackModeMeleeLanceStab` | 瞬发本路直线突刺（距离=`collider_area_size[0]×2`，范围内全部命中；走 `GetDefenseCreatureByRoad` 数据列表而非 Physics，覆盖 `CreatureDef_Front/Back` 层） | 长枪骑士普攻 101008 |
 | `AttackModeRanged` | 直线飞行弹道（InitAttackModeShow 开启 `visualVelocityOrient`：火球/冰球 billboard 视觉按 `_VelocityWS.w` 速度朝向——贴图头（默认朝右）对准飞行方向、拖尾朝飞行反方向，无 `_VelocityWS` 属性材质零副作用） | 箭矢、法术弹 |
 | `AttackModeRangedArea` | 飞行弹道+击中AOE | 爆炸箭、火球术 |
 | `AttackModeRangedArc` | 抛物线飞行 | 投石、抛物线炸弹 |
@@ -136,6 +139,7 @@ BaseAttackMode                      - 攻击模式基类
 | `AttackModeRangedBoomerang` | 回旋镖三段式飞行（起点→锁定点→超出一格折返→返回魔王，时间参数化：去程后半程减速到0、返程匀加速），每次命中固定为注入伤害(当前=魔王攻击力×0.25)、去返程均不递减，去程去重/返程可再命中 | 回旋镖、往返弹 |
 | `AttackModeOrbit` | 常驻环绕宿主圆周运动（不自毁、不越界销毁）+ 触碰命中（每只书对同一敌人 0.5 秒冷却） | 环绕书本、卫星弹 |
 | `AttackModeShockwaveRing` | 以魔王为圆心的扩张圆环：半径每帧按 speed_move 扩张，XZ 距离落在「上帧半径~当前半径」环带内的敌人命中（每敌每波一次、只命中道路范围内敌人 x≤道路右缘，右缘外不受伤害与击退），命中交 AIAttackCreatureEntity.StartKnockback 击退意图（方向固定 +x 沿道路向后推不带 z 分量，collider_area_size[1]=击退距离，落点不钳右缘可推出路外[之后由移动意图走回]，攻击循环打断、结束回闲置重索敌）；最大半径=道路右缘+余量(collider_area_size[0])−圆心x，达到即销毁；无 prefab/visual_name，视觉=StartAttackBase 时调 EffectHandler.ShowEnduringSingletonEffect（全局单例通道，SingletonEffectParam 设 startSize/startLifetime multiplier 同步半径与扩张时长，视觉基准常量在本类；Update 逐帧把视觉粒子 simulationSpeed 对齐 GetCurrentGameSpeed，2倍速/中途变速下视觉扩张与判定环带一致） | 冲击波、震荡波 |
+| `AttackModeChargeLanceKnight` | 长驻攻击模式移动施法者本体：沿本路 -X 冲锋到 x=0.5，路径区间扫描本路目标各结算一次，再抛物线跳回原位（每帧校验存活/UUID/CastSkill 意图） | 长枪骑士BOSS技能 102004（ext 100015 scene=1 5秒） |
 | `AttackModeRangedSplit` | 发射器：按道路发射多发独立子弹道后自毁 | 散射弹、分叉箭（子弹道行另配 `AttackModeRangedSplitChild`） |
 | `AttackModeExplosion` | 自爆范围伤害（伤害按距爆心距离线性衰减：中心全额→检测球边缘 `falloff_min` 倍[other_data 键，默认0.5=边缘为中心1/2]保底1，配1=不衰减；冲锋型生物 charge_attack=1 的引爆不走 `StartAttack(attacker,…)`——对已死攻击者直接销毁不爆；改走死亡分发 `SetCreatureDeadForDefense()` 里的纯数据无参路径 `CreateAttackModeForDeadExplosion()`，照冲击波/矿车 BUFF 先例手填 AttackModeBean 后 `FightHandler.StartCreateAttackMode(attackModeData)`） | 自杀式爆炸、亡语、冲锋自爆（自爆史莱姆 300001、哥布林敢死队 300002） |
 | `AttackModeFallupon` | 直接对目标造成伤害 | 天降打击、瞬移攻击 |
@@ -721,6 +725,18 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 
 已落实的类：`AttackModeRangedTracking`（含子类 ObliqueTracking）、`AttackModeRangedArcTracking`、`AttackModeRangedChain`、`AttackModeRangedArcBounce`、`AttackModeMeleeMulti`、`AttackModeOrbit`（宿主由 BUFF 外部注入，故用属性 setter 自动同步快照）、`AttackModeFalluponChain`（目标与攻击者双快照）、`AttackModeFalluponChainMulti`（攻击者快照，首个双判先例）。当帧结算型（Melee/Instant/Regain 等）与每帧从列表/collider 现取现判型（Overlap/Explosion/ShockwaveRing 等）不跨帧持有特定目标，无需双判。
 
+## 长驻攻击模式 / 移动施法者本体约束（长枪骑士冲锋 102004）
+
+`AttackModeChargeLanceKnight` 是首个在 `Update()` 里移动**施法者本体**（`attacker.creatureObj.transform`）的长驻攻击模式，由 `trigger_scene=1` 的 CastSkill 意图发射、约 1 秒后回调。扩展同类技能时遵守：
+
+1. **不要套用弹体的 `position` 规则**：`position`/`SetPosition` 只服务弹道自身；移动生物必须缓存 `FightCreatureEntity` + `Transform`，并每帧 `CheckTargetEntityValid(实体, UUID快照)` 防对象池复用。
+2. **每帧校验当前意图**：仅当 `attacker.aiEntity.currentIntentEnum == AIIntentEnum.AttackCreatureCastSkill` 时才继续移动；死亡/击退/魅惑会切走意图，必须立即 Abort（跳跃中把 y 拉回原位，x/z 交给新意图），避免和击退/魅惑抢 transform。
+3. **总时长必须 < CastSkill 的 3 秒回调兜底**（`AIIntentAttackCreatureCastSkill.CallbackTimeoutBuffer`）：超时会被强制回 Idle 且与位移抢控制。本类把冲锋钳到 ≤1.8s、跳回钳到 0.2~0.8s。
+4. **位移/计时统一 `GameFightLogic.GetFightDeltaTime()`**；不要用 DOTween DOJump（只吃 Time.timeScale，不跟 fightData.gameSpeed）。
+5. **命中走数据列表**：本路目标用 `FightBean.GetDefenseCreatureByRoad(roadIndex)` + 每帧 x 区间跨越 + `HashSet<creatureUUId>` 去重；物理 mask 只含 `CreatureDef`，会漏 `CreatureDef_Front/Back`。
+6. **动画**：冲锋播 Walk 循环；Human 骨架没有 Jump，跳回阶段继续 Walk（调用 `PlayAnim(Jump)` 会刷错误日志且不换动画）。
+7. **对象池**：`StartAttack` 与 `Destroy` 都要清空阶段、HashSet、施法者引用与回调；`Finish` 用 `isValid` 幂等守卫。
+
 ## 热路径性能约束
 
 攻击模块在战斗每帧被大量遍历，扩展时请遵守：
@@ -832,6 +848,7 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | 近战单体 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeMelee.cs` |
 | 近战多段（盗贼 100002） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeMeleeMulti.cs` |
 | 近战范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeMeleeArea.cs` |
+| 长枪骑士普攻-本路直线突刺（101008） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeMeleeLanceStab.cs` |
 | 远程弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRanged.cs` |
 | 远程范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedArea.cs` |
 | 抛物线弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedArc.cs`（`progress` 为 protected，供弹跳子类重置分段） |
@@ -847,6 +864,7 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | 回旋镖弹道（死亡回旋） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedBoomerang.cs` |
 | 环绕弹道（知识的力量） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeOrbit.cs` |
 | 圆环冲击波（第六次冲击） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeShockwaveRing.cs` |
+| 长枪骑士BOSS技能-沿路冲锋+跳回（102004，ext 100015 scene=1 5秒） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeChargeLanceKnight.cs` |
 | 分裂弹-发射器 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedSplit.cs` |
 | 分裂弹-子弹道 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedSplitChild.cs` |
 | 爆炸 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeExplosion.cs` |

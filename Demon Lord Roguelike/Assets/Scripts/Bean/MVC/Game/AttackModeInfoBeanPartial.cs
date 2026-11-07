@@ -407,6 +407,40 @@ public partial class AttackModeInfoBean
     }
     #endregion
 
+    #region 长枪骑士冲锋(LanceCharge 配置，存于 other_data)
+    protected bool isInitLanceChargeConfig = false;
+    protected float lanceChargeJumpTime = 0.6f;
+    protected float lanceChargeJumpHeight = 1.5f;
+    protected long lanceChargeFxId = 0;
+    protected long lanceLandFxId = 0;
+
+    /// <summary>
+    /// 获取长枪骑士冲锋配置（从通用扩展列 other_data 中解析 jump_time/jump_height/charge_fx/land_fx 键；缓存解析结果）。
+    /// <para>jump_time:跳回时长秒(默认0.6,钳制 0.2~0.8，与冲锋 1.8 秒上限合计小于 CastSkill 的 3 秒兜底)；
+    /// jump_height:跳回抛物线弧高(默认1.5,钳制 0~5)；
+    /// charge_fx:冲锋风特效 EffectInfo id(默认0=不播放)；
+    /// land_fx:跳回落地特效 EffectInfo id(默认0=不播放)。
+    /// 目前仅 AttackModeChargeLanceKnight 使用（BOSS技能 102004 配 jump_time:0.6&amp;jump_height:1.5&amp;charge_fx:2200001&amp;land_fx:700001）。</para>
+    /// </summary>
+    public void GetLanceChargeConfig(out float jumpTime, out float jumpHeight, out long chargeFxId, out long landFxId)
+    {
+        if (!isInitLanceChargeConfig)
+        {
+            ParseOtherDataFloat("jump_time", ref lanceChargeJumpTime);
+            ParseOtherDataFloat("jump_height", ref lanceChargeJumpHeight);
+            ParseOtherDataLong("charge_fx", ref lanceChargeFxId);
+            ParseOtherDataLong("land_fx", ref lanceLandFxId);
+            lanceChargeJumpTime = Mathf.Clamp(lanceChargeJumpTime, 0.2f, 0.8f);
+            lanceChargeJumpHeight = Mathf.Clamp(lanceChargeJumpHeight, 0f, 5f);
+            isInitLanceChargeConfig = true;
+        }
+        jumpTime = lanceChargeJumpTime;
+        jumpHeight = lanceChargeJumpHeight;
+        chargeFxId = lanceChargeFxId;
+        landFxId = lanceLandFxId;
+    }
+    #endregion
+
     #region other_data 通用解析
     /// <summary>
     /// 从 other_data 解析 float 键值（按 &amp; 拆项、每项以第一个 : 拆 key/value，与 aim_up/stuck 同规约）；未配/解析失败保持传入的原值

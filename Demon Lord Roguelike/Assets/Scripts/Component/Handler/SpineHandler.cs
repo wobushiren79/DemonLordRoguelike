@@ -51,6 +51,17 @@ public partial class SpineHandler
         return animData;
     }
 
+    /// <summary>
+    /// 追加动画（CreatureBean 版）：先按生物配置 anim_*/幻化替代动画解析指定动画名（与 PlayAnim 同口径），未配置再走骨架候选解析
+    /// </summary>
+    public TrackEntry AddAnimation(SkeletonAnimation skeletonAnimation, int trackIndex, SpineAnimationStateEnum spineAnimationState, bool isLoop, float delay, CreatureBean creatureData, float animSpeed = 1)
+    {
+        if (skeletonAnimation == null || creatureData == null)
+            return null;
+        var animNameAppoint = GetAnimNameAppoint(spineAnimationState, creatureData);
+        return AddAnimation(skeletonAnimation, trackIndex, spineAnimationState, isLoop, delay, animNameAppoint, animSpeed: animSpeed);
+    }
+
     protected string GetAnimNameAppoint(SpineAnimationStateEnum spineAnimationState, CreatureBean creatureData)
     {
         //幻化整骨替换后原生物 anim_* 配置名不适用于新骨架:不指定动画名,交框架按目标骨架实际动画列表解析(缺失仅日志不播,避免 SetAnimation 抛异常)
