@@ -69,4 +69,8 @@ $index = $equipmentFrame - 1
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.claude/scripts/run-python.ps1' '.claude/scripts/aseprite_equipment_png.py' preview --input "$tempRoot/native.png" --output $finalPreview --scale 6 --background '#4f5056'
 ```
 
-省略 `--background` 保持透明。导出后检查实际 PNG 尺寸等于原画布乘倍率，不能意外导出全动画。最终每套只保留一个 `.aseprite` 加一张 `.png`。PNG 工具依赖 Pillow，Lua 工具不依赖外部库。
+省略 `--background` 保持透明。导出后检查实际 PNG 尺寸等于原画布乘倍率，不能意外导出全动画。PNG 工具依赖 Pillow，Lua 工具不依赖外部库。
+
+## 保存原图参考截图
+
+从用户提供的原参考图读取像素。拼图先核对套装编号与所在格，按原图像素坐标裁出该套完整区域，检查帽饰、翅膀、披风或武器等边缘。单套参考可原样保存为 PNG。参考截图保留原始像素比例、颜色和背景，单独保存为 `角色_套装_参考.png`，与装备源文件和效果预览放在同一目录。`preview` 命令用于从装备帧生成效果预览，参考截图直接来自原图。

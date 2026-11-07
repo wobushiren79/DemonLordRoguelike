@@ -8,7 +8,7 @@ watched_files:
 
 # Aseprite 像素源文件编辑
 
-根据装备预览图新增整套装备、追加装备帧，或在认可版本上只修描边时，先读 [aseprite-equipment-from-preview](../aseprite-equipment-from-preview/SKILL.md) 与 [aseprite-equipment-artist](../../agents/aseprite-equipment-artist.md)。它们负责美术适配、范围约束及“原母版同级/装备/ 每套仅一份最终 aseprite + 一张预览 PNG”的交付规则；本文保留基础 Cel 工具职责。
+根据装备预览图新增整套装备、追加装备帧，或在认可版本上只修描边时，先读 [aseprite-equipment-from-preview](../aseprite-equipment-from-preview/SKILL.md) 与 [aseprite-equipment-artist](../../agents/aseprite-equipment-artist.md)。美术适配、改动范围和装备文件交付遵循上述指南。本文负责基础 Cel 工具。
 
 ## 一、范围与现有资源
 
