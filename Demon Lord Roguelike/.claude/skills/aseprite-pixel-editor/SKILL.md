@@ -1,0 +1,180 @@
+---
+name: aseprite-pixel-editor
+description: Aseprite 源文件（.aseprite/.ase）检查、创建、像素修改、精确换色、PNG 新图层、指定原图层 Cel 替换与导出流程。当用户要求修改外层“资源/生物”等目录中的 Aseprite 母版、给角色增加独立装备图层、替换指定部位装备、批量处理图层/帧或创建新的像素源文件时使用。只负责 Aseprite 美术源文件，不处理游戏装备配置或 Unity 关联。
+watched_files:
+  - .claude/scripts/run-aseprite.ps1
+  - .claude/scripts/aseprite_tool.lua
+---
+
+# Aseprite 像素源文件编辑
+
+根据装备预览图新增整套装备、追加装备帧，或在认可版本上只修描边时，先读 [aseprite-equipment-from-preview](../aseprite-equipment-from-preview/SKILL.md) 与 [aseprite-equipment-artist](../../agents/aseprite-equipment-artist.md)。它们负责美术适配、范围约束及“原母版同级/装备/ 每套仅一份最终 aseprite + 一张预览 PNG”的交付规则；本文保留基础 Cel 工具职责。
+
+## 一、范围与现有资源
+
+- 项目根目录下的相对源目录：`../资源/生物/`（即项目外层 `资源/生物`）。
+- 已确认存在：人类、人类2、骷髅、牛头人、史莱姆、哥布林、魅魔、兽人等 `.aseprite`。
+- 本 Skill **只处理 Aseprite 母版和预览导出**，不修改 ItemsInfo、CreatureModelInfo、Unity 图集、Spine 或游戏装备关联。
+- 使用 Aseprite 官方 CLI + Lua，禁止用 Write/Edit 或自写二进制替换直接修改 `.aseprite`。
+
+## 二、工具文件
+
+- [.claude/scripts/run-aseprite.ps1](../../scripts/run-aseprite.ps1)：动态定位 Aseprite，依次检查 `ASEPRITE_EXE`、PATH、卸载注册表、Steam 主库与其他 Steam 库、常见安装目录；不写死盘符。通过输出管道等待 GUI 进程完整退出，调用返回后再检查输出文件。
+- [.claude/scripts/aseprite_tool.lua](../../scripts/aseprite_tool.lua)：通用只读检查与非覆盖编辑操作。
+
+所有命令从项目根目录执行，优先 PowerShell。标准调用形式：
+
+```powershell
+$runner = ".claude/scripts/run-aseprite.ps1"
+$tool = ".claude/scripts/aseprite_tool.lua"
+powershell.exe -NoProfile -File $runner -WhichOnly
+```
+
+`-WhichOnly` 只输出实际解析到的 `Aseprite.exe`。若自动定位失败，先让用户设置 `$env:ASEPRITE_EXE`，不要在文档或脚本里写死本机路径。
+
+## 三、不可省略的安全规则
+
+1. **原文件只读**：编辑统一输出到新的 `.aseprite`；`src` 与 `out` 相同会被脚本拒绝。
+2. **默认不覆盖**：输出已存在时报错；只有用户明确允许覆盖中间产物时才传 `overwrite=true`，它仍不允许覆盖 `src`。
+3. **先检查再修改**：先 `inspect` 记录尺寸、颜色模式、图层、帧、Cel、切片，再决定操作范围。
+4. **编辑副本**：保存后重新 `inspect` 输出文件，并导出 PNG 做视觉核对；Aseprite 脚本异常也可能伴随退出码 0，必须同时检查预期输出与操作报告，不能仅凭退出码或 `ASEPRITE_TOOL_OK` 宣布图片正确。
+5. **RGB 限制**：`create/recolor/add_layer` 当前只支持 RGB/RGBA。Indexed/Grayscale 只能 `inspect`；如需转换，必须在副本上另行确认颜色与调色板影响。
+6. **坐标规则**：Cel Image 使用局部坐标；画布坐标需结合 `cel.position`。新增 PNG 的 `x/y` 是 Cel 在画布上的位置。
+7. **动画规则**：未指定 `frames` 的换色会处理所有帧；链接 Cel 可能共享图像，动手前必须确认是同步修改还是断链后只改一帧。
+8. **导出规则**：修改 `.aseprite` 不等于 PNG 已更新；需要预览时显式执行 Aseprite 原生 `--save-as` 导出。
+9. **临时产物**：验证用的临时文件放 `$env:TEMP` 或明确的临时目录，验证后清理；通用脚本不能当临时脚本删除。
+
+## 四、操作 1：inspect 检查源文件
+
+```powershell
+$source = (Resolve-Path "../资源/生物/人类/人类.aseprite").Path
+$report = Join-Path $env:TEMP "aseprite-inspect.json"
+powershell.exe -NoProfile -File $runner -b `
+  --script-param "op=inspect" `
+  --script-param "src=$source" `
+  --script-param "report=$report" `
+  --script $tool
+```
+
+报告包含：画布宽高、`color_mode`、图层数量与名称、帧时长、每个 Cel 的帧号/图层/位置/尺寸、切片名称。未传 `report` 时 JSON 输出到控制台。
+
+## 五、操作 2：create 创建 RGB 母版
+
+输出目录必须已存在；默认创建一个全透明 Cel。
+
+```powershell
+$output = Join-Path $env:TEMP "aseprite-create.aseprite"
+$createReport = Join-Path $env:TEMP "aseprite-create.json"
+powershell.exe -NoProfile -File $runner -b `
+  --script-param "op=create" `
+  --script-param "out=$output" `
+  --script-param "width=32" `
+  --script-param "height=32" `
+  --script-param "layer=Body" `
+  --script-param "report=$createReport" `
+  --script $tool
+```
+
+必填：`out/width/height`。可选：`layer`（默认 `Layer 1`）、`report`、`overwrite`。
+
+## 六、操作 3：recolor 精确换色
+
+```powershell
+$recolored = Join-Path $env:TEMP "aseprite-recolor.aseprite"
+$recolorReport = Join-Path $env:TEMP "aseprite-recolor.json"
+powershell.exe -NoProfile -File $runner -b `
+  --script-param "op=recolor" `
+  --script-param "src=$source" `
+  --script-param "out=$recolored" `
+  --script-param "from=#112233FF" `
+  --script-param "to=#445566FF" `
+  --script-param "layer=Body" `
+  --script-param "frames=1,2,3" `
+  --script-param "report=$recolorReport" `
+  --script $tool
+```
+
+- 颜色格式：`RRGGBB` 或 `RRGGBBAA`，`#` 可选；省略 alpha 时按 `FF`。
+- `layer` 省略表示全部图层；`frames` 省略表示全部帧。
+- 默认跳过直接标记为隐藏的图层；确需包含时传 `include_hidden=true`。
+- 默认没有命中像素会报错，避免写错颜色后仍生成“成功”文件；确认需要空操作时才传 `allow_no_match=true`。
+- 报告中的 `changed_pixels/changed_cels` 是实际修改数量，必须纳入验证。
+
+## 七、操作 4：add_layer 从 PNG 新增独立图层
+
+适合把已经绘制好的装备、武器或部件 PNG 加到母版，不直接画进身体层。
+
+```powershell
+$withLayer = Join-Path $env:TEMP "aseprite-layer.aseprite"
+$layerReport = Join-Path $env:TEMP "aseprite-layer.json"
+powershell.exe -NoProfile -File $runner -b `
+  --script-param "op=add_layer" `
+  --script-param "src=$source" `
+  --script-param "out=$withLayer" `
+  --script-param "png=$png" `
+  --script-param "layer=Weapon_New" `
+  --script-param "frame=1" `
+  --script-param "x=0" `
+  --script-param "y=0" `
+  --script-param "report=$layerReport" `
+  --script $tool
+```
+
+- 必填：`src/out/png/layer`。
+- `frame` 默认 1，`x/y` 默认 0；PNG 与母版都必须是 RGB/RGBA。
+- 当前每次新增一个顶层图层和一个 Cel；同名顶层图层会报错。默认位于栈顶，传 `after=现有图层名` 可插到该层之上，报告会记录 `after`。
+- 打开并关闭临时 PNG Sprite 后必须执行 `app.activeSprite = sprite` 恢复母版，再进入事务；否则批处理可能中断且不生成输出。
+- 多帧不同图片、链接 Cel、图层组内插入、像素矩阵绘制等需求，先扩展 Lua，不要用重复调用冒充已支持。
+
+## 八、操作 5：set_cel 在原图层替换或补充 Cel
+
+适合替换肩甲、胸带、腰布等已有装备，同时保留原图层顺序；目标层在该帧没有 Cel 时则新建。
+
+```powershell
+$withCel = Join-Path $env:TEMP "aseprite-cel.aseprite"
+$celReport = Join-Path $env:TEMP "aseprite-cel.json"
+powershell.exe -NoProfile -File $runner -b `
+  --script-param "op=set_cel" `
+  --script-param "src=$source" `
+  --script-param "out=$withCel" `
+  --script-param "png=$png" `
+  --script-param "layer=Clothes_1_Body" `
+  --script-param "frame=1" `
+  --script-param "x=44" `
+  --script-param "y=55" `
+  --script-param "report=$celReport" `
+  --script $tool
+```
+
+- 必填：`src/out/png/layer`；`frame` 默认 1。
+- 已存在 Cel 时，`x/y` 默认沿用原位置；新建 Cel 时默认 0。报告用 `replaced_existing` 区分替换与新增。
+- 每次只处理一个顶层图层的一帧。多帧装备可串联多个副本操作，但必须核对其他帧未因链接 Cel 被意外修改。
+
+## 九、导出 PNG 预览
+
+使用 Aseprite 原生 CLI，不在通用 Lua 里重复实现导出器：
+
+```powershell
+$preview = Join-Path $env:TEMP "aseprite-preview.png"
+powershell.exe -NoProfile -File $runner -b `
+  $withLayer --save-as $preview
+```
+
+动画可能输出多张带帧号的 PNG，应检查实际生成文件，不能假设只有 `$preview` 一张。
+
+## 十、完成一次修改的验收清单
+
+1. 原 `src` 的路径、时间戳和内容未被编辑流程覆盖。
+2. 输出 `.aseprite` 能重新打开，`inspect` 的画布、颜色模式、图层和帧符合预期。
+3. `recolor` 的修改像素数合理；`add_layer` 的图层名、帧号、PNG 尺寸和偏移合理。
+4. PNG 预览中透明背景、边缘、颜色、遮挡、各帧位置正确。
+5. 临时预览、报告与测试母版已清理；源文件和最终交付文件保留在明确位置。
+6. 修改了 `run-aseprite.ps1` 或 `aseprite_tool.lua` 时，必须在同一任务同步更新本 Skill，并手动运行 `.claude/scripts/check-watched.ps1` 核对。
+
+## 十一、后续扩展规则
+
+- 新操作在 `aseprite_tool.lua` 增加独立函数与 `op` 分支，默认仍是非覆盖输出。
+- 每种新操作至少验证：新建临时母版、执行操作、重新 inspect、导出预览、清理临时文件；还要用中文路径检查 JSON 报告仍是有效 UTF-8。
+- 复杂像素绘制优先增加“从 PNG/像素矩阵生成 Cel”，不要把大量像素坐标塞进命令行。
+- 优先保持图层名、分组、顺序、帧时长、切片不变；需求明确要求调整时才修改这些元数据。
+- 官方参考：[Aseprite CLI](https://www.aseprite.org/docs/cli/)、[Lua API](https://www.aseprite.org/api/)。
