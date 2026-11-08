@@ -342,7 +342,7 @@ public partial class GameWorldInfoRandomBean
 
     /// <summary>
     /// 获取本世界指定难度已冻结的战斗场景id(创建传送门时随出并冻结, 同世界重复进入场地固定);
-    /// 老存档该字段缺失时按配置懒补齐并写回(补齐后同样固定), 无冻结数据(如无尽测试入口未解锁难度)时按配置随机兜底
+    /// 老存档字段缺失时按配置懒补齐并写回；挑战100勇士的旧场景已不在配置池时同步迁移，其余有效场景保持冻结；无冻结数据时按配置兜底
     /// </summary>
     /// <param name="targetDifficultyLevel">难度等级</param>
     /// <param name="isBoss">是否取BOSS关场景(挑战100勇士无普通/BOSS场景之分, 忽略该参数)</param>
@@ -366,7 +366,7 @@ public partial class GameWorldInfoRandomBean
     }
 
     /// <summary>
-    /// 获取挑战100勇士指定难度已冻结的战斗场景id(缺失时按该难度冻结配置行懒补齐并写回)
+    /// 获取挑战100勇士指定难度已冻结的战斗场景id，缺失或已移出配置池时按冻结配置行重新选择并写回
     /// </summary>
     /// <param name="targetDifficultyLevel">难度等级</param>
     /// <returns>战斗场景id; 无可用配置时返回0</returns>
@@ -379,11 +379,11 @@ public partial class GameWorldInfoRandomBean
             FightTypeChallengeHundredInfoBean currentRow = FightTypeChallengeHundredInfoCfg.GetItemData(challengeHundredRowId);
             return currentRow == null ? 0 : currentRow.GetRandomFightScene();
         }
-        if (challengeHundredRandom.fightSceneId <= 0)
+        FightTypeChallengeHundredInfoBean challengeHundredInfo = FightTypeChallengeHundredInfoCfg.GetItemData(challengeHundredRandom.challengeHundredRowId);
+        if (challengeHundredInfo != null && !challengeHundredInfo.IsMatchFightScene(challengeHundredRandom.fightSceneId))
         {
-            FightTypeChallengeHundredInfoBean challengeHundredInfo = FightTypeChallengeHundredInfoCfg.GetItemData(challengeHundredRandom.challengeHundredRowId);
-            if (challengeHundredInfo != null)
-                challengeHundredRandom.fightSceneId = challengeHundredInfo.GetRandomFightScene();
+            //仅更新已失效的场地，保留原有难度、敌人配置、道路与奖励快照
+            challengeHundredRandom.fightSceneId = challengeHundredInfo.GetRandomFightScene();
         }
         return challengeHundredRandom.fightSceneId;
     }

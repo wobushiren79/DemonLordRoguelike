@@ -106,7 +106,7 @@ public partial class CameraHandler
     #region 战斗场景摄像头
 
     /// <summary>
-    /// 初始化战斗场景视角
+    /// 初始化战斗场景视角，并限制开场锚点的 Z 位置。
     /// </summary>
     public async Task InitFightSceneCamera()
     {
@@ -114,7 +114,7 @@ public partial class CameraHandler
         mainCamera.gameObject.SetActive(true);
 
         var controlTarget = GameControlHandler.Instance.manager.controlTargetForEmpty;
-        controlTarget.transform.position = new Vector3(3, 0, 3);
+        controlTarget.transform.position = new Vector3(3, 0, ControlForGameFight.ClampCameraTargetZ(3f));
 
         //关闭切换动画
         manager.SetMainCameraDefaultBlend(0);

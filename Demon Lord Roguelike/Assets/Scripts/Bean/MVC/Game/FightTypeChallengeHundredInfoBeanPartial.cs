@@ -57,6 +57,7 @@ public partial class FightTypeChallengeHundredInfoBean
         return challenge_type == 1;
     }
 
+    #region 战斗场景
     /// <summary>
     /// 获取随机战斗场景(fight_scene_ids用,分割; 随机其一)
     /// </summary>
@@ -66,6 +67,21 @@ public partial class FightTypeChallengeHundredInfoBean
             fightSceneIdList = fight_scene_ids.SplitForArrayLong(',');
         return fightSceneIdList.GetRandomData();
     }
+
+    /// <summary>
+    /// 检查冻结的战斗场景是否仍在本行配置池中，用于配置变更后迁移旧传送门场地
+    /// </summary>
+    /// <param name="sceneId">已冻结的战斗场景ID</param>
+    /// <returns>有效的正数场景ID且仍在配置池中时返回true</returns>
+    public bool IsMatchFightScene(long sceneId)
+    {
+        if (sceneId <= 0)
+            return false;
+        if (fightSceneIdList == null)
+            fightSceneIdList = fight_scene_ids.SplitForArrayLong(',');
+        return Array.IndexOf(fightSceneIdList, sceneId) >= 0;
+    }
+    #endregion
 
     /// <summary>
     /// 获取随机道路数量(解析 road_num 字段, 支持单值"x"或区间"x-y")

@@ -25,8 +25,18 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 25ad98f2b04f79740932669ea713fe20
+    m_Address: Assets/LoadResources/FightScene/FightScene_Arena_Embervault_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3e5d3c1ef2205ac44816a6e02b71c8e7
     m_Address: Assets/LoadResources/FightScene/FightScene_Forest_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 77aa41cdfba3ebe47bc1fb7339e9bc9a
+    m_Address: Assets/LoadResources/FightScene/FightScene_SkywardTerrace_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
@@ -37,6 +47,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: d7553261daf716a4cb34c9da53686820
     m_Address: Assets/LoadResources/FightScene/FightScene_Palace_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e06d2a095f710004f86a459f1b928428
+    m_Address: Assets/LoadResources/FightScene/FightScene_Palace_CrimsonCrown_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

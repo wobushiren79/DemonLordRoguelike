@@ -22,6 +22,7 @@ watched_files:
 ### 游戏摄像机
 - [Scripts/Component/Manager/CameraManager.cs](Assets/Scripts/Component/Manager/CameraManager.cs)
 - [Scripts/Component/Handler/CameraHandler.cs](Assets/Scripts/Component/Handler/CameraHandler.cs)
+- 战斗开场 `InitFightSceneCamera` 在设置 Follow/LookAt 前调用 `ControlForGameFight.ClampCameraTargetZ`，所有战斗场景的开场锚点 Z 均限制为 4（`CMFollow` 偏移 -8，相机世界 Z=-4），与输入限位一致。
 - 基地 CV_List 语义镜头：`SetXxxCamera(priority, isEnable)` 系列转调 `SetCameraForBaseScene`（详见 `camera-system` Skill）
 - 奖励选择镜头：`SetCameraForRewardSelectScene(blendTime)` 切镜；`RefreshRewardSelectCameraFov(halfWidthForBox)` 按宝箱横向总宽度自适应 FOV——宝箱>=6 个时默认 FOV(60) 装不下两侧宝箱，由 `ScenePrefabForRewardSelect.InitRewardBox` 在遮罩盖住期间调用，几何关系 tan(hFov/2)=半宽/相机z距离、tan(hFov/2)=tan(vFov/2)*aspect，只在不够装时才放大
 - 运行期聚焦/震动（`#region 魔汁机镜头聚焦/震动`）：`GetBaseSceneCamera(cvName)` 仅查找不改态；`FocusJuicerCameraOnHole/RestoreJuicerCameraFocus` 运行期改 CV_Juicer 的 Follow/LookAt/FollowOffset/TargetOffset 做滴嘴特写（缓存还原，`isJuicerCameraFocused` 门控）；`ShakeJuicerCamera` 抬升 Perlin 振幅做冲击震动——同一 CV 运行期改字段的范式，不动预制

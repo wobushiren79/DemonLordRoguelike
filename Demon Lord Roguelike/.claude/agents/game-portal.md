@@ -35,6 +35,9 @@ watched_files:
 
 ## 职责范围
 
+### 挑战100勇士场地
+- 全部普通/真勇士配置固定 `fight_scene_ids=50001`（`FightScene_Arena_Embervault_1.prefab`）。`GetChallengeHundredFightSceneId` 通过 `IsMatchFightScene` 校验旧冻结值，缺失或不再属于配置池时重选并写回；保留道路、难度、敌人行和奖励，有效冻结值不重随。资源布置及加载登记见 `portal-system` 的「挑战100勇士专用竞技场」。
+
 ### 地图与传送门生成（UIBasePortal）
 - `InitMap`：**补足不洗牌**——先显示已缓存世界 `UserTempBean.listPortalWorldInfoRandomData`，再按 `GetUnlockPortalShowCount()` 缺口 `CreateRandomPortalWorld` 补足；解锁研究提高数量后旧世界不动、只新增。
 - `CreateRandomPortalWorld`：随机已解锁世界id(`GetUnlockGameWorldIds`) → `SetGameFightTypeRandom(worldId, listExistWorld)`(第三参传 `listPortalWorldInfoRandomData`, 挑战100勇士/无尽全场各只刷1个——已存在则跳过该模式判定) → 随机地图位置(`GetRandomMapPos` 避重叠) → `iconSeed`。

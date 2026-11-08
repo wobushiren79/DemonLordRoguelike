@@ -81,6 +81,8 @@ WorldHandler.EnterGameForFightScene(fightData)  → GameFightLogicConquer 跑起
 
 > **无尽模式（GameFightTypeEnum.Infinite）复用本表同难度行**：无尽模式的怪物池 `enemy_ids`/`enemy_boss_ids`、`attack_start_num`/`attack_show_time`/`attack_boss_num`、BOSS 场景池、`drop_crystal`、`road_num`/`road_length` 均取同难度（world_id+level）征服行（经 `FightBeanForInfinite.fightTypeConquerInfo`）；其每轮强度递增倍率独立配置在 `excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（FightTypeInfiniteInfo.round_intensity_addrate，第 N 轮强度=本表同难度行 `attack_intensity_baserate`×该值^(N-1)，Bean 扩展 `GetRoundIntensityRate(round)`）。无尽传送门道路与战斗场景预生成 `GameWorldInfoRandomBean.SetRandomDataForInfinite`（难度 2 起逐档，无尽无难度 1；传送门创建后研究新解锁的难度由 `GetInfiniteDifficultyRandom(D)` 懒补齐）同样读本表 `road_num`/`road_length` 区间与场景池，场地经 `GetFightSceneId(D, true)` 取冻结值。
 
+**BOSS 决战场地**。世界 1 难度 1–10 的 `fight_scene_boss_ids` 为 `30001&30002`，分别对应旧王宫和红冠宫殿。征服最后一关与同难度无尽共用此池。创建传送门或首次生成某个难度时等概率抽取并冻结，`GetFightSceneId` 从当前池补齐老存档缺失的场地 ID。已有传送门保留其冻结场地。
+
 ### 字段一览
 
 | 字段 | 类型 | 含义 |

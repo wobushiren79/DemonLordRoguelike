@@ -60,6 +60,12 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 
 ## 数据模型
 
+### 挑战100勇士专用竞技场（2026-11-07）
+
+- `FightScene` 的 **50001** 对应 `FightScene_Arena_Embervault_1.prefab`；挑战表全部 28 行（普通/真勇士、全部难度）的 `fight_scene_ids` 均为 `50001`。征服和无尽场景池不包含它。
+- 场地仍以 Excel 为真实源，沿用 `GetFightSceneId` 冻结链路。`FightTypeChallengeHundredInfoBean.IsMatchFightScene(id)` 检查缓存场地是否仍在该行配置池；`GetChallengeHundredFightSceneId` 仅在缓存缺失或已被移出池时重选并写回，因此旧传送门也迁入竞技场，保留难度、敌人行、道路和奖励。仍在池中的场地不重随。
+- 战斗预制位于 `Assets/LoadResources/FightScene/`，Addressables 组 `FightScene`、地址为完整资源路径；嵌套原 `Building_Arena_Embervault_1`，本地位置 `(5.5,-0.05,3.5)`、等比缩放 `0.5`，匹配 5×10 战斗格及加载器道路数偏移。战斗版隐藏围墙/基础/座席/上层拱廊的 `Near Side`，避免现有战斗镜头被前景看台遮挡；原建筑资源不改。
+
 ### GameWorldInfoBean（世界配置, 自动生成, 禁改）
 `Assets/Scripts/Bean/MVC/Game/GameWorldInfoBean.cs`（Cfg.fileName = `GameWorldInfo`）
 
@@ -99,9 +105,9 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 每难度一份：`difficultyLevel`、`roadNum`、`roadLength`、`fightNum`、`fightSceneId`(普通关冻结场景)、`bossFightSceneId`(BOSS关冻结场景，无尽每轮用)、`listReward`(预生成通关奖励)、`rewardUnlockSign`(生成时的装备奖励池解锁签名)、**`listEnemyTypeId`/`listEnemyBossTypeId`**(2026-10：按征服行 `enemy_type_num`/`enemy_boss_type_num` 冻结的敌人种类，空列表=未配置整池全随机；**null=老存档未生成**，由 `GameWorldInfoRandomBean.GetDifficultyEnemyTypeIdList(D,isBoss)` 懒补齐写回，勿把字段初始化为空列表)、**`listEnemyBossSpawnId`**(BOSS 出场阵容：每个元素=一只 BOSS，长度=BOSS 数量，世界生成时由 `attack_boss_num` × BOSS 种类随出；战斗出怪与弹窗去重展示共用，null=老存档由 `GetDifficultyEnemyBossSpawnIdList(D)` 懒补齐)。无尽复用同一缓存但只填道路/场景，奖励与敌人种类/阵容留空。
 
 ### FightTypeChallengeHundredInfoBean（挑战100勇士配置, Bean 自动生成禁改 / Partial 手写扩展）
-`Assets/Scripts/Bean/MVC/Game/FightTypeChallengeHundredInfoBean(Partial).cs`（Cfg.fileName = `FightTypeChallengeHundredInfo`，一行一难度，当前10行）。
+`Assets/Scripts/Bean/MVC/Game/FightTypeChallengeHundredInfoBean(Partial).cs`（Cfg.fileName = `FightTypeChallengeHundredInfo`，一行一个挑战配置，当前28行）。
 
-- Partial 扩展：`GetEnemyIdList()`/`GetRandomEnemyId()`(enemy_ids ,分隔；生成100只怪时每只独立从列表随机抽取)、`GetDifficultyLevelList()`/`IsMatchDifficulty(level)`(本行是否可被指定难度抽中，即 difficulty_levels 含该难度)、`GetRandomFightScene()`(fight_scene_ids 随机其一；只在传送门创建/老存档懒补齐时调用一次，结果冻结进 `GameWorldChallengeHundredRandomBean.fightSceneId`)、`GetRandomRoadNum()`/`GetRandomRoadLength()`(x或x-y区间)、`GetRandomRewardCrystal()`(x固定或x-y随机，解析失败返回0)、`GetIntensityRate()`(attack_intensity_baserate 强度倍率，敌人HP/护甲/攻击力×该值，≤0按1)。
+- Partial 扩展：`GetEnemyIdList()`/`GetRandomEnemyId()`(enemy_ids ,分隔；生成100只怪时每只独立从列表随机抽取)、`GetDifficultyLevelList()`/`IsMatchDifficulty(level)`(本行是否可被指定难度抽中，即 difficulty_levels 含该难度)、`GetRandomFightScene()`(fight_scene_ids 随机其一；只在传送门创建/老存档懒补齐/冻结场景已移出配置池时调用，结果冻结进 `GameWorldChallengeHundredRandomBean.fightSceneId`)、`GetRandomRoadNum()`/`GetRandomRoadLength()`(x或x-y区间)、`GetRandomRewardCrystal()`(x固定或x-y随机，解析失败返回0)、`GetIntensityRate()`(attack_intensity_baserate 强度倍率，敌人HP/护甲/攻击力×该值，≤0按1)。
 - Cfg 扩展：`GetMatchRows(unlockDifficultyMax)`(指定难度可抽中的全部行)、`GetRandomRow(unlockDifficultyMax, bossRate)`(**两段随机**：先按 bossRate(百分数0~100) 判定普通/BOSS挑战，再在命中类型(challenge_type)的行内等概率随机其一；命中类型无匹配行落回另一类型，**全无匹配返回 null，调用方需落回默认模式**)、`GetMaxDifficultyLevel()`(2026-10 新增：扫描全部行 `difficulty_levels` 取最高，供弹窗未解锁预览)。
 
 ### FightTypeInfiniteInfoBean（无尽模式配置, Bean 自动生成禁改 / Partial 手写扩展）

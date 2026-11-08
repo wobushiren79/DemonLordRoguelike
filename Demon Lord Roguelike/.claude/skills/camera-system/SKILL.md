@@ -95,6 +95,8 @@ await CameraHandler.Instance.InitBaseSceneControlCamera(creatureData, startPosit
 ```
 两者都会 `SetMainCameraDefaultBlend(0)` 关闭切换动画后再设置 `Follow`/`LookAt`，并把 `PreviousStateIsValid = false` 以避免上一镜头插值残留。
 
+`InitFightSceneCamera` 在赋予跟随目标前通过 `ControlForGameFight.ClampCameraTargetZ` 计算开场锚点。所有战斗场景均从锚点 Z=4 开场（`CMFollow` Z 偏移 -8，世界 Z=-4），与移动时的 Z 下限一致。
+
 ### 3. 基地场景内的 CV_List 虚拟相机切换
 
 基地（及其它场景预制体）下挂有名为 `CV_List` 的节点，内含多个按用途命名的 `CinemachineCamera`。

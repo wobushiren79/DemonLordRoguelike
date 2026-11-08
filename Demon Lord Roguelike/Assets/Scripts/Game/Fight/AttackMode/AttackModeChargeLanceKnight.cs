@@ -7,6 +7,7 @@ using UnityEngine;
 /// <para>冲锋期间按「上一帧 x ~ 本帧 x」区间扫描本路防守生物，每个目标只结算一次 1 倍 ATK 伤害；
 /// 由 attack_mode_ext 的 trigger_scene=1（ai_param skill_update）驱动，走 CastSkill 意图。</para>
 /// <para>本类会移动施法者本体（非弹道），因此每帧校验施法者存活/UUID/当前意图，失配立即中止，避免与击退/魅惑/死亡抢位置。</para>
+/// <para>空放预检：冲锋路径（本路施法者当前位置至道路左缘）没有存活敌人时不释放，技能保持就绪并在下帧重试。</para>
 /// </summary>
 public class AttackModeChargeLanceKnight : BaseAttackMode
 {
@@ -25,6 +26,32 @@ public class AttackModeChargeLanceKnight : BaseAttackMode
     private const float DefaultJumpHeight = 1.5f;
     /// <summary>命中特效相对目标根节点的 Y 偏移</summary>
     private const float HitEffectOffsetY = 0.5f;
+    #endregion
+
+    #region 技能触发预检
+    /// <summary>
+    /// 技能触发预检：仅当本路冲锋路径（施法者当前位置至道路左缘）存在存活防守生物时允许释放；无敌人时保持就绪下帧再试
+    /// </summary>
+    public override bool CheckCanTriggerSkill(FightCreatureEntity attacker, AttackModeInfoBean attackModeInfo)
+    {
+        if (attacker == null || attacker.IsDead() || attacker.creatureObj == null || attacker.fightCreatureData == null || attackModeInfo == null)
+            return false;
+        var gameFightLogic = FightHandler.Instance.manager.GetCachedFightLogic();
+        if (gameFightLogic == null || gameFightLogic.fightData == null)
+            return false;
+        float attackerX = attacker.creatureObj.transform.position.x;
+        List<FightCreatureEntity> listTarget = gameFightLogic.fightData.GetDefenseCreatureByRoad(attacker.fightCreatureData.roadIndex);
+        for (int i = 0; i < listTarget.Count; i++)
+        {
+            var target = listTarget[i];
+            if (target == null || target.IsDead() || target.creatureObj == null)
+                continue;
+            float targetX = target.creatureObj.transform.position.x;
+            if (targetX >= RoadMinX - PositionEpsilon && targetX <= attackerX + PositionEpsilon)
+                return true;
+        }
+        return false;
+    }
     #endregion
 
     #region 阶段与运行态

@@ -5,6 +5,7 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 watched_files:
   - Assets/Scripts/Game/Fight/
   - Assets/Scripts/Component/Game/Scene/ScenePrefabBase.cs
+  - Assets/Scripts/Component/Game/Scene/ScenePrefabForFight.cs
   - Assets/Scripts/Component/Game/Control/ControlForGameFight.cs
   - Assets/Scripts/Component/Manager/FightManager.cs
   - Assets/Scripts/Component/Handler/FightHandler.cs
@@ -30,13 +31,14 @@ watched_files:
 
 ### 战斗场景
 - **ScenePrefabBase** - 场景预制体基类
+- **ScenePrefabForFight** - 普通战斗场景统一根组件；`WorldHandler.LoadFightScene` 在非终焉议会分支自动确保存在并初始化，场景实例动态表现集中在这里。动态天空盒默认关闭，天空石台 60001 启用并配置曝光倍率 1.65、偏航 0.8°/秒；仅操作运行时材质副本，外部替换后停更，禁用时恢复源材质并销毁副本
 - **ScenePrefabForBase** - 基地场景
 - **ScenePrefabForDoomCouncil** - 终焉议会场景
 - **ScenePrefabForRewardSelect** - 奖励选择场景
 
 ### 战斗控制
 - **ControlForGameBase** - 基础游戏控制
-- **ControlForGameFight** - 战斗游戏控制
+- **ControlForGameFight** - 战斗游戏控制；`ClampCameraTargetZ` 在开场、WASD、右键拖拽中统一限制 Z，仅六路 Embervault（场景 50001）的锚点 Z 下限为 4（相机世界 Z 下限 -4）。
 
 ### 关键 Bean
 - **FightBean** - 战斗数据基类；虚方法 `GetGameWorldInfoRandomData()` 默认返回 null，征服/无尽/100勇士三个 Bean 覆写返回各自 `gameWorldInfoRandomData`（UI 侧 Quick/0速/2倍速门控与后续需要世界+难度的逻辑统一走它，避免按具体 Bean 类型分支）
@@ -64,6 +66,7 @@ watched_files:
 | 魔晶批量渲染器(掉落魔晶 instanced) | Assets/Scripts/Game/Fight/FightDropCrystalInstanceRenderer.cs |
 | 魔物描边高亮跟随 | Assets/Scripts/Game/Fight/CreatureSpineOutlineFollow.cs |
 | 场景基类 | Assets/Scripts/Component/Game/Scene/ScenePrefabBase.cs |
+| 普通战斗场景组件 | Assets/Scripts/Component/Game/Scene/ScenePrefabForFight.cs |
 | 战斗控制 | Assets/Scripts/Component/Game/Control/ControlForGameFight.cs |
 | FightManager | Assets/Scripts/Component/Manager/FightManager.cs |
 | FightHandler | Assets/Scripts/Component/Handler/FightHandler.cs |
@@ -72,7 +75,7 @@ watched_files:
 
 ## 长驻攻击模式（移动施法者本体）
 
-`AttackModeChargeLanceKnight`（长枪骑士 BOSS 技能 102004）由 CastSkill 意图发射，在 `Update()` 中直接改 `attacker.creatureObj.transform` 做冲锋 + 抛物线跳回，而不是弹道自身 `position`。关键约束：每帧校验 `CheckTargetEntityValid(实体, UUID快照)` 且 `currentIntentEnum == AIIntentEnum.AttackCreatureCastSkill`（死亡/击退/魅惑会切走意图，立即 Abort；跳跃中断只把 y 拉回地面）；总时长必须 < `AIIntentAttackCreatureCastSkill.CallbackTimeoutBuffer`（3 秒）；位移/计时统一 `GetFightDeltaTime()`；命中走 `FightBean.GetDefenseCreatureByRoad` 数据列表（物理 mask 只含 `CreatureDef`，会漏 `CreatureDef_Front/Back` 层）。细节以 attack-mode-system skill 为准。
+`AttackModeChargeLanceKnight`（长枪骑士 BOSS 技能 102004）由 CastSkill 意图发射，释放前经 `CheckCanTriggerSkill` 预检：本路施法者当前位置至道路左缘没有存活防守生物则不释放，保持就绪下帧再试。它在 `Update()` 中直接改 `attacker.creatureObj.transform` 做冲锋 + 抛物线跳回，而不是弹道自身 `position`。关键约束：每帧校验 `CheckTargetEntityValid(实体, UUID快照)` 且 `currentIntentEnum == AIIntentEnum.AttackCreatureCastSkill`（死亡/击退/魅惑会切走意图，立即 Abort；跳跃中断只把 y 拉回地面）；总时长必须 < `AIIntentAttackCreatureCastSkill.CallbackTimeoutBuffer`（3 秒）；位移/计时统一 `GetFightDeltaTime()`；命中走 `FightBean.GetDefenseCreatureByRoad` 数据列表（物理 mask 只含 `CreatureDef`，会漏 `CreatureDef_Front/Back` 层）。细节以 attack-mode-system skill 为准。
 
 ## 弹道渲染接线（DSP GPU Instancing）
 

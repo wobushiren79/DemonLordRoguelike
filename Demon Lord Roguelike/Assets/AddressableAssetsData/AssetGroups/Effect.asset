@@ -65,11 +65,6 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 2a2f3bed19fb35745a0a25ec4acc2b26
-    m_Address: Assets/LoadResources/Effects/Effect_ChargeWind_1.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 2b71a034ccb0b394b96e6c3eaa395f79
     m_Address: Assets/LoadResources/Effects/Effect_Boom_Water_2.prefab
     m_ReadOnly: 0

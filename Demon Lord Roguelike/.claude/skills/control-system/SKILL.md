@@ -99,14 +99,16 @@ GameControlHandler.Instance.manager.controlForGameBase.EnabledControl(false);
 
 | 输入 | 处理 | 行为 |
 |------|------|------|
-| WASD (`inputActionMove`) | `HandleForMoveUpdate` | 移动 `controlTargetForEmpty`，`ClampCameraPosition` 限位(minX/maxX/minZ/maxZ) |
-| 鼠标右键拖拽 (`UseR`) | `HandleForMoveMouseUpdate` + Down/Up | 按下记 `dragCameraOrigin` 进拖拽；按位移移镜头；抬起退出拖拽 |
+| WASD (`inputActionMove`) | `HandleForMoveUpdate` | 移动 `controlTargetForEmpty`，经 `ClampCameraPosition` 限制 X/Z |
+| 鼠标右键拖拽 (`UseR`) | `HandleForMoveMouseUpdate` + Down/Up | 按下记 `dragCameraOrigin` 进拖拽；按位移移镜头，复用 `ClampCameraPosition`；抬起退出拖拽 |
 | 鼠标左键长按 (`UseL`) | `HandleForClickDropUpdate` | 无选择(`HasSelectData()==false`)时 `PickupCrystalForMouse()` 拾水晶 |
 | 鼠标左键抬起 | `HandleForUseLUp` | 手持卡 → `PutCard()`；删除模式 → `SelectCreatureDestoryHandle()` |
 | 鼠标右键抬起 | `HandleForUseRUp` | 有选择(`HasSelectData()`) → `ClearSelectData()`；卡片选择与删除模式共用同一清空逻辑 |
 | C 键 (`inputActionDeleteCreature`) | `HandleForDeleteCreatureToggle` | 切换删除生物模式(`SelectCreatureDestroy`/`UnSelectCreatureDestroy`) |
 
 战斗交互均通过 `GameHandler.Instance.manager.GetGameLogic<GameFightLogic>()` 落到战斗逻辑；`CheckUtil.CheckIsPointerUI()` 拦截 UI 上的点击。
+
+战斗开场与移镜共用 `ClampCameraTargetZ`。所有战斗场景的锚点 Z 均限制在 [4,6]，配合 `CMFollow` 的 Z 偏移 -8 将相机世界 Z 范围设为 [-4,-2]。
 
 ## 输入接线规范（重要）
 

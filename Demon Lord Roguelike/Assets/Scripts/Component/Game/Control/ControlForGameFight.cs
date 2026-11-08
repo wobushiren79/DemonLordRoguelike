@@ -28,8 +28,6 @@ public class ControlForGameFight : BaseControl
     protected float speedForDargCamera = 500f;
     protected float minX = 3;
     protected float maxX = 7f;
-    protected float minZ = 2f;
-    protected float maxZ = 6f;
 
     private Vector3 dragCameraOrigin;
 
@@ -145,18 +143,30 @@ public class ControlForGameFight : BaseControl
         }
     }
 
+    #region 镜头限位
+
     /// <summary>
-    /// 限制摄像头位置
+    /// 限制战斗镜头锚点的 X/Z 位置，供键盘移动和鼠标拖拽共用。
     /// </summary>
     public void ClampCameraPosition()
-    {        
+    {
         var targetMove = GameControlHandler.Instance.manager.controlTargetForEmpty;
-        // 限制相机移动范围
         Vector3 clampedPosition = targetMove.transform.position;
         clampedPosition.x = Mathf.Clamp(clampedPosition.x, minX, maxX);
-        clampedPosition.z = Mathf.Clamp(clampedPosition.z, minZ, maxZ);
+        clampedPosition.z = ClampCameraTargetZ(clampedPosition.z);
         targetMove.transform.position = clampedPosition;
     }
+
+    /// <summary>
+    /// 限制镜头锚点的 Z 位置，供开场和镜头移动共用。
+    /// </summary>
+    internal static float ClampCameraTargetZ(float targetZ)
+    {
+        // CMFollow 的 Z 偏移为 -8，锚点 Z 下限 4 对应镜头世界 Z 下限 -4。
+        return Mathf.Clamp(targetZ, 4f, 6f);
+    }
+
+    #endregion
 
     /// <summary>
     /// 点击拾取物品

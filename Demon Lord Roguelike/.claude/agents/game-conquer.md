@@ -51,6 +51,7 @@ watched_files:
 - `reward_crystal`（**string**，通关领奖魔晶）：单值 `x` 固定 或 区间 `x-y`（与其它区间字段同格式），走 `GetRandomRewardCrystal()`（内部复用 `ParseRandomRange`；Excel 第2行类型行为 string）
 - `reward_reputation`（int，通关声望奖励，插在 `reward_exp_boss` 与 `remark` 之间）：完整通关按难度给玩家声望；`FightTypeConquerInfoBeanPartial.GetRewardReputation()` 读取（仿 `GetBGColor`，需 Unity 重导 Bean 后才有该字段）。world_id=1 各难度(level 1~10)依次 1~10
 - `attack_intensity_baserate`（float，基础强度倍率，插在 `attack_intensity_addrate` 之后）：该难度每关恒定乘区(第1关也生效)，0/不配按 1；与 `attack_intensity_addrate`(每关递增) 共同组成 `GetCurrentIntensityRate(fightNum)`
+- **BOSS 决战场地**。世界 1 难度 1–10 的 `fight_scene_boss_ids` 为 `30001&30002`，分别对应旧王宫和红冠宫殿。创建传送门或首次生成某个难度时等概率抽取并冻结，缺失的场地 ID 按当前池补齐。已有传送门保留其冻结场地。
 - **无尽模式（GameFightTypeEnum.Infinite）复用本表同难度行**：怪物池 `enemy_ids`/`enemy_boss_ids`、`attack_start_num`/`attack_show_time`/`attack_boss_num`、BOSS 场景池、`drop_crystal`、`road_num`/`road_length` 均取同难度（world_id+level）征服行（经 `FightBeanForInfinite.fightTypeConquerInfo`）；其每轮强度递增倍率独立配置在 `excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（FightTypeInfiniteInfo，`round_intensity_addrate`，第 N 轮强度=同难度征服行 `attack_intensity_baserate`×该值^(N-1)）；无尽传送门道路与战斗场景预生成（`GameWorldInfoRandomBean.SetRandomDataForInfinite`，难度 2 起逐档，单档走 `CreateInfiniteDifficultyRandom`；传送门创建后研究新解锁的无尽难度由 `GetInfiniteDifficultyRandom(D)` 懒补齐）也读征服行 `road_num`/`road_length` 区间与场景池，场地取冻结 `bossFightSceneId`
 
 ### 随机数据与难度

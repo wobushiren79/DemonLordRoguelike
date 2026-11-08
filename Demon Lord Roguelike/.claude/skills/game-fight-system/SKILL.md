@@ -33,6 +33,7 @@ FightBean               - 战斗运行时数据（进攻/防守生物、核心�
 FightCreatureEntity     - 战斗生物实体（Spine动画、受击/回复/死亡、血条、魔王魔力条MPShow）
                           按类型拆分partial：主文件通用 + ForAttack(进攻) + ForDefense(防守) + ForDefenseCore(魔王)
 FightPrefabEntity       - 战斗预制实体（掉落魔力等场景物品；魔晶已改走 DSP 批量渲染，见「掉落水晶」节）
+ScenePrefabForFight     - 普通战斗场景根组件（场景实例表现与生命周期；动态天空盒默认关闭）
 FightHandler            - 战斗处理器（攻击模块创建、预制管理、倒计时）
 FightManager            - 战斗管理器（对象池：攻击模块、战斗预制、数据缓存）
 ControlForGameFight     - 战斗场景输入控制
@@ -322,6 +323,8 @@ public virtual void CheckGameEnd()
 
 ## 战斗场景控制
 
+`ControlForGameFight.ClampCameraTargetZ` 统一处理开场和移镜的锚点 Z 限位。仅六路 Embervault（场景 50001）将锚点 Z 下限提至 4，对应 `CMFollow` 的相机世界 Z 下限 -4。
+
 ```csharp
 public class ControlForGameFight : BaseControl
 {
@@ -564,6 +567,7 @@ gameLogic.SetGameSpeed(1.0f);                          // 正常速度
 | 测试模式 | `Assets/Scripts/Game/Logic/GameFightLogicTest.cs` |
 | 挑战100勇士模式 | `Assets/Scripts/Game/Logic/GameFightLogicChallengeHundred.cs` |
 | 战斗数据Bean | `Assets/Scripts/Bean/Game/FightBean.cs` |
+| 普通战斗场景组件 | `Assets/Scripts/Component/Game/Scene/ScenePrefabForFight.cs` |
 | 挑战100勇士战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForChallengeHundred.cs` |
 | 无尽模式战斗数据 | `Assets/Scripts/Bean/Game/FightBeanForInfinite.cs` |
 | 无尽模式配置表Partial | `Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBeanPartial.cs` |

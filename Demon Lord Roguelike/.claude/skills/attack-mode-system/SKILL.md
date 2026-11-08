@@ -51,7 +51,7 @@ BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播
 
 ### 技能触发预检（CheckCanTriggerSkill）
 
-「释放技能」意图（trigger_scene=1，由 NPC ai_param skill_update 驱动）切入前，`TryTriggerExtSkill` 统一调用 `BaseAttackMode.CheckCanTriggerSkill(attacker, attackModeInfo)` 虚方法做触发预检——默认 true 不拦截，各攻击类按需重写拦截空放（如群体治疗范围内无血量不满友军时不施法）；返回 false=保持就绪下帧再试、不切入施法。预检时无发射实例，实例经 `FightManager.GetAttackModeClass(attack_mode_id)` 取**类级共享无状态实例**（按 id 懒创建缓存，反射失败=不拦截；刻意不挂靠 `dlAttackModePrefab`——那是在途攻击表、按 instanceId 登记且技能未放时为空，也不进对象池；该缓存同样可供其他需要类级无状态实例的调用方复用），重写实现须保持无状态（配置从 attackModeInfo 入参取，禁止读写实例字段）。首个重写者：`AttackModeRegainHPArea`（2026-09-16）。
+「释放技能」意图（trigger_scene=1，由 NPC ai_param skill_update 驱动）切入前，`TryTriggerExtSkill` 统一调用 `BaseAttackMode.CheckCanTriggerSkill(attacker, attackModeInfo)` 虚方法做触发预检——默认 true 不拦截，各攻击类按需重写拦截空放（如群体治疗范围内无血量不满友军时不施法）；返回 false=保持就绪下帧再试、不切入施法。预检时无发射实例，实例经 `FightManager.GetAttackModeClass(attack_mode_id)` 取**类级共享无状态实例**（按 id 懒创建缓存，反射失败=不拦截；刻意不挂靠 `dlAttackModePrefab`——那是在途攻击表、按 instanceId 登记且技能未放时为空，也不进对象池；该缓存同样可供其他需要类级无状态实例的调用方复用），重写实现须保持无状态（配置从 attackModeInfo 入参取，禁止读写实例字段）。现有重写者：`AttackModeRegainHPArea`（2026-09-16，范围内无可治疗友军不施法）、`AttackModeChargeLanceKnight`（2026-11-07，本路冲锋路径无存活敌人不施法）。
 
 ### 攻击模式类型体系
 
@@ -80,7 +80,7 @@ BaseAttackMode                      - 攻击模式基类
 ├── AttackModeRangedBoomerang       - 回旋镖弹道（继承 BaseAttackMode：起点→锁定点→超出一格折返→返回魔王，时间参数化速度曲线，每次命中固定为注入伤害(当前=魔王攻击力×0.25)、不递减；深渊馈赠「死亡回旋」300051）
 ├── AttackModeOrbit                 - 环绕弹道（常驻不自毁：绕宿主生物 XZ 水平面圆周运动，半径0.75(OrbitRadius 常量)，高度取魔王位置+攻击起始偏移(注入 orbitHeight)，宿主(orbitCenterEntity 属性 setter 自动同步 UUId 快照防实体池复用误判)/角速度/伤害倍率由外部 BUFF 注入并同步；触碰命中走 live 球形检测、每只书对同一敌人 0.5 秒冷却，伤害=魔王实时攻击力×倍率命中瞬间取、不暴击；深渊馈赠「知识的力量」300071）
 ├── AttackModeShockwaveRing         - 圆环冲击波（以魔王为圆心扩张：XZ 环带命中自遍历不走射线批处理、每敌每波只中一次、只命中道路范围内敌人(x≤道路右缘0.5+路长，右缘外未进道路的敌人不受伤害与击退)、命中瞬时击退(落点不钳右缘可推出路外，之后由移动意图走回)、最大半径=道路全长+余量达到即销毁；视觉走 EffectHandler.ShowEnduringSingletonEffect 全局单例通道，特效id取攻击模块配置 effect_hit=1700001(Effect_Shockwave_1,原 manager effectShockwaveId 常量已删)，用 SingletonEffectParam 的 multiplier 字段同步半径/时长，并经 actionForGet 回调缓存实例、Update 逐帧对齐 simulationSpeed=GetCurrentGameSpeed 使视觉扩张跟随游戏速度；深渊馈赠「第六次冲击」300091）
-├── AttackModeChargeLanceKnight     - 长枪骑士BOSS技能-沿路冲锋（长驻攻击模式移动施法者本体：Charging 阶段沿本路向 -X 冲到 x=0.5，按「上帧x~本帧x」区间扫描 GetDefenseCreatureByRoad，每目标一次 UnderAttack；到左缘切 Jumping，按 EvalJumpPosition 同式抛物线跳回施法前精确位置；每帧校验存活/UUID/CastSkill 意图，失配 Abort；冲锋≤1.8s+跳回0.2~0.8s 满足 CastSkill 3秒兜底；Human 骨架无 Jump，跳回保持 Walk；102004 配 speed_move=12&other_data=jump_time:0.6&jump_height:1.5&charge_fx:2200001&land_fx:700001（charge_fx=跟随施法者的风线特效独立实例、World 模拟，多 BOSS 同屏不互顶；land_fx=跳回落地的 700001=Effect_BodySlam_1），ext 100015[trigger_scene=1] + NPC ai_param=skill_update:100015:5，2026-11 新增）
+├── AttackModeChargeLanceKnight     - 长枪骑士BOSS技能-沿路冲锋（空放预检=CheckCanTriggerSkill：本路施法者当前位置至道路左缘无存活防守生物则不释放，保持就绪下帧再试；长驻攻击模式移动施法者本体：Charging 阶段沿本路向 -X 冲到 x=0.5，按「上帧x~本帧x」区间扫描 GetDefenseCreatureByRoad，每目标一次 UnderAttack；到左缘切 Jumping，按 EvalJumpPosition 同式抛物线跳回施法前精确位置；每帧校验存活/UUID/CastSkill 意图，失配 Abort；冲锋≤1.8s+跳回0.2~0.8s 满足 CastSkill 3秒兜底；Human 骨架无 Jump，跳回保持 Walk；102004 配 speed_move=12&other_data=jump_time:0.6&jump_height:1.5&charge_fx:2200001&land_fx:700001（charge_fx=跟随施法者的风线特效独立实例、World 模拟，多 BOSS 同屏不互顶；land_fx=跳回落地的 700001=Effect_BodySlam_1），ext 100015[trigger_scene=1] + NPC ai_param=skill_update:100015:5，2026-11 新增）
 ├── AttackModeExplosion             - 爆炸（以自身为中心范围伤害+按距爆心半径线性衰减[other_data 键 falloff_min=边缘最低倍率,默认0.5=边缘为中心1/2,保底1,配1=不衰减]，攻击者死亡；冲锋型 charge_attack=1 走「死亡即引爆」纯数据路径 CreateAttackModeForDeadExplosion，不走 StartAttack(attacker,…)；敢死队 300002：collider_area_type=11&collider_area_size=1.5&damage_add_rate=1，effect_hit=300002(Effect_Explosion_2,2026-08-18 起爆炸两个攻击模块 300001/300002 均改用此粒子,原 Effect_Explosion_1=300001 特效已无引用)/sound_hit=420008/sound_miss=100001）
 ├── AttackModeFallupon              - 天降单体（直接对锁定目标造成伤害）
 ├── AttackModeFalluponArea          - 天降范围（对目标位置范围伤害；Update 的 gameObject==null→AttackHandle 兜底仅限老 prefab 模式，DSP 视觉模式(visual_name 非空)无实体 gameObject 跳过该检查正常下落）
@@ -736,6 +736,7 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 5. **命中走数据列表**：本路目标用 `FightBean.GetDefenseCreatureByRoad(roadIndex)` + 每帧 x 区间跨越 + `HashSet<creatureUUId>` 去重；物理 mask 只含 `CreatureDef`，会漏 `CreatureDef_Front/Back`。
 6. **动画**：冲锋播 Walk 循环；Human 骨架没有 Jump，跳回阶段继续 Walk（调用 `PlayAnim(Jump)` 会刷错误日志且不换动画）。
 7. **对象池**：`StartAttack` 与 `Destroy` 都要清空阶段、HashSet、施法者引用与回调；`Finish` 用 `isValid` 幂等守卫。
+8. **空放预检**：`CheckCanTriggerSkill` 复用 `GetDefenseCreatureByRoad`，仅当本路施法者当前位置至道路左缘 `[0.5, attackerX]` 存在存活防守生物才允许释放；无敌人时保持就绪下帧再试，不重新等待 5 秒。预检经类级共享实例调用，实现不得读写实例字段。
 
 ## 热路径性能约束
 

@@ -7,6 +7,7 @@ watched_files:
   - Assets/FrameWork/Scripts/Component/Manager/VolumeManager.cs
   - Assets/Scripts/Component/Handler/VolumeHandler.cs
   - Assets/Scripts/Component/Manager/VolumeManager.cs
+  - Assets/Scripts/Component/Game/Scene/ScenePrefabForFight.cs
 ---
 
 # 后处理/环境渲染系统 (Volume System) 开发代理
@@ -46,6 +47,8 @@ Manager 以懒加载属性持有各 VolumeComponent，Handler 通过 `manager.xx
    - 是全局的、按 Unity Scene 存；战斗场景由配置驱动（见下）。
 
 ## 关键约定
+
+- **战斗天空盒的曝光和漂移由统一战斗场景组件隔离**。普通战斗在 `WorldHandler.LoadFightScene` 自动确保根节点有 `ScenePrefabForFight`（`enableSkyboxMotion` 默认 false，不改全局天空盒）；天空石台 60001 在预制体根节点启用，复用配置表选定的 `Skybox_1`，运行时副本曝光倍率 1.65、每秒偏航 0.8°。组件只更新自己的副本，外部替换天空盒后停更；禁用时仅在仍持有当前天空盒的情况下恢复源材质并销毁副本。漂移跟随 `Time.timeScale`，不跟随战斗 0/2 速按钮。
 
 - **战斗场景雾走配置表**：`FightScene` 配置表新增 `fog` 字段（形如 `Color:#CEF9FF&Start:8&End:20&Mode:Linear`），空=不开雾。解析在 [FightSceneBeanPartial.cs](Assets/Scripts/Bean/MVC/Game/FightSceneBeanPartial.cs) 的 `HasFog` / `GetFogParams(out color,out start,out end,out mode)`，复用框架 `StringExtension.SplitForDictionary(':','&')`。开雾在 [WorldHandler.cs](Assets/Scripts/Component/Handler/WorldHandler.cs) `LoadFightScene`，关雾在 `UnLoadScene(Fight)` / `UnLoadAllScene`。
 - **战斗场景景深走配置表**：`FightScene` 表 `depth_of_field` 字段（形如 `mode:Bokeh&length:130&aperture:12`），空=默认 Bokeh/180/12。解析在 [FightSceneBeanPartial.cs](Assets/Scripts/Bean/MVC/Game/FightSceneBeanPartial.cs) 的 `HasDepthOfField` / `GetDepthOfFieldParams(out mode,out focalLength,out aperture)`（复用 `SplitForDictionary`，缺省键回退默认值）。仅 `VolumeHandler.InitData` 的 **Fight 分支**读取（经 `GameHandler.gameLogic` 当前 `GameFightLogic.fightData.fightSceneId` 查 `FightSceneCfg`），其它场景类型保持硬编码；focusDistance 始终用相机跟随距离，不由配置控制。沙漠(20001)已配 `length:130`（起伏地形 + 180mm 长焦时清晰带仅约 1.7m，透明 Spine 生物会跟着焦外背景一起糊，故沙漠降到 130 加厚景深）。

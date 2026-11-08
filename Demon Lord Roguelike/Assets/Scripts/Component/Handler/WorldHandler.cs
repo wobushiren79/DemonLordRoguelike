@@ -202,16 +202,19 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
 
     #region 加载场景
     /// <summary>
-    /// 加载终焉议会场景
+    /// 加载终焉议会场景，并根据是否进入战斗设置大门。
     /// </summary>
+    /// <param name="forBattle">是否为暴力说服战斗加载场景</param>
     /// <returns></returns>
-    public async Task<GameObject> LoadDoomCouncilScene()
+    public async Task<GameObject> LoadDoomCouncilScene(bool forBattle = false)
     {
         await UnLoadScene(GameSceneTypeEnum.DoomCouncil);
         var targetScene = await manager.GetDoomCouncilScene();
         targetScene.SetActive(true);
         targetScene.transform.position = Vector3.zero;
         targetScene.transform.eulerAngles = Vector3.zero;
+
+        targetScene.GetComponent<DoomCouncilArchitectureView>()?.SetForBattle(forBattle);
 
         dicCurrentScene.Add(GameSceneTypeEnum.DoomCouncil, targetScene);
         currentScene = targetScene;
@@ -284,7 +287,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         //如果议会 特殊加载议会场景
         if (fightData.gameFightType == GameFightTypeEnum.DoomCouncil)
         {
-            targetScene = await LoadDoomCouncilScene();
+            targetScene = await LoadDoomCouncilScene(forBattle: true);
 
             targetScene.SetActive(true);
             targetScene.transform.position = new Vector3(-0.5f, WorldManager.FightSceneHeightY, 1f);
@@ -315,6 +318,12 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             targetScene.SetActive(true);
             targetScene.transform.position = new Vector3(0, WorldManager.FightSceneHeightY, -(fightData.sceneRoadNumMax - fightData.sceneRoadNum) / 2f);
             targetScene.transform.eulerAngles = Vector3.zero;
+
+            //统一接入普通战斗场景组件，缺省时补默认组件（默认不处理天空盒）
+            var scenePrefabForFight = targetScene.GetComponent<ScenePrefabForFight>();
+            if (scenePrefabForFight == null)
+                scenePrefabForFight = targetScene.AddComponent<ScenePrefabForFight>();
+            await scenePrefabForFight.InitSceneData();
 
             //设置天空盒颜色
             ColorUtility.TryParseHtmlString("#00000000", out var targetColorSky);
@@ -444,7 +453,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             }
             else
             {
-                //战斗场景没有ScenePrefabBase
+                //没有场景组件时直接销毁
                 DestroyImmediate(targetScene);
             }
             dicCurrentScene.Remove(gameSceneType);
@@ -487,7 +496,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             }
             else
             {
-                //战斗场景没有ScenePrefabBase
+                //没有场景组件时直接销毁
                 DestroyImmediate(targetScene);
             }
         }
