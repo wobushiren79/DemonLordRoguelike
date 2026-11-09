@@ -34,7 +34,7 @@ watched_files:
 
 ## 3. 配表、绑定模式与兼容旧档
 
-1. 读 [配置表读写](../excel-io/SKILL.md)。通过项目 `.claude/scripts/run-python.ps1` 使用 openpyxl 修改 `Assets/Data/Excel/excel_fight_scene[战斗场景].xlsx` 的 `FightScene` 工作表。检查已用 ID 与编号规则，新增行按 ID 升序。`name_res` 填 prefab 文件名（含扩展名），加载时与 `PathInfo.FightScenePrefabPath` 拼成完整 Addressables 地址。`skybox_mat` 优先选用 `Skybox` 组中已登记的 `Assets/FrameWork/Materials/Skybox/` 材质，按构图填写 `skybox_rotate`。现有材质无法满足明确的美术需求时，优先把新天空做成兼容旋转参数的天空盒材质并登记到同组。按画面需要配置环境光、雾、景深、道路颜色/透明度和 `Details` 变体。
+1. 读 [配置表读写](../excel-io/SKILL.md)。通过项目 `.claude/scripts/run-python.ps1` 使用 openpyxl 修改 `Assets/Data/Excel/excel_fight_scene[战斗场景].xlsx` 的 `FightScene` 工作表。检查已用 ID 与编号规则，新增行按 ID 升序。`name_res` 填 prefab 文件名（含扩展名），加载时与 `PathInfo.FightScenePrefabPath` 拼成完整 Addressables 地址。`skybox_mat` 优先选用 `Skybox` 组中已登记的 `Assets/FrameWork/Materials/Skybox/` 材质，按构图填写 `skybox_rotate`。现有材质无法满足明确的美术需求时，优先把新天空做成兼容旋转参数的天空盒材质并登记到同组。按画面需要配置环境光、雾、景深、道路颜色/透明度和 `Details` 变体。`camera_move_limit` 用 `x:min,max&z:min,max` 配置实际相机世界 X/Z 范围，可按轴省略；默认 X=3~7、Z=-5~-1，竞技场 50001 配 `z:-4,-1`。
 2. 按入口更新目标场地配置，核对 `FightBean.fightSceneId` 最终取值。挑战100勇士的 `FightTypeChallengeHundredInfo.fight_scene_ids` 使用逗号，征服的 `FightTypeConquerInfo.fight_scene_ids` 和 `fight_scene_boss_ids` 使用 `&`。无尽用 `FightTypeInfiniteInfo.fight_scene_id` 按世界和难度指定单一 `FightScene` ID，0 或留空回退同难度征服 BOSS 场地。按 [传送门流程](../portal-system/SKILL.md) 核对专用场地只由目标正式战斗入口选用。
 3. 检查已有传送门。`FightBeanForInfinite.InitData` 在进场时优先读取当前无尽场地，因此新旧无尽传送门均使用专属配置，旧冻结值仍可用于回退。征服只懒补缺失场地，挑战100勇士通过 `GetChallengeHundredFightSceneId` / `IsMatchFightScene` 在冻结场地已移出配置池时重选。核对征服首战和决战、无尽测试入口以及无尽传送门的进场结果。
 4. 用项目 Unity 导出器同步本次改动的表到 `Assets/Resources/JsonText/`，包括模式表；通过 `ExcelUtil.ExcelToJsonItem(FileInfo, jsonFolderPath)` 定向导出时，实际回读 JSON，防止导出静默失败或拼错中文文件名。核对两端的行、字段类型和 ID 都一致，清理此次临时备份。只修改数据行时沿用已有 Bean。
@@ -47,7 +47,7 @@ watched_files:
 | 屋檐、砖面闪烁 | 检查同段内外表面、相邻段端面及双面材质。用网格平面与投影重叠验证共面，再收边或去掉重复面。保留镜头能看到的切口端面，验收缩进后有无明显缝隙。 |
 | 火盆、壁炬需要动态火焰 | 先找已有 prefab，例如 `Effect_Fire_7`。需要替换模型火焰时，仅拆旧火焰与火星几何，保留火具、炭块和合适的灯光。按火具的实际锚点挂实例，并核对发射朝向。 |
 | 粒子缩小后变细、变长或散开 | 读取实例最终 `lossyScale`，包含外层战斗 prefab 的缩放。对 `Effect_Fire_7` 的等比 `Hierarchy` 缩放，世界空间主火、火星和烟要用**共享原版值 × 最终比例**计算重力及速度上限；初速度已随层级缩放，局部空间 Glow 不做这项补偿。只覆盖各使用场景的实例，源建筑与战斗包装层比例不同时分别核对。用相同随机种子、相机和多个时间点对比；其它粒子先实测模块行为再确定缩放规则。 |
-| 镜头到边界露出切口或模型背面 | 从实际跟随偏移换算锚点限位和相机世界坐标。开场及 WASD、鼠标拖拽共用同一个限制；按目标场地与路数收窄，避免影响别的战斗。检查四周、切口以及近景遮挡。 |
+| 镜头到边界露出切口或模型背面 | 在 `FightScene.camera_move_limit` 按 `x:min,max&z:min,max` 配置实际相机世界范围，代码按跟随偏移换算锚点限位。开场及 WASD、鼠标拖拽共用 `ClampCameraTargetPosition`；只收窄目标场地，不写道路数特判。检查四周、切口以及近景遮挡。 |
 | 光照或景深与预览不同 | 用运行时的环境光、道路材质参数、雾、镜头和 Volume 设置作对照。优先按场景配表调节；道路透明度来自 `road_alpha` 经 MaterialPropertyBlock 设置的 `_Alpha`，空值或 0 回退为 0.5。检查前后景层次以及全排单位、网格和技能提示的辨识度，退场后检查全局渲染设置是否还原。 |
 
 ## 5. 验收与交付
@@ -61,7 +61,7 @@ watched_files:
 ## 平原场地布置
 
 - `FightScene` ID `40001–40004` 共用 `FightScene_Plain_1.prefab`。地面、远山、树、岩石、草、特效与详情节点在根下沿 X 正方向偏移 `0.85`，使它们一起贴合地形。运行时道路按自身世界坐标生成。
-- `InitFightSceneCamera(fightData)` 根据场地配置让平原开场锚点取 X=5、Z=4，整体画面相对默认 X=3 向左移 2 个场景单位。
+- `InitFightSceneCamera(fightData)` 让平原原始开场目标取 X=5、Z=3，再经 `ClampCameraTargetPosition` 应用 `camera_move_limit`；默认配置下锚点保持 `(5,0,3)`，实际相机世界 X=5、Z=-5，整体画面相对默认 X=3 向左移 2 个场景单位。
 - `Tree` 的 15 株近中景树和 `Ridge Tree Line` 的 139 株远树都嵌套深青绿版 `Building_Tree_2D_7_1`，使用独立材质 `Mat_Building_Tree_7_1` 和贴图 `tree_128_7_1.png`。原有 150 株在保留树脚位置的前提下等比放大 1.5 倍，另外在开场镜头左右边缘的道路外各补两株，沿纵深错开。`West Fill` 与 `East Fill` 和原林带前后交错，`Central Hill` 的 7 株树沿中央坡面分布，远树关闭投影。白天平原可见整条林带，其余变体使用各自配置的雾距。
 - `Rock` 下的 18 个无碰撞实例使用 `Building_Rock_Plain_1–3`，其中 5 块大岩石和 2 组碎石分布在远坡，沿坡面微倾斜。源 OBJ 位于 `Assets/LoadResources/Fbx/Building/Rock/`，分别为贴地主岩、楔形小岩和碎石组，裸岩和苔藓各有一个材质槽。`Wild Grass` 将 351 张草卡烘焙到 `Mesh_Plain_WildGrass_1`，共用现有 `grass_1.png` 和 `FrameWork/URP/GrassWindSway`，在路边与坡上成簇分布。
 - `Ground/Ground_1` 的显示表面由 `Mat_GroundTerrain_1` 按高度图在 GPU 位移。摆放景物时，以网格顶点采样 `TerrainHeightmap_2.png` 并在相应三角面内插值，再按预制体枢轴和材质偏移对齐树根、岩底和草卡两侧根脚。岩石最靠近道路的边界局部 Z 约 `7.80`，草簇布置在最大 6 路及出入口之外。

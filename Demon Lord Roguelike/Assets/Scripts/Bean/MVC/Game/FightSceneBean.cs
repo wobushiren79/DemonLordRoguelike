@@ -60,6 +60,10 @@ public partial class FightSceneBean : BaseBean
 	/// </summary>
 	public string depth_of_field;
 	/// <summary>
+	///实际相机世界X/Z移动范围，形如x:3,7&z:-4,-1；空轴默认X=3~7、Z=-5~-1
+	/// </summary>
+	public string camera_move_limit;
+	/// <summary>
 	///备注
 	/// </summary>
 	public string remark;

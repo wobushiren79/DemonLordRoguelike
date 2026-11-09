@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
@@ -156,6 +157,51 @@ public partial class FightSceneBean
         if (arr.Length > 1) float.TryParse(arr[1], out rotate.y);
         if (arr.Length > 2) float.TryParse(arr[2], out rotate.z);
         return rotate;
+    }
+
+    #endregion
+
+    #region 镜头移动限制配置
+
+    //默认值使用实际相机世界坐标，不是镜头锚点坐标
+    private const float DEFAULT_CAMERA_WORLD_X_MIN = 3f;
+    private const float DEFAULT_CAMERA_WORLD_X_MAX = 7f;
+    private const float DEFAULT_CAMERA_WORLD_Z_MIN = -5f;
+    private const float DEFAULT_CAMERA_WORLD_Z_MAX = -1f;
+
+    /// <summary>
+    /// 获取实际相机世界 X/Z 移动范围；空场景、空配置或未配置轴分别回退默认 X=(3,7)、Z=(-5,-1)。
+    /// </summary>
+    /// <param name="fightScene">当前战斗场景配置，null 时全部使用默认值</param>
+    /// <param name="cameraWorldXLimit">实际相机世界 X 的最小值和最大值</param>
+    /// <param name="cameraWorldZLimit">实际相机世界 Z 的最小值和最大值</param>
+    public static void GetCameraMoveLimit(FightSceneBean fightScene, out Vector2 cameraWorldXLimit, out Vector2 cameraWorldZLimit)
+    {
+        cameraWorldXLimit = new Vector2(DEFAULT_CAMERA_WORLD_X_MIN, DEFAULT_CAMERA_WORLD_X_MAX);
+        cameraWorldZLimit = new Vector2(DEFAULT_CAMERA_WORLD_Z_MIN, DEFAULT_CAMERA_WORLD_Z_MAX);
+        if (fightScene == null || string.IsNullOrWhiteSpace(fightScene.camera_move_limit)) return;
+        var dic = fightScene.camera_move_limit.SplitForDictionary();
+        if (dic.TryGetValue("x", out string xData) && TryParseCameraMoveAxisLimit(xData, out Vector2 xLimit)) cameraWorldXLimit = xLimit;
+        if (dic.TryGetValue("z", out string zData) && TryParseCameraMoveAxisLimit(zData, out Vector2 zLimit)) cameraWorldZLimit = zLimit;
+    }
+
+    /// <summary>
+    /// 解析单轴镜头移动范围（格式 min,max）；空值、非法数值或上下限倒置时返回 false。
+    /// </summary>
+    /// <param name="value">单轴范围配置字符串</param>
+    /// <param name="limit">解析出的最小值和最大值</param>
+    /// <returns>是否解析成功</returns>
+    private static bool TryParseCameraMoveAxisLimit(string value, out Vector2 limit)
+    {
+        limit = Vector2.zero;
+        if (string.IsNullOrWhiteSpace(value)) return false;
+        var values = value.Split(',');
+        if (values.Length != 2) return false;
+        bool minValid = float.TryParse(values[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float min);
+        bool maxValid = float.TryParse(values[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float max);
+        if (!minValid || !maxValid || float.IsNaN(min) || float.IsInfinity(min) || float.IsNaN(max) || float.IsInfinity(max) || min > max) return false;
+        limit = new Vector2(min, max);
+        return true;
     }
 
     #endregion

@@ -44,7 +44,7 @@ watched_files:
 - `OnClickForRefresh`（研究解锁 + 次数限制）：默认关——`UnlockEnum.PortalRefreshNum`(100300006) 未解锁时 `ui_BtnRefresh` 隐藏（`RefreshBtnRefreshState` 控制，`ui_BtnRefreshNum` 显示 `x{剩余}`）；剩余>0 才消耗(`ReducePortalRefreshNum`)+重洗(`ClearPortalWorldInfoRandomData`+`InitMap`)+`SaveUserData`，=0 弹提示(UI文本2007)。剩余 = 刷新研究等级(上限,满级10) − `UserTempBean.portalRefreshUsedNum`。
 - **世界消耗 semantics（2026-10 起按模式分开）**：
   - **征服**：仅**通关**路径(`GameFightLogicConquer.ActionForUIRewardSelectEnd`) `RefillPortalRefreshNum`(次数回满) + `ClearPortalWorldInfoRandomData`(清空世界列表→下次打开 `InitMap` 全量重洗)；战败/中途退出不清世界不回满(世界保留)。
-  - **无尽 / 挑战100勇士**：**挑战结束即消耗该世界**（输赢/ESC「结束战斗」中途放弃都算），走基类 `GameFightLogic.ConsumeCurrentPortalWorld()` → `UserTempBean.RemovePortalWorldInfoRandomData(该世界)` 只移除这一条，**不全清、不回满刷新次数**；下次打开传送门UI时 `InitMap` 发现数量缺口<`showCount`，自动补生成一个新世界并随机位置避重叠。100勇士胜利领奖结束(`ActionForUIRewardSelectEnd`/`EndGameAndReturnToBase`)、失败结算、中途放弃(`ExitFightAndReturnToBase` 重写)三处覆盖。
+  - **无尽 / 挑战100勇士**：挑战结束消耗该世界，走基类 `GameFightLogic.ConsumeCurrentPortalWorld()` → `UserTempBean.RemovePortalWorldInfoRandomData(该世界)` 只移除这一条，**不全清、不回满刷新次数**；下次打开传送门UI时 `InitMap` 发现数量缺口<`showCount`，自动补生成一个新世界并随机位置避重叠。**无尽**的输赢/ESC「结束战斗」中途放弃都消耗；**100勇士**仅胜利领奖结束与失败结算(`EndGameAndReturnToBase`)消耗，中途放弃走基类退出、保留世界。100勇士页内的「重新挑战」不消耗世界（同世界重开）。
   - ESC/Exit → `UIBaseMain`。
 - `OpenUI`：`SetBasePortalCamera` + 关远景 + `InitMap`。
 

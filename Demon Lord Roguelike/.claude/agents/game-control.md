@@ -64,7 +64,7 @@ ControlForGameFight  - 战斗场景控制：WASD/右键拖拽移镜头、左键�
 - **输入反订阅**：`Awake` 订阅 E/Jump 的 `started`，`OnDestroy` 对称反订阅，避免回调悬挂。
 
 ### 3. 战斗场景控制（ControlForGameFight）
-- **移镜头**：`HandleForMoveUpdate`(WASD) 与 `HandleForMoveMouseUpdate`(右键拖拽) 移动 `controlTargetForEmpty`，由 `ClampCameraPosition` 限位。开场和移动共用 `ClampCameraTargetZ`：所有战斗场景的锚点 Z 范围均为 [4,6]，配合 `CMFollow` 的 -8 偏移将相机世界 Z 范围设为 [-4,-2]。
+- **移镜头**：`HandleForMoveUpdate`(WASD) 与 `HandleForMoveMouseUpdate`(右键拖拽) 移动 `controlTargetForEmpty`，由 `ClampCameraPosition` 限位。开场和移动共用 `ClampCameraTargetPosition`：`FightScene.camera_move_limit` 用 `x:min,max&z:min,max` 配置实际相机世界范围，可按轴省略；默认 X=[3,7]、Z=[-5,-1]，竞技场 50001 配 `z:-4,-1`。CMFollow 的 X/Z 偏移为 0/-8，限位时统一换算成锚点坐标。
 - **左键(UseL)**：`HandleForClickDropUpdate` 仅在无选择(`!gameFightLogic.HasSelectData()`)时长按拾取水晶(`PickupCrystalForMouse`)；抬起时若手持卡则 `PutCard`、若删除模式则 `SelectCreatureDestoryHandle`。
 - **右键(UseR)**：按下进入拖拽镜头；抬起时 `HasSelectData()` 为真才 `ClearSelectData()` 取消当前选择——卡片选择与删除模式共用同一清空逻辑（不要按字段分别判空再分别调 `UnSelectCard`/`UnSelectCreatureDestroy`）。
 - **C 键**：`HandleForDeleteCreatureToggle` 切换删除生物模式(`SelectCreatureDestroy`/`UnSelectCreatureDestroy`)。

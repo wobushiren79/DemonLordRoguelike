@@ -22,7 +22,7 @@ watched_files:
 ### 游戏摄像机
 - [Scripts/Component/Manager/CameraManager.cs](Assets/Scripts/Component/Manager/CameraManager.cs)
 - [Scripts/Component/Handler/CameraHandler.cs](Assets/Scripts/Component/Handler/CameraHandler.cs)
-- 战斗开场 `InitFightSceneCamera(fightData)` 按场地配置选择横向锚点，平原 `FightScene_Plain_1.prefab` 取 X=5，默认 X=3。Z 在设置 Follow/LookAt 前经 `ControlForGameFight.ClampCameraTargetZ` 取 4（`CMFollow` 偏移 -8，相机世界 Z=-4），与输入限位一致。
+- 战斗开场 `InitFightSceneCamera(fightData)` 按场地配置选择横向锚点，平原 `FightScene_Plain_1.prefab` 取 X=5，默认 X=3。原始开场目标为 `(openingX,0,3)`，经 `ControlForGameFight.ClampCameraTargetPosition` 按 `FightScene.camera_move_limit` 钳制；默认实际相机世界 X=[3,7]、Z=[-5,-1]，竞技场 50001 的 Z=[-4,-1]，与输入限位一致。
 - 基地 CV_List 语义镜头：`SetXxxCamera(priority, isEnable)` 系列转调 `SetCameraForBaseScene`（详见 `camera-system` Skill）
 - 奖励选择镜头：`SetCameraForRewardSelectScene(blendTime)` 切镜；`RefreshRewardSelectCameraFov(halfWidthForBox)` 按宝箱横向总宽度自适应 FOV——宝箱>=6 个时默认 FOV(60) 装不下两侧宝箱，由 `ScenePrefabForRewardSelect.InitRewardBox` 在遮罩盖住期间调用，几何关系 tan(hFov/2)=半宽/相机z距离、tan(hFov/2)=tan(vFov/2)*aspect，只在不够装时才放大
 - 运行期聚焦/震动（`#region 魔汁机镜头聚焦/震动`）：`GetBaseSceneCamera(cvName)` 仅查找不改态；`FocusJuicerCameraOnHole/RestoreJuicerCameraFocus` 运行期改 CV_Juicer 的 Follow/LookAt/FollowOffset/TargetOffset 做滴嘴特写（缓存还原，`isJuicerCameraFocused` 门控）；`ShakeJuicerCamera` 抬升 Perlin 振幅做冲击震动——同一 CV 运行期改字段的范式，不动预制

@@ -49,7 +49,7 @@ watched_files:
     ├─ GameFightLogicChallengeHundred.HandleForChangeGameStateSettlement（单关100只怪）
     │     ├─ 胜利 → 发阵容经验(行 reward_exp) → 弹结算UI → Next → 弹 UIRewardSelect（3箱3抽全手动开箱，无首箱保底）
     │     └─ 失败 → 弹结算UI → Next → 直接返回基地（无奖励）；不发成就、无关卡间深渊馈赠（胜利通关声望受研究门控，见下「声望」）
-    │     └─ 收尾（赢/输/中途放弃）→ ConsumeCurrentPortalWorld()：只移除该100勇士传送门世界，下次打开传送门UI按缺口补生成新世界，不回满刷新次数、不全清地图
+    │     └─ 收尾（仅赢/输结算）→ ConsumeCurrentPortalWorld()：只移除该100勇士传送门世界，下次打开传送门UI按缺口补生成新世界，不回满刷新次数、不全清地图；中途放弃保留世界
     │
     └─ GameFightLogicInfinite（无尽模式：进攻队列耗尽自动续下一轮永不胜利，魔王死亡即失败）
           └─ 失败 → 弹结算UI（仅战绩排行榜）→ Next=退出 → 直接返回基地（无宝箱/经验/声望/成就；魔晶战斗中即时入账，退出时统一落盘）

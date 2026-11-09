@@ -38,7 +38,7 @@ watched_files:
 
 ### 战斗控制
 - **ControlForGameBase** - 基础游戏控制
-- **ControlForGameFight** - 战斗游戏控制；`ClampCameraTargetZ` 在开场、WASD、右键拖拽中统一限制 Z，仅六路 Embervault（场景 50001）的锚点 Z 下限为 4（相机世界 Z 下限 -4）。
+- **ControlForGameFight** - 战斗游戏控制；`ClampCameraTargetPosition` 在开场、WASD、右键拖拽中统一限制 X/Z，读取 `FightScene.camera_move_limit`（`x:min,max&z:min,max`，可按轴省略）。默认实际相机世界 X=[3,7]、Z=[-5,-1]，竞技场 50001 配 `z:-4,-1`，所有路数一致。
 
 ### 关键 Bean
 - **FightBean** - 战斗数据基类；虚方法 `GetGameWorldInfoRandomData()` 默认返回 null，征服/无尽/100勇士三个 Bean 覆写返回各自 `gameWorldInfoRandomData`（UI 侧 Quick/0速/2倍速门控与后续需要世界+难度的逻辑统一走它，避免按具体 Bean 类型分支）

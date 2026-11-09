@@ -189,14 +189,5 @@ public class GameFightLogicChallengeHundred : GameFightLogic
         }, false);
     }
 
-    /// <summary>
-    /// 中途结束战斗(系统界面「结束战斗」, 含 ESC 调出系统界面后的退出)
-    /// 挑战100勇士世界有一次挑战机会, 中途放弃同样视为挑战结束 → 先消耗该传送门世界, 再走基类返回基地流程
-    /// </summary>
-    public override void ExitFightAndReturnToBase()
-    {
-        ConsumeCurrentPortalWorld();
-        base.ExitFightAndReturnToBase();
-    }
     #endregion
 }

@@ -26,8 +26,6 @@ public class ControlForGameFight : BaseControl
     //是否正在拖拽摄像头
     public bool isDraggingCamera = false;
     protected float speedForDargCamera = 500f;
-    protected float minX = 3;
-    protected float maxX = 7f;
 
     private Vector3 dragCameraOrigin;
 
@@ -145,25 +143,35 @@ public class ControlForGameFight : BaseControl
 
     #region 镜头限位
 
+    /// <summary>战斗跟随相机的 Z 偏移，对应 CameraData/CMFollow.FollowOffset.z。</summary>
+    private const float CM_FIGHT_FOLLOW_OFFSET_Z = -8f;
+
     /// <summary>
-    /// 限制战斗镜头锚点的 X/Z 位置，供键盘移动和鼠标拖拽共用。
+    /// 按当前战斗场景配置限制战斗镜头锚点的 X/Z 位置，供键盘移动和鼠标拖拽共用。
     /// </summary>
     public void ClampCameraPosition()
     {
         var targetMove = GameControlHandler.Instance.manager.controlTargetForEmpty;
-        Vector3 clampedPosition = targetMove.transform.position;
-        clampedPosition.x = Mathf.Clamp(clampedPosition.x, minX, maxX);
-        clampedPosition.z = ClampCameraTargetZ(clampedPosition.z);
-        targetMove.transform.position = clampedPosition;
+        var fightData = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>()?.fightData;
+        FightSceneBean fightScene = fightData != null && fightData.gameFightType != GameFightTypeEnum.DoomCouncil && fightData.fightSceneId > 0
+            ? FightSceneCfg.GetItemData(fightData.fightSceneId)
+            : null;
+        targetMove.transform.position = ClampCameraTargetPosition(targetMove.transform.position, fightScene);
     }
 
     /// <summary>
-    /// 限制镜头锚点的 Z 位置，供开场和镜头移动共用。
+    /// 按场景配置的实际相机世界 X/Z 范围限制镜头锚点位置，供开场和镜头移动共用。
     /// </summary>
-    internal static float ClampCameraTargetZ(float targetZ)
+    /// <param name="targetPosition">待限制的镜头锚点位置</param>
+    /// <param name="fightScene">当前战斗场景配置，null 时使用默认范围</param>
+    /// <returns>限制后的镜头锚点位置</returns>
+    internal static Vector3 ClampCameraTargetPosition(Vector3 targetPosition, FightSceneBean fightScene)
     {
-        // CMFollow 的 Z 偏移为 -8，锚点 Z 下限 4 对应镜头世界 Z 下限 -4。
-        return Mathf.Clamp(targetZ, 4f, 6f);
+        FightSceneBean.GetCameraMoveLimit(fightScene, out Vector2 xLimit, out Vector2 zLimit);
+        // CMFollow 的 X/Z 偏移为 0/-8，将实际相机世界范围换算成锚点范围。
+        targetPosition.x = Mathf.Clamp(targetPosition.x, xLimit.x, xLimit.y);
+        targetPosition.z = Mathf.Clamp(targetPosition.z, zLimit.x - CM_FIGHT_FOLLOW_OFFSET_Z, zLimit.y - CM_FIGHT_FOLLOW_OFFSET_Z);
+        return targetPosition;
     }
 
     #endregion

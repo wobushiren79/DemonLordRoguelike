@@ -66,7 +66,7 @@ watched_files:
 - **GameFightLogicConquer** - 征服模式，多关卡 run 的领奖流程（BOSS 关通关领奖，4箱首箱保底）
 - **GameFightLogicDoomCouncil** - 终焉议会，结算展示投票结果，**无领奖界面**
 - **GameFightLogicTest** - 测试模式，Next 重启战斗，**不发奖不存档**
-- **GameFightLogicChallengeHundred** - 挑战100勇士（单关100只怪）：100勇士自 2026-10 起有独立难度链、传送门详情弹窗可切换，`difficultyLevel`=本场所选/冻结难度，每档独立预生成配置行/道路/奖励；胜利→发阵容经验(行 `reward_exp` 按该难度取档)→结算UI→Next→UIRewardSelect **全手动开箱**（无首箱保底，可开数=奖励总数（普通3/BOSS装备6)，不套征服 `Count-1` 钳制；奖励调 `GetChallengeHundredReward(difficultyLevel)`）；失败→直接返回基地；**不发成就、无关卡间深渊馈赠；通关声望受研究 ChallengeHundredReputationReward(100200011) 门控，领奖结束 `ActionForUIRewardSelectEnd` 调 `AddReputationForChallengeHundredComplete` 按该难度 `reward_reputation` 发放**；输赢/中途放弃都经 `EndGameAndReturnToBase`/`ExitFightAndReturnToBase` 里的 `ConsumeCurrentPortalWorld()` 消耗该传送门世界（只移除该世界、下次补生成新世界，不回满刷新次数）
+- **GameFightLogicChallengeHundred** - 挑战100勇士（单关100只怪）：100勇士自 2026-10 起有独立难度链、传送门详情弹窗可切换，`difficultyLevel`=本场所选/冻结难度，每档独立预生成配置行/道路/奖励；胜利→发阵容经验(行 `reward_exp` 按该难度取档)→结算UI→Next→UIRewardSelect **全手动开箱**（无首箱保底，可开数=奖励总数（普通3/BOSS装备6)，不套征服 `Count-1` 钳制；奖励调 `GetChallengeHundredReward(difficultyLevel)`）；失败→直接返回基地；**不发成就、无关卡间深渊馈赠；通关声望受研究 ChallengeHundredReputationReward(100200011) 门控，领奖结束 `ActionForUIRewardSelectEnd` 调 `AddReputationForChallengeHundredComplete` 按该难度 `reward_reputation` 发放**；输赢结算经 `EndGameAndReturnToBase` 里的 `ConsumeCurrentPortalWorld()` 消耗该传送门世界（只移除该世界、下次补生成新世界，不回满刷新次数）；中途放弃走基类 `ExitFightAndReturnToBase`，保留该世界）
 - **GameFightLogicInfinite** - 无尽模式（进攻队列耗尽自动续下一轮永不胜利，魔王死亡即失败）：失败结算仅打开 `UIFightSettlement` 战绩排行榜（`ActionForUIFightSettlementExit` 直接返回基地），**无宝箱/经验/声望/成就**（魔晶战斗中即时入账，退出时统一落盘；保留议案 EndGame 消耗钩子+`ConsumeCurrentPortalWorld()`消耗该传送门世界+清深渊馈赠+还原阵容状态；ESC「结束战斗」中途放弃同样消耗）
 
 ### 掉落
@@ -106,7 +106,7 @@ watched_files:
      │        → UIRewardSelect.SetData(..., isClearLastGame: true) → 全手动开箱(selectNumMax=奖励总数)
      └─ 失败: EndGameAndReturnToBase()
  → ActionForUIRewardSelectEnd: AddReputationForChallengeHundredComplete(研究100200011门控,按冻结难度 reward_reputation 发放声望)
- → EndGameAndReturnToBase()（不发成就，无深渊馈赠介入；内部 ConsumeCurrentPortalWorld()：100勇士世界只能挑战一次，输赢/中途放弃都只移除该传送门世界、下次打开传送门UI补生成新世界，不回满刷新次数、不全清地图）
+ → EndGameAndReturnToBase()（不发成就，无深渊馈赠介入；内部 ConsumeCurrentPortalWorld()：100勇士世界只能挑战一次，输赢结算都只移除该传送门世界、下次打开传送门UI补生成新世界，不回满刷新次数、不全清地图；中途放弃不经此处，保留世界）
 ```
 
 ## 奖励生成规则（RewardSelectBean，单一真实源）
