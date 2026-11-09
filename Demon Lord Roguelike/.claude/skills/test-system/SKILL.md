@@ -610,27 +610,27 @@ GameTestEditor.DrawFightSceneTest()                        // 战斗测试模式
 LauncherTest.StartForInfiniteTest(worldId, difficultyLevel, saveSlot = 0)   // Assets/Scripts/Game/Launcher/LauncherTest.cs
     │  ⓪ ClearTestGUIs() 清理残留纯GUI测试面板(所有 StartFor* 入口统一收口)
     │  ① 硬校验同难度征服行 FightTypeConquerInfoCfg.GetItemData(worldId, difficultyLevel)
-    │     (无尽复用其怪物构成/数量/时长/场景/道路区间, 缺失 LogError 返回)
+    │     (无尽复用其怪物构成/数量/时长/道路区间, 缺失 LogError 返回)
     │  ② 软校验无尽行 FightTypeInfiniteInfoCfg.GetItemData(worldId, difficultyLevel)
-    │     (缺失仅 LogWarning, 轮次强度倍率按1降级, 与 FightBeanForInfinite 语义一致不阻断)
+    │     (缺失时 LogWarning，轮次强度倍率按 1 处理，场地回退到征服 BOSS 场地)
     │  ③ saveSlot>0 时读档:UserDataService.ChangeSlot(saveSlot).Load(false) → SetUserData(挑战100勇士测试同范式)
     │  ④ isTestSimulation = true   // 奖励结算/掉落入账等 SaveUserData 被 GameDataManager 统一拦截,测试数据不保存
     │  ⑤ 手搓 GameWorldInfoRandomBean: worldId/gameFightType=Infinite/difficultyLevel/
     │     roadNum/roadLength 复用同难度征服行 GetRandomRoadNum()/GetRandomRoadLength() 区间随出并冻结
     │     (不经 SetRandomDataForInfinite 的解锁判定, 可测未解锁难度)
     │  ⑥ new FightBeanForInfinite(gameWorldInfoRandomData)
-    │     → InitData 从当前 UserData 取 selfCreature(防守核心)+GetLineupCreature(当前出战阵容), 填充第1轮进攻队列
+    │     → InitData 从当前 UserData 取防守核心和出战阵容，优先取无尽行 fight_scene_id，填充第 1 轮进攻队列
     │  ⑦ WorldHandler.EnterGameForFightScene(fightData)
 ```
 
 ### 关键点
 
 - **一行=世界+难度**：无尽配置行按 (world_id, level) 索引（难度 2~10，无尽无难度1），下拉选中一行即同时确定 worldId+difficultyLevel，故无需像征服BOSS关测试那样分手填世界 ID 与难度。
-- **复用征服行是硬依赖**：`FightBeanForInfinite.InitData()` 必需同难度征服行（怪物构成/数量/时长/场景/魔晶掉落全复用），缺失直接 LogError 返回；无尽行仅提供 `round_intensity_addrate` 逐轮强度乘区，缺失降级为 1 不阻断。测试入口的两个校验与此一一对应。
+- **复用征服行是硬依赖**：`FightBeanForInfinite.InitData()` 必需同难度征服行（复用怪物构成/数量/时长/魔晶掉落），缺失直接 LogError 返回。无尽行提供 `round_intensity_addrate` 和 `fight_scene_id`。当前难度 2–10 均为天空石台 `60001`，未配置场地时回退到同难度征服 BOSS 场地。
 - **存档意义=防守阵容**：`FightBeanForInfinite.InitData()` 从当前 `UserData` 读 `selfCreature`（魔王防守核心）与 `GetLineupCreature(GetLineupFightIndex())`（当前出战阵容），故选 1~3 槽位即用该存档真实阵容测试；选 0 用 `InitTestData` 伪造数据（50 只随机生物满阵容）。
-- **冻结链路即真实链路**：测试手搓的 randomData 字段（worldId/difficultyLevel/roadNum/roadLength）与真实传送门 `SetRandomDataForInfinite` 的产出同口径（道路同样取自同难度征服行区间），故测试进战斗所见强度/敌人构成与正式玩法一致；区别仅在世界来源是手搓而非传送门概率刷出、且可测未解锁难度。
+- **冻结链路即真实链路**：测试手搓的 randomData 字段（worldId/difficultyLevel/roadNum/roadLength）与真实传送门 `SetRandomDataForInfinite` 的产出同口径（道路同样取自同难度征服行区间），故测试进战斗所见强度/敌人构成/配置场地与正式玩法一致；区别仅在世界来源是手搓而非传送门概率刷出、且可测未解锁难度。
 - **不落盘**：统一 `isTestSimulation = true`（无论槽位 0 还是 1~3），复位仍由 `WorldHandler.EnterMainForBaseScene` 收口。
-- **rowId 来自配置表**：`excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（一行=一个世界的一个难度，`round_intensity_addrate` 列控制每轮强度递增倍率）。
+- **rowId 来自配置表**：`excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（一行=一个世界的一个难度，`round_intensity_addrate` 列控制每轮强度递增倍率，`fight_scene_id` 配置专属场地）。
 - **参数持久化**：`infiniteTestRowSelectIndex`/`infiniteTestSaveSlot`(0~3 钳制) EditorPrefs 持久化；选项缓存 `infiniteRowOptions`/`infiniteRowWorldIds`/`infiniteRowLevels` 懒加载不持久化（均在 `GameTestEditorPartial`）。
 
 ## 终焉议会测试 (DoomCouncil)
@@ -921,7 +921,7 @@ ExcelUtil.SetExcelData("Assets/Data/Excel/excel_xxx[xxx].xlsx", "SheetName", lis
 | 魔汁机测试 UI | `Assets/Editor/GameTestEditor.cs`（`DrawCreatureJuicerTest`） |
 | 挑战100勇士测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForChallengeHundredTest(rowId, saveSlot = 0)`：校验 `FightTypeChallengeHundredInfoCfg` 配置行→saveSlot>0 读档 SetUserData→`isTestSimulation=true`→手搓 `GameWorldInfoRandomBean`(worldId=1/gameFightType=ChallengeHundred/`SetRandomDataForChallengeHundred(行, 行难度首档)` 逐难度预生成并默认进入该档)→`new FightBeanForChallengeHundred`(从当前 UserData 取魔王+出战阵容)→`EnterGameForFightScene`） |
 | 挑战100勇士测试 UI | `Assets/Editor/GameTestEditor.cs`（FightSceneTest 子模式 `FightTestModeEnum.ChallengeHundred`：`DrawFightSceneTestChallengeHundred`/`EnsureChallengeHundredRowOptions` 配置行下拉+存档槽位 0~3） + `GameTestEditorPartial.cs`（challengeHundredTestRowSelectIndex/challengeHundredTestSaveSlot 持久化） |
-| 无尽模式测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForInfiniteTest(worldId, difficultyLevel, saveSlot = 0)`：硬校验同难度征服行 `FightTypeConquerInfoCfg`+软校验无尽行 `FightTypeInfiniteInfoCfg`→saveSlot>0 读档 SetUserData→`isTestSimulation=true`→手搓 `GameWorldInfoRandomBean`(worldId/gameFightType=Infinite/difficultyLevel/roadNum/roadLength 复用同难度征服行区间,不经解锁判定)→`new FightBeanForInfinite`(从当前 UserData 取魔王+出战阵容)→`EnterGameForFightScene`） |
+| 无尽模式测试入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForInfiniteTest(worldId, difficultyLevel, saveSlot = 0)`：硬校验同难度征服行 `FightTypeConquerInfoCfg`+软校验无尽行 `FightTypeInfiniteInfoCfg`→saveSlot>0 读档 SetUserData→`isTestSimulation=true`→手搓 `GameWorldInfoRandomBean`(worldId/gameFightType=Infinite/difficultyLevel/roadNum/roadLength 复用同难度征服行区间,不经解锁判定)→`new FightBeanForInfinite`(从当前 UserData 取魔王+出战阵容，优先加载无尽行配置的场地)→`EnterGameForFightScene`） |
 | 无尽模式测试 UI | `Assets/Editor/GameTestEditor.cs`（FightSceneTest 子模式 `FightTestModeEnum.Infinite`：`DrawFightSceneTestInfinite`/`EnsureInfiniteRowOptions` 配置行(世界+难度)下拉(世界名直读 Language_GameWorldInfo_cn.txt)+存档槽位 0~3） + `GameTestEditorPartial.cs`（infiniteTestRowSelectIndex/infiniteTestSaveSlot 持久化；infiniteRowOptions/infiniteRowWorldIds/infiniteRowLevels 缓存） |
 | 正常游戏启动入口 | `Assets/Scripts/Game/Launcher/LauncherTest.cs`（`StartForNormalGame`） |
 | 正常游戏启动 UI | `Assets/Editor/GameTestEditor.cs`（`DrawNormalGameTest`） |

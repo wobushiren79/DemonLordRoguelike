@@ -146,7 +146,7 @@ watched_files:
 | 挑战100勇士结算流程 | Assets/Scripts/Game/Logic/GameFightLogicChallengeHundred.cs |
 | 无尽结算流程 | Assets/Scripts/Game/Logic/GameFightLogicInfinite.cs（仅战绩排行榜，无宝箱/经验/声望/成就） |
 | 挑战100勇士配置 Bean(禁改)/扩展 | Assets/Scripts/Bean/MVC/Game/FightTypeChallengeHundredInfoBean.cs / FightTypeChallengeHundredInfoBeanPartial.cs |
-| 无尽配置 Bean(禁改)/扩展 | Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBean.cs / FightTypeInfiniteInfoBeanPartial.cs（仅逐轮强度倍率；无尽掉落/怪物池复用同难度征服行） |
+| 无尽配置 Bean(禁改)/扩展 | Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBean.cs / FightTypeInfiniteInfoBeanPartial.cs（逐轮强度倍率和 `fight_scene_id`，掉落与怪物池取同难度征服行） |
 | 水晶掉落逻辑 | Assets/Scripts/Game/Fight/FightCreatureEntity.cs（DropCrystal） |
 | 事件常量 | Assets/Scripts/Common/EventsInfo.cs（GameFightLogic_*） |
 | 入账方法 | Assets/Scripts/Bean/MVC/UserDataBean.cs（AddBackpackItem/AddCrystal） |

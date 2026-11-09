@@ -27,6 +27,10 @@ public partial class FightTypeInfiniteInfoBean : BaseBean
 	///备注
 	/// </summary>
 	public string remark;
+	/// <summary>
+	///专属战斗场景ID(0=沿用征服BOSS场地)
+	/// </summary>
+	public long fight_scene_id;
 }
 public partial class FightTypeInfiniteInfoCfg : BaseCfg<long, FightTypeInfiniteInfoBean>
 {

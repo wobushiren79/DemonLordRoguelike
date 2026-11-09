@@ -4,9 +4,9 @@ using System.Collections.Generic;
 [Serializable]
 public class FightBeanForInfinite : FightBean
 {
-    //征服模式配置行(无尽复用同难度征服行的怪物构成/数量/时长/场景/魔晶掉落)
+    //征服模式配置行(无尽复用同难度征服行的怪物构成/数量/时长/魔晶掉落)
     public FightTypeConquerInfoBean fightTypeConquerInfo;
-    //无尽模式配置行(每轮强度倍率; null时轮次乘区按1降级, 不阻断战斗)
+    //无尽模式配置行(每轮强度倍率与专属场地)
     public FightTypeInfiniteInfoBean fightTypeInfiniteInfo;
     //游戏随机数据
     public GameWorldInfoRandomBean gameWorldInfoRandomData;
@@ -31,19 +31,19 @@ public class FightBeanForInfinite : FightBean
 
     #region 初始化
     /// <summary>
-    /// 初始化无尽模式: 取同难度征服行+无尽行配置, 建防御核心/收出战阵容, 选战斗场景, 填充第1轮进攻队列
+    /// 初始化无尽模式: 取同难度征服行和无尽行配置, 建防御核心、收出战阵容、选择专属场地并填充第1轮进攻队列
     /// </summary>
     public override void InitData()
     {
         base.InitData();
-        //获取同难度征服模式配置行(无尽复用其怪物构成/数量/时长/场景/魔晶掉落)
+        //获取同难度征服模式配置行(无尽复用其怪物构成/数量/时长/魔晶掉落)
         fightTypeConquerInfo = FightTypeConquerInfoCfg.GetItemData(gameWorldInfoRandomData.worldId, gameWorldInfoRandomData.difficultyLevel);
         if (fightTypeConquerInfo == null)
         {
             LogUtil.LogError($"初始化无尽游戏模式失败 worldId:{gameWorldInfoRandomData.worldId} difficultyLevel:{gameWorldInfoRandomData.difficultyLevel}");
             return;
         }
-        //获取无尽模式配置行(每轮强度倍率; 无配置时轮次乘区按1降级, 不阻断战斗)
+        //获取无尽模式配置行(无配置时轮次乘区按1处理，场地沿用冻结的BOSS场地)
         fightTypeInfiniteInfo = FightTypeInfiniteInfoCfg.GetItemData(gameWorldInfoRandomData.worldId, gameWorldInfoRandomData.difficultyLevel);
         if (fightTypeInfiniteInfo == null)
         {
@@ -71,8 +71,10 @@ public class FightBeanForInfinite : FightBean
             dlDefenseCreatureData.Add(itemLineupCreature.creatureUUId, itemLineupCreature);
         }
 
-        //设置战斗场景ID(每轮都有BOSS, 读取传送门创建时冻结的BOSS场景, 同世界重复进入场地固定)
-        fightSceneId = gameWorldInfoRandomData.GetFightSceneId(gameWorldInfoRandomData.difficultyLevel, true);
+        //优先使用无尽配置的场地，未配置时沿用传送门冻结的BOSS场地
+        fightSceneId = fightTypeInfiniteInfo?.fight_scene_id ?? 0;
+        if (fightSceneId <= 0)
+            fightSceneId = gameWorldInfoRandomData.GetFightSceneId(gameWorldInfoRandomData.difficultyLevel, true);
         //初始化战斗数据并填充第1轮进攻队列
         fightAttackData = new FightAttackBean();
         AppendNextRoundAttackData();

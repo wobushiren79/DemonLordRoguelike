@@ -51,8 +51,9 @@ watched_files:
 - `reward_crystal`（**string**，通关领奖魔晶）：单值 `x` 固定 或 区间 `x-y`（与其它区间字段同格式），走 `GetRandomRewardCrystal()`（内部复用 `ParseRandomRange`；Excel 第2行类型行为 string）
 - `reward_reputation`（int，通关声望奖励，插在 `reward_exp_boss` 与 `remark` 之间）：完整通关按难度给玩家声望；`FightTypeConquerInfoBeanPartial.GetRewardReputation()` 读取（仿 `GetBGColor`，需 Unity 重导 Bean 后才有该字段）。world_id=1 各难度(level 1~10)依次 1~10
 - `attack_intensity_baserate`（float，基础强度倍率，插在 `attack_intensity_addrate` 之后）：该难度每关恒定乘区(第1关也生效)，0/不配按 1；与 `attack_intensity_addrate`(每关递增) 共同组成 `GetCurrentIntensityRate(fightNum)`
+- **普通关场地**。世界 1 难度 1 的 `fight_scene_ids` 为 `10001`，难度 2–10 为 `10001&20001&70001`，其中 `70001` 对应荒野峡谷。新传送门或首次生成某个难度时从对应池抽取并冻结。已有传送门沿用冻结场地，缺失的场地 ID 按当前池补齐。
 - **BOSS 决战场地**。世界 1 难度 1–10 的 `fight_scene_boss_ids` 为 `30001&30002`，分别对应旧王宫和红冠宫殿。创建传送门或首次生成某个难度时等概率抽取并冻结，缺失的场地 ID 按当前池补齐。已有传送门保留其冻结场地。
-- **无尽模式（GameFightTypeEnum.Infinite）复用本表同难度行**：怪物池 `enemy_ids`/`enemy_boss_ids`、`attack_start_num`/`attack_show_time`/`attack_boss_num`、BOSS 场景池、`drop_crystal`、`road_num`/`road_length` 均取同难度（world_id+level）征服行（经 `FightBeanForInfinite.fightTypeConquerInfo`）；其每轮强度递增倍率独立配置在 `excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（FightTypeInfiniteInfo，`round_intensity_addrate`，第 N 轮强度=同难度征服行 `attack_intensity_baserate`×该值^(N-1)）；无尽传送门道路与战斗场景预生成（`GameWorldInfoRandomBean.SetRandomDataForInfinite`，难度 2 起逐档，单档走 `CreateInfiniteDifficultyRandom`；传送门创建后研究新解锁的无尽难度由 `GetInfiniteDifficultyRandom(D)` 懒补齐）也读征服行 `road_num`/`road_length` 区间与场景池，场地取冻结 `bossFightSceneId`
+- **无尽模式（GameFightTypeEnum.Infinite）复用本表同难度行**：怪物池 `enemy_ids`/`enemy_boss_ids`、`attack_start_num`/`attack_show_time`/`attack_boss_num`、`drop_crystal`、`road_num`/`road_length` 均取同难度（world_id+level）征服行（经 `FightBeanForInfinite.fightTypeConquerInfo`）；无尽表 `excel_fight_type_infinite_info[战斗-无尽模式].xlsx` 独立配置 `round_intensity_addrate` 与 `fight_scene_id`。第 N 轮强度为征服行 `attack_intensity_baserate` × 无尽行 `round_intensity_addrate`^(N-1)。难度 2–10 的 `fight_scene_id` 均为天空石台 `60001`，已有和新建的无尽传送门进入战斗时都优先读该配置。`CreateInfiniteDifficultyRandom` 仍按征服行预生成道路与备用场地，无尽场地未配置时经 `GetFightSceneId(D, true)` 沿用冻结的 `bossFightSceneId`。
 
 ### 随机数据与难度
 - `GameWorldInfoRandomBean.SetRandomDataForConquer`（GameWorldInfoBeanPartial）—— 创建时把 1~已解锁最高难度逐档随机(roadNum/roadLength/fightNum + 普通关/BOSS关战斗场景 fightSceneId/bossFightSceneId)缓存进 listDifficultyRandom；`SetDifficultyLevel(level)` 切换难度时同步当前字段(气泡与战斗都读这些字段)，`GetDifficultyRandom(level)` 取某难度数据(缺失懒生成)。**`GetFightSceneId(D,isBoss)`** 取冻结场景(老存档懒补齐)，`FightBeanForConquer` 的 `fightSceneId` 一律走它，禁止再 `GetRandomFightScene` 重随(同世界重进场地固定)
@@ -85,7 +86,7 @@ watched_files:
 | BOSS 特写 UI | Assets/Scripts/Component/UI/Dialog/UIDialogBossShow.cs |
 | Excel 源表 | Assets/Data/Excel/excel_fight_type_conquer_info[战斗-征服模式].xlsx |
 | 导出 JSON | Assets/Resources/JsonText/FightTypeConquerInfo.txt |
-| 无尽配置 Bean(禁改)/扩展 | Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBean.cs / FightTypeInfiniteInfoBeanPartial.cs（无尽逐轮强度倍率，复用本表同难度行其余字段） |
+| 无尽配置 Bean(禁改)/扩展 | Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBean.cs / FightTypeInfiniteInfoBeanPartial.cs（无尽逐轮强度倍率与专属场地） |
 | 配置编辑器 | Assets/Editor/FightModeEditorWindow.cs (主窗口) + Assets/Editor/FightModeEditorTabConquer.cs (征服页签) + Assets/Editor/FightModeEditorTabInfinite.cs (无尽页签) |
 
 ## 约束

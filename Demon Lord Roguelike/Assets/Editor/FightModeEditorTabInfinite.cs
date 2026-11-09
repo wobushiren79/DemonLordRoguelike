@@ -11,7 +11,7 @@ using UnityEngine;
 /// 战斗模式编辑工具 - 无尽模式页签
 /// 用于可视化编辑 excel_fight_type_infinite_info[战斗-无尽模式] 表：
 /// 每行=一个世界一个难度的无尽配置(无难度1)，round_intensity_addrate 为每轮强度倍率(第N轮怪物HP/护甲/攻击力×该值^(N-1), 含BOSS)；
-/// 怪物池/数量/时长/场景/魔晶掉落均复用同难度征服行(excel_fight_type_conquer_info)，本表只配轮次强度递增。
+/// 本表配置轮次强度递增与专属场地，怪物池/数量/时长/魔晶掉落复用同难度征服行。
 /// 本页签以「配置行列表」为主组织编辑（行下拉 + 字段编辑 + 新增/删除/保存/导出Json）。
 /// 宿主窗口见 FightModeEditorWindow（菜单：游戏/战斗模式编辑）
 /// </summary>
@@ -408,6 +408,7 @@ public class FightModeEditorTabInfinite : FightModeEditorTabBase
         DrawIntField("难度等级(level, 2~10)", "level", ref currentBean.level);
         // round_intensity_addrate
         DrawFloatField("每轮强度倍率(round_intensity_addrate)", "round_intensity_addrate", ref currentBean.round_intensity_addrate);
+        DrawLongField("战斗场地ID(fight_scene_id)", "fight_scene_id", ref currentBean.fight_scene_id);
         // remark
         DrawStringField("备注(remark)", "remark", ref currentBean.remark);
 
@@ -415,7 +416,8 @@ public class FightModeEditorTabInfinite : FightModeEditorTabBase
         // 强度公式说明
         EditorGUILayout.HelpBox(
             "强度公式：第N轮怪物强度 = 同难度征服行 attack_intensity_baserate × round_intensity_addrate^(N-1)（×终焉议会强度议案）。\n" +
-            "怪物池/每轮数量/进攻时长/BOSS/魔晶掉落均复用同难度征服行配置（excel_fight_type_conquer_info）。",
+            "怪物池/每轮数量/进攻时长/BOSS/魔晶掉落均复用同难度征服行配置（excel_fight_type_conquer_info）。\n" +
+            "战斗场地填 FightScene 的 ID，填 0 时沿用传送门冻结的 BOSS 场地。",
             MessageType.Info);
 
         EditorGUILayout.EndVertical();

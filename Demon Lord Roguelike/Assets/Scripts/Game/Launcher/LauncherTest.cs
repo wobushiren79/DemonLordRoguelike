@@ -178,20 +178,20 @@ public class LauncherTest : BaseLauncher
     /// 指定配置行(世界+难度)，手搓随机数据(冻结该难度)直接进入无尽战斗；
     /// 可选择读取某个存档槽位作为运行时数据(防守方=该存档魔王+当前出战阵容)，全程测试模拟不落盘回真实存档
     /// </summary>
-    /// <param name="worldId">世界ID(无尽复用同难度征服行的怪物构成/数量/时长/场景/魔晶掉落)</param>
+    /// <param name="worldId">世界ID(无尽复用同难度征服行的怪物构成/数量/时长/魔晶掉落)</param>
     /// <param name="difficultyLevel">难度等级(2~10, 无尽模式无难度1)</param>
     /// <param name="saveSlot">存档槽位(0=使用当前测试数据 InitTestData 伪造数据;1~3=读取对应存档槽位 UserData_1/2/3 作为运行时数据,与挑战100勇士测试同范式)</param>
     public void StartForInfiniteTest(long worldId, int difficultyLevel, int saveSlot = 0)
     {
         ClearTestGUIs();
-        //校验同难度征服行是否存在(无尽复用其怪物构成/数量/时长/场景/道路区间, 缺失则 FightBeanForInfinite.InitData 直接报错返回)
+        //校验同难度征服行是否存在(无尽复用其怪物构成/数量/时长/道路区间, 缺失则 FightBeanForInfinite.InitData 直接报错返回)
         FightTypeConquerInfoBean conquerInfo = FightTypeConquerInfoCfg.GetItemData(worldId, difficultyLevel);
         if (conquerInfo == null)
         {
             LogUtil.LogError($"无尽模式测试失败，找不到同难度征服配置 worldId:{worldId} difficultyLevel:{difficultyLevel}");
             return;
         }
-        //无尽行缺失仅警告(强度倍率按1降级, 与 FightBeanForInfinite 语义一致, 不阻断战斗)
+        //无尽行缺失时强度倍率按1处理，场地回退到征服BOSS场地
         FightTypeInfiniteInfoBean infiniteInfo = FightTypeInfiniteInfoCfg.GetItemData(worldId, difficultyLevel);
         if (infiniteInfo == null)
         {

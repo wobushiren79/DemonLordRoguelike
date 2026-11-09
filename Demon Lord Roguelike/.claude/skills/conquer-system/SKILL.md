@@ -79,9 +79,11 @@ WorldHandler.EnterGameForFightScene(fightData)  → GameFightLogicConquer 跑起
 **导出 JSON**：`Assets/Resources/JsonText/FightTypeConquerInfo.txt`（派生产物，不可单独改）
 **取行键**：`world_id` + `level`（`FightTypeConquerInfoCfg.GetItemData(worldId, difficultyLevel)`），一个世界的每个难度等级一行。
 
-> **无尽模式（GameFightTypeEnum.Infinite）复用本表同难度行**：无尽模式的怪物池 `enemy_ids`/`enemy_boss_ids`、`attack_start_num`/`attack_show_time`/`attack_boss_num`、BOSS 场景池、`drop_crystal`、`road_num`/`road_length` 均取同难度（world_id+level）征服行（经 `FightBeanForInfinite.fightTypeConquerInfo`）；其每轮强度递增倍率独立配置在 `excel_fight_type_infinite_info[战斗-无尽模式].xlsx`（FightTypeInfiniteInfo.round_intensity_addrate，第 N 轮强度=本表同难度行 `attack_intensity_baserate`×该值^(N-1)，Bean 扩展 `GetRoundIntensityRate(round)`）。无尽传送门道路与战斗场景预生成 `GameWorldInfoRandomBean.SetRandomDataForInfinite`（难度 2 起逐档，无尽无难度 1；传送门创建后研究新解锁的难度由 `GetInfiniteDifficultyRandom(D)` 懒补齐）同样读本表 `road_num`/`road_length` 区间与场景池，场地经 `GetFightSceneId(D, true)` 取冻结值。
+> **无尽模式（GameFightTypeEnum.Infinite）复用本表同难度行**：无尽模式的怪物池 `enemy_ids`/`enemy_boss_ids`、`attack_start_num`/`attack_show_time`/`attack_boss_num`、`drop_crystal`、`road_num`/`road_length` 均取同难度（world_id+level）征服行（经 `FightBeanForInfinite.fightTypeConquerInfo`）；无尽表 `excel_fight_type_infinite_info[战斗-无尽模式].xlsx` 独立配置 `round_intensity_addrate` 和 `fight_scene_id`。第 N 轮强度为征服行 `attack_intensity_baserate` × 无尽行 `round_intensity_addrate`^(N-1)。世界 1 难度 2–10 的无尽场地均为天空石台 `60001`。`CreateInfiniteDifficultyRandom` 仍按征服行预生成道路与备用场地，未配置无尽场地时经 `GetFightSceneId(D, true)` 沿用冻结的 BOSS 场地。
 
-**BOSS 决战场地**。世界 1 难度 1–10 的 `fight_scene_boss_ids` 为 `30001&30002`，分别对应旧王宫和红冠宫殿。征服最后一关与同难度无尽共用此池。创建传送门或首次生成某个难度时等概率抽取并冻结，`GetFightSceneId` 从当前池补齐老存档缺失的场地 ID。已有传送门保留其冻结场地。
+**普通关场地**。世界 1 难度 1 的 `fight_scene_ids` 为 `10001`，难度 2–10 为 `10001&20001&70001`，其中 `70001` 对应荒野峡谷。新传送门或首次生成某个难度时从对应池抽取并冻结。已有传送门沿用冻结场地，缺失的场地 ID 按当前池补齐。
+
+**BOSS 决战场地**。世界 1 难度 1–10 的 `fight_scene_boss_ids` 为 `30001&30002`，分别对应旧王宫和红冠宫殿。征服最后一关使用此池。创建传送门或首次生成某个难度时等概率抽取并冻结，`GetFightSceneId` 从当前池补齐老存档缺失的场地 ID。已有传送门保留其冻结场地。
 
 ### 字段一览
 
@@ -389,7 +391,7 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 | BOSS 特写数据 | `Assets/Scripts/Bean/UI/DialogBossShowBean.cs` |
 | Excel 源表 | `Assets/Data/Excel/excel_fight_type_conquer_info[战斗-征服模式].xlsx` |
 | 导出 JSON | `Assets/Resources/JsonText/FightTypeConquerInfo.txt` |
-| 无尽配置 Bean（禁改）/扩展 | `Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBean.cs` / `FightTypeInfiniteInfoBeanPartial.cs`（无尽逐轮强度倍率 GetRoundIntensityRate，其余字段复用本表同难度行） |
+| 无尽配置 Bean（禁改）/扩展 | `Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBean.cs` / `FightTypeInfiniteInfoBeanPartial.cs`（无尽逐轮强度倍率 `GetRoundIntensityRate` 和专属场地 `fight_scene_id`） |
 | 配置编辑器 | `Assets/Editor/FightModeEditorWindow.cs`（主窗口）+ `Assets/Editor/FightModeEditorTabConquer.cs`（征服页签）+ `Assets/Editor/FightModeEditorTabInfinite.cs`（无尽页签） |
 | 难度解锁存档 | `Assets/Scripts/Bean/Game/UserUnlockBean.cs`（GetUnlockGameWorldConquerDifficultyLevel） |
 

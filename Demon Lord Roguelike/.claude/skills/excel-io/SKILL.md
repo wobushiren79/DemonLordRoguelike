@@ -166,8 +166,9 @@ python .claude/scripts/excel_delete_row.py \
 | 终焉议会 | excel_doom_council_info | DoomCouncilInfo | 13 |
 | 议会议员等级 | excel_doom_council_ratings_info | DoomCouncilRatingsInfo | 12 |
 | 粒子效果 | excel_effect_info | EffectInfo | 21 |
-| 战斗场景 | excel_fight_scene | FightScene | 12 |
-| 战斗-征服 | excel_fight_type_conquer_info | FightTypeConquerInfo | 12 |
+| 战斗场景 | excel_fight_scene | FightScene | 16 |
+| 战斗-征服 | excel_fight_type_conquer_info | FightTypeConquerInfo | 10 |
+| 战斗-无尽 | excel_fight_type_infinite_info | FightTypeInfiniteInfo | 9 |
 | 游戏世界 | excel_game_world_info | GameWorldInfo | 6 |
 | 道具信息 | excel_items_info | ItemsInfo | 229 |
 | 道具类型 | excel_items_type | ItemsType | 10 |
@@ -182,6 +183,8 @@ python .claude/scripts/excel_delete_row.py \
 | 称号 | excel_title_info | TitleInfo | 15 |
 | UI文本 | excel_ui_text | UIText | 227 |
 | 解锁信息 | excel_unlock_info | UnlockInfo | 108 |
+
+`FightTypeInfiniteInfo.fight_scene_id` 是指向 `FightScene.id` 的 `long` 列。世界 1 难度 2–10 均为 `60001` 天空石台，0 或留空时沿用同难度征服 BOSS 场地。新增配置列时，先为该 Excel 生成 Entity 并等待编译，再定向导出对应 JSON。
 
 ## 典型工作流
 

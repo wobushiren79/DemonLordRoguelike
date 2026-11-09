@@ -62,7 +62,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 
 ### 挑战100勇士专用竞技场（2026-11-07）
 
-- `FightScene` 的 **50001** 对应 `FightScene_Arena_Embervault_1.prefab`；挑战表全部 28 行（普通/真勇士、全部难度）的 `fight_scene_ids` 均为 `50001`。征服和无尽场景池不包含它。
+- `FightScene` 的 **50001** 对应 `FightScene_Arena_Embervault_1.prefab`；挑战表全部 28 行（普通/真勇士、全部难度）的 `fight_scene_ids` 均为 `50001`。征服和无尽的场地配置均不包含它。
 - 场地仍以 Excel 为真实源，沿用 `GetFightSceneId` 冻结链路。`FightTypeChallengeHundredInfoBean.IsMatchFightScene(id)` 检查缓存场地是否仍在该行配置池；`GetChallengeHundredFightSceneId` 仅在缓存缺失或已被移出池时重选并写回，因此旧传送门也迁入竞技场，保留难度、敌人行、道路和奖励。仍在池中的场地不重随。
 - 战斗预制位于 `Assets/LoadResources/FightScene/`，Addressables 组 `FightScene`、地址为完整资源路径；嵌套原 `Building_Arena_Embervault_1`，本地位置 `(5.5,-0.05,3.5)`、等比缩放 `0.5`，匹配 5×10 战斗格及加载器道路数偏移。战斗版隐藏围墙/基础/座席/上层拱廊的 `Near Side`，避免现有战斗镜头被前景看台遮挡；原建筑资源不改。
 
@@ -88,7 +88,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 - 字段：`worldId`、`gameFightType`、`roadNum`/`roadLength`/`fightNum`(当前难度的值)、`uiPosition`(Vector2Bean 规避 Newtonsoft 递归)、`iconSeed`、`difficultyLevel`、`listDifficultyRandom`(各难度预生成数据：道路/关卡/战斗场景/奖励)；ChallengeHundred 专用：`listChallengeHundredRandom`(逐难度预生成的 `GameWorldChallengeHundredRandomBean`：难度/冻结行id/道路/战斗场景/3箱奖励/解锁签名)、`challengeHundredRowId`(当前活动难度的冻结配置行id，0=未冻结)、`listRewardChallengeHundred`(当前活动难度的通关宝箱奖励：普通3箱/BOSS挑战装备6箱)、`rewardUnlockSignChallengeHundred`(当前活动难度生成奖励时的装备池解锁签名)。
 - `SetGameFightTypeRandom(worldId)`：**判定顺序——①先 roll ChallengeHundred 出现概率**(`UserUnlockBean.GetUnlockChallengeHundredShowRate()`=研究 `UnlockEnum.ChallengeHundredShowRate`(100300007) 等级×10%)，命中后按**100勇士独立难度链**取上限 `GetUnlockChallengeHundredDifficultyLevel(worldId)`，抽配置行 `FightTypeChallengeHundredInfoCfg.GetRandomRow(unlockDifficultyMax, bossRate)` 为**两段判定**：先按 BOSS 挑战出现概率 `GetUnlockChallengeHundredBossRate()`(=**基础10%**+研究 `UnlockEnum.ChallengeHundredBossRate`(100300009) 等级×10%，4级满级=50%) 判定普通/BOSS，再在命中类型行内等概率随机(命中类型该难度无匹配行落回另一类型，全无匹配返回 null 落回原随机)，抽中行才生成为该模式并直接调 `SetRandomDataForChallengeHundred`；**②再 roll 无尽**(概率=**基础10%+研究 `UnlockEnum.InfiniteShowRate`(100300008) 等级×10%**(9级满级=100%)：前提该世界**至少一个无尽难度已解锁** `GetUnlockInfiniteDifficultyLevel(worldId) >= 2`，`Random.Range(0,100) < GetUnlockInfiniteShowRate()` 命中) → `SetRandomDataForInfinite`；**③其余落回征服** → 调 `SetRandomData`。旧的"Conquer/Infinite 均匀随机列表"已删除。
 - `SetRandomDataForConquer`：创建时把 `1~已解锁最高难度` 逐档随机出 `GameWorldDifficultyRandomBean`(道路数/长度/关卡数 + **普通关/BOSS关战斗场景冻结** + **预生成奖励**)缓存进 `listDifficultyRandom`，默认难度取已解锁最高。
-- `SetRandomDataForInfinite`：按无尽已解锁难度(2~`GetUnlockInfiniteDifficultyLevel(worldId)`)**逐难度预生成 `listDifficultyRandom`**——每档走 `CreateInfiniteDifficultyRandom`：roadNum/roadLength 取自同难度征服行 `road_num`/`road_length` 区间(切换难度直接取用保证恒定)；`fightSceneId`/`bossFightSceneId` 取同难度征服行场景池冻结(无尽每轮都是BOSS，实际用 `bossFightSceneId`)；`fightNum=1` 占位(无尽无关卡数概念)；`listReward` 留空(无尽无通关奖励)；默认难度=最高已解锁无尽难度并 `SetDifficultyLevel` 同步。
+- `SetRandomDataForInfinite`：按无尽已解锁难度(2~`GetUnlockInfiniteDifficultyLevel(worldId)`)**逐难度预生成 `listDifficultyRandom`**——每档走 `CreateInfiniteDifficultyRandom`：roadNum/roadLength 取自同难度征服行 `road_num`/`road_length` 区间(切换难度直接取用保证恒定)；`fightSceneId`/`bossFightSceneId` 从同难度征服行场景池抽取并冻结为备用场地；`fightNum=1` 占位(无尽无关卡数概念)；`listReward` 留空(无尽无通关奖励)；默认难度=最高已解锁无尽难度并 `SetDifficultyLevel` 同步。
 - `GetInfiniteDifficultyRandom(D)`：取该难度道路数据；**已解锁但未预生成**(传送门创建后研究新解锁的无尽难度)时懒补齐并冻结，未解锁/无配置返回 null。`SetDifficultyLevel` 无尽分支与气泡均走此方法(不走 `GetDifficultyRandom`，避免连带生成征服通关奖励)。
 - `SetRandomDataForChallengeHundred(challengeHundredInfo)`：按 `1~GetUnlockChallengeHundredDifficultyLevel(worldId)` **逐难度预生成** `listChallengeHundredRandom`——最高难度沿用传入行(不匹配则重抽)，其余难度用 `GetRandomRow(level, bossRate)`；每档冻结配置行 id、`roadNum`/`roadLength`(行区间 x或x-y)、战斗场景 `fightSceneId`(行 `fight_scene_ids` 随机其一)、3箱奖励(`CreateRewardListForChallengeHundred(行, level)`，装备池空=全魔晶，否则全装备；**BOSS挑战翻倍：装备3箱→6件、魔晶单箱数量x2**)；`fightNum=1`；默认 `difficultyLevel`=最高已解锁100勇士难度并 `SetDifficultyLevel` 同步活动字段。
 - `EnsureChallengeHundredRandomData()`：旧存档 `listChallengeHundredRandom` 为空时懒重建——按旧 `challengeHundredRowId` 保留当前难度(夹到新难度范围)、补齐其他已解锁难度；`GetChallengeHundredRandom(D)` 首次访问也会触发 Ensure。
@@ -99,10 +99,10 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 - `SetDifficultyLevel(level)`：切换难度，把 `roadNum/roadLength/fightNum` 同步为该难度缓存值(气泡、战斗都读这些字段)。**无尽分支**：走 `GetInfiniteDifficultyRandom(level)` 同步 roadNum/roadLength(无关卡数)，**不走 `GetDifficultyRandom`**——那会连带生成征服通关奖励；研究新解锁但未预生成的难度由该方法懒补齐(返回 null 时保留当前值)。
 - `GetDifficultyRandom(level)`：取某难度数据(缺失懒生成并缓存)。
 - `GetDifficultyReward(level)`：取该难度**预生成奖励**(预览即实领)；空或解锁池签名变化时重新生成，见下。
-- `GetFightSceneId(level, isBoss)`：取本世界指定难度**已冻结的战斗场景**(2026-10-22 起，场地不再每次进战斗重随)——Conquer/Infinite 走 `GetDifficultyRandom`/`GetInfiniteDifficultyRandom` 的 `fightSceneId`/`bossFightSceneId`，ChallengeHundred 走 `GetChallengeHundredRandom(D).fightSceneId`(按冻结行随机)；老存档场景字段为0时按配置懒补齐并写回(补齐后同样固定)，无冻结数据(如无尽测试入口未解锁难度)时按配置随机兜底。三个 FightBean 的 `fightSceneId` 全部改为此方法取值。
+- `GetFightSceneId(level, isBoss)`：取本世界指定难度**已冻结的战斗场景**(2026-10-22 起，场地不再每次进战斗重随)——Conquer/Infinite 走 `GetDifficultyRandom`/`GetInfiniteDifficultyRandom` 的 `fightSceneId`/`bossFightSceneId`，ChallengeHundred 走 `GetChallengeHundredRandom(D).fightSceneId`(按冻结行随机)；老存档场景字段为0时按配置懒补齐并写回(补齐后同样固定)，无冻结数据(如无尽测试入口未解锁难度)时按配置随机兜底。征服和挑战100勇士通过此方法取场地。`FightBeanForInfinite` 优先读取无尽行 `fight_scene_id`，世界 1 难度 2–10 均为天空石台 `60001`，包括已有传送门。无尽场地未配时通过 `GetFightSceneId(level, true)` 使用冻结的备用 BOSS 场地。
 
 ### GameWorldDifficultyRandomBean（单难度随机数据）
-每难度一份：`difficultyLevel`、`roadNum`、`roadLength`、`fightNum`、`fightSceneId`(普通关冻结场景)、`bossFightSceneId`(BOSS关冻结场景，无尽每轮用)、`listReward`(预生成通关奖励)、`rewardUnlockSign`(生成时的装备奖励池解锁签名)、**`listEnemyTypeId`/`listEnemyBossTypeId`**(2026-10：按征服行 `enemy_type_num`/`enemy_boss_type_num` 冻结的敌人种类，空列表=未配置整池全随机；**null=老存档未生成**，由 `GameWorldInfoRandomBean.GetDifficultyEnemyTypeIdList(D,isBoss)` 懒补齐写回，勿把字段初始化为空列表)、**`listEnemyBossSpawnId`**(BOSS 出场阵容：每个元素=一只 BOSS，长度=BOSS 数量，世界生成时由 `attack_boss_num` × BOSS 种类随出；战斗出怪与弹窗去重展示共用，null=老存档由 `GetDifficultyEnemyBossSpawnIdList(D)` 懒补齐)。无尽复用同一缓存但只填道路/场景，奖励与敌人种类/阵容留空。
+每难度一份：`difficultyLevel`、`roadNum`、`roadLength`、`fightNum`、`fightSceneId`(普通关冻结场景)、`bossFightSceneId`(BOSS关冻结场景，无尽未配专属场地时使用)、`listReward`(预生成通关奖励)、`rewardUnlockSign`(生成时的装备奖励池解锁签名)、**`listEnemyTypeId`/`listEnemyBossTypeId`**(2026-10：按征服行 `enemy_type_num`/`enemy_boss_type_num` 冻结的敌人种类，空列表=未配置整池全随机；**null=老存档未生成**，由 `GameWorldInfoRandomBean.GetDifficultyEnemyTypeIdList(D,isBoss)` 懒补齐写回，勿把字段初始化为空列表)、**`listEnemyBossSpawnId`**(BOSS 出场阵容：每个元素=一只 BOSS，长度=BOSS 数量，世界生成时由 `attack_boss_num` × BOSS 种类随出；战斗出怪与弹窗去重展示共用，null=老存档由 `GetDifficultyEnemyBossSpawnIdList(D)` 懒补齐)。无尽复用同一缓存，填道路和备用场地，奖励与敌人种类/阵容留空。
 
 ### FightTypeChallengeHundredInfoBean（挑战100勇士配置, Bean 自动生成禁改 / Partial 手写扩展）
 `Assets/Scripts/Bean/MVC/Game/FightTypeChallengeHundredInfoBean(Partial).cs`（Cfg.fileName = `FightTypeChallengeHundredInfo`，一行一个挑战配置，当前28行）。
@@ -113,10 +113,10 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 ### FightTypeInfiniteInfoBean（无尽模式配置, Bean 自动生成禁改 / Partial 手写扩展）
 `Assets/Scripts/Bean/MVC/Game/FightTypeInfiniteInfoBean(Partial).cs`（Cfg.fileName = `FightTypeInfiniteInfo`，一行=一个世界一个无尽难度，当前 9 行=世界1难度2~10）。
 
-- 字段：`world_id` / `level`(难度2~10，无尽无难度1) / `round_intensity_addrate`(每轮强度倍率：每轮怪物HP/护甲/攻击力×该值^(轮-1)，含BOSS；第1轮恒为1；1=不递增) / `remark`。
+- 字段：`world_id` / `level`(难度2~10，无尽无难度1) / `round_intensity_addrate`(每轮强度倍率：每轮怪物HP/护甲/攻击力×该值^(轮-1)，含BOSS；第1轮恒为1；1=不递增) / `remark` / `fight_scene_id`（long，专属场地，0 或留空时回退）。
 - Partial 扩展：`GetRoundIntensityRate(round)`(轮次强度倍率=`round_intensity_addrate^(round-1)`，仅无尽表自身乘区，不含征服基础倍率与终焉议会加成；配置非法≤0按1)。
 - Cfg 扩展：`GetItemData(worldId, difficultyLevel)`(指定世界指定无尽难度配置行，无配置返回 null)、`GetMaxLevel(worldId)`(配置表中最高无尽难度，供传送门详情弹窗展示未解锁预览，无配置返回0)。
-- 战斗侧消费：`FightBeanForInfinite` 持 `fightTypeInfiniteInfo`，`GetRoundIntensityRate(round)` = 征服行 `attack_intensity_baserate`(每轮恒定基区) × 无尽行 `round_intensity_addrate^(round-1)`(逐轮乘区) × 终焉议会强度议案倍率；无尽配置行缺失时 LogError 且轮次倍率按1处理。
+- 战斗侧消费：`FightBeanForInfinite` 持 `fightTypeInfiniteInfo`，`GetRoundIntensityRate(round)` = 征服行 `attack_intensity_baserate`(每轮恒定基区) × 无尽行 `round_intensity_addrate^(round-1)`(逐轮乘区) × 终焉议会强度议案倍率；无尽配置行缺失时 LogError，轮次倍率按 1 处理，场地回退到冻结的备用 BOSS 场地。
 
 ## 地图生成与刷新（UIBasePortal）
 
@@ -207,7 +207,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 ## 配置（Excel）
 
 - `excel_game_world_info[游戏世界信息].xlsx`(工作表 `GameWorldInfo`) —— 世界配置唯一真实源；导出 `Assets/Resources/JsonText/GameWorldInfo.txt`。**2026-10 新增列 `unlock_id_challenge_hundred`**(100勇士难度研究起始ID：世界1=100310160，世界2~4=0；字段暂在 `GameWorldInfoBeanPartial` 临时 region，重新生成 Entity 后删除)。`unlock_id_infinite` 列值不变(各世界 x02 起)，语义为无尽研究起始ID。
-- `excel_fight_type_infinite_info[战斗-无尽模式].xlsx`(工作表 `FightTypeInfiniteInfo`) —— 无尽模式配置唯一真实源；导出 `FightTypeInfiniteInfo.txt`。列：`id` / `world_id` / `level`(难度2~10，无尽无难度1) / `round_intensity_addrate`(每轮强度倍率，^(轮-1) 逐轮递增) / `remark`；当前 9 行=世界1难度2~10。Bean：`FightTypeInfiniteInfoBean.cs`(自动生成,禁改) / `FightTypeInfiniteInfoBeanPartial.cs`(`GetRoundIntensityRate`；Cfg `GetItemData(worldId,level)`/`GetMaxLevel(worldId)`)。
+- `excel_fight_type_infinite_info[战斗-无尽模式].xlsx`(工作表 `FightTypeInfiniteInfo`) —— 无尽模式配置唯一真实源；导出 `FightTypeInfiniteInfo.txt`。列：`id` / `world_id` / `level`(难度2~10，无尽无难度1) / `round_intensity_addrate`(每轮强度倍率，^(轮-1) 逐轮递增) / `remark` / `fight_scene_id`（long，当前 9 行均为 `60001`）；当前 9 行=世界1难度2~10。Bean：`FightTypeInfiniteInfoBean.cs`(自动生成,禁改) / `FightTypeInfiniteInfoBeanPartial.cs`(`GetRoundIntensityRate`；Cfg `GetItemData(worldId,level)`/`GetMaxLevel(worldId)`)。
 - `excel_fight_type_challenge_hundred_info[战斗-挑战100勇士].xlsx`(工作表 `FightTypeChallengeHundredInfo`) —— 挑战100勇士配置唯一真实源；导出 `FightTypeChallengeHundredInfo.txt`。列：`id` / `enemy_ids`(,分隔，100只怪每只独立抽取) / `difficulty_levels`(,分隔，该行适配难度列表=抽中条件) / `challenge_type`(0=普通挑战,1=BOSS挑战通关宝箱奖励翻倍) / `attack_intensity_baserate`(强度倍率) / `attack_show_time` / `road_num`(x或x-y) / `road_length` / `fight_scene_ids`(,分隔) / `drop_crystal` / `reward_crystal`(每档x或x-y) / `reward_equip_rarity` / `reward_exp` / `reward_reputation`(通关声望,逐难度对齐,当前值=难度等级,需研究100200011门控才发放) / `remark`；一行=一个挑战配置(当前 28 行=征服全部进攻敌人 14普通+14BOSS，难度=征服出场难度)；**强度倍率/击杀掉晶/每箱魔晶/装备稀有度/通关经验/通关声望为「逐难度对齐字段」**：单值=全难度共用，或与难度列表等长的逗号分隔值按冻结难度逐档取值(BeanPartial 统一解析)。
 - **可视化编辑**：战斗模式编辑工具（菜单 `游戏/战斗模式编辑`）的「挑战100勇士」页签 `Assets/Editor/FightModeEditorTabChallengeHundred.cs`——**以配置行列表为主组织**(不按难度分页)：配置行下拉(`[id] [BOSS]备注 (难度:x,y)`)→加载编辑；`challenge_type` 下拉(普通/BOSS)、`difficulty_levels` 用 1~10 多选页签编辑(附实时覆盖提示)、**逐难度对齐字段按已选难度逐档独立输入框**(多难度时每难度一行；单难度/未选退化单输入框；编辑后各档相同自动折叠回单值；勾选增删难度时自动插入(继承邻档)/删除对应档值；数量不符旧数据警示)、敌人/场景 ID 列表(逗号分隔,与征服的 `&` 不同)手输或下拉按名字选取、修改字段淡黄高亮(ID 列表用「●已修改」文字标记)；支持新增行(id=max+1、适配难度沿用模板行)与删除行(EPPlus 删行)，保存/增删均单 EPPlus 会话写回 Excel(数值列写数值类型)后 `ExcelUtil.ExcelToJsonItem` 重导 JSON。
 - 改配置**必须改 Excel** 再由 Unity 导出 JSON；仅改 JSON 下次导出会被覆盖。
@@ -248,7 +248,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → 进入战斗(交给 conquer-
 - ChallengeHundred 自 2026-10 起**有独立难度概念**：难度1默认可用，难度2~10 由 `unlock_id_challenge_hundred` 研究链解锁；传送门详情弹窗**同时显示难度选择器与来袭魔物列表**(难度在上、魔物在下)，逐档解锁判断、左右切换跳过未解锁空档；`difficultyLevel` 为当前活动难度，冻结该难度的配置行/道路/奖励，强度由配置行 `attack_intensity_baserate` 按该难度取档。传送门名字仍显示模式名(UIText 417)而非世界名、确认文案用 416。文本 id：416=「是否接受100勇士的挑战？」、417=「是魔王就挑战100勇士」、418=「来袭魔物」(预留标题文案，当前代码未用)、424=「勇士」、425=「真勇士」、426=「{0}（{1}）」(气泡难度行格式，EN等半角括号)。
 - ChallengeHundred 预生成数据按难度存 `listChallengeHundredRandom`；活动字段 `challengeHundredRowId/listRewardChallengeHundred/rewardUnlockSignChallengeHundred` 是当前难度的镜像，切难度必须走 `SetDifficultyLevel` 同步，否则战斗会用到旧难度行。
 - 预生成列表只在传送门创建时按当时的已解锁难度建好，**研究解锁新难度不会重建列表**：取用时一律走 `GetChallengeHundredRandom(D)`/`GetChallengeHundredReward(D)`/`GetInfiniteDifficultyRandom(D)`(内部懒补齐已解锁缺档)，不要自己 `list.Find` 或新增"只读已预生成"的分支，否则新解锁难度会预览/战斗/结算全取不到数据。
-- **战斗场地（fightSceneId）与道路/关卡同契约：创建传送门时按难度冻结**。FightBean 里**禁止**再写 `fightTypeConquerInfo.GetRandomFightScene(...)`/`fightTypeChallengeHundredInfo.GetRandomFightScene()`——一律走 `gameWorldInfoRandomData.GetFightSceneId(difficultyLevel, isBoss)`，否则同一世界重进场地会重新随机（用户反馈过的 bug：传送门世界每次重进场地都变）。征服普通关/BOSS关各一份冻结值，无尽取 `bossFightSceneId`，挑战100勇士取该难度冻结行场景；老存档字段为0时由 `GetFightSceneId` 懒补齐写回。
+- **随机战斗场地（fightSceneId）创建传送门时按难度冻结**。征服普通关与 BOSS 关各取一份冻结值，挑战100勇士取该难度冻结行的场地。`GetFightSceneId(difficultyLevel, isBoss)` 统一读取和补齐冻结值，避免每次重进重新随机。无尽的专属场地由无尽表直接指定，未配置时经同一方法取冻结的备用 BOSS 场地。
 - 输入走 `InputActionUIEnum`(ESC/Navigate)，禁用旧版 `Input` API。
 
 ## 关联 Skill 与 Agent

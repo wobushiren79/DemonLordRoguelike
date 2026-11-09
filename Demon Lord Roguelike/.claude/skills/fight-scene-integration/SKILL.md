@@ -6,6 +6,9 @@ watched_files:
   - Assets/AddressableAssetsData/AssetGroups/FightScene.asset
   - Assets/Data/Excel/excel_fight_scene[战斗场景].xlsx
   - Assets/Resources/JsonText/FightScene.txt
+  - Assets/Data/Excel/excel_fight_type_infinite_info[战斗-无尽模式].xlsx
+  - Assets/Resources/JsonText/FightTypeInfiniteInfo.txt
+  - Assets/Scripts/Bean/Game/FightBeanForInfinite.cs
   - Assets/Scripts/Component/Handler/WorldHandler.cs
   - Assets/Scripts/Component/Manager/WorldManager.cs
 ---
@@ -28,8 +31,8 @@ watched_files:
 ## 3. 配表、绑定模式与兼容旧档
 
 1. 读 [配置表读写](../excel-io/SKILL.md)。通过项目 `.claude/scripts/run-python.ps1` 使用 openpyxl 修改 `Assets/Data/Excel/excel_fight_scene[战斗场景].xlsx` 的 `FightScene` 工作表。检查已用 ID 与编号规则，新增行按 ID 升序。`name_res` 填 prefab 文件名（含扩展名）；加载时与 `PathInfo.FightScenePrefabPath` 拼成完整 Addressables 地址。沿用同类配置的必要字段，确认 `skybox_mat` 可以加载；按画面需要配置环境光、雾、景深、道路颜色/透明度和 `Details` 变体。
-2. 按入口更新目标场地池，核对 `FightBean.fightSceneId` 最终取值。挑战100勇士的 `FightTypeChallengeHundredInfo.fight_scene_ids` 使用逗号；征服的 `FightTypeConquerInfo.fight_scene_ids` 和 `fight_scene_boss_ids` 使用 `&`。无尽当前使用同难度征服 BOSS 场地池；需要为两种模式指定不同场地时，先核对是否有独立配置入口，再按 `CLAUDE.md` 的约定处理需要调整配置来源的变更。按 [传送门流程](../portal-system/SKILL.md) 查清实际调用链，专用场地只进入授权的入口和分支。
-3. 检查已生成传送门会不会继续读旧冻结值。若需要让旧档迁移，仅在场地缺失或已移出目标行场地池时重选并写回，保留仍有效的冻结值、道路、难度、敌人和奖励。挑战100勇士已有 `GetChallengeHundredFightSceneId` / `IsMatchFightScene`；征服和无尽当前只懒补非正数 ID，有效性迁移需另行处理。模式分流时，核对预生成、缺值补齐、无冻结数据兜底是否读同一个目标池，同时验证首战和推进到 BOSS 关两种入口。
+2. 按入口更新目标场地配置，核对 `FightBean.fightSceneId` 最终取值。挑战100勇士的 `FightTypeChallengeHundredInfo.fight_scene_ids` 使用逗号，征服的 `FightTypeConquerInfo.fight_scene_ids` 和 `fight_scene_boss_ids` 使用 `&`。无尽用 `FightTypeInfiniteInfo.fight_scene_id` 按世界和难度指定单一 `FightScene` ID，0 或留空回退同难度征服 BOSS 场地。按 [传送门流程](../portal-system/SKILL.md) 核对专用场地只由目标正式战斗入口选用。
+3. 检查已有传送门。`FightBeanForInfinite.InitData` 在进场时优先读取当前无尽场地，因此新旧无尽传送门均使用专属配置，旧冻结值仍可用于回退。征服只懒补缺失场地，挑战100勇士通过 `GetChallengeHundredFightSceneId` / `IsMatchFightScene` 在冻结场地已移出配置池时重选。核对征服首战和决战、无尽测试入口以及无尽传送门的进场结果。
 4. 用项目 Unity 导出器同步本次改动的表到 `Assets/Resources/JsonText/`，包括模式表；通过 `ExcelUtil.ExcelToJsonItem(FileInfo, jsonFolderPath)` 定向导出时，实际回读 JSON，防止导出静默失败或拼错中文文件名。核对两端的行、字段类型和 ID 都一致，清理此次临时备份。只修改数据行时沿用已有 Bean。
 
 ## 4. 检查画面与控制
@@ -56,5 +59,17 @@ watched_files:
 - `FightScene` ID `30002`，Addressables 地址 `Assets/LoadResources/FightScene/FightScene_Palace_CrimsonCrown_1.prefab`。内嵌 `Building_Palace_CrimsonCrown_Cutaway_1`，子层位置 `(5.5, -0.061, 4.72)`、Y 轴旋转 `180°`、缩放 `(0.68, 0.58, 0.58)`，保留战斗所需的横向间距。两侧柱心局部 X 为 `±10.17`，柱本地缩放 `(0.75, 1, 0.85)`，柱旗与柱身留约 `0.013` 战斗场景单位。用角色站姿约 1 单位校准家具，长椅、花盆和王座等比世界缩放分别为 `0.45`、`0.43`、`0.36`，对应长椅坐面高约 `0.41`、王座高约 `1.58`，王座底面贴台顶。
 - 战斗版 12 座烛台共用 `Assets/LoadResources/Fbx/Building/Palace/CrimsonCrown_BattleCandelabrum.asset`。用图集 UV2 去掉原网格的 186 个火焰三角面，补同图集金色轴杆连接中间烛座。烛台等比世界缩放 `0.30`，烛芯高约 `0.69`，第二排局部 Z `8`，第三排仍落在台阶前平地。36 个烛芯各自嵌套 `Effect_Fire_7`，只开启主火和 Glow。火焰局部缩放 `0.19`，主火世界空间重力和速度上限按最终 `0.057` 比例补偿。烛台点光强度 `0.55`、范围 `2.3`。
 - 战斗平地的地毯保留红色织纹和两侧金边，移除中央花纹。`CrimsonCrown_BattleRoyalDais.asset` 把大厅局部高度 `0.074` 的两张地毯三角面分到独立材质槽，使用 `Mat_Building_Palace_CrimsonCrown_CombatCarpet_1` 和 `palace_crimson_crown_combat_carpet_1.png`。台阶、王座台及碰撞体继续使用原资源。
-- 世界 1 的征服难度 1–10 使用 BOSS 池 `30001&30002`，无尽按同难度复用。新随机时两座宫殿等概率，已冻结的场地继续沿用。`30002` 使用 `Skybox_6`、环境光 `#99847A`、道路透明度 `0.1`，场地雾和体积雾留空。
+- 世界 1 的征服难度 1–10 使用 BOSS 池 `30001&30002`。新随机时两座宫殿等概率，已冻结的场地继续沿用。`30002` 使用 `Skybox_6`、环境光 `#99847A`、道路透明度 `0.1`，场地雾和体积雾留空。
 - 已在编辑模式按战斗根节点偏移回读 2–6 路的地面和出生区，核对 8 面柱旗、王座底面、12 座烛台的连接件与 36 个火焰实例。实机验收可在 `TestScene` 的 `Launcher` 选战斗测试场景 `[30002]`，手动 Play 查看角色与王座比例、烛火、放置、出怪和镜头边界，再用新征服传送门验证最后一关切换。
+
+## 天空石台无尽场地
+
+- `FightScene` ID `60001`，Addressables 地址 `Assets/LoadResources/FightScene/FightScene_SkywardTerrace_1.prefab`。世界 1 无尽难度 2–10 的 `fight_scene_id` 均为 `60001`，可从战斗模式编辑器的无尽页签调整。
+- 用 `TestScene` 的 `Launcher` 选择无尽模式测试难度，手动 Play 检查场地加载、道路覆盖、放置和刷怪。正式入口可用已有无尽传送门验证进场场地，并用征服传送门确认普通关和决战仍从各自场地池选取。
+
+## 荒野峡谷普通关场地
+
+- `FightScene` ID `70001`，Addressables 地址 `Assets/LoadResources/FightScene/FightScene_WildernessCanyon_1.prefab`。内嵌 `Scene_WildernessCanyon_1`，子层平移 `(5.5, -0.005, 3.5)`，Y 轴旋转 `+5°`，使远处峡口对准道路中线。`Ground_Placement` 填补 `Ground_Arena` 的中央开口，渲染器和碰撞体都保留。
+- 战斗版保留预览的暖主光和冷补光。`Sky_Dome` 使用战斗专用材质 `Mat_FightScene_WildernessCanyon_Sky_1`，队列 `2900`，在天空盒后和常规透明特效前绘制。`Skybox_2` 供战斗加载器设置，环境光 `#8CA1AB`、线性雾 `#9EB5B3`（42–108）。棋盘格使用砂褐色 `#7D7253` / `#B4A57B`，透明度 `0.28`。
+- 根节点 `Effect` 下嵌套沙漠的 `Effect_SandDust_1` 和 `Effect_Weather_Windlines_2`。沙粒位于 `(5.5, 1.5, 3.5)`，风线从 `(20, 3, 3.5)` 发射，沿用沙漠实例的旋转、半径和砂色覆盖，从右向左扫过战场。
+- 世界 1 征服难度 2–10 的普通关池为 `10001&20001&70001`，新生成传送门抽取并冻结，已有冻结场地继续使用。编辑模式已按 2–6 路及战斗根节点偏移采样道路和出生区。实机可在 `TestScene` 的 `Launcher` 中选择普通战斗测试 `[70001] 荒野峡谷_1`，用 6 路、长度 10 检查地表、镜头边界、放置和出怪。

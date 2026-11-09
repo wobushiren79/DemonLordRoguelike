@@ -31,7 +31,7 @@ watched_files:
 
 ### 战斗场景
 - **ScenePrefabBase** - 场景预制体基类
-- **ScenePrefabForFight** - 普通战斗场景统一根组件；`WorldHandler.LoadFightScene` 在非终焉议会分支自动确保存在并初始化，场景实例动态表现集中在这里。动态天空盒默认关闭，天空石台 60001 启用并配置曝光倍率 1.65、偏航 0.8°/秒；仅操作运行时材质副本，外部替换后停更，禁用时恢复源材质并销毁副本
+- **ScenePrefabForFight** - 普通战斗场景统一根组件；`WorldHandler.LoadFightScene` 在非终焉议会分支自动确保存在并初始化，场景实例动态表现集中在这里。动态天空盒默认关闭，无尽专属场地天空石台 60001 启用并配置曝光倍率 1.65、偏航 0.8°/秒；仅操作运行时材质副本，外部替换后停更，禁用时恢复源材质并销毁副本
 - **ScenePrefabForBase** - 基地场景
 - **ScenePrefabForDoomCouncil** - 终焉议会场景
 - **ScenePrefabForRewardSelect** - 奖励选择场景
@@ -44,7 +44,7 @@ watched_files:
 - **FightBean** - 战斗数据基类；虚方法 `GetGameWorldInfoRandomData()` 默认返回 null，征服/无尽/100勇士三个 Bean 覆写返回各自 `gameWorldInfoRandomData`（UI 侧 Quick/0速/2倍速门控与后续需要世界+难度的逻辑统一走它，避免按具体 Bean 类型分支）
 - **FightBeanForConquer** - 征服模式战斗数据
 - **FightBeanForDoomCouncil** - 终焉议会战斗数据
-- **FightBeanForInfinite** - 无限/无尽模式战斗数据（持有同难度征服行 `fightTypeConquerInfo`[复用其怪物池/数量/时长/场景/魔晶掉落]+无尽行 `fightTypeInfiniteInfo`[每轮强度倍率,null 降级不阻断]+`roundNum` 当前轮次从1起；`InitData` 建核心/收阵容/取传送门创建时冻结的BOSS场景(`GetFightSceneId(D,true)`)/填充第1轮；`AppendNextRoundAttackData()` 追加下一轮波次到队列末尾不重建[每轮=征服BOSS关同款构成：普通怪分桶随机+BOSS中后段错开+每轮弹特写，数量固定不递推]；`GetRoundIntensityRate(round)`=征服 attack_intensity_baserate × 无尽 round_intensity_addrate^(round-1) × 终焉议会强度议案）
+- **FightBeanForInfinite** - 无限/无尽模式战斗数据（持有同难度征服行 `fightTypeConquerInfo`[复用其怪物池/数量/时长/魔晶掉落]+无尽行 `fightTypeInfiniteInfo`[每轮强度倍率、专属场地]+`roundNum` 当前轮次从1起；`InitData` 建核心/收阵容/优先读无尽行的 `fight_scene_id`（未配置时经 `GetFightSceneId(D,true)` 沿用冻结 BOSS 场地）/填充第1轮；`AppendNextRoundAttackData()` 追加下一轮波次到队列末尾不重建[每轮=征服BOSS关同款构成：普通怪分桶随机+BOSS中后段错开+每轮弹特写，数量固定不递推]；`GetRoundIntensityRate(round)`=征服 attack_intensity_baserate × 无尽 round_intensity_addrate^(round-1) × 终焉议会强度议案）
 - **FightBeanForTest** - 测试战斗数据
 - **FightBeanForChallengeHundred** - 挑战100勇士战斗数据（持有冻结配置行 `fightTypeChallengeHundredInfo` 与 `gameWorldInfoRandomData`；固定100只怪分桶随机排程 `InitFightAttackData`，强度=行 `attack_intensity_baserate` 不叠终焉议会）
 - **FightCreatureBean** - 战斗生物数据

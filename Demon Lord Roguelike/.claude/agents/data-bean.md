@@ -93,6 +93,8 @@ Bean/
 
 > **`AttackModeInfoBeanPartial.GetLanceChargeConfig(out jumpTime, out jumpHeight, out chargeFxId, out landFxId)`（手写 Partial，2026-11 新增）**：解析攻击模块 `other_data` 的 `jump_time`/`jump_height`/`charge_fx`/`land_fx` 键（懒解析缓存；jumpTime 钳 0.2~0.8s、jumpHeight 钳 0~5、特效 id 0=不播放），供 `AttackModeChargeLanceKnight`（长枪骑士 BOSS 技能 102004）使用；与 `GetShieldCastConfig`/`GetSummonConfig`/`GetMultiHitConfig` 同套路。Bean 自动生成文件禁改，扩展只写 Partial。
 
+> **`FightTypeInfiniteInfoBean.fight_scene_id`（Excel 自动生成列，long）** 指向 `FightScene.id`。`FightBeanForInfinite.InitData` 优先使用正数场地 ID，缺少配置或 ID 为非正数时才读取传送门原有的征服 BOSS 场地。世界 1 难度 2–10 均配置为天空石台 `60001`。
+
 ### Bean 命名规范
 > **挑战100勇士场地兼容（2026-11-07）**：`FightTypeChallengeHundredInfoBeanPartial.IsMatchFightScene(sceneId)` 复用逗号分隔场景池缓存校验正数 ID；`GameWorldInfoRandomBean.GetChallengeHundredFightSceneId` 对缺失/已移出配置池的旧场景重新选择并写回，仅迁移场地，不重建难度/道路/敌人配置/奖励快照。当前全部挑战行的场地为 50001（Embervault 竞技场）。
 
