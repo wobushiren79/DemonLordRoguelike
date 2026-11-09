@@ -40,6 +40,8 @@ Bean/
 
 > **`CreatureBean.IsDemonLord()`（`CreatureBeanPartial.cs` #region 魔王）是「是否魔王本体」判定的单一真实源**：比对 `creatureUUId == userData.selfCreature.creatureUUId`（魔王独立存储于 `UserDataBean.selfCreature`，不在背包/阵容列表内）。管理列表置顶、稀有度按 L 显示、隐藏等级、不可献祭、战斗不加经验等特殊处理统一调它，UI 层(如 `UIViewCreatureCardDetails.IsDemonLord`)已收口为委托调用。
 
+> **`NpcInfoBean.IsBoss()`（`NpcInfoBeanPartial.cs`）**：按备注 `remark` 识别 BOSS，含 `boss` 且不含否定标记 `无boss`（均不区分大小写）；避免「小兵（无BOSS技能）」被误标。该判定用于测试下拉标记，正式刷怪仍以 `enemy_boss_ids` 配置为准，不能用 `attack_mode_ext` 非空代替。
+
 > **`ItemBean.juicerExp`（手写 `Assets/Scripts/Bean/Game/ItemBean.cs`，long）**：魔汁经验值实例字段，仅 `ItemTypeEnum.Juice=11`（消耗品）类型、`ItemIdEnum.Juice=200001` 有效；榨汁结算（`CreatureJuicerLogic.SettleJuiceReward`）按投入魔物等级的 `LevelInfo.juicer_exp` 汇总写入，`num_max=1` 不堆叠保证每瓶经验独立；旧存档无此字段默认 0 兼容。
 
 > **GM 成长药水数据方法（2026-10）**：`ItemsInfoBeanPartial.GetLevelPotionDelta()` 解析 `ItemsInfo.other_data` 的 `level_delta:N`（空/非法兜底1）；`CreatureBeanPartial` 提供 `CanDownLevel/DownLevelForPotion()/DownLevelForPotion(int)`（逐级降级+经验清0+按各级点数随机回退）与 `UpLevelForPotion(int)`（逐级升级并累计加点，满级自动停止），以及 `CanUpRarity/UpRarityForPotion/CanDownRarity/DownRarity`（升阶随机新档 BUFF、降阶移除高档 `dicRarityBuff`）；`CreatureAttributeBean.RemoveRandomAttributeForLevelUp(removeNum)` 从 `dicAttributeLevelUp` 累计值按单点增量随机回退，无每级历史故非精确回退。

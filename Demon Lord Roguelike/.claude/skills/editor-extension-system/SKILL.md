@@ -27,7 +27,7 @@ EditorWindow (Unity)
 ├── AddressableWindow              # Addressable 管理
 ├── SpineWindow(+SpineWindowPreview partial)  # Spine 工具（皮肤提取 + 动画预览页签，预览可绕过官方版本兼容检查并自由搭配皮肤）
 ├── NodeBaseEditorWindow           # 节点编辑器
-├── SearchEditorWindow             # 搜索编辑器
+├── SearchEditorWindow             # 资源引用查找器（多目标GUID文本匹配：右键 Assets/查找引用 支持多选自动开查，结果按目标→类型两级分组，目标区支持多资源拖拽）
 ├── AnimSearchWindow               # 动画搜索
 ├── ImageResWindow                 # 图片资源窗口
 ├── CubemapGeneratorWindow         # Cubemap 生成器
@@ -43,7 +43,7 @@ EditorWindow (Unity)
 ├── SkinRandomEditorWindow         # 皮肤/装备/套装随机池配置 (CreatureRandomInfo 三模式: 皮肤池编辑skin_random_data/装备池·套装池编辑equip_random_data, 双列表点选增删, 写回Excel+同步JSON)
 ├── EquipSuitEditorWindow          # 装备套装配置 (EquipSuitInfo 套装表: 物种下拉+7槽位点选填入+新建/删除套装, 单EPPlus会话写回+同步JSON)
 ├── FightSceneEditorWindow         # 战斗场景配置 (excel_fight_scene: 预制/道路色/天空盒/雾/环境光/细节预制直观编辑, 保存写回Excel+再生JSON, Play时实时应用到当前战斗场景)
-├── FightModeEditorWindow(+TabConquer/TabChallengeHundred/TabInfinite)  # 战斗模式编辑工具 (征服模式/挑战100勇士/无尽模式三页签: 征服页签=前后难度对比列/ID列表名字下拉/敌人种类数量字符串字段(enemy_type_num/enemy_boss_type_num)/新增删除行; 无尽页签=编辑 excel_fight_type_infinite_info, 行下拉显示世界中文名(直读 GameWorldInfo.txt+Language_GameWorldInfo_cn.txt,不走TextHandler)+字段编辑（含指向 FightScene 的战斗场地 ID，0 时沿用冻结的 BOSS 场地）+新增/删除行+保存+导出Json, 复用挑战100勇士页签的 EPPlus 按id整行覆写模式; 均写回Excel+重导JSON)
+├── FightModeEditorWindow(+TabConquer/TabChallengeHundred/TabInfinite)  # 战斗模式编辑工具 (征服模式/挑战100勇士/无尽模式三页签: 征服页签=前后难度对比列/ID列表名字下拉/场景配置整组复制粘贴(普通关+BOSS关场景池,跨难度复用)/敌人种类数量字符串字段(enemy_type_num/enemy_boss_type_num)/新增删除行; 无尽页签=编辑 excel_fight_type_infinite_info, 行下拉显示世界中文名(直读 GameWorldInfo.txt+Language_GameWorldInfo_cn.txt,不走TextHandler)+字段编辑（含指向 FightScene 的战斗场地 ID，0 时沿用冻结的 BOSS 场地）+新增/删除行+保存+导出Json, 复用挑战100勇士页签的 EPPlus 按id整行覆写模式; 均写回Excel+重导JSON)
 ├── StoryEditorWindow              # 故事演出编辑 (StoryInfo/StoryDetailsInfo/StoryTalkInfo 三表+excel_language 对应 sheet: 三栏布局故事列表/字段/步骤编排+对话内联编辑, 4个xlsx各单EPPlus会话写回+重导JSON)
 ├── DoomCouncilEditorWindow(+TabBill/TabRatings)  # 终焉议会编辑 (excel_doom_council_info 议案/excel_doom_council_ratings_info 议员评级 两页签: 左列表右编辑, 泛型基类 DoomCouncilEditorTabBase<T> 封装EPPlus读表/变更对比淡黄高亮/SetExcelData写回+ExcelToJsonItem重导JSON; 议案页签=解锁ID下拉(直读UnlockInfo.txt)/效果实体类9选1下拉/class_entity_data按实体显示参数提示/文本ID中文预览(直读Language_*_cn.txt))
 ├── NpcCreateEditorWindow          # NPC创建编辑 (excel_npc_info 全字段 + 语言表中文名: 三栏布局 列表/字段+外观/Spine双模型预览, 非运行态版 NPC创建GUI)
@@ -234,6 +234,7 @@ Toolbar: UI脚本创建 按钮
 - Inspector 中配置测试参数
 - 一键启动各种测试场景
 - 参数持久化（EditorPrefs）
+- 场景编辑会话状态（快照/等待标记/预制路径/检测结果/回调注册标记）使用 `static` 跨 Inspector 实例共享，避免 Hierarchy 选物导致 Inspector 重建后会话显示丢失
 
 ### Inspector 面板结构
 

@@ -34,11 +34,6 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: Scree
     second: {fileID: 2100000, guid: ae1e97487df94f8448aa110e80164269, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Sky
-    second: {fileID: 2100000, guid: da8908b4d08bf61449f905e3ffe3cf43, type: 2}
   materials:
     materialImportMode: 1
     materialName: 0

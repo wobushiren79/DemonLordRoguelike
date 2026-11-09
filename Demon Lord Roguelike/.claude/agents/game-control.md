@@ -47,8 +47,9 @@ ControlForGameFight  - 战斗场景控制：WASD/右键拖拽移镜头、左键�
 - `EnableAllControl(bool)`（Manager）：先隐藏两个控制目标，再遍历 `listControl` 逐个 `EnabledControl`。
 - 打开 UI 界面时通常先 `EnabledControl(false)` 挂起控制，关闭后恢复。
 
-### 2. 基地场景控制（ControlForGameBase）
-- **移动**：`FixedUpdate`→`HandleForMoveUpdate` 读 `inputActionMove`，按生物 MSPD 属性经 `MathUtil.InterpolationLerp` 映射速度，`CheckSceneBoard`（距原点 >8.3 视为越界）拦边界；按 x 方向翻转 localScale（已抽出 `SetSpriteFlipByX`）。
+### 2. 基地和议会场景控制（ControlForGameBase）
+- **移动**：`FixedUpdate`→`HandleForMoveUpdate` 读 `inputActionMove`，按生物 MSPD 属性经 `MathUtil.InterpolationLerp` 映射速度，按 x 方向经 `SetSpriteFlipByX` 翻转精灵。
+- **边界**：基地和议会各由场景预制的 `objBoard` 指定 X/Z 移动范围。`CheckSceneBoard` 将走路和突进的候选落点转到 Board 本地坐标，任一水平轴超过单位盒半边即拦截。缓存随当前场景实例刷新。
 - **朝向**：`dashFacing`（水平面），默认进入基地朝上 `(0,0,1)`；移动时更新为最近一次移动方向（供突进用），控制切换（`EnabledControl`）时重置为默认朝上。
 - **空格突进（研究门控）**：`inputActionDash`=复用 Player 映射的 `Jump`（键盘 Space）。`HandleForDashDown` 满足「已解锁 `UnlockEnum.SpaceDash` + 非CD + 非突进中」时，沿 `dashFacing` 发起突进；距离=研究等级×`dashDistancePerLevel`（默认值引用 `UserUnlockBean.SPACE_DASH_DISTANCE_PER_LEVEL`=1.5，1/2/3级=1.5/3/4.5单位，研究气泡文本同引该常量保持单一真实源），在 `dashDuration`(0.2s) 内由 `HandleForDashUpdate`（FixedUpdate）逐帧移动完成（**非瞬移**），命中 `CheckSceneBoard`(边界) 或 `CheckDashObstacle`(Obstacle层) 即 `EndDash` 提前停住，不穿建筑/出界。CD 由 `HandleForDashCdUpdate`（Update）递减，冷却剩余存 `_dashCdRemain`（对外暴露只读属性 `DashCdRemain`），起始值取 `userUnlock.GetUnlockSpaceDashCD()`（默认3s，`UnlockEnum.SpaceDashCD` 每级-0.5s，最低1s；数值集中在 UserUnlockBean 的 `SPACE_DASH_CD_BASE/PER_LEVEL/MIN` 常量）。突进期间 FixedUpdate 接管移动、忽略常规 WASD。
 - **突进特效**：起步在脚下播一发 `Effect_BodySlam_1` 冲击特效（`ShowDashBurstEffect`，`EffectBean` 直构、`isDestoryPlayEnd=false` 走对象池省GC）。**注意：已去掉途中的 `Effect_Smoke_1` 烟雾拖尾**，冲刺视觉主要靠残影。

@@ -519,7 +519,7 @@ public class GameFightLogicCustom : GameFightLogic
 }
 ```
 
-> **PreGame 扩展钩子（按时序）**：`PreGameForAfterInitFightSceneCamera`（镜头初始化后）→ `PreGameForAfterLoadFightScene`（战斗场景加载后）→ `PreGameForAfterCreateDefenseCore`（防守核心创建/`InitFightConstData` 后、开启控制前）。需要以防守核心为操作目标（如 `BuffHandler.AddAbyssalBlessing`）时只能用最后一个钩子，更早调用会空引用/被跳过。
+> **PreGame 扩展钩子（按时序）**：`PreGameForAfterInitFightSceneCamera`（`InitFightSceneCamera(fightData)` 按场地配置设置开场镜头后）→ `PreGameForAfterLoadFightScene`（战斗场景加载后）→ `PreGameForAfterCreateDefenseCore`（防守核心创建/`InitFightConstData` 后、开启控制前）。需要以防守核心为操作目标（如 `BuffHandler.AddAbyssalBlessing`）时只能用最后一个钩子，更早调用会空引用/被跳过。
 
 ### 遍历场上所有生物
 

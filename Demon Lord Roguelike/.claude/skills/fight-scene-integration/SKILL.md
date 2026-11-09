@@ -20,17 +20,21 @@ watched_files:
 1. 读项目 `CLAUDE.md`，确认源 prefab、目标模式、世界、难度及普通/BOSS 分支。区分「可从战斗测试工具加载」「加入现有场地池」「某模式专用」三种结果。终焉议会在 `WorldHandler` 走单独的 `LoadDoomCouncilScene`，先查实际入口。现有建筑已完成时，从它的正式 prefab 开始；还在参考图建模阶段时读 [场景制作流程](../blender-scene-from-reference/SKILL.md)。
 2. 查源 prefab 的当前引用、模型依赖、地面高度、镜头可见范围，以及目标模式的道路数量和长度。先记录现有用户改动。编辑 Unity 序列化资源前，按 [连接流程](../unity-mcp-connection/SKILL.md) 确认实例和编辑器状态；通过 Unity 的 prefab/AssetDatabase API 修改并保存，回读确认。
 
+3. **单张贴图缩小**。导入 3D 战斗场景前，先按材质与 UV 的实际用途区分独立贴图和图集。将多块纹理打包到同一张图供模型分区采样的图集（如 `embervault_pixel_atlas.png`）保留原始尺寸。独立贴图的源文件任一边超过 256 像素时，用项目的[像素图编辑器](../pixel-image-editor/SKILL.md)把宽高缩到原尺寸约 1/8。2048×2048 → 256×256，1024×1024 或 1028×1028 → 128×128，512×512 → 64×64。非方形贴图选接近目标且能保持原宽高比的网格档位。没有合适档位时先确认目标尺寸。仅盘点已有资源时，列出超限贴图的路径和尺寸，标明哪些是图集，待用户选定独立贴图后再处理。
+   - 从 Unity 菜单 **Custom → 工具弹窗 → 像素图编辑器** 打开工具。步骤①载入源图并设置目标网格宽高，以磁盘源图尺寸计算目标。步骤②居中适配，选「最近邻颜色」，关闭「限制最终颜色数」，确认整张图没有裁切或补边后转换。步骤③以 **×1** 导出 PNG 并回读文件尺寸。
+   - 替换已有 PNG 时保留路径和 .meta。用原材质复核透明度和数据通道，法线贴图保留 Normal map 导入类型。
+
 ## 2. 生成战斗 prefab 并登记
 
-1. 按同类战斗 prefab 建立 `Assets/LoadResources/FightScene/FightScene_<主题>_<编号>.prefab`。把源建筑作为嵌套 prefab，用包装层处理朝向、等比缩放、位置、近景切口和该场地的灯光。检查预览专用相机、后处理、UI、灯光等是否会与运行时对象叠加。源模型确需修网格时，只改故障部位并保留原材质、UV、法线和实际需要的碰撞。
+1. 按同类战斗 prefab 建立 `Assets/LoadResources/FightScene/FightScene_<主题>_<编号>.prefab`。把源建筑作为嵌套 prefab，用包装层处理朝向、等比缩放、位置、近景切口和该场地的灯光。检查预览专用相机、后处理、UI、灯光等是否会与运行时对象叠加。普通战斗默认使用游戏天空盒。源模型含预览用天空穹顶、球体或背景面片时，在战斗包装层移除或禁用这些对象，让镜头显示配置的天空盒。源模型确需修网格时，只改故障部位并保留原材质、UV、法线和实际需要的碰撞。
 2. 顺着 `WorldHandler.LoadFightScene` 核对运行时摆放。普通战斗会重设根的位置及旋转，根 Z 由 `-(sceneRoadNumMax - sceneRoadNum) / 2f` 偏移；需要保留的美术摆放写在子层。道路由运行时另外加载和缩放。普通战斗分支会确保根节点有 `ScenePrefabForFight` 并调用 `InitSceneData`，场景实例的动态表现统一挂在该组件；其 `enableSkyboxMotion` 默认关闭，只有天空石台等明确需要动态天空盒的预制体才启用并配置曝光/偏航速度。以实际道路格、生成点和地面高度检查覆盖范围、穿模、悬空及 Z-fighting；多种路数都要检查，包含可支持的最大路数。
 3. 用 Unity API 把包装 prefab 登记到 Addressables 的 `FightScene` 组，地址使用项目完整资源路径（含 `.prefab`）。核对 GUID 与地址唯一且对应同一资产，嵌套建筑、网格、材质、贴图及特效依赖可解析。不要为了此类加载另加一个 Build Settings 场景。
 
-4. 终焉议会及暴力说服复用 Common 组的 DoomCouncilScene.prefab。建筑挂在议会场景根节点下，随战斗分支的根变换定位。DoomCouncilArchitectureView 根据主相机位置隐藏挡住画面的近侧围墙，东侧用低墙剖视。LoadDoomCouncilScene(forBattle: true) 在战斗入口打开门扇，普通议会保持关门。保留能覆盖门外出生点的正式地面。
+4. 终焉议会及暴力说服复用 Common 组的 `DoomCouncilScene.prefab`。建筑挂在议会场景根节点下，随战斗分支的根变换定位。`ScenePrefabForDoomCouncil` 根据主相机位置隐藏近侧围墙，保留原有投影，东侧用低墙剖视。普通议会保持关门，场景 `Board` 限制角色走路和突进。`LoadDoomCouncilScene(forBattle: true)` 调用场景组件的 `SetForBattle` 打开门扇，正式地面覆盖门外出生点。
 
 ## 3. 配表、绑定模式与兼容旧档
 
-1. 读 [配置表读写](../excel-io/SKILL.md)。通过项目 `.claude/scripts/run-python.ps1` 使用 openpyxl 修改 `Assets/Data/Excel/excel_fight_scene[战斗场景].xlsx` 的 `FightScene` 工作表。检查已用 ID 与编号规则，新增行按 ID 升序。`name_res` 填 prefab 文件名（含扩展名）；加载时与 `PathInfo.FightScenePrefabPath` 拼成完整 Addressables 地址。沿用同类配置的必要字段，确认 `skybox_mat` 可以加载；按画面需要配置环境光、雾、景深、道路颜色/透明度和 `Details` 变体。
+1. 读 [配置表读写](../excel-io/SKILL.md)。通过项目 `.claude/scripts/run-python.ps1` 使用 openpyxl 修改 `Assets/Data/Excel/excel_fight_scene[战斗场景].xlsx` 的 `FightScene` 工作表。检查已用 ID 与编号规则，新增行按 ID 升序。`name_res` 填 prefab 文件名（含扩展名），加载时与 `PathInfo.FightScenePrefabPath` 拼成完整 Addressables 地址。`skybox_mat` 优先选用 `Skybox` 组中已登记的 `Assets/FrameWork/Materials/Skybox/` 材质，按构图填写 `skybox_rotate`。现有材质无法满足明确的美术需求时，优先把新天空做成兼容旋转参数的天空盒材质并登记到同组。按画面需要配置环境光、雾、景深、道路颜色/透明度和 `Details` 变体。
 2. 按入口更新目标场地配置，核对 `FightBean.fightSceneId` 最终取值。挑战100勇士的 `FightTypeChallengeHundredInfo.fight_scene_ids` 使用逗号，征服的 `FightTypeConquerInfo.fight_scene_ids` 和 `fight_scene_boss_ids` 使用 `&`。无尽用 `FightTypeInfiniteInfo.fight_scene_id` 按世界和难度指定单一 `FightScene` ID，0 或留空回退同难度征服 BOSS 场地。按 [传送门流程](../portal-system/SKILL.md) 核对专用场地只由目标正式战斗入口选用。
 3. 检查已有传送门。`FightBeanForInfinite.InitData` 在进场时优先读取当前无尽场地，因此新旧无尽传送门均使用专属配置，旧冻结值仍可用于回退。征服只懒补缺失场地，挑战100勇士通过 `GetChallengeHundredFightSceneId` / `IsMatchFightScene` 在冻结场地已移出配置池时重选。核对征服首战和决战、无尽测试入口以及无尽传送门的进场结果。
 4. 用项目 Unity 导出器同步本次改动的表到 `Assets/Resources/JsonText/`，包括模式表；通过 `ExcelUtil.ExcelToJsonItem(FileInfo, jsonFolderPath)` 定向导出时，实际回读 JSON，防止导出静默失败或拼错中文文件名。核对两端的行、字段类型和 ID 都一致，清理此次临时备份。只修改数据行时沿用已有 Bean。
@@ -48,11 +52,22 @@ watched_files:
 
 ## 5. 验收与交付
 
-- **编辑模式**：回读 prefab、Addressables、Excel 和导出 JSON；核对目标模式/难度、普通及 BOSS 分支、有效与失效的旧冻结场地。检查依赖、相机锚点、边界画面和粒子表现；如改了 C#，检查 Unity 编译与 Console。编辑模式截图或模拟要注明覆盖范围。
+- **编辑模式**：回读 prefab、Addressables、Excel 和导出 JSON。核对目标模式/难度、普通及 BOSS 分支、有效与失效的旧冻结场地。检查依赖、相机锚点、边界画面和粒子表现。用战斗机位确认天空盒在开阔处和镜头边界均可见，核对预览背景模型的显隐。如改了 C#，检查 Unity 编译与 Console。编辑模式截图或模拟要注明覆盖范围。
 - **实际战斗**：按项目规则由用户手动 Play。给出可操作的复测路径，覆盖实际入口、新旧传送门、可支持的最大路数、镜头移动、放置及刷怪、退场重进。没有 Play 反馈时，把实际运行效果标为待验收。
 - **收尾**：在 Unity 项目目录运行 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".claude/scripts/check-watched.ps1" -Json`，对未跟踪的新资源补查 `watched_files`，同步受影响的项目指南。说明新增场地 ID、绑定范围、实际通过的检查与待复测项。
 
 需要查此次实际接入的参数、诊断过程或复测方法时，读 [Embervault 接入案例](references/embervault.md)。
+
+## 平原场地布置
+
+- `FightScene` ID `40001–40004` 共用 `FightScene_Plain_1.prefab`。地面、远山、树、岩石、草、特效与详情节点在根下沿 X 正方向偏移 `0.85`，使它们一起贴合地形。运行时道路按自身世界坐标生成。
+- `InitFightSceneCamera(fightData)` 根据场地配置让平原开场锚点取 X=5、Z=4，整体画面相对默认 X=3 向左移 2 个场景单位。
+- `Tree` 的 15 株近中景树和 `Ridge Tree Line` 的 139 株远树都嵌套深青绿版 `Building_Tree_2D_7_1`，使用独立材质 `Mat_Building_Tree_7_1` 和贴图 `tree_128_7_1.png`。原有 150 株在保留树脚位置的前提下等比放大 1.5 倍，另外在开场镜头左右边缘的道路外各补两株，沿纵深错开。`West Fill` 与 `East Fill` 和原林带前后交错，`Central Hill` 的 7 株树沿中央坡面分布，远树关闭投影。白天平原可见整条林带，其余变体使用各自配置的雾距。
+- `Rock` 下的 18 个无碰撞实例使用 `Building_Rock_Plain_1–3`，其中 5 块大岩石和 2 组碎石分布在远坡，沿坡面微倾斜。源 OBJ 位于 `Assets/LoadResources/Fbx/Building/Rock/`，分别为贴地主岩、楔形小岩和碎石组，裸岩和苔藓各有一个材质槽。`Wild Grass` 将 351 张草卡烘焙到 `Mesh_Plain_WildGrass_1`，共用现有 `grass_1.png` 和 `FrameWork/URP/GrassWindSway`，在路边与坡上成簇分布。
+- `Ground/Ground_1` 的显示表面由 `Mat_GroundTerrain_1` 按高度图在 GPU 位移。摆放景物时，以网格顶点采样 `TerrainHeightmap_2.png` 并在相应三角面内插值，再按预制体枢轴和材质偏移对齐树根、岩底和草卡两侧根脚。岩石最靠近道路的边界局部 Z 约 `7.80`，草簇布置在最大 6 路及出入口之外。
+- 地表底图为 `ground_8_256x256.png`，使用偏青绿的连续短草，保留少量低对比的小露土擦痕。`_BaseMap` 平铺 `(12,-12)`、偏移 `(0.25,0.50)`。Unity 导入为 256×256，使用镜像环绕、三线性过滤、MipMap 和 8 倍各向异性。
+- 白天和白天花海（`40001/40003`）主光强度为 `0.99`，色温为 `6500 K`，阴影强度为 `0.88`，俯角为 `43°`。地表材质的 `_BaseColor` 为 `(0.75, 0.74, 0.78, 1)`。白天道路色为 `#30481C` / `#57752E`，透明度为 `0.28`。夜晚和夜晚花海（`40002/40004`）使用灰绿道路色 `#243B25` / `#4D6941`，透明度为 `0.29`。
+- 四种平原变体均使用原景深 `Bokeh/180/12`。后续平原光照和地表调色沿用这组景深做对照。在 `TestScene` 的 `Launcher` 选普通战斗测试 `[40001] 平原_1`，用 6 路、长度 10 手动 Play，检查地表亮度、景深和棋盘格辨识度。
 
 ## 红冠宫殿决战场地
 
@@ -69,7 +84,10 @@ watched_files:
 
 ## 荒野峡谷普通关场地
 
-- `FightScene` ID `70001`，Addressables 地址 `Assets/LoadResources/FightScene/FightScene_WildernessCanyon_1.prefab`。内嵌 `Scene_WildernessCanyon_1`，子层平移 `(5.5, -0.005, 3.5)`，Y 轴旋转 `+5°`，使远处峡口对准道路中线。`Ground_Placement` 填补 `Ground_Arena` 的中央开口，渲染器和碰撞体都保留。
-- 战斗版保留预览的暖主光和冷补光。`Sky_Dome` 使用战斗专用材质 `Mat_FightScene_WildernessCanyon_Sky_1`，队列 `2900`，在天空盒后和常规透明特效前绘制。`Skybox_2` 供战斗加载器设置，环境光 `#8CA1AB`、线性雾 `#9EB5B3`（42–108）。棋盘格使用砂褐色 `#7D7253` / `#B4A57B`，透明度 `0.28`。
-- 根节点 `Effect` 下嵌套沙漠的 `Effect_SandDust_1` 和 `Effect_Weather_Windlines_2`。沙粒位于 `(5.5, 1.5, 3.5)`，风线从 `(20, 3, 3.5)` 发射，沿用沙漠实例的旋转、半径和砂色覆盖，从右向左扫过战场。
-- 世界 1 征服难度 2–10 的普通关池为 `10001&20001&70001`，新生成传送门抽取并冻结，已有冻结场地继续使用。编辑模式已按 2–6 路及战斗根节点偏移采样道路和出生区。实机可在 `TestScene` 的 `Launcher` 中选择普通战斗测试 `[70001] 荒野峡谷_1`，用 6 路、长度 10 检查地表、镜头边界、放置和出怪。
+- `FightScene` ID `70001`（白天）和 `70002`（夜晚）共用 Addressables 地址 `Assets/LoadResources/FightScene/FightScene_WildernessCanyon_1.prefab`。内嵌 `Scene_WildernessCanyon_1`，子层平移 `(5.5, -0.005, 3.5)`，Y 轴旋转 `+5°`，使远处峡口对准道路中线。`Ground_Placement` 填补 `Ground_Arena` 的中央开口，渲染器和碰撞体都保留。
+- 战斗包装层移除了嵌套模型的 `Sky_Dome`。白天配置 `details=Day`，由 `Details/Day/Lights` 提供暖主光和冷补光，使用 `Skybox_2`、环境光 `#8CA1AB`、线性雾 `#9EB5B3`（42–108），道路色为 `#7D7253` / `#B4A57B`。
+- 夜晚配置 `details=Night`，由 `Details/Night/Moonlights` 提供冷色月光与补光。`Moonlight` 强度为 `0.4`，`Night Canyon Bounce` 为 `0.14`，沿用白天灯组的朝向和阴影设置。夜晚使用 `Skybox_6`、环境光 `#879AC0`、线性雾 `#101A30`（30–95）及虫鸣 `2000001`。道路色为 `#5F5960` / `#938879`，体积雾和景深字段留空。两种变体的天空盒旋转均为 `-15,0,0`，道路透明度均为 `0.28`。
+- `Ground_Arena` 和 `Ground_Placement` 共用战斗专用材质 `Mat_FightScene_WildernessCanyon_Sand_1`。`Shader_WildernessCanyonSand_1` 在 URP Lit 受光前用较粗的底色 mip 识别暗沟，提浅其低频底色，保留原砂粒、裂纹、平铺接缝和法线。崖壁投影仍由 Lit 处理。
+- 白天与夜晚共用根节点 `Effect` 下的 `Effect_SandDust_1` 和 `Effect_Weather_Windlines_2`。沙粒位于 `(5.5, 1.5, 3.5)`，风线从 `(20, 3, 3.5)` 发射，沿用沙漠实例的旋转、半径和砂色覆盖，从右向左扫过战场。
+- 草丛和碎石的位置修正在战斗预制体的嵌套实例上。用 `Ground_Arena` / `Ground_Placement` 三角面测草根和石底的地表高度，草根稍入地，碎石保留自然埋底。用道具网格顶点和面心检查崖壁及草与石的穿插，露出崖壁的道具就近挪到空砂地，复核 2–6 路的道路及出生区净空。
+- 世界 1 征服难度 5（`1000005`）的普通关场地池包含夜晚 `70002`。新生成该难度场地时抽取并冻结，已有冻结场地继续使用。原场地已在编辑模式按 2–6 路及战斗根节点偏移采样道路和出生区。实机可在 `TestScene` 的 `Launcher` 中选择普通战斗测试 `[70002] 荒野峡谷_1_夜晚`，用 6 路、长度 10 检查月光、峡口轮廓、棋盘格、角色辨识度、镜头边界、放置和出怪。白天对照场景为 `[70001] 荒野峡谷_1`。

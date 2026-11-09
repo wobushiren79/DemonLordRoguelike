@@ -4,6 +4,7 @@ using DG.Tweening;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Information;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class ScenePrefabForDoomCouncil : ScenePrefabBase
 {
@@ -11,8 +12,185 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
     public GameObject councilorPosition;
     //讲台
     public GameObject podium;
+    //自由活动时的移动边界，Transform 的 X/Z 缩放表示范围。
+    public GameObject objBoard;
     //所有议员的预制体
     public Dictionary<string, GameObject> dicCouncilorObj = new Dictionary<string, GameObject>();
+
+    #region 议会建筑
+
+    [SerializeField] private Transform wallEast;
+    [SerializeField] private GameObject eastBraziers;
+    [SerializeField] private Transform wallWest;
+    [SerializeField] private GameObject rearBraziers;
+    [SerializeField] private Transform wallPodium;
+    [SerializeField] private Transform wallGate;
+    [SerializeField] private GameObject cutawayEast;
+    [SerializeField] private Transform podiumEmblem;
+    [SerializeField] private Transform gate;
+    [SerializeField] private Transform gateLeftLeaf;
+    [SerializeField] private Transform gateRightLeaf;
+    [SerializeField] private GameObject gateSeam;
+
+    [System.Flags]
+    private enum WallSide
+    {
+        None = 0,
+        East = 1,
+        West = 2,
+        Podium = 4,
+        Gate = 8
+    }
+
+    private (Renderer renderer, ShadowCastingMode shadowMode)[] eastRenderers;
+    private (Renderer renderer, ShadowCastingMode shadowMode)[] westRenderers;
+    private (Renderer renderer, ShadowCastingMode shadowMode)[] podiumRenderers;
+    private (Renderer renderer, ShadowCastingMode shadowMode)[] gateWallRenderers;
+    private (Renderer renderer, ShadowCastingMode shadowMode)[] emblemRenderers;
+    private (Renderer renderer, ShadowCastingMode shadowMode)[] gateRenderers;
+    private Quaternion leftClosedRotation;
+    private Quaternion rightClosedRotation;
+    private WallSide hiddenWalls;
+
+    #region 初始化
+
+    /// <summary>
+    /// 缓存围墙显示组件及其投影设置，以及门扇的关闭姿态。
+    /// </summary>
+    private void Awake()
+    {
+        eastRenderers = CacheRenderers(wallEast);
+        westRenderers = CacheRenderers(wallWest);
+        podiumRenderers = CacheRenderers(wallPodium);
+        gateWallRenderers = CacheRenderers(wallGate);
+        emblemRenderers = CacheRenderers(podiumEmblem);
+        gateRenderers = CacheRenderers(gate);
+        leftClosedRotation = gateLeftLeaf.localRotation;
+        rightClosedRotation = gateRightLeaf.localRotation;
+    }
+
+    /// <summary>
+    /// 记录原始投影模式，便于退出剖视时还原。
+    /// </summary>
+    private static (Renderer renderer, ShadowCastingMode shadowMode)[] CacheRenderers(Transform root)
+    {
+        var renderers = root.GetComponentsInChildren<Renderer>(true);
+        var states = new (Renderer renderer, ShadowCastingMode shadowMode)[renderers.Length];
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            var renderer = renderers[i];
+            states[i] = (renderer, renderer.shadowCastingMode);
+        }
+        return states;
+    }
+
+    /// <summary>
+    /// 在主摄像机渲染前检查围墙遮挡。
+    /// </summary>
+    private void OnEnable()
+    {
+        RenderPipelineManager.beginCameraRendering += UpdateWallVisibility;
+    }
+
+    /// <summary>
+    /// 解绑渲染回调并恢复完整围墙的可见性和投影设置。
+    /// </summary>
+    private void OnDisable()
+    {
+        RenderPipelineManager.beginCameraRendering -= UpdateWallVisibility;
+        SetHiddenWalls(WallSide.None);
+    }
+
+    #endregion
+
+    #region 围墙与大门显示
+
+    /// <summary>
+    /// 战斗时向外打开门扇，为议员的进攻路线留出入口。
+    /// </summary>
+    public void SetForBattle(bool forBattle)
+    {
+        Vector3 hingeUp = gate.InverseTransformDirection(transform.up);
+        float angle = forBattle ? 90f : 0f;
+        gateLeftLeaf.localRotation = Quaternion.AngleAxis(-angle, hingeUp) * leftClosedRotation;
+        gateRightLeaf.localRotation = Quaternion.AngleAxis(angle, hingeUp) * rightClosedRotation;
+        gateSeam.SetActive(!forBattle);
+    }
+
+    /// <summary>
+    /// 主摄像机移出围墙时隐藏近侧墙面，避免遮挡议员或战斗道路。
+    /// </summary>
+    private void UpdateWallVisibility(ScriptableRenderContext context, Camera camera)
+    {
+        if (camera.cameraType != CameraType.Game || camera != Camera.main)
+            return;
+
+        Vector3 point = transform.InverseTransformPoint(camera.transform.position);
+        WallSide outside = WallSide.None;
+        if (point.x > transform.InverseTransformPoint(wallEast.position).x)
+            outside |= WallSide.East;
+        if (point.x < transform.InverseTransformPoint(wallWest.position).x)
+            outside |= WallSide.West;
+        if (point.z < transform.InverseTransformPoint(wallPodium.position).z)
+            outside |= WallSide.Podium;
+        if (point.z > transform.InverseTransformPoint(wallGate.position).z)
+            outside |= WallSide.Gate;
+
+        SetHiddenWalls(outside);
+    }
+
+    /// <summary>
+    /// 只更新本次跨过边界的墙面，东墙使用已建好的低墙剖视。
+    /// </summary>
+    private void SetHiddenWalls(WallSide outside)
+    {
+        WallSide changed = hiddenWalls ^ outside;
+        if ((changed & WallSide.East) != 0)
+        {
+            bool hidden = (outside & WallSide.East) != 0;
+            SetRenderersHidden(eastRenderers, hidden);
+            cutawayEast.SetActive(hidden);
+            if (eastBraziers != null)
+                eastBraziers.SetActive(!hidden);
+        }
+        if ((changed & WallSide.West) != 0)
+        {
+            bool hidden = (outside & WallSide.West) != 0;
+            SetRenderersHidden(westRenderers, hidden);
+            rearBraziers.SetActive(!hidden);
+        }
+        if ((changed & WallSide.Podium) != 0)
+        {
+            bool hidden = (outside & WallSide.Podium) != 0;
+            SetRenderersHidden(podiumRenderers, hidden);
+            SetRenderersHidden(emblemRenderers, hidden);
+        }
+        if ((changed & WallSide.Gate) != 0)
+        {
+            bool hidden = (outside & WallSide.Gate) != 0;
+            SetRenderersHidden(gateWallRenderers, hidden);
+            SetRenderersHidden(gateRenderers, hidden);
+        }
+        hiddenWalls = outside;
+    }
+
+    /// <summary>
+    /// 隐藏模型时保留原有投影，恢复显示时还原原始投影模式。
+    /// </summary>
+    private static void SetRenderersHidden((Renderer renderer, ShadowCastingMode shadowMode)[] renderers, bool hidden)
+    {
+        foreach (var (renderer, shadowMode) in renderers)
+        {
+            if (shadowMode == ShadowCastingMode.Off)
+                renderer.forceRenderingOff = hidden;
+            else
+                renderer.shadowCastingMode = hidden ? ShadowCastingMode.ShadowsOnly : shadowMode;
+        }
+    }
+
+    #endregion
+
+    #endregion
 
     /// <summary>
     /// 初始化所有议员

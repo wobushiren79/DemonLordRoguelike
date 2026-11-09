@@ -8,6 +8,7 @@ watched_files:
   - Assets/Scripts/Game/Logic/DoomCouncilLogic.cs
   - Assets/Scripts/Component/UI/Game/DoomCouncil/
   - Assets/Scripts/Component/Game/Scene/ScenePrefabForDoomCouncil.cs
+  - Assets/LoadResources/Common/Scenes/DoomCouncilScene.prefab
   - Assets/Scripts/Bean/Game/DoomCouncilBean.cs
   - Assets/Scripts/Bean/Game/UserRelationshipBean.cs
   - Assets/Scripts/Bean/MVC/Game/NpcInfoBeanPartial.cs
@@ -53,6 +54,7 @@ watched_files:
 - **投票**（`StartVote`）：开始即调用 `scenePrefab.HideAllCouncilorAttitudeView()` 隐藏所有议员意愿(Success)图标；随后每名议员 `Random(0,100) < attitude ? 赞成 : 反对`，票数按评级 `DoomCouncilRatingsInfo.vote`（已移除旧的「随机 vs success_rate + 30%睡觉」逻辑）。`UIDoomCouncilVote.AddVoteData` 每票播放赞成/反对音效(650001/650002)，`UIDoomCouncilVoteEnd.VoteEndShow` 统一播放通过/否决音效(650003/650004)，覆盖普通投票与暴力说服结算。
 - **贿赂**（`UIGameConversation.ActionForItemSelectGift`）：送礼一次态度+10%；固定NPC额外加好感(按道具稀有度 `RarityInfo.item_add_relationship`)并持久化到 `UserRelationshipBean`，随即 `RefreshCouncilorView`。对话界面/台词/文本动画归 [game-conversation](.claude/agents/game-conversation.md)（conversation-system skill）。
 - **场景显示**（`ScenePrefabForDoomCouncil`）：议员预制下 `Success` SpriteRenderer 用颜色表态度/意愿(0红/50白/100绿 `GetAttitudeColor`)，自由活动阶段可见、投票开始时由 `HideAllCouncilorAttitudeView` 隐藏；`Relationship` SpriteRenderer 显示固定NPC好感图标。固定NPC：Relationship.x=-0.1、Success.x=0.1；随机NPC：隐藏 Relationship、Success.x=0。
+- **围墙与移动边界**：`ScenePrefabForDoomCouncil` 剖视近侧墙时用 `ShadowsOnly` 保留原有投影，退出剖视时恢复。场景组件持有供走路和突进共用的 `Board`，并通过 `SetForBattle` 设置门扇。
 - **好感持久化**：`UserRelationshipBean`（按 npcId 存好感，默认0=仇恨）作为独立存档 `UserRelationship_{slot}`，经 `UserDataService` Load/Save/Delete 注入落盘。
 
 ### 议会数据

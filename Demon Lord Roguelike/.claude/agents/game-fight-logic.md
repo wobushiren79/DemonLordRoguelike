@@ -34,7 +34,7 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 > **战斗开始事件**：`PreGame()` 末尾 `StartGame()` 之后触发 `EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_StartGame)`——基类单点触发覆盖征服/终焉议会/无限/测试全部模式（子类只重写 PreGameForAfterXxx 钩子不重写 PreGame），无参数；通用挂钩（故事演出"首次进战斗"已改挂 `UIFightMain_CardCreateAnimEnd`——等 UIFightMain 下方卡片出现动画播完再触发，保证高亮手卡等目标已落位）。
 
 ### PreGame 扩展钩子（按时序，virtual 空实现供子类重写）
-1. `PreGameForAfterInitFightSceneCamera` - 战斗镜头初始化后
+1. `PreGameForAfterInitFightSceneCamera` - 战斗镜头初始化后。`PreGame` 先将已选定场地的 `fightData` 传给 `InitFightSceneCamera`，再加载战斗场景。
 2. `PreGameForAfterLoadFightScene` - 战斗场景加载后
 3. `PreGameForAfterCreateDefenseCore` - 防守核心创建/`InitFightConstData` 后、开启控制前；**需要以防守核心为操作目标时（如 BuffHandler.AddAbyssalBlessing）只能用此钩子**（更早调用核心未创建会失败/被跳过）。例：`GameFightLogicTest` 在此清理并添加测试深渊馈赠、应用测试防守方固定属性(固定基础值给核心 creatureData.dicFixedAttribute 并重算)与测试魔王蓝量(MP 被固定属性设置时蓝量让位)
 

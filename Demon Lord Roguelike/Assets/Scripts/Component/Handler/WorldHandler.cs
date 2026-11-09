@@ -214,7 +214,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
         targetScene.transform.position = Vector3.zero;
         targetScene.transform.eulerAngles = Vector3.zero;
 
-        targetScene.GetComponent<DoomCouncilArchitectureView>()?.SetForBattle(forBattle);
+        targetScene.GetComponent<ScenePrefabForDoomCouncil>()?.SetForBattle(forBattle);
 
         dicCurrentScene.Add(GameSceneTypeEnum.DoomCouncil, targetScene);
         currentScene = targetScene;

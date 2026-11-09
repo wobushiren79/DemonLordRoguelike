@@ -248,30 +248,43 @@ public class ControlForGameBase : BaseControl
         }
     }
 
-    //移动边界物体缓存(基地 Board 空物体,localScale 表达 BOX 长宽);懒加载,场景内固定
+    #region 场景移动边界
+
+    private GameObject boardScene;
     protected Transform _boardBoundary;
     /// <summary>
-    /// 移动边界物体(当前基地场景的 Board 空物体);首次访问时从当前场景预制取一次并缓存
+    /// 获取当前基地或议会场景的 Board，切换场景实例时刷新缓存。
     /// </summary>
     protected Transform boardBoundary
     {
         get
         {
-            if (_boardBoundary != null)
+            var scene = WorldHandler.Instance.GetCurrentScene();
+            if (scene == boardScene)
             {
                 return _boardBoundary;
             }
-            var scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForBase>();
-            if (scenePrefab != null && scenePrefab.objBoard != null)
+
+            boardScene = scene;
+            _boardBoundary = null;
+            if (scene == null)
             {
-                _boardBoundary = scenePrefab.objBoard.transform;
+                return null;
+            }
+            if (scene.TryGetComponent<ScenePrefabForBase>(out var baseScene) && baseScene.objBoard != null)
+            {
+                _boardBoundary = baseScene.objBoard.transform;
+            }
+            else if (scene.TryGetComponent<ScenePrefabForDoomCouncil>(out var councilScene) && councilScene.objBoard != null)
+            {
+                _boardBoundary = councilScene.objBoard.transform;
             }
             return _boardBoundary;
         }
     }
 
     /// <summary>
-    /// 检测目标落点是否超出场景移动边界(基地 Board 的 BOX 范围)。
+    /// 检测走路或突进的目标落点是否超出当前场景 Board 的矩形范围。
     /// 把 Board 视为单位立方体、localScale.x/z 即 BOX 长/宽:将落点转到 Board 本地空间后,
     /// |x| 或 |z| 超过 0.5(半边)即越界;经 InverseTransformPoint 天然支持 Board 平移/旋转/缩放。
     /// 无 Board 时(如尚未取到场景预制)不做限制,返回 false。
@@ -293,6 +306,8 @@ public class ControlForGameBase : BaseControl
         }
         return false;
     }
+
+    #endregion
 
     /// <summary>
     /// 按水平输入翻转精灵朝向(x>0 朝右,x<0 朝左,x=0 保持不变)

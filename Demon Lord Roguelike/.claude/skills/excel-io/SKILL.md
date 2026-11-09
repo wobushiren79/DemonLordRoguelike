@@ -12,6 +12,7 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 - **编码**：UTF-8（openpyxl 默认行为，无需额外指定）
 - **脚本存放位置**：`.claude/scripts/`
 - **写入前必须确认**：修改配置表前先读取确认内容，写入后告知用户已变更的行列
+- **结束后释放文件占用**。用 `finally` 关闭工作簿，用 `with` 关闭自行打开的文件流，交付前检查 Git 能否读取表格及 Windows 权限继承。见 [项目 Excel 读写规则](../../../CLAUDE.md#excel-读写规则)。
 - **写入前建议加 `--backup`**：自动生成 `*.bak`；任务完成后视情况清理或保留
 - **新增数据按 id 升序插入**：新增配置行时，不要直接追加到表格末尾，而要根据 id 由小到大插入到中间对应位置，保证整张表 id 始终升序。`excel_add_row.py` 已默认按 id 排序插入（仅当新 id 比所有现有 id 都大时才落到末尾）；除特殊需求外，禁止用 `--append` 强制追加打乱排序。
 
@@ -166,7 +167,7 @@ python .claude/scripts/excel_delete_row.py \
 | 终焉议会 | excel_doom_council_info | DoomCouncilInfo | 13 |
 | 议会议员等级 | excel_doom_council_ratings_info | DoomCouncilRatingsInfo | 12 |
 | 粒子效果 | excel_effect_info | EffectInfo | 21 |
-| 战斗场景 | excel_fight_scene | FightScene | 16 |
+| 战斗场景 | excel_fight_scene | FightScene | 17 |
 | 战斗-征服 | excel_fight_type_conquer_info | FightTypeConquerInfo | 10 |
 | 战斗-无尽 | excel_fight_type_infinite_info | FightTypeInfiniteInfo | 9 |
 | 游戏世界 | excel_game_world_info | GameWorldInfo | 6 |
@@ -214,21 +215,26 @@ import openpyxl, shutil
 
 path = "Assets/Data/Excel/excel_creature_info[生物信息].xlsx"
 shutil.copy2(path, path + ".bak")
-wb = openpyxl.load_workbook(path)
-ws = wb.active
+with open(path, "rb") as source:
+    wb = openpyxl.load_workbook(source)
 
-# 列名 -> 列号映射（基于第 1 行）
-headers = {cell.value: cell.column for cell in ws[1]}
-HEADER_ROWS = 3  # 项目统一表头规范
+try:
+    ws = wb.active
 
-# 按 ID 修改
-for row_idx in range(HEADER_ROWS + 1, ws.max_row + 1):
-    if ws.cell(row=row_idx, column=headers["id"]).value == 1001:
-        ws.cell(row=row_idx, column=headers["hp"]).value = 500
-        break
+    # 列名 -> 列号映射（基于第 1 行）
+    headers = {cell.value: cell.column for cell in ws[1]}
+    HEADER_ROWS = 3  # 项目统一表头规范
 
-wb.save(path)
-wb.close()
+    # 按 ID 修改
+    for row_idx in range(HEADER_ROWS + 1, ws.max_row + 1):
+        if ws.cell(row=row_idx, column=headers["id"]).value == 1001:
+            ws.cell(row=row_idx, column=headers["hp"]).value = 500
+            break
+
+    with open(path, "wb") as target:
+        wb.save(target)
+finally:
+    wb.close()
 ```
 
 ## 注意事项

@@ -161,6 +161,7 @@ MCP 已连接（或用户已同意开启）后，上述操作的 PowerShell 命�
 - 文件编码统一使用 **UTF-8**（openpyxl 默认支持，无需额外指定）
 - 读取时使用 `openpyxl.load_workbook(path)` 或 `load_workbook(path, read_only=True)`
 - 写入时调用 `workbook.save(path)` 保存，**不得覆盖原文件前未备份**
+- **处理完 .xlsx 必须释放文件占用并确认 Git 可读**。读取、写入、回读和导出结束后，即使发生异常，也要关闭本次打开的工作簿和文件流。`openpyxl` 在 `finally` 中调用 `workbook.close()`，自行打开的文件流用 `with` 管理。Unity 中用 `using` 或 `finally` 释放 `ExcelPackage` 和文件流。若本次在 Excel 或 WPS 中打开了工作簿，保存需要保留的修改后关闭该工作簿。写回时保留原文件权限，使用临时文件替换时核对 Windows 权限继承。交付前用 `git hash-object --no-filters -- "<表格路径>"` 确认 Git 可读，如遇访问拒绝，检查文件占用和 Windows 文件权限。
 - 禁止使用 `xlrd`、`xlwt`、`xlwings`、`pandas.read_excel` 等其他 Excel 库
 - Python 脚本文件统一存放在 `.claude/scripts/` 目录下
 

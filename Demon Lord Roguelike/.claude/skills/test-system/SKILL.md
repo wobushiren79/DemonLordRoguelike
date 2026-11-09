@@ -383,7 +383,7 @@ userUnlockData.AddUnlock((long)UnlockEnum.ChallengeHundredBossRate, 4);
 卡片生物 ID 与进攻生物 NPC ID 均为 **逐行列表编辑**：每行 = 序号 + 手动 ID 输入框(LongField) + 下拉选择(选中覆盖该行 ID) + 删除；底部「➕ 添加」(默认复制最后一行值)/「🗑️ 移除最后一个」。统一由 `DrawIdListWithDropdown(idList, 标签前缀, options, optionIds)` 绘制；下拉选项**首项固定为"(手动输入)"占位**——当前 ID 不在选项中时显示它且选中不改动 ID，避免手动值被误覆盖。
 
 - **卡片生物 IDs**（基础设置区，`fightCardIds: List<long>`，旧版逗号分隔 string `fightCardId` 已废弃，EditorPrefs 旧 key 首次加载时一次性迁移后删除）：下拉选项 `[id] 中文名`，数据源 `CreatureInfoCfg.GetAllArrayData()` + 直读 `Language_CreatureInfo_cn.txt`（`EnsureFightCardCreatureOptions` 懒加载，「🔄 刷新列表」清缓存 + `ClearCfgBaseStaticCache(typeof(CreatureInfoCfg))`）。`GetTestData()` 按卡片数量循环取列表 id（空列表兜底 2002 防取模除零）；基地测试(Base)的「手下生物 IDs」与卡片测试的「生物 ID」均复用同一份 `fightCardIds` 与同一绘制方法 `DrawFightCardIdList(title)`。
-- **进攻生物 IDs（NPCID）**（敌人设置区，`enemyIds: List<long>`）：下拉选项 `id  中文名`（**BOSS 前置 `[BOSS]` 标记**，判定取 `NpcInfoBean.IsBoss()`=备注 remark 含 boss 字样不区分大小写，与征服 `enemy_boss_ids` 引用一致；不能用 `attack_mode_ext` 非空判定——牧师/勇者等非BOSS也配了额外技能），数据源 `NpcInfoCfg.GetAllArrayData()` + 直读 `Language_NpcInfo_cn.txt`（`EnsureFightEnemyNpcOptions` → 与对话测试共用构建方法 `BuildNpcOptions(withManualPlaceholder, out options, out ids)`，对话测试传 false 无占位项；BOSS 标记两处下拉都生效）。
+- **进攻生物 IDs（NPCID）**（敌人设置区，`enemyIds: List<long>`）：下拉选项 `id  中文名`（**BOSS 前置 `[BOSS]` 标记**，判定取 `NpcInfoBean.IsBoss()`=备注 remark 含 boss 且不含否定标记「无boss」（不区分大小写），与征服 `enemy_boss_ids` 引用一致；不能用 `attack_mode_ext` 非空判定——牧师/勇者等非BOSS也配了额外技能），数据源 `NpcInfoCfg.GetAllArrayData()` + 直读 `Language_NpcInfo_cn.txt`（`EnsureFightEnemyNpcOptions` → 与对话测试共用构建方法 `BuildNpcOptions(withManualPlaceholder, out options, out ids)`，对话测试传 false 无占位项；BOSS 标记两处下拉都生效）。
 
 ### 深渊馈赠测试设置（下拉选择族 + 目标等级）
 
@@ -698,7 +698,8 @@ CaptureSceneEditSnapshot(sceneObj)
 - **还原即快照语义**：快照在开始测试场景就绪后拍摄；**保存成功后会重新拍摄快照**（存档点语义——还原回到最近保存的状态而非最初状态）。
 - **重开战斗会重载场景**：结算后点「下一步」走 `EnterGameForFightScene` 重新实例化场景，**未保存的编辑全部丢失**（面板 HelpBox 已提示）；重开后新旧场景结构一致，旧快照仍可继续用于 diff/还原。
 - **备份生命周期**：退出 Play 自动销毁（playModeStateChanged）；域重载丢引用后按名字后缀 `_SceneEditBackup` + HideAndDontSave 扫描清扫（下次开始时）；快照对象不参与存档/打包（HideAndDontSave）。
-- **无持久化参数**：会话状态(备份/路径/检测结果)均为编辑器实例字段不存 EditorPrefs，`fightTestMode=SceneEdit` 本身随既有机制持久化。
+- **会话跨 Inspector 保留**：备份、等待标记、旧场景引用、预制路径、检测结果与回调注册标记均为 `static` 共享字段；在 Hierarchy 选择物体导致 `GameTestEditor` Inspector 切换/重建后，回到 LauncherTest 仍能读到同一会话，不会出现 Console 已拍摄而面板显示未拍摄。
+- **无持久化参数**：会话状态(备份/路径/检测结果)静态共享但不存 EditorPrefs，`fightTestMode=SceneEdit` 本身随既有机制持久化。
 
 ## 粒子特效测试 (EffectTest)
 

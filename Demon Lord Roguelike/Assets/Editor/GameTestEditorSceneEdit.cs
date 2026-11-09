@@ -11,18 +11,18 @@ using UnityEngine;
 public partial class GameTestEditor
 {
     #region 场景编辑-状态
-    /// <summary>场景编辑备份快照(战斗场景加载完成后的整场景克隆, HideAndDontSave, 仅内存)</summary>
-    private GameObject sceneEditBackup;
-    /// <summary>是否等待战斗场景加载完成后拍快照(点击开始测试时置 true)</summary>
-    private bool sceneEditPendingSnapshot;
-    /// <summary>点击开始测试时已在场的旧战斗场景(等待其被新场景替换后才拍快照, 防止拍到未卸载的旧场景)</summary>
-    private GameObject sceneEditPrevSceneObj;
-    /// <summary>当前快照对应的场景预制资产路径</summary>
-    private string sceneEditPrefabPath;
-    /// <summary>上次改动检测结果(仅用于面板显示; null=未检测)</summary>
-    private SceneEditDiffResult sceneEditLastDiff;
-    /// <summary>是否已注册编辑器轮询与 Play 状态回调</summary>
-    private bool sceneEditCallbackRegistered;
+    /// <summary>场景编辑备份快照(静态共享, Inspector切换/重建不丢失; HideAndDontSave仅内存)</summary>
+    private static GameObject sceneEditBackup;
+    /// <summary>是否等待战斗场景加载完成后拍快照(静态共享, 点击开始测试时置 true)</summary>
+    private static bool sceneEditPendingSnapshot;
+    /// <summary>点击开始测试时已在场的旧战斗场景(静态共享, 等待其被新场景替换后才拍快照)</summary>
+    private static GameObject sceneEditPrevSceneObj;
+    /// <summary>当前快照对应的场景预制资产路径(静态共享)</summary>
+    private static string sceneEditPrefabPath;
+    /// <summary>上次改动检测结果(静态共享, 仅用于面板显示; null=未检测)</summary>
+    private static SceneEditDiffResult sceneEditLastDiff;
+    /// <summary>是否已注册编辑器轮询与 Play 状态回调(静态共享, 每个域只保留一个回调)</summary>
+    private static bool sceneEditCallbackRegistered;
     /// <summary>道路物体名(运行时由战斗逻辑动态加载进场景, 见 WorldManager.PrefabNameFightSceneRoad; 编辑/保存/还原均排除)</summary>
     private const string SCENE_EDIT_ROAD_NAME = "FightSceneRoad";
     /// <summary>备份根节点名后缀(用于泄漏扫描)</summary>

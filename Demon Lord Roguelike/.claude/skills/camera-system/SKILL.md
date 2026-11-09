@@ -87,15 +87,15 @@ CameraHandler.Instance.SetCameraForControl(CinemachineCameraEnum.Base);
 ### 2. 初始化场景镜头
 
 ```csharp
-// 战斗场景：跟随空目标 controlTargetForEmpty
-await CameraHandler.Instance.InitFightSceneCamera();
+// 战斗场景：传入已选场地的战斗数据，跟随空目标 controlTargetForEmpty
+await CameraHandler.Instance.InitFightSceneCamera(fightData);
 
 // 基地场景：跟随生物，传入生物数据与起始位置
 await CameraHandler.Instance.InitBaseSceneControlCamera(creatureData, startPosition);
 ```
 两者都会 `SetMainCameraDefaultBlend(0)` 关闭切换动画后再设置 `Follow`/`LookAt`，并把 `PreviousStateIsValid = false` 以避免上一镜头插值残留。
 
-`InitFightSceneCamera` 在赋予跟随目标前通过 `ControlForGameFight.ClampCameraTargetZ` 计算开场锚点。所有战斗场景均从锚点 Z=4 开场（`CMFollow` Z 偏移 -8，世界 Z=-4），与移动时的 Z 下限一致。
+`GameFightLogic.PreGame` 在加载场景前把 `fightData` 传给 `InitFightSceneCamera`。它按 `fightSceneId` 读取场地配置，`FightScene_Plain_1.prefab` 的开场锚点为 X=5，默认 X=3。所有场地的开场 Z 经 `ControlForGameFight.ClampCameraTargetZ` 取 4（`CMFollow` Z 偏移 -8，世界 Z=-4），与移动时的 Z 下限一致。
 
 ### 3. 基地场景内的 CV_List 虚拟相机切换
 

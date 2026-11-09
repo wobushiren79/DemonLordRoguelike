@@ -52,7 +52,7 @@ public class GameFightLogic : BaseGameLogic
         RegisterEvent<AbyssalBlessingEntityBean>(EventsInfo.Buff_AbyssalBlessingChange, EventForAbyssalBlessingChange);
 
         //设置战斗场景视角
-        await CameraHandler.Instance.InitFightSceneCamera();
+        await CameraHandler.Instance.InitFightSceneCamera(fightData);
         //设置战斗场景视角之后
         await PreGameForAfterInitFightSceneCamera();
 

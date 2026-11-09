@@ -264,13 +264,15 @@ public partial class NpcInfoBean
     }
 
     /// <summary>
-    /// 是否BOSS（配置约定：备注 remark 中含 "boss" 字样，不区分大小写，如「持盾战士-Boss」「神官-BOSS」；
+    /// 是否BOSS（备注 remark 含 "boss" 且不含否定标记 "无boss"，不区分大小写；
     /// 与征服配置 enemy_boss_ids 的引用保持一致。注意不能用 attack_mode_ext 非空判定——牧师/勇者等非BOSS也配了额外技能）
     /// </summary>
     /// <returns>true=BOSS</returns>
     public bool IsBoss()
     {
-        return !remark.IsNull() && remark.IndexOf("boss", StringComparison.OrdinalIgnoreCase) >= 0;
+        return !remark.IsNull()
+            && remark.IndexOf("boss", StringComparison.OrdinalIgnoreCase) >= 0
+            && remark.IndexOf("无boss", StringComparison.OrdinalIgnoreCase) < 0;
     }
 
     #region 地区限制

@@ -1629,6 +1629,37 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &2517595210234147330
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3759268374685828346}
+  m_Layer: 0
+  m_Name: Board
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3759268374685828346
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2517595210234147330}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 2.715}
+  m_LocalScale: {x: 13.58, y: 1, z: 12.41}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3343562273743875472}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2948670024982796872
 GameObject:
   m_ObjectHideFlags: 0
@@ -4541,7 +4572,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3343562273743875472}
   - component: {fileID: 9209148080502524891}
-  - component: {fileID: 4910575229626165007}
   m_Layer: 0
   m_Name: DoomCouncilScene
   m_TagString: Untagged
@@ -4569,6 +4599,7 @@ Transform:
   - {fileID: 9136938673467316127}
   - {fileID: 8910439031456236019}
   - {fileID: 5028311602960901851}
+  - {fileID: 3759268374685828346}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &9209148080502524891
@@ -4585,18 +4616,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScenePrefabForDoomCouncil
   councilorPosition: {fileID: 5795513941061001977}
   podium: {fileID: 6024132937132638673}
---- !u!114 &4910575229626165007
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8504596874230909681}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7173d9062a9f8c64195bfb5c319e8010, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DoomCouncilArchitectureView
+  objBoard: {fileID: 2517595210234147330}
   wallEast: {fileID: 460701063991482536}
   eastBraziers: {fileID: 2146085887831739137}
   wallWest: {fileID: 2205232713539819750}

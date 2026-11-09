@@ -58,11 +58,12 @@ GameControlHandler.Instance.manager.controlForGameBase.EnabledControl(false);
 
 `EnableAllControl(false)` 会先隐藏两个控制目标，再遍历 `listControl` 逐个禁用——**切换控制前必先全关，再启用目标控制器**。
 
-## 基地场景控制（ControlForGameBase）
+## 基地和议会场景控制（ControlForGameBase）
 
 | 环节 | 位置 | 要点 |
 |------|------|------|
 | 移动 | `FixedUpdate → HandleForMoveUpdate` | 读 `inputActionMove`，按生物 `MSPD` 经 `MathUtil.InterpolationLerp(msp,0,100,2,5)` 映射速度；`CheckSceneBoard`(BOX 边界)拦边界；按 x 翻转 localScale |
+| 移动边界 | `CheckSceneBoard` | 基地和议会各用场景预制的 `objBoard`，按当前场景实例刷新缓存。走路和突进都把候选落点转到 Board 本地空间，检查 X/Z 是否超出单位盒半边 |
 | 动画 | `PlayAnimForControlTarget` | `SpineAnimationStateEnum`(Idle/Walk)，去重避免重复切；走路动画速度 = `moveSpeedFinal*0.8`；`SetCreatureData` 换骨架后重置 `creatureAnimEnum=None`（轨道已清空，不重置则再进基地/换幻化后 Idle 被去重跳过、角色一直静止） |
 | 出场动画 | `GameControlHandler.AnimForBaseControlShow`（`WorldHandler.EnterGameForBaseScene` 且 `isAnimForBuildingShow=true` 时，读档/新游戏进基地都会触发） | 从天而降 DOMove 直接驱动 **Renderer 世界坐标**：起跳前先捕获 `Renderer.localPosition`（=`SetCreatureData` 刚注入的幻化 world_data 偏移），起跳点与 DOMove 落点都加上该偏移——否则落地后 localPosition 归零、幻化偏移整场丢失；**起跳即播 Idle**（此前要等落地后 UIBaseMain 打开经 `EnabledControl` 才播，坠落全程是静止姿势）；落地 OnComplete 播 `Effect_BodySlam_1`+`sound_hit_6` |
 | 走路声 | 移动/静止/禁用三处 | 移动 `PlayLoopSound(sound_walk_1, pitch:1.5f)`（加快脚步节奏, 1.5 倍速）；静止、禁用、打开界面均 `StopLoopSound`（幂等） |

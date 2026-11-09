@@ -13,6 +13,7 @@ watched_files:
   - Assets/Scripts/Bean/MVC/Game/DoomCouncilInfoBeanPartial.cs
   - Assets/Scripts/Enums/NpcEnum.cs
   - Assets/Scripts/Component/Game/Scene/ScenePrefabForDoomCouncil.cs
+  - Assets/LoadResources/Common/Scenes/DoomCouncilScene.prefab
   - Assets/Scripts/Component/UI/Game/DoomCouncil/
   - Assets/Scripts/Component/UI/Popup/UIPopupDoomCouncilBillDetails.cs
 ---
@@ -67,6 +68,8 @@ watched_files:
 - 议员预制下 `Success` SpriteRenderer：用颜色表态度/意愿（0红/50白/100绿，`GetAttitudeColor`）；自由活动阶段可见，投票开始时由 `HideAllCouncilorAttitudeView()` 统一 `SetActive(false)` 隐藏。
 - `Relationship` SpriteRenderer：仅固定NPC显示好感图标（`NpcRelationshipInfo.icon_res`，UI图集）。
 - 坐标切换：固定NPC → `Relationship.x=-0.1`、`Success.x=0.1`（并排）；随机NPC → 隐藏 Relationship、`Success.x=0`（居中）。
+- `ScenePrefabForDoomCouncil` 在主相机越过墙线时隐藏近侧墙面。原本投影的网格切到 `ShadowsOnly`，离开剖视或组件停用时还原各自的投影模式。东侧使用低墙剖视。`WorldHandler.LoadDoomCouncilScene` 调用同一组件的 `SetForBattle` 设置门扇。
+- 普通议会的 `DoomCouncilScene.prefab` 用 `Board` 标记四面墙和关门内侧的可走区域。移动和突进共用 `ControlForGameBase.CheckSceneBoard`，按 Board 局部 X/Z 的半边长判定，墙面剖视时同样生效。
 
 ### 好感持久化（`UserRelationshipBean`）
 - `Dictionary<long npcId, int relationship>`，默认0=仇恨；区间映射见 `NpcRelationshipInfo`（仇恨0-100/冷淡101-200/中立201-300/友好301-400/迷恋401-500）。

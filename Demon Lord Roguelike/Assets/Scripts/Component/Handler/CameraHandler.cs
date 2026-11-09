@@ -106,15 +106,20 @@ public partial class CameraHandler
     #region 战斗场景摄像头
 
     /// <summary>
-    /// 初始化战斗场景视角，并限制开场锚点的 Z 位置。
+    /// 按战斗场景设置开场视角，并限制开场锚点的 Z 位置。
     /// </summary>
-    public async Task InitFightSceneCamera()
+    /// <param name="fightData">用于确定开场构图的战斗数据。</param>
+    public async Task InitFightSceneCamera(FightBean fightData = null)
     {
         var mainCamera = manager.mainCamera;
         mainCamera.gameObject.SetActive(true);
 
+        var fightScene = fightData != null && fightData.gameFightType != GameFightTypeEnum.DoomCouncil && fightData.fightSceneId > 0
+            ? FightSceneCfg.GetItemData(fightData.fightSceneId)
+            : null;
+        float openingX = fightScene?.name_res == "FightScene_Plain_1.prefab" ? 5f : 3f;
         var controlTarget = GameControlHandler.Instance.manager.controlTargetForEmpty;
-        controlTarget.transform.position = new Vector3(3, 0, ControlForGameFight.ClampCameraTargetZ(3f));
+        controlTarget.transform.position = new Vector3(openingX, 0, ControlForGameFight.ClampCameraTargetZ(3f));
 
         //关闭切换动画
         manager.SetMainCameraDefaultBlend(0);

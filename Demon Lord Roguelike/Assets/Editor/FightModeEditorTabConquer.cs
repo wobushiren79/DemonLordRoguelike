@@ -155,6 +155,21 @@ public class FightModeEditorTabConquer : FightModeEditorTabBase
     /// <summary>场景下拉选项显示文本（格式 "[id] 名字"）</summary>
     private List<string> sceneOptionNames = new List<string>();
 
+    /// <summary>是否已复制场景配置</summary>
+    private bool hasCopiedSceneConfig = false;
+
+    /// <summary>已复制的普通关战斗场景列表</summary>
+    private string copiedFightSceneIds = "";
+
+    /// <summary>已复制的 BOSS 关战斗场景列表</summary>
+    private string copiedFightSceneBossIds = "";
+
+    /// <summary>已复制场景配置的来源世界ID</summary>
+    private long copiedSceneWorldId = 0;
+
+    /// <summary>已复制场景配置的来源难度</summary>
+    private int copiedSceneDifficulty = 0;
+
     #endregion
 
     #region Unity 生命周期
@@ -715,6 +730,7 @@ public class FightModeEditorTabConquer : FightModeEditorTabBase
 
         // 场景配置
         DrawSectionTitle("场景配置");
+        DrawSceneConfigCopyPasteButtons();
         currentBean.fight_scene_ids = DrawIdListField(new GUIContent("战斗场景列表", "fight_scene_ids：普通关卡的战斗场景池"), currentBean.fight_scene_ids, "fight_scene_ids");
         currentBean.fight_scene_boss_ids = DrawIdListField(new GUIContent("Boss战斗场景列表", "fight_scene_boss_ids：BOSS 关卡的战斗场景池"), currentBean.fight_scene_boss_ids, "fight_scene_boss_ids");
 
@@ -764,6 +780,67 @@ public class FightModeEditorTabConquer : FightModeEditorTabBase
         Rect lineRect = GUILayoutUtility.GetRect(GUIContent.none, GUIStyle.none, GUILayout.Height(1));
         EditorGUI.DrawRect(lineRect, new Color(0.4f, 0.4f, 0.4f, 0.3f));
         GUILayout.Space(4);
+    }
+
+    /// <summary>
+    /// 绘制场景配置复制/粘贴按钮，可跨难度复用普通关与 BOSS 关场景池
+    /// </summary>
+    private void DrawSceneConfigCopyPasteButtons()
+    {
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+
+        if (hasCopiedSceneConfig)
+        {
+            EditorGUILayout.LabelField($"已复制：世界 {copiedSceneWorldId} / 难度 {copiedSceneDifficulty}", EditorStyles.miniLabel);
+        }
+
+        GUIContent copyContent = new GUIContent("复制", "复制当前难度的普通关与 BOSS 关战斗场景列表");
+        if (GUILayout.Button(copyContent, EditorStyles.miniButton, GUILayout.Width(50)))
+        {
+            CopySceneConfig();
+        }
+
+        string pasteTooltip = hasCopiedSceneConfig
+            ? $"将世界 {copiedSceneWorldId} 难度 {copiedSceneDifficulty} 的场景配置粘贴到当前难度"
+            : "请先复制一个难度的场景配置";
+        EditorGUI.BeginDisabledGroup(!hasCopiedSceneConfig);
+        if (GUILayout.Button(new GUIContent("粘贴", pasteTooltip), EditorStyles.miniButton, GUILayout.Width(50)))
+        {
+            PasteSceneConfig();
+        }
+        EditorGUI.EndDisabledGroup();
+
+        EditorGUILayout.EndHorizontal();
+    }
+
+    /// <summary>
+    /// 复制当前难度的普通关与 BOSS 关战斗场景列表
+    /// </summary>
+    private void CopySceneConfig()
+    {
+        if (currentBean == null) return;
+
+        copiedFightSceneIds = currentBean.fight_scene_ids ?? "";
+        copiedFightSceneBossIds = currentBean.fight_scene_boss_ids ?? "";
+        copiedSceneWorldId = currentBean.world_id;
+        copiedSceneDifficulty = currentBean.level;
+        hasCopiedSceneConfig = true;
+        GUI.FocusControl(null);
+    }
+
+    /// <summary>
+    /// 把已复制的场景配置粘贴到当前难度，仅修改内存数据，保存后才写回 Excel
+    /// </summary>
+    private void PasteSceneConfig()
+    {
+        if (!hasCopiedSceneConfig || currentBean == null) return;
+
+        currentBean.fight_scene_ids = copiedFightSceneIds;
+        currentBean.fight_scene_boss_ids = copiedFightSceneBossIds;
+        pendingRemoveIndex = -1;
+        pendingRemoveFieldKey = null;
+        GUI.FocusControl(null);
     }
 
     /// <summary>
