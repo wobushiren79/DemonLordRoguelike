@@ -33,7 +33,7 @@ FightBean               - 战斗运行时数据（进攻/防守生物、核心�
 FightCreatureEntity     - 战斗生物实体（Spine动画、受击/回复/死亡、血条、魔王魔力条MPShow）
                           按类型拆分partial：主文件通用 + ForAttack(进攻) + ForDefense(防守) + ForDefenseCore(魔王)
 FightPrefabEntity       - 战斗预制实体（掉落魔力等场景物品；魔晶已改走 DSP 批量渲染，见「掉落水晶」节）
-ScenePrefabForFight     - 普通战斗场景根组件（场景实例表现与生命周期；动态天空盒默认关闭）
+ScenePrefabForFight     - 普通战斗场景根组件（场景实例表现与生命周期；InitSceneData 在 Details 激活前随机花海种子和图集排、按 GameConfig 应用花海阴影；SetFlowerSeaShadows 供画质设置即时切换且不重新生成；动态天空盒默认关闭）
 FightHandler            - 战斗处理器（攻击模块创建、预制管理、倒计时）
 FightManager            - 战斗管理器（对象池：攻击模块、战斗预制、数据缓存）
 ControlForGameFight     - 战斗场景输入控制

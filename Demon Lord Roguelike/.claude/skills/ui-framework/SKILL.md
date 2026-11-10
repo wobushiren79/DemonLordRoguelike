@@ -716,6 +716,10 @@ EventsInfo.Language_Change                // 语言切换
 
 ## 业务 UI 速记（按需补充，完整清单见 ProjectUI.md）
 
+### UIGameSettingForDisplay（画质设置）
+
+`Assets/Scripts/Component/UI/Game/GameSetting/UIGameSettingForDisplay.cs` 通过 `UIGameSettingBase.CreatureItemForCheckBox` 在共用 `ui_List` 动态创建开关，无需为新增条目修改设置 prefab。弹道/物品阴影使用 `GameConfigBean.bulletShadow/itemShadow`（默认开，UIText 42005/42006）；「场景杂物阴影」使用 `sceneClutterShadow`（默认关，UIText 42007），回调经 `WorldHandler.GetCurrentScenePrefab<ScenePrefabForFight>(Fight)` 调 `SetFlowerSeaShadows` 即时更新当前花海，进场时再次应用，保存沿用 `UIGameSetting.CloseUI → SaveGameConfig`。新增文本须同步 `excel_language` 的 UIText 与 `excel_ui_text` 登记表。
+
 ### UICreatureVat（魔物进阶 / CreatureVat 培养槽）
 
 `Assets/Scripts/Component/UI/Game/CreatureVat/UICreatureVat.cs`，魔物进阶主界面（升稀有度 + 授予稀有度 BUFF）：

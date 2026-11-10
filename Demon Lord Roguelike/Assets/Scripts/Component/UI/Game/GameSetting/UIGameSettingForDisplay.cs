@@ -9,6 +9,7 @@ public class UIGameSettingForDisplay : UIGameSettingBase
     protected UIViewGameSettingCheckBox checkboxForFrameLock;
     protected UIViewGameSettingCheckBox checkboxForBulletShadow;
     protected UIViewGameSettingCheckBox checkboxForItemShadow;
+    protected UIViewGameSettingCheckBox checkboxForSceneClutterShadow;
     protected UIViewGameSettingRange rangeForFrame;
     //分辨率选项列表（预设列表 + 拖动窗口产生的自定义分辨率）
     protected List<string> listResolutionData;
@@ -59,6 +60,11 @@ public class UIGameSettingForDisplay : UIGameSettingBase
         string textItemShadowTitle = TextHandler.Instance.GetTextById(42006);
         checkboxForItemShadow = CreatureItemForCheckBox(textItemShadowTitle);
         checkboxForItemShadow.SetSelect(gameConfig.itemShadow);
+
+        //场景杂物阴影(花海等装饰实例阴影)
+        string textSceneClutterShadowTitle = TextHandler.Instance.GetTextById(42007);
+        checkboxForSceneClutterShadow = CreatureItemForCheckBox(textSceneClutterShadowTitle);
+        checkboxForSceneClutterShadow.SetSelect(gameConfig.sceneClutterShadow);
     }
 
     public override void ActionForRangeValueChange(UIViewGameSettingRange targetView, float progress)
@@ -121,6 +127,11 @@ public class UIGameSettingForDisplay : UIGameSettingBase
         {
             //同上：魔晶渲染器每帧读 GameConfig，下帧即生效
             gameConfig.itemShadow = isCheck;
+        }
+        else if (targetView == checkboxForSceneClutterShadow)
+        {
+            gameConfig.sceneClutterShadow = isCheck;
+            WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForFight>(GameSceneTypeEnum.Fight)?.SetFlowerSeaShadows(isCheck);
         }
     }
 }

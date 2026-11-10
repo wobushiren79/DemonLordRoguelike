@@ -108,8 +108,9 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 ### 平原道路配色与景深（2026-11-09）
 - `FightScene` 工作表的 `40001–40004` 共用 `FightScene_Plain_1.prefab`。白天和白天花海（`40001/40003`）的 `road_color_a`、`road_color_b` 为 `#30481C`、`#57752E`，`road_alpha` 为 `0.28`。夜晚和夜晚花海（`40002/40004`）为 `#243B25`、`#4D6941`，透明度为 `0.29`。四种变体的景深均为原值 `mode:Bokeh&length:180&aperture:12`。对应 `FightScene.txt` 已定向导出。
 
-### 平原花海雾距（2026-11-10）
-- `40003` 白天花海的 `fog` 使用 `#F2E8FB` 线性雾，起止距离为 22–100。`40004` 夜晚花海使用 `#101A30` 线性雾，起止距离为 14–65，`volumetric_fog` 的 `Density` 为 `0.035`。`FightScene.txt` 与源表的定向导出结果一致。
+### 平原提亮与雾效（2026-11-10）
+- `40001/40003` 白天及白天花海保持一致：`fog` 为 `#D4F0FF` 线性雾 30–180，`ambient_light` 为 `#A8B6C4`，体积雾为空。`40002/40004` 夜晚及夜晚花海保持一致：`fog` 为 `#101A30` 线性雾 20–60，`ambient_light` 保持 `#AABFE0`，`volumetric_fog` 清空以去除额外散射。对应 `FightScene.txt` 已定向导出并核对目标字段。
+- 画质设置新增 UIText `42007`「场景杂物阴影」，12 语言主文本已补齐；`excel_language` 的 UIText 与 `excel_ui_text` 登记表均已加行并导出。
 
 ### 荒野峡谷接入（2026-11-09）
 - `70001`（白天）和 `70002`（夜晚）共用 `FightScene_WildernessCanyon_1.prefab`，`details` 分别为 `Day` 和 `Night`。两行的道路透明度均为 `0.28`，天空盒旋转均为 `-15,0,0`。

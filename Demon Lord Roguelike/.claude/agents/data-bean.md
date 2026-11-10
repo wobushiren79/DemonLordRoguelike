@@ -34,9 +34,11 @@ Bean/
 ```
 Bean/
 ├── Game/  - Creatures, Buff, Fight, Item, DoomCouncil, Gashapon 等
-├── MVC/   - UserData, CreaturesInfo, BuffInfo, ItemsInfo 等
+├── MVC/   - GameConfigBeanPartial(游戏专用配置), UserData, CreaturesInfo, BuffInfo, ItemsInfo 等
 └── UI/    - DialogSelect, DialogRename, DialogBossShow 等
 ```
+
+> **`GameConfigBean` 游戏专用扩展字段位于 `Assets/Scripts/Bean/MVC/GameConfigBeanPartial.cs`**：`pressKeyTipShow`（bool，默认 true）控制 `UIViewPressCommon` 等快捷按键提示；`bulletShadow/itemShadow`（bool，默认 true）分别控制战斗弹道与魔晶掉落物阴影；`sceneClutterShadow`（bool，默认 false）控制战斗花海 `FlowerSeaInstanceRenderer.castShadows`。字段仍参与 `GameConfigBean` 序列化，旧配置缺少字段时使用上述默认值，四者互不联动。
 
 > **`CreatureBean.IsDemonLord()`（`CreatureBeanPartial.cs` #region 魔王）是「是否魔王本体」判定的单一真实源**：比对 `creatureUUId == userData.selfCreature.creatureUUId`（魔王独立存储于 `UserDataBean.selfCreature`，不在背包/阵容列表内）。管理列表置顶、稀有度按 L 显示、隐藏等级、不可献祭、战斗不加经验等特殊处理统一调它，UI 层(如 `UIViewCreatureCardDetails.IsDemonLord`)已收口为委托调用。
 

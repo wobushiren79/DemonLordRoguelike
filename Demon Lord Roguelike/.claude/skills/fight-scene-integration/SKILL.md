@@ -60,11 +60,11 @@ watched_files:
 
 ## 夜晚场景动态月光
 
-- `Moonlight_Beam` 挂在各预制体的对应 `Details` 分支下，随 `details` 切换显隐。各实例共用 `Assets/LoadResources/Mesh/Mesh_ForestMoonlight_1.asset`、`Assets/LoadResources/Materials/Scene/Mat_ForestMoonlight_1.mat` 和 `Assets/Shaders/Shader_ForestMoonlight_1.shader`。一个 MeshRenderer 用四个三角形绘制空中柔边斜束和贴地柔光，顶点色 R 区分两部分。单 Pass URP Unlit 材质分别控制空中和地面的颜色及亮度，地面近似加色。
-- 共享材质采用树林手调值。周期 4 秒，空中光束强度 0.35，地面柔光亮度 0.20。「光束收束强度」`_BeamTightness` 范围为 0–1，Shader 默认 0，材质使用 0.1，空中和地面的有效宽度约为原来的 91% 和 94%，保留横向柔边和峰值亮度。
+- `Moonlight_Beam` 挂在各预制体的对应 `Details` 分支下，随 `details` 切换显隐。各实例共用 `Assets/LoadResources/Mesh/Mesh_ForestMoonlight_1.asset` 和 `Assets/Shaders/Shader_ForestMoonlight_1.shader`，月光材质按夜晚分支拆分并放在 `Assets/LoadResources/Materials/Scene/`：树林晴夜使用 `Mat_ForestMoonlight_1.mat`，树林雨夜使用 `Mat_ForestRainMoonlight_1.mat`，沙漠夜晚使用 `Mat_DesertMoonlight_1.mat`，平原夜晚使用 `Mat_PlainMoonlight_1.mat`，夜晚花海使用 `Mat_PlainFlowerSeaMoonlight_1.mat`，峡谷夜晚使用 `Mat_WildernessCanyonMoonlight_1.mat`。6 个夜晚场景 ID 均可独立调参，互不影响。一个 MeshRenderer 用四个三角形绘制空中柔边斜束和贴地柔光，顶点色 R 区分两部分。单 Pass URP Unlit 材质分别控制空中和地面的颜色及亮度，地面近似加色。
+- 各场景材质的初始值均沿用树林手调参数。周期 4 秒，空中光束强度 0.35，地面柔光亮度 0.20。「光束收束强度」`_BeamTightness` 范围为 0–1，Shader 默认 0，材质使用 0.1，空中和地面的有效宽度约为原来的 91% 和 94%，保留横向柔边和峰值亮度。
 - 透明物体按棋盘 2998、月光 2999、角色 3000 绘制。月光在棋盘之后混合，光色跨棋盘边界连续，角色在月光之上。共享 `MatFightSceneRoad` 只调整渲染队列及 `_QueueOffset`，棋盘颜色和透明度继续由场景配置驱动。
 - 各分支的 Global Volume 使用优先级 10、权重 1，共用 `Assets/Settings/ForestNightColorProfile.asset`，调色参数见 [环境渲染指南](../../agents/system-volume.md#关键约定)。树林两个夜晚分支、沙漠夜晚及平原两个夜晚分支停用旧 `MoonShaft_1`，保留原方向灯、雾、雨效和水洼。峡谷保留方向灯、补光和原有雾配置，体积雾为空。
-- 共享光束从上端到下端的水平偏航约为 132.59°。主方向灯沿用树林晴夜和雨夜的 135° 偏航。沙漠 `20002`、平原 `40002`、夜晚花海 `40004` 从 315° 转到 135°，保留 30° 俯角。峡谷 `70002` 的 `Moonlights/Moonlight` 从约 57.529° 转到 135°，保留约 48.234° 俯角及原阴影设置，继续使用原无影补光。
+- 光束网格从上端到下端的水平偏航约为 132.59°。主方向灯沿用树林晴夜和雨夜的 135° 偏航。沙漠 `20002`、平原 `40002`、夜晚花海 `40004` 从 315° 转到 135°，保留 30° 俯角。峡谷 `70002` 的 `Moonlights/Moonlight` 从约 57.529° 转到 135°，保留约 48.234° 俯角及原阴影设置，继续使用原无影补光。
 
 | FightScene ID | 预制体与分支 | `Moonlight_Beam` 局部位置 |
 |---|---|---|
@@ -85,10 +85,12 @@ watched_files:
 - `Rock` 下的 18 个无碰撞实例使用 `Building_Rock_Plain_1–3`，其中 5 块大岩石和 2 组碎石分布在远坡，沿坡面微倾斜。源 OBJ 位于 `Assets/LoadResources/Fbx/Building/Rock/`，分别为贴地主岩、楔形小岩和碎石组，裸岩和苔藓各有一个材质槽。`Wild Grass` 将 351 张草卡烘焙到 `Mesh_Plain_WildGrass_1`，共用现有 `grass_1.png` 和 `FrameWork/URP/GrassWindSway`，在路边与坡上成簇分布。
 - `Ground/Ground_1` 的显示表面由 `Mat_GroundTerrain_1` 按高度图在 GPU 位移。摆放景物时，以网格顶点采样 `TerrainHeightmap_2.png` 并在相应三角面内插值，再按预制体枢轴和材质偏移对齐树根、岩底和草卡两侧根脚。岩石最靠近道路的边界局部 Z 约 `7.80`，草簇布置在最大 6 路及出入口之外。
 - 地表底图为 `ground_8_256x256.png`，使用偏青绿的连续短草，保留少量低对比的小露土擦痕。`_BaseMap` 平铺 `(12,-12)`、偏移 `(0.25,0.50)`。Unity 导入为 256×256，使用镜像环绕、三线性过滤、MipMap 和 8 倍各向异性。
-- 白天和白天花海（`40001/40003`）主光强度为 `0.99`，色温为 `6500 K`，阴影强度为 `0.88`，俯角为 `43°`。地表材质的 `_BaseColor` 为 `(0.75, 0.74, 0.78, 1)`。白天道路色为 `#30481C` / `#57752E`，透明度为 `0.28`。夜晚和夜晚花海（`40002/40004`）使用灰绿道路色 `#243B25` / `#4D6941`，透明度为 `0.29`。
+- 四种平原变体（`40001–40004`）主光强度均为 `1.6`，阴影强度均为 `0.75`。白天色温为 `6500 K`、俯角为 `43°`；夜晚保留冷蓝月光与原有方向。地表材质的 `_BaseColor` 为 `(0.75, 0.74, 0.78, 1)`。白天道路色为 `#30481C` / `#57752E`，透明度为 `0.28`。夜晚道路色为 `#243B25` / `#4D6941`，透明度为 `0.29`。
 - 四种平原变体均使用原景深 `Bokeh/180/12`。后续平原光照和地表调色沿用这组景深做对照。在 `TestScene` 的 `Launcher` 选普通战斗测试 `[40001] 平原_1`，用 6 路、长度 10 手动 Play，检查地表亮度、景深和棋盘格辨识度。
-- 白天花海 `40003` 使用线性雾 `#F2E8FB`（22–100）。夜晚花海 `40004` 使用线性雾 `#101A30`（14–65），体积雾密度为 `0.035`。雾参数按 `FightScene` 行配置。
-- `Details/DayFlowerSea/FlowerSea` 使用「团簇分布」布置 40,000 朵花，`scaleRange` 为 `0.35–0.35`。默认 80 个团簇，世界半径随机区间 3.5–6.5，团心聚集程度 0.45，散花比例 15%（团内约 34,000 朵、每团平均约 425 朵）；这些参数只在团簇模式显示，改动会自动重新生成。手动 Play 时从开场机位和移动机位检查大团簇、团间空隙与远景覆盖。`Details/NightFlowerSea/FlowerSea` 使用 `68×68` 随机抖动网格布置 9,248 朵花，新增团簇字段保留组件默认值但不生效。可通过 `FlowerSeaInstanceRenderer` 的「分布方式」切换随机抖动网格、均匀错列与团簇分布。
+- 白天平原与白天花海（`40001/40003`）均使用线性雾 `#D4F0FF`（30–180）、环境光 `#A8B6C4`，体积雾为空。夜晚平原与夜晚花海（`40002/40004`）均使用线性雾 `#101A30`（20–60）、环境光 `#AABFE0`，体积雾均为空；不再使用旧夜晚花海/平原的 6–16 近距离雾与 `0.06` 体积雾。雾和环境光按 `FightScene` 行配置，共享 `ForestNightColorProfile` 不因平原单独修改。
+- `Details/DayFlowerSea/FlowerSea` 与 `Details/NightFlowerSea/FlowerSea` 当前均使用「团簇分布」布置 40,000 朵花，`scaleRange` 为 `0.3–0.4`，团簇数分别为 450、446，世界半径随机区间均为 1.5–3，团心聚集程度 0.26，散花比例 15%；`gridCells` 在团簇模式下不生效。可通过 `FlowerSeaInstanceRenderer` 的「分布方式」切换随机抖动网格、均匀错列与团簇分布。
+- 正式战斗每次进入时，`ScenePrefabForFight.InitSceneData` 会在 Details 激活前用独立 `System.Random` 重置所有花海的 `randomSeed`，并从各自 `atlasGrid`（当前为 8 列 × 4 排）中随机选择 1 排，将该排全部 8 格写入 `atlasSelectedCells`；每朵花再按现有逻辑从所选排的 8 个花型中随机。预制体原先固定选择最上/最下排只用于编辑器预览，运行时不得把该固定排当作随机池。分支随后由 `OnEnable` 自动生成一次，无需额外调用 `Generate()`。
+- 花海真实投影由画质设置「场景杂物阴影」（UIText `42007`、`GameConfigBean.sceneClutterShadow`，默认关闭）控制。进场时无条件应用配置；切换时 `UIGameSettingForDisplay` 经 `WorldHandler.GetCurrentScenePrefab<ScenePrefabForFight>(Fight)` 调 `SetFlowerSeaShadows`，只修改所有花海的 `castShadows`，不重新 Generate、不改变随机结果。`shadowRadius` 保持组件原值；40,000 朵花开启全量投影仍有明显 GPU 成本，需手动 Play 实测。
 - 白天花海的 `Details/DayFlowerSea/PetalDrift` 嵌套 `Effect_Leaves_1.prefab`，覆盖实例颜色、尺寸、发射范围和漂移速度，将灰白像素图集染成浅粉到奶白的花瓣。预热后以每秒 9 片循环发射，沿战场横向慢漂并渐隐。手动 Play 进入 `40003`，检查近景花簇与角色比例、花海覆盖和飘散粒子的辨识度。
 
 ## 玫瑰宫殿决战场地
@@ -103,6 +105,7 @@ watched_files:
 ## 天空石台无尽场地
 
 - `FightScene` ID `60001`，Addressables 地址 `Assets/LoadResources/FightScene/FightScene_SkywardTerrace_1.prefab`。世界 1 无尽难度 2–10 的 `fight_scene_id` 均为 `60001`，可从战斗模式编辑器的无尽页签调整。
+- `Lights/Daylight Key` 使用纯白 `#FFFFFF`，主光强度为 `1.5`；`Sky Fill` 保持原冷色补光与 `0.22` 强度，不随主光修改。
 - 用 `TestScene` 的 `Launcher` 选择无尽模式测试难度，手动 Play 检查场地加载、道路覆盖、放置和刷怪。正式入口可用已有无尽传送门验证进场场地，并用征服传送门确认普通关和决战仍从各自场地池选取。
 
 ## 荒野峡谷普通关场地

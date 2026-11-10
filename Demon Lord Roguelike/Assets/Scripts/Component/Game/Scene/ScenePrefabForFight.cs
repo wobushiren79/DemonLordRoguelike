@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 /// <summary>
@@ -6,6 +8,47 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public sealed class ScenePrefabForFight : ScenePrefabBase
 {
+    #region 场景初始化
+
+    /// <summary>
+    /// 初始化场景实例，应用杂物阴影并在 Details 激活前随机花海种子与图集排，随后由花海 OnEnable 完成一次生成。
+    /// </summary>
+    public override Task InitSceneData()
+    {
+        System.Random random = new System.Random();
+        bool sceneClutterShadow = GameDataHandler.Instance.manager.GetGameConfig().sceneClutterShadow;
+        FlowerSeaInstanceRenderer[] flowerSeas = GetComponentsInChildren<FlowerSeaInstanceRenderer>(true);
+        foreach (FlowerSeaInstanceRenderer flowerSea in flowerSeas)
+        {
+            flowerSea.castShadows = sceneClutterShadow;
+            flowerSea.randomSeed = random.Next();
+            if (flowerSea.textureMode != FlowerSeaInstanceRenderer.FlowerSeaTextureMode.Atlas)
+                continue;
+
+            int columns = Mathf.Max(1, flowerSea.atlasGrid.x);
+            int rows = Mathf.Max(1, flowerSea.atlasGrid.y);
+            int selectedRow = random.Next(rows);
+            flowerSea.atlasUseAllCells = false;
+            flowerSea.atlasSelectedCells = new List<Vector2Int>(columns);
+            for (int column = 0; column < columns; column++)
+                flowerSea.atlasSelectedCells.Add(new Vector2Int(column, selectedRow));
+        }
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 设置当前战斗场景所有花海是否投射阴影，仅改渲染状态，不重新生成花海。
+    /// </summary>
+    /// <param name="isEnabled">是否开启花海阴影</param>
+    public void SetFlowerSeaShadows(bool isEnabled)
+    {
+        FlowerSeaInstanceRenderer[] flowerSeas = GetComponentsInChildren<FlowerSeaInstanceRenderer>(true);
+        foreach (FlowerSeaInstanceRenderer flowerSea in flowerSeas)
+            flowerSea.castShadows = isEnabled;
+    }
+
+    #endregion
+
     #region 天空盒设置
 
     private static readonly int ExposureId = Shader.PropertyToID("_Exposure");

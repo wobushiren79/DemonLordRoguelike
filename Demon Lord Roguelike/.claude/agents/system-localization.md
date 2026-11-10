@@ -67,6 +67,7 @@ TextManager 加载 Language_UIText_*.txt
 - **按键提示气泡 UIText 条目（2026-10）**：2000026~2000032 共 7 条（2000026 移动/2000027 移动镜头/2000028 互动/2000029 突进/2000030 0倍速/2000031 2倍速/2000032 加快进攻节奏），已配齐 12 语言翻译；用于 `UIViewPressControlForGameBase` 按键提示组各键悬浮气泡（`UIViewPressCommon.SetPopupTip`），id 常量 `TEXT_ID_*` 写在该视图内（基地 WASD=2000026/E=2000028/Space=2000029；战斗 WASD=2000027/F1=2000031/F2=2000032/Space=2000030）
 - **GM 成长药水 UIText 条目（2026-10）**：61026~61029=+1/-1 升级/降级与升阶/降阶确认框，61030~61033=满级/最低级/最高品阶/最低品阶拦截，61034/61035=多级升级/降级确认框（含 `{1}` 档位占位）；12 语言均已配置。道具名在 `Language_ItemsInfo_*` id 200004~200007 与 200008~200025。
 - **排序优先级条 UIText 条目（2026-11）**：2000033「排序优先级：{0}」（紧随 2000026~2000032 段位），`UIDialogOrderFilter.RefreshPriorityShow` 把已选排序键名称按优先级用 `>` 连接填入 `{0}`；12 语言均已配置，`excel_language` 的 UIText 与 `excel_ui_text` 两处均已加行，机制见 order-filter-system SKILL。
+- **画质设置「场景杂物阴影」（2026-11）**：UIText `42007`，由 `UIGameSettingForDisplay` 通过 `TextHandler.GetTextById` 使用；12 语言主文本均已配置，UIText 历史重复的 `content_jp`~`content_ru` 两组列填同值，`excel_language` 与 `excel_ui_text` 均已登记并导出。
 
 ## ⚠️ 一个多语言ID承载多条文本（content / content_1 / content_2）
 
