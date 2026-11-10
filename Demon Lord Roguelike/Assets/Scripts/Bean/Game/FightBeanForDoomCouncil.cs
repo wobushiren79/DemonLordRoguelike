@@ -13,6 +13,8 @@ public class FightBeanForDoomCouncil : FightBean
         InitData();
     }
 
+    #region 战斗初始化
+
     /// <summary>
     /// 初始化终焉议会暴力说服战斗
     /// </summary>
@@ -45,10 +47,18 @@ public class FightBeanForDoomCouncil : FightBean
         fightAttackData = new FightAttackBean();
         var councilorAllNpcId = doomCouncilData.GetCouncilorAllNpcId();
 
-        //沿用征服模式的默认出生位置(道路右端x=11.5并附加微小随机偏移)，不再使用议会场景站位
-        FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(0, councilorAllNpcId);
+        // 大门随侧墙延长到战斗坐标 x=12.6，议员在门外保留原有的 2.3 单位入场距离。
+        const float councilorSpawnX = 14.9f;
+        var councilorSpawnPositions = new List<float>(councilorAllNpcId.Count);
+        for (int i = 0; i < councilorAllNpcId.Count; i++)
+        {
+            councilorSpawnPositions.Add(councilorSpawnX);
+        }
+        FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(0, councilorAllNpcId, councilorSpawnPositions);
         //携带议员快照(与npcIds按下标对应): 暴力说服战斗直接使用议会同一只生物数据, 保证同皮肤同装备(不再按npcId重新随机)
         fightAttackDetails.creatureSnapshots = doomCouncilData.listCouncilor;
         fightAttackData.AddAttackQueue(fightAttackDetails);
     }
+
+    #endregion
 }

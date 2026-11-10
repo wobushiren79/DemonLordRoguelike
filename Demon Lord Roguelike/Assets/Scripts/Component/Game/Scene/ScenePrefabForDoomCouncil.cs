@@ -26,6 +26,7 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
     [SerializeField] private Transform wallPodium;
     [SerializeField] private Transform wallGate;
     [SerializeField] private GameObject cutawayEast;
+    [SerializeField] private GameObject cutawayPodium;
     [SerializeField] private Transform podiumEmblem;
     [SerializeField] private Transform gate;
     [SerializeField] private Transform gateLeftLeaf;
@@ -50,7 +51,12 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
     private (Renderer renderer, ShadowCastingMode shadowMode)[] gateRenderers;
     private Quaternion leftClosedRotation;
     private Quaternion rightClosedRotation;
+    private Vector3 leftClosedPosition;
+    private Vector3 rightClosedPosition;
     private WallSide hiddenWalls;
+
+    /// <summary>当前实例是否用于暴力说服战斗。</summary>
+    internal bool IsForBattle { get; private set; }
 
     #region 初始化
 
@@ -67,6 +73,8 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
         gateRenderers = CacheRenderers(gate);
         leftClosedRotation = gateLeftLeaf.localRotation;
         rightClosedRotation = gateRightLeaf.localRotation;
+        leftClosedPosition = gateLeftLeaf.localPosition;
+        rightClosedPosition = gateRightLeaf.localPosition;
     }
 
     /// <summary>
@@ -106,19 +114,26 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
     #region 围墙与大门显示
 
     /// <summary>
-    /// 战斗时向外打开门扇，为议员的进攻路线留出入口。
+    /// 战斗时将门扇向厅内打开并避开石框，为进攻路线留出入口。讲台低墙用于普通议会。
     /// </summary>
     public void SetForBattle(bool forBattle)
     {
         Vector3 hingeUp = gate.InverseTransformDirection(transform.up);
         float angle = forBattle ? 90f : 0f;
-        gateLeftLeaf.localRotation = Quaternion.AngleAxis(-angle, hingeUp) * leftClosedRotation;
-        gateRightLeaf.localRotation = Quaternion.AngleAxis(angle, hingeUp) * rightClosedRotation;
+        gateLeftLeaf.localRotation = Quaternion.AngleAxis(angle, hingeUp) * leftClosedRotation;
+        gateRightLeaf.localRotation = Quaternion.AngleAxis(-angle, hingeUp) * rightClosedRotation;
+        // 门扇转开时向厅内和门洞中线让位，给门板厚边和铁件留出空间。
+        Vector3 inward = gate.InverseTransformDirection(-transform.forward) * 0.23f;
+        Vector3 right = gate.InverseTransformDirection(transform.right) * 0.12f;
+        gateLeftLeaf.localPosition = forBattle ? leftClosedPosition + inward + right : leftClosedPosition;
+        gateRightLeaf.localPosition = forBattle ? rightClosedPosition + inward - right : rightClosedPosition;
         gateSeam.SetActive(!forBattle);
+        IsForBattle = forBattle;
+        RefreshPodiumCutaway((hiddenWalls & WallSide.Podium) != 0);
     }
 
     /// <summary>
-    /// 主摄像机移出围墙时隐藏近侧墙面，避免遮挡议员或战斗道路。
+    /// 相机越过围墙时隐藏近侧墙面，普通议会等镜头离开讲台墙的厚度后再恢复高墙。
     /// </summary>
     private void UpdateWallVisibility(ScriptableRenderContext context, Camera camera)
     {
@@ -131,7 +146,11 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
             outside |= WallSide.East;
         if (point.x < transform.InverseTransformPoint(wallWest.position).x)
             outside |= WallSide.West;
-        if (point.z < transform.InverseTransformPoint(wallPodium.position).z)
+        float podiumCutawayZ = transform.InverseTransformPoint(wallPodium.position).z;
+        // 普通议会把切换线放在墙柱内沿，避免相机还在墙体中时恢复完整墙面。
+        if (!IsForBattle)
+            podiumCutawayZ += 0.25f;
+        if (point.z < podiumCutawayZ)
             outside |= WallSide.Podium;
         if (point.z > transform.InverseTransformPoint(wallGate.position).z)
             outside |= WallSide.Gate;
@@ -140,7 +159,7 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
     }
 
     /// <summary>
-    /// 只更新本次跨过边界的墙面，东墙使用已建好的低墙剖视。
+    /// 只更新本次跨过边界的墙面，同步东墙和讲台的低墙剖视。
     /// </summary>
     private void SetHiddenWalls(WallSide outside)
     {
@@ -164,6 +183,7 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
             bool hidden = (outside & WallSide.Podium) != 0;
             SetRenderersHidden(podiumRenderers, hidden);
             SetRenderersHidden(emblemRenderers, hidden);
+            RefreshPodiumCutaway(hidden);
         }
         if ((changed & WallSide.Gate) != 0)
         {
@@ -172,6 +192,13 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
             SetRenderersHidden(gateRenderers, hidden);
         }
         hiddenWalls = outside;
+    }
+
+    /// <summary>普通议会从讲台侧剖视时，显示低墙及两端收口。</summary>
+    private void RefreshPodiumCutaway(bool podiumHidden)
+    {
+        if (cutawayPodium != null)
+            cutawayPodium.SetActive(podiumHidden && !IsForBattle);
     }
 
     /// <summary>

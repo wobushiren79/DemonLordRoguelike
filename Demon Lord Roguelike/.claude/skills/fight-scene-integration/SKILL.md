@@ -30,7 +30,7 @@ watched_files:
 2. 顺着 `WorldHandler.LoadFightScene` 核对运行时摆放。普通战斗会重设根的位置及旋转，根 Z 由 `-(sceneRoadNumMax - sceneRoadNum) / 2f` 偏移；需要保留的美术摆放写在子层。道路由运行时另外加载和缩放。普通战斗分支会确保根节点有 `ScenePrefabForFight` 并调用 `InitSceneData`，场景实例的动态表现统一挂在该组件；其 `enableSkyboxMotion` 默认关闭，只有天空石台等明确需要动态天空盒的预制体才启用并配置曝光/偏航速度。以实际道路格、生成点和地面高度检查覆盖范围、穿模、悬空及 Z-fighting；多种路数都要检查，包含可支持的最大路数。
 3. 用 Unity API 把包装 prefab 登记到 Addressables 的 `FightScene` 组，地址使用项目完整资源路径（含 `.prefab`）。核对 GUID 与地址唯一且对应同一资产，嵌套建筑、网格、材质、贴图及特效依赖可解析。不要为了此类加载另加一个 Build Settings 场景。
 
-4. 终焉议会及暴力说服复用 Common 组的 `DoomCouncilScene.prefab`。建筑挂在议会场景根节点下，随战斗分支的根变换定位。`ScenePrefabForDoomCouncil` 根据主相机位置隐藏近侧围墙，保留原有投影，东侧用低墙剖视。普通议会保持关门，场景 `Board` 限制角色走路和突进。`LoadDoomCouncilScene(forBattle: true)` 调用场景组件的 `SetForBattle` 打开门扇，正式地面覆盖门外出生点。
+4. 终焉议会及暴力说服复用 Common 组的 `DoomCouncilScene.prefab`。建筑挂在议会场景根节点下，随战斗分支的根变换定位。`ScenePrefabForDoomCouncil` 根据主相机位置隐藏近侧围墙，保留原有投影，东侧用低墙剖视。普通议会保持关门，场景 `Board` 限制角色走路和突进。`LoadDoomCouncilScene(forBattle: true)` 调用 `SetForBattle` 将门扇向厅内打开。地面覆盖门外 X=14.9 的议员出生中心，厅内保留单路 10 格部署区。议会分支用 `MaterialPropertyBlock` 为地毯上方的棋盘指定酒红 `#621C2E`、暖铜 `#C29158` 与 `0.35` 不透明度。
 
 ## 3. 配表、绑定模式与兼容旧档
 
@@ -69,12 +69,13 @@ watched_files:
 - 白天和白天花海（`40001/40003`）主光强度为 `0.99`，色温为 `6500 K`，阴影强度为 `0.88`，俯角为 `43°`。地表材质的 `_BaseColor` 为 `(0.75, 0.74, 0.78, 1)`。白天道路色为 `#30481C` / `#57752E`，透明度为 `0.28`。夜晚和夜晚花海（`40002/40004`）使用灰绿道路色 `#243B25` / `#4D6941`，透明度为 `0.29`。
 - 四种平原变体均使用原景深 `Bokeh/180/12`。后续平原光照和地表调色沿用这组景深做对照。在 `TestScene` 的 `Launcher` 选普通战斗测试 `[40001] 平原_1`，用 6 路、长度 10 手动 Play，检查地表亮度、景深和棋盘格辨识度。
 
-## 红冠宫殿决战场地
+## 玫瑰宫殿决战场地
 
-- `FightScene` ID `30002`，Addressables 地址 `Assets/LoadResources/FightScene/FightScene_Palace_CrimsonCrown_1.prefab`。内嵌 `Building_Palace_CrimsonCrown_Cutaway_1`，子层位置 `(5.5, -0.061, 4.72)`、Y 轴旋转 `180°`、缩放 `(0.68, 0.58, 0.58)`，保留战斗所需的横向间距。两侧柱心局部 X 为 `±10.17`，柱本地缩放 `(0.75, 1, 0.85)`，柱旗与柱身留约 `0.013` 战斗场景单位。用角色站姿约 1 单位校准家具，长椅、花盆和王座等比世界缩放分别为 `0.45`、`0.43`、`0.36`，对应长椅坐面高约 `0.41`、王座高约 `1.58`，王座底面贴台顶。
-- 战斗版 12 座烛台共用 `Assets/LoadResources/Fbx/Building/Palace/CrimsonCrown_BattleCandelabrum.asset`。用图集 UV2 去掉原网格的 186 个火焰三角面，补同图集金色轴杆连接中间烛座。烛台等比世界缩放 `0.30`，烛芯高约 `0.69`，第二排局部 Z `8`，第三排仍落在台阶前平地。36 个烛芯各自嵌套 `Effect_Fire_7`，只开启主火和 Glow。火焰局部缩放 `0.19`，主火世界空间重力和速度上限按最终 `0.057` 比例补偿。烛台点光强度 `0.55`、范围 `2.3`。
-- 战斗平地的地毯保留红色织纹和两侧金边，移除中央花纹。`CrimsonCrown_BattleRoyalDais.asset` 把大厅局部高度 `0.074` 的两张地毯三角面分到独立材质槽，使用 `Mat_Building_Palace_CrimsonCrown_CombatCarpet_1` 和 `palace_crimson_crown_combat_carpet_1.png`。台阶、王座台及碰撞体继续使用原资源。
-- 世界 1 的征服难度 1–10 使用 BOSS 池 `30001&30002`。新随机时两座宫殿等概率，已冻结的场地继续沿用。`30002` 使用 `Skybox_6`、环境光 `#99847A`、道路透明度 `0.1`，场地雾和体积雾留空。
+- `FightScene` ID `30002`，Addressables 地址 `Assets/LoadResources/FightScene/FightScene_Palace_CrimsonCrown_1.prefab`。内嵌 `Building_Palace_CrimsonCrown_Cutaway_1`，子层位置 `(5.5, -0.0435, 4.72)`、Y 轴旋转 `180°`、缩放 `(0.68, 0.58, 0.58)`，保留战斗所需的横向间距。两侧柱心局部 X 为 `±10.17`，柱本地缩放 `(0.75, 1, 0.85)`，柱旗与柱身留约 `0.013` 战斗场景单位。用角色站姿约 1 单位校准家具，长椅、花盆和王座等比世界缩放分别为 `0.45`、`0.43`、`0.36`，对应长椅坐面高约 `0.41`、王座高约 `1.58`，王座底面贴台顶。
+- 战斗版 12 座烛台共用 `Assets/LoadResources/Fbx/Building/Palace/CrimsonCrown_BattleCandelabrum.asset`。用图集 UV2 去掉原网格的 186 个火焰三角面，补同图集金色轴杆连接中间烛座。烛台等比世界缩放 `0.30`，烛芯高约 `0.69`，第二排局部 Z `8`，第三排仍落在台阶前平地。36 个烛芯各自嵌套 `Effect_Fire_7`，只开启主火和 Glow。火焰局部缩放 `0.19`，主火世界空间重力和速度上限按最终 `0.057` 比例补偿。其中 10 座带烛光。大厅 6 盏点光强度为 `1.02`、范围 `2.65`，王座台 4 盏为 `1.4`、范围 `3.15`，在地毯两侧和王座台形成局部暖光。
+- 战斗平地的地毯保留红色织纹和两侧金边，移除中央花纹。`CrimsonCrown_BattleRoyalDais.asset` 把大厅局部高度 `0.074` 的两张地毯三角面分到独立材质槽，使用 `Mat_Building_Palace_CrimsonCrown_CombatCarpet_1` 和 `palace_crimson_crown_combat_carpet_1.png`。战斗包装层整体上移后，地毯世界 Y 约为 -0.00058，贴近魔物落子平面 Y=0，并低于棋盘格平面 Y=0.0001。两侧石砖保留原有高度差。台阶、王座台及碰撞体继续使用原资源。
+- 战斗预制体将暖色主光 `Warm evening key` 的世界欧拉角设为 `(48°, 28°, 0°)`。主光强度为 `0.58`，冷色补光强度为 `0.17`，让窗边、柱廊和大厅中轴保留明暗层次。参考森林白天场地，阴影朝棋盘深处投射。地毯已贴近落子平面时，用同一机位对比主光方向，区分地面落差与影子在画面中的分离。
+- 世界 1 的征服难度 1–10 使用 BOSS 池 `30001&30002`。新随机时两座宫殿等概率，已冻结的场地继续沿用。`30002` 使用 `Skybox_6`、环境光 `#776468`、道路透明度 `0.1`、景深 `Bokeh/280/12`，场地雾和体积雾留空。
 - 已在编辑模式按战斗根节点偏移回读 2–6 路的地面和出生区，核对 8 面柱旗、王座底面、12 座烛台的连接件与 36 个火焰实例。实机验收可在 `TestScene` 的 `Launcher` 选战斗测试场景 `[30002]`，手动 Play 查看角色与王座比例、烛火、放置、出怪和镜头边界，再用新征服传送门验证最后一关切换。
 
 ## 天空石台无尽场地

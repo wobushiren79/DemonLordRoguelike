@@ -113,8 +113,8 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 - `70001` 使用 `Skybox_2`、棋盘格 `#7D7253` / `#B4A57B`、环境光 `#8CA1AB` 及线性雾 `#9EB5B3`（42–108）。`70002` 使用 `Skybox_6`、棋盘格 `#5F5960` / `#938879`、环境光 `#879AC0`、线性雾 `#101A30`（30–95）及环境音 `2000001`，体积雾和景深字段留空。
 - 世界 1 征服难度 5（`1000005`）的普通关池追加 `70002`，池值为 `10001&20001&70001&40001&10002&20002&40002&70002`。
 
-### 红冠宫殿接入（2026-11-08）
-- `excel_fight_scene` 当时共有 15 条场地配置。`30002`（红冠宫殿）使用 `FightScene_Palace_CrimsonCrown_1.prefab`，道路透明度 `0.1`，天空盒 `Skybox_6`，环境光 `#99847A`，景深 `mode:Bokeh&length:220&aperture:12`。距离雾和体积雾均留空。
+### 玫瑰宫殿场地（30002）
+- `excel_fight_scene` 当时共有 15 条场地配置。`30002`（玫瑰宫殿）使用 `FightScene_Palace_CrimsonCrown_1.prefab`，道路透明度 `0.1`，天空盒 `Skybox_6`，环境光 `#776468`，景深 `mode:Bokeh&length:280&aperture:12`。距离雾和体积雾均留空。
 - `excel_fight_type_conquer_info` 的世界 1、难度 1–10 使用 `fight_scene_boss_ids=30001&30002`。征服决战按难度等概率抽取并冻结，已冻结旧王宫 `30001` 的传送门继续使用原场地。
 
 ### 竞技场接入（2026-11-07）

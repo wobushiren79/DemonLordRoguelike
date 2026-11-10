@@ -6,6 +6,7 @@ watched_files:
   - Assets/FrameWork/Scripts/Component/Manager/CameraManager.cs
   - Assets/Scripts/Component/Handler/CameraHandler.cs
   - Assets/Scripts/Component/Manager/CameraManager.cs
+  - Assets/Scripts/Component/Game/Camera/CameraDoomCouncilLimits.cs
   - Assets/Scripts/Enums/GameStateEnum.cs
 ---
 
@@ -81,6 +82,7 @@ CameraHandler.Instance.SetCameraForControl(CinemachineCameraEnum.Fight);
 CameraHandler.Instance.SetCameraForControl(CinemachineCameraEnum.Base);
 ```
 - `Base`：启用 `cm_Base`，并按当前场景类型设置 `Lens.FieldOfView`（普通基地 55、终焉议会 50）。
+- 普通议会自由走动在 `cm_Base` 上配置 `CameraDoomCouncilLimits`。扩展在 Cinemachine 构图前约束视线，并在 Body 阶段约束已应用跟随阻尼的位置。场景局部 Z 的后退下限为 `-5.5`，横向限位按镜头宽高比计算。`SetCameraForControlBase` 通过议会组件和 `IsForBattle` 判断是否启用，其他场景清空扩展的场景引用。投票和暴力说服使用各自机位。
 - `Fight`：启用 `cm_Fight`，`Priority = int.MaxValue`。
 - **故事演出期间直接忽略**：`StoryHandler.Instance.manager.isStoryPlaying` 为 true 时本方法立即 return——演出镜头由 StoryHandler 专用 CinemachineCamera 接管，外部切镜（如新手引导末步 UIHandle 打开 UIBaseMain，其 OpenUI 会调本方法）会以 blend=0 瞬切抢走 CinemachineBrain，导致演出镜头移动全部不可见（2026-10 修复"引导末步镜头回位不播放直接跳回"的根因）；演出结束由 `StoryHandler.EndStoryCamera` 自行归还停靠相机。
 

@@ -275,15 +275,15 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
     }
 
     /// <summary>
-    /// 加载战斗场景
+    /// 加载战斗场景并设置道路棋盘格
     /// </summary>
     public async Task LoadFightScene(FightBean fightData)
     {
         await UnLoadScene(GameSceneTypeEnum.Fight);
         GameObject targetScene;//目标场景
-        string roadColorA = "#ffffff00";//道路颜色A
-        string roadColorB= "#ffffff00";//道路颜色B
-        float roadAlpha = 0.5f;//道路透明度（场景未配置时默认0.5）
+        string roadColorA;
+        string roadColorB;
+        float roadAlpha;
         //如果议会 特殊加载议会场景
         if (fightData.gameFightType == GameFightTypeEnum.DoomCouncil)
         {
@@ -292,6 +292,11 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
             targetScene.SetActive(true);
             targetScene.transform.position = new Vector3(-0.5f, WorldManager.FightSceneHeightY, 1f);
             targetScene.transform.eulerAngles = new Vector3(0, 90, 0);
+
+            // 暴力说服的棋盘格铺在红地毯上，用暖色区分格子并保留地毯纹理。
+            roadColorA = "#621C2E";
+            roadColorB = "#C29158";
+            roadAlpha = 0.35f;
         }
         else
         {

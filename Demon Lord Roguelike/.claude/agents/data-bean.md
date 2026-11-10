@@ -99,6 +99,8 @@ Bean/
 
 > **`FightTypeInfiniteInfoBean.fight_scene_id`（Excel 自动生成列，long）** 指向 `FightScene.id`。`FightBeanForInfinite.InitData` 优先使用正数场地 ID，缺少配置或 ID 为非正数时才读取传送门原有的征服 BOSS 场地。世界 1 难度 2–10 均配置为天空石台 `60001`。
 
+> `FightBeanForDoomCouncil` 在单路 10 格的战斗中按议员下标设置 `FightAttackDetailsBean.npcCreatePosX`。门在战斗世界坐标 X=12.6，出生中心 X=14.9，`CreatureHandler` 继续附加 ±0.25 的随机偏移。
+
 ### Bean 命名规范
 > **挑战100勇士场地兼容（2026-11-07）**：`FightTypeChallengeHundredInfoBeanPartial.IsMatchFightScene(sceneId)` 复用逗号分隔场景池缓存校验正数 ID；`GameWorldInfoRandomBean.GetChallengeHundredFightSceneId` 对缺失/已移出配置池的旧场景重新选择并写回，仅迁移场地，不重建难度/道路/敌人配置/奖励快照。当前全部挑战行的场地为 50001（Embervault 竞技场）。
 

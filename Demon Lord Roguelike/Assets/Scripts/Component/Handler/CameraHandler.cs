@@ -435,29 +435,38 @@ public partial class CameraHandler
         }
     }
 
+    /// <summary>
+    /// 启用基础控制镜头。普通议会额外限制自由走动时的构图。
+    /// </summary>
     protected void SetCameraForControlBase()
     {
         HideCameraForBaseScene();
-        manager.cm_Base.gameObject.SetActive(true);
-        manager.cm_Base.Priority = int.MaxValue;
+        var camera = manager.cm_Base;
         var currentScene = WorldHandler.Instance.GetCurrentScene();
-        if (currentScene == null)
+        var scenePrefabBase = currentScene != null ? currentScene.GetComponent<ScenePrefabBase>() : null;
+        var limits = camera.GetComponent<CameraDoomCouncilLimits>();
+        if (scenePrefabBase is ScenePrefabForBase)
         {
-            return;
+            camera.Lens.FieldOfView = 55;
         }
-        var scenePrefabBase = currentScene.GetComponent<ScenePrefabBase>();
-        if (scenePrefabBase == null)
+        else if (scenePrefabBase is ScenePrefabForDoomCouncil)
         {
-            return;
+            camera.Lens.FieldOfView = 50;
         }
-        if (scenePrefabBase is ScenePrefabForBase scenePrefabForBase)
+
+        if (scenePrefabBase is ScenePrefabForDoomCouncil councilScene && !councilScene.IsForBattle)
         {
-            manager.cm_Base.Lens.FieldOfView = 55;
+            if (limits == null)
+                limits = camera.gameObject.AddComponent<CameraDoomCouncilLimits>();
+            limits.SceneRoot = councilScene.transform;
         }
-        else if (scenePrefabBase is ScenePrefabForDoomCouncil scenePrefabForDoomCouncil)
+        else if (limits != null)
         {
-            manager.cm_Base.Lens.FieldOfView = 50;
+            limits.SceneRoot = null;
         }
+
+        camera.gameObject.SetActive(true);
+        camera.Priority = int.MaxValue;
     }
     
     protected void SetCameraForControlFight()
