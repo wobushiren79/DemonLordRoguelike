@@ -112,19 +112,20 @@ public abstract partial class AICreatureEntity : AIBaseEntity
     }
 
     /// <summary>
-    /// 准备当前生物的统一索敌参数，供普通搜索与指定目标命中查询共用。
+    /// 准备普通搜索与指定目标查询共用的索敌参数，范围和目标阵营优先使用 NPC 的非零配置。
     /// </summary>
     private void GetSearchParameters(out CreatureSearchType searchType, out CreatureFightTypeEnum searchCreatureFightType, out float searchRange, out Vector3 startPosition, out int searchRoadIndex)
     {
         var fightCreatureData = selfCreatureEntity.fightCreatureData;
         var creatureInfo = fightCreatureData.creatureData.creatureInfo;
-        //如果有NPC数据 优先使用NPC数据里的属性
         var npcInfo = fightCreatureData.creatureData.creatureNpcData?.npcInfo;
         searchRange = (npcInfo != null && npcInfo.attack_search_range != 0)
             ? npcInfo.attack_search_range
             : creatureInfo.attack_search_range;
-        searchCreatureFightType = creatureInfo.GetAttackSearchCreatureFightType();
         searchType = creatureInfo.GetCreatureSearchType();
+        searchCreatureFightType = (npcInfo != null && npcInfo.attack_search_creature_fight_type != 0)
+            ? (CreatureFightTypeEnum)npcInfo.attack_search_creature_fight_type
+            : creatureInfo.GetAttackSearchCreatureFightType();
         startPosition = selfCreatureEntity.creatureObj.transform.position + new Vector3(0, 0.5f, 0);
         searchRoadIndex = fightCreatureData.roadIndex;
     }

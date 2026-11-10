@@ -46,7 +46,7 @@ EditorWindow (Unity)
 ├── FightModeEditorWindow(+TabConquer/TabChallengeHundred/TabInfinite)  # 战斗模式编辑工具 (征服模式/挑战100勇士/无尽模式三页签: 征服页签=前后难度对比列/ID列表名字下拉/场景配置整组复制粘贴(普通关+BOSS关场景池,跨难度复用)/敌人种类数量字符串字段(enemy_type_num/enemy_boss_type_num)/新增删除行; 无尽页签=编辑 excel_fight_type_infinite_info, 行下拉显示世界中文名(直读 GameWorldInfo.txt+Language_GameWorldInfo_cn.txt,不走TextHandler)+字段编辑（含指向 FightScene 的战斗场地 ID，0 时沿用冻结的 BOSS 场地）+新增/删除行+保存+导出Json, 复用挑战100勇士页签的 EPPlus 按id整行覆写模式; 均写回Excel+重导JSON)
 ├── StoryEditorWindow              # 故事演出编辑 (StoryInfo/StoryDetailsInfo/StoryTalkInfo 三表+excel_language 对应 sheet: 三栏布局故事列表/字段/步骤编排+对话内联编辑, 4个xlsx各单EPPlus会话写回+重导JSON)
 ├── DoomCouncilEditorWindow(+TabBill/TabRatings)  # 终焉议会编辑 (excel_doom_council_info 议案/excel_doom_council_ratings_info 议员评级 两页签: 左列表右编辑, 泛型基类 DoomCouncilEditorTabBase<T> 封装EPPlus读表/变更对比淡黄高亮/SetExcelData写回+ExcelToJsonItem重导JSON; 议案页签=解锁ID下拉(直读UnlockInfo.txt)/效果实体类9选1下拉/class_entity_data按实体显示参数提示/文本ID中文预览(直读Language_*_cn.txt))
-├── NpcCreateEditorWindow          # NPC创建编辑 (excel_npc_info 全字段 + 语言表中文名: 三栏布局 列表/字段+外观/Spine双模型预览, 非运行态版 NPC创建GUI)
+├── NpcCreateEditorWindow          # NPC创建编辑 (excel_npc_info 业务配置 + 语言表中文名: 三栏布局 列表/字段+外观/Spine双模型预览, 非运行态版 NPC创建GUI)
 └── PixelDaEditorWindow            # PixelDa 像素美术生成 (AI 文生图/图编辑/图生视频/抽帧/音乐)
 ```
 
@@ -390,10 +390,11 @@ LauncherTest (Inspector)
 
 ### 功能
 
-非运行态的 NPC 创建/修改/删除工具（Play 模式的 UITestNpcCreate/TestNpcCreateGUI 已删除并入本工具），提供完整 NPC 创建 GUI 功能（外观皮肤/逐部位调色/装备/随机池/属性编辑 + Spine 实时预览），写回 `excel_npc_info[NPC信息].xlsx`（NpcInfo sheet 全 25 列）与 `excel_language[多语言_FrameWork].xlsx`（NpcInfo sheet 中文名 content_cn，**textId 约定==NPC id**）。
+非运行态的 NPC 创建/修改/删除工具（Play 模式的 UITestNpcCreate/TestNpcCreateGUI 已删除并入本工具），提供 NPC 创建 GUI（外观皮肤/逐部位调色/装备/随机池/属性编辑 + Spine 实时预览），将编辑字段写回 `excel_npc_info[NPC信息].xlsx` 的 NpcInfo 工作表，中文名写回 `excel_language[多语言_FrameWork].xlsx` 的 NpcInfo 工作表 `content_cn`（**textId 约定==NPC id**）。
 
 - **三栏布局**（分隔条拖拽/双击复位照搬 StoryEditorWindow）：左栏 NPC 列表（搜索/npc_type/稀有度筛选/排序 + 新建[建议id+模板复制+中文名]/删除登记；**BOSS 项标注 `[BOSS]` 前缀**——判定源=全部征服配置 `FightTypeConquerInfo.enemy_boss_ids` 解析出的 npcId 集合 setBossNpcIds，ReloadAllCfg 时随 `FightTypeConquerInfoCfg` 缓存清理一并重建）｜中栏 上区基础字段+属性、下区外观编辑（随机皮肤池/固定皮肤按部位/逐部位调色RGB(A)+16色预设盘/随机装备池+稀有度勾选/固定装备按槽位，皮肤装备候选面板作为中右之间的第4栏带图集图标）｜右栏 Spine 预览（参考模型生物2001+目标双模型、动画列表/播放控制/滚轮缩放拖拽平移）。
 - **编辑副本+快照判脏**：选中 NPC 时 JSON 深拷贝出 editingNpcInfo（**绝不直改 Cfg 缓存 Bean**），外观编辑即时写回副本字符串字段（skin_data/equip_item_ids/SetSkinColorData/SetEquipRandom），脏判定=JsonConvert 序列化比对；切换/新建/刷新前三选（保存/放弃/取消）。删除仅内存登记 deletedNpcIds，保存时双表 DeleteRow（行号降序）。
+- **索敌目标**：属性区下拉编辑 `attack_search_creature_fight_type`（0 继承职业、1 防守方、2 进攻方、99 防守核心）。普通索敌仅匹配 1 和 2。模板复制随 Bean 深拷贝带上该值，保存时由 `WriteNpcRow` 按列名写回。
 - **保存**：ValidateAll（creature_id/随机池/装备/皮肤/额外技能存在性+body_size解析，错误阻断警告可过）→ 变更摘要确认 → File.Open 探测 Excel 占用（ExcelToJsonItem 对占用文件静默跳过，不探测会有「保存成功但 JSON 没更新」隐性事故）→ 双表各单 EPPlus 会话写回 → `ExcelUtil.ExcelToJsonItem`×2 重导 JSON → 反射清 Cfg 静态缓存（dicData/arrayData，拷贝自 GameTestEditor.ClearCfgBaseStaticCache；外加 ItemsInfoCfg.dicDataForCreatureModel / CreatureModelInfoCfg.dicDetailsModelInfo / SpineAnimationStateCfg.dicSpineAnimData 三个 public 静态缓存）。
 
 ### 编辑器安全铁律（本窗口强制，其他编辑器工具同样适用）
@@ -452,9 +453,11 @@ BaseUIView 的 Inspector 扩展，显示 UI 层级和动画信息。
 **文件**: `Assets/FrameWork/Editor/Base/Inspector/InspectorFlowerSeaInstanceRenderer.cs`
 
 花海渲染器（`FlowerSeaInstanceRenderer`，见 framework-core-system）的 Inspector 扩展：
-- **全参数中文化标注**：`fieldContents` 字典（字段名→`GUIContent(中文标签, 中文悬停提示)`），未登记字段回退原名；枚举弹窗（textureMode/shape）用 `EditorGUILayout.Popup` 中文化，注意 **Popup 不画 [Header] 装饰**，需 `DrawHeaderFor` 反射补画
+- `fieldContents` 为字段提供中文标签和悬停提示。中文枚举下拉通过 `EditorGUI.BeginProperty` 和 `EditorGUI.Popup` 保留多选混合值与预制体覆盖显示，并由 `DrawHeaderFor` 补画 `[Header]` 分组。
+- 「分布方式」对应 `distributionMode`，提供随机抖动网格、均匀错列和团簇分布。随机抖动网格或多选时分布方式不一致会显示「抖动网格」，以便调节 `gridCells` 的列数和行数。
+- 仅团簇模式由 `DrawClusterFields` 显示 `clusterCount`（团数）、`clusterRadiusRange`（世界半径区间）、`clusterCenterBias`（向心聚集）、`clusterScatterRatio`（散花比例）；主循环通过 `clusterFieldNames` 跳过这些字段，单选时另显示团内/散花数量和每团平均花数预览。
 - 贴图区按 `textureMode` 条件显示（图集模式只画图集字段 / 单图模式只画单图字段）：主循环 `GetIterator` 跳过贴图字段，绘制到 `textureMode` 时插入条件块；地形区同理按 `heightMode` 条件显示（射线模式 / 高度图模式字段组）
-- 图集模式关闭「使用图集全部格子」时展开 **行列 toggle 网格**（`DrawAtlasCellGrid`）：按均分列×行画 miniButton 阵列点选格子（顶行=贴图最上行，与看图习惯一致；>256 格退化为直接画列表防卡），含全选/清空按钮与空选警告；选中集合排序写回 `atlasSelectedCells` 保证序列化稳定
+- 图集模式关闭「使用图集全部格子」时，`DrawAtlasCellGrid` 按列数和行数绘制点选网格，顶行对应贴图最上行。网格提供全选、清空和空选警告，选中的格子排序后写回 `atlasSelectedCells`。多选或格子总数超过 256 时显示序列化列表。
 - 底部「重新生成花海 / 重置全部消散 / 测试踩踏(r=2)」按钮 + 状态行（花朵总数/已消散数）
 
 ---

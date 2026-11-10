@@ -305,7 +305,9 @@ private static void RegisterAll()
 | `FindCreatureEntity(DirectionEnum)` | 朝指定方向搜索多个目标 |
 | `FindCreatureEntityForSinge(Vector3)` | 朝指定向量方向搜索单个目标 |
 | `FindCreatureEntity(Vector3)` | 朝指定向量方向搜索多个目标；**`selfCreatureEntity` 为 null（已回收）时返回 null**，是全部索敌入口的兜底 |
-| `CheckCreatureEntityInSearchResult(DirectionEnum, target, snapshotUUId)` | 检查指定目标是否仍命中当前索敌；与普通搜索共用 NPC 优先范围、搜索类型、阵营、道路和起点配置，身份/候选命中由 `FightCreatureSearchUtil` 统一校验。用于 1002 人类弓箭手保靶 |
+| `CheckCreatureEntityInSearchResult(DirectionEnum, target, snapshotUUId)` | 检查指定目标是否仍命中当前索敌。与普通搜索共用 NPC 优先的范围和目标阵营、职业搜索类型、道路和起点，身份与候选命中由 `FightCreatureSearchUtil` 统一校验。用于 1002 人类弓箭手保靶 |
+
+所有索敌类型都优先读取 `NpcInfo.attack_search_creature_fight_type` 的非零值，无 NPC 配置或该列为空/0 时继承 `CreatureInfo` 同名配置。`FindCreatureEntity` 只接受 1（防守方）和 2（进攻方），99（防守核心）等其他值返回空。通过校验后，攻击搜索使用配置阵营，`RoadAllyHPOrDRNoMax` 按施法者实际阵营搜索同路受伤友军。
 
 ### AIHandler (AI处理器)
 

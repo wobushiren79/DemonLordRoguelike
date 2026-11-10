@@ -239,7 +239,7 @@ public partial class NpcCreateEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 写入单个 NPC 行（全 25 列；name[language] 列恒写 id，遵循 textId==NPC id 约定）
+    /// 按列名写入单个 NPC 的编辑字段，name[language] 列按 textId==NPC id 约定写入。
     /// </summary>
     private void WriteNpcRow(ExcelWorksheet sheet, Dictionary<string, int> colMap, NpcInfoBean npcInfo)
     {
@@ -259,6 +259,7 @@ public partial class NpcCreateEditorWindow : EditorWindow
         SetCellFloat(sheet, row, colMap, "ASPD", npcInfo.ASPD);
         SetCellFloat(sheet, row, colMap, "MSPD", npcInfo.MSPD);
         SetCellFloat(sheet, row, colMap, "attack_search_range", npcInfo.attack_search_range);
+        SetCellLong(sheet, row, colMap, "attack_search_creature_fight_type", npcInfo.attack_search_creature_fight_type);
         SetCellText(sheet, row, colMap, "skin_data", npcInfo.skin_data);
         SetCellLong(sheet, row, colMap, "creature_random_id", npcInfo.creature_random_id);
         SetCellText(sheet, row, colMap, "equip_item_ids", npcInfo.equip_item_ids);

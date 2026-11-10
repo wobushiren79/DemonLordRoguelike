@@ -85,6 +85,10 @@ AICreatureEntity                    # 生物 AI 基类
 - **⚠️不能用「中心距 ≤ searchRange」判定**（2026-08 击退后卡死 BUG 根因）：索敌射线命中的是目标 collider **表面**，命中时两中心距离 = searchRange + collider半径——中心距口径比索敌严格一个 collider 半径，会把「索敌认为能打」的位置判成脱靶，造成 Idle→Move→Attack 死循环原地卡住（每帧切换、Move 的索敌 CD 拉满即切走导致位移代码永远执行不到）。
 - **无副作用场景**：敌人 Attack 中站定+目标（防守生物）不动 → 复查恒真；远程大 searchRange 恒真；近战目标被击退 0.5 出射线范围 → 搜不到 → 中断重索敌（设计目的）。
 
+### NPC 索敌阵营覆盖
+- 所有索敌类型共用阵营参数，优先读取 `NpcInfo.attack_search_creature_fight_type` 的非零值，无 NPC 配置或该列为空/0 时继承 `CreatureInfo` 同名配置。搜索类型仍读职业配置。
+- `FindCreatureEntity` 接受 1（防守方）和 2（进攻方），99（防守核心）等其他值返回空。通过校验后，攻击搜索按配置阵营选目标，`RoadAllyHPOrDRNoMax` 按施法者实际阵营查找同路受伤友军。无目标时，进攻生物继续向魔王核心移动，靠近后进入 `AttackCreatureAttackCore`。
+
 ### 人类弓箭手指定目标保靶（creatureId=1002）
 - **首搜不变**：Idle 仍按 `DisMaxByRoad` 选同一路正前方最远敌人；进入 Attack 后缓存目标 `creatureUUId`，后续不再因出现更远敌人而换目标。Dis 系仍不执行 `attack_search_range=10` 的数值过滤。
 - **统一查询**：`AICreatureEntity.CheckCreatureEntityInSearchResult(direction, target, snapshotUUId)` 与原索敌共用配置准备，底层 `FightCreatureSearchUtil.CheckCreatureEntityInSearchResult` 先验目标存活/表现对象/UUID，再按同一实体引用检查候选命中；Dis 分支复用原候选与方向过滤但跳过距离排名，Ray/Area 复用原结果，AI 不直接比较 roadIndex/x。

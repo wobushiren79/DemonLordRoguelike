@@ -30,11 +30,11 @@ watched_files:
 2. 顺着 `WorldHandler.LoadFightScene` 核对运行时摆放。普通战斗会重设根的位置及旋转，根 Z 由 `-(sceneRoadNumMax - sceneRoadNum) / 2f` 偏移；需要保留的美术摆放写在子层。道路由运行时另外加载和缩放。普通战斗分支会确保根节点有 `ScenePrefabForFight` 并调用 `InitSceneData`，场景实例的动态表现统一挂在该组件；其 `enableSkyboxMotion` 默认关闭，只有天空石台等明确需要动态天空盒的预制体才启用并配置曝光/偏航速度。以实际道路格、生成点和地面高度检查覆盖范围、穿模、悬空及 Z-fighting；多种路数都要检查，包含可支持的最大路数。
 3. 用 Unity API 把包装 prefab 登记到 Addressables 的 `FightScene` 组，地址使用项目完整资源路径（含 `.prefab`）。核对 GUID 与地址唯一且对应同一资产，嵌套建筑、网格、材质、贴图及特效依赖可解析。不要为了此类加载另加一个 Build Settings 场景。
 
-4. 终焉议会及暴力说服复用 Common 组的 `DoomCouncilScene.prefab`。建筑挂在议会场景根节点下，随战斗分支的根变换定位。`ScenePrefabForDoomCouncil` 根据主相机位置隐藏近侧围墙，保留原有投影，东侧用低墙剖视。普通议会保持关门，场景 `Board` 限制角色走路和突进。`LoadDoomCouncilScene(forBattle: true)` 调用 `SetForBattle` 将门扇向厅内打开。地面覆盖门外 X=14.9 的议员出生中心，厅内保留单路 10 格部署区。议会分支用 `MaterialPropertyBlock` 为地毯上方的棋盘指定酒红 `#621C2E`、暖铜 `#C29158` 与 `0.35` 不透明度。
+4. 终焉议会及暴力说服复用 Common 组的 `DoomCouncilScene.prefab`。建筑挂在议会场景根节点下，随战斗分支的根变换定位。`ScenePrefabForDoomCouncil` 根据主相机位置隐藏近侧围墙，保留原有投影，东侧用低墙剖视。两种模式均保持关门，普通议会的 `Board` 限制角色走路和突进。`LoadDoomCouncilScene(forBattle: true)` 调用 `SetForBattle` 切换讲台墙剖视规则。大厅缩短时从门端调整，保留讲台与后墙的原有间距。暴力说服使用单路 7 格部署区，议员以世界 X=8.1 为出生中心（±0.25 随机偏移），从末格与关门之间入场。议会分支用 `MaterialPropertyBlock` 为地毯上方的棋盘指定酒红 `#621C2E`、暖铜 `#C29158` 与 `0.35` 不透明度。
 
 ## 3. 配表、绑定模式与兼容旧档
 
-1. 读 [配置表读写](../excel-io/SKILL.md)。通过项目 `.claude/scripts/run-python.ps1` 使用 openpyxl 修改 `Assets/Data/Excel/excel_fight_scene[战斗场景].xlsx` 的 `FightScene` 工作表。检查已用 ID 与编号规则，新增行按 ID 升序。`name_res` 填 prefab 文件名（含扩展名），加载时与 `PathInfo.FightScenePrefabPath` 拼成完整 Addressables 地址。`skybox_mat` 优先选用 `Skybox` 组中已登记的 `Assets/FrameWork/Materials/Skybox/` 材质，按构图填写 `skybox_rotate`。现有材质无法满足明确的美术需求时，优先把新天空做成兼容旋转参数的天空盒材质并登记到同组。按画面需要配置环境光、雾、景深、道路颜色/透明度和 `Details` 变体。`camera_move_limit` 用 `x:min,max&z:min,max` 配置实际相机世界 X/Z 范围，可按轴省略；默认 X=3~7、Z=-5~-1，竞技场 50001 配 `z:-4,-1`。
+1. 读 [配置表读写](../excel-io/SKILL.md)。通过项目 `.claude/scripts/run-python.ps1` 使用 openpyxl 修改 `Assets/Data/Excel/excel_fight_scene[战斗场景].xlsx` 的 `FightScene` 工作表。检查已用 ID 与编号规则，新增行按 ID 升序。`name_res` 填 prefab 文件名（含扩展名），加载时与 `PathInfo.FightScenePrefabPath` 拼成完整 Addressables 地址。`skybox_mat` 优先选用 `Skybox` 组中已登记的 `Assets/FrameWork/Materials/Skybox/` 材质，按构图填写 `skybox_rotate`。现有材质无法满足明确的美术需求时，优先把新天空做成兼容旋转参数的天空盒材质并登记到同组。按画面需要配置环境光、雾、景深、道路颜色/透明度和 `Details` 变体。`camera_move_limit` 用 `x:min,max&z:min,max` 配置实际相机世界 X/Z 范围，可按轴省略；默认 X=3~7、Z=-4.5~-1，竞技场 50001 配 `z:-4,-1`。
 2. 按入口更新目标场地配置，核对 `FightBean.fightSceneId` 最终取值。挑战100勇士的 `FightTypeChallengeHundredInfo.fight_scene_ids` 使用逗号，征服的 `FightTypeConquerInfo.fight_scene_ids` 和 `fight_scene_boss_ids` 使用 `&`。无尽用 `FightTypeInfiniteInfo.fight_scene_id` 按世界和难度指定单一 `FightScene` ID，0 或留空回退同难度征服 BOSS 场地。按 [传送门流程](../portal-system/SKILL.md) 核对专用场地只由目标正式战斗入口选用。
 3. 检查已有传送门。`FightBeanForInfinite.InitData` 在进场时优先读取当前无尽场地，因此新旧无尽传送门均使用专属配置，旧冻结值仍可用于回退。征服只懒补缺失场地，挑战100勇士通过 `GetChallengeHundredFightSceneId` / `IsMatchFightScene` 在冻结场地已移出配置池时重选。核对征服首战和决战、无尽测试入口以及无尽传送门的进场结果。
 4. 用项目 Unity 导出器同步本次改动的表到 `Assets/Resources/JsonText/`，包括模式表；通过 `ExcelUtil.ExcelToJsonItem(FileInfo, jsonFolderPath)` 定向导出时，实际回读 JSON，防止导出静默失败或拼错中文文件名。核对两端的行、字段类型和 ID 都一致，清理此次临时备份。只修改数据行时沿用已有 Bean。
@@ -68,6 +68,9 @@ watched_files:
 - 地表底图为 `ground_8_256x256.png`，使用偏青绿的连续短草，保留少量低对比的小露土擦痕。`_BaseMap` 平铺 `(12,-12)`、偏移 `(0.25,0.50)`。Unity 导入为 256×256，使用镜像环绕、三线性过滤、MipMap 和 8 倍各向异性。
 - 白天和白天花海（`40001/40003`）主光强度为 `0.99`，色温为 `6500 K`，阴影强度为 `0.88`，俯角为 `43°`。地表材质的 `_BaseColor` 为 `(0.75, 0.74, 0.78, 1)`。白天道路色为 `#30481C` / `#57752E`，透明度为 `0.28`。夜晚和夜晚花海（`40002/40004`）使用灰绿道路色 `#243B25` / `#4D6941`，透明度为 `0.29`。
 - 四种平原变体均使用原景深 `Bokeh/180/12`。后续平原光照和地表调色沿用这组景深做对照。在 `TestScene` 的 `Launcher` 选普通战斗测试 `[40001] 平原_1`，用 6 路、长度 10 手动 Play，检查地表亮度、景深和棋盘格辨识度。
+- 白天花海 `40003` 使用线性雾 `#F2E8FB`（22–100）。夜晚花海 `40004` 使用线性雾 `#101A30`（14–65），体积雾密度为 `0.035`。雾参数按 `FightScene` 行配置。
+- `Details/DayFlowerSea/FlowerSea` 使用「团簇分布」布置 40,000 朵花，`scaleRange` 为 `0.35–0.35`。默认 80 个团簇，世界半径随机区间 3.5–6.5，团心聚集程度 0.45，散花比例 15%（团内约 34,000 朵、每团平均约 425 朵）；这些参数只在团簇模式显示，改动会自动重新生成。手动 Play 时从开场机位和移动机位检查大团簇、团间空隙与远景覆盖。`Details/NightFlowerSea/FlowerSea` 使用 `68×68` 随机抖动网格布置 9,248 朵花，新增团簇字段保留组件默认值但不生效。可通过 `FlowerSeaInstanceRenderer` 的「分布方式」切换随机抖动网格、均匀错列与团簇分布。
+- 白天花海的 `Details/DayFlowerSea/PetalDrift` 嵌套 `Effect_Leaves_1.prefab`，覆盖实例颜色、尺寸、发射范围和漂移速度，将灰白像素图集染成浅粉到奶白的花瓣。预热后以每秒 9 片循环发射，沿战场横向慢漂并渐隐。手动 Play 进入 `40003`，检查近景花簇与角色比例、花海覆盖和飘散粒子的辨识度。
 
 ## 玫瑰宫殿决战场地
 

@@ -202,7 +202,7 @@ public class WorldHandler : BaseHandler<WorldHandler, WorldManager>
 
     #region 加载场景
     /// <summary>
-    /// 加载终焉议会场景，并根据是否进入战斗设置大门。
+    /// 加载终焉议会场景，并按场景用途设置讲台墙的剖视规则。
     /// </summary>
     /// <param name="forBattle">是否为暴力说服战斗加载场景</param>
     /// <returns></returns>

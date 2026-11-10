@@ -44,7 +44,8 @@ watched_files:
 - **运行时**：`CreatureBean.SetData(NpcInfoBean)` 在 `InitEquip` 后追加 `InitRandomEquip(npcInfo)`，按池类型分支——散件池：池按 ItemType 分组（`GetAllRandomEquipData`），每槽位经 `CreatureInfoBean.CanEquipItem`（部位/种族模组/武器类型）过滤后**在「空+可装备道具」中等概率抽1个**（裸体率=1/(可装备数+1)），稀有度每件独立抽；套装池（`InitRandomEquipForSuit`）：`GetRandomEquipSuit` 筛整套可装备的套装（`EquipSuitInfoBean.CanEquipFor`，任一件穿不上整套剔除）等概率整套抽1套，**稀有度整套统一roll一次**。**固定装备 `equip_item_ids` 优先，随机只填空槽**；每件走 `EquipUtil.CreateEquipItemForNpc`（NPC随机装备场景：userType=0 不出魔王专属、加点按稀有度配置默认取值，底层收口 `CreateEquipItem`）。解析入口 `NpcInfoBean.GetEquipRandomPoolId()/GetEquipRandomRarities()`（带缓存）。该机制对所有 NPC 类型通用（任何 NPC 配了 equip_random 都会随机穿装）。
 - **外观即装备皮肤**：`GetSkinData(isNeedEquip:true)` 自动挂装备 `creature_model_info_id` 皮肤（帽隐发/武器替换基础武器皮），议会场景/对话/详情面板零改动生效。随机议员的 `HP/DR/ATK` 现阶段按“对应职业 `CreatureInfo` 基础值 × `councilor_ratings`”配置（1~5阶分别1~5倍），`MP/ASPD/MSPD` 继续保持职业基础值，`attack_search_range=0` 继续继承职业范围；装备属性继续叠加。固定议员仍独立手配，不受此同步规则约束。
 - **暴力说服快照传递**：`FightBeanForDoomCouncil` 把 `doomCouncilData.listCouncilor` 放进 `FightAttackDetailsBean.creatureSnapshots`（与 npcIds 按下标对应）；`CreatureHandler.CreateAttackCreature(npcId..., creatureSnapshot)` 快照非空时直接用该 CreatureBean 创建（`GetFightCreatureData(creatureData,...)`）——**战斗中的议员与议会场景同一只（同皮肤/同装备/同属性）**，不再按 npcId 重建重抽。未指定额外攻击时，默认普攻读取快照中 `creatureInfo.attack_mode`，因此继承对应扭蛋职业的攻击方式，无需另设“评级→职业/攻击方式”映射。征服/其它战斗不传快照，行为不变。防御生物收集当前出战阵容（`userData.GetLineupCreature(userData.GetLineupFightIndex())`，与传送门详情弹窗选择的出战阵容同一口径，替代旧写死第 1 套）。
-- `FightBeanForDoomCouncil` 固定 1 条路、可部署路径长度 10。`FightAttackDetailsBean.npcCreatePosX` 将议员出生中心设为战斗坐标 X=14.9，距新门 2.3。`CreatureHandler.CreateAttackCreature` 继续附加 ±0.25 的随机偏移。
+- `FightBeanForDoomCouncil` 固定 1 条路、7 格部署区（世界 X=0.5–7.5）。通过 `FightAttackDetailsBean.npcCreatePosX` 指定议员的世界出生中心 X=8.1。`CreatureHandler.CreateAttackCreature` 加上 ±0.25 的随机偏移后，议员仍在部署区与关闭的大门之间。
+- **议员索敌**：固定和随机议员的 `NpcInfo.attack_search_creature_fight_type` 配 `1`（防守方）。`AICreatureEntity.GetSearchParameters` 优先读取 NPC 覆盖值，缺少 NPC 配置或该列留空/为 `0` 时继承 `CreatureInfo`。空路时议员继续接近并攻击魔王核心，回复型职业仍按实际阵营寻找同路可治疗的友军。
 - **暴力说服战斗不支持重新挑战**：`GameFightLogicDoomCouncil.IsCanRestartFight()` 显式重写为 false（2026-10 与用户确认的设定）——一次性战斗，失败即议案否决，不允许靠 ESC 系统界面「重新挑战」反复重打刷到赢。
 - **装备池编辑**：编辑器「游戏/皮肤随机池配置」(`SkinRandomEditorWindow`) 支持三模式——装备池([装备]前缀)候选取自 ItemsInfo、套装池([套装]前缀)候选取自 EquipSuitInfo 套装表、均按池物种(creature_model_id)过滤；套装内容本身由「游戏/装备套装配置」(`EquipSuitEditorWindow`) 编辑；保存按池类型写回对应列并同步导出 JSON。
 
@@ -69,13 +70,13 @@ watched_files:
 - 议员预制下 `Success` SpriteRenderer：用颜色表态度/意愿（0红/50白/100绿，`GetAttitudeColor`）；自由活动阶段可见，投票开始时由 `HideAllCouncilorAttitudeView()` 统一 `SetActive(false)` 隐藏。
 - `Relationship` SpriteRenderer：仅固定NPC显示好感图标（`NpcRelationshipInfo.icon_res`，UI图集）。
 - 坐标切换：固定NPC → `Relationship.x=-0.1`、`Success.x=0.1`（并排）；随机NPC → 隐藏 Relationship、`Success.x=0`（居中）。
-- `ScenePrefabForDoomCouncil` 在主相机越过墙线时隐藏近侧墙面。原本投影的网格切到 `ShadowsOnly`，离开剖视或组件停用时还原各自的投影模式。东侧低墙与完整东墙分段对齐。`SetForBattle` 将门扇向厅内打开 90°，两扇各向中线移 0.12、向厅内移 0.23 以避开石框。普通议会还原门扇的关闭位置、旋转和门缝。
+- `ScenePrefabForDoomCouncil` 在主相机越过墙线时隐藏近侧墙面。原本投影的网格切到 `ShadowsOnly`，离开剖视或组件停用时还原各自的投影模式。东侧低墙与完整东墙分段对齐。普通议会和暴力说服都使用预制体的关闭门扇。
 - 普通议会的 `DoomCouncilScene.prefab` 用 `Board` 标记四面墙和关门内侧的可走区域。移动和突进共用 `ControlForGameBase.CheckSceneBoard`，按 Board 局部 X/Z 的半边长判定，墙面剖视时同样生效。
 - `CameraDoomCouncilLimits` 用于普通议会自由走动镜头，跟随位置局部 Z 最低为 `-5.5`，横向按水平视角收住。靠近边缘时限制位置和视线，让角色可走到墙边并留在画面内。
-- 普通议会从讲台侧剖视时显示 `CutawayPodium`，其中低墙复用东墙剖面的网格和材质，两端用柱子收口。低墙和端柱仅渲染，原墙保留阴影。普通议会以讲台墙轴向厅内 `0.25` 作为切换线，待镜头离开墙厚再恢复高墙。暴力说服沿用原围墙和开门规则。
+- 普通议会从讲台侧剖视时显示 `CutawayPodium`，其中低墙复用东墙剖面的网格和材质，两端用柱子收口。低墙和端柱仅渲染，原墙保留阴影。普通议会以讲台墙轴向厅内 `0.25` 作为切换线，待镜头离开墙厚再恢复高墙。暴力说服以讲台墙轴为切换线，隐藏高墙时只保留阴影。
 - `CouncilorPosition` 下左右各 20 张桌子，两侧分别外移 `0.65`。每张桌子保留子节点 `Position`，`InitCouncilor` 从该位置生成议员。
 - `CouncilAisleCarpet` 从讲台后方铺到门槛，无碰撞。`Mat_Building_DoomCouncil_AisleCarpet_1` 的王宫红底金边贴图沿地毯长度重复 4 次。场景地面 Y 为 `-0.012`，地毯 Y 为 `-0.004`，暴力说服棋盘 Y 为 `0.0001`。`WorldHandler` 为议会棋盘格写入酒红 `#621C2E`、暖铜 `#C29158` 和 `0.35` 不透明度。
-- 东西墙镜像布置，每侧 5 面宽 3.4 的墙、4 根间柱，壁炬位于每面墙的中心。门墙、门架沿大厅 +Z 移到 Z=13.1，`Board` 与地毯同步延伸。`Brazier_*` 节点等比缩放到 `0.72`，随附 `Effect_Fire_7` 的世界空间粒子重力和速度上限按相同比例调整。
+- 东西墙镜像布置，每侧 4 面宽 3.4 的墙、3 根间柱，壁炬位于每面墙的中心，东侧低墙剖视同步分段。大厅只从门端缩短，门墙、门架的场景局部 Z 为 9.7，`Board` 和地毯的门端随之内收。讲台根节点 Z=-1.4，讲台后墙与低墙剖视 Z=-3.9，这段间距用于保持原来的镜头剖视效果。`Brazier_*` 节点等比缩放到 `0.72`，随附 `Effect_Fire_7` 的世界空间粒子重力和速度上限按相同比例调整。
 
 ### 好感持久化（`UserRelationshipBean`）
 - `Dictionary<long npcId, int relationship>`，默认0=仇恨；区间映射见 `NpcRelationshipInfo`（仇恨0-100/冷淡101-200/中立201-300/友好301-400/迷恋401-500）。
@@ -84,7 +85,7 @@ watched_files:
 ### 相关配置表（Excel 为唯一真实源，改后需在 Unity 运行 ExcelEditorWindow 导出）
 | 表 | 关键列 |
 |----|--------|
-| `excel_npc_info` NpcInfo | `npc_type`(2固定/3随机)、`creature_id`(随机议员必须直接引用现有扭蛋职业)、`creature_random_id`、`councilor_ratings`、`attack_search_range`(0=继承职业索敌范围)、`name`、`body_size`(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定)、`equip_random`(随机装备: `装备池ID,稀有度...` 如 `10000001,N,R`，空=不随机)、`region`(地区限制: 空=不限语言、`cn` 或 `cn,en` 等语言代码=仅这些语言下出现，仅议员生成生效)、`rarity`(生物稀有度: 空/0=N、按RarityEnum值1=N~6=L；配置后创建NPC生物时写入 CreatureBean.rarity，仅设置稀有度不授稀有度BUFF；145条npc_type=3随机议员行已按评级填充：评级1-2→N、3-4→R、5→SR) |
+| `excel_npc_info` NpcInfo | `npc_type`(2固定/3随机)、`creature_id`(随机议员必须直接引用现有扭蛋职业)、`creature_random_id`、`councilor_ratings`、`attack_search_creature_fight_type`(议员配 1 搜索防守方，空/0 继承职业)、`attack_search_range`(0=继承职业索敌范围)、`name`、`body_size`(体型倍率: 空/0=1倍、"0.9,1.1"=区间随机、"1.1"=固定)、`equip_random`(随机装备: `装备池ID,稀有度...` 如 `10000001,N,R`，空=不随机)、`region`(地区限制: 空=不限语言、`cn` 或 `cn,en` 等语言代码=仅这些语言下出现，仅议员生成生效)、`rarity`(生物稀有度: 空/0=N、按RarityEnum值1=N~6=L；配置后创建NPC生物时写入 CreatureBean.rarity，仅设置稀有度不授稀有度BUFF；145条npc_type=3随机议员行已按评级填充：评级1-2→N、3-4→R、5→SR) |
 | `excel_creature_random_info` CreatureRandomInfo | `random_type`(0皮肤池/1装备散件池/2套装池)、`skin_random_data`(皮肤池: CreatureModelInfo id区间串)、`equip_random_data`(散件池: ItemsInfo id区间串 / 套装池: EquipSuitInfo id区间串)、散件池id段 `10000001~70000001` / 套装池id段 `10000002~70000002`(已配给议员行) |
 | `excel_equip_suit_info` EquipSuitInfo | `creature_model_id`(物种0=通用)、`hat/clothes/pants/shoe/nose_ring/finger_ring/weapon`(7槽位道具id,0=空)、`remark`(套装名) |
 | `excel_doom_council_info` DoomCouncilInfo | `council_num`("min,max" 议会人数)、`success_rate` |

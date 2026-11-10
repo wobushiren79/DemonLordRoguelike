@@ -29,9 +29,6 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
     [SerializeField] private GameObject cutawayPodium;
     [SerializeField] private Transform podiumEmblem;
     [SerializeField] private Transform gate;
-    [SerializeField] private Transform gateLeftLeaf;
-    [SerializeField] private Transform gateRightLeaf;
-    [SerializeField] private GameObject gateSeam;
 
     [System.Flags]
     private enum WallSide
@@ -49,10 +46,6 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
     private (Renderer renderer, ShadowCastingMode shadowMode)[] gateWallRenderers;
     private (Renderer renderer, ShadowCastingMode shadowMode)[] emblemRenderers;
     private (Renderer renderer, ShadowCastingMode shadowMode)[] gateRenderers;
-    private Quaternion leftClosedRotation;
-    private Quaternion rightClosedRotation;
-    private Vector3 leftClosedPosition;
-    private Vector3 rightClosedPosition;
     private WallSide hiddenWalls;
 
     /// <summary>当前实例是否用于暴力说服战斗。</summary>
@@ -61,7 +54,7 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
     #region 初始化
 
     /// <summary>
-    /// 缓存围墙显示组件及其投影设置，以及门扇的关闭姿态。
+    /// 缓存围墙和大门的显示组件及其投影设置。
     /// </summary>
     private void Awake()
     {
@@ -71,10 +64,6 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
         gateWallRenderers = CacheRenderers(wallGate);
         emblemRenderers = CacheRenderers(podiumEmblem);
         gateRenderers = CacheRenderers(gate);
-        leftClosedRotation = gateLeftLeaf.localRotation;
-        rightClosedRotation = gateRightLeaf.localRotation;
-        leftClosedPosition = gateLeftLeaf.localPosition;
-        rightClosedPosition = gateRightLeaf.localPosition;
     }
 
     /// <summary>
@@ -114,20 +103,10 @@ public class ScenePrefabForDoomCouncil : ScenePrefabBase
     #region 围墙与大门显示
 
     /// <summary>
-    /// 战斗时将门扇向厅内打开并避开石框，为进攻路线留出入口。讲台低墙用于普通议会。
+    /// 根据是否进入战斗切换讲台墙的剖视规则。大门保持预制体的关闭姿态。
     /// </summary>
     public void SetForBattle(bool forBattle)
     {
-        Vector3 hingeUp = gate.InverseTransformDirection(transform.up);
-        float angle = forBattle ? 90f : 0f;
-        gateLeftLeaf.localRotation = Quaternion.AngleAxis(angle, hingeUp) * leftClosedRotation;
-        gateRightLeaf.localRotation = Quaternion.AngleAxis(-angle, hingeUp) * rightClosedRotation;
-        // 门扇转开时向厅内和门洞中线让位，给门板厚边和铁件留出空间。
-        Vector3 inward = gate.InverseTransformDirection(-transform.forward) * 0.23f;
-        Vector3 right = gate.InverseTransformDirection(transform.right) * 0.12f;
-        gateLeftLeaf.localPosition = forBattle ? leftClosedPosition + inward + right : leftClosedPosition;
-        gateRightLeaf.localPosition = forBattle ? rightClosedPosition + inward - right : rightClosedPosition;
-        gateSeam.SetActive(!forBattle);
         IsForBattle = forBattle;
         RefreshPodiumCutaway((hiddenWalls & WallSide.Podium) != 0);
     }

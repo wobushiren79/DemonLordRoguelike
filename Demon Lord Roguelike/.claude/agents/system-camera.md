@@ -23,7 +23,7 @@ watched_files:
 ### 游戏摄像机
 - [Scripts/Component/Manager/CameraManager.cs](Assets/Scripts/Component/Manager/CameraManager.cs)
 - [Scripts/Component/Handler/CameraHandler.cs](Assets/Scripts/Component/Handler/CameraHandler.cs)
-- 战斗开场 `InitFightSceneCamera(fightData)` 按场地配置选择横向锚点，平原 `FightScene_Plain_1.prefab` 取 X=5，默认 X=3。原始开场目标为 `(openingX,0,3)`，经 `ControlForGameFight.ClampCameraTargetPosition` 按 `FightScene.camera_move_limit` 钳制；默认实际相机世界 X=[3,7]、Z=[-5,-1]，竞技场 50001 的 Z=[-4,-1]，与输入限位一致。
+- 战斗开场 `InitFightSceneCamera(fightData)` 按场地配置选择横向锚点，平原 `FightScene_Plain_1.prefab` 取 X=5，默认 X=3。原始开场目标为 `(openingX,0,3)`，经 `ControlForGameFight.ClampCameraTargetPosition` 按 `FightScene.camera_move_limit` 钳制；默认实际相机世界 X=[3,7]、Z=[-4.5,-1]，竞技场 50001 的 Z=[-4,-1]，与输入限位一致。
 - 基地 CV_List 语义镜头：`SetXxxCamera(priority, isEnable)` 系列转调 `SetCameraForBaseScene`（详见 `camera-system` Skill）
 - 普通议会仍通过 `SetCameraForControlBase` 启用跟随镜头，只在议会实例的 `IsForBattle` 为 false 时配置 `CameraDoomCouncilLimits`。限位使用议会局部坐标和当前水平视角，沿用独立投票机位。
 - 奖励选择镜头：`SetCameraForRewardSelectScene(blendTime)` 切镜；`RefreshRewardSelectCameraFov(halfWidthForBox)` 按宝箱横向总宽度自适应 FOV——宝箱>=6 个时默认 FOV(60) 装不下两侧宝箱，由 `ScenePrefabForRewardSelect.InitRewardBox` 在遮罩盖住期间调用，几何关系 tan(hFov/2)=半宽/相机z距离、tan(hFov/2)=tan(vFov/2)*aspect，只在不够装时才放大

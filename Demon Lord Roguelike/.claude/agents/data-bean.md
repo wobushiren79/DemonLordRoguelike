@@ -42,6 +42,8 @@ Bean/
 
 > **`NpcInfoBean.IsBoss()`（`NpcInfoBeanPartial.cs`）**：按备注 `remark` 识别 BOSS，含 `boss` 且不含否定标记 `无boss`（均不区分大小写）；避免「小兵（无BOSS技能）」被误标。该判定用于测试下拉标记，正式刷怪仍以 `enemy_boss_ids` 配置为准，不能用 `attack_mode_ext` 非空代替。
 
+> **`NpcInfoBean.attack_search_creature_fight_type`（Excel 自动生成列，int）**：覆盖 NPC 的攻击索敌阵营。缺少 NPCInfo 或该列留空/为 0 时继承 `CreatureInfo`，同路回复继续按施法者实际阵营找友军。
+
 > **`ItemBean.juicerExp`（手写 `Assets/Scripts/Bean/Game/ItemBean.cs`，long）**：魔汁经验值实例字段，仅 `ItemTypeEnum.Juice=11`（消耗品）类型、`ItemIdEnum.Juice=200001` 有效；榨汁结算（`CreatureJuicerLogic.SettleJuiceReward`）按投入魔物等级的 `LevelInfo.juicer_exp` 汇总写入，`num_max=1` 不堆叠保证每瓶经验独立；旧存档无此字段默认 0 兼容。
 
 > **GM 成长药水数据方法（2026-10）**：`ItemsInfoBeanPartial.GetLevelPotionDelta()` 解析 `ItemsInfo.other_data` 的 `level_delta:N`（空/非法兜底1）；`CreatureBeanPartial` 提供 `CanDownLevel/DownLevelForPotion()/DownLevelForPotion(int)`（逐级降级+经验清0+按各级点数随机回退）与 `UpLevelForPotion(int)`（逐级升级并累计加点，满级自动停止），以及 `CanUpRarity/UpRarityForPotion/CanDownRarity/DownRarity`（升阶随机新档 BUFF、降阶移除高档 `dicRarityBuff`）；`CreatureAttributeBean.RemoveRandomAttributeForLevelUp(removeNum)` 从 `dicAttributeLevelUp` 累计值按单点增量随机回退，无每级历史故非精确回退。
@@ -95,11 +97,11 @@ Bean/
 
 > **`AttackModeInfoBeanPartial.GetLanceChargeConfig(out jumpTime, out jumpHeight, out chargeFxId, out landFxId)`（手写 Partial，2026-11 新增）**：解析攻击模块 `other_data` 的 `jump_time`/`jump_height`/`charge_fx`/`land_fx` 键（懒解析缓存；jumpTime 钳 0.2~0.8s、jumpHeight 钳 0~5、特效 id 0=不播放），供 `AttackModeChargeLanceKnight`（长枪骑士 BOSS 技能 102004）使用；与 `GetShieldCastConfig`/`GetSummonConfig`/`GetMultiHitConfig` 同套路。Bean 自动生成文件禁改，扩展只写 Partial。
 
-> **`FightSceneBean.camera_move_limit`（Excel 自动生成列，string）**：实际相机世界 X/Z 移动范围，格式 `x:min,max&z:min,max`，两轴均可省略。手写静态入口 `FightSceneBeanPartial.GetCameraMoveLimit(fightScene, out xLimit, out zLimit)` 统一处理 null/空配置/单轴缺失与非法值回退，默认 X=(3,7)、Z=(-5,-1)；竞技场 50001 配 `z:-4,-1`。`ControlForGameFight.ClampCameraTargetPosition` 按 CMFollow 偏移 X=0、Z=-8 换算成锚点限位，开场与移动共用。
+> **`FightSceneBean.camera_move_limit`（Excel 自动生成列，string）**：实际相机世界 X/Z 移动范围，格式 `x:min,max&z:min,max`，两轴均可省略。手写静态入口 `FightSceneBeanPartial.GetCameraMoveLimit(fightScene, out xLimit, out zLimit)` 统一处理 null/空配置/单轴缺失与非法值回退，默认 X=(3,7)、Z=(-4.5,-1)；竞技场 50001 配 `z:-4,-1`。`ControlForGameFight.ClampCameraTargetPosition` 按 CMFollow 偏移 X=0、Z=-8 换算成锚点限位，开场与移动共用。
 
 > **`FightTypeInfiniteInfoBean.fight_scene_id`（Excel 自动生成列，long）** 指向 `FightScene.id`。`FightBeanForInfinite.InitData` 优先使用正数场地 ID，缺少配置或 ID 为非正数时才读取传送门原有的征服 BOSS 场地。世界 1 难度 2–10 均配置为天空石台 `60001`。
 
-> `FightBeanForDoomCouncil` 在单路 10 格的战斗中按议员下标设置 `FightAttackDetailsBean.npcCreatePosX`。门在战斗世界坐标 X=12.6，出生中心 X=14.9，`CreatureHandler` 继续附加 ±0.25 的随机偏移。
+> `FightBeanForDoomCouncil` 在单路 7 格的战斗中为议员创建普通进攻波次。用 `FightAttackDetailsBean.npcCreatePosX` 按议员指定出生中心（世界 X=8.1），`CreatureHandler` 加上 ±0.25 的随机偏移后仍位于末格与关门之间。
 
 ### Bean 命名规范
 > **挑战100勇士场地兼容（2026-11-07）**：`FightTypeChallengeHundredInfoBeanPartial.IsMatchFightScene(sceneId)` 复用逗号分隔场景池缓存校验正数 ID；`GameWorldInfoRandomBean.GetChallengeHundredFightSceneId` 对缺失/已移出配置池的旧场景重新选择并写回，仅迁移场地，不重建难度/道路/敌人配置/奖励快照。当前全部挑战行的场地为 50001（Embervault 竞技场）。

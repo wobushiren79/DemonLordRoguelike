@@ -115,6 +115,10 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public string remark;
 	/// <summary>
+	///攻击搜索目标阵营（空或0=继承生物配置，1=防守方，2=进攻方，99=防守核心）
+	/// </summary>
+	public int attack_search_creature_fight_type;
+	/// <summary>
 	/// Mod合并引用字段拼接（由Excel列头 [language]/[mode_id] 标记自动生成，请勿手改）：该行来自 Mod JsonText 时，下列字段按同一 modId 拼接，指向 Mod 自带配置/语言表的同自ID行；0=无引用不拼接
 	/// </summary>
 	public override void CombineModReferenceIds(int modId)

@@ -23,6 +23,19 @@ public partial class NpcCreateEditorWindow : EditorWindow
     private static readonly string[] npcTypeLabels = { "0 默认", "1 战斗", "2 议会固定", "3 议会随机" };
     /// <summary>稀有度下拉显示名（序号即稀有度值，0=未配置按N计）</summary>
     private static readonly string[] rarityLabels = { "0 未配置(N)", "1 N", "2 R", "3 SR", "4 SSR", "5 UR", "6 L" };
+    /// <summary>索敌目标下拉值（与显示名同序）</summary>
+    private static readonly int[] attackSearchFightTypeValues =
+    {
+        (int)CreatureFightTypeEnum.None,
+        (int)CreatureFightTypeEnum.FightDefense,
+        (int)CreatureFightTypeEnum.FightAttack,
+        (int)CreatureFightTypeEnum.FightDefenseCore
+    };
+    /// <summary>索敌目标下拉显示名</summary>
+    private static readonly string[] attackSearchFightTypeLabels =
+    {
+        "0 继承职业", "1 防守方", "2 进攻方", "99 防守核心（普通索敌无匹配）"
+    };
     #endregion
 
     #region 下拉候选缓存
@@ -232,7 +245,7 @@ public partial class NpcCreateEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 绘制属性编辑区（直接绑定编辑副本 float 字段）
+    /// 绘制属性与索敌配置编辑区，修改写入当前 NPC 编辑副本。
     /// </summary>
     private void DrawAttributeSection()
     {
@@ -244,6 +257,9 @@ public partial class NpcCreateEditorWindow : EditorWindow
         editingNpcInfo.ASPD = DrawAttrFloat("攻击速度 ASPD", editingNpcInfo.ASPD);
         editingNpcInfo.MSPD = DrawAttrFloat("移动速度 MSPD", editingNpcInfo.MSPD);
         editingNpcInfo.attack_search_range = DrawAttrFloat("搜索范围", editingNpcInfo.attack_search_range);
+        DrawIntPopup("索敌目标", editingNpcInfo.attack_search_creature_fight_type,
+            attackSearchFightTypeValues, attackSearchFightTypeLabels,
+            value => editingNpcInfo.attack_search_creature_fight_type = value);
     }
 
     /// <summary>

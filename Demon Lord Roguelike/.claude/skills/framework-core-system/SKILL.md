@@ -599,7 +599,7 @@ ghost.ClearAll();
 ### 数据流
 
 ```
-Generate()：贴图归一(图集均分全用/行列子集atlasSelectedCells/手动Rect/单图PackTextures打包→atlas+Rect[]) → 抖动网格布点(洗牌分格+种子随机，flowerCount 超额时多轮复用格子不截断)
+Generate()：贴图归一(图集均分全用/行列子集atlasSelectedCells/手动Rect/单图PackTextures打包→atlas+Rect[]) → CPU 按 distributionMode 布点
     → 地形高度三模式(固定/射线/高度图，高度图模式自动识别 MeshTerrain 材质) → 静态实例 buffer(位置/缩放/变体/相位/yaw, 32B×N) + 变体Rect buffer + args buffer
 TrampleAt(pos, radius)：XZ 空间哈希网格查花 → dissolveBuffer 写当前时钟（哨兵 -1=未消散，仅踩踏帧整份重传 4B×N），DissolvedCount 计数
 shader：每渲染帧由组件推送统一时钟 _FlowerSeaTime（编辑模式=EditorApplication.timeSinceStartup，Play=Time.time）→ progress=saturate((_FlowerSeaTime-start)/duration) → clip(noise-progress*1.001) 像素 dither 消散
@@ -618,6 +618,7 @@ flowerSea.ResetSea();   // 全部复原（不重新布点）
 
 ### 关键点与坑
 
+- **分布方式**由 `SamplePositions` 生成坐标。`JitteredGrid=0` 沿用原洗牌和随机序列，数量超过 `gridCells` 时多轮复用格子。`EvenSpread=1` 按范围宽高比和总数推算错列行，每个点位放一朵并轻微随机偏移，减少扎堆。`Clustered=2` 走 `SampleClusters`：独立随机团心 + 世界单位半径，不再递归均分小区；`clusterCount` 控制团数，`clusterRadiusRange` 控制各团半径区间，`clusterCenterBias=0` 时圆盘面积均匀、越大越向团心集中，`clusterScatterRatio` 控制全场散花比例。团内先给每团分一朵（花数足够时），余量随机分配，保证总数精确且各团大小有差异；团心按本团半径留边距，半径超过范围时缩小，避免坐标夹取在边界堆线。三个模式均遵守 `flowerCount` 和同种子可复现，共用地形采样、踩踏和 GPU 实例绘制；分布与团簇参数均入结构签名，改动后自动重新生成。
 - **双形态共用同一 quad**（底部中心 pivot）：竖直 yaw 广告牌 / 贴地平铺（`_FLATMODE` 顶点内把 y∈[0,1] 重映射到 z∈[-0.5,0.5]）。
 - **keyword 用 `multi_compile` 不用 `shader_feature`/`_local`**：材质运行时 `new`、无资产携带 keyword，`_local` 在 Instanced 绘制下变体选择失效（项目教训），`shader_feature` 有构建裁剪风险；3 个 keyword 仅 8 变体，全量内置零风险。
 - **不用 Unity instancing 宏**：顶点 `SV_InstanceID` 直接索引 `StructuredBuffer`（需 `#pragma target 4.5`）；材质须 `enableInstancing=true`。
@@ -630,7 +631,7 @@ flowerSea.ResetSea();   // 全部复原（不重新布点）
 - **预制体编辑模式(Prefab Stage)不支持预览**（2026-08 实测，两条路径均失败后回滚）：SRP `beginContextRendering` 回调对预制阶段视图不生效；`SceneView.duringSceneGui` 提交 `DrawMeshInstancedIndirect` 也画不出来（疑 DrawMesh* 需在相机渲染建立阶段提交，预制阶段渲染不走该路径）。替代工作流：把预制实例拖到场景中调参（场景视图实时预览正常）。注意排查方向：预制里的组件若未赋贴图，Generate 会在 Console 报"图集模式未赋 atlasTexture"导致 isReady=false。
 - **地形高度三模式**（`heightMode`）：`FixedY` 平地 / `Raycast` 射线（用 `gameObject.scene.GetPhysicsScene().Raycast` 命中组件所在 scene，预制阶段也能打自身场景）/ `HeightmapTerrain` 高度图地形——**GPU 顶点位移地形（如 `Shader_Mesh_Terrain.shader` 的 MeshTerrain）射线只能打到位移前的平面，必须用它**：CPU 侧复现 `TerrainHeight.hlsl` 公式（`local.y += h*heightScale`），世界XZ→地形物体空间→网格 UV(按 `mesh.bounds` 归一)→双线性采高度图；高度图/起伏/反转可自动从地形材质读（`_HeightMap/_HeightScale/_HeightInvert` 约定属性名），**贴图无需开 Read/Write**（Blit→线性临时RT→ReadPixels 回读）。
 - **时钟不用 shader 内置 `_Time.y`**：消散/风摆统一用组件每渲染帧推送的 `_FlowerSeaTime`（编辑模式=EditorApplication.timeSinceStartup，Play=Time.time）——与 TrampleAt 盖章严格同源，规避编辑模式下内置时钟不保证同步导致消散永不推进的坑（CBUFFER 里必须声明为 `float` 不能 `half`，编辑器长时间运行下大数值 half 精度不足）；`editModeLivePreview` 强制 SceneView 重绘驱动动画（**按 `editModePreviewFps` 节流，默认 30FPS**——满帧率强制重绘会让显卡空转）。
-- **参数自动实时刷新**：`OnValidate` 按「结构参数签名」分派——结构参数（范围/数量/种子/贴图列表/地形/randomYaw）全量重建，表现参数（消散/风摆/形态 keyword）仅 `PushMaterialProperties` 刷材质；编辑模式经 `EditorApplication.delayCall` 消费（OnValidate 内禁止建 GPU 资源），Play 模式 Update 消费；编辑模式拖动组件 transform 也会节流重建（0.15s）。
+- **参数自动实时刷新**：`OnValidate` 按「结构参数签名」分派——结构参数（范围/数量/种子/分布模式/团簇参数/贴图列表/地形/randomYaw）全量重建，表现参数（消散/风摆/形态 keyword）仅 `PushMaterialProperties` 刷材质；编辑模式经 `EditorApplication.delayCall` 消费（OnValidate 内禁止建 GPU 资源），Play 模式 Update 消费；编辑模式拖动组件 transform 也会节流重建（0.15s）。
 
 ---
 

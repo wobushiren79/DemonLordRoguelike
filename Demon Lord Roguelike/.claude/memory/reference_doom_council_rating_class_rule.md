@@ -19,8 +19,8 @@ metadata:
 
 ## 攻击继承与抽取边界
 
-- 暴力说服沿用议会议员快照；未指定额外攻击时，普攻最终读取快照中 `creatureInfo.attack_mode`，因此跟随该 `creature_id` 的扭蛋职业。`NpcInfo.attack_search_range=0` 时索敌范围也继承职业配置。不要扩写成“所有属性、所有额外攻击都无需配置便自动继承”。
-- **现阶段基础属性与评级倍率规则**：随机议员的 `HP/DR/ATK = 对应职业 CreatureInfo 基础值 × councilor_ratings`，1~5阶分别1~5倍；`MP/ASPD/MSPD` 继续保持职业基础值，`attack_search_range=0` 继承职业范围。后续调整职业基础属性时，须按该公式同步此职业全部5条随机议员模板。这里是**配置值复制并按评级倍增**，不是运行时自动乘算，也不能把 NPC 属性填0继承——NPC 基础属性填0就是0，仅 `attack_search_range` 支持0回退（见 [[reference-npc-attribute-zero-no-inherit]]）。装备、评级稀有度等仍按议员自身规则叠加。固定议员继续独立手配，不适用此同步规则。
+- 暴力说服沿用议会议员快照，未指定额外攻击时，普攻读取快照中 `creatureInfo.attack_mode`，沿用 `creature_id` 的扭蛋职业。议员的 `NpcInfo.attack_search_creature_fight_type=1` 指向防守方，`attack_search_range=0` 时继承职业的索敌范围。
+- **现阶段基础属性与评级倍率规则**：随机议员的 `HP/DR/ATK = 对应职业 CreatureInfo 基础值 × councilor_ratings`，1~5 阶分别为 1~5 倍。`MP/ASPD/MSPD` 沿用职业基础值。后续调整职业基础属性时，按该公式同步此职业全部 5 条随机议员模板。倍率直接写在配置值里，NPC 基础属性填 0 即使用 0（见 [[reference-npc-attribute-zero-no-inherit]]）。装备、评级稀有度等按议员自身规则叠加。固定议员独立手配。
 - `GetRandomCouncilorNpc` 正常先抽职业，再按权重抽评级，并精确查找 `(creature_id,rating)`；缺组合时回退到同职业任意评级只是运行时容错，**不能作为配置缺行的依据**。
 - 本规则只约束随机议员模板。固定议员（`npc_type=2`）是独立手配角色，可有评级6，不要求按物种或评级展开，也不参与随机议员模板计数。
 - 地区过滤等运行时筛选只决定当前可用模板，不改变全组合配置要求。

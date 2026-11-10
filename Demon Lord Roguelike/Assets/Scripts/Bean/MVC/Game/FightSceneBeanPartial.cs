@@ -166,11 +166,11 @@ public partial class FightSceneBean
     //默认值使用实际相机世界坐标，不是镜头锚点坐标
     private const float DEFAULT_CAMERA_WORLD_X_MIN = 3f;
     private const float DEFAULT_CAMERA_WORLD_X_MAX = 7f;
-    private const float DEFAULT_CAMERA_WORLD_Z_MIN = -5f;
+    private const float DEFAULT_CAMERA_WORLD_Z_MIN = -4.5f;
     private const float DEFAULT_CAMERA_WORLD_Z_MAX = -1f;
 
     /// <summary>
-    /// 获取实际相机世界 X/Z 移动范围；空场景、空配置或未配置轴分别回退默认 X=(3,7)、Z=(-5,-1)。
+    /// 获取实际相机世界 X/Z 移动范围；空场景、空配置或未配置轴分别回退默认 X=(3,7)、Z=(-4.5,-1)。
     /// </summary>
     /// <param name="fightScene">当前战斗场景配置，null 时全部使用默认值</param>
     /// <param name="cameraWorldXLimit">实际相机世界 X 的最小值和最大值</param>

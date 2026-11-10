@@ -1,11 +1,13 @@
 ---
 name: reference_colored_icons
-description: 彩色游戏图标(深渊馈赠/成就)32x32 ≤N色风格规范、控色技巧与编号进度（原 PixelLab 生成流水线已弃用）
+description: 彩色游戏图标尺寸、限色规范与编号进度。正式深渊馈赠图标为 16×16，成就与深渊暂存素材沿用 32×32 流程。
 metadata:
   type: reference
 ---
 
-彩色像素图标(深渊馈赠 `ui_abyssalblessing_*`、成就 `ui_achievement_*`)风格 = **32×32、彩色、黑色描边、单个粗壮居中徽记、每张 ≤N 色**(参考现有 `Assets/LoadResources/Textures/AbyssalBlessing/` 与 `.../Achievement/`,均带描边+简单明暗;`icon_res` 字段引用,走 `AtlasForAbyssalBlessing`/`AtlasForAchievement` 图集)。与白色 [[reference_research_white_icons]] 同源但彩色。**⚠️ 单张颜色上限随需求变**:早期约定 ≤8,2026-07-12 用户收紧到 **≤6 色**——按当次要求调量化的 colors 参数。
+深渊馈赠 `ui_abyssalblessing_*` 和成就 `ui_achievement_*` 使用彩色、黑色描边、居中构图和简明明暗。各自通过 `icon_res` 引用 `AtlasForAbyssalBlessing` 和 `AtlasForAchievement` 中的 Sprite。单张颜色上限按任务要求，2026-07-12 的约定为 **≤6 色**。
+
+**正式深渊馈赠图标**（2026-11-10）：`Assets/LoadResources/Textures/AbyssalBlessing/` 的 127 张 PNG 均为原生 **16×16**。原 32×32 的 114 张参考用户选定的金币第二版重绘，保留原图主体和各自色系，使用较大的色块、清晰描边与二值透明。原位更新 PNG 并保留 `.meta`，以维持文件名、Sprite GUID 和图集引用。成就与 `Assets/Out/AbyssalBlessing/` 的暂存素材沿用 32×32 流程。
 
 **再生成途径**：PixelLab 已停用（2026-10 起不再使用）。新图标用项目内 **PixelDa 编辑器工具**（菜单 Custom/AI/像素图生成，见 pixelda skill）出图。
 
@@ -18,4 +20,4 @@ metadata:
 **编号进度(截至 2026-07-12)**:
 - 深渊馈赠:正式目录 `ui_abyssalblessing_0..125`;暂存 `Assets/Out/AbyssalBlessing/` 新增 **`ui_abyssalblessing_126..2621`(2496 张,连号无缺口,≤6 色)** 待用户导入。**下一个从 2622 起**。
 - 成就 `ui_achievement_*`:原始按类型命名(`_time`/`_kill`/`_clear`);AI 新增按下标 `ui_achievement_0..63`。**下一个从 64 起**。
-- 正式目录现有:AbyssalBlessing 含 0–125,Achievement 含 time/kill/clear + 0–63;新产出仍在 `Assets/Out/`,待移入。
+- 正式目录现有：AbyssalBlessing 共 127 张（114 张编号图标与 13 张具名图标），Achievement 含 time/kill/clear + 0–63。新产出仍在 `Assets/Out/` 待移入。

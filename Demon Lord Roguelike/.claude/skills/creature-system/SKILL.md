@@ -499,7 +499,7 @@ Color rarityColor = CreatureUtil.GetRarityColor(creature.rarity);
 ## 同路回复索敌（CreatureSearchType.RoadAllyHPOrDRNoMax）
 
 - 愈之魅魔 4002 治疗专用 `CreatureSearchType.RoadAllyHPOrDRNoMax(12)`：按 `roadIndex` 遍历同路同阵营生物，筛「存活 + HP/DR 任一不满」（口径 `FightCreatureBean.IsHPNotFull()/IsDRNotFull()`），底层 `FightCreatureSearchUtil.FindCreatureEntityByRoadForAlly`。
-- **友军阵营取施法者实际阵营**：`attack_search_creature_fight_type` 是攻击索敌的「目标阵营」，治疗不能套用；底层按 `selfCreature.fightCreatureData.creatureFightType` 取同路列表——玩家愈之魅魔（FightDefense）奶防守方不变；终焉议会愈之魅魔作为进攻方（FightAttack）奶进攻方，不会奶到玩家。`selfCreature` 为空时回退配置值。
+- `FindCreatureEntity` 先校验解析出的索敌阵营为 1 或 2，99 等其他值直接返回空。通过校验后，`FindCreatureEntityByRoadForAlly` 按施法者实际阵营取同路友军列表，`selfCreature` 为空时回退传入阵营。玩家愈之魅魔治疗防守方，终焉议会愈之魅魔作为进攻方时治疗进攻方。
 - **其他友军优先、自己兜底**：搜索者自己满足条件时不进入本轮入列，而是在其他友军收集完后追加到列表末尾——只有没有其他可治疗目标时才会选中自己（自奶）。调用方取 `[0]`。
 - 同路搜索不看方向与距离（`attack_search_back`/正面优先等方向逻辑对它无效），**身后的同路友军同样可被选中**；`attack_search_back` 只影响防守生物是否转身，不影响本索敌。
 
@@ -507,7 +507,7 @@ Color rarityColor = CreatureUtil.GetRarityColor(creature.rarity);
 
 ## 指定目标索敌命中查询（AICreatureEntity）
 
-- `AICreatureEntity.CheckCreatureEntityInSearchResult(direction, target, snapshotUUId)` 与普通 `FindCreatureEntity` 共用索敌参数准备（NPC 优先范围、搜索类型、阵营、自身道路、统一起点），不改动原 Find 系列签名与行为。
+- `AICreatureEntity.CheckCreatureEntityInSearchResult(direction, target, snapshotUUId)` 与普通 `FindCreatureEntity` 共用索敌参数。搜索类型取 `CreatureInfo`，范围和索敌阵营参数优先取 `NpcInfo` 的非零配置，无 NPC 配置或该列为空/0 时继承 `CreatureInfo`。同路回复按上述规则选取同阵营友军。
 - 底层 `FightCreatureSearchUtil.CheckCreatureEntityInSearchResult` 先验目标存活、表现对象和锁定 UUID，再按实体引用判断候选命中；Dis 系只跳过最近/最远排名，候选、方向和 range 使用口径与原搜索一致，Ray/Area 直接复用原结果。
 - 当前用于 **1002 人类弓箭手**：首次仍选同路正前方最远目标，之后持续保靶；死亡、换路、UUID 变化或移动到身后时回 Idle 重搜。Dis 不执行 `attack_search_range=10` 数值过滤；5002 牛头人投手不受影响。
 

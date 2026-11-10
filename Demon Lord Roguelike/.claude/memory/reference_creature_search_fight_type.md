@@ -1,16 +1,14 @@
 ---
 name: reference-creature-search-fight-type
-description: 生物索敌阵营只读 attack_search_creature_fight_type 配置、与实际所在阵营无关——玩家生物（值=2 猎杀进攻方）直接改作敌人会索敌自己人打友军；正确做法=克隆生物行改值=1（先例 103106/103107）
+description: 索敌阵营参数优先读 NpcInfo，空或 0 时继承 CreatureInfo，同路回复通过阵营校验后选实际友军
 metadata:
   type: reference
 ---
 
-`AICreatureEntity.FindCreatureEntity`（AICreatureEntity.cs:89）索敌阵营 `searchCreatureFightType = creatureInfo.GetAttackSearchCreatureFightType()`——**只读生物配置，与生物实际所在阵营（FightAttack/FightDefense）无关**。玩家卡生物（如 2001 骷髅战士/2002 骷髅投手）该值=2（FightAttack，猎杀进攻方），是防守方设计；若作为进攻方生成（召唤物/暴力说服快照），AI 会搜 `LayerInfo.CreatureAtt`（**自己人**）——近战 AttackModeMelee 对 AI 传入的 attacked 直接 UnderAttack 不过层级，会真打友军。
+`AICreatureEntity.GetSearchParameters` 为所有搜索类型优先读取 `NpcInfo.attack_search_creature_fight_type` 的非零值，无 NPC 配置或该列为空/0 时继承 `CreatureInfo` 同名配置。普通搜索与指定目标复查共用此参数。`FindCreatureEntity` 接受 1（`FightDefense`）和 2（`FightAttack`），99（`FightDefenseCore`）等其他值返回空。
 
-**Why:** 2026-09-15 骷髅召唤师任务发现：全库所有敌人生物（10xxxx）都是独立行、配 attack_search_creature_fight_type=1，没有任何「敌方 NPC 复用玩家生物」的先例可抄。
+玩家职业（如 2001 骷髅战士和 2002 骷髅投手）默认配置 2。进攻 NPC 复用这些职业时，在 `NpcInfo` 配 1 即可索敌防守方。引用独立敌方职业且职业默认配置已是 1 的 NPC 可留空。玩家初始赠送 NPC 继续继承职业配置。
 
-**How to apply:** 一般把玩家生物改作敌人（或反之）时，**克隆生物行**（先例：103106/103107 克隆 2001/2002）只改 `attack_search_creature_fight_type`（敌人=1 索防守方）+ `creature_type=2` + 清 CMP/RCD/unlock_id/creature_random_id/details，皮肤/攻击方式/动画照抄，NPC 行改引用克隆生物 id，不要直接让一般敌人 NPC 引用玩家生物 id。
+终焉议会随机议员按 [[reference-doom-council-rating-class-rule]] 复用扭蛋职业，暴力说服通过 NPC 配置索敌防守方。搜索类型仍取职业，搜索范围遵循 NPC 非零优先。无防守目标时沿用普通进攻生物的魔王核心兜底。相关：[[reference-npc-attribute-zero-no-inherit]]
 
-**随机议员例外：** 终焉议会随机议员按 [[reference-doom-council-rating-class-rule]] 必须直接复用现有扭蛋职业，不能套用上述克隆建议擅自改绑或破坏“职业×评级”模板。其「暴力说服」快照（玩家生物配置=2 当敌人用）仍存在同类索敌阵营隐患；如需修复，应单独调整 NPC 驱动生物的索敌阵营推导并回归测试，而不是违背议员职业复用规则。相关：[[reference-npc-attribute-zero-no-inherit]]
-
-**回复系已修复（2026-11-03）：** 回复索敌 `CreatureSearchType.RoadAllyHPOrDRNoMax` 改为按施法者实际阵营（`selfCreature.fightCreatureData.creatureFightType`）取同路友军列表，不再套用攻击索敌配置——议会愈之魅魔作为进攻方只奶进攻方友军/自己，不会奶到玩家。**攻击系生物仍走原配置口径**，上述「议员作为进攻方打友军」隐患仍在，勿据此认为议会索敌已整体修复。
+**同路回复**通过索敌阵营校验后，`CreatureSearchType.RoadAllyHPOrDRNoMax` 按施法者实际阵营（`selfCreature.fightCreatureData.creatureFightType`）取同路友军列表。议会愈之魅魔作为进攻方时治疗同路受伤议员，并可在没有其他受伤友军时治疗自己。

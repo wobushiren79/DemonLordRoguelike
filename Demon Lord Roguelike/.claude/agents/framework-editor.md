@@ -30,7 +30,7 @@ watched_files:
 - **InspectorBaseUIView** - UI View Inspector
 - **InspectorEffectBase** - 特效 Inspector
 - **InspectorMaskUIView** - 遮罩 Inspector
-- **InspectorFlowerSeaInstanceRenderer** - 花海渲染器 Inspector（全参数中文化标注+悬停提示、按 textureMode 条件显示贴图字段、图集行列子集 toggle 网格点选、重新生成/重置消散/测试踩踏按钮、总数/已消散状态行）
+- **InspectorFlowerSeaInstanceRenderer** - 花海渲染器 Inspector。支持多选和中文分布方式下拉，包括随机抖动网格、均匀错列和团簇分布。随机抖动网格或分布方式混合时显示网格列数和行数；仅团簇模式显示团数、半径区间、团心聚集程度、散花比例及每团平均花数预览。贴图区域按来源模式显示，支持按图集行列点选、重新生成、重置消散和测试踩踏。
 
 ### Hierarchy 扩展
 - **HierarchySelect** / **HierarchySelectPopupSelect**

@@ -6,6 +6,11 @@ public class FightBeanForDoomCouncil : FightBean
 {
     public DoomCouncilBean doomCouncilData;
 
+    #region 战斗初始化
+
+    /// <summary>
+    /// 用当前议会的数据创建暴力说服战斗。
+    /// </summary>
     public FightBeanForDoomCouncil(DoomCouncilBean doomCouncilData) : base()
     {
         this.doomCouncilData = doomCouncilData;
@@ -13,10 +18,8 @@ public class FightBeanForDoomCouncil : FightBean
         InitData();
     }
 
-    #region 战斗初始化
-
     /// <summary>
-    /// 初始化终焉议会暴力说服战斗
+    /// 初始化暴力说服的单路 7 格部署区和关门内侧的议员波次。
     /// </summary>
     public override void InitData()
     {
@@ -26,7 +29,7 @@ public class FightBeanForDoomCouncil : FightBean
         //设置道路数量
         sceneRoadNum = 1;
         //设置道路长度
-        sceneRoadLength = 10;
+        sceneRoadLength = 7;
         //设置最大关卡数量
         figthNumMax = 1;
         //设置当前关卡数量
@@ -47,8 +50,8 @@ public class FightBeanForDoomCouncil : FightBean
         fightAttackData = new FightAttackBean();
         var councilorAllNpcId = doomCouncilData.GetCouncilorAllNpcId();
 
-        // 大门随侧墙延长到战斗坐标 x=12.6，议员在门外保留原有的 2.3 单位入场距离。
-        const float councilorSpawnX = 14.9f;
+        //议员出生在最后一格与关门之间，保留通用的 ±0.25 出生偏移。
+        const float councilorSpawnX = 8.1f;
         var councilorSpawnPositions = new List<float>(councilorAllNpcId.Count);
         for (int i = 0; i < councilorAllNpcId.Count; i++)
         {
