@@ -64,6 +64,7 @@ watched_files:
 - 共享材质采用树林手调值。周期 4 秒，空中光束强度 0.35，地面柔光亮度 0.20。「光束收束强度」`_BeamTightness` 范围为 0–1，Shader 默认 0，材质使用 0.1，空中和地面的有效宽度约为原来的 91% 和 94%，保留横向柔边和峰值亮度。
 - 透明物体按棋盘 2998、月光 2999、角色 3000 绘制。月光在棋盘之后混合，光色跨棋盘边界连续，角色在月光之上。共享 `MatFightSceneRoad` 只调整渲染队列及 `_QueueOffset`，棋盘颜色和透明度继续由场景配置驱动。
 - 各分支的 Global Volume 使用优先级 10、权重 1，共用 `Assets/Settings/ForestNightColorProfile.asset`，调色参数见 [环境渲染指南](../../agents/system-volume.md#关键约定)。树林两个夜晚分支、沙漠夜晚及平原两个夜晚分支停用旧 `MoonShaft_1`，保留原方向灯、雾、雨效和水洼。峡谷保留方向灯、补光和原有雾配置，体积雾为空。
+- 共享光束从上端到下端的水平偏航约为 132.59°。主方向灯沿用树林晴夜和雨夜的 135° 偏航。沙漠 `20002`、平原 `40002`、夜晚花海 `40004` 从 315° 转到 135°，保留 30° 俯角。峡谷 `70002` 的 `Moonlights/Moonlight` 从约 57.529° 转到 135°，保留约 48.234° 俯角及原阴影设置，继续使用原无影补光。
 
 | FightScene ID | 预制体与分支 | `Moonlight_Beam` 局部位置 |
 |---|---|---|
@@ -74,7 +75,7 @@ watched_files:
 | 40004 夜晚花海 | `FightScene_Plain_1.prefab` · `Details/NightFlowerSea` | `(1.35,0.015,2.6)` |
 | 70002 峡谷夜晚 | `FightScene_WildernessCanyon_1.prefab` · `Details/Night` | `(1,0.01,3)` |
 
-平原的 `Details` 还有本地 X 偏移 `+0.85`。在 `TestScene` 的 `Launcher` 依次选择上述六个普通战斗测试，手动 Play 检查光束缓动、地面落点、棋盘与角色辨识度，并拖动镜头复核遮挡和叠放。用较少路数确认地形偏移后的落点。`10004` 检查雨效、水洼和反射，`40004` 检查花海的色彩和可读性。切换白天分支时核对月光和调色随夜晚分支关闭。
+平原的 `Details` 还有本地 X 偏移 `+0.85`。在 `TestScene` 的 `Launcher` 依次选择上述六个普通战斗测试，手动 Play 检查光束缓动、地面落点、棋盘与角色辨识度，确认树木、岩石或角色的阴影沿月光方向投射。拖动镜头复核遮挡和叠放，用较少路数确认地形偏移后的落点。`10004` 检查雨效、水洼和反射，`40004` 检查花海的色彩和可读性。切换白天分支时核对月光和调色随夜晚分支关闭。
 
 ## 平原场地布置
 
@@ -108,7 +109,7 @@ watched_files:
 
 - `FightScene` ID `70001`（白天）和 `70002`（夜晚）共用 Addressables 地址 `Assets/LoadResources/FightScene/FightScene_WildernessCanyon_1.prefab`。内嵌 `Scene_WildernessCanyon_1`，子层平移 `(5.5, -0.005, 3.5)`，Y 轴旋转 `+5°`，使远处峡口对准道路中线。`Ground_Placement` 填补 `Ground_Arena` 的中央开口，渲染器和碰撞体都保留。
 - 战斗包装层移除了嵌套模型的 `Sky_Dome`。白天配置 `details=Day`，由 `Details/Day/Lights` 提供暖主光和冷补光，使用 `Skybox_2`、环境光 `#8CA1AB`、线性雾 `#9EB5B3`（42–108），道路色为 `#7D7253` / `#B4A57B`。
-- 夜晚配置 `details=Night`，由 `Details/Night/Moonlights` 提供冷色月光与补光。`Moonlight` 强度为 `0.4`，`Night Canyon Bounce` 为 `0.14`，沿用白天灯组的朝向和阴影设置。夜晚使用 `Skybox_6`、环境光 `#879AC0`、线性雾 `#101A30`（30–95）及虫鸣 `2000001`。道路色为 `#5F5960` / `#938879`，体积雾和景深字段留空。两种变体的天空盒旋转均为 `-15,0,0`，道路透明度均为 `0.28`。
+- 夜晚配置 `details=Night`，由 `Details/Night/Moonlights` 提供冷色月光与补光。`Moonlight` 强度为 `0.4`，偏航为 135°，沿用约 48.234° 的俯角和原阴影设置。`Night Canyon Bounce` 保留原朝向及 `0.14` 强度，无阴影。夜晚使用 `Skybox_6`、环境光 `#879AC0`、线性雾 `#101A30`（30–95）及虫鸣 `2000001`。道路色为 `#5F5960` / `#938879`，体积雾和景深字段留空。两种变体的天空盒旋转均为 `-15,0,0`，道路透明度均为 `0.28`。
 - `Ground_Arena` 和 `Ground_Placement` 共用战斗专用材质 `Mat_FightScene_WildernessCanyon_Sand_1`。`Shader_WildernessCanyonSand_1` 在 URP Lit 受光前用较粗的底色 mip 识别暗沟，提浅其低频底色，保留原砂粒、裂纹、平铺接缝和法线。崖壁投影仍由 Lit 处理。
 - 白天与夜晚共用根节点 `Effect` 下的 `Effect_SandDust_1` 和 `Effect_Weather_Windlines_2`。沙粒位于 `(5.5, 1.5, 3.5)`，风线从 `(20, 3, 3.5)` 发射，沿用沙漠实例的旋转、半径和砂色覆盖，从右向左扫过战场。
 - 草丛和碎石的位置修正在战斗预制体的嵌套实例上。用 `Ground_Arena` / `Ground_Placement` 三角面测草根和石底的地表高度，草根稍入地，碎石保留自然埋底。用道具网格顶点和面心检查崖壁及草与石的穿插，露出崖壁的道具就近挪到空砂地，复核 2–6 路的道路及出生区净空。

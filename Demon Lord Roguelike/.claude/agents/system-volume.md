@@ -42,6 +42,7 @@ Manager 以懒加载属性持有各 VolumeComponent，Handler 通过 `manager.xx
    - 特性：**高度雾**（baseHeight→maximumHeight 之间才有浓度）、`distance` 是渲染最大距离（超出不渲染）、强项是散射朦胧/上帝光。默认应关闭，仅特定场景开启（当前：领奖场景 + 配置了 `volumetric_fog` 的战斗场景，如树林夜晚 10002、沙漠夜晚 20002）。
    - **体积光柱（额外灯）**：包附 `VolumetricAdditionalLight` 组件（空命名空间）挂在 Spot/Point 灯上，体积雾激活期间灯光锥内产生可见散射。`Anisotropy`、`Scattering`、`Radius` 均提供公共 setter，写入时由组件限制范围。树林夜晚、树林雨夜、沙漠夜晚、平原夜晚和夜晚花海的旧 Spot `MoonShaft_1` 已停用，沿用各分支的方向灯和雾配置。峡谷夜晚沿用原方向灯及补光，体积雾配置为空。
    - **夜晚场景动态月光**：`10002`、`10004`、`20002`、`40002`、`40004`、`70002` 的对应 `Details` 分支各有一个 `Moonlight_Beam`，共用包含四个三角形的透明 Unlit 网格和单 Pass 材质，顶点色 R 区分空中斜束和贴地柔光。共享材质使用 4 秒周期、收束 0.1、空中强度 0.35、地面强度 0.20，地面近似加色。绘制顺序为棋盘 2998、月光 2999、角色 3000。各分支的局部位置、资源及测试入口见 [战斗场景接入指南](../skills/fight-scene-integration/SKILL.md#夜晚场景动态月光)。
+   - **夜晚阴影方向**：共享光束从上端到下端的水平偏航约为 132.59°，六个夜晚分支的主方向灯统一采用树林晴夜和雨夜的 135° 偏航。沙漠和平原的三个分支保留 30° 俯角，峡谷 `Moonlights/Moonlight` 保留约 48.234° 俯角。各场景保留原阴影参数，峡谷保留原无影补光。手动 Play 以主方向灯的地面阴影确认月光投射方向。
 3. **内置距离雾 RenderSettings.fog**（按深度糊雾色，最直观"远处看不清"）
    - `SetFog(fogColor, fogMode, startDistance, endDistance, density, isActive)`（单一入口：Linear 用 start/end，Exp/Exp2 用 density）
    - `SetFogActive(bool)`
