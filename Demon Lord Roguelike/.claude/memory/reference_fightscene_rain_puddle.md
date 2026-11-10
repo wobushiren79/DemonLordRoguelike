@@ -7,7 +7,7 @@ metadata:
 
 # 战斗场景雨天积水（Puddle）要点
 
-2026-08 为森林雨天子场景（FightScene 10003=DayRain/10004=NightLight）实装，方案=水洼面片挂 `Details/<雨天节点>/Puddles` 随 details 配置自动显隐（零代码），雨滴涟漪已由雨效 `Effect_Weather_Rain_Hard_1` 自带 SubEmitterRings 覆盖。雨声环境音 `sound_rain_1`（AudioInfo 2000002，audio_type=2）经两个雨天子场景的 `environment_sound` 列配置，进场自动播、离场自动停（10004 原 2000001 虫鸣已被雨声替换，单通道只能配一个）。
+2026-08 为森林雨天子场景（FightScene 10003=DayRain/10004=NightRain）实装，方案=水洼面片挂 `Details/<雨天节点>/Puddles` 随 details 配置自动显隐（零代码），雨滴涟漪已由雨效 `Effect_Weather_Rain_Hard_1` 自带 SubEmitterRings 覆盖。雨声环境音 `sound_rain_1`（AudioInfo 2000002，audio_type=2）经两个雨天子场景的 `environment_sound` 列配置，进场自动播、离场自动停（10004 原 2000001 虫鸣已被雨声替换，单通道只能配一个）。
 
 ## Shader（`Assets/FrameWork/Shader/URP/Shader_Puddle_1.shader`，内部名 `FrameWork/URP/Puddle1`，手写 URP Unlit）
 

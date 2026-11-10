@@ -58,6 +58,24 @@ watched_files:
 
 需要查此次实际接入的参数、诊断过程或复测方法时，读 [Embervault 接入案例](references/embervault.md)。
 
+## 夜晚场景动态月光
+
+- `Moonlight_Beam` 挂在各预制体的对应 `Details` 分支下，随 `details` 切换显隐。各实例共用 `Assets/LoadResources/Mesh/Mesh_ForestMoonlight_1.asset`、`Assets/LoadResources/Materials/Scene/Mat_ForestMoonlight_1.mat` 和 `Assets/Shaders/Shader_ForestMoonlight_1.shader`。一个 MeshRenderer 用四个三角形绘制空中柔边斜束和贴地柔光，顶点色 R 区分两部分。单 Pass URP Unlit 材质分别控制空中和地面的颜色及亮度，地面近似加色。
+- 共享材质采用树林手调值。周期 4 秒，空中光束强度 0.35，地面柔光亮度 0.20。「光束收束强度」`_BeamTightness` 范围为 0–1，Shader 默认 0，材质使用 0.1，空中和地面的有效宽度约为原来的 91% 和 94%，保留横向柔边和峰值亮度。
+- 透明物体按棋盘 2998、月光 2999、角色 3000 绘制。月光在棋盘之后混合，光色跨棋盘边界连续，角色在月光之上。共享 `MatFightSceneRoad` 只调整渲染队列及 `_QueueOffset`，棋盘颜色和透明度继续由场景配置驱动。
+- 各分支的 Global Volume 使用优先级 10、权重 1，共用 `Assets/Settings/ForestNightColorProfile.asset`，调色参数见 [环境渲染指南](../../agents/system-volume.md#关键约定)。树林两个夜晚分支、沙漠夜晚及平原两个夜晚分支停用旧 `MoonShaft_1`，保留原方向灯、雾、雨效和水洼。峡谷保留方向灯、补光和原有雾配置，体积雾为空。
+
+| FightScene ID | 预制体与分支 | `Moonlight_Beam` 局部位置 |
+|---|---|---|
+| 10002 树林夜晚 | `FightScene_Forest_1.prefab` · `Details/Night` | `(0,0,2.5)` |
+| 10004 树林雨夜 | `FightScene_Forest_1.prefab` · `Details/NightRain` | `(0,0,2.5)` |
+| 20002 沙漠夜晚 | `FightScene_Desert_1.prefab` · `Details/Night` | `(0,0.012,2.65)` |
+| 40002 平原夜晚 | `FightScene_Plain_1.prefab` · `Details/Night` | `(1.35,0.015,2.6)` |
+| 40004 夜晚花海 | `FightScene_Plain_1.prefab` · `Details/NightFlowerSea` | `(1.35,0.015,2.6)` |
+| 70002 峡谷夜晚 | `FightScene_WildernessCanyon_1.prefab` · `Details/Night` | `(1,0.01,3)` |
+
+平原的 `Details` 还有本地 X 偏移 `+0.85`。在 `TestScene` 的 `Launcher` 依次选择上述六个普通战斗测试，手动 Play 检查光束缓动、地面落点、棋盘与角色辨识度，并拖动镜头复核遮挡和叠放。用较少路数确认地形偏移后的落点。`10004` 检查雨效、水洼和反射，`40004` 检查花海的色彩和可读性。切换白天分支时核对月光和调色随夜晚分支关闭。
+
 ## 平原场地布置
 
 - `FightScene` ID `40001–40004` 共用 `FightScene_Plain_1.prefab`。地面、远山、树、岩石、草、特效与详情节点在根下沿 X 正方向偏移 `0.85`，使它们一起贴合地形。运行时道路按自身世界坐标生成。

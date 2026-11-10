@@ -22,5 +22,5 @@ metadata:
 - URP ShaderGraph（含 Unity 6.3 / URP 17）Lit/Unlit 目标**都没有 fog 开关**，图内无法关雾（HDRP 才有 Receives Fog）。
 - 导出方案：反射调 ShaderGraph 内部 API（**Unity 6.3 起 `GraphData`/`MultiJson`/`Generator`/`GenerationMode` 全 internal**，程序集 `Unity.ShaderGraph.Editor`；Generator 取 8 参构造，`generatedShader` 属性取源码，`messageManager` 可空）。
 - 生成代码**不内联 pass 模板**，`MixFog` 藏在 `#include ".../Editor/ShaderGraph/Includes/PBRForwardPass.hlsl"` 里 → 字符串替换找不到，须用**宏拦截**：include 前 `#define MixFog(color, coord) MixFog(color, <换算>)`、include 后 `#undef`（预处理器对自引用宏不递归展开；**每个 Pass 独立编译**，PBRForwardPass/PBRGBufferPass 要逐处包裹）。
-- 材质重指 shader 后注意保持原 `renderQueue`（路面是 2999）。
+- 材质重指 shader 后保留路面的 `renderQueue=2998` 与 `_QueueOffset=-2`。树林夜晚的月光在 2999 绘制，使柔光连续跨过棋盘边缘，战斗角色的默认透明队列为 3000。
 - 雾的开关/参数由 `VolumeHandler.SetFog` 按战斗场景配置驱动（WorldHandler 进战斗场景时设置）。
