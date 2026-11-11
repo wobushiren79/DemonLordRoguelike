@@ -152,7 +152,7 @@ public long GetPayCrystal(int researchLevel);
 // 获取带「待解锁等级累计效果」的详情描述(如 （概率40%）/（距离4.5）/（祭品上限5）)
 // 读研究表 details[language] 列对应的详情模板(details==0 返回空串, 模板无 {Value} 原样返回);
 // 数值取 待解锁等级=min(当前等级+1,level_max) 的累计总效果,满级停留在满级数值;
-// 公式统一收口 UserUnlockBean 的 static Get*ForLevel 方法(私有 GetLevelDetailValueString 按 unlock_id 分发 23 个 level_max>1 节点);
+// 公式统一收口 UserUnlockBean 的 static Get*ForLevel 方法(私有 GetLevelDetailValueString 按 unlock_id 分发 24 个 level_max>1 节点);
 // 替换走通用机制 TextHandler.GetTextReplace + TextReplaceEnum.Value(与成就 GetLevelDescription 同口径);
 // 括号/前导空格由各语言详情自带(cn/tw/jp 全角无空格,其余半角带前导空格),气泡里直接拼在名字后
 public string GetDetailsLanguageWithLevelDetail(int currentLevel);
@@ -243,6 +243,7 @@ public enum UnlockEnum : long
     CreatureVatBuffPreview = 100000006,// 生物进阶-进阶增益BUFF数值范围预览(设施段, pre=CreatureVat; 因 1~5 被 +1 的 Lv 占用故取 6)
     CreatureVatAddProgress = 100000007,// 生物进阶-魔晶加速研究(恒消耗1魔晶,研究等级=每次进度增加秒数=进度倍率; 0级隐藏加速按钮, level_max=5)
     CreatureVatMaterialNum = 100000008,// 生物进阶-素材魔物可选上限+1(每级+1, 基础5, level_max=5, 满级10)
+    CreatureVatRandomReduce = 100000009,// 生物进阶-随机增益占比缩减(进阶BUFF权重占比制: 随机权重默认1,每级-0.1, level_max=10满级0,满级有素材时不再出现随机增益; 研究节点id=100000006, 详情details=900000024)
     Altar = 100100001,                 // 祭坛
     SacrificeNum = 100100002,          // 增加献祭祭品数量(+1/级, level_max=12, 基础3满级15)
     SacrificePityRate = 100100003,     // 献祭失败保底概率提升(+5%/级, level_max=10)
@@ -288,6 +289,10 @@ public enum UnlockEnum : long
 
 > **1000 段 id 已用满前 6 个**：`100000000`=进阶设施、`100000001~100000005`=进阶设施+1 的 Lv1~Lv5 解锁条目，故本预览节点 unlock_id 从 `100000006` 起。UI 门控在 `UIViewCreatureVatAscendBuffItem.GetBuffContentForPreview` 用 `CheckIsUnlock(UnlockEnum.CreatureVatBuffPreview)`。
 
+### 设施分支(1000 段) — 生物进阶「随机增益缩减」节点
+
+进阶 BUFF 自 2026-11-11 起改为**权重占比制**（取代旧「每 id 25%×数量 直接命中」）：素材 BUFF 按 id 聚合、每份素材权重 1，「随机增益」默认占 1 份权重，各 id 命中概率=`数量/(素材总份数+随机权重)`，无素材 BUFF 始终走通用随机（不受缩减研究影响）。本节点 `CreatureVatRandomReduce`(unlock_id **100000009**，研究节点 id **100000006**，`research_type=1`，`pre_unlock_ids=100000000`，`level_max=10`，`pay_crystal` 十档 `100,200,400,800,1500,2500,4000,6000,9000,15000`，`icon_res=ui_research_1` 复用，position(-100,500) 可 `UIBaseResearchTest` 拖动微调) 每级使随机权重 **-0.1**（1 级=0.9，满级 10=0 → 有素材时素材 BUFF 必中、概率列表不再出现随机项）。消费点 `BuffUtil.GetAscendRandomWeight()`（生成 `CreateAscendRarityBuff` 与展示 `GetCreatureAscendBuffChances` 单点收口；展示侧 rate 经**最大余数法**取整为整数百分比且合计恰好 100）；公式 `UserUnlockBean.GetUnlockCreatureVatRandomReduceLevel()` / `GetCreatureVatRandomWeightForLevel(lv)`=`Clamp01(1-0.1×lv)`，气泡详情 details=**900000024**「（随机占比-{Value}%）」按待解锁级填 `GetCreatureVatRandomReduceForLevel(lv)`=lv×10。落表同其他节点：`excel_unlock_info`(id=100000009, unlock_type=0) + `excel_research_info`(id=100000006, name textId=100000009, details=900000024) + 多语言 `excel_language` 的 `ResearchInfo` 工作表(id=100000009 节点名 cn「随机增益缩减」/en「Random Buff Reduction」，id=900000024 详情模板，12 语言全翻译)。
+
 ### 设施分支(1003 段) — 传送门详情预览 4 节点
 
 传送门详情弹窗 `UIPopupPortalDetails` 的四项预览各由一个**设施研究节点**(`research_type=1`)门控：未解锁则该详情项整行隐藏（奖励区不显示），名字行始终显示。无尽模式不展示关卡数/路径长度/奖励。
@@ -322,7 +327,7 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 `ChallengeHundredShowRate`（unlock_id **100300007**，`research_type=4` 世界节点，`icon_res=ui_research_181`（100勇士专属图标；2026-10-25 起由 `ui_research_9` 换为 181），`level_max=10`，`position(-800,-90)` 位于100勇士难度2节点正左方，`pre_unlock_ids="100310160"`——前置=100勇士难度2研究，同分支前置、连线正常绘制）——研究等级 ×10 = 传送门世界刷新为「是魔王就挑战100勇士」模式的概率（百分数 0~100，未解锁=0，满级 100）。
 
 - **概率型研究消费点先例**（仿扭蛋概率研究）：消费不在 UI 门控，而在 `GameWorldInfoRandomBean.SetGameFightTypeRandom`——每次生成传送门世界时先按该概率判定，命中则抽配置行生成为挑战100勇士世界（**所有已解锁世界都可能刷出**）；抽行为**两段判定**：先按 BOSS 挑战出现概率（`GetUnlockChallengeHundredBossRate()`，基础 10%+研究 `ChallengeHundredBossRate`(100300009) 等级×10%，满级 50%，详见下文「真勇者挑战」节）判定普通/BOSS，再在命中类型行内等概率随机（`FightTypeChallengeHundredInfoCfg.GetRandomRow(当前世界最高已解锁100勇士难度, bossRate)`）；命中但当前最高已解锁100勇士难度无匹配配置行时落回原征服/无尽随机。数值读取 `UserUnlockBean.GetUnlockChallengeHundredShowRate()`（=研究等级×10）。**100勇士难度自 2026-10 起为独立研究链**，不再取征服难度。
-- **气泡按级标概率**：名字十二语言保持原名「是魔王就挑战100勇士」，概率详情经研究表 `details[language]` 列=900000022「（概率{Value}%）」（cn/tw/jp 全角括号、其余半角带前导空格，12 语言全翻译），`GetDetailsLanguageWithLevelDetail` 按 待解锁等级=min(当前+1,满级) 填概率拼在名字后（走 `UserUnlockBean.GetChallengeHundredShowRateForLevel(level)`=等级×`CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL`(10)；details 机制详见「研究配置 Bean 扩展方法」节，23 个 level_max>1 节点详情语言条目占号段 900000001~900000023）。
+- **气泡按级标概率**：名字十二语言保持原名「是魔王就挑战100勇士」，概率详情经研究表 `details[language]` 列=900000022「（概率{Value}%）」（cn/tw/jp 全角括号、其余半角带前导空格，12 语言全翻译），`GetDetailsLanguageWithLevelDetail` 按 待解锁等级=min(当前+1,满级) 填概率拼在名字后（走 `UserUnlockBean.GetChallengeHundredShowRateForLevel(level)`=等级×`CHALLENGE_HUNDRED_SHOW_RATE_PER_LEVEL`(10)；details 机制详见「研究配置 Bean 扩展方法」节，24 个 level_max>1 节点详情语言条目占号段 900000001~900000024）。
 - **落表**同其他节点：`excel_research_info`(id=100300007, `research_type=4`, `pay_crystal` 十级独立阶梯 `100,200,400,800,1500,2500,4000,6000,9000,15000`, `pre_data` 留空, `name`=同id, `details[language]`=900000022, 备注「是魔王就挑战100勇士-出现概率+10%」) + `excel_unlock_info`(id=100300007, `unlock_type=0`, 备注「是魔王就挑战100勇士出现概率」) + 多语言 `excel_language` 的 `ResearchInfo` 工作表(id=100300007 名字**全语言统一填原名「是魔王就挑战100勇士」**——该模式翻译统一用原名；id=900000022 为概率详情行)。
 - 挑战100勇士模式本身的战斗配置表/Bean/流程见 [`portal-system`](../portal-system/SKILL.md) / [`game-fight-system`](../game-fight-system/SKILL.md) 等文档，本 Skill 仅覆盖「研究→出现概率」这一面。
 
@@ -513,6 +518,9 @@ public static int GetInfiniteShowRateForLevel(int level); // 指定等级的无�
 public static int GetCreatureVatNumForLevel(int level);              // 进阶设施数量 = limmit.creatureVatMax + 等级
 public static int GetCreatureVatAddProgressForLevel(int level);      // 进阶加速每次推进秒数(=倍率) = 等级
 public static int GetCreatureVatMaterialMaxForLevel(int level);      // 进阶素材上限 = limmit.creatureVatMaterialMax + 等级
+public int GetUnlockCreatureVatRandomReduceLevel();                  // 进阶「随机增益缩减」研究等级(0~10, CreatureVatRandomReduce=100000009)
+public static float GetCreatureVatRandomWeightForLevel(int level);   // 进阶随机增益权重 = Clamp01(1-0.1×等级)(0级=1,满级10=0; BuffUtil 生成/展示共用)
+public static int GetCreatureVatRandomReduceForLevel(int level);     // 随机占比累计缩减百分比 = 等级×10(详情 details=900000024)
 public static int GetSacrificeMaxForLevel(int level);                // 献祭祭品上限 = limmit.sacrificeMax + 等级
 public static float GetSacrificeFailPityAddRateForLevel(int level);  // 献祭失败保底增量 = 等级×0.05f
 public static float GetSacrificeDifferentIdRateForLevel(int level);  // 不同id献祭成功率 = 等级×0.05f

@@ -880,6 +880,35 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 获取生物进阶「随机增益缩减」研究等级(0~10,0=未研究)
+    /// </summary>
+    /// <returns>随机增益缩减研究等级</returns>
+    public int GetUnlockCreatureVatRandomReduceLevel()
+    {
+        return GetUnlockResearchLeveByUnlockEnum(UnlockEnum.CreatureVatRandomReduce);
+    }
+
+    /// <summary>
+    /// 获取指定「随机增益缩减」研究等级对应的进阶随机增益权重:1-0.1×等级(0级=1,满级10=0;供进阶BUFF生成/概率展示按级求值)
+    /// </summary>
+    /// <param name="level">随机增益缩减研究等级</param>
+    /// <returns>随机增益权重(0~1)</returns>
+    public static float GetCreatureVatRandomWeightForLevel(int level)
+    {
+        return Mathf.Clamp01(1f - 0.1f * level);
+    }
+
+    /// <summary>
+    /// 获取指定「随机增益缩减」研究等级对应的随机占比累计缩减百分比:等级×10(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">随机增益缩减研究等级</param>
+    /// <returns>累计缩减百分比(0~100)</returns>
+    public static int GetCreatureVatRandomReduceForLevel(int level)
+    {
+        return level * 10;
+    }
+
+    /// <summary>
     /// 获取魔汁机投入魔物可选上限
     /// 基础数量取自 UserLimmitBean.juicerCreatureMax + 对应研究等级（UnlockEnum.JuicerNum，满级+10=15）
     /// </summary>

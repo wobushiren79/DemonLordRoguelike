@@ -281,6 +281,7 @@ public enum UnlockEnum : long
     CreatureVatBuffPreview = 100000006,//生物进阶-进阶增益BUFF数值范围预览(解锁后???替换成随机min~max范围;100000001~5被+1的Lv1~5占用故取6)
     CreatureVatAddProgress = 100000007,//生物进阶-魔晶加速研究(恒消耗1魔晶,研究等级=每次推进秒数=进度倍率;0级隐藏加速按钮,level_max=5)
     CreatureVatMaterialNum = 100000008,//生物进阶-素材魔物可选上限+1(每级+1,基础5,level_max=5,满级10)
+    CreatureVatRandomReduce = 100000009,//生物进阶-随机增益占比缩减(进阶BUFF权重占比制:每级随机权重-0.1,10级减到0;满级有素材时不再出现随机增益)
     Altar = 100100001,//祭坛
     SacrificeNum = 100100002,//献祭祭品数量+1
     SacrificePityRate = 100100003,//献祭失败保底概率提升(每级失败累积的保底成功率+5%,满级+50%)

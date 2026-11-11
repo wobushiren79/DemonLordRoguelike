@@ -1506,7 +1506,8 @@ GameObject:
   - component: {fileID: 8699610425366782417}
   - component: {fileID: 8684887635772948566}
   - component: {fileID: 7870946091409954971}
-  m_Layer: 0
+  - component: {fileID: 6014392562337578375}
+  m_Layer: 4
   m_Name: Water
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1585,6 +1586,29 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &6014392562337578375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2862034944182469623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eaa5e567edbac1640a4e93a813b713fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlanarReflection
+  waterLevelOffset: 0
+  textureHeight: 192
+  reflectMask:
+    serializedVersion: 2
+    m_Bits: 4294967247
+  updateEveryFrame: 1
+  farClipOverride: 0
+  skipWhenNotVisible: 1
+  waterRenderer: {fileID: 7870946091409954971}
+  waterReflectionRenderer: {fileID: 11400000, guid: 707360a9c581a4bd7aa53bfeb1429f71, type: 2}
+  waterIdleRefreshRate: 20
 --- !u!1 &3112385512984795045
 GameObject:
   m_ObjectHideFlags: 0

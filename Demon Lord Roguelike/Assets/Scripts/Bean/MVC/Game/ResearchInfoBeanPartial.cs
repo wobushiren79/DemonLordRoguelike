@@ -162,7 +162,7 @@ public partial class ResearchInfoBean
     }
 
     /// <summary>
-    /// 获取指定等级的效果数值显示串(按 unlock_id 分发到 UserUnlockBean 的 static ForLevel 公式, 22 个 level_max>1 节点)
+    /// 获取指定等级的效果数值显示串(按 unlock_id 分发到 UserUnlockBean 的 static ForLevel 公式, 覆盖各 level_max>1 节点)
     /// </summary>
     /// <param name="targetLevel">待解锁等级</param>
     /// <returns>数值显示串; 未登记公式返回 null(调用方报错并原样显示模板)</returns>
@@ -178,6 +178,9 @@ public partial class ResearchInfoBean
         //进阶素材可选上限 = creatureVatMaterialMax + 等级
         if (unlockId == (long)UnlockEnum.CreatureVatMaterialNum)
             return $"{UserUnlockBean.GetCreatureVatMaterialMaxForLevel(targetLevel)}";
+        //进阶随机增益占比累计缩减百分比 = 等级×10
+        if (unlockId == (long)UnlockEnum.CreatureVatRandomReduce)
+            return $"{UserUnlockBean.GetCreatureVatRandomReduceForLevel(targetLevel)}";
         //献祭祭品上限 = sacrificeMax + 等级
         if (unlockId == (long)UnlockEnum.SacrificeNum)
             return $"{UserUnlockBean.GetSacrificeMaxForLevel(targetLevel)}";

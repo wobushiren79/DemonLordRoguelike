@@ -49,16 +49,39 @@ public static class BuffUtil
 
     #region 进阶BUFF生成
     /// <summary>
-    /// 进阶规则:每个素材BUFF id 的直接命中概率(百分点)= 本常量 × 该 id 在素材中出现的数量。
-    /// 生成(roll累加)与展示(概率列表)同口径,单点化避免两处魔法数 25 不一致。
+    /// 获取当前进阶「随机增益」权重:默认1,「随机增益缩减」研究(UnlockEnum.CreatureVatRandomReduce)每级-0.1,满级10=0。
+    /// 生成(roll)与展示(概率列表)同口径,单点化避免两处规则不一致。
     /// </summary>
-    private const float AscendMaterialBuffRatePerCount = 25f;
+    /// <returns>随机增益权重(0~1)</returns>
+    private static float GetAscendRandomWeight()
+    {
+        int reduceLevel = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData().GetUnlockCreatureVatRandomReduceLevel();
+        return UserUnlockBean.GetCreatureVatRandomWeightForLevel(reduceLevel);
+    }
 
     /// <summary>
-    /// 进阶规则:生成 newRarity 的一条BUFF。
-    /// <para>默认走通用随机;素材魔物在 newRarity 槽位的BUFF会按 buff id 聚合,每个 id 提供 25%×数量 的直接命中概率(decision: 按 buff id 判定同一)。</para>
-    /// <para>命中某素材BUFF时,继承其 id 并按下限重随机数值(结果≥素材原数值);未命中则回退通用随机。</para>
-    /// <para>newRarity 为 UR/L 等无对应BUFF类型时返回 null(只升稀有度不授BUFF)。</para>
+    /// 统计素材BUFF总份数(各 id 数量之和;无素材BUFF返回0)。
+    /// </summary>
+    /// <param name="dicMaterialBuff">素材BUFF命中统计(GetMaterialBuffStats 结果,可空)</param>
+    /// <returns>素材BUFF总份数</returns>
+    private static int GetMaterialBuffTotalCount(Dictionary<long, CreatureAscendMaterialBuffStruct> dicMaterialBuff)
+    {
+        int total = 0;
+        if (dicMaterialBuff != null)
+        {
+            foreach (var item in dicMaterialBuff)
+            {
+                total += item.Value.count;
+            }
+        }
+        return total;
+    }
+
+    /// <summary>
+    /// 进阶规则:生成 newRarity 的一条BUFF(权重占比制)。
+    /// <para>素材魔物在 newRarity 槽位的BUFF按 buff id 聚合(decision: 按 buff id 判定同一),每份素材权重1;「随机增益」默认占1份权重,经「随机增益缩减」研究每级-0.1(满级0)。</para>
+    /// <para>各素材id命中概率=数量/(素材总份数+随机权重);命中继承该id并按下限重随机数值(结果≥素材原数值),落空(随机区间)回退通用随机。</para>
+    /// <para>无素材BUFF时始终走通用随机(随机是唯一来源,不受缩减研究影响);newRarity 为 UR/L 等无对应BUFF类型时返回 null(只升稀有度不授BUFF)。</para>
     /// </summary>
     /// <param name="newRarity">进阶后的目标稀有度</param>
     /// <param name="materials">作为素材的魔物列表</param>
@@ -72,21 +95,26 @@ public static class BuffUtil
         }
         //聚合素材在 newRarity 槽位的BUFF: buff id -> 命中统计(数量/数值下限)
         Dictionary<long, CreatureAscendMaterialBuffStruct> dicMaterialBuff = GetMaterialBuffStats(newRarity, materials);
-        //先按素材加成概率 roll(每个 id 25%×数量),命中则继承该BUFF
-        if (dicMaterialBuff != null && dicMaterialBuff.Count > 0)
+        int materialTotal = GetMaterialBuffTotalCount(dicMaterialBuff);
+        //无素材BUFF:始终通用随机
+        if (materialTotal <= 0)
         {
-            float roll = Random.Range(0f, 100f);
-            float acc = 0f;
-            foreach (var item in dicMaterialBuff)
+            return CreateRandomRarityBuff(newRarity);
+        }
+        //权重×10转整数 roll(素材每份=10,随机权重0~10):规避 float Random.Range 上限含端点与 0.1 步进尾差,保证满级(随机权重0)素材必中
+        float randomWeight = GetAscendRandomWeight();
+        int randomWeightInt = Mathf.RoundToInt(randomWeight * 10f);
+        int roll = Random.Range(0, materialTotal * 10 + randomWeightInt);
+        int acc = 0;
+        foreach (var item in dicMaterialBuff)
+        {
+            acc += item.Value.count * 10;
+            if (roll < acc)
             {
-                acc += AscendMaterialBuffRatePerCount * item.Value.count;
-                if (roll < acc)
-                {
-                    return BuffBean.CreateRandomWithFloor(item.Key, item.Value.floorValue, item.Value.floorValueRate);
-                }
+                return BuffBean.CreateRandomWithFloor(item.Key, item.Value.floorValue, item.Value.floorValueRate);
             }
         }
-        //未命中素材加成:走通用随机
+        //落空=随机区间(randomWeightInt>0):走通用随机
         return CreateRandomRarityBuff(newRarity);
     }
 
@@ -148,9 +176,9 @@ public static class BuffUtil
     public const string AscendRandomBuffName = "随机增益";
 
     /// <summary>
-    /// 按进阶BUFF生成规则,计算 newRarity 下各BUFF的命中概率(供孵化缸进阶详情实时展示)。
-    /// <para>与 <see cref="CreateAscendRarityBuff"/> 同口径:每个素材BUFF id 提供 25%×数量 的直接命中概率;</para>
-    /// <para>列表末尾追加一项"随机增益"(buffId=-1)表示剩余概率(100%-素材命中总和,走通用随机)。</para>
+    /// 按进阶BUFF生成规则(权重占比制),计算 newRarity 下各BUFF的命中概率(供孵化缸进阶详情实时展示)。
+    /// <para>与 <see cref="CreateAscendRarityBuff"/> 同口径:每份素材BUFF权重1,随机增益权重=1-0.1×「随机增益缩减」研究等级;各项概率=权重/总权重。</para>
+    /// <para>rate 经最大余数法取整为整数百分比且合计恰好100;随机权重0(研究满级)且有素材时不追加随机项;无素材BUFF时仅一项100%随机增益。</para>
     /// <para>newRarity 无对应BUFF类型(N/UR/L)时返回空列表(只升稀有度不授BUFF,不展示任何增益)。</para>
     /// </summary>
     /// <param name="newRarity">进阶后的目标稀有度</param>
@@ -165,35 +193,96 @@ public static class BuffUtil
         {
             return listChance;
         }
-        //素材命中:每个 buff id 提供 25%×数量 的概率
-        float materialTotalRate = 0f;
         Dictionary<long, CreatureAscendMaterialBuffStruct> dicMaterialBuff = GetMaterialBuffStats(newRarity, materials);
-        if (dicMaterialBuff != null)
+        int materialTotal = GetMaterialBuffTotalCount(dicMaterialBuff);
+        //无素材BUFF:仅100%随机增益(与生成口径一致,不受缩减研究影响)
+        if (materialTotal <= 0)
         {
-            foreach (var item in dicMaterialBuff)
+            listChance.Add(new CreatureAscendBuffChanceStruct
             {
-                float rate = AscendMaterialBuffRatePerCount * item.Value.count;
-                materialTotalRate += rate;
-                var buffInfo = BuffInfoCfg.GetItemData(item.Key);
-                listChance.Add(new CreatureAscendBuffChanceStruct
-                {
-                    buffId = item.Key,
-                    name = buffInfo != null ? buffInfo.name_language : "",
-                    rate = rate,
-                    //素材命中该 id 时数值下限被抬高:透传给预览按抬高后下限显示 min~max(与 CreateRandomWithFloor 同口径)
-                    floorValue = item.Value.floorValue,
-                    floorValueRate = item.Value.floorValueRate,
-                });
-            }
+                buffId = -1,
+                name = AscendRandomBuffName,
+                rate = 100,
+            });
+            return listChance;
         }
-        //兜底"随机增益":剩余概率(钳制到≥0)
-        listChance.Add(new CreatureAscendBuffChanceStruct
+        float randomWeight = GetAscendRandomWeight();
+        float totalWeight = materialTotal + randomWeight;
+        //素材BUFF项:概率=数量/总权重
+        foreach (var item in dicMaterialBuff)
         {
-            buffId = -1,
-            name = AscendRandomBuffName,
-            rate = Mathf.Max(0f, 100f - materialTotalRate),
-        });
+            var buffInfo = BuffInfoCfg.GetItemData(item.Key);
+            listChance.Add(new CreatureAscendBuffChanceStruct
+            {
+                buffId = item.Key,
+                name = buffInfo != null ? buffInfo.name_language : "",
+                rate = item.Value.count / totalWeight * 100f,
+                //素材命中该 id 时数值下限被抬高:透传给预览按抬高后下限显示 min~max(与 CreateRandomWithFloor 同口径)
+                floorValue = item.Value.floorValue,
+                floorValueRate = item.Value.floorValueRate,
+            });
+        }
+        //兜底"随机增益":随机权重>0才追加(研究满级后不再显示0%随机项)
+        if (randomWeight > 0)
+        {
+            listChance.Add(new CreatureAscendBuffChanceStruct
+            {
+                buffId = -1,
+                name = AscendRandomBuffName,
+                rate = randomWeight / totalWeight * 100f,
+            });
+        }
+        //整数百分比化(最大余数法):合计恰好100,UI直接显示整数
+        RoundChanceRatesToInteger(listChance);
         return listChance;
+    }
+
+    /// <summary>
+    /// 概率列表整数百分比化(最大余数法):各项先向下取整,差额按小数余数从大到小逐项+1,使合计恰好100;原地修改 rate。
+    /// </summary>
+    /// <param name="listChance">命中概率列表(rate 为精确百分比)</param>
+    private static void RoundChanceRatesToInteger(List<CreatureAscendBuffChanceStruct> listChance)
+    {
+        int count = listChance.Count;
+        if (count == 0)
+        {
+            return;
+        }
+        int[] floorRates = new int[count];
+        float[] remainders = new float[count];
+        int floorSum = 0;
+        for (int i = 0; i < count; i++)
+        {
+            float rate = listChance[i].rate;
+            floorRates[i] = Mathf.FloorToInt(rate);
+            remainders[i] = rate - floorRates[i];
+            floorSum += floorRates[i];
+        }
+        int remain = 100 - floorSum;
+        for (int k = 0; k < remain; k++)
+        {
+            //选出当前余数最大的项+1(余数相同取靠前者;已补项置-1不再参与)
+            int maxIndex = -1;
+            for (int i = 0; i < count; i++)
+            {
+                if (remainders[i] >= 0 && (maxIndex < 0 || remainders[i] > remainders[maxIndex]))
+                {
+                    maxIndex = i;
+                }
+            }
+            if (maxIndex < 0)
+            {
+                break;
+            }
+            floorRates[maxIndex] += 1;
+            remainders[maxIndex] = -1f;
+        }
+        for (int i = 0; i < count; i++)
+        {
+            var chance = listChance[i];
+            chance.rate = floorRates[i];
+            listChance[i] = chance;
+        }
     }
     #endregion
 }

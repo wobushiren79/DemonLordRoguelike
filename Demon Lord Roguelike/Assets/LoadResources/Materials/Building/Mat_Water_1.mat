@@ -81,6 +81,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _WaterPlanarReflectionTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -123,6 +127,8 @@ Material:
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.005
+    - _PlanarDistortion: 0.012
+    - _PlanarReflectionAmount: 0.72
     - _QueueOffset: 0
     - _ReceiveShadows: 1
     - _ReflectionAmount: 0.1
@@ -135,6 +141,7 @@ Material:
     - _SrcBlendAlpha: 1
     - _Surface: 0
     - _VertexWave: 0
+    - _WaterPlanarReflectionActive: 0
     - _WaveHeight: 0.5
     - _WaveScale: 2
     - _WaveSpeed: 2
