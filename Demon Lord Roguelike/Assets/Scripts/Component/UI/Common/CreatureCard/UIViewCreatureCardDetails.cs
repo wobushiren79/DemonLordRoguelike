@@ -82,8 +82,10 @@ public partial class UIViewCreatureCardDetails : BaseUIView
         RefreshUILayout();
     }
 
+    #region BUFF
+
     /// <summary>
-    /// 设置BUFF显示
+    /// 设置各 BUFF 的描述并传入稀有度词条来源。
     /// </summary>
     public void SetBuff()
     {
@@ -102,7 +104,7 @@ public partial class UIViewCreatureCardDetails : BaseUIView
                 itemChildTF.gameObject.SetActive(true);
                 var itemBuffData = listBuffData[i];
                 var viewItem = itemChildTF.GetComponent<UIViewBuffShowItem>();
-                viewItem.SetData(itemBuffData);
+                viewItem.SetData(itemBuffData, isRarityBuff: creatureData.dicRarityBuff.ContainsValue(itemBuffData));
             }
             else
             {
@@ -110,6 +112,8 @@ public partial class UIViewCreatureCardDetails : BaseUIView
             }
         }
     }
+
+    #endregion
 
     /// <summary>
     /// 设置魔力消耗显示（召唤该生物所需消耗的魔王魔力 CMP，基础CMP×(1+等级/稀有度增加倍率)）

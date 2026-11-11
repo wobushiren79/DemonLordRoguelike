@@ -186,6 +186,12 @@ details.RefreshCard();
 
 > **详情面板「生物详情说明」区块（`ui_RenmarkText`/`ui_RenmarkTextContent`，2026-08 新增）**：`SetData` 在 `SetMP()` 之后调 `SetRenmark()`——文本取 `creatureInfo.details_language`（生物表 `details[language_1]` 列，textId=生物自身id，取语言表 `content_1` 语种列；仅 id 1001~7004 的 30 个可招募生物已配 12 语种攻击方式描述）。`details=0` 或当前语种文本为空时整个 `ui_RenmarkText` 容器 `SetActive(false)` 隐藏，由末位 `RefreshUILayout()` 统一重算面板高度；魔王等未配置生物自然隐藏，无需特判。
 
+**满值 BUFF 描述**：`UIViewCreatureCardDetails.SetBuff()` 用 `dicRarityBuff.ContainsValue` 确认显示实例是否为稀有度词条并将 `isRarityBuff` 传给 `UIViewBuffShowItem.SetData()`。行组件为整条满值的稀有度词条应用扫光，并给对应的 `{Value}` 或 `{Percentage}` 随机数字加 `#FFD36C`。魔物自带种族 BUFF、固定数值词条和未满值词条用原样式。复用同一行时会恢复其原字体材质及横向映射。
+
+**扫光材质**：`UIViewBuffShowItem` 使用 TMP 原生 `Face Texture` 和细金色 `Glow`，横向用 `TextureMappingOptions.Line`。负 `_FaceUVSpeedX` 让白亮芯从左向右约 0.6 秒扫过，带约 38% 行宽的金色拖尾，1.8 秒循环并随游戏时间缩放。`RGBAHalf` 贴图按实际字面底色补偿原生乘色。同源字体材质及底色共用全局运行时材质和贴图，最后一个使用过扫光的行销毁时释放。
+
+`Assets/Resources/Materials/TMPBuffDescriptionGlow.mat` 是打包保留材质，固定包含原字体材质的 `UNDERLAY_ON` 与扫光的 `GLOW_ON` 组合。运行时仍从当前行的原字体材质创建副本，以沿用其字体图集和原始属性。
+
 ### 5. 创建新的卡片子类
 
 继承 `UIViewCreatureCardItem` 并重写 `RefreshCardState`：

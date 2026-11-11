@@ -20,6 +20,8 @@ public class BuffBean
     public int  trigger_num = 0;
     //触发时间 -1为无限
     public float trigger_time = -1f;
+
+    #region 构造与随机词条
     
     /// <summary>
     /// 构造BUFF运行时数据。isRandom=true时(扭蛋稀有度BUFF)对触发值做整数化闭区间随机
@@ -79,6 +81,33 @@ public class BuffBean
         buffData.trigger_value_rate = UnityEngine.Random.Range(rateFloor, rateMax + 1) / 100f;
         return buffData;
     }
+
+    /// <summary>
+    /// 判断触发值和触发百分比是否各自命中最优端点，以及词条是否至少有一个有效随机字段且全部命中。
+    /// </summary>
+    public (bool isValueMaxRoll, bool isRateMaxRoll, bool isFullRoll) GetMaxRollFlags()
+    {
+        var buffInfo = BuffInfoCfg.GetItemData(id);
+        int valueMin = Mathf.RoundToInt(buffInfo.trigger_value_min);
+        int valueMax = Mathf.RoundToInt(buffInfo.trigger_value);
+        bool hasRandomValue = valueMin < valueMax;
+        bool isValueMaxRoll = hasRandomValue && Mathf.Approximately(trigger_value, valueMax);
+
+        int rateMin = Mathf.RoundToInt(buffInfo.trigger_value_rate_min * 100);
+        int rateMax = Mathf.RoundToInt(buffInfo.trigger_value_rate * 100);
+        if (rateMin >= rateMax)
+            return (isValueMaxRoll, false, isValueMaxRoll);
+
+        // 召唤冷却和耗魔越低收益越大，沿用单属性 BUFF 的类型判定。
+        var attributeType = IsBuffEntityAttributeBase();
+        int bestRate = attributeType == CreatureAttributeTypeEnum.RCD || attributeType == CreatureAttributeTypeEnum.CMP
+            ? rateMin : rateMax;
+        bool isRateMaxRoll = Mathf.Approximately(trigger_value_rate, bestRate / 100f);
+        bool isFullRoll = isRateMaxRoll && (!hasRandomValue || isValueMaxRoll);
+        return (isValueMaxRoll, isRateMaxRoll, isFullRoll);
+    }
+
+    #endregion
 
     /// <summary>
     /// 是否是基础属性BUFF(单属性,只添加属性没有额外条件),是则返回该属性,否则返回 None

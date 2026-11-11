@@ -47,6 +47,7 @@ watched_files:
 - **UIViewBaseResearchItem** - 研究项
 - **UIViewStoreItem** - 商店道具项（孕育扩展 `UIViewStoreItemPartialGashaponMatchine`：`ui_ContentShow`(PopupButtonCommonView+PopupEnum.Text) 悬浮弹窗列出可抽生物及各稀有度实际命中概率，稀有度文本按 `RarityInfo.ui_board_color` 主色着色；概率来自 `GashaponItemBean.GetRarityProbabilityList()`；生物列表跳过职业未解锁(`creatureInfo.unlock_id`)者，与 `UIGashaponMachine.StartGashaponMachine` 抽取过滤口径一致）
 - **UIViewBuffShowItem** - Buff 展示项（名字栏 `ui_BuffName` 显示效果详情 `content_language` 并在最前拼接 `> ` 前缀、按稀有度 `buff_color` 着色；悬浮弹窗改为显示 BUFF 名字 `name_language`；详情按 `TextReplaceEnum` 替换占位：`{Percentage}`=roll后率、`{Time_S}`=trigger_time、`{Value}`=roll后trigger_value + 前置条件参数）
+  - 卡片详情的 `SetBuff()` 仅按 `dicRarityBuff` 的实例归属传入 `isRarityBuff`。`UIViewBuffShowItem.SetData()` 负责整条满值判定、随机数字标金和 TMP 原生扫光（白亮芯、金色拖尾、细金色 `Glow`）。种族自带和普通词条采用原样式。扫光材质与贴图按原材质和字面底色全局共用，最后一个使用过扫光的行销毁时释放。原材质及文字映射由行实例保存，在复用为普通词条时恢复。
 - **UIViewColorShow** - 颜色展示
 - **UIViewAbyssalBlessingInfoContent** - 深渊祝福内容
 - **UIViewBaseInfoContent** - 基础信息内容

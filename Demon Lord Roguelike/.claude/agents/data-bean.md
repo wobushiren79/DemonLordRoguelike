@@ -38,6 +38,8 @@ Bean/
 └── UI/    - DialogSelect, DialogRename, DialogBossShow 等
 ```
 
+> **`BuffBean.GetMaxRollFlags()`（手写 `Assets/Scripts/Bean/Game/BuffBean.cs`）**：用已保存的抽取值与当前配置的有效随机端点分别比较，返回触发值、百分比和整条满值标志。整条须至少有一个有效随机字段，且所有随机字段均到达最佳端点。召唤冷却和耗魔的减免百分比取最小端点。该方法只读现有数据，无新增存档字段。
+
 > **`GameConfigBean` 游戏专用扩展字段位于 `Assets/Scripts/Bean/MVC/GameConfigBeanPartial.cs`**：`pressKeyTipShow`（bool，默认 true）控制 `UIViewPressCommon` 等快捷按键提示；`bulletShadow/itemShadow`（bool，默认 true）分别控制战斗弹道与魔晶掉落物阴影；`sceneClutterShadow`（bool，默认 false）控制战斗花海 `FlowerSeaInstanceRenderer.castShadows`。字段仍参与 `GameConfigBean` 序列化，旧配置缺少字段时使用上述默认值，四者互不联动。
 
 > **`CreatureBean.IsDemonLord()`（`CreatureBeanPartial.cs` #region 魔王）是「是否魔王本体」判定的单一真实源**：比对 `creatureUUId == userData.selfCreature.creatureUUId`（魔王独立存储于 `UserDataBean.selfCreature`，不在背包/阵容列表内）。管理列表置顶、稀有度按 L 显示、隐藏等级、不可献祭、战斗不加经验等特殊处理统一调它，UI 层(如 `UIViewCreatureCardDetails.IsDemonLord`)已收口为委托调用。
@@ -117,4 +119,4 @@ Bean/
 - Bean 类保持纯数据结构，不包含业务逻辑
 - 需要序列化的 Bean 使用 `[Serializable]` 标记
 - Bean 字段使用公共属性或字段，便于 JSON 序列化
-- **`*InfoBean.cs` 和 `*Bean.cs` 是自动生成文件，禁止直接修改**。所有手写扩展方法、辅助属性、解析逻辑必须写在对应的 `*BeanPartial.cs` 文件中
+- 按文件头的 `AUTO-GENERATED-DO-NOT-EDIT` 标记识别生成文件。带标记的配置 Bean 在对应的 Partial 扩展，手写运行时 Bean 可直接维护

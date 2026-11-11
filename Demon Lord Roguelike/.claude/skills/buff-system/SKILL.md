@@ -478,6 +478,8 @@ CMP               // 召唤魔力消耗 （CMP=12，仅作BUFF修正标签、非
 
 > 「按稀有度逐级授予稀有度 BUFF」收口在 `CreatureBean.RandomRarityBuffForCreate()`（孕育 `GashaponItemBean.RandomRarity` 与测试面板 `UITestBase.OnClickForAddTestCreature` 共用），单档随机再调 `BuffUtil.CreateRandomRarityBuff`（原 `GashaponItemBean.RandomRarityBuff` 已删除）。新增/调整稀有度 BUFF 仍只需在 `excel_buff_info` 配表，属性类 BUFF 自动进入对应 buff_type 池。
 
+> **满值显示**：`BuffBean.GetMaxRollFlags()` 返回 `isValueMaxRoll`、`isRateMaxRoll`、`isFullRoll`。配置端按生成时的整数或整数百分点取整，只有取整后仍有随机区间的字段参与。整条至少有一个随机字段且所有随机字段均命中最佳端点。召唤冷却（RCD）和耗魔（CMP）的减免百分比按最大减免比较最小端点，其余比较上限。用 `Mathf.Approximately` 比较实际抽取值，避免把旧档小数再次取整成满值。详情行仅对来自 `dicRarityBuff` 且整条满值的 BUFF 应用扫光和随机数字标金。
+
 ### `BuffBean.CreateRandomWithFloor`（带下限随机工厂）
 
 ```csharp
