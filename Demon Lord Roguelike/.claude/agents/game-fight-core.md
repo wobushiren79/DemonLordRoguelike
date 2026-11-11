@@ -32,6 +32,7 @@ watched_files:
 ### 战斗场景
 - **ScenePrefabBase** - 场景预制体基类
 - **ScenePrefabForFight** - 普通战斗场景统一根组件；`WorldHandler.LoadFightScene` 在非终焉议会分支自动确保存在并初始化，场景实例动态表现集中在这里。`InitSceneData` 在 Details 激活前用独立 `System.Random` 为所有 `FlowerSeaInstanceRenderer` 重置种子，并从各自 `atlasGrid` 中随机选择 1 排、启用该排全部格子（当前 8 格）；目标分支随后由 `OnEnable` 只生成一次，编辑器固定预览不受影响。同一遍历还无条件按 `GameConfigBean.sceneClutterShadow` 设置 `castShadows`；`SetFlowerSeaShadows(bool)` 供画质设置即时切换当前场景花海阴影，只改渲染状态，不重新 Generate。动态天空盒默认关闭，无尽专属场地天空石台 60001 启用并配置曝光倍率 1.65、偏航 0.8°/秒；仅操作运行时材质副本，外部替换后停更，禁用时恢复源材质并销毁副本
+  - 平原花海用 `ScenePrefabForFight.FlowerSeaPetalColors` 集中配置四排花瓣起始色。`InitSceneData` 复用花海选中的图集行，在 Details 激活和粒子预热前给同分支的 `PetalDrift` 着色。夜晚花海的粒子在运行时从白天实例复制，昼夜共用发射配置。
 - **ScenePrefabForBase** - 基地场景
 - **ScenePrefabForDoomCouncil** - 终焉议会场景
 - **ScenePrefabForRewardSelect** - 奖励选择场景

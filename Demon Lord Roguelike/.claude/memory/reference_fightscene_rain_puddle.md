@@ -25,7 +25,9 @@ metadata:
 
 - **几何镜像法**：镜像相机位置=源相机关于水平面对称、前向/上向反射后 `LookRotation` 重建（无需 invertCulling/翻转裁剪面）；斜投影近裁剪面=水平面（Water.cs 标准 `CalculateObliqueMatrix`）裁掉水下几何。
 - **⚠️ RT 左右颠倒（2026-08-17 踩过）**：真镜面变换是左手系，`LookRotation(反射forward,反射up)` 重建的却是右手系——其 right 轴与真镜面相反，渲染出的 RT 整体左右翻转。**shader 采样必须 `screenUV.x = 1.0 - screenUV.x` 翻回**（竖直方向不变）。漏翻转的症状=左坑映出右侧敌人、敌人站坑上无倒影（内容左右互换）。
-- **全局纹理传递**：RT 写 `Shader.SetGlobalTexture("_PuddlePlanarTex")` + 开关 `_PuddlePlanarActive`（材质不留槽位，组件关闭时 shader 回退纯天空反射）；水洼 shader 用 `ComputeScreenPos` 屏幕 UV（先 1-x 翻转）+ 涟漪扰动（`_PlanarDistort`）采样，`_PlanarWeight`（0.85）与天空盒反射混合。
+- **全局纹理传递**：RT 写 `Shader.SetGlobalTexture("_PuddlePlanarTex")` + 开关 `_PuddlePlanarActive`（材质不留槽位）。水洼 shader 用 `ComputeScreenPos` 屏幕 UV（先 1-x 翻转）+ 涟漪扰动（`_PlanarDistort`）采样，`_PlanarWeight`（0.85）与天空盒反射混合。只有 RT 仍绑定在全局槽位的组件禁用时，才清除全局纹理并回退纯天空反射。
+- **Play 内切换雨天**：`FightSceneEditorWindow` 按 prefab 子节点顺序切换 Details。`DayRain` 切 `NightRain` 时，雨夜先绑定自己的 RT，随后白天雨退出。退出时若无条件把 `_PuddlePlanarActive` 置 0，雨夜的水洼就只采样天空反射。复测时先直接进两种雨天，再在同一场战斗里按两个方向实时切换。
+- **场景编辑快照会干扰反射（2026-11-11）**：战斗测试的 `SceneEdit` 在场景就绪后调用 `GameTestEditorSceneEdit.CaptureSceneEditSnapshot`。直接克隆 active 场景再停用备份，会先让备份水洼绑定自己的全局 RT，随后清掉全局反射，原场景从此只显示天空。快照改为在 inactive 临时父节点下克隆，先将快照根停用，再脱离父节点，并在 finally 清理临时父节点，阻止备份组件的生命周期副作用。首次进入和保存成功后重新拍摄均走此方法，手动复测两条路径。
 - **省开销**：RT 高 288 宽随相机纵横比、`UniversalAdditionalCameraData.renderShadows/renderPostProcessing=false`、ClearFlags=Skybox 让反射自带天空、`updateEveryFrame=false` 可隔帧、`farClipOverride` 可压远裁剪、`skipWhenNotVisible`（默认开）水洼全出主相机视锥时整帧跳过（包围盒粗测+非分配 Plane[6] 缓存）；主相机引用缓存避免 Camera.main 每帧查找。
 - **性能量级**（森林低模场景估算）：GPU 0.5~2ms（RT 仅主屏 ~7% 像素）+ CPU 0.3~1ms（裁剪+提交），Spine 骨骼/粒子模拟不随相机数增加（只多一次绘制提交）；实测可再用 Profiler 复核。
 - **验证注意**：编辑模式下组件生命周期不跑，可用反射调 `OnEnable`/`RenderReflection(srcCam)` 走通全流程。注意"物体入镜"≠"方位正确"——2026-08 的左右颠倒 bug 在测试 Rig 下也曾显示"树木/角色正确入镜"，验证时必须核对倒影的**左右方位**（如让角色站在水坑正上方看脚下倒影）。
@@ -35,7 +37,7 @@ metadata:
 
 - 地面 Y=0，道路 `FightSceneRoadHeightY=0.0001`。
 - **⚠️ 反射落点几何（2026-08 踩过）**：平面反射是真镜面，**物体的倒影落在"物体与相机之间的水面"上**（不是"只能放南侧"）。路**外**水洼想映路上角色必须贴路缘（local z∈[-3.5,-1]，远了只映天空树木，呈"角色走过无倒影、远处反而有"假象）；水洼放**路中间**角色站上去，倒影就在其脚边朝南水面，反射机制天然支持。
-- **路中间水洼的工程条件**：水洼须 `ZWrite Off`（保留 `ZTest LEqual`，已写死在 shader）——道路网格（Transparent 2999）与角色 Spine（3000）后画透出水面：网格透过水面可见、角色站在水中、倒影照常。若开 ZWrite，水洼 Y=0.02 的深度会把 Y=0.0001 的网格盖掉。示范：`Details/<雨天>/Puddles/Puddle_Road`（路中 (12,2.2)）。
+- **路中间水洼的工程条件**：水洼须 `ZWrite Off`（保留 `ZTest LEqual`，已写死在 shader），让道路网格（2998）与角色 Spine（3000）在水面之后绘制。若开 ZWrite，水洼 Y=0.02 的深度会把 Y=0.0001 的网格盖掉。6 路场景可在白天雨 `Puddle_3`（X=6.08、Z=1.87）和雨夜 `Puddle_1`（X=2.01、Z=2.43）附近放置普通魔物检查倒影。
 - 材质在 `Assets/LoadResources/Materials/Scene/Mat_Puddle_Day_1.mat` / `Mat_Puddle_Night_1.mat`；Quad 面片 Euler(90,rotY,0) 放平，关投影/接收阴影。
 - **MCP execute_code 改材质后必须 `EditorUtility.SetDirty` + `AssetDatabase.SaveAssets` 并在同一会话回读验证**——SetTexture 不保证落盘（2026-08 踩过：SetTexture 后 SaveAssets 仍 fileID:0）。
 

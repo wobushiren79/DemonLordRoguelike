@@ -10,8 +10,19 @@ public sealed class ScenePrefabForFight : ScenePrefabBase
 {
     #region 场景初始化
 
+    private const string PetalDriftName = "PetalDrift";
+
+    //与 flower_2.png 的 UV 行号一致，自下而上为紫、米白、蓝、红。
+    private static readonly ParticleSystem.MinMaxGradient[] FlowerSeaPetalColors =
+    {
+        new ParticleSystem.MinMaxGradient(new Color32(145, 101, 204, 255), new Color32(204, 175, 239, 255)),
+        new ParticleSystem.MinMaxGradient(new Color32(215, 210, 191, 255), new Color32(255, 249, 232, 255)),
+        new ParticleSystem.MinMaxGradient(new Color32(88, 114, 234, 255), new Color32(165, 190, 255, 255)),
+        new ParticleSystem.MinMaxGradient(new Color32(212, 48, 46, 255), new Color32(246, 129, 113, 255)),
+    };
+
     /// <summary>
-    /// 初始化场景实例，应用杂物阴影并在 Details 激活前随机花海种子与图集排，随后由花海 OnEnable 完成一次生成。
+    /// 在 Details 激活前应用花海阴影、随机种子和图集行，并同步花瓣颜色。
     /// </summary>
     public override Task InitSceneData()
     {
@@ -32,8 +43,36 @@ public sealed class ScenePrefabForFight : ScenePrefabBase
             flowerSea.atlasSelectedCells = new List<Vector2Int>(columns);
             for (int column = 0; column < columns; column++)
                 flowerSea.atlasSelectedCells.Add(new Vector2Int(column, selectedRow));
+
+            SetFlowerSeaPetals(flowerSea.transform.parent, selectedRow);
         }
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 在粒子预热前按花海图集行设置起始色，夜晚花海复用白天的花瓣发射配置。
+    /// </summary>
+    private void SetFlowerSeaPetals(Transform branch, int selectedRow)
+    {
+        if (branch == null || selectedRow >= FlowerSeaPetalColors.Length)
+            return;
+
+        Transform petalDrift = branch.Find(PetalDriftName);
+        if (petalDrift == null && branch == transform.Find("Details/NightFlowerSea"))
+        {
+            Transform dayPetalDrift = transform.Find($"Details/DayFlowerSea/{PetalDriftName}");
+            if (dayPetalDrift != null)
+            {
+                petalDrift = Instantiate(dayPetalDrift, branch, false);
+                petalDrift.name = PetalDriftName;
+            }
+        }
+
+        if (petalDrift != null && petalDrift.TryGetComponent<ParticleSystem>(out var particles))
+        {
+            var main = particles.main;
+            main.startColor = FlowerSeaPetalColors[selectedRow];
+        }
     }
 
     /// <summary>

@@ -635,6 +635,14 @@ flowerSea.ResetSea();   // 全部复原（不重新布点）
 
 ---
 
+## PlanarReflection 平面反射
+
+**文件** `Assets/FrameWork/Scripts/Component/Other/PlanarReflection.cs`
+
+组件启用时创建镜像相机和 RenderTexture，并发布全局 `_PuddlePlanarTex` 和 `_PuddlePlanarActive`，供 `FrameWork/URP/Puddle1` 采样。切换雨天分支时，新分支可能先启用。旧实例禁用时会释放自己的相机和纹理，只有全局纹理仍指向自己的 RenderTexture 时才清理全局纹理和开关。
+
+---
+
 ## 常用代码模板
 
 ### 创建新的 Handler-Manager 配对

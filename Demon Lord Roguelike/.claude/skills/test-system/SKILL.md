@@ -678,7 +678,8 @@ EditorApplication.update 轮询(OnSceneEditUpdate)
     │  (此时场景位置/道路/Details 均已按配置处理完, 才是最终初始状态)
     ▼
 CaptureSceneEditSnapshot(sceneObj)
-    │  Object.Instantiate 整场景克隆 → SetActive(false) + HideAndDontSave(仅内存, Hierarchy 不可见)
+    │  创建已禁用的隐藏临时根 → 在其下 Instantiate 整场景克隆
+    │  快照根 SetActive(false) + HideAndDontSave → 脱离临时根，finally 销毁临时根
     │  记录场景预制路径 sceneEditPrefabPath(fightData.fightSceneId → FightSceneCfg.name_res)
     ▼
 用户在 Hierarchy 编辑场景(拖入新预制/移动旋转缩放/删除/重命名)
@@ -695,6 +696,7 @@ CaptureSceneEditSnapshot(sceneObj)
 - **改动匹配=「同名第N个」逐层匹配**：备份子物体按 名字+同名序号 匹配运行时子物体，定位路径形如 `/Details#0/Day#0/FlowerSea#0`；用户**重命名**原物体会被视为「删除+新增」（其变换修改丢失、按新增物体处理），属已知限制。
 - **保存范围**：仅「新增预制/物体」+「原有物体的位置/旋转/缩放修改」。**不保存**：删除原物体（仅在确认框提示，需删请直接编辑预制）、激活状态（Details 显隐由场景配置 details 驱动）、组件参数修改。新增只收集**最外层**未匹配节点：预制实例走 `PrefabUtility.InstantiatePrefab` 保链接（来源=场景预制自身的套娃跳过）、非预制物体整体克隆（内部预制链接保留、组件当前值一并拷贝）。
 - **道路排除**：`FightSceneRoad` 是战斗逻辑运行时动态加载进场景根的（WorldHandler.LoadFightScene），快照/保存/还原三环均按根层物体名跳过（实例名可能带 `(Clone)` 后缀）。
+- **快照全程保持非激活**。首次与保存后的快照均在已禁用的临时父节点下克隆，再禁用快照根并脱离父节点，临时父节点在 finally 中销毁。克隆期间保持 activeInHierarchy=false，避免备份组件执行 OnEnable/OnDisable、抢占并清空正在使用的全局平面反射纹理。
 - **还原即快照语义**：快照在开始测试场景就绪后拍摄；**保存成功后会重新拍摄快照**（存档点语义——还原回到最近保存的状态而非最初状态）。
 - **重开战斗会重载场景**：结算后点「下一步」走 `EnterGameForFightScene` 重新实例化场景，**未保存的编辑全部丢失**（面板 HelpBox 已提示）；重开后新旧场景结构一致，旧快照仍可继续用于 diff/还原。
 - **备份生命周期**：退出 Play 自动销毁（playModeStateChanged）；域重载丢引用后按名字后缀 `_SceneEditBackup` + HideAndDontSave 扫描清扫（下次开始时）；快照对象不参与存档/打包（HideAndDontSave）。

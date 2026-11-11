@@ -79,7 +79,7 @@ watched_files:
 
 ## 平原场地布置
 
-- `FightScene` ID `40001–40004` 共用 `FightScene_Plain_1.prefab`。地面、远山、树、岩石、草、特效与详情节点在根下沿 X 正方向偏移 `0.85`，使它们一起贴合地形。运行时道路按自身世界坐标生成。
+- `FightScene` ID `40001–40007` 共用 `FightScene_Plain_1.prefab`。地面、远山、树、岩石、草、特效与详情节点在根下沿 X 正方向偏移 `0.85`，使它们一起贴合地形。运行时道路按自身世界坐标生成。
 - `InitFightSceneCamera(fightData)` 让平原原始开场目标取 X=5、Z=3，再经 `ClampCameraTargetPosition` 应用 `camera_move_limit`；默认配置下锚点保持 `(5,0,3)`，实际相机世界 X=5、Z=-5，整体画面相对默认 X=3 向左移 2 个场景单位。
 - `Tree` 的 15 株近中景树和 `Ridge Tree Line` 的 139 株远树都嵌套深青绿版 `Building_Tree_2D_7_1`，使用独立材质 `Mat_Building_Tree_7_1` 和贴图 `tree_128_7_1.png`。原有 150 株在保留树脚位置的前提下等比放大 1.5 倍，另外在开场镜头左右边缘的道路外各补两株，沿纵深错开。`West Fill` 与 `East Fill` 和原林带前后交错，`Central Hill` 的 7 株树沿中央坡面分布，远树关闭投影。白天平原可见整条林带，其余变体使用各自配置的雾距。
 - `Rock` 下的 18 个无碰撞实例使用 `Building_Rock_Plain_1–3`，其中 5 块大岩石和 2 组碎石分布在远坡，沿坡面微倾斜。源 OBJ 位于 `Assets/LoadResources/Fbx/Building/Rock/`，分别为贴地主岩、楔形小岩和碎石组，裸岩和苔藓各有一个材质槽。`Wild Grass` 将 351 张草卡烘焙到 `Mesh_Plain_WildGrass_1`，共用现有 `grass_1.png` 和 `FrameWork/URP/GrassWindSway`，在路边与坡上成簇分布。
@@ -91,7 +91,19 @@ watched_files:
 - `Details/DayFlowerSea/FlowerSea` 与 `Details/NightFlowerSea/FlowerSea` 当前均使用「团簇分布」布置 40,000 朵花，`scaleRange` 为 `0.3–0.4`，团簇数分别为 450、446，世界半径随机区间均为 1.5–3，团心聚集程度 0.26，散花比例 15%；`gridCells` 在团簇模式下不生效。可通过 `FlowerSeaInstanceRenderer` 的「分布方式」切换随机抖动网格、均匀错列与团簇分布。
 - 正式战斗每次进入时，`ScenePrefabForFight.InitSceneData` 会在 Details 激活前用独立 `System.Random` 重置所有花海的 `randomSeed`，并从各自 `atlasGrid`（当前为 8 列 × 4 排）中随机选择 1 排，将该排全部 8 格写入 `atlasSelectedCells`；每朵花再按现有逻辑从所选排的 8 个花型中随机。预制体原先固定选择最上/最下排只用于编辑器预览，运行时不得把该固定排当作随机池。分支随后由 `OnEnable` 自动生成一次，无需额外调用 `Generate()`。
 - 花海真实投影由画质设置「场景杂物阴影」（UIText `42007`、`GameConfigBean.sceneClutterShadow`，默认关闭）控制。进场时无条件应用配置；切换时 `UIGameSettingForDisplay` 经 `WorldHandler.GetCurrentScenePrefab<ScenePrefabForFight>(Fight)` 调 `SetFlowerSeaShadows`，只修改所有花海的 `castShadows`，不重新 Generate、不改变随机结果。`shadowRadius` 保持组件原值；40,000 朵花开启全量投影仍有明显 GPU 成本，需手动 Play 实测。
-- 白天花海的 `Details/DayFlowerSea/PetalDrift` 嵌套 `Effect_Leaves_1.prefab`，覆盖实例颜色、尺寸、发射范围和漂移速度，将灰白像素图集染成浅粉到奶白的花瓣。预热后以每秒 9 片循环发射，沿战场横向慢漂并渐隐。手动 Play 进入 `40003`，检查近景花簇与角色比例、花海覆盖和飘散粒子的辨识度。
+- 白天花海的 `Details/DayFlowerSea/PetalDrift` 嵌套 `Effect_Leaves_1.prefab`，用于配置花瓣尺寸、发射范围和漂移速度。`ScenePrefabForFight.InitSceneData` 运行时将该实例复制到 `NightFlowerSea`，供夜晚和萤火虫同时播放。昼夜用同一份 `FlowerSeaPetalColors`，按各自选中的图集行设置粒子 `startColor`，在 Details 启用和粒子预热前生效。配色按 UV 自下而上依次为紫、米白、蓝、红。预热后以每秒 9 片循环发射，沿战场横向慢漂并渐隐。手动 Play 进入 `40003` 和 `40004`，检查开场花瓣和地面花色、夜晚花瓣与萤火虫的辨识度。
+
+### 平原雨天分支
+
+| FightScene ID | Details 子节点 | 场景 |
+|---|---|---|
+| `40005` | `DayRain` | 平原白天下雨 |
+| `40006` | `DayFlowerSeaRain` | 平原白天花海下雨 |
+| `40007` | `NightFlowerSeaRain` | 平原夜晚花海下雨 |
+
+- 三个分支在预制体内默认停用，由 `FightScene.details` 选择启用。各自嵌套树林同款 `Effect_Weather_Rain_Hard_1`，保留雨滴涟漪，发射中心换算到预制体 X=5。环境音统一使用雨声 `2000002`。
+- 白天两个雨天分支使用 `Skybox_4`、线性雾 `#9FB6C2`（18–80）、环境光 `#93A5B1`，方向灯强度为 `1.0`。雨夜沿用夜晚花海的 `Skybox_6`、雾距、月光、调色与萤火虫，环境光为 `#8A9CBD`。两个花海雨天分支各有 `PetalDrift`，花瓣随进场随机选定的花色染色。
+- 世界 1 征服难度 7（`1000007`）的普通关场地池包含这三个 ID。可在 `TestScene` 的 `Launcher` 选择普通战斗测试，分别手动 Play 检查雨效覆盖、花海和月光辨识度，退场时检查雨声是否停止。
 
 ## 玫瑰宫殿决战场地
 

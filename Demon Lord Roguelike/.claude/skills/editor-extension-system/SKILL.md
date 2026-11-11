@@ -235,6 +235,7 @@ Toolbar: UI脚本创建 按钮
 - 一键启动各种测试场景
 - 参数持久化（EditorPrefs）
 - 场景编辑会话状态（快照/等待标记/预制路径/检测结果/回调注册标记）使用 `static` 跨 Inspector 实例共享，避免 Hierarchy 选物导致 Inspector 重建后会话显示丢失
+- 场景编辑首次快照与保存后快照均在已禁用的隐藏临时父节点下克隆。快照根设为非激活并标记 HideAndDontSave 后脱离父节点，临时父节点由 finally 销毁。克隆全程保持 activeInHierarchy=false，避免备份触发 OnEnable/OnDisable 并覆盖当前场景的全局平面反射。
 
 ### Inspector 面板结构
 

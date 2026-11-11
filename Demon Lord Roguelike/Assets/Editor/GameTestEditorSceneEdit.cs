@@ -228,15 +228,27 @@ public partial class GameTestEditor
     }
 
     /// <summary>
-    /// 拍摄场景快照：克隆整个场景根为 HideAndDontSave 的内存备份，并记录场景预制资产路径
+    /// 拍摄场景快照：在未激活的层级中克隆整个场景，避免备份组件执行启停逻辑，并记录场景预制资产路径
     /// </summary>
     private void CaptureSceneEditSnapshot(GameObject sceneObj)
     {
         DestroySceneEditBackup();
-        sceneEditBackup = Object.Instantiate(sceneObj);
-        sceneEditBackup.name = sceneObj.name + SCENE_EDIT_BACKUP_SUFFIX;
-        sceneEditBackup.SetActive(false);
-        sceneEditBackup.hideFlags = HideFlags.HideAndDontSave;
+        // 克隆时就保持层级未激活，防止备份水洼的反射组件抢占并清除运行中场景的全局反射。
+        GameObject inactiveRoot = new GameObject("SceneEditSnapshotRoot");
+        inactiveRoot.hideFlags = HideFlags.HideAndDontSave;
+        inactiveRoot.SetActive(false);
+        try
+        {
+            sceneEditBackup = Object.Instantiate(sceneObj, inactiveRoot.transform, true);
+            sceneEditBackup.name = $"{sceneObj.name}{SCENE_EDIT_BACKUP_SUFFIX}";
+            sceneEditBackup.SetActive(false);
+            sceneEditBackup.hideFlags = HideFlags.HideAndDontSave;
+            sceneEditBackup.transform.SetParent(null, true);
+        }
+        finally
+        {
+            Object.DestroyImmediate(inactiveRoot);
+        }
         //以实际进入战斗的场景为准取预制路径
         sceneEditPrefabPath = null;
         var fightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
