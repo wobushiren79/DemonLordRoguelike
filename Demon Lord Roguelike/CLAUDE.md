@@ -18,6 +18,8 @@
 
 选定方式后，按相应素材的规范处理尺寸、预览确认和入库。仅对已有图片做用户指定的转换或修整时，直接执行对应操作。
 
+角色装备的正式成品直接放在母版旁的 `装备/` 直属层。批次、主题和版本用文件名区分。交付前逐个核对文件的直接父目录，见[装备交付规则](.claude/skills/aseprite-equipment-from-preview/SKILL.md#正式交付路径)。
+
 ## Shell 优先级规则
 
 **执行命令行操作时一律优先使用 PowerShell（pwsh 7+）**，遵循 PowerShell 语法（`$null`、`$env:VAR`、反引号续行、动词-名词 cmdlet 等）。仅当任务确需 POSIX/Unix 脚本能力时才改用 Bash。
