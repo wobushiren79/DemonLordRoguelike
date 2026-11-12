@@ -1,1 +1,15 @@
-notify = ['C:\Users\AppleCoffee\AppData\Local\OpenAI\Codex\runtimes\cua_node\db1cc9e06a6c48d6\bin\node_modules\@oai\sky\bin\windows\codex-computer-use.exe', "turn-ended"]
+
+
+[mcp_servers.aseprite-ai-artist]
+command = "powershell.exe"
+args = [
+  "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
+  '''$relative = '.claude/skills/aseprite-ai-artist/start-mcp.ps1'
+  $candidates = @($relative, (Join-Path 'Demon Lord Roguelike' $relative))
+  $launcher = $candidates | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } | Select-Object -First 1
+  if (-not $launcher) { throw 'The project Aseprite AI Artist launcher was not found.' }
+  & (Resolve-Path -LiteralPath $launcher).Path
+  exit $LASTEXITCODE
+  '''
+]
+startup_timeout_sec = 30

@@ -35,6 +35,7 @@ EditorWindow (Unity)
 ├── SkinMeshEditorWindow           # 皮肤网格编辑器
 ├── ProjectAssetCollectorWindow    # 项目资源收集器
 ├── PixelArtPreviewWindow          # 像素图预览工具（多文件夹拖拽→Grid预览→点击Ping定位；虚拟滚动+AssetPreview异步缩略图）
+├── PixelImageEditorWindow         # 像素图编辑器（手动采样、智能检测、Sprite Fusion 网格校正、限色和透明 PNG 导出）
 ├── StyleBaseWindow                # 样式基础窗口
 ├── GameTestEditor                 # 游戏测试编辑器 (Inspector扩展)
 ├── GameBuildEditorWindow          # 打包游戏工具 (打包前资源生成(复用 ExcelEditorWindow/GameResourceEditor) + BuildPlayer)
@@ -637,6 +638,7 @@ public class InspectorMyComponent : Editor
 | Steam 编辑器 | `Assets/FrameWork/Editor/Steamworks.NET/` |
 | 项目编辑器 | `Assets/Editor/` |
 | PixelDa 像素生成工具 | `Assets/FrameWork/Editor/Base/Window/PixelDa/` |
+| 像素图编辑器及 Sprite Fusion 网格校正 | `Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindow*.cs` · [工具指南](../pixel-image-editor/SKILL.md) |
 | 游戏测试编辑器 | `Assets/Editor/GameTestEditor.cs` + `GameTestEditorPartial.cs` + `GameTestEditorSceneEdit.cs`(场景编辑子模式) |
 | 打包游戏工具 | `Assets/Editor/GameBuildEditorWindow.cs` |
 | Mod构建工具 | `Assets/Editor/ModBuildEditorWindow.cs` |

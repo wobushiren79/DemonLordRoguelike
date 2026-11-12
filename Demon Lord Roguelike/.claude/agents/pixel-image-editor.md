@@ -29,7 +29,7 @@ watched_files:
 | --- | --- |
 | [PixelImageEditorWindow.cs](Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindow.cs) | 核心：枚举/常量/共享字段/生命周期(OnGUI 分发/OnDestroy)/菜单/快捷键/横幅步骤条/步骤切换与源图载入(EnterStep2/3、LoadSource、ResetAll)/颜色工具/UI 辅助(BeginCard/DrawChecker…)/拖拽读取(ReadSourcePixels…) |
 | [PixelImageEditorWindowStep1.cs](Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindowStep1.cs) | 步骤① 设置（DrawStep1、GridOptionPopup） |
-| [PixelImageEditorWindowStep2.cs](Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindowStep2.cs) | 步骤② 定位与转换（DrawStep2、转换核心 Convert、智能网格检测） |
+| [PixelImageEditorWindowStep2.cs](Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindowStep2.cs) | 步骤② 定位与转换（DrawStep2、转换核心 Convert、智能网格检测、Sprite Fusion 网格校正） |
 | [PixelImageEditorWindowStep3.cs](Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindowStep3.cs) | 步骤③ 编辑与导出（DrawStep3、绘制/橡皮/魔棒、调色板、撤销重做、渲染/导出） |
 | [PixelImageEditorWindowStep4.cs](Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindowStep4.cs) | 步骤④ 辅助功能（帧排版 DrawStep4Relayout / 图片合并 DrawStep4Merge、BuildPngFromTopDown） |
 | [PixelImageEditorWindowStep5.cs](Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindowStep5.cs) | 步骤⑤ 像素图颜色调节（双图并排调色，ColorAdjustImage 嵌套类） |
@@ -42,6 +42,7 @@ watched_files:
 
 > **右键快捷入口**：`OpenFromSelection`（`[MenuItem("Assets/像素图编辑器")]`）在 Project 选中 `Texture2D` 后右键直接打开窗口、把该图设为源图并自动 `LoadSource`+`EnterStep2`；`OpenFromSelectionValidate`（校验函数）保证仅选中图片时菜单可用。
 2. **步骤② 定位与转换**：预览格子尺寸(4~16)、源图缩放(10~300%，中心锚定)、拖拽定位源图，选 6 种取色算法，**可设相似度阈值**与**最终颜色数量上限**，生成像素图。另含 **智能网格检测**（`DrawStep2AutoDetect`，移植自 [theamusing/perfectPixel](https://github.com/theamusing/perfectPixel) 纯 numpy 后端）：Sobel 梯度自动识别网格尺寸(`DetectGridScale`/`EstimateGridGradient`)并把网格线吸附到像素块边缘(`RefineGrids`/`FindBestGrid`)；`AutoDetectGridSizeOnly`(仅填网格数) 与 `AutoDetectAndConvert`(一键 `ConvertByCoords`→步骤③)，选项 `_autoUseRefine`/`_refineIntensity`/`_autoFixSquare`；采样复用 `SampleSourceRect`(转发 6 种算法)，`FixSquare` 近正方形补正。原 FFT 主检测器未移植（避免手写 2D-FFT），改以梯度法为主。详见「智能网格检测 - perfectPixel 移植」region。
+   - **Sprite Fusion 网格校正**（`DrawSpriteFusionSnap` / `ConvertSpriteFusionSnap`）使用透明度感知的边缘投影。支持自动检测、手填源图像素块边长、固定当前画布三种方式。网格线独立吸附，保持目标格子数，按格内可见多数与主色取样。可使用固定 RGB HEX 色板，留空时复用上方限色。成功后进入现有步骤③。
 3. **步骤③ 编辑与导出**：左侧工具面板 + 中间编辑画布 + 右侧最终效果图预览(`DrawResultPreview`，`_resultZoom` 1~20，无网格/无高亮)；画布缩放(1~20)、网格开关、画笔/橡皮/魔棒、笔刷色与尺寸(1~5)、魔棒阈值(0~30)、最近颜色(≤6)、调色板颜色替换、撤销/重做、PNG 导出(另存为/覆盖原图/同目录/拆分)。
 4. **步骤④ 辅助功能**：顶部 `GUILayout.Toolbar` 页签切换两个独立子工具——**帧排版（拆分/重排）** 与 **图片合并（拼图集）**，由 `_auxMode`(`AuxMode.Relayout`/`Merge`) 控制，`DrawStep4` 派发到 `DrawStep4Relayout` / `DrawStep4Merge`，详见下方专节。`DrawStepBar` 的 `CanGoToStep(4)` 恒为 true、`reachable = step<=_step || step==4 || step==5`，故随时可进入；不依赖步骤①~③的任何数据。
 5. **步骤⑤ 像素图颜色调节**（`DrawStep5`，见专节）：并排载入两张互相独立的图，各自提取调色板全局换色、分别导出。`CanGoToStep(5)` 恒为 true，独立于主流程。

@@ -9,7 +9,7 @@ metadata:
 
 **正式深渊馈赠图标**（2026-11-10）：`Assets/LoadResources/Textures/AbyssalBlessing/` 的 127 张 PNG 均为原生 **16×16**。原 32×32 的 114 张参考用户选定的金币第二版重绘，保留原图主体和各自色系，使用较大的色块、清晰描边与二值透明。原位更新 PNG 并保留 `.meta`，以维持文件名、Sprite GUID 和图集引用。成就与 `Assets/Out/AbyssalBlessing/` 的暂存素材沿用 32×32 流程。
 
-**再生成途径**：PixelLab 已停用（2026-10 起不再使用）。新图标用项目内 **PixelDa 编辑器工具**（菜单 Custom/AI/像素图生成，见 pixelda skill）出图。
+新图标先按[像素图生成方式](../../CLAUDE.md#像素图生成方式)确定流程。选择生图后转换时，可用项目内 **PixelDa 编辑器工具**（菜单 Custom/AI/像素图生成，见 pixelda skill）出图。PixelLab 已于 2026-10 停用。
 
 **控色 ≤N 技巧**：下载/出图后做中位切分量化——关键：**先把透明区合成到黑底**(`Image.composite over black`)再量化,让透明背景与黑描边共用同一个"黑"调色板槽,不浪费槽位;量化后 `putalpha` 还原透明。硬保证不透明像素 ≤N 色达标。
 

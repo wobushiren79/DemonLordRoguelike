@@ -27,7 +27,7 @@ watched_files:
 
 同一 `PixelImageEditorWindow` 拆成 6 个文件：
 - **PixelImageEditorWindow.cs**（核心）：枚举/常量/共享字段/生命周期(OnGUI 分发/OnDestroy)/菜单/快捷键/横幅步骤条(`DrawStepBar`/`CanGoToStep`)/步骤切换与源图载入(`EnterStep2/3`、`LoadSource`、`ResetAll`)/颜色工具/UI 辅助/拖拽读取。
-- **Step1.cs** 步骤①设置 · **Step2.cs** 步骤②定位转换+转换核心+智能网格检测 · **Step3.cs** 步骤③编辑导出+调色板+撤销重做+渲染导出 · **Step4.cs** 步骤④帧排版/图片合并 · **Step5.cs** 步骤⑤颜色调节。
+- **Step1.cs** 步骤①设置 · **Step2.cs** 步骤②定位转换+转换核心+智能网格检测+Sprite Fusion 网格校正 · **Step3.cs** 步骤③编辑导出+调色板+撤销重做+渲染导出 · **Step4.cs** 步骤④帧排版/图片合并 · **Step5.cs** 步骤⑤颜色调节。
 - 新增步骤：写 `PixelImageEditorWindowStepN.cs` partial + 核心文件三处接线（`OnGUI` switch `case N`、`DrawStepBar` names 数组与 `reachable`、`CanGoToStep(N)`）。步骤④⑤为独立工具，`CanGoToStep` 恒 true。
 
 ## 工作流（五步）
@@ -60,6 +60,13 @@ watched_files:
   - `DetectGridScale`：梯度尺寸 → 像素块边长（长宽比 >1.5 取 min 否则取均值）→ 回推格子数。
   - `RefineGrids`：从中心向两侧按格宽步进，每条网格线用 `FindBestGrid`(±`intensity`×格宽内取最强梯度峰)吸附；`Sort`+`DedupSortedCoords` 去重防零宽格；带循环 guard 防死循环。
   - `ConvertByCoords`：逐格 `SampleSourceRect`(复用 `SampleAverage/SampleMostUsed/SampleWeighted/SampleNearestNeighbor`，邻域算法四周外扩 25%、最近邻取矩形中心像素) → `FixSquare`(|nx-ny|==1 时按奇偶裁末列/行或复制首行/列) → 同步 `_gridWidth/_gridHeight`，按需 `QuantizeToMaxColors`。
+
+#### Sprite Fusion 网格校正（`DrawSpriteFusionSnap`）
+
+- 在步骤②选「Sprite Fusion 网格校正」。该入口直接处理已载入源图，预览区的拖拽和缩放用于下方手动转换。自动检测从横纵边缘峰值估算间距，也可输入源图中像素块的边长（px），或选择「固定当前画布尺寸」使用当前网格数。固定尺寸沿两轴重采样，16×16 图标宜载入正方形构图。检测不到周期时，提示改用后两种方式。
+- `ConvertSpriteFusionSnap` 通过 `BuildSnapEdgeProfiles` 比较相邻像素的预乘颜色及 alpha，以 `EstimateSnapPitch` 估计间距。 `SnapGridCuts` 从均匀网格向局部强边缘吸附，各线独立，保留输出格子数。实现参考 [Sprite Fusion Pixel Snapper](https://github.com/Hugo-Dz/spritefusion-pixel-snapper) 的边缘投影、吸附和主色取样，在 Unity 内使用 C#。
+- `SampleSnapGrid` 逐格取主色。alpha≥128 的像素须占半数以上才生成可见像素，输出为二值透明。固定色板接受 1–256 种六位 RGB（可带 `#`，逗号或空格分隔），以最近 RGB 映射可见像素。留空时沿用上方「限制最终颜色数」设置。
+- 点击「校正并转换 → 步骤③」沿用原有编辑、撤销和导出。要保存原生尺寸，选择「×1」。透明边缘以源图 alpha 为依据，纯色不透明背景可在步骤③用魔棒处理。
 
 ### 步骤③ 编辑与导出（`DrawStep3`）
 - 三栏布局：左侧工具面板 + 中间实时编辑画布(`DrawEditCanvas`，渲染 Point 纹理 `_artTex`，带网格/笔刷高亮) + 右侧「最终效果图」(`DrawResultPreview`，同 `_artTex` 但**无网格/无高亮**，缩放 `_resultZoom`(1~20)，宽高超限时内部滚动)。

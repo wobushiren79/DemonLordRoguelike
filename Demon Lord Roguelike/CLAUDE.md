@@ -8,6 +8,16 @@
 
 **所有 AI 的回答，以及让用户做的任何选择（如 AskUserQuestion 的问题与选项），都必须使用中文。** 包括任务说明、总结、提问、选项标签与描述等面向用户的文本一律用中文表述。
 
+## 像素图生成方式
+
+用户要求新生成像素图（如魔物头像、身体部件、装备或图标）时，若本次尚未指定生成方式，**先用中文列出下面三个编号，请用户选择，收到选择后再开始生图、转换或绘制。** 用户已明确指定本次方式时，直接按该方式执行。
+
+1. **生图后转换像素图**（原流程）。用 ImageGen 等生图工具生成源图，再用项目的[像素图编辑器](.claude/skills/pixel-image-editor/SKILL.md)等现有工具对齐网格、重采样到目标像素尺寸。
+2. **用 Skill 直接画字符网格**。使用 [Aseprite AI Artist](.claude/skills/aseprite-ai-artist/SKILL.md)，用字符表示每格的颜色或透明状态，按目标尺寸编写网格，再用 `draw` 写入 Aseprite。
+3. **生图预览后用 Skill 重画**。用 ImageGen 生成造型预览，通过 Aseprite AI Artist 的 `reference import` 导入实际预览图，提取轮廓、配色和主要特征，再用 `draw` 在目标尺寸网格逐像素重画。
+
+选定方式后，按相应素材的规范处理尺寸、预览确认和入库。仅对已有图片做用户指定的转换或修整时，直接执行对应操作。
+
 ## Shell 优先级规则
 
 **执行命令行操作时一律优先使用 PowerShell（pwsh 7+）**，遵循 PowerShell 语法（`$null`、`$env:VAR`、反引号续行、动词-名词 cmdlet 等）。仅当任务确需 POSIX/Unix 脚本能力时才改用 Bash。
