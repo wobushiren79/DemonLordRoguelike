@@ -73,6 +73,8 @@ UIMainLoad(加载存档界面) 空槽位 item
 | 皮肤随机池 | CreatureRandomInfoCfg | CreatureRandomInfo.txt | excel_creature_random_info |
 | 皮肤模型/颜色 | CreatureModelInfoCfg | CreatureModelInfo.txt | excel_creature_model_info |
 
+角色创建的皮肤选项取对应外观池明确列出的部件 ID。新增可随机皮肤时同步更新来源 Excel，再导出 `CreatureRandomInfo.txt`。流程见[随机池规则](../skills/spine-unity-import/references/configuration.md#同步随机池)。
+
 ### 关键文件
 
 | 文件 | 路径 |

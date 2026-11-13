@@ -40,3 +40,5 @@ Copy-Item -LiteralPath $master -Destination $copy
 1. 回读候选 JSON，核对 `skeleton.images` 为 `images/`、每个目标槽在 `skins.default` 下有附件，且对应 PNG 可读。按源 Cel 核对附件名、像素尺寸和位置。该脚本把画布底边中点作为原点，附件坐标取 Cel 中心并翻转 Y 轴。PNG 尺寸以实际 Cel 为准。脚本退出码为零时仍须检查文件和目标附件是否齐全。
 2. 首次导出使用候选 JSON 和 PNG。已有导出时，以旧 JSON 为底按附件名更新本次范围内的 `slots`、`skins.default` 和图片，保留其他附件及旧槽相对顺序。新变体优先接在同类已有槽之后，例如 `Weapon_R_21` 接在 `Weapon_R_20` 后。刷新整份导出时也要核对历史附件和顺序。脚本会因图层可见性漏掉旧附件，`images/` 也可能存有其他 Spine 工程使用的图，发布时逐个更新文件，保留目录中的其他图片。
 3. 发布前确认最终 JSON 引用的每张图能在目标 `images/` 读取。备份将覆盖的文件，发布后回读 JSON 和本次更新的 PNG，核对母版哈希。部分写入失败时恢复已替换文件并移除本次新建的文件。核验通过后清理备份和临时产物，交付 JSON、`images/` 位置与本次附件名。
+
+用户要求把交付的附件加入现有 Spine 骨架时，使用 [Spine 部件导入与皮肤绑定](../spine-skin-import/SKILL.md)。

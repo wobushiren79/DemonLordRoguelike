@@ -149,6 +149,8 @@ UIHandler.ShowMask(1, null, () =>
 
 ## 约束与注意事项
 
+创建界面的皮肤选项取物种绑定的外观池。新增可随机皮肤时按[随机池规则](../spine-unity-import/references/configuration.md#同步随机池)同步该池。
+
 - **加/减可选物种只改 `listSelectForCreature`**（UIMainCreate.cs:24-28），不动配置表；至少保留 1 个 id，且该 id 必须在 CreatureInfo 存在并配好 `creature_random_id` 皮肤池。
 - 魔王创建数值**固定**（level=0/rarity=0），不要给魔王接随机属性/稀有度/BUFF 链路。
 - 初始魔物**属性固定类型不随机**（HP/DR/ASPD）：改固定类型改 `OnClickForCreate` 里的 switch；改点数预算改 `UserLimmitBean.gashaponRandomAttributeNum`（会影响孕育扭蛋，两者同预算，改动需知会）。
