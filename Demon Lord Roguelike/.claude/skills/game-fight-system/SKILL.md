@@ -323,7 +323,7 @@ public virtual void CheckGameEnd()
 
 ## 战斗场景控制
 
-`ControlForGameFight.ClampCameraTargetPosition` 统一处理开场和移镜的锚点 X/Z 限位。`FightScene.camera_move_limit` 用 `x:min,max&z:min,max` 配置实际相机世界范围，可按轴省略；默认 X=[3,7]、Z=[-4.5,-1]，竞技场 50001 配 `z:-4,-1`，不再按道路数量特判。
+`ControlForGameFight.ClampCameraTargetPosition` 统一处理开场和移镜的锚点 X/Z 限位。`FightScene.camera_move_limit` 用 `x:min,max&z:min,max` 配置实际相机世界范围，可按轴省略；默认 X=[3,8]、Z=[-4.5,-1]，竞技场 50001 配 `z:-4,-1`，不再按道路数量特判。
 
 ```csharp
 public class ControlForGameFight : BaseControl

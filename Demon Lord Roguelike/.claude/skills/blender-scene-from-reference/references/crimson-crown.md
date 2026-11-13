@@ -18,7 +18,7 @@
 
 ## 归档与重建
 
-从 Unity 项目目录访问 `../资源/建筑/Building_Palace_CrimsonCrown_1/`。其中 `Building_Palace_CrimsonCrown_Source_1.blend` 用于编辑部件，`Building_Palace_CrimsonCrown_Atlas_1.blend` 用于查看单图集，`Previews/` 包含各机位原图和最近邻放大图。
+从 Unity 项目目录访问 `../资源/建筑/Building_Palace_CrimsonCrown_1/`。`Building_Palace_CrimsonCrown_Source_1.blend` 用于编辑部件，`Building_Palace_CrimsonCrown_Atlas_1.blend` 用于查看单图集。需要各机位原图或最近邻放大图时，按下方流程在临时验收目录重新渲染。
 
 [rebuild_crimson_crown_atlas.py](../scripts/rebuild_crimson_crown_atlas.py) 针对赤冠宫殿的材料和集合结构，可从旧合网格源工程恢复部件，也可读取拆分后的源工程。它在独立的 `Assets/Test` 验收目录生成两份 Blender 工程、图集、FBX 和摆放清单。导入时保留 FBX 层级，使 Unity 按自身坐标系读取摆放节点。按清单重建两个 prefab 并一起验收。等用户明确确认后，保留正式资源 GUID，同步更新 FBX、图集和两份 prefab 的网格引用与层级。Blender 4.5 LTS 的路径通过 PATH 或本机安装位置动态取得。
 

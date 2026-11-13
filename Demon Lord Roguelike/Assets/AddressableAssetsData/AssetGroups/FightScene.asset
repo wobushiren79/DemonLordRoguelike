@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: FightScene
   m_GUID: 7251369fdc99b0c4cad7c85a5a185754
   m_SerializeEntries:
+  - m_GUID: 14fb7348b4577e8409dd2970bcdeadf3
+    m_Address: Assets/LoadResources/FightScene/FightScene_TownCenterSquare_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 160cf89e66263444da7a5c69520bde6a
     m_Address: Assets/LoadResources/FightScene/FightScene_WildernessCanyon_1.prefab
     m_ReadOnly: 0
@@ -32,6 +37,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 25ad98f2b04f79740932669ea713fe20
     m_Address: Assets/LoadResources/FightScene/FightScene_Arena_Embervault_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 31e0aca250cba554091a43de87461e22
+    m_Address: Assets/LoadResources/FightScene/FightScene_Palace_Emerald_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

@@ -641,6 +641,8 @@ flowerSea.ResetSea();   // 全部复原（不重新布点）
 
 组件启用时创建镜像相机和 RenderTexture。雨天水洼组将 `waterRenderer` 留空，使用全局 `_PuddlePlanarTex` 和 `_PuddlePlanarActive`，供 `FrameWork/URP/Puddle1` 采样。旧实例禁用时只有全局纹理仍指向自己的 RenderTexture 才清理绑定，避免关闭先启用的新雨天分支。
 
+组件的执行顺序为 110，在 CinemachineBrain（100）更新主镜头后执行 `LateUpdate`。反射高度默认取节点世界 Y 加 `waterLevelOffset`。城镇广场的水面开启 `useRendererBoundsTop`，取接收渲染器世界包围盒的最大 Y，随实例位置和缩放变化。翡翠宫殿石砖、基地水面和雨天水洼使用默认高度计算。
+
 `BaseScene/Floor/Water` 把自身 MeshRenderer 赋给 `waterRenderer`。反射面与水面同高，纹理高度为 192，镜像相机沿用主相机的背景色并排除 Water 和 UI 层。首帧镜像渲染后，组件通过 MaterialPropertyBlock 写入 `_WaterPlanarReflectionTex` 和 `_WaterPlanarReflectionActive`。`FrameWork/URP/WaterSimple` 横向翻转屏幕 UV 后加入波纹扰动，按材质的「平面倒影强度」混入水色。禁用组件时关闭该水面的反射采样并释放资源。
 
 基地水面配置 `waterIdleRefreshRate=20`。相机、视图矩阵、投影矩阵及水面高度都未变化时，按不受时间缩放影响的时钟限频。镜头移动、切换或缩放时及时重画，保持屏幕 UV 与倒影对齐。水面镜像相机关闭深度与不透明颜色纹理复制、HDR、MSAA、阴影和后处理。基地的 `waterReflectionRenderer` 指向 `URP-Performant-Renderer`，按资源在当前管线的 Renderer List 中查找。HighFidelity 与 Balanced 已注册该渲染器，主相机仍使用各自的默认项。

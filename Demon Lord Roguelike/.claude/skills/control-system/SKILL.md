@@ -109,7 +109,7 @@ GameControlHandler.Instance.manager.controlForGameBase.EnabledControl(false);
 
 战斗交互均通过 `GameHandler.Instance.manager.GetGameLogic<GameFightLogic>()` 落到战斗逻辑；`CheckUtil.CheckIsPointerUI()` 拦截 UI 上的点击。
 
-战斗开场与移镜共用 `ClampCameraTargetPosition`。`FightScene.camera_move_limit` 用 `x:min,max&z:min,max` 配置实际相机世界 X/Z 范围，可按轴省略；默认 X=[3,7]、Z=[-4.5,-1]，竞技场 50001 配 `z:-4,-1`。CMFollow 的 X/Z 偏移为 0/-8，限位时统一换算成锚点坐标。
+战斗开场与移镜共用 `ClampCameraTargetPosition`。`FightScene.camera_move_limit` 用 `x:min,max&z:min,max` 配置实际相机世界 X/Z 范围，可按轴省略；默认 X=[3,8]、Z=[-4.5,-1]，竞技场 50001 配 `z:-4,-1`。CMFollow 的 X/Z 偏移为 0/-8，限位时统一换算成锚点坐标。
 
 ## 输入接线规范（重要）
 

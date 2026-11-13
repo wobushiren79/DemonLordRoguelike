@@ -3,6 +3,10 @@ name: fight-scene-integration
 description: 将已有 Unity 场景预制体或建筑预制体接入魔王太嚣张的正式战斗场景。用户说「把这个 prefab 加进战斗场景」「给挑战、征服、无尽绑定或替换战斗地图」或要求修复已接入场景的道路、镜头、光照、屋檐闪烁和粒子比例时使用。覆盖 Addressables 登记、配置表导出、模式场地池、旧存档与画面验收。
 watched_files:
   - Assets/LoadResources/FightScene/
+  - Assets/LoadResources/Fbx/Building/Palace/Building_Palace_Emerald_Atlas/EmeraldPalace_BattleStoneFloor.asset
+  - Assets/FrameWork/Scripts/Component/Other/PlanarReflection.cs
+  - Assets/LoadResources/Prefabs/Town/Building_Town_CenterSquare_1.prefab
+  - Assets/LoadResources/Materials/Building/TownCenterSquare/
   - Assets/AddressableAssetsData/AssetGroups/FightScene.asset
   - Assets/Data/Excel/excel_fight_scene[战斗场景].xlsx
   - Assets/Resources/JsonText/FightScene.txt
@@ -17,6 +21,8 @@ watched_files:
 
 ## 1. 确认接入范围
 
+场景导入沿用现有战斗镜头和游戏逻辑，通过场景资源、战斗预制体、Addressables 与场地配置完成接入。镜头和其他玩法代码改动以用户明确提出的需求为准。
+
 1. 读项目 `CLAUDE.md`，确认源 prefab、目标模式、世界、难度及普通/BOSS 分支。区分「可从战斗测试工具加载」「加入现有场地池」「某模式专用」三种结果。终焉议会在 `WorldHandler` 走单独的 `LoadDoomCouncilScene`，先查实际入口。现有建筑已完成时，从它的正式 prefab 开始；还在参考图建模阶段时读 [场景制作流程](../blender-scene-from-reference/SKILL.md)。
 2. 查源 prefab 的当前引用、模型依赖、地面高度、镜头可见范围，以及目标模式的道路数量和长度。先记录现有用户改动。编辑 Unity 序列化资源前，按 [连接流程](../unity-mcp-connection/SKILL.md) 确认实例和编辑器状态；通过 Unity 的 prefab/AssetDatabase API 修改并保存，回读确认。
 
@@ -26,7 +32,8 @@ watched_files:
 
 ## 2. 生成战斗 prefab 并登记
 
-1. 按同类战斗 prefab 建立 `Assets/LoadResources/FightScene/FightScene_<主题>_<编号>.prefab`。把源建筑作为嵌套 prefab，用包装层处理朝向、等比缩放、位置、近景切口和该场地的灯光。检查预览专用相机、后处理、UI、灯光等是否会与运行时对象叠加。普通战斗默认使用游戏天空盒。源模型含预览用天空穹顶、球体或背景面片时，在战斗包装层移除或禁用这些对象，让镜头显示配置的天空盒。源模型确需修网格时，只改故障部位并保留原材质、UV、法线和实际需要的碰撞。
+1. 按同类战斗 prefab 建立 `Assets/LoadResources/FightScene/FightScene_<主题>_<编号>.prefab`。把源建筑作为嵌套 prefab，用包装层处理朝向、等比缩放、位置、近景切口和该场地的灯光。检查预览专用相机、后处理、UI、灯光等是否会与运行时对象叠加。普通战斗默认使用游戏天空盒。源模型含预览用天空穹顶、球体或背景面片时，在战斗包装层移除或禁用这些对象，让镜头显示配置的天空盒。源模型确需修网格时，只改故障部位并保留原材质、UV 和法线。
+   - **模型碰撞体**。移除战斗场景模型上的 `MeshCollider`，递归检查嵌套预制体和停用的子物体。源预制体由其他入口共用时，优先在战斗包装层保存移除组件的覆盖。保留有明确用途的碰撞体，例如独立道路预制体上的 `BoxCollider`。
 2. 顺着 `WorldHandler.LoadFightScene` 核对运行时摆放。普通战斗会重设根的位置及旋转，根 Z 由 `-(sceneRoadNumMax - sceneRoadNum) / 2f` 偏移；需要保留的美术摆放写在子层。道路由运行时另外加载和缩放。普通战斗分支会确保根节点有 `ScenePrefabForFight` 并调用 `InitSceneData`，场景实例的动态表现统一挂在该组件；其 `enableSkyboxMotion` 默认关闭，只有天空石台等明确需要动态天空盒的预制体才启用并配置曝光/偏航速度。以实际道路格、生成点和地面高度检查覆盖范围、穿模、悬空及 Z-fighting；多种路数都要检查，包含可支持的最大路数。
 3. 用 Unity API 把包装 prefab 登记到 Addressables 的 `FightScene` 组，地址使用项目完整资源路径（含 `.prefab`）。核对 GUID 与地址唯一且对应同一资产，嵌套建筑、网格、材质、贴图及特效依赖可解析。不要为了此类加载另加一个 Build Settings 场景。
 
@@ -34,7 +41,7 @@ watched_files:
 
 ## 3. 配表、绑定模式与兼容旧档
 
-1. 读 [配置表读写](../excel-io/SKILL.md)。通过项目 `.claude/scripts/run-python.ps1` 使用 openpyxl 修改 `Assets/Data/Excel/excel_fight_scene[战斗场景].xlsx` 的 `FightScene` 工作表。检查已用 ID 与编号规则，新增行按 ID 升序。`name_res` 填 prefab 文件名（含扩展名），加载时与 `PathInfo.FightScenePrefabPath` 拼成完整 Addressables 地址。`skybox_mat` 优先选用 `Skybox` 组中已登记的 `Assets/FrameWork/Materials/Skybox/` 材质，按构图填写 `skybox_rotate`。现有材质无法满足明确的美术需求时，优先把新天空做成兼容旋转参数的天空盒材质并登记到同组。按画面需要配置环境光、雾、景深、道路颜色/透明度和 `Details` 变体。`camera_move_limit` 用 `x:min,max&z:min,max` 配置实际相机世界 X/Z 范围，可按轴省略；默认 X=3~7、Z=-4.5~-1，竞技场 50001 配 `z:-4,-1`。
+1. 读 [配置表读写](../excel-io/SKILL.md)。通过项目 `.claude/scripts/run-python.ps1` 使用 openpyxl 修改 `Assets/Data/Excel/excel_fight_scene[战斗场景].xlsx` 的 `FightScene` 工作表。检查已用 ID 与编号规则，新增行按 ID 升序。`name_res` 填 prefab 文件名（含扩展名），加载时与 `PathInfo.FightScenePrefabPath` 拼成完整 Addressables 地址。`skybox_mat` 优先选用 `Skybox` 组中已登记的 `Assets/FrameWork/Materials/Skybox/` 材质，按构图填写 `skybox_rotate`。现有材质无法满足明确的美术需求时，优先把新天空做成兼容旋转参数的天空盒材质并登记到同组。按画面需要配置环境光、雾、景深、道路颜色/透明度和 `Details` 变体。`camera_move_limit` 用 `x:min,max&z:min,max` 配置实际相机世界 X/Z 范围，可按轴省略；默认 X=3~8、Z=-4.5~-1，竞技场 50001 配 `z:-4,-1`。
 2. 按入口更新目标场地配置，核对 `FightBean.fightSceneId` 最终取值。挑战100勇士的 `FightTypeChallengeHundredInfo.fight_scene_ids` 使用逗号，征服的 `FightTypeConquerInfo.fight_scene_ids` 和 `fight_scene_boss_ids` 使用 `&`。无尽用 `FightTypeInfiniteInfo.fight_scene_id` 按世界和难度指定单一 `FightScene` ID，0 或留空回退同难度征服 BOSS 场地。按 [传送门流程](../portal-system/SKILL.md) 核对专用场地只由目标正式战斗入口选用。
 3. 检查已有传送门。`FightBeanForInfinite.InitData` 在进场时优先读取当前无尽场地，因此新旧无尽传送门均使用专属配置，旧冻结值仍可用于回退。征服只懒补缺失场地，挑战100勇士通过 `GetChallengeHundredFightSceneId` / `IsMatchFightScene` 在冻结场地已移出配置池时重选。核对征服首战和决战、无尽测试入口以及无尽传送门的进场结果。
 4. 用项目 Unity 导出器同步本次改动的表到 `Assets/Resources/JsonText/`，包括模式表；通过 `ExcelUtil.ExcelToJsonItem(FileInfo, jsonFolderPath)` 定向导出时，实际回读 JSON，防止导出静默失败或拼错中文文件名。核对两端的行、字段类型和 ID 都一致，清理此次临时备份。只修改数据行时沿用已有 Bean。
@@ -52,7 +59,7 @@ watched_files:
 
 ## 5. 验收与交付
 
-- **编辑模式**：回读 prefab、Addressables、Excel 和导出 JSON。核对目标模式/难度、普通及 BOSS 分支、有效与失效的旧冻结场地。检查依赖、相机锚点、边界画面和粒子表现。用战斗机位确认天空盒在开阔处和镜头边界均可见，核对预览背景模型的显隐。如改了 C#，检查 Unity 编译与 Console。编辑模式截图或模拟要注明覆盖范围。
+- **编辑模式**：回读 prefab、Addressables、Excel 和导出 JSON。核对目标模式/难度、普通及 BOSS 分支、有效与失效的旧冻结场地。检查依赖、相机锚点、边界画面和粒子表现。重新打开保存后的战斗 prefab，确认模型层级（含嵌套和停用子物体）中的 `MeshCollider` 数量为 0。用战斗机位确认天空盒在开阔处和镜头边界均可见，核对预览背景模型的显隐。如改了 C#，检查 Unity 编译与 Console。编辑模式截图或模拟要注明覆盖范围。
 - **实际战斗**：按项目规则由用户手动 Play。给出可操作的复测路径，覆盖实际入口、新旧传送门、可支持的最大路数、镜头移动、放置及刷怪、退场重进。没有 Play 反馈时，把实际运行效果标为待验收。
 - **收尾**：在 Unity 项目目录运行 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".claude/scripts/check-watched.ps1" -Json`，对未跟踪的新资源补查 `watched_files`，同步受影响的项目指南。说明新增场地 ID、绑定范围、实际通过的检查与待复测项。
 
@@ -110,10 +117,33 @@ watched_files:
 
 - `FightScene` ID `30002`，Addressables 地址 `Assets/LoadResources/FightScene/FightScene_Palace_CrimsonCrown_1.prefab`。内嵌 `Building_Palace_CrimsonCrown_Cutaway_1`，子层位置 `(5.5, -0.0435, 4.72)`、Y 轴旋转 `180°`、缩放 `(0.68, 0.58, 0.58)`，保留战斗所需的横向间距。两侧柱心局部 X 为 `±10.17`，柱本地缩放 `(0.75, 1, 0.85)`，柱旗与柱身留约 `0.013` 战斗场景单位。用角色站姿约 1 单位校准家具，长椅、花盆和王座等比世界缩放分别为 `0.45`、`0.43`、`0.36`，对应长椅坐面高约 `0.41`、王座高约 `1.58`，王座底面贴台顶。
 - 战斗版 12 座烛台共用 `Assets/LoadResources/Fbx/Building/Palace/CrimsonCrown_BattleCandelabrum.asset`。用图集 UV2 去掉原网格的 186 个火焰三角面，补同图集金色轴杆连接中间烛座。烛台等比世界缩放 `0.30`，烛芯高约 `0.69`，第二排局部 Z `8`，第三排仍落在台阶前平地。36 个烛芯各自嵌套 `Effect_Fire_7`，只开启主火和 Glow。火焰局部缩放 `0.19`，主火世界空间重力和速度上限按最终 `0.057` 比例补偿。其中 10 座带烛光。大厅 6 盏点光强度为 `1.02`、范围 `2.65`，王座台 4 盏为 `1.4`、范围 `3.15`，在地毯两侧和王座台形成局部暖光。
-- 战斗平地的地毯保留红色织纹和两侧金边，移除中央花纹。`CrimsonCrown_BattleRoyalDais.asset` 把大厅局部高度 `0.074` 的两张地毯三角面分到独立材质槽，使用 `Mat_Building_Palace_CrimsonCrown_CombatCarpet_1` 和 `palace_crimson_crown_combat_carpet_1.png`。战斗包装层整体上移后，地毯世界 Y 约为 -0.00058，贴近魔物落子平面 Y=0，并低于棋盘格平面 Y=0.0001。两侧石砖保留原有高度差。台阶、王座台及碰撞体继续使用原资源。
+- 战斗平地的地毯保留红色织纹和两侧金边，移除中央花纹。`CrimsonCrown_BattleRoyalDais.asset` 把大厅局部高度 `0.074` 的两张地毯三角面分到独立材质槽，使用 `Mat_Building_Palace_CrimsonCrown_CombatCarpet_1` 和 `palace_crimson_crown_combat_carpet_1.png`。战斗包装层整体上移后，地毯世界 Y 约为 -0.00058，贴近魔物落子平面 Y=0，并低于棋盘格平面 Y=0.0001。两侧石砖保留原有高度差。台阶和王座台继续使用原渲染资源。战斗包装层以组件移除覆盖清理模型的 `MeshCollider`。
 - 战斗预制体将暖色主光 `Warm evening key` 的世界欧拉角设为 `(48°, 28°, 0°)`。主光强度为 `0.58`，冷色补光强度为 `0.17`，让窗边、柱廊和大厅中轴保留明暗层次。参考森林白天场地，阴影朝棋盘深处投射。地毯已贴近落子平面时，用同一机位对比主光方向，区分地面落差与影子在画面中的分离。
-- 世界 1 的征服难度 1–10 使用 BOSS 池 `30001&30002`。新随机时两座宫殿等概率，已冻结的场地继续沿用。`30002` 使用 `Skybox_6`、环境光 `#776468`、道路透明度 `0.1`、景深 `Bokeh/280/12`，场地雾和体积雾留空。
+- 玫瑰宫殿接入时，世界 1 的征服难度 1–10 BOSS 池扩为 `30001&30002`。`30002` 使用 `Skybox_6`、环境光 `#776468`、道路透明度 `0.1`、景深 `Bokeh/280/12`，场地雾和体积雾留空。
 - 已在编辑模式按战斗根节点偏移回读 2–6 路的地面和出生区，核对 8 面柱旗、王座底面、12 座烛台的连接件与 36 个火焰实例。实机验收可在 `TestScene` 的 `Launcher` 选战斗测试场景 `[30002]`，手动 Play 查看角色与王座比例、烛火、放置、出怪和镜头边界，再用新征服传送门验证最后一关切换。
+
+## 城镇中心广场 BOSS 场地
+
+- `FightScene` ID `30003`，Addressables 地址 `Assets/LoadResources/FightScene/FightScene_TownCenterSquare_1.prefab`。包装层内嵌 `Building_Town_CenterSquare_1`，局部位置为 `(5.5, -0.033, 9.25)`、等比缩放 `0.70`，保留源 prefab 根的 `+90° X` FBX 轴转换。前庭两侧花坛在各自局部 X 方向对称向外移 `1.90` 米，桥、喷泉、城门沿广场中轴布置。 战斗预制体内，广场侧的 `Bridge Pier Left 2`、`Bridge Pier Right 2` 柱高减半（源模型局部 Z 缩放 `0.5`），对应的 `Bridge Lantern*` 子物体关闭，给近端棋盘留出视线。
+- 道路透明度 `0.26`，使用 `Skybox_2`、旋转 `-15,0,0`、环境光 `#9AA7BA` 与线性雾 `#ACBBCB`（26–95）。镜头使用默认移动范围，景深为 `Bokeh/240/12`。
+- 广场 Blender 源工程及 FBX 已移除白色线条和菱形地饰，保留喷泉外围的环形铺装。两侧长椅在源工程和正式建筑预制体中位于局部 X=`±9.0`，与花坛灌木分开。
+- 预览场景和战斗包装层共用的建筑预制体已移除 `Distant Woodland/Layered hills beyond the town`，Blender 源工程和 FBX 同步移除对应网格。其余建筑继续使用共享的 `Mat_Building_Town_CenterSquare_StoneAtlas_1`。
+- 旧水流、飞溅、静态涟漪和河面反光网格（`Falling water and droplets`、`Water ripples`、`Canal reflections`）已从源模型移除。循环喷泉粒子挂在 Unity 正式建筑预制体上。河道和两层喷泉继续使用 `FrameWork/URP/WaterSimple`，河道保留较慢的青绿微波，喷泉更亮、波速更快；两套材质分别控制水色、岸边软融和倒影强度。
+- 预览场景和战斗包装层共用的建筑预制体中，`Canal water`、`Lower pool`、`Upper pool` 均在 Water 层，各用 `PlanarReflection`，`waterRenderer` 指向本节点的 MeshRenderer。开启 `useRendererBoundsTop`，镜面高度取水网格世界包围盒的顶面，随战斗实例缩放。倒影在 Cinemachine 更新后跟随主相机。纹理高度依次为 192、128、96，镜头静止时分别限为每秒 12、12、8 次，视野外跳过。镜像相机用 `URP-Performant-Renderer`，排除 Water、UI 和 Road 层。独立预览使用带 MainCamera 标签的 `Town Square Camera`。
+- 城镇中心广场接入时，世界 1 征服难度 1–10 的 BOSS 池扩为 `30001&30002&30003`，用于最后一关。新生成场地时等概率抽取并冻结，已有传送门沿用有效的 `bossFightSceneId`。
+- 手动验收时，在 `TestScene` 的 `Launcher` 选「战斗场景测试 → 普通模式」及 `[30003] 城镇中心广场_BOSS`，以 6 路、长度 10 检查棋盘、落子、刷怪和镜头边界。来回拖镜头，检查桥边和喷泉倒影是否贴合水面、是否闪跳，以及喷泉粒子是否照常播放。征服 BOSS 测试按对应难度的场地池抽取。
+
+## 翡翠宫殿决战场地
+
+- `FightScene` ID `30004`，Addressables 地址 `Assets/LoadResources/FightScene/FightScene_Palace_Emerald_1.prefab`。战斗包装层嵌套 `Building_Palace_Emerald_1`，子层位置 `(5.5,-0.026,6.15)`、Y 轴旋转 `180°`、缩放 `(0.78,0.66,0.66)`。横向拓宽同时带动石墙与地基，给右侧 X=11.25–11.75 的出怪区留出间距。包装层停用屋顶、入口墙和原本位于部署区的两座前侧烛台。
+- `Nave runner` 在战斗包装层局部 X 缩放为 `1.29`，毯面横跨 X=`0.8463–10.1537`，两侧离主柱基座各约 `0.1012`。10 格棋盘仍横跨 X=`0.5–10.5`，最外侧边缘跨到石砖上。毯面 Y 约为 `-0.00059`，运行时棋盘 Y 为 `0.0001`。6 路时台阶前缘 Z 约 `7.437`，在棋盘后沿 Z=`6.5` 之外。2–5 路沿用普通战斗的根节点 Z 偏移。
+- 场地使用 `Skybox_6`、环境光 `#776468`、暖色主光与正面补光，棋盘浅金格 `#E0D4A0`、深绿灰格 `#344535`，透明度 `0.10`。景深沿用 `Bokeh/280/12`，使用默认镜头限位，场地雾与体积雾留空。
+- 王座台只留一张居中王座。东西两翼侧廊的柱套与墙体退开共面接缝，拱肩与拱圈保留连续开口并去掉重叠面。镜头横移时检查画面左侧三处拱廊柱面。
+- 建筑预制体使用一张 1024×1024 图集 `Assets/LoadResources/Textures/Building/Palace/palace_emerald_atlas_1.png` 和一个共享材质 `Assets/LoadResources/Materials/Building/Mat_Building_Palace_Emerald_Atlas_1.mat`。`Assets/Shaders/Shader_EmeraldPalaceAtlas_1.shader`（`Game/Scene/EmeraldPalaceAtlas`）保留各表面的平铺、底色、金属度、光滑度和自发光。建筑网格存放在 `Assets/LoadResources/Fbx/Building/Palace/Building_Palace_Emerald_Atlas/` 的 `Geometry_01.asset` 至 `Geometry_04.asset`。战斗包装层启用的 MeshRenderer 由 153 个减至 131 个。
+- 原建筑预制体沿用既有 GUID、建筑层级和现存组件的本地 ID。战斗包装层通过嵌套覆盖控制布局、显隐、灯光和反射层。建筑模型移除了全部 60 个 `MeshCollider`，6 张长椅与王座使用原有 `BoxCollider`，战斗道路的 `BoxCollider` 由独立道路预制体提供。
+- 战斗包装层停用大厅、入口、两翼和后殿原有的 23 个石砖渲染节点，在嵌套建筑的 `Floors and paving/Slate Floor Reflection` 使用烘焙后的 `EmeraldPalace_BattleStoneFloor.asset`。这个网格保留 5,516 个顶点、2,762 个三角面和图集 UV，使用一个子网格和一个材质槽。修改石砖源网格后，按上述范围重新合并，烘焙矩阵取目标节点的 `worldToLocalMatrix` 乘以源渲染器的 `localToWorldMatrix`。
+- `PlanarReflection` 的 `waterRenderer` 指向同节点的 MeshRenderer，`waterLevelOffset` 为 0，镜面高度取节点世界 Y（战斗预制体中约为 `-0.022039`）。反射相机剔除 Water 层，地面出视锥时跳过渲染，静止镜头沿用每秒最多 12 次刷新。图集着色器在接收倒影的朝上表面采样纹理，地毯使用同一图集的布面参数，棋盘由战斗道路材质绘制。
+- 世界 1 征服难度 1–10 的决战池为 `30001&30002&30003&30004`。新传送门等概率抽取，已有传送门继续使用有效的冻结场地。手动验收从 `TestScene` 的 `Launcher` 选择「战斗场景测试 → 普通模式 → [30004] 翡翠宫殿_BOSS」，道路长度 10、数量 6，手动 Play 后点击「开始战斗测试」，检查棋盘、落子、刷怪和镜头移动，再以 2 路复核。
 
 ## 天空石台无尽场地
 
@@ -123,7 +153,7 @@ watched_files:
 
 ## 荒野峡谷普通关场地
 
-- `FightScene` ID `70001`（白天）和 `70002`（夜晚）共用 Addressables 地址 `Assets/LoadResources/FightScene/FightScene_WildernessCanyon_1.prefab`。内嵌 `Scene_WildernessCanyon_1`，子层平移 `(5.5, -0.005, 3.5)`，Y 轴旋转 `+5°`，使远处峡口对准道路中线。`Ground_Placement` 填补 `Ground_Arena` 的中央开口，渲染器和碰撞体都保留。
+- `FightScene` ID `70001`（白天）和 `70002`（夜晚）共用 Addressables 地址 `Assets/LoadResources/FightScene/FightScene_WildernessCanyon_1.prefab`。内嵌 `Scene_WildernessCanyon_1`，子层平移 `(5.5, -0.005, 3.5)`，Y 轴旋转 `+5°`，使远处峡口对准道路中线。`Ground_Placement` 填补 `Ground_Arena` 的中央开口，保留地面渲染器，模型的 `MeshCollider` 由战斗包装层通过组件移除覆盖清理。
 - 战斗包装层移除了嵌套模型的 `Sky_Dome`。白天配置 `details=Day`，由 `Details/Day/Lights` 提供暖主光和冷补光，使用 `Skybox_2`、环境光 `#8CA1AB`、线性雾 `#9EB5B3`（42–108），道路色为 `#7D7253` / `#B4A57B`。
 - 夜晚配置 `details=Night`，由 `Details/Night/Moonlights` 提供冷色月光与补光。`Moonlight` 强度为 `0.4`，偏航为 135°，沿用约 48.234° 的俯角和原阴影设置。`Night Canyon Bounce` 保留原朝向及 `0.14` 强度，无阴影。夜晚使用 `Skybox_6`、环境光 `#879AC0`、线性雾 `#101A30`（30–95）及虫鸣 `2000001`。道路色为 `#5F5960` / `#938879`，体积雾和景深字段留空。两种变体的天空盒旋转均为 `-15,0,0`，道路透明度均为 `0.28`。
 - `Ground_Arena` 和 `Ground_Placement` 共用战斗专用材质 `Mat_FightScene_WildernessCanyon_Sand_1`。`Shader_WildernessCanyonSand_1` 在 URP Lit 受光前用较粗的底色 mip 识别暗沟，提浅其低频底色，保留原砂粒、裂纹、平铺接缝和法线。崖壁投影仍由 Lit 处理。

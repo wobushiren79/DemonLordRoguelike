@@ -101,7 +101,7 @@ Bean/
 
 > **`AttackModeInfoBeanPartial.GetLanceChargeConfig(out jumpTime, out jumpHeight, out chargeFxId, out landFxId)`（手写 Partial，2026-11 新增）**：解析攻击模块 `other_data` 的 `jump_time`/`jump_height`/`charge_fx`/`land_fx` 键（懒解析缓存；jumpTime 钳 0.2~0.8s、jumpHeight 钳 0~5、特效 id 0=不播放），供 `AttackModeChargeLanceKnight`（长枪骑士 BOSS 技能 102004）使用；与 `GetShieldCastConfig`/`GetSummonConfig`/`GetMultiHitConfig` 同套路。Bean 自动生成文件禁改，扩展只写 Partial。
 
-> **`FightSceneBean.camera_move_limit`（Excel 自动生成列，string）**：实际相机世界 X/Z 移动范围，格式 `x:min,max&z:min,max`，两轴均可省略。手写静态入口 `FightSceneBeanPartial.GetCameraMoveLimit(fightScene, out xLimit, out zLimit)` 统一处理 null/空配置/单轴缺失与非法值回退，默认 X=(3,7)、Z=(-4.5,-1)；竞技场 50001 配 `z:-4,-1`。`ControlForGameFight.ClampCameraTargetPosition` 按 CMFollow 偏移 X=0、Z=-8 换算成锚点限位，开场与移动共用。
+> **`FightSceneBean.camera_move_limit`（Excel 自动生成列，string）**：实际相机世界 X/Z 移动范围，格式 `x:min,max&z:min,max`，两轴均可省略。手写静态入口 `FightSceneBeanPartial.GetCameraMoveLimit(fightScene, out xLimit, out zLimit)` 统一处理 null/空配置/单轴缺失与非法值回退，默认 X=(3,8)、Z=(-4.5,-1)；竞技场 50001 配 `z:-4,-1`。`ControlForGameFight.ClampCameraTargetPosition` 按 CMFollow 偏移 X=0、Z=-8 换算成锚点限位，开场与移动共用。
 
 > **`FightTypeInfiniteInfoBean.fight_scene_id`（Excel 自动生成列，long）** 指向 `FightScene.id`。`FightBeanForInfinite.InitData` 优先使用正数场地 ID，缺少配置或 ID 为非正数时才读取传送门原有的征服 BOSS 场地。世界 1 难度 2–10 均配置为天空石台 `60001`。
 

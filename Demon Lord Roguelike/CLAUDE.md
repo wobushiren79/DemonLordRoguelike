@@ -18,7 +18,7 @@
 
 选定方式后，按相应素材的规范处理尺寸、预览确认和入库。仅对已有图片做用户指定的转换或修整时，直接执行对应操作。
 
-角色装备的正式成品直接放在母版旁的 `装备/` 直属层。批次、主题和版本用文件名区分。交付前逐个核对文件的直接父目录，见[装备交付规则](.claude/skills/aseprite-equipment-from-preview/SKILL.md#正式交付路径)。
+角色套装的正式成品直接放在母版旁的 `装备/` 直属层。批次、主题和版本用文件名区分。交付前逐个核对文件的直接父目录，见[装备交付规则](.claude/skills/aseprite-equipment-from-preview/SKILL.md#正式交付路径)。单独制作武器时使用 [Aseprite 武器技能](.claude/skills/aseprite-weapons/SKILL.md)，确认的款式集中保存到母版旁的 `武器/`。
 
 ## Shell 优先级规则
 

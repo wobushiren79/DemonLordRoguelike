@@ -97,7 +97,7 @@ await CameraHandler.Instance.InitBaseSceneControlCamera(creatureData, startPosit
 ```
 两者都会 `SetMainCameraDefaultBlend(0)` 关闭切换动画后再设置 `Follow`/`LookAt`，并把 `PreviousStateIsValid = false` 以避免上一镜头插值残留。
 
-`GameFightLogic.PreGame` 在加载场景前把 `fightData` 传给 `InitFightSceneCamera`。它按 `fightSceneId` 读取场地配置，`FightScene_Plain_1.prefab` 的开场 X=5，默认 X=3。原始开场目标 `(openingX,0,3)` 经 `ControlForGameFight.ClampCameraTargetPosition` 按 `FightScene.camera_move_limit` 钳制；默认实际相机世界 X=[3,7]、Z=[-4.5,-1]，竞技场 50001 的 Z=[-4,-1]，与 WASD/右键拖拽限位一致。
+`GameFightLogic.PreGame` 在加载场景前把 `fightData` 传给 `InitFightSceneCamera`。它按 `fightSceneId` 读取场地配置，`FightScene_Plain_1.prefab` 的开场 X=5，默认 X=3。原始开场目标 `(openingX,0,3)` 经 `ControlForGameFight.ClampCameraTargetPosition` 按 `FightScene.camera_move_limit` 钳制；默认实际相机世界 X=[3,8]、Z=[-4.5,-1]，竞技场 50001 的 Z=[-4,-1]，与 WASD/右键拖拽限位一致。
 
 ### 3. 基地场景内的 CV_List 虚拟相机切换
 

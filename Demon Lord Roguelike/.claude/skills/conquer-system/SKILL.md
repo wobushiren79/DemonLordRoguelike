@@ -83,7 +83,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → GameFightLogicConquer 跑起
 
 **普通关场地**。世界 1 的 `fight_scene_ids` 从难度 1 到 6 依次扩充。难度 1–3 依次加入树林白天 `10001`、沙漠白天 `20001` 和荒野峡谷白天 `70001`。难度 4 加入平原白天 `40001`，难度 5 加入平原白天花海 `40003`。难度 6–10 均包含树林、沙漠、平原、荒野峡谷的夜晚场地 `10002/20002/40002/70002`，以及平原夜晚花海 `40004`。难度 7（`1000007`）还包含树林雨天 `10003/10004` 和三个平原雨天变体 `40005–40007`。新传送门或首次生成某个难度时从对应池抽取并冻结。已有传送门沿用冻结场地，缺失的场地 ID 按当前池补齐。
 
-**BOSS 决战场地**。世界 1 难度 1–10 的 `fight_scene_boss_ids` 为 `30001&30002`，分别对应旧王宫和玫瑰宫殿。征服最后一关使用此池。创建传送门或首次生成某个难度时等概率抽取并冻结，`GetFightSceneId` 从当前池补齐老存档缺失的场地 ID。已有传送门保留其冻结场地。
+**BOSS 决战场地**。世界 1 难度 1–10 的 `fight_scene_boss_ids` 为 `30001&30002&30003&30004`，依次对应旧王宫、玫瑰宫殿、城镇中心广场和翡翠宫殿。征服最后一关使用此池。创建传送门或首次生成某个难度时等概率抽取并冻结。`GetFightSceneId` 保留已有传送门的有效 `bossFightSceneId`，缺失值按当前场地池补齐。
 
 ### 字段一览
 
@@ -368,7 +368,7 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 - **ID 列表字段**（`fight_scene_ids`/`fight_scene_boss_ids`/`enemy_ids`/`enemy_boss_ids`）：首行「标签＋foldout 共N个＋列表/文本模式切换＋快捷开表」，展开后列表编辑模式每行「LongField 手输 ID ＋ 下拉按名字选取（`DrawIdDropdown`，选项为 `[id] 名字`，场景字段取 FightScene、敌人字段取 NpcInfo，由 `BuildOptionList` 按 ID 升序构建）」二选一设置，新增行同理（下拉选中即写入新 ID 输入框）；另可切文本编辑模式直接改 `&` 分隔串。
 - **前后难度对比**：编辑区每个数值字段一行七列——左=前3难度(`level-3~-1`，远→近)只读值 / 中=当前难度可编辑 / 右=后3难度(`level+1~+3`，近→远)只读值，与当前值不同的对比单元格会**高亮**，方便跨难度调数值；ID 列表字段的对比行与标量字段同一网格对齐，中间列放当前值名字摘要格，两侧单元格**显示解析后的具体名字**（`DrawIdListCompareCells`/`DrawIdListCompareCell`，名字以、连接+自动换行，tooltip 为每行 "id 名字" 完整列表，差异判定仍按原始 ID 串）。`LoadData` 中在同一 world 内一次遍历按难度偏移填充 `prevBeans[3]`(level-1~-3，索引0=最近)/`currentBean`/`nextBeans[3]`(level+1~+3)；对比值一律用 `GetFieldValueStr` 反射按字段名读取（只读展示，不参与保存）。
 - **修改高亮**：当前值与加载时原始值（`originalBean` 深拷贝）不同的字段，编辑框淡黄底标记（`IsFieldModified` + `ModifiedBgColor`），保存栏与选择区同步显示变更数（`CountChanges`）。
-- **参数可复制**：三种粒度——① 点击任意对比单元格（`DrawCompareCell` 返回 bool，`DrawCompareCells` 一次画一侧3格并返回被点 Bean）把该字段对应难度的值复制到当前；② 编辑区顶部按难度排列的 6 个一键复制按钮（`CopyAllFrom` 反射整表覆盖，**跳过 id/world_id/level**）；③ 场景配置区「复制/粘贴」按钮整组复制 `fight_scene_ids` + `fight_scene_boss_ids`（`CopySceneConfig`/`PasteSceneConfig`），复制后切换其他难度加载并粘贴，来源世界/难度显示在按钮旁，粘贴可连续复用。复制只改内存 `currentBean`，仍需点「保存到Excel并生成Json」才写回。
+- **参数可复制**：支持以下操作。① 点击任意对比单元格（`DrawCompareCell` 返回 bool，`DrawCompareCells` 一次画一侧3格并返回被点 Bean）把该字段对应难度的值复制到当前；② 编辑区顶部按难度排列的 6 个一键复制按钮（`CopyAllFrom` 反射整表覆盖，**跳过 id/world_id/level**）；③ 场景配置区「复制/粘贴」按钮整组复制 `fight_scene_ids` + `fight_scene_boss_ids`（`CopySceneConfig`/`PasteSceneConfig`），复制后切换其他难度加载并粘贴，来源世界/难度显示在按钮旁，粘贴可连续复用。④ BOSS 战斗场景列表首行的「复制/粘贴」单独操作 `fight_scene_boss_ids`，支持跨难度粘贴空列表。粘贴只改内存 `currentBean`，点「保存到Excel并生成Json」后写回。
 - 「保存到Excel并生成Json」：用**反射按字段名**对比变更写回 Excel，并 `RegenerateJson` 重新导出 JSON（同样按字段名 + `Convert.ChangeType` 反射赋值）。
 - 改字段结构（增删列）后需保证 Excel 表头与 Bean 字段名一致，否则反射赋值会跳过该列。
 
