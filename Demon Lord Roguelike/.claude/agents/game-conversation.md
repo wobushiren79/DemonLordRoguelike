@@ -35,7 +35,8 @@ watched_files:
 - `ConversationCouncilorInfoCfg.GetDataByRelationship()` 按关系档筛出台词池，`DoomCouncilLogic.InteractCouncilor` 随机抽一条显示——**同一议员不同好感档说不同的话**。
 
 ### 贿赂（与议会系统交叉）
-- ui_Gift → `UIHandler.ShowDialogItemSelect` 送礼：本场议案投票态度 +10%（`DoomCouncilBean.AddCouncilorAttitude`）；议会固定NPC额外按道具稀有度 `RarityInfo.item_add_relationship` 增加**持久化好感**并落盘，播 `Effect_AddRelationship_1` 特效。弹窗内嵌 `UIViewItemSelect` 通用选项控件，此处只传 `actionForSelectGift` 回调，故选项只显示「赠送」按钮。
+- 每次赠送从选中的背包条目扣除 1 件。堆叠余量保留，数量归零时移除该条目。
+- `ui_Gift` → `UIHandler.ShowDialogItemSelect` → `ActionForItemSelectGift`。每次赠送按道具稀有度读取 `RarityInfo.item_add_councilor_attitude`，通过 `DoomCouncilBean.AddCouncilorAttitude` 增加受礼议员本场的赞成概率。固定议员另按 `RarityInfo.item_add_relationship` 增加**持久化好感**并存档。送礼后播放 `Effect_AddRelationship_1`。弹窗复用 `UIViewItemSelect`，仅传入 `actionForSelectGift` 来显示「赠送」按钮。
 - 态度/好感/投票机制细节归 [game-doom-council](.claude/agents/game-doom-council.md)（doom-council-system skill），本 agent 只管对话界面与台词。
 
 ## 文件速查表

@@ -61,7 +61,8 @@ watched_files:
 - 旧逻辑（随机值 vs success_rate + 30% 睡觉）已移除。
 
 ### 贿赂（`UIGameConversation.ActionForItemSelectGift`）
-- 送礼一次：态度 +10%（所有议员）。
+- 每次赠送将 `RarityInfo.item_add_councilor_attitude` 加到受礼议员的本场投票态度，单位为百分点。N/R/SR/SSR/UR/L 当前依次为 10/20/30/40/50/60。`DoomCouncilBean.AddCouncilorAttitude` 将结果限制在 0–100。
+- 道具缺少稀有度或找不到对应配置时，本场加成取 N 档的配置。配置填 0 时，本场加成为 0。调整各档数值时，修改 `excel_rarity_info[稀有度].xlsx` 的 `RarityInfo` 工作表 M 列，再导出 `RarityInfo.txt`。
 - 固定NPC额外：好感 += `RarityInfo.item_add_relationship` 并持久化到 `UserRelationshipBean`，`SaveUserData()`。
 - 之后调用 `DoomCouncilLogic.RefreshCouncilorView(uuid)` 刷新显示。
 - 对话界面本身（台词配置/文本逐字动画/说话音效/点击跳过）归 **conversation-system** skill。
@@ -91,7 +92,7 @@ watched_files:
 | `excel_doom_council_info` DoomCouncilInfo | `council_num`("min,max" 议会人数)、`success_rate` |
 | `excel_doom_council_ratings_info` | `vote`(评级票数)、`name` |
 | `excel_npc_relationship_info` | `relationship_min/max`、`relationship_type`、`icon_res` |
-| `excel_rarity_info` RarityInfo | `item_add_relationship`(贿赂好感加成) |
+| `excel_rarity_info` RarityInfo | `item_add_councilor_attitude`（本场赞成概率加成，整数百分点）、`item_add_relationship`（固定议员长期好感加成） |
 
 ---
 

@@ -482,23 +482,27 @@ public partial class UIGameConversation : BaseUIComponent
     #endregion
     
     #region 道具使用回调
+    /// <summary>
+    /// 消耗一件赠礼道具，按稀有度提高议员本场投票态度，并保存固定议员获得的好感。
+    /// </summary>
     public void ActionForItemSelectGift(UIDialogSelectItem dialogView, ItemBean itemData)
     {
         dialogView.DestroyDialog();
-        //从背包里删除这个道具
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-        userData.RemoveBackpackItem(itemData);
+        userData.RemoveBackpackItem(itemData, 1);
+        var rarityInfo = RarityInfoCfg.GetItemData(itemData.rarity);
         var doomCouncilLogic = GameHandler.Instance.manager.GetGameLogic<DoomCouncilLogic>();
-        //贿赂: 提升该议员的投票态度(每次固定+10%; 态度只与本场议案绑定, 存于 DoomCouncilBean)
         if (doomCouncilLogic != null && doomCouncilLogic.doomCouncilData != null)
         {
-            doomCouncilLogic.doomCouncilData.AddCouncilorAttitude(creatureData.creatureUUId, 10);
+            //旧道具缺少有效稀有度配置时，按 N 档计算本场投票态度。
+            var voteRarityInfo = rarityInfo ?? RarityInfoCfg.GetItemData(RarityEnum.N);
+            int addAttitude = voteRarityInfo?.item_add_councilor_attitude ?? 0;
+            doomCouncilLogic.doomCouncilData.AddCouncilorAttitude(creatureData.creatureUUId, addAttitude);
         }
         //议会固定NPC: 额外增加好感并持久化(按道具稀有度的好感加成)
         if (creatureData.IsFixedCouncilor())
         {
             var npcData = creatureData.GetCreatureNpcData();
-            var rarityInfo = RarityInfoCfg.GetItemData(itemData.rarity);
             int addRelationship = rarityInfo != null ? rarityInfo.item_add_relationship : 0;
             int newRelationship = userData.GetUserRelationshipData().AddRelationship(npcData.npcId, addRelationship);
             creatureData.relationship = newRelationship;

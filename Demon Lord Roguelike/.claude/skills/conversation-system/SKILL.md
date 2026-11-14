@@ -90,8 +90,8 @@ watched_files:
 ## 贿赂（送礼）
 
 - 入口 `ui_Gift` 按钮 → `UIHandler.ShowDialogItemSelect` 选道具（弹窗内嵌 `UIViewItemSelect` 通用选项控件，只传 `actionForSelectGift` 回调故选项只显示「赠送」按钮）→ `ActionForItemSelectGift`：
-  1. 背包扣除该道具；
-  2. **所有议员**：本场议案投票态度 +10%（`DoomCouncilBean.AddCouncilorAttitude(uuid, 10)`，态度仅存本场）；
+  1. 从选中的背包条目扣除 1 件，数量归零时移除该条目。
+  2. 受礼议员的本场赞成概率增加 `RarityInfo.item_add_councilor_attitude` 配置的百分点，调用 `DoomCouncilBean.AddCouncilorAttitude` 叠加至最多 100%。
   3. **议会固定NPC**（`IsFixedCouncilor()`）：额外按道具稀有度 `RarityInfo.item_add_relationship` 增加**持久化好感**（`UserRelationshipBean.AddRelationship` + `SaveUserData()` 落盘）；
   4. `DoomCouncilLogic.RefreshCouncilorView(uuid)` 刷新场景显示；
   5. 播 `Effect_AddRelationship_1` 粒子特效。
