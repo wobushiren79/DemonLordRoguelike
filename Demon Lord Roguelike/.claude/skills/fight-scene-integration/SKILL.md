@@ -3,9 +3,12 @@ name: fight-scene-integration
 description: 将已有 Unity 场景预制体或建筑预制体接入魔王太嚣张的正式战斗场景。用户说「把这个 prefab 加进战斗场景」「给挑战、征服、无尽绑定或替换战斗地图」或要求修复已接入场景的道路、镜头、光照、屋檐闪烁和粒子比例时使用。覆盖 Addressables 登记、配置表导出、模式场地池、旧存档与画面验收。
 watched_files:
   - Assets/LoadResources/FightScene/
+  - Assets/LoadResources/Materials/Building/Mat_UndergroundPalaceFloor_1.mat
+  - Assets/Shaders/Shader_UndergroundPalaceFloor_1.shader
   - Assets/LoadResources/Fbx/Building/Palace/Building_Palace_Emerald_Atlas/EmeraldPalace_BattleStoneFloor.asset
   - Assets/FrameWork/Scripts/Component/Other/PlanarReflection.cs
   - Assets/LoadResources/Prefabs/Town/Building_Town_CenterSquare_1.prefab
+  - Assets/LoadResources/Fbx/Building/Town/TownCenterSquare_CombinedMeshes.asset
   - Assets/LoadResources/Materials/Building/TownCenterSquare/
   - Assets/AddressableAssetsData/AssetGroups/FightScene.asset
   - Assets/Data/Excel/excel_fight_scene[战斗场景].xlsx
@@ -113,13 +116,18 @@ watched_files:
 - 每个雨天分支的 `Puddles` 复用树林昼夜对应的材质和 `PlanarReflection`，各含 4 个水坑。按地形网格及高度图采样，水坑覆盖范围内地面均为 Y=0。水面与反射平面同高 Y=0.02，沿用水洼着色器的涟漪和 ZWrite Off。白天两组的 `Puddle_3` 局部 Z 为 2.7，让两路与六路的棋盘内都能看到水坑。
 - 世界 1 征服难度 7（`1000007`）的普通关场地池包含这三个 ID。在 `TestScene` 的 `Launcher` 选择普通战斗测试，分别手动 Play 检查雨效、水坑涟漪和花海辨识度。在白天 `Puddle_3` 或雨夜 `Puddle_1` 附近放置魔物，核对脚边倒影和棋盘可读性。切换雨天与晴天，检查反射跟随分支切换。
 
+## 地下宫殿决战场地
+
+- `FightScene` ID `30001` 使用 `FightScene_Palace_1.prefab`。`Ground/Ground_1` 的地砖原平面 Y 为 `-0.0001`，位于地毯与战斗棋盘下方。材质 `Mat_UndergroundPalaceFloor_1` 保留 `Mat_Ground_4` 的地砖贴图、平铺与光照设置，通过 `Shader_UndergroundPalaceFloor_1` 在 URP Lit 雾化前混入倒影。材质倒影强度为 0.82。
+- `PlanarReflection` 使用地板渲染器的包围盒顶面作为镜面。地板在 Water 层，镜像相机使用 `URP-Performant-Renderer`，纹理高度 256，远裁剪 38，镜头静止时每秒最多刷新 12 次。编辑模式出图可在临时实例上先生成镜像相机纹理，再渲染主镜头。场景内核对时可从 `TestScene` 选择 `[30001] 地下宫殿`。
+
 ## 玫瑰宫殿决战场地
 
 - `FightScene` ID `30002`，Addressables 地址 `Assets/LoadResources/FightScene/FightScene_Palace_CrimsonCrown_1.prefab`。内嵌 `Building_Palace_CrimsonCrown_Cutaway_1`，子层位置 `(5.5, -0.0435, 4.72)`、Y 轴旋转 `180°`、缩放 `(0.68, 0.58, 0.58)`，保留战斗所需的横向间距。两侧柱心局部 X 为 `±10.17`，柱本地缩放 `(0.75, 1, 0.85)`，柱旗与柱身留约 `0.013` 战斗场景单位。用角色站姿约 1 单位校准家具，长椅、花盆和王座等比世界缩放分别为 `0.45`、`0.43`、`0.36`，对应长椅坐面高约 `0.41`、王座高约 `1.58`，王座底面贴台顶。
 - 战斗版 12 座烛台共用 `Assets/LoadResources/Fbx/Building/Palace/CrimsonCrown_BattleCandelabrum.asset`。用图集 UV2 去掉原网格的 186 个火焰三角面，补同图集金色轴杆连接中间烛座。烛台等比世界缩放 `0.30`，烛芯高约 `0.69`，第二排局部 Z `8`，第三排仍落在台阶前平地。36 个烛芯各自嵌套 `Effect_Fire_7`，只开启主火和 Glow。火焰局部缩放 `0.19`，主火世界空间重力和速度上限按最终 `0.057` 比例补偿。其中 10 座带烛光。大厅 6 盏点光强度为 `1.02`、范围 `2.65`，王座台 4 盏为 `1.4`、范围 `3.15`，在地毯两侧和王座台形成局部暖光。
 - 战斗平地的地毯保留红色织纹和两侧金边，移除中央花纹。`CrimsonCrown_BattleRoyalDais.asset` 把大厅局部高度 `0.074` 的两张地毯三角面分到独立材质槽，使用 `Mat_Building_Palace_CrimsonCrown_CombatCarpet_1` 和 `palace_crimson_crown_combat_carpet_1.png`。战斗包装层整体上移后，地毯世界 Y 约为 -0.00058，贴近魔物落子平面 Y=0，并低于棋盘格平面 Y=0.0001。两侧石砖保留原有高度差。台阶和王座台继续使用原渲染资源。战斗包装层以组件移除覆盖清理模型的 `MeshCollider`。
 - 战斗预制体将暖色主光 `Warm evening key` 的世界欧拉角设为 `(48°, 28°, 0°)`。主光强度为 `0.58`，冷色补光强度为 `0.17`，让窗边、柱廊和大厅中轴保留明暗层次。参考森林白天场地，阴影朝棋盘深处投射。地毯已贴近落子平面时，用同一机位对比主光方向，区分地面落差与影子在画面中的分离。
-- 玫瑰宫殿接入时，世界 1 的征服难度 1–10 BOSS 池扩为 `30001&30002`。`30002` 使用 `Skybox_6`、环境光 `#776468`、道路透明度 `0.1`、景深 `Bokeh/280/12`，场地雾和体积雾留空。
+- 玫瑰宫殿接入时，世界 1 的征服难度 1–10 BOSS 池扩为 `30001&30002`，对应地下宫殿与玫瑰宫殿。场地选择列表使用 `FightScene.remark` 作为显示名。`30002` 使用 `Skybox_6`、环境光 `#776468`、道路透明度 `0.1`、景深 `Bokeh/280/12`，场地雾和体积雾留空。
 - 已在编辑模式按战斗根节点偏移回读 2–6 路的地面和出生区，核对 8 面柱旗、王座底面、12 座烛台的连接件与 36 个火焰实例。实机验收可在 `TestScene` 的 `Launcher` 选战斗测试场景 `[30002]`，手动 Play 查看角色与王座比例、烛火、放置、出怪和镜头边界，再用新征服传送门验证最后一关切换。
 
 ## 城镇中心广场 BOSS 场地
@@ -128,10 +136,11 @@ watched_files:
 - 道路透明度 `0.26`，使用 `Skybox_2`、旋转 `-15,0,0`、环境光 `#9AA7BA` 与线性雾 `#ACBBCB`（26–95）。镜头使用默认移动范围，景深为 `Bokeh/240/12`。
 - 广场 Blender 源工程及 FBX 已移除白色线条和菱形地饰，保留喷泉外围的环形铺装。两侧长椅在源工程和正式建筑预制体中位于局部 X=`±9.0`，与花坛灌木分开。
 - 预览场景和战斗包装层共用的建筑预制体已移除 `Distant Woodland/Layered hills beyond the town`，Blender 源工程和 FBX 同步移除对应网格。其余建筑继续使用共享的 `Mat_Building_Town_CenterSquare_StoneAtlas_1`。
+- 广场共用建筑预制体按塔楼、房屋、花坛等现有节点，将 519 个石材图集 MeshRenderer 离线合并成 54 个单子网格。网格资产为 `Assets/LoadResources/Fbx/Building/Town/TownCenterSquare_CombinedMeshes.asset`。启用的 MeshRenderer 在独立预览中由 549 个降至 84 个，在正式战斗中由 539 个降至 80 个。源节点、MeshFilter 和原 MeshRenderer 留作后续重烘，原 MeshRenderer 已停用。修改源几何后，按相同节点分组重烘，使用组节点的 worldToLocalMatrix 乘源渲染器的 localToWorldMatrix，核对顶点数和索引数。桥灯在自身子树内单独合并，让战斗版的停用覆盖继续生效。桥柱与花坛的合并网格也保留在各自节点下，以继承缩放和位置覆盖。
 - 旧水流、飞溅、静态涟漪和河面反光网格（`Falling water and droplets`、`Water ripples`、`Canal reflections`）已从源模型移除。循环喷泉粒子挂在 Unity 正式建筑预制体上。河道和两层喷泉继续使用 `FrameWork/URP/WaterSimple`，河道保留较慢的青绿微波，喷泉更亮、波速更快；两套材质分别控制水色、岸边软融和倒影强度。
-- 预览场景和战斗包装层共用的建筑预制体中，`Canal water`、`Lower pool`、`Upper pool` 均在 Water 层，各用 `PlanarReflection`，`waterRenderer` 指向本节点的 MeshRenderer。开启 `useRendererBoundsTop`，镜面高度取水网格世界包围盒的顶面，随战斗实例缩放。倒影在 Cinemachine 更新后跟随主相机。纹理高度依次为 192、128、96，镜头静止时分别限为每秒 12、12、8 次，视野外跳过。镜像相机用 `URP-Performant-Renderer`，排除 Water、UI 和 Road 层。独立预览使用带 MainCamera 标签的 `Town Square Camera`。
+- 预览场景和战斗包装层共用的建筑预制体中，三个水面均在 Water 层。仅 `Canal water` 启用 `PlanarReflection`，`waterRenderer` 指向本节点的 MeshRenderer，`useRendererBoundsTop` 让镜面高度随实例取水面包围盒顶面。河道倒影跟随 Cinemachine 更新后的主相机，纹理高度 192，静止时每秒最多刷新 12 次，出视野时跳过。镜像相机用 `URP-Performant-Renderer`，排除 Water、UI 和 Road 层。喷泉 `Lower pool` 与 `Upper pool` 的 `PlanarReflection` 均已停用，水面使用 `WaterSimple` 的环境反射和高光，喷泉粒子继续播放。独立预览使用带 MainCamera 标签的 `Town Square Camera`。
 - 城镇中心广场接入时，世界 1 征服难度 1–10 的 BOSS 池扩为 `30001&30002&30003`，用于最后一关。新生成场地时等概率抽取并冻结，已有传送门沿用有效的 `bossFightSceneId`。
-- 手动验收时，在 `TestScene` 的 `Launcher` 选「战斗场景测试 → 普通模式」及 `[30003] 城镇中心广场_BOSS`，以 6 路、长度 10 检查棋盘、落子、刷怪和镜头边界。来回拖镜头，检查桥边和喷泉倒影是否贴合水面、是否闪跳，以及喷泉粒子是否照常播放。征服 BOSS 测试按对应难度的场地池抽取。
+- 手动验收时，在 `TestScene` 的 `Launcher` 选「战斗场景测试 → 普通模式」及 `[30003] 城镇中心广场_BOSS`，以 6 路、长度 10 检查棋盘、落子、刷怪和镜头边界。在同一画质和机位记录静止及拖镜头时的 Batches，检查桥边倒影是否贴合水面，以及喷泉水波、高光与粒子是否照常显示。河道可见并刷新时，Frame Debugger 应只有河道的镜像相机。征服 BOSS 测试按对应难度的场地池抽取。
 
 ## 翡翠宫殿决战场地
 

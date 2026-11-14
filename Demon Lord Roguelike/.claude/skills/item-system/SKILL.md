@@ -255,8 +255,9 @@ NPC 可按配置在创建时随机穿装备（首用于终焉议会随机议员�
 
 ## GM 成长药水（升级/降级/升阶/降阶）
 
-GM 调试成长消耗品（2026-10 新增），**仅普通魔物可用**（选中魔王时背包列表隐藏，使用入口再兜底拦截）。只有 4 个 `ItemTypeEnum`：升级=91、降级=92、升阶=93、降阶=94；升级档位道具 id=200004(+1) 与 200008~200016(+2~+10)，降级档位 id=200005(-1) 与 200017~200025(-2~-10)，升/降阶固定 200006/200007。配置均为 `num_max=999` 可堆叠；升级/升阶图标复用 `Item_Potion_1`，降级/降阶复用 `Item_Potion_2`；`reward_rarity`/`source` 留空，不进入征服奖励池。
+GM 调试成长消耗品（2026-10 新增），**仅普通魔物可用**（选中魔王时背包列表隐藏，使用入口再兜底拦截）。只有 4 个 `ItemTypeEnum`：升级=91、降级=92、升阶=93、降阶=94；升级档位道具 id=200004(+1) 与 200008~200016(+2~+10)，降级档位 id=200005(-1) 与 200017~200025(-2~-10)，升/降阶固定 200006/200007。配置均为 `num_max=999` 可堆叠。`reward_rarity`/`source` 留空，不进入征服奖励池。
 
+- `ItemsInfo.icon_res` 填写默认 Items 图集中的 Sprite 名。升级图标为 `Item_Potion_LevelUp_01` 至 `Item_Potion_LevelUp_10`（翡翠绿），降级图标为 `Item_Potion_LevelDown_01` 至 `Item_Potion_LevelDown_10`（朱红），药液均按档位由浅入深。升阶使用金色 `Item_Potion_RarityUp`，降阶使用钴蓝 `Item_Potion_RarityDown`。PNG 放在 `Assets/LoadResources/Textures/Items/`，导入为单 Sprite，PPU 为 16。
 - **等级档位配置**：多级升级/降级药水不新增 ItemTypeEnum，统一复用 91/92；`ItemsInfo.other_data` 写 `level_delta:N`（空/非法配置由 `ItemsInfoBeanPartial.GetLevelPotionDelta()` 兜底为 1）。
 - **使用分流**：`UICreatureManager.UseOrEquipItem` 4 分支分别进 `UseLevelUpPotionItem` / `UseLevelDownPotionItem` / `UseRarityUpPotionItem` / `UseRarityDownPotionItem`；确认/拦截文案为 UIText 61026~61035（12 语种，61034/61035 是多级确认框）。
 - **升级药水**：满级 Toast 61030；确认后先仅在内存中 `RemoveBackpackItem(itemData, 1)` + `creatureData.UpLevelForPotion(levelDelta)`（逐级调 `UpLevelForSacrifice()` 并累计各级 `attribute_point`，到满级自动停止），再打开 `UICreatureAddAttribute`；加点确认回调统一 `SaveUserData()` 并重开 `UICreatureManager`。道具消耗、升级、加点处于同一“未确认不落盘”原子窗口，加点界面强退则全部不写盘。
