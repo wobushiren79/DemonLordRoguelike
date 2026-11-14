@@ -52,7 +52,7 @@ watched_files:
 - `reward_reputation`（int，通关声望奖励，插在 `reward_exp_boss` 与 `remark` 之间）：完整通关按难度给玩家声望；`FightTypeConquerInfoBeanPartial.GetRewardReputation()` 读取（仿 `GetBGColor`，需 Unity 重导 Bean 后才有该字段）。world_id=1 各难度(level 1~10)依次 1~10
 - `attack_intensity_baserate`（float，基础强度倍率，插在 `attack_intensity_addrate` 之后）：该难度每关恒定乘区(第1关也生效)，0/不配按 1；与 `attack_intensity_addrate`(每关递增) 共同组成 `GetCurrentIntensityRate(fightNum)`
 - **普通关场地**。世界 1 的 `fight_scene_ids` 从难度 1 到 6 依次扩充。难度 1–3 依次加入树林白天 `10001`、沙漠白天 `20001` 和荒野峡谷白天 `70001`。难度 4 加入平原白天 `40001`，难度 5 加入平原白天花海 `40003`。难度 6–10 均包含树林、沙漠、平原、荒野峡谷的夜晚场地 `10002/20002/40002/70002`，以及平原夜晚花海 `40004`。难度 7（`1000007`）还包含树林雨天 `10003/10004` 和三个平原雨天变体 `40005–40007`。新传送门或首次生成某个难度时从对应池抽取并冻结。已有传送门沿用冻结场地，缺失的场地 ID 按当前池补齐。
-- **BOSS 决战场地**。世界 1 难度 1–10 的 `fight_scene_boss_ids` 为 `30001&30002&30003&30004`，依次对应旧王宫、玫瑰宫殿、城镇中心广场和翡翠宫殿。创建传送门或首次生成某个难度时等概率抽取并冻结。已有传送门沿用有效的 `bossFightSceneId`，缺失值按当前场地池补齐。
+- **BOSS 决战场地**。世界 1 难度 1–10 的 `fight_scene_boss_ids` 为 `30001&30002&30003&30004`，依次对应地下宫殿、玫瑰宫殿、城镇中心广场和翡翠宫殿。创建传送门或首次生成某个难度时等概率抽取并冻结。已有传送门沿用有效的 `bossFightSceneId`，缺失值按当前场地池补齐。
 - **无尽模式（GameFightTypeEnum.Infinite）复用本表同难度行**：怪物池 `enemy_ids`/`enemy_boss_ids`、`attack_start_num`/`attack_show_time`/`attack_boss_num`、`drop_crystal`、`road_num`/`road_length` 均取同难度（world_id+level）征服行（经 `FightBeanForInfinite.fightTypeConquerInfo`）；无尽表 `excel_fight_type_infinite_info[战斗-无尽模式].xlsx` 独立配置 `round_intensity_addrate` 与 `fight_scene_id`。第 N 轮强度为征服行 `attack_intensity_baserate` × 无尽行 `round_intensity_addrate`^(N-1)。难度 2–10 的 `fight_scene_id` 均为天空石台 `60001`，已有和新建的无尽传送门进入战斗时都优先读该配置。`CreateInfiniteDifficultyRandom` 仍按征服行预生成道路与备用场地，无尽场地未配置时经 `GetFightSceneId(D, true)` 沿用冻结的 `bossFightSceneId`。
 
 ### 随机数据与难度

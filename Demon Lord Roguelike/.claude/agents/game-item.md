@@ -74,7 +74,7 @@ watched_files:
 
 ### GM 成长药水（LevelUp/LevelDown/RarityUp/RarityDown = 91~94）
 
-GM 调试成长消耗品（2026-10 新增）：类型固定 4 种（升级91/降级92/升阶93/降阶94）；升级档位 id=200004(+1)+200008~200016(+2~+10)，降级档位 id=200005(-1)+200017~200025(-2~-10)，升/降阶=200006/200007。`num_max=999` 可堆叠，升类图标 `Item_Potion_1`、降类图标 `Item_Potion_2`，仅普通魔物可用（列表对魔王隐藏 + Use 方法兜底）。多级档位写 `ItemsInfo.other_data` 的 `level_delta:N`，由 `ItemsInfoBeanPartial.GetLevelPotionDelta()` 解析（空/非法兜底 1）。确认/拦截文案 UIText 61026~61035（12 语种，61034/61035 为多级确认框）。
+GM 调试成长消耗品（2026-10 新增）：类型固定 4 种（升级91/降级92/升阶93/降阶94）；升级档位 id=200004(+1)+200008~200016(+2~+10)，降级档位 id=200005(-1)+200017~200025(-2~-10)，升/降阶=200006/200007。`num_max=999` 可堆叠，仅普通魔物可用（列表对魔王隐藏 + Use 方法兜底）。升级图标为 `Item_Potion_LevelUp_01` 至 `Item_Potion_LevelUp_10`（翡翠绿），降级图标为 `Item_Potion_LevelDown_01` 至 `Item_Potion_LevelDown_10`（朱红），药液均按档位由浅入深。升阶使用金色 `Item_Potion_RarityUp`，降阶使用钴蓝 `Item_Potion_RarityDown`。多级档位写 `ItemsInfo.other_data` 的 `level_delta:N`，由 `ItemsInfoBeanPartial.GetLevelPotionDelta()` 解析（空/非法兜底 1）。确认/拦截文案 UIText 61026~61035（12 语种，61034/61035 为多级确认框）。
 
 - **使用链路**：`UICreatureManager.UseOrEquipItem` 分流到 `UseLevelUpPotionItem`/`UseLevelDownPotionItem`/`UseRarityUpPotionItem`/`UseRarityDownPotionItem`；确认框 → 首行 `PlayItemUseSound(itemData)`（`ItemsInfo.use_sound`=470001）→ 数据层方法 → `RemoveBackpackItem(itemData, 1)` → 落盘/刷新。
 - **升级**：满级 61030 拦截；确认后内存中消耗+`UpLevelForPotion(levelDelta)`（逐级升级并累计加点，满级自动停止），打开 `UICreatureAddAttribute`；加点确认后才统一 `SaveUserData` 并重开管理页（强退全不落盘）。
