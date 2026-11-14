@@ -150,9 +150,9 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 |--------|-------|--------|--------|
 | `excel_audio_info[音频信息_FrameWork].xlsx` | AudioInfo | 189 | id, name_res, remark, audio_type(0音效/1音乐/2环境音), volume_scale。id 段位：音效 1~650004、音乐 1000001~1200001、环境音 2000001 起（2000001=sound_night_1 夜晚虫鸣，被 FightScene 10002 引用；650001~650004=议会投票赞成/反对/通过/否决） |
 | `excel_base_info[基础信息_FrameWork].xlsx` | BaseInfo | 3 | id, content |
-| `excel_language[多语言_FrameWork].xlsx` | UIText + 18个子表 | 283(UIText，2026-11 新增 2000033「排序优先级：{0}」；2026-10 新增 426「{0}（{1}）」) | id, content_{12种语言: cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr}（含 content_1_* 详情列的表：BuffInfo、AchievementInfo、CreatureInfo[2026-08新增,生物详情描述/攻击方式说明] 等） |
+| `excel_language[多语言_FrameWork].xlsx` | UIText + 18个子表 | 285(UIText，2026-11 新增 505/506 系统界面退出确认、2000033「排序优先级：{0}」；2026-10 新增 426「{0}（{1}）」) | id, content_{12种语言: cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr}（含 content_1_* 详情列的表：BuffInfo、AchievementInfo、CreatureInfo[2026-08新增,生物详情描述/攻击方式说明] 等） |
 | `excel_spine_animation_state[骨骼动画枚举_FrameWork].xlsx` | SpineAnimationState | 33 | id, res |
-| `excel_ui_text[UI文本_FrameWork].xlsx` | UIText | 230(2026-11 新增 2000033「排序优先级：{0}」) | id, content[language] |
+| `excel_ui_text[UI文本_FrameWork].xlsx` | UIText | 232(2026-11 新增 505/506 系统界面退出确认、2000033「排序优先级：{0}」) | id, content[language] |
 
 > `excel_language` 包含多 Sheet：UIText / AbyssalBlessingInfo / ItemsType / ItemsInfo / BuffInfo / DoomCouncilInfo / StoreGashaponmachineInfo / GameWorldInfo / CreatureInfo / NpcInfo / CreatureModel / CreatureAttributeTypeInfo / ConversationCouncilorInfo / TitleInfo / NpcRelationshipInfo / DoomCouncilRatingsInfo / RarityInfo / ResearchInfo / StoryInfo(故事名) / StoryTalkInfo(故事对话内容)
 

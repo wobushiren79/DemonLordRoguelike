@@ -720,6 +720,10 @@ EventsInfo.Language_Change                // 语言切换
 
 由详情传入稀有度词条来源，行组件决定是否标金数字并应用 TMP 原生扫光。`SetData()` 切到普通词条时恢复实例自己的原材质和映射设置。扫光材质应用前配置 Glow，让 TMP 在赋值时计算字形留边。运行时贴图与材质按原材质及底色全局缓存，最后一个使用过扫光的行销毁时释放。判定和参数见 [creature-card-system](../creature-card-system/SKILL.md)。
 
+### UIGameSystem（ESC 系统界面）
+
+`Assets/Scripts/Component/UI/Game/GameSystem/UIGameSystem.cs` 基地模式的「返回主界面」与「退出游戏」分别由 `OnClickForBackMain` / `OnClickForExitGame` 先调用 `UIHandler.ShowDialogNormal`，使用 UIText 505 / 506；原 `SaveUserData()` 与跳转/退出逻辑只放在 `actionSubmit` 中，取消不执行退出。战斗模式的结束战斗 503、重新挑战 504 确认流程保持不变。
+
 ### UIGameSettingForDisplay（画质设置）
 
 `Assets/Scripts/Component/UI/Game/GameSetting/UIGameSettingForDisplay.cs` 通过 `UIGameSettingBase.CreatureItemForCheckBox` 在共用 `ui_List` 动态创建开关，无需为新增条目修改设置 prefab。弹道/物品阴影使用 `GameConfigBean.bulletShadow/itemShadow`（默认开，UIText 42005/42006）；「场景杂物阴影」使用 `sceneClutterShadow`（默认关，UIText 42007），回调经 `WorldHandler.GetCurrentScenePrefab<ScenePrefabForFight>(Fight)` 调 `SetFlowerSeaShadows` 即时更新当前花海，进场时再次应用，保存沿用 `UIGameSetting.CloseUI → SaveGameConfig`。新增文本须同步 `excel_language` 的 UIText 与 `excel_ui_text` 登记表。

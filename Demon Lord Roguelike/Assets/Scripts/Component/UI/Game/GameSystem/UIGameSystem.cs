@@ -155,12 +155,18 @@ public partial class UIGameSystem : BaseUIComponent
     }
 
     /// <summary>
-    /// 点击返回主界面
+    /// 点击返回主界面，弹出确认弹窗，确认后保存当前进度并返回主界面
     /// </summary>
     public void OnClickForBackMain()
     {
-        GameDataHandler.Instance.manager.SaveUserData();
-        WorldHandler.Instance.EnterMainForBaseScene();
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = TextHandler.Instance.GetTextById(505);
+        dialogData.actionSubmit = (view, data) =>
+        {
+            GameDataHandler.Instance.manager.SaveUserData();
+            WorldHandler.Instance.EnterMainForBaseScene();
+        };
+        UIHandler.Instance.ShowDialogNormal(dialogData);
     }
 
     /// <summary>
@@ -175,11 +181,17 @@ public partial class UIGameSystem : BaseUIComponent
     }
 
     /// <summary>
-    /// 离开游戏
+    /// 点击退出游戏，弹出确认弹窗，确认后保存当前进度并退出游戏
     /// </summary>
     public void OnClickForExitGame()
     {
-        GameDataHandler.Instance.manager.SaveUserData();
-        GameUtil.ExitGame();
+        DialogBean dialogData = new DialogBean();
+        dialogData.content = TextHandler.Instance.GetTextById(506);
+        dialogData.actionSubmit = (view, data) =>
+        {
+            GameDataHandler.Instance.manager.SaveUserData();
+            GameUtil.ExitGame();
+        };
+        UIHandler.Instance.ShowDialogNormal(dialogData);
     }
 }

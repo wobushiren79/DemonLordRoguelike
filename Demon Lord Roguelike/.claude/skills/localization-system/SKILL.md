@@ -642,3 +642,4 @@ string text = TextHandler.Instance.GetTextByIdNoBreakingSpace("BuffInfo", 10001)
 13. **GM 成长药水 UIText 条目（2026-10）**：61026~61029 为 +1/-1 升级/降级与升阶/降阶确认框，61030~61033 为满级/最低级/最高品阶/最低品阶拦截，61034/61035 为多级升级/降级确认框（含 `{1}` 档位占位）；12 语言均已配置。道具名本体在 `ItemsInfo` 语言表 id 200004~200007 与 200008~200025（多级升级/降级），机制见 item-system SKILL「GM 成长药水」
 14. **排序优先级条 UIText 条目（2026-11）**：2000033「排序优先级：{0}」，`UIDialogOrderFilter.RefreshPriorityShow` 用 `{0}` 填入已选排序键名称（按优先级 `>` 连接，如「排序优先级：伤害>击杀>经验」），12 语言均已配置；紧随 2000026~2000032 段位，机制见 order-filter-system SKILL「关键约定-排序优先级条」
 15. **画质设置「场景杂物阴影」UIText 条目（2026-11）**：42007，供 `UIGameSettingForDisplay` 动态 CheckBox 使用；12 语言均已配置，`excel_language` 的 UIText 与 `excel_ui_text` 两处均已加行，历史重复语言列填同值
+16. **系统界面退出确认 UIText 条目（2026-11-14）**：505「是否返回主界面？当前游戏进度将自动保存。」供 `UIGameSystem.OnClickForBackMain` 使用，506「是否退出游戏？当前游戏进度将自动保存。」供 `OnClickForExitGame` 使用；两者均先弹确认框，只有确认回调才保存并执行原跳转/退出逻辑。12 语言、两个 Excel 源表与对应 JSON 均已同步，历史重复语言列填同值

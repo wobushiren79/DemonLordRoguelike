@@ -68,6 +68,7 @@ TextManager 加载 Language_UIText_*.txt
 - **GM 成长药水 UIText 条目（2026-10）**：61026~61029=+1/-1 升级/降级与升阶/降阶确认框，61030~61033=满级/最低级/最高品阶/最低品阶拦截，61034/61035=多级升级/降级确认框（含 `{1}` 档位占位）；12 语言均已配置。道具名在 `Language_ItemsInfo_*` id 200004~200007 与 200008~200025。
 - **排序优先级条 UIText 条目（2026-11）**：2000033「排序优先级：{0}」（紧随 2000026~2000032 段位），`UIDialogOrderFilter.RefreshPriorityShow` 把已选排序键名称按优先级用 `>` 连接填入 `{0}`；12 语言均已配置，`excel_language` 的 UIText 与 `excel_ui_text` 两处均已加行，机制见 order-filter-system SKILL。
 - **画质设置「场景杂物阴影」（2026-11）**：UIText `42007`，由 `UIGameSettingForDisplay` 通过 `TextHandler.GetTextById` 使用；12 语言主文本均已配置，UIText 历史重复的 `content_jp`~`content_ru` 两组列填同值，`excel_language` 与 `excel_ui_text` 均已登记并导出。
+- **系统界面退出确认（2026-11-14）**：UIText `505`「是否返回主界面？当前游戏进度将自动保存。」/ `506`「是否退出游戏？当前游戏进度将自动保存。」，分别供 `UIGameSystem.OnClickForBackMain` / `OnClickForExitGame` 的确认弹窗使用；12 语言均已配置，两个 Excel 源表与对应 JSON 均已同步。
 
 ## ⚠️ 一个多语言ID承载多条文本（content / content_1 / content_2）
 
