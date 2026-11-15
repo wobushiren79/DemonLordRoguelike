@@ -141,7 +141,7 @@ BuffEventDispatcher.dicBindings  # 事件名 → IBuffEventBinding 字典
 | 前置条件基类 | Assets/Scripts/Game/Buff/BuffPre/BuffBasePreEntity.cs |
 | BuffHandler | Assets/Scripts/Component/Handler/BuffHandler.cs |
 | BuffManager | Assets/Scripts/Component/Manager/BuffManager.cs |
-| BuffBean | Assets/Scripts/Bean/Game/BuffBean.cs（含静态工厂 `CreateRandomWithFloor` 按强度继承并重随机） |
+| BuffBean | Assets/Scripts/Bean/Game/BuffBean.cs（`CreateRandomWithFloor` 按强度继承并重随机，`ClassUtil.DeepCopy` 使用无参构造复制字段，JSON 反序列化使用带 ID 的构造） |
 | 稀有度 BUFF 生成工具 | Assets/Scripts/Utils/BuffUtil.cs（`CreateRandomRarityBuff`/`CreateAscendRarityBuff`/`GetRarityBuffType`/`GetCreatureAscendBuffChances` 进阶概率展示） |
 | BuffEntityBean | Assets/Scripts/Bean/Game/BuffEntityBean.cs |
 | BuffInfoBean | Assets/Scripts/Bean/MVC/Game/BuffInfoBean.cs（自动生成，禁改） |

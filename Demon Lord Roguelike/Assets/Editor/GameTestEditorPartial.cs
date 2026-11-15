@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
 
@@ -68,9 +71,16 @@ public partial class GameTestEditor
     public int attackModeAttackTestId = 0;
     public int attackModeDefenseTestId = 0;
 
-    public string buffSelfAttackTestId = "";
-    public string buffSelfDefenseTestId = "";
-    public string buffTestId = "";
+    private class FightBuffTestItem
+    {
+        public long id;
+        public float chance = 1f;
+    }
+    private List<FightBuffTestItem> fightAttackSelfBuffSettings = new List<FightBuffTestItem>();
+    private List<FightBuffTestItem> fightDefenseSelfBuffSettings = new List<FightBuffTestItem>();
+    private List<FightBuffTestItem> fightGlobalAttackBuffSettings = new List<FightBuffTestItem>();
+    private FightBuffOption[] fightBuffOptions;
+    private bool fightBuffOptionsInPlayMode;
     // 战斗测试-深渊馈赠测试项(馈赠族根id + 目标等级)
     public class AbyssalBlessingFightTestItem
     {
@@ -210,6 +220,167 @@ public partial class GameTestEditor
     private const string FIGHT_FIXED_ATTRIBUTE_KEY = PREFS_KEY_PREFIX + "fightFixedAttribute";
     private const string FIGHT_FIXED_ATTRIBUTE_COUNT_KEY = PREFS_KEY_PREFIX + "fightFixedAttributeCount";
 
+    #region 战斗测试 BUFF 选项
+
+    /// <summary>
+    /// 用于搜索和预览的战斗测试 BUFF 配置。
+    /// </summary>
+    private sealed class FightBuffOption
+    {
+        public readonly long id;
+        public readonly string name;
+        public readonly string description;
+        public readonly string remark;
+        public readonly string label;
+        public readonly string searchText;
+        public readonly BuffTypeEnum type;
+        public readonly int level;
+
+        /// <summary>
+        /// 记录已解析的名称和效果说明，并构建选择器所用的显示与搜索文本。
+        /// </summary>
+        public FightBuffOption(BuffInfoBean info, string name, string description, string remark)
+        {
+            id = info.id;
+            type = info.GetBuffType();
+            level = info.buff_level;
+            this.name = name;
+            this.description = description;
+            this.remark = remark;
+            label = $"{name} [{id.ToString(CultureInfo.InvariantCulture)}]";
+            searchText = $"{label}\n{description}\n{remark}";
+        }
+    }
+
+    /// <summary>
+    /// 根据 BUFF 配置、中文表和前置条件构建按 ID 排序的选项。
+    /// </summary>
+    private static FightBuffOption[] BuildFightBuffOptions(BuffInfoBean[] rows, Dictionary<long, LanguageBean> language, BuffPreInfoBean[] conditions)
+    {
+        if (rows == null || rows.Length == 0)
+            return Array.Empty<FightBuffOption>();
+
+        var conditionTokens = new Dictionary<long, TextReplaceEnum>();
+        if (conditions != null)
+        {
+            foreach (var condition in conditions)
+            {
+                TextReplaceEnum? token = condition?.class_entity switch
+                {
+                    nameof(BuffPreEntityForKillNum) => TextReplaceEnum.KillNum,
+                    nameof(BuffPreEntityForUnderAttackDamage) => TextReplaceEnum.UnderAttackDamage,
+                    nameof(BuffPreEntityForAttackDamage) => TextReplaceEnum.AttackDamage,
+                    nameof(BuffPreEntityForHPRateLess) => TextReplaceEnum.HPRateLess,
+                    nameof(BuffPreEntityForRegainHPReceived) => TextReplaceEnum.RegainHPReceived,
+                    nameof(BuffPreEntityForRegainHPCast) => TextReplaceEnum.RegainHPCast,
+                    nameof(BuffPreEntityForOnFieldTime) => TextReplaceEnum.OnFieldTime,
+                    _ => null,
+                };
+                if (token.HasValue)
+                    conditionTokens[condition.id] = token.Value;
+            }
+        }
+
+        var options = new List<FightBuffOption>(rows.Length);
+        foreach (var info in rows)
+        {
+            if (info == null || info.id <= 0)
+                continue;
+
+            language.TryGetValue(info.name, out var nameRow);
+            language.TryGetValue(info.content, out var descriptionRow);
+            string name = nameRow?.content;
+            string description = descriptionRow?.content_1;
+            string remark = info.remark;
+            if (description?.Contains('{') == true || remark?.Contains('{') == true)
+            {
+                var replacements = GetFightBuffTextReplacements(info, conditionTokens);
+                description = FormatFightBuffText(description, replacements);
+                remark = FormatFightBuffText(remark, replacements);
+            }
+
+            if (string.IsNullOrWhiteSpace(name))
+                name = string.IsNullOrWhiteSpace(remark) ? "未命名 BUFF" : remark;
+            if (string.IsNullOrWhiteSpace(description))
+                description = string.IsNullOrWhiteSpace(remark) ? "暂无效果说明" : remark;
+            if (string.IsNullOrWhiteSpace(remark) || remark == description || remark == name)
+                remark = null;
+
+            options.Add(new FightBuffOption(info, name, description, remark));
+        }
+
+        options.Sort((left, right) => left.id.CompareTo(right.id));
+        return options.ToArray();
+    }
+
+    /// <summary>
+    /// 按测试战斗使用的配置值和前置条件补齐已知文本参数。
+    /// </summary>
+    private static Dictionary<TextReplaceEnum, string> GetFightBuffTextReplacements(BuffInfoBean info, Dictionary<long, TextReplaceEnum> conditionTokens)
+    {
+        var format = CultureInfo.InvariantCulture;
+        var replacements = new Dictionary<TextReplaceEnum, string>
+        {
+            [TextReplaceEnum.Percentage] = MathUtil.GetPercentage(info.trigger_value_rate, 2).ToString(format),
+            [TextReplaceEnum.TriggerChance] = MathUtil.GetPercentage(info.trigger_chance > 0 ? info.trigger_chance : 1f, 2).ToString(format),
+            [TextReplaceEnum.Time_S] = Mathf.FloorToInt(info.trigger_time).ToString(format),
+            [TextReplaceEnum.Value] = Mathf.FloorToInt(info.trigger_value).ToString(format),
+        };
+
+        if (BuffUtil.TryGetSecondaryRateMultiplier(info, out float multiplier))
+        {
+            float percentage = MathUtil.GetPercentage(Mathf.Abs(info.trigger_value_rate * multiplier), 2);
+            replacements[TextReplaceEnum.PercentageSecondary] = percentage.ToString(format);
+        }
+        if (info.class_entity == nameof(BuffEntityConditionalDeadCreateCrystal))
+        {
+            var (min, max) = BuffEntityConditionalDeadCreateCrystal.GetCrystalAmountRange(info);
+            replacements[TextReplaceEnum.ValueRange] = min == max ? min.ToString(format) : $"{min.ToString(format)}～{max.ToString(format)}";
+        }
+
+        if (conditionTokens.Count > 0)
+        {
+            try
+            {
+                var preInfo = info.GetPreInfo();
+                if (preInfo != null)
+                {
+                    foreach (var condition in preInfo)
+                    {
+                        if (conditionTokens.TryGetValue(condition.Key, out var token))
+                        {
+                            replacements[token] = token == TextReplaceEnum.HPRateLess
+                                ? MathUtil.GetPercentage(condition.Value, 2).ToString(format)
+                                : Mathf.FloorToInt(condition.Value).ToString(format);
+                        }
+                    }
+                }
+            }
+            catch (Exception exception) when (exception is FormatException or OverflowException or ArgumentException)
+            {
+                // 无法解析的 Mod 前置条件保留原占位符，仍可查看该条配置。
+            }
+        }
+
+        return replacements;
+    }
+
+    /// <summary>
+    /// 在编辑态替换预览模板中的已知参数，无需初始化游戏文本服务。
+    /// </summary>
+    private static string FormatFightBuffText(string template, Dictionary<TextReplaceEnum, string> replacements)
+    {
+        if (string.IsNullOrEmpty(template))
+            return template;
+
+        var text = new StringBuilder(template);
+        foreach (var pair in replacements)
+            text.Replace($"{{{pair.Key}}}", pair.Value);
+        return text.ToString();
+    }
+
+    #endregion
+
     #region 测试参数持久化
 
     /// <summary>
@@ -269,9 +440,9 @@ public partial class GameTestEditor
         attackModeDefenseTestId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "attackModeDefenseTestId", 0);
 
         // BUFF 相关
-        buffSelfAttackTestId = EditorPrefs.GetString(PREFS_KEY_PREFIX + "buffSelfAttackTestId", "");
-        buffSelfDefenseTestId = EditorPrefs.GetString(PREFS_KEY_PREFIX + "buffSelfDefenseTestId", "");
-        buffTestId = EditorPrefs.GetString(PREFS_KEY_PREFIX + "buffTestId", "");
+        fightAttackSelfBuffSettings = LoadFightBuffSettings("buffSelfAttackTestId");
+        fightDefenseSelfBuffSettings = LoadFightBuffSettings("buffSelfDefenseTestId");
+        fightGlobalAttackBuffSettings = LoadFightBuffSettings("buffTestId", hasChance: true);
 
         // 深渊馈赠
         LoadAbyssalBlessingFightTestList();
@@ -366,9 +537,9 @@ public partial class GameTestEditor
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "attackModeDefenseTestId", attackModeDefenseTestId);
 
         // BUFF 相关
-        EditorPrefs.SetString(PREFS_KEY_PREFIX + "buffSelfAttackTestId", buffSelfAttackTestId);
-        EditorPrefs.SetString(PREFS_KEY_PREFIX + "buffSelfDefenseTestId", buffSelfDefenseTestId);
-        EditorPrefs.SetString(PREFS_KEY_PREFIX + "buffTestId", buffTestId);
+        SaveFightBuffSettings("buffSelfAttackTestId", fightAttackSelfBuffSettings);
+        SaveFightBuffSettings("buffSelfDefenseTestId", fightDefenseSelfBuffSettings);
+        SaveFightBuffSettings("buffTestId", fightGlobalAttackBuffSettings, hasChance: true);
 
         // 深渊馈赠
         SaveAbyssalBlessingFightTestList();
@@ -418,6 +589,47 @@ public partial class GameTestEditor
 
         // 敌人 IDs
         SaveEnemyIds();
+    }
+
+    /// <summary>
+    /// 从原有偏好键读取逗号分隔的自身 BUFF 或由 &amp; 分隔的全局攻击 BUFF 及概率。
+    /// </summary>
+    private static List<FightBuffTestItem> LoadFightBuffSettings(string key, bool hasChance = false)
+    {
+        var settings = new List<FightBuffTestItem>();
+        string saved = EditorPrefs.GetString($"{PREFS_KEY_PREFIX}{key}", "");
+        foreach (string entry in saved.Split(hasChance ? '&' : ','))
+        {
+            string[] parts = entry.Split(':');
+            if (!long.TryParse(parts[0], out long id) || id <= 0)
+                continue;
+
+            var item = new FightBuffTestItem { id = id };
+            if (hasChance && parts.Length == 2 &&
+                (float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float chance) ||
+                 float.TryParse(parts[1], NumberStyles.Float, CultureInfo.CurrentCulture, out chance)))
+            {
+                item.chance = chance;
+            }
+            settings.Add(item);
+        }
+        return settings;
+    }
+
+    /// <summary>
+    /// 用原有偏好键和字符串格式持久化所选 BUFF ID 及全局攻击 BUFF 概率。
+    /// </summary>
+    private static void SaveFightBuffSettings(string key, List<FightBuffTestItem> settings, bool hasChance = false)
+    {
+        var entries = new string[settings.Count];
+        for (int i = 0; i < settings.Count; i++)
+        {
+            var item = settings[i];
+            entries[i] = hasChance
+                ? $"{item.id}:{item.chance.ToString(CultureInfo.InvariantCulture)}"
+                : item.id.ToString(CultureInfo.InvariantCulture);
+        }
+        EditorPrefs.SetString($"{PREFS_KEY_PREFIX}{key}", string.Join(hasChance ? '&' : ',', entries));
     }
 
     #endregion

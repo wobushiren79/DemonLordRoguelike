@@ -210,12 +210,16 @@ public partial class FightCreatureEntity
     }
 
     /// <summary>
-    /// 附加攻击模块配置的 BUFF，并传递追加攻击的伤害来源。
+    /// 附加命中 BUFF，并传递追加攻击的伤害来源。战斗测试可替换攻击模块的 BUFF。
     /// </summary>
     public void AddBuff(BaseAttackMode baseAttackMode)
     {
-        //触发buff
-        var listBuffData = baseAttackMode.attackModeInfo.GetListBuff();
+        var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        var listBuffData = (gameLogic?.fightData as FightBeanForTest)?.testGlobalAttackBuffs;
+        if (listBuffData.IsNull())
+        {
+            listBuffData = baseAttackMode.attackModeInfo.GetListBuff();
+        }
         if (!listBuffData.IsNull())
         {
             bool isAdd = BuffHandler.Instance.AddFightCreatureBuff(listBuffData, baseAttackMode.attackModeData.attackerId,

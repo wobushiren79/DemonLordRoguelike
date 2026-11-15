@@ -23,13 +23,19 @@ public class BuffBean
     public float trigger_time = -1f;
 
     #region 构造与随机词条
-    
+
+    /// <summary>
+    /// 供 ClassUtil 深拷贝逐字段复制已初始化的 BUFF 数据。
+    /// </summary>
+    public BuffBean() { }
+
     /// <summary>
     /// 构造BUFF运行时数据。isRandom=true时(扭蛋稀有度BUFF)对触发值做整数化闭区间随机
     /// </summary>
     /// <param name="id">buffId</param>
     /// <param name="isRandom">是否对触发值随机取值(扭蛋创建时为true)</param>
     /// <param name="createRate">BUFF创建几率</param>
+    [Newtonsoft.Json.JsonConstructor]
     public BuffBean(long id, bool isRandom = false, float createRate = 1f)
     {
         this.id = id;

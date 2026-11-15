@@ -194,6 +194,8 @@ details.RefreshCard();
 
 `Assets/Resources/Materials/TMPBuffDescriptionGlow.mat` 是打包保留材质，固定包含原字体材质的 `UNDERLAY_ON` 与扫光的 `GLOW_ON` 组合。运行时仍从当前行的原字体材质创建副本，以沿用其字体图集和原始属性。
 
+战斗测试的防守卡片通过同一个 `CreatureBean` 实例展示和放置，详情中的自带 BUFF 与召唤消耗一并读取该卡片的 `testSelfBuffs`，空列表时沿用职业配置。
+
 ### 5. 创建新的卡片子类
 
 继承 `UIViewCreatureCardItem` 并重写 `RefreshCardState`：

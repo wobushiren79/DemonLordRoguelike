@@ -40,6 +40,8 @@ Bean/
 
 > **`BuffBean.GetMaxRollFlags()`（手写 `Assets/Scripts/Bean/Game/BuffBean.cs`）**：用已保存的抽取值与当前配置的有效随机端点分别比较，返回触发值、百分比和整条满值标志。整条须至少有一个有效随机字段，且所有随机字段均到达最佳端点。召唤冷却和耗魔的减免百分比取最小端点。该方法只读现有数据，无新增存档字段。
 
+> **战斗测试 BUFF 数据**：`FightBeanForTest` 持有进攻自带 BUFF 与全局攻击 BUFF。防守卡片和进攻生物使用 `CreatureBean.testSelfBuffs` 保存实例覆盖列表，该列表跳过序列化，在生物按配置初始化时清除。克隆魔物使用 `ClassUtil.DeepCopy` 逐字段复制列表，`BuffBean()` 为该过程提供空实例，JSON 反序列化使用带 ID 的构造。
+
 > **`GameConfigBean` 游戏专用扩展字段位于 `Assets/Scripts/Bean/MVC/GameConfigBeanPartial.cs`**：`pressKeyTipShow`（bool，默认 true）控制 `UIViewPressCommon` 等快捷按键提示；`bulletShadow/itemShadow`（bool，默认 true）分别控制战斗弹道与魔晶掉落物阴影；`sceneClutterShadow`（bool，默认 false）控制战斗花海 `FlowerSeaInstanceRenderer.castShadows`。字段仍参与 `GameConfigBean` 序列化，旧配置缺少字段时使用上述默认值，四者互不联动。
 
 > **`CreatureBean.IsDemonLord()`（`CreatureBeanPartial.cs` #region 魔王）是「是否魔王本体」判定的单一真实源**：比对 `creatureUUId == userData.selfCreature.creatureUUId`（魔王独立存储于 `UserDataBean.selfCreature`，不在背包/阵容列表内）。管理列表置顶、稀有度按 L 显示、隐藏等级、不可献祭、战斗不加经验等特殊处理统一调它，UI 层(如 `UIViewCreatureCardDetails.IsDemonLord`)已收口为委托调用。

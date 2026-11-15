@@ -108,6 +108,8 @@ CreatureBean creature = new CreatureBean(creatureId, rarity: 5, level: 8);
 CreatureBean creature = new CreatureBean(creatureId, creatureUUId);
 ```
 
+战斗测试中的 `CreatureBean.testSelfBuffs` 提供单个生物的自带 BUFF 覆盖，空列表时 `GetListBuffData()` 读取职业配置。测试面板构建防守卡片时设置该字段，`CreatureHandler.CreateAttackCreature` 在初始化进攻生物战斗属性前设置。列表参与卡片属性计算及登场挂载，且按配置初始化生物时清除。
+
 ### 获取属性
 
 ```csharp

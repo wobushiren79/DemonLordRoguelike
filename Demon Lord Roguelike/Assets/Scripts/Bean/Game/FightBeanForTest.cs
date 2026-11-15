@@ -7,6 +7,16 @@ public class FightBeanForTest : FightBean
     //进攻数据
     public FightAttackBean fightAttackDataRemark;
 
+    #region 测试 BUFF
+
+    /// <summary>进攻生物的自带 BUFF。列表为空时使用生物原配置。</summary>
+    public List<BuffBean> testAttackSelfBuffs;
+
+    /// <summary>测试战斗中命中时附加的 BUFF。列表为空时使用攻击模块原配置。</summary>
+    public List<BuffBean> testGlobalAttackBuffs;
+
+    #endregion
+
     //测试深渊馈赠目标行ID列表(已按"族根+等级"解析好的具体馈赠行id；由 GameFightLogicTest 在防守核心创建后统一添加)
     public List<long> testAbyssalBlessingIds = new List<long>();
 

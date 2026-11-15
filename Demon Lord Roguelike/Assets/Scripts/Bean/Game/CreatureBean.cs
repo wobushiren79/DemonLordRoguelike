@@ -33,6 +33,10 @@ public partial class CreatureBean
     public CreatureAttributeBean creatureAttribute = new CreatureAttributeBean();
     /// <summary>生物稀有度BUFF（key=稀有度，扭蛋抽取时按命中的稀有度随机授予对应BUFF）</summary>
     public Dictionary<RarityEnum, BuffBean> dicRarityBuff = new Dictionary<RarityEnum, BuffBean>();
+    /// <summary>战斗测试为当前生物指定的自带 BUFF。列表为空时使用生物原配置。</summary>
+    [Newtonsoft.Json.JsonIgnore]
+    [NonSerialized]
+    public List<BuffBean> testSelfBuffs;
     /// <summary>体型缩放倍率（在模型目标大小 size_spine 基础上再相乘）。NPC 读 NpcInfo.body_size，
     /// 按 creatureId 创建的生物（扭蛋/建号等）读 CreatureInfo.body_size；未配置则恒为1。
     /// 含随机区间的配置在创建时解析一次并缓存到此，保证后续重复渲染体型稳定。</summary>
@@ -69,10 +73,11 @@ public partial class CreatureBean
     }
 
     /// <summary>
-    /// 设置数据（按生物配置ID，生成唯一UUID）
+    /// 按生物配置 ID 初始化数据，生成唯一 UUID 并清除上次的测试 BUFF。
     /// </summary>
     public void SetData(long creatureId)
     {
+        testSelfBuffs = null;
         var creatureInfo = CreatureInfoCfg.GetItemData(creatureId);
         this.creatureId = creatureId;
         this.creatureName = creatureInfo.name_language;
@@ -82,10 +87,11 @@ public partial class CreatureBean
     }
 
     /// <summary>
-    /// 设置数据(NPC：写入NPC数据、等级，并初始化皮肤与装备)
+    /// 按 NPC 配置初始化数据、等级、皮肤与装备，并清除上次的测试 BUFF。
     /// </summary>
     public void SetData(NpcInfoBean npcInfo)
     {
+        testSelfBuffs = null;
         creatureNpcData = new CreatureNpcBean(npcInfo.id);
 
         this.creatureId = npcInfo.creature_id;
@@ -149,9 +155,9 @@ public partial class CreatureBean
 
     #region BUFF相关
     /// <summary>
-    /// 获取所有buff
+    /// 获取自带和稀有度 BUFF。战斗测试指定了自带 BUFF 时使用该列表。
     /// </summary>
-    /// <param name="hasSelfBuff">是否有自身BUFF</param>
+    /// <param name="getSelfBuff">是否有自身BUFF</param>
     /// <param name="getRarityBuff">是否有稀有度BUFF</param>
     /// <param name="getBuffAttributeBase">是否包含属性BUFF(纯加属性)</param>
     /// <returns></returns>
@@ -161,7 +167,7 @@ public partial class CreatureBean
         //获取自身BUFF
         if (getSelfBuff)
         {
-            List<BuffBean> listSelfBuff = creatureInfo.GetCreatureBuffs();
+            List<BuffBean> listSelfBuff = testSelfBuffs.IsNull() ? creatureInfo.GetCreatureBuffs() : testSelfBuffs;
             if (!listSelfBuff.IsNull())
             {
                 for (int i = 0; i < listSelfBuff.Count; i++)

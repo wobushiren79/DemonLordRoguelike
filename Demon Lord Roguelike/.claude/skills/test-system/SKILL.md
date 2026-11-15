@@ -385,6 +385,14 @@ userUnlockData.AddUnlock((long)UnlockEnum.ChallengeHundredBossRate, 4);
 - **卡片生物 IDs**（基础设置区，`fightCardIds: List<long>`，旧版逗号分隔 string `fightCardId` 已废弃，EditorPrefs 旧 key 首次加载时一次性迁移后删除）：下拉选项 `[id] 中文名`，数据源 `CreatureInfoCfg.GetAllArrayData()` + 直读 `Language_CreatureInfo_cn.txt`（`EnsureFightCardCreatureOptions` 懒加载，「🔄 刷新列表」清缓存 + `ClearCfgBaseStaticCache(typeof(CreatureInfoCfg))`）。`GetTestData()` 按卡片数量循环取列表 id（空列表兜底 2002 防取模除零）；基地测试(Base)的「手下生物 IDs」与卡片测试的「生物 ID」均复用同一份 `fightCardIds` 与同一绘制方法 `DrawFightCardIdList(title)`。
 - **进攻生物 IDs（NPCID）**（敌人设置区，`enemyIds: List<long>`）：下拉选项 `id  中文名`（**BOSS 前置 `[BOSS]` 标记**，判定取 `NpcInfoBean.IsBoss()`=备注 remark 含 boss 且不含否定标记「无boss」（不区分大小写），与征服 `enemy_boss_ids` 引用一致；不能用 `attack_mode_ext` 非空判定——牧师/勇者等非BOSS也配了额外技能），数据源 `NpcInfoCfg.GetAllArrayData()` + 直读 `Language_NpcInfo_cn.txt`（`EnsureFightEnemyNpcOptions` → 与对话测试共用构建方法 `BuildNpcOptions(withManualPlaceholder, out options, out ids)`，对话测试传 false 无占位项；BOSS 标记两处下拉都生效）。
 
+### BUFF 测试设置
+
+「进攻方 BUFF」「防守方 BUFF」「全局攻击 BUFF」共用 `FightBuffPicker`。点击「添加 BUFF…」或已有条目打开双栏弹窗。搜索匹配名称、ID、效果和备注，可按攻击模块、生物自带、深渊馈赠及 R/SR/SSR 筛选。左侧结果按 ID 排序，右侧预览完整说明、类别、ID、等级和独立的配置备注。点击「添加」或「替换」后立即保存，替换时保留原附加概率。同一组可添加多条并逐行移除。
+
+`BuildFightBuffOptions` 从 `Language_BuffInfo_cn.txt` 分别读取名称与效果，中文翻译缺失时使用配置备注。预览按测试用配置值和 `BuffPreInfo` 前置阈值替换 `TextReplaceEnum` 占位符。编辑态直读导出资源，运行态从 `BuffInfoCfg` 和 `BuffPreInfoCfg` 获取配置（含已载入 Mod）。导出后可点击「刷新列表」重建候选和预览。
+
+三组选择沿用原 EditorPrefs 键，保留已保存的 BUFF ID 与全局攻击附加概率。移除一行会立即保存。暂时找不到配置的选项会标记并在开始测试时跳过。选中有效配置时，进攻方替换进攻生物的自身 BUFF，防守方替换测试卡片魔物的自身 BUFF，全局攻击替换攻击模块在命中时附加的 BUFF，新增行默认必定附加。战斗中克隆的防守卡片也会复制源卡片的测试自带 BUFF。清空该组后，新开测试恢复原配置。
+
 ### 深渊馈赠测试设置（下拉选择族 + 目标等级）
 
 BUFF 设置区的「深渊馈赠」**不再是手填 ID 文本框**，而是逐行配置：馈赠族下拉（选项显示 `[id] [等级范围] 中文名 - 效果`，中文直读 `Language_AbyssalBlessingInfo_cn.txt`，不切 LanguageCfg 语言避免篡改运行中游戏语言）+ 目标等级（仅升级链族显示，Lv 夹紧 1~`GetFamilyMaxLevel`；`level=0` 可重复馈赠显示"(可重复)"无等级）。配置重导后点「🔄 刷新列表」重建下拉缓存。

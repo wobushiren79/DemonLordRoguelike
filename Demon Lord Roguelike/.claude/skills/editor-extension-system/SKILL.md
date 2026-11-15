@@ -233,6 +233,7 @@ Toolbar: UI脚本创建 按钮
 ### 功能
 
 - Inspector 中配置测试参数
+- 战斗测试的三组 BUFF 共用 `FightBuffPicker`（`PopupWindowContent`）。弹窗按名称、ID、效果或备注搜索，可按类别筛选并在右侧预览。确认回调立即写入原 EditorPrefs 并刷新 Inspector，逐行替换时保留全局攻击附加概率。
 - 一键启动各种测试场景
 - 参数持久化（EditorPrefs）
 - 场景编辑会话状态（快照/等待标记/预制路径/检测结果/回调注册标记）使用 `static` 跨 Inspector 实例共享，避免 Hierarchy 选物导致 Inspector 重建后会话显示丢失

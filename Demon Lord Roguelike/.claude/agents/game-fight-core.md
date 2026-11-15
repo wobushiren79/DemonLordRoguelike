@@ -48,7 +48,7 @@ watched_files:
 - **FightBeanForConquer** - 征服模式战斗数据
 - **FightBeanForDoomCouncil** - 终焉议会战斗数据
 - **FightBeanForInfinite** - 无限/无尽模式战斗数据（持有同难度征服行 `fightTypeConquerInfo`[复用其怪物池/数量/时长/魔晶掉落]+无尽行 `fightTypeInfiniteInfo`[每轮强度倍率、专属场地]+`roundNum` 当前轮次从1起；`InitData` 建核心/收阵容/优先读无尽行的 `fight_scene_id`（未配置时经 `GetFightSceneId(D,true)` 沿用冻结 BOSS 场地）/填充第1轮；`AppendNextRoundAttackData()` 追加下一轮波次到队列末尾不重建[每轮=征服BOSS关同款构成：普通怪分桶随机+BOSS中后段错开+每轮弹特写，数量固定不递推]；`GetRoundIntensityRate(round)`=征服 attack_intensity_baserate × 无尽 round_intensity_addrate^(round-1) × 终焉议会强度议案）
-- **FightBeanForTest** - 测试战斗数据
+- **FightBeanForTest** - 测试战斗数据。`testAttackSelfBuffs` 在进攻生物初始化属性前应用，`testGlobalAttackBuffs` 由 `FightCreatureEntity.AddBuff` 在命中结算时选用。空列表沿用对应配置，测试设置保留在本场数据中。
 - **FightBeanForChallengeHundred** - 挑战100勇士战斗数据（持有冻结配置行 `fightTypeChallengeHundredInfo` 与 `gameWorldInfoRandomData`；固定100只怪分桶随机排程 `InitFightAttackData`，强度=行 `attack_intensity_baserate` 不叠终焉议会）
 - **FightCreatureBean** - 战斗生物数据
 - **FightAttackBean** - 战斗攻击数据

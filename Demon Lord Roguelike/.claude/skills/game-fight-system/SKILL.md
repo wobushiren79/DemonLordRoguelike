@@ -230,6 +230,8 @@ public partial class FightCreatureEntity
 }
 ```
 
+战斗测试的「全局攻击 BUFF」由 `FightCreatureEntity.AddBuff` 从当前 `FightBeanForTest.testGlobalAttackBuffs` 取用。测试列表为空时，命中仍读取攻击模块自身的 BUFF。从测试面板重开时沿用本场列表，新建测试战斗可重新选择。
+
 ## 魔王魔力(MP)系统
 
 MP/MPF 两个属性**仅在战斗中有效**，挂在魔王（防守核心）身上：

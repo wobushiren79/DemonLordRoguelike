@@ -103,7 +103,7 @@ public partial class GameTestEditor : Editor
     #region 战斗测试设置
 
     /// <summary>
-    /// 绘制战斗测试模式及其配置，自定义战斗可以为进攻方选择征服难度。
+    /// 绘制战斗测试模式及其配置，自定义战斗可以选择进攻难度和测试 BUFF。
     /// </summary>
     private void DrawFightSceneTest()
     {
@@ -295,9 +295,7 @@ public partial class GameTestEditor : Editor
             attackModeDefenseTestId = EditorGUILayout.IntField(new GUIContent("防守方攻击模块 ID", "防守方使用的攻击模块测试 ID"), attackModeDefenseTestId);
 
             EditorGUILayout.Space(5);
-            buffSelfAttackTestId = EditorGUILayout.TextField(new GUIContent("进攻方 BUFF", "进攻方携带的 BUFF 测试 ID"), buffSelfAttackTestId);
-            buffSelfDefenseTestId = EditorGUILayout.TextField(new GUIContent("防守方 BUFF", "防守方携带的 BUFF 测试 ID"), buffSelfDefenseTestId);
-            buffTestId = EditorGUILayout.TextField(new GUIContent("全局攻击 BUFF", "攻击时触发的 BUFF 测试 ID"), buffTestId);
+            DrawFightBuffSettings();
             DrawFightAbyssalBlessingSettings();
             EditorGUILayout.EndVertical();
             EditorGUI.indentLevel--;
@@ -632,6 +630,327 @@ public partial class GameTestEditor : Editor
             fightSceneOptions[i + 1] = listEntries[i].Value;
         }
     }
+
+    #region 战斗测试 BUFF 选择器
+
+    /// <summary>
+    /// 绘制三组测试 BUFF 及配置刷新入口。
+    /// </summary>
+    private void DrawFightBuffSettings()
+    {
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("测试 BUFF", EditorStyles.boldLabel);
+        if (GUILayout.Button("刷新列表", GUILayout.Width(90)))
+        {
+            fightBuffOptions = null;
+            if (Application.isPlaying)
+            {
+                ClearCfgBaseStaticCache(typeof(BuffInfoCfg));
+                ClearCfgBaseStaticCache(typeof(BuffPreInfoCfg));
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+
+        EnsureFightBuffOptions();
+        if (fightBuffOptions.Length == 0)
+            EditorGUILayout.HelpBox("未读取到 BUFF 配置，请检查配置表导出后刷新。", MessageType.Warning);
+
+        DrawFightBuffList("进攻方 BUFF", fightAttackSelfBuffSettings);
+        DrawFightBuffList("防守方 BUFF", fightDefenseSelfBuffSettings);
+        DrawFightBuffList("全局攻击 BUFF", fightGlobalAttackBuffSettings, showChance: true);
+    }
+
+    /// <summary>
+    /// 逐行绘制已选 BUFF、替换入口和附加概率，保留暂时找不到配置的旧选择。
+    /// </summary>
+    private void DrawFightBuffList(string title, List<FightBuffTestItem> settings, bool showChance = false)
+    {
+        EditorGUILayout.LabelField(title);
+        for (int i = 0; i < settings.Count; i++)
+        {
+            var item = settings[i];
+            var option = Array.Find(fightBuffOptions, candidate => candidate.id == item.id);
+            var label = option == null
+                ? new GUIContent($"未找到 BUFF [{item.id}]", "本次测试会跳过这条配置。")
+                : new GUIContent(option.label, string.IsNullOrEmpty(option.remark)
+                    ? option.description
+                    : $"{option.description}\n{option.remark}");
+
+            EditorGUILayout.BeginHorizontal();
+            DrawFightBuffPickerButton(label, title, settings, item);
+
+            if (showChance)
+            {
+                EditorGUILayout.LabelField(new GUIContent("概率", "附加概率，0.5 表示 50%，0 或 1 表示必定附加。"), GUILayout.Width(32));
+                item.chance = EditorGUILayout.FloatField(item.chance, GUILayout.Width(45));
+            }
+
+            bool remove = GUILayout.Button("移除", GUILayout.Width(44));
+            EditorGUILayout.EndHorizontal();
+            if (remove)
+            {
+                settings.RemoveAt(i);
+                GUI.changed = true;
+                break;
+            }
+        }
+
+        DrawFightBuffPickerButton(new GUIContent("添加 BUFF…"), title, settings);
+        EditorGUILayout.Space(3);
+    }
+
+    /// <summary>
+    /// 从 Inspector 的按钮打开选择器，确认后保存配置并刷新当前面板。
+    /// </summary>
+    private void DrawFightBuffPickerButton(GUIContent label, string title, List<FightBuffTestItem> settings, FightBuffTestItem item = null)
+    {
+        Rect anchor = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight, GUILayout.ExpandWidth(true));
+        using (new EditorGUI.DisabledScope(fightBuffOptions.Length == 0))
+        {
+            if (!GUI.Button(anchor, label))
+                return;
+        }
+
+        PopupWindow.Show(anchor, new FightBuffPicker(title, fightBuffOptions, item, id =>
+        {
+            if (this == null || target == null)
+                return;
+            if (item == null)
+                settings.Add(new FightBuffTestItem { id = id });
+            else if (settings.Contains(item))
+                item.id = id;
+            else
+                return;
+
+            SaveAllPreferences();
+            Repaint();
+        }));
+    }
+
+    /// <summary>
+    /// 缓存当前编辑态或运行态的 BUFF 候选及中文效果详情。
+    /// </summary>
+    private void EnsureFightBuffOptions()
+    {
+        bool isPlaying = Application.isPlaying;
+        if (fightBuffOptions != null && fightBuffOptionsInPlayMode == isPlaying)
+            return;
+
+        // 编辑态直读导出资源，避免通过 Cfg 加载 ModHandler 单例。
+        var rows = isPlaying ? BuffInfoCfg.GetAllArrayData() : ReadFightBuffConfig<BuffInfoBean>(BuffInfoCfg.fileName);
+        var conditions = isPlaying ? BuffPreInfoCfg.GetAllArrayData() : ReadFightBuffConfig<BuffPreInfoBean>(BuffPreInfoCfg.fileName);
+        var language = LoadLanguageForCn($"Language_{BuffInfoCfg.fileName}_cn.txt");
+        fightBuffOptions = BuildFightBuffOptions(rows, language, conditions);
+        fightBuffOptionsInPlayMode = isPlaying;
+    }
+
+    /// <summary>
+    /// 从编辑态可读取的导出资源载入 BUFF 配置。
+    /// </summary>
+    private static T[] ReadFightBuffConfig<T>(string fileName)
+    {
+        var asset = AssetDatabase.LoadAssetAtPath<TextAsset>($"Assets/Resources/JsonText/{fileName}.txt");
+        return asset != null ? JsonConvert.DeserializeObject<T[]>(asset.text) : null;
+    }
+
+    /// <summary>
+    /// 为三组 BUFF 共用的搜索、预览和确认弹窗。
+    /// </summary>
+    private sealed class FightBuffPicker : PopupWindowContent
+    {
+        private static readonly string[] typeLabels = { "全部", "攻击模块", "生物自带", "深渊馈赠", "R", "SR", "SSR" };
+        private static readonly BuffTypeEnum[] types =
+        {
+            BuffTypeEnum.None, BuffTypeEnum.Fight, BuffTypeEnum.CreatureSelf, BuffTypeEnum.AbyssalBlessing,
+            BuffTypeEnum.CreatureRarityR, BuffTypeEnum.CreatureRaritySR, BuffTypeEnum.CreatureRaritySSR
+        };
+
+        private readonly string title;
+        private readonly string confirmLabel;
+        private readonly FightBuffOption[] options;
+        private readonly Action<long> onConfirm;
+        private readonly List<FightBuffOption> results = new List<FightBuffOption>();
+        private string search = string.Empty;
+        private int typeIndex;
+        private FightBuffOption preview;
+        private Vector2 resultScroll;
+        private Vector2 detailScroll;
+        private bool focusSearch = true;
+
+        /// <summary>
+        /// 创建添加或替换弹窗，替换时预览当前的 BUFF。
+        /// </summary>
+        public FightBuffPicker(string title, FightBuffOption[] options, FightBuffTestItem item, Action<long> onConfirm)
+        {
+            this.title = title;
+            this.options = options;
+            this.onConfirm = onConfirm;
+            confirmLabel = item == null ? "添加" : "替换";
+            if (item != null)
+                preview = Array.Find(options, option => option.id == item.id);
+            FilterOptions();
+        }
+
+        /// <summary>
+        /// 提供能独立于 Inspector 宽度显示列表和详情的窗口尺寸。
+        /// </summary>
+        public override Vector2 GetWindowSize() => new Vector2(640, 430);
+
+        /// <summary>
+        /// 绘制搜索、分类、预览及确认操作。
+        /// </summary>
+        public override void OnGUI(Rect rect)
+        {
+            bool confirm;
+            bool cancel;
+            using (new GUILayout.AreaScope(new Rect(10, 8, rect.width - 20, rect.height - 16)))
+            {
+                EditorGUILayout.LabelField(title, EditorStyles.boldLabel);
+                DrawFilters();
+                EditorGUILayout.Space(5);
+
+                using (new EditorGUILayout.HorizontalScope(GUILayout.ExpandHeight(true)))
+                {
+                    DrawResults(Mathf.Floor(rect.width * 0.47f));
+                    GUILayout.Space(8);
+                    DrawPreview();
+                }
+
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    EditorGUILayout.LabelField($"{results.Count} / {options.Length} 条", EditorStyles.miniLabel);
+                    GUILayout.FlexibleSpace();
+                    cancel = GUILayout.Button("取消", GUILayout.Width(64));
+                    using (new EditorGUI.DisabledScope(preview == null))
+                        confirm = GUILayout.Button(confirmLabel, GUILayout.Width(76));
+                }
+            }
+
+            if (confirm && preview != null)
+            {
+                onConfirm(preview.id);
+                editorWindow.Close();
+            }
+            else if (cancel)
+            {
+                editorWindow.Close();
+            }
+        }
+
+        /// <summary>
+        /// 绘制关键词搜索和分类筛选，首次显示时聚焦搜索框。
+        /// </summary>
+        private void DrawFilters()
+        {
+            string query;
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                EditorGUILayout.LabelField("名称、ID 或效果", GUILayout.Width(100));
+                GUI.SetNextControlName("FightBuffSearch");
+                query = EditorGUILayout.TextField(search, EditorStyles.toolbarSearchField);
+                using (new EditorGUI.DisabledScope(string.IsNullOrEmpty(query)))
+                {
+                    if (GUILayout.Button("清空", EditorStyles.miniButton, GUILayout.Width(46)))
+                        query = string.Empty;
+                }
+            }
+
+            if (focusSearch && Event.current.type == EventType.Repaint)
+            {
+                EditorGUI.FocusTextInControl("FightBuffSearch");
+                focusSearch = false;
+            }
+
+            int selectedTypeIndex = GUILayout.Toolbar(typeIndex, typeLabels, EditorStyles.miniButton);
+            if (query != search || selectedTypeIndex != typeIndex)
+            {
+                search = query;
+                typeIndex = selectedTypeIndex;
+                FilterOptions();
+            }
+        }
+
+        /// <summary>
+        /// 在当前类别内匹配名称、ID、效果及配置备注，避免确认已隐藏的条目。
+        /// </summary>
+        private void FilterOptions()
+        {
+            string query = search.Trim();
+            results.Clear();
+            foreach (var option in options)
+            {
+                if ((typeIndex == 0 || option.type == types[typeIndex]) &&
+                    option.searchText.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    results.Add(option);
+                }
+            }
+            resultScroll = Vector2.zero;
+            if (!results.Contains(preview))
+            {
+                preview = null;
+                detailScroll = Vector2.zero;
+            }
+        }
+
+        /// <summary>
+        /// 以独立滚动区绘制结果，点击只更新详情。
+        /// </summary>
+        private void DrawResults(float width)
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.Width(width), GUILayout.ExpandHeight(true)))
+            using (var scroll = new EditorGUILayout.ScrollViewScope(resultScroll))
+            {
+                resultScroll = scroll.scrollPosition;
+                if (results.Count == 0)
+                    EditorGUILayout.LabelField("没有符合条件的 BUFF。", EditorStyles.wordWrappedLabel);
+
+                foreach (var option in results)
+                {
+                    bool selected = preview == option;
+                    if (GUILayout.Toggle(selected, option.label, EditorStyles.miniButton,
+                            GUILayout.Width(width - 24f), GUILayout.Height(22)) && !selected)
+                    {
+                        preview = option;
+                        detailScroll = Vector2.zero;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 显示所选条目的效果、分类、ID 及有区别的配置备注。
+        /// </summary>
+        private void DrawPreview()
+        {
+            using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true)))
+            using (var scroll = new EditorGUILayout.ScrollViewScope(detailScroll))
+            {
+                detailScroll = scroll.scrollPosition;
+                if (preview == null)
+                {
+                    EditorGUILayout.LabelField("选择一条 BUFF 查看效果。", EditorStyles.wordWrappedLabel);
+                    return;
+                }
+
+                EditorGUILayout.LabelField(preview.name, EditorStyles.boldLabel);
+                int category = Array.IndexOf(types, preview.type);
+                string typeLabel = category > 0 ? typeLabels[category] : "其他";
+                string level = preview.level > 0 ? $"  ·  等级 {preview.level}" : string.Empty;
+                EditorGUILayout.LabelField($"ID {preview.id}  ·  {typeLabel}{level}", EditorStyles.miniLabel);
+                EditorGUILayout.Space(7);
+                EditorGUILayout.LabelField(preview.description, EditorStyles.wordWrappedLabel);
+                if (!string.IsNullOrEmpty(preview.remark))
+                {
+                    EditorGUILayout.Space(7);
+                    EditorGUILayout.LabelField("配置备注", EditorStyles.miniBoldLabel);
+                    EditorGUILayout.LabelField(preview.remark, EditorStyles.wordWrappedLabel);
+                }
+            }
+        }
+    }
+
+    #endregion
 
     /// <summary>
     /// 绘制战斗测试-深渊馈赠设置(下拉选择馈赠族[显示中文名与效果] + 目标等级)
@@ -2130,7 +2449,7 @@ public partial class GameTestEditor : Editor
     #region 战斗测试数据
 
     /// <summary>
-    /// 构建自定义战斗及重开快照，为每个进攻波次应用所选征服难度的首关强度。
+    /// 构建自定义战斗及重开快照，传入进攻难度和三组测试 BUFF。
     /// </summary>
     public FightBean GetTestData()
     {
@@ -2145,6 +2464,9 @@ public partial class GameTestEditor : Editor
         fightData.sceneRoadNum = roadNum;
         fightData.sceneRoadLength = roadLength;
         fightData.gameFightType = GameFightTypeEnum.Test;
+        fightData.testAttackSelfBuffs = BuildFightTestBuffs(fightAttackSelfBuffSettings);
+        var defenseSelfBuffs = BuildFightTestBuffs(fightDefenseSelfBuffSettings);
+        fightData.testGlobalAttackBuffs = BuildFightTestBuffs(fightGlobalAttackBuffSettings);
 
         // 复用征服首关的倍率，生成各个自定义进攻波次。
         float intensityRate = 1f;
@@ -2202,12 +2524,7 @@ public partial class GameTestEditor : Editor
                 itemData.creatureInfo.attack_mode = attackModeDefenseTestId;
             }
 
-            // BUFF 测试
-            if (!buffSelfDefenseTestId.IsNull())
-            {
-                itemData.creatureInfo.creature_buff = buffSelfDefenseTestId;
-                itemData.creatureInfo.GetCreatureBuffs();
-            }
+            itemData.testSelfBuffs = defenseSelfBuffs;
         }
 
         FightCreatureBean fightDefCoreData = CreatureHandler.Instance.GetFightCreatureData(fightDefenseCoreId, CreatureFightTypeEnum.FightDefenseCore);
@@ -2218,11 +2535,6 @@ public partial class GameTestEditor : Editor
         fightData.InitData();
         fightData.fightSceneId = fightSceneId;
 
-        // 初始化 BUFF
-        if (!buffTestId.IsNull())
-        {
-            AttackModeInfoCfg.InitTestData(buffTestId);
-        }
         // 设置深渊馈赠：解析"族根+等级"→具体馈赠行id存入战斗数据，由 GameFightLogicTest 在防守核心创建后统一添加
         // （不可在此直接调 BuffHandler.AddAbyssalBlessing——战斗场景尚未启动，防守核心未创建，必空引用）
         fightData.testAbyssalBlessingIds.Clear();
@@ -2245,6 +2557,28 @@ public partial class GameTestEditor : Editor
             fightData.testAbyssalBlessingIds.Add(targetId);
         }
         return fightData;
+    }
+
+    /// <summary>
+    /// 从选定的有效配置生成战斗 BUFF，跳过已移除或尚未加载的配置。
+    /// </summary>
+    private static List<BuffBean> BuildFightTestBuffs(List<FightBuffTestItem> settings)
+    {
+        var buffs = new List<BuffBean>();
+        if (settings.Count == 0)
+            return buffs;
+
+        var config = BuffInfoCfg.GetAllArrayData();
+        if (config == null || config.Length == 0)
+            return buffs;
+
+        var buffInfos = BuffInfoCfg.GetAllData();
+        foreach (var item in settings)
+        {
+            if (buffInfos.ContainsKey(item.id))
+                buffs.Add(new BuffBean(item.id, createRate: item.chance));
+        }
+        return buffs;
     }
 
     #endregion

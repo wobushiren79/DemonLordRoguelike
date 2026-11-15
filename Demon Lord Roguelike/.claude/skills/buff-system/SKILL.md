@@ -321,6 +321,8 @@ BuffHandler.Instance.AddFightCreatureBuff(
 2. 走 `ApplyStackingPolicy` 判定是否合并到已有BUFF
 3. 触发 `EventsInfo.Buff_FightCreatureChange`
 
+`ClassUtil.DeepCopy` 通过 `BuffBean()` 复制已初始化的 BUFF 字段，供防守魔物克隆等流程使用。JSON 反序列化仍使用带 BUFF ID 的构造函数。
+
 ### 添加深渊馈赠 BUFF（全局，作用于防守核心）
 
 ```csharp

@@ -294,7 +294,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     }
 
     /// <summary>
-    /// 创建进攻生物
+    /// 创建进攻生物，战斗测试的自带 BUFF 在初始化战斗属性前设置。
     /// </summary>
     /// <param name="targetRoad">目标进攻路线 0为随机</param>
     /// <param name="intensityRate">强度倍率(默认1; 征服模式敌人含BOSS按关卡递增, 作用到 HP/护甲/攻击力)</param>
@@ -318,10 +318,14 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         float randomZ = targetRoad + UnityEngine.Random.Range(-0.01f, 0.01f);
         targetObj.transform.position = new Vector3(randomX, 0, randomZ);
 
-        //创建战斗生物(优先使用快照数据)
-        FightCreatureBean fightCreatureData = creatureSnapshot != null
-            ? GetFightCreatureData(creatureSnapshot, CreatureFightTypeEnum.FightAttack)
-            : GetFightCreatureData(npcInfo, CreatureFightTypeEnum.FightAttack);
+        //优先使用已有快照；测试 BUFF 必须在战斗属性初始化前设置。
+        var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        CreatureBean creatureData = creatureSnapshot ?? new CreatureBean(npcInfo);
+        if (gameLogic.fightData is FightBeanForTest testFightData && !testFightData.testAttackSelfBuffs.IsNull())
+        {
+            creatureData.testSelfBuffs = testFightData.testAttackSelfBuffs;
+        }
+        FightCreatureBean fightCreatureData = GetFightCreatureData(creatureData, CreatureFightTypeEnum.FightAttack);
         fightCreatureData.positionCreate = new Vector3Int(0, 0, targetRoad);
         //应用强度倍率(征服模式敌人含BOSS按关卡递增强度; ResetData 传参写入倍率并重算 HP/护甲/攻击力；倍率=1 时 SetData 已按默认1复位)
         if (intensityRate != 1f)
@@ -331,7 +335,6 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
 
         FightCreatureEntity fightCreatureEntity = GetFightCreatureEntity(targetObj, fightCreatureData);
         //先添加数据
-        var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         gameLogic.fightData.AddAttackCreatureByRoad(targetRoad, fightCreatureEntity);
 
         //再创建数据
