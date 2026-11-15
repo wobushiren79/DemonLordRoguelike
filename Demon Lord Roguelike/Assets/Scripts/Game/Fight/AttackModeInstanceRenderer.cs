@@ -55,9 +55,11 @@ public partial class AttackModeInstanceRenderer
         //——逐实例属性(仅"桶材质声明了 _VelocityWS"的桶启用，如火球/冰球；其余桶三个缓冲恒为 null，不占内存也不进热路径)——
         //本桶是否需要逐实例世界速度+种子+缩放：注册期按材质有无 _VelocityWS 判定一次(见 RegisterVisual)
         public bool hasVelocity;
+        /// <summary>桶材质是否接收可随战斗暂停的魔法弹渲染时间。</summary>
+        public bool hasMagicBallRenderTime;
         //本帧待上传的逐实例世界速度矢量(与 matrixBuffer 同下标；定长 1023 复用，热路径零分配)
         public Vector4[] velocityBuffer;
-        //本帧待上传的逐实例种子偏移(同上)：不灌则同屏所有火球的火星同一帧同时爆同时灭(_Time.y 是全局的)
+        //本帧待上传的逐实例种子偏移(同上)：让共用同一时钟的火星错峰生灭
         public float[] seedBuffer;
         //本帧待上传的逐实例缩放(同上)：武器 StartSize；billboard 角点在世界空间展开、矩阵缩放碰不到，火球/冰球大小靠它乘进 shader
         public float[] scaleBuffer;
@@ -77,6 +79,9 @@ public partial class AttackModeInstanceRenderer
     //——游戏设置(GameConfigBean)的弹道阴影开关，每帧 RenderAll 读一次进字段(设置界面改动下帧即生效，无需重注册桶)——
     //弹道阴影总开关：开=所有弹道投阴影(显式 cast:0 的桶除外、接收阴影按桶 receive:1)，关=全部不投也不收
     private bool frameBulletShadow;
+
+    /// <summary>魔法弹粒子时钟，战斗运行时按 Unity 帧时间推进。</summary>
+    private float magicBallRenderTime;
 
     //——环境光(GI)+主光补偿：DrawMeshInstanced 的 SampleSH 读不到全局环境探针、URP 主光 uniform 亦缺失(实测主光强度归零弹体毫无变化)，
     //开 Lit 的桶材质会偏暗；按桶 ambient 方式经 MPB 灌入环境光、并统一灌入模拟主光补齐(详见 RefreshAmbientSH/RefreshInstancedLight)——
@@ -111,6 +116,8 @@ public partial class AttackModeInstanceRenderer
     private static readonly int PropSeedOffset = Shader.PropertyToID("_SeedOffset");
     //_InstanceScale：本发的逐实例缩放(武器 StartSize，未配置=-1 取 1)。billboard 世界空间展开绕过矩阵缩放，火球/冰球尺寸须靠它逐实例灌入
     private static readonly int PropInstanceScale = Shader.PropertyToID("_InstanceScale");
+    /// <summary>魔法弹粒子、核心动画和阴影共用的时间属性。</summary>
+    private static readonly int PropMagicBallRenderTime = Shader.PropertyToID("_MagicBallRenderTime");
     //环境探针求值用的固定采样方向(6 轴)与结果缓冲(预分配复用，避免热路径分配)
     private static readonly Vector3[] ambientEvalDirs = { Vector3.up, Vector3.down, Vector3.left, Vector3.right, Vector3.forward, Vector3.back };
     private readonly Color[] ambientEvalResults = new Color[6];
@@ -154,6 +161,7 @@ public partial class AttackModeInstanceRenderer
         ApplyBucketSpin(material, spinAxis, spinSpeed);
         //逐实例世界速度：只有声明了 _VelocityWS 的材质(火球/冰球)才启用并分配缓冲，其余桶零内存零热路径开销
         bucket.hasVelocity = material.HasProperty(PropVelocityWS);
+        bucket.hasMagicBallRenderTime = material.HasProperty(PropMagicBallRenderTime);
         if (bucket.hasVelocity && bucket.velocityBuffer == null)
         {
             bucket.velocityBuffer = new Vector4[MaxInstancesPerBatch];
@@ -191,6 +199,7 @@ public partial class AttackModeInstanceRenderer
     public void ClearVisuals()
     {
         dicBucket.Clear();
+        magicBallRenderTime = 0f;
         if (dicTrailBucket.Count > 0)
         {
             foreach (var tb in dicTrailBucket.Values)
@@ -273,9 +282,10 @@ public partial class AttackModeInstanceRenderer
         }
 
         //4) 收集：把每发弹道的位置矩阵填入对应桶缓冲，满批即刻绘制并清零；启用轨迹的弹道顺带采样+收集
-        //逐实例世界速度用的帧时长与游戏速度(各取一次)：暂停帧(deltaTime=0)时 CalculateVelocityWS 内部按 0 处理，不除零
-        float deltaTime = Time.deltaTime;
+        //0倍速冻结渲染时间；运行时沿用 Unity 帧时间，使 1 倍速和 2 倍速的粒子频率与原表现一致
         float gameSpeed = GameFightLogic.GetCurrentGameSpeed();
+        float deltaTime = gameSpeed > 0f ? Time.deltaTime : 0f;
+        magicBallRenderTime += deltaTime;
         int count = listAttackMode == null ? 0 : listAttackMode.Count;
         for (int i = 0; i < count; i++)
         {
@@ -407,7 +417,7 @@ public partial class AttackModeInstanceRenderer
     }
 
     /// <summary>
-    /// 算单发弹道当前的世界速度矢量(方向×速率，单位/秒)，供 shader 的 _VelocityWS 反推特效出生点(火星世界化)；顺带推进本发的差分基准。
+    /// 按世界位移和渲染帧时间计算 _VelocityWS，供 Shader 反推特效出生点；暂停时保留上一帧提交的速度与朝向。
     /// <para>【为什么帧差分而不问弹道要】差的是"本帧位移 ÷ 帧时长" = 本帧平均速度，直线弹/追踪弹/抛物线弹全部自动正确，
     /// 无需每种 AttackMode 各自暴露飞行方向再各自算对一遍(拐弯与下坠的分量差分天然含进去了)。</para>
     /// <para>【瞬移钳制】<see cref="BaseAttackMode.SetPosition"/> 可瞬间改位置，差分会算出荒谬速度把火星甩到天边；
@@ -421,18 +431,22 @@ public partial class AttackModeInstanceRenderer
         Vector3 delta = attackMode.position - attackMode.lastRenderPosition;
         //基准无条件推进：即便本帧速度被判瞬移丢弃，也不能让基准停在旧位置(否则下一帧会把这段位移二次计入)
         attackMode.lastRenderPosition = attackMode.position;
-        //暂停帧不除零；理论速度<=0 的原地弹道直接退化为旧行为
+        if (deltaTime <= 0f)
+            return attackMode.lastRenderVelocityWS;
+
         //钳制基准走 GetVelocityClampSpeed：加速弹道(天降重力加速)由子类重写为当前真实速度，避免后半程每帧被误判瞬移
         float moveSpeed = attackMode.GetVelocityClampSpeed();
-        if (deltaTime <= 0f || moveSpeed <= 0f)
-            return Vector4.zero;
-        Vector3 velocity = delta / deltaTime;
-        //阈值须乘游戏速度：2倍速不改 timeScale、位移走 GetFightDeltaTime，真实速度即 GetMoveSpeed×gameSpeed，不乘会每帧误判瞬移、火星永远挂在弹体上
-        float maxSpeed = moveSpeed * VelocityClampRate * gameSpeed;
-        //超速判瞬移(比较平方值，省一次开方)
-        if (velocity.sqrMagnitude > maxSpeed * maxSpeed)
-            return Vector4.zero;
-        return new Vector4(velocity.x, velocity.y, velocity.z, attackMode.visualVelocityOrient ? 1f : 0f);
+        Vector4 renderVelocity = Vector4.zero;
+        if (moveSpeed > 0f)
+        {
+            Vector3 velocity = delta / deltaTime;
+            //位移按战斗速度倍率变化，瞬移阈值也按同一倍率缩放
+            float maxSpeed = moveSpeed * VelocityClampRate * gameSpeed;
+            if (velocity.sqrMagnitude <= maxSpeed * maxSpeed)
+                renderVelocity = new Vector4(velocity.x, velocity.y, velocity.z, attackMode.visualVelocityOrient ? 1f : 0f);
+        }
+        attackMode.lastRenderVelocityWS = renderVelocity;
+        return renderVelocity;
     }
 
     /// <summary>
@@ -468,6 +482,8 @@ public partial class AttackModeInstanceRenderer
     {
         //按桶环境光方式选共享 MPB：Flat 走 6 轴平均均匀光、SH 走方向性球谐(两者已由 RefreshAmbientSH 各自灌好，含 _InstancedGI 模式开关)
         MaterialPropertyBlock mpb = bucket.ambient == AttackModeAmbientType.SH ? mpbSH : mpbFlat;
+        if (bucket.hasMagicBallRenderTime)
+            mpb.SetFloat(PropMagicBallRenderTime, magicBallRenderTime);
         if (bucket.hasVelocity)
         {
             mpb.SetVectorArray(PropVelocityWS, bucket.velocityBuffer);

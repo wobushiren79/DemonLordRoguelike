@@ -82,6 +82,8 @@ watched_files:
 
 `FightManager` 持有 `attackModeInstanceRenderer`（`AttackModeInstanceRenderer`，DSP 式弹道批量渲染器）；`FightHandler.UpdateHandleForAttackModePrefab` 在射线批处理/逻辑推进之后追加**阶段4** `RenderAll(listAttackMode)` 批量绘制在途弹道。按视觉桶签名(`visual_name` + ShowSprite 换图 + 自旋细分子桶)分桶(与 `prefab_name` 原预制渲染独立)，常开但 visual_name 空/未注册桶零副作用。**细节与约束以 attack-mode-system skill / game-attack-mode agent 为准**，本代理只需知道这条接线存在。
 
+- **魔法弹暂停**：0 倍速和系统菜单暂停期间，`RenderAll` 继续绘制在途弹体。魔法弹沿用最后一次提交的速度和朝向，并保持 Shader 时钟，冻结火星分布、核心和阴影动画。
+
 ## 飘字渲染接线（DSP GPU Instancing）
 
 `FightManager` 另持有 `fightTextInstanceRenderer`（`FightTextInstanceRenderer`，飘字/伤害数字批量渲染器，与弹道渲染器同思路）：`FightHandler.Update` 顶层每帧 `RenderAll()` 一次 `DrawMeshInstanced` 画完在屏字符（实例粒度=字符，≤512 槽，槽满整条丢弃新飘字保旧），动画全在 shader 时间驱动，逐实例数组按定长 512 整份上传(与弹体桶/轨迹桶同写法，List 变长+dirty 跳帧写法曾致多位数字只显示首位、已回退勿再引入)。由 `EffectHandler.ShowTextNumEffect` 装配并转发 `ShowNumber`(int 拆位零分配，不经 string)（预制缺 MeshFilter+MeshRenderer 或仍挂 TextMeshPro 时报错不显示；旧 TMP 对象池方案已删除）；shader = `FrameWork/URP/MeshTextInstanced1`，图集行列数由材质 `_AtlasCols`/`_AtlasRows` 决定(默认 4×4)、格序=`atlasChars`("0123456789" 纯数字)；闪避显示 0；渲染队列写死 Transparent+500 恒在 Spine 生物/粒子(默认 3000)之后绘制——透明组内 ZWrite Off 互不看深度，遮挡由队列+距离排序决定，ZTest Always 管不到透明物体。**细节以 system-effect agent 为准**，本代理只需知道这条接线存在。

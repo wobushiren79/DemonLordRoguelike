@@ -25,6 +25,8 @@ public class BaseAttackMode
     /// <para>纯运行时字段(非配置参数)，仅"桶材质带 _VelocityWS"的弹道会被读写；Init 里与 position 同步初始化，防对象池复用时残留上一发位置算出跨屏速度。</para>
     /// </summary>
     public Vector3 lastRenderPosition;
+    /// <summary>上一帧提交给 Shader 的世界速度和朝向开关，暂停时用于保留粒子分布和弹体朝向。</summary>
+    internal Vector4 lastRenderVelocityWS;
     #endregion
 
     #region DSP 视觉参数（由武器 attack_mode_data 写入，供 AttackModeInstanceRenderer 构建实例矩阵/写桶材质；spriteRenderer 渲染并行生效）
@@ -138,8 +140,9 @@ public class BaseAttackMode
         spinPhase = UnityEngine.Random.Range(0f, 360f);
         //位置真实源置为起点（即使无 gameObject 也生效），再同步到 transform
         position = attackModeData.startPos;
-        //渲染差分基准同步归位：不重置则对象池复用时会拿上一发的终点作基准，首帧算出跨屏速度把火星甩到天边
+        //重置渲染差分基准和速度，避免对象池复用时继承上一发的位置或拖尾
         lastRenderPosition = position;
+        lastRenderVelocityWS = Vector4.zero;
         if (gameObject != null)
         {
             gameObject.transform.position = position;
