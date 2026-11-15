@@ -8,11 +8,6 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     #region 常量
 
     /// <summary>
-    /// 每次展示的馈赠选项数量
-    /// </summary>
-    private const int SHOW_NUM = 3;
-
-    /// <summary>
     /// 卡片出现动画的每张错位延迟（秒）
     /// </summary>
     private const float ITEM_SHOW_ANIM_STAGGER = 0.08f;
@@ -66,14 +61,40 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     #region 数据设置
 
     /// <summary>
-    /// 设置数据-正式流程：构建候选池 → 按规则抽取 SHOW_NUM 个 → 渲染
+    /// 设置数据-正式流程：构建候选池 → 按规则抽取展示数量个 → 渲染
     /// </summary>
     public void SetData(Action<AbyssalBlessingInfoBean> actionForSelect = null, Action actionForSkip = null)
     {
         List<AbyssalBlessingInfoBean> pool = BuildCandidatePool();
-        int visibleCount = Mathf.Min(SHOW_NUM, ui_AbyssalBlessingList.childCount);
+        int visibleCount = GetShowNum();
         List<AbyssalBlessingInfoBean> picked = RollCandidates(pool, visibleCount);
         SetDataInternal(picked.ToArray(), actionForSelect, actionForSkip);
+    }
+
+    /// <summary>
+    /// 获取本次展示的馈赠选项数量：基础3 + 「深渊馈赠候选数量」研究(AbyssalBlessingShowNum)等级，
+    /// 并按需动态补齐候选项子节点后返回实际可展示数量
+    /// </summary>
+    private int GetShowNum()
+    {
+        var userData = GameDataHandler.Instance.manager.GetUserData();
+        int showNum = userData.GetUserUnlockData().GetUnlockAbyssalBlessingShowNum();
+        EnsureItemCount(showNum);
+        return Mathf.Min(showNum, ui_AbyssalBlessingList.childCount);
+    }
+
+    /// <summary>
+    /// 确保候选项子节点数量不少于指定数量：不足时复制首个候选项实例补齐（布局由列表容器自动处理），
+    /// 使研究提升候选数量时无需修改预制体
+    /// </summary>
+    private void EnsureItemCount(int count)
+    {
+        if (ui_AbyssalBlessingList.childCount <= 0) return;
+        while (ui_AbyssalBlessingList.childCount < count)
+        {
+            Transform template = ui_AbyssalBlessingList.GetChild(0);
+            Instantiate(template, ui_AbyssalBlessingList);
+        }
     }
 
     /// <summary>
@@ -159,12 +180,12 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     }
 
     /// <summary>
-    /// 设置数据-测试流程，按指定 ID 列表展示（最多 SHOW_NUM 个），ID 无效时跳过
+    /// 设置数据-测试流程，按指定 ID 列表展示（最多当前展示数量个），ID 无效时跳过
     /// </summary>
     public void SetDataForTest(long[] testIds, Action<AbyssalBlessingInfoBean> actionForSelect = null, Action actionForSkip = null)
     {
         int idLen = testIds == null ? 0 : testIds.Length;
-        int visibleCount = Mathf.Min(SHOW_NUM, Mathf.Min(idLen, ui_AbyssalBlessingList.childCount));
+        int visibleCount = Mathf.Min(GetShowNum(), idLen);
         var showData = new AbyssalBlessingInfoBean[visibleCount];
         for (int i = 0; i < visibleCount; i++)
         {

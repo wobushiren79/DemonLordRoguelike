@@ -23,15 +23,35 @@ public class AttackModeRangedSplitChild : AttackModeRanged
 
     #region 逻辑处理
     /// <summary>
-    /// 移动处理：先向目标道路(z 轴)归位，再走父类的直线飞行
+    /// 检测是否击中生物：归位(z 横移)途中不检测，归位完成后才恢复父类检测。
+    /// <para>⚠️归位途中子箭仍停在出发路(z 在攻击者所在道路附近)，若照常检测，朝前的短射线会命中出发路(同一路)的敌人——
+    /// 这发子弹本该打目标路，故归位途中必须关闭命中；判定条件与 <see cref="HandleForMove"/> 的归位条件一致，自洽。</para>
+    /// </summary>
+    public override FightCreatureEntity CheckHitTargetForSingle()
+    {
+        if (Mathf.Abs(position.z - targetRoad) > RoadCloseThreshold)
+        {
+            return null;
+        }
+        return base.CheckHitTargetForSingle();
+    }
+
+    /// <summary>
+    /// 移动处理：先向目标道路(z 轴)归位，归位完成后再走父类的直线飞行
+    /// <para>⚠️归位阶段只动 z、不前进（归位途中 return 跳过本帧直线飞行）：若归位与前进同时进行，归位会消耗
+    /// z差/RoadCloseSpeedRate 格的 x 行程（分裂到相邻路 z差1 时=0.5 格）。近距离发射（如防守单位放最前排贴路右缘、
+    /// 弓箭手走进道路即索敌出手，距离仅约0.5格）时，上下路子箭归位完成前 x 就越过了该路防守单位，归位完成后已处于其背后
+    /// （更靠核心一侧），朝前的短射线永远打不到背后的目标 → 分裂箭从防守单位背后穿过（中路那发无需归位故正常）。
+    /// 归位阶段 x 不动可完整保留命中窗口：归位完成后 x=发射时 x，与目标距离=索敌命中距离，必定仍在正前方，贴脸/远射均必中。</para>
     /// </summary>
     public override void HandleForMove()
     {
-        //还没到目标道路 先向它靠拢（归位速度 = 飞行速度 × RoadCloseSpeedRate）
+        //还没到目标道路 先向它靠拢（归位速度 = 飞行速度 × RoadCloseSpeedRate；此阶段只横移不前进，保命中窗口）
         if (Mathf.Abs(position.z - targetRoad) > RoadCloseThreshold)
         {
             Vector3 roadPosition = new Vector3(position.x, position.y, targetRoad);
             SetPosition(Vector3.MoveTowards(position, roadPosition, GameFightLogic.GetFightDeltaTime() * GetMoveSpeed() * RoadCloseSpeedRate));
+            return;
         }
         base.HandleForMove();
     }

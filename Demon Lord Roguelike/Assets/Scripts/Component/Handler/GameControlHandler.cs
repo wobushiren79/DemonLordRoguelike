@@ -6,12 +6,15 @@ using UnityEngine;
 
 public class GameControlHandler : BaseHandler<GameControlHandler,GameControlManager>
 {
+    #region 控制切换
+
     /// <summary>
     /// 设置战斗控制
     /// </summary>
     public void SetFightControl()
     {
         manager.EnableAllControl(false);
+        ResetMoveInputState();
         manager.controlForGameFight.EnabledControl(true);
     }
 
@@ -21,8 +24,23 @@ public class GameControlHandler : BaseHandler<GameControlHandler,GameControlMana
     public void SetBaseControl(bool isEnable = true, bool isHideControlTarget = true)
     {
         manager.EnableAllControl(false);
+        ResetMoveInputState();
         manager.controlForGameBase.EnabledControl(isEnable, isHideControlTarget);
     }
+
+    /// <summary>
+    /// 重置基地与战斗共用的 Move 输入状态，避免场景切换后沿用旧的按键值。
+    /// </summary>
+    protected void ResetMoveInputState()
+    {
+        var inputMove = InputHandler.Instance.manager.GetInputPlayerData(InputActionPlayerEnum.Move);
+        if (inputMove == null)
+            return;
+        inputMove.Disable();
+        inputMove.Enable();
+    }
+
+    #endregion
 
     /// <summary>
     /// 动画--基础控制物体出现-跳跃

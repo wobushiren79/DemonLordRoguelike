@@ -70,13 +70,13 @@ BaseAttackMode                      - 攻击模式基类
 │   │   └── AttackModeRangedArcTracking - 抛物线落点跟踪（落点实时跟踪目标、目标死亡（或实体被池复用）落死亡点、到达落点范围检测取最近单体命中、途中不命中；弹体朝向每帧跟随抛物线切线：visualStartAngle=武器StartRotate基准角+atan2(8h(0.5-progress),Δx)，⚠️重写 trailBakeVisualAngle=true 让拖尾逐采样点烘焙当时的切线角（否则整条残影跟着当前朝向旋转）；弧高2；射空收尾按 other_data 的 stuck_time/stuck_sink 键插地停留或落地即毁，插地期弹体冻结仍挂 dlAttackModePrefab、场景清场自动回收；人类弓箭手1002用 206001[配 other_data=stuck_time:3&stuck_sink:0.1]，配 attack_search_type=41 DisMaxByRoad 索当前排最后一个敌人）
 │   ├── AttackModeRangedTracking    - 远程追踪弹道（实时改变方向追击目标，方向**先 SetY(0) 拍平 Y 再归一化**，水平速度恒为 `GetMoveSpeed()` 不随距离衰减——顺序反了先归一化再拍平会让方向长度随接近目标而 <1，表现为越靠近敌人越慢；目标死亡或实体被池复用（UUId 双判失效）时**沿本方进攻方向重锁最近存活敌人**继续追——被打方=FightAttack（我方防守）向右、=FightDefense（我方进攻）向左，该方向无目标才保持最后方向直飞；重锁失败按 RetargetInterval(0.3s) 节流防每帧全量遍历，热路径（目标有效）零分配；**贴身保底命中**：与锁定目标水平距离≤HitTouchDistance(0.25)直接判中，防 0.1 短射线迎面相撞穿进碰撞体后打不到背面、绕点空转；发射瞬间目标已死也先重锁、重锁不到才销毁，消除出手动画期间目标死亡造成的空放）
 │   │   └── AttackModeRangedObliqueTracking - 直线斜射跟踪-范围伤害版（①跟踪含Y不拍平+首发方向按出手点→瞄准点重算：从头顶高空出手（attack_start_position y=3）直直斜射目标，瞄准点=目标脚底+other_data 键 aim_up 上抬（默认0=瞄脚底，201001/201002 配 aim_up:0.5）；②命中检测/射线全程有效，目标死亡（或实体被池复用）方向冻结朝死亡点直飞直至命中或出界；③HandleForHitTarget 走 CheckHitTargetArea 命中点AOE（hit_max 近者优先截断，201001/201002 配 hit_max=3=离爆炸点最近3个敌人）；④贴身保底命中：与瞄准点距离≤AimTouchDistance(0.2)直接判中——短射线0.1在迎面相撞穿进碰撞体后永久失效（射线不打背面），无此层会挂身空转；⑤触地即毁：下落中（attackDirection.y<0）y≤GroundHitY(0.05)播 effect_hit 回收（无伤害结算），目标死亡直飞不穿地；弹体朝向：面片 quad 视觉走 visualStartAngle=StartRotate基准角+atan2(dir.y,dir.x)，⚠️重写 trailBakeVisualAngle=true 让拖尾逐采样点烘焙当时的俯仰角（否则整条残影跟着当前朝向旋转）；火球/冰球 billboard shader 走 visualVelocityOrient→_VelocityWS.w 速度朝向（矩阵旋转对其核心无效）；人类法师1003/1004用 201001/201002）
-│   ├── AttackModeRangedPiercing    - 远程穿透弹道（可穿透多个目标）
+│   ├── AttackModeRangedPiercing    - 远程穿透弹道（可穿透多个目标；hit_max>0 覆盖穿透数，205001=3 原版，205005=2 强弓手小兵专用）
 │   │   ├── AttackModeRangedPiercingRoad - 沿路碾压穿透（穿透数无上限、伤害固定不递减、驶到路尽头销毁；深渊馈赠「失控的矿车」300041）
 │   │   ├── AttackModeRangedPiercingShrink - 逐击衰减收缩穿透（初始1.5倍大小、每穿透1个敌人伤害减半保底1+大小缩小当前的1/3(变为2/3)、伤害降至1的当次命中后销毁，命中数天然有界⌊log2(ATK)⌋+1不看numPierceMax；同帧多命中按距弹近远升序结算；兽人魔法师7003火/7004冰用 205002/205003，配 buff=1000500002:0.25 烧伤/1000100002:0.25 冰减速，ATK=10→伤害10/5/2/1、大小1.5→1→0.67→0.44倍共命中4个）
 │   │   └── AttackModeRangedRebound - 四壁反弹穿透（道路矩形内永久反弹+±5°随机偏转、同目标1秒冷却、永不自毁由BUFF维持N颗；发射音sound_start=sound_fight_3、回弹音sound_hit_6；深渊馈赠「回弹菱块」300081~300085）
 │   ├── AttackModeRangedChain       - 直线连锁弹道（直线追踪锁定目标+命中后连锁至传递半径内下一目标：只认锁定目标挡路者穿过、锁定目标死亡或实体被池复用（UUId 双判失效）即直飞落点销毁不再命中、伤害不递减；hit_max=连锁次数(2=共3目标)、collider_area_size[0]=传递半径(代码缺省1)、buff=命中概率附加异常；哥布林法师6004火/6005冰用 204002/204003，配传递半径1.5——半径1=道路间距临界值只能弹同路，1.5可弹相邻路x错位≤1.12的敌人）
-│   └── AttackModeRangedSplitChild  - 分裂弹-子弹道（直线飞行 + 向自己的目标道路归位；由下方发射器发射）
-├── AttackModeRangedSplit           - 分裂弹-发射器（不飞不画不命中，按道路发射多发子弹道后自毁）
+│   └── AttackModeRangedSplitChild  - 分裂弹-子弹道（先向自己的目标道路归位[只动z不前进+归位途中不检测命中]、归位完成后再直线飞行；由下方发射器发射）
+├── AttackModeRangedSplit           - 分裂弹-发射器（不飞不画不命中，按道路发射多发子弹道后自毁；hit_max>0=含本路的总发数，2发时随机上/下一邻路）
 ├── AttackModeRangedBoomerang       - 回旋镖弹道（继承 BaseAttackMode：起点→锁定点→超出一格折返→返回魔王，时间参数化速度曲线，每次命中固定为注入伤害(当前=魔王攻击力×0.25)、不递减；深渊馈赠「死亡回旋」300051）
 ├── AttackModeOrbit                 - 环绕弹道（常驻不自毁：绕宿主生物 XZ 水平面圆周运动，半径0.75(OrbitRadius 常量)，高度取魔王位置+攻击起始偏移(注入 orbitHeight)，宿主(orbitCenterEntity 属性 setter 自动同步 UUId 快照防实体池复用误判)/角速度/伤害倍率由外部 BUFF 注入并同步；触碰命中走 live 球形检测、每只书对同一敌人 0.5 秒冷却，伤害=魔王实时攻击力×倍率命中瞬间取、不暴击；深渊馈赠「知识的力量」300071）
 ├── AttackModeShockwaveRing         - 圆环冲击波（以魔王为圆心扩张：XZ 环带命中自遍历不走射线批处理、每敌每波只中一次、只命中道路范围内敌人(x≤道路右缘0.5+路长，右缘外未进道路的敌人不受伤害与击退)、命中瞬时击退(落点不钳右缘可推出路外，之后由移动意图走回)、最大半径=道路全长+余量达到即销毁；视觉走 EffectHandler.ShowEnduringSingletonEffect 全局单例通道，特效id取攻击模块配置 effect_hit=1700001(Effect_Shockwave_1,原 manager effectShockwaveId 常量已删)，用 SingletonEffectParam 的 multiplier 字段同步半径/时长，并经 actionForGet 回调缓存实例、Update 逐帧对齐 simulationSpeed=GetCurrentGameSpeed 使视觉扩张跟随游戏速度；深渊馈赠「第六次冲击」300091）
@@ -264,6 +264,8 @@ public class AttackModeMeleeArea : BaseAttackMode
 
 #### 穿透弹道示例
 
+> `StartAttackBase` 按 `hit_max>0` 覆盖 `numPierceMax`。205001=3 为兽人弓箭手/强弓手共用原版；205005=2 为强弓手小兵专用，经 ext 100016(`trigger_scene=2`) 只挂 NPC 1020020002，强弓手 Boss 1020020001 仍为 3。
+
 ```csharp
 // Assets/Scripts/Game/Fight/AttackMode/AttackModeRangedPiercing.cs
 public class AttackModeRangedPiercing : AttackModeRanged
@@ -318,15 +320,23 @@ public class AttackModeRangedPiercing : AttackModeRanged
 
 | 行 | class_name | 该配的字段 |
 |----|-----------|-----------|
-| 父行(发射器) 204001 | `AttackModeRangedSplit` | `child_attack_mode_id`=204101、`sound_start`(发射音效，只响一次)、`remark` |
+| 父行(发射器) 204001 | `AttackModeRangedSplit` | `child_attack_mode_id`=204101、`sound_start`(发射音效，只响一次)、可选 `hit_max`=含本路的分裂总数量(缺省3；配2时本路+随机上/下一有效邻路)、`remark` |
 | 子行(子弹道) 204101 | `AttackModeRangedSplitChild` | `prefab_name`/`visual_name`/`speed_move`/`collider_size`/`attack_search_type`/`effect_hit`/`sound_hit`/`buff`/`trail_data`；⚠️`sound_start` **必须留空**，否则每发子弹各播一次、齐射时音效叠 N 层 |
 
 ```csharp
 // 发射器：不飞不画不命中，算出分裂道路→逐条发射子弹道→自毁
 public class AttackModeRangedSplit : BaseAttackMode
 {
-    public int splitNum = 2;   //自身道路之外额外分裂的道路数（越界道路跳过，故实际发射数≤splitNum+1）
+    public const int DefaultSplitNum = 3;   //含本路的默认总发数，保持旧版本路+上下路行为
+    public int splitNum = DefaultSplitNum;  //hit_max>0 时覆盖为含本路的总发数
     private readonly List<int> listSplitRoad = new List<int>();
+
+    public override void StartAttackBase()
+    {
+        base.StartAttackBase();
+        //每次发射都重设，防止对象池在不同配置行间复用时残留上一发的数量
+        splitNum = attackModeInfo != null && attackModeInfo.hit_max > 0 ? attackModeInfo.hit_max : DefaultSplitNum;
+    }
 
     public override void StartAttack(FightCreatureEntity attacker, FightCreatureEntity attacked, Action<BaseAttackMode> actionForAttackEnd)
     {
@@ -354,7 +364,7 @@ public class AttackModeRangedSplit : BaseAttackMode
     }
 }
 
-// 子弹道：与普通直线远程弹道的唯一差别 = 飞行途中向自己的目标道路(z 轴)归位
+// 子弹道：与普通直线远程弹道的唯一差别 = 先向自己的目标道路(z 轴)归位，归位完成后再直线飞行
 public class AttackModeRangedSplitChild : AttackModeRanged
 {
     public int targetRoad;
@@ -365,15 +375,30 @@ public class AttackModeRangedSplitChild : AttackModeRanged
     {
         if (Mathf.Abs(position.z - targetRoad) > RoadCloseThreshold)
         {
+            //⚠️归位阶段只动 z、不前进(return 跳过本帧直线飞行)：归位与前进并行会消耗 z差/RoadCloseSpeedRate 格 x 行程(相邻路=0.5格)，
+            //近距离发射(防守放最前排贴路右缘)时子箭归位完成前 x 已越过该路防守单位、落在其背后，朝前射线永远打不到 → 从背后穿过(中路无需归位故正常)。
+            //归位阶段 x 不动可完整保留命中窗口：归位完成后 x=发射时 x，与目标距离=索敌命中距离，必定仍在正前方，贴脸/远射均必中。
             Vector3 roadPosition = new Vector3(position.x, position.y, targetRoad);
             SetPosition(Vector3.MoveTowards(position, roadPosition, GameFightLogic.GetFightDeltaTime() * GetMoveSpeed() * RoadCloseSpeedRate));
+            return;
         }
         base.HandleForMove();   //复用父类直线飞行，故 Update 的「命中→移动→边界」顺序原样保留
+    }
+
+    //⚠️归位(z 横移)途中不检测命中：途中子箭仍停在出发路(z 在攻击者所在道路附近)，照常检测会让朝前短射线命中出发路(同一路)的敌人，
+    //而这发子弹本该打目标路。判定条件与 HandleForMove 的归位条件一致，归位完成后才恢复父类检测。
+    public override FightCreatureEntity CheckHitTargetForSingle()
+    {
+        if (Mathf.Abs(position.z - targetRoad) > RoadCloseThreshold)
+            return null;
+        return base.CheckHitTargetForSingle();
     }
 }
 ```
 
-> **只重写 `HandleForMove()` 而非 `Update()`**：`AttackModeRanged.Update()` 的顺序是「命中检测→`HandleForMove`→边界」，把归位塞进 `HandleForMove` 即可原样复用该顺序，不必重写整个 `Update`。
+> **数量与两发随机**：`splitNum` 是**含本路的总发数**，不再是额外道路数；`StartAttackBase` 每次按 `hit_max` 重设（0/空回退 `DefaultSplitNum=3`），避免对象池跨配置残留。总数 2 时 `AddRandomAdjacentSplitRoad` 等概率选上/下一相邻路，选中越界则改选另一有效邻路；其余数量仍按 +1、-1、+2、-2… 交替。204001 未配 `hit_max`，保持原版 3 发；204004 配 `hit_max=2`，经 ext 100017(`trigger_scene=2`) 只挂连射手小兵 NPC 1020030002，Boss 1020030001 与哥布林弓箭手仍用原 3 发。
+
+> **只重写 `HandleForMove()` 而非 `Update()`**：`AttackModeRanged.Update()` 的顺序是「命中检测→`HandleForMove`→边界」，把归位塞进 `HandleForMove` 即可原样复用该顺序，不必重写整个 `Update`。⚠️**归位途中必须 `return`**（只横移不前进）——并行前进会吃掉命中窗口导致近距离分裂箭从目标背后穿过（2026-11-14 修复，视觉由「斜着散开」变为「先横飘到目标路再直射」）；⚠️**归位途中还必须关闭命中检测**（重写 `CheckHitTargetForSingle` 返回 null）——否则横移经过出发路时会命中同一路敌人。横移速度 = `speed_move × attackerSpeedRate(ASPD 0~100 映射 1~3) × RoadCloseSpeedRate(2)`，204101 配 `speed_move=1` 即 **2~6 格/秒**（2倍速下实时翻倍），归位相邻路 z差1 约 0.167~0.5 秒。
 
 **⚠️两个已踩过的坑（改这块前必读）**：
 
@@ -554,7 +579,7 @@ public class AttackModeCustom : BaseAttackMode
     "buff": "1001:0.5|1002:1.0",     // 攻击附带的BUFF（ID:创建概率）
     "attack_search_type": 0,         // 攻击搜索类型（0射线 11球形范围 21盒形范围）
     "damage_add_rate": 0,            // 伤害加成比例（float；最终伤害=攻击者ATK×该值，0/空=无加成按1倍。如自爆史莱姆爆炸300001配50：ATK 10×50=500；敢死队爆炸300002配1：ATK 500×1=500）
-    "hit_max": 1,                    // 单次命中目标数上限（int；>0 时按距检测点近者优先截断+同生物去重，0/空=不限制；走 CheckHitTargetArea 的范围攻击[MeleeArea/RangedArea/Explosion/Overlap等]与 AttackModeInstantArea 系通用，InstantArea 另带 hit_decay 递减[默认0.5=减半]）
+    "hit_max": 1,                    // 数量上限（int；范围攻击=单次命中数，>0 近者优先截断+去重、0/空不限；RangedPiercing=穿透数，205005 配2；RangedSplit=含本路的总发数，204004 配2时随机上/下一有效邻路；InstantArea 另带 hit_decay 递减[默认0.5=减半]）
     "other_data": "stuck_time:3&stuck_sink:0.1", // 其它扩展参数（&分隔项,:分键值，按 key 解析的通用扩展列）。当前键：stuck_time=射空后插地停留秒数(>0启用插地)、stuck_sink=插地下沉深度(默认0)，插地目前仅 AttackModeRangedArcTracking 系使用，解析见 GetStuckConfig()；aim_up=瞄准点相对目标脚底上抬高度(默认0=瞄脚底)，目前仅 AttackModeRangedObliqueTracking 使用，解析见 GetAimUpHeight()；dr_damage_rate/hp_damage_rate=护甲/血量分段伤害倍率(默认1/1=不启用；非默认走串联破甲结算：护甲>0只以dr倍率打甲不掉血、破甲后只以hp倍率打血、破甲击溢出不结转，结算在 FightCreatureEntity.UnderAttack，经 FightUnderAttackBean 注入)，目前仅牛头人法师 101003/101004(dr2/hp0.5) 使用，解析见 GetDamageSplitConfig()；hit_decay=瞬时AOE多目标伤害递减率(默认0.5=依次减半，配1=全额)，由 AttackModeInstantArea 基类使用，解析见 GetHitDecayRate()；hit_decay_step/hit_min_rate=线性命中每次减少初始伤害的比例/最低初始伤害比例(均默认0.1)，目前仅 AttackModeRangedArcBounce(跳跳斧300061) 使用，解析见 GetHitDecayStep()/GetHitMinRate()；falloff_min=范围边缘相对中心伤害的最低倍率(默认0.5，配1=不衰减)，由 AttackModeExplosion 与 AttackModeInstantAreaThunder 使用，解析见 GetFalloffMinRate()；gravity=天降弹道重力加速度(默认9.81，每帧累加下落速度，配小则更慢更飘)，目前仅火/水大魔法师BOSS技能 700001/700002(gravity:2.4525=9.81 两次减半) 使用，解析见 GetGravity()，消费在 AttackModeFallupon(Area) 的 currentFallSpeed 累加；shield_count/shield_buff=援护护盾施法的最前排友军数量(默认3)/护盾BUFF的ID(默认0=未配置空放)，目前仅 AttackModeShieldCast（大盾战士BOSS技能 500003）使用，解析见 GetShieldCastConfig()（long 键走 ParseOtherDataLong）；summon_npc_ids/summon_count/road_spread/summon_offset_x=召唤的NPC id池(逗号分隔,每只独立随机;空=未配置空放)/每路召唤数量(默认1)/上下扩展路数(默认0=仅自己路,越界自然衰减)/召唤落点相对攻击者的x偏移(默认0;世界轴原始叠加,向左攻击者前方=X负值)，目前仅 AttackModeSummon（骷髅召唤师普攻 500004/BOSS三路技能 500005）使用，解析见 GetSummonConfig()（string 键走 ParseOtherDataString，2026-09-15 新增）
     "collider_size": 0.5,            // 碰撞检测大小（点到点）
     "collider_area_type": 11,        // 范围检测类型（11球形 21盒形）

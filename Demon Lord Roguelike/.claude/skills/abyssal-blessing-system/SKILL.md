@@ -21,7 +21,7 @@ watched_files:
 
 ## 核心概念
 
-深渊馈赠（Abyssal Blessing）是**征服模式**关卡间获得的全局增益系统：每通关一关后，玩家从随机生成的 3 个馈赠中选择 1 个（也可跳过），馈赠通过添加 BUFF 到防守核心（FightDefenseCore）作用于整局战斗，并在最终领奖后清空。
+深渊馈赠（Abyssal Blessing）是**征服模式**关卡间获得的全局增益系统：每通关一关后，玩家从随机生成的候选馈赠中选择 1 个（也可跳过），基础 3 选 1、研究 `AbyssalBlessingShowNum`(201100001) 解锁后 4 选 1，馈赠通过添加 BUFF 到防守核心（FightDefenseCore）作用于整局战斗，并在最终领奖后清空。
 
 ### 现役配置清单（2026-07 精简后，2026-07 新增第六次冲击族）
 
@@ -100,7 +100,7 @@ BuffInfoBean                - 馈赠绑定的 BUFF 配置（通过 buff_ids 关�
      │ 非最后一关
      ▼
 打开 UIFightAbyssalBlessing → SetData()
-     │  RollCandidates(SHOW_NUM=3)：
+     │  RollCandidates(GetShowNum()：基础3+研究AbyssalBlessingShowNum等级)：
      │  1. 全部配置按 GetFamilyRootId 分组成"族"
      │  2. 每族取"玩家当前拥有等级 + 1"那一行（未拥有则取族根）
      │  3. 已满级的族被排除；洗牌后取前 3 个
@@ -197,7 +197,7 @@ EventsInfo.Buff_AbyssalBlessingChange   // BUFF系统-深渊馈赠变化（参�
 ### 5. UI 组件层级
 
 ```
-UIFightAbyssalBlessing                          # 关卡间选择界面（征服模式触发，3 选 1）
+UIFightAbyssalBlessing                          # 关卡间选择界面（征服模式触发，基础3选1、研究可+1）
 ├── 候选列表                                     # RollCandidates 抽出的最多 3 个
 │   └── UIViewFightAbyssalBlessingItem          # 单个馈赠候选项
 ├── 刷新按钮 ui_RefreshBtn/ui_RefreshBtnText     # 见下「馈赠刷新」
@@ -218,6 +218,14 @@ UIPopupAbyssalBlessingInfo : PopupShowCommonView # 馈赠详情气泡
 - **次数作用域=整个征服run共享**：剩余次数池挂在 `FightBeanForConquer.abyssalBlessingRefreshUsedNum` 上，`GetAbyssalBlessingRefreshRemainNum()` = 研究上限(`GetUnlockAbyssalBlessingRefreshMax`) − 已用；`ReduceAbyssalBlessingRefreshNum()` 消耗。**新 run 随 `FightBeanForConquer` 重建自动归 0 回满**（无需存档、无显式 refill）。UI 经 `FightHandler.Instance.manager.GetCachedFightLogic().fightData as FightBeanForConquer` 取到该池；非征服(测试)取到 null → 按钮隐藏。
 - **次数文本**：`ui_RefreshBtnText` 显示「刷新x{剩余}」，多语言 UIText id `4000018`（`string.Format(GetTextById(4000018), remain)`）。剩余为 0 时点击 Toast 提示「刷新次数已用完」(UIText 2007，与传送门刷新共用)、不刷新。
 - **仿传送门刷新实现**：整套模式照搬 `UIBasePortal` 的 `PortalRefreshNum`(次数存 `UserTempBean`、研究等级=上限)；差异是本功能次数存 `FightBeanForConquer`(随 run 生灭)而非 `UserTempBean`。
+
+### 7. 候选数量（研究门控，动态补齐子节点）
+
+选择界面候选数量 = **基础 3 + 强化分支研究 `UnlockEnum.AbyssalBlessingShowNum`(201100001, `level_max=1`) 等级**，解锁后 4 选 1。节点前置=深渊馈赠刷新研究(200500001)，坐标(400,1) 在刷新节点(200,1)正右方，图标复用 `ui_research_62`，消耗 5000 魔晶。
+
+- **读取链路**：`UIFightAbyssalBlessing.GetShowNum()` → `UserUnlockBean.GetUnlockAbyssalBlessingShowNum()`（= `ABYSSAL_BLESSING_SHOW_NUM_BASE`(3) + 研究等级；static `GetAbyssalBlessingShowNumForLevel(level)` 供任意等级求值）。原 `SHOW_NUM=3` 常量已删除，正式/测试流程统一走 `GetShowNum()`。
+- **第 4 个候选项不改预制体**：`EnsureItemCount(count)` 在子节点不足时 `Instantiate` 复制 `ui_AbyssalBlessingList` 首个候选项补齐（布局由列表容器自动处理），因此无需 Unity MCP/手工编辑 prefab；`SetDataInternal` 按 child 索引绑定、多余隐藏的逻辑天然兼容。
+- **落表**：`excel_research_info`(id=201100001, `research_type=2`, `level_max=1`, `pre_unlock_ids="200500001"`, `pay_crystal=5000`, `name`=同id, details 留空) + `excel_unlock_info`(id=201100001, `unlock_type=0`) + 多语言 `excel_language` 的 `ResearchInfo` 工作表(id=201100001, cn「深渊馈赠候选数量+1」，12 语言已翻译)。
 
 ---
 
@@ -329,7 +337,7 @@ var uiFightAbyssalBlessing = UIHandler.Instance.OpenUIAndCloseOther<UIFightAbyss
 uiFightAbyssalBlessing.SetData(
     actionForSelect: info => { /* 选择回调 */ },
     actionForSkip:   () => { /* 跳过回调 */ });
-// SetData 内部调用 RollCandidates(SHOW_NUM=3)：按族取"当前等级+1"，洗牌取前 3
+// SetData 内部调用 RollCandidates(GetShowNum()=基础3+研究AbyssalBlessingShowNum等级)：按族取"当前等级+1"，洗牌取前 N
 ```
 
 ### 测试模式（指定 ID 直接展示，不随机）
@@ -526,7 +534,8 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 | 单体过滤落点 | `Assets/Scripts/Bean/Game/FightCreatureBean.cs`(CollectFromBuffList 按 SingleTargetCreatureUUId 比对) / `Assets/Scripts/Component/Handler/BuffHandler.cs`(ChangeAttackTimeDataForBuff 按 SingleTargetCreatureUUId 比对) |
 | 复制魔物(增殖) | `Assets/Scripts/Game/Buff/BuffEntity/Instant/BuffEntityInstantCloneDefenseCreature.cs`(克隆新 UUID，仅继承全体馈赠不继承单体定向，触发 Buff_DefenseCreatureAdd) |
 | 战斗卡片馈赠展示 | `Assets/Scripts/Component/UI/Common/CreatureCard/UIViewCreatureCardItemForFight.cs`(RefreshAbyssalBlessing 调 `AbyssalBlessingUtil.CollectAbyssalBlessingEntityBean(creatureData, FightDefense, 复用List)` 收集作用于本魔物的馈赠实体；收集逻辑已下沉到 Util，不再在 UI 层手写循环) |
-| 选择界面 | `Assets/Scripts/Component/UI/Game/FightAbyssalBlessing/UIFightAbyssalBlessing.cs`（SetData / RollCandidates / OnClickForRefresh / RefreshRefreshBtnState 刷新按钮 / OnClickForSkip 跳过确认弹窗[ShowDialogNormal+UIText 61024]→ExecuteSkip） |
+| 选择界面 | `Assets/Scripts/Component/UI/Game/FightAbyssalBlessing/UIFightAbyssalBlessing.cs`（SetData / GetShowNum 候选数量=基础3+研究等级 / EnsureItemCount 动态补齐候选项 / RollCandidates / OnClickForRefresh / RefreshRefreshBtnState 刷新按钮 / OnClickForSkip 跳过确认弹窗[ShowDialogNormal+UIText 61024]→ExecuteSkip） |
+| 候选数量研究 | `Assets/Scripts/Bean/Game/UserUnlockBean.cs`（GetUnlockAbyssalBlessingShowNum / GetAbyssalBlessingShowNumForLevel / ABYSSAL_BLESSING_SHOW_NUM_BASE=3，UnlockEnum.AbyssalBlessingShowNum=201100001 强化分支 level_max=1，前置=馈赠刷新200500001） |
 | 刷新次数池 | `Assets/Scripts/Bean/Game/FightBeanForConquer.cs`（abyssalBlessingRefreshUsedNum / GetAbyssalBlessingRefreshRemainNum / ReduceAbyssalBlessingRefreshNum，整个征服run共享、新run自动回满） |
 | 刷新研究上限 | `Assets/Scripts/Bean/Game/UserUnlockBean.cs`（GetUnlockAbyssalBlessingRefreshMax / CheckIsUnlockAbyssalBlessingRefresh，UnlockEnum.AbyssalBlessingRefreshNum=200500001 强化分支 level_max=5） |
 | 选择项 | `Assets/Scripts/Component/UI/Game/FightAbyssalBlessing/UIViewFightAbyssalBlessingItem.cs` |
@@ -546,7 +555,7 @@ IconHandler.Instance.SetAbyssalBlessingIcon(info.icon_res, ui_Icon);
 - **不要直接写 `manager.dicAbyssalBlessingBuffsActivie`**，必须经过 `BuffHandler.AddAbyssalBlessing`，否则跳过同族替换与事件通知。
 - **馈赠目标固定为防守核心**（CreatureFightTypeEnum.FightDefenseCore），施加者也是核心 UUID。
 - **`ClearAbyssalBlessing` 只能在征服全通关 + 领奖结束后调用**（已在 `ActionForUIRewardSelectEnd` 处理），中途调用会丢失玩家选择。
-- **选择界面随机展示 SHOW_NUM=3**：每族只出"当前等级+1"那一行，已满级族不出；候选数不足 3 时按实际数量展示。
+- **选择界面随机展示数量 = 基础3 + 研究AbyssalBlessingShowNum(201100001)等级**（`GetShowNum()` 动态读取，子节点不足时 `EnsureItemCount` 复制首项补齐、无需改预制体）：每族只出"当前等级+1"那一行，已满级族不出；候选数不足时按实际数量展示。
 - **可重复馈赠(`level<=0`)一局获得次数由 `max_count` 控制**：`0`/留空=不限；`N>0`=最多 N 次（门控 `GetAbyssalBlessingPickCount(族根) < max_count`，计数随 `ClearAbyssalBlessing` 清零）。"一次性"用 `level=0 + max_count=1`，**不要**再用已废弃的 `level=1` 单行族。升级链(`level>0`)不看 `max_count`。
 - **馈赠图标必须放入 `AtlasForAbyssalBlessing.spriteatlas`**，加载只能走 `IconHandler.Instance.SetAbyssalBlessingIcon`。
 

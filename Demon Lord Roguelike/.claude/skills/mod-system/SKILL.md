@@ -315,8 +315,8 @@ foreach (var kvp in modIdMap.modIdMap)
     LogUtil.Log($"Mod: {kvp.Key} -> ID: {kvp.Value}");
 }
 
-// 保存ModID映射（通常由系统自动管理）
-GameDataHandler.Instance.manager.SaveModIdMap();
+// 保存ModID映射（通常由系统自动管理）；原子替换成功才返回true
+bool saveSuccess = GameDataHandler.Instance.manager.SaveModIdMap();
 ```
 
 ### ModID分配规则
@@ -326,6 +326,14 @@ GameDataHandler.Instance.manager.SaveModIdMap();
 3. 新增Mod分配第一个空闲ID（从1开始递增）
 4. 卸载Mod不会删除其ID映射，保证重新加载时ID不变
 5. 上限为 `ModManager.MaxModId = 92232`（由 BaseBean.CombineModId 的 `modId*10^14 + selfId` 不溢出 long 推出）；超限的新 Mod 拒绝分配 ID、JsonText 配置不合并（`GetModJsonTextFileInfos` 跳过未分配映射的 Mod），资源仍可按 modName 加载
+
+### ModID映射防丢失与失败回滚（2026-11-14）
+
+- **读取保护**：仅文件确实不存在时允许创建空 Bean；文件存在但读取失败、反序列化为 `null`、字典为 `null` 或空字典都会使 `RebuildModIds` 返回 `false`，禁止从空表重新编号并覆盖旧文件。格式错误继续按异常处理，不静默重建。
+- **原子保存与备份**：`GameDataManager.SaveModIdMap()` 返回 `bool`，经 `BaseDataService.SaveAtomic` → `FileUtil.TryCreateTextFileAtomic` 在同目录写临时文件后原子替换；旧文件保留为 `persistentDataPath/ModIdMap_Backup`。写入失败返回 `false`，不先删除旧文件。
+- **提交与内存回滚**：候选映射单独构建，保存成功才提交；失败时恢复 `modIdMap`、`occupiedModIds` 和 Manager 中的旧 Bean。新增映射只在保存成功后输出审计日志。
+- **Catalog 回滚**：同步、异步 await、异步回调三个 Catalog 成功路径都检查 `RebuildModIds` 结果；失败会移除 locator、资源/JsonText 索引并释放 Catalog 句柄，返回/回调 `false`，避免下次被 `IsModLoaded` 误当作已加载。
+- 这些保护只改变异常路径；正常已有 ID、空号分配、配置合并及打包复制规则均不变。历史存档中已写错的完整道具 ID 不会被自动迁移，需另行处理。
 
 ## 常用代码模板
 

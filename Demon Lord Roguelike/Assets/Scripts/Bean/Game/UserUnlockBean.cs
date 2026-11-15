@@ -396,6 +396,31 @@ public class UserUnlockBean
     }
 
     /// <summary>
+    /// 深渊馈赠候选展示数量基础值(未研究时3选1)
+    /// </summary>
+    public const int ABYSSAL_BLESSING_SHOW_NUM_BASE = 3;
+
+    /// <summary>
+    /// 获取深渊馈赠候选展示数量
+    /// = ABYSSAL_BLESSING_SHOW_NUM_BASE(3) + 「深渊馈赠候选数量」研究(AbyssalBlessingShowNum)等级; 未研究保持3选1,解锁后4选1
+    /// </summary>
+    /// <returns>馈赠选择界面的候选展示数量</returns>
+    public int GetUnlockAbyssalBlessingShowNum()
+    {
+        return GetAbyssalBlessingShowNumForLevel(GetUnlockResearchLeveByUnlockEnum(UnlockEnum.AbyssalBlessingShowNum));
+    }
+
+    /// <summary>
+    /// 获取指定「深渊馈赠候选数量」研究等级对应的候选展示数量：基础3 + 等级(供研究气泡详情文本填充)
+    /// </summary>
+    /// <param name="level">深渊馈赠候选数量研究等级</param>
+    /// <returns>该等级的候选展示数量</returns>
+    public static int GetAbyssalBlessingShowNumForLevel(int level)
+    {
+        return ABYSSAL_BLESSING_SHOW_NUM_BASE + level;
+    }
+
+    /// <summary>
     /// 获取解锁阵容数量
     /// 基础数量取自 UserLimmitBean.lineupMax + 对应研究等级
     /// </summary>

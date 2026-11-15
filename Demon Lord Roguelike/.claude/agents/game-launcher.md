@@ -30,7 +30,7 @@ watched_files:
    ├── AudioHandler       → 初始化音频
    ├── UIHandler          → 初始化 UI 系统
    ├── TextHandler        → 初始化多语言
-   ├── ScreenResolutionHandler → 初始化窗口分辨率（窗口模式自由拖动、松手后按锚定宽高比等比吸附）
+   ├── ScreenResolutionHandler → 初始化窗口分辨率（以GameConfig合法比例为锚点并应用配置，非法回退1920x1080；窗口拖动等比吸附，全屏不覆盖窗口锚点）
    └── ...
 
 2. 初始化数据服务

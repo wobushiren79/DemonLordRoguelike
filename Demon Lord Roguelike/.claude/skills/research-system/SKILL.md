@@ -276,6 +276,7 @@ public enum UnlockEnum : long
     DemonLordAutoPickCrystal = 200800001,    // 魔王自动拾取魔晶(level_max=10;间隔=11-等级秒,10级10s→满级1s;每次按FIFO取场上最先掉落的魔晶,基础1颗;前置=LineupCreatureAddNum(200000001);pay_crystal=100,500,1000,2000,3000,4000,5000,6000,8000,10000)
     DemonLordAutoPickCrystalNum = 200900001, // 魔王每次拾取魔晶数量+1(level_max=10;每次拾取数=1+等级,满级11颗;前置=DemonLordAutoPickCrystal;pay_crystal="1000*1"=1000~10000)
     LineupRename = 201000001,          // 阵容重命名(level_max=1 纯解锁;前置=LineupNum(200100001);解锁后阵容管理界面 UILineupManager 显示重命名按钮,可给当前选中阵容自定义名字,页签文本优先显示自定义名;自定义名存 UserDataBean.dicLineupName)
+    AbyssalBlessingShowNum = 201100001, // 深渊馈赠候选数量+1(level_max=1 纯解锁;前置=AbyssalBlessingRefreshNum(200500001);基础3选1,解锁后4选1;消费点 UIFightAbyssalBlessing.GetShowNum)
     EquipRewardHuman = 300100301,      // 人类装备奖励
     EquipRewardSkeleton = 300200301,
 }
@@ -376,6 +377,14 @@ ui_RoadLength.SetData(title, content, userUnlock.CheckIsUnlock(UnlockEnum.Portal
 - **解锁后** `UILineupManager` 显示 RenameBtn（`OpenUI` 里 `CheckIsUnlock(UnlockEnum.LineupRename)` 控显隐，悬停气泡 UIText 30008），点击开 `UIDialogRename` 给当前选中阵容改名；自定义名存 `UserDataBean.dicLineupName`(阵容序号→名字)，显示名走 `UserDataBean.GetLineupShowName`(自定义名优先、未改名回退默认「阵容 {序号}」UIText 30005；UILineupManager 页签与 UIDialogPortalDetails 出战阵容选择区共用)；提交空名=清除改名恢复默认。
 - 落表同其他节点：`excel_research_info`(id=201000001, `name`=同id) + `excel_unlock_info`(id=201000001, `unlock_type=0`) + 多语言 `ResearchInfo`(id=201000001, cn「阵容重命名」) 与 `UIText`(id=30008, cn「重命名当前阵容」按钮气泡)。
 - 无衍生数值方法（纯开关），UI 直接用 `CheckIsUnlock(UnlockEnum.LineupRename)` 门控。
+
+### 强化分支(2011 段) — 深渊馈赠候选数量+1（数值型消费点）
+
+「深渊馈赠候选数量+1」节点（`AbyssalBlessingShowNum`，unlock_id **201100001**，`research_type=2` 强化节点，`pre_unlock_ids="200500001"` 前置=深渊馈赠刷新次数研究，`level_max=1`，`pay_crystal=5000`，`position(400,1)` 挂在馈赠刷新节点(200,1)正右方，`icon_res=ui_research_62` 与刷新节点同款）把征服模式关卡间馈赠选择从 3 选 1 提升为 4 选 1：
+
+- **消费点**在 `UIFightAbyssalBlessing.GetShowNum()`：候选数量 = `UserUnlockBean.GetUnlockAbyssalBlessingShowNum()`（= `ABYSSAL_BLESSING_SHOW_NUM_BASE`(3) + 研究等级）；`EnsureItemCount(count)` 在 `ui_AbyssalBlessingList` 子节点不足时 Instantiate 复制首个候选项补齐，**无需修改 UI 预制体**（原 `SHOW_NUM=3` 常量已删除）。详见 [`abyssal-blessing-system`](../abyssal-blessing-system/SKILL.md)「候选数量」节。
+- 落表同其他节点：`excel_research_info`(id=201100001, `name`=同id, details 留空) + `excel_unlock_info`(id=201100001, `unlock_type=0`) + 多语言 `ResearchInfo`(id=201100001, cn「深渊馈赠候选数量+1」，12 语言已翻译)。
+- 衍生数值：`GetUnlockAbyssalBlessingShowNum()` / static `GetAbyssalBlessingShowNumForLevel(level)`=3+等级。
 
 ### 魔物分支(300X1NNND 段) — 职业独立扭蛋研究（29 职业 × 3 档 = 87 节点）
 
@@ -534,10 +543,12 @@ public static float GetDropCrystalAddLifeTimeForLevel(int level);    // 魔晶�
 public static float GetDemonLordMPMaxAddValueForLevel(int level);    // 魔王魔力上限加成 = 等级×10
 public static float GetDemonLordMPFAddValueForLevel(int level);      // 魔王魔力恢复加成 = 等级×1/秒
 public static int GetAbyssalBlessingRefreshMaxForLevel(int level);   // 深渊馈赠刷新上限 = 等级
+public static int GetAbyssalBlessingShowNumForLevel(int level);      // 深渊馈赠候选展示数量 = ABYSSAL_BLESSING_SHOW_NUM_BASE(3) + 等级
 public static float GetDemonLordAutoPickCrystalIntervalForLevel(int level); // 自动拾取间隔 = 等级<=0→-1 否则 11-等级(秒)
 public static int GetDemonLordAutoPickCrystalCountForLevel(int level);      // 每次拾取魔晶数量 = 1 + 等级
 public int GetUnlockAbyssalBlessingRefreshMax();       // 深渊馈赠刷新次数上限 = AbyssalBlessingRefreshNum 等级(未解锁0,满级5)；剩余次数池挂 FightBeanForConquer(整个征服run共享,新run自动回满)
 public bool CheckIsUnlockAbyssalBlessingRefresh();     // 是否解锁深渊馈赠刷新(等级>0,门控 UIFightAbyssalBlessing 刷新按钮显隐)
+public int GetUnlockAbyssalBlessingShowNum();          // 深渊馈赠候选展示数量 = 3(ABYSSAL_BLESSING_SHOW_NUM_BASE) + AbyssalBlessingShowNum(201100001) 等级(未研究3选1,解锁后4选1)；UIFightAbyssalBlessing.GetShowNum 读取并 EnsureItemCount 动态补齐候选项子节点
 public int GetUnlockLineupNum();                       // 1 + LineupNum 等级
 public int GetUnlockLineupCreatureNum();               // 6 + LineupCreatureAddNum 等级
 public int GetUnlockGameWorldConquerDifficultyLevel(long worldId); // 最高可挑战难度 = conquerDifficultyMax + 从难度起始id连续向后统计的已解锁难度研究个数(难度已拆为每难度独立节点,断档即止)

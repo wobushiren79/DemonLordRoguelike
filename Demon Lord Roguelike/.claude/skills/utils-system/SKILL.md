@@ -62,7 +62,7 @@ Assets/FrameWork/Scripts/           Assets/Scripts/
 | DGEaseUtil | DOTween Ease 工具 |
 | AnimUtil | 通用 Animator 工具（`GetAnimClipLength` 按片段名关键字读取动画时长）。`partial class`，与游戏层 `Assets/Scripts/Utils/AnimUtil.cs` 同名共享：框架层放与业务无关的通用动画方法，游戏层放 UI 表现类动画方法 |
 | **系统工具** | |
-| FileUtil | 文件读写 |
+| FileUtil | 文件读写；`TryCreateTextFileAtomic` 在同目录写 Guid 临时文件后用 `File.Move`（首次）/`File.Replace`（替换）提交，旧文件保留为 `文件名_Backup`，失败返回 false、清理临时文件且不主动删除原文件；`BaseDataService.SaveAtomic` 为其 JSON 封装 |
 | LogUtil | 日志（替代 Debug.Log） |
 | SystemUtil | 系统信息 |
 | TimeUtil | 时间格式化 |

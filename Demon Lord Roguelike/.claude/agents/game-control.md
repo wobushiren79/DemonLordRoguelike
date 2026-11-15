@@ -42,8 +42,9 @@ ControlForGameFight  - 战斗场景控制：WASD/右键拖拽移镜头、左键�
 ## 职责范围
 
 ### 1. 控制切换（Handler）
-- `SetFightControl()`：关闭所有控制→只启用 `controlForGameFight`（进入战斗场景）。
-- `SetBaseControl(isEnable, isHideControlTarget)`：关闭所有控制→启用 `controlForGameBase`；`isHideControlTarget` 决定禁用时是否隐藏角色。
+- `SetFightControl()`：关闭所有控制→重置共享 `Move` 输入→只启用 `controlForGameFight`（进入战斗场景）。
+- `SetBaseControl(isEnable, isHideControlTarget)`：关闭所有控制→重置共享 `Move` 输入→启用 `controlForGameBase`；`isHideControlTarget` 决定禁用时是否隐藏角色。
+- `ResetMoveInputState()`：对基地与战斗共用的 Player `Move` 动作执行 `Disable → Enable`，避免场景切换沿用旧的按键值；仍被真实按住的输入会按当前设备状态重新建立。
 - `EnableAllControl(bool)`（Manager）：先隐藏两个控制目标，再遍历 `listControl` 逐个 `EnabledControl`。
 - 打开 UI 界面时通常先 `EnabledControl(false)` 挂起控制，关闭后恢复。
 

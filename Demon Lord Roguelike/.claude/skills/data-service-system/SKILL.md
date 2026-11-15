@@ -2,7 +2,7 @@
 name: data-service-system
 description: Demon Lord Roguelike 游戏的数据服务系统开发指南。使用此SKILL当需要创建或修改数据持久化、JSON读写、用户存档、配置数据管理、SQLite操作等，包括BaseDataService<T>泛型基类、UserDataService、GameConfigBean、数据存储(DataStorage)、自动备份机制等。
 watched_files:
-  - Assets/FrameWork/Scripts/MVC/BaseDataService.cs
+  - Assets/FrameWork/Scripts/DataStorage/BaseDataService.cs
   - Assets/Scripts/MVC/Service/UserDataService.cs
   - Assets/FrameWork/Scripts/DataStorage/
   - Assets/FrameWork/Scripts/BaseSystem/Sqlite/
@@ -45,7 +45,7 @@ GameDataManager (MonoBehaviour)
 
 ## BaseDataService\<T\> 泛型基类
 
-**文件**: `Assets/FrameWork/Scripts/MVC/BaseDataService.cs`
+**文件**: `Assets/FrameWork/Scripts/DataStorage/BaseDataService.cs`
 
 ### 核心方法
 
@@ -78,6 +78,10 @@ public class BaseDataService<T> where T : class, new()
     public bool HasDataFile();
 }
 ```
+
+### 原子保存（2026-11-14）
+
+`BaseDataService<T>` 实际位于 `Assets/FrameWork/Scripts/DataStorage/BaseDataService.cs`。除既有 `Save` 外新增 `SaveAtomic(T data) -> bool`：沿用实例的 `FileName`、`StoragePath` 与 `JsonType` 完成 JSON 序列化，再调用 `FileUtil.TryCreateTextFileAtomic` 在同目录写临时文件并原子替换。旧文件保留为 `文件名_Backup`；写入失败返回 `false` 且不主动删除旧文件，序列化异常继续向上抛出。既有 `Save` 行为不变，目前 ModIdMap 使用原子保存。
 
 ### 创建新的数据服务
 
@@ -474,7 +478,7 @@ PlayerPrefs.Save();
 
 | 功能 | 文件路径 |
 |------|----------|
-| 数据服务基类 | `Assets/FrameWork/Scripts/MVC/BaseDataService.cs` |
+| 数据服务基类 | `Assets/FrameWork/Scripts/DataStorage/BaseDataService.cs` |
 | 用户数据服务(含解锁/成就拆分存档读写) | `Assets/Scripts/MVC/Service/UserDataService.cs` |
 | 游戏数据管理器 | `Assets/FrameWork/Scripts/Component/Manager/GameDataManager.cs` |
 | 游戏数据处理器 | `Assets/FrameWork/Scripts/Component/Handler/GameDataHandler.cs` |

@@ -56,7 +56,7 @@ GameControlHandler.Instance.SetBaseControl(isEnable: true, isHideControlTarget: 
 GameControlHandler.Instance.manager.controlForGameBase.EnabledControl(false);
 ```
 
-`EnableAllControl(false)` 会先隐藏两个控制目标，再遍历 `listControl` 逐个禁用——**切换控制前必先全关，再启用目标控制器**。
+`EnableAllControl(false)` 会先隐藏两个控制目标，再遍历 `listControl` 逐个禁用——**切换控制前必先全关，再启用目标控制器**。`SetFightControl`/`SetBaseControl` 在全关后、启用目标前调用 `ResetMoveInputState()`，对两者共用的 Player `Move` 动作执行一次 `Disable → Enable`，清除场景切换可能残留的按键值；仍被真实按住的输入会按当前设备状态重新建立。
 
 ## 基地和议会场景控制（ControlForGameBase）
 

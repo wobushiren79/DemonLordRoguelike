@@ -150,7 +150,14 @@ public partial class CameraHandler
         controlForGame.SetCreatureData(creatureData);
         var controlTarget = GameControlHandler.Instance.manager.controlTargetForCreature;
         //初始化位置
-        GameControlHandler.Instance.manager.controlTargetForCreature.transform.position = startPosition; 
+        GameControlHandler.Instance.manager.controlTargetForCreature.transform.position = startPosition;
+        //清空非Kinematic刚体的残留运动,防止回基地后继续漂移并绕过移动边界
+        var controlRigidbody = controlTarget.GetComponent<Rigidbody>();
+        if (controlRigidbody != null)
+        {
+            controlRigidbody.linearVelocity = Vector3.zero;
+            controlRigidbody.angularVelocity = Vector3.zero;
+        }
 
         //关闭切换动画
         manager.SetMainCameraDefaultBlend(0);
