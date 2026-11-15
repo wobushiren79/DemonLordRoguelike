@@ -507,14 +507,15 @@ TextReplaceEnum
 ├── RegainHPReceived  - 累计被治疗HP
 ├── RegainHPCast      - 累计施放治疗HP
 ├── OnFieldTime       - 在场存活时间(秒)
-└── Value             - 通用数值占位（无专属语义枚举时的默认选择，如研究节点距离/冷却秒数）
+├── Value             - 通用数值占位（无专属语义枚举时的默认选择，如研究节点距离/冷却秒数）
+└── TriggerChance     - 实际触发概率（trigger_chance；0=必然触发，显示100）
 ```
 
-> **选键原则**：有语义占位的优先用语义占位（击杀→`KillNum`、秒→`Time_S`、百分比→`Percentage`），无合适语义时用通用 `Value`；都不合适再在 `TextReplaceEnum`（BaseGameEnum.cs）**追加**新枚举值（不改旧值）。同一数值可同时挂多个键（成就即把目标值同时挂 `{Name}` 与语义键，模板用哪个都能替换）。
+> **选键原则**：有语义占位的优先用语义占位（击杀→`KillNum`、秒→`Time_S`、效果百分比→`Percentage`、实际触发概率→`TriggerChance`），无合适语义时用通用 `Value`；都不合适再在 `TextReplaceEnum`（BaseGameEnum.cs）**追加**新枚举值（不改旧值）。同一数值可同时挂多个键（成就即把目标值同时挂 `{Name}` 与语义键，模板用哪个都能替换）。BUFF 描述中触发概率与效果百分比必须分别使用 `{TriggerChance}`/`{Percentage}`，不可混读 `trigger_chance` 与 `trigger_value_rate`。
 
 ### 更多范例
 
-- **BUFF 描述**：`UIViewBuffShowItem` —— `content_language` 模板 + `{Percentage}`/`{Time_S}`/`{Value}` + 按前置条件追加 `{KillNum}` 等键。
+- **BUFF 描述**：`UIViewBuffShowItem` —— `content_language` 模板 + `{Percentage}`/`{TriggerChance}`/`{Time_S}`/`{Value}` + 按前置条件追加 `{KillNum}` 等键。
 - **成就逐级描述**：`AchievementInfoBeanPartial.GetLevelDescription` —— 一条 `{Name}` 模板按等级替换目标值，省去逐级建文本。
 - **研究详情描述带待解锁数值**：`ResearchInfoBeanPartial.GetDetailsLanguageWithLevelDetail` —— 研究表 `details[language]` 列的详情模板（如 `（距离{Value}）`/`（{Value}秒）`/`（概率{Value}%）`），按「待解锁等级=min(当前+1,满级)」算累计效果数值替换并**拼在名字后**；数值源 `UserUnlockBean` 的 static `Get*ForLevel` 方法（单一真实源）。22 个 level_max>1 节点的详情条目占语言表 ResearchInfo 工作表号段 **900000001~900000022**；括号约定：**cn/tw/jp 全角（）无前导空格，其余语言半角() 带一个前导空格**（分隔样式由详情文本自带，代码不加分隔符）。
 

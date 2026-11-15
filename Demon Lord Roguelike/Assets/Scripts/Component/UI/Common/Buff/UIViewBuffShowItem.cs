@@ -32,6 +32,7 @@ public partial class UIViewBuffShowItem : BaseUIView
         Dictionary<TextReplaceEnum, string> dicReplace = new Dictionary<TextReplaceEnum, string>()
         {
             {TextReplaceEnum.Percentage, $"{MathUtil.GetPercentage(buffData.trigger_value_rate, 2)}"},
+            {TextReplaceEnum.TriggerChance, $"{MathUtil.GetPercentage(buffData.trigger_chance > 0 ? buffData.trigger_chance : 1, 2)}"},
             {TextReplaceEnum.Time_S, $"{Mathf.FloorToInt(buffData.trigger_time)}"},
             {TextReplaceEnum.Value, $"{Mathf.FloorToInt(buffData.trigger_value)}"},
         };

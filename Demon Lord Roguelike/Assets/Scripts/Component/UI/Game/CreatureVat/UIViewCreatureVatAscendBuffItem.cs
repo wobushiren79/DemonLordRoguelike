@@ -93,7 +93,7 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
 
     /// <summary>
     /// 已解锁「进阶增益范围预览」时的内容文案:随机增益属性({Percentage})显示 min~max 范围,
-    /// 触发时间/前置条件(击杀数/承伤/造伤/血量阈值)等固定占位参数显示实际值(与 UIViewBuffShowItem 同口径)。
+    /// 实际触发概率({TriggerChance})/触发时间/前置条件(击杀数/承伤/造伤/血量阈值)等固定占位参数显示实际值(与 UIViewBuffShowItem 同口径)。
     /// </summary>
     /// <param name="buffInfo">BUFF配置</param>
     /// <param name="chance">命中概率数据(取素材抬高的百分比下限)</param>
@@ -104,6 +104,8 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
         {
             //唯一随机值:进阶增益属性百分比,按整数百分点闭区间 [min,max] 显示
             {TextReplaceEnum.Percentage, GetPercentageRangeStr(buffInfo, chance.floorValueRate)},
+            //实际触发概率为固定配置值(0表示必然触发),不随进阶重随机
+            {TextReplaceEnum.TriggerChance, $"{MathUtil.GetPercentage(buffInfo.trigger_chance > 0 ? buffInfo.trigger_chance : 1, 2)}"},
             //触发时间为固定配置值(不随机),直接显示
             {TextReplaceEnum.Time_S, $"{Mathf.FloorToInt(buffInfo.trigger_time)}"},
             //随机触发值(trigger_value,如无敌秒数),按整数闭区间 [min,max] 显示

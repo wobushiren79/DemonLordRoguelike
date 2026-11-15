@@ -718,7 +718,7 @@ EventsInfo.Language_Change                // 语言切换
 
 ### UIViewBuffShowItem（满值 BUFF 描述）
 
-由详情传入稀有度词条来源，行组件决定是否标金数字并应用 TMP 原生扫光。`SetData()` 切到普通词条时恢复实例自己的原材质和映射设置。扫光材质应用前配置 Glow，让 TMP 在赋值时计算字形留边。运行时贴图与材质按原材质及底色全局缓存，最后一个使用过扫光的行销毁时释放。判定和参数见 [creature-card-system](../creature-card-system/SKILL.md)。
+由详情传入稀有度词条来源，行组件决定是否标金数字并应用 TMP 原生扫光。描述占位中 `{Percentage}`=roll后效果率，`{TriggerChance}`=实际触发概率（`trigger_chance`，0按必然触发显示100），两者不得混用。`SetData()` 切到普通词条时恢复实例自己的原材质和映射设置。扫光材质应用前配置 Glow，让 TMP 在赋值时计算字形留边。运行时贴图与材质按原材质及底色全局缓存，最后一个使用过扫光的行销毁时释放。判定和参数见 [creature-card-system](../creature-card-system/SKILL.md)。
 
 ### UIGameSystem（ESC 系统界面）
 
@@ -748,7 +748,7 @@ EventsInfo.Language_Change                // 语言切换
 - **完成进阶收尾（`OnClickForComplete`）**：落地数据→`RemoveAscendData`→存档→清空容器后做**反馈**（胜利音效 `AudioEnum.sound_win_1` + 容器处庆祝粒子 `EffectHandler.ShowCreatureAscendCompleteEffect(pos, rarityColor)`——专用粒子 `Effect_AscendComplete_1`(白模板 ParticleSystem,运行时按新稀有度 `ui_board_color` 给 startColor 上色 = 稀有度流光) + 成功 Toast `GetTextById(80013)` state=1 绿色，口径同献祭 61007），并**重建目标列表**（`targetCreatureSelect=null`+清素材+`InitCreaturekDataForTarget()`）以反映升阶后的新稀有度，否则列表停留在进阶前状态。
 - **进阶详情 UI（AscendData）**：仅「素材选择阶段（`userAscendDetails==null`）+ 已选目标」时显示 `ui_AscendData`、隐藏 `ui_ProgressContent`（培养阶段反之），统一在 `RefreshAscendData()` 切换。`ui_ProgressContent` 未序列化进 Component，靠运行时 `AutoLinkUI` 按名绑定（同理 `ui_AscendIcon` 误绑 Image 也由 AutoLink 自愈到 Animator）。
   - 升阶前/后卡牌 `ui_UIViewCreatureCardItem_BeforeAscend/_AfterAscend` 用 `CardUseStateEnum.ShowNoPopup` 关 popup；After 卡走 `BuildAscendPreviewCreature(target,newRarity)`（稀有度+1、**含 `transformItemId`**，预览卡同步显示幻化形象；引用字段共享）；两卡 `PlayCardDropIn` 从上掉落+OutBack 缩放。
-  - BUFF 增益面板 `ui_AscendBuffs`：`BuffUtil.GetCreatureAscendBuffChances(newRarity, materials)` 算概率，子项 `UIViewCreatureVatAscendBuffItem` 实时克隆/复用缓存、一排≤5 个超出 y 轴下移，出现/消失/移动均 DOTween；`SetData(chance,rarity)` 名字+BG(`ui_BG_Image`)按稀有度配色(`RarityInfo.buff_color`)，BG(`ui_BG_PopupButtonCommonView`)悬浮提示 BUFF 内容(`content_language`，未解锁「进阶增益范围预览」研究时占位参数 `{..}` 数值未定故 Regex 替 `???`，已解锁则 `{Percentage}`/`{Value}` 显示 min~max 范围、其余固定参数显示实际值)；AscendIcon 用向右戳循环 Animator。
+  - BUFF 增益面板 `ui_AscendBuffs`：`BuffUtil.GetCreatureAscendBuffChances(newRarity, materials)` 算概率，子项 `UIViewCreatureVatAscendBuffItem` 实时克隆/复用缓存、一排≤5 个超出 y 轴下移，出现/消失/移动均 DOTween；`SetData(chance,rarity)` 名字+BG(`ui_BG_Image`)按稀有度配色(`RarityInfo.buff_color`)，BG(`ui_BG_PopupButtonCommonView`)悬浮提示 BUFF 内容(`content_language`，未解锁「进阶增益范围预览」研究时占位参数 `{..}` 数值未定故 Regex 替 `???`，已解锁则 `{Percentage}`/`{Value}` 显示 min~max 范围、`{TriggerChance}` 显示实际触发概率（`trigger_chance`，0按必然触发显示100）、其余固定参数显示实际值)；AscendIcon 用向右戳循环 Animator。
 - 详细 BUFF 生成规则见 [buff-system](../buff-system/SKILL.md) / [utils-system](../utils-system/SKILL.md)。
 
 ### UIDialogSelectCreature（魔物选择弹窗）
