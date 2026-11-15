@@ -100,6 +100,11 @@ public partial class GameTestEditor : Editor
         EditorGUILayout.Space(5);
     }
 
+    #region 战斗测试设置
+
+    /// <summary>
+    /// 绘制战斗测试模式及其配置，自定义战斗可以为进攻方选择征服难度。
+    /// </summary>
     private void DrawFightSceneTest()
     {
         showFightSceneTest = EditorGUILayout.Foldout(showFightSceneTest, "⚔️ 战斗场景测试", true);
@@ -228,6 +233,7 @@ public partial class GameTestEditor : Editor
         {
             EditorGUI.indentLevel++;
             EditorGUILayout.BeginVertical("box");
+            DrawFightEnemyConquerDifficulty();
             // 单体测试模式下进攻生物数量/进攻间隔为固定值，不显示
             if (fightTestMode != FightTestModeEnum.SingleUnit)
             {
@@ -319,6 +325,59 @@ public partial class GameTestEditor : Editor
         EditorGUI.indentLevel--;
         EditorGUILayout.Space(10);
     }
+
+    /// <summary>
+    /// 绘制敌人征服难度下拉，并提供配置重导后的刷新入口。
+    /// </summary>
+    private void DrawFightEnemyConquerDifficulty()
+    {
+        EnsureFightEnemyConquerDifficultyOptions();
+        int currentIndex = Array.IndexOf(fightEnemyConquerDifficultyIds, fightEnemyConquerDifficultyId);
+        EditorGUILayout.BeginHorizontal();
+        int selectedIndex = EditorGUILayout.Popup(
+            new GUIContent("征服难度", "按所选世界和难度的首关倍率缩放测试敌人的生命、护甲和攻击力。"),
+            Mathf.Max(0, currentIndex), fightEnemyConquerDifficultyOptions);
+        if (fightEnemyConquerDifficultyIds.Length > 1)
+            fightEnemyConquerDifficultyId = fightEnemyConquerDifficultyIds[selectedIndex];
+        if (GUILayout.Button("🔄", GUILayout.Width(30)))
+        {
+            fightEnemyConquerDifficultyOptions = null;
+            ClearCfgBaseStaticCache(typeof(FightTypeConquerInfoCfg));
+        }
+        EditorGUILayout.EndHorizontal();
+
+        if (fightEnemyConquerDifficultyIds.Length == 1)
+            EditorGUILayout.HelpBox("未读取到征服难度配置，测试将使用原始强度。请检查配置导出后刷新。", MessageType.Warning);
+    }
+
+    /// <summary>
+    /// 按世界、难度构建下拉选项，显示征服首关的强度倍率。
+    /// </summary>
+    private void EnsureFightEnemyConquerDifficultyOptions()
+    {
+        if (fightEnemyConquerDifficultyOptions != null) return;
+
+        var rows = new List<FightTypeConquerInfoBean>(FightTypeConquerInfoCfg.GetAllData().Values);
+        rows.Sort((left, right) =>
+        {
+            int worldOrder = left.world_id.CompareTo(right.world_id);
+            return worldOrder != 0 ? worldOrder : left.level.CompareTo(right.level);
+        });
+        fightEnemyConquerDifficultyOptions = new GUIContent[rows.Count + 1];
+        fightEnemyConquerDifficultyIds = new long[rows.Count + 1];
+        fightEnemyConquerDifficultyOptions[0] = new GUIContent("原始强度（×1）");
+        for (int i = 0; i < rows.Count; i++)
+        {
+            var row = rows[i];
+            string worldName = GameWorldInfoCfg.GetItemData(row.world_id)?.remark;
+            if (string.IsNullOrEmpty(worldName)) worldName = $"世界 {row.world_id}";
+            fightEnemyConquerDifficultyIds[i + 1] = row.id;
+            fightEnemyConquerDifficultyOptions[i + 1] = new GUIContent(
+                $"{worldName} · 难度 {row.level}（×{row.GetCurrentIntensityRate(1):G}）");
+        }
+    }
+
+    #endregion
 
     /// <summary>
     /// 绘制防守方固定属性设置(每行: 属性下拉[中文名] + 固定值输入 + 删除；底部: 添加/移除最后一个)。
@@ -2068,6 +2127,11 @@ public partial class GameTestEditor : Editor
         EditorGUILayout.Space(10);
     }
 
+    #region 战斗测试数据
+
+    /// <summary>
+    /// 构建自定义战斗及重开快照，为每个进攻波次应用所选征服难度的首关强度。
+    /// </summary>
     public FightBean GetTestData()
     {
         // 单体测试模式：道路长度/道路数量/进攻生物数量/进攻间隔强制使用固定值
@@ -2082,11 +2146,20 @@ public partial class GameTestEditor : Editor
         fightData.sceneRoadLength = roadLength;
         fightData.gameFightType = GameFightTypeEnum.Test;
 
-        // 生成进攻数据
+        // 复用征服首关的倍率，生成各个自定义进攻波次。
+        float intensityRate = 1f;
+        if (fightEnemyConquerDifficultyId != 0 &&
+            FightTypeConquerInfoCfg.GetAllData().TryGetValue(fightEnemyConquerDifficultyId, out var conquerDifficulty))
+        {
+            intensityRate = conquerDifficulty.GetCurrentIntensityRate(1);
+        }
         fightData.fightAttackData = new FightAttackBean();
         for (int i = 0; i < attackNum; i++)
         {
-            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(attackDelay, enemyIds);
+            FightAttackDetailsBean fightAttackDetails = new FightAttackDetailsBean(attackDelay, enemyIds)
+            {
+                intensityRate = intensityRate
+            };
             fightData.fightAttackData.AddAttackQueue(fightAttackDetails);
         }
         fightData.fightAttackDataRemark = ClassUtil.DeepCopy(fightData.fightAttackData);
@@ -2173,4 +2246,6 @@ public partial class GameTestEditor : Editor
         }
         return fightData;
     }
+
+    #endregion
 }

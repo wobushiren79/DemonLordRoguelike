@@ -46,6 +46,10 @@ public partial class GameTestEditor
     public int fightSceneRoadLength = 10;
     public int fightSceneAttackNum = 2;
     public float fightSceneAttackDelay = 1;
+    // 自定义战斗的敌人征服难度配置行 ID，0 表示原始强度。
+    private long fightEnemyConquerDifficultyId;
+    private GUIContent[] fightEnemyConquerDifficultyOptions;
+    private long[] fightEnemyConquerDifficultyIds;
     // 魔王(防守核心)生物ID，默认2001骷髅战士
     public int fightDefenseCoreId = 2001;
     // 魔王蓝量(战斗开始时魔王当前魔力值,同时会把魔力上限提升到不低于该值)，默认9999
@@ -206,16 +210,27 @@ public partial class GameTestEditor
     private const string FIGHT_FIXED_ATTRIBUTE_KEY = PREFS_KEY_PREFIX + "fightFixedAttribute";
     private const string FIGHT_FIXED_ATTRIBUTE_COUNT_KEY = PREFS_KEY_PREFIX + "fightFixedAttributeCount";
 
+    #region 测试参数持久化
+
+    /// <summary>
+    /// 启用面板时读取上次使用的测试参数。
+    /// </summary>
     private void OnEnable()
     {
         LoadAllPreferences();
     }
 
+    /// <summary>
+    /// 关闭面板时保存当前测试参数。
+    /// </summary>
     private void OnDisable()
     {
         SaveAllPreferences();
     }
 
+    /// <summary>
+    /// 从编辑器偏好设置读取测试参数及敌人征服难度配置行 ID。
+    /// </summary>
     private void LoadAllPreferences()
     {
         // 战斗测试模式
@@ -239,6 +254,7 @@ public partial class GameTestEditor
         fightSceneRoadLength = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneRoadLength", 10);
         fightSceneAttackNum = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightSceneAttackNum", 2);
         fightSceneAttackDelay = EditorPrefs.GetFloat(PREFS_KEY_PREFIX + "fightSceneAttackDelay", 1);
+        long.TryParse(EditorPrefs.GetString($"{PREFS_KEY_PREFIX}fightEnemyConquerDifficultyId", "0"), out fightEnemyConquerDifficultyId);
         fightDefenseCoreId = EditorPrefs.GetInt(PREFS_KEY_PREFIX + "fightDefenseCoreId", 2001);
         fightDemonLordMP = EditorPrefs.GetFloat(PREFS_KEY_PREFIX + "fightDemonLordMP", 9999);
 
@@ -309,6 +325,9 @@ public partial class GameTestEditor
         LoadEnemyIds();
     }
 
+    /// <summary>
+    /// 保存测试参数及敌人征服难度配置行 ID 到编辑器偏好设置。
+    /// </summary>
     private void SaveAllPreferences()
     {
         // 战斗测试模式
@@ -332,6 +351,7 @@ public partial class GameTestEditor
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightSceneRoadLength", fightSceneRoadLength);
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightSceneAttackNum", fightSceneAttackNum);
         EditorPrefs.SetFloat(PREFS_KEY_PREFIX + "fightSceneAttackDelay", fightSceneAttackDelay);
+        EditorPrefs.SetString($"{PREFS_KEY_PREFIX}fightEnemyConquerDifficultyId", fightEnemyConquerDifficultyId.ToString());
         EditorPrefs.SetInt(PREFS_KEY_PREFIX + "fightDefenseCoreId", fightDefenseCoreId);
         EditorPrefs.SetFloat(PREFS_KEY_PREFIX + "fightDemonLordMP", fightDemonLordMP);
 
@@ -399,6 +419,8 @@ public partial class GameTestEditor
         // 敌人 IDs
         SaveEnemyIds();
     }
+
+    #endregion
 
     private void SaveEnemyIds()
     {
