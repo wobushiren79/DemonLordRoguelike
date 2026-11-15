@@ -59,7 +59,7 @@ public class AIIntentDefenseCreatureAttack : AIIntentCreatureAttack
     /// <summary>
     /// 重新搜索目标：人类弓箭手保留仍命中搜索的原目标，其他防守生物维持正面优先、可选背后搜索。
     /// </summary>
-    protected override FightCreatureEntity FindNextTarget(BaseAttackMode attackMode)
+    protected override FightCreatureEntity FindNextTarget(DirectionEnum direction)
     {
         if (isLockTargetCreature)
         {

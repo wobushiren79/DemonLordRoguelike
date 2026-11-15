@@ -1,17 +1,17 @@
 public class BuffEntityConditionalDeadAreaDRChange : BuffEntityConditionalDead
 {
+    #region 死亡范围护甲变化
     /// <summary>
-    /// 触发BUFF
+    /// 死亡时按死者的护甲上限结算范围内友军的护甲变化。
     /// </summary>
     public override bool TriggerBuffConditional(BuffEntityBean buffEntityData)
     {
-        bool isTriggerSuccess = base.TriggerBuffConditional(buffEntityData);
-        if (isTriggerSuccess == false)
-            return false;
-        var targetFightCreatureEntity = GetFightCreatureEntityForTarget();
-        if (targetFightCreatureEntity == null)
-            return false;
-        BuffEntityBaseDRChangeArea.DRChangeArea(buffEntityData, targetFightCreatureEntity);
-        return true;
+        if (!base.TriggerBuffConditional(buffEntityData)) return false;
+        var source = GetFightCreatureEntityForTarget();
+        if (source == null) return false;
+
+        float sourceMax = source.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.DR);
+        return BuffEntityBaseDRChangeArea.DRChangeArea(buffEntityData, source, sourceMax: sourceMax);
     }
+    #endregion
 }

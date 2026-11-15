@@ -24,6 +24,7 @@ watched_files:
 - **MonoExtension** - Mono 扩展 StartCoroutineEx
 - **RandomExtension** - 随机扩展 RandomRange/RandomItem
 - **StringExtension** - 字符串处理 IsNullOrEmpty/ToLong
+  - `SplitForDictionaryLongFloat` 可传 `formatProvider`。BUFF 配置的浮点前置条件显式使用 `CultureInfo.InvariantCulture`，避免地区格式改变小数值。
 - **VectorExtension** - 向量转换 ToVector2/ToVector3
 
 ### 工具函数 (Utils)

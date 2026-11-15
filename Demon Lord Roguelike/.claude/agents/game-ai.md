@@ -45,7 +45,7 @@ AICreatureEntity                    # 生物 AI 基类
 
 ### 通用意图
 - **AIIntentCreatureAttack** - 通用攻击意图（可继承复用）；内置 **额外攻击** 机制（见下）；内置 **目标距离复查**（见下）
-- **AIIntentCreatureDead** - 通用死亡意图
+- **AIIntentCreatureDead** - 通用死亡意图，先派发 `CreatureDeadEnd`，消费死亡 BUFF 记录的重生请求，再回收旧实体。
 - **AIIntentCreatureEmerge** - 通用出土冒出意图（召唤物出场动画，攻守通用：`AICreatureEntity.StartEmerge()` 强制切换，压入地底 1.2 深处[道路面深度遮挡形成破土观感,不播任何出场特效]，0.6s 匀速升回地面，按阵营回各自 Idle[防守朝右/进攻朝左]；两侧 InitIntentEnum 均已注册 CreatureEmerge；当前唯一调用方=AttackModeSummon 召唤生成当帧，防守方召唤系可直接复用 StartEmerge 入口；2026-09-15 新增）
 
 ### 通用 Update 事件 + 释放技能意图（2026-09-14 重构：替代专用 GlobalSkillTimer；事件系统拆在 partial 文件 AICreatureEntityForUpdateEvent.cs）
@@ -102,6 +102,9 @@ AICreatureEntity                    # 生物 AI 基类
 - **术语**：敌方"BOSS"= `FightAttack` 进攻型 NPC（走 `AIIntentAttackCreatureAttack`），**不是**玩家防守的核心 `AIDefenseCoreCreatureEntity`。
 
 ### 攻速(ASPD)换算与攻速连发（AIIntentCreatureAttack 基类，攻防通用）
+
+条件追加攻击经 `FightCreatureEntity.QueueBuffAttack()` 逐次登记。周期词条「再补一刀」空场最多暂存一发，发射后重新计时 3 秒。`AIIntentCreatureAttack` 在战斗时间推进且有合法目标时每帧最多发一发，待机和切换意图期间保留待发状态。无有效攻击模块、冲锋后自爆和主动自爆的目标不会登记追加攻击。追加攻击使用普通攻击模块及现有索敌规则，来源标记使其直接伤害和派生周期伤害无法递归触发追加攻击。
+
 - **换算公式**（`FightCreatureBean.GetAttackTimeData(out pre, out attacking, out attackTimes)`，2026-09 重构，替换旧 0~100→0.02s 封顶插值）：频率倍率 = `max(1+0.05×ASPD, 0.25)`；攻击次数 = `1+max(0, floor(ASPD÷20))`；时间倍率 = 次数÷频率倍率，准备/出手时间 = 基础×时间倍率（下限 0.02s），BUFF 之后再乘。效果：**每点攻速严格 +5% 攻击频率**、无上限无断崖；逢 20 倍数时间回基础值、攻击次数 +1（0.2 秒窗口多打一发）。
 - **连发调度**：`RefreshData` 缓存 `attackTimes`；`AttackCreatureStartEnd` 普通攻击分支发射主攻击后若 `attackTimes>1` 置 `extraShotsLeft/extraShotInterval(=0.2÷次数)/extraShotTimer`，由 `IntentUpdate→UpdateExtraShots()` 走 `GetFightDeltaTime` 逐帧推进（**不用 GTask.Wait**——其只跟 timeScale 不跟 gameSpeed，2倍速下会脱节），单帧跨多间隔用 while 补齐。每发 `FireExtraShot` 校验自身存活（死则清零终止）、目标已死则沿 `lastAttackDirection`（`AttackCreatureStartEnd` 发射前按目标方位记录）重搜、搜不到跳过本发；发射即忘（`StartCreateAttackMode(self, target, null)` 无回调）不进状态机，与主循环解耦可并存。
 - **边界**：BossSkill（`currentExtraAttack` 就绪）循环不触发连发——替代普攻（scene=2）技能同走该分支，同样不连发，每节拍恰好 1 个技能；`IntentLeaving` 清零 `extraShotsLeft` 取消在途连发；负攻速只拉长时间（频率倍率下限 0.25），不减攻击次数。

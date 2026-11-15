@@ -26,19 +26,22 @@ public partial class FightCreatureEntity
     }
 
     /// <summary>
-    /// 死亡引爆：在死亡位置创建本生物 attack_mode 配置的爆炸攻击模块（纯数据无参路径，照冲击波/矿车先例手动注入攻击者快照），
-    /// 伤害 = ATK × 攻击模式伤害倍率（与正常攻击同公式），仅冲锋自爆型生物（charge_attack=1）使用
+    /// 用死亡时的攻击快照引爆；同归于尽以尸体位置为爆心，原生冲锋自爆沿用自身攻击偏移。
     /// </summary>
-    public void CreateAttackModeForDeadExplosion()
+    /// <param name="customAttackModeId">效果指定的攻击模式，0 时使用生物的攻击模式。</param>
+    /// <param name="damageRate">效果对爆炸伤害的倍率。</param>
+    public void CreateAttackModeForDeadExplosion(long customAttackModeId = 0, float damageRate = 1f)
     {
         var creatureData = fightCreatureData.creatureData;
         var creatureInfo = creatureData.creatureInfo;
-        long attackModeId = creatureInfo.attack_mode;
+        long attackModeId = customAttackModeId != 0 ? customAttackModeId : creatureInfo.attack_mode;
         var attackModeInfo = AttackModeInfoCfg.GetItemData(attackModeId);
         if (attackModeInfo == null)
             return;
-        //爆炸点 = 生物位置 + 生物攻击起始位置 + 攻击模块自身偏移（与正常攻击起点同口径）
-        Vector3 explosionPos = creatureObj.transform.position + creatureInfo.GetAttackStartPosition() + attackModeInfo.GetStartPosOffset();
+        Vector3 explosionPos = customAttackModeId == 0
+            ? creatureObj.transform.position + creatureInfo.GetAttackStartPosition()
+            : fightCreatureData.positionDead;
+        explosionPos += attackModeInfo.GetStartPosOffset();
         //纯数据发射路径（照冲击波/矿车先例）：注入攻击者快照与爆炸点
         var fightManager = FightHandler.Instance.manager;
         AttackModeBean attackModeData = fightManager.GetAttackModeData(attackModeId);
@@ -46,7 +49,7 @@ public partial class FightCreatureEntity
         var weaponItemData = creatureData.GetEquip(ItemTypeEnum.Weapon);
         attackModeData.attackerWeaponItemId = weaponItemData != null ? weaponItemData.itemId : creatureInfo.GetEquipBaseWeaponId();
         attackModeData.attackerId = creatureData.creatureUUId;
-        attackModeData.attackerDamage = (int)(fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ATK) * attackModeInfo.GetDamageAddRate());
+        attackModeData.attackerDamage = (int)(fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.ATK) * attackModeInfo.GetDamageAddRate() * damageRate);
         attackModeData.attackerCRT = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.CRT);
         attackModeData.attackerCDMG = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.CDMG);
         attackModeData.startPos = explosionPos;
@@ -54,7 +57,7 @@ public partial class FightCreatureEntity
         attackModeData.attackedId = "";
         attackModeData.attackedLayerTarget = fightCreatureData.GetCreatureLayer(true);
         //默认受击朝向（爆炸为自身范围检测，方向不参与命中判定）
-        attackModeData.attackDirection = Vector3.right;
+        attackModeData.attackDirection = fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightAttack ? Vector3.left : Vector3.right;
         FightHandler.Instance.StartCreateAttackMode(attackModeData);
     }
     #endregion

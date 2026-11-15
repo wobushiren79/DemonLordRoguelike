@@ -40,7 +40,7 @@ watched_files:
 ### 事件
 - `Achievement_CreatureKill` - 生物被击杀（在 AIIntentCreatureDead，仅进攻方派发）→ 回调只 `AddKillCount`
 - `Achievement_ConquerComplete` - 征服模式完整通关（在 GameFightLogicConquer，参数 `long worldId, int difficultyLevel`）→ 回调只 `AddConquerCompleteCount(worldId, difficultyLevel)`
-- `Achievement_GashaponDraw` - 扭蛋抽出生物（在 GashaponMachineLogic.InitGashaponMachineData 生成蛋入账时，参数 `long creatureId`，混合/职业独立抽共用）→ 回调只 `AddGashaponCreatureDrawCount(creatureId)`
+- `Achievement_GashaponDraw` - 扭蛋抽出生物（在 `GameDataManager.TryCommitGashaponBatch` 整批入账时，参数 `long creatureId`，混合/职业独立抽共用）→ 回调只 `AddGashaponCreatureDrawCount(creatureId)`
 - 注：三事件仅累加统计；运行期不做达成判定、不实时刷新 UI。达成在打开界面时实时计算。已移除 `Achievement_StateChange` / `Achievement_ProgressChange`（高频空转）与 `Achievement_GameTimeChange`（曾驱动每秒判定，现无消费者）
 
 ### UI

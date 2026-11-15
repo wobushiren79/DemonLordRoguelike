@@ -410,6 +410,10 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 
 ## 攻速(ASPD)换算与攻速连发（AIIntentCreatureAttack 基类，攻防通用）
 
+条件追加攻击经 `FightCreatureEntity.QueueBuffAttack()` 逐次登记。周期词条「再补一刀」空场最多暂存一发，发射后重新计时 3 秒。`AIIntentCreatureAttack` 在战斗时间推进且有合法目标时每帧最多发一发，待机和切换意图期间保留待发状态。无有效攻击模块、冲锋后自爆和主动自爆的目标不会登记追加攻击。追加攻击使用普通攻击模块及现有索敌规则，来源标记使其直接伤害和派生周期伤害无法递归触发追加攻击。
+
+死亡重生由 `AIIntentCreatureDead` 在死亡结束事件派发完成后进行实体替换，使其他死亡 BUFF 先处理旧实体。
+
 2026-09 重构：攻速从「0~100 插值压时间（100 封顶、满攻速 25 倍速动画、频率超线性）」改为**线性频率制**——每点攻速严格 +5% 攻击频率，无上限。
 
 - **换算公式**（`FightCreatureBean.GetAttackTimeData(out timeAttackPre, out timeAttacking, out int attackTimes)`，唯一调用方 `AIIntentCreatureAttack.RefreshData`）：

@@ -284,9 +284,9 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
     }
 
     /// <summary>
-    /// 添加BUFF 带有触发概率的判定
+    /// 按概率附加 BUFF，并保留是否来自追加攻击的来源标记。
     /// </summary>
-    public bool AddFightCreatureBuff(List<BuffBean> listBuffData, string applierCreatureId, string targetCreatureId)
+    public bool AddFightCreatureBuff(List<BuffBean> listBuffData, string applierCreatureId, string targetCreatureId, bool isBuffAttackAgain = false)
     {
         if (listBuffData.IsNull())
         {
@@ -296,6 +296,13 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
         var listBuffEntityBean = CheckBuffCreate(listBuffData, applierCreatureId, targetCreatureId);
         if (!listBuffEntityBean.IsNull())
         {
+            if (isBuffAttackAgain)
+            {
+                for (int i = 0; i < listBuffEntityBean.Count; i++)
+                {
+                    listBuffEntityBean[i].isBuffAttackAgain = true;
+                }
+            }
             AddFightCreatureBuff(listBuffEntityBean, applierCreatureId, targetCreatureId);
             return true;
         }
@@ -388,6 +395,7 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
                 //默认：刷新剩余次数+施加者+距下次触发计时（次数型BUFF必须连timeUpdate一起重置，否则trigger_num=1时次数刷成原值等于没刷，持续触碰不会续期）
                 existingData.triggerNumLeft = incoming.triggerNumLeft;
                 existingData.applierCreatureUUId = incoming.applierCreatureUUId;
+                existingData.isBuffAttackAgain = incoming.isBuffAttackAgain;
                 existingData.timeUpdate = 0;
                 return true;
 
@@ -401,6 +409,7 @@ public partial class BuffHandler : BaseHandler<BuffHandler, BuffManager>
                 //叠层惯例：上叠一层 = 刷新距下次触发计时与剩余次数
                 existingData.triggerNumLeft = incoming.triggerNumLeft;
                 existingData.applierCreatureUUId = incoming.applierCreatureUUId;
+                existingData.isBuffAttackAgain = incoming.isBuffAttackAgain;
                 existingData.timeUpdate = 0;
                 //层数变了 通知目标生物刷新属性
                 if (stackChanged)

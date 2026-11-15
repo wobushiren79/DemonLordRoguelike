@@ -12,6 +12,10 @@ public class FightUnderAttackBean
     public string attackedId;
     //攻击者的造成的攻击
     public int attackerDamage;
+    /// <summary>本次攻击实际扣除的生命与护甲之和，供受击事件使用。</summary>
+    public int damageApplied;
+    /// <summary>伤害来源于 BUFF 追加攻击及其衍生效果，不再触发追加攻击。</summary>
+    public bool isBuffAttackAgain;
     //攻击者暴击概率
     public float attackerCRT;
     //攻击者暴击伤害倍率（默认1.5=暴击伤害+50%）
@@ -45,6 +49,7 @@ public class FightUnderAttackBean
         this.attackedId = attackedId;
         this.attackerId = baseAttackMode.attackModeData.attackerId;
         this.attackerDamage = baseAttackMode.attackModeData.attackerDamage;
+        this.isBuffAttackAgain = baseAttackMode.attackModeData.isBuffAttackAgain;
         this.attackerCRT = baseAttackMode.attackModeData.attackerCRT;
         this.attackerCDMG = baseAttackMode.attackModeData.attackerCDMG;
         this.soundHitId = baseAttackMode.attackModeInfo.sound_hit;
@@ -62,6 +67,7 @@ public class FightUnderAttackBean
         this.attackedId = buffEntityData.targetCreatureUUId;
         this.attackerId = buffEntityData.applierCreatureUUId;
         this.attackerDamage = attackerDamage;
+        this.isBuffAttackAgain = buffEntityData.isBuffAttackAgain;
         this.attackerCRT = 0;
         this.attackerCDMG = 1.5f;
         this.soundHitId = 0;
@@ -79,6 +85,7 @@ public class FightUnderAttackBean
         this.attackedId = newAttackedId;
         this.attackerId = sourceData.attackerId;
         this.attackerDamage = sourceData.attackerDamage;
+        this.isBuffAttackAgain = sourceData.isBuffAttackAgain;
         this.attackerCRT = sourceData.attackerCRT;
         this.attackerCDMG = sourceData.attackerCDMG;
         this.drDamageRate = sourceData.drDamageRate;
@@ -88,11 +95,14 @@ public class FightUnderAttackBean
         this.isDamageTransferred = true;
     }
 
+    /// <summary>归还对象池时清除伤害、归属及触发来源。</summary>
     public void ClearData()
     {
         attackerId = null;
         attackedId = null;
         attackerDamage = 0;
+        damageApplied = 0;
+        isBuffAttackAgain = false;
         attackerCRT = 0;
         attackerCDMG = 1.5f;
         drDamageRate = 1f;

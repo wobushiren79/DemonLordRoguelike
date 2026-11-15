@@ -137,8 +137,7 @@ public class BuffEntityAttribute : BuffBaseEntity, IAttributeModifierSource
                 break;
             case CreatureAttributeTypeEnum.ASPD:
                 //ASPD：基础值恒为 0，百分比通道无效；攻速百分比换算成点数(每100%=20点)后与 flat 线性叠加
-                targetData += val + CreatureUtil.AspdRateToPoint(rate);
-                break;
+                return targetData + val + CreatureUtil.AspdRateToPoint(rate);
             default:
                 targetData += val;
                 if (targetData < 0) targetData = 0;

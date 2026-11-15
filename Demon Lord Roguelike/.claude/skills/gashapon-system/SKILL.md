@@ -19,7 +19,7 @@ watched_files:
 
 ## 核心概念
 
-玩家在基地的孕育界面花费**魔晶 (crystal)** 选择一种生物族群（人类/骷髅/史莱姆/魅魔/牛头人/哥布林/兽人）并购买 1/5/10 个「蛋」，逐个点击破壳，破壳后随机获得一只该族群生物（随机皮肤 + 随机属性 + 随机稀有度），生物直接入账到玩家背包并立即落盘。可消耗魔晶**重置**重新抽，或**结束**返回基地。
+玩家在基地的孕育界面花费**魔晶 (crystal)** 选择一种生物族群（人类/骷髅/史莱姆/魅魔/牛头人/哥布林/兽人）并购买 1/5/10 个「蛋」，整批魔物在演出前生成并入账（随机皮肤、属性和稀有度），画面逐蛋揭示已入账的结果。可消耗魔晶**重置**重新抽，或**结束**返回基地。
 
 ### 解锁前置
 孕育系统需要解锁：`UnlockEnum.GashaponMachine = 100400000`。入口按钮在 `UIBaseCore`（`ui_ViewBaseCoreItemFunction_Gashapon`），未解锁时隐藏；点击 `OnClickForGashapon` → `OpenUIAndCloseOther<UIGashaponMachine>()`。各扭蛋商品本身还有独立的 `pre_unlock_ids` 前置解锁。
@@ -37,15 +37,16 @@ watched_files:
 ```
 UIGashaponMachine (BaseUIComponent)  扭蛋商店列表
     │  InitStoreListData(): 遍历配置, 按 pre_unlock_ids 过滤已解锁项
-    │  点击购买 → CheckHasCrystal(扣费) → StartGashaponMachine()
-    │            → 解析 creature_ids / 收集随机生物数据
+    │  点击购买 → 解析 creature_ids / 收集随机生物数据
+    │            → StartGashaponMachine()
     │            → GameHandler.Instance.StartGashaponMachine(GashaponMachineBean)
     ▼
-GameHandler.StartGashaponMachine(GashaponMachineBean)   // GameHandler.cs:58
-    │  manager.gameLogic = new GashaponMachineLogic(); → PreGame()
+GameHandler.StartGashaponMachine(GashaponMachineBean)
+    │  准备候选 GashaponMachineLogic → PreGame()
     ▼
 GashaponMachineLogic (BaseGameLogic)   扭蛋玩法逻辑
-    │  PreGame → InitSceneData / InitGashaponMachineData(生成所有蛋并入账)
+    │  PreGame → TryCreateGashaponBatch() → TryCommitGashaponBatch()
+    │           → 提交成功后设为活动逻辑 → BeginGashaponPresentation()
     │  StartGame → ProcessForShowAllEgg / ProcessForFocusEgg(聚焦第一个蛋)
     │  EventForEggBreak → AnimForEggBreak(破壳+显示生物) → UIGashaponBreak.InitForBreak
     │  EventForNextEgg / EventForReset(再扣费重抽) / EventForEnd
@@ -58,10 +59,16 @@ GashaponItemBean (单个蛋)
     │  creatureData: CreatureBean   isBreak: bool
     │  构造时 RandomSkill / RandomAttribute / RandomRarity
     │
-userData.AddBackpackCreature(creatureData) + SaveUserData()   // 入账并落盘
+UserDataService.TrySaveGashaponBatch()   // 恢复日志提交与回放
 ```
 
 ## 数据类型
+
+孕育整批生成后由 `GameDataManager.TryCommitGashaponBatch` 提交魔晶、抽取计数与背包魔物。`UserDataService.TrySaveGashaponBatch` 原子写入同槽位 `GashaponPending_{slot}` 日志作为提交点，快照包括主档、背包生物和成就。读档或再次保存前幂等回放，三份文件完成后清除日志。日志写入前失败回滚本批内存，保存成功后才通知扣款并进入演出。
+
+`UIGashaponMachine` 先验证商品索引和抽取候选，`PreGame` 处理余额、整批生成与入账，重置也走此入口。余额不足、生成失败或写入日志失败时保留当前界面。孕育失败提示为 UIText `2000034`。
+
+`GameHandler.StartGashaponMachine` 先准备候选孕育逻辑，`PreGame` 只在整批成功提交后将它设为活动实例并播放破壳演出。首次失败继续保留基地逻辑，重置失败保留原批结果。
 
 ### 运行时数据（`Assets/Scripts/Bean/Game/`，非自动生成可直接改）
 - **GashaponMachineBean** —— 本次抽蛋上下文
@@ -73,12 +80,13 @@ userData.AddBackpackCreature(creatureData) + SaveUserData()   // 入账并落盘
   - **随机属性共用逻辑**：`RandomAttribute()` 委托 `CreatureBean.RandomAttributeForCreate(userData)`（位于 `CreatureBeanPartial.cs`，点数取 `UserLimmitBean.gashaponRandomAttributeNum`，基础值默认5，`<=0` 不加点；**随机池按 `creatureInfo.show_attribute` 配置过滤**——如烂泥/毒液史莱姆 3003/3004 池内只有 ATK，只会随机到攻击力，底层 `CreatureAttributeBean.AddRandomAttributeForCreate(addNum, pool)` 空池兜底默认 HP/DR/ATK/ASPD）
   - **初始魔物固定属性（不再随机）**：新建存档赠送的 3 个初始魔物（`UIMainCreate.OnClickForCreate`）改用 `CreatureBean.FixedAttributeForCreate(userData, attributeType)` —— 点数预算同样取 `UserLimmitBean.gashaponRandomAttributeNum`，但全部固定堆到单一属性：`NpcId1→HP`、`NpcId2→DR`、`NpcId3→ASPD`（底层 `CreatureAttributeBean.AddFixedAttributeForCreate`，单点增量复用 `CreatureUtil.GetAttributePointAddValue`：HP/DR 每点+10、ASPD 每点+1，故 5 点 = HP+50 / DR+50 / ASPD+5）；注意该场景存档尚未 `SetUserData`，需显式传入新建的 `UserDataBean`
   - **稀有度随机**：依次判定 UR→SSR→SR→R→N，每档由 `UnlockEnum.GashaponRarity*` / `GashaponRarity*Rate` 控制是否开放与成功率；命中后通过 `BuffTypeEnum.CreatureRarity*` 从对应 `buff_type`(11=R/12=SR/13=SSR) 的 BUFF 池随机抽 1 条叠加给生物（存入 `CreatureBean.dicRarityBuff`），高稀有度会叠加各低档各 1 条（如 SSR 给 R+SR+SSR 各 1）
-  - **稀有度 BUFF 生成两级收口**：`RandomRarity()` 定好稀有度后调用 `CreatureBean.RandomRarityBuffForCreate()`（`CreatureBeanPartial.cs`）——按稀有度从 R 档逐级授予（高稀有度累积各低档各 1 条，存入 `dicRarityBuff`）；单档「按稀有度取对应 buff_type 池随机抽 1 条」再走 `BuffUtil.CreateRandomRarityBuff(rarityEnum)`（`Assets/Scripts/Utils/BuffUtil.cs`），与**魔物进阶（UICreatureVat）共用同一规则**（进阶另有素材 BUFF 加成走 `BuffUtil.CreateAscendRarityBuff`）。`RandomRarityBuffForCreate` 同时被**测试面板 `UITestBase.OnClickForAddTestCreature`** 复用，保证测试生物与孕育同口径。原 `GashaponItemBean.RandomRarityBuff(RarityEnum)` 已删除（详见 buff-system / utils-system skill）
-  - **稀有度 BUFF 分档设计规则（buff_type 11/12/13，硬约束）**——每档效果性质必须归对档位（生成入口只按 buff_type 取池随机、不校验性质，靠本规则人工保证）：
+  - **稀有度 BUFF 生成两级收口**：`RandomRarity()` 定好稀有度后调用 `CreatureBean.RandomRarityBuffForCreate()`（`CreatureBeanPartial.cs`）——按稀有度从 R 档逐级授予（高稀有度累积各低档各 1 条，存入 `dicRarityBuff`）；单档「按稀有度取对应 buff_type 池随机抽 1 条」再走 `BuffUtil.CreateRandomRarityBuff(rarityEnum, creature)`（`Assets/Scripts/Utils/BuffUtil.cs`），与**魔物进阶（UICreatureVat）共用同一规则**（进阶另有素材 BUFF 加成走 `BuffUtil.CreateAscendRarityBuff`）。`RandomRarityBuffForCreate` 同时被**测试面板 `UITestBase.OnClickForAddTestCreature`** 复用，保证测试生物与孕育同口径。原 `GashaponItemBean.RandomRarityBuff(RarityEnum)` 已删除（详见 buff-system / utils-system skill）
+  - **稀有度 BUFF 分档设计规则（buff_type 11/12/13，硬约束）**——每档效果性质必须归对档位（生成入口按 buff_type 分池并按职业过滤，效果归档由表配置）：
     - **R(11)=纯属性 BUFF**：只做属性数值加/减益、常驻无触发。现池含 HP/DR/ATK 增益(+10~20%)、ASPD 攻速增益(+50~100%)、RCD 召唤CD减益、CMP 召唤魔力消耗减益(均 -25~50%，负 rate)；可扩展 MSPD/CRT/EVA（**无 HPRegeneration 生命回复属性**，实际枚举 index11=MPF 魔法回复、且游戏无被动回血刻）。类统一 `BuffEntityAttribute`。RCD/CMP 减益：RCD 走 `GetAttribute(RCD, true)`（含深渊馈赠按需叠加，原 GetRCD 已并入）、CMP 走 `GetAttribute(CMP)`（基础CMP×(1+等级/稀有度增加倍率)后再叠加BUFF；`GetAttributeInt(CMP)` 为 int 封装）。
     - **SR(12)=条件/周期被动触发 BUFF**：累计造成/受到伤害、击杀数、血量阈值或按周期触发后生效；类 `BuffEntityConditional*`(非死亡)/`Periodic*`/`Pecurrent`。
     - **SSR(13)=特殊类 BUFF**：死亡重生/死亡反击/死亡区域治疗/克隆增殖/生成改变水晶掉落等质变效果；类 `BuffEntityConditionalDead*`/`BuffEntityInstant*` 等。
     - 高稀有度累积低档：SSR 生物 = R+SR+SSR 各 1、SR 生物 = R+SR 各 1。新增稀有度 BUFF 需在 `excel_buff_info` + 多语言 `excel_language[BuffInfo]` 配表；R 属性类自动进池，SR/SSR 需配对应实体类。**完整分档表与设计自检见 buff-system SKILL「扭蛋/稀有度 BUFF 分档设计规则」（单一真实源）**
+    - 孕育、进阶和升阶药水通过 `BuffUtil.CanPerformBuffAttack` 滤除周期和条件追加攻击共 4 条。无有效攻击模块、冲锋后自爆、主动自爆的目标都不参与抽取这些词条，战斗排队使用同一资格判定。已有词条 ID 保持，改动的触发间隔、概率和恢复率按 `BuffBean.EnsureCurrentTuning` 升级。
 
 ### 配置数据（`StoreGashaponMachineInfoBean`，自动生成 → 扩展写 Partial）
 | 字段 | 含义 | 示例 |
@@ -101,6 +109,7 @@ userData.AddBackpackCreature(creatureData) + SaveUserData()   // 入账并落盘
 - **职业独立扭蛋配置 ID** `creatureId×10+档位`（5 位）：例 `10011/10012/10013`=人类战士(1001)x1/x5/x10，`70053`=兽人魔法师(冰)(7004)x10。`creature_ids` 只填单个职业 id，池内必中该职业
 - **生物 ID 区间(creature_ids)**：人类 1001-1004、骷髅 2001-2004、史莱姆 3001-3004、魅魔 4001-4004（4005 盾之魅魔已于 2026-10 移除，愈之魅魔 4002 改血甲双补）、牛头人 5001-5004、哥布林 6001-6005、兽人 7001-7004
 - **pre_unlock_ids 解锁表达式**：逗号 `,` 分隔的是 **AND** 条件组；竖线 `|` 分隔的是组内 **OR** 选项。例 `"A,B|C|D"` = `A 且 (B 或 C 或 D)`。判定走 `userUnlock.CheckIsUnlock(...)`
+- 人类孕育 x1（`10001`）的人类冰法职业前置为 `300100004`，与其余三个职业为 OR。
 
 ### 职业独立扭蛋（29 职业 × 3 档 = 87 条）
 
@@ -109,7 +118,7 @@ userData.AddBackpackCreature(creatureData) + SaveUserData()   // 入账并落盘
 - **价格** = 该族混合抽对应档位 ×10（如人类战士 x1=200、x5=1000、x10=2000；骷髅战士 x1=100；史莱姆系 x5=2000、x10=4000）
 - **解锁**：`pre_unlock_ids` = 对应职业扭蛋研究 unlock_id（`300X1NNND`，见 research-system SKILL「魔物分支-职业扭蛋研究」），研究解锁后商店项自动出现
 - **图标**：复用职业图标 `class_icon_res`（`ui_class_N`，UI 图集）
-- **统计**：生成蛋入账时派发 `EventsInfo.Achievement_GashaponDraw(creatureId)`（`GashaponMachineLogic.InitGashaponMachineData` 循环内，混合/职业抽共用此路径），按职业累计进 `UserAchievementBean.gashaponCreatureDrawCount`，供研究 pre_data「职业抽出 99 只」条件（按职业 `GetGashaponCreatureDrawCount`）与成就类型5种族孕育成就（按种族汇总 `GetGashaponRaceDrawCount`）消费
+- **统计**：批次入账时由 `GameDataManager.TryCommitGashaponBatch` 每只派发 `EventsInfo.Achievement_GashaponDraw(creatureId)`（混合与职业抽共用此路径，计数随本批一起提交），按职业累计进 `UserAchievementBean.gashaponCreatureDrawCount`，供研究 pre_data「职业抽出 99 只」条件（按职业 `GetGashaponCreatureDrawCount`）与成就类型5种族孕育成就（按种族汇总 `GetGashaponRaceDrawCount`）消费
 
 ## 配置表（Excel 是唯一真实源）
 
@@ -128,7 +137,7 @@ userData.AddBackpackCreature(creatureData) + SaveUserData()   // 入账并落盘
 | `GashaponMachine_ClickReset` | 重置（再扣魔晶） | Logic.EventForReset |
 | `GashaponMachine_ClickEnd` | 结束返回基地 | Logic.EventForEnd |
 | `GashaponMachine_ClickShowAll` | 跳过逐个破壳（需解锁 `GashaponShowAll`） | Logic.EventForShowAll 一次性显示全部（点击时先显式播一次破壳音效） |
-| `Achievement_GashaponDraw` | 生成蛋入账时（InitGashaponMachineData 循环，参数 long creatureId） | AchievementHandler 累计职业抽取统计（见 achievement-system） |
+| `Achievement_GashaponDraw` | 生成蛋入账时（`GameDataManager.TryCommitGashaponBatch` 循环，参数 long creatureId） | AchievementHandler 累计职业抽取统计（见 achievement-system） |
 
 > UIGashaponBreak 还监听 `Creature_Rename`：当前展示生物被改名时刷新卡牌。
 
@@ -191,7 +200,7 @@ UIGashaponBreak (BaseUIComponent)     破蛋交互
 ## 数据流与存档
 
 - **货币**：魔晶 `UserDataBean.crystal`；扣费 `userData.CheckHasCrystal(num, isHint:true, isAddCrystal:true)`（购买在 UIGashaponMachine，重置在 Logic.EventForReset）
-- **入账**：`userData.AddBackpackCreature(itemGashapon.creatureData)` → `GameDataHandler.Instance.manager.SaveUserData()` 立即落盘（生成蛋时即入账，破壳只是展示）
+- **入账**：`GameDataManager.TryCommitGashaponBatch` 同时提交本批魔物、魔晶费用和抽取统计，提交成功后播放破壳演出。
 - **生物来源标记**：`CreatureTypeEnum.GashaponMachine = 1`
 
 ## 与其他系统的关系
@@ -205,7 +214,7 @@ UIGashaponBreak (BaseUIComponent)     破蛋交互
 ## 注意事项
 
 - **孕育 = 扭蛋**：代码/配置全部用 Gashapon 命名，UI 文案才叫「孕育」
-- **生成即入账**：`InitGashaponMachineData` 一次性生成全部蛋并 `AddBackpackCreature`+落盘；破壳/下一个仅为展示，不再二次入账。重置 `EventForReset` 会**再次扣魔晶**重抽
+- **发奖先于演出**：`TryCreateGashaponBatch` 整批生成，`GameDataManager.TryCommitGashaponBatch` 提交。破壳、下一个只展示结果，重置以同一批次提交路径再次孕育。
 - **Bean 改写规则**：`StoreGashaponMachineInfoBean.cs` 自动生成，扩展写 `StoreGashaponMachineInfoBeanPartial.cs`；`GashaponMachineBean`/`GashaponItemBean` 是手写运行时类可直接改
 - **配置改 Excel**：`excel_store_gashaponmachine_info` 是唯一真实源，只改 JSON 会被导出覆盖
 - **图标跨图集**：`icon_res` 用 `ui_xxx,图集类型`（如 `,Research`）可从非 UI 图集加载，解析在 `IconHandler.ParseIconName`

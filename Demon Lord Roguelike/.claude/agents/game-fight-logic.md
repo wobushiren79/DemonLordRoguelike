@@ -83,8 +83,9 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 
 ### 防守属性重算（深渊馈赠联动）
 - `RefreshAllDefenseCreatureAttribute()`（public）- 刷新防守核心 + 全部防守魔物 `RefreshBaseAttribute`（由原 `EventForAbyssalBlessingChange` 的循环抽出，后者改为调它）。供动态数值BUFF（加成率随场上魔物数/累计击杀数变化；馈赠侧曾用于都是兄弟/杀红了眼、现役无配置，稀有度BUFF侧现役「独行者」）在战况变化时重算属性。
+- 手动撤下防守魔物也按双路动态 BUFF 守卫刷新剩余友军。刷新计算最终血甲上限，上限下降立即钳制当前值，再通过 `RefreshLifeBarProgress()` 更新血条。
 - `EventForAbyssalBlessingChange(AbyssalBlessingEntityBean)` - 监听 `EventsInfo.Buff_AbyssalBlessingChange`：① 调 `RefreshAllDefenseCreatureAttribute()` 重算属性；② 调 `fightDefenseCoreCreature.RefreshAbyssalBlessingOrbit()` 刷新魔王身边环绕的馈赠图标（全量对账增删，升级替换先删后加天然兼容）。环绕机制详见 FightCreatureEntityForDefenseCore.cs「魔王-深渊馈赠环绕图标(GPU单Mesh)」region。
-- `EventForGameFightLogicCreatureDeadEnd` 中按守卫广播：`if (BuffHandler.Instance.HasDynamicRateAbyssalBlessing() || BuffHandler.Instance.HasDynamicRateCreatureBuff()) RefreshAllDefenseCreatureAttribute();`——魔物死亡（随魔物数缩放/衰减类 N 减少）/敌人死亡（随击杀数缩放类计数增加）都重算全体防守，且**该重算放在 `CheckGameEnd()` 之前**（先处理死亡带来的属性变化，再检测游戏结束）。守卫用双路 O(1) 缓存：`HasDynamicRateAbyssalBlessing()`（馈赠侧，读 BuffManager 缓存布尔，在 AddAbyssalBlessing 选取动态率馈赠时单调置 true、ClearAbyssalBlessing 复位）`||` `HasDynamicRateCreatureBuff()`（生物侧，AddFightCreatureBuff 经 CreateFightCreatureBuffEntity 置位、ClearFightCreatureBuff 复位；R稀有度独行者走此路），避免普通对局开销，热路径不遍历池。
+- 防守魔物进入死亡状态时，由 `EventForGameFightLogicCreatureDeadStart` 立即按减少后的存活数重算，`DeadEnd` 跳过其重复重算。非防守单位保留 `EventForGameFightLogicCreatureDeadEnd` 中的重算（供击杀数类使用）。所有单位的 `DeadEnd` 仍安排下一帧检测结算。守卫用双路 O(1) 缓存：`HasDynamicRateAbyssalBlessing()`（馈赠侧，读 BuffManager 缓存布尔，在 AddAbyssalBlessing 选取动态率馈赠时单调置 true、ClearAbyssalBlessing 复位）`||` `HasDynamicRateCreatureBuff()`（生物侧，AddFightCreatureBuff 经 CreateFightCreatureBuffEntity 置位、ClearFightCreatureBuff 复位；R稀有度独行者走此路），避免普通对局开销，热路径不遍历池。
 - `EventForDefenseCreatureCreate(FightCreatureEntity)` - 监听 `EventsInfo.GameFightLogic_DefenseCreatureCreate`（由 `CreatureHandler.CreateDefenseCreatureEntity` 生成新防守魔物后推送），按同一双路守卫广播 `RefreshAllDefenseCreatureAttribute()`，使随魔物数缩放/衰减类BUFF随放置/增殖魔物 N 变化即时生效。即 CreatureHandler 只负责生成、推事件，重算职责归 GameFightLogic。详见 abyssal-blessing-system / buff-system SKILL。
 
 ### 魔晶拾取链路（DSP 渲染器单一路径）
@@ -93,6 +94,8 @@ PreGame → StartGame → UpdateGame → EndGame → ClearGame
 - 拾取统一走 `PickupCrystalByRenderer(index)`（gameState 校验=Gaming 或 Settlement（结算/深渊馈赠暂停），通过后 `StartFlyBack` 飞回核心，抛物线 CPU 参数化复刻旧 DOJump）；飞回到账由渲染器回调 `OnDropCrystalArrived`（`InitFightConstData` 注入 `actionForCrystalArrived`，`FightManager.Clear` 时清空；渲染器内到账先记账、帧末压缩后统一派发，遍历中途不 Invoke）：`AddCrystal`(内含音效) → `GameFightLogic_DropAddCrystal` 事件 → `RefreshUI`(同帧多颗到账合并为一次)。
 
 ## 约束
+
+- `GameHandler.StartGashaponMachine` 先准备候选孕育逻辑，`PreGame` 只在整批成功提交后将它设为活动实例并播放破壳演出。首次失败继续保留基地逻辑，重置失败保留原批结果。
 
 - 新增战斗模式需继承 GameFightLogic，实现 Pre/Start/Update/End/Clear；`GameHandler.StartGameFight` 按 `"GameFightLogic" + gameFightType.GetEnumName()` 反射创建实例，故新增模式只需「GameFightTypeEnum 末尾追加枚举（保序列化兼容）+ 新建同名 `GameFightLogic<枚举名>` 类」，工厂零改动
 - 战斗逻辑通过 EventHandler 与其他系统通信

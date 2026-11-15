@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class BuffEntityConditionalDeadRebirth : BuffEntityConditionalDead
 {
+    #region 重生请求
     /// <summary>
     /// 触发BUFF（死亡结束事件时，旧实体尚未清理——事件先行是 BuffEntityConditionalDead 系的契约）
     /// <para>重生落点：占位已释放（冲锋生物冲锋中死亡）→ 死亡地点重生并再次冲锋；否则原格重生（原行为）。</para>
@@ -15,8 +16,7 @@ public class BuffEntityConditionalDeadRebirth : BuffEntityConditionalDead
         var fightCreatureEntity = GetFightCreatureEntityForTarget();
         if (fightCreatureEntity == null)
             return false;
-        var creatureData = fightCreatureEntity.fightCreatureData?.creatureData;
-        if (creatureData == null)
+        if (fightCreatureEntity.aiEntity?.currentIntent is not AIIntentCreatureDead deathIntent)
             return false;
         var fightCreatureData = fightCreatureEntity.fightCreatureData;
         //重生落点：占位已释放（冲锋生物）→ 死亡地点；否则原格
@@ -28,10 +28,8 @@ public class BuffEntityConditionalDeadRebirth : BuffEntityConditionalDead
         var occupantEntity = gameFightLogic.fightData.GetDefenseCreatureByPos(rebirthPos);
         if (occupantEntity != null && occupantEntity != fightCreatureEntity)
             return true;
-        //重生（同UUID旧实体的主列表占位由 CreateDefenseCreatureEntity 内部按实例预清理；卡片状态由 RemoveFightCreatureEntity 按场上存活实体判定，重生后保持Fighting不进CD）
-        CreatureHandler.Instance.CreateDefenseCreatureEntity(creatureData, rebirthPos);
-        //重生不继承重生BUFF 所以要删除
-        BuffHandler.Instance.RemoveFightCreatureBuffs<BuffEntityConditionalDeadRebirth>(creatureData.creatureUUId);
-        return true;
+        //完成死亡事件派发后重生，旧 BUFF 仍可处理当前死亡事件。
+        return deathIntent.TryQueueRebirth(rebirthPos);
     }
+    #endregion
 }

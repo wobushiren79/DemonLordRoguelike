@@ -113,7 +113,7 @@ ID 编码规则（每个可升级成就一行，取原一级 id 作行 id）：
 |------|------|----------|
 | `Achievement_CreatureKill` | `bool isAttacker` | `AIIntentCreatureDead.IntentEntering` |
 | `Achievement_ConquerComplete` | `long worldId, int difficultyLevel` | `GameFightLogicConquer.ActionForUIRewardSelectEnd` |
-| `Achievement_GashaponDraw` | `long creatureId` | `GashaponMachineLogic.InitGashaponMachineData`（生成蛋入账循环内，混合抽/职业独立抽共用） |
+| `Achievement_GashaponDraw` | `long creatureId` | `GameDataManager.TryCommitGashaponBatch`（整批入账循环内，混合抽/职业独立抽共用） |
 
 > 这三个事件**仅用于累加统计数据**（`AddKillCount` / `AddConquerCompleteCount` / `AddGashaponCreatureDrawCount`），不触发任何达成判定与 UI 刷新。
 >

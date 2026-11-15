@@ -28,6 +28,12 @@ public partial class FightCreatureEntity
     /// AI实体
     /// </summary>
     public AIBaseEntity aiEntity;
+    /// <summary>按条件独立触发但尚未发射的 BUFF 追加攻击次数。</summary>
+    private int pendingConditionalBuffAttacks;
+    /// <summary>是否已有一发周期追加攻击正在等待合法目标。</summary>
+    public bool HasPendingPeriodicBuffAttack { get; private set; }
+    /// <summary>攻击意图是否需要尝试发射 BUFF 追加攻击。</summary>
+    public bool HasPendingBuffAttack => HasPendingPeriodicBuffAttack || pendingConditionalBuffAttacks > 0;
     /// <summary>
     /// 生物战斗状态
     /// </summary>
@@ -66,6 +72,8 @@ public partial class FightCreatureEntity
     public void SetData(GameObject creatureObj, FightCreatureBean fightCreatureData)
     {
         this.creatureFightState = CreatureFightStateEnum.Live;
+        pendingConditionalBuffAttacks = 0;
+        HasPendingPeriodicBuffAttack = false;
         this.creatureObj = creatureObj;
         this.fightCreatureData = fightCreatureData;
         this.creatureObj.name = fightCreatureData.creatureData.creatureUUId;
@@ -171,8 +179,38 @@ public partial class FightCreatureEntity
     #endregion
 
     #region 状态相关
+    /// <summary>登记一发 BUFF 追加攻击。周期触发最多保留一发，条件触发逐次保留。</summary>
+    public bool QueueBuffAttack(bool isPeriodic = false)
+    {
+        if (IsDead() || !BuffUtil.CanPerformBuffAttack(fightCreatureData?.creatureData?.creatureInfo))
+            return false;
+        if (isPeriodic)
+        {
+            if (HasPendingPeriodicBuffAttack)
+                return false;
+            HasPendingPeriodicBuffAttack = true;
+        }
+        else
+        {
+            pendingConditionalBuffAttacks++;
+        }
+        return true;
+    }
+
+    /// <summary>消耗一发待发的追加攻击，并用职业的攻击模块立即向合法目标发射。</summary>
+    public void FireBuffAttack(FightCreatureEntity targetCreature)
+    {
+        if (!HasPendingBuffAttack || IsDead() || targetCreature == null || targetCreature.IsDead())
+            return;
+        if (HasPendingPeriodicBuffAttack)
+            HasPendingPeriodicBuffAttack = false;
+        else
+            pendingConditionalBuffAttacks--;
+        FightHandler.Instance.StartCreateAttackMode(this, targetCreature, null, isBuffAttackAgain: true);
+    }
+
     /// <summary>
-    /// 增加BUFF
+    /// 附加攻击模块配置的 BUFF，并传递追加攻击的伤害来源。
     /// </summary>
     public void AddBuff(BaseAttackMode baseAttackMode)
     {
@@ -180,7 +218,8 @@ public partial class FightCreatureEntity
         var listBuffData = baseAttackMode.attackModeInfo.GetListBuff();
         if (!listBuffData.IsNull())
         {
-            bool isAdd = BuffHandler.Instance.AddFightCreatureBuff(listBuffData, baseAttackMode.attackModeData.attackerId, fightCreatureData.creatureData.creatureUUId);
+            bool isAdd = BuffHandler.Instance.AddFightCreatureBuff(listBuffData, baseAttackMode.attackModeData.attackerId,
+                fightCreatureData.creatureData.creatureUUId, baseAttackMode.attackModeData.isBuffAttackAgain);
             if (isAdd)
             {
                 //刷新一下身体颜色
@@ -276,9 +315,9 @@ public partial class FightCreatureEntity
 
     /// <summary>
     /// 回复生命+护甲（血甲双补，愈之魅魔 500001 用）：总回复量=攻击方快照 attackerDamage 一份，
-    /// 先补生命、生命补满后余量再补护甲（镜像受击 ChangeDRAndHP 的先甲后血）；各分段按自身缺口截断，血甲全满的余量丢弃。
+    /// 先补生命，按实际回血量扣除本次回复预算，余量再补结算后的护甲缺口。
     /// <para>例：总量10——血10/100→血+10；血95/100→血+5满、甲+5；血满甲10/100→甲+10。</para>
-    /// <para>BUFF挂载与命中音效收口到第一有效分段（血优先，血无缺口则甲），防同帧叠播；跳字各分段各跳各的真实值（无缺口不分段、不跳0）。</para>
+    /// <para>回复期间低血 BUFF 可能失效并降低上限。BUFF 挂载与命中音效由第一个实际生效的分段处理。</para>
     /// </summary>
     public void RegainHPAndDR(BaseAttackMode baseAttackMode)
     {
@@ -287,33 +326,33 @@ public partial class FightCreatureEntity
             return;
         string attackerId = baseAttackMode.attackModeData.attackerId;
         string attackedId = fightCreatureData.creatureData.creatureUUId;
-        //先血后甲串联分配：血缺口优先吃回复量，余量给甲；各分段不超过自身缺口（与 ChangeHP/ChangeDR 截断同口径 int 截断）
         int hpLack = (int)fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.HP) - fightCreatureData.HPCurrent;
-        int drLack = (int)fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.DR) - fightCreatureData.DRCurrent;
         int hpPart = Math.Min(totalRegain, Math.Max(hpLack, 0));
-        int drPart = Math.Min(totalRegain - hpPart, Math.Max(drLack, 0));
-        //BUFF/音效收口标志：血分段有效则由血回调执行，否则由甲回调执行
-        bool sideEffectInHP = hpPart > 0;
+        int healedHP = 0;
         if (hpPart > 0)
         {
             RegainHP(attackerId, attackedId, hpPart,
                 actionForNoDead: (changeHPReal) =>
                 {
+                    if (changeHPReal <= 0)
+                        return;
+                    healedHP = changeHPReal;
                     AddBuff(baseAttackMode);
-                    if (changeHPReal > 0)
-                        AudioHandler.Instance.PlaySound(baseAttackMode.attackModeInfo.sound_hit);
+                    AudioHandler.Instance.PlaySound(baseAttackMode.attackModeInfo.sound_hit);
                 });
         }
-        if (drPart > 0)
+        //回血可能改变血甲上限，等 HP 结算后再计算可以补到护甲的量。
+        int drLack = (int)fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.DR) - fightCreatureData.DRCurrent;
+        int drPart = Math.Min(totalRegain - healedHP, Math.Max(drLack, 0));
+        if (drPart > 0 && !IsDead())
         {
             RegainDR(attackerId, attackedId, drPart,
                 actionForNoDead: (changeDRReal) =>
                 {
-                    if (!sideEffectInHP)
+                    if (healedHP == 0 && changeDRReal > 0)
                     {
                         AddBuff(baseAttackMode);
-                        if (changeDRReal > 0)
-                            AudioHandler.Instance.PlaySound(baseAttackMode.attackModeInfo.sound_hit);
+                        AudioHandler.Instance.PlaySound(baseAttackMode.attackModeInfo.sound_hit);
                     }
                 });
         }
@@ -366,7 +405,7 @@ public partial class FightCreatureEntity
     }
 
     /// <summary>
-    /// 受到攻击
+    /// 结算受到的攻击，无论命中、免疫或闪避都归还受击数据。
     /// </summary>
     public void UnderAttack(BaseAttackMode baseAttackMode)
     {
@@ -417,6 +456,20 @@ public partial class FightCreatureEntity
     /// </summary>
     public void UnderAttack(FightUnderAttackBean fightUnderAttackData, Action<int, int> actionForNoDead = null, Action<int, int> actionForDead = null)
     {
+        try
+        {
+            if (!IsDead())
+                HandleUnderAttack(fightUnderAttackData, actionForNoDead, actionForDead);
+        }
+        finally
+        {
+            FightHandler.Instance.RemoveFightUnderAttackData(fightUnderAttackData);
+        }
+    }
+
+    /// <summary>按拦截、免伤、闪避、伤害的顺序结算，并向事件消费者提供本次实扣伤害。</summary>
+    private void HandleUnderAttack(FightUnderAttackBean fightUnderAttackData, Action<int, int> actionForNoDead, Action<int, int> actionForDead)
+    {
         var gameLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var fightData = gameLogic.fightData;
         var fightRecordsData = fightData.fightRecordsData;
@@ -447,11 +500,10 @@ public partial class FightCreatureEntity
                 }
                 if (remainDamage <= 0)
                 {
-                    //伤害被全部改道：回收原数据后结束（提前return走不到方法尾部回收，对象池需平衡）
-                    FightHandler.Instance.RemoveFightUnderAttackData(fightUnderAttackData);
+                    //伤害已全部改道，统一由 UnderAttack 归还数据。
                     return;
                 }
-                //剩余伤害继续走本生物结算（数据对象留待方法尾部统一回收）
+                //剩余伤害继续走本生物结算。
                 fightUnderAttackData.attackerDamage = remainDamage;
             }
         }
@@ -507,6 +559,7 @@ public partial class FightCreatureEntity
         }
         //真实造成的伤害
         int damageReal = Mathf.Abs(changeDRReal + changeHPReal);
+        fightUnderAttackData.damageApplied = damageReal;
         //记录数据
         fightRecordsData.AddCreatureDamage(fightUnderAttackData.attackerId, damageReal);
         fightRecordsData.AddCreatureDamageReceived(fightUnderAttackData.attackedId, damageReal);
@@ -542,8 +595,6 @@ public partial class FightCreatureEntity
         );
         //事件通知
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_UnderAttack, fightUnderAttackData);
-        //攻击结束 回收攻击数据
-        FightHandler.Instance.RemoveFightUnderAttackData(fightUnderAttackData);
     }
     #endregion
 
@@ -660,7 +711,7 @@ public partial class FightCreatureEntity
     #region  检测相关
 
     /// <summary>
-    /// 检测死亡
+    /// 检测死亡，存活者执行受击反馈并刷新血条。
     /// </summary>
     public void CheckDead(Action actionForNoDead = null, Action actionForDead = null)
     {
@@ -673,26 +724,7 @@ public partial class FightCreatureEntity
             //展示血条
             creatureLifeShow?.ShowObj(true);
 
-            //设置血条进度
-            float HPMax = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.HP);
-            if (HPMax > 0)
-            {
-                creatureLifeShow?.material.SetFloat("_Progress_1", fightCreatureData.HPCurrent / HPMax);
-            }
-            else
-            {
-                creatureLifeShow?.material.SetFloat("_Progress_1", 0);
-            }
-            float DRMax = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.DR);
-            //设置护盾进度
-            if (DRMax > 0)
-            {
-                creatureLifeShow?.material.SetFloat("_Progress_2", fightCreatureData.DRCurrent / DRMax);
-            }
-            else
-            {
-                creatureLifeShow?.material.SetFloat("_Progress_2", 0);
-            }
+            RefreshLifeBarProgress();
         }
         else
         {
@@ -703,6 +735,20 @@ public partial class FightCreatureEntity
         }
     }
 
+
+    /// <summary>按当前血甲刷新进度，保留血条可见性及受击表现。</summary>
+    public void RefreshLifeBarProgress()
+    {
+        if (creatureLifeShow == null || fightCreatureData == null)
+            return;
+        var material = creatureLifeShow.material;
+        if (material == null)
+            return;
+        float hpMax = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.HP);
+        float drMax = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.DR);
+        material.SetFloat("_Progress_1", hpMax > 0 ? Mathf.Clamp01(fightCreatureData.HPCurrent / hpMax) : 0);
+        material.SetFloat("_Progress_2", drMax > 0 ? Mathf.Clamp01(fightCreatureData.DRCurrent / drMax) : 0);
+    }
 
     /// <summary>
     /// 掉落水晶（跨类型共用 按state过滤生物类型）

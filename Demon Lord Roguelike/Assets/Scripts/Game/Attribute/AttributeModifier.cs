@@ -69,7 +69,7 @@ public static class ModifierPipeline
     {
         if (modifiers == null || modifiers.Count == 0)
         {
-            return baseValue < 0 ? 0 : baseValue;
+            return attributeType == CreatureAttributeTypeEnum.ASPD ? baseValue : Mathf.Max(0f, baseValue);
         }
 
         float flatSum = 0;
@@ -101,7 +101,7 @@ public static class ModifierPipeline
 
         float v = (baseValue + flatSum) * (1f + pctAddSum) * pctMulProduct;
         if (hasOverride) v = overrideValue;
-        if (v < 0) v = 0;
-        return v;
+        // 负攻速保留给攻击频率公式处理，频率的下限由战斗生物负责。
+        return attributeType == CreatureAttributeTypeEnum.ASPD ? v : Mathf.Max(0f, v);
     }
 }

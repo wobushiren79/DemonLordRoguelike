@@ -1,17 +1,17 @@
 public class BuffEntityConditionalDeadAreaHPChange : BuffEntityConditionalDead
 {
+    #region 死亡范围生命变化
     /// <summary>
-    /// 触发BUFF
+    /// 死亡时按死者的生命上限结算范围内友军的生命变化。
     /// </summary>
     public override bool TriggerBuffConditional(BuffEntityBean buffEntityData)
     {
-        bool isTriggerSuccess = base.TriggerBuffConditional(buffEntityData);
-        if (isTriggerSuccess == false)
-            return false;
-        var targetFightCreatureEntity = GetFightCreatureEntityForTarget();
-        if (targetFightCreatureEntity == null)
-            return false;
-        BuffEntityBaseHPChangeArea.HPChangeArea(buffEntityData, targetFightCreatureEntity);
-        return true;
+        if (!base.TriggerBuffConditional(buffEntityData)) return false;
+        var source = GetFightCreatureEntityForTarget();
+        if (source == null) return false;
+
+        float sourceMax = source.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.HP);
+        return BuffEntityBaseHPChangeArea.HPChangeArea(buffEntityData, source, sourceMax: sourceMax);
     }
+    #endregion
 }

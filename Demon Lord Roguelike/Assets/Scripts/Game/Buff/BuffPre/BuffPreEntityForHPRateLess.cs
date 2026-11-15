@@ -23,14 +23,14 @@ public class BuffPreEntityForHPRateLess : BuffBasePreEntity
         {
             return false;
         }
-        float HPMax = fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.HP);
+        float HPMax = fightCreatureData.GetHPMaxForBuffCondition();
         if (HPMax == 0)
         {
             return false;
         }
         float currentHPRate = (float)fightCreatureData.HPCurrent / HPMax;
         //如果血量百分比小于值 则触发
-        if (currentHPRate <= preValue)
+        if (currentHPRate < preValue)
         {
             return true;
         }

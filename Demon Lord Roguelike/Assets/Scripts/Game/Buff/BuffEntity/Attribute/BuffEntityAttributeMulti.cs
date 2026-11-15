@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 
 /// <summary>
 /// 多属性BUFF：同时改变多个属性。
@@ -80,7 +81,7 @@ public class BuffEntityAttributeMulti : BuffEntityAttribute
 
     #region 解析
     /// <summary>
-    /// 解析 "属性:倍率|属性:倍率" 为 (属性,倍率) 列表；无 ":" 时倍率默认 1，非法属性跳过
+    /// 解析 "属性:倍率|属性:倍率" 为 (属性,倍率) 列表；未填写倍率时默认 1，非法属性或倍率跳过
     /// </summary>
     public static void ParsePairs(string classEntityData, List<BuffAttributeMultiModifierStruct> result)
     {
@@ -95,8 +96,12 @@ public class BuffEntityAttributeMulti : BuffEntityAttribute
             CreatureAttributeTypeEnum attributeType = arrayKV[0].Trim().GetEnum<CreatureAttributeTypeEnum>();
             if (attributeType == CreatureAttributeTypeEnum.None) continue;
             float rateMultiplier = 1f;
-            if (arrayKV.Length > 1 && float.TryParse(arrayKV[1].Trim(), out float parseMult))
+            if (arrayKV.Length > 1)
+            {
+                if (!float.TryParse(arrayKV[1].Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out float parseMult))
+                    continue;
                 rateMultiplier = parseMult;
+            }
             result.Add(new BuffAttributeMultiModifierStruct { attributeType = attributeType, rateMultiplier = rateMultiplier });
         }
     }

@@ -433,7 +433,7 @@ public partial class UICreatureVat : BaseUIComponent
                 //升阶后稀有度复用 GetTargetNewRarity();耗时按源稀有度(=newRarity-1)查表;预定BUFF开始时即确定(含素材概率加成)
                 int newRarity = GetTargetNewRarity();
                 float timeMax = RarityInfoCfg.GetAscendTimeByRarity(newRarity - 1);
-                BuffBean ascendBuff = BuffUtil.CreateAscendRarityBuff((RarityEnum)newRarity, listMaterialCreatureSelect);
+                BuffBean ascendBuff = BuffUtil.CreateAscendRarityBuff((RarityEnum)newRarity, listMaterialCreatureSelect, targetCreatureSelect);
 
                 for (int i = 0; i < listMaterialCreatureSelect.Count; i++)
                 {
@@ -763,7 +763,7 @@ public partial class UICreatureVat : BaseUIComponent
             return;
         int newRarity = GetTargetNewRarity();
         //按进阶BUFF生成规则计算概率(素材BUFF在前,随机增益兜底在后)
-        List<CreatureAscendBuffChanceStruct> listChance = BuffUtil.GetCreatureAscendBuffChances((RarityEnum)newRarity, listMaterialCreatureSelect);
+        List<CreatureAscendBuffChanceStruct> listChance = BuffUtil.GetCreatureAscendBuffChances((RarityEnum)newRarity, listMaterialCreatureSelect, targetCreatureSelect);
         //rarity 传升阶后稀有度:本批候选BUFF均在该稀有度槽位生成,用于子项稀有度配色
         SetAscendBuffItems(listChance, newRarity);
     }

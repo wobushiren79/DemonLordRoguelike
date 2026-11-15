@@ -32,6 +32,7 @@ public class GashaponMachineLogic : BaseGameLogic
     public int currentBreakIndex = 0;
 
     public bool isRegisterEvent = false;
+    private bool isPreparingBatch;
 
     //蛋的模型子层级名字
     public string eggChildFbxName = "Egg_1";
@@ -39,7 +40,38 @@ public class GashaponMachineLogic : BaseGameLogic
     public string eggChildRendererName = "Renderer";
     //蛋预制的资源路径
     public string pathForEggPrefab = "Assets/LoadResources/Common/Gashapon_1.prefab";
+
+    #region 孕育流程
+    /// <summary>
+    /// 整批生成及提交成功后进入破壳演出，失败时保留当前商店或上一批的结果界面
+    /// </summary>
     public override void PreGame()
+    {
+        if (isPreparingBatch || gameState == GameStateEnum.Pre)
+            return;
+
+        isPreparingBatch = true;
+        try
+        {
+            scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForBase>(GameSceneTypeEnum.BaseGaming);
+            if (!TryCreateGashaponBatch(out var rewards, out var spineResources))
+                return;
+
+            listGashaponData = rewards;
+            currentBreakIndex = 0;
+            GameHandler.Instance.manager.gameLogic = this;
+            BeginGashaponPresentation(spineResources);
+        }
+        finally
+        {
+            isPreparingBatch = false;
+        }
+    }
+
+    /// <summary>
+    /// 初始化当批场景和事件，并在预加载模型后开始展示
+    /// </summary>
+    private void BeginGashaponPresentation(List<string> spineResources)
     {
         base.PreGame();
         //注册事件
@@ -52,16 +84,9 @@ public class GashaponMachineLogic : BaseGameLogic
             this.RegisterEvent(EventsInfo.GashaponMachine_ClickEnd, EventForEnd);
             this.RegisterEvent(EventsInfo.GashaponMachine_ClickShowAll, EventForShowAll);
         }
-        //初始化场景
         InitSceneData();
-        //初始化数据
-        InitGashaponMachineData(() =>
-        {
-            //开始
-            StartGame();
-        });
-        //关闭静态模糊
         VolumeHandler.Instance.SetDepthOfFieldActive(false);
+        SpineHandler.Instance.PreLoadSkeletonDataAsset(spineResources, _ => StartGame());
     }
 
     public override void StartGame()
@@ -91,9 +116,6 @@ public class GashaponMachineLogic : BaseGameLogic
     /// </summary>
     public void InitSceneData()
     {
-        //场景实例
-        scenePrefab = WorldHandler.Instance.GetCurrentScenePrefab<ScenePrefabForBase>(GameSceneTypeEnum.BaseGaming);
-
         listEggObj.Clear();
         for (int i = 0; i < listEggObjPool.Count; i++)
         {
@@ -110,43 +132,55 @@ public class GashaponMachineLogic : BaseGameLogic
     }
 
     /// <summary>
-    /// 处理所有蛋的数据
+    /// 在不扣款的情况下生成整批魔物，再一次提交费用和完整结果
     /// </summary>
-    public void InitGashaponMachineData(Action actionForComplete)
+    private bool TryCreateGashaponBatch(out List<GashaponItemBean> rewards, out List<string> spineResources)
     {
-        currentBreakIndex = 0;
-        listGashaponData = new List<GashaponItemBean>();
-        int eggNum = gashaponMachineData.gashaponNum;
-
-        List<string> listPreLoadSpineData = new List<string>();
-        for (int i = 0; i < eggNum; i++)
+        rewards = null;
+        spineResources = null;
+        if (gashaponMachineData == null || gashaponMachineData.gashaponNum <= 0
+            || gashaponMachineData.listCreatureRandomData.IsNull())
         {
-            //随机一个已经解锁的生物
-            int randomCreatureIndex = UnityEngine.Random.Range(0, gashaponMachineData.listCreatureRandomData.Count);
-            var randomCreatureData = gashaponMachineData.listCreatureRandomData[randomCreatureIndex];
-
-            GashaponItemBean itemGashapon = new GashaponItemBean(randomCreatureData.creatureId, randomCreatureData);
-            listGashaponData.Add(itemGashapon);
-            //派发扭蛋抽出事件(成就统计按职业累计抽出数量)
-            EventHandler.Instance.TriggerEvent(EventsInfo.Achievement_GashaponDraw, randomCreatureData.creatureId);
-
-            var creatureInfo = itemGashapon.creatureData.creatureInfo;
-            var caretureModelInfo = CreatureModelCfg.GetItemData(creatureInfo.model_id);
-            listPreLoadSpineData.Add(caretureModelInfo.res_name);
-            if (!caretureModelInfo.ui_show_spine.IsNull())
-            {
-                listPreLoadSpineData.Add(caretureModelInfo.ui_show_spine);
-            }
-            //添加生成的数据
-            UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
-            userData.AddBackpackCreature(itemGashapon.creatureData);
-            //保存数据
-            GameDataHandler.Instance.manager.SaveUserData();
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(2000017));
+            return false;
         }
-        SpineHandler.Instance.PreLoadSkeletonDataAsset(listPreLoadSpineData, (dicData) =>
+
+        var dataManager = GameDataHandler.Instance.manager;
+        if (!dataManager.GetUserData().CheckHasCrystal(gashaponMachineData.payCrystal, isHint: true))
+            return false;
+
+        var candidates = gashaponMachineData.listCreatureRandomData;
+        int eggNum = gashaponMachineData.gashaponNum;
+        rewards = new List<GashaponItemBean>(eggNum);
+        spineResources = new List<string>();
+        try
         {
-            actionForComplete?.Invoke();
-        });
+            if (scenePrefab == null)
+                throw new InvalidOperationException("未找到孕育场景");
+
+            for (int i = 0; i < eggNum; i++)
+            {
+                var candidate = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+                var reward = new GashaponItemBean(candidate.creatureId, candidate);
+                rewards.Add(reward);
+                var modelInfo = CreatureModelCfg.GetItemData(reward.creatureData.creatureInfo.model_id);
+                spineResources.Add(modelInfo.res_name);
+                if (!modelInfo.ui_show_spine.IsNull())
+                    spineResources.Add(modelInfo.ui_show_spine);
+            }
+        }
+        catch (Exception e)
+        {
+            LogUtil.LogError($"生成孕育结果失败:{e.Message}");
+            UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(2000034));
+            return false;
+        }
+
+        if (dataManager.TryCommitGashaponBatch(gashaponMachineData.payCrystal, rewards))
+            return true;
+
+        UIHandler.Instance.ToastHintText(TextHandler.Instance.GetTextById(2000034));
+        return false;
     }
 
     /// <summary>
@@ -228,6 +262,7 @@ public class GashaponMachineLogic : BaseGameLogic
         isRegisterEvent = false;
         await base.ClearGame();
     }
+    #endregion
 
     #region 事件
     /// <summary>
@@ -265,13 +300,8 @@ public class GashaponMachineLogic : BaseGameLogic
     /// </summary>
     public void EventForReset()
     {
-        //再次孕育需要消耗魔晶，魔晶不足则不重置
-        var userData = GameDataHandler.Instance.manager.GetUserData();
-        if (!userData.CheckHasCrystal(gashaponMachineData.payCrystal, isHint: true, isAddCrystal: true))
-        {
-            return;
-        }
-        PreGame();
+        if (gameState == GameStateEnum.Gaming)
+            PreGame();
     }
 
     /// <summary>

@@ -1,5 +1,6 @@
-public class BuffEntityConditionalCreateCrystal : BuffBaseEntity
+public class BuffEntityConditionalCreateCrystal : BuffEntityConditional
 {
+    #region 条件触发
     /// <summary>
     /// 触发BUFF
     /// </summary>
@@ -17,16 +18,12 @@ public class BuffEntityConditionalCreateCrystal : BuffBaseEntity
     }
 
     /// <summary>
-    /// 处理检测
+    /// 达标时掉落魔晶，并保留超过门槛的进度供下一次事件使用。
     /// </summary>
     public override void HandleForEvent()
     {
-        base.HandleForEvent();
-        if (CheckIsPre(buffEntityData))
-        {
-            buffEntityData.conditionalValue = 0;
-            //触发BUFF
+        if (TryConsumeTriggerCondition())
             TriggerBuffConditional(buffEntityData);
-        }
     }
+    #endregion
 }

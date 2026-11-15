@@ -1,9 +1,10 @@
-using UnityEngine;
+using System.Globalization;
 
 public class BuffEntityConditionalDeadAttack : BuffEntityConditionalDead
 {
+    #region 死亡引爆
     /// <summary>
-    /// 触发BUFF
+    /// 死亡时用持有者的攻击快照引爆，词条随机倍率参与爆炸伤害。
     /// </summary>
     public override bool TriggerBuffConditional(BuffEntityBean buffEntityData)
     {
@@ -13,8 +14,10 @@ public class BuffEntityConditionalDeadAttack : BuffEntityConditionalDead
         var targetFightCreatureEntity = GetFightCreatureEntityForTarget();
         if (targetFightCreatureEntity == null)
             return false;
-        //开始攻击
-        BuffEntityConditionalAttack.StartCreateAttack( buffEntityData,  targetFightCreatureEntity);
+        if (!long.TryParse(buffEntityData.GetBuffInfo().class_entity_data, NumberStyles.Integer, CultureInfo.InvariantCulture, out long attackModeId) || attackModeId <= 0)
+            return false;
+        targetFightCreatureEntity.CreateAttackModeForDeadExplosion(attackModeId, buffEntityData.GetTriggerValueRate());
         return true;
     }
+    #endregion
 }

@@ -15,6 +15,8 @@
     public int triggerNumLeft;
     //条件值记录 用于条件触发的记录
     public float conditionalValue = 0;
+    /// <summary>此 BUFF 由追加攻击附加，持续伤害同样不能再次触发追加攻击。</summary>
+    public bool isBuffAttackAgain;
     //当前堆叠层数（默认1，Stack 模式下增长，受 BuffInfoBean.stack_max 限制）
     public int stackCount = 1;
 
@@ -31,6 +33,7 @@
         timeUpdateTotal = 0;
         timeUpdate = 0;
         conditionalValue = 0;
+        isBuffAttackAgain = false;
         stackCount = 1;
         this.buffId = buffData.id;
         this.buffData = buffData;
@@ -59,6 +62,7 @@
         timeUpdate = 0;
         triggerNumLeft = 0;
         conditionalValue = 0;
+        isBuffAttackAgain = false;
         stackCount = 1;
     }
 

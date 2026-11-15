@@ -130,6 +130,8 @@ cardItem.SetData(creatureData, CardUseStateEnum.Show);
 
 ### 2. 战斗卡片使用
 
+撤下魔物后，`GameFightLogic.SelectCreatureDestoryHandle` 会按需刷新仍在场魔物的独行者属性。重生完成时原卡保持 Fighting。
+
 ```csharp
 // 战斗卡片需要额外设置原始位置
 UIViewCreatureCardItemForFight fightCard = GetComponent<UIViewCreatureCardItemForFight>();

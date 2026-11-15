@@ -139,20 +139,13 @@ public class BuffBaseEntity
     }
 
     /// <summary>
-    /// 触发BUFF
+    /// 按概率触发 BUFF，0（默认）和 100% 均必定触发。
     /// </summary>
     public virtual bool TriggerBuff(BuffEntityBean buffEntityData)
     {
         float triggerChance = buffEntityData.GetTriggerChance();
-        var itemBuffChance = triggerChance;
-        if (itemBuffChance > 0)
-        {
-            var randomOdds = UnityEngine.Random.Range(0f, 1f);
-            if (randomOdds >= itemBuffChance)
-            {
-                return false;
-            }
-        }
+        if (triggerChance > 0 && triggerChance < 1 && UnityEngine.Random.Range(0f, 1f) >= triggerChance)
+            return false;
         ShowBuffEffect();
         return true;
     }
@@ -193,7 +186,7 @@ public class BuffBaseEntity
     }
 
     /// <summary>
-    /// 事件触发-被攻击
+    /// 按前置条件的事件角色过滤后，累加本次实际扣除的护甲和生命。
     /// </summary>
     public virtual void EventForUnderAttack(FightUnderAttackBean fightUnderAttack)
     {
@@ -229,7 +222,7 @@ public class BuffBaseEntity
             }
         }
         //条件触发记录
-        buffEntityData.conditionalValue += fightUnderAttack.attackerDamage;
+        buffEntityData.conditionalValue += fightUnderAttack.damageApplied;
         HandleForEvent();
     }
 

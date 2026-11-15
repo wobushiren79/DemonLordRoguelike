@@ -70,7 +70,7 @@ public class AIIntentCreatureAttack : AIBaseIntent
     }
 
     /// <summary>
-    /// 每帧更新：先复查目标距离（脱靶即中断回待机），再累计额外攻击CD与推进攻速连发，并推进"准备→出手"普通攻击循环
+    /// 每帧复查射程，推进普通攻击和连发，并在有合法目标时发射一发排队的 BUFF 追加攻击。
     /// </summary>
     public override void IntentUpdate(AIBaseEntity aiEntity)
     {
@@ -107,6 +107,7 @@ public class AIIntentCreatureAttack : AIBaseIntent
                 AttackCreatureStartEnd();
             }
         }
+        FirePendingBuffAttack();
     }
 
     /// <summary>
@@ -139,11 +140,20 @@ public class AIIntentCreatureAttack : AIBaseIntent
 
     #region 攻击流程
     /// <summary>
-    /// 立即触发一次攻击（把准备计时拉满，下一帧即进入出手）
+    /// 独立发射一发待发的 BUFF 追加攻击，无法索敌时继续保留次数。
     /// </summary>
-    public virtual void AttackImm()
+    private void FirePendingBuffAttack()
     {
-        timeUpdateAttackPre = timeUpdateAttackPreCD;
+        var attacker = selfAIEntity?.selfCreatureEntity;
+        if (attacker == null || !attacker.HasPendingBuffAttack || attacker.IsDead()
+            || selfAIEntity.currentIntent != this || GameFightLogic.GetFightDeltaTime() <= 0)
+            return;
+
+        var direction = fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightAttack
+            ? DirectionEnum.Left : DirectionEnum.Right;
+        var target = FindNextTarget(direction);
+        if (target != null)
+            attacker.FireBuffAttack(target);
     }
 
     /// <summary>
@@ -281,7 +291,8 @@ public class AIIntentCreatureAttack : AIBaseIntent
         if (selfAIEntity == null || selfAIEntity.selfCreatureEntity == null)
             return;
         //按方向策略重新搜索目标（默认沿本发攻击方向单向搜；子类可覆盖为正面优先+背后补搜）
-        var findTargetCreature = FindNextTarget(attackMode);
+        var direction = attackMode.attackModeData.attackDirection.x > 0 ? DirectionEnum.Right : DirectionEnum.Left;
+        var findTargetCreature = FindNextTarget(direction);
         //找不到最近目标 → 回待机
         if (findTargetCreature == null)
         {
@@ -309,10 +320,9 @@ public class AIIntentCreatureAttack : AIBaseIntent
     /// 攻击后重新搜索下一个目标的方向策略；默认沿本发攻击方向单向搜索。
     /// 子类可覆盖（如防守生物：正面优先，正面无目标时向身后补搜）。
     /// </summary>
-    protected virtual FightCreatureEntity FindNextTarget(BaseAttackMode attackMode)
+    protected virtual FightCreatureEntity FindNextTarget(DirectionEnum direction)
     {
-        DirectionEnum findDirectrion = attackMode.attackModeData.attackDirection.x > 0 ? DirectionEnum.Right : DirectionEnum.Left;
-        return selfAIEntity.FindCreatureEntityForSinge(findDirectrion);
+        return selfAIEntity.FindCreatureEntityForSinge(direction);
     }
 
     /// <summary>

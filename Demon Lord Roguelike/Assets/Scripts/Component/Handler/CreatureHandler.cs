@@ -232,19 +232,20 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// </summary>
     public FightCreatureEntity CreateDefenseCreatureEntity(GameObject targetObj, CreatureBean creatureData, Vector3Int creaturePos)
     {
+        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        //重生替换：死亡事件派发结束后，先清掉旧实体的 BUFF 与 UUID 占位，再初始化新实体。
+        var existSameIdEntity = gameFightLogic.fightData.GetCreatureById(creatureData.creatureUUId, CreatureFightTypeEnum.FightDefense);
+        if (existSameIdEntity != null && existSameIdEntity.IsDead())
+        {
+            BuffHandler.Instance.RemoveFightCreatureBuffs(creatureData.creatureUUId);
+            gameFightLogic.fightData.RemoveDefenseCreature(existSameIdEntity);
+        }
         //创建战斗生物数据
         FightCreatureBean fightCreatureData = GetFightCreatureData(creatureData, CreatureFightTypeEnum.FightDefense);
         fightCreatureData.positionCreate = creaturePos;
         //创建战斗生物
         FightCreatureEntity fightCreatureEntity = GetFightCreatureEntity(targetObj, fightCreatureData);
         //再添加数据
-        GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        //重生替换场景：同UUID的已死旧实体仍占用主列表key时先按实例移出（否则 Add 同key静默失败 → 新实体不在主列表成幽灵）
-        var existSameIdEntity = gameFightLogic.fightData.GetCreatureById(creatureData.creatureUUId, CreatureFightTypeEnum.FightDefense);
-        if (existSameIdEntity != null && existSameIdEntity.IsDead())
-        {
-            gameFightLogic.fightData.RemoveDefenseCreature(existSameIdEntity);
-        }
         gameFightLogic.fightData.AddDefenseCreatureByPos(creaturePos, fightCreatureEntity);
         //再创建AI
         fightCreatureEntity.aiEntity = AIHandler.Instance.CreateAIEntity<AIDefenseCreatureEntity>(actionBeforeStart: (targetEntity) =>
@@ -259,6 +260,8 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         //推送"新建防守魔物实体"事件：CreatureHandler 只负责生成，是否/如何重算属性交由 GameFightLogic 决定
         //(动态属性馈赠"随场上魔物数量缩放"依赖此事件在放置后重算已在场魔物的加成)
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_DefenseCreatureCreate, fightCreatureEntity);
+        fightCreatureData.FillInitialHealthAndArmor();
+        fightCreatureEntity.RefreshLifeBarProgress();
         return fightCreatureEntity;
     }
     #endregion
@@ -488,8 +491,11 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         //入池前复位表现层（动画/身体颜色/网格）
         targetEntity.ResetForRecycle();
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-        //删掉对应的BUFF数据
-        BuffHandler.Instance.RemoveFightCreatureBuffs(targetEntity.fightCreatureData.creatureData.creatureUUId);
+        string creatureUUId = targetEntity.fightCreatureData.creatureData.creatureUUId;
+        var currentEntity = gameFightLogic.fightData.GetCreatureById(creatureUUId, creatureType);
+        //该 UUID 若已由重生实体接管，其 BUFF 已重新挂载。
+        if (currentEntity == null || currentEntity == targetEntity)
+            BuffHandler.Instance.RemoveFightCreatureBuffs(creatureUUId);
         //放进缓存
         if (targetEntity.creatureObj != null)
         {
@@ -506,7 +512,6 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             //按实例精确移除（同格多生物按positionCreate首匹配会误删、重生替换场景同UUID会误删新实体）
             gameFightLogic.fightData.RemoveDefenseCreature(targetEntity);
             //卡片进复活CD仅当场上已无该生物的存活实体（DeadRebirth重生替换场景：新实体在场，卡片保持Fighting不进CD）
-            string creatureUUId = targetEntity.fightCreatureData.creatureData.creatureUUId;
             var existEntity = gameFightLogic.fightData.GetCreatureById(creatureUUId, CreatureFightTypeEnum.FightDefense);
             if (existEntity == null || existEntity.IsDead())
             {

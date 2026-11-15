@@ -716,11 +716,18 @@ EventsInfo.Language_Change                // 语言切换
 
 ## 业务 UI 速记（按需补充，完整清单见 ProjectUI.md）
 
+### UIViewMainLoadItem（存档列表）
+
+- `SetData` 优先展示读档错误态，再区分空槽与可继续的存档。继续、创建和删除的点击处理按同一状态校验，错误记录即使没有存档 ID 也不可进入新建流程。删除确认保存打开对话框时的目标槽。
+
 ### UIFightAbyssalBlessing（深渊馈赠选择）
 
 候选卡片由 `HorizontalLayoutGroup` 根据实际可见项单排居中。`FitCardRowToWidth` 按画布宽度缩放整行并预留卡面放大空间。卡面动画作用于 `ContentBG`，因此刷新候选数量或改变窗口尺寸时，布局组仍可调整卡槽位置。详见 `abyssal-blessing-system`。
 
 ### UIViewBuffShowItem（满值 BUFF 描述）
+
+双属性词条的 `{PercentageSecondary}` 使用实际第二属性倍率，死亡税 `{ValueRange}` 读取 `GetCrystalAmountRange`。卡片与进阶提示复用同一配置。
+
 
 由详情传入稀有度词条来源，行组件决定是否标金数字并应用 TMP 原生扫光。描述占位中 `{Percentage}`=roll后效果率，`{TriggerChance}`=实际触发概率（`trigger_chance`，0按必然触发显示100），两者不得混用。`SetData()` 切到普通词条时恢复实例自己的原材质和映射设置。扫光材质应用前配置 Glow，让 TMP 在赋值时计算字形留边。运行时贴图与材质按原材质及底色全局缓存，最后一个使用过扫光的行销毁时释放。判定和参数见 [creature-card-system](../creature-card-system/SKILL.md)。
 
@@ -734,6 +741,9 @@ EventsInfo.Language_Change                // 语言切换
 
 ### UICreatureVat（魔物进阶 / CreatureVat 培养槽）
 
+进阶实际生成与详情预览共用目标魔物过滤和 `BuffBean.GetInheritedValueRange` / `GetInheritedRateRange`。单属性召唤 CD、耗魔减免取最负的素材率作为随机上界，满减免不会洗弱。
+
+
 `Assets/Scripts/Component/UI/Game/CreatureVat/UICreatureVat.cs`，魔物进阶主界面（升稀有度 + 授予稀有度 BUFF）：
 
 - **打开时切到目标容器（`indexVatForOpen`）**：`OpenUI` 调 `SetCurrentVat(indexVatForOpen)` 后立即复位 0；仅场景 Vat 建筑按 E 交互入口注入（`ControlForGameBase.GetInteractionVatIndex` 从命中的 `VatInteraction` 交互体向上找 `objBuildingVat` 直接子物体取 `GetSiblingIndex()`，与 `UserAscendBean.GetAscendData(i)`/`SetCurrentVat(i)` 的容器索引同口径），从哪个设施按 E 就切到哪个 vat；基地核心/测试入口不注入，默认 0=第一个容器。**ESC 键退出**：重写 `OnInputActionForStarted` 拦截 `InputActionUIEnum.ESC` 调 `OnClickForExit()`，等同点击离开按钮（走入口注入的 `actionForExit`）。
@@ -742,7 +752,7 @@ EventsInfo.Language_Change                // 语言切换
 - **开始进阶即托管目标魔物**：`OnClickForStart` 确认后由 `UserAscendBean.AddAscendData` 内部收口——置 `creatureState=Vat`、`RemoveBackpackCreature`（连带移出所有阵容）把目标魔物**从背包物理移除**，本体（含装备）嵌入 `UserAscendDetailsBean.creatureData` 托管——进阶期间阵容/魔物管理/献祭/榨汁等背包列表天然不可见不可操作（替代旧方案「仅置 Vat 状态、各 UI 自行筛选」）。完成/取消时 `RemoveAscendData` 复位 `Idle` 并 `AddBackpackCreature` 归还背包（列表末尾、不自动回阵容；无托管生物=旧存档时按 `creatureUUId` 兜底回查复位）。确认弹窗文案 80010 含「进阶中的魔物将移出阵容」提示。
 - **目标列表**：仅 Idle 且未满级（`RarityInfoCfg.GetAscendTimeByRarity(rarity) > 0`，排除 L）。**默认排序**（`InitCreaturekDataForTarget` 内 `List.Sort`）：**阵容魔物优先**（`GetLinupIndex` 阵容序号升序，未上阵返回 0 排最后），其余稀有度升序 N→L，同稀有度按等级降序。目标/素材列表卡片（`UIViewCreatureCardItemForCreatureAscend`）带阵容标记通用控件 `ui_UIViewCreatureCardItemLineUpMark`（不在任何阵容自动隐藏，详见 creature-card-system skill）。
 - **素材列表**：Idle + 排除目标 + 排除上阵（`UserDataBean.CheckIsInAnyLineup`）+ 仅保留稀有度高于目标的魔物；可选上限做成研究 `GetUnlockCreatureVatMaterialMax()`=基础5(`UserLimmitBean.creatureVatMaterialMax`)+`UnlockEnum.CreatureVatMaterialNum`(100000008)等级(满级10)，超出弹 Toast（文本 id 80011）。`LimmitText` 经 `RefreshMaterialLimitText()` 显示「已选/上限」，满时数量转通用警示红 `ColorUtil.WrapLimitFull`。**默认排序**（`InitCreaturekDataForMaterial` 内 `List.Sort`）：目标下一阶段稀有度(=目标稀有度+1)置顶，其余稀有度升序，同稀有度等级降序。
-- **预定 BUFF**：`BuffUtil.CreateAscendRarityBuff(newRarity, materials)`（权重占比制：素材 BUFF 按 id 聚合、每份权重 1，随机增益默认权重 1 经「随机增益缩减」研究(100000009)每级 -0.1 满级 0；各 id 概率=数量/(素材总份数+随机权重)，命中继承并重随机数值≥素材原值，落空回退通用随机，无素材始终通用随机；UR/L 无类型为 null）。
+- **预定 BUFF**：`BuffUtil.CreateAscendRarityBuff(newRarity, materials, targetCreatureSelect)`（权重占比制：素材 BUFF 按 id 聚合、每份权重 1，随机增益默认权重 1 经「随机增益缩减」研究(100000009)每级 -0.1 满级 0；各 id 概率=数量/(素材总份数+随机权重)，命中继承并重随机后强度不低于同 id 最强素材，落空回退通用随机，无素材始终通用随机；UR/L 无类型为 null）。
 - **耗时与进度（真实时间驱动）**：按源稀有度查 `RarityInfoCfg.GetAscendTimeByRarity`（excel_rarity_info 新列 `ascend_time`）作 `timeMax`；进度**不再逐秒累加**，由开始进阶本地时间戳 `startTimeTicks` 实时计算 `GetProgress()=Max(0,(Now-startTime).秒)+extraProgress`——暂停/关游戏不停，重进自动补算离线差。**魔晶加速研究门控**：`GetUnlockCreatureVatAddProgressLevel()`(`UnlockEnum.CreatureVatAddProgress`=100000007,level_max=5) 0级隐藏加速按钮；已研究时**恒消耗1魔晶**，等级=奖励进度秒数=进度倍率(Lv N=1魔晶+N秒，累入 `extraProgress`)，按钮文本 80009「加速进阶 +{等级}秒/晶」。**长按加速音效**：`OnClickForAddProgress` 返回 `bool`(是否扣魔晶成功)，长按(`OnClickLongForAddProgress`，`LongPressButton` 每 0.1 秒重复触发) 据此由 `PlayAddProgressLongPressSound()` 调 `AudioHandler.Instance.PlaySoundForInterval(AudioEnum.sound_pay_2, 0.15f)` 限频播 `sound_pay_2`（限频收在 AudioHandler，0.15 秒≈每 0.2 秒一声，见 audio-system skill）（`sound_pay_8` 扣减音配置 `volume_scale=0` 静音，不指望它）。
 - **临时进阶数据**：`UserAscendDetailsBean`（随存档序列化）——`startTimeTicks`（开始时间戳）+ `extraProgress`（魔晶奖励秒数）算出进度，旧字段 `progress` 仅作旧存档迁移源（首次读取反推后清零），含 `creatureUUId`（冗余索引/兜底回查）、`creatureData`（托管的目标生物本体，含装备）、`targetRarity`/`timeMax`/`ascendBuff`，`GetProgress()`/`IsComplete()` / `GetProgressNormalized()` 驱动完成判定与进度条；缸内展示与完成落地均直读 `creatureData`，不回查背包。
 - **进度条配色（`RefreshVatProgress`）**：`ui_ProgressText` 与 `ui_Progress`(fillAmount) 的 `color` 按归一化进度 `ColorUtil.GetProgressColor(progressNormalized)` 分段着色（与献祭成功率同口径）。
@@ -752,7 +762,7 @@ EventsInfo.Language_Change                // 语言切换
 - **完成进阶收尾（`OnClickForComplete`）**：落地数据→`RemoveAscendData`→存档→清空容器后做**反馈**（胜利音效 `AudioEnum.sound_win_1` + 容器处庆祝粒子 `EffectHandler.ShowCreatureAscendCompleteEffect(pos, rarityColor)`——专用粒子 `Effect_AscendComplete_1`(白模板 ParticleSystem,运行时按新稀有度 `ui_board_color` 给 startColor 上色 = 稀有度流光) + 成功 Toast `GetTextById(80013)` state=1 绿色，口径同献祭 61007），并**重建目标列表**（`targetCreatureSelect=null`+清素材+`InitCreaturekDataForTarget()`）以反映升阶后的新稀有度，否则列表停留在进阶前状态。
 - **进阶详情 UI（AscendData）**：仅「素材选择阶段（`userAscendDetails==null`）+ 已选目标」时显示 `ui_AscendData`、隐藏 `ui_ProgressContent`（培养阶段反之），统一在 `RefreshAscendData()` 切换。`ui_ProgressContent` 未序列化进 Component，靠运行时 `AutoLinkUI` 按名绑定（同理 `ui_AscendIcon` 误绑 Image 也由 AutoLink 自愈到 Animator）。
   - 升阶前/后卡牌 `ui_UIViewCreatureCardItem_BeforeAscend/_AfterAscend` 用 `CardUseStateEnum.ShowNoPopup` 关 popup；After 卡走 `BuildAscendPreviewCreature(target,newRarity)`（稀有度+1、**含 `transformItemId`**，预览卡同步显示幻化形象；引用字段共享）；两卡 `PlayCardDropIn` 从上掉落+OutBack 缩放。
-  - BUFF 增益面板 `ui_AscendBuffs`：`BuffUtil.GetCreatureAscendBuffChances(newRarity, materials)` 算概率，子项 `UIViewCreatureVatAscendBuffItem` 实时克隆/复用缓存、一排≤5 个超出 y 轴下移，出现/消失/移动均 DOTween；`SetData(chance,rarity)` 名字+BG(`ui_BG_Image`)按稀有度配色(`RarityInfo.buff_color`)，BG(`ui_BG_PopupButtonCommonView`)悬浮提示 BUFF 内容(`content_language`，未解锁「进阶增益范围预览」研究时占位参数 `{..}` 数值未定故 Regex 替 `???`，已解锁则 `{Percentage}`/`{Value}` 显示 min~max 范围、`{TriggerChance}` 显示实际触发概率（`trigger_chance`，0按必然触发显示100）、其余固定参数显示实际值)；AscendIcon 用向右戳循环 Animator。
+  - BUFF 增益面板 `ui_AscendBuffs`：`BuffUtil.GetCreatureAscendBuffChances(newRarity, materials, targetCreatureSelect)` 算概率，子项 `UIViewCreatureVatAscendBuffItem` 实时克隆/复用缓存、一排≤5 个超出 y 轴下移，出现/消失/移动均 DOTween；`SetData(chance,rarity)` 名字+BG(`ui_BG_Image`)按稀有度配色(`RarityInfo.buff_color`)，BG(`ui_BG_PopupButtonCommonView`)悬浮提示 BUFF 内容(`content_language`，未解锁「进阶增益范围预览」研究时占位参数 `{..}` 数值未定故 Regex 替 `???`，已解锁则 `{Percentage}`/`{Value}` 显示 min~max 范围、`{TriggerChance}` 显示实际触发概率（`trigger_chance`，0按必然触发显示100）、其余固定参数显示实际值)；AscendIcon 用向右戳循环 Animator。
 - 详细 BUFF 生成规则见 [buff-system](../buff-system/SKILL.md) / [utils-system](../utils-system/SKILL.md)。
 
 ### UIDialogSelectCreature（魔物选择弹窗）

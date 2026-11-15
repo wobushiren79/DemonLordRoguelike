@@ -1,55 +1,42 @@
 public class BuffEntityBaseHPChange : BuffBaseEntity
 {
+    #region 生命变化
     /// <summary>
-    /// 基础方法
+    /// 执行通用 BUFF 触发判定，供范围子类使用。
     /// </summary>
     protected bool InvokeBaseTriggerBuff(BuffEntityBean buffEntityData) => base.TriggerBuff(buffEntityData);
-    
+
+    /// <summary>
+    /// 按持有者生命上限计算生命变化。
+    /// </summary>
     public override bool TriggerBuff(BuffEntityBean buffEntityData)
     {
-        bool isTriggerSuccess = base.TriggerBuff(buffEntityData);
-        if (isTriggerSuccess == false) return false;
-        //获取指定生物
-        var targetCreature = GetFightCreatureEntityForTarget();
-        return HPChange(buffEntityData, targetCreature);
+        if (!base.TriggerBuff(buffEntityData)) return false;
+        return HPChange(buffEntityData, GetFightCreatureEntityForTarget());
     }
 
     /// <summary>
-    /// HP改变
+    /// 对存活目标应用生命变化。范围效果可指定施加者的生命上限作为计算基准。
     /// </summary>
-    public static bool HPChange(BuffEntityBean buffEntityData, FightCreatureEntity fightCreatureEntity)
+    public static bool HPChange(BuffEntityBean buffEntityData, FightCreatureEntity fightCreatureEntity, float? sourceMax = null)
     {
-        if (fightCreatureEntity == null || fightCreatureEntity.fightCreatureData == null || fightCreatureEntity.IsDead())
-        {
-            return false;
-        }
-        else
-        {
-            int changeHPData = 0;
-            var buffInfo = buffEntityData.GetBuffInfo();
+        var targetData = fightCreatureEntity?.fightCreatureData;
+        if (targetData == null || fightCreatureEntity.IsDead()) return false;
 
-            //固定计算
-            float triggerValue = buffEntityData.GetTriggerValue();
-            changeHPData += (int)triggerValue;
-
-            //百分比计算
-            float triggerValueRate = buffEntityData.GetTriggerValueRate();
-            float HPMax = fightCreatureEntity.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.HP);
-            changeHPData += (int)(HPMax * triggerValueRate);
-            
-            //如果改变的HP大于0 则回复HP
-            if (changeHPData > 0)
-            {
-                fightCreatureEntity.RegainHP(buffEntityData.targetCreatureUUId, buffEntityData.targetCreatureUUId, changeHPData);
-            }
-            //如果小于0 则受到攻击
-            else
-            {
-                FightUnderAttackBean fightUnderAttackData = FightHandler.Instance.GetFightUnderAttackData(buffEntityData, -changeHPData);
-                fightCreatureEntity.UnderAttack(fightUnderAttackData);
-            }
-            return true;
+        float max = sourceMax ?? targetData.GetAttribute(CreatureAttributeTypeEnum.HP);
+        int change = (int)buffEntityData.GetTriggerValue() + (int)(max * buffEntityData.GetTriggerValueRate());
+        string targetId = targetData.creatureData.creatureUUId;
+        if (change > 0)
+        {
+            fightCreatureEntity.RegainHP(buffEntityData.applierCreatureUUId, targetId, change);
         }
+        else if (change < 0)
+        {
+            var attackData = FightHandler.Instance.GetFightUnderAttackData(buffEntityData, -change);
+            attackData.attackedId = targetId;
+            fightCreatureEntity.UnderAttack(attackData);
+        }
+        return change != 0;
     }
-
+    #endregion
 }

@@ -68,6 +68,8 @@ Bean/
 
 > **伤害转移不在 `FightCreatureBean` 上存标记（2026-10-22 重构）**：代受者/转移比例/表现全部由 BUFF 自己持有（`BuffEntityConditionalShieldTransfer`），拦截统一走 `BuffBaseEntity.InterceptUnderAttack(incomingDamage, out transferApplierId)` 虚方法，由 `FightCreatureEntity.UnderAttack` 遍历目标活跃 BUFF 链式分摊——BUFF 在=生效、移除=失效，不需要任何 Bean 侧标记/兜底清理。新增同类效果（减伤/分摊/改道）请重写该虚方法，不要往 `FightCreatureBean` 加字段。配套：`FightUnderAttackBean.isDamageTransferred`（改道数据旗标，防转移成环最多一跳，`ClearData` 重置）+ `SetDataForTransferFrom(source, newAttackedId)` 拷贝构造。
 
+> 战斗累计使用 `FightUnderAttackBean.damageApplied`，原攻击额仍在 `attackerDamage`。`BuffBean.EnsureCurrentTuning` 在旧档读写和词条消费时同步本次平衡参数，词条 ID 保留，旧百分比按原档位映射至新范围。
+
 > **`CreatureBean.dicFixedAttribute`（手写 `CreatureBeanPartial.cs`，`Dictionary<CreatureAttributeTypeEnum,float>`，`[JsonIgnore]+[NonSerialized]` 运行时字段不入存档）**：测试模式专用的**固定基础值**——设置后 `CreatureBean.GetAttribute` 该项基础值直接取固定值（跳过 creatureInfo/npcInfo 配置分支），角色加点/装备/自身BUFF/深渊馈赠仍照常叠加（**非最终值锁定**）。由 GameTestEditor「🛡️ 防守方固定属性」配置（`FightBeanForTest.dicTestDefenseFixedAttribute` 中转），`GameFightLogicTest` 应用到测试战斗防守方全部生物（卡片魔物+魔王核心；MP 被固定时测试魔王蓝量让位），战中克隆生物经 `GameFightLogic_DefenseCreatureCreate` 事件兜底补设（DeepCopy 丢 NonSerialized 字段）。⚠️ 区别于 `FixedAttributeForCreate`（新建存档初始魔物的固定**加点**，写入 `creatureAttribute` 入存档）——两者名字相近但完全不同机制。详见 test-system skill「防守方固定属性设置」。
 
 > **`FightBean` 防御生物按占位操作（手写 `Assets/Scripts/Bean/Game/FightBean.cs`）**：`CheckDefenseCreatureByPos`/`GetDefenseCreatureByPos` 均跳过 `isPositionReleased` 实体；**`RemoveDefenseCreatureByPos` 已删除**，替换为 **`RemoveDefenseCreature(FightCreatureEntity)`**——`DictionaryList.RemoveByValue` 按实例精确移除（按 positionCreate 首匹配会误删同格新生物、按 UUID 会误删重生替换的新实体）。

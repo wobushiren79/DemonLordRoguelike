@@ -2,7 +2,7 @@
 /// 条件触发-魔王回复魔力（SR稀有度BUFF「左膀右臂/舍己为王」：满足前置条件后给魔王(防守核心)回复 trigger_value 点魔力）。
 /// <para>前置条件走 pre_info（击杀数2001/累计承伤3001等），事件走 class_entity_events；回复经 FightCreatureBean.ChangeMP 自动钳制到 [0,MP上限]，并刷新魔王魔力显示。</para>
 /// </summary>
-public class BuffEntityConditionalDemonLordMPRegain : BuffBaseEntity
+public class BuffEntityConditionalDemonLordMPRegain : BuffEntityConditional
 {
     #region 触发
     /// <summary>
@@ -27,17 +27,12 @@ public class BuffEntityConditionalDemonLordMPRegain : BuffBaseEntity
 
     #region 事件处理
     /// <summary>
-    /// 处理检测：满足前置条件则重置条件计数并触发
+    /// 满足前置条件时回复魔力，将超出门槛的进度留到下一次事件。
     /// </summary>
     public override void HandleForEvent()
     {
-        base.HandleForEvent();
-        if (CheckIsPre(buffEntityData))
-        {
-            buffEntityData.conditionalValue = 0;
-            //触发BUFF
+        if (TryConsumeTriggerCondition())
             TriggerBuffConditional(buffEntityData);
-        }
     }
     #endregion
 }

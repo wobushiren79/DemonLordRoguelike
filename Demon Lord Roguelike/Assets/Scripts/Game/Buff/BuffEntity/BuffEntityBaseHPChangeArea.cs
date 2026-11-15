@@ -1,50 +1,65 @@
+using System;
+using System.Globalization;
 
 public class BuffEntityBaseHPChangeArea : BuffEntityBaseHPChange
 {
+    #region 范围生命变化
+    /// <summary>
+    /// 执行通用触发判定并对范围内友军应用生命变化。
+    /// </summary>
     public override bool TriggerBuff(BuffEntityBean buffEntityData)
     {
-        bool isTriggerSuccess = base.InvokeBaseTriggerBuff(buffEntityData);
-        if (isTriggerSuccess == false) return false;
-
-        //获取指定生物
-        var targetCreature = GetFightCreatureEntityForTarget();
-        return HPChangeArea(buffEntityData, targetCreature);
+        if (!InvokeBaseTriggerBuff(buffEntityData)) return false;
+        return HPChangeArea(buffEntityData, GetFightCreatureEntityForTarget());
     }
 
     /// <summary>
-    /// 区域DR改变
+    /// 对范围内友军应用生命变化。死亡效果使用死者的生命上限，常规效果使用受益者上限。
     /// </summary>
-    public static bool HPChangeArea(BuffEntityBean buffEntityData, FightCreatureEntity fightCreatureEntity, bool isChangeSelf = false)
+    public static bool HPChangeArea(BuffEntityBean buffEntityData, FightCreatureEntity source, bool isChangeSelf = false, float? sourceMax = null)
     {
-        var buffInfo = buffEntityData.GetBuffInfo();
-        //作用半径
-        float checkRadius = float.Parse(buffInfo.class_entity_data);
-        //圆形半径
-        var targetColliders = RayUtil.OverlapToSphere(fightCreatureEntity.fightCreatureData.positionDead, checkRadius, 1 << fightCreatureEntity.fightCreatureData.GetCreatureLayer(false));
-        if (targetColliders != null)
-        {
-            GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
-            for (int i = 0; i < targetColliders.Length; i++)
-            {
-                var itemHitterCollder = targetColliders[i];
-                string creatureId = itemHitterCollder.gameObject.name;
-                var targetCreature = gameFightLogic.fightData.GetCreatureById(creatureId, fightCreatureEntity.fightCreatureData.creatureFightType);
-                if (targetCreature != null && !targetCreature.IsDead())
-                {
-                    //判断是否要改变自己的HP 如果不改变并且当前生物是自己 则不处理
-                    if (!isChangeSelf && targetCreature == fightCreatureEntity)
-                    {
+        return BuffEntityAreaChange.Apply(buffEntityData, source, isChangeSelf, target => HPChange(buffEntityData, target, sourceMax));
+    }
+    #endregion
+}
 
-                    }
-                    else
-                    {
-                        HPChange(buffEntityData, targetCreature);
-                    }
-                }
+/// <summary>
+/// 范围回复查找同阵营的存活目标，包含友方特殊显示层。
+/// </summary>
+internal static class BuffEntityAreaChange
+{
+    #region 范围判定
+    /// <summary>
+    /// 读取配置半径并对命中的友军应用效果。
+    /// </summary>
+    internal static bool Apply(BuffEntityBean buffEntityData, FightCreatureEntity source, bool isChangeSelf, Action<FightCreatureEntity> applyChange)
+    {
+        if (source?.fightCreatureData == null
+            || !float.TryParse(buffEntityData.GetBuffInfo().class_entity_data, NumberStyles.Float, CultureInfo.InvariantCulture, out float radius)
+            || radius <= 0f)
+            return false;
+
+        var sourceData = source.fightCreatureData;
+        int layerMask = 1 << sourceData.GetCreatureLayer(false);
+        if (sourceData.creatureFightType == CreatureFightTypeEnum.FightDefense)
+            layerMask |= (1 << LayerInfo.CreatureDef_Front) | (1 << LayerInfo.CreatureDef_Back);
+        else if (sourceData.creatureFightType == CreatureFightTypeEnum.FightAttack)
+            layerMask |= (1 << LayerInfo.CreatureAtt_Front) | (1 << LayerInfo.CreatureAtt_Back);
+
+        var gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
+        var center = source.IsDead() ? sourceData.positionDead : source.creatureObj.transform.position;
+        var colliders = RayUtil.OverlapToSphere(center, radius, layerMask);
+        if (colliders != null)
+        {
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                var target = gameFightLogic.fightData.GetCreatureById(colliders[i].gameObject.name, sourceData.creatureFightType);
+                if (target != null && !target.IsDead() && (target != source || isChangeSelf))
+                    applyChange(target);
             }
         }
-        //绘制测试范围
-        BaseAttackMode.DrawTestAreaForSphere(fightCreatureEntity.fightCreatureData.positionDead, checkRadius, 1);
+        BaseAttackMode.DrawTestAreaForSphere(center, radius, 1);
         return true;
     }
+    #endregion
 }

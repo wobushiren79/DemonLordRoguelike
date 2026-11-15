@@ -6,6 +6,7 @@
 
 using UnityEngine;
 using System;
+using System.IO;
 
 public class UserDataService : BaseDataService<UserDataBean>
 {
@@ -37,23 +38,12 @@ public class UserDataService : BaseDataService<UserDataBean>
             LogUtil.Log("保存文件失败-没有数据");
             return;
         }
+        if (!TryReplayGashaponBatch())
+            return;
 
         // 创建目录
         FileUtil.CreateDirectory(StoragePath);
-
-        // 备份主存档，最多保留3份，循环覆盖
-        if (data.saveRemarkIndex >= 3)
-        {
-            data.saveRemarkIndex = 0;
-        }
-
-        string sourcePath = $"{StoragePath}/{FileName}";
-        string backupPath = $"{StoragePath}/{FileName}_Backups_{data.saveRemarkIndex}";
-        bool isRemarkSuccess = FileUtil.CopyFile(sourcePath, backupPath, true);
-        if (isRemarkSuccess)
-        {
-            data.saveRemarkIndex++;
-        }
+        BackupMainSave(data);
 
         // 写入主存档
         base.Save(data);
@@ -68,11 +58,126 @@ public class UserDataService : BaseDataService<UserDataBean>
     }
 
     /// <summary>
+    /// 按原槽位策略轮换备份主存档
+    /// </summary>
+    private void BackupMainSave(UserDataBean data)
+    {
+        // 备份主存档，最多保留3份，循环覆盖
+        if (data.saveRemarkIndex >= 3)
+        {
+            data.saveRemarkIndex = 0;
+        }
+
+        string sourcePath = $"{StoragePath}/{FileName}";
+        string backupPath = $"{StoragePath}/{FileName}_Backups_{data.saveRemarkIndex}";
+        bool isRemarkSuccess = FileUtil.CopyFile(sourcePath, backupPath, true);
+        if (isRemarkSuccess)
+        {
+            data.saveRemarkIndex++;
+        }
+    }
+
+    #region 孕育发奖保存
+    /// <summary>
+    /// 当前槽位的孕育恢复日志路径
+    /// </summary>
+    private string GashaponJournalPath => $"{StoragePath}/GashaponPending_{slotIndex}";
+
+    /// <summary>
+    /// 保存孕育批次涉及的三个存档快照，日志原子落盘即提交成功
+    /// </summary>
+    public bool TrySaveGashaponBatch(UserDataBean data)
+    {
+        if (!TryReplayGashaponBatch())
+            return false;
+
+        BackupMainSave(data);
+        var journal = new GashaponSaveJournal
+        {
+            main = JsonUtil.ToJson(data, JsonType),
+            creatures = JsonUtil.ToJson(data.GetUserBackpackCreatureData(), JsonTypeEnum.Net),
+            achievements = JsonUtil.ToJson(data.GetUserAchievementData(), JsonTypeEnum.Net),
+        };
+        string json = JsonUtil.ToJson(journal, JsonTypeEnum.Net);
+        if (!FileUtil.TryCreateTextFileAtomic(GashaponJournalPath, json))
+            return false;
+
+        // 回放中断时保留日志，读档或下一次保存前用同样的快照继续恢复
+        TryReplayGashaponBatch();
+        return true;
+    }
+
+    /// <summary>
+    /// 幂等地回放已提交的孕育快照，三个文件均写完才移除日志
+    /// </summary>
+    private bool TryReplayGashaponBatch()
+    {
+        string path = GashaponJournalPath;
+        string json;
+        try
+        {
+            json = File.ReadAllText(path);
+        }
+        catch (FileNotFoundException)
+        {
+            return true;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return true;
+        }
+        catch (Exception e)
+        {
+            LogUtil.LogWarning($"读取孕育恢复日志失败:{e.Message}");
+            return false;
+        }
+
+        try
+        {
+            var journal = JsonUtil.FromJson<GashaponSaveJournal>(json, JsonTypeEnum.Net);
+            if (journal == null || string.IsNullOrEmpty(journal.main)
+                || string.IsNullOrEmpty(journal.creatures) || string.IsNullOrEmpty(journal.achievements))
+            {
+                throw new InvalidDataException("孕育恢复日志缺少存档内容");
+            }
+
+            if (!FileUtil.TryCreateTextFileAtomic(StoragePath, $"UserBackpackCreature_{slotIndex}", journal.creatures)
+                || !FileUtil.TryCreateTextFileAtomic(StoragePath, $"UserAchievement_{slotIndex}", journal.achievements)
+                || !FileUtil.TryCreateTextFileAtomic(StoragePath, FileName, journal.main))
+            {
+                return false;
+            }
+
+            File.Delete(path);
+            return true;
+        }
+        catch (Exception e)
+        {
+            LogUtil.LogWarning($"恢复孕育存档失败:{e.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// 同一批孕育后的完整文件快照，用于重放，避免重复扣款或新增重复魔物
+    /// </summary>
+    private sealed class GashaponSaveJournal
+    {
+        public string main;
+        public string creatures;
+        public string achievements;
+    }
+    #endregion
+
+    /// <summary>
     /// 读取用户数据（主存档 + 注入拆分的解锁/成就/背包道具/背包生物/好感/故事数据）
     /// 拆分文件不存在时（全新槽位或旧存档）注入空数据，不读取旧版内嵌字段
     /// </summary>
     public override UserDataBean Load(bool isShowLog = true)
     {
+        if (!TryReplayGashaponBatch())
+            throw new IOException("孕育存档恢复失败");
+
         UserDataBean data = base.Load(isShowLog);
         if (data == null)
             return null;
@@ -90,6 +195,7 @@ public class UserDataService : BaseDataService<UserDataBean>
     /// </summary>
     public override void Delete()
     {
+        FileUtil.DeleteFile(GashaponJournalPath);
         base.Delete();
         FileUtil.DeleteFile($"{StoragePath}/UserUnlock_{slotIndex}");
         FileUtil.DeleteFile($"{StoragePath}/UserAchievement_{slotIndex}");

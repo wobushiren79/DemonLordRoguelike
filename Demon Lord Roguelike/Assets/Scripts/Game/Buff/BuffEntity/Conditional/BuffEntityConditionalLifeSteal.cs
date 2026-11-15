@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// 条件触发-伤害吸血（SSR稀有度BUFF「吸一吸」）：自身造成伤害时按rate转化为自身生命，
+/// 条件触发-伤害吸血（SSR稀有度BUFF「吸一吸」）：自身实际扣除的护甲和生命按 rate 转化为自身生命，
 /// 走正式 RegainHP 治疗路径（真实回血>0会派发生物回复事件，可喂养治疗计数类BUFF）；
 /// 按 attackerId 判定，BUFF来源伤害（反伤/再攻击等）同样触发吸血；AOE每个目标各触发一次。
 /// </summary>
@@ -19,9 +19,9 @@ public class BuffEntityConditionalLifeSteal : BuffEntityConditional
         if (fightUnderAttack.attackedId.Equals(buffEntityData.targetCreatureUUId)) return;
         var selfCreature = GetFightCreatureEntityForTarget();
         if (selfCreature == null || selfCreature.fightCreatureData == null || selfCreature.IsDead()) return;
-        //吸血量=名义伤害×rate
+        //吸血量按本次实扣伤害计算。
         float rate = buffEntityData.GetTriggerValueRate();
-        int healHP = (int)(fightUnderAttack.attackerDamage * rate);
+        int healHP = (int)(fightUnderAttack.damageApplied * rate);
         if (healHP <= 0) return;
         //触发判定（几率+粒子）
         if (!TriggerBuffConditional(buffEntityData)) return;

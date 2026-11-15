@@ -1,59 +1,42 @@
 public class BuffEntityBaseDRChange : BuffBaseEntity
-{    
-
+{
+    #region 护甲变化
     /// <summary>
-    /// 基础方法
+    /// 执行通用 BUFF 触发判定，供范围子类使用。
     /// </summary>
     protected bool InvokeBaseTriggerBuff(BuffEntityBean buffEntityData) => base.TriggerBuff(buffEntityData);
 
-
+    /// <summary>
+    /// 按持有者护甲上限计算护甲变化。
+    /// </summary>
     public override bool TriggerBuff(BuffEntityBean buffEntityData)
     {
-        bool isTriggerSuccess = base.TriggerBuff(buffEntityData);
-        if (isTriggerSuccess == false) return false;
-        //获取指定生物
-        var targetCreature =  GetFightCreatureEntityForTarget();
-        return DRChange(buffEntityData, targetCreature);
+        if (!base.TriggerBuff(buffEntityData)) return false;
+        return DRChange(buffEntityData, GetFightCreatureEntityForTarget());
     }
-
-
 
     /// <summary>
-    /// HP改变
+    /// 对存活目标应用护甲变化。范围效果可指定施加者的护甲上限作为计算基准。
     /// </summary>
-    public static bool DRChange(BuffEntityBean buffEntityData, FightCreatureEntity fightCreatureEntity)
+    public static bool DRChange(BuffEntityBean buffEntityData, FightCreatureEntity fightCreatureEntity, float? sourceMax = null)
     {
-        if (fightCreatureEntity == null || fightCreatureEntity.fightCreatureData == null || fightCreatureEntity.IsDead())
-        {
-            return false;
-        }
-        else
-        {
-            int changeDRData = 0;
-            var buffInfo = buffEntityData.GetBuffInfo();
+        var targetData = fightCreatureEntity?.fightCreatureData;
+        if (targetData == null || fightCreatureEntity.IsDead()) return false;
 
-            //固定计算
-             float triggerValue = buffEntityData.GetTriggerValue();
-            changeDRData += (int)triggerValue;
-
-            //百分比计算
-            float triggerValueRate = buffEntityData.GetTriggerValueRate();
-            float DRMax = fightCreatureEntity.fightCreatureData.GetAttribute(CreatureAttributeTypeEnum.DR);
-            changeDRData += (int)(DRMax * triggerValueRate);
-            
-            //如果改变的DR大于0 则回复DR
-            if (changeDRData > 0)
-            {
-                fightCreatureEntity.RegainDR(buffEntityData.targetCreatureUUId, buffEntityData.targetCreatureUUId, changeDRData);
-            }
-            //如果小于0 则受到攻击
-            else
-            {
-                FightUnderAttackBean fightUnderAttackData = FightHandler.Instance.GetFightUnderAttackData(buffEntityData, -changeDRData);
-                fightCreatureEntity.UnderAttack(fightUnderAttackData);
-            }
-            return true;
+        float max = sourceMax ?? targetData.GetAttribute(CreatureAttributeTypeEnum.DR);
+        int change = (int)buffEntityData.GetTriggerValue() + (int)(max * buffEntityData.GetTriggerValueRate());
+        string targetId = targetData.creatureData.creatureUUId;
+        if (change > 0)
+        {
+            fightCreatureEntity.RegainDR(buffEntityData.applierCreatureUUId, targetId, change);
         }
+        else if (change < 0)
+        {
+            var attackData = FightHandler.Instance.GetFightUnderAttackData(buffEntityData, -change);
+            attackData.attackedId = targetId;
+            fightCreatureEntity.UnderAttack(attackData);
+        }
+        return change != 0;
     }
-
+    #endregion
 }

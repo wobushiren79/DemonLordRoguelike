@@ -81,6 +81,11 @@ public class BaseDataService<T> where T : class, new()
 
 ### 原子保存（2026-11-14）
 
+孕育整批生成后由 `GameDataManager.TryCommitGashaponBatch` 提交魔晶、抽取计数与背包魔物。`UserDataService.TrySaveGashaponBatch` 原子写入同槽位 `GashaponPending_{slot}` 日志作为提交点，快照包括主档、背包生物和成就。读档或再次保存前幂等回放，三份文件完成后清除日志。日志写入前失败回滚本批内存，保存成功后才通知扣款并进入演出。
+
+已提交的批次即使通知扣款时音效或 UI 异常，仍返回成功。日志恢复失败时，`GameDataManager.LoadUserData` 返回带实际槽号的 `isErrorData`，存档列表显示错误并阻止继续、创建和删除。读取成功后也以实际打开的槽位设置 `saveIndex`，后续落盘和删除命中同一槽位。
+
+
 `BaseDataService<T>` 实际位于 `Assets/FrameWork/Scripts/DataStorage/BaseDataService.cs`。除既有 `Save` 外新增 `SaveAtomic(T data) -> bool`：沿用实例的 `FileName`、`StoragePath` 与 `JsonType` 完成 JSON 序列化，再调用 `FileUtil.TryCreateTextFileAtomic` 在同目录写临时文件并原子替换。旧文件保留为 `文件名_Backup`；写入失败返回 `false` 且不主动删除旧文件，序列化异常继续向上抛出。既有 `Save` 行为不变，目前 ModIdMap 使用原子保存。
 
 ### 创建新的数据服务

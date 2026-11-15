@@ -180,6 +180,14 @@ public class UserDataBean : BaseBean
         {
             crystal = 0;
         }
+        NotifyCrystalChange(crystalNum);
+    }
+
+    /// <summary>
+    /// 在余额变更完成后播放对应音效并刷新魔晶显示
+    /// </summary>
+    public void NotifyCrystalChange(long crystalNum)
+    {
         if (crystalNum > 0)
         {
             AudioHandler.Instance.PlaySound(AudioEnum.sound_pay_2);//增加魔晶音效

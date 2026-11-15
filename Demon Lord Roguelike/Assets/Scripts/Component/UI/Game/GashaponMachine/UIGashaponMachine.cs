@@ -121,26 +121,19 @@ public partial class UIGashaponMachine : BaseUIComponent
     /// </summary>
     public void CallBackForItemOnClickyBuy(int storeIndex)
     {
-        var itemStore = listStoreData[storeIndex];
-        var userData = GameDataHandler.Instance.manager.GetUserData();
-        //检测是否有足够的魔晶
-        if (userData.CheckHasCrystal(itemStore.pay_crystal, isHint: true, isAddCrystal: true))
-        {
-            StartGashaponMachine(itemStore);
-        }
+        StartGashaponMachine(listStoreData[storeIndex]);
     }
 
     /// <summary>
-    /// 开始扭蛋游戏
+    /// 收集已解锁且有随机数据的职业，再开始孕育
     /// </summary>
-    /// <param name="num"></param>
     public void StartGashaponMachine(StoreGashaponMachineInfoBean storeGashaponMachineInfoData)
     {        
         List<GashaponMachineCreatureStruct> listCreatureRandomData = new List<GashaponMachineCreatureStruct>();
         GashaponMachineBean gashaponMachine = new GashaponMachineBean();
         //设置扭蛋数量
         gashaponMachine.gashaponNum = storeGashaponMachineInfoData.buy_num;
-        //记录单次孕育消耗，供再次孕育（重置）时扣费
+        //记录每批孕育消耗，领取整批结果时扣费
         gashaponMachine.payCrystal = storeGashaponMachineInfoData.pay_crystal;
         gashaponMachine.listCreatureRandomData = listCreatureRandomData;
 
@@ -155,7 +148,7 @@ public partial class UIGashaponMachine : BaseUIComponent
             long itemCreatureId = listCreatureId[i];
             var creatureInfo = CreatureInfoCfg.GetItemData(itemCreatureId);
             //检测该生物职业是否解锁
-            if (!userLockData.CheckIsUnlock(creatureInfo.unlock_id))
+            if (creatureInfo == null || !userLockData.CheckIsUnlock(creatureInfo.unlock_id))
             {
                 continue;
             }

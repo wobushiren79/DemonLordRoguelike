@@ -45,7 +45,7 @@ Assets/Resources/JsonText/
 └── Language_{CfgName}_{lang}.txt       - 通用命名格式（lang ∈ cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr）
 ```
 
-> ⚠️ **真实源是 Excel，不是 `.txt`**：`Language_{CfgName}_{lang}.txt` 都是从 **`excel_language[多语言_FrameWork].xlsx` 里与 `{CfgName}` 同名的工作表**导出的产物（每个工作表列：`id / content_{lang} / content_1_{lang} / remark`，lang 含 cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr 十二种）。**`Language_UIText_*` 也不例外**——它来自 excel_language 的 `UIText` 工作表（导出器只对文件名含 `excel_language` 的工作簿生成 `Language_{sheet}_{lang}.txt`）；`excel_ui_text[UI文本_FrameWork].xlsx` 只是 UIText 的 id 登记表（导出 `UIText.txt` + UITextBean，`content[language]` 列存的值=多语言 id），**新增 UI 文本两处都要加行**（excel_language 的 UIText 表加 8 语言内容 + excel_ui_text 加登记行），二者可能不同步（历史上 excel_ui_text 漏登记过 id）。注意 excel_language 的 UIText 工作表有历史遗留的**重复列**（`content_jp`~`content_ru` 出现两次），新增行两组列要填相同值。**新增/修改文本必须改对应 Excel 工作表**，再用 ExcelEditorWindow 导出；只改 `.txt` 会在下次导出时被**覆盖丢失**。下文示例若直接写 `.txt` 仅为说明字段结构，落地务必同步 Excel 工作表。
+> ⚠️ **真实源是 Excel，不是 `.txt`**：`Language_{CfgName}_{lang}.txt` 都是从 **`excel_language[多语言_FrameWork].xlsx` 里与 `{CfgName}` 同名的工作表**导出的产物（每个工作表列：`id / content_{lang} / content_1_{lang} / remark`，lang 含 cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr 十二种）。**`Language_UIText_*` 也不例外**——它来自 excel_language 的 `UIText` 工作表（导出器只对文件名含 `excel_language` 的工作簿生成 `Language_{sheet}_{lang}.txt`）；`excel_ui_text[UI文本_FrameWork].xlsx` 只是 UIText 的 id 登记表（导出 `UIText.txt` + UITextBean，`content[language]` 列存的值=多语言 id），**新增 UI 文本两处都要加行**（excel_language 的 UIText 表加 12 语言内容 + excel_ui_text 加登记行），二者可能不同步（历史上 excel_ui_text 漏登记过 id）。注意 excel_language 的 UIText 工作表有历史遗留的**重复列**（`content_jp`~`content_ru` 出现两次），新增行两组列要填相同值。**新增/修改文本必须改对应 Excel 工作表**，再用 ExcelEditorWindow 导出；只改 `.txt` 会在下次导出时被**覆盖丢失**。下文示例若直接写 `.txt` 仅为说明字段结构，落地务必同步 Excel 工作表。
 
 ### 支持的语言
 
@@ -508,7 +508,9 @@ TextReplaceEnum
 ├── RegainHPCast      - 累计施放治疗HP
 ├── OnFieldTime       - 在场存活时间(秒)
 ├── Value             - 通用数值占位（无专属语义枚举时的默认选择，如研究节点距离/冷却秒数）
-└── TriggerChance     - 实际触发概率（trigger_chance；0=必然触发，显示100）
+├── TriggerChance     - 实际触发概率（trigger_chance；0=必然触发，显示100）
+├── PercentageSecondary - 多属性 BUFF 的第二属性变化百分比
+└── ValueRange        - 数值区间（用于死亡税掉落价值）
 ```
 
 > **选键原则**：有语义占位的优先用语义占位（击杀→`KillNum`、秒→`Time_S`、效果百分比→`Percentage`、实际触发概率→`TriggerChance`），无合适语义时用通用 `Value`；都不合适再在 `TextReplaceEnum`（BaseGameEnum.cs）**追加**新枚举值（不改旧值）。同一数值可同时挂多个键（成就即把目标值同时挂 `{Name}` 与语义键，模板用哪个都能替换）。BUFF 描述中触发概率与效果百分比必须分别使用 `{TriggerChance}`/`{Percentage}`，不可混读 `trigger_chance` 与 `trigger_value_rate`。
@@ -516,6 +518,7 @@ TextReplaceEnum
 ### 更多范例
 
 - **BUFF 描述**：`UIViewBuffShowItem` —— `content_language` 模板 + `{Percentage}`/`{TriggerChance}`/`{Time_S}`/`{Value}` + 按前置条件追加 `{KillNum}` 等键。
+- **孕育 BUFF 描述**　魂牵梦绕与折上折分别使用 `{Percentage}` 和 `{PercentageSecondary}` 显示主、副属性。副属性展示配置倍率换算后的绝对值，方向由各语言模板表达。死亡税使用 `{ValueRange}` 显示配置的单次掉落价值区间。卡片详情和进阶预览均需提供这两个键。
 - **成就逐级描述**：`AchievementInfoBeanPartial.GetLevelDescription` —— 一条 `{Name}` 模板按等级替换目标值，省去逐级建文本。
 - **研究详情描述带待解锁数值**：`ResearchInfoBeanPartial.GetDetailsLanguageWithLevelDetail` —— 研究表 `details[language]` 列的详情模板（如 `（距离{Value}）`/`（{Value}秒）`/`（概率{Value}%）`），按「待解锁等级=min(当前+1,满级)」算累计效果数值替换并**拼在名字后**；数值源 `UserUnlockBean` 的 static `Get*ForLevel` 方法（单一真实源）。22 个 level_max>1 节点的详情条目占语言表 ResearchInfo 工作表号段 **900000001~900000022**；括号约定：**cn/tw/jp 全角（）无前导空格，其余语言半角() 带一个前导空格**（分隔样式由详情文本自带，代码不加分隔符）。
 
@@ -644,3 +647,4 @@ string text = TextHandler.Instance.GetTextByIdNoBreakingSpace("BuffInfo", 10001)
 14. **排序优先级条 UIText 条目（2026-11）**：2000033「排序优先级：{0}」，`UIDialogOrderFilter.RefreshPriorityShow` 用 `{0}` 填入已选排序键名称（按优先级 `>` 连接，如「排序优先级：伤害>击杀>经验」），12 语言均已配置；紧随 2000026~2000032 段位，机制见 order-filter-system SKILL「关键约定-排序优先级条」
 15. **画质设置「场景杂物阴影」UIText 条目（2026-11）**：42007，供 `UIGameSettingForDisplay` 动态 CheckBox 使用；12 语言均已配置，`excel_language` 的 UIText 与 `excel_ui_text` 两处均已加行，历史重复语言列填同值
 16. **系统界面退出确认 UIText 条目（2026-11-14）**：505「是否返回主界面？当前游戏进度将自动保存。」供 `UIGameSystem.OnClickForBackMain` 使用，506「是否退出游戏？当前游戏进度将自动保存。」供 `OnClickForExitGame` 使用；两者均先弹确认框，只有确认回调才保存并执行原跳转/退出逻辑。12 语言、两个 Excel 源表与对应 JSON 均已同步，历史重复语言列填同值
+17. **孕育失败 UIText 条目（2026-11-15）**　`2000034`「孕育失败，未消耗魔晶，请重试」。12 语言内容、UIText 登记表与对应 JSON 均已同步。

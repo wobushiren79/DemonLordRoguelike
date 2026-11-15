@@ -1,5 +1,6 @@
 
 using System;
+using System.Runtime.Serialization;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -58,28 +59,58 @@ public class BuffBean
     }
 
     /// <summary>
-    /// 创建一条「带下限的随机」稀有度BUFF(用于魔物进阶继承素材BUFF的场景)。
-    /// 沿用扭蛋的整数闭区间随机口径,但把随机下限抬高到 floor(取 max(配置min, floor)),
-    /// 保证重随机出的数值≥素材原数值(decision: 命中素材BUFF时数值重随机但不低于原值)。
+    /// 创建一条继承素材且强度不低于素材的随机稀有度 BUFF。沿用扭蛋的整数闭区间口径。
     /// </summary>
     /// <param name="id">buffId</param>
     /// <param name="floorValue">触发值下限(素材原 trigger_value)</param>
-    /// <param name="floorValueRate">触发值百分比下限(素材原 trigger_value_rate)</param>
+    /// <param name="floorValueRate">素材原百分比；对召唤冷却和耗魔减免是数值上限。</param>
     /// <param name="createRate">BUFF创建几率</param>
     /// <returns>带下限随机后的BUFF运行时数据</returns>
     public static BuffBean CreateRandomWithFloor(long id, float floorValue, float floorValueRate, float createRate = 1f)
     {
         BuffBean buffData = new BuffBean(id, isRandom: true, createRate: createRate);
         var buffInfo = BuffInfoCfg.GetItemData(id);
-        //触发值:下限抬到 max(配置min, floor),上限取配置max,整数闭区间随机
-        int valueFloor = Mathf.RoundToInt(Mathf.Max(buffInfo.trigger_value_min, floorValue));
-        int valueMax = Mathf.Max(valueFloor, Mathf.RoundToInt(buffInfo.trigger_value));
-        buffData.trigger_value = UnityEngine.Random.Range(valueFloor, valueMax + 1);
-        //触发值百分比:同口径,按整数百分点随机
-        int rateFloor = Mathf.RoundToInt(Mathf.Max(buffInfo.trigger_value_rate_min, floorValueRate) * 100);
-        int rateMax = Mathf.Max(rateFloor, Mathf.RoundToInt(buffInfo.trigger_value_rate * 100));
-        buffData.trigger_value_rate = UnityEngine.Random.Range(rateFloor, rateMax + 1) / 100f;
+        var (valueMin, valueMax) = GetInheritedValueRange(buffInfo, floorValue);
+        buffData.trigger_value = UnityEngine.Random.Range(valueMin, valueMax + 1);
+        var (rateMin, rateMax) = GetInheritedRateRange(buffInfo, floorValueRate);
+        buffData.trigger_value_rate = UnityEngine.Random.Range(rateMin, rateMax + 1) / 100f;
         return buffData;
+    }
+
+    /// <summary>
+    /// 计算进阶继承的触发值整数范围，供随机和预览共用。
+    /// </summary>
+    public static (int min, int max) GetInheritedValueRange(BuffInfoBean buffInfo, float inheritedValue)
+    {
+        int min = Mathf.RoundToInt(Mathf.Max(buffInfo.trigger_value_min, inheritedValue));
+        return (min, Mathf.Max(min, Mathf.RoundToInt(buffInfo.trigger_value)));
+    }
+
+    /// <summary>
+    /// 计算进阶继承的百分比整数范围。减免词条的素材值限制上界，其他词条限制下界。
+    /// </summary>
+    public static (int min, int max) GetInheritedRateRange(BuffInfoBean buffInfo, float inheritedRate)
+    {
+        int min = Mathf.RoundToInt(buffInfo.trigger_value_rate_min * 100);
+        int max = Mathf.RoundToInt(buffInfo.trigger_value_rate * 100);
+        int inherited = Mathf.RoundToInt(inheritedRate * 100);
+        if (UsesLowerRateForStrongerEffect(buffInfo))
+        {
+            max = Mathf.Min(max, inherited);
+            return (Mathf.Min(min, max), max);
+        }
+        min = Mathf.Max(min, inherited);
+        return (min, Mathf.Max(min, max));
+    }
+
+    /// <summary>
+    /// 判断词条是否以更低的百分比产生更强的效果。仅用于单属性召唤冷却或召唤耗魔。
+    /// </summary>
+    public static bool UsesLowerRateForStrongerEffect(BuffInfoBean buffInfo)
+    {
+        return buffInfo != null && buffInfo.class_entity == nameof(BuffEntityAttribute) &&
+            (buffInfo.class_entity_data == nameof(CreatureAttributeTypeEnum.RCD) ||
+             buffInfo.class_entity_data == nameof(CreatureAttributeTypeEnum.CMP));
     }
 
     /// <summary>
@@ -98,13 +129,77 @@ public class BuffBean
         if (rateMin >= rateMax)
             return (isValueMaxRoll, false, isValueMaxRoll);
 
-        // 召唤冷却和耗魔越低收益越大，沿用单属性 BUFF 的类型判定。
-        var attributeType = IsBuffEntityAttributeBase();
-        int bestRate = attributeType == CreatureAttributeTypeEnum.RCD || attributeType == CreatureAttributeTypeEnum.CMP
-            ? rateMin : rateMax;
+        int bestRate = UsesLowerRateForStrongerEffect(buffInfo) ? rateMin : rateMax;
         bool isRateMaxRoll = Mathf.Approximately(trigger_value_rate, bestRate / 100f);
         bool isFullRoll = isRateMaxRoll && (!hasRandomValue || isValueMaxRoll);
         return (isValueMaxRoll, isRateMaxRoll, isFullRoll);
+    }
+
+    #endregion
+
+    #region 旧档数值兼容
+
+    /// <summary>
+    /// 更新旧档中缓存的平衡数值，恢复类词条按原有随机档位映射到当前范围。
+    /// </summary>
+    public void EnsureCurrentTuning()
+    {
+        switch (id)
+        {
+            case 12000100001L when trigger_time == 5f:
+            case 12000200001L when trigger_time == 5f:
+                var recoveryInfo = BuffInfoCfg.GetItemData(id);
+                if (recoveryInfo != null && recoveryInfo.trigger_time != trigger_time)
+                {
+                    trigger_value_rate = RemapLegacyRecoveryRate(recoveryInfo);
+                    trigger_time = recoveryInfo.trigger_time;
+                }
+                break;
+            case 12000300001L when trigger_time == 5f:
+            case 13000100001L when trigger_time == 3f:
+                trigger_time = BuffInfoCfg.GetItemData(id)?.trigger_time ?? trigger_time;
+                break;
+            case 13000400001L:
+            case 13000500001L:
+                if (trigger_value_rate >= 0.01f && trigger_value_rate <= 0.05f)
+                {
+                    var areaInfo = BuffInfoCfg.GetItemData(id);
+                    if (areaInfo != null && areaInfo.trigger_value_rate_min > 0.05f)
+                        trigger_value_rate = RemapLegacyRecoveryRate(areaInfo);
+                }
+                break;
+            case 13000600001L when trigger_chance == 0.2f:
+                trigger_chance = BuffInfoCfg.GetItemData(id)?.trigger_chance ?? trigger_chance;
+                break;
+        }
+    }
+
+    /// <summary>
+    /// 将旧区间 1%～5% 内的相对档位映射到新配置区间，保留整数百分点。
+    /// </summary>
+    private float RemapLegacyRecoveryRate(BuffInfoBean buffInfo)
+    {
+        float position = Mathf.InverseLerp(0.01f, 0.05f, trigger_value_rate);
+        float newRate = Mathf.Lerp(buffInfo.trigger_value_rate_min, buffInfo.trigger_value_rate, position);
+        return Mathf.RoundToInt(newRate * 100f) / 100f;
+    }
+
+    /// <summary>
+    /// 读取旧存档时更新触发间隔、恢复率和掉落概率。
+    /// </summary>
+    [OnDeserialized]
+    private void ApplyTuningAfterLoad(StreamingContext context)
+    {
+        EnsureCurrentTuning();
+    }
+
+    /// <summary>
+    /// 写出存档前同步兼容数值，使后续读档无需重复迁移。
+    /// </summary>
+    [OnSerializing]
+    private void ApplyTuningBeforeSave(StreamingContext context)
+    {
+        EnsureCurrentTuning();
     }
 
     #endregion

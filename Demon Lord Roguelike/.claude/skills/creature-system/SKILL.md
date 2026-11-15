@@ -327,6 +327,8 @@ FightCreatureEntity entity = CreatureHandler.Instance.GetFightCreatureEntity(cre
 
 > **`RemoveFightCreatureEntity` 防守分支两大改动**：①移除改为**按实例**——新 `FightBean.RemoveDefenseCreature(FightCreatureEntity)`（`DictionaryList.RemoveByValue`）；`FightBean.RemoveDefenseCreatureByPos` **已删除**（按 positionCreate 首匹配会误删同格生物）。②卡片进 Rest(CD) 的条件改为「场上已无该 UUID 存活实体」——DeadRebirth 重生替换场景新实体在场，卡片保持 Fighting 不进 CD；根治"重生后卡片照进CD、CD结束可再放同UUID生物导致 Add 静默失败生成幽灵实体"的缺陷（重生机制详见 buff-system SKILL「死亡重生」）。
 
+重生请求先在死亡事件中登记，所有监听者返回后由 `AIIntentCreatureDead` 完成同 UUID 替换。`CreatureHandler` 移除旧 BUFF 后创建新实例并重新挂载，旧尸体随后回收时保留新实体的 BUFF 和卡片 Fighting 状态。登场在 BUFF 挂载并重算后按最终上限填满血甲。
+
 ### CreatureManager（生物管理器）
 
 **文件**: `Assets/Scripts/Component/Manager/CreatureManager.cs`
@@ -396,6 +398,8 @@ public class CreatureInfoBean : BaseBean
 ---
 
 ## CreatureUtil - 生物工具
+
+新稀有度 BUFF 按目标职业过滤。无有效攻击模块、冲锋后自爆、主动自爆的职业在孕育、升阶药水和进阶时排除四种追加攻击词条。`BuffUtil.CanPerformBuffAttack` 也用于战斗排队，旧档已有词条保留。
 
 **文件**: `Assets/Scripts/Utils/CreatureUtil.cs`
 

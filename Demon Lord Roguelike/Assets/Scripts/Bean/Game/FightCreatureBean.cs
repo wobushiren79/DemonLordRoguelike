@@ -43,6 +43,7 @@ public class FightCreatureBean
         SetData(creatureData, creatureFightType);
     }
 
+    #region 初始化和属性重算
     /// <summary>
     /// 设置数据
     /// </summary>
@@ -63,8 +64,7 @@ public class FightCreatureBean
         this.intensityRate = intensityRate;
         //刷新一下基础属性
         RefreshBaseAttribute();
-        HPCurrent = (int)GetAttribute(CreatureAttributeTypeEnum.HP);
-        DRCurrent = (int)GetAttribute(CreatureAttributeTypeEnum.DR);
+        FillInitialHealthAndArmor();
         //战斗开始时魔力默认满值
         MPCurrent = GetAttribute(CreatureAttributeTypeEnum.MP);
         //重置无敌状态（BUFF会在生成挂接时按需重新开启）
@@ -75,8 +75,25 @@ public class FightCreatureBean
         isSummoned = false;
     }
 
+    /// <summary>
+    /// 按当前生命和护甲上限填满初始血甲，登场 BUFF 挂载后再执行一次。
+    /// </summary>
+    public void FillInitialHealthAndArmor()
+    {
+        //登场前按非低血生命上限填充，让低血词条按满血状态完成第一次重算。
+        if (healthRatioModifiers != null && healthRatioModifiers.Count > 0)
+        {
+            HPCurrent = Mathf.CeilToInt(hpMaxForBuffCondition);
+            RefreshBaseAttribute();
+        }
+        HPCurrent = (int)GetAttribute(CreatureAttributeTypeEnum.HP);
+        DRCurrent = (int)GetAttribute(CreatureAttributeTypeEnum.DR);
+    }
+
     //modifier 收集缓冲区（复用以避免每次 Refresh 都重新分配）
     private readonly List<AttributeModifier> modifierBuffer = new List<AttributeModifier>(32);
+    private List<IAttributeModifierSource> healthRatioModifiers;
+    private float hpMaxForBuffCondition;
 
     /// <summary>
     /// 初始化基础属性
@@ -100,6 +117,7 @@ public class FightCreatureBean
 
         //收集所有BUFF的 modifier，同时处理身体颜色等非属性副作用
         modifierBuffer.Clear();
+        healthRatioModifiers?.Clear();
         var creatureBuffs = BuffHandler.Instance.manager.GetFightCreatureBuffsActivie(creatureData.creatureUUId);
         CollectFromBuffList(creatureBuffs);
         //深渊馈赠buff加成
@@ -109,6 +127,18 @@ public class FightCreatureBean
             for (int i = 0; i < abyssalBlessingBuffs.List.Count; i++)
             {
                 CollectFromBuffList(abyssalBlessingBuffs.List[i]);
+            }
+        }
+
+        //先结算普通上限，避免濒死狂宴的生命奖励反过来改变自己的触发门槛。
+        var hpType = CreatureAttributeTypeEnum.HP;
+        bool hasHealthRatioModifiers = healthRatioModifiers != null && healthRatioModifiers.Count > 0;
+        if (hasHealthRatioModifiers)
+        {
+            hpMaxForBuffCondition = ModifierPipeline.Apply(dicAttribute[hpType], hpType, modifierBuffer) * intensityRate;
+            for (int i = 0; i < healthRatioModifiers.Count; i++)
+            {
+                healthRatioModifiers[i].CollectModifiers(modifierBuffer);
             }
         }
 
@@ -127,6 +157,12 @@ public class FightCreatureBean
             dicAttribute[CreatureAttributeTypeEnum.ATK] *= intensityRate;
         }
 
+        if (!hasHealthRatioModifiers)
+            hpMaxForBuffCondition = dicAttribute[hpType];
+
+        //上限下降时立即钳制，避免溢出的旧血甲被计入下一次实际伤害。
+        HPCurrent = Mathf.Min(HPCurrent, (int)dicAttribute[CreatureAttributeTypeEnum.HP]);
+        DRCurrent = Mathf.Min(DRCurrent, (int)dicAttribute[CreatureAttributeTypeEnum.DR]);
         actionForComplete?.Invoke();
     }
 
@@ -158,7 +194,10 @@ public class FightCreatureBean
             //属性 modifier 来源
             if (buff is IAttributeModifierSource src)
             {
-                src.CollectModifiers(modifierBuffer);
+                if (buff is BuffEntityConditionalAttribute && buffInfo.HasHPRatePrecondition())
+                    (healthRatioModifiers ??= new List<IAttributeModifierSource>(1)).Add(src);
+                else
+                    src.CollectModifiers(modifierBuffer);
             }
             //身体颜色副作用（保留原逻辑，最后一个生效）
             if (!buffInfo.color_body.IsNull())
@@ -168,7 +207,17 @@ public class FightCreatureBean
         }
     }
 
+    #endregion
+
     #region 获取
+    /// <summary>
+    /// 获取计入普通增益和强度倍率、排除低血条件增益的生命上限。
+    /// </summary>
+    public float GetHPMaxForBuffCondition()
+    {
+        return hpMaxForBuffCondition;
+    }
+
     /// <summary>
     /// 获取敌人的战斗生物类型
     /// </summary>
@@ -272,6 +321,8 @@ public class FightCreatureBean
         out int changeDRReal, out int changeHPReal,
         bool isRefreshAttribute = true)
     {
+        int previousDR = DRCurrent;
+        int previousHP = HPCurrent;
         changeDRReal = 0;
         changeHPReal = 0;
 
@@ -288,13 +339,17 @@ public class FightCreatureBean
             int changeValue2 = changeValue - changeDRReal;
             ChangeHP(changeValue2, out int leftHP, out changeHPReal, isRefreshAttribute: false);
         }
-        curDR = DRCurrent;
-        curHP = HPCurrent;
-
         //刷新一下基础属性
         if (isRefreshAttribute)
         {
             RefreshBaseAttribute();
+        }
+        curDR = DRCurrent;
+        curHP = HPCurrent;
+        if (changeValue > 0)
+        {
+            changeDRReal = Mathf.Max(0, Mathf.Min(curDR - previousDR, changeDRReal));
+            changeHPReal = Mathf.Max(0, Mathf.Min(curHP - previousHP, changeHPReal));
         }
     }
 
@@ -312,6 +367,7 @@ public class FightCreatureBean
         bool isRefreshAttribute = true
     )
     {
+        int previousDR = DRCurrent;
         DRCurrent += ChangeDR;
         changeDRReal = ChangeDR;
         if (DRCurrent < 0)
@@ -325,12 +381,14 @@ public class FightCreatureBean
             changeDRReal = ChangeDR - (DRCurrent - DRMAX);
             DRCurrent = DRMAX;
         }
-        leftDR = DRCurrent;
         //刷新一下基础属性
         if (isRefreshAttribute)
         {
             RefreshBaseAttribute();
         }
+        leftDR = DRCurrent;
+        if (ChangeDR > 0)
+            changeDRReal = Mathf.Max(0, Mathf.Min(leftDR - previousDR, changeDRReal));
     }
 
 
@@ -347,6 +405,7 @@ public class FightCreatureBean
         bool isRefreshAttribute = true
     )
     {
+        int previousHP = HPCurrent;
         HPCurrent += ChangeHP;
         changeHPReal = ChangeHP;
         if (HPCurrent < 0)
@@ -360,12 +419,14 @@ public class FightCreatureBean
             changeHPReal = ChangeHP - (HPCurrent - HPMax);
             HPCurrent = HPMax;
         }
-        leftHP = HPCurrent;
         //刷新一下基础属性
         if (isRefreshAttribute)
         {
             RefreshBaseAttribute();
         }
+        leftHP = HPCurrent;
+        if (ChangeHP > 0)
+            changeHPReal = Mathf.Max(0, Mathf.Min(leftHP - previousHP, changeHPReal));
     }
 
     /// <summary>

@@ -18,6 +18,7 @@ public partial class UIViewBuffShowItem : BaseUIView
     /// <param name="isRarityBuff">是否为魔物自身的稀有度词条。</param>
     public void SetData(BuffBean buffData, bool isRarityBuff = false)
     {
+        buffData.EnsureCurrentTuning();
         this.buffData = buffData;
         this.buffInfo = BuffInfoCfg.GetItemData(buffData.id);
         var rarityEnum = buffInfo.GetRarity();
@@ -36,6 +37,16 @@ public partial class UIViewBuffShowItem : BaseUIView
             {TextReplaceEnum.Time_S, $"{Mathf.FloorToInt(buffData.trigger_time)}"},
             {TextReplaceEnum.Value, $"{Mathf.FloorToInt(buffData.trigger_value)}"},
         };
+        if (BuffUtil.TryGetSecondaryRateMultiplier(buffInfo, out float secondaryMultiplier))
+        {
+            float secondaryRate = Mathf.Abs(buffData.trigger_value_rate * secondaryMultiplier);
+            dicReplace[TextReplaceEnum.PercentageSecondary] = $"{MathUtil.GetPercentage(secondaryRate, 2)}";
+        }
+        if (buffInfo.class_entity == nameof(BuffEntityConditionalDeadCreateCrystal))
+        {
+            var (min, max) = BuffEntityConditionalDeadCreateCrystal.GetCrystalAmountRange(buffInfo);
+            dicReplace[TextReplaceEnum.ValueRange] = min == max ? $"{min}" : $"{min}~{max}";
+        }
         var preInfo = buffInfo.GetPreInfo();
         if (!preInfo.IsNull())
         {
@@ -80,7 +91,11 @@ public partial class UIViewBuffShowItem : BaseUIView
             if (isValueMaxRoll)
                 dicReplace[TextReplaceEnum.Value] = FormatGoldNumber(dicReplace[TextReplaceEnum.Value]);
             if (isRateMaxRoll)
+            {
                 dicReplace[TextReplaceEnum.Percentage] = FormatGoldNumber(dicReplace[TextReplaceEnum.Percentage]);
+                if (dicReplace.TryGetValue(TextReplaceEnum.PercentageSecondary, out string secondaryPercentage))
+                    dicReplace[TextReplaceEnum.PercentageSecondary] = FormatGoldNumber(secondaryPercentage);
+            }
         }
 
         string contentText = TextHandler.Instance.GetTextReplace(buffInfo.content_language, dicReplace);

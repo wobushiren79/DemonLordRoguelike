@@ -51,6 +51,7 @@ public class BuffEntityConditionalAttribute : BuffEntityAttribute
             if (fightCreatureEntity != null && !fightCreatureEntity.IsDead())
             {
                 fightCreatureEntity.fightCreatureData.RefreshBaseAttribute();
+                fightCreatureEntity.RefreshLifeBarProgress();
             }
         }
     }

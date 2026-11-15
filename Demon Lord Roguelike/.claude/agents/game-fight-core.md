@@ -26,6 +26,8 @@ watched_files:
 - **召唤物不掉水晶（isSummoned，2026-09-15 新增）** - `DropCrystal` 方法头先判 `fightCreatureData.isSummoned` 直接 return：`AttackModeSummon` 召唤生成的生物（骷髅召唤师的骷髅 20010001/20020001）死亡不掉魔晶，防低血召唤物被挂机刷取；标记由 AttackModeSummon 在 CreateAttackCreature 后置位，`FightCreatureBean.ResetData()` 清零防对象池残留
 - **DropCrystal 掉落数量按模式分流（2026-09 新增 ChallengeHundred/Infinite 分支）** - 默认 `dropCrystal=1`；`== Conquer` 吃 `fightTypeConquerInfo.drop_crystal`；`== ChallengeHundred` else if 分支吃冻结配置行 `FightTypeChallengeHundredInfoBean.drop_crystal`（冻结数据/行为空时保持默认 1）；`== Infinite` else if 分支吃同难度征服行 `FightBeanForInfinite.fightTypeConquerInfo.drop_crystal`（与征服一致，不随轮次变化；fightTypeConquerInfo 为空时保持默认 1）。其余链路（时长=BASE_LIFE_TIME+研究加成、事件 `GameFightLogic_CreatureDeadDropCrystal`）不变
 - **冲锋自爆型死亡引爆（FightCreatureEntityForDefense.cs）** - 冲锋自爆型（`CreatureInfoBeanPartial.IsChargeAttack()`，creature_info 新列 charge_attack，当前唯一配置=6003 哥布林敢死队）死亡即引爆：`SetCreatureDeadForDefense` 里调新方法 `CreateAttackModeForDeadExplosion()`——纯数据无参路径创建爆炸攻击模块，伤害=ATK×攻击模式 damage_add_rate；绕过 AttackModeExplosion 对已死攻击者不爆的守卫；爆炸伤害按距爆心半径线性衰减（`falloff_min` 默认0.5=边缘为中心1/2，详见 attack-mode-system skill）
+- SSR「同归于尽」用死亡位置加爆炸模块偏移计算爆心，以词条倍率乘攻击模式原倍率。原生冲锋自爆仍使用职业发射偏移和自己的攻击模式倍率。
+- 愈之魅魔血甲双补由 `RegainHPAndDR` 先结算真实回血，再用剩余预算补结算后的护甲缺口。BUFF 与音效在首个实际生效的分段触发一次。
 - **FightPrefabEntity** - 战斗预制体实体；掉落物寿命按游戏速度消耗（`Update` 用 `GameFightLogic.GetFightDeltaTime()`，2倍速下按游戏时间流速扣 lifeTime）
 - **CreatureSpineOutlineFollow** - 场上魔物描边高亮跟随（选中手牌时悬停高亮对应场上魔物，共享单例预览 `FightCreature_OutlinePreview.prefab` + OutlineOnly 描边材质逐帧复制目标骨骼姿态）；渲染排序取目标 sortingOrder **+1**（前一层）：OutlineOnly 只画轮廓内部全透明，压过本体观感不变，且避免被场景全屏透明效果（如沙漠热浪 HeatHaze，Default 层 order 0 近不透明屏幕扭曲面）盖住洗掉——透明排序中同 Transparent 范围内 sortingOrder 优先于 Render Queue，放后一层(-1)会被 order 0 的热浪绘制覆盖
 
@@ -53,6 +55,7 @@ watched_files:
 - **FightDropCrystalBean** - 战斗掉落水晶
 - **FightRecordsBean** - 战斗记录
 - **FightUnderAttackBean** - 受击数据（含 drDamageRate/hpDamageRate 护甲/血量分段伤害倍率[默认1/1=走 ChangeDRAndHP 溢出逻辑；非默认=串联破甲：护甲>0只以dr倍率打甲不掉血、破甲后只以hp倍率打血、破甲击溢出不结转]，仅 SetData(BaseAttackMode) 路径从攻击模式 other_data 键 dr_damage_rate/hp_damage_rate 注入，BUFF 跳伤路径保持默认；目前仅牛头人法师 101003/101004 配 dr2/hp0.5；**isDamageTransferred + SetDataForTransferFrom**=伤害转移改道数据[援护护盾：以源数据为蓝本改写 attackedId 给代受者、攻击者/暴击快照/分段倍率/音效原样保留、置转移旗标防环；`UnderAttack` 遍历目标活跃BUFF调 `BuffBaseEntity.InterceptUnderAttack` 链式分摊——每个BUFF把改道额写进自己的改道数据 attackerDamage，剩余部分继续问下一个BUFF/写回原数据走本目标结算，扣到 0 直接回收原数据]，由 `FightHandler.GetFightUnderAttackDataForTransfer(sourceData, newAttackedId)` 经对象池生成）
+- `attackerDamage` 为结算输入，`damageApplied` 为实际扣除的护甲与生命，用于伤害累计、反伤与吸血。`UnderAttack` 在 `finally` 回收受击数据，覆盖无敌、闪避与全部伤害改道。
 
 ## 关键文件
 

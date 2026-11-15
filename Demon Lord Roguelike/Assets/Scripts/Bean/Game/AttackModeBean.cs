@@ -10,6 +10,8 @@ public class AttackModeBean
     public long attackModeId;
     //攻击者的攻击力
     public int attackerDamage;
+    /// <summary>该攻击来自 BUFF 追加，命中及其后续伤害不能再次触发追加攻击。</summary>
+    public bool isBuffAttackAgain;
     //攻击者暴击概率
     public float attackerCRT;
     //攻击者暴击伤害倍率（StartAttack时快照CDMG属性，1.5=暴击伤害+50%）
@@ -60,6 +62,7 @@ public class AttackModeBean
             return;
         }
         attackerDamage = targetData.attackerDamage;
+        isBuffAttackAgain = targetData.isBuffAttackAgain;
         attackerCRT = targetData.attackerCRT;
         attackerCDMG = targetData.attackerCDMG;
         attackerSpeedRate = targetData.attackerSpeedRate;
@@ -80,6 +83,7 @@ public class AttackModeBean
     {
         attackModeId = 0;
         attackerDamage = 0;
+        isBuffAttackAgain = false;
         attackerCRT = 0;
         attackerCDMG = 1.5f;
         attackerSpeedRate = 1f;

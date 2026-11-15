@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// 条件触发-荆棘反伤（SSR稀有度BUFF「荆棘之躯」）：自身受到攻击时，把名义承伤×rate反弹给攻击者，
+/// 条件触发-荆棘反伤（SSR稀有度BUFF「荆棘之躯」）：自身受到攻击时，按实际扣除的护甲和生命反弹伤害，
 /// 反弹伤害上限为自身当前生命值；反伤走正常 UnderAttack 管线（伤害数字/伤害统计/击杀事件）。
 /// </summary>
 public class BuffEntityConditionalThorns : BuffEntityConditional
@@ -22,15 +22,16 @@ public class BuffEntityConditionalThorns : BuffEntityConditional
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         var attackerCreature = gameFightLogic.fightData.GetCreatureById(fightUnderAttack.attackerId, CreatureFightTypeEnum.None);
         if (attackerCreature == null || attackerCreature.fightCreatureData == null || attackerCreature.IsDead()) return;
-        //反弹伤害=名义承伤×rate（与「痛楚馈赠」同口径），上限为自身当前生命值
+        //反弹伤害按实际承伤计算，上限为自身当前生命值。
         float rate = buffEntityData.GetTriggerValueRate();
-        int reflectDamage = Mathf.Min((int)(fightUnderAttack.attackerDamage * rate), selfCreature.fightCreatureData.HPCurrent);
+        int reflectDamage = Mathf.Min((int)(fightUnderAttack.damageApplied * rate), selfCreature.fightCreatureData.HPCurrent);
         if (reflectDamage <= 0) return;
         //触发判定（几率+粒子）
         if (!TriggerBuffConditional(buffEntityData)) return;
         //造反伤数据：稀有度自BUFF applier==target==自己，bean默认attackerId=自己，被攻击者改写为原攻击者
         FightUnderAttackBean reflectData = FightHandler.Instance.GetFightUnderAttackData(buffEntityData, reflectDamage);
         reflectData.attackedId = fightUnderAttack.attackerId;
+        reflectData.isBuffAttackAgain = fightUnderAttack.isBuffAttackAgain;
         attackerCreature.UnderAttack(reflectData);
     }
     #endregion

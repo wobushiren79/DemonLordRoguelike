@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
 /// <summary>
@@ -141,6 +142,7 @@ public partial class BuffInfoBean
     }
 
     protected Dictionary<long, float> dicBuffPre;
+    private bool? hasHPRatePrecondition;
 
     /// <summary>
     /// 检测是否满足前置条件
@@ -153,9 +155,34 @@ public partial class BuffInfoBean
         }
         if (dicBuffPre == null)
         {
-            dicBuffPre = pre_info.SplitForDictionaryLongFloat();
+            dicBuffPre = pre_info.SplitForDictionaryLongFloat(formatProvider: CultureInfo.InvariantCulture);
         }
         return dicBuffPre;
+    }
+
+    /// <summary>
+    /// 判断属性 BUFF 是否依赖生命比例，供属性管线延后评估。
+    /// </summary>
+    public bool HasHPRatePrecondition()
+    {
+        if (hasHPRatePrecondition.HasValue)
+            return hasHPRatePrecondition.Value;
+
+        hasHPRatePrecondition = false;
+        var preInfo = GetPreInfo();
+        if (preInfo != null)
+        {
+            foreach (var conditionId in preInfo.Keys)
+            {
+                var config = BuffPreInfoCfg.GetItemData(conditionId);
+                if (config?.class_entity == nameof(BuffPreEntityForHPRateLess))
+                {
+                    hasHPRatePrecondition = true;
+                    break;
+                }
+            }
+        }
+        return hasHPRatePrecondition.Value;
     }
 }
 

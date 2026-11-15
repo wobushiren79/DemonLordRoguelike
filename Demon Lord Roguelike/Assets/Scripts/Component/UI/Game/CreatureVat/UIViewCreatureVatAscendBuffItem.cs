@@ -71,9 +71,9 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
     /// <summary>
     /// 预览用BUFF内容文案:随机增益兜底项(buffId≤0,无具体BUFF)给通用说明;具体BUFF按「进阶增益范围预览」研究是否解锁分档:
     /// <para>未解锁:仅展示效果描述,把 {Percentage}/{Time_S}/{KillNum} 等占位参数统一替成???(数值保密)。</para>
-    /// <para>已解锁:随机增益属性({Percentage})显示 min~max 范围(素材命中时下限抬高),其余固定占位参数显示实际值。</para>
+    /// <para>已解锁时显示当前继承规则的随机范围和固定值。</para>
     /// </summary>
-    /// <param name="chance">该BUFF命中概率数据(含 buffId 与素材抬高的数值下限)</param>
+    /// <param name="chance">该 BUFF 的命中概率及最强素材数值。</param>
     /// <returns>悬浮提示内容文案</returns>
     protected string GetBuffContentForPreview(CreatureAscendBuffChanceStruct chance)
     {
@@ -96,21 +96,35 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
     /// 实际触发概率({TriggerChance})/触发时间/前置条件(击杀数/承伤/造伤/血量阈值)等固定占位参数显示实际值(与 UIViewBuffShowItem 同口径)。
     /// </summary>
     /// <param name="buffInfo">BUFF配置</param>
-    /// <param name="chance">命中概率数据(取素材抬高的百分比下限)</param>
+    /// <param name="chance">该 BUFF 的命中概率及最强素材数值。</param>
     /// <returns>带数值范围的内容文案</returns>
     protected string BuildUnlockedRangeContent(BuffInfoBean buffInfo, CreatureAscendBuffChanceStruct chance)
     {
+        var (rateMin, rateMax) = BuffBean.GetInheritedRateRange(buffInfo, chance.floorValueRate);
+        var (valueMin, valueMax) = BuffBean.GetInheritedValueRange(buffInfo, chance.floorValue);
         Dictionary<TextReplaceEnum, string> dicReplace = new Dictionary<TextReplaceEnum, string>()
         {
-            //唯一随机值:进阶增益属性百分比,按整数百分点闭区间 [min,max] 显示
-            {TextReplaceEnum.Percentage, GetPercentageRangeStr(buffInfo, chance.floorValueRate)},
+            {TextReplaceEnum.Percentage, rateMin == rateMax ? $"{rateMin}" : $"{rateMin}~{rateMax}"},
             //实际触发概率为固定配置值(0表示必然触发),不随进阶重随机
             {TextReplaceEnum.TriggerChance, $"{MathUtil.GetPercentage(buffInfo.trigger_chance > 0 ? buffInfo.trigger_chance : 1, 2)}"},
             //触发时间为固定配置值(不随机),直接显示
             {TextReplaceEnum.Time_S, $"{Mathf.FloorToInt(buffInfo.trigger_time)}"},
             //随机触发值(trigger_value,如无敌秒数),按整数闭区间 [min,max] 显示
-            {TextReplaceEnum.Value, GetValueRangeStr(buffInfo, chance.floorValue)},
+            {TextReplaceEnum.Value, valueMin == valueMax ? $"{valueMin}" : $"{valueMin}~{valueMax}"},
         };
+        if (BuffUtil.TryGetSecondaryRateMultiplier(buffInfo, out float secondaryMultiplier))
+        {
+            float first = MathUtil.GetPercentage(Mathf.Abs(rateMin / 100f * secondaryMultiplier), 2);
+            float last = MathUtil.GetPercentage(Mathf.Abs(rateMax / 100f * secondaryMultiplier), 2);
+            float min = rateMin < 0 && rateMax > 0 ? 0f : Mathf.Min(first, last);
+            float max = Mathf.Max(first, last);
+            dicReplace[TextReplaceEnum.PercentageSecondary] = min == max ? $"{min}" : $"{min}~{max}";
+        }
+        if (buffInfo.class_entity == nameof(BuffEntityConditionalDeadCreateCrystal))
+        {
+            var (min, max) = BuffEntityConditionalDeadCreateCrystal.GetCrystalAmountRange(buffInfo);
+            dicReplace[TextReplaceEnum.ValueRange] = min == max ? $"{min}" : $"{min}~{max}";
+        }
         //前置条件数值(击杀数/承伤/造伤/血量阈值)均为固定值,按前置实例类型逐项映射(与 UIViewBuffShowItem 同口径)
         var preInfo = buffInfo.GetPreInfo();
         if (!preInfo.IsNull())
@@ -138,33 +152,6 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
         return TextHandler.Instance.GetTextReplace(buffInfo.content_language, dicReplace);
     }
 
-    /// <summary>
-    /// 计算进阶增益属性百分比的展示范围文案(与 BuffBean.CreateRandomWithFloor 同口径):
-    /// 按整数百分点随机,下限抬到 max(配置min, 素材下限);上下限相同显示单值,否则显示 min~max。
-    /// </summary>
-    /// <param name="buffInfo">BUFF配置(取 trigger_value_rate_min~trigger_value_rate)</param>
-    /// <param name="floorValueRate">素材命中抬高的百分比下限(无素材命中为0)</param>
-    /// <returns>形如 "10~20" 或 "20" 的范围文案(不含百分号,百分号在描述模板里)</returns>
-    protected string GetPercentageRangeStr(BuffInfoBean buffInfo, float floorValueRate)
-    {
-        int rateFloor = Mathf.RoundToInt(Mathf.Max(buffInfo.trigger_value_rate_min, floorValueRate) * 100);
-        int rateMax = Mathf.Max(rateFloor, Mathf.RoundToInt(buffInfo.trigger_value_rate * 100));
-        return rateFloor == rateMax ? $"{rateFloor}" : $"{rateFloor}~{rateMax}";
-    }
-
-    /// <summary>
-    /// 计算随机触发值(trigger_value)的展示范围文案(与 BuffBean.CreateRandomWithFloor 同口径):
-    /// 按整数闭区间随机,下限抬到 max(配置min, 素材下限);上下限相同显示单值,否则显示 min~max。
-    /// </summary>
-    /// <param name="buffInfo">BUFF配置(取 trigger_value_min~trigger_value)</param>
-    /// <param name="floorValue">素材命中抬高的数值下限(无素材命中为0)</param>
-    /// <returns>形如 "5~10" 或 "10" 的范围文案</returns>
-    protected string GetValueRangeStr(BuffInfoBean buffInfo, float floorValue)
-    {
-        int valueFloor = Mathf.FloorToInt(Mathf.Max(buffInfo.trigger_value_min, floorValue));
-        int valueMax = Mathf.Max(valueFloor, Mathf.FloorToInt(buffInfo.trigger_value));
-        return valueFloor == valueMax ? $"{valueFloor}" : $"{valueFloor}~{valueMax}";
-    }
     #endregion
 
     #region 动画相关

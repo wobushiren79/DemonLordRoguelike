@@ -43,6 +43,7 @@ public class GameFightLogic : BaseGameLogic
     {
         base.PreGame();
         //注册事件
+        RegisterEvent<FightCreatureEntity>(EventsInfo.GameFightLogic_CreatureDeadStart, EventForGameFightLogicCreatureDeadStart);
         RegisterEvent<FightCreatureEntity>(EventsInfo.GameFightLogic_CreatureDeadEnd, EventForGameFightLogicCreatureDeadEnd);
         //新建防守魔物实体时按需重算全体防守属性（供动态属性馈赠"随场上魔物数量缩放"生效）
         RegisterEvent<FightCreatureEntity>(EventsInfo.GameFightLogic_DefenseCreatureCreate, EventForDefenseCreatureCreate);
@@ -589,6 +590,10 @@ public class GameFightLogic : BaseGameLogic
         if (targetCreature == null || targetCreature.IsDead())
             return;
         CreatureHandler.Instance.RemoveFightCreatureEntity(targetCreature, CreatureFightTypeEnum.FightDefense);
+        if (BuffHandler.Instance.HasDynamicRateAbyssalBlessing() || BuffHandler.Instance.HasDynamicRateCreatureBuff())
+        {
+            RefreshAllDefenseCreatureAttribute();
+        }
         //清除魔物时随机播放一个清扫音效
         AudioHandler.Instance.PlaySoundRandom(AudioEnum.sound_clean_1, AudioEnum.sound_clean_2);
     }
@@ -715,13 +720,25 @@ public class GameFightLogic : BaseGameLogic
 
     #region 事件
     /// <summary>
-    /// 角色死亡
+    /// 防守魔物进入死亡状态后，立即按减少后的存活数量刷新动态属性。
+    /// </summary>
+    public void EventForGameFightLogicCreatureDeadStart(FightCreatureEntity fightCreatureEntity)
+    {
+        if (fightCreatureEntity.fightCreatureData.creatureFightType == CreatureFightTypeEnum.FightDefense
+            && (BuffHandler.Instance.HasDynamicRateAbyssalBlessing() || BuffHandler.Instance.HasDynamicRateCreatureBuff()))
+        {
+            RefreshAllDefenseCreatureAttribute();
+        }
+    }
+
+    /// <summary>
+    /// 角色死亡收尾，刷新敌人击杀相关动态属性，并在实体移除后检测战斗结束。
     /// </summary>
     public void EventForGameFightLogicCreatureDeadEnd(FightCreatureEntity fightCreatureEntity)
     {
-        //动态属性BUFF(都是兄弟/杀红了眼/独行者)：魔物死亡→场上数量减少；敌人死亡→累计击杀增加，两者都需重算全体防守魔物属性
-        //先处理死亡带来的属性变化，再检测游戏是否结束(结算可能切状态)
-        if (BuffHandler.Instance.HasDynamicRateAbyssalBlessing() || BuffHandler.Instance.HasDynamicRateCreatureBuff())
+        //防守魔物死亡已在开始事件刷新，保留其余单位原有的死亡收尾刷新时机。
+        if (fightCreatureEntity.fightCreatureData.creatureFightType != CreatureFightTypeEnum.FightDefense
+            && (BuffHandler.Instance.HasDynamicRateAbyssalBlessing() || BuffHandler.Instance.HasDynamicRateCreatureBuff()))
         {
             RefreshAllDefenseCreatureAttribute();
         }
@@ -768,6 +785,7 @@ public class GameFightLogic : BaseGameLogic
                 return;
             }
             fightCreatureEntity.fightCreatureData.RefreshBaseAttribute();
+            fightCreatureEntity.RefreshLifeBarProgress();
             //属性重算会重置colorBodyCurrent，需同步刷新到Spine（BUFF到期移除后中毒/减速变色才能还原）
             fightCreatureEntity.RefreshBodyColor();
         }
@@ -800,6 +818,7 @@ public class GameFightLogic : BaseGameLogic
         if (defenseCore != null && defenseCore.fightCreatureData != null && !defenseCore.IsDead())
         {
             defenseCore.fightCreatureData.RefreshBaseAttribute();
+            defenseCore.RefreshLifeBarProgress();
         }
         //全部普通防守生物
         var listDefenseCreatureEntity = fightData.dlDefenseCreatureEntity?.List;
@@ -811,6 +830,7 @@ public class GameFightLogic : BaseGameLogic
             if (creatureEntity == null || creatureEntity.fightCreatureData == null || creatureEntity.IsDead())
                 continue;
             creatureEntity.fightCreatureData.RefreshBaseAttribute();
+            creatureEntity.RefreshLifeBarProgress();
         }
     }
     #endregion

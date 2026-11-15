@@ -65,11 +65,10 @@ public class GameHandler : BaseHandler<GameHandler, GameManager>
     /// </summary>
     public void StartGashaponMachine(GashaponMachineBean gashaponMachineData)
     {
-        if (manager.gameLogic == null || manager.gameLogic is not GashaponMachineLogic)
-            manager.gameLogic = new GashaponMachineLogic();
-        var gameLogic = manager.gameLogic as GashaponMachineLogic;
+        //首次孕育先尝试发奖，提交成功后由孕育逻辑接管活动实例。
+        var gameLogic = manager.gameLogic as GashaponMachineLogic ?? new GashaponMachineLogic();
         gameLogic.gashaponMachineData = gashaponMachineData;
-        manager.gameLogic.PreGame();
+        gameLogic.PreGame();
     }
 
     /// <summary>

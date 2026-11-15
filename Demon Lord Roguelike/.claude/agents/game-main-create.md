@@ -25,6 +25,8 @@ watched_files:
 
 ## 入口链路
 
+`UIViewMainLoadItem` 先识别读档错误并展示 `Error`，只有空槽可进创建。错误档禁止继续、创建和删除，重开读档界面可重试孕育日志恢复。
+
 ```
 UIMainLoad(加载存档界面) 空槽位 item
   └─ UIViewMainLoadItem.OnClickForCreateGame (UIViewMainLoadItem.cs:127)

@@ -179,6 +179,8 @@ CreatureHandler.Instance.RemoveFightCreatureEntity(entity, CreatureFightTypeEnum
 
 > **防守生物移除：按实例 + 卡片CD条件（2026-08 改动）**：`RemoveFightCreatureEntity` 防守分支移除改为**按实例**——新 `FightBean.RemoveDefenseCreature(FightCreatureEntity)`（`DictionaryList.RemoveByValue`）；`FightBean.RemoveDefenseCreatureByPos` **已删除**（按 positionCreate 首匹配会误删同格生物）。卡片进 Rest(CD) 的条件改为「场上已无该 UUID 存活实体」——DeadRebirth 重生替换场景新实体在场，卡片保持 Fighting 不进 CD；且 `CreateDefenseCreatureEntity` Add 前会预清理同 UUID 已死旧实体，防 `DictionaryList.Add` 静默失败生成幽灵实体（详见 creature-system SKILL / buff-system SKILL「死亡重生」）。
 
+重生请求先在死亡事件中登记，所有监听者返回后由 `AIIntentCreatureDead` 完成同 UUID 替换。`CreatureHandler` 移除旧 BUFF 后创建新实例并重新挂载，旧尸体随后回收时保留新实体的 BUFF 和卡片 Fighting 状态。登场在 BUFF 挂载并重算后按最终上限填满血甲。
+
 > **防守魔物/魔王核心的战斗幻化换骨（`GetFightCreatureObj` 新可选参数 `resNameOverride`）**：签名 `CreatureHandler.GetFightCreatureObj(long creatureId, CreatureFightTypeEnum creatureFightType, string resNameOverride = null)`——幻化状态传 `creatureData.GetTransformSpineRes()`，内部 `targetResName = resNameOverride.IsNull() ? creatureModel.res_name : resNameOverride`，新建（`AddSkeletonAnimation`）与池复用（`SetSkeletonDataAsset`）两处统一走 targetResName **整骨替换**（换骨架非换肤）。**传参规则**：`CreateDefenseCreature`（防守魔物）与 `CreateDefenseCoreCreature`（魔王核心）均传 `creatureData.GetTransformSpineRes()`（无幻化返回 null=原骨架，零副作用）；**进攻敌人（npcInfo 路径）不传**——敌人每场新建 Bean 永不幻化。**战斗换骨安全性结论**：幻化骨架不套原皮肤（无骨骼槽位依赖）、战斗动画由状态机驱动（无 `TrackEntry.Complete` 完成回调依赖）、目标骨架缺动画仅 LogError 不播不崩（游戏层 `SpineHandler.GetAnimNameAppoint` 幻化守卫返回 null 交框架按目标骨架实际动画列表解析（Idle 例外=幻化药 idle_anim 键配置的替代待机动画优先按名直播，2026-09-28 起，见 spine-system / mod-system SKILL）；幻化目标资源须含完整动画集（Idle/Walk/Attack/Dead，Idle 不标准时由 idle_anim 键替代）。幻化机制本体（`CreatureBean.transformItemId` 字段/解析入口/UI 展示漏斗）见 creature-system SKILL。
 
 ### 生物交互接口
@@ -459,7 +461,8 @@ FightHandler.Instance.RemoveFightPrefab(prefabEntity);
 ## 战斗事件列表
 
 ```csharp
-EventsInfo.GameFightLogic_CreatureDeadEnd       // 生物死亡结束
+EventsInfo.GameFightLogic_CreatureDeadStart     // 防守魔物进入死亡状态，即时重算动态人数
+EventsInfo.GameFightLogic_CreatureDeadEnd       // 生物死亡结束，随后检查结算
 EventsInfo.GameFightLogic_StartGame             // 战斗开始(PreGame末尾StartGame后由基类单点触发,覆盖征服/终焉议会/无限/测试全部模式;无参数,通用挂钩)
 EventsInfo.UIFightMain_CardCreateAnimEnd        // 战斗主UI下方卡片出现动画播完(UIFightMain.ShowCardCreateAnim末卡落位广播,空卡列表立即广播;无参数,故事演出"首次进战斗"挂钩;仅 UI 打开期间会完成广播——CloseUI 挂起发牌序列)
 EventsInfo.GameFightLogic_EndGame               // 战斗结束
@@ -476,7 +479,8 @@ EventsInfo.Buff_FightCreatureChange             // 战斗生物BUFF改变
 EventsInfo.Buff_AbyssalBlessingChange           // 深渊馈赠变化(GameFightLogic.EventForAbyssalBlessingChange 监听→刷新防守核心+全部防守生物属性 + 刷新魔王身边环绕图标 RefreshAbyssalBlessingOrbit)
 ```
 
-> **防守属性重算入口 `GameFightLogic.RefreshAllDefenseCreatureAttribute()`**（public，刷新防守核心 + 全部防守魔物 `RefreshBaseAttribute`，由 `EventForAbyssalBlessingChange` 循环抽出）：供动态数值BUFF（加成率随场上魔物数/累计击杀数变化；馈赠侧曾用于都是兄弟/杀红了眼、现役无配置，稀有度BUFF侧现役「独行者」）在战况变化时重算。两处事件驱动广播：① `EventForGameFightLogicCreatureDeadEnd` 中（魔物/敌人死亡都触发，重算放在 `CheckGameEnd()` **之前**）；② `EventForDefenseCreatureCreate` 监听 `GameFightLogic_DefenseCreatureCreate`（放置/增殖新防守魔物后触发）。均按双路 O(1) 守卫 `BuffHandler.HasDynamicRateAbyssalBlessing() || HasDynamicRateCreatureBuff()`（馈赠侧/生物侧各一个缓存布尔，任一为 true 即广播）避免普通对局无谓开销。详见 abyssal-blessing-system / buff-system SKILL。
+> **防守属性重算入口 `GameFightLogic.RefreshAllDefenseCreatureAttribute()`**（public，刷新防守核心 + 全部防守魔物 `RefreshBaseAttribute`，由 `EventForAbyssalBlessingChange` 循环抽出）：供动态数值BUFF（加成率随场上魔物数/累计击杀数变化；馈赠侧曾用于都是兄弟/杀红了眼、现役无配置，稀有度BUFF侧现役「独行者」）在战况变化时重算。重算来源包括① 防守魔物的 `EventForGameFightLogicCreatureDeadStart`（死态已置位，立即重算）与非防守单位的 `EventForGameFightLogicCreatureDeadEnd`（供击杀数类使用，先于下一帧结算检测）；② `EventForDefenseCreatureCreate` 监听 `GameFightLogic_DefenseCreatureCreate`（放置/增殖新防守魔物后触发）；③ `SelectCreatureDestoryHandle` 手动撤下后。均按双路 O(1) 守卫 `BuffHandler.HasDynamicRateAbyssalBlessing() || HasDynamicRateCreatureBuff()`（馈赠侧/生物侧各一个缓存布尔，任一为 true 即广播）避免普通对局无谓开销。详见 abyssal-blessing-system / buff-system SKILL。
+  - 手动撤下防守魔物也按双路动态 BUFF 守卫刷新剩余友军。刷新计算最终血甲上限，上限下降立即钳制当前值，再通过 `RefreshLifeBarProgress()` 更新血条。
 
 ## 常用代码模板
 

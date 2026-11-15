@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// 动态百分比属性 BUFF 基类：加成率不再取配置写死的 trigger_value_rate，而是每次重算属性时按运行时状态实时计算。
@@ -55,11 +56,8 @@ public abstract class BuffEntityAttributeDynamicRate : BuffEntityAttribute
         float rate = GetDynamicRate();
         if (rate <= 0f) return targetData;
         if (attributeType == CreatureAttributeTypeEnum.ASPD)
-            targetData += CreatureUtil.AspdRateToPoint(rate);
-        else
-            targetData *= 1f + rate;
-        if (targetData < 0) targetData = 0;
-        return targetData;
+            return targetData + CreatureUtil.AspdRateToPoint(rate);
+        return Mathf.Max(0f, targetData * (1f + rate));
     }
     #endregion
 }

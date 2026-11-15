@@ -55,7 +55,7 @@ TextManager 加载 Language_UIText_*.txt
 
 ## 约束
 
-- **真实源是 Excel，不是 `.txt`**：`Language_{CfgName}_{lang}.txt`（lang ∈ cn/en/jp/kr/tw/de/fr/ru）由 **`excel_language[多语言_FrameWork].xlsx` 中与 `{CfgName}` 同名工作表**导出（列 `id/content_{lang}/content_1_{lang}/remark`）。`Language_UIText_*` 同样来自 excel_language 的 `UIText` 工作表（导出器只对文件名含 `excel_language` 的工作簿生成 `Language_{sheet}_{lang}.txt`）；`excel_ui_text` 只是 UIText id 登记表（导出 `UIText.txt`+UITextBean），新增 UI 文本两处都要加行；UIText 工作表有重复的 `content_jp`~`content_ru` 列（历史遗留），新行两组填相同值。改文本**必须改对应 Excel 工作表**再导出——只改 `.txt` 会在下次导出被覆盖丢失
+- **真实源是 Excel，不是 `.txt`**：`Language_{CfgName}_{lang}.txt`（lang ∈ cn/en/jp/kr/tw/de/fr/ru/es/br/pl/tr）由 **`excel_language[多语言_FrameWork].xlsx` 中与 `{CfgName}` 同名工作表**导出（列 `id/content_{lang}/content_1_{lang}/remark`）。`Language_UIText_*` 同样来自 excel_language 的 `UIText` 工作表（导出器只对文件名含 `excel_language` 的工作簿生成 `Language_{sheet}_{lang}.txt`）；`excel_ui_text` 只是 UIText id 登记表（导出 `UIText.txt`+UITextBean），新增 UI 文本两处都要加行；UIText 工作表有重复的 `content_jp`~`content_ru` 列（历史遗留），新行两组填相同值。改文本**必须改对应 Excel 工作表**再导出——只改 `.txt` 会在下次导出被覆盖丢失
 - 多语言 key 统一放在 Excel 中管理，通过 ExcelEditorWindow 导出
 - 所有文本显示必须使用 UITextLanguageView 或通过 TextHandler 获取
 - 新增文本 key 需在 Excel 配置中添加
@@ -67,6 +67,7 @@ TextManager 加载 Language_UIText_*.txt
 - **按键提示气泡 UIText 条目（2026-10）**：2000026~2000032 共 7 条（2000026 移动/2000027 移动镜头/2000028 互动/2000029 突进/2000030 0倍速/2000031 2倍速/2000032 加快进攻节奏），已配齐 12 语言翻译；用于 `UIViewPressControlForGameBase` 按键提示组各键悬浮气泡（`UIViewPressCommon.SetPopupTip`），id 常量 `TEXT_ID_*` 写在该视图内（基地 WASD=2000026/E=2000028/Space=2000029；战斗 WASD=2000027/F1=2000031/F2=2000032/Space=2000030）
 - **GM 成长药水 UIText 条目（2026-10）**：61026~61029=+1/-1 升级/降级与升阶/降阶确认框，61030~61033=满级/最低级/最高品阶/最低品阶拦截，61034/61035=多级升级/降级确认框（含 `{1}` 档位占位）；12 语言均已配置。道具名在 `Language_ItemsInfo_*` id 200004~200007 与 200008~200025。
 - **排序优先级条 UIText 条目（2026-11）**：2000033「排序优先级：{0}」（紧随 2000026~2000032 段位），`UIDialogOrderFilter.RefreshPriorityShow` 把已选排序键名称按优先级用 `>` 连接填入 `{0}`；12 语言均已配置，`excel_language` 的 UIText 与 `excel_ui_text` 两处均已加行，机制见 order-filter-system SKILL。
+- **孕育失败 UIText 条目（2026-11-15）**　`2000034`「孕育失败，未消耗魔晶，请重试」，供孕育发奖失败后提示玩家使用。12 语言与 UIText 登记表均已同步。
 - **画质设置「场景杂物阴影」（2026-11）**：UIText `42007`，由 `UIGameSettingForDisplay` 通过 `TextHandler.GetTextById` 使用；12 语言主文本均已配置，UIText 历史重复的 `content_jp`~`content_ru` 两组列填同值，`excel_language` 与 `excel_ui_text` 均已登记并导出。
 - **系统界面退出确认（2026-11-14）**：UIText `505`「是否返回主界面？当前游戏进度将自动保存。」/ `506`「是否退出游戏？当前游戏进度将自动保存。」，分别供 `UIGameSystem.OnClickForBackMain` / `OnClickForExitGame` 的确认弹窗使用；12 语言均已配置，两个 Excel 源表与对应 JSON 均已同步。
 
@@ -113,5 +114,6 @@ string desc = TextHandler.Instance.GetTextReplace(template, dic); // "累计击�
 - **同一模板套不同数值**：把"一个成就多个等级目标"做成一条带 `{Name}` 的模板，按级替换即可（成就系统正是此用法）；省去逐级建文本。
 - 模板里写死的文案（数字、单位、"只生物"等）原样保留；字典给哪个键替换哪个占位符。
 - **选键原则**：有语义占位优先语义占位（击杀 `{KillNum}`、秒 `{Time_S}`、效果百分比 `{Percentage}`、实际触发概率 `{TriggerChance}`），无合适语义用通用 `{Value}`，都不合适再在 `TextReplaceEnum` 追加新枚举（不改旧值）。BUFF 的 `{TriggerChance}` 读取 `trigger_chance`（0=必然触发，显示 100），与效果数值 `trigger_value_rate` 的 `{Percentage}` 不得混用。
+- **孕育 BUFF 的追加占位符**　魂牵梦绕、折上折的主效果使用 `{Percentage}`，第二属性使用 `{PercentageSecondary}`。第二属性由同一次随机百分比乘以配置倍率后显示绝对值。死亡税使用 `{ValueRange}` 显示 `class_entity_data` 中的掉落价值区间。卡片详情和进阶预览均通过 `GetTextReplace` 替换。
 - 范例：`UIViewBuffShowItem`（BUFF 描述 `content_language` + 多个占位符）、成就 `AchievementInfoBean.GetLevelDescription`、研究节点 `ResearchInfoBeanPartial.GetDetailsLanguageWithLevelDetail`（研究表 `details[language]` 列的详情模板如 `（距离{Value}）`，按待解锁等级动态填累计效果数值并拼在名字后，数值源 `UserUnlockBean` 的 static `Get*ForLevel` 方法）。详见 [localization-system] skill。
 - **研究详情描述（2026-10 新增）**：研究表 `details[language]` 列承载按级数值详情（取代旧的名字模板 `{Value}` 写法）；23 个 level_max>1 节点的详情语言条目在 `excel_language` ResearchInfo 工作表占号段 **900000001~900000023**（12 语言全翻译；SpaceDash 900000018/SpaceDashCD 900000019/挑战100勇士 900000022 三条由名字译文剪取迁移而来；魔汁机加魔晶 900000023「（每颗魔晶+{Value}经验）」）。**括号约定：cn/tw/jp 全角（）无前导空格，en/kr/de/fr/ru/es/br/pl/tr 半角() 带一个前导空格**——气泡将详情直接拼在名字后，分隔样式全由详情文本自带，新增详情条目必须遵守该约定

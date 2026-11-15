@@ -64,6 +64,75 @@ public partial class GameDataManager : BaseManager
         userDataService.Save(targetUserData);
     }
 
+    #region 孕育发奖
+    /// <summary>
+    /// 统一提交整批魔物、职业抽数和魔晶费用，提交前失败则还原本次内存改动
+    /// </summary>
+    public bool TryCommitGashaponBatch(long price, IReadOnlyList<GashaponItemBean> rewards)
+    {
+        var targetUserData = GetUserData();
+        if (price < 0 || rewards.Count == 0 || !targetUserData.CheckHasCrystal(price))
+            return false;
+
+        var achievementData = targetUserData.GetUserAchievementData();
+        var originalDrawCounts = new Dictionary<long, long>(achievementData.gashaponCreatureDrawCount);
+        var backpack = targetUserData.GetUserBackpackCreatureData().listBackpackCreature;
+        int originalBackpackCount = backpack.Count;
+        int originalBackupIndex = targetUserData.saveRemarkIndex;
+        long originalCrystal = targetUserData.crystal;
+        bool committed = false;
+
+        try
+        {
+            targetUserData.crystal -= price;
+            for (int i = 0; i < rewards.Count; i++)
+            {
+                var creature = rewards[i].creatureData;
+                targetUserData.AddBackpackCreature(creature);
+                EventHandler.Instance.TriggerEvent(EventsInfo.Achievement_GashaponDraw, creature.creatureId);
+            }
+
+            if (isTestSimulation)
+            {
+                committed = true;
+            }
+            else
+            {
+                userDataService ??= new UserDataService();
+                userDataService.ChangeSlot(targetUserData.saveIndex);
+                committed = userDataService.TrySaveGashaponBatch(targetUserData);
+            }
+        }
+        catch (Exception e)
+        {
+            LogUtil.LogError($"孕育批次提交失败:{e.Message}");
+        }
+        finally
+        {
+            if (!committed)
+            {
+                targetUserData.crystal = originalCrystal;
+                targetUserData.saveRemarkIndex = originalBackupIndex;
+                backpack.RemoveRange(originalBackpackCount, backpack.Count - originalBackpackCount);
+                achievementData.gashaponCreatureDrawCount = originalDrawCounts;
+            }
+        }
+
+        if (committed)
+        {
+            try
+            {
+                targetUserData.NotifyCrystalChange(-price);
+            }
+            catch (Exception e)
+            {
+                LogUtil.LogWarning($"孕育已提交，刷新魔晶显示失败:{e.Message}");
+            }
+        }
+        return committed;
+    }
+    #endregion
+
     /// <summary>
     /// 删除用户数据
     /// </summary>
@@ -87,16 +156,14 @@ public partial class GameDataManager : BaseManager
             userDataService ??= new UserDataService();
             userDataService.ChangeSlot(index);
             //UserDataService.Load 内部会加载并注入拆分的解锁/成就数据
-            UserDataBean data = userDataService.Load();
-            if (data == null)
-                data = new UserDataBean();
+            UserDataBean data = userDataService.Load() ?? new UserDataBean();
+            data.saveIndex = index;
             actionForComplete?.Invoke(index, data);
         }
         catch (Exception e)
         {
             LogUtil.LogError($"读取用户数据失败:{e.Message}");
-            UserDataBean errorData = new UserDataBean();
-            errorData.isErrorData = true;
+            var errorData = new UserDataBean { isErrorData = true, saveIndex = index };
             actionForComplete?.Invoke(index, errorData);
         }
     }

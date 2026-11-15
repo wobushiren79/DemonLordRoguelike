@@ -50,27 +50,21 @@ public partial class UIViewMainLoadItem : BaseUIView
         ui_Continue.ShowObj(false);
         ui_Create.ShowObj(false);
         ui_Error.ShowObj(false);
+        if (userData?.isErrorData == true)
+        {
+            ui_Error.ShowObj(true);
+            return;
+        }
         if (userData == null || userData.id == 0)
         {
             ui_Create.ShowObj(true);
+            return;
         }
-        else
-        {
-            //如果数据损坏
-            if (userData.isErrorData)
-            {
-                ui_Error.ShowObj(true);
-            }
-            else
-            {
-                ui_Continue.ShowObj(true);
-
-                SetCreatureUI(userData.selfCreature);
-                SetUserName(userData.userName);
-                SetCrystal(userData.crystal);
-                SetGameTime(userData.gameTime);
-            }
-        }
+        ui_Continue.ShowObj(true);
+        SetCreatureUI(userData.selfCreature);
+        SetUserName(userData.userName);
+        SetCrystal(userData.crystal);
+        SetGameTime(userData.gameTime);
     }
 
     /// <summary>
@@ -123,11 +117,14 @@ public partial class UIViewMainLoadItem : BaseUIView
     /// </summary>
     public void OnClickForEnterGame()
     {
+        var selectedUserData = userData;
+        if (selectedUserData == null || selectedUserData.id == 0 || selectedUserData.isErrorData)
+            return;
         //展示mask
         UIHandler.Instance.ShowMask(1, null, () =>
         {
-            GameDataHandler.Instance.manager.SetUserData(userData);
-            WorldHandler.Instance.EnterGameForBaseScene(userData, isClearWorld : false, isAnimForBuildingShow : true);
+            GameDataHandler.Instance.manager.SetUserData(selectedUserData);
+            WorldHandler.Instance.EnterGameForBaseScene(selectedUserData, isClearWorld : false, isAnimForBuildingShow : true);
         }, false);
     }
 
@@ -136,6 +133,8 @@ public partial class UIViewMainLoadItem : BaseUIView
     /// </summary>
     public void OnClickForCreateGame()
     {
+        if (userData != null && (userData.isErrorData || userData.id != 0))
+            return;
         var targetUI = UIHandler.Instance.OpenUIAndCloseOther<UIMainCreate>();
         targetUI.SetData(userDataIndex);
     }
@@ -145,11 +144,14 @@ public partial class UIViewMainLoadItem : BaseUIView
     /// </summary>
     public void OnClickForDelete()
     {
+        var selectedUserData = userData;
+        if (selectedUserData == null || selectedUserData.id == 0 || selectedUserData.isErrorData)
+            return;
         DialogBean dialogData = new DialogBean();
-        dialogData.content = string.Format(TextHandler.Instance.GetTextById(203), userData.userName);
+        dialogData.content = string.Format(TextHandler.Instance.GetTextById(203), selectedUserData.userName);
         dialogData.actionSubmit = (dialogView, dialogData) =>
         {
-            GameDataHandler.Instance.manager.DeleteUserData(userData);
+            GameDataHandler.Instance.manager.DeleteUserData(selectedUserData);
             UIHandler.Instance.RefreshUI();
         };
         UIHandler.Instance.ShowDialogNormal(dialogData);
