@@ -198,8 +198,9 @@ EventsInfo.Buff_AbyssalBlessingChange   // BUFF系统-深渊馈赠变化（参�
 
 ```
 UIFightAbyssalBlessing                          # 关卡间选择界面（征服模式触发，基础3选1、研究可+1）
-├── 候选列表                                     # RollCandidates 抽出的最多 3 个
+├── 候选列表                                     # RollCandidates 按研究等级最多抽 3 或 4 个
 │   └── UIViewFightAbyssalBlessingItem          # 单个馈赠候选项
+│       └── ContentBG                          # 显示卡面并播放动画
 ├── 刷新按钮 ui_RefreshBtn/ui_RefreshBtnText     # 见下「馈赠刷新」
 └── 跳过按钮                                    # 点击先弹确认弹窗(UIText 61024)，确认后才播放跳过动画并触发 actionForSkip
 
@@ -212,7 +213,7 @@ UIPopupAbyssalBlessingInfo : PopupShowCommonView # 馈赠详情气泡
 
 ### 6. 馈赠刷新（研究门控 + 征服run共享次数池）
 
-选择界面右侧「刷新按钮」`ui_RefreshBtn`：点击消耗一次刷新次数、**重抽当前 3 个候选**（内部即 `SetData(actionForSelect, actionForSkip)` 重跑 `BuildCandidatePool`+`RollCandidates` 并重渲染，保留原选择/跳过回调）。
+选择界面右侧的「刷新按钮」`ui_RefreshBtn` 消耗一次刷新次数，按研究等级重新抽取候选（内部即 `SetData(actionForSelect, actionForSkip)` 重跑 `BuildCandidatePool` 和 `RollCandidates` 并重渲染，保留原选择和跳过回调）。
 
 - **研究门控**：由**强化**分支研究节点 `UnlockEnum.AbyssalBlessingRefreshNum`(200500001, `level_max=5`) 解锁。未解锁(等级0)或非征服模式时整个刷新按钮隐藏——`RefreshRefreshBtnState()` 用 `UserUnlockBean.CheckIsUnlockAbyssalBlessingRefresh()` 判定，在每次 `SetDataInternal` 末尾调用。
 - **次数作用域=整个征服run共享**：剩余次数池挂在 `FightBeanForConquer.abyssalBlessingRefreshUsedNum` 上，`GetAbyssalBlessingRefreshRemainNum()` = 研究上限(`GetUnlockAbyssalBlessingRefreshMax`) − 已用；`ReduceAbyssalBlessingRefreshNum()` 消耗。**新 run 随 `FightBeanForConquer` 重建自动归 0 回满**（无需存档、无显式 refill）。UI 经 `FightHandler.Instance.manager.GetCachedFightLogic().fightData as FightBeanForConquer` 取到该池；非征服(测试)取到 null → 按钮隐藏。
@@ -224,7 +225,7 @@ UIPopupAbyssalBlessingInfo : PopupShowCommonView # 馈赠详情气泡
 选择界面候选数量 = **基础 3 + 强化分支研究 `UnlockEnum.AbyssalBlessingShowNum`(201100001, `level_max=1`) 等级**，解锁后 4 选 1。节点前置=深渊馈赠刷新研究(200500001)，坐标(400,1) 在刷新节点(200,1)正右方，图标复用 `ui_research_62`，消耗 5000 魔晶。
 
 - **读取链路**：`UIFightAbyssalBlessing.GetShowNum()` → `UserUnlockBean.GetUnlockAbyssalBlessingShowNum()`（= `ABYSSAL_BLESSING_SHOW_NUM_BASE`(3) + 研究等级；static `GetAbyssalBlessingShowNumForLevel(level)` 供任意等级求值）。原 `SHOW_NUM=3` 常量已删除，正式/测试流程统一走 `GetShowNum()`。
-- **第 4 个候选项不改预制体**：`EnsureItemCount(count)` 在子节点不足时 `Instantiate` 复制 `ui_AbyssalBlessingList` 首个候选项补齐（布局由列表容器自动处理），因此无需 Unity MCP/手工编辑 prefab；`SetDataInternal` 按 child 索引绑定、多余隐藏的逻辑天然兼容。
+- **候选卡片与布局**。预制体已有 5 个卡槽，超过预置数量时 `EnsureItemCount(count)` 复制首个候选项补齐。`SetDataInternal` 只显示有效候选，由 `HorizontalLayoutGroup` 单排居中。`FitCardRowToWidth` 为动画留出两侧空间，按画布宽度等比缩小整行，窗口尺寸改变时重新计算。
 - **落表**：`excel_research_info`(id=201100001, `research_type=2`, `level_max=1`, `pre_unlock_ids="200500001"`, `pay_crystal=5000`, `name`=同id, details 留空) + `excel_unlock_info`(id=201100001, `unlock_type=0`) + 多语言 `excel_language` 的 `ResearchInfo` 工作表(id=201100001, cn「深渊馈赠候选数量+1」，12 语言已翻译)。
 
 ---
@@ -409,7 +410,7 @@ public void SetData(AbyssalBlessingInfoBean info)
 }
 ```
 
-**卡片音效**：出现 `AnimForShow` 每张卡错位延迟结束、动画启动时各播 `sound_card_8`（序列 `SetTarget(rt)` 可被 `transform.DOKill()` 整体杀掉，防刷新/选中后残留发声）；悬停 `OnPointerEnter` 播 `sound_card_7`（`isSelecting` 时不播）；选中 `UIFightAbyssalBlessing.OnClickForSelect` 接受点击时播 `sound_card_5`（同生物卡片出现音效模式，见 creature-card-system）。
+**卡面动画与音效**。所有动画作用于卡面 `ContentBG`，卡片根节点的位置由横向布局组管理。`AnimForShow` 在各自的延迟结束后播放 `sound_card_8`。悬停播放 `sound_card_7`，接受选择时播放 `sound_card_5`。`ResetAnimations` 停止卡面动画并还原位置与缩放，刷新复用、候选隐藏及空闲时关闭界面会一并取消延迟音效。选择或跳过已开始时，保留动画的完成回调用于解锁输入。
 
 ### 战斗内常驻列表（UIViewAbyssalBlessingInfoContent）
 

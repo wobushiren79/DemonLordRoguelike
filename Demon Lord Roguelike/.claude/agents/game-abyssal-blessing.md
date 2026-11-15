@@ -39,8 +39,8 @@ watched_files:
 - `Language_AbyssalBlessingInfo_{cn,en}.txt` - 多语言
 
 ### UI 组件
-- **UIFightAbyssalBlessing** - 征服模式关卡间馈赠选择界面（基础 3 选 1，研究 `AbyssalBlessingShowNum`(201100001) 解锁后 4 选 1：`GetShowNum()`=基础3+研究等级，`EnsureItemCount` 子节点不足时复制首项动态补齐、无需改预制体；跳过按钮先弹确认弹窗[UIText 61024]、确认后才走跳过回调）
-- **UIViewFightAbyssalBlessingItem** - 候选项（带等级 BUFF 预览；音效：出现 sound_card_8 / 悬停 sound_card_7 / 选中 sound_card_5）
+- **UIFightAbyssalBlessing** - 征服模式关卡间馈赠选择界面（基础 3 选 1，研究 `AbyssalBlessingShowNum`(201100001) 解锁后 4 选 1。`EnsureItemCount` 在子节点不足时复制首项补齐。`SetDataInternal` 按可见卡片居中排布并等比适配画布宽度。跳过按钮先弹确认弹窗[UIText 61024]，确认后执行跳过回调）
+- **UIViewFightAbyssalBlessingItem** - 候选项（带等级 BUFF 预览。动画只驱动 `ContentBG`，卡槽位置由 `HorizontalLayoutGroup` 管理。刷新复用及空闲时关闭界面会清理动画。音效为出现 sound_card_8、悬停 sound_card_7、选中 sound_card_5）
 - **UIViewAbyssalBlessingInfoContent** - 战斗界面常驻已选馈赠列表
 - **UIViewAbyssalBlessingInfoContentItem** - 已选馈赠列表项
 - **UIPopupAbyssalBlessingInfo** - 馈赠详情气泡

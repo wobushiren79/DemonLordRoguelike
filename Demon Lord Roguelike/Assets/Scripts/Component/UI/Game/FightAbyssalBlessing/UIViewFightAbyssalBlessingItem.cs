@@ -83,47 +83,35 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
 
     /// <summary>
     /// 是否已进入选中/隐藏流程：置位后悬停 enter/exit 不再驱动缩放。
-    /// 避免选中时 ShowScreenLock 盖上遮罩抢走 raycast、下一帧触发 OnPointerExit，
-    /// 其还原 Tween 与选中动画在同一 transform 上抢 scale 导致开头卡顿。
+    /// 避免选中时 ShowScreenLock 触发 OnPointerExit，使悬停还原 Tween 与选中动画同时修改卡面缩放。
     /// </summary>
     private bool isSelecting;
 
     /// <summary>
-    /// 鼠标进入-放大强调并播放悬停音效（已进入选中/隐藏流程时忽略）
+    /// 鼠标进入时放大卡面并播放悬停音效（已进入选中或隐藏流程时忽略）
     /// </summary>
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {
         if (isSelecting) return;
         AudioHandler.Instance.PlaySound(AudioEnum.sound_card_7);
         hoverTween?.Kill();
-        hoverTween = transform
+        hoverTween = CardContent
             .DOScale(Vector3.one * HOVER_SCALE, HOVER_ANIM_DURATION)
             .SetEase(Ease.OutQuad)
             .SetUpdate(UpdateType.Normal, isIndependentUpdate: true);
     }
 
     /// <summary>
-    /// 鼠标离开-还原大小（已进入选中/隐藏流程时忽略）
+    /// 鼠标离开时还原卡面大小（已进入选中或隐藏流程时忽略）
     /// </summary>
     void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
     {
         if (isSelecting) return;
         hoverTween?.Kill();
-        hoverTween = transform
+        hoverTween = CardContent
             .DOScale(Vector3.one, HOVER_ANIM_DURATION)
             .SetEase(Ease.OutQuad)
             .SetUpdate(UpdateType.Normal, isIndependentUpdate: true);
-    }
-
-    /// <summary>
-    /// 关闭悬停动画并复位缩放
-    /// 用于UI关闭时主动清理，避免鼠标停留在控件上未触发 OnPointerExit 导致动画残留
-    /// </summary>
-    public void KillHoverAnim()
-    {
-        hoverTween?.Kill();
-        hoverTween = null;
-        transform.localScale = Vector3.one;
     }
 
     #endregion
@@ -141,77 +129,79 @@ public partial class UIViewFightAbyssalBlessingItem : BaseUIView, IPointerEnterH
     private const float SHOW_ANIM_RISE_DISTANCE = 150f;
 
     /// <summary>
-    /// 首次缓存的原始 anchoredPosition，用于每次重播复位
+    /// 卡面的初始局部坐标，供动画复位使用
     /// </summary>
-    private Vector2 originalAnchoredPos;
+    private Vector2? contentRestPosition;
 
     /// <summary>
-    /// 是否已缓存过原始位置
+    /// 动画使用的卡面节点，卡片根节点由横向布局组定位
     /// </summary>
-    private bool isOriginalPosCached;
+    private RectTransform CardContent => ui_ContentBG.rectTransform;
 
     /// <summary>
-    /// 出现动画-从下方弹出（位置上滑 OutCubic + 缩放 0→1 OutBack 回弹），快速灵动；
-    /// 错位延迟结束、动画启动时播放 sound_card_8（每张卡各自播放，同生物卡片出现音效模式）
+    /// 停止卡面上的所有动画并还原位置、缩放和悬停状态
+    /// </summary>
+    public void ResetAnimations()
+    {
+        var content = CardContent;
+        contentRestPosition ??= content.anchoredPosition;
+        content.DOKill();
+        hoverTween = null;
+        isSelecting = false;
+        content.anchoredPosition = contentRestPosition.Value;
+        content.localScale = Vector3.one;
+    }
+
+    /// <summary>
+    /// 卡面从卡槽下方弹入，错位延迟结束后播放 sound_card_8
     /// </summary>
     /// <param name="delay">延迟时间，用于多卡片错位出现</param>
     public void AnimForShow(float delay = 0f)
     {
-        //复用节点：重新出现时复位选中标志，恢复悬停响应
-        isSelecting = false;
-        var rt = (RectTransform)transform;
-        if (!isOriginalPosCached)
-        {
-            originalAnchoredPos = rt.anchoredPosition;
-            isOriginalPosCached = true;
-        }
-        rt.DOKill();
-        rt.localScale = Vector3.zero;
-        rt.anchoredPosition = new Vector2(originalAnchoredPos.x, originalAnchoredPos.y - SHOW_ANIM_RISE_DISTANCE);
+        ResetAnimations();
+        var content = CardContent;
+        Vector2 restPosition = content.anchoredPosition;
+        content.localScale = Vector3.zero;
+        content.anchoredPosition = restPosition - Vector2.up * SHOW_ANIM_RISE_DISTANCE;
 
-        //SetTarget(rt)：让本序列可被 transform.DOKill() 整体杀掉(含延迟中的音效回调)，避免刷新/选中后旧序列残留发声
+        //标记序列目标，让卡面复用时一并取消延迟中的音效回调。
         DOTween.Sequence()
-            .SetTarget(rt)
-            .Join(rt.DOScale(Vector3.one, SHOW_ANIM_DURATION).SetEase(Ease.OutBack, 2.2f))
-            .Join(rt.DOAnchorPos(originalAnchoredPos, SHOW_ANIM_DURATION).SetEase(Ease.OutCubic))
-            //延迟结束、动画启动时播放卡片出现音效(每张卡各自播放)
+            .SetTarget(content)
+            .Join(content.DOScale(Vector3.one, SHOW_ANIM_DURATION).SetEase(Ease.OutBack, 2.2f))
+            .Join(content.DOAnchorPos(restPosition, SHOW_ANIM_DURATION).SetEase(Ease.OutCubic))
             .InsertCallback(0f, () => AudioHandler.Instance.PlaySound(AudioEnum.sound_card_8))
             .SetDelay(delay)
             .SetUpdate(UpdateType.Normal, isIndependentUpdate: true);
     }
 
     /// <summary>
-    /// 选中动画-先柔和放大强调、短暂停顿，再回弹缩小消失，节奏更顺滑灵动，结束回调用于触发后续逻辑
+    /// 选中卡面先放大、短暂停顿，再缩小消失并触发回调
     /// </summary>
     public void AnimForSelect(Action onComplete = null)
     {
-        //进入选中流程：屏蔽悬停 enter/exit 并清掉残留悬停 Tween，独占 transform 缩放
+        var content = CardContent;
         isSelecting = true;
-        hoverTween?.Kill();
+        content.DOKill();
         hoverTween = null;
-        transform.DOKill();
         DOTween.Sequence()
-            // 柔和放大强调：OutBack 带轻微回弹，时长拉长让动作更舒展
-            .Append(transform.DOScale(Vector3.one * 1.18f, 0.22f).SetEase(Ease.OutBack, 1.6f))
-            // 短暂停顿，给选中一个"定格"的强调感
+            .SetTarget(content)
+            .Append(content.DOScale(Vector3.one * 1.18f, 0.22f).SetEase(Ease.OutBack, 1.6f))
             .AppendInterval(0.05f)
-            // 平滑缩小消失：InBack 轻度蓄力，overshoot 调小避免突兀
-            .Append(transform.DOScale(Vector3.zero, 0.32f).SetEase(Ease.InBack, 1.2f))
+            .Append(content.DOScale(Vector3.zero, 0.32f).SetEase(Ease.InBack, 1.2f))
             .SetUpdate(UpdateType.Normal, isIndependentUpdate: true)
             .OnComplete(() => onComplete?.Invoke());
     }
 
     /// <summary>
-    /// 隐藏动画-缩到 0 消失（未被选中卡片 / 跳过时使用）
+    /// 卡面缩小消失（用于未选中的卡片及跳过流程）
     /// </summary>
     public void AnimForHide(Action onComplete = null)
     {
-        //进入隐藏流程：屏蔽悬停 enter/exit 并清掉残留悬停 Tween，独占 transform 缩放
+        var content = CardContent;
         isSelecting = true;
-        hoverTween?.Kill();
+        content.DOKill();
         hoverTween = null;
-        transform.DOKill();
-        transform
+        content
             .DOScale(Vector3.zero, 0.2f)
             .SetEase(Ease.InBack)
             .SetUpdate(UpdateType.Normal, isIndependentUpdate: true)

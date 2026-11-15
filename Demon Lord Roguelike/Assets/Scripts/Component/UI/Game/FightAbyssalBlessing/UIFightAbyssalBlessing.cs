@@ -13,6 +13,16 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     private const float ITEM_SHOW_ANIM_STAGGER = 0.08f;
 
     /// <summary>
+    /// 卡片行与画布两侧各保留的间距
+    /// </summary>
+    private const float CARD_ROW_SIDE_PADDING = 24f;
+
+    /// <summary>
+    /// 卡片行预留的额外宽度，覆盖两端卡片在出现、悬停及选中动画中的放大
+    /// </summary>
+    private const float CARD_ANIMATION_EXTRA_WIDTH_RATIO = 0.2f;
+
+    /// <summary>
     /// 优先生成"已选过馈赠的更高等级"的概率（0~1）。
     /// 当玩家已拥有可升级馈赠时，每个候选名额都按此概率独立判定是否优先填入升级项。
     /// </summary>
@@ -56,6 +66,11 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     /// </summary>
     private bool isAnimating;
 
+    /// <summary>
+    /// 当前可见卡片行的原始宽度，含动画放大的余量
+    /// </summary>
+    private float cardRowWidth;
+
     #endregion
 
     #region 数据设置
@@ -84,8 +99,7 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     }
 
     /// <summary>
-    /// 确保候选项子节点数量不少于指定数量：不足时复制首个候选项实例补齐（布局由列表容器自动处理），
-    /// 使研究提升候选数量时无需修改预制体
+    /// 确保候选项子节点数量不少于指定数量，不足时复制首个候选项实例补齐
     /// </summary>
     private void EnsureItemCount(int count)
     {
@@ -195,7 +209,7 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     }
 
     /// <summary>
-    /// 数据渲染内部实现：按 showData 数组分别绑定子节点，多余子节点隐藏
+    /// 绑定并显示有效候选，播放卡面动画并按实际可见卡片的宽度排布
     /// </summary>
     private void SetDataInternal(AbyssalBlessingInfoBean[] showData, Action<AbyssalBlessingInfoBean> actionForSelect, Action actionForSkip)
     {
@@ -203,21 +217,59 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
         this.actionForSkip = actionForSkip;
         isAnimating = false;
 
+        float widestCardWidth = 0f;
         int childCount = ui_AbyssalBlessingList.childCount;
         for (int i = 0; i < childCount; i++)
         {
-            var itemView = ui_AbyssalBlessingList.GetChild(i);
+            var itemView = (RectTransform)ui_AbyssalBlessingList.GetChild(i);
+            var targetView = itemView.GetComponent<UIViewFightAbyssalBlessingItem>();
             bool visible = i < showData.Length && showData[i] != null;
             itemView.gameObject.SetActive(visible);
-            if (!visible) continue;
+            if (!visible)
+            {
+                targetView.ResetAnimations();
+                continue;
+            }
 
-            var itemData = showData[i];
-            var targetView = itemView.GetComponent<UIViewFightAbyssalBlessingItem>();
-            targetView.SetData(itemData);
+            widestCardWidth = Mathf.Max(widestCardWidth, itemView.rect.width);
+            targetView.SetData(showData[i]);
             targetView.AnimForShow(i * ITEM_SHOW_ANIM_STAGGER);
         }
-        //渲染完刷新「刷新按钮」的显隐与剩余次数显示
+
+        var cardLayout = ui_AbyssalBlessingList.GetComponent<HorizontalLayoutGroup>();
+        cardLayout.CalculateLayoutInputHorizontal();
+        cardRowWidth = cardLayout.preferredWidth + widestCardWidth * CARD_ANIMATION_EXTRA_WIDTH_RATIO;
+        FitCardRowToWidth();
         RefreshRefreshBtnState();
+    }
+
+    #endregion
+
+    #region 候选卡片布局
+
+    /// <summary>
+    /// 画布尺寸变化时同步调节卡片行的大小
+    /// </summary>
+    private void OnRectTransformDimensionsChange()
+    {
+        FitCardRowToWidth();
+    }
+
+    /// <summary>
+    /// 为布局组提供足够宽度以居中排列卡片，再按画布宽度等比缩小整行
+    /// </summary>
+    private void FitCardRowToWidth()
+    {
+        if (ui_AbyssalBlessingList == null) return;
+        float viewportWidth = ((RectTransform)transform).rect.width;
+        if (viewportWidth <= 0f) return;
+
+        ui_AbyssalBlessingList.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Max(viewportWidth, cardRowWidth));
+        float scale = cardRowWidth > 0f
+            ? Mathf.Clamp01((viewportWidth - CARD_ROW_SIDE_PADDING * 2f) / cardRowWidth)
+            : 1f;
+        ui_AbyssalBlessingList.localScale = Vector3.one * scale;
+        LayoutRebuilder.MarkLayoutForRebuild(ui_AbyssalBlessingList);
     }
 
     #endregion
@@ -279,18 +331,19 @@ public partial class UIFightAbyssalBlessing : BaseUIComponent
     #region 生命周期
 
     /// <summary>
-    /// 关闭UI-主动清理所有子控件的悬停动画
-    /// 避免鼠标停留在控件上时UI被关闭，未触发 OnPointerExit 导致动画残留
+    /// 关闭界面时清理卡面动画，并让已经开始的选择或跳过流程完成回调
     /// </summary>
     public override void CloseUI()
     {
         base.CloseUI();
+        if (isAnimating) return;
+
         int childCount = ui_AbyssalBlessingList.childCount;
         for (int i = 0; i < childCount; i++)
         {
             var view = ui_AbyssalBlessingList.GetChild(i).GetComponent<UIViewFightAbyssalBlessingItem>();
             if (view != null)
-                view.KillHoverAnim();
+                view.ResetAnimations();
         }
     }
 

@@ -716,6 +716,10 @@ EventsInfo.Language_Change                // 语言切换
 
 ## 业务 UI 速记（按需补充，完整清单见 ProjectUI.md）
 
+### UIFightAbyssalBlessing（深渊馈赠选择）
+
+候选卡片由 `HorizontalLayoutGroup` 根据实际可见项单排居中。`FitCardRowToWidth` 按画布宽度缩放整行并预留卡面放大空间。卡面动画作用于 `ContentBG`，因此刷新候选数量或改变窗口尺寸时，布局组仍可调整卡槽位置。详见 `abyssal-blessing-system`。
+
 ### UIViewBuffShowItem（满值 BUFF 描述）
 
 由详情传入稀有度词条来源，行组件决定是否标金数字并应用 TMP 原生扫光。描述占位中 `{Percentage}`=roll后效果率，`{TriggerChance}`=实际触发概率（`trigger_chance`，0按必然触发显示100），两者不得混用。`SetData()` 切到普通词条时恢复实例自己的原材质和映射设置。扫光材质应用前配置 Glow，让 TMP 在赋值时计算字形留边。运行时贴图与材质按原材质及底色全局缓存，最后一个使用过扫光的行销毁时释放。判定和参数见 [creature-card-system](../creature-card-system/SKILL.md)。
