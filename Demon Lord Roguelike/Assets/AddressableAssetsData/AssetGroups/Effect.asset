@@ -120,6 +120,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 67ad0f389f3245f49912339464bbfe37
+    m_Address: Assets/LoadResources/Effects/Effect_Boom_Ice_Boss_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6e30d327e4eff0043b4830b3c04f44d6
     m_Address: Assets/LoadResources/Effects/Effect_Blood_1.prefab
     m_ReadOnly: 0

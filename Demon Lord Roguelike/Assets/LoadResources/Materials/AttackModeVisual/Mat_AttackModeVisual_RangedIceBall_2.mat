@@ -104,7 +104,7 @@ Material:
     - _CoreEnable: 1
     - _CoreNoiseScale: 1
     - _CoreNoiseSpeed: 1.2
-    - _CoreNoiseStrength: 0.1
+    - _CoreNoiseStrength: 0.14
     - _CorePulseAmount: 0.05
     - _CorePulseSpeed: 1
     - _CoreSize: 0.9
@@ -120,6 +120,7 @@ Material:
     - _GlossyReflections: 0
     - _InstanceScale: 1
     - _LitEnable: 1
+    - _MagicBallRenderTime: -1
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _OutlineEnable: 0
@@ -131,21 +132,21 @@ Material:
     - _SeedOffset: 0
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
-    - _SparkDistance: 1
+    - _SparkDistance: 1.2
     - _SparkEase: 0.5
     - _SparkFadeIn: 0.12
     - _SparkFadeOut: 0.6
-    - _SparkGravity: 0
+    - _SparkGravity: 0.08
     - _SparkOriginRadius: 0.15
     - _SparkRate: 1
     - _SparkSizeEnd: 0
-    - _SparkSizeStart: 0.15
+    - _SparkSizeStart: 0.2
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _SrcBlendAlpha: 1
     - _Surface: 0
     - _TrailAlpha: 1
-    - _VertexScale: 0.5
+    - _VertexScale: 0.68
     - _WorkflowMode: 1
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
@@ -153,13 +154,13 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _CoreColorCold: {r: 0.1, g: 0.85, b: 2.4, a: 1}
-    - _CoreColorHot: {r: 3, g: 5, b: 6.5, a: 1}
+    - _CoreColorHot: {r: 3.8, g: 5.4, b: 6.5, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _InstancedFlatGI: {r: 0, g: 0, b: 0, a: 0}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _RotateSpeed: {r: 0, g: 0, b: -360, a: 0}
     - _SparkColorEnd: {r: 0.15, g: 0.75, b: 2, a: 1}
-    - _SparkColorStart: {r: 2.6, g: 4.4, b: 5.6, a: 1}
+    - _SparkColorStart: {r: 3.1, g: 4.6, b: 5.6, a: 1}
     - _SparkVelocity: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
     - _VelocityWS: {r: 0, g: 0, b: 0, a: 0}
