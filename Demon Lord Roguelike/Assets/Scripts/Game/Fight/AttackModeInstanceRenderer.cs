@@ -4,7 +4,7 @@ using UnityEngine.Rendering;
 
 /// <summary>
 /// 攻击模块(弹道)GPU Instancing 批量渲染器（DSP 式："只记录位置，一起绘制"）。
-/// <para>【核心】不为每发弹道单独渲染，而是每帧遍历活跃弹道、按视觉桶签名分桶，用各弹道的 position 构建变换矩阵，每桶一次 Graphics.DrawMeshInstanced 批量绘制。</para>
+/// <para>【核心】每帧按视觉桶签名收集各弹道的变换矩阵，批量绘制弹体及可选的附加视觉层。</para>
 /// <para>【双通道】visual_name 走本批量渲染(DSP)；prefab_name 仍走原 prefab 的 SpriteRenderer/VisualEffect
 /// (FightManager.GetAttackModePrefab 创建)。二者独立字段、配置侧二选一，互不干扰。</para>
 /// <para>【零副作用】常开无总开关：visual_name 为空、或未 RegisterVisual 的弹道被跳过(什么都不画)。</para>
@@ -29,9 +29,38 @@ public partial class AttackModeInstanceRenderer
     private const float VelocityClampRate = 1.5f;
     #endregion
 
-    #region 内部结构：渲染桶
+    #region 视觉层与渲染桶
     /// <summary>
-    /// 弹体视觉桶：一个 Mesh + 一个(开 GPU Instancing 的)Material + 复用矩阵缓冲。同 visualKey 的弹道合批到此。
+    /// 附加视觉层的共享网格、材质与相对主弹体的局部矩阵。
+    /// </summary>
+    public readonly struct AdditionalVisual
+    {
+        /// <summary>此层使用的共享网格。</summary>
+        public Mesh Mesh { get; }
+        /// <summary>此层使用的共享材质，须开启 GPU Instancing。</summary>
+        public Material Material { get; }
+        /// <summary>此层相对主弹体的局部矩阵。</summary>
+        public Matrix4x4 LocalMatrix { get; }
+        /// <summary>此层所用的子网格序号。</summary>
+        public int SubMeshIndex { get; }
+        /// <summary>局部矩阵为单位矩阵时，可直接使用主弹体矩阵缓冲。</summary>
+        internal bool UsesMainMatrix { get; }
+
+        /// <summary>
+        /// 创建附加视觉层，并缓存能否直接使用主弹体矩阵。
+        /// </summary>
+        public AdditionalVisual(Mesh mesh, Material material, Matrix4x4 localMatrix, int subMeshIndex = 0)
+        {
+            Mesh = mesh;
+            Material = material;
+            LocalMatrix = localMatrix;
+            SubMeshIndex = subMeshIndex;
+            UsesMainMatrix = localMatrix.isIdentity;
+        }
+    }
+
+    /// <summary>
+    /// 弹体视觉桶：主网格、主材质、可选附加视觉层和复用矩阵缓冲。同 visualKey 的弹道合批到此。
     /// </summary>
     private class VisualBucket
     {
@@ -39,6 +68,8 @@ public partial class AttackModeInstanceRenderer
         public Mesh mesh;
         //弹体材质(须开 Enable GPU Instancing 或用支持 instancing 的 shader)
         public Material material;
+        /// <summary>按登记顺序绘制的可选附加视觉层。</summary>
+        public AdditionalVisual[] additionalVisuals;
         //本帧待绘制矩阵缓冲(固定 1023 复用，避免热路径分配)
         public readonly Matrix4x4[] matrixBuffer = new Matrix4x4[MaxInstancesPerBatch];
         //缓冲当前已填充数量
@@ -82,6 +113,12 @@ public partial class AttackModeInstanceRenderer
 
     /// <summary>魔法弹粒子时钟，战斗运行时按 Unity 帧时间推进。</summary>
     private float magicBallRenderTime;
+    /// <summary>附加视觉的时钟，按战斗帧时间推进。</summary>
+    private float additionalVisualTime;
+    /// <summary>仅在首次绘制附加层时创建，供所有附加视觉共用。</summary>
+    private MaterialPropertyBlock additionalVisualProperties;
+    /// <summary>非单位局部矩阵的附加层共用的矩阵缓冲，首次需要时创建。</summary>
+    private Matrix4x4[] additionalVisualMatrixBuffer;
 
     //——环境光(GI)+主光补偿：DrawMeshInstanced 的 SampleSH 读不到全局环境探针、URP 主光 uniform 亦缺失(实测主光强度归零弹体毫无变化)，
     //开 Lit 的桶材质会偏暗；按桶 ambient 方式经 MPB 灌入环境光、并统一灌入模拟主光补齐(详见 RefreshAmbientSH/RefreshInstancedLight)——
@@ -118,6 +155,8 @@ public partial class AttackModeInstanceRenderer
     private static readonly int PropInstanceScale = Shader.PropertyToID("_InstanceScale");
     /// <summary>魔法弹粒子、核心动画和阴影共用的时间属性。</summary>
     private static readonly int PropMagicBallRenderTime = Shader.PropertyToID("_MagicBallRenderTime");
+    /// <summary>附加视觉材质的通用战斗时间属性。</summary>
+    private static readonly int PropAttackModeVisualTime = Shader.PropertyToID("_AttackModeVisualTime");
     //环境探针求值用的固定采样方向(6 轴)与结果缓冲(预分配复用，避免热路径分配)
     private static readonly Vector3[] ambientEvalDirs = { Vector3.up, Vector3.down, Vector3.left, Vector3.right, Vector3.forward, Vector3.back };
     private readonly Color[] ambientEvalResults = new Color[6];
@@ -137,7 +176,10 @@ public partial class AttackModeInstanceRenderer
     /// </summary>
     /// <param name="spinAxis">该桶弹道的自旋轴(与 visualKey 里编码的一致)</param>
     /// <param name="spinSpeed">该桶弹道的自旋速度(度/秒)；0=不自旋</param>
-    public void RegisterVisual(string visualKey, Mesh mesh, Material material, AttackModeVisualConfig visualConfig = default, Vector3 spinAxis = default, float spinSpeed = 0f)
+    /// <param name="additionalVisuals">可选的附加视觉层，按数组顺序提交绘制。</param>
+    public void RegisterVisual(string visualKey, Mesh mesh, Material material,
+        AttackModeVisualConfig visualConfig = default, Vector3 spinAxis = default, float spinSpeed = 0f,
+        AdditionalVisual[] additionalVisuals = null)
     {
         if (string.IsNullOrEmpty(visualKey))
             return;
@@ -153,6 +195,7 @@ public partial class AttackModeInstanceRenderer
         }
         bucket.mesh = mesh;
         bucket.material = material;
+        bucket.additionalVisuals = additionalVisuals;
         //per-bucket 渲染参数：环境光补偿方式 + 投/收阴影配置(实际生效以游戏设置 bulletShadow 为总开关，见 DrawBucket)
         bucket.ambient = visualConfig.ambient;
         bucket.castShadow = visualConfig.castShadow ? ShadowCastingMode.On : ShadowCastingMode.Off;
@@ -194,12 +237,14 @@ public partial class AttackModeInstanceRenderer
     }
 
     /// <summary>
-    /// 清空所有桶注册（方案1 轨迹桶销毁克隆材质，轨迹 Mesh 是弹体桶共享 Mesh 不销毁；方案2 VFX 桶交 EffectHandler 统一销毁）。
+    /// 清空所有桶注册并重置弹体和附加视觉时钟（方案1 轨迹销毁克隆材质；方案2 VFX 交 EffectHandler 销毁）。
     /// </summary>
     public void ClearVisuals()
     {
         dicBucket.Clear();
         magicBallRenderTime = 0f;
+        additionalVisualTime = 0f;
+        additionalVisualProperties?.Clear();
         if (dicTrailBucket.Count > 0)
         {
             foreach (var tb in dicTrailBucket.Values)
@@ -286,6 +331,7 @@ public partial class AttackModeInstanceRenderer
         float gameSpeed = GameFightLogic.GetCurrentGameSpeed();
         float deltaTime = gameSpeed > 0f ? Time.deltaTime : 0f;
         magicBallRenderTime += deltaTime;
+        additionalVisualTime += deltaTime * gameSpeed;
         int count = listAttackMode == null ? 0 : listAttackMode.Count;
         for (int i = 0; i < count; i++)
         {
@@ -477,6 +523,7 @@ public partial class AttackModeInstanceRenderer
     /// <para>【逐实例数组现灌现画】火球/冰球桶的 _VelocityWS/_SeedOffset/_InstanceScale 在此刻才灌进 MPB：Set*Array 是即时拷贝、
     /// 紧接着就提交绘制，故同方式各桶轮流借用同一个 MPB 不会串数据，无需每桶再建 MPB。必须每桶一份的只有缓冲数组本身——各桶的填充是交错进行的。
     /// 数组按定长 1023 整份上传(超出 count 的部分被忽略)，与轨迹桶的 _TrailAlpha 同理；未声明这些属性的桶提交时 Unity 直接忽略残留数组。</para>
+    /// <para>按登记顺序绘制附加层，复用主弹体矩阵或叠加局部矩阵。附加层使用战斗时间，不投影也不接收阴影。</para>
     /// </summary>
     private void DrawBucket(VisualBucket bucket)
     {
@@ -497,6 +544,42 @@ public partial class AttackModeInstanceRenderer
         bool receiveShadows = frameBulletShadow && bucket.receiveShadow;
         Graphics.DrawMeshInstanced(bucket.mesh, 0, bucket.material, bucket.matrixBuffer, bucket.count,
             mpb, castMode, receiveShadows, 0, null, LightProbeUsage.Off, null);
+
+        var additionalVisuals = bucket.additionalVisuals;
+        if (additionalVisuals == null || additionalVisuals.Length == 0)
+            return;
+
+        MaterialPropertyBlock properties = null;
+        for (int i = 0; i < additionalVisuals.Length; i++)
+        {
+            var layer = additionalVisuals[i];
+            var mesh = layer.Mesh;
+            var material = layer.Material;
+            int subMesh = layer.SubMeshIndex;
+            if (mesh == null || material == null || !material.enableInstancing || (uint)subMesh >= (uint)mesh.subMeshCount)
+                continue;
+
+            if (properties == null)
+            {
+                additionalVisualProperties ??= new MaterialPropertyBlock();
+                properties = additionalVisualProperties;
+                properties.SetFloat(PropAttackModeVisualTime, additionalVisualTime);
+            }
+
+            var matrices = bucket.matrixBuffer;
+            if (!layer.UsesMainMatrix)
+            {
+                additionalVisualMatrixBuffer ??= new Matrix4x4[MaxInstancesPerBatch];
+                for (int j = 0; j < bucket.count; j++)
+                {
+                    additionalVisualMatrixBuffer[j] = bucket.matrixBuffer[j] * layer.LocalMatrix;
+                }
+                matrices = additionalVisualMatrixBuffer;
+            }
+
+            Graphics.DrawMeshInstanced(mesh, subMesh, material, matrices, bucket.count,
+                properties, ShadowCastingMode.Off, false, 0, null, LightProbeUsage.Off, null);
+        }
     }
     #endregion
 

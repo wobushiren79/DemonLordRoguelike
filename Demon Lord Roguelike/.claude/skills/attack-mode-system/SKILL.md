@@ -11,6 +11,10 @@ watched_files:
   - Assets/Scripts/Bean/MVC/Game/AttackModeInfoBeanPartial.cs
   - Assets/Scripts/Component/Handler/FightHandler.cs
   - Assets/Scripts/Component/Manager/FightManager.cs
+  - Assets/LoadResources/AttackModeVisual/
+  - Assets/LoadResources/Materials/AttackModeVisual/
+  - Assets/Shaders/Shader_FallingBow_1.shader
+  - Assets/AddressableAssetsData/AssetGroups/AttackModeVisual.asset
 ---
 
 # 攻击模块系统开发指南
@@ -51,7 +55,7 @@ BaseAttackMode       - 攻击模块逻辑基类（包含碰撞检测、特效播
 
 ### 技能触发预检（CheckCanTriggerSkill）
 
-「释放技能」意图（trigger_scene=1，由 NPC ai_param skill_update 驱动）切入前，`TryTriggerExtSkill` 统一调用 `BaseAttackMode.CheckCanTriggerSkill(attacker, attackModeInfo)` 虚方法做触发预检——默认 true 不拦截，各攻击类按需重写拦截空放（如群体治疗范围内无血量不满友军时不施法）；返回 false=保持就绪下帧再试、不切入施法。预检时无发射实例，实例经 `FightManager.GetAttackModeClass(attack_mode_id)` 取**类级共享无状态实例**（按 id 懒创建缓存，反射失败=不拦截；刻意不挂靠 `dlAttackModePrefab`——那是在途攻击表、按 instanceId 登记且技能未放时为空，也不进对象池；该缓存同样可供其他需要类级无状态实例的调用方复用），重写实现须保持无状态（配置从 attackModeInfo 入参取，禁止读写实例字段）。现有重写者：`AttackModeRegainHPArea`（2026-09-16，范围内无可治疗友军不施法）、`AttackModeChargeLanceKnight`（2026-11-07，本路冲锋路径无存活敌人不施法）。
+「释放技能」意图（trigger_scene=1，由 NPC ai_param skill_update 驱动）切入前，`TryTriggerExtSkill` 统一调用 `BaseAttackMode.CheckCanTriggerSkill(attacker, attackModeInfo)` 虚方法做触发预检——默认 true 不拦截，各攻击类按需重写拦截空放（如群体治疗范围内无血量不满友军时不施法）；返回 false=保持就绪下帧再试、不切入施法。预检时无发射实例，实例经 `FightManager.GetAttackModeClass(attack_mode_id)` 取**类级共享无状态实例**（按 id 懒创建缓存，反射失败=不拦截；刻意不挂靠 `dlAttackModePrefab`——那是在途攻击表、按 instanceId 登记且技能未放时为空，也不进对象池；该缓存同样可供其他需要类级无状态实例的调用方复用），重写实现须保持无状态（配置从 attackModeInfo 入参取，禁止读写实例字段）。现有重写者：`AttackModeRegainHPArea`（2026-09-16，范围内无可治疗友军不施法）、`AttackModeChargeLanceKnight`（2026-11-07，本路冲锋路径无存活敌人不施法）、`AttackModeRegainHPAndDR`（`regain_self:1` 时，施法者满血满甲则保持就绪）。
 
 ### 攻击模式类型体系
 
@@ -83,8 +87,8 @@ BaseAttackMode                      - 攻击模式基类
 ├── AttackModeChargeLanceKnight     - 长枪骑士BOSS技能-沿路冲锋（空放预检=CheckCanTriggerSkill：本路施法者当前位置至道路左缘无存活防守生物则不释放，保持就绪下帧再试；长驻攻击模式移动施法者本体：Charging 阶段沿本路向 -X 冲到 x=0.5，按「上帧x~本帧x」区间扫描 GetDefenseCreatureByRoad，每目标一次 UnderAttack；到左缘切 Jumping，按 EvalJumpPosition 同式抛物线跳回施法前精确位置；每帧校验存活/UUID/CastSkill 意图，失配 Abort；冲锋≤1.8s+跳回0.2~0.8s 满足 CastSkill 3秒兜底；Human 骨架无 Jump，跳回保持 Walk；102004 配 speed_move=12&other_data=jump_time:0.6&jump_height:1.5&charge_fx:2200001&land_fx:700001（charge_fx=跟随施法者的风线特效独立实例、World 模拟，多 BOSS 同屏不互顶；land_fx=跳回落地的 700001=Effect_BodySlam_1），ext 100015[trigger_scene=1] + NPC ai_param=skill_update:100015:5，2026-11 新增）
 ├── AttackModeExplosion             - 爆炸（以自身为中心范围伤害+按距爆心半径线性衰减[other_data 键 falloff_min=边缘最低倍率,默认0.5=边缘为中心1/2,保底1,配1=不衰减]，攻击者死亡；冲锋型 charge_attack=1 走「死亡即引爆」纯数据路径 CreateAttackModeForDeadExplosion，不走 StartAttack(attacker,…)；敢死队 300002：collider_area_type=11&collider_area_size=1.5&damage_add_rate=1，effect_hit=300002(Effect_Explosion_2,2026-08-18 起爆炸两个攻击模块 300001/300002 均改用此粒子,原 Effect_Explosion_1=300001 特效已无引用)/sound_hit=420008/sound_miss=100001）
 ├── AttackModeFallupon              - 天降单体（直接对锁定目标造成伤害）
-├── AttackModeFalluponArea          - 天降范围（对目标位置范围伤害；Update 的 gameObject==null→AttackHandle 兜底仅限老 prefab 模式，DSP 视觉模式(visual_name 非空)无实体 gameObject 跳过该检查正常下落）
-│   └── AttackModeFalluponAreaRandom - 天降范围-随机落点（发射时从全场存活防守生物随机取落点替换 attacked 实参[最多重试3次,落空沿用原目标],父类下落/AOE/叠buff全复用;随机源 fightData.dlDefenseCreatureEntity 不含魔王核心;火/水/冰大魔法师BOSS技能 700001 火球[buff=1000500001:0.5烧伤]/700002 水球[buff=1000600001:0.5潮湿]/700005 冰球[buff=1000700001:0.5冰缓,effect_hit=2000003(Effect_Boom_Ice_Boss_1)],经 AttackModeExtInfo 100002/100003/100006 以 trigger_interval=5 BossSkill 挂载, start_pos_offset=0,6,0 六格高天降, effect_hit=2000001(Effect_Boom_Fire_2 火爆发)/2000002(Effect_Boom_Water_2 水爆发)(2026-08-24 由 800001 火锥拆分,PS Burst 新粒子,原名 Effect_Burst_Fire_1/Water_1), 子弹视觉 visual_name=AttackModeVisual_RangedFireBall_2/WaterBall_2/IceBall_2(火/水2026-08-24 由 prefab_name 实体弹道迁入 DSP 模式,prefab_name 已留空;冰2026-09-13 由 AttackModeVisual_RangedIceBall 小冰球换成新增大冰球视觉,材质 Mat_AttackModeVisual_RangedIceBall_2 调冰青色系,落速调慢=other_data 配 gravity:2.4525(9.81 两次减半)+speed_move=1.5), sound_hit=420008）
+├── AttackModeFalluponArea          - 天降范围（对目标位置范围伤害；Update 的 gameObject==null→AttackHandle 是 Prefab 渲染通道的兜底。DSP 渲染通道（visual_name 非空）不创建 GameObject，按 position 正常下落）
+│   └── AttackModeFalluponAreaRandom - 天降范围-随机落点（发射时从全场存活防守生物随机取落点替换 attacked 实参[最多重试3次,落空沿用原目标],父类下落/AOE/叠buff全复用;随机源 fightData.dlDefenseCreatureEntity 不含魔王核心;火/水/冰大魔法师BOSS技能 700001 火球[buff=1000500001:0.5烧伤]/700002 水球[buff=1000600001:0.5潮湿]/700005 冰球[buff=1000700001:0.5冰缓,effect_hit=2000003(Effect_Boom_Ice_Boss_1)],经 AttackModeExtInfo 100002/100003/100006 以 trigger_interval=5 BossSkill 挂载, start_pos_offset=0,6,0 六格高天降, effect_hit=2000001(Effect_Boom_Fire_2 火爆发)/2000002(Effect_Boom_Water_2 水爆发)(2026-08-24 由 800001 火锥拆分,PS Burst 新粒子,原名 Effect_Burst_Fire_1/Water_1), 飞行表现使用 DSP 视觉 AttackModeVisual_RangedFireBall_2/WaterBall_2/IceBall_2，附带破风网格（详见「火、水、冰 BOSS 天降弹体」），other_data 配 gravity:2.4525(9.81 两次减半)+speed_move=1.5, sound_hit=420008）
 ├── AttackModeFalluponChain         - 天降连锁（连锁弹射多个目标，伤害递减；目标或攻击者实体被池复用（UUId 双判失效）即终止连锁；命中特效点=被击者位置+攻击者 attack_start_position 抬升[照 AttackModeLure,劈躯干非脚底,攻击者已销毁退化脚底]）
 ├── AttackModeFalluponChainMulti    - 天降连锁-三连发发射器（自身无伤害无特效：首发当帧+Update 按 other_data 键 hit_times/hit_interval 排程[GetFightDeltaTime 累计,首发后立即回调保 AI 节奏]，逐发调 FightHandler.StartCreateAttackMode 实体路径发射 child_attack_mode_id 指向的子雷[每发重新取 ATK 快照]，每发独立随机选全场存活防守生物[不含核心,重试3次,落空跳过本发]，攻击者死亡/实体池复用[UUId 双判]取消余发；不继承 FalluponChain[连锁循环 private+无参 StartAttack 废路径]；雷大魔法师BOSS技能 700006[child=800002 BOSS版普攻雷击(复制自普攻800001,初始+连锁特效均换900004 Effect_Thunder_4),hit_times:3&hit_interval:0.25=0.5秒3发]经 ext 100007 挂载 5s,2026-09-14 由单次随机落点天降雷电改造,2026-09-15 child 由 800001 拆出 800002 换 BOSS 专属特效）
 ├── AttackModeOverlap               - 重叠检测（以自身为中心范围触碰，命中走正常 UnderAttack 伤害管线）
@@ -103,9 +107,25 @@ BaseAttackMode                      - 攻击模式基类
     └── AttackModeRegainHPGround    - 地面持续治疗区域（直接继承 BaseAttackMode，类名前缀命中 IsRegainType；施法快照圆心=自身位置/阵营/半径=collider_area_size[0](=2)，发射当帧即回调[生物继续行动,区域 Update 自持——每1秒对区域内同阵营存活且 HP不满 友军跳一次 RegainHP，治疗量=施法瞬间 ATK×damage_add_rate(0.1) 快照，施法者死亡照跳,照 AttackModeRangedArcGround 地面火焰先例]，满5秒自毁；区域视觉=effect_hit 走 ShowEffect 一次性独立实例[配置 show_time=5 到期框架自动销毁，多施法者同场不互顶]；神官BOSS技能 500007[effect_hit=2100003(Effect_Buff_Health_3)]，经 ext 100010[trigger_scene=1]挂载——NPC ai_param=skill_update:100010:10 固定 10s 触发；Destroy 清零计时与阵营快照防对象池残留[2026-09-16 新增]）
 ```
 
+### 勇者自疗（500008）
+
+`AttackModeRegainHPAndDR` 读取 `AttackModeInfo.other_data` 的 `regain_self:1`，把施法者作为唯一恢复目标。出手仍走基类，按出手时的战斗攻击力 × `damage_add_rate`（勇者为 2 倍）生成一份恢复量，先回血，剩余量补甲。未配 `regain_self:1` 的 `500001` 继续使用原目标及同路友军查找。
+
+勇者 NPC `1041010003` 经额外攻击 `100018`（`trigger_scene=1`）和 `ai_param=skill_update:100018:10` 触发自疗，在移动或待机时也可触发。`CheckCanTriggerSkill` 使用 `IsHPNotFull()` 与 `IsDRNotFull()` 判断是否存在缺口，满血且满甲时保留就绪并在后续帧重试。挥砍技能 `100004` 继续在攻击意图中独立计时。
+
 ## 创建新攻击模式
 
-火、水、冰的 BOSS 天降弹体分别使用 `RangedFireBall_2`、`RangedWaterBall_2`、`RangedIceBall_2` 专用材质，`_VertexScale` 依次为 `0.70`、`0.65`、`0.68`。落地火、水沿用 BOSS 专用 `2000001`、`2000002` 粒子。冰爆 `2000003` 用独立资源名以隔离持久实例，并复用常规冰爆的 VFX Graph。雷击 `900004` 的 `VerticalStrike` 初始尺寸为 `0.4`，拉伸长度倍率为 `20/1.5`，轴向长度系数乘积保持原值。
+### 火、水、冰 BOSS 天降弹体
+
+`700001/700002/700005` 的 `visual_name` 分别为 `AttackModeVisual_RangedFireBall_2`、`AttackModeVisual_RangedWaterBall_2`、`AttackModeVisual_RangedIceBall_2`，`prefab_name` 留空。三个视觉载体位于 `Assets/LoadResources/AttackModeVisual/`，以完整路径登记在 Addressables 的 `AttackModeVisual` 组。单系大魔法师经 `100002/100003/100006` 释放，大魔导师 `1031010002` 经 `100011/100012/100013` 共用。
+
+三个 BOSS 视觉的根节点共用专用 `Assets/LoadResources/AttackModeVisual/MagicBallSparkDense_1.asset`。用现有火球网格生成器烘焙 96 个尾粒四边形、1 个核心和半径 18 的 bounds。普通魔法弹继续使用原 64 尾粒的 `FireSparkMesh.asset`。火、水、冰主体材质 `_VertexScale` 依次为 `0.56/0.52/0.544`，`_SparkSizeStart` 为 `0.114/0.114/0.12`。两项合乘使尾粒的起始线性尺寸约为之前的 48%，`_SparkRate=1` 保持各尾粒的原循环频率。弹芯保留原 DSP 姿态，投影跟随 `GameConfigBean.bulletShadow`。
+
+三套破风位于 `AdditionalVisuals/BowShock`。容器和破风节点的本地位置、旋转归零，缩放为 1，破风形状与偏移直接写在网格中。网格在 `Assets/LoadResources/AttackModeVisual/`，火、冰共用 `FallingBow_Fire_1.asset`，水用 `FallingBow_Water_1.asset`，原 `FallingBow_Ice_1.asset` 留作备选。三份 `Mat_FallingBow_{Fire,Ice,Water}_1.mat` 在 `Assets/LoadResources/Materials/AttackModeVisual/`，各自保留配色，火、水、冰材质 `_BowShockScale` 依次为 `0.72/0.752/0.70`。
+
+`FightManager` 在登记默认桶或子桶时，从视觉预制根下可选的 `AdditionalVisuals` 容器扫描后代。附加节点名称不限，可按层级配置相对于预制根的位置、旋转和缩放。登记时跳过 `activeSelf` 关闭的容器或子树，以及 `MeshRenderer.enabled` 关闭的渲染器。节点通过 `MeshFilter` 与 `MeshRenderer` 提供共享网格与材质，按有效子网格及启用 GPU Instancing 的材质槽登记，每个登记项是一层。每次提交主弹体的 `DrawMeshInstanced` 批次后，每层各追加一批，附加层不投影也不收阴影。相对矩阵为单位矩阵时复用主批次矩阵，其他层用共享临时缓冲将每个主矩阵乘以层的相对矩阵。没有附加层的弹体直接走原绘制路径。动画材质通过共享属性块的 `_AttackModeVisualTime` 读取战斗秒数，0 倍速冻结、2 倍速加快，破风 Shader `Shader_FallingBow_1.shader`（`Game/Fight/FallingBow_1`）使用同一时钟。视觉预制只用于登记资源，不逐发实例化或增加逐发状态。
+
+落地火、水沿用 BOSS 专用 `2000001`、`2000002` 粒子。冰爆 `2000003` 用独立资源名以隔离持久实例，并复用常规冰爆的 VFX Graph。雷击 `900004` 的 `VerticalStrike` 初始尺寸为 `0.4`，拉伸长度倍率为 `20/1.5`，轴向长度系数乘积保持原值。
 
 ### 1. 定义攻击模式ID
 
@@ -584,7 +604,7 @@ public class AttackModeCustom : BaseAttackMode
     "attack_search_type": 0,         // 攻击搜索类型（0射线 11球形范围 21盒形范围）
     "damage_add_rate": 0,            // 伤害加成比例（float；最终伤害=攻击者ATK×该值，0/空=无加成按1倍。如自爆史莱姆爆炸300001配50：ATK 10×50=500；敢死队爆炸300002配1：ATK 500×1=500）
     "hit_max": 1,                    // 数量上限（int；范围攻击=单次命中数，>0 近者优先截断+去重、0/空不限；RangedPiercing=穿透数，205005 配2；RangedSplit=含本路的总发数，204004 配2时随机上/下一有效邻路；InstantArea 另带 hit_decay 递减[默认0.5=减半]）
-    "other_data": "stuck_time:3&stuck_sink:0.1", // 其它扩展参数（&分隔项,:分键值，按 key 解析的通用扩展列）。当前键：stuck_time=射空后插地停留秒数(>0启用插地)、stuck_sink=插地下沉深度(默认0)，插地目前仅 AttackModeRangedArcTracking 系使用，解析见 GetStuckConfig()；aim_up=瞄准点相对目标脚底上抬高度(默认0=瞄脚底)，目前仅 AttackModeRangedObliqueTracking 使用，解析见 GetAimUpHeight()；dr_damage_rate/hp_damage_rate=护甲/血量分段伤害倍率(默认1/1=不启用；非默认走串联破甲结算：护甲>0只以dr倍率打甲不掉血、破甲后只以hp倍率打血、破甲击溢出不结转，结算在 FightCreatureEntity.UnderAttack，经 FightUnderAttackBean 注入)，目前仅牛头人法师 101003/101004(dr2/hp0.5) 使用，解析见 GetDamageSplitConfig()；hit_decay=瞬时AOE多目标伤害递减率(默认0.5=依次减半，配1=全额)，由 AttackModeInstantArea 基类使用，解析见 GetHitDecayRate()；hit_decay_step/hit_min_rate=线性命中每次减少初始伤害的比例/最低初始伤害比例(均默认0.1)，目前仅 AttackModeRangedArcBounce(跳跳斧300061) 使用，解析见 GetHitDecayStep()/GetHitMinRate()；falloff_min=范围边缘相对中心伤害的最低倍率(默认0.5，配1=不衰减)，由 AttackModeExplosion 与 AttackModeInstantAreaThunder 使用，解析见 GetFalloffMinRate()；gravity=天降弹道重力加速度(默认9.81，每帧累加下落速度，配小则更慢更飘)，目前仅火/水大魔法师BOSS技能 700001/700002(gravity:2.4525=9.81 两次减半) 使用，解析见 GetGravity()，消费在 AttackModeFallupon(Area) 的 currentFallSpeed 累加；shield_count/shield_buff=援护护盾施法的最前排友军数量(默认3)/护盾BUFF的ID(默认0=未配置空放)，目前仅 AttackModeShieldCast（大盾战士BOSS技能 500003）使用，解析见 GetShieldCastConfig()（long 键走 ParseOtherDataLong）；summon_npc_ids/summon_count/road_spread/summon_offset_x=召唤的NPC id池(逗号分隔,每只独立随机;空=未配置空放)/每路召唤数量(默认1)/上下扩展路数(默认0=仅自己路,越界自然衰减)/召唤落点相对攻击者的x偏移(默认0;世界轴原始叠加,向左攻击者前方=X负值)，目前仅 AttackModeSummon（骷髅召唤师普攻 500004/BOSS三路技能 500005）使用，解析见 GetSummonConfig()（string 键走 ParseOtherDataString，2026-09-15 新增）
+    "other_data": "stuck_time:3&stuck_sink:0.1", // 其它扩展参数（&分隔项,:分键值，按 key 解析的通用扩展列）。当前键：stuck_time=射空后插地停留秒数(>0启用插地)、stuck_sink=插地下沉深度(默认0)，插地目前仅 AttackModeRangedArcTracking 系使用，解析见 GetStuckConfig()；aim_up=瞄准点相对目标脚底上抬高度(默认0=瞄脚底)，目前仅 AttackModeRangedObliqueTracking 使用，解析见 GetAimUpHeight()；dr_damage_rate/hp_damage_rate=护甲/血量分段伤害倍率(默认1/1=不启用；非默认走串联破甲结算：护甲>0只以dr倍率打甲不掉血、破甲后只以hp倍率打血、破甲击溢出不结转，结算在 FightCreatureEntity.UnderAttack，经 FightUnderAttackBean 注入)，目前仅牛头人法师 101003/101004(dr2/hp0.5) 使用，解析见 GetDamageSplitConfig()；hit_decay=瞬时AOE多目标伤害递减率(默认0.5=依次减半，配1=全额)，由 AttackModeInstantArea 基类使用，解析见 GetHitDecayRate()；hit_decay_step/hit_min_rate=线性命中每次减少初始伤害的比例/最低初始伤害比例(均默认0.1)，目前仅 AttackModeRangedArcBounce(跳跳斧300061) 使用，解析见 GetHitDecayStep()/GetHitMinRate()；falloff_min=范围边缘相对中心伤害的最低倍率(默认0.5，配1=不衰减)，由 AttackModeExplosion 与 AttackModeInstantAreaThunder 使用，解析见 GetFalloffMinRate()；gravity=天降弹道重力加速度(默认9.81，每帧累加下落速度，配小则更慢更飘)，火/水/冰大魔法师 BOSS 天降技能 700001/700002/700005 均配 gravity:2.4525（9.81 两次减半），解析见 GetGravity()，消费在 AttackModeFallupon(Area) 的 currentFallSpeed 累加；shield_count/shield_buff=援护护盾施法的最前排友军数量(默认3)/护盾BUFF的ID(默认0=未配置空放)，目前仅 AttackModeShieldCast（大盾战士BOSS技能 500003）使用，解析见 GetShieldCastConfig()（long 键走 ParseOtherDataLong）；summon_npc_ids/summon_count/road_spread/summon_offset_x=召唤的NPC id池(逗号分隔,每只独立随机;空=未配置空放)/每路召唤数量(默认1)/上下扩展路数(默认0=仅自己路,越界自然衰减)/召唤落点相对攻击者的x偏移(默认0;世界轴原始叠加,向左攻击者前方=X负值)，目前仅 AttackModeSummon（骷髅召唤师普攻 500004/BOSS三路技能 500005）使用，解析见 GetSummonConfig()（string 键走 ParseOtherDataString，2026-09-15 新增）
     "collider_size": 0.5,            // 碰撞检测大小（点到点）
     "collider_area_type": 11,        // 范围检测类型（11球形 21盒形）
     "collider_area_size": "2,2,2",   // 范围检测大小（半径或半extents）
@@ -605,7 +625,8 @@ public class AttackModeCustom : BaseAttackMode
 
 1. 在 `Assets/LoadResources/AttackMode/` 下创建预制体
 2. 在配置表的 `prefab_name` 字段填写预制体名称（不含后缀）
-3. 预制体需包含 `SpriteRenderer` 用于显示攻击样式
+3. 将预制体加入 Addressables 的 `AttackMode` 组，地址填写完整资源路径
+4. 根据表现选择渲染组件。需要武器换图的弹体使用 `SpriteRenderer`。
 
 ## 搜索类型枚举
 
@@ -814,8 +835,8 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 
 - **[AttackModeInstanceRenderer](Assets/Scripts/Game/Fight/AttackModeInstanceRenderer.cs)**（纯 C# 类，非 MonoBehaviour，不持 GameObject；⚠️已从 `Fight/AttackMode/` **上移到 `Fight/` 目录**，且拆成 **partial 两文件**：主文件=弹体桶/`RenderAll`/环境光，[AttackModeInstanceRendererTrail.cs](Assets/Scripts/Game/Fight/AttackModeInstanceRendererTrail.cs)=轨迹拖尾全部逻辑）：`FightManager.attackModeInstanceRenderer` 持有。
 - **分桶 key = `attackModeInfo.visual_name`（新配置字段）**：`RegisterVisual(visualKey, mesh, material, visualConfig = default, spinAxis = default, spinSpeed = 0f)` 登记视觉桶（mesh=朝相机 Quad，material 须开 GPU Instancing；`visualConfig`=配置表 `visual_data` 解析的 per-bucket 渲染参数，见「视觉渲染参数 visual_data」；**自旋在此一次性写进桶材质**，见下方 per-instance 条目）；每桶固定 `Matrix4x4[1023]` 复用缓冲，满批即绘 + 收尾绘剩余，**无热路径分配**；绘制走 `DrawBucket`，弹体**投/收阴影以游戏设置为总开关**（画面页签「弹道阴影」=`GameConfigBean.bulletShadow`，**默认开启**；每帧 `RenderAll` 读一次进 `frameBulletShadow`，改动下帧即生效）——开=所有桶投阴影（`visual_data` 显式 `cast:0` 的桶单独豁免，`receive:1` 的桶受影），关=全不投不收（省一遍 ShadowCaster Pass）；拖尾恒 `ShadowCastingMode.Off`（曾做过拖尾阴影开关，效果不好已移除）；用 `position` 构建 `TRS`（旋转暂用单位、缩放取 `visualScale`（`<0`/未配置时取1、大小改由桶材质自身 `_VertexScale` 决定），billboard 交 shader）。已删除 `uniformScale` 统一缩放字段。
-- **`visual_name`(DSP 批量) 与 `prefab_name`(原预制) 是独立两套渲染通道**：`prefab_name` 仍由 `FightManager.GetAttackModePrefab` Instantiate 原 prefab(SpriteRenderer/VisualEffect)渲染，逻辑不变；配置侧二选一，勿同行都填。
-- **常开(已去除 `enableRender` 总开关)但天然零副作用**：`visual_name` 为空、或未登记该桶的弹道被跳过(不画)——现有弹道 visual_name 均空，行为不变。
+- **`visual_name`（DSP 批量）与 `prefab_name`（实例化预制体）是独立的渲染通道**：`FightManager.GetAttackModePrefab` 按 `prefab_name` 加载并实例化 Prefab，由 Prefab 自己的渲染组件绘制。配置侧二选一。
+- **常开(已去除 `enableRender` 总开关)但天然零副作用**：`visual_name` 为空或未登记对应视觉桶的弹道会跳过 DSP 绘制。
 - **`visual_name` 配置落地**：加在 `excel_attackmode_info[攻击方式].xlsx` 的 `AttackModeInfo` 表(prefab_name 之后)，**必须在 Unity 跑 ExcelEditorWindow「生成 Entity + 导出」重新生成 `AttackModeInfoBean.cs` + `AttackModeInfo.json`** 后 `attackModeInfo.visual_name` 才编译可用。
 - **视觉渲染参数 `visual_data`（per-bucket 光照控制）**：加在 `excel_attackmode_info[攻击方式].xlsx` 的 `AttackModeInfo` 表(remark 之后)，同样需跑「生成 Entity + 导出」生成 `attackModeInfo.visual_data` 字段。结构同 `trail_data`（`&` 分隔项、`:` 分键值），由 `AttackModeInfoBeanPartial.GetVisualConfig()` 解析为 `AttackModeVisualConfig`（`ambient`=环境光补偿方式 `flat`(默认)/`sh`(方向性球谐)、`cast`=投阴影 0/1（另带 `castExplicit` 标记是否显式配置）、`receive`=收阴影 0/1）。**实际生效以游戏设置「弹道阴影」为总开关**（见上条）：未配 `cast`=跟随设置投、`cast:0`=设置开启下单独不投、`receive:1` 需设置开启才收。**不配=全部默认**（Flat + 跟随设置投/不收阴影）。3D 立体模型弹道（如矿车 `AttackModeVisual_Minecart_1`）配 `ambient:sh&cast:1&receive:1` 获得方向性环境光+受影（`cast:1` 现与默认等效、仅表意）。
 - **视觉资源与懒注册**：视觉源是一个预制 `Assets/LoadResources/AttackModeVisual/<visual_name>.prefab`(`PathInfo.AttackModeVisualPath`)，挂 `MeshFilter`(Quad)+`MeshRenderer`(material 开 GPU Instancing)，注册进 Addressables(address=全路径)。`FightManager.EnsureAttackModeVisual(attackModeInfo)` 在 `GetAttackModePrefab` 里懒加载：未 `HasVisual` 时 `GetModelForAddressablesSync(dicAttackModeVisualObj,...)` 取 **sharedMesh/sharedMaterial** 注册，只加载一次。
@@ -901,6 +922,7 @@ attackMode.Destroy(isPermanently: true);  // 永久销毁（连同 GameObject）
 | 爆炸 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeExplosion.cs` |
 | 天降单体 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFallupon.cs` |
 | 天降范围 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponArea.cs` |
+| 火、水、冰 BOSS 天降弹体破风 Shader | `Assets/Shaders/Shader_FallingBow_1.shader` |
 | 天降范围-随机落点（火/水/冰大魔法师BOSS技能 700001/700002/700005 经 ext 100002/100003/100006[scene=0]；大魔导师 1031010002 经 ext 100011-100013[scene=2 替代普攻]随机四系之一） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponAreaRandom.cs` |
 | 天降连锁 | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponChain.cs` |
 | 天降连锁-三连发发射器（雷大魔法师BOSS技能 700006，ext 100007[scene=0]；大魔导师经 ext 100014[scene=2 替代普攻]随机四系之一） | `Assets/Scripts/Game/Fight/AttackMode/AttackModeFalluponChainMulti.cs` |

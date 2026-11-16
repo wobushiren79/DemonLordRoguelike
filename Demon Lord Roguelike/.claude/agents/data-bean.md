@@ -122,6 +122,8 @@ Bean/
 - 部分数据 Bean：`BeanPartial`
 - 配置数据 Bean：`InfoBean`
 
+> **`AttackModeInfoBeanPartial.IsRegainSelf()`**：缓存 `other_data` 中的 `regain_self:1`。血甲回复模块用它确定是否只回复施法者，未配置时沿用传入的目标。勇者的自疗模块 `500008` 启用此配置。
+
 ## 约束
 
 - Bean 类保持纯数据结构，不包含业务逻辑

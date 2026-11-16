@@ -27,7 +27,7 @@ watched_files:
 - **DropCrystal 掉落数量按模式分流（2026-09 新增 ChallengeHundred/Infinite 分支）** - 默认 `dropCrystal=1`；`== Conquer` 吃 `fightTypeConquerInfo.drop_crystal`；`== ChallengeHundred` else if 分支吃冻结配置行 `FightTypeChallengeHundredInfoBean.drop_crystal`（冻结数据/行为空时保持默认 1）；`== Infinite` else if 分支吃同难度征服行 `FightBeanForInfinite.fightTypeConquerInfo.drop_crystal`（与征服一致，不随轮次变化；fightTypeConquerInfo 为空时保持默认 1）。其余链路（时长=BASE_LIFE_TIME+研究加成、事件 `GameFightLogic_CreatureDeadDropCrystal`）不变
 - **冲锋自爆型死亡引爆（FightCreatureEntityForDefense.cs）** - 冲锋自爆型（`CreatureInfoBeanPartial.IsChargeAttack()`，creature_info 新列 charge_attack，当前唯一配置=6003 哥布林敢死队）死亡即引爆：`SetCreatureDeadForDefense` 里调新方法 `CreateAttackModeForDeadExplosion()`——纯数据无参路径创建爆炸攻击模块，伤害=ATK×攻击模式 damage_add_rate；绕过 AttackModeExplosion 对已死攻击者不爆的守卫；爆炸伤害按距爆心半径线性衰减（`falloff_min` 默认0.5=边缘为中心1/2，详见 attack-mode-system skill）
 - SSR「同归于尽」用死亡位置加爆炸模块偏移计算爆心，以词条倍率乘攻击模式原倍率。原生冲锋自爆仍使用职业发射偏移和自己的攻击模式倍率。
-- 愈之魅魔血甲双补由 `RegainHPAndDR` 先结算真实回血，再用剩余预算补结算后的护甲缺口。BUFF 与音效在首个实际生效的分段触发一次。
+- 愈之魅魔双补（500001）与勇者自疗（500008）共用 `FightCreatureEntity.RegainHPAndDR`。先结算真实回血，再用剩余预算补结算后的护甲缺口。BUFF 与音效在首个实际生效的分段触发一次。勇者的恢复目标为自己，生命与护甲均满时保留技能就绪。
 - **FightPrefabEntity** - 战斗预制体实体；掉落物寿命按游戏速度消耗（`Update` 用 `GameFightLogic.GetFightDeltaTime()`，2倍速下按游戏时间流速扣 lifeTime）
 - **CreatureSpineOutlineFollow** - 场上魔物描边高亮跟随（选中手牌时悬停高亮对应场上魔物，共享单例预览 `FightCreature_OutlinePreview.prefab` + OutlineOnly 描边材质逐帧复制目标骨骼姿态）；渲染排序取目标 sortingOrder **+1**（前一层）：OutlineOnly 只画轮廓内部全透明，压过本体观感不变，且避免被场景全屏透明效果（如沙漠热浪 HeatHaze，Default 层 order 0 近不透明屏幕扭曲面）盖住洗掉——透明排序中同 Transparent 范围内 sortingOrder 优先于 Render Queue，放后一层(-1)会被 order 0 的热浪绘制覆盖
 
@@ -85,7 +85,8 @@ watched_files:
 
 `FightManager` 持有 `attackModeInstanceRenderer`（`AttackModeInstanceRenderer`，DSP 式弹道批量渲染器）；`FightHandler.UpdateHandleForAttackModePrefab` 在射线批处理/逻辑推进之后追加**阶段4** `RenderAll(listAttackMode)` 批量绘制在途弹道。按视觉桶签名(`visual_name` + ShowSprite 换图 + 自旋细分子桶)分桶(与 `prefab_name` 原预制渲染独立)，常开但 visual_name 空/未注册桶零副作用。**细节与约束以 attack-mode-system skill / game-attack-mode agent 为准**，本代理只需知道这条接线存在。
 
-- **魔法弹暂停**：0 倍速和系统菜单暂停期间，`RenderAll` 继续绘制在途弹体。魔法弹沿用最后一次提交的速度和朝向，并保持 Shader 时钟，冻结火星分布、核心和阴影动画。
+- **DSP 魔法弹暂停**：0 倍速和系统菜单暂停期间，`RenderAll` 继续绘制在途弹体。魔法弹沿用最后一次提交的速度和朝向，并保持 Shader 时钟，冻结火星分布、核心和阴影动画。
+- **火、水、冰 BOSS 天降弹体**：三招走 `visual_name` 的 DSP 通道。`FightManager` 在登记视觉桶时读取可选的 `AdditionalVisuals` 容器，按有效子网格和材质槽登记附加层。三套破风均挂在 `AdditionalVisuals/BowShock`，每批弹芯绘制完后再提交附加层。动画材质经 `_AttackModeVisualTime` 读取战斗秒数，0 倍速冻结、2 倍速加快。原弹芯有 GPU 粒子，并继续响应 `bulletShadow`。落点、范围判定和落地特效由 `AttackModeFalluponArea` 处理。
 
 ## 飘字渲染接线（DSP GPU Instancing）
 

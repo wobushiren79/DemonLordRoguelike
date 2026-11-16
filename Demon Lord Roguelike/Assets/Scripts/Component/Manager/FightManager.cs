@@ -407,7 +407,7 @@ public class FightManager : BaseManager
 
     /// <summary>
     /// 确保某攻击模块的 DSP 弹体基础桶已注册：visual_name 非空且未注册时，按 AttackModeVisualPath 懒加载视觉预制
-    /// (内含 MeshFilter+MeshRenderer)，提取 sharedMesh/sharedMaterial 登记到 attackModeInstanceRenderer。
+    /// (内含 MeshFilter+MeshRenderer)，提取弹体及可选附加视觉的共享网格与材质，登记到批量渲染器。
     /// <para>视觉预制与弹道 prefab 同为持久资源缓存(dicAttackModeVisualObj，跨战斗不释放)，故只加载一次、后续复用。</para>
     /// <para>⚠️只管弹体桶、**不派生拖尾桶**：本方法在发射前预热调用，此时换图/自旋参数尚未解析(要到 InitAttackModeShow 才有)，
     /// 在这里注册拖尾等于按基础 visual_name 建一个桶——而换图弹道实际用的是子桶签名，基础桶永远收不到采样点，
@@ -420,25 +420,35 @@ public class FightManager : BaseManager
         //已注册则跳过重复加载
         if (attackModeInstanceRenderer.HasVisual(attackModeInfo.visual_name))
             return;
-        if (!TryGetAttackModeVisualSource(attackModeInfo, out Mesh mesh, out Material material))
+        if (!TryGetAttackModeVisualSource(attackModeInfo, out Mesh mesh, out Material material,
+            out AttackModeInstanceRenderer.AdditionalVisual[] additionalVisuals))
             return;
         //默认桶(无换图无自旋)直接用基础 sharedMesh/sharedMaterial(勿用 .mesh/.material，否则复制副本破坏 instancing 合批)；visual_data 决定该桶的环境光补偿方式与投/收阴影
-        attackModeInstanceRenderer.RegisterVisual(attackModeInfo.visual_name, mesh, material, attackModeInfo.GetVisualConfig());
+        attackModeInstanceRenderer.RegisterVisual(attackModeInfo.visual_name, mesh, material, attackModeInfo.GetVisualConfig(),
+            additionalVisuals: additionalVisuals);
     }
 
+    #region 弹道视觉资源
     /// <summary>
-    /// 懒加载某 visual_name 的视觉预制并取出其 sharedMesh/sharedMaterial（供默认桶注册与子桶克隆共用的取源）。
+    /// 懒加载视觉预制，取出弹体与 AdditionalVisuals 容器中的附加视觉，供默认桶及子桶注册。
     /// <para>预制持久缓存于 dicAttackModeVisualObj(跨战斗不释放)，只加载一次；缺 MeshFilter/MeshRenderer 报错返 false。</para>
     /// </summary>
-    private bool TryGetAttackModeVisualSource(AttackModeInfoBean attackModeInfo, out Mesh mesh, out Material material)
+    private bool TryGetAttackModeVisualSource(AttackModeInfoBean attackModeInfo, out Mesh mesh, out Material material,
+        out AttackModeInstanceRenderer.AdditionalVisual[] additionalVisuals)
     {
         mesh = null;
         material = null;
+        additionalVisuals = null;
         GameObject visualPrefab = GetModelForAddressablesSync(dicAttackModeVisualObj, $"{PathInfo.AttackModeVisualPath}/{attackModeInfo.visual_name}.prefab");
         if (visualPrefab == null)
             return false;
-        var meshFilter = visualPrefab.GetComponentInChildren<MeshFilter>();
-        var meshRenderer = visualPrefab.GetComponentInChildren<MeshRenderer>();
+        Transform additionalRoot = visualPrefab.transform.Find("AdditionalVisuals");
+        MeshFilter meshFilter = additionalRoot == null
+            ? visualPrefab.GetComponentInChildren<MeshFilter>()
+            : FindPrimaryVisualComponent<MeshFilter>(visualPrefab.transform, additionalRoot);
+        MeshRenderer meshRenderer = additionalRoot == null
+            ? visualPrefab.GetComponentInChildren<MeshRenderer>()
+            : FindPrimaryVisualComponent<MeshRenderer>(visualPrefab.transform, additionalRoot);
         if (meshFilter == null || meshRenderer == null)
         {
             LogUtil.LogError($"AttackModeVisual 预制缺少 MeshFilter/MeshRenderer: {attackModeInfo.visual_name}");
@@ -446,8 +456,86 @@ public class FightManager : BaseManager
         }
         mesh = meshFilter.sharedMesh;
         material = meshRenderer.sharedMaterial;
+        if (additionalRoot != null)
+        {
+            var collected = new List<AttackModeInstanceRenderer.AdditionalVisual>();
+            CollectAdditionalVisuals(additionalRoot, Matrix4x4.identity, attackModeInfo.visual_name, collected);
+            if (collected.Count > 0)
+                additionalVisuals = collected.ToArray();
+        }
         return true;
     }
+
+    /// <summary>
+    /// 在活动主弹体层级按深度优先取第一个组件，跳过整个附加视觉容器。
+    /// </summary>
+    private static T FindPrimaryVisualComponent<T>(Transform node, Transform additionalRoot) where T : Component
+    {
+        if (node.TryGetComponent(out T component))
+            return component;
+
+        for (int i = 0; i < node.childCount; i++)
+        {
+            Transform child = node.GetChild(i);
+            if (child == additionalRoot || !child.gameObject.activeSelf)
+                continue;
+
+            component = FindPrimaryVisualComponent<T>(child, additionalRoot);
+            if (component != null)
+                return component;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// 按预制层级顺序收集启用的网格、材质槽和相对预制根的变换。关闭物体时跳过其子树，关闭渲染器时只跳过本层。
+    /// </summary>
+    private static void CollectAdditionalVisuals(Transform node, Matrix4x4 parentToRoot, string visualName,
+        List<AttackModeInstanceRenderer.AdditionalVisual> collected)
+    {
+        if (!node.gameObject.activeSelf)
+            return;
+
+        Vector3 position = node.localPosition;
+        Quaternion rotation = node.localRotation;
+        Vector3 scale = node.localScale;
+        Matrix4x4 localToRoot = parentToRoot;
+        if (!position.Equals(Vector3.zero) || !rotation.Equals(Quaternion.identity) || !scale.Equals(Vector3.one))
+            localToRoot = parentToRoot * Matrix4x4.TRS(position, rotation, scale);
+
+        bool hasFilter = node.TryGetComponent(out MeshFilter filter);
+        bool hasRenderer = node.TryGetComponent(out MeshRenderer renderer);
+        if ((hasFilter || hasRenderer) && (!hasRenderer || renderer.enabled))
+        {
+            Mesh mesh = hasFilter ? filter.sharedMesh : null;
+            if (mesh == null || mesh.subMeshCount == 0 || !hasRenderer)
+            {
+                LogUtil.LogWarning($"AttackModeVisual {visualName}/{node.name} 缺少附加网格或 MeshRenderer，已跳过。");
+            }
+            else
+            {
+                Material[] materials = renderer.sharedMaterials;
+                int slotCount = Mathf.Min(mesh.subMeshCount, materials.Length);
+                if (slotCount < mesh.subMeshCount)
+                    LogUtil.LogWarning($"AttackModeVisual {visualName}/{node.name} 的部分子网格没有对应材质，已跳过。");
+
+                for (int i = 0; i < slotCount; i++)
+                {
+                    Material material = materials[i];
+                    if (material == null || !material.enableInstancing || mesh.GetIndexCount(i) == 0)
+                    {
+                        LogUtil.LogWarning($"AttackModeVisual {visualName}/{node.name} 附加槽位 {i} 缺少有效网格或未配置实例化材质，已跳过。");
+                        continue;
+                    }
+                    collected.Add(new AttackModeInstanceRenderer.AdditionalVisual(mesh, material, localToRoot, i));
+                }
+            }
+        }
+
+        for (int i = 0; i < node.childCount; i++)
+            CollectAdditionalVisuals(node.GetChild(i), localToRoot, visualName, collected);
+    }
+    #endregion
 
     /// <summary>
     /// 按某个攻击模式实例的实际视觉参数(换图 ShowSprite + 自旋)算出视觉桶签名并确保对应子桶已注册。
@@ -488,7 +576,8 @@ public class FightManager : BaseManager
         if (dicAttackModeVisualMat.ContainsKey(key))
             return;
         //取基础预制的 sharedMesh + 基材质，克隆基材质做子桶专属材质(不同贴图/自旋互不覆盖)
-        if (!TryGetAttackModeVisualSource(attackModeInfo, out Mesh mesh, out Material baseMat))
+        if (!TryGetAttackModeVisualSource(attackModeInfo, out Mesh mesh, out Material baseMat,
+            out AttackModeInstanceRenderer.AdditionalVisual[] additionalVisuals))
             return;
         Material subMat = new Material(baseMat);
         dicAttackModeVisualMat[key] = subMat;
@@ -524,7 +613,8 @@ public class FightManager : BaseManager
                     }
                 }
                 //自旋用上面快照的局部量，勿改回读 attackMode(本回调时它可能已被对象池回收重发，见 spinAxis 快照处注释)
-                attackModeInstanceRenderer.RegisterVisual(key, mesh, subMat, attackModeInfo.GetVisualConfig(), spinAxis, spinSpeed);
+                attackModeInstanceRenderer.RegisterVisual(key, mesh, subMat, attackModeInfo.GetVisualConfig(), spinAxis, spinSpeed,
+                    additionalVisuals);
                 //换图子桶贴图就绪后派生拖尾桶(拖尾复用该子桶贴图；tile 平铺越界风险见 RegisterTrailFromVisual 注释)
                 attackModeInstanceRenderer.RegisterTrailFromVisual(key, attackModeInfo.GetTrailConfig());
             });
@@ -532,7 +622,8 @@ public class FightManager : BaseManager
         else
         {
             //仅自旋不同的子桶：贴图沿用基材质，自旋在 RegisterVisual 内一次性写入子材质(整桶自旋恒定)，直接登记
-            attackModeInstanceRenderer.RegisterVisual(key, mesh, subMat, attackModeInfo.GetVisualConfig(), spinAxis, spinSpeed);
+            attackModeInstanceRenderer.RegisterVisual(key, mesh, subMat, attackModeInfo.GetVisualConfig(), spinAxis, spinSpeed,
+                additionalVisuals);
             //自旋子桶就绪后派生拖尾桶(贴图沿用基材质)
             attackModeInstanceRenderer.RegisterTrailFromVisual(key, attackModeInfo.GetTrailConfig());
         }

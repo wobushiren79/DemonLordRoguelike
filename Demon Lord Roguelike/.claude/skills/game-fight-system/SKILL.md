@@ -232,6 +232,8 @@ public partial class FightCreatureEntity
 
 战斗测试的「全局攻击 BUFF」由 `FightCreatureEntity.AddBuff` 从当前 `FightBeanForTest.testGlobalAttackBuffs` 取用。测试列表为空时，命中仍读取攻击模块自身的 BUFF。从测试面板重开时沿用本场列表，新建测试战斗可重新选择。
 
+勇者自疗（500008）把施法者本人交给 `FightCreatureEntity.RegainHPAndDR` 结算。单次预算为出手时战斗攻击力的 2 倍，先结算真实回血，再以剩余量补护甲。自疗使用 NPC 的 10 秒 `skill_update` 事件，满血且满甲时维持就绪等待下次预检。详见 [攻击模块系统](../attack-mode-system/SKILL.md#勇者自疗500008)。
+
 ## 魔王魔力(MP)系统
 
 MP/MPF 两个属性**仅在战斗中有效**，挂在魔王（防守核心）身上：
@@ -422,7 +424,7 @@ public partial class UIFightMain : BaseUIComponent
 
 ## 战斗预制管理
 
-> 弹道(攻击模块)渲染：`FightManager.attackModeInstanceRenderer`（DSP 式 GPU Instancing 批量渲染器）在 `FightHandler.UpdateHandleForAttackModePrefab` 阶段4 `RenderAll` 批量绘制在途弹道，按 `visual_name` 分桶(与 `prefab_name` 原预制渲染独立)，常开但 visual_name 空/未注册桶零副作用。弹道位置真实源为 `BaseAttackMode.position`。**细节见 attack-mode-system skill**。
+> 弹道(攻击模块)渲染：`FightManager.attackModeInstanceRenderer`（DSP 式 GPU Instancing 批量渲染器）在 `FightHandler.UpdateHandleForAttackModePrefab` 阶段4 `RenderAll` 批量绘制在途弹道，按 `visual_name` 分桶(与 `prefab_name` 原预制渲染独立)，常开但 visual_name 空/未注册桶零副作用。弹道位置真实源为 `BaseAttackMode.position`。`FightManager` 登记视觉桶时从预制根下可选的 `AdditionalVisuals` 容器登记附加层，跟随主弹体批次绘制。火、水、冰 BOSS 的破风均放在 `AdditionalVisuals/BowShock`。视觉预制只用于资源登记，不逐发实例化。**细节见 attack-mode-system skill**。
 
 > 飘字(伤害数字)渲染：`FightManager.fightTextInstanceRenderer`（同思路的 DSP 式批量渲染器，实例粒度=字符）在 `FightHandler.Update` 顶层每帧 `RenderAll` 一次 `DrawMeshInstanced` 画完在屏飘字，动画全在 shader 时间驱动；由 `EffectHandler.ShowTextNumEffect` 装配转发。**细节见 system-effect agent**。
 

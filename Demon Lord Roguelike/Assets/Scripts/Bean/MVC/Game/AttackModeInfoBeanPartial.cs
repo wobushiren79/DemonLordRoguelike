@@ -37,6 +37,24 @@ public partial class AttackModeInfoBean
     }
     #endregion
 
+    #region 回复目标
+    private bool? regainSelf;
+
+    /// <summary>
+    /// 获取血甲回复技能是否只对施法者生效（other_data: regain_self:1）。
+    /// </summary>
+    public bool IsRegainSelf()
+    {
+        if (!regainSelf.HasValue)
+        {
+            int value = 0;
+            ParseOtherDataInt("regain_self", ref value);
+            regainSelf = value == 1;
+        }
+        return regainSelf.Value;
+    }
+    #endregion
+
     #region 攻击起始位置偏移
     protected bool isInitStartPosOffset = false;
     protected Vector3 startPosOffset;
