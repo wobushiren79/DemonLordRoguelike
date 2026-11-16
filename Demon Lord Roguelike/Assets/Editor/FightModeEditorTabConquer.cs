@@ -741,6 +741,7 @@ public class FightModeEditorTabConquer : FightModeEditorTabBase
         DrawSectionTitle("敌人配置");
         currentBean.enemy_ids = DrawIdListField(new GUIContent("敌人列表", "enemy_ids：普通敌人刷怪池"), currentBean.enemy_ids, "enemy_ids");
         currentBean.enemy_boss_ids = DrawIdListField(new GUIContent("Boss列表", "enemy_boss_ids：BOSS 关额外刷怪池"), currentBean.enemy_boss_ids, "enemy_boss_ids");
+        currentBean.enemy_boss_fixed_ids = DrawIdListField(new GUIContent("固定BOSS候选", "enemy_boss_fixed_ids：多个 NPC ID 用 & 分隔。每个传送门按难度随机固定其中一只，留空时沿用原随机规则。"), currentBean.enemy_boss_fixed_ids, nameof(FightTypeConquerInfoBean.enemy_boss_fixed_ids));
         currentBean.enemy_type_num = DrawStringField(new GUIContent("敌人种类数量", "enemy_type_num：x 固定 或 x-y 区间随机；留空=每次出怪从整池全随机；配置后世界生成时冻结这批种类，重新挑战不变"), currentBean.enemy_type_num, "enemy_type_num");
         currentBean.enemy_boss_type_num = DrawStringField(new GUIContent("Boss种类数量", "enemy_boss_type_num：x 固定 或 x-y 区间随机；留空=每次出怪从整池全随机；配置后世界生成时冻结这批种类，重新挑战不变"), currentBean.enemy_boss_type_num, "enemy_boss_type_num");
         currentBean.attack_boss_num = DrawStringField(new GUIContent("Boss数量", "attack_boss_num：x 固定 或 x-y 区间随机"), currentBean.attack_boss_num, "attack_boss_num");

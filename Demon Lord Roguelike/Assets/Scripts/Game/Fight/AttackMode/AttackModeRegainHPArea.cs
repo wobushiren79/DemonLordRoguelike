@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 群体治疗-自身周围（牧师技能 500006，经 attack_mode_ext trigger_scene=1[释放技能意图] 挂载，由 NPC ai_param 的 skill_update 事件驱动「释放技能」意图在出手点发射）。
-/// <para>瞬发无弹道无伤害：当帧遍历同阵营存活友军（含自己），筛 距自己≤collider_area_size[0](=5) 且 HP不满 者，
-/// 逐个 RegainHP（治疗量=施法瞬间 ATK×damage_add_rate 快照，配置0=1倍）+ 各播一个一次性治疗粒子（ShowEffect 独立实例通道，多目标同帧不互顶）。</para>
+/// 群体治疗-自身周围（牧师和神官共用的技能 500006，经 attack_mode_ext trigger_scene=1[释放技能意图] 挂载，由 NPC ai_param 的 skill_update 事件驱动「释放技能」意图在出手点发射）。
+/// <para>瞬发无弹道无伤害：当帧遍历同阵营存活友军（含自己），筛选距自身不超过 collider_area_size[0]（500006 配置为 1 格）且 HP 不满的目标，
+/// 逐个 RegainHP（治疗量=施法瞬间 ATK×damage_add_rate，500006 配置为 0.2 倍）+ 各播一个一次性治疗粒子（ShowEffect 独立实例通道，多目标同帧不互顶）。</para>
 /// <para>空放预检：重写 CheckCanTriggerSkill，「释放技能」意图切入前判定范围内无血量不满友军时不施法（不播动作/音效/粒子，保持就绪下帧再试）。</para>
 /// <para>出手音效走 sound_start（FightManager.GetAttackModePrefab 创建时自动播放）；单目标回血音效走 sound_hit（RegainHP 内真实回血>0 才播）。</para>
 /// </summary>

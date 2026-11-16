@@ -1,6 +1,6 @@
 ---
 name: aseprite-master-backfill
-description: 将用户已确认的装备、武器或身体部件从子 Aseprite 回填到角色母版，或删除母版中指定的素材，并同步母版同级的素材名字 Excel。当前提供哥布林武器、眼睛和嘴巴的图层与补位规则。
+description: 将用户已确认的装备、武器或身体部件从子 Aseprite 回填到角色母版，或删除母版中指定的素材，并同步母版同级的素材名字 Excel。包含哥布林武器、眼睛、嘴巴和骷髅头部的图层与补位规则。
 metadata:
   watched_files:
     - .claude/scripts/run-aseprite.ps1
@@ -12,7 +12,7 @@ metadata:
 
 ## 选定母版与素材
 
-- 以实际母版目录 `../资源/生物/<生物>/` 为基准。哥布林武器先读[武器回填规则](references/goblin-weapons.md)，眼睛和嘴巴先读[身体部件回填规则](references/goblin-body-parts.md)。其他素材按各自已确认的规则定位目标图层及帧。
+- 以实际母版目录 `../资源/生物/<生物>/` 为基准。哥布林武器先读[哥布林武器回填规则](references/goblin-weapons.md)，眼睛和嘴巴先读[哥布林身体部件回填规则](references/goblin-body-parts.md)；骷髅头部先读[骷髅身体部件回填规则](references/skeleton-body-parts.md)。其他素材按各自已确认的规则定位目标图层及帧。
 - 只处理用户选定的子文件、款式或类型。新增时核对源帧、完整源图层路径和已确认的素材名称。更新或删除时先定位母版的目标帧和图层，名称只用于辅助定位。
 - 用 [Aseprite 基础工具](../aseprite-pixel-editor/SKILL.md) 检查画布、颜色模式和实际 Cel。导出/写入复用 [独立 Cel 与 manifest 工具](../aseprite-equipment-from-preview/references/tools.md)。需要按完整路径定位时用官方 Lua 检查组和图层。正式母版与子文件作为输入，先保存到不同路径的候选副本。
 

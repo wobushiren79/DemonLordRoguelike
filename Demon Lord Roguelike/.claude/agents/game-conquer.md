@@ -38,7 +38,7 @@ watched_files:
 
 ### 进攻波次与 BOSS（核心机制）
 - 普通波次：`CalcCurrentEnemyNum()` 递推数量，`[0,attack_show_time]` 内分段随机排程，敌人取 **`enemy_ids`**；配置了 `enemy_type_num` 时改取**传送门创建时冻结的若干种敌人**（`gameWorldInfoRandomData.GetDifficultyEnemyTypeIdList(D,false)`，本难度内固定、重新挑战不变），未配置则整池全随机
-- BOSS 关额外刷怪：`AddBossSpawnEvents` —— 数量与种类**取世界生成时冻结的 BOSS 出场阵容** `gameWorldInfoRandomData.GetDifficultyEnemyBossSpawnIdList(D)`（每个元素=一只 BOSS，由 `attack_boss_num` × BOSS 种类随出；空=不刷）、出现时刻 `Random.Range(showTime*0.5f, showTime*0.9f)`（中后段）、多 BOSS 按 0.3s 错开、首个携带 `bossShowNpcIds`；重新挑战数量与种类一致
+- `AddBossSpawnEvents` 从 `gameWorldInfoRandomData.GetDifficultyEnemyBossSpawnIdList(D)` 读取冻结的 BOSS 阵容。BOSS 在进攻时长的 50% 到 90% 之间出现，多只按 0.3s 错开，首只携带 `bossShowNpcIds`。重新挑战继续使用相同的阵容。
 - BOSS 特写：出怪钩子 `GameFightLogic.UpdateGameForAttackCreate` 检测 `bossShowNpcIds` → `ShowBossDialog` → `UIDialogBossShow`
 - 敌人强度倍率 `intensityRate`：`InitFightAttackData` 先取 `GetCurrentIntensityRate(fightNum)`(= `attack_intensity_baserate`基础倍率[每关恒定,第1关也生效,≤0按1] × `attack_intensity_addrate`^(fightNum-1))，再 `*= userTempData.GetEnemyIntensityRate()` 叠加终焉议会「挑战更强/更弱的敌人」议案(×2/×0.5)，作用于普通敌人+BOSS 的 HP/护甲/攻击力（**防守生物/魔王不受影响**：`FightCreatureBean.ResetData(intensityRate=1)` 显式复位倍率，敌人由 CreateAttackCreature 传本关倍率，2026-11 修复池残留）；议案作用整场 run，结束时消耗（详见 game-doom-council）。**终焉议会议案均不适用于挑战100勇士**（有意设计）：EnemyIntensity/MoreEquip/MoreDemonLordEquip 以 `gameFightType == Conquer` 判等门控，MoreExp/MoreCrystal 经配置 `class_entity_data` 指向征服流程——ChallengeHundred 强度/奖励均由自身配置行自配
 
@@ -47,7 +47,8 @@ watched_files:
 - `FightTypeConquerInfo.txt` - Excel 导出 JSON（不可单独改）
 - `FightTypeConquerInfoBean.cs`（自动生成，禁改）/ `FightTypeConquerInfoBeanPartial.cs`（解析、随机逻辑写这里）
 - 区间字段 `attack_boss_num`/`fight_num`/`road_num`/`road_length`：字符串 `x` 或 `x-y`，统一走 `ParseRandomRange`（2026-09 起转调框架工具 `RandomUtil.GetRandomIntByRangeString`，语义不变；挑战100勇士配置表 `FightTypeChallengeHundredInfoBeanPartial` 复用同一工具）
-- **敌人种类数量 `enemy_type_num` / `enemy_boss_type_num`（string，插在 `enemy_boss_ids` 之后，2026-10 新增）**：`x` 固定或 `x-y` 区间随机；**留空=保持原逻辑整池全随机**。配置后**世界生成时**从 `enemy_ids`/`enemy_boss_ids` 随机取 N 种不重复敌人并冻结进该难度的 `GameWorldDifficultyRandomBean.listEnemyTypeId`/`listEnemyBossTypeId`，整个 run（含重新挑战）都只用这批种类；解析/随取走 `FightTypeConquerInfoBeanPartial.GetRandomEnemyTypeNum/GetRandomEnemyTypeIdList`，另有 `GetEnemyIdArray(isBoss)` 缓存池数组、`GetRandomEnemyBossSpawnIdList(种类表)` 随出 BOSS 出场阵容、`HasBossSpawn()` 判该难度配置上是否会刷 BOSS（UI 展示已改用冻结出场阵容，不再用它）
+- `enemy_type_num` 与 `enemy_boss_type_num` 控制普通敌人与随机 BOSS 的候选种类数量。支持单值 `x` 或区间 `x-y`。配置后，世界生成时由 `GetRandomEnemyTypeIdList` 从对应池随机取不重复的种类并冻结，留空时从对应整池随机。
+- `enemy_boss_fixed_ids` 是按世界和难度配置的 NPC 候选字符串，用 `&` 分隔。每个传送门按难度从有效且去重的 `NpcInfo.id` 中等概率选一只，可填池外 NPC。留空时沿用原随机规则。阵容缺少选中的 BOSS 时，`EnsureFixedBossInSpawnList` 随机替换一个名额，空阵容则加一只。其余位置照常随机，也可能抽到其他候选。世界 1 难度 2–10 填相对上一档新增的 BOSS，难度 1 留空。
 - `reward_crystal`（**string**，通关领奖魔晶）：单值 `x` 固定 或 区间 `x-y`（与其它区间字段同格式），走 `GetRandomRewardCrystal()`（内部复用 `ParseRandomRange`；Excel 第2行类型行为 string）
 - `reward_reputation`（int，通关声望奖励，插在 `reward_exp_boss` 与 `remark` 之间）：完整通关按难度给玩家声望；`FightTypeConquerInfoBeanPartial.GetRewardReputation()` 读取（仿 `GetBGColor`，需 Unity 重导 Bean 后才有该字段）。world_id=1 各难度(level 1~10)依次 1~10
 - `attack_intensity_baserate`（float，基础强度倍率，插在 `attack_intensity_addrate` 之后）：该难度每关恒定乘区(第1关也生效)，0/不配按 1；与 `attack_intensity_addrate`(每关递增) 共同组成 `GetCurrentIntensityRate(fightNum)`
@@ -59,7 +60,7 @@ watched_files:
 - `GameWorldInfoRandomBean.SetRandomDataForConquer`（GameWorldInfoBeanPartial）—— 创建时把 1~已解锁最高难度逐档随机(roadNum/roadLength/fightNum + 普通关/BOSS关战斗场景 fightSceneId/bossFightSceneId)缓存进 listDifficultyRandom；`SetDifficultyLevel(level)` 切换难度时同步当前字段(气泡与战斗都读这些字段)，`GetDifficultyRandom(level)` 取某难度数据(缺失懒生成)。**`GetFightSceneId(D,isBoss)`** 取冻结场景(老存档懒补齐)，`FightBeanForConquer` 的 `fightSceneId` 一律走它，禁止再 `GetRandomFightScene` 重随(同世界重进场地固定)
 - **挑战100勇士旁路（ChallengeHundred）**：`SetGameFightTypeRandom` 随机世界模式**之前**优先判定出现概率（研究 `UnlockEnum.ChallengeHundredShowRate` 等级×10%），上限取**独立难度链** `GetUnlockChallengeHundredDifficultyLevel(worldId)`，命中且有匹配配置行（`FightTypeChallengeHundredInfoCfg.GetRandomRow(最高已解锁100勇士难度)`）则生成为 ChallengeHundred 并走 `SetRandomDataForChallengeHundred`——按 `1~最高已解锁` **逐难度预生成** `listChallengeHundredRandom`(每档冻结行id/道路数长度/战斗场景/固定单关 fightNum=1/宝箱奖励，普通3箱/BOSS挑战翻倍:装备6件·魔晶x2)，默认难度=最高；活动字段 `challengeHundredRowId/listRewardChallengeHundred/rewardUnlockSignChallengeHundred` 由 `SetDifficultyLevel` 同步，取用 `GetChallengeHundredReward(difficultyLevel)` 签名失效按该难度重生成(同征服契约)；**传送门创建后研究新解锁的难度**由 `GetChallengeHundredRandom(D)` 懒补齐（`CreateChallengeHundredRandomByLevel`，含宝箱奖励），不会因列表缺档导致气泡/战斗/结算取不到数据。传送门详情弹窗可切换难度(难度1默认可用)；气泡/进入流程见 `game-portal` agent + `portal-system` skill
 - **奖励预生成+冻结（预览即实领）**：`CreateDifficultyRandom` 生成每档时**一并预生成并冻结**通关奖励 `listReward` + 记录 `rewardUnlockSign`(生成时的装备奖励池解锁签名)，并冻结该难度的普通关/BOSS关战斗场景(2026-10-22 起，场地与道路/关卡同契约)。`GetDifficultyReward(difficulty)` 取该档预生成奖励；当 `listReward` 为空(老存档) 或 解锁新魔物掉落致签名变化(`rewardUnlockSign != RewardSelectBean.GetConquerEquipPoolSign()`) 时，按 `RewardSelectBean.CreateRewardListForConquer` 重新生成并刷新签名
-- **敌人种类冻结（2026-10）**：`CreateDifficultyRandom` 同时冻结 `listEnemyTypeId`/`listEnemyBossTypeId`（按 `enemy_type_num`/`enemy_boss_type_num` 随出；未配置则为空列表=出怪全随机），并冻结 **BOSS 出场阵容** `listEnemyBossSpawnId`（`attack_boss_num` 数量 × BOSS 种类一次随出）。战斗经 `GetDifficultyEnemyTypeIdList(D,isBoss)` / `GetDifficultyEnemyBossSpawnIdList(D)` 取用，**老存档字段为 null 时懒补齐并写回**（字段声明为 null 默认值，勿改成初始化为空列表，否则无法区分「老存档未生成」与「未配置」）。无尽模式复用同表行但不冻结/不使用种类（保持整池全随机）
+- `CreateDifficultyRandom` 冻结普通和 BOSS 候选种类、选中的 `enemyBossFixedId` 及实际阵容 `listEnemyBossSpawnId`。传送门预览与实战通过 `GetDifficultyEnemyBossSpawnIdList(D)` 读取同一阵容。旧档未选过或原选中的固定 BOSS 已失效时，从当前候选补抽并缓存。旧档阵容为 null 时懒生成并写回，其他已有阵容按需替换一个名额。无尽轮次继续按 `enemy_boss_ids` 整池随机。
 - 难度解锁：`UserUnlockBean.GetUnlockGameWorldConquerDifficultyLevel`
 
 ### 结算领奖与预览门控
@@ -68,6 +69,7 @@ watched_files:
 - **传送门详情气泡 `UIPopupPortalDetails` 四项预览受「设施」研究门控**（`UserUnlock.CheckIsUnlock`，未解锁该项整行隐藏；名字行始终显示；无尽模式不展示关卡数/路径长度/奖励）：线路数→`UnlockEnum.PortalPreviewRoadNum`(100300002)、关卡数→`PortalPreviewFightNum`(100300003)、路径长度→`PortalPreviewRoadLength`(100300004,文本id 414)、奖励道具→`PortalPreviewReward`(100300005)
 
 ### 编辑器
+- 征服页签的「固定BOSS候选」位于敌人配置区的「Boss列表」之后。支持逐行输入或按 NPC 名称选择、编辑 `&` 分隔文本以及点击相邻难度的对比格复制。清空列表可恢复纯随机，保存时写回 Excel 并重新导出 JSON。
 - **FightModeEditorWindow（战斗模式编辑工具，菜单：游戏/战斗模式编辑）** - 主窗口只承载页签栏（征服模式/挑战100勇士/无尽模式），征服配置编辑在 **FightModeEditorTabConquer** 页签（挑战100勇士页签 FightModeEditorTabChallengeHundred 见 game-portal/portal-system；无尽模式页签 FightModeEditorTabInfinite 编辑 `excel_fight_type_infinite_info`，详见 editor-extension-system skill）：可视化编辑、保存回 Excel 并重导 JSON（反射按字段名）；敌人配置区可编辑 `enemy_type_num`/`enemy_boss_type_num`（与其它区间字段同款前后难度对比+复制）；布局：顶部工具栏(刷新/导出/快捷开表)+固定选择区(世界 Popup+难度1~10页签+加载)+滚动编辑区+固定底部保存栏(显示变更数、无变更禁用)；数值字段左右分列对比前后各3个难度(level±1~±3)只读值、差异高亮，方便跨难度调数值；已修改未保存字段编辑框淡黄高亮(IsFieldModified/CountChanges)；ID 列表字段（场景/敌人/BOSS）支持「手输 ID 或下拉按名字选取」，其前后难度对比单元格与标量字段同网格对齐、显示解析后的具体名字（换行展示，完整列表见 tooltip）而非原始 ID 串；参数可复制（点任意对比单元格复制单字段 / 顶部按难度一键「复制全部数值」按钮，跳过 id/world_id/level / 场景配置区「复制/粘贴」整组复用普通关与 BOSS 关场景池 / BOSS 战斗场景列表首行「复制/粘贴」跨难度单独复用 BOSS 场景池。粘贴后仍需保存）
 
 ## 关键文件
@@ -94,7 +96,7 @@ watched_files:
 - 配置变更**必须改 Excel**（`excel_fight_type_conquer_info`），由 Unity 编辑器导出 JSON；仅改 JSON 下次导出会被覆盖。
 - `FightTypeConquerInfoBean.cs` 自动生成，**禁止直接修改**；扩展写到 `FightTypeConquerInfoBeanPartial.cs`。改结构先改 Excel 表头再「生成Entity」。
 - 区间字段是字符串（`x` / `x-y`），统一用 `ParseRandomRange` 解析，别当 int 读（`reward_crystal` 同格式，走 `GetRandomRewardCrystal()`）。
-- BOSS 关**仍照常出 `enemy_ids` 普通敌人**，BOSS 是 `enemy_boss_ids` 的额外刷怪；不要把普通波次换成 boss 池。
+- BOSS 关照常从 `enemy_ids` 安排普通波次，并按冻结的 BOSS 阵容额外刷怪。
 - BOSS 特写只在**首个 BOSS 出怪事件**弹一次（`bossShowNpcIds` 仅首条非空）。
 - 关卡推进：下一关 BOSS → 重载场景；否则同场景继续，**不要重建卡片**以免丢失卡片状态。
 - 结算分流：非 BOSS 关胜利只弹深渊馈赠、不清场；失败/通关 BOSS 才走完整 `UIFightSettlement`。

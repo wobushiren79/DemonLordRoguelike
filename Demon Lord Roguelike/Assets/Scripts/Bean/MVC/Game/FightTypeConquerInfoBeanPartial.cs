@@ -36,6 +36,8 @@ public partial class FightTypeConquerInfoBean
         return targetIds.GetRandomData();
     }
 
+    #region 敌人与BOSS
+
     /// <summary>
     /// 获取战斗敌人数据
     /// </summary>
@@ -136,44 +138,86 @@ public partial class FightTypeConquerInfoBean
     }
 
     /// <summary>
-    /// 按 attack_boss_num 随出本难度的BOSS出场阵容(每个元素=一只BOSS的 npcId, 元素个数=BOSS数量):
-    /// 每只BOSS从 bossTypeIdList(冻结的BOSS种类) 中随机取; bossTypeIdList 为空时从 enemy_boss_ids 整池随机。
+    /// 按 attack_boss_num 从冻结种类或整池随机生成本难度的BOSS阵容，并保证已选中的固定BOSS至少出现一只。
     /// 世界生成时调用一次并冻结, 战斗出怪与传送门弹窗展示(去重后的种类)共用同一份, 保证「预览=实际出场」
     /// </summary>
     /// <param name="bossTypeIdList">本难度冻结的BOSS种类(空/null=从 enemy_boss_ids 整池随机)</param>
-    /// <returns>BOSS出场阵容; BOSS数量<=0 或池为空时返回空列表</returns>
-    public List<long> GetRandomEnemyBossSpawnIdList(List<long> bossTypeIdList)
+    /// <param name="fixedBossId">本难度已选中的固定BOSS NPC ID，0 表示未配置有效候选</param>
+    /// <returns>BOSS出场阵容，每个元素是一只BOSS的 NPC ID</returns>
+    public List<long> GetRandomEnemyBossSpawnIdList(List<long> bossTypeIdList, long fixedBossId)
     {
         List<long> result = new List<long>();
         int bossNum = GetRandomBossNum();
-        if (bossNum <= 0)
-            return result;
-        //种类池为空(未配置种类数量)时用整池; 池本身为空属配置错误, 直接不出BOSS
-        List<long> randomPool = bossTypeIdList;
-        if (randomPool == null || randomPool.Count == 0)
+        if (bossNum > 0)
         {
-            long[] bossPool = GetEnemyIdArray(true);
-            if (bossPool == null || bossPool.Length == 0)
-                return result;
-            randomPool = new List<long>(bossPool);
+            //冻结种类为空时从原BOSS池随机。
+            List<long> randomPool = bossTypeIdList;
+            if (randomPool == null || randomPool.Count == 0)
+                randomPool = new List<long>(GetEnemyIdArray(true));
+            for (int i = 0; i < bossNum && randomPool.Count > 0; i++)
+            {
+                long bossId = randomPool.GetRandomData();
+                if (bossId > 0)
+                    result.Add(bossId);
+            }
         }
-        for (int i = 0; i < bossNum; i++)
-        {
-            long bossId = randomPool.GetRandomData();
-            if (bossId > 0)
-                result.Add(bossId);
-        }
+        EnsureFixedBossInSpawnList(result, fixedBossId);
         return result;
     }
 
     /// <summary>
-    /// 本难度是否会刷出BOSS(attack_boss_num 配置了大于0的数量; 留空/0/区间上限为0 均视为不刷BOSS)
+    /// 保留仍在有效候选中的冻结 ID，否则从有效候选中等概率抽一只。无有效候选时返回 0。
+    /// </summary>
+    public long GetFixedBossId(long frozenFixedBossId = 0)
+    {
+        List<long> candidateIds = GetFixedBossCandidateIds();
+        if (candidateIds.Count == 0)
+            return 0;
+        if (candidateIds.Contains(frozenFixedBossId))
+            return frozenFixedBossId;
+        return candidateIds.Count == 1 ? candidateIds[0] : candidateIds.GetRandomData();
+    }
+
+    /// <summary>
+    /// 阵容缺少已选中的固定BOSS时替换一个随机名额，空阵容则直接加入一只。
+    /// </summary>
+    public static void EnsureFixedBossInSpawnList(List<long> bossSpawnIds, long fixedBossId)
+    {
+        if (fixedBossId <= 0 || bossSpawnIds.Contains(fixedBossId))
+            return;
+        if (bossSpawnIds.Count == 0)
+            bossSpawnIds.Add(fixedBossId);
+        else
+            bossSpawnIds[UnityEngine.Random.Range(0, bossSpawnIds.Count)] = fixedBossId;
+    }
+
+    /// <summary>
+    /// 读取固定BOSS候选，跳过无效 NPC ID，并去除重复项。
+    /// </summary>
+    private List<long> GetFixedBossCandidateIds()
+    {
+        List<long> candidateIds = new List<long>();
+        if (string.IsNullOrWhiteSpace(enemy_boss_fixed_ids))
+            return candidateIds;
+        foreach (string value in enemy_boss_fixed_ids.Split('&'))
+        {
+            if (long.TryParse(value, out long npcId) && npcId > 0 &&
+                !candidateIds.Contains(npcId) && NpcInfoCfg.GetItemData(npcId) != null)
+                candidateIds.Add(npcId);
+        }
+        return candidateIds;
+    }
+
+    /// <summary>
+    /// 本难度在配置上是否会刷出BOSS（存在有效的固定BOSS或正的 attack_boss_num 上限）。
     /// 注: 传送门弹窗的BOSS展示已改用世界生成时冻结的出场阵容(GameWorldInfoRandomBean.GetDifficultyEnemyBossSpawnIdList),
     /// 该方法仅保留做配置层面的快速判定
     /// </summary>
     /// <returns>true=会刷BOSS</returns>
     public bool HasBossSpawn()
     {
+        if (GetFixedBossCandidateIds().Count > 0)
+            return true;
         if (attack_boss_num.IsNull())
             return false;
         string value = attack_boss_num.Trim();
@@ -182,6 +226,8 @@ public partial class FightTypeConquerInfoBean
             return int.TryParse(value, out int single) && single > 0;
         return int.TryParse(value.Substring(splitIndex + 1).Trim(), out int max) && max > 0;
     }
+
+    #endregion
 
     /// <summary>
     /// 获取随机关卡次数(解析 fight_num 字段, 支持单值"x"或区间"x-y")

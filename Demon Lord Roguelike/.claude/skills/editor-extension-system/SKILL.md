@@ -373,6 +373,10 @@ LauncherTest (Inspector)
 
 ---
 
+## 征服模式配置（FightModeEditorTabConquer）
+
+菜单 `游戏/战斗模式编辑` 的「征服模式」页签按世界和难度加载配置。「敌人配置」的「Boss列表」下方可编辑固定 BOSS 候选（`enemy_boss_fixed_ids`）。列表模式支持手输 NPC ID 或按 NPC 名字下拉选择，文本模式接受 `&` 分隔的 NPC ID，也可点击邻近难度的对比值复制整组候选。清空候选列表后沿用原随机逻辑。保存时写回 `FightTypeConquerInfo` 源表并重导 JSON。
+
 ## 故事演出编辑 (StoryEditorWindow)
 
 **文件**: `Assets/Editor/StoryEditorWindow.cs`，**菜单**: `游戏/故事演出编辑`

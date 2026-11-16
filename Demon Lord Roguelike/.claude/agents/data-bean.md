@@ -46,7 +46,9 @@ Bean/
 
 > **`CreatureBean.IsDemonLord()`（`CreatureBeanPartial.cs` #region 魔王）是「是否魔王本体」判定的单一真实源**：比对 `creatureUUId == userData.selfCreature.creatureUUId`（魔王独立存储于 `UserDataBean.selfCreature`，不在背包/阵容列表内）。管理列表置顶、稀有度按 L 显示、隐藏等级、不可献祭、战斗不加经验等特殊处理统一调它，UI 层(如 `UIViewCreatureCardDetails.IsDemonLord`)已收口为委托调用。
 
-> **`NpcInfoBean.IsBoss()`（`NpcInfoBeanPartial.cs`）**：按备注 `remark` 识别 BOSS，含 `boss` 且不含否定标记 `无boss`（均不区分大小写）；避免「小兵（无BOSS技能）」被误标。该判定用于测试下拉标记，正式刷怪仍以 `enemy_boss_ids` 配置为准，不能用 `attack_mode_ext` 非空代替。
+> `NpcInfoBean.IsBoss()` 按备注 `remark` 为测试下拉加 BOSS 标记。匹配 `boss` 时排除 `无boss`，均忽略大小写。征服实战根据 `enemy_boss_ids` 和 `enemy_boss_fixed_ids` 生成冻结阵容。
+
+> `FightTypeConquerInfoBean.enemy_boss_fixed_ids` 是 Excel 生成的 `&` 分隔 NPC ID 字符串。`FightTypeConquerInfoBeanPartial` 从有效去重的候选中选一只并补入随机阵容。`GameWorldDifficultyRandomBean.enemyBossFixedId` 记录每档的选中 ID。旧档缺省为 0，由 `GameWorldInfoRandomBean.GetDifficultyEnemyBossSpawnIdList` 在取阵容时补齐。
 
 > **`NpcInfoBean.attack_search_creature_fight_type`（Excel 自动生成列，int）**：覆盖 NPC 的攻击索敌阵营。缺少 NPCInfo 或该列留空/为 0 时继承 `CreatureInfo`，同路回复继续按施法者实际阵营找友军。
 

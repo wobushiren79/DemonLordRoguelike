@@ -25,7 +25,7 @@ watched_files:
 征服模式是游戏的主线 Roguelike 塔防战斗模式：一局由**多个连续关卡**组成，玩家防守魔王核心、布置防御生物抵挡一波波进攻敌人。
 
 - **关卡推进**：`fightNum` 从 1 递增到 `figthNumMax`（最大关卡数，开局随机自 `fight_num` 区间）。
-- **最后一关 = BOSS 关**：`fightNum >= figthNumMax`。BOSS 关照常出 `enemy_ids` 普通敌人，并**额外**从 `enemy_boss_ids` 生成 BOSS。
+- 最后一关（`fightNum >= figthNumMax`）照常出 `enemy_ids` 普通敌人，并额外刷出本难度冻结阵容中的 BOSS。
 - **关卡间深渊馈赠**：非 BOSS 关胜利后弹出 `UIFightAbyssalBlessing` 三选一（不重载场景、保留战场）；详见 `abyssal-blessing-system` skill。
 - **失败 / 通关 BOSS**：弹出 `UIFightSettlement` 结算；通关 BOSS 再进 `UIRewardSelect` 领奖。
 
@@ -95,6 +95,7 @@ WorldHandler.EnterGameForFightScene(fightData)  → GameFightLogicConquer 跑起
 | `fight_scene_boss_ids` | string | BOSS 关战斗场景列表（`&` 分割；传送门创建时按难度随机其一并冻结） |
 | `enemy_ids` | string | 普通敌人池 npcInfoId（`&` 分割） |
 | `enemy_boss_ids` | string | **BOSS 敌人池** npcInfoId（`&` 分割） |
+| `enemy_boss_fixed_ids` | string | 按世界和难度配置的固定 BOSS 候选 NPC ID，用 `&` 分隔。每个传送门从有效去重的候选中等概率选一只，可填池外的有效 `NpcInfo.id`。留空沿用原随机逻辑。 |
 | `enemy_type_num` | string | **普通敌人种类数量**（2026-10 新增）：单值 `3` 或区间 `3-4`；**留空=整池全随机（原逻辑）**。配置后世界生成时从 `enemy_ids` 随机取 N 种不重复敌人并冻结，整个 run（含重新挑战）只用这批 |
 | `enemy_boss_type_num` | string | **BOSS 种类数量**（2026-10 新增）：同 `enemy_type_num` 语义，池为 `enemy_boss_ids` |
 | `attack_boss_num` | string | **BOSS 数量**，单值 `2` 或区间 `2-5`（空/0 = 不刷 BOSS） |
@@ -160,11 +161,15 @@ public int GetRandomEnemyTypeNum(bool isBoss);
 // 世界生成时调用一次并冻结进 GameWorldDifficultyRandomBean.listEnemyTypeId / listEnemyBossTypeId
 public List<long> GetRandomEnemyTypeIdList(bool isBoss);
 
-// 随出 BOSS 出场阵容：按 attack_boss_num 数量逐只从 bossTypeIdList(冻结种类，空则整池) 随机取 npcId
-// 世界生成时调用一次并冻结进 GameWorldDifficultyRandomBean.listEnemyBossSpawnId（战斗出怪 + 弹窗去重展示共用）
-public List<long> GetRandomEnemyBossSpawnIdList(List<long> bossTypeIdList);
+// 已冻结选择仍有效时保留，否则从候选中抽一只。无有效候选返回 0。
+public long GetFixedBossId(long frozenFixedBossId = 0);
 
-// 本难度配置上是否会刷 BOSS（attack_boss_num 留空/0/区间上限为0 = 不刷）；仅配置层判定，弹窗已改用冻结出场阵容
+// 按 attack_boss_num 从冻结种类或整池随机取 NPC ID，保证所选固定 BOSS 出场。
+// 世界生成时调用一次并冻结进 GameWorldDifficultyRandomBean.listEnemyBossSpawnId（战斗出怪 + 弹窗去重展示共用）
+public List<long> GetRandomEnemyBossSpawnIdList(List<long> bossTypeIdList, long fixedBossId);
+public static void EnsureFixedBossInSpawnList(List<long> bossSpawnIds, long fixedBossId);
+
+// 本难度是否有有效的固定候选或大于 0 的随机 BOSS 数量上限。
 public bool HasBossSpawn();
 
 // 区间字段解析
@@ -216,7 +221,7 @@ public bool IsNextBossFight()  => figthNumMax > 0 && fightNum + 1 >= figthNumMax
 
 1. **普通波次**（BOSS 关与非 BOSS 关一致）：数量 = `CalcCurrentEnemyNum()`（递推 `num = num*addrate + add`，首关 = `attack_start_num`）；把 `[0, attack_show_time]` 均分 `waveNum` 段，每段内随机一个出现时刻；敌人 **优先取本难度冻结的敌人种类**（`gameWorldInfoRandomData.GetDifficultyEnemyTypeIdList(difficultyLevel, false)`，配置 `enemy_type_num` 时非空），为空时回落 `enemy_ids` 整池随机（`GetRandomEmenyId(false)`）。每条普通出怪事件带上**强度倍率** `GetCurrentIntensityRate(fightNum)`（= `attack_intensity_baserate × attack_intensity_addrate^(fightNum-1)`，基础倍率每关恒定、第 1 关也生效），创建时作用到 HP/护甲/攻击力（见 `FightCreatureBean.intensityRate`）。
 2. **BOSS 关额外出怪**（`AddBossSpawnEvents(spawnEvents, showTime, intensityRate, bossSpawnIdList)`）：
-   - 数量与种类 **全部取本难度冻结的 BOSS 出场阵容** `gameWorldInfoRandomData.GetDifficultyEnemyBossSpawnIdList(difficultyLevel)`（每个元素=一只 BOSS，长度=BOSS 数量；世界生成时由 `attack_boss_num` 数量 × 冻结 BOSS 种类一次随出，见 `GetRandomEnemyBossSpawnIdList`），阵容为空=不刷 BOSS
+   - 数量与种类取本难度冻结的 BOSS 阵容 `gameWorldInfoRandomData.GetDifficultyEnemyBossSpawnIdList(difficultyLevel)`。阵容的每个元素对应一只 BOSS。若缺少有效的固定 BOSS，随机替换一个现有名额，空阵容则加入一只。
    - 出现时刻 = `Random.Range(showTime*0.5f, showTime*0.9f)`（进攻总时间**中后段 50%~90%**）
    - 多个 BOSS 在该时刻按 `0.3f` 依次错开入场
    - **首个 BOSS 事件携带全部 BOSS 的 npcId**（`bossShowNpcIds`），用于一次性弹 BOSS 特写 UI
@@ -308,7 +313,7 @@ private void AddReputationForConquerComplete(FightTypeConquerInfoBean conquerInf
 
 - BOSS 出怪时由 `GameFightLogic.UpdateGameForAttackCreate` 检测到出怪数据带 `bossShowNpcIds` → 调 `GameFightLogic.ShowBossDialog(ids)` → `UIHandler.Instance.ShowDialogBossShow(DialogBossShowBean)`。
 - 特写 UI 内部会把 `Time.timeScale` 临时压到 `0.01`（慢镜头），淡入展示约 2 秒后淡出并自动 `DestroyDialog` 还原时间。
-- BOSS 生物本身就是普通进攻生物（同 `CreateAttackCreature` 路径），只是 npcId 取自 `enemy_boss_ids`；必须击杀才能清空进攻队列通关。
+- BOSS 生物与普通进攻生物共用 `CreateAttackCreature`。BOSS 的 NPC ID 来自冻结阵容，击杀所有进攻生物后才能通关。
 
 > 出怪→弹特写的钩子在基类 `GameFightLogic.UpdateGameForAttackCreate` / `ShowBossDialog`，模式无关；征服模式只负责往 `bossShowNpcIds` 填数据。
 
@@ -332,6 +337,7 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 - `GameWorldInfoRandomBean.SetRandomDataForConquer()`（`GameWorldInfoBeanPartial.cs`）：创建传送门时一次性把 `1~已解锁最高难度` 逐档用 `GetRandomRoadNum/RoadLength/FightNum` 随出，缓存进 `listDifficultyRandom`（每档一个 `GameWorldDifficultyRandomBean`），默认难度取已解锁最高。
 - **敌人种类冻结（2026-10）**：`CreateDifficultyRandom` 逐档把 `enemy_type_num`/`enemy_boss_type_num` 随出的种类集合存进 `GameWorldDifficultyRandomBean.listEnemyTypeId`/`listEnemyBossTypeId`（未配置=空列表）；BOSS 另外冻结**出场阵容** `listEnemyBossSpawnId`（`attack_boss_num` 数量 × BOSS 种类一次随出，每个元素=一只 BOSS，见 `FightTypeConquerInfoBeanPartial.GetRandomEnemyBossSpawnIdList`）。取用统一走 `GameWorldInfoRandomBean.GetDifficultyEnemyTypeIdList(D, isBoss)` / `GetDifficultyEnemyBossSpawnIdList(D)`：**老存档字段为 null 时按配置懒补齐并写回**（这些字段**不要初始化为空列表**，否则无法区分「老存档未生成」与「未配置」）；非征服模式返回 null。战斗（`FightBeanForConquer`，普通用种类、BOSS 用出场阵容）与传送门弹窗（`UIDialogPortalDetails`，BOSS 展示 = 出场阵容去重后的种类）读同一份，保证「预览=实际出怪」，且重新挑战沿用同一批。**弹窗展示受设施研究 `UnlockEnum.PortalPreviewCreature`(100300011「进攻目标预览」，前置=奖励预览，1000 魔晶；100勇士与征服共用) 门控**——未解锁时整个敌人列表不显示（`FightBeanForConquer` 的出怪不受影响，只是不预览）。无尽模式复用同表行但不冻结/不使用（保持整池全随机）。
 - `SetDifficultyLevel(level)`：切换/初始化难度时调用，把当前 `difficultyLevel` 及 `roadNum/roadLength/fightNum` 同步为该难度缓存的随机值——`FightBeanForConquer` 与传送门详情气泡 `UIPopupPortalDetails` 都直接读这些字段，故切换难度后必须同步才能反映新难度。
+- 每档从固定 BOSS 候选中选一只并存入 `GameWorldDifficultyRandomBean.enemyBossFixedId`。候选内仍有效的选择继续沿用，旧档缺少选择或选择失效时重新抽取并补入既有阵容。其他名额照常从原池或冻结种类随机，也可能抽到其他候选。清空候选后，新阵容使用原随机规则，既有阵容继续冻结。世界 1 难度 2–10 的候选来自各档相对上一难度新增的 BOSS，难度 1 留空。
 - `GetDifficultyRandom(level)`：取某难度缓存数据，缺失（老存档/仅预览的未解锁难度）时懒生成并缓存，保证同一难度数值稳定。气泡按各 item 自身难度取数。
 - 难度解锁存档：`UserUnlockBean.GetUnlockGameWorldConquerDifficultyLevel`。
 
@@ -363,9 +369,9 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 
 以下为**征服页签**（FightModeEditorTabConquer）的编辑能力：
 
-- 提供按 world/难度浏览编辑各行字段；区间字段（`attack_boss_num`/`fight_num`/`road_num`/`road_length`/`enemy_type_num`/`enemy_boss_type_num`）用字符串输入框。字段标签只写短名，完整说明（字段名+格式）放 tooltip。**敌人配置区**依次为：敌人列表 / Boss列表 / 敌人种类数量(`enemy_type_num`) / Boss种类数量(`enemy_boss_type_num`) / Boss数量，两个种类数量字段留空即全随机。
+- 按世界和难度浏览配置。区间字段使用字符串输入框，格式说明放在提示文字中。敌人配置区依次显示「敌人列表」「Boss列表」「固定BOSS候选」「敌人种类数量」「Boss种类数量」和「Boss数量」。「固定BOSS候选」支持列表和文本编辑，逐行输入 ID 或按 NPC 名称下拉选择，也可点击相邻难度的对比格复制。
 - **窗口布局**：顶部工具栏（刷新数据/导出 JSON/打开 4 张 Excel 表，toolbar 小按钮单行固定）＋ 选择区固定不滚动（世界 Popup ＋ 难度 1~10 页签 toggle ＋「加载数据」按钮；状态行显示当前编辑信息，选择已变更未加载/有未保存修改时橙色提示）＋ 中间编辑区滚动 ＋ 底部保存栏固定（保存按钮显示变更数、无变更禁用）。
-- **ID 列表字段**（`fight_scene_ids`/`fight_scene_boss_ids`/`enemy_ids`/`enemy_boss_ids`）：首行「标签＋foldout 共N个＋列表/文本模式切换＋快捷开表」，展开后列表编辑模式每行「LongField 手输 ID ＋ 下拉按名字选取（`DrawIdDropdown`，选项为 `[id] 名字`，场景字段取 FightScene、敌人字段取 NpcInfo，由 `BuildOptionList` 按 ID 升序构建）」二选一设置，新增行同理（下拉选中即写入新 ID 输入框）；另可切文本编辑模式直接改 `&` 分隔串。
+- **ID 列表字段**（`fight_scene_ids`、`fight_scene_boss_ids`、`enemy_ids`、`enemy_boss_ids`、`enemy_boss_fixed_ids`）共用列表与文本编辑。列表中每行可手输 ID 或用 `DrawIdDropdown` 按名称选择。场景选项取自 FightScene，敌人选项取自 NpcInfo。文本模式可直接编辑 `&` 分隔的 ID。
 - **前后难度对比**：编辑区每个数值字段一行七列——左=前3难度(`level-3~-1`，远→近)只读值 / 中=当前难度可编辑 / 右=后3难度(`level+1~+3`，近→远)只读值，与当前值不同的对比单元格会**高亮**，方便跨难度调数值；ID 列表字段的对比行与标量字段同一网格对齐，中间列放当前值名字摘要格，两侧单元格**显示解析后的具体名字**（`DrawIdListCompareCells`/`DrawIdListCompareCell`，名字以、连接+自动换行，tooltip 为每行 "id 名字" 完整列表，差异判定仍按原始 ID 串）。`LoadData` 中在同一 world 内一次遍历按难度偏移填充 `prevBeans[3]`(level-1~-3，索引0=最近)/`currentBean`/`nextBeans[3]`(level+1~+3)；对比值一律用 `GetFieldValueStr` 反射按字段名读取（只读展示，不参与保存）。
 - **修改高亮**：当前值与加载时原始值（`originalBean` 深拷贝）不同的字段，编辑框淡黄底标记（`IsFieldModified` + `ModifiedBgColor`），保存栏与选择区同步显示变更数（`CountChanges`）。
 - **参数可复制**：支持以下操作。① 点击任意对比单元格（`DrawCompareCell` 返回 bool，`DrawCompareCells` 一次画一侧3格并返回被点 Bean）把该字段对应难度的值复制到当前；② 编辑区顶部按难度排列的 6 个一键复制按钮（`CopyAllFrom` 反射整表覆盖，**跳过 id/world_id/level**）；③ 场景配置区「复制/粘贴」按钮整组复制 `fight_scene_ids` + `fight_scene_boss_ids`（`CopySceneConfig`/`PasteSceneConfig`），复制后切换其他难度加载并粘贴，来源世界/难度显示在按钮旁，粘贴可连续复用。④ BOSS 战斗场景列表首行的「复制/粘贴」单独操作 `fight_scene_boss_ids`，支持跨难度粘贴空列表。粘贴只改内存 `currentBean`，点「保存到Excel并生成Json」后写回。
@@ -402,7 +408,7 @@ WorldHandler.Instance.EnterGameForFightScene(fightData);      // 加载场景并
 1. **配置唯一真实源是 Excel**：任何数据变更必须改 `excel_fight_type_conquer_info`，再由 Unity 编辑器（ExcelEditorWindow 或 战斗模式编辑工具 FightModeEditorWindow 的征服页签）导出 JSON；只改 JSON 下次导出会被覆盖。
 2. **Bean 自动生成禁改**：`FightTypeConquerInfoBean.cs` 改结构要改 Excel 表头后重新「生成Entity」；解析/辅助逻辑写到 `FightTypeConquerInfoBeanPartial.cs`。
 3. **区间字段是字符串**：`attack_boss_num`/`fight_num`/`road_num`/`road_length` 用 `x` 或 `x-y`；统一走 `ParseRandomRange`，别再当 int 读。
-4. **BOSS 关仍出普通敌人**：普通波次始终取 `enemy_ids`（`GetRandomEmenyId(false)`），BOSS 是 `enemy_boss_ids` 的**额外**敌人，不要把普通波次换成 boss 池。
+4. BOSS 关照常从 `enemy_ids` 安排普通波次，并按冻结的 BOSS 阵容额外刷怪。
 5. **BOSS 特写只弹一次**：仅「首个 BOSS 出怪事件」带 `bossShowNpcIds`；多 BOSS 不要每只都弹。
 6. **关卡推进两条路**：下一关是 BOSS → 重载场景（`StartNextGameForBoss`/`InitNextData`）；否则同场景继续（`ContinueNextLevelInSameScene`/`InitNextDataForContinue`），后者**不要**重建卡片以免丢卡片状态。重载场景时 `isPositionReleased` 的冲锋自爆生物会被跳过不带入（防叠格），其卡片直接回手可再放。
 7. **结算分流**：非 BOSS 关胜利只弹深渊馈赠、不清场；失败/通关 BOSS 才走 `UIFightSettlement` 完整结算。

@@ -115,6 +115,10 @@ public partial class FightTypeConquerInfoBean : BaseBean
 	///背景色(由易到难)
 	/// </summary>
 	public string bg_color;
+	/// <summary>
+	///固定BOSS候选NPC ID（用&分割，留空不启用）
+	/// </summary>
+	public string enemy_boss_fixed_ids;
 }
 public partial class FightTypeConquerInfoCfg : BaseCfg<long, FightTypeConquerInfoBean>
 {
