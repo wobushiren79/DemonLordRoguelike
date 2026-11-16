@@ -68,6 +68,8 @@ UIMainLoad(加载存档界面) 空槽位 item
 
 ### 配置表（Excel 唯一真实源 → JSON 导出）
 
+`NpcInfoCfg` 会排除 `valid=0` 的数据。初始魔物 ID 1、2、3 是创建流程的必需配置，源表保持 `valid=1`。
+
 | 用途 | Cfg | JSON | Excel 源表 |
 |------|-----|------|-----------|
 | 物种/基础属性 | CreatureInfoCfg | CreatureInfo.txt | excel_creature_info |

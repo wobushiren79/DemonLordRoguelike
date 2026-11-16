@@ -398,6 +398,7 @@ LauncherTest (Inspector)
 - **三栏布局**（分隔条拖拽/双击复位照搬 StoryEditorWindow）：左栏 NPC 列表（搜索/npc_type/稀有度筛选/排序 + 新建[建议id+模板复制+中文名]/删除登记；**BOSS 项标注 `[BOSS]` 前缀**——判定源=全部征服配置 `FightTypeConquerInfo.enemy_boss_ids` 解析出的 npcId 集合 setBossNpcIds，ReloadAllCfg 时随 `FightTypeConquerInfoCfg` 缓存清理一并重建）｜中栏 上区基础字段+属性、下区外观编辑（随机皮肤池/固定皮肤按部位/逐部位调色RGB(A)+16色预设盘/随机装备池+稀有度勾选/固定装备按槽位，皮肤装备候选面板作为中右之间的第4栏带图集图标）｜右栏 Spine 预览（参考模型生物2001+目标双模型、动画列表/播放控制/滚轮缩放拖拽平移）。
 - **编辑副本+快照判脏**：选中 NPC 时 JSON 深拷贝出 editingNpcInfo（**绝不直改 Cfg 缓存 Bean**），外观编辑即时写回副本字符串字段（skin_data/equip_item_ids/SetSkinColorData/SetEquipRandom），脏判定=JsonConvert 序列化比对；切换/新建/刷新前三选（保存/放弃/取消）。删除仅内存登记 deletedNpcIds，保存时双表 DeleteRow（行号降序）。
 - **索敌目标**：属性区下拉编辑 `attack_search_creature_fight_type`（0 继承职业、1 防守方、2 进攻方、99 防守核心）。普通索敌仅匹配 1 和 2。模板复制随 Bean 深拷贝带上该值，保存时由 `WriteNpcRow` 按列名写回。
+- **NPC 有效性**：基础字段区的「有效」开关写回 `NpcInfo.valid`（`1` 有效，`0` 停用）。编辑器直接读取内置 `NpcInfo.txt` 的完整记录，列表给停用项标注 `[已停用]`，停用行仍可编辑和参与 ID 查重。新建项（包括按模板创建）默认有效，写回 Excel 前再次检查新 ID，避免覆盖配置表中已存在的记录。运行时 `NpcInfoCfg` 应用生成器的 `valid` 过滤。
 - **保存**：ValidateAll（creature_id/随机池/装备/皮肤/额外技能存在性+body_size解析，错误阻断警告可过）→ 变更摘要确认 → File.Open 探测 Excel 占用（ExcelToJsonItem 对占用文件静默跳过，不探测会有「保存成功但 JSON 没更新」隐性事故）→ 双表各单 EPPlus 会话写回 → `ExcelUtil.ExcelToJsonItem`×2 重导 JSON → 反射清 Cfg 静态缓存（dicData/arrayData，拷贝自 GameTestEditor.ClearCfgBaseStaticCache；外加 ItemsInfoCfg.dicDataForCreatureModel / CreatureModelInfoCfg.dicDetailsModelInfo / SpineAnimationStateCfg.dicSpineAnimData 三个 public 静态缓存）。
 
 ### 编辑器安全铁律（本窗口强制，其他编辑器工具同样适用）

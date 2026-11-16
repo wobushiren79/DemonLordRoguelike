@@ -49,5 +49,7 @@ public partial class UICreatureVat
 
     public TextMeshProUGUI ui_LimmitText;
 
+    public TextMeshProUGUI ui_TimeSpend;
+
 
 }

@@ -116,7 +116,7 @@ public partial class NpcCreateEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 绘制基础字段区（id/名字/生物/类型/稀有度/等级/评级 + 各字符串配置字段）
+    /// 绘制基础字段区（id/名字/有效性/生物/类型/稀有度/等级/评级 + 各字符串配置字段）
     /// </summary>
     private void DrawBaseFieldSection()
     {
@@ -126,6 +126,14 @@ public partial class NpcCreateEditorWindow : EditorWindow
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("中文名", GUILayout.Width(90));
         editingNameCn = EditorGUILayout.TextField(editingNameCn);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField(new GUIContent("有效", "取消勾选后，该 NPC 不进入游戏的配置列表"), GUILayout.Width(90));
+        EditorGUI.BeginChangeCheck();
+        bool isValid = EditorGUILayout.Toggle(editingNpcInfo.valid != 0);
+        if (EditorGUI.EndChangeCheck())
+            editingNpcInfo.valid = isValid ? 1 : 0;
         EditorGUILayout.EndHorizontal();
 
         DrawCreaturePopup();

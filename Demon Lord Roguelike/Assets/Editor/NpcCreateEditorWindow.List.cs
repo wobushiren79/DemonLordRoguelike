@@ -4,7 +4,7 @@ using UnityEngine;
 
 /// <summary>
 /// NpcCreateEditorWindow 左栏（partial）：NPC 列表（搜索/筛选/排序）+ 新建/删除入口。
-/// 列表数据来自 NpcInfoCfg（ReloadAllCfg 时重建）；新建项与删除登记仅存在于内存，保存时才落盘。
+/// 列表数据来自内置 NPC 配置（包括停用行，ReloadAllCfg 时重建）；新建项与删除登记保存时才落盘。
 /// </summary>
 public partial class NpcCreateEditorWindow : EditorWindow
 {
@@ -44,7 +44,7 @@ public partial class NpcCreateEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 绘制NPC列表项（搜索/筛选/排序后；新建项置顶显示[新]，删除登记项置灰，BOSS项标注[BOSS]）
+    /// 绘制NPC列表项（搜索/筛选/排序后；标记新建、停用、删除登记和 BOSS 项）
     /// </summary>
     private void DrawNpcListItems()
     {
@@ -58,6 +58,8 @@ public partial class NpcCreateEditorWindow : EditorWindow
             string label = $"{npcInfo.id}  {GetNpcNameCn(npcInfo)}";
             if (setBossNpcIds.Contains(npcInfo.id))
                 label = $"[BOSS] {label}";
+            if (npcInfo.valid == 0)
+                label = $"[已停用] {label}";
             DrawNpcListItem(npcInfo.id, isDeleted ? $"❌ {label}" : label, isDeleted);
         }
         EditorGUILayout.EndScrollView();
@@ -266,7 +268,7 @@ public partial class NpcCreateEditorWindow : EditorWindow
     }
 
     /// <summary>
-    /// 创建新NPC（空白或按模板深拷贝；name 恒等于 id 遵循 textId 约定；进入编辑并重建预览）
+    /// 创建新NPC（空白或按模板深拷贝，默认有效；name 恒等于 id；进入编辑并重建预览）
     /// </summary>
     private void CreateNewNpc(long newId)
     {
@@ -294,6 +296,7 @@ public partial class NpcCreateEditorWindow : EditorWindow
         }
         newBean.id = newId;
         newBean.name = newId;
+        newBean.valid = 1;
         isCreatingNew = false;
         string newName = inputNewName.Trim();
         inputNewId = "";

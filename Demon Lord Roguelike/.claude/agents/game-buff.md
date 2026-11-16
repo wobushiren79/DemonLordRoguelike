@@ -84,7 +84,7 @@ BuffBasePreEntity (含 BuffPreEventRole 用于事件归属过滤)
 > 时间驱动条件配套实体 `BuffEntityConditionalAttributeTime`(继承 BuffEntityConditionalAttribute)：UpdateBuffTime 未达标逐帧调 HandleForEvent 跨阈值刷属性；class_entity_events 留空。
 
 ### 扭蛋/稀有度 BUFF 分档规则（buff_type 11/12/13）
-稀有度 BUFF 池按稀有度分三档，每档对「效果性质」有硬约束（`BuffUtil.CreateRandomRarityBuff` 按 buff_type 取池，通过 `CanPerformBuffAttack` 排除目标无法执行的追加攻击词条。效果分档由配置指定）：
+稀有度 BUFF 池按稀有度分三档，每档对「效果性质」有硬约束。`BuffUtil.CreateRandomRarityBuff` 按 `buff_type` 从完整奖池抽取，效果分档由配置指定。
 ```
 R  (11) 纯属性 BUFF        —— 常驻数值加/减益、无触发条件；类 BuffEntityAttribute / 多属性双刃 BuffEntityAttributeMulti
                               可用属性 HP/DR/ATK/ASPD/MSPD/CRT/CDMG/EVA/RCD/CMP（CRT/EVA/CDMG rate走Flat；CDMG为暴击伤害倍率加成,基础1.5,如6001哥布林刺客经BUFF 2000500001 rate0.5→2.0=暴击伤害+100%；ASPD 的 rate 按 CreatureUtil.ASPD_POINT_PER_FREQUENCY_RATE 换算成点数走Flat(20点=100%攻速)，因生物基础ASPD恒为0、百分比通道恒无效；另有MP/MPR/MPF魔法向）
@@ -98,7 +98,7 @@ SSR(13) 特殊类             —— 死亡重生/死亡反击/死亡区域治�
 ```
 > 详细分档表与设计自检见 buff-system SKILL「扭蛋/稀有度 BUFF 分档设计规则」，为单一真实源。
 
-现役数值、旧存档兼容和目标职业过滤见 BUFF 系统指南的「稀有度 BUFF 生成工具」。低血量计算使用含独行者等动态加成的生命上限，并排除低血条件自身。手动撤下友军也刷新独行者；负 ASPD 保留至攻击频率公式。
+现役数值、旧存档兼容和追加攻击的战斗判定见 BUFF 系统指南的「稀有度 BUFF 生成工具」。低血量计算使用含独行者等动态加成的生命上限，并排除低血条件自身。手动撤下友军也刷新独行者。负 ASPD 保留至攻击频率公式。
 
 ### 堆叠策略 BuffStackMode (BuffInfoBean.stack_mode)
 ```
@@ -168,6 +168,6 @@ BuffEventDispatcher.dicBindings  # 事件名 → IBuffEventBinding 字典
 - 单体定向深渊馈赠（随机一只防守生物 ATK/HP/DR/攻速 翻倍）：`BuffEntityAttributeSingleTarget`/`BuffEntityAttributeAttackTimeSingleTarget` 实现 `IBuffSingleTarget`（`SetData` 随机锁定一只防守生物 UUID）；属性类在 `FightCreatureBean.CollectFromBuffList`、攻速类在 `ChangeAttackTimeDataForBuff` 按 `SingleTargetCreatureUUId` 过滤。**复制魔物(增殖 `BuffEntityInstantCloneDefenseCreature`)不继承单体定向**：克隆体是新 UUID 不匹配锁定 UUID，只继承全体性馈赠(靠 trigger_creature_type)。随机锁定走 `FightBean.GetRandomDefenseCreatureUUId()`(fightData 实例方法)；卡片展示用 `AbyssalBlessingUtil.IsAbyssalBlessingTargetCreature`(`Assets/Scripts/Utils/`) 统一判定口径。**只改运行时 dicAttribute/攻击时间，绝不改 `dlDefenseCreatureData` 里 CreatureBean 的 creatureAttribute（与存档共享引用，会污染存档）**。详见 abyssal-blessing-system SKILL
 - 动态率属性BUFF（馈赠侧曾用于都是兄弟/杀红了眼、现役无配置；稀有度BUFF侧现役「独行者」）：抽象基类 `BuffEntityAttributeDynamicRate : BuffEntityAttribute` 重写 `CollectModifiers`+`ChangeData` 用 `GetDynamicRate()` 替代配置固定 `trigger_value_rate`（默认走 PercentAdd，用于 ATK/DR/HP；**ASPD 例外**=按 CreatureUtil.ASPD_POINT_PER_FREQUENCY_RATE 换算成点数走 Flat，与普通属性 BUFF 同口径）；子类为**通用功能类**（按缩放来源命名、不绑馈赠名，可被其它同功能馈赠复用）：`BuffEntityAttributeScaleByDefenseCount`(属性随"当前场上存活防守魔物数"缩放，rate=(N-1)×rate，曾用于都是兄弟) / `BuffEntityAttributeScaleByKillCount`(属性随"本局累计击杀数"缩放，rate=`fightRecordsData.totalKillNumForDef`×rate，曾用于杀红了眼) / `BuffEntityAttributeDecayByAllyCount`(属性随"当前场上存活防守魔物数"反向衰减，rate=基础率-每友方衰减率×(N-1)下限0，现役R稀有度BUFF「独行者A-D」11001300001~04；trigger_value 复用为衰减百分点50=每友方-50%，因 BuffBean isRandom 对 trigger_value 整数化 RoundToInt(0.5)=0 会丢衰减系数)。rate 变化需重算 `dicAttribute` 才生效（事件驱动）：防守魔物死亡由 `GameFightLogic.EventForGameFightLogicCreatureDeadStart` 立即广播 `RefreshAllDefenseCreatureAttribute()`，非防守单位保留 `DeadEnd` 重算，全部单位仍由 `DeadEnd` 安排结算检测。手动撤下防守魔物也会按守卫刷新；魔物放置/增殖由 `CreatureHandler.CreateDefenseCreatureEntity` 末尾**推送新事件** `EventsInfo.GameFightLogic_DefenseCreatureCreate`（参数 FightCreatureEntity）→ `GameFightLogic.EventForDefenseCreatureCreate` 监听后广播（CreatureHandler 只生成、推事件，重算职责归 GameFightLogic）。守卫**双路 O(1) 缓存 Or**：`BuffHandler.HasDynamicRateAbyssalBlessing()`（馈赠池含动态率BUFF，`AddAbyssalBlessing` 置位、`ClearAbyssalBlessing` 复位）`||` `BuffHandler.HasDynamicRateCreatureBuff()`（场上生物带动态率BUFF，`AddFightCreatureBuff` 经收口方法 `CreateFightCreatureBuffEntity` 置位、`ClearFightCreatureBuff` 复位；独行者等稀有度动态率BUFF走此路），任一为 true 即广播，避免普通对局开销。详见 abyssal-blessing-system SKILL
 - `BuffHandler.AddAbyssalBlessing` 末尾 `TriggerEvent(Buff_AbyssalBlessingChange)`，由 `GameFightLogic.EventForAbyssalBlessingChange` 监听并刷新防守核心 + 全部防守生物 `RefreshBaseAttribute`（事件驱动，BuffHandler 不直接刷新）：属性类馈赠只有重算 `dicAttribute` 才生效，征服「普通关→普通关」走 `ContinueNextLevelInSameScene` 保留现场不重算，若馈赠变化时不刷新会出现「普通关选了不生效、切BOSS关重载场景才生效」的BUG。改动馈赠添加链路勿删此事件触发
-- 稀有度 BUFF 生成统一走 `BuffUtil`（`Assets/Scripts/Utils/BuffUtil.cs`），**扭蛋与魔物进阶共用**：`GetRarityBuffType(RarityEnum)`（R/SR/SSR→`CreatureRarity*`，N/UR/L→None）、`CreateRandomRarityBuff(rarityEnum, creature)`（取对应 buff_type 池，按目标过滤后随机 1 条）、`CreateAscendRarityBuff(newRarity, materials, creature)`（魔物进阶，权重占比制：素材在 newRarity 槽位 BUFF 按 id 聚合、每份权重 1，随机增益默认权重 1 经「随机增益缩减」研究 `CreatureVatRandomReduce`(100000009) 每级 -0.1 满级 0；各 id 概率=数量/(素材总份数+随机权重)，命中则继承并用 `BuffBean.CreateRandomWithFloor` 重随机后强度不低于同 id 最强素材，落空回退通用随机，无素材始终通用随机；UR/L 返回 null）。`GashaponItemBean` 通过 `CreatureBean.RandomRarityBuffForCreate` 进入此链路
+- 稀有度 BUFF 由 `BuffUtil` 统一处理。孕育与升阶药水使用 `CreateRandomRarityBuff(rarityEnum)`，从 R/SR/SSR 对应的完整 `buff_type` 池等概率抽取。魔物进阶使用 `CreateAscendRarityBuff(newRarity, materials)`，按同 ID 在素材新档位槽的份数占比抽取，`BuffBean.CreateRandomWithFloor` 以同 ID 最强素材为保底重抽数值。进阶缺少可继承词条或升到 UR/L 时只提升稀有度。
 - `BuffBean.CreateRandomWithFloor(id, floorValue, floorValueRate, createRate=1f)`：沿用扭蛋整数闭区间随机口径，但随机下限抬到 `max(配置min, floor)`，保证重随机结果强度不低于素材；单属性 RCD/CMP 减免使用素材率为上界（专供魔物进阶继承素材 BUFF 重随机）
 - `BuffBean.GetMaxRollFlags()` 返回触发值、百分比和整条满值标志。区间沿用生成时的整数和整数百分点口径，实际抽取值按浮点容差直接比较。整条须至少一个有效随机字段且所有随机字段都命中。召唤冷却（RCD）和耗魔（CMP）的减免百分比取最小端点，其余取上限。详情仅对整条满值的稀有度词条启用特效。

@@ -80,13 +80,13 @@ UserDataService.TrySaveGashaponBatch()   // 恢复日志提交与回放
   - **随机属性共用逻辑**：`RandomAttribute()` 委托 `CreatureBean.RandomAttributeForCreate(userData)`（位于 `CreatureBeanPartial.cs`，点数取 `UserLimmitBean.gashaponRandomAttributeNum`，基础值默认5，`<=0` 不加点；**随机池按 `creatureInfo.show_attribute` 配置过滤**——如烂泥/毒液史莱姆 3003/3004 池内只有 ATK，只会随机到攻击力，底层 `CreatureAttributeBean.AddRandomAttributeForCreate(addNum, pool)` 空池兜底默认 HP/DR/ATK/ASPD）
   - **初始魔物固定属性（不再随机）**：新建存档赠送的 3 个初始魔物（`UIMainCreate.OnClickForCreate`）改用 `CreatureBean.FixedAttributeForCreate(userData, attributeType)` —— 点数预算同样取 `UserLimmitBean.gashaponRandomAttributeNum`，但全部固定堆到单一属性：`NpcId1→HP`、`NpcId2→DR`、`NpcId3→ASPD`（底层 `CreatureAttributeBean.AddFixedAttributeForCreate`，单点增量复用 `CreatureUtil.GetAttributePointAddValue`：HP/DR 每点+10、ASPD 每点+1，故 5 点 = HP+50 / DR+50 / ASPD+5）；注意该场景存档尚未 `SetUserData`，需显式传入新建的 `UserDataBean`
   - **稀有度随机**：依次判定 UR→SSR→SR→R→N，每档由 `UnlockEnum.GashaponRarity*` / `GashaponRarity*Rate` 控制是否开放与成功率；命中后通过 `BuffTypeEnum.CreatureRarity*` 从对应 `buff_type`(11=R/12=SR/13=SSR) 的 BUFF 池随机抽 1 条叠加给生物（存入 `CreatureBean.dicRarityBuff`），高稀有度会叠加各低档各 1 条（如 SSR 给 R+SR+SSR 各 1）
-  - **稀有度 BUFF 生成两级收口**：`RandomRarity()` 定好稀有度后调用 `CreatureBean.RandomRarityBuffForCreate()`（`CreatureBeanPartial.cs`）——按稀有度从 R 档逐级授予（高稀有度累积各低档各 1 条，存入 `dicRarityBuff`）；单档「按稀有度取对应 buff_type 池随机抽 1 条」再走 `BuffUtil.CreateRandomRarityBuff(rarityEnum, creature)`（`Assets/Scripts/Utils/BuffUtil.cs`），与**魔物进阶（UICreatureVat）共用同一规则**（进阶另有素材 BUFF 加成走 `BuffUtil.CreateAscendRarityBuff`）。`RandomRarityBuffForCreate` 同时被**测试面板 `UITestBase.OnClickForAddTestCreature`** 复用，保证测试生物与孕育同口径。原 `GashaponItemBean.RandomRarityBuff(RarityEnum)` 已删除（详见 buff-system / utils-system skill）
-  - **稀有度 BUFF 分档设计规则（buff_type 11/12/13，硬约束）**——每档效果性质必须归对档位（生成入口按 buff_type 分池并按职业过滤，效果归档由表配置）：
+  - **稀有度 BUFF 生成**。`RandomRarity()` 定好稀有度后调用 `CreatureBean.RandomRarityBuffForCreate()`（`CreatureBeanPartial.cs`）。从 R 档起逐级走 `BuffUtil.CreateRandomRarityBuff(rarityEnum)`，每档从完整 `buff_type` 池抽取一条并写入 `dicRarityBuff`。测试面板 `UITestBase.OnClickForAddTestCreature` 复用逐级发放，升阶药水复用单档随机。基地魔物进阶走 `BuffUtil.CreateAscendRarityBuff` 按素材继承。
+  - **稀有度 BUFF 分档规则（buff_type 11/12/13）**。效果档位由配置指定，孕育按 `buff_type` 从完整奖池抽取。
     - **R(11)=纯属性 BUFF**：只做属性数值加/减益、常驻无触发。现池含 HP/DR/ATK 增益(+10~20%)、ASPD 攻速增益(+50~100%)、RCD 召唤CD减益、CMP 召唤魔力消耗减益(均 -25~50%，负 rate)；可扩展 MSPD/CRT/EVA（**无 HPRegeneration 生命回复属性**，实际枚举 index11=MPF 魔法回复、且游戏无被动回血刻）。类统一 `BuffEntityAttribute`。RCD/CMP 减益：RCD 走 `GetAttribute(RCD, true)`（含深渊馈赠按需叠加，原 GetRCD 已并入）、CMP 走 `GetAttribute(CMP)`（基础CMP×(1+等级/稀有度增加倍率)后再叠加BUFF；`GetAttributeInt(CMP)` 为 int 封装）。
     - **SR(12)=条件/周期被动触发 BUFF**：累计造成/受到伤害、击杀数、血量阈值或按周期触发后生效；类 `BuffEntityConditional*`(非死亡)/`Periodic*`/`Pecurrent`。
     - **SSR(13)=特殊类 BUFF**：死亡重生/死亡反击/死亡区域治疗/克隆增殖/生成改变水晶掉落等质变效果；类 `BuffEntityConditionalDead*`/`BuffEntityInstant*` 等。
     - 高稀有度累积低档：SSR 生物 = R+SR+SSR 各 1、SR 生物 = R+SR 各 1。新增稀有度 BUFF 需在 `excel_buff_info` + 多语言 `excel_language[BuffInfo]` 配表；R 属性类自动进池，SR/SSR 需配对应实体类。**完整分档表与设计自检见 buff-system SKILL「扭蛋/稀有度 BUFF 分档设计规则」（单一真实源）**
-    - 孕育、进阶和升阶药水通过 `BuffUtil.CanPerformBuffAttack` 滤除周期和条件追加攻击共 4 条。无有效攻击模块、冲锋后自爆、主动自爆的目标都不参与抽取这些词条，战斗排队使用同一资格判定。已有词条 ID 保持，改动的触发间隔、概率和恢复率按 `BuffBean.EnsureCurrentTuning` 升级。
+    - 所有职业均可获得周期和条件追加攻击词条。战斗排队时由 `BuffUtil.CanPerformBuffAttack` 检查攻击模块，跳过无有效攻击模块、冲锋自爆和主动自爆的魔物。旧词条的触发间隔、概率和恢复率按 `BuffBean.EnsureCurrentTuning` 更新。
 
 ### 配置数据（`StoreGashaponMachineInfoBean`，自动生成 → 扩展写 Partial）
 | 字段 | 含义 | 示例 |
@@ -191,7 +191,7 @@ UIGashaponBreak (BaseUIComponent)     破蛋交互
 5. 如需新的研究解锁节点，配 `ResearchInfo` + `pre_unlock_ids`
 
 ### 改抽奖/稀有度逻辑
-改 `GashaponItemBean`（RandomSkill/RandomAttribute/RandomRarity）与 `UnlockEnum.GashaponRarity*` 关联，**不要**改自动生成的 Bean。「按稀有度逐级授予稀有度 BUFF」已收口到 `CreatureBean.RandomRarityBuffForCreate()`（`RandomRarity` 定好稀有度后调用它，测试面板 `UITestBase` 也复用）；单档「按稀有度抽 1 条」再走 `BuffUtil.CreateRandomRarityBuff`，与魔物进阶共用。要改通用规则应改 `BuffUtil` / `RandomRarityBuffForCreate`，而非在 `GashaponItemBean` 内重新内联。
+改 `GashaponItemBean`（RandomSkill/RandomAttribute/RandomRarity）与 `UnlockEnum.GashaponRarity*` 的关联。孕育的逐级发放走 `CreatureBean.RandomRarityBuffForCreate()`，单档完整奖池抽取走 `BuffUtil.CreateRandomRarityBuff`。
 > 同一套 `GashaponRarity*`/`*Rate` 解锁门控还被**展示用**的 `GashaponItemBean.GetRarityProbabilityList()` 消费（孕育商店项概率弹窗）。概率数值已收口 `UserUnlockBean.GetGashaponRarityRateForLevel(rarity, level)`（= `RarityInfo.gashapon_rate` 基础概率 + 研究等级），`RandomRarity`(实际抽取) 与 `GetRarityProbabilityList`(展示概率) 均走该方法，改口径只改一处；改稀有度顺序/门控仍需两处同步，否则弹窗显示与真实概率不符。
 
 ### 改破蛋流程/动画
@@ -207,7 +207,7 @@ UIGashaponBreak (BaseUIComponent)     破蛋交互
 
 - **生物系统**：`CreatureInfoCfg` / `CreatureRandomInfoCfg`（随机皮肤）/ `CreatureModelCfg`（Spine 模型尺寸）；`CreatureHandler.SetCreatureData` + `SpineHandler.PlayAnim` 展示
 - **研究/解锁系统**：`UnlockEnum.GashaponMachine` 主入口 + `GashaponRarity*` 稀有度档位 + 每商品 `pre_unlock_ids` + 生物职业 `creatureInfo.unlock_id`
-- **BUFF 系统**：稀有度 BUFF `BuffTypeEnum.CreatureRarity*`，存 `CreatureBean.dicRarityBuff`；逐级授予走 `CreatureBean.RandomRarityBuffForCreate()`，单档生成口径统一走 `BuffUtil.CreateRandomRarityBuff`（与魔物进阶共用，见 buff-system / utils-system skill）
+- **BUFF 系统**。稀有度 BUFF `BuffTypeEnum.CreatureRarity*` 存入 `CreatureBean.dicRarityBuff`，孕育通过 `RandomRarityBuffForCreate()` 逐档调用 `BuffUtil.CreateRandomRarityBuff`。进阶继承详见 buff-system。
 - **商店 UI**：复用 `UIViewStoreItem`
 - **存档系统**：`UserDataBean.AddBackpackCreature()` / `GetUserBackpackCreatureData().listBackpackCreature` + `GameDataManager.SaveUserData()`
 

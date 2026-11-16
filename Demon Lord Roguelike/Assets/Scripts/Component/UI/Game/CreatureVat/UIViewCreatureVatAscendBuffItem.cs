@@ -69,7 +69,7 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
     }
 
     /// <summary>
-    /// 预览用BUFF内容文案:随机增益兜底项(buffId≤0,无具体BUFF)给通用说明;具体BUFF按「进阶增益范围预览」研究是否解锁分档:
+    /// 预览可继承的BUFF，按「进阶增益范围预览」研究是否解锁显示数值。
     /// <para>未解锁:仅展示效果描述,把 {Percentage}/{Time_S}/{KillNum} 等占位参数统一替成???(数值保密)。</para>
     /// <para>已解锁时显示当前继承规则的随机范围和固定值。</para>
     /// </summary>
@@ -77,9 +77,6 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
     /// <returns>悬浮提示内容文案</returns>
     protected string GetBuffContentForPreview(CreatureAscendBuffChanceStruct chance)
     {
-        if (chance.buffId <= 0)
-            //随机增益兜底文案走多语言(UIText 4000020),统一术语「稀有度」
-            return TextHandler.Instance.GetTextById(4000020);
         var buffInfo = BuffInfoCfg.GetItemData(chance.buffId);
         if (buffInfo == null)
             return "???";
@@ -92,7 +89,7 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
     }
 
     /// <summary>
-    /// 已解锁「进阶增益范围预览」时的内容文案:随机增益属性({Percentage})显示 min~max 范围,
+    /// 已解锁「进阶增益范围预览」时的内容文案:继承数值({Percentage})显示 min~max 范围,
     /// 实际触发概率({TriggerChance})/触发时间/前置条件(击杀数/承伤/造伤/血量阈值)等固定占位参数显示实际值(与 UIViewBuffShowItem 同口径)。
     /// </summary>
     /// <param name="buffInfo">BUFF配置</param>

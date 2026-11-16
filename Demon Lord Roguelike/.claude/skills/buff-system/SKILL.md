@@ -454,7 +454,7 @@ CMP               // 召唤魔力消耗 （CMP=12，仅作BUFF修正标签、非
 
 ## 扭蛋/稀有度 BUFF 分档设计规则（buff_type 11/12/13，必读）
 
-稀有度 BUFF 池按稀有度分三档，**每档对「效果性质」有硬性约束**——新增/设计稀有度 BUFF 必须落到正确档位。生成入口 `BuffUtil.CreateRandomRarityBuff` 先按 `buff_type` 取池，再按目标职业排除无法使用的追加攻击。词条性质由配表者按以下规则归档：
+稀有度 BUFF 池按稀有度分三档，**每档对效果性质有硬性约束**。孕育和升阶药水的 `BuffUtil.CreateRandomRarityBuff` 按 `buff_type` 从完整奖池抽取。词条按以下效果归档。
 
 | 稀有度 | buff_type | 效果性质（硬约束） | 适用实体类 |
 |--------|-----------|-------------------|-----------|
@@ -490,19 +490,19 @@ CMP               // 召唤魔力消耗 （CMP=12，仅作BUFF修正标签、非
 
 `BuffBean.EnsureCurrentTuning` 只迁移本次改动且已写入旧档的间隔、概率和回复率，恢复率按原档位映射新范围。配置前置条件在运行时取当前 `pre_info`，无额外存档迁移。
 
-条件追加攻击逐次登记，当前有合法目标时由攻击意图发射。周期词条「再补一刀」空场最多暂存一发，发射后重新计时 3 秒。无有效攻击模块（守护史莱姆）、冲锋后自爆（哥布林敢死队）、主动自爆（自爆史莱姆）的魔物排除这四种词条。孕育、升阶药水、进阶概率预览、进阶结果及战斗排队共用 `BuffUtil.CanPerformBuffAttack`。旧档已有词条原样保留。
+条件追加攻击逐次登记，当前有合法目标时由攻击意图发射。周期词条「再补一刀」空场最多暂存一发，发射后重新计时 3 秒。所有职业均可通过孕育、升阶药水或魔物进阶获得追加攻击词条。`BuffUtil.CanPerformBuffAttack` 用于战斗排队，要求有效攻击模块，且职业既非冲锋自爆也非主动自爆。
 累计条件在一次有效事件达标时扣除一份阈值，超过的计数保留到下次对应事件。
 
 ## 稀有度 BUFF 生成工具（`BuffUtil`）
 
-稀有度 BUFF（buff_type=11 R / 12 SR / 13 SSR）的「按稀有度随机抽一条」规则已抽到游戏层工具 `Assets/Scripts/Utils/BuffUtil.cs` 统一收口，**扭蛋（GashaponItemBean）与魔物进阶（UICreatureVat）共用同一口径**：
+`Assets/Scripts/Utils/BuffUtil.cs` 统一管理稀有度 BUFF 的档位、抽取与继承。孕育和升阶药水从整档奖池抽取，魔物进阶按所选素材继承。
 
 | API | 返回 | 说明 |
 |-----|------|------|
 | `BuffUtil.GetRarityBuffType(RarityEnum)` | `BuffTypeEnum` | 稀有度 → 稀有度 BUFF 类型。仅 R/SR/SSR 有对应类型（`CreatureRarityR/SR/SSR`）；N/UR/L 返回 `None` |
-| `BuffUtil.CreateRandomRarityBuff(RarityEnum, CreatureBean creature = null)` | `BuffBean` | **扭蛋通用规则**：按 `GetRarityBuffType` 取该类型的 BUFF 列表，按目标职业过滤后等概率抽 1 条，`new BuffBean(id, isRandom:true)`；无对应类型返回 `null` |
-| `BuffUtil.CreateAscendRarityBuff(RarityEnum newRarity, List<CreatureBean> materials, CreatureBean creature = null)` | `BuffBean` | **魔物进阶规则（权重占比制，2026-11 起取代旧 25%×数量）**：素材魔物在 `newRarity` 槽位的 BUFF 按 **buff id** 聚合，每份素材权重 1；「随机增益」默认权重 1，经「随机增益缩减」研究（`UnlockEnum.CreatureVatRandomReduce`=100000009，每级 -0.1，满级 10=0）缩减。各 id 命中概率=`数量/(素材总份数+随机权重)`；命中则继承该 id 并用 `BuffBean.CreateRandomWithFloor` 重随机数值（词条强度至少等于同 id 的最强素材），落空（随机区间）回退通用随机；无素材 BUFF 始终走通用随机（随机是唯一来源，不受缩减研究影响）。UR/L 无类型返回 `null`（只升稀有度不授 BUFF） |
-| `BuffUtil.GetCreatureAscendBuffChances(RarityEnum newRarity, List<CreatureBean> materials, CreatureBean creature = null)` | `List<CreatureAscendBuffChanceStruct>` | **进阶详情展示用**（与 `CreateAscendRarityBuff` 同口径按权重算概率）：每个素材 BUFF id 一项 `rate=数量/总权重×100`，末尾追加「随机增益」(`buffId=-1`，名 `BuffUtil.AscendRandomBuffName`)`rate=随机权重/总权重×100`；**rate 经最大余数法取整为整数百分比且合计恰好 100**；随机权重 0（缩减研究满级）且有素材时不追加随机项，无素材 BUFF 时仅一项 100% 随机增益；UR/L 无类型返回**空列表**（不授 BUFF 不展示）。供 `UICreatureVat` 孵化缸进阶详情面板实时展示。返回结构体 `CreatureAscendBuffChanceStruct` 及内部聚合结构体 `CreatureAscendMaterialBuffStruct` 同放 `Assets/Scripts/Struct/CreatureAscendStruct.cs`。**结构体透传 `floorValue`/`floorValueRate`（同 ID 素材最强的触发值和倍率）**。进阶详情气泡解锁「进阶增益范围预览」研究后调用和生成相同的区间计算 |
+| `BuffUtil.CreateRandomRarityBuff(RarityEnum rarityEnum)` | `BuffBean` | 孕育与升阶药水按 `GetRarityBuffType` 从完整奖池等概率抽取一条，通过 `new BuffBean(id, isRandom: true)` 随机数值。无对应类型或配置时返回 `null` |
+| `BuffUtil.CreateAscendRarityBuff(RarityEnum newRarity, List<CreatureBean> materials)` | `BuffBean` | 每份有效素材提供新档位槽内的一条 BUFF。同 ID 份数相加，继承概率为份数除以有效素材总份数。继承后用 `BuffBean.CreateRandomWithFloor` 重抽数值，以同 ID 最强素材为保底。无可继承词条时返回 `null`，只提升稀有度 |
+| `BuffUtil.GetCreatureAscendBuffChances(RarityEnum newRarity, List<CreatureBean> materials)` | `List<CreatureAscendBuffChanceStruct>` | 使用与抽取相同的素材统计，每个可继承 ID 一项。`rate` 按最大余数法取整后合计 100%。无可继承词条时返回空列表。`CreatureAscendBuffChanceStruct` 和内部聚合用的 `CreatureAscendMaterialBuffStruct` 定义在 `Assets/Scripts/Struct/CreatureAscendStruct.cs`，把 `floorValue` 和 `floorValueRate` 提供给「进阶增益范围预览」，预览和生成共用继承区间 |
 
 > 「按稀有度逐级授予稀有度 BUFF」收口在 `CreatureBean.RandomRarityBuffForCreate()`（孕育 `GashaponItemBean.RandomRarity` 与测试面板 `UITestBase.OnClickForAddTestCreature` 共用），单档随机再调 `BuffUtil.CreateRandomRarityBuff`（原 `GashaponItemBean.RandomRarityBuff` 已删除）。新增/调整稀有度 BUFF 仍只需在 `excel_buff_info` 配表，属性类 BUFF 自动进入对应 buff_type 池。
 

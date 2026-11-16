@@ -3,13 +3,13 @@
 /// </summary>
 public struct CreatureAscendBuffChanceStruct
 {
-    /// <summary>BUFF配置id;-1表示"随机增益"兜底项(未命中素材BUFF时走通用随机)</summary>
+    /// <summary>可继承的 BUFF 配置 ID。</summary>
     public long buffId;
-    /// <summary>展示名(素材BUFF取 name_language,兜底项取 BuffUtil.AscendRandomBuffName)</summary>
+    /// <summary>素材 BUFF 的本地化名称。</summary>
     public string name;
     /// <summary>命中概率(0~100,百分比)</summary>
     public float rate;
-    /// <summary>触发值下限(素材命中该 id 时抬高的下限,取各素材最大原值;兜底项为0)。用于进阶增益范围预览按抬高后的下限显示 min~max</summary>
+    /// <summary>同 ID 素材中最大的触发值，用作进阶范围预览的下限。</summary>
     public float floorValue;
     /// <summary>同 id 素材中最强的百分比。减冷却、减耗魔取最小原值，其余取最大原值。用于进阶范围预览。</summary>
     public float floorValueRate;

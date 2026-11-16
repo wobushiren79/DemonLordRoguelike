@@ -119,6 +119,10 @@ public partial class NpcInfoBean : BaseBean
 	/// </summary>
 	public int attack_search_creature_fight_type;
 	/// <summary>
+	///是否有效（1=有效，0=停用）
+	/// </summary>
+	public int valid;
+	/// <summary>
 	/// Mod合并引用字段拼接（由Excel列头 [language]/[mode_id] 标记自动生成，请勿手改）：该行来自 Mod JsonText 时，下列字段按同一 modId 拼接，指向 Mod 自带配置/语言表的同自ID行；0=无引用不拼接
 	/// </summary>
 	public override void CombineModReferenceIds(int modId)
@@ -144,6 +148,7 @@ public partial class NpcInfoCfg : BaseCfg<long, NpcInfoBean>
 		if (arrayData == null)
 		{
 			arrayData = GetInitData(fileName);
+			arrayData = System.Array.FindAll(arrayData, itemData => itemData.valid != 0);
 		}
 		return arrayData;
 	}
@@ -151,8 +156,7 @@ public partial class NpcInfoCfg : BaseCfg<long, NpcInfoBean>
 	{
 		if (dicData == null)
 		{
-			NpcInfoBean[] arrayData = GetInitData(fileName);
-			InitData(arrayData);
+			InitData(GetAllArrayData());
 		}
 		return GetItemData(key, dicData);
 	}

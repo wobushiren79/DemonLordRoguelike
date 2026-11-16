@@ -401,7 +401,7 @@ public class CreatureInfoBean : BaseBean
 
 ## CreatureUtil - 生物工具
 
-新稀有度 BUFF 按目标职业过滤。无有效攻击模块、冲锋后自爆、主动自爆的职业在孕育、升阶药水和进阶时排除四种追加攻击词条。`BuffUtil.CanPerformBuffAttack` 也用于战斗排队，旧档已有词条保留。
+孕育、升阶药水和进阶获得稀有度 BUFF 时使用对应档位的词条，各职业均可持有追加攻击词条。战斗中 `FightCreatureEntity.QueueBuffAttack` 调用 `BuffUtil.CanPerformBuffAttack`，无有效攻击模块、冲锋后自爆或主动自爆的生物不会排入追加攻击。
 
 **文件**: `Assets/Scripts/Utils/CreatureUtil.cs`
 

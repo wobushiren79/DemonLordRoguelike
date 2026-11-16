@@ -139,6 +139,8 @@ UIHandler.ShowMask(1, null, () =>
 
 ### 8. 配置表（Excel 唯一真实源 → JSON 导出产物）
 
+初始魔物 ID 1、2、3 的 `NpcInfo.valid` 保持为 `1`。生成的 `NpcInfoCfg` 不会返回停用行，创建流程依赖这三行。
+
 | 用途 | Cfg 类 | JSON | Excel 源表 | 创建界面用到的字段 |
 |------|--------|------|-----------|-------------------|
 | 物种/基础属性 | CreatureInfoCfg | CreatureInfo.txt | excel_creature_info | `name_language`、`creature_random_id`、体型区间 |

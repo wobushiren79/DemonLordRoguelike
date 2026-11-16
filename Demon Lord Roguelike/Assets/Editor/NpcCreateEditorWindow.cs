@@ -33,7 +33,7 @@ public partial class NpcCreateEditorWindow : EditorWindow
     #endregion
 
     #region 编辑状态字段
-    /// <summary>当前编辑副本（深拷贝自Cfg缓存，绝不直接改Cfg原值）</summary>
+    /// <summary>当前编辑副本（深拷贝自列表数据，绝不直接改列表原值）</summary>
     private NpcInfoBean editingNpcInfo;
     /// <summary>当前编辑的中文名（写语言表 content_cn；不入 NpcInfoBean，故独立字段）</summary>
     private string editingNameCn = "";
@@ -162,8 +162,10 @@ public partial class NpcCreateEditorWindow : EditorWindow
         CreatureModelInfoCfg.dicDetailsModelInfo = null;
         SpineAnimationStateCfg.dicSpineAnimData = null;
 
-        var allData = NpcInfoCfg.GetAllArrayData();
-        listAllNpc = allData != null ? new List<NpcInfoBean>(allData) : new List<NpcInfoBean>();
+        //直读内置配置，保留停用记录供编辑和 ID 查重。
+        var npcTextAsset = AssetDatabase.LoadAssetAtPath<TextAsset>($"Assets/Resources/JsonText/{NpcInfoCfg.fileName}.txt");
+        listAllNpc = (npcTextAsset != null ? JsonConvert.DeserializeObject<List<NpcInfoBean>>(npcTextAsset.text) : null)
+            ?? new List<NpcInfoBean>();
         dicNpcNameCn = LoadLanguageCnMap(NpcInfoCfg.fileName);
         dicCreatureNameCn = LoadLanguageCnMap(CreatureInfoCfg.fileName);
         dicItemNameCn = LoadLanguageCnMap(ItemsInfoCfg.fileName);

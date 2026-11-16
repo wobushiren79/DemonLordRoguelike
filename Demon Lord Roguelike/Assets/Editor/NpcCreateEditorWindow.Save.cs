@@ -246,6 +246,8 @@ public partial class NpcCreateEditorWindow : EditorWindow
         //保存前把调色字典按固定皮肤过滤序列化（既定过滤规则）
         WriteBackSkinColorData();
         int row = FindRowById(sheet, npcInfo.id);
+        if (isNewEntry && row > 0)
+            throw new InvalidOperationException($"新建 id [{npcInfo.id}] 已存在于 NPC 配置表，请刷新列表后重试。");
         if (row <= 0)
             row = sheet.Dimension.End.Row + 1;
         SetCellLong(sheet, row, colMap, "id", npcInfo.id);
@@ -272,6 +274,7 @@ public partial class NpcCreateEditorWindow : EditorWindow
         SetCellText(sheet, row, colMap, "skin_color_data", npcInfo.skin_color_data);
         SetCellText(sheet, row, colMap, "region", npcInfo.region);
         SetCellLong(sheet, row, colMap, "rarity", npcInfo.rarity);
+        SetCellLong(sheet, row, colMap, "valid", npcInfo.valid);
         SetCellText(sheet, row, colMap, "icon_res", npcInfo.icon_res);
         SetCellText(sheet, row, colMap, "remark", npcInfo.remark);
     }

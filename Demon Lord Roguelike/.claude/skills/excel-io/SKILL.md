@@ -175,7 +175,7 @@ python .claude/scripts/excel_delete_row.py \
 | 道具类型 | excel_items_type | ItemsType | 10 |
 | 多语言 | excel_language | UIText(+17子表) | 267+ |
 | 等级信息 | excel_level_info | LevelInfo | 12 |
-| NPC信息 | excel_npc_info | NpcInfo | 181 |
+| NPC信息 | excel_npc_info | NpcInfo | 183（含停用行） |
 | NPC关系 | excel_npc_relationship_info | NpcRelationshipInfo | 7 |
 | 稀有度 | excel_rarity_info | RarityInfo | 8 |
 | 研究信息 | excel_research_info | ResearchInfo | 83 |
@@ -186,6 +186,8 @@ python .claude/scripts/excel_delete_row.py \
 | 解锁信息 | excel_unlock_info | UnlockInfo | 108 |
 
 `FightTypeInfiniteInfo.fight_scene_id` 是指向 `FightScene.id` 的 `long` 列。世界 1 难度 2–10 均为 `60001` 天空石台，0 或留空时沿用同难度征服 BOSS 场地。新增配置列时，先为该 Excel 生成 Entity 并等待编译，再定向导出对应 JSON。
+
+`NpcInfo` 的 AB 列 `valid` 用 `1` 启用、`0` 停用。新行请显式填写，空的整数单元格会导出为 `0`。导出仍包含停用行，运行时列表和 ID 查询由生成的 `NpcInfoCfg` 统一过滤。
 
 ## 典型工作流
 

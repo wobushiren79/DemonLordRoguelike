@@ -262,7 +262,7 @@ GM 调试成长消耗品（2026-10 新增），**仅普通魔物可用**（选�
 - **使用分流**：`UICreatureManager.UseOrEquipItem` 4 分支分别进 `UseLevelUpPotionItem` / `UseLevelDownPotionItem` / `UseRarityUpPotionItem` / `UseRarityDownPotionItem`；确认/拦截文案为 UIText 61026~61035（12 语种，61034/61035 是多级确认框）。
 - **升级药水**：满级 Toast 61030；确认后先仅在内存中 `RemoveBackpackItem(itemData, 1)` + `creatureData.UpLevelForPotion(levelDelta)`（逐级调 `UpLevelForSacrifice()` 并累计各级 `attribute_point`，到满级自动停止），再打开 `UICreatureAddAttribute`；加点确认回调统一 `SaveUserData()` 并重开 `UICreatureManager`。道具消耗、升级、加点处于同一“未确认不落盘”原子窗口，加点界面强退则全部不写盘。
 - **降级药水**：0 级 Toast 61031；确认后 `creatureData.DownLevelForPotion(levelDelta)`（逐级降 1 级、清经验、按**当时等级** `LevelInfo.attribute_point` 调 `CreatureAttributeBean.RemoveRandomAttributeForLevelUp` 随机回退升级加点，到 0 级自动停止）→ 消耗 1 → 立即落盘；刷新详情/卡片列表/献祭按钮/背包列表。
-- **升阶药水**：`!CanUpRarity()`（L 或配置不可进阶）Toast 61032；确认后 `creatureData.UpRarityForPotion()`，新档位经 `BuffUtil.CreateRandomRarityBuff(rarity, creature)` 随机授 BUFF（按 `BuffUtil.CanPerformBuffAttack` 滤除无有效攻击模块、冲锋后自爆和主动自爆目标的追加攻击。R/SR/SSR 有 BUFF，UR/L 只升档）→ 消耗 1 → 立即落盘。
+- **升阶药水**。`!CanUpRarity()`（L 或配置不可进阶）使用提示 61032。确认后 `creatureData.UpRarityForPotion()` 升一档。升到 R/SR/SSR 时通过 `BuffUtil.CreateRandomRarityBuff(rarity)` 从新档位完整奖池抽取一条，升到 UR/L 时只升稀有度。消耗 1 个道具后立即落盘。
 - **降阶药水**：`!CanDownRarity()`（N）Toast 61033；确认后 `creatureData.DownRarity(GetRarityValue()-1)`，移除 `dicRarityBuff` 中高于新档位的 BUFF（与终焉议会降稀有度共用同一算法）→ 消耗 1 → 立即落盘。
 - **可见性**：`UIViewItemBackpackList.FilterItems` 把 Juice 与 4 个 GM 药水类型归为“普通魔物成长消耗品”，均需 `!creatureData.IsDemonLord()`；幻化药/幻原药仍所有生物含魔王可见。
 

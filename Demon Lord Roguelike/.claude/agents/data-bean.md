@@ -50,6 +50,8 @@ Bean/
 
 > **`NpcInfoBean.attack_search_creature_fight_type`（Excel 自动生成列，int）**：覆盖 NPC 的攻击索敌阵营。缺少 NPCInfo 或该列留空/为 0 时继承 `CreatureInfo`，同路回复继续按施法者实际阵营找友军。
 
+> **`NpcInfoBean.valid`（Excel 自动生成列，int）**：0 停用，1 有效。生成的 `NpcInfoCfg` 在列表和 ID 查询处过滤停用项。`NpcInfoBeanPartial` 的默认构造函数将缺少此字段的旧 JSON 视为有效，已有的显式值由 JSON 覆盖。
+
 > **`ItemBean.juicerExp`（手写 `Assets/Scripts/Bean/Game/ItemBean.cs`，long）**：魔汁经验值实例字段，仅 `ItemTypeEnum.Juice=11`（消耗品）类型、`ItemIdEnum.Juice=200001` 有效；榨汁结算（`CreatureJuicerLogic.SettleJuiceReward`）按投入魔物等级的 `LevelInfo.juicer_exp` 汇总写入，`num_max=1` 不堆叠保证每瓶经验独立；旧存档无此字段默认 0 兼容。
 
 > **GM 成长药水数据方法（2026-10）**：`ItemsInfoBeanPartial.GetLevelPotionDelta()` 解析 `ItemsInfo.other_data` 的 `level_delta:N`（空/非法兜底1）；`CreatureBeanPartial` 提供 `CanDownLevel/DownLevelForPotion()/DownLevelForPotion(int)`（逐级降级+经验清0+按各级点数随机回退）与 `UpLevelForPotion(int)`（逐级升级并累计加点，满级自动停止），以及 `CanUpRarity/UpRarityForPotion/CanDownRarity/DownRarity`（升阶随机新档 BUFF、降阶移除高档 `dicRarityBuff`）；`CreatureAttributeBean.RemoveRandomAttributeForLevelUp(removeNum)` 从 `dicAttributeLevelUp` 累计值按单点增量随机回退，无每级历史故非精确回退。

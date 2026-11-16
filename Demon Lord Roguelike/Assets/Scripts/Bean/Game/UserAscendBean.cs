@@ -37,8 +37,8 @@ public class UserAscendBean
     /// <param name="index">容器序号</param>
     /// <param name="creatureData">进阶目标生物(本体随进阶数据托管)</param>
     /// <param name="targetRarity">进阶后的目标稀有度</param>
-    /// <param name="timeMax">完成所需总时长(秒,真实时间,按源稀有度查表)</param>
-    /// <param name="ascendBuff">开始时已确定的预定BUFF(完成时才落地到生物;无对应类型可为 null)</param>
+    /// <param name="timeMax">开始时按基础耗时和素材数量确定的总时长(秒,真实时间)</param>
+    /// <param name="ascendBuff">开始时已确定的预定BUFF(完成时写入生物;没有可继承词条时为 null)</param>
     /// <returns>新建的进阶详情数据</returns>
     public UserAscendDetailsBean AddAscendData(int index, CreatureBean creatureData, int targetRarity, float timeMax, BuffBean ascendBuff)
     {
@@ -110,13 +110,13 @@ public class UserAscendDetailsBean
     public CreatureBean creatureData;
     /// <summary>进阶后的目标稀有度(完成时赋值给生物)</summary>
     public int targetRarity;
-    /// <summary>完成所需总时长(秒,真实时间,按源稀有度查表)</summary>
+    /// <summary>开始时按基础耗时和素材数量确定的总时长(秒,真实时间)</summary>
     public float timeMax;
     /// <summary>开始进阶的本地时间戳(DateTime.Now.Ticks);进度按真实时间差计算,暂停/关游戏不影响</summary>
     public long startTimeTicks;
     /// <summary>魔晶加速奖励的额外进度(秒,真实时间差之外;时钟回拨修正时保留不回扣)</summary>
     public float extraProgress;
-    /// <summary>开始时已确定的预定BUFF(完成时才落地到生物 dicRarityBuff;无对应类型为 null)</summary>
+    /// <summary>开始时已确定的预定BUFF(完成时写入生物 dicRarityBuff;没有可继承词条时为 null)</summary>
     public BuffBean ascendBuff;
 
     /// <summary>

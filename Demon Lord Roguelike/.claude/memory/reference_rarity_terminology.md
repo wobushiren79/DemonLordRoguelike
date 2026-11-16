@@ -15,4 +15,4 @@ metadata:
 - **配色**:`RarityInfo.ui_board_color`(UI底板)/`RarityInfo.buff_color`(BUFF配色,UIViewBuffShowItem 与进阶预览同口径)。
 - **注意区分**:「稀有」(R 档档名)是「稀有度」的一个档位,两者语义不冲突;「进阶/升阶」是提升稀有度的**流程名**,不要因此把稀有度本身叫「阶级」。
 - **魔王特例**:`CreatureBean.rarity=0`(IsDemonLord),代码里 `rarity≤0` 一律按 N(1) 处理(如 `RarityInfoCfg.GetAscendTimeByRarity`)。
-- 相关 UI 文本:UIText 2000018「稀有度」、80013「进阶成功,稀有度提升!」、4000020「随机生成一条该稀有度增益」(进阶 BUFF 预览兜底文案)。
+- 相关 UI 文本:UIText 2000018「稀有度」、80013「进阶成功,稀有度提升!」。

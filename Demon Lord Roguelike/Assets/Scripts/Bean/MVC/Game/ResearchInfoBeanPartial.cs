@@ -178,9 +178,6 @@ public partial class ResearchInfoBean
         //进阶素材可选上限 = creatureVatMaterialMax + 等级
         if (unlockId == (long)UnlockEnum.CreatureVatMaterialNum)
             return $"{UserUnlockBean.GetCreatureVatMaterialMaxForLevel(targetLevel)}";
-        //进阶随机增益占比累计缩减百分比 = 等级×10
-        if (unlockId == (long)UnlockEnum.CreatureVatRandomReduce)
-            return $"{UserUnlockBean.GetCreatureVatRandomReduceForLevel(targetLevel)}";
         //献祭祭品上限 = sacrificeMax + 等级
         if (unlockId == (long)UnlockEnum.SacrificeNum)
             return $"{UserUnlockBean.GetSacrificeMaxForLevel(targetLevel)}";

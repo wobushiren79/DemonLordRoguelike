@@ -31,6 +31,8 @@ watched_files:
 - **随机议员模板矩阵（长期规则）**：`NpcInfo` 按“**现有扭蛋职业 × 议员评级1~5**”全展开；按物种观察即“物种 × 该物种全部现有扭蛋职业 × 评级”。每个 `(creature_id, councilor_ratings)` 组合必须恰好有1条 `npc_type=3` 行。当前为29职业×5=145条（仅为当前数量快照）；例如人类评级1有 `(1001,1)`、`(1002,1)`、`(1003,1)`、`(1004,1)` 四条，完整为4职业×5=20条。**复用现有职业，不为议员另建 CreatureInfo 职业；新增扭蛋职业须同步补齐其5个评级行，删除职业须同步删除其全部评级行，不得只增删某一档。** 固定NPC为 `npc_type=2` 独立手配行，不适用此矩阵。随机议员的 `creature_random_id` 必须按生物 `model_id` 引用对应物种皮肤池（`model_id×10^6+1`，即 `1000001~7000001`），不能跨物种共用。完整规则见[专项记忆](../../memory/reference_doom_council_rating_class_rule.md)。
 
 ### 议员生成（`DoomCouncilLogic.GenerateCouncilors`）
+
+`NpcInfo.valid` 为 `0` 的配置由生成的 `NpcInfoCfg` 在运行时加载时排除，普通生成和全固定议员测试都使用过滤后的列表。本版简中固定议员 `2000000001`–`2000000004` 均为 `0`。需要恢复时改为 `1` 并导出 `NpcInfo.txt`。
 1. 议会人数：议案 `DoomCouncilInfo.council_num`（字符串 `"min,max"`）→ `GetRandomCouncilNum()` 区间随机。
 2. 每席：随机一个现有扭蛋职业 `creature_id` + 按权重随机评级（1~5 权重 50/30/15/10/5 归一化，`NpcInfoCfg.GetRandomCouncilorNpc()`），再精确取 `(creature_id,rating)` 对应行；缺组合时回退同职业任意评级仅为容错，不能作为配置缺行依据。
 3. 整场 10% 概率出现 1 名固定NPC（`GetRandomFixedCouncilorNpc()`）。

@@ -121,7 +121,7 @@ public partial class UICreatureVat : BaseUIComponent
 
         if (userAscendDetails != null)
         {
-            //是否已经完成(进度达到按稀有度的总时长)
+            //是否已经达到开始时确定的总时长
             if (userAscendDetails.IsComplete())
             {
                 ui_BtnComplete.gameObject.SetActive(true);
@@ -152,7 +152,7 @@ public partial class UICreatureVat : BaseUIComponent
     /// </summary>
     public void RefreshVatProgress()
     {
-        //进度按「秒/总时长」归一化为0~1(总时长按源稀有度查表)
+        //进度按「秒/总时长」归一化为0~1
         float progressNormalized = 0;
         if (userAscendDetails != null)
         {
@@ -430,10 +430,10 @@ public partial class UICreatureVat : BaseUIComponent
                 UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
                 UserAscendBean userAscend = userData.GetUserAscendData();
 
-                //升阶后稀有度复用 GetTargetNewRarity();耗时按源稀有度(=newRarity-1)查表;预定BUFF开始时即确定(含素材概率加成)
+                //开始时一次确定实际耗时和从素材继承的BUFF
                 int newRarity = GetTargetNewRarity();
-                float timeMax = RarityInfoCfg.GetAscendTimeByRarity(newRarity - 1);
-                BuffBean ascendBuff = BuffUtil.CreateAscendRarityBuff((RarityEnum)newRarity, listMaterialCreatureSelect, targetCreatureSelect);
+                float timeMax = GetAscendDuration();
+                BuffBean ascendBuff = BuffUtil.CreateAscendRarityBuff((RarityEnum)newRarity, listMaterialCreatureSelect);
 
                 for (int i = 0; i < listMaterialCreatureSelect.Count; i++)
                 {
@@ -661,8 +661,9 @@ public partial class UICreatureVat : BaseUIComponent
                 }
             }
             ui_UIViewCreatureCardList_Material.RefreshAllCard();
-            //素材变化:刷新可选上限文本 + BUFF增益概率展示(前后卡牌不变)
+            //素材变化时刷新数量、耗时和BUFF继承概率
             RefreshMaterialLimitText();
+            RefreshTimeSpend();
             RefreshAscendBuffs();
         }
     }
@@ -691,7 +692,37 @@ public partial class UICreatureVat : BaseUIComponent
     }
 
     /// <summary>
-    /// 刷新进阶详情:按阶段切换 ProgressContent/AscendData 显隐,并在素材选择阶段+已选目标时填充前后卡牌与BUFF增益。
+    /// 获取当前进阶所需秒数。按进阶前稀有度取基础耗时，每份素材将耗时减半，最低 1 秒。
+    /// </summary>
+    protected float GetAscendDuration()
+    {
+        if (targetCreatureSelect == null)
+            return 0f;
+
+        int baseTime = RarityInfoCfg.GetAscendTimeByRarity(targetCreatureSelect.GetRarityValue());
+        return baseTime > 0 ? Mathf.Max(1f, baseTime / Mathf.Pow(2f, listMaterialCreatureSelect.Count)) : 0f;
+    }
+
+    /// <summary>
+    /// 在已选目标且尚未开始进阶时显示耗时，秒数最多显示两位小数。
+    /// </summary>
+    protected void RefreshTimeSpend()
+    {
+        if (ui_TimeSpend == null)
+            return;
+
+        float timeSpend = userAscendDetails == null ? GetAscendDuration() : 0f;
+        ui_TimeSpend.gameObject.SetActive(timeSpend > 0f);
+        if (timeSpend <= 0f)
+            return;
+
+        var duration = TimeSpan.FromMilliseconds(Math.Round(timeSpend * 100.0) * 10);
+        float seconds = duration.Seconds + duration.Milliseconds / 1000f;
+        ui_TimeSpend.text = FormattableString.Invariant($"{(int)duration.TotalHours:00}:{duration.Minutes:00}:{seconds:00.##}");
+    }
+
+    /// <summary>
+    /// 刷新进阶详情:按阶段切换进度、预计耗时与详情,并在素材选择阶段+已选目标时填充前后卡牌与BUFF增益。
     /// <para>素材选择阶段(userAscendDetails==null):隐藏 ProgressContent;仅当已选目标魔物时显示 AscendData。</para>
     /// <para>培养阶段(userAscendDetails!=null):显示 ProgressContent,隐藏 AscendData。</para>
     /// </summary>
@@ -707,6 +738,7 @@ public partial class UICreatureVat : BaseUIComponent
             ui_ProgressContent.gameObject.SetActive(!isSelectingPhase);
         if (ui_AscendData != null)
             ui_AscendData.gameObject.SetActive(showAscend);
+        RefreshTimeSpend();
 
         if (!showAscend)
         {
@@ -762,8 +794,7 @@ public partial class UICreatureVat : BaseUIComponent
         if (targetCreatureSelect == null)
             return;
         int newRarity = GetTargetNewRarity();
-        //按进阶BUFF生成规则计算概率(素材BUFF在前,随机增益兜底在后)
-        List<CreatureAscendBuffChanceStruct> listChance = BuffUtil.GetCreatureAscendBuffChances((RarityEnum)newRarity, listMaterialCreatureSelect, targetCreatureSelect);
+        List<CreatureAscendBuffChanceStruct> listChance = BuffUtil.GetCreatureAscendBuffChances((RarityEnum)newRarity, listMaterialCreatureSelect);
         //rarity 传升阶后稀有度:本批候选BUFF均在该稀有度槽位生成,用于子项稀有度配色
         SetAscendBuffItems(listChance, newRarity);
     }

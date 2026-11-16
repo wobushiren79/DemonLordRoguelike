@@ -194,7 +194,7 @@ public partial class CreatureBean
             return null;
         int newRarity = GetRarityValue() + 1;
         rarity = newRarity;
-        BuffBean buffData = BuffUtil.CreateRandomRarityBuff((RarityEnum)newRarity, this);
+        BuffBean buffData = BuffUtil.CreateRandomRarityBuff((RarityEnum)newRarity);
         if (buffData != null)
             dicRarityBuff[(RarityEnum)newRarity] = buffData;
         return buffData;
@@ -404,7 +404,7 @@ public partial class CreatureBean
         for (int rarityValue = (int)RarityEnum.R; rarityValue <= rarity; rarityValue++)
         {
             RarityEnum rarityEnum = (RarityEnum)rarityValue;
-            BuffBean buffData = BuffUtil.CreateRandomRarityBuff(rarityEnum, this);
+            BuffBean buffData = BuffUtil.CreateRandomRarityBuff(rarityEnum);
             if (buffData == null)
                 continue;
             dicRarityBuff[rarityEnum] = buffData;

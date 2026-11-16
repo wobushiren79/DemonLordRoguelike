@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// BUFF 通用工具类:把「稀有度BUFF随机生成」规则统一收口,供扭蛋(GashaponItemBean)与魔物进阶(UICreatureVat)共用。
+/// 处理稀有度 BUFF 的随机生成、素材继承和预览。
 /// </summary>
 public static class BuffUtil
 {
-    #region 稀有度BUFF通用生成
+    #region 稀有度 BUFF 随机生成与追加攻击判定
     /// <summary>
     /// 获取稀有度对应的稀有度BUFF类型。仅 R/SR/SSR 配有对应类型,其余(N/UR/L)返回 None。
     /// </summary>
@@ -24,13 +24,11 @@ public static class BuffUtil
     }
 
     /// <summary>
-    /// 通用规则:随机生成一条该稀有度的BUFF(扭蛋口径,数值按 isRandom 整数闭区间随机)。
-    /// 无对应BUFF类型或该类型下无BUFF配置时返回 null。
+    /// 从对应稀有度的完整奖池等概率抽取一条 BUFF，数值按配置的整数闭区间随机。
     /// </summary>
     /// <param name="rarityEnum">目标稀有度</param>
-    /// <param name="creature">词条目标；未提供时使用完整奖池。</param>
-    /// <returns>随机BUFF运行时数据;无可用BUFF返回 null</returns>
-    public static BuffBean CreateRandomRarityBuff(RarityEnum rarityEnum, CreatureBean creature = null)
+    /// <returns>随机 BUFF，无对应类型或配置时返回 null。</returns>
+    public static BuffBean CreateRandomRarityBuff(RarityEnum rarityEnum)
     {
         BuffTypeEnum buffType = GetRarityBuffType(rarityEnum);
         if (buffType == BuffTypeEnum.None)
@@ -38,11 +36,6 @@ public static class BuffUtil
             return null;
         }
         var listBuffInfo = BuffInfoCfg.GetItemDataByBuffType(buffType);
-        var creatureInfo = creature?.creatureInfo;
-        if (listBuffInfo != null && creatureInfo != null && !CanPerformBuffAttack(creatureInfo))
-        {
-            listBuffInfo = listBuffInfo.FindAll(info => !IsBuffAttackAgain(info));
-        }
         if (listBuffInfo == null || listBuffInfo.Count == 0)
         {
             return null;
@@ -53,18 +46,7 @@ public static class BuffUtil
     }
 
     /// <summary>
-    /// 判断目标能否获得该稀有度词条。追加攻击要求可重复出手。
-    /// </summary>
-    public static bool CanReceiveRarityBuff(CreatureBean creature, BuffInfoBean buffInfo)
-    {
-        if (buffInfo == null)
-            return false;
-        var creatureInfo = creature?.creatureInfo;
-        return creatureInfo == null || !IsBuffAttackAgain(buffInfo) || CanPerformBuffAttack(creatureInfo);
-    }
-
-    /// <summary>
-    /// 判断魔物能否发射 BUFF 追加攻击。冲锋自爆不经过攻击意图，主动自爆出手后死亡。
+    /// 判断战斗中魔物能否排队发射 BUFF 追加攻击。冲锋自爆不经过攻击意图，主动自爆出手后死亡。
     /// </summary>
     public static bool CanPerformBuffAttack(CreatureInfoBean creatureInfo)
     {
@@ -75,28 +57,9 @@ public static class BuffUtil
         return attackModeInfo != null && attackModeInfo.class_name != nameof(AttackModeExplosion);
     }
 
-    /// <summary>
-    /// 区分独立追加攻击词条与职业攻击模块扩展。
-    /// </summary>
-    private static bool IsBuffAttackAgain(BuffInfoBean buffInfo)
-    {
-        return buffInfo.class_entity == nameof(BuffEntityPeriodicAttackAgain) ||
-            buffInfo.class_entity == nameof(BuffEntityConditionalAttackAgain);
-    }
     #endregion
 
     #region 进阶BUFF生成
-    /// <summary>
-    /// 获取当前进阶「随机增益」权重:默认1,「随机增益缩减」研究(UnlockEnum.CreatureVatRandomReduce)每级-0.1,满级10=0。
-    /// 生成(roll)与展示(概率列表)同口径,单点化避免两处规则不一致。
-    /// </summary>
-    /// <returns>随机增益权重(0~1)</returns>
-    private static float GetAscendRandomWeight()
-    {
-        int reduceLevel = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData().GetUnlockCreatureVatRandomReduceLevel();
-        return UserUnlockBean.GetCreatureVatRandomWeightForLevel(reduceLevel);
-    }
-
     /// <summary>
     /// 统计素材BUFF总份数(各 id 数量之和;无素材BUFF返回0)。
     /// </summary>
@@ -116,16 +79,12 @@ public static class BuffUtil
     }
 
     /// <summary>
-    /// 进阶规则:生成 newRarity 的一条BUFF(权重占比制)。
-    /// <para>素材魔物在 newRarity 槽位的BUFF按 buff id 聚合(decision: 按 buff id 判定同一),每份素材权重1;「随机增益」默认占1份权重,经「随机增益缩减」研究每级-0.1(满级0)。</para>
-    /// <para>各可用素材 id 命中概率=数量/(素材总份数+随机权重)，命中继承该 id 并重随机成同等或更强的数值，落空时回退通用随机。</para>
-    /// <para>无素材BUFF时始终走通用随机(随机是唯一来源,不受缩减研究影响);newRarity 为 UR/L 等无对应BUFF类型时返回 null(只升稀有度不授BUFF)。</para>
+    /// 按新稀有度槽位的可继承素材数量抽取一个 BUFF，重抽数值时以同 ID 的最强素材为保底。
     /// </summary>
     /// <param name="newRarity">进阶后的目标稀有度</param>
     /// <param name="materials">作为素材的魔物列表</param>
-    /// <param name="creature">进阶目标，用于限制可获得的词条。</param>
     /// <returns>预定授予的BUFF;无可用BUFF返回 null</returns>
-    public static BuffBean CreateAscendRarityBuff(RarityEnum newRarity, List<CreatureBean> materials, CreatureBean creature = null)
+    public static BuffBean CreateAscendRarityBuff(RarityEnum newRarity, List<CreatureBean> materials)
     {
         BuffTypeEnum buffType = GetRarityBuffType(newRarity);
         if (buffType == BuffTypeEnum.None)
@@ -133,28 +92,22 @@ public static class BuffUtil
             return null;
         }
         //聚合素材在 newRarity 槽位的BUFF: buff id -> 命中统计(数量/数值下限)
-        Dictionary<long, CreatureAscendMaterialBuffStruct> dicMaterialBuff = GetMaterialBuffStats(newRarity, materials, creature);
+        Dictionary<long, CreatureAscendMaterialBuffStruct> dicMaterialBuff = GetMaterialBuffStats(newRarity, materials);
         int materialTotal = GetMaterialBuffTotalCount(dicMaterialBuff);
-        //无素材BUFF:始终通用随机
         if (materialTotal <= 0)
         {
-            return CreateRandomRarityBuff(newRarity, creature);
+            return null;
         }
-        //权重×10转整数 roll(素材每份=10,随机权重0~10):规避 float Random.Range 上限含端点与 0.1 步进尾差,保证满级(随机权重0)素材必中
-        float randomWeight = GetAscendRandomWeight();
-        int randomWeightInt = Mathf.RoundToInt(randomWeight * 10f);
-        int roll = Random.Range(0, materialTotal * 10 + randomWeightInt);
-        int acc = 0;
+        int roll = Random.Range(0, materialTotal);
         foreach (var item in dicMaterialBuff)
         {
-            acc += item.Value.count * 10;
-            if (roll < acc)
+            roll -= item.Value.count;
+            if (roll < 0)
             {
                 return BuffBean.CreateRandomWithFloor(item.Key, item.Value.floorValue, item.Value.floorValueRate);
             }
         }
-        //落空=随机区间(randomWeightInt>0):走通用随机
-        return CreateRandomRarityBuff(newRarity, creature);
+        return null;
     }
 
     /// <summary>
@@ -162,10 +115,9 @@ public static class BuffUtil
     /// </summary>
     /// <param name="rarityEnum">要统计的稀有度槽位(进阶后的目标稀有度)</param>
     /// <param name="materials">素材魔物列表</param>
-    /// <param name="creature">进阶目标，用于限制可获得的词条。</param>
     /// <returns>buff id 到命中统计的字典;无任何素材BUFF返回 null</returns>
     private static Dictionary<long, CreatureAscendMaterialBuffStruct> GetMaterialBuffStats(
-        RarityEnum rarityEnum, List<CreatureBean> materials, CreatureBean creature)
+        RarityEnum rarityEnum, List<CreatureBean> materials)
     {
         if (materials == null || materials.Count == 0)
         {
@@ -185,7 +137,7 @@ public static class BuffUtil
                 continue;
             }
             var buffInfo = BuffInfoCfg.GetItemData(matBuff.id);
-            if (!CanReceiveRarityBuff(creature, buffInfo))
+            if (buffInfo == null)
                 continue;
 
             matBuff.EnsureCurrentTuning();
@@ -218,22 +170,13 @@ public static class BuffUtil
 
     #region 进阶BUFF概率展示
     /// <summary>
-    /// 进阶"随机增益"兜底项默认名(暂无对应多语言配置,硬编码与孵化缸item模板文案保持一致)。
-    /// </summary>
-    public const string AscendRandomBuffName = "随机增益";
-
-    /// <summary>
-    /// 按进阶BUFF生成规则(权重占比制),计算 newRarity 下各BUFF的命中概率(供孵化缸进阶详情实时展示)。
-    /// <para>与 <see cref="CreateAscendRarityBuff"/> 同口径:每份素材BUFF权重1,随机增益权重=1-0.1×「随机增益缩减」研究等级;各项概率=权重/总权重。</para>
-    /// <para>rate 经最大余数法取整为整数百分比且合计恰好100;随机权重0(研究满级)且有素材时不追加随机项;无素材BUFF时仅一项100%随机增益。</para>
-    /// <para>newRarity 无对应BUFF类型(N/UR/L)时返回空列表(只升稀有度不授BUFF,不展示任何增益)。</para>
+    /// 计算进阶详情展示的继承概率，每项占比为同 ID 素材数除以可继承素材总数，按最大余数法取整后合计 100%。
     /// </summary>
     /// <param name="newRarity">进阶后的目标稀有度</param>
-    /// <param name="materials">已选素材魔物列表(可空,空时仅返回100%随机增益)</param>
-    /// <param name="creature">进阶目标，用于限制可获得的词条。</param>
-    /// <returns>各BUFF命中概率列表(素材BUFF在前,随机增益兜底在后);无对应类型时为空列表</returns>
+    /// <param name="materials">已选素材魔物列表，可为空。</param>
+    /// <returns>各素材 BUFF 的继承概率，无可继承 BUFF 时返回空列表。</returns>
     public static List<CreatureAscendBuffChanceStruct> GetCreatureAscendBuffChances(
-        RarityEnum newRarity, List<CreatureBean> materials, CreatureBean creature = null)
+        RarityEnum newRarity, List<CreatureBean> materials)
     {
         List<CreatureAscendBuffChanceStruct> listChance = new List<CreatureAscendBuffChanceStruct>();
         BuffTypeEnum buffType = GetRarityBuffType(newRarity);
@@ -242,22 +185,12 @@ public static class BuffUtil
         {
             return listChance;
         }
-        Dictionary<long, CreatureAscendMaterialBuffStruct> dicMaterialBuff = GetMaterialBuffStats(newRarity, materials, creature);
+        Dictionary<long, CreatureAscendMaterialBuffStruct> dicMaterialBuff = GetMaterialBuffStats(newRarity, materials);
         int materialTotal = GetMaterialBuffTotalCount(dicMaterialBuff);
-        //无素材BUFF:仅100%随机增益(与生成口径一致,不受缩减研究影响)
         if (materialTotal <= 0)
         {
-            listChance.Add(new CreatureAscendBuffChanceStruct
-            {
-                buffId = -1,
-                name = AscendRandomBuffName,
-                rate = 100,
-            });
             return listChance;
         }
-        float randomWeight = GetAscendRandomWeight();
-        float totalWeight = materialTotal + randomWeight;
-        //素材BUFF项:概率=数量/总权重
         foreach (var item in dicMaterialBuff)
         {
             var buffInfo = BuffInfoCfg.GetItemData(item.Key);
@@ -265,20 +198,10 @@ public static class BuffUtil
             {
                 buffId = item.Key,
                 name = buffInfo != null ? buffInfo.name_language : "",
-                rate = item.Value.count / totalWeight * 100f,
+                rate = (float)item.Value.count / materialTotal * 100f,
                 //透传最强素材值，预览和生成共用继承范围。
                 floorValue = item.Value.floorValue,
                 floorValueRate = item.Value.floorValueRate,
-            });
-        }
-        //兜底"随机增益":随机权重>0才追加(研究满级后不再显示0%随机项)
-        if (randomWeight > 0)
-        {
-            listChance.Add(new CreatureAscendBuffChanceStruct
-            {
-                buffId = -1,
-                name = AscendRandomBuffName,
-                rate = randomWeight / totalWeight * 100f,
             });
         }
         //整数百分比化(最大余数法):合计恰好100,UI直接显示整数

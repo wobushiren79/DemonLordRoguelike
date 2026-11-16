@@ -15,6 +15,16 @@ public partial class NpcInfoBean
     //皮肤颜色配置缓存(key=皮肤部位类型)
     protected Dictionary<CreatureSkinTypeEnum, Color> dicSkinColor;
 
+    #region 配置初始化
+    /// <summary>
+    /// 旧版 JSON 缺少有效性字段时默认启用，显式配置的有效性以 JSON 为准。
+    /// </summary>
+    public NpcInfoBean()
+    {
+        valid = 1;
+    }
+    #endregion
+
     /// <summary>
     /// 获取议员评级
     /// </summary>

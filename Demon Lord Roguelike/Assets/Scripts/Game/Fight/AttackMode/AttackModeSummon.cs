@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 召唤（骷髅召唤师：普攻 500004[自己前方0.5召唤1只骷髅战士,5秒一次] / BOSS技能 500005[自己前方0.5,自己所在路+上下相邻路每路3只,每只独立随机骷髅战士/投手,共最多9只,经 ext 100008 trigger_scene=0 攻击意图内30秒一发顶替当次普攻,大魔法师BOSS同款]）。
+/// 召唤（骷髅召唤师：普攻 500004[自己前方0.5召唤1只骷髅战士,持续攻击基础周期6秒] / BOSS技能 500005[自己前方0.5,自己所在路+上下相邻路每路3只,每只独立随机骷髅战士/投手,共最多9只,经 ext 100008 trigger_scene=0 攻击意图内30秒一发顶替当次普攻,大魔法师BOSS同款]）。
 /// <para>瞬发无弹道无伤害：当帧按 other_data 键 summon_npc_ids(逗号分隔NPC池,每只独立随机)&amp;summon_count(每路数量)&amp;road_spread(上下扩展路数,越界自然衰减跳过不clamp)&amp;summon_offset_x(召唤落点相对攻击者的x偏移,默认0)
 /// 经 CreatureHandler.CreateAttackCreature 在攻击者前方生成进攻生物[落点x=攻击者x+summon_offset_x,500004/500005 配 -0.5=前方0.5,世界轴原始叠加照 AttackModeMelee 约定;y/z由生成管线决定:y=0地面、z=目标路]；强度倍率透传 attacker.fightCreatureData.intensityRate 保证召唤物随关卡难度递增。</para>
 /// <para>召唤物为独立进攻生物：无 owner 关联(召唤者死亡不影响存活)、计入场上进攻生物(未清完不结算胜利)；召唤生成即置 isSummoned 标记,死亡不掉魔晶(防挂机刷取)；出场走出土冒出动画(通用意图 AIIntentCreatureEmerge,从地底冒出,不播出场特效)。</para>
