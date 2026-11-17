@@ -1,6 +1,7 @@
 """Prepare exported RGBA cels or a nearest-neighbor final preview; never write .aseprite."""
 import argparse
 import json
+from collections import Counter
 from pathlib import Path
 
 from PIL import Image, ImageColor
@@ -12,7 +13,9 @@ def main():
     contour = sub.add_parser("contour")
     contour.add_argument("--manifest", type=Path, required=True)
     contour.add_argument("--output-dir", type=Path, required=True)
-    contour.add_argument("--prefix", required=True)
+    selection = contour.add_mutually_exclusive_group(required=True)
+    selection.add_argument("--layer", action="append", help="Exact layer path; repeat for each layer")
+    selection.add_argument("--prefix", help="Layer name prefix for legacy equipment")
     contour.add_argument("--exclude", action="append", default=[])
     contour.add_argument("--color", default="#111219")
     contour.add_argument("--min-luma", type=float, default=22)
@@ -38,14 +41,22 @@ def main():
         return
 
     data = json.loads(args.manifest.read_text(encoding="utf-8-sig"))
+    selected_layers = set(args.layer or [])
+    layer_counts = Counter(entry["layer"] for entry in data["cels"])
+    for layer in sorted(selected_layers):
+        if layer_counts[layer] == 0:
+            raise ValueError(f"Layer has no cel in the exported frame: {layer}")
+        if layer_counts[layer] > 1:
+            raise ValueError(f"Ambiguous layer path: {layer}; select the intended cel in the source manifest")
     if args.output_dir.exists():
         raise FileExistsError(args.output_dir)
     args.output_dir.mkdir(parents=True)
     outline = ImageColor.getcolor(args.color, "RGBA")
     replacements, changed = [], 0
     for entry in data["cels"]:
-        leaf_name = entry["layer"].rsplit("/", 1)[-1]
-        if not leaf_name.startswith(args.prefix) or entry["layer"] in args.exclude:
+        layer = entry["layer"]
+        selected = layer in selected_layers if selected_layers else layer.rsplit("/", 1)[-1].startswith(args.prefix)
+        if not selected or layer in args.exclude:
             continue
         source = (args.manifest.parent / entry["png"]).resolve()
         if not source.is_relative_to(args.manifest.parent.resolve()):
@@ -70,10 +81,13 @@ def main():
                     count += 1
         if count:
             image.save(args.output_dir / entry["png"])
-            replacements.append({"layer": entry["layer"], "png": entry["png"], "x": entry["x"], "y": entry["y"]})
+            replacement = {"layer": layer, "png": entry["png"], "x": entry["x"], "y": entry["y"]}
+            if "layer_indices" in entry:
+                replacement["layer_indices"] = entry["layer_indices"]
+            replacements.append(replacement)
             changed += count
     if not replacements:
-        raise ValueError("No contours changed; inspect the prefix and thresholds")
+        raise ValueError("No contours changed; inspect the selected layers and thresholds")
     manifest = {"width": data["width"], "height": data["height"], "mode": "replace", "frame": data["frame"], "cels": replacements}
     (args.output_dir / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps({"changed_pixels": changed, "changed_cels": len(replacements), "manifest": str(args.output_dir / "manifest.json")}, ensure_ascii=False))

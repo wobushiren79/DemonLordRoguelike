@@ -686,7 +686,7 @@ public class ScenePrefabForBase : ScenePrefabBase
     /// <param name="itemAscendDetails">该容器的进阶详情数据</param>
     private void BuildingVatRefreshItemWithProgress(Transform itemVat, UserAscendDetailsBean itemAscendDetails)
     {
-        //目标生物本体托管在进阶数据里(无托管数据=托管前的旧存档,按空态展示兜底防NRE)
+        //进阶记录缺少托管生物时，按空容器展示。
         var creatureData = itemAscendDetails.creatureData;
         if (creatureData == null)
         {

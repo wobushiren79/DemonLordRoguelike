@@ -86,7 +86,7 @@ UserDataService.TrySaveGashaponBatch()   // 恢复日志提交与回放
     - **SR(12)=条件/周期被动触发 BUFF**：累计造成/受到伤害、击杀数、血量阈值或按周期触发后生效；类 `BuffEntityConditional*`(非死亡)/`Periodic*`/`Pecurrent`。
     - **SSR(13)=特殊类 BUFF**：死亡重生/死亡反击/死亡区域治疗/克隆增殖/生成改变水晶掉落等质变效果；类 `BuffEntityConditionalDead*`/`BuffEntityInstant*` 等。
     - 高稀有度累积低档：SSR 生物 = R+SR+SSR 各 1、SR 生物 = R+SR 各 1。新增稀有度 BUFF 需在 `excel_buff_info` + 多语言 `excel_language[BuffInfo]` 配表；R 属性类自动进池，SR/SSR 需配对应实体类。**完整分档表与设计自检见 buff-system SKILL「扭蛋/稀有度 BUFF 分档设计规则」（单一真实源）**
-    - 所有职业均可获得周期和条件追加攻击词条。战斗排队时由 `BuffUtil.CanPerformBuffAttack` 检查攻击模块，跳过无有效攻击模块、冲锋自爆和主动自爆的魔物。旧词条的触发间隔、概率和恢复率按 `BuffBean.EnsureCurrentTuning` 更新。
+    - 所有职业均可获得周期和条件追加攻击词条。战斗排队时由 `BuffUtil.CanPerformBuffAttack` 检查攻击模块，跳过无有效攻击模块、冲锋自爆和主动自爆的魔物。
     - SSR 池共 11 条。「策反死者」的骷髅战士数量、「震撼到场」的击退格数均在孕育或进阶生成词条时抽定为 1～3，保存在各自的 `BuffBean.trigger_value`。战斗中按该数值触发，进阶按同词条最强素材保底。策反战士的三项继承属性在击杀时按死者最终值取样。
 
 ### 配置数据（`StoreGashaponMachineInfoBean`，自动生成 → 扩展写 Partial）

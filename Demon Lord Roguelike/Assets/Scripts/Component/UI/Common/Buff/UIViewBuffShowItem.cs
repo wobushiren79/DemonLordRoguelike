@@ -18,7 +18,6 @@ public partial class UIViewBuffShowItem : BaseUIView
     /// <param name="isRarityBuff">是否为魔物自身的稀有度词条。</param>
     public void SetData(BuffBean buffData, bool isRarityBuff = false)
     {
-        buffData.EnsureCurrentTuning();
         this.buffData = buffData;
         this.buffInfo = BuffInfoCfg.GetItemData(buffData.id);
         var rarityEnum = buffInfo.GetRarity();

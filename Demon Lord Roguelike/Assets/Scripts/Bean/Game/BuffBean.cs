@@ -1,6 +1,5 @@
 
 using System;
-using System.Runtime.Serialization;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -139,82 +138,6 @@ public class BuffBean
         bool isRateMaxRoll = Mathf.Approximately(trigger_value_rate, bestRate / 100f);
         bool isFullRoll = isRateMaxRoll && (!hasRandomValue || isValueMaxRoll);
         return (isValueMaxRoll, isRateMaxRoll, isFullRoll);
-    }
-
-    #endregion
-
-    #region 旧档数值兼容
-
-    /// <summary>
-    /// 更新旧档中缓存的平衡数值。没有保存过固定触发值的词条按配置中间档补齐。
-    /// </summary>
-    public void EnsureCurrentTuning()
-    {
-        switch (id)
-        {
-            case 12000100001L when trigger_time == 5f:
-            case 12000200001L when trigger_time == 5f:
-                var recoveryInfo = BuffInfoCfg.GetItemData(id);
-                if (recoveryInfo != null && recoveryInfo.trigger_time != trigger_time)
-                {
-                    trigger_value_rate = RemapLegacyRecoveryRate(recoveryInfo);
-                    trigger_time = recoveryInfo.trigger_time;
-                }
-                break;
-            case 12000300001L when trigger_time == 5f:
-            case 13000100001L when trigger_time == 3f:
-                trigger_time = BuffInfoCfg.GetItemData(id)?.trigger_time ?? trigger_time;
-                break;
-            case 13000400001L:
-            case 13000500001L:
-                if (trigger_value_rate >= 0.01f && trigger_value_rate <= 0.05f)
-                {
-                    var areaInfo = BuffInfoCfg.GetItemData(id);
-                    if (areaInfo != null && areaInfo.trigger_value_rate_min > 0.05f)
-                        trigger_value_rate = RemapLegacyRecoveryRate(areaInfo);
-                }
-                break;
-            case 13000600001L when trigger_chance == 0.2f:
-                trigger_chance = BuffInfoCfg.GetItemData(id)?.trigger_chance ?? trigger_chance;
-                break;
-            case 13001000001L when trigger_value == 0f:
-            case 13001100001L when trigger_value == 0f:
-                var fixedValueInfo = BuffInfoCfg.GetItemData(id);
-                if (fixedValueInfo != null)
-                {
-                    var (min, max) = GetInheritedValueRange(fixedValueInfo, 0f);
-                    trigger_value = min + (max - min) / 2;
-                }
-                break;
-        }
-    }
-
-    /// <summary>
-    /// 将旧区间 1%～5% 内的相对档位映射到新配置区间，保留整数百分点。
-    /// </summary>
-    private float RemapLegacyRecoveryRate(BuffInfoBean buffInfo)
-    {
-        float position = Mathf.InverseLerp(0.01f, 0.05f, trigger_value_rate);
-        float newRate = Mathf.Lerp(buffInfo.trigger_value_rate_min, buffInfo.trigger_value_rate, position);
-        return Mathf.RoundToInt(newRate * 100f) / 100f;
-    }
-
-    /// <summary>
-    /// 读取旧存档时更新词条的旧参数。
-    /// </summary>
-    [OnDeserialized]
-    private void ApplyTuningAfterLoad(StreamingContext context)
-    {
-        EnsureCurrentTuning();
-    }
-
-    /// <summary>
-    /// 写出存档前同步兼容数值，使后续读档无需重复迁移。
-    /// </summary>
-    [OnSerializing]
-    private void ApplyTuningBeforeSave(StreamingContext context)
-    {
-        EnsureCurrentTuning();
     }
 
     #endregion

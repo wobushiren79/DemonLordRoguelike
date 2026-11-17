@@ -189,7 +189,6 @@ public partial class CreatureBean
             {
                 var buffData = item.Value;
                 if (buffData == null) continue;
-                buffData.EnsureCurrentTuning();
                 //如果不获取含属性BUFF 则判断是否是纯属性BUFF(单属性/多属性) 如果是则跳过
                 if (getBuffAttributeBase == false && buffData.IsBuffEntityAttributeOnly())
                 {

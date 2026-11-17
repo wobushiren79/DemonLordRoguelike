@@ -32,7 +32,7 @@ public partial class GameDataHandler
     }
 
     /// <summary>
-    /// 处理进阶数据(真实时间口径):进度由 startTimeTicks 时间戳实时计算,此处只做时钟回拨修正(修正后落盘一次)+广播刷新事件,不逐秒累加、不主动存档
+    /// 检查进阶开始时间并广播刷新事件，有时间戳修正时统一保存一次。
     /// </summary>
     public void HandleForAscendData()
     {
@@ -41,7 +41,7 @@ public partial class GameDataHandler
             var userAscendData = manager.userData.GetUserAscendData();
             if (userAscendData.dicAscendData.Count > 0)
             {
-                //时钟回拨检测:玩家改本地时间导致开始时间晚于当前时间时,重置起点为当前时间并统一落盘一次
+                //开始时间缺失、无效或晚于当前时间时，将起点重置为当前时间。
                 bool isAnyFixed = false;
                 foreach (var itemData in userAscendData.dicAscendData)
                 {

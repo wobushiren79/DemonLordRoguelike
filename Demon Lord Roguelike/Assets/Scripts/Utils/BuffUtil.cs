@@ -140,7 +140,6 @@ public static class BuffUtil
             if (buffInfo == null)
                 continue;
 
-            matBuff.EnsureCurrentTuning();
             if (dicStat == null)
             {
                 dicStat = new Dictionary<long, CreatureAscendMaterialBuffStruct>();

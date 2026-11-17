@@ -87,8 +87,6 @@ public partial class UIDialogPortalDetails : DialogView
                 ? Mathf.Max(unlockDifficultyMax, FightTypeChallengeHundredInfoCfg.GetMaxDifficultyLevel())
                 : unlockDifficultyMax;
             isDifficultyUnlocked = difficulty => userUnlock.CheckChallengeHundredUnlock(gameWorldInfoRandom.worldId, difficulty);
-            //旧存档兼容: 懒重建逐难度预生成数据
-            gameWorldInfoRandom.EnsureChallengeHundredRandomData();
         }
         else
         {

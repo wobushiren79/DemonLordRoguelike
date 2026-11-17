@@ -44,16 +44,14 @@ public class UserAscendBean
     {
         if (dicAscendData.TryGetValue(index, out var targetData))
         {
-            LogUtil.LogError($"添加进阶数据错误,已经存在index_{index}的数据 progress_{targetData.GetProgress()} creatureUUId_{targetData.creatureUUId}");
+            LogUtil.LogError($"添加进阶数据错误,已经存在index_{index}的数据 progress_{targetData.GetProgress()} creatureUUId_{targetData.creatureData?.creatureUUId}");
         }
         var userData = GameDataHandler.Instance.manager.GetUserData();
         //托管目标生物:置进阶状态、从背包物理移除(RemoveBackpackCreature 内部连带移出所有阵容;装备随生物一并托管)
         creatureData.creatureState = CreatureStateEnum.Vat;
         userData.RemoveBackpackCreature(creatureData);
         UserAscendDetailsBean newData = new UserAscendDetailsBean();
-        newData.progress = 0;
         newData.index = index;
-        newData.creatureUUId = creatureData.creatureUUId;
         newData.creatureData = creatureData;
         newData.targetRarity = targetRarity;
         newData.timeMax = timeMax;
@@ -71,21 +69,11 @@ public class UserAscendBean
     {
         if (dicAscendData.TryGetValue(index, out var targetData))
         {
-            var userData = GameDataHandler.Instance.manager.GetUserData();
             if (targetData.creatureData != null)
             {
                 //托管生物复位状态并归还背包(回到背包列表末尾)
                 targetData.creatureData.creatureState = CreatureStateEnum.Idle;
-                userData.AddBackpackCreature(targetData.creatureData);
-            }
-            else
-            {
-                //兜底:无托管生物(托管前的旧存档)按UUID回查背包,仅复位状态
-                var fallbackCreature = userData.GetBackpackCreature(targetData.creatureUUId);
-                if (fallbackCreature != null)
-                {
-                    fallbackCreature.creatureState = CreatureStateEnum.Idle;
-                }
+                GameDataHandler.Instance.manager.GetUserData().AddBackpackCreature(targetData.creatureData);
             }
             dicAscendData.Remove(index);
         }
@@ -102,10 +90,6 @@ public class UserAscendDetailsBean
 {
     /// <summary>容器序号</summary>
     public int index;
-    /// <summary>旧存档遗留的累积进度(秒),仅用于迁移:首次读取反推 startTimeTicks 后清零,不再累加</summary>
-    public float progress;
-    /// <summary>进阶目标生物UUID(冗余索引;托管生物缺失时兜底回查背包用)</summary>
-    public string creatureUUId;
     /// <summary>进阶目标生物本体(含装备;开始进阶时从背包移入托管,完成/取消时归还背包)</summary>
     public CreatureBean creatureData;
     /// <summary>进阶后的目标稀有度(完成时赋值给生物)</summary>
@@ -119,17 +103,16 @@ public class UserAscendDetailsBean
     /// <summary>开始时已确定的预定BUFF(完成时写入生物 dicRarityBuff;没有可继承词条时为 null)</summary>
     public BuffBean ascendBuff;
 
+    #region 进阶进度
     /// <summary>
     /// 获取当前进度(秒,实时计算):真实耗时(now-startTime,回拨负值钳0) + 魔晶奖励秒数。
-    /// <para>旧存档惰性迁移:无时间戳时用遗留 progress 反推开始时间(进度等价保留),迁移一次后 progress 清零。</para>
+    /// <para>开始时间戳无效时返回 0，等待定时检查修正起点。</para>
     /// </summary>
     public float GetProgress()
     {
-        //旧存档迁移:反序列化无 startTimeTicks(=0)时,用遗留 progress 反推开始时间
-        if (startTimeTicks <= 0)
+        if (startTimeTicks <= 0 || startTimeTicks > DateTime.MaxValue.Ticks)
         {
-            startTimeTicks = DateTime.Now.AddSeconds(-progress).Ticks;
-            progress = 0;
+            return 0f;
         }
         float realElapsed = (float)(DateTime.Now - new DateTime(startTimeTicks)).TotalSeconds;
         //时钟回拨兜底:真实耗时不为负(tick 的 CheckAndFixTimeRollback 会重置起点并落盘,这里只做读取保护)
@@ -141,14 +124,15 @@ public class UserAscendDetailsBean
     }
 
     /// <summary>
-    /// 检测并修正时钟回拨:玩家改本地时间导致 startTime 晚于当前时间时,重置开始时间为当前时间(此后按新起点重新计算,extraProgress 保留)。
+    /// 开始时间戳无效或晚于当前时间时，将起点重置为当前时间并保留魔晶加速进度。
     /// </summary>
     /// <returns>是否发生了修正(调用方据此落盘一次)</returns>
     public bool CheckAndFixTimeRollback()
     {
-        if (startTimeTicks > DateTime.Now.Ticks)
+        long nowTicks = DateTime.Now.Ticks;
+        if (startTimeTicks <= 0 || startTimeTicks > nowTicks)
         {
-            startTimeTicks = DateTime.Now.Ticks;
+            startTimeTicks = nowTicks;
             return true;
         }
         return false;
@@ -163,11 +147,11 @@ public class UserAscendDetailsBean
     }
 
     /// <summary>
-    /// 是否已完成(进度达到总时长)。timeMax≤0 视为不可进阶/异常,直接返回 false。
+    /// 托管生物存在、总时长有效且进度达标时返回 true。
     /// </summary>
     public bool IsComplete()
     {
-        if (timeMax <= 0)
+        if (creatureData == null || timeMax <= 0)
         {
             return false;
         }
@@ -175,14 +159,15 @@ public class UserAscendDetailsBean
     }
 
     /// <summary>
-    /// 获取归一化进度(0~1),供进度条/场景水色使用。timeMax≤0 时返回 0。
+    /// 获取归一化进度(0~1),供进度条和场景水色使用。缺少托管生物或总时长无效时返回 0。
     /// </summary>
     public float GetProgressNormalized()
     {
-        if (timeMax <= 0)
+        if (creatureData == null || timeMax <= 0)
         {
             return 0;
         }
         return Mathf.Clamp01(GetProgress() / timeMax);
     }
+    #endregion
 }

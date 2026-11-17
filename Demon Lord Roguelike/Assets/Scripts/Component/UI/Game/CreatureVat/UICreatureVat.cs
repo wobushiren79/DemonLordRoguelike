@@ -131,8 +131,9 @@ public partial class UICreatureVat : BaseUIComponent
                 ui_BtnEnd.gameObject.SetActive(true);
                 //魔晶加速做成研究解锁:0级(未研究)隐藏加速按钮;已研究则文本按等级显示加速倍率(=每次推进秒数,恒消耗1魔晶)
                 int addProgressLevel = GameDataHandler.Instance.manager.GetUserData().GetUserUnlockData().GetUnlockCreatureVatAddProgressLevel();
-                ui_BtnAddProgress_Button.gameObject.SetActive(addProgressLevel > 0);
-                if (addProgressLevel > 0)
+                bool canAddProgress = userAscendDetails.creatureData != null && addProgressLevel > 0;
+                ui_BtnAddProgress_Button.gameObject.SetActive(canAddProgress);
+                if (canAddProgress)
                     ui_BtnAddProgressText.text = string.Format(TextHandler.Instance.GetTextById(80009), addProgressLevel);
             }
         }
@@ -366,7 +367,7 @@ public partial class UICreatureVat : BaseUIComponent
     /// <returns>实际扣魔晶并加进度返回 true</returns>
     public bool OnClickForAddProgress(bool isHintEnoughCrystal = true)
     {
-        if (targetVat == null || userAscendDetails == null)
+        if (targetVat == null || userAscendDetails?.creatureData == null)
             return false;
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         //恒消耗1魔晶;进度推进秒数=进度倍率=魔晶加速研究等级;未研究(0级)加速按钮隐藏,这里兜底拦截
@@ -491,23 +492,19 @@ public partial class UICreatureVat : BaseUIComponent
     /// </summary>
     public void OnClickForComplete()
     {
+        if (userAscendDetails == null || !userAscendDetails.IsComplete())
+        {
+            return;
+        }
+
         UserDataBean userData = GameDataHandler.Instance.manager.GetUserData();
         UserAscendBean userAscend = userData.GetUserAscendData();
-        //升阶后的新稀有度(供完成反馈的"稀有度流光"配色),清空临时数据前先取
-        int completedRarity = userAscendDetails != null ? userAscendDetails.targetRarity : 0;
-        //把临时进阶数据落地到生物正式数据:升稀有度 + 授予预定BUFF(按目标稀有度槽位覆盖)
-        if (userAscendDetails != null)
+        int completedRarity = userAscendDetails.targetRarity;
+        var targetCreature = userAscendDetails.creatureData;
+        targetCreature.rarity = completedRarity;
+        if (userAscendDetails.ascendBuff != null)
         {
-            //目标生物本体托管在进阶数据里(托管前的旧存档兜底回查背包)
-            var targetCreature = userAscendDetails.creatureData != null ? userAscendDetails.creatureData : userData.GetBackpackCreature(userAscendDetails.creatureUUId);
-            if (targetCreature != null)
-            {
-                targetCreature.rarity = userAscendDetails.targetRarity;
-                if (userAscendDetails.ascendBuff != null)
-                {
-                    targetCreature.dicRarityBuff[(RarityEnum)userAscendDetails.targetRarity] = userAscendDetails.ascendBuff;
-                }
-            }
+            targetCreature.dicRarityBuff[(RarityEnum)completedRarity] = userAscendDetails.ascendBuff;
         }
         //移除临时数据(托管生物复位Idle并归还背包)
         userAscend.RemoveAscendData(currentIndexVat);
