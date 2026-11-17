@@ -18,9 +18,11 @@
 
 选定方式后，按相应素材的规范处理尺寸、预览确认和入库。仅对已有图片做用户指定的转换或修整时，直接执行对应操作。
 
+身体部件和武器在子 Aseprite 与母版中都按对应目标图层从第 1 帧找最早可用空位，只有找不到可用空位才追加。占位和配对按[目标层补位规则](.claude/skills/aseprite-master-backfill/SKILL.md#身体部件与武器优先补位)处理。牛头人的独立鼻环虽属装备，也按[鼻环目标层](.claude/skills/aseprite-minotaur-backfill/SKILL.md#新帧的固定身体与落位)补位。
+
 使用 Aseprite 工具绘制、修整或验收像素图时，线条、描边和连续相接处都按[完美像素检查](.claude/skills/aseprite-pixel-editor/SKILL.md#完美像素检查)处理，并以原生 1× 和最近邻整数放大核对。
 
-角色套装共用母版旁 `装备/` 下的一份 Aseprite，每套占一帧，分件写入已有的对应装备图层。效果图和参考图按实际帧号命名并直接放在 `装备/`，见[装备交付规则](.claude/skills/aseprite-equipment-from-preview/SKILL.md#正式交付路径)。单独制作武器时使用 [Aseprite 武器技能](.claude/skills/aseprite-weapons/SKILL.md)，确认的款式集中保存到母版旁的 `武器/`。
+角色套装共用母版旁 `装备/A<母版名>_装备.aseprite`，每套占一帧，分件写入已有的对应装备图层，装备 Cel 的 Z 使用 `0`。新套装[优先补最早的空装备帧](.claude/skills/aseprite-equipment-from-preview/SKILL.md#选帧和装备图层)。效果图和参考图按实际帧号命名并直接放在 `装备/`。新参考 PNG 默认压到原始裁片 PNG 文件大小的 1/10 以内，见[装备交付规则](.claude/skills/aseprite-equipment-from-preview/SKILL.md#正式交付路径)。单独制作武器时使用 [Aseprite 武器技能](.claude/skills/aseprite-weapons/SKILL.md)，确认的款式集中保存到母版旁的 `武器/`。
 
 ## Shell 优先级规则
 

@@ -15,7 +15,7 @@
 - MVC: GameConfig + UserData controllers
 
 ### Reference
-- [reference_aseprite_equipment_fit.md](reference_aseprite_equipment_fit.md) — Aseprite 装备贴身修整。沿实际身体 alpha 检查肩袖、胸腰和裤脚，回读装备帧和原生效果图。含魅魔第 06 批、哥布林 V1 复检。母版旁 `装备/` 共用一个源文件，每套一帧，分件落到既有装备层，效果图和参考图按帧号命名。
+- [reference_aseprite_equipment_fit.md](reference_aseprite_equipment_fit.md) — Aseprite 装备贴身修整。沿实际身体 alpha 检查肩袖、胸腰和裤脚，回读装备帧和原生效果图。含魅魔第 06 批、哥布林 V1 复检。各魔物共用母版旁 `装备/A<母版名>_装备.aseprite`，每套一帧，分件落到既有装备层且 Z 为 `0`，两张 PNG 按帧号命名，新参考图默认[压到原始裁片 PNG 的 1/10 以内](../skills/aseprite-equipment-from-preview/references/tools.md#压缩参考-png)。新套装[从最早的空装备帧补位](../skills/aseprite-equipment-from-preview/SKILL.md#选帧和装备图层)，无空位再追加。
 - [reference_research_white_icons.md](reference_research_white_icons.md) — 研究图标 ui_research_* 风格规范：原生16x16、纯白剪影、透明负空间、无描边；后处理=实心剪影挖近黑(dark_cut=35，勿用旧亮度阈值≥115)；暂存已到 ui_research_577，下一个从 578 起。新图按[像素图生成方式](../../CLAUDE.md#像素图生成方式)确定流程。
 - [reference_colored_icons.md](reference_colored_icons.md) — 正式深渊馈赠图标共 127 张，均为原生 16×16（2026-11-10），成就与深渊暂存素材沿用 32×32。彩色图标保留黑描边、简明明暗和透明背景，通常每张 ≤6 色。深渊暂存已到 2621，成就已到 63。
 - [reference_item_ppu_base_compensation.md](reference_item_ppu_base_compensation.md) — 道具贴图 PPU 已统一 100→16：世界空间道具图标统一走 IconHandler.SetItemIcon(SpriteRenderer 版)，内置 ppuFix(=贴图PPU/基准100) 补偿，世界尺寸=targetSize÷100 与贴图 PPU 解耦（默认100=1单位；弹道换图 targetSize=0 按原始像素+StartSize 作 scaleMul，换图须在遍历解析完后统一调）；DSP 通道换图 _VertexScaleXY=换图像素÷基础桶贴图像素（32px 基准，2026-10-19 起按绝对像素缩放）与 PPU 无关，UI Image 亦无关（2026-10-07）
