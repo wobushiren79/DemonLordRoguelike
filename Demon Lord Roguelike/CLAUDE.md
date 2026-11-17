@@ -20,7 +20,7 @@
 
 使用 Aseprite 工具绘制、修整或验收像素图时，线条、描边和连续相接处都按[完美像素检查](.claude/skills/aseprite-pixel-editor/SKILL.md#完美像素检查)处理，并以原生 1× 和最近邻整数放大核对。
 
-角色套装的正式成品直接放在母版旁的 `装备/` 直属层。批次、主题和版本用文件名区分。交付前逐个核对文件的直接父目录，见[装备交付规则](.claude/skills/aseprite-equipment-from-preview/SKILL.md#正式交付路径)。单独制作武器时使用 [Aseprite 武器技能](.claude/skills/aseprite-weapons/SKILL.md)，确认的款式集中保存到母版旁的 `武器/`。
+角色套装共用母版旁 `装备/` 下的一份 Aseprite，每套占一帧，分件写入已有的对应装备图层。效果图和参考图按实际帧号命名并直接放在 `装备/`，见[装备交付规则](.claude/skills/aseprite-equipment-from-preview/SKILL.md#正式交付路径)。单独制作武器时使用 [Aseprite 武器技能](.claude/skills/aseprite-weapons/SKILL.md)，确认的款式集中保存到母版旁的 `武器/`。
 
 ## Shell 优先级规则
 

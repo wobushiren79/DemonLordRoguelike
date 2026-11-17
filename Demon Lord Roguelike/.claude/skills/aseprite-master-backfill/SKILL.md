@@ -16,7 +16,8 @@ metadata:
 - 人类发型、眼睛和嘴巴先读[人类身体部件回填规则](../aseprite-human-backfill/SKILL.md)，按源帧保留前后发及眼嘴搭配。
 - 魅魔发型、眼睛、角和翅膀先读[魅魔身体部件回填规则](../aseprite-succubus-backfill/SKILL.md)，核对独立部件层、前后发顺序和左右翼配对。
 - 只处理用户选定的子文件、款式或类型。新增时核对源帧、完整源图层路径和已确认的素材名称。更新或删除时先定位母版的目标帧和图层，名称只用于辅助定位。
-- 用 [Aseprite 基础工具](../aseprite-pixel-editor/SKILL.md) 检查画布、颜色模式和实际 Cel。导出/写入复用 [独立 Cel 与 manifest 工具](../aseprite-equipment-from-preview/references/tools.md)。需要按完整路径定位时用官方 Lua 检查组和图层。正式母版与子文件作为输入，先保存到不同路径的候选副本。
+- 回填套装时，从共用装备文件按实际帧号读取选定套装的各件装备 Cel，按制作交付的图层清单排除用于合成预览的身体 Cel。旧单套文件按其实际源帧和已确认的装备层读取。
+- 用 [Aseprite 基础工具](../aseprite-pixel-editor/SKILL.md) 检查画布、颜色模式和实际 Cel。导出/写入复用 [独立 Cel 与 manifest 工具](../aseprite-equipment-from-preview/references/tools.md)。完整路径重名时，分别检查源文件和母版的组内顺序，并为目标层填写实际 `layer_indices`。正式母版与子文件作为输入，先保存到不同路径的候选副本。
 
 ## 新增帧时复制基础身体
 

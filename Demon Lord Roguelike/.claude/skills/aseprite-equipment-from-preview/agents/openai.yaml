@@ -1,4 +1,4 @@
 interface:
   display_name: "预览图制作像素装备"
-  short_description: "按装备预览为 Aseprite 母版新增独立装备帧、局部修整并验证交付"
-  default_prompt: "使用 $aseprite-equipment-from-preview 根据指定参考为角色母版制作装备，保留原文件，并在同级装备文件夹为每套交付 Aseprite、效果预览 PNG 和原图参考截图 PNG。"
+  short_description: "在共用 Aseprite 中按套收录装备，沿用已有图层并按帧交付预览与参考"
+  default_prompt: "使用 $aseprite-equipment-from-preview 根据指定参考制作装备，每套用一帧写入共用装备 Aseprite 的对应已有图层，并按实际帧号交付效果图和参考图。"

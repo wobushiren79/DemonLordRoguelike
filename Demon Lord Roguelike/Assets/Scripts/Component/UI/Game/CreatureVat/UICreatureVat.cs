@@ -149,7 +149,7 @@ public partial class UICreatureVat : BaseUIComponent
     }
 
     /// <summary>
-    /// 刷新进度
+    /// 刷新进度，并在完成状态改变时更新按钮。
     /// </summary>
     public void RefreshVatProgress()
     {
@@ -158,8 +158,7 @@ public partial class UICreatureVat : BaseUIComponent
         if (userAscendDetails != null)
         {
             progressNormalized = userAscendDetails.GetProgressNormalized();
-            //刚好达成则刷新按钮状态(显示完成)
-            if (userAscendDetails.IsComplete())
+            if (userAscendDetails.IsComplete() != ui_BtnComplete.gameObject.activeSelf)
             {
                 RefreshVatState();
             }

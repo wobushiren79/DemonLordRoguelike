@@ -26,7 +26,7 @@ metadata:
 
 ## 用副本组装并验证
 
-- 候选副本、透明 PNG、预览和编号到帧号的对应关系放在本次临时目录。用官方 Aseprite CLI/Lua 保存，可复用 [Cel 导出、manifest 与验证命令](../aseprite-equipment-from-preview/references/tools.md#新增一帧或局部替换)。追加时显式列出需要的基准 Cel，排除原武器 Cel；有同名图层路径时，用官方 Lua 按各级组内的顺序定位，保留原层名。
+- 候选副本、透明 PNG、预览和编号到帧号的对应关系放在本次临时目录。用官方 Aseprite CLI/Lua 保存，可复用 [Cel 导出、manifest 与验证命令](../aseprite-equipment-from-preview/references/tools.md#新增一帧或局部替换)。追加时显式列出需要的基准 Cel，排除原武器 Cel。完整图层路径重名时，在 manifest 按实际分组顺序填写 `layer_indices`。
 - 记录输入哈希、原帧数和原标签起止帧。候选输出路径与输入不同。若 Aseprite 追加帧时延长了原标签，用官方 Lua 恢复其范围。保存后重新打开，校验新增帧数、帧与编号映射、原帧和原标签、原输入哈希，以及新增帧中的身体像素、武器层独立性、附件位置和尺寸。
 - 用保存后重新打开的 Aseprite 原生渲染输出预览。在线条、描边及分件衔接处执行[完美像素检查](../aseprite-pixel-editor/SKILL.md#完美像素检查)，同时检查武器轮廓和画布边缘。手持款检查手掌接触与握柄遮挡。胸前等偏移款与同类原武器按同一倍率比较，检查显示位置、相对角色的大小和前后遮挡。给每款标上唯一编号，在对话中展示角色装备后的实际预览。
 
