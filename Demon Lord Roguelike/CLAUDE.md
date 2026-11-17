@@ -12,11 +12,13 @@
 
 用户要求新生成像素图（如魔物头像、身体部件、装备或图标）时，若本次尚未指定生成方式，**先用中文列出下面三个编号，请用户选择，收到选择后再开始生图、转换或绘制。** 用户已明确指定本次方式时，直接按该方式执行。
 
-1. **生图后转换像素图**（原流程）。用 ImageGen 等生图工具生成源图，再用项目的[像素图编辑器](.claude/skills/pixel-image-editor/SKILL.md)等现有工具对齐网格、重采样到目标像素尺寸。
+1. **先生成图，再转为像素图，最后用 Aseprite 修细节**。用 ImageGen 等生图工具生成源图，用项目的[像素图编辑器](.claude/skills/pixel-image-editor/SKILL.md)等现有工具对齐网格并重采样到目标像素尺寸，再在 Aseprite 原生尺寸下修整线条、描边、相接处及必要的局部细节。用户要看修前和修后时，保留转换后的未修稿，两版使用相同尺寸、取景和倍率对照。
 2. **用 Skill 直接画字符网格**。使用 [Aseprite AI Artist](.claude/skills/aseprite-ai-artist/SKILL.md)，用字符表示每格的颜色或透明状态，按目标尺寸编写网格，再用 `draw` 写入 Aseprite。
 3. **生图预览后用 Skill 重画**。用 ImageGen 生成造型预览，通过 Aseprite AI Artist 的 `reference import` 导入实际预览图，提取轮廓、配色和主要特征，再用 `draw` 在目标尺寸网格逐像素重画。
 
 选定方式后，按相应素材的规范处理尺寸、预览确认和入库。仅对已有图片做用户指定的转换或修整时，直接执行对应操作。
+
+使用 Aseprite 工具绘制、修整或验收像素图时，线条、描边和连续相接处都按[完美像素检查](.claude/skills/aseprite-pixel-editor/SKILL.md#完美像素检查)处理，并以原生 1× 和最近邻整数放大核对。
 
 角色套装的正式成品直接放在母版旁的 `装备/` 直属层。批次、主题和版本用文件名区分。交付前逐个核对文件的直接父目录，见[装备交付规则](.claude/skills/aseprite-equipment-from-preview/SKILL.md#正式交付路径)。单独制作武器时使用 [Aseprite 武器技能](.claude/skills/aseprite-weapons/SKILL.md)，确认的款式集中保存到母版旁的 `武器/`。
 

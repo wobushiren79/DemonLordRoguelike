@@ -1,6 +1,6 @@
 ---
 name: aseprite-pixel-editor
-description: Aseprite 源文件（.aseprite/.ase）检查、创建、像素修改、精确换色、PNG 新图层、指定原图层 Cel 替换与导出流程。当用户要求修改外层“资源/生物”等目录中的 Aseprite 母版、给角色增加独立装备图层、替换指定部位装备、批量处理图层/帧或创建新的像素源文件时使用。只负责 Aseprite 美术源文件，不处理游戏装备配置或 Unity 关联。
+description: Aseprite 源文件（.aseprite/.ase）检查、创建、像素修改、描边修复、精确换色、PNG 新图层、指定原图层 Cel 替换与导出流程。当用户要求修改外层“资源/生物”等目录中的 Aseprite 母版、给角色增加独立装备图层、替换指定部位装备、批量处理图层/帧或创建新的像素源文件时使用。只负责 Aseprite 美术源文件，不处理游戏装备配置或 Unity 关联。
 watched_files:
   - .claude/scripts/run-aseprite.ps1
   - .claude/scripts/aseprite_tool.lua
@@ -43,6 +43,14 @@ powershell.exe -NoProfile -File $runner -WhichOnly
 7. **动画规则**：未指定 `frames` 的换色会处理所有帧；链接 Cel 可能共享图像，动手前必须确认是同步修改还是断链后只改一帧。
 8. **导出规则**：修改 `.aseprite` 不等于 PNG 已更新；需要预览时显式执行 Aseprite 原生 `--save-as` 导出。
 9. **临时产物**：验证用的临时文件放 `$env:TEMP` 或明确的临时目录，验证后清理；通用脚本不能当临时脚本删除。
+
+### 完美像素检查
+
+每次使用 Aseprite 绘制或修复像素图时，都在原生网格检查线条、描边和接合处。用铅笔自由绘制时可启用工具栏的 Pixel-perfect 模式。Lua 用 `app.useTool` 模拟笔画时可显式设置 `freehandAlgorithm=1`。字符网格、逐坐标写入或导入 PNG 时直接核对实际落点。[Aseprite 铅笔工具设置](https://aseprite.org/docs/context-bar/#pixel-perfect-mode)，[Aseprite Lua `app.useTool`](https://aseprite.org/api/app#appusetool)。
+
+- 对设定为 1 像素宽的细线、细描边和支架，检查转斜处多余的 L 形拐角、局部双厚、断点与孤点。按轮廓的坡度整理相邻阶梯的步长，例如把平滑斜边上突兀的短、长、短步长调匀。保留有意的粗细变化、结构转折和尖角。
+- 去掉凸点、补齐断点或收薄暗边后，检查翼尖等细端是否连到主体、镂空是否保形、相邻图层是否在原锚点接合。用独立图层核对像素，再用实际合成检查遮挡与接缝。
+- 将颜色调整和像素位置变化分开核对。对照原稿检查像素坐标、透明区域与实际轮廓，另看暗边宽度和色阶过渡。用 1× 看整体轮廓和线条是否清晰，用最近邻整数倍放大逐格检查转折、台阶和接合。
 
 ## 四、操作 1：inspect 检查源文件
 
@@ -167,7 +175,7 @@ powershell.exe -NoProfile -File $runner -b `
 1. 原 `src` 的路径、时间戳和内容未被编辑流程覆盖。
 2. 输出 `.aseprite` 能重新打开，`inspect` 的画布、颜色模式、图层和帧符合预期。
 3. `recolor` 的修改像素数合理；`add_layer` 的图层名、帧号、PNG 尺寸和偏移合理。
-4. PNG 预览中透明背景、边缘、颜色、遮挡、各帧位置正确。
+4. PNG 预览中透明背景、边缘、颜色、遮挡、各帧位置正确。绘制或修复的像素通过[完美像素检查](#完美像素检查)。
 5. 临时预览、报告与测试母版已清理；源文件和最终交付文件保留在明确位置。
 6. 修改了 `run-aseprite.ps1` 或 `aseprite_tool.lua` 时，必须在同一任务同步更新本 Skill，并手动运行 `.claude/scripts/check-watched.ps1` 核对。
 

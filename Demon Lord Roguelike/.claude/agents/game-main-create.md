@@ -79,6 +79,8 @@ UIMainLoad(加载存档界面) 空槽位 item
 
 角色创建的皮肤选项取对应外观池明确列出的部件 ID。新增可随机皮肤时同步更新来源 Excel，再导出 `CreatureRandomInfo.txt`。流程见[随机池规则](../skills/spine-unity-import/references/configuration.md#同步随机池)。
 
+骷髅的角色创建池 `2` 和通用外观池 `2000001` 均使用 `2010000-2010025`。其中 `2010000` 是空头部项，`2010001`–`2010025` 对应 `Head/Head_1`–`Head/Head_25`。
+
 ### 关键文件
 
 | 文件 | 路径 |

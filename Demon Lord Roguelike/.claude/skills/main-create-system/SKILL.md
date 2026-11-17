@@ -148,6 +148,8 @@ UIHandler.ShowMask(1, null, () =>
 | 皮肤随机池 | CreatureRandomInfoCfg | CreatureRandomInfo.txt | excel_creature_random_info | `skin_random_data`（注：该表另有 `random_type`/`equip_random_data` 列承载装备散件池(type1)/套装池(type2)，仅 NPC 随机装备用，创建界面只读皮肤池行） |
 | 皮肤模型/颜色 | CreatureModelInfoCfg | CreatureModelInfo.txt | excel_creature_model_info | `color_state`、部位类型 |
 
+骷髅的 `creature_random_id=2`，角色创建池的 `skin_random_data` 为 `2010000-2010025`，与骷髅通用外观池 `2000001` 一致。`2010000` 是空头部项，`2010001`–`2010025` 对应 `Head/Head_1`–`Head/Head_25`。
+
 多语言 textId：304=创建确认对话框内容（含 {0} 名字占位）、305=名字为空提示、1007=身高（UIText 表，12 语种已配；真实源 excel_language 对应工作表）。
 
 ## 约束与注意事项

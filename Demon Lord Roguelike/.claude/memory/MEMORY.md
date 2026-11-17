@@ -68,6 +68,7 @@
 ### Collaboration Feedback
 - [`feedback_play_verify_manual.md`](feedback_play_verify_manual.md) — 需要 Unity Play 模式验证的环节一律由用户手动 Play + 截图反馈（AI 列检查要点并等待截图判断），禁止 MCP 自动启动/停止 Play 自行验证（manage_editor play/pause/stop、batch_execute 等）
 - [`feedback_task_summary.md`](feedback_task_summary.md) — 任务总结必须列出参与的 Agent/Skill 名称及操作
+- [Aseprite 临时目录清理与验收](../skills/aseprite-body-parts/SKILL.md#清理与验收) — 正式写回并回读后，由最后完成的步骤删除整批工作目录，逐个核实不存在再交付。确认期间展示过的预览也在清理范围内。
 - [`feedback_bean_partial.md`](feedback_bean_partial.md) — 文件可改性只看文件头有无 AUTO-GENERATED-DO-NOT-EDIT 标记：有则写 Partial，无（含 Bean/Game 手写 Bean、MVC 脚手架 UserDataBean）可直接改
 - [`feedback_code_style.md`](feedback_code_style.md) — 方法/属性必须加 XML 注释并用 #region 分类；方法体内注释尽量单行（多行先总结，压不下再多行）
 - [`feedback_comment_sync.md`](feedback_comment_sync.md) — 修改代码逻辑时必须同步更新对应的 XML 注释
