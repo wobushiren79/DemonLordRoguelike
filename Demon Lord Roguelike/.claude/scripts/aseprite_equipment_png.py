@@ -20,7 +20,6 @@ PNG_DISCARDABLE_TEXT = {b"Comment", b"Software", b"Creation Time", b"date:create
 PNG_REFERENCE_METADATA = {
     b"cHRM", b"gAMA", b"iCCP", b"sRGB", b"cICP", b"mDCV", b"cLLI", b"pHYs", b"eXIf",
 }
-MIN_REFERENCE_LONG_EDGE = 48
 REFERENCE_PALETTES = (128, 144, 160, 192, 224, 256)
 
 
@@ -126,16 +125,6 @@ def encode_reference(image, colors, metadata):
     return data, palette
 
 
-def visible_size(image):
-    if image.mode == "RGB":
-        return image.size
-    bounds = image.getchannel("A").getbbox()
-    if not bounds:
-        return (0, 0)
-    left, top, right, bottom = bounds
-    return right - left, bottom - top
-
-
 def compress_reference(input_path, output_path):
     input_path, output_path = reference_paths(input_path, output_path)
     original = input_path.read_bytes()
@@ -144,6 +133,7 @@ def compress_reference(input_path, output_path):
     with Image.open(BytesIO(original)) as reference:
         reference.verify()
     for kind, _ in chunks:
+        # A new palette can invalidate the source background index or sample precision.
         if kind not in PNG_STATIC_CHUNKS or kind in {b"sBIT", b"bKGD"}:
             raise ValueError(f"Reference PNG has unsupported data for rescaling: {kind!r}")
     bit_depth, color_type = chunks[0][1][16:18]
@@ -159,30 +149,25 @@ def compress_reference(input_path, output_path):
     if source.getchannel("A").getextrema() == (255, 255):
         source = source.convert("RGB")
     source.info.clear()
-    original_visible_size = visible_size(source)
-    if not all(original_visible_size):
-        raise ValueError("Reference PNG has no visible content")
-    minimum_visible_size = tuple(min(4, side) for side in original_visible_size)
     longest = max(source.size)
-    minimum = min(longest, MIN_REFERENCE_LONG_EDGE)
     # Start at the scale of the approved 627 px to 241 px reference.
-    edge = max(minimum, round(longest * 241 / 627))
+    edge = max(1, round(longest * 241 / 627))
 
     def sample(long_edge):
         size = tuple(max(1, round(length * long_edge / longest)) for length in source.size)
         resized = source.resize(size, Image.Resampling.LANCZOS)
-        if any(side < minimum for side, minimum in zip(visible_size(resized), minimum_visible_size)):
-            raise ValueError("Reference would lose its visible subject at the required size")
+        if source.mode == "RGBA" and not resized.getchannel("A").getbbox():
+            raise ValueError(f"Reference PNG has no visible content at {long_edge} px")
         return resized
 
     scaled = sample(edge)
     data, palette = encode_reference(scaled, REFERENCE_PALETTES[0], metadata)
     while len(data) > budget:
-        if edge == minimum:
+        if edge == 1:
             raise ValueError(
                 f"Cannot fit a usable PNG within {budget} bytes: {edge} px needs {len(data)} bytes"
             )
-        edge = max(minimum, min(edge-1, int(edge * sqrt(budget / len(data)) * 0.99)))
+        edge = max(1, min(edge - 1, int(edge * sqrt(budget / len(data)) * 0.99)))
         scaled = sample(edge)
         data, palette = encode_reference(scaled, REFERENCE_PALETTES[0], metadata)
     if palette is not None and len(data) * 10 < budget * 9:
