@@ -295,8 +295,8 @@ public partial class GameTestEditor
             if (description?.Contains('{') == true || remark?.Contains('{') == true)
             {
                 var replacements = GetFightBuffTextReplacements(info, conditionTokens);
-                description = FormatFightBuffText(description, replacements);
-                remark = FormatFightBuffText(remark, replacements);
+                description = FormatFightBuffText(info.ApplyFixedEffectText(description), replacements);
+                remark = FormatFightBuffText(info.ApplyFixedEffectText(remark), replacements);
             }
 
             if (string.IsNullOrWhiteSpace(name))
@@ -332,11 +332,7 @@ public partial class GameTestEditor
             float percentage = MathUtil.GetPercentage(Mathf.Abs(info.trigger_value_rate * multiplier), 2);
             replacements[TextReplaceEnum.PercentageSecondary] = percentage.ToString(format);
         }
-        if (info.class_entity == nameof(BuffEntityConditionalDeadCreateCrystal))
-        {
-            var (min, max) = BuffEntityConditionalDeadCreateCrystal.GetCrystalAmountRange(info);
-            replacements[TextReplaceEnum.ValueRange] = min == max ? min.ToString(format) : $"{min.ToString(format)}～{max.ToString(format)}";
-        }
+        info.AddEventValueTextReplacements(replacements);
 
         if (conditionTokens.Count > 0)
         {

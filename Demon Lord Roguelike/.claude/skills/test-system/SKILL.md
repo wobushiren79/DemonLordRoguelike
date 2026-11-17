@@ -374,7 +374,7 @@ userUnlockData.AddUnlock((long)UnlockEnum.ChallengeHundredBossRate, 4);
 独立折叠区「🛡️ 防守方固定属性」（BUFF 设置区下方），逐行配置：属性下拉（全部 CreatureAttributeTypeEnum 除 None，选项 `HP(生命)` 中文名取 `CreatureAttributeTypeInfoCfg.GetAttributeTypeNameByEnum`，非运行态配置未加载时退化为纯枚举名）+ 固定值 FloatField；「➕ 添加」默认取第一个未占用属性、值沿用最后一行。字段 `fightFixedAttributes: List<FightFixedAttributeItem>`，EditorPrefs 持久化（attr 存 int + value 存 float）。
 
 - **语义=基础值替换（非最终值锁定）**：`CreatureBean.dicFixedAttribute`（`CreatureBeanPartial.cs` 手写，`[JsonIgnore]+[NonSerialized]` 运行时字段不入存档）设置后，`GetAttribute` 该项**基础值**直接取固定值（跳过 creatureInfo/npcInfo 配置分支），角色加点/装备/自身BUFF/深渊馈赠等修正**仍在固定值上照常叠加**。注意区别于 `CreatureBean.FixedAttributeForCreate`——那是新建存档初始魔物的"固定**加点**"（写入 `creatureAttribute` 入存档），与本测试机制无关。
-- **作用范围**：防守方全部生物 = 卡片魔物 + 魔王核心（2026-09 与用户确认的设定）。
+- **作用范围**：防守方卡片魔物、魔王核心，以及生成时未带固定基础值的克隆等单位。策反死者的召唤物在生成前已有生命上限、攻击力及移速快照，兜底事件跳过已有固定值的实例，保留继承结果。
 - **链路**：`GetTestData()` 把列表转字典存入 `FightBeanForTest.dicTestDefenseFixedAttribute`（同一属性重复配置以最后一行为准），并给每张卡片生物 `itemData.dicFixedAttribute` 预设字典副本——卡片属性显示/召唤消耗 CMP/复活CD RCD 读 `CreatureBean.GetAttribute` 即时生效；放置上场后 `FightCreatureBean.RefreshBaseAttribute` 以固定基础值重算，战斗 BUFF/馈赠管线照常叠加。魔王核心由 `GameFightLogicTest.PreGameForAfterCreateDefenseCore()` 补设字典并重算属性（当前生命/护甲重置为固定后满值）。
 - **克隆兜底**：战中克隆 BUFF（`BuffEntityInstantCloneDefenseCreature`）经 `ClassUtil.DeepCopy`(JsonUtility) 产出的生物数据会丢失 `dicFixedAttribute`（NonSerialized 不随深拷贝），`GameFightLogicTest.PreGame()` 注册 `GameFightLogic_DefenseCreatureCreate` 事件（`EventForDefenseCreatureCreateForFixedAttribute`）在放置时兜底补设并重算。
 
@@ -389,7 +389,7 @@ userUnlockData.AddUnlock((long)UnlockEnum.ChallengeHundredBossRate, 4);
 
 「进攻方 BUFF」「防守方 BUFF」「全局攻击 BUFF」共用 `FightBuffPicker`。点击「添加 BUFF…」或已有条目打开双栏弹窗。搜索匹配名称、ID、效果和备注，可按攻击模块、生物自带、深渊馈赠及 R/SR/SSR 筛选。左侧结果按 ID 排序，右侧预览完整说明、类别、ID、等级和独立的配置备注。点击「添加」或「替换」后立即保存，替换时保留原附加概率。同一组可添加多条并逐行移除。
 
-`BuildFightBuffOptions` 从 `Language_BuffInfo_cn.txt` 分别读取名称与效果，中文翻译缺失时使用配置备注。预览按测试用配置值和 `BuffPreInfo` 前置阈值替换 `TextReplaceEnum` 占位符。编辑态直读导出资源，运行态从 `BuffInfoCfg` 和 `BuffPreInfoCfg` 获取配置（含已载入 Mod）。导出后可点击「刷新列表」重建候选和预览。
+`BuildFightBuffOptions` 从 `Language_BuffInfo_cn.txt` 分别读取名称与效果，中文翻译缺失时使用配置备注。预览按测试用配置值和 `BuffPreInfo` 前置阈值替换 `TextReplaceEnum` 占位符。策反死者的召唤数量、震撼到场的击退距离 `{Value}` 使用测试默认值，即当前配置上限 3。`BuffInfoBean.AddEventValueTextReplacements` 提供死亡税 `{ValueRange}`，`BuffInfoBean.ApplyFixedEffectText` 填入震撼到场的固定前方范围 `{ForwardRange}`。编辑态直读导出资源，运行态从 `BuffInfoCfg` 和 `BuffPreInfoCfg` 获取配置（含已载入 Mod）。导出后可点击「刷新列表」重建候选和预览。
 
 三组选择沿用原 EditorPrefs 键，保留已保存的 BUFF ID 与全局攻击附加概率。移除一行会立即保存。暂时找不到配置的选项会标记并在开始测试时跳过。选中有效配置时，进攻方替换进攻生物的自身 BUFF，防守方替换测试卡片魔物的自身 BUFF，全局攻击替换攻击模块在命中时附加的 BUFF，新增行默认必定附加。战斗中克隆的防守卡片也会复制源卡片的测试自带 BUFF。清空该组后，新开测试恢复原配置。
 

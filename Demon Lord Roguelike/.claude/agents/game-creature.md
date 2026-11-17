@@ -20,6 +20,7 @@ watched_files:
 
 ### 生物管理
 - **CreatureHandler** / **CreatureManager** - 生物逻辑处理与资源管理
+- **防守召唤物**：`CreateSummonedDefenseCreature` 使用 NPC 外观和防守职业的索敌、普攻；策反死者给同批骷髅战士共享死者的生命上限、攻击力及移速基础值快照，其余属性沿用 NPC/职业配置。新建独立 UUID，只进战斗实体列表，登记前置 `isSummoned` 和 `isPositionReleased`。回收时释放固定基础值字典引用，不派发卡片休整。
 - **CreateDefenseCreatureEntity 末尾推送新事件（事件驱动，不再直接重算）** - 加完新防守魔物 BUFF 后 `EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_DefenseCreatureCreate, fightCreatureEntity)`；由 `GameFightLogic.EventForDefenseCreatureCreate` 监听后按守卫 `BuffHandler.Instance.HasDynamicRateAbyssalBlessing()` 重算全体防守属性，供随魔物数缩放类动态率馈赠（加成率随场上魔物数 N 变化；曾用于「都是兄弟」，现役无配置、机制留存）在放置/增殖新魔物时即时生效。CreatureHandler 只负责生成、推事件，重算职责归 GameFightLogic；守卫仅当馈赠池含指定类型/子类 BUFF 才广播，普通对局无开销。详见 abyssal-blessing-system / buff-system SKILL
 - **CreatureBean** / **CreatureBeanPartial** - 生物数据模型
 - **战斗测试的自带 BUFF**：`CreatureBean.testSelfBuffs` 非序列化，非空时由 `GetListBuffData` 取代该生物的职业自带 BUFF。防守卡片由测试面板构建时设置，进攻生物由 `CreatureHandler.CreateAttackCreature` 在初始化战斗属性前设置；复用初始化时清除上一只生物的测试 BUFF。

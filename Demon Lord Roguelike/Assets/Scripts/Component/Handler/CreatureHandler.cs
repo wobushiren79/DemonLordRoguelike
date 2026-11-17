@@ -232,6 +232,33 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
     /// </summary>
     public FightCreatureEntity CreateDefenseCreatureEntity(GameObject targetObj, CreatureBean creatureData, Vector3Int creaturePos)
     {
+        return CreateDefenseCreatureEntity(targetObj, creatureData, creaturePos, creaturePos, isSummoned: false);
+    }
+
+    /// <summary>
+    /// 在死亡位置附近生成不占格的防守召唤物。指定的基础属性取召唤批次快照，其余沿用 NPC 和职业配置。
+    /// </summary>
+    public FightCreatureEntity CreateSummonedDefenseCreature(NpcInfoBean npcInfo, long defenseCreatureId, Vector3 deathPosition, int roadIndex,
+        Dictionary<CreatureAttributeTypeEnum, float> inheritedAttributes)
+    {
+        var creatureData = new CreatureBean(npcInfo)
+        {
+            creatureId = defenseCreatureId,
+            dicFixedAttribute = inheritedAttributes,
+        };
+        var targetObj = CreateDefenseCreature(creatureData);
+        Vector3Int logicalPosition = new Vector3Int(Mathf.RoundToInt(deathPosition.x), 0, roadIndex);
+        float spawnX = deathPosition.x + UnityEngine.Random.Range(-0.1f, 0.1f);
+        float spawnZ = roadIndex + UnityEngine.Random.Range(-0.01f, 0.01f);
+        Vector3 worldPosition = new Vector3(spawnX, 0, spawnZ);
+        return CreateDefenseCreatureEntity(targetObj, creatureData, logicalPosition, worldPosition, isSummoned: true);
+    }
+
+    /// <summary>
+    /// 注册防守战斗实体和 AI。召唤物在登记前释放占位，登记后使用通用出土动画。
+    /// </summary>
+    private FightCreatureEntity CreateDefenseCreatureEntity(GameObject targetObj, CreatureBean creatureData, Vector3Int creaturePos, Vector3 worldPosition, bool isSummoned)
+    {
         GameFightLogic gameFightLogic = GameHandler.Instance.manager.GetGameLogic<GameFightLogic>();
         //重生替换：死亡事件派发结束后，先清掉旧实体的 BUFF 与 UUID 占位，再初始化新实体。
         var existSameIdEntity = gameFightLogic.fightData.GetCreatureById(creatureData.creatureUUId, CreatureFightTypeEnum.FightDefense);
@@ -243,6 +270,8 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         //创建战斗生物数据
         FightCreatureBean fightCreatureData = GetFightCreatureData(creatureData, CreatureFightTypeEnum.FightDefense);
         fightCreatureData.positionCreate = creaturePos;
+        fightCreatureData.isSummoned = isSummoned;
+        fightCreatureData.isPositionReleased = isSummoned;
         //创建战斗生物
         FightCreatureEntity fightCreatureEntity = GetFightCreatureEntity(targetObj, fightCreatureData);
         //再添加数据
@@ -253,7 +282,7 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
             targetEntity.InitData(fightCreatureEntity);
         });
         //设置位置
-        targetObj.transform.position = creaturePos;
+        targetObj.transform.position = worldPosition;
         //设置生物BUFF
         List<BuffBean> creatureBuffs = fightCreatureData.creatureData.GetListBuffData(getBuffAttributeBase : false);
         BuffHandler.Instance.AddFightCreatureBuff(creatureBuffs, fightCreatureData.creatureData.creatureUUId, fightCreatureData.creatureData.creatureUUId);
@@ -262,6 +291,8 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_DefenseCreatureCreate, fightCreatureEntity);
         fightCreatureData.FillInitialHealthAndArmor();
         fightCreatureEntity.RefreshLifeBarProgress();
+        if (isSummoned && fightCreatureEntity.aiEntity is AIDefenseCreatureEntity summonedAI)
+            summonedAI.StartEmerge();
         return fightCreatureEntity;
     }
     #endregion
@@ -514,12 +545,19 @@ public class CreatureHandler : BaseHandler<CreatureHandler, CreatureManager>
         {
             //按实例精确移除（同格多生物按positionCreate首匹配会误删、重生替换场景同UUID会误删新实体）
             gameFightLogic.fightData.RemoveDefenseCreature(targetEntity);
-            //卡片进复活CD仅当场上已无该生物的存活实体（DeadRebirth重生替换场景：新实体在场，卡片保持Fighting不进CD）
-            var existEntity = gameFightLogic.fightData.GetCreatureById(creatureUUId, CreatureFightTypeEnum.FightDefense);
-            if (existEntity == null || existEntity.IsDead())
+            if (targetEntity.fightCreatureData.isSummoned)
             {
-                targetEntity.fightCreatureData.creatureData.creatureState = CreatureStateEnum.Rest;
-                EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureChangeState, creatureUUId, CreatureStateEnum.Rest);
+                manager.RemoveCreatureData(targetEntity.fightCreatureData.creatureData, delay);
+            }
+            else
+            {
+                //仅在同 UUID 无存活实体时才进入卡片休整，重生替换时卡片仍在战斗中。
+                var existEntity = gameFightLogic.fightData.GetCreatureById(creatureUUId, CreatureFightTypeEnum.FightDefense);
+                if (existEntity == null || existEntity.IsDead())
+                {
+                    targetEntity.fightCreatureData.creatureData.creatureState = CreatureStateEnum.Rest;
+                    EventHandler.Instance.TriggerEvent(EventsInfo.GameFightLogic_CreatureChangeState, creatureUUId, CreatureStateEnum.Rest);
+                }
             }
         }
         //如果是进攻生物 还需要移除生物数据放入缓存

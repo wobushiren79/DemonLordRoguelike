@@ -104,6 +104,36 @@ public partial class BuffInfoBean
         return (CreatureFightTypeEnum)trigger_creature_type;
     }
 
+    #region 文案参数
+
+    /// <summary>
+    /// 填充每次触发时随机的区间。目前用于死亡税的掉落价值。
+    /// </summary>
+    public void AddEventValueTextReplacements(Dictionary<TextReplaceEnum, string> replacements)
+    {
+        if (class_entity != nameof(BuffEntityConditionalDeadCreateCrystal))
+            return;
+
+        var (min, max) = BuffEntityConditionalDeadCreateCrystal.GetCrystalAmountRange(this);
+        replacements[TextReplaceEnum.ValueRange] = min == max ? $"{min}" : $"{min}~{max}";
+    }
+
+    /// <summary>
+    /// 填充词条固定的前方搜索范围。触发数值 Value 由词条实例或继承范围提供。
+    /// </summary>
+    public string ApplyFixedEffectText(string template)
+    {
+        if (string.IsNullOrEmpty(template) || class_entity != nameof(BuffEntityConditionalDeploymentKnockback))
+            return template;
+
+        if (BuffEntityConditionalDeploymentKnockback.TryGetForwardRange(this, out int forwardRange))
+            return template.Replace("{ForwardRange}", forwardRange.ToString(CultureInfo.InvariantCulture));
+
+        return template;
+    }
+
+    #endregion
+
     /// <summary>
     /// 获取身体颜色
     /// </summary>

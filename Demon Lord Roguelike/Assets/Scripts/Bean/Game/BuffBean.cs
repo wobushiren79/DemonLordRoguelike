@@ -146,7 +146,7 @@ public class BuffBean
     #region 旧档数值兼容
 
     /// <summary>
-    /// 更新旧档中缓存的平衡数值，恢复类词条按原有随机档位映射到当前范围。
+    /// 更新旧档中缓存的平衡数值。没有保存过固定触发值的词条按配置中间档补齐。
     /// </summary>
     public void EnsureCurrentTuning()
     {
@@ -177,6 +177,15 @@ public class BuffBean
             case 13000600001L when trigger_chance == 0.2f:
                 trigger_chance = BuffInfoCfg.GetItemData(id)?.trigger_chance ?? trigger_chance;
                 break;
+            case 13001000001L when trigger_value == 0f:
+            case 13001100001L when trigger_value == 0f:
+                var fixedValueInfo = BuffInfoCfg.GetItemData(id);
+                if (fixedValueInfo != null)
+                {
+                    var (min, max) = GetInheritedValueRange(fixedValueInfo, 0f);
+                    trigger_value = min + (max - min) / 2;
+                }
+                break;
         }
     }
 
@@ -191,7 +200,7 @@ public class BuffBean
     }
 
     /// <summary>
-    /// 读取旧存档时更新触发间隔、恢复率和掉落概率。
+    /// 读取旧存档时更新词条的旧参数。
     /// </summary>
     [OnDeserialized]
     private void ApplyTuningAfterLoad(StreamingContext context)

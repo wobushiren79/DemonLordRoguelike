@@ -170,6 +170,13 @@ public class BuffBaseEntity
 
     #region 事件回调
     /// <summary>
+    /// 事件-玩家成功放置防守魔物。
+    /// </summary>
+    public virtual void EventForPlayerPutCard(UIViewCreatureCardItem card)
+    {
+    }
+
+    /// <summary>
     /// 事件触发-被攻击死亡
     /// </summary>
     public virtual void EventForUnderAttackDead(FightUnderAttackBean fightUnderAttack)

@@ -42,6 +42,10 @@ Bean/
 
 > **战斗测试 BUFF 数据**：`FightBeanForTest` 持有进攻自带 BUFF 与全局攻击 BUFF。防守卡片和进攻生物使用 `CreatureBean.testSelfBuffs` 保存实例覆盖列表，该列表跳过序列化，在生物按配置初始化时清除。克隆魔物使用 `ClassUtil.DeepCopy` 逐字段复制列表，`BuffBean()` 为该过程提供空实例，JSON 反序列化使用带 ID 的构造。
 
+> **防守召唤物与词条预览**：`FightCreatureBean.isSummoned` 标记攻守双方召唤物，防守召唤物另置 `isPositionReleased` 跳过格子占位和卡片流程。「策反死者」「震撼到场」用 `BuffBean.trigger_value` 保存生成时抽定的数值，旧档的 0 在 `EnsureCurrentTuning` 中以配置中间档补齐。`BuffInfoBean.ApplyFixedEffectText` 为卡片、进阶和测试编辑器补齐震撼到场的前方范围。
+
+> **策反死者的继承属性**：从死者 `FightCreatureBean.GetAttribute` 取已结算的 HP 上限、ATK、MSPD，赋给新骷髅战士的 `CreatureBean.dicFixedAttribute`。这是不会入档的基础值覆写，防守方修正仍可参与计算。数据回池时 `ClearTempData` 置空字段，避免给复用的 NPC 留下快照。
+
 > **`GameConfigBean` 游戏专用扩展字段位于 `Assets/Scripts/Bean/MVC/GameConfigBeanPartial.cs`**：`pressKeyTipShow`（bool，默认 true）控制 `UIViewPressCommon` 等快捷按键提示；`bulletShadow/itemShadow`（bool，默认 true）分别控制战斗弹道与魔晶掉落物阴影；`sceneClutterShadow`（bool，默认 false）控制战斗花海 `FlowerSeaInstanceRenderer.castShadows`。字段仍参与 `GameConfigBean` 序列化，旧配置缺少字段时使用上述默认值，四者互不联动。
 
 > **`CreatureBean.IsDemonLord()`（`CreatureBeanPartial.cs` #region 魔王）是「是否魔王本体」判定的单一真实源**：比对 `creatureUUId == userData.selfCreature.creatureUUId`（魔王独立存储于 `UserDataBean.selfCreature`，不在背包/阵容列表内）。管理列表置顶、稀有度按 L 显示、隐藏等级、不可献祭、战斗不加经验等特殊处理统一调它，UI 层(如 `UIViewCreatureCardDetails.IsDemonLord`)已收口为委托调用。
@@ -76,7 +80,7 @@ Bean/
 
 > 战斗累计使用 `FightUnderAttackBean.damageApplied`，原攻击额仍在 `attackerDamage`。`BuffBean.EnsureCurrentTuning` 在旧档读写和词条消费时同步本次平衡参数，词条 ID 保留，旧百分比按原档位映射至新范围。
 
-> **`CreatureBean.dicFixedAttribute`（手写 `CreatureBeanPartial.cs`，`Dictionary<CreatureAttributeTypeEnum,float>`，`[JsonIgnore]+[NonSerialized]` 运行时字段不入存档）**：测试模式专用的**固定基础值**——设置后 `CreatureBean.GetAttribute` 该项基础值直接取固定值（跳过 creatureInfo/npcInfo 配置分支），角色加点/装备/自身BUFF/深渊馈赠仍照常叠加（**非最终值锁定**）。由 GameTestEditor「🛡️ 防守方固定属性」配置（`FightBeanForTest.dicTestDefenseFixedAttribute` 中转），`GameFightLogicTest` 应用到测试战斗防守方全部生物（卡片魔物+魔王核心；MP 被固定时测试魔王蓝量让位），战中克隆生物经 `GameFightLogic_DefenseCreatureCreate` 事件兜底补设（DeepCopy 丢 NonSerialized 字段）。⚠️ 区别于 `FixedAttributeForCreate`（新建存档初始魔物的固定**加点**，写入 `creatureAttribute` 入存档）——两者名字相近但完全不同机制。详见 test-system skill「防守方固定属性设置」。
+> **`CreatureBean.dicFixedAttribute`（手写 `CreatureBeanPartial.cs`，`Dictionary<CreatureAttributeTypeEnum,float>`，运行时不入存档）**：测试固定属性和策反死者共用的基础值覆写。该项基础值优先读字典，角色加点、装备和 BUFF 仍照常结算。GameTestEditor 的「防守方固定属性」经 `FightBeanForTest.dicTestDefenseFixedAttribute` 应用到测试防守方卡片与核心，登场事件为缺少字典的实体兜底，保留已经写入的策反快照。回收实例时只释放它的字典引用。新手魔物的固定加点仍由 `FixedAttributeForCreate` 写入 `creatureAttribute`。详见 test-system skill「防守方固定属性设置」。
 
 > **`FightBean` 防御生物按占位操作（手写 `Assets/Scripts/Bean/Game/FightBean.cs`）**：`CheckDefenseCreatureByPos`/`GetDefenseCreatureByPos` 均跳过 `isPositionReleased` 实体；**`RemoveDefenseCreatureByPos` 已删除**，替换为 **`RemoveDefenseCreature(FightCreatureEntity)`**——`DictionaryList.RemoveByValue` 按实例精确移除（按 positionCreate 首匹配会误删同格新生物、按 UUID 会误删重生替换的新实体）。
 

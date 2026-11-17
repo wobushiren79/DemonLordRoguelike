@@ -117,11 +117,7 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
             float max = Mathf.Max(first, last);
             dicReplace[TextReplaceEnum.PercentageSecondary] = min == max ? $"{min}" : $"{min}~{max}";
         }
-        if (buffInfo.class_entity == nameof(BuffEntityConditionalDeadCreateCrystal))
-        {
-            var (min, max) = BuffEntityConditionalDeadCreateCrystal.GetCrystalAmountRange(buffInfo);
-            dicReplace[TextReplaceEnum.ValueRange] = min == max ? $"{min}" : $"{min}~{max}";
-        }
+        buffInfo.AddEventValueTextReplacements(dicReplace);
         //前置条件数值(击杀数/承伤/造伤/血量阈值)均为固定值,按前置实例类型逐项映射(与 UIViewBuffShowItem 同口径)
         var preInfo = buffInfo.GetPreInfo();
         if (!preInfo.IsNull())
@@ -146,7 +142,7 @@ public partial class UIViewCreatureVatAscendBuffItem : BaseUIView
                     dicReplace[TextReplaceEnum.OnFieldTime] = $"{Mathf.FloorToInt(itemData.Value)}";
             }
         }
-        return TextHandler.Instance.GetTextReplace(buffInfo.content_language, dicReplace);
+        return TextHandler.Instance.GetTextReplace(buffInfo.ApplyFixedEffectText(buffInfo.content_language), dicReplace);
     }
 
     #endregion

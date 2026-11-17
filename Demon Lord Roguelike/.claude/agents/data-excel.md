@@ -105,6 +105,12 @@ python .claude/scripts/excel_delete_row.py --path "Assets/Data/Excel/excel_buff_
 
 ## 配置表总览
 
+### SSR BUFF 策反死者与震撼到场
+
+- `excel_buff_info` 的 `BuffInfo` 工作表维护两条防守方 SSR 配置（`buff_type=13`、`rarity=4`、`trigger_creature_type=1`）。两条均以 `trigger_value_min=1`、`trigger_value=3` 提供词条生成数值区间。`13001000001` 使用 `BuffEntityConditionalSummonSkeletons` 和 `GameFightLogic_UnderAttack_Dead`，实例数据 `20010001:2001` 指向骷髅战士模板和防守职业。`13001100001` 使用 `BuffEntityConditionalDeploymentKnockback` 和 `GameFightLogic_PutCard`，实例数据 `3` 为前方范围。
+- 同 ID 的名称与描述在多语言源表 `BuffInfo` 的 12 个语种中维护。`{Value}` 对应抽到的数值，`{ForwardRange}` 对应震撼到场的前方范围。`BuffInfo.txt` 和 12 份 `Language_BuffInfo_*.txt` 均已同步。
+- 两条词条的卡片说明已压缩为各语种短句，编辑限于语言源表和导出行的 `content_1`。名称与数值参数沿用原配置。
+
 ### 孕育随机 BUFF 与失败提示（2026-11-15）
 
 - 调整按 `BuffInfo` 源表字段驱动。周期值使用 `trigger_time`，随机恢复率使用 `trigger_value_rate_min` 与 `trigger_value_rate`，计数门槛使用 `pre_info`。死亡治疗的 `class_entity_data` 为半径。死亡税 `13000600001` 的 `class_entity_data=1,10` 表示每次掉落的随机价值闭区间，`trigger_chance=1` 表示必掉。

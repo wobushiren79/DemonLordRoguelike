@@ -134,9 +134,9 @@ float mp = creature.GetAttribute(CreatureAttributeTypeEnum.MP);
 // 等级增加倍率取 LevelInfo.CMP_rate（按 level），稀有度增加倍率取 RarityInfo.CMP_rate（按 rarity，N=0 依次+0.5），
 // 两者求和由 CreatureBean.GetCreateMPAddRate() 提供（level 0/越界记0，rarity≤0视为N）。
 
-// 测试固定基础值（仅测试模式）：CreatureBean.dicFixedAttribute（运行时字段，[JsonIgnore]+[NonSerialized] 不入存档）
+// CreatureBean.dicFixedAttribute 是测试和防守召唤共用的运行时基础值覆盖，不入存档。
 // 设置后 GetAttribute 该项【基础值】直接取固定值（跳过 creatureInfo/npcInfo 配置分支），加点/装备/BUFF/馈赠仍照常叠加；
-// 由 GameTestEditor「🛡️ 防守方固定属性」配置、GameFightLogicTest 应用到测试战斗防守方（卡片魔物+魔王核心），详见 test-system skill
+// 测试配置详见 test-system skill。策反死者用它注入生命上限、攻击力、移速快照。
 
 // 配置信息
 CreatureInfoBean info = creature.creatureInfoBean;
@@ -330,6 +330,8 @@ FightCreatureEntity entity = CreatureHandler.Instance.GetFightCreatureEntity(cre
 > **`RemoveFightCreatureEntity` 防守分支两大改动**：①移除改为**按实例**——新 `FightBean.RemoveDefenseCreature(FightCreatureEntity)`（`DictionaryList.RemoveByValue`）；`FightBean.RemoveDefenseCreatureByPos` **已删除**（按 positionCreate 首匹配会误删同格生物）。②卡片进 Rest(CD) 的条件改为「场上已无该 UUID 存活实体」——DeadRebirth 重生替换场景新实体在场，卡片保持 Fighting 不进 CD；根治"重生后卡片照进CD、CD结束可再放同UUID生物导致 Add 静默失败生成幽灵实体"的缺陷（重生机制详见 buff-system SKILL「死亡重生」）。
 
 重生请求先在死亡事件中登记，所有监听者返回后由 `AIIntentCreatureDead` 完成同 UUID 替换。`CreatureHandler` 移除旧 BUFF 后创建新实例并重新挂载，旧尸体随后回收时保留新实体的 BUFF 和卡片 Fighting 状态。登场在 BUFF 挂载并重算后按最终上限填满血甲。
+
+防守召唤物走 `CreatureHandler.CreateSummonedDefenseCreature`。策反死者用 NPC 20010001 提供外观和未继承属性，用防守骷髅战士职业 2001 提供索敌、普攻和自带能力。击杀事件读取死者已结算的生命上限、攻击力和移速作为本批基础值，通过 `CreatureBean.dicFixedAttribute` 在初次属性结算前注入。保留小数，防守强度倍率仍为 1，友方馈赠和战斗临时 BUFF 可照常修正这些属性。每只骷髅的出生位置沿死者所在道路独立错开：X 为死者 X 加 `[-0.1, 0.1]`，Z 为道路编号加 `[-0.01, 0.01]`。新建独立 UUID，只进入战斗实体池。登记前标记 `isSummoned` 和 `isPositionReleased`。死亡回收对象与 NPC 数据时只解除该实例的属性快照引用，不触发卡片休整。
 
 ### CreatureManager（生物管理器）
 

@@ -510,7 +510,7 @@ TextReplaceEnum
 ├── Value             - 通用数值占位（无专属语义枚举时的默认选择，如研究节点距离/冷却秒数）
 ├── TriggerChance     - 实际触发概率（trigger_chance；0=必然触发，显示100）
 ├── PercentageSecondary - 多属性 BUFF 的第二属性变化百分比
-└── ValueRange        - 数值区间（用于死亡税掉落价值）
+└── ValueRange        - 触发时随机的数值区间（如死亡税每次掉落的魔晶价值）
 ```
 
 > **选键原则**：有语义占位的优先用语义占位（击杀→`KillNum`、秒→`Time_S`、效果百分比→`Percentage`、实际触发概率→`TriggerChance`），无合适语义时用通用 `Value`；都不合适再在 `TextReplaceEnum`（BaseGameEnum.cs）**追加**新枚举值（不改旧值）。同一数值可同时挂多个键（成就即把目标值同时挂 `{Name}` 与语义键，模板用哪个都能替换）。BUFF 描述中触发概率与效果百分比必须分别使用 `{TriggerChance}`/`{Percentage}`，不可混读 `trigger_chance` 与 `trigger_value_rate`。
@@ -518,7 +518,8 @@ TextReplaceEnum
 ### 更多范例
 
 - **BUFF 描述**：`UIViewBuffShowItem` —— `content_language` 模板 + `{Percentage}`/`{TriggerChance}`/`{Time_S}`/`{Value}` + 按前置条件追加 `{KillNum}` 等键。
-- **孕育 BUFF 描述**　魂牵梦绕与折上折分别使用 `{Percentage}` 和 `{PercentageSecondary}` 显示主、副属性。副属性展示配置倍率换算后的绝对值，方向由各语言模板表达。死亡税使用 `{ValueRange}` 显示配置的单次掉落价值区间。卡片详情和进阶预览均需提供这两个键。
+- **孕育 BUFF 描述**　魂牵梦绕与折上折分别使用 `{Percentage}` 和 `{PercentageSecondary}` 显示主、副属性。副属性展示配置倍率换算后的绝对值，方向由各语言模板表达。死亡税使用 `{ValueRange}` 显示每次掉落价值区间，由 `BuffInfoBean.AddEventValueTextReplacements` 提供。策反死者的召唤数量和震撼到场的击退距离在词条生成时决定，使用 `{Value}` 展示：卡片取实例值，进阶预览取继承闭区间，战斗测试预览取配置上限。震撼到场的固定前方范围使用游戏层 `BuffInfoBean.ApplyFixedEffectText` 替换 `{ForwardRange}`，其余占位符仍使用 `TextReplaceEnum`。进阶预览仍受研究门控。新词条须在多语言源表 `BuffInfo` 工作表同一 ID 行填写 12 个语种的名称、详情，导出后检查各语种模板占位符与运行时配置一致。
+- **卡片短文案**：策反死者（13001000001）保留 `{Value}` 个友方骷髅战士、继承死者结算后的生命上限/攻击/移速、沿路到尽头无目标时死亡。震撼到场（13001100001）保留放置、同路前方 `{ForwardRange}` 格与击退 `{Value}` 格。各语种用短句概括，校对时将占位符换成实际值后再看长度。
 - **成就逐级描述**：`AchievementInfoBeanPartial.GetLevelDescription` —— 一条 `{Name}` 模板按等级替换目标值，省去逐级建文本。
 - **研究详情描述带待解锁数值**：`ResearchInfoBeanPartial.GetDetailsLanguageWithLevelDetail` —— 研究表 `details[language]` 列的详情模板（如 `（距离{Value}）`/`（{Value}秒）`/`（概率{Value}%）`），按「待解锁等级=min(当前+1,满级)」算累计效果数值替换并**拼在名字后**；数值源 `UserUnlockBean` 的 static `Get*ForLevel` 方法（单一真实源）。22 个 level_max>1 节点的详情条目占语言表 ResearchInfo 工作表号段 **900000001~900000022**；括号约定：**cn/tw/jp 全角（）无前导空格，其余语言半角() 带一个前导空格**（分隔样式由详情文本自带，代码不加分隔符）。
 

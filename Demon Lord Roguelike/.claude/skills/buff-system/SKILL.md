@@ -423,6 +423,7 @@ public interface IBuffSingleTarget { string SingleTargetCreatureUUId { get; } }
 | `GameFightLogic_CreatureDeadDropCrystal` | `FightDropCrystalBean` | `EventForCreatureDeadDropCrystal` |
 | `GameFightLogic_CreatureDeadStart` | `FightCreatureEntity` | `EventForCreatureDeadStart` |
 | `GameFightLogic_CreatureDeadEnd` | `FightCreatureEntity` | `EventForCreatureDeadEnd` |
+| `GameFightLogic_PutCard` | `UIViewCreatureCardItem` | `EventForPlayerPutCard`，仅成功主动放置后派发 |
 
 新增事件参考前文「添加新事件类型」。
 
@@ -487,6 +488,10 @@ CMP               // 召唤魔力消耗 （CMP=12，仅作BUFF修正标签、非
 | 医疗账单、出诊费 | 实际受到治疗 100、实际施加治疗 200 |
 | 死得其所-HP、死得其所-DR | 死亡地点半径 2，回复死者相应上限的 10%～50% |
 | 死亡税 | 必定生成魔晶，每次死亡按 `class_entity_data=1,10` 独立抽整数价值。`{ValueRange}` 显示配置区间 |
+| 策反死者（13001000001） | 获得词条时抽定召唤数 1～3。持有者击杀敌人时，`BuffEntityConditionalSummonSkeletons` 从死者位置生成对应数量的友方骷髅战士，`class_entity_data=20010001:2001`（NPC 模板:防守职业）。同次召唤共用死者已结算的生命上限、攻击力、移速作为基础值，包含关卡倍率和当前属性加减益。骷髅按防守方正常承受后续修正。每只出生 X 独立偏移 -0.1～0.1，沿路索敌，无目标且到达敌方端时死亡。召唤物不占卡片或放置格，不掉魔晶，不继承词条。 |
+| 震撼到场（13001100001） | 获得词条时抽定击退距离 1～3 格，成功主动放置时，用 `BuffEntityConditionalDeploymentKnockback` 按该距离击退正前方同路 3 格内的每个敌人。`class_entity_data=3` 表示前方范围。 |
+
+上述两条使用 `buff_type=13、rarity=4、trigger_creature_type=1`。`trigger_value_min=1`、`trigger_value=3` 参与词条生成、素材保底和满值判断，触发时读取实例 `trigger_value`。旧档保存的 0 通过 `BuffBean.EnsureCurrentTuning` 补为配置中间档 2，已抽定的数值保留。卡片用 `{Value}` 显示本实例的数值，解锁进阶预览后显示可继承范围。震撼到场的 `{ForwardRange}` 由 `BuffInfoBean.ApplyFixedEffectText` 使用同一战斗配置填充。
 
 `BuffBean.EnsureCurrentTuning` 只迁移本次改动且已写入旧档的间隔、概率和回复率，恢复率按原档位映射新范围。配置前置条件在运行时取当前 `pre_info`，无额外存档迁移。
 

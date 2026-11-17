@@ -89,7 +89,7 @@ public partial class CreatureBean
     [NonSerialized]
     public float RCDTimeUpdate = 0;    //生物复活更新时间
 
-    //固定属性表(测试模式专用运行时数据, 不入存档): 设置后 GetAttribute 该项属性的基础值替换为固定值, 加点/装备/BUFF/深渊馈赠等修正仍在固定值上叠加
+    /// <summary>测试配置和防守召唤共用的基础值覆盖。不入存档，后续属性修正照常叠加。</summary>
     [Newtonsoft.Json.JsonIgnore]
     [NonSerialized]
     public Dictionary<CreatureAttributeTypeEnum, float> dicFixedAttribute;
@@ -419,6 +419,8 @@ public partial class CreatureBean
     /// </summary>
     public void ClearTempData()
     {
+        //同批召唤共享字典，只让回收的生物释放引用。
+        dicFixedAttribute = null;
         order = 0;
         RCDTimeUpdate = 0;
         creatureState = CreatureStateEnum.Idle;

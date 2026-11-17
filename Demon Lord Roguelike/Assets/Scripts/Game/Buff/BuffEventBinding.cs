@@ -50,6 +50,8 @@ public static class BuffEventDispatcher
     /// </summary>
     private static readonly Dictionary<string, IBuffEventBinding> dicBindings = new Dictionary<string, IBuffEventBinding>
     {
+        { EventsInfo.GameFightLogic_PutCard,
+            new BuffEventBinding<UIViewCreatureCardItem>(e => e.EventForPlayerPutCard) },
         { EventsInfo.GameFightLogic_UnderAttack_Dead,
             new BuffEventBinding<FightUnderAttackBean>(e => e.EventForUnderAttackDead) },
         { EventsInfo.GameFightLogic_UnderAttack,

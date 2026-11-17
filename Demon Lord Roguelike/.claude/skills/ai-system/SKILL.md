@@ -56,7 +56,7 @@ AIBaseEntity (AI实体基类)
     │       │       └── AIIntentAttackCreatureCastSkill  (释放技能: trigger_scene=1 技能的释放载体——NPC ai_param 的 skill_update 事件[AICreatureEntity 通用 Update 事件系统]到点切入[走路/待机也放,与攻击意图无关]，播一次攻击动作+出手点 StartCreateAttackMode(customAttackModeId) 发射，回调回 Idle；打断规则: Idle/Move 立即、Attack 仅 attackState!=2、击退/魅惑/死亡不切保持就绪补放；切入前预检[2026-09-16 新增]: 统一走攻击模块基类虚方法 BaseAttackMode.CheckCanTriggerSkill[默认true不拦截,各攻击类按需重写,实例经 FightManager.GetAttackModeClass 取类级共享无状态实例,不挂 dlAttackModePrefab 不进对象池],如群体治疗 AttackModeRegainHPArea 范围内无血量不满友军时不切入[防空放动作/音效/粒子]保持就绪下帧再试；首用者大盾战士BOSS援护护盾 ai_param=skill_update:100005:10→500003)
     │       │
     │       ├── AIDefenseCreatureEntity (防守型)
-    │       │       ├── AIIntentDefenseCreatureIdle   (闲置)
+    │       │       ├── AIIntentDefenseCreatureIdle   (闲置；防守召唤物无目标时沿路前进)
     │       │       ├── AIIntentDefenseCreatureAttack (攻击)
     │       │       ├── AIIntentDefenseCreatureDefend (防守)
     │       │       ├── AIIntentDefenseCreatureDead   (死亡)
@@ -67,7 +67,7 @@ AIBaseEntity (AI实体基类)
     │       │       └── AIIntentDefenseCoreCreatureDead (死亡)
     │       │
     │       └── 通用意图（进攻/防守生物均可切换，注册在两侧 InitIntentEnum）
-    │               └── AIIntentCreatureEmerge           (出土冒出: 召唤物出场动画，攻守通用——AICreatureEntity.StartEmerge 强制切换，压入地底 1.2 深处[道路面深度遮挡形成破土观感,不播任何出场特效]，0.6s 匀速升回地面，按阵营回各自 Idle[防守朝右/进攻朝左]；当前唯一调用方=AttackModeSummon 召唤生成当帧，防守方召唤系可直接复用)
+    │               └── AIIntentCreatureEmerge           (攻守召唤物通用出土动画，0.6 秒后回各阵营的 Idle)
     │
     └── AIBaseIntent (意图基类)
             ├── IntentEntering()   // 进入意图
@@ -103,7 +103,7 @@ public enum AIIntentEnum
     DefenseCoreCreatureDead, // 死亡
 
     // 通用（进攻/防守生物均可切换，注册在两侧 InitIntentEnum）
-    CreatureEmerge,          // 出土冒出（召唤物出场动画，攻守通用：AICreatureEntity.StartEmerge 强制切换，从地底匀速升回地面，期间不能移动/索敌/攻击，冒出完成按阵营回各自闲置意图；当前唯一调用方=AttackModeSummon 召唤生成当帧）
+    CreatureEmerge,          // 出土冒出（召唤物出场动画，攻守通用；冒出完成按阵营回各自闲置意图）
 }
 ```
 
@@ -438,10 +438,11 @@ public class AIIntentCustomAttack : AIIntentCreatureAttack
 
 ## 出土冒出意图（AIIntentCreatureEmerge，召唤物出场动画统一机制，攻守通用，2026-09-15 新增）
 
-- **发起入口**：`AICreatureEntity.StartEmerge()`（生物 AI 基类，攻守通用）——无参直接 `ChangeIntent(CreatureEmerge)`（照 StartKnockback 强制切换先例）；**当前唯一调用方=`AttackModeSummon.MarkSummoned`**（骷髅召唤师召唤的骷髅 20010001/20020001 生成当帧，与置 `isSummoned` 标记同处），后续防守方召唤系同样走本入口。时序安全：`CreateAIEntity` 同步 `StartAIEntity` 已进 Idle，StartEmerge 干净切走。
+- **发起入口**：`AICreatureEntity.StartEmerge()` 切换到 `CreatureEmerge`。进攻方的 `AttackModeSummon.MarkSummoned` 和防守方的 `CreatureHandler.CreateSummonedDefenseCreature` 均在创建 AI 后调用。
 - **冒出**：进入时把生物压到地面下 `EmergeDepth=1.2` 深处（低于地面的部分被不透明道路面**深度遮挡**，自然形成破土观感），随后 `EmergeDuration=0.6s` 匀速升回地面（计时走 `GetFightDeltaTime` 跟随倍速/暂停）；期间不能移动/索敌/攻击（攻击循环被自然打断）；播 Idle 动画。**不播任何出场特效**（2026-09-16 按需求去掉原 Effect_BodySlam_1 破土特效，只保留纯位移冒出）。
 - **阵营解析**：`aiEntity is AIDefenseCreatureEntity` → 回 `DefenseCreatureIdle`、朝右；否则回 `AttackCreatureIdle`、朝左。
 - **结束**：升回地面（y=出生 y）按阵营回各自闲置意图，重新走「闲置→移动→攻击」索敌流程。
+- **防守召唤物行进**：`AIIntentDefenseCreatureIdle` 按 `isSummoned` 分流，召唤物播放 Walk，先按职业配置搜正面和身后，有目标复用普通防守攻击意图，失去目标后继续向 +X 行进。到达 `0.5 + sceneRoadLength` 且搜索不到目标时走普通死亡流程。移动和索敌使用战斗时间。
 - **死亡**：冒出中死亡由各阵营死亡流程 `ChangeIntent(Dead)` 覆盖，意图无需自处理。
 - **注册**：`AIIntentFactory.RegisterAll` 注册 `CreatureEmerge`（通用区）；`AIAttackCreatureEntity` 与 `AIDefenseCreatureEntity` 的 `InitIntentEnum` 均已加入；`AIIntentEnum` 加 `CreatureEmerge`（末尾通用区）。魔王核心 `AIDefenseCoreCreatureEntity` 未注册——核心生物不会被召唤，需要时先补注册并确认阵营解析。
 

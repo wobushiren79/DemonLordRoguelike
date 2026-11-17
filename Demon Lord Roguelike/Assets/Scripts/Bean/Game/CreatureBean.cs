@@ -695,7 +695,7 @@ public partial class CreatureBean
 
     /// <summary>
     /// 获取最终属性值
-    /// <para>叠加顺序：基础值(NPC优先，否则取 creatureInfo；测试模式设定了 dicFixedAttribute 时直接取固定值) → 角色加点(creatureAttribute) → 装备属性 → 自身/稀有度BUFF修正 → [可选]深渊馈赠全局池BUFF。</para>
+    /// <para>叠加顺序：基础值（固定值、NPC、职业按优先级取值）→ 角色加点 → 装备属性 → 自身/稀有度BUFF修正 → [可选]深渊馈赠。</para>
     /// <para>CRT/EVA 基础值为0（按需由加点/装备/BUFF提供）；MP/CMP/MPF 等魔力相关仅战斗中有意义；魔王的 MP/MPF 额外叠加研究加成(UnlockEnum.DemonLordMPMax/DemonLordMPF)，战斗链路(FightCreatureBean)复用本方法不再重复叠加。</para>
     /// <para>深渊馈赠全局池(dicAbyssalBlessingBuffsActivie)仅当 includeAbyssalBlessing=true 时按需叠加，供非战斗缓存链路(如复活CD查询)使用；
     /// 战斗链路(FightCreatureBean.RefreshBaseAttribute)走 ModifierPipeline 独立叠加深渊馈赠，调用时须保持默认 false 以免重复计算。</para>
@@ -706,7 +706,7 @@ public partial class CreatureBean
     public float GetAttribute(CreatureAttributeTypeEnum creatureAttributeType, bool includeAbyssalBlessing = false)
     {
         float targetData = 0;
-        //固定属性(测试模式): 设置后基础值直接取固定值, 跳过配置/NPC基础值分支; 下方加点/装备/BUFF修正仍照常叠加
+        //测试配置和防守召唤可覆盖指定的基础值，后续加点、装备和 BUFF 仍正常叠加。
         float fixedValue = 0;
         bool hasFixedValue = dicFixedAttribute != null && dicFixedAttribute.TryGetValue(creatureAttributeType, out fixedValue);
         if (hasFixedValue)

@@ -100,6 +100,10 @@ SSR(13) 特殊类             —— 死亡重生/死亡反击/死亡区域治�
 
 现役数值、旧存档兼容和追加攻击的战斗判定见 BUFF 系统指南的「稀有度 BUFF 生成工具」。低血量计算使用含独行者等动态加成的生命上限，并排除低血条件自身。手动撤下友军也刷新独行者。负 ASPD 保留至攻击频率公式。
 
+- SSR「策反死者」（13001000001）通过 `BuffEntityConditionalSummonSkeletons` 处理持有者击杀事件，在败者所在路生成固定数量的友方骷髅战士。整批共用死者最终生命上限、攻击力和移速作为基础值，每只独立抽 X 轴出生偏移。
+- SSR「震撼到场」（13001100001）通过 `BuffEntityConditionalDeploymentKnockback` 处理 `GameFightLogic_PutCard`，正前方同路三格内的敌人均使用该词条固定的击退距离。BUFF 事件分发的回调为 `EventForPlayerPutCard(UIViewCreatureCardItem)`。
+- 两条的 `{Value}` 均为词条获得时抽定的 1～3，运行时读实例数值。旧档储存的 0 以区间中间档补为 2。震撼到场的固定前方范围走 `ApplyFixedEffectText` 的 `{ForwardRange}`。
+
 ### 堆叠策略 BuffStackMode (BuffInfoBean.stack_mode)
 ```
 0 Refresh           刷新次数/计时+施加者，不叠层（默认）

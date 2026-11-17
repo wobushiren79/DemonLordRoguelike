@@ -42,11 +42,7 @@ public partial class UIViewBuffShowItem : BaseUIView
             float secondaryRate = Mathf.Abs(buffData.trigger_value_rate * secondaryMultiplier);
             dicReplace[TextReplaceEnum.PercentageSecondary] = $"{MathUtil.GetPercentage(secondaryRate, 2)}";
         }
-        if (buffInfo.class_entity == nameof(BuffEntityConditionalDeadCreateCrystal))
-        {
-            var (min, max) = BuffEntityConditionalDeadCreateCrystal.GetCrystalAmountRange(buffInfo);
-            dicReplace[TextReplaceEnum.ValueRange] = min == max ? $"{min}" : $"{min}~{max}";
-        }
+        buffInfo.AddEventValueTextReplacements(dicReplace);
         var preInfo = buffInfo.GetPreInfo();
         if (!preInfo.IsNull())
         {
@@ -98,7 +94,7 @@ public partial class UIViewBuffShowItem : BaseUIView
             }
         }
 
-        string contentText = TextHandler.Instance.GetTextReplace(buffInfo.content_language, dicReplace);
+        string contentText = TextHandler.Instance.GetTextReplace(buffInfo.ApplyFixedEffectText(buffInfo.content_language), dicReplace);
         //名字栏改为显示效果详情，前面拼接 ">" 前缀
         ui_BuffName.text = $"> {contentText}";
         showBuffDescriptionShine = isFullRoll;
