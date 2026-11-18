@@ -15,7 +15,7 @@ description: 串联魔物装备、武器和身体部件的 Aseprite 制作、母
 
 | 步骤 | 输入与执行指南 | 完成后交付 |
 | --- | --- | --- |
-| **1. 制作 Aseprite 子素材** | 按类别使用[装备制作](../aseprite-equipment-from-preview/SKILL.md)、[武器制作](../aseprite-weapons/SKILL.md)或[身体部件制作](../aseprite-body-parts/SKILL.md)。武器和身体部件优先补子文件对应目标层的最早空位，无空位才追加。新绘制和候选确认按对应技能执行。 | 已确认的子 `.aseprite`、所选款式及源帧和图层。武器同步子文件旁的武器帧名表，装备交付共用源文件和按实际装备帧号命名的效果图及参考图。 |
+| **1. 制作 Aseprite 子素材** | 按类别使用[装备制作](../aseprite-equipment-from-preview/SKILL.md)、[武器制作](../aseprite-weapons/SKILL.md)或[身体部件制作](../aseprite-body-parts/SKILL.md)。武器和身体部件优先补子文件对应目标层的最早空位，无空位才追加。新绘制和候选确认按对应技能执行。 | 已确认的子 `.aseprite`、所选款式及源帧和图层。武器同步子文件旁的武器帧名表，装备交付共用源文件、同目录的 `A<母版名>_装备.xlsx`，以及按实际装备帧号命名的效果图和参考图。 |
 | **2. 回填 Aseprite 母版** | 使用已确认的子文件和选定款式，按[母版回填](../aseprite-master-backfill/SKILL.md)核对目标层、按规则补位并同步名字表。武器及身体部件在当前母版重新扫描目标层，无空位才追加。补位只补缺失的固定身体，另行核对各款源帧和目标帧。 | 正式母版和母版同级的 `<生物>_素材名字.xlsx`。交接本批名称、类别、实际母版帧号和完整图层路径。 |
 | **3. 从 Aseprite 导出 Spine 分件** | 使用已确认的母版及本批帧和图层，按[分件导出](../aseprite-spine-export/SKILL.md)使用项目的 `Prepare-For-Spine_AI.lua`。 | 母版同级的 Aseprite 分件 JSON、`images/` 内的分件 PNG 和本批附件名。 |
 | **4. 在 Spine 合并、调整并导出** | 使用现有 `.spine`、第 3 步的分件 JSON 和 PNG，按[Spine 导入与导出](../spine-skin-import/SKILL.md)优先用 Spine MCP，在副本里合并附件、创建并绑定独立皮肤、设置父骨骼。用户手动调整绘制顺序并保存，AI 从同一副本继续验收和发布。已有排序完成的副本可直接从验收续做。 | 验收后的正式 `.spine` 和母版同级的 Spine 4.3 运行时 JSON、`.atlas.txt`、图集列出的全部 PNG 页。排序交接时先提供可打开的副本和各类新增槽列表。 |
