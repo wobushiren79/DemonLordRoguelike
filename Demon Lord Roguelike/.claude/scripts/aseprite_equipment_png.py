@@ -125,7 +125,28 @@ def encode_reference(image, colors, metadata):
     return data, palette
 
 
-def compress_reference(input_path, output_path):
+def thumbnail_candidate(sample, edge, budget, metadata):
+    # Keep the largest fitting thumbnail before choosing its richest usable palette.
+    colors_by_quality = (256, 224, 192, 160, 128, 96, 64, 48, 32, 24, 16)
+    best = None
+    lower, upper = 1, edge
+    while lower <= upper:
+        scaled = sample(edge)
+        for colors in colors_by_quality:
+            data, palette = encode_reference(scaled, colors, metadata)
+            if len(data) <= budget:
+                best = scaled, data, palette
+                lower = edge + 1
+                break
+        else:
+            upper = edge - 1
+        edge = (lower + upper) // 2
+    if best is None:
+        raise ValueError(f"Cannot fit a usable thumbnail within {budget} bytes")
+    return best
+
+
+def compress_reference(input_path, output_path, *, thumbnail_limits=None):
     input_path, output_path = reference_paths(input_path, output_path)
     original = input_path.read_bytes()
     budget = len(original) // 10
@@ -152,6 +173,12 @@ def compress_reference(input_path, output_path):
     longest = max(source.size)
     # Start at the scale of the approved 627 px to 241 px reference.
     edge = max(1, round(longest * 241 / 627))
+    if thumbnail_limits is not None:
+        max_width, max_height, max_bytes = thumbnail_limits
+        if any(type(limit) is not int or limit < 1 for limit in thumbnail_limits):
+            raise ValueError("Thumbnail width, height and byte limits must be positive integers")
+        budget = min(budget, max_bytes)
+        edge = max(1, round(longest * min(1, max_width / source.width, max_height / source.height)))
 
     def sample(long_edge):
         size = tuple(max(1, round(length * long_edge / longest)) for length in source.size)
@@ -160,23 +187,26 @@ def compress_reference(input_path, output_path):
             raise ValueError(f"Reference PNG has no visible content at {long_edge} px")
         return resized
 
-    scaled = sample(edge)
-    data, palette = encode_reference(scaled, REFERENCE_PALETTES[0], metadata)
-    while len(data) > budget:
-        if edge == 1:
-            raise ValueError(
-                f"Cannot fit a usable PNG within {budget} bytes: {edge} px needs {len(data)} bytes"
-            )
-        edge = max(1, min(edge - 1, int(edge * sqrt(budget / len(data)) * 0.99)))
+    if thumbnail_limits is not None:
+        scaled, data, palette = thumbnail_candidate(sample, edge, budget, metadata)
+    else:
         scaled = sample(edge)
         data, palette = encode_reference(scaled, REFERENCE_PALETTES[0], metadata)
-    if palette is not None and len(data) * 10 < budget * 9:
-        for colors in REFERENCE_PALETTES[1:]:
-            candidate, candidate_palette = encode_reference(scaled, colors, metadata)
-            if len(candidate) > budget:
-                break
-            if candidate_palette is not None and candidate_palette > palette:
-                data, palette = candidate, candidate_palette
+        while len(data) > budget:
+            if edge == 1:
+                raise ValueError(
+                    f"Cannot fit a usable PNG within {budget} bytes: {edge} px needs {len(data)} bytes"
+                )
+            edge = max(1, min(edge - 1, int(edge * sqrt(budget / len(data)) * 0.99)))
+            scaled = sample(edge)
+            data, palette = encode_reference(scaled, REFERENCE_PALETTES[0], metadata)
+        if palette is not None and len(data) * 10 < budget * 9:
+            for colors in REFERENCE_PALETTES[1:]:
+                candidate, candidate_palette = encode_reference(scaled, colors, metadata)
+                if len(candidate) > budget:
+                    break
+                if candidate_palette is not None and candidate_palette > palette:
+                    data, palette = candidate, candidate_palette
 
     with Image.open(BytesIO(data)) as candidate:
         candidate.load()
@@ -217,13 +247,20 @@ def main():
     compress = sub.add_parser("compress-reference", help="Compress a PNG reference to one tenth of its input size")
     compress.add_argument("--input", type=Path, required=True)
     compress.add_argument("--output", type=Path, required=True)
+    compress.add_argument("--thumbnail-like", type=Path, help="Use an existing PNG thumbnail's width, height and file size as upper limits")
     args = parser.parse_args()
     if args.op == "optimize-reference":
         print(json.dumps(optimize_reference(args.input, args.output), ensure_ascii=False))
         return
     if args.op == "compress-reference":
         try:
-            report = compress_reference(args.input, args.output)
+            limits = None
+            if args.thumbnail_like is not None:
+                with args.thumbnail_like.open("rb") as file, Image.open(file, formats=["PNG"]) as thumbnail:
+                    width, height = thumbnail.size
+                    thumbnail.verify()
+                    limits = (width, height, file.seek(0, 2))
+            report = compress_reference(args.input, args.output, thumbnail_limits=limits)
         except (ValueError, OSError) as error:
             parser.exit(1, f"{error}\n")
         print(json.dumps(report, ensure_ascii=False))

@@ -13,9 +13,8 @@
     2. py launcher（py -3）
     3. %LOCALAPPDATA%\Programs\Python\*\python.exe（取版本号最高的）
     4. C:\Program Files\Python*\python.exe
-  脚本位于 .claude/scripts/ 下，已被 settings.json 的
-    Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".claude/scripts/*")
-  规则预授权，因此经由它执行 python 永不再弹窗，也不会把机器专属路径写进命令。
+  在 PowerShell 7 中用 & 直接调用本脚本，可通过 -c 传入多行源码。
+  通过 powershell.exe -File 启动且从管道读取 Python 源码时，省略末尾的单个减号。
 
 .PARAMETER WhichOnly
   仅解析并打印将要使用的 python 可执行文件路径，不实际执行（用于自检）。
@@ -25,17 +24,10 @@
 
 .EXAMPLE
   powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".claude/scripts/run-python.ps1" -WhichOnly
-#>
-[CmdletBinding()]
-param(
-    [switch]$WhichOnly,
-    [Parameter(ValueFromRemainingArguments = $true)]
-    [string[]]$PyArgs
-)
 
-# 强制 python 以 UTF-8 输出，避免中文乱码
-$env:PYTHONUTF8 = "1"
-$env:PYTHONIOENCODING = "utf-8"
+.EXAMPLE
+  & './.claude/scripts/run-python.ps1' -c "print('ok')"
+#>
 
 function Resolve-Python {
     # 1. PATH 上的 python / python3（用 Get-Command 而非 where，避开 WindowsApps 0 字节占位 stub）
@@ -66,17 +58,31 @@ function Resolve-Python {
     return $null
 }
 
-$resolved = Resolve-Python
-if (-not $resolved) {
-    [Console]::Error.WriteLine("run-python.ps1: 未找到可用的 Python 解释器（已查找 PATH / py launcher / %LOCALAPPDATA%\Programs\Python / Program Files）。")
-    exit 127
+function Invoke-ProjectPython {
+    [CmdletBinding()]
+    param(
+        [switch]$WhichOnly,
+        [Parameter(ValueFromRemainingArguments = $true)]
+        [string[]]$PyArgs
+    )
+
+    $env:PYTHONUTF8 = "1"
+    $env:PYTHONIOENCODING = "utf-8"
+
+    $resolved = Resolve-Python
+    if (-not $resolved) {
+        [Console]::Error.WriteLine("run-python.ps1: 未找到可用的 Python 解释器（已查找 PATH / py launcher / %LOCALAPPDATA%\Programs\Python / Program Files）。")
+        exit 127
+    }
+
+    if ($WhichOnly) {
+        Write-Output $resolved.Exe
+        exit 0
+    }
+
+    & $resolved.Exe @($resolved.Prefix + $PyArgs)
+    exit $LASTEXITCODE
 }
 
-if ($WhichOnly) {
-    Write-Output $resolved.Exe
-    exit 0
-}
-
-# 转发全部参数给 python；$LASTEXITCODE 原样返回，便于上层判断成功/失败
-& $resolved.Exe @($resolved.Prefix + $PyArgs)
-exit $LASTEXITCODE
+# Windows PowerShell 5.1 的 -File 收到孤立的减号时，普通脚本入口能正常报错；高级参数绑定必须留在函数内。
+Invoke-ProjectPython @args

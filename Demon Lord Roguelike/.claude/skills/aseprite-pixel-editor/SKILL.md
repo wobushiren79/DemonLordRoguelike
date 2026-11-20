@@ -10,6 +10,8 @@ watched_files:
 
 根据装备预览图新增整套装备、追加装备帧，或在认可版本上只修描边时，先读 [aseprite-equipment-from-preview](../aseprite-equipment-from-preview/SKILL.md) 与 [aseprite-equipment-artist](../../agents/aseprite-equipment-artist.md)。美术适配、改动范围和装备文件交付遵循上述指南。本文负责基础 Cel 工具。
 
+单独替换披挂、袖甲或护腕时也按[披挂与双臂分层](../aseprite-equipment-from-preview/SKILL.md#披挂与双臂分层)选择已有目标层，并在合成预览中分别检查两臂抬起时的遮挡。
+
 ## 一、范围与现有资源
 
 - 项目根目录下的相对源目录：`../资源/生物/`（即项目外层 `资源/生物`）。

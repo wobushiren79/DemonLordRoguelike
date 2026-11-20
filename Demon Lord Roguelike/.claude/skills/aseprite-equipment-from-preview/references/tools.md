@@ -106,14 +106,14 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.claude/scripts/run-pyt
 
 ## 压缩参考 PNG
 
-新交付的参考图默认等比用 Lanczos 缩小，优先保存为索引色 PNG。从 128 色候选开始，根据字节预算调整尺寸并尝试更丰富的色板，保留套装轮廓和主要细节。透明图在索引色无法保全缩放后 alpha 时可交付达标的 RGBA PNG。预算为**该套未缩放裁片 PNG 的实际文件字节数除以 10，向下取整**。压缩采用独立的候选路径，输入使用原始裁片。
+新交付的参考图默认等比用 Lanczos 缩小，优先保存为索引色 PNG。重制时从 Git 取同帧最近已提交的缩略图作为样本。新增帧先找同角色同类装备中构图比例相近的已提交参考，再找其他角色同类装备中比例相近的参考。记录样本路径和版本。工具读取样本的宽、高和实际字节数，从能放进该尺寸框的最大等比尺寸开始，优先保留细节，逐档减少色数，仍超出字节预算才缩小尺寸。透明图在索引色无法保全缩放后 alpha 时可交付达标的 RGBA PNG。字节预算取**该套未缩放裁片 PNG 的实际字节数除以 10（向下取整）**和**历史缩略图的实际字节数**中的较小值。确无历史样本时，仅采用原裁片的字节预算并在交付时注明。压缩采用独立的候选路径，输入使用原始裁片。
 
 ```powershell
 $candidate = Join-Path $tempRoot "reference-$equipmentFrame.png"
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.claude/scripts/run-python.ps1' '.claude/scripts/aseprite_equipment_png.py' compress-reference --input $referenceCropPng --output $candidate
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File '.claude/scripts/run-python.ps1' '.claude/scripts/aseprite_equipment_png.py' compress-reference --input $referenceCropPng --output $candidate --thumbnail-like $historicalThumbnailPng
 ```
 
-核对成功报告的 `input_bytes`、`budget_bytes` 和 `output_bytes`，确认输出字节数不超过预算。回读候选确认编码与 `palette_colors` 相符，`null` 表示透明图的 RGBA 候选。尺寸须与 `width`、`height` 一致，宽高比保持在整数像素的舍入范围内。用同一套的原始裁片对照构图、装备轮廓、细节和透明边缘。通过后保存为 `<母版名>_帧<实际帧号>_参考.png`，与同帧效果预览和共用装备源文件一起写入[正式装备目录](../SKILL.md#正式交付路径)，回读确认正式文件与候选一致。
+核对成功报告的 `input_bytes`、`budget_bytes` 和 `output_bytes`，确认输出字节数不超过预算，并回读正式图核对宽、高分别在所选历史样本的范围内。回读候选确认编码与 `palette_colors` 相符，`null` 表示透明图的 RGBA 候选。尺寸须与 `width`、`height` 一致，宽高比保持在整数像素的舍入范围内。用同一套的原始裁片对照构图、装备轮廓、细节和透明边缘。通过后保存为 `<母版名>_帧<实际帧号>_参考.png`，与同帧效果预览和共用装备源文件一起写入[正式装备目录](../SKILL.md#正式交付路径)，回读确认正式文件与候选一致。
 
 极小裁片或无法保全透明信息时，工具可能非零退出且没有输出。保留原始裁片，报告该套未能达到的字节目标。需要原像素时走下方的无损方式。
 

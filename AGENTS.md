@@ -24,6 +24,6 @@ Codex 不会因为读取文档而执行 `.claude/settings*.json` 的 hooks。以
 - 会话上下文：读取上述共享记忆索引。
 - 修改文件前：检查自动生成标记 `AUTO-GENERATED-DO-NOT-EDIT`；遵守 `CLAUDE.md` 对 Unity 序列化资源、MCP 连接和手动 Play 验证的要求。
 - 修改受关注代码或数据后：在 Unity 项目目录运行 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".claude/scripts/check-watched.ps1" -Json`，核对本次任务命中的 agent/skill 并同步原文。该脚本不包含未跟踪文件和 `Assets/FrameWork` 子模块内部改动，这两类必须额外对照 `watched_files`。
-- Python 统一通过 Unity 项目的 `.claude/scripts/run-python.ps1` 执行。
+- Python 统一通过 Unity 项目的 `.claude/scripts/run-python.ps1` 执行。PowerShell 7 中的多行源码用 `& './.claude/scripts/run-python.ps1' -c $source`，包括委派任务。Windows PowerShell 5.1 管道调用见[Python 执行规则](<Demon Lord Roguelike/CLAUDE.md#python-执行规则>)。
 
 任务总结遵循 `CLAUDE.md`，列出实际使用的 Agent/Skill 及其工作。

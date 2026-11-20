@@ -10,7 +10,9 @@
 
 ## 像素图生成方式
 
-用户要求新生成像素图（如魔物头像、身体部件、装备或图标）时，若本次尚未指定生成方式，**先用中文列出下面三个编号，并推荐方案 1，请用户选择，收到选择后再开始生图、转换或绘制。** 用户已明确指定本次方式时，直接按该方式执行。
+**为 Aseprite 素材生成的参考原图必须是像素风格。** 生图提示词须明确写出「像素风格（pixel art）」，要求轮廓呈清晰的像素阶梯，明暗用像素色块表现。选版或转换前检查生成的原图。若仍呈现平滑插画或写实渲染效果，先重新生成。
+
+用户要求新生成像素图（如魔物头像、身体部件、装备或图标）时，若尚未指定生成方式，**先用中文列出下面三个编号，并推荐方案 1，请用户选择，收到选择后再开始生图、转换或绘制。** 用户已指定方式时直接执行。对以后需要重新设计的角色套装，用户已选定方案 1 为默认重制方式；新实穿稿按装备制作 Skill 选版，用户另有要求时按本次要求执行。
 
 1. **先生成图，再转为像素图，最后用 Aseprite 修细节（推荐）**。用 ImageGen 等生图工具生成源图，用项目的[像素图编辑器](.claude/skills/pixel-image-editor/SKILL.md)等现有工具对齐网格并重采样到目标像素尺寸，再在 Aseprite 原生尺寸下修整线条、描边、相接处及必要的局部细节。用户要看修前和修后时，保留转换后的未修稿，两版使用相同尺寸、取景和倍率对照。
 2. **用 Skill 直接画字符网格**。使用 [Aseprite AI Artist](.claude/skills/aseprite-ai-artist/SKILL.md)，用字符表示每格的颜色或透明状态，按目标尺寸编写网格，再用 `draw` 写入 Aseprite。
@@ -18,11 +20,17 @@
 
 选定方式后，按相应素材的规范处理尺寸、预览确认和入库。仅对已有图片做用户指定的转换或修整时，直接执行对应操作。
 
+角色套装需要生图时，先导出该角色母版的全身素模帧作为生图输入，在原角色身上设计整套服装。以选定的全身实穿图转成母版原生网格上的像素稿，按身体锚点与前后遮挡拆入已有装备层，最后在 Aseprite 精修。隐形人台图、独立衣物绿幕图仅可作款式参考。重制断裂、穿插或碎纹严重的套装时，可按原款自由调整剪影和裁剪。新实穿预览的选版、转绘和验收见[装备制作 Skill](.claude/skills/aseprite-equipment-from-preview/SKILL.md#生图预览的生成与确认)。
+
+所有角色的穿戴装备都要为双臂独立活动留出空间。披风、披肩、长围巾的垂尾和垂片放在双臂后方，腋下留开口。选稿和拆件时按[披挂与双臂分层](.claude/skills/aseprite-equipment-from-preview/SKILL.md#披挂与双臂分层)检查左右臂。
+
+从子 Aseprite 回填任何素材前，先检查当前母版。**同一套装备、身体部件、武器或其他素材，即使只差一个像素，也要先询问用户是否覆盖，得到明确同意后才写入有差异的部分。** 用户可能已在母版手工修过细节，具体按[回填前比对同款素材](.claude/skills/aseprite-master-backfill/SKILL.md#回填前比对同款素材)执行。
+
 身体部件和武器在子 Aseprite 与母版中都按对应目标图层从第 1 帧找最早可用空位，只有找不到可用空位才追加。占位和配对按[目标层补位规则](.claude/skills/aseprite-master-backfill/SKILL.md#身体部件与武器优先补位)处理。牛头人的独立鼻环虽属装备，也按[鼻环目标层](.claude/skills/aseprite-minotaur-backfill/SKILL.md#新帧的固定身体与落位)补位。
 
 使用 Aseprite 工具绘制、修整或验收像素图时，线条、描边和连续相接处都按[完美像素检查](.claude/skills/aseprite-pixel-editor/SKILL.md#完美像素检查)处理，并以原生 1× 和最近邻整数放大核对。
 
-角色套装共用母版旁 `装备/A<母版名>_装备.aseprite`，每套占一帧，分件写入已有的对应装备图层，装备 Cel 的 Z 使用 `0`。所有魔物正式写回时同步同目录、同主文件名的 `A<母版名>_装备.xlsx`，按子文件实际帧号登记装备名称、类型和图层路径。新套装[优先补最早的空装备帧](.claude/skills/aseprite-equipment-from-preview/SKILL.md#选帧和装备图层)。效果图和参考图按实际帧号命名并直接放在 `装备/`。新参考 PNG 默认压到原始裁片 PNG 文件大小的 1/10 以内，见[装备交付规则](.claude/skills/aseprite-equipment-from-preview/SKILL.md#正式交付路径)。单独制作武器时使用 [Aseprite 武器技能](.claude/skills/aseprite-weapons/SKILL.md)，确认的款式集中保存到母版旁的 `武器/`。
+角色套装共用母版旁 `装备/A<母版名>_装备.aseprite`，每套占一帧，分件写入已有的对应装备图层，装备 Cel 的 Z 使用 `0`。所有魔物正式写回时同步同目录、同主文件名的 `A<母版名>_装备.xlsx`，按子文件实际帧号登记装备名称、类型和图层路径。新套装[优先补最早的空装备帧](.claude/skills/aseprite-equipment-from-preview/SKILL.md#选帧和装备图层)。效果图和参考图按实际帧号命名并直接放在 `装备/`。参考 PNG 的文件大小须在原始裁片 PNG 的 1/10 以内，宽、高和字节数也须在 Git 历史缩略图的范围内。重制取同帧旧图，新增优先取同角色同类装备，再取其他角色比例相近的同类装备，见[装备交付规则](.claude/skills/aseprite-equipment-from-preview/SKILL.md#正式交付路径)。单独制作武器时使用 [Aseprite 武器技能](.claude/skills/aseprite-weapons/SKILL.md)，确认的款式集中保存到母版旁的 `武器/`。
 
 ## Shell 优先级规则
 
@@ -32,15 +40,19 @@
 
 **运行任何 Python（脚本或 `-c` 内联）一律通过包装脚本 [.claude/scripts/run-python.ps1](.claude/scripts/run-python.ps1)，禁止用写死的 python.exe 绝对路径直接调用**。原因：本机 `python`/`py` 不一定在 PATH 上（python.exe 常只装在 `%LOCALAPPDATA%\Programs\Python\PythonXY\`），写死绝对路径既违反「路径动态化规则」，又无法被一条可复用的 allow 规则稳定命中，导致每次执行都弹权限确认。
 
-- **标准调用形式**（已被 `settings.json` 的 allow 规则预授权，永不弹窗）：
+在 Unity 项目目录的 PowerShell 7 中直接调用包装脚本。内联代码（包括多行 here-string）用 `-c $source` 传入，已有脚本直接传文件路径。
 
-  ```
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".claude/scripts/run-python.ps1" <脚本.py 或 -c "代码"> [参数...]
-  ```
+```powershell
+$source = @'
+print("你好")
+'@
+& './.claude/scripts/run-python.ps1' -c $source
+```
 
+- 必须从外部启动 Windows PowerShell 5.1 并通过管道传源码时，用 `$source | powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".claude/scripts/run-python.ps1"`。Python 无参数时从标准输入读源码。末尾单独的 `-` 会在 PowerShell 解析脚本参数时出错。
 - `run-python.ps1` 会按 `PATH → py launcher → %LOCALAPPDATA%\Programs\Python\* → Program Files\Python*` 顺序动态定位 python，并自动设置 `PYTHONUTF8=1` 保证中文输出不乱码，退出码原样透传。
 - 自检解析到的解释器：加 `-WhichOnly` 参数。
-- **委派给 Agent/Skill 执行 Python 任务时**，须在 prompt 中告知统一走 `run-python.ps1`，不要写死 python.exe 绝对路径。
+- 委派给 Agent/Skill 执行 Python 时，须交代使用同一包装脚本和上述调用形式。
 
 ## 路径动态化规则
 
