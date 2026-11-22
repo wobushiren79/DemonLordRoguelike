@@ -3,6 +3,14 @@ local marker = "[spine:skip]"
 local excludedColor = Color{ r = 255, g = 72, b = 72 }
 local propertyKey = "dlr/spine-export"
 
+-- 一键入口通过全局变量指定动作；直接运行本脚本时仍显示原对话框。
+local quickAction = rawget(_G, "SPINE_EXPORT_MARKING_ACTION")
+SPINE_EXPORT_MARKING_ACTION = nil
+if quickAction ~= nil and quickAction ~= "exclude" and quickAction ~= "restore" then
+    app.alert("未知的 Spine 导出标记动作：" .. tostring(quickAction))
+    return
+end
+
 -- 标记独占一行。保留其他行的原文，包括原有空行和换行格式。
 local function readMark(data)
     local kept = {}
@@ -43,21 +51,30 @@ for _, cel in ipairs(cels) do
     if readMark(cel.data) then markedCount = markedCount + 1 end
 end
 
-local dialog = Dialog("Spine 导出标记")
-dialog:label{ text = "已排除的素材会显示红色时间轴格。操作后按 Ctrl+S 保存。" }
-if #cels > 0 then
-    dialog:label{ text = string.format("选中 %d 格，其中 %d 格已排除。", #cels, markedCount) }
-    dialog:button{ id = "exclude", text = "排除导出" }
-    dialog:button{ id = "restore", text = "恢复导出" }
+local choice
+if quickAction then
+    if #cels == 0 then
+        app.alert("请先在时间轴选中要排除或恢复导出的 Cel。")
+        return
+    end
+    choice = { [quickAction] = true }
 else
-    dialog:label{ text = "要排除或恢复素材，请在时间轴点选有内容的格子。" }
+    local dialog = Dialog("Spine 导出标记")
+    dialog:label{ text = "已排除的素材会显示红色时间轴格。操作后按 Ctrl+S 保存。" }
+    if #cels > 0 then
+        dialog:label{ text = string.format("选中 %d 格，其中 %d 格已排除。", #cels, markedCount) }
+        dialog:button{ id = "exclude", text = "排除导出" }
+        dialog:button{ id = "restore", text = "恢复导出" }
+    else
+        dialog:label{ text = "要排除或恢复素材，请在时间轴点选有内容的格子。" }
+    end
+    dialog:newrow()
+    dialog:button{ id = "sync", text = "刷新整份母版的标记颜色" }
+    dialog:button{ id = "cancel", text = "取消" }
+    dialog:show()
+    choice = dialog.data
+    if not (choice.exclude or choice.restore or choice.sync) then return end
 end
-dialog:newrow()
-dialog:button{ id = "sync", text = "刷新整份母版的标记颜色" }
-dialog:button{ id = "cancel", text = "取消" }
-dialog:show()
-local choice = dialog.data
-if not (choice.exclude or choice.restore or choice.sync) then return end
 
 local changes = {}
 for _, cel in ipairs(choice.sync and sprite.cels or cels) do
