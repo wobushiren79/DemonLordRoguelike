@@ -77,8 +77,10 @@ public class TestCreatureCardGUI : MonoBehaviour
     private string creatureDropdownLabel = "请选择生物", npcDropdownLabel = "请选择NPC", rarityDropdownLabel = "稀有度";
 
     private long lastDataKey = -1;                  //上一帧的数据参数指纹(来源/id/稀有度/等级), 变更才重建生物数据
+#if UNITY_EDITOR
     private string saveHint = "";                   //保存结果提示
     private float saveHintTime;                     //保存提示显示截止时间
+#endif
     #endregion
 
     #region GUI样式

@@ -639,7 +639,7 @@ flowerSea.ResetSea();   // 全部复原（不重新布点）
 
 **文件** `Assets/FrameWork/Scripts/Component/Other/PlanarReflection.cs`
 
-组件启用时创建镜像相机和 RenderTexture。雨天水洼组将 `waterRenderer` 留空，使用全局 `_PuddlePlanarTex` 和 `_PuddlePlanarActive`，供 `FrameWork/URP/Puddle1` 采样。旧实例禁用时只有全局纹理仍指向自己的 RenderTexture 才清理绑定，避免关闭先启用的新雨天分支。
+组件启用时创建独立的镜像相机和 RenderTexture。镜像相机不挂在水面节点下，避免继承水面（如基地 Water 的 `(100,10,100)`）的非均匀缩放，导致 `worldToCameraMatrix` 带缩放/剪切并使斜投影视锥报错；禁用时仍由组件显式销毁相机。雨天水洼组将 `waterRenderer` 留空，使用全局 `_PuddlePlanarTex` 和 `_PuddlePlanarActive`，供 `FrameWork/URP/Puddle1` 采样。旧实例禁用时只有全局纹理仍指向自己的 RenderTexture 才清理绑定，避免关闭先启用的新雨天分支。
 
 组件的执行顺序为 110，在 CinemachineBrain（100）更新主镜头后执行 `LateUpdate`。反射高度默认取节点世界 Y 加 `waterLevelOffset`。城镇广场的水面开启 `useRendererBoundsTop`，取接收渲染器世界包围盒的最大 Y，随实例位置和缩放变化。翡翠宫殿石砖、基地水面和雨天水洼使用默认高度计算。
 

@@ -30,7 +30,9 @@ watched_files:
    ├── AudioHandler       → 初始化音频
    ├── UIHandler          → 初始化 UI 系统
    ├── TextHandler        → 初始化多语言
-   ├── ScreenResolutionHandler → 初始化窗口分辨率（以GameConfig合法比例为锚点并应用配置，非法回退1920x1080；窗口拖动等比吸附，全屏不覆盖窗口锚点）
+   ├── ScreenResolutionHandler → 统一初始化屏幕模式与窗口分辨率（window=0显式恢复Windowed和配置尺寸，window=1使用FullScreenWindow；
+   │                        以GameConfig合法比例为锚点，非法回退1920x1080；仅普通窗口拖动等比吸附，最大化/全屏不覆盖窗口锚点；
+   │                        Windows标题栏最大化由原生IsZoomed补充识别，代码切换pending生效前不按拖拽处理）
    └── ...
 
 2. 初始化数据服务

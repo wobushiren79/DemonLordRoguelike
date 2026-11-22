@@ -86,7 +86,9 @@ public class TestTransformPotionGUI : MonoBehaviour
     private GameObject listRoot;                    //卡片列表容器(覆盖层Canvas子节点, 换页/换页签重建)
     private GameObject sceneListRoot;               //场景列表容器(世界空间, 换页/换页签重建)
     private GameObject testSceneObj;                //测试场景实例(场景列表页签加载的游戏场景prefab, 切换/卸载/关面板时销毁)
+#if UNITY_EDITOR
     private int testSceneIndex = -1;                //当前测试场景索引(-1=无场景, 否则 testSceneRows 下标)
+#endif
     private bool testSceneLoading;                  //测试场景加载中(防连点重入)
     private List<TestSceneOption> testSceneRows;    //测试场景候选(首项=基地特殊档, 其后 FightSceneCfg 全量按 id 排序; 懒加载)
     private bool isSceneDropdownOpen;               //测试场景下拉展开状态

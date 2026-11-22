@@ -1,7 +1,10 @@
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+using System.Runtime.InteropServices;
+#endif
 using UnityEngine;
 
 /// <summary>
-/// 屏幕分辨率Handler：窗口模式下允许自由拖动窗口边缘调整大小，松手后按锚定宽高比等比吸附（宽*1.1则高也*1.1），并刷新UI
+/// 屏幕分辨率Handler：统一初始化屏幕模式；普通窗口允许自由拖动边缘并按锚定宽高比等比吸附，最大化与全屏不覆盖普通窗口锚点
 /// </summary>
 public class ScreenResolutionHandler : BaseHandler<ScreenResolutionHandler, BaseManager>
 {
@@ -18,6 +21,8 @@ public class ScreenResolutionHandler : BaseHandler<ScreenResolutionHandler, Base
     protected const float AspectTolerance = 0.01f;
     //拖动结束判定时间（尺寸稳定该秒数后视为松手，执行等比吸附）
     protected const float ResizeSettleTime = 0.3f;
+    //SetResolution异常等待上限（秒），超时恢复普通拖拽，避免永久等待系统无法应用的尺寸
+    protected const float PendingTimeout = 3f;
     #endregion
 
     #region 字段
@@ -32,6 +37,10 @@ public class ScreenResolutionHandler : BaseHandler<ScreenResolutionHandler, Base
     protected int pendingHeight = -1;
     //是否有待生效的SetResolution
     protected bool hasPending;
+    //本次SetResolution的发起时间
+    protected float pendingStartTime;
+    //当前Unity播放器的Windows主窗口句柄（尚未获取到时保持空值并继续重试）
+    protected System.IntPtr mainWindowHandle;
     //拖动结束后待收尾标记（吸附/存档/刷新UI）
     protected bool resizeDirty;
     //最后一次尺寸变化时间
@@ -42,7 +51,7 @@ public class ScreenResolutionHandler : BaseHandler<ScreenResolutionHandler, Base
 
     #region 初始化
     /// <summary>
-    /// 初始化（以配置中的合法分辨率为锚点；非法配置回退默认尺寸，窗口模式下应用配置尺寸）
+    /// 初始化（以配置中的合法分辨率为锚点；非法配置回退默认尺寸，并统一应用配置的屏幕模式）
     /// </summary>
     public void InitData()
     {
@@ -64,15 +73,22 @@ public class ScreenResolutionHandler : BaseHandler<ScreenResolutionHandler, Base
             GameDataHandler.Instance.manager.SaveGameConfig();
             LogUtil.LogWarning($"检测到非法窗口分辨率:{invalidResolution}，已恢复为:{gameConfig.screenResolution}");
         }
-        //按配置的目标窗口模式判断，避免全屏切换尚未生效时误用Screen.fullScreen强制窗口化
-        if (gameConfig.window != 1 && (currentWidth != anchorWidth || currentHeight != anchorHeight))
-            SetResolutionByCode(anchorWidth, anchorHeight);
+        //按配置统一设置屏幕模式；窗口模式同时恢复普通窗口尺寸，避免沿用上次最大化或全屏状态
+        if (gameConfig.window != 1)
+        {
+            if (Screen.fullScreenMode != FullScreenMode.Windowed || IsWindowMaximized() || currentWidth != anchorWidth || currentHeight != anchorHeight)
+                SetResolutionByCode(anchorWidth, anchorHeight);
+        }
+        else if (Screen.fullScreenMode != FullScreenMode.FullScreenWindow)
+        {
+            Screen.fullScreenMode = FullScreenMode.FullScreenWindow;
+        }
     }
     #endregion
 
     #region 公有方法
     /// <summary>
-    /// 由代码主动设置分辨率（设置界面选择分辨率时调用）：更新锚定比例并标记来源，避免被吸附逻辑二次修正
+    /// 由代码主动设置普通窗口分辨率（启动或设置界面选择分辨率时调用）：更新锚点并等待目标生效，避免中间尺寸被误判为拖拽
     /// </summary>
     /// <param name="w">宽</param>
     /// <param name="h">高</param>
@@ -89,41 +105,51 @@ public class ScreenResolutionHandler : BaseHandler<ScreenResolutionHandler, Base
         anchorHeight = h;
         pendingWidth = w;
         pendingHeight = h;
+        pendingStartTime = Time.unscaledTime;
         hasPending = true;
         resizeDirty = false;
-        Screen.SetResolution(w, h, false);
+        Screen.SetResolution(w, h, FullScreenMode.Windowed);
     }
     #endregion
 
     #region 生命周期
     /// <summary>
-    /// 每帧检测窗口尺寸：拖动中不干预（避免反复SetResolution导致闪烁），松手尺寸稳定后一次性等比吸附
+    /// 每帧处理代码分辨率切换并检测普通窗口尺寸；最大化与全屏不参与拖拽吸附，普通窗口松手后一次性等比吸附
     /// </summary>
     protected void Update()
     {
         //编辑器下Game视图本身可自由缩放且SetResolution无效，不处理
         if (Application.isEditor || !isInit)
             return;
-        //全屏模式不允许拖动，仅同步实际尺寸并清理待处理状态，不用显示器比例覆盖窗口锚点
-        if (Screen.fullScreen)
-        {
-            lastSeenWidth = Screen.width;
-            lastSeenHeight = Screen.height;
-            hasPending = false;
-            resizeDirty = false;
-            return;
-        }
         int w = Screen.width;
         int h = Screen.height;
-        //自己发起的SetResolution生效：确认为新锚点并收尾
-        if (hasPending && w == pendingWidth && h == pendingHeight)
+        //代码主动切换期间只等待目标生效，中间尺寸不进入拖拽或存档
+        if (hasPending)
         {
-            hasPending = false;
-            anchorWidth = w;
-            anchorHeight = h;
             lastSeenWidth = w;
             lastSeenHeight = h;
-            FinishResize();
+            resizeDirty = false;
+            bool isTargetWindow = Screen.fullScreenMode == FullScreenMode.Windowed && !IsWindowMaximized() && w == pendingWidth && h == pendingHeight;
+            if (isTargetWindow)
+            {
+                hasPending = false;
+                anchorWidth = w;
+                anchorHeight = h;
+                FinishResize();
+                return;
+            }
+            if (Time.unscaledTime - pendingStartTime < PendingTimeout)
+                return;
+            //请求超时后当帧只清除等待状态，不把中间尺寸当成用户拖拽结果
+            hasPending = false;
+            return;
+        }
+        //最大化或全屏只同步实际尺寸，不执行吸附、不覆盖普通窗口锚点
+        if (Screen.fullScreenMode != FullScreenMode.Windowed || IsWindowMaximized())
+        {
+            lastSeenWidth = w;
+            lastSeenHeight = h;
+            resizeDirty = false;
             return;
         }
         if (w == lastSeenWidth && h == lastSeenHeight)
@@ -137,8 +163,7 @@ public class ScreenResolutionHandler : BaseHandler<ScreenResolutionHandler, Base
                 ApplyAspectSnap(w, h);
             return;
         }
-        //尺寸变化中（用户正在拖动）：只记录不干预，用户输入同时作废未生效的pending
-        hasPending = false;
+        //尺寸变化中（用户正在拖动）：只记录不干预
         lastSeenWidth = w;
         lastSeenHeight = h;
         lastResizeTime = Time.unscaledTime;
@@ -147,6 +172,37 @@ public class ScreenResolutionHandler : BaseHandler<ScreenResolutionHandler, Base
     #endregion
 
     #region 私有方法
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+    /// <summary>
+    /// 查询指定Windows窗口是否处于最大化状态
+    /// </summary>
+    /// <param name="hWnd">当前Unity播放器的主窗口句柄</param>
+    /// <returns>窗口最大化时返回true</returns>
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    protected static extern bool IsZoomed(System.IntPtr hWnd);
+#endif
+
+    /// <summary>
+    /// 检测当前Unity播放器是否被Windows标题栏最大化（Unity报告Windowed时也可能处于该状态）
+    /// </summary>
+    /// <returns>WindowsStandalone下已最大化返回true，编辑器和其他平台返回false</returns>
+    protected bool IsWindowMaximized()
+    {
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
+        if (mainWindowHandle == System.IntPtr.Zero)
+        {
+            using (System.Diagnostics.Process process = System.Diagnostics.Process.GetCurrentProcess())
+            {
+                mainWindowHandle = process.MainWindowHandle;
+            }
+        }
+        return mainWindowHandle != System.IntPtr.Zero && IsZoomed(mainWindowHandle);
+#else
+        return false;
+#endif
+    }
+
     /// <summary>
     /// 尝试解析宽x高格式的分辨率字符串，格式损坏时返回false而不抛异常
     /// </summary>
@@ -213,8 +269,9 @@ public class ScreenResolutionHandler : BaseHandler<ScreenResolutionHandler, Base
         }
         pendingWidth = targetW;
         pendingHeight = targetH;
+        pendingStartTime = Time.unscaledTime;
         hasPending = true;
-        Screen.SetResolution(targetW, targetH, false);
+        Screen.SetResolution(targetW, targetH, FullScreenMode.Windowed);
     }
 
     /// <summary>

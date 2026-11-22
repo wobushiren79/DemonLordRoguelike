@@ -24,9 +24,7 @@ public class BaseLauncher : BaseMonoBehaviour
         SystemUtil.GCCollect();
 
         GameConfigBean gameConfig = GameDataHandler.Instance.manager.GetGameConfig();
-        //设置全屏
-        Screen.fullScreen = gameConfig.window == 1 ? true : false;
-        //初始化屏幕分辨率Handler（窗口自由拖动等比缩放）
+        //初始化屏幕Handler（按配置统一设置窗口/全屏模式与分辨率，普通窗口支持自由拖动等比缩放）
         ScreenResolutionHandler.Instance.InitData();
         //设置垂直同步与FPS（两者互斥，锁帧优先：vSyncCount 非 0 时 targetFrameRate 会被忽略；旧配置可能两项同开，此处强制修正；必须先设 vSync 再设帧率）
         if (gameConfig.stateForFrames == 1)

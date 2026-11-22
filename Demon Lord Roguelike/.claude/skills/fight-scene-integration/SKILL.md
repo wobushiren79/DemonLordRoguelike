@@ -119,7 +119,7 @@ watched_files:
 ## 地下宫殿决战场地
 
 - `FightScene` ID `30001` 使用 `FightScene_Palace_1.prefab`。`Ground/Ground_1` 的地砖原平面 Y 为 `-0.0001`，位于地毯与战斗棋盘下方。材质 `Mat_UndergroundPalaceFloor_1` 保留 `Mat_Ground_4` 的地砖贴图、平铺与光照设置，通过 `Shader_UndergroundPalaceFloor_1` 在 URP Lit 雾化前混入倒影。材质倒影强度为 0.82。
-- `PlanarReflection` 使用地板渲染器的包围盒顶面作为镜面。地板在 Water 层，镜像相机使用 `URP-Performant-Renderer`，纹理高度 256，远裁剪 38，镜头静止时每秒最多刷新 12 次。编辑模式出图可在临时实例上先生成镜像相机纹理，再渲染主镜头。场景内核对时可从 `TestScene` 选择 `[30001] 地下宫殿`。
+- `PlanarReflection` 使用地板渲染器的包围盒顶面作为镜面。地板在 Water 层，镜像相机使用 `URP-Performant-Renderer`，纹理高度 256，远裁剪 38，镜头静止时每秒最多刷新 12 次。所有场景的镜像相机均创建为独立物体，不继承接收水面或地面节点的缩放，禁用时由组件显式销毁。编辑模式出图可在临时实例上先生成镜像相机纹理，再渲染主镜头。场景内核对时可从 `TestScene` 选择 `[30001] 地下宫殿`。
 
 ## 玫瑰宫殿决战场地
 
