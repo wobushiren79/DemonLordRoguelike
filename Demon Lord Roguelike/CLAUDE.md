@@ -22,6 +22,10 @@
 
 角色套装需要生图时，先导出该角色母版的全身素模帧作为生图输入，在原角色身上设计整套服装。以选定的全身实穿图转成母版原生网格上的像素稿，按身体锚点与前后遮挡拆入已有装备层，最后在 Aseprite 精修。隐形人台图、独立衣物绿幕图仅可作款式参考。重制断裂、穿插或碎纹严重的套装时，可按原款自由调整剪影和裁剪。新实穿预览的选版、转绘和验收见[装备制作 Skill](.claude/skills/aseprite-equipment-from-preview/SKILL.md#生图预览的生成与确认)。
 
+所有 Aseprite 素材修改按[多件素材逐件制作与验收](.claude/skills/aseprite-pixel-editor/SKILL.md#多件素材逐件制作与验收)执行。由当前助手独立完成，每件保存、回读并目视验收后再做下一件，不调用子代理。
+
+魅魔的所有穿戴装备都要突出她性感、美丽、迷人的气质。设计与选稿按[魅魔装备风格](.claude/skills/aseprite-equipment-from-preview/SKILL.md#魅魔装备风格)逐款核对全身实穿效果。
+
 所有角色的穿戴装备都要为双臂独立活动留出空间。披风、披肩、长围巾的垂尾和垂片放在双臂后方，腋下留开口。选稿和拆件时按[披挂与双臂分层](.claude/skills/aseprite-equipment-from-preview/SKILL.md#披挂与双臂分层)检查左右臂。
 
 从子 Aseprite 回填任何素材前，先检查当前母版。**同一套装备、身体部件、武器或其他素材，即使只差一个像素，也要先询问用户是否覆盖，得到明确同意后才写入有差异的部分。** 用户可能已在母版手工修过细节，具体按[回填前比对同款素材](.claude/skills/aseprite-master-backfill/SKILL.md#回填前比对同款素材)执行。
