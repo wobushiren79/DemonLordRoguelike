@@ -66,6 +66,7 @@
 - [`project_attack_dead_pos_pool_aba_bug.md`](project_attack_dead_pos_pool_aba_bug.md) — 进攻生物"攻击死亡位置/原地抽搐"偶发BUG排查中(2026-08-03起未结案)：主嫌疑=FightCreatureEntity对象池ABA复用(SetData重置state=Live使持尸引用IsDead()=false)；含已排除路径清单与下次复现的三处插桩方案
 
 ### Collaboration Feedback
+- [后台 MCP 与桌面使用](feedback_background_mcp.md) — 优先用跨 AI 客户端可复用的后台 MCP，前台桌面留给用户。
 - [`feedback_play_verify_manual.md`](feedback_play_verify_manual.md) — 需要 Unity Play 模式验证的环节一律由用户手动 Play + 截图反馈（AI 列检查要点并等待截图判断），禁止 MCP 自动启动/停止 Play 自行验证（manage_editor play/pause/stop、batch_execute 等）
 - [`feedback_task_summary.md`](feedback_task_summary.md) — 任务总结必须列出参与的 Agent/Skill 名称及操作
 - [Aseprite 临时目录清理与验收](../skills/aseprite-body-parts/SKILL.md#清理与验收) — 正式写回并回读后，由最后完成的步骤删除整批工作目录，逐个核实不存在再交付。确认期间展示过的预览也在清理范围内。

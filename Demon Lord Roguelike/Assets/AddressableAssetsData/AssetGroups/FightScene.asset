@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 188be7376810ce846b2fa262328c0e13
+    m_Address: Assets/LoadResources/FightScene/FightScene_HighlandRampart_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 18aa4759c7f2b164d8074267bb3858e8
     m_Address: Assets/LoadResources/FightScene/FightScene_Plain_1.prefab
     m_ReadOnly: 0
@@ -67,6 +72,11 @@ MonoBehaviour:
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: e06d2a095f710004f86a459f1b928428
     m_Address: Assets/LoadResources/FightScene/FightScene_Palace_CrimsonCrown_1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f0e2d79d05c24a74895e187662b464c8
+    m_Address: Assets/LoadResources/FightScene/FightScene_CastleMarketSquare_1.prefab
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

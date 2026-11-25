@@ -1,0 +1,185 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8747758988927123574
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8709337115247479976}
+  m_Layer: 0
+  m_Name: Building_Town_CastleMarketSquare_1
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8709337115247479976
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8747758988927123574}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 4564723855296287346}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &4094776276879062425
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 8709337115247479976}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071067
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8327724307429401863, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.55
+      objectReference: {fileID: 0}
+    - target: {fileID: -8327724307429401863, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 7.32
+      objectReference: {fileID: 0}
+    - target: {fileID: -8327724307429401863, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -3.05
+      objectReference: {fileID: 0}
+    - target: {fileID: -7813170824806939323, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -5.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -7813170824806939323, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -3.05
+      objectReference: {fileID: 0}
+    - target: {fileID: -7813170824806939323, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.0005000001
+      objectReference: {fileID: 0}
+    - target: {fileID: -607784635297781198, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.55
+      objectReference: {fileID: 0}
+    - target: {fileID: -607784635297781198, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -7.32
+      objectReference: {fileID: 0}
+    - target: {fileID: -607784635297781198, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -3.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_Name
+      value: CastleMarketSquare
+      objectReference: {fileID: 0}
+    - target: {fileID: 4389367488073714942, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_Layer
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 8711387219747779926, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 5.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8711387219747779926, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -3.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 8711387219747779926, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.0005000001
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4389367488073714942, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1694710263404609576}
+  m_SourcePrefab: {fileID: 100100000, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+--- !u!1 &304480253137058151 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4389367488073714942, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+  m_PrefabInstance: {fileID: 4094776276879062425}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1694710263404609576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 304480253137058151}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eaa5e567edbac1640a4e93a813b713fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlanarReflection
+  waterLevelOffset: 0
+  useRendererBoundsTop: 1
+  textureHeight: 192
+  reflectMask:
+    serializedVersion: 2
+    m_Bits: 4294934479
+  updateEveryFrame: 1
+  farClipOverride: 0
+  skipWhenNotVisible: 1
+  waterRenderer: {fileID: 4185973138236098558}
+  waterReflectionRenderer: {fileID: 11400000, guid: 707360a9c581a4bd7aa53bfeb1429f71, type: 2}
+  waterIdleRefreshRate: 12
+--- !u!23 &4185973138236098558 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -9024086446634339737, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+  m_PrefabInstance: {fileID: 4094776276879062425}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &4564723855296287346 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 8b23055f805d64b4dbd54c520c463570, type: 3}
+  m_PrefabInstance: {fileID: 4094776276879062425}
+  m_PrefabAsset: {fileID: 0}

@@ -3,6 +3,11 @@ name: fight-scene-integration
 description: 将已有 Unity 场景预制体或建筑预制体接入魔王太嚣张的正式战斗场景。用户说「把这个 prefab 加进战斗场景」「给挑战、征服、无尽绑定或替换战斗地图」或要求修复已接入场景的道路、镜头、光照、屋檐闪烁和粒子比例时使用。覆盖 Addressables 登记、配置表导出、模式场地池、旧存档与画面验收。
 watched_files:
   - Assets/LoadResources/FightScene/
+  - Assets/LoadResources/Prefabs/Wall/Building_Wall_HighlandRampart_1.prefab
+  - Assets/LoadResources/Materials/Building/HighlandRampart/
+  - Assets/LoadResources/Textures/Building/Wall/skybox_highland_rampart.png
+  - Assets/LoadResources/Textures/Building/Wall/highland_landscape_atlas.png
+  - Assets/AddressableAssetsData/AssetGroups/Skybox.asset
   - Assets/LoadResources/Materials/Building/Mat_UndergroundPalaceFloor_1.mat
   - Assets/Shaders/Shader_UndergroundPalaceFloor_1.shader
   - Assets/LoadResources/Fbx/Building/Palace/Building_Palace_Emerald_Atlas/EmeraldPalace_BattleStoneFloor.asset
@@ -10,6 +15,9 @@ watched_files:
   - Assets/LoadResources/Prefabs/Town/Building_Town_CenterSquare_1.prefab
   - Assets/LoadResources/Fbx/Building/Town/TownCenterSquare_CombinedMeshes.asset
   - Assets/LoadResources/Materials/Building/TownCenterSquare/
+  - Assets/LoadResources/Prefabs/Town/Building_Town_CastleMarketSquare_1.prefab
+  - Assets/LoadResources/Fbx/Building/Town/CastleMarketSquare_CombinedMeshes.asset
+  - Assets/LoadResources/Materials/Building/CastleMarketSquare/TownCanalWater.mat
   - Assets/AddressableAssetsData/AssetGroups/FightScene.asset
   - Assets/Data/Excel/excel_fight_scene[战斗场景].xlsx
   - Assets/Resources/JsonText/FightScene.txt
@@ -141,6 +149,22 @@ watched_files:
 - 预览场景和战斗包装层共用的建筑预制体中，三个水面均在 Water 层。仅 `Canal water` 启用 `PlanarReflection`，`waterRenderer` 指向本节点的 MeshRenderer，`useRendererBoundsTop` 让镜面高度随实例取水面包围盒顶面。河道倒影跟随 Cinemachine 更新后的主相机，纹理高度 192，静止时每秒最多刷新 12 次，出视野时跳过。镜像相机用 `URP-Performant-Renderer`，排除 Water、UI 和 Road 层。喷泉 `Lower pool` 与 `Upper pool` 的 `PlanarReflection` 均已停用，水面使用 `WaterSimple` 的环境反射和高光，喷泉粒子继续播放。独立预览使用带 MainCamera 标签的 `Town Square Camera`。
 - 城镇中心广场接入时，世界 1 征服难度 1–10 的 BOSS 池扩为 `30001&30002&30003`，用于最后一关。新生成场地时等概率抽取并冻结，已有传送门沿用有效的 `bossFightSceneId`。
 - 手动验收时，在 `TestScene` 的 `Launcher` 选「战斗场景测试 → 普通模式」及 `[30003] 城镇中心广场_BOSS`，以 6 路、长度 10 检查棋盘、落子、刷怪和镜头边界。在同一画质和机位记录静止及拖镜头时的 Batches，检查桥边倒影是否贴合水面，以及喷泉水波、高光与粒子是否照常显示。河道可见并刷新时，Frame Debugger 应只有河道的镜像相机。征服 BOSS 测试按对应难度的场地池抽取。
+
+## 城堡市集普通测试场地
+
+- `FightScene` ID `30005`，名称为「城堡市集」，顺接同段的 `30004` 翡翠宫殿。预制体在 Addressables 的 `FightScene` 组，独立地址为 `Assets/LoadResources/FightScene/FightScene_CastleMarketSquare_1.prefab`。通过普通战斗场景测试入口选用。旧广场 `30003` 和征服、挑战、无尽的普通及 BOSS 场地池均沿用原配置。
+- 战斗包装内的模型根实例 `Castle Market Square` 局部位置为 `(5.5, -0.008, 5.74)`，等比缩放 `0.70`。广场圆环中心沿建筑纵向偏移 `-3.20`，6 路时对应棋盘中心 `(X=5.5, Z=3.5)`。切换为 2 至 5 路时，场景跟随棋盘的运行时纵向偏移，圆环始终与棋盘对中。
+- 长椅和花坛均沿街移至源模型局部 `Y=-3.05`，花坛沿街缩至 `0.55` 倍，错开住宅门口，椅脚落在铺地上。战斗包装将两侧建筑和陈设再向外移。以街心为 X 原点，西、东中段住宅分别位于 `X=-16.15`、`+16.80`，两侧前排建筑距街心 `16.65`，长椅距街心 `10.15`，花坛和街灯距街心 `12.35`。街灯沿街坐标为 `2.60`，椅背与花坛之间的战斗世界横向净距为 `0.574` 米。
+- 战斗包装将 590 个源 MeshRenderer 烘焙为 48 组合并网格，存于 `Assets/LoadResources/Fbx/Building/Town/CastleMarketSquare_CombinedMeshes.asset`。启用的 MeshRenderer 从 619 个降至 77 个。护城河 `Canal water` 使用 `FrameWork/URP/WaterSimple` 和 `PlanarReflection`，倒影强度为 `0.20`、扰动为 `0.036`、波高为 `0.09`，波纹世界尺度 `_EffectScale=2.8`，波形频率 `_WaveScale=3.8`。镜像纹理高 192 像素，静止镜头下每秒最多刷新 12 次。独立预览场景共用游戏天空材质 `Skybox_2`。
+- 护城河在战斗场景中横向贯通约 108.8 米，宽约 3.25 米。水面世界 Y 为 `-0.568`，低于石岸顶约 0.56 米，镜像平面取水面渲染器上沿。河床和两岸石墙越过两侧街口，临河住宅的石基下接河床。调整河道几何时同步更新战斗包装内的城河、远景草地、广场铺装和两栋临河住宅这五组合批。用实际战斗预制体在左右极限机位检查水面与石岸是否连续。
+- 手动验收时，在 `TestScene` 的 `Launcher` 选「战斗场景测试 → 普通模式 → [30005] 城堡市集」，道路长度设为 10，切换 6 路和 2 路检查圆环对中、两端落子和敌方入场。拖动镜头观察门前通道、椅背和花坛的间距，以及桥边水波和倒影。用 Frame Debugger 核对河面反射相机。
+
+## 高地城墙普通测试场地
+
+- `FightScene` ID `30006` 对应「高地城墙」，从 `TestScene` 的 `Launcher → 战斗场景测试 → 普通模式` 选用。战斗预制体 `FightScene_HighlandRampart_1.prefab` 登记在 `FightScene` 组。可单独打开 `Assets/Scenes/HighlandRampart.unity` 查看全景。
+- 战斗预制体嵌套 `Building_Wall_HighlandRampart_1.prefab`，保留塔楼火盆与方向光 `Morning Sun`。战斗包装关闭源建筑的两片天空网格，由 `Skybox` 组中的 `Mat_HighlandRampart_Skybox.mat` 显示晨空。高地、林地和峰顶保留在模型中，随镜头产生视差。
+- 山体与林地共用 `highland_landscape_atlas.png`（1408×344）。图集上方是山体，下方是林地，每块四周留 4 像素延展边。两种材质通过贴图缩放和偏移分别取样；调整材质时同步 `_BaseMap` 和 `_MainTex` 的图集区域。
+- 棋盘颜色取 `#776955` 和 `#C4B091`，透明度为 `0.26`。环境光取 `#A3B0C4`，景深显式设为 `mode:Off`。以长度 10 分别检查 2 路、6 路的格位、核心与右端出生区，再拖动镜头检查后垛口与远山。
 
 ## 翡翠宫殿决战场地
 

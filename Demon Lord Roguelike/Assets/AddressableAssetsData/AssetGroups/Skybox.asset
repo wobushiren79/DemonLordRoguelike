@@ -25,6 +25,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 379e43e977a820e4d8edf81ef3d22551
+    m_Address: Assets/LoadResources/Materials/Building/HighlandRampart/Mat_HighlandRampart_Skybox.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 6db3683c542be044f881fba55d306ade
     m_Address: Assets/FrameWork/Materials/Skybox/Skybox_6.mat
     m_ReadOnly: 0
