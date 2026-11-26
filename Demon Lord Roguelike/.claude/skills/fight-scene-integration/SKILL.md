@@ -3,6 +3,11 @@ name: fight-scene-integration
 description: 将已有 Unity 场景预制体或建筑预制体接入魔王太嚣张的正式战斗场景。用户说「把这个 prefab 加进战斗场景」「给挑战、征服、无尽绑定或替换战斗地图」或要求修复已接入场景的道路、镜头、光照、屋檐闪烁和粒子比例时使用。覆盖 Addressables 登记、配置表导出、模式场地池、旧存档与画面验收。
 watched_files:
   - Assets/LoadResources/FightScene/
+  - Assets/LoadResources/Fbx/Building/Ship/SeadrakeGalleon_CombinedMeshes.asset
+  - Assets/LoadResources/Materials/Building/SeadrakeGalleon/Ocean.mat
+  - Assets/LoadResources/Materials/Building/SeadrakeGalleon/Mat_SeadrakeGalleon_Skybox.mat
+  - Assets/Shaders/Shader_SeadrakeGalleonSea_1.shader
+  - Assets/Shaders/Shader_SeadrakeGalleonSky_1.shader
   - Assets/LoadResources/Prefabs/Wall/Building_Wall_HighlandRampart_1.prefab
   - Assets/LoadResources/Materials/Building/HighlandRampart/
   - Assets/LoadResources/Textures/Building/Wall/skybox_highland_rampart.png
@@ -164,7 +169,8 @@ watched_files:
 - `FightScene` ID `30006` 对应「高地城墙」，从 `TestScene` 的 `Launcher → 战斗场景测试 → 普通模式` 选用。战斗预制体 `FightScene_HighlandRampart_1.prefab` 登记在 `FightScene` 组。可单独打开 `Assets/Scenes/HighlandRampart.unity` 查看全景。
 - 战斗预制体嵌套 `Building_Wall_HighlandRampart_1.prefab`，保留塔楼火盆与方向光 `Morning Sun`。战斗包装关闭源建筑的两片天空网格，由 `Skybox` 组中的 `Mat_HighlandRampart_Skybox.mat` 显示晨空。高地、林地和峰顶保留在模型中，随镜头产生视差。
 - 山体与林地共用 `highland_landscape_atlas.png`（1408×344）。图集上方是山体，下方是林地，每块四周留 4 像素延展边。两种材质通过贴图缩放和偏移分别取样；调整材质时同步 `_BaseMap` 和 `_MainTex` 的图集区域。
-- 棋盘颜色取 `#776955` 和 `#C4B091`，透明度为 `0.26`。环境光取 `#A3B0C4`，景深显式设为 `mode:Off`。以长度 10 分别检查 2 路、6 路的格位、核心与右端出生区，再拖动镜头检查后垛口与远山。
+- 棋盘颜色取 `#776955` 和 `#C4B091`，透明度为 `0.26`，环境光取 `#A3B0C4`。远山按 `Color:#BDCAD8&Start:20&End:440&Mode:Linear` 逐渐融入雾色。战斗景深为 `mode:Bokeh&length:160&aperture:12`，对焦距离随战斗相机取值。该场的 `volumetric_fog` 设为 `Density:0`，防止开启后处理时项目默认体积雾额外压暗晨空。
+- 独立场景的两台相机各自引用 `Assets/Settings/HighlandRampartPanoramaFocus.asset` 和 `HighlandRampartBattleFocus.asset`。全景对焦 15.8 米、215 mm，战斗机位对焦 8.73 米、160 mm，光圈均为 f/12。两台相机按各自的 Volume 层取样，场景雾参数与表内一致。手动 Play 时，以长度 10 分别检查 2 路、6 路的格位、核心与右端出生区，平移镜头检查墙砖清晰度、林地层次和峰顶轮廓。
 
 ## 翡翠宫殿决战场地
 
@@ -193,3 +199,14 @@ watched_files:
 - 白天与夜晚共用根节点 `Effect` 下的 `Effect_SandDust_1` 和 `Effect_Weather_Windlines_2`。沙粒位于 `(5.5, 1.5, 3.5)`，风线从 `(20, 3, 3.5)` 发射，沿用沙漠实例的旋转、半径和砂色覆盖，从右向左扫过战场。
 - 草丛和碎石的位置修正在战斗预制体的嵌套实例上。用 `Ground_Arena` / `Ground_Placement` 三角面测草根和石底的地表高度，草根稍入地，碎石保留自然埋底。用道具网格顶点和面心检查崖壁及草与石的穿插，露出崖壁的道具就近挪到空砂地，复核 2–6 路的道路及出生区净空。
 - 世界 1 征服难度 5（`1000005`）的普通关场地池包含夜晚 `70002`。新生成该难度场地时抽取并冻结，已有冻结场地继续使用。原场地已在编辑模式按 2–6 路及战斗根节点偏移采样道路和出生区。实机可在 `TestScene` 的 `Launcher` 中选择普通战斗测试 `[70002] 荒野峡谷_1_夜晚`，用 6 路、长度 10 检查月光、峡口轮廓、棋盘格、角色辨识度、镜头边界、放置和出怪。白天对照场景为 `[70001] 荒野峡谷_1`。
+
+## 海龙号甲板普通测试场地
+
+- `FightScene` ID `80001` 对应「海龙号甲板」。战斗包装的完整地址为 `Assets/LoadResources/FightScene/FightScene_SeadrakeGalleon_1.prefab`。在 `TestScene` 的 `Launcher` 中选择「战斗场景测试 → 普通模式 → [80001] 海龙号甲板」。
+- 棋盘采用木棕 `#795C43` 和浅木色 `#C6A17A`，道路透明度 `0.17`。场地使用已登记在 Skybox 组的 `Mat_SeadrakeGalleon_Skybox.mat`，复用 `Skybox_1` 的晴空立方体和 `-15,0,0` 旋转。海天交界按世界仰角过渡到场地雾色。环境光为 `#A8B6C4`。
+- 距离雾配置为 `Color:#A9C5D5&Start:25&End:140&Mode:Linear`，景深为 `mode:Bokeh&length:168&aperture:18`，战斗相机跟随距离约 8.73 米。棋盘位于起雾距离以内；体积雾和 `Details` 留空。
+- `Ocean.mat` 使用世界坐标生成两层错位的浪纹；根据屏幕像素覆盖范围混合不同尺度的浪峰，日光在浪尖产生随时间变化的碎闪。海面逐像素按视深混合距离雾，使用单个不透明通道。核对效果时用启用 HDR 和后处理的正式战斗机位，冻结浪相，分别比较关雾、仅距离雾、距离雾加景深三种画面，最后恢复流速核对动画。
+- 包装层内嵌正式建筑 `Assets/LoadResources/Prefabs/Ship/Building_Ship_SeadrakeGalleon_1.prefab`。船体局部位置为 `(5.75, -0.004, 3.5)`、Y 轴旋转 180°、等比缩放 1.15。战斗中停用模型的预览天幕 `SkyBackdrop`，由配置的天空盒显示远景。保留 `OceanSurface` 及左右舷白浪、远海浪尖三组网格。
+- 战斗包装在船体下增加 `Battle combined hull`。将 136 个静态部件按共享材质、顶点通道和渲染状态烘焙到 `SeadrakeGalleon_CombinedMeshes.asset` 的 18 个子网格资产，每个 Mesh 只有一个子网格和一个材质槽。源部件在战斗实例中关闭渲染，展示场景继续使用原模型。改船模后按源路径清单同步烘焙，保留三角形、UV 和法线，并按相同机位对照甲板与阴影。海面、两舷白浪和远海浪尖独立绘制，关闭这四个渲染器的投射阴影。战斗包装启用的 MeshRenderer 由 140 个降至 22 个，材质槽由 439 个降至 27 个，其中可投影的材质槽由 438 个降至 18 个。 同一开场机位在编辑模式隔离 Game 视图分组采样：空画面 6 批，原海船 1257 批，合批海船 126 批；扣除空画面后为 1251 → 120。该口径只含船及灯光，完整战斗应另在 Play 的相同路数和机位复测。
+- 场地镜头限位为 `x:5.25,7.5&z:-5.5,-3.5`。默认开场相机位于世界坐标 (5.25, 3.5, -5)，看向 (5.25, 0, 3)。16:9 六路开场以甲板棋盘和角色为中心，船头全貌可在独立场景查看。六路时，含防守核心及出生区的净空范围为 X −0.45 至 12、场景局部 Z 0.45 至 6.55、Y 0.1 至 2。该范围内无遮挡，按运行时场景偏移抽测两至六路，甲板均覆盖对应地面点。
+- 场地可由普通测试工具直接选择。征服、无尽及挑战100勇士的现有场地池均未绑定此 ID。手动 Play 时选十格六路，确认首末格落子、右侧刷怪与镜头拖动，再用两路复查近侧船舷有无遮挡。以同一路数、窗口尺寸和开场站位比较 Game 视图 Stats 的 Batches、Shadow casters。

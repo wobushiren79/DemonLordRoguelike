@@ -34,6 +34,8 @@ public class GameBuildEditorWindow : EditorWindow
     private const string EditorPrefsKeyCopyMods = "GameBuildEditorWindow.CopyMods";
     /// <summary>单个 Mod 是否复制的 EditorPrefs 键前缀（完整键 = 前缀 + Mod 名）</summary>
     private const string EditorPrefsKeyPrefixCopyMod = "GameBuildEditorWindow.CopyMod.";
+    /// <summary>记录各项目已扫描的 Mod 名，以便重新打开窗口后仍能发现勾选但已移走的目录。</summary>
+    private const string EditorPrefsKeyKnownMods = "GameBuildEditorWindow.KnownMods.";
 
     /// <summary>打包用的游戏场景（正式包固定从该场景出包，与 Build Settings 里的日常测试场景解耦）</summary>
     private const string GameScenePath = "Assets/Scenes/GameScene.unity";
@@ -93,6 +95,42 @@ public class GameBuildEditorWindow : EditorWindow
 
     #region 窗口入口
 
+    /// <summary>向框架发布窗口提供本项目的构建流程。</summary>
+    [InitializeOnLoadMethod]
+    private static void RegisterSteamPipeBuild()
+    {
+        SteamPipeWindow.BuildContent = BuildSteamPipeContent;
+    }
+
+    /// <summary>按当前打包选项在空目录内构建 Steam 内容，构建或所选 Mod 复制失败时通知调用方。</summary>
+    private static string BuildSteamPipeContent(string directory)
+    {
+        BuildTarget target = EditorUserBuildSettings.activeBuildTarget;
+        if (target != BuildTarget.StandaloneWindows && target != BuildTarget.StandaloneWindows64)
+            throw new BuildFailedException($"当前构建目标为 {target}，请先在 Unity 中切换到 Windows 桌面平台。");
+        if (string.IsNullOrWhiteSpace(directory))
+            throw new BuildFailedException("请指定 Steam 发布构建的空目录。");
+        string outputDirectory = Path.GetFullPath(directory);
+        if (File.Exists(outputDirectory) || (Directory.Exists(outputDirectory) && Directory.EnumerateFileSystemEntries(outputDirectory).Any()))
+            throw new BuildFailedException($"Steam 发布构建需要独立的空目录：{outputDirectory}");
+
+        var window = Resources.FindObjectsOfTypeAll<GameBuildEditorWindow>().FirstOrDefault();
+        bool temporary = window == null;
+        if (temporary)
+            window = CreateInstance<GameBuildEditorWindow>();
+        try
+        {
+            window.BuildGame(outputDirectory, true);
+            return outputDirectory;
+        }
+        finally
+        {
+            if (temporary)
+                DestroyImmediate(window);
+        }
+    }
+
+    /// <summary>打开游戏打包工具。</summary>
     [MenuItem("游戏/打包游戏")]
     public static void ShowWindow()
     {
@@ -254,7 +292,18 @@ public class GameBuildEditorWindow : EditorWindow
         EditorGUI.BeginDisabledGroup(string.IsNullOrEmpty(buildPath));
         if (GUILayout.Button("开始打包", GUILayout.Height(40)))
         {
-            BuildGame();
+            try
+            {
+                BuildGame(buildPath, false);
+            }
+            catch (System.OperationCanceledException e)
+            {
+                LogUtil.Log(e.Message);
+            }
+            catch (BuildFailedException e)
+            {
+                Debug.LogError(e.Message);
+            }
         }
         EditorGUI.EndDisabledGroup();
         GUI.backgroundColor = prev;
@@ -345,43 +394,72 @@ public class GameBuildEditorWindow : EditorWindow
     #region 打包逻辑
 
     /// <summary>
-    /// 执行打包：先按勾选项生成 Spine 资源，再调用 BuildPlayer 打包
+    /// 切换到游戏场景，按窗口选项构建到指定目录，并在构建结束或中止时恢复场景。
     /// </summary>
-    private void BuildGame()
+    private void BuildGame(string outputDirectory, bool forSteamPipe)
     {
         // URP 兼容模式缺 URP_COMPATIBILITY_MODE 宏时打包必失败，先补宏；补宏会触发脚本重编译中断后续流程，需重编译完成后重新打包
         if (EnsureURPCompatibilityModeDefine())
         {
-            EditorUtility.DisplayDialog("打包游戏", "已自动为当前平台补充 URP_COMPATIBILITY_MODE 编译宏（URP 兼容模式打包必需）。\n脚本重编译完成后，请重新点击「开始打包」。", "确定");
-            return;
+            const string message = "已自动为当前平台补充 URP_COMPATIBILITY_MODE 编译宏。请等待脚本重编译完成后重新打包。";
+            if (!forSteamPipe)
+                EditorUtility.DisplayDialog("打包游戏", message, "确定");
+            throw new System.OperationCanceledException(message);
         }
 
-        if (string.IsNullOrEmpty(buildPath))
-        {
-            Debug.LogError("打包路径不能为空！");
-            return;
-        }
-        EditorPrefs.SetString(EditorPrefsKeyBuildPath, buildPath);
+        if (string.IsNullOrEmpty(outputDirectory))
+            throw new BuildFailedException("打包路径不能为空！");
+        if (!forSteamPipe)
+            EditorPrefs.SetString(EditorPrefsKeyBuildPath, outputDirectory);
 
         // 打包前自动切到 Game 场景：正式包固定从 GameScene 出包，避免当前打开/Build Settings 里配置的是 TestScene 时打出测试包
         if (!File.Exists(GameScenePath))
-        {
-            Debug.LogError($"找不到游戏场景：{GameScenePath}，无法打包！");
-            return;
-        }
-        string prevScenePath = EditorSceneManager.GetActiveScene().path;
+            throw new BuildFailedException($"找不到游戏场景：{GameScenePath}，无法打包！");
         // 当前场景有未保存修改时询问是否保存，点取消则中止打包
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            throw new System.OperationCanceledException("已取消打包（场景存在未保存的修改）。");
+        var previousScene = EditorSceneManager.GetActiveScene();
+        if (previousScene.path == GameScenePath)
         {
-            LogUtil.Log("已取消打包（场景存在未保存的修改）");
+            BuildGameContent(outputDirectory, forSteamPipe);
             return;
         }
-        if (prevScenePath != GameScenePath)
-        {
-            LogUtil.Log($"打包前切换场景：{prevScenePath} -> {GameScenePath}");
-            EditorSceneManager.OpenScene(GameScenePath);
-        }
 
+        var setup = EditorSceneManager.GetSceneManagerSetup();
+        // 无路径的临时场景无法由场景配置恢复，保留它们并临时激活游戏场景。
+        bool keepScenesLoaded = string.IsNullOrEmpty(previousScene.path) || setup.Any(scene => string.IsNullOrEmpty(scene.path));
+        var gameScene = EditorSceneManager.GetSceneByPath(GameScenePath);
+        bool openAdditively = keepScenesLoaded && (!gameScene.IsValid() || !gameScene.isLoaded);
+        try
+        {
+            LogUtil.Log($"打包前切换场景：{previousScene.path} -> {GameScenePath}");
+            if (!keepScenesLoaded)
+                EditorSceneManager.OpenScene(GameScenePath);
+            else
+            {
+                if (openAdditively)
+                    gameScene = EditorSceneManager.OpenScene(GameScenePath, OpenSceneMode.Additive);
+                if (!EditorSceneManager.SetActiveScene(gameScene))
+                    throw new BuildFailedException($"无法激活游戏场景：{GameScenePath}");
+            }
+            BuildGameContent(outputDirectory, forSteamPipe);
+        }
+        finally
+        {
+            if (keepScenesLoaded)
+            {
+                EditorSceneManager.SetActiveScene(previousScene);
+                if (openAdditively && gameScene.IsValid() && gameScene.isLoaded)
+                    EditorSceneManager.CloseScene(gameScene, !setup.Any(scene => scene.path == GameScenePath));
+            }
+            else
+                EditorSceneManager.RestoreSceneManagerSetup(setup);
+        }
+    }
+
+    /// <summary>执行资源预处理、构建游戏并复制所选 Mod，发布流程仅在所有步骤成功后继续。</summary>
+    private void BuildGameContent(string outputDirectory, bool forSteamPipe)
+    {
         // 打包前资源生成（全部成功后再打包）
         if (isExportAllJsons)
         {
@@ -407,14 +485,14 @@ public class GameBuildEditorWindow : EditorWindow
         // 固定使用 Game 场景打包（不读 Build Settings 的场景列表，避免日常挂的 TestScene 混进正式包）
         string[] scenes = { GameScenePath };
 
-        Directory.CreateDirectory(buildPath);
+        Directory.CreateDirectory(outputDirectory);
 
         BuildTarget target = EditorUserBuildSettings.activeBuildTarget;
-        string locationPath = buildPath;
+        string locationPath = outputDirectory;
         // Windows 平台需要指定 exe 文件名
         if (target == BuildTarget.StandaloneWindows || target == BuildTarget.StandaloneWindows64)
         {
-            locationPath = Path.Combine(buildPath, PlayerSettings.productName + ".exe");
+            locationPath = Path.Combine(outputDirectory, $"{PlayerSettings.productName}.exe");
         }
 
         // 按勾选项组装 BuildOptions
@@ -423,49 +501,43 @@ public class GameBuildEditorWindow : EditorWindow
         if (isAllowDebugging) buildOptions |= BuildOptions.AllowDebugging;
         if (isConnectProfiler) buildOptions |= BuildOptions.ConnectWithProfiler;
         if (isDeepProfiling) buildOptions |= BuildOptions.EnableDeepProfilingSupport;
-        if (isAutoRun) buildOptions |= BuildOptions.AutoRunPlayer;
-        if (isShowBuiltPlayer) buildOptions |= BuildOptions.ShowBuiltPlayer;
+        if (!forSteamPipe && isAutoRun) buildOptions |= BuildOptions.AutoRunPlayer;
+        if (!forSteamPipe && isShowBuiltPlayer) buildOptions |= BuildOptions.ShowBuiltPlayer;
 
         LogUtil.Log($"========== 开始打包：{target} -> {locationPath}（Options: {buildOptions}，GM模式: {isEnableGMMode}） ==========");
 
         // 按 GM 选项写入运行时开关文件（打包结束恢复 0，避免残留影响日常开发出包）
-        WriteGMModeConfig(isEnableGMMode);
         try
         {
+            WriteGMModeConfig(isEnableGMMode);
             BuildReport report = BuildPipeline.BuildPlayer(scenes, locationPath, target, buildOptions);
 
             if (report.summary.result == BuildResult.Succeeded)
             {
                 LogUtil.Log($"========== 打包完成：{locationPath} ==========");
-                // Mod 复制失败不阻断打包收尾（场景恢复/GM配置还原等），只记错误日志
+                // 普通打包保留既有的 Mod 警告行为，Steam 发布要求所选资源全部就绪。
                 try
                 {
-                    CopySelectedModsToBuild();
+                    CopySelectedModsToBuild(outputDirectory, forSteamPipe);
                 }
-                catch (System.Exception e)
+                catch (System.Exception e) when (!forSteamPipe)
                 {
                     LogUtil.LogError($"[打包] 复制 Mod 资源失败：{e.Message}");
                 }
                 // 未勾选 ShowBuiltPlayer 时手动打开一次输出目录，保证用户总能找到产物
-                if (!isShowBuiltPlayer)
+                if (!forSteamPipe && !isShowBuiltPlayer)
                 {
                     EditorUtility.RevealInFinder(locationPath);
                 }
             }
             else
             {
-                Debug.LogError($"打包失败：{report.summary.result}，错误数 {report.summary.totalErrors}");
+                throw new BuildFailedException($"打包未完成：{report.summary.result}，错误数 {report.summary.totalErrors}");
             }
         }
         finally
         {
             WriteGMModeConfig(false);
-        }
-
-        // 打包结束恢复打包前打开的场景（如从 TestScene 发起的打包，打完切回去继续日常开发）
-        if (!string.IsNullOrEmpty(prevScenePath) && prevScenePath != GameScenePath && File.Exists(prevScenePath))
-        {
-            EditorSceneManager.OpenScene(prevScenePath);
         }
     }
 
@@ -515,8 +587,18 @@ public class GameBuildEditorWindow : EditorWindow
             {
                 listModNames.Add(Path.GetFileName(dir));
             }
-            listModNames.Sort();
         }
+        // 保留已勾选但被移走的目录，允许用户取消对应选项，并让发布构建报告缺失。
+        string knownModsKey = $"{EditorPrefsKeyKnownMods}{modsRoot}";
+        foreach (string name in EditorPrefs.GetString(knownModsKey, "").Split('\n'))
+        {
+            if (name.Length == 0 || name == "." || name == ".." || name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+                continue;
+            if (!listModNames.Contains(name) && EditorPrefs.GetBool($"{EditorPrefsKeyPrefixCopyMod}{name}", false))
+                listModNames.Add(name);
+        }
+        listModNames.Sort();
+        EditorPrefs.SetString(knownModsKey, string.Join("\n", listModNames));
         foreach (var modName in listModNames)
         {
             dictModSelection[modName] = EditorPrefs.GetBool(EditorPrefsKeyPrefixCopyMod + modName, false);
@@ -546,12 +628,12 @@ public class GameBuildEditorWindow : EditorWindow
     /// <summary>
     /// 打包成功后，把勾选的 Mod 目录复制到输出目录的 Mods 下（目标已存在时先删后拷，保证与项目内一致）
     /// </summary>
-    private void CopySelectedModsToBuild()
+    private void CopySelectedModsToBuild(string outputDirectory, bool requireAll)
     {
         if (!isCopyMods)
             return;
         string sourceRoot = GetProjectModsRootPath();
-        string targetRoot = Path.Combine(buildPath, "Mods");
+        string targetRoot = Path.Combine(outputDirectory, "Mods");
         foreach (var modName in listModNames)
         {
             if (!dictModSelection.TryGetValue(modName, out bool selected) || !selected)
@@ -559,6 +641,8 @@ public class GameBuildEditorWindow : EditorWindow
             string sourceDir = Path.Combine(sourceRoot, modName);
             if (!Directory.Exists(sourceDir))
             {
+                if (requireAll)
+                    throw new BuildFailedException($"勾选的 Mod 目录不存在：{sourceDir}");
                 LogUtil.LogWarning($"[打包] 勾选复制的 Mod 目录不存在，已跳过：{sourceDir}");
                 continue;
             }

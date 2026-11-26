@@ -32,6 +32,9 @@ ExportedObj/
 # Unity3D Generated File On Crash Reports
 sysinfo.txt
 
+# Local Steam App ID used when launching outside the Steam client
+/Demon Lord Roguelike/steam_appid.txt
+
 # Builds
 *.apk
 *.unitypackage

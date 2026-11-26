@@ -351,7 +351,7 @@ MyFeatureHandler.Instance.DoSomething();
 | `TextHandler` | `TextManager` | 多语言文本 |
 | `AIHandler` | `AIManager` | AI管理 |
 | `CShaderHandler` | `CShaderManager` | 自定义Shader |
-| `SteamHandler` | `SteamManager` | Steam |
+| `SteamHandler` | `BaseManager` | `Awake` 在同一对象上挂载 `SteamManager`，由它初始化 Steam API 并派发回调 |
 | `VolumeHandler` | `VolumeManager` | 音量 |
 
 ---

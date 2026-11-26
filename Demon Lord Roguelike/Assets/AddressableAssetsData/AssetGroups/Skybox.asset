@@ -20,6 +20,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1d93d3e7bfe220f4c9909d8f292c81dd
+    m_Address: Assets/LoadResources/Materials/Building/SeadrakeGalleon/Mat_SeadrakeGalleon_Skybox.mat
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 33ee9d8d9e6f6a44eb02b4f522505044
     m_Address: Assets/FrameWork/Materials/Skybox/Skybox_5.mat
     m_ReadOnly: 0

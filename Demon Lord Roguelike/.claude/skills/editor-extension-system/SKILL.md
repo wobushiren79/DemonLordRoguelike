@@ -39,6 +39,7 @@ EditorWindow (Unity)
 ├── StyleBaseWindow                # 样式基础窗口
 ├── GameTestEditor                 # 游戏测试编辑器 (Inspector扩展)
 ├── GameBuildEditorWindow          # 打包游戏工具 (打包前资源生成(复用 ExcelEditorWindow/GameResourceEditor) + BuildPlayer)
+├── SteamPipeWindow                # 游戏/SteamPipe：本机账号、Depot 配置、预览、上传和历史
 ├── ModBuildEditorWindow           # Mod构建工具 (批量模式构建MOD项目 + 导出JsonText + 移动到本项目Mods)
 ├── GameResourceEditor(+Spine/Atlas/Common partial)  # 游戏资源处理 (Spine/图集/通用 三板块页签)
 ├── SkinRandomEditorWindow         # 皮肤/装备/套装随机池配置 (CreatureRandomInfo 三模式: 皮肤池编辑skin_random_data/装备池·套装池编辑equip_random_data, 双列表点选增删, 写回Excel+同步JSON)
@@ -297,6 +298,16 @@ LauncherTest (Inspector)
 - 「开始打包」：先 `EnsureURPCompatibilityModeDefine` 确保当前平台带 `URP_COMPATIBILITY_MODE` 编译宏（Unity 6.3 起 URP 兼容模式被打包校验拦截，缺宏直接 BuildFailedException；缺宏时自动补宏并弹窗提示——补宏触发脚本重编译会中断本次打包，重编译完成后需重新点击「开始打包」）→ 自动切换到 `Assets/Scenes/GameScene.unity`（未保存修改弹保存提示、取消则中止；打包完成后自动切回原场景）→ 执行勾选步骤 → **固定只用 GameScene 打包**（不读 Build Settings 场景列表，避免日常挂的 TestScene 混进正式包）→ 按勾选项组装 `BuildOptions` → `BuildPipeline.BuildPlayer` 打到 `activeBuildTarget`（Windows 平台自动追加 `PlayerSettings.productName + ".exe"`），成功后打开产物目录（勾选 ShowBuiltPlayer 时由 Unity 打开，否则手动 `RevealInFinder`）。
 
 ---
+
+## SteamPipe 发布窗口
+
+入口为 `游戏/SteamPipe`，框架代码在 `Assets/FrameWork/Editor/SteamPipe/`。游戏项目通过 `GameBuildEditorWindow.RegisterSteamPipeBuild` 注册可选的 `SteamPipeWindow.BuildContent` 回调。独立窗口既能上传经过测试的现有目录，也能调用该回调在全新的 `%LOCALAPPDATA%/UnitySteamPipeBuilds/<项目标识>/<本次构建>/` 构建 Windows 玩家包。发布构建复用项目预处理、GM、开发包与 Mod 选项，所选 Mod 缺少或复制失败即中止上传。
+
+- **账号与工具**　Windows 默认使用框架内置的 SteamCMD。首次执行任务时，运行器在持有安装锁后校验 `Editor/SteamPipe/Tools~/steamcmd.zip` 的 SHA-256，并将启动器解压到 `%LOCALAPPDATA%/UnitySteamPipe/SteamCMD/`。后续启动复用本机安装，Valve 在此更新组件和保存设备授权。也可选择仓库外已有的 `steamcmd.exe`，或点「恢复内置」。首次登录由官方终端接收密码与 Steam Guard。移除账号记录仅修改窗口的本机配置。
+- **更新内置启动器**　从 Valve 获取 Windows 原始 ZIP，核对解压后可执行文件的 Valve 数字签名，再更新框架子模块中的 ZIP 和 `SteamPipeBundledTool.ArchiveSha256`。Unity 忽略 `Tools~/`，随框架同步的是压缩包；本机安装目录始终留在工作树外。[Valve 官方下载](https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip)
+- **游戏与 Depot**　按项目管理命名配置、App ID、多 Depot、映射、递归、排除规则、安装脚本及文件属性。可以导入含内联或独立 Depot 的 AppBuild VDF。每次运行在本机任务目录生成自己的 VDF。导入时遇到无法表达的规则会报告具体字段。
+- **预览和上传**　官方 Preview 在任务的 `SteamOutput/` 生成清单。仅上传会创建 Build；按配置启用 SetLive 时可上线到已有测试分支。默认分支请通过窗口的 Steamworks 版本页入口操作。
+- **存储和记录**　工具路径与账号名单保存在 `%LOCALAPPDATA%/UnitySteamPipe/`，每个项目按路径摘要区分配置、任务历史、日志及上传缓存。历史支持浏览清单、复制 Build ID、恢复原配置再试。构建、登录和模拟数据验证时均不得将密码、验证码、SteamCMD 会话文件或用户发布配置写进 Unity 资源和 Git。
 
 ## Mod 构建工具 (ModBuildEditorWindow)
 
@@ -642,7 +653,7 @@ public class InspectorMyComponent : Editor
 | 脚本模板 | `Assets/FrameWork/Editor/ScriptsTemplates/` |
 | 编辑器工具类 | `Assets/FrameWork/Editor/Base/Utils/` |
 | AssetBundle 工具 | `Assets/FrameWork/Editor/AssetBundles/` |
-| Steam 编辑器 | `Assets/FrameWork/Editor/Steamworks.NET/` |
+| Steam SDK 安装、设置与构建脚本 | `Assets/FrameWork/Plugins/Steamworks.NET/Editor/`（随 SDK 发行包更新） |
 | 项目编辑器 | `Assets/Editor/` |
 | PixelDa 像素生成工具 | `Assets/FrameWork/Editor/Base/Window/PixelDa/` |
 | 像素图编辑器及 Sprite Fusion 网格校正 | `Assets/FrameWork/Editor/Base/Window/PixelImageEditorWindow*.cs` · [工具指南](../pixel-image-editor/SKILL.md) |

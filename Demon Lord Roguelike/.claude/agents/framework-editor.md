@@ -14,6 +14,7 @@ watched_files:
 ## 职责范围
 
 ### 编辑器窗口
+- **SteamPipeWindow** - 独立的「游戏/SteamPipe」发布窗口。通用配置、VDF、账号授权、预览、上传及本机历史的实现位于 `Assets/FrameWork/Editor/SteamPipe/`；其中 `Tools~/steamcmd.zip` 随框架分发，首次使用时展开到当前 Windows 用户目录。项目可通过 `SteamPipeWindow.BuildContent` 接入自身构建流程。具体规则见关联 Skill 的 SteamPipe 章节。
 - **BaseUICreateWindow** - UI 脚本创建向导
 - **MVCEditorWindow** - MVC 代码生成
 - **ExcelEditorWindow** - Excel 配置导出（`CreateEntity` 生成 `*Bean.cs`+`Cfg`；含 `valid` 列的表自动生成 `valid!=0` 过滤，详见关联 Skill）
